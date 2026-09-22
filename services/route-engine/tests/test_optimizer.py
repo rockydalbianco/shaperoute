@@ -5,12 +5,24 @@ import networkx as nx
 import numpy as np
 import pytest
 
-from route_engine.geo import latlon_to_local_array, local_to_latlon, path_length_m
+from route_engine.geo import (
+    haversine_m,
+    latlon_to_local_array,
+    local_to_latlon,
+    path_length_m,
+)
+from route_engine.models import RouteRequest
 from route_engine.network import NetworkRoute, OsmnxSource, area_around
 from route_engine.optimizer import (
     PHASES,
     SCALE_RANGE,
+    START_BEARINGS,
+    START_OFFSET_M,
+    START_RINGS_M,
     RoadMask,
+    ShapeNotDrawableError,
+    candidate_starts,
+    plan_route,
     reach,
     search,
     zone_area,
@@ -197,3 +209,49 @@ def test_polish_uses_the_budget_left_to_fix_the_distance(
     traced = {(a.rotation_deg, a.phase) for a in result.attempts[:2]}
     assert (result.best.rotation_deg, result.best.phase) in traced
     assert len(result.attempts) == 4
+
+
+def test_candidate_starts_ring_the_requested_point() -> None:
+    starts = candidate_starts(LEVICO)
+    assert starts[0] == (LEVICO, 0.0)
+    assert len(starts) == 1 + len(START_RINGS_M) * START_BEARINGS
+    for point, offset in starts:
+        assert haversine_m(LEVICO, point) == pytest.approx(offset, abs=0.5)
+    assert max(offset for _, offset in starts) == START_OFFSET_M
+
+
+def _grid_from_x(x0_m: float, spacing_m: float = 50.0) -> nx.MultiDiGraph:
+    """A street grid only from x0_m east of LEVICO: no roads near the start."""
+    graph = _half_grid(spacing_m)
+    return graph.subgraph([n for n in graph if n[0] * spacing_m >= x0_m]).copy()
+
+
+def test_the_start_moves_where_the_shape_closes_on_the_roads() -> None:
+    # Roads begin 400 m east of the requested start: a circle through it
+    # always has an arc on empty ground, one through a start 500 m east
+    # can lie entirely on the grid.
+    graph = _grid_from_x(400.0)
+    fixed = search(graph, CIRCLE, LEVICO, 3000.0, move_start=False)
+    moved = search(graph, CIRCLE, LEVICO, 3000.0)
+    assert moved.best.offset_m > 0
+    assert moved.best.similarity > fixed.best.similarity
+    assert moved.best.similarity >= 0.90
+
+
+def test_a_shape_the_roads_cannot_draw_is_refused() -> None:
+    # A single straight street: no heart fits on it.
+    graph = nx.MultiDiGraph()
+    for i in range(41):
+        lat, lon = local_to_latlon(LEVICO, i * 50.0 - 1000.0, 0.0)
+        graph.add_node(i, y=lat, x=lon)
+        if i:
+            graph.add_edge(i - 1, i, length=50.0)
+            graph.add_edge(i, i - 1, length=50.0)
+
+    class OneStreet:
+        def load(self, bbox: tuple[float, float, float, float]) -> nx.MultiDiGraph:
+            return graph
+
+    request = RouteRequest(start=LEVICO, shape="heart", distance_m=2000)
+    with pytest.raises(ShapeNotDrawableError, match="cannot be drawn here"):
+        plan_route(request, OneStreet())

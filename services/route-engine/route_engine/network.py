@@ -8,6 +8,7 @@ when the road is not straight, a `geometry` LineString in (lon, lat).
 from __future__ import annotations
 
 import math
+import weakref
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -16,7 +17,13 @@ from typing import Any, Protocol
 import networkx as nx
 import numpy as np
 
-from route_engine.geo import LatLon, latlon_to_local, local_to_latlon, path_length_m
+from route_engine.geo import (
+    LatLon,
+    latlon_to_local,
+    latlon_to_local_array,
+    local_to_latlon,
+    path_length_m,
+)
 
 # Starting values, to be tuned on samples (docs/MAPS.md).
 AREA_MARGIN_M = 500.0
@@ -26,6 +33,8 @@ SPARSE_THRESHOLD_M = 150.0
 ZONE_RADIUS = 0.02
 CORRIDOR_BAND = 0.02
 CORRIDOR_WEIGHT = 2.0
+# Distances from the outline are exact up to this far beyond its band.
+CORRIDOR_EXACT_M = 1000.0
 
 # OSMnx 2.1 "walk" filter without its `cycleway` exclusion: in Trentino most
 # cycle paths are shared with pedestrians (ADR-0022). The name keeps these
@@ -184,11 +193,8 @@ def nearest_nodes(
     """Nearest graph node for each point, and its distance in metres."""
     origin = points[0]
     node_ids = list(graph.nodes)
-    local = np.array(
-        [
-            latlon_to_local(origin, (graph.nodes[n]["y"], graph.nodes[n]["x"]))
-            for n in node_ids
-        ]
+    local = latlon_to_local_array(
+        origin, np.array([(graph.nodes[n]["y"], graph.nodes[n]["x"]) for n in node_ids])
     )
     nearest: list[Any] = []
     distances: list[float] = []
@@ -270,23 +276,58 @@ def _corridor_costs(
     roads outside cost more the farther they are, so the route follows the
     contour instead of cutting through the shape.
     """
-    edges = list(graph.edges(data=True))
+    edges = list(graph.edges(data="length"))
     costs: dict[tuple[Any, Any], float] = {}
     if weight > 0:
-        samples = []
-        for u, v, data in edges:
-            coords = _edge_coords(graph, u, v, data)
-            samples.extend((coords[0], coords[len(coords) // 2], coords[-1]))
-        xy = np.array([latlon_to_local(origin, p) for p in samples])
-        distance = distance_to_polyline(outline, xy).reshape(-1, 3).mean(axis=1)
+        xy = latlon_to_local_array(origin, _edge_samples(graph))
+        distance = _distance_to_outline(outline, xy, CORRIDOR_EXACT_M + band_m)
+        distance = distance.reshape(-1, 3).mean(axis=1)
         excess = np.maximum(0.0, distance - band_m) / max(band_m, 1.0)
         factors = 1.0 + weight * excess
     else:
         factors = np.ones(len(edges))
-    for (u, v, data), factor in zip(edges, factors, strict=True):
-        cost = float(data["length"]) * float(factor)
+    for (u, v, length), factor in zip(edges, factors, strict=True):
+        cost = float(length) * float(factor)
         costs[(u, v)] = min(cost, costs.get((u, v), math.inf))
     return costs
+
+
+# Edge samples per graph, kept while its edges stay the same (zone graphs
+# are traced up to 20 times). A weak mapping, so nothing outlives the graph
+# or ends up in a GraphML file.
+_samples_cache: weakref.WeakKeyDictionary[Graph, tuple[int, np.ndarray]] = (
+    weakref.WeakKeyDictionary()
+)
+
+
+def _edge_samples(graph: Graph) -> np.ndarray:
+    """(lat, lon) of both ends and the middle point of every edge, three rows
+    per edge in `graph.edges()` order."""
+    cached = _samples_cache.get(graph)
+    if cached is not None and cached[0] == graph.number_of_edges():
+        return cached[1]
+    samples = []
+    for u, v, data in graph.edges(data=True):
+        coords = _edge_coords(graph, u, v, data)
+        samples.extend((coords[0], coords[len(coords) // 2], coords[-1]))
+    array = np.array(samples).reshape(-1, 2)
+    _samples_cache[graph] = (graph.number_of_edges(), array)
+    return array
+
+
+def _distance_to_outline(
+    outline: np.ndarray, points: np.ndarray, exact_within_m: float
+) -> np.ndarray:
+    """Distance of each point from the outline, exact within `exact_within_m`
+    of its bounding box; farther out, the distance from the box (a lower
+    bound, already beyond any road the corridor lets the route use)."""
+    low, high = outline.min(axis=0), outline.max(axis=0)
+    gap = np.maximum(0.0, np.maximum(low - points, points - high))
+    to_box = np.hypot(gap[:, 0], gap[:, 1])
+    result = to_box.copy()
+    near = to_box <= exact_within_m
+    result[near] = distance_to_polyline(outline, points[near])
+    return result
 
 
 _SINK = ("zone-sink",)
@@ -314,7 +355,9 @@ def _route_through_zones(
     each zone and the indices of the anchors that could not be reached.
     """
     node_ids = list(graph.nodes)
-    xy = np.array([latlon_to_local(origin, _node_latlon(graph, n)) for n in node_ids])
+    xy = latlon_to_local_array(
+        origin, np.array([_node_latlon(graph, n) for n in node_ids])
+    )
     used: set[frozenset[Any]] = set()
 
     def weight(u: Any, v: Any, edges: dict[Any, dict[str, Any]]) -> float:
@@ -394,7 +437,7 @@ def snap_to_network(
         )
 
     origin = shape_points[0]
-    outline = np.array([latlon_to_local(origin, p) for p in shape_points])
+    outline = latlon_to_local_array(origin, np.array(shape_points))
     if not np.allclose(outline[0], outline[-1]):
         outline = np.vstack([outline, outline[:1]])
     perimeter = float(np.hypot(*np.diff(outline, axis=0).T).sum())

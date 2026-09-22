@@ -157,7 +157,8 @@ senza server, il che rende il ciclo di prova rapidissimo.
 ## 5. Ottimizzazione e somiglianza
 
 La forma non si disegna a scala e rotazione fisse: si adatta alle strade
-(TASK-015, ADR-0023). Il percorso passa sempre per la partenza.
+(TASK-015, ADR-0023). La partenza si può spostare fino a 500 m dal punto
+richiesto, se da lì la forma si chiude meglio (ADR-0025).
 
 ### Parametri da cercare
 
@@ -166,14 +167,15 @@ La forma non si disegna a scala e rotazione fisse: si adatta alle strade
 | rotazione | 0–345° ogni 15°, poi ±15° ogni 5° | attorno alla partenza |
 | fase di partenza | 0; 0,25; 0,5; 0,75 | dove la partenza entra nella forma |
 | scala | 0,4–1,1 × la stima di §3 | le strade allungano il percorso fino a 2,5× |
+| partenza | il punto richiesto, o a 250 / 500 m in 8 direzioni | spostarla deve valere almeno il 5% del contorno |
 
 La rotazione conta molto dove la rete ha buchi (campi, fiumi, ferrovie); in
 una città fitta come Milano la forma va bene già dove cade.
 
 ### Strategia di ricerca
 
-1. **Conteggio delle strade**, per tutte le 96 combinazioni di rotazione e
-   fase: la quota del contorno con una strada entro la fascia del corridoio
+1. **Conteggio delle strade**, per tutte le combinazioni di partenza,
+   rotazione e fase (17 × 24 × 4): la quota del contorno con una strada entro la fascia del corridoio
    (§4). Le strade si campionano una volta, su una griglia; nessun routing,
    quindi costa pochi millisecondi a combinazione.
 2. **Tracciamento** (§4) della combinazione migliore, su un ritaglio del
@@ -188,7 +190,8 @@ una città fitta come Milano la forma va bene già dove cade.
 
 Ci si ferma appena distanza (±10%) e somiglianza (≥ 0,90) vanno bene. Se il
 budget finisce prima, si restituisce il tentativo di costo minore con un
-warning che dice cosa manca.
+warning che dice cosa manca. Se anche il migliore copre meno del **60%** del
+contorno, nessun percorso: la forma lì non è disponibile (ADR-0025).
 
 ### Funzione obiettivo
 
@@ -196,7 +199,8 @@ warning che dice cosa manca.
 costo = w_forma · (1 − somiglianza) + w_dist · |dist_reale − dist_target| / dist_target
 ```
 
-con `w_forma` = 3 e `w_dist` = 1: la forma conta più della distanza.
+con `w_forma` = 3 e `w_dist` = 1: la forma conta più della distanza. Una
+partenza spostata di 500 m aggiunge 0,15, cioè vale 5 punti di copertura.
 
 ### Misura della somiglianza
 

@@ -12,7 +12,7 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 
-from route_engine.geo import LatLon, latlon_to_local
+from route_engine.geo import LatLon, latlon_to_local_array
 from route_engine.network import distance_to_polyline
 
 # Coverage tolerance, as a fraction of the shape perimeter (100 m at 5 km).
@@ -24,7 +24,7 @@ SAMPLE_STEP_M = 10.0
 
 
 def _local(origin: LatLon, points: Sequence[LatLon]) -> np.ndarray:
-    return np.array([latlon_to_local(origin, p) for p in points])
+    return latlon_to_local_array(origin, np.array(points))
 
 
 def _closed(xy: np.ndarray) -> np.ndarray:

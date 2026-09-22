@@ -65,22 +65,22 @@ chiude ADR-0010.
 | 2026-09-22 | TASK-017_heart_15km_trento_v2.gpx | trento | — | 29.6 / 15.0 km | — | zone + corridoio, rete con ciclopedonali; copertura 100%, ripercorso 2%; da guardare |
 | 2026-09-22 | TASK-017_heart_5km_levico_v2.gpx | levico | — | 7.4 / 5.0 km | — | zone + corridoio, rete con ciclopedonali; copertura 90%, ripercorso 0%; da guardare |
 | 2026-09-22 | TASK-017_heart_5km_valsugana_v2.gpx | valsugana | — | 15.9 / 5.0 km | — | zone + corridoio, rete con ciclopedonali; copertura 62%, ripercorso 13%; da guardare |
-| 2026-09-23 | TASK-015_heart_5km_trento_v1.gpx | trento | 0.97 | 5.2 / 5.0 km | — | ottimizzatore: rotazione 5°, fase 0.50, scala 53%, 8 tracciamenti, convergente; fit 0.81; da guardare |
-| 2026-09-23 | TASK-015_heart_15km_trento_v1.gpx | trento | 0.97 | 14.7 / 15.0 km | — | ottimizzatore: rotazione 0°, fase 0.00, scala 51%, 2 tracciamenti, convergente; fit 0.84; da guardare |
-| 2026-09-23 | TASK-015_circle_5km_trento_v1.gpx | trento | 0.91 | 5.3 / 5.0 km | — | ottimizzatore: rotazione 0°, fase 0.25, scala 73%, 2 tracciamenti, convergente; fit 0.85; da guardare |
-| 2026-09-23 | TASK-015_circle_15km_trento_v1.gpx | trento | 0.96 | 16.3 / 15.0 km | — | ottimizzatore: rotazione 0°, fase 0.75, scala 43%, 8 tracciamenti, convergente; fit 0.71; da guardare |
-| 2026-09-23 | TASK-015_heart_5km_levico_v1.gpx | levico | 0.84 | 5.7 / 5.0 km | — | ottimizzatore: rotazione 30°, fase 0.75, scala 63%, 9 tracciamenti, non convergente; fit 0.72; da guardare |
-| 2026-09-23 | TASK-015_heart_15km_levico_v1.gpx | levico | 0.81 | 14.6 / 15.0 km | — | ottimizzatore: rotazione 0°, fase 0.00, scala 56%, 5 tracciamenti, non convergente; fit 0.72; da guardare |
-| 2026-09-23 | TASK-015_circle_5km_levico_v1.gpx | levico | 0.91 | 5.0 / 5.0 km | — | ottimizzatore: rotazione 60°, fase 0.25, scala 51%, 11 tracciamenti, convergente; fit 0.71; da guardare |
-| 2026-09-23 | TASK-015_circle_15km_levico_v1.gpx | levico | 0.96 | 16.3 / 15.0 km | — | ottimizzatore: rotazione 0°, fase 0.50, scala 62%, 6 tracciamenti, convergente; fit 0.84; da guardare |
-| 2026-09-23 | TASK-015_heart_5km_valsugana_v1.gpx | valsugana | 0.30 | 6.1 / 5.0 km | — | ottimizzatore: rotazione 0°, fase 0.25, scala 51%, 14 tracciamenti, non convergente; fit 0.22; da guardare |
-| 2026-09-23 | TASK-015_heart_15km_valsugana_v1.gpx | valsugana | 0.91 | 17.0 / 15.0 km | — | ottimizzatore: rotazione 10°, fase 0.50, scala 57%, 10 tracciamenti, non convergente; fit 0.72; da guardare |
-| 2026-09-23 | TASK-015_circle_5km_valsugana_v1.gpx | valsugana | 0.35 | 4.4 / 5.0 km | — | ottimizzatore: rotazione 0°, fase 0.25, scala 83%, 18 tracciamenti, non convergente; fit 0.44; da guardare |
-| 2026-09-23 | TASK-015_circle_15km_valsugana_v1.gpx | valsugana | 0.88 | 15.7 / 15.0 km | — | ottimizzatore: rotazione 0°, fase 0.75, scala 51%, 11 tracciamenti, non convergente; fit 0.73; da guardare |
-| 2026-09-23 | TASK-015_heart_5km_milano_v1.gpx | milano | 1.00 | 5.4 / 5.0 km | — | ottimizzatore (solo confronto): rotazione 0°, fase 0.00, scala 77%, 2 tracciamenti, convergente; fit 0.97; da guardare |
-| 2026-09-23 | TASK-015_heart_15km_milano_v1.gpx | milano | 1.00 | 14.3 / 15.0 km | — | ottimizzatore (solo confronto): rotazione 0°, fase 0.00, scala 79%, 2 tracciamenti, convergente; fit 1.00; da guardare |
-| 2026-09-23 | TASK-015_circle_5km_milano_v1.gpx | milano | 0.95 | 5.5 / 5.0 km | — | ottimizzatore (solo confronto): rotazione 0°, fase 0.00, scala 69%, 2 tracciamenti, convergente; fit 0.91; da guardare |
-| 2026-09-23 | TASK-015_circle_15km_milano_v1.gpx | milano | 1.00 | 16.0 / 15.0 km | — | ottimizzatore (solo confronto): rotazione 0°, fase 0.00, scala 82%, 2 tracciamenti, convergente; fit 1.00; da guardare |
+| 2026-09-23 | TASK-015_heart_5km_trento_v1.gpx | trento | 0.97 | 5.2 / 5.0 km | quasi | ottimizzatore: rotazione 5°, fase 0.50, scala 53%, 8 tracciamenti, convergente; fit 0.81; giudizio: bene, ma resta sempre un pezzo tagliato vicino alla partenza |
+| 2026-09-23 | TASK-015_heart_15km_trento_v1.gpx | trento | 0.97 | 14.7 / 15.0 km | quasi | ottimizzatore: rotazione 0°, fase 0.00, scala 51%, 2 tracciamenti, convergente; fit 0.84; giudizio: bene, ma resta sempre un pezzo tagliato vicino alla partenza |
+| 2026-09-23 | TASK-015_circle_5km_trento_v1.gpx | trento | 0.91 | 5.3 / 5.0 km | quasi | ottimizzatore: rotazione 0°, fase 0.25, scala 73%, 2 tracciamenti, convergente; fit 0.85; giudizio: bene, ma resta sempre un pezzo tagliato vicino alla partenza |
+| 2026-09-23 | TASK-015_circle_15km_trento_v1.gpx | trento | 0.96 | 16.3 / 15.0 km | quasi | ottimizzatore: rotazione 0°, fase 0.75, scala 43%, 8 tracciamenti, convergente; fit 0.71; giudizio: bene, ma resta sempre un pezzo tagliato vicino alla partenza |
+| 2026-09-23 | TASK-015_heart_5km_levico_v1.gpx | levico | 0.84 | 5.7 / 5.0 km | quasi | ottimizzatore: rotazione 30°, fase 0.75, scala 63%, 9 tracciamenti, non convergente; fit 0.72; giudizio: come Trento: un pezzo tagliato |
+| 2026-09-23 | TASK-015_heart_15km_levico_v1.gpx | levico | 0.81 | 14.6 / 15.0 km | quasi | ottimizzatore: rotazione 0°, fase 0.00, scala 56%, 5 tracciamenti, non convergente; fit 0.72; giudizio: come Trento: un pezzo tagliato |
+| 2026-09-23 | TASK-015_circle_5km_levico_v1.gpx | levico | 0.91 | 5.0 / 5.0 km | quasi | ottimizzatore: rotazione 60°, fase 0.25, scala 51%, 11 tracciamenti, convergente; fit 0.71; giudizio: come Trento: un pezzo tagliato |
+| 2026-09-23 | TASK-015_circle_15km_levico_v1.gpx | levico | 0.96 | 16.3 / 15.0 km | quasi | ottimizzatore: rotazione 0°, fase 0.50, scala 62%, 6 tracciamenti, convergente; fit 0.84; giudizio: come Trento: un pezzo tagliato |
+| 2026-09-23 | TASK-015_heart_5km_valsugana_v1.gpx | valsugana | 0.30 | 6.1 / 5.0 km | no | ottimizzatore: rotazione 0°, fase 0.25, scala 51%, 14 tracciamenti, non convergente; fit 0.22; giudizio: sospesa: rete troppo rada per ora |
+| 2026-09-23 | TASK-015_heart_15km_valsugana_v1.gpx | valsugana | 0.91 | 17.0 / 15.0 km | no | ottimizzatore: rotazione 10°, fase 0.50, scala 57%, 10 tracciamenti, non convergente; fit 0.72; giudizio: sospesa: rete troppo rada per ora |
+| 2026-09-23 | TASK-015_circle_5km_valsugana_v1.gpx | valsugana | 0.35 | 4.4 / 5.0 km | no | ottimizzatore: rotazione 0°, fase 0.25, scala 83%, 18 tracciamenti, non convergente; fit 0.44; giudizio: sospesa: rete troppo rada per ora |
+| 2026-09-23 | TASK-015_circle_15km_valsugana_v1.gpx | valsugana | 0.88 | 15.7 / 15.0 km | no | ottimizzatore: rotazione 0°, fase 0.75, scala 51%, 11 tracciamenti, non convergente; fit 0.73; giudizio: sospesa: rete troppo rada per ora |
+| 2026-09-23 | TASK-015_heart_5km_milano_v1.gpx | milano | 1.00 | 5.4 / 5.0 km | sì | ottimizzatore (solo confronto): rotazione 0°, fase 0.00, scala 77%, 2 tracciamenti, convergente; fit 0.97; giudizio: perfetto, soprattutto sulle distanze lunghe |
+| 2026-09-23 | TASK-015_heart_15km_milano_v1.gpx | milano | 1.00 | 14.3 / 15.0 km | sì | ottimizzatore (solo confronto): rotazione 0°, fase 0.00, scala 79%, 2 tracciamenti, convergente; fit 1.00; giudizio: perfetto, soprattutto sulle distanze lunghe |
+| 2026-09-23 | TASK-015_circle_5km_milano_v1.gpx | milano | 0.95 | 5.5 / 5.0 km | sì | ottimizzatore (solo confronto): rotazione 0°, fase 0.00, scala 69%, 2 tracciamenti, convergente; fit 0.91; giudizio: perfetto, soprattutto sulle distanze lunghe |
+| 2026-09-23 | TASK-015_circle_15km_milano_v1.gpx | milano | 1.00 | 16.0 / 15.0 km | sì | ottimizzatore (solo confronto): rotazione 0°, fase 0.00, scala 82%, 2 tracciamenti, convergente; fit 1.00; giudizio: perfetto, soprattutto sulle distanze lunghe |
 
 <!--
 Esempio di riga compilata:

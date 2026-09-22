@@ -68,6 +68,7 @@ services/       api · ai · route-engine · export
 packages/       shared-types · geometry · config
 docs/           documentazione, con tasks/
 samples/        GPX generati, versionati e annotati
+tools/          script di sviluppo: anteprima dei campioni su mappa
 ```
 
 Le cartelle si creano quando servono: `apps/` e `packages/` restano vuote

@@ -40,6 +40,7 @@ packages/
 docs/
   tasks/               un file per task
 tests/                 test end-to-end trasversali
+tools/                 script di sviluppo, solo libreria standard (ADR-0024)
 .github/               CI e template di Pull Request
 ```
 

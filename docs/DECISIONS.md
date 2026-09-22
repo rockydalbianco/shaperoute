@@ -210,3 +210,30 @@ chiamante il controllo sul numero di segmenti, e quindi sulle punte.
 **Conseguenza**: il criterio di TASK-011 "`get_shape("heart")(64)`
 restituisce 64 punti" si legge come 64 vertici, 65 elementi. Chi consuma la
 lista e vuole i soli vertici usa `points[:-1]`.
+
+## ADR-0018 — Proiezione: piano tangente locale, fase continua, rotazione antioraria
+**Stato**: Attiva · 2026-09-22
+
+TASK-012 doveva chiudere la scelta fra formula locale e `pyproj`, e fissare
+come si esprimono fase e rotazione.
+
+**Decisione**:
+- Conversione metri ↔ gradi con il piano tangente nel punto di partenza
+  (`route_engine/geo.py`, R = 6 371 000 m). Niente `pyproj`.
+- La fase è una frazione del perimetro in `[0, 1)`, dal vertice 0. La curva
+  proiettata inizia e finisce nel punto di partenza; i vertici originali
+  restano tutti.
+- La rotazione è in gradi, antioraria, applicata dopo la scala.
+
+**Motivo**: misurato su un cuore con distanza fino a 50 km (il massimo di
+ADR-0016): errore di perimetro sotto lo 0,05%, spostamento massimo di un
+punto 5 m a 46°N e 8 m a 60°N — meno della larghezza di una strada, e lo
+snapping sposterà molto di più. Una fase continua è ciò che serve
+all'ottimizzatore (TASK-015); tenere i vertici originali conserva le punte
+del cuore (ADR-0017). L'antiorario è la convenzione della trigonometria
+usata nel codice.
+
+**Conseguenza**: nessuna dipendenza nuova. La formula degenera vicino ai
+poli (`cos lat0 → 0`); `RouteRequest` oggi ammette latitudini fino a ±90, e
+se servirà un limite si apre un task. Se lo snapping di TASK-014 mostrasse
+errori riconducibili alla proiezione, questa voce si riapre.

@@ -1,6 +1,6 @@
 # TASK-012 — Proiezione della forma in coordinate geografiche
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 1 · **Branch**: `feat/TASK-012-shape-projection`
 
 ## Obiettivo
@@ -33,12 +33,12 @@ per il punto di partenza dell'utente.
 
 ## Criteri di accettazione
 
-- [ ] La forma proiettata passa per il punto di partenza.
-- [ ] Il perimetro in metri corrisponde alla distanza richiesta entro l'1%.
-- [ ] Rotazione e scala si compongono correttamente (verificato dai test).
-- [ ] Nessun calcolo geometrico avviene in gradi.
-- [ ] `pytest` verde, `ruff` e `black` puliti.
-- [ ] `docs/STATUS.md` aggiornato.
+- [x] La forma proiettata passa per il punto di partenza.
+- [x] Il perimetro in metri corrisponde alla distanza richiesta entro l'1%.
+- [x] Rotazione e scala si compongono correttamente (verificato dai test).
+- [x] Nessun calcolo geometrico avviene in gradi.
+- [x] `pytest` verde, `ruff` e `black` puliti.
+- [x] `docs/STATUS.md` aggiornato.
 
 ## File toccati
 
@@ -57,3 +57,11 @@ services/route-engine/tests/test_projection.py
   e si apre un task, senza cambiare approccio dentro questo.
 
 ## Esito
+
+`geo.py` converte fra piano tangente in metri e WGS84; `projection.py`
+applica scala, rotazione (antioraria) e fase (frazione del perimetro) e
+restituisce una curva che inizia e finisce nella partenza. Perimetro entro
+lo 0,05% del target fino a 50 km, quindi niente `pyproj` (ADR-0018).
+32 test nuovi, 65 in totale.
+Corretto in `TESTING.md` il riferimento Levico–Trento: 15 km in linea
+d'aria, non 18.

@@ -31,7 +31,7 @@ Strumento: `pytest`. I test stanno accanto al codice che testano.
 - proiezione geografica: un punto noto finisce dove ci si aspetta; scala e
   rotazione si compongono correttamente; un giro completo torna al punto
   di partenza;
-- calcolo distanze: confronto con valori noti (Levico–Trento ≈ 18 km in
+- calcolo distanze: confronto con valori noti (Levico–Trento ≈ 15 km in
   linea d'aria);
 - metriche di somiglianza: una forma con sé stessa dà 1; due forme
   palesemente diverse danno un valore basso;

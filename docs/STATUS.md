@@ -11,12 +11,12 @@
 
 ## In una riga
 
-Il route-engine genera circle e heart normalizzati in `[-1, 1]²`, con
-punti equispaziati in lunghezza d'arco. Niente coordinate geografiche ancora.
+Il route-engine genera circle e heart e li proietta in `(lat, lon)` attorno
+al punto di partenza, con scala, rotazione e fase. Niente rete stradale ancora.
 
 ## Prossimo passo
 
-**TASK-012 — Proiezione della forma in coordinate geografiche.**
+**TASK-013 — Export GPX minimo.**
 
 ## In lavorazione
 
@@ -24,6 +24,9 @@ Niente.
 
 ## Completato
 
+- **TASK-012** — `project_shape` mette la forma sulla mappa passando esattamente
+  per la partenza; perimetro in metri entro lo 0,05% del target fino a
+  50 km; formula locale al posto di `pyproj` (ADR-0018).
 - **TASK-011** — `get_shape("heart")(64)` dà 64 vertici equispaziati (±0.5%)
   più la chiusura, con entrambe le punte del cuore; `n_points` conta i
   vertici (ADR-0017).
@@ -43,8 +46,8 @@ Niente.
 
 - Setup locale del route-engine: in `services/route-engine/`,
   `python -m venv .venv` e `pip install -e ".[dev]"`.
-- `projection.py`, `network.py`, `optimizer.py`, `metrics.py` sono vuoti
-  apposta: si riempiono da TASK-012 in poi.
+- `network.py`, `optimizer.py`, `metrics.py` sono vuoti apposta: si
+  riempiono da TASK-014 in poi.
 - matplotlib non è una dipendenza: per guardare le forme basta uno script
   usa-e-getta fuori dal repository.
 - Con latitudine negativa serve la forma `--start=-33.9,18.4`: argparse

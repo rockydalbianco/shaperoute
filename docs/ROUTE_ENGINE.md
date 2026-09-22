@@ -76,10 +76,12 @@ lat = lat0 + (y_m / R) · 180/π
 lon = lon0 + (x_m / (R · cos lat0)) · 180/π       R = 6_371_000 m
 ```
 
-Sotto i 30 km l'errore di questa approssimazione è trascurabile rispetto
-alla tolleranza di forma. Per correttezza formale si può usare `pyproj` con
-proiezione azimutale equidistante locale; la decisione è aperta,
-vedi `DECISIONS.md`.
+Misurato: su un cuore da 50 km l'errore sul perimetro è sotto lo 0,05% e
+nessun punto si sposta di più di 8 m (a 60°N). Basta: niente `pyproj`
+(ADR-0018). Il piano è tangente nel punto di partenza.
+
+La rotazione è in gradi, **antioraria** (x verso est, y verso nord), e si
+applica dopo la scala.
 
 **Scala iniziale**: la forma normalizzata ha un perimetro noto in unità
 normalizzate. Per ottenere `distance_m`, scala = `distance_m / perimetro`.
@@ -91,6 +93,11 @@ empirico si misura, non si indovina.
 La traslazione non è quindi libera: il punto di partenza sta sulla curva,
 non al suo centro. Quale punto della forma coincida con la partenza è esso
 stesso un parametro (è la fase lungo la curva).
+
+La **fase** è una frazione del perimetro in `[0, 1)`, misurata dal vertice 0
+della forma. La curva proiettata comincia e finisce esattamente nel punto di
+partenza; tutti i vertici della forma restano, e il punto di fase si
+aggiunge solo se cade fra due vertici.
 
 ## 4. Snapping alla rete reale
 

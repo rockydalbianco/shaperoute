@@ -1,6 +1,6 @@
 # TASK-015 — Ottimizzatore iterativo e metrica di somiglianza
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 1 · **Branch**: `feat/TASK-015-iterative-optimizer`
 
 ## Obiettivo

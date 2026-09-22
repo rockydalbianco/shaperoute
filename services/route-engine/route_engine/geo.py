@@ -9,6 +9,8 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 
+import numpy as np
+
 LatLon = tuple[float, float]
 
 EARTH_RADIUS_M = 6_371_000.0
@@ -45,3 +47,11 @@ def haversine_m(a: LatLon, b: LatLon) -> float:
 def path_length_m(points: Sequence[LatLon]) -> float:
     """Length in metres of a polyline of WGS84 points."""
     return sum(haversine_m(a, b) for a, b in zip(points, points[1:], strict=False))
+
+
+def latlon_to_local_array(origin: LatLon, points: np.ndarray) -> np.ndarray:
+    """`latlon_to_local` for an (n, 2) array of (lat, lon) rows; returns (x, y) rows."""
+    lat0, lon0 = origin
+    x = np.radians(points[:, 1] - lon0) * EARTH_RADIUS_M * math.cos(math.radians(lat0))
+    y = np.radians(points[:, 0] - lat0) * EARTH_RADIUS_M
+    return np.column_stack([x, y])

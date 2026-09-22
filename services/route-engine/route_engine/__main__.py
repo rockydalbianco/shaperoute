@@ -9,19 +9,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from route_engine.export_gpx import route_name, to_gpx
-from route_engine.geo import path_length_m
 from route_engine.models import InvalidRequestError, RouteRequest
-from route_engine.network import (
-    EDGE_REUSE_PENALTY,
-    OsmnxSource,
-    area_around,
-    snap_to_network,
-)
-from route_engine.projection import initial_scale, project_shape
+from route_engine.network import EDGE_REUSE_PENALTY, OsmnxSource
+from route_engine.optimizer import SHAPE_POINTS, SIMILARITY, plan_route, required_area
+from route_engine.projection import initial_scale
 from route_engine.shapes import get_shape
-
-# Starting value from docs/ROUTE_ENGINE.md §2, to be tuned.
-N_POINTS = 64
 
 
 def _parse_start(value: str) -> tuple[float, float]:
@@ -64,6 +56,11 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("data/cache"),
         help="where road graphs are cached (default: data/cache)",
+    )
+    parser.add_argument(
+        "--no-optimize",
+        action="store_true",
+        help="trace the shape once at its initial placement (as in TASK-017)",
     )
     parser.add_argument(
         "--reuse-penalty",
@@ -112,26 +109,33 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.out is None:
         return 0
 
-    shape = get_shape(request.shape)(N_POINTS)
-    projected = project_shape(
-        shape, request.start, initial_scale(shape, request.distance_m)
-    )
+    optimize = not args.no_optimize
+    shape = get_shape(request.shape)(SHAPE_POINTS)
     source = OsmnxSource(args.cache_dir)
-    bbox = area_around(projected)
+    bbox = required_area(shape, request.start, request.distance_m, optimize)
     if source.is_cached(bbox):
-        print(f"Road graph: cached in {source.cache_path(bbox)}")
+        print("Road graph: from the cache")
     else:
         print("Road graph: downloading from OpenStreetMap...")
-    route = snap_to_network(
-        source.load(bbox), projected, reuse_penalty=args.reuse_penalty
+    plan = plan_route(
+        request, source, optimize=optimize, reuse_penalty=args.reuse_penalty
     )
+    route = plan.result
 
     when = datetime.now(UTC)
     name = route_name(request.shape, request.distance_m, when)
     args.out.write_text(to_gpx(route.points, name, when), encoding="utf-8")
     print(f"Wrote {args.out}: {len(route.points)} points")
-    print(f"  theoretical: {path_length_m(projected):.0f} m")
-    print(f"  on roads:    {route.distance_m:.0f} m (target {request.distance_m} m)")
+    if plan.search is not None:
+        best = plan.search.best
+        base = initial_scale(shape, request.distance_m)
+        print(
+            f"  placement:  rotation {best.rotation_deg:.0f}°, phase {best.phase:.2f}, "
+            f"scale {best.scale_m / base:.0%} of the initial one"
+        )
+        print(f"  attempts:   {len(plan.search.attempts)} routes traced")
+    print(f"  similarity: {route.similarity:.2f} ({SIMILARITY})")
+    print(f"  on roads:   {route.distance_m:.0f} m (target {request.distance_m} m)")
     for warning in route.warnings:
         print(f"  warning: {warning}")
     return 0

@@ -1,6 +1,6 @@
 # TASK-014 — Snapping alla rete reale con OSMnx
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 1 · **Branch**: `feat/TASK-014-network-snapping`
 
 ## Obiettivo
@@ -108,4 +108,9 @@ docs/STATUS.md
 
 ## Esito
 
-*(si compila a fine task)*
+La CLI produce un GPX chiuso che segue strade e sentieri reali (OSMnx,
+cache offline, potatura degli speroni, ADR-0021) e stampa distanza reale,
+target e warning. Distanza su strada ancora 2,2–3,8× il target; la penalità
+2.0 da sola non riduce le ripercorrenze in modo visibile (0–3%, annotato in
+`MAPS.md`), lo fa la potatura. Seguire il contorno invece dei waypoint
+passa a TASK-017.

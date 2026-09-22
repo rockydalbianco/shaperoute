@@ -16,8 +16,7 @@ GPX: la forma teorica si vede sulla mappa. Niente rete stradale ancora.
 
 ## Prossimo passo
 
-**TASK-014 — Snapping alla rete reale con OSMnx.** Il file del task non
-esiste ancora: va scritto prima di iniziare (ROADMAP).
+**TASK-014 — Snapping alla rete reale con OSMnx.**
 
 ## In lavorazione
 

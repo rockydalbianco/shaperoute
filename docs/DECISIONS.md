@@ -255,3 +255,33 @@ di comando; un servizio separato non aggiunge nulla finché l'unico formato
 
 **Conseguenza**: in fase 2, con i formati wearable, si decide se spostare
 il modulo in `services/export/`. Dettagli del formato in `docs/GPX.md`.
+
+## ADR-0020 — Grafo stradale: cache locale, area della forma, penalità fissa
+**Stato**: Attiva · 2026-09-22
+
+Preparando TASK-014 sono emersi tre conflitti: `CLAUDE.md` vuole il
+route-engine eseguibile senza rete, OSMnx scarica da internet; `TESTING.md`
+chiede di versionare i grafi delle zone, che pesano decine di MB in un
+repository pubblico; `ROUTE_ENGINE.md` §4 scarica un raggio pari alla
+distanza target, circa 700 km² per 15 km.
+
+**Decisione**:
+- Il grafo si scarica una volta e si salva in `data/cache/` (ignorata da
+  git); da lì la CLI gira offline. I test usano grafi sintetici costruiti
+  nel codice e un grafo reale piccolo (< 1 MB) in `tests/fixtures/`. I
+  grafi di zona non si versionano.
+- L'area scaricata è il rettangolo della forma teorica proiettata più un
+  margine.
+- La penalità sugli archi già percorsi entra in TASK-014 con un fattore
+  fisso, tarato a occhio sui campioni.
+
+**Motivo**: la cache mantiene la promessa "senza rete" dopo il primo
+download senza appesantire il repository; le fixture piccole bastano a
+rendere i test deterministici. L'area della forma è ciò che il percorso usa
+davvero. Senza penalità i primi campioni reali sarebbero pieni di tratti
+ripercorsi, e giudicarli a occhio non direbbe nulla.
+
+**Conseguenza**: `TESTING.md` (fixture) e `ROUTE_ENGINE.md` §4 (area) vanno
+corretti in TASK-014. I campioni in `samples/` restano riproducibili solo a
+parità di dati OSM: la data del download va annotata. Il fattore di
+penalità si rivede con l'ottimizzatore (TASK-015).

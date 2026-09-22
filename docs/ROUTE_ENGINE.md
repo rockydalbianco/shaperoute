@@ -106,13 +106,17 @@ agganciati al grafo stradale e collegati tra loro.
 
 Procedura di base:
 
-1. Scaricare il grafo della zona (raggio ≈ distanza target, con margine),
-   filtrato per l'attività: a piedi `network_type="walk"`.
+1. Scaricare il grafo del rettangolo che contiene la forma proiettata,
+   più un margine (ADR-0020), filtrato per l'attività: a piedi
+   `network_type="walk"`.
 2. Per ogni punto della forma, trovare il **nodo più vicino** del grafo.
 3. Eliminare i nodi duplicati consecutivi, che nascono dove la forma è più
    fitta della rete.
 4. Calcolare il percorso più breve tra nodi consecutivi.
 5. Concatenare i segmenti; l'ultimo torna al primo, chiudendo il ciclo.
+6. Eliminare gli speroni: ogni A → B → A diventa A.
+
+Valori, cache e misure: `MAPS.md`.
 
 ### I due problemi che emergono subito
 
@@ -120,8 +124,9 @@ Procedura di base:
 collegati da un'unica via, il percorso ci passa due volte e sulla mappa si
 vede un tratto che si ripercorre: brutto e ingannevole sulla distanza.
 Mitigazione: aumentare il peso degli archi già usati, così il calcolo
-preferisce strade nuove anche se più lunghe. Il fattore di penalità è da
-tarare.
+preferisce strade nuove anche se più lunghe. Misurato in TASK-014: da sola
+la penalità non basta, perché spesso il ritorno è l'unica via. Ciò che
+funziona è potare gli speroni dopo il routing (passo 6).
 
 **Rete troppo rada.** Se il nodo più vicino a un waypoint dista centinaia di
 metri, la forma è irrecuperabile in quel punto. Non va nascosto: si misura

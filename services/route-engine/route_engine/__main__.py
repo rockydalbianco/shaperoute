@@ -11,6 +11,12 @@ from pathlib import Path
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.geo import path_length_m
 from route_engine.models import InvalidRequestError, RouteRequest
+from route_engine.network import (
+    EDGE_REUSE_PENALTY,
+    OsmnxSource,
+    area_around,
+    snap_to_network,
+)
 from route_engine.projection import initial_scale, project_shape
 from route_engine.shapes import get_shape
 
@@ -53,12 +59,24 @@ def _build_parser() -> argparse.ArgumentParser:
         "--out", type=Path, help="write the route to this GPX file (never overwritten)"
     )
     parser.add_argument("--activity", default="running", help="default: running")
+    parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        default=Path("data/cache"),
+        help="where road graphs are cached (default: data/cache)",
+    )
+    parser.add_argument(
+        "--reuse-penalty",
+        type=float,
+        default=EDGE_REUSE_PENALTY,
+        help=f"weight multiplier on already used roads (default: {EDGE_REUSE_PENALTY})",
+    )
     return parser
 
 
 def parse_args(
     argv: Sequence[str] | None = None,
-) -> tuple[RouteRequest, Path | None]:
+) -> tuple[RouteRequest, argparse.Namespace]:
     """Parse CLI arguments into a validated RouteRequest and the output path.
 
     Invalid input exits with status 2 and a one-line message, never a traceback.
@@ -76,7 +94,7 @@ def parse_args(
         )
     except InvalidRequestError as exc:
         parser.error(str(exc))
-    return request, args.out
+    return request, args
 
 
 def parse_request(argv: Sequence[str] | None = None) -> RouteRequest:
@@ -84,22 +102,38 @@ def parse_request(argv: Sequence[str] | None = None) -> RouteRequest:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    request, out = parse_args(argv)
+    request, args = parse_args(argv)
     lat, lon = request.start
     print("Route request:")
     print(f"  shape:    {request.shape}")
     print(f"  distance: {request.distance_m} m")
     print(f"  start:    {lat}, {lon}")
     print(f"  activity: {request.activity}")
-    if out is not None:
-        shape = get_shape(request.shape)(N_POINTS)
-        points = project_shape(
-            shape, request.start, initial_scale(shape, request.distance_m)
-        )
-        when = datetime.now(UTC)
-        name = route_name(request.shape, request.distance_m, when)
-        out.write_text(to_gpx(points, name, when), encoding="utf-8")
-        print(f"Wrote {out}: {len(points)} points, {path_length_m(points):.0f} m")
+    if args.out is None:
+        return 0
+
+    shape = get_shape(request.shape)(N_POINTS)
+    projected = project_shape(
+        shape, request.start, initial_scale(shape, request.distance_m)
+    )
+    source = OsmnxSource(args.cache_dir)
+    bbox = area_around(projected)
+    if source.is_cached(bbox):
+        print(f"Road graph: cached in {source.cache_path(bbox)}")
+    else:
+        print("Road graph: downloading from OpenStreetMap...")
+    route = snap_to_network(
+        source.load(bbox), projected, reuse_penalty=args.reuse_penalty
+    )
+
+    when = datetime.now(UTC)
+    name = route_name(request.shape, request.distance_m, when)
+    args.out.write_text(to_gpx(route.points, name, when), encoding="utf-8")
+    print(f"Wrote {args.out}: {len(route.points)} points")
+    print(f"  theoretical: {path_length_m(projected):.0f} m")
+    print(f"  on roads:    {route.distance_m:.0f} m (target {request.distance_m} m)")
+    for warning in route.warnings:
+        print(f"  warning: {warning}")
     return 0
 
 

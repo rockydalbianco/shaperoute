@@ -7,7 +7,9 @@ name = "route-engine"
 version = "0.1.0"
 description = "Pure-Python engine that turns a shape, a distance and a start point into a real route."
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "osmnx>=2.1,<3",
+]
 
 [project.optional-dependencies]
 dev = [

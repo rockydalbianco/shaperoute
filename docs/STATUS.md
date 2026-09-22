@@ -11,12 +11,13 @@
 
 ## In una riga
 
-La CLI genera circle e heart attorno al punto di partenza e li scrive in
-GPX: la forma teorica si vede sulla mappa. Niente rete stradale ancora.
+La CLI genera circle e heart attorno alla partenza, li aggancia alla rete
+stradale reale (OSMnx, cache offline) e scrive un GPX chiuso che segue le
+strade; la distanza su strada è però 2,2–3,8× il target.
 
 ## Prossimo passo
 
-**TASK-014 — Snapping alla rete reale con OSMnx.**
+**TASK-017 — Snapping robusto: seguire il contorno, non i waypoint.**
 
 ## In lavorazione
 
@@ -24,6 +25,11 @@ Niente.
 
 ## Completato
 
+- **TASK-014** — GPX sulla rete reale: grafo OSMnx con cache in
+  `data/cache/`, snapping al nodo, routing con penalità, potatura degli
+  speroni (ADR-0020, ADR-0021); warning di rete rada; `MAPS.md` scritto.
+  Il percorso taglia ancora per l'interno invece di seguire il bordo
+  (cuore 5 km Levico: tagli interni e doppio anello nel lobo destro).
 - **TASK-013** — `--out` scrive un GPX 1.1 (ADR-0019); 12 campioni teorici
   (heart/circle, 5 e 15 km, tre zone) guardati in gpx.studio: tutti `sì`.
 - **TASK-012** — `project_shape` mette la forma sulla mappa passando esattamente
@@ -48,17 +54,20 @@ Niente.
 
 - Setup locale del route-engine: in `services/route-engine/`,
   `python -m venv .venv` e `pip install -e ".[dev]"`.
-- `network.py`, `optimizer.py`, `metrics.py` sono vuoti apposta: si
-  riempiono da TASK-014 in poi.
+- `optimizer.py` e `metrics.py` sono vuoti apposta: si riempiono in
+  TASK-015.
+- Per TASK-017 il riferimento visivo è il cuore 5 km a Levico (immagine
+  annotata in locale: `Pictures/Screenshots/Cuore5kmLevico.png`): togliere
+  i tagli interni e il doppio anello nel lobo destro; usare le strade
+  esterne vicine al contorno (lungo il lago a ovest, a est del lobo destro,
+  in basso al centro). I 12 grafi sono già in cache: TASK-017 gira offline.
 - matplotlib non è una dipendenza: per guardare le forme basta uno script
   usa-e-getta fuori dal repository.
 - Con latitudine negativa serve la forma `--start=-33.9,18.4`: argparse
   scambia `-33.9,...` per un'opzione.
 - Le cartelle `apps/` e `packages/` restano vuote fino alla fase 2. È
   voluto, non è un file mancante.
-- Le partenze delle tre zone sono in `docs/TESTING.md`. Quella di
-  `valsugana` è il centro della valle, vicino a Borgo: se in TASK-014 la
-  rete risulta tutt'altro che rada, spostarla su un versante.
+- Le partenze delle tre zone sono in `docs/TESTING.md`.
 - Nella versione app la partenza sarà la posizione GPS del dispositivo
   (fase 2); le zone fisse servono solo a confrontare le prove.
 - Il repository è pubblico: nessun segreto nei file, mai. Le chiavi stanno

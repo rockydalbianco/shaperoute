@@ -44,6 +44,7 @@ produce un GPX che, aperto in un visualizzatore, **sembra un cuore**.
 | TASK-012 | Proiezione forma → coordinate geografiche |
 | TASK-013 | Export GPX minimo (per vedere subito qualcosa) |
 | TASK-014 | Snapping alla rete reale con OSMnx |
+| TASK-017 | Snapping robusto: seguire il contorno (prima di TASK-015) |
 | TASK-015 | Metrica di somiglianza + ottimizzatore |
 | TASK-016 | Validazione: distanza, ripercorrenza, percorribilità |
 

@@ -11,12 +11,12 @@
 
 ## In una riga
 
-Il pacchetto `route-engine` esiste: la CLI valida gli argomenti e stampa la
-richiesta interpretata. Nessuna geometria ancora.
+Il route-engine genera circle e heart normalizzati in `[-1, 1]²`, con
+punti equispaziati in lunghezza d'arco. Niente coordinate geografiche ancora.
 
 ## Prossimo passo
 
-**TASK-011 — Forme parametriche: circle e heart.**
+**TASK-012 — Proiezione della forma in coordinate geografiche.**
 
 ## In lavorazione
 
@@ -24,6 +24,9 @@ Niente.
 
 ## Completato
 
+- **TASK-011** — `get_shape("heart")(64)` dà 64 vertici equispaziati (±0.5%)
+  più la chiusura, con entrambe le punte del cuore; `n_points` conta i
+  vertici (ADR-0017).
 - **TASK-010** — `python -m route_engine --shape circle --distance 5000
   --start 46.0122,11.2986` stampa la richiesta; input assurdi danno un
   errore di una riga (exit 2), non un traceback.
@@ -40,8 +43,10 @@ Niente.
 
 - Setup locale del route-engine: in `services/route-engine/`,
   `python -m venv .venv` e `pip install -e ".[dev]"`.
-- `shapes/`, `projection.py`, `network.py`, `optimizer.py`, `metrics.py`
-  sono vuoti apposta: si riempiono da TASK-011 in poi.
+- `projection.py`, `network.py`, `optimizer.py`, `metrics.py` sono vuoti
+  apposta: si riempiono da TASK-012 in poi.
+- matplotlib non è una dipendenza: per guardare le forme basta uno script
+  usa-e-getta fuori dal repository.
 - Con latitudine negativa serve la forma `--start=-33.9,18.4`: argparse
   scambia `-33.9,...` per un'opzione.
 - Le cartelle `apps/` e `packages/` restano vuote fino alla fase 2. È

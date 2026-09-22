@@ -1,6 +1,6 @@
 # TASK-011 — Forme parametriche: circle e heart
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 1 · **Branch**: `feat/TASK-011-parametric-shapes`
 
 ## Obiettivo
@@ -32,13 +32,13 @@ lunghezza d'arco.
 
 ## Criteri di accettazione
 
-- [ ] `get_shape("heart")(64)` restituisce 64 punti, curva chiusa.
-- [ ] Tutti i punti stanno in `[-1, 1] × [-1, 1]`.
-- [ ] Il cuore è simmetrico rispetto all'asse verticale entro tolleranza.
-- [ ] La distanza tra punti consecutivi è uniforme entro il 5%.
-- [ ] Nessun modulo di `shapes/` importa nulla di geografico.
-- [ ] `pytest` verde, `ruff` e `black` puliti.
-- [ ] `docs/STATUS.md` aggiornato.
+- [x] `get_shape("heart")(64)` restituisce 64 punti, curva chiusa. (64 vertici + chiusura, ADR-0017)
+- [x] Tutti i punti stanno in `[-1, 1] × [-1, 1]`.
+- [x] Il cuore è simmetrico rispetto all'asse verticale entro tolleranza.
+- [x] La distanza tra punti consecutivi è uniforme entro il 5%.
+- [x] Nessun modulo di `shapes/` importa nulla di geografico.
+- [x] `pytest` verde, `ruff` e `black` puliti.
+- [x] `docs/STATUS.md` aggiornato.
 
 ## File toccati
 
@@ -63,3 +63,9 @@ buttato via con matplotlib — solo per guardarle. Un cuore sbagliato si
 riconosce in un secondo a occhio e in mezz'ora leggendo numeri.
 
 ## Esito
+
+Circle e heart generati per arco equispaziato (spaziatura del cuore entro
+±0.5% della media con 64 vertici), registro `SHAPES` + `get_shape`, 33 test
+verdi. `n_points` conta i vertici e la lista ha un elemento in più per la
+chiusura (ADR-0017): con 64 elementi chiusi il cuore perdeva la punta in
+basso. Verificato anche a occhio su un PNG generato fuori dal repository.

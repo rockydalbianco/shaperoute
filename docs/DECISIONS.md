@@ -143,3 +143,21 @@ dopo prova, è il dato che chiude ADR-0010. In più `git show` recupera
 qualsiasi campione com'era a una data precedente.
 
 Restano ignorati `out/` e `scratch/`, per le prove che non si guardano.
+
+## ADR-0015 — Repository pubblico
+**Stato**: Attiva · 2026-09-22
+
+Su GitHub la protezione del ramo `main` è gratuita solo sui repository
+pubblici; su uno privato richiede GitHub Pro.
+
+**Decisione**: `rockydalbianco/shaperoute` è pubblico.
+
+**Motivo**: la protezione del ramo è il vincolo che regge tutto il metodo
+di lavoro (ADR-0004), e vale più della riservatezza del sorgente. Nel
+codice non c'è nulla di riservato: le chiavi stanno in `.env`, che non
+entra nel repository.
+
+**Conseguenza**: nessun segreto nei file, mai, nemmeno temporaneamente —
+la cronologia di git è pubblica e conserva tutto. Se in futuro servisse
+riservatezza, la visibilità si cambia dalle impostazioni, perdendo però la
+protezione del ramo a meno di passare a GitHub Pro.

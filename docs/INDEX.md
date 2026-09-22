@@ -13,6 +13,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 
 | Sto lavorando su… | Leggi |
 |---|---|
+| Installare tutto e partire da zero | `SETUP.md` |
 | Geometria delle forme (circle, heart, star) | `ROUTE_ENGINE.md` §2 |
 | Proiezione forma → coordinate geografiche | `ROUTE_ENGINE.md` §3 |
 | Snapping alla rete stradale, routing | `ROUTE_ENGINE.md` §4, `MAPS.md` |
@@ -36,6 +37,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 
 | Documento | Stato | Si scrive con |
 |---|---|---|
+| `SETUP.md` | pieno | — |
 | `PRODUCT.md` | pieno | — |
 | `ARCHITECTURE.md` | pieno | — |
 | `ROUTE_ENGINE.md` | pieno | — |

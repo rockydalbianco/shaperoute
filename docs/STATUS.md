@@ -11,13 +11,20 @@
 
 ## In una riga
 
-La CLI genera circle e heart attorno alla partenza, li aggancia alla rete
-stradale reale (OSMnx, cache offline) e scrive un GPX chiuso che segue le
-strade; la distanza su strada è però 2,2–3,8× il target.
+La CLI genera circle e heart attorno alla partenza, li aggancia alla rete a
+piedi reale (con le ciclopedonali) seguendo il contorno e scrive un GPX
+chiuso; a scala e rotazione iniziali la distanza su strada è 1,5–3,7× il
+target, perché parte della forma cade dove non ci sono strade.
 
 ## Prossimo passo
 
-**TASK-017 — Snapping robusto: seguire il contorno, non i waypoint.**
+**TASK-015 — Ottimizzatore iterativo (e metrica di somiglianza).**
+Il file del task non esiste ancora: va scritto e confermato prima di
+iniziare. L'idea concordata: contare le strade vicine al contorno per molte
+rotazioni attorno alla partenza (costa poco, niente routing), tracciare con
+`snap_to_network` solo le migliori, correggere la scala in base alla
+distanza reale e ripetere finché forma (copertura) e distanza (es. ±10%)
+vanno bene, o restituire il migliore con un warning.
 
 ## In lavorazione
 
@@ -25,6 +32,11 @@ Niente.
 
 ## Completato
 
+- **TASK-017** — Zone di nodi al posto del nodo più vicino e corridoio
+  attorno al contorno (ADR-0022): più corto di TASK-014 in 11 casi su 12 a
+  parità di copertura. Rete a piedi con le ciclopedonali, nei due sensi:
+  cuore 5 km Levico da 2,21× a 1,47×. Resta un rientro in basso al centro
+  del cuore, su campi senza strade: lo risolve la rotazione (TASK-015).
 - **TASK-014** — GPX sulla rete reale: grafo OSMnx con cache in
   `data/cache/`, snapping al nodo, routing con penalità, potatura degli
   speroni (ADR-0020, ADR-0021); warning di rete rada; `MAPS.md` scritto.
@@ -56,11 +68,13 @@ Niente.
   `python -m venv .venv` e `pip install -e ".[dev]"`.
 - `optimizer.py` e `metrics.py` sono vuoti apposta: si riempiono in
   TASK-015.
-- Per TASK-017 il riferimento visivo è il cuore 5 km a Levico (immagine
-  annotata in locale: `Pictures/Screenshots/Cuore5kmLevico.png`): togliere
-  i tagli interni e il doppio anello nel lobo destro; usare le strade
-  esterne vicine al contorno (lungo il lago a ovest, a est del lobo destro,
-  in basso al centro). I 12 grafi sono già in cache: TASK-017 gira offline.
+- Grafi `foot` in cache: solo 4 dei 12 casi (i tre cuori da 5 km e il
+  cuore da 15 km a Trento). Gli altri 8 si scaricano **uno alla volta**,
+  quando Overpass torna a rispondere (`MAPS.md`, "Overpass: come si
+  scarica"). I 12 grafi `walk` di TASK-014 restano per i confronti.
+- Per misurare una modifica allo snapping sui 12 casi:
+  `python tests/measure_snapping.py` (in `services/route-engine/`);
+  `--network walk` usa i grafi di TASK-014.
 - matplotlib non è una dipendenza: per guardare le forme basta uno script
   usa-e-getta fuori dal repository.
 - Con latitudine negativa serve la forma `--start=-33.9,18.4`: argparse

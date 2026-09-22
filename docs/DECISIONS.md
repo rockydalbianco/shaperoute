@@ -308,3 +308,39 @@ erano proprio i ritorni a rovinare il disegno.
 
 **Conseguenza**: le deviazioni residue (2,2–3,8× il target) sono il
 problema di TASK-017. La penalità resta, con valore da rivedere lì.
+
+## ADR-0022 — Zone e corridoio al posto del nodo più vicino; rete con le ciclopedonali
+**Stato**: Attiva · 2026-09-22
+
+TASK-017 doveva portare la distanza su strada entro 1,5× il target senza
+ottimizzatore. Misurando anche quanta parte del contorno il percorso segue
+davvero (copertura, `MAPS.md`), le varianti che ci arrivano lo fanno
+saltando pezzi di forma. Guardando i campioni è emerso anche che la rete
+`walk` di OSMnx scarta le ciclabili, quasi tutte ciclopedonali in Trentino.
+
+**Decisione**:
+- Ogni punto della forma, tranne la partenza, è una **zona** di nodi
+  (raggio 2% del perimetro), non il solo nodo più vicino. Fra una zona e la
+  successiva le strade costano di più quanto più stanno lontane dal
+  contorno oltre una fascia del 2% del perimetro (**corridoio**, peso 2,0).
+  Aggancio all'arco, guardia sulle deviazioni e sfoltimento dei waypoint
+  sono stati provati e scartati.
+- La rete a piedi è il filtro `walk` di OSMnx **senza** l'esclusione di
+  `highway=cycleway`, costruita con `network_type="walk"` perché ogni strada
+  resti percorribile nei due sensi. I grafi in cache si chiamano `foot_*`.
+- Il traguardo di 1,5× esce da TASK-017 e passa a TASK-015: ruotare e
+  scalare la forma, tracciare, misurare e ripetere finché forma e distanza
+  vanno bene.
+
+**Motivo**: sui 12 casi zone e corridoio accorciano in 11 casi (rapporto
+mediano 2,89× → 2,57×) senza perdere copertura (79%); la guardia arriva a
+11/12 entro 1,5× ma con copertura 41%, cioè disegnando un'altra forma. Le
+ciclabili, sul cuore da 5 km a Levico, portano 1,82× → 1,47× e copertura
+82% → 90%. Il residuo viene da dove cade la forma (campi, fiumi, ferrovie a
+scala e rotazione iniziali), che nessun aggancio può correggere.
+
+**Conseguenza**: TASK-017 si chiude con i criteri rivisti (più corto della
+TASK-014 senza perdere copertura). TASK-015 usa `snap_to_network` così com'è
+come passo di tracciamento e la copertura come candidata alla misura di
+somiglianza. Gli 8 grafi `foot` non ancora scaricati si scaricano uno alla
+volta quando Overpass risponde (`MAPS.md`).

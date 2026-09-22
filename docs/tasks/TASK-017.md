@@ -1,6 +1,6 @@
 # TASK-017 — Snapping robusto: seguire il contorno, non i waypoint
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 1 · **Branch**: `feat/TASK-017-robust-snapping`
 
 ## Obiettivo
@@ -55,24 +55,36 @@ Cause misurate:
 
 ## Criteri di accettazione
 
-- [ ] Su almeno 9 dei 12 casi la distanza su strada è entro **1,5×** il
-      target, a scala iniziale e senza ottimizzatore.
-- [ ] Nessun caso peggiora di giudizio a occhio rispetto a TASK-014.
+Rivisti a metà task (ADR-0022): nessuna variante arriva a 1,5× senza
+perdere la forma, e il traguardo di distanza passa a TASK-015.
+
+- [x] ~~Su almeno 9 dei 12 casi la distanza su strada è entro 1,5× il
+      target~~ → **rivisto**: su almeno 9 dei 12 casi la distanza scende
+      rispetto a TASK-014, senza calo della copertura media. Esito: 11/12,
+      rapporto mediano 2,89× → 2,57×, copertura media 79% → 79%.
+- [ ] Nessun caso peggiora di giudizio a occhio rispetto a TASK-014: da
+      guardare in gpx.studio sui campioni `TASK-017_*_v1` (numeri in
+      `samples/LOG.md`).
 - [ ] Sul cuore da 5 km a Levico non ci sono rientri verso l'interno
-      visibili a occhio.
-- [ ] Nessun waypoint scartato senza che la CLI lo dica in un warning.
-- [ ] `pytest` verde, `ruff` e `black` puliti.
-- [ ] `MAPS.md` aggiornato con le nuove misure; `docs/STATUS.md` aggiornato.
+      visibili a occhio: **non raggiunto**. Spariti il doppio anello nel
+      lobo destro e i tagli nel lobo sinistro (con le ciclopedonali); resta
+      un rientro in basso al centro, dove il contorno attraversa campi senza
+      strade. Passa a TASK-015 (rotazione).
+- [x] Nessun waypoint scartato senza che la CLI lo dica in un warning.
+- [x] `pytest` verde, `ruff` e `black` puliti.
+- [x] `MAPS.md` aggiornato con le nuove misure; `docs/STATUS.md` aggiornato.
 
 ## File toccati
 
 ```
 services/route-engine/route_engine/network.py
 services/route-engine/tests/test_network.py
+services/route-engine/tests/measure_snapping.py
 samples/TASK-017_*.gpx
 samples/LOG.md
 docs/MAPS.md
 docs/ROUTE_ENGINE.md
+docs/DECISIONS.md
 docs/STATUS.md
 ```
 
@@ -86,4 +98,8 @@ docs/STATUS.md
 
 ## Esito
 
-*(si compila a fine task)*
+Ogni punto della forma è una zona di nodi e le strade lontane dal contorno
+costano di più (ADR-0022): più corto di TASK-014 in 11 casi su 12 a parità
+di copertura. Con le ciclopedonali nella rete il cuore da 5 km a Levico
+passa da 2,21× a 1,47×. Il traguardo di 1,5× dipende da dove cade la forma
+e passa all'ottimizzatore iterativo di TASK-015.

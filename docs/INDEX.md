@@ -1,0 +1,67 @@
+# INDEX — Cosa leggere, e quando
+
+Scopo di questo file: **evitare che si carichi documentazione inutile**.
+Trova la riga che descrive il tuo task, leggi solo quei documenti.
+
+## Regola generale
+
+| Sempre | Mai "per sicurezza" |
+|---|---|
+| `CLAUDE.md`, `STATUS.md`, il task file | tutto il resto di `docs/` |
+
+## Instradamento per tipo di task
+
+| Sto lavorando su… | Leggi |
+|---|---|
+| Geometria delle forme (circle, heart, star) | `ROUTE_ENGINE.md` §2 |
+| Proiezione forma → coordinate geografiche | `ROUTE_ENGINE.md` §3 |
+| Snapping alla rete stradale, routing | `ROUTE_ENGINE.md` §4, `MAPS.md` |
+| Ottimizzazione e metrica di somiglianza | `ROUTE_ENGINE.md` §5 |
+| Validazione distanza / percorribilità | `ROUTE_ENGINE.md` §6, `TESTING.md` |
+| Guardare o confrontare percorsi generati | `../samples/README.md` |
+| Export GPX o wearable | `GPX.md` |
+| Endpoint, contratti REST, validazione input | `API.md`, `ARCHITECTURE.md` §3 |
+| Interpretazione linguaggio naturale | `AI.md` |
+| Schermate, mappa, interazione utente | `UI.md`, `PRODUCT.md` |
+| Modello dati, migrazioni, PostGIS | `DATABASE.md` |
+| Scelta di libreria, provider, formato | `DECISIONS.md` |
+| Struttura cartelle, confini tra moduli | `ARCHITECTURE.md` |
+| Test, fixture, criteri di accettazione | `TESTING.md` |
+| Branch, PR, review, rilasci | `TEAM_WORKFLOW.md` |
+| Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
+
+## Stato dei documenti
+
+`[pieno]` utilizzabile · `[stub]` da scrivere quando arriva il task che lo richiede
+
+| Documento | Stato | Si scrive con |
+|---|---|---|
+| `PRODUCT.md` | pieno | — |
+| `ARCHITECTURE.md` | pieno | — |
+| `ROUTE_ENGINE.md` | pieno | — |
+| `ROADMAP.md` | pieno | — |
+| `DECISIONS.md` | pieno | — |
+| `STATUS.md` | pieno | — |
+| `TEAM_WORKFLOW.md` | pieno | — |
+| `TESTING.md` | pieno | — |
+| `GPX.md` | stub | TASK-013 |
+| `MAPS.md` | stub | TASK-014 |
+| `API.md` | stub | TASK-022 |
+| `UI.md` | stub | TASK-021 |
+| `AI.md` | stub | TASK-030 |
+| `DATABASE.md` | stub | fase 4 |
+
+Uno stub si riempie **quando arriva il suo task**, non prima: scrivere oggi
+un `DATABASE.md` dettagliato significa documentare decisioni non ancora prese.
+
+## Chi possiede cosa
+
+Ogni informazione vive in **un solo** documento. Se la trovi in due posti,
+uno dei due è già sbagliato: cancellalo e metti un rimando.
+
+- Stato corrente e prossimo passo → `STATUS.md` (solo lì)
+- Perché una scelta è stata fatta → `DECISIONS.md` (solo lì)
+- Cosa faremo e in che ordine → `ROADMAP.md` (solo lì)
+- Come funziona un algoritmo → il documento di dominio
+- Regole permanenti di comportamento → `CLAUDE.md` (solo lì)
+- Risultati generati e loro giudizio → `samples/LOG.md` (solo lì)

@@ -1,0 +1,57 @@
+# STATUS — Dove siamo adesso
+
+> **Unica fonte di verità sullo stato del progetto.**
+> Primo file da leggere in ogni sessione, ultimo da aggiornare a fine task.
+> Se è disallineato dalla realtà, tutto il resto del sistema smette di
+> funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
+
+**Ultimo aggiornamento**: 2026-09-22 · **Fase corrente**: 0 — Fondamenta
+
+---
+
+## In una riga
+
+Repository appena creato. Documentazione impostata. Nessun codice scritto.
+
+## Prossimo passo
+
+**TASK-001 — Repository locale, GitHub, `main` protetto.**
+
+## In lavorazione
+
+Niente.
+
+## Completato
+
+Niente. (Le voci si aggiungono qui, una riga per task, dalla più recente.)
+
+## Bloccato
+
+Niente.
+
+## Note per la prossima sessione
+
+- Lo starter non contiene ancora codice: `services/route-engine/` è vuoto
+  e si popola con TASK-010.
+- Le cartelle `apps/` e `packages/` restano vuote fino alla fase 2. È
+  voluto, non è un file mancante.
+- Il primo riscontro visivo arriva con TASK-013: fino a lì non c'è niente
+  da guardare su una mappa, ed è normale.
+- `samples/` è vuota per ora: si riempie da TASK-013 in poi, un GPX per
+  ogni prova guardata.
+
+---
+
+## Come si aggiorna
+
+A fine task, in un solo commit dentro la stessa PR:
+
+1. Sposta il task da **In lavorazione** a **Completato**, con una riga di
+   esito: cosa funziona adesso che prima non funzionava.
+2. Riscrivi **Prossimo passo** con un solo task.
+3. Aggiorna **In una riga**.
+4. Svuota o aggiorna **Note per la prossima sessione**.
+
+Tenere breve questo file è parte del lavoro: è quello che si paga in ogni
+sessione. Lo storico sta nei commit e nelle PR, non qui. Se **Completato**
+supera una decina di righe, si condensa per fase.

@@ -9,7 +9,6 @@ from route_engine.network import (
     FileSource,
     OsmnxSource,
     area_around,
-    dedupe_consecutive,
     nearest_nodes,
     prune_spurs,
     snap_to_network,
@@ -63,10 +62,6 @@ def test_nearest_nodes_picks_closest_and_measures_distance() -> None:
     assert distances[1] == pytest.approx(31.6, abs=0.1)  # hypot(30, 10)
 
 
-def test_dedupe_drops_consecutive_and_closing_repeats() -> None:
-    assert dedupe_consecutive(["a", "a", "b", "b", "c", "a", "a"]) == ["a", "b", "c"]
-
-
 def test_prune_spurs_removes_nested_out_and_back() -> None:
     assert prune_spurs(["a", "b", "c", "b", "a", "d"]) == ["a", "d"]
     assert prune_spurs(["a", "b", "c", "d", "a"]) == ["a", "b", "c", "d", "a"]
@@ -111,14 +106,98 @@ def test_route_follows_edges_only() -> None:
 def test_penalty_avoids_reusing_an_edge_when_an_alternative_exists() -> None:
     # Out and back between two neighbours: without penalty the return trip
     # reuses the same edge (100 m); with a strong penalty it goes around
-    # the cell (300 m < 4 × 100 m).
+    # the cell (300 m < 4 × 100 m). No corridor: going around the cell
+    # leaves the outline, which the corridor alone would forbid.
     graph = _grid(2)
     shape = [_at(0, 0), _at(1, 0), _at(0, 0)]
-    plain = snap_to_network(graph, shape, reuse_penalty=1.0)
-    penalized = snap_to_network(graph, shape, reuse_penalty=4.0)
+    plain = snap_to_network(graph, shape, reuse_penalty=1.0, corridor=0.0)
+    penalized = snap_to_network(graph, shape, reuse_penalty=4.0, corridor=0.0)
     assert _reused_edges(graph, plain.points) == 1
     assert _reused_edges(graph, penalized.points) == 0
     assert penalized.distance_m == pytest.approx(400.0, rel=1e-3)
+
+
+def _river_grid() -> nx.MultiDiGraph:
+    """Two streets 200 m apart along j = 0 and j = 2, joined only at i = 0 and 4."""
+    graph = nx.MultiDiGraph()
+    for i in range(5):
+        for j in (0, 2):
+            lat, lon = _at(i, j)
+            graph.add_node((i, j), y=lat, x=lon)
+    for j in (0, 2):
+        for i in range(4):
+            graph.add_edge((i, j), (i + 1, j), length=SPACING_M)
+            graph.add_edge((i + 1, j), (i, j), length=SPACING_M)
+    for i in (0, 4):
+        graph.add_edge((i, 0), (i, 2), length=2 * SPACING_M)
+        graph.add_edge((i, 2), (i, 0), length=2 * SPACING_M)
+    return graph
+
+
+def test_zone_reaches_a_near_node_on_this_side_of_the_river() -> None:
+    # The middle shape point is 90 m from (2, 2), across the river, and
+    # 110 m from (2, 0), on the street the route is already on.
+    graph = _river_grid()
+    shape = [_at(0, 0), _at(2, 1.1), _at(4, 0), _at(0, 0)]
+    nearest_only = snap_to_network(graph, shape, 1.0, zone_radius=0.0)
+    zoned = snap_to_network(graph, shape, 1.0, zone_radius=0.15)  # ≈ 128 m
+    assert _at(2, 2) in nearest_only.points
+    assert nearest_only.distance_m == pytest.approx(1200.0, rel=1e-3)
+    assert _at(2, 2) not in zoned.points
+    assert zoned.distance_m < nearest_only.distance_m
+
+
+def _link(
+    graph: nx.MultiDiGraph,
+    a: tuple[float, float],
+    b: tuple[float, float],
+    **attrs: object,
+) -> None:
+    for node in (a, b):
+        if node not in graph:
+            lat, lon = _at(*node)
+            graph.add_node(node, y=lat, x=lon)
+    if "length" not in attrs:
+        attrs["length"] = haversine_m(_at(*a), _at(*b))
+    graph.add_edge(a, b, **attrs)
+    graph.add_edge(b, a, **attrs)
+
+
+def _ring_with_chord() -> nx.MultiDiGraph:
+    """Border of a 300 m square whose east side winds, plus an inner chord.
+
+    From (3, 1) to (3, 2) the border zig-zags up to 40 m outside the square
+    (412 m); a street 100–150 m inside joins the same corners in 400 m.
+    """
+    from shapely.geometry import LineString
+
+    graph = nx.MultiDiGraph()
+    ring = [(0, 0), (1, 0), (2, 0), (3, 0), (3, 1), (3, 2), (3, 3)]
+    ring += [(2, 3), (1, 3), (0, 3), (0, 2), (0, 1), (0, 0)]
+    for a, b in zip(ring, ring[1:], strict=False):
+        if (a, b) != ((3, 1), (3, 2)):
+            _link(graph, a, b)
+    zigzag = [(3 + 0.4 * (k % 2), 1 + k / 10) for k in range(11)]
+    geometry = LineString([_at(i, j)[::-1] for i, j in zigzag])
+    length = sum(
+        haversine_m(_at(*p), _at(*q)) for p, q in zip(zigzag, zigzag[1:], strict=False)
+    )
+    _link(graph, (3, 1), (3, 2), length=length, geometry=geometry)
+    _link(graph, (3, 1), (1.5, 1))
+    _link(graph, (1.5, 1), (1.5, 2))
+    _link(graph, (1.5, 2), (3, 2))
+    return graph
+
+
+def test_corridor_keeps_the_route_on_the_outline() -> None:
+    graph = _ring_with_chord()
+    shape = [_at(0, 0), _at(3, 0), _at(3, 3), _at(0, 3), _at(0, 0)]
+    plain = snap_to_network(graph, shape, corridor=0.0)
+    corridor = snap_to_network(graph, shape, corridor=2.0)
+    assert _at(1.5, 1) in plain.points
+    assert plain.distance_m == pytest.approx(1500.0, rel=1e-3)
+    assert _at(1.5, 1) not in corridor.points
+    assert corridor.distance_m == pytest.approx(1512.3, rel=1e-3)
 
 
 def test_sparse_network_raises_warnings() -> None:

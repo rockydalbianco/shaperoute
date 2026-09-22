@@ -107,14 +107,23 @@ agganciati al grafo stradale e collegati tra loro.
 Procedura di base:
 
 1. Scaricare il grafo del rettangolo che contiene la forma proiettata,
-   più un margine (ADR-0020), filtrato per l'attività: a piedi
-   `network_type="walk"`.
-2. Per ogni punto della forma, trovare il **nodo più vicino** del grafo.
-3. Eliminare i nodi duplicati consecutivi, che nascono dove la forma è più
-   fitta della rete.
-4. Calcolare il percorso più breve tra nodi consecutivi.
-5. Concatenare i segmenti; l'ultimo torna al primo, chiudendo il ciclo.
+   più un margine (ADR-0020), filtrato per l'attività: a piedi, la rete
+   pedonale **con le ciclopedonali** (ADR-0022).
+2. Il primo punto della forma è la partenza: il percorso inizia e finisce
+   al **nodo più vicino**.
+3. Ogni altro punto della forma è una **zona**: i nodi entro un raggio dal
+   punto. Raggiungere un nodo della zona costa la strada più la sua
+   distanza dal punto, così il percorso sceglie il nodo comodo e non
+   quello più vicino in linea d'aria ma oltre un fiume (TASK-017).
+4. Fra una zona e la successiva, percorso di costo minimo in cui le strade
+   lontane dal contorno costano di più (**corridoio**), tranne che dentro
+   una fascia di tolleranza: il percorso segue il bordo invece di tagliare
+   per l'interno, senza zig-zag per restarci appiccicato.
+5. Concatenare i segmenti; l'ultimo torna alla partenza, chiudendo il ciclo.
 6. Eliminare gli speroni: ogni A → B → A diventa A.
+
+Raggio delle zone e fascia sono frazioni del perimetro della forma: crescono
+con la distanza richiesta.
 
 Valori, cache e misure: `MAPS.md`.
 
@@ -127,6 +136,14 @@ Mitigazione: aumentare il peso degli archi già usati, così il calcolo
 preferisce strade nuove anche se più lunghe. Misurato in TASK-014: da sola
 la penalità non basta, perché spesso il ritorno è l'unica via. Ciò che
 funziona è potare gli speroni dopo il routing (passo 6).
+
+**Deviazioni verso l'interno.** Collegare waypoint consecutivi col percorso
+più breve taglia per l'interno appena il bordo non ha una strada continua, e
+agganciare ogni punto a un solo nodo costringe a raggiungere anche i nodi
+oltre un ostacolo. Zone e corridoio (passi 3 e 4) riducono entrambe le cose
+(TASK-017). Quello che resta dipende da dove cade la forma: se il contorno
+passa su campi o su un fiume, nessun aggancio lo recupera. Lo risolve
+l'ottimizzatore spostando e ruotando la forma (§5).
 
 **Rete troppo rada.** Se il nodo più vicino a un waypoint dista centinaia di
 metri, la forma è irrecuperabile in quel punto. Non va nascosto: si misura

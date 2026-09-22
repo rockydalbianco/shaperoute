@@ -49,6 +49,22 @@ chiude ADR-0010.
 | 2026-09-22 | TASK-014_heart_15km_valsugana_v2.gpx | valsugana | — | 33.4 / 15.0 km | — | con potatura; giudizio d'insieme: ancora lontano dal solo perimetro |
 | 2026-09-22 | TASK-014_circle_5km_valsugana_v2.gpx | valsugana | — | 16.8 / 5.0 km | — | con potatura; giudizio d'insieme: ancora lontano dal solo perimetro |
 | 2026-09-22 | TASK-014_circle_15km_valsugana_v2.gpx | valsugana | — | 48.3 / 15.0 km | — | con potatura; giudizio d'insieme: ancora lontano dal solo perimetro |
+| 2026-09-22 | TASK-017_heart_5km_trento_v1.gpx | trento | — | 10.5 / 5.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 94%, ripercorso 7%; da guardare |
+| 2026-09-22 | TASK-017_heart_15km_trento_v1.gpx | trento | — | 39.3 / 15.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 99%, ripercorso 12%; da guardare |
+| 2026-09-22 | TASK-017_circle_5km_trento_v1.gpx | trento | — | 16.8 / 5.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 74%, ripercorso 23%; da guardare |
+| 2026-09-22 | TASK-017_circle_15km_trento_v1.gpx | trento | — | 40.2 / 15.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 96%, ripercorso 5%; da guardare |
+| 2026-09-22 | TASK-017_heart_5km_levico_v1.gpx | levico | — | 9.1 / 5.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 82%, ripercorso 10%; da guardare |
+| 2026-09-22 | TASK-017_heart_15km_levico_v1.gpx | levico | — | 26.9 / 15.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 96%, ripercorso 1%; da guardare |
+| 2026-09-22 | TASK-017_circle_5km_levico_v1.gpx | levico | — | 9.2 / 5.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 53%, ripercorso 20%; da guardare |
+| 2026-09-22 | TASK-017_circle_15km_levico_v1.gpx | levico | — | 37.7 / 15.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 81%, ripercorso 2%; da guardare |
+| 2026-09-22 | TASK-017_heart_5km_valsugana_v1.gpx | valsugana | — | 15.9 / 5.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 62%, ripercorso 13%; da guardare |
+| 2026-09-22 | TASK-017_heart_15km_valsugana_v1.gpx | valsugana | — | 31.4 / 15.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 75%, ripercorso 3%; da guardare |
+| 2026-09-22 | TASK-017_circle_5km_valsugana_v1.gpx | valsugana | — | 18.3 / 5.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 62%, ripercorso 21%; da guardare |
+| 2026-09-22 | TASK-017_circle_15km_valsugana_v1.gpx | valsugana | — | 39.7 / 15.0 km | — | zone + corridoio, rete walk (come TASK-014); copertura 74%, ripercorso 4%; da guardare |
+| 2026-09-22 | TASK-017_heart_5km_trento_v2.gpx | trento | — | 8.3 / 5.0 km | — | zone + corridoio, rete con ciclopedonali; copertura 94%, ripercorso 0%; da guardare |
+| 2026-09-22 | TASK-017_heart_15km_trento_v2.gpx | trento | — | 29.6 / 15.0 km | — | zone + corridoio, rete con ciclopedonali; copertura 100%, ripercorso 2%; da guardare |
+| 2026-09-22 | TASK-017_heart_5km_levico_v2.gpx | levico | — | 7.4 / 5.0 km | — | zone + corridoio, rete con ciclopedonali; copertura 90%, ripercorso 0%; da guardare |
+| 2026-09-22 | TASK-017_heart_5km_valsugana_v2.gpx | valsugana | — | 15.9 / 5.0 km | — | zone + corridoio, rete con ciclopedonali; copertura 62%, ripercorso 13%; da guardare |
 
 <!--
 Esempio di riga compilata:

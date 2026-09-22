@@ -8,6 +8,7 @@ import pytest
 
 from route_engine.__main__ import main
 from route_engine.export_gpx import GPX_NAMESPACE, route_name, to_gpx
+from route_engine.geo import path_length_m
 from route_engine.network import OsmnxSource
 from route_engine.optimizer import required_area
 from route_engine.projection import initial_scale, project_shape
@@ -118,11 +119,18 @@ def test_cli_writes_road_route_to_out(
     assert main(args) == 0
     root = _parse(out.read_text(encoding="utf-8"))
     points = root.findall("gpx:trk/gpx:trkseg/gpx:trkpt", NS)
-    assert len(points) > 65
+    latlon = [(float(p.attrib["lat"]), float(p.attrib["lon"])) for p in points]
     assert points[0].attrib == points[-1].attrib
+    if not optimize:
+        # Along the roads there are more points than the 65 of the shape.
+        # The optimizer may shrink the heart, so the count says nothing there.
+        assert len(points) > 65
     printed = capsys.readouterr().out
     assert "similarity:" in printed
     assert ("attempts:" in printed) == optimize
+    on_roads = re.search(r"on roads:\s+(\d+) m", printed)
+    assert on_roads is not None
+    assert int(on_roads.group(1)) == pytest.approx(path_length_m(latlon), abs=1.0)
 
 
 def test_cli_never_overwrites_an_existing_file(

@@ -57,12 +57,15 @@ MAX_RESCALES = 4
 REFINE_SPAN_DEG = 15.0
 REFINE_STEP_DEG = 5.0
 MAX_TRACES = 20
-# Stop when both hold (ROUTE_ENGINE.md §5, TASK-015).
+# Stop when both hold (ROUTE_ENGINE.md §5). Metric and threshold come from
+# the eye judgement of the first results (TASK-015, docs/MAPS.md): the
+# routes judged good covered 90% of the outline or more, the others less.
 DISTANCE_TOLERANCE = 0.10
-SIMILARITY_THRESHOLD = 0.80
+SIMILARITY_THRESHOLD = 0.90
 SIMILARITY = "coverage"
-# cost = W_SHAPE · (1 − similarity) + W_DISTANCE · |real − target| / target
-W_SHAPE = 2.0
+# cost = W_SHAPE · (1 − similarity) + W_DISTANCE · |real − target| / target;
+# the shape matters most.
+W_SHAPE = 3.0
 W_DISTANCE = 1.0
 
 
@@ -274,6 +277,40 @@ def search(
             scale = new_scale
         return (history[-1] if history else None), scale
 
+    def polish(best: Attempt) -> bool:
+        """Spend the budget left on the distance of the best placement.
+
+        Between a trace too short and one too long of the same placement,
+        interpolate; otherwise take the secant through the two closest.
+        Stops as soon as the distance is right: if the shape is still
+        wrong then, rescaling will not fix it.
+        """
+        rotation, phase = best.rotation_deg, best.phase
+        while len(attempts) < max_traces:
+            same = [
+                a for a in attempts if a.rotation_deg == rotation and a.phase == phase
+            ]
+            if any(abs(a.ratio - 1) <= DISTANCE_TOLERANCE for a in same):
+                return any(good(a) for a in same)
+            short = [a for a in same if a.ratio < 1]
+            long = [a for a in same if a.ratio > 1]
+            if short and long:
+                a = max(short, key=lambda x: x.ratio)
+                b = min(long, key=lambda x: x.ratio)
+                da, db = a.route.distance_m, b.route.distance_m
+                scale = a.scale_m + (distance_m - da) * (b.scale_m - a.scale_m) / (
+                    db - da
+                )
+            else:
+                closest = sorted(same, key=lambda x: abs(x.ratio - 1))[:2]
+                scale = next_scale(closest[::-1])
+            scale = min(high, max(low, scale))
+            if any(math.isclose(scale, a.scale_m, rel_tol=1e-3) for a in same):
+                return False
+            if good(attempt(rotation, phase, scale)):
+                return True
+        return False
+
     def best_placement(
         scale: float, tried: list[tuple[float, float]]
     ) -> tuple[float, float] | None:
@@ -325,7 +362,7 @@ def search(
         last, _ = rescale(refined[0][1], best.phase, best.scale_m)
         if last is not None and good(last):
             return _done(attempts, True)
-    return _done(attempts, False)
+    return _done(attempts, polish(min(attempts, key=lambda a: a.cost)))
 
 
 def _angle_gap(a: float, b: float) -> float:

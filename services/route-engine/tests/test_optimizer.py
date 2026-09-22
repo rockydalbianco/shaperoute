@@ -170,3 +170,30 @@ def test_a_zone_graph_in_cache_is_cropped_without_downloading(
         for _, d in graph.nodes(data=True)
     )
     assert source.cache_path(inner).exists()  # the crop is cached too
+
+
+def test_polish_uses_the_budget_left_to_fix_the_distance(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The distance is not proportional to the scale: 0.5 + 0.8 × scale / base
+    # times the target. One trace per placement and one placement leave the
+    # distance 30% off; the polish finds the scale (5/8 of the base) where
+    # it is right.
+    import route_engine.optimizer as optimizer
+
+    monkeypatch.setattr(optimizer, "MAX_RESCALES", 1)
+    monkeypatch.setattr(optimizer, "TOP_PLACEMENTS", 1)
+    base = initial_scale(CIRCLE, 5000.0)
+
+    def trace(projected: list[tuple[float, float]]) -> NetworkRoute:
+        scale = path_length_m(projected) / 5000.0 * base
+        return NetworkRoute(projected, 5000.0 * (0.5 + 0.8 * scale / base))
+
+    result = search(_half_grid(), CIRCLE, LEVICO, 5000.0, trace=trace)
+    assert result.converged
+    assert result.best.ratio == pytest.approx(1.0, abs=0.01)
+    assert result.best.scale_m == pytest.approx(base * 5 / 8, rel=0.01)
+    # The polish rescales a placement already traced, it does not pick a new one.
+    traced = {(a.rotation_deg, a.phase) for a in result.attempts[:2]}
+    assert (result.best.rotation_deg, result.best.phase) in traced
+    assert len(result.attempts) == 4

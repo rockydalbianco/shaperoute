@@ -55,6 +55,8 @@ ZONES = {
     "trento": (46.0671, 11.1214),
     "levico": (46.0122, 11.2986),
     "valsugana": (46.0533, 11.4483),
+    # Comparison only (TASK-015): a big city with a very dense network.
+    "milano": (45.4642, 9.1900),
 }
 SHAPES = ("heart", "circle")
 DISTANCES = (5000, 15000)

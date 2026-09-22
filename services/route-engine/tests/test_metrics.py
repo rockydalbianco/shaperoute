@@ -1,0 +1,81 @@
+import math
+
+import pytest
+
+from route_engine.geo import local_to_latlon
+from route_engine.metrics import (
+    SIMILARITIES,
+    coverage,
+    fit_similarity,
+    frechet_m,
+    hausdorff_m,
+    shape_size,
+)
+from route_engine.projection import initial_scale, project_shape
+from route_engine.shapes import get_shape
+
+LEVICO = (46.0122, 11.2986)
+
+
+def _projected(name: str, distance_m: float = 5000.0, rotation: float = 0.0) -> list:
+    shape = get_shape(name)(64)
+    return project_shape(shape, LEVICO, initial_scale(shape, distance_m), rotation)
+
+
+def _square(side_m: float) -> list[tuple[float, float]]:
+    corners = [(0, 0), (side_m, 0), (side_m, side_m), (0, side_m), (0, 0)]
+    return [local_to_latlon(LEVICO, x, y) for x, y in corners]
+
+
+def test_shape_size_is_the_radius_of_a_circle_as_long() -> None:
+    assert shape_size(_square(1000.0)) == pytest.approx(4000.0 / (2 * math.pi))
+
+
+@pytest.mark.parametrize("name", sorted(SIMILARITIES))
+def test_a_shape_is_fully_similar_to_itself(name: str) -> None:
+    heart = _projected("heart")
+    assert SIMILARITIES[name](heart, heart) == pytest.approx(1.0, abs=0.01)
+
+
+@pytest.mark.parametrize("name", sorted(SIMILARITIES))
+def test_clearly_different_shapes_score_low(name: str) -> None:
+    # The same heart turned upside down around the start: same length,
+    # same start, a different drawing.
+    heart = _projected("heart")
+    flipped = _projected("heart", rotation=180.0)
+    assert SIMILARITIES[name](flipped, heart) < 0.5
+
+
+def test_coverage_counts_the_part_of_the_outline_the_route_follows() -> None:
+    square = _square(1000.0)
+    half = square[:3]  # two sides out of four
+    assert coverage(half, square, tolerance_m=1.0) == pytest.approx(0.5, abs=0.01)
+
+
+def test_hausdorff_is_the_worst_gap_either_way() -> None:
+    square = _square(1000.0)
+    shifted = [local_to_latlon(LEVICO, 30.0, 0.0)] + square[1:-1]
+    shifted.append(shifted[0])
+    assert hausdorff_m(shifted, square) == pytest.approx(30.0, abs=0.5)
+
+
+def test_frechet_sees_the_order_hausdorff_ignores() -> None:
+    # The same square walked the other way round: every point lies on the
+    # outline, but a quarter of the way one walker is at the south-east
+    # corner and the other at the north-west one; the best pairing of the
+    # two walks still leaves them a side (1000 m) apart.
+    square = _square(1000.0)
+    backwards = list(reversed(square))
+    assert hausdorff_m(backwards, square) == pytest.approx(0.0, abs=0.5)
+    assert frechet_m(backwards, square) > 900.0
+
+
+def test_fit_penalizes_a_loop_that_coverage_ignores() -> None:
+    # The square plus an out-and-back to its centre: the outline is all
+    # covered, but about a quarter of the route is inside the shape.
+    square = _square(1000.0)
+    centre = local_to_latlon(LEVICO, 500.0, 500.0)
+    detour = square[:1] + [centre, square[0]] + square[1:]
+    assert coverage(detour, square, tolerance_m=20.0) == pytest.approx(1.0)
+    assert fit_similarity(detour, square) < 0.95
+    assert fit_similarity(square, square) == pytest.approx(1.0)

@@ -79,15 +79,47 @@ class OsmnxSource:
         name = f"{self.network_name}_{south:.5f}_{west:.5f}_{north:.5f}_{east:.5f}"
         return self.cache_dir / f"{name}.graphml"
 
+    def covering_path(self, bbox: BBox) -> Path | None:
+        """Smallest cached graph of this network whose area contains `bbox`."""
+        exact = self.cache_path(bbox)
+        if exact.exists():
+            return exact
+        south, west, north, east = bbox
+        eps = 1e-5  # names are rounded to 5 decimals
+        best: tuple[float, Path] | None = None
+        for path in self.cache_dir.glob(f"{self.network_name}_*.graphml"):
+            parts = path.stem.split("_")[1:]
+            try:
+                s, w, n, e = (float(p) for p in parts)
+            except ValueError:
+                continue
+            if (
+                s <= south + eps
+                and w <= west + eps
+                and n >= north - eps
+                and e >= east - eps
+            ):
+                size = (n - s) * (e - w)
+                if best is None or size < best[0]:
+                    best = (size, path)
+        return None if best is None else best[1]
+
     def is_cached(self, bbox: BBox) -> bool:
-        return self.cache_path(bbox).exists()
+        return self.covering_path(bbox) is not None
 
     def load(self, bbox: BBox) -> Graph:
+        """Graph of `bbox`: from its cache file, cropped from a larger cached
+        graph (and saved under its own name), or downloaded."""
         import osmnx as ox
 
         path = self.cache_path(bbox)
         if path.exists():
             return ox.load_graphml(path)
+        covering = self.covering_path(bbox)
+        if covering is not None:
+            graph = crop(ox.load_graphml(covering), bbox)
+            ox.save_graphml(graph, path)
+            return graph
         ox.settings.cache_folder = str(self.cache_dir / "http")
         south, west, north, east = bbox
         # network_type="walk" keeps every edge two-way: one-way streets do
@@ -120,6 +152,22 @@ def area_around(points: Sequence[LatLon], margin_m: float = AREA_MARGIN_M) -> BB
         math.ceil(north / step) * step,
         math.ceil(east / step) * step,
     )
+
+
+def crop(graph: Graph, bbox: BBox) -> Graph:
+    """Nodes inside `bbox`, the edges between them, largest connected piece.
+
+    Close to what downloading `bbox` gives: OSMnx also keeps only the
+    largest piece, but simplifies the ways before cutting them at the border.
+    """
+    south, west, north, east = bbox
+    inside = [
+        n
+        for n, d in graph.nodes(data=True)
+        if south <= d["y"] <= north and west <= d["x"] <= east
+    ]
+    pieces = nx.weakly_connected_components(graph.subgraph(inside))
+    return graph.subgraph(max(pieces, key=len)).copy()
 
 
 @dataclass

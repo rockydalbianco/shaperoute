@@ -8,7 +8,8 @@ import pytest
 
 from route_engine.__main__ import main
 from route_engine.export_gpx import GPX_NAMESPACE, route_name, to_gpx
-from route_engine.network import OsmnxSource, area_around
+from route_engine.network import OsmnxSource
+from route_engine.optimizer import required_area
 from route_engine.projection import initial_scale, project_shape
 from route_engine.shapes import get_shape
 
@@ -98,23 +99,30 @@ def _cli_args(out: Path, cache_dir: Path) -> list[str]:
     ]
 
 
-def _seed_cache(cache_dir: Path) -> None:
+def _seed_cache(cache_dir: Path, optimize: bool = True) -> None:
     """Put the Levico fixture where the CLI looks for a 1 km heart's graph."""
     heart = get_shape("heart")(64)
-    bbox = area_around(project_shape(heart, LEVICO, initial_scale(heart, 1000.0)))
+    bbox = required_area(heart, LEVICO, 1000.0, optimize)
     cache_dir.mkdir()
     shutil.copy(FIXTURE, OsmnxSource(cache_dir).cache_path(bbox))
 
 
-def test_cli_writes_road_route_to_out(tmp_path: Path) -> None:
+@pytest.mark.parametrize("optimize", [True, False])
+def test_cli_writes_road_route_to_out(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], optimize: bool
+) -> None:
     cache_dir = tmp_path / "cache"
-    _seed_cache(cache_dir)
+    _seed_cache(cache_dir, optimize)
     out = tmp_path / "heart.gpx"
-    assert main(_cli_args(out, cache_dir)) == 0
+    args = _cli_args(out, cache_dir) + ([] if optimize else ["--no-optimize"])
+    assert main(args) == 0
     root = _parse(out.read_text(encoding="utf-8"))
     points = root.findall("gpx:trk/gpx:trkseg/gpx:trkpt", NS)
     assert len(points) > 65
     assert points[0].attrib == points[-1].attrib
+    printed = capsys.readouterr().out
+    assert "similarity:" in printed
+    assert ("attempts:" in printed) == optimize
 
 
 def test_cli_never_overwrites_an_existing_file(

@@ -10,6 +10,7 @@ Genera percorsi reali che sulla mappa disegnano una forma.
 
 | Se vuoi… | Apri |
 |---|---|
+| **installare tutto e partire da zero** | [`docs/SETUP.md`](docs/SETUP.md) |
 | capire a che punto siamo | [`docs/STATUS.md`](docs/STATUS.md) |
 | capire cosa stiamo costruendo | [`docs/PRODUCT.md`](docs/PRODUCT.md) |
 | capire come è fatto | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |

@@ -11,7 +11,8 @@
 
 ## In una riga
 
-Fase 0 chiusa: repository su GitHub con `main` protetto e CI attiva. Nessun codice scritto.
+Fase 0 chiusa: repository su GitHub con `main` protetto e CI attiva.
+Nessun codice scritto.
 
 ## Prossimo passo
 
@@ -23,8 +24,10 @@ Niente.
 
 ## Completato
 
-- **TASK-001** — Repository privato su GitHub, `main` protetto (PR + CI
-  obbligatorie); push diretto su `main` verificato come rifiutato.
+- **TASK-001** — Repository **pubblico** su GitHub
+  (`rockydalbianco/shaperoute`), `main` protetto da ruleset con Pull
+  Request obbligatoria; push diretto su `main` provato e rifiutato;
+  prima PR mergiata con CI verde.
 
 ## Bloccato
 
@@ -40,6 +43,8 @@ Niente.
   da guardare su una mappa, ed è normale.
 - `samples/` è vuota per ora: si riempie da TASK-013 in poi, un GPX per
   ogni prova guardata.
+- Il repository è pubblico: nessun segreto nei file, mai. Le chiavi stanno
+  solo in `.env`, che non entra nel repository.
 
 ---
 

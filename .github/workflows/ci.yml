@@ -1,9 +1,9 @@
 name: CI
 
-# CI volutamente minima: lint e test sul route-engine.
-# Si estende in fase 2, quando ci sarà l'app da costruire.
-# Una CI complicata su un repository quasi vuoto è solo tempo speso a far
-# passare build.
+# CI volutamente minima: lint e test sul route-engine, che esiste da
+# TASK-010. Si estende in fase 2, quando ci sarà l'app da costruire.
+# La cache di pip ha per chiave il pyproject.toml del route-engine: finché
+# le dipendenze non cambiano, OSMnx e il resto non si riscaricano a ogni run.
 
 on:
   pull_request:
@@ -17,33 +17,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Finché il pacchetto non esiste (prima di TASK-010) il job passa
-      # senza fare nulla: serve che main sia protetto da una CI verde fin
-      # dal primo giorno.
-      - name: Check if route-engine exists
-        id: check
-        run: |
-          if [ -f services/route-engine/pyproject.toml ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "route-engine non ancora presente: niente da verificare."
-          fi
-
       - uses: actions/setup-python@v5
-        if: steps.check.outputs.exists == 'true'
         with:
           python-version: "3.11"
+          cache: pip
+          cache-dependency-path: services/route-engine/pyproject.toml
 
       - name: Install
-        if: steps.check.outputs.exists == 'true'
         working-directory: services/route-engine
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
       - name: Lint
-        if: steps.check.outputs.exists == 'true'
         working-directory: services/route-engine
         run: |
           ruff check .
@@ -53,6 +39,5 @@ jobs:
       # e fallirebbero per motivi che non riguardano il codice.
       # Vedi docs/TESTING.md.
       - name: Test
-        if: steps.check.outputs.exists == 'true'
         working-directory: services/route-engine
         run: pytest -m "not network"

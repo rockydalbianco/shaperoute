@@ -47,6 +47,8 @@ produce un GPX che, aperto in un visualizzatore, **sembra un cuore**.
 | TASK-017 | Snapping robusto: seguire il contorno (prima di TASK-015) |
 | TASK-015 | Metrica di somiglianza + ottimizzatore |
 | TASK-016 | Validazione: distanza, ripercorrenza, percorribilità |
+| TASK-018 | README e CI allineati allo stato della fase 1 |
+| TASK-019 | Anteprima dei campioni su mappa, in una sola pagina |
 
 **Cancello di fase**: tre forme generate in tre zone diverse (città, paese,
 valle) e giudicate a occhio. Se il cuore non si riconosce, si resta qui.

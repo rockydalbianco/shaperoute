@@ -161,3 +161,30 @@ entra nel repository.
 la cronologia di git è pubblica e conserva tutto. Se in futuro servisse
 riservatezza, la visibilità si cambia dalle impostazioni, perdendo però la
 protezione del ramo a meno di passare a GitHub Pro.
+
+## ADR-0016 — Contratto e CLI del route-engine senza dipendenze runtime
+**Stato**: Attiva · 2026-09-22
+
+TASK-010 lasciava aperte alcune scelte sullo scheletro del route-engine.
+
+**Decisione**:
+- `RouteRequest` e `RouteResult` sono dataclass `frozen`, non modelli
+  Pydantic; la validazione sta in `RouteRequest.__post_init__`.
+- La CLI usa `argparse` della libreria standard.
+- Distanza target ammessa: da 1 000 a 50 000 m.
+- Attività ammesse: solo `running`.
+- Forme ammesse: `circle` e `heart`, registrate in
+  `route_engine/shapes/SUPPORTED_SHAPES`.
+
+**Motivo**: il route-engine è una libreria pura (ADR-0002); ogni dipendenza
+runtime evitata è una in meno da installare in CI e da tenere allineata.
+Validare nel modello e non solo nella CLI protegge anche i chiamanti futuri
+(l'API). I limiti di distanza coprono una corsa plausibile, da un giro breve
+a una maratona abbondante; `running` è l'unica attività dell'MVP.
+
+**Conseguenza**: l'API, in fase 2, userà Pydantic ai suoi confini e
+convertirà verso le dataclass. Con latitudine negativa la CLI richiede
+`--start=-33.9,18.4`, perché argparse legge `-33.9,...` come un'opzione.
+Walking e cycling, o limiti di distanza diversi per attività, richiedono una
+nuova voce che superi questa. I modelli vivono in `route_engine/models.py`
+finché `packages/shared-types/` non esiste (ARCHITECTURE §3).

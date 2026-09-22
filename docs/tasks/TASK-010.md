@@ -1,6 +1,6 @@
 # TASK-010 — Scheletro del pacchetto route-engine e CLI
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 1 · **Branch**: `feat/TASK-010-route-engine-skeleton`
 
 ## Obiettivo
@@ -32,12 +32,12 @@ geometria ancora: si costruisce il contenitore.
 
 ## Criteri di accettazione
 
-- [ ] Il comando si avvia e stampa la richiesta interpretata.
-- [ ] Coordinate o distanze assurde danno un errore leggibile, non un crash.
-- [ ] `pytest` verde.
-- [ ] `ruff` e `black` puliti.
-- [ ] Il pacchetto non importa nulla da `api/` o `ai/`.
-- [ ] `docs/STATUS.md` aggiornato.
+- [x] Il comando si avvia e stampa la richiesta interpretata.
+- [x] Coordinate o distanze assurde danno un errore leggibile, non un crash.
+- [x] `pytest` verde.
+- [x] `ruff` e `black` puliti.
+- [x] Il pacchetto non importa nulla da `api/` o `ai/`.
+- [x] `docs/STATUS.md` aggiornato.
 
 ## File toccati
 
@@ -56,3 +56,7 @@ services/route-engine/tests/test_cli.py
 - Export GPX (TASK-013).
 
 ## Esito
+
+CLI funzionante con validazione di coordinate, distanza (1–50 km), forma
+e attività; 14 test verdi, `ruff` e `black` puliti. Contratto in
+`route_engine/models.py` come dataclass frozen, senza dipendenze runtime.

@@ -18,13 +18,9 @@ target, perché parte della forma cade dove non ci sono strade.
 
 ## Prossimo passo
 
-**TASK-015 — Ottimizzatore iterativo (e metrica di somiglianza).**
-Il file del task non esiste ancora: va scritto e confermato prima di
-iniziare. L'idea concordata: contare le strade vicine al contorno per molte
-rotazioni attorno alla partenza (costa poco, niente routing), tracciare con
-`snap_to_network` solo le migliori, correggere la scala in base alla
-distanza reale e ripetere finché forma (copertura) e distanza (es. ±10%)
-vanno bene, o restituire il migliore con un warning.
+**TASK-015 — Ottimizzatore iterativo e metrica di somiglianza.**
+Il file del task è scritto (`docs/tasks/TASK-015.md`). Il primo passo è
+una decisione da confermare: l'area per zona e il ritaglio dalla cache.
 
 ## In lavorazione
 

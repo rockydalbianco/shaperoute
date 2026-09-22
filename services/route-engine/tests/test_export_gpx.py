@@ -1,4 +1,5 @@
 import re
+import shutil
 import xml.etree.ElementTree as ET
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
@@ -7,6 +8,7 @@ import pytest
 
 from route_engine.__main__ import main
 from route_engine.export_gpx import GPX_NAMESPACE, route_name, to_gpx
+from route_engine.network import OsmnxSource, area_around
 from route_engine.projection import initial_scale, project_shape
 from route_engine.shapes import get_shape
 
@@ -83,20 +85,36 @@ def test_route_name(distance_m: int, expected: str) -> None:
     assert route_name("heart", distance_m, WHEN) == expected
 
 
-def _cli_args(out: Path) -> list[str]:
+FIXTURE = Path(__file__).parent / "fixtures" / "levico_walk_1km.graphml"
+
+
+def _cli_args(out: Path, cache_dir: Path) -> list[str]:
     return [
         "--shape=heart",
-        "--distance=5000",
+        "--distance=1000",
         "--start=46.0122,11.2986",
         f"--out={out}",
+        f"--cache-dir={cache_dir}",
     ]
 
 
-def test_cli_writes_gpx_to_out(tmp_path: Path) -> None:
+def _seed_cache(cache_dir: Path) -> None:
+    """Put the Levico fixture where the CLI looks for a 1 km heart's graph."""
+    heart = get_shape("heart")(64)
+    bbox = area_around(project_shape(heart, LEVICO, initial_scale(heart, 1000.0)))
+    cache_dir.mkdir()
+    shutil.copy(FIXTURE, OsmnxSource(cache_dir).cache_path(bbox))
+
+
+def test_cli_writes_road_route_to_out(tmp_path: Path) -> None:
+    cache_dir = tmp_path / "cache"
+    _seed_cache(cache_dir)
     out = tmp_path / "heart.gpx"
-    assert main(_cli_args(out)) == 0
+    assert main(_cli_args(out, cache_dir)) == 0
     root = _parse(out.read_text(encoding="utf-8"))
-    assert len(root.findall("gpx:trk/gpx:trkseg/gpx:trkpt", NS)) == 65
+    points = root.findall("gpx:trk/gpx:trkseg/gpx:trkpt", NS)
+    assert len(points) > 65
+    assert points[0].attrib == points[-1].attrib
 
 
 def test_cli_never_overwrites_an_existing_file(
@@ -105,7 +123,7 @@ def test_cli_never_overwrites_an_existing_file(
     out = tmp_path / "heart.gpx"
     out.write_text("keep me", encoding="utf-8")
     with pytest.raises(SystemExit) as exc_info:
-        main(_cli_args(out))
+        main(_cli_args(out, tmp_path / "cache"))
     assert exc_info.value.code == 2
     assert "already exists" in capsys.readouterr().err
     assert out.read_text(encoding="utf-8") == "keep me"

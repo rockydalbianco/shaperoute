@@ -60,8 +60,10 @@ Le zone di prova sono fisse, scelte per coprire i tre casi che contano:
 Gli stessi tre nomi si usano nei nomi dei file in `samples/`: un solo
 vocabolario per le zone, ovunque.
 
-Il grafo di ciascuna si scarica una volta, si salva e si versiona. I test
-girano offline.
+I grafi delle zone si scaricano una volta e restano in `data/cache/`, fuori
+da git (ADR-0020). I test girano offline su grafi sintetici costruiti nel
+codice e su una fixture reale piccola in
+`services/route-engine/tests/fixtures/` (vedi `MAPS.md`).
 
 ## Verifica visiva
 

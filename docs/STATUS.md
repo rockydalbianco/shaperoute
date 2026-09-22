@@ -20,7 +20,25 @@ GPX: la forma teorica si vede sulla mappa. Niente rete stradale ancora.
 
 ## In lavorazione
 
-Niente.
+**TASK-014** sul branch `feat/TASK-014-network-snapping`, non chiuso.
+Fatto: grafo OSMnx con cache, snapping al nodo, routing con penalità,
+potatura degli speroni, `MAPS.md`, ADR-0021, TASK-017 scritto. 88 test
+verdi. Campioni `TASK-014_*` v1 (senza potatura) e v2/v3 (con) nel LOG.
+
+Il giudizio a occhio: strade seguite bene, cuore riconducibile, ma il
+percorso è **ancora lontano dal solo perimetro**. Sul cuore 5 km a Levico
+(immagine annotata in locale: `Pictures/Screenshots/Cuore5kmLevico.png`):
+- da togliere: i tagli che attraversano l'interno e il doppio anello nel
+  lobo destro;
+- da usare: le strade esterne vicine al contorno (lungo il lago a ovest,
+  a est del lobo destro, in basso al centro).
+
+Causa: collegare waypoint consecutivi col percorso più breve taglia per
+l'interno invece di seguire il bordo.
+
+**Prossima mossa**: decidere se il nuovo approccio (seguire le strade più
+vicine al contorno in modo continuo) si fa dentro TASK-014 o in TASK-017,
+poi implementarlo.
 
 ## Completato
 

@@ -1,6 +1,6 @@
 # TASK-014 — Snapping alla rete reale con OSMnx
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 1 · **Branch**: `feat/TASK-014-network-snapping`
 
 ## Obiettivo

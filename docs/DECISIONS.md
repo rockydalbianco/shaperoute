@@ -285,3 +285,26 @@ ripercorsi, e giudicarli a occhio non direbbe nulla.
 corretti in TASK-014. I campioni in `samples/` restano riproducibili solo a
 parità di dati OSM: la data del download va annotata. Il fattore di
 penalità si rivede con l'ottimizzatore (TASK-015).
+
+## ADR-0021 — Solo `osmnx` come dipendenza; potatura degli speroni
+**Stato**: Attiva · 2026-09-22
+
+TASK-014 ha aggiunto la prima dipendenza runtime e ha mostrato che la
+penalità sugli archi usati (ADR-0020) non basta contro le andate e ritorno.
+
+**Decisione**:
+- Dipendenza runtime: `osmnx>=2.1,<3` e ciò che porta con sé. Niente
+  extra `neighbors` (scikit-learn, scipy): il nodo più vicino si calcola in
+  metri con `geo.py` e numpy.
+- Dopo il routing si potano gli speroni: ogni A → B → A diventa A, finché
+  ce ne sono; se non resta un anello si tiene il percorso originale.
+
+**Motivo**: calcolare in metri è la regola del progetto e numpy arriva già
+con osmnx; scikit-learn e scipy aggiungerebbero ~60 MB per una sola
+funzione. Rispetto a nessuna penalità, la penalità 2.0 cambia la distanza
+del 0–3% (cuore 5 km, Trento e Levico); sui 12 campioni la potatura la
+riduce del 19–53% e taglia gli archi ripercorsi del 43–90%. A occhio
+erano proprio i ritorni a rovinare il disegno.
+
+**Conseguenza**: le deviazioni residue (2,2–3,8× il target) sono il
+problema di TASK-017. La penalità resta, con valore da rivedere lì.

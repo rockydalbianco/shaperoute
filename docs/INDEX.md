@@ -47,7 +47,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | `TEAM_WORKFLOW.md` | pieno | — |
 | `TESTING.md` | pieno | — |
 | `GPX.md` | pieno | — |
-| `MAPS.md` | stub | TASK-014 |
+| `MAPS.md` | pieno | — |
 | `API.md` | stub | TASK-022 |
 | `UI.md` | stub | TASK-021 |
 | `AI.md` | stub | TASK-030 |

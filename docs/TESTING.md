@@ -49,15 +49,17 @@ un grafo salvato su file. Un test di integrazione vero, marcato
 
 ### Fixture
 
-Le zone di prova sono fisse, scelte per coprire i tre casi che contano:
+Le zone di prova sono fisse, scelte per coprire i tre casi che contano;
+`milano` si aggiunge solo come termine di confronto e non entra nei criteri:
 
 | Nome | Zona | Partenza `(lat, lon)` | Perché |
 |---|---|---|---|
 | `trento` | centro di Trento (Piazza Duomo) | 46.0671, 11.1214 | rete fitta, caso facile |
 | `levico` | Levico Terme | 46.0122, 11.2986 | rete media, caso realistico |
 | `valsugana` | fondovalle, centro della valle | 46.0533, 11.4483 | rete rada, caso difficile |
+| `milano` | centro di Milano (piazza Duomo) | 45.4642, 9.1900 | solo confronto (TASK-015): rete fittissima, il caso più facile |
 
-Gli stessi tre nomi si usano nei nomi dei file in `samples/`: un solo
+Gli stessi nomi si usano nei nomi dei file in `samples/`: un solo
 vocabolario per le zone, ovunque.
 
 I grafi delle zone si scaricano una volta e restano in `data/cache/`, fuori

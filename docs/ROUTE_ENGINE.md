@@ -156,16 +156,39 @@ senza server, il che rende il ciclo di prova rapidissimo.
 
 ## 5. Ottimizzazione e somiglianza
 
+La forma non si disegna a scala e rotazione fisse: si adatta alle strade
+(TASK-015, ADR-0023). Il percorso passa sempre per la partenza.
+
 ### Parametri da cercare
 
-| Parametro | Intervallo | Note |
+| Parametro | Valori | Note |
 |---|---|---|
-| scala | ±40% attorno alla stima di §3 | corregge l'allungamento dovuto alla rete |
-| rotazione | 0–360° | il parametro che conta di più |
-| fase di partenza | 0–1 lungo la curva | dove l'utente entra nella forma |
+| rotazione | 0–345° ogni 15°, poi ±15° ogni 5° | attorno alla partenza |
+| fase di partenza | 0; 0,25; 0,5; 0,75 | dove la partenza entra nella forma |
+| scala | 0,4–1,1 × la stima di §3 | le strade allungano il percorso fino a 2,5× |
 
-La rotazione domina: una griglia stradale orientata nord-sud rende alcune
-rotazioni molto migliori di altre, e la differenza si vede a occhio nudo.
+La rotazione conta molto dove la rete ha buchi (campi, fiumi, ferrovie); in
+una città fitta come Milano la forma va bene già dove cade.
+
+### Strategia di ricerca
+
+1. **Conteggio delle strade**, per tutte le 96 combinazioni di rotazione e
+   fase: la quota del contorno con una strada entro la fascia del corridoio
+   (§4). Le strade si campionano una volta, su una griglia; nessun routing,
+   quindi costa pochi millisecondi a combinazione.
+2. **Tracciamento** (§4) della combinazione migliore, su un ritaglio del
+   grafo attorno alla forma.
+3. **Correzione della scala** verso la distanza target: prima in
+   proporzione, poi per secante sugli ultimi due tentativi, perché la
+   distanza non cresce in proporzione alla scala. Fino a 4 tracciamenti.
+4. Si ripete per altre 2 combinazioni, riordinate alla scala imparata e
+   lontane da quelle già provate; poi si rifinisce la rotazione migliore.
+5. Con il budget che resta (20 tracciamenti in tutto) si corregge ancora
+   la distanza del piazzamento migliore, finché è giusta.
+
+Ci si ferma appena distanza (±10%) e somiglianza (≥ 0,90) vanno bene. Se il
+budget finisce prima, si restituisce il tentativo di costo minore con un
+warning che dice cosa manca.
 
 ### Funzione obiettivo
 
@@ -173,33 +196,24 @@ rotazioni molto migliori di altre, e la differenza si vede a occhio nudo.
 costo = w_forma · (1 − somiglianza) + w_dist · |dist_reale − dist_target| / dist_target
 ```
 
-Con `w_forma` maggiore di `w_dist`, coerentemente con la priorità di prodotto.
-I pesi sono configurabili e vanno tarati sui primi risultati reali.
+con `w_forma` = 3 e `w_dist` = 1: la forma conta più della distanza.
 
 ### Misura della somiglianza
 
-Si confronta la traccia reale con la forma teorica proiettata, dopo aver
-ricampionato entrambe allo stesso numero di punti. Candidate:
+Si confronta il percorso con la forma piazzata (ruotata e scalata). Provate
+in TASK-015:
 
-- **Distanza di Hausdorff**: semplice, ma governata dal punto peggiore —
-  una singola deviazione rovina un punteggio altrimenti buono.
-- **Distanza di Fréchet discreta**: tiene conto dell'ordine dei punti,
-  descrive meglio la somiglianza percepita, costa di più.
+- **copertura**: quota del contorno con il percorso entro il 2% del
+  perimetro. **Tenuta**: è quella che separa i percorsi giudicati buoni a
+  occhio (≥ 90%) dagli altri;
+- **fit**: media armonica di copertura e precisione (quota del percorso
+  vicina al contorno). Penalizza anche anelli interni e punte, ma sui primi
+  giudizi separava peggio; resta come misura di controllo;
+- **Hausdorff** e **Fréchet discreta**, normalizzate sul raggio della forma:
+  scartate. Dominate dal punto peggiore, Fréchet dava il voto più alto a un
+  percorso giudicato no.
 
-Entrambe vanno **normalizzate** sulla dimensione caratteristica della forma,
-altrimenti percorsi da 5 km e da 20 km non sono confrontabili.
-
-Non esiste ancora una scelta definitiva: si implementano entrambe, si
-generano percorsi, si confronta il punteggio con il giudizio a occhio e si
-tiene quella che ci va d'accordo. È un lavoro sperimentale, e il risultato
-va scritto in `DECISIONS.md`.
-
-### Strategia di ricerca
-
-Griglia grossolana sulla rotazione (12–24 valori), poi raffinamento locale
-attorno al migliore. Niente ottimizzatori sofisticati finché non è chiaro
-che servono: ogni valutazione richiede un calcolo di percorso, quindi il
-costo è dominato dal numero di tentativi, non dall'algoritmo.
+Misure e giudizi: `MAPS.md`; scelta: ADR-0023.
 
 ## 6. Validazione
 

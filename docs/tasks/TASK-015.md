@@ -105,18 +105,26 @@ strade, si adatta la forma alle strade:
 
 ## Criteri di accettazione
 
+Stato al 2026-09-23, campioni `TASK-015_*_v1` (numeri in `MAPS.md`).
+
 - [ ] Distanza su strada entro **±10%** del target in almeno 10 dei 12
-      casi.
-- [ ] Copertura del contorno almeno **80%** in almeno 9 dei 12 casi.
+      casi: **8/12**. Fuori: cuore 5 km Levico (+14%), cuore 5 km e 15 km
+      Valsugana (+23%, +13%), cerchio 5 km Valsugana (−13%). Dove la
+      distanza giusta costa forma, il costo sceglie la forma.
+- [x] Copertura del contorno almeno **80%** in almeno 9 dei 12 casi:
+      **10/12** (sotto: i due 5 km della Valsugana).
 - [ ] Giudizio a occhio `sì` o `quasi` in almeno 9 dei 12 casi, annotato
-      in `samples/LOG.md`.
+      in `samples/LOG.md`: da dare.
 - [ ] Sul cuore da 5 km a Levico non ci sono rientri verso l'interno
-      visibili a occhio (criterio ereditato da TASK-017).
-- [ ] Ogni caso gira offline dalla cache in meno di 30 s su questo PC.
-- [ ] `--no-optimize` riproduce le distanze di TASK-017 sugli stessi grafi.
-- [ ] La metrica scelta e l'area per zona sono in `DECISIONS.md`.
-- [ ] `pytest -m "not network"` verde e offline; `ruff` e `black` puliti.
-- [ ] `ROUTE_ENGINE.md` §5, `MAPS.md` e `docs/STATUS.md` aggiornati.
+      visibili a occhio: **non raggiunto**; il piazzamento scelto (ruotato
+      di 30°, scala 63%) è peggio a occhio di quello di TASK-017.
+- [x] Ogni caso gira offline dalla cache in meno di 30 s su questo PC:
+      2–24 s (Milano, fuori dai 12: 36–85 s).
+- [x] `--no-optimize` riproduce le distanze di TASK-017 sugli stessi grafi
+      (8,3 / 7,4 / 15,9 km per i cuori da 5 km).
+- [x] La metrica scelta e l'area per zona sono in `DECISIONS.md` (ADR-0023).
+- [x] `pytest -m "not network"` verde e offline; `ruff` e `black` puliti.
+- [x] `ROUTE_ENGINE.md` §5, `MAPS.md` e `docs/STATUS.md` aggiornati.
 
 ## File toccati
 
@@ -128,11 +136,15 @@ services/route-engine/route_engine/__main__.py
 services/route-engine/tests/test_optimizer.py
 services/route-engine/tests/test_metrics.py
 services/route-engine/tests/measure_snapping.py
+services/route-engine/tests/measure_optimizer.py
+services/route-engine/route_engine/geo.py
+services/route-engine/tests/test_export_gpx.py
 samples/TASK-015_*.gpx
 samples/LOG.md
 docs/ROUTE_ENGINE.md
 docs/MAPS.md
 docs/DECISIONS.md
+docs/TESTING.md
 docs/STATUS.md
 ```
 

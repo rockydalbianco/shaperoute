@@ -11,23 +11,27 @@
 
 ## In una riga
 
-La CLI genera circle e heart attorno alla partenza, li aggancia alla rete a
-piedi reale (con le ciclopedonali) seguendo il contorno e scrive un GPX
-chiuso; a scala e rotazione iniziali la distanza su strada è 1,5–3,7× il
-target, perché parte della forma cade dove non ci sono strade.
+La CLI cerca rotazione, punto di ingresso e scala in cui le strade seguono
+la forma, poi scrive il GPX: a Trento e Milano cuori e cerchi si
+riconoscono alla distanza giusta, a Levico in parte, in Valsugana non con 5 km.
 
 ## Prossimo passo
 
-**TASK-015 — Ottimizzatore iterativo e metrica di somiglianza.**
-Il file del task è scritto (`docs/tasks/TASK-015.md`). Il primo passo è
-una decisione da confermare: l'area per zona e il ritaglio dalla cache.
+Chiudere **TASK-015** dopo il giudizio a occhio sui campioni
+`TASK-015_*_v1` (righe in `samples/LOG.md`, colonna Giudizio vuota).
 
 ## In lavorazione
 
-Niente.
+- **TASK-015** sul branch `feat/TASK-015-iterative-optimizer`. Una prima
+  parte è già su `main` (PR #13, mergiata come "work in progress"); il resto
+  arriva con una seconda PR dallo stesso branch. Criteri: `docs/tasks/TASK-015.md`.
+- **TASK-019** (anteprima dei campioni su mappa) implementato sul branch
+  `feat/TASK-019-sample-preview`, PR da aprire e mergiare.
 
 ## Completato
 
+- **TASK-018** — README allineato alla fase 1: stato reale e sezione
+  «Provarlo» con setup e comando della CLI; CI senza impalcatura, con cache di pip.
 - **TASK-017** — Zone di nodi al posto del nodo più vicino e corridoio
   attorno al contorno (ADR-0022): più corto di TASK-014 in 11 casi su 12 a
   parità di copertura. Rete a piedi con le ciclopedonali, nei due sensi:
@@ -62,15 +66,16 @@ Niente.
 
 - Setup locale del route-engine: in `services/route-engine/`,
   `python -m venv .venv` e `pip install -e ".[dev]"`.
-- `optimizer.py` e `metrics.py` sono vuoti apposta: si riempiono in
-  TASK-015.
-- Grafi `foot` in cache: solo 4 dei 12 casi (i tre cuori da 5 km e il
-  cuore da 15 km a Trento). Gli altri 8 si scaricano **uno alla volta**,
-  quando Overpass torna a rispondere (`MAPS.md`, "Overpass: come si
-  scarica"). I 12 grafi `walk` di TASK-014 restano per i confronti.
-- Per misurare una modifica allo snapping sui 12 casi:
-  `python tests/measure_snapping.py` (in `services/route-engine/`);
-  `--network walk` usa i grafi di TASK-014.
+- In cache ci sono i grafi `foot` di zona di trento, levico, valsugana e
+  milano (ADR-0023): tutti i casi girano offline. Da questo PC un indirizzo
+  di `overpass-api.de` non risponde: prima di scaricare, leggere `MAPS.md`,
+  "Overpass: come si scarica".
+- Per misurare sui casi di riferimento (in `services/route-engine/`):
+  `python tests/measure_optimizer.py` (ottimizzatore, `--no-optimize` per
+  TASK-017) e `python tests/measure_snapping.py` (solo snapping).
+- Difetto noto, non ancora in un task: **punte** di andata e ritorno su
+  strade parallele (marciapiede e strada) che la potatura non riconosce
+  (`MAPS.md`). Candidato per TASK-016 o per un task di snapping.
 - matplotlib non è una dipendenza: per guardare le forme basta uno script
   usa-e-getta fuori dal repository.
 - Con latitudine negativa serve la forma `--start=-33.9,18.4`: argparse

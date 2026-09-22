@@ -344,3 +344,36 @@ TASK-014 senza perdere copertura). TASK-015 usa `snap_to_network` così com'è
 come passo di tracciamento e la copertura come candidata alla misura di
 somiglianza. Gli 8 grafi `foot` non ancora scaricati si scaricano uno alla
 volta quando Overpass risponde (`MAPS.md`).
+
+## ADR-0023 — Un grafo per zona; somiglianza = copertura del contorno
+**Stato**: Attiva · 2026-09-23
+
+TASK-015 ruota e scala la forma attorno alla partenza: il rettangolo della
+forma (ADR-0020) cambia a ogni tentativo, e scaricarlo ogni volta vorrebbe
+dire decine di richieste a Overpass per un solo percorso. Serviva anche una
+misura di somiglianza per decidere quando fermarsi (`ROUTE_ENGINE.md` §5).
+
+**Decisione**:
+- L'area è un **quadrato attorno alla partenza** che contiene la forma a
+  ogni rotazione, fase e scala massima, più 500 m: circa 11,5 km di lato per
+  15 km. Si scarica **un grafo per zona**; ogni area più piccola si ritaglia
+  da un grafo in cache che la contiene, e il ritaglio si salva col suo nome.
+  Ogni tracciamento lavora sul ritaglio attorno alla forma candidata.
+- La somiglianza è la **copertura**: quota del contorno con il percorso
+  entro il 2% del perimetro. Ci si ferma a **0,90** e distanza entro
+  **±10%**; il costo pesa la forma 3 e la distanza 1.
+- Hausdorff e Fréchet discreta sono implementate e misurate, ma scartate;
+  `fit` (copertura nei due sensi) resta come misura di controllo.
+
+**Motivo**: con un grafo per zona bastano 3 download per le tre zone (più
+Milano per confronto), e un caso gira dalla cache in 3–24 s. Sui primi sei
+percorsi giudicati a occhio, i due `sì` avevano copertura 90–95% e gli
+altri 84% o meno; `fit` metteva un `sì` (71%) sotto un `no` (72%), Fréchet
+dava il voto più alto a un `no`. La forma conta più della distanza per il
+prodotto, da qui il peso 3.
+
+**Conseguenza**: i grafi di zona pesano 8–26 MB in Trentino e 98 MB a
+Milano, dove leggere il GraphML porta un caso a 36–85 s. La copertura non
+vede anelli interni né punte (andata e ritorno su strade parallele): se i
+giudizi a occhio lo chiedono, si passa a `fit` o si corregge lo snapping.
+Soglia e pesi si rivedono con i giudizi sui campioni di TASK-015.

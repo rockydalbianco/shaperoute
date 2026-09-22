@@ -188,3 +188,25 @@ convertirà verso le dataclass. Con latitudine negativa la CLI richiede
 Walking e cycling, o limiti di distanza diversi per attività, richiedono una
 nuova voce che superi questa. I modelli vivono in `route_engine/models.py`
 finché `packages/shared-types/` non esiste (ARCHITECTURE §3).
+
+## ADR-0017 — `n_points` conta i vertici, la chiusura è in più
+**Stato**: Attiva · 2026-09-22
+
+Il cuore ha due punte (incavo in alto, punta in basso) a metà esatta della
+lunghezza d'arco. Con 64 elementi di cui l'ultimo uguale al primo i segmenti
+sono 63, dispari: la punta in basso cade fra due vertici, viene tagliata
+(y = −16.2 invece di −17 prima della normalizzazione) e la spaziatura fra
+punti consecutivi scende al 23% della media.
+
+**Decisione**: una forma chiamata con `n_points` restituisce `n_points`
+vertici equispaziati in lunghezza d'arco, più il primo ripetuto in fondo:
+`n_points + 1` elementi, `n_points` segmenti. La chiusura resta esplicita
+come vuole `ROUTE_ENGINE.md` §2.
+
+**Motivo**: la regola "ultimo = primo" semplifica proiezione, routing ed
+export; contare i vertici invece degli elementi è ciò che lascia al
+chiamante il controllo sul numero di segmenti, e quindi sulle punte.
+
+**Conseguenza**: il criterio di TASK-011 "`get_shape("heart")(64)`
+restituisce 64 punti" si legge come 64 vertici, 65 elementi. Chi consuma la
+lista e vuole i soli vertici usa `points[:-1]`.

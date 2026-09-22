@@ -43,13 +43,16 @@ heart:   x = 16 sin³t
 
 Regole:
 
-- La curva è **chiusa**: l'ultimo punto coincide col primo.
+- La curva è **chiusa**: l'ultimo punto coincide col primo. `N` conta i
+  vertici distinti, quindi la lista ha `N + 1` elementi e `N` segmenti
+  (ADR-0017).
 - I punti sono **equispaziati in lunghezza d'arco**, non nel parametro `t`.
   Con `t` uniforme il cuore accumula punti sulle punte e ne lascia pochi
   sui lobi: l'approssimazione peggiora proprio dove la forma si riconosce.
 - `N` è un parametro. Troppo basso: la forma si spigola. Troppo alto: ogni
   punto diventa un vincolo di routing e il percorso si frammenta.
-  Punto di partenza ragionevole: **64 punti**, da tarare.
+  Punto di partenza ragionevole: **64 punti**, da tarare. Con `N` pari
+  entrambe le punte del cuore cadono su un vertice.
 - Nessuna forma conosce latitudine, longitudine o metri. Se un modulo di
   `shapes/` importa qualcosa di geografico, è nel posto sbagliato.
 

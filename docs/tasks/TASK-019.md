@@ -1,6 +1,6 @@
 # TASK-019 — Anteprima dei campioni su mappa
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 1 · **Branch**: `feat/TASK-019-sample-preview`
 
 ## Obiettivo
@@ -31,6 +31,9 @@ comando e un doppio clic, e il prima/dopo è un pattern con `v*`.
 
 1. **Fermarsi e chiedere conferma.** Nessuna di queste scelte è in
    `DECISIONS.md`; l'ADR si scrive nella PR che implementa, non prima.
+   → Confermate tutte le proposte il 2026-09-23 (ADR-0024). Tile da
+   `file://` provate prima di scrivere lo script: si caricano (Edge
+   headless, 16 tile, nessun errore).
    - **Libreria e tile.** Proposta: **Leaflet** 1.9 da CDN (unpkg o
      cdnjs), con versione fissata e hash SRI; tile **standard di
      OpenStreetMap** (`https://tile.openstreetmap.org/{z}/{x}/{y}.png`)
@@ -115,24 +118,29 @@ comando e un doppio clic, e il prima/dopo è un pattern con `v*`.
 
 ## Criteri di accettazione
 
-- [ ] `python tools/preview_samples.py "samples/TASK-017_*_v1.gpx"`,
-      lanciato con il Python di sistema fuori dal venv, scrive la pagina e
-      ne stampa il percorso.
-- [ ] Lo script importa solo moduli della libreria standard; nessuna riga
-      nuova in un `pyproject.toml` o in un file di requisiti.
-- [ ] Aperta con doppio clic (`file://`), la pagina mostra i 12 campioni
-      `TASK-017_*_v1` come 12 livelli, ognuno accendibile e spegnibile, con
-      la mappa sotto e l'attribuzione OSM visibile. Se al passo 1 le tile
-      da `file://` risultano rifiutate, vale la soluzione confermata allora.
-- [ ] Ogni livello mostra nome del file, distanza e numero di punti; le 12
-      distanze coincidono con quelle di `samples/LOG.md` a 0,1 km.
-- [ ] Due esecuzioni sullo stesso input producono file identici.
-- [ ] Dopo la generazione `git status` è pulito (la pagina sta in un
-      percorso ignorato), salvo diversa decisione al passo 1.
-- [ ] Test del passo 3 verdi e offline; `ruff` e `black` puliti su
-      `tools/`; la CI li esegue.
-- [ ] ADR scritta; `samples/README.md`, `TESTING.md`, `ARCHITECTURE.md`,
-      README e `STATUS.md` aggiornati.
+- [x] `python tools/preview_samples.py "samples/TASK-017_*_v1.gpx"`,
+      lanciato con il Python di sistema (3.12) fuori dal venv, scrive la
+      pagina e ne stampa il percorso come `file:///...`.
+- [x] Lo script importa solo moduli della libreria standard (lo controlla
+      anche un test); nessuna riga nuova in un `pyproject.toml` o in un file
+      di requisiti.
+- [x] Aperta da `file://`, la pagina mostra i 12 campioni `TASK-017_*_v1`
+      come 12 livelli, ognuno accendibile e spegnibile, con la mappa sotto
+      e l'attribuzione OSM visibile. Provato con Edge headless: 12 caselle,
+      12 tracce; spente 11 ne resta 1, riaccesa una tornano 2.
+- [x] Ogni livello mostra nome del file, distanza e numero di punti; le 12
+      distanze coincidono con quelle di `samples/LOG.md` a 0,1 km (12 su 12).
+- [x] Due esecuzioni sullo stesso input producono file identici (`cmp`, e
+      un test).
+- [x] Dopo la generazione `git status` è pulito: la pagina sta in `out/`.
+- [x] Test del passo 3 verdi e offline (13); `ruff` e `black` puliti su
+      `tools/`, con gli stessi comandi del passo «Tools» della CI.
+- [ ] La CI esegue il passo «Tools»: si vede sulla PR.
+- [x] ADR-0024 scritta; `samples/README.md`, `TESTING.md`,
+      `ARCHITECTURE.md` e README aggiornati.
+- [ ] `docs/STATUS.md`: non toccato in questa PR, per non andare in
+      conflitto con il lavoro in parallelo su TASK-015; la riga si aggiunge
+      a parte.
 
 ## File toccati
 
@@ -144,9 +152,11 @@ samples/README.md
 docs/TESTING.md
 docs/ARCHITECTURE.md
 docs/DECISIONS.md
-docs/STATUS.md
+docs/tasks/TASK-019.md
 README.md
 ```
+
+`docs/STATUS.md` era previsto e non è stato toccato (vedi i criteri).
 
 ## Fuori scope
 
@@ -164,4 +174,8 @@ README.md
 
 ## Esito
 
-*(si compila a fine task)*
+`python tools/preview_samples.py "samples/TASK-017_*_v1.gpx"` scrive
+`out/preview.html`: i 12 campioni su una mappa OSM, un livello per file con
+distanza e punti, aperta da `file://` senza server (ADR-0024). Le distanze
+coincidono con `samples/LOG.md`. Resta fuori la forma teorica sovrapposta,
+che il GPX non contiene.

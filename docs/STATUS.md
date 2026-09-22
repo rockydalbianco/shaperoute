@@ -11,12 +11,13 @@
 
 ## In una riga
 
-Il route-engine genera circle e heart e li proietta in `(lat, lon)` attorno
-al punto di partenza, con scala, rotazione e fase. Niente rete stradale ancora.
+La CLI genera circle e heart attorno al punto di partenza e li scrive in
+GPX: la forma teorica si vede sulla mappa. Niente rete stradale ancora.
 
 ## Prossimo passo
 
-**TASK-013 — Export GPX minimo.**
+**TASK-014 — Snapping alla rete reale con OSMnx.** Il file del task non
+esiste ancora: va scritto prima di iniziare (ROADMAP).
 
 ## In lavorazione
 
@@ -24,6 +25,8 @@ Niente.
 
 ## Completato
 
+- **TASK-013** — `--out` scrive un GPX 1.1 (ADR-0019); 12 campioni teorici
+  (heart/circle, 5 e 15 km, tre zone) guardati in gpx.studio: tutti `sì`.
 - **TASK-012** — `project_shape` mette la forma sulla mappa passando esattamente
   per la partenza; perimetro in metri entro lo 0,05% del target fino a
   50 km; formula locale al posto di `pyproj` (ADR-0018).
@@ -54,10 +57,11 @@ Niente.
   scambia `-33.9,...` per un'opzione.
 - Le cartelle `apps/` e `packages/` restano vuote fino alla fase 2. È
   voluto, non è un file mancante.
-- Il primo riscontro visivo arriva con TASK-013: fino a lì non c'è niente
-  da guardare su una mappa, ed è normale.
-- `samples/` è vuota per ora: si riempie da TASK-013 in poi, un GPX per
-  ogni prova guardata.
+- Le partenze delle tre zone sono in `docs/TESTING.md`. Quella di
+  `valsugana` è il centro della valle, vicino a Borgo: se in TASK-014 la
+  rete risulta tutt'altro che rada, spostarla su un versante.
+- Nella versione app la partenza sarà la posizione GPS del dispositivo
+  (fase 2); le zone fisse servono solo a confrontare le prove.
 - Il repository è pubblico: nessun segreto nei file, mai. Le chiavi stanno
   solo in `.env`, che non entra nel repository.
 

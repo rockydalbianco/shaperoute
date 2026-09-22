@@ -1,6 +1,6 @@
 # TASK-013 — Export GPX minimo
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 1 · **Branch**: `feat/TASK-013-gpx-export`
 
 ## Obiettivo
@@ -29,13 +29,13 @@ momento in cui si vede qualcosa.**
 
 ## Criteri di accettazione
 
-- [ ] Il GPX si apre senza errori in gpx.studio e in geojson.io.
-- [ ] La forma teorica si riconosce a occhio sulla mappa.
-- [ ] La distanza mostrata dal visualizzatore è vicina a quella richiesta.
-- [ ] `docs/GPX.md` non è più uno stub.
-- [ ] I campioni sono in `samples/` e hanno la loro riga in `samples/LOG.md`.
-- [ ] `pytest` verde, `ruff` e `black` puliti.
-- [ ] `docs/STATUS.md` aggiornato.
+- [x] Il GPX si apre senza errori in gpx.studio e in geojson.io.
+- [x] La forma teorica si riconosce a occhio sulla mappa.
+- [x] La distanza mostrata dal visualizzatore è vicina a quella richiesta.
+- [x] `docs/GPX.md` non è più uno stub.
+- [x] I campioni sono in `samples/` e hanno la loro riga in `samples/LOG.md`.
+- [x] `pytest` verde, `ruff` e `black` puliti.
+- [x] `docs/STATUS.md` aggiornato.
 
 ## File toccati
 
@@ -65,3 +65,10 @@ per tutto il resto della fase 1. Un'ora spesa qui fa risparmiare giorni su
 TASK-014 e TASK-015.
 
 ## Esito
+
+`python -m route_engine ... --out file.gpx` scrive un GPX 1.1 con la forma
+teorica; la CLI non sovrascrive mai un file esistente. 12 campioni in
+`samples/` (heart e circle, 5 e 15 km, trento/levico/valsugana), aperti in
+gpx.studio: forma, partenza e distanza corrette in tutti. `docs/GPX.md`
+scritto, ADR-0019 per la collocazione dell'export. Partenze delle zone
+fissate in `docs/TESTING.md`. 75 test verdi.

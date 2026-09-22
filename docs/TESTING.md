@@ -51,11 +51,11 @@ un grafo salvato su file. Un test di integrazione vero, marcato
 
 Le zone di prova sono fisse, scelte per coprire i tre casi che contano:
 
-| Nome | Zona | Perché |
-|---|---|---|
-| `trento` | centro di Trento | rete fitta, caso facile |
-| `levico` | Levico Terme | rete media, caso realistico |
-| `valsugana` | versante, fondovalle | rete rada, caso difficile |
+| Nome | Zona | Partenza `(lat, lon)` | Perché |
+|---|---|---|---|
+| `trento` | centro di Trento (Piazza Duomo) | 46.0671, 11.1214 | rete fitta, caso facile |
+| `levico` | Levico Terme | 46.0122, 11.2986 | rete media, caso realistico |
+| `valsugana` | fondovalle, centro della valle | 46.0533, 11.4483 | rete rada, caso difficile |
 
 Gli stessi tre nomi si usano nei nomi dei file in `samples/`: un solo
 vocabolario per le zone, ovunque.

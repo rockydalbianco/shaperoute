@@ -237,3 +237,21 @@ usata nel codice.
 poli (`cos lat0 → 0`); `RouteRequest` oggi ammette latitudini fino a ±90, e
 se servirà un limite si apre un task. Se lo snapping di TASK-014 mostrasse
 errori riconducibili alla proiezione, questa voce si riapre.
+
+## ADR-0019 — Export GPX dentro il route-engine, solo libreria standard
+**Stato**: Attiva · 2026-09-22
+
+ARCHITECTURE §2 colloca l'export in `services/export/`, ma TASK-013 lo
+chiede in `route_engine/export_gpx.py`.
+
+**Decisione**: in fase 1 l'export GPX vive nel route-engine e usa solo
+`xml.etree.ElementTree`. Formato: GPX 1.1, un `<trk>` con un `<trkseg>`,
+coordinate a 7 decimali, niente quote, metadati senza nomi di persone. La
+CLI rifiuta di scrivere su un file esistente.
+
+**Motivo**: la fase 1 vive di generare → guardare → correggere dalla riga
+di comando; un servizio separato non aggiunge nulla finché l'unico formato
+è GPX. Il rifiuto di sovrascrivere rende automatica la regola di ADR-0014.
+
+**Conseguenza**: in fase 2, con i formati wearable, si decide se spostare
+il modulo in `services/export/`. Dettagli del formato in `docs/GPX.md`.

@@ -12,7 +12,18 @@ chiude ADR-0010.
 
 | Data | File | Zona | Somiglianza | Dist. reale / target | Giudizio | Nota |
 |---|---|---|---|---|---|---|
-| | | | | | | |
+| 2026-09-22 | TASK-013_heart_5km_trento_v1.gpx | trento | — | 5.0 / 5.0 km | sì | forma teorica, ignora le strade |
+| 2026-09-22 | TASK-013_heart_15km_trento_v1.gpx | trento | — | 15.0 / 15.0 km | sì | forma teorica, ignora le strade |
+| 2026-09-22 | TASK-013_circle_5km_trento_v1.gpx | trento | — | 5.0 / 5.0 km | sì | forma teorica, ignora le strade |
+| 2026-09-22 | TASK-013_circle_15km_trento_v1.gpx | trento | — | 15.0 / 15.0 km | sì | forma teorica, ignora le strade |
+| 2026-09-22 | TASK-013_heart_5km_levico_v1.gpx | levico | — | 5.0 / 5.0 km | sì | forma teorica, ignora le strade |
+| 2026-09-22 | TASK-013_heart_15km_levico_v1.gpx | levico | — | 15.0 / 15.0 km | sì | forma teorica, ignora le strade |
+| 2026-09-22 | TASK-013_circle_5km_levico_v1.gpx | levico | — | 5.0 / 5.0 km | sì | forma teorica, ignora le strade |
+| 2026-09-22 | TASK-013_circle_15km_levico_v1.gpx | levico | — | 15.0 / 15.0 km | sì | forma teorica, ignora le strade |
+| 2026-09-22 | TASK-013_heart_5km_valsugana_v1.gpx | valsugana | — | 5.0 / 5.0 km | sì | forma teorica, ignora le strade |
+| 2026-09-22 | TASK-013_heart_15km_valsugana_v1.gpx | valsugana | — | 15.0 / 15.0 km | sì | forma teorica, ignora le strade |
+| 2026-09-22 | TASK-013_circle_5km_valsugana_v1.gpx | valsugana | — | 5.0 / 5.0 km | sì | forma teorica, ignora le strade |
+| 2026-09-22 | TASK-013_circle_15km_valsugana_v1.gpx | valsugana | — | 15.0 / 15.0 km | sì | forma teorica, ignora le strade |
 
 <!--
 Esempio di riga compilata:

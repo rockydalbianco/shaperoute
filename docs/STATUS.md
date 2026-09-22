@@ -11,7 +11,7 @@
 
 ## In una riga
 
-Repository appena creato. Documentazione impostata. Nessun codice scritto.
+Repository creato e collegato a GitHub. Documentazione impostata. Nessun codice scritto.
 
 ## Prossimo passo
 

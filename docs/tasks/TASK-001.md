@@ -1,6 +1,6 @@
 # TASK-001 — Repository locale, GitHub, `main` protetto
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 0 · **Branch**: `chore/TASK-001-repo-setup`
 
 ## Obiettivo
@@ -35,12 +35,12 @@ provata è una protezione che si scopre non funzionare nel momento peggiore.
 
 ## Criteri di accettazione
 
-- [ ] Il repository è su GitHub ed è privato.
-- [ ] `main` contiene lo starter completo.
-- [ ] Un push diretto su `main` viene rifiutato.
-- [ ] Almeno una PR è stata aperta e mergiata.
-- [ ] La CI gira sulle PR ed è verde.
-- [ ] `docs/STATUS.md` aggiornato.
+- [x] Il repository è su GitHub ed è privato.
+- [x] `main` contiene lo starter completo.
+- [x] Un push diretto su `main` viene rifiutato.
+- [x] Almeno una PR è stata aperta e mergiata.
+- [x] La CI gira sulle PR ed è verde.
+- [x] `docs/STATUS.md` aggiornato.
 
 ## File toccati
 
@@ -55,3 +55,7 @@ docs/STATUS.md
 - CI elaborata: per ora bastano lint e test.
 
 ## Esito
+
+Repository privato su GitHub, `main` protetto (PR obbligatoria, push
+diretti vietati, CI richiesta). Verificato: PR #1 mergiata con CI verde,
+push diretto su `main` rifiutato.

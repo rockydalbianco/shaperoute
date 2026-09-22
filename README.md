@@ -3,8 +3,10 @@
 Genera percorsi reali che sulla mappa disegnano una forma.
 «Un cuore da 15 km partendo da qui» → un percorso percorribile, in GPX.
 
-**Stato**: fase 0, fondamenta. Nessun codice ancora. Vedi
-[`docs/STATUS.md`](docs/STATUS.md).
+**Stato**: fase 1, route engine, in sviluppo. Da riga di comando,
+`python -m route_engine --shape heart --distance 5000 --start 46.0122,11.2986 --out heart.gpx`
+scrive un GPX che segue strade reali di OpenStreetMap. Cosa funziona e
+cosa manca: [`docs/STATUS.md`](docs/STATUS.md).
 
 ## Da dove si comincia
 
@@ -21,6 +23,26 @@ Genera percorsi reali che sulla mappa disegnano una forma.
 | vedere i percorsi generati finora | [`samples/`](samples/) |
 
 Chi lavora con un agente di codice legge prima [`CLAUDE.md`](CLAUDE.md).
+
+## Provarlo
+
+Serve Python 3.11 o superiore ([`docs/SETUP.md`](docs/SETUP.md)). In
+PowerShell, dalla radice del repository:
+
+```powershell
+cd services\route-engine
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -e ".[dev]"
+cd ..\..
+python -m route_engine --shape heart --distance 5000 --start 46.0122,11.2986 --out heart.gpx
+```
+
+Il GPX si guarda in un visualizzatore come [gpx.studio](https://gpx.studio).
+La prima esecuzione su una zona scarica il grafo stradale da OpenStreetMap
+(serve la rete); le successive girano offline dalla cache in `data/cache/`,
+relativa alla cartella da cui si lancia il comando: per questo si torna
+alla radice. Download e cache sono spiegati in [`docs/MAPS.md`](docs/MAPS.md).
 
 ## Il principio
 

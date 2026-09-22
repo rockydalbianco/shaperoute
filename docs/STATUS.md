@@ -11,12 +11,12 @@
 
 ## In una riga
 
-Fase 0 chiusa: repository su GitHub con `main` protetto e CI attiva.
-Nessun codice scritto.
+Il pacchetto `route-engine` esiste: la CLI valida gli argomenti e stampa la
+richiesta interpretata. Nessuna geometria ancora.
 
 ## Prossimo passo
 
-**TASK-010 — Scheletro del pacchetto route-engine e CLI.**
+**TASK-011 — Forme parametriche: circle e heart.**
 
 ## In lavorazione
 
@@ -24,6 +24,9 @@ Niente.
 
 ## Completato
 
+- **TASK-010** — `python -m route_engine --shape circle --distance 5000
+  --start 46.0122,11.2986` stampa la richiesta; input assurdi danno un
+  errore di una riga (exit 2), non un traceback.
 - **TASK-001** — Repository **pubblico** su GitHub
   (`rockydalbianco/shaperoute`), `main` protetto da ruleset con Pull
   Request obbligatoria; push diretto su `main` provato e rifiutato;
@@ -35,8 +38,12 @@ Niente.
 
 ## Note per la prossima sessione
 
-- Lo starter non contiene ancora codice: `services/route-engine/` è vuoto
-  e si popola con TASK-010.
+- Setup locale del route-engine: in `services/route-engine/`,
+  `python -m venv .venv` e `pip install -e ".[dev]"`.
+- `shapes/`, `projection.py`, `network.py`, `optimizer.py`, `metrics.py`
+  sono vuoti apposta: si riempiono da TASK-011 in poi.
+- Con latitudine negativa serve la forma `--start=-33.9,18.4`: argparse
+  scambia `-33.9,...` per un'opzione.
 - Le cartelle `apps/` e `packages/` restano vuote fino alla fase 2. È
   voluto, non è un file mancante.
 - Il primo riscontro visivo arriva con TASK-013: fino a lì non c'è niente

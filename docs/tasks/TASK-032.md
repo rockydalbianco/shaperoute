@@ -1,6 +1,6 @@
 # TASK-032 — Il motore segue un contorno qualunque
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 3 · **Branch**: `feat/TASK-032-any-outline`
 
 ## Obiettivo
@@ -95,16 +95,37 @@ riconosce, la fase 3 si ripensa (`ROADMAP.md`).
 
 ## Criteri di accettazione
 
-- [ ] In `services/route-engine/` `ruff`, `black --check` e
-      `pytest -m "not network"` passano.
-- [ ] Ogni caso del punto 4 ha il suo test.
-- [ ] 18 campioni in `samples/`, ognuno con la sua riga in `LOG.md`:
-      somiglianza, distanza reale e giudizio dell'utente.
-- [ ] Cuore e cerchio dei casi di riferimento non peggiorano (numeri nella
-      PR).
-- [ ] Esito del cancello (punto F) scritto in `ROADMAP.md`.
+- [x] In `services/route-engine/` `ruff`, `black --check` e
+      `pytest -m "not network"` passano (162 test; 54 nell'API).
+- [x] Ogni caso del punto 4 ha il suo test (`test_outline.py`,
+      `test_cli.py`).
+- [x] 18 campioni in `samples/`, ognuno con la sua riga in `LOG.md`:
+      somiglianza, distanza reale e giudizio dell'utente; più i 6 della
+      casa v2.
+- [x] Cuore e cerchio dei casi di riferimento non peggiorano: nessun
+      parametro cambiato, e gli 8 casi di Trento e Levico rifatti con
+      `plan_route` danno la stessa somiglianza e la stessa distanza delle
+      righe di TASK-016 in `LOG.md`.
+- [x] Esito del cancello (punto F) scritto in `ROADMAP.md`.
 - [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
-- [ ] Nuova ADR; `ROUTE_ENGINE.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
+- [x] ADR-0035; `ROUTE_ENGINE.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
+
+Differenze dal piano:
+- `route_engine/models.py`, non fra i file previsti: i controlli di
+  partenza, distanza e attività diventano funzioni, così la CLI li usa
+  anche con un contorno. Messaggi e contratto uguali.
+- La casa è cambiata durante il task: la v1 (tetto a punta) non si
+  riconosceva, e l'utente ha chiesto camino, porta e finestre. Camino e
+  porta sono entrati nel contorno (v2, altri 6 campioni); le finestre
+  stanno dentro il contorno e vanno in un task a parte (`ROADMAP.md`). Per
+  il camino la casa non è più simmetrica: il test controlla i vertici.
+- Il test della CLI con `--outline` usa una griglia di strade costruita nel
+  test, come quelli dell'ottimizzatore: il grafo di Levico da 1 km è
+  troppo piccolo per una zona.
+- I campioni li ha generati uno script usa-e-getta con `plan_shape` e i
+  grafi di zona dell'API, per non salvare 24 ritagli in `data/cache/`;
+  le zone della casa da 15 km a Levico e Milano (12,7 km di lato) sono
+  state scaricate così.
 
 ## File toccati
 
@@ -136,4 +157,8 @@ docs/tasks/TASK-032.md
 
 ## Esito
 
-*(si compila a fine task)*
+Giudicato dall'utente il 2026-09-24 (`samples/LOG.md`): la stella si
+riconosce ovunque, il cavallo a Levico e Milano e quasi a Trento; la casa
+no, e con camino e porta solo quasi a Milano. Il cancello è superato: il
+motore segue un contorno qualunque da file, e regge le forme che si
+riconoscono dalla sagoma grande (ADR-0035).

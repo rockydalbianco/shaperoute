@@ -16,16 +16,19 @@ forma, si scrive la distanza fino a 21 km, e il percorso compare sulla
 mappa: 3–10 km nelle zone in cache in 5–25 s, da 15 a 21 km in 30–50 s,
 con l'attesa che dice cosa succede. Una zona nuova aggiunge il suo download
 da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
-percorso si esporta in GPX, e Garmin Connect lo apre.
+percorso si esporta in GPX, e Garmin Connect lo apre. Dalla CLI il motore
+segue anche un contorno letto da file: stella e cavallo si riconoscono
+sulle strade, la casa no.
 
 ## Prossimo passo
 
-**TASK-032 — Il motore segue un contorno qualunque**
-(`docs/tasks/TASK-032.md`, branch `feat/TASK-032-any-outline`), scelte
-A–F confermate dall'utente il 2026-09-24. Stella, casa e
-sagoma di un cavallo da file, dalla CLI, giudicate a occhio a Trento e
-Levico; è il cancello della fase 3, ripianificata il 2026-09-24
-(`ROADMAP.md`). ADR-0012 si decide con TASK-030, dopo il catalogo.
+**Scrivere il file di TASK-033 — Catalogo di forme con licenza aperta e
+riquadro della forma nell'app** (`ROADMAP.md`, fase 3). Da proporre
+all'utente: quali forme entrano (quelle che si riconoscono dalla sagoma
+grande, ADR-0035), da dove vengono i contorni e con quale licenza, come il
+nome scritto trova la forma senza AI (sinonimi), e se prima si rivede la
+somiglianza calcolata, più generosa dell'occhio sulle forme complesse.
+ADR-0012 si decide con TASK-030, dopo il catalogo.
 
 ## In lavorazione
 
@@ -33,6 +36,10 @@ Niente.
 
 ## Completato
 
+- **Fase 3 finora** — TASK-032: forme da un contorno in JSON, dalla CLI
+  (`--outline`, ADR-0035). Cancello superato: stella sì ovunque, cavallo
+  quasi a Trento e sì a Levico e Milano; la casa no, anche con camino e
+  porta.
 - **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in
@@ -58,8 +65,12 @@ Niente.
 - Su questo PC il route-engine usa l'ambiente dell'API: non c'è
   `services/route-engine/.venv` (`SETUP.md`, passo 10.2).
 - In cache ci sono i grafi `foot` di zona di trento, levico, valsugana e
-  milano (ADR-0023), più le zone di Trento da 21 e 30 km (TASK-026): tutti
-  i casi girano offline. Da questo PC un indirizzo
+  milano (ADR-0023), più le zone di Trento da 21 e 30 km (TASK-026) e
+  quelle di Levico e Milano larghe 12,7 km (casa da 15 km, TASK-032):
+  tutti i casi girano offline.
+- Per generare campioni senza salvare ritagli in `data/cache/`: uno script
+  usa-e-getta che chiama `plan_shape` con `ZoneGraphs` dell'API, come in
+  TASK-032. La CLI invece salva un ritaglio per ogni caso. Da questo PC un indirizzo
   di `overpass-api.de` non risponde: prima di scaricare, leggere `MAPS.md`,
   "Overpass: come si scarica".
 - Per misurare sui casi di riferimento (in `services/route-engine/`, con

@@ -112,7 +112,16 @@ Obiettivo: l'utente scrive nel riquadro della forma una parola («stella»,
 
 **Cancello dopo TASK-032**: la stella e la sagoma del cavallo si
 riconoscono a occhio a Trento a 15 km. Se no, ci si ferma e la fase si
-ripensa, per esempio con un catalogo di sole forme semplici.
+ripensa, per esempio con un catalogo di sole forme semplici. **Superato il
+2026-09-24**: stella `sì` ovunque, cavallo `quasi` a Trento e `sì` a
+Levico e Milano. La casa invece no, neanche con camino e porta (`quasi`
+solo a Milano): il catalogo deve preferire forme che si riconoscono dalla
+sagoma grande, non dai dettagli (ADR-0035). Prima del catalogo va rivista
+la somiglianza calcolata, più generosa dell'occhio sulle forme complesse.
+
+**Richiesta dell'utente (2026-09-24)**: la casa con le finestre. Le
+finestre stanno dentro il contorno: servono forme fatte di più pezzi e
+tratti percorsi due volte. Task da definire, dopo TASK-033.
 
 **Deciso con l'utente (2026-09-24).** Non serve interpretare una frase:
 distanza e attività si scrivono nei loro riquadri, e l'AI serve solo per la

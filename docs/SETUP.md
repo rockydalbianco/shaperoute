@@ -395,6 +395,17 @@ Deve rispondere `v24.` seguito da altri numeri. Con Node arriva anche
 Sul telefono, installa **Expo Go** dal Play Store (Android) o dall'App
 Store (iPhone).
 
+**Con l'iPhone serve anche un account Expo**, gratuito: Expo Go apre il
+progetto solo se il PC e il telefono hanno fatto l'accesso con lo stesso
+account. Crealo su [expo.dev](https://expo.dev/signup), accedi in Expo Go,
+poi sul PC, dalla cartella `apps\mobile`:
+
+```powershell
+npx.cmd expo login
+```
+
+Con Android non serve.
+
 ### 9.3 Lanciare l'app
 
 Dalla radice del repository:

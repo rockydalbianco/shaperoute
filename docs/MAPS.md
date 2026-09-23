@@ -211,8 +211,28 @@ somiglianza; ✅ = distanza entro ±10% e somiglianza ≥ 0,90; ADR-0025):
 - Tempi dalla cache: 7–32 s per caso nelle tre zone, 11–33 s a Milano
   (dopo la prima lettura, che scrive il pickle).
 - Difetto rimasto: **punte** di andata e ritorno su strade parallele
-  (marciapiede e strada), che la potatura non riconosce. Riguarda lo
-  snapping.
+  (marciapiede e strada), che la potatura non riconosce. Tolte in TASK-016.
+
+**TASK-016**, validazione e punte parallele tolte (ADR-0026), campioni
+`TASK-016_*_v1` (somiglianza · ripercorso a vista · metri su scale /
+strade principali / gallerie):
+
+| Zona | cuore 5 km | cuore 15 km | cerchio 5 km | cerchio 15 km |
+|---|---|---|---|---|
+| trento | 0,89 · 10% · 373 / 0 / 110 | 0,89 · 4% · 575 / 0 / 405 | 0,94 · 9% · 80 / 0 / 0 | 0,82 · 2% · 450 / 0 / 415 |
+| levico | 0,87 · 5% · 14 / 0 / 0 | 0,82 · 4% · 14 / 1500 / 0 | 0,74 · 2% · 0 / 0 / 0 | 0,79 · 2% · 14 / 726 / 0 |
+| valsugana | non disponibile | 0,66 · 7% · 685 / 0 / 0 | non disponibile | 0,77 · 5% · 704 / 0 / 0 |
+| milano | 0,97 · 7% · 131 / 0 / 700 | 1,00 · 0% · 303 / 0 / 255 | 0,92 · 5% · 255 / 0 / 464 | 1,00 · 2% · 157 / 20 / 298 |
+
+- Ripercorrenza esatta sotto il 5% tranne il cuore 5 km di Levico (5,3%)
+  e il cuore 15 km della Valsugana (7,3%); a vista sotto il 10% ovunque.
+- Le scale sono il difetto più frequente: fino a 700 m in un percorso,
+  in città e in collina. A Levico i 15 km passano per 0,7–1,5 km di strade
+  principali. A Milano "gallerie" sono soprattutto sottopassi pedonali.
+- Confronto di strategie di ricerca, 14 casi disegnabili, 20 tracciamenti:
+  correggere la scala di ogni piazzamento (tenuta) dà somiglianza media
+  0,862; tracciare più piazzamenti una volta sola 0,845.
+- Tempi dalla cache: 5–28 s per caso.
 
 ## Fixture di test
 

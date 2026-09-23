@@ -120,9 +120,11 @@ Procedura di base:
    una fascia di tolleranza: il percorso segue il bordo invece di tagliare
    per l'interno, senza zig-zag per restarci appiccicato.
 5. Concatenare i segmenti; l'ultimo torna alla partenza, chiudendo il ciclo.
-6. Eliminare gli speroni: ogni A → B → A diventa A, tranne quelli che
-   portano a una punta della forma (la punta del cuore), che la disegnano
-   (ADR-0025).
+6. Eliminare gli speroni: ogni A → B → A diventa A, e ogni andata e
+   ritorno su strade parallele (marciapiede e strada) si sostituisce con il
+   breve collegamento fra i due capi; le due potature si ripetono finché il
+   percorso non cambia. Restano quelli che portano a una punta della forma
+   (la punta del cuore), che la disegnano (ADR-0025, ADR-0026).
 
 Raggio delle zone e fascia sono frazioni del perimetro della forma: crescono
 con la distanza richiesta.
@@ -187,7 +189,7 @@ una città fitta come Milano la forma va bene già dove cade.
    distanza non cresce in proporzione alla scala. Fino a 4 tracciamenti.
 4. Si ripete per altre 2 combinazioni, riordinate alla scala imparata e
    lontane da quelle già provate; poi si rifinisce la rotazione migliore.
-5. Con il budget che resta (16 tracciamenti in tutto, fino a 6
+5. Con il budget che resta (20 tracciamenti in tutto, fino a 6
    piazzamenti) si corregge ancora la distanza del piazzamento migliore.
 
 Ci si ferma appena distanza (±10%) e somiglianza (≥ 0,90) vanno bene. Se il
@@ -223,19 +225,25 @@ scartate: dominate dal punto peggiore, andavano contro il giudizio a occhio.
 
 ## 6. Validazione
 
-Un `RouteResult` è valido solo se:
+Un percorso esce dal motore solo se (altrimenti è un errore, non un warning):
 
-- il percorso è chiuso e passa per il punto di partenza;
-- `|distance_m − target| / target ≤ 0.10`;
-- nessun arco è vietato all'attività richiesta;
-- la frazione di percorso ripercorsa due volte è sotto soglia (da tarare);
-- la somiglianza supera la soglia minima della forma.
+- è chiuso e parte dal punto di strada più vicino alla sua partenza;
+- la partenza è entro 500 m da quella richiesta (ADR-0025).
 
-Se un criterio fallisce, si restituisce il risultato **con il warning**, non
-un errore muto: sapere perché è venuto male è informazione utile.
+Poi si misurano, e oltre soglia diventano warning in `RouteResult.warnings`
+con misura e limite (`validation.py`, ADR-0026):
 
-Il giudizio finale resta visivo. Vedi `TESTING.md` per come si tiene
-insieme la parte automatica con quella a occhio.
+- distanza: fuori da ±10% (oltre ±2 km la forma non è disponibile);
+- somiglianza: sotto 0,90 (sotto 0,60 la forma non è disponibile);
+- ripercorrenza esatta: archi già percorsi, sopra il 5% della lunghezza;
+- ripercorrenza visiva: tratti entro 20 m da un altro tratto lontano almeno
+  60 m lungo il percorso, sopra il 10% (le punte della forma escluse);
+- percorribilità: metri su scale, strade principali (`trunk`, `primary`) e
+  in galleria, appena ci sono.
+
+La CLI stampa sempre tutte le misure, anche sotto soglia. Il giudizio finale
+resta visivo: vedi `TESTING.md` per come si tiene insieme la parte
+automatica con quella a occhio.
 
 ## 7. Interfaccia da riga di comando
 

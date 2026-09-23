@@ -58,12 +58,11 @@ SCALE_RANGE = (0.4, 1.1)
 START_OFFSET_M = 500.0
 START_RINGS_M = (250.0, 500.0)
 START_BEARINGS = 8
-# Placements traced after the road count (while the budget lasts), rescales
-# of the first one, and traces kept for refining the best one.
-TOP_PLACEMENTS = 12
+# Placements traced after the road count (while the budget lasts), and
+# rescales for each of them. Tracing more placements once each, instead,
+# scored a bit worse on the 14 drawable cases (TASK-016, docs/MAPS.md).
+TOP_PLACEMENTS = 6
 MAX_RESCALES = 4
-RESERVED_TRACES = 4
-SCREEN_ONCE = True  # TEMPORARY: comparison switch
 # Rotation refinement around the best placement.
 REFINE_SPAN_DEG = 15.0
 REFINE_STEP_DEG = 5.0
@@ -448,21 +447,14 @@ def search(
                 return p
         return None
 
-    # The first placement learns the scale; the next ones are traced once at
-    # that scale, so the budget explores many placements, and the best of
-    # them gets the refinement and the polish (TASK-016).
     scale = base_scale
     tried: list[Placement] = []
-    screening = max(1, max_traces - RESERVED_TRACES)
-    for k in range(TOP_PLACEMENTS):
+    for _ in range(TOP_PLACEMENTS):
         placement = best_placement(scale, tried)
-        if placement is None or (k > 0 and len(attempts) >= screening):
+        if placement is None or len(attempts) >= max_traces:
             break
         tried.append(placement)
-        if k == 0 or not SCREEN_ONCE:
-            last, scale = rescale(placement, scale)
-        else:
-            last = attempt(placement, scale)
+        last, scale = rescale(placement, scale)
         if last is not None and good(last):
             return _done(attempts, good, distance_m)
 

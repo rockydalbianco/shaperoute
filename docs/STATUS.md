@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-23 · **Fase corrente**: 1 — Route Engine
+**Ultimo aggiornamento**: 2026-09-23 · **Fase corrente**: 2 — App e API
 
 ---
 
@@ -19,12 +19,10 @@ scale, strade principali e gallerie.
 
 ## Prossimo passo
 
-**Da decidere con l'utente: il cancello di fase 1.** I task di fase 1
-(010–019) sono tutti chiusi. `docs/ROADMAP.md` chiede forme giudicate a
-occhio in città, paese e valle: Trento e Milano `sì`, Levico `quasi`, la
-valle (Valsugana) è sospesa. Si passa alla fase 2 (TASK-020) o si apre
-prima un task di fase 1 in più (per esempio: evitare scale e strade
-principali nella ricerca).
+**TASK-020 — Bootstrap monorepo, mobile Expo, shared-types.** Il file del
+task è scritto (`docs/tasks/TASK-020.md`); il primo passo è confermare le
+proposte A (monorepo npm), B (app e tipi) e C (strumenti e CI). Il
+cancello di fase 1 è superato con la valle sospesa (ADR-0027).
 
 ## In lavorazione
 
@@ -77,8 +75,8 @@ Niente.
   usa-e-getta fuori dal repository.
 - Con latitudine negativa serve la forma `--start=-33.9,18.4`: argparse
   scambia `-33.9,...` per un'opzione.
-- Le cartelle `apps/` e `packages/` restano vuote fino alla fase 2. È
-  voluto, non è un file mancante.
+- Le cartelle `apps/` e `packages/` non esistono ancora: nascono con
+  TASK-020. È voluto, non è un file mancante.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.
 - Nella versione app la partenza sarà la posizione GPS del dispositivo
   (fase 2); le zone fisse servono solo a confrontare le prove.

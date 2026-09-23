@@ -101,7 +101,7 @@ supporto a dislivello e superfici, che servirà in fase 4.
 **Da decidere entro**: fase 2, TASK-022.
 
 ## ADR-0010 — Metrica di somiglianza
-**Stato**: Aperta
+**Stato**: Superata da ADR-0023 (e ADR-0025) · 2026-09-23
 
 Hausdorff contro Fréchet discreta: si implementano entrambe in TASK-015, si
 confrontano con il giudizio a occhio e si sceglie con dati alla mano.
@@ -498,3 +498,23 @@ al percorso esatto dei tentativi. Sterrati, sentieri difficili e
 marciapiedi richiedono altri tag (`surface`, `sac_scale`, `sidewalk`) e un
 nuovo download.
 
+## ADR-0027 — Cancello di fase 1 superato con la valle sospesa
+**Stato**: Attiva · 2026-09-23
+
+Il cancello di fase 1 (`ROADMAP.md`) chiede tre forme generate in città,
+paese e valle e giudicate a occhio.
+
+**Decisione**: il cancello è superato, e si passa alla fase 2. Giudizi sui
+campioni `TASK-016_*_v1`: Trento (città) `sì` su cuore e cerchio,
+Levico (paese) `quasi`, Milano (solo confronto) `sì`. La valle (Valsugana)
+è sospesa su scelta dell'utente: dove la rete non basta, il motore dichiara
+la forma non disponibile invece di disegnarla male (ADR-0025).
+
+**Motivo**: in città e in paese la forma si riconosce alla distanza giusta;
+in valle i casi da 5 km sono rifiutati dalla regola stessa del motore, non
+disegnati male. Il rischio più grande adesso è l'app, non il motore.
+
+**Conseguenza**: la valle resta un caso aperto, da riprendere con dati o
+ricerca migliori, non in fase 2. Restano annotati in `STATUS.md` i limiti
+noti del motore: scale e strade principali solo misurate, non evitate;
+ricerca sensibile all'ordine dei tentativi (ADR-0026).

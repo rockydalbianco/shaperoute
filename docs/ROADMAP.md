@@ -52,7 +52,8 @@ produce un GPX che, aperto in un visualizzatore, **sembra un cuore**.
 
 **Cancello di fase**: tre forme generate in tre zone diverse (città, paese,
 valle) e giudicate a occhio. Se il cuore non si riconosce, si resta qui.
-Non si passa alla fase 2 per stanchezza.
+Non si passa alla fase 2 per stanchezza. Superato il 2026-09-23, con la
+valle sospesa (ADR-0027).
 
 Nota su TASK-013: l'export GPX arriva prima del routing reale apposta.
 Serve a vedere la forma teorica sulla mappa già dopo TASK-012, cioè ad

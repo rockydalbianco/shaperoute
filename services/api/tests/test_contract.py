@@ -22,6 +22,7 @@ from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
     ErrorDetail,
+    GpxRequestBody,
     JobStatus,
     RouteJobBody,
     RouteRequestBody,
@@ -98,3 +99,11 @@ def test_route_job_fixtures_are_valid_bodies() -> None:
 
 def test_job_statuses_match_shared_types() -> None:
     assert list(get_args(JobStatus)) == _load("route-job-statuses.json")
+
+
+def test_gpx_request_fixture_is_a_valid_body() -> None:
+    data = _load("gpx-request.json")
+    assert set(data) == _names(GpxRequestBody)
+    assert set(data["request"]) == _names(RouteRequestBody)
+    assert set(data["result"]) == _names(RouteResultBody)
+    GpxRequestBody.model_validate(data)

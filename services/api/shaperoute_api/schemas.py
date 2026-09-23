@@ -88,3 +88,12 @@ class RouteJobBody(BaseModel):
     status: JobStatus
     result: RouteResultBody | None = Field(description="Only when status is done.")
     error: ErrorDetail | None = Field(description="Only when status is failed.")
+
+
+class GpxRequestBody(BaseModel):
+    """What the app sends to POST /gpx: GpxRequest in packages/shared-types."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    request: RouteRequestBody
+    result: RouteResultBody

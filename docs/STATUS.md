@@ -11,45 +11,36 @@
 
 ## In una riga
 
-La CLI ruota, scala e sposta la forma finché le strade la seguono e scrive
-un GPX chiuso: a Trento e Milano cuori e cerchi riconoscibili alla distanza
-giusta, a Levico quasi; dove la rete è troppo rada la forma è dichiarata
-non disponibile. Ogni percorso dice quanto ripercorre e quanti metri fa su
-scale, strade principali e gallerie.
+Il route engine, da riga di comando, disegna cuori e cerchi riconoscibili
+su strade reali (Trento e Milano bene, Levico quasi, valle sospesa) e
+scrive un GPX con i suoi controlli. L'app per telefono esiste e si apre
+con Expo Go, ma per ora mostra solo le forme disponibili.
 
 ## Prossimo passo
 
-**TASK-020 — Bootstrap monorepo, mobile Expo, shared-types.** Il file del
-task è scritto (`docs/tasks/TASK-020.md`); il primo passo è confermare le
-proposte A (monorepo npm), B (app e tipi) e C (strumenti e CI). Il
-cancello di fase 1 è superato con la valle sospesa (ADR-0027).
+**TASK-021 — Mappa + posizione GPS.** Il file del task è da scrivere; va
+decisa prima ADR-0011 (mappa e tile). Vincolo da sapere: l'utente prova su
+**iPhone** da un **PC Windows**, con strumenti gratuiti. MapLibre per React
+Native richiede una *development build*, e su un iPhone vero questa chiede
+un Mac o EAS con un account Apple Developer a pagamento. Funzionano invece
+in Expo Go `react-native-maps` (su iOS usa Apple Maps) o una WebView con
+una mappa web e tile OSM, come l'anteprima di TASK-019.
 
 ## In lavorazione
 
-**TASK-020** sul branch `feat/TASK-020-mobile-bootstrap`: monorepo npm, app
-Expo (SDK 57) con una schermata, `packages/shared-types` con i test di
-allineamento, job `mobile` in CI, documentazione e ADR-0028 pronti. Manca
-che l'utente apra l'app sul telefono con Expo Go (`SETUP.md`, passo 9) e
-che la CI sia verde sulla PR.
+Niente.
 
 ## Completato
 
-- **TASK-016** — Validazione: riga `checks` con ripercorso esatto e a
-  vista, metri su scale, strade principali e gallerie; warning solo sopra
-  soglia; percorso non chiuso rifiutato; punte parallele tolte (ADR-0026).
-- **TASK-015** — Ottimizzatore: 17 partenze (fino a 500 m) × 24 rotazioni ×
-  4 fasi contate sulle strade, tracciamento delle migliori, scala per
-  secante; somiglianza = copertura nei due sensi meno le punte mancate
-  (ADR-0023, ADR-0025). Trento e Levico: distanza entro ±10% in 8 casi su
-  8; Milano perfetta; Valsugana in parte non disponibile. 7–32 s per caso.
-- **TASK-019** — `python tools/preview_samples.py "samples/TASK-015_*_v3.gpx"`
-  scrive `out/preview.html`: tutti i campioni su una mappa OSM (ADR-0024).
-- **TASK-018** — README allineato alla fase 1 (stato, «Provarlo»); CI senza
-  impalcatura, con cache di pip.
-- **TASK-017** — Zone di nodi e corridoio attorno al contorno (ADR-0022);
-  rete a piedi con le ciclopedonali, nei due sensi.
-- **TASK-010–014** — Pacchetto e CLI, forme circle e heart, proiezione,
-  export GPX, snapping su OSMnx con cache e potatura degli speroni.
+- **TASK-020** — Monorepo npm con `apps/mobile` (Expo SDK 57, una
+  schermata) e `packages/shared-types` (contratto in TypeScript, allineato
+  al Python da test); job `mobile` in CI (ADR-0028). Provata sull'iPhone.
+- **Fase 1 — Route engine** (TASK-010–019): CLI e GPX; forme circle e
+  heart; snapping su OSMnx con zone e corridoio (ADR-0022); ottimizzatore
+  che ruota, scala e sposta la partenza fino a 500 m (ADR-0023, ADR-0025);
+  validazione con ripercorso e percorribilità (ADR-0026); anteprima dei
+  campioni su mappa (ADR-0024). Cancello superato con la valle sospesa
+  (ADR-0027).
 - **TASK-001** — Repository pubblico, `main` protetto da PR obbligatoria.
 
 ## Bloccato
@@ -73,14 +64,19 @@ Niente.
 - In sospeso, piccoli: dichiarare `numpy` in `pyproject.toml` (lo usa già il
   motore, arriva con osmnx: nulla da installare); in fase 2, far scegliere
   all'utente fra più percorsi alternativi (la ricerca li ha già).
-- La Valsugana è sospesa su richiesta dell'utente: un cuore da 15 km e un
-  cerchio da 5 km lì non sono disponibili (ADR-0025).
+- La Valsugana è sospesa su richiesta dell'utente: cuore e cerchio da 5 km
+  lì non sono disponibili (ADR-0025, ADR-0027).
 - matplotlib non è una dipendenza: per guardare le forme basta uno script
   usa-e-getta fuori dal repository.
 - Con latitudine negativa serve la forma `--start=-33.9,18.4`: argparse
   scambia `-33.9,...` per un'opzione.
-- Le cartelle `apps/` e `packages/` non esistono ancora: nascono con
-  TASK-020. È voluto, non è un file mancante.
+- App: dalla radice `npm install`, poi `npm run mobile` e il QR con la
+  Fotocamera dell'iPhone (`SETUP.md`, passo 9). In PowerShell di questo PC
+  si scrive `npm.cmd` al posto di `npm` (script bloccati). Sull'iPhone
+  Expo Go vuole l'accesso con lo stesso account Expo sul PC e sul telefono
+  (già fatto).
+- Il disco C: di questo PC è quasi pieno (2 GB liberi il 2026-09-23): Expo
+  si ferma con `ENOSPC` quando finisce lo spazio.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.
 - Nella versione app la partenza sarà la posizione GPS del dispositivo
   (fase 2); le zone fisse servono solo a confrontare le prove.

@@ -1,6 +1,6 @@
 # TASK-020 — Bootstrap monorepo, mobile Expo, shared-types
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 2 · **Branch**: `feat/TASK-020-mobile-bootstrap`
 
 ## Obiettivo
@@ -74,9 +74,9 @@ e npm 11; pnpm e yarn no.
 
 - [x] Dalla radice, `npm install` e poi `npm run lint`, `npm run typecheck`
       e `npm test` passano, offline dopo l'installazione.
-- [ ] `npm run mobile` avvia Expo; l'utente apre l'app con Expo Go sul
-      telefono e vede «ShapeRoute» con `circle` e `heart` (giudizio
-      dell'utente): **da provare**. Il bundle Android si genera
+- [x] `npm run mobile` avvia Expo; l'utente apre l'app con Expo Go sul
+      telefono e vede «ShapeRoute» con `circle` e `heart`: visto
+      sull'iPhone dell'utente il 2026-09-23. Il bundle Android si genera
       (`expo export`) ed `expo-doctor` passa 21 controlli su 21.
 - [x] Cambiare un campo in `models.py` senza cambiare il JSON di esempio, o
       viceversa, fa fallire un test (provato a mano: un campo rinominato nel
@@ -128,4 +128,9 @@ docs/STATUS.md
 
 ## Esito
 
-*(si compila a fine task)*
+L'app si apre sull'iPhone con Expo Go e legge le forme dal contratto
+condiviso; lint, formato, tipi e test girano dalla radice e in CI. Emerso
+provandola: su iPhone Expo Go vuole l'accesso con lo stesso account Expo
+sul PC e sul telefono, PowerShell blocca `npm` (si usa `npm.cmd`) e con il
+disco pieno Expo si ferma: tutto annotato in `SETUP.md`, passo 9. Per
+TASK-021: MapLibre non gira in Expo Go (vedi `STATUS.md`).

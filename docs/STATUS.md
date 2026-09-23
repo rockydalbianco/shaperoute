@@ -18,8 +18,9 @@ con Expo Go, ma per ora mostra solo le forme disponibili.
 
 ## Prossimo passo
 
-**TASK-021 — Mappa + posizione GPS.** Il file del task è da scrivere; va
-decisa prima ADR-0011 (mappa e tile). Vincolo da sapere: l'utente prova su
+**TASK-021 — Mappa + posizione GPS.** Il file del task è da scrivere, sul
+branch `docs/TASK-021-task-file` (già aperto); va decisa prima ADR-0011
+(mappa e tile). Vincolo da sapere: l'utente prova su
 **iPhone** da un **PC Windows**, con strumenti gratuiti. MapLibre per React
 Native richiede una *development build*, e su un iPhone vero questa chiede
 un Mac o EAS con un account Apple Developer a pagamento. Funzionano invece

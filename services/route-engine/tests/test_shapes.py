@@ -86,6 +86,8 @@ def test_registry_and_supported_shapes_agree() -> None:
 
 def test_shapes_modules_import_nothing_geographic() -> None:
     allowed = {"__future__", "math", "collections.abc", "typing"}
+    # Reading an outline from a file (TASK-032): nothing geographic either.
+    allowed |= {"json", "dataclasses", "pathlib"}
     package_dir = Path(route_engine.shapes.__file__).parent
     for module in package_dir.glob("*.py"):
         for node in ast.walk(ast.parse(module.read_text(encoding="utf-8"))):

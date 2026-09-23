@@ -1,0 +1,13 @@
+{
+  "name": "house",
+  "source": "square house with a pitched roof (TASK-032)",
+  "license": "drawn for ShapeRoute, no third-party rights",
+  "points": [
+    [0.0000, 1.0000],
+    [1.0000, 0.2000],
+    [1.0000, -1.0000],
+    [-1.0000, -1.0000],
+    [-1.0000, 0.2000],
+    [0.0000, 1.0000]
+  ]
+}

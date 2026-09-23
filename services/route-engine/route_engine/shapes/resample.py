@@ -20,6 +20,16 @@ def sample_closed(
     return points
 
 
+def normalize(points: Sequence[Point]) -> list[Point]:
+    """Center the bounding box on the origin and scale uniformly into [-1, 1]²."""
+    xs = [x for x, _ in points]
+    ys = [y for _, y in points]
+    cx = (min(xs) + max(xs)) / 2.0
+    cy = (min(ys) + max(ys)) / 2.0
+    half = max(max(xs) - min(xs), max(ys) - min(ys)) / 2.0
+    return [((x - cx) / half, (y - cy) / half) for x, y in points]
+
+
 def resample_by_arc_length(polyline: Sequence[Point], n_points: int) -> list[Point]:
     """Return `n_points` vertices equally spaced along a closed polyline.
 

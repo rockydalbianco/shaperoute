@@ -140,7 +140,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         best = plan.search.best
         base = initial_scale(shape, request.distance_m)
         print(
-            f"  placement:  rotation {best.rotation_deg:.0f}°, phase {best.phase:.2f}, "
+            f"  placement:  rotation {best.rotation_deg:.0f} deg, "
+            f"phase {best.phase:.2f}, "
             f"scale {best.scale_m / base:.0%} of the initial one"
         )
         if best.offset_m > 0:
@@ -152,6 +153,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"  attempts:   {len(plan.search.attempts)} routes traced")
     print(f"  similarity: {route.similarity:.2f} ({SIMILARITY})")
     print(f"  on roads:   {route.distance_m:.0f} m (target {request.distance_m} m)")
+    checks = plan.checks
+    print(
+        f"  checks:     {checks['reuse']:.0%} on roads already travelled, "
+        f"{checks['retrace']:.0%} running beside itself; "
+        f"{checks['steps']:.0f} m on steps, {checks['busy']:.0f} m on main roads, "
+        f"{checks['tunnel']:.0f} m in tunnels"
+    )
     for warning in route.warnings:
         print(f"  warning: {warning}")
     return 0

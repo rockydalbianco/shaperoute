@@ -455,3 +455,46 @@ cuore era uno sperone potato: lì ora resta (cuore 5 km Valsugana: 15,9 →
 Soglie e penalità sono tarate su 16 casi e pochi giudizi: si rivedono con
 altri campioni. Una forma rifiutata oggi (Valsugana 15 km cuore, 5 km
 cerchio) può diventare disponibile con uno snapping migliore.
+
+## ADR-0026 — Validazione del percorso e potatura delle punte parallele
+**Stato**: Attiva · 2026-09-23
+
+Dopo TASK-015 restavano difetti che nessuna misura vedeva: le "punte" di
+andata e ritorno su strade parallele (marciapiede e strada), e tratti su
+scale, strade principali e gallerie. La §6 di `ROUTE_ENGINE.md` chiedeva
+anche un percorso che passasse per il punto di partenza, superato da
+ADR-0025.
+
+**Decisione** (soglie confermate dall'utente, da ritarare):
+- ogni percorso misura la **ripercorrenza esatta** (archi già percorsi,
+  warning sopra il 5%) e **visiva** (tratti entro 20 m da un altro tratto
+  lontano almeno 60 m lungo il percorso, warning sopra il 10%; le punte
+  della forma sono escluse) e i **metri su scale, strade principali**
+  (`trunk`, `primary`) **e gallerie** (warning appena ci sono), solo con i
+  tag già in cache;
+- un percorso non chiuso, che non parte dalla sua partenza o con la
+  partenza a più di 500 m da quella richiesta è un **errore del motore**,
+  non un warning;
+- nello snapping si **tolgono le punte parallele**: un tratto che torna
+  entro 20 m da dove era passato, dopo almeno 60 m e al massimo il 15% del
+  percorso, sottile per il 70% della lunghezza, senza punte della forma e
+  con i due estremi collegati da strada in meno di 60 m. Le due potature
+  (esatta e parallela) si ripetono finché il percorso non cambia;
+- la ricerca resta quella di TASK-015 (correzioni di scala su ogni
+  piazzamento), con 20 tracciamenti invece di 16.
+
+**Motivo**: con 200 m di distanza lungo il percorso, come proposto, le
+punte sotto i 200 m non si vedevano; con 60 m sì (cerchio 15 km Trento: 2%
+→ 7%). Una sola passata di potatura lasciava sul cerchio 5 km di Levico il
+59% di percorso ripercorso a vista; ripetendole, il 2%. Tracciare più
+piazzamenti una volta sola invece di correggere la scala di ciascuno ha
+dato somiglianza media 0,845 contro 0,862 sui 14 casi disegnabili.
+
+**Conseguenza**: i percorsi puliti cambiano le distanze, quindi le
+correzioni di scala e l'ordine dei tentativi: il cuore 15 km di Trento non
+ritrova il piazzamento della v3 (0,94) e si ferma a 0,89, anche se quel
+piazzamento, tracciato a mano, vale ancora 0,94. La ricerca resta sensibile
+al percorso esatto dei tentativi. Sterrati, sentieri difficili e
+marciapiedi richiedono altri tag (`surface`, `sac_scale`, `sidewalk`) e un
+nuovo download.
+

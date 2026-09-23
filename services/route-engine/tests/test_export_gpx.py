@@ -127,6 +127,7 @@ def test_cli_writes_road_route_to_out(
         assert len(points) > 65
     printed = capsys.readouterr().out
     assert "similarity:" in printed
+    assert "running beside itself" in printed and "m in tunnels" in printed
     assert ("attempts:" in printed) == optimize
     on_roads = re.search(r"on roads:\s+(\d+) m", printed)
     assert on_roads is not None

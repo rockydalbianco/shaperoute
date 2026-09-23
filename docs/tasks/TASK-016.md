@@ -65,17 +65,25 @@ controlli stanno insieme.
 
 ## Criteri di accettazione
 
-- [ ] Sui 12 casi più Milano la CLI stampa ripercorrenza esatta e visiva e
-      i metri su scale, strade principali e gallerie.
-- [ ] I warning compaiono solo sopra soglia, e ogni warning dice misura e
-      soglia.
-- [ ] Un percorso non chiuso, o con la partenza a più di 500 m, non esce
-      mai dal motore (test).
+Stato sui campioni `TASK-016_*_v1` (numeri in `MAPS.md`).
+
+- [x] Sui 12 casi più Milano la CLI stampa ripercorrenza esatta e visiva e
+      i metri su scale, strade principali e gallerie (riga `checks`).
+- [x] I warning compaiono solo sopra soglia, e ogni warning dice misura e
+      soglia (test in `tests/test_validation.py`).
+- [x] Un percorso non chiuso, o con la partenza a più di 500 m, non esce
+      mai dal motore (`check_closed`, test).
 - [ ] Le punte sul cerchio da 15 km a Trento spariscono a occhio, senza
-      peggiorare gli altri casi (campioni giudicati).
-- [ ] `pytest -m "not network"` verde e offline; `ruff` e `black` puliti.
-- [ ] `ROUTE_ENGINE.md` §6, `MAPS.md` e `docs/STATUS.md` aggiornati; ADR
-      per le soglie.
+      peggiorare gli altri casi (campioni giudicati): **da giudicare**. Le
+      punte lunghe non ci sono più; il cuore da 15 km a Trento però scende
+      da 0,94 a 0,89 (ADR-0026, conseguenza).
+- [x] `pytest -m "not network"` verde e offline; `ruff` e `black` puliti.
+- [x] `ROUTE_ENGINE.md` §4 e §6, `MAPS.md` e `docs/STATUS.md` aggiornati;
+      ADR-0026.
+
+Differenze dal piano: la ripercorrenza visiva usa 60 m di distanza lungo il
+percorso, non 200 (a 200 le punte corte sfuggivano); la ricerca passa da
+16 a 20 tracciamenti.
 
 ## File toccati
 
@@ -85,6 +93,10 @@ services/route-engine/route_engine/optimizer.py
 services/route-engine/route_engine/network.py
 services/route-engine/tests/test_validation.py
 services/route-engine/tests/measure_optimizer.py
+services/route-engine/route_engine/__main__.py
+services/route-engine/tests/test_export_gpx.py
+samples/TASK-016_*.gpx
+samples/LOG.md
 docs/ROUTE_ENGINE.md
 docs/MAPS.md
 docs/DECISIONS.md

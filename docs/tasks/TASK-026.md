@@ -101,7 +101,7 @@ pulsanti, e l'app gli dice subito se è fuori dai limiti. I percorsi oltre
       valido mostra il messaggio e non parte nessuna richiesta.
 - [x] Sull'iPhone la distanza del limite arriva entro i 5 minuti (21 km a
       Trento, zona in cache).
-- [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
+- [x] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
 - [x] ADR-0034; `UI.md`, `API.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
 
 Differenze dal piano: il tastierino numerico di iOS non ha il tasto invio e

@@ -14,25 +14,27 @@
 La CLI ruota, scala e sposta la forma finché le strade la seguono e scrive
 un GPX chiuso: a Trento e Milano cuori e cerchi riconoscibili alla distanza
 giusta, a Levico quasi; dove la rete è troppo rada la forma è dichiarata
-non disponibile.
+non disponibile. Ogni percorso dice quanto ripercorre e quanti metri fa su
+scale, strade principali e gallerie.
 
 ## Prossimo passo
 
-**TASK-016 — Validazione: distanza, ripercorrenza, percorribilità.**
-Il file del task è scritto (`docs/tasks/TASK-016.md`); il primo passo è
-confermare soglie e categorie, e se togliere anche le "punte" su strade
-parallele (passo 6).
+**Da decidere con l'utente: il cancello di fase 1.** I task di fase 1
+(010–019) sono tutti chiusi. `docs/ROADMAP.md` chiede forme giudicate a
+occhio in città, paese e valle: Trento e Milano `sì`, Levico `quasi`, la
+valle (Valsugana) è sospesa. Si passa alla fase 2 (TASK-020) o si apre
+prima un task di fase 1 in più (per esempio: evitare scale e strade
+principali nella ricerca).
 
 ## In lavorazione
 
-**TASK-016** sul branch `feat/TASK-016-validation`: codice, campioni
-`TASK-016_*_v1` e documentazione pronti; manca il giudizio a occhio
-dell'utente sui campioni (righe in `samples/LOG.md`, "da guardare"), poi si
-chiude con la seconda PR (la prima, #17, è già su `main` come "work in
-progress").
+Niente.
 
 ## Completato
 
+- **TASK-016** — Validazione: riga `checks` con ripercorso esatto e a
+  vista, metri su scale, strade principali e gallerie; warning solo sopra
+  soglia; percorso non chiuso rifiutato; punte parallele tolte (ADR-0026).
 - **TASK-015** — Ottimizzatore: 17 partenze (fino a 500 m) × 24 rotazioni ×
   4 fasi contate sulle strade, tracciamento delle migliori, scala per
   secante; somiglianza = copertura nei due sensi meno le punte mancate
@@ -63,9 +65,9 @@ Niente.
 - Per misurare sui casi di riferimento (in `services/route-engine/`):
   `python tests/measure_optimizer.py` (ottimizzatore, `--no-optimize` per
   TASK-017) e `python tests/measure_snapping.py` (solo snapping).
-- Difetto noto, non ancora in un task: **punte** di andata e ritorno su
-  strade parallele (marciapiede e strada) che la potatura non riconosce
-  (`MAPS.md`). Candidato per TASK-016 o per un task di snapping.
+- Fuori scope di TASK-016, annotati: tag `surface`, `sac_scale` e
+  `sidewalk` (serve riscaricare i grafi), ed evitare scale e strade
+  principali nella ricerca (oggi si misurano e si avvisa soltanto).
 - In sospeso, piccoli: dichiarare `numpy` in `pyproject.toml` (lo usa già il
   motore, arriva con osmnx: nulla da installare); in fase 2, far scegliere
   all'utente fra più percorsi alternativi (la ricerca li ha già).

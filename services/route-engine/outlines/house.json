@@ -1,11 +1,19 @@
 {
   "name": "house",
-  "source": "square house with a pitched roof (TASK-032)",
+  "source": "house with a pitched roof, a chimney and a door (TASK-032, v2)",
   "license": "drawn for ShapeRoute, no third-party rights",
   "points": [
     [0.0000, 1.0000],
+    [0.4500, 0.6400],
+    [0.4500, 0.9500],
+    [0.7000, 0.9500],
+    [0.7000, 0.4400],
     [1.0000, 0.2000],
     [1.0000, -1.0000],
+    [0.2000, -1.0000],
+    [0.2000, -0.3500],
+    [-0.2000, -0.3500],
+    [-0.2000, -1.0000],
     [-1.0000, -1.0000],
     [-1.0000, 0.2000],
     [0.0000, 1.0000]

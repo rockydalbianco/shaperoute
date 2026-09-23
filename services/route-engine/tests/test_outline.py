@@ -156,6 +156,12 @@ def test_the_star_has_five_tips_and_five_notches() -> None:
     assert _is_mirror_symmetric(read_outline(OUTLINES / "star.json"))
 
 
-def test_the_house_has_walls_and_a_roof() -> None:
-    assert _vertices("house") == [(0, 1), (1, 0.2), (1, -1), (-1, -1), (-1, 0.2)]
-    assert _is_mirror_symmetric(read_outline(OUTLINES / "house.json"))
+def test_the_house_has_walls_a_roof_a_chimney_and_a_door() -> None:
+    roof = [(0, 1), (0.45, 0.64)]
+    chimney = [(0.45, 0.95), (0.7, 0.95), (0.7, 0.44)]
+    right_wall = [(1, 0.2), (1, -1)]
+    door = [(0.2, -1), (0.2, -0.35), (-0.2, -0.35), (-0.2, -1)]
+    left_wall = [(-1, -1), (-1, 0.2)]
+    assert _vertices("house") == roof + chimney + right_wall + door + left_wall
+    # The chimney rises above the roof, on the right slope (y = 1 - 0.8 x).
+    assert all(y > 1 - 0.8 * x for x, y in chimney[:2])

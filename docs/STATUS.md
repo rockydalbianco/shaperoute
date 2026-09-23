@@ -25,7 +25,62 @@ parallele (passo 6).
 
 ## In lavorazione
 
-Niente.
+### TASK-016 — Ripresa (sessione interrotta il 2026-09-23: batteria)
+
+Branch `feat/TASK-016-validation`, nato da `docs/TASK-016-task-file` (il
+file del task: se la sua PR non è ancora mergiata, mergiarla prima). Scelte
+dell'utente già nel file del task: soglie come proposte, e le punte si
+tolgono (passo 6).
+
+**Fatto** (commit "work in progress" sul branch, 128 test verdi):
+- `validation.py`: `measure` (ripercorrenza esatta e visiva, metri su
+  scale, strade principali, gallerie), `validate` (warning sopra soglia),
+  `check_closed` (errore se il percorso non è chiuso o la partenza è a più
+  di 500 m); chiamati da `plan_route`, valori in `Plan.checks`, colonne in
+  `tests/measure_optimizer.py`; test in `tests/test_validation.py`.
+- Ripercorrenza visiva: distanza lungo il percorso minima **60 m**, non
+  200 come nel file del task (a 200 m le punte corte non si vedevano).
+- `prune_parallel_spurs` in `network.py`: toglie le andate e ritorno su
+  strade parallele (non verso le punte della forma); in `snap_to_network`
+  le due potature si ripetono finché il percorso non cambia (così il cerchio
+  5 km di Levico passa da 59% ripercorso a 2%).
+- Ricerca: `MAX_TRACES` 20 (limite di tempo 40 s accettato dall'utente);
+  nuova strategia "screening" (primo piazzamento con le correzioni di
+  scala, gli altri tracciati una volta sola, `TOP_PLACEMENTS` 12,
+  `RESERVED_TRACES` 4). **In `optimizer.py` c'è un interruttore
+  temporaneo `SCREEN_ONCE`** per confrontarla con la vecchia strategia:
+  va tolto dopo il confronto.
+
+**Problema aperto**: dopo la nuova potatura il cuore da 15 km a Trento è
+peggiorato (0,94 → 0,85–0,89) perché la ricerca non ritrova il piazzamento
+della v3 (rotazione 60°, fase 0, scala 51%), che con lo snapping attuale dà
+ancora 0,94. Il confronto delle due strategie sui 16 casi era in corso:
+`python ../../_compare.py A` e `... B` (in `services/route-engine/`,
+script non versionato alla radice); se è andato perso, rilanciarlo.
+
+**Confronto fatto** (14 casi disegnabili, budget 20):
+- A, screening (`SCREEN_ONCE = True`): somiglianza media 0,845, 6 casi
+  convergenti; meglio sul cuore 5 km Trento (0,91, converge);
+- B, correzioni su ogni piazzamento (`SCREEN_ONCE = False`,
+  `TOP_PLACEMENTS` 6, `RESERVED_TRACES` 0): media **0,862**, 5 convergenti;
+  meglio sui 15 km di Trento (0,89 e 0,82), sui cerchi di Levico e sul
+  cerchio 15 km Valsugana;
+- nessuna delle due ritrova lo 0,94 del cuore 15 km Trento; Milano uguale.
+
+**Da fare, in ordine:**
+1. Scegliere la strategia (proposta: B, media più alta, differenze piccole)
+   e togliere `SCREEN_ONCE`.
+2. Rigenerare i campioni `TASK-016_*_v1.gpx` (quelli sul disco, non
+   versionati, sono di un codice precedente: cancellarli), righe in
+   `samples/LOG.md`, far giudicare all'utente.
+3. Documentazione: ADR-0026 (soglie, 60 m, potatura delle punte parallele,
+   ricerca), `ROUTE_ENGINE.md` §4 e §6 (allineare ad ADR-0025), `MAPS.md`
+   con le misure, criteri ed esito in `docs/tasks/TASK-016.md`.
+4. Chiudere TASK-016.
+
+**File temporanei alla radice** (non versionati): `_png.py`,
+`_samples016.py` (genera campioni e immagine), `_samples016.png`,
+`_samples016.txt`, `_compare.py`, `_compare.txt`.
 
 ## Completato
 

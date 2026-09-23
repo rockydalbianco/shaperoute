@@ -52,6 +52,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(
         f"{'case':<22} {'km':>11} {'ratio':>6} {'cover':>6} {'fit':>5}"
         f" {'move':>4} {'rot':>4} {'phase':>5} {'scale':>5} {'traces':>6}"
+        f"  {'reuse':>5} {'twice':>5} {'steps':>5} {'busy':>5} {'tunnel':>6}"
     )
     rows: list[tuple[float, float, bool]] = []
     for name, shape_name, distance, start in cases(args.only):
@@ -88,7 +89,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         rows.append((ratio, cover, abs(ratio - 1) <= 0.10))
         print(
             f"{name:<22} {result.distance_m / 1000:5.1f}/{distance / 1000:<5.1f}"
-            f" {ratio:5.2f}x {cover:5.0%} {fit:5.0%} {placement}  {elapsed:4.1f}s"
+            f" {ratio:5.2f}x {cover:5.0%} {fit:5.0%} {placement}"
+            f"  {plan.checks['reuse']:5.0%} {plan.checks['retrace']:5.0%}"
+            f" {plan.checks['steps']:4.0f}m {plan.checks['busy']:4.0f}m"
+            f" {plan.checks['tunnel']:5.0f}m  {elapsed:4.1f}s"
         )
         for warning in result.warnings:
             print(f"{'':<22} warning: {warning}")

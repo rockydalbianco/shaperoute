@@ -1,6 +1,6 @@
 # TASK-016 — Validazione: distanza, ripercorrenza, percorribilità
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 1 · **Branch**: `feat/TASK-016-validation`
 
 ## Obiettivo
@@ -25,8 +25,9 @@ controlli stanno insieme.
 
 ## Cosa fare
 
-1. **Fermarsi e chiedere** le soglie e le categorie qui proposte (valori
-   iniziali, da tarare sui campioni):
+1. **Confermato dall'utente il 2026-09-23**: soglie e categorie come
+   proposte qui sotto, e il passo 6 (togliere le punte) si fa. Valori
+   iniziali, da tarare sui campioni:
    - **ripercorrenza esatta**: quota della lunghezza su archi già percorsi,
      warning sopra il **5%**;
    - **ripercorrenza visiva**: quota della lunghezza che corre entro
@@ -51,10 +52,10 @@ controlli stanno insieme.
    colonne di ripercorrenza e percorribilità.
 5. **Misure**: i 12 casi più Milano, con i numeri in `MAPS.md`. Non servono
    campioni nuovi se i percorsi non cambiano.
-6. **Solo se confermato al passo 1**: togliere le punte di andata e ritorno
+6. **Confermato**: togliere le punte di andata e ritorno
    su strade parallele che non portano a una punta della forma, con la
-   stessa regola della ripercorrenza visiva. È uno snapping diverso: se
-   entra, servono campioni `TASK-016_*_v1` giudicati a occhio.
+   stessa regola della ripercorrenza visiva. Cambia lo snapping, quindi
+   servono campioni `TASK-016_*_v1` giudicati a occhio.
 7. **Test** deterministici su grafi sintetici: arco ripercorso, andata e
    ritorno su due strade parallele a 15 m, scala e strada principale nel
    percorso, percorso non chiuso rifiutato.
@@ -70,9 +71,8 @@ controlli stanno insieme.
       soglia.
 - [ ] Un percorso non chiuso, o con la partenza a più di 500 m, non esce
       mai dal motore (test).
-- [ ] Se il passo 6 è confermato: le punte sul cerchio da 15 km a Trento
-      spariscono a occhio, senza peggiorare gli altri casi (campioni
-      giudicati).
+- [ ] Le punte sul cerchio da 15 km a Trento spariscono a occhio, senza
+      peggiorare gli altri casi (campioni giudicati).
 - [ ] `pytest -m "not network"` verde e offline; `ruff` e `black` puliti.
 - [ ] `ROUTE_ENGINE.md` §6, `MAPS.md` e `docs/STATUS.md` aggiornati; ADR
       per le soglie.

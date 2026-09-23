@@ -134,10 +134,10 @@ class OsmnxSource:
 
         path = self.cache_path(bbox)
         if path.exists():
-            return _read_graph(path)
+            return read_graph(path)
         covering = self.covering_path(bbox)
         if covering is not None:
-            graph = crop(_read_graph(covering), bbox)
+            graph = crop(read_graph(covering), bbox)
             _write_graph(graph, path)
             return graph
         ox.settings.cache_folder = str(self.cache_dir / "http")
@@ -154,7 +154,7 @@ class OsmnxSource:
         return graph
 
 
-def _read_graph(path: Path) -> Graph:
+def read_graph(path: Path) -> Graph:
     """A cached graph: from its pickle when there is one, else from GraphML.
 
     GraphML is the cache of record (readable, what OSMnx writes); the pickle

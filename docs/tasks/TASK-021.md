@@ -1,6 +1,6 @@
 # TASK-021 — Mappa e posizione GPS
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 2 · **Branch**: `feat/TASK-021-map-location`
 
 ## Obiettivo
@@ -152,17 +152,18 @@ e mai usate.
 
 ## Criteri di accettazione
 
-- [ ] Sull'iPhone dell'utente, con Expo Go: al primo avvio compare la
+- [x] Sull'iPhone dell'utente, con Expo Go: al primo avvio compare la
       richiesta del permesso di posizione; concesso, la mappa mostra la
       zona attorno con il segno della posizione, si sposta e si ingrandisce
       con le dita, e l'attribuzione è leggibile senza toccare nulla.
-- [ ] Sull'iPhone, negando il permesso l'app non si blocca: mostra la mappa
+- [x] Sull'iPhone, negando il permesso l'app non si blocca: mostra la mappa
       dell'Italia, il messaggio e il campo di ricerca; cercando una città
       (per esempio «Levico Terme») e una via (per esempio una via di
       Trento) e scegliendo un risultato, la mappa va lì con il segno sulla
       partenza.
-- [ ] Sull'iPhone, concesso il permesso dalle Impostazioni, il pulsante
-      trova la posizione e la partenza torna quella del GPS.
+- [x] Sull'iPhone, concesso il permesso dalle Impostazioni, il pulsante
+      trova la posizione e la partenza torna quella del GPS. I tre criteri
+      sull'iPhone provati dall'utente il 2026-09-23.
 - [x] Se libreria o stile non si caricano, l'app mostra un messaggio e non
       uno schermo bianco (test automatico: in Expo Go non si toglie
       internet lasciando il Wi-Fi verso il PC). Provato anche sulla pagina
@@ -172,7 +173,8 @@ e mai usate.
       passano, offline dopo l'installazione (52 test nell'app).
 - [x] Scambiare lat e lon nella conversione fa fallire un test (provato a
       mano: 10 test cadono scambiando `toLngLat`, 6 con `fromLngLat`).
-- [ ] I job `mobile` e `route-engine` della CI sono verdi sulla PR.
+- [ ] I job `mobile` e `route-engine` della CI sono verdi sulla PR (si
+      spunta quando la PR è aperta e la CI ha girato).
 - [x] Nessuna chiave né segreto nel repository.
 - [x] ADR-0029, ADR-0011 superata; `UI.md`, `INDEX.md`, `MAPS.md`,
       `SETUP.md` (passo 9.4), `TESTING.md`, `.env.example`, `STATUS.md`
@@ -228,4 +230,9 @@ docs/tasks/TASK-021.md
 
 ## Esito
 
-*(si compila a fine task)*
+Sull'iPhone l'app mostra la mappa OSM centrata sulla posizione GPS e,
+senza posizione, fa partire da una città o una via cercata con Photon;
+lint, tipi e 52 test girano senza rete. Emerso: MapLibre GL JS 6 è solo a
+moduli ES, per questo la 5.24.0; in Expo Go il permesso di posizione è di
+Expo Go (`SETUP.md`, passo 9.4). Rimandati a TASK-022 e TASK-023: geocoding
+e tile dietro l'API, scelta della partenza toccando la mappa.

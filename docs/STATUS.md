@@ -13,25 +13,28 @@
 
 Il route engine, da riga di comando, disegna cuori e cerchi riconoscibili
 su strade reali (Trento e Milano bene, Levico quasi, valle sospesa) e
-scrive un GPX con i suoi controlli. L'app per telefono esiste e si apre
-con Expo Go, ma per ora mostra solo le forme disponibili.
+scrive un GPX con i suoi controlli. L'app, in Expo Go sull'iPhone, mostra
+la mappa sulla posizione GPS o su un luogo cercato, ma non chiede ancora
+percorsi: manca l'API.
 
 ## Prossimo passo
 
-Provare TASK-021 sull'iPhone con Expo Go, seguendo i criteri del task (con
-e senza permesso di posizione, `SETUP.md` passo 9.4), poi chiuderlo. Dopo:
-TASK-022, l'API FastAPI che espone il route-engine.
+**TASK-022 — API FastAPI che espone il route-engine.** Il file del task è
+da scrivere (`docs/tasks/`, branch `docs/TASK-022-task-file`). Da decidere
+lì: ADR-0009 (motore di routing di produzione, «da decidere entro
+TASK-022»), se generare i tipi TypeScript dall'OpenAPI (ADR-0028), come il
+telefono raggiunge l'API sul PC durante le prove, e se mettere dietro l'API
+anche tile e ricerca del luogo (ADR-0029).
 
 ## In lavorazione
 
-- **TASK-021** — Mappa e posizione GPS, branch
-  `feat/TASK-021-map-location`. Codice, test e documenti fatti (ADR-0029):
-  mappa MapLibre GL JS in WebView con tile OpenFreeMap, posizione con
-  `expo-location`, ricerca di città o via con Photon quando la posizione
-  manca. Manca la prova sull'iPhone.
+Niente. PR di TASK-021 da aprire: il criterio della CI verde si spunta lì.
 
 ## Completato
 
+- **TASK-021** — Mappa MapLibre GL JS in WebView con tile OpenFreeMap,
+  posizione GPS con `expo-location` e, senza posizione, ricerca di città o
+  via con Photon (ADR-0029). Provata sull'iPhone.
 - **TASK-020** — Monorepo npm con `apps/mobile` (Expo SDK 57, una
   schermata) e `packages/shared-types` (contratto in TypeScript, allineato
   al Python da test); job `mobile` in CI (ADR-0028). Provata sull'iPhone.
@@ -74,12 +77,12 @@ Niente.
   Fotocamera dell'iPhone (`SETUP.md`, passo 9). In PowerShell di questo PC
   si scrive `npm.cmd` al posto di `npm` (script bloccati). Sull'iPhone
   Expo Go vuole l'accesso con lo stesso account Expo sul PC e sul telefono
-  (già fatto).
-- Il disco C: di questo PC è quasi pieno (2 GB liberi il 2026-09-23): Expo
-  si ferma con `ENOSPC` quando finisce lo spazio.
+  (già fatto); il permesso di posizione è di Expo Go (`SETUP.md`, 9.4).
+- Il disco C: di questo PC è quasi pieno (1,8 GB liberi il 2026-09-23):
+  Expo si ferma con `ENOSPC` quando finisce lo spazio.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.
-- Nella versione app la partenza sarà la posizione GPS del dispositivo
-  (fase 2); le zone fisse servono solo a confrontare le prove.
+- Nell'app la partenza è la posizione GPS o un luogo cercato (`UI.md`);
+  le zone fisse servono solo a confrontare le prove.
 - Il repository è pubblico: nessun segreto nei file, mai. Le chiavi stanno
   solo in `.env`, che non entra nel repository.
 

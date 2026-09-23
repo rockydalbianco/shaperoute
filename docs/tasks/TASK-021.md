@@ -173,8 +173,8 @@ e mai usate.
       passano, offline dopo l'installazione (52 test nell'app).
 - [x] Scambiare lat e lon nella conversione fa fallire un test (provato a
       mano: 10 test cadono scambiando `toLngLat`, 6 con `fromLngLat`).
-- [ ] I job `mobile` e `route-engine` della CI sono verdi sulla PR (si
-      spunta quando la PR è aperta e la CI ha girato).
+- [x] I job `mobile` e `route-engine` della CI sono verdi sulla PR
+      (PR #23).
 - [x] Nessuna chiave né segreto nel repository.
 - [x] ADR-0029, ADR-0011 superata; `UI.md`, `INDEX.md`, `MAPS.md`,
       `SETUP.md` (passo 9.4), `TESTING.md`, `.env.example`, `STATUS.md`

@@ -28,7 +28,7 @@ anche tile e ricerca del luogo (ADR-0029).
 
 ## In lavorazione
 
-Niente. PR di TASK-021 da aprire: il criterio della CI verde si spunta lì.
+Niente.
 
 ## Completato
 

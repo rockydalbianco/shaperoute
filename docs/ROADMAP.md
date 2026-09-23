@@ -71,6 +71,7 @@ Obiettivo: la stessa cosa, ma dal telefono.
 | TASK-023 | Collegamento app ↔ API, anteprima percorso |
 | TASK-025 | Richieste in due tempi: percorsi lunghi e zone nuove (prima di TASK-024) |
 | TASK-024 | Export e condivisione GPX dal telefono |
+| TASK-026 | Distanza libera: un campo da 1 a 50 km al posto dei pulsanti |
 
 Fine fase: **il MVP di `PRODUCT.md` è completo**.
 
@@ -85,9 +86,10 @@ diversi:
   l'AI (fase 3), ma disegnare si può solo le forme che il motore conosce, e
   quelle nuove sono lavoro di fase 4.
 
-Quando e con quali task: ancora da decidere. Chiudendo TASK-023 l'utente
-ha messo prima TASK-025, perché oggi 15 km e zone nuove superano i 60 s che
-il telefono aspetta.
+Deciso con l'utente scrivendo TASK-025: prima TASK-025 (senza le richieste
+in due tempi 15 km e zone nuove non arrivano), poi TASK-024, poi la
+**distanza libera** in TASK-026. La **forma libera** va in fase 4, insieme
+alle forme nuove del motore.
 
 ## Fase 3 — Linguaggio naturale
 

@@ -20,15 +20,12 @@ telefono aspetta.
 
 ## Prossimo passo
 
-**TASK-025 — Richieste in due tempi.** Il file del task è da scrivere
-(`docs/tasks/`, branch `docs/TASK-025-task-file`). Il problema, misurato
-sull'iPhone, è in `docs/tasks/TASK-023.md`, «Limiti misurati». Da decidere
-lì: forma dei nuovi endpoint (richiesta che risponde subito con un
-identificativo, stato da chiedere), ogni quanto l'app chiede e fino a
-quando, stati mostrati durante l'attesa (download, calcolo), download fuori
-dal lucchetto dei grafi, e cosa cambia di ADR-0030 e ADR-0031. Dopo:
-TASK-024; i campi liberi per distanza e forma sono ancora da mettere in
-ordine (`ROADMAP.md`, fase 2).
+**TASK-025 — Richieste in due tempi**, sul branch
+`feat/TASK-025-route-jobs`. Il file del task è scritto, con le scelte già
+confermate dall'utente: `POST /route-jobs` con stato da chiedere ogni 2 s
+fino a 5 minuti, stati di download e calcolo, due thread nell'API, un
+lucchetto per zona, `RouteJob` in `shared-types`. Dopo: TASK-024, poi la
+distanza libera (TASK-026); la forma libera in fase 4 (`ROADMAP.md`).
 
 ## In lavorazione
 

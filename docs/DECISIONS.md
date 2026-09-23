@@ -672,7 +672,7 @@ TASK-023.
 
 ## ADR-0031 — L'app chiede i percorsi all'API: indirizzo, attesa, errori
 **Stato**: Attiva · 2026-09-23 · la richiesta sincrona e il limite di 60 s
-sono superati da ADR-0032
+sono superati da ADR-0032; i pulsanti delle distanze da ADR-0034
 
 TASK-023 collega l'app all'API di ADR-0030. Servivano l'indirizzo
 dell'API, la scelta di forma e distanza, l'attesa, il disegno del percorso
@@ -800,3 +800,40 @@ dove il dato viaggia, e un GPX viaggia.
 campioni scritti prima del TASK-024 non hanno l'attribuzione e restano come
 sono (ADR-0014). Il file nella cartella temporanea può sparire: chi lo vuole
 tenere lo salva dal foglio di condivisione.
+
+## ADR-0034 — La distanza si scrive in km, fino a 21 km nell'app
+**Stato**: Attiva · 2026-09-23
+
+L'utente ha chiesto un campo libero per la distanza al posto dei pulsanti
+(`ROADMAP.md`, fase 2). Oltre i 15 km non c'erano misure: TASK-026 ha
+misurato 21 e 30 km a Trento. Confermato dall'utente.
+
+**Decisione**:
+- **Un campo «km»** con il tastierino numerico al posto dei pulsanti 3, 5,
+  10 e 15 km, senza scorciatoie. Accetta interi e un decimale, con la
+  virgola o con il punto; al contratto va `distance_m` intero (7,5 km →
+  7500). La conversione è una funzione pura, `toDistanceM`. Di partenza 5.
+- **Limite dell'app: 21 km**, in una sola costante (`MAX_APP_DISTANCE_KM`).
+  Motore e contratto restano a 1–50 km (ADR-0016).
+- **Fuori limite**: «Enter a distance between 1 and 21 km.» sotto il campo,
+  e «Draw route» spento. Sopra i 15 km, un avviso prima della richiesta:
+  «Long routes take longer: up to a few minutes.»
+- La **forma** resta a pulsanti: la forma libera è fase 4.
+- **Tastiera**: la schermata si accorcia quando si apre (`KeyboardAvoidingView`
+  di React Native), e «Draw route» la chiude, perché il tastierino di iOS
+  non ha il tasto invio. Nessuna dipendenza nuova.
+
+**Motivo**: l'app offre la distanza più lunga che arriva entro i 5 minuti
+di attesa (ADR-0032) anche in una zona nuova. A Trento il calcolo cresce
+poco con la distanza (36–47 s a 21 km, 28–42 s a 30 km); cresce il
+download della zona: 105 s a 21 km, 279 s a 30 km, che da solo quasi
+esaurisce i 5 minuti, e sui dati mobili è più lento. A 30 km il cuore di
+Trento non si disegna. Un campo solo, senza pulsanti, è quello che l'utente
+ha chiesto; il limite in una costante si alza quando il download sarà più
+veloce.
+
+**Conseguenza**: le distanze fra 21 e 50 km le accetta solo la CLI o
+`/docs`. Una zona da 21 km pesa circa 55 MB su disco, più la risposta di
+Overpass (`API.md`, «Oltre 15 km»). Alzare il limite chiede prima un modo
+più veloce di avere i dati delle zone (ADR-0009). Il tastierino segue la
+lingua del telefono: per questo si accettano sia la virgola sia il punto.

@@ -1,7 +1,16 @@
 import type { LatLon, RouteRequest, Shape } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { apiUrl } from "./src/api/apiUrl";
@@ -12,7 +21,8 @@ import {
 import { MapView } from "./src/map/MapView";
 import { PlaceSearch } from "./src/places/PlaceSearch";
 import type { Place } from "./src/places/photon";
-import { type DistanceKm, RoutePanel } from "./src/route/RoutePanel";
+import { toDistanceM } from "./src/route/distance";
+import { RoutePanel } from "./src/route/RoutePanel";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import {
   type RouteState,
@@ -42,7 +52,8 @@ function MapScreen() {
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
   const [shape, setShape] = useState<Shape>("heart");
-  const [distanceKm, setDistanceKm] = useState<DistanceKm>(5);
+  const [distanceText, setDistanceText] = useState("5");
+  const distanceM = toDistanceM(distanceText);
   const { state, draw, cancel } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
 
@@ -59,12 +70,10 @@ function MapScreen() {
 
   const noPosition = position.status === "denied" || position.status === "unavailable";
 
-  const request: RouteRequest | null = start && {
-    start: start.point,
-    shape,
-    distance_m: distanceKm * 1000,
-    activity: "running",
-  };
+  const request: RouteRequest | null =
+    start && distanceM !== null
+      ? { start: start.point, shape, distance_m: distanceM, activity: "running" }
+      : null;
   // A new start, shape or distance leaves the last answer behind.
   const view: RouteState =
     request && state.status !== "idle" && sameRequest(state.request, request)
@@ -79,7 +88,12 @@ function MapScreen() {
       : { status: "idle" };
 
   return (
-    <View style={styles.screen}>
+    // The km field sits at the bottom: the map shrinks so the keyboard does
+    // not cover it.
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <View style={[styles.panel, { paddingTop: insets.top + 8 }]}>
         <View style={styles.titleRow}>
           <Text style={styles.title}>ShapeRoute</Text>
@@ -113,12 +127,19 @@ function MapScreen() {
       <View style={[styles.panel, styles.bottom, { paddingBottom: insets.bottom + 8 }]}>
         <RoutePanel
           shape={shape}
-          distanceKm={distanceKm}
           onShape={setShape}
-          onDistance={setDistanceKm}
+          distanceText={distanceText}
+          distanceM={distanceM}
+          onDistanceText={setDistanceText}
           view={view}
           canDraw={request !== null}
-          onDraw={() => request && draw(request)}
+          onDraw={() => {
+            // The decimal pad has no return key: drawing closes it.
+            Keyboard.dismiss();
+            if (request) {
+              draw(request);
+            }
+          }}
           onCancel={cancel}
           exporting={exporting}
           onExport={() => {
@@ -128,7 +149,7 @@ function MapScreen() {
           }}
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

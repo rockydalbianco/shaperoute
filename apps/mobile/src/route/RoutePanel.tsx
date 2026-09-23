@@ -1,26 +1,22 @@
 import { type Shape, SHAPES } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { LONG_DISTANCE_KM, MAX_APP_DISTANCE_KM, MIN_DISTANCE_KM } from "./distance";
 import { problemText } from "./problems";
 import type { ExportState } from "./useGpxExport";
 import type { RouteProblem, RouteState } from "./useRouteRequest";
 
-/**
- * The distances offered for now: the ones with known times (ADR-0031).
- * Free fields for any distance and shape come later (ROADMAP, phase 2).
- */
-export const DISTANCES_KM = [3, 5, 10, 15] as const;
-export type DistanceKm = (typeof DISTANCES_KM)[number];
-
 type Props = {
   shape: Shape;
-  distanceKm: DistanceKm;
   onShape: (shape: Shape) => void;
-  onDistance: (distanceKm: DistanceKm) => void;
+  /** The km field as typed, and what it means in metres (null: not valid). */
+  distanceText: string;
+  distanceM: number | null;
+  onDistanceText: (text: string) => void;
   /** The state of the request for the current start, shape and distance. */
   view: RouteState;
-  /** False without a start. */
+  /** False without a start or with a distance that is not valid. */
   canDraw: boolean;
   onDraw: () => void;
   onCancel: () => void;
@@ -31,9 +27,10 @@ type Props = {
 
 export function RoutePanel({
   shape,
-  distanceKm,
   onShape,
-  onDistance,
+  distanceText,
+  distanceM,
+  onDistanceText,
   view,
   canDraw,
   onDraw,
@@ -56,21 +53,30 @@ export function RoutePanel({
         ))}
       </View>
       <View style={styles.row}>
-        {DISTANCES_KM.map((option) => (
-          <Choice
-            key={option}
-            label={`${option} km`}
-            selected={option === distanceKm}
-            disabled={waiting}
-            onPress={() => onDistance(option)}
-          />
-        ))}
+        <TextInput
+          style={[styles.km, waiting && styles.off]}
+          value={distanceText}
+          onChangeText={onDistanceText}
+          editable={!waiting}
+          keyboardType="decimal-pad"
+          selectTextOnFocus
+          accessibilityLabel="Distance in km"
+        />
+        <Text>km</Text>
       </View>
+      {distanceM === null ? (
+        <Text style={styles.problem}>
+          {`Enter a distance between ${MIN_DISTANCE_KM} and ${MAX_APP_DISTANCE_KM} km.`}
+        </Text>
+      ) : (
+        distanceM > LONG_DISTANCE_KM * 1000 && (
+          <Text style={styles.note}>Long routes take longer: up to a few minutes.</Text>
+        )
+      )}
       {waiting ? (
         <View style={styles.row}>
           <Text style={styles.waiting}>
-            {waitingText(view.phase, distanceKm, shape)}{" "}
-            <Elapsed since={view.startedAt} />
+            {waitingText(view)} <Elapsed since={view.startedAt} />
           </Text>
           <Pressable
             style={styles.secondary}
@@ -121,11 +127,7 @@ export function RoutePanel({
 }
 
 /** What the API is doing, as it said on its last answer. */
-function waitingText(
-  phase: Extract<RouteState, { status: "waiting" }>["phase"],
-  distanceKm: DistanceKm,
-  shape: Shape,
-): string {
+function waitingText({ phase, request }: Extract<RouteState, { status: "waiting" }>) {
   switch (phase) {
     case "sending":
     case "queued":
@@ -133,7 +135,7 @@ function waitingText(
     case "downloading_map":
       return "Downloading map data for this area…";
     default:
-      return `Drawing a ${distanceKm} km ${shape}…`;
+      return `Drawing a ${request.distance_m / 1000} km ${request.shape}…`;
   }
 }
 
@@ -204,6 +206,18 @@ const styles = StyleSheet.create({
   selectedText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  km: {
+    width: 72,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 16,
+  },
+  note: {
+    color: "#666",
   },
   draw: {
     alignItems: "center",

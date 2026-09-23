@@ -1,7 +1,8 @@
 # UI — Interfaccia mobile
 
 > Scritto con TASK-021 (mappa, posizione, ricerca del luogo) e TASK-023
-> (forma, distanza, percorso). Le domande ancora aperte stanno in fondo.
+> (forma, distanza, percorso); la distanza libera con TASK-026. Le domande
+> ancora aperte stanno in fondo.
 
 ## Cosa è deciso
 
@@ -64,10 +65,24 @@ punto, ricentra la mappa.
 
 ## Forma e distanza
 
-Per ora si scelgono fra pulsanti: `circle` e `heart`; 3, 5, 10 e 15 km. Di
-partenza cuore e 5 km. L'attività è sempre `running` e non si mostra. Le
-distanze sono quelle con tempi conosciuti (ADR-0031). Dopo verranno campi
-liberi per ogni distanza e ogni forma (`ROADMAP.md`, fase 2).
+La forma si sceglie fra pulsanti, `circle` e `heart`; la forma libera
+arriva con la fase 4. La distanza si scrive in un campo in km con il
+tastierino numerico (ADR-0034):
+
+- interi o un decimale, con la virgola o con il punto: `7`, `7,5`, `7.5`;
+  gli spazi attorno non contano. Al motore va in metri interi (7,5 km →
+  7500);
+- da 1 a **21 km**: il limite lo hanno deciso le misure (`API.md`, «Oltre
+  15 km»), e sta in una costante dell'app (`MAX_APP_DISTANCE_KM`). Motore
+  e contratto arrivano a 50 km;
+- con un valore non valido, anche il campo vuoto, sotto compare «Enter a
+  distance between 1 and 21 km.» e «Draw route» resta spento;
+- sopra i 15 km, prima della richiesta: «Long routes take longer: up to a
+  few minutes.»
+
+Di partenza cuore e 5 km. L'attività è sempre `running` e non si mostra.
+Il tastierino non ha il tasto invio: si chiude toccando «Draw route», e
+mentre è aperto la mappa si accorcia perché non copra il campo.
 
 ## Chiedere un percorso
 
@@ -84,8 +99,9 @@ secondi che passano, e offre «Cancel»:
 
 Forma e distanza non si cambiano durante l'attesa.
 
-- Fino a 10 km il percorso di solito arriva in 5–35 s, un 15 km in circa
-  30 s; una zona nuova aggiunge il suo download (`API.md`, «Tempi»).
+- Fino a 10 km il percorso di solito arriva in 5–35 s, da 15 a 21 km in
+  30–50 s; una zona nuova aggiunge il suo download, circa 105 s per un
+  21 km (`API.md`, «Tempi»).
 - Dopo 5 minuti l'app smette di aspettare e dice all'API di lasciar
   perdere.
 - Due errori di rete di fila durante l'attesa si perdonano; al terzo l'app
@@ -155,7 +171,10 @@ iOS chiude la pagina per liberare memoria, la WebView la ricarica da sola.
 
 ## Domande ancora aperte
 
-- Campi liberi per distanza e forma (`ROADMAP.md`, fase 2).
+- Forma libera e forme nuove (`ROADMAP.md`, fase 4).
+- Distanze oltre i 21 km: aspettano un download delle zone più veloce
+  (ADR-0009).
+- Miglia al posto dei km.
 - Avvisi in parole semplici: servono codici negli avvisi del contratto.
 - Rigenerare o scegliere fra percorsi alternativi.
 - Navigazione, quando le schermate saranno più di una.

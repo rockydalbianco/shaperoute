@@ -136,8 +136,8 @@ l'API sta scaricando la mappa o calcolando.
       aspettare la fine del 15 (provato dall'utente).
 - [x] `POST /routes` sincrona funziona come prima (test, e i 29 test di
       TASK-022 passano senza modifiche).
-- [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR
-      (si spunta quando la PR è aperta e la CI ha girato).
+- [x] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR
+      (PR #29).
 - [x] ADR-0032, ADR-0030 e ADR-0031 annotate; `API.md`, `UI.md`,
       `ARCHITECTURE.md`, `TESTING.md`, `STATUS.md` aggiornati.
 

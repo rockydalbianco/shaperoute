@@ -31,7 +31,7 @@ la distanza libera (TASK-026); la forma libera in fase 4 (`ROADMAP.md`).
 
 ## In lavorazione
 
-Niente. PR di TASK-025 da aprire: il criterio della CI verde si spunta lì.
+Niente.
 
 ## Completato
 

@@ -57,3 +57,26 @@ export interface ApiError {
     message: string;
   };
 }
+
+/** Where a route request stands, from queued to done or failed. */
+export const JOB_STATUSES = [
+  "queued",
+  "downloading_map",
+  "computing",
+  "done",
+  "failed",
+] as const;
+export type JobStatus = (typeof JOB_STATUSES)[number];
+
+/**
+ * A route request the API is working on (ADR-0032): the answer to
+ * POST /route-jobs and to every GET /route-jobs/{job_id}.
+ */
+export interface RouteJob {
+  job_id: string;
+  status: JobStatus;
+  /** Only when `status` is "done". */
+  result: RouteResult | null;
+  /** Only when `status` is "failed". */
+  error: ApiError["error"] | null;
+}

@@ -1,0 +1,18 @@
+{
+  "job_id": "4f2c9e1a",
+  "status": "done",
+  "result": {
+    "points": [
+      [46.0671, 11.1214],
+      [46.0671, 11.1344],
+      [46.0761, 11.1344],
+      [46.0761, 11.1214],
+      [46.0671, 11.1214]
+    ],
+    "distance_m": 4004.5,
+    "similarity": 0.91,
+    "shape": "heart",
+    "warnings": ["120 m of the route on steps"]
+  },
+  "error": null
+}

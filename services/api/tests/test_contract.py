@@ -22,6 +22,8 @@ from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
     ErrorDetail,
+    JobStatus,
+    RouteJobBody,
     RouteRequestBody,
     RouteResultBody,
 )
@@ -79,3 +81,20 @@ def test_error_fixture_is_a_valid_error_body() -> None:
 
 def test_error_codes_match_shared_types() -> None:
     assert list(get_args(ErrorCode)) == _load("api-error-codes.json")
+
+
+def test_route_job_fixtures_are_valid_bodies() -> None:
+    for name in (
+        "route-job-running.json",
+        "route-job-done.json",
+        "route-job-failed.json",
+    ):
+        data = _load(name)
+        assert set(data) == _names(RouteJobBody), name
+        RouteJobBody.model_validate(data)
+    assert RouteJobBody.model_validate(_load("route-job-done.json")).result is not None
+    assert RouteJobBody.model_validate(_load("route-job-failed.json")).error is not None
+
+
+def test_job_statuses_match_shared_types() -> None:
+    assert list(get_args(JobStatus)) == _load("route-job-statuses.json")

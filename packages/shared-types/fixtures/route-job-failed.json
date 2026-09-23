@@ -1,0 +1,9 @@
+{
+  "job_id": "4f2c9e1a",
+  "status": "failed",
+  "result": null,
+  "error": {
+    "code": "shape_not_drawable",
+    "message": "a 5 km heart cannot be drawn here: the best route scores 0.52 for shape, 0.60 needed"
+  }
+}

@@ -1,6 +1,6 @@
 # TASK-022 — API FastAPI che espone il route-engine
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 2 · **Branch**: `feat/TASK-022-api`
 
 ## Obiettivo
@@ -131,24 +131,37 @@ girano in locale e in CI, senza rete.
 
 ## Criteri di accettazione
 
-- [ ] In `services/api/`, `ruff check .`, `black --check .` e
-      `pytest -m "not network"` passano, senza rete.
-- [ ] `POST /routes` con un `RouteRequest` valido sul grafo di prova
+- [x] In `services/api/`, `ruff check .`, `black --check .` e
+      `pytest -m "not network"` passano, senza rete (27 test).
+- [x] `POST /routes` con un `RouteRequest` valido sul grafo di prova
       restituisce un `RouteResult` con gli stessi campi di `shared-types`.
-- [ ] Ogni caso della tabella degli errori ha il suo status, il suo
+- [x] Ogni caso della tabella degli errori ha il suo status, il suo
       `code` e un messaggio, provato da un test.
-- [ ] Rinominare un campo in un JSON di esempio di `shared-types` fa
-      fallire anche un test dell'API (provato a mano).
-- [ ] Richieste ripetute su partenze diverse della stessa zona non
-      scrivono nuovi file in `data/cache/` (test, e controllato a mano).
+- [x] Rinominare un campo in un JSON di esempio di `shared-types` fa
+      fallire anche un test dell'API (provato a mano: `distance_m` in
+      `route-request.json` e in `route-result.json`, 2 test cadono).
+- [x] Richieste ripetute su partenze diverse della stessa zona non
+      scrivono ritagli in `data/cache/` (test, e controllato a mano con 10
+      richieste). L'unico file nuovo è il pickle di una zona letta per la
+      prima volta, scritto una volta sola come fa la CLI (ADR-0023).
 - [ ] Dall'iPhone, sulla stessa Wi-Fi, `/health` risponde
       `{"status": "ok"}`.
-- [ ] Tempi dei quattro casi del punto 6 scritti in `API.md`.
-- [ ] `services/route-engine`: i test passano come prima, la CLI funziona
-      come prima e non importa nulla dall'API.
+- [x] Tempi dei quattro casi del punto 6 scritti in `API.md`, più una
+      partenza nuova a Trento.
+- [x] `services/route-engine`: i test passano come prima (131), la CLI dà
+      lo stesso percorso dell'API sul cerchio di Levico e non importa
+      nulla dall'API.
 - [ ] I job `api`, `route-engine` e `mobile` della CI sono verdi sulla PR.
-- [ ] Nuova ADR, ADR-0009 aggiornata; `API.md`, `SETUP.md`, `TESTING.md`,
-      `INDEX.md`, `STATUS.md` aggiornati.
+- [x] ADR-0030, ADR-0009 rinviata alla fase 4; `API.md`, `SETUP.md`
+      (passo 10), `TESTING.md`, `INDEX.md`, `STATUS.md` aggiornati.
+
+Differenze dal piano: anche indirizzi e metodi sbagliati rispondono nella
+stessa forma, con `code` `http_error`; aggiornato anche il `README.md`
+(avvio dell'API, struttura). `ARCHITECTURE.md` non cambia: `services/api`
+era già nell'albero. Il venv dell'API occupa circa 300 MB (disco C: da 1,8
+a 1,3 GB liberi, con il pickle di Trento). Starlette 1.7 avvisa che httpx
+nel `TestClient` è deprecato a favore di `httpx2`: per ora funziona, si
+cambia quando smetterà, con conferma perché è una dipendenza diversa.
 
 ## File toccati
 

@@ -19,15 +19,16 @@ percorsi: manca l'API.
 
 ## Prossimo passo
 
-**TASK-022 — API FastAPI che espone il route-engine**, sul branch
-`feat/TASK-022-api`. Il file del task è scritto, con le scelte già
-confermate dall'utente: FastAPI in `services/api/`, errori con un codice,
-grafi di zona in memoria senza salvare i ritagli, ADR-0009 rinviata alla
-fase 4, job `api` in CI. La ADR si scrive nella PR che implementa.
+Aprire `http://<indirizzo-del-PC>:8000/health` da Safari sull'iPhone con
+l'API avviata con `--lan` (`SETUP.md`, passo 10), poi chiudere TASK-022.
+Dopo: TASK-023, l'app che chiede i percorsi all'API.
 
 ## In lavorazione
 
-Niente.
+- **TASK-022** — API FastAPI, branch `feat/TASK-022-api`. Codice, test e
+  documenti fatti (ADR-0030): `POST /routes` e `GET /health`, errori con un
+  codice, grafi di zona in memoria senza ritagli salvati, tempi misurati
+  (7–32 s, `API.md`). Manca la prova di `/health` dall'iPhone.
 
 ## Completato
 

@@ -59,6 +59,18 @@ npm run mobile
 Si inquadra il codice QR con Expo Go (Android) o con la fotocamera
 (iPhone); telefono e PC devono stare sulla stessa rete Wi-Fi.
 
+### L'API
+
+Ha un suo ambiente Python con dentro il route-engine
+([`docs/SETUP.md`](docs/SETUP.md), passo 10). Dalla radice:
+
+```powershell
+services\api\.venv\Scripts\python.exe -m shaperoute_api --lan
+```
+
+Risponde su `/health` e `/routes`, con la documentazione su `/docs`
+([`docs/API.md`](docs/API.md)); con `--lan` anche dal telefono.
+
 ## Il principio
 
 **L'AI interpreta la richiesta, il Route Engine decide il percorso.**
@@ -87,4 +99,4 @@ tools/          script di sviluppo: anteprima dei campioni su mappa
 ```
 
 Le cartelle si creano quando servono: oggi ci sono solo `apps/mobile`,
-`packages/shared-types`, `services/route-engine`.
+`packages/shared-types`, `services/api`, `services/route-engine`.

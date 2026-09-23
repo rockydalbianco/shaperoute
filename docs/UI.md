@@ -72,14 +72,26 @@ liberi per ogni distanza e ogni forma (`ROADMAP.md`, fase 2).
 ## Chiedere un percorso
 
 «Draw route» è spento finché non c'è una partenza. Toccato, la richiesta va
-all'API e il pannello mostra «Drawing a 5 km heart… 12 s», con i secondi
-che passano, e «Cancel». Forma e distanza non si cambiano durante l'attesa.
+all'API in due tempi (ADR-0032): l'API la accetta subito, poi l'app chiede
+ogni 2 s a che punto è. Il pannello dice cosa sta succedendo, sempre con i
+secondi che passano, e offre «Cancel»:
 
-- Il percorso di solito arriva in 7–35 s (`API.md`, «Tempi»).
-- Dopo 60 s l'app smette di aspettare: circa quando iOS chiuderebbe
-  comunque la richiesta.
-- «Cancel» interrompe l'attesa. Il PC finisce il calcolo e il risultato si
-  butta.
+| Stato dell'API | Il pannello dice |
+|---|---|
+| richiesta partita, o in coda | «Waiting for the API…» |
+| zona da scaricare | «Downloading map data for this area…» |
+| calcolo | «Drawing a 15 km heart…» |
+
+Forma e distanza non si cambiano durante l'attesa.
+
+- Fino a 10 km il percorso di solito arriva in 5–35 s, un 15 km in circa
+  30 s; una zona nuova aggiunge il suo download (`API.md`, «Tempi»).
+- Dopo 5 minuti l'app smette di aspettare e dice all'API di lasciar
+  perdere.
+- Due errori di rete di fila durante l'attesa si perdonano; al terzo l'app
+  dice che l'API non si raggiunge.
+- «Cancel» interrompe l'attesa e dice all'API di lasciar perdere: una
+  richiesta in coda non parte, una in download si ferma prima di calcolare.
 - Una partenza, una forma o una distanza nuove tolgono il percorso e
   l'esito di prima.
 
@@ -104,7 +116,8 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 | Errore del motore (`engine_error`) | The route engine failed. Try again; if it happens again, look at the API log. |
 | `invalid_request`, `http_error`, risposta illeggibile | The app and the API do not agree (a bug): … |
 | API non raggiungibile | Cannot reach the API at http://…:8000. Start it on the PC with --lan, on the same Wi-Fi. |
-| Nessuna risposta in 60 s | No answer within a minute. The API may be downloading map data for a new area: try again shortly. |
+| Nessun risultato in 5 minuti | The API took more than 5 minutes. Try again later, or a shorter distance. |
+| L'API non conosce più la richiesta (riavviata) | The API lost this request (was it restarted?). Try again. |
 | Indirizzo dell'API sconosciuto | The app does not know where the API is: open it from the QR code of npm run mobile on the PC. |
 
 ## Cosa esce dal telefono

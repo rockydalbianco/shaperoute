@@ -20,16 +20,18 @@ telefono aspetta.
 
 ## Prossimo passo
 
-**TASK-025 — Richieste in due tempi**, sul branch
-`feat/TASK-025-route-jobs`. Il file del task è scritto, con le scelte già
-confermate dall'utente: `POST /route-jobs` con stato da chiedere ogni 2 s
-fino a 5 minuti, stati di download e calcolo, due thread nell'API, un
-lucchetto per zona, `RouteJob` in `shared-types`. Dopo: TASK-024, poi la
-distanza libera (TASK-026); la forma libera in fase 4 (`ROADMAP.md`).
+Provare TASK-025 sull'iPhone con l'API avviata con `--lan`, seguendo il
+punto 6 del task (15 km a Trento, una zona nuova, «Cancel» e poi un 5 km),
+poi chiuderlo. Dopo: TASK-024, poi la distanza libera (TASK-026); la forma
+libera in fase 4 (`ROADMAP.md`).
 
 ## In lavorazione
 
-Niente.
+- **TASK-025** — Richieste in due tempi, branch `feat/TASK-025-route-jobs`.
+  Codice, test e documenti fatti (ADR-0032): `/route-jobs` con stati,
+  due thread, un lucchetto per zona, l'app che chiede ogni 2 s fino a 5
+  minuti e mostra download e calcolo. Sul PC un 15 km a Trento arriva in
+  31 s. Manca la prova sull'iPhone.
 
 ## Completato
 
@@ -93,7 +95,9 @@ Niente.
   (già fatto); il permesso di posizione è di Expo Go (`SETUP.md`, 9.4).
 - API: dalla radice `services\api\.venv\Scripts\python.exe -m
   shaperoute_api --lan` (`SETUP.md`, passo 10); risponde anche su `/docs`.
-- Il disco C: di questo PC è quasi pieno (1,3 GB liberi il 2026-09-23):
+- Il disco C: di questo PC è quasi pieno (1,1 GB liberi il 2026-09-23;
+  ogni zona nuova scaricata vale circa 40 MB, più le risposte di Overpass
+  in `data/cache/http/`, già 244 MB):
   Expo si ferma con `ENOSPC` quando finisce lo spazio. In `data/cache/`
   ci sono ritagli salvati dalla CLI che si possono togliere a mano.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.

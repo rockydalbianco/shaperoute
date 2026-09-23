@@ -1,6 +1,6 @@
 # TASK-025 — Richieste in due tempi: percorsi lunghi e zone nuove
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 2 · **Branch**: `feat/TASK-025-route-jobs`
 
 ## Obiettivo
@@ -115,22 +115,35 @@ l'API sta scaricando la mappa o calcolando.
 
 ## Criteri di accettazione
 
-- [ ] Dalla radice `npm run lint`, `npm run format:check`,
-      `npm run typecheck` e `npm test` passano; in `services/api/`
-      `ruff`, `black --check` e `pytest -m "not network"` passano.
-- [ ] Rinominare un campo in un JSON di esempio di `RouteJob` fa fallire
-      sia `shared-types` sia un test dell'API (provato a mano).
-- [ ] Ogni riga del punto 5 ha il suo test.
+- [x] Dalla radice `npm run lint`, `npm run format:check`,
+      `npm run typecheck` e `npm test` passano (96 test nell'app, 6 in
+      `shared-types`); in `services/api/` `ruff`, `black --check` e
+      `pytest -m "not network"` passano (49 test).
+- [x] Rinominare un campo in un JSON di esempio di `RouteJob` fa fallire
+      sia `shared-types` sia un test dell'API (provato a mano: `job_id` →
+      `id` in `route-job-running.json`).
+- [x] Ogni riga del punto 5 ha il suo test.
 - [ ] Sull'iPhone: il cerchio da 15 km a Trento arriva sulla mappa; tempo
       annotato.
 - [ ] Sull'iPhone: una zona nuova mostra «Downloading map data…» e poi il
       percorso, oppure un messaggio onesto; esito e tempo annotati.
 - [ ] Sull'iPhone: dopo «Cancel» su un 15 km, un 5 km arriva senza
       aspettare la fine del 15.
-- [ ] `POST /routes` sincrona funziona come prima.
+- [x] `POST /routes` sincrona funziona come prima (test, e i 29 test di
+      TASK-022 passano senza modifiche).
 - [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
-- [ ] Nuova ADR, ADR-0031 aggiornata; `API.md`, `UI.md`, `ARCHITECTURE.md`,
-      `STATUS.md` aggiornati.
+- [x] ADR-0032, ADR-0030 e ADR-0031 annotate; `API.md`, `UI.md`,
+      `ARCHITECTURE.md`, `TESTING.md`, `STATUS.md` aggiornati.
+
+Differenze dal piano: la traduzione da eccezione a `{code, message}` sta in
+`errors.py`, usata sia da `POST /routes` sia dai job. Una richiesta
+annullata mentre carica il grafo si ferma prima di calcolare (il motore
+carica il grafo una volta sola, all'inizio): risparmia il calcolo, non il
+download. Prova col motore vero sul PC, prima del telefono (API di prova
+sulla porta 8001, perché la 8000 era occupata dall'API della prova di
+TASK-023): cerchio da 15 km a Trento accettato subito e pronto in 31 s; un
+5 km chiesto dopo aver annullato un 15 km in download pronto in 18 s. Il
+15 km annullato ha comunque scaricato e salvato la sua zona (40 MB).
 
 ## File toccati
 

@@ -80,7 +80,9 @@ cambia e le altre no, un test fallisce (ADR-0028). I punti sono
 
 Anche il corpo degli errori dell'API, `{"error": {"code", "message"}}`, è
 contratto: `ApiError` e i suoi codici in `shared-types`, `ErrorBody`
-nell'API, allineati dagli stessi JSON di esempio (ADR-0031).
+nell'API, allineati dagli stessi JSON di esempio (ADR-0031). Così pure la
+richiesta in due tempi, `RouteJob` con i suoi stati (ADR-0032), che porta
+dentro un `RouteResult` o un errore.
 
 ## 4. Regole di dipendenza
 

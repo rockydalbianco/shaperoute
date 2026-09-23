@@ -1,6 +1,7 @@
 # API — Contratti REST
 
-> Scritto con TASK-022. Le scelte e i loro motivi stanno in ADR-0030.
+> Scritto con TASK-022, richieste in due tempi con TASK-025. Le scelte e i
+> loro motivi stanno in ADR-0030 e ADR-0032.
 
 ## Cosa è deciso
 
@@ -32,6 +33,38 @@ la CLI). La documentazione interattiva è su `/docs`.
 
 `200 {"status": "ok"}`. Serve a controllare che l'API risponda.
 
+### Richieste in due tempi: `/route-jobs`
+
+È la strada dell'app (ADR-0032). Un percorso da 15 km o una zona da
+scaricare durano più di quanto il telefono aspetta una risposta, quindi la
+richiesta risponde subito e il percorso si chiede dopo.
+
+- `POST /route-jobs` con un `RouteRequest` (come sotto) risponde subito
+  `202` con un `RouteJob`: `{"job_id", "status", "result": null, "error": null}`.
+  Una richiesta non valida risponde `422 invalid_request` senza diventare
+  un job.
+- `GET /route-jobs/{job_id}` restituisce il `RouteJob` di adesso. `status`
+  è uno di:
+
+  | `status` | Vuol dire |
+  |---|---|
+  | `queued` | in coda: i due thread di lavoro sono occupati |
+  | `downloading_map` | la zona non è in cache e si scarica da Overpass |
+  | `computing` | grafo pronto (o in lettura dal disco), il motore calcola |
+  | `done` | `result` è il `RouteResult` |
+  | `failed` | `error` è `{code, message}`, come negli errori sotto |
+
+- `DELETE /route-jobs/{job_id}` annulla: `204`. Una richiesta in coda non
+  parte; una che sta caricando il grafo si ferma prima di calcolare; una
+  che sta già calcolando finisce nel suo thread e il risultato si butta.
+- Un `job_id` sconosciuto (annullato, finito da più di 10 minuti, o API
+  riavviata) risponde `404 http_error`.
+
+Le richieste vivono nella memoria dell'API: un riavvio le perde. Lavorano
+due alla volta, così un 15 km annullato non ferma la richiesta dopo; le due
+però si dividono il processore, quindi la seconda va più piano finché la
+prima non finisce.
+
 ### `POST /routes`
 
 Riceve un `RouteRequest`:
@@ -56,7 +89,8 @@ Risponde `200` con un `RouteResult`:
 ```
 
 La richiesta è sincrona: la risposta arriva quando il percorso è pronto
-(tempi sotto).
+(tempi sotto). Resta per `/docs`, `curl` e le misure; l'app usa
+`/route-jobs`.
 
 ## Errori
 
@@ -89,7 +123,13 @@ log dell'API, non al telefono.
 L'API non salva i ritagli dei grafi, come invece fa la CLI (ADR-0023): da
 3 a 110 MB per ogni partenza nuova avrebbero riempito il disco. Tiene in
 memoria gli ultimi 2 grafi di zona e ne ritaglia uno nuovo per ogni
-richiesta. Una zona non in cache si scarica e si salva come con la CLI.
+richiesta. Una zona non in cache si scarica e si salva come con la CLI,
+anche se la richiesta viene annullata durante il download: una zona pesa
+circa 40 MB fra GraphML e pickle, e OSMnx tiene le risposte di Overpass
+in `data/cache/http/` (244 MB il 2026-09-23).
+
+C'è un lucchetto per zona (ADR-0032): mentre si scarica una zona, le
+richieste per le altre zone non aspettano.
 
 Il log dell'API dice per ogni richiesta da dove veniva il grafo (memoria,
 disco o rete), quanto è durata e com'è andata. La posizione di partenza
@@ -128,11 +168,17 @@ nelle zone in cache hanno risposto in 5–25 s. Non stanno nei 60 s:
 - **una zona nuova**: 72–100 s solo per scaricarla da Overpass sui dati
   mobili; una volta è fallita dopo 22 s (503).
 
-Le richieste in due tempi di TASK-025 servono a questo.
+Con le richieste in due tempi (TASK-025), sul PC di sviluppo:
+- cerchio da 15 km a Trento, zona già in cache: accettato subito, finito
+  in **31 s** (3,8 s di grafo, 26 s di calcolo; 15,9 km, somiglianza
+  0,82). Nella prova sull'iPhone lo stesso caso era arrivato a 50 s di
+  calcolo perché due 15 km giravano insieme;
+- un 5 km chiesto subito dopo aver annullato un 15 km ancora in download:
+  pronto in 18 s, senza aspettare l'altro.
 
 ## Domande ancora aperte
 
-- Richieste in due tempi (accetta, poi chiedi il risultato), se il
-  telefono non aspetta abbastanza: TASK-023.
+- Motore lento sui 15 km: circa 30 s da solo, più se lavora insieme a
+  un'altra richiesta (`STATUS.md`).
 - Autenticazione, limiti di richieste, versione, HTTPS, deploy: fase 4.
 - Motore di routing di produzione: ADR-0009, rinviata alla fase 4.

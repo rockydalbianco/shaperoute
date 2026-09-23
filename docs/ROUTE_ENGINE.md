@@ -120,7 +120,9 @@ Procedura di base:
    una fascia di tolleranza: il percorso segue il bordo invece di tagliare
    per l'interno, senza zig-zag per restarci appiccicato.
 5. Concatenare i segmenti; l'ultimo torna alla partenza, chiudendo il ciclo.
-6. Eliminare gli speroni: ogni A → B → A diventa A.
+6. Eliminare gli speroni: ogni A → B → A diventa A, tranne quelli che
+   portano a una punta della forma (la punta del cuore), che la disegnano
+   (ADR-0025).
 
 Raggio delle zone e fascia sono frazioni del perimetro della forma: crescono
 con la distanza richiesta.
@@ -156,16 +158,43 @@ senza server, il che rende il ciclo di prova rapidissimo.
 
 ## 5. Ottimizzazione e somiglianza
 
+La forma non si disegna a scala e rotazione fisse: si adatta alle strade
+(TASK-015, ADR-0023). La partenza si può spostare fino a 500 m dal punto
+richiesto, se da lì la forma si chiude meglio (ADR-0025).
+
 ### Parametri da cercare
 
-| Parametro | Intervallo | Note |
+| Parametro | Valori | Note |
 |---|---|---|
-| scala | ±40% attorno alla stima di §3 | corregge l'allungamento dovuto alla rete |
-| rotazione | 0–360° | il parametro che conta di più |
-| fase di partenza | 0–1 lungo la curva | dove l'utente entra nella forma |
+| rotazione | 0–345° ogni 15°, poi ±15° ogni 5° | attorno alla partenza |
+| fase di partenza | 0; 0,25; 0,5; 0,75 | dove la partenza entra nella forma |
+| scala | 0,4–1,1 × la stima di §3 | le strade allungano il percorso fino a 2,5× |
+| partenza | il punto richiesto, o a 250 / 500 m in 8 direzioni | spostarla deve valere almeno il 5% del contorno |
 
-La rotazione domina: una griglia stradale orientata nord-sud rende alcune
-rotazioni molto migliori di altre, e la differenza si vede a occhio nudo.
+La rotazione conta molto dove la rete ha buchi (campi, fiumi, ferrovie); in
+una città fitta come Milano la forma va bene già dove cade.
+
+### Strategia di ricerca
+
+1. **Conteggio delle strade**, per tutte le combinazioni di partenza,
+   rotazione e fase (17 × 24 × 4): la quota del contorno con una strada entro la fascia del corridoio
+   (§4). Le strade si campionano una volta, su una griglia; nessun routing,
+   quindi costa pochi millisecondi a combinazione.
+2. **Tracciamento** (§4) della combinazione migliore, su un ritaglio del
+   grafo attorno alla forma.
+3. **Correzione della scala** verso la distanza target: prima in
+   proporzione, poi per secante sugli ultimi due tentativi, perché la
+   distanza non cresce in proporzione alla scala. Fino a 4 tracciamenti.
+4. Si ripete per altre 2 combinazioni, riordinate alla scala imparata e
+   lontane da quelle già provate; poi si rifinisce la rotazione migliore.
+5. Con il budget che resta (16 tracciamenti in tutto, fino a 6
+   piazzamenti) si corregge ancora la distanza del piazzamento migliore.
+
+Ci si ferma appena distanza (±10%) e somiglianza (≥ 0,90) vanno bene. Se il
+budget finisce prima, si restituisce il tentativo di costo minore entro
+**±2 km** dal target, con un warning che dice cosa manca. Se la somiglianza
+migliore è sotto **0,60**, o nessun tentativo sta entro ±2 km, nessun
+percorso: la forma lì non è disponibile (ADR-0025).
 
 ### Funzione obiettivo
 
@@ -173,33 +202,24 @@ rotazioni molto migliori di altre, e la differenza si vede a occhio nudo.
 costo = w_forma · (1 − somiglianza) + w_dist · |dist_reale − dist_target| / dist_target
 ```
 
-Con `w_forma` maggiore di `w_dist`, coerentemente con la priorità di prodotto.
-I pesi sono configurabili e vanno tarati sui primi risultati reali.
+con `w_forma` = 3 e `w_dist` = 1: la forma conta più della distanza. Una
+partenza spostata di 500 m aggiunge 0,15, cioè vale 5 punti di copertura.
 
 ### Misura della somiglianza
 
-Si confronta la traccia reale con la forma teorica proiettata, dopo aver
-ricampionato entrambe allo stesso numero di punti. Candidate:
+Si confronta il percorso con la forma piazzata (ruotata e scalata), in tre
+pezzi (ADR-0023, ADR-0025):
 
-- **Distanza di Hausdorff**: semplice, ma governata dal punto peggiore —
-  una singola deviazione rovina un punteggio altrimenti buono.
-- **Distanza di Fréchet discreta**: tiene conto dell'ordine dei punti,
-  descrive meglio la somiglianza percepita, costa di più.
+- **copertura**: quota del contorno con il percorso entro il 2% del
+  perimetro;
+- **precisione**: quota del percorso entro la stessa distanza dal contorno;
+  scende con anelli interni, tagli e punte;
+- **punte**: i vertici in cui il contorno gira più di 60° (incavo e punta
+  del cuore; il cerchio non ne ha) devono avere il percorso vicino.
 
-Entrambe vanno **normalizzate** sulla dimensione caratteristica della forma,
-altrimenti percorsi da 5 km e da 20 km non sono confrontabili.
-
-Non esiste ancora una scelta definitiva: si implementano entrambe, si
-generano percorsi, si confronta il punteggio con il giudizio a occhio e si
-tiene quella che ci va d'accordo. È un lavoro sperimentale, e il risultato
-va scritto in `DECISIONS.md`.
-
-### Strategia di ricerca
-
-Griglia grossolana sulla rotazione (12–24 valori), poi raffinamento locale
-attorno al migliore. Niente ottimizzatori sofisticati finché non è chiaro
-che servono: ogni valutazione richiede un calcolo di percorso, quindi il
-costo è dominato dal numero di tentativi, non dall'algoritmo.
+Somiglianza = media armonica di copertura e precisione (`fit`), meno 0,10
+per ogni punta mancata. Hausdorff e Fréchet discreta sono state provate e
+scartate: dominate dal punto peggiore, andavano contro il giudizio a occhio.
 
 ## 6. Validazione
 

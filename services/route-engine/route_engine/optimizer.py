@@ -22,8 +22,8 @@ from typing import Any, Protocol
 
 import numpy as np
 
-from route_engine.geo import LatLon, latlon_to_local_array
-from route_engine.metrics import SIMILARITIES, Similarity
+from route_engine.geo import LatLon, latlon_to_local_array, local_to_latlon
+from route_engine.metrics import CORNER_PENALTY, SIMILARITIES, Similarity
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import (
     AREA_MARGIN_M,
@@ -33,7 +33,7 @@ from route_engine.network import (
     Graph,
     NetworkRoute,
     area_around,
-    crop,
+    corner_indices,
     snap_to_network,
 )
 from route_engine.projection import (
@@ -50,20 +50,37 @@ PHASES = (0.0, 0.25, 0.5, 0.75)
 ROTATION_STEP_DEG = 15.0
 # Scale bounds, as multiples of the initial scale.
 SCALE_RANGE = (0.4, 1.1)
-# Placements traced after the road count, and rescales for each of them.
-TOP_PLACEMENTS = 3
+# The shape may start this far from the requested point, on rings of these
+# radii in as many directions, when that lets it close on the roads
+# (TASK-015, ADR-0025).
+START_OFFSET_M = 500.0
+START_RINGS_M = (250.0, 500.0)
+START_BEARINGS = 8
+# Placements traced after the road count (while the budget lasts), and
+# rescales for each of them.
+TOP_PLACEMENTS = 6
 MAX_RESCALES = 4
 # Rotation refinement around the best placement.
 REFINE_SPAN_DEG = 15.0
 REFINE_STEP_DEG = 5.0
-MAX_TRACES = 20
-# Stop when both hold (ROUTE_ENGINE.md §5, TASK-015).
+MAX_TRACES = 16
+# Stop when both hold (ROUTE_ENGINE.md §5). Metric and threshold come from
+# the eye judgement of the first results (TASK-015, docs/MAPS.md): the
+# routes judged good covered 90% of the outline or more, the others less.
 DISTANCE_TOLERANCE = 0.10
-SIMILARITY_THRESHOLD = 0.80
-SIMILARITY = "coverage"
-# cost = W_SHAPE · (1 − similarity) + W_DISTANCE · |real − target| / target
-W_SHAPE = 2.0
+# When no placement gets both right, the route may miss the target distance
+# by up to this much to keep the shape; beyond it, no route (ADR-0025).
+DISTANCE_FALLBACK_M = 2000.0
+SIMILARITY_THRESHOLD = 0.90
+SIMILARITY = "shape"
+# cost = W_SHAPE · (1 − similarity) + W_DISTANCE · |real − target| / target;
+# the shape matters most.
+W_SHAPE = 3.0
 W_DISTANCE = 1.0
+# Moving the start by START_OFFSET_M costs as much as 5% of coverage, both
+# when ranking placements by roads and when choosing among traced routes.
+OFFSET_FIT_PENALTY = 0.05
+W_OFFSET = W_SHAPE * OFFSET_FIT_PENALTY
 
 
 def reach(shape: Sequence[Point], phases: Sequence[float] = PHASES) -> float:
@@ -81,7 +98,10 @@ def zone_area(shape: Sequence[Point], start: LatLon, distance_m: float) -> BBox:
     One graph of this area serves every attempt of the search (ADR-0023).
     """
     largest_scale = initial_scale(shape, distance_m) * SCALE_RANGE[1]
-    return area_around([start], margin_m=reach(shape) * largest_scale + AREA_MARGIN_M)
+    return area_around(
+        [start],
+        margin_m=reach(shape) * largest_scale + START_OFFSET_M + AREA_MARGIN_M,
+    )
 
 
 def _perimeter_m(xy: np.ndarray) -> float:
@@ -125,51 +145,100 @@ class RoadMask:
             np.arange(counts.sum()) - np.repeat(np.cumsum(counts) - counts, counts)
         ) / np.repeat(counts, counts)
         self.samples = np.vstack([a[seg] + (b - a)[seg] * t[:, None], b])
-        self._grids: dict[float, set[tuple[int, int]]] = {}
+        self._grids: dict[float, tuple[np.ndarray, int, int]] = {}
 
-    def _grid(self, band_m: float) -> set[tuple[int, int]]:
+    def _grid(self, band_m: float) -> tuple[np.ndarray, int, int]:
+        """Boolean grid of cells within a band of a road, and its first cell."""
         if band_m not in self._grids:
             cell = band_m / 2
-            cells = np.unique(np.floor(self.samples / cell).astype(int), axis=0)
-            near: set[tuple[int, int]] = set()
-            reach_cells = 2  # a band is two cells
-            offsets = [
-                (dx, dy)
-                for dx in range(-reach_cells, reach_cells + 1)
-                for dy in range(-reach_cells, reach_cells + 1)
-                if dx * dx + dy * dy <= reach_cells * reach_cells
-            ]
-            for cx, cy in map(tuple, cells):
-                near.update((cx + dx, cy + dy) for dx, dy in offsets)
-            self._grids[band_m] = near
+            r = 2  # a band is two cells
+            idx = np.floor(self.samples / cell).astype(int)
+            x0, y0 = idx.min(axis=0)
+            occupied = np.zeros(tuple(idx.max(axis=0) - (x0, y0) + 1), bool)
+            occupied[idx[:, 0] - x0, idx[:, 1] - y0] = True
+            w, h = occupied.shape
+            near = np.zeros((w + 2 * r, h + 2 * r), bool)
+            for dx in range(-r, r + 1):
+                for dy in range(-r, r + 1):
+                    if dx * dx + dy * dy <= r * r:
+                        near[r + dx : r + dx + w, r + dy : r + dy + h] |= occupied
+            self._grids[band_m] = (near, int(x0) - r, int(y0) - r)
         return self._grids[band_m]
 
-    def fit(self, outline: Sequence[LatLon], band_m: float) -> float:
-        """Share of the closed `outline` that has a road within about `band_m`."""
-        xy = latlon_to_local_array(self.origin, np.array(outline))
-        n = max(8, math.ceil(_perimeter_m(xy) / (band_m / 2)))
-        cumulative = np.concatenate(
-            [[0.0], np.cumsum(np.hypot(*np.diff(xy, axis=0).T))]
-        )
+    def fit_xy(self, outline_xy: np.ndarray, band_m: float) -> float:
+        """Share of a closed outline, in metres around `origin`, that has a
+        road within about `band_m`."""
+        n = max(8, math.ceil(_perimeter_m(outline_xy) / (band_m / 2)))
+        steps = np.hypot(*np.diff(outline_xy, axis=0).T)
+        cumulative = np.concatenate([[0.0], np.cumsum(steps)])
         s = np.linspace(0.0, cumulative[-1], n, endpoint=False)
         pts = np.column_stack(
-            [np.interp(s, cumulative, xy[:, 0]), np.interp(s, cumulative, xy[:, 1])]
+            [
+                np.interp(s, cumulative, outline_xy[:, 0]),
+                np.interp(s, cumulative, outline_xy[:, 1]),
+            ]
         )
-        near = self._grid(band_m)
-        cells = np.floor(pts / (band_m / 2)).astype(int)
-        return sum((cx, cy) in near for cx, cy in map(tuple, cells)) / n
+        near, x0, y0 = self._grid(band_m)
+        cells = np.floor(pts / (band_m / 2)).astype(int) - (x0, y0)
+        inside = (
+            (cells >= 0).all(axis=1)
+            & (cells[:, 0] < near.shape[0])
+            & (cells[:, 1] < near.shape[1])
+        )
+        return float(near[cells[inside, 0], cells[inside, 1]].sum()) / n
+
+    def near_xy(self, points_xy: np.ndarray, band_m: float) -> np.ndarray:
+        """Whether each point, in metres around `origin`, has a road within
+        about `band_m`."""
+        near, x0, y0 = self._grid(band_m)
+        cells = np.floor(points_xy / (band_m / 2)).astype(int) - (x0, y0)
+        inside = (
+            (cells >= 0).all(axis=1)
+            & (cells[:, 0] < near.shape[0])
+            & (cells[:, 1] < near.shape[1])
+        )
+        result = np.zeros(len(points_xy), bool)
+        result[inside] = near[cells[inside, 0], cells[inside, 1]]
+        return result
+
+    def fit(self, outline: Sequence[LatLon], band_m: float) -> float:
+        """`fit_xy` for an outline in WGS84."""
+        return self.fit_xy(
+            latlon_to_local_array(self.origin, np.array(outline)), band_m
+        )
+
+
+@dataclass(frozen=True)
+class Placement:
+    """Where the shape goes: its start (maybe moved), rotation and phase."""
+
+    start: LatLon
+    offset_m: float  # how far `start` is from the requested one
+    rotation_deg: float
+    phase: float
 
 
 @dataclass
 class Attempt:
-    rotation_deg: float
-    phase: float
+    placement: Placement
     scale_m: float
     shape: list[LatLon]
     route: NetworkRoute
     similarity: float
     ratio: float  # distance on roads / target
     cost: float
+
+    @property
+    def rotation_deg(self) -> float:
+        return self.placement.rotation_deg
+
+    @property
+    def phase(self) -> float:
+        return self.placement.phase
+
+    @property
+    def offset_m(self) -> float:
+        return self.placement.offset_m
 
 
 @dataclass
@@ -184,14 +253,24 @@ Tracer = Callable[[list[LatLon]], NetworkRoute]
 
 
 def _tracer(graph: Graph, reuse_penalty: float) -> Tracer:
-    """Trace on the crop around each candidate, as a download of it would give."""
+    """Trace on the whole zone graph: the corridor already makes the roads
+    far from the candidate too dear to use, so cropping first gains nothing."""
 
     def trace(projected: list[LatLon]) -> NetworkRoute:
-        return snap_to_network(
-            crop(graph, area_around(projected)), projected, reuse_penalty
-        )
+        return snap_to_network(graph, projected, reuse_penalty)
 
     return trace
+
+
+def candidate_starts(start: LatLon) -> list[tuple[LatLon, float]]:
+    """The requested start, then points on rings around it, with their offset."""
+    starts = [(start, 0.0)]
+    for radius in START_RINGS_M:
+        for k in range(START_BEARINGS):
+            bearing = 2 * math.pi * k / START_BEARINGS
+            x, y = radius * math.sin(bearing), radius * math.cos(bearing)
+            starts.append((local_to_latlon(start, x, y), radius))
+    return starts
 
 
 def search(
@@ -204,31 +283,63 @@ def search(
     similarity: Similarity | None = None,
     trace: Tracer | None = None,
     reuse_penalty: float = EDGE_REUSE_PENALTY,
+    move_start: bool = True,
 ) -> Search:
-    """Best route for `shape` from `start` near `distance_m` on `graph`."""
+    """Best route for `shape` near `distance_m` on `graph`, starting at
+    `start` or, with `move_start`, up to START_OFFSET_M away from it."""
     similarity = similarity or SIMILARITIES[SIMILARITY]
     trace = trace or _tracer(graph, reuse_penalty)
     mask = RoadMask(graph, start)
     base_scale = initial_scale(shape, distance_m)
     low, high = (base_scale * f for f in SCALE_RANGE)
+    starts = candidate_starts(start) if move_start else [(start, 0.0)]
     attempts: list[Attempt] = []
+    # The road count works in metres around `start`, without projecting.
+    phase_xy = {phase: np.array(start_at_phase(shape, phase)) for phase in PHASES}
+    phase_corners = {phase: corner_indices(pts[:-1]) for phase, pts in phase_xy.items()}
+    start_xy = {s: latlon_to_local_array(start, np.array([s]))[0] for s, _ in starts}
 
-    def placed(rotation: float, phase: float, scale: float) -> list[LatLon]:
-        return project_shape(shape, start, scale, rotation, phase)
+    def outline_xy(p: Placement, scale: float) -> np.ndarray:
+        """`project_shape` in metres around `start` (same scale and rotation)."""
+        pts = phase_xy[p.phase]
+        theta = math.radians(p.rotation_deg)
+        cos_t, sin_t = math.cos(theta), math.sin(theta)
+        local = scale * np.column_stack(
+            [
+                pts[:, 0] * cos_t - pts[:, 1] * sin_t,
+                pts[:, 0] * sin_t + pts[:, 1] * cos_t,
+            ]
+        )
+        return local - local[0] + start_xy[p.start]
 
-    def road_fit(rotation: float, phase: float, scale: float) -> float:
+    def placed(p: Placement, scale: float) -> list[LatLon]:
+        return project_shape(shape, p.start, scale, p.rotation_deg, p.phase)
+
+    def road_fit(p: Placement, scale: float) -> float:
         # The band follows the scale alone, so every placement at one scale
-        # shares the same grid.
+        # shares the same grid. Moving the start must earn its keep.
         band = round(CORRIDOR_BAND * perimeter(shape) * scale, 3)
-        return mask.fit(placed(rotation, phase, scale), band)
+        outline = outline_xy(p, scale)
+        fit = mask.fit_xy(outline, band)
+        corners = outline[phase_corners[p.phase]]
+        bare = int((~mask.near_xy(corners, band)).sum()) if len(corners) else 0
+        return (
+            fit
+            - CORNER_PENALTY * bare
+            - OFFSET_FIT_PENALTY * p.offset_m / START_OFFSET_M
+        )
 
-    def attempt(rotation: float, phase: float, scale: float) -> Attempt:
-        outline = placed(rotation, phase, scale)
+    def attempt(p: Placement, scale: float) -> Attempt:
+        outline = placed(p, scale)
         route = trace(outline)
         sim = similarity(route.points, outline)
         ratio = route.distance_m / distance_m
-        cost = W_SHAPE * (1 - sim) + W_DISTANCE * abs(ratio - 1)
-        result = Attempt(rotation, phase, scale, outline, route, sim, ratio, cost)
+        cost = (
+            W_SHAPE * (1 - sim)
+            + W_DISTANCE * abs(ratio - 1)
+            + W_OFFSET * p.offset_m / START_OFFSET_M
+        )
+        result = Attempt(p, scale, outline, route, sim, ratio, cost)
         attempts.append(result)
         return result
 
@@ -257,15 +368,13 @@ def search(
                     guess = secant
         return min(high, max(low, guess))
 
-    def rescale(
-        rotation: float, phase: float, scale: float
-    ) -> tuple[Attempt | None, float]:
+    def rescale(p: Placement, scale: float) -> tuple[Attempt | None, float]:
         """Trace, rescale towards the target, repeat; returns the next scale."""
         history: list[Attempt] = []
         for _ in range(MAX_RESCALES):
             if len(attempts) >= max_traces:
                 break
-            history.append(attempt(rotation, phase, scale))
+            history.append(attempt(p, scale))
             if abs(history[-1].ratio - 1) <= DISTANCE_TOLERANCE:
                 break
             new_scale = next_scale(history)
@@ -274,66 +383,119 @@ def search(
             scale = new_scale
         return (history[-1] if history else None), scale
 
-    def best_placement(
-        scale: float, tried: list[tuple[float, float]]
-    ) -> tuple[float, float] | None:
+    def polish(best: Attempt) -> bool:
+        """Spend the budget left on the distance of the best placement.
+
+        Between a trace too short and one too long of the same placement,
+        interpolate; otherwise take the secant through the two closest.
+        Stops as soon as the distance is right: if the shape is still
+        wrong then, rescaling will not fix it.
+        """
+        p = best.placement
+        while len(attempts) < max_traces:
+            same = [a for a in attempts if a.placement == p]
+            if any(abs(a.ratio - 1) <= DISTANCE_TOLERANCE for a in same):
+                return any(good(a) for a in same)
+            short = [a for a in same if a.ratio < 1]
+            long = [a for a in same if a.ratio > 1]
+            if short and long:
+                a = max(short, key=lambda x: x.ratio)
+                b = min(long, key=lambda x: x.ratio)
+                da, db = a.route.distance_m, b.route.distance_m
+                scale = a.scale_m + (distance_m - da) * (b.scale_m - a.scale_m) / (
+                    db - da
+                )
+            else:
+                closest = sorted(same, key=lambda x: abs(x.ratio - 1))[:2]
+                scale = next_scale(closest[::-1])
+            scale = min(high, max(low, scale))
+            if any(math.isclose(scale, a.scale_m, rel_tol=1e-3) for a in same):
+                return False
+            if good(attempt(p, scale)):
+                return True
+        return False
+
+    def best_placement(scale: float, tried: list[Placement]) -> Placement | None:
         """Placement with most roads along the outline at `scale`, away from
-        the tried ones (same phase and within two rotation steps)."""
+        the tried ones (same start and phase, within two rotation steps)."""
+        candidates = [
+            Placement(s, offset, float(r), phase)
+            for s, offset in starts
+            for r in np.arange(0.0, 360.0, ROTATION_STEP_DEG)
+            for phase in PHASES
+        ]
         ranked = sorted(
-            (
-                (road_fit(float(r), p, scale), float(r), p)
-                for r in np.arange(0.0, 360.0, ROTATION_STEP_DEG)
-                for p in PHASES
+            range(len(candidates)),
+            key=lambda i: (
+                -road_fit(candidates[i], scale),
+                candidates[i].offset_m,
+                i,
             ),
-            key=lambda item: (-item[0], item[1], item[2]),
         )
-        for _, rotation, phase in ranked:
+        for i in ranked:
+            p = candidates[i]
             near = any(
-                p == phase and _angle_gap(r, rotation) < 2 * ROTATION_STEP_DEG
-                for r, p in tried
+                t.start == p.start
+                and t.phase == p.phase
+                and _angle_gap(t.rotation_deg, p.rotation_deg) < 2 * ROTATION_STEP_DEG
+                for t in tried
             )
             if not near:
-                return rotation, phase
+                return p
         return None
 
     scale = base_scale
-    tried: list[tuple[float, float]] = []
+    tried: list[Placement] = []
     for _ in range(TOP_PLACEMENTS):
         placement = best_placement(scale, tried)
         if placement is None or len(attempts) >= max_traces:
             break
         tried.append(placement)
-        last, scale = rescale(*placement, scale)
+        last, scale = rescale(placement, scale)
         if last is not None and good(last):
-            return _done(attempts, True)
+            return _done(attempts, good, distance_m)
 
     best = min(attempts, key=lambda a: a.cost)
-    offsets = np.arange(-REFINE_SPAN_DEG, REFINE_SPAN_DEG + 1e-9, REFINE_STEP_DEG)
-    tried = {(a.rotation_deg % 360, a.phase) for a in attempts}
+    turns = np.arange(-REFINE_SPAN_DEG, REFINE_SPAN_DEG + 1e-9, REFINE_STEP_DEG)
+    traced = {a.placement for a in attempts}
+    around = [
+        Placement(
+            best.placement.start,
+            best.offset_m,
+            float((best.rotation_deg + t) % 360),
+            best.phase,
+        )
+        for t in turns
+    ]
     refined = sorted(
-        (
-            (
-                road_fit((best.rotation_deg + o) % 360, best.phase, best.scale_m),
-                (best.rotation_deg + o) % 360,
-            )
-            for o in offsets
-            if ((best.rotation_deg + o) % 360, best.phase) not in tried
-        ),
-        key=lambda item: (-item[0], item[1]),
+        (p for p in around if p not in traced),
+        key=lambda p: (-road_fit(p, best.scale_m), p.rotation_deg),
     )
     if refined and len(attempts) < max_traces:
-        last, _ = rescale(refined[0][1], best.phase, best.scale_m)
+        last, _ = rescale(refined[0], best.scale_m)
         if last is not None and good(last):
-            return _done(attempts, True)
-    return _done(attempts, False)
+            return _done(attempts, good, distance_m)
+    polish(min(attempts, key=lambda a: a.cost))
+    return _done(attempts, good, distance_m)
 
 
 def _angle_gap(a: float, b: float) -> float:
     return abs((a - b + 180.0) % 360.0 - 180.0)
 
 
-def _done(attempts: list[Attempt], converged: bool) -> Search:
-    best = min(attempts, key=lambda a: a.cost)
+def _done(
+    attempts: list[Attempt], good: Callable[[Attempt], bool], distance_m: float
+) -> Search:
+    """The cheapest attempt that meets both thresholds; failing that, the
+    cheapest within DISTANCE_FALLBACK_M of the target, if there is one."""
+    good_ones = [a for a in attempts if good(a)]
+    converged = bool(good_ones)
+    within = [
+        a
+        for a in attempts
+        if abs(a.route.distance_m - distance_m) <= DISTANCE_FALLBACK_M
+    ]
+    best = min(good_ones or within or attempts, key=lambda a: a.cost)
     warnings = list(best.route.warnings)
     if not converged:
         if abs(best.ratio - 1) > DISTANCE_TOLERANCE:
@@ -351,6 +513,20 @@ def _done(attempts: list[Attempt], converged: bool) -> Search:
 
 # Vertices of the normalized shape (docs/ROUTE_ENGINE.md §2), to be tuned.
 SHAPE_POINTS = 64
+# Below this similarity no route is returned: better none than one that does
+# not look like the shape (TASK-015, ADR-0025).
+MIN_SIMILARITY = 0.60
+
+
+class ShapeNotDrawableError(ValueError):
+    """The roads around the start cannot draw the requested shape."""
+
+
+def _compass(origin: LatLon, point: LatLon) -> str:
+    x, y = latlon_to_local_array(origin, np.array([point]))[0]
+    names = ("north", "north-east", "east", "south-east")
+    names += ("south", "south-west", "west", "north-west")
+    return names[round(math.degrees(math.atan2(x, y)) / 45.0) % 8]
 
 
 class GraphLoader(Protocol):
@@ -397,7 +573,28 @@ def plan_route(
             request.distance_m,
             reuse_penalty=reuse_penalty,
         )
-        route, sim, warnings = found.best.route, found.best.similarity, found.warnings
+        best = found.best
+        what = f"a {request.distance_m / 1000:g} km {request.shape}"
+        if best.similarity < MIN_SIMILARITY:
+            raise ShapeNotDrawableError(
+                f"{what} cannot be drawn here: the best route scores "
+                f"{best.similarity:.2f} for shape, {MIN_SIMILARITY:.2f} needed"
+            )
+        gap = best.route.distance_m - request.distance_m
+        if abs(gap) > DISTANCE_FALLBACK_M:
+            raise ShapeNotDrawableError(
+                f"{what} cannot be drawn here: the best shape is "
+                f"{gap / 1000:+.1f} km from the target, at most "
+                f"{DISTANCE_FALLBACK_M / 1000:g} km allowed"
+            )
+        route, sim, warnings = best.route, best.similarity, list(found.warnings)
+        if best.offset_m > 0:
+            direction = _compass(request.start, best.placement.start)
+            warnings.insert(
+                0,
+                f"start moved {best.offset_m:.0f} m {direction} of the requested "
+                "point, where the shape closes on the roads",
+            )
     else:
         found = None
         projected = project_shape(

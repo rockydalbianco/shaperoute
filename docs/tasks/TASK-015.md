@@ -1,6 +1,6 @@
 # TASK-015 — Ottimizzatore iterativo e metrica di somiglianza
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 1 · **Branch**: `feat/TASK-015-iterative-optimizer`
 
 ## Obiettivo
@@ -105,18 +105,26 @@ strade, si adatta la forma alle strade:
 
 ## Criteri di accettazione
 
-- [ ] Distanza su strada entro **±10%** del target in almeno 10 dei 12
-      casi.
-- [ ] Copertura del contorno almeno **80%** in almeno 9 dei 12 casi.
-- [ ] Giudizio a occhio `sì` o `quasi` in almeno 9 dei 12 casi, annotato
-      in `samples/LOG.md`.
+Rivisti con l'utente durante il task: la Valsugana è sospesa (forme non
+disponibili dove la rete è troppo rada), il limite di tempo sale a 40 s.
+Stato finale sui campioni `TASK-015_*_v3` (numeri in `MAPS.md`).
+
+- [x] Distanza su strada entro **±10%** del target: **8/8** casi di Trento e
+      Levico (in origine: 10 casi su 12, Valsugana compresa).
+- [x] Copertura del contorno almeno **80%**: **8/8** (minimo 87%).
+- [x] Giudizio a occhio `sì` o `quasi`: **8/8** (Trento `sì`, con il cuore
+      da 5 km migliore nella v2; Levico `quasi`), in `samples/LOG.md`.
 - [ ] Sul cuore da 5 km a Levico non ci sono rientri verso l'interno
-      visibili a occhio (criterio ereditato da TASK-017).
-- [ ] Ogni caso gira offline dalla cache in meno di 30 s su questo PC.
-- [ ] `--no-optimize` riproduce le distanze di TASK-017 sugli stessi grafi.
-- [ ] La metrica scelta e l'area per zona sono in `DECISIONS.md`.
-- [ ] `pytest -m "not network"` verde e offline; `ruff` e `black` puliti.
-- [ ] `ROUTE_ENGINE.md` §5, `MAPS.md` e `docs/STATUS.md` aggiornati.
+      visibili a occhio: **in parte**. La punta c'è, ma i lobi restano
+      irregolari; migliorarli è lavoro di snapping.
+- [x] Ogni caso gira offline dalla cache in meno di **40 s** (limite alzato
+      dall'utente da 30 s): 7–32 s.
+- [x] `--no-optimize` riproduce le distanze di TASK-017, tranne dove la
+      punta del cuore era uno sperone potato (Valsugana 5 km, ADR-0025).
+- [x] La metrica e l'area per zona sono in `DECISIONS.md` (ADR-0023,
+      ADR-0025).
+- [x] `pytest -m "not network"` verde e offline; `ruff` e `black` puliti.
+- [x] `ROUTE_ENGINE.md` §4 e §5, `MAPS.md` e `docs/STATUS.md` aggiornati.
 
 ## File toccati
 
@@ -128,18 +136,25 @@ services/route-engine/route_engine/__main__.py
 services/route-engine/tests/test_optimizer.py
 services/route-engine/tests/test_metrics.py
 services/route-engine/tests/measure_snapping.py
+services/route-engine/tests/measure_optimizer.py
+services/route-engine/route_engine/geo.py
+services/route-engine/tests/test_export_gpx.py
+services/route-engine/tests/test_network.py
 samples/TASK-015_*.gpx
 samples/LOG.md
 docs/ROUTE_ENGINE.md
 docs/MAPS.md
 docs/DECISIONS.md
+docs/TESTING.md
 docs/STATUS.md
 ```
 
 ## Fuori scope
 
 - Cambiare lo snapping di TASK-017 (zone, corridoio, fascia): qui si usa
-  com'è. Se serve cambiarlo, si segnala.
+  com'è. Se serve cambiarlo, si segnala. *Fatto un'eccezione, chiesta
+  dall'utente: la potatura non toglie più lo sperone verso la punta del
+  cuore (ADR-0025).*
 - Validazione di percorribilità e misura della ripercorrenza (TASK-016).
 - Ottimizzatori di libreria (scipy, scikit-optimize) o dipendenze nuove:
   griglia e rifinitura bastano, come dice §5.
@@ -148,4 +163,11 @@ docs/STATUS.md
 
 ## Esito
 
-*(si compila a fine task)*
+La CLI ruota, scala e sposta (fino a 500 m) la forma finché le strade la
+seguono: a Trento e Milano cuori e cerchi alla distanza giusta, a Levico
+quasi; in Valsugana alcune forme sono dichiarate non disponibili invece di
+dare un percorso brutto. Somiglianza = copertura nei due sensi meno le
+punte mancate (ADR-0025). Restano per altri task:
+- le punte di andata e ritorno su strade parallele (snapping);
+- la scelta fra più percorsi alternativi (app, fase 2);
+- dichiarare `numpy` fra le dipendenze.

@@ -11,7 +11,13 @@ from pathlib import Path
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.models import InvalidRequestError, RouteRequest
 from route_engine.network import EDGE_REUSE_PENALTY, OsmnxSource
-from route_engine.optimizer import SHAPE_POINTS, SIMILARITY, plan_route, required_area
+from route_engine.optimizer import (
+    SHAPE_POINTS,
+    SIMILARITY,
+    ShapeNotDrawableError,
+    plan_route,
+    required_area,
+)
 from route_engine.projection import initial_scale
 from route_engine.shapes import get_shape
 
@@ -117,9 +123,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("Road graph: from the cache")
     else:
         print("Road graph: downloading from OpenStreetMap...")
-    plan = plan_route(
-        request, source, optimize=optimize, reuse_penalty=args.reuse_penalty
-    )
+    try:
+        plan = plan_route(
+            request, source, optimize=optimize, reuse_penalty=args.reuse_penalty
+        )
+    except ShapeNotDrawableError as exc:
+        print(f"No route: {exc}", file=sys.stderr)
+        return 1
     route = plan.result
 
     when = datetime.now(UTC)
@@ -133,6 +143,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"  placement:  rotation {best.rotation_deg:.0f}°, phase {best.phase:.2f}, "
             f"scale {best.scale_m / base:.0%} of the initial one"
         )
+        if best.offset_m > 0:
+            start_lat, start_lon = best.placement.start
+            print(
+                f"  start:      {start_lat:.5f}, {start_lon:.5f}"
+                f" ({best.offset_m:.0f} m away)"
+            )
         print(f"  attempts:   {len(plan.search.attempts)} routes traced")
     print(f"  similarity: {route.similarity:.2f} ({SIMILARITY})")
     print(f"  on roads:   {route.distance_m:.0f} m (target {request.distance_m} m)")

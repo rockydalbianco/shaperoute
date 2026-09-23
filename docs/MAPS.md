@@ -1,8 +1,8 @@
 # MAPS — Dati cartografici e routing
 
 Come il route-engine ottiene la rete stradale e ci aggancia la forma.
-Scritto con TASK-014, aggiornato con TASK-017; le scelte di fondo stanno in
-ADR-0008, ADR-0020 e ADR-0022.
+Scritto con TASK-014, aggiornato con TASK-017 e TASK-015; le scelte di
+fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
 
 ## Sorgente
 
@@ -35,6 +35,15 @@ ADR-0008, ADR-0020 e ADR-0022.
   chiede) non richiede un nuovo download.
 - `ox.settings.requests_timeout` finisce **dentro la query**: cambiarlo
   cambia la chiave della cache HTTP e costringe a riscaricare.
+- `overpass-api.de` ha due indirizzi IPv4, e da questo PC uno
+  (65.109.112.52) non accetta connessioni. OSMnx fissa un solo indirizzo
+  per richiesta con `socket.gethostbyname`, che restituisce il primo: se è
+  quello irraggiungibile, il download va in timeout dopo 180 s. I download
+  di TASK-015 sono riusciti facendo restituire a `gethostbyname` il primo
+  indirizzo raggiungibile, in uno script usa-e-getta; il motore non lo fa.
+- Per controllare Overpass senza scaricare nulla: la pagina
+  `https://overpass-api.de/api/status`, con uno User-Agent vero (quello
+  di default di curl riceve 406).
 
 ## Cache
 
@@ -48,12 +57,27 @@ ADR-0008, ADR-0020 e ADR-0022.
   occupano 78 MB.
 - I dati OSM cambiano: un campione è riproducibile solo con lo stesso
   grafo. Per rifare un confronto pulito, si tiene la cache.
+- Accanto a ogni GraphML c'è una copia **pickle** dello stesso grafo:
+  leggere il GraphML di una zona richiede 5–13 s (fino a un minuto a
+  Milano), il pickle pochi secondi. Il GraphML resta il formato di
+  riferimento; il pickle si rigenera da solo se manca o è più vecchio.
 
 ## Area scaricata
 
-Il rettangolo della forma teorica proiettata, più **500 m per lato**
-(`AREA_MARGIN_M`). Non il raggio pari alla distanza target: per 15 km
-sarebbero circa 700 km², quasi tutti inutili.
+- **Con l'ottimizzatore** (TASK-015, ADR-0023): un quadrato attorno alla
+  partenza che contiene la forma a ogni rotazione, fase e scala massima,
+  più la partenza spostabile (500 m, ADR-0025) e 500 m di margine
+  (`zone_area`). Per 15 km circa 12,5 km di lato (155 km²). Si scarica **un grafo per zona**, partendo dal caso
+  più grande (cerchio da 15 km): ogni area più piccola si **ritaglia** da un
+  grafo in cache che la contiene (`crop`) e il ritaglio si salva col suo
+  nome.
+- **Senza** (`--no-optimize`): il rettangolo della forma teorica proiettata,
+  più **500 m per lato** (`AREA_MARGIN_M`).
+
+Grafi di zona (cerchio da 15 km): Trento 22.613 nodi, Levico 6.845,
+Valsugana 7.156, Milano 85.336. Il ritaglio di Levico sull'area del cuore
+da 5 km dà 905 nodi contro i 904 del download diretto di TASK-017:
+ritagliare equivale a scaricare.
 
 ## Dal disegno alla strada
 
@@ -163,6 +187,33 @@ aggirarli. Nessun aggancio lo recupera: serve spostare la forma dove le
 strade ci sono, cioè ruotarla e scalarla (TASK-015, `ROUTE_ENGINE.md` §5).
 Il traguardo di 1,5× passa lì.
 
+**TASK-015**, ottimizzatore sulla rete `foot`, campioni v3 (rapporto ·
+somiglianza; ✅ = distanza entro ±10% e somiglianza ≥ 0,90; ADR-0025):
+
+| Zona | cuore 5 km | cuore 15 km | cerchio 5 km | cerchio 15 km |
+|---|---|---|---|---|
+| trento | 1,02× · 0,82 | 0,93× · 0,94 ✅ | 1,00× · 0,93 ✅ | 0,93× · 0,91 ✅ |
+| levico | 1,04× · 0,80 | 1,01× · 0,82 | 1,00× · 0,71 | 1,04× · 0,80 |
+| valsugana | 0,76× · 0,70 | non disponibile | non disponibile | 1,05× · 0,73 |
+| milano | 1,08× · 0,97 ✅ | 0,95× · 1,00 ✅ | 1,09× · 0,91 ✅ | 1,07× · 1,00 ✅ |
+
+- Trento e Levico: distanza entro ±10% in 8 casi su 8, copertura ≥ 87%.
+  Rapporto mediano sui 12 casi di TASK-017: 2,57×; qui 1,02×.
+- Giudizi a occhio (`samples/LOG.md`): Milano `sì`; Trento `sì`, tranne il
+  cuore da 5 km, migliore nella v2; Levico `quasi` (le punte ci sono, ma i
+  lobi restano irregolari); Valsugana sospesa, con due forme non
+  disponibili.
+- Cosa ha contato, versione per versione: v1 copertura → v2 `fit` (niente
+  più pezzi tagliati a Trento) → v3 punte premiate e non potate (a Levico
+  la punta del cuore ricompare, con la forma ruotata di 45–60°).
+- La partenza spostata è servita solo in Valsugana (250 m): in città le
+  strade ci sono ovunque e il conteggio non la premia.
+- Tempi dalla cache: 7–32 s per caso nelle tre zone, 11–33 s a Milano
+  (dopo la prima lettura, che scrive il pickle).
+- Difetto rimasto: **punte** di andata e ritorno su strade parallele
+  (marciapiede e strada), che la potatura non riconosce. Riguarda lo
+  snapping.
+
 ## Fixture di test
 
 `services/route-engine/tests/fixtures/levico_walk_1km.graphml`: 1 km²
@@ -173,8 +224,6 @@ serve a provare l'algoritmo su un grafo reale, non il filtro.
 
 ## Ancora aperto
 
-- Gli 8 grafi `foot` mancanti: si scaricano, uno alla volta, quando
-  Overpass torna a rispondere.
 - Provider di tiles per la mappa dell'app (fase 2).
 - Motore di routing di produzione: ADR-0009.
 - Attribuzione OpenStreetMap (ODbL) dove i percorsi vengono mostrati:

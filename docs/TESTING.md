@@ -18,7 +18,11 @@ Nessuno dei due sostituisce l'altro.
 
 ## Test automatici
 
-Strumento: `pytest`. I test stanno accanto al codice che testano.
+Strumenti: `pytest` per Python; per TypeScript Jest con `jest-expo` e
+Testing Library nell'app, il test runner di Node (`node --test`) in
+`packages/shared-types`. I test stanno accanto al codice che testano.
+Dalla radice, `npm test` li lancia tutti; `npm run typecheck` fa il
+controllo dei tipi, che per TypeScript è già metà dei test.
 
 ### Cosa si testa davvero
 
@@ -35,7 +39,12 @@ Strumento: `pytest`. I test stanno accanto al codice che testano.
   linea d'aria);
 - metriche di somiglianza: una forma con sé stessa dà 1; due forme
   palesemente diverse danno un valore basso;
-- export GPX: il file prodotto è XML valido e contiene i punti attesi.
+- export GPX: il file prodotto è XML valido e contiene i punti attesi;
+- contratto: i JSON di esempio in `packages/shared-types/fixtures/` hanno
+  esattamente i campi dei tipi TypeScript (`tsc`) e delle dataclass Python
+  (`tests/test_contract.py`); forme, attività e limiti coincidono;
+- app: la schermata si renderizza e mostra ciò che deve (Testing Library),
+  senza rete e senza telefono.
 
 **Non deterministico, va isolato:**
 
@@ -94,9 +103,10 @@ divergono spesso, la metrica scelta non descrive ciò che l'occhio vede.
 ## CI
 
 Per ora minima: lint e test su ogni PR, per il route-engine e per gli
-script di `tools/`, senza test di rete. Si estende
-quando ci sarà l'app da costruire. Una CI complicata su un repository
-quasi vuoto è solo tempo speso a far passare build.
+script di `tools/`, senza test di rete; dalla fase 2, lint, formato, tipi
+e test dell'app e dei tipi condivisi (job `mobile`). Niente build per
+telefono in CI. Una CI complicata su un repository quasi vuoto è solo
+tempo speso a far passare build.
 
 ## Quando un test non va scritto
 

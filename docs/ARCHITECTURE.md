@@ -70,6 +70,12 @@ RouteResult:
 Chi modifica questi due oggetti modifica il contratto di tutti: serve una
 voce in `DECISIONS.md`.
 
+Oggi esistono in due copie scritte a mano, con gli stessi nomi dei campi:
+le dataclass in `services/route-engine/route_engine/models.py` (ADR-0016) e
+i tipi TypeScript in `packages/shared-types/src/index.ts`. I JSON di esempio
+in `packages/shared-types/fixtures/` le tengono allineate: se una cambia e
+l'altra no, un test fallisce (ADR-0028). I punti sono `[lat, lon]`.
+
 ## 4. Regole di dipendenza
 
 - `route-engine` non importa **nulla** da `api` né da `ai`.

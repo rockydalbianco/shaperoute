@@ -18,14 +18,11 @@ con Expo Go, ma per ora mostra solo le forme disponibili.
 
 ## Prossimo passo
 
-**TASK-021 — Mappa + posizione GPS.** Il file del task è da scrivere, sul
-branch `docs/TASK-021-task-file` (già aperto); va decisa prima ADR-0011
-(mappa e tile). Vincolo da sapere: l'utente prova su
-**iPhone** da un **PC Windows**, con strumenti gratuiti. MapLibre per React
-Native richiede una *development build*, e su un iPhone vero questa chiede
-un Mac o EAS con un account Apple Developer a pagamento. Funzionano invece
-in Expo Go `react-native-maps` (su iOS usa Apple Maps) o una WebView con
-una mappa web e tile OSM, come l'anteprima di TASK-019.
+**TASK-021 — Mappa e posizione GPS**, sul branch
+`feat/TASK-021-map-location`. Il file del task è scritto, con le scelte
+già confermate dall'utente: mappa in WebView con MapLibre GL JS e tile
+OpenFreeMap, posizione con `expo-location` e, senza posizione, ricerca di
+città o via con Photon. La ADR si scrive nella PR che implementa.
 
 ## In lavorazione
 

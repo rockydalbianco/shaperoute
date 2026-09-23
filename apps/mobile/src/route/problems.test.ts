@@ -41,7 +41,12 @@ test.each<[RouteProblem, string, string | undefined]>([
   ],
   [
     { kind: "timeout" },
-    "No answer within a minute. The API may be downloading map data for a new area: try again shortly.",
+    "The API took more than 5 minutes. Try again later, or a shorter distance.",
+    undefined,
+  ],
+  [
+    { kind: "lost" },
+    "The API lost this request (was it restarted?). Try again.",
     undefined,
   ],
   [

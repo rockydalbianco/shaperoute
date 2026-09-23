@@ -3,10 +3,12 @@
 Genera percorsi reali che sulla mappa disegnano una forma.
 «Un cuore da 15 km partendo da qui» → un percorso percorribile, in GPX.
 
-**Stato**: fase 1, route engine, in sviluppo. Da riga di comando,
+**Stato**: fase 2, app e API, appena iniziata. Il route engine funziona da
+riga di comando:
 `python -m route_engine --shape heart --distance 5000 --start 46.0122,11.2986 --out heart.gpx`
-scrive un GPX che segue strade reali di OpenStreetMap. Cosa funziona e
-cosa manca: [`docs/STATUS.md`](docs/STATUS.md).
+scrive un GPX che segue strade reali di OpenStreetMap. L'app per telefono
+per ora mostra solo le forme disponibili. Cosa funziona e cosa manca:
+[`docs/STATUS.md`](docs/STATUS.md).
 
 ## Da dove si comincia
 
@@ -44,6 +46,19 @@ La prima esecuzione su una zona scarica il grafo stradale da OpenStreetMap
 relativa alla cartella da cui si lancia il comando: per questo si torna
 alla radice. Download e cache sono spiegati in [`docs/MAPS.md`](docs/MAPS.md).
 
+### L'app sul telefono
+
+Servono Node 24 e l'app **Expo Go** sul telefono ([`docs/SETUP.md`](docs/SETUP.md),
+passo 9). Dalla radice del repository:
+
+```powershell
+npm install
+npm run mobile
+```
+
+Si inquadra il codice QR con Expo Go (Android) o con la fotocamera
+(iPhone); telefono e PC devono stare sulla stessa rete Wi-Fi.
+
 ## Il principio
 
 **L'AI interpreta la richiesta, il Route Engine decide il percorso.**
@@ -71,5 +86,5 @@ samples/        GPX generati, versionati e annotati
 tools/          script di sviluppo: anteprima dei campioni su mappa
 ```
 
-Le cartelle si creano quando servono: `apps/` e `packages/` restano vuote
-fino alla fase 2.
+Le cartelle si creano quando servono: oggi ci sono solo `apps/mobile`,
+`packages/shared-types`, `services/route-engine`.

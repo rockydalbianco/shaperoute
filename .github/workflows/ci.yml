@@ -1,8 +1,8 @@
 name: CI
 
 # CI volutamente minima: lint e test sul route-engine, che esiste da
-# TASK-010, e sugli script di tools/ (TASK-019). Si estende in fase 2,
-# quando ci sarà l'app da costruire.
+# TASK-010, e sugli script di tools/ (TASK-019); da TASK-020, lint, formato,
+# tipi e test dell'app e dei tipi condivisi (job "mobile").
 # La cache di pip ha per chiave il pyproject.toml del route-engine: finché
 # le dipendenze non cambiano, OSMnx e il resto non si riscaricano a ogni run.
 
@@ -50,3 +50,29 @@ jobs:
           ruff check --config services/route-engine/pyproject.toml tools
           black --check --config services/route-engine/pyproject.toml tools
           pytest tools
+
+  # App Expo e packages/shared-types, workspace npm dalla radice (ADR-0028).
+  # La cache di npm ha per chiave package-lock.json.
+  mobile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: |
+          npm run lint
+          npm run format:check
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test

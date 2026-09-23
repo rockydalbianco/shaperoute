@@ -518,3 +518,46 @@ disegnati male. Il rischio più grande adesso è l'app, non il motore.
 ricerca migliori, non in fase 2. Restano annotati in `STATUS.md` i limiti
 noti del motore: scale e strade principali solo misurate, non evitate;
 ricerca sensibile all'ordine dei tentativi (ADR-0026).
+
+## ADR-0028 — Monorepo npm, app Expo, tipi condivisi scritti a mano
+**Stato**: Attiva · 2026-09-23
+
+TASK-020 crea la prima parte TypeScript del repository: servivano gestore
+dei pacchetti, forma dell'app, posto e verifica dei tipi condivisi,
+strumenti. Confermato dall'utente, con il vincolo che tutto sia aperto e
+gratuito (lo è: licenze MIT).
+
+**Decisione**:
+- **Monorepo** con i workspace di **npm** (`apps/*`, `packages/*`), un solo
+  `package-lock.json`, **Node 24** (`.nvmrc`). Niente pnpm, yarn, Turborepo.
+  Alla radice un `overrides` tiene **una sola copia di React**, quella
+  dell'SDK di Expo (oggi 19.2.3).
+- **App** `apps/mobile` dal template Expo `blank-typescript`, **SDK 57**,
+  `strict`, senza expo-router. Del template non si tengono `CLAUDE.md`,
+  `AGENTS.md`, `.claude/` (istruzioni per agenti che imponevano expo-router
+  ed EAS) e la `LICENSE` di Expo.
+- **`@shaperoute/shared-types`**: sorgenti TypeScript senza build, stessi
+  nomi dei campi di `models.py` (snake_case), punti `[lat, lon]`. Tre JSON
+  di esempio (`fixtures/`) sono controllati da `tsc` e dal test runner di
+  Node da un lato, da `tests/test_contract.py` del route-engine dall'altro.
+- **Strumenti**: ESLint con `eslint-config-expo` (`expo lint`), Prettier
+  (larghezza 88 come `black`, fine riga automatica per Windows), Jest con
+  `jest-expo` e `@testing-library/react-native`, `tsc --noEmit` su ogni
+  workspace; per `shared-types` `node --test`, che non aggiunge un secondo
+  Jest. Job `mobile` in CI.
+
+**Motivo**: npm e Node sono già installati e bastano per due pacchetti;
+Expo trova da solo i workspace npm. Expo Go apre solo l'ultimo SDK, per
+questo il 57. Copiare i tipi a mano con un test di allineamento costa meno
+di un generatore di codice, e la scelta di generarli dall'OpenAPI resta a
+TASK-022. Due copie di React nello stesso bundle rompono gli hook: npm, con
+i workspace, ne aveva installate due (19.2.3 e 19.3.0).
+
+**Conseguenza**: quando cambia l'SDK di Expo si aggiorna anche la versione
+di React in `overrides`. `test-renderer` resta a ~1.2 finché Expo non passa
+a React 19.3 (la 1.3 lo richiede). TypeScript 6 non carica più da solo i
+tipi `@types`: vanno dichiarati in `types` (`jest` nell'app, `node` in
+`shared-types`, che dichiara `@types/node`). `npm audit` segnala 10
+vulnerabilità moderate, tutte da `uuid` dentro gli strumenti di build di
+Expo (`xcode`), non nell'app: si risolvono con un SDK nuovo, non a mano.
+

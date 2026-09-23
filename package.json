@@ -1,0 +1,25 @@
+{
+  "name": "shaperoute",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "mobile": "npm run start --workspace @shaperoute/mobile",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write apps packages",
+    "format:check": "prettier --check apps packages",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.9"
+  },
+  "overrides": {
+    "react": "19.2.3"
+  }
+}

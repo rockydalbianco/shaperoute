@@ -1,6 +1,6 @@
 # TASK-020 — Bootstrap monorepo, mobile Expo, shared-types
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 2 · **Branch**: `feat/TASK-020-mobile-bootstrap`
 
 ## Obiettivo
@@ -24,7 +24,9 @@ e npm 11; pnpm e yarn no.
 
 ## Cosa fare
 
-1. **Da confermare** (proposte, non decise):
+1. **Confermato dall'utente il 2026-09-23**: A, B e C come proposte,
+   purché tutto sia aperto e gratuito (lo è: npm, Expo, ESLint, Prettier,
+   Jest e Testing Library hanno licenza MIT):
    - **A. Monorepo**: workspace di **npm** (già installato), un solo
      `package.json` alla radice con `apps/*` e `packages/*`, un solo
      `package-lock.json`, **Node 24** in `.nvmrc` ed `engines`. Niente
@@ -70,19 +72,26 @@ e npm 11; pnpm e yarn no.
 
 ## Criteri di accettazione
 
-- [ ] Dalla radice, `npm install` e poi `npm run lint`, `npm run typecheck`
+- [x] Dalla radice, `npm install` e poi `npm run lint`, `npm run typecheck`
       e `npm test` passano, offline dopo l'installazione.
 - [ ] `npm run mobile` avvia Expo; l'utente apre l'app con Expo Go sul
       telefono e vede «ShapeRoute» con `circle` e `heart` (giudizio
-      dell'utente).
-- [ ] Cambiare un campo in `models.py` senza cambiare il JSON di esempio, o
-      viceversa, fa fallire un test (provato una volta, a mano).
+      dell'utente): **da provare**. Il bundle Android si genera
+      (`expo export`) ed `expo-doctor` passa 21 controlli su 21.
+- [x] Cambiare un campo in `models.py` senza cambiare il JSON di esempio, o
+      viceversa, fa fallire un test (provato a mano: un campo rinominato nel
+      JSON rompe `tsc`, una distanza fuori limite rompe `test_contract.py`).
 - [ ] Il job `mobile` della CI è verde sulla PR; `route-engine` resta
-      verde.
-- [ ] `services/route-engine` non dipende da nulla di Node: `pip install`
+      verde: **da vedere sulla PR**.
+- [x] `services/route-engine` non dipende da nulla di Node: `pip install`
       e `pytest -m "not network"` funzionano come prima.
-- [ ] `SETUP.md`, `README.md`, `ARCHITECTURE.md`, `TESTING.md`,
-      `STATUS.md` aggiornati; ADR delle scelte.
+- [x] `SETUP.md` (passo 9), `README.md`, `ARCHITECTURE.md`, `TESTING.md`,
+      `STATUS.md` aggiornati; ADR-0028.
+
+Differenze dal piano: i test di `shared-types` usano `node --test` invece
+di Jest, con `@types/node`; `test-renderer` è fermo a ~1.2 e React ha un
+`overrides` alla radice (ADR-0028, conseguenza); via dal template i file
+per agenti AI e la licenza di Expo.
 
 ## File toccati
 
@@ -90,11 +99,11 @@ e npm 11; pnpm e yarn no.
 package.json
 package-lock.json
 .nvmrc
+.prettierrc.json
 apps/mobile/**
 packages/shared-types/**
 services/route-engine/tests/test_contract.py
 .github/workflows/ci.yml
-.gitignore
 README.md
 docs/SETUP.md
 docs/ARCHITECTURE.md

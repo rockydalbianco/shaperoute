@@ -373,6 +373,51 @@ Tre abitudini che fanno la differenza:
 
 ---
 
+## Passo 9 — Node e l'app sul telefono (dalla fase 2)
+
+L'app è scritta in TypeScript con Expo: per lanciarla servono **Node** sul
+PC e l'app **Expo Go** sul telefono. Tutti e due sono gratuiti.
+
+### 9.1 Node
+
+Scaricalo da [nodejs.org](https://nodejs.org), versione **24 LTS**, e
+installalo con le risposte predefinite. Chiudi e riapri PowerShell:
+
+```powershell
+node --version
+```
+
+Deve rispondere `v24.` seguito da altri numeri. Con Node arriva anche
+`npm`, il programma che installa i pacchetti JavaScript.
+
+### 9.2 Expo Go
+
+Sul telefono, installa **Expo Go** dal Play Store (Android) o dall'App
+Store (iPhone).
+
+### 9.3 Lanciare l'app
+
+Dalla radice del repository:
+
+```powershell
+npm install
+npm run mobile
+```
+
+`npm install` scarica le dipendenze in `node_modules/` (qualche minuto la
+prima volta, poi niente). `npm run mobile` avvia Expo e mostra un codice
+QR: inquadralo con Expo Go (Android) o con la fotocamera (iPhone). Telefono
+e PC devono stare sulla **stessa rete Wi-Fi**. La prima volta Windows
+chiede se Node può usare la rete: consenti sulle reti private.
+
+Si ferma con `Ctrl+C`. I controlli che fa la CI si lanciano così:
+`npm run lint`, `npm run format:check`, `npm run typecheck`, `npm test`.
+
+Dopo il primo giro della CI con l'app, aggiungi il controllo `mobile` alle
+regole di `main`, come al passo 7.3 per `route-engine`.
+
+---
+
 ## Il ciclo di tutti i giorni
 
 Una volta finito il setup, ogni sessione di lavoro è sempre questa:
@@ -422,6 +467,7 @@ Se sei confuso su dove ti trovi, `git status` risponde quasi sempre.
 | `protected branch` | stai scrivendo su `main` | crea un branch: `git switch -c feat/...` |
 | Chiede utente e password al push | credenziali non salvate | usa il login dal browser, non la password |
 | Vedi `(END)` o `:` e non risponde più | sei in un visualizzatore | premi `q` |
+| Il telefono non apre l'app dal QR | telefono e PC su reti diverse, o firewall | stessa Wi-Fi; consenti Node sulle reti private |
 
 Se ti blocchi su qualcosa che non è in questa tabella, copia l'errore per
 intero e chiedilo: il messaggio d'errore contiene quasi sempre la risposta,

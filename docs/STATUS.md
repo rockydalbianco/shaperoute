@@ -26,7 +26,11 @@ cancello di fase 1 è superato con la valle sospesa (ADR-0027).
 
 ## In lavorazione
 
-Niente.
+**TASK-020** sul branch `feat/TASK-020-mobile-bootstrap`: monorepo npm, app
+Expo (SDK 57) con una schermata, `packages/shared-types` con i test di
+allineamento, job `mobile` in CI, documentazione e ADR-0028 pronti. Manca
+che l'utente apra l'app sul telefono con Expo Go (`SETUP.md`, passo 9) e
+che la CI sia verde sulla PR.
 
 ## Completato
 

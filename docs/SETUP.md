@@ -478,6 +478,22 @@ I controlli della CI, da `services\api`:
 Dopo il primo giro della CI con l'API, aggiungi il controllo `api` alle
 regole di `main`, come al passo 7.3.
 
+### 10.2 Il route-engine con lo stesso ambiente
+
+L'ambiente dell'API contiene già il route-engine e i suoi strumenti di
+sviluppo: non serve un secondo ambiente in `services\route-engine`, che
+occuperebbe altri 300 MB. La CLI, dalla **radice** del repository:
+
+```powershell
+services\api\.venv\Scripts\python.exe -m route_engine --shape heart --distance 5000 --start 46.0122,11.2986 --out heart.gpx
+```
+
+I controlli della CI del motore, da `services\route-engine`:
+`..\api\.venv\Scripts\python.exe -m ruff check .`,
+`..\api\.venv\Scripts\python.exe -m black --check .`,
+`..\api\.venv\Scripts\python.exe -m pytest -m "not network"`.
+Con lo stesso `python.exe` girano gli script di misura in `tests\`.
+
 ### 10.1 App e API insieme
 
 Per chiedere percorsi dal telefono servono due finestre di PowerShell,

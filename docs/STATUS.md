@@ -22,13 +22,11 @@ lo apre.
 
 ## Prossimo passo
 
-**TASK-026 — Distanza libera.** Il file del task è da scrivere
-(`docs/tasks/`, branch `docs/TASK-026-task-file`). È la richiesta
-dell'utente in `ROADMAP.md`, fase 2: un campo al posto dei pulsanti delle
-distanze. Da decidere lì: campo in km con decimali o no, limiti da
-`shared-types` (1–50 km) e messaggio fuori limite, se i pulsanti restano
-come scorciatoie, e i tempi oltre 15 km, mai misurati. Con TASK-026 la fase
-2 si chiude; poi la fase 3, prima con ADR-0012 (modello AI).
+**TASK-026 — Distanza libera** (`docs/tasks/TASK-026.md`, scelte A–E
+confermate il 2026-09-23; branch `feat/TASK-026-free-distance`). Un campo
+in km al posto dei pulsanti delle distanze; prima si misurano 21 e 30 km a
+Trento, e il limite dell'app lo decidono i numeri. Con TASK-026 la fase 2
+si chiude; poi la fase 3, prima con ADR-0012 (modello AI).
 
 ## In lavorazione
 
@@ -57,15 +55,16 @@ Niente.
 
 ## Note per la prossima sessione
 
-- Setup locale del route-engine: in `services/route-engine/`,
-  `python -m venv .venv` e `pip install -e ".[dev]"`.
+- Su questo PC il route-engine usa l'ambiente dell'API: non c'è
+  `services/route-engine/.venv` (`SETUP.md`, passo 10.2).
 - In cache ci sono i grafi `foot` di zona di trento, levico, valsugana e
   milano (ADR-0023): tutti i casi girano offline. Da questo PC un indirizzo
   di `overpass-api.de` non risponde: prima di scaricare, leggere `MAPS.md`,
   "Overpass: come si scarica".
-- Per misurare sui casi di riferimento (in `services/route-engine/`):
-  `python tests/measure_optimizer.py` (ottimizzatore, `--no-optimize` per
-  TASK-017) e `python tests/measure_snapping.py` (solo snapping).
+- Per misurare sui casi di riferimento (in `services/route-engine/`, con
+  `..\api\.venv\Scripts\python.exe`): `tests/measure_optimizer.py`
+  (ottimizzatore, `--no-optimize` per TASK-017) e
+  `tests/measure_snapping.py` (solo snapping).
 - Fuori scope di TASK-016, annotati: tag `surface`, `sac_scale` e
   `sidewalk` (serve riscaricare i grafi), ed evitare scale e strade
   principali nella ricerca (oggi si misurano e si avvisa soltanto).
@@ -89,11 +88,13 @@ Niente.
   (già fatto); il permesso di posizione è di Expo Go (`SETUP.md`, 9.4).
 - API: dalla radice `services\api\.venv\Scripts\python.exe -m
   shaperoute_api --lan` (`SETUP.md`, passo 10); risponde anche su `/docs`.
-- Il disco C: di questo PC è quasi pieno (1,1 GB liberi il 2026-09-23;
-  ogni zona nuova scaricata vale circa 40 MB, più le risposte di Overpass
-  in `data/cache/http/`, già 244 MB):
-  Expo si ferma con `ENOSPC` quando finisce lo spazio. In `data/cache/`
-  ci sono ritagli salvati dalla CLI che si possono togliere a mano.
+- Il disco C: di questo PC ha poco spazio (5,7 GB liberi il 2026-09-23,
+  dopo la pulizia: tolti MATLAB, i ritagli in `data/cache/` e la venv del
+  route-engine). Ogni zona nuova scaricata vale circa 40 MB, più le
+  risposte di Overpass in `data/cache/http/`; Expo si ferma con `ENOSPC`
+  quando finisce lo spazio. La CLI salva un ritaglio per ogni partenza o
+  distanza nuova dentro una zona in cache: si possono togliere a mano. Il
+  disco D: ha più di 270 GB liberi.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.
 - Nell'app la partenza è la posizione GPS o un luogo cercato (`UI.md`);
   le zone fisse servono solo a confrontare le prove.

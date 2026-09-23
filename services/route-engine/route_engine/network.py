@@ -37,6 +37,13 @@ CORRIDOR_WEIGHT = 2.0
 # A vertex where the outline turns more than this is a corner of the shape,
 # like the heart's tip and dip (TASK-015); the circle has none.
 CORNER_TURN_DEG = 60.0
+# Out-and-back on parallel roads (TASK-016, ADR-0026): a return within
+# SPUR_NEAR_M after at least SPUR_MIN_M, over at most SPUR_MAX_SHARE of the
+# route, on a stretch that runs beside itself for SPUR_THIN_SHARE of it.
+SPUR_NEAR_M = 20.0
+SPUR_MIN_M = 60.0
+SPUR_MAX_SHARE = 0.15
+SPUR_THIN_SHARE = 0.7
 # Distances from the outline are exact up to this far beyond its band.
 CORRIDOR_EXACT_M = 1000.0
 
@@ -217,6 +224,7 @@ class NetworkRoute:
     distance_m: float
     warnings: list[str] = field(default_factory=list)
     waypoints: list[Any] = field(default_factory=list)  # node reached per zone
+    nodes: list[Any] = field(default_factory=list)  # graph nodes, in order
 
 
 def nearest_nodes(
@@ -257,6 +265,90 @@ def prune_spurs(
         else:
             result.append(node)
     return result
+
+
+def prune_parallel_spurs(
+    graph: Graph,
+    route_nodes: Sequence[Any],
+    keep: Collection[Any] = frozenset(),
+    near_m: float = SPUR_NEAR_M,
+    min_m: float = SPUR_MIN_M,
+    max_share: float = SPUR_MAX_SHARE,
+) -> list[Any]:
+    """Remove out-and-back detours that return on a parallel road.
+
+    `prune_spurs` catches A → B → A; going out on one side of a street and
+    back on the other (or on a footway beside it) uses different nodes and
+    still draws a spike. A stretch from node i to a later node j is such a
+    spike when j is within `near_m` of i after at least `min_m` along the
+    route (at most `max_share` of it), most of the stretch runs within
+    `near_m` of itself, no node of it is in `keep` (corners of the shape),
+    and a road joins i and j in at most 3 × `near_m`: then that road
+    replaces the stretch.
+    """
+    nodes = list(route_nodes)
+    if len(nodes) < 4:
+        return nodes
+    origin = _node_latlon(graph, nodes[0])
+    xy = latlon_to_local_array(
+        origin, np.array([_node_latlon(graph, n) for n in nodes])
+    )
+    steps = [0.0] + [
+        min(float(d["length"]) for d in graph[u][v].values())
+        for u, v in zip(nodes, nodes[1:], strict=False)
+    ]
+    along = np.cumsum(steps)
+    total = float(along[-1])
+    result: list[Any] = []
+    i = 0
+    while i < len(nodes):
+        result.append(nodes[i])
+        gap = np.hypot(xy[:, 0] - xy[i, 0], xy[:, 1] - xy[i, 1])
+        spans = along - along[i]
+        candidates = np.flatnonzero(
+            (np.arange(len(nodes)) > i)
+            & (gap <= near_m)
+            & (spans >= min_m)
+            & (spans <= max_share * total)
+        )
+        for j in candidates[::-1]:
+            inner = nodes[i + 1 : j]
+            if any(n in keep for n in inner):
+                continue
+            if not _thin(xy[i : j + 1], along[i : j + 1], near_m):
+                continue
+            if nodes[j] == nodes[i]:  # a thin loop back to the same node
+                i = int(j) + 1
+                break
+            try:
+                link = nx.shortest_path(graph, nodes[i], nodes[j], weight="length")
+            except nx.NetworkXNoPath:
+                continue
+            link_m = sum(
+                min(float(d["length"]) for d in graph[u][v].values())
+                for u, v in zip(link, link[1:], strict=False)
+            )
+            if link_m > 3 * near_m:
+                continue
+            result.extend(link[1:-1])
+            i = int(j)
+            break
+        else:
+            i += 1
+    return result
+
+
+def _thin(xy: np.ndarray, along: np.ndarray, near_m: float) -> bool:
+    """Whether most of a stretch (by length) runs within `near_m` of another
+    part of itself at least 2 × `near_m` away along it: a spike."""
+    if len(xy) < 3:
+        return False
+    d = np.hypot(xy[:, None, 0] - xy[None, :, 0], xy[:, None, 1] - xy[None, :, 1])
+    apart = np.abs(along[:, None] - along[None, :]) >= 2 * near_m
+    d[~apart] = np.inf
+    close = d.min(axis=1) <= 1.5 * near_m
+    weights = np.diff(along, prepend=along[0]) + np.diff(along, append=along[-1])
+    return bool(weights[close].sum() >= SPUR_THIN_SHARE * weights.sum())
 
 
 def corner_indices(xy: np.ndarray) -> list[int]:
@@ -516,7 +608,13 @@ def snap_to_network(
 
     if 0 in corners:
         corner_nodes.add(route_nodes[0])
-    pruned = prune_spurs(route_nodes, keep=corner_nodes)
+    pruned = list(route_nodes)
+    while True:  # removing one kind of spur can expose the other
+        before = pruned
+        pruned = prune_spurs(pruned, keep=corner_nodes)
+        pruned = prune_parallel_spurs(graph, pruned, keep=corner_nodes)
+        if pruned == before:
+            break
     if len(set(pruned)) >= 3:  # keep it only if a loop survives
         route_nodes = pruned
     points: list[LatLon] = [_node_latlon(graph, route_nodes[0])]
@@ -527,4 +625,5 @@ def snap_to_network(
         distance_m=path_length_m(points),
         warnings=warnings,
         waypoints=reached,
+        nodes=route_nodes,
     )

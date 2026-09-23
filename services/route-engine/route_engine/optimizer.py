@@ -34,6 +34,7 @@ from route_engine.network import (
     NetworkRoute,
     area_around,
     corner_indices,
+    nearest_nodes,
     snap_to_network,
 )
 from route_engine.projection import (
@@ -44,6 +45,7 @@ from route_engine.projection import (
     start_at_phase,
 )
 from route_engine.shapes import get_shape
+from route_engine.validation import check_closed, measure, validate
 
 # Where the start enters the shape, as arc-length fractions (TASK-015).
 PHASES = (0.0, 0.25, 0.5, 0.75)
@@ -56,14 +58,16 @@ SCALE_RANGE = (0.4, 1.1)
 START_OFFSET_M = 500.0
 START_RINGS_M = (250.0, 500.0)
 START_BEARINGS = 8
-# Placements traced after the road count (while the budget lasts), and
-# rescales for each of them.
-TOP_PLACEMENTS = 6
+# Placements traced after the road count (while the budget lasts), rescales
+# of the first one, and traces kept for refining the best one.
+TOP_PLACEMENTS = 12
 MAX_RESCALES = 4
+RESERVED_TRACES = 4
+SCREEN_ONCE = True  # TEMPORARY: comparison switch
 # Rotation refinement around the best placement.
 REFINE_SPAN_DEG = 15.0
 REFINE_STEP_DEG = 5.0
-MAX_TRACES = 16
+MAX_TRACES = 20
 # Stop when both hold (ROUTE_ENGINE.md §5). Metric and threshold come from
 # the eye judgement of the first results (TASK-015, docs/MAPS.md): the
 # routes judged good covered 90% of the outline or more, the others less.
@@ -444,14 +448,21 @@ def search(
                 return p
         return None
 
+    # The first placement learns the scale; the next ones are traced once at
+    # that scale, so the budget explores many placements, and the best of
+    # them gets the refinement and the polish (TASK-016).
     scale = base_scale
     tried: list[Placement] = []
-    for _ in range(TOP_PLACEMENTS):
+    screening = max(1, max_traces - RESERVED_TRACES)
+    for k in range(TOP_PLACEMENTS):
         placement = best_placement(scale, tried)
-        if placement is None or len(attempts) >= max_traces:
+        if placement is None or (k > 0 and len(attempts) >= screening):
             break
         tried.append(placement)
-        last, scale = rescale(placement, scale)
+        if k == 0 or not SCREEN_ONCE:
+            last, scale = rescale(placement, scale)
+        else:
+            last = attempt(placement, scale)
         if last is not None and good(last):
             return _done(attempts, good, distance_m)
 
@@ -518,6 +529,17 @@ SHAPE_POINTS = 64
 MIN_SIMILARITY = 0.60
 
 
+# Around each corner of the shape, this share of its perimeter may be drawn
+# twice without counting as retraced: the spike to a corner draws it.
+CORNER_SPARE = 0.05
+
+
+def _scale_of(placed: Sequence[LatLon], shape: Sequence[Point]) -> float:
+    """Metres per normalized unit of a placed shape."""
+    xy = latlon_to_local_array(placed[0], np.array(placed))
+    return _perimeter_m(xy) / perimeter(shape)
+
+
 class ShapeNotDrawableError(ValueError):
     """The roads around the start cannot draw the requested shape."""
 
@@ -546,6 +568,7 @@ def required_area(
 class Plan:
     result: RouteResult
     search: Search | None  # None when the shape was not optimized
+    checks: dict[str, float] = field(default_factory=dict)  # validation.measure
 
 
 def plan_route(
@@ -588,6 +611,7 @@ def plan_route(
                 f"{DISTANCE_FALLBACK_M / 1000:g} km allowed"
             )
         route, sim, warnings = best.route, best.similarity, list(found.warnings)
+        placed, chosen_start = best.shape, best.placement.start
         if best.offset_m > 0:
             direction = _compass(request.start, best.placement.start)
             warnings.insert(
@@ -601,12 +625,26 @@ def plan_route(
             shape, request.start, initial_scale(shape, request.distance_m)
         )
         route = snap_to_network(graph, projected, reuse_penalty)
-        sim, warnings = similarity(route.points, projected), route.warnings
+        sim, warnings = similarity(route.points, projected), list(route.warnings)
+        placed, chosen_start = projected, request.start
+    [first], _ = nearest_nodes(graph, [chosen_start])
+    check_closed(
+        route.points,
+        (graph.nodes[first]["y"], graph.nodes[first]["x"]),
+        request.start,
+        chosen_start,
+        START_OFFSET_M,
+    )
+    outline = latlon_to_local_array(placed[0], np.array(placed[:-1]))
+    corners = [placed[i] for i in corner_indices(outline)]
+    spare = CORNER_SPARE * perimeter(shape) * _scale_of(placed, shape)
+    measures = measure(graph, route.points, route.nodes, corners, spare)
+    warnings.extend(issue.message for issue in validate(measures))
     result = RouteResult(
         points=route.points,
         distance_m=route.distance_m,
         similarity=sim,
         shape=request.shape,
-        warnings=list(warnings),
+        warnings=warnings,
     )
-    return Plan(result, found)
+    return Plan(result, found, measures)

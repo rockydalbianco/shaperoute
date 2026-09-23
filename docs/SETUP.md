@@ -413,6 +413,10 @@ chiede se Node può usare la rete: consenti sulle reti private.
 Si ferma con `Ctrl+C`. I controlli che fa la CI si lanciano così:
 `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm test`.
 
+Se PowerShell risponde `npm.ps1 cannot be loaded because running scripts
+is disabled`, scrivi `npm.cmd` al posto di `npm` (`npm.cmd run mobile`):
+è lo stesso comando, senza lo script che Windows blocca.
+
 Dopo il primo giro della CI con l'app, aggiungi il controllo `mobile` alle
 regole di `main`, come al passo 7.3 per `route-engine`.
 
@@ -467,6 +471,7 @@ Se sei confuso su dove ti trovi, `git status` risponde quasi sempre.
 | `protected branch` | stai scrivendo su `main` | crea un branch: `git switch -c feat/...` |
 | Chiede utente e password al push | credenziali non salvate | usa il login dal browser, non la password |
 | Vedi `(END)` o `:` e non risponde più | sei in un visualizzatore | premi `q` |
+| `npm.ps1 cannot be loaded` | PowerShell blocca gli script | usa `npm.cmd` al posto di `npm` |
 | Il telefono non apre l'app dal QR | telefono e PC su reti diverse, o firewall | stessa Wi-Fi; consenti Node sulle reti private |
 
 Se ti blocchi su qualcosa che non è in questa tabella, copia l'errore per

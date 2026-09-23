@@ -1,14 +1,18 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import apiErrorCodes from "../fixtures/api-error-codes.json" with { type: "json" };
+import apiError from "../fixtures/api-error.json" with { type: "json" };
 import contract from "../fixtures/contract.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
 import result from "../fixtures/route-result.json" with { type: "json" };
 import {
   ACTIVITIES,
+  API_ERROR_CODES,
   MAX_DISTANCE_M,
   MIN_DISTANCE_M,
   SHAPES,
+  type ApiError,
   type RouteRequest,
   type RouteResult,
 } from "../src/index.ts";
@@ -18,12 +22,20 @@ import {
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 const requestFields: Same<keyof typeof request, keyof RouteRequest> = true;
 const resultFields: Same<keyof typeof result, keyof RouteResult> = true;
+const errorFields: Same<keyof typeof apiError, keyof ApiError> = true;
+const errorDetailFields: Same<keyof typeof apiError.error, keyof ApiError["error"]> =
+  true;
 
 const isShape = (value: string): boolean =>
   (SHAPES as readonly string[]).includes(value);
 
 test("the fixtures have the fields of the types", () => {
-  assert.ok(requestFields && resultFields);
+  assert.ok(requestFields && resultFields && errorFields && errorDetailFields);
+});
+
+test("the error fixture uses a known code, and the codes match the API", () => {
+  assert.ok((API_ERROR_CODES as readonly string[]).includes(apiError.error.code));
+  assert.deepEqual([...API_ERROR_CODES], apiErrorCodes);
 });
 
 test("shapes, activities and distance limits match the route engine", () => {

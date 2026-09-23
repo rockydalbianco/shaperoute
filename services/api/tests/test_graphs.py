@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import shutil
+import threading
 from pathlib import Path
 
 import networkx as nx
@@ -160,3 +161,38 @@ def test_no_crop_is_saved_in_the_cache(tmp_path: Path) -> None:
         zone_file.name,
         zone_file.with_suffix(".pickle").name,
     ]
+
+
+def test_needs_download_says_whether_a_zone_is_cached() -> None:
+    graphs = ZoneGraphs(FakeSource([ZONE_A]))
+    assert not graphs.needs_download(inside(ZONE_A))
+    assert graphs.needs_download(inside(ZONE_B))
+
+
+def test_a_download_does_not_hold_up_a_zone_in_memory() -> None:
+    class SlowDownload(FakeSource):
+        def __init__(self) -> None:
+            super().__init__([ZONE_A], download=grid(*ZONE_B[:2]))
+            self.started = threading.Event()
+            self.release = threading.Event()
+
+        def load(self, bbox: BBox) -> Graph:
+            self.started.set()
+            self.release.wait(5)
+            return super().load(bbox)
+
+    source = SlowDownload()
+    graphs = ZoneGraphs(source, read=CountingReader(source))
+    graphs.load(inside(ZONE_A))
+
+    downloading = threading.Thread(target=graphs.load, args=(ZONE_B,))
+    downloading.start()
+    assert source.started.wait(5)
+    # Zone A answers while zone B is still downloading.
+    answered = threading.Event()
+    threading.Thread(
+        target=lambda: (graphs.load(inside(ZONE_A)), answered.set())
+    ).start()
+    assert answered.wait(5)
+    source.release.set()
+    downloading.join(5)

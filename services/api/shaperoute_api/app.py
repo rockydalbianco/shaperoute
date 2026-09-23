@@ -1,45 +1,49 @@
 """The HTTP API: RouteRequest in, RouteResult out (docs/API.md).
 
 The API orchestrates and does not compute: the route comes from the engine's
-plan_route, errors become a status and a code the app can explain.
+plan_route, errors become a status and a code the app can explain. The app
+uses route jobs (ADR-0032); POST /routes answers in one go, for /docs, curl
+and measurements.
 """
 
 from __future__ import annotations
 
 import logging
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import AsyncIterator, Sequence
+from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from route_engine.models import InvalidRequestError, RouteRequest
-from route_engine.optimizer import (
-    GraphLoader,
-    Plan,
-    ShapeNotDrawableError,
-    plan_route,
-)
-from starlette.exceptions import HTTPException
+from route_engine.optimizer import GraphLoader, ShapeNotDrawableError, plan_route
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from shaperoute_api.errors import error_of
 from shaperoute_api.graphs import MapDataUnavailableError
+from shaperoute_api.jobs import Job, Planner, RouteJobs
 from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
+    ErrorDetail,
+    RouteJobBody,
     RouteRequestBody,
     RouteResultBody,
 )
 
 log = logging.getLogger(__name__)
 
-Planner = Callable[[RouteRequest, GraphLoader], Plan]
-
 ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     422: {"model": ErrorBody, "description": "invalid_request or shape_not_drawable"},
     500: {"model": ErrorBody, "description": "engine_error"},
     503: {"model": ErrorBody, "description": "map_data_unavailable"},
 }
+UNKNOWN_JOB = (
+    "Unknown route job: cancelled, finished more than 10 minutes ago, "
+    "or the API was restarted."
+)
 
 
 def error(status: int, code: ErrorCode, message: str) -> JSONResponse:
@@ -56,27 +60,76 @@ def validation_message(errors: Sequence[Any]) -> str:
     return "; ".join(parts)
 
 
-def create_app(source: GraphLoader, planner: Planner = plan_route) -> FastAPI:
+def to_request(body: RouteRequestBody) -> RouteRequest:
+    """The engine's RouteRequest checks the values: InvalidRequestError."""
+    return RouteRequest(
+        start=body.start,
+        shape=body.shape,
+        distance_m=body.distance_m,
+        activity=body.activity,
+    )
+
+
+def job_body(job: Job) -> RouteJobBody:
+    return RouteJobBody(
+        job_id=job.job_id,
+        status=job.status,
+        result=None if job.result is None else RouteResultBody.from_result(job.result),
+        error=(
+            None
+            if job.error is None
+            else ErrorDetail(code=job.error[0], message=job.error[1])
+        ),
+    )
+
+
+def create_app(
+    source: GraphLoader,
+    planner: Planner = plan_route,
+    jobs: RouteJobs | None = None,
+) -> FastAPI:
+    route_jobs = jobs or RouteJobs(source, planner)
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        yield
+        route_jobs.shutdown()
+
     app = FastAPI(
         title="ShapeRoute API",
-        version="0.1.0",
+        version="0.2.0",
         description="Generates real routes that draw a shape on the map.",
+        lifespan=lifespan,
     )
 
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
+    @app.post("/route-jobs", status_code=202, responses=ERROR_RESPONSES)
+    def create_route_job(body: RouteRequestBody) -> RouteJobBody:
+        return job_body(route_jobs.submit(to_request(body)))
+
+    @app.get("/route-jobs/{job_id}", responses={404: {"model": ErrorBody}})
+    def get_route_job(job_id: str) -> RouteJobBody:
+        job = route_jobs.get(job_id)
+        if job is None:
+            raise HTTPException(404, UNKNOWN_JOB)
+        return job_body(job)
+
+    @app.delete(
+        "/route-jobs/{job_id}", status_code=204, responses={404: {"model": ErrorBody}}
+    )
+    def cancel_route_job(job_id: str) -> Response:
+        if not route_jobs.cancel(job_id):
+            raise HTTPException(404, UNKNOWN_JOB)
+        return Response(status_code=204)
+
     # A plain def: FastAPI runs it in a thread, so a long route does not stop
-    # the server from answering /health.
+    # the server from answering the other requests.
     @app.post("/routes", responses=ERROR_RESPONSES)
     def create_route(body: RouteRequestBody) -> RouteResultBody:
-        request = RouteRequest(
-            start=body.start,
-            shape=body.shape,
-            distance_m=body.distance_m,
-            activity=body.activity,
-        )
+        request = to_request(body)
         what = f"{request.shape} {request.distance_m} m"
         started = time.perf_counter()
         try:
@@ -98,27 +151,21 @@ def create_app(source: GraphLoader, planner: Planner = plan_route) -> FastAPI:
     def invalid_body(_: Request, exc: RequestValidationError) -> JSONResponse:
         return error(422, "invalid_request", validation_message(exc.errors()))
 
-    @app.exception_handler(InvalidRequestError)
-    def invalid_value(_: Request, exc: InvalidRequestError) -> JSONResponse:
-        return error(422, "invalid_request", str(exc))
+    def engine_answer(_: Request, exc: Exception) -> JSONResponse:
+        return error(*error_of(exc))
 
-    @app.exception_handler(ShapeNotDrawableError)
-    def not_drawable(_: Request, exc: ShapeNotDrawableError) -> JSONResponse:
-        return error(422, "shape_not_drawable", str(exc))
+    for known in (InvalidRequestError, ShapeNotDrawableError, MapDataUnavailableError):
+        app.add_exception_handler(known, engine_answer)
 
-    @app.exception_handler(MapDataUnavailableError)
-    def no_map_data(_: Request, exc: MapDataUnavailableError) -> JSONResponse:
-        return error(503, "map_data_unavailable", str(exc))
-
-    @app.exception_handler(HTTPException)
-    def http_error(_: Request, exc: HTTPException) -> JSONResponse:
+    @app.exception_handler(StarletteHTTPException)
+    def http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
         return error(exc.status_code, "http_error", str(exc.detail))
 
     # Anything else, InvalidRouteError included (ADR-0026). The traceback goes
     # to the server log, not to the phone.
     @app.exception_handler(Exception)
-    def engine_error(_: Request, exc: Exception) -> JSONResponse:
+    def engine_error(request: Request, exc: Exception) -> JSONResponse:
         log.exception("route failed", exc_info=exc)
-        return error(500, "engine_error", "The route engine failed; see the API log.")
+        return engine_answer(request, exc)
 
     return app

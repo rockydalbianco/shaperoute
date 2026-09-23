@@ -75,3 +75,16 @@ class ErrorBody(BaseModel):
     """Every error the API returns has this shape."""
 
     error: ErrorDetail
+
+
+JobStatus = Literal["queued", "downloading_map", "computing", "done", "failed"]
+
+
+class RouteJobBody(BaseModel):
+    """A route request the API is working on (ADR-0032): RouteJob in
+    packages/shared-types."""
+
+    job_id: str
+    status: JobStatus
+    result: RouteResultBody | None = Field(description="Only when status is done.")
+    error: ErrorDetail | None = Field(description="Only when status is failed.")

@@ -19,11 +19,12 @@ percorsi e risponde anche dal telefono, ma l'app non la chiama ancora.
 
 ## Prossimo passo
 
-**TASK-023 — Collegamento app ↔ API, anteprima percorso.** Il file del
-task è da scrivere (`docs/tasks/`, branch `docs/TASK-023-task-file`). Da
-decidere lì: come l'app conosce l'indirizzo dell'API sul PC, scelta di
-forma e distanza, attesa e messaggi per ogni `code` di errore (domande
-aperte in `UI.md`), e se servono richieste in due tempi (ADR-0030).
+**TASK-023 — Collegamento app ↔ API, anteprima percorso**, sul branch
+`feat/TASK-023-app-api`. Il file del task è scritto, con le scelte già
+confermate dall'utente: indirizzo dell'API dal server di Expo, forma e
+distanza da pulsanti (per ora), richiesta sincrona con attesa e «Cancel»,
+un messaggio per ogni errore, corpo degli errori in `shared-types`. Dopo
+TASK-023: campi liberi per distanza e forma (`ROADMAP.md`, fase 2).
 
 ## In lavorazione
 

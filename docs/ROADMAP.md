@@ -98,23 +98,49 @@ TASK-026 ha misurato 21 e 30 km a Trento: il calcolo regge, il download di
 una zona nuova no (279 s a 30 km). L'app arriva a **21 km**; motore e
 contratto restano a 50 (ADR-0034).
 
-## Fase 3 — Linguaggio naturale
+## Fase 3 — La forma scritta dall'utente
+
+Obiettivo: l'utente scrive nel riquadro della forma una parola («stella»,
+«cavallo») e il percorso la disegna.
 
 | Task | Titolo |
 |---|---|
-| TASK-030 | Parser richiesta naturale → `RouteRequest` |
-| TASK-031 | Gestione richieste ambigue o impossibili |
+| TASK-032 | Il motore segue un contorno qualunque: stella, casa, cavallo (prima di tutto) |
+| TASK-033 | Catalogo di forme con licenza aperta e riquadro della forma nell'app |
+| TASK-030 | L'AI riconosce la parola scritta e sceglie la forma del catalogo (ADR-0012) |
+| TASK-031 | Parole senza forma nel catalogo e forme che le strade non reggono |
 
-L'AI arriva per ultima perché è la parte più facile da aggiungere e la più
-facile da sbagliare concettualmente. Con la pipeline già funzionante, il
-suo confine è ovvio: produce un `RouteRequest`, niente altro.
+**Cancello dopo TASK-032**: la stella e la sagoma del cavallo si
+riconoscono a occhio a Trento a 15 km. Se no, ci si ferma e la fase si
+ripensa, per esempio con un catalogo di sole forme semplici.
+
+**Deciso con l'utente (2026-09-24).** Non serve interpretare una frase:
+distanza e attività si scrivono nei loro riquadri, e l'AI serve solo per la
+forma. Il lavoro si divide in due:
+- **riconoscere la parola** è il ruolo che il progetto dà all'AI: da
+  «stemma della Ferrari» a «cavallo rampante» (TASK-030);
+- **il disegno** viene da un catalogo di contorni con licenza aperta:
+  l'AI sceglie, il contorno non lo inventa. Il catalogo pesa poco (un
+  contorno è circa 1 KB, 10.000 forme circa 10 MB): distanza, partenza e
+  rotazione le applica il motore a ogni richiesta. Il limite è quali
+  parole copre, non lo spazio.
+
+Far disegnare all'AI le forme che il catalogo non ha va contro ADR-0001:
+l'AI non produce geometrie. Si decide dopo TASK-032, con i risultati in
+mano, e lo decide l'utente. In ogni caso le strade reggono solo il contorno
+esterno e i dettagli grandi, e i loghi sono marchi registrati.
+
+Prima era «Linguaggio naturale»: una frase libera tradotta in un
+`RouteRequest`. TASK-030 e TASK-031 hanno cambiato titolo; il loro file non
+era ancora scritto.
 
 ## Fase 4 — Estensione
 
-Walking e cycling; nuove forme (star, lettere); account e percorsi salvati;
+Walking e cycling; scritte (lettere e parole); account e percorsi salvati;
 database PostgreSQL + PostGIS; preferenze di dislivello e superficie;
 distanze oltre i 21 km nell'app, con un modo più veloce di avere i dati
-delle zone (ADR-0009, ADR-0034).
+delle zone (ADR-0009, ADR-0034); hosting, perché l'app funzioni anche a PC
+spento (ADR-0013).
 
 ## Fase 5 — Oltre
 

@@ -227,26 +227,63 @@ test("Draw route is off until there is a start", async () => {
   expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
 });
 
-test("draws the route for the chosen shape and distance", async () => {
+function distanceField() {
+  return screen.getByLabelText("Distance in km");
+}
+
+test("the distance starts at 5 km", async () => {
+  requestPermission.mockReturnValue(new Promise(() => {}));
+  await render(<App />);
+  expect(distanceField()).toHaveDisplayValue("5");
+  expect(screen.queryByText(/Enter a distance/)).not.toBeOnTheScreen();
+});
+
+test("draws the route for the chosen shape and the distance typed", async () => {
   jest.useFakeTimers();
   apiAnswers(job("computing"), jobDone);
   await atTrento();
   await fireEvent.press(screen.getByText("circle"));
-  await fireEvent.press(screen.getByText("3 km"));
+  await fireEvent.changeText(distanceField(), "7,5");
   await fireEvent.press(screen.getByText("Draw route"));
   await nextPoll();
   await nextPoll();
 
-  expect(screen.getByText("4.0 km on roads (target 3 km)")).toBeOnTheScreen();
+  expect(screen.getByText("4.0 km on roads (target 7.5 km)")).toBeOnTheScreen();
   expect(screen.getByText("• 120 m of the route on steps")).toBeOnTheScreen();
   expect(lastRouteRequest()).toEqual({
     start: [46.0671, 11.1214],
     shape: "circle",
-    distance_m: 3000,
+    distance_m: 7500,
     activity: "running",
   });
   expect(lastScript()).toContain('"type":"showRoute","coordinates":[[11.1214,46.0671]');
   jest.useRealTimers();
+});
+
+test("a distance that is not valid turns Draw route off and says why", async () => {
+  apiAnswers(jobDone);
+  await atTrento();
+  for (const text of ["0,5", "22", "abc", ""]) {
+    await fireEvent.changeText(distanceField(), text);
+    expect(screen.getByText("Enter a distance between 1 and 21 km.")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+    await fireEvent.press(screen.getByText("Draw route"));
+  }
+  expect(apiCalls("POST")).toEqual([]);
+
+  await fireEvent.changeText(distanceField(), "21");
+  expect(screen.queryByText(/Enter a distance/)).not.toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+});
+
+test("above 15 km the panel warns that the route takes longer", async () => {
+  requestPermission.mockReturnValue(new Promise(() => {}));
+  await render(<App />);
+  const warning = "Long routes take longer: up to a few minutes.";
+  await fireEvent.changeText(distanceField(), "15");
+  expect(screen.queryByText(warning)).not.toBeOnTheScreen();
+  await fireEvent.changeText(distanceField(), "15,5");
+  expect(screen.getByText(warning)).toBeOnTheScreen();
 });
 
 test("while waiting it says what the API is doing, with the seconds", async () => {
@@ -328,6 +365,21 @@ test("a new start takes the old route away", async () => {
   const cleared = scripts.findIndex((script) => script.includes('"clearRoute"'));
   expect(shown).toBeGreaterThan(-1);
   expect(cleared).toBeGreaterThan(shown);
+  jest.useRealTimers();
+});
+
+test("a new distance takes the old route away", async () => {
+  jest.useFakeTimers();
+  apiAnswers(jobDone);
+  await atTrento();
+  await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
+  expect(screen.getByText("4.0 km on roads (target 5 km)")).toBeOnTheScreen();
+
+  await fireEvent.changeText(distanceField(), "10");
+
+  expect(screen.queryByText(/km on roads/)).not.toBeOnTheScreen();
+  expect(lastScript()).toContain('"clearRoute"');
   jest.useRealTimers();
 });
 

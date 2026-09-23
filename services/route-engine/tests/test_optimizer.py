@@ -28,7 +28,7 @@ from route_engine.optimizer import (
     zone_area,
 )
 from route_engine.projection import initial_scale, project_shape
-from route_engine.shapes import get_shape
+from route_engine.shapes import SUPPORTED_SHAPES, get_shape
 
 LEVICO = (46.0122, 11.2986)
 FIXTURE = Path(__file__).parent / "fixtures" / "levico_walk_1km.graphml"
@@ -281,3 +281,19 @@ def test_a_shape_too_far_from_the_distance_is_refused(
     request = RouteRequest(start=LEVICO, shape="circle", distance_m=2000)
     with pytest.raises(ShapeNotDrawableError, match=r"\+3\.0 km from the target"):
         plan_route(request, Grid())
+
+
+@pytest.mark.parametrize("name", SUPPORTED_SHAPES)
+def test_every_catalogue_shape_is_planned_on_a_street_grid(name: str) -> None:
+    # 1500 m east of LEVICO the half grid surrounds the start on every side.
+    start = local_to_latlon(LEVICO, 1500.0, 0.0)
+
+    class Grid:
+        def load(self, bbox: tuple[float, float, float, float]) -> nx.MultiDiGraph:
+            return _half_grid()
+
+    request = RouteRequest(start=start, shape=name, distance_m=3000)
+    result = plan_route(request, Grid()).result
+    assert result.shape == name
+    assert result.points[0] == result.points[-1]
+    assert result.similarity >= 0.60

@@ -7,6 +7,7 @@ from typing import Any
 
 import pytest
 
+from route_engine.shapes import OUTLINES
 from route_engine.shapes.outline import (
     InvalidOutlineError,
     Outline,
@@ -15,7 +16,6 @@ from route_engine.shapes.outline import (
 )
 
 N = 64
-OUTLINES = Path(__file__).parents[1] / "outlines"
 
 
 def _data(points: list[list[float]], **overrides: Any) -> dict[str, Any]:

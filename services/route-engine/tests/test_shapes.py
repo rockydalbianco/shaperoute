@@ -1,11 +1,14 @@
 import ast
 import math
+import tomllib
+from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
 
 import route_engine.shapes
-from route_engine.shapes import SHAPES, SUPPORTED_SHAPES, get_shape
+from route_engine.shapes import OUTLINES, SHAPES, SUPPORTED_SHAPES, get_shape
+from route_engine.shapes.outline import Outline
 from route_engine.shapes.resample import Point
 
 N = 64
@@ -30,10 +33,35 @@ def test_shape_fits_unit_square(name: str) -> None:
         assert -1.0 <= y <= 1.0
 
 
+def _arc_positions(points: list[Point], outline: Sequence[Point]) -> list[float]:
+    """Where each point lies along `outline`, as a length from its start."""
+    positions = []
+    for p in points:
+        walked = 0.0
+        for a, b in zip(outline, outline[1:], strict=False):
+            side = math.dist(a, b)
+            if abs(math.dist(a, p) + math.dist(p, b) - side) <= 1e-9:
+                positions.append(walked + math.dist(a, p))
+                break
+            walked += side
+        else:
+            raise AssertionError(f"{p} is not on the outline")
+    return positions
+
+
 @pytest.mark.parametrize("name", SUPPORTED_SHAPES)
 @pytest.mark.parametrize("n_points", [16, N, 200])
 def test_spacing_is_uniform_within_5_percent(name: str, n_points: int) -> None:
-    segments = _segments(get_shape(name)(n_points))
+    shape = get_shape(name)
+    points = shape(n_points)
+    if isinstance(shape, Outline):
+        # Straight between two points across a corner is shorter than along
+        # the outline: measure along it, where the spacing is exact.
+        positions = _arc_positions(points[:-1], shape.points)
+        steps = [b - a for a, b in zip(positions, positions[1:], strict=False)]
+        assert steps == pytest.approx([steps[0]] * len(steps), rel=1e-6)
+        return
+    segments = _segments(points)
     mean = sum(segments) / len(segments)
     for length in segments:
         assert abs(length - mean) / mean <= 0.05
@@ -76,8 +104,9 @@ def test_too_few_points_is_rejected(n_points: int) -> None:
 
 
 def test_unknown_shape_is_rejected() -> None:
-    with pytest.raises(ValueError, match="unknown shape 'star'"):
-        get_shape("star")
+    # The house is an outline file, but not a catalogue shape (ADR-0036).
+    with pytest.raises(ValueError, match="unknown shape 'house'"):
+        get_shape("house")
 
 
 def test_registry_and_supported_shapes_agree() -> None:
@@ -101,3 +130,12 @@ def test_shapes_modules_import_nothing_geographic() -> None:
                 assert name in allowed or name.startswith(
                     "route_engine.shapes"
                 ), f"{module.name} imports {name}"
+
+
+def test_the_outlines_ship_with_the_package() -> None:
+    # Read at import by the API too, so they must be package data.
+    pyproject = Path(route_engine.shapes.__file__).parents[2] / "pyproject.toml"
+    data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    patterns = data["tool"]["setuptools"]["package-data"]["route_engine.shapes"]
+    assert patterns == ["outlines/*.json"]
+    assert {path.stem for path in OUTLINES.glob("*.json")} >= {"star", "horse"}

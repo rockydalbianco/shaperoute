@@ -21,6 +21,10 @@ dev = [
 [tool.setuptools.packages.find]
 include = ["route_engine*"]
 
+# The shape outlines are read at import (ADR-0035, ADR-0036).
+[tool.setuptools.package-data]
+"route_engine.shapes" = ["outlines/*.json"]
+
 [tool.black]
 line-length = 88
 target-version = ["py311"]

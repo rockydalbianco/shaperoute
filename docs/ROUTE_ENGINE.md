@@ -120,7 +120,9 @@ Procedura di base:
    una fascia di tolleranza: il percorso segue il bordo invece di tagliare
    per l'interno, senza zig-zag per restarci appiccicato.
 5. Concatenare i segmenti; l'ultimo torna alla partenza, chiudendo il ciclo.
-6. Eliminare gli speroni: ogni A → B → A diventa A.
+6. Eliminare gli speroni: ogni A → B → A diventa A, tranne quelli che
+   portano a una punta della forma (la punta del cuore), che la disegnano
+   (ADR-0025).
 
 Raggio delle zone e fascia sono frazioni del perimetro della forma: crescono
 con la distanza richiesta.
@@ -185,13 +187,14 @@ una città fitta come Milano la forma va bene già dove cade.
    distanza non cresce in proporzione alla scala. Fino a 4 tracciamenti.
 4. Si ripete per altre 2 combinazioni, riordinate alla scala imparata e
    lontane da quelle già provate; poi si rifinisce la rotazione migliore.
-5. Con il budget che resta (20 tracciamenti in tutto) si corregge ancora
-   la distanza del piazzamento migliore, finché è giusta.
+5. Con il budget che resta (16 tracciamenti in tutto, fino a 6
+   piazzamenti) si corregge ancora la distanza del piazzamento migliore.
 
 Ci si ferma appena distanza (±10%) e somiglianza (≥ 0,90) vanno bene. Se il
-budget finisce prima, si restituisce il tentativo di costo minore con un
-warning che dice cosa manca. Se anche il migliore copre meno del **60%** del
-contorno, nessun percorso: la forma lì non è disponibile (ADR-0025).
+budget finisce prima, si restituisce il tentativo di costo minore entro
+**±2 km** dal target, con un warning che dice cosa manca. Se la somiglianza
+migliore è sotto **0,60**, o nessun tentativo sta entro ±2 km, nessun
+percorso: la forma lì non è disponibile (ADR-0025).
 
 ### Funzione obiettivo
 
@@ -204,20 +207,19 @@ partenza spostata di 500 m aggiunge 0,15, cioè vale 5 punti di copertura.
 
 ### Misura della somiglianza
 
-Si confronta il percorso con la forma piazzata (ruotata e scalata). Provate
-in TASK-015:
+Si confronta il percorso con la forma piazzata (ruotata e scalata), in tre
+pezzi (ADR-0023, ADR-0025):
 
 - **copertura**: quota del contorno con il percorso entro il 2% del
-  perimetro. **Tenuta**: è quella che separa i percorsi giudicati buoni a
-  occhio (≥ 90%) dagli altri;
-- **fit**: media armonica di copertura e precisione (quota del percorso
-  vicina al contorno). Penalizza anche anelli interni e punte, ma sui primi
-  giudizi separava peggio; resta come misura di controllo;
-- **Hausdorff** e **Fréchet discreta**, normalizzate sul raggio della forma:
-  scartate. Dominate dal punto peggiore, Fréchet dava il voto più alto a un
-  percorso giudicato no.
+  perimetro;
+- **precisione**: quota del percorso entro la stessa distanza dal contorno;
+  scende con anelli interni, tagli e punte;
+- **punte**: i vertici in cui il contorno gira più di 60° (incavo e punta
+  del cuore; il cerchio non ne ha) devono avere il percorso vicino.
 
-Misure e giudizi: `MAPS.md`; scelta: ADR-0023.
+Somiglianza = media armonica di copertura e precisione (`fit`), meno 0,10
+per ogni punta mancata. Hausdorff e Fréchet discreta sono state provate e
+scartate: dominate dal punto peggiore, andavano contro il giudizio a occhio.
 
 ## 6. Validazione
 

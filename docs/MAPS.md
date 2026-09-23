@@ -57,23 +57,27 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   occupano 78 MB.
 - I dati OSM cambiano: un campione è riproducibile solo con lo stesso
   grafo. Per rifare un confronto pulito, si tiene la cache.
+- Accanto a ogni GraphML c'è una copia **pickle** dello stesso grafo:
+  leggere il GraphML di una zona richiede 5–13 s (fino a un minuto a
+  Milano), il pickle pochi secondi. Il GraphML resta il formato di
+  riferimento; il pickle si rigenera da solo se manca o è più vecchio.
 
 ## Area scaricata
 
 - **Con l'ottimizzatore** (TASK-015, ADR-0023): un quadrato attorno alla
   partenza che contiene la forma a ogni rotazione, fase e scala massima,
-  più 500 m (`zone_area`). Per 15 km circa 11,5 km di lato (130 km²), per
-  5 km circa 4,5 km. Si scarica **un grafo per zona**, partendo dal caso
+  più la partenza spostabile (500 m, ADR-0025) e 500 m di margine
+  (`zone_area`). Per 15 km circa 12,5 km di lato (155 km²). Si scarica **un grafo per zona**, partendo dal caso
   più grande (cerchio da 15 km): ogni area più piccola si **ritaglia** da un
   grafo in cache che la contiene (`crop`) e il ritaglio si salva col suo
   nome.
 - **Senza** (`--no-optimize`): il rettangolo della forma teorica proiettata,
   più **500 m per lato** (`AREA_MARGIN_M`).
 
-Grafi di zona (cerchio da 15 km): Trento 26 MB e 20.967 nodi, Levico 8 MB e
-5.623, Valsugana 6.354 nodi, Milano 98 MB e 75.816. Il ritaglio di Levico
-sull'area del cuore da 5 km dà 905 nodi contro i 904 del download diretto
-di TASK-017: ritagliare equivale a scaricare.
+Grafi di zona (cerchio da 15 km): Trento 22.613 nodi, Levico 6.845,
+Valsugana 7.156, Milano 85.336. Il ritaglio di Levico sull'area del cuore
+da 5 km dà 905 nodi contro i 904 del download diretto di TASK-017:
+ritagliare equivale a scaricare.
 
 ## Dal disegno alla strada
 
@@ -183,30 +187,32 @@ aggirarli. Nessun aggancio lo recupera: serve spostare la forma dove le
 strade ci sono, cioè ruotarla e scalarla (TASK-015, `ROUTE_ENGINE.md` §5).
 Il traguardo di 1,5× passa lì.
 
-**TASK-015**, ottimizzatore sulla rete `foot` (rapporto · copertura ·
-tracciamenti; ✅ = distanza entro ±10% e copertura ≥ 90%):
+**TASK-015**, ottimizzatore sulla rete `foot`, campioni v3 (rapporto ·
+somiglianza; ✅ = distanza entro ±10% e somiglianza ≥ 0,90; ADR-0025):
 
 | Zona | cuore 5 km | cuore 15 km | cerchio 5 km | cerchio 15 km |
 |---|---|---|---|---|
-| trento | 1,04× · 97% · 8 ✅ | 0,98× · 97% · 2 ✅ | 1,05× · 91% · 2 ✅ | 1,08× · 96% · 8 ✅ |
-| levico | 1,14× · 84% · 9 | 0,97× · 81% · 5 | 1,00× · 91% · 11 ✅ | 1,09× · 96% · 6 ✅ |
-| valsugana | 1,23× · 30% · 14 | 1,13× · 91% · 10 | 0,87× · 35% · 18 | 1,05× · 88% · 11 |
-| milano | 1,08× · 100% · 2 ✅ | 0,95× · 100% · 2 ✅ | 1,09× · 95% · 2 ✅ | 1,07× · 100% · 2 ✅ |
+| trento | 1,02× · 0,82 | 0,93× · 0,94 ✅ | 1,00× · 0,93 ✅ | 0,93× · 0,91 ✅ |
+| levico | 1,04× · 0,80 | 1,01× · 0,82 | 1,00× · 0,71 | 1,04× · 0,80 |
+| valsugana | 0,76× · 0,70 | non disponibile | non disponibile | 1,05× · 0,73 |
+| milano | 1,08× · 0,97 ✅ | 0,95× · 1,00 ✅ | 1,09× · 0,91 ✅ | 1,07× · 1,00 ✅ |
 
-- Sui 12 casi di riferimento: distanza entro ±10% in 8, copertura ≥ 80%
-  in 10, entrambe le soglie di arresto in 6. Rapporto mediano 1,05×,
-  contro 2,57× di TASK-017 (rete `walk`).
-- Milano (confronto) converge in 2 tracciamenti, con la forma dove cade:
-  con una rete fitta il problema non c'è. In Valsugana i 5 km non trovano
-  una posizione con strade tutto attorno.
-- Sulla rete `walk` (grafi di TASK-014 uniti, senza ciclopedonali) gli
-  stessi casi andavano peggio a Levico: le ciclopedonali contano.
-- Tempi dalla cache: 2–24 s per caso nelle tre zone, quasi tutti per
-  leggere il grafo di zona; a Milano 36–85 s (GraphML da 98 MB).
-- Difetto visto a occhio, non misurato dalla copertura: **punte** di andata
-  e ritorno su strade parallele (marciapiede e strada), che la potatura degli
-  speroni non riconosce perché i nodi sono diversi. Riguarda lo snapping,
-  non l'ottimizzatore.
+- Trento e Levico: distanza entro ±10% in 8 casi su 8, copertura ≥ 87%.
+  Rapporto mediano sui 12 casi di TASK-017: 2,57×; qui 1,02×.
+- Giudizi a occhio (`samples/LOG.md`): Milano `sì`; Trento `sì`, tranne il
+  cuore da 5 km, migliore nella v2; Levico `quasi` (le punte ci sono, ma i
+  lobi restano irregolari); Valsugana sospesa, con due forme non
+  disponibili.
+- Cosa ha contato, versione per versione: v1 copertura → v2 `fit` (niente
+  più pezzi tagliati a Trento) → v3 punte premiate e non potate (a Levico
+  la punta del cuore ricompare, con la forma ruotata di 45–60°).
+- La partenza spostata è servita solo in Valsugana (250 m): in città le
+  strade ci sono ovunque e il conteggio non la premia.
+- Tempi dalla cache: 7–32 s per caso nelle tre zone, 11–33 s a Milano
+  (dopo la prima lettura, che scrive il pickle).
+- Difetto rimasto: **punte** di andata e ritorno su strade parallele
+  (marciapiede e strada), che la potatura non riconosce. Riguarda lo
+  snapping.
 
 ## Fixture di test
 

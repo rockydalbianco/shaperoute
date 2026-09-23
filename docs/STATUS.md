@@ -5,110 +5,43 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-22 · **Fase corrente**: 1 — Route Engine
+**Ultimo aggiornamento**: 2026-09-23 · **Fase corrente**: 1 — Route Engine
 
 ---
 
 ## In una riga
 
-La CLI cerca rotazione, punto di ingresso e scala in cui le strade seguono
-la forma, poi scrive il GPX: a Trento e Milano cuori e cerchi si
-riconoscono alla distanza giusta, a Levico in parte, in Valsugana non con 5 km.
+La CLI ruota, scala e sposta la forma finché le strade la seguono e scrive
+un GPX chiuso: a Trento e Milano cuori e cerchi riconoscibili alla distanza
+giusta, a Levico quasi; dove la rete è troppo rada la forma è dichiarata
+non disponibile.
 
 ## Prossimo passo
 
-Riprendere **TASK-015** dal punto "Ripresa" qui sotto: rimisurare, generare
-i campioni v2, farli giudicare, allineare la documentazione, chiudere.
+**TASK-016 — Validazione: distanza, ripercorrenza, percorribilità**
+(`ROADMAP.md`). Il file del task va scritto e confermato; dentro ci stanno
+bene le "punte" di andata e ritorno su strade parallele (vedi note).
 
 ## In lavorazione
 
-### TASK-015 — Ripresa (sessione interrotta il 2026-09-23 per limite d'uso)
-
-Branch `feat/TASK-015-iterative-optimizer`. Una prima parte è già su `main`
-(PR #13, mergiata come "work in progress"); il resto va in una seconda PR
-dallo stesso branch. 116 test verdi, ruff e black puliti.
-
-**Fatto e funzionante** (codice su branch):
-- ottimizzatore in `optimizer.py`: conteggio delle strade per 17 partenze ×
-  24 rotazioni × 4 fasi, tracciamento delle migliori, scala per secante,
-  rifinitura, budget di 20 tracciamenti;
-- **partenza spostabile fino a 500 m** (anelli a 250 e 500 m, 8 direzioni),
-  chiesta dall'utente per non tagliare vicino alla partenza; spostarla vale
-  5 punti di copertura; la CLI stampa la nuova partenza;
-- **forma non disponibile** sotto somiglianza 0,60: `ShapeNotDrawableError`,
-  niente GPX (per la Valsugana a 5 km);
-- **metrica passata da copertura a `fit`** (soglia 0,90): i giudizi
-  dell'utente (Milano `sì` con fit ≥ 0,91; Trento e Levico `quasi` con
-  fit 0,71–0,85 ma copertura ≥ 0,90) mostrano che la copertura non vede il
-  "pezzo tagliato";
-- velocità: conteggio vettorizzato, tracciamento sul grafo di zona intero
-  (niente ritaglio), campioni degli archi in cache, distanze esatte solo
-  entro 1 km dalla forma;
-- grafi di zona riscaricati più grandi (+500 m per la partenza spostabile)
-  per trento, levico, valsugana e milano, tutti in `data/cache/`.
-
-**Da fare, in ordine:**
-1. Rimisurare i 16 casi (12 + Milano): `python tests/measure_optimizer.py`
-   in `services/route-engine/`. Con il vecchio codice un caso di Trento
-   durava 28 s: verificare che ora stia sotto i 30 s.
-2. Campioni `TASK-015_*_v2.gpx` (`--out-dir ../../samples --tag v2`),
-   righe in `samples/LOG.md`, far giudicare all'utente. Giudizi v1 già
-   registrati: Milano `sì`, Trento e Levico `quasi` ("un pezzo tagliato"),
-   Valsugana sospesa.
-3. Documentazione da allineare: ADR-0023 e `ROUTE_ENGINE.md` §5 dicono
-   ancora "copertura tenuta" (ora è `fit`); scrivere **ADR-0025**
-   (partenza spostabile + forma non disponibile); `MAPS.md` con le nuove
-   misure e i nuovi grafi di zona; criteri in `docs/tasks/TASK-015.md`
-   (Valsugana fuori dai criteri, su richiesta dell'utente).
-4. Chiudere TASK-015, seconda PR.
-
-**Decisioni aperte per l'utente:**
-- il tratto dalla posizione alla partenza spostata non entra nel GPX né
-  nella distanza: confermare o chiedere di includerlo;
-- dichiarare `numpy` in `pyproject.toml` (già usato direttamente, arriva
-  con osmnx): serve un sì;
-- PR di TASK-019 (`feat/TASK-019-sample-preview`) da mergiare; al merge,
-  conflitto in `DECISIONS.md` fra ADR-0023 e ADR-0024: tenerle entrambe.
-
-**File temporanei** (non tracciati, da cancellare a fine task):
-`_samples015.png`, `_zones.py` (script di download con l'indirizzo di
-Overpass raggiungibile, vedi `MAPS.md`), `_zones.log`, la cartella vuota
-`.claude/worktrees/`.
-
-### Altro
-
-- **TASK-019** (anteprima dei campioni su mappa) implementato sul branch
-  `feat/TASK-019-sample-preview`, PR da aprire e mergiare.
+Niente.
 
 ## Completato
 
-- **TASK-018** — README allineato alla fase 1: stato reale e sezione
-  «Provarlo» con setup e comando della CLI; CI senza impalcatura, con cache di pip.
-- **TASK-017** — Zone di nodi al posto del nodo più vicino e corridoio
-  attorno al contorno (ADR-0022): più corto di TASK-014 in 11 casi su 12 a
-  parità di copertura. Rete a piedi con le ciclopedonali, nei due sensi:
-  cuore 5 km Levico da 2,21× a 1,47×. Resta un rientro in basso al centro
-  del cuore, su campi senza strade: lo risolve la rotazione (TASK-015).
-- **TASK-014** — GPX sulla rete reale: grafo OSMnx con cache in
-  `data/cache/`, snapping al nodo, routing con penalità, potatura degli
-  speroni (ADR-0020, ADR-0021); warning di rete rada; `MAPS.md` scritto.
-  Il percorso taglia ancora per l'interno invece di seguire il bordo
-  (cuore 5 km Levico: tagli interni e doppio anello nel lobo destro).
-- **TASK-013** — `--out` scrive un GPX 1.1 (ADR-0019); 12 campioni teorici
-  (heart/circle, 5 e 15 km, tre zone) guardati in gpx.studio: tutti `sì`.
-- **TASK-012** — `project_shape` mette la forma sulla mappa passando esattamente
-  per la partenza; perimetro in metri entro lo 0,05% del target fino a
-  50 km; formula locale al posto di `pyproj` (ADR-0018).
-- **TASK-011** — `get_shape("heart")(64)` dà 64 vertici equispaziati (±0.5%)
-  più la chiusura, con entrambe le punte del cuore; `n_points` conta i
-  vertici (ADR-0017).
-- **TASK-010** — `python -m route_engine --shape circle --distance 5000
-  --start 46.0122,11.2986` stampa la richiesta; input assurdi danno un
-  errore di una riga (exit 2), non un traceback.
-- **TASK-001** — Repository **pubblico** su GitHub
-  (`rockydalbianco/shaperoute`), `main` protetto da ruleset con Pull
-  Request obbligatoria; push diretto su `main` provato e rifiutato;
-  prima PR mergiata con CI verde.
+- **TASK-015** — Ottimizzatore: 17 partenze (fino a 500 m) × 24 rotazioni ×
+  4 fasi contate sulle strade, tracciamento delle migliori, scala per
+  secante; somiglianza = copertura nei due sensi meno le punte mancate
+  (ADR-0023, ADR-0025). Trento e Levico: distanza entro ±10% in 8 casi su
+  8; Milano perfetta; Valsugana in parte non disponibile. 7–32 s per caso.
+- **TASK-019** — `python tools/preview_samples.py "samples/TASK-015_*_v3.gpx"`
+  scrive `out/preview.html`: tutti i campioni su una mappa OSM (ADR-0024).
+- **TASK-018** — README allineato alla fase 1 (stato, «Provarlo»); CI senza
+  impalcatura, con cache di pip.
+- **TASK-017** — Zone di nodi e corridoio attorno al contorno (ADR-0022);
+  rete a piedi con le ciclopedonali, nei due sensi.
+- **TASK-010–014** — Pacchetto e CLI, forme circle e heart, proiezione,
+  export GPX, snapping su OSMnx con cache e potatura degli speroni.
+- **TASK-001** — Repository pubblico, `main` protetto da PR obbligatoria.
 
 ## Bloccato
 
@@ -128,6 +61,11 @@ Niente.
 - Difetto noto, non ancora in un task: **punte** di andata e ritorno su
   strade parallele (marciapiede e strada) che la potatura non riconosce
   (`MAPS.md`). Candidato per TASK-016 o per un task di snapping.
+- In sospeso, piccoli: dichiarare `numpy` in `pyproject.toml` (lo usa già il
+  motore, arriva con osmnx: nulla da installare); in fase 2, far scegliere
+  all'utente fra più percorsi alternativi (la ricerca li ha già).
+- La Valsugana è sospesa su richiesta dell'utente: un cuore da 15 km e un
+  cerchio da 5 km lì non sono disponibili (ADR-0025).
 - matplotlib non è una dipendenza: per guardare le forme basta uno script
   usa-e-getta fuori dal repository.
 - Con latitudine negativa serve la forma `--start=-33.9,18.4`: argparse

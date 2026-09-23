@@ -346,7 +346,7 @@ somiglianza. Gli 8 grafi `foot` non ancora scaricati si scaricano uno alla
 volta quando Overpass risponde (`MAPS.md`).
 
 ## ADR-0023 — Un grafo per zona; somiglianza = copertura del contorno
-**Stato**: Attiva · 2026-09-23
+**Stato**: Attiva · 2026-09-23 · la scelta della metrica è superata da ADR-0025
 
 TASK-015 ruota e scala la forma attorno alla partenza: il rettangolo della
 forma (ADR-0020) cambia a ogni tentativo, e scaricarlo ogni volta vorrebbe
@@ -413,3 +413,45 @@ anche se i dati sono dentro. La scelta vale solo per lo strumento di
 sviluppo: ADR-0011 resta aperta per l'app. Se un giorno le tile da
 `file://` venissero rifiutate, le alternative sono servire `out/` con
 `python -m http.server` o un altro provider: si decide allora.
+
+## ADR-0025 — Regole dell'ottimizzatore dopo i giudizi a occhio
+**Stato**: Attiva · 2026-09-23
+
+I campioni di TASK-015 giudicati a occhio hanno mostrato quattro cose:
+- la copertura non vede i pezzi tagliati;
+- un cuore senza punta non sembra un cuore;
+- forzare la forma a passare per il punto richiesto la fa tagliare vicino
+  alla partenza;
+- in Valsugana certe forme non si disegnano.
+
+**Decisione**:
+- **Somiglianza** = `fit` (copertura nei due sensi) meno 0,10 per ogni
+  punta della forma mancata; ci si ferma a 0,90. Le punte sono i vertici
+  in cui il contorno gira più di 60° (l'incavo e la punta del cuore). La
+  ricerca penalizza già nel conteggio delle strade le punte senza strada.
+- **Le punte non si potano**: lo sperone che scende alla punta di un cuore
+  e risale è ciò che la disegna. Gli altri speroni si potano come prima.
+- **Partenza spostabile** fino a 500 m (anelli a 250 e 500 m, 8 direzioni);
+  spostarla deve valere almeno 5 punti di copertura. Il percorso parte e
+  finisce nella partenza spostata: il tratto dal punto richiesto non entra
+  né nel GPX né nella distanza.
+- **Distanza**: obiettivo ±10%; se nessun piazzamento ci riesce, fino a
+  **±2 km** pur di tenere la forma.
+- **Forma non disponibile** (nessun percorso, errore esplicito) se la
+  somiglianza migliore è sotto 0,60 o la distanza è oltre ±2 km.
+- Ricerca: fino a 6 piazzamenti e 16 tracciamenti; ogni caso sotto i 40 s.
+
+**Motivo**: sui giudizi v1 la copertura metteva Trento (`quasi`, 91–97%)
+alla pari di Milano (`sì`, 95–100%); `fit` li separa (0,71–0,85 contro
+0,91–1,00). A Levico la punta del cuore spariva per la potatura degli
+speroni; con le punte protette e premiate i due cuori la raggiungono (v3),
+ruotati di 45–60°. L'utente preferisce la forma alla rotazione e accetta
+fino a 2 km di scarto quando la forma non ci sta, ma non un percorso che
+non somiglia alla forma.
+
+**Conseguenza**: `--no-optimize` rifà TASK-017, tranne dove la punta del
+cuore era uno sperone potato: lì ora resta (cuore 5 km Valsugana: 15,9 →
+16,8 km; Trento e Levico identici).
+Soglie e penalità sono tarate su 16 casi e pochi giudizi: si rivedono con
+altri campioni. Una forma rifiutata oggi (Valsugana 15 km cuore, 5 km
+cerchio) può diventare disponibile con uno snapping migliore.

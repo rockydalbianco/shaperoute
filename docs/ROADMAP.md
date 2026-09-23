@@ -69,6 +69,7 @@ Obiettivo: la stessa cosa, ma dal telefono.
 | TASK-021 | Mappa MapLibre + posizione GPS |
 | TASK-022 | API FastAPI che espone il route-engine |
 | TASK-023 | Collegamento app ↔ API, anteprima percorso |
+| TASK-025 | Richieste in due tempi: percorsi lunghi e zone nuove (prima di TASK-024) |
 | TASK-024 | Export e condivisione GPX dal telefono |
 
 Fine fase: **il MVP di `PRODUCT.md` è completo**.
@@ -84,7 +85,9 @@ diversi:
   l'AI (fase 3), ma disegnare si può solo le forme che il motore conosce, e
   quelle nuove sono lavoro di fase 4.
 
-Quando e con quali task si decide chiudendo TASK-023.
+Quando e con quali task: ancora da decidere. Chiudendo TASK-023 l'utente
+ha messo prima TASK-025, perché oggi 15 km e zone nuove superano i 60 s che
+il telefono aspetta.
 
 ## Fase 3 — Linguaggio naturale
 

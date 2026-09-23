@@ -70,11 +70,17 @@ RouteResult:
 Chi modifica questi due oggetti modifica il contratto di tutti: serve una
 voce in `DECISIONS.md`.
 
-Oggi esistono in due copie scritte a mano, con gli stessi nomi dei campi:
-le dataclass in `services/route-engine/route_engine/models.py` (ADR-0016) e
-i tipi TypeScript in `packages/shared-types/src/index.ts`. I JSON di esempio
-in `packages/shared-types/fixtures/` le tengono allineate: se una cambia e
-l'altra no, un test fallisce (ADR-0028). I punti sono `[lat, lon]`.
+Oggi esistono in tre copie scritte a mano, con gli stessi nomi dei campi:
+le dataclass in `services/route-engine/route_engine/models.py` (ADR-0016),
+i modelli Pydantic in `services/api/shaperoute_api/schemas.py` (ADR-0030)
+e i tipi TypeScript in `packages/shared-types/src/index.ts`. I JSON di
+esempio in `packages/shared-types/fixtures/` le tengono allineate: se una
+cambia e le altre no, un test fallisce (ADR-0028). I punti sono
+`[lat, lon]`.
+
+Anche il corpo degli errori dell'API, `{"error": {"code", "message"}}`, è
+contratto: `ApiError` e i suoi codici in `shared-types`, `ErrorBody`
+nell'API, allineati dagli stessi JSON di esempio (ADR-0031).
 
 ## 4. Regole di dipendenza
 

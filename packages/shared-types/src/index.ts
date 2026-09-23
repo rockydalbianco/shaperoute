@@ -38,3 +38,22 @@ export interface RouteResult {
   shape: Shape;
   warnings: string[];
 }
+
+/** Codes of the errors the API answers with (docs/API.md). */
+export const API_ERROR_CODES = [
+  "invalid_request",
+  "shape_not_drawable",
+  "map_data_unavailable",
+  "engine_error",
+  "http_error",
+] as const;
+export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
+
+/** The body of every error answer of the API. */
+export interface ApiError {
+  error: {
+    code: ApiErrorCode;
+    /** In English, for people: the engine's own words when it has them. */
+    message: string;
+  };
+}

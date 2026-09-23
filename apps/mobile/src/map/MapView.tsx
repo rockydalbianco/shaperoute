@@ -4,21 +4,30 @@ import { Linking, type StyleProp, type ViewStyle } from "react-native";
 import { WebView } from "react-native-webview";
 
 import { buildMapPage, isExternalUrl } from "./mapPage";
-import { pageScript, parsePageMessage, setPosition } from "./messages";
+import {
+  clearRoute,
+  pageScript,
+  parsePageMessage,
+  setPosition,
+  showRoute,
+} from "./messages";
 
 const MAP_PAGE = buildMapPage();
 
 type Props = {
   /** Where the route will start; the map centres on it with a marker. */
   start: LatLon | null;
+  /** The route to draw over the roads, or null for none. */
+  route: LatLon[] | null;
   /** Called when the map cannot be shown, with a reason for the log. */
   onError: (reason: string) => void;
   style?: StyleProp<ViewStyle>;
 };
 
-export function MapView({ start, onError, style }: Props) {
+export function MapView({ start, route, onError, style }: Props) {
   const webView = useRef<WebView>(null);
   const [ready, setReady] = useState(false);
+  const routeShown = useRef(false);
 
   // A new start, even at the same place, centres the map on it again.
   useEffect(() => {
@@ -26,6 +35,20 @@ export function MapView({ start, onError, style }: Props) {
       webView.current?.injectJavaScript(pageScript(setPosition(start)));
     }
   }, [ready, start]);
+
+  // After the start, so the map frames the route rather than the start.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (route) {
+      webView.current?.injectJavaScript(pageScript(showRoute(route)));
+      routeShown.current = true;
+    } else if (routeShown.current) {
+      webView.current?.injectJavaScript(pageScript(clearRoute()));
+      routeShown.current = false;
+    }
+  }, [ready, route]);
 
   return (
     <WebView

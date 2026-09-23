@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from dataclasses import fields
 from pathlib import Path
-from typing import Any
+from typing import Any, get_args
 
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
@@ -18,7 +18,13 @@ from route_engine.network import FileSource
 from route_engine.optimizer import GraphLoader, Plan
 
 from shaperoute_api.app import create_app
-from shaperoute_api.schemas import RouteRequestBody, RouteResultBody
+from shaperoute_api.schemas import (
+    ErrorBody,
+    ErrorCode,
+    ErrorDetail,
+    RouteRequestBody,
+    RouteResultBody,
+)
 
 REPO = Path(__file__).resolve().parents[3]
 FIXTURES = REPO / "packages" / "shared-types" / "fixtures"
@@ -62,3 +68,14 @@ def test_the_api_answers_the_result_fixture_unchanged() -> None:
     response = TestClient(app).post("/routes", json=_load("route-request.json"))
     assert response.status_code == 200
     assert response.json() == data
+
+
+def test_error_fixture_is_a_valid_error_body() -> None:
+    data = _load("api-error.json")
+    assert set(data) == _names(ErrorBody)
+    assert set(data["error"]) == _names(ErrorDetail)
+    assert ErrorBody.model_validate(data).error.code == "shape_not_drawable"
+
+
+def test_error_codes_match_shared_types() -> None:
+    assert list(get_args(ErrorCode)) == _load("api-error-codes.json")

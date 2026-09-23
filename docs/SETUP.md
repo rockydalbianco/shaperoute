@@ -478,6 +478,26 @@ I controlli della CI, da `services\api`:
 Dopo il primo giro della CI con l'API, aggiungi il controllo `api` alle
 regole di `main`, come al passo 7.3.
 
+### 10.1 App e API insieme
+
+Per chiedere percorsi dal telefono servono due finestre di PowerShell,
+tutte e due dalla radice del repository:
+
+```powershell
+services\api\.venv\Scripts\python.exe -m shaperoute_api --lan
+```
+
+```powershell
+npm.cmd run mobile
+```
+
+L'app trova l'API da sola: è sullo stesso PC che le manda l'app, alla porta
+8000. Se l'API è spenta, «Draw route» risponde «Cannot reach the API at
+…» con l'indirizzo che ha provato. Per partire da una zona già in cache
+(Trento, Levico, Valsugana, Milano) si nega la posizione a Expo Go (passo
+9.4) e si cerca il luogo; da una zona nuova l'API deve prima scaricarla, e
+può volerci più di un minuto.
+
 ---
 
 ## Il ciclo di tutti i giorni

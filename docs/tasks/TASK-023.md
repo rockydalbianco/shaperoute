@@ -1,6 +1,6 @@
 # TASK-023 — Collegamento app ↔ API, anteprima percorso
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 2 · **Branch**: `feat/TASK-023-app-api`
 
 ## Obiettivo
@@ -136,24 +136,62 @@ può annullare, e ogni errore ha un messaggio che dice cosa fare.
 
 ## Criteri di accettazione
 
-- [ ] Dalla radice `npm run lint`, `npm run format:check`,
-      `npm run typecheck` e `npm test` passano; in `services/api/`
-      `ruff`, `black --check` e `pytest -m "not network"` passano.
-- [ ] Rinominare un campo in `fixtures/api-error.json` fa fallire sia i
-      controlli di `shared-types` sia un test dell'API (provato a mano).
-- [ ] Ogni riga della tabella F ha il suo messaggio sullo schermo, provato
+- [x] Dalla radice `npm run lint`, `npm run format:check`,
+      `npm run typecheck` e `npm test` passano (97 test nell'app, 5 in
+      `shared-types`); in `services/api/` `ruff`, `black --check` e
+      `pytest -m "not network"` passano.
+- [x] Rinominare un campo in `fixtures/api-error.json` fa fallire sia i
+      controlli di `shared-types` sia un test dell'API (provato a mano:
+      `message` → `text`, un errore di `tsc` e un test dell'API).
+- [x] Ogni riga della tabella F ha il suo messaggio sullo schermo, provato
       da un test.
-- [ ] Scambiare lat e lon nei punti del percorso fa fallire un test
-      (provato a mano).
-- [ ] Sull'iPhone: dalla ricerca «Piazza Duomo, Trento», cuore e cerchio
-      compaiono sulla mappa con la distanza reale e gli avvisi; tempo
-      annotato.
-- [ ] Sull'iPhone: «Cancel» ferma l'attesa; con l'API spenta compare il
-      messaggio con l'indirizzo.
-- [ ] Sull'iPhone, con il GPS: esito annotato.
-- [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
-- [ ] Nuova ADR; `UI.md`, `ARCHITECTURE.md`, `SETUP.md`, `TESTING.md`,
-      `STATUS.md` aggiornati.
+- [x] Scambiare lat e lon nei punti del percorso fa fallire un test
+      (provato a mano: 3 test cadono).
+- [x] Sull'iPhone: dalla ricerca «Piazza Duomo, Trento», cuore e cerchio
+      compaiono sulla mappa con la distanza reale e gli avvisi. Tempi dal
+      log dell'API, prova dell'utente del 2026-09-23: 5–25 s per 3, 5 e
+      10 km a Trento.
+- [x] Sull'iPhone: «Cancel» ferma l'attesa; con l'API spenta compare il
+      messaggio con l'indirizzo (provato dall'utente).
+- [x] Sull'iPhone, con il GPS e nelle altre zone: esito annotato sotto,
+      «Limiti misurati».
+- [x] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR
+      (PR #27).
+
+### Limiti misurati sull'iPhone
+
+Dal log dell'API durante la prova, con il PC collegato all'hotspot
+dell'iPhone (le richieste arrivano da `172.20.10.1`), quindi con i
+download sui dati mobili:
+
+- **15 km non sta mai nei 60 s**, né a Trento né altrove. Anche con la zona
+  già in memoria servono circa 14 s per ritagliare il grafo e circa 50 s di
+  calcolo (cerchio 15 km a Trento: 64 s al secondo tentativo, 122,5 s al
+  primo con il download). L'API finisce il calcolo, ma il telefono ha già
+  smesso di aspettare e mostra «No answer within a minute…».
+- **Le zone nuove** chiedono 72–100 s solo per scaricare i dati OSM: la
+  prima richiesta in una zona nuova sfora anche a 5–10 km (cuore 10 km
+  vicino a Levico: 88,6 s di download più 7 s di calcolo). Il tentativo
+  dopo trova la zona in cache e riesce, fino a 10 km.
+- Un download da Overpass è fallito dopo 22 s: 503 `map_data_unavailable`,
+  con il suo messaggio.
+- Mentre l'API scarica una zona, le altre richieste aspettano il lucchetto
+  dei grafi (un cuore da 5 km ha atteso 8,8 s).
+
+Deciso con l'utente: TASK-023 si chiude qui e le richieste in due tempi
+diventano TASK-025, prima di TASK-024 (`ROADMAP.md`).
+- [x] ADR-0031; `UI.md`, `ARCHITECTURE.md` (tre copie del contratto e
+      il corpo degli errori), `API.md`, `SETUP.md` (passo 10.1),
+      `TESTING.md`, `STATUS.md` aggiornati.
+
+Differenze dal piano: i codici degli errori hanno un secondo JSON di
+esempio, `api-error-codes.json`, letto da `shared-types` e dall'API. C'è un
+messaggio in più, per quando l'app non conosce l'indirizzo dell'API.
+«My position» è salito nel pannello in alto, per lasciare in basso forma e
+distanza. Forma e distanza non si cambiano durante l'attesa. Prima della
+prova sul telefono la pagina è stata guardata in Edge headless con un
+percorso vero dell'API (cuore da 5 km a Trento): linea sopra le strade,
+mappa inquadrata, segnaposto sulla partenza.
 
 ## File toccati
 
@@ -201,4 +239,10 @@ docs/tasks/TASK-023.md
 
 ## Esito
 
-*(si compila a fine task)*
+Dal telefono si sceglie forma e distanza e il percorso compare sulla
+mappa con distanza e avvisi, in 5–25 s per 3–10 km nelle zone in cache;
+ogni errore ha il suo messaggio e il corpo degli errori è nel contratto
+condiviso. Emerso: 15 km e zone nuove superano i 60 s che il telefono
+aspetta; vanno in TASK-025 (richieste in due tempi). Il calcolo di 15 km,
+circa 50 s più 14 s di ritaglio, resta lento anche lì: annotato in
+`STATUS.md`.

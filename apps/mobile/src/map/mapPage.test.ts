@@ -7,6 +7,7 @@ import {
   MAPLIBRE_JS_SRI,
   MAPLIBRE_JS_URL,
   MAPLIBRE_VERSION,
+  ROUTE_COLOR,
 } from "./mapPage";
 
 const page = buildMapPage();
@@ -44,4 +45,11 @@ test.each([
   ["data:text/html,hello", false],
 ])("isExternalUrl(%s) is %s", (url, expected) => {
   expect(isExternalUrl(url)).toBe(expected);
+});
+
+test("has a route line, and handles the route messages", () => {
+  expect(page).toContain('map.addSource("route"');
+  expect(page).toContain(`"line-color": "${ROUTE_COLOR}"`);
+  expect(page).toContain('message.type === "showRoute"');
+  expect(page).toContain('message.type === "clearRoute"');
 });

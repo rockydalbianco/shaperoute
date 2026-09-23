@@ -1,0 +1,96 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "W",
+        "osm_id": 34663493,
+        "osm_key": "highway",
+        "osm_value": "residential",
+        "type": "street",
+        "name": "Via Rodolfo Belenzani",
+        "postcode": "38122",
+        "city": "Trento",
+        "district": "Centro Storico - Piedicastello",
+        "county": "Provincia di Trento",
+        "state": "Trentino-Alto Adige/Südtirol",
+        "country": "Italia",
+        "countrycode": "IT"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [11.1211947, 46.0692621]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "W",
+        "osm_id": 239981367,
+        "osm_key": "highway",
+        "osm_value": "pedestrian",
+        "type": "street",
+        "name": "Via Rodolfo Belenzani",
+        "postcode": "38122",
+        "city": "Trento",
+        "district": "Centro Storico - Piedicastello",
+        "county": "Provincia di Trento",
+        "state": "Trentino-Alto Adige/Südtirol",
+        "country": "Italia",
+        "countrycode": "IT"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [11.1212297, 46.0695156]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "W",
+        "osm_id": 167352428,
+        "osm_key": "amenity",
+        "osm_value": "school",
+        "type": "house",
+        "name": "Scuola Primaria «Rodolfo Belenzani»",
+        "street": "Via San Vito",
+        "housenumber": "169",
+        "postcode": "38121",
+        "city": "Trento",
+        "district": "Argentario",
+        "county": "Provincia di Trento",
+        "state": "Trentino-Alto Adige/Südtirol",
+        "country": "Italia",
+        "countrycode": "IT"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [11.1394085, 46.0741262]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "W",
+        "osm_id": 80767248,
+        "osm_key": "amenity",
+        "osm_value": "townhall",
+        "type": "house",
+        "name": "Comune di Trento",
+        "street": "Via Rodolfo Belenzani",
+        "postcode": "38122",
+        "city": "Trento",
+        "district": "Centro Storico - Piedicastello",
+        "county": "Provincia di Trento",
+        "state": "Trentino-Alto Adige/Südtirol",
+        "country": "Italia",
+        "countrycode": "IT"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [11.1213339, 46.0692814]
+      }
+    }
+  ]
+}

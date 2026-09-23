@@ -1,6 +1,6 @@
 # TASK-016 — Validazione: distanza, ripercorrenza, percorribilità
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 1 · **Branch**: `feat/TASK-016-validation`
 
 ## Obiettivo
@@ -73,10 +73,10 @@ Stato sui campioni `TASK-016_*_v1` (numeri in `MAPS.md`).
       soglia (test in `tests/test_validation.py`).
 - [x] Un percorso non chiuso, o con la partenza a più di 500 m, non esce
       mai dal motore (`check_closed`, test).
-- [ ] Le punte sul cerchio da 15 km a Trento spariscono a occhio, senza
-      peggiorare gli altri casi (campioni giudicati): **da giudicare**. Le
-      punte lunghe non ci sono più; il cuore da 15 km a Trento però scende
-      da 0,94 a 0,89 (ADR-0026, conseguenza).
+- [x] Le punte sul cerchio da 15 km a Trento spariscono a occhio, senza
+      peggiorare gli altri casi: campioni giudicati dall'utente il
+      2026-09-23, giudizi d'accordo con la metrica. Il cuore da 15 km a
+      Trento scende da 0,94 a 0,89 (ADR-0026, conseguenza) ed è accettato.
 - [x] `pytest -m "not network"` verde e offline; `ruff` e `black` puliti.
 - [x] `ROUTE_ENGINE.md` §4 e §6, `MAPS.md` e `docs/STATUS.md` aggiornati;
       ADR-0026.
@@ -115,4 +115,9 @@ docs/STATUS.md
 
 ## Esito
 
-*(si compila a fine task)*
+Ogni percorso esce con la riga `checks` (ripercorso esatto e a vista,
+metri su scale, strade principali e gallerie) e i warning sopra soglia; un
+percorso non chiuso o con la partenza oltre 500 m non esce dal motore. Le
+punte di andata e ritorno su strade parallele sono tolte: ripercorso a
+vista sotto il 10% in tutti i casi. Milano e Trento si riconoscono, Levico
+quasi, Valsugana sospesa (ADR-0026).

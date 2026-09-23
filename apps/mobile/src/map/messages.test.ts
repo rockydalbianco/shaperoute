@@ -1,10 +1,32 @@
-import { pageScript, parsePageMessage, setPosition } from "./messages";
+import {
+  clearRoute,
+  pageScript,
+  parsePageMessage,
+  setPosition,
+  showRoute,
+} from "./messages";
 
 test("setPosition sends the point in MapLibre order", () => {
   expect(setPosition([46.0671, 11.1214])).toEqual({
     type: "setPosition",
     lngLat: [11.1214, 46.0671],
   });
+});
+
+test("showRoute sends every point in MapLibre order", () => {
+  expect(
+    showRoute([
+      [46.0671, 11.1214],
+      [46.0122, 11.2986],
+    ]),
+  ).toEqual({
+    type: "showRoute",
+    coordinates: [
+      [11.1214, 46.0671],
+      [11.2986, 46.0122],
+    ],
+  });
+  expect(clearRoute()).toEqual({ type: "clearRoute" });
 });
 
 test("pageScript hands the message to the page and returns true", () => {

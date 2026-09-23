@@ -1,9 +1,10 @@
-import { type LatLon, SHAPES } from "@shaperoute/shared-types";
+import type { LatLon, RouteRequest, Shape } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { apiUrl } from "./src/api/apiUrl";
 import {
   type PositionState,
   useCurrentPosition,
@@ -11,6 +12,15 @@ import {
 import { MapView } from "./src/map/MapView";
 import { PlaceSearch } from "./src/places/PlaceSearch";
 import type { Place } from "./src/places/photon";
+import { type DistanceKm, RoutePanel } from "./src/route/RoutePanel";
+import {
+  type RouteState,
+  sameRequest,
+  useRouteRequest,
+} from "./src/route/useRouteRequest";
+
+/** The API on the PC that serves the app (ADR-0031); null if unknown. */
+const API_URL = apiUrl();
 
 /** Where the route will start: the GPS position, or a place searched for. */
 type Start =
@@ -30,6 +40,9 @@ function MapScreen() {
   const { position, refresh } = useCurrentPosition();
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [shape, setShape] = useState<Shape>("heart");
+  const [distanceKm, setDistanceKm] = useState<DistanceKm>(5);
+  const { state, draw, cancel } = useRouteRequest(API_URL);
 
   // The GPS wins as soon as it answers, also over a place searched before.
   const start = useMemo<Start | null>(() => {
@@ -44,10 +57,27 @@ function MapScreen() {
 
   const noPosition = position.status === "denied" || position.status === "unavailable";
 
+  const request: RouteRequest | null = start && {
+    start: start.point,
+    shape,
+    distance_m: distanceKm * 1000,
+    activity: "running",
+  };
+  // A new start, shape or distance leaves the last answer behind.
+  const view: RouteState =
+    request && state.status !== "idle" && sameRequest(state.request, request)
+      ? state
+      : { status: "idle" };
+
   return (
     <View style={styles.screen}>
       <View style={[styles.panel, { paddingTop: insets.top + 8 }]}>
-        <Text style={styles.title}>ShapeRoute</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>ShapeRoute</Text>
+          <Pressable style={styles.button} onPress={refresh} accessibilityRole="button">
+            <Text style={styles.buttonText}>My position</Text>
+          </Pressable>
+        </View>
         <Text style={styles.status}>{statusText(position, start)}</Text>
         {position.status === "denied" && (
           <Pressable
@@ -65,19 +95,23 @@ function MapScreen() {
           </Text>
         )}
       </View>
-      <MapView style={styles.map} start={start?.point ?? null} onError={setMapError} />
+      <MapView
+        style={styles.map}
+        start={start?.point ?? null}
+        route={view.status === "done" ? view.result.points : null}
+        onError={setMapError}
+      />
       <View style={[styles.panel, styles.bottom, { paddingBottom: insets.bottom + 8 }]}>
-        <Pressable style={styles.button} onPress={refresh} accessibilityRole="button">
-          <Text style={styles.buttonText}>My position</Text>
-        </Pressable>
-        <View style={styles.shapes}>
-          <Text style={styles.label}>Shapes</Text>
-          {SHAPES.map((shape) => (
-            <Text key={shape} style={styles.shape}>
-              {shape}
-            </Text>
-          ))}
-        </View>
+        <RoutePanel
+          shape={shape}
+          distanceKm={distanceKm}
+          onShape={setShape}
+          onDistance={setDistanceKm}
+          view={view}
+          canDraw={request !== null}
+          onDraw={() => request && draw(request)}
+          onCancel={cancel}
+        />
       </View>
     </View>
   );
@@ -109,6 +143,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 8,
   },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -130,9 +169,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bottom: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
     paddingTop: 8,
   },
   button: {
@@ -144,17 +180,5 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
-  },
-  shapes: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    color: "#666",
-  },
-  shape: {
-    fontSize: 16,
   },
 });

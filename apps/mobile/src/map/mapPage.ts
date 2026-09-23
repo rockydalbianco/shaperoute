@@ -29,6 +29,10 @@ export const ITALY_BOUNDS: [southWest: LatLon, northEast: LatLon] = [
 /** Zoom used to show a start: a few streets around it. */
 export const START_ZOOM = 15;
 
+/** The route line: strong enough to stand out over any road colour. */
+export const ROUTE_COLOR = "#d6336c";
+export const ROUTE_WIDTH = 5;
+
 /**
  * Links the page tries to open (the attribution) go to the phone's browser:
  * the WebView only ever shows the map page.
@@ -70,6 +74,8 @@ export function buildMapPage(): string {
     }
     var styleLoaded = false;
     var marker = null;
+    var noRoute = { type: "FeatureCollection", features: [] };
+    var route = noRoute;
     var map = new maplibregl.Map({
       container: "map",
       style: ${JSON.stringify(MAP_STYLE_URL)},
@@ -81,7 +87,27 @@ export function buildMapPage(): string {
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
     map.once("style.load", function () {
       styleLoaded = true;
+      // A route that arrived before the style is drawn now.
+      map.addSource("route", { type: "geojson", data: route });
+      map.addLayer({
+        id: "route",
+        type: "line",
+        source: "route",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${JSON.stringify(ROUTE_COLOR)},
+          "line-width": ${ROUTE_WIDTH},
+          "line-opacity": 0.9,
+        },
+      });
     });
+    function setRoute(data) {
+      route = data;
+      var source = map.getSource("route");
+      if (source) {
+        source.setData(route);
+      }
+    }
     map.on("error", function (event) {
       // Without a style there is no map; a missing tile later is not fatal.
       if (!styleLoaded) {
@@ -97,6 +123,19 @@ export function buildMapPage(): string {
             marker = new maplibregl.Marker().setLngLat(message.lngLat).addTo(map);
           }
           map.flyTo({ center: message.lngLat, zoom: ${START_ZOOM} });
+        } else if (message.type === "showRoute") {
+          var points = message.coordinates;
+          setRoute({
+            type: "Feature",
+            properties: {},
+            geometry: { type: "LineString", coordinates: points },
+          });
+          var bounds = points.reduce(function (box, point) {
+            return box.extend(point);
+          }, new maplibregl.LngLatBounds(points[0], points[0]));
+          map.fitBounds(bounds, { padding: 40 });
+        } else if (message.type === "clearRoute") {
+          setRoute(noRoute);
         }
       },
     };

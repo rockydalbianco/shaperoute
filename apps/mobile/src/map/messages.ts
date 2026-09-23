@@ -3,13 +3,25 @@ import type { LatLon } from "@shaperoute/shared-types";
 import { type LngLat, toLngLat } from "./coordinates";
 
 /** From the app to the map page, delivered by `pageScript`. */
-export type ToPage = { type: "setPosition"; lngLat: LngLat };
+export type ToPage =
+  | { type: "setPosition"; lngLat: LngLat }
+  | { type: "showRoute"; coordinates: LngLat[] }
+  | { type: "clearRoute" };
 
 /** From the map page to the app, through `window.ReactNativeWebView`. */
 export type FromPage = { type: "ready" } | { type: "error"; message: string };
 
 export function setPosition(point: LatLon): ToPage {
   return { type: "setPosition", lngLat: toLngLat(point) };
+}
+
+/** Draws the route and frames the map on it. */
+export function showRoute(points: LatLon[]): ToPage {
+  return { type: "showRoute", coordinates: points.map(toLngLat) };
+}
+
+export function clearRoute(): ToPage {
+  return { type: "clearRoute" };
 }
 
 /** JavaScript that hands a message to the page (see `mapPage.ts`). */

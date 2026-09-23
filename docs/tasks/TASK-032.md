@@ -42,8 +42,8 @@ riconosce, la fase 3 si ripensa (`ROADMAP.md`).
 
 ## Cosa fare
 
-1. **Fermarsi e chiedere conferma.** Nessuna di queste scelte è in
-   `DECISIONS.md`; la nuova ADR si scrive nella PR che implementa.
+1. **Confermato dall'utente il 2026-09-24**: A–F come proposte. La nuova
+   ADR si scrive nella PR che implementa.
    - **A. Il contorno sta in un file JSON**: un solo contorno chiuso, senza
      buchi e senza incroci, più nome, fonte e licenza. Il motore lo porta
      in `[-1, 1]²` e lo ricampiona a 64 punti, come le forme di oggi.

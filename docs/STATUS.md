@@ -21,8 +21,8 @@ percorso si esporta in GPX, e Garmin Connect lo apre.
 ## Prossimo passo
 
 **TASK-032 — Il motore segue un contorno qualunque**
-(`docs/tasks/TASK-032.md`, branch `feat/TASK-032-any-outline`). Il file è
-scritto: le scelte A–F aspettano la conferma dell'utente. Stella, casa e
+(`docs/tasks/TASK-032.md`, branch `feat/TASK-032-any-outline`), scelte
+A–F confermate dall'utente il 2026-09-24. Stella, casa e
 sagoma di un cavallo da file, dalla CLI, giudicate a occhio a Trento e
 Levico; è il cancello della fase 3, ripianificata il 2026-09-24
 (`ROADMAP.md`). ADR-0012 si decide con TASK-030, dopo il catalogo.

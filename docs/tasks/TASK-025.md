@@ -1,6 +1,6 @@
 # TASK-025 — Richieste in due tempi: percorsi lunghi e zone nuove
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 2 · **Branch**: `feat/TASK-025-route-jobs`
 
 ## Obiettivo
@@ -123,15 +123,21 @@ l'API sta scaricando la mappa o calcolando.
       sia `shared-types` sia un test dell'API (provato a mano: `job_id` →
       `id` in `route-job-running.json`).
 - [x] Ogni riga del punto 5 ha il suo test.
-- [ ] Sull'iPhone: il cerchio da 15 km a Trento arriva sulla mappa; tempo
-      annotato.
-- [ ] Sull'iPhone: una zona nuova mostra «Downloading map data…» e poi il
-      percorso, oppure un messaggio onesto; esito e tempo annotati.
-- [ ] Sull'iPhone: dopo «Cancel» su un 15 km, un 5 km arriva senza
-      aspettare la fine del 15.
+- [x] Sull'iPhone: il cerchio da 15 km a Trento arriva sulla mappa in
+      circa 30 s (prova dell'utente del 2026-09-23). Prima sforava sempre.
+- [x] Sull'iPhone: una zona nuova (Rovereto) finisce in un messaggio
+      onesto, «Map data for this area could not be downloaded», con il
+      motivo: connessione a `overpass-api.de` scaduta dopo 180 s. È il
+      problema di rete di questo PC annotato in `MAPS.md`: il DNS dà
+      l'indirizzo 65.109.112.52, che da qui non risponde, mentre l'altro
+      (162.55.144.139) si collega in 0,08 s (verificato lo stesso giorno).
+      Deciso con l'utente: resta una nota, niente task.
+- [x] Sull'iPhone: dopo «Cancel» su un 15 km, un 5 km arriva senza
+      aspettare la fine del 15 (provato dall'utente).
 - [x] `POST /routes` sincrona funziona come prima (test, e i 29 test di
       TASK-022 passano senza modifiche).
-- [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
+- [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR
+      (si spunta quando la PR è aperta e la CI ha girato).
 - [x] ADR-0032, ADR-0030 e ADR-0031 annotate; `API.md`, `UI.md`,
       `ARCHITECTURE.md`, `TESTING.md`, `STATUS.md` aggiornati.
 
@@ -180,4 +186,10 @@ docs/tasks/TASK-025.md
 
 ## Esito
 
-*(si compila a fine task)*
+Dall'iPhone un 15 km a Trento arriva in circa 30 s invece di scadere, e
+l'attesa dice se l'API scarica la mappa o calcola; «Cancel» libera subito
+il posto per la richiesta dopo. Emerso: le zone nuove dipendono
+dall'indirizzo di Overpass che il DNS dà a questo PC, e uno dei due non
+risponde (`MAPS.md`), annotato senza task; una zona annullata durante il
+download si salva comunque (circa 40 MB). Il motore resta sui 30 s per
+15 km, il limite dell'MVP (`STATUS.md`).

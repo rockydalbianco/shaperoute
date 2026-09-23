@@ -15,26 +15,30 @@ Il route engine, da riga di comando, disegna cuori e cerchi riconoscibili
 su strade reali (Trento e Milano bene, Levico quasi, valle sospesa) e
 scrive un GPX con i suoi controlli. Dall'iPhone, con l'API sul PC, si
 sceglie forma e distanza e il percorso compare sulla mappa: 3–10 km nelle
-zone in cache in 5–25 s. 15 km e zone nuove superano i 60 s che il
-telefono aspetta.
+zone in cache in 5–25 s, 15 km in circa 30 s, con l'attesa che dice cosa
+succede. Le zone nuove dipendono da Overpass, che da questo PC risponde
+solo a volte (`MAPS.md`).
 
 ## Prossimo passo
 
-Provare TASK-025 sull'iPhone con l'API avviata con `--lan`, seguendo il
-punto 6 del task (15 km a Trento, una zona nuova, «Cancel» e poi un 5 km),
-poi chiuderlo. Dopo: TASK-024, poi la distanza libera (TASK-026); la forma
-libera in fase 4 (`ROADMAP.md`).
+**TASK-024 — Export e condivisione GPX dal telefono.** Il file del task è
+da scrivere (`docs/tasks/`, branch `docs/TASK-024-task-file`). Il GPX oggi
+lo scrive solo la CLI (`route_engine/export_gpx.py`, `GPX.md`). Da decidere
+lì: chi scrive il GPX per l'app (l'API, riusando l'export del motore, o
+l'app), come il telefono lo salva o lo condivide (foglio di condivisione di
+iOS, file), e l'attribuzione OSM nel GPX (`MAPS.md`, «Ancora aperto»). Dopo:
+la distanza libera (TASK-026); la forma libera in fase 4 (`ROADMAP.md`).
 
 ## In lavorazione
 
-- **TASK-025** — Richieste in due tempi, branch `feat/TASK-025-route-jobs`.
-  Codice, test e documenti fatti (ADR-0032): `/route-jobs` con stati,
-  due thread, un lucchetto per zona, l'app che chiede ogni 2 s fino a 5
-  minuti e mostra download e calcolo. Sul PC un 15 km a Trento arriva in
-  31 s. Manca la prova sull'iPhone.
+Niente. PR di TASK-025 da aprire: il criterio della CI verde si spunta lì.
 
 ## Completato
 
+- **TASK-025** — Richieste in due tempi: `/route-jobs` con stati, due
+  thread, un lucchetto per zona; l'app chiede ogni 2 s fino a 5 minuti e
+  mostra download e calcolo (ADR-0032). Dall'iPhone un 15 km arriva in
+  circa 30 s.
 - **TASK-023** — L'app chiede i percorsi all'API: forma e distanza da
   pulsanti, attesa con «Cancel», percorso sulla mappa con distanza e
   avvisi, un messaggio per ogni errore, `ApiError` in `shared-types`

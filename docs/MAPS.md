@@ -41,6 +41,14 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   quello irraggiungibile, il download va in timeout dopo 180 s. I download
   di TASK-015 sono riusciti facendo restituire a `gethostbyname` il primo
   indirizzo raggiungibile, in uno script usa-e-getta; il motore non lo fa.
+  Vale anche per l'API: il 2026-09-23 sera (TASK-025) una zona nuova
+  chiesta dall'app è finita in `map_data_unavailable` dopo 180 s, perché
+  `gethostbyname` restituiva sempre 65.109.112.52, mentre 162.55.144.139 si
+  collegava in 0,08 s. L'ordine cambia: alle 21:03 un download dal PC era
+  riuscito. Deciso con l'utente di lasciarlo così: è un difetto della rete
+  di sviluppo, e in produzione il download si ripensa con ADR-0009.
+  Controllo rapido: un tentativo di connessione alla porta 443 dei due
+  indirizzi dice quale risponde.
 - Per controllare Overpass senza scaricare nulla: la pagina
   `https://overpass-api.de/api/status`, con uno User-Agent vero (quello
   di default di curl riceve 406).

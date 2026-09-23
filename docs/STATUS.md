@@ -58,9 +58,18 @@ ancora 0,94. Il confronto delle due strategie sui 16 casi era in corso:
 `python ../../_compare.py A` e `... B` (in `services/route-engine/`,
 script non versionato alla radice); se è andato perso, rilanciarlo.
 
+**Confronto fatto** (14 casi disegnabili, budget 20):
+- A, screening (`SCREEN_ONCE = True`): somiglianza media 0,845, 6 casi
+  convergenti; meglio sul cuore 5 km Trento (0,91, converge);
+- B, correzioni su ogni piazzamento (`SCREEN_ONCE = False`,
+  `TOP_PLACEMENTS` 6, `RESERVED_TRACES` 0): media **0,862**, 5 convergenti;
+  meglio sui 15 km di Trento (0,89 e 0,82), sui cerchi di Levico e sul
+  cerchio 15 km Valsugana;
+- nessuna delle due ritrova lo 0,94 del cuore 15 km Trento; Milano uguale.
+
 **Da fare, in ordine:**
-1. Scegliere la strategia dal confronto (media della somiglianza, casi
-   convergenti) e togliere `SCREEN_ONCE`.
+1. Scegliere la strategia (proposta: B, media più alta, differenze piccole)
+   e togliere `SCREEN_ONCE`.
 2. Rigenerare i campioni `TASK-016_*_v1.gpx` (quelli sul disco, non
    versionati, sono di un codice precedente: cancellarli), righe in
    `samples/LOG.md`, far giudicare all'utente.

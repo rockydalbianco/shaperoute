@@ -8,6 +8,7 @@ when the road is not straight, a `geometry` LineString in (lon, lat).
 from __future__ import annotations
 
 import math
+import pickle
 import weakref
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -123,11 +124,11 @@ class OsmnxSource:
 
         path = self.cache_path(bbox)
         if path.exists():
-            return ox.load_graphml(path)
+            return _read_graph(path)
         covering = self.covering_path(bbox)
         if covering is not None:
-            graph = crop(ox.load_graphml(covering), bbox)
-            ox.save_graphml(graph, path)
+            graph = crop(_read_graph(covering), bbox)
+            _write_graph(graph, path)
             return graph
         ox.settings.cache_folder = str(self.cache_dir / "http")
         south, west, north, east = bbox
@@ -139,8 +140,36 @@ class OsmnxSource:
             custom_filter=self.custom_filter,
         )
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-        ox.save_graphml(graph, path)
+        _write_graph(graph, path)
         return graph
+
+
+def _read_graph(path: Path) -> Graph:
+    """A cached graph: from its pickle when there is one, else from GraphML.
+
+    GraphML is the cache of record (readable, what OSMnx writes); the pickle
+    beside it only saves time, since parsing a zone's GraphML takes up to a
+    minute. Both are written by this module into the ignored cache folder.
+    """
+    import osmnx as ox
+
+    fast = path.with_suffix(".pickle")
+    if fast.exists() and fast.stat().st_mtime >= path.stat().st_mtime:
+        with fast.open("rb") as file:
+            graph: Graph = pickle.load(file)
+        return graph
+    graph = ox.load_graphml(path)
+    with fast.open("wb") as file:
+        pickle.dump(graph, file, protocol=pickle.HIGHEST_PROTOCOL)
+    return graph
+
+
+def _write_graph(graph: Graph, path: Path) -> None:
+    import osmnx as ox
+
+    ox.save_graphml(graph, path)
+    with path.with_suffix(".pickle").open("wb") as file:
+        pickle.dump(graph, file, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def area_around(points: Sequence[LatLon], margin_m: float = AREA_MARGIN_M) -> BBox:

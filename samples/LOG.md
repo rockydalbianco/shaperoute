@@ -81,6 +81,22 @@ chiude ADR-0010.
 | 2026-09-23 | TASK-015_heart_15km_milano_v1.gpx | milano | 1.00 | 14.3 / 15.0 km | sì | ottimizzatore (solo confronto): rotazione 0°, fase 0.00, scala 79%, 2 tracciamenti, convergente; fit 1.00; giudizio: perfetto, soprattutto sulle distanze lunghe |
 | 2026-09-23 | TASK-015_circle_5km_milano_v1.gpx | milano | 0.95 | 5.5 / 5.0 km | sì | ottimizzatore (solo confronto): rotazione 0°, fase 0.00, scala 69%, 2 tracciamenti, convergente; fit 0.91; giudizio: perfetto, soprattutto sulle distanze lunghe |
 | 2026-09-23 | TASK-015_circle_15km_milano_v1.gpx | milano | 1.00 | 16.0 / 15.0 km | sì | ottimizzatore (solo confronto): rotazione 0°, fase 0.00, scala 82%, 2 tracciamenti, convergente; fit 1.00; giudizio: perfetto, soprattutto sulle distanze lunghe |
+| 2026-09-23 | TASK-015_heart_5km_trento_v2.gpx | trento | 0.88 | 3.9 / 5.0 km | — | ottimizzatore v2: fit (copertura 0.97), rotazione 0°, fase 0.50, scala 50%, 15 tracciamenti, non convergente; da guardare |
+| 2026-09-23 | TASK-015_heart_15km_trento_v2.gpx | trento | 0.84 | 14.7 / 15.0 km | — | ottimizzatore v2: fit (copertura 0.97), rotazione 0°, fase 0.00, scala 51%, 16 tracciamenti, non convergente; da guardare |
+| 2026-09-23 | TASK-015_circle_5km_trento_v2.gpx | trento | 0.93 | 5.0 / 5.0 km | — | ottimizzatore v2: fit (copertura 0.98), rotazione 30°, fase 0.25, scala 69%, 13 tracciamenti, convergente; da guardare |
+| 2026-09-23 | TASK-015_circle_15km_trento_v2.gpx | trento | 0.91 | 13.9 / 15.0 km | — | ottimizzatore v2: fit (copertura 0.95), rotazione 30°, fase 0.25, scala 63%, 9 tracciamenti, convergente; da guardare |
+| 2026-09-23 | TASK-015_heart_5km_levico_v2.gpx | levico | 0.82 | 5.9 / 5.0 km | — | ottimizzatore v2: fit (copertura 0.80), rotazione 0°, fase 0.75, scala 100%, 16 tracciamenti, non convergente; da guardare |
+| 2026-09-23 | TASK-015_heart_15km_levico_v2.gpx | levico | 0.79 | 14.4 / 15.0 km | — | ottimizzatore v2: fit (copertura 0.89), rotazione 45°, fase 0.00, scala 60%, 16 tracciamenti, non convergente; da guardare |
+| 2026-09-23 | TASK-015_circle_5km_levico_v2.gpx | levico | 0.71 | 5.0 / 5.0 km | — | ottimizzatore v2: fit (copertura 0.91), rotazione 150°, fase 0.00, scala 51%, 15 tracciamenti, non convergente; da guardare |
+| 2026-09-23 | TASK-015_circle_15km_levico_v2.gpx | levico | 0.80 | 15.6 / 15.0 km | — | ottimizzatore v2: fit (copertura 0.91), rotazione 0°, fase 0.50, scala 59%, 14 tracciamenti, non convergente; da guardare |
+| 2026-09-23 | TASK-015_heart_5km_valsugana_v2.gpx | valsugana | 0.79 | 2.7 / 5.0 km | — | ottimizzatore v2: fit (copertura 0.83), rotazione 180°, fase 0.25, scala 40%, partenza spostata di 250 m, 16 tracciamenti, non convergente; da guardare |
+| 2026-09-23 | TASK-015_heart_15km_valsugana_v2.gpx | valsugana | 0.76 | 19.1 / 15.0 km | — | ottimizzatore v2: fit (copertura 0.91), rotazione 90°, fase 0.75, scala 68%, 16 tracciamenti, non convergente; da guardare |
+| 2026-09-23 | TASK-015_circle_15km_valsugana_v2.gpx | valsugana | 0.82 | 11.4 / 15.0 km | — | ottimizzatore v2: fit (copertura 0.91), rotazione 0°, fase 0.75, scala 47%, 16 tracciamenti, non convergente; da guardare |
+| 2026-09-23 | TASK-015_heart_5km_milano_v2.gpx | milano | 0.97 | 5.4 / 5.0 km | — | ottimizzatore v2 (solo confronto): fit (copertura 1.00), rotazione 0°, fase 0.00, scala 77%, 2 tracciamenti, convergente; da guardare |
+| 2026-09-23 | TASK-015_heart_15km_milano_v2.gpx | milano | 1.00 | 14.3 / 15.0 km | — | ottimizzatore v2 (solo confronto): fit (copertura 1.00), rotazione 0°, fase 0.00, scala 79%, 2 tracciamenti, convergente; da guardare |
+| 2026-09-23 | TASK-015_circle_5km_milano_v2.gpx | milano | 0.91 | 5.5 / 5.0 km | — | ottimizzatore v2 (solo confronto): fit (copertura 0.95), rotazione 0°, fase 0.00, scala 69%, 2 tracciamenti, convergente; da guardare |
+| 2026-09-23 | TASK-015_circle_15km_milano_v2.gpx | milano | 1.00 | 16.0 / 15.0 km | — | ottimizzatore v2 (solo confronto): fit (copertura 1.00), rotazione 0°, fase 0.00, scala 82%, 2 tracciamenti, convergente; da guardare |
+| 2026-09-23 | — (circle_5km_valsugana, v2) | valsugana | — | — | — | nessun GPX: forma non disponibile, copertura massima 46% contro 60% richiesto |
 
 <!--
 Esempio di riga compilata:

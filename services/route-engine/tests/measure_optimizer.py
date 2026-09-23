@@ -28,7 +28,12 @@ from route_engine.export_gpx import route_name, to_gpx
 from route_engine.metrics import SIMILARITIES
 from route_engine.models import RouteRequest
 from route_engine.network import OsmnxSource
-from route_engine.optimizer import SHAPE_POINTS, plan_route, required_area
+from route_engine.optimizer import (
+    SHAPE_POINTS,
+    ShapeNotDrawableError,
+    plan_route,
+    required_area,
+)
 from route_engine.projection import initial_scale, project_shape
 from route_engine.shapes import get_shape
 
@@ -46,7 +51,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     source = OsmnxSource(args.cache_dir)
     print(
         f"{'case':<22} {'km':>11} {'ratio':>6} {'cover':>6} {'fit':>5}"
-        f" {'rot':>4} {'phase':>5} {'scale':>5} {'traces':>6}"
+        f" {'move':>4} {'rot':>4} {'phase':>5} {'scale':>5} {'traces':>6}"
     )
     rows: list[tuple[float, float, bool]] = []
     for name, shape_name, distance, start in cases(args.only):
@@ -58,7 +63,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             continue
         request = RouteRequest(start=start, shape=shape_name, distance_m=distance)
         t0 = time.perf_counter()
-        plan = plan_route(request, source, optimize=optimize)
+        try:
+            plan = plan_route(request, source, optimize=optimize)
+        except ShapeNotDrawableError as exc:
+            print(f"{name:<22} not drawable: {exc}")
+            continue
         elapsed = time.perf_counter() - t0
         result = plan.result
         if plan.search is not None:
@@ -66,13 +75,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             outline = best.shape
             status = "ok" if plan.search.converged else "no"
             placement = (
-                f"{best.rotation_deg:4.0f} {best.phase:5.2f}"
+                f"{best.offset_m:4.0f} {best.rotation_deg:4.0f} {best.phase:5.2f}"
                 f" {best.scale_m / initial_scale(shape, distance):5.0%}"
                 f" {len(plan.search.attempts):4d} {status}"
             )
         else:
             outline = project_shape(shape, start, initial_scale(shape, distance))
-            placement = f"{'-':>4} {'-':>5} {'-':>5} {'-':>6}"
+            placement = f"{'-':>4} {'-':>4} {'-':>5} {'-':>5} {'-':>6}"
         ratio = result.distance_m / distance
         cover = SIMILARITIES["coverage"](result.points, outline)
         fit = SIMILARITIES["fit"](result.points, outline)
@@ -94,7 +103,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if rows:
         ratios, covers, within = zip(*rows, strict=True)
         print(
-            f"distance within ±10%: {sum(within)}/{len(rows)}"
+            f"distance within +-10%: {sum(within)}/{len(rows)}"
             f"  cover >= 80%: {sum(c >= 0.8 for c in covers)}/{len(rows)}"
             f"  median ratio {np.median(ratios):.2f}x"
         )

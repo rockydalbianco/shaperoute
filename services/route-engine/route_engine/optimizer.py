@@ -55,13 +55,14 @@ SCALE_RANGE = (0.4, 1.1)
 START_OFFSET_M = 500.0
 START_RINGS_M = (250.0, 500.0)
 START_BEARINGS = 8
-# Placements traced after the road count, and rescales for each of them.
-TOP_PLACEMENTS = 3
+# Placements traced after the road count (while the budget lasts), and
+# rescales for each of them.
+TOP_PLACEMENTS = 6
 MAX_RESCALES = 4
 # Rotation refinement around the best placement.
 REFINE_SPAN_DEG = 15.0
 REFINE_STEP_DEG = 5.0
-MAX_TRACES = 20
+MAX_TRACES = 16
 # Stop when both hold (ROUTE_ENGINE.md §5). Metric and threshold come from
 # the eye judgement of the first results (TASK-015, docs/MAPS.md): the
 # routes judged good covered 90% of the outline or more, the others less.

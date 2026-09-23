@@ -1,4 +1,5 @@
 import type { RouteRequest } from "@shaperoute/shared-types";
+import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import request from "@shaperoute/shared-types/fixtures/route-request.json";
 import result from "@shaperoute/shared-types/fixtures/route-result.json";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
@@ -16,12 +17,19 @@ afterAll(() => {
   fetchSpy.mockRestore();
 });
 
-test("waits, then keeps the route with its request", async () => {
-  fetchSpy.mockResolvedValue(Response.json(result));
+test("waits with the API's phase, then keeps the route with its request", async () => {
+  jest.useFakeTimers();
+  const computing = { ...jobDone, status: "computing", result: null };
+  fetchSpy
+    .mockResolvedValueOnce(Response.json(computing, { status: 202 }))
+    .mockResolvedValueOnce(Response.json(jobDone));
   const { result: hook } = await renderHook(() => useRouteRequest("http://pc:8000"));
   await act(() => hook.current.draw(REQUEST));
-  await waitFor(() => expect(hook.current.state.status).toBe("done"));
+  expect(hook.current.state).toMatchObject({ status: "waiting", phase: "computing" });
+
+  await act(() => jest.advanceTimersByTimeAsync(2000));
   expect(hook.current.state).toEqual({ status: "done", request: REQUEST, result });
+  jest.useRealTimers();
 });
 
 test("without an API address it fails without asking anyone", async () => {

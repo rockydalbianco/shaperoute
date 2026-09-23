@@ -50,13 +50,16 @@ controllo dei tipi, che per TypeScript è già metà dei test.
   vera salvata in `apps/mobile/src/places/fixtures/`. La conversione fra
   `(lat, lon)` e il `[lon, lat]` di MapLibre si prova con la partenza di
   Trento, dove uno scambio non passa. Le risposte dell'API vengono dai JSON
-  di esempio di `shared-types` (percorso ed errore); attesa, limite di 60 s
-  e «Cancel» si provano con timer finti;
+  di esempio di `shared-types` (percorso, errore, richieste in due tempi);
+  stati dell'attesa, limite di 5 minuti, errori di rete ripetuti e
+  «Cancel» si provano con timer finti;
 - API: con `TestClient` di FastAPI, un percorso vero sul grafo piccolo di
   Levico (circa 5 s, uno solo) e ogni errore con un motore finto; i
   modelli Pydantic leggono gli stessi JSON di esempio di `shared-types`;
   i grafi di zona si leggono una volta e nessun ritaglio finisce nella
-  cache.
+  cache. Le richieste in due tempi girano su thread veri, con motori finti
+  che aspettano un segnale e un orologio finto per i 10 minuti: niente
+  `sleep` a caso, solo attese su eventi.
 
 **Non deterministico, va isolato:**
 

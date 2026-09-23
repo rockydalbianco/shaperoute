@@ -63,7 +63,8 @@ export function RoutePanel({
       {waiting ? (
         <View style={styles.row}>
           <Text style={styles.waiting}>
-            Drawing a {distanceKm} km {shape}… <Elapsed since={view.startedAt} />
+            {waitingText(view.phase, distanceKm, shape)}{" "}
+            <Elapsed since={view.startedAt} />
           </Text>
           <Pressable
             style={styles.secondary}
@@ -100,6 +101,23 @@ export function RoutePanel({
       {view.status === "failed" && <Problem view={view} />}
     </View>
   );
+}
+
+/** What the API is doing, as it said on its last answer. */
+function waitingText(
+  phase: Extract<RouteState, { status: "waiting" }>["phase"],
+  distanceKm: DistanceKm,
+  shape: Shape,
+): string {
+  switch (phase) {
+    case "sending":
+    case "queued":
+      return "Waiting for the API…";
+    case "downloading_map":
+      return "Downloading map data for this area…";
+    default:
+      return `Drawing a ${distanceKm} km ${shape}…`;
+  }
 }
 
 function Problem({ view }: { view: Extract<RouteState, { status: "failed" }> }) {

@@ -15,17 +15,19 @@ Il route engine, da riga di comando, disegna cuori e cerchi riconoscibili
 su strade reali (Trento e Milano bene, Levico quasi, valle sospesa) e
 scrive un GPX con i suoi controlli. Dall'iPhone, con l'API sul PC, si
 sceglie forma e distanza e il percorso compare sulla mappa: 3–10 km nelle
-zone in cache in 5–25 s. 15 km e zone nuove superano i 60 s che il
-telefono aspetta.
+zone in cache in 5–25 s, 15 km in circa 30 s, con l'attesa che dice cosa
+succede. Le zone nuove dipendono da Overpass, che da questo PC risponde
+solo a volte (`MAPS.md`).
 
 ## Prossimo passo
 
-**TASK-025 — Richieste in due tempi**, sul branch
-`feat/TASK-025-route-jobs`. Il file del task è scritto, con le scelte già
-confermate dall'utente: `POST /route-jobs` con stato da chiedere ogni 2 s
-fino a 5 minuti, stati di download e calcolo, due thread nell'API, un
-lucchetto per zona, `RouteJob` in `shared-types`. Dopo: TASK-024, poi la
-distanza libera (TASK-026); la forma libera in fase 4 (`ROADMAP.md`).
+**TASK-024 — Export e condivisione GPX dal telefono.** Il file del task è
+da scrivere (`docs/tasks/`, branch `docs/TASK-024-task-file`). Il GPX oggi
+lo scrive solo la CLI (`route_engine/export_gpx.py`, `GPX.md`). Da decidere
+lì: chi scrive il GPX per l'app (l'API, riusando l'export del motore, o
+l'app), come il telefono lo salva o lo condivide (foglio di condivisione di
+iOS, file), e l'attribuzione OSM nel GPX (`MAPS.md`, «Ancora aperto»). Dopo:
+la distanza libera (TASK-026); la forma libera in fase 4 (`ROADMAP.md`).
 
 ## In lavorazione
 
@@ -33,20 +35,12 @@ Niente.
 
 ## Completato
 
-- **TASK-023** — L'app chiede i percorsi all'API: forma e distanza da
-  pulsanti, attesa con «Cancel», percorso sulla mappa con distanza e
-  avvisi, un messaggio per ogni errore, `ApiError` in `shared-types`
-  (ADR-0031). Provata sull'iPhone fino a 10 km nelle zone in cache.
-- **TASK-022** — API FastAPI in `services/api/`: `POST /routes` e
-  `GET /health`, errori con un codice, grafi di zona in memoria senza
-  ritagli salvati, 7–32 s per percorso; ADR-0009 rinviata alla fase 4
-  (ADR-0030). Provata dall'iPhone.
-- **TASK-021** — Mappa MapLibre GL JS in WebView con tile OpenFreeMap,
-  posizione GPS con `expo-location` e, senza posizione, ricerca di città o
-  via con Photon (ADR-0029). Provata sull'iPhone.
-- **TASK-020** — Monorepo npm con `apps/mobile` (Expo SDK 57, una
-  schermata) e `packages/shared-types` (contratto in TypeScript, allineato
-  al Python da test); job `mobile` in CI (ADR-0028). Provata sull'iPhone.
+- **Fase 2 finora** (TASK-020–025): monorepo npm con app Expo e
+  `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
+  GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in
+  memoria (ADR-0030); app che chiede i percorsi, li disegna e spiega ogni
+  errore (ADR-0031); richieste in due tempi con stati, per 15 km e zone
+  nuove (ADR-0032). Tutto provato sull'iPhone.
 - **Fase 1 — Route engine** (TASK-010–019): CLI e GPX; forme circle e
   heart; snapping su OSMnx con zone e corridoio (ADR-0022); ottimizzatore
   che ruota, scala e sposta la partenza fino a 500 m (ADR-0023, ADR-0025);
@@ -93,7 +87,9 @@ Niente.
   (già fatto); il permesso di posizione è di Expo Go (`SETUP.md`, 9.4).
 - API: dalla radice `services\api\.venv\Scripts\python.exe -m
   shaperoute_api --lan` (`SETUP.md`, passo 10); risponde anche su `/docs`.
-- Il disco C: di questo PC è quasi pieno (1,3 GB liberi il 2026-09-23):
+- Il disco C: di questo PC è quasi pieno (1,1 GB liberi il 2026-09-23;
+  ogni zona nuova scaricata vale circa 40 MB, più le risposte di Overpass
+  in `data/cache/http/`, già 244 MB):
   Expo si ferma con `ENOSPC` quando finisce lo spazio. In `data/cache/`
   ci sono ritagli salvati dalla CLI che si possono togliere a mano.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.

@@ -34,7 +34,11 @@ export function problemText(problem: RouteProblem): ProblemText {
       };
     case "timeout":
       return {
-        text: "No answer within a minute. The API may be downloading map data for a new area: try again shortly.",
+        text: "The API took more than 5 minutes. Try again later, or a shorter distance.",
+      };
+    case "lost":
+      return {
+        text: "The API lost this request (was it restarted?). Try again.",
       };
     case "no_api_url":
       return {

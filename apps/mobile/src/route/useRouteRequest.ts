@@ -1,4 +1,4 @@
-import type { RouteRequest, RouteResult } from "@shaperoute/shared-types";
+import type { JobStatus, RouteRequest, RouteResult } from "@shaperoute/shared-types";
 import { useCallback, useRef, useState } from "react";
 
 import { requestRoute, type RouteOutcome } from "../api/routes";
@@ -10,13 +10,19 @@ export type RouteProblem =
 
 export type RouteState =
   | { status: "idle" }
-  | { status: "waiting"; request: RouteRequest; startedAt: number }
+  | {
+      status: "waiting";
+      request: RouteRequest;
+      startedAt: number;
+      /** What the API says it is doing; "sending" until it has answered. */
+      phase: "sending" | JobStatus;
+    }
   | { status: "done"; request: RouteRequest; result: RouteResult }
   | { status: "failed"; request: RouteRequest; problem: RouteProblem };
 
 /**
  * One route request at a time: a new one, or `cancel`, stops waiting for the
- * previous. The API keeps computing a cancelled route; its answer is dropped.
+ * previous and tells the API to drop it (ADR-0032).
  */
 export function useRouteRequest(baseUrl: string | null): {
   state: RouteState;
@@ -31,9 +37,14 @@ export function useRouteRequest(baseUrl: string | null): {
       current.current?.abort();
       const mine = new AbortController();
       current.current = mine;
-      setState({ status: "waiting", request, startedAt: Date.now() });
+      setState({ status: "waiting", request, startedAt: Date.now(), phase: "sending" });
+      const onStatus = (phase: JobStatus) => {
+        if (current.current === mine) {
+          setState((now) => (now.status === "waiting" ? { ...now, phase } : now));
+        }
+      };
       const outcome: Promise<RouteOutcome | { kind: "no_api_url" }> = baseUrl
-        ? requestRoute(baseUrl, request, { signal: mine.signal })
+        ? requestRoute(baseUrl, request, { signal: mine.signal, onStatus })
         : Promise.resolve({ kind: "no_api_url" });
       void outcome.then((answer) => {
         if (current.current !== mine) {

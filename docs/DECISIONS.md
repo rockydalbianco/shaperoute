@@ -623,7 +623,9 @@ dietro l'API (TASK-022). A ogni avvio a freddo la WebView scarica circa
 posizione e rete sono finte, la pagina si prova sul telefono.
 
 ## ADR-0030 — API FastAPI sul route-engine, grafi di zona in memoria
-**Stato**: Attiva · 2026-09-23
+**Stato**: Attiva · 2026-09-23 · l'app non usa più `POST /routes` ma le
+richieste in due tempi, e il lucchetto unico dei grafi è diventato uno per
+zona (ADR-0032)
 
 TASK-022 espone il route-engine al telefono. Servivano forma dell'API,
 errori, gestione dei grafi e una risposta ad ADR-0009 e alla domanda
@@ -669,7 +671,8 @@ TASK-023.
 
 
 ## ADR-0031 — L'app chiede i percorsi all'API: indirizzo, attesa, errori
-**Stato**: Attiva · 2026-09-23
+**Stato**: Attiva · 2026-09-23 · la richiesta sincrona e il limite di 60 s
+sono superati da ADR-0032
 
 TASK-023 collega l'app all'API di ADR-0030. Servivano l'indirizzo
 dell'API, la scelta di forma e distanza, l'attesa, il disegno del percorso
@@ -710,3 +713,48 @@ perché la zona va scaricata, finisce in «nessuna risposta»: l'API però
 finisce il lavoro e salva la zona, e il tentativo dopo trova la cache.
 L'utente ha chiesto, per dopo questa fase, campi liberi per ogni distanza e
 ogni forma (`ROADMAP.md`, fase 2).
+
+## ADR-0032 — Richieste in due tempi: accettata subito, chiesta finché è pronta
+**Stato**: Attiva · 2026-09-23
+
+Sull'iPhone (TASK-023) i 15 km e le zone nuove superavano i circa 60 s che
+il telefono aspetta una risposta: l'API finiva il lavoro, ma il telefono
+non c'era più. Confermato dall'utente (TASK-025).
+
+**Decisione**:
+- **Endpoint**: `POST /route-jobs` risponde subito `202` con un `RouteJob`;
+  `GET /route-jobs/{job_id}` ne dà lo stato e, alla fine, il percorso o
+  l'errore; `DELETE /route-jobs/{job_id}` annulla. `POST /routes` resta per
+  `/docs`, `curl` e le misure.
+- **Stati**: `queued`, `downloading_map`, `computing`, `done`, `failed`.
+  Nessuna percentuale.
+- **Dove girano**: due thread nel processo dell'API; le richieste stanno in
+  memoria e si dimenticano 10 minuti dopo la fine. Nessuna dipendenza
+  nuova. Una richiesta annullata in coda non parte; una annullata mentre
+  carica il grafo si ferma prima di calcolare; una che calcola finisce nel
+  suo thread e il risultato si butta.
+- **Un lucchetto per zona** invece di uno per tutti i grafi.
+- **L'app** chiede lo stato ogni 2 s, fino a 5 minuti; perdona due errori
+  di rete di fila; con «Cancel» o allo scadere manda il `DELETE`. Il
+  pannello dice lo stato: attesa, download, calcolo.
+- **Contratto**: `RouteJob` e `JOB_STATUSES` in `shared-types`, con JSON di
+  esempio per una richiesta in corso, finita e fallita, e per gli stati,
+  letti da `tsc`, dal test di Node e dai modelli Pydantic.
+
+**Motivo**: la richiesta sincrona dipende da quanto aspetta il telefono, e
+né il download di una zona (72–100 s sui dati mobili) né un 15 km (30–65 s)
+ci stanno con margine. Chiedere ogni 2 s costa poche richieste piccole e
+non ha bisogno di nuove librerie né di tenere aperta una connessione. Due
+thread e non uno perché un calcolo già partito non si interrompe: con un
+thread solo, annullare un 15 km lascerebbe in coda la richiesta dopo. Il
+lucchetto unico faceva aspettare un 5 km in una zona in memoria dietro il
+download di un'altra zona.
+
+**Conseguenza**: riavviare l'API perde le richieste in corso, e l'app lo
+dice («lost»). Due richieste insieme si dividono il processore: un 15 km
+che finisce nel suo thread rallenta quella dopo, anche se non la blocca.
+Una zona si scarica e si salva anche quando la richiesta viene annullata:
+circa 40 MB per zona, più le risposte di Overpass in `data/cache/http/`.
+Con l'hosting (fase 4) le richieste dovranno sopravvivere a un riavvio e a
+più processi: servirà una coda vera. Il motore resta lento sui 15 km,
+oltre i 30 s di `PRODUCT.md`: è un lavoro a parte.

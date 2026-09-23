@@ -1,6 +1,7 @@
 import { SHAPES } from "@shaperoute/shared-types";
 import apiError from "@shaperoute/shared-types/fixtures/api-error.json";
-import routeResult from "@shaperoute/shared-types/fixtures/route-result.json";
+import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
+import jobFailed from "@shaperoute/shared-types/fixtures/route-job-failed.json";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import * as Location from "expo-location";
 
@@ -53,21 +54,45 @@ const API = "http://192.168.1.23:8000";
 
 let fetchSpy: jest.SpiedFunction<typeof fetch>;
 
-/** The API answers with this; Photon with its usual answer. */
-function apiAnswers(status: number, body: unknown) {
-  fetchSpy.mockImplementation(async (input) =>
-    String(input).startsWith(API)
-      ? Response.json(body, { status })
-      : Response.json(response),
+function job(status: string) {
+  return { job_id: "4f2c9e1a", status, result: null, error: null };
+}
+
+/**
+ * The API accepts the route job, then answers each poll with the next body
+ * (the last one repeats); Photon answers as usual.
+ */
+function apiAnswers(...polls: unknown[]) {
+  fetchSpy.mockImplementation(async (input, init) => {
+    if (!String(input).startsWith(API)) {
+      return Response.json(response);
+    }
+    const method = init?.method ?? "GET";
+    if (method === "DELETE") {
+      return new Response(null, { status: 204 });
+    }
+    if (method === "POST") {
+      return Response.json(job("queued"), { status: 202 });
+    }
+    return Response.json(polls.length > 1 ? polls.shift() : polls[0]);
+  });
+}
+
+function apiCalls(method: string) {
+  return fetchSpy.mock.calls.filter(
+    ([input, init]) =>
+      String(input).startsWith(API) && (init?.method ?? "GET") === method,
   );
 }
 
 /** What the app sent to the API in its last request. */
 function lastRouteRequest(): unknown {
-  const call = fetchSpy.mock.calls.filter(
-    ([input]) => String(input) === `${API}/routes`,
-  );
-  return JSON.parse(String(call.at(-1)?.[1]?.body));
+  return JSON.parse(String(apiCalls("POST").at(-1)?.[1]?.body));
+}
+
+/** Lets the app poll the API once. */
+async function nextPoll() {
+  await act(() => jest.advanceTimersByTimeAsync(2000));
 }
 
 async function atTrento() {
@@ -180,13 +205,16 @@ test("Draw route is off until there is a start", async () => {
 });
 
 test("draws the route for the chosen shape and distance", async () => {
-  apiAnswers(200, routeResult);
+  jest.useFakeTimers();
+  apiAnswers(job("computing"), jobDone);
   await atTrento();
   await fireEvent.press(screen.getByText("circle"));
   await fireEvent.press(screen.getByText("3 km"));
   await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
+  await nextPoll();
 
-  expect(await screen.findByText("4.0 km on roads (target 3 km)")).toBeOnTheScreen();
+  expect(screen.getByText("4.0 km on roads (target 3 km)")).toBeOnTheScreen();
   expect(screen.getByText("• 120 m of the route on steps")).toBeOnTheScreen();
   expect(lastRouteRequest()).toEqual({
     start: [46.0671, 11.1214],
@@ -195,38 +223,55 @@ test("draws the route for the chosen shape and distance", async () => {
     activity: "running",
   });
   expect(lastScript()).toContain('"type":"showRoute","coordinates":[[11.1214,46.0671]');
+  jest.useRealTimers();
 });
 
-test("while waiting it counts the seconds, and Cancel stops it", async () => {
+test("while waiting it says what the API is doing, with the seconds", async () => {
   jest.useFakeTimers();
-  fetchSpy.mockImplementation(
-    (_input, init) =>
-      new Promise((_resolve, reject) => {
-        init?.signal?.addEventListener("abort", () => reject(new Error("Aborted")));
-      }),
-  );
+  apiAnswers(job("downloading_map"), job("computing"));
   await atTrento();
   await fireEvent.press(screen.getByText("Draw route"));
-  expect(screen.getByText(/Drawing a 5 km heart…/)).toBeOnTheScreen();
-  await act(() => jest.advanceTimersByTimeAsync(3000));
-  expect(screen.getByText("3 s")).toBeOnTheScreen();
+  expect(screen.getByText(/Waiting for the API…/)).toBeOnTheScreen();
 
+  await nextPoll();
+  expect(screen.getByText(/Downloading map data for this area…/)).toBeOnTheScreen();
+  expect(screen.getByText("2 s")).toBeOnTheScreen();
+
+  await nextPoll();
+  expect(screen.getByText(/Drawing a 5 km heart…/)).toBeOnTheScreen();
+  jest.useRealTimers();
+});
+
+test("Cancel stops waiting and tells the API to drop the job", async () => {
+  jest.useFakeTimers();
+  apiAnswers(job("computing"));
+  await atTrento();
+  await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
   await fireEvent.press(screen.getByText("Cancel"));
-  expect(await screen.findByText("Draw route")).toBeOnTheScreen();
+  await act(() => jest.advanceTimersByTimeAsync(0));
+
+  expect(screen.getByText("Draw route")).toBeOnTheScreen();
   expect(screen.queryByText(/Drawing a/)).not.toBeOnTheScreen();
+  expect(apiCalls("DELETE").map(([url]) => String(url))).toEqual([
+    `${API}/route-jobs/4f2c9e1a`,
+  ]);
   jest.useRealTimers();
 });
 
 test("an error from the API is explained, with the engine's reason", async () => {
-  apiAnswers(422, apiError);
+  jest.useFakeTimers();
+  apiAnswers(jobFailed);
   await atTrento();
   await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
   expect(
-    await screen.findByText(
+    screen.getByText(
       "This shape does not fit the roads here. Try another distance, shape or start.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByText(apiError.error.message)).toBeOnTheScreen();
+  jest.useRealTimers();
 });
 
 test("an API that does not answer says where it was looked for", async () => {
@@ -243,10 +288,12 @@ test("an API that does not answer says where it was looked for", async () => {
 });
 
 test("a new start takes the old route away", async () => {
-  apiAnswers(200, routeResult);
+  jest.useFakeTimers();
+  apiAnswers(jobDone);
   await atTrento();
   await fireEvent.press(screen.getByText("Draw route"));
-  await screen.findByText("4.0 km on roads (target 5 km)");
+  await nextPoll();
+  expect(screen.getByText("4.0 km on roads (target 5 km)")).toBeOnTheScreen();
 
   getPosition.mockResolvedValue(positionAt(46.0122, 11.2986));
   await fireEvent.press(screen.getByText("My position"));
@@ -258,4 +305,5 @@ test("a new start takes the old route away", async () => {
   const cleared = scripts.findIndex((script) => script.includes('"clearRoute"'));
   expect(shown).toBeGreaterThan(-1);
   expect(cleared).toBeGreaterThan(shown);
+  jest.useRealTimers();
 });

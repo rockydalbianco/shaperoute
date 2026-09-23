@@ -4,15 +4,21 @@ import { test } from "node:test";
 import apiErrorCodes from "../fixtures/api-error-codes.json" with { type: "json" };
 import apiError from "../fixtures/api-error.json" with { type: "json" };
 import contract from "../fixtures/contract.json" with { type: "json" };
+import jobDone from "../fixtures/route-job-done.json" with { type: "json" };
+import jobFailed from "../fixtures/route-job-failed.json" with { type: "json" };
+import jobRunning from "../fixtures/route-job-running.json" with { type: "json" };
+import jobStatuses from "../fixtures/route-job-statuses.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
 import result from "../fixtures/route-result.json" with { type: "json" };
 import {
   ACTIVITIES,
   API_ERROR_CODES,
+  JOB_STATUSES,
   MAX_DISTANCE_M,
   MIN_DISTANCE_M,
   SHAPES,
   type ApiError,
+  type RouteJob,
   type RouteRequest,
   type RouteResult,
 } from "../src/index.ts";
@@ -26,11 +32,32 @@ const errorFields: Same<keyof typeof apiError, keyof ApiError> = true;
 const errorDetailFields: Same<keyof typeof apiError.error, keyof ApiError["error"]> =
   true;
 
+const jobFields: Same<keyof typeof jobRunning, keyof RouteJob> &
+  Same<keyof typeof jobDone, keyof RouteJob> &
+  Same<keyof typeof jobFailed, keyof RouteJob> = true;
+const jobResultFields: Same<keyof typeof jobDone.result, keyof RouteResult> = true;
+const jobErrorFields: Same<keyof typeof jobFailed.error, keyof ApiError["error"]> =
+  true;
+
 const isShape = (value: string): boolean =>
   (SHAPES as readonly string[]).includes(value);
 
 test("the fixtures have the fields of the types", () => {
   assert.ok(requestFields && resultFields && errorFields && errorDetailFields);
+  assert.ok(jobFields && jobResultFields && jobErrorFields);
+});
+
+test("route jobs carry a result only when done, an error only when failed", () => {
+  assert.deepEqual([...JOB_STATUSES], jobStatuses);
+  for (const job of [jobRunning, jobDone, jobFailed]) {
+    assert.ok((JOB_STATUSES as readonly string[]).includes(job.status));
+  }
+  assert.equal(jobRunning.result, null);
+  assert.equal(jobRunning.error, null);
+  assert.equal(jobDone.status, "done");
+  assert.deepEqual(jobDone.result, result);
+  assert.equal(jobFailed.status, "failed");
+  assert.deepEqual(jobFailed.error, apiError.error);
 });
 
 test("the error fixture uses a known code, and the codes match the API", () => {

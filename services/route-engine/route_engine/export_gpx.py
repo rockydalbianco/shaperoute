@@ -14,6 +14,12 @@ CREATOR = "ShapeRoute route-engine"
 # 7 decimals of a degree are about 1 cm: enough, and diffs stay readable.
 COORDINATE_DECIMALS = 7
 
+# The route is made of OpenStreetMap data: the ODbL wants it said wherever the
+# data goes, and a GPX file travels (ADR-0033).
+OSM_AUTHOR = "OpenStreetMap contributors"
+OSM_LICENSE = "https://opendatacommons.org/licenses/odbl/1-0/"
+OSM_COPYRIGHT_URL = "https://www.openstreetmap.org/copyright"
+
 
 def route_name(shape: str, distance_m: int, when: datetime) -> str:
     """Human-readable track name, e.g. 'heart 5 km · 2026-09-22'."""
@@ -34,6 +40,11 @@ def to_gpx(points: Sequence[LatLon], name: str, when: datetime) -> str:
     ET.SubElement(metadata, f"{ns}name").text = name
     author = ET.SubElement(metadata, f"{ns}author")
     ET.SubElement(author, f"{ns}name").text = CREATOR
+    # GPX 1.1 wants this order in metadata: name, author, copyright, link, time.
+    copyright_ = ET.SubElement(metadata, f"{ns}copyright", {"author": OSM_AUTHOR})
+    ET.SubElement(copyright_, f"{ns}license").text = OSM_LICENSE
+    link = ET.SubElement(metadata, f"{ns}link", {"href": OSM_COPYRIGHT_URL})
+    ET.SubElement(link, f"{ns}text").text = f"© {OSM_AUTHOR}"
     ET.SubElement(metadata, f"{ns}time").text = timestamp
 
     trk = ET.SubElement(gpx, f"{ns}trk")

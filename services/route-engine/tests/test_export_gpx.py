@@ -7,7 +7,13 @@ from pathlib import Path
 import pytest
 
 from route_engine.__main__ import main
-from route_engine.export_gpx import GPX_NAMESPACE, route_name, to_gpx
+from route_engine.export_gpx import (
+    GPX_NAMESPACE,
+    OSM_COPYRIGHT_URL,
+    OSM_LICENSE,
+    route_name,
+    to_gpx,
+)
 from route_engine.geo import path_length_m
 from route_engine.network import OsmnxSource
 from route_engine.optimizer import required_area
@@ -72,6 +78,21 @@ def test_metadata_has_name_author_and_utc_time() -> None:
     assert root.findtext("gpx:trk/gpx:name", namespaces=NS) == (
         "heart 5 km · 2026-09-22"
     )
+
+
+def test_metadata_credits_openstreetmap_in_gpx_order() -> None:
+    root = _parse(to_gpx(_heart_route(), "heart", WHEN))
+    metadata = root.find("gpx:metadata", NS)
+    assert metadata is not None
+    order = [child.tag.split("}")[1] for child in metadata]
+    assert order == ["name", "author", "copyright", "link", "time"]
+    copyright_ = metadata.find("gpx:copyright", NS)
+    assert copyright_ is not None
+    assert copyright_.get("author") == "OpenStreetMap contributors"
+    assert copyright_.findtext("gpx:license", namespaces=NS) == OSM_LICENSE
+    link = metadata.find("gpx:link", NS)
+    assert link is not None and link.get("href") == OSM_COPYRIGHT_URL
+    assert link.findtext("gpx:text", namespaces=NS) == "© OpenStreetMap contributors"
 
 
 def test_naive_time_is_rejected() -> None:

@@ -21,13 +21,12 @@ solo a volte (`MAPS.md`).
 
 ## Prossimo passo
 
-**TASK-024 — Export e condivisione GPX dal telefono.** Il file del task è
-da scrivere (`docs/tasks/`, branch `docs/TASK-024-task-file`). Il GPX oggi
-lo scrive solo la CLI (`route_engine/export_gpx.py`, `GPX.md`). Da decidere
-lì: chi scrive il GPX per l'app (l'API, riusando l'export del motore, o
-l'app), come il telefono lo salva o lo condivide (foglio di condivisione di
-iOS, file), e l'attribuzione OSM nel GPX (`MAPS.md`, «Ancora aperto»). Dopo:
-la distanza libera (TASK-026); la forma libera in fase 4 (`ROADMAP.md`).
+**TASK-024 — Export e condivisione GPX dal telefono**, sul branch
+`feat/TASK-024-gpx-export`. Il file del task è scritto, con le scelte già
+confermate dall'utente: `POST /gpx` nell'API con l'export del motore,
+`expo-file-system` ed `expo-sharing` nell'app, attribuzione OSM nel GPX,
+`GpxRequest` in `shared-types`. Dopo: la distanza libera (TASK-026), che
+chiude la fase 2.
 
 ## In lavorazione
 
@@ -95,6 +94,11 @@ Niente.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.
 - Nell'app la partenza è la posizione GPS o un luogo cercato (`UI.md`);
   le zone fisse servono solo a confrontare le prove.
+- Fase 3 solo dopo la chiusura della fase 2, come vuole `ROADMAP.md`:
+  confermato dall'utente il 2026-09-23, che aveva chiesto se partire in
+  parallelo con un altro agente. Prima di TASK-030 va decisa ADR-0012
+  (modello AI): un modello via API si paga a consumo, uno locale pesa
+  diversi GB, e il disco è quasi pieno.
 - Il repository è pubblico: nessun segreto nei file, mai. Le chiavi stanno
   solo in `.env`, che non entra nel repository.
 

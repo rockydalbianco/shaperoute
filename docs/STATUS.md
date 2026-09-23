@@ -18,9 +18,10 @@ non disponibile.
 
 ## Prossimo passo
 
-**TASK-016 — Validazione: distanza, ripercorrenza, percorribilità**
-(`ROADMAP.md`). Il file del task va scritto e confermato; dentro ci stanno
-bene le "punte" di andata e ritorno su strade parallele (vedi note).
+**TASK-016 — Validazione: distanza, ripercorrenza, percorribilità.**
+Il file del task è scritto (`docs/tasks/TASK-016.md`); il primo passo è
+confermare soglie e categorie, e se togliere anche le "punte" su strade
+parallele (passo 6).
 
 ## In lavorazione
 

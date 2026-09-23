@@ -1,6 +1,6 @@
 # TASK-026 — Distanza libera
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 2 · **Branch**: `feat/TASK-026-free-distance`
 
 ## Obiettivo
@@ -97,9 +97,10 @@ pulsanti, e l'app gli dice subito se è fuori dai limiti. I percorsi oltre
 - [x] Tempi, somiglianza e spazio su disco di 21 e 30 km a Trento scritti
       in `API.md`, «Oltre 15 km»; il limite dell'app scelto con quei
       numeri: 21 km, come proposto.
-- [ ] Sull'iPhone un 7,5 km arriva con «target 7.5 km»; un valore non
+- [x] Sull'iPhone un 7,5 km arriva con «target 7.5 km»; un valore non
       valido mostra il messaggio e non parte nessuna richiesta.
-- [ ] Sull'iPhone la distanza del limite arriva entro i 5 minuti.
+- [x] Sull'iPhone la distanza del limite arriva entro i 5 minuti (21 km a
+      Trento, zona in cache).
 - [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
 - [x] ADR-0034; `UI.md`, `API.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
 
@@ -136,4 +137,8 @@ docs/tasks/TASK-026.md
 
 ## Esito
 
-*(si compila a fine task)*
+Provato dall'utente sull'iPhone il 2026-09-24, tutto corretto: 7,5 km
+arriva con «target 7.5 km»; 22, 0,5 e il campo vuoto mostrano il messaggio
+e tengono spento «Draw route»; la tastiera non copre il campo e «Draw
+route» la chiude; 21 km a Trento arriva, con l'avviso sopra i 15 km. La
+distanza si scrive in km, fino a 21 km (ADR-0034), e la fase 2 è chiusa.

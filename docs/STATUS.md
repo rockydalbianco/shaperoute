@@ -5,46 +5,41 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-23 · **Fase corrente**: 2 — App e API
+**Ultimo aggiornamento**: 2026-09-24 · **Fase corrente**: 3 — Linguaggio naturale
 
 ---
 
 ## In una riga
 
-Il route engine, da riga di comando, disegna cuori e cerchi riconoscibili
-su strade reali (Trento e Milano bene, Levico quasi, valle sospesa) e
-scrive un GPX con i suoi controlli. Dall'iPhone, con l'API sul PC, si
-sceglie forma e distanza e il percorso compare sulla mappa: 3–10 km nelle
-zone in cache in 5–25 s, 15 km in circa 30 s, con l'attesa che dice cosa
-succede. Le zone nuove dipendono da Overpass, che da questo PC risponde
-solo a volte (`MAPS.md`). Il percorso si esporta in GPX, e Garmin Connect
-lo apre.
+Fase 2 chiusa: il MVP gira dall'iPhone, con l'API sul PC. Si sceglie la
+forma, si scrive la distanza fino a 21 km, e il percorso compare sulla
+mappa: 3–10 km nelle zone in cache in 5–25 s, da 15 a 21 km in 30–50 s,
+con l'attesa che dice cosa succede. Una zona nuova aggiunge il suo download
+da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
+percorso si esporta in GPX, e Garmin Connect lo apre.
 
 ## Prossimo passo
 
-Provare TASK-026 sull'iPhone con l'API avviata con `--lan`, seguendo il
-punto 5 del task: 7,5 km, un valore non valido, 21 km a Trento; chiuderlo.
-Con TASK-026 la fase 2 si chiude; poi la fase 3, prima con ADR-0012
-(modello AI).
+**Fase 3: decidere ADR-0012 (provider e modello AI)**, prima di scrivere il
+file di TASK-030 (richiesta in linguaggio naturale → `RouteRequest`). Un
+modello via API si paga a consumo e vuole una chiave in `.env`; uno locale
+pesa diversi GB, e C: ha 5,5 GB liberi. La scelta si propone all'utente e
+si aspetta la conferma.
 
 ## In lavorazione
 
-- **TASK-026** — Distanza libera, branch `feat/TASK-026-free-distance`.
-  Misure, codice, test e documenti fatti (ADR-0034): a Trento 21 km arriva
-  in 36–47 s più 105 s di download per una zona nuova, 30 km scarica la
-  zona in 279 s; l'app arriva a 21 km, con un campo in km al posto dei
-  pulsanti. Manca la prova sull'iPhone. In cache ci sono ora le zone di
-  Trento da 21 e 30 km (`API.md`, «Oltre 15 km»).
+Niente.
 
 ## Completato
 
-- **Fase 2 finora** (TASK-020–025): monorepo npm con app Expo e
+- **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in
   memoria (ADR-0030); app che chiede i percorsi, li disegna e spiega ogni
   errore (ADR-0031); richieste in due tempi con stati, per 15 km e zone
   nuove (ADR-0032); export GPX con attribuzione OSM, aperto in Garmin
-  Connect (ADR-0033). Tutto provato sull'iPhone.
+  Connect (ADR-0033); distanza scritta in km, fino a 21 km, scelta con le
+  misure di 21 e 30 km a Trento (ADR-0034). Tutto provato sull'iPhone.
 - **Fase 1 — Route engine** (TASK-010–019): CLI e GPX; forme circle e
   heart; snapping su OSMnx con zone e corridoio (ADR-0022); ottimizzatore
   che ruota, scala e sposta la partenza fino a 500 m (ADR-0023, ADR-0025);
@@ -62,7 +57,8 @@ Niente.
 - Su questo PC il route-engine usa l'ambiente dell'API: non c'è
   `services/route-engine/.venv` (`SETUP.md`, passo 10.2).
 - In cache ci sono i grafi `foot` di zona di trento, levico, valsugana e
-  milano (ADR-0023): tutti i casi girano offline. Da questo PC un indirizzo
+  milano (ADR-0023), più le zone di Trento da 21 e 30 km (TASK-026): tutti
+  i casi girano offline. Da questo PC un indirizzo
   di `overpass-api.de` non risponde: prima di scaricare, leggere `MAPS.md`,
   "Overpass: come si scarica".
 - Per misurare sui casi di riferimento (in `services/route-engine/`, con
@@ -77,7 +73,7 @@ Niente.
   richieste in due tempi lo rendono sopportabile, non veloce: `PRODUCT.md`
   chiede al massimo 30 s.
 - In sospeso, piccoli: dichiarare `numpy` in `pyproject.toml` (lo usa già il
-  motore, arriva con osmnx: nulla da installare); in fase 2, far scegliere
+  motore, arriva con osmnx: nulla da installare); più avanti, far scegliere
   all'utente fra più percorsi alternativi (la ricerca li ha già).
 - La Valsugana è sospesa su richiesta dell'utente: cuore e cerchio da 5 km
   lì non sono disponibili (ADR-0025, ADR-0027).
@@ -102,11 +98,8 @@ Niente.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.
 - Nell'app la partenza è la posizione GPS o un luogo cercato (`UI.md`);
   le zone fisse servono solo a confrontare le prove.
-- Fase 3 solo dopo la chiusura della fase 2, come vuole `ROADMAP.md`:
-  confermato dall'utente il 2026-09-23, che aveva chiesto se partire in
-  parallelo con un altro agente. Prima di TASK-030 va decisa ADR-0012
-  (modello AI): un modello via API si paga a consumo, uno locale pesa
-  diversi GB, e il disco è quasi pieno.
+- Il MVP non rispetta ancora il tempo di `PRODUCT.md` (≤ 30 s) sopra i
+  10 km e con le zone nuove: è il motore lento annotato sopra.
 - Il repository è pubblico: nessun segreto nei file, mai. Le chiavi stanno
   solo in `.env`, che non entra nel repository.
 

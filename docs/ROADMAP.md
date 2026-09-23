@@ -73,7 +73,10 @@ Obiettivo: la stessa cosa, ma dal telefono.
 | TASK-024 | Export e condivisione GPX dal telefono |
 | TASK-026 | Distanza libera: un campo in km al posto dei pulsanti, fino a 21 km |
 
-Fine fase: **il MVP di `PRODUCT.md` è completo**.
+Fine fase: **il MVP di `PRODUCT.md` è completo**. Chiusa il 2026-09-24 con
+TASK-026: le sei funzioni del MVP ci sono tutte, provate sull'iPhone; resta
+sopra la soglia di 30 s il tempo di generazione oltre i 10 km e con le zone
+nuove (`STATUS.md`).
 
 **Richiesta dell'utente (2026-09-23), per dopo TASK-023.** In TASK-023
 forma e distanza si scelgono fra pochi pulsanti (cerchio o cuore; 3, 5, 10,

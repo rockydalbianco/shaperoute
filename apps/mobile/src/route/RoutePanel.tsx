@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { problemText } from "./problems";
-import type { RouteState } from "./useRouteRequest";
+import type { ExportState } from "./useGpxExport";
+import type { RouteProblem, RouteState } from "./useRouteRequest";
 
 /**
  * The distances offered for now: the ones with known times (ADR-0031).
@@ -23,6 +24,9 @@ type Props = {
   canDraw: boolean;
   onDraw: () => void;
   onCancel: () => void;
+  /** The GPX export of the route on screen. */
+  exporting: ExportState;
+  onExport: () => void;
 };
 
 export function RoutePanel({
@@ -34,6 +38,8 @@ export function RoutePanel({
   canDraw,
   onDraw,
   onCancel,
+  exporting,
+  onExport,
 }: Props) {
   const waiting = view.status === "waiting";
   return (
@@ -96,9 +102,20 @@ export function RoutePanel({
               • {warning}
             </Text>
           ))}
+          <Pressable
+            style={[styles.secondary, styles.export]}
+            onPress={onExport}
+            disabled={exporting.status === "preparing"}
+            accessibilityRole="button"
+          >
+            <Text style={styles.secondaryText}>
+              {exporting.status === "preparing" ? "Preparing GPX…" : "Export GPX"}
+            </Text>
+          </Pressable>
+          {exporting.status === "failed" && <Problem problem={exporting.problem} />}
         </View>
       )}
-      {view.status === "failed" && <Problem view={view} />}
+      {view.status === "failed" && <Problem problem={view.problem} />}
     </View>
   );
 }
@@ -120,8 +137,8 @@ function waitingText(
   }
 }
 
-function Problem({ view }: { view: Extract<RouteState, { status: "failed" }> }) {
-  const { text, detail } = problemText(view.problem);
+function Problem({ problem }: { problem: RouteProblem }) {
+  const { text, detail } = problemText(problem);
   return (
     <View>
       <Text style={styles.problem}>{text}</Text>
@@ -215,6 +232,10 @@ const styles = StyleSheet.create({
   },
   secondaryText: {
     fontWeight: "bold",
+  },
+  export: {
+    alignSelf: "flex-start",
+    marginTop: 8,
   },
   result: {
     fontWeight: "bold",

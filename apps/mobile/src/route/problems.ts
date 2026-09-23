@@ -40,6 +40,10 @@ export function problemText(problem: RouteProblem): ProblemText {
       return {
         text: "The API lost this request (was it restarted?). Try again.",
       };
+    case "no_sharing":
+      return { text: "This phone cannot open the share sheet." };
+    case "share_failed":
+      return { text: "The GPX could not be saved on the phone. Try again." };
     case "no_api_url":
       return {
         text: "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.",

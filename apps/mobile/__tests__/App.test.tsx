@@ -4,6 +4,7 @@ import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import jobFailed from "@shaperoute/shared-types/fixtures/route-job-failed.json";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import * as Location from "expo-location";
+import * as Sharing from "expo-sharing";
 
 import response from "../src/places/fixtures/photon-via-belenzani-trento.json";
 import App from "../App";
@@ -18,6 +19,11 @@ jest.mock("expo-constants", () => ({
   __esModule: true,
   default: { expoConfig: { hostUri: "192.168.1.23:8081" } },
 }));
+jest.mock("expo-file-system");
+jest.mock("expo-sharing", () => ({
+  isAvailableAsync: jest.fn(),
+  shareAsync: jest.fn(),
+}));
 jest.mock("expo-location", () => ({
   Accuracy: { Balanced: 3 },
   requestForegroundPermissionsAsync: jest.fn(),
@@ -28,6 +34,10 @@ const { injectJavaScript } =
   jest.requireMock<typeof import("../__mocks__/react-native-webview")>(
     "react-native-webview",
   );
+const { written } =
+  jest.requireMock<typeof import("../__mocks__/expo-file-system")>("expo-file-system");
+const sharingAvailable = jest.mocked(Sharing.isAvailableAsync);
+const share = jest.mocked(Sharing.shareAsync);
 const requestPermission = jest.mocked(Location.requestForegroundPermissionsAsync);
 const getPosition = jest.mocked(Location.getCurrentPositionAsync);
 
@@ -51,6 +61,8 @@ function lastScript(): string | undefined {
 }
 
 const API = "http://192.168.1.23:8000";
+const GPX = '<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1"></gpx>';
+const GPX_FILE = "shaperoute-heart-5km-2026-09-23.gpx";
 
 let fetchSpy: jest.SpiedFunction<typeof fetch>;
 
@@ -71,6 +83,11 @@ function apiAnswers(...polls: unknown[]) {
     if (method === "DELETE") {
       return new Response(null, { status: 204 });
     }
+    if (String(input) === `${API}/gpx`) {
+      return new Response(GPX, {
+        headers: { "Content-Disposition": `attachment; filename="${GPX_FILE}"` },
+      });
+    }
     if (method === "POST") {
       return Response.json(job("queued"), { status: 202 });
     }
@@ -85,9 +102,12 @@ function apiCalls(method: string) {
   );
 }
 
-/** What the app sent to the API in its last request. */
+/** What the app sent to the API in its last route request. */
 function lastRouteRequest(): unknown {
-  return JSON.parse(String(apiCalls("POST").at(-1)?.[1]?.body));
+  const posts = apiCalls("POST").filter(([input]) =>
+    String(input).endsWith("/route-jobs"),
+  );
+  return JSON.parse(String(posts.at(-1)?.[1]?.body));
 }
 
 /** Lets the app poll the API once. */
@@ -108,6 +128,9 @@ beforeEach(() => {
   getPosition.mockReset();
   injectJavaScript.mockClear();
   fetchSpy = jest.spyOn(globalThis, "fetch");
+  written.clear();
+  sharingAvailable.mockReset().mockResolvedValue(true);
+  share.mockReset().mockResolvedValue();
 });
 
 afterEach(() => {
@@ -305,5 +328,49 @@ test("a new start takes the old route away", async () => {
   const cleared = scripts.findIndex((script) => script.includes('"clearRoute"'));
   expect(shown).toBeGreaterThan(-1);
   expect(cleared).toBeGreaterThan(shown);
+  jest.useRealTimers();
+});
+
+test("Export GPX shares the route as a file", async () => {
+  jest.useFakeTimers();
+  apiAnswers(jobDone);
+  await atTrento();
+  expect(screen.queryByText("Export GPX")).not.toBeOnTheScreen();
+  await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
+
+  await fireEvent.press(screen.getByText("Export GPX"));
+  await act(() => jest.advanceTimersByTimeAsync(0));
+
+  const [[url, init]] = apiCalls("POST").filter(([input]) =>
+    String(input).endsWith("/gpx"),
+  );
+  expect(url).toBe(`${API}/gpx`);
+  expect(JSON.parse(String(init?.body))).toEqual({
+    request: {
+      start: [46.0671, 11.1214],
+      shape: "heart",
+      distance_m: 5000,
+      activity: "running",
+    },
+    result: jobDone.result,
+  });
+  expect(written.get(`file:///cache/${GPX_FILE}`)).toBe(GPX);
+  expect(share).toHaveBeenCalledWith(`file:///cache/${GPX_FILE}`, expect.anything());
+  expect(screen.getByText("Export GPX")).toBeOnTheScreen();
+  jest.useRealTimers();
+});
+
+test("Export GPX says so when the phone cannot share", async () => {
+  jest.useFakeTimers();
+  sharingAvailable.mockResolvedValue(false);
+  apiAnswers(jobDone);
+  await atTrento();
+  await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
+  await fireEvent.press(screen.getByText("Export GPX"));
+  await act(() => jest.advanceTimersByTimeAsync(0));
+  expect(screen.getByText("This phone cannot open the share sheet.")).toBeOnTheScreen();
+  expect(share).not.toHaveBeenCalled();
   jest.useRealTimers();
 });

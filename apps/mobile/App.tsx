@@ -13,6 +13,7 @@ import { MapView } from "./src/map/MapView";
 import { PlaceSearch } from "./src/places/PlaceSearch";
 import type { Place } from "./src/places/photon";
 import { type DistanceKm, RoutePanel } from "./src/route/RoutePanel";
+import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import {
   type RouteState,
   sameRequest,
@@ -43,6 +44,7 @@ function MapScreen() {
   const [shape, setShape] = useState<Shape>("heart");
   const [distanceKm, setDistanceKm] = useState<DistanceKm>(5);
   const { state, draw, cancel } = useRouteRequest(API_URL);
+  const gpx = useGpxExport(API_URL);
 
   // The GPS wins as soon as it answers, also over a place searched before.
   const start = useMemo<Start | null>(() => {
@@ -67,6 +69,13 @@ function MapScreen() {
   const view: RouteState =
     request && state.status !== "idle" && sameRequest(state.request, request)
       ? state
+      : { status: "idle" };
+  // The export state of another route does not belong on screen.
+  const exporting: ExportState =
+    view.status === "done" &&
+    gpx.state.status !== "idle" &&
+    gpx.state.result === view.result
+      ? gpx.state
       : { status: "idle" };
 
   return (
@@ -111,6 +120,12 @@ function MapScreen() {
           canDraw={request !== null}
           onDraw={() => request && draw(request)}
           onCancel={cancel}
+          exporting={exporting}
+          onExport={() => {
+            if (view.status === "done") {
+              gpx.exportGpx(view.request, view.result);
+            }
+          }}
         />
       </View>
     </View>

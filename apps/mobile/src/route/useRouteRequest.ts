@@ -6,7 +6,10 @@ import { requestRoute, type RouteOutcome } from "../api/routes";
 /** What can go wrong, as the screen explains it (see problems.ts). */
 export type RouteProblem =
   | Exclude<RouteOutcome, { kind: "route" } | { kind: "cancelled" }>
-  | { kind: "no_api_url" };
+  | { kind: "no_api_url" }
+  /** Export GPX: the phone has no share sheet, or could not save the file. */
+  | { kind: "no_sharing" }
+  | { kind: "share_failed" };
 
 export type RouteState =
   | { status: "idle" }

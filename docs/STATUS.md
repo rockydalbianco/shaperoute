@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-24 · **Fase corrente**: 3 — Linguaggio naturale
+**Ultimo aggiornamento**: 2026-09-24 · **Fase corrente**: 3 — La forma scritta dall'utente
 
 ---
 
@@ -20,11 +20,12 @@ percorso si esporta in GPX, e Garmin Connect lo apre.
 
 ## Prossimo passo
 
-**Fase 3: decidere ADR-0012 (provider e modello AI)**, prima di scrivere il
-file di TASK-030 (richiesta in linguaggio naturale → `RouteRequest`). Un
-modello via API si paga a consumo e vuole una chiave in `.env`; uno locale
-pesa diversi GB, e C: ha 5,5 GB liberi. La scelta si propone all'utente e
-si aspetta la conferma.
+**TASK-032 — Il motore segue un contorno qualunque**
+(`docs/tasks/TASK-032.md`, branch `feat/TASK-032-any-outline`), scelte
+A–F confermate dall'utente il 2026-09-24. Stella, casa e
+sagoma di un cavallo da file, dalla CLI, giudicate a occhio a Trento e
+Levico; è il cancello della fase 3, ripianificata il 2026-09-24
+(`ROADMAP.md`). ADR-0012 si decide con TASK-030, dopo il catalogo.
 
 ## In lavorazione
 

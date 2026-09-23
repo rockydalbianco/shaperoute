@@ -244,7 +244,7 @@ serve a provare l'algoritmo su un grafo reale, non il filtro.
 
 ## Ancora aperto
 
-- Provider di tiles per la mappa dell'app (fase 2).
 - Motore di routing di produzione: ADR-0009.
-- Attribuzione OpenStreetMap (ODbL) dove i percorsi vengono mostrati:
-  da definire con l'app.
+- Attribuzione OpenStreetMap (ODbL): sulla mappa dell'app è sempre
+  visibile (ADR-0029, tile di OpenFreeMap); per il GPX esportato si vede
+  con TASK-024.

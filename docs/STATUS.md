@@ -18,15 +18,17 @@ con Expo Go, ma per ora mostra solo le forme disponibili.
 
 ## Prossimo passo
 
-**TASK-021 — Mappa e posizione GPS**, sul branch
-`feat/TASK-021-map-location`. Il file del task è scritto, con le scelte
-già confermate dall'utente: mappa in WebView con MapLibre GL JS e tile
-OpenFreeMap, posizione con `expo-location` e, senza posizione, ricerca di
-città o via con Photon. La ADR si scrive nella PR che implementa.
+Provare TASK-021 sull'iPhone con Expo Go, seguendo i criteri del task (con
+e senza permesso di posizione, `SETUP.md` passo 9.4), poi chiuderlo. Dopo:
+TASK-022, l'API FastAPI che espone il route-engine.
 
 ## In lavorazione
 
-Niente.
+- **TASK-021** — Mappa e posizione GPS, branch
+  `feat/TASK-021-map-location`. Codice, test e documenti fatti (ADR-0029):
+  mappa MapLibre GL JS in WebView con tile OpenFreeMap, posizione con
+  `expo-location`, ricerca di città o via con Photon quando la posizione
+  manca. Manca la prova sull'iPhone.
 
 ## Completato
 

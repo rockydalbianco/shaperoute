@@ -44,7 +44,12 @@ controllo dei tipi, che per TypeScript è già metà dei test.
   esattamente i campi dei tipi TypeScript (`tsc`) e delle dataclass Python
   (`tests/test_contract.py`); forme, attività e limiti coincidono;
 - app: la schermata si renderizza e mostra ciò che deve (Testing Library),
-  senza rete e senza telefono.
+  senza rete e senza telefono. WebView, posizione (`expo-location`) e
+  `fetch` sono finti: il finto della WebView sta in
+  `apps/mobile/__mocks__/`, le risposte di Photon vengono da una risposta
+  vera salvata in `apps/mobile/src/places/fixtures/`. La conversione fra
+  `(lat, lon)` e il `[lon, lat]` di MapLibre si prova con la partenza di
+  Trento, dove uno scambio non passa.
 
 **Non deterministico, va isolato:**
 
@@ -55,6 +60,11 @@ motivi che non c'entrano col codice.
 Regola: lo scaricamento del grafo sta dietro un'interfaccia, e i test usano
 un grafo salvato su file. Un test di integrazione vero, marcato
 `@pytest.mark.network`, resta escluso dall'esecuzione normale e dalla CI.
+
+Lo stesso vale per l'app: libreria della mappa, tile e ricerca del luogo
+arrivano dalla rete, e nei test sono finti. La mappa vera si prova a mano
+sul telefono con Expo Go, seguendo i criteri del task (con e senza permesso
+di posizione).
 
 ### Fixture
 

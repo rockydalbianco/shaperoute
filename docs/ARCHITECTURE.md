@@ -82,7 +82,8 @@ Anche il corpo degli errori dell'API, `{"error": {"code", "message"}}`, è
 contratto: `ApiError` e i suoi codici in `shared-types`, `ErrorBody`
 nell'API, allineati dagli stessi JSON di esempio (ADR-0031). Così pure la
 richiesta in due tempi, `RouteJob` con i suoi stati (ADR-0032), che porta
-dentro un `RouteResult` o un errore.
+dentro un `RouteResult` o un errore, e `GpxRequest`, richiesta e risultato
+insieme per `POST /gpx` (ADR-0033).
 
 ## 4. Regole di dipendenza
 

@@ -758,3 +758,45 @@ circa 40 MB per zona, più le risposte di Overpass in `data/cache/http/`.
 Con l'hosting (fase 4) le richieste dovranno sopravvivere a un riavvio e a
 più processi: servirà una coda vera. Il motore resta lento sui 15 km,
 oltre i 30 s di `PRODUCT.md`: è un lavoro a parte.
+
+## ADR-0033 — Il GPX per il telefono lo scrive l'API, con l'export del motore
+**Stato**: Attiva · 2026-09-23
+
+TASK-024 porta l'export GPX nell'app. Servivano chi scrive il file, come
+il telefono lo salva e lo condivide, e l'attribuzione di OpenStreetMap.
+Confermato dall'utente.
+
+**Decisione**:
+- **`POST /gpx`** nell'API riceve `{request, result}` (`GpxRequest`) e
+  risponde il GPX scritto da `to_gpx` e `route_name` del motore, con il
+  nome del file nell'intestazione (`shaperoute-heart-5km-2026-09-23.gpx`).
+  Non ricorda niente.
+- **Sul telefono** il file va nella cartella temporanea dell'app
+  (`expo-file-system`) e si apre il foglio di condivisione di iOS
+  (`expo-sharing`, tipo `com.topografix.gpx`). Dipendenze nuove, MIT,
+  dentro Expo Go; `expo install` ha aggiunto il plugin di `expo-sharing` in
+  `app.json`.
+- **Attribuzione OSM** nei metadati di ogni GPX, anche della CLI:
+  `<copyright author="OpenStreetMap contributors">` con la licenza ODbL e
+  un `<link>` a `https://www.openstreetmap.org/copyright`.
+- **Nell'app** il pulsante «Export GPX» sotto il risultato, con «Preparing
+  GPX…» mentre aspetta; gli errori usano i messaggi che ci sono già, più
+  due per il telefono (niente foglio di condivisione, file non salvato).
+- Il GPX **resta nel motore**: niente `services/export/` finché non
+  arrivano i formati per orologi.
+- `GpxRequest` entra nel contratto, con il suo JSON di esempio controllato
+  da `tsc`, dal test di Node e dai modelli Pydantic.
+
+**Motivo**: un solo scrittore di GPX, già provato dalla CLI e dai campioni,
+vuol dire che il file del telefono e quello della CLI sono uguali, e un
+test lo controlla. Un endpoint che non ricorda niente non dipende dai 10
+minuti di vita delle richieste in due tempi (ADR-0032). Mettere il GPX in
+ogni `RouteJob` finito appesantirebbe tutte le risposte per un file che non
+tutti vogliono; scriverlo nell'app sarebbe un secondo scrittore da tenere
+allineato. Il percorso nasce da dati OSM: la licenza ODbL chiede di dirlo
+dove il dato viaggia, e un GPX viaggia.
+
+**Conseguenza**: l'export ha bisogno dell'API accesa, come il calcolo. I
+campioni scritti prima del TASK-024 non hanno l'attribuzione e restano come
+sono (ADR-0014). Il file nella cartella temporanea può sparire: chi lo vuole
+tenere lo salva dal foglio di condivisione.

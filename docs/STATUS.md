@@ -21,16 +21,18 @@ solo a volte (`MAPS.md`).
 
 ## Prossimo passo
 
-**TASK-024 — Export e condivisione GPX dal telefono**, sul branch
-`feat/TASK-024-gpx-export`. Il file del task è scritto, con le scelte già
-confermate dall'utente: `POST /gpx` nell'API con l'export del motore,
-`expo-file-system` ed `expo-sharing` nell'app, attribuzione OSM nel GPX,
-`GpxRequest` in `shared-types`. Dopo: la distanza libera (TASK-026), che
-chiude la fase 2.
+Provare TASK-024 sull'iPhone con l'API avviata con `--lan`, seguendo il
+punto 7 del task: «Export GPX», «Salva su File», poi aprire il GPX in
+un'app o in un sito per la corsa; chiuderlo. Dopo: la distanza libera
+(TASK-026), che chiude la fase 2.
 
 ## In lavorazione
 
-Niente.
+- **TASK-024** — Export GPX, branch `feat/TASK-024-gpx-export`. Codice,
+  test e documenti fatti (ADR-0033): `POST /gpx` con l'export del motore,
+  attribuzione OSM nel GPX, «Export GPX» con il foglio di condivisione di
+  iOS, `GpxRequest` in `shared-types`. Manca la prova sull'iPhone e su
+  un'app vera per la corsa.
 
 ## Completato
 

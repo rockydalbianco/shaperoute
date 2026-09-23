@@ -59,6 +59,36 @@ Regole:
 Aggiungere una forma significa aggiungere una funzione e registrarla: non
 deve richiedere modifiche a nessun'altra fase.
 
+### Forme da file (TASK-032)
+
+Una forma può anche arrivare da un **contorno** in JSON, per ora solo dalla
+CLI (`--outline`, ADR-0035); le forme registrate restano le sole del
+contratto.
+
+```json
+{
+  "name": "star",
+  "source": "da dove viene il disegno",
+  "license": "la sua licenza",
+  "points": [[0.0, 1.0], [0.2245, 0.309], ..., [0.0, 1.0]]
+}
+```
+
+- `x` verso destra, `y` verso l'alto, a qualsiasi scala: il motore porta il
+  contorno in `[-1, 1]²` e lo ricampiona a `N` punti, come le altre forme.
+- **Un solo contorno chiuso**: l'ultimo punto ripete il primo; niente
+  buchi, pezzi separati o incroci, perché un percorso è una sola linea
+  chiusa. Un file che non lo rispetta viene rifiutato con il motivo.
+- Fonte e licenza stanno nel file: il disegno di qualcun altro entra solo
+  con una licenza aperta.
+
+I contorni di prova sono in `services/route-engine/outlines/`: stella e
+casa (con camino e porta) disegnate per ShapeRoute, e la sagoma di un
+cavallo al galoppo (OpenClipart, CC0). Del cavallo resta il contorno
+esterno, 147 vertici; a 64 punti gambe, coda e testa si leggono ancora, i
+dettagli minori no. Come vengono sulle strade: ADR-0035 e
+`samples/LOG.md`.
+
 ## 3. Proiezione geografica
 
 Trasformazione dei punti normalizzati in coordinate reali, applicando
@@ -255,6 +285,16 @@ python -m route_engine \
     --distance 15000 \
     --start 46.0122,11.2986 \
     --out heart_levico.gpx
+```
+
+Con una forma da file, `--outline` al posto di `--shape`:
+
+```
+python -m route_engine \
+    --outline services/route-engine/outlines/star.json \
+    --distance 15000 \
+    --start 46.0671,11.1214 \
+    --out star_trento.gpx
 ```
 
 Il GPX si apre in un visualizzatore (gpx.studio, geojson.io) e si guarda.

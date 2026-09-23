@@ -1,0 +1,18 @@
+{
+  "name": "star",
+  "source": "regular five-pointed star, inner radius 0.382 of the outer (TASK-032)",
+  "license": "drawn for ShapeRoute, no third-party rights",
+  "points": [
+    [0.0000, 1.0000],
+    [0.2245, 0.3090],
+    [0.9511, 0.3090],
+    [0.3633, -0.1180],
+    [0.5878, -0.8090],
+    [0.0000, -0.3820],
+    [-0.5878, -0.8090],
+    [-0.3633, -0.1180],
+    [-0.9511, 0.3090],
+    [-0.2245, 0.3090],
+    [0.0000, 1.0000]
+  ]
+}

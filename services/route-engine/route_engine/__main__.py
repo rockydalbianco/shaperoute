@@ -1,25 +1,59 @@
-"""Command-line entry point: python -m route_engine --shape ... --distance ..."""
+"""Command-line entry point: python -m route_engine --shape ... --distance ...
+
+`--outline FILE` takes the shape from a JSON outline instead (TASK-032).
+"""
 
 from __future__ import annotations
 
 import argparse
 import sys
 from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
 from route_engine.export_gpx import route_name, to_gpx
-from route_engine.models import InvalidRequestError, RouteRequest
+from route_engine.models import (
+    InvalidRequestError,
+    RouteRequest,
+    check_activity,
+    check_distance,
+    check_start,
+)
 from route_engine.network import EDGE_REUSE_PENALTY, OsmnxSource
 from route_engine.optimizer import (
     SHAPE_POINTS,
     SIMILARITY,
     ShapeNotDrawableError,
-    plan_route,
+    plan_shape,
     required_area,
 )
 from route_engine.projection import initial_scale
 from route_engine.shapes import get_shape
+from route_engine.shapes.outline import InvalidOutlineError, Outline, read_outline
+
+
+@dataclass(frozen=True)
+class OutlineRequest:
+    """A RouteRequest whose shape is an outline read from a file (TASK-032).
+
+    Not part of the contract: outline shapes are tried from the CLI only,
+    until the shape catalogue (TASK-033).
+    """
+
+    start: tuple[float, float]
+    outline: Outline
+    distance_m: int
+    activity: str = "running"
+
+    def __post_init__(self) -> None:
+        check_start(self.start)
+        check_distance(self.distance_m)
+        check_activity(self.activity)
+
+    @property
+    def shape(self) -> str:
+        return self.outline.name
 
 
 def _parse_start(value: str) -> tuple[float, float]:
@@ -41,7 +75,14 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="python -m route_engine",
         description="Generate a real route that draws a shape on the map.",
     )
-    parser.add_argument("--shape", required=True, help="shape name, e.g. circle")
+    what = parser.add_mutually_exclusive_group(required=True)
+    what.add_argument("--shape", help="shape name, e.g. circle")
+    what.add_argument(
+        "--outline",
+        type=Path,
+        metavar="FILE",
+        help="a shape read from a JSON outline, e.g. outlines/star.json",
+    )
     parser.add_argument(
         "--distance", required=True, type=int, help="target distance in metres"
     )
@@ -79,8 +120,8 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def parse_args(
     argv: Sequence[str] | None = None,
-) -> tuple[RouteRequest, argparse.Namespace]:
-    """Parse CLI arguments into a validated RouteRequest and the output path.
+) -> tuple[RouteRequest | OutlineRequest, argparse.Namespace]:
+    """Parse CLI arguments into a validated request and the output path.
 
     Invalid input exits with status 2 and a one-line message, never a traceback.
     """
@@ -88,19 +129,30 @@ def parse_args(
     args = parser.parse_args(argv)
     if args.out is not None and args.out.exists():
         parser.error(f"{args.out} already exists; samples are never overwritten")
+    request: RouteRequest | OutlineRequest
     try:
-        request = RouteRequest(
-            start=args.start,
-            shape=args.shape,
-            distance_m=args.distance,
-            activity=args.activity,
-        )
+        if args.outline is None:
+            request = RouteRequest(
+                start=args.start,
+                shape=args.shape,
+                distance_m=args.distance,
+                activity=args.activity,
+            )
+        else:
+            request = OutlineRequest(
+                start=args.start,
+                outline=read_outline(args.outline),
+                distance_m=args.distance,
+                activity=args.activity,
+            )
+    except InvalidOutlineError as exc:
+        parser.error(f"{args.outline}: {exc}")
     except InvalidRequestError as exc:
         parser.error(str(exc))
     return request, args
 
 
-def parse_request(argv: Sequence[str] | None = None) -> RouteRequest:
+def parse_request(argv: Sequence[str] | None = None) -> RouteRequest | OutlineRequest:
     return parse_args(argv)[0]
 
 
@@ -108,7 +160,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     request, args = parse_args(argv)
     lat, lon = request.start
     print("Route request:")
-    print(f"  shape:    {request.shape}")
+    if isinstance(request, OutlineRequest):
+        print(f"  shape:    {request.shape} (outline from {args.outline})")
+        print(f"            {request.outline.source}; {request.outline.license}")
+        shape = request.outline(SHAPE_POINTS)
+    else:
+        print(f"  shape:    {request.shape}")
+        shape = get_shape(request.shape)(SHAPE_POINTS)
     print(f"  distance: {request.distance_m} m")
     print(f"  start:    {lat}, {lon}")
     print(f"  activity: {request.activity}")
@@ -116,7 +174,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     optimize = not args.no_optimize
-    shape = get_shape(request.shape)(SHAPE_POINTS)
     source = OsmnxSource(args.cache_dir)
     bbox = required_area(shape, request.start, request.distance_m, optimize)
     if source.is_cached(bbox):
@@ -124,8 +181,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     else:
         print("Road graph: downloading from OpenStreetMap...")
     try:
-        plan = plan_route(
-            request, source, optimize=optimize, reuse_penalty=args.reuse_penalty
+        plan = plan_shape(
+            shape,
+            request.shape,
+            request.start,
+            request.distance_m,
+            source,
+            optimize=optimize,
+            reuse_penalty=args.reuse_penalty,
         )
     except ShapeNotDrawableError as exc:
         print(f"No route: {exc}", file=sys.stderr)

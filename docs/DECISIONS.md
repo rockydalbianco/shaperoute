@@ -837,3 +837,53 @@ veloce.
 Overpass (`API.md`, «Oltre 15 km»). Alzare il limite chiede prima un modo
 più veloce di avere i dati delle zone (ADR-0009). Il tastierino segue la
 lingua del telefono: per questo si accettano sia la virgola sia il punto.
+
+## ADR-0035 — Forme da un contorno in un file, per ora solo dalla CLI
+**Stato**: Attiva · 2026-09-24
+
+Prima di catalogo e AI (fase 3, `ROADMAP.md`) serviva sapere se le strade
+reggono forme più complesse di cerchio e cuore. TASK-032 le ha provate da
+file. Confermato dall'utente.
+
+**Decisione**:
+- **Il contorno è un JSON** con `name`, `source`, `license` e `points`: un
+  solo contorno chiuso (l'ultimo punto ripete il primo), senza buchi, pezzi
+  separati o incroci; `x` verso destra e `y` verso l'alto, a qualsiasi
+  scala. Il motore lo porta in `[-1, 1]²` e lo ricampiona a 64 punti come
+  le altre forme; un file sbagliato è rifiutato con il motivo
+  (`shapes/outline.py`). Solo la libreria standard.
+- **Solo dalla CLI**: `--outline FILE` al posto di `--shape`.
+  `RouteRequest`, contratto, API e app non cambiano. Il lavoro di
+  `plan_route` passa a `plan_shape`, che accetta qualsiasi forma
+  normalizzata con il suo nome; `plan_route` la chiama con la forma
+  registrata. La CLI controlla partenza, distanza e attività con gli stessi
+  controlli di `RouteRequest` (`check_start`, `check_distance`,
+  `check_activity`).
+- **Forme di prova** in `services/route-engine/outlines/`: stella e casa
+  disegnate per ShapeRoute, la sagoma di un cavallo al galoppo (OpenClipart
+  via FreeSVG, CC0; solo il contorno esterno, convertito da uno script
+  usa-e-getta fuori dal repository).
+- **Nessuna taratura**: 64 punti, angoli sopra 60°, regole sulle andate e
+  ritorno restano come sono.
+
+**Motivo**: provare forme nuove senza prometterle all'app; quali entrano
+nel contratto lo decide il catalogo (TASK-033). Fonte e licenza nel file
+tengono tracciabile ogni disegno che non è nostro. Gli stessi controlli di
+`RouteRequest` fanno fallire allo stesso modo una richiesta sbagliata, con
+o senza contorno.
+
+**Conseguenza**: il cancello della fase 3 è superato (giudizio
+dell'utente, `samples/LOG.md`): la **stella** si riconosce ovunque, il
+**cavallo** a Levico e Milano e quasi a Trento. La **casa** no: senza
+camino né porta non si legge come casa da nessuna parte; con camino e porta
+(v2) quasi a Milano, no a Trento e Levico. Regge un contorno riconoscibile
+dalla sagoma grande (punte, zampe, testa); non regge una forma che si
+riconosce da dettagli di poche centinaia di metri o da lati dritti, fuori
+da una rete fitta come Milano. La **somiglianza calcolata è più generosa
+dell'occhio** sulle forme complesse (casa 0,76–1,00 giudicata `no`): la
+tolleranza del 2% del perimetro, 200–300 m, copre i dettagli che mancano.
+A Trento e Levico le zampe del cavallo diventano andate e ritorno: dal 5 al
+17% del percorso su strade già fatte, dove il limite è il 5%, con un
+avviso. Le finestre della
+casa, chieste dall'utente, stanno dentro il contorno: servono forme di più
+pezzi e tratti percorsi due volte, un lavoro a parte da decidere.

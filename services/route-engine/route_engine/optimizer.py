@@ -575,27 +575,42 @@ def plan_route(
     roads (`search`); without, it is traced once at its initial placement,
     as in TASK-017.
     """
-    shape = get_shape(request.shape)(SHAPE_POINTS)
-    similarity = SIMILARITIES[SIMILARITY]
-    graph = source.load(
-        required_area(shape, request.start, request.distance_m, optimize)
+    return plan_shape(
+        get_shape(request.shape)(SHAPE_POINTS),
+        request.shape,
+        request.start,
+        request.distance_m,
+        source,
+        optimize,
+        reuse_penalty,
     )
+
+
+def plan_shape(
+    shape: Sequence[Point],
+    name: str,
+    start: LatLon,
+    distance_m: int,
+    source: GraphLoader,
+    optimize: bool = True,
+    reuse_penalty: float = EDGE_REUSE_PENALTY,
+) -> Plan:
+    """plan_route for any normalized shape, also an outline read from a file
+    (TASK-032). `name` only labels the result and its messages; start and
+    distance are the caller's to check, as RouteRequest does.
+    """
+    similarity = SIMILARITIES[SIMILARITY]
+    graph = source.load(required_area(shape, start, distance_m, optimize))
     if optimize:
-        found = search(
-            graph,
-            shape,
-            request.start,
-            request.distance_m,
-            reuse_penalty=reuse_penalty,
-        )
+        found = search(graph, shape, start, distance_m, reuse_penalty=reuse_penalty)
         best = found.best
-        what = f"a {request.distance_m / 1000:g} km {request.shape}"
+        what = f"a {distance_m / 1000:g} km {name}"
         if best.similarity < MIN_SIMILARITY:
             raise ShapeNotDrawableError(
                 f"{what} cannot be drawn here: the best route scores "
                 f"{best.similarity:.2f} for shape, {MIN_SIMILARITY:.2f} needed"
             )
-        gap = best.route.distance_m - request.distance_m
+        gap = best.route.distance_m - distance_m
         if abs(gap) > DISTANCE_FALLBACK_M:
             raise ShapeNotDrawableError(
                 f"{what} cannot be drawn here: the best shape is "
@@ -605,7 +620,7 @@ def plan_route(
         route, sim, warnings = best.route, best.similarity, list(found.warnings)
         placed, chosen_start = best.shape, best.placement.start
         if best.offset_m > 0:
-            direction = _compass(request.start, best.placement.start)
+            direction = _compass(start, best.placement.start)
             warnings.insert(
                 0,
                 f"start moved {best.offset_m:.0f} m {direction} of the requested "
@@ -613,17 +628,15 @@ def plan_route(
             )
     else:
         found = None
-        projected = project_shape(
-            shape, request.start, initial_scale(shape, request.distance_m)
-        )
+        projected = project_shape(shape, start, initial_scale(shape, distance_m))
         route = snap_to_network(graph, projected, reuse_penalty)
         sim, warnings = similarity(route.points, projected), list(route.warnings)
-        placed, chosen_start = projected, request.start
+        placed, chosen_start = projected, start
     [first], _ = nearest_nodes(graph, [chosen_start])
     check_closed(
         route.points,
         (graph.nodes[first]["y"], graph.nodes[first]["x"]),
-        request.start,
+        start,
         chosen_start,
         START_OFFSET_M,
     )
@@ -636,7 +649,7 @@ def plan_route(
         points=route.points,
         distance_m=route.distance_m,
         similarity=sim,
-        shape=request.shape,
+        shape=name,
         warnings=warnings,
     )
     return Plan(result, found, measures)

@@ -107,7 +107,7 @@ riconosce, la fase 3 si ripensa (`ROADMAP.md`).
       `plan_route` danno la stessa somiglianza e la stessa distanza delle
       righe di TASK-016 in `LOG.md`.
 - [x] Esito del cancello (punto F) scritto in `ROADMAP.md`.
-- [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
+- [x] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
 - [x] ADR-0035; `ROUTE_ENGINE.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
 
 Differenze dal piano:

@@ -19,12 +19,11 @@ percorsi: manca l'API.
 
 ## Prossimo passo
 
-**TASK-022 — API FastAPI che espone il route-engine.** Il file del task è
-da scrivere (`docs/tasks/`, branch `docs/TASK-022-task-file`). Da decidere
-lì: ADR-0009 (motore di routing di produzione, «da decidere entro
-TASK-022»), se generare i tipi TypeScript dall'OpenAPI (ADR-0028), come il
-telefono raggiunge l'API sul PC durante le prove, e se mettere dietro l'API
-anche tile e ricerca del luogo (ADR-0029).
+**TASK-022 — API FastAPI che espone il route-engine**, sul branch
+`feat/TASK-022-api`. Il file del task è scritto, con le scelte già
+confermate dall'utente: FastAPI in `services/api/`, errori con un codice,
+grafi di zona in memoria senza salvare i ritagli, ADR-0009 rinviata alla
+fase 4, job `api` in CI. La ADR si scrive nella PR che implementa.
 
 ## In lavorazione
 

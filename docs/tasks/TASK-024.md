@@ -111,9 +111,8 @@ OpenStreetMap, e un'app vera per la corsa lo apre e mostra il percorso.
 - [x] Il GPX di `POST /gpx` e quello della CLI per lo stesso percorso sono
       uguali, a parte l'ora di creazione (test, con l'orologio dell'API
       fissato).
-- [ ] Sull'iPhone il file arriva in File con il nome giusto. Non riportato
-      a parte: l'utente ha provato l'export fino a Garmin Connect (sotto).
-      Il nome del file lo controlla il test dell'app.
+- [x] Sull'iPhone il file arriva in File con il nome giusto (provato
+      dall'utente il 2026-09-23).
 - [x] Il GPX si apre in un'app o in un sito per la corsa e mostra il
       percorso: **Garmin Connect** lo apre (prova dell'utente del
       2026-09-23); annotato in `GPX.md`.

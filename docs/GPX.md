@@ -92,7 +92,7 @@ sovrascrive mai (ADR-0014). La nomenclatura dei file in `samples/` è in
 
 ## Non ancora verificato
 
-- Compatibilità con Garmin, Strava, Komoot: si prova quando i percorsi
-  seguiranno strade vere (dopo TASK-014). Oggi il GPX contiene la forma
-  **teorica**, che passa sopra case, prati e laghi.
+- **Garmin Connect** apre il GPX esportato dal telefono (TASK-024, prova
+  dell'utente del 2026-09-23). **Strava** e **Komoot** non sono ancora stati
+  provati.
 - Quote altimetriche: servono in fase 4 (dislivello), sorgente da decidere.

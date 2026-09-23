@@ -1,6 +1,6 @@
 # TASK-024 — Export e condivisione GPX dal telefono
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 2 · **Branch**: `feat/TASK-024-gpx-export`
 
 ## Obiettivo
@@ -111,10 +111,13 @@ OpenStreetMap, e un'app vera per la corsa lo apre e mostra il percorso.
 - [x] Il GPX di `POST /gpx` e quello della CLI per lo stesso percorso sono
       uguali, a parte l'ora di creazione (test, con l'orologio dell'API
       fissato).
-- [ ] Sull'iPhone il file arriva in File con il nome giusto.
-- [ ] Il GPX si apre in un'app o in un sito per la corsa e mostra il
-      percorso; quale e come annotato in `GPX.md`.
-- [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
+- [x] Sull'iPhone il file arriva in File con il nome giusto (provato
+      dall'utente il 2026-09-23).
+- [x] Il GPX si apre in un'app o in un sito per la corsa e mostra il
+      percorso: **Garmin Connect** lo apre (prova dell'utente del
+      2026-09-23); annotato in `GPX.md`.
+- [x] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR
+      (PR #31, già mergiata; la chiusura del task va in una PR a parte).
 - [x] ADR-0033; `GPX.md`, `API.md`, `UI.md`, `MAPS.md`, `ARCHITECTURE.md`,
       `STATUS.md` aggiornati.
 
@@ -161,4 +164,7 @@ docs/tasks/TASK-024.md
 
 ## Esito
 
-*(si compila a fine task)*
+Dal telefono «Export GPX» apre il foglio di condivisione con il file
+scritto dall'export del motore, lo stesso della CLI, e Garmin Connect lo
+apre: è la prima prova su un'app vera. Ogni GPX porta ora l'attribuzione di
+OpenStreetMap. Strava e Komoot non sono stati provati (`GPX.md`).

@@ -17,22 +17,22 @@ scrive un GPX con i suoi controlli. Dall'iPhone, con l'API sul PC, si
 sceglie forma e distanza e il percorso compare sulla mappa: 3–10 km nelle
 zone in cache in 5–25 s, 15 km in circa 30 s, con l'attesa che dice cosa
 succede. Le zone nuove dipendono da Overpass, che da questo PC risponde
-solo a volte (`MAPS.md`).
+solo a volte (`MAPS.md`). Il percorso si esporta in GPX, e Garmin Connect
+lo apre.
 
 ## Prossimo passo
 
-Provare TASK-024 sull'iPhone con l'API avviata con `--lan`, seguendo il
-punto 7 del task: «Export GPX», «Salva su File», poi aprire il GPX in
-un'app o in un sito per la corsa; chiuderlo. Dopo: la distanza libera
-(TASK-026), che chiude la fase 2.
+**TASK-026 — Distanza libera.** Il file del task è da scrivere
+(`docs/tasks/`, branch `docs/TASK-026-task-file`). È la richiesta
+dell'utente in `ROADMAP.md`, fase 2: un campo al posto dei pulsanti delle
+distanze. Da decidere lì: campo in km con decimali o no, limiti da
+`shared-types` (1–50 km) e messaggio fuori limite, se i pulsanti restano
+come scorciatoie, e i tempi oltre 15 km, mai misurati. Con TASK-026 la fase
+2 si chiude; poi la fase 3, prima con ADR-0012 (modello AI).
 
 ## In lavorazione
 
-- **TASK-024** — Export GPX, branch `feat/TASK-024-gpx-export`. Codice,
-  test e documenti fatti (ADR-0033): `POST /gpx` con l'export del motore,
-  attribuzione OSM nel GPX, «Export GPX» con il foglio di condivisione di
-  iOS, `GpxRequest` in `shared-types`. Manca la prova sull'iPhone e su
-  un'app vera per la corsa.
+Niente.
 
 ## Completato
 
@@ -41,7 +41,8 @@ un'app o in un sito per la corsa; chiuderlo. Dopo: la distanza libera
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in
   memoria (ADR-0030); app che chiede i percorsi, li disegna e spiega ogni
   errore (ADR-0031); richieste in due tempi con stati, per 15 km e zone
-  nuove (ADR-0032). Tutto provato sull'iPhone.
+  nuove (ADR-0032); export GPX con attribuzione OSM, aperto in Garmin
+  Connect (ADR-0033). Tutto provato sull'iPhone.
 - **Fase 1 — Route engine** (TASK-010–019): CLI e GPX; forme circle e
   heart; snapping su OSMnx con zone e corridoio (ADR-0022); ottimizzatore
   che ruota, scala e sposta la partenza fino a 500 m (ADR-0023, ADR-0025);

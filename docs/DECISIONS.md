@@ -98,7 +98,8 @@ di produzione è ADR-0009.
 Candidati: OSRM, GraphHopper, Valhalla. Valhalla è interessante per il
 supporto a dislivello e superfici, che servirà in fase 4.
 
-**Da decidere entro**: fase 2, TASK-022.
+**Da decidere entro**: fase 4, con hosting e database (ADR-0013). Era
+fase 2, TASK-022: rinviata con ADR-0030, l'MVP resta su OSMnx.
 
 ## ADR-0010 — Metrica di somiglianza
 **Stato**: Superata da ADR-0023 (e ADR-0025) · 2026-09-23
@@ -620,4 +621,49 @@ cambiano in una costante ciascuno, e con molti utenti si potranno mettere
 dietro l'API (TASK-022). A ogni avvio a freddo la WebView scarica circa
 1 MB di MapLibre GL JS. La mappa vera non gira in Jest: nei test WebView,
 posizione e rete sono finte, la pagina si prova sul telefono.
+
+## ADR-0030 — API FastAPI sul route-engine, grafi di zona in memoria
+**Stato**: Attiva · 2026-09-23
+
+TASK-022 espone il route-engine al telefono. Servivano forma dell'API,
+errori, gestione dei grafi e una risposta ad ADR-0009 e alla domanda
+lasciata aperta da ADR-0028 sui tipi generati. Confermato dall'utente.
+
+**Decisione**:
+- **Pacchetto** `services/api/` (`shaperoute_api`), Python 3.11, FastAPI e
+  uvicorn; httpx solo per i test. Il route-engine si installa accanto, nello
+  stesso ambiente. `python -m shaperoute_api` risponde solo al PC; con
+  `--lan` alla Wi-Fi, e stampa l'indirizzo per il telefono.
+- **Endpoint**: `GET /health` e `POST /routes`, con `RouteRequest` e
+  `RouteResult` identici a `shared-types`. Richiesta sincrona. Niente
+  autenticazione, prefisso di versione e CORS finché l'API gira solo sul PC.
+- **Errori** tutti come `{"error": {"code", "message"}}`:
+  `invalid_request` e `shape_not_drawable` (422), `map_data_unavailable`
+  (503), `engine_error` (500), `http_error` per indirizzi e metodi
+  sbagliati. I limiti dei valori restano solo in `models.py`.
+- **Grafi**: l'API tiene in memoria gli ultimi 2 grafi di zona e ritaglia
+  in memoria, senza salvare i ritagli; le zone nuove si scaricano e si
+  salvano come con la CLI. Nel route-engine `read_graph` diventa pubblica.
+- **Tipi**: niente generazione dall'OpenAPI. I modelli Pydantic leggono
+  gli stessi JSON di esempio di `shared-types`, come `tsc` e il test del
+  motore.
+- **ADR-0009** (motore di routing di produzione) rinviata alla fase 4.
+- **CI**: job `api` con lint e test.
+
+**Motivo**: la CLI salva ogni ritaglio, da 3 a 110 MB per partenza: con
+un'API il disco del PC, già quasi pieno, finirebbe in poche decine di
+richieste; tenere la zona in memoria evita anche di rileggerla. Con due
+oggetti nel contratto un generatore di tipi costa più di quanto risparmia,
+e i JSON di esempio tengono già allineate le tre copie. OSRM, GraphHopper e
+Valhalla sono server a parte e non conoscono zone e corridoio (ADR-0022):
+adottarli vuol dire riscrivere lo snapping, meglio con i tempi misurati in
+uso vero. `--lan` esplicito perché un'API senza autenticazione aperta alla
+rete deve essere una scelta, non il default.
+
+**Conseguenza**: un grafo di zona in memoria occupa centinaia di MB, da
+qui il limite di 2. La prima richiesta in una zona legge il grafo dal
+disco, le altre no. Con `--lan` chiunque sulla stessa Wi-Fi può chiedere
+percorsi: va usata solo su reti di casa. Se il telefono non aspetta la
+risposta di una richiesta lunga, le richieste in due tempi si decidono con
+TASK-023.
 

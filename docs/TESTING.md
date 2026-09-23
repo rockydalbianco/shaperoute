@@ -49,7 +49,12 @@ controllo dei tipi, che per TypeScript è già metà dei test.
   `apps/mobile/__mocks__/`, le risposte di Photon vengono da una risposta
   vera salvata in `apps/mobile/src/places/fixtures/`. La conversione fra
   `(lat, lon)` e il `[lon, lat]` di MapLibre si prova con la partenza di
-  Trento, dove uno scambio non passa.
+  Trento, dove uno scambio non passa;
+- API: con `TestClient` di FastAPI, un percorso vero sul grafo piccolo di
+  Levico (circa 5 s, uno solo) e ogni errore con un motore finto; i
+  modelli Pydantic leggono gli stessi JSON di esempio di `shared-types`;
+  i grafi di zona si leggono una volta e nessun ritaglio finisce nella
+  cache.
 
 **Non deterministico, va isolato:**
 
@@ -114,7 +119,8 @@ divergono spesso, la metrica scelta non descrive ciò che l'occhio vede.
 
 Per ora minima: lint e test su ogni PR, per il route-engine e per gli
 script di `tools/`, senza test di rete; dalla fase 2, lint, formato, tipi
-e test dell'app e dei tipi condivisi (job `mobile`). Niente build per
+e test dell'app e dei tipi condivisi (job `mobile`) e dell'API (job
+`api`). Niente build per
 telefono in CI. Una CI complicata su un repository quasi vuoto è solo
 tempo speso a far passare build.
 

@@ -14,16 +14,16 @@
 Il route engine, da riga di comando, disegna cuori e cerchi riconoscibili
 su strade reali (Trento e Milano bene, Levico quasi, valle sospesa) e
 scrive un GPX con i suoi controlli. L'app, in Expo Go sull'iPhone, mostra
-la mappa sulla posizione GPS o su un luogo cercato, ma non chiede ancora
-percorsi: manca l'API.
+la mappa sulla posizione GPS o su un luogo cercato. L'API sul PC calcola i
+percorsi e risponde anche dal telefono, ma l'app non la chiama ancora.
 
 ## Prossimo passo
 
-**TASK-022 — API FastAPI che espone il route-engine**, sul branch
-`feat/TASK-022-api`. Il file del task è scritto, con le scelte già
-confermate dall'utente: FastAPI in `services/api/`, errori con un codice,
-grafi di zona in memoria senza salvare i ritagli, ADR-0009 rinviata alla
-fase 4, job `api` in CI. La ADR si scrive nella PR che implementa.
+**TASK-023 — Collegamento app ↔ API, anteprima percorso.** Il file del
+task è da scrivere (`docs/tasks/`, branch `docs/TASK-023-task-file`). Da
+decidere lì: come l'app conosce l'indirizzo dell'API sul PC, scelta di
+forma e distanza, attesa e messaggi per ogni `code` di errore (domande
+aperte in `UI.md`), e se servono richieste in due tempi (ADR-0030).
 
 ## In lavorazione
 
@@ -31,6 +31,10 @@ Niente.
 
 ## Completato
 
+- **TASK-022** — API FastAPI in `services/api/`: `POST /routes` e
+  `GET /health`, errori con un codice, grafi di zona in memoria senza
+  ritagli salvati, 7–32 s per percorso; ADR-0009 rinviata alla fase 4
+  (ADR-0030). Provata dall'iPhone.
 - **TASK-021** — Mappa MapLibre GL JS in WebView con tile OpenFreeMap,
   posizione GPS con `expo-location` e, senza posizione, ricerca di città o
   via con Photon (ADR-0029). Provata sull'iPhone.
@@ -77,8 +81,11 @@ Niente.
   si scrive `npm.cmd` al posto di `npm` (script bloccati). Sull'iPhone
   Expo Go vuole l'accesso con lo stesso account Expo sul PC e sul telefono
   (già fatto); il permesso di posizione è di Expo Go (`SETUP.md`, 9.4).
-- Il disco C: di questo PC è quasi pieno (1,8 GB liberi il 2026-09-23):
-  Expo si ferma con `ENOSPC` quando finisce lo spazio.
+- API: dalla radice `services\api\.venv\Scripts\python.exe -m
+  shaperoute_api --lan` (`SETUP.md`, passo 10); risponde anche su `/docs`.
+- Il disco C: di questo PC è quasi pieno (1,3 GB liberi il 2026-09-23):
+  Expo si ferma con `ENOSPC` quando finisce lo spazio. In `data/cache/`
+  ci sono ritagli salvati dalla CLI che si possono togliere a mano.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.
 - Nell'app la partenza è la posizione GPS o un luogo cercato (`UI.md`);
   le zone fisse servono solo a confrontare le prove.

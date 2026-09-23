@@ -444,6 +444,42 @@ verso il PC. Nessuna chiave da mettere in `.env`.
 
 ---
 
+## Passo 10 — L'API sul PC (dalla fase 2)
+
+L'API ha un suo ambiente Python, con dentro anche il route-engine che
+espone. Occupa circa 300 MB. Una volta sola, da PowerShell:
+
+```powershell
+cd ~\PycharmProjects\shaperoute\services\api
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -e ..\route-engine -e ".[dev]"
+```
+
+Si chiama `python.exe` dentro `.venv` invece di attivare l'ambiente,
+perché PowerShell blocca lo script di attivazione come blocca `npm.ps1`.
+
+Per avviarla, dalla **radice** del repository (i grafi stanno in
+`data\cache`):
+
+```powershell
+services\api\.venv\Scripts\python.exe -m shaperoute_api --lan
+```
+
+Stampa due indirizzi: `/docs` per provarla dal PC, e quello da aprire in
+Safari sull'iPhone, che deve rispondere `{"status":"ok"}`. La prima volta
+Windows chiede se Python può usare la rete: consenti sulle reti private.
+Senza `--lan` l'API risponde solo al PC. Si ferma con `Ctrl+C`.
+
+I controlli della CI, da `services\api`:
+`.venv\Scripts\python.exe -m ruff check .`,
+`.venv\Scripts\python.exe -m black --check .`,
+`.venv\Scripts\python.exe -m pytest -m "not network"`.
+
+Dopo il primo giro della CI con l'API, aggiungi il controllo `api` alle
+regole di `main`, come al passo 7.3.
+
+---
+
 ## Il ciclo di tutti i giorni
 
 Una volta finito il setup, ogni sessione di lavoro è sempre questa:

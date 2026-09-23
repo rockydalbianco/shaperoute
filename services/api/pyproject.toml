@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shaperoute-api"
+version = "0.1.0"
+description = "HTTP API that exposes the route engine to the app."
+requires-python = ">=3.11"
+# route-engine is installed beside it from ../route-engine (docs/SETUP.md).
+dependencies = [
+    "route-engine",
+    "fastapi>=0.141,<1",
+    "uvicorn>=0.53,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "ruff>=0.5",
+    "black>=24",
+    "httpx>=0.28,<1",
+]
+
+[tool.setuptools.packages.find]
+include = ["shaperoute_api*"]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "network: needs internet access; excluded from normal runs and CI",
+]

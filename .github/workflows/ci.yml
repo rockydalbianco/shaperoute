@@ -2,7 +2,8 @@ name: CI
 
 # CI volutamente minima: lint e test sul route-engine, che esiste da
 # TASK-010, e sugli script di tools/ (TASK-019); da TASK-020, lint, formato,
-# tipi e test dell'app e dei tipi condivisi (job "mobile").
+# tipi e test dell'app e dei tipi condivisi (job "mobile"); da TASK-022,
+# lint e test dell'API (job "api").
 # La cache di pip ha per chiave il pyproject.toml del route-engine: finché
 # le dipendenze non cambiano, OSMnx e il resto non si riscaricano a ogni run.
 
@@ -50,6 +51,37 @@ jobs:
           ruff check --config services/route-engine/pyproject.toml tools
           black --check --config services/route-engine/pyproject.toml tools
           pytest tools
+
+  # L'API FastAPI, installata insieme al route-engine che espone (ADR-0030).
+  # I test girano sul grafo piccolo di Levico e sui JSON di shared-types.
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            services/route-engine/pyproject.toml
+            services/api/pyproject.toml
+
+      - name: Install
+        working-directory: services/api
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ../route-engine -e ".[dev]"
+
+      - name: Lint
+        working-directory: services/api
+        run: |
+          ruff check .
+          black --check .
+
+      - name: Test
+        working-directory: services/api
+        run: pytest -m "not network"
 
   # App Expo e packages/shared-types, workspace npm dalla radice (ADR-0028).
   # La cache di npm ha per chiave package-lock.json.

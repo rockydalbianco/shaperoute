@@ -255,3 +255,29 @@ def test_a_shape_the_roads_cannot_draw_is_refused() -> None:
     request = RouteRequest(start=LEVICO, shape="heart", distance_m=2000)
     with pytest.raises(ShapeNotDrawableError, match="cannot be drawn here"):
         plan_route(request, OneStreet())
+
+
+def test_a_shape_too_far_from_the_distance_is_refused(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The search's best follows the shape but is 3 km too long: beyond the
+    # 2 km a non-conforming route may miss the target by.
+    import route_engine.optimizer as optimizer
+
+    real_search = optimizer.search
+
+    def long_search(*args: object, **kwargs: object) -> optimizer.Search:
+        result = real_search(*args, trace=_fake_trace(stretch=1.0), **kwargs)
+        best = result.best
+        best.route = NetworkRoute(best.route.points, 5000.0)
+        return result
+
+    monkeypatch.setattr(optimizer, "search", long_search)
+
+    class Grid:
+        def load(self, bbox: tuple[float, float, float, float]) -> nx.MultiDiGraph:
+            return _half_grid()
+
+    request = RouteRequest(start=LEVICO, shape="circle", distance_m=2000)
+    with pytest.raises(ShapeNotDrawableError, match=r"\+3\.0 km from the target"):
+        plan_route(request, Grid())

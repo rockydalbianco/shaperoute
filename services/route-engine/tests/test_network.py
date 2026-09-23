@@ -1,3 +1,4 @@
+import math
 import shutil
 from pathlib import Path
 
@@ -67,17 +68,36 @@ def test_prune_spurs_removes_nested_out_and_back() -> None:
     assert prune_spurs(["a", "b", "c", "d", "a"]) == ["a", "b", "c", "d", "a"]
 
 
-def test_waypoint_on_a_dead_end_leaves_no_spike() -> None:
-    # A 2×2 block with a dead-end street sticking out east of (1, 0).
+def _dead_end_block() -> nx.MultiDiGraph:
+    """A 2×2 block with a dead-end street sticking out east of (1, 0)."""
     graph = _grid(2)
     graph.add_node((2, 0), y=_at(2, 0)[0], x=_at(2, 0)[1])
     graph.add_edge((1, 0), (2, 0), length=SPACING_M)
     graph.add_edge((2, 0), (1, 0), length=SPACING_M)
-    shape = [_at(0, 0), _at(2, 0), _at(1, 1), _at(0, 1), _at(0, 0)]
+    return graph
+
+
+def test_waypoint_on_a_dead_end_leaves_no_spike() -> None:
+    # A smooth outline (12 points on an ellipse, no turn above 60°) with one
+    # point nearest to the dead end: the out-and-back is pruned.
+    graph = _dead_end_block()
+    angles = [-0.75 * math.pi + 2 * math.pi * k / 12 for k in range(12)]
+    shape = [_at(1 + math.cos(t), 0.5 + 0.5 * math.sin(t)) for t in angles]
+    shape.append(shape[0])
     route = snap_to_network(graph, shape)
     assert _at(2, 0) not in route.points
     assert _reused_edges(graph, route.points) == 0
     assert route.distance_m == pytest.approx(400.0, rel=1e-3)
+
+
+def test_a_corner_on_a_dead_end_keeps_its_spike() -> None:
+    # The outline turns by 135° at (2, 0): that spike draws the corner, like
+    # the tip of a heart, and survives the pruning.
+    graph = _dead_end_block()
+    shape = [_at(0, 0), _at(2, 0), _at(1, 1), _at(0, 1), _at(0, 0)]
+    route = snap_to_network(graph, shape)
+    assert _at(2, 0) in route.points
+    assert route.distance_m == pytest.approx(600.0, rel=1e-3)
 
 
 def test_route_that_is_only_a_spur_is_kept_rather_than_emptied() -> None:

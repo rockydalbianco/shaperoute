@@ -5,10 +5,13 @@ import pytest
 from route_engine.geo import local_to_latlon
 from route_engine.metrics import (
     SIMILARITIES,
+    corners,
+    corners_missed,
     coverage,
     fit_similarity,
     frechet_m,
     hausdorff_m,
+    shape_similarity,
     shape_size,
 )
 from route_engine.projection import initial_scale, project_shape
@@ -79,3 +82,24 @@ def test_fit_penalizes_a_loop_that_coverage_ignores() -> None:
     assert coverage(detour, square, tolerance_m=20.0) == pytest.approx(1.0)
     assert fit_similarity(detour, square) < 0.95
     assert fit_similarity(square, square) == pytest.approx(1.0)
+
+
+def test_the_heart_has_two_corners_and_the_circle_none() -> None:
+    heart = _projected("heart")
+    found = corners(heart)
+    assert len(found) == 2
+    assert heart[0] in found  # the dip, where phase 0 starts
+    assert corners(_projected("circle")) == []
+
+
+def test_missing_the_tip_of_the_heart_costs_similarity() -> None:
+    # The route follows the whole heart but cuts straight across its tip.
+    heart = _projected("heart")
+    tip = max(range(len(heart)), key=lambda i: -heart[i][0])  # southmost point
+    cut = heart[: tip - 3] + heart[tip + 4 :]
+    tolerance = 0.02 * shape_size(heart) * 2 * math.pi
+    assert corners_missed(heart, heart, tolerance) == 0
+    assert corners_missed(cut, heart, tolerance) == 1
+    assert shape_similarity(cut, heart) == pytest.approx(
+        fit_similarity(cut, heart) - 0.10
+    )

@@ -23,7 +23,7 @@ from typing import Any, Protocol
 import numpy as np
 
 from route_engine.geo import LatLon, latlon_to_local_array, local_to_latlon
-from route_engine.metrics import SIMILARITIES, Similarity
+from route_engine.metrics import CORNER_PENALTY, SIMILARITIES, Similarity
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import (
     AREA_MARGIN_M,
@@ -33,6 +33,7 @@ from route_engine.network import (
     Graph,
     NetworkRoute,
     area_around,
+    corner_indices,
     snap_to_network,
 )
 from route_engine.projection import (
@@ -67,8 +68,11 @@ MAX_TRACES = 16
 # the eye judgement of the first results (TASK-015, docs/MAPS.md): the
 # routes judged good covered 90% of the outline or more, the others less.
 DISTANCE_TOLERANCE = 0.10
+# When no placement gets both right, the route may miss the target distance
+# by up to this much to keep the shape; beyond it, no route (ADR-0025).
+DISTANCE_FALLBACK_M = 2000.0
 SIMILARITY_THRESHOLD = 0.90
-SIMILARITY = "fit"
+SIMILARITY = "shape"
 # cost = W_SHAPE · (1 − similarity) + W_DISTANCE · |real − target| / target;
 # the shape matters most.
 W_SHAPE = 3.0
@@ -183,6 +187,20 @@ class RoadMask:
         )
         return float(near[cells[inside, 0], cells[inside, 1]].sum()) / n
 
+    def near_xy(self, points_xy: np.ndarray, band_m: float) -> np.ndarray:
+        """Whether each point, in metres around `origin`, has a road within
+        about `band_m`."""
+        near, x0, y0 = self._grid(band_m)
+        cells = np.floor(points_xy / (band_m / 2)).astype(int) - (x0, y0)
+        inside = (
+            (cells >= 0).all(axis=1)
+            & (cells[:, 0] < near.shape[0])
+            & (cells[:, 1] < near.shape[1])
+        )
+        result = np.zeros(len(points_xy), bool)
+        result[inside] = near[cells[inside, 0], cells[inside, 1]]
+        return result
+
     def fit(self, outline: Sequence[LatLon], band_m: float) -> float:
         """`fit_xy` for an outline in WGS84."""
         return self.fit_xy(
@@ -278,6 +296,7 @@ def search(
     attempts: list[Attempt] = []
     # The road count works in metres around `start`, without projecting.
     phase_xy = {phase: np.array(start_at_phase(shape, phase)) for phase in PHASES}
+    phase_corners = {phase: corner_indices(pts[:-1]) for phase, pts in phase_xy.items()}
     start_xy = {s: latlon_to_local_array(start, np.array([s]))[0] for s, _ in starts}
 
     def outline_xy(p: Placement, scale: float) -> np.ndarray:
@@ -300,8 +319,15 @@ def search(
         # The band follows the scale alone, so every placement at one scale
         # shares the same grid. Moving the start must earn its keep.
         band = round(CORRIDOR_BAND * perimeter(shape) * scale, 3)
-        fit = mask.fit_xy(outline_xy(p, scale), band)
-        return fit - OFFSET_FIT_PENALTY * p.offset_m / START_OFFSET_M
+        outline = outline_xy(p, scale)
+        fit = mask.fit_xy(outline, band)
+        corners = outline[phase_corners[p.phase]]
+        bare = int((~mask.near_xy(corners, band)).sum()) if len(corners) else 0
+        return (
+            fit
+            - CORNER_PENALTY * bare
+            - OFFSET_FIT_PENALTY * p.offset_m / START_OFFSET_M
+        )
 
     def attempt(p: Placement, scale: float) -> Attempt:
         outline = placed(p, scale)
@@ -427,7 +453,7 @@ def search(
         tried.append(placement)
         last, scale = rescale(placement, scale)
         if last is not None and good(last):
-            return _done(attempts, True)
+            return _done(attempts, good, distance_m)
 
     best = min(attempts, key=lambda a: a.cost)
     turns = np.arange(-REFINE_SPAN_DEG, REFINE_SPAN_DEG + 1e-9, REFINE_STEP_DEG)
@@ -448,16 +474,28 @@ def search(
     if refined and len(attempts) < max_traces:
         last, _ = rescale(refined[0], best.scale_m)
         if last is not None and good(last):
-            return _done(attempts, True)
-    return _done(attempts, polish(min(attempts, key=lambda a: a.cost)))
+            return _done(attempts, good, distance_m)
+    polish(min(attempts, key=lambda a: a.cost))
+    return _done(attempts, good, distance_m)
 
 
 def _angle_gap(a: float, b: float) -> float:
     return abs((a - b + 180.0) % 360.0 - 180.0)
 
 
-def _done(attempts: list[Attempt], converged: bool) -> Search:
-    best = min(attempts, key=lambda a: a.cost)
+def _done(
+    attempts: list[Attempt], good: Callable[[Attempt], bool], distance_m: float
+) -> Search:
+    """The cheapest attempt that meets both thresholds; failing that, the
+    cheapest within DISTANCE_FALLBACK_M of the target, if there is one."""
+    good_ones = [a for a in attempts if good(a)]
+    converged = bool(good_ones)
+    within = [
+        a
+        for a in attempts
+        if abs(a.route.distance_m - distance_m) <= DISTANCE_FALLBACK_M
+    ]
+    best = min(good_ones or within or attempts, key=lambda a: a.cost)
     warnings = list(best.route.warnings)
     if not converged:
         if abs(best.ratio - 1) > DISTANCE_TOLERANCE:
@@ -536,11 +574,18 @@ def plan_route(
             reuse_penalty=reuse_penalty,
         )
         best = found.best
+        what = f"a {request.distance_m / 1000:g} km {request.shape}"
         if best.similarity < MIN_SIMILARITY:
             raise ShapeNotDrawableError(
-                f"a {request.distance_m / 1000:g} km {request.shape} cannot be "
-                f"drawn here: at best {best.similarity:.0%} of its outline has a "
-                f"road nearby, {MIN_SIMILARITY:.0%} needed"
+                f"{what} cannot be drawn here: the best route scores "
+                f"{best.similarity:.2f} for shape, {MIN_SIMILARITY:.2f} needed"
+            )
+        gap = best.route.distance_m - request.distance_m
+        if abs(gap) > DISTANCE_FALLBACK_M:
+            raise ShapeNotDrawableError(
+                f"{what} cannot be drawn here: the best shape is "
+                f"{gap / 1000:+.1f} km from the target, at most "
+                f"{DISTANCE_FALLBACK_M / 1000:g} km allowed"
             )
         route, sim, warnings = best.route, best.similarity, list(found.warnings)
         if best.offset_m > 0:

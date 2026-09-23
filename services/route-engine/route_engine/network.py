@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 import pickle
 import weakref
-from collections.abc import Sequence
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
@@ -34,6 +34,9 @@ SPARSE_THRESHOLD_M = 150.0
 ZONE_RADIUS = 0.02
 CORRIDOR_BAND = 0.02
 CORRIDOR_WEIGHT = 2.0
+# A vertex where the outline turns more than this is a corner of the shape,
+# like the heart's tip and dip (TASK-015); the circle has none.
+CORNER_TURN_DEG = 60.0
 # Distances from the outline are exact up to this far beyond its band.
 CORRIDOR_EXACT_M = 1000.0
 
@@ -236,19 +239,35 @@ def nearest_nodes(
     return nearest, distances
 
 
-def prune_spurs(route_nodes: Sequence[Any]) -> list[Any]:
-    """Remove out-and-back detours: every A → B → A becomes A, repeatedly.
+def prune_spurs(
+    route_nodes: Sequence[Any], keep: Collection[Any] = frozenset()
+) -> list[Any]:
+    """Remove out-and-back detours: every A → B → A becomes A, repeatedly,
+    unless B is in `keep`.
 
     Reaching a waypoint down a side street and coming back draws a spike
-    that is not part of the shape; dropping it keeps the outer contour.
+    that is not part of the shape; dropping it keeps the outer contour. A
+    spike out to a corner of the shape, such as the heart's tip, is what
+    draws the corner: those nodes go in `keep`.
     """
     result: list[Any] = []
     for node in route_nodes:
-        if len(result) >= 2 and result[-2] == node:
+        if len(result) >= 2 and result[-2] == node and result[-1] not in keep:
             result.pop()
         else:
             result.append(node)
     return result
+
+
+def corner_indices(xy: np.ndarray) -> list[int]:
+    """Indices of the vertices of a closed polyline (no repeated closing
+    point) where the outline turns by more than CORNER_TURN_DEG."""
+    before = xy - np.roll(xy, 1, axis=0)
+    after = np.roll(xy, -1, axis=0) - xy
+    cross = before[:, 0] * after[:, 1] - before[:, 1] * after[:, 0]
+    dot = (before * after).sum(axis=1)
+    turn = np.degrees(np.abs(np.arctan2(cross, dot)))
+    return [int(i) for i in np.flatnonzero(turn > CORNER_TURN_DEG)]
 
 
 def distance_to_polyline(polyline: np.ndarray, points: np.ndarray) -> np.ndarray:
@@ -370,7 +389,8 @@ def _route_through_zones(
     radius_m: float,
     costs: dict[tuple[Any, Any], float],
     reuse_penalty: float,
-) -> tuple[list[Any], list[Any], list[int]]:
+    corners: Collection[int] = frozenset(),
+) -> tuple[list[Any], list[Any], list[int], set[Any]]:
     """Closed route from `first` through a zone around each anchor, back to `first`.
 
     A zone is every node within `radius_m` of its anchor, or the nearest
@@ -381,7 +401,9 @@ def _route_through_zones(
 
     Each leg adds a temporary sink node to `graph`, linked from the zone,
     and removes it afterwards. Returns the route nodes, the node reached in
-    each zone and the indices of the anchors that could not be reached.
+    each zone, the indices of the anchors that could not be reached, and the
+    nodes reached for the anchors listed in `corners` (1-based, like the
+    indices of the unreached ones).
     """
     node_ids = list(graph.nodes)
     xy = latlon_to_local_array(
@@ -401,6 +423,7 @@ def _route_through_zones(
     route_nodes = [first]
     reached = [first]
     skipped: list[int] = []
+    corner_nodes: set[Any] = set()
     for index, anchor in enumerate(anchors, start=1):
         ax, ay = latlon_to_local(origin, anchor)
         d = np.hypot(xy[:, 0] - ax, xy[:, 1] - ay)
@@ -421,13 +444,15 @@ def _route_through_zones(
             for i in zone:
                 costs.pop((node_ids[i], _SINK), None)
         walk(path[:-1])
+        if index in corners:
+            corner_nodes.add(path[-2])
         if path[-2] != reached[-1]:
             reached.append(path[-2])
     try:
         walk(nx.shortest_path(graph, route_nodes[-1], first, weight=weight))
     except nx.NetworkXNoPath:
         skipped.append(0)
-    return route_nodes, reached, skipped
+    return route_nodes, reached, skipped, corner_nodes
 
 
 def snap_to_network(
@@ -475,7 +500,8 @@ def snap_to_network(
         anchors.pop()
 
     costs = _corridor_costs(graph, origin, outline, corridor, band * perimeter)
-    route_nodes, reached, skipped = _route_through_zones(
+    corners = set(corner_indices(outline[:-1]))
+    route_nodes, reached, skipped, corner_nodes = _route_through_zones(
         graph,
         origin,
         nodes[0],
@@ -483,11 +509,14 @@ def snap_to_network(
         zone_radius * perimeter,
         costs,
         reuse_penalty,
+        corners,
     )
     for index in skipped:
         warnings.append(f"no road path to shape point {index}; skipped")
 
-    pruned = prune_spurs(route_nodes)
+    if 0 in corners:
+        corner_nodes.add(route_nodes[0])
+    pruned = prune_spurs(route_nodes, keep=corner_nodes)
     if len(set(pruned)) >= 3:  # keep it only if a loop survives
         route_nodes = pruned
     points: list[LatLon] = [_node_latlon(graph, route_nodes[0])]

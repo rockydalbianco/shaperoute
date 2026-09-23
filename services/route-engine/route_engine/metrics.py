@@ -13,7 +13,7 @@ from collections.abc import Callable, Sequence
 import numpy as np
 
 from route_engine.geo import LatLon, latlon_to_local_array
-from route_engine.network import distance_to_polyline
+from route_engine.network import corner_indices, distance_to_polyline
 
 # Coverage tolerance, as a fraction of the shape perimeter (100 m at 5 km).
 COVER_TOLERANCE = 0.02
@@ -21,6 +21,10 @@ COVER_TOLERANCE = 0.02
 FRECHET_POINTS = 128
 # Spacing of the samples along the outline, in metres.
 SAMPLE_STEP_M = 10.0
+# Each corner of the shape (network.corner_indices: the heart's tip and dip,
+# what makes it recognizable) that the route misses costs this much
+# similarity (TASK-015).
+CORNER_PENALTY = 0.10
 
 
 def _local(origin: LatLon, points: Sequence[LatLon]) -> np.ndarray:
@@ -133,6 +137,34 @@ def fit_similarity(route: Sequence[LatLon], shape: Sequence[LatLon]) -> float:
     return 0.0 if c + p == 0 else 2 * c * p / (c + p)
 
 
+def corners(shape: Sequence[LatLon]) -> list[LatLon]:
+    """Vertices of a closed shape where the outline turns sharply."""
+    points = list(shape)
+    if len(points) > 1 and points[-1] == points[0]:
+        points.pop()
+    return [points[i] for i in corner_indices(_local(points[0], points))]
+
+
+def corners_missed(
+    route: Sequence[LatLon], shape: Sequence[LatLon], tolerance_m: float
+) -> int:
+    """How many corners of the shape have no route within `tolerance_m`."""
+    found = corners(shape)
+    if not found:
+        return 0
+    origin = shape[0]
+    d = distance_to_polyline(_local(origin, route), _local(origin, found))
+    return int((d > tolerance_m).sum())
+
+
+def shape_similarity(route: Sequence[LatLon], shape: Sequence[LatLon]) -> float:
+    """`fit`, minus CORNER_PENALTY for each corner the route misses: a heart
+    without its tip is not a heart, even if the rest follows the outline."""
+    tolerance = COVER_TOLERANCE * shape_size(shape) * 2 * math.pi
+    missed = corners_missed(route, shape, tolerance)
+    return max(0.0, fit_similarity(route, shape) - CORNER_PENALTY * missed)
+
+
 def hausdorff_similarity(route: Sequence[LatLon], shape: Sequence[LatLon]) -> float:
     return max(0.0, 1.0 - hausdorff_m(route, shape) / shape_size(shape))
 
@@ -146,6 +178,7 @@ Similarity = Callable[[Sequence[LatLon], Sequence[LatLon]], float]
 SIMILARITIES: dict[str, Similarity] = {
     "coverage": coverage_similarity,
     "fit": fit_similarity,
+    "shape": shape_similarity,
     "hausdorff": hausdorff_similarity,
     "frechet": frechet_similarity,
 }

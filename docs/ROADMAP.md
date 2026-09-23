@@ -73,6 +73,19 @@ Obiettivo: la stessa cosa, ma dal telefono.
 
 Fine fase: **il MVP di `PRODUCT.md` è completo**.
 
+**Richiesta dell'utente (2026-09-23), per dopo TASK-023.** In TASK-023
+forma e distanza si scelgono fra pochi pulsanti (cerchio o cuore; 3, 5, 10,
+15 km). Dopo, si scrivono in **campi liberi**: l'app deve saper disegnare
+ogni distanza e ogni forma che l'utente chiede. Le due metà hanno pesi
+diversi:
+- la distanza libera è vicina: il motore accetta già da 1 a 50 km, ma i
+  tempi oltre 15 km non sono misurati;
+- la forma libera tocca il confine di ADR-0001: il testo lo interpreta
+  l'AI (fase 3), ma disegnare si può solo le forme che il motore conosce, e
+  quelle nuove sono lavoro di fase 4.
+
+Quando e con quali task si decide chiudendo TASK-023.
+
 ## Fase 3 — Linguaggio naturale
 
 | Task | Titolo |

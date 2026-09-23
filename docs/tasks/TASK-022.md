@@ -1,6 +1,6 @@
 # TASK-022 — API FastAPI che espone il route-engine
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 2 · **Branch**: `feat/TASK-022-api`
 
 ## Obiettivo
@@ -144,14 +144,15 @@ girano in locale e in CI, senza rete.
       scrivono ritagli in `data/cache/` (test, e controllato a mano con 10
       richieste). L'unico file nuovo è il pickle di una zona letta per la
       prima volta, scritto una volta sola come fa la CLI (ADR-0023).
-- [ ] Dall'iPhone, sulla stessa Wi-Fi, `/health` risponde
-      `{"status": "ok"}`.
+- [x] Dall'iPhone, sulla stessa Wi-Fi, `/health` risponde
+      `{"status": "ok"}` (provato dall'utente il 2026-09-23, con `--lan`).
 - [x] Tempi dei quattro casi del punto 6 scritti in `API.md`, più una
       partenza nuova a Trento.
 - [x] `services/route-engine`: i test passano come prima (131), la CLI dà
       lo stesso percorso dell'API sul cerchio di Levico e non importa
       nulla dall'API.
-- [ ] I job `api`, `route-engine` e `mobile` della CI sono verdi sulla PR.
+- [x] I job `api`, `route-engine` e `mobile` della CI sono verdi sulla PR
+      (PR #25).
 - [x] ADR-0030, ADR-0009 rinviata alla fase 4; `API.md`, `SETUP.md`
       (passo 10), `TESTING.md`, `INDEX.md`, `STATUS.md` aggiornati.
 
@@ -199,4 +200,9 @@ docs/tasks/TASK-022.md
 
 ## Esito
 
-*(si compila a fine task)*
+Il PC ha un'API che calcola i percorsi con il route-engine e risponde
+anche dall'iPhone; gli errori hanno un codice per l'app, e le richieste non
+riempiono più il disco di ritagli. Tempi misurati 7–32 s (`API.md`): tutti
+sotto i 60 s di iOS, il cuore di Trento vicino ai 30 s dell'MVP. Rimandati:
+richieste in due tempi e indirizzo dell'API nell'app (TASK-023), motore di
+routing di produzione (ADR-0009, fase 4), `httpx2` per i test.

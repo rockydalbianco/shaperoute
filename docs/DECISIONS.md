@@ -109,7 +109,7 @@ confrontano con il giudizio a occhio e si sceglie con dati alla mano.
 **Da decidere entro**: fine fase 1.
 
 ## ADR-0011 — Provider di mappe e tiles
-**Stato**: Aperta · **Da decidere entro**: TASK-021
+**Stato**: Superata da ADR-0029 · 2026-09-23
 
 ## ADR-0012 — Provider e modello AI
 **Stato**: Aperta · **Da decidere entro**: TASK-030
@@ -560,4 +560,64 @@ tipi `@types`: vanno dichiarati in `types` (`jest` nell'app, `node` in
 `shared-types`, che dichiara `@types/node`). `npm audit` segnala 10
 vulnerabilità moderate, tutte da `uuid` dentro gli strumenti di build di
 Expo (`xcode`), non nell'app: si risolvono con un SDK nuovo, non a mano.
+
+## ADR-0029 — Mappa dell'app in WebView, posizione GPS, ricerca del luogo
+**Stato**: Attiva · 2026-09-23
+
+TASK-021 porta nell'app la mappa e la posizione. L'utente prova su iPhone
+con Expo Go, da un PC Windows e con strumenti gratuiti: MapLibre React
+Native non gira in Expo Go, e su un iPhone vero la *development build*
+chiede un Mac o l'Apple Developer Program a pagamento. Confermato
+dall'utente, che ha chiesto in più la ricerca del luogo quando la posizione
+non c'è.
+
+**Decisione**:
+- **Mappa**: l'app scrive una pagina HTML e la apre in
+  `react-native-webview`. Dentro, **MapLibre GL JS 5.24.0** da unpkg
+  (versione fissata, hash SRI, come ADR-0024) e lo stile `liberty` di
+  **OpenFreeMap** (dati OSM, gratuito, senza chiave né account).
+  Attribuzione estesa, mai compressa dietro l'icona «i». La 5.x perché è
+  l'ultima in un file solo: la 6 è solo moduli ES, con il worker in un file
+  separato. URL dello stile in una sola costante.
+- **App e pagina** si parlano con messaggi tipati: `setPosition` verso la
+  pagina, `ready` ed `error` verso l'app. Lo scambio fra `[lat, lon]` e il
+  `[lon, lat]` di MapLibre e GeoJSON avviene solo in
+  `apps/mobile/src/map/coordinates.ts`. I link della pagina si aprono nel
+  browser del telefono.
+- **Posizione** con `expo-location`, solo in primo piano: una lettura
+  all'apertura e una a ogni «My position», al massimo 15 s. Non esce dal
+  telefono.
+- **Senza posizione** (permesso negato, GPS spento o muto): mappa
+  sull'Italia e ricerca di una città o una via con **Photon**
+  (`photon.komoot.io`: dati OSM, gratuito, senza chiave, uso corretto e
+  nessuna garanzia). Richiesta all'invio, non a ogni lettera, al massimo 5
+  risultati. Il luogo scelto diventa la partenza; il GPS, quando risponde,
+  torna a vincere.
+- **Margini dello schermo** con `react-native-safe-area-context`: il
+  `SafeAreaView` di React Native è deprecato.
+- Dipendenze nuove: `react-native-webview`, `expo-location`,
+  `react-native-safe-area-context`, nelle versioni dell'SDK 57, licenza
+  MIT, tutte già dentro Expo Go.
+
+**Motivo**: la mappa usa gli stessi dati OSM su cui traccia il motore,
+quindi i sentieri del percorso si vedono; è la stessa su iPhone e Android;
+non servono chiavi né account; resta MapLibre, e stile e provider si
+riusano con MapLibre nativo se un giorno arriva una development build.
+Scartati: `react-native-maps` (su iPhone è Apple Maps, senza i dati OSM; su
+Android Google Maps con chiave e fatturazione), MapLibre React Native (non
+gira in Expo Go), Leaflet con le tile OSM (la loro policy non è per un'app
+distribuita); per la ricerca, il geocoder del telefono (su Android vuole
+proprio il permesso che manca, e restituisce solo coordinate senza nomi) e
+Nominatim (per le app chiede un server intermedio con cache e al massimo
+una richiesta al secondo in tutto).
+
+**Conseguenza**: l'app chiama direttamente due servizi esterni, le tile e
+Photon; non sono servizi nostri, quindi ARCHITECTURE §4 («`mobile` parla
+solo con `api`») non cambia. Senza rete non ci sono né mappa né ricerca, e
+l'app lo dice. Il provider delle tile vede quale zona si guarda, Photon il
+testo cercato (`UI.md`). OpenFreeMap e Photon non garantiscono nulla: si
+cambiano in una costante ciascuno, e con molti utenti si potranno mettere
+dietro l'API (TASK-022). A ogni avvio a freddo la WebView scarica circa
+1 MB di MapLibre GL JS. La mappa vera non gira in Jest: nei test WebView,
+posizione e rete sono finte, la pagina si prova sul telefono.
 

@@ -1,6 +1,6 @@
 # TASK-021 — Mappa e posizione GPS
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 2 · **Branch**: `feat/TASK-021-map-location`
 
 ## Obiettivo
@@ -86,6 +86,9 @@ e mai usate.
      installate con `npx expo install` (versioni dell'SDK 57, licenza
      MIT). MapLibre GL JS solo da CDN, non da npm; Photon con il `fetch` di
      React Native. Nessuna dipendenza di sviluppo nuova.
+     → Aggiunta durante il lavoro, confermata dall'utente il 2026-09-23:
+     `react-native-safe-area-context` (~5.7.0, MIT, dentro Expo Go), perché
+     il `SafeAreaView` di React Native è deprecato.
 2. **Pagina della mappa** (`apps/mobile/src/map/`):
    - una funzione pura che scrive l'HTML, con versione e SRI di MapLibre
      GL JS e URL dello stile in costanti, controlli di attribuzione e zoom,
@@ -149,39 +152,53 @@ e mai usate.
 
 ## Criteri di accettazione
 
-- [ ] Sull'iPhone dell'utente, con Expo Go: al primo avvio compare la
+- [x] Sull'iPhone dell'utente, con Expo Go: al primo avvio compare la
       richiesta del permesso di posizione; concesso, la mappa mostra la
       zona attorno con il segno della posizione, si sposta e si ingrandisce
       con le dita, e l'attribuzione è leggibile senza toccare nulla.
-- [ ] Sull'iPhone, negando il permesso l'app non si blocca: mostra la mappa
+- [x] Sull'iPhone, negando il permesso l'app non si blocca: mostra la mappa
       dell'Italia, il messaggio e il campo di ricerca; cercando una città
       (per esempio «Levico Terme») e una via (per esempio una via di
       Trento) e scegliendo un risultato, la mappa va lì con il segno sulla
       partenza.
-- [ ] Sull'iPhone, concesso il permesso dalle Impostazioni, il pulsante
-      trova la posizione e la partenza torna quella del GPS.
-- [ ] Se libreria o stile non si caricano, l'app mostra un messaggio e non
+- [x] Sull'iPhone, concesso il permesso dalle Impostazioni, il pulsante
+      trova la posizione e la partenza torna quella del GPS. I tre criteri
+      sull'iPhone provati dall'utente il 2026-09-23.
+- [x] Se libreria o stile non si caricano, l'app mostra un messaggio e non
       uno schermo bianco (test automatico: in Expo Go non si toglie
-      internet lasciando il Wi-Fi verso il PC).
-- [ ] Dalla radice `npm run lint`, `npm run typecheck` e `npm test`
-      passano, offline dopo l'installazione.
-- [ ] Scambiare lat e lon nella conversione fa fallire un test (provato a
-      mano).
-- [ ] I job `mobile` e `route-engine` della CI sono verdi sulla PR.
-- [ ] Nessuna chiave né segreto nel repository.
-- [ ] ADR nuova, ADR-0011 chiusa; `UI.md`, `INDEX.md`, `MAPS.md`,
-      `SETUP.md`, `TESTING.md`, `.env.example`, `STATUS.md` aggiornati.
+      internet lasciando il Wi-Fi verso il PC). Provato anche sulla pagina
+      vera in Edge headless: hash SRI sbagliato e stile inesistente danno
+      `error`.
+- [x] Dalla radice `npm run lint`, `npm run typecheck` e `npm test`
+      passano, offline dopo l'installazione (52 test nell'app).
+- [x] Scambiare lat e lon nella conversione fa fallire un test (provato a
+      mano: 10 test cadono scambiando `toLngLat`, 6 con `fromLngLat`).
+- [x] I job `mobile` e `route-engine` della CI sono verdi sulla PR
+      (PR #23).
+- [x] Nessuna chiave né segreto nel repository.
+- [x] ADR-0029, ADR-0011 superata; `UI.md`, `INDEX.md`, `MAPS.md`,
+      `SETUP.md` (passo 9.4), `TESTING.md`, `.env.example`, `STATUS.md`
+      aggiornati.
+
+Differenze dal piano: MapLibre GL JS è la 5.24.0 e non la 6, che è solo
+moduli ES con il worker in un file separato (ADR-0029); in più
+`react-native-safe-area-context` (punto 1, D). La partenza da ricerca
+porta anche l'etichetta del luogo, per la riga di stato. Il test della
+schermata resta in `apps/mobile/__tests__/`, gli altri accanto al codice.
+Prima della prova sul telefono la pagina è stata guardata in Edge headless:
+Italia all'apertura, segnaposto in piazza Duomo a Trento, attribuzione
+intera a 390 px.
 
 ## File toccati
 
 ```
 apps/mobile/App.tsx
-apps/mobile/app.json          (se expo install aggiunge il plugin di expo-location)
 apps/mobile/package.json
 apps/mobile/src/map/**
 apps/mobile/src/location/**
 apps/mobile/src/places/**
 apps/mobile/__tests__/**
+apps/mobile/__mocks__/react-native-webview.tsx
 package-lock.json
 .env.example
 docs/DECISIONS.md
@@ -213,4 +230,9 @@ docs/tasks/TASK-021.md
 
 ## Esito
 
-*(si compila a fine task)*
+Sull'iPhone l'app mostra la mappa OSM centrata sulla posizione GPS e,
+senza posizione, fa partire da una città o una via cercata con Photon;
+lint, tipi e 52 test girano senza rete. Emerso: MapLibre GL JS 6 è solo a
+moduli ES, per questo la 5.24.0; in Expo Go il permesso di posizione è di
+Expo Go (`SETUP.md`, passo 9.4). Rimandati a TASK-022 e TASK-023: geocoding
+e tile dietro l'API, scelta della partenza toccando la mappa.

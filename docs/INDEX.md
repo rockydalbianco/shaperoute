@@ -49,7 +49,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | `GPX.md` | pieno | — |
 | `MAPS.md` | pieno | — |
 | `API.md` | stub | TASK-022 |
-| `UI.md` | stub | TASK-021 |
+| `UI.md` | pieno per mappa e posizione | il resto con TASK-023 |
 | `AI.md` | stub | TASK-030 |
 | `DATABASE.md` | stub | fase 4 |
 

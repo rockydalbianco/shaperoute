@@ -431,6 +431,17 @@ is disabled`, scrivi `npm.cmd` al posto di `npm` (`npm.cmd run mobile`):
 Dopo il primo giro della CI con l'app, aggiungi il controllo `mobile` alle
 regole di `main`, come al passo 7.3 per `route-engine`.
 
+### 9.4 Posizione e mappa
+
+La prima volta l'app chiede di usare la posizione. In Expo Go la richiesta
+e l'impostazione sono di **Expo Go**, non di ShapeRoute: per cambiarla,
+Impostazioni → Expo Go → Posizione. Con «Mai» si prova il caso senza
+posizione, con la ricerca di una città o una via; «Mentre usi l'app» la
+rimette.
+
+Mappa e ricerca hanno bisogno di internet sul telefono, oltre al Wi-Fi
+verso il PC. Nessuna chiave da mettere in `.env`.
+
 ---
 
 ## Il ciclo di tutti i giorni

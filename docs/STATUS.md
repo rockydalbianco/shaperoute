@@ -35,24 +35,12 @@ Niente. PR di TASK-025 da aprire: il criterio della CI verde si spunta lì.
 
 ## Completato
 
-- **TASK-025** — Richieste in due tempi: `/route-jobs` con stati, due
-  thread, un lucchetto per zona; l'app chiede ogni 2 s fino a 5 minuti e
-  mostra download e calcolo (ADR-0032). Dall'iPhone un 15 km arriva in
-  circa 30 s.
-- **TASK-023** — L'app chiede i percorsi all'API: forma e distanza da
-  pulsanti, attesa con «Cancel», percorso sulla mappa con distanza e
-  avvisi, un messaggio per ogni errore, `ApiError` in `shared-types`
-  (ADR-0031). Provata sull'iPhone fino a 10 km nelle zone in cache.
-- **TASK-022** — API FastAPI in `services/api/`: `POST /routes` e
-  `GET /health`, errori con un codice, grafi di zona in memoria senza
-  ritagli salvati, 7–32 s per percorso; ADR-0009 rinviata alla fase 4
-  (ADR-0030). Provata dall'iPhone.
-- **TASK-021** — Mappa MapLibre GL JS in WebView con tile OpenFreeMap,
-  posizione GPS con `expo-location` e, senza posizione, ricerca di città o
-  via con Photon (ADR-0029). Provata sull'iPhone.
-- **TASK-020** — Monorepo npm con `apps/mobile` (Expo SDK 57, una
-  schermata) e `packages/shared-types` (contratto in TypeScript, allineato
-  al Python da test); job `mobile` in CI (ADR-0028). Provata sull'iPhone.
+- **Fase 2 finora** (TASK-020–025): monorepo npm con app Expo e
+  `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
+  GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in
+  memoria (ADR-0030); app che chiede i percorsi, li disegna e spiega ogni
+  errore (ADR-0031); richieste in due tempi con stati, per 15 km e zone
+  nuove (ADR-0032). Tutto provato sull'iPhone.
 - **Fase 1 — Route engine** (TASK-010–019): CLI e GPX; forme circle e
   heart; snapping su OSMnx con zone e corridoio (ADR-0022); ottimizzatore
   che ruota, scala e sposta la partenza fino a 500 m (ADR-0023, ADR-0025);

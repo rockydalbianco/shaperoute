@@ -1,6 +1,6 @@
 # TASK-026 — Distanza libera
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 2 · **Branch**: `feat/TASK-026-free-distance`
 
 ## Obiettivo
@@ -89,16 +89,25 @@ pulsanti, e l'app gli dice subito se è fuori dai limiti. I percorsi oltre
 
 ## Criteri di accettazione
 
-- [ ] Dalla radice `npm run lint`, `npm run format:check`,
-      `npm run typecheck` e `npm test` passano.
-- [ ] Ogni caso del punto 4 ha il suo test.
-- [ ] Tempi, somiglianza e spazio su disco di 21 e 30 km a Trento scritti
-      in `API.md`; il limite dell'app scelto con quei numeri.
+- [x] Dalla radice `npm run lint`, `npm run format:check`,
+      `npm run typecheck` e `npm test` passano (132 test nell'app, 7 in
+      `shared-types`).
+- [x] Ogni caso del punto 4 ha il suo test (`distance.test.ts`,
+      `App.test.tsx`).
+- [x] Tempi, somiglianza e spazio su disco di 21 e 30 km a Trento scritti
+      in `API.md`, «Oltre 15 km»; il limite dell'app scelto con quei
+      numeri: 21 km, come proposto.
 - [ ] Sull'iPhone un 7,5 km arriva con «target 7.5 km»; un valore non
       valido mostra il messaggio e non parte nessuna richiesta.
 - [ ] Sull'iPhone la distanza del limite arriva entro i 5 minuti.
 - [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
-- [ ] Nuova ADR; `UI.md`, `API.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
+- [x] ADR-0034; `UI.md`, `API.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
+
+Differenze dal piano: il tastierino numerico di iOS non ha il tasto invio e
+il campo sta in fondo allo schermo, sotto la tastiera. La schermata si
+accorcia quando la tastiera si apre (`KeyboardAvoidingView` di React
+Native, nessuna dipendenza nuova), e «Draw route» la chiude. A 30 km il
+cuore di Trento non si disegna (`shape_not_drawable`, 2,7 km più corto).
 
 ## File toccati
 

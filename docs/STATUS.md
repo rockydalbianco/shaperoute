@@ -22,15 +22,19 @@ lo apre.
 
 ## Prossimo passo
 
-**TASK-026 — Distanza libera** (`docs/tasks/TASK-026.md`, scelte A–E
-confermate il 2026-09-23; branch `feat/TASK-026-free-distance`). Un campo
-in km al posto dei pulsanti delle distanze; prima si misurano 21 e 30 km a
-Trento, e il limite dell'app lo decidono i numeri. Con TASK-026 la fase 2
-si chiude; poi la fase 3, prima con ADR-0012 (modello AI).
+Provare TASK-026 sull'iPhone con l'API avviata con `--lan`, seguendo il
+punto 5 del task: 7,5 km, un valore non valido, 21 km a Trento; chiuderlo.
+Con TASK-026 la fase 2 si chiude; poi la fase 3, prima con ADR-0012
+(modello AI).
 
 ## In lavorazione
 
-Niente.
+- **TASK-026** — Distanza libera, branch `feat/TASK-026-free-distance`.
+  Misure, codice, test e documenti fatti (ADR-0034): a Trento 21 km arriva
+  in 36–47 s più 105 s di download per una zona nuova, 30 km scarica la
+  zona in 279 s; l'app arriva a 21 km, con un campo in km al posto dei
+  pulsanti. Manca la prova sull'iPhone. In cache ci sono ora le zone di
+  Trento da 21 e 30 km (`API.md`, «Oltre 15 km»).
 
 ## Completato
 
@@ -68,10 +72,10 @@ Niente.
 - Fuori scope di TASK-016, annotati: tag `surface`, `sac_scale` e
   `sidewalk` (serve riscaricare i grafi), ed evitare scale e strade
   principali nella ricerca (oggi si misurano e si avvisa soltanto).
-- Motore lento sui 15 km: circa 50 s di calcolo e 14 s per ritagliare la
-  zona anche dalla memoria (TASK-023, «Limiti misurati»). Le richieste in
-  due tempi lo rendono sopportabile, non veloce: `PRODUCT.md` chiede al
-  massimo 30 s.
+- Motore lento sulle distanze lunghe: 30–50 s da 15 a 30 km, più il
+  download di una zona nuova (TASK-023, TASK-026; `API.md`, «Tempi»). Le
+  richieste in due tempi lo rendono sopportabile, non veloce: `PRODUCT.md`
+  chiede al massimo 30 s.
 - In sospeso, piccoli: dichiarare `numpy` in `pyproject.toml` (lo usa già il
   motore, arriva con osmnx: nulla da installare); in fase 2, far scegliere
   all'utente fra più percorsi alternativi (la ricerca li ha già).
@@ -88,7 +92,7 @@ Niente.
   (già fatto); il permesso di posizione è di Expo Go (`SETUP.md`, 9.4).
 - API: dalla radice `services\api\.venv\Scripts\python.exe -m
   shaperoute_api --lan` (`SETUP.md`, passo 10); risponde anche su `/docs`.
-- Il disco C: di questo PC ha poco spazio (5,7 GB liberi il 2026-09-23,
+- Il disco C: di questo PC ha poco spazio (5,5 GB liberi il 2026-09-23,
   dopo la pulizia: tolti MATLAB, i ritagli in `data/cache/` e la venv del
   route-engine). Ogni zona nuova scaricata vale circa 40 MB, più le
   risposte di Overpass in `data/cache/http/`; Expo si ferma con `ENOSPC`

@@ -71,7 +71,7 @@ Obiettivo: la stessa cosa, ma dal telefono.
 | TASK-023 | Collegamento app ↔ API, anteprima percorso |
 | TASK-025 | Richieste in due tempi: percorsi lunghi e zone nuove (prima di TASK-024) |
 | TASK-024 | Export e condivisione GPX dal telefono |
-| TASK-026 | Distanza libera: un campo da 1 a 50 km al posto dei pulsanti |
+| TASK-026 | Distanza libera: un campo in km al posto dei pulsanti, fino a 21 km |
 
 Fine fase: **il MVP di `PRODUCT.md` è completo**.
 
@@ -91,6 +91,10 @@ in due tempi 15 km e zone nuove non arrivano), poi TASK-024, poi la
 **distanza libera** in TASK-026. La **forma libera** va in fase 4, insieme
 alle forme nuove del motore.
 
+TASK-026 ha misurato 21 e 30 km a Trento: il calcolo regge, il download di
+una zona nuova no (279 s a 30 km). L'app arriva a **21 km**; motore e
+contratto restano a 50 (ADR-0034).
+
 ## Fase 3 — Linguaggio naturale
 
 | Task | Titolo |
@@ -105,7 +109,9 @@ suo confine è ovvio: produce un `RouteRequest`, niente altro.
 ## Fase 4 — Estensione
 
 Walking e cycling; nuove forme (star, lettere); account e percorsi salvati;
-database PostgreSQL + PostGIS; preferenze di dislivello e superficie.
+database PostgreSQL + PostGIS; preferenze di dislivello e superficie;
+distanze oltre i 21 km nell'app, con un modo più veloce di avere i dati
+delle zone (ADR-0009, ADR-0034).
 
 ## Fase 5 — Oltre
 

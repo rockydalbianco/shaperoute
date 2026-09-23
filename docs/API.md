@@ -187,9 +187,38 @@ Con le richieste in due tempi (TASK-025), sul PC di sviluppo:
 - un 5 km chiesto subito dopo aver annullato un 15 km ancora in download:
   pronto in 18 s, senza aspettare l'altro.
 
+### Oltre 15 km (TASK-026)
+
+Misurati il 2026-09-23 sul PC di sviluppo, dalla partenza di Trento, con
+`/route-jobs` su `127.0.0.1`, una richiesta alla volta. Le zone le ha
+scaricate uno script usa-e-getta, con l'indirizzo di Overpass che risponde
+(`MAPS.md`); ogni zona serve sia al cuore sia al cerchio.
+
+| Zona | Area | Download | Su disco |
+|---|---|---|---|
+| 21 km | 16,7 × 16,7 km = 280 km² | 105 s | 55 MB (38 GraphML, 17 pickle), più 21 MB di risposta di Overpass |
+| 30 km | 23 × 23 km = 530 km² | 279 s | 82 MB (57 GraphML, 25 pickle), più 33 MB di risposta di Overpass |
+
+| Caso | 1ª richiesta | 2ª richiesta | Risultato |
+|---|---|---|---|
+| 21 km, cuore | 42 s | 47 s | 20,7 km, somiglianza 0,86 |
+| 21 km, cerchio | 44 s | 36 s | 21,0 km, 0,82 |
+| 30 km, cuore | 31 s | 28 s | `shape_not_drawable`: il migliore è 2,7 km più corto |
+| 30 km, cerchio | 42 s | 41 s | 30,2 km, 0,90 |
+
+Il grafo pesa 6–7 s dal disco e 2,5–4 s dalla memoria; il resto è il
+calcolo, che cresce poco con la distanza. L'API con le due zone in memoria
+occupa circa 400 MB. Quello che cresce è il **download** di una zona
+nuova: 105 s a 21 km, 279 s a 30 km, già quasi i 5 minuti che l'app
+aspetta prima del calcolo. Per questo l'app arriva a 21 km (ADR-0034):
+anche in una zona nuova il percorso arriva in circa due minuti e mezzo. Sui
+dati mobili il download è più lento (72–100 s per un 15 km, TASK-023).
+
 ## Domande ancora aperte
 
-- Motore lento sui 15 km: circa 30 s da solo, più se lavora insieme a
-  un'altra richiesta (`STATUS.md`).
+- Motore lento sulle distanze lunghe: 30–45 s da 15 a 30 km, più se lavora
+  insieme a un'altra richiesta (`STATUS.md`).
+- Zone oltre i 21 km: il download da Overpass supera i minuti che l'app
+  aspetta; si ripensa con ADR-0009.
 - Autenticazione, limiti di richieste, versione, HTTPS, deploy: fase 4.
 - Motore di routing di produzione: ADR-0009, rinviata alla fase 4.

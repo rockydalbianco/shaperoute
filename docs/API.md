@@ -120,7 +120,15 @@ compare in `data/cache/`.
 
 Tutti i casi stanno sotto i 60 s dopo i quali iOS tende a chiudere una
 richiesta ferma; il cuore di Trento sfiora i 30 s dell'MVP (`PRODUCT.md`).
-Una zona da scaricare non è misurata: dipende da Overpass (`MAPS.md`).
+
+Dal telefono (TASK-023, PC sull'hotspot dell'iPhone) i casi fino a 10 km
+nelle zone in cache hanno risposto in 5–25 s. Non stanno nei 60 s:
+- **15 km**, sempre: circa 14 s per ritagliare la zona, anche dalla
+  memoria, e circa 50 s di calcolo;
+- **una zona nuova**: 72–100 s solo per scaricarla da Overpass sui dati
+  mobili; una volta è fallita dopo 22 s (503).
+
+Le richieste in due tempi di TASK-025 servono a questo.
 
 ## Domande ancora aperte
 

@@ -13,27 +13,33 @@
 
 Il route engine, da riga di comando, disegna cuori e cerchi riconoscibili
 su strade reali (Trento e Milano bene, Levico quasi, valle sospesa) e
-scrive un GPX con i suoi controlli. L'app, in Expo Go sull'iPhone, mostra
-la mappa sulla posizione GPS o su un luogo cercato. L'API sul PC calcola i
-percorsi e risponde anche dal telefono, ma l'app non la chiama ancora.
+scrive un GPX con i suoi controlli. Dall'iPhone, con l'API sul PC, si
+sceglie forma e distanza e il percorso compare sulla mappa: 3–10 km nelle
+zone in cache in 5–25 s. 15 km e zone nuove superano i 60 s che il
+telefono aspetta.
 
 ## Prossimo passo
 
-Provare TASK-023 sull'iPhone con l'API avviata con `--lan` (`SETUP.md`,
-passo 10.1), seguendo il punto 7 del task, poi chiuderlo. Dopo TASK-023:
-campi liberi per distanza e forma (`ROADMAP.md`, fase 2), da mettere in
-ordine con TASK-024.
+**TASK-025 — Richieste in due tempi.** Il file del task è da scrivere
+(`docs/tasks/`, branch `docs/TASK-025-task-file`). Il problema, misurato
+sull'iPhone, è in `docs/tasks/TASK-023.md`, «Limiti misurati». Da decidere
+lì: forma dei nuovi endpoint (richiesta che risponde subito con un
+identificativo, stato da chiedere), ogni quanto l'app chiede e fino a
+quando, stati mostrati durante l'attesa (download, calcolo), download fuori
+dal lucchetto dei grafi, e cosa cambia di ADR-0030 e ADR-0031. Dopo:
+TASK-024; i campi liberi per distanza e forma sono ancora da mettere in
+ordine (`ROADMAP.md`, fase 2).
 
 ## In lavorazione
 
-- **TASK-023** — App ↔ API, branch `feat/TASK-023-app-api`. Codice, test e
-  documenti fatti (ADR-0031): forma e distanza da pulsanti, «Draw route»
-  con attesa e «Cancel», percorso sulla mappa con distanza e avvisi, un
-  messaggio per ogni errore, `ApiError` in `shared-types`. Manca la prova
-  sull'iPhone.
+Niente.
 
 ## Completato
 
+- **TASK-023** — L'app chiede i percorsi all'API: forma e distanza da
+  pulsanti, attesa con «Cancel», percorso sulla mappa con distanza e
+  avvisi, un messaggio per ogni errore, `ApiError` in `shared-types`
+  (ADR-0031). Provata sull'iPhone fino a 10 km nelle zone in cache.
 - **TASK-022** — API FastAPI in `services/api/`: `POST /routes` e
   `GET /health`, errori con un codice, grafi di zona in memoria senza
   ritagli salvati, 7–32 s per percorso; ADR-0009 rinviata alla fase 4
@@ -70,6 +76,10 @@ Niente.
 - Fuori scope di TASK-016, annotati: tag `surface`, `sac_scale` e
   `sidewalk` (serve riscaricare i grafi), ed evitare scale e strade
   principali nella ricerca (oggi si misurano e si avvisa soltanto).
+- Motore lento sui 15 km: circa 50 s di calcolo e 14 s per ritagliare la
+  zona anche dalla memoria (TASK-023, «Limiti misurati»). Le richieste in
+  due tempi lo rendono sopportabile, non veloce: `PRODUCT.md` chiede al
+  massimo 30 s.
 - In sospeso, piccoli: dichiarare `numpy` in `pyproject.toml` (lo usa già il
   motore, arriva con osmnx: nulla da installare); in fase 2, far scegliere
   all'utente fra più percorsi alternativi (la ricerca li ha già).

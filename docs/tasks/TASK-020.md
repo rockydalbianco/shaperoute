@@ -81,8 +81,8 @@ e npm 11; pnpm e yarn no.
 - [x] Cambiare un campo in `models.py` senza cambiare il JSON di esempio, o
       viceversa, fa fallire un test (provato a mano: un campo rinominato nel
       JSON rompe `tsc`, una distanza fuori limite rompe `test_contract.py`).
-- [ ] Il job `mobile` della CI è verde sulla PR; `route-engine` resta
-      verde: **da vedere sulla PR**.
+- [x] Il job `mobile` della CI è verde sulla PR; `route-engine` resta
+      verde (PR #21).
 - [x] `services/route-engine` non dipende da nulla di Node: `pip install`
       e `pytest -m "not network"` funzionano come prima.
 - [x] `SETUP.md` (passo 9), `README.md`, `ARCHITECTURE.md`, `TESTING.md`,

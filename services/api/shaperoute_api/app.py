@@ -10,13 +10,15 @@ from __future__ import annotations
 
 import logging
 import time
-from collections.abc import AsyncIterator, Sequence
+from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from route_engine.export_gpx import route_name, to_gpx
 from route_engine.models import InvalidRequestError, RouteRequest
 from route_engine.optimizer import GraphLoader, ShapeNotDrawableError, plan_route
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -28,6 +30,7 @@ from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
     ErrorDetail,
+    GpxRequestBody,
     RouteJobBody,
     RouteRequestBody,
     RouteResultBody,
@@ -70,6 +73,13 @@ def to_request(body: RouteRequestBody) -> RouteRequest:
     )
 
 
+def gpx_file_name(request: RouteRequest, when: datetime) -> str:
+    """No spaces or odd characters: some apps refuse them, e.g.
+    'shaperoute-heart-5km-2026-09-23.gpx'."""
+    km = f"{request.distance_m / 1000:g}km"
+    return f"shaperoute-{request.shape}-{km}-{when:%Y-%m-%d}.gpx"
+
+
 def job_body(job: Job) -> RouteJobBody:
     return RouteJobBody(
         job_id=job.job_id,
@@ -83,10 +93,15 @@ def job_body(job: Job) -> RouteJobBody:
     )
 
 
+def now_utc() -> datetime:
+    return datetime.now(UTC)
+
+
 def create_app(
     source: GraphLoader,
     planner: Planner = plan_route,
     jobs: RouteJobs | None = None,
+    now: Callable[[], datetime] = now_utc,
 ) -> FastAPI:
     route_jobs = jobs or RouteJobs(source, planner)
 
@@ -124,6 +139,34 @@ def create_app(
         if not route_jobs.cancel(job_id):
             raise HTTPException(404, UNKNOWN_JOB)
         return Response(status_code=204)
+
+    # The route as a GPX file, written by the engine's own export, the one the
+    # CLI uses (ADR-0033). Nothing is kept: the app sends request and result.
+    @app.post(
+        "/gpx",
+        response_class=Response,
+        responses={
+            200: {"content": {"application/gpx+xml": {}}, "description": "GPX 1.1"},
+            422: ERROR_RESPONSES[422],
+        },
+    )
+    def export_gpx(body: GpxRequestBody) -> Response:
+        request = to_request(body.request)
+        when = now()
+        document = to_gpx(
+            body.result.points,
+            route_name(request.shape, request.distance_m, when),
+            when,
+        )
+        return Response(
+            document,
+            media_type="application/gpx+xml",
+            headers={
+                "Content-Disposition": (
+                    f'attachment; filename="{gpx_file_name(request, when)}"'
+                )
+            },
+        )
 
     # A plain def: FastAPI runs it in a thread, so a long route does not stop
     # the server from answering the other requests.

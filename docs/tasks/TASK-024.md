@@ -1,6 +1,6 @@
 # TASK-024 — Export e condivisione GPX dal telefono
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 2 · **Branch**: `feat/TASK-024-gpx-export`
 
 ## Obiettivo
@@ -100,20 +100,29 @@ OpenStreetMap, e un'app vera per la corsa lo apre e mostra il percorso.
 
 ## Criteri di accettazione
 
-- [ ] Dalla radice `npm run lint`, `npm run format:check`,
-      `npm run typecheck` e `npm test` passano; in `services/api/` e in
-      `services/route-engine/` `ruff`, `black --check` e
+- [x] Dalla radice `npm run lint`, `npm run format:check`,
+      `npm run typecheck` e `npm test` passano (110 test nell'app, 7 in
+      `shared-types`); in `services/api/` (54 test) e in
+      `services/route-engine/` (132 test) `ruff`, `black --check` e
       `pytest -m "not network"` passano.
-- [ ] Rinominare un campo nel JSON di esempio di `GpxRequest` fa fallire sia
-      `shared-types` sia un test dell'API (provato a mano).
-- [ ] Il GPX di `POST /gpx` e quello della CLI per lo stesso percorso sono
-      uguali, a parte l'ora di creazione (test).
+- [x] Rinominare un campo nel JSON di esempio di `GpxRequest` fa fallire sia
+      `shared-types` sia un test dell'API (provato a mano: `result` →
+      `route`, 3 errori di `tsc` e 4 test dell'API).
+- [x] Il GPX di `POST /gpx` e quello della CLI per lo stesso percorso sono
+      uguali, a parte l'ora di creazione (test, con l'orologio dell'API
+      fissato).
 - [ ] Sull'iPhone il file arriva in File con il nome giusto.
 - [ ] Il GPX si apre in un'app o in un sito per la corsa e mostra il
       percorso; quale e come annotato in `GPX.md`.
 - [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
-- [ ] Nuova ADR; `GPX.md`, `API.md`, `UI.md`, `MAPS.md`, `ARCHITECTURE.md`,
+- [x] ADR-0033; `GPX.md`, `API.md`, `UI.md`, `MAPS.md`, `ARCHITECTURE.md`,
       `STATUS.md` aggiornati.
+
+Differenze dal piano: `expo install` ha aggiunto il plugin di
+`expo-sharing` in `apps/mobile/app.json`, che non era fra i file previsti.
+L'app prende il nome del file dall'intestazione dell'API e lo accetta solo
+se è un semplice `*.gpx`, altrimenti usa `shaperoute.gpx`. Due messaggi
+nuovi per il telefono: niente foglio di condivisione, file non salvato.
 
 ## File toccati
 

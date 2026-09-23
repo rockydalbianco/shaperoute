@@ -49,6 +49,12 @@ test.each<[RouteProblem, string, string | undefined]>([
     "The API lost this request (was it restarted?). Try again.",
     undefined,
   ],
+  [{ kind: "no_sharing" }, "This phone cannot open the share sheet.", undefined],
+  [
+    { kind: "share_failed" },
+    "The GPX could not be saved on the phone. Try again.",
+    undefined,
+  ],
   [
     { kind: "no_api_url" },
     "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.",

@@ -189,7 +189,7 @@ function isErrorDetail(value: unknown): value is ApiError["error"] {
   );
 }
 
-function isApiError(body: unknown): body is ApiError {
+export function isApiError(body: unknown): body is ApiError {
   return isRecord(body) && isErrorDetail(body.error);
 }
 

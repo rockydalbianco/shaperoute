@@ -65,6 +65,17 @@ due alla volta, così un 15 km annullato non ferma la richiesta dopo; le due
 però si dividono il processore, quindi la seconda va più piano finché la
 prima non finisce.
 
+### `POST /gpx`
+
+Riceve un `GpxRequest`, cioè `{"request": RouteRequest, "result":
+RouteResult}`, e risponde `200` con il percorso in GPX 1.1
+(`application/gpx+xml`), scritto da `export_gpx.py` del motore come fa la
+CLI (`GPX.md`). Il nome del file è nell'intestazione:
+`Content-Disposition: attachment; filename="shaperoute-heart-5km-2026-09-23.gpx"`.
+L'API non ricorda niente, quindi l'export funziona anche dopo i 10 minuti
+di vita di una richiesta in due tempi. Un corpo non valido risponde
+`422 invalid_request` (ADR-0033).
+
 ### `POST /routes`
 
 Riceve un `RouteRequest`:

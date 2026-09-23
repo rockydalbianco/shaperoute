@@ -80,3 +80,9 @@ export interface RouteJob {
   /** Only when `status` is "failed". */
   error: ApiError["error"] | null;
 }
+
+/** What the app sends to POST /gpx to get the route as a GPX file (ADR-0033). */
+export interface GpxRequest {
+  request: RouteRequest;
+  result: RouteResult;
+}

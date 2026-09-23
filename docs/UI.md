@@ -98,12 +98,28 @@ Forma e distanza non si cambiano durante l'attesa.
 ## Il risultato
 
 Sulla mappa la linea del percorso, inquadrata. Sotto, «4.0 km on roads
-(target 5 km)» e gli avvisi del motore **così come sono**, in inglese, uno
-per riga: per esempio che la partenza è stata spostata, o che la forma
+(target 5 km)», gli avvisi del motore **così come sono**, in inglese, uno
+per riga, e il pulsante «Export GPX» (sotto, «Export del GPX»). Gli
+avvisi dicono per esempio che la partenza è stata spostata, o che la forma
 somiglia meno di quanto dovrebbe. La somiglianza non si mostra come
 numero: la forma la giudica l'occhio (`PRODUCT.md`), e sotto 0,90 il
 motore aggiunge già un avviso. Il segnaposto resta sulla partenza chiesta;
 se il motore l'ha spostata (fino a 500 m), lo dice l'avviso.
+
+## Export del GPX
+
+«Export GPX» chiede il file all'API e apre il foglio di condivisione di
+iOS: File, AirDrop, Mail, le app di corsa (`GPX.md`, «Dal telefono»).
+Mentre l'API prepara il file il pulsante dice «Preparing GPX…». Se
+l'utente chiude il foglio senza scegliere, non succede niente. Un errore
+compare sotto il pulsante, con i messaggi di «Quando non va»; in più:
+
+| Caso | Messaggio |
+|---|---|
+| Il telefono non ha il foglio di condivisione | This phone cannot open the share sheet. |
+| Il file non si salva sul telefono | The GPX could not be saved on the phone. Try again. |
+
+Un percorso nuovo toglie l'errore dell'export di prima.
 
 ## Quando non va
 
@@ -142,5 +158,4 @@ iOS chiude la pagina per liberare memoria, la WebView la ricarica da sola.
 - Campi liberi per distanza e forma (`ROADMAP.md`, fase 2).
 - Avvisi in parole semplici: servono codici negli avvisi del contratto.
 - Rigenerare o scegliere fra percorsi alternativi.
-- Export e condivisione del GPX (TASK-024).
 - Navigazione, quando le schermate saranno più di una.

@@ -254,5 +254,5 @@ serve a provare l'algoritmo su un grafo reale, non il filtro.
 
 - Motore di routing di produzione: ADR-0009.
 - Attribuzione OpenStreetMap (ODbL): sulla mappa dell'app è sempre
-  visibile (ADR-0029, tile di OpenFreeMap); per il GPX esportato si vede
-  con TASK-024.
+  visibile (ADR-0029, tile di OpenFreeMap), e dal TASK-024 anche nei
+  metadati di ogni GPX (`GPX.md`, ADR-0033).

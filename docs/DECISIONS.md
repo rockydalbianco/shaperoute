@@ -667,3 +667,46 @@ percorsi: va usata solo su reti di casa. Se il telefono non aspetta la
 risposta di una richiesta lunga, le richieste in due tempi si decidono con
 TASK-023.
 
+
+## ADR-0031 — L'app chiede i percorsi all'API: indirizzo, attesa, errori
+**Stato**: Attiva · 2026-09-23
+
+TASK-023 collega l'app all'API di ADR-0030. Servivano l'indirizzo
+dell'API, la scelta di forma e distanza, l'attesa, il disegno del percorso
+e un messaggio per ogni errore. Confermato dall'utente, per questa prima
+fase.
+
+**Decisione**:
+- **Indirizzo**: l'host del server di sviluppo di Expo
+  (`Constants.expoConfig.hostUri`) con la porta 8000; `expo-constants`
+  diventa una dipendenza dichiarata. Senza host l'app lo dice, non tira a
+  indovinare.
+- **Forma e distanza** fra pulsanti: `circle` e `heart`; 3, 5, 10, 15 km;
+  di partenza cuore da 5 km; attività sempre `running`.
+- **Richiesta sincrona**, niente richieste in due tempi. L'app smette di
+  aspettare dopo 60 s e ha «Cancel»; una partenza, una forma o una
+  distanza nuove scartano l'esito di prima.
+- **Percorso sulla mappa** con i messaggi `showRoute` e `clearRoute`, punti
+  in `[lon, lat]` da `toLngLat`; il segnaposto resta sulla partenza
+  chiesta.
+- **Risultato**: distanza reale contro distanza chiesta e avvisi del
+  motore così come sono; la somiglianza non si mostra come numero.
+- **Errori**: un messaggio per caso (`UI.md`, «Quando non va»).
+- **Contratto**: `ApiError` e `API_ERROR_CODES` entrano in `shared-types`,
+  con `api-error.json` e `api-error-codes.json` controllati da `tsc`, dal
+  test di Node e dal test di contratto dell'API.
+
+**Motivo**: il telefono raggiunge già il PC per scaricare l'app, quindi
+l'indirizzo non va scritto a mano e non cambia a ogni rete. Le distanze
+proposte sono quelle con tempi misurati; i tempi (7–32 s, `API.md`) stanno
+sotto i circa 60 s dopo cui iOS chiude una richiesta ferma, e la richiesta
+sincrona basta. `PRODUCT.md` vuole che la forma la giudichi l'occhio: un
+numero di somiglianza direbbe altro. Il corpo degli errori è contratto come
+richiesta e risultato, e si allinea allo stesso modo.
+
+**Conseguenza**: l'indirizzo vale solo in sviluppo; quello di produzione
+arriva con l'hosting (fase 4). Una richiesta che supera i 60 s, di solito
+perché la zona va scaricata, finisce in «nessuna risposta»: l'API però
+finisce il lavoro e salva la zona, e il tentativo dopo trova la cache.
+L'utente ha chiesto, per dopo questa fase, campi liberi per ogni distanza e
+ogni forma (`ROADMAP.md`, fase 2).

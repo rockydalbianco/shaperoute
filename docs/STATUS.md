@@ -19,16 +19,18 @@ percorsi e risponde anche dal telefono, ma l'app non la chiama ancora.
 
 ## Prossimo passo
 
-**TASK-023 — Collegamento app ↔ API, anteprima percorso**, sul branch
-`feat/TASK-023-app-api`. Il file del task è scritto, con le scelte già
-confermate dall'utente: indirizzo dell'API dal server di Expo, forma e
-distanza da pulsanti (per ora), richiesta sincrona con attesa e «Cancel»,
-un messaggio per ogni errore, corpo degli errori in `shared-types`. Dopo
-TASK-023: campi liberi per distanza e forma (`ROADMAP.md`, fase 2).
+Provare TASK-023 sull'iPhone con l'API avviata con `--lan` (`SETUP.md`,
+passo 10.1), seguendo il punto 7 del task, poi chiuderlo. Dopo TASK-023:
+campi liberi per distanza e forma (`ROADMAP.md`, fase 2), da mettere in
+ordine con TASK-024.
 
 ## In lavorazione
 
-Niente.
+- **TASK-023** — App ↔ API, branch `feat/TASK-023-app-api`. Codice, test e
+  documenti fatti (ADR-0031): forma e distanza da pulsanti, «Draw route»
+  con attesa e «Cancel», percorso sulla mappa con distanza e avvisi, un
+  messaggio per ogni errore, `ApiError` in `shared-types`. Manca la prova
+  sull'iPhone.
 
 ## Completato
 

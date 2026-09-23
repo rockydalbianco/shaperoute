@@ -1,6 +1,6 @@
 # TASK-023 — Collegamento app ↔ API, anteprima percorso
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 2 · **Branch**: `feat/TASK-023-app-api`
 
 ## Obiettivo
@@ -136,15 +136,17 @@ può annullare, e ogni errore ha un messaggio che dice cosa fare.
 
 ## Criteri di accettazione
 
-- [ ] Dalla radice `npm run lint`, `npm run format:check`,
-      `npm run typecheck` e `npm test` passano; in `services/api/`
-      `ruff`, `black --check` e `pytest -m "not network"` passano.
-- [ ] Rinominare un campo in `fixtures/api-error.json` fa fallire sia i
-      controlli di `shared-types` sia un test dell'API (provato a mano).
-- [ ] Ogni riga della tabella F ha il suo messaggio sullo schermo, provato
+- [x] Dalla radice `npm run lint`, `npm run format:check`,
+      `npm run typecheck` e `npm test` passano (97 test nell'app, 5 in
+      `shared-types`); in `services/api/` `ruff`, `black --check` e
+      `pytest -m "not network"` passano.
+- [x] Rinominare un campo in `fixtures/api-error.json` fa fallire sia i
+      controlli di `shared-types` sia un test dell'API (provato a mano:
+      `message` → `text`, un errore di `tsc` e un test dell'API).
+- [x] Ogni riga della tabella F ha il suo messaggio sullo schermo, provato
       da un test.
-- [ ] Scambiare lat e lon nei punti del percorso fa fallire un test
-      (provato a mano).
+- [x] Scambiare lat e lon nei punti del percorso fa fallire un test
+      (provato a mano: 3 test cadono).
 - [ ] Sull'iPhone: dalla ricerca «Piazza Duomo, Trento», cuore e cerchio
       compaiono sulla mappa con la distanza reale e gli avvisi; tempo
       annotato.
@@ -152,8 +154,18 @@ può annullare, e ogni errore ha un messaggio che dice cosa fare.
       messaggio con l'indirizzo.
 - [ ] Sull'iPhone, con il GPS: esito annotato.
 - [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
-- [ ] Nuova ADR; `UI.md`, `ARCHITECTURE.md`, `SETUP.md`, `TESTING.md`,
-      `STATUS.md` aggiornati.
+- [x] ADR-0031; `UI.md`, `ARCHITECTURE.md` (tre copie del contratto e
+      il corpo degli errori), `API.md`, `SETUP.md` (passo 10.1),
+      `TESTING.md`, `STATUS.md` aggiornati.
+
+Differenze dal piano: i codici degli errori hanno un secondo JSON di
+esempio, `api-error-codes.json`, letto da `shared-types` e dall'API. C'è un
+messaggio in più, per quando l'app non conosce l'indirizzo dell'API.
+«My position» è salito nel pannello in alto, per lasciare in basso forma e
+distanza. Forma e distanza non si cambiano durante l'attesa. Prima della
+prova sul telefono la pagina è stata guardata in Edge headless con un
+percorso vero dell'API (cuore da 5 km a Trento): linea sopra le strade,
+mappa inquadrata, segnaposto sulla partenza.
 
 ## File toccati
 

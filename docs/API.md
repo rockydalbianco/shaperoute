@@ -75,6 +75,10 @@ del motore:
 | Il motore viola le sue regole (ADR-0026) o altro imprevisto | 500 | `engine_error` |
 | Indirizzo o metodo sbagliato | 404, 405 | `http_error` |
 
+Forma e codici sono anche nel contratto condiviso con l'app: `ApiError` e
+`API_ERROR_CODES` in `shared-types` (ADR-0031). Un codice nuovo va aggiunto
+in tutti e due i posti, e i test lo controllano.
+
 I limiti di distanza, forme e attività stanno solo in `models.py` del
 route-engine: Pydantic controlla i tipi, il `RouteRequest` del motore i
 valori. Per `engine_error` il messaggio è generico e il dettaglio va nel

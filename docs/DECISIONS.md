@@ -377,3 +377,39 @@ Milano, dove leggere il GraphML porta un caso a 36–85 s. La copertura non
 vede anelli interni né punte (andata e ritorno su strade parallele): se i
 giudizi a occhio lo chiedono, si passa a `fit` o si corregge lo snapping.
 Soglia e pesi si rivedono con i giudizi sui campioni di TASK-015.
+
+## ADR-0024 — Anteprima dei campioni: pagina HTML con Leaflet e tile OSM
+**Stato**: Attiva · 2026-09-23
+
+Ogni task di fase 1 produce 12 campioni da guardare a occhio, e caricarli
+uno alla volta in gpx.studio costa più che guardarli (TASK-019). Il
+provider di mappe e tiles dell'app, ADR-0011, è ancora aperto.
+
+**Decisione**:
+- `tools/preview_samples.py`, fuori dal route-engine e con la sola libreria
+  standard, scrive una pagina HTML con tutti i GPX di un pattern, un
+  livello per file. Le tracce sono dentro la pagina come JSON: si apre da
+  `file://`, senza server.
+- Mappa con **Leaflet 1.9.4** da unpkg (versione fissata, hash SRI) e
+  **tile standard di OpenStreetMap**, con l'attribuzione sempre visibile.
+  Uso leggero, interattivo e personale, come chiede la policy delle tile
+  OSM: niente download in anticipo né per l'uso offline.
+- La pagina va in `out/preview.html`, ignorato da git, e si sovrascrive: è
+  usa-e-getta e si rigenera dai GPX versionati (ADR-0014).
+- `tools/` è la cartella degli script di sviluppo. In CI lint e test
+  girano nello stesso job del route-engine, con le sue regole
+  (`--config services/route-engine/pyproject.toml`).
+
+**Motivo**: un comando e un doppio clic al posto di dodici caricamenti,
+senza dipendenze nuove né per il route-engine né per chi lancia lo script.
+Leaflet con tile raster è il minimo che serve per guardare tracce; MapLibre,
+la libreria dell'app, chiederebbe uno stile e un provider, cioè la
+decisione di ADR-0011. Il dubbio sul Referer, che una pagina aperta da
+`file://` non manda, è stato provato: le tile si caricano (Edge headless,
+2026-09-23).
+
+**Conseguenza**: la pagina ha bisogno della rete per Leaflet e per le tile,
+anche se i dati sono dentro. La scelta vale solo per lo strumento di
+sviluppo: ADR-0011 resta aperta per l'app. Se un giorno le tile da
+`file://` venissero rifiutate, le alternative sono servire `out/` con
+`python -m http.server` o un altro provider: si decide allora.

@@ -35,7 +35,17 @@ quella dove il risultato viene bene.
 
 ## Come si guarda un campione
 
-1. Apri il file in [gpx.studio](https://gpx.studio) o [geojson.io](https://geojson.io).
+1. Apri i campioni del task tutti insieme, dalla radice del repository:
+
+   ```
+   python tools/preview_samples.py "samples/TASK-017_*_v1.gpx"
+   ```
+
+   Scrive `out/preview.html` (ignorato da git): si apre con un doppio
+   clic, un livello per file da accendere e spegnere, con distanza e
+   numero di punti. Serve la rete per la mappa (ADR-0024). Per un file
+   solo va bene anche [gpx.studio](https://gpx.studio) o
+   [geojson.io](https://geojson.io).
 2. Rispondi a una domanda sola: **si riconosce la forma?**
 3. Annota la riga in [`LOG.md`](LOG.md), con il punteggio di somiglianza
    che ha stampato la CLI.
@@ -56,5 +66,8 @@ Per vedere un campione com'era prima di una modifica:
 git show <commit>:samples/TASK-015_heart_15km_levico_v3.gpx > /tmp/prima.gpx
 ```
 
-gpx.studio carica più tracce insieme: aprendo il prima e il dopo sulla
-stessa mappa la differenza si vede subito.
+Per le versioni che sono già in `samples/`, basta un pattern:
+`python tools/preview_samples.py "samples/TASK-014_heart_5km_levico_v*.gpx"`
+mette il prima e il dopo sulla stessa mappa, e la differenza si vede subito.
+Lo script accetta anche più file o pattern, per esempio il file estratto con
+`git show` insieme al campione di oggi.

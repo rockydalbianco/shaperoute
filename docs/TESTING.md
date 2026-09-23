@@ -73,7 +73,9 @@ Per ogni PR di fase 1:
 
 1. Genera il GPX con la CLI, salvandolo in `samples/` con il nome
    convenzionale (vedi `samples/README.md`).
-2. Aprilo in gpx.studio o geojson.io.
+2. Aprilo con gli altri campioni del task nell'anteprima di
+   `tools/preview_samples.py` (comando in `samples/README.md`), oppure in
+   gpx.studio o geojson.io.
 3. Guardalo e rispondi a una domanda sola: **si riconosce la forma?**
 4. Aggiungi la riga in `samples/LOG.md`: punteggio di somiglianza e
    giudizio a occhio (`sì` / `quasi` / `no`).
@@ -91,7 +93,8 @@ divergono spesso, la metrica scelta non descrive ciò che l'occhio vede.
 
 ## CI
 
-Per ora minima: lint e test su ogni PR, senza test di rete. Si estende
+Per ora minima: lint e test su ogni PR, per il route-engine e per gli
+script di `tools/`, senza test di rete. Si estende
 quando ci sarà l'app da costruire. Una CI complicata su un repository
 quasi vuoto è solo tempo speso a far passare build.
 

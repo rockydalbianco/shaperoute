@@ -97,7 +97,7 @@ bene.
 ```
 
 Il testo va da 1 a 60 caratteri: fuori da lì, `422 invalid_request`. Se
-Ollama è spento, non ha il modello o non risponde entro 60 s, `503
+Ollama è spento, non ha il modello o non risponde entro 90 s, `503
 ai_unavailable`, con il motivo nel messaggio. Le stesse parole, a meno di
 maiuscole e spazi, si chiedono al modello una volta sola: l'API le ricorda
 finché non si riavvia.

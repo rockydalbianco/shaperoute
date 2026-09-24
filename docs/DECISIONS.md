@@ -113,10 +113,53 @@ confrontano con il giudizio a occhio e si sceglie con dati alla mano.
 **Stato**: Superata da ADR-0029 · 2026-09-23
 
 ## ADR-0012 — Provider e modello AI
-**Stato**: Aperta · **Da decidere entro**: TASK-030
+**Stato**: Attiva · 2026-09-24 · provider e modello scelti dall'utente; il
+resto proposto dall'agente e approvato dall'utente (TASK-030)
 
 Vincolo già fissato: dietro un'interfaccia astratta, sostituibile senza
-toccare l'architettura.
+toccare l'architettura. Il lavoro dell'AI lo ha deciso la fase 3: leggere le
+parole del riquadro della forma che la tabella dell'app non conosce
+(«stemma della Ferrari») e scegliere una forma del catalogo (ADR-0036).
+
+**Decisione**:
+- **Provider: un modello aperto in locale, in Ollama**, sullo stesso PC
+  dell'API. Niente chiavi né costi per richiesta, e le parole non escono
+  dalla rete di casa. Ollama e i modelli stanno sul disco D:.
+- **Modello: `qwen3:4b`** (Apache 2.0, 2,5 GB), senza «ragionamento»
+  (`think: false`). Scelto misurando tre modelli con licenza aperta che
+  parlano italiano: qwen3:4b, phi4-mini (MIT) e granite4:3b (Apache 2.0).
+  Scartati prima di misurare: qwen2.5:3b (licenza di ricerca), Gemma e
+  Llama (licenze proprie).
+- **Pacchetto `services/ai/`** (`shaperoute_ai`), solo libreria standard:
+  `ShapeModel.choose(text, shapes) -> Choice` è l'interfaccia,
+  `OllamaModel` l'unico provider. Il catalogo lo passa l'API, e
+  `ShapeReader` scarta ogni risposta fuori catalogo.
+- **Risposta vincolata** da uno schema JSON: `picture` (cosa raffigura
+  l'immagine più nota della cosa nominata), poi `shape`, un nome del
+  catalogo o `none`. Temperatura 0, seme fisso. Testo da 1 a 60 caratteri.
+- **API**: `POST /shape-readings`, `{text}` → `{text, shape}`; `503
+  ai_unavailable` se Ollama non risponde entro 90 s; cache in memoria.
+- **App**: prima la tabella; le altre parole vanno all'API quando l'utente
+  ha finito di scrivere. «Draw route» si accende solo con una forma.
+- **Soglia**: l'utente ha accettato qwen3:4b sotto il 90% della lista di
+  messa a punto (87%), perché sulle parole nuove arriva al 94% e sbaglia
+  forma di rado (3 volte su 84). La soglia si guarda sulla lista di
+  controllo, che non serve mai a cambiare la domanda al modello.
+
+**Motivo**: l'utente vuole strumenti gratuiti e open source (TASK-030,
+punto A). Fra i tre modelli qwen3:4b dà più risposte giuste su tutte e due
+le liste (89% in tutto, contro 83% e 81%) in 5–6 s a parola. granite4:3b
+non sbaglia mai forma ma dice più spesso «nessuna»; phi4-mini dà 9 forme
+sbagliate su 84. Con il ragionamento acceso, qwen3:4b non risponde in 5
+minuti su questo PC (`AI.md`, «Misure»).
+
+**Conseguenza**: il PC dell'API deve avere Ollama acceso con il modello
+(`SETUP.md` 10.3); senza, l'app va lo stesso con le parole della tabella.
+Il modello caricato occupa 3,2 GB di RAM per 15 minuti dopo l'ultima
+parola, e la prima parola dopo una pausa aspetta il caricamento, fino a
+49 s. Quando l'API lascerà il PC (ADR-0013) servirà un altro provider:
+un'altra classe dietro `ShapeModel`. Una forma nuova nel catalogo vuole la
+sua riga in `OUTLINES` e le sue parole nelle due liste.
 
 ## ADR-0013 — Database, hosting e autenticazione
 **Stato**: Aperta · **Da decidere entro**: fase 4

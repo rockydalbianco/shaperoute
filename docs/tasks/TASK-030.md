@@ -97,20 +97,22 @@ dall'agente, li ha approvati lo stesso giorno. Vanno in ADR-0012.
 
 ## Criteri di accettazione
 
-- [ ] Dalla radice `npm run lint`, `npm run format:check`,
-      `npm run typecheck` e `npm test` passano; in `services/ai/` e in
-      `services/api/` `ruff`, `black --check` e `pytest -m "not network"`
-      passano.
-- [ ] I test coprono: risposta fuori catalogo scartata, testo vuoto o
+- [x] Dalla radice `npm run lint`, `npm run format:check`,
+      `npm run typecheck` e `npm test` passano (190 test nell'app, 8 in
+      `shared-types`); in `services/ai/` (28 test) e in `services/api/`
+      (67) `ruff`, `black --check` e `pytest -m "not network"` passano.
+- [x] I test coprono: risposta fuori catalogo scartata, testo vuoto o
       troppo lungo rifiutato, cache, Ollama spento → `ai_unavailable`,
       corpo della richiesta a Ollama (schema, temperatura), fixture del
       contratto, stati dell'app.
-- [ ] Nessun test della CI chiama un modello vero.
-- [ ] La lista di prova è misurata con ogni candidato; il modello scelto
-      rispetta la soglia G; i numeri sono in `AI.md`.
+- [x] Nessun test della CI chiama un modello vero.
+- [x] La lista di prova è misurata con ogni candidato; i numeri sono in
+      `AI.md`. La soglia G non è raggiunta sulla lista di prova (87%):
+      l'utente ha scelto qwen3:4b guardando la lista di controllo (94%),
+      e lo registra ADR-0012.
 - [ ] Sull'iPhone «stemma della Ferrari» dà «→ horse» e il percorso.
 - [ ] I job della CI sono verdi sulla PR.
-- [ ] ADR-0012 attiva; documenti del punto 7 aggiornati.
+- [x] ADR-0012 attiva; documenti del punto 7 aggiornati.
 
 ## File toccati
 

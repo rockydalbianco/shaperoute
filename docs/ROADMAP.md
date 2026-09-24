@@ -173,6 +173,13 @@ motore cerca un posto fino a 2 km e l'app mostra «Start here» (ADR-0040). A
 Levico 15 km gatto e pesce, prima non disponibili, diventano `sì` a 1 km;
 cuore di Trento e stella di Levico si spostano di 1 km e restano `sì`.
 
+**TASK-030 (2026-09-24)**: le parole che la tabella non conosce le legge
+qwen3:4b, un modello aperto in Ollama sul PC dell'API, e sceglie una forma
+del catalogo o nessuna (ADR-0012). Sulle parole nuove della lista di
+controllo è giusto il 94% delle volte, in circa 5 s; la prima parola dopo
+una pausa aspetta il caricamento, fino a 49 s. Gli errori sono quasi tutti
+«nessuna forma»: cosa proporre allora è TASK-031.
+
 **Deciso con l'utente (2026-09-24).** Non serve interpretare una frase:
 distanza e attività si scrivono nei loro riquadri, e l'AI serve solo per la
 forma. Il lavoro si divide in due:

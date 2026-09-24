@@ -48,16 +48,17 @@ scritti a mano (`#ccc`, `#666`, `#333`, `#999`, `#d6336c`, `#b42318`,
 
 ## Criteri di accettazione
 
-- [ ] `grep` per `#` nei file di interfaccia non trova più colori scritti a
+- [x] `grep` per `#` nei file di interfaccia non trova più colori scritti a
       mano: vengono tutti da `theme/tokens`.
 - [ ] Sull'iPhone: mappa scura, percorso giallo ben visibile sopra le
       strade, pannello scuro, testo leggibile.
-- [ ] **Le etichette dei luoghi si vedono.** Se mancano, il font stack di
+- [x] **Le etichette dei luoghi si vedono.** Se mancano, il font stack di
       `mapStyle.ts` non è fra quelli che OpenFreeMap serve: è l'unico
       punto che i test non possono verificare, e fallisce in silenzio.
-- [ ] L'attribuzione OpenStreetMap è presente e compare una volta sola.
-- [ ] Il marcatore «Start here» si distingue dal percorso.
-- [ ] `npm run typecheck`, `npm run lint`, `npm test` puliti.
+      (Nel browser: sì. Sul telefono: da vedere.)
+- [x] L'attribuzione OpenStreetMap è presente e compare una volta sola.
+- [x] Il marcatore «Start here» si distingue dal percorso.
+- [x] `npm run typecheck`, `npm run lint`, `npm test` puliti.
 - [ ] Una schermata dell'app sul telefono allegata alla PR.
 - [ ] `docs/STATUS.md` aggiornato.
 
@@ -91,3 +92,32 @@ le tile rispondono. Il giudizio resta quello a occhio sul telefono, come per
 le forme: guardare la mappa di Levico di sera, che è il caso reale.
 
 ## Esito
+
+*(in attesa della prova sull'iPhone)*
+
+Fatto: nessun colore scritto a mano nelle tre schermate e nella pagina
+della mappa, ogni `Pressable` alto almeno `MIN_TAP_SIZE`, 207 test verdi.
+La pagina della mappa, generata dal codice e aperta nel browser con un
+percorso finto a Trento: mappa scura, percorso giallo ben visibile, «Start
+here» ciano, nome «Trento» leggibile, attribuzione intera una volta sola.
+
+Scelte dell'agente su delega dell'utente, oltre ai colori:
+- **Testi senza colore**: «km», le forme da toccare, i luoghi trovati, il
+  risultato non avevano un colore e sul fondo scuro sarebbero neri su nero:
+  ora usano `text` o `textMuted`.
+- **Segnaposto della partenza chiaro** (`text`): quello di MapLibre è un
+  azzurro che accanto al ciano di «Start here» si confonde.
+- **I comandi secondari sono neutri** («My position», «Search» erano blu),
+  «Open Settings» è sottolineato: il giallo resta a «Draw route».
+- **Tastiere scure e barra di stato chiara**, e il fondo della WebView
+  scuro, così la mappa non lampeggia bianca.
+- **La TileJSON che non arriva è un errore della mappa**: prima lo era lo
+  stile di liberty che non arrivava; ora lo stile è nella pagina, e senza
+  questa regola una rete che non raggiunge OpenFreeMap darebbe una mappa
+  vuota senza messaggio.
+- Lo stile entra nella pagina con i `<` protetti (`<`): l'attribuzione
+  contiene `</a>`.
+
+Non fatto, fuori scope: il titolo dice ancora «ShapeRoute», e i testi
+«Location is off for ShapeRoute…» anche (cambiare i testi non rientra nel
+task).

@@ -21,9 +21,13 @@ Uno solo, scuro, con il nome Sgrava (ADR-0046). Tutti i valori stanno in
 corpi del testo, la linea del percorso (gialla, larga 5) e `MIN_TAP_SIZE`,
 44, l'altezza minima di ogni cosa da toccare. **Nessun colore scritto a
 mano fuori da lì**: lo stile della mappa e le schermate leggono gli stessi
-token, e un colore nuovo è un token nuovo. Nell'app lo applica TASK-046:
-fino ad allora la mappa è ancora «liberty» di OpenFreeMap, chiara, e i
-pannelli sono grigi.
+token, e un colore nuovo è un token nuovo. Applicato all'app con TASK-046:
+mappa scura, percorso giallo, pannelli scuri, tastiere scure, barra di
+stato chiara. «Draw route» è l'unico comando giallo, con il testo scuro; gli
+altri («My position», «Search», «Cancel», «Export GPX», le forme da
+toccare) sono neutri, su `surfaceRaised`. Il segnaposto della partenza è
+chiaro (`text`): quello di MapLibre è un azzurro che si confonde con il
+ciano di «Start here».
 
 | Token | Colore | Per cosa |
 |---|---|---|
@@ -212,7 +216,7 @@ somiglia meno di quanto dovrebbe. La somiglianza non si mostra come
 numero: la forma la giudica l'occhio (`PRODUCT.md`), e sotto 0,90 il
 motore aggiunge già un avviso. Il segnaposto resta sulla partenza chiesta.
 Se il percorso comincia a più di 50 m da lì, perché il motore ha spostato la
-forma dove ci sta (fino a 2 km, ADR-0040), un secondo segnaposto verde con
+forma dove ci sta (fino a 2 km, ADR-0040), un secondo segnaposto ciano con
 l'etichetta «Start here» segna dove andare, e la mappa inquadra tutti e due;
 l'avviso dice di quanto e in che direzione.
 
@@ -263,8 +267,10 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 ## Quando la mappa non si carica
 
 La pagina avvisa l'app se lo script di MapLibre non arriva (anche con un
-hash SRI che non torna) o se non si carica lo stile. Una tile mancante,
-dopo, non è un errore. L'app mostra «The map could not load (motivo).
+hash SRI che non torna), se lo stile non è valido, o se non arriva la
+descrizione delle tile di OpenFreeMap (la TileJSON): lo stile è nella
+pagina, ma senza di lei la mappa resta vuota. Una tile mancante, dopo, non
+è un errore. L'app mostra «The map could not load (motivo).
 Check the connection and reopen the app.» invece di uno schermo bianco. Se
 iOS chiude la pagina per liberare memoria, la WebView la ricarica da sola.
 

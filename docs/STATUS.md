@@ -33,9 +33,9 @@ passaggio, ogni lettera cerca le sue strade e poi le lettere si collegano,
 più distanziate; chiesto dall'utente dopo TASK-041. Il numero salta 042–046
 perché un'altra sessione usa TASK-045 e TASK-046 (tema dell'app).
 
-**App: TASK-046 — Applicare il tema** (`docs/tasks/TASK-046.md`): mappa
-scura, percorso giallo, pannelli dai token. Parte da `main` dopo il merge
-di TASK-045.
+**App: TASK-046 — Applicare il tema** (`docs/tasks/TASK-046.md`): fatto
+e provato nel browser; manca la prova dell'utente sull'iPhone, con una
+schermata per la PR.
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
@@ -43,7 +43,9 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-Niente.
+- **TASK-046** — Applicare il tema (worktree `D:\shaperoute-app`):
+  `mapPage.ts`, `mapPage.test.ts`, `RoutePanel.tsx`, `PlaceSearch.tsx`,
+  `App.tsx`, `docs/UI.md`.
 
 ## Completato
 

@@ -88,7 +88,7 @@ dall'agente su delega, dopo i primi campioni. Registrate in ADR-0039.
       stella 10 km e cavallo 15 km a Levico.
 - [x] Ogni forma del punto E ha i suoi campioni e il giudizio dell'utente
       in `LOG.md` (10 GPX; gatto e pesce a Levico non disponibili).
-- [ ] I job della CI sono verdi sulla PR.
+- [x] I job della CI sono verdi sulla PR (#42).
 - [x] ADR-0039; `ROUTE_ENGINE.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
 
 ## File toccati

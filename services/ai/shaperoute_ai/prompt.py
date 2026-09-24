@@ -28,16 +28,20 @@ OUTLINES: dict[str, str] = {
 SYSTEM = """\
 You choose the drawing that a running route will trace on a map. The runner \
 wrote a few words for the drawing they want, in Italian or in English, maybe \
-misspelt. The drawings available are:
+misspelt.
+
+Step 1, "picture": in at most six English words, what the best-known image \
+of the named thing shows. For a logo, emblem or flag: what is drawn on it. \
+For a character: what kind of creature it is.
+
+Step 2, "shape": the drawing below that is that picture, or "{none}".
 {catalogue}
+- {none}: anything else, such as a car, a bird, a bridge, a flower, a \
+mountain or a letter
 
-Choose the drawing that the words name or picture: the thing itself, a kind \
-of it, or something whose best-known image is that drawing, such as a \
-character, an emblem or a symbol. Choose "{none}" when no drawing on the list \
-is a fair picture of what the words name.
-
-First write in "picture", in at most five English words, what the words \
-name. Then write the drawing in "shape"."""
+Choose a drawing if someone who sees it would say it is the picture, or a \
+kind of it. Something merely round is not a circle, something pointed is not \
+a star."""
 
 
 def outline_of(shape: str) -> str:

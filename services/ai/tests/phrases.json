@@ -37,7 +37,7 @@
     { "text": "stella cometa", "accept": ["star"] },
     { "text": "Stella Polare", "accept": ["star"] },
     { "text": "stella marina", "accept": ["star", "fish"] },
-    { "text": "stela", "accept": ["star"] },
+    { "text": "stela", "accept": ["star", null] },
 
     { "text": "luna crescente", "accept": ["moon"] },
     { "text": "spicchio di luna", "accept": ["moon"] },

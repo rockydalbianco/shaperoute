@@ -28,14 +28,15 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 
 ## Prossimo passo
 
-**TASK-047 — Lettere una per una** (`ROADMAP.md`, fase 4): più punti di
-passaggio, ogni lettera cerca le sue strade e poi le lettere si collegano,
-più distanziate; chiesto dall'utente dopo TASK-041. Il numero salta 042–046
-perché un'altra sessione usa TASK-045 e TASK-046 (tema dell'app).
+**TASK-050 — Lettere una per una** (`ROADMAP.md`, fase 4), in lavorazione
+in un'altra sessione. Per le indicazioni di svolta il seguito è
+**TASK-048**: portare i nodi del percorso e le indicazioni fuori dal motore,
+fino all'API e all'app, con la via di partenza.
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
-non fa merge, e ogni task parte dal branch del precedente.
+e ogni task parte da `main` (`CLAUDE.md`), in un worktree suo quando più
+agenti lavorano insieme.
 
 ## In lavorazione
 
@@ -47,7 +48,10 @@ Niente.
   chiusa percorsa così com'è (ADR-0042); «CIAO» a tratto singolo, dalla
   CLI, `quasi` a Trento, Levico e Milano a 15 km. TASK-041: un `path`
   aperto si corre a sola andata (ADR-0043); per l'utente «CIAO» aperto è
-  peggio del chiuso.
+  peggio del chiuso. TASK-047: indicazioni di svolta agli incroci nel
+  motore (`directions.py`, ADR-0045), solo la funzione: su cuori da 15 km
+  nessuna in mezzo a una strada; 180 a Trento, 75 a Levico, 264 a Milano,
+  dove i marciapiedi senza nome le rendono difficili da leggere.
 - **Fase 3** — TASK-032: forme da un contorno in JSON, dalla CLI
   (`--outline`, ADR-0035). Cancello superato: stella sì ovunque, cavallo
   quasi a Trento e sì a Levico e Milano; la casa no, anche con camino e

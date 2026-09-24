@@ -55,6 +55,7 @@ export const API_ERROR_CODES = [
   "map_data_unavailable",
   "engine_error",
   "http_error",
+  "ai_unavailable",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
@@ -94,4 +95,23 @@ export interface RouteJob {
 export interface GpxRequest {
   request: RouteRequest;
   result: RouteResult;
+}
+
+/** The longest text of the shape field the AI reads: a word or a few. */
+export const MAX_SHAPE_TEXT_LENGTH = 60;
+
+/**
+ * What the app sends to POST /shape-readings (ADR-0012): the words of the
+ * shape field that the app's own table does not know.
+ */
+export interface ShapeReadingRequest {
+  text: string;
+}
+
+/** The AI's reading of the words: a shape of the catalogue, or none. */
+export interface ShapeReading {
+  /** The words as read: single spaces, none at the ends. */
+  text: string;
+  /** Null when no shape of the catalogue fits the words. */
+  shape: Shape | null;
 }

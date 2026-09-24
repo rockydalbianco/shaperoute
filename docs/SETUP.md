@@ -447,13 +447,17 @@ verso il PC. Nessuna chiave da mettere in `.env`.
 ## Passo 10 — L'API sul PC (dalla fase 2)
 
 L'API ha un suo ambiente Python, con dentro anche il route-engine che
-espone. Occupa circa 300 MB. Una volta sola, da PowerShell:
+espone e il pacchetto dell'AI (`services\ai`, solo libreria standard).
+Occupa circa 300 MB. Una volta sola, da PowerShell:
 
 ```powershell
 cd ~\PycharmProjects\shaperoute\services\api
 python -m venv .venv
-.venv\Scripts\python.exe -m pip install -e ..\route-engine -e ".[dev]"
+.venv\Scripts\python.exe -m pip install -e ..\route-engine -e ..\ai -e ".[dev]"
 ```
+
+Chi aveva già l'ambiente prima di TASK-030 aggiunge solo l'AI:
+`.venv\Scripts\python.exe -m pip install -e ..\ai`.
 
 Si chiama `python.exe` dentro `.venv` invece di attivare l'ambiente,
 perché PowerShell blocca lo script di attivazione come blocca `npm.ps1`.
@@ -493,6 +497,34 @@ I controlli della CI del motore, da `services\route-engine`:
 `..\api\.venv\Scripts\python.exe -m black --check .`,
 `..\api\.venv\Scripts\python.exe -m pytest -m "not network"`.
 Con lo stesso `python.exe` girano gli script di misura in `tests\`.
+
+### 10.3 L'AI che legge le parole della forma (da TASK-030)
+
+Le parole che la tabella dell'app non conosce («stemma della Ferrari») le
+legge un modello aperto in **Ollama**, sullo stesso PC (ADR-0012,
+`AI.md`). Senza Ollama l'app funziona lo stesso, con le parole della
+tabella. Ollama da solo occupa circa 4 GB e il modello altri 2–3 GB: su
+questo PC vanno tutti e due sul disco D:.
+
+1. Prima di installare, perché i modelli vadano su D:: menu Start,
+   «variabili d'ambiente», «Modifica le variabili d'ambiente relative al
+   tuo account», **Nuova…**: nome `OLLAMA_MODELS`, valore
+   `D:\Ollama\models`.
+2. Scarica `OllamaSetup.exe` da https://ollama.com/download/windows e
+   installalo su D:, da PowerShell:
+
+   ```powershell
+   cd ~\Downloads
+   .\OllamaSetup.exe /DIR="D:\Ollama"
+   ```
+
+3. Ollama parte da solo con Windows e resta nell'area di notifica. Da una
+   PowerShell nuova, `ollama --version` risponde.
+
+Il modello da scaricare e il comando sono in `AI.md`, «Modello». L'API lo
+chiama su `http://127.0.0.1:11434`; con `--ai-model` se ne prova un altro.
+I controlli della CI del pacchetto, da `services\ai`, sono gli stessi del
+motore, con `..\api\.venv\Scripts\python.exe`.
 
 ### 10.1 App e API insieme
 

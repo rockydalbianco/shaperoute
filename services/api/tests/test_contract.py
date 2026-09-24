@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import FileSource
 from route_engine.optimizer import GraphLoader, Plan
+from shaperoute_ai.reading import MAX_TEXT_LENGTH
 
 from shaperoute_api.app import create_app
 from shaperoute_api.schemas import (
@@ -27,6 +28,8 @@ from shaperoute_api.schemas import (
     RouteJobBody,
     RouteRequestBody,
     RouteResultBody,
+    ShapeReadingBody,
+    ShapeReadingRequestBody,
 )
 
 REPO = Path(__file__).resolve().parents[3]
@@ -107,3 +110,17 @@ def test_gpx_request_fixture_is_a_valid_body() -> None:
     assert set(data["request"]) == _names(RouteRequestBody)
     assert set(data["result"]) == _names(RouteResultBody)
     GpxRequestBody.model_validate(data)
+
+
+def test_shape_reading_fixtures_are_valid_bodies() -> None:
+    request = _load("shape-reading-request.json")
+    assert set(request) == _names(ShapeReadingRequestBody)
+    ShapeReadingRequestBody.model_validate(request)
+    for name in ("shape-reading.json", "shape-reading-none.json"):
+        data = _load(name)
+        assert set(data) == _names(ShapeReadingBody), name
+        ShapeReadingBody.model_validate(data)
+
+
+def test_shape_text_limit_matches_shared_types() -> None:
+    assert _load("shape-reading-limits.json") == {"max_text_length": MAX_TEXT_LENGTH}

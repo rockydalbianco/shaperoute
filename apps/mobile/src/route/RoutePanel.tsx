@@ -1,4 +1,4 @@
-import type { Shape } from "@shaperoute/shared-types";
+import { MAX_SHAPE_TEXT_LENGTH, type Shape } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -7,12 +7,17 @@ import { problemText } from "./problems";
 import { shapeList } from "./shapeWords";
 import type { ExportState } from "./useGpxExport";
 import type { RouteProblem, RouteState } from "./useRouteRequest";
+import type { ShapeReadingState } from "./useShapeReading";
 
 type Props = {
   /** The shape field as typed, and the shape it names (null: none). */
   shapeText: string;
   shape: Shape | null;
   onShapeText: (text: string) => void;
+  /** The AI's reading of words the table does not know; null otherwise. */
+  reading: ShapeReadingState | null;
+  /** The user is done typing the shape: the AI may read it. */
+  onShapeDone: () => void;
   /** The km field as typed, and what it means in metres (null: not valid). */
   distanceText: string;
   distanceM: number | null;
@@ -32,6 +37,8 @@ export function RoutePanel({
   shapeText,
   shape,
   onShapeText,
+  reading,
+  onShapeDone,
   distanceText,
   distanceM,
   onDistanceText,
@@ -50,7 +57,9 @@ export function RoutePanel({
           style={[styles.field, styles.shape, waiting && styles.off]}
           value={shapeText}
           onChangeText={onShapeText}
+          onEndEditing={onShapeDone}
           editable={!waiting}
+          maxLength={MAX_SHAPE_TEXT_LENGTH}
           placeholder="heart, star, horse…"
           autoCapitalize="none"
           autoCorrect={false}
@@ -69,13 +78,7 @@ export function RoutePanel({
         />
         <Text>km</Text>
       </View>
-      {shape === null ? (
-        <Text style={styles.problem}>{`Unknown shape. Try: ${shapeList()}.`}</Text>
-      ) : (
-        shapeText.trim().toLowerCase() !== shape && (
-          <Text style={styles.note}>→ {shape}</Text>
-        )
-      )}
+      <ShapeNote text={shapeText} shape={shape} reading={reading} />
       {distanceM === null ? (
         <Text style={styles.problem}>
           {`Enter a distance between ${MIN_DISTANCE_KM} and ${MAX_APP_DISTANCE_KM} km.`}
@@ -136,6 +139,41 @@ export function RoutePanel({
       {view.status === "failed" && <Problem problem={view.problem} />}
     </View>
   );
+}
+
+/** Under the shape field: the shape the words name, or why there is none. */
+function ShapeNote({
+  text,
+  shape,
+  reading,
+}: {
+  text: string;
+  shape: Shape | null;
+  reading: ShapeReadingState | null;
+}) {
+  if (shape !== null) {
+    return text.trim().toLowerCase() === shape ? null : (
+      <Text style={styles.note}>→ {shape}</Text>
+    );
+  }
+  switch (reading?.status) {
+    case "unread":
+      return <Text style={styles.note}>Press Done and the AI will read it.</Text>;
+    case "reading":
+      return <Text style={styles.note}>The AI is reading it…</Text>;
+    case "read":
+      return (
+        <Text style={styles.problem}>
+          {`No shape in the catalogue for “${text.trim()}”. Try: ${shapeList()}.`}
+        </Text>
+      );
+    case "failed":
+      return <Problem problem={reading.problem} />;
+    default:
+      return (
+        <Text style={styles.problem}>{`Unknown shape. Try: ${shapeList()}.`}</Text>
+      );
+  }
 }
 
 /** What the API is doing, as it said on its last answer. */

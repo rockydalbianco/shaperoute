@@ -1,7 +1,8 @@
 # API — Contratti REST
 
-> Scritto con TASK-022, richieste in due tempi con TASK-025. Le scelte e i
-> loro motivi stanno in ADR-0030 e ADR-0032.
+> Scritto con TASK-022, richieste in due tempi con TASK-025, lettura delle
+> parole della forma con TASK-030. Le scelte e i loro motivi stanno in
+> ADR-0030, ADR-0032 e ADR-0012.
 
 ## Cosa è deciso
 
@@ -25,7 +26,9 @@ python -m shaperoute_api --lan      # anche dal telefono, sulla stessa Wi-Fi
 
 Con `--lan` stampa l'indirizzo da scrivere sul telefono. `--port` cambia
 la porta, `--cache-dir` la cartella dei grafi (default `data/cache`, come
-la CLI). La documentazione interattiva è su `/docs`.
+la CLI). `--ai-model` e `--ai-url` scelgono il modello di Ollama che legge
+le parole della forma e dove risponde (`AI.md`); senza, valgono quelli del
+codice. La documentazione interattiva è su `/docs`.
 
 ## Endpoint
 
@@ -76,6 +79,29 @@ L'API non ricorda niente, quindi l'export funziona anche dopo i 10 minuti
 di vita di una richiesta in due tempi. Un corpo non valido risponde
 `422 invalid_request` (ADR-0033).
 
+### `POST /shape-readings`
+
+Le parole del riquadro della forma che la tabella dell'app non conosce
+(ADR-0012, `AI.md`). Riceve uno `ShapeReadingRequest`:
+
+```json
+{ "text": "stemma della Ferrari" }
+```
+
+e risponde `200` con uno `ShapeReading`: le parole come lette (spazi
+singoli, nessuno ai lati) e una forma del catalogo, o `null` se nessuna va
+bene.
+
+```json
+{ "text": "stemma della Ferrari", "shape": "horse" }
+```
+
+Il testo va da 1 a 60 caratteri: fuori da lì, `422 invalid_request`. Se
+Ollama è spento, non ha il modello o non risponde entro 90 s, `503
+ai_unavailable`, con il motivo nel messaggio. Le stesse parole, a meno di
+maiuscole e spazi, si chiedono al modello una volta sola: l'API le ricorda
+finché non si riavvia.
+
 ### `POST /routes`
 
 Riceve un `RouteRequest`:
@@ -117,6 +143,7 @@ del motore:
 | JSON malformato, campo mancante, in più o fuori limite | 422 | `invalid_request` |
 | Forma non disponibile in quella zona (ADR-0025) | 422 | `shape_not_drawable` |
 | Zona non in cache e dati OSM non scaricabili | 503 | `map_data_unavailable` |
+| Il modello che legge le parole della forma non risponde (`AI.md`) | 503 | `ai_unavailable` |
 | Il motore viola le sue regole (ADR-0026) o altro imprevisto | 500 | `engine_error` |
 | Indirizzo o metodo sbagliato | 404, 405 | `http_error` |
 

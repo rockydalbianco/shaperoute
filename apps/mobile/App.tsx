@@ -24,6 +24,7 @@ import type { Place } from "./src/places/photon";
 import { toDistanceM } from "./src/route/distance";
 import { RoutePanel } from "./src/route/RoutePanel";
 import { toShape } from "./src/route/shapeWords";
+import { useShapeReading } from "./src/route/useShapeReading";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import {
   type RouteState,
@@ -53,7 +54,14 @@ function MapScreen() {
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
   const [shapeText, setShapeText] = useState("heart");
-  const shape = toShape(shapeText);
+  const tableShape = toShape(shapeText);
+  const shapeReading = useShapeReading(API_URL);
+  // The table first; the AI only for other words (ADR-0012).
+  const reading =
+    tableShape === null && shapeText.trim() !== ""
+      ? shapeReading.stateOf(shapeText)
+      : null;
+  const shape = tableShape ?? (reading?.status === "read" ? reading.shape : null);
   const [distanceText, setDistanceText] = useState("5");
   const distanceM = toDistanceM(distanceText);
   const { state, draw, cancel } = useRouteRequest(API_URL);
@@ -131,6 +139,12 @@ function MapScreen() {
           shapeText={shapeText}
           shape={shape}
           onShapeText={setShapeText}
+          reading={reading}
+          onShapeDone={() => {
+            if (reading) {
+              shapeReading.read(shapeText);
+            }
+          }}
           distanceText={distanceText}
           distanceM={distanceM}
           onDistanceText={setDistanceText}

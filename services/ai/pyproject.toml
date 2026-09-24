@@ -3,29 +3,22 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "shaperoute-api"
+name = "shaperoute-ai"
 version = "0.1.0"
-description = "HTTP API that exposes the route engine to the app."
+description = "Reads the words of the shape field and picks a shape of the catalogue."
 requires-python = ">=3.11"
-# route-engine and shaperoute-ai are installed beside it from ../route-engine
-# and ../ai (docs/SETUP.md).
-dependencies = [
-    "route-engine",
-    "shaperoute-ai",
-    "fastapi>=0.141,<1",
-    "uvicorn>=0.53,<1",
-]
+# Standard library only: the model runs in Ollama, called over HTTP (ADR-0012).
+dependencies = []
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8",
     "ruff>=0.5",
     "black>=24",
-    "httpx>=0.28,<1",
 ]
 
 [tool.setuptools.packages.find]
-include = ["shaperoute_api*"]
+include = ["shaperoute_ai*"]
 
 [tool.black]
 line-length = 88

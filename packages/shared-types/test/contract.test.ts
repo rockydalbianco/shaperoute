@@ -11,11 +11,16 @@ import jobRunning from "../fixtures/route-job-running.json" with { type: "json" 
 import jobStatuses from "../fixtures/route-job-statuses.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
 import result from "../fixtures/route-result.json" with { type: "json" };
+import shapeReadingLimits from "../fixtures/shape-reading-limits.json" with { type: "json" };
+import shapeReadingNone from "../fixtures/shape-reading-none.json" with { type: "json" };
+import shapeReadingRequest from "../fixtures/shape-reading-request.json" with { type: "json" };
+import shapeReading from "../fixtures/shape-reading.json" with { type: "json" };
 import {
   ACTIVITIES,
   API_ERROR_CODES,
   JOB_STATUSES,
   MAX_DISTANCE_M,
+  MAX_SHAPE_TEXT_LENGTH,
   MIN_DISTANCE_M,
   SHAPES,
   type ApiError,
@@ -23,6 +28,8 @@ import {
   type RouteJob,
   type RouteRequest,
   type RouteResult,
+  type ShapeReading,
+  type ShapeReadingRequest,
 } from "../src/index.ts";
 
 // Checked by `tsc`: the fixtures have exactly the fields of the types, so a
@@ -45,12 +52,28 @@ const gpxFields: Same<keyof typeof gpxRequest, keyof GpxRequest> &
   Same<keyof typeof gpxRequest.request, keyof RouteRequest> &
   Same<keyof typeof gpxRequest.result, keyof RouteResult> = true;
 
+const shapeReadingFields: Same<
+  keyof typeof shapeReadingRequest,
+  keyof ShapeReadingRequest
+> &
+  Same<keyof typeof shapeReading, keyof ShapeReading> &
+  Same<keyof typeof shapeReadingNone, keyof ShapeReading> = true;
+
 const isShape = (value: string): boolean =>
   (SHAPES as readonly string[]).includes(value);
 
 test("the fixtures have the fields of the types", () => {
   assert.ok(requestFields && resultFields && errorFields && errorDetailFields);
   assert.ok(jobFields && jobResultFields && jobErrorFields && gpxFields);
+  assert.ok(shapeReadingFields);
+});
+
+test("a shape reading names a shape of the catalogue, or none", () => {
+  assert.equal(shapeReading.text, shapeReadingRequest.text);
+  assert.ok(isShape(shapeReading.shape));
+  assert.equal(shapeReadingNone.shape, null);
+  assert.equal(MAX_SHAPE_TEXT_LENGTH, shapeReadingLimits.max_text_length);
+  assert.ok(shapeReadingRequest.text.length <= MAX_SHAPE_TEXT_LENGTH);
 });
 
 test("the GPX request carries the request and result fixtures", () => {

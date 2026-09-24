@@ -20,13 +20,16 @@ in un riquadro, in italiano o in inglese, fra quelle del catalogo:
 cerchio, cuore, stella, cavallo, luna, gatto e pesce. Gatto e pesce hanno
 tratti interni, fatti andata e ritorno (gli occhi). Quando la forma non va
 attorno alla partenza, il motore cerca un posto fino a 2 km e l'app mostra
-«Start here»: così gatto e pesce si disegnano anche a Levico.
+«Start here»: così gatto e pesce si disegnano anche a Levico. Le parole che
+la tabella non conosce («stemma della Ferrari») le legge un modello aperto
+in Ollama sul PC, che sceglie una forma del catalogo o nessuna.
 
 ## Prossimo passo
 
-**TASK-030 — L'AI riconosce la parola scritta** (`ROADMAP.md`, fase 3):
-da «stemma della Ferrari» a una forma del catalogo; si decide ADR-0012.
-Il file del task non è ancora scritto.
+**TASK-031 — Parole senza forma nel catalogo e forme che le strade non
+reggono** (`ROADMAP.md`, fase 3): cosa dire e proporre quando l'AI risponde
+«nessuna forma», o la forma non ci sta. Il file del task non è ancora
+scritto.
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
@@ -34,7 +37,9 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-Niente.
+- **TASK-030** — L'AI legge le parole della forma: codice, misure e
+  documenti fatti (ADR-0012, `AI.md`), CI verde sulla PR #45. Manca la
+  prova sull'iPhone dell'utente.
 
 ## Completato
 
@@ -78,6 +83,12 @@ Niente.
 
 ## Note per la prossima sessione
 
+- Ollama 0.34.4 è installato in `D:\Ollama` e parte con Windows; i
+  modelli stanno in `D:\Ollama\models` (variabile `OLLAMA_MODELS`
+  dell'account). Oltre a `qwen3:4b` ci sono phi4-mini e granite4:3b,
+  scartati: si tolgono con `ollama rm phi4-mini` e `ollama rm granite4:3b`
+  (4,6 GB). Resta da togliere a mano anche `D:\Ollama-setup` (l'installer,
+  1,5 GB). L'ambiente dell'API ha anche `services\ai` installato.
 - Su questo PC il route-engine usa l'ambiente dell'API: non c'è
   `services/route-engine/.venv` (`SETUP.md`, passo 10.2).
 - In cache ci sono i grafi `foot` di zona di trento, levico, valsugana e

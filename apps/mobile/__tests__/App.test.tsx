@@ -64,6 +64,8 @@ const GPX = '<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1"></gpx>';
 const GPX_FILE = "shaperoute-heart-5km-2026-09-23.gpx";
 
 let fetchSpy: jest.SpiedFunction<typeof fetch>;
+/** How the AI on the PC answers POST /shape-readings in the next test. */
+let readShape: (text: string) => Response;
 
 function job(status: string) {
   return { job_id: "4f2c9e1a", status, result: null, error: null };
@@ -86,6 +88,9 @@ function apiAnswers(...polls: unknown[]) {
       return new Response(GPX, {
         headers: { "Content-Disposition": `attachment; filename="${GPX_FILE}"` },
       });
+    }
+    if (String(input) === `${API}/shape-readings`) {
+      return readShape((JSON.parse(String(init?.body)) as { text: string }).text);
     }
     if (method === "POST") {
       return Response.json(job("queued"), { status: 202 });
@@ -130,6 +135,7 @@ beforeEach(() => {
   written.clear();
   sharingAvailable.mockReset().mockResolvedValue(true);
   share.mockReset().mockResolvedValue();
+  readShape = (text) => Response.json({ text, shape: null });
 });
 
 afterEach(() => {
@@ -444,24 +450,104 @@ test("a shape written in Italian is sent by its name", async () => {
   jest.useRealTimers();
 });
 
-test("an unknown shape turns Draw route off and suggests the catalogue", async () => {
+test("an unknown word turns Draw route off until the AI has read it", async () => {
   apiAnswers(jobDone);
   await atTrento();
-  for (const text of ["drago", "casa", ""]) {
+  for (const text of ["drago", "casa"]) {
     await fireEvent.changeText(screen.getByLabelText("Shape"), text);
-    expect(
-      screen.getByText(
-        "Unknown shape. Try: circle, heart, star, horse, moon, cat or fish.",
-      ),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("Press Done and the AI will read it.")).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
     await fireEvent.press(screen.getByText("Draw route"));
   }
+  await fireEvent.changeText(screen.getByLabelText("Shape"), "");
+  expect(
+    screen.getByText(
+      "Unknown shape. Try: circle, heart, star, horse, moon, cat or fish.",
+    ),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
   expect(apiCalls("POST")).toEqual([]);
 
   await fireEvent.changeText(screen.getByLabelText("Shape"), "star");
-  expect(screen.queryByText(/Unknown shape/)).not.toBeOnTheScreen();
+  expect(screen.queryByText(/Unknown shape|Press Done/)).not.toBeOnTheScreen();
   expect(screen.queryByText("→ star")).not.toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+});
+
+test("the AI reads the words the table does not know, once", async () => {
+  jest.useFakeTimers();
+  apiAnswers(job("computing"));
+  readShape = (text) => Response.json({ text, shape: "horse" });
+  await atTrento();
+  const field = screen.getByLabelText("Shape");
+  await fireEvent.changeText(field, "stemma della Ferrari");
+  await fireEvent(field, "endEditing");
+  expect(await screen.findByText("→ horse")).toBeOnTheScreen();
+  await fireEvent(field, "endEditing");
+  await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
+
+  const readings = apiCalls("POST").filter(([input]) =>
+    String(input).endsWith("/shape-readings"),
+  );
+  expect(readings).toHaveLength(1);
+  expect(JSON.parse(String(readings[0][1]?.body))).toEqual({
+    text: "stemma della Ferrari",
+  });
+  expect(lastRouteRequest()).toMatchObject({ shape: "horse" });
+  jest.useRealTimers();
+});
+
+test("words the table knows are not sent to the AI", async () => {
+  apiAnswers(jobDone);
+  await atTrento();
+  const field = screen.getByLabelText("Shape");
+  await fireEvent.changeText(field, "Cavallo");
+  await fireEvent(field, "endEditing");
+  expect(screen.getByText("→ horse")).toBeOnTheScreen();
+  expect(apiCalls("POST")).toEqual([]);
+});
+
+test("words with no shape of the catalogue keep Draw route off", async () => {
+  apiAnswers(jobDone);
+  await atTrento();
+  const field = screen.getByLabelText("Shape");
+  await fireEvent.changeText(field, "Batman");
+  await fireEvent(field, "endEditing");
+  expect(
+    await screen.findByText(
+      "No shape in the catalogue for “Batman”. Try: circle, heart, star, horse, moon, cat or fish.",
+    ),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+});
+
+test("when the AI is off the app says so, and asks again next time", async () => {
+  apiAnswers(jobDone);
+  readShape = () =>
+    Response.json(
+      {
+        error: {
+          code: "ai_unavailable",
+          message: "Ollama does not answer at http://127.0.0.1:11434/api/chat",
+        },
+      },
+      { status: 503 },
+    );
+  await atTrento();
+  const field = screen.getByLabelText("Shape");
+  await fireEvent.changeText(field, "Garfield");
+  await fireEvent(field, "endEditing");
+  expect(
+    await screen.findByText(
+      "The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat or fish.",
+    ),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+
+  readShape = (text) => Response.json({ text, shape: "cat" });
+  await fireEvent(field, "endEditing");
+  expect(await screen.findByText("→ cat")).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
 });
 

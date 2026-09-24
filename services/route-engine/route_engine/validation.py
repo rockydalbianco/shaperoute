@@ -15,7 +15,11 @@ from typing import Any
 import numpy as np
 
 from route_engine.geo import LatLon, haversine_m, latlon_to_local_array
-from route_engine.network import Graph
+from route_engine.network import Graph, distance_to_segments
+
+# Sides of a shape, as (start, end), that the shape draws twice on purpose:
+# its strokes, out and back (TASK-037).
+Strokes = Sequence[tuple[LatLon, LatLon]]
 
 # Starting values, confirmed with the user in TASK-016 (ADR-0026).
 EXACT_REUSE_MAX = 0.05  # share of the length on edges already travelled
@@ -54,18 +58,43 @@ def _values(tag: Any) -> set[str]:
     return {str(tag)}
 
 
-def exact_reuse(graph: Graph, nodes: Sequence[Any]) -> float:
-    """Share of the route length on edges travelled before, either way."""
+def exact_reuse(
+    graph: Graph,
+    nodes: Sequence[Any],
+    strokes: Strokes = (),
+    stroke_radius_m: float = 0.0,
+) -> float:
+    """Share of the route length on edges travelled before, either way,
+    leaving out the edges whose middle is within `stroke_radius_m` of a
+    stroke of the shape: that one is meant to be travelled twice."""
     seen: set[frozenset[Any]] = set()
-    total = reused = 0.0
+    total = 0.0
+    reused: list[tuple[Any, Any, float]] = []
     for u, v in zip(nodes, nodes[1:], strict=False):
         length = float(_edge_data(graph, u, v)["length"])
         key = frozenset((u, v))
         total += length
         if key in seen:
-            reused += length
+            reused.append((u, v, length))
         seen.add(key)
-    return reused / total if total else 0.0
+    if reused and strokes:
+        origin = (graph.nodes[nodes[0]]["y"], graph.nodes[nodes[0]]["x"])
+        ends = np.array(
+            [
+                [(graph.nodes[n]["y"], graph.nodes[n]["x"]) for n in (u, v)]
+                for u, v, _ in reused
+            ]
+        )
+        middles = latlon_to_local_array(origin, ends.reshape(-1, 2)).reshape(-1, 2, 2)
+        away = _from_strokes(origin, strokes, middles.mean(axis=1)) > stroke_radius_m
+        reused = [r for r, keep in zip(reused, away, strict=True) if keep]
+    return sum(length for _, _, length in reused) / total if total else 0.0
+
+
+def _from_strokes(origin: LatLon, strokes: Strokes, points: np.ndarray) -> np.ndarray:
+    """Distance of each (x, y) point, around `origin`, from the nearest stroke."""
+    ends = latlon_to_local_array(origin, np.array(strokes).reshape(-1, 2))
+    return distance_to_segments(ends[0::2], ends[1::2], points)
 
 
 def _resample(xy: np.ndarray, step_m: float) -> tuple[np.ndarray, np.ndarray]:
@@ -108,10 +137,13 @@ def visual_retrace(
     points: Sequence[LatLon],
     spare: Collection[LatLon] = (),
     spare_radius_m: float = 0.0,
+    strokes: Strokes = (),
+    stroke_radius_m: float = 0.0,
 ) -> float:
     """Share of the route drawn twice (`retraced`), leaving out the samples
-    within `spare_radius_m` of a point in `spare`: the out-and-back to a
-    corner of the shape is meant to be there."""
+    within `spare_radius_m` of a point in `spare` and those within
+    `stroke_radius_m` of a stroke: the out-and-back to a corner of the
+    shape, and along a stroke, is meant to be there."""
     xy = latlon_to_local_array(points[0], np.array(points))
     pts, _ = _resample(xy, RETRACE_STEP_M)
     if len(pts) == 0:
@@ -123,6 +155,8 @@ def visual_retrace(
             pts[:, None, 0] - corners[None, :, 0], pts[:, None, 1] - corners[None, :, 1]
         ).min(axis=1)
         twice &= d > spare_radius_m
+    if strokes:
+        twice &= _from_strokes(points[0], strokes, pts) > stroke_radius_m
     return float(twice.mean())
 
 
@@ -170,12 +204,18 @@ def measure(
     nodes: Sequence[Any],
     corners: Collection[LatLon] = (),
     corner_radius_m: float = 0.0,
+    strokes: Strokes = (),
+    stroke_radius_m: float = 0.0,
 ) -> dict[str, float]:
     """Every check's value: `reuse` and `retrace` as shares of the length,
-    `steps`, `busy` and `tunnel` in metres."""
+    `steps`, `busy` and `tunnel` in metres. Along the `strokes` of the
+    shape, drawn out and back on purpose, nothing counts as reused or
+    retraced."""
     return {
-        "reuse": exact_reuse(graph, nodes),
-        "retrace": visual_retrace(points, corners, corner_radius_m),
+        "reuse": exact_reuse(graph, nodes, strokes, stroke_radius_m),
+        "retrace": visual_retrace(
+            points, corners, corner_radius_m, strokes, stroke_radius_m
+        ),
         **usability(graph, nodes),
     }
 

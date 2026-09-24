@@ -23,7 +23,12 @@ from typing import Any, Protocol
 import numpy as np
 
 from route_engine.geo import LatLon, latlon_to_local_array, local_to_latlon
-from route_engine.metrics import CORNER_PENALTY, SIMILARITIES, Similarity
+from route_engine.metrics import (
+    CORNER_PENALTY,
+    COVER_TOLERANCE,
+    SIMILARITIES,
+    Similarity,
+)
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import (
     AREA_MARGIN_M,
@@ -34,8 +39,10 @@ from route_engine.network import (
     NetworkRoute,
     area_around,
     corner_indices,
+    detail_scale,
     nearest_nodes,
     snap_to_network,
+    twice_drawn,
 )
 from route_engine.projection import (
     Point,
@@ -311,6 +318,9 @@ def search(
     phase_xy = {phase: np.array(start_at_phase(shape, phase)) for phase in PHASES}
     phase_corners = {phase: corner_indices(pts[:-1]) for phase, pts in phase_xy.items()}
     start_xy = {s: latlon_to_local_array(start, np.array([s]))[0] for s, _ in starts}
+    # A shape with strokes is judged finer (ADR-0039); normalized, its sides
+    # drawn twice coincide exactly.
+    band_share = CORRIDOR_BAND * detail_scale(np.array(shape), near_m=1e-9)
 
     def outline_xy(p: Placement, scale: float) -> np.ndarray:
         """`project_shape` in metres around `start` (same scale and rotation)."""
@@ -331,7 +341,7 @@ def search(
     def road_fit(p: Placement, scale: float) -> float:
         # The band follows the scale alone, so every placement at one scale
         # shares the same grid. Moving the start must earn its keep.
-        band = round(CORRIDOR_BAND * perimeter(shape) * scale, 3)
+        band = round(band_share * perimeter(shape) * scale, 3)
         outline = outline_xy(p, scale)
         fit = mask.fit_xy(outline, band)
         corners = outline[phase_corners[p.phase]]
@@ -535,6 +545,9 @@ MIN_SIMILARITY = 0.60
 # Around each corner of the shape, this share of its perimeter may be drawn
 # twice without counting as retraced: the spike to a corner draws it.
 CORNER_SPARE = 0.05
+# Along a stroke of the shape, as far as the route may be from it and still
+# draw it (TASK-037): there, going out and back is the point.
+STROKE_SPARE = COVER_TOLERANCE
 
 
 def _scale_of(placed: Sequence[LatLon], shape: Sequence[Point]) -> float:
@@ -667,10 +680,19 @@ def plan_shape(
         chosen_start,
         START_OFFSET_M,
     )
-    outline = latlon_to_local_array(placed[0], np.array(placed[:-1]))
-    corners = [placed[i] for i in corner_indices(outline)]
-    spare = CORNER_SPARE * perimeter(shape) * _scale_of(placed, shape)
-    measures = measure(graph, route.points, route.nodes, corners, spare)
+    outline = latlon_to_local_array(placed[0], np.array(placed))
+    corners = [placed[i] for i in corner_indices(outline[:-1])]
+    strokes = [(placed[i], placed[i + 1]) for i in np.flatnonzero(twice_drawn(outline))]
+    size = perimeter(shape) * _scale_of(placed, shape)
+    measures = measure(
+        graph,
+        route.points,
+        route.nodes,
+        corners,
+        CORNER_SPARE * size,
+        strokes,
+        STROKE_SPARE * size,
+    )
     warnings.extend(issue.message for issue in validate(measures))
     result = RouteResult(
         points=route.points,

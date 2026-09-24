@@ -1,6 +1,6 @@
 {
   "name": "fish",
-  "source": "fish seen from the side, forked tail (TASK-034, candidate)",
+  "source": "fish seen from the side, forked tail (TASK-034, candidate; eye, TASK-037)",
   "license": "drawn for ShapeRoute, no third-party rights",
   "points": [
     [1.0000, 0.0000],
@@ -32,5 +32,15 @@
     [0.9299, -0.2047],
     [0.9823, -0.1047],
     [1.0000, 0.0000]
+  ],
+  "strokes": [
+    [
+      [0.9823, 0.1047],
+      [0.7600, 0.1400],
+      [0.6400, 0.2600],
+      [0.5200, 0.1400],
+      [0.6400, 0.0200],
+      [0.7600, 0.1400]
+    ]
   ]
 }

@@ -154,6 +154,15 @@ tratti interni. In quest'ordine:
 - **trova dove la forma ci sta** (TASK-038): la ricerca prova partenze nel raggio di
   qualche km e l'app dice dove andare.
 
+**TASK-037 (2026-09-24)**: i contorni possono avere tratti, linee e anelli
+che il percorso fa andata e ritorno (ADR-0039): finestre alla casa, fusto e
+rami all'albero, occhi al gatto, occhio al pesce. A giudizio dell'utente, a
+15 km i dettagli si vedono dove le strade sono fitte: a Trento gatto e
+pesce `sì`, casa `quasi`; a Milano tutto `sì`. A Levico no: casa e albero
+`no`, gatto e pesce non disponibili. Quattro casi migliorano, uno peggiora
+(l'albero di Levico). Gatto e pesce si possono proporre per il catalogo;
+per Levico serve trovare il posto (TASK-038).
+
 **Deciso con l'utente (2026-09-24).** Non serve interpretare una frase:
 distanza e attività si scrivono nei loro riquadri, e l'AI serve solo per la
 forma. Il lavoro si divide in due:

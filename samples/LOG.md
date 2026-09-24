@@ -204,6 +204,18 @@ chiude ADR-0010.
 | 2026-09-24 | TASK-036_cat_15km_trento_v1.gpx | trento | 0.95 | 13.6 / 15.0 km | quasi | testa di gatto dritta: 0° invece di 5° (TASK-034_cat_15km_trento_v1.gpx, giudicato «no»); partenza spostata di 250 m; 830 m scale; 62 m gallerie |
 | 2026-09-24 | TASK-036_house_10km_levico_v2.gpx | levico | 0.80 | 9.8 / 10.0 km | no | casa v2 dritta: 15° invece di 5° (TASK-032_house_10km_levico_v2.gpx, giudicato «no»); sotto 0,90 dopo la ricerca; 14% su strade già percorse; 99 m scale; 98 m gallerie |
 | 2026-09-24 | TASK-036_house_15km_trento_v2.gpx | trento | 0.91 | 14.1 / 15.0 km | no | casa v2 dritta: 10° invece di 30° (TASK-032_house_15km_trento_v2.gpx, giudicato «no»); 6% su strade già percorse; 15% of the route runs next to another stretch of it, within 20 m (limit 10%); 125 m scale; 284 m gallerie |
+| 2026-09-24 | TASK-037_house_15km_trento_v1.gpx | trento | 0.90 | 16.3 / 15.0 km | quasi | casa con finestre (TASK-036_house_15km_trento_v2.gpx, giudicato «no»); 3% su strade già percorse; 1211 m scale; 9 s |
+| 2026-09-24 | TASK-037_tree_15km_trento_v1.gpx | trento | 0.94 | 15.1 / 15.0 km | no | albero con fusto e rami (TASK-034_tree_15km_trento_v1.gpx, giudicato «no»); 5% su strade già percorse; 38 m scale; 75 m gallerie; 3 s |
+| 2026-09-24 | TASK-037_cat_15km_trento_v1.gpx | trento | 0.91 | 14.4 / 15.0 km | sì | gatto con occhi (TASK-036_cat_15km_trento_v1.gpx, giudicato «quasi»); 436 m scale; 230 m gallerie; 8 s |
+| 2026-09-24 | TASK-037_fish_15km_trento_v1.gpx | trento | 0.87 | 14.4 / 15.0 km | sì | pesce con occhio (TASK-034_fish_15km_trento_v1.gpx, giudicato «no»); sotto 0,90 dopo la ricerca; 5% su strade già percorse; 415 m scale; 232 m gallerie; 23 s; giudizio: l'occhio vale più della metrica |
+| 2026-09-24 | TASK-037_house_15km_levico_v1.gpx | levico | 0.81 | 15.1 / 15.0 km | no | casa con finestre (TASK-032_house_15km_levico_v2.gpx, giudicato «no»); inclinata 15°; sotto 0,90 dopo la ricerca; 23% su strade già percorse; 4 s |
+| 2026-09-24 | TASK-037_tree_15km_levico_v1.gpx | levico | 0.96 | 15.2 / 15.0 km | no | albero con fusto e rami (TASK-036_tree_15km_levico_v1.gpx, giudicato «quasi»): peggiora; partenza spostata di 250 m; 34 m scale; 4 s; giudizio: la metrica è più generosa dell'occhio |
+| 2026-09-24 | TASK-037_house_15km_milano_v1.gpx | milano | 0.99 | 13.6 / 15.0 km | sì | solo confronto; casa con finestre (TASK-032_house_15km_milano_v2.gpx, giudicato «quasi»); 264 m scale; 464 m gallerie; 16 s |
+| 2026-09-24 | TASK-037_tree_15km_milano_v1.gpx | milano | 0.99 | 13.9 / 15.0 km | sì | solo confronto; albero con fusto e rami (TASK-034_tree_15km_milano_v1.gpx, giudicato «sì»); 259 m scale; 695 m gallerie; 7 s |
+| 2026-09-24 | TASK-037_cat_15km_milano_v1.gpx | milano | 0.99 | 14.1 / 15.0 km | sì | solo confronto; gatto con occhi (TASK-034_cat_15km_milano_v1.gpx, giudicato «sì»); 225 m scale; 496 m gallerie; 15 s |
+| 2026-09-24 | TASK-037_fish_15km_milano_v1.gpx | milano | 0.99 | 15.2 / 15.0 km | sì | solo confronto; pesce con occhio (TASK-034_fish_15km_milano_v1.gpx, giudicato «sì»); 105 m scale; 327 m gallerie; 21 s |
+| 2026-09-24 | — (cat_15km_levico, TASK-037) | levico | — | — | — | nessun GPX: forma non disponibile, somiglianza massima 0,52 contro 0,60 (TASK-036_cat_15km_levico_v1.gpx, giudicato «no») |
+| 2026-09-24 | — (fish_15km_levico, TASK-037) | levico | — | — | — | nessun GPX: forma non disponibile, somiglianza massima 0,47 contro 0,60 (TASK-036_fish_15km_levico_v1.gpx, giudicato «no») |
 
 <!--
 Esempio di riga compilata:

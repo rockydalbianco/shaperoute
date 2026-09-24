@@ -80,9 +80,42 @@ giudizio a occhio dell'utente sulle strade.
   contorno in `[-1, 1]²` e lo ricampiona a `N` punti, come le altre forme.
 - **Un solo contorno chiuso**: l'ultimo punto ripete il primo; niente
   buchi, pezzi separati o incroci, perché un percorso è una sola linea
-  chiusa. Un file che non lo rispetta viene rifiutato con il motivo.
+  chiusa. Un file che non lo rispetta viene rifiutato con il motivo. I
+  dettagli interni si aggiungono come tratti (sotto).
 - Fonte e licenza stanno nel file: il disegno di qualcun altro entra solo
   con una licenza aperta.
+
+### Tratti ripassati (TASK-037)
+
+Un contorno può avere anche dei **tratti** (`strokes`, facoltativi): linee
+dentro o accanto al contorno, come un ramo, un occhio o una finestra, che
+il percorso disegna andando e tornando sulla stessa strada (ADR-0039).
+
+```json
+"strokes": [
+  [[1.0, -0.275], [0.75, -0.275], [0.75, -0.1], [0.45, -0.1],
+   [0.45, -0.45], [0.75, -0.45], [0.75, -0.275]]
+]
+```
+
+- Un tratto **parte dal contorno o da un tratto precedente**: il primo
+  punto deve stare su una sua linea (entro lo 0,1% della grandezza del
+  contorno, e allora ci viene spostato sopra).
+- Una **linea** (ramo, gamba) si percorre fino in fondo e si torna
+  indietro. Un tratto che finisce su un suo punto precedente chiude lì un
+  **anello** (finestra, occhio): l'anello si percorre una volta, e si torna
+  indietro solo sulla linea che ci porta.
+- I tratti non incrociano il contorno, gli altri tratti, né se stessi.
+- Il motore ne fa **una sola linea chiusa**: il contorno, con ogni tratto
+  inserito dove parte. Quella linea si ricampiona tenendo tutti i suoi
+  vertici, così il ritorno passa esattamente dove è passata l'andata; gli
+  altri punti fino a `N` si distribuiscono per lunghezza. Con più vertici
+  che `N`, restano solo i vertici.
+- Un contorno senza tratti si ricampiona come prima.
+
+Del disegno i tratti fanno parte a tutti gli effetti: contano nella
+lunghezza (la scala li comprende), nella somiglianza e negli angoli, e la
+punta di ogni linea, dove si torna indietro, è un angolo della forma.
 
 I contorni stanno in `route_engine/shapes/outlines/`, dati del pacchetto:
 stella e casa (con camino e porta) disegnate per ShapeRoute, e la sagoma di
@@ -90,7 +123,9 @@ un cavallo al galoppo (OpenClipart, CC0). La casa si prova solo dalla CLI:
 non è nel catalogo. Del cavallo resta il contorno
 esterno, 147 vertici; a 64 punti gambe, coda e testa si leggono ancora, i
 dettagli minori no. Come vengono sulle strade: ADR-0035 e
-`samples/LOG.md`.
+`samples/LOG.md`. Ci sono anche le candidate di TASK-034 (luna, pesce,
+freccia, albero, corona, gatto); dal TASK-037 casa, albero, gatto e pesce
+hanno dei tratti: due finestre, fusto e rami, gli occhi, l'occhio.
 
 ## 3. Proiezione geografica
 
@@ -159,8 +194,18 @@ Procedura di base:
    percorso non cambia. Restano quelli che portano a una punta della forma
    (la punta del cuore), che la disegnano (ADR-0025, ADR-0026).
 
+I **tratti** della forma (§2) si disegnano due volte apposta: il motore li
+riconosce perché i loro lati coincidono, entro 1 m, con altri lati della
+forma percorsi in senso contrario. Andando verso un punto di un tratto le
+strade già percorse non costano di più, così il ritorno passa dalla stessa
+strada dell'andata; la punta di ogni linea è un angolo, quindi la potatura
+non la toglie (ADR-0039).
+
 Raggio delle zone e fascia sono frazioni del perimetro della forma: crescono
-con la distanza richiesta.
+con la distanza richiesta. Per una forma con tratti valgono la metà
+(`STROKE_DETAIL`): a 15 km un occhio o una finestra sono larghi quanto il 2%
+del percorso, e con zone e fascia così larghe il percorso passa accanto al
+dettaglio senza disegnarlo (ADR-0039).
 
 Valori, cache e misure: `MAPS.md`.
 
@@ -255,7 +300,8 @@ pezzi (ADR-0023, ADR-0025):
   del cuore; il cerchio non ne ha) devono avere il percorso vicino.
 
 Somiglianza = media armonica di copertura e precisione (`fit`), meno 0,10
-per ogni punta mancata. Hausdorff e Fréchet discreta sono state provate e
+per ogni punta mancata. Per una forma con tratti la distanza è l'1% del
+perimetro invece del 2%, come zone e fascia (§4, ADR-0039). Hausdorff e Fréchet discreta sono state provate e
 scartate: dominate dal punto peggiore, andavano contro il giudizio a occhio.
 
 ## 6. Validazione
@@ -275,6 +321,10 @@ con misura e limite (`validation.py`, ADR-0026):
   60 m lungo il percorso, sopra il 10% (le punte della forma escluse);
 - percorribilità: metri su scale, strade principali (`trunk`, `primary`) e
   in galleria, appena ci sono.
+
+Lungo i **tratti** della forma (§2), entro il 2% del perimetro, la strada
+ripercorsa è voluta: non conta né nella ripercorrenza esatta né in quella
+visiva (ADR-0039).
 
 La CLI stampa sempre tutte le misure, anche sotto soglia. Il giudizio finale
 resta visivo: vedi `TESTING.md` per come si tiene insieme la parte

@@ -10,6 +10,7 @@ from dataclasses import asdict
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+from route_engine.directions import GROUP_M, Turn
 from route_engine.models import (
     MAX_DISTANCE_M,
     MIN_DISTANCE_M,
@@ -42,6 +43,25 @@ class RouteRequestBody(BaseModel):
     )
 
 
+class DirectionBody(BaseModel):
+    """What to do at one junction: Direction in packages/shared-types
+    (route_engine/directions.py, ADR-0045)."""
+
+    node: int = Field(description="OpenStreetMap id of the junction's node.")
+    point: tuple[float, float] = Field(description="The junction as [lat, lon].")
+    distance_m: float = Field(description="Along the route from its start.")
+    turn: Turn
+    angle_deg: float = Field(description="The turn, positive to the right.")
+    street: str | None = Field(
+        description="Name or ref of the road entered; null when OSM has neither."
+    )
+    road_type: str | None = Field(description='OSM highway, like "footway".')
+    branches: int = Field(description="Roads that meet at the junction.")
+    joined: bool = Field(
+        description=f"Less than {GROUP_M:g} m after the direction before: read with it."
+    )
+
+
 class RouteResultBody(BaseModel):
     """What the app gets back: RouteResult in packages/shared-types."""
 
@@ -52,6 +72,11 @@ class RouteResultBody(BaseModel):
     similarity: float = Field(description="How much the route looks like the shape.")
     shape: str
     warnings: list[str]
+    # Missing in a GPX request from an older app: nothing to check there.
+    directions: list[DirectionBody] = Field(
+        default_factory=list,
+        description="Turn by turn, the start first; empty without a search.",
+    )
 
     @classmethod
     def from_result(cls, result: RouteResult) -> RouteResultBody:

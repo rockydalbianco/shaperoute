@@ -63,6 +63,25 @@ richiesta risponde subito e il percorso si chiede dopo.
 - Un `job_id` sconosciuto (annullato, finito da più di 10 minuti, o API
   riavviata) risponde `404 http_error`.
 
+Il `RouteResult` di una richiesta in due tempi porta anche le
+**indicazioni di svolta** (`directions`, TASK-048, ADR-0045 e ADR-0047): la
+prima è la partenza (`"turn": "depart"`, la via da cui si parte), poi una
+per ogni incrocio dove si gira, si cambia strada o si sceglie a un bivio.
+
+```json
+{"node": 2, "point": [46.0671, 11.1344], "distance_m": 1003.6, "turn": "left",
+ "angle_deg": -90.0, "street": "Via Manci", "road_type": "residential",
+ "branches": 4, "joined": false}
+```
+
+`turn` è uno di `depart`, `left`, `right`, `sharp-left`, `sharp-right`,
+`straight`, `u-turn`. `street` è il nome della via in cui si entra, o il
+suo `ref`, o `null` se OSM non ha né l'uno né l'altro: allora dice
+qualcosa solo `road_type`. `joined` è vero quando l'indicazione arriva
+meno di 15 m dopo la precedente, da leggere insieme («sinistra, poi
+destra»): nessuna si toglie. Le calcola il motore sul grafo su cui ha
+tracciato il percorso, in circa 0,1 s.
+
 Le richieste vivono nella memoria dell'API: un riavvio le perde. Lavorano
 due alla volta, così un 15 km annullato non ferma la richiesta dopo; le due
 però si dividono il processore, quindi la seconda va più piano finché la
@@ -121,9 +140,13 @@ Risponde `200` con un `RouteResult`:
   "distance_m": 5230.4,
   "similarity": 0.91,
   "shape": "heart",
-  "warnings": ["start moved 250 m south of the requested point, …"]
+  "warnings": ["start moved 250 m south of the requested point, …"],
+  "directions": []
 }
 ```
+
+Qui `directions` resta vuoto: le indicazioni arrivano solo con le
+richieste in due tempi (sopra). Nel `GpxRequest` si può omettere.
 
 La richiesta è sincrona: la risposta arriva quando il percorso è pronto
 (tempi sotto). Resta per `/docs`, `curl` e le misure; l'app usa

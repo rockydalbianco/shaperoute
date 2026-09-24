@@ -4,6 +4,7 @@ import { test } from "node:test";
 import apiErrorCodes from "../fixtures/api-error-codes.json" with { type: "json" };
 import apiError from "../fixtures/api-error.json" with { type: "json" };
 import contract from "../fixtures/contract.json" with { type: "json" };
+import directions from "../fixtures/directions.json" with { type: "json" };
 import gpxRequest from "../fixtures/gpx-request.json" with { type: "json" };
 import jobDone from "../fixtures/route-job-done.json" with { type: "json" };
 import jobFailed from "../fixtures/route-job-failed.json" with { type: "json" };
@@ -18,12 +19,15 @@ import shapeReading from "../fixtures/shape-reading.json" with { type: "json" };
 import {
   ACTIVITIES,
   API_ERROR_CODES,
+  GROUP_M,
   JOB_STATUSES,
   MAX_DISTANCE_M,
   MAX_SHAPE_TEXT_LENGTH,
   MIN_DISTANCE_M,
   SHAPES,
+  TURNS,
   type ApiError,
+  type Direction,
   type GpxRequest,
   type RouteJob,
   type RouteRequest,
@@ -37,6 +41,8 @@ import {
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 const requestFields: Same<keyof typeof request, keyof RouteRequest> = true;
 const resultFields: Same<keyof typeof result, keyof RouteResult> = true;
+const directionFields: Same<keyof (typeof result.directions)[number], keyof Direction> =
+  true;
 const errorFields: Same<keyof typeof apiError, keyof ApiError> = true;
 const errorDetailFields: Same<keyof typeof apiError.error, keyof ApiError["error"]> =
   true;
@@ -65,7 +71,7 @@ const isShape = (value: string): boolean =>
 test("the fixtures have the fields of the types", () => {
   assert.ok(requestFields && resultFields && errorFields && errorDetailFields);
   assert.ok(jobFields && jobResultFields && jobErrorFields && gpxFields);
-  assert.ok(shapeReadingFields);
+  assert.ok(shapeReadingFields && directionFields);
 });
 
 test("a shape reading names a shape of the catalogue, or none", () => {
@@ -121,4 +127,21 @@ test("the result fixture is a closed route of [lat, lon] points", () => {
   assert.deepEqual(result.points.at(0), result.points.at(-1));
   assert.ok(isShape(result.shape));
   assert.ok(0 <= result.similarity && result.similarity <= 1);
+});
+
+test("directions start with the departure and use the engine's turns", () => {
+  assert.deepEqual([...TURNS], directions.turns);
+  assert.equal(GROUP_M, directions.group_m);
+  const [start, ...rest] = result.directions;
+  assert.equal(start.turn, "depart");
+  assert.equal(start.distance_m, 0);
+  assert.deepEqual(start.point, result.points[0]);
+  let before = start.distance_m;
+  for (const direction of rest) {
+    assert.ok((TURNS as readonly string[]).includes(direction.turn));
+    assert.notEqual(direction.turn, "depart");
+    assert.ok(direction.distance_m >= before);
+    assert.equal(direction.joined, direction.distance_m - before < GROUP_M);
+    before = direction.distance_m;
+  }
 });

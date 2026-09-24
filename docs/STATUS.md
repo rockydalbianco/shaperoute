@@ -34,8 +34,7 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-- **TASK-039** — Luna, gatto e pesce nel catalogo: fatto e verificato;
-  manca la prova sull'iPhone («luna», «gatto», «pesce» a Trento).
+Niente.
 
 ## Completato
 
@@ -53,7 +52,8 @@ non fa merge, e ogni task parte dal branch del precedente.
   TASK-037: tratti interni ripassati nei contorni, con tolleranze dimezzate
   per le forme che li hanno (ADR-0039); a 15 km 4 casi su 12 migliorano,
   uno peggiora; gatto e pesce `sì` a Trento e Milano, Levico `no`.
-  TASK-039: luna, gatto e pesce nel catalogo, scelti dall'utente.
+  TASK-039: luna, gatto e pesce nel catalogo, scelti dall'utente; provati
+  sull'iPhone.
 - **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in

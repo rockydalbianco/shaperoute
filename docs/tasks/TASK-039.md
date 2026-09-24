@@ -1,6 +1,6 @@
 # TASK-039 — Luna, gatto e pesce nel catalogo
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 3 · **Branch**: `feat/TASK-039-catalog-moon-cat-fish` (parte da
 `main`, che contiene TASK-037)
 
@@ -61,8 +61,9 @@ sulle strade di Trento o di Levico.
       15 km dà gli stessi punti dei campioni giudicati
       (`TASK-036_moon_10km_levico_v1.gpx`, `TASK-037_cat_15km_trento_v1.gpx`,
       `TASK-037_fish_15km_trento_v1.gpx`), in 6, 9 e 22 s.
-- [ ] Sull'iPhone «luna», «gatto» e «pesce» disegnano il percorso.
-- [ ] I job della CI sono verdi sulla PR.
+- [x] Sull'iPhone «luna», «gatto» e «pesce» disegnano il percorso (prova
+      dell'utente, 2026-09-24).
+- [x] I job della CI sono verdi sulla PR (#43).
 - [x] `UI.md`, `ROUTE_ENGINE.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
 
 ## File toccati
@@ -91,4 +92,7 @@ docs/tasks/TASK-039.md
 
 ## Esito
 
-*(da compilare a fine task)*
+Il catalogo ha sette forme: luna, gatto e pesce si scrivono nell'app e
+disegnano il percorso, provato dall'utente sull'iPhone. Gatto e pesce, con
+gli occhi, non sono disponibili a Levico 15 km: resta a TASK-038. Differenze
+dal piano: nessuna.

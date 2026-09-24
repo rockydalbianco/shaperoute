@@ -66,6 +66,14 @@ def test_the_request_asks_for_a_fixed_answer_among_the_shapes() -> None:
     assert body["format"]["required"] == ["picture", "shape"]
 
 
+def test_thinking_is_left_to_ollama_unless_set() -> None:
+    post = FakePost(reply('{"picture": "", "shape": "star"}'))
+    OllamaModel(post=post).choose("stella cometa", SHAPES)
+    OllamaModel(post=post, think=False).choose("stella cometa", SHAPES)
+    assert "think" not in post.calls[0][1]
+    assert post.calls[1][1]["think"] is False
+
+
 def test_none_becomes_no_shape() -> None:
     choice = parse_reply(reply('{"picture": "a dog", "shape": "none"}'))
     assert choice == Choice(None, "a dog")

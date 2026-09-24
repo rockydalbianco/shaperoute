@@ -60,9 +60,12 @@ class OllamaModel:
     url: str = DEFAULT_URL
     timeout_s: float = TIMEOUT_S
     post: Post = field(default=post_json, repr=False)
+    # False for a model that thinks before answering (qwen3): on a laptop
+    # the thinking takes longer than the answer. None: Ollama's default.
+    think: bool | None = None
 
     def request_body(self, text: str, shapes: Sequence[str]) -> dict[str, Any]:
-        return {
+        body: dict[str, Any] = {
             "model": self.model,
             "messages": [
                 {"role": "system", "content": system_prompt(shapes)},
@@ -74,6 +77,9 @@ class OllamaModel:
             # Temperature 0 and a fixed seed: the same words, the same answer.
             "options": {"temperature": 0, "seed": 0, "num_predict": MAX_ANSWER_TOKENS},
         }
+        if self.think is not None:
+            body["think"] = self.think
+        return body
 
     def choose(self, text: str, shapes: Sequence[str]) -> Choice:
         reply = self.post(

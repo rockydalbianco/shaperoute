@@ -42,6 +42,18 @@ Prese dall'agente il 2026-09-24, su delega dell'utente.
   nuovi giudicati dall'utente**: una misura diversa dentro la ricerca cambia
   tutti i percorsi.
 
+## Criteri di accettazione
+
+- [x] I 72 casi giudicati si rigenerano con la stessa somiglianza del LOG.
+- [x] Ogni misura provata è confrontata con i giudizi dell'utente (tabella
+      sotto).
+- [x] La decisione è in una ADR (ADR-0037); `ROADMAP.md` e `STATUS.md`
+      aggiornati; la spiegazione sbagliata di ADR-0035 è segnata.
+- [ ] I job della CI sono verdi sulla PR.
+
+Nessun codice del prodotto cambia: gli script di analisi stanno fuori dal
+repository.
+
 ## Analisi (2026-09-24)
 
 Per ogni misura: la media per giudizio e la quota di coppie con giudizio

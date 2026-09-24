@@ -69,6 +69,13 @@ SCALE_RANGE = (0.4, 1.1)
 START_OFFSET_M = 500.0
 START_RINGS_M = (250.0, 500.0)
 START_BEARINGS = 8
+# When no route there is good, or the shape cannot be drawn there, a second
+# search looks for a place up to FAR_OFFSET_M away, on these rings, with its
+# own budget of traces (TASK-038, ADR-0040).
+FAR_OFFSET_M = 2000.0
+FAR_RINGS_M = (1000.0, 1500.0, 2000.0)
+FAR_BEARINGS = 12
+FAR_TRACES = 20
 # Placements traced after the road count (while the budget lasts), and
 # rescales for each of them. Tracing more placements once each, instead,
 # scored a bit worse on the 14 drawable cases (TASK-016, docs/MAPS.md).
@@ -106,15 +113,21 @@ def reach(shape: Sequence[Point], phases: Sequence[float] = PHASES) -> float:
     return farthest
 
 
-def zone_area(shape: Sequence[Point], start: LatLon, distance_m: float) -> BBox:
-    """Square around `start` holding the shape at any rotation, phase and scale.
+def zone_area(
+    shape: Sequence[Point],
+    start: LatLon,
+    distance_m: float,
+    offset_m: float = START_OFFSET_M,
+) -> BBox:
+    """Square around `start` holding the shape at any rotation, phase and
+    scale, from any start up to `offset_m` away.
 
     One graph of this area serves every attempt of the search (ADR-0023).
     """
     largest_scale = initial_scale(shape, distance_m) * SCALE_RANGE[1]
     return area_around(
         [start],
-        margin_m=reach(shape) * largest_scale + START_OFFSET_M + AREA_MARGIN_M,
+        margin_m=reach(shape) * largest_scale + offset_m + AREA_MARGIN_M,
     )
 
 
@@ -278,10 +291,21 @@ def _tracer(graph: Graph, reuse_penalty: float) -> Tracer:
 
 def candidate_starts(start: LatLon) -> list[tuple[LatLon, float]]:
     """The requested start, then points on rings around it, with their offset."""
-    starts = [(start, 0.0)]
-    for radius in START_RINGS_M:
-        for k in range(START_BEARINGS):
-            bearing = 2 * math.pi * k / START_BEARINGS
+    return [(start, 0.0), *_rings(start, START_RINGS_M, START_BEARINGS)]
+
+
+def far_starts(start: LatLon) -> list[tuple[LatLon, float]]:
+    """Where the second search starts the shape: farther rings (ADR-0040)."""
+    return _rings(start, FAR_RINGS_M, FAR_BEARINGS)
+
+
+def _rings(
+    start: LatLon, radii: Sequence[float], bearings: int
+) -> list[tuple[LatLon, float]]:
+    starts = []
+    for radius in radii:
+        for k in range(bearings):
+            bearing = 2 * math.pi * k / bearings
             x, y = radius * math.sin(bearing), radius * math.cos(bearing)
             starts.append((local_to_latlon(start, x, y), radius))
     return starts
@@ -299,10 +323,12 @@ def search(
     reuse_penalty: float = EDGE_REUSE_PENALTY,
     move_start: bool = True,
     max_tilt_deg: float = FREE_TILT_DEG,
+    starts: Sequence[tuple[LatLon, float]] | None = None,
 ) -> Search:
     """Best route for `shape` near `distance_m` on `graph`, starting at
-    `start` or, with `move_start`, up to START_OFFSET_M away from it. The
-    shape turns at most `max_tilt_deg` either way from how it is drawn."""
+    `start` or, with `move_start`, up to START_OFFSET_M away from it; or
+    from the given `starts`, each with its distance from `start`. The shape
+    turns at most `max_tilt_deg` either way from how it is drawn."""
     similarity = similarity or SIMILARITIES[SIMILARITY]
 
     def allowed(rotation_deg: float) -> bool:
@@ -312,7 +338,8 @@ def search(
     mask = RoadMask(graph, start)
     base_scale = initial_scale(shape, distance_m)
     low, high = (base_scale * f for f in SCALE_RANGE)
-    starts = candidate_starts(start) if move_start else [(start, 0.0)]
+    if starts is None:
+        starts = candidate_starts(start) if move_start else [(start, 0.0)]
     attempts: list[Attempt] = []
     # The road count works in metres around `start`, without projecting.
     phase_xy = {phase: np.array(start_at_phase(shape, phase)) for phase in PHASES}
@@ -585,6 +612,7 @@ class Plan:
     result: RouteResult
     search: Search | None  # None when the shape was not optimized
     checks: dict[str, float] = field(default_factory=dict)  # validation.measure
+    far: Search | None = None  # the second search, when there was one
 
 
 def plan_route(
@@ -634,6 +662,7 @@ def plan_shape(
     """
     similarity = SIMILARITIES[SIMILARITY]
     graph = source.load(required_area(shape, start, distance_m, optimize))
+    far: Search | None = None
     if optimize:
         found = search(
             graph,
@@ -643,17 +672,37 @@ def plan_shape(
             reuse_penalty=reuse_penalty,
             max_tilt_deg=max_tilt_deg,
         )
+        if not found.converged:
+            # Not good here: look for a place farther away (ADR-0040).
+            far_graph = source.load(zone_area(shape, start, distance_m, FAR_OFFSET_M))
+            far = search(
+                far_graph,
+                shape,
+                start,
+                distance_m,
+                max_traces=FAR_TRACES,
+                reuse_penalty=reuse_penalty,
+                max_tilt_deg=max_tilt_deg,
+                starts=far_starts(start),
+            )
+            if far.converged or (
+                not _drawable(found.best, distance_m)
+                and _drawable(far.best, distance_m)
+            ):
+                found, graph = far, far_graph
         best = found.best
-        what = f"a {distance_m / 1000:g} km {name}"
+        what = f"a {distance_m / 1000:g} km {name} cannot be drawn here"
+        if far is not None:  # looked farther too
+            what += f", nor within {FAR_OFFSET_M / 1000:g} km"
         if best.similarity < MIN_SIMILARITY:
             raise ShapeNotDrawableError(
-                f"{what} cannot be drawn here: the best route scores "
+                f"{what}: the best route scores "
                 f"{best.similarity:.2f} for shape, {MIN_SIMILARITY:.2f} needed"
             )
         gap = best.route.distance_m - distance_m
         if abs(gap) > DISTANCE_FALLBACK_M:
             raise ShapeNotDrawableError(
-                f"{what} cannot be drawn here: the best shape is "
+                f"{what}: the best shape is "
                 f"{gap / 1000:+.1f} km from the target, at most "
                 f"{DISTANCE_FALLBACK_M / 1000:g} km allowed"
             )
@@ -661,10 +710,15 @@ def plan_shape(
         placed, chosen_start = best.shape, best.placement.start
         if best.offset_m > 0:
             direction = _compass(start, best.placement.start)
+            moved = (
+                f"{best.offset_m:.0f} m"
+                if best.offset_m < 1000
+                else f"{best.offset_m / 1000:g} km"
+            )
             warnings.insert(
                 0,
-                f"start moved {best.offset_m:.0f} m {direction} of the requested "
-                "point, where the shape closes on the roads",
+                f"start moved {moved} {direction} of the requested point, "
+                "where the shape closes on the roads",
             )
     else:
         found = None
@@ -678,7 +732,7 @@ def plan_shape(
         (graph.nodes[first]["y"], graph.nodes[first]["x"]),
         start,
         chosen_start,
-        START_OFFSET_M,
+        FAR_OFFSET_M if far is not None and found is far else START_OFFSET_M,
     )
     outline = latlon_to_local_array(placed[0], np.array(placed))
     corners = [placed[i] for i in corner_indices(outline[:-1])]
@@ -701,4 +755,12 @@ def plan_shape(
         shape=name,
         warnings=warnings,
     )
-    return Plan(result, found, measures)
+    return Plan(result, found, measures, far)
+
+
+def _drawable(best: Attempt, distance_m: float) -> bool:
+    """Whether plan_shape would return this attempt rather than refuse it."""
+    return (
+        best.similarity >= MIN_SIMILARITY
+        and abs(best.route.distance_m - distance_m) <= DISTANCE_FALLBACK_M
+    )

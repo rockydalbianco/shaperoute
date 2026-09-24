@@ -146,8 +146,11 @@ per riga, e il pulsante «Export GPX» (sotto, «Export del GPX»). Gli
 avvisi dicono per esempio che la partenza è stata spostata, o che la forma
 somiglia meno di quanto dovrebbe. La somiglianza non si mostra come
 numero: la forma la giudica l'occhio (`PRODUCT.md`), e sotto 0,90 il
-motore aggiunge già un avviso. Il segnaposto resta sulla partenza chiesta;
-se il motore l'ha spostata (fino a 500 m), lo dice l'avviso.
+motore aggiunge già un avviso. Il segnaposto resta sulla partenza chiesta.
+Se il percorso comincia a più di 50 m da lì, perché il motore ha spostato la
+forma dove ci sta (fino a 2 km, ADR-0040), un secondo segnaposto verde con
+l'etichetta «Start here» segna dove andare, e la mappa inquadra tutti e due;
+l'avviso dice di quanto e in che direzione.
 
 ## Export del GPX
 

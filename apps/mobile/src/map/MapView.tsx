@@ -42,13 +42,13 @@ export function MapView({ start, route, onError, style }: Props) {
       return;
     }
     if (route) {
-      webView.current?.injectJavaScript(pageScript(showRoute(route)));
+      webView.current?.injectJavaScript(pageScript(showRoute(route, start)));
       routeShown.current = true;
     } else if (routeShown.current) {
       webView.current?.injectJavaScript(pageScript(clearRoute()));
       routeShown.current = false;
     }
-  }, [ready, route]);
+  }, [ready, route, start]);
 
   return (
     <WebView

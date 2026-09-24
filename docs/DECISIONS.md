@@ -416,7 +416,8 @@ sviluppo: ADR-0011 resta aperta per l'app. Se un giorno le tile da
 `python -m http.server` o un altro provider: si decide allora.
 
 ## ADR-0025 — Regole dell'ottimizzatore dopo i giudizi a occhio
-**Stato**: Attiva · 2026-09-23
+**Stato**: Attiva · 2026-09-23 · la partenza si sposta anche fino a 2 km con
+ADR-0040
 
 I campioni di TASK-015 giudicati a occhio hanno mostrato quattro cose:
 - la copertura non vede i pezzi tagliati;
@@ -1051,3 +1052,43 @@ lunghe. Gatto e pesce con i tratti hanno ora un `sì` a Trento e a Milano:
 possono essere proposti per il catalogo (ADR-0036), in un task a parte.
 L'albero con fusto e sei rami è troppo fitto per 15 km. Il 50% di
 `STROKE_DETAIL` è un primo valore, da ritarare con altri giudizi.
+
+## ADR-0040 — Trova dove la forma ci sta: una seconda ricerca fino a 2 km
+**Stato**: Attiva · 2026-09-24 · proposto dall'agente, approvato
+dall'utente; confermato dal suo giudizio sui campioni
+
+Chi fa Strava art sceglie il posto dove la forma ci sta. Il motore invece
+cercava solo entro 500 m dalla partenza (ADR-0025): a Levico, a 15 km, gatto
+e pesce non erano disponibili e la casa non si riconosceva (ADR-0039).
+
+**Decisione**:
+- **Due tempi.** Prima la ricerca di sempre. Solo se non trova un percorso
+  buono (distanza ±10%, somiglianza ≥ 0,90), o la forma non è disponibile,
+  una seconda ricerca parte da 1, 1,5 e 2 km in 12 direzioni, con altri 20
+  tracciamenti (`FAR_RINGS_M`, `FAR_BEARINGS`, `FAR_TRACES`).
+- **Il percorso lontano vince solo se è buono**, o se quello vicino non
+  c'era. Lo spostamento costa come prima: fra due posti buoni, il più
+  vicino.
+- **Zona più grande solo nel secondo tempo**: il grafo copre la forma da
+  una partenza a 2 km; dove la cache non basta si scarica.
+- **Contratto invariato**: il percorso comincia da `points[0]`, e l'avviso
+  dice quanto e dove si è spostato. Il rifiuto dice «… nor within 2 km».
+- **L'app** mette un segnaposto verde «Start here» sul primo punto del
+  percorso quando comincia a più di 50 m dalla partenza chiesta, e inquadra
+  tutti e due i segnaposti.
+
+**Motivo**: a Levico 15 km gatto e pesce con gli occhi trovano posto a 1 km
+(est e nord-ovest) e l'utente li giudica `sì`: prima non erano disponibili.
+Anche il cuore di Trento 15 km e la stella di Levico 10 km, `sì` ma non
+buoni per il motore (0,87; −11% dal target), si spostano di 1 km, e restano
+`sì` (`samples/LOG.md`, TASK-038). Dove la ricerca vicina è buona (cerchio,
+cavallo, albero di Levico) niente cambia; la casa di Levico resta dov'era,
+perché lontano il motore trova 0,86, non abbastanza.
+
+**Conseguenza**: una forma che non va vicino costa un secondo tempo:
+12–14 s per gatto e pesce a Levico, fino a 52 s per il cuore di Trento da
+15 km, che prima consuma tutta la ricerca vicina (`API.md`, «Tempi»). Il
+primo secondo tempo in una zona non in cache la scarica: 42 s per quella di
+Levico. Il posto si cerca solo quando la somiglianza del motore dice che la
+forma non va: dove l'occhio non è d'accordo (l'albero di Levico) non si
+sposta.

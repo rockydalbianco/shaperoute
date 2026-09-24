@@ -170,7 +170,9 @@ class RouteJobs:
 class _Reporting:
     """The job's graph source: says when a download starts and ends, and
     stops the job if it was cancelled meanwhile. The engine loads its graph
-    once, before computing, so a cancelled job spares the computing."""
+    before computing, so a cancelled job spares the computing; when the
+    shape does not fit near the start it loads a larger one and computes
+    again (ADR-0040), and a download then shows between two computings."""
 
     def __init__(
         self,

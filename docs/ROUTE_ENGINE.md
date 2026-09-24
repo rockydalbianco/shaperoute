@@ -252,6 +252,7 @@ richiesto, se da lì la forma si chiude meglio (ADR-0025).
 | fase di partenza | 0; 0,25; 0,5; 0,75 | dove la partenza entra nella forma |
 | scala | 0,4–1,1 × la stima di §3 | le strade allungano il percorso fino a 2,5× |
 | partenza | il punto richiesto, o a 250 / 500 m in 8 direzioni | spostarla deve valere almeno il 5% del contorno |
+| partenza lontana | a 1 / 1,5 / 2 km in 12 direzioni | solo nel secondo tempo, sotto |
 
 La rotazione conta molto dove la rete ha buchi (campi, fiumi, ferrovie); in
 una città fitta come Milano la forma va bene già dove cade. Ma l'occhio non
@@ -279,6 +280,25 @@ budget finisce prima, si restituisce il tentativo di costo minore entro
 **±2 km** dal target, con un warning che dice cosa manca. Se la somiglianza
 migliore è sotto **0,60**, o nessun tentativo sta entro ±2 km, nessun
 percorso: la forma lì non è disponibile (ADR-0025).
+
+### Trova dove la forma ci sta (TASK-038)
+
+Se la ricerca attorno alla partenza non trova un percorso buono (distanza
+±10% e somiglianza ≥ 0,90), c'è un **secondo tempo** (ADR-0040):
+
+1. si carica un grafo più grande, che copre la forma anche da una partenza
+   a 2 km (può voler dire scaricare una zona nuova);
+2. la stessa ricerca riparte dalle partenze lontane (1, 1,5 e 2 km in 12
+   direzioni), con altri 20 tracciamenti;
+3. il percorso lontano sostituisce quello vicino solo se è buono, o se
+   quello vicino non c'era. Spostarsi continua a costare come sopra, quindi
+   fra due posti buoni vince il più vicino.
+
+Dove la forma ci sta già il secondo tempo non parte: stessi percorsi e
+stessi tempi di prima. Se la forma non è disponibile né vicino né lontano,
+l'errore lo dice («… cannot be drawn here, nor within 2 km: …»). L'avviso
+sullo spostamento passa ai km sopra i 1000 m («start moved 1.5 km
+north-east of the requested point, …»).
 
 ### Funzione obiettivo
 

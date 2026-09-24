@@ -54,12 +54,24 @@ test("draws a route in MapLibre order, then clears it", async () => {
   await pagePosts('{"type":"ready"}');
   await rerender(<MapView start={TRENTO} route={route} onError={jest.fn()} />);
   expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain(
-    '{"type":"showRoute","coordinates":[[11.1214,46.0671],[11.2986,46.0122],[11.1214,46.0671]]}',
+    '{"type":"showRoute","coordinates":[[11.1214,46.0671],[11.2986,46.0122],[11.1214,46.0671]],"startHere":null}',
   );
 
   await rerender(<MapView start={TRENTO} route={null} onError={jest.fn()} />);
   expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain('{"type":"clearRoute"}');
   expect(injectJavaScript).toHaveBeenCalledTimes(3);
+});
+
+test("marks where a route begins when it is away from the start", async () => {
+  const route: LatLon[] = [LEVICO, TRENTO, LEVICO];
+  const { rerender } = await render(
+    <MapView start={TRENTO} route={null} onError={jest.fn()} />,
+  );
+  await pagePosts('{"type":"ready"}');
+  await rerender(<MapView start={TRENTO} route={route} onError={jest.fn()} />);
+  expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain(
+    '"startHere":[11.2986,46.0122]',
+  );
 });
 
 test("clears nothing that was never drawn", async () => {

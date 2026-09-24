@@ -216,6 +216,10 @@ chiude ADR-0010.
 | 2026-09-24 | TASK-037_fish_15km_milano_v1.gpx | milano | 0.99 | 15.2 / 15.0 km | sì | solo confronto; pesce con occhio (TASK-034_fish_15km_milano_v1.gpx, giudicato «sì»); 105 m scale; 327 m gallerie; 21 s |
 | 2026-09-24 | — (cat_15km_levico, TASK-037) | levico | — | — | — | nessun GPX: forma non disponibile, somiglianza massima 0,52 contro 0,60 (TASK-036_cat_15km_levico_v1.gpx, giudicato «no») |
 | 2026-09-24 | — (fish_15km_levico, TASK-037) | levico | — | — | — | nessun GPX: forma non disponibile, somiglianza massima 0,47 contro 0,60 (TASK-036_fish_15km_levico_v1.gpx, giudicato «no») |
+| 2026-09-24 | TASK-038_cat_15km_levico_v1.gpx | levico | 0.71 | 14.7 / 15.0 km | sì | gatto con occhi nel posto trovato: partenza spostata di 1 km a est (TASK-037: non disponibile; TASK-036_cat_15km_levico_v1.gpx, senza occhi, «no»); sotto 0,90 dopo la ricerca; 11% su strade già percorse; 816 m strade principali; 239 m gallerie; 12–14 s; giudizio: l'occhio vale più della metrica |
+| 2026-09-24 | TASK-038_fish_15km_levico_v1.gpx | levico | 0.78 | 15.6 / 15.0 km | sì | pesce con occhio nel posto trovato: partenza spostata di 1 km a nord-ovest (TASK-037: non disponibile; TASK-036_fish_15km_levico_v1.gpx, senza occhio, «no»); sotto 0,90 dopo la ricerca; 877 m strade principali; 98 m gallerie; 13–14 s con la zona in cache, 58 s scaricandola; giudizio: l'occhio vale più della metrica |
+| 2026-09-24 | TASK-038_heart_15km_trento_v1.gpx | trento | 0.90 | 14.5 / 15.0 km | sì | cuore nel posto trovato: partenza spostata di 1 km a nord-est (TASK-036_heart_15km_trento_v1.gpx, 0,87, «sì»); 1009 m scale; 242 m gallerie; 47–52 s |
+| 2026-09-24 | TASK-038_star_10km_levico_v1.gpx | levico | 0.94 | 10.5 / 10.0 km | sì | stella nel posto trovato: partenza spostata di 1 km a nord-est (TASK-036_star_10km_levico_v1.gpx, −11% dal target, «sì»); 549 m strade principali; 7–10 s |
 
 <!--
 Esempio di riga compilata:

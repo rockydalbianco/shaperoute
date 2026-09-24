@@ -17,9 +17,10 @@ from shaperoute_ai.prompt import NONE, answer_schema, system_prompt
 from shaperoute_ai.reading import Choice, ModelUnavailableError
 
 DEFAULT_URL = "http://127.0.0.1:11434"
-DEFAULT_MODEL = "qwen2.5:3b"
-# The first answer loads the model from disk: seconds on this laptop.
-TIMEOUT_S = 60.0
+# Chosen by measuring three open models on the word lists (docs/AI.md).
+DEFAULT_MODEL = "qwen3:4b"
+# The first answer loads the model from disk: up to 49 s on this laptop.
+TIMEOUT_S = 90.0
 # How long Ollama keeps the model in memory after an answer.
 KEEP_ALIVE = "15m"
 # The answer is a short JSON object; this only stops a runaway one.
@@ -40,7 +41,7 @@ def post_json(url: str, body: dict[str, Any], timeout_s: float) -> Any:
         with urllib.request.urlopen(request, timeout=timeout_s) as response:
             return json.load(response)
     except urllib.error.HTTPError as exc:
-        # e.g. 404 {"error": "model 'qwen2.5:3b' not found"}: not pulled yet.
+        # e.g. 404 {"error": "model 'qwen3:4b' not found"}: not pulled yet.
         detail = exc.read().decode("utf-8", "replace").strip()
         raise ModelUnavailableError(f"Ollama answered {exc.code}: {detail}") from exc
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
@@ -54,15 +55,16 @@ def post_json(url: str, body: dict[str, Any], timeout_s: float) -> Any:
 
 @dataclass
 class OllamaModel:
-    """A model pulled in Ollama, e.g. `ollama pull qwen2.5:3b`."""
+    """A model pulled in Ollama, e.g. `ollama pull qwen3:4b`."""
 
     model: str = DEFAULT_MODEL
     url: str = DEFAULT_URL
     timeout_s: float = TIMEOUT_S
     post: Post = field(default=post_json, repr=False)
-    # False for a model that thinks before answering (qwen3): on a laptop
-    # the thinking takes longer than the answer. None: Ollama's default.
-    think: bool | None = None
+    # No thinking before the answer: on this laptop qwen3 thinking gave no
+    # answer in 5 minutes. Models that cannot think accept False too.
+    # None leaves it to Ollama.
+    think: bool | None = False
 
     def request_body(self, text: str, shapes: Sequence[str]) -> dict[str, Any]:
         body: dict[str, Any] = {

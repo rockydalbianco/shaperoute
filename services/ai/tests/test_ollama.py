@@ -66,12 +66,12 @@ def test_the_request_asks_for_a_fixed_answer_among_the_shapes() -> None:
     assert body["format"]["required"] == ["picture", "shape"]
 
 
-def test_thinking_is_left_to_ollama_unless_set() -> None:
+def test_the_model_does_not_think_unless_told() -> None:
     post = FakePost(reply('{"picture": "", "shape": "star"}'))
     OllamaModel(post=post).choose("stella cometa", SHAPES)
-    OllamaModel(post=post, think=False).choose("stella cometa", SHAPES)
-    assert "think" not in post.calls[0][1]
-    assert post.calls[1][1]["think"] is False
+    OllamaModel(post=post, think=None).choose("stella cometa", SHAPES)
+    assert post.calls[0][1]["think"] is False
+    assert "think" not in post.calls[1][1]
 
 
 def test_none_becomes_no_shape() -> None:
@@ -145,7 +145,7 @@ def test_post_json_sends_and_reads_json(server: FakeOllama) -> None:
 
 
 def test_a_model_not_pulled_says_so(server: FakeOllama) -> None:
-    server.answer = (404, '{"error": "model \'qwen2.5:3b\' not found"}')
+    server.answer = (404, '{"error": "model \'qwen3:4b\' not found"}')
     with pytest.raises(ModelUnavailableError, match="404.*not found"):
         post_json(f"{url_of(server)}/api/chat", {}, 5.0)
 

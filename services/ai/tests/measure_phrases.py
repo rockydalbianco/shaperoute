@@ -4,9 +4,9 @@ Not a test: it needs Ollama running with the model pulled, and it takes
 minutes. One row per phrase, then the share of right answers and the times,
 so candidate models can be compared on the same list (docs/AI.md).
 
-    python tests/measure_phrases.py --model phi4-mini
-    python tests/measure_phrases.py --model qwen3:4b --no-think --only Ferrari
-    python tests/measure_phrases.py --model qwen3:4b --no-think --list holdout
+    python tests/measure_phrases.py
+    python tests/measure_phrases.py --model phi4-mini --only Ferrari
+    python tests/measure_phrases.py --model granite4:3b --list holdout
 
 The first call loads the model and is timed apart ("load"); every phrase is
 asked to the model directly, without the reader's cache.
@@ -37,7 +37,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--list", choices=LISTS, default="tuning")
     parser.add_argument("--only", help="substring of the phrase, e.g. Ferrari")
     parser.add_argument(
-        "--no-think", action="store_true", help="for models that think (qwen3)"
+        "--think", action="store_true", help="let a model like qwen3 think first"
     )
     args = parser.parse_args(argv)
 
@@ -48,7 +48,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         for item in data["phrases"]
         if args.only is None or args.only.casefold() in item["text"].casefold()
     ]
-    model = OllamaModel(args.model, args.url, think=False if args.no_think else None)
+    model = OllamaModel(args.model, args.url, think=args.think)
 
     started = time.perf_counter()
     model.choose("cerchio", shapes)

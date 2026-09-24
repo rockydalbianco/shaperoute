@@ -1,6 +1,6 @@
 # TASK-034 — Forme candidate
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 3 · **Branch**: `feat/TASK-034-candidate-shapes` (parte da
 `feat/TASK-033-shape-catalog`)
 
@@ -60,9 +60,10 @@ Prese dall'agente il 2026-09-24 notte, su delega dell'utente.
       `pytest -m "not network"` passano.
 - [x] 36 campioni in `samples/`, con somiglianza e distanza nel file del
       task.
-- [ ] Giudizio dell'utente in `samples/LOG.md`.
-- [ ] Le candidate promosse sono nel catalogo, con le loro parole e i test;
-      `UI.md`, `STATUS.md` aggiornati.
+- [x] Giudizio dell'utente in `samples/LOG.md`.
+- [x] Le candidate promosse sono nel catalogo: nessuna è promossa (punto D),
+      quindi catalogo, parole e `UI.md` non cambiano; `STATUS.md` e
+      `ROADMAP.md` aggiornati.
 - [ ] I job della CI sono verdi sulla PR.
 
 ## File toccati
@@ -105,4 +106,11 @@ Milano): ne parla TASK-035.
 
 ## Esito
 
-*(si compila dopo il giudizio dell'utente)*
+Giudicato dall'utente il 2026-09-24: «vanno bene solo quelle a Milano». Le
+sei candidate si riconoscono a Milano (`sì`) e non a Trento e Levico
+(`no`), dove la somiglianza calcolata le dava fra 0,83 e 0,97. Per il
+punto D nessuna entra nel catalogo: i contorni restano in
+`route_engine/shapes/outlines/`, pronti se il motore migliora. La
+prima impressione dell'agente (luna riconoscibile quasi ovunque) era più
+generosa dell'occhio dell'utente. I 36 giudizi diventano i dati di
+TASK-035.

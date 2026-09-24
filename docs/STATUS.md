@@ -31,10 +31,7 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-- **TASK-034** — Forme candidate, branch `feat/TASK-034-candidate-shapes`
-  (parte da quello di TASK-033). Sei contorni nuovi (luna, pesce, freccia,
-  albero, corona, gatto) e 36 campioni: manca il giudizio dell'utente
-  (`out/TASK-034-candidates.png`), poi le promosse entrano nel catalogo.
+Niente.
 
 ## Completato
 
@@ -43,7 +40,9 @@ non fa merge, e ogni task parte dal branch del precedente.
   quasi a Trento e sì a Levico e Milano; la casa no, anche con camino e
   porta. TASK-033: catalogo di quattro forme (cerchio, cuore, stella,
   cavallo) e riquadro della forma che legge la parola in italiano o in
-  inglese (ADR-0036); provato sull'iPhone.
+  inglese (ADR-0036); provato sull'iPhone. TASK-034: sei forme candidate
+  (luna, pesce, freccia, albero, corona, gatto) si riconoscono solo a
+  Milano, nessuna entra nel catalogo.
 - **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in

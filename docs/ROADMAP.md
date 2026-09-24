@@ -123,6 +123,14 @@ generosa dell'occhio sulle forme complesse: si rivede in TASK-035. Non
 blocca il catalogo, perché ci entrano solo forme già giudicate a occhio
 (ADR-0036; deciso dall'agente su delega dell'utente, 2026-09-24).
 
+**TASK-034 (2026-09-24)**: sei forme nuove disegnate dall'agente (luna,
+pesce, freccia, albero, corona, testa di gatto) si riconoscono a Milano e
+non a Trento e Levico, secondo l'utente. Oltre a stella e cavallo, sulle
+strade di Trento e Levico non passa nessuna delle forme provate: allargare
+il catalogo chiede un motore che segua meglio il contorno dove le strade
+sono rade, prima di altri disegni. La somiglianza le dava 0,83–0,97:
+TASK-035 parte da questi giudizi.
+
 **Richiesta dell'utente (2026-09-24)**: la casa con le finestre. Le
 finestre stanno dentro il contorno: servono forme fatte di più pezzi e
 tratti percorsi due volte. Task da definire, dopo TASK-035.

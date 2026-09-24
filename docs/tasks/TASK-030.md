@@ -1,6 +1,6 @@
 # TASK-030 — L'AI riconosce la parola scritta
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 3 · **Branch**: `feat/TASK-030-ai-reads-the-word` (parte da
 `main`, che contiene TASK-038)
 
@@ -111,6 +111,12 @@ dall'agente, li ha approvati lo stesso giorno. Vanno in ADR-0012.
       l'utente ha scelto qwen3:4b guardando la lista di controllo (94%),
       e lo registra ADR-0012.
 - [ ] Sull'iPhone «stemma della Ferrari» dà «→ horse» e il percorso.
+      **Non raggiunto** (prova dell'utente, 2026-09-24): sull'iPhone le
+      parole più semplici funzionano, «stemma della ferrari» e «spirit» no.
+      Il modello non conosce bene lo stemma né il cavallo del film; frasi
+      più esplicite («logo ferrari», «cavallino rampante», «Spirit
+      cavallo») sì. L'utente ha scelto di chiudere il task così e di
+      documentare il limite (`AI.md`, «Limiti»).
 - [x] I job della CI sono verdi sulla PR (#45), compreso il nuovo `ai`.
 - [x] ADR-0012 attiva; documenti del punto 7 aggiornati.
 
@@ -156,4 +162,14 @@ docs/tasks/TASK-030.md
 
 ## Esito
 
-*(si compila a fine task)*
+Le parole che la tabella non conosce le legge qwen3:4b in Ollama sul PC, e
+sceglie una forma del catalogo o nessuna: provato dall'utente sull'iPhone,
+funziona con le parole più semplici. Sulle liste: 87% (messa a punto) e 94%
+(controllo), circa 5 s a parola, fino a 49 s la prima dopo una pausa.
+Emerso: sulle parole che il modello conosce poco («stemma della ferrari»,
+«spirit») la risposta non c'è o cambia da una richiesta all'altra, e la
+cache dell'API tiene la prima. Differenze dal piano: soglia G non
+raggiunta sulla lista di prova, accettata dall'utente (ADR-0012); una
+seconda lista, di controllo, aggiunta durante la misura. Rimandati:
+precaricare il modello all'avvio dell'API (annotato in `STATUS.md`); cosa
+proporre quando non c'è una forma, TASK-031.

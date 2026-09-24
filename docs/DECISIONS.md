@@ -159,7 +159,10 @@ Il modello caricato occupa 3,2 GB di RAM per 15 minuti dopo l'ultima
 parola, e la prima parola dopo una pausa aspetta il caricamento, fino a
 49 s. Quando l'API lascerà il PC (ADR-0013) servirà un altro provider:
 un'altra classe dietro `ShapeModel`. Una forma nuova nel catalogo vuole la
-sua riga in `OUTLINES` e le sue parole nelle due liste.
+sua riga in `OUTLINES` e le sue parole nelle due liste. Sull'iPhone le
+parole semplici vanno, quelle che il modello conosce poco no («stemma della
+ferrari», «spirit»): l'utente ha scelto di tenere il limite, documentato in
+`AI.md`, «Limiti», invece di cercare un modello più grande.
 
 ## ADR-0013 — Database, hosting e autenticazione
 **Stato**: Aperta · **Da decidere entro**: fase 4

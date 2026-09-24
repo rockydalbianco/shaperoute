@@ -1447,3 +1447,28 @@ tocca motore, API e `shared-types` insieme, oggi di un altro task.
 di `warnings.test.ts` li copiano parola per parola: chi cambia una frase del
 motore deve cambiarla anche lì, o l'app torna a mostrarla grezza. Quando il
 contratto avrà i codici, questo file si toglie.
+
+## ADR-0050 — Barra di caricamento: una stima per fasi, mai oltre la fase
+**Stato**: Attiva · 2026-09-24 · la barra chiesta dall'utente; la stima
+decisa dall'agente su delega dell'utente (TASK-055)
+
+L'API dice solo la fase della richiesta (in coda, download della zona,
+calcolo, ADR-0032), non a che punto è. Una barra che si riempie a tempo
+fisso mentirebbe: un 21 km in una zona nuova dura minuti, un 5 km in cache
+pochi secondi.
+
+**Decisione**: ogni fase ha un tratto della barra (in coda 0–8%, download
+8–45%, calcolo 45–95%). Dentro la fase la barra avanza come
+`1 − e^(−2t/T)`, con `T` il tempo che la fase di solito prende (in coda
+4 s, download 90 s, calcolo 2,5 s a km e non meno di 10 s, dalle misure di
+`API.md`): al tempo atteso è all'86% del tratto, poi rallenta senza mai
+superarlo. Non torna indietro, e il 100% lo dà solo il percorso arrivato.
+Gialla, come il percorso che prende forma (ADR-0046). Nessuna libreria.
+
+**Scartate**: una barra indeterminata che va e viene (non dice niente in
+più della rotellina); una percentuale vera dal motore (tocca motore, API e
+contratto).
+
+**Conseguenza**: la barra dice la verità sulle fasi e più o meno sul tempo:
+un calcolo più lento del solito resta fermo poco sotto il 95%. Se le misure
+dei tempi cambiano, vanno cambiate le costanti di `progress.ts`.

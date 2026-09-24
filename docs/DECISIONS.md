@@ -1364,3 +1364,33 @@ con 25 m a Milano le catene arrivano a 7, troppe per dirle insieme.
 **Conseguenza**: il contratto cresce di un campo che l'app di oggi
 ignora. La schermata e la voce sono TASK-049; i nomi dei marciapiedi,
 TASK-053.
+
+## ADR-0049 — Il modello dell'AI si carica all'avvio dell'API, in background
+**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
+(TASK-052)
+
+La prima parola letta dall'AI paga il caricamento del modello dal disco:
+40–49 s su questo PC, a ridosso dei 60 s dopo i quali iOS chiude una
+richiesta (`AI.md`).
+
+**Decisione**:
+- **All'avvio l'API chiede a Ollama di caricare il modello**
+  (`OllamaModel.preload`: `/api/generate` senza prompt), in un thread in
+  background, con una riga di log. L'API risponde subito.
+- **Non fallisce mai**: Ollama spento, modello mancante o memoria che non
+  basta finiscono nel log («AI model not preloaded»); la prima parola si
+  comporta come prima (`ShapeReader.warm_up`).
+- **Stessa durata di prima** (`KEEP_ALIVE`, 15 minuti dall'ultima
+  richiesta), non per sempre (`keep_alive: -1`).
+
+**Motivo**: di solito l'API si accende per provare l'app subito dopo, e la
+prima parola arriva entro 15 minuti. Tenere il modello caricato per sempre
+occuperebbe 3,2 GB su 6,9 finché l'API è accesa, anche nelle ore in cui
+nessuno scrive. Se servisse, basta cambiare `KEEP_ALIVE` per le richieste
+dell'API.
+
+**Conseguenza**: nei 15 minuti dopo l'avvio la RAM del modello è occupata
+anche se nessuno scrive una parola. Con il PC carico (1,9 GB liberi, il
+2026-09-24) Ollama non riesce a caricarlo entro 90 s: l'API parte lo
+stesso e la prima parola resta lenta. Il tempo della prima parola dopo il
+precaricamento è da misurare con il PC scarico.

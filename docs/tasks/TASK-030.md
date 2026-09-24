@@ -111,7 +111,7 @@ dall'agente, li ha approvati lo stesso giorno. Vanno in ADR-0012.
       l'utente ha scelto qwen3:4b guardando la lista di controllo (94%),
       e lo registra ADR-0012.
 - [ ] Sull'iPhone «stemma della Ferrari» dà «→ horse» e il percorso.
-- [ ] I job della CI sono verdi sulla PR.
+- [x] I job della CI sono verdi sulla PR (#45), compreso il nuovo `ai`.
 - [x] ADR-0012 attiva; documenti del punto 7 aggiornati.
 
 ## File toccati

@@ -38,8 +38,8 @@ non fa merge, e ogni task parte dal branch del precedente.
 ## In lavorazione
 
 - **TASK-030** — L'AI legge le parole della forma: codice, misure e
-  documenti fatti (ADR-0012, `AI.md`). Mancano la prova sull'iPhone
-  dell'utente e la CI verde sulla PR.
+  documenti fatti (ADR-0012, `AI.md`), CI verde sulla PR #45. Manca la
+  prova sull'iPhone dell'utente.
 
 ## Completato
 

@@ -83,12 +83,20 @@ contratto: `ApiError` e i suoi codici in `shared-types`, `ErrorBody`
 nell'API, allineati dagli stessi JSON di esempio (ADR-0031). Così pure la
 richiesta in due tempi, `RouteJob` con i suoi stati (ADR-0032), che porta
 dentro un `RouteResult` o un errore, e `GpxRequest`, richiesta e risultato
-insieme per `POST /gpx` (ADR-0033).
+insieme per `POST /gpx` (ADR-0033). Da TASK-030, `ShapeReadingRequest` e
+`ShapeReading` per `POST /shape-readings`: le parole del riquadro della
+forma in ingresso, una forma del catalogo o `null` in uscita (ADR-0012).
+
+L'AI (`services/ai/`, pacchetto `shaperoute_ai`) produce solo il nome di
+una forma, non un `RouteRequest` intero: distanza e attività hanno i loro
+riquadri (`ROADMAP.md`, fase 3). Il catalogo glielo passa l'API, e l'API
+controlla la risposta prima di usarla.
 
 ## 4. Regole di dipendenza
 
 - `route-engine` non importa **nulla** da `api` né da `ai`.
 - `ai` non importa `route-engine`: non deve poter calcolare percorsi.
+  Riceve i nomi delle forme dall'API, come dati.
 - `api` è l'unico che conosce entrambi e li mette in fila.
 - `mobile` parla solo con `api`, mai direttamente con gli altri servizi.
 - `packages/` non importa da `services/`: è il livello più basso.

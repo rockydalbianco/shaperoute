@@ -22,7 +22,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Guardare o confrontare percorsi generati | `../samples/README.md` |
 | Export GPX o wearable | `GPX.md` |
 | Endpoint, contratti REST, validazione input | `API.md`, `ARCHITECTURE.md` §3 |
-| Interpretazione linguaggio naturale | `AI.md` |
+| Parole della forma lette dall'AI, Ollama | `AI.md` |
 | Schermate, mappa, interazione utente | `UI.md`, `PRODUCT.md` |
 | Modello dati, migrazioni, PostGIS | `DATABASE.md` |
 | Scelta di libreria, provider, formato | `DECISIONS.md` |
@@ -50,7 +50,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | `MAPS.md` | pieno | — |
 | `API.md` | pieno | — |
 | `UI.md` | pieno per mappa e posizione | il resto con TASK-023 |
-| `AI.md` | stub | TASK-030 |
+| `AI.md` | pieno | — |
 | `DATABASE.md` | stub | fase 4 |
 
 Uno stub si riempie **quando arriva il suo task**, non prima: scrivere oggi

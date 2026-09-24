@@ -2,8 +2,8 @@
 
 > Scritto con TASK-021 (mappa, posizione, ricerca del luogo) e TASK-023
 > (forma, distanza, percorso); la distanza libera con TASK-026, il
-> riquadro della forma con TASK-033. Le domande ancora aperte stanno in
-> fondo.
+> riquadro della forma con TASK-033, le parole lette dall'AI con TASK-030.
+> Le domande ancora aperte stanno in fondo.
 
 ## Cosa è deciso
 
@@ -88,10 +88,30 @@ sulle strade:
   `shapeWords.ts`.
 - Una parola che non è il nome della forma la conferma sotto il campo:
   «cavallo» mostra «→ horse».
-- Una parola sconosciuta, o il campo vuoto: «Unknown shape. Try: circle,
-  heart, star, horse, moon, cat or fish.» e «Draw route» resta spento. Le frasi («stemma
-  della Ferrari») le leggerà l'AI (TASK-030).
-- Nel campo vuoto il suggerimento è «heart, star, horse…».
+- Il campo vuoto: «Unknown shape. Try: circle, heart, star, horse, moon,
+  cat or fish.» e «Draw route» resta spento.
+- Nel campo vuoto il suggerimento è «heart, star, horse…». Il campo
+  accetta al massimo 60 caratteri.
+
+Le **parole che la tabella non conosce** («stemma della Ferrari», «Nemo»)
+le legge l'AI sul PC (ADR-0012, `AI.md`). La tabella viene sempre prima:
+è immediata e non ha bisogno dell'AI.
+
+| Quando | Sotto il campo | «Draw route» |
+|---|---|---|
+| Mentre si scrive | Press Done and the AI will read it. | spento |
+| Dopo «Fine», o toccando fuori dal campo | The AI is reading it… | spento |
+| L'AI trova una forma | → horse | acceso |
+| L'AI non trova una forma | No shape in the catalogue for “Batman”. Try: circle, … | spento |
+| L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, … | spento |
+
+- Le parole partono quando la scrittura finisce («Fine» sulla tastiera, o
+  un tocco fuori dal campo), non a ogni lettera: il modello impiega secondi
+  e le parole a metà non servono.
+- L'app ricorda le letture finché resta aperta: tornare sulle stesse parole,
+  a meno di maiuscole e spazi, non le rimanda. Un errore invece non si
+  ricorda: con «Fine» si riprova.
+- Se l'API non si raggiunge, i messaggi sono quelli di «Quando non va».
 
 La **distanza** si scrive con il tastierino numerico (ADR-0034):
 
@@ -176,6 +196,7 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 | Forma che non ci sta (`shape_not_drawable`) | This shape does not fit the roads here. Try another distance, shape or start. |
 | Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
 | Errore del motore (`engine_error`) | The route engine failed. Try again; if it happens again, look at the API log. |
+| L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat or fish. |
 | `invalid_request`, `http_error`, risposta illeggibile | The app and the API do not agree (a bug): … |
 | API non raggiungibile | Cannot reach the API at http://…:8000. Start it on the PC with --lan, on the same Wi-Fi. |
 | Nessun risultato in 5 minuti | The API took more than 5 minutes. Try again later, or a shorter distance. |
@@ -187,6 +208,9 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 - **La partenza**: va all'API sul PC, in rete locale, con forma e
   distanza. L'API non la scrive nel log. Se la zona non è in cache, il PC
   la scarica da Overpass, che vede quale area si chiede.
+- **Le parole della forma** che la tabella non conosce: vanno all'API sul
+  PC, e da lì al modello in Ollama, sullo stesso PC. Non escono dalla rete
+  di casa; il log dell'API le scrive, con la forma scelta.
 - **Le tile**: il provider vede quale zona si guarda, come con ogni mappa.
 - **La ricerca**: il testo cercato arriva a Photon (komoot).
 - **La libreria**: MapLibre GL JS arriva da unpkg a ogni avvio a freddo.
@@ -201,7 +225,7 @@ iOS chiude la pagina per liberare memoria, la WebView la ricarica da sola.
 
 ## Domande ancora aperte
 
-- Frasi al posto delle parole della forma: l'AI, TASK-030.
+- Cosa proporre quando l'AI non trova una forma: TASK-031.
 - Forme nuove nel catalogo: si disegnano, si provano e si giudicano prima
   di entrare (ADR-0036).
 - Distanze oltre i 21 km: aspettano un download delle zone più veloce

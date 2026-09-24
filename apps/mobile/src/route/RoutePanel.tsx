@@ -1,22 +1,25 @@
-import { type Shape, SHAPES } from "@shaperoute/shared-types";
+import type { Shape } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { LONG_DISTANCE_KM, MAX_APP_DISTANCE_KM, MIN_DISTANCE_KM } from "./distance";
 import { problemText } from "./problems";
+import { shapeList } from "./shapeWords";
 import type { ExportState } from "./useGpxExport";
 import type { RouteProblem, RouteState } from "./useRouteRequest";
 
 type Props = {
-  shape: Shape;
-  onShape: (shape: Shape) => void;
+  /** The shape field as typed, and the shape it names (null: none). */
+  shapeText: string;
+  shape: Shape | null;
+  onShapeText: (text: string) => void;
   /** The km field as typed, and what it means in metres (null: not valid). */
   distanceText: string;
   distanceM: number | null;
   onDistanceText: (text: string) => void;
   /** The state of the request for the current start, shape and distance. */
   view: RouteState;
-  /** False without a start or with a distance that is not valid. */
+  /** False without a start, a known shape and a valid distance. */
   canDraw: boolean;
   onDraw: () => void;
   onCancel: () => void;
@@ -26,8 +29,9 @@ type Props = {
 };
 
 export function RoutePanel({
+  shapeText,
   shape,
-  onShape,
+  onShapeText,
   distanceText,
   distanceM,
   onDistanceText,
@@ -42,19 +46,20 @@ export function RoutePanel({
   return (
     <View style={styles.panel}>
       <View style={styles.row}>
-        {SHAPES.map((option) => (
-          <Choice
-            key={option}
-            label={option}
-            selected={option === shape}
-            disabled={waiting}
-            onPress={() => onShape(option)}
-          />
-        ))}
-      </View>
-      <View style={styles.row}>
         <TextInput
-          style={[styles.km, waiting && styles.off]}
+          style={[styles.field, styles.shape, waiting && styles.off]}
+          value={shapeText}
+          onChangeText={onShapeText}
+          editable={!waiting}
+          placeholder="heart, star, horse…"
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="done"
+          selectTextOnFocus
+          accessibilityLabel="Shape"
+        />
+        <TextInput
+          style={[styles.field, styles.km, waiting && styles.off]}
           value={distanceText}
           onChangeText={onDistanceText}
           editable={!waiting}
@@ -64,6 +69,13 @@ export function RoutePanel({
         />
         <Text>km</Text>
       </View>
+      {shape === null ? (
+        <Text style={styles.problem}>{`Unknown shape. Try: ${shapeList()}.`}</Text>
+      ) : (
+        shapeText.trim().toLowerCase() !== shape && (
+          <Text style={styles.note}>→ {shape}</Text>
+        )
+      )}
       {distanceM === null ? (
         <Text style={styles.problem}>
           {`Enter a distance between ${MIN_DISTANCE_KM} and ${MAX_APP_DISTANCE_KM} km.`}
@@ -149,30 +161,6 @@ function Problem({ problem }: { problem: RouteProblem }) {
   );
 }
 
-function Choice({
-  label,
-  selected,
-  disabled,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  disabled: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      style={[styles.choice, selected && styles.selected]}
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityState={{ selected, disabled }}
-    >
-      <Text style={selected ? styles.selectedText : undefined}>{label}</Text>
-    </Pressable>
-  );
-}
-
 /** Seconds since `since`, updated every second while it is on screen. */
 function Elapsed({ since }: { since: number }) {
   const [now, setNow] = useState(Date.now);
@@ -192,29 +180,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  choice: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#ccc",
-  },
-  selected: {
-    backgroundColor: "#1f6feb",
-    borderColor: "#1f6feb",
-  },
-  selectedText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  km: {
-    width: 72,
+  field: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 16,
+  },
+  shape: {
+    flex: 1,
+  },
+  km: {
+    width: 72,
   },
   note: {
     color: "#666",

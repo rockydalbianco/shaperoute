@@ -109,6 +109,9 @@ Obiettivo: l'utente scrive nel riquadro della forma una parola («stella»,
 | TASK-033 | Catalogo di forme con licenza aperta e riquadro della forma nell'app |
 | TASK-034 | Forme candidate: disegni nuovi e campioni pronti per il giudizio |
 | TASK-035 | Una somiglianza che vede i dettagli, confrontata con i giudizi a occhio |
+| TASK-036 | Forme dritte: le forme con un alto e un basso non si inclinano |
+| TASK-037 | Tratti interni ripassati: rami, occhi, gambe, finestre |
+| TASK-038 | Trova dove la forma ci sta: partenze nel raggio di qualche km |
 | TASK-030 | L'AI riconosce la parola scritta e sceglie la forma del catalogo (ADR-0012) |
 | TASK-031 | Parole senza forma nel catalogo e forme che le strade non reggono |
 
@@ -118,10 +121,10 @@ ripensa, per esempio con un catalogo di sole forme semplici. **Superato il
 2026-09-24**: stella `sì` ovunque, cavallo `quasi` a Trento e `sì` a
 Levico e Milano. La casa invece no, neanche con camino e porta (`quasi`
 solo a Milano): il catalogo deve preferire forme che si riconoscono dalla
-sagoma grande, non dai dettagli (ADR-0035). La somiglianza calcolata è più
-generosa dell'occhio sulle forme complesse: si rivede in TASK-035. Non
-blocca il catalogo, perché ci entrano solo forme già giudicate a occhio
-(ADR-0036; deciso dall'agente su delega dell'utente, 2026-09-24).
+sagoma grande, non dai dettagli (ADR-0035). La somiglianza calcolata dà
+voti alti anche a forme che l'occhio non riconosce: TASK-035 ha mostrato
+che non è colpa della tolleranza, e che la somiglianza resta com'è
+(ADR-0037). Il catalogo resta legato al giudizio a occhio (ADR-0036).
 
 **TASK-034 (2026-09-24)**: sei forme nuove disegnate dall'agente (luna,
 pesce, freccia, albero, corona, testa di gatto) si riconoscono a Milano e
@@ -134,6 +137,19 @@ TASK-035 parte da questi giudizi.
 **Richiesta dell'utente (2026-09-24)**: la casa con le finestre. Le
 finestre stanno dentro il contorno: servono forme fatte di più pezzi e
 tratti percorsi due volte. Task da definire, dopo TASK-035.
+
+**Deciso dall'utente (2026-09-24), guardando la Strava art**: per le figure
+complesse **ripassare le strade è voluto**, perché migliora molto la forma.
+Chi fa Strava art disegna occhi, finestre, rami e scritte con tratti di
+andata e ritorno, lavora in grande e sceglie il posto dove la forma ci sta.
+Dopo TASK-035 e TASK-036 (forme dritte, dall'analisi di TASK-035), in
+quest'ordine:
+- **tratti interni ripassati** (TASK-037): il contorno porta linee aperte attaccate al
+  bordo (rami, occhi, gambe sottili) e anelli interni (finestre); il
+  percorso le fa andata e ritorno, senza potarle né penalizzarle. Supera in
+  parte ADR-0026, che scoraggia ogni ripasso;
+- **trova dove la forma ci sta** (TASK-038): la ricerca prova partenze nel raggio di
+  qualche km e l'app dice dove andare.
 
 **Deciso con l'utente (2026-09-24).** Non serve interpretare una frase:
 distanza e attività si scrivono nei loro riquadri, e l'AI serve solo per la

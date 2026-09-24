@@ -840,7 +840,8 @@ più veloce di avere i dati delle zone (ADR-0009). Il tastierino segue la
 lingua del telefono: per questo si accettano sia la virgola sia il punto.
 
 ## ADR-0035 — Forme da un contorno in un file, per ora solo dalla CLI
-**Stato**: Attiva · 2026-09-24
+**Stato**: Attiva · 2026-09-24 · la spiegazione della somiglianza generosa
+è corretta da ADR-0037
 
 Prima di catalogo e AI (fase 3, `ROADMAP.md`) serviva sapere se le strade
 reggono forme più complesse di cerchio e cuore. TASK-032 le ha provate da
@@ -930,3 +931,38 @@ aggiungerne le parole. Nell'app le forme non si vedono più come pulsanti:
 chi non sa cosa scrivere lo scopre dal messaggio, o dal suggerimento nel
 campo vuoto. L'API risponde `invalid_request` a una forma fuori catalogo,
 come prima.
+
+## ADR-0037 — La somiglianza resta com'è; l'orientamento conta per l'occhio
+**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
+
+TASK-035 doveva trovare una somiglianza che andasse d'accordo con l'occhio,
+dopo che TASK-032 e TASK-034 avevano mostrato percorsi con 0,83–1,00
+giudicati `no`.
+
+**Decisione**:
+- **La somiglianza del motore non cambia** (fit al 2% con la penalità
+  sugli angoli, ADR-0025).
+- **Il metodo resta**: il motore è deterministico, quindi i casi giudicati
+  si rigenerano identici e ogni misura nuova si confronta con i giudizi
+  dell'utente prima di entrare nel motore.
+- **Prossimo passo**: tenere dritte, entro pochi gradi, le forme che hanno
+  un alto e un basso; con campioni nuovi da giudicare.
+
+**Motivo**: su 60 casi giudicati (senza la casa, dove conta il disegno)
+nessuna delle 16 misure provate separa i `no`: copertura, precisione e fit
+all'1% e allo 0,5%, angoli mancati, Hausdorff, Fréchet, zigzag e svolte
+del percorso. La media dei `no` sta sempre fra quella dei `sì` e quella
+dei `quasi`. Una tolleranza più stretta separa appena meglio i `sì` dai
+`quasi` (coppie ordinate come l'occhio 0,83 contro 0,79): troppo poco per
+cambiare tutti i percorsi. Invece, senza cerchio e casa, 25 `sì` su 26
+sono dritti, e 8 dei 10 casi inclinati di 15° o più sono `no` (TASK-035,
+«L'orientamento»).
+
+**Conseguenza**: la spiegazione di ADR-0035, «la tolleranza del 2% copre i
+dettagli che mancano», era sbagliata: la somiglianza misura quanto il
+percorso segue il contorno piazzato, e lo misura bene; l'occhio giudica
+anche orientamento, disegno e grandezza. Un numero alto non promette una
+forma riconoscibile: per questo il catalogo resta legato al giudizio a
+occhio (ADR-0036). 16 `no` su 24 sono dritti: sulle strade di Trento e
+Levico, a 10–15 km, molte forme non passano comunque. Lì servono i tratti
+ripassati e la scelta del posto (`ROADMAP.md`).

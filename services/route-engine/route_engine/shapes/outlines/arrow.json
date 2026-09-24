@@ -1,0 +1,15 @@
+{
+  "name": "arrow",
+  "source": "arrow pointing right, wide shaft (TASK-034, candidate)",
+  "license": "drawn for ShapeRoute, no third-party rights",
+  "points": [
+    [1.0000, 0.0000],
+    [0.2000, -0.6000],
+    [0.2000, -0.2200],
+    [-1.0000, -0.2200],
+    [-1.0000, 0.2200],
+    [0.2000, 0.2200],
+    [0.2000, 0.6000],
+    [1.0000, 0.0000]
+  ]
+}

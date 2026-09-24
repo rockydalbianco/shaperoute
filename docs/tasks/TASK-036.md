@@ -63,7 +63,7 @@ Prese dall'agente il 2026-09-24, su delega dell'utente.
       dell'utente in `LOG.md`.
 - [x] Nessuna forma del catalogo peggiora a giudizio dell'utente: cuore di
       Levico da `quasi` a `sì`, cuore di Trento e stella di Levico `sì`.
-- [ ] I job della CI sono verdi sulla PR.
+- [x] I job della CI sono verdi sulla PR (#40).
 - [x] ADR-0038; `ROUTE_ENGINE.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
 
 ## File toccati

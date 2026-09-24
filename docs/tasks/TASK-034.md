@@ -64,7 +64,7 @@ Prese dall'agente il 2026-09-24 notte, su delega dell'utente.
 - [x] Le candidate promosse sono nel catalogo: nessuna è promossa (punto D),
       quindi catalogo, parole e `UI.md` non cambiano; `STATUS.md` e
       `ROADMAP.md` aggiornati.
-- [ ] I job della CI sono verdi sulla PR.
+- [x] I job della CI sono verdi sulla PR (#38).
 
 ## File toccati
 

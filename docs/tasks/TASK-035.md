@@ -49,7 +49,7 @@ Prese dall'agente il 2026-09-24, su delega dell'utente.
       sotto).
 - [x] La decisione è in una ADR (ADR-0037); `ROADMAP.md` e `STATUS.md`
       aggiornati; la spiegazione sbagliata di ADR-0035 è segnata.
-- [ ] I job della CI sono verdi sulla PR.
+- [x] I job della CI sono verdi sulla PR (#39).
 
 Nessun codice del prodotto cambia: gli script di analisi stanno fuori dal
 repository.

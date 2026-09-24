@@ -17,18 +17,16 @@ con l'attesa che dice cosa succede. Una zona nuova aggiunge il suo download
 da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
 percorso si esporta in GPX, e Garmin Connect lo apre. La forma si scrive
 in un riquadro, in italiano o in inglese, fra quelle del catalogo:
-cerchio, cuore, stella e cavallo. Dalla CLI un contorno può avere tratti
-interni, fatti andata e ritorno (finestre, occhi, rami): si vedono dove le
+cerchio, cuore, stella, cavallo, luna, gatto e pesce. Gatto e pesce hanno
+tratti interni, fatti andata e ritorno (gli occhi): si vedono dove le
 strade sono fitte (Trento, Milano), non a Levico.
 
 ## Prossimo passo
 
 **TASK-038 — Trova dove la forma ci sta** (`ROADMAP.md`, fase 3): la
 ricerca prova partenze nel raggio di qualche km e l'app dice dove andare;
-è il rimedio per Levico, dove né il contorno né i tratti passano. Prima,
-piccolo: la luna entra nel catalogo (ha un `sì` a Levico dopo TASK-036), e
-con l'utente si decide se entrano anche gatto e pesce con i tratti (`sì` a
-Trento e Milano dopo TASK-037). ADR-0012 si decide con TASK-030.
+è il rimedio per Levico, dove né il contorno né i tratti passano. ADR-0012
+si decide con TASK-030.
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
@@ -36,7 +34,8 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-Niente.
+- **TASK-039** — Luna, gatto e pesce nel catalogo: fatto e verificato;
+  manca la prova sull'iPhone («luna», «gatto», «pesce» a Trento).
 
 ## Completato
 
@@ -54,6 +53,7 @@ Niente.
   TASK-037: tratti interni ripassati nei contorni, con tolleranze dimezzate
   per le forme che li hanno (ADR-0039); a 15 km 4 casi su 12 migliorano,
   uno peggiora; gatto e pesce `sì` a Trento e Milano, Levico `no`.
+  TASK-039: luna, gatto e pesce nel catalogo, scelti dall'utente.
 - **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in

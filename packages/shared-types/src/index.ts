@@ -11,7 +11,15 @@
 export type LatLon = [lat: number, lon: number];
 
 /** The shape catalogue (ADR-0036): the same names as the route engine. */
-export const SHAPES = ["circle", "heart", "star", "horse"] as const;
+export const SHAPES = [
+  "circle",
+  "heart",
+  "star",
+  "horse",
+  "moon",
+  "cat",
+  "fish",
+] as const;
 export type Shape = (typeof SHAPES)[number];
 
 export const ACTIVITIES = ["running"] as const;

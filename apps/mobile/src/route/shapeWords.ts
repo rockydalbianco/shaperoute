@@ -25,6 +25,18 @@ export const SHAPE_WORDS: Record<
     en: ["horse", "horses", "pony", "stallion"],
     it: ["cavallo", "cavalli", "cavallino", "stallone", "puledro"],
   },
+  moon: {
+    en: ["moon", "moons", "crescent", "crescent moon"],
+    it: ["luna", "lune", "mezzaluna", "falce di luna"],
+  },
+  cat: {
+    en: ["cat", "cats", "kitty", "kitten"],
+    it: ["gatto", "gatti", "gatta", "gatte", "gattino", "micio"],
+  },
+  fish: {
+    en: ["fish", "fishes"],
+    it: ["pesce", "pesci", "pesciolino"],
+  },
 };
 
 const WORD_TO_SHAPE = new Map<string, Shape>(
@@ -62,7 +74,7 @@ export function toShape(text: string): Shape | null {
   return WORD_TO_SHAPE.get(words.join(" ")) ?? null;
 }
 
-/** "circle, heart, star or horse": the shapes to suggest. */
+/** "circle, heart, star, horse, moon, cat or fish": the shapes to suggest. */
 export function shapeList(): string {
   return `${SHAPES.slice(0, -1).join(", ")} or ${SHAPES[SHAPES.length - 1]}`;
 }

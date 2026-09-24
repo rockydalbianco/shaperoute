@@ -29,6 +29,9 @@ SHAPES: dict[str, ShapeFn] = {
     "heart": heart,
     "star": read_outline(OUTLINES / "star.json"),
     "horse": read_outline(OUTLINES / "horse.json"),
+    "moon": read_outline(OUTLINES / "moon.json"),
+    "cat": read_outline(OUTLINES / "cat.json"),  # with strokes: its eyes
+    "fish": read_outline(OUTLINES / "fish.json"),  # with a stroke: its eye
 }
 
 SUPPORTED_SHAPES: tuple[str, ...] = tuple(SHAPES)

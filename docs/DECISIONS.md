@@ -893,8 +893,7 @@ pezzi e tratti percorsi due volte, un lavoro a parte da decidere.
 
 ## ADR-0036 — Catalogo delle forme: solo quelle giudicate a occhio, scritte in un riquadro
 **Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente;
-il giudizio dell'utente sui campioni lo sostiene a Trento e Milano, non a
-Levico
+il catalogo cresce con luna, gatto e pesce (TASK-039)
 
 TASK-033 porta nell'app le forme nuove di TASK-032. L'utente, prima di
 lasciare lavorare l'agente da solo, gli ha chiesto di prendere le decisioni
@@ -936,9 +935,7 @@ campo vuoto. L'API risponde `invalid_request` a una forma fuori catalogo,
 come prima.
 
 ## ADR-0037 — La somiglianza resta com'è; l'orientamento conta per l'occhio
-**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente;
-il giudizio dell'utente sui campioni lo sostiene a Trento e Milano, non a
-Levico
+**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
 
 TASK-035 doveva trovare una somiglianza che andasse d'accordo con l'occhio,
 dopo che TASK-032 e TASK-034 avevano mostrato percorsi con 0,83–1,00

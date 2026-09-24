@@ -64,8 +64,8 @@ deve richiedere modifiche a nessun'altra fase.
 Una forma può anche arrivare da un **contorno** in JSON (ADR-0035): dalla
 CLI con `--outline FILE`, oppure registrata in `SHAPES` come le altre. Le
 forme registrate sono il **catalogo** e sono contratto (ADR-0036): `circle`,
-`heart`, `star`, `horse`. Un contorno entra nel catalogo solo dopo il
-giudizio a occhio dell'utente sulle strade.
+`heart`, `star`, `horse`, `moon`, `cat`, `fish`. Un contorno entra nel
+catalogo solo dopo il giudizio a occhio dell'utente sulle strade.
 
 ```json
 {
@@ -125,7 +125,9 @@ esterno, 147 vertici; a 64 punti gambe, coda e testa si leggono ancora, i
 dettagli minori no. Come vengono sulle strade: ADR-0035 e
 `samples/LOG.md`. Ci sono anche le candidate di TASK-034 (luna, pesce,
 freccia, albero, corona, gatto); dal TASK-037 casa, albero, gatto e pesce
-hanno dei tratti: due finestre, fusto e rami, gli occhi, l'occhio.
+hanno dei tratti: due finestre, fusto e rami, gli occhi, l'occhio. Luna,
+gatto e pesce sono nel catalogo dal TASK-039, gatto e pesce con i tratti;
+freccia, albero, corona e casa si provano solo dalla CLI.
 
 ## 3. Proiezione geografica
 

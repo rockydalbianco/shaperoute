@@ -2,6 +2,14 @@ import { MAX_SHAPE_TEXT_LENGTH, type Shape, SHAPES } from "@shaperoute/shared-ty
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import {
+  color,
+  fontSize,
+  fontWeight,
+  MIN_TAP_SIZE,
+  radius,
+  space,
+} from "../theme/tokens";
 import { LONG_DISTANCE_KM, MAX_APP_DISTANCE_KM, MIN_DISTANCE_KM } from "./distance";
 import { problemText } from "./problems";
 import { shapeList } from "./shapeWords";
@@ -67,6 +75,8 @@ export function RoutePanel({
           editable={!waiting}
           maxLength={MAX_SHAPE_TEXT_LENGTH}
           placeholder="heart, star, horse…"
+          placeholderTextColor={color.textFaint}
+          keyboardAppearance="dark"
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="done"
@@ -79,10 +89,11 @@ export function RoutePanel({
           onChangeText={onDistanceText}
           editable={!waiting}
           keyboardType="decimal-pad"
+          keyboardAppearance="dark"
           selectTextOnFocus
           accessibilityLabel="Distance in km"
         />
-        <Text>km</Text>
+        <Text style={styles.unit}>km</Text>
       </View>
       <ShapeNote
         text={shapeText}
@@ -252,7 +263,7 @@ function ShapeChoices({ onPick }: { onPick: (shape: Shape) => void }) {
           onPress={() => onPick(shape)}
           accessibilityRole="button"
         >
-          <Text>{shape}</Text>
+          <Text style={styles.secondaryText}>{shape}</Text>
         </Pressable>
       ))}
     </View>
@@ -271,20 +282,23 @@ function Elapsed({ since }: { since: number }) {
 
 const styles = StyleSheet.create({
   panel: {
-    gap: 8,
+    gap: space.sm,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: space.sm,
   },
   field: {
+    minHeight: MIN_TAP_SIZE,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 16,
+    borderColor: color.border,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    fontSize: fontSize.input,
+    color: color.text,
+    backgroundColor: color.surface,
   },
   shape: {
     flex: 1,
@@ -292,53 +306,65 @@ const styles = StyleSheet.create({
   km: {
     width: 72,
   },
-  note: {
-    color: "#666",
+  unit: {
+    color: color.textMuted,
+    fontSize: fontSize.body,
   },
+  note: {
+    color: color.textMuted,
+  },
+  // The one yellow control: it makes the route, and the route is yellow.
   draw: {
+    minHeight: MIN_TAP_SIZE,
     alignItems: "center",
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: "#d6336c",
+    justifyContent: "center",
+    borderRadius: radius.md,
+    backgroundColor: color.accent,
   },
   off: {
     opacity: 0.4,
   },
+  // Dark on yellow: white does not reach the contrast minimum (ADR-0046).
   drawText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+    color: color.onAccent,
+    fontWeight: fontWeight.bold,
+    fontSize: fontSize.input,
   },
   waiting: {
     flex: 1,
-    color: "#333",
+    color: color.text,
   },
   secondary: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    paddingHorizontal: space.lg,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: "#999",
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
   },
   secondaryText: {
-    fontWeight: "bold",
+    color: color.text,
+    fontWeight: fontWeight.bold,
   },
   export: {
     alignSelf: "flex-start",
-    marginTop: 8,
+    marginTop: space.sm,
   },
   result: {
-    fontWeight: "bold",
+    color: color.text,
+    fontWeight: fontWeight.bold,
   },
+  // Not yellow: that means "route", and a warning is something else.
   warning: {
-    color: "#666",
-    fontSize: 13,
+    color: color.warning,
+    fontSize: fontSize.small,
   },
   problem: {
-    color: "#b42318",
+    color: color.error,
   },
   problemBox: {
-    gap: 6,
+    gap: space.sm,
   },
   choice: {
     alignSelf: "flex-start",
@@ -346,14 +372,13 @@ const styles = StyleSheet.create({
   choices: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 6,
+    gap: space.sm,
   },
   chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: space.md,
   },
   detail: {
-    color: "#666",
-    fontSize: 12,
+    color: color.textFaint,
+    fontSize: fontSize.detail,
   },
 });

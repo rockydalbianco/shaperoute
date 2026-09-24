@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import {
+  color,
+  fontSize,
+  fontWeight,
+  MIN_TAP_SIZE,
+  radius,
+  space,
+} from "../theme/tokens";
 import { type Place, searchPlaces } from "./photon";
 
 type SearchState =
@@ -41,6 +49,8 @@ export function PlaceSearch({ onSelect }: Props) {
         <TextInput
           style={styles.input}
           placeholder="City or street"
+          placeholderTextColor={color.textFaint}
+          keyboardAppearance="dark"
           value={query}
           onChangeText={setQuery}
           onSubmitEditing={submit}
@@ -72,7 +82,7 @@ export function PlaceSearch({ onSelect }: Props) {
                 onSelect(place);
               }}
             >
-              <Text>{place.label}</Text>
+              <Text style={styles.placeText}>{place.label}</Text>
             </Pressable>
           ))}
           <Text style={styles.credit}>© OpenStreetMap contributors</Text>
@@ -85,40 +95,52 @@ export function PlaceSearch({ onSelect }: Props) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    gap: 8,
-    marginTop: 8,
+    gap: space.sm,
+    marginTop: space.sm,
   },
   input: {
     flex: 1,
+    minHeight: MIN_TAP_SIZE,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 16,
+    borderColor: color.border,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    fontSize: fontSize.input,
+    color: color.text,
+    backgroundColor: color.surface,
   },
+  // A secondary control: the yellow belongs to "Draw route" alone.
   button: {
+    minHeight: MIN_TAP_SIZE,
     justifyContent: "center",
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: "#1f6feb",
+    paddingHorizontal: space.lg,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: color.text,
+    fontWeight: fontWeight.bold,
   },
   note: {
-    marginTop: 8,
-    color: "#666",
+    marginTop: space.sm,
+    color: color.textMuted,
   },
   place: {
-    paddingVertical: 10,
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#ccc",
+    borderBottomColor: color.border,
+  },
+  placeText: {
+    color: color.text,
+    fontSize: fontSize.body,
   },
   credit: {
-    marginTop: 4,
-    fontSize: 11,
-    color: "#666",
+    marginTop: space.xs,
+    fontSize: fontSize.detail,
+    color: color.textFaint,
   },
 });

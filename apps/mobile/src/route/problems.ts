@@ -1,3 +1,4 @@
+import { shapeList } from "./shapeWords";
 import type { RouteProblem } from "./useRouteRequest";
 
 /** What the screen says: what happened and what to do, then details. */
@@ -22,6 +23,11 @@ export function problemText(problem: RouteProblem): ProblemText {
         case "engine_error":
           return {
             text: "The route engine failed. Try again; if it happens again, look at the API log.",
+          };
+        case "ai_unavailable":
+          return {
+            text: `The AI that reads shape words is not running on the PC (Ollama). These words work without it: ${shapeList()}.`,
+            detail: problem.message,
           };
         default:
           return { text: `${BUG}: ${problem.code}.`, detail: problem.message };

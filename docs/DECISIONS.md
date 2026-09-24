@@ -1231,3 +1231,44 @@ andata tutti i lati sono «disegnati due volte», e la misura delle strade
 ripercorse non vede niente. Il percorso aperto resta disponibile dalla CLI;
 nell'app arriva, se serve, con le parole.
 
+## ADR-0046 — Tema Sgrava: i token in un file, lo stile della mappa nostro
+**Stato**: Attiva · 2026-09-24 · tavolozza, regole e file consegnati
+dall'utente (TASK-045); verifiche e registrazione dell'agente su delega
+dell'utente
+
+L'app è grigia e chiara, sopra la mappa «liberty» di OpenFreeMap, e ogni
+schermata scrive a mano i suoi colori: un percorso giallo, lì sopra, quasi
+non si vede.
+
+**Decisione**:
+- **Un file di token** (`apps/mobile/src/theme/tokens.ts`): colori,
+  spaziature, raggi, corpi del testo, la linea del percorso e
+  `MIN_TAP_SIZE` (44). Nessun colore scritto a mano fuori da lì. Un tema
+  solo, scuro.
+- **Il giallo `#FFD02B` è il percorso** e il comando che lo produce,
+  nient'altro; gli avvisi sono `warning` (`#FF7A59`), gli errori `error`. Sul
+  giallo il testo è scuro (`onAccent`). «Start here» (ADR-0040) è ciano,
+  `#4DD2FF`.
+- **Lo stile della mappa lo scrive l'app** (`src/map/mapStyle.ts`,
+  `sgravaDarkStyle`): la stessa sorgente vettoriale OpenMapTiles di
+  OpenFreeMap (`tiles.openfreemap.org/planet`, senza chiave), gli stessi
+  glifi, i colori dai token, l'attribuzione OSM nella sorgente.
+- **I test controllano quello che fallisce in silenzio**: ogni strato ha
+  sorgente e `source-layer`, gli id sono unici, le strade grandi stanno
+  sopra le piccole, i colori vengono solo dai token e nessuno è il giallo.
+
+**Motivo**: un colore si decide una volta, e mappa e pannello non si
+separano più; lo stile non cambia sotto di noi quando OpenFreeMap aggiorna
+il suo.
+
+**Verificato il 2026-09-24**: la TileJSON risponde e ha tutti gli strati
+usati, con `name:it` sui luoghi; il font «Noto Sans Regular», lo stesso di
+liberty, risponde. Contrasti: testo scuro sul giallo 13,5:1, bianco 1,5:1;
+`textMuted` 7,2:1 e `textFaint` 5,8:1 sul fondo; sulla mappa il percorso
+13,2:1, «Start here» 11,0:1, i nomi dei luoghi 5,6:1.
+
+**Conseguenza**: la mappa ha meno strati di liberty: niente nomi delle vie,
+numeri civici, punti d'interesse, confini. Se le etichette si vedano
+davvero lo dice solo il telefono. Le schermate usano i token da TASK-046;
+fino ad allora l'app non cambia.
+

@@ -226,7 +226,7 @@ singolo come nella Strava art, e subito con una parola corta.
 |---|---|
 | TASK-040 | Una parola a tratto singolo: «CIAO», dalla CLI |
 | TASK-041 | Percorso aperto: l'utente sceglie se tornare alla partenza |
-| TASK-042 | Lettere dritte e distanziate: più punti di passaggio per le parole |
+| TASK-047 | Lettere una per una: ognuna cerca le sue strade, poi si collegano |
 
 **TASK-041, proposto dall'utente.** Nelle scritte si può ripassare la stessa
 strada, e non serve tornare alla partenza: l'utente sceglie un giro chiuso

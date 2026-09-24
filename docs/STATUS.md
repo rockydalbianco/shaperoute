@@ -28,9 +28,10 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 
 ## Prossimo passo
 
-**TASK-042 — Lettere dritte e distanziate** (`ROADMAP.md`, fase 4): più
-punti di passaggio per le parole e lettere più distanziate, su richiesta
-dell'utente dopo TASK-041.
+**TASK-047 — Lettere una per una** (`ROADMAP.md`, fase 4): più punti di
+passaggio, ogni lettera cerca le sue strade e poi le lettere si collegano,
+più distanziate; chiesto dall'utente dopo TASK-041. Il numero salta 042–046
+perché un'altra sessione usa TASK-045 e TASK-046 (tema dell'app).
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,

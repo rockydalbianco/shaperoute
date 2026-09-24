@@ -89,7 +89,7 @@ docs/ROUTE_ENGINE.md, docs/DECISIONS.md, docs/STATUS.md
 Un `path` aperto si corre a sola andata, dalla CLI (ADR-0043): Trento
 0,96, Levico 0,91, Milano 1,00. L'utente giudica «CIAO» aperto peggio del
 chiuso di TASK-040, e chiede lettere più distanziate e una I dritta,
-andata e ritorno sulla stessa strada. Da qui TASK-042: la I di Trento
+andata e ritorno sulla stessa strada. Da qui TASK-047: la I di Trento
 girava 100–250 m a destra del suo asse perché la parola aveva un punto di
 passaggio per vertice (67, sopra i 64 del motore), nessuno lungo la I, ed
 era ruotata di 15°.

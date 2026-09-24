@@ -33,6 +33,10 @@ SHAPES: dict[str, ShapeFn] = {
 
 SUPPORTED_SHAPES: tuple[str, ...] = tuple(SHAPES)
 
+# Shapes that look the same at any angle: the search may turn them freely.
+# Every other shape stays upright, give or take a few degrees (ADR-0038).
+FREE_ROTATION: frozenset[str] = frozenset({"circle"})
+
 
 def get_shape(name: str) -> ShapeFn:
     try:

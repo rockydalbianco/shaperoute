@@ -44,12 +44,16 @@ from route_engine.projection import (
     project_shape,
     start_at_phase,
 )
-from route_engine.shapes import get_shape
+from route_engine.shapes import FREE_ROTATION, get_shape
 from route_engine.validation import check_closed, measure, validate
 
 # Where the start enters the shape, as arc-length fractions (TASK-015).
 PHASES = (0.0, 0.25, 0.5, 0.75)
 ROTATION_STEP_DEG = 15.0
+# A shape with a top and a bottom tilts at most this much: tilted shapes
+# were judged unrecognizable (TASK-035, ADR-0038). 180 lets it turn freely.
+MAX_TILT_DEG = 15.0
+FREE_TILT_DEG = 180.0
 # Scale bounds, as multiples of the initial scale.
 SCALE_RANGE = (0.4, 1.1)
 # The shape may start this far from the requested point, on rings of these
@@ -287,10 +291,16 @@ def search(
     trace: Tracer | None = None,
     reuse_penalty: float = EDGE_REUSE_PENALTY,
     move_start: bool = True,
+    max_tilt_deg: float = FREE_TILT_DEG,
 ) -> Search:
     """Best route for `shape` near `distance_m` on `graph`, starting at
-    `start` or, with `move_start`, up to START_OFFSET_M away from it."""
+    `start` or, with `move_start`, up to START_OFFSET_M away from it. The
+    shape turns at most `max_tilt_deg` either way from how it is drawn."""
     similarity = similarity or SIMILARITIES[SIMILARITY]
+
+    def allowed(rotation_deg: float) -> bool:
+        return _angle_gap(rotation_deg, 0.0) <= max_tilt_deg + 1e-9
+
     trace = trace or _tracer(graph, reuse_penalty)
     mask = RoadMask(graph, start)
     base_scale = initial_scale(shape, distance_m)
@@ -425,6 +435,7 @@ def search(
             Placement(s, offset, float(r), phase)
             for s, offset in starts
             for r in np.arange(0.0, 360.0, ROTATION_STEP_DEG)
+            if allowed(r)
             for phase in PHASES
         ]
         ranked = sorted(
@@ -471,7 +482,7 @@ def search(
         for t in turns
     ]
     refined = sorted(
-        (p for p in around if p not in traced),
+        (p for p in around if p not in traced and allowed(p.rotation_deg)),
         key=lambda p: (-road_fit(p, best.scale_m), p.rotation_deg),
     )
     if refined and len(attempts) < max_traces:
@@ -583,7 +594,14 @@ def plan_route(
         source,
         optimize,
         reuse_penalty,
+        tilt_limit(request.shape),
     )
+
+
+def tilt_limit(name: str) -> float:
+    """How far a shape may turn: freely if it looks the same at any angle,
+    otherwise it stays upright (ADR-0038)."""
+    return FREE_TILT_DEG if name in FREE_ROTATION else MAX_TILT_DEG
 
 
 def plan_shape(
@@ -594,15 +612,24 @@ def plan_shape(
     source: GraphLoader,
     optimize: bool = True,
     reuse_penalty: float = EDGE_REUSE_PENALTY,
+    max_tilt_deg: float = MAX_TILT_DEG,
 ) -> Plan:
     """plan_route for any normalized shape, also an outline read from a file
     (TASK-032). `name` only labels the result and its messages; start and
-    distance are the caller's to check, as RouteRequest does.
+    distance are the caller's to check, as RouteRequest does. An outline
+    stays upright unless told otherwise (ADR-0038).
     """
     similarity = SIMILARITIES[SIMILARITY]
     graph = source.load(required_area(shape, start, distance_m, optimize))
     if optimize:
-        found = search(graph, shape, start, distance_m, reuse_penalty=reuse_penalty)
+        found = search(
+            graph,
+            shape,
+            start,
+            distance_m,
+            reuse_penalty=reuse_penalty,
+            max_tilt_deg=max_tilt_deg,
+        )
         best = found.best
         what = f"a {distance_m / 1000:g} km {name}"
         if best.similarity < MIN_SIMILARITY:

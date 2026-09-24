@@ -14,6 +14,8 @@ from route_engine.geo import (
 from route_engine.models import RouteRequest
 from route_engine.network import NetworkRoute, OsmnxSource, area_around
 from route_engine.optimizer import (
+    FREE_TILT_DEG,
+    MAX_TILT_DEG,
     PHASES,
     SCALE_RANGE,
     START_BEARINGS,
@@ -25,6 +27,7 @@ from route_engine.optimizer import (
     plan_route,
     reach,
     search,
+    tilt_limit,
     zone_area,
 )
 from route_engine.projection import initial_scale, project_shape
@@ -297,3 +300,34 @@ def test_every_catalogue_shape_is_planned_on_a_street_grid(name: str) -> None:
     assert result.shape == name
     assert result.points[0] == result.points[-1]
     assert result.similarity >= 0.60
+
+
+def _tilt(rotation_deg: float) -> float:
+    return min(rotation_deg % 360.0, 360.0 - rotation_deg % 360.0)
+
+
+def test_an_upright_search_never_tilts_beyond_the_limit() -> None:
+    heart = get_shape("heart")(64)
+    start = local_to_latlon(LEVICO, 1500.0, 0.0)
+    result = search(_half_grid(), heart, start, 3000.0, max_tilt_deg=MAX_TILT_DEG)
+    assert result.attempts
+    assert all(_tilt(a.rotation_deg) <= MAX_TILT_DEG for a in result.attempts)
+
+
+def test_the_circle_turns_freely_every_other_shape_stays_upright() -> None:
+    assert tilt_limit("circle") == FREE_TILT_DEG
+    for name in SUPPORTED_SHAPES:
+        if name != "circle":
+            assert tilt_limit(name) == MAX_TILT_DEG
+
+
+def test_plan_route_keeps_a_catalogue_shape_upright() -> None:
+    start = local_to_latlon(LEVICO, 1500.0, 0.0)
+
+    class Grid:
+        def load(self, bbox: tuple[float, float, float, float]) -> nx.MultiDiGraph:
+            return _half_grid()
+
+    plan = plan_route(RouteRequest(start=start, shape="star", distance_m=3000), Grid())
+    assert plan.search is not None
+    assert all(_tilt(a.rotation_deg) <= MAX_TILT_DEG for a in plan.search.attempts)

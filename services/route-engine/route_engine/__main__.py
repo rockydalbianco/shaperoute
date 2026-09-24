@@ -27,6 +27,7 @@ from route_engine.optimizer import (
     ShapeNotDrawableError,
     plan_shape,
     required_area,
+    tilt_limit,
 )
 from route_engine.projection import initial_scale
 from route_engine.shapes import get_shape
@@ -190,6 +191,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             source,
             optimize=optimize,
             reuse_penalty=args.reuse_penalty,
+            max_tilt_deg=tilt_limit(request.shape),
         )
     except ShapeNotDrawableError as exc:
         print(f"No route: {exc}", file=sys.stderr)

@@ -966,3 +966,34 @@ forma riconoscibile: per questo il catalogo resta legato al giudizio a
 occhio (ADR-0036). 16 `no` su 24 sono dritti: sulle strade di Trento e
 Levico, a 10–15 km, molte forme non passano comunque. Lì servono i tratti
 ripassati e la scelta del posto (`ROADMAP.md`).
+
+## ADR-0038 — Le forme restano dritte, tranne il cerchio
+**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente;
+confermato dal giudizio dell'utente sui campioni
+
+TASK-035 ha mostrato che l'occhio non riconosce una forma inclinata: 25
+`sì` su 26 erano dritti, 8 dei 10 casi inclinati di 15° o più erano `no`.
+La ricerca invece ruotava la forma su tutto il giro (ADR-0023).
+
+**Decisione**:
+- **Inclinazione massima 15°** (`MAX_TILT_DEG`): la ricerca prova −15°, 0°
+  e +15°, e la rifinitura resta dentro lo stesso limite.
+- **Il cerchio gira libero** (`FREE_ROTATION`): è lo stesso a ogni angolo,
+  e la rotazione attorno alla partenza lo sposta dove le strade lo reggono.
+- Vale per il catalogo e per i contorni da file della CLI.
+- Nessun altro parametro cambia (fasi, partenze, scale).
+
+**Motivo**: rigenerati i 60 casi giudicati (senza cerchio e casa v1), 45
+non cambiano e 15 escono dritti; nessuno è rifiutato. Il giudizio
+dell'utente sui 15: 7 migliorano e nessuno peggiora. Il cuore di Levico da
+15 km passa da `quasi` a `sì`, la luna di Levico da 10 km da `no` a `sì`;
+pesce di Trento, freccia di Trento da 15 km, albero di Levico e gatto di
+Trento da `no` a `quasi` (`samples/LOG.md`, TASK-036).
+
+**Conseguenza**: con meno rotazioni la ricerca ha meno posizioni e fa meno
+conti. In un posto dove la forma ci sta solo inclinata, esce dritta ma
+seguita peggio: non è successo nei casi provati, e il rimedio è cercare il
+posto (TASK-038), non inclinarla. La luna ora ha un `sì` a Levico e può
+entrare nel catalogo (ADR-0036). Le forme ancora a `no` si riconoscono da
+un occhio, una finestra, una rientranza: servono i tratti interni ripassati
+(TASK-037).

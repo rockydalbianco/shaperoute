@@ -2,8 +2,8 @@
 
 > Scritto con TASK-021 (mappa, posizione, ricerca del luogo) e TASK-023
 > (forma, distanza, percorso); la distanza libera con TASK-026, il
-> riquadro della forma con TASK-033, le parole lette dall'AI con TASK-030.
-> Le domande ancora aperte stanno in fondo.
+> riquadro della forma con TASK-033, le parole lette dall'AI con TASK-030,
+> il tema con TASK-045. Le domande ancora aperte stanno in fondo.
 
 ## Cosa è deciso
 
@@ -13,6 +13,50 @@
 - I percorsi li chiede all'API sul PC (ADR-0030, ADR-0031); mappa e
   ricerca del luogo chiamano direttamente due servizi esterni (ADR-0029).
 - Testi in inglese, come il codice; le traduzioni verranno dopo.
+
+## Il tema
+
+Uno solo, scuro, con il nome Sgrava (ADR-0046). Tutti i valori stanno in
+`apps/mobile/src/theme/tokens.ts`: colori, spaziature a passi di 4, raggi,
+corpi del testo, la linea del percorso (gialla, larga 5) e `MIN_TAP_SIZE`,
+44, l'altezza minima di ogni cosa da toccare. **Nessun colore scritto a
+mano fuori da lì**: lo stile della mappa e le schermate leggono gli stessi
+token, e un colore nuovo è un token nuovo. Nell'app lo applica TASK-046:
+fino ad allora la mappa è ancora «liberty» di OpenFreeMap, chiara, e i
+pannelli sono grigi.
+
+| Token | Colore | Per cosa |
+|---|---|---|
+| `accent` | `#FFD02B` | il percorso e il comando che lo produce, «Draw route» |
+| `onAccent` | `#0A0A0B` | testo e icone sul giallo |
+| `background` | `#0A0A0B` | il fondo dell'app, nero neutro |
+| `surface`, `surfaceRaised` | `#141416`, `#1A1A1D` | campi, schede, il pannello sopra la mappa; una superficie sopra un'altra |
+| `border`, `borderStrong` | `#26262A`, `#33333A` | divisioni; bordi dei comandi |
+| `text` | `#F5F5F4` | il testo |
+| `textMuted` | `#9B9B9F` | etichette e righe secondarie (7,2:1 sul fondo) |
+| `textFaint` | `#8A8A90` | il testo più tenue ancora leggibile (5,8:1), non per il corpo |
+| `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
+| `error` | `#FF6B6B` | una richiesta fallita |
+| `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
+| `map.*` | dal `#0D0E10` al `#3A3D45` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
+
+Quattro regole:
+
+1. **Il giallo significa una cosa sola**: il percorso, e il comando che lo
+   produce. Gli avvisi usano `warning`, arancio: un avviso giallo
+   renderebbe il colore muto.
+2. **Sul giallo il testo è scuro** (`onAccent`, 13,5:1). Il bianco si ferma
+   a 1,5:1, sotto il minimo, e in pieno sole, dove l'app si usa, non si
+   legge.
+3. **«Start here» è ciano**, non più verde: su una mappa scura il verde è
+   spento, e il ciano non si scambia per il percorso.
+4. **Lo stile della mappa è dell'app** (`src/map/mapStyle.ts`), non si
+   scarica più da OpenFreeMap: le tile e i font sono gli stessi
+   (OpenMapTiles, «Noto Sans Regular»), i colori li decidono i token.
+   Prima era un file altrui, che poteva cambiare sotto di noi. La mappa
+   mostra fondo, acqua, verde, edifici, strade e i nomi di città, paesi e
+   villaggi; non i nomi delle vie, i numeri civici e i punti d'interesse.
+   Nessuno strato della mappa usa il giallo.
 
 ## La schermata
 

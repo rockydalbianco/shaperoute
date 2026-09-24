@@ -1,8 +1,9 @@
 # UI — Interfaccia mobile
 
 > Scritto con TASK-021 (mappa, posizione, ricerca del luogo) e TASK-023
-> (forma, distanza, percorso); la distanza libera con TASK-026. Le domande
-> ancora aperte stanno in fondo.
+> (forma, distanza, percorso); la distanza libera con TASK-026, il
+> riquadro della forma con TASK-033. Le domande ancora aperte stanno in
+> fondo.
 
 ## Cosa è deciso
 
@@ -65,9 +66,31 @@ punto, ricentra la mappa.
 
 ## Forma e distanza
 
-La forma si sceglie fra pulsanti, `circle` e `heart`; la forma libera
-arriva con la fase 4. La distanza si scrive in un campo in km con il
-tastierino numerico (ADR-0034):
+Forma e distanza si scrivono in due riquadri sulla stessa riga: la forma a
+sinistra, i km a destra.
+
+La **forma** è una parola, in inglese o in italiano (ADR-0036). Le forme
+sono quelle del catalogo, le sole che l'utente ha giudicato riconoscibili
+sulle strade:
+
+| Forma | Parole |
+|---|---|
+| `circle` | circle, ring, round · cerchio, anello, tondo |
+| `heart` | heart, love · cuore, cuoricino, amore |
+| `star` | star · stella, stellina |
+| `horse` | horse, pony, stallion · cavallo, cavallino, stallone, puledro |
+
+- Anche al plurale («stelle», «hearts»), con l'articolo («una stella»,
+  «l'amore»), con maiuscole e accenti qualsiasi. La tabella sta in
+  `shapeWords.ts`.
+- Una parola che non è il nome della forma la conferma sotto il campo:
+  «cavallo» mostra «→ horse».
+- Una parola sconosciuta, o il campo vuoto: «Unknown shape. Try: circle,
+  heart, star or horse.» e «Draw route» resta spento. Le frasi («stemma
+  della Ferrari») le leggerà l'AI (TASK-030).
+- Nel campo vuoto il suggerimento è «heart, star, horse…».
+
+La **distanza** si scrive con il tastierino numerico (ADR-0034):
 
 - interi o un decimale, con la virgola o con il punto: `7`, `7,5`, `7.5`;
   gli spazi attorno non contano. Al motore va in metri interi (7,5 km →
@@ -80,9 +103,10 @@ tastierino numerico (ADR-0034):
 - sopra i 15 km, prima della richiesta: «Long routes take longer: up to a
   few minutes.»
 
-Di partenza cuore e 5 km. L'attività è sempre `running` e non si mostra.
-Il tastierino non ha il tasto invio: si chiude toccando «Draw route», e
-mentre è aperto la mappa si accorcia perché non copra il campo.
+Di partenza «heart» e 5 km. L'attività è sempre `running` e non si
+mostra. Il tastierino numerico non ha il tasto invio: si chiude toccando
+«Draw route»; quello della forma si chiude con «Fine». Mentre una tastiera
+è aperta la mappa si accorcia perché non copra i campi.
 
 ## Chiedere un percorso
 
@@ -171,7 +195,9 @@ iOS chiude la pagina per liberare memoria, la WebView la ricarica da sola.
 
 ## Domande ancora aperte
 
-- Forma libera e forme nuove (`ROADMAP.md`, fase 4).
+- Frasi al posto delle parole della forma: l'AI, TASK-030.
+- Forme nuove nel catalogo: si disegnano, si provano e si giudicano prima
+  di entrare (ADR-0036).
 - Distanze oltre i 21 km: aspettano un download delle zone più veloce
   (ADR-0009).
 - Miglia al posto dei km.

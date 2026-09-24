@@ -59,11 +59,13 @@ Regole:
 Aggiungere una forma significa aggiungere una funzione e registrarla: non
 deve richiedere modifiche a nessun'altra fase.
 
-### Forme da file (TASK-032)
+### Forme da file e catalogo (TASK-032, TASK-033)
 
-Una forma può anche arrivare da un **contorno** in JSON, per ora solo dalla
-CLI (`--outline`, ADR-0035); le forme registrate restano le sole del
-contratto.
+Una forma può anche arrivare da un **contorno** in JSON (ADR-0035): dalla
+CLI con `--outline FILE`, oppure registrata in `SHAPES` come le altre. Le
+forme registrate sono il **catalogo** e sono contratto (ADR-0036): `circle`,
+`heart`, `star`, `horse`. Un contorno entra nel catalogo solo dopo il
+giudizio a occhio dell'utente sulle strade.
 
 ```json
 {
@@ -82,9 +84,10 @@ contratto.
 - Fonte e licenza stanno nel file: il disegno di qualcun altro entra solo
   con una licenza aperta.
 
-I contorni di prova sono in `services/route-engine/outlines/`: stella e
-casa (con camino e porta) disegnate per ShapeRoute, e la sagoma di un
-cavallo al galoppo (OpenClipart, CC0). Del cavallo resta il contorno
+I contorni stanno in `route_engine/shapes/outlines/`, dati del pacchetto:
+stella e casa (con camino e porta) disegnate per ShapeRoute, e la sagoma di
+un cavallo al galoppo (OpenClipart, CC0). La casa si prova solo dalla CLI:
+non è nel catalogo. Del cavallo resta il contorno
 esterno, 147 vertici; a 64 punti gambe, coda e testa si leggono ancora, i
 dettagli minori no. Come vengono sulle strade: ADR-0035 e
 `samples/LOG.md`.
@@ -291,10 +294,10 @@ Con una forma da file, `--outline` al posto di `--shape`:
 
 ```
 python -m route_engine \
-    --outline services/route-engine/outlines/star.json \
+    --outline services/route-engine/route_engine/shapes/outlines/house.json \
     --distance 15000 \
     --start 46.0671,11.1214 \
-    --out star_trento.gpx
+    --out house_trento.gpx
 ```
 
 Il GPX si apre in un visualizzatore (gpx.studio, geojson.io) e si guarda.

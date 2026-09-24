@@ -76,16 +76,26 @@ decisioni migliori»); le motiva ADR-0036, e l'utente può rivederle.
 
 ## Criteri di accettazione
 
-- [ ] Dalla radice `npm run lint`, `npm run format:check`,
-      `npm run typecheck` e `npm test` passano; in `services/route-engine/`
-      e in `services/api/` `ruff`, `black --check` e
+- [x] Dalla radice `npm run lint`, `npm run format:check`,
+      `npm run typecheck` e `npm test` passano (161 test nell'app, 7 in
+      `shared-types`); in `services/route-engine/` (195 test) e in
+      `services/api/` (54) `ruff`, `black --check` e
       `pytest -m "not network"` passano.
-- [ ] Ogni caso del punto 4 ha il suo test.
+- [x] Ogni caso del punto 4 ha il suo test (`test_shapes.py`,
+      `test_optimizer.py`, `shapeWords.test.ts`, `App.test.tsx`).
 - [ ] Sull'iPhone «stella» e «cavallo» disegnano il percorso; una parola
       sconosciuta mostra il messaggio e non parte nessuna richiesta.
 - [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
-- [ ] Nuova ADR; `UI.md`, `ROUTE_ENGINE.md`, `ROADMAP.md`, `STATUS.md`
-      aggiornati.
+- [x] ADR-0036; `UI.md`, `ROUTE_ENGINE.md`, `ROADMAP.md`, `STATUS.md`
+      aggiornati. `API.md` non nomina le forme una per una: invariato.
+
+Prova attraverso l'API sul PC, con i grafi in cache: `POST /routes` a
+Trento, 10 km, dà la stella in 13 s (somiglianza 0,98, 9,9 km) e il
+cavallo in 7 s (0,97, 9,8 km), come i campioni di TASK-032; `house`
+risponde `invalid_request` con l'elenco delle forme.
+
+Differenze dal piano: nessuna. Nei test del motore e dell'API la forma
+sconosciuta è diventata `house` (prima era `star`).
 
 ## File toccati
 

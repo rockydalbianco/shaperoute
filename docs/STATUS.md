@@ -11,28 +11,30 @@
 
 ## In una riga
 
-Fase 2 chiusa: il MVP gira dall'iPhone, con l'API sul PC. Si sceglie la
-forma, si scrive la distanza fino a 21 km, e il percorso compare sulla
-mappa: 3–10 km nelle zone in cache in 5–25 s, da 15 a 21 km in 30–50 s,
+Fase 2 chiusa: il MVP gira dall'iPhone, con l'API sul PC. Si scrivono
+forma e distanza, fino a 21 km, e il percorso compare sulla mappa: 3–10 km nelle zone in cache in 5–25 s, da 15 a 21 km in 30–50 s,
 con l'attesa che dice cosa succede. Una zona nuova aggiunge il suo download
 da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
-percorso si esporta in GPX, e Garmin Connect lo apre. Dalla CLI il motore
-segue anche un contorno letto da file: stella e cavallo si riconoscono
-sulle strade, la casa no.
+percorso si esporta in GPX, e Garmin Connect lo apre. La forma si scrive
+in un riquadro, in italiano o in inglese, fra quelle del catalogo:
+cerchio, cuore, stella e cavallo (TASK-033, da provare sull'iPhone).
 
 ## Prossimo passo
 
-**Scrivere il file di TASK-033 — Catalogo di forme con licenza aperta e
-riquadro della forma nell'app** (`ROADMAP.md`, fase 3). Da proporre
-all'utente: quali forme entrano (quelle che si riconoscono dalla sagoma
-grande, ADR-0035), da dove vengono i contorni e con quale licenza, come il
-nome scritto trova la forma senza AI (sinonimi), e se prima si rivede la
-somiglianza calcolata, più generosa dell'occhio sulle forme complesse.
-ADR-0012 si decide con TASK-030, dopo il catalogo.
+**TASK-034 — Forme candidate** (`ROADMAP.md`, fase 3): contorni nuovi
+disegnati dall'agente, con i campioni pronti per il giudizio a occhio
+dell'utente. Poi TASK-035, la somiglianza. ADR-0012 si decide con TASK-030.
+
+Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
+e registra le decisioni come «deciso dall'agente su delega dell'utente»,
+non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-Niente.
+- **TASK-033** — Catalogo e riquadro della forma, branch
+  `feat/TASK-033-shape-catalog` (parte da `main` dopo TASK-032). Codice,
+  test e documenti fatti (ADR-0036); provato attraverso l'API sul PC
+  (stella e cavallo da 10 km a Trento). Manca la prova sull'iPhone.
 
 ## Completato
 
@@ -67,12 +69,12 @@ Niente.
 - In cache ci sono i grafi `foot` di zona di trento, levico, valsugana e
   milano (ADR-0023), più le zone di Trento da 21 e 30 km (TASK-026) e
   quelle di Levico e Milano larghe 12,7 km (casa da 15 km, TASK-032):
-  tutti i casi girano offline.
+  tutti i casi girano offline. Da questo PC un indirizzo di
+  `overpass-api.de` non risponde: prima di scaricare, leggere `MAPS.md`,
+  "Overpass: come si scarica".
 - Per generare campioni senza salvare ritagli in `data/cache/`: uno script
   usa-e-getta che chiama `plan_shape` con `ZoneGraphs` dell'API, come in
-  TASK-032. La CLI invece salva un ritaglio per ogni caso. Da questo PC un indirizzo
-  di `overpass-api.de` non risponde: prima di scaricare, leggere `MAPS.md`,
-  "Overpass: come si scarica".
+  TASK-032. La CLI invece salva un ritaglio per ogni caso.
 - Per misurare sui casi di riferimento (in `services/route-engine/`, con
   `..\api\.venv\Scripts\python.exe`): `tests/measure_optimizer.py`
   (ottimizzatore, `--no-optimize` per TASK-017) e

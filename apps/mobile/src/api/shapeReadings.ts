@@ -37,7 +37,7 @@ export async function requestShapeReading(
     return { kind: "reading", shape: answer.shape };
   }
   return !response.ok && isApiError(answer)
-    ? { kind: "api_error", code: answer.error.code, message: answer.error.message }
+    ? { kind: "api_error", ...answer.error }
     : { kind: "bad_answer", status: response.status };
 }
 

@@ -331,10 +331,25 @@ test("an error from the API is explained, with the engine's reason", async () =>
   await nextPoll();
   expect(
     screen.getByText(
-      "This shape does not fit the roads here. Try another distance, shape or start.",
+      "This shape does not fit the roads here at this distance. It fits at about 4 km.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByText(apiError.error.message)).toBeOnTheScreen();
+  jest.useRealTimers();
+});
+
+test("Try N km draws again at the distance the shape fits", async () => {
+  jest.useFakeTimers();
+  apiAnswers(jobFailed, jobDone);
+  await atTrento();
+  await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
+  apiAnswers(jobDone);
+  await fireEvent.press(screen.getByRole("button", { name: "Try 4 km" }));
+  await nextPoll();
+  expect(distanceField().props.value).toBe("4");
+  expect(lastRouteRequest()).toMatchObject({ shape: "heart", distance_m: 4000 });
+  expect(screen.getByText("4.0 km on roads (target 4 km)")).toBeOnTheScreen();
   jest.useRealTimers();
 });
 
@@ -515,11 +530,13 @@ test("words with no shape of the catalogue keep Draw route off", async () => {
   await fireEvent.changeText(field, "Batman");
   await fireEvent(field, "endEditing");
   expect(
-    await screen.findByText(
-      "No shape in the catalogue for “Batman”. Try: circle, heart, star, horse, moon, cat or fish.",
-    ),
+    await screen.findByText(/^No shape in the catalogue for “Batman”\. Describe/),
   ).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+
+  await fireEvent.press(screen.getByRole("button", { name: "star" }));
+  expect(field.props.value).toBe("star");
+  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
 });
 
 test("when the AI is off the app says so, and asks again next time", async () => {

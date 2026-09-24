@@ -37,7 +37,7 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-**TASK-031** — `feat/TASK-031-no-shape-no-fit`: file del task scritto; proposta della distanza che ci sta (scelta dell'utente) e forme da toccare quando non c'è forma.
+**TASK-031** — `feat/TASK-031-no-shape-no-fit`: fatto e con i test verdi. Quando la forma non ci sta per la distanza, l'API suggerisce quella che ci sta e l'app mostra «Try N km» (ADR-0041); quando non c'è forma, o la somiglianza è bassa, le forme del catalogo sono pulsanti. Manca la prova sull'iPhone dall'utente.
 
 ## Completato
 
@@ -80,7 +80,7 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## Bloccato
 
-**TASK-031** — `feat/TASK-031-no-shape-no-fit`: file del task scritto; proposta della distanza che ci sta (scelta dell'utente) e forme da toccare quando non c'è forma.
+**TASK-031** — `feat/TASK-031-no-shape-no-fit`: fatto e con i test verdi. Quando la forma non ci sta per la distanza, l'API suggerisce quella che ci sta e l'app mostra «Try N km» (ADR-0041); quando non c'è forma, o la somiglianza è bassa, le forme del catalogo sono pulsanti. Manca la prova sull'iPhone dall'utente.
 
 ## Note per la prossima sessione
 

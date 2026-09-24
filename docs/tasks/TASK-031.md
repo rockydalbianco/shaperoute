@@ -57,15 +57,16 @@ forme lato API.
 
 ## Criteri di accettazione
 
-- [ ] Il motore, quando fallisce per distanza, espone la distanza del
+- [x] Il motore, quando fallisce per distanza, espone la distanza del
       percorso migliore; per somiglianza, nessuna.
-- [ ] L'API restituisce `suggested_distance_m` in km interi, tra 1 e 21 km,
-      o `null`; test API verdi.
-- [ ] Il contratto in `shared-types` e la fixture hanno il campo; test verdi.
-- [ ] L'app mostra «Try N km» quando c'è una distanza suggerita e,
+- [x] L'API restituisce `suggested_distance_m` in km interi, tra 1 e 50 km
+      (i limiti del contratto; l'app offre il pulsante fino a 21 km), o
+      `null`; test API verdi.
+- [x] Il contratto in `shared-types` e la fixture hanno il campo; test verdi.
+- [x] L'app mostra «Try N km» quando c'è una distanza suggerita e,
       toccandolo, richiede il percorso con quella distanza (test del
       pannello o dell'hook).
-- [ ] Con «nessuna forma» l'app mostra le forme del catalogo come pulsanti
+- [x] Con «nessuna forma» l'app mostra le forme del catalogo come pulsanti
       che le scrivono nel riquadro.
 - [ ] Provato sull'iPhone dall'utente: un caso per ciascun vicolo.
 

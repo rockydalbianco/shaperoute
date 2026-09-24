@@ -65,6 +65,11 @@ export interface ApiError {
     code: ApiErrorCode;
     /** In English, for people: the engine's own words when it has them. */
     message: string;
+    /**
+     * Only with "shape_not_drawable", else null: a distance the shape fits,
+     * in whole km as metres (TASK-031).
+     */
+    suggested_distance_m: number | null;
   };
 }
 

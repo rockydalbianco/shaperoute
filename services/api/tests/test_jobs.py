@@ -14,6 +14,7 @@ from route_engine.validation import InvalidRouteError
 
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.jobs import RouteJobs
+from shaperoute_api.schemas import ErrorDetail
 
 REQUEST = RouteRequest(start=(46.0671, 11.1214), shape="heart", distance_m=5000)
 RESULT = RouteResult(
@@ -144,7 +145,9 @@ def test_errors_end_in_failed(
     job = jobs.submit(REQUEST)
     wait_until(lambda: status(jobs, job.job_id) == "failed")
     failed = jobs.get(job.job_id)
-    assert failed is not None and failed.error == (code, message)
+    assert failed is not None and failed.error == ErrorDetail(
+        code=code, message=message
+    )
     assert failed.result is None
 
 

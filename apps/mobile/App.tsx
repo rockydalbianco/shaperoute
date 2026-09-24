@@ -158,6 +158,13 @@ function MapScreen() {
             }
           }}
           onCancel={cancel}
+          onTryDistance={(distance_m) => {
+            setDistanceText(String(distance_m / 1000));
+            if (request) {
+              draw({ ...request, distance_m });
+            }
+          }}
+          onPickShape={setShapeText}
           exporting={exporting}
           onExport={() => {
             if (view.status === "done") {

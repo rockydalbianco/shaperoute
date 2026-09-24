@@ -584,7 +584,16 @@ def _scale_of(placed: Sequence[LatLon], shape: Sequence[Point]) -> float:
 
 
 class ShapeNotDrawableError(ValueError):
-    """The roads around the start cannot draw the requested shape."""
+    """The roads around the start cannot draw the requested shape.
+
+    best_distance_m is the length of the best route found when it followed
+    the shape but missed the distance: that distance the shape fits
+    (TASK-031). None when the best route did not follow the shape.
+    """
+
+    def __init__(self, message: str, best_distance_m: float | None = None) -> None:
+        super().__init__(message)
+        self.best_distance_m = best_distance_m
 
 
 def _compass(origin: LatLon, point: LatLon) -> str:
@@ -704,7 +713,8 @@ def plan_shape(
             raise ShapeNotDrawableError(
                 f"{what}: the best shape is "
                 f"{gap / 1000:+.1f} km from the target, at most "
-                f"{DISTANCE_FALLBACK_M / 1000:g} km allowed"
+                f"{DISTANCE_FALLBACK_M / 1000:g} km allowed",
+                best_distance_m=best.route.distance_m,
             )
         route, sim, warnings = best.route, best.similarity, list(found.warnings)
         placed, chosen_start = best.shape, best.placement.start

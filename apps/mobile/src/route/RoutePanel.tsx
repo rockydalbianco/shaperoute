@@ -1,4 +1,4 @@
-import { MAX_SHAPE_TEXT_LENGTH, type Shape } from "@shaperoute/shared-types";
+import { MAX_SHAPE_TEXT_LENGTH, type Shape, SHAPES } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -31,6 +31,10 @@ type Props = {
   /** The GPX export of the route on screen. */
   exporting: ExportState;
   onExport: () => void;
+  /** Ways out of a dead end (TASK-031): draw again at a distance the shape
+   * fits, or write a shape of the catalogue in the field. */
+  onTryDistance: (distanceM: number) => void;
+  onPickShape: (shape: Shape) => void;
 };
 
 export function RoutePanel({
@@ -48,6 +52,8 @@ export function RoutePanel({
   onCancel,
   exporting,
   onExport,
+  onTryDistance,
+  onPickShape,
 }: Props) {
   const waiting = view.status === "waiting";
   return (
@@ -78,7 +84,12 @@ export function RoutePanel({
         />
         <Text>km</Text>
       </View>
-      <ShapeNote text={shapeText} shape={shape} reading={reading} />
+      <ShapeNote
+        text={shapeText}
+        shape={shape}
+        reading={reading}
+        onPickShape={onPickShape}
+      />
       {distanceM === null ? (
         <Text style={styles.problem}>
           {`Enter a distance between ${MIN_DISTANCE_KM} and ${MAX_APP_DISTANCE_KM} km.`}
@@ -136,7 +147,13 @@ export function RoutePanel({
           {exporting.status === "failed" && <Problem problem={exporting.problem} />}
         </View>
       )}
-      {view.status === "failed" && <Problem problem={view.problem} />}
+      {view.status === "failed" && (
+        <Problem
+          problem={view.problem}
+          onTryDistance={onTryDistance}
+          onPickShape={onPickShape}
+        />
+      )}
     </View>
   );
 }
@@ -146,10 +163,12 @@ function ShapeNote({
   text,
   shape,
   reading,
+  onPickShape,
 }: {
   text: string;
   shape: Shape | null;
   reading: ShapeReadingState | null;
+  onPickShape: (shape: Shape) => void;
 }) {
   if (shape !== null) {
     return text.trim().toLowerCase() === shape ? null : (
@@ -162,10 +181,15 @@ function ShapeNote({
     case "reading":
       return <Text style={styles.note}>The AI is reading it…</Text>;
     case "read":
+      // What the model does not know it does not guess (AI.md, «Limiti»):
+      // plainer words may work, or a shape of the catalogue.
       return (
-        <Text style={styles.problem}>
-          {`No shape in the catalogue for “${text.trim()}”. Try: ${shapeList()}.`}
-        </Text>
+        <View>
+          <Text style={styles.problem}>
+            {`No shape in the catalogue for “${text.trim()}”. Describe what it looks like (“prancing horse”, not “Ferrari badge”), or pick one:`}
+          </Text>
+          <ShapeChoices onPick={onPickShape} />
+        </View>
       );
     case "failed":
       return <Problem problem={reading.problem} />;
@@ -189,12 +213,48 @@ function waitingText({ phase, request }: Extract<RouteState, { status: "waiting"
   }
 }
 
-function Problem({ problem }: { problem: RouteProblem }) {
-  const { text, detail } = problemText(problem);
+function Problem({
+  problem,
+  onTryDistance,
+  onPickShape,
+}: {
+  problem: RouteProblem;
+  onTryDistance?: (distanceM: number) => void;
+  onPickShape?: (shape: Shape) => void;
+}) {
+  const { text, detail, tryDistanceM, pickShape } = problemText(problem);
   return (
-    <View>
+    <View style={styles.problemBox}>
       <Text style={styles.problem}>{text}</Text>
+      {tryDistanceM !== undefined && onTryDistance && (
+        <Pressable
+          style={[styles.secondary, styles.choice]}
+          onPress={() => onTryDistance(tryDistanceM)}
+          accessibilityRole="button"
+        >
+          <Text style={styles.secondaryText}>{`Try ${tryDistanceM / 1000} km`}</Text>
+        </Pressable>
+      )}
+      {pickShape && onPickShape && <ShapeChoices onPick={onPickShape} />}
       {detail && <Text style={styles.detail}>{detail}</Text>}
+    </View>
+  );
+}
+
+/** The shapes of the catalogue, each writing itself in the shape field. */
+function ShapeChoices({ onPick }: { onPick: (shape: Shape) => void }) {
+  return (
+    <View style={styles.choices}>
+      {SHAPES.map((shape) => (
+        <Pressable
+          key={shape}
+          style={[styles.secondary, styles.chip]}
+          onPress={() => onPick(shape)}
+          accessibilityRole="button"
+        >
+          <Text>{shape}</Text>
+        </Pressable>
+      ))}
     </View>
   );
 }
@@ -276,6 +336,21 @@ const styles = StyleSheet.create({
   },
   problem: {
     color: "#b42318",
+  },
+  problemBox: {
+    gap: 6,
+  },
+  choice: {
+    alignSelf: "flex-start",
+  },
+  choices: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   detail: {
     color: "#666",

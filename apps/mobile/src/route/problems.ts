@@ -1,8 +1,18 @@
+import { MAX_APP_DISTANCE_KM } from "./distance";
 import { shapeList } from "./shapeWords";
 import type { RouteProblem } from "./useRouteRequest";
 
-/** What the screen says: what happened and what to do, then details. */
-export type ProblemText = { text: string; detail?: string };
+/**
+ * What the screen says: what happened and what to do, then details. The
+ * way out, when there is one to tap (TASK-031): a distance the shape fits,
+ * or the shapes of the catalogue.
+ */
+export type ProblemText = {
+  text: string;
+  detail?: string;
+  tryDistanceM?: number;
+  pickShape?: boolean;
+};
 
 const BUG = "The app and the API do not agree (a bug)";
 
@@ -10,11 +20,21 @@ export function problemText(problem: RouteProblem): ProblemText {
   switch (problem.kind) {
     case "api_error":
       switch (problem.code) {
-        case "shape_not_drawable":
+        case "shape_not_drawable": {
+          const fits = problem.suggested_distance_m;
+          if (fits != null && fits <= MAX_APP_DISTANCE_KM * 1000) {
+            return {
+              text: `This shape does not fit the roads here at this distance. It fits at about ${fits / 1000} km.`,
+              detail: problem.message,
+              tryDistanceM: fits,
+            };
+          }
           return {
-            text: "This shape does not fit the roads here. Try another distance, shape or start.",
+            text: "This shape does not fit the roads here. Try another shape, or another start:",
             detail: problem.message,
+            pickShape: true,
           };
+        }
         case "map_data_unavailable":
           return {
             text: "Map data for this area could not be downloaded. Try again later.",

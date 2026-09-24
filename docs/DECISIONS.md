@@ -1138,3 +1138,27 @@ primo secondo tempo in una zona non in cache la scarica: 42 s per quella di
 Levico. Il posto si cerca solo quando la somiglianza del motore dice che la
 forma non va: dove l'occhio non è d'accordo (l'albero di Levico) non si
 sposta.
+
+## ADR-0041 — Quando la forma non ci sta, proporre la distanza che ci sta
+**Stato**: Attiva · 2026-09-24 · scelto dall'utente fra quattro proposte
+dell'agente (TASK-031)
+
+Quando il motore rifiuta perché il percorso migliore segue la forma ma è
+lontano dalla distanza chiesta, la sua lunghezza è già nota: il rifiuto la
+porta (`ShapeNotDrawableError.best_distance_m`) e l'API la restituisce
+arrotondata al km come `suggested_distance_m`, fra 1 e 50 km. L'app, se è
+entro i 21 km che offre, mostra «Try N km», che scrive la distanza e
+ridisegna. Se il motivo è la somiglianza, o la distanza è oltre 21 km, l'app
+propone le forme del catalogo da toccare. Il campo c'è in ogni errore,
+`null` fuori da questo caso.
+
+**Scartate**: provare le altre forme del catalogo nella stessa zona e
+proporre quelle che riescono (5–25 s a forma: minuti di attesa); le due
+cose insieme; solo testi più chiari.
+
+**Motivo**: nessun calcolo in più, e una via d'uscita da toccare.
+
+**Conseguenza**: la distanza proposta non è garantita: un nuovo disegno
+rifà la ricerca, che a quella distanza di solito trova lo stesso percorso,
+ma può rifiutare ancora.
+

@@ -20,7 +20,13 @@ export const MAX_POLL_FAILURES = 3;
 /** Every way a route request can end. */
 export type RouteOutcome =
   | { kind: "route"; result: RouteResult }
-  | { kind: "api_error"; code: ApiErrorCode; message: string }
+  | {
+      kind: "api_error";
+      code: ApiErrorCode;
+      message: string;
+      /** A distance the shape fits (TASK-031); missing from older APIs. */
+      suggested_distance_m?: number | null;
+    }
   | { kind: "bad_answer"; status: number }
   | { kind: "unreachable"; url: string }
   /** The API does not know the job any more: restarted, or 10 minutes gone. */
@@ -85,7 +91,7 @@ export async function requestRoute(
       return { kind: "route", result: job.result };
     }
     if (job.status === "failed" && job.error) {
-      return { kind: "api_error", code: job.error.code, message: job.error.message };
+      return { kind: "api_error", ...job.error };
     }
     onStatus?.(job.status);
     if (Date.now() >= deadline) {
@@ -129,8 +135,7 @@ async function call(
 
 function problemOf(answer: Answer): RouteOutcome {
   if (!answer.ok && isApiError(answer.body)) {
-    const { code, message } = answer.body.error;
-    return { kind: "api_error", code, message };
+    return { kind: "api_error", ...answer.body.error };
   }
   return { kind: "bad_answer", status: answer.status };
 }

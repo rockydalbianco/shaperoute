@@ -87,6 +87,7 @@ def test_a_failed_job_carries_the_error(client_for: Any) -> None:
         "error": {
             "code": "shape_not_drawable",
             "message": "a 5 km heart cannot be drawn here",
+            "suggested_distance_m": None,
         },
     }
 

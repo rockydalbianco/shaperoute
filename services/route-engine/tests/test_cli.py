@@ -4,7 +4,7 @@ import networkx as nx
 import pytest
 
 import route_engine.__main__ as cli
-from route_engine.__main__ import OutlineRequest, main, parse_request
+from route_engine.__main__ import OutlineRequest, WordRequest, main, parse_request
 from route_engine.geo import local_to_latlon
 from route_engine.models import RouteRequest
 from route_engine.shapes import OUTLINES
@@ -157,4 +157,58 @@ def test_outline_writes_the_route_as_gpx(
     assert "similarity:" in printed
     gpx = out.read_text(encoding="utf-8")
     assert "<name>house 3 km" in gpx
+    assert gpx.count("<trkpt") > 10
+
+
+# --- --word: a word written one letter at a time (TASK-050) ---
+
+
+def _word_args(**overrides: str) -> list[str]:
+    values = {"word": "ciao", "distance": "3000", "start": "46.0122,11.2986"}
+    values.update(overrides)
+    return [f"--{name}={value}" for name, value in values.items()]
+
+
+def test_word_builds_a_request_with_the_word_in_capitals() -> None:
+    request = parse_request(_word_args())
+    assert isinstance(request, WordRequest)
+    assert request.shape == "CIAO"
+    assert [letter.char for letter in request.word.letters] == list("CIAO")
+    assert request.distance_m == 3000
+    assert request.start == LEVICO
+
+
+@pytest.mark.parametrize(
+    ("argv", "message"),
+    [
+        ([*_args(), "--word=CIAO"], "not allowed with argument"),
+        (_word_args(word="ciao!"), "no letter !"),
+        (_word_args(distance="0"), "distance must be between"),
+    ],
+)
+def test_word_errors_exit_with_readable_error(
+    argv: list[str], message: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        parse_request(argv)
+    assert exc_info.value.code == 2
+    err = capsys.readouterr().err
+    assert message in err
+    assert "Traceback" not in err
+
+
+def test_word_writes_the_route_as_gpx(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(cli, "OsmnxSource", _GridSource)
+    out = tmp_path / "io.gpx"
+    assert main([*_word_args(word="io", distance="2000"), f"--out={out}"]) == 0
+    printed = capsys.readouterr().out
+    assert "IO (word, letters from letters.json)" in printed
+    assert "letters:" in printed
+    assert "(letters)" in printed
+    gpx = out.read_text(encoding="utf-8")
+    assert "<name>IO 2 km" in gpx
     assert gpx.count("<trkpt") > 10

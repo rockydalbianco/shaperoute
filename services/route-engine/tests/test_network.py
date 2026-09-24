@@ -168,6 +168,22 @@ def test_a_stroke_comes_back_the_way_it_went_despite_the_penalty() -> None:
     assert route.points == [_at(0, 0), _at(1, 0), _at(0, 0)]
 
 
+def test_a_word_comes_back_on_the_road_it_went_out_on() -> None:
+    # Out along a street and back: a one-way road beside it is shorter on
+    # the way back, 180 m against 200. With the roads just used weighing
+    # less (`retrace` below 1), the route comes back the way it went, as a
+    # word does (TASK-050); by default it takes the road beside.
+    graph = _grid(3).subgraph([(0, 0), (1, 0), (2, 0)]).copy()
+    beside = local_to_latlon(LEVICO, SPACING_M, 30.0)
+    graph.add_node("beside", y=beside[0], x=beside[1])
+    graph.add_edge((2, 0), "beside", length=90.0)
+    graph.add_edge("beside", (0, 0), length=90.0)
+    shape = [_at(0, 0), _at(2, 0), _at(0, 0)]
+    assert beside in snap_to_network(graph, shape, corridor=0.0).points
+    route = snap_to_network(graph, shape, corridor=0.0, retrace=0.5)
+    assert route.points == [_at(0, 0), _at(1, 0), _at(2, 0), _at(1, 0), _at(0, 0)]
+
+
 def test_a_stroke_along_a_dead_end_survives_the_pruning() -> None:
     # The block of the test above with its dead end two nodes long, and a
     # shape that draws it out and back from (1, 0): the whole line stays.

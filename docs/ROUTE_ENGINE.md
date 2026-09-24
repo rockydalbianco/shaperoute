@@ -137,6 +137,33 @@ Una parola a tratto singolo non ha un contorno che la contiene. Al posto di
   ritorno al doppio della distanza, entrando solo dal suo primo punto, e
   del percorso tiene l'andata, fino al fondo della linea.
 
+### Parole lettera per lettera (TASK-050)
+
+Invece di un `path` disegnato a mano, una parola si **compone** da un
+alfabeto a tratto singolo (`route_engine/letters.json`, per ora C,
+I, A, O; ADR-0044). Ogni lettera è alta 1 e sta sulla sua base, y = 0:
+
+```json
+"A": {"out": [[0, 0], [0.12, 0.4], [0.48, 0.4], [0.6, 0]],
+      "back": [[0.6, 0], [0.48, 0.4], [0.3, 1], [0.12, 0.4], [0, 0]]}
+```
+
+- `out` va dall'ingresso all'uscita, tutti e due sulla base, e può tornare
+  su se stessa (la I sale e scende, la C fa andata e ritorno).
+- `back`, solo se uscita e ingresso non coincidono, riporta all'ingresso
+  senza passare dalla base: la A torna per le gambe, e la base non la
+  chiude a triangolo.
+
+`words.py` mette le lettere in fila, **0,6 dell'altezza** fra una e
+l'altra, unite da tratti di base; dopo l'ultima lettera il percorso torna
+indietro sulla base e sui `back`, fino alla partenza: una linea chiusa come
+le altre forme. La linea parte **a metà del primo spazio**, e ogni lato è
+diviso in pezzi di al più **1/16 dell'altezza**: «CIAO» ha 296 punti di
+passaggio invece di 64, e la I ne ha 16 per salire e 16 per scendere. Ogni
+punto sa di quale lettera è, o di quale spazio e a che punto (§5, «Lettere
+che si spostano»). Lettere che l'alfabeto non ha: la parola è rifiutata
+con l'elenco di quelle che ha.
+
 I contorni stanno in `route_engine/shapes/outlines/`, dati del pacchetto:
 stella e casa (con camino e porta) disegnate per ShapeRoute, e la sagoma di
 un cavallo al galoppo (OpenClipart, CC0). La casa si prova solo dalla CLI:
@@ -320,6 +347,27 @@ l'errore lo dice («… cannot be drawn here, nor within 2 km: …»). L'avviso
 sullo spostamento passa ai km sopra i 1000 m («start moved 1.5 km
 north-east of the requested point, …»).
 
+### Lettere che si spostano (TASK-050)
+
+Per una parola composta (§2) la ricerca è la stessa, con due differenze
+(ADR-0044):
+
+- **Entra nella parola solo a metà di uno spazio** fra due lettere: le fasi
+  sono i centri degli spazi, non i quarti del perimetro.
+- **A ogni tracciamento, prima di tracciare, ogni lettera si sposta** dove
+  i suoi tratti hanno più strade: prova gli spostamenti fino a **1/4
+  dell'altezza** su una griglia di **1/16** (49 in tutto, lungo la base e
+  in su), conta le strade entro 1/16 dell'altezza lungo la lettera sola
+  (`RoadMask`), e ogni spostamento costa fino al 5% del conteggio, al
+  massimo spostamento. Si guarda la lettera sola perché la quota sulla
+  parola intera premia gli spostamenti che accorciano gli spazi. Gli spazi
+  si allungano o accorciano, e lo spazio da cui parte il percorso resta
+  fermo nel suo centro, dove sta la partenza. Le lettere non ruotano e non
+  cambiano misura.
+
+La somiglianza si misura sulla parola con le lettere spostate: è quella
+che il percorso deve disegnare.
+
 ### Funzione obiettivo
 
 ```
@@ -392,6 +440,14 @@ python -m route_engine \
     --distance 15000 \
     --start 46.0671,11.1214 \
     --out house_trento.gpx
+```
+
+Con una parola, `--word` (§2, «Parole lettera per lettera»); la CLI
+stampa di quanto si è spostata ogni lettera, in metri lungo la base e in
+su:
+
+```
+python -m route_engine --word CIAO --distance 15000     --start 46.0671,11.1214 --out ciao_trento.gpx
 ```
 
 Il GPX si apre in un visualizzatore (gpx.studio, geojson.io) e si guarda.

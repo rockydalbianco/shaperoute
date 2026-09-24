@@ -1,5 +1,5 @@
 {
-  "shapes": ["circle", "heart", "star", "horse"],
+  "shapes": ["circle", "heart", "star", "horse", "moon", "cat", "fish"],
   "activities": ["running"],
   "min_distance_m": 1000,
   "max_distance_m": 50000

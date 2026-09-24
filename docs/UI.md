@@ -79,6 +79,9 @@ sulle strade:
 | `heart` | heart, love · cuore, cuoricino, amore |
 | `star` | star · stella, stellina |
 | `horse` | horse, pony, stallion · cavallo, cavallino, stallone, puledro |
+| `moon` | moon, crescent, crescent moon · luna, mezzaluna, falce di luna |
+| `cat` | cat, kitty, kitten · gatto, gatta, gattino, micio |
+| `fish` | fish · pesce, pesciolino |
 
 - Anche al plurale («stelle», «hearts»), con l'articolo («una stella»,
   «l'amore»), con maiuscole e accenti qualsiasi. La tabella sta in
@@ -86,7 +89,7 @@ sulle strade:
 - Una parola che non è il nome della forma la conferma sotto il campo:
   «cavallo» mostra «→ horse».
 - Una parola sconosciuta, o il campo vuoto: «Unknown shape. Try: circle,
-  heart, star or horse.» e «Draw route» resta spento. Le frasi («stemma
+  heart, star, horse, moon, cat or fish.» e «Draw route» resta spento. Le frasi («stemma
   della Ferrari») le leggerà l'AI (TASK-030).
 - Nel campo vuoto il suggerimento è «heart, star, horse…».
 

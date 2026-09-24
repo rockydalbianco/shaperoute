@@ -19,6 +19,14 @@ test.each([
   ["Cavallì", "horse"],
   ["the horse", "horse"],
   ["pony", "horse"],
+  ["la luna", "moon"],
+  ["Mezzaluna", "moon"],
+  ["a crescent moon", "moon"],
+  ["il gatto", "cat"],
+  ["micio", "cat"],
+  ["a kitten", "cat"],
+  ["pesci", "fish"],
+  ["the fish", "fish"],
 ])("%j is a %s", (text, shape) => {
   expect(toShape(text)).toBe(shape);
 });
@@ -54,5 +62,5 @@ test("every word names its own shape, and no word is used twice", () => {
 });
 
 test("the suggestion lists every shape", () => {
-  expect(shapeList()).toBe("circle, heart, star or horse");
+  expect(shapeList()).toBe("circle, heart, star, horse, moon, cat or fish");
 });

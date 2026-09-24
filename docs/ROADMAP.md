@@ -111,6 +111,7 @@ Obiettivo: l'utente scrive nel riquadro della forma una parola («stella»,
 | TASK-035 | Una somiglianza che vede i dettagli, confrontata con i giudizi a occhio |
 | TASK-036 | Forme dritte: le forme con un alto e un basso non si inclinano |
 | TASK-037 | Tratti interni ripassati: rami, occhi, gambe, finestre |
+| TASK-039 | Luna, gatto e pesce nel catalogo |
 | TASK-038 | Trova dove la forma ci sta: partenze nel raggio di qualche km |
 | TASK-030 | L'AI riconosce la parola scritta e sceglie la forma del catalogo (ADR-0012) |
 | TASK-031 | Parole senza forma nel catalogo e forme che le strade non reggono |
@@ -162,6 +163,10 @@ pesce `sì`, casa `quasi`; a Milano tutto `sì`. A Levico no: casa e albero
 `no`, gatto e pesce non disponibili. Quattro casi migliorano, uno peggiora
 (l'albero di Levico). Gatto e pesce si possono proporre per il catalogo;
 per Levico serve trovare il posto (TASK-038).
+
+**TASK-039 (2026-09-24)**: luna, gatto e pesce entrano nel catalogo, scelti
+dall'utente con la regola di TASK-034 (un `sì` a Trento o a Levico); gatto
+e pesce con i tratti.
 
 **Deciso con l'utente (2026-09-24).** Non serve interpretare una frase:
 distanza e attività si scrivono nei loro riquadri, e l'AI serve solo per la

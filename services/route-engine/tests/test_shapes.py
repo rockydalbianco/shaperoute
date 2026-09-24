@@ -18,12 +18,20 @@ def _segments(points: list[Point]) -> list[float]:
     return [math.dist(a, b) for a, b in zip(points, points[1:], strict=False)]
 
 
+def _has_strokes(name: str) -> bool:
+    shape = get_shape(name)
+    return isinstance(shape, Outline) and bool(shape.strokes)
+
+
 @pytest.mark.parametrize("name", SUPPORTED_SHAPES)
 def test_shape_has_n_vertices_and_is_closed(name: str) -> None:
     points = get_shape(name)(N)
     assert len(points) == N + 1
     assert points[-1] == points[0]
-    assert len(set(points[:-1])) == N
+    assert all(a != b for a, b in zip(points, points[1:], strict=False))
+    if not _has_strokes(name):
+        # With strokes the way back passes again on the way out (TASK-037).
+        assert len(set(points[:-1])) == N
 
 
 @pytest.mark.parametrize("name", SUPPORTED_SHAPES)
@@ -54,6 +62,13 @@ def _arc_positions(points: list[Point], outline: Sequence[Point]) -> list[float]
 def test_spacing_is_uniform_within_5_percent(name: str, n_points: int) -> None:
     shape = get_shape(name)
     points = shape(n_points)
+    if isinstance(shape, Outline) and shape.strokes:
+        # Every vertex of the drawn path stays, so the way back follows the
+        # way out; the other points cut its sides into equal parts (TASK-037).
+        path = shape.path()
+        assert all(vertex in points for vertex in path)
+        assert len(points) == max(n_points, len(path) - 1) + 1
+        return
     if isinstance(shape, Outline):
         # Straight between two points across a corner is shorter than along
         # the outline: measure along it, where the spacing is exact.
@@ -138,4 +153,5 @@ def test_the_outlines_ship_with_the_package() -> None:
     data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
     patterns = data["tool"]["setuptools"]["package-data"]["route_engine.shapes"]
     assert patterns == ["outlines/*.json"]
-    assert {path.stem for path in OUTLINES.glob("*.json")} >= {"star", "horse"}
+    catalogue = {"star", "horse", "moon", "cat", "fish"}
+    assert {path.stem for path in OUTLINES.glob("*.json")} >= catalogue

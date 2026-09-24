@@ -450,7 +450,9 @@ test("an unknown shape turns Draw route off and suggests the catalogue", async (
   for (const text of ["drago", "casa", ""]) {
     await fireEvent.changeText(screen.getByLabelText("Shape"), text);
     expect(
-      screen.getByText("Unknown shape. Try: circle, heart, star or horse."),
+      screen.getByText(
+        "Unknown shape. Try: circle, heart, star, horse, moon, cat or fish.",
+      ),
     ).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
     await fireEvent.press(screen.getByText("Draw route"));

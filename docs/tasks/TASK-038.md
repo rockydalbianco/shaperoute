@@ -1,6 +1,6 @@
 # TASK-038 — Trova dove la forma ci sta
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 3 · **Branch**: `feat/TASK-038-find-the-place` (parte da `main`,
 che contiene TASK-039)
 
@@ -95,8 +95,9 @@ download della zona di Levico (punto D). Registrate in ADR-0040.
       gatto e pesce di Levico, cuore di Trento e stella di Levico tutti
       `sì`. Casa e albero di Levico e gatto di Trento non cambiano (nessun
       campione nuovo).
-- [ ] Sull'iPhone il segnaposto mostra dove andare.
-- [ ] I job della CI sono verdi sulla PR.
+- [x] Sull'iPhone il segnaposto mostra dove andare (gatto 15 km a Levico,
+      prova dell'utente, 2026-09-24).
+- [x] I job della CI sono verdi sulla PR (#44).
 - [x] ADR-0040; `ROUTE_ENGINE.md`, `UI.md`, `API.md`, `ROADMAP.md`,
       `STATUS.md` aggiornati.
 
@@ -130,4 +131,10 @@ docs/tasks/TASK-038.md
 
 ## Esito
 
-*(da compilare a fine task)*
+Quando la forma non va attorno alla partenza, il motore trova un posto fino
+a 2 km e l'app mostra «Start here»: provato dall'utente sull'iPhone. A
+Levico 15 km gatto e pesce, prima non disponibili, sono `sì` a 1 km; cuore
+di Trento e stella di Levico si spostano di 1 km e restano `sì`. Emerso: il
+cuore di Trento da 15 km sale a 47–52 s, perché il secondo tempo arriva
+dopo tutta la ricerca vicina (`API.md`, «Tempi»); l'albero di Levico non si
+sposta, perché per il motore va già bene. Differenze dal piano: nessuna.

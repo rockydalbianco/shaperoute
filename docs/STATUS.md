@@ -26,7 +26,7 @@ attorno alla partenza, il motore cerca un posto fino a 2 km e l'app mostra
 
 **TASK-030 — L'AI riconosce la parola scritta** (`ROADMAP.md`, fase 3):
 da «stemma della Ferrari» a una forma del catalogo; si decide ADR-0012.
-Prima va chiuso TASK-038 (sotto).
+Il file del task non è ancora scritto.
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
@@ -34,8 +34,7 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-- **TASK-038** — Trova dove la forma ci sta: fatto, giudicato dall'utente
-  (4 `sì`); manca la prova sull'iPhone (gatto 15 km a Levico) e la PR.
+Niente.
 
 ## Completato
 
@@ -55,7 +54,8 @@ non fa merge, e ogni task parte dal branch del precedente.
   uno peggiora; gatto e pesce `sì` a Trento e Milano, Levico `no`.
   TASK-039: luna, gatto e pesce nel catalogo, scelti dall'utente; provati
   sull'iPhone. TASK-038: se la forma non va vicino, un posto fino a 2 km
-  (ADR-0040); a Levico gatto e pesce `sì` a 1 km.
+  e «Start here» nell'app (ADR-0040); a Levico gatto e pesce `sì` a 1 km;
+  provato sull'iPhone.
 - **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in

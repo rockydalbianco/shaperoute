@@ -244,7 +244,8 @@ chiuso; resta dalla CLI.
 passato alle indicazioni di svolta, di un'altra sessione): le lettere si
 compongono da un alfabeto a tratto singolo, più distanziate, con un punto
 di passaggio ogni 1/16 dell'altezza, e ognuna si sposta di poco dove ha
-più strade (ADR-0044).
+più strade (ADR-0044). **Fatto**: per l'utente «CIAO» è `sì` a Trento,
+Levico e Milano, molto meglio di TASK-040; resta dalla CLI.
 
 ## Fase 5 — Oltre
 

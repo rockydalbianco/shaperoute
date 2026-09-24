@@ -1,6 +1,6 @@
 # TASK-050 — Lettere una per una: ognuna cerca le sue strade, poi si collegano
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-050-letters-one-by-one` (parte da `main`)
 
 Era TASK-047: quel numero è passato alle indicazioni di svolta, scritte
@@ -71,16 +71,16 @@ Deciso dall'agente su delega dell'utente:
 
 ## Criteri di accettazione
 
-- [ ] Una parola si compone dalle lettere, con lo spazio e la base, e il
+- [x] Una parola si compone dalle lettere, con lo spazio e la base, e il
       ritorno non chiude la A (test).
-- [ ] Ogni lato di una parola è lungo al più 1/16 dell'altezza (test).
-- [ ] Lo spostamento di una lettera la porta dove ha più strade, resta
+- [x] Ogni lato di una parola è lungo al più 1/16 dell'altezza (test).
+- [x] Lo spostamento di una lettera la porta dove ha più strade, resta
       entro il limite, e la partenza non si muove (test su un grafo con una
       strada sola).
-- [ ] Contorni e forme del catalogo danno gli stessi punti di prima (test
+- [x] Contorni e forme del catalogo danno gli stessi punti di prima (test
       esistenti verdi).
-- [ ] `ruff`, `black`, `pytest -m "not network"` puliti.
-- [ ] Campioni nelle tre zone e giudizio dell'utente, contro TASK-040.
+- [x] `ruff`, `black`, `pytest -m "not network"` puliti.
+- [x] Campioni nelle tre zone e giudizio dell'utente, contro TASK-040.
 
 ## File toccati
 
@@ -110,7 +110,10 @@ docs/DECISIONS.md (ADR-0044), docs/STATUS.md
 
 ## Esito
 
-In attesa del giudizio dell'utente. «CIAO» si compone da C, I, A, O e si
-scrive dalla CLI con `--word`; campioni a 15 km a Trento (0,82), Levico
-(0,86) e Milano (0,97), con la somiglianza delle lettere (ADR-0044,
-`samples/LOG.md`). Tutti i criteri tranne il giudizio sono soddisfatti.
+«CIAO» si compone da C, I, A, O e si scrive dalla CLI con `--word`: per
+l'utente `sì` a Trento, Levico e Milano a 15 km, molto meglio di TASK-040
+(ADR-0044, `samples/LOG.md`). Dopo i primi campioni la ricerca è passata a
+guardare le lettere una per una (piazzamenti e somiglianza) e la I torna
+sulla sua strada. Emerso: i tempi salgono a 40–140 s; le lettere si
+spostano poco. Rimandati, in «Fuori scope»: le altre lettere e le parole
+nell'app.

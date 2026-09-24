@@ -1234,7 +1234,7 @@ nell'app arriva, se serve, con le parole.
 ## ADR-0044 — Parole lettera per lettera: alfabeto a tratto singolo, lettere che si spostano
 **Stato**: Attiva · 2026-09-24 · chiesto dall'utente dopo TASK-041; il metodo
 deciso dall'agente su delega dell'utente; giudizio dell'utente sui
-campioni: in attesa
+campioni: `sì` nelle tre zone, molto meglio di TASK-040
 
 Dopo TASK-041 l'utente ha chiesto lettere più distanziate, una I corsa
 andata e ritorno sulla stessa strada, e di «intensificare i punti di
@@ -1282,8 +1282,9 @@ a Levico e 0,97 a Milano (con la misura delle altre forme 0,90, 0,93 e
 larghi tolgono distanza alle lettere. I tempi crescono a 40–140 s
 (TASK-040: 8–54 s): 296 punti invece di 64, e con la misura più severa la
 ricerca si ferma di rado prima del budget e prova anche lontano. Le
-lettere si spostano poco: solo la O, di 43–97 m. A Trento la C resta una
-linea. Il giudizio dell'utente: `samples/LOG.md`, TASK-050.
+lettere si spostano poco: solo la O, di 43–97 m. Per l'utente «CIAO» è
+`sì` a Trento, Levico e Milano, molto meglio di TASK-040
+(`samples/LOG.md`).
 
 ## ADR-0045 — Indicazioni di svolta: dagli incroci del grafo, non dalle curve
 **Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente

@@ -28,8 +28,10 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 
 ## Prossimo passo
 
-**TASK-050 — Lettere una per una** (`ROADMAP.md`, fase 4), in lavorazione
-in un'altra sessione. Per le indicazioni di svolta il seguito è
+**TASK-050 — Lettere una per una** (`ROADMAP.md`, fase 4): fatto,
+giudicato `sì` nelle tre zone. Per le scritte il seguito è **TASK-056**, la
+parola nell'API, poi **TASK-057**, il campo nell'app, chiesti dall'utente.
+Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
 nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
@@ -45,13 +47,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## In lavorazione
 
 Niente per l'app.
-
-- **TASK-050 — Lettere una per una** (branch
-  `feat/TASK-050-letters-one-by-one`): codice, test e campioni pronti
-  (ADR-0044), in attesa del giudizio dell'utente su «CIAO» a 15 km contro
-  TASK-040. File: `optimizer.py`, `network.py` (solo il parametro
-  `retrace`), `__main__.py`, `words.py`, `letters.json`, i loro test,
-  `ROUTE_ENGINE.md`, `ROADMAP.md`, `samples/`.
 
 ## Completato
 
@@ -71,7 +66,12 @@ Niente per l'app.
   nessuna in mezzo a una strada; 180 a Trento, 75 a Levico, 264 a Milano,
   dove i marciapiedi senza nome le rendono difficili da leggere. TASK-048:
   le richieste in due tempi le restituiscono, con la partenza e le vicine
-  segnate (`joined`, ADR-0047); l'app non le mostra ancora.
+  segnate (`joined`, ADR-0047); l'app non le mostra ancora. TASK-050:
+  le parole si compongono da un alfabeto a tratto singolo (C, I, A, O),
+  con lettere più distanziate, un punto di passaggio ogni 1/16
+  dell'altezza, ogni lettera spostata dove ha più strade e la I andata e
+  ritorno sulla stessa strada (ADR-0044); «CIAO» dalla CLI (`--word`) è
+  `sì` a Trento, Levico e Milano a 15 km, molto meglio di TASK-040.
 - **Fase 3** — TASK-032: forme da un contorno in JSON, dalla CLI
   (`--outline`, ADR-0035). Cancello superato: stella sì ovunque, cavallo
   quasi a Trento e sì a Levico e Milano; la casa no, anche con camino e

@@ -226,9 +226,9 @@ chiude ADR-0010.
 | 2026-09-24 | TASK-041_ciao-open_15km_trento_v1.gpx | trento | 0.96 | 15.4 / 15.0 km | peggio del chiuso | «CIAO» a sola andata, dalla C alla O; per l'utente il chiuso (TASK-040) era meglio; 733 m scale; 30 s |
 | 2026-09-24 | TASK-041_ciao-open_15km_levico_v1.gpx | levico | 0.91 | 14.9 / 15.0 km | peggio del chiuso | a sola andata; partenza spostata di 250 m a nord; 576 m gallerie; 13 s |
 | 2026-09-24 | TASK-041_ciao-open_15km_milano_v1.gpx | milano | 1.00 | 13.6 / 15.0 km | peggio del chiuso | a sola andata; partenza spostata di 1 km a est, dopo la ricerca lontana su una zona doppia: 263 s |
-| 2026-09-24 | TASK-050_ciao_15km_trento_v1.gpx | trento | 0.82 | 15.6 / 15.0 km | da giudicare | «CIAO» lettera per lettera, giro chiuso (ADR-0044); somiglianza delle lettere, 0,90 con quella delle altre forme; lettere alte 773 m, ruotata di 10°; la O spostata di 97 m verso la A e 48 m in su; 1059 m scale; 593 m gallerie; 142 s, con la ricerca lontana |
-| 2026-09-24 | TASK-050_ciao_15km_levico_v1.gpx | levico | 0.86 | 16.3 / 15.0 km | da giudicare | lettera per lettera; 0,93 con la misura delle altre forme; lettere alte 693 m; partenza spostata di 250 m a sud-est; la O spostata di 43 m verso la A; 239 m gallerie; 40 s, con la ricerca lontana |
-| 2026-09-24 | TASK-050_ciao_15km_milano_v1.gpx | milano | 0.97 | 15.1 / 15.0 km | da giudicare | lettera per lettera; 0,99 con la misura delle altre forme; lettere alte 810 m, nessuna spostata; al secondo tracciamento; 338 m scale; 148 m strade principali; 649 m gallerie; 44 s |
+| 2026-09-24 | TASK-050_ciao_15km_trento_v1.gpx | trento | 0.82 | 15.6 / 15.0 km | sì | «CIAO» lettera per lettera, giro chiuso (ADR-0044); per l'utente molto meglio di TASK-040; somiglianza delle lettere, 0,90 con quella delle altre forme; lettere alte 773 m, ruotata di 10°; la O spostata di 97 m verso la A e 48 m in su; 1059 m scale; 593 m gallerie; 142 s, con la ricerca lontana |
+| 2026-09-24 | TASK-050_ciao_15km_levico_v1.gpx | levico | 0.86 | 16.3 / 15.0 km | sì | lettera per lettera; 0,93 con la misura delle altre forme; lettere alte 693 m; partenza spostata di 250 m a sud-est; la O spostata di 43 m verso la A; 239 m gallerie; 40 s, con la ricerca lontana |
+| 2026-09-24 | TASK-050_ciao_15km_milano_v1.gpx | milano | 0.97 | 15.1 / 15.0 km | sì | lettera per lettera; 0,99 con la misura delle altre forme; lettere alte 810 m, nessuna spostata; al secondo tracciamento; 338 m scale; 148 m strade principali; 649 m gallerie; 44 s |
 
 <!--
 Esempio di riga compilata:

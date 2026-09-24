@@ -46,8 +46,8 @@ ciano di «Start here».
 
 Quattro regole:
 
-1. **Il giallo significa una cosa sola**: il percorso, e il comando che lo
-   produce. Gli avvisi usano `warning`, arancio: un avviso giallo
+1. **Il giallo significa una cosa sola**: il percorso, il comando che lo
+   produce e la barra che lo mostra mentre si disegna. Gli avvisi usano `warning`, arancio: un avviso giallo
    renderebbe il colore muto.
 2. **Sul giallo il testo è scuro** (`onAccent`, 13,5:1). Il bianco si ferma
    a 1,5:1, sotto il minimo, e in pieno sole, dove l'app si usa, non si
@@ -209,8 +209,13 @@ aperta la schermata si accorcia perché non copra i campi.
 
 «Draw route» è spento finché non c'è una partenza. Toccato, la richiesta va
 all'API in due tempi (ADR-0032): l'API la accetta subito, poi l'app chiede
-ogni 2 s a che punto è. La scheda dice cosa sta succedendo, accanto a un
-indicatore di caricamento (non più i secondi, TASK-054), e offre «Cancel»:
+ogni 2 s a che punto è. La scheda dice cosa sta succedendo e offre «Cancel»;
+sotto, una barra gialla che avanza (TASK-055, ADR-0050). L'API dice la fase,
+non una percentuale, quindi la barra è una stima: ogni fase ha il suo
+tratto (in coda fino all'8%, download della zona fino al 45%, calcolo fino
+al 95%) e lo percorre al ritmo dei tempi misurati qui sotto, rallentando
+verso la fine senza superarlo. Non torna mai indietro, e si riempie solo
+quando arriva il percorso.
 
 | Stato dell'API | Il pannello dice |
 |---|---|

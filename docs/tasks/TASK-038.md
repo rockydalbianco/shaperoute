@@ -79,16 +79,25 @@ download della zona di Levico (punto D). Registrate in ADR-0040.
 
 ## Criteri di accettazione
 
-- [ ] Dalla radice `npm run lint`, `npm run format:check`,
-      `npm run typecheck` e `npm test` passano; in `services/route-engine/`
-      e in `services/api/` `ruff`, `black --check` e
+- [x] Dalla radice `npm run lint`, `npm run format:check`,
+      `npm run typecheck` e `npm test` passano (173 test nell'app, 7 in
+      `shared-types`); in `services/route-engine/` (276 test) e in
+      `services/api/` (54) `ruff`, `black --check` e
       `pytest -m "not network"` passano.
-- [ ] Ogni caso del punto 2 ha il suo test.
-- [ ] Le forme del catalogo che oggi sono buone danno gli stessi percorsi.
-- [ ] I campioni del punto G hanno il giudizio dell'utente in `LOG.md`.
+- [x] Ogni caso del punto 2 ha il suo test (`test_optimizer.py`), e il
+      segnaposto i suoi (`messages.test.ts`, `MapView.test.tsx`,
+      `mapPage.test.ts`, `coordinates.test.ts`).
+- [x] Le forme del catalogo che oggi sono buone danno gli stessi percorsi:
+      stesso hash di `main` per cerchio 10 km a Trento e cavallo 15 km a
+      Levico. Cuore di Trento 15 km e stella di Levico 10 km non erano
+      buoni per il motore: si spostano, e l'utente li giudica `sì`.
+- [x] I campioni del punto G hanno il giudizio dell'utente in `LOG.md`:
+      gatto e pesce di Levico, cuore di Trento e stella di Levico tutti
+      `sì`. Casa e albero di Levico e gatto di Trento non cambiano (nessun
+      campione nuovo).
 - [ ] Sull'iPhone il segnaposto mostra dove andare.
 - [ ] I job della CI sono verdi sulla PR.
-- [ ] Nuova ADR; `ROUTE_ENGINE.md`, `UI.md`, `API.md`, `ROADMAP.md`,
+- [x] ADR-0040; `ROUTE_ENGINE.md`, `UI.md`, `API.md`, `ROADMAP.md`,
       `STATUS.md` aggiornati.
 
 ## File toccati
@@ -96,6 +105,7 @@ download della zona di Levico (punto D). Registrate in ADR-0040.
 ```
 services/route-engine/route_engine/optimizer.py
 services/route-engine/tests/test_optimizer.py
+services/api/shaperoute_api/jobs.py
 apps/mobile/src/**
 apps/mobile/__tests__/**
 samples/TASK-038_*.gpx

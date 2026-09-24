@@ -172,6 +172,13 @@ compare in `data/cache/`.
 Tutti i casi stanno sotto i 60 s dopo i quali iOS tende a chiudere una
 richiesta ferma; il cuore di Trento sfiora i 30 s dell'MVP (`PRODUCT.md`).
 
+Con la ricerca del posto (TASK-038, ADR-0040), misurati il 2026-09-24 dal
+motore, zone in cache, ogni caso due volte: gatto e pesce da 15 km a Levico
+12–14 s, stella da 10 km a Levico 7–10 s, tutti spostati di 1 km; cuore da
+15 km a Trento 47–52 s, perché prima finisce la ricerca vicina. Il primo
+secondo tempo che non trova la zona la scarica (Levico: 42 s in più); lo
+stato del job passa da `computing` a `downloading_map` e torna `computing`.
+
 Dal telefono (TASK-023, PC sull'hotspot dell'iPhone) i casi fino a 10 km
 nelle zone in cache hanno risposto in 5–25 s. Non stanno nei 60 s:
 - **15 km**, sempre: circa 14 s per ritagliare la zona, anche dalla

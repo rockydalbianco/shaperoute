@@ -18,15 +18,15 @@ da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
 percorso si esporta in GPX, e Garmin Connect lo apre. La forma si scrive
 in un riquadro, in italiano o in inglese, fra quelle del catalogo:
 cerchio, cuore, stella, cavallo, luna, gatto e pesce. Gatto e pesce hanno
-tratti interni, fatti andata e ritorno (gli occhi): si vedono dove le
-strade sono fitte (Trento, Milano), non a Levico.
+tratti interni, fatti andata e ritorno (gli occhi). Quando la forma non va
+attorno alla partenza, il motore cerca un posto fino a 2 km e l'app mostra
+«Start here»: così gatto e pesce si disegnano anche a Levico.
 
 ## Prossimo passo
 
-**TASK-038 — Trova dove la forma ci sta** (`ROADMAP.md`, fase 3): la
-ricerca prova partenze nel raggio di qualche km e l'app dice dove andare;
-è il rimedio per Levico, dove né il contorno né i tratti passano. ADR-0012
-si decide con TASK-030.
+**TASK-030 — L'AI riconosce la parola scritta** (`ROADMAP.md`, fase 3):
+da «stemma della Ferrari» a una forma del catalogo; si decide ADR-0012.
+Prima va chiuso TASK-038 (sotto).
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
@@ -34,7 +34,8 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-Niente.
+- **TASK-038** — Trova dove la forma ci sta: fatto, giudicato dall'utente
+  (4 `sì`); manca la prova sull'iPhone (gatto 15 km a Levico) e la PR.
 
 ## Completato
 
@@ -53,7 +54,8 @@ Niente.
   per le forme che li hanno (ADR-0039); a 15 km 4 casi su 12 migliorano,
   uno peggiora; gatto e pesce `sì` a Trento e Milano, Levico `no`.
   TASK-039: luna, gatto e pesce nel catalogo, scelti dall'utente; provati
-  sull'iPhone.
+  sull'iPhone. TASK-038: se la forma non va vicino, un posto fino a 2 km
+  (ADR-0040); a Levico gatto e pesce `sì` a 1 km.
 - **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in
@@ -80,7 +82,8 @@ Niente.
   `services/route-engine/.venv` (`SETUP.md`, passo 10.2).
 - In cache ci sono i grafi `foot` di zona di trento, levico, valsugana e
   milano (ADR-0023), più le zone di Trento da 21 e 30 km (TASK-026) e
-  quelle di Levico e Milano larghe 12,7 km (casa da 15 km, TASK-032):
+  quelle di Levico e Milano larghe 12,7 km (casa da 15 km, TASK-032), e
+  una zona di Levico larga 15 km (TASK-038, per cercare il posto a 2 km):
   tutti i casi girano offline. Da questo PC un indirizzo di
   `overpass-api.de` non risponde: prima di scaricare, leggere `MAPS.md`,
   "Overpass: come si scarica".

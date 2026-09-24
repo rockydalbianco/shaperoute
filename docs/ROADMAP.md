@@ -168,6 +168,11 @@ per Levico serve trovare il posto (TASK-038).
 dall'utente con la regola di TASK-034 (un `sì` a Trento o a Levico); gatto
 e pesce con i tratti.
 
+**TASK-038 (2026-09-24)**: quando la forma non va attorno alla partenza, il
+motore cerca un posto fino a 2 km e l'app mostra «Start here» (ADR-0040). A
+Levico 15 km gatto e pesce, prima non disponibili, diventano `sì` a 1 km;
+cuore di Trento e stella di Levico si spostano di 1 km e restano `sì`.
+
 **Deciso con l'utente (2026-09-24).** Non serve interpretare una frase:
 distanza e attività si scrivono nei loro riquadri, e l'AI serve solo per la
 forma. Il lavoro si divide in due:

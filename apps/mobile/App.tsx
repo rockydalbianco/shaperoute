@@ -1,17 +1,8 @@
-import type { LatLon, RouteRequest } from "@shaperoute/shared-types";
+import type { LatLon, RouteRequest, Shape } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Linking,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
+import { Keyboard, StyleSheet, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { apiUrl } from "./src/api/apiUrl";
 import {
@@ -19,26 +10,20 @@ import {
   useCurrentPosition,
 } from "./src/location/useCurrentPosition";
 import { MapView } from "./src/map/MapView";
-import { PlaceSearch } from "./src/places/PlaceSearch";
 import type { Place } from "./src/places/photon";
 import { toDistanceM } from "./src/route/distance";
-import { RoutePanel } from "./src/route/RoutePanel";
+import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { toShape } from "./src/route/shapeWords";
-import { useShapeReading } from "./src/route/useShapeReading";
-import {
-  color,
-  fontSize,
-  fontWeight,
-  MIN_TAP_SIZE,
-  radius,
-  space,
-} from "./src/theme/tokens";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import {
   type RouteState,
   sameRequest,
   useRouteRequest,
 } from "./src/route/useRouteRequest";
+import { useShapeReading } from "./src/route/useShapeReading";
+import { ChooseScreen } from "./src/screens/ChooseScreen";
+import { MapScreen } from "./src/screens/MapScreen";
+import { color } from "./src/theme/tokens";
 
 /** The API on the PC that serves the app (ADR-0031); null if unknown. */
 const API_URL = apiUrl();
@@ -47,18 +32,21 @@ const API_URL = apiUrl();
 type Start =
   { point: LatLon; source: "gps" } | { point: LatLon; source: "search"; label: string };
 
+/** The two screens (TASK-051): what to draw, then the map with the route. */
+type Screen = "choose" | "map";
+
 export default function App() {
   return (
     <SafeAreaProvider>
-      <MapScreen />
+      <Sgrava />
       {/* The app is dark: light status bar text on any phone setting. */}
       <StatusBar style="light" />
     </SafeAreaProvider>
   );
 }
 
-function MapScreen() {
-  const insets = useSafeAreaInsets();
+function Sgrava() {
+  const [screen, setScreen] = useState<Screen>("choose");
   const { position, refresh } = useCurrentPosition();
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -87,8 +75,6 @@ function MapScreen() {
     return null;
   }, [position, place]);
 
-  const noPosition = position.status === "denied" || position.status === "unavailable";
-
   const request: RouteRequest | null =
     start && shape !== null && distanceM !== null
       ? { start: start.point, shape, distance_m: distanceM, activity: "running" }
@@ -106,90 +92,92 @@ function MapScreen() {
       ? gpx.state
       : { status: "idle" };
 
+  function onDraw() {
+    // The decimal pad has no return key: drawing closes it.
+    Keyboard.dismiss();
+    // The same route already drawn is shown again, not asked for again.
+    if (request && view.status !== "done") {
+      draw(request);
+    }
+    setScreen("map");
+  }
+
+  function onBack() {
+    // Nobody is left watching the wait: drop it, as Cancel does.
+    if (view.status === "waiting") {
+      cancel();
+    }
+    setScreen("choose");
+  }
+
+  function onPickShape(picked: Shape) {
+    setShapeText(picked);
+    setScreen("choose");
+  }
+
   return (
-    // The km field sits at the bottom: the map shrinks so the keyboard does
-    // not cover it.
-    <KeyboardAvoidingView
-      style={styles.screen}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <View style={[styles.panel, { paddingTop: insets.top + space.sm }]}>
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>ShapeRoute</Text>
-          <Pressable style={styles.button} onPress={refresh} accessibilityRole="button">
-            <Text style={styles.buttonText}>My position</Text>
-          </Pressable>
-        </View>
-        <Text style={styles.status}>{statusText(position, start)}</Text>
-        {position.status === "denied" && (
-          <Pressable
-            style={styles.linkButton}
-            onPress={() => void Linking.openSettings()}
-            accessibilityRole="button"
-          >
-            <Text style={styles.link}>Open Settings</Text>
-          </Pressable>
-        )}
-        {noPosition && <PlaceSearch onSelect={setPlace} />}
-        {mapError && (
-          <Text style={styles.error}>
-            The map could not load ({mapError}). Check the connection and reopen the
-            app.
-          </Text>
-        )}
-      </View>
-      <MapView
-        style={styles.map}
-        start={start?.point ?? null}
-        route={view.status === "done" ? view.result.points : null}
-        onError={setMapError}
-      />
-      <View
-        style={[
-          styles.panel,
-          styles.bottom,
-          { paddingBottom: insets.bottom + space.sm },
-        ]}
+    <View style={styles.screen}>
+      <MapScreen
+        active={screen === "map"}
+        onBack={onBack}
+        mapError={mapError}
+        map={
+          <MapView
+            style={styles.map}
+            start={start?.point ?? null}
+            route={view.status === "done" ? view.result.points : null}
+            onError={setMapError}
+          />
+        }
       >
-        <RoutePanel
-          shapeText={shapeText}
-          shape={shape}
-          onShapeText={setShapeText}
-          reading={reading}
-          onShapeDone={() => {
-            if (reading) {
-              shapeReading.read(shapeText);
-            }
-          }}
-          distanceText={distanceText}
-          distanceM={distanceM}
-          onDistanceText={setDistanceText}
+        <RouteOutcome
           view={view}
-          canDraw={request !== null}
-          onDraw={() => {
-            // The decimal pad has no return key: drawing closes it.
-            Keyboard.dismiss();
-            if (request) {
-              draw(request);
-            }
+          onCancel={() => {
+            cancel();
+            setScreen("choose");
           }}
-          onCancel={cancel}
-          onTryDistance={(distance_m) => {
-            setDistanceText(String(distance_m / 1000));
-            if (request) {
-              draw({ ...request, distance_m });
-            }
-          }}
-          onPickShape={setShapeText}
           exporting={exporting}
           onExport={() => {
             if (view.status === "done") {
               gpx.exportGpx(view.request, view.result);
             }
           }}
+          onTryDistance={(distance_m) => {
+            setDistanceText(String(distance_m / 1000));
+            if (request) {
+              draw({ ...request, distance_m });
+            }
+          }}
+          onPickShape={onPickShape}
         />
-      </View>
-    </KeyboardAvoidingView>
+      </MapScreen>
+      {screen === "choose" && (
+        <ChooseScreen
+          status={statusText(position, start)}
+          denied={position.status === "denied"}
+          noPosition={position.status === "denied" || position.status === "unavailable"}
+          onMyPosition={refresh}
+          onPlace={setPlace}
+          mapError={mapError}
+          footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
+        >
+          <RouteChoice
+            shapeText={shapeText}
+            shape={shape}
+            onShapeText={setShapeText}
+            reading={reading}
+            onShapeDone={() => {
+              if (reading) {
+                shapeReading.read(shapeText);
+              }
+            }}
+            distanceText={distanceText}
+            distanceM={distanceM}
+            onDistanceText={setDistanceText}
+          />
+        </ChooseScreen>
+      )}
+    </View>
   );
 }
 
@@ -215,60 +203,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: color.background,
   },
-  panel: {
-    paddingHorizontal: space.lg,
-    paddingBottom: space.sm,
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  title: {
-    color: color.text,
-    fontSize: fontSize.title,
-    fontWeight: fontWeight.bold,
-  },
-  status: {
-    marginTop: space.xs,
-    color: color.textMuted,
-    fontSize: fontSize.body,
-  },
-  linkButton: {
-    minHeight: MIN_TAP_SIZE,
-    justifyContent: "center",
-    alignSelf: "flex-start",
-  },
-  // Not yellow: that is the route's. Underlined, so it still reads as a link.
-  link: {
-    color: color.text,
-    fontWeight: fontWeight.bold,
-    textDecorationLine: "underline",
-  },
-  error: {
-    marginTop: space.sm,
-    color: color.error,
-  },
   map: {
     flex: 1,
     // Under the page while the WebView starts, so it never flashes white.
     backgroundColor: color.map.background,
-  },
-  bottom: {
-    paddingTop: space.sm,
-  },
-  // A secondary control: the yellow belongs to "Draw route" alone.
-  button: {
-    minHeight: MIN_TAP_SIZE,
-    justifyContent: "center",
-    paddingHorizontal: space.lg,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-    backgroundColor: color.surfaceRaised,
-  },
-  buttonText: {
-    color: color.text,
-    fontWeight: fontWeight.bold,
   },
 });

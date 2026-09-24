@@ -62,23 +62,39 @@ Quattro regole:
    villaggi; non i nomi delle vie, i numeri civici e i punti d'interesse.
    Nessuno strato della mappa usa il giallo.
 
-## La schermata
+## Le due schermate
 
-Per ora è una sola, senza navigazione. Dall'alto:
+Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
 
-1. **Pannello**: il titolo con il pulsante «My position», una riga che
-   dice da dove partirà il percorso e, quando servono, il rimando alle
-   Impostazioni, la ricerca del luogo e l'errore della mappa.
-2. **Mappa**: all'apertura l'Italia intera, poi la partenza con un
-   segnaposto, a zoom 15 (qualche via attorno); con un percorso, la linea
-   e la mappa inquadrata su di lui. Si sposta e si ingrandisce con le dita
-   o con i pulsanti + e −. L'attribuzione dei dati è sempre visibile in
-   basso, per intero; i suoi link si aprono nel browser del telefono.
-3. **Pannello del percorso**: forma, distanza, «Draw route», poi l'attesa
-   e l'esito.
+1. **«What to draw»**, all'apertura. Dall'alto: il nome «Sgrava» con il
+   pulsante «My position»; una scheda che dice da dove partirà il percorso,
+   con, quando servono, il rimando alle Impostazioni e la ricerca del
+   luogo; l'errore della mappa; le forme del catalogo come tessere, con un
+   simbolo e il nome (quella scelta ha il bordo chiaro); il campo per
+   un'altra parola; la distanza, grande, fra − e +. In fondo, fermo mentre
+   il resto scorre, «Draw route».
+2. **La mappa**, che si apre con «Draw route» e chiede il percorso. La
+   mappa va da bordo a bordo, con «←» in alto a sinistra; sotto, una
+   scheda con l'attesa, il risultato o il problema. All'apertura la mappa
+   mostra l'Italia intera, poi la partenza con un segnaposto, a zoom 15
+   (qualche via attorno); con un percorso, la linea e la mappa inquadrata
+   su di lui. Si sposta e si ingrandisce con le dita o con i pulsanti + e
+   −. L'attribuzione dei dati è sempre visibile in basso, per intero; i
+   suoi link si aprono nel browser del telefono.
 
-I pannelli stanno fuori dalla mappa, così non coprono l'attribuzione; i
-margini seguono la tacca e la barra in basso di ogni telefono.
+Passare da una schermata all'altra:
+
+- «←» torna alla scelta con forma e distanza di prima. Se il percorso è
+  ancora in calcolo, lo abbandona, come «Cancel».
+- «Cancel» torna alla scelta. Una forma toccata dopo un problema anche.
+- «Try N km» ridisegna restando sulla mappa.
+- «Draw route» con forma, distanza e partenza di un percorso già disegnato
+  lo mostra di nuovo, senza chiederlo di nuovo all'API.
+
+La mappa resta caricata anche sotto la prima schermata: andare e tornare
+non la ricarica. La scheda sta sotto la mappa, non sopra, così non copre
+l'attribuzione; i margini seguono la tacca e la barra in basso di ogni
+telefono.
 
 ## La partenza
 
@@ -114,8 +130,10 @@ punto, ricentra la mappa.
 
 ## Forma e distanza
 
-Forma e distanza si scrivono in due riquadri sulla stessa riga: la forma a
-sinistra, i km a destra.
+La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
+scrivendo nel campo. I simboli delle tessere sono caratteri (♥ ★ ◯ ☾ e le
+emoji di gatto, pesce, cavallo): disegnare i contorni veri vuole
+`react-native-svg`, una dipendenza non ancora chiesta.
 
 La **forma** è una parola, in inglese o in italiano (ADR-0036). Le forme
 sono quelle del catalogo, le sole che l'utente ha giudicato riconoscibili
@@ -150,7 +168,7 @@ le legge l'AI sul PC (ADR-0012, `AI.md`). La tabella viene sempre prima:
 | Mentre si scrive | Press Done and the AI will read it. | spento |
 | Dopo «Fine», o toccando fuori dal campo | The AI is reading it… | spento |
 | L'AI trova una forma | → horse | acceso |
-| L'AI non trova una forma | No shape in the catalogue for “Batman”. Describe what it looks like (“prancing horse”, not “Ferrari badge”), or pick one: e sotto le forme del catalogo come pulsanti, che si scrivono nel campo (TASK-031) | spento |
+| L'AI non trova una forma | No shape in the catalogue for “Batman”. Describe what it looks like (“prancing horse”, not “Ferrari badge”), or pick one: (le tessere sono sopra il campo) | spento |
 | L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, … | spento |
 
 - Le parole partono quando la scrittura finisce («Fine» sulla tastiera, o
@@ -175,9 +193,11 @@ La **distanza** si scrive con il tastierino numerico (ADR-0034):
   few minutes.»
 
 Di partenza «heart» e 5 km. L'attività è sempre `running` e non si
-mostra. Il tastierino numerico non ha il tasto invio: si chiude toccando
-«Draw route»; quello della forma si chiude con «Fine». Mentre una tastiera
-è aperta la mappa si accorcia perché non copra i campi.
+mostra. − e + cambiano la distanza di 1 km, fermi fra 1 e 21; un valore fuori
+dai limiti torna dentro, un testo che non è un numero riparte da 1. Il
+tastierino numerico non ha il tasto invio: si chiude toccando «Draw
+route»; quello della forma si chiude con «Fine». Mentre una tastiera è
+aperta la schermata si accorcia perché non copra i campi.
 
 ## Chiedere un percorso
 
@@ -284,4 +304,5 @@ iOS chiude la pagina per liberare memoria, la WebView la ricarica da sola.
 - Miglia al posto dei km.
 - Avvisi in parole semplici: servono codici negli avvisi del contratto.
 - Rigenerare o scegliere fra percorsi alternativi.
-- Navigazione, quando le schermate saranno più di una.
+- Contorni disegnati delle forme e cursore della distanza: vogliono
+  dipendenze (TASK-051).

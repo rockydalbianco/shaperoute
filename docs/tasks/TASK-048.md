@@ -57,8 +57,8 @@ passare (con la ricerca lontana, ADR-0040, è il secondo).
 - [x] Nessuna indicazione persa nel raggruppamento (test).
 - [x] Sui tre cuori da 15 km, il numero di indicazioni dopo il
       raggruppamento è scritto nell'esito.
-- [ ] Nessun file fuori da «File toccati»: in più `models.py` e il test del
-      contratto in `shared-types` (vedi Esito).
+- [x] Nessun file fuori da «File toccati» (`models.py` e il test del
+      contratto aggiunti durante il lavoro, vedi Esito).
 - [x] Nuovo ADR in `docs/DECISIONS.md`; `docs/STATUS.md` e `docs/API.md`
       aggiornati.
 
@@ -66,12 +66,15 @@ passare (con la ricerca lontana, ADR-0040, è il secondo).
 
 ```
 services/route-engine/route_engine/directions.py
+services/route-engine/route_engine/models.py      (RouteResult.directions)
 services/route-engine/tests/test_directions.py
 services/api/shaperoute_api/jobs.py
 services/api/shaperoute_api/schemas.py
 services/api/tests/…                               (test delle indicazioni)
 packages/shared-types/src/index.ts
-packages/shared-types/fixtures/…
+packages/shared-types/test/contract.test.ts
+packages/shared-types/fixtures/route-result.json, route-job-done.json,
+  gpx-request.json, directions.json (nuovo)
 docs/API.md, docs/DECISIONS.md, docs/STATUS.md
 ```
 

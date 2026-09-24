@@ -33,3 +33,28 @@ export function toDistanceM(text: string): number | null {
   }
   return metres;
 }
+
+/** What − and + add to the distance. */
+export const DISTANCE_STEP_KM = 1;
+
+/**
+ * The distance field after pressing − (steps < 0) or + (steps > 0): one
+ * DISTANCE_STEP_KM each, held between MIN_DISTANCE_KM and MAX_APP_DISTANCE_KM.
+ * A value out of range is brought back into it; text that is not a number
+ * starts from the minimum. The decimal keeps the separator typed.
+ */
+export function stepDistance(text: string, steps: number): string {
+  const match = KM.exec(text.trim());
+  const separator = text.includes(",") ? "," : ".";
+  // In tenths of a km, to add and compare without floating point.
+  const tenths = match ? Number(match[1]) * 10 + Number(match[2] ?? "0") : null;
+  const next =
+    tenths === null
+      ? MIN_DISTANCE_KM * 10
+      : Math.min(
+          MAX_APP_DISTANCE_KM * 10,
+          Math.max(MIN_DISTANCE_KM * 10, tenths + steps * DISTANCE_STEP_KM * 10),
+        );
+  const whole = Math.floor(next / 10);
+  return next % 10 === 0 ? String(whole) : `${whole}${separator}${next % 10}`;
+}

@@ -11,13 +11,15 @@ import {
   space,
 } from "../theme/tokens";
 import { LONG_DISTANCE_KM, MAX_APP_DISTANCE_KM, MIN_DISTANCE_KM } from "./distance";
+import { DistanceStepper } from "./DistanceStepper";
 import { problemText } from "./problems";
+import { ShapeTiles } from "./ShapeTiles";
 import { shapeList } from "./shapeWords";
 import type { ExportState } from "./useGpxExport";
 import type { RouteProblem, RouteState } from "./useRouteRequest";
 import type { ShapeReadingState } from "./useShapeReading";
 
-type Props = {
+type ChoiceProps = {
   /** The shape field as typed, and the shape it names (null: none). */
   shapeText: string;
   shape: Shape | null;
@@ -30,22 +32,13 @@ type Props = {
   distanceText: string;
   distanceM: number | null;
   onDistanceText: (text: string) => void;
-  /** The state of the request for the current start, shape and distance. */
-  view: RouteState;
-  /** False without a start, a known shape and a valid distance. */
-  canDraw: boolean;
-  onDraw: () => void;
-  onCancel: () => void;
-  /** The GPX export of the route on screen. */
-  exporting: ExportState;
-  onExport: () => void;
-  /** Ways out of a dead end (TASK-031): draw again at a distance the shape
-   * fits, or write a shape of the catalogue in the field. */
-  onTryDistance: (distanceM: number) => void;
-  onPickShape: (shape: Shape) => void;
 };
 
-export function RoutePanel({
+/**
+ * What to draw (TASK-051): the shapes as tiles, a field for any other word,
+ * and the distance. "Draw route" sits apart, at the foot of the screen.
+ */
+export function RouteChoice({
   shapeText,
   shape,
   onShapeText,
@@ -54,53 +47,29 @@ export function RoutePanel({
   distanceText,
   distanceM,
   onDistanceText,
-  view,
-  canDraw,
-  onDraw,
-  onCancel,
-  exporting,
-  onExport,
-  onTryDistance,
-  onPickShape,
-}: Props) {
-  const waiting = view.status === "waiting";
+}: ChoiceProps) {
   return (
     <View style={styles.panel}>
-      <View style={styles.row}>
-        <TextInput
-          style={[styles.field, styles.shape, waiting && styles.off]}
-          value={shapeText}
-          onChangeText={onShapeText}
-          onEndEditing={onShapeDone}
-          editable={!waiting}
-          maxLength={MAX_SHAPE_TEXT_LENGTH}
-          placeholder="heart, star, horse…"
-          placeholderTextColor={color.textFaint}
-          keyboardAppearance="dark"
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="done"
-          selectTextOnFocus
-          accessibilityLabel="Shape"
-        />
-        <TextInput
-          style={[styles.field, styles.km, waiting && styles.off]}
-          value={distanceText}
-          onChangeText={onDistanceText}
-          editable={!waiting}
-          keyboardType="decimal-pad"
-          keyboardAppearance="dark"
-          selectTextOnFocus
-          accessibilityLabel="Distance in km"
-        />
-        <Text style={styles.unit}>km</Text>
-      </View>
-      <ShapeNote
-        text={shapeText}
-        shape={shape}
-        reading={reading}
-        onPickShape={onPickShape}
+      <Text style={styles.label}>SHAPE</Text>
+      <ShapeTiles chosen={shape} onPick={onShapeText} />
+      <TextInput
+        style={styles.field}
+        value={shapeText}
+        onChangeText={onShapeText}
+        onEndEditing={onShapeDone}
+        maxLength={MAX_SHAPE_TEXT_LENGTH}
+        placeholder="heart, star, horse…"
+        placeholderTextColor={color.textFaint}
+        keyboardAppearance="dark"
+        autoCapitalize="none"
+        autoCorrect={false}
+        returnKeyType="done"
+        selectTextOnFocus
+        accessibilityLabel="Shape"
       />
+      <ShapeNote text={shapeText} shape={shape} reading={reading} />
+      <Text style={[styles.label, styles.section]}>DISTANCE</Text>
+      <DistanceStepper text={distanceText} onText={onDistanceText} editable />
       {distanceM === null ? (
         <Text style={styles.problem}>
           {`Enter a distance between ${MIN_DISTANCE_KM} and ${MAX_APP_DISTANCE_KM} km.`}
@@ -110,7 +79,56 @@ export function RoutePanel({
           <Text style={styles.note}>Long routes take longer: up to a few minutes.</Text>
         )
       )}
-      {waiting ? (
+    </View>
+  );
+}
+
+/** The one yellow control: it makes the route, and the route is yellow. */
+export function DrawButton({
+  enabled,
+  onDraw,
+}: {
+  enabled: boolean;
+  onDraw: () => void;
+}) {
+  return (
+    <Pressable
+      style={[styles.draw, !enabled && styles.off]}
+      onPress={onDraw}
+      disabled={!enabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !enabled }}
+    >
+      <Text style={styles.drawText}>Draw route</Text>
+    </Pressable>
+  );
+}
+
+type OutcomeProps = {
+  /** The state of the request for the current start, shape and distance. */
+  view: RouteState;
+  onCancel: () => void;
+  /** The GPX export of the route on screen. */
+  exporting: ExportState;
+  onExport: () => void;
+  /** Ways out of a dead end (TASK-031): draw again at a distance the shape
+   * fits, or choose a shape of the catalogue. */
+  onTryDistance: (distanceM: number) => void;
+  onPickShape: (shape: Shape) => void;
+};
+
+/** Under the map: the wait, the route, or why there is none. */
+export function RouteOutcome({
+  view,
+  onCancel,
+  exporting,
+  onExport,
+  onTryDistance,
+  onPickShape,
+}: OutcomeProps) {
+  switch (view.status) {
+    case "waiting":
+      return (
         <View style={styles.row}>
           <Text style={styles.waiting}>
             {waitingText(view)} <Elapsed since={view.startedAt} />
@@ -123,19 +141,10 @@ export function RoutePanel({
             <Text style={styles.secondaryText}>Cancel</Text>
           </Pressable>
         </View>
-      ) : (
-        <Pressable
-          style={[styles.draw, !canDraw && styles.off]}
-          onPress={onDraw}
-          disabled={!canDraw}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canDraw }}
-        >
-          <Text style={styles.drawText}>Draw route</Text>
-        </Pressable>
-      )}
-      {view.status === "done" && (
-        <View>
+      );
+    case "done":
+      return (
+        <View style={styles.panel}>
           <Text style={styles.result}>
             {(view.result.distance_m / 1000).toFixed(1)} km on roads (target{" "}
             {view.request.distance_m / 1000} km)
@@ -157,16 +166,18 @@ export function RoutePanel({
           </Pressable>
           {exporting.status === "failed" && <Problem problem={exporting.problem} />}
         </View>
-      )}
-      {view.status === "failed" && (
+      );
+    case "failed":
+      return (
         <Problem
           problem={view.problem}
           onTryDistance={onTryDistance}
           onPickShape={onPickShape}
         />
-      )}
-    </View>
-  );
+      );
+    default:
+      return null;
+  }
 }
 
 /** Under the shape field: the shape the words name, or why there is none. */
@@ -174,12 +185,10 @@ function ShapeNote({
   text,
   shape,
   reading,
-  onPickShape,
 }: {
   text: string;
   shape: Shape | null;
   reading: ShapeReadingState | null;
-  onPickShape: (shape: Shape) => void;
 }) {
   if (shape !== null) {
     return text.trim().toLowerCase() === shape ? null : (
@@ -193,14 +202,11 @@ function ShapeNote({
       return <Text style={styles.note}>The AI is reading it…</Text>;
     case "read":
       // What the model does not know it does not guess (AI.md, «Limiti»):
-      // plainer words may work, or a shape of the catalogue.
+      // plainer words may work, or a shape of the catalogue, the tiles above.
       return (
-        <View>
-          <Text style={styles.problem}>
-            {`No shape in the catalogue for “${text.trim()}”. Describe what it looks like (“prancing horse”, not “Ferrari badge”), or pick one:`}
-          </Text>
-          <ShapeChoices onPick={onPickShape} />
-        </View>
+        <Text style={styles.problem}>
+          {`No shape in the catalogue for “${text.trim()}”. Describe what it looks like (“prancing horse”, not “Ferrari badge”), or pick one:`}
+        </Text>
       );
     case "failed":
       return <Problem problem={reading.problem} />;
@@ -289,6 +295,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: space.sm,
   },
+  // Section labels, uppercase and letter-spaced (tokens: fontSize.label).
+  label: {
+    color: color.textMuted,
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
+    letterSpacing: 1.2,
+  },
+  section: {
+    marginTop: space.lg,
+  },
   field: {
     minHeight: MIN_TAP_SIZE,
     borderWidth: 1,
@@ -300,25 +316,14 @@ const styles = StyleSheet.create({
     color: color.text,
     backgroundColor: color.surface,
   },
-  shape: {
-    flex: 1,
-  },
-  km: {
-    width: 72,
-  },
-  unit: {
-    color: color.textMuted,
-    fontSize: fontSize.body,
-  },
   note: {
     color: color.textMuted,
   },
-  // The one yellow control: it makes the route, and the route is yellow.
   draw: {
-    minHeight: MIN_TAP_SIZE,
+    minHeight: MIN_TAP_SIZE + space.md,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: color.accent,
   },
   off: {
@@ -354,6 +359,7 @@ const styles = StyleSheet.create({
   result: {
     color: color.text,
     fontWeight: fontWeight.bold,
+    fontSize: fontSize.input,
   },
   // Not yellow: that means "route", and a warning is something else.
   warning: {

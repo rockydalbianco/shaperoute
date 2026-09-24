@@ -35,15 +35,18 @@ fino all'API e all'app, con la via di partenza. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
 nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
 
-**App: un'interfaccia più da app che da sito**, chiesta dall'utente dopo
-TASK-046: il task si scrive dopo la sua scelta sulla direzione.
+**App: TASK-051 — Due schermate** (`docs/tasks/TASK-051.md`): scelta di
+forma e distanza, poi la mappa; scelto dall'utente per un'app «più app e
+meno sito». Fatto e provato con i test; manca la prova sull'iPhone.
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
-Niente per l'app.
+- **TASK-051** — Due schermate (worktree `D:\shaperoute-app`): `App.tsx`,
+  `__tests__/App.test.tsx`, `src/route/RoutePanel.tsx`, `distance.ts`,
+  file nuovi in `src/screens/` e `src/route/`, `docs/UI.md`.
 
 ## Completato
 

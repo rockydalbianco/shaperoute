@@ -17,6 +17,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from typing import Protocol, runtime_checkable
 
+from route_engine.directions import guidance
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import BBox, Graph
 from route_engine.optimizer import GraphLoader, Plan
@@ -115,7 +116,8 @@ class RouteJobs:
             lambda: self._wanted(job),
         )
         try:
-            result = self._planner(job.request, source).result
+            plan = self._planner(job.request, source)
+            result = with_directions(plan, source.graphs)
         except _Dropped:
             log.info("job %s: dropped before computing", job.job_id)
             return
@@ -186,6 +188,7 @@ class _Reporting:
         self._source = source
         self._report = report
         self._wanted = wanted
+        self.graphs: list[Graph] = []  # as loaded, for the directions
 
     def load(self, bbox: BBox) -> Graph:
         downloading = isinstance(self._source, KnowsDownloads) and (
@@ -198,4 +201,20 @@ class _Reporting:
             raise _Dropped
         if downloading:
             self._report("computing")
+        self.graphs.append(graph)
         return graph
+
+
+def with_directions(plan: Plan, graphs: list[Graph]) -> RouteResult:
+    """The plan's result with its directions (TASK-048), computed on the
+    graph the route was traced on: the last one loaded when the route comes
+    from the search farther away (ADR-0040), else the first. A route that
+    was not searched has no nodes, and no directions."""
+    if plan.search is None or not graphs:
+        return plan.result
+    graph = (
+        graphs[-1] if plan.far is not None and plan.search is plan.far else graphs[0]
+    )
+    return replace(
+        plan.result, directions=guidance(graph, plan.search.best.route.nodes)
+    )

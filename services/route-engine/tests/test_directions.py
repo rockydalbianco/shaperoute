@@ -1,20 +1,27 @@
+import json
 from pathlib import Path
+from typing import get_args
 
 import networkx as nx
 import pytest
 
+from route_engine import directions as directions_module
 from route_engine.directions import (
+    GROUP_M,
     MIN_BRANCHES,
     SHARP_MIN_DEG,
     TURN_MIN_DEG,
     U_TURN_MIN_DEG,
+    Turn,
     branch_count,
     directions,
+    guidance,
     turn_of,
 )
 from route_engine.network import FileSource
 
 FIXTURES = Path(__file__).parent / "fixtures"
+SHARED = Path(__file__).resolve().parents[3] / "packages" / "shared-types" / "fixtures"
 # Node ids of the made-up graph, as in fixtures/make_directions_graph.py.
 W, T, E, F, S, P, Q, R, G, H, K, U1, U2 = range(1, 14)
 ANYWHERE = (0.0, 0.0, 0.0, 0.0)  # FileSource ignores the area
@@ -178,3 +185,31 @@ def test_on_a_real_graph_every_direction_is_at_a_real_junction() -> None:
         assert d.branches >= MIN_BRANCHES
         # OSMnx's own count of the streets at the node, from OSM itself.
         assert graph.nodes[d.node]["street_count"] >= MIN_BRANCHES
+
+
+def test_guidance_starts_with_the_road_the_route_starts_on(
+    graph: nx.MultiDiGraph,
+) -> None:
+    start, *rest = guidance(graph, [W, T, E, F, H])
+    assert (start.node, start.turn, start.distance_m) == (W, "depart", 0.0)
+    assert (start.street, start.road_type, start.branches) == (
+        "Via Roma",
+        "residential",
+        1,
+    )
+    assert rest == directions(graph, [W, T, E, F, H])  # none joined: 200 m apart
+    assert guidance(graph, [W]) == []
+
+
+def test_directions_close_together_are_joined_and_kept(
+    graph: nx.MultiDiGraph, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # E and F are 200 m apart: with a wider group they are read together.
+    monkeypatch.setattr(directions_module, "GROUP_M", 250.0)
+    said = guidance(graph, [W, T, E, F, H])
+    assert [(d.node, d.joined) for d in said] == [(W, False), (E, False), (F, True)]
+
+
+def test_turns_and_grouping_match_shared_types() -> None:
+    shared = json.loads((SHARED / "directions.json").read_text(encoding="utf-8"))
+    assert shared == {"turns": list(get_args(Turn)), "group_m": GROUP_M}

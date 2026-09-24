@@ -46,6 +46,44 @@ export interface RouteResult {
   similarity: number;
   shape: Shape;
   warnings: string[];
+  /** Turn by turn, the start first (TASK-048); empty without a search. */
+  directions: Direction[];
+}
+
+/** What a direction says to do (route_engine/directions.py, ADR-0045). */
+export const TURNS = [
+  "depart",
+  "left",
+  "right",
+  "sharp-left",
+  "sharp-right",
+  "straight",
+  "u-turn",
+] as const;
+export type Turn = (typeof TURNS)[number];
+
+/** Directions closer than this to the one before are read with it. */
+export const GROUP_M = 15;
+
+/** What to do at one junction of the route. */
+export interface Direction {
+  /** OpenStreetMap id of the junction's node. */
+  node: number;
+  point: LatLon;
+  /** Along the route from its start, in metres. */
+  distance_m: number;
+  /** "depart" for the first: the road the route starts on. */
+  turn: Turn;
+  /** The turn in degrees, positive to the right. */
+  angle_deg: number;
+  /** Name or ref of the road entered; null when OSM has neither, never made up. */
+  street: string | null;
+  /** OSM highway of the road entered, like "footway". */
+  road_type: string | null;
+  /** Roads that meet at the junction. */
+  branches: number;
+  /** Less than GROUP_M after the direction before: read with it. */
+  joined: boolean;
 }
 
 /** Codes of the errors the API answers with (docs/API.md). */

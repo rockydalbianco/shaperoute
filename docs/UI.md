@@ -107,11 +107,17 @@ telefono.
 | GPS riuscito | «Starting from your position.» | — |
 | Permesso negato | «Location is off for ShapeRoute…» | «Open Settings», ricerca |
 | GPS spento, errore, nessuna risposta in 15 s | «Your position is not available right now…» | ricerca |
+| «Another place», nessun luogo ancora | «Search for a city or street to start from.» | ricerca |
 | Luogo scelto dalla ricerca | «Starting from Via Rodolfo Belenzani, Trento.» | ricerca, per cambiarlo |
 
-«My position» rilegge il GPS e chiede di nuovo il permesso, se il telefono
-lo permette ancora. Quando il GPS risponde, vince anche su un luogo cercato
-prima, e la ricerca sparisce. Ogni nuova partenza, anche nello stesso
+La partenza si sceglie con due pulsanti affiancati nella scheda «START»
+(TASK-054): **«My position»**, il GPS, e **«Another place»**, un luogo
+cercato. Con «Another place» c'è la ricerca, e il luogo scelto resta la
+partenza anche se il GPS risponde: si può partire da un'altra città con il
+GPS acceso. «My position» torna al GPS, lo rilegge e chiede di nuovo il
+permesso, se il telefono lo permette ancora; la ricerca sparisce. Senza GPS
+(permesso negato, nessuna risposta) la ricerca c'è comunque, e il luogo
+cercato fa da partenza finché il GPS non risponde. Ogni nuova partenza, anche nello stesso
 punto, ricentra la mappa.
 
 ## Ricerca del luogo
@@ -203,8 +209,8 @@ aperta la schermata si accorcia perché non copra i campi.
 
 «Draw route» è spento finché non c'è una partenza. Toccato, la richiesta va
 all'API in due tempi (ADR-0032): l'API la accetta subito, poi l'app chiede
-ogni 2 s a che punto è. Il pannello dice cosa sta succedendo, sempre con i
-secondi che passano, e offre «Cancel»:
+ogni 2 s a che punto è. La scheda dice cosa sta succedendo, accanto a un
+indicatore di caricamento (non più i secondi, TASK-054), e offre «Cancel»:
 
 | Stato dell'API | Il pannello dice |
 |---|---|
@@ -228,11 +234,18 @@ Forma e distanza non si cambiano durante l'attesa.
 
 ## Il risultato
 
-Sulla mappa la linea del percorso, inquadrata. Sotto, «4.0 km on roads
-(target 5 km)», gli avvisi del motore **così come sono**, in inglese, uno
-per riga, e il pulsante «Export GPX» (sotto, «Export del GPX»). Gli
-avvisi dicono per esempio che la partenza è stata spostata, o che la forma
-somiglia meno di quanto dovrebbe. La somiglianza non si mostra come
+Sulla mappa la linea del percorso, inquadrata. Sotto, la distanza in grande
+(«4.0 km») e «on roads · target 5 km»; poi gli avvisi del motore, uno per
+riga, e «Export GPX» largo (sotto, «Export del GPX»).
+
+Gli avvisi sono **in parole semplici** (TASK-054, ADR-0048): l'app
+riconosce i testi che il motore scrive e li riscrive brevi, con una
+striscia arancio (`warning`) per quelli a cui fare attenzione (scale,
+strade principali, gallerie, forma poco fedele, pochi tratti di strada) e
+grigia per quelli da sapere (partenza spostata, distanza diversa da quella
+chiesta, strade ripercorse); prima quelli a cui fare attenzione, e la
+stessa frase una volta sola. Un testo che l'app non conosce resta com'è,
+in inglese. La somiglianza non si mostra come
 numero: la forma la giudica l'occhio (`PRODUCT.md`), e sotto 0,90 il
 motore aggiunge già un avviso. Il segnaposto resta sulla partenza chiesta.
 Se il percorso comincia a più di 50 m da lì, perché il motore ha spostato la
@@ -302,7 +315,8 @@ iOS chiude la pagina per liberare memoria, la WebView la ricarica da sola.
 - Distanze oltre i 21 km: aspettano un download delle zone più veloce
   (ADR-0009).
 - Miglia al posto dei km.
-- Avvisi in parole semplici: servono codici negli avvisi del contratto.
+- Avvisi in parole semplici: oggi l'app riconosce i testi del motore
+  (ADR-0048); la strada pulita sono i codici negli avvisi del contratto.
 - Rigenerare o scegliere fra percorsi alternativi.
 - Contorni disegnati delle forme e cursore della distanza: vogliono
   dipendenze (TASK-051).

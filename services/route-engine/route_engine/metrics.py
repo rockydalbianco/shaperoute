@@ -13,7 +13,7 @@ from collections.abc import Callable, Sequence
 import numpy as np
 
 from route_engine.geo import LatLon, latlon_to_local_array
-from route_engine.network import corner_indices, distance_to_polyline
+from route_engine.network import corner_indices, detail_scale, distance_to_polyline
 
 # Coverage tolerance, as a fraction of the shape perimeter (100 m at 5 km).
 COVER_TOLERANCE = 0.02
@@ -58,6 +58,13 @@ def _dense(xy: np.ndarray, step_m: float = SAMPLE_STEP_M) -> np.ndarray:
 def shape_size(shape: Sequence[LatLon]) -> float:
     """Characteristic size of a closed shape: radius of a circle as long (m)."""
     return _length(_closed(_local(shape[0], shape))) / (2 * math.pi)
+
+
+def cover_tolerance_m(shape: Sequence[LatLon]) -> float:
+    """How far the route may be from the shape and still draw it: a share of
+    its perimeter, finer for a shape with strokes (ADR-0039)."""
+    fine = detail_scale(_closed(_local(shape[0], shape)))
+    return COVER_TOLERANCE * shape_size(shape) * 2 * math.pi * fine
 
 
 def coverage(
@@ -124,14 +131,14 @@ def frechet_m(
 
 
 def coverage_similarity(route: Sequence[LatLon], shape: Sequence[LatLon]) -> float:
-    tolerance = COVER_TOLERANCE * shape_size(shape) * 2 * math.pi
+    tolerance = cover_tolerance_m(shape)
     return coverage(route, shape, tolerance)
 
 
 def fit_similarity(route: Sequence[LatLon], shape: Sequence[LatLon]) -> float:
     """Harmonic mean of coverage and precision: the route follows the whole
     outline and nothing else."""
-    tolerance = COVER_TOLERANCE * shape_size(shape) * 2 * math.pi
+    tolerance = cover_tolerance_m(shape)
     c = coverage(route, shape, tolerance)
     p = precision(route, shape, tolerance)
     return 0.0 if c + p == 0 else 2 * c * p / (c + p)
@@ -160,7 +167,7 @@ def corners_missed(
 def shape_similarity(route: Sequence[LatLon], shape: Sequence[LatLon]) -> float:
     """`fit`, minus CORNER_PENALTY for each corner the route misses: a heart
     without its tip is not a heart, even if the rest follows the outline."""
-    tolerance = COVER_TOLERANCE * shape_size(shape) * 2 * math.pi
+    tolerance = cover_tolerance_m(shape)
     missed = corners_missed(route, shape, tolerance)
     return max(0.0, fit_similarity(route, shape) - CORNER_PENALTY * missed)
 

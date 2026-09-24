@@ -46,6 +46,14 @@ SPUR_MAX_SHARE = 0.15
 SPUR_THIN_SHARE = 0.7
 # Distances from the outline are exact up to this far beyond its band.
 CORRIDOR_EXACT_M = 1000.0
+# A side of a shape this close to another side is drawn twice on purpose: a
+# stroke, out and back (TASK-037). Other sides are never this close.
+TWICE_NEAR_M = 1.0
+# A shape with strokes has details about as wide as ZONE_RADIUS and
+# CORRIDOR_BAND of its perimeter: for it these fractions, and the tolerance
+# of the similarity, shrink by this much, so the search sees the details
+# (TASK-037, ADR-0039).
+STROKE_DETAIL = 0.5
 
 # OSMnx 2.1 "walk" filter without its `cycleway` exclusion: in Trentino most
 # cycle paths are shared with pedestrians (ADR-0022). The name keeps these
@@ -364,7 +372,13 @@ def corner_indices(xy: np.ndarray) -> list[int]:
 
 def distance_to_polyline(polyline: np.ndarray, points: np.ndarray) -> np.ndarray:
     """Distance in metres from each (x, y) point to the nearest polyline segment."""
-    a, b = polyline[:-1], polyline[1:]
+    return distance_to_segments(polyline[:-1], polyline[1:], points)
+
+
+def distance_to_segments(
+    a: np.ndarray, b: np.ndarray, points: np.ndarray
+) -> np.ndarray:
+    """Distance in metres from each (x, y) point to the nearest segment a-b."""
     ab = b - a
     ab2 = np.maximum((ab**2).sum(axis=1), 1e-12)
     result = np.empty(len(points))
@@ -377,6 +391,29 @@ def distance_to_polyline(polyline: np.ndarray, points: np.ndarray) -> np.ndarray
         d = np.hypot(p[:, None, 0] - closest[..., 0], p[:, None, 1] - closest[..., 1])
         result[s : s + chunk] = d.min(axis=1)
     return result
+
+
+def twice_drawn(xy: np.ndarray, near_m: float = TWICE_NEAR_M) -> np.ndarray:
+    """For each side of a closed polyline (last point repeating the first),
+    whether its middle lies on a side going the other way: the shape draws
+    it twice, like a stroke out and back (TASK-037). A side cut in two where
+    the route starts goes on the same way, and does not count."""
+    a, b = xy[:-1], xy[1:]
+    ab = b - a
+    middles = (a + b) / 2
+    twice = np.zeros(len(a), bool)
+    for i, middle in enumerate(middles):
+        back = (ab @ ab[i]) < 0
+        if back.any():
+            d = distance_to_segments(a[back], b[back], middle[None])
+            twice[i] = bool(d[0] <= near_m)
+    return twice
+
+
+def detail_scale(xy: np.ndarray, near_m: float = TWICE_NEAR_M) -> float:
+    """STROKE_DETAIL for a shape with strokes (a side drawn twice), 1 for a
+    plain outline: what the tolerances of a shape are multiplied by."""
+    return STROKE_DETAIL if twice_drawn(xy, near_m).any() else 1.0
 
 
 def _edge_key(u: Any, v: Any) -> frozenset[Any]:
@@ -482,6 +519,7 @@ def _route_through_zones(
     costs: dict[tuple[Any, Any], float],
     reuse_penalty: float,
     corners: Collection[int] = frozenset(),
+    twice: Collection[int] = frozenset(),
 ) -> tuple[list[Any], list[Any], list[int], set[Any]]:
     """Closed route from `first` through a zone around each anchor, back to `first`.
 
@@ -489,7 +527,9 @@ def _route_through_zones(
     one if none is that close. Reaching a zone node costs, on top of the
     road, its distance from the anchor: the route takes the node that is
     cheap to reach instead of the single nearest one, which may lie across
-    a river or a railway. Used roads cost `reuse_penalty` times more.
+    a river or a railway. Used roads cost `reuse_penalty` times more, except
+    on the way to the anchors in `twice` (1-based, 0 for the way home),
+    which the shape draws twice on purpose.
 
     Each leg adds a temporary sink node to `graph`, linked from the zone,
     and removes it afterwards. Returns the route nodes, the node reached in
@@ -502,10 +542,11 @@ def _route_through_zones(
         origin, np.array([_node_latlon(graph, n) for n in node_ids])
     )
     used: set[frozenset[Any]] = set()
+    penalty = reuse_penalty
 
     def weight(u: Any, v: Any, edges: dict[Any, dict[str, Any]]) -> float:
         cost = costs[(u, v)]
-        return cost * reuse_penalty if _edge_key(u, v) in used else cost
+        return cost * penalty if _edge_key(u, v) in used else cost
 
     def walk(path: list[Any]) -> None:
         for u, v in zip(path, path[1:], strict=False):
@@ -517,6 +558,7 @@ def _route_through_zones(
     skipped: list[int] = []
     corner_nodes: set[Any] = set()
     for index, anchor in enumerate(anchors, start=1):
+        penalty = 1.0 if index in twice else reuse_penalty
         ax, ay = latlon_to_local(origin, anchor)
         d = np.hypot(xy[:, 0] - ax, xy[:, 1] - ay)
         zone = np.flatnonzero(d <= radius_m)
@@ -540,6 +582,7 @@ def _route_through_zones(
             corner_nodes.add(path[-2])
         if path[-2] != reached[-1]:
             reached.append(path[-2])
+    penalty = 1.0 if 0 in twice else reuse_penalty
     try:
         walk(nx.shortest_path(graph, route_nodes[-1], first, weight=weight))
     except nx.NetworkXNoPath:
@@ -586,13 +629,19 @@ def snap_to_network(
     outline = latlon_to_local_array(origin, np.array(shape_points))
     if not np.allclose(outline[0], outline[-1]):
         outline = np.vstack([outline, outline[:1]])
-    perimeter = float(np.hypot(*np.diff(outline, axis=0).T).sum())
+    drawn_twice = twice_drawn(outline)
+    # Strokes have small details: finer zones and corridor (ADR-0039).
+    fine = STROKE_DETAIL if drawn_twice.any() else 1.0
+    perimeter = fine * float(np.hypot(*np.diff(outline, axis=0).T).sum())
     anchors = list(shape_points[1:])
     if anchors and anchors[-1] == shape_points[0]:
         anchors.pop()
 
     costs = _corridor_costs(graph, origin, outline, corridor, band * perimeter)
     corners = set(corner_indices(outline[:-1]))
+    # Side i - 1 of the outline leads to anchor i; the last one leads home.
+    sides = len(outline) - 1
+    twice = {(i + 1) % sides for i in np.flatnonzero(drawn_twice)}
     route_nodes, reached, skipped, corner_nodes = _route_through_zones(
         graph,
         origin,
@@ -602,6 +651,7 @@ def snap_to_network(
         costs,
         reuse_penalty,
         corners,
+        twice,
     )
     for index in skipped:
         warnings.append(f"no road path to shape point {index}; skipped")

@@ -7,6 +7,7 @@ from route_engine.metrics import (
     SIMILARITIES,
     corners,
     corners_missed,
+    cover_tolerance_m,
     coverage,
     fit_similarity,
     frechet_m,
@@ -103,3 +104,14 @@ def test_missing_the_tip_of_the_heart_costs_similarity() -> None:
     assert shape_similarity(cut, heart) == pytest.approx(
         fit_similarity(cut, heart) - 0.10
     )
+
+
+def test_a_shape_with_strokes_is_judged_finer() -> None:
+    # A 1 km square, and the same with a 250 m line in from a side and back:
+    # the strokes make the details the tolerance must see (ADR-0039).
+    plain = _square(1000.0)
+    points = [(0, 0), (1000, 0), (1000, 500), (750, 500), (1000, 500)]
+    points += [(1000, 1000), (0, 1000), (0, 0)]
+    stroked = [local_to_latlon(LEVICO, x, y) for x, y in points]
+    assert cover_tolerance_m(plain) == pytest.approx(0.02 * 4000, rel=1e-6)
+    assert cover_tolerance_m(stroked) == pytest.approx(0.5 * 0.02 * 4500, rel=1e-6)

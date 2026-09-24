@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 import networkx as nx
+import numpy as np
 import pytest
 
 from route_engine.geo import haversine_m, latlon_to_local, local_to_latlon
@@ -10,9 +11,11 @@ from route_engine.network import (
     FileSource,
     OsmnxSource,
     area_around,
+    detail_scale,
     nearest_nodes,
     prune_spurs,
     snap_to_network,
+    twice_drawn,
 )
 from route_engine.projection import initial_scale, project_shape
 from route_engine.shapes import get_shape
@@ -127,14 +130,54 @@ def test_penalty_avoids_reusing_an_edge_when_an_alternative_exists() -> None:
     # Out and back between two neighbours: without penalty the return trip
     # reuses the same edge (100 m); with a strong penalty it goes around
     # the cell (300 m < 4 × 100 m). No corridor: going around the cell
-    # leaves the outline, which the corridor alone would forbid.
+    # leaves the outline, which the corridor alone would forbid. The shape
+    # comes back 5 m beside its way out: not a stroke drawn twice.
     graph = _grid(2)
-    shape = [_at(0, 0), _at(1, 0), _at(0, 0)]
+    shape = [_at(0, 0), _at(1, 0), _at(0, 0.05), _at(0, 0)]
     plain = snap_to_network(graph, shape, reuse_penalty=1.0, corridor=0.0)
     penalized = snap_to_network(graph, shape, reuse_penalty=4.0, corridor=0.0)
     assert _reused_edges(graph, plain.points) == 1
     assert _reused_edges(graph, penalized.points) == 0
     assert penalized.distance_m == pytest.approx(400.0, rel=1e-3)
+
+
+def test_the_sides_of_a_stroke_are_drawn_twice() -> None:
+    # A square with a line from the middle of its right side to the centre.
+    square = [(0, 0), (2, 0), (2, 1), (1, 1), (2, 1), (2, 2), (0, 2), (0, 0)]
+    xy = np.array(square, float) * SPACING_M
+    assert twice_drawn(xy).tolist() == [False, False, True, True] + [False] * 3
+    circle = np.array(get_shape("circle")(64)) * SPACING_M
+    assert not twice_drawn(circle).any()
+    # A side cut in two a hair from its end, as by the start of a route, goes
+    # on the same way: not a stroke.
+    cut = np.array([(0, 0), (0.001, 0), (2, 0), (2, 2), (0, 2), (0, 0)]) * SPACING_M
+    assert not twice_drawn(cut).any()
+    # With strokes, zones, corridor and similarity look closer (ADR-0039).
+    assert detail_scale(xy) == 0.5
+    assert detail_scale(circle) == 1.0
+
+
+def test_a_stroke_comes_back_the_way_it_went_despite_the_penalty() -> None:
+    # The same out and back as above, now drawn twice on purpose: the way
+    # back is not penalized, and the corner at its end keeps it.
+    graph = _grid(2)
+    shape = [_at(0, 0), _at(1, 0), _at(0, 0)]
+    route = snap_to_network(graph, shape, reuse_penalty=4.0, corridor=0.0)
+    assert route.points == [_at(0, 0), _at(1, 0), _at(0, 0)]
+
+
+def test_a_stroke_along_a_dead_end_survives_the_pruning() -> None:
+    # The block of the test above with its dead end two nodes long, and a
+    # shape that draws it out and back from (1, 0): the whole line stays.
+    graph = _dead_end_block()
+    graph.add_node((3, 0), y=_at(3, 0)[0], x=_at(3, 0)[1])
+    graph.add_edge((2, 0), (3, 0), length=SPACING_M)
+    graph.add_edge((3, 0), (2, 0), length=SPACING_M)
+    stroke = [_at(1, 0), _at(2, 0), _at(3, 0), _at(2, 0), _at(1, 0)]
+    shape = [_at(0, 0), *stroke, _at(1, 1), _at(0, 1), _at(0, 0)]
+    route = snap_to_network(graph, shape)
+    assert route.points == shape
+    assert route.distance_m == pytest.approx(800.0, rel=1e-3)
 
 
 def _river_grid() -> nx.MultiDiGraph:

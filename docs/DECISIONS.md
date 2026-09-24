@@ -458,7 +458,8 @@ altri campioni. Una forma rifiutata oggi (Valsugana 15 km cuore, 5 km
 cerchio) può diventare disponibile con uno snapping migliore.
 
 ## ADR-0026 — Validazione del percorso e potatura delle punte parallele
-**Stato**: Attiva · 2026-09-23
+**Stato**: Attiva · 2026-09-23 · lungo i tratti delle forme superata in
+parte da ADR-0039
 
 Dopo TASK-015 restavano difetti che nessuna misura vedeva: le "punte" di
 andata e ritorno su strade parallele (marciapiede e strada), e tratti su
@@ -841,7 +842,7 @@ lingua del telefono: per questo si accettano sia la virgola sia il punto.
 
 ## ADR-0035 — Forme da un contorno in un file, per ora solo dalla CLI
 **Stato**: Attiva · 2026-09-24 · la spiegazione della somiglianza generosa
-è corretta da ADR-0037
+è corretta da ADR-0037; i tratti ripassati si aggiungono con ADR-0039
 
 Prima di catalogo e AI (fase 3, `ROADMAP.md`) serviva sapere se le strade
 reggono forme più complesse di cerchio e cuore. TASK-032 le ha provate da
@@ -997,3 +998,33 @@ posto (TASK-038), non inclinarla. La luna ora ha un `sì` a Levico e può
 entrare nel catalogo (ADR-0036). Le forme ancora a `no` si riconoscono da
 un occhio, una finestra, una rientranza: servono i tratti interni ripassati
 (TASK-037).
+
+## ADR-0039 — Tratti ripassati: linee e anelli dentro la forma
+**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
+
+Le forme ancora a `no` dopo TASK-036 si riconoscono da un dettaglio
+interno, e l'utente ha chiesto di disegnarli come nella Strava art, con
+tratti di andata e ritorno. Un contorno era un solo anello, e il motore
+potava e segnalava ogni ripasso (ADR-0026).
+
+**Decisione**:
+- **Formato**: il JSON del contorno accetta `strokes`, facoltativo. Un
+  tratto parte dal contorno o da un tratto precedente; una linea si
+  percorre fino in fondo e ritorno, un tratto che finisce su un suo punto
+  chiude un anello, percorso una volta. Niente incroci con il contorno, fra
+  tratti o su se stessi (`ROUTE_ENGINE.md` §2).
+- **Una sola traccia**: il motore inserisce ogni tratto dove parte, e
+  ricampiona la linea tenendo tutti i vertici, così andata e ritorno
+  coincidono. Senza tratti, il contorno si ricampiona come prima.
+- **Potatura e misure**: i lati che la forma disegna due volte (entro 1 m
+  da un altro lato percorso in senso contrario) si riconoscono dalla
+  geometria, senza altri dati. Verso
+  quei punti le strade già percorse non costano di più; la punta di ogni
+  linea è un angolo e la potatura la tiene. Entro il 2% del perimetro da un
+  tratto nulla conta come ripercorso, né esatto né a vista.
+- **Somiglianza**: la stessa misura, sulla forma intera con i tratti.
+- **Tolleranze dimezzate per le forme con tratti** (`STROKE_DETAIL` = 0,5):
+  raggio delle zone, fascia del corridoio e tolleranza della somiglianza
+  passano dal 2% all'1% del perimetro. Le forme senza tratti non cambiano.
+- **Forme**: finestre alla casa, fusto e tre coppie di rami all'albero,
+  occhi al gatto, occhio al pesce.

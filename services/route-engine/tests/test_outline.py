@@ -1,4 +1,4 @@
-"""Shapes read from a JSON outline (TASK-032)."""
+"""Shapes read from a JSON outline (TASK-032), with strokes (TASK-037)."""
 
 import json
 import math
@@ -14,6 +14,7 @@ from route_engine.shapes.outline import (
     parse_outline,
     read_outline,
 )
+from route_engine.shapes.resample import resample_by_arc_length
 
 N = 64
 
@@ -165,3 +166,104 @@ def test_the_house_has_walls_a_roof_a_chimney_and_a_door() -> None:
     assert _vertices("house") == roof + chimney + right_wall + door + left_wall
     # The chimney rises above the roof, on the right slope (y = 1 - 0.8 x).
     assert all(y > 1 - 0.8 * x for x, y in chimney[:2])
+
+
+# Strokes (TASK-037). A 4 × 4 square, scaled to [-1, 1]² by halving and
+# shifting: (x, y) in the file is (x / 2 - 1, y / 2 - 1) after reading.
+SQUARE = [[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]]
+BRANCH = [[4, 2], [2.5, 2]]  # from the right side inwards
+WINDOW = [[0, 2], [1, 2], [1, 3], [2, 3], [2, 1], [1, 1], [1, 2]]  # hung on a line
+
+
+def _read(*strokes: list[list[float]]) -> Outline:
+    return parse_outline(_data(SQUARE, strokes=list(strokes)))
+
+
+def _file(x: float, y: float) -> tuple[float, float]:
+    return x / 2 - 1, y / 2 - 1
+
+
+def _sides(path: list[tuple[float, float]]) -> list[frozenset[tuple[float, float]]]:
+    return [frozenset(side) for side in zip(path, path[1:], strict=False)]
+
+
+def test_without_strokes_an_outline_is_resampled_as_before() -> None:
+    plain = parse_outline(_data(RECTANGLE))
+    assert parse_outline(_data(RECTANGLE, strokes=[])) == plain
+    assert plain(N) == resample_by_arc_length(plain.points, N)
+    for path in OUTLINES.glob("*.json"):
+        outline = read_outline(path)
+        if not outline.strokes:
+            assert outline(N) == resample_by_arc_length(outline.points, N)
+
+
+def test_a_line_is_drawn_out_and_back_where_it_starts() -> None:
+    path = _read(BRANCH).path()
+    corners = [_file(*p) for p in SQUARE]
+    start, tip = _file(4, 2), _file(2.5, 2)
+    assert path == [*corners[:2], start, tip, start, *corners[2:]]
+
+
+def test_a_loop_is_drawn_once_and_its_line_twice() -> None:
+    path = _read(WINDOW).path()
+    sides = _sides(path)
+    line = frozenset((_file(0, 2), _file(1, 2)))
+    assert sides.count(line) == 2
+    loop = _sides([_file(*p) for p in WINDOW[1:]])
+    assert all(sides.count(side) == 1 for side in loop)
+    assert path[0] == path[-1]
+
+
+def test_a_stroke_may_start_on_an_earlier_stroke() -> None:
+    twig = [[3, 2], [3, 3]]
+    path = _read(BRANCH, twig).path()
+    corners = [_file(*p) for p in SQUARE]
+    start, fork, end = _file(4, 2), _file(3, 2), _file(2.5, 2)
+    # Out along the branch, up the twig and back at the fork, on to the end
+    # of the branch and back to where it started.
+    twig_tip = _file(3, 3)
+    assert path == [*corners[:2], start, fork, twig_tip, fork, end, start, *corners[2:]]
+
+
+def test_a_start_close_to_a_line_is_moved_onto_it() -> None:
+    near = _read([[4.001, 2], [2.5, 2]])
+    assert near.strokes == _read(BRANCH).strokes
+    # Close to a corner, the stroke starts at the corner.
+    corner = _read([[4, 0.002], [2, 2]])
+    assert corner.strokes[0][0] == _file(4, 0)
+
+
+def test_strokes_are_resampled_keeping_every_vertex() -> None:
+    outline = _read(WINDOW, BRANCH)
+    path = outline.path()
+    points = outline(N)
+    assert len(points) == N + 1
+    assert points[0] == points[-1]
+    assert all(vertex in points for vertex in path)
+
+
+@pytest.mark.parametrize(
+    ("strokes", "message"),
+    [
+        ([[[2, 2], [3, 3]]], "stroke 1 does not start on the outline"),
+        ([[[4, 2]]], "stroke 1 needs at least 2 distinct points"),
+        ([[[4, 2], [-1, 2]]], "stroke 1 crosses the outline"),
+        ([[[4, 2], [4, 3]]], "stroke 1 crosses the outline"),  # along a side
+        ([BRANCH, [[3, 0], [3, 3]]], "strokes 1 and 2 cross"),
+        ([[[4, 2], [2, 2], [3, 2]]], "stroke 1 folds back onto itself"),
+        ([[[4, 2], [1, 2], [2, 3], [2, 1]]], "stroke 1 crosses itself"),
+        ([[[4, 2], [3, 2], [2, 3], [3, 2]]], "loop of fewer than 3 distinct points"),
+        ([[[4, 2], [3, "a"]]], "list of lines"),
+        ("not a list", "list of lines"),
+    ],
+)
+def test_strokes_that_cannot_be_drawn_are_refused(strokes: Any, message: str) -> None:
+    with pytest.raises(InvalidOutlineError, match=message.replace("[", r"\[")):
+        parse_outline(_data(SQUARE, strokes=strokes))
+
+
+def test_a_stroke_may_stick_out_of_the_outline() -> None:
+    # Like a whisker: the drawing, now 5 wide, is scaled by its width.
+    whisker = _read([[4, 2], [5, 2]])
+    expected = [(0.6, 0.0), (1.0, 0.0), (0.6, 0.0)]
+    assert whisker.path()[2:5] == [pytest.approx(p) for p in expected]

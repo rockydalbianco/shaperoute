@@ -116,3 +116,23 @@ def test_parallel_spur_is_pruned_unless_it_leads_to_a_corner() -> None:
     pruned = prune_parallel_spurs(graph, SPIKED)
     assert pruned == ["c0", "c1", "f0", "c2", "c3", "c0"]
     assert prune_parallel_spurs(graph, SPIKED, keep={"s3"}) == SPIKED
+
+
+def test_along_a_stroke_nothing_counts_as_reused_or_retraced() -> None:
+    # The spike of SPIKED, and a plain out-and-back on the dead end, as the
+    # shape's own stroke from c1 to s3: meant to be drawn twice.
+    graph = _spike_town()
+    stroke = [(_node_latlon(graph, "c1"), _node_latlon(graph, "s3"))]
+    points = _points(graph, SPIKED)
+    assert visual_retrace(points, strokes=stroke, stroke_radius_m=30.0) == 0.0
+    back_and_forth = ["c0", "c1", "s1", "s2", "s3", "s2", "s1", "c1", "f0"]
+    back_and_forth += ["c2", "c3", "c0"]
+    assert exact_reuse(graph, back_and_forth) == pytest.approx(150 / 4300, rel=1e-3)
+    assert exact_reuse(graph, back_and_forth, stroke, 30.0) == 0.0
+    # A stroke elsewhere spares nothing here.
+    far = [(_node_latlon(graph, "c3"), _node_latlon(graph, "c2"))]
+    assert exact_reuse(graph, back_and_forth, far, 30.0) == pytest.approx(
+        150 / 4300, rel=1e-3
+    )
+    measures = measure(graph, points, SPIKED, strokes=stroke, stroke_radius_m=30.0)
+    assert measures["reuse"] == measures["retrace"] == 0.0

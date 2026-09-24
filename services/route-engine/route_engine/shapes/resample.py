@@ -56,3 +56,28 @@ def resample_by_arc_length(polyline: Sequence[Point], n_points: int) -> list[Poi
         vertices.append((x0 + f * (x1 - x0), y0 + f * (y1 - y0)))
     vertices.append(vertices[0])
     return vertices
+
+
+def resample_keeping_vertices(polyline: Sequence[Point], n_points: int) -> list[Point]:
+    """Like `resample_by_arc_length`, but every vertex of the closed polyline
+    stays: the points left up to `n_points` are spread over its sides by
+    length, each side cut into equal parts. With more vertices than
+    `n_points`, the vertices alone (TASK-037).
+    """
+    sides = list(zip(polyline, polyline[1:], strict=False))
+    lengths = [math.dist(a, b) for a, b in sides]
+    total = sum(lengths)
+    extra = max(0, n_points - len(sides))
+    shares = [extra * length / total for length in lengths]
+    counts = [math.floor(share) for share in shares]
+    # Largest remainders first; on a tie, the earlier side.
+    order = sorted(range(len(sides)), key=lambda i: (counts[i] - shares[i], i))
+    for i in order[: extra - sum(counts)]:
+        counts[i] += 1
+    vertices: list[Point] = []
+    for ((x0, y0), (x1, y1)), count in zip(sides, counts, strict=True):
+        for k in range(count + 1):
+            f = k / (count + 1)
+            vertices.append((x0 + f * (x1 - x0), y0 + f * (y1 - y0)))
+    vertices.append(vertices[0])
+    return vertices

@@ -21,8 +21,10 @@ dev = [
 [tool.setuptools.packages.find]
 include = ["route_engine*"]
 
-# The shape outlines are read at import (ADR-0035, ADR-0036).
+# The shape outlines and the letters are read at import (ADR-0035, ADR-0036,
+# ADR-0044).
 [tool.setuptools.package-data]
+"route_engine" = ["letters.json"]
 "route_engine.shapes" = ["outlines/*.json"]
 
 [tool.black]

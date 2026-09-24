@@ -28,6 +28,8 @@ from route_engine.metrics import (
     COVER_TOLERANCE,
     SIMILARITIES,
     Similarity,
+    coverage,
+    precision,
 )
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import (
@@ -54,6 +56,7 @@ from route_engine.projection import (
 )
 from route_engine.shapes import FREE_ROTATION, get_shape
 from route_engine.validation import check_closed, measure, validate
+from route_engine.words import MAX_SHIFT, SHIFT_STEP, Word
 
 # Where the start enters the shape, as arc-length fractions (TASK-015).
 PHASES = (0.0, 0.25, 0.5, 0.75)
@@ -103,6 +106,24 @@ W_DISTANCE = 1.0
 # when ranking placements by roads and when choosing among traced routes.
 OFFSET_FIT_PENALTY = 0.05
 W_OFFSET = W_SHAPE * OFFSET_FIT_PENALTY
+# The letters of a word each move up to words.MAX_SHIFT, on a grid of
+# words.SHIFT_STEP, to where their own strokes have most roads within
+# LETTER_BAND letter heights (TASK-050, fit_letters). Moving a letter that
+# far costs this share of its road count: a letter stays where it is unless
+# the roads are clearly better elsewhere.
+SHIFT_PENALTY = 0.05
+LETTER_BAND = 1 / 16
+# A word is judged letter by letter (word_similarity), within this many
+# letter heights. The shape similarity looks at the whole line, gaps
+# included, within 1% of its length (ADR-0039): some 150 m for letters 700 m
+# high at 15 km, and it passed words whose letters the roads did not draw.
+# Tracing zones and corridor this narrow were tried too, and dropped: at
+# Trento the route lost the O (TASK-050).
+WORD_TOLERANCE = 1 / 8
+# Where a word goes back along itself (the I, the C, the gaps), the roads it
+# has just used cost this much: it comes back on the same road, as the user
+# asked for the I, instead of on a parallel one (TASK-050).
+WORD_RETRACE = 0.5
 
 
 def reach(shape: Sequence[Point], phases: Sequence[float] = PHASES) -> float:
@@ -119,16 +140,21 @@ def zone_area(
     start: LatLon,
     distance_m: float,
     offset_m: float = START_OFFSET_M,
+    word: Word | None = None,
 ) -> BBox:
     """Square around `start` holding the shape at any rotation, phase and
-    scale, from any start up to `offset_m` away.
+    scale, from any start up to `offset_m` away; for a `word`, at its own
+    phases and with its letters moved as far as they may.
 
     One graph of this area serves every attempt of the search (ADR-0023).
     """
     largest_scale = initial_scale(shape, distance_m) * SCALE_RANGE[1]
+    far = reach(shape)
+    if word is not None:
+        far = reach(shape, word.phases) + MAX_SHIFT * word.height
     return area_around(
         [start],
-        margin_m=reach(shape) * largest_scale + offset_m + AREA_MARGIN_M,
+        margin_m=far * largest_scale + offset_m + AREA_MARGIN_M,
     )
 
 
@@ -229,6 +255,24 @@ class RoadMask:
         result[inside] = near[cells[inside, 0], cells[inside, 1]]
         return result
 
+    def fits_xy(
+        self, line_xy: np.ndarray, moves: np.ndarray, band_m: float
+    ) -> np.ndarray:
+        """`fit_xy` of a line moved by each of `moves`, all in metres, at
+        once: the line is sampled a single time (TASK-050)."""
+        n = max(8, math.ceil(_perimeter_m(line_xy) / (band_m / 2)))
+        steps = np.hypot(*np.diff(line_xy, axis=0).T)
+        cumulative = np.concatenate([[0.0], np.cumsum(steps)])
+        s = np.linspace(0.0, cumulative[-1], n, endpoint=False)
+        pts = np.column_stack(
+            [
+                np.interp(s, cumulative, line_xy[:, 0]),
+                np.interp(s, cumulative, line_xy[:, 1]),
+            ]
+        )
+        moved = (pts[None] + moves[:, None]).reshape(-1, 2)
+        return self.near_xy(moved, band_m).reshape(len(moves), n).mean(axis=1)
+
     def fit(self, outline: Sequence[LatLon], band_m: float) -> float:
         """`fit_xy` for an outline in WGS84."""
         return self.fit_xy(
@@ -255,6 +299,9 @@ class Attempt:
     similarity: float
     ratio: float  # distance on roads / target
     cost: float
+    # How far each letter of a word moved (fit_letters), in letter heights:
+    # along the base line, then up.
+    shifts: tuple[tuple[float, float], ...] = ()
 
     @property
     def rotation_deg(self) -> float:
@@ -280,12 +327,12 @@ class Search:
 Tracer = Callable[[list[LatLon]], NetworkRoute]
 
 
-def _tracer(graph: Graph, reuse_penalty: float) -> Tracer:
+def _tracer(graph: Graph, reuse_penalty: float, retrace: float = 1.0) -> Tracer:
     """Trace on the whole zone graph: the corridor already makes the roads
     far from the candidate too dear to use, so cropping first gains nothing."""
 
     def trace(projected: list[LatLon]) -> NetworkRoute:
-        return snap_to_network(graph, projected, reuse_penalty)
+        return snap_to_network(graph, projected, reuse_penalty, retrace=retrace)
 
     return trace
 
@@ -312,6 +359,97 @@ def _rings(
     return starts
 
 
+def shift_grid() -> np.ndarray:
+    """The moves a letter may try, in letter heights: every point of a grid
+    of SHIFT_STEP within MAX_SHIFT, shortest first, staying put first."""
+    k = round(MAX_SHIFT / SHIFT_STEP)
+    moves = [
+        (i * SHIFT_STEP, j * SHIFT_STEP)
+        for i in range(-k, k + 1)
+        for j in range(-k, k + 1)
+        if i * i + j * j <= k * k
+    ]
+    return np.array(sorted(moves, key=lambda m: (math.hypot(*m), m)))
+
+
+def letter_moves(
+    word: Word,
+    start: int,
+    rotation_deg: float,
+    scale: float,
+    origin_xy: np.ndarray,
+    mask: RoadMask,
+    band_m: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Where each letter of `word` has most roads (TASK-050): the move of
+    `shift_grid` each letter keeps, in letter heights, and its score.
+
+    The word is drawn from gap `start` (Word.line), turned by
+    `rotation_deg` and scaled by `scale` like a placement, with its first
+    point at `origin_xy`, in metres around `mask.origin`. A letter scores
+    the share of its strokes with a road within `band_m`, less
+    SHIFT_PENALTY for the longest move. Only the letter counts: a share of
+    the whole word would reward the moves that shorten the gaps. A lone
+    letter does not move: the search places the word.
+    """
+    grid = shift_grid() if len(word.letters) > 1 else np.zeros((1, 2))
+    points, _ = word.line(start)
+    theta = math.radians(rotation_deg)
+    cos_t, sin_t = math.cos(theta), math.sin(theta)
+    turn = scale * np.array([[cos_t, -sin_t], [sin_t, cos_t]])
+    xy = (points - points[0]) @ turn.T + origin_xy
+    moves = grid * word.height @ turn.T  # in metres
+    costs = SHIFT_PENALTY * np.hypot(grid[:, 0], grid[:, 1]) / MAX_SHIFT
+    chosen: list[int] = []
+    scores: list[float] = []
+    for rows in word.strokes(start):
+        score = mask.fits_xy(xy[rows], moves, band_m) - costs
+        chosen.append(int(np.argmax(score)))  # the shortest move on a tie
+        scores.append(float(score[chosen[-1]]))
+    return grid[chosen], np.array(scores)
+
+
+def fit_letters(
+    word: Word,
+    start: int,
+    rotation_deg: float,
+    scale: float,
+    origin_xy: np.ndarray,
+    mask: RoadMask,
+    band_m: float,
+) -> tuple[list[Point], np.ndarray]:
+    """Move each letter of `word` where its strokes have most roads
+    (`letter_moves`, same arguments); the gaps stretch to follow, and the
+    first point stays. Returns the normalized points, closed, and the moves
+    in letter heights."""
+    shifts, _ = letter_moves(word, start, rotation_deg, scale, origin_xy, mask, band_m)
+    return word.moved(start, shifts), shifts
+
+
+def word_similarity(
+    word: Word,
+    start: int,
+    route: Sequence[LatLon],
+    outline: Sequence[LatLon],
+    height_m: float,
+) -> float:
+    """How well `route` writes `word`, placed as `outline` (in the order of
+    Word.line(start)) with letters `height_m` high (TASK-050): the harmonic
+    mean of the letters' coverage, on average over the letters, and of the
+    precision on the whole word, within WORD_TOLERANCE letter heights."""
+    tolerance = WORD_TOLERANCE * height_m
+    covered = np.mean(
+        [
+            coverage(route, [outline[i] for i in rows], tolerance)
+            for rows in word.strokes(start)
+        ]
+    )
+    exact = precision(route, outline, tolerance)
+    return (
+        0.0 if covered + exact == 0 else float(2 * covered * exact / (covered + exact))
+    )
+
+
 def search(
     graph: Graph,
     shape: Sequence[Point],
@@ -326,18 +464,23 @@ def search(
     max_tilt_deg: float = FREE_TILT_DEG,
     starts: Sequence[tuple[LatLon, float]] | None = None,
     phases: Sequence[float] = PHASES,
+    word: Word | None = None,
 ) -> Search:
     """Best route for `shape` near `distance_m` on `graph`, starting at
     `start` or, with `move_start`, up to START_OFFSET_M away from it; or
     from the given `starts`, each with its distance from `start`. The shape
     turns at most `max_tilt_deg` either way from how it is drawn, and the
-    route enters it at one of `phases`."""
+    route enters it at one of `phases`.
+
+    When `shape` is the `word`'s points and `phases` its phases, every
+    trace first moves the letters to where the roads are (fit_letters)."""
     similarity = similarity or SIMILARITIES[SIMILARITY]
 
     def allowed(rotation_deg: float) -> bool:
         return _angle_gap(rotation_deg, 0.0) <= max_tilt_deg + 1e-9
 
-    trace = trace or _tracer(graph, reuse_penalty)
+    retrace = 1.0 if word is None else WORD_RETRACE
+    trace = trace or _tracer(graph, reuse_penalty, retrace)
     mask = RoadMask(graph, start)
     base_scale = initial_scale(shape, distance_m)
     low, high = (base_scale * f for f in SCALE_RANGE)
@@ -351,6 +494,8 @@ def search(
     # A shape with strokes is judged finer (ADR-0039); normalized, its sides
     # drawn twice coincide exactly.
     band_share = CORRIDOR_BAND * detail_scale(np.array(shape), near_m=1e-9)
+    # One band for every trace, so the letters share one grid of roads.
+    letter_band = float(round(LETTER_BAND * base_scale * word.height)) if word else 0.0
 
     def outline_xy(p: Placement, scale: float) -> np.ndarray:
         """`project_shape` in metres around `start` (same scale and rotation)."""
@@ -369,6 +514,19 @@ def search(
         return project_shape(shape, p.start, scale, p.rotation_deg, p.phase)
 
     def road_fit(p: Placement, scale: float) -> float:
+        if word is not None:  # letter by letter, each where it may move
+            _, scores = letter_moves(
+                word,
+                word.phases.index(p.phase),
+                p.rotation_deg,
+                scale,
+                start_xy[p.start],
+                mask,
+                letter_band,
+            )
+            return (
+                float(scores.mean()) - OFFSET_FIT_PENALTY * p.offset_m / START_OFFSET_M
+            )
         # The band follows the scale alone, so every placement at one scale
         # shares the same grid. Moving the start must earn its keep.
         band = round(band_share * perimeter(shape) * scale, 3)
@@ -383,16 +541,36 @@ def search(
         )
 
     def attempt(p: Placement, scale: float) -> Attempt:
-        outline = placed(p, scale)
+        shifts: tuple[tuple[float, float], ...] = ()
+        if word is None:
+            outline = placed(p, scale)
+        else:
+            drawn, moved = fit_letters(
+                word,
+                word.phases.index(p.phase),
+                p.rotation_deg,
+                scale,
+                start_xy[p.start],
+                mask,
+                letter_band,
+            )
+            outline = project_shape(drawn, p.start, scale, p.rotation_deg)
+            shifts = tuple((float(x), float(y)) for x, y in moved)
         route = trace(outline)
-        sim = similarity(route.points, outline)
+        if word is None:
+            sim = similarity(route.points, outline)
+        else:
+            index = word.phases.index(p.phase)
+            sim = word_similarity(
+                word, index, route.points, outline, scale * word.height
+            )
         ratio = route.distance_m / distance_m
         cost = (
             W_SHAPE * (1 - sim)
             + W_DISTANCE * abs(ratio - 1)
             + W_OFFSET * p.offset_m / START_OFFSET_M
         )
-        result = Attempt(p, scale, outline, route, sim, ratio, cost)
+        result = Attempt(p, scale, outline, route, sim, ratio, cost, shifts)
         attempts.append(result)
         return result
 
@@ -617,12 +795,16 @@ def planned_distance(distance_m: float, one_way: bool) -> float:
 
 
 def required_area(
-    shape: Sequence[Point], start: LatLon, distance_m: float, optimize: bool = True
+    shape: Sequence[Point],
+    start: LatLon,
+    distance_m: float,
+    optimize: bool = True,
+    word: Word | None = None,
 ) -> BBox:
     """Area whose graph a request needs: the zone, or just the initial shape.
     `distance_m` is the planned one (`planned_distance`)."""
     if optimize:
-        return zone_area(shape, start, distance_m)
+        return zone_area(shape, start, distance_m, word=word)
     return area_around(project_shape(shape, start, initial_scale(shape, distance_m)))
 
 
@@ -674,6 +856,7 @@ def plan_shape(
     reuse_penalty: float = EDGE_REUSE_PENALTY,
     max_tilt_deg: float = MAX_TILT_DEG,
     one_way: bool = False,
+    word: Word | None = None,
 ) -> Plan:
     """plan_route for any normalized shape, also an outline read from a file
     (TASK-032). `name` only labels the result and its messages; start and
@@ -684,12 +867,18 @@ def plan_shape(
     as a closed shape twice `distance_m` long, entered at its first point,
     and the route keeps the way out, which ends at the shape's far end
     (TASK-041). Shares and scores are the same for the whole and the half.
+
+    A `word` is a closed line whose `points` are `shape`: the search enters
+    it half-way along a gap between letters, and moves the letters to where
+    the roads are (TASK-050).
     """
     similarity = SIMILARITIES[SIMILARITY]
     planned_m = planned_distance(distance_m, one_way)
     kept = 0.5 if one_way else 1.0  # of the planned route
     phases = (0.0,) if one_way else PHASES
-    graph = source.load(required_area(shape, start, planned_m, optimize))
+    if word is not None:
+        phases = word.phases
+    graph = source.load(required_area(shape, start, planned_m, optimize, word))
     far: Search | None = None
     if optimize:
         found = search(
@@ -700,10 +889,13 @@ def plan_shape(
             reuse_penalty=reuse_penalty,
             max_tilt_deg=max_tilt_deg,
             phases=phases,
+            word=word,
         )
         if not found.converged:
             # Not good here: look for a place farther away (ADR-0040).
-            far_graph = source.load(zone_area(shape, start, planned_m, FAR_OFFSET_M))
+            far_graph = source.load(
+                zone_area(shape, start, planned_m, FAR_OFFSET_M, word)
+            )
             far = search(
                 far_graph,
                 shape,
@@ -714,6 +906,7 @@ def plan_shape(
                 max_tilt_deg=max_tilt_deg,
                 starts=far_starts(start),
                 phases=phases,
+                word=word,
             )
             if far.converged or (
                 not _drawable(found.best, planned_m, kept)
@@ -754,8 +947,12 @@ def plan_shape(
     else:
         found = None
         projected = project_shape(shape, start, initial_scale(shape, planned_m))
-        route = snap_to_network(graph, projected, reuse_penalty)
+        retrace = 1.0 if word is None else WORD_RETRACE
+        route = snap_to_network(graph, projected, reuse_penalty, retrace=retrace)
         sim, warnings = similarity(route.points, projected), list(route.warnings)
+        if word is not None:
+            height_m = initial_scale(shape, planned_m) * word.height
+            sim = word_similarity(word, 0, route.points, projected, height_m)
         placed, chosen_start = projected, start
     [first], _ = nearest_nodes(graph, [chosen_start])
     check_closed(

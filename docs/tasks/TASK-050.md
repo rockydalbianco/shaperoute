@@ -43,7 +43,7 @@ mediano del disegno dal percorso 32 m (era 44), 10 s; 256 punti, 30 m,
 
 Deciso dall'agente su delega dell'utente:
 
-1. **Alfabeto a tratto singolo** (`shapes/letters.json`), per ora C, I, A,
+1. **Alfabeto a tratto singolo** (`route_engine/letters.json`), per ora C, I, A,
    O. Ogni lettera è alta 1 e ha un'andata, dall'ingresso all'uscita, tutti
    e due sulla base; e, se ingresso e uscita non coincidono, un ritorno.
    La A esce dal piede destro e torna per le gambe: la base non la chiude.
@@ -79,7 +79,7 @@ Deciso dall'agente su delega dell'utente:
 ## File toccati
 
 ```
-services/route-engine/route_engine/shapes/letters.json   (nuovo)
+services/route-engine/route_engine/letters.json          (nuovo)
 services/route-engine/route_engine/words.py              (nuovo)
 services/route-engine/route_engine/optimizer.py
 services/route-engine/route_engine/__main__.py

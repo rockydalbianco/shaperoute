@@ -226,7 +226,7 @@ singolo come nella Strava art, e subito con una parola corta.
 |---|---|
 | TASK-040 | Una parola a tratto singolo: «CIAO», dalla CLI |
 | TASK-041 | Percorso aperto: l'utente sceglie se tornare alla partenza |
-| TASK-047 | Lettere una per una: ognuna cerca le sue strade, poi si collegano |
+| TASK-050 | Lettere una per una: ognuna cerca le sue strade, poi si collegano |
 
 **TASK-041, proposto dall'utente.** Nelle scritte si può ripassare la stessa
 strada, e non serve tornare alla partenza: l'utente sceglie un giro chiuso
@@ -239,6 +239,12 @@ linea aperta si pianifica come andata e ritorno sulla stessa linea, poi il
 percorso si taglia in fondo all'andata; il motore resta quello dei giri
 chiusi. **Fatto (ADR-0043)**: per l'utente «CIAO» aperto è peggio del
 chiuso; resta dalla CLI.
+
+**TASK-050, chiesto dall'utente dopo TASK-041** (era TASK-047: quel numero è
+passato alle indicazioni di svolta, di un'altra sessione): le lettere si
+compongono da un alfabeto a tratto singolo, più distanziate, con un punto
+di passaggio ogni 1/16 dell'altezza, e ognuna si sposta di poco dove ha
+più strade (ADR-0044).
 
 ## Fase 5 — Oltre
 

@@ -527,6 +527,7 @@ def _route_through_zones(
     reuse_penalty: float,
     corners: Collection[int] = frozenset(),
     twice: Collection[int] = frozenset(),
+    retrace: float = 1.0,
 ) -> tuple[list[Any], list[Any], list[int], set[Any]]:
     """Closed route from `first` through a zone around each anchor, back to `first`.
 
@@ -536,7 +537,8 @@ def _route_through_zones(
     cheap to reach instead of the single nearest one, which may lie across
     a river or a railway. Used roads cost `reuse_penalty` times more, except
     on the way to the anchors in `twice` (1-based, 0 for the way home),
-    which the shape draws twice on purpose.
+    which the shape draws twice on purpose: there they cost `retrace` times
+    as much, less than 1 to come back on the same road (TASK-050).
 
     Each leg adds a temporary sink node to `graph`, linked from the zone,
     and removes it afterwards. Returns the route nodes, the node reached in
@@ -565,7 +567,7 @@ def _route_through_zones(
     skipped: list[int] = []
     corner_nodes: set[Any] = set()
     for index, anchor in enumerate(anchors, start=1):
-        penalty = 1.0 if index in twice else reuse_penalty
+        penalty = retrace if index in twice else reuse_penalty
         ax, ay = latlon_to_local(origin, anchor)
         d = np.hypot(xy[:, 0] - ax, xy[:, 1] - ay)
         zone = np.flatnonzero(d <= radius_m)
@@ -589,7 +591,7 @@ def _route_through_zones(
             corner_nodes.add(path[-2])
         if path[-2] != reached[-1]:
             reached.append(path[-2])
-    penalty = 1.0 if 0 in twice else reuse_penalty
+    penalty = retrace if 0 in twice else reuse_penalty
     try:
         walk(nx.shortest_path(graph, route_nodes[-1], first, weight=weight))
     except nx.NetworkXNoPath:
@@ -637,6 +639,7 @@ def snap_to_network(
     zone_radius: float = ZONE_RADIUS,
     corridor: float = CORRIDOR_WEIGHT,
     band: float = CORRIDOR_BAND,
+    retrace: float = 1.0,
 ) -> NetworkRoute:
     """Turn a projected shape into a closed route on the road network.
 
@@ -644,7 +647,9 @@ def snap_to_network(
     node nearest to it. Every other point is reached through a zone of
     nodes around it, and roads far from the outline cost more
     (docs/ROUTE_ENGINE.md §4). `zone_radius` and `band` are fractions of
-    the shape perimeter, so they scale with the requested distance.
+    the shape perimeter, so they scale with the requested distance. Where
+    the shape goes back along itself, used roads cost `retrace` times as
+    much (_route_through_zones).
     """
     warnings: list[str] = []
     nodes, distances = nearest_nodes(graph, shape_points)
@@ -690,6 +695,7 @@ def snap_to_network(
         reuse_penalty,
         corners,
         twice,
+        retrace,
     )
     for index in skipped:
         warnings.append(f"no road path to shape point {index}; skipped")

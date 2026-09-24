@@ -91,6 +91,17 @@ class OllamaModel:
         )
         return parse_reply(reply)
 
+    def preload(self) -> None:
+        """Load the model into memory now, so the first word is answered in
+        seconds, not the 40-49 s of reading it from disk (TASK-052). Ollama
+        loads a model when asked to generate from no prompt, and keeps it
+        KEEP_ALIVE, as after an answer. Raises ModelUnavailableError."""
+        self.post(
+            f"{self.url.rstrip('/')}/api/generate",
+            {"model": self.model, "keep_alive": KEEP_ALIVE},
+            self.timeout_s,
+        )
+
 
 def parse_reply(reply: Any) -> Choice:
     """The choice in Ollama's answer: {"message": {"content": "{...}"}}."""

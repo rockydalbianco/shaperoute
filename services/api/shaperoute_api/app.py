@@ -10,6 +10,7 @@ catalogue some words name (ADR-0012): the AI never sees the route.
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
@@ -117,6 +118,13 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        if reader is not None:
+            # In the background: the API answers at once, even with Ollama
+            # off or the model missing; the first word waits less (TASK-052).
+            log.info("AI model: loading in the background")
+            threading.Thread(
+                target=reader.warm_up, name="ai-preload", daemon=True
+            ).start()
         yield
         route_jobs.shutdown()
 

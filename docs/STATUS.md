@@ -36,15 +36,18 @@ Per le indicazioni di svolta il seguito è
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
 nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
 
-**App: una barra di caricamento sotto la mappa durante il disegno**,
-chiesta dall'utente dopo TASK-054: TASK-055.
+**App: TASK-055 — Barra di caricamento sotto la mappa**
+(`docs/tasks/TASK-055.md`): fatta e provata con i test; manca la prova
+dell'utente sull'iPhone. Poi TASK-057, il campo per le parole (dopo
+TASK-056).
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
-Niente per l'app.
+- **TASK-055** — Barra di caricamento (worktree `D:\shaperoute-app`):
+  `RoutePanel.tsx`, `progress.ts`, `LoadingBar.tsx`, `docs/UI.md`.
 
 ## Completato
 
@@ -123,6 +126,8 @@ Niente.
   modelli stanno in `D:\Ollama\models` (variabile `OLLAMA_MODELS`
   dell'account). C'è solo `qwen3:4b`: i due scartati e l'installer sono
   già tolti. L'ambiente dell'API ha anche `services\ai` installato.
+- Precaricamento del modello (TASK-052): da misurare con il PC scarico,
+  riga «AI model loaded in … s» nel log dell'API.
 - In sospeso, dall'AI (`AI.md`): precaricare il modello all'avvio
   dell'API (prima parola da 40–49 s a circa 5 s, 3,2 GB di RAM da subito).
 - Su questo PC il route-engine usa l'ambiente dell'API: non c'è

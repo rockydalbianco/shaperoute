@@ -1,12 +1,5 @@
 import { MAX_SHAPE_TEXT_LENGTH, type Shape, SHAPES } from "@shaperoute/shared-types";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   color,
@@ -18,6 +11,7 @@ import {
 } from "../theme/tokens";
 import { LONG_DISTANCE_KM, MAX_APP_DISTANCE_KM, MIN_DISTANCE_KM } from "./distance";
 import { DistanceStepper } from "./DistanceStepper";
+import { LoadingBar } from "./LoadingBar";
 import { problemText } from "./problems";
 import { ShapeTiles } from "./ShapeTiles";
 import { shapeList } from "./shapeWords";
@@ -136,17 +130,19 @@ export function RouteOutcome({
   switch (view.status) {
     case "waiting":
       return (
-        <View style={styles.row}>
-          {/* A spinner, not the seconds: how long is the API's business. */}
-          <ActivityIndicator color={color.text} testID="loading" />
-          <Text style={styles.waiting}>{waitingText(view)}</Text>
-          <Pressable
-            style={styles.secondary}
-            onPress={onCancel}
-            accessibilityRole="button"
-          >
-            <Text style={styles.secondaryText}>Cancel</Text>
-          </Pressable>
+        <View style={styles.panel}>
+          <View style={styles.row}>
+            <Text style={styles.waiting}>{waitingText(view)}</Text>
+            <Pressable
+              style={styles.secondary}
+              onPress={onCancel}
+              accessibilityRole="button"
+            >
+              <Text style={styles.secondaryText}>Cancel</Text>
+            </Pressable>
+          </View>
+          {/* A bar, not the seconds: an estimate from the phase (ADR-0050). */}
+          <LoadingBar phase={view.phase} distanceM={view.request.distance_m} />
         </View>
       );
     case "done":

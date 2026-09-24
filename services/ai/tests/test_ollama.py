@@ -13,7 +13,9 @@ import pytest
 
 from shaperoute_ai.ollama import (
     DEFAULT_MODEL,
+    KEEP_ALIVE,
     MAX_ANSWER_TOKENS,
+    TIMEOUT_S,
     OllamaModel,
     parse_reply,
     post_json,
@@ -163,3 +165,20 @@ def test_ollama_not_running_is_no_answer() -> None:
         port = probe.getsockname()[1]
     with pytest.raises(ModelUnavailableError, match="is it running"):
         post_json(f"http://127.0.0.1:{port}/api/chat", {}, 5.0)
+
+
+def test_preload_asks_ollama_to_load_the_model_with_no_prompt() -> None:
+    post = FakePost({"model": DEFAULT_MODEL, "response": "", "done": True})
+    OllamaModel(url="http://pc:11434/", post=post).preload()
+    [(url, body, timeout_s)] = post.calls
+    assert url == "http://pc:11434/api/generate"
+    assert body == {"model": DEFAULT_MODEL, "keep_alive": KEEP_ALIVE}
+    assert timeout_s == TIMEOUT_S
+
+
+def test_preload_says_when_ollama_cannot_load_it() -> None:
+    def post(url: str, body: dict[str, Any], timeout_s: float) -> Any:
+        raise ModelUnavailableError("Ollama answered 404: model not found")
+
+    with pytest.raises(ModelUnavailableError, match="404"):
+        OllamaModel(post=post).preload()

@@ -28,10 +28,9 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 
 ## Prossimo passo
 
-Fase 3 chiusa: tutti i suoi task sono fatti. Il prossimo è il primo task
-della fase 4 (`ROADMAP.md`: walking e cycling, scritte, account, PostGIS,
-dislivello, oltre 21 km, hosting), da scegliere con l'utente: nessun file
-di task è scritto.
+Dopo TASK-040, **TASK-041 — Percorso aperto**: l'utente sceglie se tornare
+alla partenza (`ROADMAP.md`, fase 4). Il file del task non è ancora
+scritto.
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
@@ -39,7 +38,10 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-Niente.
+**TASK-040** — `feat/TASK-040-word-single-stroke`: il contorno accetta
+`path`, una linea chiusa percorsa così com'è; «CIAO» a tratto singolo
+(`shapes/outlines/ciao.json`); campioni a 15 km a Trento (0,93), Levico
+(0,91) e Milano (1,00) in `samples/`. Manca il giudizio dell'utente.
 
 ## Completato
 

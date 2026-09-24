@@ -219,6 +219,25 @@ distanze oltre i 21 km nell'app, con un modo più veloce di avere i dati
 delle zone (ADR-0009, ADR-0034); hosting, perché l'app funzioni anche a PC
 spento (ADR-0013).
 
+**Scelto dall'utente (2026-09-24)**: si comincia dalle scritte, a tratto
+singolo come nella Strava art, e subito con una parola corta.
+
+| Task | Titolo |
+|---|---|
+| TASK-040 | Una parola a tratto singolo: «CIAO», dalla CLI |
+| TASK-041 | Percorso aperto: l'utente sceglie se tornare alla partenza |
+
+**TASK-041, proposto dall'utente.** Nelle scritte si può ripassare la stessa
+strada, e non serve tornare alla partenza: l'utente sceglie un giro chiuso
+o un percorso aperto. Oggi il «chiuso» regge tutto il motore
+(ricampionamento, spostamento della partenza lungo la forma,
+instradamento, somiglianza, controlli), il GPX e il contratto con l'app
+(`RouteResult.points`: «the last point is the first»), e
+`ROUTE_ENGINE.md` lo mette alla base. Un'idea da valutare nel task: una
+linea aperta si pianifica come andata e ritorno sulla stessa linea, poi il
+percorso si taglia in fondo all'andata; il motore resta quello dei giri
+chiusi.
+
 ## Fase 5 — Oltre
 
 Sincronizzazione smartwatch; web app; SUP; parapendio. Queste ultime due

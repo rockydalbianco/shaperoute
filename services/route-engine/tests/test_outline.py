@@ -193,7 +193,7 @@ def test_without_strokes_an_outline_is_resampled_as_before() -> None:
     assert plain(N) == resample_by_arc_length(plain.points, N)
     for path in OUTLINES.glob("*.json"):
         outline = read_outline(path)
-        if not outline.strokes:
+        if not outline.strokes and not outline.line:
             assert outline(N) == resample_by_arc_length(outline.points, N)
 
 
@@ -267,3 +267,52 @@ def test_a_stroke_may_stick_out_of_the_outline() -> None:
     whisker = _read([[4, 2], [5, 2]])
     expected = [(0.6, 0.0), (1.0, 0.0), (0.6, 0.0)]
     assert whisker.path()[2:5] == [pytest.approx(p) for p in expected]
+
+
+# A path (TASK-040): an L drawn down and right, then back the same way.
+L_PATH = [[0, 2], [0, 0], [1, 0], [0, 0], [0, 2]]
+
+
+def _path_data(path: Any, **overrides: Any) -> dict[str, Any]:
+    data = _data([], path=path, **overrides)
+    del data["points"]
+    return data
+
+
+def test_a_path_is_drawn_as_it_is() -> None:
+    outline = parse_outline(_path_data(L_PATH))
+    assert outline.line
+    assert outline.path() == pytest.approx(
+        [(-0.5, 1), (-0.5, -1), (0.5, -1), (-0.5, -1), (-0.5, 1)]
+    )
+
+
+def test_a_path_is_resampled_keeping_every_vertex() -> None:
+    outline = parse_outline(_path_data(L_PATH))
+    points = outline(N)
+    assert len(points) == N + 1
+    assert points[-1] == points[0]
+    for vertex in outline.path():
+        assert vertex in points
+
+
+@pytest.mark.parametrize(
+    ("path", "message"),
+    [
+        (L_PATH[:-1], "the path is open"),
+        ([[0, 0], [0, 0]], "at least 2 distinct points"),
+        ([[0, 0], [1, "a"], [0, 0]], "list of [x, y] numbers"),
+        ("not a list", "list of [x, y] numbers"),
+    ],
+)
+def test_a_path_that_cannot_be_drawn_is_refused(path: Any, message: str) -> None:
+    with pytest.raises(InvalidOutlineError, match=message.replace("[", r"\[")):
+        parse_outline(_path_data(path))
+
+
+@pytest.mark.parametrize("key", ["points", "strokes"])
+def test_a_path_does_not_go_with_points_or_strokes(key: str) -> None:
+    data = _path_data(L_PATH)
+    data[key] = RECTANGLE if key == "points" else []
+    with pytest.raises(InvalidOutlineError, match="'path' replaces"):
+        parse_outline(data)

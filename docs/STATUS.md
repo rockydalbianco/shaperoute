@@ -32,7 +32,7 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 in un'altra sessione. Per le indicazioni di svolta il seguito è
 **TASK-048**: portare i nodi del percorso e le indicazioni fuori dal motore,
 fino all'API e all'app, con la via di partenza. Dopo TASK-050,
-**TASK-051 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
+**TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
 nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
 
 **App: un'interfaccia più da app che da sito**, chiesta dall'utente dopo

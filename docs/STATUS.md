@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-24 · **Fase corrente**: 3 chiusa, 4 da cominciare
+**Ultimo aggiornamento**: 2026-09-24 · **Fase corrente**: 4 — Estensione (scritte)
 
 ---
 
@@ -38,14 +38,14 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-**TASK-040** — `feat/TASK-040-word-single-stroke`: il contorno accetta
-`path`, una linea chiusa percorsa così com'è; «CIAO» a tratto singolo
-(`shapes/outlines/ciao.json`); campioni a 15 km a Trento (0,93), Levico
-(0,91) e Milano (1,00) in `samples/`. Manca il giudizio dell'utente.
+Niente.
 
 ## Completato
 
-- **Fase 3 finora** — TASK-032: forme da un contorno in JSON, dalla CLI
+- **Fase 4 finora** — TASK-040: il contorno accetta `path`, una linea
+  chiusa percorsa così com'è (ADR-0042); «CIAO» a tratto singolo, dalla
+  CLI, `quasi` a Trento, Levico e Milano a 15 km.
+- **Fase 3** — TASK-032: forme da un contorno in JSON, dalla CLI
   (`--outline`, ADR-0035). Cancello superato: stella sì ovunque, cavallo
   quasi a Trento e sì a Levico e Milano; la casa no, anche con camino e
   porta. TASK-033: catalogo di quattro forme (cerchio, cuore, stella,

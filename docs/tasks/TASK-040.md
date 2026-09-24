@@ -1,6 +1,6 @@
 # TASK-040 — Una parola a tratto singolo: «CIAO»
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-040-word-single-stroke` (parte da
 `feat/TASK-031-no-shape-no-fit`)
 
@@ -35,7 +35,7 @@ dritte (ADR-0038), cosa che per una scritta è indispensabile.
 
 ## Cosa fare
 
-Proposto dall'agente (da confermare con ADR a fine task):
+Proposto dall'agente, registrato in ADR-0042:
 
 1. **Formato**: il JSON accetta `path` al posto di `points` e `strokes`:
    una sola linea chiusa (l'ultimo punto ripete il primo), percorsa così
@@ -57,13 +57,13 @@ Proposto dall'agente (da confermare con ADR a fine task):
 
 ## Criteri di accettazione
 
-- [ ] Un `path` valido si legge, si normalizza e si ricampiona; ogni file
+- [x] Un `path` valido si legge, si normalizza e si ricampiona; ogni file
       sbagliato è rifiutato con il suo motivo (test).
-- [ ] I contorni di oggi (`points`, `strokes`) danno gli stessi punti di
+- [x] I contorni di oggi (`points`, `strokes`) danno gli stessi punti di
       prima (test esistenti verdi).
-- [ ] `ciao.json` produce un GPX dalla CLI a Trento, Levico e Milano, o il
+- [x] `ciao.json` produce un GPX dalla CLI a Trento, Levico e Milano, o il
       rifiuto è registrato in `samples/LOG.md`.
-- [ ] Giudizio dell'utente registrato per ogni zona.
+- [x] Giudizio dell'utente registrato per ogni zona: `quasi` in tutte e tre.
 
 ## File toccati
 
@@ -88,4 +88,8 @@ docs/ROUTE_ENGINE.md, docs/DECISIONS.md, docs/ROADMAP.md, docs/STATUS.md
 
 ## Esito
 
-*(da compilare)*
+Il contorno accetta `path`, una linea chiusa percorsa così com'è
+(ADR-0042). «CIAO» a 15 km dà un percorso a Trento (0,93), Levico (0,91) e
+Milano (1,00); l'utente lo giudica `quasi` in tutte e tre. Il ritorno alla
+partenza ripassa circa un quarto della linea (24%): il percorso aperto, proposto
+dall'utente durante il task, è TASK-041.

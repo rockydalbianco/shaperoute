@@ -1162,3 +1162,34 @@ cose insieme; solo testi più chiari.
 rifà la ricerca, che a quella distanza di solito trova lo stesso percorso,
 ma può rifiutare ancora.
 
+## ADR-0042 — Scritte: una linea chiusa percorsa così com'è
+**Stato**: Attiva · 2026-09-24 · tratto singolo e parola corta scelti
+dall'utente; il formato proposto dall'agente; giudizio dell'utente sui
+campioni: `quasi`
+
+La fase 4 comincia dalle scritte (`ROADMAP.md`). L'utente ha scelto il
+tratto singolo, come nella Strava art, e di provare subito una parola
+corta. Il contorno di ADR-0035 è un anello che non si incrocia, con tratti
+appesi (ADR-0039): una parola a tratto singolo non ci entra.
+
+**Decisione**:
+- **`path`** al posto di `points` e `strokes`: una sola linea chiusa,
+  percorsa così com'è, che può ripassare e toccare se stessa
+  (`ROUTE_ENGINE.md` §2). Il resto del motore non cambia: i lati
+  ripassati li riconosce già dalla geometria, e con loro dimezza le
+  tolleranze (ADR-0039); le forme restano dritte (ADR-0038).
+- **«CIAO»** (`shapes/outlines/ciao.json`), disegnato per ShapeRoute:
+  maiuscole alte 1 unite da una linea di base; il ritorno alla partenza
+  ripassa la base e le gambe della A, per non chiudere la A a triangolo.
+  Solo dalla CLI: contratto, API e app non cambiano.
+
+**Motivo**: la cosa più piccola che permette di giudicare una parola a
+occhio, senza toccare il motore oltre il formato del file.
+
+**Conseguenza**: a 15 km «CIAO» dà un percorso a Trento (0,93), Levico
+(0,91) e Milano (1,00), e l'utente lo giudica `quasi` in tutte e tre
+(`samples/LOG.md`, TASK-040). Il giro chiuso costa: il ritorno ripassa
+circa un quarto della linea (24%), e le lettere restano alte 750–930 m. Un
+percorso aperto, che non torna alla partenza, lascerebbe tutta la
+distanza alla parola: è TASK-041, proposto dall'utente.
+

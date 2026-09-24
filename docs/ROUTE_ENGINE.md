@@ -117,6 +117,22 @@ Del disegno i tratti fanno parte a tutti gli effetti: contano nella
 lunghezza (la scala li comprende), nella somiglianza e negli angoli, e la
 punta di ogni linea, dove si torna indietro, è un angolo della forma.
 
+### Una linea sola, senza contorno (TASK-040)
+
+Una parola a tratto singolo non ha un contorno che la contiene. Al posto di
+`points` e `strokes` il file ha allora `path`: **una sola linea chiusa**
+(l'ultimo punto ripete il primo), percorsa così com'è (ADR-0042).
+
+```json
+{"name": "ciao", "source": "...", "license": "...", "path": [[0.53, 0.18], ..., [0.53, 0.18]]}
+```
+
+- Può tornare su se stessa e toccarsi, e non deve racchiudere niente: i
+  lati ripassati il motore li riconosce dalla geometria, come per i tratti.
+- Si ricampiona tenendo tutti i vertici, come una forma con tratti.
+- Rifiutati con il motivo: meno di 2 punti distinti, linea aperta, `path`
+  insieme a `points` o `strokes`.
+
 I contorni stanno in `route_engine/shapes/outlines/`, dati del pacchetto:
 stella e casa (con camino e porta) disegnate per ShapeRoute, e la sagoma di
 un cavallo al galoppo (OpenClipart, CC0). La casa si prova solo dalla CLI:

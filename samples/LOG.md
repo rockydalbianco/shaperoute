@@ -223,6 +223,9 @@ chiude ADR-0010.
 | 2026-09-24 | TASK-040_ciao_15km_trento_v1.gpx | trento | 0.93 | 15.2 / 15.0 km | quasi | «CIAO» a tratto singolo, giro chiuso: ritorno sulla linea di base e sulle gambe della A; ruotata di 15°, scala 82%; 3% su strade già percorse; 1740 m scale; 299 m gallerie; 23 s |
 | 2026-09-24 | TASK-040_ciao_15km_levico_v1.gpx | levico | 0.91 | 14.8 / 15.0 km | quasi | «CIAO» a tratto singolo, giro chiuso; scala 79%; 435 m gallerie; 8 s |
 | 2026-09-24 | TASK-040_ciao_15km_milano_v1.gpx | milano | 1.00 | 14.9 / 15.0 km | quasi | «CIAO» a tratto singolo, giro chiuso; al primo tracciamento; 192 m scale; 500 m gallerie; 54 s; la somiglianza 1,00 è più generosa dell'occhio |
+| 2026-09-24 | TASK-041_ciao-open_15km_trento_v1.gpx | trento | 0.96 | 15.4 / 15.0 km | peggio del chiuso | «CIAO» a sola andata, dalla C alla O; per l'utente il chiuso (TASK-040) era meglio; 733 m scale; 30 s |
+| 2026-09-24 | TASK-041_ciao-open_15km_levico_v1.gpx | levico | 0.91 | 14.9 / 15.0 km | peggio del chiuso | a sola andata; partenza spostata di 250 m a nord; 576 m gallerie; 13 s |
+| 2026-09-24 | TASK-041_ciao-open_15km_milano_v1.gpx | milano | 1.00 | 13.6 / 15.0 km | peggio del chiuso | a sola andata; partenza spostata di 1 km a est, dopo la ricerca lontana su una zona doppia: 263 s |
 
 <!--
 Esempio di riga compilata:

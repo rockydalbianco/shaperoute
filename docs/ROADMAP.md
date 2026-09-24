@@ -226,6 +226,7 @@ singolo come nella Strava art, e subito con una parola corta.
 |---|---|
 | TASK-040 | Una parola a tratto singolo: «CIAO», dalla CLI |
 | TASK-041 | Percorso aperto: l'utente sceglie se tornare alla partenza |
+| TASK-042 | Lettere dritte e distanziate: più punti di passaggio per le parole |
 
 **TASK-041, proposto dall'utente.** Nelle scritte si può ripassare la stessa
 strada, e non serve tornare alla partenza: l'utente sceglie un giro chiuso
@@ -236,7 +237,8 @@ instradamento, somiglianza, controlli), il GPX e il contratto con l'app
 `ROUTE_ENGINE.md` lo mette alla base. Un'idea da valutare nel task: una
 linea aperta si pianifica come andata e ritorno sulla stessa linea, poi il
 percorso si taglia in fondo all'andata; il motore resta quello dei giri
-chiusi.
+chiusi. **Fatto (ADR-0043)**: per l'utente «CIAO» aperto è peggio del
+chiuso; resta dalla CLI.
 
 ## Fase 5 — Oltre
 

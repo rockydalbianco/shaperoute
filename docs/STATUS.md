@@ -28,9 +28,9 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 
 ## Prossimo passo
 
-Dopo TASK-040, **TASK-041 — Percorso aperto**: l'utente sceglie se tornare
-alla partenza (`ROADMAP.md`, fase 4). Il file del task non è ancora
-scritto.
+**TASK-042 — Lettere dritte e distanziate** (`ROADMAP.md`, fase 4): più
+punti di passaggio per le parole e lettere più distanziate, su richiesta
+dell'utente dopo TASK-041.
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
@@ -38,18 +38,15 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-**TASK-041** — `feat/TASK-041-open-route`: una parola si corre a sola
-andata. Un `path` aperto si pianifica come andata e ritorno al doppio della
-distanza, con la sola fase 0, e si tiene l'andata fino al fondo della
-parola (`first_leg`). Campioni di «CIAO» aperto a 15 km: Trento 0,96,
-Levico 0,91, Milano 1,00 (13,6 km, partenza spostata di 1 km, 263 s).
-Manca il giudizio dell'utente, aperto contro chiuso.
+Niente.
 
 ## Completato
 
 - **Fase 4 finora** — TASK-040: il contorno accetta `path`, una linea
   chiusa percorsa così com'è (ADR-0042); «CIAO» a tratto singolo, dalla
-  CLI, `quasi` a Trento, Levico e Milano a 15 km.
+  CLI, `quasi` a Trento, Levico e Milano a 15 km. TASK-041: un `path`
+  aperto si corre a sola andata (ADR-0043); per l'utente «CIAO» aperto è
+  peggio del chiuso.
 - **Fase 3** — TASK-032: forme da un contorno in JSON, dalla CLI
   (`--outline`, ADR-0035). Cancello superato: stella sì ovunque, cavallo
   quasi a Trento e sì a Levico e Milano; la casa no, anche con camino e

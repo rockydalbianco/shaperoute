@@ -1193,3 +1193,41 @@ circa un quarto della linea (24%), e le lettere restano alte 750–930 m. Un
 percorso aperto, che non torna alla partenza, lascerebbe tutta la
 distanza alla parola: è TASK-041, proposto dall'utente.
 
+## ADR-0043 — Percorso aperto: andata e ritorno pianificati, tenuta l'andata
+**Stato**: Attiva · 2026-09-24 · proposto dall'utente; il metodo proposto
+dall'agente; solo motore e CLI, scelto dall'utente; giudizio dell'utente
+sui campioni: peggio del giro chiuso
+
+Durante TASK-040 l'utente ha proposto che una scritta si possa correre
+senza tornare alla partenza, a scelta. Il giro chiuso regge tutto il
+motore.
+
+**Decisione**:
+- **Un `path` aperto è a sola andata** (`Outline.one_way`): il motore lo
+  legge come andata e ritorno sulla stessa linea, una linea chiusa.
+- **Si pianifica al doppio della distanza**, entrando nella forma solo alla
+  fase 0, cioè all'inizio della parola (`search(phases=...)`,
+  `planned_distance`). Gli scarti in percentuale e la somiglianza sono gli
+  stessi per il tutto e per la metà; i messaggi parlano della distanza
+  chiesta.
+- **Si tiene l'andata** (`network.first_leg`): fino al nodo più vicino al
+  fondo della parola, che è a metà della linea di andata e ritorno, più un
+  decimo della distanza da metà percorso (`HALF_WAY_WEIGHT`). Il ritorno
+  può fare strade diverse dall'andata, e metà percorso è solo indicativa;
+  ma un passaggio precedente vicino al fondo (l'ingresso nella O di
+  «CIAO») è chilometri prima di metà. Con peso 1 il taglio cadeva a 124 m
+  dal fondo in un percorso che ci passava a 30 m; con 0,1 a 36 m.
+- **Solo dalla CLI**, con l'apertura nel file (`ciao_open.json`):
+  contratto, API e app non cambiano.
+
+**Motivo**: il motore dei giri chiusi resta quello di prima, senza un
+secondo modo di cercare.
+
+**Conseguenza**: «CIAO» aperto a 15 km dà un percorso a Trento (0,96),
+Levico (0,91) e Milano (1,00, ma 13,6 km e 263 s: la ricerca lontana
+lavora su una zona grande il doppio). L'utente lo giudica peggio del giro
+chiuso di TASK-040 (`samples/LOG.md`, TASK-041). Per una forma a sola
+andata tutti i lati sono «disegnati due volte», e la misura delle strade
+ripercorse non vede niente. Il percorso aperto resta disponibile dalla CLI;
+nell'app arriva, se serve, con le parole.
+

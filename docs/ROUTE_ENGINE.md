@@ -130,8 +130,12 @@ Una parola a tratto singolo non ha un contorno che la contiene. Al posto di
 - Può tornare su se stessa e toccarsi, e non deve racchiudere niente: i
   lati ripassati il motore li riconosce dalla geometria, come per i tratti.
 - Si ricampiona tenendo tutti i vertici, come una forma con tratti.
-- Rifiutati con il motivo: meno di 2 punti distinti, linea aperta, `path`
-  insieme a `points` o `strokes`.
+- Rifiutati con il motivo: meno di 2 punti distinti, `path` insieme a
+  `points` o `strokes`.
+- **Aperta** (l'ultimo punto diverso dal primo) è una forma **a sola
+  andata** (TASK-041, ADR-0043): il motore la pianifica come andata e
+  ritorno al doppio della distanza, entrando solo dal suo primo punto, e
+  del percorso tiene l'andata, fino al fondo della linea.
 
 I contorni stanno in `route_engine/shapes/outlines/`, dati del pacchetto:
 stella e casa (con camino e porta) disegnate per ShapeRoute, e la sagoma di

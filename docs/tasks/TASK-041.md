@@ -1,6 +1,6 @@
 # TASK-041 — Percorso aperto: la parola senza ritorno alla partenza
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-041-open-route` (parte da
 `feat/TASK-040-word-single-stroke`)
 
@@ -54,15 +54,15 @@ Proposto dall'agente:
 
 ## Criteri di accettazione
 
-- [ ] Un `path` aperto si legge come andata e ritorno; i `path` chiusi e i
+- [x] Un `path` aperto si legge come andata e ritorno; i `path` chiusi e i
       contorni danno gli stessi punti di prima (test).
-- [ ] `search` con la sola fase 0 prova solo quella (test).
-- [ ] Il taglio tiene l'andata fino al fondo della parola, anche quando il
+- [x] `search` con la sola fase 0 prova solo quella (test).
+- [x] Il taglio tiene l'andata fino al fondo della parola, anche quando il
       percorso ci passa prima (la O di «CIAO») (test).
-- [ ] Un percorso a sola andata non finisce dove comincia, ed è lungo circa
+- [x] Un percorso a sola andata non finisce dove comincia, ed è lungo circa
       la distanza chiesta (test su una griglia).
-- [ ] Campioni a 15 km nelle tre zone e giudizio dell'utente, aperto contro
-      chiuso.
+- [x] Campioni a 15 km nelle tre zone e giudizio dell'utente: l'aperto è
+      peggio del chiuso.
 
 ## File toccati
 
@@ -86,4 +86,10 @@ docs/ROUTE_ENGINE.md, docs/DECISIONS.md, docs/STATUS.md
 
 ## Esito
 
-*(da compilare)*
+Un `path` aperto si corre a sola andata, dalla CLI (ADR-0043): Trento
+0,96, Levico 0,91, Milano 1,00. L'utente giudica «CIAO» aperto peggio del
+chiuso di TASK-040, e chiede lettere più distanziate e una I dritta,
+andata e ritorno sulla stessa strada. Da qui TASK-042: la I di Trento
+girava 100–250 m a destra del suo asse perché la parola aveva un punto di
+passaggio per vertice (67, sopra i 64 del motore), nessuno lungo la I, ed
+era ruotata di 15°.

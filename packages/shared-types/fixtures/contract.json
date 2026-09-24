@@ -2,5 +2,8 @@
   "shapes": ["circle", "heart", "star", "horse", "moon", "cat", "fish"],
   "activities": ["running"],
   "min_distance_m": 1000,
-  "max_distance_m": 50000
+  "max_distance_m": 50000,
+  "letters": ["A", "C", "I", "O"],
+  "max_word_letters": 8,
+  "letter_distance_m": 3000
 }

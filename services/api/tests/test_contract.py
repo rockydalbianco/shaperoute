@@ -127,3 +127,15 @@ def test_shape_reading_fixtures_are_valid_bodies() -> None:
 
 def test_shape_text_limit_matches_shared_types() -> None:
     assert _load("shape-reading-limits.json") == {"max_text_length": MAX_TEXT_LENGTH}
+
+
+def test_word_fixtures_are_valid_bodies() -> None:
+    # A word instead of a shape, the other null (TASK-056).
+    request = _load("route-request-word.json")
+    assert set(request) == _names(RouteRequestBody)
+    assert RouteRequestBody.model_validate(request).word == "ciao"
+    result = _load("route-result-word.json")
+    assert set(result) == _names(RouteResultBody)
+    body = RouteResultBody.model_validate(result)
+    assert body.shape is None
+    assert body.word == "CIAO"

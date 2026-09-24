@@ -14,6 +14,7 @@ from route_engine.models import (
     RouteResult,
 )
 from route_engine.shapes import SUPPORTED_SHAPES
+from route_engine.words import ALPHABET, LETTER_DISTANCE_M, MAX_WORD_LETTERS
 
 REPO = Path(__file__).resolve().parents[3]
 FIXTURES = REPO / "packages" / "shared-types" / "fixtures"
@@ -27,18 +28,27 @@ def _names(model: type) -> set[str]:
     return {f.name for f in fields(model)}
 
 
-def test_request_fixture_is_a_valid_request() -> None:
-    data = _load("route-request.json")
-    assert set(data) == _names(RouteRequest)
-    request = RouteRequest(**{**data, "start": tuple(data["start"])})
-    assert request.start == (46.0671, 11.1214)
+def test_request_fixtures_are_valid_requests() -> None:
+    # A shape or a word, the other null (TASK-056).
+    for name, drawn in (
+        ("route-request.json", "heart"),
+        ("route-request-word.json", "CIAO"),
+    ):
+        data = _load(name)
+        assert set(data) == _names(RouteRequest)
+        request = RouteRequest(**{**data, "start": tuple(data["start"])})
+        assert request.start == (46.0671, 11.1214)
+        assert request.name == drawn
 
 
-def test_result_fixture_has_the_result_fields() -> None:
-    data = _load("route-result.json")
-    assert set(data) == _names(RouteResult)
-    result = RouteResult(**{**data, "points": [tuple(p) for p in data["points"]]})
-    assert result.points[0] == result.points[-1]
+def test_result_fixtures_have_the_result_fields() -> None:
+    for name in ("route-result.json", "route-result-word.json"):
+        data = _load(name)
+        assert set(data) == _names(RouteResult)
+        points = [tuple(p) for p in data["points"]]
+        result = RouteResult(**{**data, "points": points})
+        assert result.points[0] == result.points[-1]
+        assert (result.shape is None) != (result.word is None)
 
 
 def test_shapes_activities_and_limits_match() -> None:
@@ -48,4 +58,7 @@ def test_shapes_activities_and_limits_match() -> None:
         "activities": list(SUPPORTED_ACTIVITIES),
         "min_distance_m": MIN_DISTANCE_M,
         "max_distance_m": MAX_DISTANCE_M,
+        "letters": sorted(ALPHABET),
+        "max_word_letters": MAX_WORD_LETTERS,
+        "letter_distance_m": LETTER_DISTANCE_M,
     }

@@ -71,9 +71,10 @@ services/route-engine/tests/test_contract.py
 services/route-engine/tests/test_words.py
 services/api/shaperoute_api/schemas.py
 services/api/shaperoute_api/jobs.py                    (solo il log)
-services/api/shaperoute_api/app.py                     (se il coordinatore lo concede)
+services/api/shaperoute_api/app.py                     (dopo #60: to_request, gpx_file_name)
 services/api/tests/test_contract.py, test_route_jobs.py, test_routes.py, test_gpx.py
-packages/shared-types/src/index.ts, test/contract.test.ts, fixtures/*
+packages/shared-types/src/index.ts, test/contract.test.ts
+packages/shared-types/fixtures/*  (route-request-word.json, route-result-word.json nuovi)
 docs/tasks/TASK-056.md, docs/API.md, docs/DECISIONS.md (ADR-0051), docs/STATUS.md
 ```
 

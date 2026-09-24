@@ -1231,6 +1231,59 @@ andata tutti i lati sono «disegnati due volte», e la misura delle strade
 ripercorse non vede niente. Il percorso aperto resta disponibile dalla CLI;
 nell'app arriva, se serve, con le parole.
 
+## ADR-0045 — Indicazioni di svolta: dagli incroci del grafo, non dalle curve
+**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
+(TASK-047)
+
+Per guidare chi corre servono le svolte. Un incrocio e il nome di una via
+sono proprietà del grafo, che ha solo il motore: la funzione sta in
+`route_engine/directions.py` e parte da `(grafo, nodi del percorso)`.
+
+**Decisione**:
+- **Un incrocio è un nodo con almeno 3 strade** (`MIN_BRANCHES`). Le strade
+  si contano come coppie distinte (vicino, lunghezza), in entrata e in
+  uscita, non con `graph.degree`: nel grafo a piedi ogni strada è un arco
+  per verso, e un nodo in mezzo a una strada ha grado 4. Il grafo di
+  `network.py` è semplificato (`graph_from_bbox` di OSMnx, `simplify` di
+  default), ma restano nodi con due strade: 27 su 303 nella fixture di
+  Levico, 22 di grado 4 (bordi tagliati, vie unite).
+- **Si parla solo agli incroci**, mai sul primo e sull'ultimo nodo, e
+  quando: la svolta supera 30° (`TURN_MIN_DEG`); oppure si va dritti ma si
+  cambia strada (nomi diversi, o fra una via con nome e una senza); oppure
+  si va dritti ma un'altra strada va dritta quanto o più di quella presa
+  (un bivio): allora il verso è `left`/`right` rispetto a quella.
+- **Il verso** viene dalla direzione delle due strade a 20 m dal nodo
+  (`HEADING_PROBE_M`), in metri sul piano locale: `straight` fino a 30°,
+  `sharp-*` da 135° (a metà fra angolo retto e tornare indietro),
+  `u-turn` da 165°.
+- **Il nome**: `name`, se manca `ref` (come «SP12»), se manca niente; il
+  tipo di strada (`highway`) a parte, per chi mostra le vie senza nome. Un
+  arco semplificato con più nomi continua la strada con cui ne condivide
+  uno; altrimenti porta tutti i nomi, uniti da « / ». Mai un nome inventato.
+- **Distanze** dalla partenza come somma delle `length` degli archi più
+  corti, gli stessi che disegna `snap_to_network`.
+- **Solo il modulo e i test**: `RouteResult`, API e app non cambiano
+  (TASK-048).
+
+**Motivo**: su cuori veri da 15 km (Trento, Levico, Milano, script usa-e-getta)
+nessuna indicazione cade su un nodo che OSM stesso (`street_count`) non
+conta come incrocio, e ogni cambio di strada a un incrocio ne ha una. Senza
+la regola del bivio, a Trento 9 incroci si passavano in silenzio con
+un'altra strada più dritta di quella presa (per esempio Via dei Masetti che
+piega di 22° mentre una laterale va dritta): chi corre avrebbe sbagliato.
+Il numero di indicazioni cambia poco con la sonda (10–40 m: ±5%) e più con
+la soglia del dritto (Milano: 296 a 20°, 264 a 30°, 229 a 40°); 30° lascia
+in silenzio le vie che piegano un poco all'incrocio senza nascondere le
+svolte vere.
+
+**Conseguenza**: 180 indicazioni a Trento, 75 a Levico, 264 a Milano, in
+circa 0,1 s. Dove il grafo è fatto di marciapiedi senza nome (Milano: 213
+indicazioni su 264 entrano in un `footway`) molte arrivano a coppie a pochi
+metri (110 entro 15 m dalla precedente): attraversare una strada è «sinistra,
+poi destra». Sono incroci veri, quindi restano; raggrupparle è compito di chi
+le presenta (TASK-049). Il nome della via lungo cui corre un marciapiede non
+è nel dato, e non si indovina.
+
 ## ADR-0046 — Tema Sgrava: i token in un file, lo stile della mappa nostro
 **Stato**: Attiva · 2026-09-24 · tavolozza, regole e file consegnati
 dall'utente (TASK-045); verifiche e registrazione dell'agente su delega

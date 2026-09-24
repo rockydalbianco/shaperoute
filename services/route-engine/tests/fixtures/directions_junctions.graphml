@@ -1,0 +1,259 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d11" for="edge" attr.name="ref" attr.type="string" />
+  <key id="d10" for="edge" attr.name="geometry" attr.type="string" />
+  <key id="d9" for="edge" attr.name="length" attr.type="string" />
+  <key id="d8" for="edge" attr.name="reversed" attr.type="string" />
+  <key id="d7" for="edge" attr.name="oneway" attr.type="string" />
+  <key id="d6" for="edge" attr.name="osmid" attr.type="string" />
+  <key id="d5" for="edge" attr.name="highway" attr.type="string" />
+  <key id="d4" for="edge" attr.name="name" attr.type="string" />
+  <key id="d3" for="node" attr.name="x" attr.type="string" />
+  <key id="d2" for="node" attr.name="y" attr.type="string" />
+  <key id="d1" for="graph" attr.name="simplified" attr.type="string" />
+  <key id="d0" for="graph" attr.name="crs" attr.type="string" />
+  <graph edgedefault="directed">
+    <node id="1">
+      <data key="d2">46.0</data>
+      <data key="d3">10.997410751401945</data>
+    </node>
+    <node id="2">
+      <data key="d2">46.0</data>
+      <data key="d3">11.0</data>
+    </node>
+    <node id="3">
+      <data key="d2">45.998201356788165</data>
+      <data key="d3">11.002589248598055</data>
+    </node>
+    <node id="4">
+      <data key="d2">45.99640271357632</data>
+      <data key="d3">11.002589248598055</data>
+    </node>
+    <node id="5">
+      <data key="d2">45.998201356788165</data>
+      <data key="d3">11.005178497196107</data>
+    </node>
+    <node id="6">
+      <data key="d2">46.001798643211835</data>
+      <data key="d3">11.0</data>
+    </node>
+    <node id="7">
+      <data key="d2">46.001798643211835</data>
+      <data key="d3">11.002589248598055</data>
+    </node>
+    <node id="8">
+      <data key="d2">46.001798643211835</data>
+      <data key="d3">11.005178497196107</data>
+    </node>
+    <node id="9">
+      <data key="d2">45.99460407036449</data>
+      <data key="d3">11.002589248598055</data>
+    </node>
+    <node id="10">
+      <data key="d2">45.99640271357632</data>
+      <data key="d3">11.0</data>
+    </node>
+    <node id="11">
+      <data key="d2">45.99757093234241</data>
+      <data key="d3">11.003560216822324</data>
+    </node>
+    <node id="12">
+      <data key="d2">45.998662708772</data>
+      <data key="d3">11.007003917457736</data>
+    </node>
+    <node id="13">
+      <data key="d2">45.99774000480433</data>
+      <data key="d3">11.007003917457736</data>
+    </node>
+    <edge source="1" target="2" id="0">
+      <data key="d4">Via Roma</data>
+      <data key="d5">residential</data>
+      <data key="d6">1</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">199.999999991201</data>
+    </edge>
+    <edge source="2" target="1" id="0">
+      <data key="d4">Via Roma</data>
+      <data key="d5">residential</data>
+      <data key="d6">1</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">199.999999991201</data>
+    </edge>
+    <edge source="2" target="3" id="0">
+      <data key="d4">Via Roma</data>
+      <data key="d5">residential</data>
+      <data key="d6">2</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">370.7108217788718</data>
+      <data key="d10">LINESTRING (11 46, 11.00194193644854 46, 11.002589248598055 45.99955033919704, 11.002589248598055 45.998201356788165)</data>
+    </edge>
+    <edge source="2" target="6" id="0">
+      <data key="d4">Via Verdi</data>
+      <data key="d5">residential</data>
+      <data key="d6">5</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">199.99999999960306</data>
+    </edge>
+    <edge source="3" target="2" id="0">
+      <data key="d4">Via Roma</data>
+      <data key="d5">residential</data>
+      <data key="d6">2</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">370.7108217788718</data>
+      <data key="d10">LINESTRING (11.002589248598055 45.998201356788165, 11.002589248598055 45.99955033919704, 11.00194193644854 46, 11 46)</data>
+    </edge>
+    <edge source="3" target="4" id="0">
+      <data key="d4">Corso Italia</data>
+      <data key="d5">residential</data>
+      <data key="d6">3</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">200.00000000031037</data>
+    </edge>
+    <edge source="3" target="5" id="0">
+      <data key="d5">footway</data>
+      <data key="d6">4</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">200.0065014170241</data>
+    </edge>
+    <edge source="4" target="3" id="0">
+      <data key="d4">Corso Italia</data>
+      <data key="d5">residential</data>
+      <data key="d6">3</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">200.00000000031037</data>
+    </edge>
+    <edge source="4" target="9" id="0">
+      <data key="d4">['Corso Italia', 'Viale Dante']</data>
+      <data key="d5">residential</data>
+      <data key="d6">8</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">200.00000000031037</data>
+    </edge>
+    <edge source="4" target="10" id="0">
+      <data key="d11">SP12</data>
+      <data key="d5">tertiary</data>
+      <data key="d6">9</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">200.0130026461147</data>
+    </edge>
+    <edge source="4" target="11" id="0">
+      <data key="d4">Via Gialli</data>
+      <data key="d5">residential</data>
+      <data key="d6">10</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">149.99874218527037</data>
+    </edge>
+    <edge source="5" target="3" id="0">
+      <data key="d5">footway</data>
+      <data key="d6">4</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">200.0065014170241</data>
+    </edge>
+    <edge source="5" target="12" id="0">
+      <data key="d5">footway</data>
+      <data key="d6">11</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">150.0460489182466</data>
+    </edge>
+    <edge source="5" target="13" id="0">
+      <data key="d5">footway</data>
+      <data key="d6">12</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">150.0471537233859</data>
+    </edge>
+    <edge source="6" target="2" id="0">
+      <data key="d4">Via Verdi</data>
+      <data key="d5">residential</data>
+      <data key="d6">5</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">199.99999999960306</data>
+    </edge>
+    <edge source="6" target="7" id="0">
+      <data key="d4">Via Verdi</data>
+      <data key="d5">residential</data>
+      <data key="d6">6</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">199.99349836828338</data>
+    </edge>
+    <edge source="7" target="6" id="0">
+      <data key="d4">Via Verdi</data>
+      <data key="d5">residential</data>
+      <data key="d6">6</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">199.99349836828338</data>
+    </edge>
+    <edge source="7" target="8" id="0">
+      <data key="d4">Via Bianchi</data>
+      <data key="d5">residential</data>
+      <data key="d6">7</data>
+      <data key="d7">False</data>
+      <data key="d8">False</data>
+      <data key="d9">199.99349836803768</data>
+    </edge>
+    <edge source="8" target="7" id="0">
+      <data key="d4">Via Bianchi</data>
+      <data key="d5">residential</data>
+      <data key="d6">7</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">199.99349836803768</data>
+    </edge>
+    <edge source="9" target="4" id="0">
+      <data key="d4">['Corso Italia', 'Viale Dante']</data>
+      <data key="d5">residential</data>
+      <data key="d6">8</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">200.00000000031037</data>
+    </edge>
+    <edge source="10" target="4" id="0">
+      <data key="d11">SP12</data>
+      <data key="d5">tertiary</data>
+      <data key="d6">9</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">200.0130026461147</data>
+    </edge>
+    <edge source="11" target="4" id="0">
+      <data key="d4">Via Gialli</data>
+      <data key="d5">residential</data>
+      <data key="d6">10</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">149.99874218527037</data>
+    </edge>
+    <edge source="12" target="5" id="0">
+      <data key="d5">footway</data>
+      <data key="d6">11</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">150.0460489182466</data>
+    </edge>
+    <edge source="13" target="5" id="0">
+      <data key="d5">footway</data>
+      <data key="d6">12</data>
+      <data key="d7">False</data>
+      <data key="d8">True</data>
+      <data key="d9">150.0471537233859</data>
+    </edge>
+    <data key="d0">epsg:4326</data>
+    <data key="d1">True</data>
+  </graph>
+</graphml>

@@ -1,92 +1,152 @@
-# TASK-047 — Lettere una per una: ognuna cerca le sue strade, poi si collegano
+# TASK-047 — Indicazioni di svolta agli incroci
 
-**Stato**: In corso
-**Fase**: 4 · **Branch**: `feat/TASK-047-letters-one-by-one` (parte da
-`feat/TASK-041-open-route`)
+**Stato**: Done
+**Fase**: 4 · **Branch**: `feat/TASK-047-directions`
 
 ## Obiettivo
 
-«CIAO» chiuso a 15 km con lettere più dritte e più distanziate: ogni
-lettera si sposta di poco per stare sulle strade, la I si corre andata e
-ritorno sulla stessa strada, e le lettere si collegano lungo la base.
+Una funzione pura che, dato il grafo stradale e il percorso come sequenza di
+nodi, restituisce le indicazioni: **una per ogni incrocio dove si gira o si
+cambia strada**, con il nome della via.
 
-## Contesto da leggere
+Nessuna indicazione dove la traccia curva restando sulla stessa strada.
 
-- `docs/DECISIONS.md` ADR-0042, ADR-0043, ADR-0023 (ricerca), ADR-0039
-- `services/route-engine/route_engine/optimizer.py` (`search`, `RoadMask`,
-  `plan_shape`), `network.py` (`snap_to_network`)
-- `samples/LOG.md`, righe TASK-040 e TASK-041
+Nessuna interfaccia, nessun GPS, nessuna voce: solo la funzione e i suoi test.
 
-## Richieste dell'utente (2026-09-24)
+## La regola, in una riga
 
-- Il giro chiuso era meglio dell'aperto (TASK-041).
-- Lettere più distanziate.
-- A Trento c'era una strada per una I dritta, centrata fra C e A:
-  andata e ritorno sulla stessa strada l'avrebbero deformata meno.
-- «Meglio intensificare i punti di passaggio e creare le lettere
-  separatamente e poi connetterle.»
+> Si avvisa quando si **cambia strada a un incrocio**, non quando la traccia
+> cambia direzione.
 
-## Cosa c'è già
+Che le indicazioni siano tante non è un problema: un percorso che disegna una
+forma attraversa molti incroci, ed è giusto che li annunci tutti. Il problema
+è annunciarne uno dove non c'è un incrocio, o tacerne uno dove c'è.
 
-Perché la I di Trento non è venuta (TASK-041): «CIAO» ha 67 vertici, sopra
-i 64 punti del motore, quindi i punti di passaggio sono solo i vertici e
-lungo la I non ce n'è nessuno. Il percorso sale e scende per due strade
-diverse, 100–250 m a destra dell'asse, e la parola è ruotata di 15°. Con
-più punti, su «CIAO» chiuso a Trento: 128 punti, rotazione 0°, scarto
-mediano del disegno dal percorso 32 m (era 44), 10 s; 256 punti, 30 m,
-20 s.
+## Perché sta nel motore e non nell'app
+
+Un incrocio è una proprietà del **grafo**: dalla lista di coordinate non è
+visibile. Il nome della via nemmeno. Sono informazioni che ha solo il
+route-engine, quindi il codice sta lì.
+
+`RouteResult` oggi porta solo `points`: la sequenza dei nodi resta dentro il
+motore. **Portarla fuori fino all'app è TASK-048**, non questo task. Qui si
+scrive la funzione e la si prova con un grafo salvato.
+
+## Lavoro in parallelo — leggere prima di iniziare
+
+Un altro agente sta lavorando **nella stessa cartella**, su `network.py` e
+`optimizer.py`, in questo momento.
+
+- Tu crei **un file nuovo**, `directions.py`, e il suo test. Nient'altro.
+- `network.py` e `optimizer.py` li **leggi** per capire com'è fatto il grafo
+  e come è rappresentato il percorso. Non li modifichi, per nessun motivo.
+- Se la funzione sembra richiedere una modifica a un file esistente,
+  fermati e dillo: vuol dire che il confine va ridiscusso.
+
+## La cosa da verificare per prima
+
+OSMnx di norma **semplifica** il grafo: toglie i nodi di passaggio e mette la
+forma della strada nell'attributo `geometry` degli archi. Se il grafo di
+`network.py` è semplificato, **ogni nodo del percorso è già un incrocio o un
+fondo strada**, e metà del lavoro è fatto: le indicazioni nascono dai nodi, e
+le curve non le vedi nemmeno.
+
+Guarda `network.py` prima di scrivere una riga. La risposta cambia il task.
+
+## Il tranello dei gradi
+
+In un `MultiDiGraph` di OSMnx `G.degree(n)` conta gli archi in entrata **e**
+in uscita: un nodo in mezzo a una strada a doppio senso risulta di grado 4 e
+sembra un incrocio. Per contare i rami veri servono i vicini distinti in
+entrambe le direzioni, o la vista non orientata del grafo.
+
+Sbagliare qui produce un incrocio ogni dieci metri, e il risultato sembra
+plausibile. È il primo caso che il test deve coprire.
 
 ## Cosa fare
 
-Proposto dall'agente, da confermare con l'utente:
-
-1. **Lettere separate**: un alfabeto a tratto singolo
-   (`shapes/letters.json`), per ora C, I, A, O. Ogni lettera è una linea
-   nel suo riquadro, alta 1, che entra e esce dalla base.
-2. **Parola composta dal motore**: le lettere in fila con uno spazio
-   (proposta: 0,6 dell'altezza, era 0,3), unite da tratti di base; il
-   ritorno alla partenza ripassa la base. Il motore sa quali punti sono di
-   quale lettera.
-3. **Più punti di passaggio per le parole**: ogni lato diviso in pezzi di
-   al più 1/16 dell'altezza di una lettera (circa 256 punti per «CIAO»).
-4. **Ogni lettera cerca le sue strade**: dopo la ricerca di oggi sulla
-   parola intera (posto, scala, rotazione), ogni lettera prova piccoli
-   spostamenti (proposta: fino a 1/4 dell'altezza, su una griglia) e
-   tiene quello con più strade lungo i suoi tratti (`RoadMask`). I tratti
-   di base si allungano o accorciano di conseguenza. Poi si traccia la
-   parola intera, come oggi.
-5. **CLI**: `--word CIAO`, al posto di `--shape` e `--outline`.
-6. **Campioni** a 15 km a Trento, Levico e Milano
-   (`TASK-047_ciao_15km_<zona>_v1.gpx`), accanto a quelli di TASK-040.
+1. `route_engine/directions.py`: da `(graph, nodes)` a `list[Direction]`.
+   Ogni `Direction` porta almeno: il nodo, la distanza dalla partenza in
+   metri, il verso (`left`, `right`, `sharp-left`, `sharp-right`,
+   `straight`, `u-turn`), l'angolo in gradi, il nome della via su cui si
+   entra, e il numero di rami dell'incrocio.
+2. Si emette un'indicazione quando, su un nodo con **almeno tre rami**:
+   - l'angolo di svolta supera la soglia, **oppure**
+   - il nome della via cambia, anche andando dritto
+     («continua su Via Roma» serve quanto «gira a sinistra»).
+3. Non si emette nulla su un nodo di passaggio, qualunque sia l'angolo.
+4. Vie senza nome: OSM spesso non ne ha per sentieri e vicoli. Usa un
+   ripiego onesto (il tipo di strada, o niente), mai un nome inventato.
+5. Soglie e costanti esportate e documentate, non sparse nel codice.
+6. `tests/test_directions.py`, deterministico, con un grafo salvato fra le
+   fixture (`docs/TESTING.md`: niente rete nei test normali):
+   - un nodo di passaggio a doppio senso **non** produce indicazioni,
+     nemmeno con la strada che curva di 90°;
+   - un incrocio a T attraversato dritto senza cambio di nome: nessuna
+     indicazione;
+   - lo stesso incrocio con svolta: una indicazione, verso giusto;
+   - cambio di nome andando dritto: una indicazione;
+   - via senza nome: nessun errore, ripiego previsto.
+7. Uno script usa-e-getta **fuori dal repository** che stampa le indicazioni
+   di un cuore vero, per leggerle.
 
 ## Criteri di accettazione
 
-- [ ] Una parola si compone dalle lettere, con lo spazio e la base (test).
-- [ ] Ogni lato di una parola è diviso fino alla lunghezza massima (test).
-- [ ] Lo spostamento di una lettera la porta dove ha più strade, e resta
-      entro il limite (test su una griglia con una strada sola).
-- [ ] Contorni e forme del catalogo danno gli stessi punti di prima (test
-      esistenti verdi).
-- [ ] Campioni nelle tre zone e giudizio dell'utente, contro TASK-040.
+- [x] `ruff`, `black`, `pytest -m "not network"` puliti.
+- [x] Su un cuore vero da 15 km: **nessuna indicazione in mezzo a una
+      strada**. Questo è il criterio che conta.
+- [x] Ogni incrocio dove il percorso cambia strada ha la sua indicazione.
+- [ ] Le indicazioni lette di fila si capiscono senza guardare la mappa.
+      Il numero ottenuto va scritto nell'esito, senza un tetto: tante va bene. **Trento e Levico sì, Milano no** (vedi Esito).
+- [x] Soglie documentate con il valore scelto e perché.
+- [x] Nessun file esistente modificato: solo `directions.py` e il suo test.
+- [x] Nuovo ADR in `docs/DECISIONS.md`.
+- [x] `docs/STATUS.md` aggiornato.
 
 ## File toccati
 
 ```
-services/route-engine/route_engine/shapes/letters.json
-services/route-engine/route_engine/words.py
-services/route-engine/route_engine/optimizer.py
-services/route-engine/route_engine/__main__.py
-services/route-engine/tests/test_words.py
-samples/TASK-047_*.gpx, samples/LOG.md
-docs/ROUTE_ENGINE.md, docs/DECISIONS.md, docs/STATUS.md
+services/route-engine/route_engine/directions.py   (nuovo)
+services/route-engine/tests/test_directions.py     (nuovo)
+services/route-engine/tests/fixtures/…             (nuovo, il grafo salvato)
+docs/DECISIONS.md
+docs/STATUS.md
 ```
 
 ## Fuori scope
 
-- Tutto l'alfabeto, cifre, minuscole: dopo il giudizio su «CIAO».
-- Parole nell'API e nell'app.
-- Ruotare o scalare le lettere una per una: si spostano soltanto.
+- `network.py`, `optimizer.py`, `models.py`, `__main__.py`: un altro agente
+  ci sta lavorando adesso.
+- Portare le indicazioni fuori dal motore, fino all'API e all'app: TASK-048.
+- Interfaccia, voce, vibrazione, GPS dal vivo: TASK-049.
+- Ricalcolare il percorso se l'utente sbaglia strada.
+
+## Nota per il seguito
+
+Il valore vero, per chi corre, è probabilmente **audio o vibrazione a 50 m
+dalla svolta**, col telefono in tasca: leggere un pannello mentre si corre è
+scomodo. Questo task produce il dato che serve comunque, in tutti i casi.
 
 ## Esito
 
-*(da compilare)*
+Fatto il 2026-09-24, su delega dell'utente (ADR-0045). `directions(graph,
+nodes)` dà una `Direction` a ogni incrocio (almeno 3 strade, contate come
+strade e non come archi) dove il percorso gira di più di 30°, cambia strada
+andando dritto, o prende una delle due strade di un bivio. Grafo salvato
+fra le fixture (`directions_junctions.graphml`, rigenerabile senza rete con
+`make_directions_graph.py`), 29 test; con `graph.degree` al posto delle
+strade 6 falliscono.
+
+Cuori veri da 15 km: **nessuna indicazione in mezzo a una strada** e nessun
+cambio di strada a un incrocio senza indicazione a Trento, Levico e Milano.
+Indicazioni: **180 a Trento, 75 a Levico, 264 a Milano**. A Trento e Levico
+si leggono di fila; a Milano il grafo è di marciapiedi senza nome (213 su
+264 entrano in un `footway`) e 110 arrivano entro 15 m dalla precedente
+(attraversamenti: «sinistra, poi destra»): si capiscono male senza mappa.
+Il dato è giusto; il limite sta nei nomi che OSM non ha. Per TASK-048/049:
+la via di partenza (oggi non è un'indicazione) e il raggruppamento delle
+indicazioni vicine.
+
+Il task è partito da `main` in un worktree separato
+(`shaperoute-directions`): le lettere, che avevano lo stesso numero, sono
+diventate TASK-050.

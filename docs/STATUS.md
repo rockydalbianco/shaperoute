@@ -17,15 +17,18 @@ con l'attesa che dice cosa succede. Una zona nuova aggiunge il suo download
 da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
 percorso si esporta in GPX, e Garmin Connect lo apre. La forma si scrive
 in un riquadro, in italiano o in inglese, fra quelle del catalogo:
-cerchio, cuore, stella e cavallo.
+cerchio, cuore, stella e cavallo. Dalla CLI un contorno può avere tratti
+interni, fatti andata e ritorno (finestre, occhi, rami): si vedono dove le
+strade sono fitte (Trento, Milano), non a Levico.
 
 ## Prossimo passo
 
-**TASK-037 — Tratti interni ripassati** (`ROADMAP.md`, fase 3): rami,
-occhi, gambe sottili, finestre, disegnati con andata e ritorno; voluto
-dall'utente. Prima, piccolo: la luna entra nel catalogo (ha un `sì` a
-Levico dopo TASK-036). Poi TASK-038 (trova dove la forma ci sta). ADR-0012
-si decide con TASK-030.
+**TASK-038 — Trova dove la forma ci sta** (`ROADMAP.md`, fase 3): la
+ricerca prova partenze nel raggio di qualche km e l'app dice dove andare;
+è il rimedio per Levico, dove né il contorno né i tratti passano. Prima,
+piccolo: la luna entra nel catalogo (ha un `sì` a Levico dopo TASK-036), e
+con l'utente si decide se entrano anche gatto e pesce con i tratti (`sì` a
+Trento e Milano dopo TASK-037). ADR-0012 si decide con TASK-030.
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
@@ -48,6 +51,9 @@ Niente.
   somiglianza separa i «no» dell'utente, la somiglianza resta com'è; conta
   l'orientamento (ADR-0037). TASK-036: le forme restano dritte entro 15°,
   tranne il cerchio; 7 casi su 15 migliorano, nessuno peggiora (ADR-0038).
+  TASK-037: tratti interni ripassati nei contorni, con tolleranze dimezzate
+  per le forme che li hanno (ADR-0039); a 15 km 4 casi su 12 migliorano,
+  uno peggiora; gatto e pesce `sì` a Trento e Milano, Levico `no`.
 - **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in
@@ -81,6 +87,11 @@ Niente.
 - Per generare campioni senza salvare ritagli in `data/cache/`: uno script
   usa-e-getta che chiama `plan_shape` con `ZoneGraphs` dell'API, come in
   TASK-032. La CLI invece salva un ritaglio per ogni caso.
+- Per giudicare le forme senza mappa basta un PNG scritto con la libreria
+  standard (`zlib`, `struct`), come `out/TASK-037-before-after.png`: niente
+  matplotlib né PIL.
+- Il 50% di `STROKE_DETAIL` (ADR-0039) è un primo valore; l'albero con
+  fusto e sei rami è troppo fitto per 15 km.
 - Per misurare sui casi di riferimento (in `services/route-engine/`, con
   `..\api\.venv\Scripts\python.exe`): `tests/measure_optimizer.py`
   (ottimizzatore, `--no-optimize` per TASK-017) e

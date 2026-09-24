@@ -892,7 +892,9 @@ casa, chieste dall'utente, stanno dentro il contorno: servono forme di più
 pezzi e tratti percorsi due volte, un lavoro a parte da decidere.
 
 ## ADR-0036 — Catalogo delle forme: solo quelle giudicate a occhio, scritte in un riquadro
-**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
+**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente;
+il giudizio dell'utente sui campioni lo sostiene a Trento e Milano, non a
+Levico
 
 TASK-033 porta nell'app le forme nuove di TASK-032. L'utente, prima di
 lasciare lavorare l'agente da solo, gli ha chiesto di prendere le decisioni
@@ -934,7 +936,9 @@ campo vuoto. L'API risponde `invalid_request` a una forma fuori catalogo,
 come prima.
 
 ## ADR-0037 — La somiglianza resta com'è; l'orientamento conta per l'occhio
-**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
+**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente;
+il giudizio dell'utente sui campioni lo sostiene a Trento e Milano, non a
+Levico
 
 TASK-035 doveva trovare una somiglianza che andasse d'accordo con l'occhio,
 dopo che TASK-032 e TASK-034 avevano mostrato percorsi con 0,83–1,00
@@ -1000,7 +1004,9 @@ un occhio, una finestra, una rientranza: servono i tratti interni ripassati
 (TASK-037).
 
 ## ADR-0039 — Tratti ripassati: linee e anelli dentro la forma
-**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
+**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente;
+il giudizio dell'utente sui campioni lo sostiene a Trento e Milano, non a
+Levico
 
 Le forme ancora a `no` dopo TASK-036 si riconoscono da un dettaglio
 interno, e l'utente ha chiesto di disegnarli come nella Strava art, con
@@ -1028,3 +1034,23 @@ potava e segnalava ogni ripasso (ADR-0026).
   passano dal 2% all'1% del perimetro. Le forme senza tratti non cambiano.
 - **Forme**: finestre alla casa, fusto e tre coppie di rami all'albero,
   occhi al gatto, occhio al pesce.
+
+**Motivo**: con le tolleranze al 2% del percorso, a 15 km circa 300 m, i
+dettagli erano larghi quanto la tolleranza: il percorso passava accanto a
+finestre e rami senza disegnarli, e la somiglianza non se ne accorgeva
+(albero di Levico 0,99 senza un ramo). All'1% i dettagli entrano nella
+ricerca. Giudizio dell'utente sui 12 casi da 15 km (`samples/LOG.md`,
+TASK-037): a Trento gatto e pesce `sì` (prima `quasi` e `no`), casa
+`quasi` (prima `no`), albero `no` come prima; a Milano tutti `sì` (la casa
+prima era `quasi`); a Levico casa e albero `no` (l'albero prima era
+`quasi`), gatto e pesce non disponibili (prima `no`). Quattro casi
+migliorano, uno peggiora. Le forme del catalogo non hanno tratti e danno
+gli stessi percorsi di prima.
+
+**Conseguenza**: i dettagli si disegnano dove le strade sono fitte, e a
+Levico no: le strade rade reggono il contorno, non i dettagli a 15 km. Il
+rimedio è cercare il posto dove la forma ci sta (TASK-038), o distanze più
+lunghe. Gatto e pesce con i tratti hanno ora un `sì` a Trento e a Milano:
+possono essere proposti per il catalogo (ADR-0036), in un task a parte.
+L'albero con fusto e sei rami è troppo fitto per 15 km. Il 50% di
+`STROKE_DETAIL` è un primo valore, da ritarare con altri giudizi.

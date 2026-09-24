@@ -3,7 +3,8 @@
 The API orchestrates and does not compute: the route comes from the engine's
 plan_route, errors become a status and a code the app can explain. The app
 uses route jobs (ADR-0032); POST /routes answers in one go, for /docs, curl
-and measurements.
+and measurements. POST /shape-readings asks the AI which shape of the
+catalogue some words name (ADR-0012): the AI never sees the route.
 """
 
 from __future__ import annotations
@@ -21,6 +22,12 @@ from fastapi.responses import JSONResponse
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.models import InvalidRequestError, RouteRequest
 from route_engine.optimizer import GraphLoader, ShapeNotDrawableError, plan_route
+from shaperoute_ai.reading import (
+    InvalidTextError,
+    ModelUnavailableError,
+    ShapeReader,
+    clean,
+)
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from shaperoute_api.errors import error_of
@@ -34,6 +41,8 @@ from shaperoute_api.schemas import (
     RouteJobBody,
     RouteRequestBody,
     RouteResultBody,
+    ShapeReadingBody,
+    ShapeReadingRequestBody,
 )
 
 log = logging.getLogger(__name__)
@@ -43,6 +52,11 @@ ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     500: {"model": ErrorBody, "description": "engine_error"},
     503: {"model": ErrorBody, "description": "map_data_unavailable"},
 }
+SHAPE_READING_RESPONSES: dict[int | str, dict[str, Any]] = {
+    422: {"model": ErrorBody, "description": "invalid_request"},
+    503: {"model": ErrorBody, "description": "ai_unavailable"},
+}
+AI_OFF = "This API was started without the AI that reads shape words."
 UNKNOWN_JOB = (
     "Unknown route job: cancelled, finished more than 10 minutes ago, "
     "or the API was restarted."
@@ -102,6 +116,7 @@ def create_app(
     planner: Planner = plan_route,
     jobs: RouteJobs | None = None,
     now: Callable[[], datetime] = now_utc,
+    reader: ShapeReader | None = None,
 ) -> FastAPI:
     route_jobs = jobs or RouteJobs(source, planner)
 
@@ -168,6 +183,15 @@ def create_app(
             },
         )
 
+    # The words the app's table does not know (ADR-0012). A plain def, like
+    # /routes: a model on a laptop takes seconds, in a thread of its own.
+    @app.post("/shape-readings", responses=SHAPE_READING_RESPONSES)
+    def read_shape(body: ShapeReadingRequestBody) -> ShapeReadingBody:
+        if reader is None:
+            raise ModelUnavailableError(AI_OFF)
+        choice = reader.read(body.text)
+        return ShapeReadingBody(text=clean(body.text), shape=choice.shape)
+
     # A plain def: FastAPI runs it in a thread, so a long route does not stop
     # the server from answering the other requests.
     @app.post("/routes", responses=ERROR_RESPONSES)
@@ -197,7 +221,13 @@ def create_app(
     def engine_answer(_: Request, exc: Exception) -> JSONResponse:
         return error(*error_of(exc))
 
-    for known in (InvalidRequestError, ShapeNotDrawableError, MapDataUnavailableError):
+    for known in (
+        InvalidRequestError,
+        ShapeNotDrawableError,
+        MapDataUnavailableError,
+        InvalidTextError,
+        ModelUnavailableError,
+    ):
         app.add_exception_handler(known, engine_answer)
 
     @app.exception_handler(StarletteHTTPException)

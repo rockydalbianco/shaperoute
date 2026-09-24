@@ -17,6 +17,7 @@ from route_engine.models import (
     RouteResult,
 )
 from route_engine.shapes import SUPPORTED_SHAPES
+from shaperoute_ai.reading import MAX_TEXT_LENGTH
 
 
 class RouteRequestBody(BaseModel):
@@ -63,6 +64,7 @@ ErrorCode = Literal[
     "map_data_unavailable",
     "engine_error",
     "http_error",
+    "ai_unavailable",
 ]
 
 
@@ -97,3 +99,29 @@ class GpxRequestBody(BaseModel):
 
     request: RouteRequestBody
     result: RouteResultBody
+
+
+class ShapeReadingRequestBody(BaseModel):
+    """What the app sends to POST /shape-readings: ShapeReadingRequest in
+    packages/shared-types."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(
+        description=(
+            f"The words of the shape field, at most {MAX_TEXT_LENGTH} characters."
+        ),
+        examples=["stemma della Ferrari"],
+    )
+
+
+class ShapeReadingBody(BaseModel):
+    """The AI's reading of the words (ADR-0012): ShapeReading in
+    packages/shared-types."""
+
+    text: str = Field(description="The words as read: single spaces, none at the ends.")
+    shape: str | None = Field(
+        description=(
+            f"One of: {', '.join(SUPPORTED_SHAPES)}; null when none fits the words."
+        )
+    )

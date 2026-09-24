@@ -3,5 +3,6 @@
   "shape_not_drawable",
   "map_data_unavailable",
   "engine_error",
-  "http_error"
+  "http_error",
+  "ai_unavailable"
 ]

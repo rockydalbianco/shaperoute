@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-24 · **Fase corrente**: 3 — La forma scritta dall'utente
+**Ultimo aggiornamento**: 2026-09-24 · **Fase corrente**: 3 chiusa, 4 da cominciare
 
 ---
 
@@ -22,14 +22,16 @@ tratti interni, fatti andata e ritorno (gli occhi). Quando la forma non va
 attorno alla partenza, il motore cerca un posto fino a 2 km e l'app mostra
 «Start here»: così gatto e pesce si disegnano anche a Levico. Le parole che
 la tabella non conosce («stemma della Ferrari») le legge un modello aperto
-in Ollama sul PC, che sceglie una forma del catalogo o nessuna.
+in Ollama sul PC, che sceglie una forma del catalogo o nessuna; se è
+nessuna, l'app propone le forme del catalogo da toccare. Se la forma non ci
+sta per la distanza, l'app propone quella che ci sta («Try N km»).
 
 ## Prossimo passo
 
-**TASK-031 — Parole senza forma nel catalogo e forme che le strade non
-reggono** (`ROADMAP.md`, fase 3): cosa dire e proporre quando l'AI risponde
-«nessuna forma», o la forma non ci sta. Il file del task non è ancora
-scritto.
+Fase 3 chiusa: tutti i suoi task sono fatti. Il prossimo è il primo task
+della fase 4 (`ROADMAP.md`: walking e cycling, scritte, account, PostGIS,
+dislivello, oltre 21 km, hosting), da scegliere con l'utente: nessun file
+di task è scritto.
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
@@ -37,7 +39,7 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-**TASK-031** — `feat/TASK-031-no-shape-no-fit`: fatto e con i test verdi. Quando la forma non ci sta per la distanza, l'API suggerisce quella che ci sta e l'app mostra «Try N km» (ADR-0041); quando non c'è forma, o la somiglianza è bassa, le forme del catalogo sono pulsanti. Manca la prova sull'iPhone dall'utente.
+Niente.
 
 ## Completato
 
@@ -61,7 +63,11 @@ non fa merge, e ogni task parte dal branch del precedente.
   provato sull'iPhone. TASK-030: le parole che la tabella non conosce le
   legge qwen3:4b in Ollama sul PC (ADR-0012): 94% sulle parole nuove,
   circa 5 s a parola; sull'iPhone vanno le parole semplici, non «stemma
-  della ferrari» né «spirit» (`AI.md`, «Limiti»).
+  della ferrari» né «spirit» (`AI.md`, «Limiti»). TASK-031: con
+  «nessuna forma» l'app offre le forme del catalogo come pulsanti, provato
+  sull'iPhone; se la forma non ci sta per la distanza, l'API suggerisce
+  quella che ci sta e l'app mostra «Try N km» (ADR-0041), un caso raro:
+  sull'iPhone non è mai uscito.
 - **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in
@@ -80,7 +86,7 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## Bloccato
 
-**TASK-031** — `feat/TASK-031-no-shape-no-fit`: fatto e con i test verdi. Quando la forma non ci sta per la distanza, l'API suggerisce quella che ci sta e l'app mostra «Try N km» (ADR-0041); quando non c'è forma, o la somiglianza è bassa, le forme del catalogo sono pulsanti. Manca la prova sull'iPhone dall'utente.
+Niente.
 
 ## Note per la prossima sessione
 

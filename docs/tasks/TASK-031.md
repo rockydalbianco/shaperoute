@@ -1,6 +1,6 @@
 # TASK-031 — Parole senza forma e forme che le strade non reggono
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 3 · **Branch**: `feat/TASK-031-no-shape-no-fit` (parte da
 `docs/TASK-030-close`)
 
@@ -68,7 +68,9 @@ forme lato API.
       pannello o dell'hook).
 - [x] Con «nessuna forma» l'app mostra le forme del catalogo come pulsanti
       che le scrivono nel riquadro.
-- [ ] Provato sull'iPhone dall'utente: un caso per ciascun vicolo.
+- [x] Provato sull'iPhone dall'utente: «nessuna forma» sì. «Try N km» non
+      è mai uscito: l'utente ha scelto di non cercare il caso apposta, lo
+      coprono i test.
 
 ## File toccati
 
@@ -93,4 +95,11 @@ docs/API.md, docs/UI.md, docs/STATUS.md, docs/DECISIONS.md
 
 ## Esito
 
-*(da compilare)*
+Con «nessuna forma» l'app offre le forme del catalogo come pulsanti,
+provato sull'iPhone. Se la forma non ci sta per la distanza, l'API
+suggerisce `suggested_distance_m` e l'app mostra «Try N km» (ADR-0041),
+coperto dai test ma mai visto sull'iPhone: dopo TASK-038 il motore quasi
+sempre trova un percorso. In Valsugana, la zona con meno strade, 16 casi su
+19 (7 forme a 5, 10 e 15 km, ricerca interrotta) danno un percorso; i tre
+rifiuti (cerchio 10 km, gatto e pesce 5 km) non hanno il motivo
+registrato.

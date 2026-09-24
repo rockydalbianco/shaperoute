@@ -183,6 +183,14 @@ dell'utente, vanno le parole semplici ma non «stemma della ferrari» né
 «spirit», che il modello non conosce bene; il limite resta, documentato
 (`AI.md`, «Limiti»).
 
+**TASK-031 (2026-09-24)**: quando l'AI non trova una forma, l'app offre le
+forme del catalogo come pulsanti, con il consiglio di descrivere la cosa in
+modo esplicito; provato sull'iPhone. Quando la forma non ci sta perché il
+percorso migliore manca la distanza, l'API suggerisce la distanza che ci
+sta e l'app mostra «Try N km» (ADR-0041, scelta dell'utente). Quel rifiuto
+è raro: dopo TASK-038 il motore quasi sempre trova un percorso, e
+sull'iPhone non è mai uscito; lo coprono i test. **Fase 3 chiusa.**
+
 **Deciso con l'utente (2026-09-24).** Non serve interpretare una frase:
 distanza e attività si scrivono nei loro riquadri, e l'AI serve solo per la
 forma. Il lavoro si divide in due:

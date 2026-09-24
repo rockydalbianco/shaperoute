@@ -26,6 +26,13 @@ from route_engine.geo import (
     path_length_m,
 )
 
+# Where a route drawn out and back turns (first_leg): a metre from the far
+# end of the shape weighs as much as ten from half-way along the route. The
+# way back may take other roads than the way out, and be some hundred metres
+# longer or shorter; an earlier pass near the far end is kilometres before
+# half-way (TASK-041).
+HALF_WAY_WEIGHT = 0.1
+
 # Starting values, to be tuned on samples (docs/MAPS.md).
 AREA_MARGIN_M = 500.0
 EDGE_REUSE_PENALTY = 2.0
@@ -588,6 +595,37 @@ def _route_through_zones(
     except nx.NetworkXNoPath:
         skipped.append(0)
     return route_nodes, reached, skipped, corner_nodes
+
+
+def first_leg(graph: Graph, route: NetworkRoute, turn: LatLon) -> NetworkRoute:
+    """The way out of a route drawn out and back (TASK-041): from its start
+    to the node nearest to `turn`, the far end of the shape.
+
+    The route may pass near `turn` on its way there too, like a word that
+    ends where one of its letters begins; so the node chosen is the one
+    nearest to `turn` plus, weighed HALF_WAY_WEIGHT, nearest to half-way
+    along the route, both in metres.
+    """
+    nodes = route.nodes
+    xy = latlon_to_local_array(
+        turn, np.array([_node_latlon(graph, node) for node in nodes])
+    )
+    along = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(xy, axis=0).T))])
+    cost = np.hypot(xy[:, 0], xy[:, 1]) + HALF_WAY_WEIGHT * np.abs(
+        along - along[-1] / 2
+    )
+    kept = nodes[: max(1, int(np.argmin(cost))) + 1]
+    points: list[LatLon] = [_node_latlon(graph, kept[0])]
+    for u, v in zip(kept, kept[1:], strict=False):
+        points.extend(_edge_points(graph, u, v))
+    reached = set(kept)
+    return NetworkRoute(
+        points=points,
+        distance_m=path_length_m(points),
+        warnings=list(route.warnings),
+        waypoints=[node for node in route.waypoints if node in reached],
+        nodes=kept,
+    )
 
 
 def snap_to_network(

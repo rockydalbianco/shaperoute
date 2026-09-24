@@ -299,7 +299,6 @@ def test_a_path_is_resampled_keeping_every_vertex() -> None:
 @pytest.mark.parametrize(
     ("path", "message"),
     [
-        (L_PATH[:-1], "the path is open"),
         ([[0, 0], [0, 0]], "at least 2 distinct points"),
         ([[0, 0], [1, "a"], [0, 0]], "list of [x, y] numbers"),
         ("not a list", "list of [x, y] numbers"),
@@ -316,3 +315,14 @@ def test_a_path_does_not_go_with_points_or_strokes(key: str) -> None:
     data[key] = RECTANGLE if key == "points" else []
     with pytest.raises(InvalidOutlineError, match="'path' replaces"):
         parse_outline(data)
+
+
+def test_a_closed_path_is_not_one_way() -> None:
+    assert not parse_outline(_path_data(L_PATH)).one_way
+
+
+def test_an_open_path_is_one_way_and_drawn_out_and_back() -> None:
+    # The L of L_PATH, open: down and right, ending at the foot (TASK-041).
+    outline = parse_outline(_path_data(L_PATH[:3]))
+    assert outline.one_way
+    assert outline.path() == parse_outline(_path_data(L_PATH)).path()

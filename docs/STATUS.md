@@ -21,9 +21,11 @@ cerchio, cuore, stella e cavallo.
 
 ## Prossimo passo
 
-**TASK-035 — Una somiglianza che vede i dettagli** (`ROADMAP.md`, fase
-3): confrontare altre misure con i giudizi a occhio già dati. ADR-0012 si
-decide con TASK-030.
+**TASK-036 — Forme dritte** (`ROADMAP.md`, fase 3): le forme che hanno un
+alto e un basso si inclinano al massimo di pochi gradi; campioni nuovi dei
+casi che erano inclinati, da far giudicare all'utente. Poi TASK-037 (tratti
+interni ripassati, deciso dall'utente) e TASK-038 (trova dove la forma ci
+sta). ADR-0012 si decide con TASK-030.
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
@@ -42,7 +44,9 @@ Niente.
   cavallo) e riquadro della forma che legge la parola in italiano o in
   inglese (ADR-0036); provato sull'iPhone. TASK-034: sei forme candidate
   (luna, pesce, freccia, albero, corona, gatto) si riconoscono solo a
-  Milano, nessuna entra nel catalogo.
+  Milano, nessuna entra nel catalogo. TASK-035: nessuna misura di
+  somiglianza separa i «no» dell'utente, la somiglianza resta com'è; conta
+  l'orientamento (ADR-0037).
 - **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in

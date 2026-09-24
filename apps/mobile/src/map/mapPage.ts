@@ -1,10 +1,13 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
+import { color, route } from "../theme/tokens";
 import { toLngLat } from "./coordinates";
+import { sgravaDarkStyle } from "./mapStyle";
 
 /**
  * The map page shown in the WebView (ADR-0029): MapLibre GL JS from a CDN,
- * pinned with SRI hashes, and the OpenFreeMap style. No key is needed.
+ * pinned with SRI hashes, and the app's own dark style over OpenFreeMap's
+ * tiles (ADR-0046). No key is needed.
  *
  * 5.x is the last release shipped as a single script; 6.x is ES modules only,
  * with a separate worker file.
@@ -17,8 +20,8 @@ export const MAPLIBRE_CSS_URL = `https://unpkg.com/maplibre-gl@${MAPLIBRE_VERSIO
 export const MAPLIBRE_CSS_SRI =
   "sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK";
 
-/** The only place that names the tile provider: change it here. */
-export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+/** The style, written into the page: nothing to fetch, colours from the tokens. */
+export const MAP_STYLE = sgravaDarkStyle;
 
 /** What the map shows before a start is known: the whole of Italy. */
 export const ITALY_BOUNDS: [southWest: LatLon, northEast: LatLon] = [
@@ -29,13 +32,31 @@ export const ITALY_BOUNDS: [southWest: LatLon, northEast: LatLon] = [
 /** Zoom used to show a start: a few streets around it. */
 export const START_ZOOM = 15;
 
-/** The route line: strong enough to stand out over any road colour. */
-export const ROUTE_COLOR = "#d6336c";
-export const ROUTE_WIDTH = 5;
+/** The route line: the brand yellow, the one thing on the map that has it. */
+export const ROUTE_COLOR = route.color;
+export const ROUTE_WIDTH = route.width;
+export const ROUTE_OPACITY = route.opacity;
 
-/** Where a moved route begins (ADR-0040): a green marker and its label. */
-export const START_HERE_COLOR = "#2f9e44";
+/**
+ * The start asked for. MapLibre's default marker is a light blue that reads
+ * as the cyan of "Start here" next to it, so it takes the text colour instead.
+ */
+export const POSITION_COLOR = color.text;
+
+/** Where a moved route begins (ADR-0040): a cyan marker and its label. */
+export const START_HERE_COLOR = color.startHere;
 export const START_HERE_LABEL = "Start here";
+
+/** Behind the map while it loads, so the page never flashes white. */
+export const MAP_BACKGROUND = color.map.background;
+
+/**
+ * A value as a JavaScript literal inside the page's `<script>`. `<` is escaped
+ * so that no string in it (the attribution has links) can close the script.
+ */
+function toScript(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
 
 /**
  * Links the page tries to open (the attribution) go to the phone's browser:
@@ -54,7 +75,7 @@ export function buildMapPage(): string {
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <link rel="stylesheet" href="${MAPLIBRE_CSS_URL}" integrity="${MAPLIBRE_CSS_SRI}" crossorigin="anonymous">
 <style>
-  html, body, #map { margin: 0; width: 100%; height: 100%; }
+  html, body, #map { margin: 0; width: 100%; height: 100%; background: ${MAP_BACKGROUND}; }
 </style>
 </head>
 <body>
@@ -83,7 +104,7 @@ export function buildMapPage(): string {
     var route = noRoute;
     var map = new maplibregl.Map({
       container: "map",
-      style: ${JSON.stringify(MAP_STYLE_URL)},
+      style: ${toScript(MAP_STYLE)},
       bounds: ${bounds},
       fitBoundsOptions: { padding: 16 },
       attributionControl: false,
@@ -100,9 +121,9 @@ export function buildMapPage(): string {
         source: "route",
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "line-color": ${JSON.stringify(ROUTE_COLOR)},
+          "line-color": ${toScript(ROUTE_COLOR)},
           "line-width": ${ROUTE_WIDTH},
-          "line-opacity": 0.9,
+          "line-opacity": ${ROUTE_OPACITY},
         },
       });
     });
@@ -114,7 +135,7 @@ export function buildMapPage(): string {
       if (lngLat) {
         var label = new maplibregl.Popup({ closeButton: false, closeOnClick: false })
           .setText(${JSON.stringify(START_HERE_LABEL)});
-        startHere = new maplibregl.Marker({ color: ${JSON.stringify(START_HERE_COLOR)} })
+        startHere = new maplibregl.Marker({ color: ${toScript(START_HERE_COLOR)} })
           .setLngLat(lngLat)
           .setPopup(label)
           .addTo(map)
@@ -129,8 +150,11 @@ export function buildMapPage(): string {
       }
     }
     map.on("error", function (event) {
-      // Without a style there is no map; a missing tile later is not fatal.
-      if (!styleLoaded) {
+      // Without a style there is no map, and the style is in the page: what
+      // can fail is the tiles' description (TileJSON), an error of the source
+      // with no tile. A missing tile later is not fatal.
+      var noTiles = event.sourceId === "openmaptiles" && !event.tile;
+      if (!styleLoaded || noTiles) {
         fail((event.error && event.error.message) || "The map style did not load");
       }
     });
@@ -140,7 +164,9 @@ export function buildMapPage(): string {
           if (marker) {
             marker.setLngLat(message.lngLat);
           } else {
-            marker = new maplibregl.Marker().setLngLat(message.lngLat).addTo(map);
+            marker = new maplibregl.Marker({ color: ${toScript(POSITION_COLOR)} })
+              .setLngLat(message.lngLat)
+              .addTo(map);
           }
           map.flyTo({ center: message.lngLat, zoom: ${START_ZOOM} });
         } else if (message.type === "showRoute") {

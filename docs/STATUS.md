@@ -31,27 +31,27 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 **TASK-050 — Lettere una per una** (`ROADMAP.md`, fase 4), in lavorazione
 in un'altra sessione. Per le indicazioni di svolta il seguito è
 **TASK-048**: portare i nodi del percorso e le indicazioni fuori dal motore,
-fino all'API e all'app, con la via di partenza.
+fino all'API e all'app, con la via di partenza. Dopo TASK-050,
+**TASK-051 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
+nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
 
-**App: TASK-046 — Applicare il tema** (`docs/tasks/TASK-046.md`): mappa
-scura, percorso giallo, pannelli dai token. Parte da `main` dopo il merge
-di TASK-045.
+**App: un'interfaccia più da app che da sito**, chiesta dall'utente dopo
+TASK-046: il task si scrive dopo la sua scelta sulla direzione.
 
-Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
-e registra le decisioni come «deciso dall'agente su delega dell'utente»,
-e ogni task parte da `main` (`CLAUDE.md`), in un worktree suo quando più
-agenti lavorano insieme.
+Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
+`CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
-Niente.
+Niente per l'app.
 
 ## Completato
 
 - **Tema dell'app** — TASK-045: i token Sgrava
   (`apps/mobile/src/theme/tokens.ts`) e uno stile MapLibre scuro che li usa
   (`src/map/mapStyle.ts`), con i test che lo dicono ben formato (ADR-0046,
-  `UI.md`, «Il tema»). L'app non li usa ancora: è TASK-046.
+  `UI.md`, «Il tema»). TASK-046: l'app li usa, mappa scura e percorso
+  giallo; provato sull'iPhone.
 - **Fase 4 finora** — TASK-040: il contorno accetta `path`, una linea
   chiusa percorsa così com'è (ADR-0042); «CIAO» a tratto singolo, dalla
   CLI, `quasi` a Trento, Levico e Milano a 15 km. TASK-041: un `path`

@@ -25,6 +25,14 @@ import { toDistanceM } from "./src/route/distance";
 import { RoutePanel } from "./src/route/RoutePanel";
 import { toShape } from "./src/route/shapeWords";
 import { useShapeReading } from "./src/route/useShapeReading";
+import {
+  color,
+  fontSize,
+  fontWeight,
+  MIN_TAP_SIZE,
+  radius,
+  space,
+} from "./src/theme/tokens";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import {
   type RouteState,
@@ -43,7 +51,8 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <MapScreen />
-      <StatusBar style="auto" />
+      {/* The app is dark: light status bar text on any phone setting. */}
+      <StatusBar style="light" />
     </SafeAreaProvider>
   );
 }
@@ -104,7 +113,7 @@ function MapScreen() {
       style={styles.screen}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={[styles.panel, { paddingTop: insets.top + 8 }]}>
+      <View style={[styles.panel, { paddingTop: insets.top + space.sm }]}>
         <View style={styles.titleRow}>
           <Text style={styles.title}>ShapeRoute</Text>
           <Pressable style={styles.button} onPress={refresh} accessibilityRole="button">
@@ -114,6 +123,7 @@ function MapScreen() {
         <Text style={styles.status}>{statusText(position, start)}</Text>
         {position.status === "denied" && (
           <Pressable
+            style={styles.linkButton}
             onPress={() => void Linking.openSettings()}
             accessibilityRole="button"
           >
@@ -134,7 +144,13 @@ function MapScreen() {
         route={view.status === "done" ? view.result.points : null}
         onError={setMapError}
       />
-      <View style={[styles.panel, styles.bottom, { paddingBottom: insets.bottom + 8 }]}>
+      <View
+        style={[
+          styles.panel,
+          styles.bottom,
+          { paddingBottom: insets.bottom + space.sm },
+        ]}
+      >
         <RoutePanel
           shapeText={shapeText}
           shape={shape}
@@ -197,11 +213,11 @@ function statusText(position: PositionState, start: Start | null): string {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: color.background,
   },
   panel: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+    paddingHorizontal: space.lg,
+    paddingBottom: space.sm,
   },
   titleRow: {
     flexDirection: "row",
@@ -209,36 +225,50 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
+    color: color.text,
+    fontSize: fontSize.title,
+    fontWeight: fontWeight.bold,
   },
   status: {
-    marginTop: 4,
-    color: "#333",
+    marginTop: space.xs,
+    color: color.textMuted,
+    fontSize: fontSize.body,
   },
+  linkButton: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    alignSelf: "flex-start",
+  },
+  // Not yellow: that is the route's. Underlined, so it still reads as a link.
   link: {
-    marginTop: 4,
-    color: "#1f6feb",
-    fontWeight: "bold",
+    color: color.text,
+    fontWeight: fontWeight.bold,
+    textDecorationLine: "underline",
   },
   error: {
-    marginTop: 8,
-    color: "#b42318",
+    marginTop: space.sm,
+    color: color.error,
   },
   map: {
     flex: 1,
+    // Under the page while the WebView starts, so it never flashes white.
+    backgroundColor: color.map.background,
   },
   bottom: {
-    paddingTop: 8,
+    paddingTop: space.sm,
   },
+  // A secondary control: the yellow belongs to "Draw route" alone.
   button: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: "#1f6feb",
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    paddingHorizontal: space.lg,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: color.text,
+    fontWeight: fontWeight.bold,
   },
 });

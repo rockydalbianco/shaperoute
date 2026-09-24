@@ -40,6 +40,7 @@ from route_engine.network import (
     area_around,
     corner_indices,
     detail_scale,
+    first_leg,
     nearest_nodes,
     snap_to_network,
     twice_drawn,
@@ -324,11 +325,13 @@ def search(
     move_start: bool = True,
     max_tilt_deg: float = FREE_TILT_DEG,
     starts: Sequence[tuple[LatLon, float]] | None = None,
+    phases: Sequence[float] = PHASES,
 ) -> Search:
     """Best route for `shape` near `distance_m` on `graph`, starting at
     `start` or, with `move_start`, up to START_OFFSET_M away from it; or
     from the given `starts`, each with its distance from `start`. The shape
-    turns at most `max_tilt_deg` either way from how it is drawn."""
+    turns at most `max_tilt_deg` either way from how it is drawn, and the
+    route enters it at one of `phases`."""
     similarity = similarity or SIMILARITIES[SIMILARITY]
 
     def allowed(rotation_deg: float) -> bool:
@@ -342,7 +345,7 @@ def search(
         starts = candidate_starts(start) if move_start else [(start, 0.0)]
     attempts: list[Attempt] = []
     # The road count works in metres around `start`, without projecting.
-    phase_xy = {phase: np.array(start_at_phase(shape, phase)) for phase in PHASES}
+    phase_xy = {phase: np.array(start_at_phase(shape, phase)) for phase in phases}
     phase_corners = {phase: corner_indices(pts[:-1]) for phase, pts in phase_xy.items()}
     start_xy = {s: latlon_to_local_array(start, np.array([s]))[0] for s, _ in starts}
     # A shape with strokes is judged finer (ADR-0039); normalized, its sides
@@ -473,7 +476,7 @@ def search(
             for s, offset in starts
             for r in np.arange(0.0, 360.0, ROTATION_STEP_DEG)
             if allowed(r)
-            for phase in PHASES
+            for phase in phases
         ]
         ranked = sorted(
             range(len(candidates)),
@@ -607,10 +610,17 @@ class GraphLoader(Protocol):
     def load(self, bbox: BBox) -> Graph: ...
 
 
+def planned_distance(distance_m: float, one_way: bool) -> float:
+    """What the engine plans for: a one-way shape is planned out and back,
+    twice as long, and the way out is kept (TASK-041)."""
+    return 2 * distance_m if one_way else distance_m
+
+
 def required_area(
     shape: Sequence[Point], start: LatLon, distance_m: float, optimize: bool = True
 ) -> BBox:
-    """Area whose graph a request needs: the zone, or just the initial shape."""
+    """Area whose graph a request needs: the zone, or just the initial shape.
+    `distance_m` is the planned one (`planned_distance`)."""
     if optimize:
         return zone_area(shape, start, distance_m)
     return area_around(project_shape(shape, start, initial_scale(shape, distance_m)))
@@ -663,40 +673,51 @@ def plan_shape(
     optimize: bool = True,
     reuse_penalty: float = EDGE_REUSE_PENALTY,
     max_tilt_deg: float = MAX_TILT_DEG,
+    one_way: bool = False,
 ) -> Plan:
     """plan_route for any normalized shape, also an outline read from a file
     (TASK-032). `name` only labels the result and its messages; start and
     distance are the caller's to check, as RouteRequest does. An outline
     stays upright unless told otherwise (ADR-0038).
+
+    A `one_way` shape is drawn out and back (Outline.one_way): it is planned
+    as a closed shape twice `distance_m` long, entered at its first point,
+    and the route keeps the way out, which ends at the shape's far end
+    (TASK-041). Shares and scores are the same for the whole and the half.
     """
     similarity = SIMILARITIES[SIMILARITY]
-    graph = source.load(required_area(shape, start, distance_m, optimize))
+    planned_m = planned_distance(distance_m, one_way)
+    kept = 0.5 if one_way else 1.0  # of the planned route
+    phases = (0.0,) if one_way else PHASES
+    graph = source.load(required_area(shape, start, planned_m, optimize))
     far: Search | None = None
     if optimize:
         found = search(
             graph,
             shape,
             start,
-            distance_m,
+            planned_m,
             reuse_penalty=reuse_penalty,
             max_tilt_deg=max_tilt_deg,
+            phases=phases,
         )
         if not found.converged:
             # Not good here: look for a place farther away (ADR-0040).
-            far_graph = source.load(zone_area(shape, start, distance_m, FAR_OFFSET_M))
+            far_graph = source.load(zone_area(shape, start, planned_m, FAR_OFFSET_M))
             far = search(
                 far_graph,
                 shape,
                 start,
-                distance_m,
+                planned_m,
                 max_traces=FAR_TRACES,
                 reuse_penalty=reuse_penalty,
                 max_tilt_deg=max_tilt_deg,
                 starts=far_starts(start),
+                phases=phases,
             )
             if far.converged or (
-                not _drawable(found.best, distance_m)
-                and _drawable(far.best, distance_m)
+                not _drawable(found.best, planned_m, kept)
+                and _drawable(far.best, planned_m, kept)
             ):
                 found, graph = far, far_graph
         best = found.best
@@ -708,13 +729,13 @@ def plan_shape(
                 f"{what}: the best route scores "
                 f"{best.similarity:.2f} for shape, {MIN_SIMILARITY:.2f} needed"
             )
-        gap = best.route.distance_m - distance_m
+        gap = (best.route.distance_m - planned_m) * kept
         if abs(gap) > DISTANCE_FALLBACK_M:
             raise ShapeNotDrawableError(
                 f"{what}: the best shape is "
                 f"{gap / 1000:+.1f} km from the target, at most "
                 f"{DISTANCE_FALLBACK_M / 1000:g} km allowed",
-                best_distance_m=best.route.distance_m,
+                best_distance_m=best.route.distance_m * kept,
             )
         route, sim, warnings = best.route, best.similarity, list(found.warnings)
         placed, chosen_start = best.shape, best.placement.start
@@ -732,7 +753,7 @@ def plan_shape(
             )
     else:
         found = None
-        projected = project_shape(shape, start, initial_scale(shape, distance_m))
+        projected = project_shape(shape, start, initial_scale(shape, planned_m))
         route = snap_to_network(graph, projected, reuse_penalty)
         sim, warnings = similarity(route.points, projected), list(route.warnings)
         placed, chosen_start = projected, start
@@ -744,6 +765,8 @@ def plan_shape(
         chosen_start,
         FAR_OFFSET_M if far is not None and found is far else START_OFFSET_M,
     )
+    if one_way:  # the far end is half-way along the shape
+        route = first_leg(graph, route, start_at_phase(placed, 0.5)[0])
     outline = latlon_to_local_array(placed[0], np.array(placed))
     corners = [placed[i] for i in corner_indices(outline[:-1])]
     strokes = [(placed[i], placed[i + 1]) for i in np.flatnonzero(twice_drawn(outline))]
@@ -768,9 +791,10 @@ def plan_shape(
     return Plan(result, found, measures, far)
 
 
-def _drawable(best: Attempt, distance_m: float) -> bool:
-    """Whether plan_shape would return this attempt rather than refuse it."""
+def _drawable(best: Attempt, distance_m: float, kept: float = 1.0) -> bool:
+    """Whether plan_shape would return this attempt rather than refuse it,
+    keeping that share of its route."""
     return (
         best.similarity >= MIN_SIMILARITY
-        and abs(best.route.distance_m - distance_m) <= DISTANCE_FALLBACK_M
+        and abs(best.route.distance_m - distance_m) * kept <= DISTANCE_FALLBACK_M
     )

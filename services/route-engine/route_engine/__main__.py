@@ -26,6 +26,7 @@ from route_engine.optimizer import (
     SIMILARITY,
     ShapeNotDrawableError,
     plan_shape,
+    planned_distance,
     required_area,
     tilt_limit,
 )
@@ -177,7 +178,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     optimize = not args.no_optimize
     source = OsmnxSource(args.cache_dir)
-    bbox = required_area(shape, request.start, request.distance_m, optimize)
+    one_way = isinstance(request, OutlineRequest) and request.outline.one_way
+    planned_m = planned_distance(request.distance_m, one_way)
+    bbox = required_area(shape, request.start, planned_m, optimize)
     if source.is_cached(bbox):
         print("Road graph: from the cache")
     else:
@@ -192,6 +195,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             optimize=optimize,
             reuse_penalty=args.reuse_penalty,
             max_tilt_deg=tilt_limit(request.shape),
+            one_way=one_way,
         )
     except ShapeNotDrawableError as exc:
         print(f"No route: {exc}", file=sys.stderr)
@@ -204,7 +208,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"Wrote {args.out}: {len(route.points)} points")
     if plan.search is not None:
         best = plan.search.best
-        base = initial_scale(shape, request.distance_m)
+        base = initial_scale(shape, planned_m)
         print(
             f"  placement:  rotation {best.rotation_deg:.0f} deg, "
             f"phase {best.phase:.2f}, "

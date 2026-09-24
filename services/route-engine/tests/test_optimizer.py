@@ -29,13 +29,15 @@ from route_engine.optimizer import (
     candidate_starts,
     far_starts,
     plan_route,
+    plan_shape,
     reach,
     search,
     tilt_limit,
     zone_area,
 )
-from route_engine.projection import initial_scale, project_shape
-from route_engine.shapes import SUPPORTED_SHAPES, get_shape
+from route_engine.projection import initial_scale, project_shape, start_at_phase
+from route_engine.shapes import OUTLINES, SUPPORTED_SHAPES, get_shape
+from route_engine.shapes.outline import read_outline
 
 LEVICO = (46.0122, 11.2986)
 FIXTURE = Path(__file__).parent / "fixtures" / "levico_walk_1km.graphml"
@@ -421,3 +423,33 @@ def test_a_refusal_says_the_place_was_looked_for_nearby_too() -> None:
     graph = _grid_from_x(2600.0)
     with pytest.raises(ShapeNotDrawableError, match="here, nor within 2 km"):
         plan_route(request, _Loader(graph))
+
+
+def test_a_search_enters_the_shape_only_at_the_given_phases() -> None:
+    start = local_to_latlon(LEVICO, 1500.0, 0.0)
+    result = search(_half_grid(), CIRCLE, start, 3000.0, phases=(0.0,))
+    assert result.attempts
+    assert {a.phase for a in result.attempts} == {0.0}
+
+
+def test_a_one_way_word_ends_away_from_its_start_after_the_distance() -> None:
+    # «CIAO» written once, left to right (TASK-041), on the half grid.
+    outline = read_outline(OUTLINES / "ciao_open.json")
+    assert outline.one_way
+    start = local_to_latlon(LEVICO, 1500.0, 0.0)
+
+    class Grid:
+        def load(self, bbox: tuple[float, float, float, float]) -> nx.MultiDiGraph:
+            return _half_grid()
+
+    plan = plan_shape(outline(64), outline.name, start, 3000, Grid(), one_way=True)
+    result = plan.result
+    assert plan.search is not None
+    assert {a.phase for a in plan.search.attempts} == {0.0}
+    # It ends at the far end of the word as placed: under the O, some 450 m
+    # from the tip of the C where it starts.
+    far_end = start_at_phase(plan.search.best.shape, 0.5)[0]
+    assert haversine_m(result.points[-1], far_end) < 100.0
+    assert haversine_m(result.points[0], result.points[-1]) > 300.0
+    assert result.distance_m == pytest.approx(3000.0, rel=0.25)
+    assert result.distance_m == pytest.approx(path_length_m(result.points))

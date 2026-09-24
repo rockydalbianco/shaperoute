@@ -38,7 +38,12 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-Niente.
+**TASK-041** — `feat/TASK-041-open-route`: una parola si corre a sola
+andata. Un `path` aperto si pianifica come andata e ritorno al doppio della
+distanza, con la sola fase 0, e si tiene l'andata fino al fondo della
+parola (`first_leg`). Campioni di «CIAO» aperto a 15 km: Trento 0,96,
+Levico 0,91, Milano 1,00 (13,6 km, partenza spostata di 1 km, 263 s).
+Manca il giudizio dell'utente, aperto contro chiuso.
 
 ## Completato
 

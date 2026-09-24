@@ -28,8 +28,11 @@ it, such as a word written in a single stroke (TASK-040):
     {"name": "ciao", "source": "...", "license": "...", "path": [[x, y], ...]}
 
 The route follows it as it is: it may go back along itself and touch
-itself, and need not enclose anything. Like an outline it is closed, the
-last point repeating the first.
+itself, and need not enclose anything. When the last point repeats the
+first, the path is closed, like an outline. When it does not, the shape is
+one way (TASK-041): the route draws the path and ends where it ends. The
+engine plans it as the path out and back, a closed line like the others,
+and keeps the way out.
 """
 
 from __future__ import annotations
@@ -72,6 +75,9 @@ class Outline:
     strokes: tuple[tuple[Point, ...], ...] = ()
     # True when `points` is a `path`, drawn as it is (TASK-040).
     line: bool = False
+    # True when the path was open: `points` is it out and back, and the
+    # route keeps the way out (TASK-041).
+    one_way: bool = False
 
     def __call__(self, n_points: int) -> list[Point]:
         """`n_points` vertices equally spaced by arc length, like any shape.
@@ -149,12 +155,17 @@ def parse_outline(data: object) -> Outline:
             raise InvalidOutlineError(
                 "'path' replaces 'points' and 'strokes': give one or the other"
             )
+        path = _path(data["path"])
+        one_way = path[-1] != path[0]
+        if one_way:  # out and back: a closed line
+            path += path[-2::-1]
         return Outline(
             name=texts["name"],
             source=texts["source"],
             license=texts["license"],
-            points=tuple(normalize(_path(data["path"]))),
+            points=tuple(normalize(path)),
             line=True,
+            one_way=one_way,
         )
     ring = _ring(data.get("points"))
     strokes = _strokes(data.get("strokes"), ring)
@@ -205,8 +216,7 @@ def _ring(raw: object) -> list[Point]:
 
 
 def _path(raw: object) -> list[Point]:
-    """The points of a valid closed line, repeats dropped, the first point
-    repeated at the end."""
+    """The points of a valid line, open or closed, repeats dropped."""
     if not isinstance(raw, list) or not all(_is_pair(p) for p in raw):
         raise InvalidOutlineError("'path' must be a list of [x, y] numbers")
     points: list[Point] = []
@@ -215,10 +225,6 @@ def _path(raw: object) -> list[Point]:
             points.append((float(x), float(y)))
     if len(set(points)) < 2:
         raise InvalidOutlineError("the path needs at least 2 distinct points")
-    if points[-1] != points[0]:
-        raise InvalidOutlineError(
-            "the path is open: the last point must repeat the first"
-        )
     return points
 
 

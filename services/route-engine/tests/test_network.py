@@ -9,9 +9,11 @@ import pytest
 from route_engine.geo import haversine_m, latlon_to_local, local_to_latlon
 from route_engine.network import (
     FileSource,
+    NetworkRoute,
     OsmnxSource,
     area_around,
     detail_scale,
+    first_leg,
     nearest_nodes,
     prune_spurs,
     snap_to_network,
@@ -324,3 +326,28 @@ def test_download_then_cache(tmp_path: Path) -> None:
     assert not source.is_cached(bbox)
     assert len(source.load(bbox)) > 0
     assert source.is_cached(bbox)
+
+
+def _word_ending_on_a_loop() -> tuple[nx.MultiDiGraph, list[tuple[int, int]]]:
+    """A line of 4 blocks east, then a square loop from its end, like an O
+    written last; and a route drawing it out and back (TASK-041)."""
+    graph = _grid(5)
+    out = [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (4, 1), (3, 1), (3, 0)]
+    # Along the line, round the loop back to (4, 0), then all of it back.
+    nodes = [*out, (4, 0)]
+    nodes = nodes + nodes[-2::-1]
+    return graph, nodes
+
+
+def test_the_way_out_ends_at_the_far_end_not_where_the_route_passed_before() -> None:
+    graph, nodes = _word_ending_on_a_loop()
+    points = [(graph.nodes[n]["y"], graph.nodes[n]["x"]) for n in nodes]
+    route = NetworkRoute(points=points, distance_m=0.0, nodes=nodes)
+    far_end = (graph.nodes[(4, 0)]["y"], graph.nodes[(4, 0)]["x"])
+    # The route reaches (4, 0) three times: on the way out, after the loop
+    # (half-way: the far end) and on the way back.
+    leg = first_leg(graph, route, far_end)
+    assert leg.nodes == nodes[: len(nodes) // 2 + 1]
+    assert leg.points[0] == points[0]
+    assert leg.points[-1] == far_end
+    assert leg.distance_m == pytest.approx(8 * SPACING_M, rel=1e-3)

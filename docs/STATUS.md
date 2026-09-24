@@ -28,27 +28,32 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 
 ## Prossimo passo
 
-**TASK-050 — Lettere una per una** (`ROADMAP.md`, fase 4), in lavorazione
-in un'altra sessione. Per le indicazioni di svolta il seguito è
+**TASK-050 — Lettere una per una** (`ROADMAP.md`, fase 4): fatto,
+giudicato `sì` nelle tre zone. Per le scritte il seguito è **TASK-056**, la
+parola nell'API, poi **TASK-057**, il campo nell'app, chiesti dall'utente.
+Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
 nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
 
-**App: TASK-053 — Partenza a scelta e mappa più curata**, chiesto
-dall'utente dopo TASK-051: scegliere fra GPS e un'altra città anche con il
-GPS attivo; sulla mappa un caricamento al posto dei secondi e avvisi più
-leggibili.
+**App: TASK-055 — Barra di caricamento sotto la mappa**
+(`docs/tasks/TASK-055.md`): fatta e provata con i test; manca la prova
+dell'utente sull'iPhone. Poi TASK-057, il campo per le parole (dopo
+TASK-056).
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
-Niente per l'app.
+- **TASK-055** — Barra di caricamento (worktree `D:\shaperoute-app`):
+  `RoutePanel.tsx`, `progress.ts`, `LoadingBar.tsx`, `docs/UI.md`.
 
 ## Completato
 
-- **App** — TASK-051: due schermate, prima cosa disegnare (tessere delle
+- **App** — TASK-054: partenza dal GPS o da un altro luogo anche con il
+  GPS acceso, rotellina durante l'attesa, avvisi in parole semplici
+  (ADR-0048); provato sull'iPhone. TASK-051: due schermate, prima cosa disegnare (tessere delle
   forme, distanza con − e +) poi la mappa; provato sull'iPhone.
 - **Tema dell'app** — TASK-045: i token Sgrava
   (`apps/mobile/src/theme/tokens.ts`) e uno stile MapLibre scuro che li usa
@@ -64,7 +69,12 @@ Niente per l'app.
   nessuna in mezzo a una strada; 180 a Trento, 75 a Levico, 264 a Milano,
   dove i marciapiedi senza nome le rendono difficili da leggere. TASK-048:
   le richieste in due tempi le restituiscono, con la partenza e le vicine
-  segnate (`joined`, ADR-0047); l'app non le mostra ancora.
+  segnate (`joined`, ADR-0047); l'app non le mostra ancora. TASK-050:
+  le parole si compongono da un alfabeto a tratto singolo (C, I, A, O),
+  con lettere più distanziate, un punto di passaggio ogni 1/16
+  dell'altezza, ogni lettera spostata dove ha più strade e la I andata e
+  ritorno sulla stessa strada (ADR-0044); «CIAO» dalla CLI (`--word`) è
+  `sì` a Trento, Levico e Milano a 15 km, molto meglio di TASK-040.
 - **Fase 3** — TASK-032: forme da un contorno in JSON, dalla CLI
   (`--outline`, ADR-0035). Cancello superato: stella sì ovunque, cavallo
   quasi a Trento e sì a Levico e Milano; la casa no, anche con camino e

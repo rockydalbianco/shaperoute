@@ -1,5 +1,4 @@
 import { MAX_SHAPE_TEXT_LENGTH, type Shape, SHAPES } from "@shaperoute/shared-types";
-import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -12,12 +11,14 @@ import {
 } from "../theme/tokens";
 import { LONG_DISTANCE_KM, MAX_APP_DISTANCE_KM, MIN_DISTANCE_KM } from "./distance";
 import { DistanceStepper } from "./DistanceStepper";
+import { LoadingBar } from "./LoadingBar";
 import { problemText } from "./problems";
 import { ShapeTiles } from "./ShapeTiles";
 import { shapeList } from "./shapeWords";
 import type { ExportState } from "./useGpxExport";
 import type { RouteProblem, RouteState } from "./useRouteRequest";
 import type { ShapeReadingState } from "./useShapeReading";
+import { type Note, toNotes } from "./warnings";
 
 type ChoiceProps = {
   /** The shape field as typed, and the shape it names (null: none). */
@@ -129,30 +130,34 @@ export function RouteOutcome({
   switch (view.status) {
     case "waiting":
       return (
-        <View style={styles.row}>
-          <Text style={styles.waiting}>
-            {waitingText(view)} <Elapsed since={view.startedAt} />
-          </Text>
-          <Pressable
-            style={styles.secondary}
-            onPress={onCancel}
-            accessibilityRole="button"
-          >
-            <Text style={styles.secondaryText}>Cancel</Text>
-          </Pressable>
+        <View style={styles.panel}>
+          <View style={styles.row}>
+            <Text style={styles.waiting}>{waitingText(view)}</Text>
+            <Pressable
+              style={styles.secondary}
+              onPress={onCancel}
+              accessibilityRole="button"
+            >
+              <Text style={styles.secondaryText}>Cancel</Text>
+            </Pressable>
+          </View>
+          {/* A bar, not the seconds: an estimate from the phase (ADR-0050). */}
+          <LoadingBar phase={view.phase} distanceM={view.request.distance_m} />
         </View>
       );
     case "done":
       return (
         <View style={styles.panel}>
-          <Text style={styles.result}>
-            {(view.result.distance_m / 1000).toFixed(1)} km on roads (target{" "}
-            {view.request.distance_m / 1000} km)
-          </Text>
-          {view.result.warnings.map((warning) => (
-            <Text key={warning} style={styles.warning}>
-              • {warning}
+          <View>
+            <Text style={styles.result}>
+              {`${(view.result.distance_m / 1000).toFixed(1)} km`}
             </Text>
+            <Text style={styles.target}>
+              {`on roads · target ${view.request.distance_m / 1000} km`}
+            </Text>
+          </View>
+          {toNotes(view.result.warnings).map((note) => (
+            <NoteRow key={note.text} note={note} />
           ))}
           <Pressable
             style={[styles.secondary, styles.export]}
@@ -276,14 +281,18 @@ function ShapeChoices({ onPick }: { onPick: (shape: Shape) => void }) {
   );
 }
 
-/** Seconds since `since`, updated every second while it is on screen. */
-function Elapsed({ since }: { since: number }) {
-  const [now, setNow] = useState(Date.now);
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-  return <Text>{Math.max(0, Math.floor((now - since) / 1000))} s</Text>;
+/**
+ * A warning of the engine in plain words (warnings.ts), with a stripe that says
+ * whether to watch for it (warning) or just to know it.
+ */
+function NoteRow({ note }: { note: Note }) {
+  return (
+    <View
+      style={[styles.noteRow, note.tone === "caution" ? styles.caution : styles.info]}
+    >
+      <Text style={styles.noteText}>{note.text}</Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -353,17 +362,34 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.bold,
   },
   export: {
-    alignSelf: "flex-start",
+    alignItems: "center",
     marginTop: space.sm,
   },
   result: {
     color: color.text,
     fontWeight: fontWeight.bold,
-    fontSize: fontSize.input,
+    fontSize: fontSize.display,
+  },
+  target: {
+    color: color.textMuted,
+    fontSize: fontSize.body,
+  },
+  noteRow: {
+    paddingVertical: space.sm,
+    paddingHorizontal: space.md,
+    borderLeftWidth: 3,
+    borderRadius: radius.sm,
+    backgroundColor: color.surfaceRaised,
   },
   // Not yellow: that means "route", and a warning is something else.
-  warning: {
-    color: color.warning,
+  caution: {
+    borderLeftColor: color.warning,
+  },
+  info: {
+    borderLeftColor: color.borderStrong,
+  },
+  noteText: {
+    color: color.text,
     fontSize: fontSize.small,
   },
   problem: {

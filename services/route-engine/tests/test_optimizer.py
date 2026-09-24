@@ -18,6 +18,7 @@ from route_engine.optimizer import (
     FAR_OFFSET_M,
     FAR_RINGS_M,
     FREE_TILT_DEG,
+    LETTER_BAND,
     MAX_TILT_DEG,
     PHASES,
     SCALE_RANGE,
@@ -28,16 +29,25 @@ from route_engine.optimizer import (
     ShapeNotDrawableError,
     candidate_starts,
     far_starts,
+    fit_letters,
     plan_route,
     plan_shape,
     reach,
     search,
+    shift_grid,
     tilt_limit,
+    word_similarity,
     zone_area,
 )
-from route_engine.projection import initial_scale, project_shape, start_at_phase
+from route_engine.projection import (
+    initial_scale,
+    perimeter,
+    project_shape,
+    start_at_phase,
+)
 from route_engine.shapes import OUTLINES, SUPPORTED_SHAPES, get_shape
 from route_engine.shapes.outline import read_outline
+from route_engine.words import MAX_SHIFT, compose
 
 LEVICO = (46.0122, 11.2986)
 FIXTURE = Path(__file__).parent / "fixtures" / "levico_walk_1km.graphml"
@@ -453,3 +463,131 @@ def test_a_one_way_word_ends_away_from_its_start_after_the_distance() -> None:
     assert haversine_m(result.points[0], result.points[-1]) > 300.0
     assert result.distance_m == pytest.approx(3000.0, rel=0.25)
     assert result.distance_m == pytest.approx(path_length_m(result.points))
+
+
+# --- Words, one letter at a time (TASK-050) ---
+
+II = compose("II")
+LETTER_M = 1000.0  # letters 1 km high
+II_SCALE = LETTER_M / II.height  # metres per normalized unit
+
+
+def _north_road(x_m: float) -> nx.MultiDiGraph:
+    """A single road running north, x_m east of LEVICO, from 500 m south of
+    it to 1500 m north."""
+    graph = nx.MultiDiGraph()
+    for j in range(41):
+        lat, lon = local_to_latlon(LEVICO, x_m, -500.0 + 50.0 * j)
+        graph.add_node(j, y=lat, x=lon)
+        if j:
+            graph.add_edge(j - 1, j, length=50.0)
+            graph.add_edge(j, j - 1, length=50.0)
+    return graph
+
+
+def _fit_ii(road_x_m: float) -> tuple[np.ndarray, np.ndarray]:
+    """«II» drawn from the middle of its gap at LEVICO, upright, letters 1 km
+    high and 600 m apart, fitted to a single road: its points in metres
+    around LEVICO, and the moves of the letters in letter heights."""
+    mask = RoadMask(_north_road(road_x_m), LEVICO)
+    band = LETTER_BAND * LETTER_M
+    drawn, shifts = fit_letters(II, 0, 0.0, II_SCALE, np.zeros(2), mask, band)
+    xy = (np.array(drawn) - drawn[0]) * II_SCALE
+    return xy, shifts
+
+
+def test_a_letter_moves_to_the_road_beside_it() -> None:
+    # The I on the right stands 300 m east of the start; the road runs
+    # 180 m farther east, within a quarter of a letter height.
+    xy, shifts = _fit_ii(480.0)
+    assert shifts[0] == pytest.approx((0.0, 0.0))  # the other I is too far
+    along, up = shifts[1]
+    assert 0.0 < along <= MAX_SHIFT and up == 0.0
+    right_i = xy[np.isclose(xy[:, 1], LETTER_M)]
+    assert abs(right_i[0, 0] - 480.0) <= LETTER_BAND * LETTER_M
+    # The start stays half-way between the letters.
+    assert np.allclose(xy[0], 0.0) and np.allclose(xy[-1], 0.0)
+
+
+def test_a_letter_does_not_move_beyond_its_limit() -> None:
+    # 500 m east of the I, twice the farthest move: it stays where it is.
+    _, shifts = _fit_ii(800.0)
+    assert not shifts.any()
+    for road_x in (480.0, 800.0, -300.0, 300.0):
+        _, shifts = _fit_ii(road_x)
+        assert np.hypot(shifts[:, 0], shifts[:, 1]).max() <= MAX_SHIFT + 1e-9
+
+
+def test_the_moves_a_letter_tries_start_with_staying_put() -> None:
+    grid = shift_grid()
+    assert tuple(grid[0]) == (0.0, 0.0)
+    lengths = np.hypot(grid[:, 0], grid[:, 1])
+    assert np.all(np.diff(lengths) >= 0) and lengths.max() == MAX_SHIFT
+    assert len(grid) == len({tuple(m) for m in grid})
+
+
+def test_a_word_is_planned_from_its_gaps_with_its_letters_moved() -> None:
+    word = compose("IO")
+    start = local_to_latlon(LEVICO, 1500.0, 0.0)
+    plan = plan_shape(
+        list(word.points), word.text, start, 2000, _Loader(_half_grid()), word=word
+    )
+    assert plan.search is not None
+    assert {a.phase for a in plan.search.attempts} <= set(word.phases)
+    assert all(len(a.shifts) == 2 for a in plan.search.attempts)
+    result = plan.result
+    assert result.shape == "IO"
+    assert haversine_m(result.points[0], result.points[-1]) < 1.0
+    assert result.distance_m == pytest.approx(2000.0, rel=0.25)
+
+
+def test_a_word_zone_holds_the_word_moved_from_any_of_its_gaps() -> None:
+    word = compose("CIAO")
+    shape = list(word.points)
+    south, west, north, east = zone_area(shape, LEVICO, 15000.0, word=word)
+    largest = initial_scale(shape, 15000.0) * SCALE_RANGE[1]
+    for k in range(len(word.phases)):
+        for rotation in (-MAX_TILT_DEG, 0.0, MAX_TILT_DEG):
+            for sign in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
+                shifts = np.tile(np.array(sign) * MAX_SHIFT / np.sqrt(2), (4, 1))
+                moved = word.moved(k, shifts)
+                drawn = project_shape(moved, LEVICO, largest, rotation)
+                for lat, lon in drawn:
+                    assert south < lat < north and west < lon < east
+
+
+def test_a_word_without_one_of_its_letters_is_judged_by_that_letter() -> None:
+    word = compose("CIAO")
+    height_m = 700.0
+    outline = project_shape(list(word.points), LEVICO, height_m / word.height)
+    assert word_similarity(word, 0, outline, outline, height_m) == pytest.approx(1.0)
+    # The route skips the I, which is an eighth of the line: the letters'
+    # coverage drops by nearly a quarter.
+    no_i = [
+        point
+        for point, place in zip(outline, word.places, strict=True)
+        if place.index != 1 or place.along is not None
+    ]
+    similarity = word_similarity(word, 0, no_i, outline, height_m)
+    assert 0.80 < similarity < 0.90
+
+
+def test_a_placement_where_the_letters_have_roads_ranks_first() -> None:
+    # «II», 1 km high, over a single road: the upright placement puts the
+    # right I on it (from the start 300 m west of the road), the tilted
+    # ones do not.
+    start = local_to_latlon(LEVICO, -300.0, 0.0)
+    graph = _north_road(0.0)
+    result = search(
+        graph,
+        list(II.points),
+        start,
+        II_SCALE * perimeter(list(II.points)),
+        max_traces=1,
+        move_start=False,
+        max_tilt_deg=MAX_TILT_DEG,
+        phases=II.phases,
+        word=II,
+        trace=_fake_trace(stretch=1.0),
+    )
+    assert result.attempts[0].rotation_deg == 0.0

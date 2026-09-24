@@ -1,6 +1,7 @@
 """Command-line entry point: python -m route_engine --shape ... --distance ...
 
-`--outline FILE` takes the shape from a JSON outline instead (TASK-032).
+`--outline FILE` takes the shape from a JSON outline instead (TASK-032), and
+`--word TEXT` writes a word one letter at a time (TASK-050).
 """
 
 from __future__ import annotations
@@ -33,6 +34,7 @@ from route_engine.optimizer import (
 from route_engine.projection import initial_scale
 from route_engine.shapes import get_shape
 from route_engine.shapes.outline import InvalidOutlineError, Outline, read_outline
+from route_engine.words import LETTERS, InvalidWordError, Word, compose
 
 
 @dataclass(frozen=True)
@@ -56,6 +58,26 @@ class OutlineRequest:
     @property
     def shape(self) -> str:
         return self.outline.name
+
+
+@dataclass(frozen=True)
+class WordRequest:
+    """A RouteRequest whose shape is a word, written with the letters of
+    letters.json (TASK-050). From the CLI only, like outlines."""
+
+    start: tuple[float, float]
+    word: Word
+    distance_m: int
+    activity: str = "running"
+
+    def __post_init__(self) -> None:
+        check_start(self.start)
+        check_distance(self.distance_m)
+        check_activity(self.activity)
+
+    @property
+    def shape(self) -> str:
+        return self.word.text
 
 
 def _parse_start(value: str) -> tuple[float, float]:
@@ -85,6 +107,11 @@ def _build_parser() -> argparse.ArgumentParser:
         metavar="FILE",
         help="a shape read from a JSON outline, e.g. "
         "route_engine/shapes/outlines/house.json",
+    )
+    what.add_argument(
+        "--word",
+        metavar="TEXT",
+        help="a word written one letter at a time, e.g. CIAO",
     )
     parser.add_argument(
         "--distance", required=True, type=int, help="target distance in metres"
@@ -121,9 +148,12 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+Request = RouteRequest | OutlineRequest | WordRequest
+
+
 def parse_args(
     argv: Sequence[str] | None = None,
-) -> tuple[RouteRequest | OutlineRequest, argparse.Namespace]:
+) -> tuple[Request, argparse.Namespace]:
     """Parse CLI arguments into a validated request and the output path.
 
     Invalid input exits with status 2 and a one-line message, never a traceback.
@@ -132,9 +162,16 @@ def parse_args(
     args = parser.parse_args(argv)
     if args.out is not None and args.out.exists():
         parser.error(f"{args.out} already exists; samples are never overwritten")
-    request: RouteRequest | OutlineRequest
+    request: Request
     try:
-        if args.outline is None:
+        if args.word is not None:
+            request = WordRequest(
+                start=args.start,
+                word=compose(args.word),
+                distance_m=args.distance,
+                activity=args.activity,
+            )
+        elif args.outline is None:
             request = RouteRequest(
                 start=args.start,
                 shape=args.shape,
@@ -150,12 +187,14 @@ def parse_args(
             )
     except InvalidOutlineError as exc:
         parser.error(f"{args.outline}: {exc}")
+    except InvalidWordError as exc:
+        parser.error(f"--word {args.word}: {exc}")
     except InvalidRequestError as exc:
         parser.error(str(exc))
     return request, args
 
 
-def parse_request(argv: Sequence[str] | None = None) -> RouteRequest | OutlineRequest:
+def parse_request(argv: Sequence[str] | None = None) -> Request:
     return parse_args(argv)[0]
 
 
@@ -167,6 +206,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"  shape:    {request.shape} (outline from {args.outline})")
         print(f"            {request.outline.source}; {request.outline.license}")
         shape = request.outline(SHAPE_POINTS)
+    elif isinstance(request, WordRequest):
+        print(f"  shape:    {request.shape} (word, letters from {LETTERS.name})")
+        shape = list(request.word.points)
     else:
         print(f"  shape:    {request.shape}")
         shape = get_shape(request.shape)(SHAPE_POINTS)
@@ -179,8 +221,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     optimize = not args.no_optimize
     source = OsmnxSource(args.cache_dir)
     one_way = isinstance(request, OutlineRequest) and request.outline.one_way
+    word = request.word if isinstance(request, WordRequest) else None
     planned_m = planned_distance(request.distance_m, one_way)
-    bbox = required_area(shape, request.start, planned_m, optimize)
+    bbox = required_area(shape, request.start, planned_m, optimize, word)
     if source.is_cached(bbox):
         print("Road graph: from the cache")
     else:
@@ -196,6 +239,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             reuse_penalty=args.reuse_penalty,
             max_tilt_deg=tilt_limit(request.shape),
             one_way=one_way,
+            word=word,
         )
     except ShapeNotDrawableError as exc:
         print(f"No route: {exc}", file=sys.stderr)
@@ -220,8 +264,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                 f"  start:      {start_lat:.5f}, {start_lon:.5f}"
                 f" ({best.offset_m:.0f} m away)"
             )
+        if word is not None and best.shifts:
+            height_m = best.scale_m * word.height
+            moves = ", ".join(
+                f"{letter.char} {dx * height_m:+.0f}/{dy * height_m:+.0f}"
+                for letter, (dx, dy) in zip(word.letters, best.shifts, strict=True)
+            )
+            print(f"  letters:    {height_m:.0f} m high; moved (m, along/up) {moves}")
         print(f"  attempts:   {len(plan.search.attempts)} routes traced")
-    print(f"  similarity: {route.similarity:.2f} ({SIMILARITY})")
+    measure_name = SIMILARITY if word is None else "letters"
+    print(f"  similarity: {route.similarity:.2f} ({measure_name})")
     print(f"  on roads:   {route.distance_m:.0f} m (target {request.distance_m} m)")
     checks = plan.checks
     print(

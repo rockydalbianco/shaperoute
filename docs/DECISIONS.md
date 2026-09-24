@@ -1231,6 +1231,61 @@ andata tutti i lati sono «disegnati due volte», e la misura delle strade
 ripercorse non vede niente. Il percorso aperto resta disponibile dalla CLI;
 nell'app arriva, se serve, con le parole.
 
+## ADR-0044 — Parole lettera per lettera: alfabeto a tratto singolo, lettere che si spostano
+**Stato**: Attiva · 2026-09-24 · chiesto dall'utente dopo TASK-041; il metodo
+deciso dall'agente su delega dell'utente; giudizio dell'utente sui
+campioni: `sì` nelle tre zone, molto meglio di TASK-040
+
+Dopo TASK-041 l'utente ha chiesto lettere più distanziate, una I corsa
+andata e ritorno sulla stessa strada, e di «intensificare i punti di
+passaggio e creare le lettere separatamente e poi connetterle». La «CIAO»
+di TASK-040 aveva 67 vertici, sopra i 64 punti del motore: lungo la I
+nessun punto di passaggio.
+
+**Decisione**:
+- **Alfabeto** (`route_engine/letters.json`, per ora C, I, A, O): ogni
+  lettera è alta 1 sulla sua base, con un'andata dall'ingresso all'uscita,
+  tutti e due sulla base, e, se diversi, un ritorno che non passa dalla
+  base: la A torna per le gambe. `words.py` compone la parola: lettere a
+  0,6 dell'altezza l'una dall'altra (erano 0,3), unite sulla base, e il
+  ritorno ripassa base e ritorni. Ogni lato è di al più 1/16 dell'altezza:
+  296 punti per «CIAO». Dalla CLI, `--word` (`ROUTE_ENGINE.md` §2).
+- **La ricerca entra nella parola solo a metà di uno spazio**, e lì la
+  partenza resta ferma quando le lettere si spostano.
+- **Le lettere si spostano** fino a 1/4 dell'altezza, su una griglia di
+  1/16, dove i loro tratti hanno più strade entro 1/16 dell'altezza;
+  lo spostamento massimo costa il 5% del conteggio. Conta la lettera sola:
+  la quota sulla parola intera premiava gli spostamenti che accorciano gli
+  spazi. Lo stesso conteggio, lettera per lettera, ordina i piazzamenti da
+  tracciare (§5).
+- **Somiglianza delle parole**: la copertura di ogni lettera entro 1/8
+  dell'altezza, in media sulle lettere, in media armonica con la
+  precisione sulla parola intera; niente penalità per gli angoli, che in
+  una parola sono decine. Quella delle altre forme (1% del perimetro, circa
+  150 m a 15 km) dava 0,92 a una «CIAO» di Trento senza metà della C e
+  senza la I.
+- **Ripasso sulla stessa strada**: dove la parola torna su se stessa (la I,
+  la C, la base) le strade appena percorse pesano la metà
+  (`snap_to_network(retrace=0.5)`); prima pesavano come le altre, e la I
+  tornava su una parallela. Le altre forme non cambiano.
+- Provati e scartati: zone e corridoio del tracciamento larghi 1/8
+  dell'altezza invece dell'1% del perimetro. A Milano la I veniva più
+  dritta, ma a Trento il percorso perdeva la O e a Levico peggiorava.
+
+**Motivo**: ogni richiesta dell'utente diventa una regola che si prova da
+sola, senza cambiare il motore per le forme del catalogo; e la ricerca
+guarda le lettere, che sono ciò che l'occhio legge.
+
+**Conseguenza**: a 15 km la somiglianza delle lettere è 0,82 a Trento, 0,86
+a Levico e 0,97 a Milano (con la misura delle altre forme 0,90, 0,93 e
+0,99); lettere alte 690–810 m (TASK-040: 750–930 m), perché gli spazi più
+larghi tolgono distanza alle lettere. I tempi crescono a 40–140 s
+(TASK-040: 8–54 s): 296 punti invece di 64, e con la misura più severa la
+ricerca si ferma di rado prima del budget e prova anche lontano. Le
+lettere si spostano poco: solo la O, di 43–97 m. Per l'utente «CIAO» è
+`sì` a Trento, Levico e Milano, molto meglio di TASK-040
+(`samples/LOG.md`).
+
 ## ADR-0045 — Indicazioni di svolta: dagli incroci del grafo, non dalle curve
 **Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
 (TASK-047)
@@ -1330,7 +1385,6 @@ numeri civici, punti d'interesse, confini. Se le etichette si vedano
 davvero lo dice solo il telefono. Le schermate usano i token da TASK-046;
 fino ad allora l'app non cambia.
 
-
 ## ADR-0047 — Indicazioni nell'API: lista piatta, partenza prima, vicine segnate
 **Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
 (TASK-048)
@@ -1365,6 +1419,35 @@ con 25 m a Milano le catene arrivano a 7, troppe per dirle insieme.
 ignora. La schermata e la voce sono TASK-049; i nomi dei marciapiedi,
 TASK-053.
 
+## ADR-0048 — Avvisi del motore in parole semplici, riconosciuti dall'app
+**Stato**: Attiva · 2026-09-24 · chiesto dall'utente («migliorare le note
+che vengono fuori»); il metodo deciso dall'agente su delega dell'utente
+(TASK-054)
+
+Gli avvisi arrivano all'app come frasi per sviluppatori («shape similarity
+0.86 is below 0.90 after 18 attempts»), e l'app li mostrava così com'erano.
+Il contratto non ha codici per gli avvisi, e oggi è di TASK-048
+(`packages/shared-types`).
+
+**Decisione**: l'app riconosce i testi che il motore scrive oggi, con una
+regola per ciascuno (`apps/mobile/src/route/warnings.ts`), e li riscrive
+brevi, con un tono: **attenzione** (scale, strade principali, gallerie,
+forma poco fedele, pochi tratti di strada, pezzi di forma saltati) o
+**da sapere** (partenza spostata, distanza diversa, strade ripercorse,
+partenza lontana dalla strada). Prima quelli di attenzione, la stessa frase
+una volta sola. Un testo sconosciuto passa com'è: un avviso nuovo non si
+perde mai.
+
+**Scartata**: codici negli avvisi del contratto, la strada pulita, ma
+tocca motore, API e `shared-types` insieme, oggi di un altro task.
+
+**Motivo**: la richiesta dell'utente subito, senza toccare file di altri.
+
+**Conseguenza**: i testi del motore diventano un contratto nascosto. I test
+di `warnings.test.ts` li copiano parola per parola: chi cambia una frase del
+motore deve cambiarla anche lì, o l'app torna a mostrarla grezza. Quando il
+contratto avrà i codici, questo file si toglie.
+
 ## ADR-0049 — Il modello dell'AI si carica all'avvio dell'API, in background
 **Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
 (TASK-052)
@@ -1394,3 +1477,28 @@ anche se nessuno scrive una parola. Con il PC carico (1,9 GB liberi, il
 2026-09-24) Ollama non riesce a caricarlo entro 90 s: l'API parte lo
 stesso e la prima parola resta lenta. Il tempo della prima parola dopo il
 precaricamento è da misurare con il PC scarico.
+
+## ADR-0050 — Barra di caricamento: una stima per fasi, mai oltre la fase
+**Stato**: Attiva · 2026-09-24 · la barra chiesta dall'utente; la stima
+decisa dall'agente su delega dell'utente (TASK-055)
+
+L'API dice solo la fase della richiesta (in coda, download della zona,
+calcolo, ADR-0032), non a che punto è. Una barra che si riempie a tempo
+fisso mentirebbe: un 21 km in una zona nuova dura minuti, un 5 km in cache
+pochi secondi.
+
+**Decisione**: ogni fase ha un tratto della barra (in coda 0–8%, download
+8–45%, calcolo 45–95%). Dentro la fase la barra avanza come
+`1 − e^(−2t/T)`, con `T` il tempo che la fase di solito prende (in coda
+4 s, download 90 s, calcolo 2,5 s a km e non meno di 10 s, dalle misure di
+`API.md`): al tempo atteso è all'86% del tratto, poi rallenta senza mai
+superarlo. Non torna indietro, e il 100% lo dà solo il percorso arrivato.
+Gialla, come il percorso che prende forma (ADR-0046). Nessuna libreria.
+
+**Scartate**: una barra indeterminata che va e viene (non dice niente in
+più della rotellina); una percentuale vera dal motore (tocca motore, API e
+contratto).
+
+**Conseguenza**: la barra dice la verità sulle fasi e più o meno sul tempo:
+un calcolo più lento del solito resta fermo poco sotto il 95%. Se le misure
+dei tempi cambiano, vanno cambiate le costanti di `progress.ts`.

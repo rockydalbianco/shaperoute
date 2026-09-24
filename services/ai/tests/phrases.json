@@ -1,0 +1,65 @@
+{
+  "about": "Words the shape table does not know, with the answers accepted (TASK-030). null: no shape of the catalogue. Two answers: both are fair.",
+  "shapes": ["circle", "heart", "star", "horse", "moon", "cat", "fish"],
+  "phrases": [
+    { "text": "stemma della Ferrari", "accept": ["horse"] },
+    { "text": "cavallino rampante", "accept": ["horse"] },
+    { "text": "logo Ferrari", "accept": ["horse"] },
+    { "text": "Ferrari", "accept": ["horse", null] },
+    { "text": "mustang", "accept": ["horse"] },
+    { "text": "giumenta", "accept": ["horse"] },
+    { "text": "puledrino", "accept": ["horse"] },
+    { "text": "unicorno", "accept": ["horse", null] },
+    { "text": "Pegaso", "accept": ["horse", null] },
+    { "text": "cavalo", "accept": ["horse"] },
+
+    { "text": "Nemo", "accept": ["fish"] },
+    { "text": "pesce rosso", "accept": ["fish"] },
+    { "text": "goldfish", "accept": ["fish"] },
+    { "text": "trota", "accept": ["fish"] },
+    { "text": "squalo", "accept": ["fish"] },
+    { "text": "salmone", "accept": ["fish"] },
+    { "text": "balena", "accept": ["fish", null] },
+
+    { "text": "Garfield", "accept": ["cat"] },
+    { "text": "Hello Kitty", "accept": ["cat"] },
+    { "text": "Stregatto", "accept": ["cat"] },
+    { "text": "micetto", "accept": ["cat"] },
+    { "text": "felino", "accept": ["cat"] },
+    { "text": "tigre", "accept": ["cat", null] },
+
+    { "text": "San Valentino", "accept": ["heart"] },
+    { "text": "ti amo", "accept": ["heart"] },
+    { "text": "innamorati", "accept": ["heart"] },
+    { "text": "I love NY", "accept": ["heart"] },
+    { "text": "curoe", "accept": ["heart"] },
+
+    { "text": "stella cometa", "accept": ["star"] },
+    { "text": "Stella Polare", "accept": ["star"] },
+    { "text": "stella marina", "accept": ["star", "fish"] },
+    { "text": "stela", "accept": ["star"] },
+
+    { "text": "luna crescente", "accept": ["moon"] },
+    { "text": "spicchio di luna", "accept": ["moon"] },
+    { "text": "half moon", "accept": ["moon"] },
+
+    { "text": "ciambella", "accept": ["circle"] },
+    { "text": "anello di fidanzamento", "accept": ["circle"] },
+    { "text": "ruota", "accept": ["circle"] },
+    { "text": "rotonda", "accept": ["circle"] },
+    { "text": "pizza", "accept": ["circle", null] },
+
+    { "text": "cane", "accept": [null] },
+    { "text": "Snoopy", "accept": [null] },
+    { "text": "Batman", "accept": [null] },
+    { "text": "Torre Eiffel", "accept": [null] },
+    { "text": "casa", "accept": [null] },
+    { "text": "Italia", "accept": [null] },
+    { "text": "dinosauro", "accept": [null] },
+    { "text": "farfalla", "accept": [null] },
+    { "text": "Pikachu", "accept": [null] },
+    { "text": "aereo", "accept": [null] },
+    { "text": "chitarra", "accept": [null] },
+    { "text": "albero di Natale", "accept": [null] }
+  ]
+}

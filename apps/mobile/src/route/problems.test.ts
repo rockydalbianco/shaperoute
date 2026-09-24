@@ -5,11 +5,6 @@ const REASON = "a 5 km heart cannot be drawn here: the best route scores 0.52";
 
 test.each<[RouteProblem, string, string | undefined]>([
   [
-    { kind: "api_error", code: "shape_not_drawable", message: REASON },
-    "This shape does not fit the roads here. Try another distance, shape or start.",
-    REASON,
-  ],
-  [
     { kind: "api_error", code: "map_data_unavailable", message: "Overpass timed out" },
     "Map data for this area could not be downloaded. Try again later.",
     "Overpass timed out",
@@ -63,3 +58,39 @@ test.each<[RouteProblem, string, string | undefined]>([
 ])("%j", (problem, text, detail) => {
   expect(problemText(problem)).toEqual(detail ? { text, detail } : { text });
 });
+
+const FAR =
+  "a 7 km heart cannot be drawn here: the best shape is -2.7 km from the target";
+
+test("a shape that misses the distance offers the distance it fits", () => {
+  expect(
+    problemText({
+      kind: "api_error",
+      code: "shape_not_drawable",
+      message: FAR,
+      suggested_distance_m: 4000,
+    }),
+  ).toEqual({
+    text: "This shape does not fit the roads here at this distance. It fits at about 4 km.",
+    detail: FAR,
+    tryDistanceM: 4000,
+  });
+});
+
+test.each([null, undefined, 30_000])(
+  "without a distance the app can ask for (%p), the shapes are offered",
+  (suggested) => {
+    expect(
+      problemText({
+        kind: "api_error",
+        code: "shape_not_drawable",
+        message: REASON,
+        suggested_distance_m: suggested,
+      }),
+    ).toEqual({
+      text: "This shape does not fit the roads here. Try another shape, or another start:",
+      detail: REASON,
+      pickShape: true,
+    });
+  },
+);

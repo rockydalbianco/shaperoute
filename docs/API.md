@@ -135,8 +135,13 @@ Ogni errore ha la stessa forma, con un messaggio in inglese come quelli
 del motore:
 
 ```json
-{ "error": { "code": "shape_not_drawable", "message": "a 5 km heart cannot be drawn here: …" } }
+{ "error": { "code": "shape_not_drawable", "message": "a 7 km heart cannot be drawn here: …", "suggested_distance_m": 4000 } }
 ```
+
+`suggested_distance_m` c'è in ogni errore ed è `null` tranne con
+`shape_not_drawable`, quando il percorso migliore seguiva la forma ma
+mancava la distanza: è la sua lunghezza, al km intero, fra 1 e 50 km
+(ADR-0041). Se il motivo è la somiglianza bassa resta `null`.
 
 | Caso | HTTP | `code` |
 |---|---|---|

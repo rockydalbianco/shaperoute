@@ -260,8 +260,9 @@ def test_a_shape_the_roads_cannot_draw_is_refused() -> None:
             return graph
 
     request = RouteRequest(start=LEVICO, shape="heart", distance_m=2000)
-    with pytest.raises(ShapeNotDrawableError, match="cannot be drawn here"):
+    with pytest.raises(ShapeNotDrawableError, match="cannot be drawn here") as refused:
         plan_route(request, OneStreet())
+    assert refused.value.best_distance_m is None
 
 
 def test_a_shape_too_far_from_the_distance_is_refused(
@@ -286,8 +287,11 @@ def test_a_shape_too_far_from_the_distance_is_refused(
             return _half_grid()
 
     request = RouteRequest(start=LEVICO, shape="circle", distance_m=2000)
-    with pytest.raises(ShapeNotDrawableError, match=r"\+3\.0 km from the target"):
+    with pytest.raises(
+        ShapeNotDrawableError, match=r"\+3\.0 km from the target"
+    ) as refused:
         plan_route(request, Grid())
+    assert refused.value.best_distance_m == 5000.0
 
 
 @pytest.mark.parametrize("name", SUPPORTED_SHAPES)

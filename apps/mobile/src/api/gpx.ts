@@ -41,7 +41,7 @@ export async function requestGpx(
   }
   const error: unknown = await response.json().catch(() => undefined);
   return isApiError(error)
-    ? { kind: "api_error", code: error.error.code, message: error.error.message }
+    ? { kind: "api_error", ...error.error }
     : { kind: "bad_answer", status: response.status };
 }
 

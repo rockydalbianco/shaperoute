@@ -183,6 +183,14 @@ dell'utente, vanno le parole semplici ma non «stemma della ferrari» né
 «spirit», che il modello non conosce bene; il limite resta, documentato
 (`AI.md`, «Limiti»).
 
+**TASK-031 (2026-09-24)**: quando l'AI non trova una forma, l'app offre le
+forme del catalogo come pulsanti, con il consiglio di descrivere la cosa in
+modo esplicito; provato sull'iPhone. Quando la forma non ci sta perché il
+percorso migliore manca la distanza, l'API suggerisce la distanza che ci
+sta e l'app mostra «Try N km» (ADR-0041, scelta dell'utente). Quel rifiuto
+è raro: dopo TASK-038 il motore quasi sempre trova un percorso, e
+sull'iPhone non è mai uscito; lo coprono i test. **Fase 3 chiusa.**
+
 **Deciso con l'utente (2026-09-24).** Non serve interpretare una frase:
 distanza e attività si scrivono nei loro riquadri, e l'AI serve solo per la
 forma. Il lavoro si divide in due:
@@ -210,6 +218,25 @@ database PostgreSQL + PostGIS; preferenze di dislivello e superficie;
 distanze oltre i 21 km nell'app, con un modo più veloce di avere i dati
 delle zone (ADR-0009, ADR-0034); hosting, perché l'app funzioni anche a PC
 spento (ADR-0013).
+
+**Scelto dall'utente (2026-09-24)**: si comincia dalle scritte, a tratto
+singolo come nella Strava art, e subito con una parola corta.
+
+| Task | Titolo |
+|---|---|
+| TASK-040 | Una parola a tratto singolo: «CIAO», dalla CLI |
+| TASK-041 | Percorso aperto: l'utente sceglie se tornare alla partenza |
+
+**TASK-041, proposto dall'utente.** Nelle scritte si può ripassare la stessa
+strada, e non serve tornare alla partenza: l'utente sceglie un giro chiuso
+o un percorso aperto. Oggi il «chiuso» regge tutto il motore
+(ricampionamento, spostamento della partenza lungo la forma,
+instradamento, somiglianza, controlli), il GPX e il contratto con l'app
+(`RouteResult.points`: «the last point is the first»), e
+`ROUTE_ENGINE.md` lo mette alla base. Un'idea da valutare nel task: una
+linea aperta si pianifica come andata e ritorno sulla stessa linea, poi il
+percorso si taglia in fondo all'andata; il motore resta quello dei giri
+chiusi.
 
 ## Fase 5 — Oltre
 

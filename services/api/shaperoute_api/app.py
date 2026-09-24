@@ -36,7 +36,6 @@ from shaperoute_api.jobs import Job, Planner, RouteJobs
 from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
-    ErrorDetail,
     GpxRequestBody,
     RouteJobBody,
     RouteRequestBody,
@@ -99,11 +98,7 @@ def job_body(job: Job) -> RouteJobBody:
         job_id=job.job_id,
         status=job.status,
         result=None if job.result is None else RouteResultBody.from_result(job.result),
-        error=(
-            None
-            if job.error is None
-            else ErrorDetail(code=job.error[0], message=job.error[1])
-        ),
+        error=job.error,
     )
 
 
@@ -219,7 +214,9 @@ def create_app(
         return error(422, "invalid_request", validation_message(exc.errors()))
 
     def engine_answer(_: Request, exc: Exception) -> JSONResponse:
-        return error(*error_of(exc))
+        status, detail = error_of(exc)
+        body = ErrorBody(error=detail)
+        return JSONResponse(status_code=status, content=body.model_dump())
 
     for known in (
         InvalidRequestError,

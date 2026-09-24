@@ -1138,3 +1138,58 @@ primo secondo tempo in una zona non in cache la scarica: 42 s per quella di
 Levico. Il posto si cerca solo quando la somiglianza del motore dice che la
 forma non va: dove l'occhio non è d'accordo (l'albero di Levico) non si
 sposta.
+
+## ADR-0041 — Quando la forma non ci sta, proporre la distanza che ci sta
+**Stato**: Attiva · 2026-09-24 · scelto dall'utente fra quattro proposte
+dell'agente (TASK-031)
+
+Quando il motore rifiuta perché il percorso migliore segue la forma ma è
+lontano dalla distanza chiesta, la sua lunghezza è già nota: il rifiuto la
+porta (`ShapeNotDrawableError.best_distance_m`) e l'API la restituisce
+arrotondata al km come `suggested_distance_m`, fra 1 e 50 km. L'app, se è
+entro i 21 km che offre, mostra «Try N km», che scrive la distanza e
+ridisegna. Se il motivo è la somiglianza, o la distanza è oltre 21 km, l'app
+propone le forme del catalogo da toccare. Il campo c'è in ogni errore,
+`null` fuori da questo caso.
+
+**Scartate**: provare le altre forme del catalogo nella stessa zona e
+proporre quelle che riescono (5–25 s a forma: minuti di attesa); le due
+cose insieme; solo testi più chiari.
+
+**Motivo**: nessun calcolo in più, e una via d'uscita da toccare.
+
+**Conseguenza**: la distanza proposta non è garantita: un nuovo disegno
+rifà la ricerca, che a quella distanza di solito trova lo stesso percorso,
+ma può rifiutare ancora.
+
+## ADR-0042 — Scritte: una linea chiusa percorsa così com'è
+**Stato**: Attiva · 2026-09-24 · tratto singolo e parola corta scelti
+dall'utente; il formato proposto dall'agente; giudizio dell'utente sui
+campioni: `quasi`
+
+La fase 4 comincia dalle scritte (`ROADMAP.md`). L'utente ha scelto il
+tratto singolo, come nella Strava art, e di provare subito una parola
+corta. Il contorno di ADR-0035 è un anello che non si incrocia, con tratti
+appesi (ADR-0039): una parola a tratto singolo non ci entra.
+
+**Decisione**:
+- **`path`** al posto di `points` e `strokes`: una sola linea chiusa,
+  percorsa così com'è, che può ripassare e toccare se stessa
+  (`ROUTE_ENGINE.md` §2). Il resto del motore non cambia: i lati
+  ripassati li riconosce già dalla geometria, e con loro dimezza le
+  tolleranze (ADR-0039); le forme restano dritte (ADR-0038).
+- **«CIAO»** (`shapes/outlines/ciao.json`), disegnato per ShapeRoute:
+  maiuscole alte 1 unite da una linea di base; il ritorno alla partenza
+  ripassa la base e le gambe della A, per non chiudere la A a triangolo.
+  Solo dalla CLI: contratto, API e app non cambiano.
+
+**Motivo**: la cosa più piccola che permette di giudicare una parola a
+occhio, senza toccare il motore oltre il formato del file.
+
+**Conseguenza**: a 15 km «CIAO» dà un percorso a Trento (0,93), Levico
+(0,91) e Milano (1,00), e l'utente lo giudica `quasi` in tutte e tre
+(`samples/LOG.md`, TASK-040). Il giro chiuso costa: il ritorno ripassa
+circa un quarto della linea (24%), e le lettere restano alte 750–930 m. Un
+percorso aperto, che non torna alla partenza, lascerebbe tutta la
+distanza alla parola: è TASK-041, proposto dall'utente.
+

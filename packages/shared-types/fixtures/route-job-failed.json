@@ -4,6 +4,7 @@
   "result": null,
   "error": {
     "code": "shape_not_drawable",
-    "message": "a 5 km heart cannot be drawn here: the best route scores 0.52 for shape, 0.60 needed"
+    "message": "a 7 km heart cannot be drawn here: the best shape is -2.7 km from the target, at most 2 km allowed",
+    "suggested_distance_m": 4000
   }
 }

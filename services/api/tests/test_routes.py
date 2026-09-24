@@ -126,10 +126,31 @@ def test_malformed_json() -> None:
 def test_engine_errors(exc: Exception, status: int, code: str, message: str) -> None:
     response = client_failing_with(exc).post("/routes", json=TRENTO_HEART)
     assert response.status_code == status
-    assert response.json() == {"error": {"code": code, "message": message}}
+    assert response.json() == {
+        "error": {"code": code, "message": message, "suggested_distance_m": None}
+    }
 
 
 def test_unknown_paths_use_the_same_error_shape() -> None:
     response = client_failing_with(AssertionError()).get("/nowhere")
     assert response.status_code == 404
-    assert response.json() == {"error": {"code": "http_error", "message": "Not Found"}}
+    assert response.json() == {
+        "error": {
+            "code": "http_error",
+            "message": "Not Found",
+            "suggested_distance_m": None,
+        }
+    }
+
+
+@pytest.mark.parametrize(
+    ("best_m", "suggested"),
+    [(4_300.0, 4_000), (4_600.0, 5_000), (300.0, 1_000), (61_000.0, 50_000)],
+)
+def test_a_shape_that_misses_the_distance_suggests_one(
+    best_m: float, suggested: int
+) -> None:
+    exc = ShapeNotDrawableError("a 7 km heart cannot be drawn here", best_m)
+    response = client_failing_with(exc).post("/routes", json=TRENTO_HEART)
+    assert response.status_code == 422
+    assert response.json()["error"]["suggested_distance_m"] == suggested

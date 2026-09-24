@@ -1,5 +1,5 @@
 """Shapes read from a file: one closed outline, and maybe strokes, as JSON
-(TASK-032, TASK-037).
+(TASK-032, TASK-037); or one closed line drawn as it is (TASK-040).
 
     {
       "name": "star",
@@ -21,6 +21,15 @@ it to its end and comes back the same way; a stroke that ends on one of its
 own earlier points closes a loop there, like a window hung on a line, and
 only the line before the loop is travelled back. Strokes cross neither the
 outline, nor each other, nor themselves.
+
+`path` replaces `points` and `strokes` for a shape with no outline around
+it, such as a word written in a single stroke (TASK-040):
+
+    {"name": "ciao", "source": "...", "license": "...", "path": [[x, y], ...]}
+
+The route follows it as it is: it may go back along itself and touch
+itself, and need not enclose anything. Like an outline it is closed, the
+last point repeating the first.
 """
 
 from __future__ import annotations
@@ -61,6 +70,8 @@ class Outline:
     # In the same frame as `points`; each starts on the outline or on an
     # earlier stroke (TASK-037).
     strokes: tuple[tuple[Point, ...], ...] = ()
+    # True when `points` is a `path`, drawn as it is (TASK-040).
+    line: bool = False
 
     def __call__(self, n_points: int) -> list[Point]:
         """`n_points` vertices equally spaced by arc length, like any shape.
@@ -69,13 +80,16 @@ class Outline:
         stroke comes back exactly the way it went out, and the other points
         are spread along it by length.
         """
-        if not self.strokes:
+        if not self.strokes and not self.line:
             return resample_by_arc_length(self.points, n_points)
         return resample_keeping_vertices(self.path(), n_points)
 
     def path(self) -> list[Point]:
         """One closed line: the outline, with each stroke drawn out and back
-        where it starts; the first point is repeated at the end."""
+        where it starts; the first point is repeated at the end. A `path` is
+        that line already."""
+        if self.line:
+            return list(self.points)
         ring = list(self.points[:-1])
         lines: list[tuple[list[Point], bool]] = [(ring, True)]
         tolerance = _tolerance(ring)
@@ -130,6 +144,18 @@ def parse_outline(data: object) -> Outline:
         if not isinstance(value, str) or not value.strip():
             raise InvalidOutlineError(f"{key!r} must be a non-empty string")
         texts[key] = value.strip()
+    if "path" in data:
+        if "points" in data or "strokes" in data:
+            raise InvalidOutlineError(
+                "'path' replaces 'points' and 'strokes': give one or the other"
+            )
+        return Outline(
+            name=texts["name"],
+            source=texts["source"],
+            license=texts["license"],
+            points=tuple(normalize(_path(data["path"]))),
+            line=True,
+        )
     ring = _ring(data.get("points"))
     strokes = _strokes(data.get("strokes"), ring)
     # Outline and strokes share one frame: centred and scaled together.
@@ -176,6 +202,24 @@ def _ring(raw: object) -> list[Point]:
             f"{i} and {j} meet"
         )
     return ring
+
+
+def _path(raw: object) -> list[Point]:
+    """The points of a valid closed line, repeats dropped, the first point
+    repeated at the end."""
+    if not isinstance(raw, list) or not all(_is_pair(p) for p in raw):
+        raise InvalidOutlineError("'path' must be a list of [x, y] numbers")
+    points: list[Point] = []
+    for x, y in raw:
+        if not points or (x, y) != points[-1]:
+            points.append((float(x), float(y)))
+    if len(set(points)) < 2:
+        raise InvalidOutlineError("the path needs at least 2 distinct points")
+    if points[-1] != points[0]:
+        raise InvalidOutlineError(
+            "the path is open: the last point must repeat the first"
+        )
+    return points
 
 
 def _strokes(raw: object, ring: list[Point]) -> list[list[Point]]:

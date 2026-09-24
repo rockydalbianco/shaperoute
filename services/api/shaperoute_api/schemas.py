@@ -71,6 +71,9 @@ ErrorCode = Literal[
 class ErrorDetail(BaseModel):
     code: ErrorCode
     message: str
+    # Only with shape_not_drawable: a distance the shape fits, in whole km
+    # (TASK-031).
+    suggested_distance_m: int | None = None
 
 
 class ErrorBody(BaseModel):

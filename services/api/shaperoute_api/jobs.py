@@ -22,7 +22,7 @@ from route_engine.network import BBox, Graph
 from route_engine.optimizer import GraphLoader, Plan
 
 from shaperoute_api.errors import error_of
-from shaperoute_api.schemas import ErrorCode, JobStatus
+from shaperoute_api.schemas import ErrorDetail, JobStatus
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class Job:
     request: RouteRequest
     status: JobStatus = "queued"
     result: RouteResult | None = None
-    error: tuple[ErrorCode, str] | None = None
+    error: ErrorDetail | None = None
     finished_at: float | None = None
 
 
@@ -120,12 +120,15 @@ class RouteJobs:
             log.info("job %s: dropped before computing", job.job_id)
             return
         except Exception as exc:
-            _, code, message = error_of(exc)
-            if code == "engine_error":
+            _, error = error_of(exc)
+            if error.code == "engine_error":
                 log.exception("job %s: the engine failed", job.job_id, exc_info=exc)
-            self._set(job, status="failed", error=(code, message))
+            self._set(job, status="failed", error=error)
             log.info(
-                "job %s: %s after %.1f s", job.job_id, code, self._clock() - started
+                "job %s: %s after %.1f s",
+                job.job_id,
+                error.code,
+                self._clock() - started,
             )
             return
         self._set(job, status="done", result=result)
@@ -142,7 +145,7 @@ class RouteJobs:
         job: Job,
         status: JobStatus,
         result: RouteResult | None = None,
-        error: tuple[ErrorCode, str] | None = None,
+        error: ErrorDetail | None = None,
     ) -> bool:
         """Updates the job; False if it was cancelled in the meantime."""
         with self._lock:

@@ -87,7 +87,11 @@ def test_a_model_that_does_not_answer_is_ai_unavailable() -> None:
     response = client_with(model).post("/shape-readings", json={"text": "Garfield"})
     assert response.status_code == 503
     assert response.json() == {
-        "error": {"code": "ai_unavailable", "message": "Ollama does not answer"}
+        "error": {
+            "code": "ai_unavailable",
+            "message": "Ollama does not answer",
+            "suggested_distance_m": None,
+        }
     }
 
 

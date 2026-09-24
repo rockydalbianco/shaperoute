@@ -102,7 +102,7 @@ le legge l'AI sul PC (ADR-0012, `AI.md`). La tabella viene sempre prima:
 | Mentre si scrive | Press Done and the AI will read it. | spento |
 | Dopo «Fine», o toccando fuori dal campo | The AI is reading it… | spento |
 | L'AI trova una forma | → horse | acceso |
-| L'AI non trova una forma | No shape in the catalogue for “Batman”. Try: circle, … | spento |
+| L'AI non trova una forma | No shape in the catalogue for “Batman”. Describe what it looks like (“prancing horse”, not “Ferrari badge”), or pick one: e sotto le forme del catalogo come pulsanti, che si scrivono nel campo (TASK-031) | spento |
 | L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, … | spento |
 
 - Le parole partono quando la scrittura finisce («Fine» sulla tastiera, o
@@ -193,7 +193,8 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 
 | Caso | Messaggio |
 |---|---|
-| Forma che non ci sta (`shape_not_drawable`) | This shape does not fit the roads here. Try another distance, shape or start. |
+| Forma che non ci sta, con una distanza che ci sta (`shape_not_drawable`, ADR-0041) | This shape does not fit the roads here at this distance. It fits at about 4 km. e un pulsante «Try 4 km» che scrive la distanza e ridisegna |
+| Forma che non ci sta, senza distanza (somiglianza bassa, o distanza oltre 21 km) | This shape does not fit the roads here. Try another shape, or another start: e le forme del catalogo come pulsanti |
 | Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
 | Errore del motore (`engine_error`) | The route engine failed. Try again; if it happens again, look at the API log. |
 | L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat or fish. |

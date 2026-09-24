@@ -47,6 +47,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 Niente per l'app.
 
+- **TASK-050 — Lettere una per una** (branch
+  `feat/TASK-050-letters-one-by-one`): codice, test e campioni pronti
+  (ADR-0044), in attesa del giudizio dell'utente su «CIAO» a 15 km contro
+  TASK-040. File: `optimizer.py`, `network.py` (solo il parametro
+  `retrace`), `__main__.py`, `words.py`, `letters.json`, i loro test,
+  `ROUTE_ENGINE.md`, `ROADMAP.md`, `samples/`.
+
 ## Completato
 
 - **App** — TASK-051: due schermate, prima cosa disegnare (tessere delle

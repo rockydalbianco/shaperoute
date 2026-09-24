@@ -1231,6 +1231,60 @@ andata tutti i lati sono «disegnati due volte», e la misura delle strade
 ripercorse non vede niente. Il percorso aperto resta disponibile dalla CLI;
 nell'app arriva, se serve, con le parole.
 
+## ADR-0044 — Parole lettera per lettera: alfabeto a tratto singolo, lettere che si spostano
+**Stato**: Attiva · 2026-09-24 · chiesto dall'utente dopo TASK-041; il metodo
+deciso dall'agente su delega dell'utente; giudizio dell'utente sui
+campioni: in attesa
+
+Dopo TASK-041 l'utente ha chiesto lettere più distanziate, una I corsa
+andata e ritorno sulla stessa strada, e di «intensificare i punti di
+passaggio e creare le lettere separatamente e poi connetterle». La «CIAO»
+di TASK-040 aveva 67 vertici, sopra i 64 punti del motore: lungo la I
+nessun punto di passaggio.
+
+**Decisione**:
+- **Alfabeto** (`route_engine/letters.json`, per ora C, I, A, O): ogni
+  lettera è alta 1 sulla sua base, con un'andata dall'ingresso all'uscita,
+  tutti e due sulla base, e, se diversi, un ritorno che non passa dalla
+  base: la A torna per le gambe. `words.py` compone la parola: lettere a
+  0,6 dell'altezza l'una dall'altra (erano 0,3), unite sulla base, e il
+  ritorno ripassa base e ritorni. Ogni lato è di al più 1/16 dell'altezza:
+  296 punti per «CIAO». Dalla CLI, `--word` (`ROUTE_ENGINE.md` §2).
+- **La ricerca entra nella parola solo a metà di uno spazio**, e lì la
+  partenza resta ferma quando le lettere si spostano.
+- **Le lettere si spostano** fino a 1/4 dell'altezza, su una griglia di
+  1/16, dove i loro tratti hanno più strade entro 1/16 dell'altezza;
+  lo spostamento massimo costa il 5% del conteggio. Conta la lettera sola:
+  la quota sulla parola intera premiava gli spostamenti che accorciano gli
+  spazi. Lo stesso conteggio, lettera per lettera, ordina i piazzamenti da
+  tracciare (§5).
+- **Somiglianza delle parole**: la copertura di ogni lettera entro 1/8
+  dell'altezza, in media sulle lettere, in media armonica con la
+  precisione sulla parola intera; niente penalità per gli angoli, che in
+  una parola sono decine. Quella delle altre forme (1% del perimetro, circa
+  150 m a 15 km) dava 0,92 a una «CIAO» di Trento senza metà della C e
+  senza la I.
+- **Ripasso sulla stessa strada**: dove la parola torna su se stessa (la I,
+  la C, la base) le strade appena percorse pesano la metà
+  (`snap_to_network(retrace=0.5)`); prima pesavano come le altre, e la I
+  tornava su una parallela. Le altre forme non cambiano.
+- Provati e scartati: zone e corridoio del tracciamento larghi 1/8
+  dell'altezza invece dell'1% del perimetro. A Milano la I veniva più
+  dritta, ma a Trento il percorso perdeva la O e a Levico peggiorava.
+
+**Motivo**: ogni richiesta dell'utente diventa una regola che si prova da
+sola, senza cambiare il motore per le forme del catalogo; e la ricerca
+guarda le lettere, che sono ciò che l'occhio legge.
+
+**Conseguenza**: a 15 km la somiglianza delle lettere è 0,82 a Trento, 0,86
+a Levico e 0,97 a Milano (con la misura delle altre forme 0,90, 0,93 e
+0,99); lettere alte 690–810 m (TASK-040: 750–930 m), perché gli spazi più
+larghi tolgono distanza alle lettere. I tempi crescono a 40–140 s
+(TASK-040: 8–54 s): 296 punti invece di 64, e con la misura più severa la
+ricerca si ferma di rado prima del budget e prova anche lontano. Le
+lettere si spostano poco: solo la O, di 43–97 m. A Trento la C resta una
+linea. Il giudizio dell'utente: `samples/LOG.md`, TASK-050.
+
 ## ADR-0045 — Indicazioni di svolta: dagli incroci del grafo, non dalle curve
 **Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
 (TASK-047)

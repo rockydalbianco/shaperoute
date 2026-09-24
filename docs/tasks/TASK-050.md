@@ -56,9 +56,15 @@ Deciso dall'agente su delega dell'utente:
 4. **Ogni lettera cerca le sue strade**: a ogni tracciamento, fissati
    posto, scala e rotazione della parola, ogni lettera prova spostamenti
    fino a 1/4 dell'altezza, su una griglia di 1/16, e tiene quello con più
-   strade lungo la parola intera (`RoadMask`), con una piccola penalità per
+   strade lungo i suoi tratti (`RoadMask`), con una piccola penalità per
    lo spostamento. I tratti di base si allungano o accorciano. La partenza
    resta a metà di uno spazio, ferma: la ricerca entra nella parola solo lì.
+   Aggiunti durante il task, dopo i primi campioni (ADR-0044): lo stesso
+   conteggio lettera per lettera ordina i piazzamenti; la somiglianza di
+   una parola si misura lettera per lettera, entro 1/8 dell'altezza; dove
+   la parola torna su se stessa le strade appena percorse pesano la metà
+   (`network.snap_to_network(retrace=...)`), così la I torna sulla sua
+   strada.
 5. **CLI**: `--word CIAO`, al posto di `--shape` e `--outline`.
 6. **Campioni** a 15 km a Trento, Levico e Milano
    (`TASK-050_ciao_15km_<zona>_v1.gpx`), accanto a quelli di TASK-040.
@@ -83,10 +89,12 @@ services/route-engine/route_engine/letters.json          (nuovo)
 services/route-engine/route_engine/words.py              (nuovo)
 services/route-engine/route_engine/optimizer.py
 services/route-engine/route_engine/__main__.py
+services/route-engine/route_engine/network.py            (aggiunto: parametro retrace)
 services/route-engine/pyproject.toml                     (letters.json nel pacchetto)
 services/route-engine/tests/test_words.py                (nuovo)
 services/route-engine/tests/test_optimizer.py
 services/route-engine/tests/test_cli.py
+services/route-engine/tests/test_network.py              (aggiunto)
 samples/TASK-050_*.gpx, samples/LOG.md
 docs/tasks/TASK-050.md, docs/ROUTE_ENGINE.md, docs/ROADMAP.md
 docs/DECISIONS.md (ADR-0044), docs/STATUS.md
@@ -98,8 +106,11 @@ docs/DECISIONS.md (ADR-0044), docs/STATUS.md
 - Parole nell'API e nell'app.
 - Parole a sola andata (TASK-041): l'utente preferisce il giro chiuso.
 - Ruotare o scalare le lettere una per una: si spostano soltanto.
-- `network.py` e le indicazioni di svolta (TASK-047, un'altra sessione).
+- Le indicazioni di svolta (TASK-047, un'altra sessione).
 
 ## Esito
 
-*(da compilare)*
+In attesa del giudizio dell'utente. «CIAO» si compone da C, I, A, O e si
+scrive dalla CLI con `--word`; campioni a 15 km a Trento (0,82), Levico
+(0,86) e Milano (0,97), con la somiglianza delle lettere (ADR-0044,
+`samples/LOG.md`). Tutti i criteri tranne il giudizio sono soddisfatti.

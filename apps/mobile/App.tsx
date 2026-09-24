@@ -1,4 +1,4 @@
-import type { LatLon, RouteRequest, Shape } from "@shaperoute/shared-types";
+import type { LatLon, RouteRequest } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import {
@@ -23,6 +23,7 @@ import { PlaceSearch } from "./src/places/PlaceSearch";
 import type { Place } from "./src/places/photon";
 import { toDistanceM } from "./src/route/distance";
 import { RoutePanel } from "./src/route/RoutePanel";
+import { toShape } from "./src/route/shapeWords";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import {
   type RouteState,
@@ -51,7 +52,8 @@ function MapScreen() {
   const { position, refresh } = useCurrentPosition();
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
-  const [shape, setShape] = useState<Shape>("heart");
+  const [shapeText, setShapeText] = useState("heart");
+  const shape = toShape(shapeText);
   const [distanceText, setDistanceText] = useState("5");
   const distanceM = toDistanceM(distanceText);
   const { state, draw, cancel } = useRouteRequest(API_URL);
@@ -71,7 +73,7 @@ function MapScreen() {
   const noPosition = position.status === "denied" || position.status === "unavailable";
 
   const request: RouteRequest | null =
-    start && distanceM !== null
+    start && shape !== null && distanceM !== null
       ? { start: start.point, shape, distance_m: distanceM, activity: "running" }
       : null;
   // A new start, shape or distance leaves the last answer behind.
@@ -126,8 +128,9 @@ function MapScreen() {
       />
       <View style={[styles.panel, styles.bottom, { paddingBottom: insets.bottom + 8 }]}>
         <RoutePanel
+          shapeText={shapeText}
           shape={shape}
-          onShape={setShape}
+          onShapeText={setShapeText}
           distanceText={distanceText}
           distanceM={distanceM}
           onDistanceText={setDistanceText}

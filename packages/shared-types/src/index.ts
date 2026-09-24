@@ -10,7 +10,8 @@
 /** A point as [latitude, longitude], WGS84, in that order. */
 export type LatLon = [lat: number, lon: number];
 
-export const SHAPES = ["circle", "heart"] as const;
+/** The shape catalogue (ADR-0036): the same names as the route engine. */
+export const SHAPES = ["circle", "heart", "star", "horse"] as const;
 export type Shape = (typeof SHAPES)[number];
 
 export const ACTIVITIES = ["running"] as const;

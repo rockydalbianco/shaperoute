@@ -73,7 +73,7 @@ def test_a_route_on_the_levico_test_graph() -> None:
         ({**TRENTO_HEART, "start": [46.0671]}, "start"),
         ({**TRENTO_HEART, "distance_m": "far"}, "distance_m"),
         ({**TRENTO_HEART, "distance_m": 100}, "distance must be between"),
-        ({**TRENTO_HEART, "shape": "star"}, "unknown shape 'star'"),
+        ({**TRENTO_HEART, "shape": "house"}, "unknown shape 'house'"),
         ({**TRENTO_HEART, "start": [91.0, 11.1]}, "latitude must be between"),
     ],
 )

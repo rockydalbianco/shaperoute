@@ -164,7 +164,7 @@ riservatezza, la visibilità si cambia dalle impostazioni, perdendo però la
 protezione del ramo a meno di passare a GitHub Pro.
 
 ## ADR-0016 — Contratto e CLI del route-engine senza dipendenze runtime
-**Stato**: Attiva · 2026-09-22
+**Stato**: Attiva · 2026-09-22 · le forme ammesse sono superate da ADR-0036
 
 TASK-010 lasciava aperte alcune scelte sullo scheletro del route-engine.
 
@@ -672,7 +672,8 @@ TASK-023.
 
 ## ADR-0031 — L'app chiede i percorsi all'API: indirizzo, attesa, errori
 **Stato**: Attiva · 2026-09-23 · la richiesta sincrona e il limite di 60 s
-sono superati da ADR-0032; i pulsanti delle distanze da ADR-0034
+sono superati da ADR-0032; i pulsanti delle distanze da ADR-0034, quelli
+delle forme da ADR-0036
 
 TASK-023 collega l'app all'API di ADR-0030. Servivano l'indirizzo
 dell'API, la scelta di forma e distanza, l'attesa, il disegno del percorso
@@ -887,3 +888,45 @@ A Trento e Levico le zampe del cavallo diventano andate e ritorno: dal 5 al
 avviso. Le finestre della
 casa, chieste dall'utente, stanno dentro il contorno: servono forme di più
 pezzi e tratti percorsi due volte, un lavoro a parte da decidere.
+
+## ADR-0036 — Catalogo delle forme: solo quelle giudicate a occhio, scritte in un riquadro
+**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
+
+TASK-033 porta nell'app le forme nuove di TASK-032. L'utente, prima di
+lasciare lavorare l'agente da solo, gli ha chiesto di prendere le decisioni
+migliori senza chiedere: questa voce le registra, perché possa rivederle.
+
+**Decisione**:
+- **Nel catalogo entra una forma solo se l'utente l'ha giudicata a occhio**
+  sulle strade, con `sì` o `quasi` in almeno una zona (`samples/LOG.md`).
+  Oggi: `circle`, `heart`, `star`, `horse`. La casa resta fuori, anche con
+  camino e porta.
+- **Il catalogo è contratto**: `star` e `horse` entrano in
+  `SUPPORTED_SHAPES` del motore, nello schema dell'API, in `SHAPES` di
+  `shared-types` e in `contract.json`. Supera le forme ammesse di ADR-0016.
+- **I contorni sono dati del pacchetto del motore**,
+  `route_engine/shapes/outlines/`, dichiarati in `pyproject.toml`: l'API li
+  legge all'avvio anche senza i sorgenti accanto. Ci stanno anche i contorni
+  solo di prova (la casa), non registrati come forme.
+- **Il riquadro della forma** nell'app è un campo di testo, di partenza
+  «heart», nella stessa riga dei km. Una tabella di parole (`shapeWords.ts`)
+  porta la parola alla forma: inglese e italiano, singolare e plurale, con o
+  senza articolo, accenti e maiuscole indifferenti. Una parola che non è il
+  nome della forma lo conferma sotto il campo («→ horse»); una sconosciuta
+  spegne «Draw route» con «Unknown shape. Try: circle, heart, star or
+  horse.». Niente AI.
+
+**Motivo**: la forma la giudica l'occhio (`PRODUCT.md`), e la somiglianza
+calcolata è più generosa dell'occhio sulle forme complesse (ADR-0035):
+offrire una forma mai guardata vorrebbe dire promettere un disegno che forse
+non si riconosce. Una tabella di parole copre i nomi che l'utente scrive
+davvero, è deterministica e si prova con test; le frasi libere («stemma
+della Ferrari») restano all'AI di TASK-030. Tenere i contorni nel pacchetto
+evita un percorso di file che vale solo con l'installazione in sviluppo.
+
+**Conseguenza**: aggiungere una forma al catalogo vuol dire disegnarla,
+generare i campioni, farla giudicare all'utente, poi registrarla e
+aggiungerne le parole. Nell'app le forme non si vedono più come pulsanti:
+chi non sa cosa scrivere lo scopre dal messaggio, o dal suggerimento nel
+campo vuoto. L'API risponde `invalid_request` a una forma fuori catalogo,
+come prima.

@@ -1,4 +1,3 @@
-import { SHAPES } from "@shaperoute/shared-types";
 import apiError from "@shaperoute/shared-types/fixtures/api-error.json";
 import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import jobFailed from "@shaperoute/shared-types/fixtures/route-job-failed.json";
@@ -137,14 +136,13 @@ afterEach(() => {
   fetchSpy.mockRestore();
 });
 
-test("shows the app name and every shape from shared-types", async () => {
+test("shows the app name and starts with a heart", async () => {
   requestPermission.mockReturnValue(new Promise(() => {}));
   await render(<App />);
   expect(screen.getByText("ShapeRoute")).toBeOnTheScreen();
   expect(screen.getByText("Finding your position…")).toBeOnTheScreen();
-  for (const shape of SHAPES) {
-    expect(screen.getByText(shape)).toBeOnTheScreen();
-  }
+  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("heart");
+  expect(screen.queryByText(/Unknown shape/)).not.toBeOnTheScreen();
 });
 
 test("with the position, the map centres on it and there is no search", async () => {
@@ -242,7 +240,7 @@ test("draws the route for the chosen shape and the distance typed", async () => 
   jest.useFakeTimers();
   apiAnswers(job("computing"), jobDone);
   await atTrento();
-  await fireEvent.press(screen.getByText("circle"));
+  await fireEvent.changeText(screen.getByLabelText("Shape"), "cerchio");
   await fireEvent.changeText(distanceField(), "7,5");
   await fireEvent.press(screen.getByText("Draw route"));
   await nextPoll();
@@ -424,5 +422,58 @@ test("Export GPX says so when the phone cannot share", async () => {
   await act(() => jest.advanceTimersByTimeAsync(0));
   expect(screen.getByText("This phone cannot open the share sheet.")).toBeOnTheScreen();
   expect(share).not.toHaveBeenCalled();
+  jest.useRealTimers();
+});
+
+test("a shape written in Italian is sent by its name", async () => {
+  jest.useFakeTimers();
+  apiAnswers(job("computing"));
+  await atTrento();
+  await fireEvent.changeText(screen.getByLabelText("Shape"), "Cavallo");
+  expect(screen.getByText("→ horse")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
+
+  expect(lastRouteRequest()).toEqual({
+    start: [46.0671, 11.1214],
+    shape: "horse",
+    distance_m: 5000,
+    activity: "running",
+  });
+  expect(screen.getByText(/Drawing a 5 km horse…/)).toBeOnTheScreen();
+  jest.useRealTimers();
+});
+
+test("an unknown shape turns Draw route off and suggests the catalogue", async () => {
+  apiAnswers(jobDone);
+  await atTrento();
+  for (const text of ["drago", "casa", ""]) {
+    await fireEvent.changeText(screen.getByLabelText("Shape"), text);
+    expect(
+      screen.getByText("Unknown shape. Try: circle, heart, star or horse."),
+    ).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+    await fireEvent.press(screen.getByText("Draw route"));
+  }
+  expect(apiCalls("POST")).toEqual([]);
+
+  await fireEvent.changeText(screen.getByLabelText("Shape"), "star");
+  expect(screen.queryByText(/Unknown shape/)).not.toBeOnTheScreen();
+  expect(screen.queryByText("→ star")).not.toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+});
+
+test("a new shape takes the old route away", async () => {
+  jest.useFakeTimers();
+  apiAnswers(jobDone);
+  await atTrento();
+  await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
+  expect(screen.getByText("4.0 km on roads (target 5 km)")).toBeOnTheScreen();
+
+  await fireEvent.changeText(screen.getByLabelText("Shape"), "stella");
+
+  expect(screen.queryByText(/km on roads/)).not.toBeOnTheScreen();
+  expect(lastScript()).toContain('"clearRoute"');
   jest.useRealTimers();
 });

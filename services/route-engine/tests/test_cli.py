@@ -7,6 +7,7 @@ import route_engine.__main__ as cli
 from route_engine.__main__ import OutlineRequest, main, parse_request
 from route_engine.geo import local_to_latlon
 from route_engine.models import RouteRequest
+from route_engine.shapes import OUTLINES
 
 
 def _args(**overrides: str) -> list[str]:
@@ -71,7 +72,6 @@ def test_invalid_arguments_exit_with_readable_error(
 
 # --- --outline: a shape read from a file (TASK-032) ---
 
-OUTLINES = Path(__file__).parents[1] / "outlines"
 LEVICO = (46.0122, 11.2986)
 
 

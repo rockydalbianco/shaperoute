@@ -81,7 +81,8 @@ def _build_parser() -> argparse.ArgumentParser:
         "--outline",
         type=Path,
         metavar="FILE",
-        help="a shape read from a JSON outline, e.g. outlines/star.json",
+        help="a shape read from a JSON outline, e.g. "
+        "route_engine/shapes/outlines/house.json",
     )
     parser.add_argument(
         "--distance", required=True, type=int, help="target distance in metres"

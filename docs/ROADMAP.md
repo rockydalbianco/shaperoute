@@ -107,6 +107,8 @@ Obiettivo: l'utente scrive nel riquadro della forma una parola («stella»,
 |---|---|
 | TASK-032 | Il motore segue un contorno qualunque: stella, casa, cavallo (prima di tutto) |
 | TASK-033 | Catalogo di forme con licenza aperta e riquadro della forma nell'app |
+| TASK-034 | Forme candidate: disegni nuovi e campioni pronti per il giudizio |
+| TASK-035 | Una somiglianza che vede i dettagli, confrontata con i giudizi a occhio |
 | TASK-030 | L'AI riconosce la parola scritta e sceglie la forma del catalogo (ADR-0012) |
 | TASK-031 | Parole senza forma nel catalogo e forme che le strade non reggono |
 
@@ -116,12 +118,14 @@ ripensa, per esempio con un catalogo di sole forme semplici. **Superato il
 2026-09-24**: stella `sì` ovunque, cavallo `quasi` a Trento e `sì` a
 Levico e Milano. La casa invece no, neanche con camino e porta (`quasi`
 solo a Milano): il catalogo deve preferire forme che si riconoscono dalla
-sagoma grande, non dai dettagli (ADR-0035). Prima del catalogo va rivista
-la somiglianza calcolata, più generosa dell'occhio sulle forme complesse.
+sagoma grande, non dai dettagli (ADR-0035). La somiglianza calcolata è più
+generosa dell'occhio sulle forme complesse: si rivede in TASK-035. Non
+blocca il catalogo, perché ci entrano solo forme già giudicate a occhio
+(ADR-0036; deciso dall'agente su delega dell'utente, 2026-09-24).
 
 **Richiesta dell'utente (2026-09-24)**: la casa con le finestre. Le
 finestre stanno dentro il contorno: servono forme fatte di più pezzi e
-tratti percorsi due volte. Task da definire, dopo TASK-033.
+tratti percorsi due volte. Task da definire, dopo TASK-035.
 
 **Deciso con l'utente (2026-09-24).** Non serve interpretare una frase:
 distanza e attività si scrivono nei loro riquadri, e l'AI serve solo per la

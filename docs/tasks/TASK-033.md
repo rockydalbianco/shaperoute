@@ -1,6 +1,6 @@
 # TASK-033 — Catalogo di forme e riquadro della forma
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 3 · **Branch**: `feat/TASK-033-shape-catalog`
 
 ## Obiettivo
@@ -83,9 +83,10 @@ decisioni migliori»); le motiva ADR-0036, e l'utente può rivederle.
       `pytest -m "not network"` passano.
 - [x] Ogni caso del punto 4 ha il suo test (`test_shapes.py`,
       `test_optimizer.py`, `shapeWords.test.ts`, `App.test.tsx`).
-- [ ] Sull'iPhone «stella» e «cavallo» disegnano il percorso; una parola
+- [x] Sull'iPhone «stella» e «cavallo» disegnano il percorso; una parola
       sconosciuta mostra il messaggio e non parte nessuna richiesta.
-- [ ] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR.
+- [x] I job `mobile`, `api` e `route-engine` della CI sono verdi sulla PR
+      (#37, mergiata con i controlli obbligatori di `main`).
 - [x] ADR-0036; `UI.md`, `ROUTE_ENGINE.md`, `ROADMAP.md`, `STATUS.md`
       aggiornati. `API.md` non nomina le forme una per una: invariato.
 
@@ -129,4 +130,8 @@ docs/tasks/TASK-033.md
 
 ## Esito
 
-*(si compila a fine task)*
+Provato dall'utente sull'iPhone il 2026-09-24, funziona tutto. La PR #37 è
+stata mergiata prima di questo commit di chiusura, che arriva su `main` con
+la PR di TASK-034. La forma si
+scrive in un riquadro, in italiano o in inglese, e il catalogo ha quattro
+forme: cerchio, cuore, stella e cavallo (ADR-0036).

@@ -1,7 +1,6 @@
 # TASK-046 — Applicare il tema all'app
 
-**Stato**: In corso · TASK-041 mergiato; il branch si riporta su `main`
-appena TASK-045 è mergiato
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-046-apply-theme`
 
 ## Obiettivo
@@ -50,17 +49,18 @@ scritti a mano (`#ccc`, `#666`, `#333`, `#999`, `#d6336c`, `#b42318`,
 
 - [x] `grep` per `#` nei file di interfaccia non trova più colori scritti a
       mano: vengono tutti da `theme/tokens`.
-- [ ] Sull'iPhone: mappa scura, percorso giallo ben visibile sopra le
+- [x] Sull'iPhone: mappa scura, percorso giallo ben visibile sopra le
       strade, pannello scuro, testo leggibile.
 - [x] **Le etichette dei luoghi si vedono.** Se mancano, il font stack di
       `mapStyle.ts` non è fra quelli che OpenFreeMap serve: è l'unico
       punto che i test non possono verificare, e fallisce in silenzio.
-      (Nel browser: sì. Sul telefono: da vedere.)
+      (Nel browser e sul telefono.)
 - [x] L'attribuzione OpenStreetMap è presente e compare una volta sola.
 - [x] Il marcatore «Start here» si distingue dal percorso.
 - [x] `npm run typecheck`, `npm run lint`, `npm test` puliti.
-- [ ] Una schermata dell'app sul telefono allegata alla PR.
-- [ ] `docs/STATUS.md` aggiornato.
+- [ ] Una schermata dell'app sul telefono allegata alla PR. (Non
+      allegata: l'utente ha provato l'app e l'ha approvata a voce.)
+- [x] `docs/STATUS.md` aggiornato.
 
 ## File toccati
 
@@ -93,7 +93,7 @@ le forme: guardare la mappa di Levico di sera, che è il caso reale.
 
 ## Esito
 
-*(in attesa della prova sull'iPhone)*
+Provato dall'utente sull'iPhone il 2026-09-24: «funziona, va benissimo».
 
 Fatto: nessun colore scritto a mano nelle tre schermate e nella pagina
 della mappa, ogni `Pressable` alto almeno `MIN_TAP_SIZE`, 207 test verdi.

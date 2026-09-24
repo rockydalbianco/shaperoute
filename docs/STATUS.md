@@ -33,26 +33,23 @@ passaggio, ogni lettera cerca le sue strade e poi le lettere si collegano,
 più distanziate; chiesto dall'utente dopo TASK-041. Il numero salta 042–046
 perché un'altra sessione usa TASK-045 e TASK-046 (tema dell'app).
 
-**App: TASK-046 — Applicare il tema** (`docs/tasks/TASK-046.md`): fatto
-e provato nel browser; manca la prova dell'utente sull'iPhone, con una
-schermata per la PR.
+**App: un'interfaccia più da app che da sito**, chiesta dall'utente dopo
+TASK-046: il task si scrive dopo la sua scelta sulla direzione.
 
-Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
-e registra le decisioni come «deciso dall'agente su delega dell'utente»,
-non fa merge, e ogni task parte dal branch del precedente.
+Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
+`CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
-- **TASK-046** — Applicare il tema (worktree `D:\shaperoute-app`):
-  `mapPage.ts`, `mapPage.test.ts`, `RoutePanel.tsx`, `PlaceSearch.tsx`,
-  `App.tsx`, `docs/UI.md`.
+Niente per l'app.
 
 ## Completato
 
 - **Tema dell'app** — TASK-045: i token Sgrava
   (`apps/mobile/src/theme/tokens.ts`) e uno stile MapLibre scuro che li usa
   (`src/map/mapStyle.ts`), con i test che lo dicono ben formato (ADR-0046,
-  `UI.md`, «Il tema»). L'app non li usa ancora: è TASK-046.
+  `UI.md`, «Il tema»). TASK-046: l'app li usa, mappa scura e percorso
+  giallo; provato sull'iPhone.
 - **Fase 4 finora** — TASK-040: il contorno accetta `path`, una linea
   chiusa percorsa così com'è (ADR-0042); «CIAO» a tratto singolo, dalla
   CLI, `quasi` a Trento, Levico e Milano a 15 km. TASK-041: un `path`

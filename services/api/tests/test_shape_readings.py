@@ -6,6 +6,7 @@ import json
 from collections.abc import Sequence
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 from route_engine.network import FileSource
 from route_engine.shapes import SUPPORTED_SHAPES
@@ -16,7 +17,10 @@ from shaperoute_api.app import create_app
 
 REPO = Path(__file__).resolve().parents[3]
 UNUSED = FileSource(REPO / "unused.graphml")
-PHRASES = REPO / "services/ai/tests/phrases.json"
+PHRASE_LISTS = [
+    REPO / "services/ai/tests/phrases.json",
+    REPO / "services/ai/tests/phrases-holdout.json",
+]
 
 
 class FakeModel:
@@ -99,10 +103,22 @@ def test_every_shape_of_the_catalogue_has_its_outline_for_the_model() -> None:
     assert set(OUTLINES) == set(SUPPORTED_SHAPES)
 
 
-def test_the_phrase_list_uses_the_catalogue() -> None:
-    data = json.loads(PHRASES.read_text(encoding="utf-8"))
+@pytest.mark.parametrize("path", PHRASE_LISTS, ids=lambda path: path.name)
+def test_the_phrase_lists_use_the_catalogue(path: Path) -> None:
+    data = json.loads(path.read_text(encoding="utf-8"))
     assert data["shapes"] == list(SUPPORTED_SHAPES)
     for item in data["phrases"]:
         assert item["accept"], item
         for shape in item["accept"]:
             assert shape is None or shape in SUPPORTED_SHAPES, item
+
+
+def test_the_held_out_words_are_new() -> None:
+    tuning, holdout = (
+        {
+            item["text"].casefold()
+            for item in json.loads(path.read_text("utf-8"))["phrases"]
+        }
+        for path in PHRASE_LISTS
+    )
+    assert not tuning & holdout

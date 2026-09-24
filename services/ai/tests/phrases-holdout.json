@@ -1,0 +1,45 @@
+{
+  "about": "Held-out words (TASK-030): written after the prompt was tuned on phrases.json, and measured once per model, never used to change the prompt. Same format.",
+  "shapes": ["circle", "heart", "star", "horse", "moon", "cat", "fish"],
+  "phrases": [
+    { "text": "cavallo a dondolo", "accept": ["horse"] },
+    { "text": "stallone nero", "accept": ["horse"] },
+    { "text": "logo Ford Mustang", "accept": ["horse"] },
+    { "text": "zebra", "accept": ["horse", null] },
+
+    { "text": "pesce palla", "accept": ["fish"] },
+    { "text": "tonno", "accept": ["fish"] },
+    { "text": "pesciolino rosso", "accept": ["fish"] },
+    { "text": "Moby Dick", "accept": ["fish", null] },
+
+    { "text": "gatto nero", "accept": ["cat"] },
+    { "text": "Doraemon", "accept": ["cat"] },
+    { "text": "Grumpy Cat", "accept": ["cat"] },
+    { "text": "leone", "accept": ["cat", null] },
+
+    { "text": "cuore spezzato", "accept": ["heart"] },
+    { "text": "festa degli innamorati", "accept": ["heart"] },
+    { "text": "emoji del cuore", "accept": ["heart"] },
+
+    { "text": "stella di David", "accept": ["star", null] },
+    { "text": "stelle e strisce", "accept": ["star", null] },
+    { "text": "stellato", "accept": ["star"] },
+
+    { "text": "luna piena", "accept": ["moon", "circle"] },
+    { "text": "falce lunare", "accept": ["moon"] },
+
+    { "text": "anello d'oro", "accept": ["circle"] },
+    { "text": "hula hoop", "accept": ["circle"] },
+    { "text": "bersaglio", "accept": ["circle"] },
+
+    { "text": "gufo", "accept": [null] },
+    { "text": "bicicletta", "accept": [null] },
+    { "text": "Colosseo", "accept": [null] },
+    { "text": "Topolino", "accept": [null] },
+    { "text": "chiave", "accept": [null] },
+    { "text": "ombrello", "accept": [null] },
+    { "text": "Superman", "accept": [null] },
+    { "text": "tartaruga", "accept": [null] },
+    { "text": "mela", "accept": [null] }
+  ]
+}

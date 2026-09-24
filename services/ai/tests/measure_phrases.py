@@ -6,6 +6,7 @@ so candidate models can be compared on the same list (docs/AI.md).
 
     python tests/measure_phrases.py --model phi4-mini
     python tests/measure_phrases.py --model qwen3:4b --no-think --only Ferrari
+    python tests/measure_phrases.py --model qwen3:4b --no-think --list holdout
 
 The first call loads the model and is timed apart ("load"); every phrase is
 asked to the model directly, without the reader's cache.
@@ -22,20 +23,25 @@ from pathlib import Path
 
 from shaperoute_ai.ollama import DEFAULT_MODEL, DEFAULT_URL, OllamaModel
 
-PHRASES = Path(__file__).with_name("phrases.json")
+# phrases.json tunes the prompt; phrases-holdout.json only checks it (docs/AI.md).
+LISTS = {
+    "tuning": Path(__file__).with_name("phrases.json"),
+    "holdout": Path(__file__).with_name("phrases-holdout.json"),
+}
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--url", default=DEFAULT_URL)
+    parser.add_argument("--list", choices=LISTS, default="tuning")
     parser.add_argument("--only", help="substring of the phrase, e.g. Ferrari")
     parser.add_argument(
         "--no-think", action="store_true", help="for models that think (qwen3)"
     )
     args = parser.parse_args(argv)
 
-    data = json.loads(PHRASES.read_text(encoding="utf-8"))
+    data = json.loads(LISTS[args.list].read_text(encoding="utf-8"))
     shapes: list[str] = data["shapes"]
     phrases = [
         (item["text"], item["accept"])

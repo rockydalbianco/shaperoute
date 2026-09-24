@@ -17,7 +17,7 @@ con l'attesa che dice cosa succede. Una zona nuova aggiunge il suo download
 da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
 percorso si esporta in GPX, e Garmin Connect lo apre. La forma si scrive
 in un riquadro, in italiano o in inglese, fra quelle del catalogo:
-cerchio, cuore, stella e cavallo (TASK-033, da provare sull'iPhone).
+cerchio, cuore, stella e cavallo.
 
 ## Prossimo passo
 
@@ -31,10 +31,6 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-- **TASK-033** — Catalogo e riquadro della forma, branch
-  `feat/TASK-033-shape-catalog` (parte da `main` dopo TASK-032). Codice,
-  test e documenti fatti (ADR-0036); provato attraverso l'API sul PC
-  (stella e cavallo da 10 km a Trento). Manca la prova sull'iPhone.
 - **TASK-034** — Forme candidate, branch `feat/TASK-034-candidate-shapes`
   (parte da quello di TASK-033). Sei contorni nuovi (luna, pesce, freccia,
   albero, corona, gatto) e 36 campioni: manca il giudizio dell'utente
@@ -45,7 +41,9 @@ non fa merge, e ogni task parte dal branch del precedente.
 - **Fase 3 finora** — TASK-032: forme da un contorno in JSON, dalla CLI
   (`--outline`, ADR-0035). Cancello superato: stella sì ovunque, cavallo
   quasi a Trento e sì a Levico e Milano; la casa no, anche con camino e
-  porta.
+  porta. TASK-033: catalogo di quattro forme (cerchio, cuore, stella,
+  cavallo) e riquadro della forma che legge la parola in italiano o in
+  inglese (ADR-0036); provato sull'iPhone.
 - **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in

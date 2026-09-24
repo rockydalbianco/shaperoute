@@ -8,6 +8,8 @@ import {
   MAPLIBRE_JS_URL,
   MAPLIBRE_VERSION,
   ROUTE_COLOR,
+  START_HERE_COLOR,
+  START_HERE_LABEL,
 } from "./mapPage";
 
 const page = buildMapPage();
@@ -52,4 +54,13 @@ test("has a route line, and handles the route messages", () => {
   expect(page).toContain(`"line-color": "${ROUTE_COLOR}"`);
   expect(page).toContain('message.type === "showRoute"');
   expect(page).toContain('message.type === "clearRoute"');
+});
+
+test("marks where a moved route begins, and frames it with the start", () => {
+  expect(START_HERE_LABEL).toBe("Start here");
+  expect(page).toContain(`.setText("${START_HERE_LABEL}")`);
+  expect(page).toContain(`new maplibregl.Marker({ color: "${START_HERE_COLOR}" })`);
+  expect(page).toContain("setStartHere(message.startHere)");
+  expect(page).toContain("bounds.extend(marker.getLngLat())");
+  expect(page).toContain("setStartHere(null)");
 });

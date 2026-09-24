@@ -33,6 +33,10 @@ export const START_ZOOM = 15;
 export const ROUTE_COLOR = "#d6336c";
 export const ROUTE_WIDTH = 5;
 
+/** Where a moved route begins (ADR-0040): a green marker and its label. */
+export const START_HERE_COLOR = "#2f9e44";
+export const START_HERE_LABEL = "Start here";
+
 /**
  * Links the page tries to open (the attribution) go to the phone's browser:
  * the WebView only ever shows the map page.
@@ -74,6 +78,7 @@ export function buildMapPage(): string {
     }
     var styleLoaded = false;
     var marker = null;
+    var startHere = null;
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
     var map = new maplibregl.Map({
@@ -101,6 +106,21 @@ export function buildMapPage(): string {
         },
       });
     });
+    function setStartHere(lngLat) {
+      if (startHere) {
+        startHere.remove();
+        startHere = null;
+      }
+      if (lngLat) {
+        var label = new maplibregl.Popup({ closeButton: false, closeOnClick: false })
+          .setText(${JSON.stringify(START_HERE_LABEL)});
+        startHere = new maplibregl.Marker({ color: ${JSON.stringify(START_HERE_COLOR)} })
+          .setLngLat(lngLat)
+          .setPopup(label)
+          .addTo(map)
+          .togglePopup();
+      }
+    }
     function setRoute(data) {
       route = data;
       var source = map.getSource("route");
@@ -133,9 +153,15 @@ export function buildMapPage(): string {
           var bounds = points.reduce(function (box, point) {
             return box.extend(point);
           }, new maplibregl.LngLatBounds(points[0], points[0]));
+          setStartHere(message.startHere);
+          if (message.startHere && marker) {
+            // Where the user is and where to go, both in view.
+            bounds.extend(marker.getLngLat());
+          }
           map.fitBounds(bounds, { padding: 40 });
         } else if (message.type === "clearRoute") {
           setRoute(noRoute);
+          setStartHere(null);
         }
       },
     };

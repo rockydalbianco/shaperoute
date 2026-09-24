@@ -1,11 +1,18 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { type LngLat, toLngLat } from "./coordinates";
+import { type LngLat, metresBetween, toLngLat } from "./coordinates";
+
+/**
+ * A route that begins farther than this from the requested start gets a
+ * "Start here" marker: the engine moved it where the shape fits (ADR-0025,
+ * ADR-0040). Closer, it begins on the nearest road.
+ */
+export const START_HERE_M = 50;
 
 /** From the app to the map page, delivered by `pageScript`. */
 export type ToPage =
   | { type: "setPosition"; lngLat: LngLat }
-  | { type: "showRoute"; coordinates: LngLat[] }
+  | { type: "showRoute"; coordinates: LngLat[]; startHere: LngLat | null }
   | { type: "clearRoute" };
 
 /** From the map page to the app, through `window.ReactNativeWebView`. */
@@ -15,9 +22,18 @@ export function setPosition(point: LatLon): ToPage {
   return { type: "setPosition", lngLat: toLngLat(point) };
 }
 
-/** Draws the route and frames the map on it. */
-export function showRoute(points: LatLon[]): ToPage {
-  return { type: "showRoute", coordinates: points.map(toLngLat) };
+/**
+ * Draws the route and frames the map on it. When it begins away from
+ * `requested`, the start the user asked for, it marks where to go.
+ */
+export function showRoute(points: LatLon[], requested: LatLon | null = null): ToPage {
+  const moved =
+    requested !== null && metresBetween(requested, points[0]) > START_HERE_M;
+  return {
+    type: "showRoute",
+    coordinates: points.map(toLngLat),
+    startHere: moved ? toLngLat(points[0]) : null,
+  };
 }
 
 export function clearRoute(): ToPage {

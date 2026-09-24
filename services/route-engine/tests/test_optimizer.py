@@ -14,6 +14,9 @@ from route_engine.geo import (
 from route_engine.models import RouteRequest
 from route_engine.network import NetworkRoute, OsmnxSource, area_around
 from route_engine.optimizer import (
+    FAR_BEARINGS,
+    FAR_OFFSET_M,
+    FAR_RINGS_M,
     FREE_TILT_DEG,
     MAX_TILT_DEG,
     PHASES,
@@ -24,6 +27,7 @@ from route_engine.optimizer import (
     RoadMask,
     ShapeNotDrawableError,
     candidate_starts,
+    far_starts,
     plan_route,
     reach,
     search,
@@ -331,3 +335,85 @@ def test_plan_route_keeps_a_catalogue_shape_upright() -> None:
     plan = plan_route(RouteRequest(start=start, shape="star", distance_m=3000), Grid())
     assert plan.search is not None
     assert all(_tilt(a.rotation_deg) <= MAX_TILT_DEG for a in plan.search.attempts)
+
+
+class _Loader:
+    """A graph source that hands out one graph, whatever the area."""
+
+    def __init__(self, graph: nx.MultiDiGraph) -> None:
+        self.graph = graph
+
+    def load(self, bbox: tuple[float, float, float, float]) -> nx.MultiDiGraph:
+        return self.graph
+
+
+def test_far_starts_ring_the_requested_point_up_to_two_km() -> None:
+    starts = far_starts(LEVICO)
+    assert len(starts) == len(FAR_RINGS_M) * FAR_BEARINGS
+    for point, offset in starts:
+        assert haversine_m(LEVICO, point) == pytest.approx(offset, abs=0.5)
+    assert min(offset for _, offset in starts) > START_OFFSET_M
+    assert max(offset for _, offset in starts) == FAR_OFFSET_M == 2000.0
+
+
+def test_a_shape_that_fits_near_the_start_does_not_look_farther() -> None:
+    start = local_to_latlon(LEVICO, 1500.0, 0.0)
+    request = RouteRequest(start=start, shape="circle", distance_m=3000)
+    plan = plan_route(request, _Loader(_half_grid()))
+    assert plan.search is not None and plan.search.converged
+    assert plan.far is None
+
+
+def test_a_shape_that_does_not_fit_near_the_start_finds_its_place() -> None:
+    # Roads only from 1400 m east: within 500 m no circle closes on them,
+    # from 1.5 or 2 km east it does.
+    request = RouteRequest(start=LEVICO, shape="circle", distance_m=3000)
+    plan = plan_route(request, _Loader(_grid_from_x(1400.0)))
+    assert plan.far is not None and plan.search is plan.far
+    moved = haversine_m(LEVICO, plan.result.points[0])
+    assert 1000.0 - 50.0 <= moved <= FAR_OFFSET_M + 50.0
+    assert plan.result.similarity >= 0.90
+    assert plan.result.warnings[0].startswith("start moved 1")
+    assert " km east of the requested point" in plan.result.warnings[0]
+    # No attempt of either search starts more than 2 km away.
+    for attempt in plan.far.attempts:
+        assert attempt.offset_m <= FAR_OFFSET_M
+        assert haversine_m(LEVICO, attempt.placement.start) <= FAR_OFFSET_M + 0.5
+
+
+def test_a_far_place_wins_only_when_its_route_is_good(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Near the start the route is drawable but, say, not good enough: the
+    # far one replaces it only if it is good.
+    import route_engine.optimizer as optimizer
+
+    real_search = optimizer.search
+
+    def searching(far_good: bool) -> object:
+        def fake(*args: object, **kwargs: object) -> optimizer.Search:
+            result = real_search(*args, **kwargs)
+            result.converged = far_good if kwargs.get("starts") else False
+            return result
+
+        return fake
+
+    start = local_to_latlon(LEVICO, 1500.0, 0.0)
+    request = RouteRequest(start=start, shape="circle", distance_m=3000)
+    for far_good in (False, True):
+        monkeypatch.setattr(optimizer, "search", searching(far_good))
+        plan = plan_route(request, _Loader(_half_grid()))
+        assert plan.far is not None
+        moved = haversine_m(start, plan.result.points[0])
+        if far_good:
+            assert plan.search is plan.far and moved >= 1000.0 - 50.0
+        else:
+            assert plan.search is not plan.far and moved <= START_OFFSET_M + 50.0
+
+
+def test_a_refusal_says_the_place_was_looked_for_nearby_too() -> None:
+    # No roads at all within 2.5 km: nothing to draw here or farther away.
+    request = RouteRequest(start=LEVICO, shape="circle", distance_m=3000)
+    graph = _grid_from_x(2600.0)
+    with pytest.raises(ShapeNotDrawableError, match="here, nor within 2 km"):
+        plan_route(request, _Loader(graph))

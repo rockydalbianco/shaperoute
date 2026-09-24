@@ -142,8 +142,11 @@ tratti percorsi due volte. Task da definire, dopo TASK-035.
 complesse **ripassare le strade è voluto**, perché migliora molto la forma.
 Chi fa Strava art disegna occhi, finestre, rami e scritte con tratti di
 andata e ritorno, lavora in grande e sceglie il posto dove la forma ci sta.
-Dopo TASK-035 e TASK-036 (forme dritte, dall'analisi di TASK-035), in
-quest'ordine:
+TASK-036 ha tenuto dritte le forme: dei 15 casi che cambiano, a giudizio
+dell'utente 7 migliorano e nessuno peggiora; la luna ha ora un `sì` a
+Levico e può entrare nel catalogo (ADR-0038). Le forme ancora a `no` si
+riconoscono da un dettaglio interno, e l'utente lo ha ribadito: servono i
+tratti interni. In quest'ordine:
 - **tratti interni ripassati** (TASK-037): il contorno porta linee aperte attaccate al
   bordo (rami, occhi, gambe sottili) e anelli interni (finestre); il
   percorso le fa andata e ritorno, senza potarle né penalizzarle. Supera in

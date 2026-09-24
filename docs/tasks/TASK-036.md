@@ -1,6 +1,6 @@
 # TASK-036 — Forme dritte
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 3 · **Branch**: `feat/TASK-036-upright-shapes` (parte da
 `feat/TASK-035-similarity-details`)
 
@@ -55,14 +55,16 @@ Prese dall'agente il 2026-09-24, su delega dell'utente.
 
 ## Criteri di accettazione
 
-- [ ] In `services/route-engine/` e in `services/api/` `ruff`,
-      `black --check` e `pytest -m "not network"` passano.
-- [ ] Ogni caso del punto 2 ha il suo test.
-- [ ] I casi giudicati sono rigenerati; quelli cambiati hanno un campione
-      e il giudizio dell'utente in `LOG.md`.
-- [ ] Nessuna forma del catalogo peggiora a giudizio dell'utente.
+- [x] In `services/route-engine/` (204 test) e in `services/api/` (54)
+      `ruff`, `black --check` e `pytest -m "not network"` passano.
+- [x] Ogni caso del punto 2 ha il suo test (`test_optimizer.py`).
+- [x] I casi giudicati sono rigenerati (60: 45 uguali, 15 cambiati,
+      nessuno rifiutato); i 15 cambiati hanno un campione e il giudizio
+      dell'utente in `LOG.md`.
+- [x] Nessuna forma del catalogo peggiora a giudizio dell'utente: cuore di
+      Levico da `quasi` a `sì`, cuore di Trento e stella di Levico `sì`.
 - [ ] I job della CI sono verdi sulla PR.
-- [ ] Nuova ADR; `ROUTE_ENGINE.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
+- [x] ADR-0038; `ROUTE_ENGINE.md`, `ROADMAP.md`, `STATUS.md` aggiornati.
 
 ## File toccati
 
@@ -88,4 +90,10 @@ docs/tasks/TASK-036.md
 
 ## Esito
 
-*(si compila dopo il giudizio dell'utente)*
+Giudicato dall'utente il 2026-09-24 (`out/TASK-036-before-after.png`,
+`samples/LOG.md`): dei 15 casi che cambiano, 7 migliorano e nessuno
+peggiora. Le forme ora restano dritte, e l'occhio le riconosce di più: il
+cuore di Levico e la luna di Levico diventano `sì`, pesce, freccia, albero
+e gatto passano da `no` a `quasi`. La luna può entrare nel catalogo. Le
+forme ancora a `no` si riconoscono da un dettaglio interno: per l'utente
+servono i tratti interni ripassati (TASK-037).

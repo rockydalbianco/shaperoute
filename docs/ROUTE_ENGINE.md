@@ -201,18 +201,20 @@ richiesto, se da lì la forma si chiude meglio (ADR-0025).
 
 | Parametro | Valori | Note |
 |---|---|---|
-| rotazione | 0–345° ogni 15°, poi ±15° ogni 5° | attorno alla partenza |
+| rotazione | −15°, 0°, +15°, poi ±15° ogni 5° restando entro ±15° | attorno alla partenza; il cerchio 0–345° ogni 15° |
 | fase di partenza | 0; 0,25; 0,5; 0,75 | dove la partenza entra nella forma |
 | scala | 0,4–1,1 × la stima di §3 | le strade allungano il percorso fino a 2,5× |
 | partenza | il punto richiesto, o a 250 / 500 m in 8 direzioni | spostarla deve valere almeno il 5% del contorno |
 
 La rotazione conta molto dove la rete ha buchi (campi, fiumi, ferrovie); in
-una città fitta come Milano la forma va bene già dove cade.
+una città fitta come Milano la forma va bene già dove cade. Ma l'occhio non
+riconosce una forma inclinata: dal TASK-036 ogni forma resta dritta entro
+±15°, tranne il cerchio, che a qualsiasi angolo è lo stesso (ADR-0038).
 
 ### Strategia di ricerca
 
 1. **Conteggio delle strade**, per tutte le combinazioni di partenza,
-   rotazione e fase (17 × 24 × 4): la quota del contorno con una strada entro la fascia del corridoio
+   rotazione e fase (17 × 3 × 4, il cerchio 17 × 24 × 4): la quota del contorno con una strada entro la fascia del corridoio
    (§4). Le strade si campionano una volta, su una griglia; nessun routing,
    quindi costa pochi millisecondi a combinazione.
 2. **Tracciamento** (§4) della combinazione migliore, su un ritaglio del

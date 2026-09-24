@@ -29,6 +29,12 @@ describe("sgravaDarkStyle", () => {
     expect(ATTRIBUTION).toContain("openstreetmap.org/copyright");
   });
 
+  it("also credits the tile provider and the tile schema", () => {
+    // The source's attribution overrides the TileJSON's, so it must carry all three.
+    expect(ATTRIBUTION).toContain("openfreemap.org");
+    expect(ATTRIBUTION).toContain("OpenMapTiles");
+  });
+
   it("gives every data layer a source and a source-layer", () => {
     for (const layer of vectorLayers) {
       expect(layer).toHaveProperty("source", "openmaptiles");

@@ -64,7 +64,7 @@ task precedente: deve poter essere unito da solo.
       (`git diff --stat main` mostra solo aggiunte).
 - [x] `npm run typecheck` pulito in modalità strict.
 - [x] `npm run lint` pulito.
-- [x] `npm test` verde, compresi i 7 test di `mapStyle.test.ts`.
+- [x] `npm test` verde, compresi i 7 test di `mapStyle.test.ts` (ora 8).
 - [x] `docs/UI.md` contiene la tavolozza e le quattro regole qui sopra.
 - [x] Nuovo ADR in `docs/DECISIONS.md`.
 - [x] `docs/STATUS.md` aggiornato.
@@ -90,12 +90,16 @@ docs/STATUS.md
 
 ## Esito
 
-I tre file consegnati sono entrati così come sono, a parte gli a capo di
-Prettier in `mapStyle.ts` e `mapStyle.test.ts`: la CI controlla il
-formato (`npm run format:check`). Di codice, solo aggiunte; fra i file
-esistenti cambiano soltanto `UI.md` («Il tema»), `DECISIONS.md` (ADR-0046) e
-`STATUS.md`. `typecheck`, `lint` e `format:check` puliti, 201 test verdi, i 7
-di `mapStyle.test.ts` compresi.
+I tre file consegnati sono entrati con due cambi. Gli a capo di Prettier in
+`mapStyle.ts` e `mapStyle.test.ts`, perché la CI controlla il formato
+(`npm run format:check`). E l'attribuzione: il file diceva solo
+«© OpenStreetMap», e in MapLibre l'attribuzione di una sorgente prende il
+posto di quella della TileJSON, quindi sulla mappa sarebbero spariti
+OpenFreeMap e OpenMapTiles, che le loro licenze chiedono. Ora è la riga
+della TileJSON per intero, con un test in più (8 in `mapStyle.test.ts`).
+Di codice, solo aggiunte; fra i file esistenti cambiano soltanto `UI.md`
+(«Il tema»), `DECISIONS.md` (ADR-0046) e `STATUS.md`. `typecheck`, `lint` e
+`format:check` puliti, 202 test verdi.
 
 Verificato in rete, perché i test non possono: la TileJSON di OpenFreeMap
 risponde con tutti gli strati che lo stile usa, e `name:it` sui luoghi; il

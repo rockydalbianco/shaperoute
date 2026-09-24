@@ -28,9 +28,17 @@ export const TILE_SOURCE_URL = "https://tiles.openfreemap.org/planet";
 export const GLYPHS_URL = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
 const LABEL_FONT = ["Noto Sans Regular"];
 
-/** OpenStreetMap's licence requires this line to stay visible. */
+/**
+ * The credit line the tile provider asks for, word for word from its TileJSON:
+ * OpenFreeMap, the OpenMapTiles schema (CC-BY) and the OpenStreetMap data
+ * (ODbL) all require it to stay visible. A source's own `attribution` replaces
+ * the TileJSON's in MapLibre, so leaving any of the three out here drops it
+ * from the map.
+ */
 export const ATTRIBUTION =
-  '<a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap</a>';
+  '<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> ' +
+  '<a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> ' +
+  'Data from <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>';
 
 /** Roads grouped the way they should look, not the way OSM tags them. */
 const FAINT_ROADS = ["path", "track", "service"];

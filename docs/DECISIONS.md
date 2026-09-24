@@ -1252,7 +1252,12 @@ non si vede.
 - **Lo stile della mappa lo scrive l'app** (`src/map/mapStyle.ts`,
   `sgravaDarkStyle`): la stessa sorgente vettoriale OpenMapTiles di
   OpenFreeMap (`tiles.openfreemap.org/planet`, senza chiave), gli stessi
-  glifi, i colori dai token, l'attribuzione OSM nella sorgente.
+  glifi, i colori dai token. L'attribuzione nella sorgente è quella della
+  TileJSON, per intero: OpenFreeMap, OpenMapTiles, OpenStreetMap. In
+  MapLibre l'attribuzione di una sorgente sostituisce quella della TileJSON:
+  il file consegnato diceva solo «© OpenStreetMap» e avrebbe tolto le altre
+  due, che le licenze chiedono (corretto dall'agente su delega
+  dell'utente).
 - **I test controllano quello che fallisce in silenzio**: ogni strato ha
   sorgente e `source-layer`, gli id sono unici, le strade grandi stanno
   sopra le piccole, i colori vengono solo dai token e nessuno è il giallo.

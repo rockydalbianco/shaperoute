@@ -35,21 +35,22 @@ fino all'API e all'app, con la via di partenza. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
 nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
 
-**App: TASK-051 — Due schermate** (`docs/tasks/TASK-051.md`): scelta di
-forma e distanza, poi la mappa; scelto dall'utente per un'app «più app e
-meno sito». Fatto e provato con i test; manca la prova sull'iPhone.
+**App: TASK-053 — Partenza a scelta e mappa più curata**, chiesto
+dall'utente dopo TASK-051: scegliere fra GPS e un'altra città anche con il
+GPS attivo; sulla mappa un caricamento al posto dei secondi e avvisi più
+leggibili.
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
-- **TASK-051** — Due schermate (worktree `D:\shaperoute-app`): `App.tsx`,
-  `__tests__/App.test.tsx`, `src/route/RoutePanel.tsx`, `distance.ts`,
-  file nuovi in `src/screens/` e `src/route/`, `docs/UI.md`.
+Niente per l'app.
 
 ## Completato
 
+- **App** — TASK-051: due schermate, prima cosa disegnare (tessere delle
+  forme, distanza con − e +) poi la mappa; provato sull'iPhone.
 - **Tema dell'app** — TASK-045: i token Sgrava
   (`apps/mobile/src/theme/tokens.ts`) e uno stile MapLibre scuro che li usa
   (`src/map/mapStyle.ts`), con i test che lo dicono ben formato (ADR-0046,

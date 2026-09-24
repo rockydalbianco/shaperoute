@@ -1,6 +1,6 @@
 # TASK-051 — Due schermate: prima cosa disegnare, poi la mappa
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-051-two-screens`
 
 ## Obiettivo
@@ -57,7 +57,7 @@ Decisioni dell'agente su delega dell'utente, dentro la scelta:
 - [x] Nessun colore scritto a mano; ogni cosa da toccare alta almeno 44.
 - [x] `npm run typecheck`, `npm run lint`, `npm run format:check`,
       `npm test` puliti.
-- [ ] Provato dall'utente sull'iPhone.
+- [x] Provato dall'utente sull'iPhone.
 
 ## File toccati
 
@@ -83,7 +83,7 @@ docs/UI.md, docs/STATUS.md
 
 ## Esito
 
-*(in attesa della prova sull'iPhone)*
+Provato dall'utente sull'iPhone il 2026-09-24: «sì, va bene».
 
 Le due schermate funzionano nei test: 224 verdi, 5 nuovi sull'andata e
 ritorno, − e +, le tessere. In più rispetto al piano, deciso dall'agente:

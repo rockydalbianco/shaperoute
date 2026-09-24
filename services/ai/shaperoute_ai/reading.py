@@ -68,6 +68,23 @@ class ShapeReader:
     def shapes(self) -> tuple[str, ...]:
         return self._shapes
 
+    def warm_up(self) -> bool:
+        """Load the model before the first word, when it has a `preload()`
+        like OllamaModel (TASK-052).
+        Never raises: a model that is off or missing only makes the first
+        word slow, or unavailable, as without warming up. True if loaded."""
+        preload = getattr(self._model, "preload", None)
+        if preload is None:
+            return False
+        started = time.perf_counter()
+        try:
+            preload()
+        except ModelUnavailableError as exc:
+            log.warning("AI model not preloaded: %s", exc)
+            return False
+        log.info("AI model loaded in %.1f s", time.perf_counter() - started)
+        return True
+
     def read(self, text: str) -> Choice:
         """The shape the words name, or none. Raises InvalidTextError and
         ModelUnavailableError, which is not remembered: the next call asks

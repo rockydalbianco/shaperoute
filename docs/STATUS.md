@@ -126,6 +126,8 @@ Niente.
   modelli stanno in `D:\Ollama\models` (variabile `OLLAMA_MODELS`
   dell'account). C'è solo `qwen3:4b`: i due scartati e l'installer sono
   già tolti. L'ambiente dell'API ha anche `services\ai` installato.
+- Precaricamento del modello (TASK-052): da misurare con il PC scarico,
+  riga «AI model loaded in … s» nel log dell'API.
 - In sospeso, dall'AI (`AI.md`): precaricare il modello all'avvio
   dell'API (prima parola da 40–49 s a circa 5 s, 3,2 GB di RAM da subito).
 - Su questo PC il route-engine usa l'ambiente dell'API: non c'è

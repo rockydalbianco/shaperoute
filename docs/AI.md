@@ -121,6 +121,12 @@ ragionano.
 | Ogni parola dopo, modello già caricato | 4–6 s, al massimo 10 s |
 | Parole già lette | subito, dalla cache |
 
+All'avvio l'API chiede a Ollama di caricare il modello, in background
+(TASK-052, ADR-0049): la prima parola nei 15 minuti dopo l'avvio non paga il
+caricamento dal disco. Se Ollama è spento, il modello manca o la memoria
+libera non basta (servono 3,2 GB), l'API lo scrive nel log («AI model not
+preloaded») e parte lo stesso.
+
 Ollama tiene il modello in memoria 15 minuti dopo l'ultima parola
 (`KEEP_ALIVE`); l'API aspetta al massimo 90 s (`TIMEOUT_S`). La prima
 parola dopo una pausa sta sotto i 60 s dopo i quali iOS chiude una
@@ -216,7 +222,5 @@ marchio: l'AI sceglie fra contorni che il progetto ha già.
 - Cosa proporre quando nessuna forma va bene: TASK-031. Per esempio,
   suggerire di scrivere la cosa in modo più esplicito («logo» invece di
   «stemma»).
-- Precaricare il modello all'avvio dell'API: la prima parola scenderebbe
-  da 40–49 s a circa 5 s, al prezzo di 3,2 GB di RAM occupati da subito.
 - Un provider diverso quando l'API non girerà più sul PC (hosting,
   ADR-0013): basta un'altra classe dietro `ShapeModel`.

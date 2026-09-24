@@ -37,7 +37,7 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-Niente.
+**TASK-031** — `feat/TASK-031-no-shape-no-fit`: file del task scritto; proposta della distanza che ci sta (scelta dell'utente) e forme da toccare quando non c'è forma.
 
 ## Completato
 
@@ -80,7 +80,7 @@ Niente.
 
 ## Bloccato
 
-Niente.
+**TASK-031** — `feat/TASK-031-no-shape-no-fit`: file del task scritto; proposta della distanza che ci sta (scelta dell'utente) e forme da toccare quando non c'è forma.
 
 ## Note per la prossima sessione
 

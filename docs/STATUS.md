@@ -33,6 +33,10 @@ in un'altra sessione. Per le indicazioni di svolta il seguito è
 **TASK-048**: portare i nodi del percorso e le indicazioni fuori dal motore,
 fino all'API e all'app, con la via di partenza.
 
+**App: TASK-046 — Applicare il tema** (`docs/tasks/TASK-046.md`): mappa
+scura, percorso giallo, pannelli dai token. Parte da `main` dopo il merge
+di TASK-045.
+
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
 e ogni task parte da `main` (`CLAUDE.md`), in un worktree suo quando più
@@ -44,6 +48,10 @@ Niente.
 
 ## Completato
 
+- **Tema dell'app** — TASK-045: i token Sgrava
+  (`apps/mobile/src/theme/tokens.ts`) e uno stile MapLibre scuro che li usa
+  (`src/map/mapStyle.ts`), con i test che lo dicono ben formato (ADR-0046,
+  `UI.md`, «Il tema»). L'app non li usa ancora: è TASK-046.
 - **Fase 4 finora** — TASK-040: il contorno accetta `path`, una linea
   chiusa percorsa così com'è (ADR-0042); «CIAO» a tratto singolo, dalla
   CLI, `quasi` a Trento, Levico e Milano a 15 km. TASK-041: un `path`
@@ -163,6 +171,10 @@ Niente.
   10 km e con le zone nuove: è il motore lento annotato sopra.
 - Il repository è pubblico: nessun segreto nei file, mai. Le chiavi stanno
   solo in `.env`, che non entra nel repository.
+- Più sessioni lavorano insieme, ognuna nel suo worktree: l'app in
+  `D:\shaperoute-app`, con i suoi `node_modules` (`npm ci --cache
+  D:/npm-cache`: il 2026-09-24 C: aveva 2,8 GB liberi). Il primo `jest` a
+  freddo può superare i 5 s di un test e fallire; al secondo giro è verde.
 
 ---
 

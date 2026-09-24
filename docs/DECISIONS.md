@@ -1330,7 +1330,6 @@ numeri civici, punti d'interesse, confini. Se le etichette si vedano
 davvero lo dice solo il telefono. Le schermate usano i token da TASK-046;
 fino ad allora l'app non cambia.
 
-
 ## ADR-0047 — Indicazioni nell'API: lista piatta, partenza prima, vicine segnate
 **Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
 (TASK-048)
@@ -1364,3 +1363,32 @@ con 25 m a Milano le catene arrivano a 7, troppe per dirle insieme.
 **Conseguenza**: il contratto cresce di un campo che l'app di oggi
 ignora. La schermata e la voce sono TASK-049; i nomi dei marciapiedi,
 TASK-053.
+
+## ADR-0048 — Avvisi del motore in parole semplici, riconosciuti dall'app
+**Stato**: Attiva · 2026-09-24 · chiesto dall'utente («migliorare le note
+che vengono fuori»); il metodo deciso dall'agente su delega dell'utente
+(TASK-054)
+
+Gli avvisi arrivano all'app come frasi per sviluppatori («shape similarity
+0.86 is below 0.90 after 18 attempts»), e l'app li mostrava così com'erano.
+Il contratto non ha codici per gli avvisi, e oggi è di TASK-048
+(`packages/shared-types`).
+
+**Decisione**: l'app riconosce i testi che il motore scrive oggi, con una
+regola per ciascuno (`apps/mobile/src/route/warnings.ts`), e li riscrive
+brevi, con un tono: **attenzione** (scale, strade principali, gallerie,
+forma poco fedele, pochi tratti di strada, pezzi di forma saltati) o
+**da sapere** (partenza spostata, distanza diversa, strade ripercorse,
+partenza lontana dalla strada). Prima quelli di attenzione, la stessa frase
+una volta sola. Un testo sconosciuto passa com'è: un avviso nuovo non si
+perde mai.
+
+**Scartata**: codici negli avvisi del contratto, la strada pulita, ma
+tocca motore, API e `shared-types` insieme, oggi di un altro task.
+
+**Motivo**: la richiesta dell'utente subito, senza toccare file di altri.
+
+**Conseguenza**: i testi del motore diventano un contratto nascosto. I test
+di `warnings.test.ts` li copiano parola per parola: chi cambia una frase del
+motore deve cambiarla anche lì, o l'app torna a mostrarla grezza. Quando il
+contratto avrà i codici, questo file si toglie.

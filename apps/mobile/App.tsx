@@ -1,10 +1,16 @@
-import type { LatLon, RouteRequest, Shape } from "@shaperoute/shared-types";
+import type { RouteRequest, Shape } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { apiUrl } from "./src/api/apiUrl";
+import {
+  chooseStart,
+  showsSearch,
+  type Start,
+  type StartMode,
+} from "./src/location/startMode";
 import {
   type PositionState,
   useCurrentPosition,
@@ -28,10 +34,6 @@ import { color } from "./src/theme/tokens";
 /** The API on the PC that serves the app (ADR-0031); null if unknown. */
 const API_URL = apiUrl();
 
-/** Where the route will start: the GPS position, or a place searched for. */
-type Start =
-  { point: LatLon; source: "gps" } | { point: LatLon; source: "search"; label: string };
-
 /** The two screens (TASK-051): what to draw, then the map with the route. */
 type Screen = "choose" | "map";
 
@@ -48,6 +50,7 @@ export default function App() {
 function Sgrava() {
   const [screen, setScreen] = useState<Screen>("choose");
   const { position, refresh } = useCurrentPosition();
+  const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
   const [shapeText, setShapeText] = useState("heart");
@@ -64,16 +67,10 @@ function Sgrava() {
   const { state, draw, cancel } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
 
-  // The GPS wins as soon as it answers, also over a place searched before.
-  const start = useMemo<Start | null>(() => {
-    if (position.status === "ok") {
-      return { point: position.point, source: "gps" };
-    }
-    if (place) {
-      return { point: place.point, source: "search", label: place.label };
-    }
-    return null;
-  }, [position, place]);
+  const start = useMemo(
+    () => chooseStart(startMode, position, place),
+    [startMode, position, place],
+  );
 
   const request: RouteRequest | null =
     start && shape !== null && distanceM !== null
@@ -153,10 +150,17 @@ function Sgrava() {
       </MapScreen>
       {screen === "choose" && (
         <ChooseScreen
-          status={statusText(position, start)}
-          denied={position.status === "denied"}
-          noPosition={position.status === "denied" || position.status === "unavailable"}
-          onMyPosition={refresh}
+          status={statusText(startMode, position, start)}
+          denied={startMode === "gps" && position.status === "denied"}
+          mode={startMode}
+          onMode={(mode) => {
+            setStartMode(mode);
+            if (mode === "gps") {
+              // Asked again, as the old button did: the permission may be on now.
+              refresh();
+            }
+          }}
+          searching={showsSearch(startMode, position)}
           onPlace={setPlace}
           mapError={mapError}
           footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
@@ -181,12 +185,19 @@ function Sgrava() {
   );
 }
 
-function statusText(position: PositionState, start: Start | null): string {
+function statusText(
+  mode: StartMode,
+  position: PositionState,
+  start: Start | null,
+): string {
   if (start?.source === "gps") {
     return "Starting from your position.";
   }
   if (start?.source === "search") {
     return `Starting from ${start.label}.`;
+  }
+  if (mode === "place") {
+    return "Search for a city or street to start from.";
   }
   switch (position.status) {
     case "denied":

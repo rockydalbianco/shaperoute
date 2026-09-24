@@ -1,4 +1,4 @@
-import { MAX_APP_DISTANCE_KM, toDistanceM } from "./distance";
+import { MAX_APP_DISTANCE_KM, stepDistance, toDistanceM } from "./distance";
 
 test.each([
   ["7", 7000],
@@ -26,4 +26,21 @@ test.each([
   ["50", "within the engine limit, over the app one"],
 ])("%j is not a distance: %s", (text) => {
   expect(toDistanceM(text)).toBeNull();
+});
+
+test.each([
+  ["5", 1, "6"],
+  ["5", -1, "4"],
+  ["7,5", 1, "8,5"],
+  ["7.5", -1, "6.5"],
+  ["1", -1, "1"],
+  ["1,5", -1, "1"],
+  ["21", 1, "21"],
+  ["20,5", 1, "21"],
+  ["30", -1, "21"],
+  ["0", 1, "1"],
+  ["", 1, "1"],
+  ["abc", -1, "1"],
+])("%j stepped by %i is %j", (text, steps, expected) => {
+  expect(stepDistance(text, steps)).toBe(expected);
 });

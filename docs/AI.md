@@ -180,6 +180,31 @@ Per misurare un modello, con Ollama acceso e il modello scaricato, da
 ..\api\.venv\Scripts\python.exe tests\measure_phrases.py --model qwen3:4b --list holdout
 ```
 
+## Limiti
+
+Provato dall'utente sull'iPhone il 2026-09-24: le parole più semplici
+funzionano, «stemma della ferrari» e «spirit» no.
+
+- **Quello che il modello non sa, non lo indovina.** Per «stemma della
+  Ferrari» descrive a volte un cavallo, a volte un'auto da corsa o uno
+  chevron araldico: legge «stemma» come uno stemma di famiglia. Di
+  «Spirit» non conosce il cavallo del film e vede «uno spirito». Frasi più
+  esplicite funzionano: «logo ferrari» («a red prancing horse»),
+  «cavallino rampante», «Spirit cavallo».
+- **Sulle parole al limite la risposta cambia.** Temperatura 0 e seme fisso
+  non bastano: Ollama riusa i calcoli della richiesta precedente, e la
+  stessa frase ripetuta può dare prima horse e poi nessuna forma. Sulle
+  parole che il modello conosce bene («Nemo») la risposta è sempre la
+  stessa. Anche le misure risentono di questo: ogni numero vale una volta,
+  a meno di qualche voce.
+- **La cache dell'API tiene la prima risposta** fino al riavvio: ripremere
+  «Fine» sulla stessa parola non la cambia. Si cambia la parola.
+
+Un modello più grande saprebbe di più, ma non ci sta nei 7 GB di questo PC
+con l'API accesa (qwen3:8b chiede 5–6 GB). Scelto dall'utente: il limite
+resta, documentato qui; cosa suggerire all'utente quando non c'è una forma
+è TASK-031.
+
 ## Marchi
 
 «Stemma della Ferrari» diventa il cavallo del catalogo, che è un disegno
@@ -188,6 +213,10 @@ marchio: l'AI sceglie fra contorni che il progetto ha già.
 
 ## Domande ancora aperte
 
-- Cosa proporre quando nessuna forma va bene: TASK-031.
+- Cosa proporre quando nessuna forma va bene: TASK-031. Per esempio,
+  suggerire di scrivere la cosa in modo più esplicito («logo» invece di
+  «stemma»).
+- Precaricare il modello all'avvio dell'API: la prima parola scenderebbe
+  da 40–49 s a circa 5 s, al prezzo di 3,2 GB di RAM occupati da subito.
 - Un provider diverso quando l'API non girerà più sul PC (hosting,
   ADR-0013): basta un'altra classe dietro `ShapeModel`.

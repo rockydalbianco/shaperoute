@@ -37,9 +37,7 @@ non fa merge, e ogni task parte dal branch del precedente.
 
 ## In lavorazione
 
-- **TASK-030** — L'AI legge le parole della forma: codice, misure e
-  documenti fatti (ADR-0012, `AI.md`), CI verde sulla PR #45. Manca la
-  prova sull'iPhone dell'utente.
+Niente.
 
 ## Completato
 
@@ -60,7 +58,10 @@ non fa merge, e ogni task parte dal branch del precedente.
   TASK-039: luna, gatto e pesce nel catalogo, scelti dall'utente; provati
   sull'iPhone. TASK-038: se la forma non va vicino, un posto fino a 2 km
   e «Start here» nell'app (ADR-0040); a Levico gatto e pesce `sì` a 1 km;
-  provato sull'iPhone.
+  provato sull'iPhone. TASK-030: le parole che la tabella non conosce le
+  legge qwen3:4b in Ollama sul PC (ADR-0012): 94% sulle parole nuove,
+  circa 5 s a parola; sull'iPhone vanno le parole semplici, non «stemma
+  della ferrari» né «spirit» (`AI.md`, «Limiti»).
 - **Fase 2 — App e API** (TASK-020–026): monorepo npm con app Expo e
   `shared-types` (ADR-0028); mappa MapLibre GL JS in WebView con posizione
   GPS e ricerca del luogo (ADR-0029); API FastAPI con grafi di zona in
@@ -85,10 +86,10 @@ Niente.
 
 - Ollama 0.34.4 è installato in `D:\Ollama` e parte con Windows; i
   modelli stanno in `D:\Ollama\models` (variabile `OLLAMA_MODELS`
-  dell'account). Oltre a `qwen3:4b` ci sono phi4-mini e granite4:3b,
-  scartati: si tolgono con `ollama rm phi4-mini` e `ollama rm granite4:3b`
-  (4,6 GB). Resta da togliere a mano anche `D:\Ollama-setup` (l'installer,
-  1,5 GB). L'ambiente dell'API ha anche `services\ai` installato.
+  dell'account). C'è solo `qwen3:4b`: i due scartati e l'installer sono
+  già tolti. L'ambiente dell'API ha anche `services\ai` installato.
+- In sospeso, dall'AI (`AI.md`): precaricare il modello all'avvio
+  dell'API (prima parola da 40–49 s a circa 5 s, 3,2 GB di RAM da subito).
 - Su questo PC il route-engine usa l'ambiente dell'API: non c'è
   `services/route-engine/.venv` (`SETUP.md`, passo 10.2).
 - In cache ci sono i grafi `foot` di zona di trento, levico, valsugana e

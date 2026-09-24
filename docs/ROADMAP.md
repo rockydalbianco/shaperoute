@@ -178,7 +178,10 @@ qwen3:4b, un modello aperto in Ollama sul PC dell'API, e sceglie una forma
 del catalogo o nessuna (ADR-0012). Sulle parole nuove della lista di
 controllo è giusto il 94% delle volte, in circa 5 s; la prima parola dopo
 una pausa aspetta il caricamento, fino a 49 s. Gli errori sono quasi tutti
-«nessuna forma»: cosa proporre allora è TASK-031.
+«nessuna forma»: cosa proporre allora è TASK-031. Sull'iPhone, a giudizio
+dell'utente, vanno le parole semplici ma non «stemma della ferrari» né
+«spirit», che il modello non conosce bene; il limite resta, documentato
+(`AI.md`, «Limiti»).
 
 **Deciso con l'utente (2026-09-24).** Non serve interpretare una frase:
 distanza e attività si scrivono nei loro riquadri, e l'AI serve solo per la

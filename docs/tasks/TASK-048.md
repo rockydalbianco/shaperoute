@@ -1,6 +1,6 @@
 # TASK-048 — Indicazioni di svolta nell'API
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-048-directions-api` (da `main`, dopo il
 merge di TASK-047, PR #53)
 
@@ -50,27 +50,31 @@ passare (con la ricerca lontana, ADR-0040, è il secondo).
 
 ## Criteri di accettazione
 
-- [ ] `ruff`, `black`, `pytest -m "not network"` e i test di
+- [x] `ruff`, `black`, `pytest -m "not network"` e i test di
       `shared-types` puliti.
-- [ ] Una richiesta in due tempi restituisce le indicazioni, con la via di
+- [x] Una richiesta in due tempi restituisce le indicazioni, con la via di
       partenza come prima.
-- [ ] Nessuna indicazione persa nel raggruppamento (test).
-- [ ] Sui tre cuori da 15 km, il numero di indicazioni dopo il
+- [x] Nessuna indicazione persa nel raggruppamento (test).
+- [x] Sui tre cuori da 15 km, il numero di indicazioni dopo il
       raggruppamento è scritto nell'esito.
-- [ ] Nessun file fuori da «File toccati».
-- [ ] Nuovo ADR in `docs/DECISIONS.md`; `docs/STATUS.md` e `docs/API.md`
+- [x] Nessun file fuori da «File toccati» (`models.py` e il test del
+      contratto aggiunti durante il lavoro, vedi Esito).
+- [x] Nuovo ADR in `docs/DECISIONS.md`; `docs/STATUS.md` e `docs/API.md`
       aggiornati.
 
 ## File toccati
 
 ```
 services/route-engine/route_engine/directions.py
+services/route-engine/route_engine/models.py      (RouteResult.directions)
 services/route-engine/tests/test_directions.py
 services/api/shaperoute_api/jobs.py
 services/api/shaperoute_api/schemas.py
 services/api/tests/…                               (test delle indicazioni)
 packages/shared-types/src/index.ts
-packages/shared-types/fixtures/…
+packages/shared-types/test/contract.test.ts
+packages/shared-types/fixtures/route-result.json, route-job-done.json,
+  gpx-request.json, directions.json (nuovo)
 docs/API.md, docs/DECISIONS.md, docs/STATUS.md
 ```
 
@@ -85,4 +89,23 @@ docs/API.md, docs/DECISIONS.md, docs/STATUS.md
 
 ## Esito
 
-*(da compilare)*
+Fatto il 2026-09-24 (ADR-0047). `guidance(graph, nodes)` nel motore: la
+via di partenza (`depart`) e poi le indicazioni di TASK-047, ognuna con
+`joined` quando arriva a meno di 15 m dalla precedente; nessuna si toglie.
+Le richieste in due tempi le restituiscono in `RouteResult.directions`,
+calcolate in `jobs.py` sui nodi di `Plan.search.best.route` e sul grafo
+che il loader ha dato al motore: `optimizer.py`, `__main__.py` e `app.py`
+non cambiano. `/routes` sincrono le lascia vuote.
+
+Il raggruppamento è un segno (`joined`), non un'indicazione che ne
+contiene altre: la lista resta piatta, uguale nel motore, nell'API e in
+`shared-types`. Cuori da 15 km, momenti da annunciare dopo il
+raggruppamento: **Trento 138 su 181, Levico 73 su 76, Milano 155 su 265**
+(partenza compresa); la catena più lunga è di 5 indicazioni. Con 25 m a
+Milano le catene arrivano a 7: troppo per dirle insieme.
+
+Fuori dall'elenco: `packages/shared-types/test/contract.test.ts`, che
+controlla i campi nuovi, e `route_engine/models.py`, per il campo
+`RouteResult.directions` (vuoto di default). Il contratto vuole gli stessi
+campi nel motore e nell'API (ADR-0028), e il default evita di toccare
+`optimizer.py`. Nessun task in corso lo elenca.

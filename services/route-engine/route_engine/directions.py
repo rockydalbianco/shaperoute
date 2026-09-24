@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Literal
 
 import networkx as nx
@@ -43,8 +43,14 @@ HEADING_PROBE_M = 20.0
 TURN_MIN_DEG = 30.0
 SHARP_MIN_DEG = 135.0
 U_TURN_MIN_DEG = 165.0
+# Directions closer than this to the one before are read with it, "left,
+# then right": mostly crossing a street from one pavement to the other
+# (TASK-048, ADR-0047).
+GROUP_M = 15.0
 
-Turn = Literal["left", "right", "sharp-left", "sharp-right", "straight", "u-turn"]
+Turn = Literal[
+    "depart", "left", "right", "sharp-left", "sharp-right", "straight", "u-turn"
+]
 
 
 @dataclass(frozen=True)
@@ -59,6 +65,9 @@ class Direction:
     `road_type` is its OSM `highway` (like "footway"), for a road without
     either. A way whose simplified edge merges several names or types
     carries them all, joined by " / ".
+    `joined` is True when the direction comes less than GROUP_M after the
+    one before, to be read with it. The departure (`guidance`) has turn
+    "depart", angle 0, and the road the route starts on.
     """
 
     node: Any
@@ -69,6 +78,33 @@ class Direction:
     street: str | None
     road_type: str | None
     branches: int
+    joined: bool = False
+
+
+def guidance(graph: nx.MultiDiGraph, nodes: Sequence[Any]) -> list[Direction]:
+    """What a runner is told along a route: the road it starts on, then
+    `directions`, each marked `joined` when it comes less than GROUP_M
+    after the one before. None of them is dropped. Empty for a route of
+    fewer than two nodes."""
+    if len(nodes) < 2:
+        return []
+    first = _edge(graph, nodes[0], nodes[1])
+    said = [
+        Direction(
+            node=nodes[0],
+            point=_latlon(graph, nodes[0]),
+            distance_m=0.0,
+            turn="depart",
+            angle_deg=0.0,
+            street=_join(_road(first)),
+            road_type=_join(_labels(first.get("highway"))),
+            branches=branch_count(graph, nodes[0]),
+        )
+    ]
+    for direction in directions(graph, nodes):
+        joined = direction.distance_m - said[-1].distance_m < GROUP_M
+        said.append(replace(direction, joined=joined))
+    return said
 
 
 def directions(graph: nx.MultiDiGraph, nodes: Sequence[Any]) -> list[Direction]:

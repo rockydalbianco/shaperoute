@@ -30,8 +30,7 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 
 **TASK-050 — Lettere una per una** (`ROADMAP.md`, fase 4), in lavorazione
 in un'altra sessione. Per le indicazioni di svolta il seguito è
-**TASK-048**: portare i nodi del percorso e le indicazioni fuori dal motore,
-fino all'API e all'app, con la via di partenza. Dopo TASK-050,
+**TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
 nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
 
@@ -63,7 +62,9 @@ Niente per l'app.
   peggio del chiuso. TASK-047: indicazioni di svolta agli incroci nel
   motore (`directions.py`, ADR-0045), solo la funzione: su cuori da 15 km
   nessuna in mezzo a una strada; 180 a Trento, 75 a Levico, 264 a Milano,
-  dove i marciapiedi senza nome le rendono difficili da leggere.
+  dove i marciapiedi senza nome le rendono difficili da leggere. TASK-048:
+  le richieste in due tempi le restituiscono, con la partenza e le vicine
+  segnate (`joined`, ADR-0047); l'app non le mostra ancora.
 - **Fase 3** — TASK-032: forme da un contorno in JSON, dalla CLI
   (`--outline`, ADR-0035). Cancello superato: stella sì ovunque, cavallo
   quasi a Trento e sì a Levico e Milano; la casa no, anche con camino e

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from route_engine.directions import Direction
 from route_engine.shapes import SUPPORTED_SHAPES
 
 SUPPORTED_ACTIVITIES: tuple[str, ...] = ("running",)
@@ -70,3 +71,5 @@ class RouteResult:
     similarity: float
     shape: str
     warnings: list[str] = field(default_factory=list)
+    # Turn-by-turn, from directions.guidance; the API fills it (TASK-048).
+    directions: list[Direction] = field(default_factory=list)

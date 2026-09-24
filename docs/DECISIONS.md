@@ -1330,3 +1330,37 @@ numeri civici, punti d'interesse, confini. Se le etichette si vedano
 davvero lo dice solo il telefono. Le schermate usano i token da TASK-046;
 fino ad allora l'app non cambia.
 
+
+## ADR-0047 — Indicazioni nell'API: lista piatta, partenza prima, vicine segnate
+**Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente
+(TASK-048)
+
+Le indicazioni di ADR-0045 stavano solo nel motore. Per mostrarle o dirle
+servono all'app, con due cose emerse in TASK-047: la via da cui si parte, e
+le coppie a pochi metri quando si attraversa una strada.
+
+**Decisione**:
+- **`RouteResult.directions`** nel motore, nell'API e in `shared-types`,
+  campo per campo come il resto del contratto (ADR-0028), vuoto di
+  default: `optimizer.py` non cambia, e `/routes` sincrono lo lascia vuoto.
+- **Le calcola `jobs.py`** alla fine di una richiesta in due tempi, sui nodi
+  di `Plan.search.best.route` e sul grafo che il loader ha dato al motore
+  (l'ultimo se il percorso viene dalla ricerca lontana, ADR-0040).
+- **La prima è la partenza**: `turn` `depart`, distanza 0, la via del primo
+  arco (`directions.guidance`).
+- **Le vicine si segnano, non si fondono**: `joined` è vero quando
+  un'indicazione arriva meno di `GROUP_M` = 15 m dopo la precedente. La
+  lista resta piatta e nessuna indicazione si perde; chi le presenta le
+  legge insieme.
+
+**Motivo**: una lista piatta è lo stesso tipo in Python, in pydantic e in
+TypeScript, e i test del contratto la controllano già; un'indicazione che
+ne contiene altre avrebbe voluto un tipo ricorsivo su tre lati. Sui cuori
+da 15 km, con 15 m i momenti da annunciare scendono da 181 a 138 a
+Trento, da 76 a 73 a Levico e da 265 a 155 a Milano; la catena più lunga
+è di 5. Con 10 m restano coppie da attraversamento separate (Milano 190);
+con 25 m a Milano le catene arrivano a 7, troppe per dirle insieme.
+
+**Conseguenza**: il contratto cresce di un campo che l'app di oggi
+ignora. La schermata e la voce sono TASK-049; i nomi dei marciapiedi,
+TASK-053.

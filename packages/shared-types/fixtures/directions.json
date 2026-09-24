@@ -1,0 +1,12 @@
+{
+  "turns": [
+    "depart",
+    "left",
+    "right",
+    "sharp-left",
+    "sharp-right",
+    "straight",
+    "u-turn"
+  ],
+  "group_m": 15
+}

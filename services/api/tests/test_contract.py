@@ -13,6 +13,7 @@ from typing import Any, get_args
 
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
+from route_engine.directions import Direction
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import FileSource
 from route_engine.optimizer import GraphLoader, Plan
@@ -20,6 +21,7 @@ from shaperoute_ai.reading import MAX_TEXT_LENGTH
 
 from shaperoute_api.app import create_app
 from shaperoute_api.schemas import (
+    DirectionBody,
     ErrorBody,
     ErrorCode,
     ErrorDetail,
@@ -47,6 +49,7 @@ def _names(model: type[BaseModel]) -> set[str]:
 def test_bodies_have_the_fields_of_the_dataclasses() -> None:
     assert _names(RouteRequestBody) == {f.name for f in fields(RouteRequest)}
     assert _names(RouteResultBody) == {f.name for f in fields(RouteResult)}
+    assert _names(DirectionBody) == {f.name for f in fields(Direction)}
 
 
 def test_request_fixture_is_a_valid_body() -> None:

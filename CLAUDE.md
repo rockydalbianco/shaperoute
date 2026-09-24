@@ -81,6 +81,14 @@ Più agenti lavorano sullo stesso repository nello stesso momento.
   andato male.
 - Non toccare il branch di un altro agente, e non fare `git clean`: potresti
   cancellare file non tracciati che un altro sta per committare.
+- **Il file `docs/tasks/TASK-XXX.md` di un altro task non si modifica mai**,
+  nemmeno per riusarne il numero.
+- **Numeri di task e di ADR li assegna il coordinatore** (la sessione
+  «Coordinatore»): chiedili prima di creare il file, anche quando il task te
+  lo dà l'utente. Senza coordinatore, cerca il primo numero libero anche nei
+  branch remoti e nei worktree (`git branch -a`, `git worktree list`).
+- In `STATUS.md` e `DECISIONS.md` aggiungi le tue righe: non riscrivere né
+  cancellare quelle degli altri.
 
 ## A fine task, sempre
 

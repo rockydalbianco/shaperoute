@@ -50,15 +50,15 @@ Prese dall'agente il 2026-09-24 notte, su delega dell'utente.
 1. I sei contorni in `route_engine/shapes/outlines/`, controllati dal test
    che valida ogni contorno del repository.
 2. I 36 campioni, con un'immagine d'insieme in `out/` per guardarli tutti
-   insieme, e `out/preview.html` per la mappa.
+   insieme, e `out/TASK-034-preview.html` per la mappa.
 3. Giudizio dell'utente → righe in `LOG.md`.
 4. Le candidate promosse entrano nel catalogo (punto D), con i test.
 
 ## Criteri di accettazione
 
-- [ ] In `services/route-engine/` `ruff`, `black --check` e
+- [x] In `services/route-engine/` `ruff`, `black --check` e
       `pytest -m "not network"` passano.
-- [ ] 36 campioni in `samples/`, con somiglianza e distanza nel file del
+- [x] 36 campioni in `samples/`, con somiglianza e distanza nel file del
       task.
 - [ ] Giudizio dell'utente in `samples/LOG.md`.
 - [ ] Le candidate promosse sono nel catalogo, con le loro parole e i test;
@@ -82,6 +82,27 @@ e, per le candidate promosse, quelli del catalogo di TASK-033
 - Forme fatte di più pezzi o con buchi.
 - La somiglianza calcolata: TASK-035.
 
+## Campioni (2026-09-24 notte)
+
+Somiglianza calcolata e distanza reale; tutti i 36 hanno un percorso,
+nessuno è rifiutato. Due zone di Milano da 15 km sono state scaricate
+(pesce 311 s, freccia 253 s in tutto). Sulla mappa: `out/TASK-034-preview.html`;
+tutti insieme, con il contorno accanto: `out/TASK-034-candidates.png`.
+
+| Forma | Trento 10 | Trento 15 | Levico 10 | Levico 15 | Milano 10 | Milano 15 | Prima impressione dell'agente |
+|---|---|---|---|---|---|---|---|
+| luna (`moon`) | 0,97 · 9,3 km | 0,93 · 14,7 km | 0,92 · 9,6 km | 0,93 · 14,5 km | 1,00 · 9,1 km | 1,00 · 14,7 km | si riconosce quasi ovunque: la candidata più forte |
+| pesce (`fish`) | 0,96 · 10,5 km | 0,91 · 14,1 km | 0,94 · 8,3 km | 0,86 · 16,2 km | 1,00 · 9,8 km | 1,00 · 14,9 km | a Milano sì, la coda si vede; a Trento e Levico diventa una macchia |
+| freccia (`arrow`) | 0,92 · 10,2 km | 0,94 · 13,7 km | 0,83 · 9,8 km | 0,90 · 15,2 km | 0,99 · 10,0 km | 1,00 · 15,5 km | a Milano sì; a Trento 15 km quasi; a Levico no |
+| albero (`tree`) | 0,93 · 9,3 km | 0,97 · 14,3 km | 0,91 · 9,5 km | 0,96 · 14,1 km | 1,00 · 10,4 km | 0,96 · 15,8 km | i piani si perdono: resta un triangolo, anche con somiglianza 1,00 |
+| corona (`crown`) | 0,90 · 9,8 km | 0,90 · 15,0 km | 0,93 · 8,5 km | 0,91 · 14,4 km | 1,00 · 10,7 km | 1,00 · 16,3 km | le punte si perdono quasi sempre, anche con somiglianza 1,00 |
+| gatto (`cat`) | 0,95 · 9,2 km | 0,91 · 15,4 km | 0,91 · 11,2 km | 0,87 · 14,4 km | 0,99 · 9,9 km | 0,98 · 15,4 km | le orecchie si vedono a Milano e a volte a Trento |
+
+La prima impressione è dell'agente e **non è un giudizio**: il giudizio lo
+dà l'utente, e va in `samples/LOG.md`. Come in TASK-032, la somiglianza
+resta alta anche dove l'occhio perde i dettagli (albero e corona a
+Milano): ne parla TASK-035.
+
 ## Esito
 
-*(si compila a fine task)*
+*(si compila dopo il giudizio dell'utente)*

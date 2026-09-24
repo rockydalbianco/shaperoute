@@ -21,9 +21,9 @@ cerchio, cuore, stella e cavallo (TASK-033, da provare sull'iPhone).
 
 ## Prossimo passo
 
-**TASK-034 — Forme candidate** (`ROADMAP.md`, fase 3): contorni nuovi
-disegnati dall'agente, con i campioni pronti per il giudizio a occhio
-dell'utente. Poi TASK-035, la somiglianza. ADR-0012 si decide con TASK-030.
+**TASK-035 — Una somiglianza che vede i dettagli** (`ROADMAP.md`, fase
+3): confrontare altre misure con i giudizi a occhio già dati. ADR-0012 si
+decide con TASK-030.
 
 Dal 2026-09-24 notte l'agente lavora da solo, su delega dell'utente: decide
 e registra le decisioni come «deciso dall'agente su delega dell'utente»,
@@ -35,6 +35,10 @@ non fa merge, e ogni task parte dal branch del precedente.
   `feat/TASK-033-shape-catalog` (parte da `main` dopo TASK-032). Codice,
   test e documenti fatti (ADR-0036); provato attraverso l'API sul PC
   (stella e cavallo da 10 km a Trento). Manca la prova sull'iPhone.
+- **TASK-034** — Forme candidate, branch `feat/TASK-034-candidate-shapes`
+  (parte da quello di TASK-033). Sei contorni nuovi (luna, pesce, freccia,
+  albero, corona, gatto) e 36 campioni: manca il giudizio dell'utente
+  (`out/TASK-034-candidates.png`), poi le promosse entrano nel catalogo.
 
 ## Completato
 

@@ -26,13 +26,16 @@ Indicazioni
   └─ Dopo    TASK-061  `along` nella navigazione (schermo e voce)    dopo 060 (e 049 ✓)
 
 Interfaccia Grafica
-  ├─ Adesso  TASK-058  Barre di caricamento: mappa, AI, attesa API   nessuna (049 ✓)
+  ├─ Attesa  TASK-058  Barre di caricamento: mappa, AI, attesa API   PR #72, merge dell'utente
+  ├─ Adesso  TASK-066  L'app non si blocca senza `directions`        nessuna
   └─ Dopo    TASK-057  Campo per scrivere la parola da disegnare     dopo 059 e 058
 
 Programmatore Lettere
-  ├─ Adesso  TASK-059  Alfabeto completo, A–Z a tratto singolo
+  ├─ Attesa  TASK-059  Alfabeto completo, A–Z a tratto singolo       PR #71, giudizio dato
   ├─ Dopo    TASK-064  Animali candidati: farfalla, uccello, cane,   dopo 059
   │                    lumaca (contorni e campioni, giudizio utente)
+  ├─ Dopo    TASK-067  Lettere unite anche dall'alto, scala per      dopo 064 e 063
+  │                    lettera
   └─ Dopo    TASK-065  Gli animali approvati nel catalogo            dopo 064, 057
 
 Da assegnare (servono l'ok dell'utente sul cosa)
@@ -45,13 +48,15 @@ Da assegnare (servono l'ok dell'utente sul cosa)
 | Task | Titolo | Chi | Stato | Dipende da | ADR |
 |---|---|---|---|---|---|
 | TASK-057 | Campo per la parola da disegnare, nell'app | Interfaccia Grafica | in coda | 059, 058 | 0053 |
-| TASK-058 | Barre di caricamento: mappa, «The AI is reading it…», attesa API | Interfaccia Grafica | in corso | 055 ✓, 049 ✓ | 0055 |
-| TASK-059 | Alfabeto completo, A–Z a tratto singolo | Programmatore Lettere | in corso | 056 ✓ | 0056 |
+| TASK-058 | Barre di caricamento: mappa, «The AI is reading it…», attesa API | Interfaccia Grafica | PR #72 | 055 ✓, 049 ✓ | 0055 |
+| TASK-059 | Alfabeto completo, A–Z a tratto singolo | Programmatore Lettere | PR #71 | 056 ✓ | 0056 |
 | TASK-060 | `along` nell'API e in `shared-types` | Indicazioni | in coda | 059, 053 ✓ | 0057 |
 | TASK-061 | `along` nella navigazione | Indicazioni | in coda | 060, 049 ✓ | 0058 |
 | TASK-063 | Dove va il tempo del motore oltre i 10 km, e un primo taglio | Indicazioni | in corso | — | 0059 |
 | TASK-064 | Animali candidati: farfalla, uccello, cane, lumaca | Programmatore Lettere | in coda | 059 | 0060 |
 | TASK-065 | Gli animali approvati nel catalogo (parole, AI, app) | Programmatore Lettere | in coda | 064, 057 | 0061 |
+| TASK-066 | L'app mostra «risposta non valida» invece di bloccarsi se mancano `directions` | Interfaccia Grafica | in corso | — | — |
+| TASK-067 | Lettere unite anche dall'alto, scala per lettera | Programmatore Lettere | in coda | 064, 063 | 0063 |
 
 Perché quest'ordine:
 
@@ -70,12 +75,20 @@ Perché quest'ordine:
 - **065 dopo 064 e 057**: entra nel catalogo solo ciò che l'utente approva
   (ADR-0036); tocca `shared-types`, `shapes/__init__.py`, il prompt dell'AI
   e l'app (`shapeWords.ts`, `ShapeTiles.tsx`), vicini al campo di 057.
+- **066 subito**: solo `apps/mobile/src/api/routes.ts` (+ test); trovato
+  nella prova di 058 con un'API vecchia sul PC.
+- **067 dopo 063**: tocca `words.py` e `optimizer.py`, che 063 sta
+  misurando. Chiesto dall'utente il 2026-09-25 dopo i campioni di 059:
+  collegare le lettere anche dall'alto se aiuta, e scale diverse fra
+  lettere purché non troppo diverse dalle vicine. Niente tratto di base
+  per I e F in testa alla parola: deciso dall'utente, non serve.
 
 ## File occupati adesso
 
 | File | Di chi |
 |---|---|
-| `apps/mobile/src/route/LoadingBar.tsx`, `progress.ts`, `RoutePanel.tsx`, `src/map/mapPage.ts`, `messages.ts`, `MapView.tsx`, `src/screens/MapScreen.tsx` (+ test) | TASK-058 |
+| `apps/mobile/src/route/LoadingBar.tsx`, `progress.ts`, `RoutePanel.tsx`, `src/map/mapPage.ts`, `messages.ts`, `MapView.tsx` (+ test) | TASK-058 (PR #72) |
+| `apps/mobile/src/api/routes.ts` (+ test) | TASK-066 |
 | `route_engine/letters.json`, `words.py`, `tests/test_words.py`, `packages/shared-types` (LETTERS, `contract.json`), `schemas.py` (descrizione di `word`) | TASK-059 |
 | `route_engine/optimizer.py`, `network.py` (+ test), `docs/ROUTE_ENGINE.md` | TASK-063 |
 | `docs/STATUS.md`, `docs/DECISIONS.md` | tutti, ognuno solo le sue righe |
@@ -83,8 +96,9 @@ Perché quest'ordine:
 
 ## Numeri
 
-- Task: presi fino a **TASK-065**. Il prossimo libero è **TASK-066**.
-- ADR: presi fino a **ADR-0061**. Il prossimo libero è **ADR-0062**.
+- Task: presi fino a **TASK-067**. Il prossimo libero è **TASK-068**.
+- ADR: presi fino a **ADR-0063** (0062 riservato a 066 se serve). Il prossimo
+  libero è **ADR-0064**.
 
 ## Fatto in questa tornata (2026-09-24/25)
 

@@ -67,6 +67,37 @@ docs/DECISIONS.md
   svolte (`ANNOUNCE_M`, `PASS_M`).
 - La modalità tasca (TASK-070).
 
+## Prova sull'iPhone (in attesa)
+
+PR #86, CI verde. Manca la prova dell'utente per strada, insieme a TASK-061
+(«beside» a voce): la farà alla prossima corsa. Il merge lo fa il
+coordinatore dopo l'ok.
+
+Come prepararla (Windows PowerShell). C: è quasi pieno: niente zone nuove,
+si parte da Trento o Milano, già in cache.
+
+1. Fermare con `Ctrl+C` l'API e Expo che girano da altri checkout.
+2. API, dalla radice del worktree:
+   ```powershell
+   cd C:\Users\ricky\PycharmProjects\shaperoute-TASK-074
+   $env:PYTHONPATH = "C:\Users\ricky\PycharmProjects\shaperoute-TASK-074\services\api;C:\Users\ricky\PycharmProjects\shaperoute-TASK-074\services\route-engine;C:\Users\ricky\PycharmProjects\shaperoute-TASK-074\services\ai"
+   C:\Users\ricky\PycharmProjects\shaperoute\services\api\.venv\Scripts\python.exe -m shaperoute_api --lan --cache-dir C:\Users\ricky\PycharmProjects\shaperoute\data\cache
+   ```
+3. App, in un'altra finestra:
+   ```powershell
+   cd C:\Users\ricky\PycharmProjects\shaperoute-TASK-074
+   npm.cmd run mobile
+   ```
+4. Per strada, dopo «Start»:
+   - sul marciapiede opposto al percorso nessun «You are off the route»;
+   - su una parallela sbagliata a 50 m o più: banner arancio, avviso una
+     volta e vibrazione entro 10 s circa;
+   - rientrando, «Back on the route» dopo un paio di posizioni;
+   - su un marciapiede senza nome, «…onto the footpath beside Via …».
+
+Dopo il merge: togliere subito il worktree e il suo `node_modules` (C: è
+quasi pieno).
+
 ## Esito
 
-*(a fine task)*
+*(a fine task, dopo la prova)*

@@ -171,3 +171,13 @@ test("directions start with the departure and use the engine's turns", () => {
     before = direction.distance_m;
   }
 });
+
+test("only a direction without a street of its own runs along one", () => {
+  for (const direction of result.directions) {
+    if (direction.street !== null) assert.equal(direction.along, null);
+  }
+  assert.ok(result.directions.some((d) => d.street === null && d.along !== null));
+  // An API older than TASK-060 leaves it out: still a Direction (tsc).
+  const older: Omit<Direction, "along"> extends Direction ? true : false = true;
+  assert.ok(older);
+});

@@ -23,6 +23,8 @@ type Props = {
   phase: WaitingPhase;
   /** The distance asked for: long routes take longer to compute. */
   distanceM: number;
+  /** The word asked for, if any: a word has its own pace (TASK-069). */
+  word?: string | null;
 };
 
 /**
@@ -30,12 +32,12 @@ type Props = {
  * the phase and the time spent in it (progress.ts, ADR-0050): it never goes
  * back, and it fills only when the route arrives, which replaces it.
  */
-export function LoadingBar({ phase, distanceM }: Props) {
+export function LoadingBar({ phase, distanceM, word }: Props) {
   return (
     <EstimateBar
       stage={phase}
-      progressAt={(seconds) => estimateProgress(phase, seconds, distanceM)}
-      usualS={phaseSeconds(phase, distanceM)}
+      progressAt={(seconds) => estimateProgress(phase, seconds, distanceM, word)}
+      usualS={phaseSeconds(phase, distanceM, word)}
       label="Drawing the route"
       testID="loading"
     />

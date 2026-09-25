@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Protocol
 
 from route_engine.network import BBox, Graph, crop, read_graph
+from route_engine.sidewalks import NamedRoad
 
 log = logging.getLogger(__name__)
 
@@ -53,6 +54,16 @@ class ZoneGraphs:
         # requests for that zone wait. The guard only covers the two dicts.
         self._zone_locks: dict[Path, threading.Lock] = {}
         self._guard = threading.Lock()
+
+    def named_roads(self, bbox: BBox) -> list[NamedRoad]:
+        """The names the foot graph leaves out around `bbox`, from the cached
+        file only (ADR-0057): none from a source without them, or with no
+        file for the zone. A route never waits for Overpass for a name."""
+        named_roads = getattr(self._source, "named_roads", None)
+        if named_roads is None:
+            return []
+        roads: list[NamedRoad] = named_roads(bbox, download=False)
+        return roads
 
     def needs_download(self, bbox: BBox) -> bool:
         """True when no cached zone covers `bbox`: loading it means Overpass."""

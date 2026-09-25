@@ -1720,6 +1720,44 @@ composte (anteprima di TASK-059), non le lettere da sole.
   dalla cima, se non confonde o se aiuta, e che possano avere scale
   diverse, purché non troppo da quelle vicine: TASK-067 (ADR-0063).
 
+## ADR-0057 — `along` nell'API e nei tipi condivisi
+**Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
+(TASK-060)
+
+La via lungo cui corre un marciapiede senza nome (ADR-0054) c'era solo nel
+motore, in una lista a parte; la navigazione (TASK-061) la vuole nella
+risposta dell'API.
+
+**Decisione**:
+- **Un campo `along` per indicazione**, accanto a `street` e distinto da
+  lui: stringa o `null`, e non `null` solo quando `street` è `null`. È un
+  campo di `Direction` nel motore (`directions.py`, predefinito `None`),
+  così il test che vuole il contratto uguale al motore resta com'è;
+  `guidance` lo lascia `None`, lo riempie l'API (`alongs.py`). Il principio
+  di ADR-0054 resta: una deduzione non entra mai in `street`.
+- **Retrocompatibile**: in `shared-types` è `along?: string | null`
+  (un'API precedente non lo manda), nell'API ha `null` come predefinito
+  (un `GpxRequest` di un'app precedente non lo ha). La guardia dell'app
+  ignora i campi che non conosce.
+- **I nomi solo dalla cache**: l'API legge il file dei nomi della zona
+  (`OsmnxSource.named_roads(..., download=False)`), non chiede mai a
+  Overpass durante una richiesta. Senza il file, o se non si legge,
+  contano le sole vie con nome del grafo: `along` non fa mai fallire un
+  percorso.
+- **Solo attorno al percorso**: vie del grafo e nomi si prendono nel
+  riquadro del percorso allargato di 60 m (4 volte la soglia di 15 m).
+
+**Motivo**: un campo opzionale per indicazione è la forma più semplice da
+leggere per l'app, e non cambia niente per chi non lo usa.
+
+**Conseguenza**: sul cuore da 15 km di Trento, dall'API, 118 indicazioni
+senza nome, 74 senza via con le sole vie del grafo, 57 col file dei nomi
+(come TASK-053); circa 0,3 s in più. Oggi il file dei nomi c'è solo per
+le zone di TASK-053 (Trento, Levico, Milano): nessuno lo scarica da solo,
+e una zona nuova ha le sole vie del grafo finché non si chiama
+`OsmnxSource.named_roads`. Scaricarlo insieme alla zona è un seguito
+possibile, non fatto qui.
+
 ## ADR-0059 — Corridoio più veloce, a percorsi identici
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
 (TASK-063)
@@ -1802,6 +1840,36 @@ l'uccello `quasi` a Levico, la lumaca `sì` a Trento, il cane `no` in
 tutte e due. Quali animali entrano nel catalogo lo decide l'utente, con
 TASK-065 (ADR-0036); gli altri restano nella cartella dei contorni, come
 la casa e l'albero.
+
+## ADR-0064 — La barra stima una parola dalle sue lettere
+**Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
+(TASK-069)
+
+Una parola si calcolava come una forma della stessa distanza
+(`computeSeconds`, 2,5 s a km): per «CIAO» a 15 km 37,5 s, mentre il motore
+ne mette 40–140. La barra arrivava presto in fondo e pulsava a 75 s, quando
+un'attesa normale era ancora in corso.
+
+**Misure** (CLI del motore, Trento, zona in cache, PC di sviluppo,
+2026-09-25): «UNO» 10 km 45 s; «CIAO» 15 km 75 s e 43 s; «TRENTO» 21 km
+106 s; «CAMMINO» 21 km 141 s. A parità di distanza, 7 lettere costano un
+terzo più di 6: il tempo lo fanno le lettere, ognuna un percorso a sé
+cucito alla vicina.
+
+**Decisione**: nella fase di calcolo, se la richiesta ha `word`, la stima è
+`wordSeconds` = 20 s a lettera, mai meno di `computeSeconds` della stessa
+distanza. Le altre fasi (coda, download) restano quelle di ADR-0050; la
+regola della pulsazione oltre il doppio (ADR-0055) vale uguale: «CIAO»
+pulsa dopo 160 s invece di 75 s.
+
+**Scartate**: una retta con lettere e km insieme (con quattro misure, due
+parametri inseguono il rumore: «CIAO» varia da 43 a 75 s da solo); 18 s a
+lettera, il valore medio (20 s sta un po' sopra, e le attese già annotate
+arrivano a 140 s per «CIAO» e 258 s per «BELLO»).
+
+**Conseguenza**: la barra di una parola avanza più piano, e pulsa solo dopo
+il doppio del solito per quella parola. Se il motore diventa più veloce
+sulle parole, basta cambiare `WORD_LETTER_S` con nuove misure.
 
 ## ADR-0065 — Testa di cane: orecchie che pendono, occhi, naso e bocca ripassati
 **Stato**: Attiva · 2026-09-25 · chiesto dall'utente («Per il cane prova

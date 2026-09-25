@@ -53,6 +53,9 @@ Niente per l'app.
 
 ## Completato
 
+- **App** — TASK-061: un marciapiede senza nome con accanto una via dice
+  «Turn left onto the footpath beside Via Roma», sul banner e a voce
+  (ADR-0058). `street` vince sempre; un'API senza `along` legge come prima.
 - **Programmatore Lettere** — TASK-068: la testa di cane come contorno
   candidato (`dog_head`), vista di fronte con le orecchie che pendono, e
   occhi, naso e bocca ripassati (ADR-0065); provata dalla CLI a 15 km:

@@ -1758,6 +1758,30 @@ e una zona nuova ha le sole vie del grafo finché non si chiama
 `OsmnxSource.named_roads`. Scaricarlo insieme alla zona è un seguito
 possibile, non fatto qui.
 
+## ADR-0058 — `along` nella navigazione: «beside», mai «onto»
+**Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
+(TASK-061)
+
+Con ADR-0057 ogni indicazione può avere `along`: la via che corre accanto a
+una strada senza nome, dedotta dalle strade vicine. L'app la ignorava, e un
+marciapiede diceva solo «Turn left onto the footpath».
+
+**Decisione**: quando `street` manca e `along` c'è, la frase aggiunge
+«beside» e la via dopo il tipo di strada: «Turn left onto the footpath
+beside Via Roma», alla partenza «Head out on the footpath beside Via Roma».
+Senza tipo di strada resta solo «Turn left beside Via Roma». Vale uguale
+per il banner, la seconda riga e la voce, che usano la stessa funzione
+(`onto` in `phrases.ts`). `street` vince sempre; senza tutti e due, e con
+un'API senza `along`, la frase è quella di prima.
+
+**Scartate**: «along Via Roma» (si legge come se la via fosse quella su cui
+si corre, e a voce si confonde con «onto»); «Turn left onto Via Roma» (è un
+nome dato a una strada che non l'ha, contro ADR-0045); «near Via Roma»
+(troppo vago per decidere a un incrocio).
+
+**Conseguenza**: le frasi dei marciapiedi si allungano di due o tre parole;
+il nome è sempre quello di una via vera accanto, non del marciapiede.
+
 ## ADR-0059 — Corridoio più veloce, a percorsi identici
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
 (TASK-063)

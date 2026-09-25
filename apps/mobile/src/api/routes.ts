@@ -2,12 +2,14 @@ import {
   API_ERROR_CODES,
   type ApiError,
   type ApiErrorCode,
+  type Direction,
   JOB_STATUSES,
   type JobStatus,
   type RouteJob,
   type RouteRequest,
   type RouteResult,
   SHAPES,
+  TURNS,
 } from "@shaperoute/shared-types";
 
 /** How often the app asks where a route job stands (ADR-0032). */
@@ -180,9 +182,34 @@ export function isRouteResult(body: unknown): body is RouteResult {
     body.points.every(isPoint) &&
     typeof body.distance_m === "number" &&
     typeof body.similarity === "number" &&
-    (SHAPES as readonly unknown[]).includes(body.shape) &&
+    // A shape of the catalogue, or a word (TASK-056): never both, never neither.
+    ((SHAPES as readonly unknown[]).includes(body.shape)
+      ? body.word === undefined || body.word === null
+      : body.shape === null && typeof body.word === "string") &&
     Array.isArray(body.warnings) &&
-    body.warnings.every((warning) => typeof warning === "string")
+    body.warnings.every((warning) => typeof warning === "string") &&
+    // Required since TASK-048: an API without them is out of date, not empty.
+    Array.isArray(body.directions) &&
+    body.directions.every(isDirection)
+  );
+}
+
+function isNullableString(value: unknown): boolean {
+  return value === null || typeof value === "string";
+}
+
+function isDirection(value: unknown): value is Direction {
+  return (
+    isRecord(value) &&
+    typeof value.node === "number" &&
+    isPoint(value.point) &&
+    typeof value.distance_m === "number" &&
+    (TURNS as readonly unknown[]).includes(value.turn) &&
+    typeof value.angle_deg === "number" &&
+    isNullableString(value.street) &&
+    isNullableString(value.road_type) &&
+    typeof value.branches === "number" &&
+    typeof value.joined === "boolean"
   );
 }
 

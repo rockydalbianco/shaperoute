@@ -503,14 +503,16 @@ def distance_to_segments(
     """Distance in metres from each (x, y) point to the nearest segment a-b."""
     ab = b - a
     ab2 = np.maximum((ab**2).sum(axis=1), 1e-12)
+    ax, ay, abx, aby = a[:, 0], a[:, 1], ab[:, 0], ab[:, 1]
     result = np.empty(len(points))
-    chunk = 4096
+    # x and y apart, in chunks of about a million pairs: the same arithmetic
+    # as on (x, y) pairs, about twice as fast (TASK-063).
+    chunk = max(1, 2**20 // max(1, len(a)))
     for s in range(0, len(points), chunk):
-        p = points[s : s + chunk]
-        ap = p[:, None, :] - a[None]
-        t = np.clip((ap * ab[None]).sum(axis=2) / ab2[None], 0.0, 1.0)
-        closest = a[None] + t[..., None] * ab[None]
-        d = np.hypot(p[:, None, 0] - closest[..., 0], p[:, None, 1] - closest[..., 1])
+        px = points[s : s + chunk, 0][:, None]
+        py = points[s : s + chunk, 1][:, None]
+        t = np.clip(((px - ax) * abx + (py - ay) * aby) / ab2, 0.0, 1.0)
+        d = np.hypot(px - (ax + t * abx), py - (ay + t * aby))
         result[s : s + chunk] = d.min(axis=1)
     return result
 
@@ -575,20 +577,22 @@ def _corridor_costs(
     roads outside cost more the farther they are, so the route follows the
     contour instead of cutting through the shape.
     """
-    edges = list(graph.edges(data="length"))
-    costs: dict[tuple[Any, Any], float] = {}
+    steps, which, lengths = _edge_steps(graph)
     if weight > 0:
-        xy = latlon_to_local_array(origin, _edge_samples(graph))
+        # Edges share their ends, and each road runs both ways: every
+        # distinct point once (TASK-063).
+        points, rows = _distinct_samples(graph)
+        xy = latlon_to_local_array(origin, points)
         distance = _distance_to_outline(outline, xy, CORRIDOR_EXACT_M + band_m)
-        distance = distance.reshape(-1, 3).mean(axis=1)
+        distance = distance[rows].reshape(-1, 3).mean(axis=1)
         excess = np.maximum(0.0, distance - band_m) / max(band_m, 1.0)
         factors = 1.0 + weight * excess
     else:
-        factors = np.ones(len(edges))
-    for (u, v, length), factor in zip(edges, factors, strict=True):
-        cost = float(length) * float(factor)
-        costs[(u, v)] = min(cost, costs.get((u, v), math.inf))
-    return costs
+        factors = np.ones(len(lengths))
+    # Parallel edges share a step, which costs the cheapest of them.
+    cheapest = np.full(len(steps), math.inf)
+    np.minimum.at(cheapest, which, lengths * factors)
+    return dict(zip(steps, cheapest.tolist(), strict=True))
 
 
 # Edge samples per graph, kept while its edges stay the same (zone graphs
@@ -612,6 +616,48 @@ def _edge_samples(graph: Graph) -> np.ndarray:
     array = np.array(samples).reshape(-1, 2)
     _samples_cache[graph] = (graph.number_of_edges(), array)
     return array
+
+
+_distinct_cache: weakref.WeakKeyDictionary[
+    Graph, tuple[int, np.ndarray, np.ndarray]
+] = weakref.WeakKeyDictionary()
+
+
+def _distinct_samples(graph: Graph) -> tuple[np.ndarray, np.ndarray]:
+    """The distinct points of `_edge_samples`, and for each sample its row
+    among them."""
+    cached = _distinct_cache.get(graph)
+    if cached is not None and cached[0] == graph.number_of_edges():
+        return cached[1], cached[2]
+    points, rows = np.unique(_edge_samples(graph), axis=0, return_inverse=True)
+    rows = rows.reshape(-1)
+    _distinct_cache[graph] = (graph.number_of_edges(), points, rows)
+    return points, rows
+
+
+# The u→v steps of each graph, kept like its edge samples (TASK-063): a zone
+# has 100 000 edges and more, and listing them in Python took most of the
+# time of the corridor, trace after trace.
+_steps_cache: weakref.WeakKeyDictionary[
+    Graph, tuple[int, list[tuple[Any, Any]], np.ndarray, np.ndarray]
+] = weakref.WeakKeyDictionary()
+
+
+def _edge_steps(graph: Graph) -> tuple[list[tuple[Any, Any]], np.ndarray, np.ndarray]:
+    """The distinct u→v steps of `graph`, the step of each edge in
+    `graph.edges()` order, and the length of each edge."""
+    cached = _steps_cache.get(graph)
+    if cached is not None and cached[0] == graph.number_of_edges():
+        return cached[1], cached[2], cached[3]
+    index: dict[tuple[Any, Any], int] = {}
+    which, lengths = [], []
+    for u, v, length in graph.edges(data="length"):
+        which.append(index.setdefault((u, v), len(index)))
+        lengths.append(float(length))
+    steps = list(index)
+    entry = (graph.number_of_edges(), steps, np.array(which), np.array(lengths))
+    _steps_cache[graph] = entry
+    return steps, entry[2], entry[3]
 
 
 def _distance_to_outline(

@@ -78,6 +78,14 @@ class DirectionBody(BaseModel):
     joined: bool = Field(
         description=f"Less than {GROUP_M:g} m after the direction before: read with it."
     )
+    # Missing from an older API, or in a GPX request from an older app.
+    along: str | None = Field(
+        default=None,
+        description=(
+            "When street is null, the street the road runs along, deduced "
+            "(ADR-0054, ADR-0057); never a name of the road itself."
+        ),
+    )
 
 
 class RouteResultBody(BaseModel):

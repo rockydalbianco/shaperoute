@@ -161,14 +161,17 @@ class OsmnxSource:
             self.cache_dir / f"names_{south:.5f}_{west:.5f}_{north:.5f}_{east:.5f}.json"
         )
 
-    def named_roads(self, bbox: BBox) -> list[NamedRoad]:
+    def named_roads(self, bbox: BBox, download: bool = True) -> list[NamedRoad]:
         """The named roads of `bbox` that the foot graph leaves out
         (NAMED_ROADS_QUERY): from a cached file whose area contains `bbox`,
         else one Overpass request, saved beside the graphs. A few MB where a
-        graph takes a hundred (ADR-0054)."""
+        graph takes a hundred (ADR-0054). With `download` False, none when
+        no file covers `bbox` (the API, ADR-0057)."""
         covering = _covering_file(self.cache_dir, "names", ".json", bbox)
         if covering is not None:
             return [r for r in read_named_roads(covering) if _touches(r, bbox)]
+        if not download:
+            return []
         roads = parse_named_roads(_overpass(named_roads_query(bbox)))
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         write_named_roads(roads, self.names_path(bbox))

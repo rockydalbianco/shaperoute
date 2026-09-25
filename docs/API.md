@@ -82,6 +82,25 @@ meno di 15 m dopo la precedente, da leggere insieme («sinistra, poi
 destra»): nessuna si toglie. Le calcola il motore sul grafo su cui ha
 tracciato il percorso, in circa 0,1 s.
 
+`along` (TASK-060, ADR-0057) è la via lungo cui corre una strada senza
+nome, di solito un marciapiede disegnato a parte: una **deduzione** del
+motore (ADR-0054), mai un nome della strada stessa. C'è solo quando
+`street` è `null`, altrimenti è `null`; resta `null` anche quando non c'è
+una via con nome entro 15 m e parallela (piazze, parchi, viali larghi).
+
+```json
+{"node": 3, "point": [46.0761, 11.1344], "distance_m": 2004.4, "turn": "left",
+ "angle_deg": -88.5, "street": null, "road_type": "footway",
+ "branches": 3, "joined": false, "along": "Via Rosmini"}
+```
+
+Le vie accanto vengono dal grafo e dal file dei nomi della zona in cache
+(`MAPS.md`, «Cache»); l'API non lo scarica mai durante una richiesta: una
+zona senza il file dà solo le vie del grafo. Il campo è opzionale nei tipi
+condivisi: un'API precedente non lo manda, e un `GpxRequest` può ometterlo.
+Sul cuore da 15 km di Trento le indicazioni senza nome né via passano da
+118 a 57, e `along` costa circa 0,3 s.
+
 Le richieste vivono nella memoria dell'API: un riavvio le perde. Lavorano
 due alla volta, così un 15 km annullato non ferma la richiesta dopo; le due
 però si dividono il processore, quindi la seconda va più piano finché la

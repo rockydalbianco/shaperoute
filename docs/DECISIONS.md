@@ -1720,6 +1720,68 @@ composte (anteprima di TASK-059), non le lettere da sole.
   dalla cima, se non confonde o se aiuta, e che possano avere scale
   diverse, purché non troppo da quelle vicine: TASK-067 (ADR-0063).
 
+## ADR-0057 — `along` nell'API e nei tipi condivisi
+**Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
+(TASK-060)
+
+La via lungo cui corre un marciapiede senza nome (ADR-0054) c'era solo nel
+motore, in una lista a parte; la navigazione (TASK-061) la vuole nella
+risposta dell'API.
+
+**Decisione**:
+- **Un campo `along` per indicazione**, accanto a `street` e distinto da
+  lui: stringa o `null`, e non `null` solo quando `street` è `null`. È un
+  campo di `Direction` nel motore (`directions.py`, predefinito `None`),
+  così il test che vuole il contratto uguale al motore resta com'è;
+  `guidance` lo lascia `None`, lo riempie l'API (`alongs.py`). Il principio
+  di ADR-0054 resta: una deduzione non entra mai in `street`.
+- **Retrocompatibile**: in `shared-types` è `along?: string | null`
+  (un'API precedente non lo manda), nell'API ha `null` come predefinito
+  (un `GpxRequest` di un'app precedente non lo ha). La guardia dell'app
+  ignora i campi che non conosce.
+- **I nomi solo dalla cache**: l'API legge il file dei nomi della zona
+  (`OsmnxSource.named_roads(..., download=False)`), non chiede mai a
+  Overpass durante una richiesta. Senza il file, o se non si legge,
+  contano le sole vie con nome del grafo: `along` non fa mai fallire un
+  percorso.
+- **Solo attorno al percorso**: vie del grafo e nomi si prendono nel
+  riquadro del percorso allargato di 60 m (4 volte la soglia di 15 m).
+
+**Motivo**: un campo opzionale per indicazione è la forma più semplice da
+leggere per l'app, e non cambia niente per chi non lo usa.
+
+**Conseguenza**: sul cuore da 15 km di Trento, dall'API, 118 indicazioni
+senza nome, 74 senza via con le sole vie del grafo, 57 col file dei nomi
+(come TASK-053); circa 0,3 s in più. Oggi il file dei nomi c'è solo per
+le zone di TASK-053 (Trento, Levico, Milano): nessuno lo scarica da solo,
+e una zona nuova ha le sole vie del grafo finché non si chiama
+`OsmnxSource.named_roads`. Scaricarlo insieme alla zona è un seguito
+possibile, non fatto qui.
+
+## ADR-0058 — `along` nella navigazione: «beside», mai «onto»
+**Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
+(TASK-061)
+
+Con ADR-0057 ogni indicazione può avere `along`: la via che corre accanto a
+una strada senza nome, dedotta dalle strade vicine. L'app la ignorava, e un
+marciapiede diceva solo «Turn left onto the footpath».
+
+**Decisione**: quando `street` manca e `along` c'è, la frase aggiunge
+«beside» e la via dopo il tipo di strada: «Turn left onto the footpath
+beside Via Roma», alla partenza «Head out on the footpath beside Via Roma».
+Senza tipo di strada resta solo «Turn left beside Via Roma». Vale uguale
+per il banner, la seconda riga e la voce, che usano la stessa funzione
+(`onto` in `phrases.ts`). `street` vince sempre; senza tutti e due, e con
+un'API senza `along`, la frase è quella di prima.
+
+**Scartate**: «along Via Roma» (si legge come se la via fosse quella su cui
+si corre, e a voce si confonde con «onto»); «Turn left onto Via Roma» (è un
+nome dato a una strada che non l'ha, contro ADR-0045); «near Via Roma»
+(troppo vago per decidere a un incrocio).
+
+**Conseguenza**: le frasi dei marciapiedi si allungano di due o tre parole;
+il nome è sempre quello di una via vera accanto, non del marciapiede.
+
 ## ADR-0059 — Corridoio più veloce, a percorsi identici
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
 (TASK-063)
@@ -1832,6 +1894,50 @@ arrivano a 140 s per «CIAO» e 258 s per «BELLO»).
 **Conseguenza**: la barra di una parola avanza più piano, e pulsa solo dopo
 il doppio del solito per quella parola. Se il motore diventa più veloce
 sulle parole, basta cambiare `WORD_LETTER_S` con nuove misure.
+
+## ADR-0065 — Testa di cane: orecchie che pendono, occhi, naso e bocca ripassati
+**Stato**: Attiva · 2026-09-25 · chiesto dall'utente («Per il cane prova
+anche solo la testa facendo dettagli come bocca naso e occhi»); il disegno
+deciso dall'agente su delega dell'utente (TASK-068); giudizio dell'utente:
+`sì` a Trento, Levico e Milano
+
+Il cane intero di TASK-064 (ADR-0060) è `sì` a Milano e `no` a Trento e
+Levico. L'utente chiede di provare solo la testa, con i dettagli del muso.
+
+**Decisione**:
+- **Un contorno nuovo**, `route_engine/shapes/outlines/dog_head.json`,
+  accanto a `dog.json`, che resta com'è. Si prova solo dalla CLI
+  (`--outline`) finché l'utente non lo giudica; nessun parametro del motore
+  cambia.
+- **Vista di fronte, orecchie che pendono**: cranio tondo, muso più
+  stretto, due orecchie lunghe ai lati delle guance, aperte in basso di
+  30°, staccate dalla guancia da una tacca a V larga. È ciò che la
+  distingue dal gatto (`cat.json`), che ha le orecchie a punta in su: nella
+  testa di cane la cima è il cranio.
+- **Occhi, naso e bocca sono tratti ripassati** (ADR-0039): gli occhi, due
+  anelli di otto punti appesi con una linea corta alla tacca fra orecchio e
+  guancia, come quelli del gatto; il naso, un anello in mezzo al muso,
+  appeso a una linea che sale dal mento; la bocca, due linee corte da quella
+  linea sotto il naso, una per lato.
+- **Campioni come TASK-064**: i grafi di zona dell'API in memoria, solo le
+  zone in cache, nessun ritaglio su C:.
+
+**Motivo**: otto bozze provate sulle strade prima dei campioni
+(`docs/tasks/TASK-068.md`). Con dettagli piccoli il muso si aggrovigliava;
+il motore taglia gli anelli all'interno, quindi occhi e naso devono essere
+grandi quasi quanto gli occhi del gatto (470 m contro 560 m a 15 km, a
+scala piena) e avere più punti di passaggio; con la tacca stretta il
+percorso la scorciava e un orecchio spariva. Con le orecchie aperte la
+somiglianza sale a 0,97 · 0,95 · 0,99 (Trento, Levico, Milano), da
+0,94 · 0,92 · 0,98.
+
+**Conseguenza**: 3 campioni a 15 km (`samples/LOG.md`, TASK-068), tutti
+con un percorso, in 3–17 s. I dettagli, andata e ritorno, sono il 44% della
+lunghezza del disegno, contro il 29% del gatto: a 15 km naso e bocca escono
+più piccoli del disegno. Giudizio dell'utente (2026-09-25): la testa è
+`sì` in tutte e tre le zone, dove il cane intero era `sì` solo a Milano.
+Se il cane entra nel catalogo, e come testa o intero, lo decide l'utente
+con TASK-065 (ADR-0036).
 
 ## ADR-0068 — Il contorno ricavato da un'immagine, con regole fisse
 **Stato**: Attiva · 2026-09-25 · chiesto dall'utente («l'utente può caricare

@@ -1944,7 +1944,9 @@ con TASK-065 (ADR-0036).
 un'immagine da rappresentare e dai contorni si ricava la forma»), con il
 perimetro della prima versione: un soggetto chiaro su sfondo uniforme, solo
 il contorno esterno; Pillow autorizzata dall'utente; il metodo e le soglie
-decisi dall'agente su delega dell'utente (TASK-072)
+decisi dall'agente su delega dell'utente (TASK-072); giudizio
+dell'utente: mela, pera e Italia `sì` ovunque, stella `quasi` a Trento e
+`sì` a Milano, gatto `no` a Trento e Milano
 
 Le forme arrivavano solo dal catalogo, dai file dei contorni e dalle
 parole. L'utente vuole partire da un'immagine sua. Il principio resta: il
@@ -1993,3 +1995,9 @@ nell'app (TASK-073) lo farà vedere prima di chiedere il percorso. Uno
 sfondo con una sfumatura forte, o un'ombra attaccata al soggetto, viene
 rifiutato o finisce nel contorno. I dettagli interni (occhi, finestre) non
 diventano tratti ripassati: se servono, è un lavoro a parte.
+Giudizio dell'utente (2026-09-25, `samples/LOG.md`): mela, pera e Italia
+`sì` in ogni zona, stella `quasi` a Trento e `sì` a Milano, gatto `no` a
+Trento e Milano. Il gatto non si riconosceva già dal contorno: una sagoma
+povera di dettagli resta povera anche sulle strade. Da valutare con
+TASK-073: l'anteprima che fa giudicare la sagoma prima del percorso, e se
+la semplificazione toglie troppo.

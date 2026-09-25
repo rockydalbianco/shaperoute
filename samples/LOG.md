@@ -253,15 +253,15 @@ chiude ADR-0010.
 | 2026-09-25 | TASK-068_dog-head_15km_trento_v1.gpx | trento | 0.97 | 15.6 / 15.0 km | sì | testa di cane di fronte, orecchie che pendono, occhi, naso e bocca ripassati (ADR-0065); confronto: TASK-064_dog_15km_trento_v1.gpx, cane intero, giudicato «no»; ruotata di 15°, scala 95%; 752 m scale; 284 m gallerie; 17 s |
 | 2026-09-25 | TASK-068_dog-head_15km_levico_v1.gpx | levico | 0.95 | 15.4 / 15.0 km | sì | testa di cane (TASK-064_dog_15km_levico_v1.gpx, giudicato «no»); ruotata di 15°, scala 81%; 29 m scale; 98 m gallerie; 3 s |
 | 2026-09-25 | TASK-068_dog-head_15km_milano_v1.gpx | milano | 0.99 | 16.4 / 15.0 km | sì | testa di cane (TASK-064_dog_15km_milano_v1.gpx, giudicato «sì»); al primo tracciamento; 264 m scale; 473 m gallerie; 16 s |
-| 2026-09-25 | TASK-072_apple_15km_trento_v1.gpx | trento | 0.93 | 13.5 / 15.0 km | in attesa | contorno ricavato da `TASK-072_apple.png` (disegno: mela con gambo e foglia, ADR-0068), 40 angoli; scala 70%; 943 m scale; 385 m gallerie; 12 s |
-| 2026-09-25 | TASK-072_star_15km_trento_v1.gpx | trento | 0.90 | 15.0 / 15.0 km | in attesa | da `TASK-072_star.png` (logo su sfondo trasparente), 16 angoli; scala 72%; 1109 m scale; 285 m gallerie; 14 s |
-| 2026-09-25 | TASK-072_cat_15km_trento_v1.gpx | trento | 0.96 | 14.1 / 15.0 km | in attesa | da `TASK-072_cat.png` (sagoma seduta, coda alzata), 39 angoli; scala 58%; 351 m scale; 256 m gallerie; 12 s |
-| 2026-09-25 | TASK-072_pear_15km_trento_v1.gpx | trento | 0.96 | 14.3 / 15.0 km | in attesa | da `TASK-072_pear.jpg` (finta foto su tavolo sfumato), 25 angoli; scala 50%; 11% su strade già percorse, 23% accanto a se stesso; 705 m strade principali; 19 s |
-| 2026-09-25 | TASK-072_italy_15km_trento_v1.gpx | trento | 0.96 | 15.8 / 15.0 km | in attesa | da `TASK-072_italy.png` (sagoma della mappa; la Sardegna, staccata, resta fuori), 42 angoli; scala 70%; 14% accanto a se stesso; 332 m scale; 25 s |
-| 2026-09-25 | TASK-072_apple_15km_milano_v1.gpx | milano | 1.00 | 14.5 / 15.0 km | in attesa | mela; scala 90%; 137 m scale; 260 m gallerie; 37 s |
-| 2026-09-25 | TASK-072_star_15km_milano_v1.gpx | milano | 1.00 | 14.7 / 15.0 km | in attesa | stella; scala 84%; 185 m scale; 314 m gallerie; 33 s |
-| 2026-09-25 | TASK-072_cat_15km_milano_v1.gpx | milano | 0.99 | 15.0 / 15.0 km | in attesa | gatto; scala 87%; 239 m scale; 431 m gallerie; 33 s |
-| 2026-09-25 | TASK-072_italy_15km_milano_v1.gpx | milano | 1.00 | 15.7 / 15.0 km | in attesa | Italia; al primo tracciamento; 205 m scale; 680 m gallerie; 34 s |
+| 2026-09-25 | TASK-072_apple_15km_trento_v1.gpx | trento | 0.93 | 13.5 / 15.0 km | sì | contorno ricavato da `TASK-072_apple.png` (disegno: mela con gambo e foglia, ADR-0068), 40 angoli; scala 70%; 943 m scale; 385 m gallerie; 12 s |
+| 2026-09-25 | TASK-072_star_15km_trento_v1.gpx | trento | 0.90 | 15.0 / 15.0 km | quasi | da `TASK-072_star.png` (logo su sfondo trasparente), 16 angoli; scala 72%; 1109 m scale; 285 m gallerie; 14 s |
+| 2026-09-25 | TASK-072_cat_15km_trento_v1.gpx | trento | 0.96 | 14.1 / 15.0 km | no | da `TASK-072_cat.png` (sagoma seduta, coda alzata), 39 angoli; scala 58%; 351 m scale; 256 m gallerie; 12 s; commento dell'utente: il gatto è difficile da riconoscere già dal contorno, servono più dettagli, o non fare tutto il corpo se è così poco dettagliato |
+| 2026-09-25 | TASK-072_pear_15km_trento_v1.gpx | trento | 0.96 | 14.3 / 15.0 km | sì | da `TASK-072_pear.jpg` (finta foto su tavolo sfumato), 25 angoli; scala 50%; 11% su strade già percorse, 23% accanto a se stesso; 705 m strade principali; 19 s |
+| 2026-09-25 | TASK-072_italy_15km_trento_v1.gpx | trento | 0.96 | 15.8 / 15.0 km | sì | da `TASK-072_italy.png` (sagoma della mappa; la Sardegna, staccata, resta fuori), 42 angoli; scala 70%; 14% accanto a se stesso; 332 m scale; 25 s |
+| 2026-09-25 | TASK-072_apple_15km_milano_v1.gpx | milano | 1.00 | 14.5 / 15.0 km | sì | mela; scala 90%; 137 m scale; 260 m gallerie; 37 s |
+| 2026-09-25 | TASK-072_star_15km_milano_v1.gpx | milano | 1.00 | 14.7 / 15.0 km | sì | stella; scala 84%; 185 m scale; 314 m gallerie; 33 s |
+| 2026-09-25 | TASK-072_cat_15km_milano_v1.gpx | milano | 0.99 | 15.0 / 15.0 km | no | gatto; scala 87%; 239 m scale; 431 m gallerie; 33 s |
+| 2026-09-25 | TASK-072_italy_15km_milano_v1.gpx | milano | 1.00 | 15.7 / 15.0 km | sì | Italia; al primo tracciamento; 205 m scale; 680 m gallerie; 34 s |
 
 <!--
 Esempio di riga compilata:

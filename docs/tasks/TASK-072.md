@@ -53,7 +53,7 @@ che non va è rifiutata con il motivo.
       `services/route-engine`.
 - [x] 9 campioni in `samples/`, righe in `samples/LOG.md`, pagina di
       giudizio.
-- [ ] Giudizio dell'utente in `samples/LOG.md` (dopo la PR, non per il
+- [x] Giudizio dell'utente in `samples/LOG.md` (dopo la PR, non per il
       merge).
 
 ## File toccati
@@ -117,7 +117,28 @@ perdeva la coda e il gambo.
 Il motore ricava il contorno esterno da un'immagine con un soggetto chiaro
 su sfondo uniforme, con regole fisse (ADR-0068), e la CLI ne fa un
 percorso (`--image`, `--save-outline`); le immagini che non vanno sono
-rifiutate con il motivo. 9 campioni a 15 km in attesa del giudizio
-dell'utente (`samples/LOG.md`). Emerso: un pezzo staccato si perde senza
-avviso, quindi l'anteprima del contorno nell'app (TASK-073) serve prima di
-chiedere il percorso.
+rifiutate con il motivo. Anteprima:
+https://claude.ai/artifact/Eu4gz4LKoJWpVJF9PM8knx. Giudizio dell'utente
+(2026-09-25, `samples/LOG.md`):
+
+| Immagine | Trento | Milano |
+|---|---|---|
+| mela | sì | sì |
+| stella | quasi | sì |
+| gatto | no | no |
+| pera | sì | — |
+| Italia | sì | sì |
+
+Commento dell'utente: «alcune forme però sono irriconoscibili anche dalla
+forma reale, il gatto è molto difficile da riconoscere anche dalla forma:
+bisogna essere più dettagliati, oppure non fare tutto il corpo se è così
+poco dettagliato». Il gatto non si riconosceva già dal contorno, prima
+delle strade: la sagoma di profilo seduta, senza occhi né muso, non basta.
+
+Da valutare con TASK-073, non ancora deciso:
+
+- l'anteprima del contorno nell'app deve far vedere all'utente se la
+  sagoma si riconosce **prima** di chiedere il percorso, perché il gatto
+  non si riconosceva già dal contorno;
+- valutare se la semplificazione (lisciatura al 2%, angoli all'1%, al più
+  100) toglie troppi dettagli.

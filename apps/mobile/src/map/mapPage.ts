@@ -152,6 +152,10 @@ export function buildMapPage(): string {
         source.setData(route);
       }
     }
+    // The first time every tile in view is drawn: the app hides its bar.
+    map.once("idle", function () {
+      post({ type: "loaded" });
+    });
     map.on("error", function (event) {
       // Without a style there is no map, and the style is in the page: what
       // can fail is the tiles' description (TileJSON), an error of the source

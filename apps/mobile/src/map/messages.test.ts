@@ -54,8 +54,9 @@ test("pageScript hands the message to the page and returns true", () => {
   );
 });
 
-test("parsePageMessage reads ready and error", () => {
+test("parsePageMessage reads ready, loaded and error", () => {
   expect(parsePageMessage('{"type":"ready"}')).toEqual({ type: "ready" });
+  expect(parsePageMessage('{"type":"loaded"}')).toEqual({ type: "loaded" });
   expect(parsePageMessage('{"type":"error","message":"style not found"}')).toEqual({
     type: "error",
     message: "style not found",

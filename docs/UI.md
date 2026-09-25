@@ -215,7 +215,15 @@ non una percentuale, quindi la barra è una stima: ogni fase ha il suo
 tratto (in coda fino all'8%, download della zona fino al 45%, calcolo fino
 al 95%) e lo percorre al ritmo dei tempi misurati qui sotto, rallentando
 verso la fine senza superarlo. Non torna mai indietro, e si riempie solo
-quando arriva il percorso.
+quando arriva il percorso. Se una fase dura più del doppio del solito
+(anche la prima risposta dell'API, che di solito arriva in pochi secondi),
+la barra pulsa: si sta ancora aspettando (TASK-058, ADR-0055).
+
+La stessa barra, con la stessa regola, compare anche nelle altre attese:
+sotto «The AI is reading it…» mentre l'AI legge le parole (di solito 20 s,
+fino a 50 s se deve caricare il modello), e al centro della mappa mentre MapLibre e
+le prime tessere si caricano (di solito 5 s): solo la prima volta, finché la
+pagina non dice `loaded`; se la mappa non si carica, al suo posto l'errore.
 
 | Stato dell'API | Il pannello dice |
 |---|---|

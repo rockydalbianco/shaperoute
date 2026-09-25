@@ -1,3 +1,5 @@
+import string
+
 import networkx as nx
 import numpy as np
 import pytest
@@ -12,13 +14,20 @@ from route_engine.words import (
     LETTER_GAP,
     SIDE_STEP,
     InvalidWordError,
+    Letter,
     Place,
     Word,
     compose,
     parse_letters,
+    spell_letters,
 )
 
 CIAO = compose("ciao")
+# Every letter once (TASK-059).
+ALL = compose(string.ascii_uppercase)
+# The letters with a base of their own. The others leave the base open
+# between their feet, like the A (ADR-0044, ADR-0056).
+BASED = "BDZ"
 
 
 def _letter(word: Word, index: int) -> np.ndarray:
@@ -38,13 +47,81 @@ def _line_places(word: Word, start: int) -> list[Place]:
     return [word.places[k] for k in [*range(i, n), *range(i + 1)]]
 
 
-def test_every_letter_stands_on_the_base_line_and_ends_where_it_began() -> None:
-    assert set("CIAO") <= set(ALPHABET)
-    for letter in ALPHABET.values():
-        assert letter.out[0][1] == 0.0 and letter.out[-1][1] == 0.0
-        end = letter.back[-1] if letter.back else letter.out[-1]
-        assert end == letter.out[0]
-        assert max(y for _, y in (*letter.out, *letter.back)) == 1.0
+def _base_x(letter: Letter) -> list[float]:
+    """Where `letter` touches the base line."""
+    return [x for x, y in (*letter.out, *letter.back) if y == 0.0]
+
+
+def test_the_alphabet_has_every_capital_from_a_to_z() -> None:
+    assert sorted(ALPHABET) == list(string.ascii_uppercase)
+
+
+@pytest.mark.parametrize("char", string.ascii_uppercase)
+def test_every_letter_is_one_stroke_from_the_base_line_back_to_it(char: str) -> None:
+    letter = ALPHABET[char]
+    assert letter.out[0][1] == 0.0 and letter.out[-1][1] == 0.0
+    end = letter.back[-1] if letter.back else letter.out[-1]
+    assert end == letter.out[0]
+    ys = [y for _, y in (*letter.out, *letter.back)]
+    assert min(ys) == 0.0 and max(ys) == 1.0
+
+
+@pytest.mark.parametrize("char", string.ascii_uppercase)
+def test_every_letter_is_entered_and_left_at_the_ends_of_its_base(char: str) -> None:
+    letter = ALPHABET[char]
+    assert letter.out[0][0] == min(_base_x(letter))
+    assert letter.out[-1][0] == max(_base_x(letter))
+
+
+@pytest.mark.parametrize("char", string.ascii_uppercase)
+def test_only_b_d_and_z_draw_along_the_base_line(char: str) -> None:
+    letter = ALPHABET[char]
+    along = sum(
+        abs(b[0] - a[0])
+        for line in (letter.out, letter.back)
+        for a, b in zip(line, line[1:], strict=False)
+        if a[1] == b[1] == 0.0
+    )
+    # The E and the L too keep their lowest arm off it: on it, the line
+    # joining the letters would leave an F and an I.
+    assert (along > 0) == (char in BASED)
+
+
+@pytest.mark.parametrize("char", string.ascii_uppercase)
+def test_every_letter_but_the_i_is_about_as_wide_as_the_a(char: str) -> None:
+    letter = ALPHABET[char]
+    width = letter.right - letter.left
+    if char == "I":
+        assert width == 0.0
+    else:  # M and W the widest
+        assert 0.45 <= width <= 0.85
+
+
+def test_a_word_with_every_letter_is_one_closed_line_of_short_sides() -> None:
+    assert ALL.text == string.ascii_uppercase
+    assert ALL.units[0] == ALL.units[-1]
+    assert ALL.places[0] == Place(0, 0.5)
+    sides = np.hypot(*np.diff(np.array(ALL.units), axis=0).T)
+    assert sides.max() <= SIDE_STEP + 1e-12
+    letters = [_letter(ALL, k) for k in range(26)]
+    for before, after in zip(letters, letters[1:], strict=False):
+        assert after[:, 0].min() - before[:, 0].max() == pytest.approx(LETTER_GAP)
+
+
+def test_the_base_line_stays_open_under_every_letter_but_b_d_and_z() -> None:
+    units = np.array(ALL.units)
+    on_base = [
+        (a[0] + b[0]) / 2
+        for a, b in zip(units, units[1:], strict=False)
+        if a[1] == b[1] == 0.0
+    ]
+    for k, letter in enumerate(ALL.letters):
+        if letter.char in BASED:
+            continue
+        points = _letter(ALL, k)
+        feet = points[points[:, 1] == 0.0, 0]
+        left, right = feet.min(), feet.max()
+        assert not any(left < x < right for x in on_base), letter.char
 
 
 def test_the_letters_stand_in_a_row_a_gap_apart_one_unit_high() -> None:
@@ -133,12 +210,24 @@ def test_a_lone_letter_never_moves() -> None:
     [
         ("  ", "the word is empty"),
         ("CIAO!", "no letter !"),
-        ("zen", "no letter E, N, Z"),
+        ("né1", "no letter 1, É: a word can use only the letters A to Z"),
     ],
 )
 def test_a_word_the_alphabet_cannot_write_is_refused(text: str, message: str) -> None:
     with pytest.raises(InvalidWordError, match=message):
         compose(text)
+
+
+@pytest.mark.parametrize(
+    ("chars", "spelled"),
+    [
+        (ALPHABET, "A to Z"),
+        ("OCIA", "A, C, I, O"),
+        ("ZYXFEDBA", "A, B, D to F, X to Z"),
+    ],
+)
+def test_the_letters_are_spelled_by_their_runs(chars: str, spelled: str) -> None:
+    assert spell_letters(chars) == spelled
 
 
 @pytest.mark.parametrize(
@@ -160,18 +249,21 @@ def test_a_broken_alphabet_is_refused(letters: dict[str, object], message: str) 
         parse_letters({"source": "test", "license": "test", "letters": letters})
 
 
-@pytest.mark.parametrize("start", [0, 1, 2])
-def test_each_letter_is_drawn_by_one_continuous_line(start: int) -> None:
-    points, _ = CIAO.line(start)
-    places = _line_places(CIAO, start)
-    strokes = CIAO.strokes(start)
+@pytest.mark.parametrize(
+    ("word", "start"),
+    [(CIAO, 0), (CIAO, 1), (CIAO, 2), (ALL, 0), (ALL, 12), (ALL, 24)],
+)
+def test_each_letter_is_drawn_by_one_continuous_line(word: Word, start: int) -> None:
+    points, _ = word.line(start)
+    places = _line_places(word, start)
+    strokes = word.strokes(start)
     assert sum(len(rows) for rows in strokes) == sum(
         place.along is None for place in places
     )
     for k, rows in enumerate(strokes):
         assert all(places[row] == Place(k) for row in rows)
         sides = np.hypot(*np.diff(points[rows], axis=0).T)
-        assert sides.max() <= SIDE_STEP * CIAO.height + 1e-12
+        assert sides.max() <= SIDE_STEP * word.height + 1e-12
 
 
 # --- A word in a route request (TASK-056) ---
@@ -184,7 +276,7 @@ TRENTO = (46.0671, 11.1214)
     [
         ({"shape": "heart", "word": "ciao"}, "either a shape or a word"),
         ({}, "either a shape or a word"),
-        ({"word": "cane"}, "no letter E, N yet: a word can use A, C, I, O"),
+        ({"word": "città"}, "no letter À: a word can use only the letters A to Z"),
         ({"word": "ciaociaoc"}, "at most 8 letters, got 9"),
         ({"word": "ciao", "distance_m": 10000}, "a 4-letter word needs at least 12 km"),
     ],

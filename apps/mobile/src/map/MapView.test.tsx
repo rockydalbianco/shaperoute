@@ -102,3 +102,21 @@ test("opens links in the phone's browser, not in the map", async () => {
   expect(openURL).toHaveBeenCalledWith("https://www.openstreetmap.org/copyright");
   openURL.mockRestore();
 });
+
+test("shows a bar over the map until the first tiles are drawn", async () => {
+  await render(<MapView start={TRENTO} route={null} onError={jest.fn()} />);
+  expect(screen.getByTestId("map-loading")).toBeTruthy();
+  await pagePosts('{"type":"ready"}');
+  expect(screen.getByTestId("map-loading")).toBeTruthy();
+
+  await pagePosts('{"type":"loaded"}');
+  expect(screen.queryByTestId("map-loading")).toBeNull();
+});
+
+test("a map that cannot load shows no bar, the error instead", async () => {
+  const onError = jest.fn();
+  await render(<MapView start={TRENTO} route={null} onError={onError} />);
+  await pagePosts('{"type":"error","message":"style not found"}');
+  expect(onError).toHaveBeenCalledWith("style not found");
+  expect(screen.queryByTestId("map-loading")).toBeNull();
+});

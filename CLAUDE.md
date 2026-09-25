@@ -20,6 +20,8 @@ decide il percorso.** L'AI non produce mai coordinate, tracce o geometrie.
 3. Leggi **solo** i documenti che `docs/INDEX.md` associa a quel task.
 4. Guarda in `STATUS.md` quali task sono **In lavorazione**: i file elencati
    nei loro «File toccati» appartengono a loro, non a te.
+5. Con più agenti in parallelo, `docs/AGENTI.md` dice qual è il tuo task
+   adesso, qual è il prossimo e quali file sono occupati.
 
 Non leggere l'intera cartella `docs/`. Non leggere codice di servizi
 che il task non tocca.

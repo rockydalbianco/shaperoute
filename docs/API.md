@@ -163,15 +163,18 @@ con `--word` (ADR-0044):
 ```
 
 - Maiuscole o minuscole, solo le lettere dell'alfabeto del motore
-  (`route_engine/letters.json`, oggi A, C, I, O), al più 8, e almeno 3 km
-  di percorso per lettera: «CIAO» vuole almeno 12 km. Sono `LETTERS`,
-  `MAX_WORD_LETTERS` e `LETTER_DISTANCE_M` in `shared-types`, così l'app
-  può controllare prima di chiedere.
+  (`route_engine/letters.json`, dalla A alla Z dal TASK-059: niente
+  accenti, cifre o spazi), al più 8, e almeno 3 km di percorso per
+  lettera: «CIAO» vuole almeno 12 km. Sono `LETTERS`, `MAX_WORD_LETTERS` e
+  `LETTER_DISTANCE_M` in `shared-types`, così l'app può controllare prima
+  di chiedere. Per «città» il messaggio è `no letter À: a word can use
+  only the letters A to Z`.
 - Il `RouteResult` ha `"shape": null` e `"word": "CIAO"`, la parola in
   maiuscole; per una forma è il contrario, con `"word": null`.
 - Il nome del file GPX usa la parola: `shaperoute-CIAO-15km-2026-09-24.gpx`.
 - Una parola chiede più tempo di una forma: 40–140 s per «CIAO» a 15 km,
-  quasi sempre con la ricerca fino a 2 km (ADR-0044).
+  quasi sempre con la ricerca fino a 2 km (ADR-0044); con le lettere di
+  più tratti di più, fino a 258 s per «BELLO» (ADR-0056).
 
 ## Errori
 

@@ -1566,6 +1566,34 @@ tempi del motore (30–50 s sopra i 10 km).
 **Conseguenza**: una dipendenza in più nell'app. Le soglie sono stime,
 non misure: vanno provate correndo (TASK-049, «Esito»).
 
+## ADR-0053 — La parola nell'app: un interruttore «Shape | Word», controllata prima di mandarla
+**Stato**: Attiva · 2026-09-25 · il campo chiesto dall'utente il 2026-09-24;
+la forma decisa dall'agente su delega dell'utente (TASK-057)
+
+L'API accetta `word` al posto di `shape` (ADR-0051). Nell'app il campo
+della forma manda già le parole che la tabella non conosce all'AI: un campo
+solo per tutte e due renderebbe ambiguo «ciao» (una parola da scrivere, o
+una forma da leggere?).
+
+**Decisione**: sopra le tessere un interruttore «Shape | Word», lo stesso
+componente della partenza (`Segmented`). Con «Word» un campo in maiuscole
+prende il posto di tessere e campo della forma; la richiesta porta `word`
+e non `shape`. L'app controlla la parola prima (`wordInput.ts`, con
+`LETTERS`, `MAX_WORD_LETTERS`, `LETTER_DISTANCE_M` di `shared-types`) e
+dice in inglese cosa non va, con «Draw route» spento. Il limite dell'app è
+7 lettere: l'ottava vorrebbe 24 km, oltre i 21 dell'app (ADR-0034). Con una
+distanza troppo corta un tasto «Use N km» scrive la minima. Il nome del
+percorso, nell'attesa e nel risultato, è la parola fra virgolette, o la
+forma.
+
+**Scartate**: un campo unico che indovina (ambiguo con l'AI); togliere gli
+accenti da sé («città» → «CITTA», l'utente non vede cosa è stato disegnato);
+bloccare il campo a 7 caratteri (l'ottavo sparirebbe senza spiegazione).
+
+**Conseguenza**: la barra usa ancora la stima delle forme, e per una parola
+(40–258 s) pulsa prima (ADR-0055): «più lento del solito», non «rotto».
+Se si vorrà una stima per le parole, è `progress.ts`.
+
 ## ADR-0054 — Marciapiedi senza nome: la via lungo cui corrono, dedotta a parte
 **Stato**: Attiva · 2026-09-25 · file a parte per i nomi scelto
 dall'utente; il resto deciso dall'agente su delega dell'utente (TASK-053)

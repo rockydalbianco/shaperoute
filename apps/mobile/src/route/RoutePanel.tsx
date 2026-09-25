@@ -9,6 +9,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Segmented } from "../screens/Segmented";
 import { LONG_DISTANCE_KM, MAX_APP_DISTANCE_KM, MIN_DISTANCE_KM } from "./distance";
 import { DistanceStepper } from "./DistanceStepper";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
@@ -19,8 +20,23 @@ import type { ExportState } from "./useGpxExport";
 import type { RouteProblem, RouteState } from "./useRouteRequest";
 import type { ShapeReadingState } from "./useShapeReading";
 import { type Note, toNotes } from "./warnings";
+import {
+  type DrawKind,
+  MAX_WORD_FIELD_LENGTH,
+  routeName,
+  type WordCheck,
+  wordDistanceM,
+} from "./wordInput";
+
+const DRAW_KINDS = [
+  { value: "shape", label: "Shape" },
+  { value: "word", label: "Word" },
+] as const;
 
 type ChoiceProps = {
+  /** A shape or a word: one of the two, and the switch shows which. */
+  kind: DrawKind;
+  onKind: (kind: DrawKind) => void;
   /** The shape field as typed, and the shape it names (null: none). */
   shapeText: string;
   shape: Shape | null;
@@ -29,6 +45,10 @@ type ChoiceProps = {
   reading: ShapeReadingState | null;
   /** The user is done typing the shape: the AI may read it. */
   onShapeDone: () => void;
+  /** The word field as typed, and whether it can be sent (wordInput.ts). */
+  wordText: string;
+  onWordText: (text: string) => void;
+  wordCheck: WordCheck;
   /** The km field as typed, and what it means in metres (null: not valid). */
   distanceText: string;
   distanceM: number | null;
@@ -36,39 +56,78 @@ type ChoiceProps = {
 };
 
 /**
- * What to draw (TASK-051): the shapes as tiles, a field for any other word,
- * and the distance. "Draw route" sits apart, at the foot of the screen.
+ * What to draw (TASK-051): the shapes as tiles and a field for any other word,
+ * or a word written letter by letter (TASK-057); then the distance. "Draw
+ * route" sits apart, at the foot of the screen.
  */
 export function RouteChoice({
+  kind,
+  onKind,
   shapeText,
   shape,
   onShapeText,
   reading,
   onShapeDone,
+  wordText,
+  onWordText,
+  wordCheck,
   distanceText,
   distanceM,
   onDistanceText,
 }: ChoiceProps) {
   return (
     <View style={styles.panel}>
-      <Text style={styles.label}>SHAPE</Text>
-      <ShapeTiles chosen={shape} onPick={onShapeText} />
-      <TextInput
-        style={styles.field}
-        value={shapeText}
-        onChangeText={onShapeText}
-        onEndEditing={onShapeDone}
-        maxLength={MAX_SHAPE_TEXT_LENGTH}
-        placeholder="heart, star, horse…"
-        placeholderTextColor={color.textFaint}
-        keyboardAppearance="dark"
-        autoCapitalize="none"
-        autoCorrect={false}
-        returnKeyType="done"
-        selectTextOnFocus
-        accessibilityLabel="Shape"
+      <Text style={styles.label}>DRAW</Text>
+      <Segmented
+        options={DRAW_KINDS}
+        value={kind}
+        onChange={onKind}
+        style={styles.kinds}
       />
-      <ShapeNote text={shapeText} shape={shape} reading={reading} />
+      {kind === "shape" ? (
+        <>
+          <ShapeTiles chosen={shape} onPick={onShapeText} />
+          <TextInput
+            style={styles.field}
+            value={shapeText}
+            onChangeText={onShapeText}
+            onEndEditing={onShapeDone}
+            maxLength={MAX_SHAPE_TEXT_LENGTH}
+            placeholder="heart, star, horse…"
+            placeholderTextColor={color.textFaint}
+            keyboardAppearance="dark"
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="done"
+            selectTextOnFocus
+            accessibilityLabel="Shape"
+          />
+          <ShapeNote text={shapeText} shape={shape} reading={reading} />
+        </>
+      ) : (
+        <>
+          <TextInput
+            style={[styles.field, styles.wordField]}
+            value={wordText}
+            onChangeText={onWordText}
+            maxLength={MAX_WORD_FIELD_LENGTH}
+            placeholder="CIAO"
+            placeholderTextColor={color.textFaint}
+            keyboardAppearance="dark"
+            autoCapitalize="characters"
+            autoCorrect={false}
+            spellCheck={false}
+            autoComplete="off"
+            returnKeyType="done"
+            accessibilityLabel="Word"
+          />
+          <WordNote
+            text={wordText}
+            check={wordCheck}
+            onDistance={(metres) => onDistanceText(String(metres / 1000))}
+          />
+        </>
+      )}
       <Text style={[styles.label, styles.section]}>DISTANCE</Text>
       <DistanceStepper text={distanceText} onText={onDistanceText} editable />
       {distanceM === null ? (
@@ -156,7 +215,7 @@ export function RouteOutcome({
               {`${(view.result.distance_m / 1000).toFixed(1)} km`}
             </Text>
             <Text style={styles.target}>
-              {`on roads · target ${view.request.distance_m / 1000} km`}
+              {`${routeName(view.request)} · on roads · target ${view.request.distance_m / 1000} km`}
             </Text>
           </View>
           {toNotes(view.result.warnings).map((note) => (
@@ -185,6 +244,7 @@ export function RouteOutcome({
       return (
         <Problem
           problem={view.problem}
+          kind={view.request.word ? "word" : "shape"}
           onTryDistance={onTryDistance}
           onPickShape={onPickShape}
         />
@@ -237,6 +297,48 @@ function ShapeNote({
   }
 }
 
+/**
+ * Under the word field: how far the word needs, or why it cannot be drawn.
+ * A distance too short for it can be raised with a tap.
+ */
+function WordNote({
+  text,
+  check,
+  onDistance,
+}: {
+  text: string;
+  check: WordCheck;
+  onDistance: (distanceM: number) => void;
+}) {
+  if (check.ok) {
+    const letters = Array.from(check.word).length;
+    return (
+      <Text style={styles.note}>
+        {`${letters} ${letters === 1 ? "letter" : "letters"}: at least ${wordDistanceM(check.word) / 1000} km. A word takes a few minutes to draw.`}
+      </Text>
+    );
+  }
+  // An empty field is not a mistake: it says what to write.
+  if (text.trim() === "") {
+    return <Text style={styles.note}>{check.problem}</Text>;
+  }
+  const needs = check.needsDistanceM;
+  return (
+    <View style={styles.problemBox}>
+      <Text style={styles.problem}>{check.problem}</Text>
+      {needs !== undefined && (
+        <Pressable
+          style={[styles.secondary, styles.choice]}
+          onPress={() => onDistance(needs)}
+          accessibilityRole="button"
+        >
+          <Text style={styles.secondaryText}>{`Use ${needs / 1000} km`}</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
 /** What the API is doing, as it said on its last answer. */
 function waitingText({ phase, request }: Extract<RouteState, { status: "waiting" }>) {
   switch (phase) {
@@ -246,20 +348,24 @@ function waitingText({ phase, request }: Extract<RouteState, { status: "waiting"
     case "downloading_map":
       return "Downloading map data for this area…";
     default:
-      return `Drawing a ${request.distance_m / 1000} km ${request.shape}…`;
+      return request.word
+        ? `Drawing “${request.word}”, ${request.distance_m / 1000} km…`
+        : `Drawing a ${request.distance_m / 1000} km ${request.shape}…`;
   }
 }
 
 function Problem({
   problem,
+  kind,
   onTryDistance,
   onPickShape,
 }: {
   problem: RouteProblem;
+  kind?: DrawKind;
   onTryDistance?: (distanceM: number) => void;
   onPickShape?: (shape: Shape) => void;
 }) {
-  const { text, detail, tryDistanceM, pickShape } = problemText(problem);
+  const { text, detail, tryDistanceM, pickShape } = problemText(problem, kind);
   return (
     <View style={styles.problemBox}>
       <Text style={styles.problem}>{text}</Text>
@@ -328,6 +434,13 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: space.lg,
+  },
+  // On the screen's background the track needs a surface to show.
+  kinds: {
+    backgroundColor: color.surface,
+  },
+  wordField: {
+    letterSpacing: 2,
   },
   field: {
     minHeight: MIN_TAP_SIZE,

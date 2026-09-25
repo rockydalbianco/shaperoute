@@ -59,7 +59,11 @@ Niente per l'app.
   15 km. Giudizio dell'utente: tutti `sì` a Milano; farfalla `quasi` a
   Trento e Levico, uccello `quasi` a Levico, lumaca `sì` a Trento, il
   resto `no`. Quali entrano nel catalogo lo decide l'utente, con TASK-065.
-
+- **App** — TASK-057: un interruttore «Shape | Word»; la parola si scrive
+  nell'app, controllata prima (A–Z, al più 7 lettere, 3 km a lettera, con
+  «Use N km»), parte come `word` ed è il nome del percorso (ADR-0053);
+  provato sull'iPhone. Seguito possibile: una stima della barra per le
+  parole (`progress.ts`).
 - **Motore** — TASK-063: dove va il tempo sopra i 10 km (numeri nel task
   file) e corridoio da 1,3 a 4,5 volte più veloce a percorsi identici
   (ADR-0059): Trento da 15 a 21 km da 80–97 s a 35–64 s sul PC carico.

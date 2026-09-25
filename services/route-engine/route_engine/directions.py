@@ -68,6 +68,9 @@ class Direction:
     `joined` is True when the direction comes less than GROUP_M after the
     one before, to be read with it. The departure (`guidance`) has turn
     "depart", angle 0, and the road the route starts on.
+    `along` is the street an unnamed road runs along (sidewalks.alongs,
+    ADR-0054, ADR-0057): a deduction, never put in `street`; `guidance`
+    leaves it None, the API fills it.
     """
 
     node: Any
@@ -79,6 +82,7 @@ class Direction:
     road_type: str | None
     branches: int
     joined: bool = False
+    along: str | None = None
 
 
 def guidance(graph: nx.MultiDiGraph, nodes: Sequence[Any]) -> list[Direction]:

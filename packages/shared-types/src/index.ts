@@ -128,6 +128,12 @@ export interface Direction {
   branches: number;
   /** Less than GROUP_M after the direction before: read with it. */
   joined: boolean;
+  /**
+   * When `street` is null, the street the road runs along, deduced from the
+   * roads beside it (ADR-0054, ADR-0057): never a name of the road itself.
+   * Missing from an API older than TASK-060.
+   */
+  along?: string | null;
 }
 
 /** Codes of the errors the API answers with (docs/API.md). */

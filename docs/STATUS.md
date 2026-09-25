@@ -53,6 +53,11 @@ Niente per l'app.
 
 ## Completato
 
+- **Indicazioni** — TASK-060: ogni indicazione dell'API ha `along`, la via
+  lungo cui corre una strada senza nome, distinta da `street` (ADR-0057);
+  opzionale in `shared-types`. Nomi solo dalla cache, mai da Overpass
+  durante una richiesta. Cuore da 15 km di Trento: 118 → 57 indicazioni
+  senza nome né via. Il seguito è TASK-061, `along` nella navigazione.
 - **App** — TASK-069: la barra di una parola stima il calcolo dalle
   lettere, 20 s l'una (misure nel task file, ADR-0064): «CIAO» a 15 km
   pulsa dopo 160 s invece di 75 s. Le forme come prima.
@@ -83,7 +88,7 @@ Niente per l'app.
   cui corre, dedotta a parte (`sidewalks.alongs`, ADR-0054); i nomi delle
   vie escluse dal grafo in un file per zona. Cuori da 15 km, indicazioni
   senza nome né via: Milano 231 → 81, Trento 118 → 57, Levico 34 → 30.
-  Nell'API e nell'app non c'è ancora.
+  Nell'API c'è da TASK-060; nell'app non ancora.
 - **App** — TASK-055: barra di caricamento gialla sotto la mappa, stimata
   per fasi (ADR-0050); provata sull'iPhone.
 - **App** — TASK-054: partenza dal GPS o da un altro luogo anche con il

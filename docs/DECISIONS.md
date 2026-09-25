@@ -1720,6 +1720,44 @@ composte (anteprima di TASK-059), non le lettere da sole.
   dalla cima, se non confonde o se aiuta, e che possano avere scale
   diverse, purché non troppo da quelle vicine: TASK-067 (ADR-0063).
 
+## ADR-0057 — `along` nell'API e nei tipi condivisi
+**Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
+(TASK-060)
+
+La via lungo cui corre un marciapiede senza nome (ADR-0054) c'era solo nel
+motore, in una lista a parte; la navigazione (TASK-061) la vuole nella
+risposta dell'API.
+
+**Decisione**:
+- **Un campo `along` per indicazione**, accanto a `street` e distinto da
+  lui: stringa o `null`, e non `null` solo quando `street` è `null`. È un
+  campo di `Direction` nel motore (`directions.py`, predefinito `None`),
+  così il test che vuole il contratto uguale al motore resta com'è;
+  `guidance` lo lascia `None`, lo riempie l'API (`alongs.py`). Il principio
+  di ADR-0054 resta: una deduzione non entra mai in `street`.
+- **Retrocompatibile**: in `shared-types` è `along?: string | null`
+  (un'API precedente non lo manda), nell'API ha `null` come predefinito
+  (un `GpxRequest` di un'app precedente non lo ha). La guardia dell'app
+  ignora i campi che non conosce.
+- **I nomi solo dalla cache**: l'API legge il file dei nomi della zona
+  (`OsmnxSource.named_roads(..., download=False)`), non chiede mai a
+  Overpass durante una richiesta. Senza il file, o se non si legge,
+  contano le sole vie con nome del grafo: `along` non fa mai fallire un
+  percorso.
+- **Solo attorno al percorso**: vie del grafo e nomi si prendono nel
+  riquadro del percorso allargato di 60 m (4 volte la soglia di 15 m).
+
+**Motivo**: un campo opzionale per indicazione è la forma più semplice da
+leggere per l'app, e non cambia niente per chi non lo usa.
+
+**Conseguenza**: sul cuore da 15 km di Trento, dall'API, 118 indicazioni
+senza nome, 74 senza via con le sole vie del grafo, 57 col file dei nomi
+(come TASK-053); circa 0,3 s in più. Oggi il file dei nomi c'è solo per
+le zone di TASK-053 (Trento, Levico, Milano): nessuno lo scarica da solo,
+e una zona nuova ha le sole vie del grafo finché non si chiama
+`OsmnxSource.named_roads`. Scaricarlo insieme alla zona è un seguito
+possibile, non fatto qui.
+
 ## ADR-0059 — Corridoio più veloce, a percorsi identici
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
 (TASK-063)

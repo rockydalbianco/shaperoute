@@ -1719,3 +1719,32 @@ composte (anteprima di TASK-059), non le lettere da sole.
   Per il seguito l'utente chiede che le lettere si possano unire anche
   dalla cima, se non confonde o se aiuta, e che possano avere scale
   diverse, purché non troppo da quelle vicine: TASK-067 (ADR-0063).
+
+## ADR-0059 — Corridoio più veloce, a percorsi identici
+**Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
+(TASK-063)
+
+Sopra i 10 km il motore stava fra 40 e 97 s sui casi di riferimento, e più
+di metà del tempo era il corridoio (`_corridor_costs`): a ogni tracciato,
+fino a 40 per richiesta, l'elenco in Python di tutti gli archi della zona
+e la distanza dalla forma di tre punti per arco.
+
+**Decisione**: si accelera senza cambiare un solo numero.
+- Gli archi di un grafo e i loro passi u→v si elencano una volta e restano
+  accanto al grafo, come già i punti campione (mappa debole, rifatta se
+  cambia il numero di archi); i costi si calcolano con numpy.
+- La distanza dalla forma si calcola una volta per punto distinto: i capi
+  degli archi si ripetono, e ogni strada c'è nei due sensi.
+- `distance_to_segments` lavora su x e y separati, a blocchi di circa un
+  milione di coppie: la stessa aritmetica, circa il doppio più veloce.
+
+**Perché così**: il compito chiedeva prima i tagli che non cambiano i
+percorsi. Questi danno gli stessi bit (test in `test_network.py`) e, sui 13
+casi misurati, gli stessi percorsi punto per punto. Corridoio da 1,3 a 4,5
+volte più veloce; Trento da 15 a 21 km da 80–97 s a 35–64 s.
+
+**Scartato, per ora**: fermare la seconda ricerca fino a 2 km (ADR-0040)
+quando la prima ha già un percorso disegnabile, o darle meno tracciati:
+taglia di più ma cambia i percorsi, va deciso fuori da questo task. Un
+ritaglio della zona senza copia: tocca l'API (`services/api`) e il nodo
+temporaneo che il motore aggiunge al grafo.

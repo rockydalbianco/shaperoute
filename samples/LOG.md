@@ -250,6 +250,9 @@ chiude ADR-0010.
 | 2026-09-25 | TASK-064_snail_15km_trento_v1.gpx | trento | 0.94 | 13.5 / 15.0 km | sì | lumaca di profilo, spirale del guscio e corna ripassate (ADR-0060); scala 78%; 605 m scale; 54 m gallerie; 13 s |
 | 2026-09-25 | TASK-064_snail_15km_levico_v1.gpx | levico | 0.94 | 15.8 / 15.0 km | no | lumaca; ruotata di −15°; partenza spostata di 250 m a nord; 5% su strade già percorse; 15 s |
 | 2026-09-25 | TASK-064_snail_15km_milano_v1.gpx | milano | 1.00 | 15.2 / 15.0 km | sì | lumaca; al primo tracciamento; 109 m scale; 56 m strade principali; 277 m gallerie; 28 s |
+| 2026-09-25 | TASK-068_dog-head_15km_trento_v1.gpx | trento | 0.97 | 15.6 / 15.0 km | in attesa | testa di cane di fronte, orecchie che pendono, occhi, naso e bocca ripassati (ADR-0065); confronto: TASK-064_dog_15km_trento_v1.gpx, cane intero, giudicato «no»; ruotata di 15°, scala 95%; 752 m scale; 284 m gallerie; 17 s |
+| 2026-09-25 | TASK-068_dog-head_15km_levico_v1.gpx | levico | 0.95 | 15.4 / 15.0 km | in attesa | testa di cane (TASK-064_dog_15km_levico_v1.gpx, giudicato «no»); ruotata di 15°, scala 81%; 29 m scale; 98 m gallerie; 3 s |
+| 2026-09-25 | TASK-068_dog-head_15km_milano_v1.gpx | milano | 0.99 | 16.4 / 15.0 km | in attesa | testa di cane (TASK-064_dog_15km_milano_v1.gpx, giudicato «sì»); al primo tracciamento; 264 m scale; 473 m gallerie; 16 s |
 
 <!--
 Esempio di riga compilata:

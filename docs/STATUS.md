@@ -53,6 +53,12 @@ Niente per l'app.
 
 ## Completato
 
+- **Programmatore Lettere** — TASK-068: la testa di cane come contorno
+  candidato (`dog_head`), vista di fronte con le orecchie che pendono, e
+  occhi, naso e bocca ripassati (ADR-0065); provata dalla CLI a 15 km:
+  somiglianza 0,97 a Trento, 0,95 a Levico, 0,99 a Milano. Giudizio
+  dell'utente in attesa (pagina nel task file); decide se il cane entra nel
+  catalogo con TASK-065, e se come testa o intero.
 - **Programmatore Lettere** — TASK-064: quattro animali candidati
   (farfalla, uccello, cane, lumaca) disegnati come contorni, con antenne,
   zampe, coda, spirale e corna ripassate (ADR-0060), provati dalla CLI a

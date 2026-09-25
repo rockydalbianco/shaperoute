@@ -21,9 +21,10 @@
 
 ```
 Indicazioni
-  ├─ Adesso  TASK-049  Navigazione GPS a svolte, voce e vibrazione   PR #65
-  ├─ Dopo    TASK-060  `along` nell'API e nei tipi condivisi         dopo 049 (e 053 ✓)
-  └─ Dopo    TASK-061  `along` nella navigazione (schermo e voce)    dopo 060
+  ├─ Attesa  TASK-049  Navigazione GPS a svolte, voce e vibrazione   PR #65: prova a piedi dell'utente
+  ├─ Adesso  TASK-062  Dichiarare `numpy` nel route-engine           nessuna
+  ├─ Dopo    TASK-060  `along` nell'API e nei tipi condivisi         dopo 059 (e 053 ✓)
+  └─ Dopo    TASK-061  `along` nella navigazione (schermo e voce)    dopo 060 e 049
 
 Interfaccia Grafica
   ├─ Adesso  TASK-058  Barra di caricamento anche per mappa e API
@@ -31,7 +32,7 @@ Interfaccia Grafica
 
 Programmatore Lettere
   ├─ Adesso  TASK-059  Alfabeto completo, A–Z a tratto singolo
-  └─ Dopo    TASK-062  Dichiarare `numpy` nel route-engine           dopo 059
+  └─ Dopo    da decidere con l'utente (vedi «Da assegnare»)
 
 Da assegnare (servono l'ok dell'utente sul cosa)
   ├─ Motore lento oltre i 10 km: `PRODUCT.md` chiede ≤ 30 s
@@ -43,22 +44,24 @@ Da assegnare (servono l'ok dell'utente sul cosa)
 
 | Task | Titolo | Chi | Stato | Dipende da | ADR |
 |---|---|---|---|---|---|
-| TASK-049 | Navigazione GPS a svolte, voce e vibrazione | Indicazioni | PR #65 | 048 ✓ | 0052 |
+| TASK-049 | Navigazione GPS a svolte, voce e vibrazione | Indicazioni | PR #65, prova a piedi | 048 ✓ | 0052 |
 | TASK-057 | Campo per la parola da disegnare, nell'app | Interfaccia Grafica | in coda | 059, 049 | 0053 |
 | TASK-058 | Barra di caricamento per mappa e connessione API | Interfaccia Grafica | in corso | 055 ✓ | 0055 |
 | TASK-059 | Alfabeto completo, A–Z a tratto singolo | Programmatore Lettere | in corso | 056 ✓ | 0056 |
-| TASK-060 | `along` nell'API e in `shared-types` | Indicazioni | in coda | 049, 053 ✓ | 0057 |
-| TASK-061 | `along` nella navigazione | Indicazioni | in coda | 060 | 0058 |
-| TASK-062 | Dichiarare `numpy` in `pyproject.toml` | Programmatore Lettere | in coda | 059 | — |
+| TASK-060 | `along` nell'API e in `shared-types` | Indicazioni | in coda | 059, 053 ✓ | 0057 |
+| TASK-061 | `along` nella navigazione | Indicazioni | in coda | 060, 049 | 0058 |
+| TASK-062 | Dichiarare `numpy` in `pyproject.toml` | Indicazioni | in corso | — | — |
 
 Perché quest'ordine:
 
 - **057 dopo 059**: il campo arriva con tutte le lettere, non con quattro.
 - **057 dopo 049**: 049 tiene `App.tsx`, `RoutePanel.tsx` e le schermate.
-- **060 dopo 049**: `along` passa dall'API (`jobs.py`, `schemas.py`,
-  `shared-types`) e 049 cambia il contratto con `expo-speech` e le
-  indicazioni; uno alla volta.
-- **062 dopo 059**: tutti e due toccano `services/route-engine/`.
+- **060 dopo 059**: tutti e due toccano `schemas.py` e
+  `packages/shared-types` (`index.ts`, fixture); uno alla volta.
+- **061 dopo 060 e 049**: la voce sta in `src/navigation/phrases.ts` (049),
+  il dato `along` arriva con 060.
+- **062 subito**: tocca solo `services/route-engine/pyproject.toml`, che
+  nessun task in corso usa.
 
 ## File occupati adesso
 
@@ -67,6 +70,7 @@ Perché quest'ordine:
 | `apps/mobile/App.tsx`, `src/route/RoutePanel.tsx`, `src/screens/*`, `src/map/*`, `src/navigation/*`, `package.json`, `package-lock.json` | TASK-049 |
 | `apps/mobile/src/route/LoadingBar.tsx`, `progress.ts` (+ test) | TASK-058 |
 | `route_engine/letters.json`, `words.py`, `tests/test_words.py`, `packages/shared-types` (LETTERS, `contract.json`), `schemas.py` (descrizione di `word`) | TASK-059 |
+| `services/route-engine/pyproject.toml` | TASK-062 |
 | `docs/STATUS.md`, `docs/DECISIONS.md` | tutti, ognuno solo le sue righe |
 | `docs/AGENTI.md`, `CLAUDE.md` | coordinatore |
 

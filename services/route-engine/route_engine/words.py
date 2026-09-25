@@ -15,7 +15,14 @@ its base line, y = 0, with x growing to the right:
 `out` goes from where the letter is entered to where it is left, both on
 the base line, and may go back along itself. When the two differ, `back`
 leads from the exit to the entry again without drawing the base between
-them: the A comes back along its legs, so the base never closes it.
+them: the A comes back along its legs, so the base never closes it. Only
+the letters that have a base of their own, B, D and Z, come back along it.
+
+All 26 capitals are there since TASK-059. Each is entered at its leftmost
+point on the base line and left at its rightmost, so the line that joins
+the letters never runs over one. That line would swallow any stroke lying
+on it: the lowest arm of the E and of the L stands a little above it, or
+in the middle of a word they would read as an F and an I.
 
 A word puts its letters in a row, LETTER_GAP apart, joined along the base
 line. The route writes them left to right, then comes back along the base
@@ -34,7 +41,7 @@ from __future__ import annotations
 
 import json
 import math
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -238,6 +245,24 @@ def _is_pair(value: object) -> bool:
 ALPHABET: dict[str, Letter] = read_letters()
 
 
+def spell_letters(chars: Iterable[str]) -> str:
+    """The letters in order, a run of three or more by its ends: «A to Z»
+    for the whole alphabet (TASK-059), «A, C, I, O» for the first one."""
+    runs: list[list[int]] = []
+    for code in sorted({ord(c) for c in chars}):
+        if runs and code == runs[-1][-1] + 1:
+            runs[-1].append(code)
+        else:
+            runs.append([code])
+    parts: list[str] = []
+    for run in runs:
+        if len(run) >= 3:
+            parts.append(f"{chr(run[0])} to {chr(run[-1])}")
+        else:
+            parts.extend(chr(code) for code in run)
+    return ", ".join(parts)
+
+
 def compose(
     text: str,
     alphabet: dict[str, Letter] | None = None,
@@ -252,8 +277,8 @@ def compose(
     missing = sorted({c for c in chars if c not in alphabet})
     if missing:
         raise InvalidWordError(
-            f"no letter {', '.join(missing)} yet: "
-            f"a word can use {', '.join(sorted(alphabet))}"
+            f"no letter {', '.join(missing)}: "
+            f"a word can use only the letters {spell_letters(alphabet)}"
         )
     letters = tuple(alphabet[c] for c in chars)
     outs: list[list[Point]] = []

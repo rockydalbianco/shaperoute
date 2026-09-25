@@ -51,6 +51,8 @@ Niente per l'app.
 
 ## Completato
 
+- **Indicazioni** — TASK-062: `numpy` dichiarato fra le dipendenze del
+  motore (`>=1.24,<3`, lo stesso limite basso di osmnx).
 - **Indicazioni** — TASK-053: un marciapiede senza nome prende la via lungo
   cui corre, dedotta a parte (`sidewalks.alongs`, ADR-0054); i nomi delle
   vie escluse dal grafo in un file per zona. Cuori da 15 km, indicazioni
@@ -169,9 +171,8 @@ Niente.
   download di una zona nuova (TASK-023, TASK-026; `API.md`, «Tempi»). Le
   richieste in due tempi lo rendono sopportabile, non veloce: `PRODUCT.md`
   chiede al massimo 30 s.
-- In sospeso, piccoli: dichiarare `numpy` in `pyproject.toml` (lo usa già il
-  motore, arriva con osmnx: nulla da installare); più avanti, far scegliere
-  all'utente fra più percorsi alternativi (la ricerca li ha già).
+- In sospeso, piccolo: più avanti, far scegliere all'utente fra più
+  percorsi alternativi (la ricerca li ha già).
 - La Valsugana è sospesa su richiesta dell'utente: cuore e cerchio da 5 km
   lì non sono disponibili (ADR-0025, ADR-0027).
 - matplotlib non è una dipendenza: per guardare le forme basta uno script

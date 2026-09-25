@@ -238,6 +238,18 @@ chiude ADR-0010.
 | 2026-09-25 | TASK-059_max_15km_trento_v1.gpx | trento | 0.92 | 14.4 / 15.0 km | sì | «MAX», M e X (ADR-0056); lettere alte 655 m; ruotata di 15°; 1105 m scale; 125 m gallerie; 15 s |
 | 2026-09-25 | TASK-059_max_15km_levico_v1.gpx | levico | 0.89 | 14.6 / 15.0 km | sì | lettera per lettera; lettere alte 542 m; ruotata di 15°; spostate: X di 102 m; 98 m gallerie; 44 s |
 | 2026-09-25 | TASK-059_max_15km_milano_v1.gpx | milano | 0.95 | 14.6 / 15.0 km | sì | lettera per lettera; lettere alte 724 m; 409 m scale; 1149 m gallerie; 39 s |
+| 2026-09-25 | TASK-064_butterfly_15km_trento_v1.gpx | trento | 0.93 | 14.1 / 15.0 km | quasi | farfalla vista dall'alto, ali aperte, antenne ripassate (ADR-0060); ruotata di 15°, scala 68%; 6% su strade già percorse; 1940 m scale; 12 s |
+| 2026-09-25 | TASK-064_butterfly_15km_levico_v1.gpx | levico | 0.84 | 15.0 / 15.0 km | quasi | farfalla; partenza spostata di 250 m a nord; sotto 0,90 dopo la ricerca, anche quella lontana; 1727 m strade principali; 19 s |
+| 2026-09-25 | TASK-064_butterfly_15km_milano_v1.gpx | milano | 0.97 | 15.8 / 15.0 km | sì | farfalla; al primo tracciamento; 349 m scale; 579 m gallerie; 23 s |
+| 2026-09-25 | TASK-064_bird_15km_trento_v1.gpx | trento | 0.94 | 14.6 / 15.0 km | no | uccello in volo di profilo, due ali alzate, coda a forbice, solo contorno (ADR-0060); scala 65%; 14% su strade già percorse; 506 m scale; 424 m gallerie; 16 s |
+| 2026-09-25 | TASK-064_bird_15km_levico_v1.gpx | levico | 0.91 | 14.2 / 15.0 km | quasi | uccello; scala 59%; 6% su strade già percorse; 1195 m strade principali; 4 s |
+| 2026-09-25 | TASK-064_bird_15km_milano_v1.gpx | milano | 1.00 | 14.4 / 15.0 km | sì | uccello; al primo tracciamento; 177 m scale; 551 m gallerie; 60 s |
+| 2026-09-25 | TASK-064_dog_15km_trento_v1.gpx | trento | 0.96 | 15.4 / 15.0 km | no | cane in piedi di profilo, zampe e coda ripassate andata e ritorno (ADR-0060); scala 80%; 1550 m scale; 220 m gallerie; 13 s |
+| 2026-09-25 | TASK-064_dog_15km_levico_v1.gpx | levico | 0.92 | 13.6 / 15.0 km | no | cane; scala 70%; 1435 m strade principali; 239 m gallerie; 5 s |
+| 2026-09-25 | TASK-064_dog_15km_milano_v1.gpx | milano | 0.99 | 14.0 / 15.0 km | sì | cane; 154 m scale; 381 m gallerie; 41 s |
+| 2026-09-25 | TASK-064_snail_15km_trento_v1.gpx | trento | 0.94 | 13.5 / 15.0 km | sì | lumaca di profilo, spirale del guscio e corna ripassate (ADR-0060); scala 78%; 605 m scale; 54 m gallerie; 13 s |
+| 2026-09-25 | TASK-064_snail_15km_levico_v1.gpx | levico | 0.94 | 15.8 / 15.0 km | no | lumaca; ruotata di −15°; partenza spostata di 250 m a nord; 5% su strade già percorse; 15 s |
+| 2026-09-25 | TASK-064_snail_15km_milano_v1.gpx | milano | 1.00 | 15.2 / 15.0 km | sì | lumaca; al primo tracciamento; 109 m scale; 56 m strade principali; 277 m gallerie; 28 s |
 
 <!--
 Esempio di riga compilata:

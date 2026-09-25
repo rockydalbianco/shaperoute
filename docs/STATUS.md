@@ -53,6 +53,12 @@ Niente per l'app.
 
 ## Completato
 
+- **Programmatore Lettere** — TASK-064: quattro animali candidati
+  (farfalla, uccello, cane, lumaca) disegnati come contorni, con antenne,
+  zampe, coda, spirale e corna ripassate (ADR-0060), provati dalla CLI a
+  15 km. Giudizio dell'utente: tutti `sì` a Milano; farfalla `quasi` a
+  Trento e Levico, uccello `quasi` a Levico, lumaca `sì` a Trento, il
+  resto `no`. Quali entrano nel catalogo lo decide l'utente, con TASK-065.
 - **App** — TASK-057: un interruttore «Shape | Word»; la parola si scrive
   nell'app, controllata prima (A–Z, al più 7 lettere, 3 km a lettera, con
   «Use N km»), parte come `word` ed è il nome del percorso (ADR-0053);

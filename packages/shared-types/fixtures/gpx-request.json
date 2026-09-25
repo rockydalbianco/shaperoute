@@ -28,7 +28,8 @@
         "street": "Via Belenzani",
         "road_type": "residential",
         "branches": 3,
-        "joined": false
+        "joined": false,
+        "along": null
       },
       {
         "node": 2,
@@ -39,7 +40,8 @@
         "street": "Via Manci",
         "road_type": "residential",
         "branches": 4,
-        "joined": false
+        "joined": false,
+        "along": null
       },
       {
         "node": 3,
@@ -50,7 +52,8 @@
         "street": null,
         "road_type": "footway",
         "branches": 3,
-        "joined": false
+        "joined": false,
+        "along": "Via Rosmini"
       },
       {
         "node": 4,
@@ -61,7 +64,8 @@
         "street": "SP12",
         "road_type": "tertiary",
         "branches": 3,
-        "joined": false
+        "joined": false,
+        "along": null
       },
       {
         "node": 5,
@@ -72,7 +76,8 @@
         "street": "Via Verdi",
         "road_type": "residential",
         "branches": 4,
-        "joined": true
+        "joined": true,
+        "along": null
       }
     ],
     "word": null

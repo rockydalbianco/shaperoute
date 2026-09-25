@@ -21,7 +21,9 @@ from route_engine.directions import guidance
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import BBox, Graph
 from route_engine.optimizer import GraphLoader, Plan
+from route_engine.sidewalks import NamedRoad
 
+from shaperoute_api.alongs import NamedRoads, with_alongs
 from shaperoute_api.errors import error_of
 from shaperoute_api.schemas import ErrorDetail, JobStatus
 
@@ -41,6 +43,14 @@ class KnowsDownloads(Protocol):
     """A graph source that can tell a download in advance (ZoneGraphs)."""
 
     def needs_download(self, bbox: BBox) -> bool: ...
+
+
+@runtime_checkable
+class KnowsNames(Protocol):
+    """A graph source with the names of the roads its graphs leave out, for
+    the `along` of the directions (ZoneGraphs, ADR-0057)."""
+
+    def named_roads(self, bbox: BBox) -> list[NamedRoad]: ...
 
 
 class _Dropped(Exception):
@@ -115,7 +125,10 @@ class RouteJobs:
         )
         try:
             plan = self._planner(job.request, source)
-            result = with_directions(plan, source.graphs)
+            names = self._source if isinstance(self._source, KnowsNames) else None
+            result = with_directions(
+                plan, source.graphs, None if names is None else names.named_roads
+            )
         except _Dropped:
             log.info("job %s: dropped before computing", job.job_id)
             return
@@ -203,16 +216,19 @@ class _Reporting:
         return graph
 
 
-def with_directions(plan: Plan, graphs: list[Graph]) -> RouteResult:
+def with_directions(
+    plan: Plan, graphs: list[Graph], named_roads: NamedRoads | None = None
+) -> RouteResult:
     """The plan's result with its directions (TASK-048), computed on the
     graph the route was traced on: the last one loaded when the route comes
     from the search farther away (ADR-0040), else the first. A route that
-    was not searched has no nodes, and no directions."""
+    was not searched has no nodes, and no directions. Unnamed roads get the
+    street they run along (`along`, ADR-0057), also from `named_roads`."""
     if plan.search is None or not graphs:
         return plan.result
     graph = (
         graphs[-1] if plan.far is not None and plan.search is plan.far else graphs[0]
     )
-    return replace(
-        plan.result, directions=guidance(graph, plan.search.best.route.nodes)
-    )
+    nodes = plan.search.best.route.nodes
+    directions = with_alongs(graph, nodes, guidance(graph, nodes), named_roads)
+    return replace(plan.result, directions=directions)

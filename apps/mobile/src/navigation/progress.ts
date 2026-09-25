@@ -14,8 +14,9 @@ import { metresBetween } from "../map/coordinates";
  */
 export const BACK_M = 50;
 export const AHEAD_M = 300;
-/** Farther than this from the route, the runner is off it (a GPS fix in a
- * town is often 10-20 m off; a parallel street is 50 m or more). */
+/** Farther than this from the route, a fix is off it (a GPS fix in a town
+ * is often 10-20 m off, the far pavement 15-25 m; a parallel street is 50 m
+ * or more). One fix is not enough to say so: see OFF_FIXES (ADR-0070). */
 export const OFF_ROUTE_M = 40;
 
 export type Located = {

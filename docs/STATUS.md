@@ -53,6 +53,11 @@ Niente per l'app.
 
 ## Completato
 
+- **App** — TASK-074: «Off the route» solo dopo 3 posizioni di fila oltre
+  40 m, per almeno 8 s; una posizione con errore oltre 40 m non conta;
+  «Back on the route» dopo 2 posizioni sul percorso (ADR-0070). Il
+  marciapiede opposto e il GPS che sbaglia per qualche secondo non danno
+  più l'avviso; una via parallela sbagliata sì, 8–10 s dopo.
 - **App** — TASK-061: un marciapiede senza nome con accanto una via dice
   «Turn left onto the footpath beside Via Roma», sul banner e a voce
   (ADR-0058). `street` vince sempre; un'API senza `along` legge come prima.

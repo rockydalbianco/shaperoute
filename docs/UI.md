@@ -315,9 +315,13 @@ Ogni svolta si dice a voce 50 m prima, in inglese come il resto dell'app
 footpath»), con una vibrazione. Una via senza nome è «the footpath», «the
 path», «the road»: mai un nome inventato. Se accanto corre una via con nome
 (dedotta dall'API, ADR-0057), la si dice con «beside»: «Turn left onto the
-footpath beside Via Roma», sul banner e a voce (ADR-0058). Oltre 40 m dal percorso il banner
-diventa arancio, «Off the route», e la voce lo dice una volta; il percorso
-non si ricalcola. Alla fine, «You have arrived». Funziona con lo schermo
+footpath beside Via Roma», sul banner e a voce (ADR-0058). Oltre 40 m dal percorso per almeno
+tre posizioni di fila e 8 secondi il banner diventa arancio, «Off the
+route», e la voce lo dice una volta, con una vibrazione; il percorso non si
+ricalcola. Il marciapiede opposto e un GPS che sbaglia per qualche secondo
+non bastano, e una posizione con un errore dichiarato oltre 40 m non conta;
+una via parallela sbagliata sì (ADR-0070). Dopo due posizioni di fila sul
+percorso, «Back on the route». Alla fine, «You have arrived». Funziona con lo schermo
 acceso e l'app aperta; la posizione non esce dal telefono.
 
 ## Export del GPX

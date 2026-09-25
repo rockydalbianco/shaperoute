@@ -6,6 +6,7 @@ import { WebView } from "react-native-webview";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
   clearRoute,
+  follow,
   pageScript,
   parsePageMessage,
   setPosition,
@@ -19,15 +20,18 @@ type Props = {
   start: LatLon | null;
   /** The route to draw over the roads, or null for none. */
   route: LatLon[] | null;
+  /** While navigating, the phone's position: the map follows it (TASK-049). */
+  following?: LatLon | null;
   /** Called when the map cannot be shown, with a reason for the log. */
   onError: (reason: string) => void;
   style?: StyleProp<ViewStyle>;
 };
 
-export function MapView({ start, route, onError, style }: Props) {
+export function MapView({ start, route, following = null, onError, style }: Props) {
   const webView = useRef<WebView>(null);
   const [ready, setReady] = useState(false);
   const routeShown = useRef(false);
+  const followed = useRef(false);
 
   // A new start, even at the same place, centres the map on it again.
   useEffect(() => {
@@ -49,6 +53,24 @@ export function MapView({ start, route, onError, style }: Props) {
       routeShown.current = false;
     }
   }, [ready, route, start]);
+
+  // Navigating: the map stays on the runner. After, the whole route again.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (following) {
+      webView.current?.injectJavaScript(pageScript(follow(following)));
+      followed.current = true;
+    } else if (followed.current) {
+      followed.current = false;
+      if (route) {
+        webView.current?.injectJavaScript(pageScript(showRoute(route, start)));
+      }
+    }
+    // Only a new position moves the map; the route effect above draws it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, following]);
 
   return (
     <WebView

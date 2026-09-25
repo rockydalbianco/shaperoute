@@ -1,4 +1,4 @@
-import type { RouteRequest, Shape } from "@shaperoute/shared-types";
+import type { Direction, RouteRequest, Shape } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
@@ -16,6 +16,7 @@ import {
   useCurrentPosition,
 } from "./src/location/useCurrentPosition";
 import { MapView } from "./src/map/MapView";
+import { useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
 import { toDistanceM } from "./src/route/distance";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
@@ -29,13 +30,18 @@ import {
 import { useShapeReading } from "./src/route/useShapeReading";
 import { ChooseScreen } from "./src/screens/ChooseScreen";
 import { MapScreen } from "./src/screens/MapScreen";
+import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
 import { color } from "./src/theme/tokens";
+
+/** A route without directions: one list, so navigation does not restart. */
+const NO_DIRECTIONS: Direction[] = [];
 
 /** The API on the PC that serves the app (ADR-0031); null if unknown. */
 const API_URL = apiUrl();
 
-/** The two screens (TASK-051): what to draw, then the map with the route. */
-type Screen = "choose" | "map";
+/** The screens (TASK-051): what to draw, the map with the route, and the
+ * turn-by-turn along it (TASK-049). */
+type Screen = "choose" | "map" | "navigate";
 
 export default function App() {
   return (
@@ -89,6 +95,13 @@ function Sgrava() {
       ? gpx.state
       : { status: "idle" };
 
+  const navigating = screen === "navigate" && view.status === "done";
+  const navigation = useNavigation(
+    view.status === "done" ? view.result.points : null,
+    view.status === "done" ? view.result.directions : NO_DIRECTIONS,
+    navigating,
+  );
+
   function onDraw() {
     // The decimal pad has no return key: drawing closes it.
     Keyboard.dismiss();
@@ -115,38 +128,54 @@ function Sgrava() {
   return (
     <View style={styles.screen}>
       <MapScreen
-        active={screen === "map"}
+        active={screen === "map" || navigating}
         onBack={onBack}
         mapError={mapError}
+        banner={navigating ? <NavigationBanner state={navigation} /> : undefined}
         map={
           <MapView
             style={styles.map}
             start={start?.point ?? null}
             route={view.status === "done" ? view.result.points : null}
+            following={
+              navigating && navigation.status === "following"
+                ? navigation.position
+                : null
+            }
             onError={setMapError}
           />
         }
       >
-        <RouteOutcome
-          view={view}
-          onCancel={() => {
-            cancel();
-            setScreen("choose");
-          }}
-          exporting={exporting}
-          onExport={() => {
-            if (view.status === "done") {
-              gpx.exportGpx(view.request, view.result);
+        {navigating ? (
+          <NavigationCard
+            navigation={
+              navigation.status === "following" ? navigation.navigation : null
             }
-          }}
-          onTryDistance={(distance_m) => {
-            setDistanceText(String(distance_m / 1000));
-            if (request) {
-              draw({ ...request, distance_m });
-            }
-          }}
-          onPickShape={onPickShape}
-        />
+            onStop={() => setScreen("map")}
+          />
+        ) : (
+          <RouteOutcome
+            view={view}
+            onCancel={() => {
+              cancel();
+              setScreen("choose");
+            }}
+            exporting={exporting}
+            onExport={() => {
+              if (view.status === "done") {
+                gpx.exportGpx(view.request, view.result);
+              }
+            }}
+            onTryDistance={(distance_m) => {
+              setDistanceText(String(distance_m / 1000));
+              if (request) {
+                draw({ ...request, distance_m });
+              }
+            }}
+            onPickShape={onPickShape}
+            onStart={() => setScreen("navigate")}
+          />
+        )}
       </MapScreen>
       {screen === "choose" && (
         <ChooseScreen

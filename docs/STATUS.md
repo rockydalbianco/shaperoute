@@ -38,18 +38,17 @@ Per le indicazioni di svolta il seguito è
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
 nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
 
-**App: TASK-055 — Barra di caricamento sotto la mappa**
-(`docs/tasks/TASK-055.md`): fatta e provata con i test; manca la prova
-dell'utente sull'iPhone. Poi TASK-057, il campo per le parole (dopo
-TASK-056).
+**App: TASK-058 — Barra anche durante il download della zona e la
+connessione all'API**, chiesto dall'utente dopo TASK-055; poi TASK-057, il
+campo per le parole (dopo TASK-056 e TASK-049).
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
-- **TASK-055** — Barra di caricamento (worktree `D:\shaperoute-app`):
-  `RoutePanel.tsx`, `progress.ts`, `LoadingBar.tsx`, `docs/UI.md`.
+Niente per l'app.
+
 - **TASK-059** — Alfabeto dalla A alla Z (worktree
   `shaperoute-TASK-059`): `letters.json`, `words.py`, `test_words.py`,
   `schemas.py`, `test_routes.py` dell'API, `shared-types` (`LETTERS`,
@@ -58,6 +57,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Indicazioni** — TASK-062: `numpy` dichiarato fra le dipendenze del
+  motore (`>=1.24,<3`, lo stesso limite basso di osmnx).
+- **Indicazioni** — TASK-053: un marciapiede senza nome prende la via lungo
+  cui corre, dedotta a parte (`sidewalks.alongs`, ADR-0054); i nomi delle
+  vie escluse dal grafo in un file per zona. Cuori da 15 km, indicazioni
+  senza nome né via: Milano 231 → 81, Trento 118 → 57, Levico 34 → 30.
+  Nell'API e nell'app non c'è ancora.
+- **App** — TASK-055: barra di caricamento gialla sotto la mappa, stimata
+  per fasi (ADR-0050); provata sull'iPhone.
 - **App** — TASK-054: partenza dal GPS o da un altro luogo anche con il
   GPS acceso, rotellina durante l'attesa, avvisi in parole semplici
   (ADR-0048); provato sull'iPhone. TASK-051: due schermate, prima cosa disegnare (tessere delle
@@ -133,6 +141,9 @@ Niente.
 
 ## Note per la prossima sessione
 
+- Navigazione col GPS (TASK-049): da provare sull'iPhone camminando un
+  percorso vero; dopo il merge serve `npm install` dalla radice
+  (`expo-speech`).
 - Ollama 0.34.4 è installato in `D:\Ollama` e parte con Windows; i
   modelli stanno in `D:\Ollama\models` (variabile `OLLAMA_MODELS`
   dell'account). C'è solo `qwen3:4b`: i due scartati e l'installer sono
@@ -169,9 +180,8 @@ Niente.
   download di una zona nuova (TASK-023, TASK-026; `API.md`, «Tempi»). Le
   richieste in due tempi lo rendono sopportabile, non veloce: `PRODUCT.md`
   chiede al massimo 30 s.
-- In sospeso, piccoli: dichiarare `numpy` in `pyproject.toml` (lo usa già il
-  motore, arriva con osmnx: nulla da installare); più avanti, far scegliere
-  all'utente fra più percorsi alternativi (la ricerca li ha già).
+- In sospeso, piccolo: più avanti, far scegliere all'utente fra più
+  percorsi alternativi (la ricerca li ha già).
 - La Valsugana è sospesa su richiesta dell'utente: cuore e cerchio da 5 km
   lì non sono disponibili (ADR-0025, ADR-0027).
 - matplotlib non è una dipendenza: per guardare le forme basta uno script

@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Pure-Python engine that turns a shape, a distance and a start point into a real route."
 requires-python = ">=3.11"
 dependencies = [
+    "numpy>=1.24,<3",
     "osmnx>=2.1,<3",
 ]
 

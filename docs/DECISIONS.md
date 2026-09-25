@@ -1536,3 +1536,40 @@ che per quattro dura già 40–140 s.
 **Conseguenza**: nell'app, che arriva a 21 km, una parola ha al più 7
 lettere. Con l'alfabeto di oggi le parole possibili sono poche: allargarlo
 è una scelta chiesta all'utente. Il campo nell'app è TASK-057.
+
+## ADR-0054 — Marciapiedi senza nome: la via lungo cui corrono, dedotta a parte
+**Stato**: Attiva · 2026-09-25 · file a parte per i nomi scelto
+dall'utente; il resto deciso dall'agente su delega dell'utente (TASK-053)
+
+A Milano quasi tutte le indicazioni entrano in un `footway` senza nome
+(TASK-047): il marciapiede disegnato a parte, accanto alla sua via. La via
+col nome spesso non è nel grafo: `FOOT_FILTER` esclude quelle con
+`sidewalk=separate`, proprio quelle.
+
+**Decisione**:
+- **I nomi delle vie escluse** arrivano da una seconda richiesta a
+  Overpass per zona, salvata in un file JSON accanto al grafo
+  (`network.named_roads`, `MAPS.md`, «Cache»). Il grafo su cui si corre non
+  cambia. **Scartato**: le stesse vie nel grafo marcate non percorribili
+  (riscaricare ogni zona, circa 100 MB a Milano, e il rischio che la
+  ricerca le usi).
+- **La via di un marciapiede** (`sidewalks.py`): contano le vie escluse e
+  le vie con nome del grafo. Il marciapiede si campiona ogni 5 m; a ogni
+  campione la via con nome più vicina entro **15 m** e parallela entro
+  **20°**. Vince la via che accompagna almeno **metà** dei campioni.
+  Un attraversamento, perpendicolare, non prende nessuna via.
+- **È una deduzione, tenuta a parte**: `alongs(...)` dà una lista
+  affiancata alle indicazioni, mai dentro `street`. Non è un campo di
+  `Direction`: il contratto (`schemas.py`, `shared-types`) era di un altro
+  task, e un test lo vuole identico al motore. Portarla nell'API e
+  nell'app è di TASK-049 o seguenti.
+
+**Motivo**: pochi MB per zona e nessun cambio al percorso; le soglie sono
+quelle della proposta, e sui cuori reggono (campione sotto).
+
+**Conseguenza**: sui cuori da 15 km le indicazioni senza nome passano da
+231 a 81 a Milano, da 118 a 57 a Trento, da 34 a 30 a Levico (sentieri di
+campagna, senza vie accanto). Un campione di quattro deduzioni a Milano,
+controllato su openstreetmap.org, era giusto in tutti e quattro. Restano
+senza via i marciapiedi di piazze e parchi, e quelli più lontani di 15 m
+dal centro della strada (i viali larghi).

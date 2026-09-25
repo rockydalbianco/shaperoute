@@ -53,6 +53,9 @@ Niente per l'app.
 
 ## Completato
 
+- **App** — TASK-066: una risposta senza `directions` (API precedente a
+  TASK-048) è `bad_answer`, non un crash; la guardia accetta anche i
+  percorsi di una parola (`shape: null`, `word`), pronta per TASK-057.
 - **App** — TASK-058: la barra di caricamento anche sulla mappa che si
   carica e sotto la lettura dell'AI; pulsa quando un'attesa dura più del
   doppio del solito, anche con l'API che non risponde (ADR-0055); provato

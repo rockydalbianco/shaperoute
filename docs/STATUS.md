@@ -53,6 +53,10 @@ Niente per l'app.
 
 ## Completato
 
+- **App** — TASK-058: la barra di caricamento anche sulla mappa che si
+  carica e sotto la lettura dell'AI; pulsa quando un'attesa dura più del
+  doppio del solito, anche con l'API che non risponde (ADR-0055); provato
+  sull'iPhone.
 - **Indicazioni** — TASK-062: `numpy` dichiarato fra le dipendenze del
   motore (`>=1.24,<3`, lo stesso limite basso di osmnx).
 - **Indicazioni** — TASK-053: un marciapiede senza nome prende la via lungo

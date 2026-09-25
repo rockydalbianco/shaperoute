@@ -11,7 +11,7 @@ import {
 } from "../theme/tokens";
 import { LONG_DISTANCE_KM, MAX_APP_DISTANCE_KM, MIN_DISTANCE_KM } from "./distance";
 import { DistanceStepper } from "./DistanceStepper";
-import { LoadingBar } from "./LoadingBar";
+import { LoadingBar, ReadingBar } from "./LoadingBar";
 import { problemText } from "./problems";
 import { ShapeTiles } from "./ShapeTiles";
 import { shapeList } from "./shapeWords";
@@ -213,7 +213,13 @@ function ShapeNote({
     case "unread":
       return <Text style={styles.note}>Press Done and the AI will read it.</Text>;
     case "reading":
-      return <Text style={styles.note}>The AI is reading it…</Text>;
+      // A word may take the model 4–50 s: a bar, as for the route (TASK-058).
+      return (
+        <View style={styles.reading}>
+          <Text style={styles.note}>The AI is reading it…</Text>
+          <ReadingBar />
+        </View>
+      );
     case "read":
       // What the model does not know it does not guess (AI.md, «Limiti»):
       // plainer words may work, or a shape of the catalogue, the tiles above.
@@ -336,6 +342,9 @@ const styles = StyleSheet.create({
   },
   note: {
     color: color.textMuted,
+  },
+  reading: {
+    gap: space.sm,
   },
   draw: {
     minHeight: MIN_TAP_SIZE + space.md,

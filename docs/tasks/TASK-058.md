@@ -1,6 +1,6 @@
 # TASK-058 — La barra di caricamento anche per la mappa e per l'API
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-058-loading-everywhere`
 
 ## Obiettivo
@@ -57,7 +57,7 @@ Decisioni dell'agente su delega dell'utente (ADR-0055):
       disegnate; un errore la toglie (test).
 - [x] La barra compare sotto «The AI is reading it…» (test).
 - [x] `typecheck`, `lint`, `format:check`, `npm test` puliti (275 test).
-- [ ] Provato dall'utente sull'iPhone.
+- [x] Provato dall'utente sull'iPhone (2026-09-25).
 
 ## File toccati
 
@@ -87,4 +87,12 @@ docs/UI.md, docs/DECISIONS.md, docs/STATUS.md
 
 ## Esito
 
-*(in attesa della prova sull'iPhone)*
+Fatto: la barra c'è sulla mappa che si carica, sotto la lettura dell'AI, e
+pulsa quando l'API tarda. 275 test verdi; provato dall'utente sull'iPhone
+il 2026-09-25 («sì, ora funziona»).
+
+Nella prova l'app si è chiusa con «Cannot read property 'length'» in
+`RouteOutcome`: l'API accesa sul PC era del 24/09, senza `directions`, che
+l'app di TASK-049 dà per certe. Riavviata l'API, tutto bene. Che l'app non
+regga un'API vecchia è da sistemare in `api/routes.ts` (segnalato al
+coordinatore).

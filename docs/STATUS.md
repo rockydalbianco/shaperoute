@@ -47,13 +47,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-058** — Barra anche per mappa, lettura dell'AI e API lenta
-  (worktree `D:\shaperoute-app`): `progress.ts`, `LoadingBar.tsx` (+ test),
-  `docs/UI.md`, `mapPage.ts`, `messages.ts`, `MapView.tsx`,
-  `RoutePanel.tsx` (+ test). Fatto coi test; manca la prova sull'iPhone.
+Niente per l'app.
 
 ## Completato
 
+- **App** — TASK-058: la barra di caricamento anche sulla mappa che si
+  carica e sotto la lettura dell'AI; pulsa quando un'attesa dura più del
+  doppio del solito, anche con l'API che non risponde (ADR-0055); provato
+  sull'iPhone.
 - **Indicazioni** — TASK-062: `numpy` dichiarato fra le dipendenze del
   motore (`>=1.24,<3`, lo stesso limite basso di osmnx).
 - **Indicazioni** — TASK-053: un marciapiede senza nome prende la via lungo

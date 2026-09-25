@@ -262,6 +262,16 @@ chiude ADR-0010.
 | 2026-09-25 | TASK-072_star_15km_milano_v1.gpx | milano | 1.00 | 14.7 / 15.0 km | sì | stella; scala 84%; 185 m scale; 314 m gallerie; 33 s |
 | 2026-09-25 | TASK-072_cat_15km_milano_v1.gpx | milano | 0.99 | 15.0 / 15.0 km | no | gatto; scala 87%; 239 m scale; 431 m gallerie; 33 s |
 | 2026-09-25 | TASK-072_italy_15km_milano_v1.gpx | milano | 1.00 | 15.7 / 15.0 km | sì | Italia; al primo tracciamento; 205 m scale; 680 m gallerie; 34 s |
+| 2026-09-26 | TASK-075_heart_10km_caldonazzo_yesterday_v1.gpx | caldonazzo | 0.86 | 11.8 / 10.0 km | da giudicare | Via della Villa (45.9934, 11.2580), motore di ieri `87304b0`; 9% su strade già percorse, 187 m gallerie; 41 s (con il ritaglio della zona) |
+| 2026-09-26 | TASK-075_heart_10km_caldonazzo_today_v1.gpx | caldonazzo | 0.86 | 11.8 / 10.0 km | da giudicare | stessa partenza, motore di oggi `709f4f5`: punti identici a quello di ieri; 21 s |
+| 2026-09-26 | TASK-075_heart_10km_caldonazzo_n25_v1.gpx | caldonazzo | 0.82 | 9.7 / 10.0 km | da giudicare | partenza 25 m a nord di Via della Villa, motore di oggi (ieri: identico); 19 s |
+| 2026-09-26 | TASK-075_heart_10km_caldonazzo_s25_v1.gpx | caldonazzo | 0.85 | 9.2 / 10.0 km | da giudicare | partenza 25 m a sud di Via della Villa, motore di oggi (ieri: identico); 16 s |
+| 2026-09-26 | TASK-075_heart_10km_caldonazzo_e25_v1.gpx | caldonazzo | 0.92 | 11.0 / 10.0 km | da giudicare | partenza 25 m a est di Via della Villa, motore di oggi (ieri: identico); 5 s |
+| 2026-09-26 | TASK-075_heart_10km_caldonazzo_w25_v1.gpx | caldonazzo | 0.85 | 11.7 / 10.0 km | da giudicare | partenza 25 m a ovest di Via della Villa, motore di oggi (ieri: identico); 18 s |
+| 2026-09-26 | TASK-075_heart_10km_caldonazzo_ne70_v1.gpx | caldonazzo | 0.73 | 9.7 / 10.0 km | da giudicare | partenza 70 m a nord-est di Via della Villa, motore di oggi (ieri: identico); 19 s |
+| 2026-09-26 | TASK-075_heart_10km_caldonazzo_sw70_v1.gpx | caldonazzo | 0.92 | 9.3 / 10.0 km | da giudicare | partenza 70 m a sud-ovest di Via della Villa, motore di oggi (ieri: identico); 16 s |
+| 2026-09-26 | TASK-075_heart_10km_caldonazzo_n100_v1.gpx | caldonazzo | 0.91 | 9.4 / 10.0 km | da giudicare | partenza 100 m a nord di Via della Villa, motore di oggi (ieri: identico); 14 s |
+| 2026-09-26 | TASK-075_heart_10km_caldonazzo_e100_v1.gpx | caldonazzo | 0.81 | 11.1 / 10.0 km | da giudicare | partenza 100 m a est di Via della Villa, motore di oggi (ieri: identico); 20 s |
 
 <!--
 Esempio di riga compilata:

@@ -195,6 +195,61 @@ hanno dei tratti: due finestre, fusto e rami, gli occhi, l'occhio. Luna,
 gatto e pesce sono nel catalogo dal TASK-039, gatto e pesce con i tratti;
 freccia, albero, corona e casa si provano solo dalla CLI.
 
+### Il contorno da un'immagine (TASK-072)
+
+`route_engine/image_outline.py` ricava un contorno dal soggetto di
+un'immagine PNG o JPEG, con regole fisse: la stessa immagine dà sempre lo
+stesso contorno, e l'AI non c'entra (ADR-0068). Vale per **un soggetto
+chiaro su sfondo uniforme**: un disegno, un logo, una sagoma, un oggetto
+fotografato su un tavolo bianco. Del soggetto si tiene **solo il contorno
+esterno**: buchi e linee interne si perdono.
+
+1. L'immagine si raddrizza secondo l'EXIF (le foto del telefono) e si
+   riduce a 640 pixel di lato al più.
+2. Lo **sfondo** è quello che mostra il bordo dell'immagine (una fascia del
+   2% del lato): il suo colore è la mediana del bordo, e almeno il 70% del
+   bordo deve stare entro 40 da quel colore (distanza RGB). Un'immagine
+   trasparente attorno al soggetto usa la trasparenza.
+3. Il **soggetto** sono i pixel lontani dallo sfondo almeno 60, o il doppio
+   della variazione dello sfondo lungo il bordo se è di più. I suoi pezzi
+   diventano poligoni; quelli sotto l'1% del più grande sono macchioline, e
+   si ignorano. Un pezzo staccato più piccolo si perde: il contorno è
+   quello del pezzo più grande.
+4. Il contorno si **liscia alla scala delle strade**: le parti più sottili
+   del 2% del soggetto si tolgono e le fessure altrettanto strette si
+   chiudono (ADR-0039: i dettagli sottili sulle strade non restano), con
+   gli angoli che restano angoli. Poi si **semplifica** agli angoli che si
+   scostano più dell'1% del soggetto, al più 100.
+
+Il risultato è un contorno come quelli dei file (`name`, `source`,
+`license`, `points` in pixel, y verso l'alto) e passa lo stesso controllo
+(`parse_outline`). Un'immagine che non va è **rifiutata con il motivo**,
+una parola che l'API potrà tradurre (`InvalidImageError.reason`):
+
+| `reason` | Quando |
+|---|---|
+| `unreadable` | il file non si legge come immagine |
+| `format` | un formato che non è PNG o JPEG |
+| `background` | lo sfondo non è uniforme |
+| `no_subject` | niente si stacca dallo sfondo |
+| `scattered` | il pezzo più grande è meno del 75% del soggetto: più soggetti |
+| `edge` | il soggetto tocca il bordo dell'immagine |
+| `small` | il soggetto è sotto i 48 pixel (su 640), o l'immagine sotto i 96 |
+| `jagged` | più di 100 angoli anche dopo la semplificazione |
+
+Dalla CLI, `--image` al posto di `--shape`; il nome della forma è quello
+del file. `--save-outline` scrive il contorno in JSON per guardarlo, e si
+rilegge con `--outline`:
+
+```
+python -m route_engine --image mela.png --save-outline mela.json     --distance 15000 --start 46.0671,11.1214 --out mela_trento.gpx
+```
+
+Come per `--outline`, la forma resta dritta (ADR-0038) e passa da
+`plan_shape`. Il modulo sta fuori da `shapes/`, che legge i contorni con
+la sola libreria standard: per ricavarne uno servono Pillow, numpy e
+shapely.
+
 ## 3. Proiezione geografica
 
 Trasformazione dei punti normalizzati in coordinate reali, applicando

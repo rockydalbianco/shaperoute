@@ -53,6 +53,13 @@ Niente per l'app.
 
 ## Completato
 
+- **Motore** — TASK-072: la forma ricavata da un'immagine. Da un PNG o
+  JPEG con un soggetto chiaro su sfondo uniforme il motore ricava il
+  contorno esterno con regole fisse (`image_outline.py`, ADR-0068) e la CLI
+  ne fa un percorso (`--image`, `--save-outline`); sfondo non uniforme,
+  più soggetti, soggetto sul bordo, piccolo o frastagliato sono rifiutati
+  con il motivo. Campioni a 15 km a Trento e Milano, giudizio dell'utente
+  in attesa. Il seguito è **TASK-073**: l'immagine nell'app e nell'API.
 - **App** — TASK-069: la barra di una parola stima il calcolo dalle
   lettere, 20 s l'una (misure nel task file, ADR-0064): «CIAO» a 15 km
   pulsa dopo 160 s invece di 75 s. Le forme come prima.

@@ -1,6 +1,6 @@
 # TASK-068 — Cane: solo la testa, con occhi, naso e bocca
 
-**Stato**: Done (in attesa del giudizio dell'utente)
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-068-dog-head` (parte da `main`)
 
 Assegnato dal coordinatore su richiesta dell'utente (2026-09-25), dopo il
@@ -58,7 +58,7 @@ Deciso dall'agente su delega dell'utente (ADR-0065):
       `services/route-engine` (512 passati).
 - [x] 3 campioni in `samples/`, righe in `samples/LOG.md`.
 - [x] Pagina di giudizio pubblicata.
-- [ ] Giudizio dell'utente in `samples/LOG.md` (dopo la PR, non per il
+- [x] Giudizio dell'utente in `samples/LOG.md` (dopo la PR, non per il
       merge).
 
 ## File toccati
@@ -121,6 +121,16 @@ piccoli all'interno. Il giudizio lo dà l'utente, e va in `samples/LOG.md`.
 
 Testa di cane candidata come contorno, con occhi, naso e bocca ripassati,
 provata a 15 km nelle tre zone (ADR-0065); pagina di giudizio:
-https://claude.ai/artifact/YC6xE283NpvSm4StffaEPr. In attesa del giudizio
-dell'utente; se il cane entra nel catalogo, e come testa o intero, si
-decide con TASK-065.
+https://claude.ai/artifact/YC6xE283NpvSm4StffaEPr.
+Giudizio dell'utente (2026-09-25, `samples/LOG.md`): «Testa di cane:
+Trento sì, Levico sì, Milano sì».
+
+| | Trento | Levico | Milano |
+|---|---|---|---|
+| testa (`dog_head`) | sì | sì | sì |
+| cane intero (TASK-064) | no | no | sì |
+
+La testa si riconosce in tutte e tre le zone, il cane intero solo a
+Milano. La prima impressione dell'agente era più severa a Trento e a
+Levico. Se il cane entra nel catalogo, e come testa o intero, lo decide
+l'utente con TASK-065.

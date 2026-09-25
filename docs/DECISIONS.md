@@ -1874,8 +1874,8 @@ sulle parole, basta cambiare `WORD_LETTER_S` con nuove misure.
 ## ADR-0065 — Testa di cane: orecchie che pendono, occhi, naso e bocca ripassati
 **Stato**: Attiva · 2026-09-25 · chiesto dall'utente («Per il cane prova
 anche solo la testa facendo dettagli come bocca naso e occhi»); il disegno
-deciso dall'agente su delega dell'utente (TASK-068); giudizio dell'utente
-in attesa
+deciso dall'agente su delega dell'utente (TASK-068); giudizio dell'utente:
+`sì` a Trento, Levico e Milano
 
 Il cane intero di TASK-064 (ADR-0060) è `sì` a Milano e `no` a Trento e
 Levico. L'utente chiede di provare solo la testa, con i dettagli del muso.
@@ -1910,5 +1910,7 @@ somiglianza sale a 0,97 · 0,95 · 0,99 (Trento, Levico, Milano), da
 **Conseguenza**: 3 campioni a 15 km (`samples/LOG.md`, TASK-068), tutti
 con un percorso, in 3–17 s. I dettagli, andata e ritorno, sono il 44% della
 lunghezza del disegno, contro il 29% del gatto: a 15 km naso e bocca escono
-più piccoli del disegno. Se il cane entra nel catalogo, e come testa o
-intero, lo decide l'utente con TASK-065 (ADR-0036).
+più piccoli del disegno. Giudizio dell'utente (2026-09-25): la testa è
+`sì` in tutte e tre le zone, dove il cane intero era `sì` solo a Milano.
+Se il cane entra nel catalogo, e come testa o intero, lo decide l'utente
+con TASK-065 (ADR-0036).

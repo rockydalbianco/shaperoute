@@ -34,7 +34,8 @@ giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
 chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
 fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
 dalla cima, e una scala per lettera vicina a quella delle vicine
-(ADR-0063, dopo TASK-063, che ha `optimizer.py`).
+(ADR-0063, dopo TASK-063, che ha `optimizer.py`). Da TASK-071: lettere più
+piccole si leggono peggio; le lettere squadrate sono proposte all'utente.
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -61,6 +62,26 @@ Niente per l'app.
   parole su 9 peggio, nessuna meglio. Il motore resta com'è (ADR-0067
   «Scartata», codice nel commit `0e8add6`). Proposta all'utente, da
   decidere: lettere squadrate come nello screenshot di Strava (task file).
+- **Motore** — TASK-075: il cuore da 10 km di Caldonazzo non è peggiorato.
+  Motore di ieri (`87304b0`) e di oggi (`709f4f5`) danno lo stesso percorso
+  punto per punto su 9 partenze su 9, oggi in 16,9 s invece di 21,4 s.
+  Cambia invece con la partenza: 25–100 m di GPS portano la somiglianza da
+  0,73 a 0,92. Nessun codice cambiato; da decidere se il motore debba
+  provare partenze vicine (task file). Giudizio: 5 `sì`, 3 `quasi`, 2 `no`
+  su 10 cuori; l'utente ha scelto che il motore provi più partenze vicine e
+  tenga la migliore: **TASK-076**.
+- **Motore** — TASK-072: la forma ricavata da un'immagine. Da un PNG o
+  JPEG con un soggetto chiaro su sfondo uniforme il motore ricava il
+  contorno esterno con regole fisse (`image_outline.py`, ADR-0068) e la CLI
+  ne fa un percorso (`--image`, `--save-outline`); sfondo non uniforme,
+  più soggetti, soggetto sul bordo, piccolo o frastagliato sono rifiutati
+  con il motivo. Campioni a 15 km a Trento e Milano: mela, pera e Italia
+  `sì`, stella `quasi`/`sì`, gatto `no` (non si riconosceva già dal
+  contorno). Il seguito è **TASK-073**: l'immagine nell'app e nell'API,
+  con l'anteprima del contorno prima del percorso (task file).
+- **App** — TASK-061: un marciapiede senza nome con accanto una via dice
+  «Turn left onto the footpath beside Via Roma», sul banner e a voce
+  (ADR-0058). `street` vince sempre; un'API senza `along` legge come prima.
 - **Programmatore Lettere** — TASK-068: la testa di cane come contorno
   candidato (`dog_head`), vista di fronte con le orecchie che pendono, e
   occhi, naso e bocca ripassati (ADR-0065); provata dalla CLI a 15 km:

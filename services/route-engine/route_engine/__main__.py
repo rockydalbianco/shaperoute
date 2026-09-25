@@ -1,12 +1,15 @@
 """Command-line entry point: python -m route_engine --shape ... --distance ...
 
-`--outline FILE` takes the shape from a JSON outline instead (TASK-032), and
-`--word TEXT` writes a word one letter at a time (TASK-050).
+`--outline FILE` takes the shape from a JSON outline instead (TASK-032),
+`--word TEXT` writes a word one letter at a time (TASK-050), and
+`--image FILE` takes the outline of the subject of a PNG or JPEG image
+(TASK-072); `--save-outline FILE` writes that outline as JSON to look at.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -14,6 +17,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from route_engine.export_gpx import route_name, to_gpx
+from route_engine.image_outline import InvalidImageError, outline_data
 from route_engine.models import (
     InvalidRequestError,
     RouteRequest,
@@ -33,7 +37,12 @@ from route_engine.optimizer import (
 )
 from route_engine.projection import initial_scale
 from route_engine.shapes import get_shape
-from route_engine.shapes.outline import InvalidOutlineError, Outline, read_outline
+from route_engine.shapes.outline import (
+    InvalidOutlineError,
+    Outline,
+    parse_outline,
+    read_outline,
+)
 from route_engine.words import LETTERS, InvalidWordError, Word, compose
 
 
@@ -109,6 +118,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "route_engine/shapes/outlines/house.json",
     )
     what.add_argument(
+        "--image",
+        type=Path,
+        metavar="FILE",
+        help="a shape traced from the subject of a PNG or JPEG image, "
+        "one subject on a plain background",
+    )
+    what.add_argument(
         "--word",
         metavar="TEXT",
         help="a word written one letter at a time, e.g. CIAO",
@@ -126,6 +142,13 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--out", type=Path, help="write the route to this GPX file (never overwritten)"
+    )
+    parser.add_argument(
+        "--save-outline",
+        type=Path,
+        metavar="FILE",
+        help="with --image: write the traced outline to this JSON file "
+        "(never overwritten); read it back with --outline",
     )
     parser.add_argument("--activity", default="running", help="default: running")
     parser.add_argument(
@@ -162,12 +185,29 @@ def parse_args(
     args = parser.parse_args(argv)
     if args.out is not None and args.out.exists():
         parser.error(f"{args.out} already exists; samples are never overwritten")
+    if args.save_outline is not None:
+        if args.image is None:
+            parser.error("--save-outline needs --image")
+        if args.save_outline.exists():
+            parser.error(f"{args.save_outline} already exists; never overwritten")
+    # The outline traced from --image, as its JSON file holds it.
+    args.traced = None
     request: Request
     try:
         if args.word is not None:
             request = WordRequest(
                 start=args.start,
                 word=compose(args.word),
+                distance_m=args.distance,
+                activity=args.activity,
+            )
+        elif args.image is not None:
+            args.traced = outline_data(
+                args.image, name=args.image.stem, source=args.image.name
+            )
+            request = OutlineRequest(
+                start=args.start,
+                outline=parse_outline(args.traced),
                 distance_m=args.distance,
                 activity=args.activity,
             )
@@ -185,6 +225,8 @@ def parse_args(
                 distance_m=args.distance,
                 activity=args.activity,
             )
+    except InvalidImageError as exc:
+        parser.error(f"{args.image}: {exc}")
     except InvalidOutlineError as exc:
         parser.error(f"{args.outline}: {exc}")
     except InvalidWordError as exc:
@@ -202,7 +244,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     request, args = parse_args(argv)
     lat, lon = request.start
     print("Route request:")
-    if isinstance(request, OutlineRequest):
+    if isinstance(request, OutlineRequest) and args.traced is not None:
+        corners = len(args.traced["points"]) - 1
+        print(f"  shape:    {request.shape} (traced from {args.image})")
+        print(f"            {corners} corners; {request.outline.license}")
+        shape = request.outline(SHAPE_POINTS)
+    elif isinstance(request, OutlineRequest):
         print(f"  shape:    {request.shape} (outline from {args.outline})")
         print(f"            {request.outline.source}; {request.outline.license}")
         shape = request.outline(SHAPE_POINTS)
@@ -215,6 +262,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"  distance: {request.distance_m} m")
     print(f"  start:    {lat}, {lon}")
     print(f"  activity: {request.activity}")
+    if args.save_outline is not None:
+        text = json.dumps(args.traced, indent=1)
+        args.save_outline.write_text(text + "\n", encoding="utf-8")
+        print(f"Wrote {args.save_outline}: the traced outline")
     if args.out is None:
         return 0
 

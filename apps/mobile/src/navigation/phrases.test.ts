@@ -16,17 +16,47 @@ test("the shared example reads as instructions", () => {
   expect(directions.map(instruction)).toEqual([
     "Head out on Via Belenzani",
     "Turn left onto Via Manci",
-    "Turn left onto the footpath",
+    "Turn left onto the footpath beside Via Rosmini",
     "Continue straight onto SP12",
     "Turn sharp right onto Via Verdi",
   ]);
 });
 
 test("a road with no name is called by its kind, never named", () => {
-  const unnamed = { ...directions[2], road_type: "footway / steps" };
+  const unnamed = { ...directions[2], road_type: "footway / steps", along: null };
   expect(onto(unnamed)).toBe(" onto the footpath");
   expect(onto({ ...unnamed, road_type: "tertiary" })).toBe(" onto the road");
   expect(onto({ ...unnamed, road_type: null })).toBe("");
+});
+
+test("the street beside an unnamed road is said as beside, never as its name", () => {
+  const footway = directions[2];
+  expect(footway.along).toBe("Via Rosmini");
+  expect(onto(footway)).toBe(" onto the footpath beside Via Rosmini");
+  expect(onto({ ...footway, road_type: null })).toBe(" beside Via Rosmini");
+  expect(instruction({ ...footway, turn: "depart" })).toBe(
+    "Head out on the footpath beside Via Rosmini",
+  );
+  expect(instruction({ ...footway, turn: "depart", road_type: null })).toBe(
+    "Head out beside Via Rosmini",
+  );
+  expect(announcement([footway], 52)).toBe(
+    "In 50 metres, turn left onto the footpath beside Via Rosmini",
+  );
+});
+
+test("a street name always wins over the street beside", () => {
+  const named = { ...directions[2], street: "Via Grazioli" };
+  expect(instruction(named)).toBe("Turn left onto Via Grazioli");
+});
+
+test("an API older than TASK-060, without along, reads as before", () => {
+  const { along: _along, ...old } = directions[2];
+  expect(instruction(old)).toBe("Turn left onto the footpath");
+  expect(instruction({ ...directions[2], along: "" })).toBe(
+    "Turn left onto the footpath",
+  );
+  expect(instruction({ ...old, road_type: null })).toBe("Turn left");
 });
 
 test("joined directions are said together, street names untouched", () => {

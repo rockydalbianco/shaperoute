@@ -313,7 +313,9 @@ inquadra di nuovo il percorso.
 Ogni svolta si dice a voce 50 m prima, in inglese come il resto dell'app
 («In 50 metres, turn left onto Via Roma, then turn right onto the
 footpath»), con una vibrazione. Una via senza nome è «the footpath», «the
-path», «the road»: mai un nome inventato. Oltre 40 m dal percorso il banner
+path», «the road»: mai un nome inventato. Se accanto corre una via con nome
+(dedotta dall'API, ADR-0057), la si dice con «beside»: «Turn left onto the
+footpath beside Via Roma», sul banner e a voce (ADR-0058). Oltre 40 m dal percorso il banner
 diventa arancio, «Off the route», e la voce lo dice una volta; il percorso
 non si ricalcola. Alla fine, «You have arrived». Funziona con lo schermo
 acceso e l'app aperta; la posizione non esce dal telefono.

@@ -1758,6 +1758,30 @@ e una zona nuova ha le sole vie del grafo finché non si chiama
 `OsmnxSource.named_roads`. Scaricarlo insieme alla zona è un seguito
 possibile, non fatto qui.
 
+## ADR-0058 — `along` nella navigazione: «beside», mai «onto»
+**Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
+(TASK-061)
+
+Con ADR-0057 ogni indicazione può avere `along`: la via che corre accanto a
+una strada senza nome, dedotta dalle strade vicine. L'app la ignorava, e un
+marciapiede diceva solo «Turn left onto the footpath».
+
+**Decisione**: quando `street` manca e `along` c'è, la frase aggiunge
+«beside» e la via dopo il tipo di strada: «Turn left onto the footpath
+beside Via Roma», alla partenza «Head out on the footpath beside Via Roma».
+Senza tipo di strada resta solo «Turn left beside Via Roma». Vale uguale
+per il banner, la seconda riga e la voce, che usano la stessa funzione
+(`onto` in `phrases.ts`). `street` vince sempre; senza tutti e due, e con
+un'API senza `along`, la frase è quella di prima.
+
+**Scartate**: «along Via Roma» (si legge come se la via fosse quella su cui
+si corre, e a voce si confonde con «onto»); «Turn left onto Via Roma» (è un
+nome dato a una strada che non l'ha, contro ADR-0045); «near Via Roma»
+(troppo vago per decidere a un incrocio).
+
+**Conseguenza**: le frasi dei marciapiedi si allungano di due o tre parole;
+il nome è sempre quello di una via vera accanto, non del marciapiede.
+
 ## ADR-0059 — Corridoio più veloce, a percorsi identici
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
 (TASK-063)
@@ -1965,3 +1989,66 @@ inversioni): sta nel disegno delle lettere, con o senza questa modifica.
 Le lettere ripassano il 74–91% della loro linea; a 15 km il 51–92% del
 percorso è su strade corse due volte (con il ritorno a specchio 71–92%,
 cioè 5,4–7,0 km di secondo passaggio), con 3–25 inversioni a U per parola.
+
+## ADR-0068 — Il contorno ricavato da un'immagine, con regole fisse
+**Stato**: Attiva · 2026-09-25 · chiesto dall'utente («l'utente può caricare
+un'immagine da rappresentare e dai contorni si ricava la forma»), con il
+perimetro della prima versione: un soggetto chiaro su sfondo uniforme, solo
+il contorno esterno; Pillow autorizzata dall'utente; il metodo e le soglie
+decisi dall'agente su delega dell'utente (TASK-072); giudizio
+dell'utente: mela, pera e Italia `sì` ovunque, stella `quasi` a Trento e
+`sì` a Milano, gatto `no` a Trento e Milano
+
+Le forme arrivavano solo dal catalogo, dai file dei contorni e dalle
+parole. L'utente vuole partire da un'immagine sua. Il principio resta: il
+percorso lo decide il motore, e anche il contorno lo ricava il motore, non
+l'AI.
+
+**Decisione**:
+- **Un modulo nuovo, `route_engine/image_outline.py`**: PNG o JPEG →
+  sfondo dal bordo → soggetto per soglia sul colore (o sulla trasparenza) →
+  il pezzo più grande → contorno esterno lisciato e semplificato → un
+  `Outline` come quelli dei file, controllato da `parse_outline`
+  (`ROUTE_ENGINE.md` §2, «Il contorno da un'immagine»). Fuori da
+  `shapes/`, che resta alla sola libreria standard.
+- **Regole fisse, niente di appreso**: stessa immagine, stesso contorno.
+  Soglie: sfondo uniforme se il 70% del bordo sta entro 40 dalla sua
+  mediana (RGB); soggetto oltre 60 dallo sfondo; il pezzo più grande
+  almeno il 75% del soggetto; il soggetto staccato dal bordo e largo almeno
+  48 pixel su 640; al più 100 angoli.
+- **Rifiutare invece di indovinare**: sfondo non uniforme, nessun
+  soggetto, più soggetti, soggetto che tocca il bordo, troppo piccolo,
+  troppo frastagliato, formato sbagliato. Ogni rifiuto ha un motivo in una
+  parola (`reason`), per il messaggio dell'app di TASK-073.
+- **Lisciato alla scala delle strade**: le parti più sottili del 2% del
+  soggetto si tolgono e le fessure altrettanto strette si chiudono, con
+  giunzioni ad angolo, così le punte restano punte (ADR-0038, ADR-0039: i
+  dettagli sottili sulle strade non restano). Semplificazione di
+  Douglas–Peucker all'1% del soggetto.
+- **Il contorno si calcola con shapely** (unione dei tratti di pixel di
+  ogni riga, `buffer`, `simplify`) e numpy, già installati con osmnx:
+  dichiarati in `pyproject.toml` come Pillow, perché il motore li importa
+  (come numpy con TASK-062). Nessuna altra libreria (scikit-image, OpenCV).
+- **Dalla CLI**: `--image FILE` come `--outline` (`plan_shape`,
+  `tilt_limit`, forma dritta), con il nome del file; `--save-outline FILE`
+  scrive il contorno in JSON, che `--outline` rilegge uguale.
+
+**Motivo**: un soggetto su sfondo uniforme si separa bene con una soglia,
+senza modelli, e la regola si prova con immagini disegnate nei test. Uno
+sfondo pieno di cose invece non ha una soglia giusta: meglio un rifiuto con
+il motivo che una forma a caso. Il pezzo più grande e il solo contorno
+esterno danno una linea chiusa, l'unica cosa che un percorso disegna senza
+tratti ripassati.
+
+**Conseguenza**: un pezzo staccato più piccolo (un gambo che non tocca la
+mela, un puntino) si perde senza avviso: l'anteprima del contorno
+nell'app (TASK-073) lo farà vedere prima di chiedere il percorso. Uno
+sfondo con una sfumatura forte, o un'ombra attaccata al soggetto, viene
+rifiutato o finisce nel contorno. I dettagli interni (occhi, finestre) non
+diventano tratti ripassati: se servono, è un lavoro a parte.
+Giudizio dell'utente (2026-09-25, `samples/LOG.md`): mela, pera e Italia
+`sì` in ogni zona, stella `quasi` a Trento e `sì` a Milano, gatto `no` a
+Trento e Milano. Il gatto non si riconosceva già dal contorno: una sagoma
+povera di dettagli resta povera anche sulle strade. Da valutare con
+TASK-073: l'anteprima che fa giudicare la sagoma prima del percorso, e se
+la semplificazione toglie troppo.

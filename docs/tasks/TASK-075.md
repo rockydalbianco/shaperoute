@@ -104,7 +104,7 @@ ieri, 16,9 s oggi: il guadagno di TASK-063 c'è.
 | 25 m nord | 0,82 | 9,7 km |
 | 25 m sud | 0,85 | 9,2 km |
 | 25 m est | 0,92 | 11,0 km |
-| 25 m ovest | 0,86 | 11,7 km |
+| 25 m ovest | 0,85 | 11,7 km |
 | 70 m nord-est | 0,73 | 9,7 km |
 | 70 m sud-ovest | 0,92 | 9,3 km |
 | 100 m nord | 0,91 | 9,4 km |
@@ -134,7 +134,32 @@ righe in `samples/LOG.md`. Pagina di giudizio (sì / quasi / no, e quale
 somiglia a quello di ieri nell'app):
 https://claude.ai/artifact/2RWMt1kAbYKoT3RTC5XKDm
 
-### Da decidere (non fatto qui)
+### Giudizio dell'utente (2026-09-26)
+
+| Partenza | Somiglianza | Giudizio |
+|---|---|---|
+| Via della Villa (ieri = oggi) | 0,86 | sì |
+| 25 m nord | 0,82 | no |
+| 25 m sud | 0,85 | sì |
+| 25 m est | 0,92 | sì |
+| 25 m ovest | 0,85 | quasi |
+| 70 m nord-est | 0,73 | no |
+| 70 m sud-ovest | 0,92 | sì |
+| 100 m nord | 0,91 | quasi |
+| 100 m est | 0,81 | quasi |
+
+Il più simile al cuore di ieri nell'app, secondo l'utente: quello da Via
+della Villa, cioè lo stesso che il motore fa oggi.
+
+**Per dopo:** la somiglianza non segue sempre il giudizio a occhio (25 m
+nord 0,82 `no` contro 25 m sud 0,85 `sì`; 100 m nord 0,91 solo `quasi`).
+Scegliere la partenza migliore con la sola somiglianza può sbagliare.
+
+### Decisione dell'utente
+
+Il motore prova più partenze vicine e tiene la migliore: sarà TASK-076.
+
+### Da decidere (non fatto qui) — superato dalla decisione sopra
 
 Quanto il cuore dipende da pochi metri di partenza è il problema vero, ed è
 una scelta di prodotto: il motore potrebbe provare alcune partenze vicine

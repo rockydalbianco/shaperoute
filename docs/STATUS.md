@@ -51,6 +51,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 Niente per l'app.
 
+- **Programmatore Lettere** — TASK-064: quattro animali candidati
+  (farfalla, uccello, cane, lumaca) disegnati come contorni, con antenne,
+  zampe, coda, spirale e corna ripassate (ADR-0060); 12 campioni a 15 km
+  nelle tre zone, tutti con un percorso. Giudizio dell'utente in attesa:
+  anteprima https://claude.ai/artifact/L77yrZ9aDWTJRQcAp9hEEb. Dopo il
+  giudizio, TASK-065 porta nel catalogo quelli con un `sì` o un `quasi`.
+
 ## Completato
 
 - **App** — TASK-058: la barra di caricamento anche sulla mappa che si

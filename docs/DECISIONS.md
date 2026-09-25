@@ -1691,3 +1691,51 @@ composte (anteprima di TASK-059), non le lettere da sole.
   Per il seguito l'utente chiede che le lettere si possano unire anche
   dalla cima, se non confonde o se aiuta, e che possano avere scale
   diverse, purché non troppo da quelle vicine: TASK-067 (ADR-0063).
+
+## ADR-0060 — Animali candidati: la sagoma nel contorno, i dettagli sottili ripassati
+**Stato**: Attiva · 2026-09-25 · chiesto dall'utente («aumenta il numero di
+forme disponibili», poi «Animali»: farfalla, uccello, cane, lumaca); il
+disegno deciso dall'agente su delega dell'utente (TASK-064); giudizio
+dell'utente sui campioni in attesa
+
+Il catalogo ha sette forme, e ci entra solo ciò che l'utente ha giudicato
+a occhio sulle strade (ADR-0036). Servivano quattro animali da provare,
+come le candidate di TASK-034.
+
+**Decisione**:
+- **Quattro contorni nuovi** in `route_engine/shapes/outlines/`
+  (`butterfly`, `bird`, `dog`, `snail`), disegnati dall'agente con pochi
+  punti e archi calcolati: nessuna licenza di terzi, nessun download. Si
+  provano solo dalla CLI (`--outline`) finché l'utente non li giudica;
+  nessun parametro del motore cambia.
+- **La sagoma grande sta nel contorno** (ADR-0035): la farfalla vista
+  dall'alto, simmetrica, con quattro ali e una rientranza profonda fra
+  l'ala superiore e l'inferiore; l'uccello in volo di profilo, con due ali
+  alzate e larghe e la coda a forbice; il cane in piedi di profilo, con
+  l'orecchio alzato; la lumaca di profilo, con il guscio tondo sul corpo.
+  Tutti dritti, come le altre forme (ADR-0038).
+- **I dettagli sottili sono tratti ripassati** (ADR-0039): le antenne della
+  farfalla, le quattro zampe e la coda del cane, la spirale del guscio (un
+  giro, appesa al guscio con una linea corta come gli occhi del gatto) e le
+  corna della lumaca. L'uccello resta solo contorno.
+- **Campioni come la CLI, senza ritagli**: `read_outline`, `plan_shape` e
+  `tilt_limit` come `--outline`, ma con i grafi di zona dell'API in
+  memoria, come TASK-032 e TASK-034: nessun ritaglio in `data/cache/` (C:
+  quasi pieno) e solo le zone già in cache.
+
+**Motivo**: una prima bozza, provata sulle strade prima dei campioni, aveva
+l'uccello con ali strette, il cane con le quattro zampe nel contorno e la
+lumaca con una spirale di un giro e un quarto. Le ali strette si chiudevano
+in una macchia; le zampe del contorno, larghe 0,11 della forma, si
+riducevano a due blocchi o sparivano (un contorno senza tratti si
+ricampiona a 64 punti, e un piede ne prende uno o due); la spirale fitta
+diventava un groviglio. Con i tratti ripassati ogni vertice resta, e la
+strada scende lungo la zampa e torna indietro. Rifatti così, uccello, cane
+e lumaca si leggono meglio in due zone su tre (confronto a occhio
+dell'agente, non un giudizio); le bozze non sono nei campioni.
+
+**Conseguenza**: 12 campioni a 15 km (`samples/LOG.md`, TASK-064), tutti
+con un percorso: somiglianza 0,84–1,00, in 4–60 s. Tre animali su quattro
+hanno tratti, quindi le tolleranze dimezzate di ADR-0039. Entrano nel catalogo, con TASK-065, gli animali con almeno un `sì` o un
+`quasi` dell'utente (ADR-0036); gli altri restano nella cartella dei
+contorni, come la casa e l'albero.

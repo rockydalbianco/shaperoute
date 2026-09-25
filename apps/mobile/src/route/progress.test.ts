@@ -7,6 +7,8 @@ import {
   phaseSeconds,
   READING_S,
   readingProgress,
+  WORD_LETTER_S,
+  wordSeconds,
 } from "./progress";
 
 test("each phase starts where the one before ends", () => {
@@ -61,4 +63,29 @@ test("a wait is slow past twice its usual time", () => {
   expect(isSlow(8, phaseSeconds("sending", 5000))).toBe(true);
   expect(phaseSeconds("computing", 21000)).toBe(computeSeconds(21000));
   expect(phaseSeconds("downloading_map", 5000)).toBe(90);
+});
+
+test("a word is paced by its letters, not only by its distance", () => {
+  expect(wordSeconds("UNO", 10000)).toBe(3 * WORD_LETTER_S);
+  expect(wordSeconds("CAMMINO", 21000)).toBe(7 * WORD_LETTER_S);
+  expect(wordSeconds("CAMMINO", 21000)).toBeGreaterThan(wordSeconds("TRENTO", 21000));
+  expect(wordSeconds("CIAO", 15000)).toBeGreaterThan(computeSeconds(15000));
+  // Never quicker than a shape of the same distance.
+  expect(wordSeconds("UNO", 42000)).toBe(computeSeconds(42000));
+});
+
+test("a word computes at its own pace; a shape as before", () => {
+  expect(phaseSeconds("computing", 15000, "CIAO")).toBe(wordSeconds("CIAO", 15000));
+  expect(phaseSeconds("computing", 15000, null)).toBe(computeSeconds(15000));
+  expect(phaseSeconds("downloading_map", 15000, "CIAO")).toBe(90);
+  expect(estimateProgress("computing", 40, 15000, "CIAO")).toBeLessThan(
+    estimateProgress("computing", 40, 15000),
+  );
+  expect(estimateProgress("computing", 3600, 15000, "CIAO")).toBeLessThanOrEqual(0.95);
+});
+
+test("a word is slow past twice its own estimate", () => {
+  const usual = phaseSeconds("computing", 15000, "CIAO");
+  expect(isSlow(2 * usual - 1, usual)).toBe(false);
+  expect(isSlow(2 * usual, usual)).toBe(true);
 });

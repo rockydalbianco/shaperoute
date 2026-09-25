@@ -58,6 +58,9 @@ Niente per l'app.
   opzionale in `shared-types`. Nomi solo dalla cache, mai da Overpass
   durante una richiesta. Cuore da 15 km di Trento: 118 → 57 indicazioni
   senza nome né via. Il seguito è TASK-061, `along` nella navigazione.
+- **App** — TASK-069: la barra di una parola stima il calcolo dalle
+  lettere, 20 s l'una (misure nel task file, ADR-0064): «CIAO» a 15 km
+  pulsa dopo 160 s invece di 75 s. Le forme come prima.
 - **Programmatore Lettere** — TASK-064: quattro animali candidati
   (farfalla, uccello, cane, lumaca) disegnati come contorni, con antenne,
   zampe, coda, spirale e corna ripassate (ADR-0060), provati dalla CLI a

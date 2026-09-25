@@ -1,6 +1,8 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import type { RouteRequest } from "@shaperoute/shared-types";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 
-import { RouteChoice } from "./RoutePanel";
+import { SLOW_TEXT } from "./LoadingBar";
+import { RouteChoice, RouteOutcome } from "./RoutePanel";
 import type { ShapeReadingState } from "./useShapeReading";
 import { checkWord } from "./wordInput";
 
@@ -83,4 +85,38 @@ test("a distance too short for the word is raised with a tap", async () => {
   ).toBeTruthy();
   await fireEvent.press(screen.getByText("Use 12 km"));
   expect(onDistanceText).toHaveBeenCalledWith("12");
+});
+
+function computing(request: RouteRequest) {
+  return (
+    <RouteOutcome
+      view={{ status: "waiting", request, startedAt: 0, phase: "computing" }}
+      onCancel={jest.fn()}
+      exporting={{ status: "idle" }}
+      onExport={jest.fn()}
+      onTryDistance={jest.fn()}
+      onPickShape={jest.fn()}
+      onStart={jest.fn()}
+    />
+  );
+}
+
+test("the bar is given the word, and waits for it longer than for a shape", async () => {
+  jest.useFakeTimers();
+  try {
+    const start: [number, number] = [46.0671, 11.1214];
+    await render(
+      computing({ start, word: "CIAO", distance_m: 15000, activity: "running" }),
+    );
+    await act(() => jest.advanceTimersByTimeAsync(100_000));
+    expect(screen.getByTestId("loading").props.accessibilityValue.text).toBeUndefined();
+
+    await render(
+      computing({ start, shape: "heart", distance_m: 15000, activity: "running" }),
+    );
+    await act(() => jest.advanceTimersByTimeAsync(100_000));
+    expect(screen.getByTestId("loading").props.accessibilityValue.text).toBe(SLOW_TEXT);
+  } finally {
+    jest.useRealTimers();
+  }
 });

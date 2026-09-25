@@ -29,6 +29,20 @@ export function computeSeconds(distanceM: number): number {
   return Math.max(10, 2.5 * (distanceM / 1000));
 }
 
+/** Seconds a letter of a word usually takes to compute (TASK-069). */
+export const WORD_LETTER_S = 20;
+
+/**
+ * Seconds the engine usually takes to write a word (TASK-069, ADR-0064).
+ * Each letter is a route of its own, joined to the next, so the letters set
+ * the time more than the kilometres: at Trento 45 s for "UNO" (10 km), 43–75 s
+ * for "CIAO" (15 km), 106 s for "TRENTO" and 141 s for "CAMMINO" (21 km).
+ * About 20 s a letter, never less than a shape of the same distance.
+ */
+export function wordSeconds(word: string, distanceM: number): number {
+  return Math.max(WORD_LETTER_S * Array.from(word).length, computeSeconds(distanceM));
+}
+
 function spanOf(phase: WaitingPhase): [number, number] {
   switch (phase) {
     case "downloading_map":
@@ -46,7 +60,11 @@ function spanOf(phase: WaitingPhase): [number, number] {
  * waiting (`isSlow`), so an API that does not answer never looks stuck
  * (TASK-058, ADR-0055).
  */
-export function phaseSeconds(phase: WaitingPhase, distanceM: number): number {
+export function phaseSeconds(
+  phase: WaitingPhase,
+  distanceM: number,
+  word?: string | null,
+): number {
   switch (phase) {
     case "downloading_map":
       return DOWNLOAD_S;
@@ -54,20 +72,22 @@ export function phaseSeconds(phase: WaitingPhase, distanceM: number): number {
     case "queued":
       return WAITING_S;
     default:
-      return computeSeconds(distanceM);
+      return word ? wordSeconds(word, distanceM) : computeSeconds(distanceM);
   }
 }
 
 /**
  * The share of the bar to fill, from 0 to 1, after `seconds` in `phase`.
  * At the expected time a phase is 86% through its span, then creeps on.
+ * A word computes at its own pace (`wordSeconds`).
  */
 export function estimateProgress(
   phase: WaitingPhase,
   seconds: number,
   distanceM: number,
+  word?: string | null,
 ): number {
-  return along(spanOf(phase), seconds, phaseSeconds(phase, distanceM));
+  return along(spanOf(phase), seconds, phaseSeconds(phase, distanceM, word));
 }
 
 /**

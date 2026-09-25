@@ -34,7 +34,8 @@ giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
 chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
 fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
 dalla cima, e una scala per lettera vicina a quella delle vicine
-(ADR-0063, dopo TASK-063, che ha `optimizer.py`).
+(ADR-0063, dopo TASK-063, che ha `optimizer.py`). Da TASK-071: lettere più
+piccole si leggono peggio; le lettere squadrate sono proposte all'utente.
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -53,6 +54,14 @@ Niente per l'app.
 
 ## Completato
 
+- **Programmatore Lettere** — TASK-071: verificato che il ritorno di un
+  tratto ripassato prende a volte un'altra via e disegna un anello,
+  soprattutto a Milano («CIAO» 51% di strade doppie contro il 74% del
+  disegno). Provato il ritorno sulle strade dell'andata: una linea sola, ma
+  percorso più lungo e lettere più piccole (fino a −28%); per l'utente 4
+  parole su 9 peggio, nessuna meglio. Il motore resta com'è (ADR-0067
+  «Scartata», codice nel commit `0e8add6`). Proposta all'utente, da
+  decidere: lettere squadrate come nello screenshot di Strava (task file).
 - **Motore** — TASK-075: il cuore da 10 km di Caldonazzo non è peggiorato.
   Motore di ieri (`87304b0`) e di oggi (`709f4f5`) danno lo stesso percorso
   punto per punto su 9 partenze su 9, oggi in 16,9 s invece di 21,4 s.

@@ -53,6 +53,15 @@ Niente per l'app.
 
 ## Completato
 
+- **Motore** — TASK-072: la forma ricavata da un'immagine. Da un PNG o
+  JPEG con un soggetto chiaro su sfondo uniforme il motore ricava il
+  contorno esterno con regole fisse (`image_outline.py`, ADR-0068) e la CLI
+  ne fa un percorso (`--image`, `--save-outline`); sfondo non uniforme,
+  più soggetti, soggetto sul bordo, piccolo o frastagliato sono rifiutati
+  con il motivo. Campioni a 15 km a Trento e Milano: mela, pera e Italia
+  `sì`, stella `quasi`/`sì`, gatto `no` (non si riconosceva già dal
+  contorno). Il seguito è **TASK-073**: l'immagine nell'app e nell'API,
+  con l'anteprima del contorno prima del percorso (task file).
 - **App** — TASK-061: un marciapiede senza nome con accanto una via dice
   «Turn left onto the footpath beside Via Roma», sul banner e a voce
   (ADR-0058). `street` vince sempre; un'API senza `along` legge come prima.

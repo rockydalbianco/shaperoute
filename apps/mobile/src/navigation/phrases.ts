@@ -3,7 +3,9 @@ import type { Direction, Turn } from "@shaperoute/shared-types";
 /**
  * What the app shows and says for a direction (TASK-049), in English like
  * the rest of the interface. The street is the one OpenStreetMap names; a
- * road without a name is called by its kind, never given one (ADR-0045).
+ * road without a name is called by its kind, never given one (ADR-0045);
+ * the street it runs beside, when the API deduced one, is said as "beside",
+ * never as the road's own name (ADR-0058).
  */
 
 const VERBS: Record<Turn, string> = {
@@ -40,7 +42,10 @@ const KINDS: Record<string, string> = {
   residential: "the street",
 };
 
-/** "onto Via Roma", "onto the footpath", or nothing when OSM says nothing. */
+/**
+ * "onto Via Roma", "onto the footpath", "onto the footpath beside Via Roma",
+ * or nothing when OSM says nothing. `street` always wins over `along`.
+ */
 export function onto(direction: Direction): string {
   if (direction.street) {
     return ` onto ${direction.street}`;
@@ -48,7 +53,9 @@ export function onto(direction: Direction): string {
   // A merged edge can be "footway / steps": the first kind is enough.
   const kind = direction.road_type?.split(" / ")[0];
   const words = kind ? (KINDS[kind] ?? "the road") : null;
-  return words ? ` onto ${words}` : "";
+  // `along` is missing from an API older than TASK-060.
+  const beside = direction.along ? ` beside ${direction.along}` : "";
+  return words ? ` onto ${words}${beside}` : beside;
 }
 
 /** "Turn left onto Via Roma"; the departure says where it starts. */

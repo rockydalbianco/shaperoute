@@ -53,6 +53,10 @@ Niente per l'app.
 
 ## Completato
 
+- **App** — TASK-061: un marciapiede senza nome con accanto una via dice
+  «Turn left onto the footpath beside Via Roma», sul banner e a voce
+  (ADR-0058). `street` vince sempre; un'API senza `along` legge come prima.
+
 - **Indicazioni** — TASK-060: ogni indicazione dell'API ha `along`, la via
   lungo cui corre una strada senza nome, distinta da `street` (ADR-0057);
   opzionale in `shared-types`. Nomi solo dalla cache, mai da Overpass

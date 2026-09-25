@@ -221,8 +221,9 @@ la barra pulsa: si sta ancora aspettando (TASK-058, ADR-0055).
 
 La stessa barra, con la stessa regola, compare anche nelle altre attese:
 sotto «The AI is reading it…» mentre l'AI legge le parole (di solito 20 s,
-fino a 50 s se deve caricare il modello), e sopra la mappa mentre MapLibre e
-le tessere si caricano (di solito 5 s).
+fino a 50 s se deve caricare il modello), e al centro della mappa mentre MapLibre e
+le prime tessere si caricano (di solito 5 s): solo la prima volta, finché la
+pagina non dice `loaded`; se la mappa non si carica, al suo posto l'errore.
 
 | Stato dell'API | Il pannello dice |
 |---|---|

@@ -49,8 +49,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-058** — Barra anche per mappa, lettura dell'AI e API lenta
   (worktree `D:\shaperoute-app`): `progress.ts`, `LoadingBar.tsx` (+ test),
-  `docs/UI.md`, più i collegamenti in `mapPage.ts`, `messages.ts`,
-  `MapView.tsx`, `MapScreen.tsx`, `RoutePanel.tsx` (liberi dopo TASK-049).
+  `docs/UI.md`, `mapPage.ts`, `messages.ts`, `MapView.tsx`,
+  `RoutePanel.tsx` (+ test). Fatto coi test; manca la prova sull'iPhone.
 
 ## Completato
 

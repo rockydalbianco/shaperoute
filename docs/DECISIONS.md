@@ -1626,5 +1626,6 @@ barra oltre il tratto della fase (poi resterebbe ferma alla fase dopo).
 
 **Conseguenza**: una pulsazione vuol dire «più lento del solito», non
 «rotto». Per la mappa la pagina deve dire all'app quando carica e quando ha
-finito (`dataloading`/`idle` di MapLibre): i collegamenti sono in file di
-TASK-049.
+finito: il primo `idle` di MapLibre diventa il messaggio `loaded`. La barra
+della mappa compare solo al primo caricamento, al centro della mappa
+(dentro `MapView`): a ogni spostamento, in navigazione, ci sarebbe sempre.

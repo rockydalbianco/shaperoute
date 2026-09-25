@@ -17,7 +17,11 @@ export type ToPage =
   | { type: "follow"; lngLat: LngLat };
 
 /** From the map page to the app, through `window.ReactNativeWebView`. */
-export type FromPage = { type: "ready" } | { type: "error"; message: string };
+export type FromPage =
+  | { type: "ready" }
+  /** The first tiles are drawn: the map has finished loading (TASK-058). */
+  | { type: "loaded" }
+  | { type: "error"; message: string };
 
 export function setPosition(point: LatLon): ToPage {
   return { type: "setPosition", lngLat: toLngLat(point) };
@@ -66,8 +70,8 @@ export function parsePageMessage(data: string): FromPage | null {
   if (typeof message !== "object" || message === null || !("type" in message)) {
     return null;
   }
-  if (message.type === "ready") {
-    return { type: "ready" };
+  if (message.type === "ready" || message.type === "loaded") {
+    return { type: message.type };
   }
   if (
     message.type === "error" &&

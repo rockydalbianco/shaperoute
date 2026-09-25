@@ -1870,3 +1870,47 @@ arrivano a 140 s per «CIAO» e 258 s per «BELLO»).
 **Conseguenza**: la barra di una parola avanza più piano, e pulsa solo dopo
 il doppio del solito per quella parola. Se il motore diventa più veloce
 sulle parole, basta cambiare `WORD_LETTER_S` con nuove misure.
+
+## ADR-0065 — Testa di cane: orecchie che pendono, occhi, naso e bocca ripassati
+**Stato**: Attiva · 2026-09-25 · chiesto dall'utente («Per il cane prova
+anche solo la testa facendo dettagli come bocca naso e occhi»); il disegno
+deciso dall'agente su delega dell'utente (TASK-068); giudizio dell'utente:
+`sì` a Trento, Levico e Milano
+
+Il cane intero di TASK-064 (ADR-0060) è `sì` a Milano e `no` a Trento e
+Levico. L'utente chiede di provare solo la testa, con i dettagli del muso.
+
+**Decisione**:
+- **Un contorno nuovo**, `route_engine/shapes/outlines/dog_head.json`,
+  accanto a `dog.json`, che resta com'è. Si prova solo dalla CLI
+  (`--outline`) finché l'utente non lo giudica; nessun parametro del motore
+  cambia.
+- **Vista di fronte, orecchie che pendono**: cranio tondo, muso più
+  stretto, due orecchie lunghe ai lati delle guance, aperte in basso di
+  30°, staccate dalla guancia da una tacca a V larga. È ciò che la
+  distingue dal gatto (`cat.json`), che ha le orecchie a punta in su: nella
+  testa di cane la cima è il cranio.
+- **Occhi, naso e bocca sono tratti ripassati** (ADR-0039): gli occhi, due
+  anelli di otto punti appesi con una linea corta alla tacca fra orecchio e
+  guancia, come quelli del gatto; il naso, un anello in mezzo al muso,
+  appeso a una linea che sale dal mento; la bocca, due linee corte da quella
+  linea sotto il naso, una per lato.
+- **Campioni come TASK-064**: i grafi di zona dell'API in memoria, solo le
+  zone in cache, nessun ritaglio su C:.
+
+**Motivo**: otto bozze provate sulle strade prima dei campioni
+(`docs/tasks/TASK-068.md`). Con dettagli piccoli il muso si aggrovigliava;
+il motore taglia gli anelli all'interno, quindi occhi e naso devono essere
+grandi quasi quanto gli occhi del gatto (470 m contro 560 m a 15 km, a
+scala piena) e avere più punti di passaggio; con la tacca stretta il
+percorso la scorciava e un orecchio spariva. Con le orecchie aperte la
+somiglianza sale a 0,97 · 0,95 · 0,99 (Trento, Levico, Milano), da
+0,94 · 0,92 · 0,98.
+
+**Conseguenza**: 3 campioni a 15 km (`samples/LOG.md`, TASK-068), tutti
+con un percorso, in 3–17 s. I dettagli, andata e ritorno, sono il 44% della
+lunghezza del disegno, contro il 29% del gatto: a 15 km naso e bocca escono
+più piccoli del disegno. Giudizio dell'utente (2026-09-25): la testa è
+`sì` in tutte e tre le zone, dove il cane intero era `sì` solo a Milano.
+Se il cane entra nel catalogo, e come testa o intero, lo decide l'utente
+con TASK-065 (ADR-0036).

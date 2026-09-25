@@ -71,12 +71,14 @@ export function useRouteRequest(baseUrl: string | null): {
   return { state, draw, cancel };
 }
 
-/** Same start, shape and distance: the state still belongs to the screen. */
+/** Same start, shape or word, and distance: the state still belongs to the
+ * screen. */
 export function sameRequest(a: RouteRequest, b: RouteRequest): boolean {
   return (
     a.start[0] === b.start[0] &&
     a.start[1] === b.start[1] &&
     a.shape === b.shape &&
+    a.word === b.word &&
     a.distance_m === b.distance_m &&
     a.activity === b.activity
   );

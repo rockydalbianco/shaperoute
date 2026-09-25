@@ -1,6 +1,7 @@
 import { MAX_APP_DISTANCE_KM } from "./distance";
 import { shapeList } from "./shapeWords";
 import type { RouteProblem } from "./useRouteRequest";
+import type { DrawKind } from "./wordInput";
 
 /**
  * What the screen says: what happened and what to do, then details. The
@@ -16,7 +17,12 @@ export type ProblemText = {
 
 const BUG = "The app and the API do not agree (a bug)";
 
-export function problemText(problem: RouteProblem): ProblemText {
+/** `kind`: what the route draws; a word that does not fit is not offered
+ * the shapes, but a shorter word (TASK-057). */
+export function problemText(
+  problem: RouteProblem,
+  kind: DrawKind = "shape",
+): ProblemText {
   switch (problem.kind) {
     case "api_error":
       switch (problem.code) {
@@ -24,9 +30,15 @@ export function problemText(problem: RouteProblem): ProblemText {
           const fits = problem.suggested_distance_m;
           if (fits != null && fits <= MAX_APP_DISTANCE_KM * 1000) {
             return {
-              text: `This shape does not fit the roads here at this distance. It fits at about ${fits / 1000} km.`,
+              text: `This ${kind} does not fit the roads here at this distance. It fits at about ${fits / 1000} km.`,
               detail: problem.message,
               tryDistanceM: fits,
+            };
+          }
+          if (kind === "word") {
+            return {
+              text: "This word does not fit the roads here. Try a shorter word, or another start.",
+              detail: problem.message,
             };
           }
           return {

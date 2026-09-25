@@ -136,6 +136,11 @@ punto, ricentra la mappa.
 
 ## Forma e distanza
 
+Sopra, un interruttore **«Shape | Word»** (TASK-057, ADR-0053): il percorso
+disegna una forma del catalogo **oppure** una parola, mai tutte e due, e
+l'interruttore mostra quale. Di partenza «Shape». Passare dall'uno all'altro
+non cancella quanto scritto nell'altro campo.
+
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
 scrivendo nel campo. I simboli delle tessere sono caratteri (♥ ★ ◯ ☾ e le
 emoji di gatto, pesce, cavallo): disegnare i contorni veri vuole
@@ -185,6 +190,29 @@ le legge l'AI sul PC (ADR-0012, `AI.md`). La tabella viene sempre prima:
   ricorda: con «Fine» si riprova.
 - Se l'API non si raggiunge, i messaggi sono quelli di «Quando non va».
 
+La **parola** (con «Word») si scrive in un campo che va in maiuscole; al
+posto delle tessere e del campo della forma. L'app la controlla prima di
+mandarla, con le regole dell'API (`API.md`, «Una parola invece di una
+forma»), e la manda come `word`, in maiuscole e senza `shape`:
+
+| Quando | Sotto il campo | «Draw route» |
+|---|---|---|
+| Campo vuoto | Write a word to draw, with the letters A to Z. (grigio) | spento |
+| Uno spazio in mezzo | One word only, without spaces. | spento |
+| Una lettera fuori da A–Z | No letter “À”: a word can use only the letters A to Z, without accents. | spento |
+| Più di 7 lettere | At most 7 letters: each needs 3 km, and the app goes up to 21 km. | spento |
+| Meno di 3 km a lettera | “CIAO” needs at least 12 km: 3 km for each letter. e il tasto «Use 12 km» | spento |
+| La parola va | 4 letters: at least 12 km. A word takes a few minutes to draw. | acceso |
+
+- Le lettere sono `LETTERS` di `shared-types`; il contratto ne ammette 8
+  (`MAX_WORD_LETTERS`), ma a 3 km l'una (`LETTER_DISTANCE_M`) l'ottava
+  vorrebbe 24 km, oltre i 21 dell'app: il limite dell'app è 7.
+- Gli accenti non si tolgono di nascosto: «città» dice quale lettera manca,
+  come l'API.
+- «Use 12 km» scrive la distanza minima nel campo dei km.
+- Il campo accetta 20 caratteri, così oltre il limite si legge perché.
+- Le regole stanno in `src/route/wordInput.ts`.
+
 La **distanza** si scrive con il tastierino numerico (ADR-0034):
 
 - interi o un decimale, con la virgola o con il punto: `7`, `7,5`, `7.5`;
@@ -229,7 +257,7 @@ pagina non dice `loaded`; se la mappa non si carica, al suo posto l'errore.
 |---|---|
 | richiesta partita, o in coda | «Waiting for the API…» |
 | zona da scaricare | «Downloading map data for this area…» |
-| calcolo | «Drawing a 15 km heart…» |
+| calcolo | «Drawing a 15 km heart…», per una parola «Drawing “CIAO”, 12 km…» |
 
 Forma e distanza non si cambiano durante l'attesa.
 
@@ -240,15 +268,19 @@ Forma e distanza non si cambiano durante l'attesa.
   perdere.
 - Due errori di rete di fila durante l'attesa si perdonano; al terzo l'app
   dice che l'API non si raggiunge.
+- Una parola chiede più tempo di una forma: 40–140 s per «CIAO» a 15 km,
+  fino a 258 s per «BELLO» (`API.md`); la barra pulsa quando la stima è
+  passata (ADR-0055).
 - «Cancel» interrompe l'attesa e dice all'API di lasciar perdere: una
   richiesta in coda non parte, una in download si ferma prima di calcolare.
-- Una partenza, una forma o una distanza nuove tolgono il percorso e
+- Una partenza, una forma, una parola o una distanza nuove tolgono il percorso e
   l'esito di prima.
 
 ## Il risultato
 
 Sulla mappa la linea del percorso, inquadrata. Sotto, la distanza in grande
-(«4.0 km») e «on roads · target 5 km»; poi gli avvisi del motore, uno per
+(«4.0 km») e, dopo il nome del percorso, «heart · on roads · target 5 km»
+o «“CIAO” · on roads · target 12 km» (TASK-057); poi gli avvisi del motore, uno per
 riga, e «Export GPX» largo (sotto, «Export del GPX»).
 
 Gli avvisi sono **in parole semplici** (TASK-054, ADR-0048): l'app
@@ -307,6 +339,7 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 |---|---|
 | Forma che non ci sta, con una distanza che ci sta (`shape_not_drawable`, ADR-0041) | This shape does not fit the roads here at this distance. It fits at about 4 km. e un pulsante «Try 4 km» che scrive la distanza e ridisegna |
 | Forma che non ci sta, senza distanza (somiglianza bassa, o distanza oltre 21 km) | This shape does not fit the roads here. Try another shape, or another start: e le forme del catalogo come pulsanti |
+| Parola che non ci sta (TASK-057) | come per la forma, con «This word…»; senza distanza: This word does not fit the roads here. Try a shorter word, or another start. (niente forme da toccare) |
 | Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
 | Errore del motore (`engine_error`) | The route engine failed. Try again; if it happens again, look at the API log. |
 | L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat or fish. |

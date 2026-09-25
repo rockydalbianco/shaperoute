@@ -94,3 +94,33 @@ test.each([null, undefined, 30_000])(
     });
   },
 );
+
+test("a word that fits at another distance offers it, as a word", () => {
+  expect(
+    problemText(
+      {
+        kind: "api_error",
+        code: "shape_not_drawable",
+        message: FAR,
+        suggested_distance_m: 15_000,
+      },
+      "word",
+    ),
+  ).toEqual({
+    text: "This word does not fit the roads here at this distance. It fits at about 15 km.",
+    detail: FAR,
+    tryDistanceM: 15_000,
+  });
+});
+
+test("a word that does not fit is not offered the shapes", () => {
+  expect(
+    problemText(
+      { kind: "api_error", code: "shape_not_drawable", message: REASON },
+      "word",
+    ),
+  ).toEqual({
+    text: "This word does not fit the roads here. Try a shorter word, or another start.",
+    detail: REASON,
+  });
+});

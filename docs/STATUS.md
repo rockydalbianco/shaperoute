@@ -49,7 +49,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-Niente per l'app.
+- **App** — TASK-057: il campo per la parola da disegnare («Shape | Word»,
+  ADR-0053); da provare sull'iPhone.
 
 ## Completato
 

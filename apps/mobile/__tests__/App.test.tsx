@@ -238,7 +238,9 @@ test("Draw route is off until there is a start", async () => {
 /** The result card: the distance on roads, and the target under it. */
 function expectRoute(km: string, target: string) {
   expect(screen.getByText(`${km} km`)).toBeOnTheScreen();
-  expect(screen.getByText(`on roads · target ${target} km`)).toBeOnTheScreen();
+  // After the route's name: the shape, or the word (TASK-057).
+  const line = ` · on roads · target ${target} km`.replace(".", "\\.");
+  expect(screen.getByText(new RegExp(`${line}$`))).toBeOnTheScreen();
 }
 
 /** From the map back to the choice. */
@@ -728,4 +730,81 @@ test("My position goes back to the GPS after another place", async () => {
   ).toBeOnTheScreen();
   expect(screen.queryByPlaceholderText("City or street")).not.toBeOnTheScreen();
   expect(lastScript()).toContain('"lngLat":[11.1214,46.0671]');
+});
+
+/** The route of jobDone, drawn as a word (TASK-056): no shape, the word. */
+function wordDone(word: string) {
+  return {
+    ...jobDone,
+    result: { ...jobDone.result, shape: null, word },
+  };
+}
+
+async function chooseWord(word: string) {
+  await fireEvent.press(screen.getByRole("button", { name: "Word" }));
+  await fireEvent.changeText(screen.getByLabelText("Word"), word);
+}
+
+test("a word is sent as `word`, and named while waiting and on the result", async () => {
+  jest.useFakeTimers();
+  apiAnswers(job("computing"), wordDone("CIAO"));
+  await atTrento();
+  await chooseWord("ciao");
+  await fireEvent.changeText(distanceField(), "12");
+  expect(
+    screen.getByRole("button", { name: "Word", selected: true }),
+  ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
+  expect(screen.getByText(/Drawing “CIAO”, 12 km…/)).toBeOnTheScreen();
+
+  await nextPoll();
+  expect(screen.getByText("“CIAO” · on roads · target 12 km")).toBeOnTheScreen();
+  expect(lastRouteRequest()).toEqual({
+    start: [46.0671, 11.1214],
+    word: "CIAO",
+    distance_m: 12000,
+    activity: "running",
+  });
+  jest.useRealTimers();
+});
+
+test("a distance short for the word keeps Draw route off, and Use N km fixes it", async () => {
+  await atTrento();
+  await chooseWord("ciao");
+  expect(
+    screen.getByText("“CIAO” needs at least 12 km: 3 km for each letter."),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+
+  await fireEvent.press(screen.getByText("Use 12 km"));
+  expect(distanceField()).toHaveDisplayValue("12");
+  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+});
+
+test("a letter out of the alphabet keeps Draw route off and says which", async () => {
+  await atTrento();
+  await fireEvent.changeText(distanceField(), "15");
+  await chooseWord("città");
+  expect(
+    screen.getByText(
+      "No letter “À”: a word can use only the letters A to Z, without accents.",
+    ),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
+  expect(apiCalls("POST")).toEqual([]);
+});
+
+test("Shape and Word each keep what was written in them", async () => {
+  await atTrento();
+  await chooseWord("kiwi");
+  await fireEvent.press(screen.getByRole("button", { name: "Shape" }));
+  expect(screen.queryByLabelText("Word")).not.toBeOnTheScreen();
+  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("heart");
+  expect(
+    screen.getByRole("button", { name: "heart", selected: true }),
+  ).toBeOnTheScreen();
+
+  await fireEvent.press(screen.getByRole("button", { name: "Word" }));
+  expect(screen.getByLabelText("Word")).toHaveDisplayValue("kiwi");
 });

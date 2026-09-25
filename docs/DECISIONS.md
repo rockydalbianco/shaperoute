@@ -1725,7 +1725,8 @@ temporaneo che il motore aggiunge al grafo.
 **Stato**: Attiva · 2026-09-25 · chiesto dall'utente («aumenta il numero di
 forme disponibili», poi «Animali»: farfalla, uccello, cane, lumaca); il
 disegno deciso dall'agente su delega dell'utente (TASK-064); giudizio
-dell'utente sui campioni in attesa
+dell'utente: tutti e quattro `sì` a Milano; farfalla `quasi` a Trento e
+Levico, uccello `quasi` a Levico, lumaca `sì` a Trento, il resto `no`
 
 Il catalogo ha sette forme, e ci entra solo ciò che l'utente ha giudicato
 a occhio sulle strade (ADR-0036). Servivano quattro animali da provare,
@@ -1766,7 +1767,10 @@ dell'agente, non un giudizio); le bozze non sono nei campioni.
 **Conseguenza**: 12 campioni a 15 km (`samples/LOG.md`, TASK-064), tutti
 con un percorso: somiglianza 0,84–1,00, in 4–60 s, generati prima di
 TASK-063, che lascia i percorsi identici (ADR-0059). Tre animali su
-quattro hanno tratti, quindi le tolleranze dimezzate di ADR-0039. Entrano
-nel catalogo, con TASK-065, gli animali con almeno un `sì` o un `quasi`
-dell'utente (ADR-0036); gli altri restano nella cartella dei contorni,
-come la casa e l'albero.
+quattro hanno tratti, quindi le tolleranze dimezzate di ADR-0039.
+Giudizio dell'utente (2026-09-25): a Milano si riconoscono tutti e
+quattro; fuori da Milano la farfalla è `quasi` a Trento e Levico,
+l'uccello `quasi` a Levico, la lumaca `sì` a Trento, il cane `no` in
+tutte e due. Quali animali entrano nel catalogo lo decide l'utente, con
+TASK-065 (ADR-0036); gli altri restano nella cartella dei contorni, come
+la casa e l'albero.

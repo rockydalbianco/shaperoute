@@ -51,14 +51,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 Niente per l'app.
 
+## Completato
+
 - **Programmatore Lettere** — TASK-064: quattro animali candidati
   (farfalla, uccello, cane, lumaca) disegnati come contorni, con antenne,
-  zampe, coda, spirale e corna ripassate (ADR-0060); 12 campioni a 15 km
-  nelle tre zone, tutti con un percorso. Giudizio dell'utente in attesa:
-  anteprima https://claude.ai/artifact/L77yrZ9aDWTJRQcAp9hEEb. Dopo il
-  giudizio, TASK-065 porta nel catalogo quelli con un `sì` o un `quasi`.
-
-## Completato
+  zampe, coda, spirale e corna ripassate (ADR-0060), provati dalla CLI a
+  15 km. Giudizio dell'utente: tutti `sì` a Milano; farfalla `quasi` a
+  Trento e Levico, uccello `quasi` a Levico, lumaca `sì` a Trento, il
+  resto `no`. Quali entrano nel catalogo lo decide l'utente, con TASK-065.
 
 - **Motore** — TASK-063: dove va il tempo sopra i 10 km (numeri nel task
   file) e corridoio da 1,3 a 4,5 volte più veloce a percorsi identici

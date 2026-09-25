@@ -1,6 +1,6 @@
 # TASK-064 — Animali candidati: farfalla, uccello, cane, lumaca
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-064-animal-candidates` (parte da `main`)
 
 Assegnato dal coordinatore su richiesta dell'utente (2026-09-25):
@@ -59,7 +59,7 @@ Deciso dall'agente su delega dell'utente (ADR-0060):
       `services/route-engine`.
 - [x] 12 campioni in `samples/`, righe in `samples/LOG.md`.
 - [x] Anteprima e domanda all'utente.
-- [ ] Giudizio dell'utente in `samples/LOG.md` (dopo la PR, non per il
+- [x] Giudizio dell'utente in `samples/LOG.md` (dopo la PR, non per il
       merge).
 
 ## File toccati
@@ -112,3 +112,23 @@ si intuisce ovunque (testa con l'orecchio, coda, zampe), meglio a Milano;
 la lumaca si riconosce a Milano, a Trento si vede la spirale, a Levico no;
 l'uccello si intuisce a Milano (due ali alzate), a Trento e Levico no. Il
 giudizio lo dà l'utente, e va in `samples/LOG.md`.
+
+## Esito
+
+Quattro animali candidati come contorni, provati a 15 km nelle tre zone
+(ADR-0060); anteprima: https://claude.ai/artifact/L77yrZ9aDWTJRQcAp9hEEb.
+Giudizio dell'utente (2026-09-25, `samples/LOG.md`):
+
+| Animale | Trento | Levico | Milano |
+|---|---|---|---|
+| farfalla | quasi | quasi | sì |
+| uccello | no | quasi | sì |
+| cane | no | no | sì |
+| lumaca | sì | no | sì |
+
+Tutti e quattro si riconoscono a Milano; fuori da Milano la farfalla è
+`quasi` due volte, l'uccello `quasi` a Levico, la lumaca `sì` a Trento, il
+cane mai. La prima impressione dell'agente era più generosa su farfalla e
+cane a Trento e Levico, più severa sulla lumaca a Trento e sull'uccello a
+Levico. Quali animali entrano nel catalogo lo decide l'utente, con
+TASK-065.

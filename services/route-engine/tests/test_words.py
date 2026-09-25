@@ -1,7 +1,11 @@
+import networkx as nx
 import numpy as np
 import pytest
 
+from route_engine.geo import haversine_m, local_to_latlon
+from route_engine.models import InvalidRequestError, RouteRequest
 from route_engine.network import twice_drawn
+from route_engine.optimizer import plan_route
 from route_engine.projection import start_at_phase
 from route_engine.words import (
     ALPHABET,
@@ -168,3 +172,62 @@ def test_each_letter_is_drawn_by_one_continuous_line(start: int) -> None:
         assert all(places[row] == Place(k) for row in rows)
         sides = np.hypot(*np.diff(points[rows], axis=0).T)
         assert sides.max() <= SIDE_STEP * CIAO.height + 1e-12
+
+
+# --- A word in a route request (TASK-056) ---
+
+TRENTO = (46.0671, 11.1214)
+
+
+@pytest.mark.parametrize(
+    ("fields", "message"),
+    [
+        ({"shape": "heart", "word": "ciao"}, "either a shape or a word"),
+        ({}, "either a shape or a word"),
+        ({"word": "cane"}, "no letter E, N yet: a word can use A, C, I, O"),
+        ({"word": "ciaociaoc"}, "at most 8 letters, got 9"),
+        ({"word": "ciao", "distance_m": 10000}, "a 4-letter word needs at least 12 km"),
+    ],
+)
+def test_a_route_request_checks_its_word(
+    fields: dict[str, object], message: str
+) -> None:
+    with pytest.raises(InvalidRequestError, match=message):
+        RouteRequest(**{"start": TRENTO, "distance_m": 15000, **fields})
+
+
+def test_a_route_request_is_named_by_its_word_in_capitals() -> None:
+    request = RouteRequest(start=TRENTO, distance_m=12000, word=" ciao ")
+    assert request.shape is None
+    assert request.name == "CIAO"
+    assert RouteRequest(start=TRENTO, distance_m=5000, shape="heart").name == "heart"
+
+
+def _grid(spacing_m: float = 100.0, half_m: float = 3000.0) -> nx.MultiDiGraph:
+    """Streets every `spacing_m` around TRENTO, both directions."""
+    graph = nx.MultiDiGraph()
+    n = int(half_m / spacing_m)
+    for i in range(-n, n + 1):
+        for j in range(-n, n + 1):
+            lat, lon = local_to_latlon(TRENTO, i * spacing_m, j * spacing_m)
+            graph.add_node((i, j), y=lat, x=lon)
+    for i, j in list(graph.nodes):
+        for b in ((i + 1, j), (i, j + 1)):
+            if b in graph:
+                graph.add_edge((i, j), b, length=spacing_m)
+                graph.add_edge(b, (i, j), length=spacing_m)
+    return graph
+
+
+class _Grid:
+    def load(self, bbox: tuple[float, float, float, float]) -> nx.MultiDiGraph:
+        return _grid()
+
+
+def test_plan_route_writes_a_word_and_names_it() -> None:
+    request = RouteRequest(start=TRENTO, distance_m=6000, word="io")
+    result = plan_route(request, _Grid()).result
+    assert result.word == "IO"
+    assert result.shape is None
+    assert haversine_m(result.points[0], result.points[-1]) < 1.0
+    assert result.distance_m == pytest.approx(6000.0, rel=0.25)

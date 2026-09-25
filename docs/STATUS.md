@@ -29,8 +29,10 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 ## Prossimo passo
 
 **TASK-050 — Lettere una per una** (`ROADMAP.md`, fase 4): fatto,
-giudicato `sì` nelle tre zone. Per le scritte il seguito è **TASK-056**, la
-parola nell'API, poi **TASK-057**, il campo nell'app, chiesti dall'utente.
+giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
+(ADR-0051). Per le scritte il seguito è **TASK-057**, il campo nell'app,
+chiesto dall'utente; aperta la scelta di allargare l'alfabeto oltre C, I,
+A, O.
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -75,6 +77,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'altezza, ogni lettera spostata dove ha più strade e la I andata e
   ritorno sulla stessa strada (ADR-0044); «CIAO» dalla CLI (`--word`) è
   `sì` a Trento, Levico e Milano a 15 km, molto meglio di TASK-040.
+  TASK-056: l'API accetta `word` al posto di `shape` e risponde con
+  `"word": "CIAO"` e `"shape": null`; lettere dell'alfabeto, al più 8, e
+  almeno 3 km per lettera, se no un `invalid_request` che dice perché
+  (ADR-0051); `shared-types` ha le costanti per l'app.
 - **Fase 3** — TASK-032: forme da un contorno in JSON, dalla CLI
   (`--outline`, ADR-0035). Cancello superato: stella sì ovunque, cavallo
   quasi a Trento e sì a Levico e Milano; la casa no, anche con camino e

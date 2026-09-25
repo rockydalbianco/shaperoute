@@ -10,7 +10,9 @@ import jobDone from "../fixtures/route-job-done.json" with { type: "json" };
 import jobFailed from "../fixtures/route-job-failed.json" with { type: "json" };
 import jobRunning from "../fixtures/route-job-running.json" with { type: "json" };
 import jobStatuses from "../fixtures/route-job-statuses.json" with { type: "json" };
+import wordRequest from "../fixtures/route-request-word.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
+import wordResult from "../fixtures/route-result-word.json" with { type: "json" };
 import result from "../fixtures/route-result.json" with { type: "json" };
 import shapeReadingLimits from "../fixtures/shape-reading-limits.json" with { type: "json" };
 import shapeReadingNone from "../fixtures/shape-reading-none.json" with { type: "json" };
@@ -21,8 +23,11 @@ import {
   API_ERROR_CODES,
   GROUP_M,
   JOB_STATUSES,
+  LETTER_DISTANCE_M,
+  LETTERS,
   MAX_DISTANCE_M,
   MAX_SHAPE_TEXT_LENGTH,
+  MAX_WORD_LETTERS,
   MIN_DISTANCE_M,
   SHAPES,
   TURNS,
@@ -41,6 +46,8 @@ import {
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 const requestFields: Same<keyof typeof request, keyof RouteRequest> = true;
 const resultFields: Same<keyof typeof result, keyof RouteResult> = true;
+const wordFields: Same<keyof typeof wordRequest, keyof RouteRequest> &
+  Same<keyof typeof wordResult, keyof RouteResult> = true;
 const directionFields: Same<keyof (typeof result.directions)[number], keyof Direction> =
   true;
 const errorFields: Same<keyof typeof apiError, keyof ApiError> = true;
@@ -71,7 +78,7 @@ const isShape = (value: string): boolean =>
 test("the fixtures have the fields of the types", () => {
   assert.ok(requestFields && resultFields && errorFields && errorDetailFields);
   assert.ok(jobFields && jobResultFields && jobErrorFields && gpxFields);
-  assert.ok(shapeReadingFields && directionFields);
+  assert.ok(shapeReadingFields && directionFields && wordFields);
 });
 
 test("a shape reading names a shape of the catalogue, or none", () => {
@@ -110,6 +117,25 @@ test("shapes, activities and distance limits match the route engine", () => {
   assert.deepEqual([...ACTIVITIES], contract.activities);
   assert.equal(MIN_DISTANCE_M, contract.min_distance_m);
   assert.equal(MAX_DISTANCE_M, contract.max_distance_m);
+  assert.deepEqual([...LETTERS], contract.letters);
+  assert.equal(MAX_WORD_LETTERS, contract.max_word_letters);
+  assert.equal(LETTER_DISTANCE_M, contract.letter_distance_m);
+});
+
+test("a request has a shape or a word, and a word the letters it may use", () => {
+  assert.equal(request.word, null);
+  assert.equal(wordRequest.shape, null);
+  const letters = wordRequest.word.toUpperCase();
+  assert.ok(letters.length <= MAX_WORD_LETTERS);
+  assert.ok([...letters].every((c) => (LETTERS as readonly string[]).includes(c)));
+  assert.ok(wordRequest.distance_m >= letters.length * LETTER_DISTANCE_M);
+});
+
+test("a result names its shape or its word", () => {
+  assert.equal(result.word, null);
+  assert.equal(wordResult.shape, null);
+  assert.equal(wordResult.word, wordRequest.word.toUpperCase());
+  assert.deepEqual(wordResult.points.at(0), wordResult.points.at(-1));
 });
 
 test("the request fixture is a valid request", () => {

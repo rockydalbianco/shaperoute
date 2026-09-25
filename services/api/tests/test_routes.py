@@ -75,6 +75,18 @@ def test_a_route_on_the_levico_test_graph() -> None:
         ({**TRENTO_HEART, "distance_m": 100}, "distance must be between"),
         ({**TRENTO_HEART, "shape": "house"}, "unknown shape 'house'"),
         ({**TRENTO_HEART, "start": [91.0, 11.1]}, "latitude must be between"),
+        # A shape or a word, one of the two, and a word the engine can write
+        # (TASK-056).
+        ({**TRENTO_HEART, "word": "ciao"}, "either a shape or a word"),
+        ({**TRENTO_HEART, "shape": None}, "either a shape or a word"),
+        (
+            {**TRENTO_HEART, "shape": None, "word": "cane", "distance_m": 15000},
+            "no letter E, N yet: a word can use A, C, I, O",
+        ),
+        (
+            {**TRENTO_HEART, "shape": None, "word": "ciao"},
+            "a 4-letter word needs at least 12 km",
+        ),
     ],
 )
 def test_invalid_requests(body: dict[str, object], fragment: str) -> None:

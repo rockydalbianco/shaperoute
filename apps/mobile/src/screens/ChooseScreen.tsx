@@ -22,6 +22,14 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { Segmented } from "./Segmented";
+
+/** "My position" also asks the GPS again, as the old button did, so it works
+ * after the permission is given in Settings. */
+const START_MODES = [
+  { value: "gps", label: "My position" },
+  { value: "place", label: "Another place" },
+] as const;
 
 type Props = {
   /** Where the route will start, in words (UI.md, «La partenza»). */
@@ -73,18 +81,7 @@ export function ChooseScreen({
         </View>
         <View style={styles.startCard}>
           <Text style={styles.label}>START</Text>
-          <View style={styles.modes}>
-            <ModeButton
-              label="My position"
-              selected={mode === "gps"}
-              onPress={() => onMode("gps")}
-            />
-            <ModeButton
-              label="Another place"
-              selected={mode === "place"}
-              onPress={() => onMode("place")}
-            />
-          </View>
+          <Segmented options={START_MODES} value={mode} onChange={onMode} />
           <Text style={styles.status}>{status}</Text>
           {denied && (
             <Pressable
@@ -104,33 +101,6 @@ export function ChooseScreen({
         {footer}
       </View>
     </KeyboardAvoidingView>
-  );
-}
-
-/**
- * One half of the start switch. "My position" also asks the GPS again, as the
- * old button did, so it works after the permission is given in Settings.
- */
-function ModeButton({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      style={[styles.mode, selected && styles.modeSelected]}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-    >
-      <Text style={[styles.modeText, selected && styles.modeTextSelected]}>
-        {label}
-      </Text>
-    </Pressable>
   );
 }
 
@@ -173,33 +143,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.label,
     fontWeight: fontWeight.semibold,
     letterSpacing: 1.2,
-  },
-  modes: {
-    flexDirection: "row",
-    padding: space.xs,
-    gap: space.xs,
-    borderRadius: radius.pill,
-    backgroundColor: color.background,
-  },
-  mode: {
-    flex: 1,
-    minHeight: MIN_TAP_SIZE,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: radius.pill,
-  },
-  // Chosen is told by a lighter surface, not by yellow: that is the route's.
-  modeSelected: {
-    backgroundColor: color.surfaceRaised,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-  },
-  modeText: {
-    color: color.textMuted,
-    fontWeight: fontWeight.semibold,
-  },
-  modeTextSelected: {
-    color: color.text,
   },
   status: {
     color: color.textMuted,

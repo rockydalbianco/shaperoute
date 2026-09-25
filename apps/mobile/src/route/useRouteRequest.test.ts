@@ -63,4 +63,9 @@ test("sameRequest compares values, not objects", () => {
   expect(sameRequest(REQUEST, { ...REQUEST, start: [...REQUEST.start] })).toBe(true);
   expect(sameRequest(REQUEST, { ...REQUEST, distance_m: 3000 })).toBe(false);
   expect(sameRequest(REQUEST, { ...REQUEST, start: [46.0671, 11.1215] })).toBe(false);
+  const { start, distance_m, activity } = REQUEST;
+  const word: RouteRequest = { start, distance_m, activity, word: "CIAO" };
+  expect(sameRequest(word, { ...word })).toBe(true);
+  expect(sameRequest(word, { ...word, word: "KIWI" })).toBe(false);
+  expect(sameRequest(word, REQUEST)).toBe(false);
 });

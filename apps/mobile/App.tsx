@@ -28,6 +28,7 @@ import {
   useRouteRequest,
 } from "./src/route/useRouteRequest";
 import { useShapeReading } from "./src/route/useShapeReading";
+import { checkWord, type DrawKind } from "./src/route/wordInput";
 import { ChooseScreen } from "./src/screens/ChooseScreen";
 import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
@@ -59,6 +60,7 @@ function Sgrava() {
   const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [kind, setKind] = useState<DrawKind>("shape");
   const [shapeText, setShapeText] = useState("heart");
   const tableShape = toShape(shapeText);
   const shapeReading = useShapeReading(API_URL);
@@ -70,6 +72,8 @@ function Sgrava() {
   const shape = tableShape ?? (reading?.status === "read" ? reading.shape : null);
   const [distanceText, setDistanceText] = useState("5");
   const distanceM = toDistanceM(distanceText);
+  const [wordText, setWordText] = useState("");
+  const wordCheck = checkWord(wordText, distanceM);
   const { state, draw, cancel } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
 
@@ -78,11 +82,20 @@ function Sgrava() {
     [startMode, position, place],
   );
 
+  // One or the other (ADR-0051): the kind not chosen is not sent.
+  const drawn: { shape: Shape } | { word: string } | null =
+    kind === "shape"
+      ? shape !== null
+        ? { shape }
+        : null
+      : wordCheck.ok
+        ? { word: wordCheck.word }
+        : null;
   const request: RouteRequest | null =
-    start && shape !== null && distanceM !== null
-      ? { start: start.point, shape, distance_m: distanceM, activity: "running" }
+    start && drawn !== null && distanceM !== null
+      ? { start: start.point, ...drawn, distance_m: distanceM, activity: "running" }
       : null;
-  // A new start, shape or distance leaves the last answer behind.
+  // A new start, shape, word or distance leaves the last answer behind.
   const view: RouteState =
     request && state.status !== "idle" && sameRequest(state.request, request)
       ? state
@@ -195,6 +208,8 @@ function Sgrava() {
           footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
         >
           <RouteChoice
+            kind={kind}
+            onKind={setKind}
             shapeText={shapeText}
             shape={shape}
             onShapeText={setShapeText}
@@ -204,6 +219,9 @@ function Sgrava() {
                 shapeReading.read(shapeText);
               }
             }}
+            wordText={wordText}
+            onWordText={setWordText}
+            wordCheck={wordCheck}
             distanceText={distanceText}
             distanceM={distanceM}
             onDistanceText={setDistanceText}

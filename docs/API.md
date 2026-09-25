@@ -301,6 +301,18 @@ aspetta prima del calcolo. Per questo l'app arriva a 21 km (ADR-0034):
 anche in una zona nuova il percorso arriva in circa due minuti e mezzo. Sui
 dati mobili il download è più lento (72–100 s per un 15 km, TASK-023).
 
+### Dove va il tempo (TASK-063)
+
+Misurato il 2026-09-25 dal motore, zone in cache, cuore e cerchio a 10, 15
+e 21 km (numeri per fase in `tasks/TASK-063.md`). Quel giorno il PC era più
+carico che nelle misure sopra: i totali assoluti vengono più alti, il
+confronto prima/dopo vale. Più di metà del tempo era il **corridoio**, il
+costo di ogni strada ricalcolato a ogni tracciato: reso da 1,3 a 4,5 volte
+più veloce a percorsi identici (ADR-0059), Trento da 15 a 21 km è passata
+da 80–97 s a 35–64 s. Sopra i 30 s restano la **seconda ricerca** fino a
+2 km (ADR-0040), che a Trento corre quasi sempre, e a Milano il
+**ritaglio** della zona dalla memoria, 6–13 s a richiesta.
+
 ## Domande ancora aperte
 
 - Motore lento sulle distanze lunghe: 30–45 s da 15 a 30 km, più se lavora

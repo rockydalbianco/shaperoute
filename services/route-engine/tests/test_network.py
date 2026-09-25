@@ -6,13 +6,21 @@ import networkx as nx
 import numpy as np
 import pytest
 
-from route_engine.geo import haversine_m, latlon_to_local, local_to_latlon
+from route_engine.geo import (
+    haversine_m,
+    latlon_to_local,
+    latlon_to_local_array,
+    local_to_latlon,
+)
 from route_engine.network import (
     FileSource,
     NetworkRoute,
     OsmnxSource,
+    _corridor_costs,
     area_around,
     detail_scale,
+    distance_to_polyline,
+    distance_to_segments,
     first_leg,
     nearest_nodes,
     prune_spurs,
@@ -367,3 +375,66 @@ def test_the_way_out_ends_at_the_far_end_not_where_the_route_passed_before() -> 
     assert leg.points[0] == points[0]
     assert leg.points[-1] == far_end
     assert leg.distance_m == pytest.approx(8 * SPACING_M, rel=1e-3)
+
+
+def _segments_by_pairs(a: np.ndarray, b: np.ndarray, points: np.ndarray) -> np.ndarray:
+    """distance_to_segments as it was before TASK-063, on (x, y) pairs."""
+    ab = b - a
+    ab2 = np.maximum((ab**2).sum(axis=1), 1e-12)
+    ap = points[:, None, :] - a[None]
+    t = np.clip((ap * ab[None]).sum(axis=2) / ab2[None], 0.0, 1.0)
+    closest = a[None] + t[..., None] * ab[None]
+    d = np.hypot(
+        points[:, None, 0] - closest[..., 0], points[:, None, 1] - closest[..., 1]
+    )
+    return d.min(axis=1)
+
+
+def test_distance_to_segments_is_the_same_to_the_last_bit() -> None:
+    rng = np.random.default_rng(63)
+    line = rng.normal(0.0, 3000.0, (65, 2))
+    line[5] = line[4]  # a segment of no length
+    points = rng.normal(0.0, 3000.0, (40_000, 2))  # more than one chunk
+    fast = distance_to_segments(line[:-1], line[1:], points)
+    assert np.array_equal(fast, _segments_by_pairs(line[:-1], line[1:], points))
+
+
+def _costs_one_by_one(
+    graph: nx.MultiDiGraph, outline: np.ndarray, weight: float, band_m: float
+) -> dict[tuple[object, object], float]:
+    """_corridor_costs as it was before TASK-063: one edge at a time."""
+    samples = []
+    for u, v, data in graph.edges(data=True):
+        start = (graph.nodes[u]["y"], graph.nodes[u]["x"])
+        end = (graph.nodes[v]["y"], graph.nodes[v]["x"])
+        coords = [start, end]
+        if data.get("geometry") is not None:
+            coords = [(lat, lon) for lon, lat in data["geometry"].coords]
+            if math.dist(coords[-1], start) < math.dist(coords[0], start):
+                coords.reverse()
+        samples.extend((coords[0], coords[len(coords) // 2], coords[-1]))
+    xy = latlon_to_local_array(LEVICO, np.array(samples))
+    distance = distance_to_polyline(outline, xy).reshape(-1, 3).mean(axis=1)
+    factors = 1.0 + weight * np.maximum(0.0, distance - band_m) / max(band_m, 1.0)
+    costs: dict[tuple[object, object], float] = {}
+    for (u, v, length), factor in zip(graph.edges(data="length"), factors, strict=True):
+        cost = float(length) * float(factor)
+        costs[(u, v)] = min(cost, costs.get((u, v), math.inf))
+    return costs
+
+
+def test_corridor_costs_are_the_same_as_edge_by_edge() -> None:
+    graph = _grid(6)
+    # A longer parallel road: the step keeps the cheaper one.
+    graph.add_edge((0, 0), (1, 0), length=250.0)
+    outline = np.array([[0.0, 0.0], [300.0, 0.0], [300.0, 300.0], [0.0, 0.0]])
+    expected = _costs_one_by_one(graph, outline, 2.0, 50.0)
+    costs = _corridor_costs(graph, LEVICO, outline, 2.0, 50.0)
+    assert costs == expected
+    assert costs[((0, 0), (1, 0))] == SPACING_M
+    # Again from the kept steps, and anew once the graph gains an edge.
+    assert _corridor_costs(graph, LEVICO, outline, 2.0, 50.0) == expected
+    graph.add_edge((0, 0), (5, 5), length=900.0)
+    assert _corridor_costs(graph, LEVICO, outline, 2.0, 50.0) == _costs_one_by_one(
+        graph, outline, 2.0, 50.0
+    )

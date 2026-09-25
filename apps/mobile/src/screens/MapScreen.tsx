@@ -12,6 +12,8 @@ type Props = {
   active: boolean;
   onBack: () => void;
   mapError: string | null;
+  /** While navigating, the next turn, in place of the way back (TASK-049). */
+  banner?: ReactNode;
   /** The wait, the route or the problem (RouteOutcome). */
   children: ReactNode;
 };
@@ -21,7 +23,7 @@ type Props = {
  * card underneath. The card sits below the map, not over it, so it never
  * covers the attribution (UI.md).
  */
-export function MapScreen({ map, active, onBack, mapError, children }: Props) {
+export function MapScreen({ map, active, onBack, mapError, banner, children }: Props) {
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.screen}>
@@ -29,15 +31,17 @@ export function MapScreen({ map, active, onBack, mapError, children }: Props) {
         {map}
         {active && (
           <View style={[styles.top, { top: insets.top + space.sm }]}>
-            <Pressable
-              style={styles.back}
-              onPress={onBack}
-              accessibilityRole="button"
-              accessibilityLabel="Back"
-            >
-              <Text style={styles.backText}>←</Text>
-            </Pressable>
-            {mapError && (
+            {banner ?? (
+              <Pressable
+                style={styles.back}
+                onPress={onBack}
+                accessibilityRole="button"
+                accessibilityLabel="Back"
+              >
+                <Text style={styles.backText}>←</Text>
+              </Pressable>
+            )}
+            {mapError && !banner && (
               <View style={styles.errorBox}>
                 <MapError reason={mapError} />
               </View>

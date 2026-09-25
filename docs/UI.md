@@ -258,6 +258,24 @@ forma dove ci sta (fino a 2 km, ADR-0040), un secondo segnaposto ciano con
 l'etichetta «Start here» segna dove andare, e la mappa inquadra tutti e due;
 l'avviso dice di quanto e in che direzione.
 
+## La navigazione
+
+Sotto il risultato, «Start» giallo, quando il percorso ha le indicazioni di
+svolta (TASK-049, ADR-0052). Si resta sulla schermata della mappa: al posto
+di «←» un banner con la prossima svolta (freccia gialla, distanza dal GPS
+dal vivo, «Turn left onto Via Roma», e una seconda riga per le svolte a
+pochi metri da leggere insieme); sotto, i km rimasti e «Stop», che torna al
+risultato. La mappa segue la posizione, vicina (zoom 17), e dopo «Stop»
+inquadra di nuovo il percorso.
+
+Ogni svolta si dice a voce 50 m prima, in inglese come il resto dell'app
+(«In 50 metres, turn left onto Via Roma, then turn right onto the
+footpath»), con una vibrazione. Una via senza nome è «the footpath», «the
+path», «the road»: mai un nome inventato. Oltre 40 m dal percorso il banner
+diventa arancio, «Off the route», e la voce lo dice una volta; il percorso
+non si ricalcola. Alla fine, «You have arrived». Funziona con lo schermo
+acceso e l'app aperta; la posizione non esce dal telefono.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di

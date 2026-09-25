@@ -135,6 +135,9 @@ Niente.
 
 ## Note per la prossima sessione
 
+- Navigazione col GPS (TASK-049): da provare sull'iPhone camminando un
+  percorso vero; dopo il merge serve `npm install` dalla radice
+  (`expo-speech`).
 - Ollama 0.34.4 è installato in `D:\Ollama` e parte con Windows; i
   modelli stanno in `D:\Ollama\models` (variabile `OLLAMA_MODELS`
   dell'account). C'è solo `qwen3:4b`: i due scartati e l'installer sono

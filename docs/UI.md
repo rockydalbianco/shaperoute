@@ -269,8 +269,10 @@ Forma e distanza non si cambiano durante l'attesa.
 - Due errori di rete di fila durante l'attesa si perdonano; al terzo l'app
   dice che l'API non si raggiunge.
 - Una parola chiede più tempo di una forma: 40–140 s per «CIAO» a 15 km,
-  fino a 258 s per «BELLO» (`API.md`); la barra pulsa quando la stima è
-  passata (ADR-0055).
+  fino a 258 s per «BELLO» (`API.md`). Per una parola la barra stima il
+  calcolo dalle lettere, circa 20 s l'una, mai meno di una forma della
+  stessa distanza (TASK-069, ADR-0064); pulsa oltre il doppio di quella
+  stima (ADR-0055), per «CIAO» dopo 160 s.
 - «Cancel» interrompe l'attesa e dice all'API di lasciar perdere: una
   richiesta in coda non parte, una in download si ferma prima di calcolare.
 - Una partenza, una forma, una parola o una distanza nuove tolgono il percorso e

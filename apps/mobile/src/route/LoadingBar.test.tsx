@@ -63,6 +63,16 @@ test("the answer moves the bar on, and it stops saying it is waiting", async () 
   expect(now()).toBeGreaterThanOrEqual(45);
 });
 
+test("a word gets longer before the bar says it is still waiting", async () => {
+  // A 15 km shape is slow after 75 s; "CIAO" after twice 80 s.
+  await render(<LoadingBar phase="computing" distanceM={15000} word="CIAO" />);
+  await act(() => jest.advanceTimersByTimeAsync(100_000));
+  expect(text("loading")).toBeUndefined();
+
+  await act(() => jest.advanceTimersByTimeAsync(60_000));
+  expect(text("loading")).toBe(SLOW_TEXT);
+});
+
 test("the AI's reading and the map have their own bars", async () => {
   await render(
     <>

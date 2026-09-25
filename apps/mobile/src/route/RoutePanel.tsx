@@ -204,7 +204,11 @@ export function RouteOutcome({
             </Pressable>
           </View>
           {/* A bar, not the seconds: an estimate from the phase (ADR-0050). */}
-          <LoadingBar phase={view.phase} distanceM={view.request.distance_m} />
+          <LoadingBar
+            phase={view.phase}
+            distanceM={view.request.distance_m}
+            word={view.request.word}
+          />
         </View>
       );
     case "done":

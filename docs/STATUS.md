@@ -51,6 +51,9 @@ Niente per l'app.
 
 ## Completato
 
+- **Motore** — TASK-063: dove va il tempo sopra i 10 km (numeri nel task
+  file) e corridoio da 1,3 a 4,5 volte più veloce a percorsi identici
+  (ADR-0059): Trento da 15 a 21 km da 80–97 s a 35–64 s sul PC carico.
 - **Indicazioni** — TASK-062: `numpy` dichiarato fra le dipendenze del
   motore (`>=1.24,<3`, lo stesso limite basso di osmnx).
 - **Indicazioni** — TASK-053: un marciapiede senza nome prende la via lungo
@@ -170,6 +173,9 @@ Niente.
 - Fuori scope di TASK-016, annotati: tag `surface`, `sac_scale` e
   `sidewalk` (serve riscaricare i grafi), ed evitare scale e strade
   principali nella ricerca (oggi si misurano e si avvisa soltanto).
+- Dopo TASK-063, sopra i 30 s restano la seconda ricerca fino a 2 km
+  (ADR-0040), che a Trento corre quasi sempre, e il ritaglio della zona
+  nell'API (6–13 s a Milano): proposte in `tasks/TASK-063.md`, da decidere.
 - Motore lento sulle distanze lunghe: 30–50 s da 15 a 30 km, più il
   download di una zona nuova (TASK-023, TASK-026; `API.md`, «Tempi»). Le
   richieste in due tempi lo rendono sopportabile, non veloce: `PRODUCT.md`

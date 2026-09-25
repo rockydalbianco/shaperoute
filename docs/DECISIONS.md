@@ -1802,3 +1802,33 @@ l'uccello `quasi` a Levico, la lumaca `sì` a Trento, il cane `no` in
 tutte e due. Quali animali entrano nel catalogo lo decide l'utente, con
 TASK-065 (ADR-0036); gli altri restano nella cartella dei contorni, come
 la casa e l'albero.
+
+## ADR-0064 — La barra stima una parola dalle sue lettere
+**Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
+(TASK-069)
+
+Una parola si calcolava come una forma della stessa distanza
+(`computeSeconds`, 2,5 s a km): per «CIAO» a 15 km 37,5 s, mentre il motore
+ne mette 40–140. La barra arrivava presto in fondo e pulsava a 75 s, quando
+un'attesa normale era ancora in corso.
+
+**Misure** (CLI del motore, Trento, zona in cache, PC di sviluppo,
+2026-09-25): «UNO» 10 km 45 s; «CIAO» 15 km 75 s e 43 s; «TRENTO» 21 km
+106 s; «CAMMINO» 21 km 141 s. A parità di distanza, 7 lettere costano un
+terzo più di 6: il tempo lo fanno le lettere, ognuna un percorso a sé
+cucito alla vicina.
+
+**Decisione**: nella fase di calcolo, se la richiesta ha `word`, la stima è
+`wordSeconds` = 20 s a lettera, mai meno di `computeSeconds` della stessa
+distanza. Le altre fasi (coda, download) restano quelle di ADR-0050; la
+regola della pulsazione oltre il doppio (ADR-0055) vale uguale: «CIAO»
+pulsa dopo 160 s invece di 75 s.
+
+**Scartate**: una retta con lettere e km insieme (con quattro misure, due
+parametri inseguono il rumore: «CIAO» varia da 43 a 75 s da solo); 18 s a
+lettera, il valore medio (20 s sta un po' sopra, e le attese già annotate
+arrivano a 140 s per «CIAO» e 258 s per «BELLO»).
+
+**Conseguenza**: la barra di una parola avanza più piano, e pulsa solo dopo
+il doppio del solito per quella parola. Se il motore diventa più veloce
+sulle parole, basta cambiare `WORD_LETTER_S` con nuove misure.

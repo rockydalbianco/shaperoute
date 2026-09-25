@@ -116,6 +116,8 @@ type OutcomeProps = {
    * fits, or choose a shape of the catalogue. */
   onTryDistance: (distanceM: number) => void;
   onPickShape: (shape: Shape) => void;
+  /** Turn-by-turn along the route on screen (TASK-049). */
+  onStart: () => void;
 };
 
 /** Under the map: the wait, the route, or why there is none. */
@@ -126,6 +128,7 @@ export function RouteOutcome({
   onExport,
   onTryDistance,
   onPickShape,
+  onStart,
 }: OutcomeProps) {
   switch (view.status) {
     case "waiting":
@@ -159,6 +162,12 @@ export function RouteOutcome({
           {toNotes(view.result.warnings).map((note) => (
             <NoteRow key={note.text} note={note} />
           ))}
+          {/* Only with directions: a route traced without them has no turns. */}
+          {view.result.directions.length > 0 && (
+            <Pressable style={styles.draw} onPress={onStart} accessibilityRole="button">
+              <Text style={styles.drawText}>Start</Text>
+            </Pressable>
+          )}
           <Pressable
             style={[styles.secondary, styles.export]}
             onPress={onExport}

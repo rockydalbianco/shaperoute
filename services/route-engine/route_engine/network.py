@@ -7,8 +7,11 @@ when the road is not straight, a `geometry` LineString in (lon, lat).
 
 from __future__ import annotations
 
+import json
 import math
 import pickle
+import urllib.parse
+import urllib.request
 import weakref
 from collections.abc import Collection, Sequence
 from dataclasses import dataclass, field
@@ -25,6 +28,7 @@ from route_engine.geo import (
     local_to_latlon,
     path_length_m,
 )
+from route_engine.sidewalks import NamedRoad
 
 # Where a route drawn out and back turns (first_leg): a metre from the far
 # end of the shape weighs as much as ten from half-way along the route. The
@@ -74,6 +78,15 @@ FOOT_FILTER = (
     '["sidewalk:both"!~"separate"]["sidewalk:left"!~"separate"]'
     '["sidewalk:right"!~"separate"]'
 )
+
+# The named roads FOOT_FILTER leaves out because their sidewalks are drawn
+# apart: only to name those sidewalks (sidewalks.py, ADR-0054), never walked.
+NAMED_ROADS_QUERY = (
+    "[out:json][timeout:{timeout}];"
+    'way["highway"]["name"][~"^sidewalk(:both|:left|:right)?$"~"separate"]'
+    "({south},{west},{north},{east});out tags geom;"
+)
+NAMED_ROADS_TIMEOUT_S = 180
 
 # (south, west, north, east) in degrees.
 BBox = tuple[float, float, float, float]
@@ -141,6 +154,25 @@ class OsmnxSource:
 
     def is_cached(self, bbox: BBox) -> bool:
         return self.covering_path(bbox) is not None
+
+    def names_path(self, bbox: BBox) -> Path:
+        south, west, north, east = bbox
+        return (
+            self.cache_dir / f"names_{south:.5f}_{west:.5f}_{north:.5f}_{east:.5f}.json"
+        )
+
+    def named_roads(self, bbox: BBox) -> list[NamedRoad]:
+        """The named roads of `bbox` that the foot graph leaves out
+        (NAMED_ROADS_QUERY): from a cached file whose area contains `bbox`,
+        else one Overpass request, saved beside the graphs. A few MB where a
+        graph takes a hundred (ADR-0054)."""
+        covering = _covering_file(self.cache_dir, "names", ".json", bbox)
+        if covering is not None:
+            return [r for r in read_named_roads(covering) if _touches(r, bbox)]
+        roads = parse_named_roads(_overpass(named_roads_query(bbox)))
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        write_named_roads(roads, self.names_path(bbox))
+        return roads
 
     def load(self, bbox: BBox) -> Graph:
         """Graph of `bbox`: from its cache file, cropped from a larger cached
@@ -215,6 +247,89 @@ def area_around(points: Sequence[LatLon], margin_m: float = AREA_MARGIN_M) -> BB
         math.ceil(north / step) * step,
         math.ceil(east / step) * step,
     )
+
+
+def named_roads_query(bbox: BBox, timeout_s: int = NAMED_ROADS_TIMEOUT_S) -> str:
+    south, west, north, east = bbox
+    return NAMED_ROADS_QUERY.format(
+        timeout=timeout_s, south=south, west=west, north=north, east=east
+    )
+
+
+def parse_named_roads(answer: dict[str, Any]) -> list[NamedRoad]:
+    """Roads from an Overpass JSON answer with `out tags geom`."""
+    roads: list[NamedRoad] = []
+    for element in answer.get("elements", []):
+        name = element.get("tags", {}).get("name", "").strip()
+        points = tuple(
+            (float(p["lat"]), float(p["lon"])) for p in element.get("geometry", [])
+        )
+        if element.get("type") == "way" and name and len(points) >= 2:
+            roads.append(NamedRoad(name, points))
+    return roads
+
+
+def write_named_roads(roads: Sequence[NamedRoad], path: Path) -> None:
+    rows = [
+        {"name": r.name, "points": [[round(a, 7), round(b, 7)] for a, b in r.points]}
+        for r in roads
+    ]
+    path.write_text(json.dumps({"roads": rows}, ensure_ascii=False), encoding="utf-8")
+
+
+def read_named_roads(path: Path) -> list[NamedRoad]:
+    rows = json.loads(path.read_text(encoding="utf-8"))["roads"]
+    return [
+        NamedRoad(row["name"], tuple((float(a), float(b)) for a, b in row["points"]))
+        for row in rows
+    ]
+
+
+def _touches(road: NamedRoad, bbox: BBox) -> bool:
+    south, west, north, east = bbox
+    return any(
+        south <= lat <= north and west <= lon <= east for lat, lon in road.points
+    )
+
+
+def _covering_file(
+    directory: Path, prefix: str, suffix: str, bbox: BBox
+) -> Path | None:
+    """Smallest `<prefix>_<s>_<w>_<n>_<e><suffix>` in `directory` whose area
+    contains `bbox`."""
+    south, west, north, east = bbox
+    eps = 1e-5  # names are rounded to 5 decimals
+    best: tuple[float, Path] | None = None
+    for path in directory.glob(f"{prefix}_*{suffix}"):
+        try:
+            s, w, n, e = (float(p) for p in path.stem.split("_")[1:])
+        except ValueError:
+            continue
+        if (
+            s <= south + eps
+            and w <= west + eps
+            and n >= north - eps
+            and e >= east - eps
+        ):
+            size = (n - s) * (e - w)
+            if best is None or size < best[0]:
+                best = (size, path)
+    return None if best is None else best[1]
+
+
+def _overpass(query: str) -> dict[str, Any]:
+    """One request to the Overpass server OSMnx uses, with its User-Agent.
+    One attempt: MAPS.md, «Overpass: come si scarica»."""
+    import osmnx as ox
+
+    request = urllib.request.Request(
+        f"{ox.settings.overpass_url.rstrip('/')}/interpreter",
+        data=urllib.parse.urlencode({"data": query}).encode(),
+        headers={"User-Agent": ox.settings.http_user_agent},
+    )
+    with urllib.request.urlopen(request, timeout=NAMED_ROADS_TIMEOUT_S + 10) as answer:
+        result: dict[str, Any] = json.load(answer)
+    return result
 
 
 def crop(graph: Graph, bbox: BBox) -> Graph:

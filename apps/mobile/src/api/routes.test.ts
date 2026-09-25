@@ -194,10 +194,18 @@ test("the route guard checks directions and the shape or word", () => {
   const [first] = result.directions;
   expect(isRouteResult(wordResult)).toBe(true);
   expect(isRouteResult({ ...result, directions: null })).toBe(false);
-  expect(isRouteResult({ ...result, directions: [{ ...first, turn: "jump" }] })).toBe(false);
-  expect(isRouteResult({ ...result, directions: [{ ...first, street: 7 }] })).toBe(false);
-  expect(isRouteResult({ ...result, directions: [{ ...first, joined: undefined }] })).toBe(false);
-  expect(isRouteResult({ ...result, directions: [{ ...first, street: null }] })).toBe(true);
+  expect(isRouteResult({ ...result, directions: [{ ...first, turn: "jump" }] })).toBe(
+    false,
+  );
+  expect(isRouteResult({ ...result, directions: [{ ...first, street: 7 }] })).toBe(
+    false,
+  );
+  expect(
+    isRouteResult({ ...result, directions: [{ ...first, joined: undefined }] }),
+  ).toBe(false);
+  expect(isRouteResult({ ...result, directions: [{ ...first, street: null }] })).toBe(
+    true,
+  );
   expect(isRouteResult({ ...wordResult, word: undefined })).toBe(false);
   expect(isRouteResult({ ...result, word: "CIAO" })).toBe(false);
 });

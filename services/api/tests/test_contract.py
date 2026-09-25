@@ -139,3 +139,19 @@ def test_word_fixtures_are_valid_bodies() -> None:
     body = RouteResultBody.model_validate(result)
     assert body.shape is None
     assert body.word == "CIAO"
+
+
+def test_the_api_passes_the_word_on_and_answers_its_result_unchanged() -> None:
+    data = _load("route-result-word.json")
+    result = RouteResult(**{**data, "points": [tuple(p) for p in data["points"]]})
+    asked: list[RouteRequest] = []
+
+    def planner(request: RouteRequest, source: GraphLoader) -> Plan:
+        asked.append(request)
+        return Plan(result=result, search=None)
+
+    app = create_app(FileSource(FIXTURES / "unused.graphml"), planner=planner)
+    response = TestClient(app).post("/routes", json=_load("route-request-word.json"))
+    assert response.status_code == 200
+    assert response.json() == data
+    assert asked[0].word == "ciao"

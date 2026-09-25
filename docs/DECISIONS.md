@@ -1502,3 +1502,37 @@ contratto).
 **Conseguenza**: la barra dice la verità sulle fasi e più o meno sul tempo:
 un calcolo più lento del solito resta fermo poco sotto il 95%. Se le misure
 dei tempi cambiano, vanno cambiate le costanti di `progress.ts`.
+
+## ADR-0051 — La parola nell'API: `word` accanto a `shape`, una delle due
+**Stato**: Attiva · 2026-09-24 · chiesto dall'utente (tramite il
+coordinatore); il contratto e i limiti decisi dall'agente su delega
+dell'utente
+
+L'utente vuole scrivere nell'app la parola da disegnare. Il motore la sa
+scrivere dalla CLI (ADR-0044); il contratto con l'app conosceva solo le
+forme del catalogo, e l'app controlla che il risultato ne nomini una.
+
+**Decisione**:
+- **Contratto**: `RouteRequest` ha `shape` oppure `word`, l'altro assente
+  o `null`; `RouteResult` ha `shape: null` e `word` (in maiuscole) per una
+  parola, `word: null` per una forma. Sono aggiunte: l'app di oggi manda e
+  riceve una forma come prima, e compila senza modifiche. Il nome del file
+  e della traccia GPX usa la parola.
+- **Controlli nel motore** (`models.check_word`), come gli altri valori:
+  solo lettere dell'alfabeto, oggi A, C, I, O; al più 8 lettere; almeno
+  3 km di percorso per lettera. Ogni caso è un `invalid_request` con un
+  messaggio in inglese che l'app può mostrare così com'è: quali lettere
+  mancano e quali ci sono, o la distanza minima.
+- **Costanti in `shared-types`** (`LETTERS`, `MAX_WORD_LETTERS`,
+  `LETTER_DISTANCE_M`), allineate al motore da `contract.json`: l'app può
+  controllare prima di chiedere (TASK-057).
+
+**Motivo**: 3 km per lettera perché «CIAO» è stato giudicato `sì` a 15 km,
+3,75 km per lettera, con lettere alte 700–800 m, e con meno le lettere
+scendono sotto quello che gli isolati di una città sanno disegnare. 8
+lettere perché ognuna aggiunge circa 75 punti di passaggio a una ricerca
+che per quattro dura già 40–140 s.
+
+**Conseguenza**: nell'app, che arriva a 21 km, una parola ha al più 7
+lettere. Con l'alfabeto di oggi le parole possibili sono poche: allargarlo
+è una scelta chiesta all'utente. Il campo nell'app è TASK-057.

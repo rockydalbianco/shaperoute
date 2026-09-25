@@ -1,6 +1,6 @@
 # TASK-056 — La parola nell'API: una richiesta di percorso con `word`
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-056-words-api` (parte da `main`)
 
 Assegnato dal coordinatore su richiesta dell'utente: l'utente vuole
@@ -49,17 +49,17 @@ Deciso dall'agente su delega dell'utente, salvo la domanda aperta sotto:
 
 ## Criteri di accettazione
 
-- [ ] Una richiesta con `word` diventa un job che finisce con un percorso
+- [x] Una richiesta con `word` diventa un job che finisce con un percorso
       e con `word` nel risultato (test con un grafo finto).
-- [ ] `shape` e `word` insieme, o nessuno dei due: `invalid_request`.
-- [ ] Una lettera che l'alfabeto non ha: `invalid_request`, e il messaggio
+- [x] `shape` e `word` insieme, o nessuno dei due: `invalid_request`.
+- [x] Una lettera che l'alfabeto non ha: `invalid_request`, e il messaggio
       nomina la lettera e l'alfabeto.
-- [ ] Una parola troppo lunga, o troppo corta la distanza per le sue
+- [x] Una parola troppo lunga, o troppo corta la distanza per le sue
       lettere: `invalid_request` con la distanza minima nel messaggio.
-- [ ] Le richieste con `shape` rispondono come prima (test esistenti verdi).
-- [ ] Fixture e test del contratto verdi sui due lati; l'app compila senza
+- [x] Le richieste con `shape` rispondono come prima (test esistenti verdi).
+- [x] Fixture e test del contratto verdi sui due lati; l'app compila senza
       modifiche (`npm run typecheck` in `apps/mobile`).
-- [ ] `ruff`, `black`, `pytest` puliti in route-engine e api.
+- [x] `ruff`, `black`, `pytest` puliti in route-engine e api.
 
 ## File toccati
 
@@ -71,7 +71,7 @@ services/route-engine/tests/test_contract.py
 services/route-engine/tests/test_words.py
 services/api/shaperoute_api/schemas.py
 services/api/shaperoute_api/jobs.py                    (solo il log)
-services/api/shaperoute_api/app.py                     (dopo #60: to_request, gpx_file_name)
+services/api/shaperoute_api/app.py                     (to_request, nomi del GPX, log)
 services/api/tests/test_contract.py, test_route_jobs.py, test_routes.py, test_gpx.py
 packages/shared-types/src/index.ts, test/contract.test.ts
 packages/shared-types/fixtures/*  (route-request-word.json, route-result-word.json nuovi)
@@ -82,9 +82,14 @@ docs/tasks/TASK-056.md, docs/API.md, docs/DECISIONS.md (ADR-0051), docs/STATUS.m
 
 - Il campo della parola nell'app: TASK-057.
 - Le lettere che l'alfabeto non ha ancora: domanda aperta all'utente.
-- `app.py` oltre `to_request` e `gpx_file_name`: è di TASK-052.
+- `app.py` oltre la richiesta e i nomi: era di TASK-052, ora libero.
 - Rendere più veloce il motore sulle parole.
 
 ## Esito
 
-*(da compilare)*
+Una richiesta con `word` diventa un percorso con `"shape": null` e
+`"word": "CIAO"`, da `/route-jobs`, `/routes` e `/gpx`; le parole che il
+motore non sa scrivere, o troppo lunghe per la distanza, ricevono un
+`invalid_request` che dice perché (ADR-0051). L'app compila senza
+modifiche. Rimandati: il campo nell'app (TASK-057) e le lettere che
+mancano (domanda aperta all'utente).

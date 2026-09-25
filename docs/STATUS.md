@@ -36,21 +36,26 @@ Per le indicazioni di svolta il seguito è
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
 nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
 
-**App: TASK-055 — Barra di caricamento sotto la mappa**
-(`docs/tasks/TASK-055.md`): fatta e provata con i test; manca la prova
-dell'utente sull'iPhone. Poi TASK-057, il campo per le parole (dopo
-TASK-056).
+**App: TASK-058 — Barra anche durante il download della zona e la
+connessione all'API**, chiesto dall'utente dopo TASK-055; poi TASK-057, il
+campo per le parole (dopo TASK-056 e TASK-049).
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
-- **TASK-055** — Barra di caricamento (worktree `D:\shaperoute-app`):
-  `RoutePanel.tsx`, `progress.ts`, `LoadingBar.tsx`, `docs/UI.md`.
+Niente per l'app.
 
 ## Completato
 
+- **Indicazioni** — TASK-053: un marciapiede senza nome prende la via lungo
+  cui corre, dedotta a parte (`sidewalks.alongs`, ADR-0054); i nomi delle
+  vie escluse dal grafo in un file per zona. Cuori da 15 km, indicazioni
+  senza nome né via: Milano 231 → 81, Trento 118 → 57, Levico 34 → 30.
+  Nell'API e nell'app non c'è ancora.
+- **App** — TASK-055: barra di caricamento gialla sotto la mappa, stimata
+  per fasi (ADR-0050); provata sull'iPhone.
 - **App** — TASK-054: partenza dal GPS o da un altro luogo anche con il
   GPS acceso, rotellina durante l'attesa, avvisi in parole semplici
   (ADR-0048); provato sull'iPhone. TASK-051: due schermate, prima cosa disegnare (tessere delle

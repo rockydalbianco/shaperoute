@@ -1,6 +1,6 @@
 # TASK-053 — Nomi dei marciapiedi
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-053-sidewalk-names` (da `main`, dopo
 TASK-050, che lavora su `network.py`)
 
@@ -48,12 +48,12 @@ come si scaricano le zone):
 
 ## Criteri di accettazione
 
-- [ ] `ruff`, `black`, `pytest -m "not network"` puliti.
-- [ ] Nessun `along` su un marciapiede lontano più della soglia da una via
+- [x] `ruff`, `black`, `pytest -m "not network"` puliti.
+- [x] Nessun `along` su un marciapiede lontano più della soglia da una via
       con nome (test su un grafo salvato).
-- [ ] A Milano la quota di indicazioni senza nome né `along` è scritta
+- [x] A Milano la quota di indicazioni senza nome né `along` è scritta
       nell'esito, prima e dopo.
-- [ ] Nuovo ADR; `docs/MAPS.md` e `docs/STATUS.md` aggiornati.
+- [x] Nuovo ADR; `docs/MAPS.md` e `docs/STATUS.md` aggiornati.
 
 ## File toccati
 
@@ -71,4 +71,18 @@ docs/MAPS.md, docs/DECISIONS.md, docs/STATUS.md
 
 ## Esito
 
-*(da compilare)*
+Fatto il 2026-09-25 (ADR-0054). Il punto 1 l'ha scelto l'utente: un file
+a parte con i nomi delle vie escluse, uno per zona (`network.named_roads`,
+Trento 106 KB, Levico 5 KB, Milano 1,1 MB). `sidewalks.py` trova la via con
+nome più vicina entro 15 m e parallela entro 20° per almeno metà del tratto;
+`alongs(graph, nodes, directions, index)` dà la via per ogni indicazione
+senza nome, in una lista a parte. Non è un campo di `Direction`: il
+contratto era di TASK-056 e un test lo vuole uguale al motore; portarla
+all'API e all'app è per TASK-049 o seguenti.
+
+Cuori da 15 km, indicazioni senza nome né via, prima → dopo: **Milano 231
+→ 81** (su 265), **Trento 118 → 57** (su 181), **Levico 34 → 30** (su 76).
+Delle vie trovate a Milano, 98 vengono solo dalle vie escluse; le altre
+anche dal grafo. Campione controllato su openstreetmap.org, quattro a
+Milano: giusti tutti. Restano senza via piazze, parchi e i marciapiedi dei
+viali più larghi di 15 m. 15 test nuovi (`test_sidewalks.py`).

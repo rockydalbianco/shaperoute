@@ -1969,7 +1969,7 @@ GPS fra le case sbaglia di 10–20 m, a tratti per qualche secondo di fila.
   Il ritorno vero, con una posizione ogni 2 s, si sente dopo 2 s in più.
 
 **Scartate**: una soglia che cresce con l'accuracy della posizione (iOS la
-dà a gradini, 5, 10, 16, 65 m, e a 65 m nessuna soglia utile resta sotto
+dà spesso a gradini larghi, fino a 65 m, e a 65 m nessuna soglia utile resta sotto
 i 50 m della via parallela); la media delle ultime posizioni (un errore
 grande pesa comunque, e la via sbagliata arriva più tardi).
 

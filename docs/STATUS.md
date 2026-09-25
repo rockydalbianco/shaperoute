@@ -49,11 +49,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **App** — TASK-057: il campo per la parola da disegnare («Shape | Word»,
-  ADR-0053); da provare sull'iPhone.
+Niente per l'app.
 
 ## Completato
 
+- **App** — TASK-057: un interruttore «Shape | Word»; la parola si scrive
+  nell'app, controllata prima (A–Z, al più 7 lettere, 3 km a lettera, con
+  «Use N km»), parte come `word` ed è il nome del percorso (ADR-0053);
+  provato sull'iPhone. Seguito possibile: una stima della barra per le
+  parole (`progress.ts`).
 - **App** — TASK-066: una risposta senza `directions` (API precedente a
   TASK-048) è `bad_answer`, non un crash; la guardia accetta anche i
   percorsi di una parola (`shape: null`, `word`), pronta per TASK-057.

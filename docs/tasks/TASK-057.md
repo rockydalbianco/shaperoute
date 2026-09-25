@@ -1,6 +1,6 @@
 # TASK-057 — Campo per la parola da disegnare, nell'app
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-057-word-field`
 
 ## Obiettivo
@@ -32,15 +32,16 @@ per scrivere le lettere/parole da disegnare».
 
 ## Criteri di accettazione
 
-- [ ] L'interruttore mostra quale dei due è scelto; cambiare non perde
+- [x] L'interruttore mostra quale dei due è scelto; cambiare non perde
       quanto scritto nell'altro.
-- [ ] Una parola valida manda `{"word": "CIAO", …}` senza `shape`.
-- [ ] Lettere fuori da A–Z, spazi, troppe lettere, distanza sotto i 3 km a
+- [x] Una parola valida manda `{"word": "CIAO", …}` senza `shape`.
+- [x] Lettere fuori da A–Z, spazi, troppe lettere, distanza sotto i 3 km a
       lettera: messaggio chiaro e «Draw route» spento; per la distanza un
       tasto porta a quella minima.
-- [ ] Attesa e risultato dicono la parola.
-- [ ] Una forma toccata dopo un errore torna a «Shape».
-- [ ] Test verdi (`npm test`, typecheck, lint, prettier); provato
+- [x] Attesa e risultato dicono la parola.
+- [x] Una parola che non ci sta non propone le forme, ma una parola più
+      corta.
+- [x] Test verdi (`npm test`, typecheck, lint, prettier); provato
       sull'iPhone.
 
 ## File toccati
@@ -49,6 +50,7 @@ per scrivere le lettere/parole da disegnare».
 apps/mobile/App.tsx
 apps/mobile/__tests__/App.test.tsx
 apps/mobile/src/route/RoutePanel.tsx
+apps/mobile/src/route/RoutePanel.test.tsx
 apps/mobile/src/route/wordInput.ts          (nuovo)
 apps/mobile/src/route/wordInput.test.ts     (nuovo)
 apps/mobile/src/route/problems.ts
@@ -74,4 +76,8 @@ docs/tasks/TASK-057.md
 
 ## Esito
 
-*(a fine task)*
+Interruttore «Shape | Word» e campo per la parola, controllata prima di
+mandarla (A–Z, al più 7 lettere, 3 km a lettera, «Use N km»); la parola è
+il nome del percorso nell'attesa e nel risultato. Provato sull'iPhone il
+2026-09-25: «va benone». Rimandata una stima della barra per le parole
+(`progress.ts`, ADR-0053).

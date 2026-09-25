@@ -55,6 +55,14 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
 
 ## Cache
 
+- **Nomi delle vie escluse** (TASK-053, ADR-0054): accanto ai grafi,
+  `names_<sud>_<ovest>_<nord>_<est>.json`, le vie con nome che
+  `FOOT_FILTER` lascia fuori perché hanno il marciapiede disegnato a parte
+  (`sidewalk=separate`). Servono solo a dire lungo quale via corre un
+  marciapiede senza nome, mai a camminarci. Una richiesta a Overpass per
+  zona (`network.named_roads`), un tentativo solo; un file che copre la
+  zona vale anche per le zone più piccole. Pesano poco: Trento 106 KB,
+  Levico 5 KB, Milano 1,1 MB, scaricati in 1–30 s.
 - Il grafo si scarica una volta e si salva in `data/cache/` come GraphML
   (ignorato da git). Da lì la CLI gira **offline**.
 - Nome del file: `<rete>_<sud>_<ovest>_<nord>_<est>.graphml`, con il

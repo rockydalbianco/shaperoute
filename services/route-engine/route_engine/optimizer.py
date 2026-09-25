@@ -54,7 +54,6 @@ from route_engine.projection import (
     project_shape,
     start_at_phase,
 )
-from route_engine.retrace import snap_retraced
 from route_engine.shapes import FREE_ROTATION, get_shape
 from route_engine.validation import check_closed, measure, validate
 from route_engine.words import MAX_SHIFT, SHIFT_STEP, Word, compose
@@ -121,13 +120,9 @@ LETTER_BAND = 1 / 16
 # Tracing zones and corridor this narrow were tried too, and dropped: at
 # Trento the route lost the O (TASK-050).
 WORD_TOLERANCE = 1 / 8
-# Where a word goes back along itself (the I, the C, the gaps), it comes back
-# on the very roads of the way out (retrace.snap_retraced, TASK-071): one
-# thin line, not a loop. Until TASK-071 the roads just used only cost half,
-# and the way back took a parallel road where the way out had zig-zagged.
-# The first pass of such a stroke still pays half for used roads: paying
-# double made the routes of TASK-059's words a median 15% longer than
-# before, against 5%, and the words smaller.
+# Where a word goes back along itself (the I, the C, the gaps), the roads it
+# has just used cost this much: it comes back on the same road, as the user
+# asked for the I, instead of on a parallel one (TASK-050).
 WORD_RETRACE = 0.5
 
 
@@ -332,15 +327,12 @@ class Search:
 Tracer = Callable[[list[LatLon]], NetworkRoute]
 
 
-def _tracer(graph: Graph, reuse_penalty: float, word: bool = False) -> Tracer:
+def _tracer(graph: Graph, reuse_penalty: float, retrace: float = 1.0) -> Tracer:
     """Trace on the whole zone graph: the corridor already makes the roads
-    far from the candidate too dear to use, so cropping first gains nothing.
-    A word comes back on the roads of its way out (TASK-071)."""
+    far from the candidate too dear to use, so cropping first gains nothing."""
 
     def trace(projected: list[LatLon]) -> NetworkRoute:
-        if word:
-            return snap_retraced(graph, projected, reuse_penalty, retrace=WORD_RETRACE)
-        return snap_to_network(graph, projected, reuse_penalty)
+        return snap_to_network(graph, projected, reuse_penalty, retrace=retrace)
 
     return trace
 
@@ -487,7 +479,8 @@ def search(
     def allowed(rotation_deg: float) -> bool:
         return _angle_gap(rotation_deg, 0.0) <= max_tilt_deg + 1e-9
 
-    trace = trace or _tracer(graph, reuse_penalty, word=word is not None)
+    retrace = 1.0 if word is None else WORD_RETRACE
+    trace = trace or _tracer(graph, reuse_penalty, retrace)
     mask = RoadMask(graph, start)
     base_scale = initial_scale(shape, distance_m)
     low, high = (base_scale * f for f in SCALE_RANGE)
@@ -971,7 +964,8 @@ def plan_shape(
     else:
         found = None
         projected = project_shape(shape, start, initial_scale(shape, planned_m))
-        route = _tracer(graph, reuse_penalty, word=word is not None)(projected)
+        retrace = 1.0 if word is None else WORD_RETRACE
+        route = snap_to_network(graph, projected, reuse_penalty, retrace=retrace)
         sim, warnings = similarity(route.points, projected), list(route.warnings)
         if word is not None:
             height_m = initial_scale(shape, planned_m) * word.height

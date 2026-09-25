@@ -31,12 +31,6 @@ shape. The line starts half-way along the first gap, and every side is cut
 into pieces at most SIDE_STEP long, so that the route has a waypoint every
 few tens of metres.
 
-A stroke drawn twice is cut at the same points both ways (TASK-071): a side
-is first split where another point of its letter lies on it, like the stem
-of the E where its arms leave it. So the way back has the very points of
-the way out, and the route can come back on the very roads
-(`retrace.snap_retraced`).
-
 Every vertex knows which letter it belongs to, or which gap and how far
 along it: the search moves each letter a little, to where the roads are
 (`optimizer.fit_letters`), and the gaps stretch to follow. The point where
@@ -74,9 +68,6 @@ SHIFT_STEP = 1 / 16
 # some 75 waypoints to a search that takes 40–140 s for four.
 MAX_WORD_LETTERS = 8
 LETTER_DISTANCE_M = 3000
-# A point this close to a side of its letter, in letter heights, lies on it:
-# the side is split there (TASK-071).
-ON_SIDE = 1e-9
 
 
 class InvalidWordError(ValueError):
@@ -302,11 +293,9 @@ def compose(
     line: list[tuple[Point, Place]] = [(outs[0][0], Place(0))]
 
     def draw(points: Sequence[Point], index: int) -> None:
-        corners = [*outs[index], *backs[index]]
         for a, b in zip(points, points[1:], strict=False):
-            for c, d in _split(a, b, corners):
-                for f in _cuts(math.dist(c, d), step):
-                    line.append((_along(c, d, f), Place(index)))
+            for f in _cuts(math.dist(a, b), step):
+                line.append((_along(a, b, f), Place(index)))
 
     def cross(index: int, forward: bool) -> None:
         """The gap after letter `index`, to the next letter or back."""
@@ -356,21 +345,6 @@ def compose(
         height=1.0 / half,
         phases=tuple(cumulative[i] / cumulative[-1] for i in starts),
     )
-
-
-def _split(a: Point, b: Point, points: Iterable[Point]) -> list[tuple[Point, Point]]:
-    """The side from `a` to `b` in pieces, split where one of `points` lies
-    on it (TASK-071)."""
-    dx, dy = b[0] - a[0], b[1] - a[1]
-    length = math.hypot(dx, dy)
-    inside: dict[float, Point] = {}
-    for p in points:
-        t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / length**2
-        off = abs((p[0] - a[0]) * dy - (p[1] - a[1]) * dx) / length
-        if ON_SIDE < t < 1 - ON_SIDE and off < ON_SIDE:
-            inside[t] = p
-    ends = [a, *(inside[t] for t in sorted(inside)), b]
-    return list(zip(ends, ends[1:], strict=False))
 
 
 def _cuts(length: float, step: float) -> list[float]:

@@ -53,6 +53,14 @@ Niente per l'app.
 
 ## Completato
 
+- **Programmatore Lettere** — TASK-071: verificato che il ritorno di un
+  tratto ripassato prende a volte un'altra via e disegna un anello,
+  soprattutto a Milano («CIAO» 51% di strade doppie contro il 74% del
+  disegno). Provato il ritorno sulle strade dell'andata: una linea sola, ma
+  percorso più lungo e lettere più piccole (fino a −28%); per l'utente 4
+  parole su 9 peggio, nessuna meglio. Il motore resta com'è (ADR-0067
+  «Scartata», codice nel commit `0e8add6`). Proposta all'utente, da
+  decidere: lettere squadrate come nello screenshot di Strava (task file).
 - **Programmatore Lettere** — TASK-068: la testa di cane come contorno
   candidato (`dog_head`), vista di fronte con le orecchie che pendono, e
   occhi, naso e bocca ripassati (ADR-0065); provata dalla CLI a 15 km:

@@ -1914,3 +1914,54 @@ più piccoli del disegno. Giudizio dell'utente (2026-09-25): la testa è
 `sì` in tutte e tre le zone, dove il cane intero era `sì` solo a Milano.
 Se il cane entra nel catalogo, e come testa o intero, lo decide l'utente
 con TASK-065 (ADR-0036).
+
+## ADR-0067 — Parole: il ritorno sulle strade dell'andata, provato e scartato
+**Stato**: Scartata · 2026-09-26 · chiesto dall'utente («se si percorre la
+stessa strada anche al ritorno le rende più pulite le lettere, e più
+fini»); il metodo deciso dall'agente su delega dell'utente (TASK-071);
+giudizio dell'utente: 4 parole su 9 peggio, nessuna meglio; l'utente ha
+scelto di non farlo entrare nel motore
+
+Una lettera senza anelli si corre tutta due volte (ADR-0056), e dove la
+parola torna su se stessa le strade appena usate costano la metà
+(ADR-0044). Sui campioni di TASK-050 e TASK-059, rigenerati con il codice
+di `main`, il ritorno prende un'altra strada dove l'andata ha fatto
+zig-zag, e al posto di una linea viene un anello. Succede soprattutto a
+Milano, con marciapiedi e vie parallele fitte: «CIAO» ha il 51% del
+percorso su strade corse due volte contro il 74% del disegno, e 3,7 km
+corsi una volta sola accanto a un tratto ripassato
+(`docs/tasks/TASK-071.md`).
+
+**Provato** (commit `0e8add6` nel branch `feat/TASK-071-retraced-letters`,
+tolto dal commit dopo):
+- in `words.compose` i tratti ripassati tagliati negli stessi punti
+  all'andata e al ritorno (il gambo di E, K, L e la sbarra della B non lo
+  erano);
+- un tracciatore per le parole, `retrace.snap_retraced`: ogni punto della
+  linea tiene il nodo di strada in cui è stato raggiunto la prima volta, e
+  un lato già disegnato nel verso opposto ripete all'indietro i nodi
+  dell'andata; al primo passaggio le strade già usate costano la metà, come
+  prima. Le altre forme restavano con `snap_to_network`, identiche (cuore,
+  gatto e stella a 15 km nelle tre zone, stessi punti).
+
+**Esito**: ogni tratto ripassato diventa una linea sola (Milano: «CIAO» 77%
+di strade doppie, «MAX» 92%), ma il ritorno ripete gli zig-zag dell'andata
+e allo stesso piazzamento il percorso si allunga del 2–24% (mediana 5%). La
+ricerca, per stare nella distanza, stringe la parola o sceglie un altro
+posto: a Trento e Levico lettere più piccole del 13–28%. Giudizio
+dell'utente, prima → dopo: «CIAO» sì · sì · sì → quasi · quasi · sì;
+«BELLO» no · quasi · sì → no · no · quasi; «MAX» sì ovunque, come prima (e
+grande come prima). Le linee più sottili non compensano lettere più
+piccole.
+
+**Decisione**: il motore resta com'è. Il ritorno su un'altra strada nasce
+dallo zig-zag dell'andata, cioè da tratti obliqui o curvi su una griglia di
+vie: il seguito proposto all'utente sono le lettere squadrate dello
+screenshot di Strava, un tratto per via, dove il ritorno pulito viene da
+sé (proposta in `docs/tasks/TASK-071.md`).
+
+**Quanta strada costa il ripasso** (per chi non ama strade doppie e
+inversioni): sta nel disegno delle lettere, con o senza questa modifica.
+Le lettere ripassano il 74–91% della loro linea; a 15 km il 51–92% del
+percorso è su strade corse due volte (con il ritorno a specchio 71–92%,
+cioè 5,4–7,0 km di secondo passaggio), con 3–25 inversioni a U per parola.

@@ -1536,3 +1536,32 @@ che per quattro dura già 40–140 s.
 **Conseguenza**: nell'app, che arriva a 21 km, una parola ha al più 7
 lettere. Con l'alfabeto di oggi le parole possibili sono poche: allargarlo
 è una scelta chiesta all'utente. Il campo nell'app è TASK-057.
+
+## ADR-0052 — Navigazione nell'app: il percorso già disegnato, seguito col GPS
+**Stato**: Attiva · 2026-09-25 · chiesta dall'utente («come Google Maps»);
+`expo-speech` approvata dall'utente il 2026-09-24; il resto deciso
+dall'agente su delega dell'utente (TASK-049)
+
+**Decisione**:
+- **Si segue il percorso che c'è**, con le indicazioni di ADR-0047: niente
+  ricalcolo. Oltre 40 m dalla linea (`OFF_ROUTE_M`) si dice «Off the route»
+  una volta.
+- **La posizione si cerca vicino a dov'era** (da 50 m indietro a 300 m
+  avanti) e tornare indietro lungo il percorso costa quanto starne fuori:
+  una forma passa due volte per la stessa strada (i tratti ripassati,
+  ADR-0039), e il punto più vicino di tutto il percorso può essere quello
+  sbagliato.
+- **Una svolta si annuncia a 50 m** (`ANNOUNCE_M`, circa 15 s di corsa),
+  una volta, insieme a quelle `joined`; si considera passata 10 m dopo
+  l'incrocio (`PASS_M`), l'arrivo a 25 m dalla fine.
+- **Voce e vibrazione**: `expo-speech` in inglese (`en-US`), come
+  l'interfaccia; `Vibration` di React Native, 400 ms, per ogni svolta.
+- **La mappa segue** con un messaggio nuovo, `follow`: sposta il
+  segnaposto e centra a zoom 17 senza rifare l'inquadratura del percorso.
+
+**Motivo**: la prima versione deve dire la verità su un percorso che già
+esiste; ricalcolarlo vorrebbe il motore dal telefono a ogni errore, con i
+tempi del motore (30–50 s sopra i 10 km).
+
+**Conseguenza**: una dipendenza in più nell'app. Le soglie sono stime,
+non misure: vanno provate correndo (TASK-049, «Esito»).

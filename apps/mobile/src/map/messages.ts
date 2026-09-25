@@ -13,7 +13,8 @@ export const START_HERE_M = 50;
 export type ToPage =
   | { type: "setPosition"; lngLat: LngLat }
   | { type: "showRoute"; coordinates: LngLat[]; startHere: LngLat | null }
-  | { type: "clearRoute" };
+  | { type: "clearRoute" }
+  | { type: "follow"; lngLat: LngLat };
 
 /** From the map page to the app, through `window.ReactNativeWebView`. */
 export type FromPage = { type: "ready" } | { type: "error"; message: string };
@@ -34,6 +35,14 @@ export function showRoute(points: LatLon[], requested: LatLon | null = null): To
     coordinates: points.map(toLngLat),
     startHere: moved ? toLngLat(points[0]) : null,
   };
+}
+
+/**
+ * Moves the position marker and keeps the map on it, close up, without
+ * framing the route again: navigation (TASK-049).
+ */
+export function follow(point: LatLon): ToPage {
+  return { type: "follow", lngLat: toLngLat(point) };
 }
 
 export function clearRoute(): ToPage {

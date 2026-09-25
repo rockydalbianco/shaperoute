@@ -1,6 +1,7 @@
 import { color } from "../theme/tokens";
 import {
   buildMapPage,
+  FOLLOW_ZOOM,
   isExternalUrl,
   MAP_BACKGROUND,
   MAP_STYLE,
@@ -109,4 +110,10 @@ test("marks where a moved route begins, and frames it with the start", () => {
   expect(page).toContain("setStartHere(message.startHere)");
   expect(page).toContain("bounds.extend(marker.getLngLat())");
   expect(page).toContain("setStartHere(null)");
+});
+
+test("the page follows the runner close up, without framing the route again", () => {
+  const handler = page.slice(page.indexOf('message.type === "follow"'));
+  expect(handler).toContain(`zoom: ${FOLLOW_ZOOM}`);
+  expect(handler.slice(0, handler.indexOf("clearRoute"))).not.toContain("fitBounds");
 });

@@ -1,5 +1,6 @@
 import {
   clearRoute,
+  follow,
   pageScript,
   parsePageMessage,
   setPosition,
@@ -70,4 +71,11 @@ test.each([
   ["error without text", '{"type":"error"}'],
 ])("parsePageMessage ignores %s", (_case, data) => {
   expect(parsePageMessage(data)).toBeNull();
+});
+
+test("follow sends the position in MapLibre order", () => {
+  expect(follow([46.0671, 11.1214])).toEqual({
+    type: "follow",
+    lngLat: [11.1214, 46.0671],
+  });
 });

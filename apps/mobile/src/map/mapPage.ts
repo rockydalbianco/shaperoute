@@ -32,6 +32,9 @@ export const ITALY_BOUNDS: [southWest: LatLon, northEast: LatLon] = [
 /** Zoom used to show a start: a few streets around it. */
 export const START_ZOOM = 15;
 
+/** Zoom while navigating: the next junction and the streets around it. */
+export const FOLLOW_ZOOM = 17;
+
 /** The route line: the brand yellow, the one thing on the map that has it. */
 export const ROUTE_COLOR = route.color;
 export const ROUTE_WIDTH = route.width;
@@ -185,6 +188,15 @@ export function buildMapPage(): string {
             bounds.extend(marker.getLngLat());
           }
           map.fitBounds(bounds, { padding: 40 });
+        } else if (message.type === "follow") {
+          if (marker) {
+            marker.setLngLat(message.lngLat);
+          } else {
+            marker = new maplibregl.Marker({ color: ${toScript(POSITION_COLOR)} })
+              .setLngLat(message.lngLat)
+              .addTo(map);
+          }
+          map.easeTo({ center: message.lngLat, zoom: ${FOLLOW_ZOOM}, duration: 500 });
         } else if (message.type === "clearRoute") {
           setRoute(noRoute);
           setStartHere(null);

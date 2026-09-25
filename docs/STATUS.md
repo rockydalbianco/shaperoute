@@ -51,6 +51,9 @@ Niente per l'app.
 
 ## Completato
 
+- **App** — TASK-066: una risposta senza `directions` (API precedente a
+  TASK-048) è `bad_answer`, non un crash; la guardia accetta anche i
+  percorsi di una parola (`shape: null`, `word`), pronta per TASK-057.
 - **Indicazioni** — TASK-062: `numpy` dichiarato fra le dipendenze del
   motore (`>=1.24,<3`, lo stesso limite basso di osmnx).
 - **Indicazioni** — TASK-053: un marciapiede senza nome prende la via lungo

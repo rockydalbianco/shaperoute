@@ -4,6 +4,7 @@ import request from "@shaperoute/shared-types/fixtures/route-request.json";
 import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import jobFailed from "@shaperoute/shared-types/fixtures/route-job-failed.json";
 import result from "@shaperoute/shared-types/fixtures/route-result.json";
+import wordResult from "@shaperoute/shared-types/fixtures/route-result-word.json";
 
 import {
   isRouteJob,
@@ -178,4 +179,25 @@ test("the guards accept the shared fixtures and refuse broken ones", () => {
   expect(isRouteJob(jobDone)).toBe(true);
   expect(isRouteJob(jobFailed)).toBe(true);
   expect(isRouteJob({ ...jobDone, status: "sleeping" })).toBe(false);
+});
+
+test("a route without directions, from an API older than TASK-048, is a bad answer", async () => {
+  const { directions: _, ...old } = result;
+  const { fetchFn } = api(
+    { status: 202, body: job("queued") },
+    { status: 200, body: { ...job("done"), result: old } },
+  );
+  expect(await run(fetchFn)).toEqual({ kind: "bad_answer", status: 200 });
+});
+
+test("the route guard checks directions and the shape or word", () => {
+  const [first] = result.directions;
+  expect(isRouteResult(wordResult)).toBe(true);
+  expect(isRouteResult({ ...result, directions: null })).toBe(false);
+  expect(isRouteResult({ ...result, directions: [{ ...first, turn: "jump" }] })).toBe(false);
+  expect(isRouteResult({ ...result, directions: [{ ...first, street: 7 }] })).toBe(false);
+  expect(isRouteResult({ ...result, directions: [{ ...first, joined: undefined }] })).toBe(false);
+  expect(isRouteResult({ ...result, directions: [{ ...first, street: null }] })).toBe(true);
+  expect(isRouteResult({ ...wordResult, word: undefined })).toBe(false);
+  expect(isRouteResult({ ...result, word: "CIAO" })).toBe(false);
 });

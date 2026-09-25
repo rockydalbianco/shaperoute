@@ -1536,3 +1536,29 @@ che per quattro dura già 40–140 s.
 **Conseguenza**: nell'app, che arriva a 21 km, una parola ha al più 7
 lettere. Con l'alfabeto di oggi le parole possibili sono poche: allargarlo
 è una scelta chiesta all'utente. Il campo nell'app è TASK-057.
+
+## ADR-0055 — La barra in ogni attesa, e pulsa quando l'attesa si allunga
+**Stato**: Attiva · 2026-09-25 · i tre punti chiesti dall'utente; la forma
+decisa dall'agente su delega dell'utente (TASK-058)
+
+La barra di ADR-0050 c'era solo nel disegno del percorso. L'utente la
+vuole anche mentre la mappa si carica e mentre si aspetta l'API: la lettura
+dell'AI e un'API che non risponde. In quel caso la barra restava ferma
+vicino all'8% fino al timeout di iOS (60 s): sembrava bloccata.
+
+**Decisione**: una sola barra (`EstimateBar`), con la regola di ADR-0050
+(stima `1 − e^(−2t/T)`, mai indietro, mai piena da sola), usata tre volte:
+percorso, lettura dell'AI (`T` = 20 s, fra i 4–10 s a modello caricato e i
+39–49 s da caricare, `AI.md`), mappa con le tessere (`T` = 5 s, 0–95%).
+Oltre `2T` nella stessa fase la barra **pulsa** e dice «Still waiting» allo
+screen reader; la fase dopo la ferma. Niente librerie: `Animated` di React
+Native.
+
+**Scartate**: accorciare il timeout della prima chiamata (cambia quando
+l'app dice «API non raggiungibile», fuori da questo task); far avanzare la
+barra oltre il tratto della fase (poi resterebbe ferma alla fase dopo).
+
+**Conseguenza**: una pulsazione vuol dire «più lento del solito», non
+«rotto». Per la mappa la pagina deve dire all'app quando carica e quando ha
+finito (`dataloading`/`idle` di MapLibre): i collegamenti sono in file di
+TASK-049.

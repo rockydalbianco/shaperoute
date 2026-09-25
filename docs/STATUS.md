@@ -48,6 +48,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-058** — Barra anche per mappa, lettura dell'AI e API lenta
+  (worktree `D:\shaperoute-app`): `progress.ts`, `LoadingBar.tsx` (+ test),
+  `docs/UI.md`. I collegamenti nei file di TASK-049 sono da concordare.
 - **TASK-055** — Barra di caricamento (worktree `D:\shaperoute-app`):
   `RoutePanel.tsx`, `progress.ts`, `LoadingBar.tsx`, `docs/UI.md`.
 

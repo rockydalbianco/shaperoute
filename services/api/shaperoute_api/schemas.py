@@ -18,7 +18,12 @@ from route_engine.models import (
     RouteResult,
 )
 from route_engine.shapes import SUPPORTED_SHAPES
-from route_engine.words import ALPHABET, LETTER_DISTANCE_M, MAX_WORD_LETTERS
+from route_engine.words import (
+    ALPHABET,
+    LETTER_DISTANCE_M,
+    MAX_WORD_LETTERS,
+    spell_letters,
+)
 from shaperoute_ai.reading import MAX_TEXT_LENGTH
 
 
@@ -42,7 +47,7 @@ class RouteRequestBody(BaseModel):
         description=(
             f"A word written one letter at a time (TASK-056), instead of a "
             f"shape: at most {MAX_WORD_LETTERS} of the letters "
-            f"{', '.join(sorted(ALPHABET))}, and "
+            f"{spell_letters(ALPHABET)} (TASK-059), upper or lower case, and "
             f"{LETTER_DISTANCE_M / 1000:g} km of route for each."
         ),
         examples=[None],

@@ -30,11 +30,38 @@ export const MIN_DISTANCE_M = 1_000;
 export const MAX_DISTANCE_M = 50_000;
 
 /**
- * The letters a word may use (route_engine/letters.json, ADR-0044), at
- * most MAX_WORD_LETTERS of them, with LETTER_DISTANCE_M of route for each
- * (TASK-056). Upper or lower case alike.
+ * The letters a word may use (route_engine/letters.json, ADR-0044): A to Z
+ * since TASK-059 (ADR-0056). At most MAX_WORD_LETTERS of them, with
+ * LETTER_DISTANCE_M of route for each (TASK-056). Upper or lower case alike.
  */
-export const LETTERS = ["A", "C", "I", "O"] as const;
+export const LETTERS = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+] as const;
 export const MAX_WORD_LETTERS = 8;
 export const LETTER_DISTANCE_M = 3_000;
 

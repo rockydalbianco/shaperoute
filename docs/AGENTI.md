@@ -31,7 +31,9 @@ Interfaccia Grafica
 
 Programmatore Lettere
   ├─ Adesso  TASK-059  Alfabeto completo, A–Z a tratto singolo
-  └─ Dopo    da decidere con l'utente (vedi «Da assegnare»)
+  ├─ Dopo    TASK-064  Animali candidati: farfalla, uccello, cane,   dopo 059
+  │                    lumaca (contorni e campioni, giudizio utente)
+  └─ Dopo    TASK-065  Gli animali approvati nel catalogo            dopo 064, 057
 
 Da assegnare (servono l'ok dell'utente sul cosa)
   ├─ Far scegliere fra più percorsi alternativi (la ricerca li ha già)
@@ -48,6 +50,8 @@ Da assegnare (servono l'ok dell'utente sul cosa)
 | TASK-060 | `along` nell'API e in `shared-types` | Indicazioni | in coda | 059, 053 ✓ | 0057 |
 | TASK-061 | `along` nella navigazione | Indicazioni | in coda | 060, 049 ✓ | 0058 |
 | TASK-063 | Dove va il tempo del motore oltre i 10 km, e un primo taglio | Indicazioni | in corso | — | 0059 |
+| TASK-064 | Animali candidati: farfalla, uccello, cane, lumaca | Programmatore Lettere | in coda | 059 | 0060 |
+| TASK-065 | Gli animali approvati nel catalogo (parole, AI, app) | Programmatore Lettere | in coda | 064, 057 | 0061 |
 
 Perché quest'ordine:
 
@@ -59,6 +63,13 @@ Perché quest'ordine:
   `along` arriva con 060.
 - **063 subito**: tocca il motore (`optimizer.py`, `network.py`), che nessun
   task in corso usa; `words.py` resta di 059.
+- **064 dopo 059**: stesso agente; i contorni sono file nuovi
+  (`shapes/outlines/*.json`) e i campioni passano dalla CLI (`--outline`),
+  come TASK-034: niente catalogo, niente `shared-types`. Scelti dall'utente
+  il 2026-09-25: «Animali» (farfalla, uccello, cane, lumaca).
+- **065 dopo 064 e 057**: entra nel catalogo solo ciò che l'utente approva
+  (ADR-0036); tocca `shared-types`, `shapes/__init__.py`, il prompt dell'AI
+  e l'app (`shapeWords.ts`, `ShapeTiles.tsx`), vicini al campo di 057.
 
 ## File occupati adesso
 
@@ -72,8 +83,8 @@ Perché quest'ordine:
 
 ## Numeri
 
-- Task: presi fino a **TASK-063**. Il prossimo libero è **TASK-064**.
-- ADR: presi fino a **ADR-0059**. Il prossimo libero è **ADR-0060**.
+- Task: presi fino a **TASK-065**. Il prossimo libero è **TASK-066**.
+- ADR: presi fino a **ADR-0061**. Il prossimo libero è **ADR-0062**.
 
 ## Fatto in questa tornata (2026-09-24/25)
 

@@ -148,6 +148,37 @@ def test_the_gaps_run_along_the_base_line_out_and_back() -> None:
     assert on_gaps > 6
 
 
+def _point_ids(units: np.ndarray) -> list[int]:
+    """For each point, the index of the first point equal to it."""
+    ids: list[int] = []
+    for i, point in enumerate(units):
+        same = np.flatnonzero(np.hypot(*(units[:i] - point).T) < 1e-9)
+        ids.append(ids[same[0]] if len(same) else i)
+    return ids
+
+
+@pytest.mark.parametrize("word", [CIAO, ALL, compose("BELLO")])
+def test_every_stroke_drawn_twice_has_the_same_points_both_ways(word: Word) -> None:
+    # So the route can come back on the very roads of the way out (TASK-071).
+    units = np.array(word.units)
+    ids = _point_ids(units)
+    sides = list(zip(ids, ids[1:], strict=False))
+    drawn = set(sides)
+    twice = twice_drawn(units, near_m=1e-9)
+    for i, (a, b) in enumerate(sides):
+        assert ((b, a) in drawn) == twice[i]
+
+
+def test_the_stem_of_the_e_is_split_where_its_arms_leave_it() -> None:
+    # Up the stem in one side, down it in three (1 to 0.6, 0.6 to 0.2, 0.2
+    # to 0): the way up is cut at 0.6 and 0.2 too, and then in the same
+    # pieces as the way down, 7 + 7 + 4 of them.
+    points = _letter(compose("E"), 0)
+    stem = {round(y, 9) for x, y in points if x == 0.0}
+    assert 0.6 in stem and 0.2 in stem
+    assert len(stem) == 1 + 7 + 7 + 4
+
+
 def test_the_way_back_does_not_close_the_a() -> None:
     units = np.array(CIAO.units)
     feet = _letter(CIAO, 2)

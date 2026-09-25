@@ -1,6 +1,6 @@
 # TASK-059 — Alfabeto completo: dalla A alla Z, a tratto singolo
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-059-full-alphabet` (parte da `main`)
 
 Assegnato dal coordinatore su richiesta dell'utente (2026-09-25): «sì fai
@@ -55,7 +55,7 @@ Deciso dall'agente su delega dell'utente:
 - [x] `ruff`, `black`, `pytest -m "not network"` puliti in route-engine e
       api; `npm test` in `packages/shared-types`.
 - [x] Campioni nelle tre zone e anteprima.
-- [ ] Giudizio dell'utente sui campioni, prima del merge.
+- [x] Giudizio dell'utente sui campioni, prima del merge.
 
 ## File toccati
 
@@ -82,15 +82,23 @@ docs/DECISIONS.md (ADR-0056), docs/STATUS.md
 
 ## Esito
 
-*(in attesa del giudizio dell'utente sui campioni)*
-
 Il motore scrive con tutte le lettere dalla A alla Z, e l'API e
 `shared-types` le accettano (ADR-0056). A 15 km «BELLO», «KIWI» e «MAX»
 hanno somiglianza delle lettere 0,74–0,95 e lettere alte 493–727 m, in
 15–258 s (`samples/LOG.md`); anteprima per l'utente:
-https://claude.ai/artifact/TLjtgKASQL5agjrCDwesvf. Emerso guardando le parole
-composte: la E e la L sulla base diventavano F e I (alzate a 0,2), e una I
-o una F in prima posizione si leggono ancora L ed E (proposta: base anche
-prima della prima lettera, in `words.py`, da decidere). Annotati in
-ADR-0056 e rimandati: la distanza minima per lettera misurata su «CIAO», e
-i tempi di «BELLO» (255–258 s) vicini ai 5 minuti che l'app aspetta.
+https://claude.ai/artifact/TLjtgKASQL5agjrCDwesvf. Giudizio dell'utente
+(2026-09-25): «MAX» `sì` nelle tre zone; «BELLO» e «KIWI» `sì` a Milano,
+`quasi` a Levico, `no` a Trento. Emerso guardando le parole composte: la E
+e la L sulla base diventavano F e I (alzate a 0,2), e una I o una F in
+prima posizione si leggono ancora L ed E. Annotati in ADR-0056 e
+rimandati: la distanza minima per lettera misurata su «CIAO», e i tempi di
+«BELLO» (255–258 s) vicini ai 5 minuti che l'app aspetta.
+
+Indicazione dell'utente per il seguito, **TASK-067** (ADR-0063, dopo il
+merge di TASK-063, che ha `optimizer.py`): «Se serve, il collegamento con
+l'altra lettera può essere anche non dal basso: se questo non confonde o
+serve per migliorare, anche connetterle dalla cima. Poi anche con scale
+diverse le lettere possono essere, basta che non varino troppo da quelle
+vicine.» Cioè unioni fra le lettere anche dalla cima, e una scala per
+lettera con un limite sulla differenza dalle vicine; con dentro anche la I
+e la F all'inizio della parola.

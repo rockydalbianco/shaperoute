@@ -1606,7 +1606,9 @@ dal centro della strada (i viali larghi).
 ## ADR-0056 — Alfabeto dalla A alla Z: 26 maiuscole a tratto singolo, E ed L staccate dalla base
 **Stato**: Attiva · 2026-09-25 · chiesto dall'utente («sì fai tutte le
 lettere dell'alfabeto»); il disegno delle lettere deciso dall'agente su
-delega dell'utente (TASK-059); giudizio dell'utente sui campioni: in attesa
+delega dell'utente (TASK-059); giudizio dell'utente sui campioni: «MAX»
+`sì` nelle tre zone, «BELLO» e «KIWI» `sì` a Milano, `quasi` a Levico, `no`
+a Trento
 
 Il motore scriveva solo con C, I, A, O (ADR-0044), e l'API rifiutava ogni
 altra lettera (ADR-0051): poche parole possibili.
@@ -1658,3 +1660,9 @@ composte (anteprima di TASK-059), non le lettere da sole.
   base anche prima della prima lettera e dopo l'ultima, in `words.py`: è un
   cambio del modo di comporre (anche «CIAO»), proposto all'utente, non
   fatto qui.
+- Giudizio dell'utente (2026-09-25): le lettere nuove si leggono dove le
+  strade le aiutano, «MAX» ovunque, «BELLO» e «KIWI» a Milano; a Trento no.
+  Per il seguito l'utente chiede che le lettere si possano unire anche
+  dalla cima, se non confonde o se aiuta, e che possano avere scale
+  diverse, purché non troppo da quelle vicine: TASK-067 (ADR-0063), con
+  dentro anche la I e la F all'inizio della parola.

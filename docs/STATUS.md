@@ -31,8 +31,10 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 **TASK-050 — Lettere una per una** (`ROADMAP.md`, fase 4): fatto,
 giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
 (ADR-0051). Per le scritte il seguito è **TASK-057**, il campo nell'app,
-chiesto dall'utente. L'alfabeto dalla A alla Z è **TASK-059** (ADR-0056):
-fatto, in attesa del giudizio dell'utente sui campioni prima del merge.
+chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
+fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
+dalla cima, una scala per lettera vicina a quella delle vicine, la I e la
+F all'inizio della parola (ADR-0063, dopo TASK-063, che ha `optimizer.py`).
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -48,12 +50,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## In lavorazione
 
 Niente per l'app.
-
-- **TASK-059** — Alfabeto dalla A alla Z (worktree
-  `shaperoute-TASK-059`): `letters.json`, `words.py`, `test_words.py`,
-  `schemas.py`, `test_routes.py` dell'API, `shared-types` (`LETTERS`,
-  `contract.json`), `ROUTE_ENGINE.md`, `API.md`. Fatto; aspetta il giudizio
-  dell'utente sui campioni (`samples/LOG.md`), poi il merge.
 
 ## Completato
 
@@ -93,7 +89,10 @@ Niente per l'app.
   TASK-056: l'API accetta `word` al posto di `shape` e risponde con
   `"word": "CIAO"` e `"shape": null`; lettere dell'alfabeto, al più 8, e
   almeno 3 km per lettera, se no un `invalid_request` che dice perché
-  (ADR-0051); `shared-types` ha le costanti per l'app.
+  (ADR-0051); `shared-types` ha le costanti per l'app. TASK-059: tutte le
+  lettere dalla A alla Z, la E e la L col tratto basso staccato dalla base
+  (ADR-0056); a 15 km «MAX» `sì` nelle tre zone, «BELLO» e «KIWI» `sì` a
+  Milano, `quasi` a Levico, `no` a Trento.
 - **Fase 3** — TASK-032: forme da un contorno in JSON, dalla CLI
   (`--outline`, ADR-0035). Cancello superato: stella sì ovunque, cavallo
   quasi a Trento e sì a Levico e Milano; la casa no, anche con camino e

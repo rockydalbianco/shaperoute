@@ -123,3 +123,31 @@ def test_post_routes_still_answers_in_one_go(client_for: Any) -> None:
     response = client.post("/routes", json=HEART)
     assert response.status_code == 200
     assert response.json()["distance_m"] == 5100.0
+
+
+def test_a_word_becomes_a_job_whose_result_names_the_word() -> None:
+    # The engine gets the word, and the result says it is one (TASK-056).
+    asked: list[RouteRequest] = []
+    word = RouteResult(
+        points=RESULT.points,
+        distance_m=15100.0,
+        similarity=0.97,
+        shape=None,
+        word="CIAO",
+    )
+
+    def planner(request: RouteRequest, source: GraphLoader) -> Plan:
+        asked.append(request)
+        return Plan(result=word, search=None)
+
+    app = create_app(FileSource(Path("unused.graphml")), planner=planner)
+    ciao = {"start": [46.0671, 11.1214], "word": "ciao", "distance_m": 15000}
+    with TestClient(app) as client:
+        job = client.post("/route-jobs", json=ciao)
+        assert job.status_code == 202
+        done = finished(client, job.json()["job_id"])
+    assert done["status"] == "done"
+    assert done["result"]["shape"] is None
+    assert done["result"]["word"] == "CIAO"
+    assert asked[0].word == "ciao"
+    assert asked[0].shape is None

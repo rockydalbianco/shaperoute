@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Protocol
 
 import numpy as np
@@ -56,7 +56,7 @@ from route_engine.projection import (
 )
 from route_engine.shapes import FREE_ROTATION, get_shape
 from route_engine.validation import check_closed, measure, validate
-from route_engine.words import MAX_SHIFT, SHIFT_STEP, Word
+from route_engine.words import MAX_SHIFT, SHIFT_STEP, Word, compose
 
 # Where the start enters the shape, as arc-length fractions (TASK-015).
 PHASES = (0.0, 0.25, 0.5, 0.75)
@@ -826,8 +826,25 @@ def plan_route(
 
     With `optimize` the shape is rotated, moved and rescaled to fit the
     roads (`search`); without, it is traced once at its initial placement,
-    as in TASK-017.
+    as in TASK-017. A word is written one letter at a time (TASK-050) and
+    comes back with `word` instead of `shape` (TASK-056).
     """
+    if request.word is not None:
+        word = compose(request.word)
+        plan = plan_shape(
+            list(word.points),
+            word.text,
+            request.start,
+            request.distance_m,
+            source,
+            optimize,
+            reuse_penalty,
+            MAX_TILT_DEG,
+            word=word,
+        )
+        result = replace(plan.result, shape=None, word=word.text)
+        return replace(plan, result=result)
+    assert request.shape is not None  # RouteRequest has one of the two
     return plan_shape(
         get_shape(request.shape)(SHAPE_POINTS),
         request.shape,

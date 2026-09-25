@@ -67,3 +67,23 @@ def test_a_bad_body_is_an_invalid_request() -> None:
         response = client().post("/gpx", json=data)
         assert response.status_code == 422
         assert response.json()["error"]["code"] == "invalid_request"
+
+
+def test_a_word_names_the_file_and_the_track() -> None:
+    # TASK-056: the word in capitals, where a shape has its name.
+    data = body()
+    data["request"] = {
+        **data["request"],
+        "shape": None,
+        "word": "ciao",
+        "distance_m": 15000,
+    }
+    data["result"] = {**data["result"], "shape": None, "word": "CIAO"}
+    response = client().post("/gpx", json=data)
+    assert response.status_code == 200
+    disposition = response.headers["content-disposition"]
+    assert disposition == 'attachment; filename="shaperoute-CIAO-15km-2026-09-23.gpx"'
+    root = ET.fromstring(response.content)
+    assert root.findtext("gpx:metadata/gpx:name", namespaces=NS) == (
+        "CIAO 15 km · 2026-09-23"
+    )

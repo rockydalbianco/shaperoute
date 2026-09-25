@@ -97,6 +97,10 @@ Più agenti lavorano sullo stesso repository nello stesso momento.
 - [ ] Se è stata presa una decisione tecnica: nuova voce in `docs/DECISIONS.md`.
 - [ ] Se il comportamento è cambiato: documento di dominio aggiornato.
 - [ ] Task file spostato a stato `Done` con una riga di esito.
+- [ ] Avvisato il coordinatore («TASK-XXX fatto»), poi **contesto pulito**:
+      `/clear` (o `clear_session` con `"self"`) o una sessione nuova. Il task
+      successivo parte da `STATUS.md` e dal suo task file, non dalla chat:
+      quello che serve dopo va scritto lì prima di pulire.
 
 ## Convenzioni
 
@@ -123,5 +127,6 @@ senza chiavi API.
 - Preferisci leggere un file preciso invece di esplorare a tappeto.
 - Non incollare output lunghi nella chat: scrivili su file.
 - Non riassumere ciò che hai appena fatto se è già scritto in `STATUS.md`.
-- Se il contesto si sta riempiendo, chiudi il task e apri il successivo
-  invece di continuare nella stessa sessione.
+- Un task, un contesto: mai due task di fila nella stessa conversazione.
+- Se il contesto si riempie a metà task: commit, scrivi nel task file dove
+  sei arrivato, avvisa il coordinatore e pulisci.

@@ -18,6 +18,7 @@ from route_engine.models import (
     RouteResult,
 )
 from route_engine.shapes import SUPPORTED_SHAPES
+from route_engine.words import ALPHABET, LETTER_DISTANCE_M, MAX_WORD_LETTERS
 from shaperoute_ai.reading import MAX_TEXT_LENGTH
 
 
@@ -31,8 +32,20 @@ class RouteRequestBody(BaseModel):
         description="Start point as [lat, lon], WGS84.",
         examples=[[46.0671, 11.1214]],
     )
-    shape: str = Field(
-        description=f"One of: {', '.join(SUPPORTED_SHAPES)}.", examples=["heart"]
+    shape: str | None = Field(
+        default=None,
+        description=f"One of: {', '.join(SUPPORTED_SHAPES)}; or give a word.",
+        examples=["heart"],
+    )
+    word: str | None = Field(
+        default=None,
+        description=(
+            f"A word written one letter at a time (TASK-056), instead of a "
+            f"shape: at most {MAX_WORD_LETTERS} of the letters "
+            f"{', '.join(sorted(ALPHABET))}, and "
+            f"{LETTER_DISTANCE_M / 1000:g} km of route for each."
+        ),
+        examples=[None],
     )
     distance_m: int = Field(
         description=f"Target distance in metres, {MIN_DISTANCE_M}–{MAX_DISTANCE_M}.",
@@ -70,12 +83,15 @@ class RouteResultBody(BaseModel):
     )
     distance_m: float = Field(description="Distance actually covered, in metres.")
     similarity: float = Field(description="How much the route looks like the shape.")
-    shape: str
+    shape: str | None = Field(description="Null for a word.")
     warnings: list[str]
     # Missing in a GPX request from an older app: nothing to check there.
     directions: list[DirectionBody] = Field(
         default_factory=list,
         description="Turn by turn, the start first; empty without a search.",
+    )
+    word: str | None = Field(
+        default=None, description="The word in capitals; null for a shape."
     )
 
     @classmethod

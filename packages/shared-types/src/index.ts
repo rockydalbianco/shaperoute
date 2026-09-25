@@ -29,13 +29,27 @@ export type Activity = (typeof ACTIVITIES)[number];
 export const MIN_DISTANCE_M = 1_000;
 export const MAX_DISTANCE_M = 50_000;
 
-export interface RouteRequest {
+/**
+ * The letters a word may use (route_engine/letters.json, ADR-0044), at
+ * most MAX_WORD_LETTERS of them, with LETTER_DISTANCE_M of route for each
+ * (TASK-056). Upper or lower case alike.
+ */
+export const LETTERS = ["A", "C", "I", "O"] as const;
+export const MAX_WORD_LETTERS = 8;
+export const LETTER_DISTANCE_M = 3_000;
+
+interface RouteRequestFields {
   start: LatLon;
-  shape: Shape;
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
 }
+
+/** A shape of the catalogue, or a word written one letter at a time: one
+ * of the two, the other absent or null (TASK-056). */
+export type RouteRequest =
+  | (RouteRequestFields & { shape: Shape; word?: null })
+  | (RouteRequestFields & { shape?: null; word: string });
 
 export interface RouteResult {
   /** The route, closed: the last point is the first. */
@@ -44,10 +58,13 @@ export interface RouteResult {
   distance_m: number;
   /** How much the route looks like the shape, from 0 to 1. */
   similarity: number;
-  shape: Shape;
+  /** Null for a word (TASK-056). */
+  shape: Shape | null;
   warnings: string[];
   /** Turn by turn, the start first (TASK-048); empty without a search. */
   directions: Direction[];
+  /** The word in capitals, null for a shape (TASK-056). */
+  word?: string | null;
 }
 
 /** What a direction says to do (route_engine/directions.py, ADR-0045). */

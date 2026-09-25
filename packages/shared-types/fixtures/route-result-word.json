@@ -1,0 +1,14 @@
+{
+  "points": [
+    [46.0671, 11.1214],
+    [46.0671, 11.1344],
+    [46.0761, 11.1344],
+    [46.0671, 11.1214]
+  ],
+  "distance_m": 15122.0,
+  "similarity": 0.97,
+  "shape": null,
+  "warnings": ["338 m of the route on steps"],
+  "directions": [],
+  "word": "CIAO"
+}

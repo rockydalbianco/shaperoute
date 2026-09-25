@@ -91,6 +91,7 @@ def test_a_model_that_does_not_answer_is_ai_unavailable() -> None:
             "code": "ai_unavailable",
             "message": "Ollama does not answer",
             "suggested_distance_m": None,
+            "reason": None,
         }
     }
 

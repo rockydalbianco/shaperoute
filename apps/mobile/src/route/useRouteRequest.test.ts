@@ -1,10 +1,11 @@
 import type { RouteRequest } from "@shaperoute/shared-types";
+import imageOutline from "@shaperoute/shared-types/fixtures/image-outline.json";
 import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import request from "@shaperoute/shared-types/fixtures/route-request.json";
 import result from "@shaperoute/shared-types/fixtures/route-result.json";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 
-import { sameRequest, useRouteRequest } from "./useRouteRequest";
+import { type AnyRouteRequest, sameRequest, useRouteRequest } from "./useRouteRequest";
 
 const REQUEST = request as RouteRequest;
 const fetchSpy = jest.spyOn(globalThis, "fetch");
@@ -68,4 +69,14 @@ test("sameRequest compares values, not objects", () => {
   expect(sameRequest(word, { ...word })).toBe(true);
   expect(sameRequest(word, { ...word, word: "KIWI" })).toBe(false);
   expect(sameRequest(word, REQUEST)).toBe(false);
+});
+
+test("an image is the same while its outline is the one traced for it", () => {
+  const { start, distance_m, activity } = REQUEST;
+  const outline = imageOutline.points as [number, number][];
+  const image: AnyRouteRequest = { start, distance_m, activity, outline };
+  expect(sameRequest(image, { ...image })).toBe(true);
+  expect(sameRequest(image, { ...image, outline: [...outline] })).toBe(false);
+  expect(sameRequest(image, REQUEST)).toBe(false);
+  expect(sameRequest(REQUEST, image)).toBe(false);
 });

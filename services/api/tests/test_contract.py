@@ -6,14 +6,18 @@ by the engine's test_contract.py and here: if one side changes, a test fails.
 
 from __future__ import annotations
 
+import inspect
 import json
+import re
 from dataclasses import fields
 from pathlib import Path
 from typing import Any, get_args
 
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
+from route_engine import image_outline
 from route_engine.directions import Direction
+from route_engine.image_outline import MAX_POINTS
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import FileSource
 from route_engine.optimizer import GraphLoader, Plan
@@ -21,11 +25,16 @@ from shaperoute_ai.reading import MAX_TEXT_LENGTH
 
 from shaperoute_api.app import create_app
 from shaperoute_api.schemas import (
+    MAX_IMAGE_BYTES,
     DirectionBody,
     ErrorBody,
     ErrorCode,
     ErrorDetail,
     GpxRequestBody,
+    ImageOutlineBody,
+    ImageOutlineRequestBody,
+    ImageReason,
+    ImageRouteRequestBody,
     JobStatus,
     RouteJobBody,
     RouteRequestBody,
@@ -155,3 +164,44 @@ def test_the_api_passes_the_word_on_and_answers_its_result_unchanged() -> None:
     assert response.status_code == 200
     assert response.json() == data
     assert asked[0].word == "ciao"
+
+
+def test_image_fixtures_are_valid_bodies() -> None:
+    # TASK-073, ADR-0069: the outline of an image, its route, its refusal.
+    request = _load("image-outline-request.json")
+    assert set(request) == _names(ImageOutlineRequestBody)
+    ImageOutlineRequestBody.model_validate(request)
+    outline = _load("image-outline.json")
+    assert set(outline) == _names(ImageOutlineBody)
+    ImageOutlineBody.model_validate(outline)
+    route = _load("image-route-request.json")
+    assert set(route) == _names(ImageRouteRequestBody)
+    assert ImageRouteRequestBody.model_validate(route).outline == [
+        tuple(p) for p in outline["points"]
+    ]
+    result = _load("route-result-image.json")
+    assert set(result) == _names(RouteResultBody)
+    body = RouteResultBody.model_validate(result)
+    assert body.shape is None and body.word is None
+    error = _load("image-error.json")
+    assert set(error["error"]) == _names(ErrorDetail)
+    assert ErrorBody.model_validate(error).error.reason == "background"
+
+
+def test_an_image_route_request_is_a_route_request_with_an_outline() -> None:
+    engine = {f.name for f in fields(RouteRequest)} - {"shape", "word"}
+    assert _names(ImageRouteRequestBody) == engine | {"outline"}
+
+
+def test_image_reasons_and_limits_match_shared_types() -> None:
+    assert list(get_args(ImageReason)) == _load("image-reasons.json")
+    assert _load("image-limits.json") == {
+        "max_image_bytes": MAX_IMAGE_BYTES,
+        "max_outline_points": MAX_POINTS,
+    }
+
+
+def test_every_reason_of_the_engine_is_in_the_contract() -> None:
+    source = inspect.getsource(image_outline)
+    raised = set(re.findall(r'InvalidImageError\(\s*"(\w+)"', source))
+    assert raised == set(get_args(ImageReason))

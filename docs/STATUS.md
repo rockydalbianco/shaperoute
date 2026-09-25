@@ -53,6 +53,14 @@ Niente per l'app.
 
 ## Completato
 
+- **Motore** — TASK-075: il cuore da 10 km di Caldonazzo non è peggiorato.
+  Motore di ieri (`87304b0`) e di oggi (`709f4f5`) danno lo stesso percorso
+  punto per punto su 9 partenze su 9, oggi in 16,9 s invece di 21,4 s.
+  Cambia invece con la partenza: 25–100 m di GPS portano la somiglianza da
+  0,73 a 0,92. Nessun codice cambiato; da decidere se il motore debba
+  provare partenze vicine (task file). Giudizio: 5 `sì`, 3 `quasi`, 2 `no`
+  su 10 cuori; l'utente ha scelto che il motore provi più partenze vicine e
+  tenga la migliore: **TASK-076**.
 - **Motore** — TASK-072: la forma ricavata da un'immagine. Da un PNG o
   JPEG con un soggetto chiaro su sfondo uniforme il motore ricava il
   contorno esterno con regole fisse (`image_outline.py`, ADR-0068) e la CLI

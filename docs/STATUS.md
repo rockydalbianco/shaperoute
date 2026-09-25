@@ -58,6 +58,11 @@ Niente per l'app.
   opzionale in `shared-types`. Nomi solo dalla cache, mai da Overpass
   durante una richiesta. Cuore da 15 km di Trento: 118 → 57 indicazioni
   senza nome né via. Il seguito è TASK-061, `along` nella navigazione.
+- **App** — TASK-057: un interruttore «Shape | Word»; la parola si scrive
+  nell'app, controllata prima (A–Z, al più 7 lettere, 3 km a lettera, con
+  «Use N km»), parte come `word` ed è il nome del percorso (ADR-0053);
+  provato sull'iPhone. Seguito possibile: una stima della barra per le
+  parole (`progress.ts`).
 - **Motore** — TASK-063: dove va il tempo sopra i 10 km (numeri nel task
   file) e corridoio da 1,3 a 4,5 volte più veloce a percorsi identici
   (ADR-0059): Trento da 15 a 21 km da 80–97 s a 35–64 s sul PC carico.

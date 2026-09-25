@@ -1606,9 +1606,9 @@ dal centro della strada (i viali larghi).
 ## ADR-0056 — Alfabeto dalla A alla Z: 26 maiuscole a tratto singolo, E ed L staccate dalla base
 **Stato**: Attiva · 2026-09-25 · chiesto dall'utente («sì fai tutte le
 lettere dell'alfabeto»); il disegno delle lettere deciso dall'agente su
-delega dell'utente (TASK-059); giudizio dell'utente sui campioni: «MAX»
-`sì` nelle tre zone, «BELLO» e «KIWI» `sì` a Milano, `quasi` a Levico, `no`
-a Trento
+delega dell'utente (TASK-059); giudizio dell'utente: lettere nuove
+approvate, E ed L staccate dalla base sì; sui campioni «MAX» `sì` nelle tre
+zone, «BELLO» e «KIWI» `sì` a Milano, `quasi` a Levico, `no` a Trento
 
 Il motore scriveva solo con C, I, A, O (ADR-0044), e l'API rifiutava ogni
 altra lettera (ADR-0051): poche parole possibili.
@@ -1654,15 +1654,13 @@ composte (anteprima di TASK-059), non le lettere da sole.
   lunghe: 15–258 s a 15 km, «BELLO» 255 s a Trento e 258 s a Milano (CIAO:
   40–140 s). L'app aspetta al più 5 minuti (`MAX_WAIT_MS`): una parola di
   7 lettere con M o W a 21 km può non bastare.
-- **Aperto**: la base comincia dopo la prima lettera e finisce prima
-  dell'ultima, così una I o una F in prima posizione, con la linea solo a
-  destra, si leggono L ed E («IO» sembra «LO»). Si sistema con un tratto di
-  base anche prima della prima lettera e dopo l'ultima, in `words.py`: è un
-  cambio del modo di comporre (anche «CIAO»), proposto all'utente, non
-  fatto qui.
+- La base comincia dopo la prima lettera e finisce prima dell'ultima,
+  così una I o una F in prima posizione, con la linea solo a destra, si
+  leggono L ed E («IO» sembra «LO»). Proposto un tratto di base anche prima
+  della prima lettera e dopo l'ultima: l'utente non lo vuole (2026-09-25),
+  resta così.
 - Giudizio dell'utente (2026-09-25): le lettere nuove si leggono dove le
   strade le aiutano, «MAX» ovunque, «BELLO» e «KIWI» a Milano; a Trento no.
   Per il seguito l'utente chiede che le lettere si possano unire anche
   dalla cima, se non confonde o se aiuta, e che possano avere scale
-  diverse, purché non troppo da quelle vicine: TASK-067 (ADR-0063), con
-  dentro anche la I e la F all'inizio della parola.
+  diverse, purché non troppo da quelle vicine: TASK-067 (ADR-0063).

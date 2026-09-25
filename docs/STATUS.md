@@ -33,8 +33,8 @@ giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
 (ADR-0051). Per le scritte il seguito è **TASK-057**, il campo nell'app,
 chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
 fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
-dalla cima, una scala per lettera vicina a quella delle vicine, la I e la
-F all'inizio della parola (ADR-0063, dopo TASK-063, che ha `optimizer.py`).
+dalla cima, e una scala per lettera vicina a quella delle vicine
+(ADR-0063, dopo TASK-063, che ha `optimizer.py`).
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il

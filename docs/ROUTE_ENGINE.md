@@ -180,7 +180,8 @@ segni): la parola è rifiutata, e il messaggio dice quali lettere ci sono
 
 La linea di base comincia dopo la prima lettera e finisce prima
 dell'ultima: una I o una F all'inizio di una parola hanno la linea solo a
-destra e si leggono come una L e una E (TASK-059, aperto in ADR-0056).
+destra e si leggono come una L e una E: l'utente la tiene così
+(TASK-059, ADR-0056).
 
 I contorni stanno in `route_engine/shapes/outlines/`, dati del pacchetto:
 stella e casa (con camino e porta) disegnate per ShapeRoute, e la sagoma di

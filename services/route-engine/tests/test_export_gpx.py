@@ -129,7 +129,13 @@ def _seed_cache(cache_dir: Path, optimize: bool = True) -> None:
     shutil.copy(FIXTURE, OsmnxSource(cache_dir).cache_path(bbox))
 
 
-@pytest.mark.parametrize("optimize", [True, False])
+# With the optimizer, a 1 km heart does not fit the small Levico fixture, so
+# the CLI searches up to 2 km away (ADR-0040) and downloads that zone: on CI
+# it hung on Overpass. The far search has its own offline tests in
+# test_optimizer.py.
+@pytest.mark.parametrize(
+    "optimize", [pytest.param(True, marks=pytest.mark.network), False]
+)
 def test_cli_writes_road_route_to_out(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], optimize: bool
 ) -> None:

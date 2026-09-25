@@ -67,12 +67,15 @@ export function useNavigation(
           accuracy: Location.Accuracy.BestForNavigation,
           distanceInterval: FIX_EVERY_M,
         },
-        ({ coords }) => {
+        ({ coords, timestamp }) => {
           if (stopped || navigation.current === null) {
             return;
           }
           const fix: LatLon = [coords.latitude, coords.longitude];
-          const next = onFix(navigation.current, fix);
+          const next = onFix(navigation.current, fix, {
+            accuracyM: coords.accuracy,
+            timeMs: timestamp,
+          });
           navigation.current = next.navigation;
           setState({ status: "following", navigation: next.navigation, position: fix });
           play(next.cues);

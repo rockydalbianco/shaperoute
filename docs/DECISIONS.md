@@ -1565,6 +1565,7 @@ tempi del motore (30–50 s sopra i 10 km).
 
 **Conseguenza**: una dipendenza in più nell'app. Le soglie sono stime,
 non misure: vanno provate correndo (TASK-049, «Esito»).
+
 ## ADR-0054 — Marciapiedi senza nome: la via lungo cui corrono, dedotta a parte
 **Stato**: Attiva · 2026-09-25 · file a parte per i nomi scelto
 dall'utente; il resto deciso dall'agente su delega dell'utente (TASK-053)

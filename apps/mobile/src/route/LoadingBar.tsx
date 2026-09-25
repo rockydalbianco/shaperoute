@@ -1,11 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Animated, StyleSheet } from "react-native";
 
 import { color, radius } from "../theme/tokens";
-import { estimateProgress, type WaitingPhase } from "./progress";
+import {
+  estimateProgress,
+  isSlow,
+  MAP_S,
+  mapProgress,
+  phaseSeconds,
+  READING_S,
+  readingProgress,
+  type WaitingPhase,
+} from "./progress";
 
 /** How often the bar moves on. */
 export const TICK_MS = 250;
+
+/** What the bar says to a screen reader once a wait outlasts the usual. */
+export const SLOW_TEXT = "Still waiting";
 
 type Props = {
   phase: WaitingPhase;
@@ -19,37 +31,125 @@ type Props = {
  * back, and it fills only when the route arrives, which replaces it.
  */
 export function LoadingBar({ phase, distanceM }: Props) {
-  // When the current phase began; set by the effect, not during the render.
-  const phaseStart = useRef<{ phase: WaitingPhase; at: number } | null>(null);
-  const [shown, setShown] = useState(() => estimateProgress(phase, 0, distanceM));
+  return (
+    <EstimateBar
+      stage={phase}
+      progressAt={(seconds) => estimateProgress(phase, seconds, distanceM)}
+      usualS={phaseSeconds(phase, distanceM)}
+      label="Drawing the route"
+      testID="loading"
+    />
+  );
+}
+
+/** The AI reading the words the table does not know (TASK-058). */
+export function ReadingBar() {
+  return (
+    <EstimateBar
+      stage="reading"
+      progressAt={readingProgress}
+      usualS={READING_S}
+      label="Reading the shape"
+      testID="reading-loading"
+    />
+  );
+}
+
+/** The map and its tiles loading, over the map (TASK-058). */
+export function MapLoadingBar() {
+  return (
+    <EstimateBar
+      stage="map"
+      progressAt={mapProgress}
+      usualS={MAP_S}
+      label="Loading the map"
+      testID="map-loading"
+    />
+  );
+}
+
+type EstimateProps = {
+  /** A new stage restarts the clock; the bar still never goes back. */
+  stage: string;
+  /** The share to fill after the seconds spent in this stage. */
+  progressAt: (seconds: number) => number;
+  /** Seconds the stage usually lasts: past twice this, the bar pulses. */
+  usualS: number;
+  label: string;
+  testID: string;
+};
+
+/**
+ * A bar that advances with the time spent waiting (ADR-0050). When the wait
+ * outlasts twice the usual, the fill pulses: the app is still trying, even
+ * if the estimate barely moves (ADR-0055).
+ */
+function EstimateBar({ stage, progressAt, usualS, label, testID }: EstimateProps) {
+  // When the current stage began; set by the effect, not during the render.
+  const stageStart = useRef<{ stage: string; at: number } | null>(null);
+  // The latest estimate and pace, read by the timer without restarting it.
+  const pace = useRef({ progressAt, usualS });
+  useEffect(() => {
+    pace.current = { progressAt, usualS };
+  });
+  const [shown, setShown] = useState(() => progressAt(0));
+  const [slow, setSlow] = useState(false);
+  const [opacity] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
-    if (phaseStart.current?.phase !== phase) {
-      phaseStart.current = { phase, at: Date.now() };
+    if (stageStart.current?.stage !== stage) {
+      stageStart.current = { stage, at: Date.now() };
     }
-    const began = phaseStart.current.at;
+    const began = stageStart.current.at;
     const tick = () => {
       const seconds = (Date.now() - began) / 1000;
-      const next = estimateProgress(phase, seconds, distanceM);
+      const next = pace.current.progressAt(seconds);
       setShown((before) => Math.max(before, next));
+      setSlow(isSlow(seconds, pace.current.usualS));
     };
     tick();
     const timer = setInterval(tick, TICK_MS);
     return () => clearInterval(timer);
-  }, [phase, distanceM]);
+  }, [stage]);
+
+  useEffect(() => {
+    if (!slow) {
+      return;
+    }
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 0.35,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
+      ]),
+    );
+    pulse.start();
+    return () => {
+      pulse.stop();
+      opacity.setValue(1);
+    };
+  }, [slow, opacity]);
 
   const percent = Math.round(shown * 100);
   return (
-    <View
+    <Animated.View
       style={styles.track}
       accessible
       accessibilityRole="progressbar"
-      accessibilityLabel="Drawing the route"
-      accessibilityValue={{ min: 0, max: 100, now: percent }}
-      testID="loading"
+      accessibilityLabel={label}
+      accessibilityValue={{
+        min: 0,
+        max: 100,
+        now: percent,
+        ...(slow ? { text: SLOW_TEXT } : {}),
+      }}
+      testID={testID}
     >
-      <View style={[styles.fill, { width: `${shown * 100}%` }]} />
-    </View>
+      <Animated.View style={[styles.fill, { width: `${shown * 100}%`, opacity }]} />
+    </Animated.View>
   );
 }
 

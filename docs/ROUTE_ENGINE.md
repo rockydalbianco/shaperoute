@@ -140,8 +140,9 @@ Una parola a tratto singolo non ha un contorno che la contiene. Al posto di
 ### Parole lettera per lettera (TASK-050)
 
 Invece di un `path` disegnato a mano, una parola si **compone** da un
-alfabeto a tratto singolo (`route_engine/letters.json`, per ora C,
-I, A, O; ADR-0044). Ogni lettera è alta 1 e sta sulla sua base, y = 0:
+alfabeto a tratto singolo (`route_engine/letters.json`, ADR-0044): le 26
+maiuscole dalla A alla Z (TASK-059, ADR-0056; prima solo C, I, A, O). Ogni
+lettera è alta 1 e sta sulla sua base, y = 0:
 
 ```json
 "A": {"out": [[0, 0], [0.12, 0.4], [0.48, 0.4], [0.6, 0]],
@@ -152,7 +153,19 @@ I, A, O; ADR-0044). Ogni lettera è alta 1 e sta sulla sua base, y = 0:
   su se stessa (la I sale e scende, la C fa andata e ritorno).
 - `back`, solo se uscita e ingresso non coincidono, riporta all'ingresso
   senza passare dalla base: la A torna per le gambe, e la base non la
-  chiude a triangolo.
+  chiude a triangolo. Solo B, D e Z, che una base ce l'hanno, tornano per
+  quella; H, K, M, N, R, W, X restano aperte sotto, come la A.
+- Ogni lettera entra dal suo punto più a sinistra sulla base ed esce da
+  quello più a destra, così la linea che unisce le lettere non ci passa
+  sopra. Un tratto sulla base si confonderebbe con quella linea: il tratto
+  basso della E e della L sta a 0,2 dell'altezza, se no a metà parola si
+  leggerebbero una F e una I.
+- Larghe 0,5–0,65 (M e W 0,8, la I niente), le curve con un punto ogni 20°
+  come la C e la O. Una lettera senza anelli (E, F, H, K, M, N, T, V, X…)
+  si corre tutta due volte, andata e ritorno: un giro chiuso che non
+  ripassi niente non c'è. Lunghezza del tratto, in altezze: 2 la I; 2,5–4
+  A, B, C, D, F, J, L, O, P, Q, T, Y; 4–5,2 E, G, H, K, R, S, U, V, X, Z;
+  6,3 la N, 7 la W, 7,2 la M.
 
 `words.py` mette le lettere in fila, **0,6 dell'altezza** fra una e
 l'altra, unite da tratti di base; dopo l'ultima lettera il percorso torna
@@ -161,8 +174,14 @@ le altre forme. La linea parte **a metà del primo spazio**, e ogni lato è
 diviso in pezzi di al più **1/16 dell'altezza**: «CIAO» ha 296 punti di
 passaggio invece di 64, e la I ne ha 16 per salire e 16 per scendere. Ogni
 punto sa di quale lettera è, o di quale spazio e a che punto (§5, «Lettere
-che si spostano»). Lettere che l'alfabeto non ha: la parola è rifiutata
-con l'elenco di quelle che ha.
+che si spostano»). Lettere che l'alfabeto non ha (accenti, cifre,
+segni): la parola è rifiutata, e il messaggio dice quali lettere ci sono
+(«A to Z»).
+
+La linea di base comincia dopo la prima lettera e finisce prima
+dell'ultima: una I o una F all'inizio di una parola hanno la linea solo a
+destra e si leggono come una L e una E: l'utente la tiene così
+(TASK-059, ADR-0056).
 
 I contorni stanno in `route_engine/shapes/outlines/`, dati del pacchetto:
 stella e casa (con camino e porta) disegnate per ShapeRoute, e la sagoma di

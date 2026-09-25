@@ -41,7 +41,12 @@ function spanOf(phase: WaitingPhase): [number, number] {
   }
 }
 
-function expectedSeconds(phase: WaitingPhase, distanceM: number): number {
+/**
+ * Seconds a phase usually lasts. Past twice this the bar shows it is still
+ * waiting (`isSlow`), so an API that does not answer never looks stuck
+ * (TASK-058, ADR-0055).
+ */
+export function phaseSeconds(phase: WaitingPhase, distanceM: number): number {
   switch (phase) {
     case "downloading_map":
       return DOWNLOAD_S;
@@ -62,8 +67,38 @@ export function estimateProgress(
   seconds: number,
   distanceM: number,
 ): number {
-  const [from, to] = spanOf(phase);
-  const through =
-    1 - Math.exp((-2 * Math.max(0, seconds)) / expectedSeconds(phase, distanceM));
+  return along(spanOf(phase), seconds, phaseSeconds(phase, distanceM));
+}
+
+/**
+ * The AI reads a word in 4–10 s with the model loaded, 39–49 s when it must
+ * load it first (AI.md); the API gives up at 90 s (API.md).
+ */
+export const READING_S = 20;
+
+/** MapLibre and the first tiles, over the phone's connection. */
+export const MAP_S = 5;
+
+/** The AI's reading of the words, as a bar (TASK-058). */
+export function readingProgress(seconds: number): number {
+  return along([0, 0.95], seconds, READING_S);
+}
+
+/** The map page and its tiles, as a bar (TASK-058). */
+export function mapProgress(seconds: number): number {
+  return along([0, 0.95], seconds, MAP_S);
+}
+
+/** Past twice the usual time: the bar says it is still waiting. */
+export function isSlow(seconds: number, expectedS: number): boolean {
+  return seconds >= 2 * expectedS;
+}
+
+function along(
+  [from, to]: [number, number],
+  seconds: number,
+  expectedS: number,
+): number {
+  const through = 1 - Math.exp((-2 * Math.max(0, seconds)) / expectedS);
   return from + (to - from) * through;
 }

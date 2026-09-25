@@ -229,6 +229,15 @@ chiude ADR-0010.
 | 2026-09-24 | TASK-050_ciao_15km_trento_v1.gpx | trento | 0.82 | 15.6 / 15.0 km | sì | «CIAO» lettera per lettera, giro chiuso (ADR-0044); per l'utente molto meglio di TASK-040; somiglianza delle lettere, 0,90 con quella delle altre forme; lettere alte 773 m, ruotata di 10°; la O spostata di 97 m verso la A e 48 m in su; 1059 m scale; 593 m gallerie; 142 s, con la ricerca lontana |
 | 2026-09-24 | TASK-050_ciao_15km_levico_v1.gpx | levico | 0.86 | 16.3 / 15.0 km | sì | lettera per lettera; 0,93 con la misura delle altre forme; lettere alte 693 m; partenza spostata di 250 m a sud-est; la O spostata di 43 m verso la A; 239 m gallerie; 40 s, con la ricerca lontana |
 | 2026-09-24 | TASK-050_ciao_15km_milano_v1.gpx | milano | 0.97 | 15.1 / 15.0 km | sì | lettera per lettera; 0,99 con la misura delle altre forme; lettere alte 810 m, nessuna spostata; al secondo tracciamento; 338 m scale; 148 m strade principali; 649 m gallerie; 44 s |
+| 2026-09-25 | TASK-059_bello_15km_trento_v1.gpx | trento | 0.74 | 16.1 / 15.0 km | no | «BELLO», parola lunga, con E ed L staccate dalla base (ADR-0056); lettere alte 571 m; ruotata di 15°; spostate: L di 107 m; 1148 m scale; 264 m gallerie; 255 s |
+| 2026-09-25 | TASK-059_bello_15km_levico_v1.gpx | levico | 0.75 | 15.1 / 15.0 km | quasi | lettera per lettera; lettere alte 493 m; ruotata di 15°; partenza spostata di 250 m; spostate: B di 92 m, O di 92 m; 34 m scale; 973 m strade principali; 64 s |
+| 2026-09-25 | TASK-059_bello_15km_milano_v1.gpx | milano | 0.91 | 15.7 / 15.0 km | sì | lettera per lettera; lettere alte 571 m; ruotata di 15°; partenza spostata di 1000 m; 96 m scale; 258 s, con la ricerca lontana |
+| 2026-09-25 | TASK-059_kiwi_15km_trento_v1.gpx | trento | 0.82 | 15.0 / 15.0 km | no | «KIWI», K e W (ADR-0056); lettere alte 562 m; spostate: K di 141 m; 984 m scale; 564 m gallerie; 138 s |
+| 2026-09-25 | TASK-059_kiwi_15km_levico_v1.gpx | levico | 0.80 | 16.0 / 15.0 km | quasi | lettera per lettera; lettere alte 519 m; spostate: K di 65 m; 40 m scale; 393 m gallerie; 38 s |
+| 2026-09-25 | TASK-059_kiwi_15km_milano_v1.gpx | milano | 0.93 | 14.4 / 15.0 km | sì | lettera per lettera; lettere alte 727 m; ruotata di 15°; 286 m scale; 976 m gallerie; 79 s |
+| 2026-09-25 | TASK-059_max_15km_trento_v1.gpx | trento | 0.92 | 14.4 / 15.0 km | sì | «MAX», M e X (ADR-0056); lettere alte 655 m; ruotata di 15°; 1105 m scale; 125 m gallerie; 15 s |
+| 2026-09-25 | TASK-059_max_15km_levico_v1.gpx | levico | 0.89 | 14.6 / 15.0 km | sì | lettera per lettera; lettere alte 542 m; ruotata di 15°; spostate: X di 102 m; 98 m gallerie; 44 s |
+| 2026-09-25 | TASK-059_max_15km_milano_v1.gpx | milano | 0.95 | 14.6 / 15.0 km | sì | lettera per lettera; lettere alte 724 m; 409 m scale; 1149 m gallerie; 39 s |
 
 <!--
 Esempio di riga compilata:

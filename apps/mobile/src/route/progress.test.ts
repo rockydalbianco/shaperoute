@@ -1,4 +1,13 @@
-import { computeSeconds, estimateProgress } from "./progress";
+import {
+  computeSeconds,
+  estimateProgress,
+  isSlow,
+  MAP_S,
+  mapProgress,
+  phaseSeconds,
+  READING_S,
+  readingProgress,
+} from "./progress";
 
 test("each phase starts where the one before ends", () => {
   expect(estimateProgress("queued", 0, 5000)).toBe(0);
@@ -36,4 +45,20 @@ test("long routes are given longer to compute", () => {
   expect(estimateProgress("computing", 20, 21000)).toBeLessThan(
     estimateProgress("computing", 20, 5000),
   );
+});
+
+test("the reading and the map fill like a phase, and never fill alone", () => {
+  expect(readingProgress(0)).toBe(0);
+  expect(mapProgress(0)).toBe(0);
+  expect(readingProgress(READING_S)).toBeCloseTo(0.95 * 0.8647, 3);
+  expect(mapProgress(MAP_S)).toBeCloseTo(0.95 * 0.8647, 3);
+  expect(readingProgress(3600)).toBeLessThanOrEqual(0.95);
+  expect(mapProgress(3600)).toBeLessThanOrEqual(0.95);
+});
+
+test("a wait is slow past twice its usual time", () => {
+  expect(isSlow(7.9, phaseSeconds("sending", 5000))).toBe(false);
+  expect(isSlow(8, phaseSeconds("sending", 5000))).toBe(true);
+  expect(phaseSeconds("computing", 21000)).toBe(computeSeconds(21000));
+  expect(phaseSeconds("downloading_map", 5000)).toBe(90);
 });

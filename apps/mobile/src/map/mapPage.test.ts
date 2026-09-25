@@ -66,6 +66,11 @@ test("reports tiles that cannot be described, not just a missing style", () => {
   expect(page).toContain('event.sourceId === "openmaptiles" && !event.tile');
 });
 
+test("tells the app once the first tiles are drawn", () => {
+  expect(page).toContain('map.once("idle"');
+  expect(page).toContain('post({ type: "loaded" })');
+});
+
 test("keeps the attribution expanded", () => {
   expect(page).toContain("new maplibregl.AttributionControl({ compact: false })");
 });

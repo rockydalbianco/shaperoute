@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-24 · **Fase corrente**: 4 — Estensione (scritte)
+**Ultimo aggiornamento**: 2026-09-25 · **Fase corrente**: 4 — Estensione (scritte)
 
 ---
 
@@ -31,8 +31,8 @@ sta per la distanza, l'app propone quella che ci sta («Try N km»).
 **TASK-050 — Lettere una per una** (`ROADMAP.md`, fase 4): fatto,
 giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
 (ADR-0051). Per le scritte il seguito è **TASK-057**, il campo nell'app,
-chiesto dall'utente; aperta la scelta di allargare l'alfabeto oltre C, I,
-A, O.
+chiesto dall'utente. L'alfabeto dalla A alla Z è **TASK-059** (ADR-0056):
+fatto, in attesa del giudizio dell'utente sui campioni prima del merge.
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -50,6 +50,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-055** — Barra di caricamento (worktree `D:\shaperoute-app`):
   `RoutePanel.tsx`, `progress.ts`, `LoadingBar.tsx`, `docs/UI.md`.
+- **TASK-059** — Alfabeto dalla A alla Z (worktree
+  `shaperoute-TASK-059`): `letters.json`, `words.py`, `test_words.py`,
+  `schemas.py`, `test_routes.py` dell'API, `shared-types` (`LETTERS`,
+  `contract.json`), `ROUTE_ENGINE.md`, `API.md`. Fatto; aspetta il giudizio
+  dell'utente sui campioni (`samples/LOG.md`), poi il merge.
 
 ## Completato
 

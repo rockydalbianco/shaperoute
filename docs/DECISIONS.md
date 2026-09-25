@@ -1536,3 +1536,59 @@ che per quattro dura già 40–140 s.
 **Conseguenza**: nell'app, che arriva a 21 km, una parola ha al più 7
 lettere. Con l'alfabeto di oggi le parole possibili sono poche: allargarlo
 è una scelta chiesta all'utente. Il campo nell'app è TASK-057.
+
+## ADR-0056 — Alfabeto dalla A alla Z: 26 maiuscole a tratto singolo, E ed L staccate dalla base
+**Stato**: Attiva · 2026-09-25 · chiesto dall'utente («sì fai tutte le
+lettere dell'alfabeto»); il disegno delle lettere deciso dall'agente su
+delega dell'utente (TASK-059); giudizio dell'utente sui campioni: in attesa
+
+Il motore scriveva solo con C, I, A, O (ADR-0044), e l'API rifiutava ogni
+altra lettera (ADR-0051): poche parole possibili.
+
+**Decisione**:
+- **22 lettere nuove** in `letters.json`, nello stesso formato; A, C, I, O
+  restano identiche. Alte 1, larghe 0,5–0,65 come la A (M e W 0,8), curve
+  con un punto ogni 20° come la C e la O; M con la V a 0,3 dell'altezza e
+  W con la punta a 0,7, così non toccano la base; la coda della Q scende
+  dall'interno della O fino alla base, e la Q esce da lì.
+- **Ingresso e uscita**: ogni lettera entra dal suo punto più a sinistra
+  sulla base ed esce da quello più a destra. La linea che unisce le lettere
+  non passa mai sopra una lettera, e non si allunga sotto di lei.
+- **La base**: la disegnano solo B, D e Z, che ce l'hanno; H, K, M, N, R,
+  W, X tornano per i loro tratti, come la A, perché chiuse sotto
+  diventerebbero altre figure.
+- **E ed L**: il tratto in basso sta a 0,2 dell'altezza (i bracci della E
+  a 1, 0,6 e 0,2). Sulla base la linea di unione se lo mangia, e a metà
+  parola la E si legge F e la L si legge I. Provato e scartato: un dentino
+  verso l'alto alla fine del braccio, che da lontano sembra un punto dopo
+  una F o una I.
+- Il messaggio per una lettera che manca dice «a word can use only the
+  letters A to Z» invece di elencarle (`words.spell_letters`), anche nella
+  descrizione di `word` dell'API. `LETTERS` di `shared-types` e
+  `contract.json` hanno le 26 lettere.
+
+**Motivo**: lettere dello stesso stile di «CIAO», giudicata `sì`, e le
+regole di ADR-0044 estese a tutte: la A aperta sotto vale per ogni lettera
+coi piedi separati. Le due scelte sulla base nascono dal guardare le parole
+composte (anteprima di TASK-059), non le lettere da sole.
+
+**Conseguenza**:
+- Una lettera senza anelli si corre tutta due volte: tratto di 7,2 altezze
+  per la M, 7 la W, 6,3 la N, contro 2,5–3,8 per O, A, C. Con gli spazi,
+  «CIAO» è lunga 4,1 altezze a lettera, «BELLO» 5,3, «MAMMA» 6,6: a pari
+  distanza le lettere vengono più piccole. A 15 km le lettere di «BELLO»,
+  «KIWI» e «MAX» sono alte 493–727 m (CIAO: 690–810 m), con somiglianza
+  delle lettere 0,74–0,95 (CIAO: 0,82–0,97; `samples/LOG.md`). I 3 km a
+  lettera di ADR-0051 sono misurati su «CIAO»: una distanza minima che
+  guardi la lunghezza del tratto invece del numero di lettere tocca
+  `models.py` e il contratto, ed è fuori da TASK-059.
+- Più punti di passaggio (461 per «BELLO», 297 per «CIAO») e ricerche più
+  lunghe: 15–258 s a 15 km, «BELLO» 255 s a Trento e 258 s a Milano (CIAO:
+  40–140 s). L'app aspetta al più 5 minuti (`MAX_WAIT_MS`): una parola di
+  7 lettere con M o W a 21 km può non bastare.
+- **Aperto**: la base comincia dopo la prima lettera e finisce prima
+  dell'ultima, così una I o una F in prima posizione, con la linea solo a
+  destra, si leggono L ed E («IO» sembra «LO»). Si sistema con un tratto di
+  base anche prima della prima lettera e dopo l'ultima, in `words.py`: è un
+  cambio del modo di comporre (anche «CIAO»), proposto all'utente, non
+  fatto qui.

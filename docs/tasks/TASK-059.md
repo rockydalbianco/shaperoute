@@ -45,17 +45,17 @@ Deciso dall'agente su delega dell'utente:
 
 ## Criteri di accettazione
 
-- [ ] `letters.json` ha le 26 lettere dalla A alla Z; A, C, I, O come prima.
-- [ ] Ogni lettera è un tratto solo che entra ed esce sulla base (test).
-- [ ] La base fra i piedi non è disegnata da H, K, M, N, R, W, X (test).
-- [ ] Una parola con tutte le lettere si compone, con ogni lato di al più
+- [x] `letters.json` ha le 26 lettere dalla A alla Z; A, C, I, O come prima.
+- [x] Ogni lettera è un tratto solo che entra ed esce sulla base (test).
+- [x] La base fra i piedi non è disegnata da H, K, M, N, R, W, X (test).
+- [x] Una parola con tutte le lettere si compone, con ogni lato di al più
       1/16 dell'altezza (test).
-- [ ] `LETTERS` in `shared-types` e `contract.json` sono le 26 lettere, e i
+- [x] `LETTERS` in `shared-types` e `contract.json` sono le 26 lettere, e i
       test del contratto sono verdi sui due lati.
-- [ ] `ruff`, `black`, `pytest -m "not network"` puliti in route-engine e
+- [x] `ruff`, `black`, `pytest -m "not network"` puliti in route-engine e
       api; `npm test` in `packages/shared-types`.
-- [ ] Campioni nelle tre zone e anteprima; giudizio dell'utente prima del
-      merge.
+- [x] Campioni nelle tre zone e anteprima.
+- [ ] Giudizio dell'utente sui campioni, prima del merge.
 
 ## File toccati
 
@@ -65,7 +65,7 @@ services/route-engine/route_engine/words.py             (messaggio)
 services/route-engine/tests/test_words.py
 services/api/shaperoute_api/schemas.py                  (descrizione di word)
 services/api/tests/test_routes.py                       (il messaggio: E, N ora ci sono)
-packages/shared-types/src/index.ts, fixtures/contract.json, test/contract.test.ts
+packages/shared-types/src/index.ts, fixtures/contract.json
 samples/TASK-059_*.gpx, samples/LOG.md
 docs/tasks/TASK-059.md, docs/ROUTE_ENGINE.md, docs/API.md
 docs/DECISIONS.md (ADR-0056), docs/STATUS.md
@@ -82,4 +82,15 @@ docs/DECISIONS.md (ADR-0056), docs/STATUS.md
 
 ## Esito
 
-*(a fine task)*
+*(in attesa del giudizio dell'utente sui campioni)*
+
+Il motore scrive con tutte le lettere dalla A alla Z, e l'API e
+`shared-types` le accettano (ADR-0056). A 15 km «BELLO», «KIWI» e «MAX»
+hanno somiglianza delle lettere 0,74–0,95 e lettere alte 493–727 m, in
+15–258 s (`samples/LOG.md`); anteprima per l'utente:
+https://claude.ai/artifact/TLjtgKASQL5agjrCDwesvf. Emerso guardando le parole
+composte: la E e la L sulla base diventavano F e I (alzate a 0,2), e una I
+o una F in prima posizione si leggono ancora L ed E (proposta: base anche
+prima della prima lettera, in `words.py`, da decidere). Annotati in
+ADR-0056 e rimandati: la distanza minima per lettera misurata su «CIAO», e
+i tempi di «BELLO» (255–258 s) vicini ai 5 minuti che l'app aspetta.

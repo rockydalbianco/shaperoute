@@ -122,6 +122,54 @@ semplificazione resta (sotto).
   Più angoli non rendono il gatto più riconoscibile: la sua sagoma è già
   quella del disegno.
 
+## Prova sull'iPhone (in attesa)
+
+Dove siamo (2026-09-26): codice, test e documenti fatti, PR #89 aperta con
+CI verde, legata alla sessione. Manca solo la prova dell'utente; poi
+«TASK-073 fatto» al coordinatore con il numero della PR, e il merge lo fa
+lui. Worktree `D:\shaperoute-TASK-073` (branch
+`feat/TASK-073-image-in-app`, con il suo `node_modules`): **resta** fino al
+merge, poi va rimosso. Nessun `.venv` nel worktree: si usa quello del
+checkout principale con `PYTHONPATH` sui pacchetti del worktree (le
+installazioni editabili puntano al checkout principale).
+
+Passi per l'utente (Windows PowerShell):
+
+1. Fermare API ed Expo che girano (Ctrl+C nelle due finestre).
+2. Prima finestra, l'API:
+
+   ```
+   cd D:\shaperoute-TASK-073
+   $env:PYTHONPATH = "D:\shaperoute-TASK-073\services\api;D:\shaperoute-TASK-073\services\route-engine;D:\shaperoute-TASK-073\services\ai"
+   C:\Users\ricky\PycharmProjects\shaperoute\services\api\.venv\Scripts\python.exe -m shaperoute_api --lan --cache-dir C:\Users\ricky\PycharmProjects\shaperoute\data\cache
+   ```
+
+   `--cache-dir` punta alla cache del checkout principale: niente zone
+   nuove né copie su C:.
+3. Seconda finestra, Expo: `cd D:\shaperoute-TASK-073`, poi
+   `npm.cmd run mobile`; QR con la fotocamera dell'iPhone, Expo Go.
+4. Start «Another place»: Trento o Milano (zone in cache). Poi «Image»:
+   - un oggetto scuro su un foglio bianco con spazio attorno (forbici,
+     chiave, foglia): la linea gialla gli somiglia? «Hide the picture»
+     funziona? Poi 10 km e «Draw route»;
+   - «Take photo»: iOS chiede il permesso della fotocamera la prima volta;
+   - una foto di una stanza o di una strada: il motivo del rifiuto in
+     parole semplici;
+   - facoltativo: una cartina dell'Italia su bianco, la Sardegna resta
+     visibile sotto la linea, senza contorno giallo.
+
+Da raccogliere per ogni caso: va / non va, con quello che si vede. Se
+qualcosa non va, si corregge sul branch della PR #89 e si ripete la prova.
+
+Controlli già fatti in locale (per ripeterli: `services/api` con lo stesso
+`PYTHONPATH` e il python del checkout principale, `-m ruff check .`,
+`-m black --check .`, `-m pytest -m "not network"`; da
+`D:\shaperoute-TASK-073`, `npm.cmd run typecheck`, `npm.cmd test`,
+`npm.cmd run format:check`, `npm.cmd run lint`): 117 test dell'API, 14 di
+`shared-types`, 332 dell'app. Sotto carico il Jest completo può scadere in
+LoadingBar, MapView e RoutePanel: da soli passano, e `--maxWorkers=2` li
+fa passare tutti.
+
 ## Esito
 
 *(a fine task)*

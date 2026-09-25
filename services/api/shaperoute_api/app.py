@@ -10,6 +10,7 @@ catalogue some words name (ADR-0012): the AI never sees the route.
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
@@ -81,6 +82,7 @@ def to_request(body: RouteRequestBody) -> RouteRequest:
     return RouteRequest(
         start=body.start,
         shape=body.shape,
+        word=body.word,
         distance_m=body.distance_m,
         activity=body.activity,
     )
@@ -88,9 +90,9 @@ def to_request(body: RouteRequestBody) -> RouteRequest:
 
 def gpx_file_name(request: RouteRequest, when: datetime) -> str:
     """No spaces or odd characters: some apps refuse them, e.g.
-    'shaperoute-heart-5km-2026-09-23.gpx'."""
+    'shaperoute-heart-5km-2026-09-23.gpx', 'shaperoute-CIAO-15km-2026-09-24.gpx'."""
     km = f"{request.distance_m / 1000:g}km"
-    return f"shaperoute-{request.shape}-{km}-{when:%Y-%m-%d}.gpx"
+    return f"shaperoute-{request.name}-{km}-{when:%Y-%m-%d}.gpx"
 
 
 def job_body(job: Job) -> RouteJobBody:
@@ -117,6 +119,13 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        if reader is not None:
+            # In the background: the API answers at once, even with Ollama
+            # off or the model missing; the first word waits less (TASK-052).
+            log.info("AI model: loading in the background")
+            threading.Thread(
+                target=reader.warm_up, name="ai-preload", daemon=True
+            ).start()
         yield
         route_jobs.shutdown()
 
@@ -165,7 +174,7 @@ def create_app(
         when = now()
         document = to_gpx(
             body.result.points,
-            route_name(request.shape, request.distance_m, when),
+            route_name(request.name, request.distance_m, when),
             when,
         )
         return Response(
@@ -192,7 +201,7 @@ def create_app(
     @app.post("/routes", responses=ERROR_RESPONSES)
     def create_route(body: RouteRequestBody) -> RouteResultBody:
         request = to_request(body)
-        what = f"{request.shape} {request.distance_m} m"
+        what = f"{request.name} {request.distance_m} m"
         started = time.perf_counter()
         try:
             result = planner(request, source).result

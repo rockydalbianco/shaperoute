@@ -127,3 +127,31 @@ def test_shape_reading_fixtures_are_valid_bodies() -> None:
 
 def test_shape_text_limit_matches_shared_types() -> None:
     assert _load("shape-reading-limits.json") == {"max_text_length": MAX_TEXT_LENGTH}
+
+
+def test_word_fixtures_are_valid_bodies() -> None:
+    # A word instead of a shape, the other null (TASK-056).
+    request = _load("route-request-word.json")
+    assert set(request) == _names(RouteRequestBody)
+    assert RouteRequestBody.model_validate(request).word == "ciao"
+    result = _load("route-result-word.json")
+    assert set(result) == _names(RouteResultBody)
+    body = RouteResultBody.model_validate(result)
+    assert body.shape is None
+    assert body.word == "CIAO"
+
+
+def test_the_api_passes_the_word_on_and_answers_its_result_unchanged() -> None:
+    data = _load("route-result-word.json")
+    result = RouteResult(**{**data, "points": [tuple(p) for p in data["points"]]})
+    asked: list[RouteRequest] = []
+
+    def planner(request: RouteRequest, source: GraphLoader) -> Plan:
+        asked.append(request)
+        return Plan(result=result, search=None)
+
+    app = create_app(FileSource(FIXTURES / "unused.graphml"), planner=planner)
+    response = TestClient(app).post("/routes", json=_load("route-request-word.json"))
+    assert response.status_code == 200
+    assert response.json() == data
+    assert asked[0].word == "ciao"

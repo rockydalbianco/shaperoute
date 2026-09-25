@@ -152,6 +152,27 @@ La richiesta è sincrona: la risposta arriva quando il percorso è pronto
 (tempi sotto). Resta per `/docs`, `curl` e le misure; l'app usa
 `/route-jobs`.
 
+### Una parola invece di una forma (TASK-056)
+
+Un `RouteRequest` ha `shape` **oppure** `word`: l'altro manca o è `null`.
+Con `word` il motore scrive la parola una lettera alla volta, come la CLI
+con `--word` (ADR-0044):
+
+```json
+{ "start": [46.0671, 11.1214], "word": "ciao", "distance_m": 15000, "activity": "running" }
+```
+
+- Maiuscole o minuscole, solo le lettere dell'alfabeto del motore
+  (`route_engine/letters.json`, oggi A, C, I, O), al più 8, e almeno 3 km
+  di percorso per lettera: «CIAO» vuole almeno 12 km. Sono `LETTERS`,
+  `MAX_WORD_LETTERS` e `LETTER_DISTANCE_M` in `shared-types`, così l'app
+  può controllare prima di chiedere.
+- Il `RouteResult` ha `"shape": null` e `"word": "CIAO"`, la parola in
+  maiuscole; per una forma è il contrario, con `"word": null`.
+- Il nome del file GPX usa la parola: `shaperoute-CIAO-15km-2026-09-24.gpx`.
+- Una parola chiede più tempo di una forma: 40–140 s per «CIAO» a 15 km,
+  quasi sempre con la ricerca fino a 2 km (ADR-0044).
+
 ## Errori
 
 Ogni errore ha la stessa forma, con un messaggio in inglese come quelli
@@ -169,6 +190,7 @@ mancava la distanza: è la sua lunghezza, al km intero, fra 1 e 50 km
 | Caso | HTTP | `code` |
 |---|---|---|
 | JSON malformato, campo mancante, in più o fuori limite | 422 | `invalid_request` |
+| `shape` e `word` insieme o nessuno; una lettera che l'alfabeto non ha; più di 8 lettere; meno di 3 km a lettera | 422 | `invalid_request` |
 | Forma non disponibile in quella zona (ADR-0025) | 422 | `shape_not_drawable` |
 | Zona non in cache e dati OSM non scaricabili | 503 | `map_data_unavailable` |
 | Il modello che legge le parole della forma non risponde (`AI.md`) | 503 | `ai_unavailable` |
@@ -179,8 +201,8 @@ Forma e codici sono anche nel contratto condiviso con l'app: `ApiError` e
 `API_ERROR_CODES` in `shared-types` (ADR-0031). Un codice nuovo va aggiunto
 in tutti e due i posti, e i test lo controllano.
 
-I limiti di distanza, forme e attività stanno solo in `models.py` del
-route-engine: Pydantic controlla i tipi, il `RouteRequest` del motore i
+I limiti di distanza, forme, parole e attività stanno solo in
+`models.py` del route-engine: Pydantic controlla i tipi, il `RouteRequest` del motore i
 valori. Per `engine_error` il messaggio è generico e il dettaglio va nel
 log dell'API, non al telefono.
 

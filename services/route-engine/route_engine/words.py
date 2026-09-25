@@ -54,6 +54,13 @@ SIDE_STEP = 1 / 16
 # and the step of the grid of moves tried (optimizer.fit_letters).
 MAX_SHIFT = 0.25
 SHIFT_STEP = 1 / 16
+# A word asked for in a route request (TASK-056): at most this many letters,
+# and this many metres of route for each. «CIAO» was judged good at 15 km,
+# 3.75 km a letter, with letters 700–800 m high (ADR-0044); with less the
+# letters shrink below what city blocks can draw, and every letter adds
+# some 75 waypoints to a search that takes 40–140 s for four.
+MAX_WORD_LETTERS = 8
+LETTER_DISTANCE_M = 3000
 
 
 class InvalidWordError(ValueError):
@@ -245,8 +252,8 @@ def compose(
     missing = sorted({c for c in chars if c not in alphabet})
     if missing:
         raise InvalidWordError(
-            f"no letter {', '.join(missing)} in the alphabet, "
-            f"which has {''.join(sorted(alphabet))}"
+            f"no letter {', '.join(missing)} yet: "
+            f"a word can use {', '.join(sorted(alphabet))}"
         )
     letters = tuple(alphabet[c] for c in chars)
     outs: list[list[Point]] = []

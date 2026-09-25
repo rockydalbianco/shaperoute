@@ -81,9 +81,7 @@ class RouteJobs:
             self._forget_old()
             self._jobs[job.job_id] = job
             snapshot = replace(job)
-        log.info(
-            "job %s: %s %d m queued", job.job_id, request.shape, request.distance_m
-        )
+        log.info("job %s: %s %d m queued", job.job_id, request.name, request.distance_m)
         self._pool.submit(self._run, job)
         return snapshot
 

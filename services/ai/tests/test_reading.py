@@ -99,3 +99,28 @@ def test_the_oldest_reading_goes_first_when_the_cache_is_full(
         shape_reader.read(word)
     # "a" left when "c" came in; "b" and "c" stayed.
     assert [text for text, _ in model.asked] == ["a", "b", "c", "a"]
+
+
+class PreloadingModel(FakeModel):
+    def __init__(self, fails: bool = False) -> None:
+        super().__init__({})
+        self.fails = fails
+        self.preloaded = 0
+
+    def preload(self) -> None:
+        self.preloaded += 1
+        if self.fails:
+            raise ModelUnavailableError("Ollama does not answer: is it running?")
+
+
+def test_warming_up_preloads_a_model_that_can() -> None:
+    model = PreloadingModel()
+    assert ShapeReader(model, SHAPES).warm_up() is True
+    assert model.preloaded == 1
+
+
+def test_warming_up_never_fails() -> None:
+    # Ollama off or the model missing: the first word will say so, not the start.
+    model = PreloadingModel(fails=True)
+    assert ShapeReader(model, SHAPES).warm_up() is False
+    assert ShapeReader(FakeModel({}), SHAPES).warm_up() is False  # no preload

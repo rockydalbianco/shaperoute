@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-09-25 sera · `main` = `0ddb95c`
+**Ultimo aggiornamento**: 2026-09-26 · `main` = `7212156`
 
 ## Come si usa
 
@@ -16,30 +16,32 @@
 3. Il messaggio di partenza lo manda il coordinatore, completo (numero,
    ADR, file, confini). Se non arriva, chiedilo: non partire da solo.
 4. Numeri di task e di ADR: solo dal coordinatore (`CLAUDE.md`).
+5. **Worktree nuovi su D:** (`D:\shaperoute-TASK-XXX`). Su C: lo spazio è
+   poco: niente installazioni né zone nuove. La cache delle zone sta in
+   `D:\shaperoute-data\cache`; `data\cache` del checkout principale è un
+   collegamento (junction) a quella cartella.
 
 ## L'albero
 
 ```
 Indicazioni
-  ├─ Adesso  TASK-061  `along` nella navigazione (schermo e voce)    060 ✓
-  ├─ Dopo    TASK-074  Niente «fuori tracciato» per il marciapiede   dopo 061
-  │                    opposto o un GPS impreciso
-  └─ Dopo    TASK-070  Modalità tasca: schermo acceso ma nero,       dopo 074
-                       tocchi bloccati, voce attiva                  (e non insieme a 073)
+  ├─ Adesso  TASK-076  Il cuore meno sensibile alla partenza: più     075 ✓
+  │                    partenze vicine, si tiene la migliore
+  ├─ Attesa  TASK-074  Niente «fuori tracciato» per il marciapiede     PR #86, prova
+  │                    opposto (prova sull'iPhone alla prossima corsa)  dell'utente
+  └─ Dopo    TASK-070  Modalità tasca: schermo acceso ma nero,         dopo 073
+                       tocchi bloccati, voce attiva                    (package.json)
 
 Interfaccia Grafica
-  ├─ Adesso  TASK-072  La forma da un'immagine: motore e CLI         nessuna
-  │                    (campioni, giudizio utente)
-  └─ Dopo    TASK-073  L'immagine nell'app e nell'API                dopo 072
-                                                                     (e non insieme a 070)
+  └─ Attesa  TASK-073  L'immagine nell'app e nell'API                  PR #89, prova
+                                                                       dell'utente
 
 Programmatore Lettere
-  ├─ Attesa  TASK-068  Cane: solo la testa (PR #82, giudizio utente)
-  ├─ Dopo    TASK-071  Lettere ripassate: andata e ritorno sulla     dopo 068
-  │                    stessa strada, tratti sottili
-  ├─ Dopo    TASK-067  Lettere unite anche dall'alto, scala per      dopo 071 (da rivedere
-  │                    lettera                                       coi risultati di 071)
-  └─ Dopo    TASK-065  Gli animali approvati nel catalogo            dopo 068 (e 060 ✓)
+  ├─ Adesso  TASK-077  Lettere squadrate: un secondo alfabeto          071 ✓
+  ├─ Dopo    TASK-065  Gli animali approvati nel catalogo              dopo 073
+  │                    (farfalla, lumaca, testa di cane)               (shared-types)
+  └─ Dopo    TASK-067  Lettere unite dall'alto, scala per lettera      da rivedere
+                                                                       dopo 071 e 077
 
 Da assegnare (servono l'ok dell'utente sul cosa)
   ├─ Far scegliere fra più percorsi alternativi (la ricerca li ha già)
@@ -50,70 +52,66 @@ Da assegnare (servono l'ok dell'utente sul cosa)
   ├─ Ritaglio della zona senza copia del grafo, nell'API: 6–13 s in meno
   │  a Milano, percorsi identici (TASK-063, proposta 2)
   ├─ Voce e GPS col telefono davvero bloccato: serve una build propria
-  │  (account Apple Developer), non Expo Go (TASK-070, prima versione)
-  └─ Nuove forme dagli spunti di gpsart.info: temi stagionali (zucca,
-     albero di Natale), coniglio, elefante, sagome di mappe
+  │  (account Apple Developer), non Expo Go
+  ├─ Nuove forme dagli spunti di gpsart.info: temi stagionali (zucca,
+  │  albero di Natale), coniglio, elefante, sagome di mappe
+  └─ Registrare le richieste dell'API su file, per rifare un percorso visto
+     nell'app (in TASK-075 non si è potuto)
 ```
 
 ## I task, uno per uno
 
 | Task | Titolo | Chi | Stato | Dipende da | ADR |
 |---|---|---|---|---|---|
-| TASK-061 | `along` nella navigazione | Indicazioni | in corso | 060 ✓ | 0058 |
-| TASK-065 | Gli animali approvati nel catalogo (parole, AI, app) | Programmatore Lettere | in coda | 068, 060 ✓ | 0061 |
-| TASK-067 | Lettere unite anche dall'alto, scala per lettera | Programmatore Lettere | in coda | 071 | 0063 |
-| TASK-068 | Cane: solo la testa, con occhi, naso e bocca | Programmatore Lettere | PR #82 | 064 ✓ | 0065 |
-| TASK-070 | Modalità tasca | Indicazioni | in coda | 074 | 0066 |
-| TASK-071 | Lettere ripassate, andata e ritorno sulla stessa strada | Programmatore Lettere | in coda | 068 | 0067 |
-| TASK-072 | La forma da un'immagine: motore e CLI | Interfaccia Grafica | in corso | — | 0068 |
-| TASK-073 | L'immagine nell'app e nell'API | Interfaccia Grafica | in coda | 072 | 0069 |
-| TASK-074 | Niente «fuori tracciato» per il marciapiede opposto | Indicazioni | in coda | 061 | 0070 |
+| TASK-065 | Gli animali approvati nel catalogo (parole, AI, app) | Programmatore Lettere | in coda | 073 | 0061 |
+| TASK-067 | Lettere unite dall'alto, scala per lettera | Programmatore Lettere | in coda | 077 | 0063 |
+| TASK-070 | Modalità tasca | Indicazioni | in coda | 073 | 0066 |
+| TASK-073 | L'immagine nell'app e nell'API | Interfaccia Grafica | PR #89 | 072 ✓ | 0069 |
+| TASK-074 | Niente «fuori tracciato» per il marciapiede opposto | Indicazioni | PR #86 | 061 ✓ | 0070 |
+| TASK-076 | Più partenze vicine, si tiene il percorso migliore | Indicazioni | in corso | 075 ✓ | 0071 |
+| TASK-077 | Lettere squadrate: un secondo alfabeto | Programmatore Lettere | in corso | 071 ✓ | 0072 |
 
 Perché quest'ordine:
 
-- **061, 074, 070 in fila**: toccano tutti `src/navigation/`. 074 prima di
-  070 perché è un difetto trovato dall'utente sulle strade: oggi basta un
-  punto GPS oltre i 40 m (`OFF_ROUTE_M`) per dire «fuori tracciato».
-- **070 e 073 mai insieme**: tutti e due aggiungono pacchetti all'app
-  (`package.json`, `package-lock.json`). Parte per primo quello pronto per
-  primo; l'altro aspetta il merge.
-- **070, modalità tasca**: scelta dall'utente il 2026-09-25 (strada «B»).
-  La prima versione, a telefono bloccato, non si può fare in Expo Go: la
-  documentazione di `expo-location` richiede una build propria. Pacchetti
-  autorizzati: `expo-keep-awake`, `expo-brightness`.
-- **072 e 073**: chiesto dall'utente: la forma dai contorni di
-  un'immagine. Perimetro deciso dall'utente: un soggetto chiaro su sfondo
-  uniforme, solo il contorno esterno. Pacchetti autorizzati: Pillow nel
-  motore, `expo-image-picker` nell'app.
-- **071 prima di 067**: chiesto dall'utente dopo le prove sull'iPhone. Le
-  lettere vengono meglio ripassate (andata e ritorno sulla stessa strada),
-  come nelle GPS art di riferimento. Se le lettere si ripassano, anche il
-  modo di unirle cambia: 067 si rivede dopo i risultati di 071.
-- **065 dopo 068**: nel catalogo vanno **farfalla e lumaca** (deciso
-  dall'utente il 2026-09-25); il cane dipende dal giudizio sulla testa
-  (068); l'uccello resta fuori.
+- **076 senza `optimizer.py`**: la ricerca delle partenze sta in un modulo
+  nuovo che chiama `plan_route`; il collegamento all'API (`app.py`,
+  `jobs.py`) solo dopo il merge di 073, che li sta modificando. Scelta
+  dell'utente dopo TASK-075: il motore di ieri e di oggi davano lo stesso
+  cuore, a cambiarlo era la partenza GPS (25–100 m: somiglianza da 0,73 a
+  0,92).
+- **077 senza `__main__.py`**: la CLI la sta modificando 076; i campioni
+  delle lettere squadrate passano da uno script a parte. Scelta
+  dell'utente dopo TASK-071 (ripasso sulla stessa strada provato e
+  scartato: 4 parole su 9 peggio, nessuna meglio).
+- **065 e 070 dopo 073**: 073 tocca `packages/shared-types` e aggiunge un
+  pacchetto all'app (`package.json`, `package-lock.json`); 065 tocca
+  `shared-types`, 070 aggiunge `expo-keep-awake` ed `expo-brightness`.
+- **067**: dopo 071 si sa che lettere più piccole si leggono peggio; si
+  rivede coi risultati di 077.
 
 ## File occupati adesso
 
 | File | Di chi |
 |---|---|
-| `apps/mobile/src/navigation/` (+ il componente che mostra l'indicazione), `docs/UI.md` | TASK-061 |
-| `services/route-engine/route_engine/shapes/image_outline.py`, `__main__.py`, `pyproject.toml`, `samples/TASK-072_*`, `docs/ROUTE_ENGINE.md` | TASK-072 |
-| `route_engine/shapes/outlines/dog_head.json`, `samples/TASK-068_*` | TASK-068 (PR #82) |
+| `apps/mobile/` (App, route, api, `package.json`), `package-lock.json`, `packages/shared-types`, `services/api` (`app.py`, `jobs.py`, `schemas.py`, test) | TASK-073 (PR #89) |
+| `apps/mobile/src/navigation/` | TASK-074 (PR #86) |
+| `route_engine/__main__.py`, il modulo nuovo delle partenze vicine, `samples/TASK-076_*` | TASK-076 |
+| `route_engine/letters_block.json`, `words.py`, `optimizer.py` (solo la parte delle parole), `samples/TASK-077_*` | TASK-077 |
 | `samples/LOG.md`, `docs/STATUS.md`, `docs/DECISIONS.md` | tutti, ognuno solo le sue righe |
 | `docs/AGENTI.md`, `CLAUDE.md` | coordinatore |
 
 ## Numeri
 
-- Task: presi fino a **TASK-074**. Il prossimo libero è **TASK-075**.
-- ADR: presi fino a **ADR-0070** (0062 riservato e non usato). Il
-  prossimo libero è **ADR-0071**.
+- Task: presi fino a **TASK-077**. Il prossimo libero è **TASK-078**.
+- ADR: presi fino a **ADR-0072** (0062 riservato e non usato; 0067
+  «Scartata»). Il prossimo libero è **ADR-0073**.
 
-## Fatto in questa tornata (2026-09-24/25)
+## Fatto in questa tornata (2026-09-24/26)
 
-TASK-045, 046, 047, 048, 049, 050, 051, 052, 053, 054, 055, 056, 057,
-058, 059, 060, 062, 063, 064, 066, 069; test della CLI fuori dalla CI
-perché scaricava da Overpass (#68); regole in `CLAUDE.md` (#50, #57, #63)
-e questo albero (#66, #73, #76, #80).
+TASK-045 … 064, 066, 068, 069, 071 (scartato, solo verifica e campioni),
+072, 075 (nessuna regressione: la causa era la partenza GPS); test della
+CLI fuori dalla CI (#68); regole in `CLAUDE.md` (#50, #57, #63) e questo
+albero (#66, #73, #76, #80, #83).
 
-Dopo il merge di TASK-049: `npm.cmd install` dalla radice (`expo-speech`).
+Dopo un merge che aggiunge pacchetti all'app: `npm.cmd install` dalla
+radice del checkout principale (è successo con `expo-speech`).

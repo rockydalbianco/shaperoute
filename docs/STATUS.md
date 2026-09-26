@@ -57,6 +57,15 @@ Niente per l'app.
 
 ## Completato
 
+- **Programmatore Lettere** — TASK-078: tre forme candidate come contorni,
+  sagoma nel contorno e dettagli ripassati (ADR-0073): testa di coniglio
+  (`rabbit_head`), zucca di Halloween (`pumpkin`), albero di Natale con la
+  stella (`christmas_tree`); provate dalla CLI a 15 km: somiglianza
+  0,97 · 0,88 · 0,97, 0,92 · 0,83 · 1,00 e 0,93 · 0,81 · 1,00 (Trento,
+  Levico, Milano). Giudizio dell'utente: tutte e tre `sì` a Milano;
+  coniglio `sì` a Trento e `quasi` a Levico, zucca `no` a Trento e `quasi`
+  a Levico, albero `quasi` a Trento e `no` a Levico. Quali entrano nel catalogo lo decide l'utente, con
+  TASK-065 o dopo.
 - **Programmatore Lettere** — TASK-077: lettere squadrate, un secondo
   stile delle parole nel motore (`letters_block.json`, `style="block"`,
   ADR-0072): tratti dritti o a 45°, lettere larghe e vicine, la parola

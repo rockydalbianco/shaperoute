@@ -2256,3 +2256,50 @@ preferito la vicina `quasi` alla partenza `sì` spostata di 1 km, perché
 lo spostamento costa quanto nella ricerca (0,1 a 1 km). Se un cuore
 migliore a 1 km valga più di uno quasi dalla porta di casa è una scelta di
 prodotto, aperta (task file).
+
+## ADR-0073 — Coniglio, zucca e albero di Natale: candidate come la testa di cane
+**Stato**: Attiva · 2026-09-26 · chiesto dall'utente (spunti da gpsart.info:
+animali «solo la testa», temi stagionali, sagome semplici); il disegno
+deciso dall'agente su delega dell'utente (TASK-078); giudizio dell'utente:
+tutte e tre `sì` a Milano; coniglio `sì` a Trento e `quasi` a Levico,
+zucca `quasi` a Levico, albero di Natale `quasi` a Trento, il resto `no`
+
+La testa di cane (ADR-0065) è `sì` in tutte e tre le zone, il cane intero
+solo a Milano; il gatto da immagine (TASK-072) non si riconosceva già come
+sagoma. Servivano altre forme da provare, riconoscibili dai loro tratti
+principali prima che dai dettagli.
+
+**Decisione**:
+- **Tre contorni nuovi** in `route_engine/shapes/outlines/`
+  (`rabbit_head`, `pumpkin`, `christmas_tree`), disegnati dall'agente con
+  archi calcolati: nessuna licenza di terzi. Si provano solo dalla CLI
+  (`--outline`) finché l'utente non li giudica; nessun parametro del motore
+  cambia; `tree.json` resta com'è.
+- **Il tratto che fa riconoscere la forma sta nel contorno** (ADR-0035):
+  le orecchie lunghe e dritte del coniglio, più lunghe dei due terzi della
+  testa (il gatto le ha corte a punta, il cane le ha pendenti); i tre
+  spicchi della zucca, che si toccano in quattro tacche, e il picciolo
+  storto; i tre piani dell'abete, con il bordo che risale verso il tronco.
+  Dritti (ADR-0038).
+- **I dettagli sono tratti ripassati** (ADR-0039, ADR-0065): occhi, naso e
+  bocca del coniglio come quelli della testa di cane; occhi a triangolo e
+  sorriso della zucca, appesi alle tacche e al fondo; la stella a cinque
+  punte in cima all'albero.
+- **Campioni come TASK-064 e TASK-068**: i grafi di zona dell'API in
+  memoria, solo le zone in cache, nessun ritaglio su C:.
+
+**Motivo**: bozze provate sulle strade prima dei campioni
+(`docs/tasks/TASK-078.md`). Le orecchie strette del coniglio si perdevano
+a Levico (0,78; con orecchie più larghe 0,88); i denti del sorriso,
+larghi 0,12 della forma, sparivano in tutte le zone; tacche più profonde
+fra gli spicchi spezzavano la zucca a Levico; con piani poco sporgenti e
+la stella piccola l'albero di Trento perdeva i piani.
+
+**Conseguenza**: 9 campioni a 15 km (`samples/LOG.md`, TASK-078), tutti
+con un percorso, in 11–44 s: somiglianza 0,81–1,00, la più bassa a
+Levico per tutte e tre. L'albero resta difficile fuori da Milano, come
+quello di TASK-034/037. Giudizio dell'utente (2026-09-26): a Milano si
+riconoscono tutte e tre; il coniglio è `sì` a Trento e `quasi` a Levico,
+la zucca `no` a Trento e `quasi` a Levico, l'albero di Natale `quasi` a
+Trento e `no` a Levico (l'albero di TASK-034/037 era `no` in tutte e due). Quali forme entrano nel catalogo
+lo decide l'utente, con TASK-065 o dopo (ADR-0036).

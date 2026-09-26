@@ -57,6 +57,11 @@ Niente per l'app.
 
 ## Completato
 
+- **App** — TASK-074: «Off the route» solo dopo 3 posizioni di fila oltre
+  40 m, per almeno 8 s; una posizione con errore oltre 40 m non conta;
+  «Back on the route» dopo 2 posizioni sul percorso (ADR-0070). Il
+  marciapiede opposto e il GPS che sbaglia per qualche secondo non danno
+  più l'avviso; una via parallela sbagliata sì, 8–10 s dopo.
 - **Riparatore** — TASK-082: le direzioni col trattino («north-east»,
   «south-west») nell'avviso della partenza spostata ora si traducono come
   «north»; test per le otto direzioni del motore. Un avviso che l'app non

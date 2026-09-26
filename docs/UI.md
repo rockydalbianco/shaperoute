@@ -374,6 +374,18 @@ una via parallela sbagliata sì (ADR-0070). Dopo due posizioni di fila sul
 percorso, «Back on the route». Alla fine, «You have arrived». Funziona con lo schermo
 acceso e l'app aperta; la posizione non esce dal telefono.
 
+**Modalità tasca** (TASK-070, ADR-0066). Accanto a «Stop», «Pocket»: lo
+schermo diventa nero, la luminosità va al minimo e resta acceso, e i tocchi
+non fanno niente; voce, vibrazione e GPS vanno avanti come prima. Si esce
+tenendo premuto lo schermo 2 secondi: in basso, fioca, «Hold for 2 seconds
+to leave pocket mode», e «Keep holding…» mentre si preme. La prima volta
+per avvio dell'app un avviso, «Pocket mode», con «Cancel» e «Go dark»: «The
+screen goes dark but stays on, so directions go on. Do not lock the phone:
+if you press the side button, directions stop. To come back, hold the
+screen for 2 seconds.» La luminosità torna com'era all'uscita, all'arrivo
+(che toglie anche il pulsante), con «Stop» e quando l'app esce dal primo
+piano.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di

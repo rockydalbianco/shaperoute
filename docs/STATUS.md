@@ -53,7 +53,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-Niente per l'app.
+- **App** — TASK-070: modalità tasca (ADR-0066). «Pocket» durante la
+  navigazione: schermo nero e acceso, luminosità al minimo, tocchi
+  ignorati, si esce tenendo premuto 2 s; voce e GPS come prima. Codice e
+  test fatti; manca la prova sull'iPhone con l'utente (passi nel task file).
 
 ## Completato
 

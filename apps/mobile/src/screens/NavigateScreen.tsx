@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { type Navigation, remainingM, upcoming } from "../navigation/navigator";
 import { ARROWS, distanceLabel, instruction, thenText } from "../navigation/phrases";
 import type { NavigationState } from "../navigation/useNavigation";
+import { usePocketMode } from "../navigation/usePocketMode";
 import {
   color,
   fontSize,
@@ -11,6 +12,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { confirmPocketMode, PocketScreen } from "./PocketScreen";
 
 /**
  * Navigation over the map (TASK-049): the next turn at the top, big enough
@@ -83,14 +85,30 @@ export function NavigationCard({
   navigation: Navigation | null;
   onStop: () => void;
 }) {
+  // Pocket mode only while there is a route to follow: arriving ends it.
+  const following = navigation !== null && !navigation.arrived;
+  const pocket = usePocketMode(following);
   return (
     <View style={styles.card}>
       <Text style={styles.left}>
         {navigation ? `${distanceLabel(remainingM(navigation))} to go` : " "}
       </Text>
-      <Pressable style={styles.stop} onPress={onStop} accessibilityRole="button">
-        <Text style={styles.stopText}>Stop</Text>
-      </Pressable>
+      <View style={styles.buttons}>
+        {following && (
+          <Pressable
+            style={styles.stop}
+            onPress={() => confirmPocketMode(pocket.enter)}
+            accessibilityRole="button"
+            accessibilityLabel="Pocket mode"
+          >
+            <Text style={styles.stopText}>Pocket</Text>
+          </Pressable>
+        )}
+        <Pressable style={styles.stop} onPress={onStop} accessibilityRole="button">
+          <Text style={styles.stopText}>Stop</Text>
+        </Pressable>
+      </View>
+      <PocketScreen on={pocket.on} onExit={pocket.exit} />
     </View>
   );
 }
@@ -140,6 +158,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: space.md,
+  },
+  buttons: {
+    flexDirection: "row",
+    gap: space.sm,
   },
   left: {
     color: color.text,

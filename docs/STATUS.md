@@ -51,14 +51,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 Niente per l'app.
 
+## Completato
+
 - **Interfaccia Grafica** — TASK-073: l'immagine nell'app e nell'API
   (ADR-0069). «Image» accanto a Shape e Word, foto dalla libreria o dalla
   fotocamera, anteprima del contorno prima del percorso, motivo del rifiuto
-  in parole semplici. Codice e test fatti; manca la prova sull'iPhone con
-  l'utente, poi il merge del coordinatore.
-
-## Completato
-
+  in parole semplici. Provato sull'iPhone dall'utente (2026-09-26): «sì,
+  funziona tutto».
 - **Motore** — TASK-072: la forma ricavata da un'immagine. Da un PNG o
   JPEG con un soggetto chiaro su sfondo uniforme il motore ricava il
   contorno esterno con regole fisse (`image_outline.py`, ADR-0068) e la CLI

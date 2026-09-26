@@ -1,6 +1,6 @@
 # TASK-073 — L'immagine nell'app e nell'API
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-073-image-in-app` (parte da `main`)
 
 Assegnato dal coordinatore su richiesta dell'utente (2026-09-25), seguito di
@@ -59,7 +59,7 @@ rifiutata mostra il motivo in parole semplici.
       `npm run typecheck`, `npm test`, `npm run lint`, `format:check`.
 - [x] Prova da capo a fondo con il motore vero (mela di TASK-072, Trento,
       10 km): 9,2 km, somiglianza 0,94, 27 s, con le indicazioni.
-- [ ] Prova sull'iPhone con l'utente (Expo Go).
+- [x] Prova sull'iPhone con l'utente (Expo Go).
 
 ## File toccati
 
@@ -122,7 +122,10 @@ semplificazione resta (sotto).
   Più angoli non rendono il gatto più riconoscibile: la sua sagoma è già
   quella del disegno.
 
-## Prova sull'iPhone (in attesa)
+## Prova sull'iPhone (2026-09-26)
+
+Fatta dall'utente con i passi qui sotto, riferita dal coordinatore:
+«sì, funziona tutto».
 
 Dove siamo (2026-09-26): codice, test e documenti fatti, PR #89 aperta con
 CI verde, legata alla sessione. Manca solo la prova dell'utente; poi
@@ -172,4 +175,9 @@ fa passare tutti.
 
 ## Esito
 
-*(a fine task)*
+Nell'app, accanto a Shape e Word, «Image»: una foto dalla libreria o
+dalla fotocamera, il contorno che il motore ne ricava mostrato sopra la foto
+prima del percorso, poi il percorso come per una forma; un'immagine
+rifiutata mostra il motivo in parole semplici (ADR-0069). Provato
+sull'iPhone dall'utente il 2026-09-26: «sì, funziona tutto». Dopo il merge
+il worktree `D:\shaperoute-TASK-073` va rimosso.

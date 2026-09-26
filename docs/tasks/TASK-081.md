@@ -54,6 +54,7 @@ packages/shared-types/fixtures/api-error-codes.json
 apps/mobile/src/api/apiUrl.ts, routes.ts, gpx.ts, shapeReadings.ts, imageOutlines.ts e i loro test
 apps/mobile/src/route/problems.ts, problems.test.ts (messaggio «unreachable», ok del coordinatore)
 apps/mobile/src/route/accessProblems.test.ts (nuovo)
+apps/mobile/__tests__/App.test.tsx          (una riga, con l'ok del coordinatore; il file è anche di TASK-065)
 Dockerfile, .dockerignore                    (nuovi)
 .env.example
 .github/workflows/ci.yml                     (solo il job docker)

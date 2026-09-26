@@ -380,7 +380,7 @@ test("an API that does not answer says where it was looked for", async () => {
   await fireEvent.press(await screen.findByText("Draw route"));
   expect(
     await screen.findByText(
-      `Cannot reach the API at ${API}. Start it on the PC with --lan, on the same Wi-Fi.`,
+      `Cannot reach the API at ${API}. Check that it is running (on the PC: with --lan) and that the phone can reach it: same Wi-Fi, Tailscale on, or the server address in apps/mobile/.env (docs/DEPLOY.md).`,
     ),
   ).toBeOnTheScreen();
 });

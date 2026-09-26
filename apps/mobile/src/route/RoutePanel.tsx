@@ -9,19 +9,22 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { isImageRequest } from "../api/routes";
 import { Segmented } from "../screens/Segmented";
 import { LONG_DISTANCE_KM, MAX_APP_DISTANCE_KM, MIN_DISTANCE_KM } from "./distance";
 import { DistanceStepper } from "./DistanceStepper";
+import { ImageChoice } from "./ImageChoice";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
-import { problemText } from "./problems";
+import type { ImageSource } from "./pickImage";
+import { type ChoiceKind, problemText } from "./problems";
 import { ShapeTiles } from "./ShapeTiles";
 import { shapeList } from "./shapeWords";
 import type { ExportState } from "./useGpxExport";
-import type { RouteProblem, RouteState } from "./useRouteRequest";
+import type { ImageState } from "./useImageOutline";
+import type { AnyRouteRequest, RouteProblem, RouteState } from "./useRouteRequest";
 import type { ShapeReadingState } from "./useShapeReading";
 import { type Note, toNotes } from "./warnings";
 import {
-  type DrawKind,
   MAX_WORD_FIELD_LENGTH,
   routeName,
   type WordCheck,
@@ -31,12 +34,13 @@ import {
 const DRAW_KINDS = [
   { value: "shape", label: "Shape" },
   { value: "word", label: "Word" },
+  { value: "image", label: "Image" },
 ] as const;
 
 type ChoiceProps = {
-  /** A shape or a word: one of the two, and the switch shows which. */
-  kind: DrawKind;
-  onKind: (kind: DrawKind) => void;
+  /** A shape, a word or an image: one of them, and the switch shows which. */
+  kind: ChoiceKind;
+  onKind: (kind: ChoiceKind) => void;
   /** The shape field as typed, and the shape it names (null: none). */
   shapeText: string;
   shape: Shape | null;
@@ -49,6 +53,9 @@ type ChoiceProps = {
   wordText: string;
   onWordText: (text: string) => void;
   wordCheck: WordCheck;
+  /** The picture chosen and its outline (TASK-073), and how to choose one. */
+  image: ImageState;
+  onChooseImage: (source: ImageSource) => void;
   /** The km field as typed, and what it means in metres (null: not valid). */
   distanceText: string;
   distanceM: number | null;
@@ -57,7 +64,8 @@ type ChoiceProps = {
 
 /**
  * What to draw (TASK-051): the shapes as tiles and a field for any other word,
- * or a word written letter by letter (TASK-057); then the distance. "Draw
+ * or a word written letter by letter (TASK-057), or the outline of a picture
+ * (TASK-073); then the distance. "Draw
  * route" sits apart, at the foot of the screen.
  */
 export function RouteChoice({
@@ -71,6 +79,8 @@ export function RouteChoice({
   wordText,
   onWordText,
   wordCheck,
+  image,
+  onChooseImage,
   distanceText,
   distanceM,
   onDistanceText,
@@ -104,6 +114,8 @@ export function RouteChoice({
           />
           <ShapeNote text={shapeText} shape={shape} reading={reading} />
         </>
+      ) : kind === "image" ? (
+        <ImageChoice state={image} onChoose={onChooseImage} />
       ) : (
         <>
           <TextInput
@@ -207,7 +219,7 @@ export function RouteOutcome({
           <LoadingBar
             phase={view.phase}
             distanceM={view.request.distance_m}
-            word={view.request.word}
+            word={isImageRequest(view.request) ? null : view.request.word}
           />
         </View>
       );
@@ -219,7 +231,7 @@ export function RouteOutcome({
               {`${(view.result.distance_m / 1000).toFixed(1)} km`}
             </Text>
             <Text style={styles.target}>
-              {`${routeName(view.request)} · on roads · target ${view.request.distance_m / 1000} km`}
+              {`${nameOf(view.request)} · on roads · target ${view.request.distance_m / 1000} km`}
             </Text>
           </View>
           {toNotes(view.result.warnings).map((note) => (
@@ -248,7 +260,7 @@ export function RouteOutcome({
       return (
         <Problem
           problem={view.problem}
-          kind={view.request.word ? "word" : "shape"}
+          kind={kindOf(view.request)}
           onTryDistance={onTryDistance}
           onPickShape={onPickShape}
         />
@@ -343,6 +355,15 @@ function WordNote({
   );
 }
 
+/** What the route draws, for the line under its distance. */
+function nameOf(request: AnyRouteRequest): string {
+  return isImageRequest(request) ? "Picture" : routeName(request);
+}
+
+function kindOf(request: AnyRouteRequest): ChoiceKind {
+  return isImageRequest(request) ? "image" : request.word ? "word" : "shape";
+}
+
 /** What the API is doing, as it said on its last answer. */
 function waitingText({ phase, request }: Extract<RouteState, { status: "waiting" }>) {
   switch (phase) {
@@ -352,6 +373,9 @@ function waitingText({ phase, request }: Extract<RouteState, { status: "waiting"
     case "downloading_map":
       return "Downloading map data for this area…";
     default:
+      if (isImageRequest(request)) {
+        return `Drawing the picture's outline, ${request.distance_m / 1000} km…`;
+      }
       return request.word
         ? `Drawing “${request.word}”, ${request.distance_m / 1000} km…`
         : `Drawing a ${request.distance_m / 1000} km ${request.shape}…`;
@@ -365,7 +389,7 @@ function Problem({
   onPickShape,
 }: {
   problem: RouteProblem;
-  kind?: DrawKind;
+  kind?: ChoiceKind;
   onTryDistance?: (distanceM: number) => void;
   onPickShape?: (shape: Shape) => void;
 }) {

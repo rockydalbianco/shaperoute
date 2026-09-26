@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "image_not_usable",
+    "message": "the background is not uniform: the image needs one subject on a plain background",
+    "suggested_distance_m": null,
+    "reason": "background"
+  }
+}

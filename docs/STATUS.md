@@ -63,7 +63,11 @@ Niente per l'app.
   albero `quasi` a Trento e Levico, coniglio `quasi` a Trento e `no` a
   Levico, zucca `no`. Quali entrano nel catalogo lo decide l'utente, con
   TASK-065 o dopo.
-
+- **Interfaccia Grafica** — TASK-073: l'immagine nell'app e nell'API
+  (ADR-0069). «Image» accanto a Shape e Word, foto dalla libreria o dalla
+  fotocamera, anteprima del contorno prima del percorso, motivo del rifiuto
+  in parole semplici. Provato sull'iPhone dall'utente (2026-09-26): «sì,
+  funziona tutto».
 - **Programmatore Lettere** — TASK-071: verificato che il ritorno di un
   tratto ripassato prende a volte un'altra via e disegna un anello,
   soprattutto a Milano («CIAO» 51% di strade doppie contro il 74% del

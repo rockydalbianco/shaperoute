@@ -4,5 +4,6 @@
   "map_data_unavailable",
   "engine_error",
   "http_error",
-  "ai_unavailable"
+  "ai_unavailable",
+  "image_not_usable"
 ]

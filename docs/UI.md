@@ -136,10 +136,11 @@ punto, ricentra la mappa.
 
 ## Forma e distanza
 
-Sopra, un interruttore **«Shape | Word»** (TASK-057, ADR-0053): il percorso
-disegna una forma del catalogo **oppure** una parola, mai tutte e due, e
+Sopra, un interruttore **«Shape | Word | Image»** (TASK-057, ADR-0053;
+«Image» dal TASK-073): il percorso disegna una forma del catalogo, una
+parola **oppure** il contorno di un'immagine, mai due insieme, e
 l'interruttore mostra quale. Di partenza «Shape». Passare dall'uno all'altro
-non cancella quanto scritto nell'altro campo.
+non cancella quanto scritto o scelto negli altri.
 
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
 scrivendo nel campo. I simboli delle tessere sono caratteri (♥ ★ ◯ ☾ e le
@@ -232,6 +233,55 @@ dai limiti torna dentro, un testo che non è un numero riparte da 1. Il
 tastierino numerico non ha il tasto invio: si chiude toccando «Draw
 route»; quello della forma si chiude con «Fine». Mentre una tastiera è
 aperta la schermata si accorcia perché non copra i campi.
+
+### L'immagine (TASK-073)
+
+Con «Image» due pulsanti: **«Choose picture»**, dalla libreria delle foto,
+e **«Take photo»**, con la fotocamera (`expo-image-picker`). La libreria
+non chiede permessi su iOS: il selettore di sistema consegna solo la foto
+scelta. La fotocamera chiede il suo la prima volta. La foto arriva intera,
+senza ritaglio quadrato: il soggetto vuole sfondo tutto intorno. iOS la
+consegna in JPEG anche se è HEIC; un PNG trasparente perde la trasparenza.
+
+Prima di scegliere, una riga dice cosa funziona: *One subject on a plain
+background works best: a drawing, a logo, an object on a bare table. The
+route follows its outside line.*
+
+La foto va all'API (`POST /image-outlines`, ADR-0069) e mentre il motore
+ricava il contorno la riga dice *Tracing the outline…* (meno di 2 s). Poi
+l'**anteprima**: la foto attenuata, e sopra il contorno in giallo, il
+colore del percorso, perché è quello che il percorso disegnerà. Quello che
+non è diventato linea resta visibile sotto: un pezzo staccato (la
+Sardegna), un dettaglio lisciato. Sotto, *The yellow line is what the route
+will draw. If it does not look like the subject, the route will not
+either: try another picture. Only the largest piece is kept.* e un link
+«Hide the picture» che lascia solo la linea, come sarà sulla mappa: il
+gatto di TASK-072 non si riconosceva già dal contorno, e senza la foto
+sotto si vede. Un'immagine alta resta entro 320 punti d'altezza, così la
+distanza resta a vista. La linea è fatta di rettangoli sottili ruotati,
+senza SVG (`react-native-svg` non è una dipendenza dell'app).
+
+«Draw route» si accende solo con un contorno: il percorso si chiede come
+per una forma, con la distanza del campo sotto, e manda il contorno
+dell'anteprima (`POST /image-route-jobs`). «Choose another» sostituisce la
+foto; annullare il selettore lascia quella di prima. Sotto la distanza del
+risultato si legge «Picture · on roads · target 15 km».
+
+Se l'immagine è rifiutata, al posto dell'anteprima il motivo in parole
+semplici, con sotto il testo del motore:
+
+| `reason` | Messaggio |
+|---|---|
+| `background` | The background is too busy. Use one subject on a plain background, like a drawing on white paper or an object on a bare table. |
+| `no_subject` | Nothing stands out from the background. Use a subject much darker or brighter than what is around it. |
+| `scattered` | The picture shows more than one thing. Use a picture with a single subject. |
+| `edge` | The subject touches the edge of the picture. Leave some background all around it. |
+| `small` | The subject is too small. Get closer, or use a bigger picture. |
+| `jagged` | The outline is too jagged to run on roads. Try a simpler subject. |
+| `format` | Only PNG and JPEG pictures work. Choose another one. |
+| `unreadable` | This picture could not be read. Choose another one. |
+| fotocamera negata | The camera is off for this app. Allow it in Settings, or choose a picture instead. |
+| oltre 10 MB | This picture is too large: 12.3 MB, at most 10 MB. Choose a smaller one. |
 
 ## Chiedere un percorso
 
@@ -343,6 +393,7 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 |---|---|
 | Forma che non ci sta, con una distanza che ci sta (`shape_not_drawable`, ADR-0041) | This shape does not fit the roads here at this distance. It fits at about 4 km. e un pulsante «Try 4 km» che scrive la distanza e ridisegna |
 | Forma che non ci sta, senza distanza (somiglianza bassa, o distanza oltre 21 km) | This shape does not fit the roads here. Try another shape, or another start: e le forme del catalogo come pulsanti |
+| Contorno di un'immagine che non ci sta (TASK-073) | come per la forma, con «This image…»; senza distanza: This outline does not fit the roads here. Try another distance, another start, or a simpler picture. (niente forme da toccare) |
 | Parola che non ci sta (TASK-057) | come per la forma, con «This word…»; senza distanza: This word does not fit the roads here. Try a shorter word, or another start. (niente forme da toccare) |
 | Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
 | Errore del motore (`engine_error`) | The route engine failed. Try again; if it happens again, look at the API log. |
@@ -361,6 +412,9 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 - **Le parole della forma** che la tabella non conosce: vanno all'API sul
   PC, e da lì al modello in Ollama, sullo stesso PC. Non escono dalla rete
   di casa; il log dell'API le scrive, con la forma scelta.
+- **La foto scelta per «Image»** (TASK-073): va all'API sul PC, in rete
+  locale, una volta; l'API non la salva e non la scrive nel log. Poi viaggia
+  solo il contorno. Non va a nessun servizio esterno né all'AI.
 - **Le tile**: il provider vede quale zona si guarda, come con ogni mappa.
 - **La ricerca**: il testo cercato arriva a Photon (komoot).
 - **La libreria**: MapLibre GL JS arriva da unpkg a ogni avvio a freddo.

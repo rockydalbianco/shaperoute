@@ -35,7 +35,9 @@ chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
 fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
 dalla cima, e una scala per lettera vicina a quella delle vicine
 (ADR-0063, dopo TASK-063, che ha `optimizer.py`). Da TASK-071: lettere più
-piccole si leggono peggio; le lettere squadrate sono proposte all'utente.
+piccole si leggono peggio; le lettere squadrate sono in prova con
+TASK-077, e dopo il giudizio l'utente decide se sostituiscono quelle di
+oggi o diventano una scelta nell'app (un task a parte).
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -51,6 +53,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## In lavorazione
 
 Niente per l'app.
+
+- **Programmatore Lettere** — TASK-077: lettere squadrate, un secondo
+  alfabeto (`letters_block.json`, `style="block"`) con la parola girata
+  sulla griglia delle vie, al più 30° (ADR-0072). Lo stile di oggi non
+  cambia. Campioni «CIAO», «BELLO», «MAX» e «HURRY» nelle tre zone, in
+  attesa del giudizio dell'utente (pagina nel task file).
 
 ## Completato
 

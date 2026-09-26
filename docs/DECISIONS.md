@@ -2216,3 +2216,23 @@ riconoscono tutte e tre; il coniglio è `sì` a Trento e `quasi` a Levico,
 la zucca `no` a Trento e `quasi` a Levico, l'albero di Natale `quasi` a
 Trento e `no` a Levico (l'albero di TASK-034/037 era `no` in tutte e due). Quali forme entrano nel catalogo
 lo decide l'utente, con TASK-065 o dopo (ADR-0036).
+
+## ADR-0077 — Un avviso sconosciuto arriva con la prima lettera maiuscola
+**Stato**: Attiva · 2026-09-26 · deciso dall'agente su delega dell'utente
+(TASK-082)
+
+Con ADR-0048 un avviso che l'app non riconosce passa com'è, e i testi del
+motore sono in minuscolo: con «north-east» l'utente vedeva «start moved
+250 m north-east of the requested point…» (Caldonazzo, TASK-076).
+
+**Decisione**: la regola della partenza spostata accetta le direzioni col
+trattino, tutte quelle di `optimizer._compass`; e un testo sconosciuto
+passa ancora com'è, ma con la prima lettera maiuscola.
+
+**Scartata**: cambiare il testo del motore; codici negli avvisi (vedi
+ADR-0048), oggi fuori dal task.
+
+**Motivo**: un avviso nuovo non si perde, e non sembra un errore.
+
+**Conseguenza**: resta vero quello che dice ADR-0048: chi cambia una frase
+del motore la cambia anche in `warnings.test.ts`.

@@ -57,6 +57,10 @@ Niente per l'app.
 
 ## Completato
 
+- **Riparatore** — TASK-082: le direzioni col trattino («north-east»,
+  «south-west») nell'avviso della partenza spostata ora si traducono come
+  «north»; test per le otto direzioni del motore. Un avviso che l'app non
+  conosce arriva con la prima lettera maiuscola (ADR-0077).
 - **Programmatore Lettere** — TASK-078: tre forme candidate come contorni,
   sagoma nel contorno e dettagli ripassati (ADR-0073): testa di coniglio
   (`rabbit_head`), zucca di Halloween (`pumpkin`), albero di Natale con la

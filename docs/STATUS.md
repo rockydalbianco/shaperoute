@@ -57,6 +57,10 @@ Niente per l'app.
 
 ## Completato
 
+- **Riparatore** — TASK-082: le direzioni col trattino («north-east»,
+  «south-west») nell'avviso della partenza spostata ora si traducono come
+  «north»; test per le otto direzioni del motore. Un avviso che l'app non
+  conosce arriva con la prima lettera maiuscola (ADR-0077).
 - **Motore** — TASK-076 (PR aperta, merge del coordinatore): il motore
   prova il cuore anche da 3 nodi a 25–100 m, in parallelo, e tiene il
   migliore; il percorso parte comunque dall'utente, con l'avvicinamento nei

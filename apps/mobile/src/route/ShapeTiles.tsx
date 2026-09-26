@@ -31,7 +31,8 @@ export const SHAPE_SIGNS: Record<Shape, string> = {
 type Props = {
   /** The shape the field names now, shown as chosen; null for none. */
   chosen: Shape | null;
-  onPick: (shape: Shape) => void;
+  /** Gets the shape's name as the runner reads it: "dog head". */
+  onPick: (name: string) => void;
 };
 
 /** The shapes of the catalogue as tiles: touching one writes it in the field. */
@@ -44,7 +45,7 @@ export function ShapeTiles({ chosen, onPick }: Props) {
           <Pressable
             key={shape}
             style={[styles.tile, selected && styles.selected]}
-            onPress={() => onPick(shape)}
+            onPress={() => onPick(shapeName(shape))}
             accessibilityRole="button"
             accessibilityLabel={shapeName(shape)}
             accessibilityState={{ selected }}

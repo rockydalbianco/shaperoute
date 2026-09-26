@@ -112,6 +112,22 @@ docs/tasks/TASK-065.md
   `apps/mobile/src/navigation/` (TASK-074), `words.py`, `letters*.json`,
   `optimizer.py`.
 
+## Verifica: le forme del catalogo danno i percorsi giudicati (2026-09-26)
+
+`plan_route` con `RouteRequest(shape=…, distance_m=15000)` dalle partenze
+di `docs/TESTING.md`, con i grafi di zona in memoria come l'API
+(`ZoneGraphs`, cache `D:\shaperoute-data\cache`, una zona alla volta).
+Punti confrontati con 7 decimali, come nel GPX. Somiglianza · km · tempo.
+
+| Forma | Trento | Levico | Milano |
+|---|---|---|---|
+| `butterfly` | uguale · 0,93 · 14,1 · 24 s | uguale · 0,84 · 15,0 · 20 s | uguale · 0,97 · 15,8 · 34 s |
+| `snail` | uguale · 0,94 · 13,5 · 12 s | uguale · 0,94 · 15,8 · 10 s | uguale · 1,00 · 15,2 · 27 s |
+| `dog_head` | uguale · 0,97 · 15,6 · 17 s | uguale · 0,95 · 15,4 · 4 s | uguale · 0,99 · 16,4 · 28 s |
+
+Tutti e nove punto per punto uguali ai campioni di TASK-064 e TASK-068
+(`samples/`). Lo script è fuori dal repository (scratchpad della sessione).
+
 ## Esito
 
 *(a fine task)*

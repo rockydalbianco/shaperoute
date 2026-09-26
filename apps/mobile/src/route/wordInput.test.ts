@@ -62,7 +62,7 @@ test("a distance not valid is left to the distance field", () => {
   expect(checkWord("ciao", null)).toEqual({ ok: true, word: "CIAO" });
 });
 
-test("the route's name is the word, quoted, or the shape", () => {
+test("the route's name is the word, quoted, or the shape as read", () => {
   const base = {
     start: [46, 11] as [number, number],
     distance_m: 12_000,
@@ -70,4 +70,7 @@ test("the route's name is the word, quoted, or the shape", () => {
   };
   expect(routeName({ ...base, word: "CIAO" } satisfies RouteRequest)).toBe("“CIAO”");
   expect(routeName({ ...base, shape: "heart" } satisfies RouteRequest)).toBe("heart");
+  expect(routeName({ ...base, shape: "dog_head" } satisfies RouteRequest)).toBe(
+    "dog head",
+  );
 });

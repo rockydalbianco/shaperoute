@@ -62,12 +62,16 @@ const WORD_TO_SHAPE = new Map<string, Shape>(
 
 const ARTICLES = new Set(["a", "an", "the", "un", "uno", "una", "il", "lo", "la"]);
 
-/** Lower case, no accents, curly apostrophes made straight, single spaces. */
+/**
+ * Lower case, no accents, curly apostrophes made straight, underscores as
+ * spaces (so the contract's "dog_head" reads too), single spaces.
+ */
 function normalize(text: string): string {
   return text
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .replace(/[‘’]/g, "'")
+    .replace(/_/g, " ")
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();

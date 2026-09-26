@@ -38,6 +38,7 @@ test.each([
   ["dog head", "dog_head"],
   ["dog’s head", "dog_head"],
   ["testa di cane", "dog_head"],
+  ["dog_head", "dog_head"],
 ])("%j is a %s", (text, shape) => {
   expect(toShape(text)).toBe(shape);
 });

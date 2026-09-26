@@ -147,10 +147,43 @@ sessione).
 
 ## Dove siamo
 
-Codice, test e documenti fatti; da fare: controlli completi, PR, prova
-sull'iPhone con l'utente, misura dell'AI con qwen3:4b (dopo la prova, a RAM
-libera: ~650 MB liberi oggi, il modello ne chiede 3,2 GB), `STATUS.md`,
-«TASK-065 fatto» al coordinatore.
+Codice, test e documenti fatti, PR #95 aperta (legata alla sessione).
+Worktree `D:\shaperoute-TASK-065` con il suo `node_modules`: **resta** fino
+al merge, poi va rimosso. Nessun `.venv` nel worktree: si usa quello del
+checkout principale con `PYTHONPATH` sui pacchetti del worktree.
+
+Da fare: prova sull'iPhone con l'utente (passi sotto), misura dell'AI con
+qwen3:4b (dopo la prova, a RAM libera: ~650 MB liberi oggi, il modello ne
+chiede 3,2 GB), `STATUS.md`, «TASK-065 fatto» al coordinatore.
+
+## Prova sull'iPhone: i passi
+
+Windows PowerShell:
+
+1. Fermare API ed Expo che girano (Ctrl+C nelle loro finestre).
+2. Prima finestra, l'API:
+
+   ```
+   cd D:\shaperoute-TASK-065
+   $env:PYTHONPATH = "D:\shaperoute-TASK-065\services\api;D:\shaperoute-TASK-065\services\route-engine;D:\shaperoute-TASK-065\services\ai"
+   C:\Users\ricky\PycharmProjects\shaperoute\services\api\.venv\Scripts\python.exe -m shaperoute_api --lan --cache-dir D:\shaperoute-data\cache
+   ```
+
+3. Seconda finestra, Expo: `cd D:\shaperoute-TASK-065`, poi
+   `npm.cmd run mobile`; QR con la fotocamera dell'iPhone, Expo Go.
+4. Casi:
+   - **Tessere**: undici, l'ultima riga con tre. 🦋 scrive «butterfly»,
+     🐌 «snail», 🐶 «dog head», 🐰 «rabbit head», senza «→» sotto il campo.
+   - **Parole**: «lumaca» mostra «→ snail», «cane» «→ dog head»,
+     «coniglio» «→ rabbit head», «farfalla» «→ butterfly».
+   - **Percorso**: start «Another place», Trento o Milano (zone in cache),
+     «cane» 15 km, «Draw route»: l'attesa dice «Drawing a 15 km dog
+     head…», poi il percorso sulla mappa. Se c'è tempo, anche un'altra forma
+     nuova.
+   - Facoltativo, l'AI: «Snoopy» e «Fine». Con poca RAM il modello si carica
+     alla prima parola (fino a un minuto); deve dare «→ dog head».
+
+Da raccogliere per ogni caso: va / non va, con quello che si vede.
 
 ## Esito
 

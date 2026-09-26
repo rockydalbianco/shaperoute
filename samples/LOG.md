@@ -276,8 +276,8 @@ chiude ADR-0010.
 | 2026-09-26 | TASK-076_heart_10km_caldonazzo_nearby_v1.gpx | caldonazzo | 0.82 | 9.4 / 10.0 km | quasi | migliore partenza vicina, 93 m lungo le strade (incluse andata e ritorno); non scelto |
 | 2026-09-26 | TASK-076_heart_10km_trento_start_v1.gpx | trento | 0.86 | 8.3 / 10.0 km | sì | dalla partenza (46.0671, 11.1214), come oggi |
 | 2026-09-26 | TASK-076_heart_10km_trento_nearby_v1.gpx | trento | 0.88 | 8.7 / 10.0 km | sì | partenza vicina a 65 m, scelta (punteggio 0,871 contro 0,833); un'altra a 97 m fa 0,89 ma più corta |
-| 2026-09-26 | TASK-076_heart_15km_trento_start_v1.gpx | trento | 0.90 | 14.5 / 15.0 km | sì | dalla partenza, come oggi: il motore la sposta di 1 km a nord-est («Start here») |
-| 2026-09-26 | TASK-076_heart_15km_trento_nearby_v1.gpx | trento | 0.88 | 14.6 / 15.0 km | quasi | partenza vicina a 57 m, scelta: parte dalla posizione dell'utente invece che a 1 km |
+| 2026-09-26 | TASK-076_heart_15km_trento_start_v1.gpx | trento | 0.90 | 14.5 / 15.0 km | sì | dalla partenza, come oggi: il motore la sposta di 1 km a nord-est («Start here»); scelto dalla regola finale |
+| 2026-09-26 | TASK-076_heart_15km_trento_nearby_v1.gpx | trento | 0.88 | 14.6 / 15.0 km | quasi | partenza vicina a 57 m; scelta dalla prima regola, non più dalla finale («vince il cuore migliore», ADR-0071) |
 | 2026-09-26 | TASK-076_heart_10km_milano_start_v1.gpx | milano | 0.99 | 10.1 / 10.0 km | sì | piazza Duomo; partenze vicine non provate (55 676 nodi, oltre 30 000): solo confronto |
 | 2026-09-26 | TASK-071_ciao_15km_trento_v1.gpx | trento | 0.82 | 15.6 / 15.0 km | come TASK-050: sì | «prima» di TASK-071: il codice di `main`, con distanza, somiglianza, scale e gallerie uguali a TASK-050_ciao_15km_trento_v1.gpx; 72% del percorso su strade corse due volte, 74% nel disegno; 731 m corsi una volta accanto a un tratto ripassato |
 | 2026-09-26 | TASK-071_ciao_15km_levico_v1.gpx | levico | 0.87 | 16.3 / 15.0 km | come TASK-050: sì | «prima», come TASK-050; strade doppie 80% (disegno 74%); 540 m una volta accanto a un tratto ripassato |

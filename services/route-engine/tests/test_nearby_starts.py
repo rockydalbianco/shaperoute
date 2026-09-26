@@ -17,7 +17,7 @@ from route_engine.geo import LatLon, haversine_m, local_to_latlon, path_length_m
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.nearby_starts import (
     MEMORY_RESERVE_MB,
-    SWITCH_MARGIN,
+    TIE_MARGIN,
     WORKER_BASE_MB,
     WORKER_PER_MB,
     OneGraph,
@@ -183,15 +183,36 @@ def test_with_approach_refuses_a_way_to_elsewhere() -> None:
         with_approach(graph, plan, [(0, 0), (1, 0)])
 
 
-def _tried(*scores: float | None) -> list[Tried]:
-    return [Tried(ORIGIN, 0.0, None, s, 1.0) for s in scores]
+def _tried(*scores: float | None, approach_m: float = 60.0) -> list[Tried]:
+    """The start (no approach), then nearby starts `approach_m` away."""
+    return [
+        Tried(ORIGIN, 0.0 if i == 0 else approach_m, None, s, 1.0)
+        for i, s in enumerate(scores)
+    ]
 
 
-def test_choose_keeps_the_start_unless_a_nearby_one_is_clearly_better() -> None:
-    assert _choose(_tried(0.85, 0.85 + SWITCH_MARGIN / 2)) == 0
-    assert _choose(_tried(0.85, 0.85 + SWITCH_MARGIN, 0.90)) == 2
+def _moved_start(similarity: float, offset_m: float) -> Tried:
+    """The start's plan, whose search moved it `offset_m`."""
+    graph = _grid()
+    plan = _plan(graph, [(0, 0), (1, 0), (1, 1), (0, 1), (0, 0)], similarity, offset_m)
+    return Tried(ORIGIN, 0.0, plan, similarity, 1.0)
+
+
+def test_choose_takes_the_best_shape_and_the_nearest_of_equals() -> None:
+    assert _choose(_tried(0.85, 0.85 + TIE_MARGIN / 2)) == 0
+    assert _choose(_tried(0.85, 0.85 + TIE_MARGIN * 1.5)) == 1
+    assert _choose(_tried(0.85, 0.87, 0.90)) == 2
     assert _choose(_tried(None, 0.70)) == 1
     assert _choose(_tried(None, None)) is None
+
+
+def test_a_better_shape_wins_even_where_the_search_moved_the_start() -> None:
+    """Trento, 15 km (ADR-0071, the user's choice): the heart 1 km away
+    judged `yes` beats the one from the door judged `almost`."""
+    nearby = _tried(None, 0.88, approach_m=57.0)[1]
+    assert _choose([_moved_start(0.90, 1000.0), nearby]) == 0
+    # Nearly as good: the one that begins nearer the user wins.
+    assert _choose([_moved_start(0.89, 1000.0), nearby]) == 1
 
 
 def test_score_counts_distance_only_beyond_the_tolerance() -> None:

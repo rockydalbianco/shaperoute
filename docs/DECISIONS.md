@@ -2176,8 +2176,9 @@ motore prova alcune partenze vicine e tiene il percorso migliore», con
 l'avvicinamento nel percorso); quante partenze, come sceglierle e come
 tenere il tempo deciso dall'agente su delega dell'utente (TASK-076);
 giudizio dell'utente: Caldonazzo partenza `sì`, vicina `quasi`; Trento 10 km
-entrambe `sì`; Trento 15 km partenza spostata `sì`, vicina scelta `quasi`;
-Milano `sì`
+entrambe `sì`; Trento 15 km partenza spostata `sì`, vicina `quasi`; Milano
+`sì`. Scelta dell'utente dopo il giudizio (2026-09-26): «vince il cuore
+migliore», anche con la partenza spostata dalla ricerca
 
 **Contesto**: a Caldonazzo 25–100 m di partenza portano il cuore da 10 km
 da 0,73 a 0,92 (TASK-075). Il motore però non va toccato: `optimizer.py` è
@@ -2214,18 +2215,28 @@ di TASK-071 mentre si scrive questo.
   è già a 0,99); e solo tanti processi quanti entrano nella memoria libera,
   lasciandone 1 GB alla partenza dell'utente (un processo ≈ 100 MB + 10
   volte il grafo pickled). Senza memoria il percorso è quello di oggi.
-- **Quale si tiene**: la somiglianza, meno la distanza oltre il 10% dal
-  target e lo spostamento della partenza, pesati come in `search`. Una
-  vicina vince solo con 0,02 in più. Il primo criterio provato, il costo di
-  `search` con la distanza piena, sceglieva a Caldonazzo un cuore da 0,82 a
-  9,4 km al posto di quello da 0,86 a 11,8 km: il tipo che l'utente aveva
-  giudicato `no`.
+- **Quale si tiene** (scelta dell'utente): il cuore migliore fra tutti i
+  candidati, cioè la partenza dell'utente, le vicine e la partenza che la
+  ricerca ha spostato («Start here», fino a 1 km come prima). Punteggio: la
+  somiglianza, meno la distanza oltre il 10% dal target pesata come in
+  `search`; dove comincia il percorso non conta. Fra i candidati entro
+  0,01 dal migliore vince quello che comincia più vicino all'utente
+  (avvicinamento o spostamento), poi la partenza stessa. Soglia decisa
+  dall'agente: a Trento 15 km l'occhio ha visto 0,02 (0,90 `sì`, 0,88
+  `quasi`), in TASK-075 non sempre meno (0,85 `sì` e `quasi`).
+  Scartati: il costo di `search` con la distanza piena (a Caldonazzo
+  sceglieva un cuore da 0,82 a 9,4 km al posto di quello da 0,86 a 11,8 km,
+  il tipo che l'utente aveva giudicato `no`); e la prima versione, che
+  pesava lo spostamento come la ricerca e a Trento 15 km preferiva la
+  vicina `quasi` al cuore `sì` a 1 km.
 - **L'avvicinamento**: dal nodo della partenza dell'utente al nodo vicino
   per la strada più corta, e ritorno per la stessa; nei metri, nel GPX e
   nei nodi (le indicazioni lo contano). La somiglianza resta quella della
   forma.
-- **Dalla CLI**: `--nearby N`. L'API la usa dopo TASK-073 (`app.py`,
-  `jobs.py`), con `NearbyPlan.graph` per le indicazioni.
+- **Nell'API**: `plan_request` (`images.py`) chiama `plan_nearby` al posto
+  di `plan_route`, per le forme e le parole; le immagini come prima. Le
+  indicazioni non cambiano: quando vince una vicina il grafo è quello della
+  partenza, il primo caricato. Dalla CLI: `--nearby N`.
 
 **Misure** (cuore, zona già in memoria; tempi da 2–3 ripetizioni, molto
 variabili: il PC ha 7 GB e durante le misure 0,4–2 GB liberi, con altri
@@ -2235,7 +2246,7 @@ agenti al lavoro):
 |---|---|---|---|
 | Caldonazzo 10 km | 8–19 s | 11–20 s | 0,86 → 0,86 (vicine 0,82, 0,79, 0,77) |
 | Trento 10 km | 29–40 s | 40–42 s | 0,86 → 0,88 (65 m) |
-| Trento 15 km | 34–39 s | 43–69 s | 0,90 spostata di 1 km → 0,88 dalla partenza (57 m) |
+| Trento 15 km | 34–39 s | 43–69 s | 0,90 spostata di 1 km, tenuta (vicina migliore 0,88) |
 | Milano 10 km | 15–18 s | 25–33 s prima del limite sui nodi, ora non provate | 0,99 |
 | Milano 15 km | 25–80 s | non provate | 1,00 |
 
@@ -2244,18 +2255,22 @@ Milano 15 km `MemoryError`). Nell'ultima serie di misure, con meno di
 1,5 GB liberi, la regola della memoria ha lasciato fuori le vicine in ogni
 caso: tempi e percorsi quelli di oggi.
 
+Caldonazzo, 25 posizioni entro ±100 m da Via della Villa, 10 km (le
+posizioni del GPS degli screenshot dell'utente): dalla sola partenza
+0,73–0,96, media 0,834, 7 sotto 0,80; con le vicine e la regola sopra
+0,77–0,96, media 0,847, 4 sotto 0,80. I 7 cuori da 0,90 in su restano 7, e
+vengono tutti dalla partenza spostata di 1 km.
+
 **Conseguenza**: dove la rete è rada e la memoria c'è, il cuore dipende
-meno dalla partenza e un cuore «spostato» può tornare a partire
-dall'utente; dove la rete è fitta non cambia nulla. Il tempo cresce di
+meno dalla partenza: i casi peggiori migliorano, i migliori restano quelli
+che la ricerca trova spostandosi. Dove la rete è fitta non cambia nulla. Il tempo cresce di
 qualche secondo nei paesi e di 5–15 s a Trento, fuori dai 30 s di
 PRODUCT.md dove già lo si era. Su questo PC la memoria decide spesso lei:
 più RAM libera (chiudere applicazioni) lascia provare le vicine. La
-somiglianza non segue sempre l'occhio (TASK-075). Giudizio dell'utente: la
-scelta è giusta a Caldonazzo e a Trento 10 km; a Trento 15 km il motore ha
-preferito la vicina `quasi` alla partenza `sì` spostata di 1 km, perché
-lo spostamento costa quanto nella ricerca (0,1 a 1 km). Se un cuore
-migliore a 1 km valga più di uno quasi dalla porta di casa è una scelta di
-prodotto, aperta (task file).
+somiglianza non segue sempre l'occhio (TASK-075): con la regola dell'utente
+la scelta coincide con il giudizio in tutti e quattro i casi giudicati
+(a Trento 10 km la vicina, 0,88, contro la partenza, 0,86: tutte e due
+`sì`).
 
 ## ADR-0073 — Coniglio, zucca e albero di Natale: candidate come la testa di cane
 **Stato**: Attiva · 2026-09-26 · chiesto dall'utente (spunti da gpsart.info:

@@ -466,11 +466,15 @@ da alcuni nodi della rete vicini e tiene il percorso migliore:
    anelli a 250–500 m né seconda ricerca, perché un percorso che comincia
    altrove andrebbe scartato comunque.
 3. **Quanto si aspetta**: finita la partenza dell'utente, le vicine hanno
-   al più altri 8 s, e mai oltre 25 s dalla richiesta; quelle ancora in
-   corso si lasciano.
-4. **Quale si tiene**: la somiglianza, meno la distanza oltre il 10% dal
-   target e lo spostamento della partenza, pesati come nella ricerca. Una
-   partenza vicina vince solo se supera quella dell'utente di 0,02.
+   al più altri 8 s, e mai oltre 25 s dalla richiesta; nessuno se il suo
+   percorso è già buono. Quelle ancora in corso si lasciano. Non si provano
+   su grafi oltre 30 000 nodi (Milano) né in più processi di quanti ne
+   entrano nella memoria libera.
+4. **Quale si tiene** (scelta dell'utente): il cuore migliore fra tutti,
+   anche quello che la ricerca ha spostato («Start here»). Conta la
+   somiglianza, meno la distanza oltre il 10% dal target; fra i candidati
+   entro 0,01 dal migliore vince quello che comincia più vicino
+   all'utente.
 5. **L'avvicinamento**: se vince una partenza vicina, il percorso comincia
    dal nodo della partenza dell'utente, va al nodo vicino per la strada più
    corta, disegna la forma e torna indietro per la stessa strada. I metri
@@ -478,7 +482,8 @@ da alcuni nodi della rete vicini e tiene il percorso migliore:
    resta quella della forma.
 
 Dalla CLI: `--nearby N` (N partenze vicine; senza, solo la partenza come
-prima). L'API la userà dopo TASK-073.
+prima). L'API la usa per le forme e le parole (`plan_request`), non per
+le immagini.
 
 ### Lettere che si spostano (TASK-050)
 

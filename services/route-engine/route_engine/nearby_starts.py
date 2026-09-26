@@ -53,7 +53,6 @@ from route_engine.optimizer import (
     START_OFFSET_M,
     STROKE_SPARE,
     W_DISTANCE,
-    W_OFFSET,
     W_SHAPE,
     GraphLoader,
     Plan,
@@ -86,10 +85,13 @@ APPROACH_MAX_M = 150.0
 # not made slower still (PRODUCT.md: 30 s at most).
 NEARBY_GRACE_S = 8.0
 NEARBY_BUDGET_S = 25.0
-# A nearby start must score this much more than the start itself: it adds
-# an approach, and smaller gaps in similarity the eye does not see
-# (TASK-075: 0.85 was judged both `yes` and `almost`).
-SWITCH_MARGIN = 0.02
+# The best shape wins, wherever it starts: the user's start, a nearby one,
+# or where the search moved it ("Start here"; the user's choice, ADR-0071).
+# Plans within this much of the best score count as equal, and of those the
+# one that begins nearest the user wins. The eye saw 0.02 (TASK-076,
+# Trento 15 km: 0.90 `yes`, 0.88 `almost`) but not always less (TASK-075:
+# 0.85 judged both `yes` and `almost`).
+TIE_MARGIN = 0.01
 # No nearby starts on a graph this big: the search from one node alone
 # outlasts NEARBY_BUDGET_S there (84 000 nodes at Milan, 15 km: 35 s), so it
 # would only slow the start's own plan. Measured on the PC of the API.
@@ -376,17 +378,14 @@ def with_approach(graph: Graph, plan: Plan, approach: list[Any]) -> Plan:
 
 def score(plan: Plan, distance_m: float) -> float:
     """How good a finished plan is, higher is better: its similarity, less
-    the distance beyond DISTANCE_TOLERANCE of `distance_m` and the start the
-    search moved, weighed as the search weighs them against the shape
-    (optimizer.search). Within the tolerance the shape alone counts: the
-    user judges the drawing, and TASK-075's cuts closest to 10 km were not
-    the ones judged best."""
+    the distance beyond DISTANCE_TOLERANCE of `distance_m`, weighed as the
+    search weighs it against the shape (optimizer.search). Within the
+    tolerance the shape alone counts: the user judges the drawing, and
+    TASK-075's cuts closest to 10 km were not the ones judged best. Where
+    the route starts does not count here (`_choose`)."""
     ratio = plan.result.distance_m / distance_m
-    offset = 0.0 if plan.search is None else plan.search.best.offset_m
-    return (
-        plan.result.similarity
-        - W_DISTANCE / W_SHAPE * max(0.0, abs(ratio - 1) - DISTANCE_TOLERANCE)
-        - W_OFFSET / W_SHAPE * offset / START_OFFSET_M
+    return plan.result.similarity - W_DISTANCE / W_SHAPE * max(
+        0.0, abs(ratio - 1) - DISTANCE_TOLERANCE
     )
 
 
@@ -484,6 +483,15 @@ class Tried:
     seconds: float | None
     note: str = ""
     error: ShapeNotDrawableError | None = None
+
+    @property
+    def away_m(self) -> float:
+        """How far from the user the route begins: the approach of a nearby
+        start, or how far the search moved the start."""
+        moved = 0.0
+        if self.plan is not None and self.plan.search is not None:
+            moved = self.plan.search.best.offset_m
+        return self.approach_m + moved
 
 
 @dataclass
@@ -592,18 +600,14 @@ def plan_nearby(
 
 
 def _choose(tried: list[Tried]) -> int | None:
-    """The start with the best score; a nearby one only when it beats the
-    start itself by SWITCH_MARGIN."""
+    """The best shape; of those within TIE_MARGIN of it, the one that
+    begins nearest the user, then the first tried."""
     scored = [i for i, t in enumerate(tried) if t.score is not None]
     if not scored:
         return None
-    best = max(scored, key=lambda i: (tried[i].score, -i))
-    first = tried[0].score
-    if best != 0 and first is not None:
-        assert tried[best].score is not None
-        if tried[best].score < first + SWITCH_MARGIN:  # type: ignore[operator]
-            return 0
-    return best
+    top = max(tried[i].score for i in scored)  # type: ignore[type-var]
+    equal = [i for i in scored if tried[i].score >= top - TIE_MARGIN]  # type: ignore[operator]
+    return min(equal, key=lambda i: (tried[i].away_m, i))
 
 
 def _start_tried(

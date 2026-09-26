@@ -6,12 +6,19 @@ import apiError from "../fixtures/api-error.json" with { type: "json" };
 import contract from "../fixtures/contract.json" with { type: "json" };
 import directions from "../fixtures/directions.json" with { type: "json" };
 import gpxRequest from "../fixtures/gpx-request.json" with { type: "json" };
+import imageError from "../fixtures/image-error.json" with { type: "json" };
+import imageLimits from "../fixtures/image-limits.json" with { type: "json" };
+import imageOutlineRequest from "../fixtures/image-outline-request.json" with { type: "json" };
+import imageOutline from "../fixtures/image-outline.json" with { type: "json" };
+import imageReasons from "../fixtures/image-reasons.json" with { type: "json" };
+import imageRouteRequest from "../fixtures/image-route-request.json" with { type: "json" };
 import jobDone from "../fixtures/route-job-done.json" with { type: "json" };
 import jobFailed from "../fixtures/route-job-failed.json" with { type: "json" };
 import jobRunning from "../fixtures/route-job-running.json" with { type: "json" };
 import jobStatuses from "../fixtures/route-job-statuses.json" with { type: "json" };
 import wordRequest from "../fixtures/route-request-word.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
+import imageResult from "../fixtures/route-result-image.json" with { type: "json" };
 import wordResult from "../fixtures/route-result-word.json" with { type: "json" };
 import result from "../fixtures/route-result.json" with { type: "json" };
 import shapeReadingLimits from "../fixtures/shape-reading-limits.json" with { type: "json" };
@@ -22,10 +29,13 @@ import {
   ACTIVITIES,
   API_ERROR_CODES,
   GROUP_M,
+  IMAGE_REASONS,
   JOB_STATUSES,
   LETTER_DISTANCE_M,
   LETTERS,
   MAX_DISTANCE_M,
+  MAX_IMAGE_BYTES,
+  MAX_OUTLINE_POINTS,
   MAX_SHAPE_TEXT_LENGTH,
   MAX_WORD_LETTERS,
   MIN_DISTANCE_M,
@@ -34,6 +44,9 @@ import {
   type ApiError,
   type Direction,
   type GpxRequest,
+  type ImageOutline,
+  type ImageOutlineRequest,
+  type ImageRouteRequest,
   type RouteJob,
   type RouteRequest,
   type RouteResult,
@@ -71,6 +84,19 @@ const shapeReadingFields: Same<
 > &
   Same<keyof typeof shapeReading, keyof ShapeReading> &
   Same<keyof typeof shapeReadingNone, keyof ShapeReading> = true;
+
+const imageFields: Same<keyof typeof imageOutlineRequest, keyof ImageOutlineRequest> &
+  Same<keyof typeof imageOutline, keyof ImageOutline> &
+  Same<keyof typeof imageRouteRequest, keyof ImageRouteRequest> &
+  Same<keyof typeof imageResult, keyof RouteResult> &
+  Same<keyof typeof imageError.error, keyof ApiError["error"]> = true;
+
+// Checked by `tsc` too: the fixtures are values of the types.
+const typedImage: [ImageOutline, ImageRouteRequest, ApiError] = [
+  imageOutline as ImageOutline,
+  imageRouteRequest as ImageRouteRequest,
+  imageError as ApiError,
+];
 
 const isShape = (value: string): boolean =>
   (SHAPES as readonly string[]).includes(value);
@@ -180,4 +206,29 @@ test("only a direction without a street of its own runs along one", () => {
   // An API older than TASK-060 leaves it out: still a Direction (tsc).
   const older: Omit<Direction, "along"> extends Direction ? true : false = true;
   assert.ok(older);
+});
+
+test("an image outline, its route request and its refusal", () => {
+  assert.ok(imageFields);
+  const [outline, request, error] = typedImage;
+  assert.deepEqual([...IMAGE_REASONS], imageReasons);
+  assert.equal(MAX_IMAGE_BYTES, imageLimits.max_image_bytes);
+  assert.equal(MAX_OUTLINE_POINTS, imageLimits.max_outline_points);
+  assert.ok(imageOutlineRequest.image.length > 0);
+  // The route request sends the outline back unchanged.
+  assert.deepEqual(request.outline, outline.points);
+  assert.deepEqual(outline.points.at(0), outline.points.at(-1));
+  assert.equal(outline.points.length, outline.image_points.length);
+  assert.ok(outline.points.flat().every((v) => Math.abs(v) <= 1));
+  assert.ok(outline.image_points.flat().every((v) => v >= 0 && v <= 1));
+  assert.ok(outline.points.length - 1 <= MAX_OUTLINE_POINTS);
+  assert.equal(error.error.code, "image_not_usable");
+  assert.ok((IMAGE_REASONS as readonly unknown[]).includes(error.error.reason));
+  assert.equal(apiError.error.reason, null);
+});
+
+test("an image route has neither shape nor word", () => {
+  assert.equal(imageResult.shape, null);
+  assert.equal(imageResult.word, null);
+  assert.deepEqual(imageResult.points.at(0), imageResult.points.at(-1));
 });

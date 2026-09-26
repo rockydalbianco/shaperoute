@@ -1,9 +1,15 @@
-import type { JobStatus, RouteRequest } from "@shaperoute/shared-types";
+import type {
+  ImageRouteRequest,
+  JobStatus,
+  RouteRequest,
+} from "@shaperoute/shared-types";
 import apiError from "@shaperoute/shared-types/fixtures/api-error.json";
 import request from "@shaperoute/shared-types/fixtures/route-request.json";
 import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import jobFailed from "@shaperoute/shared-types/fixtures/route-job-failed.json";
 import result from "@shaperoute/shared-types/fixtures/route-result.json";
+import imageRequest from "@shaperoute/shared-types/fixtures/image-route-request.json";
+import imageResult from "@shaperoute/shared-types/fixtures/route-result-image.json";
 import wordResult from "@shaperoute/shared-types/fixtures/route-result-word.json";
 
 import {
@@ -208,4 +214,23 @@ test("the route guard checks directions and the shape or word", () => {
   );
   expect(isRouteResult({ ...wordResult, word: undefined })).toBe(false);
   expect(isRouteResult({ ...result, word: "CIAO" })).toBe(false);
+});
+
+test("an image's outline is posted to /image-route-jobs, and read as any job", async () => {
+  const done = { ...jobDone, result: imageResult };
+  const { fetchFn, calls } = api(
+    { status: 202, body: job("queued") },
+    { status: 200, body: done },
+  );
+  const pending = requestRoute(URL, imageRequest as ImageRouteRequest, { fetchFn });
+  await jest.advanceTimersByTimeAsync(POLL_MS);
+  expect(await pending).toEqual({ kind: "route", result: imageResult });
+  expect(calls("POST")[0][0]).toBe(`${URL}/image-route-jobs`);
+  expect(calls("POST")[0][1]?.body).toBe(JSON.stringify(imageRequest));
+  expect(calls("GET")[0][0]).toBe(JOB_URL);
+});
+
+test("an image route has neither shape nor word, and says so with nulls", () => {
+  expect(isRouteResult(imageResult)).toBe(true);
+  expect(isRouteResult({ ...imageResult, word: undefined })).toBe(false);
 });

@@ -21,7 +21,7 @@ import type { Place } from "./src/places/photon";
 import { toDistanceM } from "./src/route/distance";
 import type { ChoiceKind } from "./src/route/problems";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
-import { toShape } from "./src/route/shapeWords";
+import { shapeName, toShape } from "./src/route/shapeWords";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
 import { useImageOutline } from "./src/route/useImageOutline";
 import {
@@ -144,7 +144,7 @@ function Sgrava() {
   }
 
   function onPickShape(picked: Shape) {
-    setShapeText(picked);
+    setShapeText(shapeName(picked));
     setScreen("choose");
   }
 

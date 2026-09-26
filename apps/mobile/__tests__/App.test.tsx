@@ -661,6 +661,22 @@ test("a shape picked after a failure goes back to the choice", async () => {
   jest.useRealTimers();
 });
 
+test("a shape picked after a failure is written as read: dog head", async () => {
+  jest.useFakeTimers();
+  apiAnswers({
+    ...jobFailed,
+    error: { ...jobFailed.error, suggested_distance_m: null },
+  });
+  await atTrento();
+  await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
+  await fireEvent.press(screen.getByRole("button", { name: "dog head" }));
+
+  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("dog head");
+  expect(screen.getByRole("button", { name: "Draw route" })).toBeEnabled();
+  jest.useRealTimers();
+});
+
 test("− and + change the distance by a km, between 1 and 21", async () => {
   requestPermission.mockReturnValue(new Promise(() => {}));
   await render(<App />);
@@ -682,6 +698,23 @@ test("touching a tile chooses that shape", async () => {
   ).toBeOnTheScreen();
   expect(
     screen.getByRole("button", { name: "heart", selected: false }),
+  ).toBeOnTheScreen();
+});
+
+test("the dog's head tile writes the name the runner reads", async () => {
+  requestPermission.mockReturnValue(new Promise(() => {}));
+  await render(<App />);
+  await fireEvent.press(screen.getByRole("button", { name: "dog head" }));
+  expect(screen.getByLabelText("Shape")).toHaveDisplayValue("dog head");
+  expect(
+    screen.getByRole("button", { name: "dog head", selected: true }),
+  ).toBeOnTheScreen();
+  expect(screen.queryByText("→ dog head")).not.toBeOnTheScreen();
+
+  await fireEvent.changeText(screen.getByLabelText("Shape"), "cane");
+  expect(screen.getByText("→ dog head")).toBeOnTheScreen();
+  expect(
+    screen.getByRole("button", { name: "dog head", selected: true }),
   ).toBeOnTheScreen();
 });
 

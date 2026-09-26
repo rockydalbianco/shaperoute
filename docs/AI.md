@@ -142,18 +142,18 @@ Due liste di parole e frasi, in italiano e in inglese, con le risposte
 accettate: due per quelle ambigue («stella marina»: stella o pesce), `null`
 per quelle che non devono dare una forma.
 
-- **Messa a punto**, `services/ai/tests/phrases.json`: 61 voci, 10 senza
+- **Messa a punto**, `services/ai/tests/phrases.json`: 64 voci, 10 senza
   forma. Su questa si è corretta la domanda al modello.
-- **Controllo**, `phrases-holdout.json`: 40 voci nuove, 10 senza forma,
+- **Controllo**, `phrases-holdout.json`: 42 voci nuove, 10 senza forma,
   scritte dopo e misurate una volta per modello. Non serve mai a cambiare
   la domanda: è il numero onesto.
 
-Con farfalla, lumaca e testa di cane (TASK-065) «cane» e «farfalla», che
-valevano «nessuna forma», sono uscite: ora le legge la tabella. Sono
-entrate 11 voci per le tre forme nella messa a punto (fra queste «Snoopy»,
-che valeva nessuna forma e ora accetta anche la testa di cane) e 7 nel
-controllo, scritte prima di misurarle; «ragno» e «ape» sono voci nuove
-senza forma.
+Con farfalla, lumaca, testa di cane e testa di coniglio (TASK-065) «cane»
+e «farfalla», che valevano «nessuna forma», sono uscite: ora le legge la
+tabella. Sono entrate 14 voci per le quattro forme nella messa a punto
+(fra queste «Snoopy», che valeva nessuna forma e ora accetta anche la testa
+di cane) e 9 nel controllo, scritte prima di misurarle; «ragno» e «ape»
+sono voci nuove senza forma.
 
 Un test dell'API controlla che le due liste usino il catalogo e non abbiano
 voci in comune. Risultati del 2026-09-24, con la domanda finale e le

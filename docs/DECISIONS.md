@@ -2056,8 +2056,9 @@ la semplificazione toglie troppo.
 ## ADR-0073 — Coniglio, zucca e albero di Natale: candidate come la testa di cane
 **Stato**: Attiva · 2026-09-26 · chiesto dall'utente (spunti da gpsart.info:
 animali «solo la testa», temi stagionali, sagome semplici); il disegno
-deciso dall'agente su delega dell'utente (TASK-078); giudizio dell'utente
-in attesa
+deciso dall'agente su delega dell'utente (TASK-078); giudizio dell'utente:
+tutte e tre `sì` a Milano; albero di Natale `quasi` a Trento e Levico,
+coniglio `quasi` a Trento, il resto `no`
 
 La testa di cane (ADR-0065) è `sì` in tutte e tre le zone, il cane intero
 solo a Milano; il gatto da immagine (TASK-072) non si riconosceva già come
@@ -2093,5 +2094,8 @@ la stella piccola l'albero di Trento perdeva i piani.
 **Conseguenza**: 9 campioni a 15 km (`samples/LOG.md`, TASK-078), tutti
 con un percorso, in 11–44 s: somiglianza 0,81–1,00, la più bassa a
 Levico per tutte e tre. L'albero resta difficile fuori da Milano, come
-quello di TASK-034/037. Quali forme entrano nel catalogo lo decide
-l'utente, con TASK-065 o dopo (ADR-0036).
+quello di TASK-034/037. Giudizio dell'utente (2026-09-26): a Milano si
+riconoscono tutte e tre; l'albero di Natale è `quasi` a Trento e Levico
+(l'albero di TASK-034/037 era `no`), il coniglio `quasi` a Trento e `no`
+a Levico, la zucca `no` in tutte e due. Quali forme entrano nel catalogo
+lo decide l'utente, con TASK-065 o dopo (ADR-0036).

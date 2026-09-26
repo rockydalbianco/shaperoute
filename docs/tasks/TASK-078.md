@@ -1,6 +1,6 @@
 # TASK-078 — Nuove forme candidate: testa di coniglio, zucca, albero di Natale
 
-**Stato**: In corso (in attesa del giudizio dell'utente)
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-078-rabbit-pumpkin-tree` (parte da `main`)
 
 Assegnato dal coordinatore su richiesta dell'utente (2026-09-26), dopo gli
@@ -58,7 +58,7 @@ Deciso dall'agente su delega dell'utente (ADR-0073):
       `services/route-engine`.
 - [x] 9 campioni in `samples/`, righe in `samples/LOG.md` «in attesa».
 - [x] Pagina di giudizio pubblicata.
-- [ ] Giudizio dell'utente in `samples/LOG.md` (dopo la PR, non per il
+- [x] Giudizio dell'utente in `samples/LOG.md` (dopo la PR, non per il
       merge).
 
 ## File toccati
@@ -126,4 +126,18 @@ Il giudizio lo dà l'utente, e va in `samples/LOG.md`.
 
 ## Esito
 
-*(dopo il giudizio dell'utente)*
+Tre forme candidate come contorni, con i dettagli ripassati, provate a 15
+km nelle tre zone (ADR-0073); pagina di giudizio:
+https://claude.ai/artifact/JGNRhquxcfjtj6a1zxcTJB.
+Giudizio dell'utente (2026-09-26, `samples/LOG.md`):
+
+| | Trento | Levico | Milano |
+|---|---|---|---|
+| testa di coniglio (`rabbit_head`) | quasi | no | sì |
+| zucca di Halloween (`pumpkin`) | no | no | sì |
+| albero di Natale (`christmas_tree`) | quasi | quasi | sì |
+
+Tutte e tre si riconoscono a Milano; fuori da Milano l'albero di Natale è
+`quasi` in tutte e due le zone, meglio dell'albero di TASK-034/037
+(`no`); il coniglio è `quasi` a Trento; la zucca non si riconosce. Quali
+forme entrano nel catalogo lo decide l'utente, con TASK-065 o dopo.

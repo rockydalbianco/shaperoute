@@ -59,8 +59,10 @@ Niente per l'app.
   (`rabbit_head`), zucca di Halloween (`pumpkin`), albero di Natale con la
   stella (`christmas_tree`); provate dalla CLI a 15 km: somiglianza
   0,97 · 0,88 · 0,97, 0,92 · 0,83 · 1,00 e 0,93 · 0,81 · 1,00 (Trento,
-  Levico, Milano). Giudizio dell'utente in attesa (pagina nel task file);
-  decide quali entrano nel catalogo, con TASK-065 o dopo.
+  Levico, Milano). Giudizio dell'utente: tutte e tre `sì` a Milano;
+  albero `quasi` a Trento e Levico, coniglio `quasi` a Trento e `no` a
+  Levico, zucca `no`. Quali entrano nel catalogo lo decide l'utente, con
+  TASK-065 o dopo.
 
 - **Programmatore Lettere** — TASK-071: verificato che il ritorno di un
   tratto ripassato prende a volte un'altra via e disegna un anello,

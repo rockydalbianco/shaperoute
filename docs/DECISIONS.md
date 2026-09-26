@@ -2001,3 +2001,90 @@ Trento e Milano. Il gatto non si riconosceva già dal contorno: una sagoma
 povera di dettagli resta povera anche sulle strade. Da valutare con
 TASK-073: l'anteprima che fa giudicare la sagoma prima del percorso, e se
 la semplificazione toglie troppo.
+
+## ADR-0071 — Partenze vicine: tre nodi entro 100 m in parallelo, si tiene il cuore migliore
+**Stato**: Attiva · 2026-09-26 · chiesto dall'utente dopo TASK-075 («il
+motore prova alcune partenze vicine e tiene il percorso migliore», con
+l'avvicinamento nel percorso); quante partenze, come sceglierle e come
+tenere il tempo deciso dall'agente su delega dell'utente (TASK-076);
+giudizio dell'utente: Caldonazzo partenza `sì`, vicina `quasi`; Trento 10 km
+entrambe `sì`; Trento 15 km partenza spostata `sì`, vicina scelta `quasi`;
+Milano `sì`
+
+**Contesto**: a Caldonazzo 25–100 m di partenza portano il cuore da 10 km
+da 0,73 a 0,92 (TASK-075). Il motore però non va toccato: `optimizer.py` è
+di TASK-071 mentre si scrive questo.
+
+**Decisione** (`route_engine/nearby_starts.py`):
+
+- **Quali partenze**: fino a 3 nodi a 25–100 m in linea d'aria, uno per
+  settore di 120° (il primo sul nord), al più 150 m lungo le strade e 25 m
+  l'uno dall'altro; nel settore quello con la strada più vicina a 60 m.
+- **In parallelo, in processi**: la partenza dell'utente fa il piano di
+  sempre (`plan_shape`, può scaricare, spostare la partenza, cercare a
+  2 km) nel processo che la chiede; ogni partenza vicina ha un processo
+  (`multiprocessing`, `spawn`, priorità bassa). I processi, non i thread:
+  la ricerca è Python puro e il GIL la serializza.
+- **Una partenza vicina fa solo la ricerca da quel nodo** (`search` con
+  `move_start=False`, `ShapeJob.here`): senza anelli a 250–500 m e senza la
+  seconda ricerca a 2 km, i cui percorsi comincerebbero altrove e
+  andrebbero scartati. Costa circa metà di un piano intero (Caldonazzo
+  7–9 s contro 13–17 s). I passi dopo la ricerca ripetono quelli di
+  `plan_shape` per questo caso; un test controlla che diano lo stesso
+  risultato. Con un interruttore in `plan_shape`, dopo TASK-071, la copia
+  si toglie.
+- **Il grafo ai processi**: quello già ritagliato per la partenza, pickled
+  una volta sola. La partenza vicina è entro 100 m, dentro il margine di
+  500 m dell'area. Leggere la zona intera in ogni processo mandava in swap
+  il PC (Trento 15 km: 240 s).
+- **Quanto si aspetta**: finita la partenza dell'utente, al più 8 s, mai
+  oltre 25 s dalla richiesta; se il suo percorso è già buono (somiglianza
+  ≥ 0,90, distanza entro il 10%, partenza non spostata) nessuno. I ritardatari
+  si chiudono (`terminate`).
+- **Quando non si provano**: grafo oltre 30 000 nodi (Milano: 55 676 a
+  10 km, 83 779 a 15 km; lì la sola ricerca da un nodo dura 35 s e il cuore
+  è già a 0,99); e solo tanti processi quanti entrano nella memoria libera,
+  lasciandone 1 GB alla partenza dell'utente (un processo ≈ 100 MB + 10
+  volte il grafo pickled). Senza memoria il percorso è quello di oggi.
+- **Quale si tiene**: la somiglianza, meno la distanza oltre il 10% dal
+  target e lo spostamento della partenza, pesati come in `search`. Una
+  vicina vince solo con 0,02 in più. Il primo criterio provato, il costo di
+  `search` con la distanza piena, sceglieva a Caldonazzo un cuore da 0,82 a
+  9,4 km al posto di quello da 0,86 a 11,8 km: il tipo che l'utente aveva
+  giudicato `no`.
+- **L'avvicinamento**: dal nodo della partenza dell'utente al nodo vicino
+  per la strada più corta, e ritorno per la stessa; nei metri, nel GPX e
+  nei nodi (le indicazioni lo contano). La somiglianza resta quella della
+  forma.
+- **Dalla CLI**: `--nearby N`. L'API la usa dopo TASK-073 (`app.py`,
+  `jobs.py`), con `NearbyPlan.graph` per le indicazioni.
+
+**Misure** (cuore, zona già in memoria; tempi da 2–3 ripetizioni, molto
+variabili: il PC ha 7 GB e durante le misure 0,4–2 GB liberi, con altri
+agenti al lavoro):
+
+| Caso | Solo partenza | Con 3 vicine | Somiglianza scelta |
+|---|---|---|---|
+| Caldonazzo 10 km | 8–19 s | 11–20 s | 0,86 → 0,86 (vicine 0,82, 0,79, 0,77) |
+| Trento 10 km | 29–40 s | 40–42 s | 0,86 → 0,88 (65 m) |
+| Trento 15 km | 34–39 s | 43–69 s | 0,90 spostata di 1 km → 0,88 dalla partenza (57 m) |
+| Milano 10 km | 15–18 s | 25–33 s prima del limite sui nodi, ora non provate | 0,99 |
+| Milano 15 km | 25–80 s | non provate | 1,00 |
+
+Con 4 vicine: stessi guadagni, più tempo e memoria (Trento 15 km 52–256 s,
+Milano 15 km `MemoryError`). Nell'ultima serie di misure, con meno di
+1,5 GB liberi, la regola della memoria ha lasciato fuori le vicine in ogni
+caso: tempi e percorsi quelli di oggi.
+
+**Conseguenza**: dove la rete è rada e la memoria c'è, il cuore dipende
+meno dalla partenza e un cuore «spostato» può tornare a partire
+dall'utente; dove la rete è fitta non cambia nulla. Il tempo cresce di
+qualche secondo nei paesi e di 5–15 s a Trento, fuori dai 30 s di
+PRODUCT.md dove già lo si era. Su questo PC la memoria decide spesso lei:
+più RAM libera (chiudere applicazioni) lascia provare le vicine. La
+somiglianza non segue sempre l'occhio (TASK-075). Giudizio dell'utente: la
+scelta è giusta a Caldonazzo e a Trento 10 km; a Trento 15 km il motore ha
+preferito la vicina `quasi` alla partenza `sì` spostata di 1 km, perché
+lo spostamento costa quanto nella ricerca (0,1 a 1 km). Se un cuore
+migliore a 1 km valga più di uno quasi dalla porta di casa è una scelta di
+prodotto, aperta (task file).

@@ -53,6 +53,16 @@ Niente per l'app.
 
 ## Completato
 
+- **Motore** — TASK-076 (PR aperta, merge del coordinatore): il motore
+  prova il cuore anche da 3 nodi a 25–100 m, in parallelo, e tiene il
+  migliore; il percorso parte comunque dall'utente, con l'avvicinamento nei
+  km e nel GPX (`nearby_starts.py`, ADR-0071, CLI `--nearby 3`). Trento
+  10 km 0,86 → 0,88; Trento 15 km dalla partenza invece che a 1 km;
+  Caldonazzo e Milano uguali. Più 3–15 s; niente vicine su grafi oltre
+  30 000 nodi o senza memoria libera. Giudizio: scelta giusta a Caldonazzo e
+  Trento 10 km; a Trento 15 km vince la vicina `quasi` sulla partenza `sì`
+  spostata di 1 km: scelta di prodotto aperta (task file). Prossimo passo:
+  collegarlo all'API dopo il merge di TASK-073.
 - **Motore** — TASK-075: il cuore da 10 km di Caldonazzo non è peggiorato.
   Motore di ieri (`87304b0`) e di oggi (`709f4f5`) danno lo stesso percorso
   punto per punto su 9 partenze su 9, oggi in 16,9 s invece di 21,4 s.

@@ -272,6 +272,13 @@ chiude ADR-0010.
 | 2026-09-26 | TASK-075_heart_10km_caldonazzo_sw70_v1.gpx | caldonazzo | 0.92 | 9.3 / 10.0 km | sì | partenza 70 m a sud-ovest di Via della Villa, motore di oggi (ieri: identico); 16 s |
 | 2026-09-26 | TASK-075_heart_10km_caldonazzo_n100_v1.gpx | caldonazzo | 0.91 | 9.4 / 10.0 km | quasi | partenza 100 m a nord di Via della Villa, motore di oggi (ieri: identico); 14 s |
 | 2026-09-26 | TASK-075_heart_10km_caldonazzo_e100_v1.gpx | caldonazzo | 0.81 | 11.1 / 10.0 km | quasi | partenza 100 m a est di Via della Villa, motore di oggi (ieri: identico); 20 s |
+| 2026-09-26 | TASK-076_heart_10km_caldonazzo_start_v1.gpx | caldonazzo | 0.86 | 11.8 / 10.0 km | sì | dalla partenza (45.9934, 11.2580), come oggi; scelto: nessuna delle 3 partenze vicine lo batte (0,82 a 93 m, 0,79, 0,77) |
+| 2026-09-26 | TASK-076_heart_10km_caldonazzo_nearby_v1.gpx | caldonazzo | 0.82 | 9.4 / 10.0 km | quasi | migliore partenza vicina, 93 m lungo le strade (incluse andata e ritorno); non scelto |
+| 2026-09-26 | TASK-076_heart_10km_trento_start_v1.gpx | trento | 0.86 | 8.3 / 10.0 km | sì | dalla partenza (46.0671, 11.1214), come oggi |
+| 2026-09-26 | TASK-076_heart_10km_trento_nearby_v1.gpx | trento | 0.88 | 8.7 / 10.0 km | sì | partenza vicina a 65 m, scelta (punteggio 0,871 contro 0,833); un'altra a 97 m fa 0,89 ma più corta |
+| 2026-09-26 | TASK-076_heart_15km_trento_start_v1.gpx | trento | 0.90 | 14.5 / 15.0 km | sì | dalla partenza, come oggi: il motore la sposta di 1 km a nord-est («Start here») |
+| 2026-09-26 | TASK-076_heart_15km_trento_nearby_v1.gpx | trento | 0.88 | 14.6 / 15.0 km | quasi | partenza vicina a 57 m, scelta: parte dalla posizione dell'utente invece che a 1 km |
+| 2026-09-26 | TASK-076_heart_10km_milano_start_v1.gpx | milano | 0.99 | 10.1 / 10.0 km | sì | piazza Duomo; partenze vicine non provate (55 676 nodi, oltre 30 000): solo confronto |
 
 <!--
 Esempio di riga compilata:

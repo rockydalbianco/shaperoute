@@ -448,6 +448,43 @@ l'errore lo dice («… cannot be drawn here, nor within 2 km: …»). L'avviso
 sullo spostamento passa ai km sopra i 1000 m («start moved 1.5 km
 north-east of the requested point, …»).
 
+### Partenze vicine (TASK-076)
+
+Pochi metri di partenza cambiano il percorso che la ricerca trova: a
+Caldonazzo 25–100 m portano il cuore da 10 km da 0,73 a 0,92 (TASK-075).
+Con `nearby_starts.plan_nearby` (ADR-0071) il motore prova la forma anche
+da alcuni nodi della rete vicini e tiene il percorso migliore:
+
+1. **Quali partenze**: fino a 3 nodi a 25–100 m in linea d'aria, uno per
+   settore attorno alla partenza (il primo centrato sul nord), a non più di
+   150 m lungo le strade (un nodo oltre il fiume non è vicino) e a 25 m
+   l'uno dall'altro; nel settore, quello la cui strada è più vicina a 60 m.
+2. **In parallelo**: la partenza dell'utente fa il piano di sempre, nel
+   processo che la chiede (può scaricare la zona, spostare la partenza,
+   cercare a 2 km). Ogni partenza vicina ha un processo suo, con il grafo
+   già ritagliato per la partenza, e fa solo la ricerca da quel nodo: né
+   anelli a 250–500 m né seconda ricerca, perché un percorso che comincia
+   altrove andrebbe scartato comunque.
+3. **Quanto si aspetta**: finita la partenza dell'utente, le vicine hanno
+   al più altri 8 s, e mai oltre 25 s dalla richiesta; nessuno se il suo
+   percorso è già buono. Quelle ancora in corso si lasciano. Non si provano
+   su grafi oltre 30 000 nodi (Milano) né in più processi di quanti ne
+   entrano nella memoria libera.
+4. **Quale si tiene** (scelta dell'utente): il cuore migliore fra tutti,
+   anche quello che la ricerca ha spostato («Start here»). Conta la
+   somiglianza, meno la distanza oltre il 10% dal target; fra i candidati
+   entro 0,01 dal migliore vince quello che comincia più vicino
+   all'utente.
+5. **L'avvicinamento**: se vince una partenza vicina, il percorso comincia
+   dal nodo della partenza dell'utente, va al nodo vicino per la strada più
+   corta, disegna la forma e torna indietro per la stessa strada. I metri
+   dell'avvicinamento contano nella distanza e sono nel GPX; la somiglianza
+   resta quella della forma.
+
+Dalla CLI: `--nearby N` (N partenze vicine; senza, solo la partenza come
+prima). L'API la usa per le forme e le parole (`plan_request`), non per
+le immagini.
+
 ### Lettere che si spostano (TASK-050)
 
 Per una parola composta (§2) la ricerca è la stessa, con due differenze
@@ -563,6 +600,13 @@ su:
 
 ```
 python -m route_engine --word CIAO --distance 15000     --start 46.0671,11.1214 --out ciao_trento.gpx
+```
+
+Con `--nearby 3` prova anche 3 partenze vicine e tiene la migliore (§5,
+«Partenze vicine»); la CLI stampa ogni partenza provata e quale ha vinto:
+
+```
+python -m route_engine --shape heart --distance 10000     --start 45.9934,11.2580 --nearby 3 --out heart_caldonazzo.gpx
 ```
 
 Il GPX si apre in un visualizzatore (gpx.studio, geojson.io) e si guarda.

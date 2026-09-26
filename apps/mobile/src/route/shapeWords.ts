@@ -37,6 +37,24 @@ export const SHAPE_WORDS: Record<
     en: ["fish", "fishes"],
     it: ["pesce", "pesci", "pesciolino"],
   },
+  butterfly: {
+    en: ["butterfly", "butterflies"],
+    it: ["farfalla", "farfalle", "farfallina"],
+  },
+  snail: {
+    en: ["snail", "snails"],
+    it: ["lumaca", "lumache", "lumachina", "chiocciola", "chiocciole"],
+  },
+  // Only the head is drawn, but a dog is what the runner asks for (ADR-0061).
+  dog_head: {
+    en: ["dog", "dogs", "dog head", "dog's head", "doggy", "puppy"],
+    it: ["cane", "cani", "cagnolino", "testa di cane"],
+  },
+  // The same for the rabbit: its head is the rabbit (ADR-0061).
+  rabbit_head: {
+    en: ["rabbit", "rabbits", "rabbit head", "rabbit's head", "bunny"],
+    it: ["coniglio", "conigli", "coniglietto", "testa di coniglio"],
+  },
 };
 
 const WORD_TO_SHAPE = new Map<string, Shape>(
@@ -49,12 +67,16 @@ const WORD_TO_SHAPE = new Map<string, Shape>(
 
 const ARTICLES = new Set(["a", "an", "the", "un", "uno", "una", "il", "lo", "la"]);
 
-/** Lower case, no accents, curly apostrophes made straight, single spaces. */
+/**
+ * Lower case, no accents, curly apostrophes made straight, underscores as
+ * spaces (so the contract's "dog_head" reads too), single spaces.
+ */
 function normalize(text: string): string {
   return text
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .replace(/[‘’]/g, "'")
+    .replace(/_/g, " ")
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
@@ -74,7 +96,16 @@ export function toShape(text: string): Shape | null {
   return WORD_TO_SHAPE.get(words.join(" ")) ?? null;
 }
 
-/** "circle, heart, star, horse, moon, cat or fish": the shapes to suggest. */
+/**
+ * A shape as the runner reads it: "dog head" for `dog_head`. The contract
+ * keeps its name; the table knows this one too, so it can go in the field.
+ */
+export function shapeName(shape: Shape): string {
+  return shape.replace(/_/g, " ");
+}
+
+/** "circle, heart, star, …, snail or dog head": the shapes to suggest. */
 export function shapeList(): string {
-  return `${SHAPES.slice(0, -1).join(", ")} or ${SHAPES[SHAPES.length - 1]}`;
+  const names = SHAPES.map(shapeName);
+  return `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
 }

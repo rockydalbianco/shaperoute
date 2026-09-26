@@ -18,7 +18,7 @@ import { LoadingBar, ReadingBar } from "./LoadingBar";
 import type { ImageSource } from "./pickImage";
 import { type ChoiceKind, problemText } from "./problems";
 import { ShapeTiles } from "./ShapeTiles";
-import { shapeList } from "./shapeWords";
+import { shapeList, shapeName } from "./shapeWords";
 import type { ExportState } from "./useGpxExport";
 import type { ImageState } from "./useImageOutline";
 import type { AnyRouteRequest, RouteProblem, RouteState } from "./useRouteRequest";
@@ -281,8 +281,9 @@ function ShapeNote({
   reading: ShapeReadingState | null;
 }) {
   if (shape !== null) {
-    return text.trim().toLowerCase() === shape ? null : (
-      <Text style={styles.note}>→ {shape}</Text>
+    const name = shapeName(shape);
+    return text.trim().toLowerCase() === name ? null : (
+      <Text style={styles.note}>→ {name}</Text>
     );
   }
   switch (reading?.status) {
@@ -378,7 +379,7 @@ function waitingText({ phase, request }: Extract<RouteState, { status: "waiting"
       }
       return request.word
         ? `Drawing “${request.word}”, ${request.distance_m / 1000} km…`
-        : `Drawing a ${request.distance_m / 1000} km ${request.shape}…`;
+        : `Drawing a ${request.distance_m / 1000} km ${routeName(request)}…`;
   }
 }
 
@@ -423,7 +424,7 @@ function ShapeChoices({ onPick }: { onPick: (shape: Shape) => void }) {
           onPress={() => onPick(shape)}
           accessibilityRole="button"
         >
-          <Text style={styles.secondaryText}>{shape}</Text>
+          <Text style={styles.secondaryText}>{shapeName(shape)}</Text>
         </Pressable>
       ))}
     </View>

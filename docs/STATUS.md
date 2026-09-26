@@ -54,6 +54,14 @@ Niente per l'app.
 
 ## Completato
 
+- **Programmatore Lettere** — TASK-078: tre forme candidate come contorni,
+  sagoma nel contorno e dettagli ripassati (ADR-0073): testa di coniglio
+  (`rabbit_head`), zucca di Halloween (`pumpkin`), albero di Natale con la
+  stella (`christmas_tree`); provate dalla CLI a 15 km: somiglianza
+  0,97 · 0,88 · 0,97, 0,92 · 0,83 · 1,00 e 0,93 · 0,81 · 1,00 (Trento,
+  Levico, Milano). Giudizio dell'utente in attesa (pagina nel task file);
+  decide quali entrano nel catalogo, con TASK-065 o dopo.
+
 - **Programmatore Lettere** — TASK-071: verificato che il ritorno di un
   tratto ripassato prende a volte un'altra via e disegna un anello,
   soprattutto a Milano («CIAO» 51% di strade doppie contro il 74% del

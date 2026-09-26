@@ -294,4 +294,13 @@ chiude ADR-0010.
 <!--
 Esempio di riga compilata:
 | 2026-09-30 | TASK-013_heart_15km_levico_v1.gpx | levico | — | 15.0 / 15.0 km | sì | forma teorica, passa sopra il lago |
+| 2026-09-26 | TASK-078_rabbit-head_15km_trento_v1.gpx | trento | 0.97 | 15.3 / 15.0 km | in attesa | candidata: testa di coniglio di fronte, orecchie lunghe e dritte, occhi, naso e bocca ripassati (ADR-0073); dritta; 11 s |
+| 2026-09-26 | TASK-078_rabbit-head_15km_levico_v1.gpx | levico | 0.88 | 15.1 / 15.0 km | in attesa | testa di coniglio; partenza spostata di 250 m, ruotata di 15°; 28 s |
+| 2026-09-26 | TASK-078_rabbit-head_15km_milano_v1.gpx | milano | 0.97 | 15.2 / 15.0 km | in attesa | testa di coniglio; dritta; 26 s |
+| 2026-09-26 | TASK-078_pumpkin_15km_trento_v1.gpx | trento | 0.92 | 16.2 / 15.0 km | in attesa | candidata: zucca di Halloween, tre spicchi e picciolo, occhi a triangolo e sorriso ripassati (ADR-0073); dritta; 13 s |
+| 2026-09-26 | TASK-078_pumpkin_15km_levico_v1.gpx | levico | 0.83 | 15.7 / 15.0 km | in attesa | zucca; dritta; 23 s |
+| 2026-09-26 | TASK-078_pumpkin_15km_milano_v1.gpx | milano | 1.00 | 16.0 / 15.0 km | in attesa | zucca; dritta; 19 s |
+| 2026-09-26 | TASK-078_christmas-tree_15km_trento_v1.gpx | trento | 0.93 | 16.0 / 15.0 km | in attesa | candidata: albero di Natale a tre piani, tronco, stella ripassata in cima (ADR-0073); confronto: TASK-037_tree_15km_trento_v1.gpx, giudicato «no»; partenza spostata di 1 km, dalla ricerca lontana; 44 s |
+| 2026-09-26 | TASK-078_christmas-tree_15km_levico_v1.gpx | levico | 0.81 | 14.5 / 15.0 km | in attesa | albero di Natale (TASK-037_tree_15km_levico_v1.gpx, giudicato «no»); ruotato di 15°; 24 s |
+| 2026-09-26 | TASK-078_christmas-tree_15km_milano_v1.gpx | milano | 1.00 | 15.7 / 15.0 km | in attesa | albero di Natale (TASK-037_tree_15km_milano_v1.gpx, giudicato «sì»); dritto; 30 s |
 -->

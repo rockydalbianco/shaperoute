@@ -5,5 +5,7 @@
   "engine_error",
   "http_error",
   "ai_unavailable",
-  "image_not_usable"
+  "image_not_usable",
+  "unauthorized",
+  "too_many_requests"
 ]

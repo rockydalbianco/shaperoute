@@ -5,6 +5,7 @@ import {
   SHAPES,
 } from "@shaperoute/shared-types";
 
+import { apiKey, keyHeaders } from "./apiUrl";
 import { isApiError, type RouteOutcome } from "./routes";
 
 export type ShapeReadingOutcome =
@@ -20,13 +21,14 @@ export async function requestShapeReading(
   baseUrl: string,
   text: string,
   fetchFn: typeof fetch = fetch,
+  key: string | null = apiKey(),
 ): Promise<ShapeReadingOutcome> {
   const body: ShapeReadingRequest = { text };
   let response: Response;
   try {
     response = await fetchFn(`${baseUrl}/shape-readings`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...keyHeaders(key) },
       body: JSON.stringify(body),
     });
   } catch {

@@ -33,7 +33,7 @@ test.each<[RouteProblem, string, string | undefined]>([
   ],
   [
     { kind: "unreachable", url: "http://192.168.1.23:8000" },
-    "Cannot reach the API at http://192.168.1.23:8000. Start it on the PC with --lan, on the same Wi-Fi.",
+    "Cannot reach the API at http://192.168.1.23:8000. Check that it is running (on the PC: with --lan) and that the phone can reach it: same Wi-Fi, Tailscale on, or the server address in apps/mobile/.env (docs/DEPLOY.md).",
     undefined,
   ],
   [

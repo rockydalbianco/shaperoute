@@ -145,6 +145,10 @@ export const API_ERROR_CODES = [
   "http_error",
   "ai_unavailable",
   "image_not_usable",
+  /** A key is set on the API and the request has the wrong one (TASK-081). */
+  "unauthorized",
+  /** Too many requests from this phone in a minute (TASK-081). */
+  "too_many_requests",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 

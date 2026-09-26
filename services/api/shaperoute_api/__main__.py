@@ -1,4 +1,9 @@
-"""Start the API: python -m shaperoute_api [--lan] [--port 8000] [--ai-model ...]."""
+"""Start the API: python -m shaperoute_api [--lan] [--port 8000] [--ai-model ...].
+
+The key and the limit come from the environment, never from the command
+line, which stays in the shell history (SHAPEROUTE_API_KEY and
+SHAPEROUTE_RATE_LIMIT, docs/DEPLOY.md).
+"""
 
 from __future__ import annotations
 
@@ -14,6 +19,7 @@ from route_engine.shapes import SUPPORTED_SHAPES
 from shaperoute_ai.ollama import DEFAULT_MODEL, DEFAULT_URL, OllamaModel
 from shaperoute_ai.reading import ShapeReader
 
+from shaperoute_api.access import KEY_HEADER, KEY_VARIABLE, Access, AccessConfigError
 from shaperoute_api.app import create_app
 from shaperoute_api.graphs import ZoneGraphs
 
@@ -65,6 +71,10 @@ def lan_address() -> str | None:
 
 def main(argv: Sequence[str] | None = None) -> None:
     args = parse_args(argv)
+    try:
+        access = Access.from_env()
+    except AccessConfigError as exc:
+        raise SystemExit(str(exc)) from None
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
     reader = ShapeReader(OllamaModel(args.ai_model, args.ai_url), SUPPORTED_SHAPES)
     app = create_app(ZoneGraphs(OsmnxSource(args.cache_dir)), reader=reader)
@@ -72,6 +82,12 @@ def main(argv: Sequence[str] | None = None) -> None:
     here = f"http://127.0.0.1:{args.port}"
     print(f"API docs on this PC: {here}/docs")
     print(f"Shape words read by {args.ai_model} in Ollama, {args.ai_url}")
+    if access.key is None:
+        print(f"No API key ({KEY_VARIABLE} not set): only for the home network")
+    else:
+        print(f"API key required in the {KEY_HEADER} header ({KEY_VARIABLE})")
+    if access.posts_per_minute:
+        print(f"At most {access.posts_per_minute} POSTs a minute from each client")
     if args.lan:
         address = lan_address() or "<this PC's address>"
         print(f"From the phone, same Wi-Fi: http://{address}:{args.port}/health")

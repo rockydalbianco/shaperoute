@@ -34,6 +34,7 @@ SHAPES = (
     "butterfly",
     "snail",
     "dog_head",
+    "rabbit_head",
 )
 
 

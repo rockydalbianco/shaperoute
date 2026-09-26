@@ -131,3 +131,27 @@ Tutti e nove punto per punto uguali ai campioni di TASK-064 e TASK-068
 ## Esito
 
 *(a fine task)*
+
+## Dove sono arrivato (2026-09-26, limite d'uso raggiunto)
+
+Fatto e committato: farfalla, lumaca, testa di cane e testa di coniglio
+(`rabbit_head`, sì del coordinatore dopo il merge di #91) in motore,
+`shared-types`, app (parole, tessere 🦋 🐌 🐶 🐰, «dog head»/«rabbit head»
+sullo schermo), AI (righe in `OUTLINES`, liste di prova), test. `origin/main`
+unito (a53520b). Verifica dei punti uguali ai campioni: fatta per le prime
+tre (tabella sopra).
+
+Resta da fare:
+1. Coordinatore: ok per `apps/mobile/App.tsx` (una riga,
+   `setShapeText(shapeName(picked))` in `onPickShape`)? Chiesto, senza
+   risposta.
+2. Test completi: app (`npm.cmd test`, lint, format:check, typecheck),
+   motore, AI, API; `rabbit_head` nello script di verifica (campioni
+   `TASK-078_rabbit-head_15km_*`).
+3. Documenti per il coniglio: `UI.md` (tabella, emoji, messaggi), `AI.md`
+   (liste: 64 e 42 voci, 10 e 10 senza forma; 14 voci nuove nella messa a
+   punto, 9 nel controllo), ADR-0061, `ROUTE_ENGINE.md` §2 (catalogo:
+   ancora da scrivere), questo file («File toccati»: aggiungere
+   `RoutePanel.tsx`, `wordInput.ts`, `wordInput.test.ts`).
+4. Misura dell'AI con qwen3:4b (dopo la prova sull'iPhone, a RAM libera).
+5. `STATUS.md`, PR, prova sull'iPhone con l'utente, «TASK-065 fatto».

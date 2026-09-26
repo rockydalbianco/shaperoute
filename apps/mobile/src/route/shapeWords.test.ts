@@ -39,6 +39,10 @@ test.each([
   ["dog’s head", "dog_head"],
   ["testa di cane", "dog_head"],
   ["dog_head", "dog_head"],
+  ["il coniglio", "rabbit_head"],
+  ["a bunny", "rabbit_head"],
+  ["Coniglietto", "rabbit_head"],
+  ["rabbit head", "rabbit_head"],
 ])("%j is a %s", (text, shape) => {
   expect(toShape(text)).toBe(shape);
 });
@@ -77,7 +81,7 @@ test("every word names its own shape, and no word is used twice", () => {
 
 test("the suggestion lists every shape, as the runner reads it", () => {
   expect(shapeList()).toBe(
-    "circle, heart, star, horse, moon, cat, fish, butterfly, snail or dog head",
+    "circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head or rabbit head",
   );
 });
 

@@ -50,6 +50,11 @@ export const SHAPE_WORDS: Record<
     en: ["dog", "dogs", "dog head", "dog's head", "doggy", "puppy"],
     it: ["cane", "cani", "cagnolino", "testa di cane"],
   },
+  // The same for the rabbit: its head is the rabbit (ADR-0061).
+  rabbit_head: {
+    en: ["rabbit", "rabbits", "rabbit head", "rabbit's head", "bunny"],
+    it: ["coniglio", "conigli", "coniglietto", "testa di coniglio"],
+  },
 };
 
 const WORD_TO_SHAPE = new Map<string, Shape>(

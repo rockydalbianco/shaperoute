@@ -36,6 +36,7 @@ SHAPES: dict[str, ShapeFn] = {
     "butterfly": read_outline(OUTLINES / "butterfly.json"),  # its antennae
     "snail": read_outline(OUTLINES / "snail.json"),  # its spiral and horns
     "dog_head": read_outline(OUTLINES / "dog_head.json"),  # eyes, nose, mouth
+    "rabbit_head": read_outline(OUTLINES / "rabbit_head.json"),  # eyes, nose, mouth
 }
 
 SUPPORTED_SHAPES: tuple[str, ...] = tuple(SHAPES)

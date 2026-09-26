@@ -22,6 +22,7 @@ export const SHAPES = [
   "butterfly",
   "snail",
   "dog_head",
+  "rabbit_head",
 ] as const;
 export type Shape = (typeof SHAPES)[number];
 

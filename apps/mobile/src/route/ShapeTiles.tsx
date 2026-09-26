@@ -26,6 +26,7 @@ export const SHAPE_SIGNS: Record<Shape, string> = {
   butterfly: "🦋",
   snail: "🐌",
   dog_head: "🐶",
+  rabbit_head: "🐰",
 };
 
 type Props = {

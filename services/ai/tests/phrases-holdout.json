@@ -10,7 +10,8 @@
     "fish",
     "butterfly",
     "snail",
-    "dog_head"
+    "dog_head",
+    "rabbit_head"
   ],
   "phrases": [
     { "text": "cavallo a dondolo", "accept": ["horse"] },
@@ -37,6 +38,9 @@
     { "text": "pastore tedesco", "accept": ["dog_head"] },
     { "text": "dalmata", "accept": ["dog_head"] },
     { "text": "volpe", "accept": ["dog_head", "cat", null] },
+
+    { "text": "Bianconiglio", "accept": ["rabbit_head"] },
+    { "text": "coniglio pasquale", "accept": ["rabbit_head"] },
 
     { "text": "cuore spezzato", "accept": ["heart"] },
     { "text": "festa degli innamorati", "accept": ["heart"] },

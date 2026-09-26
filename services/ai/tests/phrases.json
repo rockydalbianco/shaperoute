@@ -10,7 +10,8 @@
     "fish",
     "butterfly",
     "snail",
-    "dog_head"
+    "dog_head",
+    "rabbit_head"
   ],
   "phrases": [
     { "text": "stemma della Ferrari", "accept": ["horse"] },
@@ -52,6 +53,10 @@
     { "text": "labrador", "accept": ["dog_head"] },
     { "text": "Scooby-Doo", "accept": ["dog_head"] },
     { "text": "lupo", "accept": ["dog_head", null] },
+
+    { "text": "Bugs Bunny", "accept": ["rabbit_head"] },
+    { "text": "Roger Rabbit", "accept": ["rabbit_head"] },
+    { "text": "lepre", "accept": ["rabbit_head", null] },
 
     { "text": "San Valentino", "accept": ["heart"] },
     { "text": "ti amo", "accept": ["heart"] },

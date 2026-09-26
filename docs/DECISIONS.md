@@ -2118,12 +2118,12 @@ si perde nel selettore di iOS, che consegna JPEG. Un pezzo staccato si perde
 ancora, ma ora si vede nell'anteprima.
 
 ## ADR-0072 — Lettere squadrate: un secondo alfabeto, girato sulla griglia delle vie
-**Stato**: Proposta · 2026-09-26 · chiesto dall'utente dopo TASK-071
+**Stato**: Attiva · 2026-09-26 · chiesto dall'utente dopo TASK-071
 («sì, provale»), sul modello delle scritte di GPS art che ha mandato
 («2024», «HURRY»); disegno delle lettere, rotazione e soglie decisi
-dall'agente su delega dell'utente (TASK-077); se lo stile sostituisce
-quello di oggi o diventa una scelta nell'app lo decide l'utente dopo il
-giudizio dei campioni
+dall'agente su delega dell'utente (TASK-077); dopo il giudizio l'utente ha
+scelto di tenere tutti e due gli stili, da scegliere nell'app (un task a
+parte)
 
 **Contesto**: le lettere di oggi (ADR-0044, ADR-0056) hanno curve e
 diagonali che su una griglia di vie diventano scale e zig-zag, ed è lì che
@@ -2162,3 +2162,10 @@ griglie a 5° e a −20°); diagonali a gradini disegnati.
 più larghe) e, a 15 km, lettere un po' più basse. Dove la griglia è
 regolare (Milano) le lettere cadono sulle vie; dove non lo è (Levico,
 Trento di là dall'Adige) il percorso resta a zig-zag come oggi.
+
+**Giudizio dell'utente** (2026-09-26), squadrate (oggi): «CIAO» sì ·
+quasi · sì (sì · sì · sì); «BELLO» quasi · no · no (no · quasi · sì);
+«MAX» no · quasi · sì (sì · sì · sì); «HURRY» no ovunque. Vanno bene le
+parole corte con lettere grandi su una griglia regolare (CIAO e MAX a
+Milano); con cinque lettere a 15 km le lettere sono troppo piccole anche a
+Milano. Lo stile di oggi resta il predefinito.

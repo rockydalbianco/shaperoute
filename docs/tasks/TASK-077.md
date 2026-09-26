@@ -1,6 +1,6 @@
 # TASK-077 — Lettere squadrate: un secondo alfabeto da provare accanto a quello di oggi
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-077-block-letters`
 
 ## Obiettivo
@@ -58,9 +58,9 @@ in fondo a `docs/tasks/TASK-071.md`.
       griglia girata (test).
 - [x] Forme e parole nello stile di oggi: stessi punti di `main` (test, e
       cuore, gatto e stella a 15 km nelle tre zone con la stessa impronta).
-- [ ] Campioni in `samples/`, righe in `LOG.md`, pagina di giudizio
-      pubblicata; giudizio dell'utente scritto qui. *(Manca il giudizio.)*
-- [ ] Test, `ruff` e `black` verdi; CI verde.
+- [x] Campioni in `samples/`, righe in `LOG.md`, pagina di giudizio
+      pubblicata; giudizio dell'utente scritto qui.
+- [x] Test, `ruff` e `black` verdi; CI verde.
 
 ## File toccati
 
@@ -134,9 +134,9 @@ risposte»): https://claude.ai/artifact/K4e7J6Ue2j9czXKpYWiMYd
 | MAX Trento | 0,87 · 482 m · 14,6 · +5° | 0,92 · 655 m · sì |
 | MAX Levico | 0,85 · 518 m · 14,7 · −6° | 0,89 · 542 m · sì |
 | MAX Milano | 0,95 · 734 m · 15,2 · +3° | 0,95 · 724 m · sì |
-| HURRY Trento | 0,83 · 441 m · 14,6 · −18° | 0,72 · 428 m · da giudicare (TASK-077_hurry-round) |
-| HURRY Levico | 0,76 · 451 m · 16,0 · −22° | 0,79 · 432 m · da giudicare |
-| HURRY Milano | 0,91 · 520 m · 15,4 · +8° | 0,90 · 537 m · da giudicare |
+| HURRY Trento | 0,83 · 441 m · 14,6 · −18° | 0,72 · 428 m · non giudicato (TASK-077_hurry-round) |
+| HURRY Levico | 0,76 · 451 m · 16,0 · −22° | 0,79 · 432 m · non giudicato |
+| HURRY Milano | 0,91 · 520 m · 15,4 · +8° | 0,90 · 537 m · non giudicato |
 
 Cosa si vede sovrapponendo percorso, disegno e vie:
 
@@ -166,6 +166,37 @@ Nei test: `compose("ciao")` è uguale a `compose("ciao", ALPHABET,
 LETTER_GAP)`, e una parola di oggi resta dritta entro ±15° anche su una
 griglia girata di 20°.
 
+## Giudizio dell'utente
+
+2026-09-26, sulle lettere squadrate, con quelle di oggi fra parentesi
+(TASK-071 v1):
+
+| | Trento | Levico | Milano |
+|---|---|---|---|
+| CIAO | sì (sì) | quasi (sì) | sì (sì) |
+| BELLO | quasi (no) | no (quasi) | no (sì) |
+| MAX | no (sì) | quasi (sì) | sì (sì) |
+| HURRY | no | no | no |
+
+«HURRY» nelle lettere di oggi non è stato giudicato. **Stile scelto
+dall'utente: tutte e due, una scelta nell'app.**
+
+Rispetto a oggi: uno meglio («BELLO» a Trento), tre uguali («CIAO» a
+Trento e Milano, «MAX» a Milano), cinque peggio. Vanno bene le parole
+corte dove le lettere restano grandi (CIAO e MAX a Milano, 734–827 m);
+con cinque lettere a 15 km (BELLO, HURRY: 431–520 m) no, anche sulla
+griglia di Milano. Come in TASK-071, la dimensione delle lettere conta più
+dello stile.
+
 ## Esito
 
-*(a fine task)*
+Le lettere squadrate ci sono nel motore come secondo stile
+(`style="block"`, ADR-0072), con la parola girata sulla griglia delle vie
+al più di 30°; lo stile di oggi resta il predefinito e non cambia di un
+punto. Giudizio: squadrate bene per parole corte su una griglia regolare,
+peggio di oggi per parole di cinque lettere e dove le vie non fanno
+griglia. L'utente vuole **tutti e due gli stili, da scegliere nell'app**:
+è un task a parte (lo stile nella richiesta, nell'API, in `shared-types` e
+un selettore accanto al campo della parola), da assegnare dal
+coordinatore. Da valutare lì: consigliare le squadrate solo per parole
+fino a quattro lettere, o più chilometri per lettera.

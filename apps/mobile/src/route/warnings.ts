@@ -4,7 +4,8 @@
  * The engine writes them for developers: "shape similarity 0.85 is below 0.90
  * after 12 attempts". The contract has no codes for them yet, so the app
  * recognises the texts the engine writes today and says them simply. A text it
- * does not recognise is shown as it is: a new warning is never hidden.
+ * does not recognise is shown as it is, with a capital first letter: a new
+ * warning is never hidden (ADR-0077).
  *
  * The patterns follow the engine's f-strings: `validation.py` (the Issues),
  * `optimizer.py` (search, plan_shape) and `network.py` (snap_to_network).
@@ -33,8 +34,10 @@ function metres(value: string): string {
 
 const RULES: Rule[] = [
   {
-    // optimizer.plan_shape, when the shape was placed away (ADR-0040).
-    pattern: /^start moved (.+?) (\w+) of the requested point, where the shape closes/,
+    // optimizer.plan_shape, when the shape was placed away (ADR-0040). The
+    // direction is one of optimizer._compass: "north", "north-east", ...
+    pattern:
+      /^start moved (.+?) ([a-z]+(?:-[a-z]+)*) of the requested point, where the shape closes/,
     tone: "info",
     say: ([, distance, direction]) =>
       `The route starts ${distance} ${direction} of your start, where the shape fits the roads. Go to “Start here”.`,
@@ -104,7 +107,7 @@ export function toNote(warning: string): Note {
       return { tone: rule.tone, text: rule.say(match) };
     }
   }
-  return { tone: "info", text: warning };
+  return { tone: "info", text: capitalise(warning) };
 }
 
 /**

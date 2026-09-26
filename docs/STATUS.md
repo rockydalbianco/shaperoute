@@ -54,13 +54,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## In lavorazione
 
 - **TASK-081** — API da fuori casa (chiave, limite, indirizzo nell'app,
-  Docker, `DEPLOY.md`): PR #94. La prova PC + Tailscale funziona
-  (l'utente, 2026-09-26). Resta la CI `mobile`: `App.test.tsx` controlla il
-  vecchio testo di «Cannot reach the API».
+  Docker, `DEPLOY.md`): fatto, PR #94 con CI verde, da mergiare dopo l'ok
+  dell'utente. PC + Tailscale provato dall'iPhone in 5G: funziona
+  (2026-09-26). Senza PC acceso: Raspberry Pi 5 o VPS con PayPal
+  (`DEPLOY.md`, D ed E), da decidere con l'utente.
 Niente per l'app.
 
 ## Completato
 
+- **App** — TASK-074: «Off the route» solo dopo 3 posizioni di fila oltre
+  40 m, per almeno 8 s; una posizione con errore oltre 40 m non conta;
+  «Back on the route» dopo 2 posizioni sul percorso (ADR-0070). Il
+  marciapiede opposto e il GPS che sbaglia per qualche secondo non danno
+  più l'avviso; una via parallela sbagliata sì, 8–10 s dopo.
+- **Riparatore** — TASK-082: le direzioni col trattino («north-east»,
+  «south-west») nell'avviso della partenza spostata ora si traducono come
+  «north»; test per le otto direzioni del motore. Un avviso che l'app non
+  conosce arriva con la prima lettera maiuscola (ADR-0077).
 - **Motore** — TASK-076 (PR aperta, merge del coordinatore): il motore
   prova il cuore anche da 3 nodi a 25–100 m, in parallelo, e tiene il
   migliore; il percorso parte comunque dall'utente, con l'avvicinamento nei

@@ -2117,6 +2117,47 @@ il motore la disegna: nessun rischio per il motore, e il principio resta
 si perde nel selettore di iOS, che consegna JPEG. Un pezzo staccato si perde
 ancora, ma ora si vede nell'anteprima.
 
+## ADR-0070 — «Off the route» dopo più posizioni e qualche secondo, non dopo una
+**Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
+(TASK-074)
+
+L'utente, correndo sul marciapiede opposto a quello del percorso, si è
+sentito dire «You are off the route». La soglia era già 40 m
+(`OFF_ROUTE_M`, ADR-0052), ma bastava **una** posizione oltre: in OSM il
+marciapiede opposto è spesso una linea a sé, a 15–25 m dal percorso, e il
+GPS fra le case sbaglia di 10–20 m, a tratti per qualche secondo di fila.
+22 m di marciapiede più 20 m di errore passano i 40 m.
+
+**Decisione** (`navigator.ts`):
+- **La soglia resta 40 m.** Alzarla non basta (un errore raro supera
+  qualunque soglia) e ritarda la via sbagliata, che è a 50 m o più.
+- **L'avviso dopo 3 posizioni di fila oltre la soglia, che coprono almeno
+  8 s** (`OFF_FIXES`, `OFF_SECONDS`) dalla prima. Una posizione entro la
+  soglia azzera la serie. Il GPS che sbaglia di solito torna in pochi secondi; una via
+  sbagliata non torna vicina. Il conto da solo non basta: a passo di corsa
+  le posizioni arrivano ogni 2 s circa (`FIX_EVERY_M` = 5 m), e 3 posizioni
+  sono 4 s. Senza l'ora della posizione conta solo il numero.
+- **Una posizione con errore dichiarato oltre 40 m** (`POOR_FIX_M`, da
+  `coords.accuracy`) non dice niente sull'essere fuori: non allunga né
+  azzera la serie, e non riporta sul percorso. Sul percorso fa avanzare
+  come prima.
+- **«Back on the route» dopo 2 posizioni di fila entro la soglia**
+  (`BACK_FIXES`): su una via parallela a 50 m, una posizione storta verso
+  il percorso non deve far dire «Back on the route» e poi di nuovo «off».
+  Il ritorno vero, con una posizione ogni 2 s, si sente dopo 2 s in più.
+
+**Scartate**: una soglia che cresce con l'accuracy della posizione (iOS la
+dà spesso a gradini larghi, fino a 65 m, e a 65 m nessuna soglia utile resta sotto
+i 50 m della via parallela); la media delle ultime posizioni (un errore
+grande pesa comunque, e la via sbagliata arriva più tardi).
+
+**Conseguenza**: sulla via parallela sbagliata l'avviso arriva 8–10 s dopo
+averla presa, circa 25–30 m di corsa, invece che alla prima posizione. Test
+con sequenze finte in `navigator.test.ts`: 4 minuti sul marciapiede opposto
+con tre posizioni di fila oltre 40 m, nessun avviso; un punto a 60 m,
+nessuno; una via a 47–63 m, uno dopo 8 s; posizioni con errore 80 m,
+nessuno. Se sul campo arriva ancora a sproposito, si alza `OFF_SECONDS`.
+
 ## ADR-0072 — Lettere squadrate: un secondo alfabeto, girato sulla griglia delle vie
 **Stato**: Attiva · 2026-09-26 · chiesto dall'utente dopo TASK-071
 («sì, provale»), sul modello delle scritte di GPS art che ha mandato
@@ -2370,3 +2411,23 @@ centinaia), Cloudflare Workers (memoria); una libreria di rate limiting
 (A) senza cambiare codice; le strade senza PC acceso (D, E) sono
 documentate e l'immagine è pronta. Il messaggio dell'app quando l'API non
 risponde nomina Wi-Fi, Tailscale e l'indirizzo del server.
+
+## ADR-0077 — Un avviso sconosciuto arriva con la prima lettera maiuscola
+**Stato**: Attiva · 2026-09-26 · deciso dall'agente su delega dell'utente
+(TASK-082)
+
+Con ADR-0048 un avviso che l'app non riconosce passa com'è, e i testi del
+motore sono in minuscolo: con «north-east» l'utente vedeva «start moved
+250 m north-east of the requested point…» (Caldonazzo, TASK-076).
+
+**Decisione**: la regola della partenza spostata accetta le direzioni col
+trattino, tutte quelle di `optimizer._compass`; e un testo sconosciuto
+passa ancora com'è, ma con la prima lettera maiuscola.
+
+**Scartata**: cambiare il testo del motore; codici negli avvisi (vedi
+ADR-0048), oggi fuori dal task.
+
+**Motivo**: un avviso nuovo non si perde, e non sembra un errore.
+
+**Conseguenza**: resta vero quello che dice ADR-0048: chi cambia una frase
+del motore la cambia anche in `warnings.test.ts`.

@@ -1,6 +1,6 @@
 # TASK-081 — Preparare il passaggio a un server: API raggiungibile da fuori casa, protetta, con la guida
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-081-server-ready` · **ADR**: ADR-0076
 
 ## Obiettivo
@@ -36,10 +36,9 @@ l'app sa usare un indirizzo e una chiave configurati. Gratis e senza carta.
       arm64).
 - [x] `docs/DEPLOY.md` (strade A–E), link in `SETUP.md`, errori in `API.md`.
 - [x] ADR-0076 in `DECISIONS.md`, righe in `STATUS.md`.
-- [x] Prova PC + Tailscale: «tailscale funziona» (l'utente, 2026-09-26,
-      riferito dal coordinatore; dettagli di luogo e rete da confermare).
-- [ ] PR #94 con CI verde: `mobile` rosso su `__tests__/App.test.tsx`
-      (vedi sotto).
+- [x] Prova PC + Tailscale dall'iPhone in 5G, Wi-Fi spenta: funziona
+      (l'utente, 2026-09-26).
+- [x] PR #94 con CI verde (anche `docker`, amd64 e arm64).
 
 ## File toccati
 
@@ -90,10 +89,11 @@ coordinatore).
 
 ## Esito
 
-*(da chiudere)* L'API chiede la chiave e limita i POST se configurata,
-l'app usa indirizzo e chiave da `.env`, l'immagine Docker si costruisce per
-amd64 e arm64, `DEPLOY.md` ha le strade A–E. La prova PC + Tailscale
-funziona (l'utente). Aperto: `App.test.tsx` (di TASK-065) controlla il
-vecchio testo di «Cannot reach the API», cambiato qui con l'ok del
-coordinatore; va deciso se aggiornare quella riga o tornare al testo di
-prima.
+Fatto. Con `SHAPEROUTE_API_KEY` l'API chiede la chiave `X-API-Key` e
+limita i POST (401 `unauthorized`, 429 `too_many_requests`); senza, tutto
+come prima. L'app usa `EXPO_PUBLIC_API_URL` ed `EXPO_PUBLIC_API_KEY` se ci
+sono. L'immagine Docker si costruisce per amd64 e arm64. `DEPLOY.md` ha le
+strade A–E; la A (PC + Tailscale, con `REACT_NATIVE_PACKAGER_HOSTNAME`)
+funziona dall'iPhone in 5G senza le variabili nuove. Il messaggio «Cannot
+reach the API» ora nomina Wi-Fi, Tailscale e server (una riga di
+`App.test.tsx`, con l'ok del coordinatore). Prossimo: TASK-079.

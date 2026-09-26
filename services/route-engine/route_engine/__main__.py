@@ -4,6 +4,8 @@
 `--word TEXT` writes a word one letter at a time (TASK-050), and
 `--image FILE` takes the outline of the subject of a PNG or JPEG image
 (TASK-072); `--save-outline FILE` writes that outline as JSON to look at.
+`--nearby N` also plans from N road nodes near the start and keeps the best
+(TASK-076).
 """
 
 from __future__ import annotations
@@ -24,6 +26,12 @@ from route_engine.models import (
     check_activity,
     check_distance,
     check_start,
+)
+from route_engine.nearby_starts import (
+    NEARBY_COUNT,
+    NearbyPlan,
+    ShapeJob,
+    plan_nearby,
 )
 from route_engine.network import EDGE_REUSE_PENALTY, OsmnxSource
 from route_engine.optimizer import (
@@ -168,6 +176,15 @@ def _build_parser() -> argparse.ArgumentParser:
         default=EDGE_REUSE_PENALTY,
         help=f"weight multiplier on already used roads (default: {EDGE_REUSE_PENALTY})",
     )
+    parser.add_argument(
+        "--nearby",
+        type=int,
+        default=0,
+        metavar="N",
+        help="also plan from N road nodes 25-100 m from the start, in parallel, "
+        "and keep the best route, reached from the start "
+        f"(the API's choice is {NEARBY_COUNT}; default: 0, the start only)",
+    )
     return parser
 
 
@@ -185,6 +202,10 @@ def parse_args(
     args = parser.parse_args(argv)
     if args.out is not None and args.out.exists():
         parser.error(f"{args.out} already exists; samples are never overwritten")
+    if args.nearby < 0:
+        parser.error("--nearby must be 0 or more")
+    if args.nearby and args.no_optimize:
+        parser.error("--nearby needs the search: drop --no-optimize")
     if args.save_outline is not None:
         if args.image is None:
             parser.error("--save-outline needs --image")
@@ -279,19 +300,33 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("Road graph: from the cache")
     else:
         print("Road graph: downloading from OpenStreetMap...")
+    nearby: NearbyPlan | None = None
     try:
-        plan = plan_shape(
-            shape,
-            request.shape,
-            request.start,
-            request.distance_m,
-            source,
-            optimize=optimize,
-            reuse_penalty=args.reuse_penalty,
-            max_tilt_deg=tilt_limit(request.shape),
-            one_way=one_way,
-            word=word,
-        )
+        if args.nearby:
+            job = ShapeJob(
+                tuple(shape),
+                request.shape,
+                request.distance_m,
+                reuse_penalty=args.reuse_penalty,
+                max_tilt_deg=tilt_limit(request.shape),
+                one_way=one_way,
+                word=word,
+            )
+            nearby = plan_nearby(job, request.start, source, count=args.nearby)
+            plan = nearby.plan
+        else:
+            plan = plan_shape(
+                shape,
+                request.shape,
+                request.start,
+                request.distance_m,
+                source,
+                optimize=optimize,
+                reuse_penalty=args.reuse_penalty,
+                max_tilt_deg=tilt_limit(request.shape),
+                one_way=one_way,
+                word=word,
+            )
     except ShapeNotDrawableError as exc:
         print(f"No route: {exc}", file=sys.stderr)
         return 1
@@ -323,6 +358,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             print(f"  letters:    {height_m:.0f} m high; moved (m, along/up) {moves}")
         print(f"  attempts:   {len(plan.search.attempts)} routes traced")
+    if nearby is not None:
+        _print_nearby(nearby)
     measure_name = SIMILARITY if word is None else "letters"
     print(f"  similarity: {route.similarity:.2f} ({measure_name})")
     print(f"  on roads:   {route.distance_m:.0f} m (target {request.distance_m} m)")
@@ -336,6 +373,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     for warning in route.warnings:
         print(f"  warning: {warning}")
     return 0
+
+
+def _print_nearby(nearby: NearbyPlan) -> None:
+    """Every start tried, and which one the route comes from."""
+    print(f"  nearby:     {len(nearby.tried)} starts planned")
+    if nearby.skipped:
+        print(f"            ({nearby.skipped})")
+    for i, tried in enumerate(nearby.tried):
+        mark = "*" if i == nearby.chosen else " "
+        where = "the start" if i == 0 else f"{tried.approach_m:.0f} m along the roads"
+        if tried.plan is None or tried.score is None:
+            what = tried.note
+        else:
+            what = (
+                f"similarity {tried.plan.result.similarity:.2f}, "
+                f"{tried.plan.result.distance_m:.0f} m, score {tried.score:.3f}"
+            )
+        print(f"            {mark} {where}: {what}")
 
 
 if __name__ == "__main__":

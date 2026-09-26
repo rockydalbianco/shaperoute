@@ -25,11 +25,11 @@ from route_engine.models import (
     check_distance,
     check_start,
 )
+from route_engine.nearby_starts import ShapeJob, plan_nearby
 from route_engine.optimizer import (
     SHAPE_POINTS,
     GraphLoader,
     Plan,
-    plan_route,
     plan_shape,
     tilt_limit,
 )
@@ -159,7 +159,8 @@ def plan_image(request: ImageRequest, source: GraphLoader) -> Plan:
 
 
 def plan_request(request: AnyRequest, source: GraphLoader) -> Plan:
-    """The API's planner: a shape or a word as always, or an image."""
+    """The API's planner: a shape or a word, also from a few road nodes near
+    the start, keeping the best (TASK-076, ADR-0071); or an image."""
     if isinstance(request, ImageRequest):
         return plan_image(request, source)
-    return plan_route(request, source)
+    return plan_nearby(ShapeJob.of_request(request), request.start, source).plan

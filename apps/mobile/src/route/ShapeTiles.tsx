@@ -9,6 +9,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { shapeName } from "./shapeWords";
 
 /**
  * A sign for each shape of the catalogue. Text, not drawings: drawing the real
@@ -22,6 +23,9 @@ export const SHAPE_SIGNS: Record<Shape, string> = {
   moon: "☾",
   cat: "🐈",
   fish: "🐟",
+  butterfly: "🦋",
+  snail: "🐌",
+  dog_head: "🐶",
 };
 
 type Props = {
@@ -42,11 +46,13 @@ export function ShapeTiles({ chosen, onPick }: Props) {
             style={[styles.tile, selected && styles.selected]}
             onPress={() => onPick(shape)}
             accessibilityRole="button"
-            accessibilityLabel={shape}
+            accessibilityLabel={shapeName(shape)}
             accessibilityState={{ selected }}
           >
             <Text style={styles.sign}>{SHAPE_SIGNS[shape]}</Text>
-            <Text style={[styles.name, selected && styles.selectedName]}>{shape}</Text>
+            <Text style={[styles.name, selected && styles.selectedName]}>
+              {shapeName(shape)}
+            </Text>
           </Pressable>
         );
       })}

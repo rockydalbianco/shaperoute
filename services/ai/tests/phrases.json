@@ -1,6 +1,17 @@
 {
   "about": "Words the shape table does not know, with the answers accepted (TASK-030). null: no shape of the catalogue. Two answers: both are fair.",
-  "shapes": ["circle", "heart", "star", "horse", "moon", "cat", "fish"],
+  "shapes": [
+    "circle",
+    "heart",
+    "star",
+    "horse",
+    "moon",
+    "cat",
+    "fish",
+    "butterfly",
+    "snail",
+    "dog_head"
+  ],
   "phrases": [
     { "text": "stemma della Ferrari", "accept": ["horse"] },
     { "text": "cavallino rampante", "accept": ["horse"] },
@@ -28,6 +39,20 @@
     { "text": "felino", "accept": ["cat"] },
     { "text": "tigre", "accept": ["cat", null] },
 
+    { "text": "farfalla monarca", "accept": ["butterfly"] },
+    { "text": "falena", "accept": ["butterfly", null] },
+    { "text": "papillon", "accept": ["butterfly", "dog_head"] },
+
+    { "text": "escargot", "accept": ["snail"] },
+    { "text": "lumacone", "accept": ["snail"] },
+    { "text": "Turbo", "accept": ["snail", null] },
+
+    { "text": "Snoopy", "accept": ["dog_head", null] },
+    { "text": "Lassie", "accept": ["dog_head"] },
+    { "text": "labrador", "accept": ["dog_head"] },
+    { "text": "Scooby-Doo", "accept": ["dog_head"] },
+    { "text": "lupo", "accept": ["dog_head", null] },
+
     { "text": "San Valentino", "accept": ["heart"] },
     { "text": "ti amo", "accept": ["heart"] },
     { "text": "innamorati", "accept": ["heart"] },
@@ -49,14 +74,12 @@
     { "text": "rotonda", "accept": ["circle"] },
     { "text": "pizza", "accept": ["circle", null] },
 
-    { "text": "cane", "accept": [null] },
-    { "text": "Snoopy", "accept": [null] },
     { "text": "Batman", "accept": [null] },
     { "text": "Torre Eiffel", "accept": [null] },
     { "text": "casa", "accept": [null] },
     { "text": "Italia", "accept": [null] },
     { "text": "dinosauro", "accept": [null] },
-    { "text": "farfalla", "accept": [null] },
+    { "text": "ragno", "accept": [null] },
     { "text": "Pikachu", "accept": [null] },
     { "text": "aereo", "accept": [null] },
     { "text": "chitarra", "accept": [null] },

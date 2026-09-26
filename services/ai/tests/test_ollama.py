@@ -23,7 +23,18 @@ from shaperoute_ai.ollama import (
 from shaperoute_ai.prompt import NONE
 from shaperoute_ai.reading import Choice, ModelUnavailableError
 
-SHAPES = ("circle", "heart", "star", "horse", "moon", "cat", "fish")
+SHAPES = (
+    "circle",
+    "heart",
+    "star",
+    "horse",
+    "moon",
+    "cat",
+    "fish",
+    "butterfly",
+    "snail",
+    "dog_head",
+)
 
 
 def reply(content: str) -> dict[str, Any]:

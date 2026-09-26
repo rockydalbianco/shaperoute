@@ -25,8 +25,15 @@ def _has_strokes(name: str) -> bool:
 
 @pytest.mark.parametrize("name", SUPPORTED_SHAPES)
 def test_shape_has_n_vertices_and_is_closed(name: str) -> None:
-    points = get_shape(name)(N)
-    assert len(points) == N + 1
+    shape = get_shape(name)
+    points = shape(N)
+    if _has_strokes(name):
+        # Every vertex of the drawn path stays: the snail and the dog's head
+        # have more than N of them (TASK-065).
+        assert isinstance(shape, Outline)
+        assert len(points) == max(N, len(shape.path()) - 1) + 1
+    else:
+        assert len(points) == N + 1
     assert points[-1] == points[0]
     assert all(a != b for a, b in zip(points, points[1:], strict=False))
     if not _has_strokes(name):
@@ -118,10 +125,12 @@ def test_too_few_points_is_rejected(n_points: int) -> None:
         get_shape("heart")(n_points)
 
 
-def test_unknown_shape_is_rejected() -> None:
-    # The house is an outline file, but not a catalogue shape (ADR-0036).
-    with pytest.raises(ValueError, match="unknown shape 'house'"):
-        get_shape("house")
+@pytest.mark.parametrize("name", ["house", "dog", "bird"])
+def test_unknown_shape_is_rejected(name: str) -> None:
+    # Outline files, but not catalogue shapes (ADR-0036): the house, and the
+    # whole dog and the bird the user left out (ADR-0061).
+    with pytest.raises(ValueError, match=f"unknown shape '{name}'"):
+        get_shape(name)
 
 
 def test_registry_and_supported_shapes_agree() -> None:
@@ -154,4 +163,5 @@ def test_the_outlines_ship_with_the_package() -> None:
     patterns = data["tool"]["setuptools"]["package-data"]["route_engine.shapes"]
     assert patterns == ["outlines/*.json"]
     catalogue = {"star", "horse", "moon", "cat", "fish"}
+    catalogue |= {"butterfly", "snail", "dog_head"}
     assert {path.stem for path in OUTLINES.glob("*.json")} >= catalogue

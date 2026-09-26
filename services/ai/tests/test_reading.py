@@ -14,7 +14,18 @@ from shaperoute_ai.reading import (
     clean,
 )
 
-SHAPES = ("circle", "heart", "star", "horse", "moon", "cat", "fish")
+SHAPES = (
+    "circle",
+    "heart",
+    "star",
+    "horse",
+    "moon",
+    "cat",
+    "fish",
+    "butterfly",
+    "snail",
+    "dog_head",
+)
 
 
 class FakeModel:
@@ -50,8 +61,9 @@ def test_none_is_an_answer() -> None:
 
 
 def test_a_shape_outside_the_catalogue_counts_as_none() -> None:
-    model = FakeModel({"cane": Choice("dog", "a dog")})
-    assert ShapeReader(model, SHAPES).read("cane") == Choice(None, "a dog")
+    # The bird was drawn, but the user left it out (ADR-0061).
+    model = FakeModel({"uccello": Choice("bird", "a bird")})
+    assert ShapeReader(model, SHAPES).read("uccello") == Choice(None, "a bird")
 
 
 @pytest.mark.parametrize("text", ["", "   ", "\n\t"])

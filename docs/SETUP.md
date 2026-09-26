@@ -546,6 +546,9 @@ L'app trova l'API da sola: è sullo stesso PC che le manda l'app, alla porta
 9.4) e si cerca il luogo; da una zona nuova l'API deve prima scaricarla, e
 può volerci più di un minuto.
 
+Per chiedere percorsi **fuori casa**, in 5G (PC + Tailscale), o da un
+server: `DEPLOY.md`.
+
 ---
 
 ## Il ciclo di tutti i giorni

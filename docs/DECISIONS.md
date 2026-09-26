@@ -2216,3 +2216,55 @@ riconoscono tutte e tre; il coniglio è `sì` a Trento e `quasi` a Levico,
 la zucca `no` a Trento e `quasi` a Levico, l'albero di Natale `quasi` a
 Trento e `no` a Levico (l'albero di TASK-034/037 era `no` in tutte e due). Quali forme entrano nel catalogo
 lo decide l'utente, con TASK-065 o dopo (ADR-0036).
+
+## ADR-0076 — API da fuori casa: chiave, limite, indirizzo nell'app, Docker
+
+**Data**: 2026-09-26 · **Task**: TASK-081 · **Stato**: accettata ·
+deciso dall'agente su delega dell'utente (strade e vincolo «gratis e senza
+carta» dall'utente, tramite il coordinatore)
+
+**Decisione**:
+
+- **Strada di adesso: PC + Tailscale** (`DEPLOY.md`, A): l'API resta sul
+  PC con `--lan`, che ascolta su tutte le interfacce, anche quella di
+  Tailscale; Expo pubblica l'indirizzo `100.x` se
+  `REACT_NATIVE_PACKAGER_HOSTNAME` è impostato, e l'app ricava l'API dallo
+  stesso host (ADR-0031). Nessuna chiave: la tailnet è privata. Poi
+  Cloudflare Tunnel (B), server con carta (C), Raspberry Pi 5 (D), VPS
+  pagato con PayPal (E).
+- **Chiave**: solo dalla variabile `SHAPEROUTE_API_KEY`, mai da riga di
+  comando (resta nella cronologia). Intestazione `X-API-Key`, confronto a
+  tempo costante (`hmac.compare_digest`), almeno 16 caratteri o l'API non
+  parte. `GET /health` resta aperto. Senza variabile, tutto come prima.
+  Errore 401 `unauthorized`, codice nuovo del contratto.
+- **Limite in memoria**, senza dipendenze: `SHAPEROUTE_RATE_LIMIT` POST al
+  minuto per client (default 30, 0 = spento), finestra scorrevole; 429
+  `too_many_requests` con `Retry-After`. Solo i POST, che fanno lavorare
+  il PC: il polling dei job (GET ogni 2 s) non conta. Per indirizzo del
+  client: dietro un tunnel tutti condividono lo stesso, accettabile per un
+  utente solo.
+- **Tutto in un modulo nuovo**, `shaperoute_api/access.py`, collegato con
+  `protect(app)` in `create_app`.
+- **App**: `EXPO_PUBLIC_API_URL` ed `EXPO_PUBLIC_API_KEY` in
+  `apps/mobile/.env`, letti da Expo; l'indirizzo configurato vince su
+  quello di Expo, la chiave va in ogni chiamata (job, polling, DELETE,
+  GPX, letture, contorni). Senza, come prima.
+- **Docker**: `python:3.12-slim`, dipendenze prese dai `pyproject.toml`,
+  pacchetti eseguiti dai sorgenti con `PYTHONPATH` (così i file di dati
+  del motore ci sono tutti, anche quelli che `package-data` non elenca),
+  utente non root, grafi nel volume `/app/data/cache`, zone scaricate alla
+  prima richiesta o subito con la CLI del motore. Ollama fuori
+  dall'immagine: senza, `ai_unavailable`. La CI costruisce l'immagine per
+  amd64 (con una prova di `/health` e della chiave) e per ARM64 (Raspberry
+  Pi, Oracle Ampere), senza pubblicarla.
+
+**Alternative scartate**: Hugging Face Spaces (Docker a pagamento), Render
+e Koyeb gratis (512 MB di RAM, niente disco permanente: una zona ne occupa
+centinaia), Cloudflare Workers (memoria); una libreria di rate limiting
+(dipendenza nuova, non serve per un utente); la chiave come opzione
+`--api-key`.
+
+**Conseguenza**: l'utente può chiedere percorsi in 5G con il PC acceso
+(A) senza cambiare codice; le strade senza PC acceso (D, E) sono
+documentate e l'immagine è pronta. Il messaggio dell'app quando l'API non
+risponde parla ancora di «same Wi-Fi».

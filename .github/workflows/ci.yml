@@ -167,3 +167,12 @@ jobs:
       - name: Log
         if: always()
         run: docker logs api || true
+
+      # Raspberry Pi 5 e Oracle Ampere sono ARM64: l'immagine deve
+      # costruirsi anche per loro (emulata con QEMU, solo la build).
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build for ARM64
+        run: docker buildx build --platform linux/arm64 -t shaperoute-api:arm64 .

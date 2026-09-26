@@ -30,6 +30,14 @@ la CLI). `--ai-model` e `--ai-url` scelgono il modello di Ollama che legge
 le parole della forma e dove risponde (`AI.md`); senza, valgono quelli del
 codice. La documentazione interattiva è su `/docs`.
 
+Da fuori casa (TASK-081, ADR-0076, `DEPLOY.md`): se la variabile
+d'ambiente `SHAPEROUTE_API_KEY` è impostata (almeno 16 caratteri), ogni
+richiesta tranne `GET /health` deve avere l'intestazione `X-API-Key` con
+quel valore; senza, l'API è aperta come prima. I POST sono limitati a
+`SHAPEROUTE_RATE_LIMIT` al minuto per client (default 30, 0 = nessun
+limite); il polling dei job è GET e non conta. La chiave non si passa mai
+da riga di comando.
+
 ## Endpoint
 
 ### `GET /health`
@@ -279,6 +287,8 @@ mancava la distanza: è la sua lunghezza, al km intero, fra 1 e 50 km
 | Immagine non in base64 o oltre 10 MB; contorno di `/image-route-jobs` non valido | 422 | `invalid_request` |
 | Il motore viola le sue regole (ADR-0026) o altro imprevisto | 500 | `engine_error` |
 | Indirizzo o metodo sbagliato | 404, 405 | `http_error` |
+| Con `SHAPEROUTE_API_KEY` impostata: `X-API-Key` mancante o sbagliata (TASK-081) | 401 | `unauthorized` |
+| Più di `SHAPEROUTE_RATE_LIMIT` POST in un minuto dallo stesso client (default 30; `Retry-After` in secondi) | 429 | `too_many_requests` |
 
 Forma e codici sono anche nel contratto condiviso con l'app: `ApiError` e
 `API_ERROR_CODES` in `shared-types` (ADR-0031). Un codice nuovo va aggiunto

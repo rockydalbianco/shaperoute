@@ -53,6 +53,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-081** — API da fuori casa (chiave, limite, indirizzo nell'app,
+  Docker, `DEPLOY.md`): PR aperta, in attesa della prova PC + Tailscale
+  in 5G e dell'ok dell'utente.
 Niente per l'app.
 
 ## Completato

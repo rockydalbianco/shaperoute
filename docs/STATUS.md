@@ -57,6 +57,17 @@ Niente per l'app.
 
 ## Completato
 
+- **Motore** — TASK-076 (PR aperta, merge del coordinatore): il motore
+  prova il cuore anche da 3 nodi a 25–100 m, in parallelo, e tiene il
+  migliore; il percorso parte comunque dall'utente, con l'avvicinamento nei
+  km e nel GPX (`nearby_starts.py`, ADR-0071, CLI `--nearby 3`). Trento
+  10 km 0,86 → 0,88; Caldonazzo, Trento 15 km e Milano uguali. Vince il
+  cuore migliore anche se la ricerca sposta la partenza (scelta
+  dell'utente). Più 3–15 s; niente vicine su grafi oltre 30 000 nodi o
+  senza memoria libera. Nell'API per forme e parole (`plan_request`).
+  Caldonazzo: stesso motore di ieri; il cuore cambia con la posizione del
+  GPS (0,73–0,98 entro 100 m). Il testo inglese grezzo di uno screenshot è
+  un bug dell'app: TASK-082.
 - **Programmatore Lettere** — TASK-078: tre forme candidate come contorni,
   sagoma nel contorno e dettagli ripassati (ADR-0073): testa di coniglio
   (`rabbit_head`), zucca di Halloween (`pumpkin`), albero di Natale con la

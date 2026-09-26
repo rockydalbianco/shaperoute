@@ -11,6 +11,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from route_engine.directions import GROUP_M, Turn
+from route_engine.image_outline import MAX_POINTS as MAX_OUTLINE_POINTS
 from route_engine.models import (
     MAX_DISTANCE_M,
     MIN_DISTANCE_M,
@@ -25,6 +26,11 @@ from route_engine.words import (
     spell_letters,
 )
 from shaperoute_ai.reading import MAX_TEXT_LENGTH
+
+# The largest image POST /image-outlines takes, and its length in base64
+# (ADR-0069): a phone photo re-encoded as JPEG is 1-4 MB.
+MAX_IMAGE_BYTES = 10_000_000
+MAX_IMAGE_BASE64 = 4 * -(-MAX_IMAGE_BYTES // 3)
 
 
 class RouteRequestBody(BaseModel):
@@ -96,7 +102,7 @@ class RouteResultBody(BaseModel):
     )
     distance_m: float = Field(description="Distance actually covered, in metres.")
     similarity: float = Field(description="How much the route looks like the shape.")
-    shape: str | None = Field(description="Null for a word.")
+    shape: str | None = Field(description="Null for a word or an image.")
     warnings: list[str]
     # Missing in a GPX request from an older app: nothing to check there.
     directions: list[DirectionBody] = Field(
@@ -104,7 +110,7 @@ class RouteResultBody(BaseModel):
         description="Turn by turn, the start first; empty without a search.",
     )
     word: str | None = Field(
-        default=None, description="The word in capitals; null for a shape."
+        default=None, description="The word in capitals; null for a shape or an image."
     )
 
     @classmethod
@@ -119,6 +125,20 @@ ErrorCode = Literal[
     "engine_error",
     "http_error",
     "ai_unavailable",
+    "image_not_usable",
+]
+
+# Why an image gives no outline: InvalidImageError.reason in
+# route_engine/image_outline.py (ADR-0068).
+ImageReason = Literal[
+    "format",
+    "unreadable",
+    "background",
+    "no_subject",
+    "scattered",
+    "edge",
+    "small",
+    "jagged",
 ]
 
 
@@ -128,6 +148,8 @@ class ErrorDetail(BaseModel):
     # Only with shape_not_drawable: a distance the shape fits, in whole km
     # (TASK-031).
     suggested_distance_m: int | None = None
+    # Only with image_not_usable: why the engine found no outline (TASK-073).
+    reason: ImageReason | None = None
 
 
 class ErrorBody(BaseModel):
@@ -154,7 +176,8 @@ class GpxRequestBody(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    request: RouteRequestBody
+    # An image route has its own request (TASK-073), defined below.
+    request: RouteRequestBody | ImageRouteRequestBody
     result: RouteResultBody
 
 
@@ -181,4 +204,66 @@ class ShapeReadingBody(BaseModel):
         description=(
             f"One of: {', '.join(SUPPORTED_SHAPES)}; null when none fits the words."
         )
+    )
+
+
+class ImageOutlineRequestBody(BaseModel):
+    """What the app sends to POST /image-outlines (ADR-0069):
+    ImageOutlineRequest in packages/shared-types."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    image: str = Field(
+        max_length=MAX_IMAGE_BASE64,
+        description=(
+            f"A PNG or JPEG file in base64, at most {MAX_IMAGE_BYTES // 1_000_000} "
+            f"MB before encoding: one clear subject on a plain background."
+        ),
+    )
+
+
+class ImageOutlineBody(BaseModel):
+    """The outline the engine traced from the image (ADR-0068, ADR-0069):
+    ImageOutline in packages/shared-types."""
+
+    points: list[tuple[float, float]] = Field(
+        description=(
+            "The outline, closed, centred and scaled into [-1, 1], y upwards: "
+            "what an image route request sends back."
+        )
+    )
+    image_points: list[tuple[float, float]] = Field(
+        description=(
+            "The same corners over the image, as shares of its width and "
+            "height from the top left: to draw the outline on the picture."
+        )
+    )
+    aspect: float = Field(description="Width over height of the image, upright.")
+
+
+class ImageRouteRequestBody(BaseModel):
+    """What the app sends to POST /image-route-jobs: ImageRouteRequest in
+    packages/shared-types. The outline is the one POST /image-outlines
+    answered, checked again like any input (ADR-0069)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    start: tuple[float, float] = Field(
+        description="Start point as [lat, lon], WGS84.",
+        examples=[[46.0671, 11.1214]],
+    )
+    outline: list[tuple[float, float]] = Field(
+        min_length=4,
+        max_length=MAX_OUTLINE_POINTS + 1,
+        description=(
+            f"The points of an ImageOutline: closed, within [-1, 1], at most "
+            f"{MAX_OUTLINE_POINTS} corners."
+        ),
+    )
+    distance_m: int = Field(
+        description=f"Target distance in metres, {MIN_DISTANCE_M}–{MAX_DISTANCE_M}.",
+        examples=[15000],
+    )
+    activity: str = Field(
+        default="running", description=f"One of: {', '.join(SUPPORTED_ACTIVITIES)}."
     )

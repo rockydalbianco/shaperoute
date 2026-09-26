@@ -2053,6 +2053,70 @@ povera di dettagli resta povera anche sulle strade. Da valutare con
 TASK-073: l'anteprima che fa giudicare la sagoma prima del percorso, e se
 la semplificazione toglie troppo.
 
+## ADR-0069 — L'immagine nell'API: base64 in JSON, anteprima, poi il contorno
+**Stato**: Attiva · 2026-09-26 · perimetro dell'utente (un soggetto chiaro
+su sfondo uniforme, solo il contorno esterno, rifiuto con il motivo;
+anteprima prima del percorso; `expo-image-picker` autorizzato); il
+contratto deciso dall'agente su delega dell'utente, approvato dal
+coordinatore (TASK-073)
+
+**Decisione**:
+
+- **Due richieste.** `POST /image-outlines` riceve l'immagine e risponde
+  con il contorno che il motore ricava (ADR-0068), in meno di 2 s; l'app lo
+  mostra. `POST /image-route-jobs` riceve il contorno, non l'immagine, e
+  risponde con un `RouteJob` come `/route-jobs`, letto e annullato sullo
+  stesso `/route-jobs/{job_id}`.
+- **L'immagine in base64 dentro il JSON**, al più 10 MB prima della
+  codifica (`MAX_IMAGE_BYTES`; Pydantic taglia prima la stringa a
+  13 333 336 caratteri). Niente multipart, che vorrebbe `python-multipart`:
+  nessuna dipendenza Python nuova (Pillow c'era già con il motore). Una foto
+  dell'iPhone, ricodificata in JPEG a qualità 0,8 dal selettore, sta fra 1
+  e 4 MB. L'API non salva e non scrive l'immagine.
+- **Il contorno torna in due forme**: `points`, normalizzati in [-1, 1],
+  per il percorso; `image_points`, frazioni della foto dall'alto a
+  sinistra, con `aspect`, per disegnarlo sopra la foto nell'anteprima.
+- **Il contorno che torna dal telefono si controlla come ogni input**
+  (richiesta del coordinatore): da 4 a 101 punti (al più 100 angoli, il
+  limite del motore), numeri finiti, dentro [-1, 1] (tolleranza 1e-6), poi
+  `parse_outline` del motore (chiuso, 3 punti distinti, senza incroci).
+  Altrimenti `invalid_request` con il motivo, prima di creare il job.
+- **Il contratto del motore non cambia**: `RouteRequest` e `models.py`
+  restano forma o parola. L'API ha il suo `ImageRequest` (partenza,
+  distanza e attività controllate con le funzioni di `models.py`) e il suo
+  pianificatore, `plan_request`, che per un'immagine chiama `plan_shape`
+  come `--image` dalla CLI: dritto (ADR-0038), nome `image`. Il
+  `RouteResult` di un'immagine ha `shape` e `word` a `null`.
+- **Un codice nuovo, `image_not_usable`** (422), con un campo nuovo in ogni
+  errore, `reason`: `null`, tranne con questo codice, dove è il motivo del
+  motore (`IMAGE_REASONS`). Un test dell'API controlla che i motivi di
+  `image_outline.py` siano tutti nel contratto.
+- **`shared-types` resta retrocompatibile**: tipi nuovi
+  (`ImageOutlineRequest`, `ImageOutline`, `ImageRouteRequest`,
+  `ImageReason`), `reason` opzionale, `GpxRequest.request` che accetta
+  anche un `ImageRouteRequest`. Un'app vecchia non chiama i due indirizzi
+  nuovi e ignora `reason`.
+- **La semplificazione di ADR-0068 resta com'è.** Misurata sui cinque
+  campioni di TASK-072: il contorno finale copre il 97–99% della sagoma
+  grezza (sovrapposizione mela 0,987, gatto 0,981, Italia 0,968, pera
+  0,984, stella 0,985) con 16–42 angoli, lontano dal limite di 100.
+  Dimezzare lisciatura e semplificazione porta il gatto a 0,989: la sua
+  sagoma resta la stessa. Il gatto non si riconosceva per la sagoma, non per
+  la semplificazione.
+
+**Motivo**: l'anteprima fa giudicare la sagoma prima di aspettare il
+percorso, ed è la risposta al gatto di TASK-072. Mandare il contorno invece
+dell'immagine alla seconda richiesta evita di rimandare megabyte, e lascia
+l'API senza stato fra le due. Il contorno però arriva dal telefono, e il
+motore non si fida di un input: lo ricontrolla.
+
+**Conseguenza**: l'API potrebbe ricevere un contorno che non ha tracciato
+lei. Se passa i controlli è una forma valida come un file di `outlines/`, e
+il motore la disegna: nessun rischio per il motore, e il principio resta
+(l'AI non produce geometrie; qui l'AI non c'entra). La trasparenza di un PNG
+si perde nel selettore di iOS, che consegna JPEG. Un pezzo staccato si perde
+ancora, ma ora si vede nell'anteprima.
+
 ## ADR-0072 — Lettere squadrate: un secondo alfabeto, girato sulla griglia delle vie
 **Stato**: Proposta · 2026-09-26 · chiesto dall'utente dopo TASK-071
 («sì, provale»), sul modello delle scritte di GPS art che ha mandato

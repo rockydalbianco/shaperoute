@@ -139,7 +139,12 @@ def test_engine_errors(exc: Exception, status: int, code: str, message: str) -> 
     response = client_failing_with(exc).post("/routes", json=TRENTO_HEART)
     assert response.status_code == status
     assert response.json() == {
-        "error": {"code": code, "message": message, "suggested_distance_m": None}
+        "error": {
+            "code": code,
+            "message": message,
+            "suggested_distance_m": None,
+            "reason": None,
+        }
     }
 
 
@@ -151,6 +156,7 @@ def test_unknown_paths_use_the_same_error_shape() -> None:
             "code": "http_error",
             "message": "Not Found",
             "suggested_distance_m": None,
+            "reason": None,
         }
     }
 

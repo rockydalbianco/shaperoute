@@ -21,8 +21,9 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from route_engine.export_gpx import route_name, to_gpx
+from route_engine.image_outline import InvalidImageError
 from route_engine.models import InvalidRequestError, RouteRequest
-from route_engine.optimizer import GraphLoader, ShapeNotDrawableError, plan_route
+from route_engine.optimizer import GraphLoader, ShapeNotDrawableError
 from shaperoute_ai.reading import (
     InvalidTextError,
     ModelUnavailableError,
@@ -33,11 +34,23 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from shaperoute_api.errors import error_of
 from shaperoute_api.graphs import MapDataUnavailableError
+from shaperoute_api.images import (
+    AnyRequest,
+    ImageRequest,
+    decode_image,
+    outline_of,
+    plan_request,
+    trace,
+)
 from shaperoute_api.jobs import Job, Planner, RouteJobs
 from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
+    ErrorDetail,
     GpxRequestBody,
+    ImageOutlineBody,
+    ImageOutlineRequestBody,
+    ImageRouteRequestBody,
     RouteJobBody,
     RouteRequestBody,
     RouteResultBody,
@@ -51,6 +64,9 @@ ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     422: {"model": ErrorBody, "description": "invalid_request or shape_not_drawable"},
     500: {"model": ErrorBody, "description": "engine_error"},
     503: {"model": ErrorBody, "description": "map_data_unavailable"},
+}
+IMAGE_OUTLINE_RESPONSES: dict[int | str, dict[str, Any]] = {
+    422: {"model": ErrorBody, "description": "invalid_request or image_not_usable"},
 }
 SHAPE_READING_RESPONSES: dict[int | str, dict[str, Any]] = {
     422: {"model": ErrorBody, "description": "invalid_request"},
@@ -77,8 +93,16 @@ def validation_message(errors: Sequence[Any]) -> str:
     return "; ".join(parts)
 
 
-def to_request(body: RouteRequestBody) -> RouteRequest:
-    """The engine's RouteRequest checks the values: InvalidRequestError."""
+def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
+    """The engine's RouteRequest checks the values, and ImageRequest those of
+    an image route: InvalidRequestError."""
+    if isinstance(body, ImageRouteRequestBody):
+        return ImageRequest(
+            start=body.start,
+            outline=outline_of(body.outline),
+            distance_m=body.distance_m,
+            activity=body.activity,
+        )
     return RouteRequest(
         start=body.start,
         shape=body.shape,
@@ -88,9 +112,10 @@ def to_request(body: RouteRequestBody) -> RouteRequest:
     )
 
 
-def gpx_file_name(request: RouteRequest, when: datetime) -> str:
+def gpx_file_name(request: AnyRequest, when: datetime) -> str:
     """No spaces or odd characters: some apps refuse them, e.g.
-    'shaperoute-heart-5km-2026-09-23.gpx', 'shaperoute-CIAO-15km-2026-09-24.gpx'."""
+    'shaperoute-heart-5km-2026-09-23.gpx', 'shaperoute-CIAO-15km-2026-09-24.gpx',
+    'shaperoute-image-15km-2026-09-26.gpx'."""
     km = f"{request.distance_m / 1000:g}km"
     return f"shaperoute-{request.name}-{km}-{when:%Y-%m-%d}.gpx"
 
@@ -110,7 +135,7 @@ def now_utc() -> datetime:
 
 def create_app(
     source: GraphLoader,
-    planner: Planner = plan_route,
+    planner: Planner = plan_request,
     jobs: RouteJobs | None = None,
     now: Callable[[], datetime] = now_utc,
     reader: ShapeReader | None = None,
@@ -143,6 +168,18 @@ def create_app(
     @app.post("/route-jobs", status_code=202, responses=ERROR_RESPONSES)
     def create_route_job(body: RouteRequestBody) -> RouteJobBody:
         return job_body(route_jobs.submit(to_request(body)))
+
+    # The route of an image's outline, drawn like a shape (ADR-0069); the
+    # job is then read and cancelled at /route-jobs/{job_id}, as any other.
+    @app.post("/image-route-jobs", status_code=202, responses=ERROR_RESPONSES)
+    def create_image_route_job(body: ImageRouteRequestBody) -> RouteJobBody:
+        return job_body(route_jobs.submit(to_request(body)))
+
+    # The engine traces the outline (ADR-0068): the app shows it before the
+    # route is asked for. A plain def: decoding a photo takes a moment.
+    @app.post("/image-outlines", responses=IMAGE_OUTLINE_RESPONSES)
+    def trace_image(body: ImageOutlineRequestBody) -> ImageOutlineBody:
+        return trace(decode_image(body.image))
 
     @app.get("/route-jobs/{job_id}", responses={404: {"model": ErrorBody}})
     def get_route_job(job_id: str) -> RouteJobBody:
@@ -226,6 +263,15 @@ def create_app(
         status, detail = error_of(exc)
         body = ErrorBody(error=detail)
         return JSONResponse(status_code=status, content=body.model_dump())
+
+    @app.exception_handler(InvalidImageError)
+    def image_not_usable(_: Request, exc: InvalidImageError) -> JSONResponse:
+        detail = ErrorDetail(
+            code="image_not_usable", message=str(exc), reason=exc.reason
+        )
+        return JSONResponse(
+            status_code=422, content=ErrorBody(error=detail).model_dump()
+        )
 
     for known in (
         InvalidRequestError,

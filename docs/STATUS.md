@@ -54,8 +54,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## In lavorazione
 
 - **TASK-081** — API da fuori casa (chiave, limite, indirizzo nell'app,
-  Docker, `DEPLOY.md`): PR aperta, in attesa della prova PC + Tailscale
-  in 5G e dell'ok dell'utente.
+  Docker, `DEPLOY.md`): PR #94. La prova PC + Tailscale funziona
+  (l'utente, 2026-09-26). Resta la CI `mobile`: `App.test.tsx` controlla il
+  vecchio testo di «Cannot reach the API».
 Niente per l'app.
 
 ## Completato

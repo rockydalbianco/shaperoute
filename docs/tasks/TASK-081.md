@@ -32,10 +32,14 @@ l'app sa usare un indirizzo e una chiave configurati. Gratis e senza carta.
       GET, DELETE), GPX, letture AI, immagini (test); messaggi in
       `problems.ts` (test nuovo `accessProblems.test.ts`).
 - [x] `Dockerfile`, `.dockerignore`, job CI `docker` scritti (da verificare
-      in CI: la build non è mai girata, Docker non è sul PC).
-- [ ] `docs/DEPLOY.md`, link in `SETUP.md`, errori in `API.md`.
-- [ ] ADR-0076 in `DECISIONS.md`, righe in `STATUS.md`.
-- [ ] PR con CI verde; prova Tailscale.
+      in CI: job `docker` verde, amd64 con prova di /health e chiave, e
+      arm64).
+- [x] `docs/DEPLOY.md` (strade A–E), link in `SETUP.md`, errori in `API.md`.
+- [x] ADR-0076 in `DECISIONS.md`, righe in `STATUS.md`.
+- [x] Prova PC + Tailscale: «tailscale funziona» (l'utente, 2026-09-26,
+      riferito dal coordinatore; dettagli di luogo e rete da confermare).
+- [ ] PR #94 con CI verde: `mobile` rosso su `__tests__/App.test.tsx`
+      (vedi sotto).
 
 ## File toccati
 
@@ -57,7 +61,7 @@ docs/DEPLOY.md (nuovo), docs/SETUP.md, docs/API.md, docs/tasks/TASK-081.md
 docs/STATUS.md, docs/DECISIONS.md            (solo righe nuove)
 ```
 
-## Dove sono arrivato (2026-09-26, limite d'uso raggiunto)
+## Dove sono arrivato (2026-09-26)
 
 Fatto e verificato in locale: test API 134 verdi; app typecheck, lint,
 prettier verdi; jest 338/346 in blocco, le 3 suite rosse (LoadingBar,
@@ -85,4 +89,10 @@ coordinatore).
 
 ## Esito
 
-*(a fine task)*
+*(da chiudere)* L'API chiede la chiave e limita i POST se configurata,
+l'app usa indirizzo e chiave da `.env`, l'immagine Docker si costruisce per
+amd64 e arm64, `DEPLOY.md` ha le strade A–E. La prova PC + Tailscale
+funziona (l'utente). Aperto: `App.test.tsx` (di TASK-065) controlla il
+vecchio testo di «Cannot reach the API», cambiato qui con l'ok del
+coordinatore; va deciso se aggiornare quella riga o tornare al testo di
+prima.

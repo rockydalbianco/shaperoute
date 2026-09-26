@@ -1,3 +1,4 @@
+from functools import partial
 from pathlib import Path
 
 import networkx as nx
@@ -7,6 +8,7 @@ import route_engine.__main__ as cli
 from route_engine.__main__ import OutlineRequest, WordRequest, main, parse_request
 from route_engine.geo import local_to_latlon
 from route_engine.models import RouteRequest
+from route_engine.nearby_starts import plan_nearby
 from route_engine.shapes import OUTLINES
 
 
@@ -212,3 +214,40 @@ def test_word_writes_the_route_as_gpx(
     gpx = out.read_text(encoding="utf-8")
     assert "<name>IO 2 km" in gpx
     assert gpx.count("<trkpt") > 10
+
+
+# --- --nearby: the best of a few starts near the given one (TASK-076) ---
+
+
+def test_nearby_prints_every_start_planned(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(cli, "OsmnxSource", _GridSource)
+    # In this process: the worker processes have their own test.
+    monkeypatch.setattr(cli, "plan_nearby", partial(plan_nearby, processes=False))
+    out = tmp_path / "circle.gpx"
+    argv = [*_args(distance="3000"), "--nearby=2", f"--out={out}"]
+    assert main(argv) == 0
+    printed = capsys.readouterr().out
+    assert "nearby:     3 starts planned" in printed
+    assert "the start:" in printed
+    assert "m along the roads:" in printed
+    assert out.read_text(encoding="utf-8").count("<trkpt") > 10
+
+
+@pytest.mark.parametrize(
+    "extra, message",
+    [
+        (["--nearby=-1"], "--nearby must be 0 or more"),
+        (["--nearby=2", "--no-optimize"], "--nearby needs the search"),
+    ],
+)
+def test_nearby_errors_exit_with_readable_error(
+    extra: list[str], message: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with pytest.raises(SystemExit) as exc:
+        parse_request([*_args(), *extra])
+    assert exc.value.code == 2
+    assert message in capsys.readouterr().err

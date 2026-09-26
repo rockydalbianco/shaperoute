@@ -12,12 +12,13 @@ import time
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw
-from route_engine.models import InvalidRequestError, RouteResult
+from route_engine.models import InvalidRequestError, RouteRequest, RouteResult
 from route_engine.network import FileSource
 from route_engine.optimizer import MAX_TILT_DEG, GraphLoader, Plan
 from shapely.geometry import Polygon
@@ -327,3 +328,21 @@ def test_the_gpx_of_an_image_route_is_named_image(
     assert response.status_code == 200, response.text
     disposition = response.headers["content-disposition"]
     assert 'filename="shaperoute-image-15km-2026-09-26.gpx"' in disposition
+
+
+def test_a_shape_or_a_word_is_planned_with_nearby_starts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """TASK-076: the planner tries nearby starts too (ADR-0071)."""
+    called: dict[str, Any] = {}
+    plan = Plan(result=RESULT, search=None)
+
+    def plan_nearby(job: Any, start: Any, source: Any) -> Any:
+        called.update(job=job, start=start)
+        return SimpleNamespace(plan=plan)
+
+    monkeypatch.setattr(images, "plan_nearby", plan_nearby)
+    request = RouteRequest(start=(46.0671, 11.1214), shape="heart", distance_m=10000)
+    assert plan_request(request, FileSource(Path("unused.graphml"))) is plan
+    assert called["start"] == request.start
+    assert called["job"].name == "heart" and called["job"].distance_m == 10000

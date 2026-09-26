@@ -1,7 +1,14 @@
-import type { JobStatus, RouteRequest, RouteResult } from "@shaperoute/shared-types";
+import type { JobStatus, RouteResult } from "@shaperoute/shared-types";
 import { useCallback, useRef, useState } from "react";
 
-import { requestRoute, type RouteOutcome } from "../api/routes";
+import {
+  type AnyRouteRequest,
+  isImageRequest,
+  requestRoute,
+  type RouteOutcome,
+} from "../api/routes";
+
+export type { AnyRouteRequest };
 
 /** What can go wrong, as the screen explains it (see problems.ts). */
 export type RouteProblem =
@@ -15,13 +22,13 @@ export type RouteState =
   | { status: "idle" }
   | {
       status: "waiting";
-      request: RouteRequest;
+      request: AnyRouteRequest;
       startedAt: number;
       /** What the API says it is doing; "sending" until it has answered. */
       phase: "sending" | JobStatus;
     }
-  | { status: "done"; request: RouteRequest; result: RouteResult }
-  | { status: "failed"; request: RouteRequest; problem: RouteProblem };
+  | { status: "done"; request: AnyRouteRequest; result: RouteResult }
+  | { status: "failed"; request: AnyRouteRequest; problem: RouteProblem };
 
 /**
  * One route request at a time: a new one, or `cancel`, stops waiting for the
@@ -29,14 +36,14 @@ export type RouteState =
  */
 export function useRouteRequest(baseUrl: string | null): {
   state: RouteState;
-  draw: (request: RouteRequest) => void;
+  draw: (request: AnyRouteRequest) => void;
   cancel: () => void;
 } {
   const [state, setState] = useState<RouteState>({ status: "idle" });
   const current = useRef<AbortController | null>(null);
 
   const draw = useCallback(
-    (request: RouteRequest) => {
+    (request: AnyRouteRequest) => {
       current.current?.abort();
       const mine = new AbortController();
       current.current = mine;
@@ -71,14 +78,18 @@ export function useRouteRequest(baseUrl: string | null): {
   return { state, draw, cancel };
 }
 
-/** Same start, shape or word, and distance: the state still belongs to the
- * screen. */
-export function sameRequest(a: RouteRequest, b: RouteRequest): boolean {
+/** Same start, shape, word or image, and distance: the state still belongs
+ * to the screen. An image's outline is the same when it is the one traced
+ * for the same picture: the same array. */
+export function sameRequest(a: AnyRouteRequest, b: AnyRouteRequest): boolean {
+  const drawn =
+    isImageRequest(a) || isImageRequest(b)
+      ? isImageRequest(a) && isImageRequest(b) && a.outline === b.outline
+      : a.shape === b.shape && a.word === b.word;
   return (
     a.start[0] === b.start[0] &&
     a.start[1] === b.start[1] &&
-    a.shape === b.shape &&
-    a.word === b.word &&
+    drawn &&
     a.distance_m === b.distance_m &&
     a.activity === b.activity
   );

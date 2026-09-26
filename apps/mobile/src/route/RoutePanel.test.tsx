@@ -1,8 +1,16 @@
-import type { RouteRequest } from "@shaperoute/shared-types";
+import type {
+  ImageOutline,
+  ImageRouteRequest,
+  RouteRequest,
+} from "@shaperoute/shared-types";
+import imageOutline from "@shaperoute/shared-types/fixtures/image-outline.json";
+import imageRequest from "@shaperoute/shared-types/fixtures/image-route-request.json";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 
 import { SLOW_TEXT } from "./LoadingBar";
+import { REASON_TEXT } from "./problems";
 import { RouteChoice, RouteOutcome } from "./RoutePanel";
+import type { ImageState } from "./useImageOutline";
 import type { ShapeReadingState } from "./useShapeReading";
 import { checkWord } from "./wordInput";
 
@@ -21,6 +29,8 @@ function choice(reading: ShapeReadingState | null) {
       wordCheck={checkWord("", 5000)}
       distanceText="5"
       distanceM={5000}
+      image={{ status: "none" }}
+      onChooseImage={jest.fn()}
       onDistanceText={jest.fn()}
     />
   );
@@ -55,6 +65,8 @@ function wordChoice(wordText: string, distanceM: number, onDistanceText = jest.f
       wordCheck={checkWord(wordText, distanceM)}
       distanceText={String(distanceM / 1000)}
       distanceM={distanceM}
+      image={{ status: "none" }}
+      onChooseImage={jest.fn()}
       onDistanceText={onDistanceText}
     />
   );
@@ -119,4 +131,97 @@ test("the bar is given the word, and waits for it longer than for a shape", asyn
   } finally {
     jest.useRealTimers();
   }
+});
+
+const PICTURE = { uri: "file:///apple.jpg", width: 800, height: 600 };
+
+function imageChoice(image: ImageState, onChooseImage = jest.fn()) {
+  return (
+    <RouteChoice
+      kind="image"
+      onKind={jest.fn()}
+      shapeText="heart"
+      shape="heart"
+      onShapeText={jest.fn()}
+      reading={null}
+      onShapeDone={jest.fn()}
+      wordText=""
+      onWordText={jest.fn()}
+      wordCheck={checkWord("", 5000)}
+      image={image}
+      onChooseImage={onChooseImage}
+      distanceText="15"
+      distanceM={15000}
+      onDistanceText={jest.fn()}
+    />
+  );
+}
+
+test("with Image chosen, a picture is chosen or taken", async () => {
+  const onChooseImage = jest.fn();
+  await render(imageChoice({ status: "none" }, onChooseImage));
+  expect(screen.queryByLabelText("Shape")).toBeNull();
+  expect(screen.getByText(/One subject on a plain background works best/)).toBeTruthy();
+  await fireEvent.press(screen.getByText("Choose picture"));
+  await fireEvent.press(screen.getByText("Take photo"));
+  expect(onChooseImage.mock.calls).toEqual([["library"], ["camera"]]);
+});
+
+test("the traced outline shows before the route, and the picture can be hidden", async () => {
+  await render(
+    imageChoice({
+      status: "traced",
+      picture: PICTURE,
+      outline: imageOutline as ImageOutline,
+    }),
+  );
+  expect(screen.getByText("Choose another")).toBeTruthy();
+  expect(screen.getByText(/The yellow line is what the route will draw/)).toBeTruthy();
+  await fireEvent(screen.getByTestId("image-preview"), "layout", {
+    nativeEvent: { layout: { width: 300, height: 0 } },
+  });
+  expect(screen.getAllByTestId("outline-side")).toHaveLength(3);
+  expect(screen.getByTestId("preview-picture")).toBeTruthy();
+  await fireEvent.press(screen.getByText("Hide the picture"));
+  expect(screen.queryByTestId("preview-picture")).toBeNull();
+  expect(screen.getByText("Show the picture")).toBeTruthy();
+});
+
+test("a refused picture says why in plain words", async () => {
+  await render(
+    imageChoice({
+      status: "failed",
+      picture: PICTURE,
+      problem: {
+        kind: "api_error",
+        code: "image_not_usable",
+        message: "the background is not uniform",
+        reason: "background",
+      },
+    }),
+  );
+  expect(screen.getByText(REASON_TEXT.background)).toBeTruthy();
+  expect(screen.getByText("the background is not uniform")).toBeTruthy();
+  expect(screen.queryByTestId("image-preview")).toBeNull();
+});
+
+test("an image route that does not fit offers no shapes", async () => {
+  const request = imageRequest as ImageRouteRequest;
+  await render(
+    <RouteOutcome
+      view={{
+        status: "failed",
+        request,
+        problem: { kind: "api_error", code: "shape_not_drawable", message: "no" },
+      }}
+      onCancel={jest.fn()}
+      exporting={{ status: "idle" }}
+      onExport={jest.fn()}
+      onTryDistance={jest.fn()}
+      onPickShape={jest.fn()}
+      onStart={jest.fn()}
+    />,
+  );
+  expect(screen.getByText(/This outline does not fit the roads here/)).toBeTruthy();
+  expect(screen.queryByText("heart")).toBeNull();
 });

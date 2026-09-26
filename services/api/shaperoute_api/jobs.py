@@ -18,18 +18,20 @@ from dataclasses import dataclass, replace
 from typing import Protocol, runtime_checkable
 
 from route_engine.directions import guidance
-from route_engine.models import RouteRequest, RouteResult
+from route_engine.models import RouteResult
 from route_engine.network import BBox, Graph
 from route_engine.optimizer import GraphLoader, Plan
 from route_engine.sidewalks import NamedRoad
 
 from shaperoute_api.alongs import NamedRoads, with_alongs
 from shaperoute_api.errors import error_of
+from shaperoute_api.images import AnyRequest
 from shaperoute_api.schemas import ErrorDetail, JobStatus
 
 log = logging.getLogger(__name__)
 
-Planner = Callable[[RouteRequest, GraphLoader], Plan]
+# A shape, a word, or an image's outline (TASK-073).
+Planner = Callable[[AnyRequest, GraphLoader], Plan]
 
 # Two, not one: a cancelled 15 km keeps its thread until the engine ends,
 # and the next request must not wait behind it.
@@ -61,7 +63,7 @@ class _Dropped(Exception):
 @dataclass
 class Job:
     job_id: str
-    request: RouteRequest
+    request: AnyRequest
     status: JobStatus = "queued"
     result: RouteResult | None = None
     error: ErrorDetail | None = None
@@ -85,7 +87,7 @@ class RouteJobs:
         self._lock = threading.Lock()
         self._pool = ThreadPoolExecutor(workers, thread_name_prefix="route-job")
 
-    def submit(self, request: RouteRequest) -> Job:
+    def submit(self, request: AnyRequest) -> Job:
         job = Job(job_id=uuid.uuid4().hex[:12], request=request)
         with self._lock:
             self._forget_old()

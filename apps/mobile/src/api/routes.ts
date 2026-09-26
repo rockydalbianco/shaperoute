@@ -3,6 +3,8 @@ import {
   type ApiError,
   type ApiErrorCode,
   type Direction,
+  type ImageReason,
+  type ImageRouteRequest,
   JOB_STATUSES,
   type JobStatus,
   type RouteJob,
@@ -28,6 +30,8 @@ export type RouteOutcome =
       message: string;
       /** A distance the shape fits (TASK-031); missing from older APIs. */
       suggested_distance_m?: number | null;
+      /** Why an image has no outline (TASK-073); missing from older APIs. */
+      reason?: ImageReason | null;
     }
   | { kind: "bad_answer"; status: number }
   | { kind: "unreachable"; url: string }
@@ -48,14 +52,22 @@ type Options = {
 
 type Answer = { status: number; ok: boolean; body: unknown };
 
+/** A shape or a word, or the outline of an image (TASK-073). */
+export type AnyRouteRequest = RouteRequest | ImageRouteRequest;
+
+export function isImageRequest(request: AnyRouteRequest): request is ImageRouteRequest {
+  return "outline" in request;
+}
+
 /**
  * Asks the API for a route in two steps (ADR-0032): POST /route-jobs answers
  * at once with a job, then GET /route-jobs/{id} every `pollMs` until the job
- * is done or failed. Never throws.
+ * is done or failed. An image's outline is posted to /image-route-jobs
+ * instead (ADR-0069), and read the same way. Never throws.
  */
 export async function requestRoute(
   baseUrl: string,
-  request: RouteRequest,
+  request: AnyRouteRequest,
   {
     signal,
     onStatus,
@@ -67,7 +79,8 @@ export async function requestRoute(
   const deadline = Date.now() + maxWaitMs;
   let answer: Answer;
   try {
-    answer = await call(fetchFn, `${baseUrl}/route-jobs`, {
+    const jobs = isImageRequest(request) ? "image-route-jobs" : "route-jobs";
+    answer = await call(fetchFn, `${baseUrl}/${jobs}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
@@ -182,10 +195,11 @@ export function isRouteResult(body: unknown): body is RouteResult {
     body.points.every(isPoint) &&
     typeof body.distance_m === "number" &&
     typeof body.similarity === "number" &&
-    // A shape of the catalogue, or a word (TASK-056): never both, never neither.
+    // A shape of the catalogue, or a word (TASK-056), never both; both null
+    // for an image (TASK-073), which only an API that knows words sends.
     ((SHAPES as readonly unknown[]).includes(body.shape)
       ? body.word === undefined || body.word === null
-      : body.shape === null && typeof body.word === "string") &&
+      : body.shape === null && (typeof body.word === "string" || body.word === null)) &&
     Array.isArray(body.warnings) &&
     body.warnings.every((warning) => typeof warning === "string") &&
     // Required since TASK-048: an API without them is out of date, not empty.

@@ -195,19 +195,78 @@ con `--word` (ADR-0044):
   quasi sempre con la ricerca fino a 2 km (ADR-0044); con le lettere di
   più tratti di più, fino a 258 s per «BELLO» (ADR-0056).
 
+### Un'immagine invece di una forma (TASK-073)
+
+Due richieste, e il contorno si vede prima del percorso (ADR-0069).
+
+**`POST /image-outlines`** — il motore ricava il contorno dell'immagine
+(`route_engine/image_outline.py`, ADR-0068):
+
+```json
+{ "image": "/9j/4AAQSkZJRgABAQ…" }
+```
+
+`image` è il file PNG o JPEG in base64, dentro il JSON: al più 10 MB prima
+della codifica (`MAX_IMAGE_BYTES`), cioè 13 333 336 caratteri. Nessun upload
+multipart, che vorrebbe `python-multipart`. La risposta, in meno di 2 s:
+
+```json
+{ "points": [[-1.0, -0.8], [1.0, -0.8], [0.0, 0.9], [-1.0, -0.8]],
+  "image_points": [[0.1, 0.9], [0.9, 0.9], [0.5, 0.05], [0.1, 0.9]],
+  "aspect": 1.0 }
+```
+
+- `points`: il contorno chiuso, centrato e scalato in [-1, 1], y in alto,
+  al più 100 angoli (`MAX_OUTLINE_POINTS`): è quello che torna indietro
+  con la richiesta del percorso.
+- `image_points`: gli stessi angoli sopra l'immagine, come frazioni di
+  larghezza e altezza dall'angolo in alto a sinistra: l'app ci disegna la
+  linea sopra la foto.
+- `aspect`: larghezza su altezza dell'immagine, dritta (EXIF).
+
+Un'immagine che non dà un contorno è rifiutata con `422`
+`image_not_usable` e il motivo del motore in `reason`: `format`,
+`unreadable`, `background`, `no_subject`, `scattered`, `edge`, `small`,
+`jagged` (`IMAGE_REASONS` in `shared-types`). Base64 non valido o
+un'immagine oltre il limite sono `invalid_request`.
+
+**`POST /image-route-jobs`** — il percorso del contorno, come `/route-jobs`:
+
+```json
+{ "start": [46.0671, 11.1214], "outline": [[-1.0, -0.8], [1.0, -0.8], [0.0, 0.9], [-1.0, -0.8]], "distance_m": 15000, "activity": "running" }
+```
+
+- `outline` sono i `points` di `/image-outlines`, senza cambiarli.
+  L'immagine non viaggia una seconda volta.
+- Il contorno arriva dal telefono e si controlla come ogni input: da 4 a
+  101 punti, numeri finiti, dentro [-1, 1], e poi il controllo del motore
+  (`parse_outline`: chiuso, almeno 3 punti distinti, senza incroci).
+  Altrimenti `422` `invalid_request` con quello che non va
+  (`outline: the outline crosses itself: …`).
+- Partenza, distanza e attività si controllano come per una forma.
+- La risposta è un `RouteJob`: si legge e si annulla su
+  `/route-jobs/{job_id}`, come gli altri. Il motore lo disegna come
+  `--image` dalla CLI, dritto (ADR-0038); il `RouteResult` ha `"shape":
+  null` e `"word": null`. Con la mela di TASK-072 a Trento, 10 km:
+  9,2 km, somiglianza 0,94, in 27 s.
+- Il GPX si chiede a `POST /gpx` con questa richiesta al posto del
+  `RouteRequest`; il file si chiama `shaperoute-image-15km-2026-09-26.gpx`.
+
 ## Errori
 
 Ogni errore ha la stessa forma, con un messaggio in inglese come quelli
 del motore:
 
 ```json
-{ "error": { "code": "shape_not_drawable", "message": "a 7 km heart cannot be drawn here: …", "suggested_distance_m": 4000 } }
+{ "error": { "code": "shape_not_drawable", "message": "a 7 km heart cannot be drawn here: …", "suggested_distance_m": 4000, "reason": null } }
 ```
 
 `suggested_distance_m` c'è in ogni errore ed è `null` tranne con
 `shape_not_drawable`, quando il percorso migliore seguiva la forma ma
 mancava la distanza: è la sua lunghezza, al km intero, fra 1 e 50 km
 (ADR-0041). Se il motivo è la somiglianza bassa resta `null`.
+`reason` c'è in ogni errore dal TASK-073 ed è `null` tranne con
+`image_not_usable`: il motivo del motore, in una parola.
 
 | Caso | HTTP | `code` |
 |---|---|---|
@@ -216,6 +275,8 @@ mancava la distanza: è la sua lunghezza, al km intero, fra 1 e 50 km
 | Forma non disponibile in quella zona (ADR-0025) | 422 | `shape_not_drawable` |
 | Zona non in cache e dati OSM non scaricabili | 503 | `map_data_unavailable` |
 | Il modello che legge le parole della forma non risponde (`AI.md`) | 503 | `ai_unavailable` |
+| Un'immagine senza un contorno chiaro (TASK-073) | 422 | `image_not_usable` |
+| Immagine non in base64 o oltre 10 MB; contorno di `/image-route-jobs` non valido | 422 | `invalid_request` |
 | Il motore viola le sue regole (ADR-0026) o altro imprevisto | 500 | `engine_error` |
 | Indirizzo o metodo sbagliato | 404, 405 | `http_error` |
 

@@ -34,7 +34,11 @@ giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
 chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
 fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
 dalla cima, e una scala per lettera vicina a quella delle vicine
-(ADR-0063, dopo TASK-063, che ha `optimizer.py`).
+(ADR-0063, dopo TASK-063, che ha `optimizer.py`). Da TASK-071: lettere più
+piccole si leggono peggio. Da TASK-077: le lettere squadrate sono un
+secondo stile nel motore; l'utente le vuole come **scelta nell'app**,
+accanto a quelle di oggi (task da assegnare: stile nella richiesta,
+nell'API, in `shared-types` e nell'app).
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -58,6 +62,68 @@ Niente per l'app.
   «Back on the route» dopo 2 posizioni sul percorso (ADR-0070). Il
   marciapiede opposto e il GPS che sbaglia per qualche secondo non danno
   più l'avviso; una via parallela sbagliata sì, 8–10 s dopo.
+- **Riparatore** — TASK-082: le direzioni col trattino («north-east»,
+  «south-west») nell'avviso della partenza spostata ora si traducono come
+  «north»; test per le otto direzioni del motore. Un avviso che l'app non
+  conosce arriva con la prima lettera maiuscola (ADR-0077).
+- **Motore** — TASK-076 (PR aperta, merge del coordinatore): il motore
+  prova il cuore anche da 3 nodi a 25–100 m, in parallelo, e tiene il
+  migliore; il percorso parte comunque dall'utente, con l'avvicinamento nei
+  km e nel GPX (`nearby_starts.py`, ADR-0071, CLI `--nearby 3`). Trento
+  10 km 0,86 → 0,88; Caldonazzo, Trento 15 km e Milano uguali. Vince il
+  cuore migliore anche se la ricerca sposta la partenza (scelta
+  dell'utente). Più 3–15 s; niente vicine su grafi oltre 30 000 nodi o
+  senza memoria libera. Nell'API per forme e parole (`plan_request`).
+  Caldonazzo: stesso motore di ieri; il cuore cambia con la posizione del
+  GPS (0,73–0,98 entro 100 m). Il testo inglese grezzo di uno screenshot è
+  un bug dell'app: TASK-082.
+- **Programmatore Lettere** — TASK-078: tre forme candidate come contorni,
+  sagoma nel contorno e dettagli ripassati (ADR-0073): testa di coniglio
+  (`rabbit_head`), zucca di Halloween (`pumpkin`), albero di Natale con la
+  stella (`christmas_tree`); provate dalla CLI a 15 km: somiglianza
+  0,97 · 0,88 · 0,97, 0,92 · 0,83 · 1,00 e 0,93 · 0,81 · 1,00 (Trento,
+  Levico, Milano). Giudizio dell'utente: tutte e tre `sì` a Milano;
+  coniglio `sì` a Trento e `quasi` a Levico, zucca `no` a Trento e `quasi`
+  a Levico, albero `quasi` a Trento e `no` a Levico. Quali entrano nel catalogo lo decide l'utente, con
+  TASK-065 o dopo.
+- **Programmatore Lettere** — TASK-077: lettere squadrate, un secondo
+  stile delle parole nel motore (`letters_block.json`, `style="block"`,
+  ADR-0072): tratti dritti o a 45°, lettere larghe e vicine, la parola
+  girata sulla griglia delle vie al più di 30°. Lo stile di oggi resta il
+  predefinito, identico. Giudizio: CIAO sì · quasi · sì, MAX no · quasi ·
+  sì, BELLO quasi · no · no, HURRY no (Trento · Levico · Milano): bene le
+  parole corte con lettere grandi su una griglia regolare. L'utente vuole
+  **tutti e due gli stili, da scegliere nell'app**: task da assegnare.
+- **Interfaccia Grafica** — TASK-073: l'immagine nell'app e nell'API
+  (ADR-0069). «Image» accanto a Shape e Word, foto dalla libreria o dalla
+  fotocamera, anteprima del contorno prima del percorso, motivo del rifiuto
+  in parole semplici. Provato sull'iPhone dall'utente (2026-09-26): «sì,
+  funziona tutto».
+- **Programmatore Lettere** — TASK-071: verificato che il ritorno di un
+  tratto ripassato prende a volte un'altra via e disegna un anello,
+  soprattutto a Milano («CIAO» 51% di strade doppie contro il 74% del
+  disegno). Provato il ritorno sulle strade dell'andata: una linea sola, ma
+  percorso più lungo e lettere più piccole (fino a −28%); per l'utente 4
+  parole su 9 peggio, nessuna meglio. Il motore resta com'è (ADR-0067
+  «Scartata», codice nel commit `0e8add6`). Proposta all'utente, da
+  decidere: lettere squadrate come nello screenshot di Strava (task file).
+- **Motore** — TASK-075: il cuore da 10 km di Caldonazzo non è peggiorato.
+  Motore di ieri (`87304b0`) e di oggi (`709f4f5`) danno lo stesso percorso
+  punto per punto su 9 partenze su 9, oggi in 16,9 s invece di 21,4 s.
+  Cambia invece con la partenza: 25–100 m di GPS portano la somiglianza da
+  0,73 a 0,92. Nessun codice cambiato; da decidere se il motore debba
+  provare partenze vicine (task file). Giudizio: 5 `sì`, 3 `quasi`, 2 `no`
+  su 10 cuori; l'utente ha scelto che il motore provi più partenze vicine e
+  tenga la migliore: **TASK-076**.
+- **Motore** — TASK-072: la forma ricavata da un'immagine. Da un PNG o
+  JPEG con un soggetto chiaro su sfondo uniforme il motore ricava il
+  contorno esterno con regole fisse (`image_outline.py`, ADR-0068) e la CLI
+  ne fa un percorso (`--image`, `--save-outline`); sfondo non uniforme,
+  più soggetti, soggetto sul bordo, piccolo o frastagliato sono rifiutati
+  con il motivo. Campioni a 15 km a Trento e Milano: mela, pera e Italia
+  `sì`, stella `quasi`/`sì`, gatto `no` (non si riconosceva già dal
+  contorno). Il seguito è **TASK-073**: l'immagine nell'app e nell'API,
+  con l'anteprima del contorno prima del percorso (task file).
 - **App** — TASK-061: un marciapiede senza nome con accanto una via dice
   «Turn left onto the footpath beside Via Roma», sul banner e a voce
   (ADR-0058). `street` vince sempre; un'API senza `along` legge come prima.

@@ -85,12 +85,12 @@ export interface RouteResult {
   distance_m: number;
   /** How much the route looks like the shape, from 0 to 1. */
   similarity: number;
-  /** Null for a word (TASK-056). */
+  /** Null for a word (TASK-056) or an image (TASK-073). */
   shape: Shape | null;
   warnings: string[];
   /** Turn by turn, the start first (TASK-048); empty without a search. */
   directions: Direction[];
-  /** The word in capitals, null for a shape (TASK-056). */
+  /** The word in capitals, null for a shape or an image (TASK-056). */
   word?: string | null;
 }
 
@@ -144,6 +144,7 @@ export const API_ERROR_CODES = [
   "engine_error",
   "http_error",
   "ai_unavailable",
+  "image_not_usable",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
@@ -158,6 +159,11 @@ export interface ApiError {
      * in whole km as metres (TASK-031).
      */
     suggested_distance_m: number | null;
+    /**
+     * Only with "image_not_usable", else null: why the engine found no
+     * outline (TASK-073). Missing from an API older than TASK-073.
+     */
+    reason?: ImageReason | null;
   };
 }
 
@@ -186,7 +192,7 @@ export interface RouteJob {
 
 /** What the app sends to POST /gpx to get the route as a GPX file (ADR-0033). */
 export interface GpxRequest {
-  request: RouteRequest;
+  request: RouteRequest | ImageRouteRequest;
   result: RouteResult;
 }
 
@@ -207,4 +213,63 @@ export interface ShapeReading {
   text: string;
   /** Null when no shape of the catalogue fits the words. */
   shape: Shape | null;
+}
+
+/** The largest image POST /image-outlines takes, before base64 (ADR-0069). */
+export const MAX_IMAGE_BYTES = 10_000_000;
+/** The most corners an outline traced from an image has (ADR-0068). */
+export const MAX_OUTLINE_POINTS = 100;
+
+/**
+ * Why an image gives no outline (route_engine/image_outline.py, ADR-0068):
+ * not PNG or JPEG, unreadable, a background that is not plain, no subject,
+ * more than one, a subject on the edge, too small, too jagged.
+ */
+export const IMAGE_REASONS = [
+  "format",
+  "unreadable",
+  "background",
+  "no_subject",
+  "scattered",
+  "edge",
+  "small",
+  "jagged",
+] as const;
+export type ImageReason = (typeof IMAGE_REASONS)[number];
+
+/**
+ * What the app sends to POST /image-outlines (TASK-073, ADR-0069): a PNG or
+ * JPEG file in base64, at most MAX_IMAGE_BYTES before encoding.
+ */
+export interface ImageOutlineRequest {
+  image: string;
+}
+
+/** A point of an outline as [x, y]. */
+export type OutlinePoint = [x: number, y: number];
+
+/** The outline the engine traced from an image, to show before the route. */
+export interface ImageOutline {
+  /** Closed, centred and scaled into [-1, 1], y upwards: what an
+   * ImageRouteRequest sends back. */
+  points: OutlinePoint[];
+  /** The same corners over the image, as shares of its width and height
+   * from the top left: to draw the outline on the picture. */
+  image_points: OutlinePoint[];
+  /** Width over height of the image, upright. */
+  aspect: number;
+}
+
+/**
+ * What the app sends to POST /image-route-jobs: the route of an image's
+ * outline. The answer is a RouteJob, read at /route-jobs/{job_id}; its
+ * result has neither shape nor word.
+ */
+export interface ImageRouteRequest {
+  start: LatLon;
+  /** The `points` of an ImageOutline, unchanged. */
+  outline: OutlinePoint[];
+  /** Target distance in metres, a whole number. */
+  distance_m: number;
+  activity: Activity;
 }

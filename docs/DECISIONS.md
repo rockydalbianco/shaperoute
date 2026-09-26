@@ -1939,6 +1939,184 @@ più piccoli del disegno. Giudizio dell'utente (2026-09-25): la testa è
 Se il cane entra nel catalogo, e come testa o intero, lo decide l'utente
 con TASK-065 (ADR-0036).
 
+## ADR-0067 — Parole: il ritorno sulle strade dell'andata, provato e scartato
+**Stato**: Scartata · 2026-09-26 · chiesto dall'utente («se si percorre la
+stessa strada anche al ritorno le rende più pulite le lettere, e più
+fini»); il metodo deciso dall'agente su delega dell'utente (TASK-071);
+giudizio dell'utente: 4 parole su 9 peggio, nessuna meglio; l'utente ha
+scelto di non farlo entrare nel motore
+
+Una lettera senza anelli si corre tutta due volte (ADR-0056), e dove la
+parola torna su se stessa le strade appena usate costano la metà
+(ADR-0044). Sui campioni di TASK-050 e TASK-059, rigenerati con il codice
+di `main`, il ritorno prende un'altra strada dove l'andata ha fatto
+zig-zag, e al posto di una linea viene un anello. Succede soprattutto a
+Milano, con marciapiedi e vie parallele fitte: «CIAO» ha il 51% del
+percorso su strade corse due volte contro il 74% del disegno, e 3,7 km
+corsi una volta sola accanto a un tratto ripassato
+(`docs/tasks/TASK-071.md`).
+
+**Provato** (commit `0e8add6` nel branch `feat/TASK-071-retraced-letters`,
+tolto dal commit dopo):
+- in `words.compose` i tratti ripassati tagliati negli stessi punti
+  all'andata e al ritorno (il gambo di E, K, L e la sbarra della B non lo
+  erano);
+- un tracciatore per le parole, `retrace.snap_retraced`: ogni punto della
+  linea tiene il nodo di strada in cui è stato raggiunto la prima volta, e
+  un lato già disegnato nel verso opposto ripete all'indietro i nodi
+  dell'andata; al primo passaggio le strade già usate costano la metà, come
+  prima. Le altre forme restavano con `snap_to_network`, identiche (cuore,
+  gatto e stella a 15 km nelle tre zone, stessi punti).
+
+**Esito**: ogni tratto ripassato diventa una linea sola (Milano: «CIAO» 77%
+di strade doppie, «MAX» 92%), ma il ritorno ripete gli zig-zag dell'andata
+e allo stesso piazzamento il percorso si allunga del 2–24% (mediana 5%). La
+ricerca, per stare nella distanza, stringe la parola o sceglie un altro
+posto: a Trento e Levico lettere più piccole del 13–28%. Giudizio
+dell'utente, prima → dopo: «CIAO» sì · sì · sì → quasi · quasi · sì;
+«BELLO» no · quasi · sì → no · no · quasi; «MAX» sì ovunque, come prima (e
+grande come prima). Le linee più sottili non compensano lettere più
+piccole.
+
+**Decisione**: il motore resta com'è. Il ritorno su un'altra strada nasce
+dallo zig-zag dell'andata, cioè da tratti obliqui o curvi su una griglia di
+vie: il seguito proposto all'utente sono le lettere squadrate dello
+screenshot di Strava, un tratto per via, dove il ritorno pulito viene da
+sé (proposta in `docs/tasks/TASK-071.md`).
+
+**Quanta strada costa il ripasso** (per chi non ama strade doppie e
+inversioni): sta nel disegno delle lettere, con o senza questa modifica.
+Le lettere ripassano il 74–91% della loro linea; a 15 km il 51–92% del
+percorso è su strade corse due volte (con il ritorno a specchio 71–92%,
+cioè 5,4–7,0 km di secondo passaggio), con 3–25 inversioni a U per parola.
+
+## ADR-0068 — Il contorno ricavato da un'immagine, con regole fisse
+**Stato**: Attiva · 2026-09-25 · chiesto dall'utente («l'utente può caricare
+un'immagine da rappresentare e dai contorni si ricava la forma»), con il
+perimetro della prima versione: un soggetto chiaro su sfondo uniforme, solo
+il contorno esterno; Pillow autorizzata dall'utente; il metodo e le soglie
+decisi dall'agente su delega dell'utente (TASK-072); giudizio
+dell'utente: mela, pera e Italia `sì` ovunque, stella `quasi` a Trento e
+`sì` a Milano, gatto `no` a Trento e Milano
+
+Le forme arrivavano solo dal catalogo, dai file dei contorni e dalle
+parole. L'utente vuole partire da un'immagine sua. Il principio resta: il
+percorso lo decide il motore, e anche il contorno lo ricava il motore, non
+l'AI.
+
+**Decisione**:
+- **Un modulo nuovo, `route_engine/image_outline.py`**: PNG o JPEG →
+  sfondo dal bordo → soggetto per soglia sul colore (o sulla trasparenza) →
+  il pezzo più grande → contorno esterno lisciato e semplificato → un
+  `Outline` come quelli dei file, controllato da `parse_outline`
+  (`ROUTE_ENGINE.md` §2, «Il contorno da un'immagine»). Fuori da
+  `shapes/`, che resta alla sola libreria standard.
+- **Regole fisse, niente di appreso**: stessa immagine, stesso contorno.
+  Soglie: sfondo uniforme se il 70% del bordo sta entro 40 dalla sua
+  mediana (RGB); soggetto oltre 60 dallo sfondo; il pezzo più grande
+  almeno il 75% del soggetto; il soggetto staccato dal bordo e largo almeno
+  48 pixel su 640; al più 100 angoli.
+- **Rifiutare invece di indovinare**: sfondo non uniforme, nessun
+  soggetto, più soggetti, soggetto che tocca il bordo, troppo piccolo,
+  troppo frastagliato, formato sbagliato. Ogni rifiuto ha un motivo in una
+  parola (`reason`), per il messaggio dell'app di TASK-073.
+- **Lisciato alla scala delle strade**: le parti più sottili del 2% del
+  soggetto si tolgono e le fessure altrettanto strette si chiudono, con
+  giunzioni ad angolo, così le punte restano punte (ADR-0038, ADR-0039: i
+  dettagli sottili sulle strade non restano). Semplificazione di
+  Douglas–Peucker all'1% del soggetto.
+- **Il contorno si calcola con shapely** (unione dei tratti di pixel di
+  ogni riga, `buffer`, `simplify`) e numpy, già installati con osmnx:
+  dichiarati in `pyproject.toml` come Pillow, perché il motore li importa
+  (come numpy con TASK-062). Nessuna altra libreria (scikit-image, OpenCV).
+- **Dalla CLI**: `--image FILE` come `--outline` (`plan_shape`,
+  `tilt_limit`, forma dritta), con il nome del file; `--save-outline FILE`
+  scrive il contorno in JSON, che `--outline` rilegge uguale.
+
+**Motivo**: un soggetto su sfondo uniforme si separa bene con una soglia,
+senza modelli, e la regola si prova con immagini disegnate nei test. Uno
+sfondo pieno di cose invece non ha una soglia giusta: meglio un rifiuto con
+il motivo che una forma a caso. Il pezzo più grande e il solo contorno
+esterno danno una linea chiusa, l'unica cosa che un percorso disegna senza
+tratti ripassati.
+
+**Conseguenza**: un pezzo staccato più piccolo (un gambo che non tocca la
+mela, un puntino) si perde senza avviso: l'anteprima del contorno
+nell'app (TASK-073) lo farà vedere prima di chiedere il percorso. Uno
+sfondo con una sfumatura forte, o un'ombra attaccata al soggetto, viene
+rifiutato o finisce nel contorno. I dettagli interni (occhi, finestre) non
+diventano tratti ripassati: se servono, è un lavoro a parte.
+Giudizio dell'utente (2026-09-25, `samples/LOG.md`): mela, pera e Italia
+`sì` in ogni zona, stella `quasi` a Trento e `sì` a Milano, gatto `no` a
+Trento e Milano. Il gatto non si riconosceva già dal contorno: una sagoma
+povera di dettagli resta povera anche sulle strade. Da valutare con
+TASK-073: l'anteprima che fa giudicare la sagoma prima del percorso, e se
+la semplificazione toglie troppo.
+
+## ADR-0069 — L'immagine nell'API: base64 in JSON, anteprima, poi il contorno
+**Stato**: Attiva · 2026-09-26 · perimetro dell'utente (un soggetto chiaro
+su sfondo uniforme, solo il contorno esterno, rifiuto con il motivo;
+anteprima prima del percorso; `expo-image-picker` autorizzato); il
+contratto deciso dall'agente su delega dell'utente, approvato dal
+coordinatore (TASK-073)
+
+**Decisione**:
+
+- **Due richieste.** `POST /image-outlines` riceve l'immagine e risponde
+  con il contorno che il motore ricava (ADR-0068), in meno di 2 s; l'app lo
+  mostra. `POST /image-route-jobs` riceve il contorno, non l'immagine, e
+  risponde con un `RouteJob` come `/route-jobs`, letto e annullato sullo
+  stesso `/route-jobs/{job_id}`.
+- **L'immagine in base64 dentro il JSON**, al più 10 MB prima della
+  codifica (`MAX_IMAGE_BYTES`; Pydantic taglia prima la stringa a
+  13 333 336 caratteri). Niente multipart, che vorrebbe `python-multipart`:
+  nessuna dipendenza Python nuova (Pillow c'era già con il motore). Una foto
+  dell'iPhone, ricodificata in JPEG a qualità 0,8 dal selettore, sta fra 1
+  e 4 MB. L'API non salva e non scrive l'immagine.
+- **Il contorno torna in due forme**: `points`, normalizzati in [-1, 1],
+  per il percorso; `image_points`, frazioni della foto dall'alto a
+  sinistra, con `aspect`, per disegnarlo sopra la foto nell'anteprima.
+- **Il contorno che torna dal telefono si controlla come ogni input**
+  (richiesta del coordinatore): da 4 a 101 punti (al più 100 angoli, il
+  limite del motore), numeri finiti, dentro [-1, 1] (tolleranza 1e-6), poi
+  `parse_outline` del motore (chiuso, 3 punti distinti, senza incroci).
+  Altrimenti `invalid_request` con il motivo, prima di creare il job.
+- **Il contratto del motore non cambia**: `RouteRequest` e `models.py`
+  restano forma o parola. L'API ha il suo `ImageRequest` (partenza,
+  distanza e attività controllate con le funzioni di `models.py`) e il suo
+  pianificatore, `plan_request`, che per un'immagine chiama `plan_shape`
+  come `--image` dalla CLI: dritto (ADR-0038), nome `image`. Il
+  `RouteResult` di un'immagine ha `shape` e `word` a `null`.
+- **Un codice nuovo, `image_not_usable`** (422), con un campo nuovo in ogni
+  errore, `reason`: `null`, tranne con questo codice, dove è il motivo del
+  motore (`IMAGE_REASONS`). Un test dell'API controlla che i motivi di
+  `image_outline.py` siano tutti nel contratto.
+- **`shared-types` resta retrocompatibile**: tipi nuovi
+  (`ImageOutlineRequest`, `ImageOutline`, `ImageRouteRequest`,
+  `ImageReason`), `reason` opzionale, `GpxRequest.request` che accetta
+  anche un `ImageRouteRequest`. Un'app vecchia non chiama i due indirizzi
+  nuovi e ignora `reason`.
+- **La semplificazione di ADR-0068 resta com'è.** Misurata sui cinque
+  campioni di TASK-072: il contorno finale copre il 97–99% della sagoma
+  grezza (sovrapposizione mela 0,987, gatto 0,981, Italia 0,968, pera
+  0,984, stella 0,985) con 16–42 angoli, lontano dal limite di 100.
+  Dimezzare lisciatura e semplificazione porta il gatto a 0,989: la sua
+  sagoma resta la stessa. Il gatto non si riconosceva per la sagoma, non per
+  la semplificazione.
+
+**Motivo**: l'anteprima fa giudicare la sagoma prima di aspettare il
+percorso, ed è la risposta al gatto di TASK-072. Mandare il contorno invece
+dell'immagine alla seconda richiesta evita di rimandare megabyte, e lascia
+l'API senza stato fra le due. Il contorno però arriva dal telefono, e il
+motore non si fida di un input: lo ricontrolla.
+
+**Conseguenza**: l'API potrebbe ricevere un contorno che non ha tracciato
+lei. Se passa i controlli è una forma valida come un file di `outlines/`, e
+il motore la disegna: nessun rischio per il motore, e il principio resta
+(l'AI non produce geometrie; qui l'AI non c'entra). La trasparenza di un PNG
+si perde nel selettore di iOS, che consegna JPEG. Un pezzo staccato si perde
+ancora, ma ora si vede nell'anteprima.
+
 ## ADR-0070 — «Off the route» dopo più posizioni e qualche secondo, non dopo una
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
 (TASK-074)
@@ -1979,3 +2157,225 @@ con sequenze finte in `navigator.test.ts`: 4 minuti sul marciapiede opposto
 con tre posizioni di fila oltre 40 m, nessun avviso; un punto a 60 m,
 nessuno; una via a 47–63 m, uno dopo 8 s; posizioni con errore 80 m,
 nessuno. Se sul campo arriva ancora a sproposito, si alza `OFF_SECONDS`.
+
+## ADR-0072 — Lettere squadrate: un secondo alfabeto, girato sulla griglia delle vie
+**Stato**: Attiva · 2026-09-26 · chiesto dall'utente dopo TASK-071
+(«sì, provale»), sul modello delle scritte di GPS art che ha mandato
+(«2024», «HURRY»); disegno delle lettere, rotazione e soglie decisi
+dall'agente su delega dell'utente (TASK-077); dopo il giudizio l'utente ha
+scelto di tenere tutti e due gli stili, da scegliere nell'app (un task a
+parte)
+
+**Contesto**: le lettere di oggi (ADR-0044, ADR-0056) hanno curve e
+diagonali che su una griglia di vie diventano scale e zig-zag, ed è lì che
+il ritorno prende un'altra strada (ADR-0067). Nelle scritte di Strava che
+l'utente ha mandato ogni tratto è una via, corsa all'andata e al ritorno,
+e le lettere sono larghe e vicine.
+
+**Decisione**:
+- `letters_block.json`, stesso formato di `letters.json`: tratti solo
+  orizzontali, verticali o a 45°. O, D, B, Q rettangoli chiusi sulla base
+  (come oggi B, D, Z); la U con il fondo sulla base e gli angoli a 45°,
+  perché due aste su una linea continua si leggerebbero come «II»; C, G,
+  S, J con il tratto basso a 0,2, come E e L oggi. Le diagonali a 45° e
+  non a gradini: la strada le fa comunque a gradini, della misura dei suoi
+  isolati, mentre un gradino disegnato ha una misura che una via su due
+  non ha. Larghe 0,8–1, spazi di 0,3 invece di 0,6.
+- Lo stile si sceglie con `style` in `words.compose` e
+  `optimizer.plan_route`, `"round"` per difetto: senza, parole e forme
+  sono identiche a prima. `RouteRequest`, API e app non lo conoscono
+  ancora.
+- Una parola squadrata si gira come corrono le vie attorno a ogni
+  partenza (`street_grid.py`: direzioni dei pezzi di via pesate per
+  lunghezza, ripiegate in 90°, cime dopo una lisciatura di ±4°), invece di
+  stare dritta entro ±15° (ADR-0038). Al più 30° fuori dall'orizzontale:
+  a Levico la griglia a 43° vinceva il conteggio delle strade e metteva
+  «MAX» e «BELLO» di traverso sulla mappa, illeggibili; senza una
+  direzione entro 30° la parola sta dritta.
+
+**Alternative scartate**: provare tutte le rotazioni fra −45° e 45° a
+passi fini e lasciar scegliere il conteggio delle strade (sei volte i
+piazzamenti da contare, e la griglia la trova già l'istogramma); una
+direzione sola per tutta la zona (a 1–2 km le vie girano: Trento ha due
+griglie a 5° e a −20°); diagonali a gradini disegnati.
+
+**Conseguenze**: le parole squadrate sono più lunghe sul disegno (lettere
+più larghe) e, a 15 km, lettere un po' più basse. Dove la griglia è
+regolare (Milano) le lettere cadono sulle vie; dove non lo è (Levico,
+Trento di là dall'Adige) il percorso resta a zig-zag come oggi.
+
+**Giudizio dell'utente** (2026-09-26), squadrate (oggi): «CIAO» sì ·
+quasi · sì (sì · sì · sì); «BELLO» quasi · no · no (no · quasi · sì);
+«MAX» no · quasi · sì (sì · sì · sì); «HURRY» no ovunque. Vanno bene le
+parole corte con lettere grandi su una griglia regolare (CIAO e MAX a
+Milano); con cinque lettere a 15 km le lettere sono troppo piccole anche a
+Milano. Lo stile di oggi resta il predefinito.
+
+## ADR-0071 — Partenze vicine: tre nodi entro 100 m in parallelo, si tiene il cuore migliore
+**Stato**: Attiva · 2026-09-26 · chiesto dall'utente dopo TASK-075 («il
+motore prova alcune partenze vicine e tiene il percorso migliore», con
+l'avvicinamento nel percorso); quante partenze, come sceglierle e come
+tenere il tempo deciso dall'agente su delega dell'utente (TASK-076);
+giudizio dell'utente: Caldonazzo partenza `sì`, vicina `quasi`; Trento 10 km
+entrambe `sì`; Trento 15 km partenza spostata `sì`, vicina `quasi`; Milano
+`sì`. Scelta dell'utente dopo il giudizio (2026-09-26): «vince il cuore
+migliore», anche con la partenza spostata dalla ricerca
+
+**Contesto**: a Caldonazzo 25–100 m di partenza portano il cuore da 10 km
+da 0,73 a 0,92 (TASK-075). Il motore però non va toccato: `optimizer.py` è
+di TASK-071 mentre si scrive questo.
+
+**Decisione** (`route_engine/nearby_starts.py`):
+
+- **Quali partenze**: fino a 3 nodi a 25–100 m in linea d'aria, uno per
+  settore di 120° (il primo sul nord), al più 150 m lungo le strade e 25 m
+  l'uno dall'altro; nel settore quello con la strada più vicina a 60 m.
+- **In parallelo, in processi**: la partenza dell'utente fa il piano di
+  sempre (`plan_shape`, può scaricare, spostare la partenza, cercare a
+  2 km) nel processo che la chiede; ogni partenza vicina ha un processo
+  (`multiprocessing`, `spawn`, priorità bassa). I processi, non i thread:
+  la ricerca è Python puro e il GIL la serializza.
+- **Una partenza vicina fa solo la ricerca da quel nodo** (`search` con
+  `move_start=False`, `ShapeJob.here`): senza anelli a 250–500 m e senza la
+  seconda ricerca a 2 km, i cui percorsi comincerebbero altrove e
+  andrebbero scartati. Costa circa metà di un piano intero (Caldonazzo
+  7–9 s contro 13–17 s). I passi dopo la ricerca ripetono quelli di
+  `plan_shape` per questo caso; un test controlla che diano lo stesso
+  risultato. Con un interruttore in `plan_shape`, dopo TASK-071, la copia
+  si toglie.
+- **Il grafo ai processi**: quello già ritagliato per la partenza, pickled
+  una volta sola. La partenza vicina è entro 100 m, dentro il margine di
+  500 m dell'area. Leggere la zona intera in ogni processo mandava in swap
+  il PC (Trento 15 km: 240 s).
+- **Quanto si aspetta**: finita la partenza dell'utente, al più 8 s, mai
+  oltre 25 s dalla richiesta; se il suo percorso è già buono (somiglianza
+  ≥ 0,90, distanza entro il 10%, partenza non spostata) nessuno. I ritardatari
+  si chiudono (`terminate`).
+- **Quando non si provano**: grafo oltre 30 000 nodi (Milano: 55 676 a
+  10 km, 83 779 a 15 km; lì la sola ricerca da un nodo dura 35 s e il cuore
+  è già a 0,99); e solo tanti processi quanti entrano nella memoria libera,
+  lasciandone 1 GB alla partenza dell'utente (un processo ≈ 100 MB + 10
+  volte il grafo pickled). Senza memoria il percorso è quello di oggi.
+- **Quale si tiene** (scelta dell'utente): il cuore migliore fra tutti i
+  candidati, cioè la partenza dell'utente, le vicine e la partenza che la
+  ricerca ha spostato («Start here», fino a 1 km come prima). Punteggio: la
+  somiglianza, meno la distanza oltre il 10% dal target pesata come in
+  `search`; dove comincia il percorso non conta. Fra i candidati entro
+  0,01 dal migliore vince quello che comincia più vicino all'utente
+  (avvicinamento o spostamento), poi la partenza stessa. Soglia decisa
+  dall'agente: a Trento 15 km l'occhio ha visto 0,02 (0,90 `sì`, 0,88
+  `quasi`), in TASK-075 non sempre meno (0,85 `sì` e `quasi`).
+  Scartati: il costo di `search` con la distanza piena (a Caldonazzo
+  sceglieva un cuore da 0,82 a 9,4 km al posto di quello da 0,86 a 11,8 km,
+  il tipo che l'utente aveva giudicato `no`); e la prima versione, che
+  pesava lo spostamento come la ricerca e a Trento 15 km preferiva la
+  vicina `quasi` al cuore `sì` a 1 km.
+- **L'avvicinamento**: dal nodo della partenza dell'utente al nodo vicino
+  per la strada più corta, e ritorno per la stessa; nei metri, nel GPX e
+  nei nodi (le indicazioni lo contano). La somiglianza resta quella della
+  forma.
+- **Nell'API**: `plan_request` (`images.py`) chiama `plan_nearby` al posto
+  di `plan_route`, per le forme e le parole; le immagini come prima. Le
+  indicazioni non cambiano: quando vince una vicina il grafo è quello della
+  partenza, il primo caricato. Dalla CLI: `--nearby N`.
+
+**Misure** (cuore, zona già in memoria; tempi da 2–3 ripetizioni, molto
+variabili: il PC ha 7 GB e durante le misure 0,4–2 GB liberi, con altri
+agenti al lavoro):
+
+| Caso | Solo partenza | Con 3 vicine | Somiglianza scelta |
+|---|---|---|---|
+| Caldonazzo 10 km | 8–19 s | 11–20 s | 0,86 → 0,86 (vicine 0,82, 0,79, 0,77) |
+| Trento 10 km | 29–40 s | 40–42 s | 0,86 → 0,88 (65 m) |
+| Trento 15 km | 34–39 s | 43–69 s | 0,90 spostata di 1 km, tenuta (vicina migliore 0,88) |
+| Milano 10 km | 15–18 s | 25–33 s prima del limite sui nodi, ora non provate | 0,99 |
+| Milano 15 km | 25–80 s | non provate | 1,00 |
+
+Con 4 vicine: stessi guadagni, più tempo e memoria (Trento 15 km 52–256 s,
+Milano 15 km `MemoryError`). Nell'ultima serie di misure, con meno di
+1,5 GB liberi, la regola della memoria ha lasciato fuori le vicine in ogni
+caso: tempi e percorsi quelli di oggi.
+
+Caldonazzo, 25 posizioni entro ±100 m da Via della Villa, 10 km (le
+posizioni del GPS degli screenshot dell'utente): dalla sola partenza
+0,73–0,96, media 0,834, 7 sotto 0,80; con le vicine e la regola sopra
+0,77–0,96, media 0,847, 4 sotto 0,80. I 7 cuori da 0,90 in su restano 7, e
+vengono tutti dalla partenza spostata di 1 km.
+
+**Conseguenza**: dove la rete è rada e la memoria c'è, il cuore dipende
+meno dalla partenza: i casi peggiori migliorano, i migliori restano quelli
+che la ricerca trova spostandosi. Dove la rete è fitta non cambia nulla. Il tempo cresce di
+qualche secondo nei paesi e di 5–15 s a Trento, fuori dai 30 s di
+PRODUCT.md dove già lo si era. Su questo PC la memoria decide spesso lei:
+più RAM libera (chiudere applicazioni) lascia provare le vicine. La
+somiglianza non segue sempre l'occhio (TASK-075): con la regola dell'utente
+la scelta coincide con il giudizio in tutti e quattro i casi giudicati
+(a Trento 10 km la vicina, 0,88, contro la partenza, 0,86: tutte e due
+`sì`).
+
+## ADR-0073 — Coniglio, zucca e albero di Natale: candidate come la testa di cane
+**Stato**: Attiva · 2026-09-26 · chiesto dall'utente (spunti da gpsart.info:
+animali «solo la testa», temi stagionali, sagome semplici); il disegno
+deciso dall'agente su delega dell'utente (TASK-078); giudizio dell'utente:
+tutte e tre `sì` a Milano; coniglio `sì` a Trento e `quasi` a Levico,
+zucca `quasi` a Levico, albero di Natale `quasi` a Trento, il resto `no`
+
+La testa di cane (ADR-0065) è `sì` in tutte e tre le zone, il cane intero
+solo a Milano; il gatto da immagine (TASK-072) non si riconosceva già come
+sagoma. Servivano altre forme da provare, riconoscibili dai loro tratti
+principali prima che dai dettagli.
+
+**Decisione**:
+- **Tre contorni nuovi** in `route_engine/shapes/outlines/`
+  (`rabbit_head`, `pumpkin`, `christmas_tree`), disegnati dall'agente con
+  archi calcolati: nessuna licenza di terzi. Si provano solo dalla CLI
+  (`--outline`) finché l'utente non li giudica; nessun parametro del motore
+  cambia; `tree.json` resta com'è.
+- **Il tratto che fa riconoscere la forma sta nel contorno** (ADR-0035):
+  le orecchie lunghe e dritte del coniglio, più lunghe dei due terzi della
+  testa (il gatto le ha corte a punta, il cane le ha pendenti); i tre
+  spicchi della zucca, che si toccano in quattro tacche, e il picciolo
+  storto; i tre piani dell'abete, con il bordo che risale verso il tronco.
+  Dritti (ADR-0038).
+- **I dettagli sono tratti ripassati** (ADR-0039, ADR-0065): occhi, naso e
+  bocca del coniglio come quelli della testa di cane; occhi a triangolo e
+  sorriso della zucca, appesi alle tacche e al fondo; la stella a cinque
+  punte in cima all'albero.
+- **Campioni come TASK-064 e TASK-068**: i grafi di zona dell'API in
+  memoria, solo le zone in cache, nessun ritaglio su C:.
+
+**Motivo**: bozze provate sulle strade prima dei campioni
+(`docs/tasks/TASK-078.md`). Le orecchie strette del coniglio si perdevano
+a Levico (0,78; con orecchie più larghe 0,88); i denti del sorriso,
+larghi 0,12 della forma, sparivano in tutte le zone; tacche più profonde
+fra gli spicchi spezzavano la zucca a Levico; con piani poco sporgenti e
+la stella piccola l'albero di Trento perdeva i piani.
+
+**Conseguenza**: 9 campioni a 15 km (`samples/LOG.md`, TASK-078), tutti
+con un percorso, in 11–44 s: somiglianza 0,81–1,00, la più bassa a
+Levico per tutte e tre. L'albero resta difficile fuori da Milano, come
+quello di TASK-034/037. Giudizio dell'utente (2026-09-26): a Milano si
+riconoscono tutte e tre; il coniglio è `sì` a Trento e `quasi` a Levico,
+la zucca `no` a Trento e `quasi` a Levico, l'albero di Natale `quasi` a
+Trento e `no` a Levico (l'albero di TASK-034/037 era `no` in tutte e due). Quali forme entrano nel catalogo
+lo decide l'utente, con TASK-065 o dopo (ADR-0036).
+
+## ADR-0077 — Un avviso sconosciuto arriva con la prima lettera maiuscola
+**Stato**: Attiva · 2026-09-26 · deciso dall'agente su delega dell'utente
+(TASK-082)
+
+Con ADR-0048 un avviso che l'app non riconosce passa com'è, e i testi del
+motore sono in minuscolo: con «north-east» l'utente vedeva «start moved
+250 m north-east of the requested point…» (Caldonazzo, TASK-076).
+
+**Decisione**: la regola della partenza spostata accetta le direzioni col
+trattino, tutte quelle di `optimizer._compass`; e un testo sconosciuto
+passa ancora com'è, ma con la prima lettera maiuscola.
+
+**Scartata**: cambiare il testo del motore; codici negli avvisi (vedi
+ADR-0048), oggi fuori dal task.
+
+**Motivo**: un avviso nuovo non si perde, e non sembra un errore.
+
+**Conseguenza**: resta vero quello che dice ADR-0048: chi cambia una frase
+del motore la cambia anche in `warnings.test.ts`.

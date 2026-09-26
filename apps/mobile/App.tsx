@@ -1,4 +1,4 @@
-import type { Direction, RouteRequest, Shape } from "@shaperoute/shared-types";
+import type { Direction, Shape } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
@@ -19,16 +19,19 @@ import { MapView } from "./src/map/MapView";
 import { useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
 import { toDistanceM } from "./src/route/distance";
+import type { ChoiceKind } from "./src/route/problems";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { toShape } from "./src/route/shapeWords";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
+import { useImageOutline } from "./src/route/useImageOutline";
 import {
+  type AnyRouteRequest,
   type RouteState,
   sameRequest,
   useRouteRequest,
 } from "./src/route/useRouteRequest";
 import { useShapeReading } from "./src/route/useShapeReading";
-import { checkWord, type DrawKind } from "./src/route/wordInput";
+import { checkWord } from "./src/route/wordInput";
 import { ChooseScreen } from "./src/screens/ChooseScreen";
 import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
@@ -60,7 +63,7 @@ function Sgrava() {
   const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
-  const [kind, setKind] = useState<DrawKind>("shape");
+  const [kind, setKind] = useState<ChoiceKind>("shape");
   const [shapeText, setShapeText] = useState("heart");
   const tableShape = toShape(shapeText);
   const shapeReading = useShapeReading(API_URL);
@@ -74,6 +77,7 @@ function Sgrava() {
   const distanceM = toDistanceM(distanceText);
   const [wordText, setWordText] = useState("");
   const wordCheck = checkWord(wordText, distanceM);
+  const image = useImageOutline(API_URL);
   const { state, draw, cancel } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
 
@@ -82,16 +86,22 @@ function Sgrava() {
     [startMode, position, place],
   );
 
-  // One or the other (ADR-0051): the kind not chosen is not sent.
-  const drawn: { shape: Shape } | { word: string } | null =
+  // One of them (ADR-0051): the kinds not chosen are not sent. An image
+  // sends the outline the engine traced and the user has seen (ADR-0069).
+  const drawn:
+    { shape: Shape } | { word: string } | { outline: [number, number][] } | null =
     kind === "shape"
       ? shape !== null
         ? { shape }
         : null
-      : wordCheck.ok
-        ? { word: wordCheck.word }
-        : null;
-  const request: RouteRequest | null =
+      : kind === "word"
+        ? wordCheck.ok
+          ? { word: wordCheck.word }
+          : null
+        : image.state.status === "traced"
+          ? { outline: image.state.outline.points }
+          : null;
+  const request: AnyRouteRequest | null =
     start && drawn !== null && distanceM !== null
       ? { start: start.point, ...drawn, distance_m: distanceM, activity: "running" }
       : null;
@@ -222,6 +232,8 @@ function Sgrava() {
             wordText={wordText}
             onWordText={setWordText}
             wordCheck={wordCheck}
+            image={image.state}
+            onChooseImage={image.choose}
             distanceText={distanceText}
             distanceM={distanceM}
             onDistanceText={setDistanceText}

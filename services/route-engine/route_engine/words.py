@@ -35,6 +35,12 @@ Every vertex knows which letter it belongs to, or which gap and how far
 along it: the search moves each letter a little, to where the roads are
 (`optimizer.fit_letters`), and the gaps stretch to follow. The point where
 the route starts stays where it is.
+
+A word comes in one of two styles (TASK-077). "round", the default, is the
+alphabet above. "block" is `letters_block.json`, in the same format: every
+stroke level, upright or at 45°, the letters 0.8–1 wide and BLOCK_GAP
+apart, like the GPS art of blocky words run on a street grid; the search
+turns it the way the streets run (`optimizer.search`).
 """
 
 from __future__ import annotations
@@ -44,16 +50,22 @@ import math
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 
 from route_engine.shapes.resample import Point
 
 LETTERS = Path(__file__).with_name("letters.json")
+BLOCK_LETTERS = Path(__file__).with_name("letters_block.json")
+
+Style = Literal["round", "block"]
 
 # Space between two letters, in letter heights. «CIAO» of TASK-040 had
 # about 0.3, and the user asked for the letters farther apart.
 LETTER_GAP = 0.6
+# Block letters stand closer, as in the blocky words the user pointed to.
+BLOCK_GAP = 0.3
 # Longest side of a word, in letter heights: for letters 1 km high, a
 # waypoint every 60 m. Along the I of TASK-040 there was none.
 SIDE_STEP = 1 / 16
@@ -120,6 +132,7 @@ class Word:
     # Arc-length share of `points` at each of `starts`: the phases the
     # search may enter the word at.
     phases: tuple[float, ...]
+    style: Style = "round"
 
     def line(self, start: int) -> tuple[np.ndarray, np.ndarray]:
         """The word as the route draws it from `starts[start]`: its
@@ -243,6 +256,12 @@ def _is_pair(value: object) -> bool:
 
 
 ALPHABET: dict[str, Letter] = read_letters()
+BLOCK_ALPHABET: dict[str, Letter] = read_letters(BLOCK_LETTERS)
+# The alphabet and the gap of each style.
+STYLES: dict[str, tuple[dict[str, Letter], float]] = {
+    "round": (ALPHABET, LETTER_GAP),
+    "block": (BLOCK_ALPHABET, BLOCK_GAP),
+}
 
 
 def spell_letters(chars: Iterable[str]) -> str:
@@ -266,11 +285,16 @@ def spell_letters(chars: Iterable[str]) -> str:
 def compose(
     text: str,
     alphabet: dict[str, Letter] | None = None,
-    gap: float = LETTER_GAP,
+    gap: float | None = None,
     step: float = SIDE_STEP,
+    style: Style = "round",
 ) -> Word:
-    """The closed line that writes `text` (any case) with `alphabet`."""
-    alphabet = ALPHABET if alphabet is None else alphabet
+    """The closed line that writes `text` (any case) with `alphabet`, its
+    letters `gap` apart: by default the alphabet and gap of `style`."""
+    if style not in STYLES:
+        raise InvalidWordError(f"no style {style!r}: {' or '.join(STYLES)}")
+    alphabet = STYLES[style][0] if alphabet is None else alphabet
+    gap = STYLES[style][1] if gap is None else gap
     chars = text.strip().upper()
     if not chars:
         raise InvalidWordError("the word is empty")
@@ -344,6 +368,7 @@ def compose(
         points=points,
         height=1.0 / half,
         phases=tuple(cumulative[i] / cumulative[-1] for i in starts),
+        style=style,
     )
 
 

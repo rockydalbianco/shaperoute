@@ -1,6 +1,6 @@
 # TASK-074 — Niente «fuori tracciato» per il marciapiede opposto o un GPS impreciso
 
-**Stato**: In corso
+**Stato**: Done — prova sull'iPhone rimandata per scelta dell'utente (2026-09-26)
 **Fase**: 4 · **Branch**: `fix/TASK-074-off-route-tolerance`
 
 ## Obiettivo
@@ -67,11 +67,13 @@ docs/DECISIONS.md
   svolte (`ANNOUNCE_M`, `PASS_M`).
 - La modalità tasca (TASK-070).
 
-## Prova sull'iPhone (in attesa)
+## Prova sull'iPhone (rimandata)
 
-PR #86, CI verde. Manca la prova dell'utente per strada, insieme a TASK-061
-(«beside» a voce): la farà alla prossima corsa. Il merge lo fa il
-coordinatore dopo l'ok.
+PR #86, CI verde. Il 2026-09-26 l'utente ha scelto di mergiare **senza
+aspettare la prova per strada**: la farà alla prossima corsa, insieme a
+TASK-061 («beside» a voce), e se qualcosa non va si corregge dopo con un
+task nuovo. I passi qui sotto restano validi per quella prova, da `main`
+invece che dal worktree.
 
 Come prepararla (Windows PowerShell). C: è quasi pieno: niente zone nuove,
 si parte da Trento o Milano, già in cache.
@@ -100,4 +102,8 @@ quasi pieno).
 
 ## Esito
 
-*(a fine task, dopo la prova)*
+«Off the route» arriva dopo 3 posizioni di fila oltre 40 m per almeno 8 s,
+le posizioni poco precise non contano, «Back on the route» dopo 2
+(ADR-0070); tutti i criteri verificati con test deterministici. La prova
+per strada è rimandata per scelta dell'utente (2026-09-26): se l'avviso
+arriva ancora a sproposito, si alza `OFF_SECONDS`.

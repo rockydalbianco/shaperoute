@@ -1,9 +1,9 @@
-import type { RouteRequest, RouteResult } from "@shaperoute/shared-types";
+import type { RouteResult } from "@shaperoute/shared-types";
 import { useCallback, useState } from "react";
 
 import { requestGpx } from "../api/gpx";
 import { shareGpx } from "./shareGpx";
-import type { RouteProblem } from "./useRouteRequest";
+import type { AnyRouteRequest, RouteProblem } from "./useRouteRequest";
 
 export type ExportState =
   | { status: "idle" }
@@ -16,12 +16,12 @@ export type ExportState =
  */
 export function useGpxExport(baseUrl: string | null): {
   state: ExportState;
-  exportGpx: (request: RouteRequest, result: RouteResult) => void;
+  exportGpx: (request: AnyRouteRequest, result: RouteResult) => void;
 } {
   const [state, setState] = useState<ExportState>({ status: "idle" });
 
   const exportGpx = useCallback(
-    (request: RouteRequest, result: RouteResult) => {
+    (request: AnyRouteRequest, result: RouteResult) => {
       const fail = (problem: RouteProblem) =>
         setState({ status: "failed", result, problem });
       if (!baseUrl) {

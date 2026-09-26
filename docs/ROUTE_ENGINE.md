@@ -183,6 +183,33 @@ dell'ultima: una I o una F all'inizio di una parola hanno la linea solo a
 destra e si leggono come una L e una E: l'utente la tiene così
 (TASK-059, ADR-0056).
 
+### Lettere squadrate (TASK-077)
+
+Un secondo alfabeto, `route_engine/letters_block.json`, nello stesso
+formato, si sceglie con `style="block"` (`words.compose`,
+`optimizer.plan_route`); senza, la parola è quella di sopra, identica
+(ADR-0072). Ogni tratto è orizzontale, verticale o a 45°, come nelle scritte
+di GPS art corse su una griglia di vie:
+
+- O, D, B, Q sono rettangoli che si chiudono sulla base (la D con gli
+  angoli di destra tagliati a 45°, la B con la pancia di sopra più stretta,
+  la Q con una codina a 45° dentro l'angolo); la U è un rettangolo aperto
+  con gli angoli bassi a 45°, fondo sulla base.
+- C, G, S, J hanno il tratto basso a 0,2 dell'altezza, come oggi E e L:
+  sulla base lo coprirebbe la linea che unisce le lettere. S e G sono a
+  gradini, ad angolo retto.
+- E, F, H, I, L, T come oggi, più larghe.
+- Le diagonali a 45°: la A con la punta, M e W con la V a metà altezza, N,
+  X e Z larghe 1, la V e la Y con le braccia a 45° dalla metà, la K con
+  le braccia dal centro dell'asta, la R con la gamba.
+- Larghe 0,8 (M, N, V, W, X, Y, Z 1; J 0,6, K 0,5, I niente), **0,3
+  dell'altezza** fra una lettera e l'altra invece di 0,6. A 15 km, sul
+  disegno, «CIAO» ha lettere alte 827 m (oggi 924), «BELLO» 507 (571),
+  «MAX» 851 (854): le lettere sono più larghe, la parola più lunga.
+
+`tests/measure_words.py` scrive le parole in uno dei due stili nelle tre
+zone, solo dalla cache, e stampa le misure di ogni caso.
+
 I contorni stanno in `route_engine/shapes/outlines/`, dati del pacchetto:
 stella e casa (con camino e porta) disegnate per ShapeRoute, e la sagoma di
 un cavallo al galoppo (OpenClipart, CC0). La casa si prova solo dalla CLI:
@@ -194,6 +221,61 @@ freccia, albero, corona, gatto); dal TASK-037 casa, albero, gatto e pesce
 hanno dei tratti: due finestre, fusto e rami, gli occhi, l'occhio. Luna,
 gatto e pesce sono nel catalogo dal TASK-039, gatto e pesce con i tratti;
 freccia, albero, corona e casa si provano solo dalla CLI.
+
+### Il contorno da un'immagine (TASK-072)
+
+`route_engine/image_outline.py` ricava un contorno dal soggetto di
+un'immagine PNG o JPEG, con regole fisse: la stessa immagine dà sempre lo
+stesso contorno, e l'AI non c'entra (ADR-0068). Vale per **un soggetto
+chiaro su sfondo uniforme**: un disegno, un logo, una sagoma, un oggetto
+fotografato su un tavolo bianco. Del soggetto si tiene **solo il contorno
+esterno**: buchi e linee interne si perdono.
+
+1. L'immagine si raddrizza secondo l'EXIF (le foto del telefono) e si
+   riduce a 640 pixel di lato al più.
+2. Lo **sfondo** è quello che mostra il bordo dell'immagine (una fascia del
+   2% del lato): il suo colore è la mediana del bordo, e almeno il 70% del
+   bordo deve stare entro 40 da quel colore (distanza RGB). Un'immagine
+   trasparente attorno al soggetto usa la trasparenza.
+3. Il **soggetto** sono i pixel lontani dallo sfondo almeno 60, o il doppio
+   della variazione dello sfondo lungo il bordo se è di più. I suoi pezzi
+   diventano poligoni; quelli sotto l'1% del più grande sono macchioline, e
+   si ignorano. Un pezzo staccato più piccolo si perde: il contorno è
+   quello del pezzo più grande.
+4. Il contorno si **liscia alla scala delle strade**: le parti più sottili
+   del 2% del soggetto si tolgono e le fessure altrettanto strette si
+   chiudono (ADR-0039: i dettagli sottili sulle strade non restano), con
+   gli angoli che restano angoli. Poi si **semplifica** agli angoli che si
+   scostano più dell'1% del soggetto, al più 100.
+
+Il risultato è un contorno come quelli dei file (`name`, `source`,
+`license`, `points` in pixel, y verso l'alto) e passa lo stesso controllo
+(`parse_outline`). Un'immagine che non va è **rifiutata con il motivo**,
+una parola che l'API potrà tradurre (`InvalidImageError.reason`):
+
+| `reason` | Quando |
+|---|---|
+| `unreadable` | il file non si legge come immagine |
+| `format` | un formato che non è PNG o JPEG |
+| `background` | lo sfondo non è uniforme |
+| `no_subject` | niente si stacca dallo sfondo |
+| `scattered` | il pezzo più grande è meno del 75% del soggetto: più soggetti |
+| `edge` | il soggetto tocca il bordo dell'immagine |
+| `small` | il soggetto è sotto i 48 pixel (su 640), o l'immagine sotto i 96 |
+| `jagged` | più di 100 angoli anche dopo la semplificazione |
+
+Dalla CLI, `--image` al posto di `--shape`; il nome della forma è quello
+del file. `--save-outline` scrive il contorno in JSON per guardarlo, e si
+rilegge con `--outline`:
+
+```
+python -m route_engine --image mela.png --save-outline mela.json     --distance 15000 --start 46.0671,11.1214 --out mela_trento.gpx
+```
+
+Come per `--outline`, la forma resta dritta (ADR-0038) e passa da
+`plan_shape`. Il modulo sta fuori da `shapes/`, che legge i contorni con
+la sola libreria standard: per ricavarne uno servono Pillow, numpy e
+shapely.
 
 ## 3. Proiezione geografica
 
@@ -366,6 +448,43 @@ l'errore lo dice («… cannot be drawn here, nor within 2 km: …»). L'avviso
 sullo spostamento passa ai km sopra i 1000 m («start moved 1.5 km
 north-east of the requested point, …»).
 
+### Partenze vicine (TASK-076)
+
+Pochi metri di partenza cambiano il percorso che la ricerca trova: a
+Caldonazzo 25–100 m portano il cuore da 10 km da 0,73 a 0,92 (TASK-075).
+Con `nearby_starts.plan_nearby` (ADR-0071) il motore prova la forma anche
+da alcuni nodi della rete vicini e tiene il percorso migliore:
+
+1. **Quali partenze**: fino a 3 nodi a 25–100 m in linea d'aria, uno per
+   settore attorno alla partenza (il primo centrato sul nord), a non più di
+   150 m lungo le strade (un nodo oltre il fiume non è vicino) e a 25 m
+   l'uno dall'altro; nel settore, quello la cui strada è più vicina a 60 m.
+2. **In parallelo**: la partenza dell'utente fa il piano di sempre, nel
+   processo che la chiede (può scaricare la zona, spostare la partenza,
+   cercare a 2 km). Ogni partenza vicina ha un processo suo, con il grafo
+   già ritagliato per la partenza, e fa solo la ricerca da quel nodo: né
+   anelli a 250–500 m né seconda ricerca, perché un percorso che comincia
+   altrove andrebbe scartato comunque.
+3. **Quanto si aspetta**: finita la partenza dell'utente, le vicine hanno
+   al più altri 8 s, e mai oltre 25 s dalla richiesta; nessuno se il suo
+   percorso è già buono. Quelle ancora in corso si lasciano. Non si provano
+   su grafi oltre 30 000 nodi (Milano) né in più processi di quanti ne
+   entrano nella memoria libera.
+4. **Quale si tiene** (scelta dell'utente): il cuore migliore fra tutti,
+   anche quello che la ricerca ha spostato («Start here»). Conta la
+   somiglianza, meno la distanza oltre il 10% dal target; fra i candidati
+   entro 0,01 dal migliore vince quello che comincia più vicino
+   all'utente.
+5. **L'avvicinamento**: se vince una partenza vicina, il percorso comincia
+   dal nodo della partenza dell'utente, va al nodo vicino per la strada più
+   corta, disegna la forma e torna indietro per la stessa strada. I metri
+   dell'avvicinamento contano nella distanza e sono nel GPX; la somiglianza
+   resta quella della forma.
+
+Dalla CLI: `--nearby N` (N partenze vicine; senza, solo la partenza come
+prima). L'API la usa per le forme e le parole (`plan_request`), non per
+le immagini.
+
 ### Lettere che si spostano (TASK-050)
 
 Per una parola composta (§2) la ricerca è la stessa, con due differenze
@@ -386,6 +505,20 @@ Per una parola composta (§2) la ricerca è la stessa, con due differenze
 
 La somiglianza si misura sulla parola con le lettere spostate: è quella
 che il percorso deve disegnare.
+
+### Parole squadrate sulla griglia delle vie (TASK-077)
+
+Una parola in lettere squadrate (§2) non resta dritta entro ±15°
+(ADR-0038): si gira come corrono le vie attorno alla partenza
+(`street_grid.py`, ADR-0072). Ogni pezzo di via entro la portata della
+parola vota per la sua direzione, ripiegata in un quarto di giro (una
+griglia corre per lungo e per largo), con la sua lunghezza; i voti si
+sommano per gradi e si lisciano di ±4°, e le cime più alte, fino a tre
+lontane almeno 20° e alte almeno metà della prima, sono le direzioni della
+griglia. La ricerca prova, per ogni partenza, le direzioni al più **30°**
+fuori dall'orizzontale (dritta se non ce n'è), e la rifinitura gira di al
+più 5° attorno a una di esse. A Levico una griglia a 43° metteva la parola
+di traverso sulla mappa, e non si leggeva.
 
 ### Funzione obiettivo
 
@@ -467,6 +600,13 @@ su:
 
 ```
 python -m route_engine --word CIAO --distance 15000     --start 46.0671,11.1214 --out ciao_trento.gpx
+```
+
+Con `--nearby 3` prova anche 3 partenze vicine e tiene la migliore (§5,
+«Partenze vicine»); la CLI stampa ogni partenza provata e quale ha vinto:
+
+```
+python -m route_engine --shape heart --distance 10000     --start 45.9934,11.2580 --nearby 3 --out heart_caldonazzo.gpx
 ```
 
 Il GPX si apre in un visualizzatore (gpx.studio, geojson.io) e si guarda.

@@ -60,11 +60,38 @@ test.each([
   expect(toNote(warning)).toEqual({ tone, text });
 });
 
-test("a warning the app does not know is shown as it is", () => {
+// Every direction optimizer._compass can write, with metres and kilometres.
+test.each([
+  ["north", "250 m"],
+  ["north-east", "250 m"],
+  ["east", "1.5 km"],
+  ["south-east", "900 m"],
+  ["south", "2 km"],
+  ["south-west", "1.2 km"],
+  ["west", "40 m"],
+  ["north-west", "1.75 km"],
+])("the start moved %s is said in plain words", (direction, distance) => {
+  expect(
+    toNote(
+      `start moved ${distance} ${direction} of the requested point, where the shape closes on the roads`,
+    ),
+  ).toEqual({
+    tone: "info",
+    text: `The route starts ${distance} ${direction} of your start, where the shape fits the roads. Go to “Start here”.`,
+  });
+});
+
+test("a warning the app does not know is shown as it is, capitalised", () => {
   expect(toNote("something new from the engine")).toEqual({
     tone: "info",
-    text: "something new from the engine",
+    text: "Something new from the engine",
   });
+});
+
+test("an unknown warning never reaches the user in lower case", () => {
+  const text = toNote("start moved 250 m up-hill somewhere else").text;
+  expect(text.charAt(0)).toBe("S");
+  expect(toNote("").text).toBe("");
 });
 
 test("things to watch for come first, and a sentence is said once", () => {

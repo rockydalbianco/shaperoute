@@ -1,12 +1,17 @@
 """Command-line entry point: python -m route_engine --shape ... --distance ...
 
-`--outline FILE` takes the shape from a JSON outline instead (TASK-032), and
-`--word TEXT` writes a word one letter at a time (TASK-050).
+`--outline FILE` takes the shape from a JSON outline instead (TASK-032),
+`--word TEXT` writes a word one letter at a time (TASK-050), and
+`--image FILE` takes the outline of the subject of a PNG or JPEG image
+(TASK-072); `--save-outline FILE` writes that outline as JSON to look at.
+`--nearby N` also plans from N road nodes near the start and keeps the best
+(TASK-076).
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -14,12 +19,19 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from route_engine.export_gpx import route_name, to_gpx
+from route_engine.image_outline import InvalidImageError, outline_data
 from route_engine.models import (
     InvalidRequestError,
     RouteRequest,
     check_activity,
     check_distance,
     check_start,
+)
+from route_engine.nearby_starts import (
+    NEARBY_COUNT,
+    NearbyPlan,
+    ShapeJob,
+    plan_nearby,
 )
 from route_engine.network import EDGE_REUSE_PENALTY, OsmnxSource
 from route_engine.optimizer import (
@@ -33,7 +45,12 @@ from route_engine.optimizer import (
 )
 from route_engine.projection import initial_scale
 from route_engine.shapes import get_shape
-from route_engine.shapes.outline import InvalidOutlineError, Outline, read_outline
+from route_engine.shapes.outline import (
+    InvalidOutlineError,
+    Outline,
+    parse_outline,
+    read_outline,
+)
 from route_engine.words import LETTERS, InvalidWordError, Word, compose
 
 
@@ -109,6 +126,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "route_engine/shapes/outlines/house.json",
     )
     what.add_argument(
+        "--image",
+        type=Path,
+        metavar="FILE",
+        help="a shape traced from the subject of a PNG or JPEG image, "
+        "one subject on a plain background",
+    )
+    what.add_argument(
         "--word",
         metavar="TEXT",
         help="a word written one letter at a time, e.g. CIAO",
@@ -126,6 +150,13 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--out", type=Path, help="write the route to this GPX file (never overwritten)"
+    )
+    parser.add_argument(
+        "--save-outline",
+        type=Path,
+        metavar="FILE",
+        help="with --image: write the traced outline to this JSON file "
+        "(never overwritten); read it back with --outline",
     )
     parser.add_argument("--activity", default="running", help="default: running")
     parser.add_argument(
@@ -145,6 +176,15 @@ def _build_parser() -> argparse.ArgumentParser:
         default=EDGE_REUSE_PENALTY,
         help=f"weight multiplier on already used roads (default: {EDGE_REUSE_PENALTY})",
     )
+    parser.add_argument(
+        "--nearby",
+        type=int,
+        default=0,
+        metavar="N",
+        help="also plan from N road nodes 25-100 m from the start, in parallel, "
+        "and keep the best route, reached from the start "
+        f"(the API's choice is {NEARBY_COUNT}; default: 0, the start only)",
+    )
     return parser
 
 
@@ -162,12 +202,33 @@ def parse_args(
     args = parser.parse_args(argv)
     if args.out is not None and args.out.exists():
         parser.error(f"{args.out} already exists; samples are never overwritten")
+    if args.nearby < 0:
+        parser.error("--nearby must be 0 or more")
+    if args.nearby and args.no_optimize:
+        parser.error("--nearby needs the search: drop --no-optimize")
+    if args.save_outline is not None:
+        if args.image is None:
+            parser.error("--save-outline needs --image")
+        if args.save_outline.exists():
+            parser.error(f"{args.save_outline} already exists; never overwritten")
+    # The outline traced from --image, as its JSON file holds it.
+    args.traced = None
     request: Request
     try:
         if args.word is not None:
             request = WordRequest(
                 start=args.start,
                 word=compose(args.word),
+                distance_m=args.distance,
+                activity=args.activity,
+            )
+        elif args.image is not None:
+            args.traced = outline_data(
+                args.image, name=args.image.stem, source=args.image.name
+            )
+            request = OutlineRequest(
+                start=args.start,
+                outline=parse_outline(args.traced),
                 distance_m=args.distance,
                 activity=args.activity,
             )
@@ -185,6 +246,8 @@ def parse_args(
                 distance_m=args.distance,
                 activity=args.activity,
             )
+    except InvalidImageError as exc:
+        parser.error(f"{args.image}: {exc}")
     except InvalidOutlineError as exc:
         parser.error(f"{args.outline}: {exc}")
     except InvalidWordError as exc:
@@ -202,7 +265,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     request, args = parse_args(argv)
     lat, lon = request.start
     print("Route request:")
-    if isinstance(request, OutlineRequest):
+    if isinstance(request, OutlineRequest) and args.traced is not None:
+        corners = len(args.traced["points"]) - 1
+        print(f"  shape:    {request.shape} (traced from {args.image})")
+        print(f"            {corners} corners; {request.outline.license}")
+        shape = request.outline(SHAPE_POINTS)
+    elif isinstance(request, OutlineRequest):
         print(f"  shape:    {request.shape} (outline from {args.outline})")
         print(f"            {request.outline.source}; {request.outline.license}")
         shape = request.outline(SHAPE_POINTS)
@@ -215,6 +283,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"  distance: {request.distance_m} m")
     print(f"  start:    {lat}, {lon}")
     print(f"  activity: {request.activity}")
+    if args.save_outline is not None:
+        text = json.dumps(args.traced, indent=1)
+        args.save_outline.write_text(text + "\n", encoding="utf-8")
+        print(f"Wrote {args.save_outline}: the traced outline")
     if args.out is None:
         return 0
 
@@ -228,19 +300,33 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("Road graph: from the cache")
     else:
         print("Road graph: downloading from OpenStreetMap...")
+    nearby: NearbyPlan | None = None
     try:
-        plan = plan_shape(
-            shape,
-            request.shape,
-            request.start,
-            request.distance_m,
-            source,
-            optimize=optimize,
-            reuse_penalty=args.reuse_penalty,
-            max_tilt_deg=tilt_limit(request.shape),
-            one_way=one_way,
-            word=word,
-        )
+        if args.nearby:
+            job = ShapeJob(
+                tuple(shape),
+                request.shape,
+                request.distance_m,
+                reuse_penalty=args.reuse_penalty,
+                max_tilt_deg=tilt_limit(request.shape),
+                one_way=one_way,
+                word=word,
+            )
+            nearby = plan_nearby(job, request.start, source, count=args.nearby)
+            plan = nearby.plan
+        else:
+            plan = plan_shape(
+                shape,
+                request.shape,
+                request.start,
+                request.distance_m,
+                source,
+                optimize=optimize,
+                reuse_penalty=args.reuse_penalty,
+                max_tilt_deg=tilt_limit(request.shape),
+                one_way=one_way,
+                word=word,
+            )
     except ShapeNotDrawableError as exc:
         print(f"No route: {exc}", file=sys.stderr)
         return 1
@@ -272,6 +358,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             print(f"  letters:    {height_m:.0f} m high; moved (m, along/up) {moves}")
         print(f"  attempts:   {len(plan.search.attempts)} routes traced")
+    if nearby is not None:
+        _print_nearby(nearby)
     measure_name = SIMILARITY if word is None else "letters"
     print(f"  similarity: {route.similarity:.2f} ({measure_name})")
     print(f"  on roads:   {route.distance_m:.0f} m (target {request.distance_m} m)")
@@ -285,6 +373,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     for warning in route.warnings:
         print(f"  warning: {warning}")
     return 0
+
+
+def _print_nearby(nearby: NearbyPlan) -> None:
+    """Every start tried, and which one the route comes from."""
+    print(f"  nearby:     {len(nearby.tried)} starts planned")
+    if nearby.skipped:
+        print(f"            ({nearby.skipped})")
+    for i, tried in enumerate(nearby.tried):
+        mark = "*" if i == nearby.chosen else " "
+        where = "the start" if i == 0 else f"{tried.approach_m:.0f} m along the roads"
+        if tried.plan is None or tried.score is None:
+            what = tried.note
+        else:
+            what = (
+                f"similarity {tried.plan.result.similarity:.2f}, "
+                f"{tried.plan.result.distance_m:.0f} m, score {tried.score:.3f}"
+            )
+        print(f"            {mark} {where}: {what}")
 
 
 if __name__ == "__main__":

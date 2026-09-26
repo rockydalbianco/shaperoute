@@ -1,7 +1,13 @@
+import { type ImageReason, MAX_IMAGE_BYTES } from "@shaperoute/shared-types";
+
 import { MAX_APP_DISTANCE_KM } from "./distance";
 import { shapeList } from "./shapeWords";
+import type { ImageProblem } from "./useImageOutline";
 import type { RouteProblem } from "./useRouteRequest";
 import type { DrawKind } from "./wordInput";
+
+/** What the route draws: a shape, a word, or the outline of an image. */
+export type ChoiceKind = DrawKind | "image";
 
 /**
  * What the screen says: what happened and what to do, then details. The
@@ -21,7 +27,7 @@ const BUG = "The app and the API do not agree (a bug)";
  * the shapes, but a shorter word (TASK-057). */
 export function problemText(
   problem: RouteProblem,
-  kind: DrawKind = "shape",
+  kind: ChoiceKind = "shape",
 ): ProblemText {
   switch (problem.kind) {
     case "api_error":
@@ -41,6 +47,12 @@ export function problemText(
               detail: problem.message,
             };
           }
+          if (kind === "image") {
+            return {
+              text: "This outline does not fit the roads here. Try another distance, another start, or a simpler picture.",
+              detail: problem.message,
+            };
+          }
           return {
             text: "This shape does not fit the roads here. Try another shape, or another start:",
             detail: problem.message,
@@ -55,6 +67,13 @@ export function problemText(
         case "engine_error":
           return {
             text: "The route engine failed. Try again; if it happens again, look at the API log.",
+          };
+        case "image_not_usable":
+          return {
+            text: problem.reason
+              ? REASON_TEXT[problem.reason]
+              : "The route engine cannot find one clear outline in this picture.",
+            detail: problem.message,
           };
         case "ai_unavailable":
           return {
@@ -86,5 +105,43 @@ export function problemText(
       return {
         text: "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.",
       };
+  }
+}
+
+/**
+ * Why the engine found no outline, in plain words and with what to do
+ * (the reasons of route_engine/image_outline.py, ADR-0068).
+ */
+export const REASON_TEXT: Record<ImageReason, string> = {
+  format: "Only PNG and JPEG pictures work. Choose another one.",
+  unreadable: "This picture could not be read. Choose another one.",
+  background:
+    "The background is too busy. Use one subject on a plain background, like a drawing on white paper or an object on a bare table.",
+  no_subject:
+    "Nothing stands out from the background. Use a subject much darker or brighter than what is around it.",
+  scattered:
+    "The picture shows more than one thing. Use a picture with a single subject.",
+  edge: "The subject touches the edge of the picture. Leave some background all around it.",
+  small: "The subject is too small. Get closer, or use a bigger picture.",
+  jagged: "The outline is too jagged to run on roads. Try a simpler subject.",
+};
+
+/** Under the picture: why there is no outline to draw. */
+export function imageProblemText(problem: ImageProblem): ProblemText {
+  switch (problem.kind) {
+    case "denied":
+      return {
+        text: "The camera is off for this app. Allow it in Settings, or choose a picture instead.",
+      };
+    case "too_large":
+      return {
+        text: `This picture is too large: ${(problem.bytes / 1e6).toFixed(1)} MB, at most ${MAX_IMAGE_BYTES / 1e6} MB. Choose a smaller one.`,
+      };
+    case "pick_failed":
+      return {
+        text: "The picture could not be opened. Try again, or choose another one.",
+      };
+    default:
+      return problemText(problem, "image");
   }
 }

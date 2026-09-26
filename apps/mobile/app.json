@@ -18,6 +18,16 @@
       },
       "predictiveBackGestureEnabled": false
     },
-    "plugins": ["expo-sharing"]
+    "plugins": [
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Sgrava uses the picture you choose to trace the outline your route will draw.",
+          "cameraPermission": "Sgrava uses the photo you take to trace the outline your route will draw.",
+          "microphonePermission": false
+        }
+      ]
+    ]
   }
 }

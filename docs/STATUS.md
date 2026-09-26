@@ -35,7 +35,10 @@ chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
 fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
 dalla cima, e una scala per lettera vicina a quella delle vicine
 (ADR-0063, dopo TASK-063, che ha `optimizer.py`). Da TASK-071: lettere più
-piccole si leggono peggio; le lettere squadrate sono proposte all'utente.
+piccole si leggono peggio. Da TASK-077: le lettere squadrate sono un
+secondo stile nel motore; l'utente le vuole come **scelta nell'app**,
+accanto a quelle di oggi (task da assegnare: stile nella richiesta,
+nell'API, in `shared-types` e nell'app).
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -54,6 +57,23 @@ Niente per l'app.
 
 ## Completato
 
+- **Programmatore Lettere** — TASK-078: tre forme candidate come contorni,
+  sagoma nel contorno e dettagli ripassati (ADR-0073): testa di coniglio
+  (`rabbit_head`), zucca di Halloween (`pumpkin`), albero di Natale con la
+  stella (`christmas_tree`); provate dalla CLI a 15 km: somiglianza
+  0,97 · 0,88 · 0,97, 0,92 · 0,83 · 1,00 e 0,93 · 0,81 · 1,00 (Trento,
+  Levico, Milano). Giudizio dell'utente: tutte e tre `sì` a Milano;
+  coniglio `sì` a Trento e `quasi` a Levico, zucca `no` a Trento e `quasi`
+  a Levico, albero `quasi` a Trento e `no` a Levico. Quali entrano nel catalogo lo decide l'utente, con
+  TASK-065 o dopo.
+- **Programmatore Lettere** — TASK-077: lettere squadrate, un secondo
+  stile delle parole nel motore (`letters_block.json`, `style="block"`,
+  ADR-0072): tratti dritti o a 45°, lettere larghe e vicine, la parola
+  girata sulla griglia delle vie al più di 30°. Lo stile di oggi resta il
+  predefinito, identico. Giudizio: CIAO sì · quasi · sì, MAX no · quasi ·
+  sì, BELLO quasi · no · no, HURRY no (Trento · Levico · Milano): bene le
+  parole corte con lettere grandi su una griglia regolare. L'utente vuole
+  **tutti e due gli stili, da scegliere nell'app**: task da assegnare.
 - **Interfaccia Grafica** — TASK-073: l'immagine nell'app e nell'API
   (ADR-0069). «Image» accanto a Shape e Word, foto dalla libreria o dalla
   fotocamera, anteprima del contorno prima del percorso, motivo del rifiuto

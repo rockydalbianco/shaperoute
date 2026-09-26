@@ -98,7 +98,7 @@ export function problemText(
       return { text: `${BUG}: unexpected answer, HTTP ${problem.status}.` };
     case "unreachable":
       return {
-        text: `Cannot reach the API at ${problem.url}. Start it on the PC with --lan, on the same Wi-Fi.`,
+        text: `Cannot reach the API at ${problem.url}. Check that it is running (on the PC: with --lan) and that the phone can reach it: same Wi-Fi, Tailscale on, or the server address in apps/mobile/.env (docs/DEPLOY.md).`,
       };
     case "timeout":
       return {

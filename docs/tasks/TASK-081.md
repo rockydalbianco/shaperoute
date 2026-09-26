@@ -48,7 +48,7 @@ services/api/tests/test_access.py            (nuovo)
 packages/shared-types/src/index.ts           (solo API_ERROR_CODES, in fondo)
 packages/shared-types/fixtures/api-error-codes.json
 apps/mobile/src/api/apiUrl.ts, routes.ts, gpx.ts, shapeReadings.ts, imageOutlines.ts e i loro test
-apps/mobile/src/route/problems.ts
+apps/mobile/src/route/problems.ts, problems.test.ts (messaggio «unreachable», ok del coordinatore)
 apps/mobile/src/route/accessProblems.test.ts (nuovo)
 Dockerfile, .dockerignore                    (nuovi)
 .env.example
@@ -79,8 +79,9 @@ Da fare: `DEPLOY.md` (A Tailscale: `--lan`, IP 100.x del PC in
 `EXPO_PUBLIC_API_URL`, firewall di Windows sulla rete Tailscale; B
 `cloudflared tunnel --url http://localhost:8000` + chiave; C Docker su
 Hetzner/Oracle), link in `SETUP.md` §10, due righe nella tabella errori di
-`API.md`, ADR-0076, STATUS, PR. Il messaggio «unreachable» di `problems.ts`
-dice ancora «same Wi-Fi»: cambiarlo tocca `problems.test.ts`, non elencato.
+`API.md`, ADR-0076, STATUS, PR. Il messaggio «unreachable» ora vale anche
+per Tailscale e per un server (`problems.test.ts` aggiunto con l'ok del
+coordinatore).
 
 ## Esito
 

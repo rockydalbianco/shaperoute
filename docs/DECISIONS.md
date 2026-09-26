@@ -2267,4 +2267,4 @@ centinaia), Cloudflare Workers (memoria); una libreria di rate limiting
 **Conseguenza**: l'utente può chiedere percorsi in 5G con il PC acceso
 (A) senza cambiare codice; le strade senza PC acceso (D, E) sono
 documentate e l'immagine è pronta. Il messaggio dell'app quando l'API non
-risponde parla ancora di «same Wi-Fi».
+risponde nomina Wi-Fi, Tailscale e l'indirizzo del server.

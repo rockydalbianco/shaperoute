@@ -279,6 +279,39 @@ chiude ADR-0010.
 | 2026-09-26 | TASK-076_heart_15km_trento_start_v1.gpx | trento | 0.90 | 14.5 / 15.0 km | sì | dalla partenza, come oggi: il motore la sposta di 1 km a nord-est («Start here») |
 | 2026-09-26 | TASK-076_heart_15km_trento_nearby_v1.gpx | trento | 0.88 | 14.6 / 15.0 km | quasi | partenza vicina a 57 m, scelta: parte dalla posizione dell'utente invece che a 1 km |
 | 2026-09-26 | TASK-076_heart_10km_milano_start_v1.gpx | milano | 0.99 | 10.1 / 10.0 km | sì | piazza Duomo; partenze vicine non provate (55 676 nodi, oltre 30 000): solo confronto |
+| 2026-09-26 | TASK-071_ciao_15km_trento_v1.gpx | trento | 0.82 | 15.6 / 15.0 km | come TASK-050: sì | «prima» di TASK-071: il codice di `main`, con distanza, somiglianza, scale e gallerie uguali a TASK-050_ciao_15km_trento_v1.gpx; 72% del percorso su strade corse due volte, 74% nel disegno; 731 m corsi una volta accanto a un tratto ripassato |
+| 2026-09-26 | TASK-071_ciao_15km_levico_v1.gpx | levico | 0.87 | 16.3 / 15.0 km | come TASK-050: sì | «prima», come TASK-050; strade doppie 80% (disegno 74%); 540 m una volta accanto a un tratto ripassato |
+| 2026-09-26 | TASK-071_ciao_15km_milano_v1.gpx | milano | 0.97 | 15.1 / 15.0 km | come TASK-050: sì | «prima», come TASK-050; strade doppie 51% (disegno 74%): la base va e torna su due vie, anelli larghi; 3694 m una volta accanto a un tratto ripassato |
+| 2026-09-26 | TASK-071_bello_15km_trento_v1.gpx | trento | 0.74 | 16.1 / 15.0 km | come TASK-059: no | «prima», come TASK-059; strade doppie 75% (disegno 79%); 2524 m una volta accanto a un tratto ripassato |
+| 2026-09-26 | TASK-071_bello_15km_levico_v1.gpx | levico | 0.75 | 15.1 / 15.0 km | come TASK-059: quasi | «prima», come TASK-059; strade doppie 76% (disegno 79%); 982 m una volta accanto a un tratto ripassato |
+| 2026-09-26 | TASK-071_bello_15km_milano_v1.gpx | milano | 0.91 | 15.7 / 15.0 km | come TASK-059: sì | «prima», come TASK-059; strade doppie 77% (disegno 79%); 1167 m una volta accanto a un tratto ripassato |
+| 2026-09-26 | TASK-071_max_15km_trento_v1.gpx | trento | 0.92 | 14.4 / 15.0 km | come TASK-059: sì | «prima», come TASK-059; strade doppie 92% (disegno 91%); un anello di 800 m sulla X |
+| 2026-09-26 | TASK-071_max_15km_levico_v1.gpx | levico | 0.89 | 14.6 / 15.0 km | come TASK-059: sì | «prima», come TASK-059; strade doppie 91% (disegno 91%); 393 m una volta accanto a un tratto ripassato |
+| 2026-09-26 | TASK-071_max_15km_milano_v1.gpx | milano | 0.95 | 14.6 / 15.0 km | come TASK-059: sì | «prima», come TASK-059; strade doppie 77% (disegno 91%); 2325 m una volta accanto a un tratto ripassato |
+| 2026-09-26 | TASK-071_ciao_15km_trento_v2.gpx | trento | 0.91 | 15.2 / 15.0 km | quasi (prima sì) | «dopo»: ritorno sulle strade dell'andata (ADR-0067); lettere alte 603 m (prima 773); partenza spostata di 1 km, dalla ricerca lontana; strade doppie 71% (disegno 74%); 1216 m scale; 78 s |
+| 2026-09-26 | TASK-071_ciao_15km_levico_v2.gpx | levico | 0.75 | 14.7 / 15.0 km | quasi (prima sì) | «dopo»; lettere alte 496 m (prima 693), altro piazzamento; strade doppie 82% (disegno 74%); 45 s |
+| 2026-09-26 | TASK-071_ciao_15km_milano_v2.gpx | milano | 0.97 | 15.3 / 15.0 km | sì | «dopo»; lettere alte 785 m (prima 810); strade doppie 77% (disegno 74%, prima 51%); 32 s |
+| 2026-09-26 | TASK-071_bello_15km_trento_v2.gpx | trento | 0.78 | 14.9 / 15.0 km | no | «dopo»; lettere alte 410 m (prima 571); strade doppie 92% (disegno 79%); 139 s |
+| 2026-09-26 | TASK-071_bello_15km_levico_v2.gpx | levico | 0.74 | 15.8 / 15.0 km | no (prima quasi) | «dopo»; lettere alte 371 m (prima 493); fra la E e la L il percorso scende sotto la base; 66 s |
+| 2026-09-26 | TASK-071_bello_15km_milano_v2.gpx | milano | 0.87 | 15.3 / 15.0 km | quasi (prima sì) | «dopo»; lettere alte 495 m (prima 571), senza spostare la partenza (prima 1 km); 197 s |
+| 2026-09-26 | TASK-071_max_15km_trento_v2.gpx | trento | 0.91 | 14.5 / 15.0 km | sì | «dopo»; lettere alte 664 m (prima 655); strade doppie 88% (disegno 91%); 14 s |
+| 2026-09-26 | TASK-071_max_15km_levico_v2.gpx | levico | 0.84 | 15.9 / 15.0 km | sì | «dopo»; lettere alte 635 m (prima 542); partenza spostata di 250 m; 32 s |
+| 2026-09-26 | TASK-071_max_15km_milano_v2.gpx | milano | 0.96 | 15.3 / 15.0 km | sì | «dopo»; lettere alte 715 m (prima 724); strade doppie 92% (disegno 91%, prima 77%); 33 s |
+| 2026-09-26 | TASK-077_ciao-block_15km_trento_v1.gpx | trento | 0.91 | 14.9 / 15.0 km | sì (oggi sì) | lettere squadrate (ADR-0072); lettere alte 539 m; girata di -23°; strade doppie 71% (disegno 68%); 38 s |
+| 2026-09-26 | TASK-077_ciao-block_15km_levico_v1.gpx | levico | 0.91 | 16.4 / 15.0 km | quasi (oggi sì) | lettere squadrate (ADR-0072); lettere alte 679 m; girata di -4°; partenza spostata di 1 km; strade doppie 69% (disegno 68%); 27 s |
+| 2026-09-26 | TASK-077_ciao-block_15km_milano_v1.gpx | milano | 0.95 | 16.1 / 15.0 km | sì (oggi sì) | lettere squadrate (ADR-0072); lettere alte 827 m; girata di +3°; strade doppie 61% (disegno 68%); 59 s |
+| 2026-09-26 | TASK-077_bello-block_15km_trento_v1.gpx | trento | 0.82 | 16.0 / 15.0 km | quasi (oggi no) | lettere squadrate (ADR-0072); lettere alte 451 m; girata di -13°; partenza spostata di 250 m; strade doppie 66% (disegno 76%); 144 s |
+| 2026-09-26 | TASK-077_bello-block_15km_levico_v1.gpx | levico | 0.78 | 13.6 / 15.0 km | no (oggi quasi) | lettere squadrate (ADR-0072); lettere alte 431 m; girata di +15°; partenza spostata di 250 m; strade doppie 80% (disegno 76%); 59 s |
+| 2026-09-26 | TASK-077_bello-block_15km_milano_v1.gpx | milano | 0.87 | 14.6 / 15.0 km | no (oggi sì) | lettere squadrate (ADR-0072); lettere alte 507 m; girata di +3°; strade doppie 39% (disegno 76%); 204 s |
+| 2026-09-26 | TASK-077_max-block_15km_trento_v1.gpx | trento | 0.87 | 14.6 / 15.0 km | no (oggi sì) | lettere squadrate (ADR-0072); lettere alte 482 m; girata di +5°; partenza spostata di 250 m; strade doppie 79% (disegno 87%); 91 s |
+| 2026-09-26 | TASK-077_max-block_15km_levico_v1.gpx | levico | 0.85 | 14.7 / 15.0 km | quasi (oggi sì) | lettere squadrate (ADR-0072); lettere alte 518 m; girata di -6°; partenza spostata di 250 m; strade doppie 91% (disegno 87%); 37 s |
+| 2026-09-26 | TASK-077_max-block_15km_milano_v1.gpx | milano | 0.95 | 15.2 / 15.0 km | sì (oggi sì) | lettere squadrate (ADR-0072); lettere alte 734 m; girata di +3°; strade doppie 78% (disegno 87%); 41 s |
+| 2026-09-26 | TASK-077_hurry-block_15km_trento_v1.gpx | trento | 0.83 | 14.6 / 15.0 km | no | lettere squadrate (ADR-0072); lettere alte 441 m; girata di -18°; partenza spostata di 250 m; strade doppie 74% (disegno 82%); 122 s |
+| 2026-09-26 | TASK-077_hurry-block_15km_levico_v1.gpx | levico | 0.76 | 16.0 / 15.0 km | no | lettere squadrate (ADR-0072); lettere alte 451 m; girata di -22°; strade doppie 76% (disegno 82%); 87 s |
+| 2026-09-26 | TASK-077_hurry-block_15km_milano_v1.gpx | milano | 0.91 | 15.4 / 15.0 km | no | lettere squadrate (ADR-0072); lettere alte 520 m; girata di +8°; strade doppie 70% (disegno 82%); 110 s |
+| 2026-09-26 | TASK-077_hurry-round_15km_trento_v1.gpx | trento | 0.72 | 15.3 / 15.0 km | non giudicato | HURRY nelle lettere di oggi, per il confronto; lettere alte 428 m; girata di -15°; strade doppie 86% (disegno 87%); 160 s |
+| 2026-09-26 | TASK-077_hurry-round_15km_levico_v1.gpx | levico | 0.79 | 16.0 / 15.0 km | non giudicato | HURRY nelle lettere di oggi, per il confronto; lettere alte 432 m; girata di -15°; strade doppie 82% (disegno 87%); 86 s |
+| 2026-09-26 | TASK-077_hurry-round_15km_milano_v1.gpx | milano | 0.90 | 15.7 / 15.0 km | non giudicato | HURRY nelle lettere di oggi, per il confronto; lettere alte 537 m; girata di +15°; strade doppie 74% (disegno 87%); 35 s |
 
 <!--
 Esempio di riga compilata:

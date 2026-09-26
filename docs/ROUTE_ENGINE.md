@@ -183,6 +183,33 @@ dell'ultima: una I o una F all'inizio di una parola hanno la linea solo a
 destra e si leggono come una L e una E: l'utente la tiene così
 (TASK-059, ADR-0056).
 
+### Lettere squadrate (TASK-077)
+
+Un secondo alfabeto, `route_engine/letters_block.json`, nello stesso
+formato, si sceglie con `style="block"` (`words.compose`,
+`optimizer.plan_route`); senza, la parola è quella di sopra, identica
+(ADR-0072). Ogni tratto è orizzontale, verticale o a 45°, come nelle scritte
+di GPS art corse su una griglia di vie:
+
+- O, D, B, Q sono rettangoli che si chiudono sulla base (la D con gli
+  angoli di destra tagliati a 45°, la B con la pancia di sopra più stretta,
+  la Q con una codina a 45° dentro l'angolo); la U è un rettangolo aperto
+  con gli angoli bassi a 45°, fondo sulla base.
+- C, G, S, J hanno il tratto basso a 0,2 dell'altezza, come oggi E e L:
+  sulla base lo coprirebbe la linea che unisce le lettere. S e G sono a
+  gradini, ad angolo retto.
+- E, F, H, I, L, T come oggi, più larghe.
+- Le diagonali a 45°: la A con la punta, M e W con la V a metà altezza, N,
+  X e Z larghe 1, la V e la Y con le braccia a 45° dalla metà, la K con
+  le braccia dal centro dell'asta, la R con la gamba.
+- Larghe 0,8 (M, N, V, W, X, Y, Z 1; J 0,6, K 0,5, I niente), **0,3
+  dell'altezza** fra una lettera e l'altra invece di 0,6. A 15 km, sul
+  disegno, «CIAO» ha lettere alte 827 m (oggi 924), «BELLO» 507 (571),
+  «MAX» 851 (854): le lettere sono più larghe, la parola più lunga.
+
+`tests/measure_words.py` scrive le parole in uno dei due stili nelle tre
+zone, solo dalla cache, e stampa le misure di ogni caso.
+
 I contorni stanno in `route_engine/shapes/outlines/`, dati del pacchetto:
 stella e casa (con camino e porta) disegnate per ShapeRoute, e la sagoma di
 un cavallo al galoppo (OpenClipart, CC0). La casa si prova solo dalla CLI:
@@ -473,6 +500,20 @@ Per una parola composta (§2) la ricerca è la stessa, con due differenze
 
 La somiglianza si misura sulla parola con le lettere spostate: è quella
 che il percorso deve disegnare.
+
+### Parole squadrate sulla griglia delle vie (TASK-077)
+
+Una parola in lettere squadrate (§2) non resta dritta entro ±15°
+(ADR-0038): si gira come corrono le vie attorno alla partenza
+(`street_grid.py`, ADR-0072). Ogni pezzo di via entro la portata della
+parola vota per la sua direzione, ripiegata in un quarto di giro (una
+griglia corre per lungo e per largo), con la sua lunghezza; i voti si
+sommano per gradi e si lisciano di ±4°, e le cime più alte, fino a tre
+lontane almeno 20° e alte almeno metà della prima, sono le direzioni della
+griglia. La ricerca prova, per ogni partenza, le direzioni al più **30°**
+fuori dall'orizzontale (dritta se non ce n'è), e la rifinitura gira di al
+più 5° attorno a una di esse. A Levico una griglia a 43° metteva la parola
+di traverso sulla mappa, e non si leggeva.
 
 ### Funzione obiettivo
 

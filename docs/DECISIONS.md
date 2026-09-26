@@ -1939,6 +1939,57 @@ più piccoli del disegno. Giudizio dell'utente (2026-09-25): la testa è
 Se il cane entra nel catalogo, e come testa o intero, lo decide l'utente
 con TASK-065 (ADR-0036).
 
+## ADR-0067 — Parole: il ritorno sulle strade dell'andata, provato e scartato
+**Stato**: Scartata · 2026-09-26 · chiesto dall'utente («se si percorre la
+stessa strada anche al ritorno le rende più pulite le lettere, e più
+fini»); il metodo deciso dall'agente su delega dell'utente (TASK-071);
+giudizio dell'utente: 4 parole su 9 peggio, nessuna meglio; l'utente ha
+scelto di non farlo entrare nel motore
+
+Una lettera senza anelli si corre tutta due volte (ADR-0056), e dove la
+parola torna su se stessa le strade appena usate costano la metà
+(ADR-0044). Sui campioni di TASK-050 e TASK-059, rigenerati con il codice
+di `main`, il ritorno prende un'altra strada dove l'andata ha fatto
+zig-zag, e al posto di una linea viene un anello. Succede soprattutto a
+Milano, con marciapiedi e vie parallele fitte: «CIAO» ha il 51% del
+percorso su strade corse due volte contro il 74% del disegno, e 3,7 km
+corsi una volta sola accanto a un tratto ripassato
+(`docs/tasks/TASK-071.md`).
+
+**Provato** (commit `0e8add6` nel branch `feat/TASK-071-retraced-letters`,
+tolto dal commit dopo):
+- in `words.compose` i tratti ripassati tagliati negli stessi punti
+  all'andata e al ritorno (il gambo di E, K, L e la sbarra della B non lo
+  erano);
+- un tracciatore per le parole, `retrace.snap_retraced`: ogni punto della
+  linea tiene il nodo di strada in cui è stato raggiunto la prima volta, e
+  un lato già disegnato nel verso opposto ripete all'indietro i nodi
+  dell'andata; al primo passaggio le strade già usate costano la metà, come
+  prima. Le altre forme restavano con `snap_to_network`, identiche (cuore,
+  gatto e stella a 15 km nelle tre zone, stessi punti).
+
+**Esito**: ogni tratto ripassato diventa una linea sola (Milano: «CIAO» 77%
+di strade doppie, «MAX» 92%), ma il ritorno ripete gli zig-zag dell'andata
+e allo stesso piazzamento il percorso si allunga del 2–24% (mediana 5%). La
+ricerca, per stare nella distanza, stringe la parola o sceglie un altro
+posto: a Trento e Levico lettere più piccole del 13–28%. Giudizio
+dell'utente, prima → dopo: «CIAO» sì · sì · sì → quasi · quasi · sì;
+«BELLO» no · quasi · sì → no · no · quasi; «MAX» sì ovunque, come prima (e
+grande come prima). Le linee più sottili non compensano lettere più
+piccole.
+
+**Decisione**: il motore resta com'è. Il ritorno su un'altra strada nasce
+dallo zig-zag dell'andata, cioè da tratti obliqui o curvi su una griglia di
+vie: il seguito proposto all'utente sono le lettere squadrate dello
+screenshot di Strava, un tratto per via, dove il ritorno pulito viene da
+sé (proposta in `docs/tasks/TASK-071.md`).
+
+**Quanta strada costa il ripasso** (per chi non ama strade doppie e
+inversioni): sta nel disegno delle lettere, con o senza questa modifica.
+Le lettere ripassano il 74–91% della loro linea; a 15 km il 51–92% del
+percorso è su strade corse due volte (con il ritorno a specchio 71–92%,
+cioè 5,4–7,0 km di secondo passaggio), con 3–25 inversioni a U per parola.
+
 ## ADR-0068 — Il contorno ricavato da un'immagine, con regole fisse
 **Stato**: Attiva · 2026-09-25 · chiesto dall'utente («l'utente può caricare
 un'immagine da rappresentare e dai contorni si ricava la forma»), con il
@@ -2001,6 +2052,123 @@ Trento e Milano. Il gatto non si riconosceva già dal contorno: una sagoma
 povera di dettagli resta povera anche sulle strade. Da valutare con
 TASK-073: l'anteprima che fa giudicare la sagoma prima del percorso, e se
 la semplificazione toglie troppo.
+
+## ADR-0069 — L'immagine nell'API: base64 in JSON, anteprima, poi il contorno
+**Stato**: Attiva · 2026-09-26 · perimetro dell'utente (un soggetto chiaro
+su sfondo uniforme, solo il contorno esterno, rifiuto con il motivo;
+anteprima prima del percorso; `expo-image-picker` autorizzato); il
+contratto deciso dall'agente su delega dell'utente, approvato dal
+coordinatore (TASK-073)
+
+**Decisione**:
+
+- **Due richieste.** `POST /image-outlines` riceve l'immagine e risponde
+  con il contorno che il motore ricava (ADR-0068), in meno di 2 s; l'app lo
+  mostra. `POST /image-route-jobs` riceve il contorno, non l'immagine, e
+  risponde con un `RouteJob` come `/route-jobs`, letto e annullato sullo
+  stesso `/route-jobs/{job_id}`.
+- **L'immagine in base64 dentro il JSON**, al più 10 MB prima della
+  codifica (`MAX_IMAGE_BYTES`; Pydantic taglia prima la stringa a
+  13 333 336 caratteri). Niente multipart, che vorrebbe `python-multipart`:
+  nessuna dipendenza Python nuova (Pillow c'era già con il motore). Una foto
+  dell'iPhone, ricodificata in JPEG a qualità 0,8 dal selettore, sta fra 1
+  e 4 MB. L'API non salva e non scrive l'immagine.
+- **Il contorno torna in due forme**: `points`, normalizzati in [-1, 1],
+  per il percorso; `image_points`, frazioni della foto dall'alto a
+  sinistra, con `aspect`, per disegnarlo sopra la foto nell'anteprima.
+- **Il contorno che torna dal telefono si controlla come ogni input**
+  (richiesta del coordinatore): da 4 a 101 punti (al più 100 angoli, il
+  limite del motore), numeri finiti, dentro [-1, 1] (tolleranza 1e-6), poi
+  `parse_outline` del motore (chiuso, 3 punti distinti, senza incroci).
+  Altrimenti `invalid_request` con il motivo, prima di creare il job.
+- **Il contratto del motore non cambia**: `RouteRequest` e `models.py`
+  restano forma o parola. L'API ha il suo `ImageRequest` (partenza,
+  distanza e attività controllate con le funzioni di `models.py`) e il suo
+  pianificatore, `plan_request`, che per un'immagine chiama `plan_shape`
+  come `--image` dalla CLI: dritto (ADR-0038), nome `image`. Il
+  `RouteResult` di un'immagine ha `shape` e `word` a `null`.
+- **Un codice nuovo, `image_not_usable`** (422), con un campo nuovo in ogni
+  errore, `reason`: `null`, tranne con questo codice, dove è il motivo del
+  motore (`IMAGE_REASONS`). Un test dell'API controlla che i motivi di
+  `image_outline.py` siano tutti nel contratto.
+- **`shared-types` resta retrocompatibile**: tipi nuovi
+  (`ImageOutlineRequest`, `ImageOutline`, `ImageRouteRequest`,
+  `ImageReason`), `reason` opzionale, `GpxRequest.request` che accetta
+  anche un `ImageRouteRequest`. Un'app vecchia non chiama i due indirizzi
+  nuovi e ignora `reason`.
+- **La semplificazione di ADR-0068 resta com'è.** Misurata sui cinque
+  campioni di TASK-072: il contorno finale copre il 97–99% della sagoma
+  grezza (sovrapposizione mela 0,987, gatto 0,981, Italia 0,968, pera
+  0,984, stella 0,985) con 16–42 angoli, lontano dal limite di 100.
+  Dimezzare lisciatura e semplificazione porta il gatto a 0,989: la sua
+  sagoma resta la stessa. Il gatto non si riconosceva per la sagoma, non per
+  la semplificazione.
+
+**Motivo**: l'anteprima fa giudicare la sagoma prima di aspettare il
+percorso, ed è la risposta al gatto di TASK-072. Mandare il contorno invece
+dell'immagine alla seconda richiesta evita di rimandare megabyte, e lascia
+l'API senza stato fra le due. Il contorno però arriva dal telefono, e il
+motore non si fida di un input: lo ricontrolla.
+
+**Conseguenza**: l'API potrebbe ricevere un contorno che non ha tracciato
+lei. Se passa i controlli è una forma valida come un file di `outlines/`, e
+il motore la disegna: nessun rischio per il motore, e il principio resta
+(l'AI non produce geometrie; qui l'AI non c'entra). La trasparenza di un PNG
+si perde nel selettore di iOS, che consegna JPEG. Un pezzo staccato si perde
+ancora, ma ora si vede nell'anteprima.
+
+## ADR-0072 — Lettere squadrate: un secondo alfabeto, girato sulla griglia delle vie
+**Stato**: Attiva · 2026-09-26 · chiesto dall'utente dopo TASK-071
+(«sì, provale»), sul modello delle scritte di GPS art che ha mandato
+(«2024», «HURRY»); disegno delle lettere, rotazione e soglie decisi
+dall'agente su delega dell'utente (TASK-077); dopo il giudizio l'utente ha
+scelto di tenere tutti e due gli stili, da scegliere nell'app (un task a
+parte)
+
+**Contesto**: le lettere di oggi (ADR-0044, ADR-0056) hanno curve e
+diagonali che su una griglia di vie diventano scale e zig-zag, ed è lì che
+il ritorno prende un'altra strada (ADR-0067). Nelle scritte di Strava che
+l'utente ha mandato ogni tratto è una via, corsa all'andata e al ritorno,
+e le lettere sono larghe e vicine.
+
+**Decisione**:
+- `letters_block.json`, stesso formato di `letters.json`: tratti solo
+  orizzontali, verticali o a 45°. O, D, B, Q rettangoli chiusi sulla base
+  (come oggi B, D, Z); la U con il fondo sulla base e gli angoli a 45°,
+  perché due aste su una linea continua si leggerebbero come «II»; C, G,
+  S, J con il tratto basso a 0,2, come E e L oggi. Le diagonali a 45° e
+  non a gradini: la strada le fa comunque a gradini, della misura dei suoi
+  isolati, mentre un gradino disegnato ha una misura che una via su due
+  non ha. Larghe 0,8–1, spazi di 0,3 invece di 0,6.
+- Lo stile si sceglie con `style` in `words.compose` e
+  `optimizer.plan_route`, `"round"` per difetto: senza, parole e forme
+  sono identiche a prima. `RouteRequest`, API e app non lo conoscono
+  ancora.
+- Una parola squadrata si gira come corrono le vie attorno a ogni
+  partenza (`street_grid.py`: direzioni dei pezzi di via pesate per
+  lunghezza, ripiegate in 90°, cime dopo una lisciatura di ±4°), invece di
+  stare dritta entro ±15° (ADR-0038). Al più 30° fuori dall'orizzontale:
+  a Levico la griglia a 43° vinceva il conteggio delle strade e metteva
+  «MAX» e «BELLO» di traverso sulla mappa, illeggibili; senza una
+  direzione entro 30° la parola sta dritta.
+
+**Alternative scartate**: provare tutte le rotazioni fra −45° e 45° a
+passi fini e lasciar scegliere il conteggio delle strade (sei volte i
+piazzamenti da contare, e la griglia la trova già l'istogramma); una
+direzione sola per tutta la zona (a 1–2 km le vie girano: Trento ha due
+griglie a 5° e a −20°); diagonali a gradini disegnati.
+
+**Conseguenze**: le parole squadrate sono più lunghe sul disegno (lettere
+più larghe) e, a 15 km, lettere un po' più basse. Dove la griglia è
+regolare (Milano) le lettere cadono sulle vie; dove non lo è (Levico,
+Trento di là dall'Adige) il percorso resta a zig-zag come oggi.
+
+**Giudizio dell'utente** (2026-09-26), squadrate (oggi): «CIAO» sì ·
+quasi · sì (sì · sì · sì); «BELLO» quasi · no · no (no · quasi · sì);
+«MAX» no · quasi · sì (sì · sì · sì); «HURRY» no ovunque. Vanno bene le
+parole corte con lettere grandi su una griglia regolare (CIAO e MAX a
+Milano); con cinque lettere a 15 km le lettere sono troppo piccole anche a
+Milano. Lo stile di oggi resta il predefinito.
 
 ## ADR-0071 — Partenze vicine: tre nodi entro 100 m in parallelo, si tiene il cuore migliore
 **Stato**: Attiva · 2026-09-26 · chiesto dall'utente dopo TASK-075 («il

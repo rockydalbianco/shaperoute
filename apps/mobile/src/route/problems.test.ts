@@ -1,4 +1,6 @@
-import { problemText } from "./problems";
+import { IMAGE_REASONS } from "@shaperoute/shared-types";
+
+import { imageProblemText, problemText, REASON_TEXT } from "./problems";
 import type { RouteProblem } from "./useRouteRequest";
 
 const REASON = "a 5 km heart cannot be drawn here: the best route scores 0.52";
@@ -123,4 +125,53 @@ test("a word that does not fit is not offered the shapes", () => {
     text: "This word does not fit the roads here. Try a shorter word, or another start.",
     detail: REASON,
   });
+});
+
+test("every reason the engine gives has its own plain words", () => {
+  for (const reason of IMAGE_REASONS) {
+    const { text, detail } = problemText({
+      kind: "api_error",
+      code: "image_not_usable",
+      message: "engine words",
+      reason,
+    });
+    expect(text).toBe(REASON_TEXT[reason]);
+    expect(detail).toBe("engine words");
+  }
+  expect(new Set(Object.values(REASON_TEXT)).size).toBe(IMAGE_REASONS.length);
+  expect(REASON_TEXT.background).toMatch(/plain background/);
+});
+
+test("an image refused by an API without reasons still says something", () => {
+  const problem = {
+    kind: "api_error",
+    code: "image_not_usable",
+    message: "m",
+  } as const;
+  expect(problemText(problem).text).toMatch(/one clear outline/);
+});
+
+test("an outline that does not fit offers the distance, but no shapes", () => {
+  const notDrawable = {
+    kind: "api_error",
+    code: "shape_not_drawable",
+    message: REASON,
+  } as const;
+  const text = problemText(notDrawable, "image");
+  expect(text.text).toMatch(/This outline does not fit/);
+  expect(text.pickShape).toBeUndefined();
+  expect(
+    problemText({ ...notDrawable, suggested_distance_m: 9000 }, "image"),
+  ).toMatchObject({ text: expect.stringMatching(/^This image/), tryDistanceM: 9000 });
+});
+
+test("picking problems are said before any API is asked", () => {
+  expect(imageProblemText({ kind: "denied" }).text).toMatch(/camera is off/);
+  expect(imageProblemText({ kind: "too_large", bytes: 12_300_000 }).text).toBe(
+    "This picture is too large: 12.3 MB, at most 10 MB. Choose a smaller one.",
+  );
+  expect(imageProblemText({ kind: "pick_failed" }).text).toMatch(/could not be opened/);
+  expect(imageProblemText({ kind: "unreachable", url: "http://pc:8000" }).text).toMatch(
+    /Cannot reach the API/,
+  );
 });

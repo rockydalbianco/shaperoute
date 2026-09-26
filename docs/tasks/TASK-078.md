@@ -129,15 +129,20 @@ Il giudizio lo dà l'utente, e va in `samples/LOG.md`.
 Tre forme candidate come contorni, con i dettagli ripassati, provate a 15
 km nelle tre zone (ADR-0073); pagina di giudizio:
 https://claude.ai/artifact/JGNRhquxcfjtj6a1zxcTJB.
-Giudizio dell'utente (2026-09-26, `samples/LOG.md`):
+Giudizio dell'utente (2026-09-26, `samples/LOG.md`), dato al coordinatore:
 
 | | Trento | Levico | Milano |
 |---|---|---|---|
-| testa di coniglio (`rabbit_head`) | quasi | no | sì |
-| zucca di Halloween (`pumpkin`) | no | no | sì |
-| albero di Natale (`christmas_tree`) | quasi | quasi | sì |
+| testa di coniglio (`rabbit_head`) | sì | quasi | sì |
+| zucca di Halloween (`pumpkin`) | no | quasi | sì |
+| albero di Natale (`christmas_tree`) | quasi | no | sì |
 
-Tutte e tre si riconoscono a Milano; fuori da Milano l'albero di Natale è
-`quasi` in tutte e due le zone, meglio dell'albero di TASK-034/037
-(`no`); il coniglio è `quasi` a Trento; la zucca non si riconosce. Quali
-forme entrano nel catalogo lo decide l'utente, con TASK-065 o dopo.
+Sostituisce un primo giudizio dato nella sessione dell'agente lo stesso
+giorno (coniglio quasi/no/sì, zucca no/no/sì, albero quasi/quasi/sì);
+l'utente ha confermato che vale questo.
+
+Tutte e tre si riconoscono a Milano. Fuori da Milano il coniglio è la
+forma migliore (`sì` a Trento, `quasi` a Levico), come la testa di cane;
+l'albero di Natale è `quasi` a Trento e `no` a Levico, come l'albero di
+TASK-034/037; la zucca è `quasi` a Levico e `no` a Trento. Quali forme
+entrano nel catalogo lo decide l'utente, con TASK-065 o dopo.

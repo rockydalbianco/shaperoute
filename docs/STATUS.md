@@ -60,8 +60,8 @@ Niente per l'app.
   stella (`christmas_tree`); provate dalla CLI a 15 km: somiglianza
   0,97 · 0,88 · 0,97, 0,92 · 0,83 · 1,00 e 0,93 · 0,81 · 1,00 (Trento,
   Levico, Milano). Giudizio dell'utente: tutte e tre `sì` a Milano;
-  albero `quasi` a Trento e Levico, coniglio `quasi` a Trento e `no` a
-  Levico, zucca `no`. Quali entrano nel catalogo lo decide l'utente, con
+  coniglio `sì` a Trento e `quasi` a Levico, zucca `no` a Trento e `quasi`
+  a Levico, albero `quasi` a Trento e `no` a Levico. Quali entrano nel catalogo lo decide l'utente, con
   TASK-065 o dopo.
 - **Interfaccia Grafica** — TASK-073: l'immagine nell'app e nell'API
   (ADR-0069). «Image» accanto a Shape e Word, foto dalla libreria o dalla

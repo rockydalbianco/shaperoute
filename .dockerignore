@@ -1,0 +1,13 @@
+# Only services/ goes into the API image (Dockerfile): nothing else is sent
+# to Docker, above all no .env and no downloaded road graphs.
+*
+!services/route-engine/pyproject.toml
+!services/route-engine/route_engine/
+!services/ai/pyproject.toml
+!services/ai/shaperoute_ai/
+!services/api/pyproject.toml
+!services/api/shaperoute_api/
+**/__pycache__
+**/*.py[cod]
+**/.env
+**/.env.*

@@ -140,3 +140,30 @@ jobs:
 
       - name: Test
         run: npm test
+
+  # L'immagine Docker dell'API (TASK-081, ADR-0076): si costruisce e si
+  # prova che risponde a /health, con e senza chiave; non si pubblica.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: docker build -t shaperoute-api:ci .
+
+      - name: Smoke test
+        run: |
+          docker run -d --name api -p 8000:8000 \
+            -e SHAPEROUTE_API_KEY=ci-key-only-for-this-run shaperoute-api:ci
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:8000/health && break
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:8000/health
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/docs)" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' \
+            -H 'X-API-Key: ci-key-only-for-this-run' http://127.0.0.1:8000/docs)" = 200
+
+      - name: Log
+        if: always()
+        run: docker logs api || true

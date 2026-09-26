@@ -62,3 +62,10 @@ test("the guard wants points in [-1, 1], picture points in [0, 1], one each", ()
   expect(isImageOutline({ ...imageOutline, aspect: 0 })).toBe(false);
   expect(isImageOutline(null)).toBe(false);
 });
+
+test("the key goes with the image (TASK-081)", async () => {
+  const fetchFn = answering(200, imageOutline);
+  await requestImageOutline(URL, "aGVsbG8=", { fetchFn, key: "secret-key-for-tests" });
+  const init = (fetchFn.mock.calls[0] as unknown[])[1] as RequestInit;
+  expect(new Headers(init.headers).get("X-API-Key")).toBe("secret-key-for-tests");
+});

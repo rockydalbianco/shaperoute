@@ -1,6 +1,18 @@
 {
   "about": "Held-out words (TASK-030): written after the prompt was tuned on phrases.json, and measured once per model, never used to change the prompt. Same format.",
-  "shapes": ["circle", "heart", "star", "horse", "moon", "cat", "fish"],
+  "shapes": [
+    "circle",
+    "heart",
+    "star",
+    "horse",
+    "moon",
+    "cat",
+    "fish",
+    "butterfly",
+    "snail",
+    "dog_head",
+    "rabbit_head"
+  ],
   "phrases": [
     { "text": "cavallo a dondolo", "accept": ["horse"] },
     { "text": "stallone nero", "accept": ["horse"] },
@@ -16,6 +28,19 @@
     { "text": "Doraemon", "accept": ["cat"] },
     { "text": "Grumpy Cat", "accept": ["cat"] },
     { "text": "leone", "accept": ["cat", null] },
+
+    { "text": "farfallone", "accept": ["butterfly"] },
+    { "text": "ali di farfalla", "accept": ["butterfly"] },
+
+    { "text": "lumaca di mare", "accept": ["snail"] },
+    { "text": "guscio a spirale", "accept": ["snail", null] },
+
+    { "text": "pastore tedesco", "accept": ["dog_head"] },
+    { "text": "dalmata", "accept": ["dog_head"] },
+    { "text": "volpe", "accept": ["dog_head", "cat", null] },
+
+    { "text": "Bianconiglio", "accept": ["rabbit_head"] },
+    { "text": "coniglio pasquale", "accept": ["rabbit_head"] },
 
     { "text": "cuore spezzato", "accept": ["heart"] },
     { "text": "festa degli innamorati", "accept": ["heart"] },
@@ -40,6 +65,7 @@
     { "text": "ombrello", "accept": [null] },
     { "text": "Superman", "accept": [null] },
     { "text": "tartaruga", "accept": [null] },
-    { "text": "mela", "accept": [null] }
+    { "text": "mela", "accept": [null] },
+    { "text": "ape", "accept": [null] }
   ]
 }

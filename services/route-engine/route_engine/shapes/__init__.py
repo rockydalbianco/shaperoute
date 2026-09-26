@@ -32,6 +32,11 @@ SHAPES: dict[str, ShapeFn] = {
     "moon": read_outline(OUTLINES / "moon.json"),
     "cat": read_outline(OUTLINES / "cat.json"),  # with strokes: its eyes
     "fish": read_outline(OUTLINES / "fish.json"),  # with a stroke: its eye
+    # The animals the user approved (TASK-065), all with strokes.
+    "butterfly": read_outline(OUTLINES / "butterfly.json"),  # its antennae
+    "snail": read_outline(OUTLINES / "snail.json"),  # its spiral and horns
+    "dog_head": read_outline(OUTLINES / "dog_head.json"),  # eyes, nose, mouth
+    "rabbit_head": read_outline(OUTLINES / "rabbit_head.json"),  # eyes, nose, mouth
 }
 
 SUPPORTED_SHAPES: tuple[str, ...] = tuple(SHAPES)

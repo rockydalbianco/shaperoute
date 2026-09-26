@@ -2116,3 +2116,56 @@ il motore la disegna: nessun rischio per il motore, e il principio resta
 (l'AI non produce geometrie; qui l'AI non c'entra). La trasparenza di un PNG
 si perde nel selettore di iOS, che consegna JPEG. Un pezzo staccato si perde
 ancora, ma ora si vede nell'anteprima.
+
+## ADR-0072 — Lettere squadrate: un secondo alfabeto, girato sulla griglia delle vie
+**Stato**: Attiva · 2026-09-26 · chiesto dall'utente dopo TASK-071
+(«sì, provale»), sul modello delle scritte di GPS art che ha mandato
+(«2024», «HURRY»); disegno delle lettere, rotazione e soglie decisi
+dall'agente su delega dell'utente (TASK-077); dopo il giudizio l'utente ha
+scelto di tenere tutti e due gli stili, da scegliere nell'app (un task a
+parte)
+
+**Contesto**: le lettere di oggi (ADR-0044, ADR-0056) hanno curve e
+diagonali che su una griglia di vie diventano scale e zig-zag, ed è lì che
+il ritorno prende un'altra strada (ADR-0067). Nelle scritte di Strava che
+l'utente ha mandato ogni tratto è una via, corsa all'andata e al ritorno,
+e le lettere sono larghe e vicine.
+
+**Decisione**:
+- `letters_block.json`, stesso formato di `letters.json`: tratti solo
+  orizzontali, verticali o a 45°. O, D, B, Q rettangoli chiusi sulla base
+  (come oggi B, D, Z); la U con il fondo sulla base e gli angoli a 45°,
+  perché due aste su una linea continua si leggerebbero come «II»; C, G,
+  S, J con il tratto basso a 0,2, come E e L oggi. Le diagonali a 45° e
+  non a gradini: la strada le fa comunque a gradini, della misura dei suoi
+  isolati, mentre un gradino disegnato ha una misura che una via su due
+  non ha. Larghe 0,8–1, spazi di 0,3 invece di 0,6.
+- Lo stile si sceglie con `style` in `words.compose` e
+  `optimizer.plan_route`, `"round"` per difetto: senza, parole e forme
+  sono identiche a prima. `RouteRequest`, API e app non lo conoscono
+  ancora.
+- Una parola squadrata si gira come corrono le vie attorno a ogni
+  partenza (`street_grid.py`: direzioni dei pezzi di via pesate per
+  lunghezza, ripiegate in 90°, cime dopo una lisciatura di ±4°), invece di
+  stare dritta entro ±15° (ADR-0038). Al più 30° fuori dall'orizzontale:
+  a Levico la griglia a 43° vinceva il conteggio delle strade e metteva
+  «MAX» e «BELLO» di traverso sulla mappa, illeggibili; senza una
+  direzione entro 30° la parola sta dritta.
+
+**Alternative scartate**: provare tutte le rotazioni fra −45° e 45° a
+passi fini e lasciar scegliere il conteggio delle strade (sei volte i
+piazzamenti da contare, e la griglia la trova già l'istogramma); una
+direzione sola per tutta la zona (a 1–2 km le vie girano: Trento ha due
+griglie a 5° e a −20°); diagonali a gradini disegnati.
+
+**Conseguenze**: le parole squadrate sono più lunghe sul disegno (lettere
+più larghe) e, a 15 km, lettere un po' più basse. Dove la griglia è
+regolare (Milano) le lettere cadono sulle vie; dove non lo è (Levico,
+Trento di là dall'Adige) il percorso resta a zig-zag come oggi.
+
+**Giudizio dell'utente** (2026-09-26), squadrate (oggi): «CIAO» sì ·
+quasi · sì (sì · sì · sì); «BELLO» quasi · no · no (no · quasi · sì);
+«MAX» no · quasi · sì (sì · sì · sì); «HURRY» no ovunque. Vanno bene le
+parole corte con lettere grandi su una griglia regolare (CIAO e MAX a
+Milano); con cinque lettere a 15 km le lettere sono troppo piccole anche a
+Milano. Lo stile di oggi resta il predefinito.

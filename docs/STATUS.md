@@ -55,13 +55,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **App** — TASK-070: modalità tasca (ADR-0066). «Pocket» durante la
-  navigazione: schermo nero e acceso, luminosità al minimo, tocchi
-  ignorati, si esce tenendo premuto 2 s; voce e GPS come prima. Codice e
-  test fatti; manca la prova sull'iPhone con l'utente (passi nel task file).
+Niente.
 
 ## Completato
 
+- **App** — TASK-070: modalità tasca (ADR-0066). «Pocket» durante la
+  navigazione: schermo nero e acceso, luminosità al minimo, tocchi
+  ignorati, si esce tenendo premuto 2 s; voce e GPS come prima. Provata
+  sull'iPhone dall'utente (2026-09-28): funziona.
 - **App** — TASK-074: «Off the route» solo dopo 3 posizioni di fila oltre
   40 m, per almeno 8 s; una posizione con errore oltre 40 m non conta;
   «Back on the route» dopo 2 posizioni sul percorso (ADR-0070). Il

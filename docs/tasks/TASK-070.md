@@ -1,6 +1,6 @@
 # TASK-070 — Modalità tasca: schermo acceso ma nero, tocchi bloccati, voce e GPS attivi
 
-**Stato**: In corso — codice e test fatti, manca la prova sull'iPhone
+**Stato**: Done — modalità tasca provata sull'iPhone dall'utente (2026-09-28): funziona
 **Fase**: 4 · **Branch**: `feat/TASK-070-pocket-mode`
 
 ## Obiettivo
@@ -48,7 +48,7 @@ runtime di Expo Go per SDK 57: non chiedono plugin né `app.json`.
 - [x] Navigazione, voce, vibrazione e GPS non cambiano (`useNavigation.ts`
       e `navigator.ts` non toccati).
 - [x] Test, typecheck, lint e prettier verdi.
-- [ ] Prova sull'iPhone: voce in tasca, tocchi ignorati, uscita, luminosità
+- [x] Prova sull'iPhone: voce in tasca, tocchi ignorati, uscita, luminosità
       di prima.
 
 ## File toccati

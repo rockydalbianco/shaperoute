@@ -55,15 +55,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-081** — API da fuori casa (chiave, limite, indirizzo nell'app,
-  Docker, `DEPLOY.md`): fatto, PR #94 con CI verde, da mergiare dopo l'ok
-  dell'utente. PC + Tailscale provato dall'iPhone in 5G: funziona
-  (2026-09-26). Senza PC acceso: Raspberry Pi 5 o VPS con PayPal
-  (`DEPLOY.md`, D ed E), da decidere con l'utente.
-Niente per l'app.
+Niente.
 
 ## Completato
 
+- **App** — TASK-070: modalità tasca (ADR-0066). «Pocket» durante la
+  navigazione: schermo nero e acceso, luminosità al minimo, tocchi
+  ignorati, si esce tenendo premuto 2 s; voce e GPS come prima. Provata
+  sull'iPhone dall'utente (2026-09-28): funziona.
 - **App** — TASK-074: «Off the route» solo dopo 3 posizioni di fila oltre
   40 m, per almeno 8 s; una posizione con errore oltre 40 m non conta;
   «Back on the route» dopo 2 posizioni sul percorso (ADR-0070). Il

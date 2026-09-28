@@ -2486,3 +2486,44 @@ ADR-0048), oggi fuori dal task.
 
 **Conseguenza**: resta vero quello che dice ADR-0048: chi cambia una frase
 del motore la cambia anche in `warnings.test.ts`.
+
+## ADR-0066 — Modalità tasca: schermo acceso ma nero, invece della posizione in background
+**Stato**: Attiva · 2026-09-26 · strada scelta dall'utente; dettagli decisi
+dall'agente su delega dell'utente (TASK-070)
+
+L'utente vuole le indicazioni a voce col telefono in tasca. La posizione in
+background di `expo-location` non funziona in Expo Go («You must use a
+development build»), e una build propria su iPhone da Windows richiede
+l'account Apple Developer a pagamento. L'utente ha scelto la «modalità
+tasca».
+
+**Decisione**:
+- durante la navigazione, «Pocket» accanto a «Stop»: lo schermo resta
+  acceso (`expo-keep-awake`, tag `pocket-mode`), la luminosità dell'app va
+  a 0 (`expo-brightness`), un `Modal` nero copre tutto e ignora i tocchi;
+  si esce solo **tenendo premuto 2 secondi** (`HOLD_MS`), con la scritta
+  «Hold for 2 seconds to leave pocket mode» e «Keep holding…» mentre si
+  preme. Il tasto indietro di Android non esce;
+- la prima volta per avvio dell'app, un avviso con «Cancel» / «Go dark»:
+  bloccare il telefono o premere il tasto laterale ferma le indicazioni;
+- la luminosità torna com'era all'uscita, all'arrivo, con «Stop» e quando
+  l'app va in background; su iOS anche quando l'app è solo «inactive»
+  (centro di controllo, tasto laterale), perché la luminosità impostata
+  dall'app resta fino al blocco del telefono anche fuori dall'app; se l'app
+  torna attiva senza uscire, lo schermo si riabbassa;
+- navigazione, voce, vibrazione, GPS e tolleranza «fuori tracciato»
+  (ADR-0070) non cambiano: la modalità tasca è solo schermo.
+
+**Scartata**: posizione in background (non va in Expo Go); una build
+propria (costa); il nero senza abbassare la luminosità (su un LCD la
+retroilluminazione resta accesa); un doppio tocco o uno swipe per uscire
+(in tasca capitano); l'avviso salvato per sempre (servirebbe una
+dipendenza di storage).
+
+**Motivo**: l'app resta in primo piano, quindi tutto quello che già
+funziona continua a funzionare, con due dipendenze Expo che vanno in Expo
+Go.
+
+**Conseguenza**: se l'utente blocca il telefono le indicazioni si fermano,
+come prima. La mappa sotto il nero continua a seguire la posizione (è in
+`App.tsx`, fuori dal task): costa un po' di batteria, stima nel task file.

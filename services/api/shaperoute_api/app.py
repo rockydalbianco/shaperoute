@@ -119,6 +119,7 @@ def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
         word=body.word,
         distance_m=body.distance_m,
         activity=body.activity,
+        style=body.style,  # type: ignore[arg-type]  # RouteRequest checks it
     )
 
 

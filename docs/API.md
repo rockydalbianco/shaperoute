@@ -199,6 +199,12 @@ con `--word` (ADR-0044):
 - Il `RouteResult` ha `"shape": null` e `"word": "CIAO"`, la parola in
   maiuscole; per una forma è il contrario, con `"word": null`.
 - Il nome del file GPX usa la parola: `shaperoute-CIAO-15km-2026-09-24.gpx`.
+- `style` sceglie le lettere (TASK-080, ADR-0075): `"round"`, il
+  predefinito, oppure `"block"`, le lettere squadrate girate sulla griglia
+  delle vie (ADR-0072). Solo con una parola: `"block"` con una forma, o uno
+  stile che non c'è, è `invalid_request` (`a style is for the letters of a
+  word`, `unknown style 'italic'`). Gli stili sono `LETTER_STYLES` in
+  `shared-types`; una richiesta d'immagine non ha `style`.
 - Una parola chiede più tempo di una forma: 40–140 s per «CIAO» a 15 km,
   quasi sempre con la ricerca fino a 2 km (ADR-0044); con le lettere di
   più tratti di più, fino a 258 s per «BELLO» (ADR-0056).
@@ -317,7 +323,7 @@ motore, in una parola.
 | Caso | HTTP | `code` |
 |---|---|---|
 | JSON malformato, campo mancante, in più o fuori limite | 422 | `invalid_request` |
-| `shape` e `word` insieme o nessuno; una lettera che l'alfabeto non ha; più di 8 lettere; meno di 3 km a lettera | 422 | `invalid_request` |
+| `shape` e `word` insieme o nessuno; una lettera che l'alfabeto non ha; più di 8 lettere; meno di 3 km a lettera; `style` sconosciuto o `"block"` con una forma | 422 | `invalid_request` |
 | Forma non disponibile in quella zona (ADR-0025) | 422 | `shape_not_drawable` |
 | Zona non in cache e dati OSM non scaricabili | 503 | `map_data_unavailable` |
 | Il modello che legge le parole della forma non risponde (`AI.md`) | 503 | `ai_unavailable` |

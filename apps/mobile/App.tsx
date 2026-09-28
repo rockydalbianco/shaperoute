@@ -1,4 +1,9 @@
-import type { Direction, OutlinePoint, Shape } from "@shaperoute/shared-types";
+import type {
+  Direction,
+  LetterStyle,
+  OutlinePoint,
+  Shape,
+} from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
@@ -78,6 +83,7 @@ function Sgrava() {
   const distanceM = toDistanceM(distanceText);
   const [wordText, setWordText] = useState("");
   const wordCheck = checkWord(wordText, distanceM);
+  const [letterStyle, setLetterStyle] = useState<LetterStyle>("round");
   const image = useImageOutline(API_URL);
   // Past RouteChoice to the image panel (TASK-079).
   const { edits, add, undo } = image;
@@ -95,7 +101,7 @@ function Sgrava() {
   // with the details drawn on it (TASK-079).
   const drawn:
     | { shape: Shape }
-    | { word: string }
+    | { word: string; style: LetterStyle }
     | { outline: OutlinePoint[]; strokes?: OutlinePoint[][] }
     | null =
     kind === "shape"
@@ -104,7 +110,7 @@ function Sgrava() {
         : null
       : kind === "word"
         ? wordCheck.ok
-          ? { word: wordCheck.word }
+          ? { word: wordCheck.word, style: letterStyle }
           : null
         : image.state.status === "traced"
           ? {
@@ -244,6 +250,8 @@ function Sgrava() {
               wordText={wordText}
               onWordText={setWordText}
               wordCheck={wordCheck}
+              letterStyle={letterStyle}
+              onLetterStyle={setLetterStyle}
               image={image.state}
               onChooseImage={image.choose}
               distanceText={distanceText}

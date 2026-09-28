@@ -217,6 +217,13 @@ forma»), e la manda come `word`, in maiuscole e senza `shape`:
 | Meno di 3 km a lettera | “CIAO” needs at least 12 km: 3 km for each letter. e il tasto «Use 12 km» | spento |
 | La parola va | 4 letters: at least 12 km. A word takes a few minutes to draw. | acceso |
 
+Sotto la nota, **«LETTERS: Round | Square»** (TASK-080, ADR-0075): le
+lettere di oggi o quelle squadrate, che nell'API sono `style: "block"`.
+«Round» è la scelta all'avvio; con «Square» sotto compare, in grigio,
+«Square letters follow the street grid: best for short words.». La scelta
+va nella richiesta di ogni parola come `style` e non si salva fra un
+avvio e l'altro.
+
 - Le lettere sono `LETTERS` di `shared-types`; il contratto ne ammette 8
   (`MAX_WORD_LETTERS`), ma a 3 km l'una (`LETTER_DISTANCE_M`) l'ottava
   vorrebbe 24 km, oltre i 21 dell'app: il limite dell'app è 7.

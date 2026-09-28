@@ -70,6 +70,9 @@ test("sameRequest compares values, not objects", () => {
   expect(sameRequest(word, { ...word })).toBe(true);
   expect(sameRequest(word, { ...word, word: "KIWI" })).toBe(false);
   expect(sameRequest(word, REQUEST)).toBe(false);
+  // Round letters when not said (TASK-080).
+  expect(sameRequest(word, { ...word, style: "round" })).toBe(true);
+  expect(sameRequest(word, { ...word, style: "block" })).toBe(false);
 });
 
 test("an image is the same while its outline is the one traced for it", () => {

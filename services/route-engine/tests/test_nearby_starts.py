@@ -326,6 +326,16 @@ def test_a_word_from_the_api_comes_back_as_a_word() -> None:
     assert result.shape is None and result.word == "CIAO"
 
 
+def test_a_word_from_the_api_keeps_its_letters_style() -> None:
+    # TASK-080: the style of the request, round when not asked.
+    ask = {"start": ORIGIN, "word": "ciao", "distance_m": 15000}
+    block = ShapeJob.of_request(RouteRequest(**ask, style="block"))
+    round_ = ShapeJob.of_request(RouteRequest(**ask))
+    assert block.word is not None and block.word.style == "block"
+    assert round_.word is not None and round_.word.style == "round"
+    assert block.shape != round_.shape
+
+
 def test_a_nearby_choice_brings_the_graph_of_its_route() -> None:
     job = LoopJob(similarity=(((2, 0), 0.95),))
     found = plan_nearby(job, ORIGIN, GridSource(), count=4, processes=False)

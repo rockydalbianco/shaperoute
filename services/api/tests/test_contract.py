@@ -167,6 +167,7 @@ def test_the_api_passes_the_word_on_and_answers_its_result_unchanged() -> None:
     assert response.status_code == 200
     assert response.json() == data
     assert asked[0].word == "ciao"
+    assert asked[0].style == "block"  # TASK-080
 
 
 def test_image_fixtures_are_valid_bodies() -> None:
@@ -194,7 +195,8 @@ def test_image_fixtures_are_valid_bodies() -> None:
 
 
 def test_an_image_route_request_is_a_route_request_with_an_outline() -> None:
-    engine = {f.name for f in fields(RouteRequest)} - {"shape", "word"}
+    # No letters in an image, so no style (TASK-080).
+    engine = {f.name for f in fields(RouteRequest)} - {"shape", "word", "style"}
     assert _names(ImageRouteRequestBody) == engine | {"outline", "strokes"}
 
 

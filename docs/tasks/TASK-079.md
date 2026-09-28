@@ -65,26 +65,26 @@ il contorno modificato: sempre una linea sola.
 
 ## Criteri di accettazione
 
-- [ ] Motore: una parte che si sovrappone alla sagoma la allarga in un
+- [x] Motore: una parte che si sovrappone alla sagoma la allarga in un
       contorno solo; una parte staccata è `not_joined`, una tutta dentro
       `inside`; un dettaglio che parte vicino alla linea si aggancia e
       torna un `stroke` valido; un dettaglio che si incrocia chiude
       l'anello; lontano dalla linea `not_on_line`; che incrocia la linea
       o un altro dettaglio `crosses`; troppi angoli `too_many_corners`;
       una parte che copre l'attacco di un dettaglio `covers_detail`.
-- [ ] Ogni risultato passa `parse_outline` con i suoi `strokes`.
-- [ ] API: `POST /image-outline-edits` risponde con `points`, `strokes`,
+- [x] Ogni risultato passa `parse_outline` con i suoi `strokes`.
+- [x] API: `POST /image-outline-edits` risponde con `points`, `strokes`,
       `image_points`, `image_strokes`, `aspect`; rifiuta con
       `outline_edit_rejected` e `reason`; input fuori misura
       `invalid_request`.
-- [ ] API: `/image-route-jobs` con `strokes` crea il job; senza, come
+- [x] API: `/image-route-jobs` con `strokes` crea il job; senza, come
       prima; `strokes` controllati come il contorno.
-- [ ] I motivi del motore sono tutti nel contratto (test sul sorgente).
-- [ ] `shared-types` retrocompatibile, fixture lette da `tsc`, Node, API.
-- [ ] App: disegnare una parte e un dettaglio, rifiuto con il motivo in
+- [x] I motivi del motore sono tutti nel contratto (test sul sorgente).
+- [x] `shared-types` retrocompatibile, fixture lette da `tsc`, Node, API.
+- [x] App: disegnare una parte e un dettaglio, rifiuto con il motivo in
       parole semplici, «Undo» fino al contorno ricavato, «Choose another»
       azzera la pila; i dettagli nell'anteprima; `strokes` nella richiesta.
-- [ ] `ruff`, `black --check`, `pytest -m "not network"` in motore e API;
+- [x] `ruff`, `black --check`, `pytest -m "not network"` in motore e API;
       `npm run typecheck`, `npm test`, `npm run lint`, `format:check`.
 - [ ] Prova sull'iPhone con l'utente prima del merge.
 

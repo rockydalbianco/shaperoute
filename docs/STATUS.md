@@ -17,8 +17,10 @@ con l'attesa che dice cosa succede. Una zona nuova aggiunge il suo download
 da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
 percorso si esporta in GPX, e Garmin Connect lo apre. La forma si scrive
 in un riquadro, in italiano o in inglese, fra quelle del catalogo:
-cerchio, cuore, stella, cavallo, luna, gatto e pesce. Gatto e pesce hanno
-tratti interni, fatti andata e ritorno (gli occhi). Quando la forma non va
+cerchio, cuore, stella, cavallo, luna, gatto, pesce, farfalla, lumaca,
+testa di cane e testa di coniglio, anche da toccare come tessere. Gatto,
+pesce e i quattro animali nuovi hanno tratti interni, fatti andata e
+ritorno (occhi, antenne, spirale). Quando la forma non va
 attorno alla partenza, il motore cerca un posto fino a 2 km e l'app mostra
 «Start here»: così gatto e pesce si disegnano anche a Levico. Le parole che
 la tabella non conosce («stemma della Ferrari») le legge un modello aperto

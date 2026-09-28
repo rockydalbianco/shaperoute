@@ -69,6 +69,11 @@ export const LETTERS = [
 export const MAX_WORD_LETTERS = 8;
 export const LETTER_DISTANCE_M = 3_000;
 
+/** The letters of a word (TASK-080, ADR-0075): round, the default, or block,
+ * square letters turned to the street grid (ADR-0072). Only for a word. */
+export const LETTER_STYLES = ["round", "block"] as const;
+export type LetterStyle = (typeof LETTER_STYLES)[number];
+
 interface RouteRequestFields {
   start: LatLon;
   /** Target distance in metres, a whole number. */
@@ -79,8 +84,8 @@ interface RouteRequestFields {
 /** A shape of the catalogue, or a word written one letter at a time: one
  * of the two, the other absent or null (TASK-056). */
 export type RouteRequest =
-  | (RouteRequestFields & { shape: Shape; word?: null })
-  | (RouteRequestFields & { shape?: null; word: string });
+  | (RouteRequestFields & { shape: Shape; word?: null; style?: "round" })
+  | (RouteRequestFields & { shape?: null; word: string; style?: LetterStyle });
 
 export interface RouteResult {
   /** The route, closed: the last point is the first. */

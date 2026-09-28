@@ -87,6 +87,18 @@ def test_a_route_on_the_levico_test_graph() -> None:
             {**TRENTO_HEART, "shape": None, "word": "ciao"},
             "a 4-letter word needs at least 12 km",
         ),
+        # The letters' style, only for a word (TASK-080).
+        ({**TRENTO_HEART, "style": "block"}, "a style is for the letters of a word"),
+        (
+            {
+                **TRENTO_HEART,
+                "shape": None,
+                "word": "ciao",
+                "distance_m": 15000,
+                "style": "italic",
+            },
+            "unknown style 'italic'",
+        ),
     ],
 )
 def test_invalid_requests(body: dict[str, object], fragment: str) -> None:

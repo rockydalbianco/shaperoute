@@ -1,4 +1,4 @@
-import type { Direction, Shape } from "@shaperoute/shared-types";
+import type { Direction, LetterStyle, Shape } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
@@ -77,6 +77,7 @@ function Sgrava() {
   const distanceM = toDistanceM(distanceText);
   const [wordText, setWordText] = useState("");
   const wordCheck = checkWord(wordText, distanceM);
+  const [letterStyle, setLetterStyle] = useState<LetterStyle>("round");
   const image = useImageOutline(API_URL);
   const { state, draw, cancel } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
@@ -89,14 +90,17 @@ function Sgrava() {
   // One of them (ADR-0051): the kinds not chosen are not sent. An image
   // sends the outline the engine traced and the user has seen (ADR-0069).
   const drawn:
-    { shape: Shape } | { word: string } | { outline: [number, number][] } | null =
+    | { shape: Shape }
+    | { word: string; style: LetterStyle }
+    | { outline: [number, number][] }
+    | null =
     kind === "shape"
       ? shape !== null
         ? { shape }
         : null
       : kind === "word"
         ? wordCheck.ok
-          ? { word: wordCheck.word }
+          ? { word: wordCheck.word, style: letterStyle }
           : null
         : image.state.status === "traced"
           ? { outline: image.state.outline.points }
@@ -232,6 +236,8 @@ function Sgrava() {
             wordText={wordText}
             onWordText={setWordText}
             wordCheck={wordCheck}
+            letterStyle={letterStyle}
+            onLetterStyle={setLetterStyle}
             image={image.state}
             onChooseImage={image.choose}
             distanceText={distanceText}

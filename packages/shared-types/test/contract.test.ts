@@ -32,6 +32,7 @@ import {
   IMAGE_REASONS,
   JOB_STATUSES,
   LETTER_DISTANCE_M,
+  LETTER_STYLES,
   LETTERS,
   MAX_DISTANCE_M,
   MAX_IMAGE_BYTES,
@@ -146,6 +147,7 @@ test("shapes, activities and distance limits match the route engine", () => {
   assert.deepEqual([...LETTERS], contract.letters);
   assert.equal(MAX_WORD_LETTERS, contract.max_word_letters);
   assert.equal(LETTER_DISTANCE_M, contract.letter_distance_m);
+  assert.deepEqual([...LETTER_STYLES], contract.styles);
 });
 
 test("a request has a shape or a word, and a word the letters it may use", () => {

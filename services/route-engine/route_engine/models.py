@@ -9,7 +9,9 @@ from route_engine.shapes import SUPPORTED_SHAPES
 from route_engine.words import (
     LETTER_DISTANCE_M,
     MAX_WORD_LETTERS,
+    STYLES,
     InvalidWordError,
+    Style,
     compose,
 )
 
@@ -33,6 +35,8 @@ class RouteRequest:
     shape: str | None = None
     word: str | None = None
     activity: str = "running"
+    # The letters of a word (TASK-080, ADR-0075): "block" only for a word.
+    style: Style = "round"
 
     def __post_init__(self) -> None:
         check_start(self.start)
@@ -47,6 +51,14 @@ class RouteRequest:
                 f"choose one of: {', '.join(SUPPORTED_SHAPES)}"
             )
         check_activity(self.activity)
+        if self.style not in STYLES:
+            raise InvalidRequestError(
+                f"unknown style {self.style!r}; choose one of: {', '.join(STYLES)}"
+            )
+        if self.style != "round" and self.word is None:
+            raise InvalidRequestError(
+                "a style is for the letters of a word, not a shape"
+            )
 
     @property
     def name(self) -> str:

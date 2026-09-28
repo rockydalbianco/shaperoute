@@ -62,12 +62,8 @@ test("a tall picture is kept low enough to see the rest", async () => {
   });
 });
 
-// TASK-079: details, and a finger drawing on the picture.
-function touch(x: number, y: number) {
-  return { nativeEvent: { locationX: x, locationY: y } };
-}
-
-async function drawable(onDraw?: (line: [number, number][]) => void) {
+// TASK-079: the details drawn by hand, drawn like the outline.
+test("the details are drawn like the outline", async () => {
   const stroke: [number, number][] = [
     [0.25, 0.5],
     [0.5, 0.5],
@@ -78,53 +74,11 @@ async function drawable(onDraw?: (line: [number, number][]) => void) {
       points={SQUARE}
       strokes={[stroke]}
       aspect={4 / 3}
-      onDraw={onDraw}
     />,
   );
   await fireEvent(screen.getByTestId("image-preview"), "layout", {
     nativeEvent: { layout: { width: 400, height: 0 } },
   });
-  return screen.getByTestId("preview-frame");
-}
-
-test("the details are drawn like the outline", async () => {
-  await drawable();
   expect(screen.getAllByTestId("outline-side")).toHaveLength(4);
   expect(screen.getAllByTestId("detail-side")).toHaveLength(1);
-});
-
-test("a finger draws a line, which goes out as shares when it lifts", async () => {
-  const onDraw = jest.fn();
-  const frame = await drawable(onDraw);
-  expect(frame.props.onStartShouldSetResponder()).toBe(true);
-  expect(frame.props.onResponderTerminationRequest()).toBe(false);
-  await fireEvent(frame, "responderGrant", touch(100, 75));
-  await fireEvent(frame, "responderMove", touch(200, 75));
-  await fireEvent(frame, "responderMove", touch(300, 150));
-  // The line follows the finger, thinner than the outline.
-  expect(screen.getAllByTestId("drawn-side")).toHaveLength(2);
-  await fireEvent(frame, "responderRelease", touch(300, 150));
-  expect(onDraw).toHaveBeenCalledWith([
-    [0.25, 0.25],
-    [0.5, 0.25],
-    [0.75, 0.5],
-  ]);
-  expect(screen.queryAllByTestId("drawn-side")).toHaveLength(0);
-});
-
-test("a tap is not a line, and a touch taken away draws nothing", async () => {
-  const onDraw = jest.fn();
-  const frame = await drawable(onDraw);
-  await fireEvent(frame, "responderGrant", touch(100, 75));
-  await fireEvent(frame, "responderRelease", touch(100, 75));
-  await fireEvent(frame, "responderGrant", touch(100, 75));
-  await fireEvent(frame, "responderMove", touch(200, 75));
-  await fireEvent(frame, "responderTerminate", touch(200, 75));
-  expect(onDraw).not.toHaveBeenCalled();
-  expect(screen.queryAllByTestId("drawn-side")).toHaveLength(0);
-});
-
-test("without onDraw the picture takes no touches", async () => {
-  const frame = await drawable();
-  expect(frame.props.onStartShouldSetResponder).toBeUndefined();
 });

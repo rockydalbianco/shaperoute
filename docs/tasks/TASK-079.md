@@ -110,7 +110,8 @@ apps/mobile/src/route/useRouteRequest.ts, useRouteRequest.test.ts
 apps/mobile/src/api/imageOutlines.ts, routes.ts (solo il tipo di reason)
 apps/mobile/src/api/outlineEdits.ts, outlineEdits.test.ts            (nuovi)
 apps/mobile/src/route/drawnLine.ts, drawnLine.test.ts, imageEdits.ts,
-  ImageChoice.test.tsx                                               (nuovi)
+  ImageChoice.test.tsx, OutlineBoard.tsx, OutlineBoard.test.tsx,
+  boardView.ts, boardView.test.ts                                    (nuovi)
 apps/mobile/src/route/ImageChoice.tsx, ImagePreview.tsx e test
 apps/mobile/src/route/useImageOutline.ts, test
 apps/mobile/src/route/problems.ts, problems.test.ts
@@ -158,6 +159,8 @@ Da fare con l'utente prima del merge. Dal Mac, due finestre del terminale:
    poi il QR con l'iPhone (Expo Go).
 3. Start su Milano (zona in cache), «Image», una foto di un oggetto scuro
    su un foglio bianco:
+   - «Edit the outline»: la lavagna a tutto schermo; due dita ingrandiscono
+     e spostano, «Fit» torna com'era; lo schermo resta fermo disegnando.
    - «Add a part», un triangolo a cavallo della linea: si unisce? Uno
      lontano dalla linea: il motivo in parole semplici?
    - «Add a detail», dal bordo verso l'interno, poi un giro che incrocia la
@@ -165,6 +168,14 @@ Da fare con l'utente prima del merge. Dal Mac, due finestre del terminale:
      disegna?
    - «Undo» due volte: torna al contorno ricavato?
    - 10 km e «Draw route»: il percorso ha le parti e i dettagli.
+
+## Prima prova sull'iPhone (2026-09-28)
+
+Dall'utente, via hotspot (Tailscale: l'iPhone non era nella tailnet del
+Mac). Esito: mentre si disegna col dito la pagina scorre su e giù; la
+lavagna deve essere a tutto schermo, con lo zoom. Fatto: «Edit the
+outline» apre la lavagna (`OutlineBoard.tsx`, `boardView.ts`), l'anteprima
+nella pagina mostra soltanto. Da ripetere la prova.
 
 ## Esito
 

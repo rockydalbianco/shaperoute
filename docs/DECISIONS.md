@@ -2576,12 +2576,16 @@ L'utente vuole completarlo a mano sull'anteprima (ADR-0069).
   controllano come il contorno (numeri finiti, dentro [-1, 1], al più 50
   punti, poi `parse_outline` con i dettagli). Un'app o un'API più vecchie
   vanno come prima: senza `strokes` il contorno è quello di TASK-073.
-- **App**: «Add a part», «Add a detail», «Undo» sotto l'anteprima; con un
-  pulsante acceso si disegna col dito sulla foto, con i gestori di tocco
-  di React Native (nessuna dipendenza nuova); la linea segue il dito, più
-  sottile. I punti più vicini dell'1% della foto si lasciano prima di
+- **App**: «Edit the outline» apre una lavagna a tutto schermo (`Modal`),
+  fuori dalla pagina che scorre, con «Add a part», «Add a detail», «Undo».
+  Un dito disegna con un pulsante acceso, due dita ingrandiscono (fino a 8
+  volte) e spostano; le linee restano larghe uguali. Tutto con i gestori di
+  tocco di React Native (nessuna dipendenza nuova). I punti più vicini
+  dell'1% della foto, diviso l'ingrandimento, si lasciano prima di
   mandarla. Le azioni arrivano al pannello dell'immagine con un contesto
-  React, senza passare dal pannello del percorso.
+  React, senza passare dal pannello del percorso. Prima prova sull'iPhone
+  (2026-09-28): disegnando sull'anteprima dentro la pagina, la pagina
+  scorreva; l'utente ha chiesto la lavagna a tutto schermo e lo zoom.
 
 **Motivo**: il formato e il disegno dei tratti ripassati esistevano già
 (gatto, pesce, testa di cane): basta produrli. Decidere nel motore tiene il

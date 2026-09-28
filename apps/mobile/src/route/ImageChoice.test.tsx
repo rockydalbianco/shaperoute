@@ -5,8 +5,12 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import { ImageChoice } from "./ImageChoice";
 import { type ImageEdits, ImageEditsContext } from "./imageEdits";
-import { EDIT_REASON_TEXT } from "./problems";
-import type { EditState, ImageState } from "./useImageOutline";
+import type { ImageState } from "./useImageOutline";
+
+jest.mock(
+  "react-native-safe-area-context",
+  () => jest.requireActual("react-native-safe-area-context/jest/mock").default,
+);
 
 const PICTURE = { uri: "file:///apple.jpg", width: 800, height: 600 };
 const TRACED: ImageState = {
@@ -15,8 +19,8 @@ const TRACED: ImageState = {
   outline: imageOutline as ImageOutline,
 };
 
-function edits(edit: EditState = { status: "idle" }, earlier: ImageOutline[] = []) {
-  return { earlier, edit, add: jest.fn(), undo: jest.fn() } satisfies ImageEdits;
+function edits(): ImageEdits {
+  return { earlier: [], edit: { status: "idle" }, add: jest.fn(), undo: jest.fn() };
 }
 
 async function shown(value: ImageEdits | null, state: ImageState = TRACED) {
@@ -30,76 +34,23 @@ async function shown(value: ImageEdits | null, state: ImageState = TRACED) {
   });
 }
 
-test("a part or a detail is drawn on the picture once its button is on", async () => {
-  const value = edits();
-  await shown(value);
-  // A square picture: a frame of 320 by 320 points (MAX_PREVIEW_HEIGHT).
-  const frame = screen.getByTestId("preview-frame");
-  expect(frame.props.onStartShouldSetResponder).toBeUndefined();
-  await fireEvent.press(screen.getByText("Add a detail"));
-  expect(screen.getByText(/Draw from the yellow line/)).toBeTruthy();
-  await fireEvent(frame, "responderGrant", {
-    nativeEvent: { locationX: 160, locationY: 240 },
-  });
-  await fireEvent(frame, "responderMove", {
-    nativeEvent: { locationX: 160, locationY: 160 },
-  });
-  await fireEvent(frame, "responderRelease", {});
-  expect(value.add).toHaveBeenCalledWith("detail", [
-    [0.5, 0.75],
-    [0.5, 0.5],
-  ]);
-  await fireEvent.press(screen.getByText("Add a part"));
-  expect(screen.getByText(/Draw a closed shape across the yellow line/)).toBeTruthy();
-  // Pressed again, the button is off and the picture takes no touches.
-  await fireEvent.press(screen.getByText("Add a part"));
-  expect(
-    screen.getByTestId("preview-frame").props.onStartShouldSetResponder,
-  ).toBeUndefined();
+test("the preview only shows the outline; editing opens the full-screen board", async () => {
+  await shown(edits());
+  expect(screen.queryByTestId("outline-board")).toBeNull();
+  await fireEvent.press(screen.getByText("Edit the outline"));
+  expect(screen.getByTestId("outline-board")).toBeTruthy();
+  expect(screen.getByText("Add a part")).toBeTruthy();
+  await fireEvent.press(screen.getByText("Done"));
+  expect(screen.queryByTestId("outline-board")).toBeNull();
 });
 
-test("while a line is on its way nothing else is drawn", async () => {
-  await shown(edits({ status: "sending", kind: "part" }));
-  expect(screen.getByText("Adding the part…")).toBeTruthy();
-  await fireEvent.press(screen.getByText("Add a part"));
-  expect(
-    screen.getByTestId("preview-frame").props.onStartShouldSetResponder,
-  ).toBeUndefined();
-});
-
-test("a refused line says why in plain words", async () => {
-  await shown(
-    edits({
-      status: "refused",
-      kind: "detail",
-      problem: {
-        kind: "api_error",
-        code: "outline_edit_rejected",
-        message: "the detail must start on the yellow line",
-        reason: "not_on_line",
-      },
-    }),
-  );
-  expect(screen.getByText(EDIT_REASON_TEXT.not_on_line)).toBeTruthy();
-  expect(screen.getByText("the detail must start on the yellow line")).toBeTruthy();
-});
-
-test("Undo is off until something was added, then takes it away", async () => {
-  const none = edits();
-  await shown(none);
-  await fireEvent.press(screen.getByText("Undo"));
-  expect(none.undo).not.toHaveBeenCalled();
-  const some = edits({ status: "idle" }, [imageOutline as ImageOutline]);
-  await shown(some, { ...TRACED, outline: edited as ImageOutline });
-  // The detail added is drawn over the picture.
+test("the details added are drawn in the preview", async () => {
+  await shown(edits(), { ...TRACED, outline: edited as ImageOutline });
   expect(screen.getAllByTestId("detail-side")).toHaveLength(1);
-  await fireEvent.press(screen.getByText("Undo"));
-  expect(some.undo).toHaveBeenCalled();
 });
 
 test("without the editor the outline is only shown", async () => {
   await shown(null);
   expect(screen.getByTestId("image-preview")).toBeTruthy();
-  expect(screen.queryByText("Add a part")).toBeNull();
-  expect(screen.queryByText("Undo")).toBeNull();
+  expect(screen.queryByText("Edit the outline")).toBeNull();
 });

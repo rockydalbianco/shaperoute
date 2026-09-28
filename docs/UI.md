@@ -281,15 +281,27 @@ sotto si vede. Un'immagine alta resta entro 320 punti d'altezza, così la
 distanza resta a vista. La linea è fatta di rettangoli sottili ruotati,
 senza SVG (`react-native-svg` non è una dipendenza dell'app).
 
-**Modificare il contorno** (TASK-079, ADR-0074). Sotto l'anteprima tre
-pulsanti: **«Add a part»**, **«Add a detail»**, **«Undo»**. Con uno dei
-primi due acceso (giallo) si disegna col dito sulla foto: la linea segue il
-dito, gialla e più sottile, e quando il dito si alza va all'API, che
-risponde con il contorno nuovo (*Adding the part…*, meno di un secondo).
-Premuto di nuovo, il pulsante si spegne e la foto non prende più i tocchi
-(la pagina scorre di nuovo). Sotto i pulsanti una riga dice cosa
-disegnare:
+**Modificare il contorno** (TASK-079, ADR-0074). Sotto l'anteprima,
+**«Edit the outline»** apre una **lavagna a tutto schermo**: la foto
+attenuata con il contorno, e sotto **«Add a part»**, **«Add a detail»**,
+**«Undo»**; in alto «Done» per tornare e «Fit» quando la foto è ingrandita.
+La lavagna sta fuori dalla pagina che scorre: mentre si disegna lo schermo
+resta fermo (nella prima prova sull'iPhone l'anteprima, dentro la pagina,
+scorreva col dito). L'anteprima nella pagina mostra soltanto.
 
+- **Due dita** ingrandiscono (fino a 8 volte) e spostano la foto, sempre.
+- **Un dito**, con «Add a part» o «Add a detail» acceso (giallo), disegna:
+  la linea segue il dito, gialla e più sottile, e quando il dito si alza va
+  all'API, che risponde con il contorno nuovo (*Adding the part…*). Se
+  durante il tratto si appoggia un secondo dito, il tratto si lascia e si
+  ingrandisce. Senza pulsante acceso, un dito sposta la foto ingrandita.
+- Le linee restano larghe uguali a ogni ingrandimento; ingranditi si
+  disegnano dettagli più fini.
+
+Sopra i pulsanti una riga dice cosa fare:
+
+- nessun pulsante: *Choose what to add. Two fingers zoom and move the
+  picture.*
 - parte: *Draw a closed shape across the yellow line: it joins the
   outline.*
 - dettaglio: *Draw from the yellow line: the route runs along it and back.

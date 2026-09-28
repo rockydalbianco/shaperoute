@@ -144,7 +144,7 @@ entra con `lppl1316`, o fatti aggiungere al progetto.
    ```
 
    ```
-   npx eas-cli env:update --environment preview --variable-name EXPO_PUBLIC_API_URL --value http://NUOVO-INDIRIZZO:8000
+   npx eas-cli env:set preview --name EXPO_PUBLIC_API_URL --value http://NUOVO-INDIRIZZO:8000 --visibility plaintext
    ```
 
    Poi si ripubblica (punto 3). La variabile di EAS vince su

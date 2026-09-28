@@ -1,6 +1,6 @@
 # TASK-080 — Lo stile delle lettere come scelta nell'app
 
-**Stato**: In corso — codice e test fatti, manca la prova sull'iPhone
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-080-letter-style`
 
 ## Obiettivo
@@ -35,7 +35,7 @@ squadrate (ADR-0072), e il percorso arriva in quello stile.
 - [x] `shared-types` e fixture hanno `style`; i test di contratto lo
       confrontano da tutti e due i lati.
 - [x] Nell'app «Square» manda `style: "block"`, «Round» `"round"` (test).
-- [ ] Prova sull'iPhone: una parola squadrata e una tonda disegnate dallo
+- [x] Prova sull'iPhone: una parola squadrata e una tonda disegnate dallo
       stesso punto.
 
 ## File toccati
@@ -80,10 +80,13 @@ docs/tasks/TASK-080.md
 
 ## Prova sull'iPhone
 
-*(dopo la prova)* Dalla radice: API aggiornata (`SETUP.md`, passo 10) e
+2026-09-28, dall'utente sul Mac (API ed Expo su Wi‑Fi): ok, «merge 99».
+Passi: dalla radice: API aggiornata (`SETUP.md`, passo 10) e
 `npm run mobile`. «Word», «CIAO», 15 km: una volta «Round», una volta
 «Square», dallo stesso punto; il secondo deve avere tratti dritti o a 45°.
 
 ## Esito
 
-*(a fine task)*
+Nell'app si scelgono le lettere «Round» o «Square» per una parola; lo
+stile va in `RouteRequest`, nell'API e in `shared-types` (ADR-0075).
+Rimandati: `--style` nella CLI, lo stile ricordato fra gli avvii.

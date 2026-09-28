@@ -37,10 +37,7 @@ chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
 fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
 dalla cima, e una scala per lettera vicina a quella delle vicine
 (ADR-0063, dopo TASK-063, che ha `optimizer.py`). Da TASK-071: lettere più
-piccole si leggono peggio. Da TASK-077: le lettere squadrate sono un
-secondo stile nel motore; l'utente le vuole come **scelta nell'app**,
-accanto a quelle di oggi (task da assegnare: stile nella richiesta,
-nell'API, in `shared-types` e nell'app).
+piccole si leggono peggio. Le lettere squadrate si scelgono nell'app da TASK-080.
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -55,13 +52,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **App** — TASK-080: lo stile delle lettere come scelta nell'app
-  (ADR-0075). «LETTERS: Round | Square» sotto il campo della parola, `style`
-  in `RouteRequest`, API e `shared-types`. Codice e test fatti; manca la
-  prova sull'iPhone (passi nel task file).
+Niente.
 
 ## Completato
 
+- **App** — TASK-080: le lettere di una parola «Round» o «Square»,
+  scelte nell'app sotto il campo della parola; `style` in `RouteRequest`,
+  API e `shared-types` (ADR-0075). Provato sull'iPhone (2026-09-28).
 - **App** — TASK-070: modalità tasca (ADR-0066). «Pocket» durante la
   navigazione: schermo nero e acceso, luminosità al minimo, tocchi
   ignorati, si esce tenendo premuto 2 s; voce e GPS come prima. Provata

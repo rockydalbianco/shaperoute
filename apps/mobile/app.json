@@ -4,6 +4,9 @@
     "slug": "shaperoute",
     "version": "0.0.0",
     "runtimeVersion": "exposdk:57.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/47bc672d-5824-4e77-84c4-b44132c6e87f"
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -29,6 +32,12 @@
           "microphonePermission": false
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "47bc672d-5824-4e77-84c4-b44132c6e87f"
+      }
+    },
+    "owner": "lppl1316"
   }
 }

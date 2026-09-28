@@ -56,3 +56,10 @@ test.each([
   const outcome = await requestShapeReading(URL, "casa", answers(response));
   expect(outcome).toEqual({ kind: "bad_answer", status: 200 });
 });
+
+test("the key goes with the words (TASK-081)", async () => {
+  const fetchFn = answers(Response.json(shapeReading));
+  await requestShapeReading(URL, "horse", fetchFn, "secret-key-for-tests");
+  const [, init] = fetchFn.mock.calls[0];
+  expect(new Headers(init?.headers).get("X-API-Key")).toBe("secret-key-for-tests");
+});

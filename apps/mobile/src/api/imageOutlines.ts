@@ -1,5 +1,6 @@
 import type { ImageOutline } from "@shaperoute/shared-types";
 
+import { apiKey, keyHeaders } from "./apiUrl";
 import { isApiError, type RouteOutcome } from "./routes";
 
 /** Every way asking for the outline of an image can end. */
@@ -16,13 +17,17 @@ export type ImageOutcome =
 export async function requestImageOutline(
   baseUrl: string,
   base64: string,
-  { signal, fetchFn = fetch }: { signal?: AbortSignal; fetchFn?: typeof fetch } = {},
+  {
+    signal,
+    fetchFn = fetch,
+    key = apiKey(),
+  }: { signal?: AbortSignal; fetchFn?: typeof fetch; key?: string | null } = {},
 ): Promise<ImageOutcome> {
   let response: Response;
   try {
     response = await fetchFn(`${baseUrl}/image-outlines`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...keyHeaders(key) },
       body: JSON.stringify({ image: base64 }),
       signal,
     });

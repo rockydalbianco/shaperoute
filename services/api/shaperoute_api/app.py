@@ -32,6 +32,7 @@ from shaperoute_ai.reading import (
 )
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from shaperoute_api.access import protect
 from shaperoute_api.errors import error_of
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.images import (
@@ -160,6 +161,7 @@ def create_app(
         description="Generates real routes that draw a shape on the map.",
         lifespan=lifespan,
     )
+    protect(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

@@ -126,6 +126,10 @@ ErrorCode = Literal[
     "http_error",
     "ai_unavailable",
     "image_not_usable",
+    # A key is set and the request has the wrong one (TASK-081, ADR-0076).
+    "unauthorized",
+    # Too many POSTs from one client in a minute (TASK-081).
+    "too_many_requests",
 ]
 
 # Why an image gives no outline: InvalidImageError.reason in

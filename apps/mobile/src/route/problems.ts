@@ -80,6 +80,17 @@ export function problemText(
             text: `The AI that reads shape words is not running on the PC (Ollama). These words work without it: ${shapeList()}.`,
             detail: problem.message,
           };
+        // The key and the limit of an API reached from outside (TASK-081).
+        case "unauthorized":
+          return {
+            text: "The API refused this app's key. Put the API's key in EXPO_PUBLIC_API_KEY in apps/mobile/.env, then restart npm run mobile (docs/DEPLOY.md).",
+            detail: problem.message,
+          };
+        case "too_many_requests":
+          return {
+            text: "Too many requests to the API in the last minute. Wait a minute, then try again.",
+            detail: problem.message,
+          };
         default:
           return { text: `${BUG}: ${problem.code}.`, detail: problem.message };
       }
@@ -87,7 +98,7 @@ export function problemText(
       return { text: `${BUG}: unexpected answer, HTTP ${problem.status}.` };
     case "unreachable":
       return {
-        text: `Cannot reach the API at ${problem.url}. Start it on the PC with --lan, on the same Wi-Fi.`,
+        text: `Cannot reach the API at ${problem.url}. Check that it is running (on the PC: with --lan) and that the phone can reach it: same Wi-Fi, Tailscale on, or the server address in apps/mobile/.env (docs/DEPLOY.md).`,
       };
     case "timeout":
       return {

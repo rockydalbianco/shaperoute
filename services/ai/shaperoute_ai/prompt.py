@@ -23,6 +23,10 @@ OUTLINES: dict[str, str] = {
     "moon": "a crescent moon",
     "cat": "the head of a cat, with pointed ears and eyes",
     "fish": "a fish seen from the side, with a forked tail and an eye",
+    "butterfly": "a butterfly seen from above, with open wings and antennae",
+    "snail": "a snail seen from the side, with a spiral shell and two horns",
+    "dog_head": "the head of a dog, with long hanging ears, eyes and a nose",
+    "rabbit_head": "the head of a rabbit, with two long upright ears and eyes",
 }
 
 SYSTEM = """\

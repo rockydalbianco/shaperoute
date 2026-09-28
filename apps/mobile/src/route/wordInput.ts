@@ -6,6 +6,7 @@ import {
 } from "@shaperoute/shared-types";
 
 import { MAX_APP_DISTANCE_KM } from "./distance";
+import { shapeName } from "./shapeWords";
 
 /** What the route draws: a shape of the catalogue, or a word (ADR-0053). */
 export type DrawKind = "shape" | "word";
@@ -80,7 +81,10 @@ export function checkWord(text: string, distanceM: number | null): WordCheck {
   return { ok: true, word };
 }
 
-/** The route's name on screen: the word, or the shape (TASK-057). */
+/** The route's name on screen: the word, or the shape as read (TASK-057). */
 export function routeName(request: RouteRequest): string {
-  return request.word ? `“${request.word}”` : String(request.shape);
+  if (request.word) {
+    return `“${request.word}”`;
+  }
+  return request.shape ? shapeName(request.shape) : String(request.shape);
 }

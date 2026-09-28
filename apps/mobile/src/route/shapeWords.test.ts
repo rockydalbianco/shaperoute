@@ -1,6 +1,6 @@
 import { SHAPES } from "@shaperoute/shared-types";
 
-import { SHAPE_WORDS, shapeList, toShape } from "./shapeWords";
+import { SHAPE_WORDS, shapeList, shapeName, toShape } from "./shapeWords";
 
 test.each([
   ["heart", "heart"],
@@ -27,6 +27,22 @@ test.each([
   ["a kitten", "cat"],
   ["pesci", "fish"],
   ["the fish", "fish"],
+  ["una farfalla", "butterfly"],
+  ["Butterflies", "butterfly"],
+  ["la lumaca", "snail"],
+  ["chiocciola", "snail"],
+  ["a snail", "snail"],
+  ["il cane", "dog_head"],
+  ["Cagnolino", "dog_head"],
+  ["the dog", "dog_head"],
+  ["dog head", "dog_head"],
+  ["dog’s head", "dog_head"],
+  ["testa di cane", "dog_head"],
+  ["dog_head", "dog_head"],
+  ["il coniglio", "rabbit_head"],
+  ["a bunny", "rabbit_head"],
+  ["Coniglietto", "rabbit_head"],
+  ["rabbit head", "rabbit_head"],
 ])("%j is a %s", (text, shape) => {
   expect(toShape(text)).toBe(shape);
 });
@@ -39,6 +55,8 @@ test.each([
   ["stemma della Ferrari", "a phrase: the AI's job (TASK-030)"],
   ["una", "an article alone"],
   ["cuore stella", "two shapes"],
+  ["uccello", "an animal the user left out (ADR-0061)"],
+  ["bird", "an animal the user left out (ADR-0061)"],
 ])("%j is no shape: %s", (text) => {
   expect(toShape(text)).toBeNull();
 });
@@ -61,6 +79,16 @@ test("every word names its own shape, and no word is used twice", () => {
   }
 });
 
-test("the suggestion lists every shape", () => {
-  expect(shapeList()).toBe("circle, heart, star, horse, moon, cat or fish");
+test("the suggestion lists every shape, as the runner reads it", () => {
+  expect(shapeList()).toBe(
+    "circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head or rabbit head",
+  );
+});
+
+test("a shape's name on screen is a word of its own", () => {
+  expect(shapeName("dog_head")).toBe("dog head");
+  expect(shapeName("heart")).toBe("heart");
+  for (const shape of SHAPES) {
+    expect(toShape(shapeName(shape))).toBe(shape);
+  }
 });

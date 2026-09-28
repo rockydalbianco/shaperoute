@@ -234,3 +234,37 @@ test("an image route has neither shape nor word, and says so with nulls", () => 
   expect(isRouteResult(imageResult)).toBe(true);
   expect(isRouteResult({ ...imageResult, word: undefined })).toBe(false);
 });
+
+test("with a key, every call of a route job carries it (TASK-081)", async () => {
+  const { fetchFn, calls } = api(
+    { status: 202, body: job("queued") },
+    { status: 200, body: job("computing") },
+  );
+  const controller = new AbortController();
+  const pending = requestRoute(URL, REQUEST, {
+    fetchFn,
+    signal: controller.signal,
+    apiKey: "secret-key-for-tests",
+  });
+  await jest.advanceTimersByTimeAsync(POLL_MS * 2);
+  controller.abort();
+  await pending;
+  const sent = ["POST", "GET", "DELETE"].flatMap((method) =>
+    calls(method).map(([, init]) => new Headers(init?.headers).get("X-API-Key")),
+  );
+  expect(sent.length).toBeGreaterThanOrEqual(3);
+  expect(sent.every((key) => key === "secret-key-for-tests")).toBe(true);
+});
+
+test("without a key no key header is sent", async () => {
+  const { fetchFn, calls } = api({ status: 202, body: jobDone });
+  await run(fetchFn);
+  const [, init] = calls("POST")[0];
+  expect(new Headers(init?.headers).has("X-API-Key")).toBe(false);
+});
+
+test("a wrong key is an error of the API, with its code", async () => {
+  const body = { error: { code: "unauthorized", message: "Missing or wrong API key" } };
+  const { fetchFn } = api({ status: 401, body });
+  expect(await run(fetchFn)).toEqual({ kind: "api_error", ...body.error });
+});

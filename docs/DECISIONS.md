@@ -1865,6 +1865,61 @@ tutte e due. Quali animali entrano nel catalogo lo decide l'utente, con
 TASK-065 (ADR-0036); gli altri restano nella cartella dei contorni, come
 la casa e l'albero.
 
+## ADR-0061 — Farfalla, lumaca, testa di cane e di coniglio nel catalogo; «dog head» sullo schermo
+**Stato**: Attiva · 2026-09-26 · le forme scelte dall'utente; il resto
+deciso dall'agente su delega dell'utente (TASK-065)
+
+TASK-064 (ADR-0060), TASK-068 (ADR-0065) e TASK-078 (ADR-0073) hanno
+disegnato quattro animali, una testa di cane e tre candidate nuove (testa di
+coniglio, zucca, albero di Natale), giudicati dall'utente sulle strade a
+15 km. Quali entrano nel catalogo lo decide l'utente (ADR-0036).
+
+**Decisione**:
+- **Entrano `butterfly`, `snail`, `dog_head` e `rabbit_head`**, scelti
+  dall'utente. Tutti e quattro sono `sì` a Milano; la farfalla è `quasi` a
+  Trento e Levico, la lumaca `sì` a Trento, la testa di cane `sì` in tutte
+  e tre le zone, la testa di coniglio `sì` a Trento e `quasi` a Levico. Il
+  cane intero (`dog`), l'uccello (`bird`), la zucca (`pumpkin`) e l'albero
+  di Natale (`christmas_tree`) restano contorni da CLI, come la casa: il
+  cane è `sì` solo a Milano, e la testa lo sostituisce.
+- **Come le forme di TASK-039**: in `SHAPES` del motore, in `shared-types`
+  e in `contract.json`, con le parole in `shapeWords.ts` e una riga per
+  forma nella domanda all'AI (`OUTLINES`). Tutte e quattro entrano con i
+  tratti ripassati (antenne; spirale e corna; occhi, naso e bocca).
+- **I nomi nel contratto sono `dog_head` e `rabbit_head`**, come i file.
+  **Sullo schermo si legge «dog head», «rabbit head»** (`shapeName` in
+  `shapeWords.ts`): tessere, suggerimenti, conferma sotto il campo, attesa,
+  nome del percorso. Una tessera, o un chip dopo un percorso che non ci
+  sta, scrive nel campo il nome che si legge, e la tabella lo conosce; la
+  tabella legge il trattino basso come uno spazio.
+- **«cane», «dog», «cagnolino», «puppy» portano alla testa di cane**, e
+  «coniglio», «rabbit», «bunny» a quella di coniglio: nel catalogo c'è un
+  cane solo e un coniglio solo, e chi li chiede vuole quelli. «chiocciola»
+  porta alla lumaca: nel campo della forma è l'animale, non la «@».
+- **Tessere con le emoji** 🦋 🐌 🐶 🐰, come gatto, pesce e cavallo (🐶 e
+  🐰 sono proprio due teste), quattro per riga come oggi.
+- **Liste di prova dell'AI**: «cane» e «farfalla», che valevano nessuna
+  forma, escono perché ora le legge la tabella; entrano parole che la
+  tabella non conosce per le quattro forme («Snoopy», «Lassie»,
+  «escargot», «farfalla monarca», «Bugs Bunny»…) e due senza forma
+  («ragno», «ape»).
+
+**Motivo**: la regola del catalogo resta ADR-0036: entra solo ciò che
+l'utente ha giudicato a occhio. Un nome di contratto con il trattino basso
+è chiaro per l'API ma non per chi corre; un nome solo per lo schermo tiene
+il contratto com'è e costa una funzione. Portare «cane» alla testa evita
+un «nessuna forma» per la parola più ovvia.
+
+**Conseguenza**: il catalogo ha undici forme. La lumaca (72 vertici), la
+testa di cane (69) e quella di coniglio (81) hanno più vertici dei 64 punti
+di una forma: con i tratti ogni vertice resta (TASK-037), e i test del
+catalogo lo prevedono. Chieste come forme del catalogo danno, punto per
+punto, i percorsi dei campioni giudicati (`docs/tasks/TASK-065.md`).
+Un'app più vecchia dell'API non conosce le forme nuove: se l'AI risponde
+«butterfly», quell'app lo tratta come una risposta sbagliata. App e API si
+aggiornano insieme, come oggi dallo stesso checkout. Le tessere sono undici:
+tre righe da quattro, l'ultima con tre.
+
 ## ADR-0064 — La barra stima una parola dalle sue lettere
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
 (TASK-069)
@@ -2359,6 +2414,58 @@ riconoscono tutte e tre; il coniglio è `sì` a Trento e `quasi` a Levico,
 la zucca `no` a Trento e `quasi` a Levico, l'albero di Natale `quasi` a
 Trento e `no` a Levico (l'albero di TASK-034/037 era `no` in tutte e due). Quali forme entrano nel catalogo
 lo decide l'utente, con TASK-065 o dopo (ADR-0036).
+
+## ADR-0076 — API da fuori casa: chiave, limite, indirizzo nell'app, Docker
+
+**Data**: 2026-09-26 · **Task**: TASK-081 · **Stato**: accettata ·
+deciso dall'agente su delega dell'utente (strade e vincolo «gratis e senza
+carta» dall'utente, tramite il coordinatore)
+
+**Decisione**:
+
+- **Strada di adesso: PC + Tailscale** (`DEPLOY.md`, A): l'API resta sul
+  PC con `--lan`, che ascolta su tutte le interfacce, anche quella di
+  Tailscale; Expo pubblica l'indirizzo `100.x` se
+  `REACT_NATIVE_PACKAGER_HOSTNAME` è impostato, e l'app ricava l'API dallo
+  stesso host (ADR-0031). Nessuna chiave: la tailnet è privata. Poi
+  Cloudflare Tunnel (B), server con carta (C), Raspberry Pi 5 (D), VPS
+  pagato con PayPal (E).
+- **Chiave**: solo dalla variabile `SHAPEROUTE_API_KEY`, mai da riga di
+  comando (resta nella cronologia). Intestazione `X-API-Key`, confronto a
+  tempo costante (`hmac.compare_digest`), almeno 16 caratteri o l'API non
+  parte. `GET /health` resta aperto. Senza variabile, tutto come prima.
+  Errore 401 `unauthorized`, codice nuovo del contratto.
+- **Limite in memoria**, senza dipendenze: `SHAPEROUTE_RATE_LIMIT` POST al
+  minuto per client (default 30, 0 = spento), finestra scorrevole; 429
+  `too_many_requests` con `Retry-After`. Solo i POST, che fanno lavorare
+  il PC: il polling dei job (GET ogni 2 s) non conta. Per indirizzo del
+  client: dietro un tunnel tutti condividono lo stesso, accettabile per un
+  utente solo.
+- **Tutto in un modulo nuovo**, `shaperoute_api/access.py`, collegato con
+  `protect(app)` in `create_app`.
+- **App**: `EXPO_PUBLIC_API_URL` ed `EXPO_PUBLIC_API_KEY` in
+  `apps/mobile/.env`, letti da Expo; l'indirizzo configurato vince su
+  quello di Expo, la chiave va in ogni chiamata (job, polling, DELETE,
+  GPX, letture, contorni). Senza, come prima.
+- **Docker**: `python:3.12-slim`, dipendenze prese dai `pyproject.toml`,
+  pacchetti eseguiti dai sorgenti con `PYTHONPATH` (così i file di dati
+  del motore ci sono tutti, anche quelli che `package-data` non elenca),
+  utente non root, grafi nel volume `/app/data/cache`, zone scaricate alla
+  prima richiesta o subito con la CLI del motore. Ollama fuori
+  dall'immagine: senza, `ai_unavailable`. La CI costruisce l'immagine per
+  amd64 (con una prova di `/health` e della chiave) e per ARM64 (Raspberry
+  Pi, Oracle Ampere), senza pubblicarla.
+
+**Alternative scartate**: Hugging Face Spaces (Docker a pagamento), Render
+e Koyeb gratis (512 MB di RAM, niente disco permanente: una zona ne occupa
+centinaia), Cloudflare Workers (memoria); una libreria di rate limiting
+(dipendenza nuova, non serve per un utente); la chiave come opzione
+`--api-key`.
+
+**Conseguenza**: l'utente può chiedere percorsi in 5G con il PC acceso
+(A) senza cambiare codice; le strade senza PC acceso (D, E) sono
+documentate e l'immagine è pronta. Il messaggio dell'app quando l'API non
+risponde nomina Wi-Fi, Tailscale e l'indirizzo del server.
 
 ## ADR-0077 — Un avviso sconosciuto arriva con la prima lettera maiuscola
 **Stato**: Attiva · 2026-09-26 · deciso dall'agente su delega dell'utente

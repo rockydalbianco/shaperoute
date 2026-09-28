@@ -3,6 +3,7 @@ import {
   type ApiError,
   type ApiErrorCode,
   type Direction,
+  type EditReason,
   type ImageReason,
   type ImageRouteRequest,
   JOB_STATUSES,
@@ -32,8 +33,9 @@ export type RouteOutcome =
       message: string;
       /** A distance the shape fits (TASK-031); missing from older APIs. */
       suggested_distance_m?: number | null;
-      /** Why an image has no outline (TASK-073); missing from older APIs. */
-      reason?: ImageReason | null;
+      /** Why an image has no outline (TASK-073), or a drawn line was not
+       * added to it (TASK-079); missing from older APIs. */
+      reason?: ImageReason | EditReason | null;
     }
   | { kind: "bad_answer"; status: number }
   | { kind: "unreachable"; url: string }

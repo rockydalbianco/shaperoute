@@ -45,10 +45,10 @@ export async function requestImageOutline(
     : { kind: "bad_answer", status: response.status };
 }
 
-function isPoints(value: unknown, min: number, max: number): boolean {
+function isPoints(value: unknown, min: number, max: number, least = 4): boolean {
   return (
     Array.isArray(value) &&
-    value.length >= 4 &&
+    value.length >= least &&
     value.every(
       (point) =>
         Array.isArray(point) &&
@@ -64,18 +64,41 @@ function isPoints(value: unknown, min: number, max: number): boolean {
   );
 }
 
+/** Details in both frames, one for one; missing from an API older than
+ * TASK-079, which is none. */
+function isStrokes(strokes: unknown, imageStrokes: unknown): boolean {
+  if (strokes === undefined && imageStrokes === undefined) {
+    return true;
+  }
+  return (
+    Array.isArray(strokes) &&
+    Array.isArray(imageStrokes) &&
+    strokes.length === imageStrokes.length &&
+    strokes.every((stroke) => isPoints(stroke, -1, 1, 2)) &&
+    imageStrokes.every(
+      (stroke, i) =>
+        isPoints(stroke, 0, 1, 2) &&
+        (stroke as unknown[]).length === (strokes[i] as unknown[]).length,
+    )
+  );
+}
+
 /** Enough checks to draw it and send it back safely. */
 export function isImageOutline(body: unknown): body is ImageOutline {
   if (typeof body !== "object" || body === null) {
     return false;
   }
-  const { points, image_points, aspect } = body as Record<string, unknown>;
+  const { points, image_points, aspect, strokes, image_strokes } = body as Record<
+    string,
+    unknown
+  >;
   return (
     isPoints(points, -1, 1) &&
     isPoints(image_points, 0, 1) &&
     (image_points as unknown[]).length === (points as unknown[]).length &&
     typeof aspect === "number" &&
     Number.isFinite(aspect) &&
-    aspect > 0
+    aspect > 0 &&
+    isStrokes(strokes, image_strokes)
   );
 }

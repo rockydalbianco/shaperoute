@@ -1,8 +1,13 @@
-import { type ImageReason, MAX_IMAGE_BYTES } from "@shaperoute/shared-types";
+import {
+  type EditReason,
+  type ImageReason,
+  IMAGE_REASONS,
+  MAX_IMAGE_BYTES,
+} from "@shaperoute/shared-types";
 
 import { MAX_APP_DISTANCE_KM } from "./distance";
 import { shapeList } from "./shapeWords";
-import type { ImageProblem } from "./useImageOutline";
+import type { EditProblem, ImageProblem } from "./useImageOutline";
 import type { RouteProblem } from "./useRouteRequest";
 import type { DrawKind } from "./wordInput";
 
@@ -70,9 +75,17 @@ export function problemText(
           };
         case "image_not_usable":
           return {
-            text: problem.reason
+            text: isImageReason(problem.reason)
               ? REASON_TEXT[problem.reason]
               : "The route engine cannot find one clear outline in this picture.",
+            detail: problem.message,
+          };
+        case "outline_edit_rejected":
+          return {
+            text:
+              problem.reason && problem.reason in EDIT_REASON_TEXT
+                ? EDIT_REASON_TEXT[problem.reason as EditReason]
+                : "This line cannot be added to the outline. Draw it again.",
             detail: problem.message,
           };
         case "ai_unavailable":
@@ -136,6 +149,34 @@ export const REASON_TEXT: Record<ImageReason, string> = {
   small: "The subject is too small. Get closer, or use a bigger picture.",
   jagged: "The outline is too jagged to run on roads. Try a simpler subject.",
 };
+
+function isImageReason(reason: unknown): reason is ImageReason {
+  return (IMAGE_REASONS as readonly unknown[]).includes(reason);
+}
+
+/**
+ * Why a line drawn on the outline was refused, in plain words and with what
+ * to do (the reasons of route_engine/outline_edits.py, TASK-079).
+ */
+export const EDIT_REASON_TEXT: Record<EditReason, string> = {
+  short: "This line is too short to add. Draw a longer one.",
+  not_joined:
+    "A part must overlap the yellow line, or the route would need two lines. Draw it across the line.",
+  inside:
+    "This part is inside the outline and adds nothing. Draw it across the yellow line.",
+  covers_detail:
+    "This part covers where a detail starts. Undo the detail first, or draw the part elsewhere.",
+  not_on_line: "A detail must start on the yellow line. Put your finger on it first.",
+  crosses:
+    "A detail cannot cross the outline or another detail: the route would cross itself. Draw it again.",
+  too_many_corners:
+    "That is too much for one route. Undo something, or draw simpler lines.",
+};
+
+/** Under the picture: why a drawn line was not added (TASK-079). */
+export function editProblemText(problem: EditProblem): ProblemText {
+  return problemText(problem, "image");
+}
 
 /** Under the picture: why there is no outline to draw. */
 export function imageProblemText(problem: ImageProblem): ProblemText {

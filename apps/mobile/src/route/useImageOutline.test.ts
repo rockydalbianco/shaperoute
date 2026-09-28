@@ -1,5 +1,7 @@
 import imageError from "@shaperoute/shared-types/fixtures/image-error.json";
 import imageOutline from "@shaperoute/shared-types/fixtures/image-outline.json";
+import edited from "@shaperoute/shared-types/fixtures/image-outline-edited.json";
+import editError from "@shaperoute/shared-types/fixtures/outline-edit-error.json";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 
 import type { Picked } from "./pickImage";
@@ -78,4 +80,91 @@ test("a camera refused, or no API, fails without asking the API", async () => {
     }),
   );
   expect(fetchSpy).not.toHaveBeenCalled();
+});
+
+// TASK-079: lines drawn on the outline, and Undo.
+async function traced() {
+  fetchSpy.mockResolvedValueOnce(Response.json(imageOutline));
+  const hook = await renderHook(() =>
+    useImageOutline("http://pc:8000", async () => PICKED),
+  );
+  await act(async () => hook.result.current.choose("library"));
+  await waitFor(() => expect(hook.result.current.state.status).toBe("traced"));
+  return hook;
+}
+
+const LINE: [number, number][] = [
+  [0.5, 0.88],
+  [0.5, 0.5],
+];
+
+test("a line drawn becomes the outline shown, and Undo goes back", async () => {
+  const { result } = await traced();
+  expect(result.current.edits).toEqual({ earlier: [], edit: { status: "idle" } });
+  fetchSpy.mockResolvedValueOnce(Response.json(edited));
+  await act(async () => result.current.add("detail", LINE));
+  await waitFor(() =>
+    expect(result.current.state).toMatchObject({ status: "traced", outline: edited }),
+  );
+  expect(result.current.edits).toEqual({
+    earlier: [imageOutline],
+    edit: { status: "idle" },
+  });
+  const [url, init] = fetchSpy.mock.calls[1];
+  expect(url).toBe("http://pc:8000/image-outline-edits");
+  expect(JSON.parse(init?.body as string)).toMatchObject({
+    kind: "detail",
+    line: LINE,
+  });
+  await act(async () => result.current.undo());
+  expect(result.current.state).toMatchObject({ outline: imageOutline });
+  expect(result.current.edits.earlier).toEqual([]);
+});
+
+test("a refused line keeps the outline and says why", async () => {
+  const { result } = await traced();
+  fetchSpy.mockResolvedValueOnce(Response.json(editError, { status: 422 }));
+  await act(async () => result.current.add("detail", LINE));
+  await waitFor(() => expect(result.current.edits.edit.status).toBe("refused"));
+  expect(result.current.edits.edit).toMatchObject({
+    kind: "detail",
+    problem: {
+      kind: "api_error",
+      code: "outline_edit_rejected",
+      reason: "not_on_line",
+    },
+  });
+  expect(result.current.state).toMatchObject({ outline: imageOutline });
+  // Undo has nothing to take away.
+  await act(async () => result.current.undo());
+  expect(result.current.state).toMatchObject({ outline: imageOutline });
+});
+
+test("a new picture starts from its own outline, without the edits", async () => {
+  const { result } = await traced();
+  fetchSpy.mockResolvedValueOnce(Response.json(edited));
+  await act(async () => result.current.add("detail", LINE));
+  await waitFor(() => expect(result.current.edits.earlier).toHaveLength(1));
+  fetchSpy.mockResolvedValueOnce(Response.json(imageOutline));
+  await act(async () => result.current.choose("library"));
+  await waitFor(() =>
+    expect(result.current.state).toMatchObject({ outline: imageOutline }),
+  );
+  expect(result.current.edits.earlier).toEqual([]);
+});
+
+test("Undo drops a line still on its way", async () => {
+  const { result } = await traced();
+  fetchSpy.mockResolvedValueOnce(Response.json(edited));
+  await act(async () => result.current.add("detail", LINE));
+  await waitFor(() => expect(result.current.edits.earlier).toHaveLength(1));
+  let answer: (response: Response) => void = () => {};
+  fetchSpy.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+  await act(async () => result.current.add("part", LINE));
+  expect(result.current.edits.edit).toEqual({ status: "sending", kind: "part" });
+  await act(async () => result.current.undo());
+  expect(result.current.state).toMatchObject({ outline: imageOutline });
+  await act(async () => answer(Response.json(edited)));
+  expect(result.current.state).toMatchObject({ outline: imageOutline });
+  expect(result.current.edits).toEqual({ earlier: [], edit: { status: "idle" } });
 });

@@ -1,4 +1,4 @@
-import type { Direction, Shape } from "@shaperoute/shared-types";
+import type { Direction, OutlinePoint, Shape } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
@@ -19,6 +19,7 @@ import { MapView } from "./src/map/MapView";
 import { useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
 import { toDistanceM } from "./src/route/distance";
+import { ImageEditsContext } from "./src/route/imageEdits";
 import type { ChoiceKind } from "./src/route/problems";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { shapeName, toShape } from "./src/route/shapeWords";
@@ -78,6 +79,9 @@ function Sgrava() {
   const [wordText, setWordText] = useState("");
   const wordCheck = checkWord(wordText, distanceM);
   const image = useImageOutline(API_URL);
+  // Past RouteChoice to the image panel (TASK-079).
+  const { edits, add, undo } = image;
+  const imageEdits = useMemo(() => ({ ...edits, add, undo }), [edits, add, undo]);
   const { state, draw, cancel } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
 
@@ -87,9 +91,13 @@ function Sgrava() {
   );
 
   // One of them (ADR-0051): the kinds not chosen are not sent. An image
-  // sends the outline the engine traced and the user has seen (ADR-0069).
+  // sends the outline the engine traced and the user has seen (ADR-0069),
+  // with the details drawn on it (TASK-079).
   const drawn:
-    { shape: Shape } | { word: string } | { outline: [number, number][] } | null =
+    | { shape: Shape }
+    | { word: string }
+    | { outline: OutlinePoint[]; strokes?: OutlinePoint[][] }
+    | null =
     kind === "shape"
       ? shape !== null
         ? { shape }
@@ -99,7 +107,10 @@ function Sgrava() {
           ? { word: wordCheck.word }
           : null
         : image.state.status === "traced"
-          ? { outline: image.state.outline.points }
+          ? {
+              outline: image.state.outline.points,
+              strokes: image.state.outline.strokes,
+            }
           : null;
   const request: AnyRouteRequest | null =
     start && drawn !== null && distanceM !== null
@@ -217,27 +228,29 @@ function Sgrava() {
           mapError={mapError}
           footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
         >
-          <RouteChoice
-            kind={kind}
-            onKind={setKind}
-            shapeText={shapeText}
-            shape={shape}
-            onShapeText={setShapeText}
-            reading={reading}
-            onShapeDone={() => {
-              if (reading) {
-                shapeReading.read(shapeText);
-              }
-            }}
-            wordText={wordText}
-            onWordText={setWordText}
-            wordCheck={wordCheck}
-            image={image.state}
-            onChooseImage={image.choose}
-            distanceText={distanceText}
-            distanceM={distanceM}
-            onDistanceText={setDistanceText}
-          />
+          <ImageEditsContext.Provider value={imageEdits}>
+            <RouteChoice
+              kind={kind}
+              onKind={setKind}
+              shapeText={shapeText}
+              shape={shape}
+              onShapeText={setShapeText}
+              reading={reading}
+              onShapeDone={() => {
+                if (reading) {
+                  shapeReading.read(shapeText);
+                }
+              }}
+              wordText={wordText}
+              onWordText={setWordText}
+              wordCheck={wordCheck}
+              image={image.state}
+              onChooseImage={image.choose}
+              distanceText={distanceText}
+              distanceM={distanceM}
+              onDistanceText={setDistanceText}
+            />
+          </ImageEditsContext.Provider>
         </ChooseScreen>
       )}
     </View>

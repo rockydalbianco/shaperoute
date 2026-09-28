@@ -93,9 +93,13 @@ const shapeReadingFields: Same<
   Same<keyof typeof shapeReading, keyof ShapeReading> &
   Same<keyof typeof shapeReadingNone, keyof ShapeReading> = true;
 
+// The traced outline and its request without the details of TASK-079.
 const imageFields: Same<keyof typeof imageOutlineRequest, keyof ImageOutlineRequest> &
-  Same<keyof typeof imageOutline, keyof ImageOutline> &
-  Same<keyof typeof imageRouteRequest, keyof ImageRouteRequest> &
+  Same<
+    keyof typeof imageOutline,
+    keyof Omit<ImageOutline, "strokes" | "image_strokes">
+  > &
+  Same<keyof typeof imageRouteRequest, keyof Omit<ImageRouteRequest, "strokes">> &
   Same<keyof typeof imageResult, keyof RouteResult> &
   Same<keyof typeof imageError.error, keyof ApiError["error"]> = true;
 
@@ -104,11 +108,9 @@ const editFields: Same<keyof typeof imageEditRequest, keyof ImageOutlineEditRequ
   Same<keyof typeof editError.error, keyof ApiError["error"]> = true;
 
 // Checked by `tsc` too: the fixtures are values of the types.
-// Their empty `strokes` read as never[], which no cast accepts: through
-// unknown, with the fields checked by Same above (TASK-079).
 const typedImage: [ImageOutline, ImageRouteRequest, ApiError] = [
-  imageOutline as unknown as ImageOutline,
-  imageRouteRequest as unknown as ImageRouteRequest,
+  imageOutline as ImageOutline,
+  imageRouteRequest as ImageRouteRequest,
   imageError as ApiError,
 ];
 // The request has no strokes yet: through unknown, like typedImage.
@@ -269,7 +271,7 @@ test("a line drawn on an outline, the outline it gives, and its refusal", () => 
   assert.ok(edited.points.flat().every((v) => Math.abs(v) <= 1));
   assert.equal(error.error.code, "outline_edit_rejected");
   assert.ok((EDIT_REASONS as readonly unknown[]).includes(error.error.reason));
-  // A traced outline has no details; its route request sends none.
-  assert.deepEqual(imageOutline.strokes, []);
-  assert.deepEqual(imageRouteRequest.strokes, []);
+  // The traced outline and its request are as an API and an app older than
+  // TASK-079 send them: without details, still of the types.
+  assert.ok(!("strokes" in imageOutline) && !("strokes" in imageRouteRequest));
 });

@@ -1,6 +1,12 @@
-import { IMAGE_REASONS } from "@shaperoute/shared-types";
+import { EDIT_REASONS, IMAGE_REASONS } from "@shaperoute/shared-types";
 
-import { imageProblemText, problemText, REASON_TEXT } from "./problems";
+import {
+  EDIT_REASON_TEXT,
+  editProblemText,
+  imageProblemText,
+  problemText,
+  REASON_TEXT,
+} from "./problems";
 import type { RouteProblem } from "./useRouteRequest";
 
 const REASON = "a 5 km heart cannot be drawn here: the best route scores 0.52";
@@ -174,4 +180,32 @@ test("picking problems are said before any API is asked", () => {
   expect(imageProblemText({ kind: "unreachable", url: "http://pc:8000" }).text).toMatch(
     /Cannot reach the API/,
   );
+});
+
+test("every reason a drawn line is refused has its own plain words", () => {
+  for (const reason of EDIT_REASONS) {
+    const { text, detail } = editProblemText({
+      kind: "api_error",
+      code: "outline_edit_rejected",
+      message: "engine words",
+      reason,
+    });
+    expect(text).toBe(EDIT_REASON_TEXT[reason]);
+    expect(detail).toBe("engine words");
+  }
+  expect(new Set(Object.values(EDIT_REASON_TEXT)).size).toBe(EDIT_REASONS.length);
+  expect(EDIT_REASON_TEXT.not_on_line).toMatch(/start on the yellow line/);
+});
+
+test("a line refused without a known reason still says something", () => {
+  const problem = {
+    kind: "api_error",
+    code: "outline_edit_rejected",
+    message: "m",
+  } as const;
+  expect(editProblemText(problem).text).toMatch(/Draw it again/);
+  // An image reason never lands on an edit's words, nor the other way.
+  expect(
+    problemText({ ...problem, code: "image_not_usable", reason: "short" }).text,
+  ).toMatch(/one clear outline/);
 });

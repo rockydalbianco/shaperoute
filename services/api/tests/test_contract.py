@@ -175,10 +175,12 @@ def test_image_fixtures_are_valid_bodies() -> None:
     assert set(request) == _names(ImageOutlineRequestBody)
     ImageOutlineRequestBody.model_validate(request)
     outline = _load("image-outline.json")
-    assert set(outline) == _names(ImageOutlineBody)
+    # As an API older than TASK-079 answers: no details (ADR-0074).
+    assert set(outline) == _names(ImageOutlineBody) - {"strokes", "image_strokes"}
     ImageOutlineBody.model_validate(outline)
     route = _load("image-route-request.json")
-    assert set(route) == _names(ImageRouteRequestBody)
+    # As an app older than TASK-079 sends it: no details.
+    assert set(route) == _names(ImageRouteRequestBody) - {"strokes"}
     assert ImageRouteRequestBody.model_validate(route).outline == [
         tuple(p) for p in outline["points"]
     ]

@@ -2582,7 +2582,10 @@ L'utente vuole aprire l'app dall'iPhone senza tenere acceso Expo sul PC.
 - Si pubblica a mano sul branch `preview` (`DEPLOY.md` A.6), non dalla CI:
   servirebbe `EXPO_TOKEN` fra i segreti di GitHub (proposta a parte).
 - L'indirizzo dell'API viene da `EXPO_PUBLIC_API_URL` al momento della
-  pubblicazione. L'app ricava l'API dall'host di Expo **solo** con
+  pubblicazione, salvato come variabile dell'ambiente `preview` su EAS
+  (visibilità «plain text»: finisce comunque nell'app), non nel `.env` del
+  PC: chiunque pubblichi, da qualunque PC, usa lo stesso indirizzo (chiesto
+  dall'utente). L'app ricava l'API dall'host di Expo **solo** con
   `__DEV__` (`devServerHost` in `apiUrl.ts`): un update pubblicato è un
   bundle di produzione servito da Expo, e il suo host non è il PC.
 

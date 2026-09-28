@@ -92,8 +92,7 @@ Non tocca i file di TASK-080 (`App.tsx`, `src/route/`, `shared-types`,
 Fatto. L'app è su Expo (`@lppl1316/shaperoute`, branch `preview`) e si
 apre in Expo Go sull'iPhone senza `npm run mobile`: provata dall'utente il
 2026-09-28, con l'API sul Mac via Tailscale (`100.84.99.112:8000`,
-scritto nel `.env` locale, non nel repository). Un'app pubblicata non
-ricava più l'API dall'host di Expo. Proposte per dopo, non fatte:
-l'indirizzo come variabile dell'ambiente `preview` su EAS
-(`eas env:create`), invece del `.env` locale; pubblicare dalla CI a ogni
+salvato come variabile dell'ambiente `preview` su EAS, su richiesta
+dell'utente; non nel repository). Un'app pubblicata non ricava più l'API
+dall'host di Expo. Proposta per dopo, non fatta: pubblicare dalla CI a ogni
 merge (`EXPO_TOKEN`).

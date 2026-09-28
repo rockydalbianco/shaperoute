@@ -133,19 +133,30 @@ entra con `lppl1316`, o fatti aggiungere al progetto.
 
 1. Una volta: `npx eas-cli login` (su Windows `npx.cmd`), con l'account
    Expo. Lo fa l'utente, con le sue credenziali.
-2. In `apps/mobile/.env` l'indirizzo dell'API (A.5), per esempio
-   `EXPO_PUBLIC_API_URL=http://100.101.102.103:8000`. **Obbligatorio**:
-   un'app pubblicata non ricava l'API dall'host di Expo e, senza, dice che
-   non trova l'API.
+2. L'indirizzo dell'API sta **su EAS**, come variabile dell'ambiente
+   `preview` del progetto (oggi `http://100.84.99.112:8000`, il Mac su
+   Tailscale). **Obbligatorio**: un'app pubblicata non ricava l'API
+   dall'host di Expo e, senza, dice che non trova l'API. Per vederlo o
+   cambiarlo, da `apps/mobile`:
+
+   ```
+   npx eas-cli env:list --environment preview
+   ```
+
+   ```
+   npx eas-cli env:update --environment preview --variable-name EXPO_PUBLIC_API_URL --value http://NUOVO-INDIRIZZO:8000
+   ```
+
+   Poi si ripubblica (punto 3). La variabile di EAS vince su
+   `apps/mobile/.env`, che serve solo a `npm.cmd run mobile` (A.5).
 3. Pubblicare, da `apps/mobile`:
 
    ```
    npx eas-cli update --branch preview --environment preview --message "cosa è cambiato"
    ```
 
-   Circa un minuto. `--environment preview` è obbligatorio senza domande
-   interattive; su EAS l'ambiente è vuoto, e l'indirizzo arriva da
-   `apps/mobile/.env`. Alla fine stampa il link della pagina dell'update su
+   Circa un minuto. `--environment preview` porta dentro le variabili
+   del punto 2. Alla fine stampa il link della pagina dell'update su
    expo.dev.
 4. Sull'iPhone: apri quel link e inquadra il QR della pagina, oppure apri
    Expo Go → il progetto `shaperoute` nella scheda dell'account → branch

@@ -259,6 +259,43 @@ un'immagine oltre il limite sono `invalid_request`.
   9,2 km, somiglianza 0,94, in 27 s.
 - Il GPX si chiede a `POST /gpx` con questa richiesta al posto del
   `RouteRequest`; il file si chiama `shaperoute-image-15km-2026-09-26.gpx`.
+- `strokes` (dal TASK-079, facoltativo): i dettagli disegnati a mano, gli
+  `strokes` di un `ImageOutline` modificato, senza cambiarli. Si
+  controllano come il contorno: numeri finiti, dentro [-1, 1], al più 50
+  punti in tutto (`MAX_DETAIL_POINTS`), poi `parse_outline` con i
+  dettagli (ognuno parte dalla linea o da un dettaglio prima, niente
+  incroci). Il percorso segue ogni dettaglio e torna indietro.
+
+### Modificare il contorno (TASK-079)
+
+**`POST /image-outline-edits`** — una parte o un dettaglio disegnati col
+dito sull'anteprima (ADR-0074). L'API non tiene niente fra due modifiche:
+l'app manda il contorno che mostra e la linea disegnata.
+
+```json
+{ "image_points": [[0.1, 0.9], [0.9, 0.9], [0.5, 0.05], [0.1, 0.9]],
+  "image_strokes": [],
+  "aspect": 1.0,
+  "kind": "detail",
+  "line": [[0.5, 0.88], [0.5, 0.7], [0.5, 0.5]] }
+```
+
+- `image_points`, `image_strokes`, `aspect`: quelli dell'`ImageOutline`
+  mostrato; `line`: la linea disegnata, come frazioni della foto
+  dall'angolo in alto a sinistra, da 2 a 2000 punti.
+- `kind`: `part`, una linea chiusa da unire alla sagoma, che deve
+  sovrapporsi; `detail`, una linea che parte dal contorno (o da un
+  dettaglio), che il percorso fa andata e ritorno. Dove si incrocia da
+  sola chiude un anello, come un occhio.
+- La risposta è un `ImageOutline`, con in più `strokes` (nella cornice di
+  `points`) e `image_strokes` (sopra la foto). `/image-outlines` li dà
+  vuoti.
+- Un disegno che non dà una linea sola è `422` `outline_edit_rejected`, con
+  il motivo del motore in `reason`: `short`, `not_joined`, `inside`,
+  `covers_detail`, `not_on_line`, `crosses`, `too_many_corners`
+  (`EDIT_REASONS` in `shared-types`). Punti fuori da [0, 1], un contorno
+  non valido o `aspect` fuori da 1/20–20 sono `invalid_request`.
+- «Undo» è dell'app: torna al contorno di prima, senza chiamare l'API.
 
 ## Errori
 
@@ -274,7 +311,8 @@ del motore:
 mancava la distanza: è la sua lunghezza, al km intero, fra 1 e 50 km
 (ADR-0041). Se il motivo è la somiglianza bassa resta `null`.
 `reason` c'è in ogni errore dal TASK-073 ed è `null` tranne con
-`image_not_usable`: il motivo del motore, in una parola.
+`image_not_usable` e `outline_edit_rejected` (TASK-079): il motivo del
+motore, in una parola.
 
 | Caso | HTTP | `code` |
 |---|---|---|
@@ -284,6 +322,7 @@ mancava la distanza: è la sua lunghezza, al km intero, fra 1 e 50 km
 | Zona non in cache e dati OSM non scaricabili | 503 | `map_data_unavailable` |
 | Il modello che legge le parole della forma non risponde (`AI.md`) | 503 | `ai_unavailable` |
 | Un'immagine senza un contorno chiaro (TASK-073) | 422 | `image_not_usable` |
+| Una linea disegnata che non dà un contorno solo (TASK-079) | 422 | `outline_edit_rejected` |
 | Immagine non in base64 o oltre 10 MB; contorno di `/image-route-jobs` non valido | 422 | `invalid_request` |
 | Il motore viola le sue regole (ADR-0026) o altro imprevisto | 500 | `engine_error` |
 | Indirizzo o metodo sbagliato | 404, 405 | `http_error` |

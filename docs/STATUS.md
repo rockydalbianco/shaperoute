@@ -55,7 +55,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-Niente.
+- **TASK-079** — modificare il contorno di un'immagine (ADR-0074): «Add a
+  part», «Add a detail», «Undo» sull'anteprima di «Image»; il motore unisce
+  la parte alla sagoma o fa del dettaglio un tratto andata e ritorno, e
+  rifiuta con il motivo ciò che non dà una linea sola. Codice, test e
+  documenti fatti, PR aperta; manca la prova sull'iPhone (passi nel task
+  file). Worktree `../shaperoute-079`.
 
 ## Completato
 

@@ -282,6 +282,30 @@ Come per `--outline`, la forma resta dritta (ADR-0038) e passa da
 la sola libreria standard: per ricavarne uno servono Pillow, numpy e
 shapely.
 
+### Parti e dettagli disegnati a mano (TASK-079)
+
+`route_engine/outline_edits.py` (ADR-0074) aggiunge a un contorno una linea
+disegnata col dito, e decide cosa diventa, con regole fisse:
+
+- `add_part`: la linea si chiude, si semplifica all'1% e si **unisce alla
+  sagoma**. Deve sovrapporsi (altrimenti i pezzi sarebbero due) e
+  aggiungere almeno lo 0,5% dell'area; i buchi si perdono; i dettagli già
+  fatti devono restare attaccati alla linea nuova.
+- `add_detail`: la linea diventa uno **`stroke`** (TASK-037). L'inizio si
+  aggancia al punto più vicino del contorno o di un dettaglio entro il 6%
+  della sagoma, lasciando i punti fatti scorrendo sulla linea; dove la
+  linea si incrocia da sola si chiude un anello (un occhio) e il resto si
+  lascia, e così se la fine torna entro il 3% da un suo punto. Poi la
+  semplificazione all'1%.
+
+Tutto nella cornice del disegno, x a destra e y in alto, a qualunque scala.
+Ogni risultato passa `parse_outline` con i suoi dettagli: la linea resta
+una sola. Un disegno che non va è rifiutato con il motivo
+(`InvalidEditError.reason`): `short`, `not_joined`, `inside`,
+`covers_detail`, `not_on_line`, `crosses`, `too_many_corners` (oltre 100
+angoli per il contorno, 50 punti per tutti i dettagli, 2000 per un
+disegno).
+
 ## 3. Proiezione geografica
 
 Trasformazione dei punti normalizzati in coordinate reali, applicando

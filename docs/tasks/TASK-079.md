@@ -96,22 +96,35 @@ services/route-engine/tests/test_outline_edits.py                    (nuovo)
 services/api/shaperoute_api/outline_edits.py                         (nuovo)
 services/api/tests/test_outline_edits.py                             (nuovo)
 services/api/shaperoute_api/images.py
-services/api/shaperoute_api/schemas.py        (TASK-080: dopo il suo merge)
-services/api/shaperoute_api/app.py            (TASK-080: dopo il suo merge)
+services/api/shaperoute_api/schemas.py        (anche di TASK-080: ok dell'utente)
+services/api/shaperoute_api/app.py            (anche di TASK-080: ok dell'utente)
 services/api/tests/test_contract.py, test_images.py
-packages/shared-types/src/index.ts            (TASK-080: dopo il suo merge)
+packages/shared-types/src/index.ts            (anche di TASK-080: ok dell'utente)
 packages/shared-types/test/contract.test.ts
-packages/shared-types/fixtures/image-outline-edit*.json               (nuovi)
-apps/mobile/App.tsx                           (TASK-080: dopo il suo merge)
-apps/mobile/src/route/useRouteRequest.ts, test (TASK-080: dopo il suo merge)
+packages/shared-types/fixtures/api-error-codes.json, image-limits.json
+packages/shared-types/fixtures/edit-reasons.json, image-outline-edit-request.json,
+  image-outline-edited.json, outline-edit-error.json                (nuovi)
+apps/mobile/App.tsx                           (anche di TASK-080: ok dell'utente)
+apps/mobile/src/route/useRouteRequest.ts, useRouteRequest.test.ts
+                                              (anche di TASK-080: ok dell'utente)
+apps/mobile/src/api/imageOutlines.ts, routes.ts (solo il tipo di reason)
 apps/mobile/src/api/outlineEdits.ts, outlineEdits.test.ts            (nuovi)
-apps/mobile/src/route/OutlineEditor.tsx, useOutlineEdits.ts e test   (nuovi)
+apps/mobile/src/route/drawnLine.ts, drawnLine.test.ts, imageEdits.ts,
+  ImageChoice.test.tsx                                               (nuovi)
 apps/mobile/src/route/ImageChoice.tsx, ImagePreview.tsx e test
 apps/mobile/src/route/useImageOutline.ts, test
 apps/mobile/src/route/problems.ts, problems.test.ts
-docs/API.md, docs/UI.md, docs/DECISIONS.md (ADR-0074), docs/STATUS.md
+docs/API.md, docs/UI.md, docs/ROUTE_ENGINE.md, docs/DECISIONS.md (ADR-0074),
+  docs/STATUS.md
 docs/tasks/TASK-079.md
 ```
+
+Scelte per non toccare altri file di TASK-080: le fixture del contorno
+ricavato e della sua richiesta restano senza `strokes` (sono come le manda
+un'API o un'app di prima, e `RoutePanel.test.tsx` le usa); le azioni di
+modifica arrivano a `ImageChoice` con un contesto React
+(`imageEdits.ts`), senza passare da `RoutePanel.tsx`; lo stato delle
+modifiche sta fuori da `ImageState`.
 
 ## Fuori scope
 
@@ -120,6 +133,38 @@ docs/tasks/TASK-079.md
 - I dettagli ricavati dalla foto da soli (occhi trovati dal motore).
 - Il contorno disegnato sulla mappa prima del percorso.
 - Lo stile delle lettere (TASK-080), EAS Update (TASK-083).
+
+## Prova da capo a fondo (2026-09-28)
+
+Con il motore vero e la cache di Milano, dall'API (`TestClient`): un disco
+nero su bianco ricavato in 24 angoli, due orecchie aggiunte come parti, una
+terza parte staccata rifiutata (`not_joined`), un occhio ad anello dal
+fianco sinistro: 27 angoli e un dettaglio di 6 punti, ogni modifica sotto i
+10 ms. Percorso da 10 km da piazza del Duomo: 9,3 km, somiglianza 0,96, in
+3 s: testa, orecchie e occhio in una linea sola.
+
+## Prova sull'iPhone
+
+Da fare con l'utente prima del merge. Dal Mac, due finestre del terminale:
+
+1. API dal worktree, con l'ambiente e la cache del checkout principale:
+
+   ```
+   cd ~/Progetti/shaperoute-079/services/api
+   PYTHONPATH=$PWD:$PWD/../route-engine:$PWD/../ai ../../../shaperoute/services/api/.venv/bin/python -m shaperoute_api --lan --cache-dir ../../../shaperoute/data/cache
+   ```
+
+2. Expo dal worktree: `cd ~/Progetti/shaperoute-079 && npm run mobile`,
+   poi il QR con l'iPhone (Expo Go).
+3. Start su Milano (zona in cache), «Image», una foto di un oggetto scuro
+   su un foglio bianco:
+   - «Add a part», un triangolo a cavallo della linea: si unisce? Uno
+     lontano dalla linea: il motivo in parole semplici?
+   - «Add a detail», dal bordo verso l'interno, poi un giro che incrocia la
+     propria linea: diventa un occhio? La pagina resta ferma mentre si
+     disegna?
+   - «Undo» due volte: torna al contorno ricavato?
+   - 10 km e «Draw route»: il percorso ha le parti e i dettagli.
 
 ## Esito
 

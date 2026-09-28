@@ -80,8 +80,8 @@ catalogo di oggi.
       no.
 - [x] `plan_route` con le quattro forme dà gli stessi punti dei campioni
       giudicati di TASK-064, TASK-068 e TASK-078 (tabella sotto).
-- [ ] Sull'iPhone le forme nuove si scelgono dalle tessere e con una
-      parola, e disegnano un percorso (prova dell'utente).
+- [x] Sull'iPhone le forme nuove si scelgono dalle tessere e con una
+      parola, e disegnano un percorso (prova dell'utente, 2026-09-26).
 - [ ] I job della CI sono verdi sulla PR.
 - [x] `UI.md`, `AI.md`, `ROUTE_ENGINE.md`, `DECISIONS.md` aggiornati;
       `STATUS.md` a fine task.

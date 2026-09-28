@@ -5,6 +5,11 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
+> **2026-09-28: agenti fermati.** L'utente passa il progetto a un collega,
+> che lavora da solo e non in contemporanea. Lo stato aggiornato, i task
+> aperti e i numeri liberi sono in **`docs/PASSAGGIO.md`**; l'albero qui
+> sotto è fermo al 2026-09-26.
+
 **Ultimo aggiornamento**: 2026-09-26 · `main` = `7212156`
 
 ## Come si usa

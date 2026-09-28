@@ -66,3 +66,10 @@ test.each([
 ])("fileNameOf(%p) is %p", (disposition, name) => {
   expect(fileNameOf(disposition)).toBe(name);
 });
+
+test("the key goes with the request (TASK-081)", async () => {
+  const fetchFn = answers(new Response(GPX));
+  await requestGpx(URL, BODY, fetchFn, "secret-key-for-tests");
+  const [, init] = fetchFn.mock.calls[0];
+  expect(new Headers(init?.headers).get("X-API-Key")).toBe("secret-key-for-tests");
+});

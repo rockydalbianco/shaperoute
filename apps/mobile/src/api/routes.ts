@@ -14,6 +14,8 @@ import {
   TURNS,
 } from "@shaperoute/shared-types";
 
+import { apiKey as configuredKey, keyHeaders } from "./apiUrl";
+
 /** How often the app asks where a route job stands (ADR-0032). */
 export const POLL_MS = 2_000;
 /** When the app stops waiting: the worst case seen was about 165 s. */
@@ -46,6 +48,8 @@ type Options = {
   /** Called with each state the API reports while working. */
   onStatus?: (status: JobStatus) => void;
   fetchFn?: typeof fetch;
+  /** Sent in every call; by default EXPO_PUBLIC_API_KEY (TASK-081). */
+  apiKey?: string | null;
   pollMs?: number;
   maxWaitMs?: number;
 };
@@ -72,17 +76,19 @@ export async function requestRoute(
     signal,
     onStatus,
     fetchFn = fetch,
+    apiKey = configuredKey(),
     pollMs = POLL_MS,
     maxWaitMs = MAX_WAIT_MS,
   }: Options = {},
 ): Promise<RouteOutcome> {
   const deadline = Date.now() + maxWaitMs;
+  const auth = keyHeaders(apiKey);
   let answer: Answer;
   try {
     const jobs = isImageRequest(request) ? "image-route-jobs" : "route-jobs";
     answer = await call(fetchFn, `${baseUrl}/${jobs}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...auth },
       body: JSON.stringify(request),
       signal,
     });
@@ -98,7 +104,7 @@ export async function requestRoute(
   const jobUrl = `${baseUrl}/route-jobs/${encodeURIComponent(job.job_id)}`;
   // Tells the API to drop the job; nobody waits for its answer.
   const forget = () =>
-    void fetchFn(jobUrl, { method: "DELETE" }).catch(() => undefined);
+    void fetchFn(jobUrl, { method: "DELETE", headers: auth }).catch(() => undefined);
 
   let failures = 0;
   for (;;) {
@@ -115,7 +121,7 @@ export async function requestRoute(
     }
     try {
       await sleep(pollMs, signal);
-      answer = await call(fetchFn, jobUrl, { signal });
+      answer = await call(fetchFn, jobUrl, { headers: auth, signal });
     } catch {
       if (signal?.aborted) {
         forget();

@@ -1,5 +1,6 @@
 import type { GpxRequest } from "@shaperoute/shared-types";
 
+import { apiKey, keyHeaders } from "./apiUrl";
 import { isApiError, type RouteOutcome } from "./routes";
 
 /** Used when the API gives no usable file name. */
@@ -18,12 +19,13 @@ export async function requestGpx(
   baseUrl: string,
   body: GpxRequest,
   fetchFn: typeof fetch = fetch,
+  key: string | null = apiKey(),
 ): Promise<GpxOutcome> {
   let response: Response;
   try {
     response = await fetchFn(`${baseUrl}/gpx`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...keyHeaders(key) },
       body: JSON.stringify(body),
     });
   } catch {

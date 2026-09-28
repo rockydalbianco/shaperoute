@@ -53,6 +53,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-081** — API da fuori casa (chiave, limite, indirizzo nell'app,
+  Docker, `DEPLOY.md`): fatto, PR #94 con CI verde, da mergiare dopo l'ok
+  dell'utente. PC + Tailscale provato dall'iPhone in 5G: funziona
+  (2026-09-26). Senza PC acceso: Raspberry Pi 5 o VPS con PayPal
+  (`DEPLOY.md`, D ed E), da decidere con l'utente.
 Niente per l'app.
 
 ## Completato

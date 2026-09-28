@@ -5,13 +5,17 @@ import apiErrorCodes from "../fixtures/api-error-codes.json" with { type: "json"
 import apiError from "../fixtures/api-error.json" with { type: "json" };
 import contract from "../fixtures/contract.json" with { type: "json" };
 import directions from "../fixtures/directions.json" with { type: "json" };
+import editReasons from "../fixtures/edit-reasons.json" with { type: "json" };
 import gpxRequest from "../fixtures/gpx-request.json" with { type: "json" };
 import imageError from "../fixtures/image-error.json" with { type: "json" };
 import imageLimits from "../fixtures/image-limits.json" with { type: "json" };
+import imageEditRequest from "../fixtures/image-outline-edit-request.json" with { type: "json" };
+import imageEdited from "../fixtures/image-outline-edited.json" with { type: "json" };
 import imageOutlineRequest from "../fixtures/image-outline-request.json" with { type: "json" };
 import imageOutline from "../fixtures/image-outline.json" with { type: "json" };
 import imageReasons from "../fixtures/image-reasons.json" with { type: "json" };
 import imageRouteRequest from "../fixtures/image-route-request.json" with { type: "json" };
+import editError from "../fixtures/outline-edit-error.json" with { type: "json" };
 import jobDone from "../fixtures/route-job-done.json" with { type: "json" };
 import jobFailed from "../fixtures/route-job-failed.json" with { type: "json" };
 import jobRunning from "../fixtures/route-job-running.json" with { type: "json" };
@@ -28,12 +32,15 @@ import shapeReading from "../fixtures/shape-reading.json" with { type: "json" };
 import {
   ACTIVITIES,
   API_ERROR_CODES,
+  EDIT_REASONS,
   GROUP_M,
   IMAGE_REASONS,
   JOB_STATUSES,
   LETTER_DISTANCE_M,
   LETTERS,
+  MAX_DETAIL_POINTS,
   MAX_DISTANCE_M,
+  MAX_DRAWN_POINTS,
   MAX_IMAGE_BYTES,
   MAX_OUTLINE_POINTS,
   MAX_SHAPE_TEXT_LENGTH,
@@ -45,6 +52,7 @@ import {
   type Direction,
   type GpxRequest,
   type ImageOutline,
+  type ImageOutlineEditRequest,
   type ImageOutlineRequest,
   type ImageRouteRequest,
   type RouteJob,
@@ -91,11 +99,23 @@ const imageFields: Same<keyof typeof imageOutlineRequest, keyof ImageOutlineRequ
   Same<keyof typeof imageResult, keyof RouteResult> &
   Same<keyof typeof imageError.error, keyof ApiError["error"]> = true;
 
+const editFields: Same<keyof typeof imageEditRequest, keyof ImageOutlineEditRequest> &
+  Same<keyof typeof imageEdited, keyof ImageOutline> &
+  Same<keyof typeof editError.error, keyof ApiError["error"]> = true;
+
 // Checked by `tsc` too: the fixtures are values of the types.
+// Their empty `strokes` read as never[], which no cast accepts: through
+// unknown, with the fields checked by Same above (TASK-079).
 const typedImage: [ImageOutline, ImageRouteRequest, ApiError] = [
-  imageOutline as ImageOutline,
-  imageRouteRequest as ImageRouteRequest,
+  imageOutline as unknown as ImageOutline,
+  imageRouteRequest as unknown as ImageRouteRequest,
   imageError as ApiError,
+];
+// The request has no strokes yet: through unknown, like typedImage.
+const typedEdit: [ImageOutlineEditRequest, ImageOutline, ApiError] = [
+  imageEditRequest as unknown as ImageOutlineEditRequest,
+  imageEdited as ImageOutline,
+  editError as ApiError,
 ];
 
 const isShape = (value: string): boolean =>
@@ -231,4 +251,25 @@ test("an image route has neither shape nor word", () => {
   assert.equal(imageResult.shape, null);
   assert.equal(imageResult.word, null);
   assert.deepEqual(imageResult.points.at(0), imageResult.points.at(-1));
+});
+
+test("a line drawn on an outline, the outline it gives, and its refusal", () => {
+  assert.ok(editFields);
+  const [edit, edited, error] = typedEdit;
+  assert.deepEqual([...EDIT_REASONS], editReasons);
+  assert.equal(MAX_DETAIL_POINTS, imageLimits.max_detail_points);
+  assert.equal(MAX_DRAWN_POINTS, imageLimits.max_drawn_points);
+  // The edit sends the outline as shown over the picture.
+  assert.deepEqual(edit.image_points, imageOutline.image_points);
+  assert.equal(edit.kind, "detail");
+  // One detail more, in both frames; the outline itself is unchanged.
+  assert.deepEqual(edited.image_points, edit.image_points);
+  assert.equal(edited.strokes?.length, 1);
+  assert.equal(edited.image_strokes?.length, 1);
+  assert.ok(edited.points.flat().every((v) => Math.abs(v) <= 1));
+  assert.equal(error.error.code, "outline_edit_rejected");
+  assert.ok((EDIT_REASONS as readonly unknown[]).includes(error.error.reason));
+  // A traced outline has no details; its route request sends none.
+  assert.deepEqual(imageOutline.strokes, []);
+  assert.deepEqual(imageRouteRequest.strokes, []);
 });

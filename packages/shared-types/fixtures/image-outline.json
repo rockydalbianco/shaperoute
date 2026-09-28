@@ -11,5 +11,7 @@
     [0.5, 0.05],
     [0.1, 0.9]
   ],
-  "aspect": 1.0
+  "aspect": 1.0,
+  "strokes": [],
+  "image_strokes": []
 }

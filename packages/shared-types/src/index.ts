@@ -149,6 +149,8 @@ export const API_ERROR_CODES = [
   "http_error",
   "ai_unavailable",
   "image_not_usable",
+  /** A line drawn on an image's outline gives no outline (TASK-079). */
+  "outline_edit_rejected",
   /** A key is set on the API and the request has the wrong one (TASK-081). */
   "unauthorized",
   /** Too many requests from this phone in a minute (TASK-081). */
@@ -169,9 +171,10 @@ export interface ApiError {
     suggested_distance_m: number | null;
     /**
      * Only with "image_not_usable", else null: why the engine found no
-     * outline (TASK-073). Missing from an API older than TASK-073.
+     * outline (TASK-073). Missing from an API older than TASK-073. With
+     * "outline_edit_rejected", why the drawing was refused (TASK-079).
      */
-    reason?: ImageReason | null;
+    reason?: ImageReason | EditReason | null;
   };
 }
 
@@ -266,6 +269,13 @@ export interface ImageOutline {
   image_points: OutlinePoint[];
   /** Width over height of the image, upright. */
   aspect: number;
+  /** Details drawn by hand (TASK-079), in the frame of `points`: each starts
+   * on the outline or on an earlier one, and the route goes along it and
+   * back. Empty for a traced outline; missing from an API older than
+   * TASK-079. */
+  strokes?: OutlinePoint[][];
+  /** The same details over the image, like `image_points`. */
+  image_strokes?: OutlinePoint[][];
 }
 
 /**
@@ -277,7 +287,55 @@ export interface ImageRouteRequest {
   start: LatLon;
   /** The `points` of an ImageOutline, unchanged. */
   outline: OutlinePoint[];
+  /** The `strokes` of an ImageOutline, unchanged (TASK-079); absent or
+   * empty for an outline as traced. */
+  strokes?: OutlinePoint[][];
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
+}
+
+/** The most points of all the details of an outline together (TASK-079):
+ * each is run out and back. */
+export const MAX_DETAIL_POINTS = 50;
+/** The most points of a line drawn with a finger (TASK-079). */
+export const MAX_DRAWN_POINTS = 2_000;
+
+/**
+ * Why a line drawn on an outline was refused (route_engine/outline_edits.py,
+ * TASK-079, ADR-0074): too short or small; a part away from the outline, or
+ * all inside it; a part over the start of a detail; a detail that does not
+ * start on the line, or crosses a line; too many corners.
+ */
+export const EDIT_REASONS = [
+  "short",
+  "not_joined",
+  "inside",
+  "covers_detail",
+  "not_on_line",
+  "crosses",
+  "too_many_corners",
+] as const;
+export type EditReason = (typeof EDIT_REASONS)[number];
+
+/** What a line drawn on an outline adds: a closed part joined to the
+ * silhouette, or a detail the route goes along and back. */
+export type EditKind = "part" | "detail";
+
+/**
+ * What the app sends to POST /image-outline-edits (TASK-079, ADR-0074): the
+ * outline it shows over the picture and one line drawn on it. The answer is
+ * the new ImageOutline, or an ApiError "outline_edit_rejected" with its
+ * `reason`. Nothing is kept between two edits: undo is the app's own.
+ */
+export interface ImageOutlineEditRequest {
+  /** The `image_points` of the ImageOutline shown. */
+  image_points: OutlinePoint[];
+  /** Its `image_strokes`. */
+  image_strokes: OutlinePoint[][];
+  /** Its `aspect`. */
+  aspect: number;
+  kind: EditKind;
+  /** The line drawn, as shares of the image from the top left. */
+  line: OutlinePoint[];
 }

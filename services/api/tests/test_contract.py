@@ -15,23 +15,26 @@ from typing import Any, get_args
 
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
-from route_engine import image_outline
+from route_engine import image_outline, outline_edits
 from route_engine.directions import Direction
 from route_engine.image_outline import MAX_POINTS
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import FileSource
 from route_engine.optimizer import GraphLoader, Plan
+from route_engine.outline_edits import MAX_DETAIL_POINTS, MAX_DRAWN_POINTS
 from shaperoute_ai.reading import MAX_TEXT_LENGTH
 
 from shaperoute_api.app import create_app
 from shaperoute_api.schemas import (
     MAX_IMAGE_BYTES,
     DirectionBody,
+    EditReason,
     ErrorBody,
     ErrorCode,
     ErrorDetail,
     GpxRequestBody,
     ImageOutlineBody,
+    ImageOutlineEditRequestBody,
     ImageOutlineRequestBody,
     ImageReason,
     ImageRouteRequestBody,
@@ -190,7 +193,7 @@ def test_image_fixtures_are_valid_bodies() -> None:
 
 def test_an_image_route_request_is_a_route_request_with_an_outline() -> None:
     engine = {f.name for f in fields(RouteRequest)} - {"shape", "word"}
-    assert _names(ImageRouteRequestBody) == engine | {"outline"}
+    assert _names(ImageRouteRequestBody) == engine | {"outline", "strokes"}
 
 
 def test_image_reasons_and_limits_match_shared_types() -> None:
@@ -198,6 +201,8 @@ def test_image_reasons_and_limits_match_shared_types() -> None:
     assert _load("image-limits.json") == {
         "max_image_bytes": MAX_IMAGE_BYTES,
         "max_outline_points": MAX_POINTS,
+        "max_detail_points": MAX_DETAIL_POINTS,
+        "max_drawn_points": MAX_DRAWN_POINTS,
     }
 
 
@@ -205,3 +210,36 @@ def test_every_reason_of_the_engine_is_in_the_contract() -> None:
     source = inspect.getsource(image_outline)
     raised = set(re.findall(r'InvalidImageError\(\s*"(\w+)"', source))
     assert raised == set(get_args(ImageReason))
+
+
+def test_outline_edit_fixtures_are_valid_bodies() -> None:
+    # TASK-079, ADR-0074: a line drawn on an outline, and what it gives.
+    request = _load("image-outline-edit-request.json")
+    assert set(request) == _names(ImageOutlineEditRequestBody)
+    ImageOutlineEditRequestBody.model_validate(request)
+    edited = _load("image-outline-edited.json")
+    assert set(edited) == _names(ImageOutlineBody)
+    assert len(ImageOutlineBody.model_validate(edited).strokes) == 1
+    error = _load("outline-edit-error.json")
+    assert set(error["error"]) == _names(ErrorDetail)
+    assert ErrorBody.model_validate(error).error.reason == "not_on_line"
+
+
+def test_the_api_answers_the_edited_outline_fixture() -> None:
+    app = create_app(FileSource(FIXTURES / "unused.graphml"))
+    response = TestClient(app).post(
+        "/image-outline-edits", json=_load("image-outline-edit-request.json")
+    )
+    assert response.status_code == 200, response.json()
+    assert response.json() == _load("image-outline-edited.json")
+
+
+def test_edit_reasons_match_shared_types() -> None:
+    assert list(get_args(EditReason)) == _load("edit-reasons.json")
+
+
+def test_every_edit_reason_of_the_engine_is_in_the_contract() -> None:
+    source = inspect.getsource(outline_edits)
+    raised = set(re.findall(r'InvalidEditError\(\s*"(\w+)"', source))
+    assert raised == set(get_args(EditReason))
+    assert set(outline_edits.EDIT_REASONS) == set(get_args(EditReason))

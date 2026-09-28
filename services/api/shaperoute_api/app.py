@@ -24,6 +24,7 @@ from route_engine.export_gpx import route_name, to_gpx
 from route_engine.image_outline import InvalidImageError
 from route_engine.models import InvalidRequestError, RouteRequest
 from route_engine.optimizer import GraphLoader, ShapeNotDrawableError
+from route_engine.outline_edits import InvalidEditError
 from shaperoute_ai.reading import (
     InvalidTextError,
     ModelUnavailableError,
@@ -44,12 +45,14 @@ from shaperoute_api.images import (
     trace,
 )
 from shaperoute_api.jobs import Job, Planner, RouteJobs
+from shaperoute_api.outline_edits import edit_outline
 from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
     ErrorDetail,
     GpxRequestBody,
     ImageOutlineBody,
+    ImageOutlineEditRequestBody,
     ImageOutlineRequestBody,
     ImageRouteRequestBody,
     RouteJobBody,
@@ -68,6 +71,12 @@ ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
 }
 IMAGE_OUTLINE_RESPONSES: dict[int | str, dict[str, Any]] = {
     422: {"model": ErrorBody, "description": "invalid_request or image_not_usable"},
+}
+OUTLINE_EDIT_RESPONSES: dict[int | str, dict[str, Any]] = {
+    422: {
+        "model": ErrorBody,
+        "description": "invalid_request or outline_edit_rejected",
+    },
 }
 SHAPE_READING_RESPONSES: dict[int | str, dict[str, Any]] = {
     422: {"model": ErrorBody, "description": "invalid_request"},
@@ -100,7 +109,7 @@ def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
     if isinstance(body, ImageRouteRequestBody):
         return ImageRequest(
             start=body.start,
-            outline=outline_of(body.outline),
+            outline=outline_of(body.outline, body.strokes),
             distance_m=body.distance_m,
             activity=body.activity,
         )
@@ -182,6 +191,12 @@ def create_app(
     @app.post("/image-outlines", responses=IMAGE_OUTLINE_RESPONSES)
     def trace_image(body: ImageOutlineRequestBody) -> ImageOutlineBody:
         return trace(decode_image(body.image))
+
+    # A part or a detail drawn on the outline (TASK-079, ADR-0074): the
+    # engine decides what it becomes; nothing is kept between two edits.
+    @app.post("/image-outline-edits", responses=OUTLINE_EDIT_RESPONSES)
+    def edit_image_outline(body: ImageOutlineEditRequestBody) -> ImageOutlineBody:
+        return edit_outline(body)
 
     @app.get("/route-jobs/{job_id}", responses={404: {"model": ErrorBody}})
     def get_route_job(job_id: str) -> RouteJobBody:
@@ -270,6 +285,15 @@ def create_app(
     def image_not_usable(_: Request, exc: InvalidImageError) -> JSONResponse:
         detail = ErrorDetail(
             code="image_not_usable", message=str(exc), reason=exc.reason
+        )
+        return JSONResponse(
+            status_code=422, content=ErrorBody(error=detail).model_dump()
+        )
+
+    @app.exception_handler(InvalidEditError)
+    def outline_edit_rejected(_: Request, exc: InvalidEditError) -> JSONResponse:
+        detail = ErrorDetail(
+            code="outline_edit_rejected", message=str(exc), reason=exc.reason
         )
         return JSONResponse(
             status_code=422, content=ErrorBody(error=detail).model_dump()

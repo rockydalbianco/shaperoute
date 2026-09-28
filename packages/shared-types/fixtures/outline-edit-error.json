@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "outline_edit_rejected",
+    "message": "the detail must start on the yellow line",
+    "suggested_distance_m": null,
+    "reason": "not_on_line"
+  }
+}

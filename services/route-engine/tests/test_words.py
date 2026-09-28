@@ -279,6 +279,9 @@ TRENTO = (46.0671, 11.1214)
         ({"word": "città"}, "no letter À: a word can use only the letters A to Z"),
         ({"word": "ciaociaoc"}, "at most 8 letters, got 9"),
         ({"word": "ciao", "distance_m": 10000}, "a 4-letter word needs at least 12 km"),
+        # The letters' style, only for a word (TASK-080).
+        ({"word": "ciao", "style": "italic"}, "unknown style 'italic'"),
+        ({"shape": "heart", "style": "block"}, "a style is for the letters of a word"),
     ],
 )
 def test_a_route_request_checks_its_word(
@@ -293,6 +296,12 @@ def test_a_route_request_is_named_by_its_word_in_capitals() -> None:
     assert request.shape is None
     assert request.name == "CIAO"
     assert RouteRequest(start=TRENTO, distance_m=5000, shape="heart").name == "heart"
+
+
+def test_a_route_request_has_round_letters_unless_asked() -> None:
+    assert RouteRequest(start=TRENTO, distance_m=12000, word="ciao").style == "round"
+    block = RouteRequest(start=TRENTO, distance_m=12000, word="ciao", style="block")
+    assert block.style == "block"
 
 
 def _grid(spacing_m: float = 100.0, half_m: float = 3000.0) -> nx.MultiDiGraph:

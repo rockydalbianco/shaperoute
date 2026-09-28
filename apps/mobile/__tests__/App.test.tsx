@@ -796,9 +796,29 @@ test("a word is sent as `word`, and named while waiting and on the result", asyn
   expect(lastRouteRequest()).toEqual({
     start: [46.0671, 11.1214],
     word: "CIAO",
+    style: "round",
     distance_m: 12000,
     activity: "running",
   });
+  jest.useRealTimers();
+});
+
+test("square letters are sent as style block (TASK-080)", async () => {
+  jest.useFakeTimers();
+  apiAnswers(job("computing"), wordDone("CIAO"));
+  await atTrento();
+  await chooseWord("ciao");
+  await fireEvent.changeText(distanceField(), "12");
+  expect(
+    screen.getByRole("button", { name: "Round", selected: true }),
+  ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Square" }));
+  expect(
+    screen.getByText("Square letters follow the street grid: best for short words."),
+  ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByText("Draw route"));
+  await nextPoll();
+  expect(lastRouteRequest()).toMatchObject({ word: "CIAO", style: "block" });
   jest.useRealTimers();
 });
 

@@ -140,10 +140,12 @@ entra con `lppl1316`, o fatti aggiungere al progetto.
 3. Pubblicare, da `apps/mobile`:
 
    ```
-   npx eas-cli update --branch preview --message "cosa è cambiato"
+   npx eas-cli update --branch preview --environment preview --message "cosa è cambiato"
    ```
 
-   Circa un minuto. Alla fine stampa il link della pagina dell'update su
+   Circa un minuto. `--environment preview` è obbligatorio senza domande
+   interattive; su EAS l'ambiente è vuoto, e l'indirizzo arriva da
+   `apps/mobile/.env`. Alla fine stampa il link della pagina dell'update su
    expo.dev.
 4. Sull'iPhone: apri quel link e inquadra il QR della pagina, oppure apri
    Expo Go → il progetto `shaperoute` nella scheda dell'account → branch

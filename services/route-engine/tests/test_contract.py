@@ -14,7 +14,7 @@ from route_engine.models import (
     RouteResult,
 )
 from route_engine.shapes import SUPPORTED_SHAPES
-from route_engine.words import ALPHABET, LETTER_DISTANCE_M, MAX_WORD_LETTERS
+from route_engine.words import ALPHABET, LETTER_DISTANCE_M, MAX_WORD_LETTERS, STYLES
 
 REPO = Path(__file__).resolve().parents[3]
 FIXTURES = REPO / "packages" / "shared-types" / "fixtures"
@@ -61,4 +61,5 @@ def test_shapes_activities_and_limits_match() -> None:
         "letters": sorted(ALPHABET),
         "max_word_letters": MAX_WORD_LETTERS,
         "letter_distance_m": LETTER_DISTANCE_M,
+        "styles": list(STYLES),
     }

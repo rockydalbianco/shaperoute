@@ -1,6 +1,6 @@
 # TASK-083 — L'app su Expo: aperta da Expo Go senza Expo acceso sul PC
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-083-eas-update` · **ADR**: ADR-0078
 
 ## Obiettivo
@@ -40,7 +40,8 @@ server di sviluppo di Expo (porta 8081) né il QR del terminale.
    `EXPO_PUBLIC_API_URL`, nessun indirizzo indovinato, con test.
    (Da verificare: forse `hostUri` in un update è già vuoto e basta un test.)
 5. Pubblicare: da `apps/mobile`, con `EXPO_PUBLIC_API_URL` in
-   `apps/mobile/.env`, `npx eas-cli update --branch preview --message "..."`.
+   `apps/mobile/.env`, `npx eas-cli update --branch preview --environment
+   preview --message "..."`.
    Aprire l'update in Expo Go dall'iPhone (QR della pagina dell'update su
    expo.dev, o la scheda del progetto in Expo Go) e chiedere un percorso.
 6. `docs/DEPLOY.md`: sezione nuova «L'app senza Expo acceso» (login,
@@ -49,18 +50,18 @@ server di sviluppo di Expo (porta 8081) né il QR del terminale.
 
 ## Criteri di accettazione
 
-- [ ] `expo-updates` installato alla versione dell'SDK 57, con l'ok
+- [x] `expo-updates` installato alla versione dell'SDK 57, con l'ok
       dell'utente; `npm run typecheck`, `lint`, `format:check`, `test`
       verdi.
-- [ ] `app.json` con `runtimeVersion` `exposdk:57.0.0`, `updates.url` e
+- [x] `app.json` con `runtimeVersion` `exposdk:57.0.0`, `updates.url` e
       `projectId`; nessun segreto nel repository.
-- [ ] Senza `EXPO_PUBLIC_API_URL` e senza server di sviluppo l'app non
+- [x] Senza `EXPO_PUBLIC_API_URL` e senza server di sviluppo l'app non
       indovina un indirizzo sbagliato (test in `apiUrl.test.ts`).
-- [ ] Un update pubblicato con `eas update` si apre in Expo Go sull'iPhone
+- [x] Un update pubblicato con `eas update` si apre in Expo Go sull'iPhone
       con `npm run mobile` spento, e calcola un percorso (prova dell'utente).
-- [ ] `DEPLOY.md` spiega pubblicare, aprire e ripubblicare; ADR-0078 in
+- [x] `DEPLOY.md` spiega pubblicare, aprire e ripubblicare; ADR-0078 in
       `DECISIONS.md`; righe in `STATUS.md`.
-- [ ] PR con CI verde.
+- [x] PR con CI verde.
 
 ## File toccati
 
@@ -88,4 +89,11 @@ Non tocca i file di TASK-080 (`App.tsx`, `src/route/`, `shared-types`,
 
 ## Esito
 
-*(a fine task)*
+Fatto. L'app è su Expo (`@lppl1316/shaperoute`, branch `preview`) e si
+apre in Expo Go sull'iPhone senza `npm run mobile`: provata dall'utente il
+2026-09-28, con l'API sul Mac via Tailscale (`100.84.99.112:8000`,
+scritto nel `.env` locale, non nel repository). Un'app pubblicata non
+ricava più l'API dall'host di Expo. Proposte per dopo, non fatte:
+l'indirizzo come variabile dell'ambiente `preview` su EAS
+(`eas env:create`), invece del `.env` locale; pubblicare dalla CI a ogni
+merge (`EXPO_TOKEN`).

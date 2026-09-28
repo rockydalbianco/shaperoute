@@ -4,7 +4,8 @@
     "shape": "heart",
     "word": null,
     "distance_m": 5000,
-    "activity": "running"
+    "activity": "running",
+    "style": "round"
   },
   "result": {
     "points": [

@@ -65,6 +65,13 @@ class RouteRequestBody(BaseModel):
     activity: str = Field(
         default="running", description=f"One of: {', '.join(SUPPORTED_ACTIVITIES)}."
     )
+    style: str = Field(
+        default="round",
+        description=(
+            "The letters of a word (TASK-080): round, or block for square "
+            "letters on the street grid (ADR-0072). Only round with a shape."
+        ),
+    )
 
 
 class DirectionBody(BaseModel):

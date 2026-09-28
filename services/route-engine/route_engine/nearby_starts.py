@@ -142,7 +142,7 @@ class ShapeJob:
     def of_request(cls, request: RouteRequest) -> ShapeJob:
         """What `plan_route` plans for `request`, from any start."""
         if request.word is not None:
-            word = compose(request.word)
+            word = compose(request.word, style=request.style)
             return cls(
                 tuple(word.points),
                 word.text,

@@ -3,5 +3,6 @@
   "shape": null,
   "word": "ciao",
   "distance_m": 15000,
-  "activity": "running"
+  "activity": "running",
+  "style": "block"
 }

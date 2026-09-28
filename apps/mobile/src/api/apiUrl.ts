@@ -19,13 +19,26 @@ export function apiUrlFromHost(hostUri: string | null | undefined): string | nul
 }
 
 /**
+ * The host of the Expo dev server, only while the app runs from it. An app
+ * published with EAS Update (TASK-083) is a production bundle served by
+ * Expo, not by the PC: there is no host to guess the API from.
+ */
+export function devServerHost(
+  dev: boolean = __DEV__,
+  hostUri: string | null | undefined = Constants.expoConfig?.hostUri,
+): string | null {
+  return dev ? (hostUri ?? null) : null;
+}
+
+/**
  * EXPO_PUBLIC_API_URL in apps/mobile/.env, when the API is not beside the
  * Expo server: the PC through Tailscale, a tunnel, a server (docs/DEPLOY.md).
- * Without it, the address of the Expo server, as before.
+ * Without it, the address of the Expo server, as before; in a published
+ * app, none.
  */
 export function apiUrl(
   configured: string | undefined = process.env.EXPO_PUBLIC_API_URL,
-  hostUri: string | null | undefined = Constants.expoConfig?.hostUri,
+  hostUri: string | null | undefined = devServerHost(),
 ): string | null {
   const url = configured?.trim().replace(/\/+$/, "");
   return url ? url : apiUrlFromHost(hostUri);

@@ -872,18 +872,19 @@ def plan_route(
     source: GraphLoader,
     optimize: bool = True,
     reuse_penalty: float = EDGE_REUSE_PENALTY,
-    style: Style = "round",
+    style: Style | None = None,
 ) -> Plan:
     """RouteRequest in, RouteResult out (docs/ARCHITECTURE.md §3).
 
     With `optimize` the shape is rotated, moved and rescaled to fit the
     roads (`search`); without, it is traced once at its initial placement,
     as in TASK-017. A word is written one letter at a time (TASK-050), in
-    the letters of `style` (TASK-077), and comes back with `word` instead
+    the letters of `style` (TASK-077), the request's when None (TASK-080),
+    and comes back with `word` instead
     of `shape` (TASK-056).
     """
     if request.word is not None:
-        word = compose(request.word, style=style)
+        word = compose(request.word, style=style or request.style)
         plan = plan_shape(
             list(word.points),
             word.text,

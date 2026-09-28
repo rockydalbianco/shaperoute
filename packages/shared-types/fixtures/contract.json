@@ -44,5 +44,6 @@
     "Z"
   ],
   "max_word_letters": 8,
-  "letter_distance_m": 3000
+  "letter_distance_m": 3000,
+  "styles": ["round", "block"]
 }

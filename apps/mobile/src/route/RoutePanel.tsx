@@ -1,4 +1,9 @@
-import { MAX_SHAPE_TEXT_LENGTH, type Shape, SHAPES } from "@shaperoute/shared-types";
+import {
+  type LetterStyle,
+  MAX_SHAPE_TEXT_LENGTH,
+  type Shape,
+  SHAPES,
+} from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -37,6 +42,12 @@ const DRAW_KINDS = [
   { value: "image", label: "Image" },
 ] as const;
 
+// The letters of a word (TASK-080, ADR-0075): "block" is square in the API.
+const LETTER_STYLE_OPTIONS = [
+  { value: "round", label: "Round" },
+  { value: "block", label: "Square" },
+] as const;
+
 type ChoiceProps = {
   /** A shape, a word or an image: one of them, and the switch shows which. */
   kind: ChoiceKind;
@@ -53,6 +64,9 @@ type ChoiceProps = {
   wordText: string;
   onWordText: (text: string) => void;
   wordCheck: WordCheck;
+  /** Round or square letters for the word (TASK-080). */
+  letterStyle: LetterStyle;
+  onLetterStyle: (style: LetterStyle) => void;
   /** The picture chosen and its outline (TASK-073), and how to choose one. */
   image: ImageState;
   onChooseImage: (source: ImageSource) => void;
@@ -79,6 +93,8 @@ export function RouteChoice({
   wordText,
   onWordText,
   wordCheck,
+  letterStyle,
+  onLetterStyle,
   image,
   onChooseImage,
   distanceText,
@@ -138,6 +154,18 @@ export function RouteChoice({
             check={wordCheck}
             onDistance={(metres) => onDistanceText(String(metres / 1000))}
           />
+          <Text style={[styles.label, styles.section]}>LETTERS</Text>
+          <Segmented
+            options={LETTER_STYLE_OPTIONS}
+            value={letterStyle}
+            onChange={onLetterStyle}
+            style={styles.kinds}
+          />
+          {letterStyle === "block" && (
+            <Text style={styles.note}>
+              Square letters follow the street grid: best for short words.
+            </Text>
+          )}
         </>
       )}
       <Text style={[styles.label, styles.section]}>DISTANCE</Text>

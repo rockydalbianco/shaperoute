@@ -85,7 +85,9 @@ export function sameRequest(a: AnyRouteRequest, b: AnyRouteRequest): boolean {
   const drawn =
     isImageRequest(a) || isImageRequest(b)
       ? isImageRequest(a) && isImageRequest(b) && a.outline === b.outline
-      : a.shape === b.shape && a.word === b.word;
+      : a.shape === b.shape &&
+        a.word === b.word &&
+        (a.style ?? "round") === (b.style ?? "round");
   return (
     a.start[0] === b.start[0] &&
     a.start[1] === b.start[1] &&

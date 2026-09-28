@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-25 · **Fase corrente**: 4 — Estensione (scritte)
+**Ultimo aggiornamento**: 2026-09-28 · **Fase corrente**: 4 — Estensione (scritte)
 
 ---
 
@@ -55,7 +55,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-Niente.
+- **App** — TASK-080: lo stile delle lettere come scelta nell'app
+  (ADR-0075). «LETTERS: Round | Square» sotto il campo della parola, `style`
+  in `RouteRequest`, API e `shared-types`. Codice e test fatti; manca la
+  prova sull'iPhone (passi nel task file).
 
 ## Completato
 

@@ -2528,7 +2528,39 @@ Go.
 come prima. La mappa sotto il nero continua a seguire la posizione (è in
 `App.tsx`, fuori dal task): costa un po' di batteria, stima nel task file.
 
-<<<<<<< HEAD
+## ADR-0075 — Lo stile delle lettere nella richiesta e nell'app
+**Stato**: Attiva · 2026-09-28 · chiesto dall'utente dopo TASK-077
+(«tutti e due gli stili, da scegliere nell'app»); forma del campo, nomi e
+testi decisi dall'agente su delega dell'utente (TASK-080)
+
+**Contesto**: il motore scrive le parole in due stili (ADR-0072), ma
+`style` era solo un argomento di `plan_route`: `RouteRequest`, API, CLI
+delle partenze vicine e app non lo conoscevano.
+
+**Decisione**:
+- `RouteRequest.style`, `"round"` per difetto, controllato lì come gli
+  altri campi: uno stile che non c'è, o `"block"` con una forma, è
+  `InvalidRequestError`. `plan_route(style=None)` usa quello della
+  richiesta; `ShapeJob.of_request` (partenze vicine, ADR-0071) pure.
+- Nell'API `style` è un campo facoltativo di `RouteRequestBody`, passato
+  com'è: lo controlla il motore. Non c'è in `ImageRouteRequestBody`.
+- In `shared-types`: `LETTER_STYLES`, `LetterStyle`, `style?` nel
+  `RouteRequest` (solo `"round"` per una forma); `contract.json` ha
+  `styles`, confrontato dai test del motore e dei tipi.
+- Nell'app, sotto il campo della parola, un `Segmented` «Round | Square»:
+  «Square» perché «block» a un utente non dice niente. «Round» all'avvio,
+  non salvato (servirebbe una dipendenza di storage). La parola parte
+  sempre con `style`.
+
+**Alternative scartate**: un campo `word_style` separato (un nome in più
+per la stessa cosa del motore); lo stile scelto dall'API secondo la
+griglia delle vie (è una scelta dell'utente, non del motore); il selettore
+anche per le forme (non hanno lettere).
+
+**Conseguenza**: un'app vecchia che non manda `style` ha le lettere di
+prima; un'API vecchia rifiuta `style` (`extra="forbid"`): app e API vanno
+aggiornate insieme, come per ogni campo nuovo.
+
 ---
 
 ## ADR-0078 — L'app pubblicata con EAS Update, aperta da Expo Go
@@ -2565,37 +2597,3 @@ l'host, e Expo Go resta quello di oggi.
 leggibili da chi lo scarica; cambiare indirizzo o app vuol dire
 ripubblicare. Con `expo start --no-dev` l'app non ricava più l'API
 dall'host di Expo: serve `EXPO_PUBLIC_API_URL`.
-=======
-## ADR-0075 — Lo stile delle lettere nella richiesta e nell'app
-**Stato**: Attiva · 2026-09-28 · chiesto dall'utente dopo TASK-077
-(«tutti e due gli stili, da scegliere nell'app»); forma del campo, nomi e
-testi decisi dall'agente su delega dell'utente (TASK-080)
-
-**Contesto**: il motore scrive le parole in due stili (ADR-0072), ma
-`style` era solo un argomento di `plan_route`: `RouteRequest`, API, CLI
-delle partenze vicine e app non lo conoscevano.
-
-**Decisione**:
-- `RouteRequest.style`, `"round"` per difetto, controllato lì come gli
-  altri campi: uno stile che non c'è, o `"block"` con una forma, è
-  `InvalidRequestError`. `plan_route(style=None)` usa quello della
-  richiesta; `ShapeJob.of_request` (partenze vicine, ADR-0071) pure.
-- Nell'API `style` è un campo facoltativo di `RouteRequestBody`, passato
-  com'è: lo controlla il motore. Non c'è in `ImageRouteRequestBody`.
-- In `shared-types`: `LETTER_STYLES`, `LetterStyle`, `style?` nel
-  `RouteRequest` (solo `"round"` per una forma); `contract.json` ha
-  `styles`, confrontato dai test del motore e dei tipi.
-- Nell'app, sotto il campo della parola, un `Segmented` «Round | Square»:
-  «Square» perché «block» a un utente non dice niente. «Round» all'avvio,
-  non salvato (servirebbe una dipendenza di storage). La parola parte
-  sempre con `style`.
-
-**Alternative scartate**: un campo `word_style` separato (un nome in più
-per la stessa cosa del motore); lo stile scelto dall'API secondo la
-griglia delle vie (è una scelta dell'utente, non del motore); il selettore
-anche per le forme (non hanno lettere).
-
-**Conseguenza**: un'app vecchia che non manda `style` ha le lettere di
-prima; un'API vecchia rifiuta `style` (`extra="forbid"`): app e API vanno
-aggiornate insieme, come per ogni campo nuovo.
->>>>>>> origin/main

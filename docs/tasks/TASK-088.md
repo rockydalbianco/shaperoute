@@ -56,7 +56,6 @@ all'API come le altre forme del catalogo.
       `npm run typecheck` e `npm test` passano (448 test); in
       `services/route-engine/` (830), `services/ai/` (32) e `services/api/`
       (156) `ruff`, `black --check` e `pytest -m "not network"` passano.
-      Con le due righe di `shared-types` nel worktree, non ancora nel commit.
 - [x] «zucca», «pumpkin», «albero di Natale», «christmas tree» portano
       alla forma giusta; «albero» e «tree» a nessuna (`shapeWords.test.ts`).
 - [x] L'API accetta le due forme e rifiuta `tree`; a Milano a 15 km i
@@ -64,7 +63,9 @@ all'API come le altre forme del catalogo.
       (zucca 16,0 km · 1,00; albero 15,7 km · 1,00; 3–4 s a zona caricata).
 - [x] L'AI le riconosce: le 13 voci nuove delle due liste sono giuste,
       «albero» e «tree» restano nessuna forma (numeri in `AI.md`).
-- [ ] `packages/shared-types` nel commit (dopo TASK-084 o con l'ok).
+- [x] `packages/shared-types` nel commit: ok dell'utente (2026-09-30) prima
+      del merge di TASK-084, che tocca `index.ts` dalla riga 239 in poi e
+      non `contract.json`; le due righe qui sono in `SHAPES`, riga 26.
 - [ ] Prova dell'utente sull'iPhone, a Milano.
 - [ ] I job della CI sono verdi sulla PR.
 
@@ -106,9 +107,7 @@ docs/tasks/TASK-088.md
 
 ## Dove siamo
 
-Motore, AI, app, documenti e test fatti e nel branch. Le due righe di
-`shared-types` sono solo nel worktree: senza di loro l'app non compila
-(`Record<Shape, …>`), quindi la PR si apre quando entrano.
+Tutto nel branch, PR aperta. Manca la prova dell'utente sull'iPhone.
 
 ## Prova sull'iPhone: i passi
 

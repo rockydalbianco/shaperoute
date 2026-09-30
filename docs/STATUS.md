@@ -52,7 +52,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-Niente.
+- **App** — TASK-086: pulsanti più visibili (ADR-0081): bordo e fondo dei
+  comandi schiariti nei token. Manca la prova sull'iPhone.
 
 ## Completato
 

@@ -51,6 +51,12 @@ from route_engine.shapes.outline import (
     parse_outline,
     read_outline,
 )
+from route_engine.track_score import (
+    TrackNotScorableError,
+    TrackPoint,
+    read_gpx_track,
+    score_track,
+)
 from route_engine.words import LETTERS, InvalidWordError, Word, compose
 
 
@@ -158,6 +164,13 @@ def _build_parser() -> argparse.ArgumentParser:
         help="with --image: write the traced outline to this JSON file "
         "(never overwritten); read it back with --outline",
     )
+    parser.add_argument(
+        "--score-track",
+        type=Path,
+        metavar="FILE",
+        help="score from 0 to 100 the run recorded in this GPX file against "
+        "the route planned for the request (with or without --out)",
+    )
     parser.add_argument("--activity", default="running", help="default: running")
     parser.add_argument(
         "--cache-dir",
@@ -211,6 +224,12 @@ def parse_args(
             parser.error("--save-outline needs --image")
         if args.save_outline.exists():
             parser.error(f"{args.save_outline} already exists; never overwritten")
+    args.track = None
+    if args.score_track is not None:
+        try:
+            args.track = read_gpx_track(args.score_track.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, TrackNotScorableError) as exc:
+            parser.error(f"{args.score_track}: {exc}")
     # The outline traced from --image, as its JSON file holds it.
     args.traced = None
     request: Request
@@ -287,7 +306,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         text = json.dumps(args.traced, indent=1)
         args.save_outline.write_text(text + "\n", encoding="utf-8")
         print(f"Wrote {args.save_outline}: the traced outline")
-    if args.out is None:
+    if args.out is None and args.track is None:
         return 0
 
     optimize = not args.no_optimize
@@ -334,8 +353,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     when = datetime.now(UTC)
     name = route_name(request.shape, request.distance_m, when)
-    args.out.write_text(to_gpx(route.points, name, when), encoding="utf-8")
-    print(f"Wrote {args.out}: {len(route.points)} points")
+    if args.out is not None:
+        args.out.write_text(to_gpx(route.points, name, when), encoding="utf-8")
+        print(f"Wrote {args.out}: {len(route.points)} points")
     if plan.search is not None:
         best = plan.search.best
         base = initial_scale(shape, planned_m)
@@ -372,6 +392,28 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     for warning in route.warnings:
         print(f"  warning: {warning}")
+    if args.track is not None:
+        return _print_track_score(args.track, route.points, route.similarity)
+    return 0
+
+
+def _print_track_score(
+    track: Sequence[TrackPoint],
+    points: Sequence[tuple[float, float]],
+    similarity: float,
+) -> int:
+    try:
+        scored = score_track(track, points, similarity)
+    except TrackNotScorableError as exc:
+        print(f"No score: {exc}", file=sys.stderr)
+        return 1
+    print(f"Track score: {scored.score} out of 100")
+    print(
+        f"  fidelity:   {scored.fidelity:.2f} "
+        f"({scored.covered:.0%} of the route run, "
+        f"{scored.on_route:.0%} of the run on the route)"
+    )
+    print(f"  run:        {scored.distance_m:.0f} m")
     return 0
 
 

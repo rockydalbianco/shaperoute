@@ -56,6 +56,10 @@ Niente.
 
 ## Completato
 
+- **App** — TASK-089: un suggerimento toccato riempie il campo, chiude la
+  tastiera e non fa ripartire la ricerca; i suggerimenti arrivano anche
+  mentre si continua a scrivere, pausa 300 ms (ADR-0083). Photon resta a
+  2–3 s a risposta. **Da provare sull'iPhone** (task file, «Esito»).
 - **App** — TASK-085: i luoghi della partenza suggeriti mentre si scrive,
   da 3 lettere, prima quelli vicini alla posizione (ADR-0080). Provato
   sull'iPhone (2026-09-30).

@@ -2710,3 +2710,25 @@ prima. Photon risponde in circa 3 s: «Searching…» resta visibile.
 
 **Conseguenza**: più richieste a Photon di prima, una per pausa. Se il
 servizio dovesse limitare, la soglia e il ritardo sono due costanti.
+## ADR-0083 — Suggerimenti dei luoghi: risposte intermedie e tocco che chiude
+**Stato**: Attiva · 2026-09-30 · chiesto dall'utente («la ricerca è lenta,
+il suggerimento non riesco a premerlo»); deciso dall'agente su delega
+dell'utente (TASK-089). Modifica ADR-0080.
+
+**Contesto**: Photon risponde in 2–3 s, tempo del server. Con ADR-0080 si
+mostrava solo la risposta all'ultima ricerca: chi continuava a scrivere
+non vedeva nulla per 5–6 s. Dopo il tocco su un suggerimento il campo
+restava col testo parziale, e un tocco entro la pausa faceva ripartire la
+ricerca e riaprire l'elenco.
+
+**Decisione**: le ricerche sono numerate e una risposta con dei luoghi si
+mostra se è più nuova di quella sullo schermo, anche con un'altra in
+corso; «No place found» e l'errore solo per l'ultima. La pausa scende da
+500 a 300 ms. Al tocco il campo prende il nome del luogo, la tastiera si
+chiude, le risposte in arrivo si scartano e quel testo non si cerca.
+
+**Alternative scartate**: una richiesta a lettera (ADR-0080); cambiare
+servizio o ospitare Photon (scelta dell'utente, fuori dal task).
+
+**Conseguenza**: qualche richiesta in più a Photon. I suggerimenti possono
+essere per il testo di un attimo prima, finché arriva la risposta nuova.

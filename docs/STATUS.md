@@ -70,6 +70,12 @@ Niente.
   things»). I dettagli a mano passano da 50 punti a 200 punti percorsi
   (circa 100 andata e ritorno). Campioni a 12 km: Milano «sì», Levico
   «quasi». Provato sull'iPhone dall'utente (2026-09-30): funziona.
+- **Motore** — TASK-111: il punteggio di una traccia corsa, da 0 a 100
+  (`track_score.py`, ADR-0090): la somiglianza del percorso per la fedeltà
+  della corsa al percorso, entro 40 m. Dalla CLI con `--score-track
+  corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
+  poi TASK-113.
+
 - **API e motore** — TASK-087: il ritaglio della zona più veloce, a
   percorsi identici (ADR-0082, la proposta 2 di TASK-063). A Milano, con
   la zona in memoria, da 2–6 s a 0,3–1 s a richiesta su questo Mac; stessi

@@ -599,6 +599,35 @@ per ogni punta mancata. Per una forma con tratti la distanza è l'1% del
 perimetro invece del 2%, come zone e fascia (§4, ADR-0039). Hausdorff e Fréchet discreta sono state provate e
 scartate: dominate dal punto peggiore, andavano contro il giudizio a occhio.
 
+### Il punteggio di una traccia corsa (TASK-111)
+
+Chi ha corso un percorso ha una traccia GPS; `track_score.py` le dà un
+punteggio da 0 a 100 (ADR-0090):
+
+```
+punteggio = arrotonda(100 · somiglianza del percorso · fedeltà)
+```
+
+- la **somiglianza** è quella del percorso pianificato
+  (`RouteResult.similarity`): quanto il piano somiglia alla forma;
+- la **fedeltà** è la media armonica di due quote, entro 40 m:
+  **coperta**, la parte del percorso pianificato con la traccia vicina, e
+  **sul percorso**, la parte della traccia vicina al percorso. Saltare un
+  pezzo abbassa la prima, una deviazione la seconda.
+
+Il percorso corso per intero prende quindi il voto del percorso. I 40 m
+sono quelli di «Off the route» nell'app (ADR-0070): il marciapiede opposto
+più l'errore del GPS fra le case; la via parallela resta fuori.
+
+Prima la traccia si pulisce (`clean_track`): via le posizioni con errore
+oltre 40 m, quelle a meno di 1 m dalla precedente e i salti oltre 12 m/s,
+quando la traccia ha gli orari. Una traccia con meno di 2 posizioni buone,
+o più corta del 10% del percorso, non ha punteggio
+(`TrackNotScorableError`, con il motivo).
+
+Vale per forme, parole e immagini allo stesso modo: servono solo i punti e
+la somiglianza del percorso, niente grafo e niente rete.
+
 ## 6. Validazione
 
 Un percorso esce dal motore solo se (altrimenti è un errore, non un warning):
@@ -660,6 +689,15 @@ Con `--nearby 3` prova anche 3 partenze vicine e tiene la migliore (§5,
 
 ```
 python -m route_engine --shape heart --distance 10000     --start 45.9934,11.2580 --nearby 3 --out heart_caldonazzo.gpx
+```
+
+Con `--score-track corsa.gpx` pianifica il percorso della richiesta e dà
+il punteggio alla corsa registrata nel file (§5, «Il punteggio di una
+traccia corsa»); `--out` non serve:
+
+```
+python -m route_engine --shape heart --distance 10000 \
+    --start 45.9934,11.2580 --score-track corsa.gpx
 ```
 
 Il GPX si apre in un visualizzatore (gpx.studio, geojson.io) e si guarda.

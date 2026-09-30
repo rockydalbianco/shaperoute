@@ -1,6 +1,6 @@
 # TASK-111 — Motore: il punteggio di una traccia corsa
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-111-track-score`
 
 ## Obiettivo
@@ -39,12 +39,12 @@ predefinito; se l'utente sceglie altro, cambia solo cosa si confronta.
 
 ## Criteri di accettazione
 
-- [ ] La traccia uguale al percorso pianificato dà `round(similarity*100)`.
-- [ ] Rumore di 10 m: il punteggio cala di al più 5 punti.
-- [ ] Metà percorso: punteggio più basso e «coperta» circa 0,5.
-- [ ] Traccia vuota o troppo corta: nessun punteggio, con il motivo.
-- [ ] Nessun import da `services/api` o `services/ai`; nessuna dipendenza nuova.
-- [ ] `pytest`, `ruff`, `black` verdi.
+- [x] La traccia uguale al percorso pianificato dà `round(similarity*100)`.
+- [x] Rumore di 10 m: il punteggio cala di al più 5 punti.
+- [x] Metà percorso: punteggio più basso e «coperta» circa 0,5.
+- [x] Traccia vuota o troppo corta: nessun punteggio, con il motivo.
+- [x] Nessun import da `services/api` o `services/ai`; nessuna dipendenza nuova.
+- [x] `pytest`, `ruff`, `black` verdi.
 
 ## File toccati
 
@@ -65,3 +65,10 @@ docs/tasks/TASK-111.md
 - Riconoscere chi bara (traccia finta, in bici): annotare, non fare.
 
 ## Esito
+
+`track_score.py` dà il punteggio e la CLI lo stampa con `--score-track`;
+18 test, senza rete. Diverso dal passo 2: il punteggio è la somiglianza del
+percorso per la fedeltà della traccia al percorso, non la traccia contro la
+forma ideale, perché la forma piazzata non esce dal motore (ADR-0090). Per
+TASK-113: `score_track(track, route.points, route.similarity)`. Non fatto,
+annotato nell'ADR: riconoscere una traccia finta o in bici.

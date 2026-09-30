@@ -1,6 +1,6 @@
 # TASK-086 — Pulsanti più visibili
 
-**Stato**: In corso — fatto, manca la prova sull'iPhone
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-086-visible-buttons`
 
 ## Obiettivo
@@ -23,7 +23,7 @@ I comandi dell'app si vedono come pulsanti, anche all'aperto.
 - [x] Il bordo dei comandi ha contrasto ≥ 3:1 sul fondo (4,3:1).
 - [x] Il giallo resta solo di «Draw route»; nessun colore fuori dai token.
 - [x] Test dell'app verdi.
-- [ ] Prova sull'iPhone: l'utente vede i pulsanti.
+- [x] Prova sull'iPhone: l'utente vede i pulsanti.
 
 ## File toccati
 
@@ -42,4 +42,5 @@ docs/tasks/TASK-086.md
 
 ## Esito
 
-*(a fine task)*
+Bordo e fondo dei comandi schiariti in tre token; provato sull'iPhone
+dall'utente il 2026-09-30 («ora funziona, merge 103»).

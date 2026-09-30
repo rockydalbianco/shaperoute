@@ -52,11 +52,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **App** — TASK-086: pulsanti più visibili (ADR-0081): bordo e fondo dei
-  comandi schiariti nei token. Manca la prova sull'iPhone.
+- **App** — TASK-085: i luoghi suggeriti mentre si scrive la partenza
+  (ADR-0080). Codice e test fatti; manca la prova sull'iPhone.
 
 ## Completato
 
+- **App** — TASK-086: pulsanti più visibili, bordo e fondo dei comandi
+  schiariti nei token (ADR-0081). Provato sull'iPhone (2026-09-30).
 - **App e motore** — TASK-079: modificare il contorno di un'immagine
   (ADR-0074). «Edit the outline» apre una lavagna a tutto schermo con zoom:
   «Add a part» unisce una forma alla sagoma, «Add a detail» aggiunge un

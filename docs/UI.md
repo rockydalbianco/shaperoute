@@ -125,8 +125,13 @@ punto, ricentra la mappa.
 
 - Compare solo quando la posizione manca. Campo «City or street», pulsante
   «Search» o invio della tastiera.
-- La richiesta parte all'invio, non a ogni lettera, e mai con il campo
-  vuoto: Photon chiede un uso corretto.
+- I luoghi si suggeriscono **mentre si scrive** (TASK-085, ADR-0080): da 3
+  lettere, mezzo secondo dopo l'ultima (`MIN_SUGGEST_LENGTH`,
+  `SUGGEST_DELAY_MS` in `PlaceSearch.tsx`), non a ogni lettera: Photon
+  chiede un uso corretto. «Search» e l'invio cercano subito, mai con il
+  campo vuoto. I suggerimenti di prima restano finché arrivano i nuovi;
+  sotto le 3 lettere spariscono. Una risposta a un testo che non è più nel
+  campo non si mostra.
 - Al massimo 5 risultati. Ognuno si legge come nome e prima area più ampia
   diversa dal nome: «Via Rodolfo Belenzani, Trento», «Levico Terme,
   Provincia di Trento». Le etichette uguali si mostrano una volta sola (una

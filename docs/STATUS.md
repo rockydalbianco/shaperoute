@@ -56,6 +56,10 @@ Niente.
 
 ## Completato
 
+- **App** — TASK-083: l'app su Expo con EAS Update (ADR-0078). Si apre
+  in Expo Go sull'iPhone senza `npm run mobile` acceso; l'API serve
+  sempre (Mac + Tailscale). Si ripubblica dopo ogni modifica dell'app
+  (`DEPLOY.md` A.6). Provata dall'utente (2026-09-28): funziona.
 - **App** — TASK-080: le lettere di una parola «Round» o «Square»,
   scelte nell'app sotto il campo della parola; `style` in `RouteRequest`,
   API e `shared-types` (ADR-0075). Provato sull'iPhone (2026-09-28).

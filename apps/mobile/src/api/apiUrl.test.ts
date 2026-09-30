@@ -1,4 +1,4 @@
-import { apiKey, apiUrl, apiUrlFromHost, keyHeaders } from "./apiUrl";
+import { apiKey, apiUrl, apiUrlFromHost, devServerHost, keyHeaders } from "./apiUrl";
 
 test.each([
   ["192.168.1.23:8081", "http://192.168.1.23:8000"],
@@ -31,6 +31,16 @@ test.each([undefined, "", "   "])(
     expect(apiUrl(configured, "192.168.1.23:8081")).toBe("http://192.168.1.23:8000");
   },
 );
+
+test("a published app (EAS Update, TASK-083) guesses no host", () => {
+  expect(devServerHost(true, "192.168.1.23:8081")).toBe("192.168.1.23:8081");
+  expect(devServerHost(false, "192.168.1.23:8081")).toBeNull();
+  expect(devServerHost(true, undefined)).toBeNull();
+  expect(apiUrl(undefined, devServerHost(false, "u.expo.dev"))).toBeNull();
+  expect(
+    apiUrl("http://100.101.102.103:8000", devServerHost(false, "u.expo.dev")),
+  ).toBe("http://100.101.102.103:8000");
+});
 
 test("a configured key goes in the X-API-Key header; none, no header", () => {
   expect(apiKey(" secret-key-for-tests ")).toBe("secret-key-for-tests");

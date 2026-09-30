@@ -1,6 +1,6 @@
 # TASK-085 — I luoghi suggeriti mentre si scrive la partenza
 
-**Stato**: In corso — codice e test fatti, manca la prova sull'iPhone
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-085-place-suggestions`
 
 ## Obiettivo
@@ -28,7 +28,7 @@ sotto il campo, senza premere «Search».
 - [x] Una risposta vecchia non copre quella nuova.
 - [x] Con la posizione nota, Photon riceve `lat`/`lon` (dopo la prima
       prova: «via bel» dava il Brasile).
-- [ ] Prova sull'iPhone: scrivendo «via bel…» compaiono i luoghi.
+- [x] Prova sull'iPhone: scrivendo «via bel…» compaiono i luoghi.
 
 ## File toccati
 
@@ -52,4 +52,6 @@ docs/tasks/TASK-085.md
 
 ## Esito
 
-*(a fine task)*
+I luoghi compaiono mentre si scrive, prima quelli vicini alla posizione.
+Provato sull'iPhone dall'utente il 2026-09-30: «ora funziona» (alla prima
+prova no: Photon senza posizione dava luoghi lontani, PR #104).

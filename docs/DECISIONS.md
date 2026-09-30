@@ -2783,6 +2783,7 @@ visite. Se una versione nuova lo cambia, `test_zone_crop.py` fallisce (il
 confronto è con `network.crop` nello stesso processo): si aggiorna
 `ZoneCrop`, o si torna a `crop` in `graphs.py`, una riga. Una zona in
 memoria non va modificata dopo essere stata data a `ZoneCrop`.
+
 ## ADR-0083 — Suggerimenti dei luoghi: risposte intermedie e tocco che chiude
 **Stato**: Attiva · 2026-09-30 · chiesto dall'utente («la ricerca è lenta,
 il suggerimento non riesco a premerlo»); deciso dall'agente su delega
@@ -2805,6 +2806,43 @@ servizio o ospitare Photon (scelta dell'utente, fuori dal task).
 
 **Conseguenza**: qualche richiesta in più a Photon. I suggerimenti possono
 essere per il testo di un attimo prima, finché arriva la risposta nuova.
+
+## ADR-0090 — Il punteggio di una corsa: somiglianza del percorso per fedeltà
+**Stato**: Attiva · 2026-09-30 · il punteggio chiesto dall'utente; il come
+deciso dall'agente su delega dell'utente (TASK-111)
+
+**Contesto**: l'utente vuole un punteggio per il disegno corso, «in base
+alla somiglianza». Il task proponeva di confrontare la traccia GPS con la
+forma ideale, con `shape_similarity`. Ma la forma piazzata (ruotata,
+scalata, per le parole con le lettere spostate) non esce dal motore:
+`RouteResult` porta i punti del percorso e la sua somiglianza, e così API
+e app. Parole e immagini poi non usano la stessa misura delle forme.
+
+**Decisione** (`track_score.py`):
+- **Punteggio = arrotonda(100 · somiglianza del percorso · fedeltà).** La
+  fedeltà è la media armonica fra la quota del percorso pianificato con la
+  traccia entro 40 m e la quota della traccia entro 40 m dal percorso.
+- **40 m**, come `OFF_ROUTE_M` dell'app (ADR-0070): chi non ha mai sentito
+  «Off the route» non perde punti.
+- **Pulizia prima del confronto**: errore oltre 40 m, passi sotto 1 m,
+  salti oltre 12 m/s (solo con gli orari).
+- **Niente punteggio** sotto 2 posizioni buone o sotto il 10% della
+  lunghezza del percorso: un errore con il motivo, non uno zero.
+- CLI: `--score-track FILE`, che ripianifica il percorso della richiesta.
+
+**Scartata**: *traccia contro forma piazzata, con la somiglianza del
+motore.* Chiede di portare il piazzamento nel contratto (API,
+`shared-types`, app) e una strada diversa per parole e immagini; e la sua
+tolleranza, il 2% del perimetro, a 15 km è 300 m: chi corre la via
+parallela prenderebbe lo stesso voto.
+
+**Conseguenze**: chi corre il percorso per intero prende il voto del
+percorso, mai di più: una forma che le strade disegnano male ha un tetto
+basso anche corsa bene. Chi devia e disegna la forma *meglio* del piano
+perde punti. Il punteggio non riconosce una traccia finta o fatta in bici:
+annotato, non fatto. TASK-113 deve mandare all'API punti e somiglianza del
+percorso; presa dall'app, la somiglianza si può falsare: TASK-117 la
+ricalcola o la conserva col percorso.
 
 ## ADR-0085 — Il registro delle richieste dell'API, spento per default
 **Stato**: Attiva · 2026-09-30 · la funzione è chiesta dall'utente («serve

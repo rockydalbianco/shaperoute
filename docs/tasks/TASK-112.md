@@ -1,6 +1,6 @@
 # TASK-112 — App: registrare la traccia durante la navigazione
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-112-track-recording`
 
 ## Obiettivo
@@ -68,3 +68,7 @@ pianificato ma non la richiesta né la somiglianza; e una corsa interrotta
 si riprende da sola con «Start» sullo stesso percorso entro 30 minuti,
 senza la domanda «riprendi o scarta». Tutte e due le cose passano a
 TASK-113, che tocca `App.tsx`.
+
+Mergiato su richiesta dell'utente («merge 113», 2026-09-30) **senza la
+prova sull'iPhone**: la camminata di 500 m si fa con TASK-113, quando la
+traccia si vede sullo schermo.

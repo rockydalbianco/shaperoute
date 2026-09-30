@@ -63,7 +63,7 @@ Niente.
 
 ## Completato
 
-- **App** — TASK-112 (PR aperta, manca la prova sull'iPhone): durante la
+- **App** — TASK-112 (prova sull'iPhone da fare con TASK-113): durante la
   navigazione l'app registra la traccia della corsa e la tiene in un file
   sul telefono, anche se l'app si chiude (`trackRecorder.ts`,
   `trackStore.ts`, ADR-0091). Sullo schermo non cambia niente: la usa

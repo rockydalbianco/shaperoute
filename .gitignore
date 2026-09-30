@@ -29,6 +29,9 @@ yarn-error.log*
 *.osm
 *.osm.pbf
 data/cache/
+
+# Registro delle richieste dell'API: contiene le partenze (ADR-0085)
+data/requests/
 .osmnx_cache/
 
 # Output di lavoro usa-e-getta

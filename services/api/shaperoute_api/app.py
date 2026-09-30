@@ -22,7 +22,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.image_outline import InvalidImageError
-from route_engine.models import InvalidRequestError, RouteRequest
+from route_engine.models import InvalidRequestError, RouteRequest, RouteResult
 from route_engine.optimizer import GraphLoader, ShapeNotDrawableError
 from route_engine.outline_edits import InvalidEditError
 from shaperoute_ai.reading import (
@@ -44,8 +44,9 @@ from shaperoute_api.images import (
     plan_request,
     trace,
 )
-from shaperoute_api.jobs import Job, Planner, RouteJobs
+from shaperoute_api.jobs import Job, JobEnd, Planner, RouteJobs
 from shaperoute_api.outline_edits import edit_outline
+from shaperoute_api.request_log import RequestLog
 from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
@@ -140,6 +141,18 @@ def job_body(job: Job) -> RouteJobBody:
     )
 
 
+def job_recorder(request_log: RequestLog) -> JobEnd:
+    def record(
+        job: Job,
+        result: RouteResult | None,
+        error: ErrorDetail | None,
+        elapsed_s: float,
+    ) -> None:
+        request_log.record(job.body, result, error, elapsed_s, job.job_id)
+
+    return record
+
+
 def now_utc() -> datetime:
     return datetime.now(UTC)
 
@@ -150,8 +163,11 @@ def create_app(
     jobs: RouteJobs | None = None,
     now: Callable[[], datetime] = now_utc,
     reader: ShapeReader | None = None,
+    request_log: RequestLog | None = None,
 ) -> FastAPI:
-    route_jobs = jobs or RouteJobs(source, planner)
+    # The request log (TASK-090) hears how each job ended; None: no log.
+    on_end = None if request_log is None else job_recorder(request_log)
+    route_jobs = jobs or RouteJobs(source, planner, on_end=on_end)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -179,13 +195,13 @@ def create_app(
 
     @app.post("/route-jobs", status_code=202, responses=ERROR_RESPONSES)
     def create_route_job(body: RouteRequestBody) -> RouteJobBody:
-        return job_body(route_jobs.submit(to_request(body)))
+        return job_body(route_jobs.submit(to_request(body), body.model_dump()))
 
     # The route of an image's outline, drawn like a shape (ADR-0069); the
     # job is then read and cancelled at /route-jobs/{job_id}, as any other.
     @app.post("/image-route-jobs", status_code=202, responses=ERROR_RESPONSES)
     def create_image_route_job(body: ImageRouteRequestBody) -> RouteJobBody:
-        return job_body(route_jobs.submit(to_request(body)))
+        return job_body(route_jobs.submit(to_request(body), body.model_dump()))
 
     # The engine traces the outline (ADR-0068): the app shows it before the
     # route is asked for. A plain def: decoding a photo takes a moment.
@@ -263,6 +279,8 @@ def create_app(
         except Exception as exc:
             elapsed = time.perf_counter() - started
             log.info("route %s: %s after %.1f s", what, type(exc).__name__, elapsed)
+            if request_log is not None:
+                request_log.record(body.model_dump(), None, error_of(exc)[1], elapsed)
             raise
         log.info(
             "route %s: %.0f m on roads, similarity %.2f, in %.1f s",
@@ -271,6 +289,10 @@ def create_app(
             result.similarity,
             time.perf_counter() - started,
         )
+        if request_log is not None:
+            request_log.record(
+                body.model_dump(), result, None, time.perf_counter() - started
+            )
         return RouteResultBody.from_result(result)
 
     @app.exception_handler(RequestValidationError)

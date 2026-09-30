@@ -63,6 +63,13 @@ Niente.
 
 ## Completato
 
+- **App** — TASK-112 (prova sull'iPhone da fare con TASK-113): durante la
+  navigazione l'app registra la traccia della corsa e la tiene in un file
+  sul telefono, anche se l'app si chiude (`trackRecorder.ts`,
+  `trackStore.ts`, ADR-0091). Sullo schermo non cambia niente: la usa
+  **TASK-113**, che deve anche salvare la somiglianza del percorso e
+  chiedere «riprendi o scarta» alla riapertura.
+
 - **Motore, API e app** — TASK-084: più soggetti in una foto, fino a 4,
   in una linea sola (ADR-0079). Il più grande è il contorno, gli altri
   sono appesi con un trattino nel punto più vicino, fatto andata e

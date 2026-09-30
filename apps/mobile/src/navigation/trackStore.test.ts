@@ -1,0 +1,197 @@
+import type { LatLon } from "@shaperoute/shared-types";
+
+import type { TrackFix } from "./trackRecorder";
+import {
+  clearRun,
+  loadRun,
+  RESUME_WITHIN_MS,
+  RUN_FILE,
+  SAVE_EVERY_MS,
+  saveRun,
+  startRun,
+} from "./trackStore";
+
+// The phone's documents folder, in memory: what is written stays there for
+// the next read, as after closing the app.
+jest.mock("expo-file-system", () => {
+  const files = new Map<string, string>();
+  const state = { failing: false };
+  class File {
+    uri: string;
+    constructor(directory: { uri: string }, name: string) {
+      this.uri = `${directory.uri}${name}`;
+    }
+    get exists(): boolean {
+      return files.has(this.uri);
+    }
+    create(): void {
+      if (state.failing) {
+        throw new Error("No space left on device");
+      }
+      files.set(this.uri, "");
+    }
+    write(text: string): void {
+      files.set(this.uri, text);
+    }
+    textSync(): string {
+      return files.get(this.uri) ?? "";
+    }
+    delete(): void {
+      files.delete(this.uri);
+    }
+  }
+  return { File, Paths: { document: { uri: "file:///documents/" } }, files, state };
+});
+
+const disk = jest.requireMock<{
+  files: Map<string, string>;
+  state: { failing: boolean };
+}>("expo-file-system");
+const RUN_URI = `file:///documents/${RUN_FILE}`;
+
+const START: LatLon = [46.0122, 11.2986];
+const METRE = 1 / 111_195;
+const ROUTE: LatLon[] = [START, [START[0] + 500 * METRE, START[1]], START];
+const OTHER_ROUTE: LatLon[] = [START, [START[0], START[1] + 0.01], START];
+
+function fix(northM: number, seconds: number): TrackFix {
+  return {
+    point: [START[0] + northM * METRE, START[1]],
+    timeMs: seconds * 1000,
+    accuracyM: 5,
+  };
+}
+
+beforeEach(() => {
+  disk.files.clear();
+  disk.state.failing = false;
+});
+
+test("a saved run is read back as it was, from the documents folder", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), false);
+  run.stop();
+  expect(disk.files.has(RUN_URI)).toBe(true);
+  expect(loadRun()).toEqual({
+    version: 1,
+    route: ROUTE,
+    track: run.track(),
+    status: "stopped",
+  });
+  expect(loadRun()?.track.fixes).toHaveLength(2);
+});
+
+test("the file is written at the first fix, then at most every 15 seconds", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  expect(loadRun()?.track.fixes).toHaveLength(1);
+  run.onFix(fix(10, 4), false);
+  run.onFix(fix(20, 8), false);
+  expect(loadRun()?.track.fixes).toHaveLength(1);
+  run.onFix(fix(40, SAVE_EVERY_MS / 1000), false);
+  expect(loadRun()?.track.fixes).toHaveLength(4);
+});
+
+test("the app closed during a run leaves the run in the file, still running", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(60, SAVE_EVERY_MS / 1000), false);
+  // No stop(): the app was closed.
+  const left = loadRun();
+  expect(left?.status).toBe("running");
+  expect(left?.track.distanceM).toBeCloseTo(60, 0);
+});
+
+test("arriving ends the run: later fixes and stop change nothing", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), true);
+  run.onFix(fix(200, 60), false);
+  run.stop();
+  const saved = loadRun();
+  expect(saved?.status).toBe("arrived");
+  expect(saved?.track.fixes).toHaveLength(2);
+});
+
+test("the same route started again soon goes on with the track", () => {
+  const first = startRun(ROUTE, 0);
+  first.onFix(fix(0, 0), false);
+  first.onFix(fix(50, 20), false);
+  first.stop();
+
+  const again = startRun(ROUTE, 60_000);
+  expect(again.track().fixes).toHaveLength(2);
+  again.onFix(fix(100, 80), false);
+  expect(again.track().distanceM).toBeCloseTo(100, 0);
+  expect(loadRun()?.status).toBe("running");
+});
+
+test.each([
+  ["another route", OTHER_ROUTE, 60_000],
+  ["the same route much later", ROUTE, 20_000 + RESUME_WITHIN_MS + 1],
+])("%s starts a new track and replaces the old run", (_name, route, nowMs) => {
+  const first = startRun(ROUTE, 0);
+  first.onFix(fix(0, 0), false);
+  first.onFix(fix(50, 20), false);
+  first.stop();
+
+  const next = startRun(route, nowMs);
+  expect(next.track().fixes).toHaveLength(0);
+  // Until the new run has a fix, the old one is still in the file.
+  expect(loadRun()?.route).toEqual(ROUTE);
+  next.onFix(fix(0, nowMs / 1000 + 1), false);
+  expect(loadRun()?.route).toEqual(route);
+  expect(loadRun()?.track.fixes).toHaveLength(1);
+});
+
+test("a run that arrived is not taken up again", () => {
+  const first = startRun(ROUTE, 0);
+  first.onFix(fix(0, 0), false);
+  first.onFix(fix(10, 4), true);
+  expect(startRun(ROUTE, 10_000).track().fixes).toHaveLength(0);
+});
+
+test("stopping before any fix writes nothing", () => {
+  startRun(ROUTE, 0).stop();
+  expect(loadRun()).toBeNull();
+});
+
+test("a file that is not a run reads as no run", () => {
+  expect(loadRun()).toBeNull();
+  for (const text of [
+    "not json",
+    "{}",
+    '{"version":2}',
+    '{"version":1,"route":[[1]]}',
+  ]) {
+    disk.files.set(RUN_URI, text);
+    expect(loadRun()).toBeNull();
+  }
+});
+
+test("a phone that refuses the file does not stop the recording", () => {
+  disk.state.failing = true;
+  expect(
+    saveRun({
+      version: 1,
+      route: ROUTE,
+      track: { fixes: [], distanceM: 0 },
+      status: "running",
+    }),
+  ).toBe(false);
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), false);
+  run.stop();
+  expect(run.track().fixes).toHaveLength(2);
+  expect(loadRun()).toBeNull();
+});
+
+test("clearing removes the run", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  clearRun();
+  expect(loadRun()).toBeNull();
+  clearRun();
+});

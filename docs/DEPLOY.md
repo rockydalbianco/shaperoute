@@ -216,6 +216,26 @@ client (percorsi, contorni, parole, GPX), poi 429 `too_many_requests`.
 Si cambia con `SHAPEROUTE_RATE_LIMIT` (0 = nessun limite). Dietro un
 tunnel tutti i telefoni contano come un client solo.
 
+## Il registro delle richieste e le posizioni
+
+L'API può scrivere ogni richiesta di percorso in un file, per rifarla
+uguale quando un percorso esce male (`API.md`, «Registro delle richieste»;
+TASK-090, ADR-0085). È **spento** finché non si avvia l'API con
+`--request-log` o con `SHAPEROUTE_REQUEST_LOG=1`.
+
+Da sapere prima di accenderlo: ogni riga contiene la **partenza** di chi ha
+chiesto il percorso, cioè di solito dove si trova, con l'ora. Sul PC di
+casa, usato da te, sono le tue posizioni sul tuo disco. Su un server
+(strade C, D, E) o con l'app data ad altre persone, il file raccoglie le
+posizioni di **tutti** quelli che usano l'app: accendilo solo per il tempo
+che serve a capire un difetto, dillo a chi usa l'app, e poi cancella
+`data/requests/`. Il file non contiene la chiave dell'API né le foto, è
+leggibile solo dall'utente che ha avviato l'API e non supera i 10 MB.
+
+Nel container Docker il file sta in `/app/data/requests`, fuori dal volume
+della cache: sparisce quando il container si ricrea. Per accenderlo lì si
+aggiunge `-e SHAPEROUTE_REQUEST_LOG=1` a `docker run`.
+
 ---
 
 ## B — PC + Cloudflare Tunnel

@@ -38,6 +38,10 @@ quel valore; senza, l'API è aperta come prima. I POST sono limitati a
 limite); il polling dei job è GET e non conta. La chiave non si passa mai
 da riga di comando.
 
+Con `--request-log`, o con `SHAPEROUTE_REQUEST_LOG=1`, l'API scrive ogni
+richiesta di percorso in un file, per poterla rifare: «Registro delle
+richieste», più sotto. Senza, non scrive niente (è il default).
+
 ## Endpoint
 
 ### `GET /health`
@@ -113,6 +117,66 @@ Le richieste vivono nella memoria dell'API: un riavvio le perde. Lavorano
 due alla volta, così un 15 km annullato non ferma la richiesta dopo; le due
 però si dividono il processore, quindi la seconda va più piano finché la
 prima non finisce.
+
+### Registro delle richieste (TASK-090, ADR-0085)
+
+Serve a rifare uguale un percorso visto nell'app, per capire un difetto:
+in TASK-075 non si è potuto, perché la partenza era il GPS del telefono e
+25–100 m cambiano il cuore. **Spento per default**; si accende all'avvio:
+
+```
+python -m shaperoute_api --lan --request-log
+```
+
+oppure con la variabile d'ambiente `SHAPEROUTE_REQUEST_LOG=1`. All'avvio
+l'API dice se registra e dove. Il file è `data/requests/requests.jsonl`
+(`--request-log-dir` cambia la cartella), fuori dal repository
+(`.gitignore`) e leggibile solo da chi ha avviato l'API. Una riga JSON per
+ogni richiesta di percorso finita (`/route-jobs`, `/image-route-jobs`,
+`/routes`), scritta dopo che il job ha la sua risposta:
+
+```json
+{"time": "2026-09-30T13:18:08+00:00", "kind": "shape", "job_id": "d44ecaff13cc",
+ "request": {"start": [45.9934, 11.258], "shape": "heart", "word": null,
+             "distance_m": 10000, "activity": "running", "style": "round"},
+ "outcome": {"status": "done", "distance_m": 11841.8, "similarity": 0.8568,
+             "points": 467, "route": "19a2ca915124baf7", "elapsed_s": 7.3}}
+```
+
+- `kind`: `shape`, `word` o `image`. `request` è il corpo com'è arrivato,
+  con i default scritti; per un'immagine, `outline` e `strokes`.
+- `outcome`: `done` con distanza, somiglianza, numero di punti, secondi e
+  `route`, un'impronta dei punti (uguale solo se il percorso è lo stesso
+  punto per punto); `failed` con il solo `code` dell'errore; `cancelled`
+  per un job annullato prima del calcolo. `job_id` è `null` per `/routes`.
+- **Mai nel file**: la chiave dell'API, le intestazioni, l'indirizzo del
+  telefono, la foto (`/image-outlines` e `/image-outline-edits` non sono
+  registrati), i punti del percorso, le parole di `/shape-readings`. Una
+  richiesta non valida (422 prima del job) non è registrata.
+- **Grandezza**: a 5 MB il file diventa `requests.old.jsonl` (quello di
+  prima è sostituito) e ne comincia uno nuovo: mai più di 10 MB sul disco,
+  alcune migliaia di richieste.
+- Se il file non si può scrivere, la richiesta va avanti lo stesso e nel
+  log dell'API c'è un avviso, senza il corpo della richiesta.
+
+**Rifare una richiesta**, senza server e senza telefono, dalla radice del
+repository:
+
+```
+python -m shaperoute_api.replay --list          # le righe, numerate
+python -m shaperoute_api.replay                 # rifà l'ultima
+python -m shaperoute_api.replay --job d44ecaff13cc --gpx out/again.gpx
+python -m shaperoute_api.replay --line 3
+```
+
+Ricostruisce la richiesta dal corpo, con gli stessi controlli di quando è
+arrivata, e la dà allo stesso motore sui grafi in cache (`--cache-dir`,
+`--file` per un altro registro). Stampa distanza e somiglianza di adesso e
+dice se il percorso è quello registrato, punto per punto; se non lo è
+(motore cambiato, o altri dati della mappa) esce con codice 1. Provato con
+un cuore da 10 km a Caldonazzo e «CIAO» squadrato a Levico: 467 e 626
+punti, identici. Il registro contiene le partenze degli utenti: vedi
+`UI.md`, «Cosa esce dal telefono», e `DEPLOY.md`.
 
 ### `POST /gpx`
 

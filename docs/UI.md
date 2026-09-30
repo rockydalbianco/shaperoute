@@ -499,8 +499,17 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 ## Cosa esce dal telefono
 
 - **La partenza**: va all'API sul PC, in rete locale, con forma e
-  distanza. L'API non la scrive nel log. Se la zona non è in cache, il PC
-  la scarica da Overpass, che vede quale area si chiede.
+  distanza. Se la zona non è in cache, il PC la scarica da Overpass, che
+  vede quale area si chiede. Dove resta scritta (TASK-090, ADR-0085):
+  - nel log a schermo dell'API, per forme e parole, da quando il motore
+    prova le partenze vicine (TASK-076): passa e non è un file;
+  - nel **registro delle richieste**, solo se chi avvia l'API lo accende
+    (`--request-log`, spento per default): un file sul computer dell'API,
+    `data/requests/requests.jsonl`, con partenza, distanza, forma, parola o
+    contorno dell'immagine di ogni richiesta, per poterla rifare
+    (`API.md`). Mai la foto, mai la chiave. Non entra nel repository, non
+    torna al telefono, non va a nessun servizio; al massimo 10 MB, poi le
+    righe vecchie si perdono. Per cancellarlo basta cancellare il file.
 - **Le parole della forma** che la tabella non conosce: vanno all'API sul
   PC, e da lì al modello in Ollama, sullo stesso PC. Non escono dalla rete
   di casa; il log dell'API le scrive, con la forma scelta.

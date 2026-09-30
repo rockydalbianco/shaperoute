@@ -43,6 +43,14 @@ test.each([
   ["a bunny", "rabbit_head"],
   ["Coniglietto", "rabbit_head"],
   ["rabbit head", "rabbit_head"],
+  ["zucca", "pumpkin"],
+  ["la zucca di Halloween", "pumpkin"],
+  ["Pumpkins", "pumpkin"],
+  ["jack-o’-lantern", "pumpkin"],
+  ["albero di Natale", "christmas_tree"],
+  ["l'albero di natale", "christmas_tree"],
+  ["a Christmas tree", "christmas_tree"],
+  ["christmas_tree", "christmas_tree"],
 ])("%j is a %s", (text, shape) => {
   expect(toShape(text)).toBe(shape);
 });
@@ -57,6 +65,9 @@ test.each([
   ["cuore stella", "two shapes"],
   ["uccello", "an animal the user left out (ADR-0061)"],
   ["bird", "an animal the user left out (ADR-0061)"],
+  ["albero", "a plain tree is not the Christmas tree (ADR-0083)"],
+  ["tree", "a plain tree is not the Christmas tree (ADR-0083)"],
+  ["natale", "a feast, not a drawing: the AI's job"],
 ])("%j is no shape: %s", (text) => {
   expect(toShape(text)).toBeNull();
 });
@@ -81,7 +92,7 @@ test("every word names its own shape, and no word is used twice", () => {
 
 test("the suggestion lists every shape, as the runner reads it", () => {
   expect(shapeList()).toBe(
-    "circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head or rabbit head",
+    "circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas tree",
   );
 });
 

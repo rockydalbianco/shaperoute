@@ -52,7 +52,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-Niente.
+- **Catalogo** — TASK-088: zucca di Halloween (`pumpkin`) e albero di
+  Natale (`christmas_tree`) nel catalogo (ADR-0083). Motore, AI, app e
+  documenti fatti; mancano `shared-types` (file di TASK-084, in attesa) e
+  la prova sull'iPhone.
 
 ## Completato
 

@@ -27,7 +27,13 @@ export const SHAPE_SIGNS: Record<Shape, string> = {
   snail: "🐌",
   dog_head: "🐶",
   rabbit_head: "🐰",
+  pumpkin: "🎃",
+  christmas_tree: "🎄",
 };
+
+const PER_ROW = 4;
+// Empty places that fill the last row, so its tiles stay as wide as the rest.
+const SPARE = (PER_ROW - (SHAPES.length % PER_ROW)) % PER_ROW;
 
 type Props = {
   /** The shape the field names now, shown as chosen; null for none. */
@@ -58,6 +64,9 @@ export function ShapeTiles({ chosen, onPick }: Props) {
           </Pressable>
         );
       })}
+      {Array.from({ length: SPARE }, (_, index) => (
+        <View key={`spare-${index}`} style={styles.spare} />
+      ))}
     </View>
   );
 }
@@ -80,6 +89,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.border,
     backgroundColor: color.surface,
+  },
+  spare: {
+    flexBasis: "22%",
+    flexGrow: 1,
   },
   // Chosen is told by the border, not by yellow: that is the route's.
   selected: {

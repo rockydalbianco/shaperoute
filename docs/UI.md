@@ -153,10 +153,12 @@ non cancella quanto scritto o scelto negli altri.
 
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
 scrivendo nel campo. I simboli delle tessere sono caratteri (♥ ★ ◯ ☾ e le
-emoji di gatto, pesce, cavallo, farfalla, lumaca, cane e coniglio):
+emoji di gatto, pesce, cavallo, farfalla, lumaca, cane, coniglio, zucca
+e albero di Natale):
 disegnare i contorni veri vuole `react-native-svg`, una dipendenza non
 ancora chiesta.
-Le tessere sono quattro per riga.
+Le tessere sono quattro per riga; l'ultima riga, se non è piena, tiene le
+tessere larghe come le altre (TASK-088).
 
 La **forma** è una parola, in inglese o in italiano (ADR-0036). Le forme
 sono quelle del catalogo, le sole che l'utente ha giudicato riconoscibili
@@ -175,6 +177,8 @@ sulle strade:
 | `snail` | snail · lumaca, lumachina, chiocciola |
 | `dog_head` | dog, dog head, doggy, puppy · cane, cagnolino, testa di cane |
 | `rabbit_head` | rabbit, rabbit head, bunny · coniglio, coniglietto, testa di coniglio |
+| `pumpkin` | pumpkin, halloween pumpkin, jack-o'-lantern · zucca, zucca di halloween |
+| `christmas_tree` | christmas tree, xmas tree · albero di natale, alberello di natale |
 
 - Anche al plurale («stelle», «hearts»), con l'articolo («una stella»,
   «l'amore»), con maiuscole e accenti qualsiasi. La tabella sta in
@@ -186,9 +190,12 @@ sulle strade:
   campo e nel nome del percorso (ADR-0061). «cane» e «dog» portano alla
   testa di cane, «coniglio» e «bunny» a quella di coniglio: gli animali
   interi non sono nel catalogo.
+- «albero» e «tree» da soli **non** sono l'albero di Natale (ADR-0083): un
+  albero qualsiasi non è nel catalogo, e resta «nessuna forma». Sullo
+  schermo `christmas_tree` si legge «christmas tree».
 - Il campo vuoto: «Unknown shape. Try: circle, heart, star, horse, moon,
-  cat, fish, butterfly, snail, dog head or rabbit head.» e «Draw route»
-  resta spento.
+  cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas
+  tree.» e «Draw route» resta spento.
 - Nel campo vuoto il suggerimento è «heart, star, horse…». Il campo
   accetta al massimo 60 caratteri.
 
@@ -483,7 +490,7 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 | Parola che non ci sta (TASK-057) | come per la forma, con «This word…»; senza distanza: This word does not fit the roads here. Try a shorter word, or another start. (niente forme da toccare) |
 | Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
 | Errore del motore (`engine_error`) | The route engine failed. Try again; if it happens again, look at the API log. |
-| L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head or rabbit head. |
+| L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas tree. |
 | `invalid_request`, `http_error`, risposta illeggibile | The app and the API do not agree (a bug): … |
 | API non raggiungibile | Cannot reach the API at http://…:8000. Start it on the PC with --lan, on the same Wi-Fi. |
 | Nessun risultato in 5 minuti | The API took more than 5 minutes. Try again later, or a shorter distance. |

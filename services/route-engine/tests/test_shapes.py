@@ -125,10 +125,11 @@ def test_too_few_points_is_rejected(n_points: int) -> None:
         get_shape("heart")(n_points)
 
 
-@pytest.mark.parametrize("name", ["house", "dog", "bird", "pumpkin", "christmas_tree"])
+@pytest.mark.parametrize("name", ["house", "dog", "bird", "tree"])
 def test_unknown_shape_is_rejected(name: str) -> None:
-    # Outline files, but not catalogue shapes (ADR-0036): the house, and the
-    # candidates the user left out (ADR-0061).
+    # Outline files, but not catalogue shapes (ADR-0036): the house, the
+    # candidates the user left out (ADR-0061), and the plain tree, which is
+    # not the Christmas tree (ADR-0083).
     with pytest.raises(ValueError, match=f"unknown shape '{name}'"):
         get_shape(name)
 
@@ -164,4 +165,5 @@ def test_the_outlines_ship_with_the_package() -> None:
     assert patterns == ["outlines/*.json"]
     catalogue = {"star", "horse", "moon", "cat", "fish"}
     catalogue |= {"butterfly", "snail", "dog_head", "rabbit_head"}
+    catalogue |= {"pumpkin", "christmas_tree"}
     assert {path.stem for path in OUTLINES.glob("*.json")} >= catalogue

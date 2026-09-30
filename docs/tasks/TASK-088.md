@@ -3,7 +3,7 @@
 **Stato**: In corso
 **Fase**: 4 · **Branch**: `feat/TASK-088-seasonal-catalog` (parte da `main`)
 
-Approvato dall'utente il 2026-09-30. ADR-0083. Numeri presi senza
+Approvato dall'utente il 2026-09-30. ADR-0084 (era 0083, preso intanto da TASK-089). Numeri presi senza
 coordinatore: primi liberi fra branch remoti e worktree (087/ADR-0082 sono
 del ritaglio della zona, 089 e seguenti già presi).
 
@@ -34,10 +34,10 @@ all'API come le altre forme del catalogo.
 - **A. Entrano tutte e due**: scelta dell'utente, da non ridiscutere.
 - **B. «albero» e «tree» da soli non cambiano significato** (chiesto
   dall'utente): fuori dalla tabella, e «nessuna forma» per l'AI. Le parole
-  della tabella sono in ADR-0083.
+  della tabella sono in ADR-0084.
 - **C. Tessere** 🎃 e 🎄; l'ultima riga delle tessere si riempie di posti
   vuoti, così la tredicesima non diventa larga quanto lo schermo (deciso
-  dall'agente su delega dell'utente, ADR-0083).
+  dall'agente su delega dell'utente, ADR-0084).
 
 ## Cosa fare
 
@@ -53,9 +53,9 @@ all'API come le altre forme del catalogo.
 ## Criteri di accettazione
 
 - [x] Dalla radice `npm run lint`, `npm run format:check`,
-      `npm run typecheck` e `npm test` passano (448 test); in
-      `services/route-engine/` (830), `services/ai/` (32) e `services/api/`
-      (156) `ruff`, `black --check` e `pytest -m "not network"` passano.
+      `npm run typecheck` e `npm test` passano (451 test); in
+      `services/route-engine/` (865), `services/ai/` (32) e `services/api/`
+      (162) `ruff`, `black --check` e `pytest -m "not network"` passano.
 - [x] «zucca», «pumpkin», «albero di Natale», «christmas tree» portano
       alla forma giusta; «albero» e «tree» a nessuna (`shapeWords.test.ts`).
 - [x] L'API accetta le due forme e rifiuta `tree`; a Milano a 15 km i

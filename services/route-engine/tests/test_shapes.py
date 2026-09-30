@@ -129,7 +129,7 @@ def test_too_few_points_is_rejected(n_points: int) -> None:
 def test_unknown_shape_is_rejected(name: str) -> None:
     # Outline files, but not catalogue shapes (ADR-0036): the house, the
     # candidates the user left out (ADR-0061), and the plain tree, which is
-    # not the Christmas tree (ADR-0083).
+    # not the Christmas tree (ADR-0084).
     with pytest.raises(ValueError, match=f"unknown shape '{name}'"):
         get_shape(name)
 

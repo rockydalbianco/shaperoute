@@ -60,7 +60,7 @@ export const SHAPE_WORDS: Record<
     it: ["zucca", "zucche", "zucca di halloween"],
   },
   // Never "tree" or "albero" alone: a plain tree is another drawing, not in
-  // the catalogue (ADR-0083).
+  // the catalogue (ADR-0084).
   christmas_tree: {
     en: ["christmas tree", "christmas trees", "xmas tree"],
     it: ["albero di natale", "alberi di natale", "alberello di natale"],

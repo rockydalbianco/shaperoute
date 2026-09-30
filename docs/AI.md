@@ -155,7 +155,7 @@ tabella. Sono entrate 14 voci per le quattro forme nella messa a punto
 di cane) e 9 nel controllo, scritte prima di misurarle; «ragno» e «ape»
 sono voci nuove senza forma.
 
-Con zucca e albero di Natale (TASK-088, ADR-0083) «albero di Natale», che
+Con zucca e albero di Natale (TASK-088, ADR-0084) «albero di Natale», che
 valeva «nessuna forma», è uscita: ora la legge la tabella. Sono entrate 8
 voci nella messa a punto e 5 nel controllo, più «quercia» senza forma.
 «albero» e «tree» devono restare **nessuna forma**: con la prima riga

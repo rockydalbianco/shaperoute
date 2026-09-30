@@ -65,8 +65,8 @@ test.each([
   ["cuore stella", "two shapes"],
   ["uccello", "an animal the user left out (ADR-0061)"],
   ["bird", "an animal the user left out (ADR-0061)"],
-  ["albero", "a plain tree is not the Christmas tree (ADR-0083)"],
-  ["tree", "a plain tree is not the Christmas tree (ADR-0083)"],
+  ["albero", "a plain tree is not the Christmas tree (ADR-0084)"],
+  ["tree", "a plain tree is not the Christmas tree (ADR-0084)"],
   ["natale", "a feast, not a drawing: the AI's job"],
 ])("%j is no shape: %s", (text) => {
   expect(toShape(text)).toBeNull();

@@ -2733,7 +2733,80 @@ prima. Photon risponde in circa 3 s: «Searching…» resta visibile.
 **Conseguenza**: più richieste a Photon di prima, una per pausa. Se il
 servizio dovesse limitare, la soglia e il ritardo sono due costanti.
 
-## ADR-0083 — Zucca e albero di Natale nel catalogo; «albero» da solo resta fuori
+## ADR-0082 — Il ritaglio della zona rifatto a mano, nello stesso ordine
+**Stato**: Attiva · 2026-09-30 · il lavoro e il vincolo («percorsi
+identici») chiesti dall'utente; il come deciso dall'agente su delega
+dell'utente (TASK-087)
+
+**Contesto**: l'API ritaglia a ogni richiesta il grafo dalla zona in
+memoria (ADR-0030). `network.crop` passa due volte da una vista di
+NetworkX, per trovare il pezzo connesso più grande e per copiarlo, e
+intanto il garbage collector di Python ripassa più volte tutta la zona: a
+Milano 2–5 s su questo Mac, 6–13 s sul PC di TASK-063.
+
+**Decisione**:
+
+- `route_engine/zone_crop.py`: `ZoneCrop(zona).crop(bbox)` costruisce il
+  ritaglio dai dizionari della zona, senza viste. Dà il grafo di
+  `network.crop` con nodi, archi e attributi **nello stesso ordine**,
+  seguendo passo per passo quello che fa NetworkX (l'ordine di una vista,
+  la visita in ampiezza dei pezzi, la copia). Dove NetworkX cambia ordine
+  (un ritaglio con meno nodi della metà delle strade di un incrocio) lascia
+  il lavoro a `network.crop`.
+- Il ritaglio ha dizionari **suoi**, anche per gli attributi: ogni
+  richiesta ha ancora il suo grafo e la zona non viene mai modificata. Il
+  nodo «sink» di `_route_through_zones` e le richieste in parallelo restano
+  com'erano; motore e `nearby_starts.py` non si toccano.
+- `ZoneGraphs` sospende il garbage collector durante il ritaglio
+  (`_gc_paused`, con un contatore per i ritagli contemporanei) e lo
+  riaccende alla fine se era acceso. La raccolta è solo rimandata.
+- `network.crop` resta: lo usa la CLI, ed è il riferimento dei test.
+
+**Scartate**:
+
+- *Nessun ritaglio: il motore sulla zona intera o su una vista.* L'ordine
+  dei nodi e degli archi cambierebbe, e con lui i percorsi a parità di
+  costo; una vista rende più lento ogni Dijkstra; il «sink» finirebbe nel
+  grafo condiviso dalle richieste in parallelo.
+- *Tenere il ritaglio per la stessa area.* Le partenze dal GPS cambiano a
+  ogni richiesta (l'area è arrotondata a 10 m), e un grafo riusato andrebbe
+  protetto dal «sink» di chi lo sta usando.
+- *Attributi condivisi con la zona* (senza copiarli): 0,1 s in meno, ma un
+  attributo cambiato da una richiesta arriverebbe a tutte le altre.
+
+**Perché così**: i percorsi dipendono dall'ordine nel grafo, non solo dal
+suo contenuto. Rifare lo stesso grafo più in fretta è l'unica strada che
+non tocca né il motore né quel che vede.
+
+**Conseguenza**: `zone_crop.py` dipende da come NetworkX 3 ordina viste e
+visite. Se una versione nuova lo cambia, `test_zone_crop.py` fallisce (il
+confronto è con `network.crop` nello stesso processo): si aggiorna
+`ZoneCrop`, o si torna a `crop` in `graphs.py`, una riga. Una zona in
+memoria non va modificata dopo essere stata data a `ZoneCrop`.
+## ADR-0083 — Suggerimenti dei luoghi: risposte intermedie e tocco che chiude
+**Stato**: Attiva · 2026-09-30 · chiesto dall'utente («la ricerca è lenta,
+il suggerimento non riesco a premerlo»); deciso dall'agente su delega
+dell'utente (TASK-089). Modifica ADR-0080.
+
+**Contesto**: Photon risponde in 2–3 s, tempo del server. Con ADR-0080 si
+mostrava solo la risposta all'ultima ricerca: chi continuava a scrivere
+non vedeva nulla per 5–6 s. Dopo il tocco su un suggerimento il campo
+restava col testo parziale, e un tocco entro la pausa faceva ripartire la
+ricerca e riaprire l'elenco.
+
+**Decisione**: le ricerche sono numerate e una risposta con dei luoghi si
+mostra se è più nuova di quella sullo schermo, anche con un'altra in
+corso; «No place found» e l'errore solo per l'ultima. La pausa scende da
+500 a 300 ms. Al tocco il campo prende il nome del luogo, la tastiera si
+chiude, le risposte in arrivo si scartano e quel testo non si cerca.
+
+**Alternative scartate**: una richiesta a lettera (ADR-0080); cambiare
+servizio o ospitare Photon (scelta dell'utente, fuori dal task).
+
+**Conseguenza**: qualche richiesta in più a Photon. I suggerimenti possono
+essere per il testo di un attimo prima, finché arriva la risposta nuova.
+
+## ADR-0084 — Zucca e albero di Natale nel catalogo; «albero» da solo resta fuori
 **Stato**: Attiva · 2026-09-30 · le forme scelte dall'utente; parole,
 tessere e domanda all'AI decise dall'agente su delega dell'utente (TASK-088)
 

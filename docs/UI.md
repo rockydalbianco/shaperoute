@@ -126,12 +126,15 @@ punto, ricentra la mappa.
 - Compare solo quando la posizione manca. Campo «City or street», pulsante
   «Search» o invio della tastiera.
 - I luoghi si suggeriscono **mentre si scrive** (TASK-085, ADR-0080): da 3
-  lettere, mezzo secondo dopo l'ultima (`MIN_SUGGEST_LENGTH`,
+  lettere, 300 ms dopo l'ultima (`MIN_SUGGEST_LENGTH`,
   `SUGGEST_DELAY_MS` in `PlaceSearch.tsx`), non a ogni lettera: Photon
   chiede un uso corretto. «Search» e l'invio cercano subito, mai con il
   campo vuoto. I suggerimenti di prima restano finché arrivano i nuovi;
-  sotto le 3 lettere spariscono. Una risposta a un testo che non è più nel
-  campo non si mostra.
+  sotto le 3 lettere spariscono. Una risposta si mostra se è più nuova di
+  quella sullo schermo, anche con un'altra ricerca in corso (TASK-089,
+  ADR-0083): Photon impiega 2–3 s.
+- Toccato un suggerimento, il campo ne prende il nome, la tastiera si
+  chiude e l'elenco sparisce; la riga si illumina mentre è premuta.
 - Con la posizione GPS nota (o l'ultimo luogo scelto), Photon riceve
   `lat`/`lon` e mette prima i luoghi attorno: «via bel» a Trento trova vie
   del Trentino, non del Brasile.
@@ -190,7 +193,7 @@ sulle strade:
   campo e nel nome del percorso (ADR-0061). «cane» e «dog» portano alla
   testa di cane, «coniglio» e «bunny» a quella di coniglio: gli animali
   interi non sono nel catalogo.
-- «albero» e «tree» da soli **non** sono l'albero di Natale (ADR-0083): un
+- «albero» e «tree» da soli **non** sono l'albero di Natale (ADR-0084): un
   albero qualsiasi non è nel catalogo, e resta «nessuna forma». Sullo
   schermo `christmas_tree` si legge «christmas tree».
 - Il campo vuoto: «Unknown shape. Try: circle, heart, star, horse, moon,

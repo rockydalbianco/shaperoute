@@ -449,6 +449,16 @@ da 80–97 s a 35–64 s. Sopra i 30 s restano la **seconda ricerca** fino a
 2 km (ADR-0040), che a Trento corre quasi sempre, e a Milano il
 **ritaglio** della zona dalla memoria, 6–13 s a richiesta.
 
+### Il ritaglio (TASK-087)
+
+Dal 2026-09-30 il ritaglio lo fa `ZoneCrop` (`route_engine/zone_crop.py`,
+ADR-0082): lo stesso grafo di `network.crop`, nello stesso ordine, senza
+passare dalle viste di NetworkX e col garbage collector sospeso. Ogni
+richiesta ha ancora il suo grafo. Misurato su un Mac (non il PC delle
+misure sopra), zona di Milano già in memoria: da 1,7–5,6 s a 0,3–1,0 s a
+richiesta fra 10 e 21 km, percorsi identici punto per punto
+(`tasks/TASK-087.md`). A Levico era già sotto il mezzo secondo.
+
 ## Domande ancora aperte
 
 - Motore lento sulle distanze lunghe: 30–45 s da 15 a 30 km, più se lavora

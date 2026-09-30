@@ -1,0 +1,57 @@
+# TASK-122 — L'API e il database sempre accesi
+
+**Stato**: Todo
+**Fase**: 4 · **Branch**: `chore/TASK-122-hosting`
+**Dipende da**: TASK-110, TASK-114 · **Serve prima di** invitare altre persone
+
+## Obiettivo
+
+API e database girano dove ha scelto l'utente in TASK-110, raggiungibili
+da qualunque telefono con HTTPS, anche a Mac spento.
+
+## Contesto da leggere
+
+- `docs/DEPLOY.md`
+- `docs/DECISIONS.md`, ADR di TASK-110 su hosting e database
+- `docs/MAPS.md` «Overpass: come si scarica»
+
+## Cosa fare
+
+Creare account su servizi esterni, pagare e inserire chiavi lo fa
+**l'utente**: l'agente prepara i file e la guida passo per passo.
+
+1. Configurazione per il servizio scelto (il pacchetto Docker c'è già),
+   con il database, le migrazioni all'avvio e i segreti fuori dal
+   repository.
+2. La cache delle zone sul server: quali zone caricare, quanto spazio.
+3. HTTPS, chiave dell'API, limite alle richieste per indirizzo: l'API non
+   è più dietro Tailscale.
+4. Copia di sicurezza del database, e come si ripristina (provato una volta).
+5. `EXPO_PUBLIC_API_URL` verso il server e app ripubblicata con EAS Update.
+6. `DEPLOY.md`: una strada nuova, completa; `.env.example`.
+
+## Criteri di accettazione
+
+- [ ] `GET /health` risponde in HTTPS da una rete diversa da quella di casa.
+- [ ] Un cuore da 5 km a Trento si genera dal server nei tempi di `API.md`.
+- [ ] Iscrizione ed entrata funzionano dall'iPhone senza Tailscale.
+- [ ] Un ripristino della copia di sicurezza è stato provato e annotato.
+- [ ] Nessun segreto nel repository.
+
+## File toccati
+
+```
+docs/DEPLOY.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-122.md
+.env.example
+deploy/
+```
+
+## Fuori scope
+
+- Build propria per l'App Store (account Apple Developer): task a parte.
+- Rendere più veloce il motore.
+
+## Esito

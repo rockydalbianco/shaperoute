@@ -30,9 +30,9 @@ Tailscale, chiave dell'API facoltativa, pacchetto Docker e guida
 | TASK-079 | approvato, non iniziato | modificare il contorno ricavato da un'immagine: aggiungere una parte (unita alla sagoma), aggiungere dettagli come occhi (tratti attaccati alla linea, fatti andata e ritorno), annullare. **Sempre un tratto solo** |
 | TASK-067 | in coda, da rivedere | lettere unite dall'alto e scala per lettera; dopo TASK-071 (scartato) e TASK-077 si sa che lettere più piccole si leggono peggio |
 
-I numeri: il prossimo task libero è **TASK-084**, il prossimo ADR libero
-**ADR-0079** (ADR-0062 riservato e non usato; ADR-0074, 0075, 0078 già
-dati a TASK-079, 080, 083).
+I numeri: il prossimo task libero è **TASK-085**, il prossimo ADR libero
+**ADR-0080** (ADR-0062 riservato e non usato; ADR-0074, 0075, 0078, 0079
+già dati a TASK-079, 080, 083, 084).
 
 **Idee non ancora approvate** (serve l'ok dell'utente sul cosa): scegliere
 fra più percorsi alternativi; registrare le richieste dell'API su file, per

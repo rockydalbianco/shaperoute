@@ -301,11 +301,18 @@ multipart, che vorrebbe `python-multipart`. La risposta, in meno di 2 s:
   larghezza e altezza dall'angolo in alto a sinistra: l'app ci disegna la
   linea sopra la foto.
 - `aspect`: larghezza su altezza dell'immagine, dritta (EXIF).
+- `strokes` e `image_strokes` (dal TASK-084 anche per una foto appena
+  letta): con più soggetti, fino a 4, ogni soggetto dopo il più grande è
+  un tratto, nei due sistemi di `points` e `image_points`. Il primo lato è
+  il collegamento, dalla linea già disegnata al soggetto; il resto è il
+  contorno del soggetto, che si chiude sul secondo punto. Vuoti con un
+  soggetto solo. L'app li disegna e li rimanda senza cambiarli.
 
 Un'immagine che non dà un contorno è rifiutata con `422`
 `image_not_usable` e il motivo del motore in `reason`: `format`,
 `unreadable`, `background`, `no_subject`, `scattered`, `edge`, `small`,
-`jagged` (`IMAGE_REASONS` in `shared-types`). Base64 non valido o
+`jagged` (`IMAGE_REASONS` in `shared-types`). Dal TASK-084 `scattered`
+vuol dire più di 4 soggetti: fino a 4 si disegnano. Base64 non valido o
 un'immagine oltre il limite sono `invalid_request`.
 
 **`POST /image-route-jobs`** — il percorso del contorno, come `/route-jobs`:
@@ -329,10 +336,12 @@ un'immagine oltre il limite sono `invalid_request`.
   9,2 km, somiglianza 0,94, in 27 s.
 - Il GPX si chiede a `POST /gpx` con questa richiesta al posto del
   `RouteRequest`; il file si chiama `shaperoute-image-15km-2026-09-26.gpx`.
-- `strokes` (dal TASK-079, facoltativo): i dettagli disegnati a mano, gli
-  `strokes` di un `ImageOutline` modificato, senza cambiarli. Si
-  controllano come il contorno: numeri finiti, dentro [-1, 1], al più 50
-  punti in tutto (`MAX_DETAIL_POINTS`), poi `parse_outline` con i
+- `strokes` (dal TASK-079, facoltativo): gli altri soggetti della foto
+  (TASK-084) e i dettagli disegnati a mano, gli `strokes` di un
+  `ImageOutline`, senza cambiarli. Si controllano come il contorno: numeri
+  finiti, dentro [-1, 1], al più 200 punti **percorsi** in tutto
+  (`MAX_DETAIL_POINTS`): un anello conta una volta, un tratto andata e
+  ritorno due, quindi circa 100 punti di dettagli senza anello; poi `parse_outline` con i
   dettagli (ognuno parte dalla linea o da un dettaglio prima; possono
   incrociarsi e incrociare il contorno). Il percorso segue ogni dettaglio e torna indietro.
 

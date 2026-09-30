@@ -50,8 +50,12 @@ MIN_DRAWN_SHARE = 0.03
 CLOSE_SHARE = 0.03
 # A part must add at least this share of the silhouette's area.
 MIN_GAIN_SHARE = 0.005
-# The corners of all the details together: each is run out and back.
-MAX_DETAIL_POINTS = 50
+# The points of all the strokes together as the route travels them
+# (travelled_points): the other subjects of the image (TASK-084) and the
+# details drawn by hand. A line run out and back counts twice, so details
+# without loops have about 100 points; past that the route no longer fits
+# its distance (measured in Milan, ADR-0079).
+MAX_DETAIL_POINTS = 200
 # Points of a drawing: a finger gives a few hundred at most.
 MAX_DRAWN_POINTS = 2_000
 # Collinear points left by merging are dropped, no more.
@@ -82,6 +86,12 @@ class EditedOutline:
     # Closed: the first point repeated at the end.
     points: tuple[Point, ...]
     strokes: tuple[tuple[Point, ...], ...] = ()
+
+
+def travelled_points(strokes: Sequence[Sequence[Point]]) -> int:
+    """The points of the strokes as the route travels them: a loop once, the
+    line before it, or a whole stroke without a loop, out and back."""
+    return sum(len(s) + list(s).index(s[-1]) for s in strokes)
 
 
 def add_part(
@@ -183,11 +193,11 @@ def _with_detail(
         thin = LineString(line).simplify(_THIN_SHARE * size, preserve_topology=False)
         line = _looped([(x, y) for x, y in thin.coords], size)
     stroke = _simplified(line, size)
-    detail_points = sum(len(s) for s in strokes) + len(stroke)
+    detail_points = travelled_points([*strokes, stroke])
     if detail_points > MAX_DETAIL_POINTS:
         raise InvalidEditError(
             "too_many_corners",
-            f"the details would have {detail_points} points, "
+            f"the details would have {detail_points} points to travel, "
             f"at most {MAX_DETAIL_POINTS}",
         )
     closed = tuple(ring) + (ring[0],)

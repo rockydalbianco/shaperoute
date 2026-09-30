@@ -276,17 +276,20 @@ consegna in JPEG anche se è HEIC; un PNG trasparente perde la trasparenza.
 
 Prima di scegliere, una riga dice cosa funziona: *One subject on a plain
 background works best: a drawing, a logo, an object on a bare table. The
-route follows its outside line.*
+route follows its outside line. Up to 4 separate subjects are joined in one
+line.*
 
 La foto va all'API (`POST /image-outlines`, ADR-0069) e mentre il motore
 ricava il contorno la riga dice *Tracing the outline…* (meno di 2 s). Poi
 l'**anteprima**: la foto attenuata, e sopra il contorno in giallo, il
 colore del percorso, perché è quello che il percorso disegnerà. Quello che
-non è diventato linea resta visibile sotto: un pezzo staccato (la
-Sardegna), un dettaglio lisciato. Sotto, *The yellow line is what the route
+non è diventato linea resta visibile sotto: un dettaglio lisciato, una
+macchiolina. Con più soggetti staccati, fino a 4 (TASK-084, ADR-0079),
+ognuno ha la sua linea gialla, e un trattino giallo lo collega al più
+vicino: il percorso lo fa andata e ritorno. Sotto, *The yellow line is what the route
 will draw. If it does not look like the subject, the route will not
-either: try another picture, or add to the line below. Only the largest
-piece is kept.* e un link
+either: try another picture, or edit the outline. Separate subjects are
+joined by a short line, which the route runs there and back.* e un link
 «Hide the picture» che lascia solo la linea, come sarà sulla mappa: il
 gatto di TASK-072 non si riconosceva già dal contorno, e senza la foto
 sotto si vede. Un'immagine alta resta entro 320 punti d'altezza, così la
@@ -347,7 +350,7 @@ semplici, con sotto il testo del motore:
 |---|---|
 | `background` | The background is too busy. Use one subject on a plain background, like a drawing on white paper or an object on a bare table. |
 | `no_subject` | Nothing stands out from the background. Use a subject much darker or brighter than what is around it. |
-| `scattered` | The picture shows more than one thing. Use a picture with a single subject. |
+| `scattered` | The picture shows more than 4 separate things. Use a picture with 4 subjects at most. |
 | `edge` | The subject touches the edge of the picture. Leave some background all around it. |
 | `small` | The subject is too small. Get closer, or use a bigger picture. |
 | `jagged` | The outline is too jagged to run on roads. Try a simpler subject. |

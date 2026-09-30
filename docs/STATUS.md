@@ -58,11 +58,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `samples/TASK-084_*` (`TASK-084_overview.png` li mostra tutti). Mancano
   il giudizio dell'utente sui campioni e la prova sull'iPhone, poi il
   merge. File toccati: quelli elencati in `docs/tasks/TASK-084.md`.
-- **App** — TASK-085: i luoghi suggeriti mentre si scrive la partenza
-  (ADR-0080). Codice e test fatti; manca la prova sull'iPhone.
 
 ## Completato
 
+- **App** — TASK-085: i luoghi della partenza suggeriti mentre si scrive,
+  da 3 lettere, prima quelli vicini alla posizione (ADR-0080). Provato
+  sull'iPhone (2026-09-30).
 - **App e motore** — TASK-079: modificare il contorno di un'immagine
   (ADR-0074). «Edit the outline» apre una lavagna a tutto schermo con zoom:
   «Add a part» unisce una forma alla sagoma, «Add a detail» aggiunge un

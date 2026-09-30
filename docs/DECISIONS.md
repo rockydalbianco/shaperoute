@@ -2770,9 +2770,12 @@ servizio e stesso limite di 5 risultati.
 
 **Alternative scartate**: una richiesta a ogni lettera (uso scorretto di
 Photon, e risposte che si accavallano); togliere «Search» (con la rete
-lenta è il modo di riprovare); suggerimenti vicini alla posizione
-(`lat`/`lon` di Photon): la ricerca compare proprio quando la posizione
-manca o non si vuole usare.
+lenta è il modo di riprovare).
+
+**Aggiunta dopo la prima prova dell'utente** (2026-09-30): «via bel» dava
+una strada in Brasile. Quando la posizione GPS è nota (o, senza, l'ultimo
+luogo scelto), va a Photon come `lat`/`lon`: i luoghi attorno vengono
+prima. Photon risponde in circa 3 s: «Searching…» resta visibile.
 
 **Conseguenza**: più richieste a Photon di prima, una per pausa. Se il
 servizio dovesse limitare, la soglia e il ritardo sono due costanti.

@@ -15,16 +15,20 @@ export interface Place {
   point: LatLon;
 }
 
-export function photonSearchUrl(query: string): string {
-  return `${PHOTON_URL}?q=${encodeURIComponent(query.trim())}&limit=${MAX_PLACES}`;
+/** With `near`, places around it come first (TASK-085): "via bel" typed in
+ * Trento is a street of Trentino, not one of Brazil. */
+export function photonSearchUrl(query: string, near: LatLon | null = null): string {
+  const url = `${PHOTON_URL}?q=${encodeURIComponent(query.trim())}&limit=${MAX_PLACES}`;
+  return near ? `${url}&lat=${near[0]}&lon=${near[1]}` : url;
 }
 
 /** Throws when the service cannot be reached or does not answer 200. */
 export async function searchPlaces(
   query: string,
   fetchFn: typeof fetch = fetch,
+  near: LatLon | null = null,
 ): Promise<Place[]> {
-  const response = await fetchFn(photonSearchUrl(query));
+  const response = await fetchFn(photonSearchUrl(query, near));
   if (!response.ok) {
     throw new Error(`Photon answered ${response.status}`);
   }

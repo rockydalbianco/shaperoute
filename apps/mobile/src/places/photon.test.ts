@@ -80,3 +80,10 @@ test("searchPlaces fails when the network does", async () => {
     "Network request failed",
   );
 });
+
+test("with a position, Photon is asked for places around it (TASK-085)", async () => {
+  expect(photonSearchUrl("via bel", [46.0671, 11.1214])).toBe(
+    "https://photon.komoot.io/api/?q=via%20bel&limit=5&lat=46.0671&lon=11.1214",
+  );
+  expect(photonSearchUrl("via bel", null)).toBe(photonSearchUrl("via bel"));
+});

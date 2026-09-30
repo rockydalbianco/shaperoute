@@ -63,6 +63,10 @@ Niente.
 
 ## Completato
 
+- **Motore** — TASK-091: il log dell'API non scrive più le coordinate
+  della partenza né delle partenze vicine provate (ADR-0092); resta
+  «start N: score…, approach … m». Il nome del file della zona in cache
+  (un riquadro di chilometri) c'è ancora.
 - **Motore, API e app** — TASK-084: più soggetti in una foto, fino a 4,
   in una linea sola (ADR-0079). Il più grande è il contorno, gli altri
   sono appesi con un trattino nel punto più vicino, fatto andata e

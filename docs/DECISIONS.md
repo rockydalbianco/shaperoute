@@ -2964,3 +2964,27 @@ replay può dare un percorso diverso da quello registrato. Su un server il
 file conterrebbe le posizioni di tutti gli utenti: `DEPLOY.md` lo dice.
 Un'API su più processi scriverebbe nello stesso file da più parti: oggi è
 un processo solo.
+
+## ADR-0092 — Nessuna posizione nel log dell'API
+**Stato**: Attiva · 2026-09-30 · chiesto dall'utente («togli le partenze
+dal log a schermo dell'API»); il come deciso dall'agente su delega
+dell'utente (TASK-091)
+
+**Contesto**: da TASK-076 il motore scriveva nel log, per ogni richiesta di
+forma o parola, le coordinate della partenza e delle partenze vicine
+provate («start 0 (45.9934, 11.258): score…»), e l'errore di una partenza
+vicina che non disegna le ripeteva («from (45.99…)»). Emerso in TASK-090.
+
+**Decisione**: `nearby_starts.py` scrive «start N: score…, approach … m»
+senza coordinate, e l'errore dice «from this start». Restano il numero
+della partenza e i metri di avvicinamento, che bastano a leggere la scelta.
+Per rifare una richiesta c'è il registro (ADR-0085), che è spento finché
+non lo si accende.
+
+**Non toccato**: il log dice ancora quale file di grafo è stato letto
+(`foot_45.97750_11.24860_….graphml`): è il nome del file in cache, cioè il
+riquadro di una zona larga chilometri, non la partenza. Cambiarlo tocca
+`graphs.py` / `network.py` e i nomi della cache.
+
+**Conseguenza**: chi legge il log non vede più dove si trova l'utente;
+per sapere la partenza di una richiesta serve il registro.

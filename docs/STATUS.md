@@ -63,6 +63,8 @@ Niente.
   per punto. **Spento per default**: accenderlo sempre sul Mac è una scelta
   dell'utente. Non si vede nell'app. Provato: cuore 10 km a Caldonazzo e
   «CIAO» a Levico, rifatti identici (467 e 626 punti).
+- **App** — TASK-086: pulsanti più visibili, bordo e fondo dei comandi
+  schiariti nei token (ADR-0081). Provato sull'iPhone (2026-09-30).
 - **App** — TASK-085: i luoghi della partenza suggeriti mentre si scrive,
   da 3 lettere, prima quelli vicini alla posizione (ADR-0080). Provato
   sull'iPhone (2026-09-30).

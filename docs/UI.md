@@ -308,7 +308,8 @@ Sopra i pulsanti una riga dice cosa fare:
   line, and the route runs along it and back. Close a loop to make an eye.*
 
 Si disegna dove si vuole, anche dentro l'immagine: ciò che non tocca la
-linea gialla il motore lo collega con un trattino nel punto più vicino.
+linea gialla il motore lo collega con un trattino nel punto più vicino. Le linee
+possono incrociarsi e uscire dal contorno.
 
 I dettagli si vedono gialli come il contorno. «Undo» toglie l'ultima
 modifica, fino al contorno ricavato dalla foto; è spento finché non c'è
@@ -319,7 +320,6 @@ linea, al posto della riga il motivo, con sotto il testo del motore:
 |---|---|
 | `short` | This line is too short to add. Draw a longer one. |
 | `covers_detail` | This part covers where a detail starts. Undo the detail first, or draw the part elsewhere. |
-| `crosses` | This line would cross the outline or another line, and the route would cross itself. Draw it where it crosses nothing. |
 | `too_many_corners` | That is too much for one route. Undo something, or draw simpler lines. |
 
 «Draw route» si accende solo con un contorno: il percorso si chiede come

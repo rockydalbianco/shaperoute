@@ -309,15 +309,10 @@ export const MAX_DRAWN_POINTS = 2_000;
 /**
  * Why a line drawn on an outline was refused (route_engine/outline_edits.py,
  * TASK-079, ADR-0074): too short or small; a part over the start of a
- * detail; a line that crosses another; too many corners. A drawing away
- * from the outline is not refused: it is joined to the nearest line.
+ * detail; too many corners. A drawing away from the outline is not
+ * refused, it is joined to the nearest line; and lines may cross.
  */
-export const EDIT_REASONS = [
-  "short",
-  "covers_detail",
-  "crosses",
-  "too_many_corners",
-] as const;
+export const EDIT_REASONS = ["short", "covers_detail", "too_many_corners"] as const;
 export type EditReason = (typeof EDIT_REASONS)[number];
 
 /** What a line drawn on an outline adds: a closed part joined to the

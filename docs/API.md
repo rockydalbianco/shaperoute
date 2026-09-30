@@ -269,8 +269,8 @@ un'immagine oltre il limite sono `invalid_request`.
   `strokes` di un `ImageOutline` modificato, senza cambiarli. Si
   controllano come il contorno: numeri finiti, dentro [-1, 1], al più 50
   punti in tutto (`MAX_DETAIL_POINTS`), poi `parse_outline` con i
-  dettagli (ognuno parte dalla linea o da un dettaglio prima, niente
-  incroci). Il percorso segue ogni dettaglio e torna indietro.
+  dettagli (ognuno parte dalla linea o da un dettaglio prima; possono
+  incrociarsi e incrociare il contorno). Il percorso segue ogni dettaglio e torna indietro.
 
 ### Modificare il contorno (TASK-079)
 
@@ -299,8 +299,7 @@ l'app manda il contorno che mostra e la linea disegnata.
   `points`) e `image_strokes` (sopra la foto). `/image-outlines` li dà
   vuoti.
 - Un disegno che non dà una linea sola è `422` `outline_edit_rejected`, con
-  il motivo del motore in `reason`: `short`, `covers_detail`, `crosses`,
-  `too_many_corners`
+  il motivo del motore in `reason`: `short`, `covers_detail`, `too_many_corners`
   (`EDIT_REASONS` in `shared-types`). Punti fuori da [0, 1], un contorno
   non valido o `aspect` fuori da 1/20–20 sono `invalid_request`.
 - «Undo» è dell'app: torna al contorno di prima, senza chiamare l'API.

@@ -162,8 +162,6 @@ export const EDIT_REASON_TEXT: Record<EditReason, string> = {
   short: "This line is too short to add. Draw a longer one.",
   covers_detail:
     "This part covers where a detail starts. Undo the detail first, or draw the part elsewhere.",
-  crosses:
-    "This line would cross the outline or another line, and the route would cross itself. Draw it where it crosses nothing.",
   too_many_corners:
     "That is too much for one route. Undo something, or draw simpler lines.",
 };

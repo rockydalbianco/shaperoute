@@ -70,7 +70,7 @@ def edit_outline(body: ImageOutlineEditRequestBody) -> ImageOutlineBody:
         data["strokes"] = [[list(p) for p in s] for s in edited.strokes]
     # Centred and scaled into [-1, 1] together, as the route request sends
     # them back.
-    outline = parse_outline(data)
+    outline = parse_outline(data, allow_crossings=True)
     return ImageOutlineBody(
         points=_rounded(outline.points),
         strokes=[_rounded(stroke) for stroke in outline.strokes],

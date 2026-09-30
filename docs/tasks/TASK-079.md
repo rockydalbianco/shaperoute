@@ -182,9 +182,12 @@ nella pagina mostra soltanto. Da ripetere la prova.
 La lavagna si apre e lo zoom va. L'utente vuole **disegnare dentro
 l'immagine**: «Add a part» con una forma tutta dentro dava `inside`. Fatto:
 un disegno lontano dalla linea si collega alla linea più vicina invece di
-essere rifiutato; tolti `not_joined`, `inside`, `not_on_line`; resta
-`crosses`, che l'utente ha accettato. I criteri sopra che nominano quei tre
-motivi valgono con questa regola. Da ripetere la prova.
+essere rifiutato; tolti `not_joined`, `inside`, `not_on_line`. Poi l'utente:
+«la cosa dell'incrocio toglila, a me va bene se si incrociano»: tolto anche
+`crosses` (`parse_outline(..., allow_crossings=True)`, solo per i contorni
+modificati a mano). I criteri sopra che nominano quei motivi valgono con
+queste regole. File in più: `route_engine/shapes/outline.py` (il
+parametro nuovo, spento per tutto il resto). Da ripetere la prova.
 
 ## Esito
 

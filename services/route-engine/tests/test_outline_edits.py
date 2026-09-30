@@ -23,8 +23,9 @@ SQUARE: list[Point] = [(0, 0), (100, 0), (100, 100), (0, 100), (0, 0)]
 LEFT_STROKE: list[Point] = [(0, 50), (50, 50)]
 
 
-def _valid(edited: EditedOutline) -> None:
-    """The result is one line the route can follow."""
+def _valid(edited: EditedOutline, crossings: bool = False) -> None:
+    """The result is one line the route can follow; with `crossings`, one
+    that may cross itself."""
     data: dict[str, object] = {
         "name": "t",
         "source": "t",
@@ -33,7 +34,7 @@ def _valid(edited: EditedOutline) -> None:
     }
     if edited.strokes:
         data["strokes"] = [[list(p) for p in s] for s in edited.strokes]
-    parse_outline(data)
+    parse_outline(data, allow_crossings=crossings)
 
 
 def _reason(call: object, *args: object) -> str:
@@ -99,9 +100,14 @@ def test_a_part_inside_the_silhouette_hangs_on_it_as_a_loop() -> None:
     assert Polygon(_loop(stroke)).area == pytest.approx(40 * 40)
 
 
-def test_a_loop_inside_cannot_cross_a_detail() -> None:
+def test_a_loop_inside_may_cross_a_detail() -> None:
     drawn = [(20, 40), (40, 40), (40, 60), (20, 60)]
-    assert _reason(add_part, SQUARE, [LEFT_STROKE], drawn) == "crosses"
+    edited = add_part(SQUARE, [LEFT_STROKE], drawn)
+    _valid(edited, crossings=True)
+    assert len(edited.strokes) == 2
+    # Without the crossings allowed, the same outline is not one.
+    with pytest.raises(InvalidOutlineError):
+        _valid(edited)
 
 
 def test_a_tiny_part_is_short() -> None:
@@ -225,14 +231,36 @@ def test_an_eye_drawn_inside_is_a_loop_joined_to_the_line() -> None:
     assert stroke == ((0, 50), (30, 50), (40, 60), (50, 50), (40, 40), (30, 50))
 
 
-def test_a_detail_across_the_outline_is_refused() -> None:
+def test_a_detail_may_cross_the_outline() -> None:
     drawn = [(0, 50), (50, 50), (50, 120)]
-    assert _reason(add_detail, SQUARE, [], drawn) == "crosses"
+    edited = add_detail(SQUARE, [], drawn)
+    _valid(edited, crossings=True)
+    assert edited.strokes == (((0, 50), (50, 50), (50, 120)),)
 
 
-def test_a_detail_across_another_detail_is_refused() -> None:
+def test_a_detail_may_cross_another_detail() -> None:
     drawn = [(50, 0), (50, 20), (30, 60)]
-    assert _reason(add_detail, SQUARE, [LEFT_STROKE], drawn) == "crosses"
+    edited = add_detail(SQUARE, [LEFT_STROKE], drawn)
+    _valid(edited, crossings=True)
+    assert edited.strokes[1] == ((50, 0), (50, 20), (30, 60))
+
+
+def test_the_route_of_crossing_lines_is_still_one_closed_line() -> None:
+    edited = add_detail(SQUARE, [LEFT_STROKE], [(50, 0), (50, 20), (30, 60)])
+    outline = parse_outline(
+        {
+            "name": "t",
+            "source": "t",
+            "license": "t",
+            "points": [list(p) for p in edited.points],
+            "strokes": [[list(p) for p in s] for s in edited.strokes],
+        },
+        allow_crossings=True,
+    )
+    path = outline.path()
+    assert path[0] == path[-1]
+    # Out and back along each detail: its far end is passed once.
+    assert len(outline(64)) == 65
 
 
 def test_a_short_detail_is_refused() -> None:

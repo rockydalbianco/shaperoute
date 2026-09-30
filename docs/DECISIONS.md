@@ -2564,10 +2564,17 @@ L'utente vuole completarlo a mano sull'anteprima (ADR-0069).
     (seconda prova sull'iPhone, 2026-09-30: l'utente vuole disegnare dentro
     l'immagine): una linea aperta prende un tratto dritto dal punto più
     vicino al suo capo più vicino; una forma chiusa che non si sovrappone
-    alla sagoma, o che ci sta dentro, diventa un anello appeso. Si rifiuta
-    solo ciò che incrocerebbe un'altra linea;
+    alla sagoma, o che ci sta dentro, diventa un anello appeso;
+  - **le linee disegnate possono incrociarsi** e incrociare il contorno
+    (scelta dell'utente, 2026-09-30: «a me va bene se si incrociano»):
+    `parse_outline` ha `allow_crossings`, usato solo per i contorni
+    modificati a mano; per i file dei contorni il controllo resta. Provato
+    a Milano, 10 km, con un occhio, una bocca e due linee che incrociano:
+    10,1 km, somiglianza 0,92; con tanti tratti interni il disegno si
+    riconosce meno, e l'andata e ritorno fa a volte un piccolo anello
+    (TASK-071);
   - un rifiuto ha un motivo in una parola: `short`, `covers_detail`,
-    `crosses`, `too_many_corners`.
+    `too_many_corners`.
 - **L'API non tiene stato**: `POST /image-outline-edits` riceve il contorno
   mostrato, nella cornice della foto (`image_points`, `image_strokes`,
   `aspect`), il tipo e la linea disegnata, e risponde con un

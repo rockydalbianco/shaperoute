@@ -194,7 +194,7 @@ test("every reason a drawn line is refused has its own plain words", () => {
     expect(detail).toBe("engine words");
   }
   expect(new Set(Object.values(EDIT_REASON_TEXT)).size).toBe(EDIT_REASONS.length);
-  expect(EDIT_REASON_TEXT.crosses).toMatch(/cross itself/);
+  expect(EDIT_REASON_TEXT.short).toMatch(/too short/);
 });
 
 test("a line refused without a known reason still says something", () => {

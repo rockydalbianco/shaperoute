@@ -151,7 +151,8 @@ def outline_of(
     if strokes:
         data["strokes"] = [[[x, y] for x, y in stroke] for stroke in strokes]
     try:
-        return parse_outline(data)
+        # Details drawn by hand may cross (TASK-079, ADR-0074).
+        return parse_outline(data, allow_crossings=True)
     except InvalidOutlineError as exc:
         raise InvalidRequestError(f"outline: {exc}") from None
 

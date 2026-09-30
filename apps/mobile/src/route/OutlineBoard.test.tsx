@@ -160,15 +160,15 @@ test("a refused line says why; Undo and Done do what they say", async () => {
       problem: {
         kind: "api_error",
         code: "outline_edit_rejected",
-        message: "the detail crosses a line",
-        reason: "crosses",
+        message: "the line is too short: draw a longer one",
+        reason: "short",
       },
     },
     [OUTLINE],
   );
   const onClose = jest.fn();
   await board(value, onClose);
-  expect(screen.getByText(EDIT_REASON_TEXT.crosses)).toBeTruthy();
+  expect(screen.getByText(EDIT_REASON_TEXT.short)).toBeTruthy();
   await fireEvent.press(screen.getByText("Undo"));
   expect(value.undo).toHaveBeenCalled();
   await fireEvent.press(screen.getByText("Done"));

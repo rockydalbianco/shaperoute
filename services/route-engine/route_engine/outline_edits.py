@@ -19,9 +19,11 @@ route can follow (ADR-0074):
 
 Everything is in the frame of the drawing, x to the right and y upwards, at
 any scale: the distances below are shares of the outline's longer side.
-Every result passes parse_outline with its strokes; a drawing that gives no
-such line is refused with the reason (InvalidEditError), in a word a caller
-can map to its own message.
+The lines may cross the outline and each other: the route is still one line,
+which crosses itself there. Every result passes parse_outline with its
+strokes, crossings allowed; a drawing that gives no such line is refused
+with the reason (InvalidEditError), in a word a caller can map to its own
+message.
 """
 
 from __future__ import annotations
@@ -60,7 +62,6 @@ _THIN_SHARE = 0.002
 EDIT_REASONS = (
     "short",
     "covers_detail",
-    "crosses",
     "too_many_corners",
 )
 
@@ -193,8 +194,8 @@ def _with_detail(
     added = (*(tuple(s) for s in strokes), stroke)
     try:
         _parse(closed, added)
-    except InvalidOutlineError as exc:
-        raise InvalidEditError("crosses", f"the detail crosses a line: {exc}") from None
+    except InvalidOutlineError as exc:  # a loop too small to be one
+        raise InvalidEditError("short", f"the detail is too small: {exc}") from None
     return EditedOutline(points=closed, strokes=added)
 
 
@@ -219,7 +220,8 @@ def _parse(points: Sequence[Point], strokes: Sequence[Sequence[Point]]) -> None:
     }
     if strokes:
         data["strokes"] = [[[x, y] for x, y in s] for s in strokes]
-    parse_outline(data)
+    # Lines drawn by hand may cross: the route is still one line.
+    parse_outline(data, allow_crossings=True)
 
 
 def _size(ring: Sequence[Point]) -> float:

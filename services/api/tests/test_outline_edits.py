@@ -133,12 +133,33 @@ def test_a_refused_drawing_says_why(
     client: tuple[TestClient, list[AnyRequest]],
 ) -> None:
     http, _ = client
-    # From the left side, across the square and out through the right one.
-    response = _edit(http, kind="detail", line=[[0.4, 0.4], [0.5, 0.4], [0.8, 0.4]])
+    response = _edit(http, kind="detail", line=[[0.4, 0.4], [0.401, 0.4]])
     assert response.status_code == 422
     error = response.json()["error"]
     assert error["code"] == "outline_edit_rejected"
-    assert error["reason"] == "crosses"
+    assert error["reason"] == "short"
+
+
+def test_lines_may_cross_and_their_route_is_accepted(
+    client: tuple[TestClient, list[AnyRequest]],
+) -> None:
+    http, asked = client
+    # From the left side, across the square and out through the right one.
+    line = [[0.4, 0.4], [0.5, 0.4], [0.8, 0.4]]
+    response = _edit(http, kind="detail", line=line)
+    assert response.status_code == 200, response.json()
+    body = response.json()
+    assert body["image_strokes"] == [[[0.4, 0.4], [0.8, 0.4]]]
+    job = http.post(
+        "/image-route-jobs",
+        json={
+            "start": START,
+            "outline": body["points"],
+            "strokes": body["strokes"],
+            "distance_m": 15000,
+        },
+    )
+    assert job.status_code == 202, job.json()
 
 
 def test_a_drawing_away_from_the_outline_is_joined_to_it(

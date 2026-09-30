@@ -131,7 +131,7 @@ test("a refused line keeps the outline and says why", async () => {
     problem: {
       kind: "api_error",
       code: "outline_edit_rejected",
-      reason: "crosses",
+      reason: "short",
     },
   });
   expect(result.current.state).toMatchObject({ outline: imageOutline });

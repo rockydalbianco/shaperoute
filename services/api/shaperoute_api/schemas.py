@@ -160,7 +160,6 @@ ImageReason = Literal[
 EditReason = Literal[
     "short",
     "covers_detail",
-    "crosses",
     "too_many_corners",
 ]
 

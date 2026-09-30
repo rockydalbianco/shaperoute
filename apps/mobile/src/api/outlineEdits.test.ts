@@ -30,7 +30,7 @@ test("a refused drawing gives the engine's reason", async () => {
     fetchFn: answering(422, editError),
   });
   expect(outcome).toEqual({ kind: "api_error", ...editError.error });
-  expect(outcome).toMatchObject({ reason: "crosses" });
+  expect(outcome).toMatchObject({ reason: "short" });
 });
 
 test("no API is unreachable, a cancelled request is cancelled", async () => {

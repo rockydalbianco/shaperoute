@@ -25,12 +25,15 @@ export const color = {
   background: "#0A0A0B",
   /** Cards, fields, the sheet over the map. */
   surface: "#141416",
-  /** A surface that must sit above another one. */
-  surfaceRaised: "#1A1A1D",
+  /** A surface that must sit above another one: the fill of a control. */
+  surfaceRaised: "#2B2B31",
 
-  border: "#26262A",
-  /** Borders that carry a control, not just a division. */
-  borderStrong: "#33333A",
+  border: "#3D3D44",
+  /**
+   * Borders that carry a control, not just a division: 4.3:1 on
+   * `background`, so a button is seen as one in sunlight (TASK-086).
+   */
+  borderStrong: "#74747E",
 
   text: "#F5F5F4",
   /** Labels and secondary lines; 7:1 on `background`. */

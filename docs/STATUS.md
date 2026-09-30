@@ -56,6 +56,8 @@ Niente.
 
 ## Completato
 
+- **App** — TASK-086: pulsanti più visibili, bordo e fondo dei comandi
+  schiariti nei token (ADR-0081). Provato sull'iPhone (2026-09-30).
 - **App** — TASK-085: i luoghi della partenza suggeriti mentre si scrive,
   da 3 lettere, prima quelli vicini alla posizione (ADR-0080). Provato
   sull'iPhone (2026-09-30).

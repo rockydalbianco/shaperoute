@@ -63,6 +63,10 @@ Niente.
 
 ## Completato
 
+- **Motore** — TASK-091: il log dell'API non scrive più le coordinate
+  della partenza né delle partenze vicine provate (ADR-0092); resta
+  «start N: score…, approach … m». Il nome del file della zona in cache
+  (un riquadro di chilometri) c'è ancora.
 - **App** — TASK-112 (prova sull'iPhone da fare con TASK-113): durante la
   navigazione l'app registra la traccia della corsa e la tiene in un file
   sul telefono, anche se l'app si chiude (`trackRecorder.ts`,

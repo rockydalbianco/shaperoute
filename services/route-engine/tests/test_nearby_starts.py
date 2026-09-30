@@ -5,6 +5,8 @@ start gets a square loop from its nearest node, with a similarity chosen by
 the test.
 """
 
+import logging
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -413,3 +415,24 @@ def test_a_big_graph_gets_no_nearby_starts(monkeypatch: pytest.MonkeyPatch) -> N
     monkeypatch.setattr(nearby_module, "NEARBY_MAX_NODES", 10)
     found = plan_nearby(LoopJob(), ORIGIN, GridSource(), processes=False)
     assert len(found.tried) == 1 and "nodes" in found.skipped
+
+
+def test_the_log_of_the_starts_tried_holds_no_position(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    job = LoopJob(similarity=(((2, 0), 0.95),))
+    with caplog.at_level(logging.INFO, logger="route_engine"):
+        plan_nearby(job, ORIGIN, GridSource(), count=4, processes=False)
+    text = "\n".join(record.getMessage() for record in caplog.records)
+    assert "start 0: score" in text and "start 1: score" in text
+    # No coordinate: nothing with four decimals or more.
+    assert not re.search(r"\d\.\d{4,}", text)
+
+
+def test_a_start_that_cannot_draw_says_so_without_its_position() -> None:
+    start = _latlon(_grid(), (3, -2))
+    job = ShapeJob.of_request(RouteRequest(start=start, shape="heart", distance_m=8000))
+    with pytest.raises(ShapeNotDrawableError) as raised:
+        job.here(start, GridSource())
+    assert "from this start" in str(raised.value)
+    assert not re.search(r"\d\.\d{4,}", str(raised.value))

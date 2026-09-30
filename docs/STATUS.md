@@ -75,6 +75,10 @@ Niente.
   percorsi punto per punto su 8 casi (Milano 10, 15, 21 km; Levico
   10 km). Da misurare Levico a 15 e 21 km quando la zona è in cache.
   L'API va riavviata dopo il merge per prenderlo.
+- **App** — TASK-089: un suggerimento toccato riempie il campo, chiude la
+  tastiera e non fa ripartire la ricerca; i suggerimenti arrivano anche
+  mentre si continua a scrivere, pausa 300 ms (ADR-0083). Photon resta a
+  2–3 s a risposta. Provato sull'iPhone (2026-09-30).
 - **App** — TASK-086: pulsanti più visibili, bordo e fondo dei comandi
   schiariti nei token (ADR-0081). Provato sull'iPhone (2026-09-30).
 - **App** — TASK-085: i luoghi della partenza suggeriti mentre si scrive,

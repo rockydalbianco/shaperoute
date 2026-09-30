@@ -1,6 +1,6 @@
 # TASK-079 — Modificare il contorno di un'immagine
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-079-image-outline` (parte da `main`)
 
 Approvato dall'utente (`docs/PASSAGGIO.md`, «Aperto»): modificare il
@@ -86,12 +86,13 @@ il contorno modificato: sempre una linea sola.
       azzera la pila; i dettagli nell'anteprima; `strokes` nella richiesta.
 - [x] `ruff`, `black --check`, `pytest -m "not network"` in motore e API;
       `npm run typecheck`, `npm test`, `npm run lint`, `format:check`.
-- [ ] Prova sull'iPhone con l'utente prima del merge.
+- [x] Prova sull'iPhone con l'utente prima del merge.
 
 ## File toccati
 
 ```
 services/route-engine/route_engine/outline_edits.py                  (nuovo)
+services/route-engine/route_engine/shapes/outline.py  (solo `allow_crossings`)
 services/route-engine/tests/test_outline_edits.py                    (nuovo)
 services/api/shaperoute_api/outline_edits.py                         (nuovo)
 services/api/tests/test_outline_edits.py                             (nuovo)
@@ -191,4 +192,14 @@ parametro nuovo, spento per tutto il resto). Da ripetere la prova.
 
 ## Esito
 
-*(a fine task)*
+Nell'anteprima di «Image», «Edit the outline» apre una lavagna a tutto
+schermo con zoom a due dita: «Add a part», «Add a detail», «Undo». Si
+disegna dove si vuole; ciò che non tocca la linea il motore lo collega alla
+linea più vicina, e le linee possono incrociarsi (ADR-0074). Il percorso
+resta una linea sola. Provato sull'iPhone dall'utente il 2026-09-30, dopo
+tre giri di correzioni (pagina che scorreva, disegnare dentro, incroci):
+«ora funziona». Emerso e rimandato: più soggetti in una foto, fino a 4,
+collegati (**TASK-084**, task file sul branch
+`feat/TASK-084-multi-subject`). Limite visto: con tanti tratti interni a
+10 km il disegno si riconosce meno. Dopo il merge il worktree
+`../shaperoute-079` va rimosso.

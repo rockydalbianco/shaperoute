@@ -52,15 +52,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-079** — modificare il contorno di un'immagine (ADR-0074): «Add a
-  part», «Add a detail», «Undo» sull'anteprima di «Image»; il motore unisce
-  la parte alla sagoma o fa del dettaglio un tratto andata e ritorno, e
-  rifiuta con il motivo ciò che non dà una linea sola. Codice, test e
-  documenti fatti, PR aperta; manca la prova sull'iPhone (passi nel task
-  file). Worktree `../shaperoute-079`.
+Niente.
 
 ## Completato
 
+- **App e motore** — TASK-079: modificare il contorno di un'immagine
+  (ADR-0074). «Edit the outline» apre una lavagna a tutto schermo con zoom:
+  «Add a part» unisce una forma alla sagoma, «Add a detail» aggiunge un
+  tratto fatto andata e ritorno, «Undo» toglie l'ultima modifica. Si
+  disegna dove si vuole: ciò che non tocca la linea è collegato alla linea
+  più vicina, e le linee possono incrociarsi. `POST /image-outline-edits`,
+  `strokes` in `/image-route-jobs`. Provato sull'iPhone dall'utente
+  (2026-09-30): funziona. Il seguito è **TASK-084**: più soggetti in una
+  foto, fino a 4, collegati in una linea sola.
 - **App** — TASK-083: l'app su Expo con EAS Update (ADR-0078). Si apre
   in Expo Go sull'iPhone senza `npm run mobile` acceso; l'API serve
   sempre (Mac + Tailscale). Si ripubblica dopo ogni modifica dell'app

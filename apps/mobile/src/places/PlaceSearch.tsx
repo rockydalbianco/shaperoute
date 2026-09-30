@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   color,
@@ -27,9 +27,10 @@ type Props = {
 };
 
 /** Suggestions start at this many letters, this long after the last one
- * (TASK-085, ADR-0080): Photon asks for fair use, not a request per letter. */
+ * (TASK-085, ADR-0080): Photon asks for fair use, not a request per letter.
+ * Photon itself takes 2-3 s, so the pause is kept short (TASK-089). */
 export const MIN_SUGGEST_LENGTH = 3;
-export const SUGGEST_DELAY_MS = 500;
+export const SUGGEST_DELAY_MS = 300;
 
 /**
  * A city or street to start from, when the position is not shared. Places
@@ -39,9 +40,11 @@ export const SUGGEST_DELAY_MS = 500;
 export function PlaceSearch({ onSelect, near = null }: Props) {
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState<SearchState>({ status: "idle" });
-  // Only the answer to the last search asked is shown: an older one may
-  // come back later, for a text that is no longer in the field.
+  // Searches are numbered. An answer is shown unless a later one already
+  // is: Photon is slow, and places for "via bel" are better than nothing
+  // while "via bele" is on its way (TASK-089).
   const asked = useRef(0);
+  const shown = useRef(0);
   // The text of that search: the pause after "Search" does not ask it twice.
   const askedText = useRef("");
 
@@ -53,11 +56,19 @@ export function PlaceSearch({ onSelect, near = null }: Props) {
       setSearch((now) => (now.status === "found" ? now : { status: "searching" }));
       try {
         const places = await searchPlaces(text, fetch, near);
-        if (mine === asked.current) {
-          setSearch(places.length ? { status: "found", places } : { status: "none" });
+        if (mine <= shown.current) {
+          return;
+        }
+        if (places.length) {
+          shown.current = mine;
+          setSearch({ status: "found", places });
+        } else if (mine === asked.current) {
+          shown.current = mine;
+          setSearch({ status: "none" });
         }
       } catch {
         if (mine === asked.current) {
+          shown.current = mine;
           setSearch({ status: "failed" });
         }
       }
@@ -78,14 +89,29 @@ export function PlaceSearch({ onSelect, near = null }: Props) {
     return () => clearTimeout(timer);
   }, [query, searchFor]);
 
+  /** No answer still on its way is shown. */
+  function forget() {
+    asked.current += 1;
+    shown.current = asked.current;
+    setSearch({ status: "idle" });
+  }
+
   function onText(text: string) {
     setQuery(text);
     if (text.trim().length < MIN_SUGGEST_LENGTH) {
       // Too short to suggest: what was found for a longer text goes.
-      asked.current += 1;
+      forget();
       askedText.current = "";
-      setSearch({ status: "idle" });
     }
+  }
+
+  function choose(place: Place) {
+    forget();
+    // The field shows what was chosen, and the pause does not search for it.
+    askedText.current = place.label;
+    setQuery(place.label);
+    Keyboard.dismiss();
+    onSelect(place);
   }
 
   function submit() {
@@ -126,13 +152,9 @@ export function PlaceSearch({ onSelect, near = null }: Props) {
           {search.places.map((place) => (
             <Pressable
               key={place.label}
-              style={styles.place}
+              style={({ pressed }) => [styles.place, pressed && styles.placePressed]}
               accessibilityRole="button"
-              onPress={() => {
-                asked.current += 1;
-                setSearch({ status: "idle" });
-                onSelect(place);
-              }}
+              onPress={() => choose(place)}
             >
               <Text style={styles.placeText}>{place.label}</Text>
             </Pressable>
@@ -185,6 +207,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: color.border,
+  },
+  placePressed: {
+    backgroundColor: color.surfaceRaised,
   },
   placeText: {
     color: color.text,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gc
 import math
 import shutil
 import threading
@@ -9,9 +10,16 @@ from pathlib import Path
 
 import networkx as nx
 import pytest
-from route_engine.network import BBox, FileSource, Graph, OsmnxSource, read_graph
+from route_engine.network import (
+    BBox,
+    FileSource,
+    Graph,
+    OsmnxSource,
+    crop,
+    read_graph,
+)
 
-from shaperoute_api.graphs import MapDataUnavailableError, ZoneGraphs
+from shaperoute_api.graphs import MapDataUnavailableError, ZoneGraphs, _gc_paused
 
 REPO = Path(__file__).resolve().parents[3]
 LEVICO_GRAPH = REPO / "services/route-engine/tests/fixtures/levico_walk_1km.graphml"
@@ -111,6 +119,93 @@ def test_each_request_gets_its_own_graph() -> None:
     first = graphs.load(inside(ZONE_A))
     first.remove_nodes_from(list(first))
     assert len(graphs.load(inside(ZONE_A))) > 0
+
+
+def test_the_crop_is_the_one_network_crop_gives() -> None:
+    # Same nodes and edges in the same order (ADR-0082): test_zone_crop.py
+    # of the engine checks it in full.
+    source = FakeSource([ZONE_A])
+    graphs = ZoneGraphs(source, read=CountingReader(source))
+    for margin in (0.001, 0.002, 0.003):
+        bbox = inside(ZONE_A, margin)
+        expected = crop(grid(*ZONE_A[:2]), bbox)
+        graph = graphs.load(bbox)
+        assert list(graph.nodes(data=True)) == list(expected.nodes(data=True))
+        assert list(graph.edges(keys=True, data=True)) == list(
+            expected.edges(keys=True, data=True)
+        )
+
+
+def test_what_the_engine_adds_to_a_graph_is_not_in_the_next_one() -> None:
+    source = FakeSource([ZONE_A])
+    graphs = ZoneGraphs(source, read=CountingReader(source))
+    bbox = inside(ZONE_A)
+    first = graphs.load(bbox)
+    nodes, edges = len(first), first.number_of_edges()
+    first.add_node(("zone-sink",))
+    first.add_edge((3, 3), ("zone-sink",))
+    first.nodes[(3, 3)]["y"] = 0.0
+    first[(3, 3)][(3, 4)][0]["length"] = 1.0
+    second = graphs.load(bbox)
+    assert ("zone-sink",) not in second
+    assert (len(second), second.number_of_edges()) == (nodes, edges)
+    assert second.nodes[(3, 3)]["y"] != 0.0
+    assert second[(3, 3)][(3, 4)][0]["length"] == 80.0
+
+
+def test_requests_at_the_same_time_get_the_same_crop_each_its_own() -> None:
+    source = FakeSource([ZONE_A])
+    graphs = ZoneGraphs(source, read=CountingReader(source))
+    bbox = inside(ZONE_A)
+    expected = list(graphs.load(bbox).edges(keys=True, data=True))
+    loaded: list[Graph] = []
+
+    def load() -> None:
+        graph = graphs.load(bbox)
+        graph.add_edge((3, 3), ("zone-sink",))  # as the engine does
+        loaded.append(graph)
+        graph.remove_node(("zone-sink",))
+
+    threads = [threading.Thread(target=load) for _ in range(8)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(5)
+    assert len({id(graph) for graph in loaded}) == 8
+    for graph in loaded:
+        assert list(graph.edges(keys=True, data=True)) == expected
+
+
+def test_garbage_collection_is_back_on_after_a_crop() -> None:
+    source = FakeSource([ZONE_A])
+    graphs = ZoneGraphs(source, read=CountingReader(source))
+    assert gc.isenabled()
+    graphs.load(inside(ZONE_A))
+    assert gc.isenabled()
+    with _gc_paused():
+        assert not gc.isenabled()
+        with _gc_paused():  # two crops at once
+            assert not gc.isenabled()
+        assert not gc.isenabled()
+    assert gc.isenabled()
+
+
+def test_garbage_collection_stays_off_if_it_was_off() -> None:
+    gc.disable()
+    try:
+        with _gc_paused():
+            pass
+        assert not gc.isenabled()
+    finally:
+        gc.enable()
+
+
+def test_garbage_collection_is_back_on_after_a_failed_crop() -> None:
+    source = FakeSource([ZONE_A])
+    graphs = ZoneGraphs(source, read=CountingReader(source))
+    with pytest.raises(ValueError):
+        graphs.load((46.0001, 11.0001, 46.0002, 11.0002))  # no node inside
+    assert gc.isenabled()
 
 
 def test_a_new_zone_is_downloaded_once() -> None:

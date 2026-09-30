@@ -25,7 +25,8 @@ token, e un colore nuovo è un token nuovo. Applicato all'app con TASK-046:
 mappa scura, percorso giallo, pannelli scuri, tastiere scure, barra di
 stato chiara. «Draw route» è l'unico comando giallo, con il testo scuro; gli
 altri («My position», «Search», «Cancel», «Export GPX», le forme da
-toccare) sono neutri, su `surfaceRaised`. Il segnaposto della partenza è
+toccare) sono neutri, su `surfaceRaised`, con il bordo `borderStrong`:
+schiariti con TASK-086 (ADR-0081) perché sul fondo nero non si vedevano. Il segnaposto della partenza è
 chiaro (`text`): quello di MapLibre è un azzurro che si confonde con il
 ciano di «Start here».
 
@@ -34,8 +35,8 @@ ciano di «Start here».
 | `accent` | `#FFD02B` | il percorso e il comando che lo produce, «Draw route» |
 | `onAccent` | `#0A0A0B` | testo e icone sul giallo |
 | `background` | `#0A0A0B` | il fondo dell'app, nero neutro |
-| `surface`, `surfaceRaised` | `#141416`, `#1A1A1D` | campi, schede, il pannello sopra la mappa; una superficie sopra un'altra |
-| `border`, `borderStrong` | `#26262A`, `#33333A` | divisioni; bordi dei comandi |
+| `surface`, `surfaceRaised` | `#141416`, `#2B2B31` | campi, schede, il pannello sopra la mappa; una superficie sopra un'altra |
+| `border`, `borderStrong` | `#3D3D44`, `#74747E` | divisioni; bordi dei comandi (4,3:1 sul fondo, TASK-086) |
 | `text` | `#F5F5F4` | il testo |
 | `textMuted` | `#9B9B9F` | etichette e righe secondarie (7,2:1 sul fondo) |
 | `textFaint` | `#8A8A90` | il testo più tenue ancora leggibile (5,8:1), non per il corpo |
@@ -125,12 +126,15 @@ punto, ricentra la mappa.
 - Compare solo quando la posizione manca. Campo «City or street», pulsante
   «Search» o invio della tastiera.
 - I luoghi si suggeriscono **mentre si scrive** (TASK-085, ADR-0080): da 3
-  lettere, mezzo secondo dopo l'ultima (`MIN_SUGGEST_LENGTH`,
+  lettere, 300 ms dopo l'ultima (`MIN_SUGGEST_LENGTH`,
   `SUGGEST_DELAY_MS` in `PlaceSearch.tsx`), non a ogni lettera: Photon
   chiede un uso corretto. «Search» e l'invio cercano subito, mai con il
   campo vuoto. I suggerimenti di prima restano finché arrivano i nuovi;
-  sotto le 3 lettere spariscono. Una risposta a un testo che non è più nel
-  campo non si mostra.
+  sotto le 3 lettere spariscono. Una risposta si mostra se è più nuova di
+  quella sullo schermo, anche con un'altra ricerca in corso (TASK-089,
+  ADR-0083): Photon impiega 2–3 s.
+- Toccato un suggerimento, il campo ne prende il nome, la tastiera si
+  chiude e l'elenco sparisce; la riga si illumina mentre è premuta.
 - Con la posizione GPS nota (o l'ultimo luogo scelto), Photon riceve
   `lat`/`lon` e mette prima i luoghi attorno: «via bel» a Trento trova vie
   del Trentino, non del Brasile.

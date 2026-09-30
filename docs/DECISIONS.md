@@ -2753,6 +2753,29 @@ secondario diventa un anello appeso alla linea più vicina. Campioni a
 12 km: a Milano somiglianza 0,96–0,98; a Levico 0,76–0,84, come le altre
 forme con tratti in montagna.
 
+
+## ADR-0081 — Comandi più visibili: bordo e fondo schiariti nei token
+**Stato**: Attiva · 2026-09-30 · chiesto dall'utente («devono essere più
+visibili i vari pulsanti, vedi tu come fare»); valori decisi dall'agente su
+delega dell'utente (TASK-086)
+
+**Contesto**: i comandi neutri (ADR-0046) avevano fondo `#1A1A1D` e bordo
+`#33333A` sul fondo `#0A0A0B`: contrasto 1,1:1 e 1,6:1. Sull'iPhone,
+all'aperto, un pulsante non si distingueva dal pannello.
+
+**Decisione**: tre token cambiano, nessun file oltre `tokens.ts`:
+`surfaceRaised` `#2B2B31`, `borderStrong` `#74747E` (4,3:1 sul fondo,
+sopra il 3:1 chiesto a un comando), `border` `#3D3D44`. Tutti i comandi li
+leggono già, quindi cambiano insieme: «Search», «My position», «Cancel»,
+«Export GPX», − e +, l'opzione scelta di un interruttore, le tessere.
+
+**Alternative scartate**: comandi gialli (il giallo è del percorso e di
+«Draw route», ADR-0046); uno stile per pulsante, file per file (tocca file
+di altri task e i comandi smettono di assomigliarsi); testo più grande
+(non era il testo a mancare).
+
+**Conseguenza**: anche i bordi dei campi e delle tessere sono più chiari.
+Il testo sui comandi resta sopra 12:1.
 ## ADR-0080 — I luoghi suggeriti mentre si scrive
 **Stato**: Attiva · 2026-09-30 · chiesto dall'utente («il suggerimento
 della posizione, città, via, mentre sto scrivendo»); soglie e dettagli
@@ -2779,3 +2802,76 @@ prima. Photon risponde in circa 3 s: «Searching…» resta visibile.
 
 **Conseguenza**: più richieste a Photon di prima, una per pausa. Se il
 servizio dovesse limitare, la soglia e il ritardo sono due costanti.
+
+## ADR-0082 — Il ritaglio della zona rifatto a mano, nello stesso ordine
+**Stato**: Attiva · 2026-09-30 · il lavoro e il vincolo («percorsi
+identici») chiesti dall'utente; il come deciso dall'agente su delega
+dell'utente (TASK-087)
+
+**Contesto**: l'API ritaglia a ogni richiesta il grafo dalla zona in
+memoria (ADR-0030). `network.crop` passa due volte da una vista di
+NetworkX, per trovare il pezzo connesso più grande e per copiarlo, e
+intanto il garbage collector di Python ripassa più volte tutta la zona: a
+Milano 2–5 s su questo Mac, 6–13 s sul PC di TASK-063.
+
+**Decisione**:
+
+- `route_engine/zone_crop.py`: `ZoneCrop(zona).crop(bbox)` costruisce il
+  ritaglio dai dizionari della zona, senza viste. Dà il grafo di
+  `network.crop` con nodi, archi e attributi **nello stesso ordine**,
+  seguendo passo per passo quello che fa NetworkX (l'ordine di una vista,
+  la visita in ampiezza dei pezzi, la copia). Dove NetworkX cambia ordine
+  (un ritaglio con meno nodi della metà delle strade di un incrocio) lascia
+  il lavoro a `network.crop`.
+- Il ritaglio ha dizionari **suoi**, anche per gli attributi: ogni
+  richiesta ha ancora il suo grafo e la zona non viene mai modificata. Il
+  nodo «sink» di `_route_through_zones` e le richieste in parallelo restano
+  com'erano; motore e `nearby_starts.py` non si toccano.
+- `ZoneGraphs` sospende il garbage collector durante il ritaglio
+  (`_gc_paused`, con un contatore per i ritagli contemporanei) e lo
+  riaccende alla fine se era acceso. La raccolta è solo rimandata.
+- `network.crop` resta: lo usa la CLI, ed è il riferimento dei test.
+
+**Scartate**:
+
+- *Nessun ritaglio: il motore sulla zona intera o su una vista.* L'ordine
+  dei nodi e degli archi cambierebbe, e con lui i percorsi a parità di
+  costo; una vista rende più lento ogni Dijkstra; il «sink» finirebbe nel
+  grafo condiviso dalle richieste in parallelo.
+- *Tenere il ritaglio per la stessa area.* Le partenze dal GPS cambiano a
+  ogni richiesta (l'area è arrotondata a 10 m), e un grafo riusato andrebbe
+  protetto dal «sink» di chi lo sta usando.
+- *Attributi condivisi con la zona* (senza copiarli): 0,1 s in meno, ma un
+  attributo cambiato da una richiesta arriverebbe a tutte le altre.
+
+**Perché così**: i percorsi dipendono dall'ordine nel grafo, non solo dal
+suo contenuto. Rifare lo stesso grafo più in fretta è l'unica strada che
+non tocca né il motore né quel che vede.
+
+**Conseguenza**: `zone_crop.py` dipende da come NetworkX 3 ordina viste e
+visite. Se una versione nuova lo cambia, `test_zone_crop.py` fallisce (il
+confronto è con `network.crop` nello stesso processo): si aggiorna
+`ZoneCrop`, o si torna a `crop` in `graphs.py`, una riga. Una zona in
+memoria non va modificata dopo essere stata data a `ZoneCrop`.
+## ADR-0083 — Suggerimenti dei luoghi: risposte intermedie e tocco che chiude
+**Stato**: Attiva · 2026-09-30 · chiesto dall'utente («la ricerca è lenta,
+il suggerimento non riesco a premerlo»); deciso dall'agente su delega
+dell'utente (TASK-089). Modifica ADR-0080.
+
+**Contesto**: Photon risponde in 2–3 s, tempo del server. Con ADR-0080 si
+mostrava solo la risposta all'ultima ricerca: chi continuava a scrivere
+non vedeva nulla per 5–6 s. Dopo il tocco su un suggerimento il campo
+restava col testo parziale, e un tocco entro la pausa faceva ripartire la
+ricerca e riaprire l'elenco.
+
+**Decisione**: le ricerche sono numerate e una risposta con dei luoghi si
+mostra se è più nuova di quella sullo schermo, anche con un'altra in
+corso; «No place found» e l'errore solo per l'ultima. La pausa scende da
+500 a 300 ms. Al tocco il campo prende il nome del luogo, la tastiera si
+chiude, le risposte in arrivo si scartano e quel testo non si cerca.
+
+**Alternative scartate**: una richiesta a lettera (ADR-0080); cambiare
+servizio o ospitare Photon (scelta dell'utente, fuori dal task).
+
+**Conseguenza**: qualche richiesta in più a Photon. I suggerimenti possono
+essere per il testo di un attimo prima, finché arriva la risposta nuova.

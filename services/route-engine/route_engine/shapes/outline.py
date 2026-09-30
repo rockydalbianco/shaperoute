@@ -139,7 +139,10 @@ def read_outline(path: Path) -> Outline:
     return parse_outline(data)
 
 
-def parse_outline(data: object) -> Outline:
+def parse_outline(data: object, allow_crossings: bool = False) -> Outline:
+    """`allow_crossings`: the strokes may cross the outline, each other and
+    themselves, as lines drawn by hand on an image do (TASK-079); each must
+    still start on the outline or on an earlier stroke."""
     if not isinstance(data, dict):
         raise InvalidOutlineError(
             "expected a JSON object with name, source, license and points"
@@ -168,7 +171,7 @@ def parse_outline(data: object) -> Outline:
             one_way=one_way,
         )
     ring = _ring(data.get("points"))
-    strokes = _strokes(data.get("strokes"), ring)
+    strokes = _strokes(data.get("strokes"), ring, allow_crossings)
     # Outline and strokes share one frame: centred and scaled together.
     flat = normalize([*ring, ring[0], *(p for stroke in strokes for p in stroke)])
     points, rest = flat[: len(ring) + 1], flat[len(ring) + 1 :]
@@ -228,7 +231,9 @@ def _path(raw: object) -> list[Point]:
     return points
 
 
-def _strokes(raw: object, ring: list[Point]) -> list[list[Point]]:
+def _strokes(
+    raw: object, ring: list[Point], allow_crossings: bool = False
+) -> list[list[Point]]:
     """The strokes of a file, each start moved exactly onto its line."""
     if raw is None:
         return []
@@ -263,7 +268,8 @@ def _strokes(raw: object, ring: list[Point]) -> list[list[Point]]:
             points[-1] = found[3]
         strokes.append(points)
         lines.append((points, False))
-    _check_strokes(ring, strokes)
+    if not allow_crossings:
+        _check_strokes(ring, strokes)
     return strokes
 
 

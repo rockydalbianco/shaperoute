@@ -33,6 +33,7 @@ from route_engine.optimizer import (
     plan_shape,
     tilt_limit,
 )
+from route_engine.outline_edits import MAX_DETAIL_POINTS
 from route_engine.shapes.outline import InvalidOutlineError, Outline, parse_outline
 
 from shaperoute_api.schemas import MAX_IMAGE_BYTES, ImageOutlineBody
@@ -116,14 +117,24 @@ def _analysed_size(image: bytes) -> tuple[float, float]:
     return width * scale, height * scale
 
 
-def outline_of(points: list[tuple[float, float]]) -> Outline:
-    """The outline an image route request sends back, checked as any input
-    (ADR-0069): InvalidRequestError, which says what is wrong with it."""
+def outline_of(
+    points: list[tuple[float, float]],
+    strokes: list[list[tuple[float, float]]] | None = None,
+) -> Outline:
+    """The outline an image route request sends back, with the details drawn
+    on it (TASK-079), checked as any input (ADR-0069): InvalidRequestError,
+    which says what is wrong with it."""
+    strokes = strokes or []
     if len(points) - 1 > MAX_POINTS:
         raise InvalidRequestError(
             f"outline: at most {MAX_POINTS} corners, got {len(points) - 1}"
         )
-    for x, y in points:
+    detail_points = sum(len(stroke) for stroke in strokes)
+    if detail_points > MAX_DETAIL_POINTS:
+        raise InvalidRequestError(
+            f"strokes: at most {MAX_DETAIL_POINTS} points in all, got {detail_points}"
+        )
+    for x, y in [*points, *(p for stroke in strokes for p in stroke)]:
         if not (math.isfinite(x) and math.isfinite(y)):
             raise InvalidRequestError("outline: every point must be a finite number")
         if abs(x) > 1 + SLACK or abs(y) > 1 + SLACK:
@@ -131,15 +142,17 @@ def outline_of(points: list[tuple[float, float]]) -> Outline:
                 "outline: the points must be within [-1, 1], as POST "
                 "/image-outlines gives them"
             )
+    data: dict[str, object] = {
+        "name": IMAGE_NAME,
+        "source": "an image traced by the engine (TASK-073)",
+        "license": "as the image",
+        "points": [[x, y] for x, y in points],
+    }
+    if strokes:
+        data["strokes"] = [[[x, y] for x, y in stroke] for stroke in strokes]
     try:
-        return parse_outline(
-            {
-                "name": IMAGE_NAME,
-                "source": "an image traced by the engine (TASK-073)",
-                "license": "as the image",
-                "points": [[x, y] for x, y in points],
-            }
-        )
+        # Details drawn by hand may cross (TASK-079, ADR-0074).
+        return parse_outline(data, allow_crossings=True)
     except InvalidOutlineError as exc:
         raise InvalidRequestError(f"outline: {exc}") from None
 

@@ -18,6 +18,7 @@ from route_engine.models import (
     SUPPORTED_ACTIVITIES,
     RouteResult,
 )
+from route_engine.outline_edits import MAX_DETAIL_POINTS, MAX_DRAWN_POINTS
 from route_engine.shapes import SUPPORTED_SHAPES
 from route_engine.words import (
     ALPHABET,
@@ -133,6 +134,8 @@ ErrorCode = Literal[
     "http_error",
     "ai_unavailable",
     "image_not_usable",
+    # A line drawn on an image's outline gives no outline (TASK-079).
+    "outline_edit_rejected",
     # A key is set and the request has the wrong one (TASK-081, ADR-0076).
     "unauthorized",
     # Too many POSTs from one client in a minute (TASK-081).
@@ -152,6 +155,14 @@ ImageReason = Literal[
     "jagged",
 ]
 
+# Why a line drawn on an outline was refused: InvalidEditError.reason in
+# route_engine/outline_edits.py (TASK-079, ADR-0074).
+EditReason = Literal[
+    "short",
+    "covers_detail",
+    "too_many_corners",
+]
+
 
 class ErrorDetail(BaseModel):
     code: ErrorCode
@@ -159,8 +170,9 @@ class ErrorDetail(BaseModel):
     # Only with shape_not_drawable: a distance the shape fits, in whole km
     # (TASK-031).
     suggested_distance_m: int | None = None
-    # Only with image_not_usable: why the engine found no outline (TASK-073).
-    reason: ImageReason | None = None
+    # Only with image_not_usable: why the engine found no outline (TASK-073);
+    # with outline_edit_rejected, why the drawing was refused (TASK-079).
+    reason: ImageReason | EditReason | None = None
 
 
 class ErrorBody(BaseModel):
@@ -250,6 +262,18 @@ class ImageOutlineBody(BaseModel):
         )
     )
     aspect: float = Field(description="Width over height of the image, upright.")
+    strokes: list[list[tuple[float, float]]] = Field(
+        default_factory=list,
+        description=(
+            "Details drawn by hand (TASK-079), in the frame of points: each "
+            "starts on the outline or on an earlier one, and the route goes "
+            "along it and back. None for a traced outline."
+        ),
+    )
+    image_strokes: list[list[tuple[float, float]]] = Field(
+        default_factory=list,
+        description="The same details over the image, like image_points.",
+    )
 
 
 class ImageRouteRequestBody(BaseModel):
@@ -271,10 +295,53 @@ class ImageRouteRequestBody(BaseModel):
             f"{MAX_OUTLINE_POINTS} corners."
         ),
     )
+    strokes: list[list[tuple[float, float]]] = Field(
+        default_factory=list,
+        max_length=MAX_DETAIL_POINTS // 2,
+        description=(
+            f"The strokes of an ImageOutline, unchanged (TASK-079): at most "
+            f"{MAX_DETAIL_POINTS} points in all. None for an outline as traced."
+        ),
+    )
     distance_m: int = Field(
         description=f"Target distance in metres, {MIN_DISTANCE_M}–{MAX_DISTANCE_M}.",
         examples=[15000],
     )
     activity: str = Field(
         default="running", description=f"One of: {', '.join(SUPPORTED_ACTIVITIES)}."
+    )
+
+
+class ImageOutlineEditRequestBody(BaseModel):
+    """What the app sends to POST /image-outline-edits (TASK-079, ADR-0074):
+    ImageOutlineEditRequest in packages/shared-types. The outline as the app
+    shows it over the picture, and one line drawn on it with a finger; the
+    API keeps nothing between two edits."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    image_points: list[tuple[float, float]] = Field(
+        min_length=4,
+        max_length=MAX_OUTLINE_POINTS + 1,
+        description="The image_points of the ImageOutline shown.",
+    )
+    image_strokes: list[list[tuple[float, float]]] = Field(
+        default_factory=list,
+        max_length=MAX_DETAIL_POINTS // 2,
+        description="The image_strokes of the ImageOutline shown.",
+    )
+    aspect: float = Field(description="The aspect of the ImageOutline shown.")
+    kind: Literal["part", "detail"] = Field(
+        description=(
+            "part: a closed line joined to the silhouette; detail: a line from "
+            "the outline, which the route goes along and back."
+        )
+    )
+    line: list[tuple[float, float]] = Field(
+        min_length=2,
+        max_length=MAX_DRAWN_POINTS,
+        description=(
+            "The line drawn, as shares of the image's width and height from "
+            "the top left, like image_points."
+        ),
     )

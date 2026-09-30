@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -9,7 +9,9 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { ImageEditsContext } from "./imageEdits";
 import { ImagePreview } from "./ImagePreview";
+import { OutlineBoard } from "./OutlineBoard";
 import type { ImageSource } from "./pickImage";
 import { imageProblemText } from "./problems";
 import type { ImageState } from "./useImageOutline";
@@ -19,6 +21,10 @@ import type { ImageState } from "./useImageOutline";
  * photo, see the outline the engine traced from it, then draw the route.
  * The outline shows before the route is asked for: if it does not look like
  * the subject, the route will not either.
+ *
+ * «Edit the outline» opens it on the whole screen, where a finger adds a
+ * part or a detail and Undo takes the last one away (TASK-079): one line
+ * always, which the engine checks.
  */
 export function ImageChoice({
   state,
@@ -28,6 +34,8 @@ export function ImageChoice({
   onChoose: (source: ImageSource) => void;
 }) {
   const [showPicture, setShowPicture] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const edits = useContext(ImageEditsContext);
   const chosen = state.status !== "none" && state.picture !== null;
   return (
     <View style={styles.panel}>
@@ -55,18 +63,39 @@ export function ImageChoice({
           <ImagePreview
             picture={state.picture}
             points={state.outline.image_points}
+            strokes={state.outline.image_strokes}
             aspect={state.outline.aspect}
             showPicture={showPicture}
           />
-          <Pressable
-            style={styles.link}
-            onPress={() => setShowPicture((shown) => !shown)}
-            accessibilityRole="button"
-          >
-            <Text style={styles.linkText}>
-              {showPicture ? "Hide the picture" : "Show the picture"}
-            </Text>
-          </Pressable>
+          <View style={styles.row}>
+            <Pressable
+              style={styles.link}
+              onPress={() => setShowPicture((shown) => !shown)}
+              accessibilityRole="button"
+            >
+              <Text style={styles.linkText}>
+                {showPicture ? "Hide the picture" : "Show the picture"}
+              </Text>
+            </Pressable>
+          </View>
+          {edits && (
+            <>
+              <Pressable
+                style={styles.button}
+                onPress={() => setEditing(true)}
+                accessibilityRole="button"
+              >
+                <Text style={styles.buttonText}>Edit the outline</Text>
+              </Pressable>
+              <OutlineBoard
+                visible={editing}
+                onClose={() => setEditing(false)}
+                picture={state.picture}
+                outline={state.outline}
+                edits={edits}
+              />
+            </>
+          )}
         </>
       )}
     </View>
@@ -88,8 +117,8 @@ function ImageNote({ state }: { state: ImageState }) {
       return (
         <Text style={styles.note}>
           The yellow line is what the route will draw. If it does not look like the
-          subject, the route will not either: try another picture. Only the largest
-          piece is kept.
+          subject, the route will not either: try another picture, or edit the outline.
+          Only the largest piece is kept.
         </Text>
       );
     case "failed": {

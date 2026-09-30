@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "outline_edit_rejected",
+    "message": "the line is too short: draw a longer one",
+    "suggested_distance_m": null,
+    "reason": "short"
+  }
+}

@@ -1,4 +1,5 @@
 import type { RouteRequest } from "@shaperoute/shared-types";
+import edited from "@shaperoute/shared-types/fixtures/image-outline-edited.json";
 import imageOutline from "@shaperoute/shared-types/fixtures/image-outline.json";
 import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import request from "@shaperoute/shared-types/fixtures/route-request.json";
@@ -82,4 +83,14 @@ test("an image is the same while its outline is the one traced for it", () => {
   expect(sameRequest(image, { ...image, outline: [...outline] })).toBe(false);
   expect(sameRequest(image, REQUEST)).toBe(false);
   expect(sameRequest(REQUEST, image)).toBe(false);
+});
+
+test("an image with other details is another request (TASK-079)", () => {
+  const { start, distance_m, activity } = REQUEST;
+  const outline = edited.points as [number, number][];
+  const strokes = edited.strokes as [number, number][][];
+  const image: AnyRouteRequest = { start, distance_m, activity, outline, strokes };
+  expect(sameRequest(image, { ...image })).toBe(true);
+  expect(sameRequest(image, { ...image, strokes: [...strokes] })).toBe(false);
+  expect(sameRequest(image, { ...image, strokes: undefined })).toBe(false);
 });

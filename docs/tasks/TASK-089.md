@@ -28,7 +28,7 @@ suggerimenti arrivano prima.
       parte più, anche se il tocco arriva subito dopo una lettera.
 - [x] Una risposta arriva sullo schermo anche con una ricerca più nuova in
       corso; una più vecchia di quella mostrata no.
-- [ ] Provato sull'iPhone dall'utente.
+- [x] Provato sull'iPhone dall'utente (2026-09-30): funziona.
 
 ## File toccati
 
@@ -52,7 +52,7 @@ docs/UI.md
 
 ## Esito
 
-Fatto nel codice, con i test. Il tocco mancato non si è potuto riprodurre
+Provato sull'iPhone dall'utente (2026-09-30): funziona. Il tocco mancato non si è potuto riprodurre
 (su questo Mac non c'è il simulatore): corretti i due casi trovati leggendo
 il codice — il tocco entro la pausa dopo una lettera faceva ripartire la
 ricerca e riaprire l'elenco; dopo il tocco il campo restava col testo

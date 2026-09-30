@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -22,24 +22,68 @@ type Props = {
   onSelect: (place: Place) => void;
 };
 
+/** Suggestions start at this many letters, this long after the last one
+ * (TASK-085, ADR-0080): Photon asks for fair use, not a request per letter. */
+export const MIN_SUGGEST_LENGTH = 3;
+export const SUGGEST_DELAY_MS = 500;
+
 /**
- * A city or street to start from, when the position is not shared. The
- * search starts on submit, not at every letter: Photon asks for fair use.
+ * A city or street to start from, when the position is not shared. Places
+ * are suggested while typing, once the typing pauses; "Search" and the
+ * keyboard's return key search at once.
  */
 export function PlaceSearch({ onSelect }: Props) {
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState<SearchState>({ status: "idle" });
+  // Only the answer to the last search asked is shown: an older one may
+  // come back later, for a text that is no longer in the field.
+  const asked = useRef(0);
+  // The text of that search: the pause after "Search" does not ask it twice.
+  const askedText = useRef("");
 
-  async function submit() {
-    if (!query.trim()) {
+  async function searchFor(text: string) {
+    const mine = ++asked.current;
+    askedText.current = text.trim();
+    // The places already suggested stay until the new ones come.
+    setSearch((now) => (now.status === "found" ? now : { status: "searching" }));
+    try {
+      const places = await searchPlaces(text);
+      if (mine === asked.current) {
+        setSearch(places.length ? { status: "found", places } : { status: "none" });
+      }
+    } catch {
+      if (mine === asked.current) {
+        setSearch({ status: "failed" });
+      }
+    }
+  }
+
+  useEffect(() => {
+    const text = query.trim();
+    if (text.length < MIN_SUGGEST_LENGTH) {
       return;
     }
-    setSearch({ status: "searching" });
-    try {
-      const places = await searchPlaces(query);
-      setSearch(places.length ? { status: "found", places } : { status: "none" });
-    } catch {
-      setSearch({ status: "failed" });
+    const timer = setTimeout(() => {
+      if (text !== askedText.current) {
+        void searchFor(query);
+      }
+    }, SUGGEST_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  function onText(text: string) {
+    setQuery(text);
+    if (text.trim().length < MIN_SUGGEST_LENGTH) {
+      // Too short to suggest: what was found for a longer text goes.
+      asked.current += 1;
+      askedText.current = "";
+      setSearch({ status: "idle" });
+    }
+  }
+
+  function submit() {
+    if (query.trim()) {
+      void searchFor(query);
     }
   }
 
@@ -52,7 +96,7 @@ export function PlaceSearch({ onSelect }: Props) {
           placeholderTextColor={color.textFaint}
           keyboardAppearance="dark"
           value={query}
-          onChangeText={setQuery}
+          onChangeText={onText}
           onSubmitEditing={submit}
           returnKeyType="search"
           autoCorrect={false}
@@ -78,6 +122,7 @@ export function PlaceSearch({ onSelect }: Props) {
               style={styles.place}
               accessibilityRole="button"
               onPress={() => {
+                asked.current += 1;
                 setSearch({ status: "idle" });
                 onSelect(place);
               }}

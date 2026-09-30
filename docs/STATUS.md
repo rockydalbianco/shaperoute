@@ -58,6 +58,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `samples/TASK-084_*` (`TASK-084_overview.png` li mostra tutti). Mancano
   il giudizio dell'utente sui campioni e la prova sull'iPhone, poi il
   merge. File toccati: quelli elencati in `docs/tasks/TASK-084.md`.
+- **App** — TASK-085: i luoghi suggeriti mentre si scrive la partenza
+  (ADR-0080). Codice e test fatti; manca la prova sull'iPhone.
 
 ## Completato
 

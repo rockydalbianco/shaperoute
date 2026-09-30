@@ -2741,3 +2741,27 @@ unisce solo al contorno principale: una parte disegnata sopra un soggetto
 secondario diventa un anello appeso alla linea più vicina. Campioni a
 12 km: a Milano somiglianza 0,96–0,98; a Levico 0,76–0,84, come le altre
 forme con tratti in montagna.
+
+## ADR-0080 — I luoghi suggeriti mentre si scrive
+**Stato**: Attiva · 2026-09-30 · chiesto dall'utente («il suggerimento
+della posizione, città, via, mentre sto scrivendo»); soglie e dettagli
+decisi dall'agente su delega dell'utente (TASK-085)
+
+**Contesto**: la ricerca del luogo partiva solo con «Search» o l'invio
+(ADR-0029), per non mandare a Photon una richiesta a lettera.
+
+**Decisione**: `PlaceSearch` cerca da solo quando il testo ha almeno 3
+lettere e non cambia da 500 ms. «Search» e l'invio restano e cercano
+subito; la pausa dopo non ripete la stessa ricerca. Si mostra solo la
+risposta all'ultima ricerca chiesta; i suggerimenti di prima restano
+sullo schermo finché arrivano i nuovi. Nessuna dipendenza nuova, stesso
+servizio e stesso limite di 5 risultati.
+
+**Alternative scartate**: una richiesta a ogni lettera (uso scorretto di
+Photon, e risposte che si accavallano); togliere «Search» (con la rete
+lenta è il modo di riprovare); suggerimenti vicini alla posizione
+(`lat`/`lon` di Photon): la ricerca compare proprio quando la posizione
+manca o non si vuole usare.
+
+**Conseguenza**: più richieste a Photon di prima, una per pausa. Se il
+servizio dovesse limitare, la soglia e il ritardo sono due costanti.

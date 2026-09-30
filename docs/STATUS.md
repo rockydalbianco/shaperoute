@@ -47,6 +47,13 @@ nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
 connessione all'API**, chiesto dall'utente dopo TASK-055; poi TASK-057, il
 campo per le parole (dopo TASK-056 e TASK-049).
 
+**Parte social, chiesta dall'utente (2026-09-30)**: punteggio del disegno
+corso, account, profilo, like e commenti. Tredici task scritti, TASK-110 …
+122, con l'ordine in `ROADMAP.md` («La parte social»). Partono subito
+**TASK-111** (punteggio nel motore) e **TASK-112** (traccia registrata
+nell'app); **TASK-110** sono le scelte dell'utente da cui dipendono gli
+account.
+
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
@@ -63,6 +70,16 @@ Niente.
   per punto. **Spento per default**: accenderlo sempre sul Mac è una scelta
   dell'utente. Non si vede nell'app. Provato: cuore 10 km a Caldonazzo e
   «CIAO» a Levico, rifatti identici (467 e 626 punti).
+- **API e motore** — TASK-087: il ritaglio della zona più veloce, a
+  percorsi identici (ADR-0082, la proposta 2 di TASK-063). A Milano, con
+  la zona in memoria, da 2–6 s a 0,3–1 s a richiesta su questo Mac; stessi
+  percorsi punto per punto su 8 casi (Milano 10, 15, 21 km; Levico
+  10 km). Da misurare Levico a 15 e 21 km quando la zona è in cache.
+  L'API va riavviata dopo il merge per prenderlo.
+- **App** — TASK-089: un suggerimento toccato riempie il campo, chiude la
+  tastiera e non fa ripartire la ricerca; i suggerimenti arrivano anche
+  mentre si continua a scrivere, pausa 300 ms (ADR-0083). Photon resta a
+  2–3 s a risposta. Provato sull'iPhone (2026-09-30).
 - **App** — TASK-086: pulsanti più visibili, bordo e fondo dei comandi
   schiariti nei token (ADR-0081). Provato sull'iPhone (2026-09-30).
 - **App** — TASK-085: i luoghi della partenza suggeriti mentre si scrive,

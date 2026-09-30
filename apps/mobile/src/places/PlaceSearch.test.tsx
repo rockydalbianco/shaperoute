@@ -43,6 +43,10 @@ test("shows the places found and gives back the one chosen", async () => {
     point: [46.0692621, 11.1211947],
   });
   expect(screen.queryByText("Comune di Trento, Trento")).not.toBeOnTheScreen();
+  // The field shows the place chosen (TASK-089).
+  expect(screen.getByPlaceholderText("City or street").props.value).toBe(
+    "Via Rodolfo Belenzani, Trento",
+  );
 });
 
 test("says so when nothing is found", async () => {
@@ -138,6 +142,55 @@ describe("while typing", () => {
     await act(async () => {
       answerOld(Response.json(response));
     });
+    expect(screen.queryByText("Comune di Trento, Trento")).not.toBeOnTheScreen();
+  });
+
+  // TASK-089.
+
+  test("an answer is shown while a later search is still on its way", async () => {
+    let answerNew: (value: Response) => void = () => {};
+    fetchMock.mockResolvedValueOnce(Response.json(response));
+    fetchMock.mockReturnValueOnce(
+      new Promise<Response>((resolve) => {
+        answerNew = resolve;
+      }),
+    );
+    await render(<PlaceSearch onSelect={jest.fn()} />);
+    await type("Via Bel");
+    await pause();
+    await type("Via Bele");
+    await pause();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(screen.getByText("Via Rodolfo Belenzani, Trento")).toBeOnTheScreen();
+    await act(async () => {
+      answerNew(Response.json({ type: "FeatureCollection", features: [] }));
+    });
+    expect(screen.getByText("No place found. Try adding the city.")).toBeOnTheScreen();
+  });
+
+  test("a place chosen is not searched for again", async () => {
+    photonAnswers(response);
+    const onSelect = jest.fn();
+    await render(<PlaceSearch onSelect={onSelect} />);
+    await type("Via Bel");
+    await pause();
+    await fireEvent.press(screen.getByText("Via Rodolfo Belenzani, Trento"));
+    await pause();
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Comune di Trento, Trento")).not.toBeOnTheScreen();
+  });
+
+  test("a place chosen just after typing stays chosen", async () => {
+    photonAnswers(response);
+    await render(<PlaceSearch onSelect={jest.fn()} />);
+    await type("Via Bel");
+    await pause();
+    // One more letter, and the tap before the pause ends.
+    await type("Via Bele");
+    await fireEvent.press(screen.getByText("Via Rodolfo Belenzani, Trento"));
+    await pause();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(screen.queryByText("Comune di Trento, Trento")).not.toBeOnTheScreen();
   });
 });

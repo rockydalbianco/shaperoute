@@ -2732,3 +2732,54 @@ prima. Photon risponde in circa 3 s: «Searching…» resta visibile.
 
 **Conseguenza**: più richieste a Photon di prima, una per pausa. Se il
 servizio dovesse limitare, la soglia e il ritardo sono due costanti.
+
+## ADR-0082 — Il ritaglio della zona rifatto a mano, nello stesso ordine
+**Stato**: Attiva · 2026-09-30 · il lavoro e il vincolo («percorsi
+identici») chiesti dall'utente; il come deciso dall'agente su delega
+dell'utente (TASK-087)
+
+**Contesto**: l'API ritaglia a ogni richiesta il grafo dalla zona in
+memoria (ADR-0030). `network.crop` passa due volte da una vista di
+NetworkX, per trovare il pezzo connesso più grande e per copiarlo, e
+intanto il garbage collector di Python ripassa più volte tutta la zona: a
+Milano 2–5 s su questo Mac, 6–13 s sul PC di TASK-063.
+
+**Decisione**:
+
+- `route_engine/zone_crop.py`: `ZoneCrop(zona).crop(bbox)` costruisce il
+  ritaglio dai dizionari della zona, senza viste. Dà il grafo di
+  `network.crop` con nodi, archi e attributi **nello stesso ordine**,
+  seguendo passo per passo quello che fa NetworkX (l'ordine di una vista,
+  la visita in ampiezza dei pezzi, la copia). Dove NetworkX cambia ordine
+  (un ritaglio con meno nodi della metà delle strade di un incrocio) lascia
+  il lavoro a `network.crop`.
+- Il ritaglio ha dizionari **suoi**, anche per gli attributi: ogni
+  richiesta ha ancora il suo grafo e la zona non viene mai modificata. Il
+  nodo «sink» di `_route_through_zones` e le richieste in parallelo restano
+  com'erano; motore e `nearby_starts.py` non si toccano.
+- `ZoneGraphs` sospende il garbage collector durante il ritaglio
+  (`_gc_paused`, con un contatore per i ritagli contemporanei) e lo
+  riaccende alla fine se era acceso. La raccolta è solo rimandata.
+- `network.crop` resta: lo usa la CLI, ed è il riferimento dei test.
+
+**Scartate**:
+
+- *Nessun ritaglio: il motore sulla zona intera o su una vista.* L'ordine
+  dei nodi e degli archi cambierebbe, e con lui i percorsi a parità di
+  costo; una vista rende più lento ogni Dijkstra; il «sink» finirebbe nel
+  grafo condiviso dalle richieste in parallelo.
+- *Tenere il ritaglio per la stessa area.* Le partenze dal GPS cambiano a
+  ogni richiesta (l'area è arrotondata a 10 m), e un grafo riusato andrebbe
+  protetto dal «sink» di chi lo sta usando.
+- *Attributi condivisi con la zona* (senza copiarli): 0,1 s in meno, ma un
+  attributo cambiato da una richiesta arriverebbe a tutte le altre.
+
+**Perché così**: i percorsi dipendono dall'ordine nel grafo, non solo dal
+suo contenuto. Rifare lo stesso grafo più in fretta è l'unica strada che
+non tocca né il motore né quel che vede.
+
+**Conseguenza**: `zone_crop.py` dipende da come NetworkX 3 ordina viste e
+visite. Se una versione nuova lo cambia, `test_zone_crop.py` fallisce (il
+confronto è con `network.crop` nello stesso processo): si aggiorna
+`ZoneCrop`, o si torna a `crop` in `graphs.py`, una riga. Una zona in
+memoria non va modificata dopo essere stata data a `ZoneCrop`.

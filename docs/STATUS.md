@@ -62,6 +62,8 @@ Niente.
   percorsi punto per punto su 8 casi (Milano 10, 15, 21 km; Levico
   10 km). Da misurare Levico a 15 e 21 km quando la zona è in cache.
   L'API va riavviata dopo il merge per prenderlo.
+- **App** — TASK-086: pulsanti più visibili, bordo e fondo dei comandi
+  schiariti nei token (ADR-0081). Provato sull'iPhone (2026-09-30).
 - **App** — TASK-085: i luoghi della partenza suggeriti mentre si scrive,
   da 3 lettere, prima quelli vicini alla posizione (ADR-0080). Provato
   sull'iPhone (2026-09-30).

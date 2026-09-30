@@ -2684,6 +2684,28 @@ leggibili da chi lo scarica; cambiare indirizzo o app vuol dire
 ripubblicare. Con `expo start --no-dev` l'app non ricava più l'API
 dall'host di Expo: serve `EXPO_PUBLIC_API_URL`.
 
+## ADR-0081 — Comandi più visibili: bordo e fondo schiariti nei token
+**Stato**: Attiva · 2026-09-30 · chiesto dall'utente («devono essere più
+visibili i vari pulsanti, vedi tu come fare»); valori decisi dall'agente su
+delega dell'utente (TASK-086)
+
+**Contesto**: i comandi neutri (ADR-0046) avevano fondo `#1A1A1D` e bordo
+`#33333A` sul fondo `#0A0A0B`: contrasto 1,1:1 e 1,6:1. Sull'iPhone,
+all'aperto, un pulsante non si distingueva dal pannello.
+
+**Decisione**: tre token cambiano, nessun file oltre `tokens.ts`:
+`surfaceRaised` `#2B2B31`, `borderStrong` `#74747E` (4,3:1 sul fondo,
+sopra il 3:1 chiesto a un comando), `border` `#3D3D44`. Tutti i comandi li
+leggono già, quindi cambiano insieme: «Search», «My position», «Cancel»,
+«Export GPX», − e +, l'opzione scelta di un interruttore, le tessere.
+
+**Alternative scartate**: comandi gialli (il giallo è del percorso e di
+«Draw route», ADR-0046); uno stile per pulsante, file per file (tocca file
+di altri task e i comandi smettono di assomigliarsi); testo più grande
+(non era il testo a mancare).
+
+**Conseguenza**: anche i bordi dei campi e delle tessere sono più chiari.
+Il testo sui comandi resta sopra 12:1.
 ## ADR-0080 — I luoghi suggeriti mentre si scrive
 **Stato**: Attiva · 2026-09-30 · chiesto dall'utente («il suggerimento
 della posizione, città, via, mentre sto scrivendo»); soglie e dettagli

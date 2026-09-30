@@ -1,8 +1,8 @@
-# TASK-095 — Il profilo: nome, foto, due righe
+# TASK-116 — Il profilo: nome, foto, due righe
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-095-profile`
-**Dipende da**: TASK-094
+**Fase**: 4 · **Branch**: `feat/TASK-116-profile`
+**Dipende da**: TASK-115
 
 ## Obiettivo
 
@@ -12,7 +12,7 @@ possono vedere.
 ## Contesto da leggere
 
 - `docs/DATABASE.md`, `docs/API.md` (account)
-- `docs/UI.md` (schede, TASK-094)
+- `docs/UI.md` (schede, TASK-115)
 - `services/api/shaperoute_api/images.py` (limiti delle immagini)
 
 ## Cosa fare
@@ -54,12 +54,12 @@ docs/DATABASE.md
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
-docs/tasks/TASK-095.md
+docs/tasks/TASK-116.md
 ```
 
 ## Fuori scope
 
 - Seguire altri utenti, profili privati.
-- L'elenco dei disegni nel profilo (TASK-096).
+- L'elenco dei disegni nel profilo (TASK-117).
 
 ## Esito

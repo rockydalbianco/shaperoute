@@ -1,18 +1,18 @@
-# TASK-101 — L'API e il database sempre accesi
+# TASK-122 — L'API e il database sempre accesi
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `chore/TASK-101-hosting`
-**Dipende da**: TASK-089, TASK-093 · **Serve prima di** invitare altre persone
+**Fase**: 4 · **Branch**: `chore/TASK-122-hosting`
+**Dipende da**: TASK-110, TASK-114 · **Serve prima di** invitare altre persone
 
 ## Obiettivo
 
-API e database girano dove ha scelto l'utente in TASK-089, raggiungibili
+API e database girano dove ha scelto l'utente in TASK-110, raggiungibili
 da qualunque telefono con HTTPS, anche a Mac spento.
 
 ## Contesto da leggere
 
 - `docs/DEPLOY.md`
-- `docs/DECISIONS.md`, ADR di TASK-089 su hosting e database
+- `docs/DECISIONS.md`, ADR di TASK-110 su hosting e database
 - `docs/MAPS.md` «Overpass: come si scarica»
 
 ## Cosa fare
@@ -44,7 +44,7 @@ Creare account su servizi esterni, pagare e inserire chiavi lo fa
 docs/DEPLOY.md
 docs/DECISIONS.md
 docs/STATUS.md
-docs/tasks/TASK-101.md
+docs/tasks/TASK-122.md
 .env.example
 deploy/
 ```

@@ -1,8 +1,8 @@
-# TASK-100 — Segnalare, bloccare, cancellare i propri dati
+# TASK-121 — Segnalare, bloccare, cancellare i propri dati
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-100-report-block`
-**Dipende da**: TASK-099
+**Fase**: 4 · **Branch**: `feat/TASK-121-report-block`
+**Dipende da**: TASK-120
 
 ## Obiettivo
 
@@ -12,7 +12,7 @@ persone che non si conoscono.
 
 ## Contesto da leggere
 
-- `docs/PRODUCT.md` (parte social), ADR di TASK-089 sui contenuti
+- `docs/PRODUCT.md` (parte social), ADR di TASK-110 sui contenuti
 - `docs/API.md` (disegni, commenti, profili), `docs/DATABASE.md`
 
 ## Cosa fare
@@ -23,7 +23,7 @@ persone che non si conoscono.
 2. Per chi gestisce: gli utenti con il ruolo `admin` leggono le
    segnalazioni (`GET /admin/reports`) e nascondono un disegno, un commento
    o un utente. Per ora senza schermate: dall'API (`/docs`).
-3. `DELETE /me` (TASK-093) cancella davvero tutto: disegni, tracce, foto,
+3. `DELETE /me` (TASK-114) cancella davvero tutto: disegni, tracce, foto,
    like, commenti. Un test lo dimostra tabella per tabella.
 4. App: «Report» e «Block» dal menu di un disegno, di un commento e di un
    profilo; «Blocked users» nel profilo, per sbloccare; al primo accesso le
@@ -66,7 +66,7 @@ docs/DATABASE.md
 docs/UI.md
 docs/PRODUCT.md
 docs/STATUS.md
-docs/tasks/TASK-100.md
+docs/tasks/TASK-121.md
 ```
 
 ## Fuori scope

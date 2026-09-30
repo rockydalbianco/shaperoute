@@ -48,10 +48,10 @@ connessione all'API**, chiesto dall'utente dopo TASK-055; poi TASK-057, il
 campo per le parole (dopo TASK-056 e TASK-049).
 
 **Parte social, chiesta dall'utente (2026-09-30)**: punteggio del disegno
-corso, account, profilo, like e commenti. Tredici task scritti, TASK-089 …
-101, con l'ordine in `ROADMAP.md` («La parte social»). Partono subito
-**TASK-090** (punteggio nel motore) e **TASK-091** (traccia registrata
-nell'app); **TASK-089** sono le scelte dell'utente da cui dipendono gli
+corso, account, profilo, like e commenti. Tredici task scritti, TASK-110 …
+122, con l'ordine in `ROADMAP.md` («La parte social»). Partono subito
+**TASK-111** (punteggio nel motore) e **TASK-112** (traccia registrata
+nell'app); **TASK-110** sono le scelte dell'utente da cui dipendono gli
 account.
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di

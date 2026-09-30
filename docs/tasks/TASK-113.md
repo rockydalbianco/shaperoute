@@ -1,8 +1,8 @@
-# TASK-092 — Il punteggio a fine corsa, nell'API e nell'app
+# TASK-113 — Il punteggio a fine corsa, nell'API e nell'app
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-092-finish-score`
-**Dipende da**: TASK-090, TASK-091
+**Fase**: 4 · **Branch**: `feat/TASK-113-finish-score`
+**Dipende da**: TASK-111, TASK-112
 
 ## Obiettivo
 
@@ -13,7 +13,7 @@ il punteggio da 0 a 100. Senza account: resta tutto sul telefono.
 
 - `docs/API.md` «Endpoint», «Errori»
 - `docs/UI.md` «La navigazione», «Il risultato»
-- `docs/ROUTE_ENGINE.md` §5 (parte di TASK-090)
+- `docs/ROUTE_ENGINE.md` §5 (parte di TASK-111)
 
 ## Cosa fare
 
@@ -57,12 +57,12 @@ docs/API.md
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
-docs/tasks/TASK-092.md
+docs/tasks/TASK-113.md
 ```
 
 ## Fuori scope
 
-- Salvare il disegno su un server, pubblicarlo (TASK-096).
+- Salvare il disegno su un server, pubblicarlo (TASK-117).
 - Classifiche, record personali.
 
 ## Esito

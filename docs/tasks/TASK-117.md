@@ -1,8 +1,8 @@
-# TASK-096 — Salvare un disegno, e i miei disegni
+# TASK-117 — Salvare un disegno, e i miei disegni
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-096-save-drawing`
-**Dipende da**: TASK-092, TASK-095
+**Fase**: 4 · **Branch**: `feat/TASK-117-save-drawing`
+**Dipende da**: TASK-113, TASK-116
 
 ## Obiettivo
 
@@ -13,7 +13,7 @@ ritrova nel profilo e sceglie se pubblicarlo.
 
 - `docs/DATABASE.md` (disegni), `docs/PRODUCT.md` (parte social)
 - `docs/API.md` `/track-scores`
-- `docs/UI.md` «Finish» (TASK-092), profilo (TASK-095)
+- `docs/UI.md` «Finish» (TASK-113), profilo (TASK-116)
 
 ## Cosa fare
 
@@ -25,7 +25,7 @@ ritrova nel profilo e sceglie se pubblicarlo.
    (titolo, pubblico sì/no), `DELETE /drawings/{id}`. Solo il proprietario
    modifica e cancella; un disegno privato lo vede solo lui.
 3. La traccia mostrata agli altri è senza i primi e gli ultimi 200 m (o la
-   misura scelta in TASK-089): si taglia nell'API, non nell'app. Il
+   misura scelta in TASK-110): si taglia nell'API, non nell'app. Il
    proprietario la vede intera.
 4. App: «Save drawing» nella schermata «Finish», con titolo e
    l'interruttore «Public»; senza account, l'invito a iscriversi e la
@@ -65,12 +65,12 @@ docs/DATABASE.md
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
-docs/tasks/TASK-096.md
+docs/tasks/TASK-117.md
 ```
 
 ## Fuori scope
 
-- Vedere i disegni degli altri (TASK-097).
+- Vedere i disegni degli altri (TASK-118).
 - Caricare un GPX da Strava o Garmin.
 - Foto della corsa.
 

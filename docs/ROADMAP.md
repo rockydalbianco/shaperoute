@@ -255,28 +255,28 @@ commentano i disegni degli altri.
 
 | Task | Titolo | Dipende da |
 |---|---|---|
-| TASK-089 | Le scelte: account, dati, hosting, privacy (chiude ADR-0013) | — |
-| TASK-090 | Motore: il punteggio di una traccia corsa | — |
-| TASK-091 | App: registrare la traccia durante la navigazione | — |
-| TASK-092 | Il punteggio a fine corsa, nell'API e nell'app | 090, 091 |
-| TASK-093 | API: database e account | 089 |
-| TASK-094 | App: iscriversi, entrare, uscire | 093 |
-| TASK-095 | Il profilo: nome, foto, due righe | 094 |
-| TASK-096 | Salvare un disegno, e i miei disegni | 092, 095 |
-| TASK-097 | Il feed: i disegni degli altri | 096 |
-| TASK-098 | Like | 097 |
-| TASK-099 | Commenti | 097 |
-| TASK-100 | Segnalare, bloccare, cancellare i propri dati | 099 |
-| TASK-101 | L'API e il database sempre accesi | 089, 093 |
+| TASK-110 | Le scelte: account, dati, hosting, privacy (chiude ADR-0013) | — |
+| TASK-111 | Motore: il punteggio di una traccia corsa | — |
+| TASK-112 | App: registrare la traccia durante la navigazione | — |
+| TASK-113 | Il punteggio a fine corsa, nell'API e nell'app | 111, 112 |
+| TASK-114 | API: database e account | 110 |
+| TASK-115 | App: iscriversi, entrare, uscire | 114 |
+| TASK-116 | Il profilo: nome, foto, due righe | 115 |
+| TASK-117 | Salvare un disegno, e i miei disegni | 113, 116 |
+| TASK-118 | Il feed: i disegni degli altri | 117 |
+| TASK-119 | Like | 118 |
+| TASK-120 | Commenti | 118 |
+| TASK-121 | Segnalare, bloccare, cancellare i propri dati | 120 |
+| TASK-122 | L'API e il database sempre accesi | 110, 114 |
 
-Due binari. **Il punteggio** (090 → 091 → 092) non ha bisogno di account né
+Due binari. **Il punteggio** (111 → 112 → 113) non ha bisogno di account né
 di server: parte subito e dà già qualcosa da vedere sull'iPhone. **Gli
-account** cominciano da TASK-089, che non è codice: sono scelte
+account** cominciano da TASK-110, che non è codice: sono scelte
 dell'utente (dove girano i dati, come si entra, chi vede cosa), e finché
-non sono prese 093–101 non partono. I due binari si incontrano in TASK-096.
+non sono prese 114–122 non partono. I due binari si incontrano in TASK-117.
 
-**Cancello prima di invitare persone che non si conoscono**: TASK-100 e
-TASK-101 fatti. Fino ad allora la parte social si prova fra l'utente e il
+**Cancello prima di invitare persone che non si conoscono**: TASK-121 e
+TASK-122 fatti. Fino ad allora la parte social si prova fra l'utente e il
 collega, con l'API sul Mac.
 
 ## Fase 5 — Oltre

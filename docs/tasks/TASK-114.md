@@ -1,8 +1,8 @@
-# TASK-093 — API: database e account
+# TASK-114 — API: database e account
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-093-accounts-api`
-**Dipende da**: TASK-089
+**Fase**: 4 · **Branch**: `feat/TASK-114-accounts-api`
+**Dipende da**: TASK-110
 
 ## Obiettivo
 
@@ -11,14 +11,14 @@ con i dati in un database.
 
 ## Contesto da leggere
 
-- `docs/DATABASE.md` (scritto da TASK-089)
-- `docs/DECISIONS.md`, gli ADR di TASK-089
+- `docs/DATABASE.md` (scritto da TASK-110)
+- `docs/DECISIONS.md`, gli ADR di TASK-110
 - `docs/API.md` «Cosa è deciso», «Errori»
 - `services/api/shaperoute_api/access.py`
 
 ## Cosa fare
 
-Database, libreria e modo di entrare sono quelli scelti in TASK-089: qui
+Database, libreria e modo di entrare sono quelli scelti in TASK-110: qui
 non si scelgono. Se un pacchetto non è nell'elenco approvato lì, fermarsi.
 
 1. Collegamento al database e migrazioni; tabella degli utenti. L'indirizzo
@@ -61,13 +61,13 @@ docs/DATABASE.md
 docs/SETUP.md
 docs/DECISIONS.md
 docs/STATUS.md
-docs/tasks/TASK-093.md
+docs/tasks/TASK-114.md
 ```
 
 ## Fuori scope
 
-- Schermate dell'app (TASK-094). Profilo (TASK-095).
+- Schermate dell'app (TASK-115). Profilo (TASK-116).
 - Password dimenticata via email: serve un servizio di posta; annotare.
-- Mettere l'API su un server (TASK-101).
+- Mettere l'API su un server (TASK-122).
 
 ## Esito

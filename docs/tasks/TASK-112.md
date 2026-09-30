@@ -1,7 +1,7 @@
-# TASK-091 — App: registrare la traccia durante la navigazione
+# TASK-112 — App: registrare la traccia durante la navigazione
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-091-track-recording`
+**Fase**: 4 · **Branch**: `feat/TASK-112-track-recording`
 
 ## Obiettivo
 
@@ -48,14 +48,14 @@ apps/mobile/src/navigation/useNavigation.test.ts
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
-docs/tasks/TASK-091.md
+docs/tasks/TASK-112.md
 ```
 
 ## Fuori scope
 
 - GPS a telefono bloccato: in Expo Go non c'è (serve una build propria).
   La traccia si registra con lo schermo acceso o in modalità tasca.
-- Punteggio e schermata di fine corsa (TASK-092).
+- Punteggio e schermata di fine corsa (TASK-113).
 - Registrare una corsa senza un percorso pianificato.
 
 ## Esito

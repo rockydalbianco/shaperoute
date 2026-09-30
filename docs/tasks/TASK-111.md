@@ -1,7 +1,7 @@
-# TASK-090 — Motore: il punteggio di una traccia corsa
+# TASK-111 — Motore: il punteggio di una traccia corsa
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-090-track-score`
+**Fase**: 4 · **Branch**: `feat/TASK-111-track-score`
 
 ## Obiettivo
 
@@ -13,11 +13,11 @@ restituisce un punteggio da 0 a 100, dalla CLI, senza rete.
 - `docs/ROUTE_ENGINE.md` §5
 - `services/route-engine/route_engine/metrics.py`
 - `docs/DECISIONS.md` ADR-0037, ADR-0039
-- `docs/tasks/TASK-089.md`, punto 1 (se già deciso)
+- `docs/tasks/TASK-110.md`, punto 1 (se già deciso)
 
 ## Cosa fare
 
-Non dipende da TASK-089 per partire: la proposta del punto 1 è il
+Non dipende da TASK-110 per partire: la proposta del punto 1 è il
 predefinito; se l'utente sceglie altro, cambia solo cosa si confronta.
 
 1. Modulo nuovo `track_score.py`: pulisce la traccia (punti con errore GPS
@@ -55,12 +55,12 @@ services/route-engine/tests/test_track_score.py
 docs/ROUTE_ENGINE.md
 docs/DECISIONS.md
 docs/STATUS.md
-docs/tasks/TASK-090.md
+docs/tasks/TASK-111.md
 ```
 
 ## Fuori scope
 
-- API e app (TASK-092).
+- API e app (TASK-113).
 - Cambiare `metrics.py` o la somiglianza dei percorsi pianificati.
 - Riconoscere chi bara (traccia finta, in bici): annotare, non fare.
 

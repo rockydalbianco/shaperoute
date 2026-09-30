@@ -1,7 +1,7 @@
-# TASK-089 — Le scelte della parte social: account, dati, hosting, privacy
+# TASK-110 — Le scelte della parte social: account, dati, hosting, privacy
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `docs/TASK-089-social-decisions`
+**Fase**: 4 · **Branch**: `docs/TASK-110-social-decisions`
 
 ## Obiettivo
 
@@ -23,7 +23,7 @@ la fa l'utente**, una domanda per volta.
 
 1. **Cosa prende il punteggio.** Proposta: la traccia GPS corsa, confrontata
    con la forma ideale con la stessa misura del motore, mostrata da 0 a 100
-   (TASK-090). Alternativa: solo il percorso pianificato (c'è già
+   (TASK-111). Alternativa: solo il percorso pianificato (c'è già
    `similarity`).
 2. **Dove girano API e database.** Oggi l'API è sul Mac, con Tailscale: gli
    altri iscritti non la raggiungono. Confrontare almeno: server proprio
@@ -40,11 +40,11 @@ la fa l'utente**, una domanda per volta.
    200 m della traccia non si mostrano agli altri (la partenza è spesso casa).
 6. **Dati personali.** Cosa si raccoglie, per quanto, come si cancella
    l'account con tutti i suoi dati; età minima; testo della privacy.
-7. **Regole dei contenuti.** Segnalare e bloccare (TASK-100): l'App Store
+7. **Regole dei contenuti.** Segnalare e bloccare (TASK-121): l'App Store
    li chiede per i contenuti scritti dagli utenti.
 8. Scrivere gli ADR, riempire `DATABASE.md` (schema di utenti, disegni,
    like, commenti), aggiornare `PRODUCT.md` e, se le scelte cambiano i task
-   090–101, scriverlo nell'«Esito» di questo task e dirlo all'utente: quei
+   111–122, scriverlo nell'«Esito» di questo task e dirlo all'utente: quei
    task file si correggono prima che partano, non a metà.
 
 ## Criteri di accettazione
@@ -64,7 +64,7 @@ docs/DATABASE.md
 docs/PRODUCT.md
 docs/INDEX.md
 docs/STATUS.md
-docs/tasks/TASK-089.md
+docs/tasks/TASK-110.md
 ```
 
 ## Fuori scope

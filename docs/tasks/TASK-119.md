@@ -1,8 +1,8 @@
-# TASK-098 — Like
+# TASK-119 — Like
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-098-likes`
-**Dipende da**: TASK-097
+**Fase**: 4 · **Branch**: `feat/TASK-119-likes`
+**Dipende da**: TASK-118
 
 ## Obiettivo
 
@@ -52,7 +52,7 @@ docs/API.md
 docs/DATABASE.md
 docs/UI.md
 docs/STATUS.md
-docs/tasks/TASK-098.md
+docs/tasks/TASK-119.md
 ```
 
 ## Fuori scope

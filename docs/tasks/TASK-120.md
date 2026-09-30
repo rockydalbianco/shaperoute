@@ -1,8 +1,8 @@
-# TASK-099 — Commenti
+# TASK-120 — Commenti
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-099-comments`
-**Dipende da**: TASK-097 · **Prima di aprirli a tutti**: TASK-100
+**Fase**: 4 · **Branch**: `feat/TASK-120-comments`
+**Dipende da**: TASK-118 · **Prima di aprirli a tutti**: TASK-121
 
 ## Obiettivo
 
@@ -57,12 +57,12 @@ docs/API.md
 docs/DATABASE.md
 docs/UI.md
 docs/STATUS.md
-docs/tasks/TASK-099.md
+docs/tasks/TASK-120.md
 ```
 
 ## Fuori scope
 
 - Risposte a un commento, menzioni, like ai commenti, modifica.
-- Notifiche. Segnalare e bloccare (TASK-100).
+- Notifiche. Segnalare e bloccare (TASK-121).
 
 ## Esito

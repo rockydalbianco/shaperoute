@@ -1,8 +1,8 @@
-# TASK-097 — Il feed: i disegni degli altri
+# TASK-118 — Il feed: i disegni degli altri
 
 **Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-097-feed`
-**Dipende da**: TASK-096
+**Fase**: 4 · **Branch**: `feat/TASK-118-feed`
+**Dipende da**: TASK-117
 
 ## Obiettivo
 
@@ -24,7 +24,7 @@ recente, e da lì si arriva al disegno e al profilo di chi l'ha fatto.
    per aggiornare, carica altri in fondo; il tocco apre `DrawingScreen`, il
    nome apre il profilo con la sua griglia.
 4. Stati vuoti: nessun disegno ancora, senza rete, senza account (il feed
-   si legge solo da iscritti: proposta, conferma in TASK-089 punto 5).
+   si legge solo da iscritti: proposta, conferma in TASK-110 punto 5).
 5. Test di API e app; `API.md`, `UI.md`.
 
 ## Criteri di accettazione
@@ -54,12 +54,12 @@ docs/API.md
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
-docs/tasks/TASK-097.md
+docs/tasks/TASK-118.md
 ```
 
 ## Fuori scope
 
-- Like e commenti (TASK-098, TASK-099).
+- Like e commenti (TASK-119, TASK-120).
 - Seguire utenti, feed «vicino a me», classifica, ricerca.
 - «Corri anche tu questo disegno»: annotare come idea.
 

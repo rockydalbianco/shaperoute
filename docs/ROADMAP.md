@@ -247,6 +247,38 @@ di passaggio ogni 1/16 dell'altezza, e ognuna si sposta di poco dove ha
 più strade (ADR-0044). **Fatto**: per l'utente «CIAO» è `sì` a Trento,
 Levico e Milano, molto meglio di TASK-040; resta dalla CLI.
 
+### La parte social (chiesta dall'utente il 2026-09-30)
+
+Chi corre salva quello che ha disegnato, l'app gli dà un punteggio in base
+alla somiglianza, e gli iscritti hanno un profilo, mettono like e
+commentano i disegni degli altri.
+
+| Task | Titolo | Dipende da |
+|---|---|---|
+| TASK-089 | Le scelte: account, dati, hosting, privacy (chiude ADR-0013) | — |
+| TASK-090 | Motore: il punteggio di una traccia corsa | — |
+| TASK-091 | App: registrare la traccia durante la navigazione | — |
+| TASK-092 | Il punteggio a fine corsa, nell'API e nell'app | 090, 091 |
+| TASK-093 | API: database e account | 089 |
+| TASK-094 | App: iscriversi, entrare, uscire | 093 |
+| TASK-095 | Il profilo: nome, foto, due righe | 094 |
+| TASK-096 | Salvare un disegno, e i miei disegni | 092, 095 |
+| TASK-097 | Il feed: i disegni degli altri | 096 |
+| TASK-098 | Like | 097 |
+| TASK-099 | Commenti | 097 |
+| TASK-100 | Segnalare, bloccare, cancellare i propri dati | 099 |
+| TASK-101 | L'API e il database sempre accesi | 089, 093 |
+
+Due binari. **Il punteggio** (090 → 091 → 092) non ha bisogno di account né
+di server: parte subito e dà già qualcosa da vedere sull'iPhone. **Gli
+account** cominciano da TASK-089, che non è codice: sono scelte
+dell'utente (dove girano i dati, come si entra, chi vede cosa), e finché
+non sono prese 093–101 non partono. I due binari si incontrano in TASK-096.
+
+**Cancello prima di invitare persone che non si conoscono**: TASK-100 e
+TASK-101 fatti. Fino ad allora la parte social si prova fra l'utente e il
+collega, con l'API sul Mac.
+
 ## Fase 5 — Oltre
 
 Sincronizzazione smartwatch; web app; SUP; parapendio. Queste ultime due

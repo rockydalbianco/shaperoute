@@ -28,7 +28,7 @@ Tailscale, chiave dell'API facoltativa, pacchetto Docker e guida
 | TASK-080 | approvato, non iniziato | lo stile delle lettere (normale / squadrato) come scelta nell'app: `RouteRequest`, API, `shared-types`, un selettore accanto al campo della parola. Nel motore c'è già `plan_route(..., style="block")` (ADR-0072) |
 | TASK-083 | approvato, non iniziato | provare EAS Update: l'app pubblicata su Expo e aperta da Expo Go senza Expo acceso sul PC. Serve l'indirizzo dell'API scritto nell'app (`EXPO_PUBLIC_API_URL`, TASK-081). Il login a Expo lo fa l'utente. Se serve `expo-updates`, chiedere prima |
 | TASK-079 | approvato, non iniziato | modificare il contorno ricavato da un'immagine: aggiungere una parte (unita alla sagoma), aggiungere dettagli come occhi (tratti attaccati alla linea, fatti andata e ritorno), annullare. **Sempre un tratto solo** |
-| TASK-084 | approvato, non iniziato | più soggetti in una foto (fino a 4), collegati in una linea sola con un tratto andata e ritorno nel punto più vicino; dopo il merge di TASK-079 (PR #101). Task file sul branch `feat/TASK-084-multi-subject` |
+| TASK-084 | in lavorazione, branch `feat/TASK-084-multi-subject` | più soggetti in una foto (fino a 4), collegati in una linea sola con un tratto andata e ritorno nel punto più vicino (ADR-0079). Fatto e con i test verdi; mancano il giudizio dell'utente sui campioni e la prova sull'iPhone |
 | TASK-067 | in coda, da rivedere | lettere unite dall'alto e scala per lettera; dopo TASK-071 (scartato) e TASK-077 si sa che lettere più piccole si leggono peggio |
 
 I numeri: il prossimo task libero è **TASK-085**, il prossimo ADR libero

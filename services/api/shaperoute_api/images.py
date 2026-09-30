@@ -90,18 +90,27 @@ def decode_image(text: str) -> bytes:
 
 def trace(image: bytes) -> ImageOutlineBody:
     """The outline of the image's subject, both for the route and for the
-    picture; InvalidImageError, with its reason, when there is none."""
+    picture, with its other subjects as strokes (TASK-084);
+    InvalidImageError, with its reason, when there is none."""
     data = outline_data(image, name=IMAGE_NAME, source="an image from the app")
     outline = parse_outline(data)
     width, height = _analysed_size(image)
     pixels: list[list[float]] = data["points"]  # type: ignore[assignment]
-    return ImageOutlineBody(
-        points=[(round(x, DIGITS), round(y, DIGITS)) for x, y in outline.points],
+    stroke_pixels: list[list[list[float]]] = data.get("strokes", [])  # type: ignore[assignment]
+
+    def shares(line: list[list[float]]) -> list[tuple[float, float]]:
         # The engine's y is upwards: the row of a pixel is -y.
-        image_points=[
-            (round(x / width, DIGITS), round(-y / height, DIGITS)) for x, y in pixels
-        ],
+        return [(round(x / width, DIGITS), round(-y / height, DIGITS)) for x, y in line]
+
+    def rounded(line: tuple[tuple[float, float], ...]) -> list[tuple[float, float]]:
+        return [(round(x, DIGITS), round(y, DIGITS)) for x, y in line]
+
+    return ImageOutlineBody(
+        points=rounded(outline.points),
+        image_points=shares(pixels),
         aspect=round(width / height, DIGITS),
+        strokes=[rounded(stroke) for stroke in outline.strokes],
+        image_strokes=[shares(stroke) for stroke in stroke_pixels],
     )
 
 
@@ -121,8 +130,9 @@ def outline_of(
     points: list[tuple[float, float]],
     strokes: list[list[tuple[float, float]]] | None = None,
 ) -> Outline:
-    """The outline an image route request sends back, with the details drawn
-    on it (TASK-079), checked as any input (ADR-0069): InvalidRequestError,
+    """The outline an image route request sends back, with its other
+    subjects (TASK-084) and the details drawn on it (TASK-079) as strokes,
+    checked as any input (ADR-0069): InvalidRequestError,
     which says what is wrong with it."""
     strokes = strokes or []
     if len(points) - 1 > MAX_POINTS:

@@ -108,7 +108,8 @@ function ImageNote({ state }: { state: ImageState }) {
       return (
         <Text style={styles.note}>
           One subject on a plain background works best: a drawing, a logo, an object on
-          a bare table. The route follows its outside line.
+          a bare table. The route follows its outside line. Up to 4 separate subjects
+          are joined in one line.
         </Text>
       );
     case "tracing":
@@ -118,7 +119,8 @@ function ImageNote({ state }: { state: ImageState }) {
         <Text style={styles.note}>
           The yellow line is what the route will draw. If it does not look like the
           subject, the route will not either: try another picture, or edit the outline.
-          Only the largest piece is kept.
+          Separate subjects are joined by a short line, which the route runs there and
+          back.
         </Text>
       );
     case "failed": {

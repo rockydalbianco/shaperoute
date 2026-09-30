@@ -265,14 +265,16 @@ class ImageOutlineBody(BaseModel):
     strokes: list[list[tuple[float, float]]] = Field(
         default_factory=list,
         description=(
-            "Details drawn by hand (TASK-079), in the frame of points: each "
-            "starts on the outline or on an earlier one, and the route goes "
-            "along it and back. None for a traced outline."
+            "The other subjects of the image (TASK-084) and the details "
+            "drawn by hand (TASK-079), in the frame of points: each starts on "
+            "the outline or on an earlier one, and the route goes along it "
+            "and back; one that ends on its own second point closes a loop, "
+            "drawn once. None for one subject as traced."
         ),
     )
     image_strokes: list[list[tuple[float, float]]] = Field(
         default_factory=list,
-        description="The same details over the image, like image_points.",
+        description="The same strokes over the image, like image_points.",
     )
 
 
@@ -300,7 +302,7 @@ class ImageRouteRequestBody(BaseModel):
         max_length=MAX_DETAIL_POINTS // 2,
         description=(
             f"The strokes of an ImageOutline, unchanged (TASK-079): at most "
-            f"{MAX_DETAIL_POINTS} points in all. None for an outline as traced."
+            f"{MAX_DETAIL_POINTS} points in all. None for an outline without."
         ),
     )
     distance_m: int = Field(

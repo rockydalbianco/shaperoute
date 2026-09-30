@@ -312,6 +312,12 @@ chiude ADR-0010.
 | 2026-09-26 | TASK-077_hurry-round_15km_trento_v1.gpx | trento | 0.72 | 15.3 / 15.0 km | non giudicato | HURRY nelle lettere di oggi, per il confronto; lettere alte 428 m; girata di -15°; strade doppie 86% (disegno 87%); 160 s |
 | 2026-09-26 | TASK-077_hurry-round_15km_levico_v1.gpx | levico | 0.79 | 16.0 / 15.0 km | non giudicato | HURRY nelle lettere di oggi, per il confronto; lettere alte 432 m; girata di -15°; strade doppie 82% (disegno 87%); 86 s |
 | 2026-09-26 | TASK-077_hurry-round_15km_milano_v1.gpx | milano | 0.90 | 15.7 / 15.0 km | non giudicato | HURRY nelle lettere di oggi, per il confronto; lettere alte 537 m; girata di +15°; strade doppie 74% (disegno 87%); 35 s |
+| 2026-09-30 | TASK-084_moon-star_12km_milano_v1.gpx | milano | 0.96 | 12.1 / 12.0 km | da giudicare | da `TASK-084_moon-star.png` (disegno: falce di luna e stella staccata, ADR-0079): 2 soggetti, 22 angoli + stella di 16 punti, collegamento dalla punta bassa della falce; scala 76%; 262 m scale; 379 m gallerie; 15 s |
+| 2026-09-30 | TASK-084_moon-star_12km_levico_v1.gpx | levico | 0.83 | 10.3 / 12.0 km | da giudicare | luna e stella; partenza spostata di 250 m a ovest; scala 65%; 848 m strade principali; zona scaricata (450 s, poi in cache) |
+| 2026-09-30 | TASK-084_hearts_12km_milano_v1.gpx | milano | 0.98 | 10.9 / 12.0 km | da giudicare | da `TASK-084_hearts.png` (un cuore grande e due piccoli su sfondo avorio): 3 soggetti, il terzo appeso al secondo; scala 81%; 307 m scale; 533 m gallerie; 14 s |
+| 2026-09-30 | TASK-084_hearts_12km_levico_v1.gpx | levico | 0.76 | 12.8 / 12.0 km | da giudicare | tre cuori; ruotati di 15°; partenza spostata di 250 m a sud-est; 1523 m strade principali; 70 s |
+| 2026-09-30 | TASK-084_village_12km_milano_v1.gpx | milano | 0.98 | 12.3 / 12.0 km | da giudicare | da `TASK-084_village.png` (casa, albero, sole e nuvola): 4 soggetti, il massimo; scala 81%; 303 m scale; 662 m gallerie; 12 s |
+| 2026-09-30 | TASK-084_village_12km_levico_v1.gpx | levico | 0.84 | 11.6 / 12.0 km | da giudicare | casa, albero, sole e nuvola; partenza spostata di 250 m a est; scala 60%; 14 s |
 
 <!--
 Esempio di riga compilata:

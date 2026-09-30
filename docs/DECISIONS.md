@@ -2683,3 +2683,61 @@ l'host, e Expo Go resta quello di oggi.
 leggibili da chi lo scarica; cambiare indirizzo o app vuol dire
 ripubblicare. Con `expo start --no-dev` l'app non ricava più l'API
 dall'host di Expo: serve `EXPO_PUBLIC_API_URL`.
+
+## ADR-0079 — Più soggetti in una foto: fino a 4, appesi con un collegamento nel punto più vicino
+**Stato**: Attiva · 2026-09-30 · il cosa deciso dall'utente (al più 4
+soggetti, oltre la foto è rifiutata; il collegamento si vede sulla mappa,
+fatto andata e ritorno; si collega «nel punto meno problematico per non
+intaccare il disegno», cioè dove i soggetti sono più vicini); il come
+deciso dall'agente su delega dell'utente (TASK-084)
+
+Una foto con più soggetti era rifiutata (`scattered`, ADR-0068), o ne
+restava solo il più grande. L'utente, provando TASK-079, vuole che si
+disegnino tutti.
+
+**Decisione**:
+- **Il formato c'è già**: un soggetto in più è uno `stroke` con l'anello in
+  fondo (TASK-037, ADR-0074). Il gambo è il collegamento, l'anello il
+  contorno del soggetto. `parse_outline`, `plan_shape`, l'API e l'app li
+  portano e li disegnano già: il lavoro è in `image_outline.py`.
+- **Soggetto** è ogni pezzo sopra l'1% del più grande (la soglia delle
+  macchioline di prima), tranne: un pezzo dentro un altro; un pezzo
+  secondario tagliato dal bordo (prima si ignorava, e si ignora ancora: il
+  bordo rifiuta solo il soggetto più grande); un pezzo che la lisciatura
+  consuma. Sparisce la regola del 75%.
+- **Una scala sola**: lisciatura e semplificazione usano il lato lungo di
+  tutto il disegno, non del singolo soggetto. Sulla mappa la scala è una,
+  e un soggetto piccolo non può avere più dettagli di quanti le strade ne
+  disegnino. Con un soggetto solo il disegno è il soggetto: il contorno è
+  quello di prima, punto per punto (verificato su 9 immagini contro il
+  codice di `main`).
+- **Il collegamento** è il tratto più corto fra il soggetto e tutto ciò
+  che è già disegnato: contorno, soggetti e collegamenti di prima
+  (`shapely.ops.nearest_points` sulle linee già semplificate). Si attacca
+  ogni volta il soggetto più vicino al già disegnato. Per costruzione il
+  tratto non attraversa niente: se attraversasse una linea, quella linea
+  sarebbe più vicina. Il controllo severo di `parse_outline` (niente
+  incroci) lo conferma a ogni foto.
+- **Soggetti quasi attaccati diventano uno**: sotto il 2,5% del disegno,
+  perché la semplificazione sposta ogni linea fino all'1% e due linee
+  potrebbero toccarsi.
+- **Limiti**: `MAX_SUBJECTS` = 4; oltre, `scattered`, lo stesso motivo con
+  un testo nuovo («more than 4 separate things»): nessun valore nuovo nel
+  contratto. Gli `strokes` dei soggetti hanno al più 150 punti
+  (`MAX_SUBJECT_POINTS`), altrimenti `jagged`. `MAX_DETAIL_POINTS`, il
+  limite di tutti gli `strokes` nell'API e nelle modifiche a mano, passa da
+  50 a 200: 150 per i soggetti più i 50 dei dettagli.
+
+**Motivo**: riusare lo `stroke` ad anello tiene il principio (una linea
+sola, decisa dal motore) senza toccare il motore dei percorsi né il
+contratto. Il punto più vicino è quello che l'utente ha chiesto, ed è
+anche il collegamento più corto da correre due volte.
+
+**Conseguenza**: una foto con un pezzo secondario sopra l'1% (prima
+ignorato) ora lo disegna come soggetto, con il suo collegamento. Il limite
+unico degli `strokes` non distingue soggetti e dettagli: una foto con un
+soggetto solo accetta fino a 200 punti di dettagli a mano. «Add a part»
+unisce solo al contorno principale: una parte disegnata sopra un soggetto
+secondario diventa un anello appeso alla linea più vicina. Campioni a
+12 km: a Milano somiglianza 0,96–0,98; a Levico 0,76–0,84, come le altre
+forme con tratti in montagna.

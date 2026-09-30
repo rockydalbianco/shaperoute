@@ -37,7 +37,7 @@ from shapely.geometry import LinearRing, LineString, Polygon
 from shapely.geometry import Point as ShapelyPoint
 from shapely.ops import nearest_points
 
-from route_engine.image_outline import MAX_POINTS, SIMPLIFY_SHARE
+from route_engine.image_outline import MAX_POINTS, MAX_SUBJECT_POINTS, SIMPLIFY_SHARE
 from route_engine.shapes.outline import InvalidOutlineError, parse_outline
 from route_engine.shapes.resample import Point
 
@@ -50,8 +50,9 @@ MIN_DRAWN_SHARE = 0.03
 CLOSE_SHARE = 0.03
 # A part must add at least this share of the silhouette's area.
 MIN_GAIN_SHARE = 0.005
-# The corners of all the details together: each is run out and back.
-MAX_DETAIL_POINTS = 50
+# The points of all the strokes together: the other subjects of the image
+# (TASK-084) and, with 50 points of their own, the details drawn by hand.
+MAX_DETAIL_POINTS = MAX_SUBJECT_POINTS + 50
 # Points of a drawing: a finger gives a few hundred at most.
 MAX_DRAWN_POINTS = 2_000
 # Collinear points left by merging are dropped, no more.

@@ -1,6 +1,6 @@
 # TASK-084 — Più soggetti in una foto, collegati in una linea sola
 
-**Stato**: Todo
+**Stato**: In lavorazione (2026-09-30)
 **Fase**: 4 · **Branch**: `feat/TASK-084-multi-subject` (parte da `main`)
 
 Chiesto dall'utente il 2026-09-30, provando TASK-079 sull'iPhone: una foto
@@ -91,17 +91,22 @@ nella lettura della foto.
 
 ## File toccati
 
-Previsti; da confermare all'inizio del task.
+Confermati all'inizio del task (2026-09-30, nessun altro task in
+lavorazione). Rispetto ai previsti: in più `outline_edits.py` (solo il
+limite `MAX_DETAIL_POINTS`), `docs/PASSAGGIO.md` e i file dei campioni; non
+servono `test_contract.py`, il test di `shared-types` e i test dell'app.
 
 ```
 services/route-engine/route_engine/image_outline.py
+services/route-engine/route_engine/outline_edits.py (MAX_DETAIL_POINTS)
 services/route-engine/tests/test_image_outline.py
-services/api/shaperoute_api/images.py, schemas.py (motivo nuovo, limiti)
-services/api/tests/test_images.py, test_contract.py
-packages/shared-types/src/index.ts, fixtures, test
-apps/mobile/src/route/ImageChoice.tsx, problems.ts e test
+services/api/shaperoute_api/images.py, schemas.py (strokes, descrizioni)
+services/api/tests/test_images.py
+packages/shared-types/src/index.ts, fixtures/image-limits.json
+apps/mobile/src/route/ImageChoice.tsx, problems.ts
 docs/ROUTE_ENGINE.md, docs/API.md, docs/UI.md, docs/DECISIONS.md (ADR-0079),
-  docs/STATUS.md, samples/LOG.md
+  docs/STATUS.md, docs/PASSAGGIO.md, samples/LOG.md
+samples/TASK-084_* (immagini, GPX, overview)
 docs/tasks/TASK-084.md
 ```
 
@@ -111,6 +116,26 @@ docs/tasks/TASK-084.md
 - Scegliere a mano dove collegare, o quali soggetti tenere.
 - Più di 4 soggetti; soggetti dentro i buchi di un altro.
 - Foto con sfondo non uniforme.
+
+## A che punto siamo (2026-09-30)
+
+Fatto: motore, API, app, documenti, ADR-0079, campioni. Come è andata
+rispetto all'idea tecnica:
+
+- i soggetti si lisciano e si semplificano alla scala di **tutto il
+  disegno**, non ognuno alla sua (con un soggetto solo è uguale a prima,
+  punto per punto: verificato contro il codice di `main`);
+- il collegamento può partire anche da un collegamento di prima, non solo
+  da un contorno: così non si incrociano mai;
+- soggetti più vicini del 2,5% del disegno diventano uno;
+- il motivo del rifiuto resta `scattered`, con un testo nuovo;
+- `MAX_DETAIL_POINTS` da 50 a 200 (150 per i soggetti, 50 per i dettagli);
+- «Add a part» su un soggetto secondario: diventa un anello appeso, non si
+  unisce (l'unione resta solo sul contorno principale).
+
+Manca: il giudizio dell'utente sui campioni (`samples/LOG.md`, righe «da
+giudicare»; `samples/TASK-084_overview.png`), la prova sull'iPhone, la CI
+e il merge.
 
 ## Esito
 

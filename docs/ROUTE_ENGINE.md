@@ -227,14 +227,15 @@ tratti (ADR-0061); cane intero, uccello, zucca e albero di Natale restano
 candidate da CLI (TASK-064, TASK-078). Lumaca e teste hanno più di 64
 vertici: con i tratti restano tutti, e la forma ha più punti.
 
-### Il contorno da un'immagine (TASK-072)
+### Il contorno da un'immagine (TASK-072, TASK-084)
 
 `route_engine/image_outline.py` ricava un contorno dal soggetto di
 un'immagine PNG o JPEG, con regole fisse: la stessa immagine dà sempre lo
 stesso contorno, e l'AI non c'entra (ADR-0068). Vale per **un soggetto
 chiaro su sfondo uniforme**: un disegno, un logo, una sagoma, un oggetto
 fotografato su un tavolo bianco. Del soggetto si tiene **solo il contorno
-esterno**: buchi e linee interne si perdono.
+esterno**: buchi e linee interne si perdono. Con **più soggetti staccati,
+fino a 4**, il contorno resta una linea sola (ADR-0079, punto 5).
 
 1. L'immagine si raddrizza secondo l'EXIF (le foto del telefono) e si
    riduce a 640 pixel di lato al più.
@@ -245,17 +246,31 @@ esterno**: buchi e linee interne si perdono.
 3. Il **soggetto** sono i pixel lontani dallo sfondo almeno 60, o il doppio
    della variazione dello sfondo lungo il bordo se è di più. I suoi pezzi
    diventano poligoni; quelli sotto l'1% del più grande sono macchioline, e
-   si ignorano. Un pezzo staccato più piccolo si perde: il contorno è
-   quello del pezzo più grande.
+   si ignorano. Il più grande dà il contorno (`points`).
 4. Il contorno si **liscia alla scala delle strade**: le parti più sottili
-   del 2% del soggetto si tolgono e le fessure altrettanto strette si
+   del 2% del disegno si tolgono e le fessure altrettanto strette si
    chiudono (ADR-0039: i dettagli sottili sulle strade non restano), con
    gli angoli che restano angoli. Poi si **semplifica** agli angoli che si
-   scostano più dell'1% del soggetto, al più 100.
+   scostano più dell'1% del disegno, al più 100. Il «disegno» sono tutti i
+   soggetti insieme: con uno solo è il soggetto, come prima di TASK-084.
+5. Gli **altri pezzi sono altri soggetti** (TASK-084): ognuno si liscia e
+   si semplifica come il più grande, alla scala di tutto il disegno, e
+   diventa uno `stroke` con l'anello in fondo, come un occhio. Il gambo è
+   il **collegamento**: il tratto più corto fra il soggetto e ciò che è già
+   disegnato (il contorno, o un soggetto o un collegamento di prima),
+   trovato sulle linee già semplificate. Si attacca per primo il soggetto
+   più vicino: così nessun collegamento attraversa un altro soggetto. Il
+   percorso fa il collegamento andata e ritorno, e il soggetto una volta.
+   Non sono soggetti: un pezzo dentro un altro (è una sua linea interna),
+   un pezzo secondario tagliato dal bordo, uno che la lisciatura consuma.
+   Due soggetti più vicini del 2,5% del disegno diventano uno solo:
+   semplificati, le loro linee potrebbero toccarsi. Gli `strokes` di tutti
+   i soggetti insieme hanno al più 150 punti (`MAX_SUBJECT_POINTS`).
 
 Il risultato è un contorno come quelli dei file (`name`, `source`,
-`license`, `points` in pixel, y verso l'alto) e passa lo stesso controllo
-(`parse_outline`). Un'immagine che non va è **rifiutata con il motivo**,
+`license`, `points` e `strokes` in pixel, y verso l'alto) e passa lo stesso
+controllo (`parse_outline`, quello severo: nessuna linea ne incrocia
+un'altra). Un'immagine che non va è **rifiutata con il motivo**,
 una parola che l'API potrà tradurre (`InvalidImageError.reason`):
 
 | `reason` | Quando |
@@ -264,10 +279,10 @@ una parola che l'API potrà tradurre (`InvalidImageError.reason`):
 | `format` | un formato che non è PNG o JPEG |
 | `background` | lo sfondo non è uniforme |
 | `no_subject` | niente si stacca dallo sfondo |
-| `scattered` | il pezzo più grande è meno del 75% del soggetto: più soggetti |
+| `scattered` | più di 4 soggetti (`MAX_SUBJECTS`) |
 | `edge` | il soggetto tocca il bordo dell'immagine |
 | `small` | il soggetto è sotto i 48 pixel (su 640), o l'immagine sotto i 96 |
-| `jagged` | più di 100 angoli anche dopo la semplificazione |
+| `jagged` | più di 100 angoli anche dopo la semplificazione, o più di 150 punti per gli altri soggetti |
 
 Dalla CLI, `--image` al posto di `--shape`; il nome della forma è quello
 del file. `--save-outline` scrive il contorno in JSON per guardarlo, e si

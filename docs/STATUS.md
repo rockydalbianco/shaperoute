@@ -52,15 +52,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-084 — Più soggetti in una foto, collegati in una linea sola**
-  (ADR-0079), branch `feat/TASK-084-multi-subject`. Motore, API, app e
-  documenti fatti, test verdi; campioni a 12 km a Milano e a Levico in
-  `samples/TASK-084_*` (`TASK-084_overview.png` li mostra tutti). Mancano
-  il giudizio dell'utente sui campioni e la prova sull'iPhone, poi il
-  merge. File toccati: quelli elencati in `docs/tasks/TASK-084.md`.
+Niente.
 
 ## Completato
 
+- **Motore, API e app** — TASK-084: più soggetti in una foto, fino a 4,
+  in una linea sola (ADR-0079). Il più grande è il contorno, gli altri
+  sono appesi con un trattino nel punto più vicino, fatto andata e
+  ritorno; con più di 4 la foto è rifiutata («more than 4 separate
+  things»). I dettagli a mano passano da 50 punti a 200 punti percorsi
+  (circa 100 andata e ritorno). Campioni a 12 km: Milano «sì», Levico
+  «quasi». Provato sull'iPhone dall'utente (2026-09-30): funziona.
 - **App** — TASK-085: i luoghi della partenza suggeriti mentre si scrive,
   da 3 lettere, prima quelli vicini alla posizione (ADR-0080). Provato
   sull'iPhone (2026-09-30).

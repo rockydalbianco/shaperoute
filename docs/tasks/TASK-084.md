@@ -1,6 +1,6 @@
 # TASK-084 — Più soggetti in una foto, collegati in una linea sola
 
-**Stato**: In lavorazione (2026-09-30)
+**Stato**: Done (2026-09-30)
 **Fase**: 4 · **Branch**: `feat/TASK-084-multi-subject` (parte da `main`)
 
 Chiesto dall'utente il 2026-09-30, provando TASK-079 sull'iPhone: una foto
@@ -76,17 +76,17 @@ nella lettura della foto.
 
 ## Criteri di accettazione
 
-- [ ] Due soggetti staccati danno un contorno con un `stroke` ad anello;
+- [x] Due soggetti staccati danno un contorno con un `stroke` ad anello;
       il percorso della CLI li disegna tutti e due in una linea.
-- [ ] Il collegamento è il segmento più corto fra i due soggetti e non
+- [x] Il collegamento è il segmento più corto fra i due soggetti e non
       incrocia nessuna linea (`parse_outline` passa).
-- [ ] 3 e 4 soggetti funzionano; 5 sono rifiutati con il motivo.
-- [ ] Una foto con un soggetto solo dà lo stesso contorno di prima, punto
+- [x] 3 e 4 soggetti funzionano; 5 sono rifiutati con il motivo.
+- [x] Una foto con un soggetto solo dà lo stesso contorno di prima, punto
       per punto.
-- [ ] Macchioline, soggetto sul bordo, sfondo non uniforme: come prima.
-- [ ] Campioni giudicati dall'utente.
-- [ ] Prova sull'iPhone con la foto che oggi è rifiutata.
-- [ ] `ruff`, `black --check`, `pytest -m "not network"`; `npm run
+- [x] Macchioline, soggetto sul bordo, sfondo non uniforme: come prima.
+- [x] Campioni giudicati dall'utente.
+- [x] Prova sull'iPhone con la foto che oggi è rifiutata.
+- [x] `ruff`, `black --check`, `pytest -m "not network"`; `npm run
       typecheck`, `npm test`, `npm run lint`, `format:check`.
 
 ## File toccati
@@ -99,7 +99,7 @@ servono `test_contract.py`, il test di `shared-types` e i test dell'app.
 ```
 services/route-engine/route_engine/image_outline.py
 services/route-engine/route_engine/outline_edits.py (MAX_DETAIL_POINTS)
-services/route-engine/tests/test_image_outline.py
+services/route-engine/tests/test_image_outline.py, test_outline_edits.py
 services/api/shaperoute_api/images.py, schemas.py (strokes, descrizioni)
 services/api/tests/test_images.py
 packages/shared-types/src/index.ts, fixtures/image-limits.json
@@ -137,10 +137,12 @@ rispetto all'idea tecnica:
 - «Add a part» su un soggetto secondario: diventa un anello appeso, non si
   unisce (l'unione resta solo sul contorno principale).
 
-Manca: il giudizio dell'utente sui campioni (`samples/LOG.md`, righe «da
-giudicare»; `samples/TASK-084_overview.png`), la prova sull'iPhone, la CI
-e il merge.
-
 ## Esito
 
-*(a fine task)*
+Fatto (2026-09-30, PR #105, ADR-0079). Una foto con 2–4 soggetti dà un
+contorno solo: il più grande è la linea, gli altri sono appesi con un
+collegamento nel punto più vicino; oltre 4 la foto è rifiutata. Campioni
+a 12 km giudicati dall'utente: Milano «sì» (somiglianza 0,96–0,98), Levico
+«quasi» (0,76–0,84); il collegamento non disturba. Provato dall'utente
+sull'iPhone: funziona. Dentro anche il limite dei dettagli a mano, da 50
+punti a 200 punti percorsi (circa 100 andata e ritorno).

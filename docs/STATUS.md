@@ -63,6 +63,13 @@ Niente.
 
 ## Completato
 
+- **API** — TASK-090: il registro delle richieste (ADR-0085). Con
+  `--request-log` l'API scrive ogni richiesta di percorso, partenza
+  compresa, in `data/requests/requests.jsonl`; `python -m
+  shaperoute_api.replay` la rifà e dice se il percorso è lo stesso punto
+  per punto. **Spento per default**: accenderlo sempre sul Mac è una scelta
+  dell'utente. Non si vede nell'app. Provato: cuore 10 km a Caldonazzo e
+  «CIAO» a Levico, rifatti identici (467 e 626 punti).
 - **Motore** — TASK-111: il punteggio di una traccia corsa, da 0 a 100
   (`track_score.py`, ADR-0090): la somiglianza del percorso per la fedeltà
   della corsa al percorso, entro 40 m. Dalla CLI con `--score-track

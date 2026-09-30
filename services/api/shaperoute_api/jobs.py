@@ -15,7 +15,7 @@ import uuid
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from route_engine.directions import guidance
 from route_engine.models import RouteResult
@@ -68,6 +68,13 @@ class Job:
     result: RouteResult | None = None
     error: ErrorDetail | None = None
     finished_at: float | None = None
+    # The request as it arrived, for the request log (TASK-090).
+    body: dict[str, Any] | None = None
+
+
+# Told how a job ended, cancelled ones too (neither result nor error when
+# it was dropped before computing), with its seconds: the request log.
+JobEnd = Callable[[Job, RouteResult | None, ErrorDetail | None, float], None]
 
 
 class RouteJobs:
@@ -78,17 +85,19 @@ class RouteJobs:
         workers: int = WORKERS,
         keep_s: float = KEEP_S,
         clock: Callable[[], float] = time.monotonic,
+        on_end: JobEnd | None = None,
     ) -> None:
         self._source = source
         self._planner = planner
+        self._on_end = on_end
         self._keep_s = keep_s
         self._clock = clock
         self._jobs: dict[str, Job] = {}
         self._lock = threading.Lock()
         self._pool = ThreadPoolExecutor(workers, thread_name_prefix="route-job")
 
-    def submit(self, request: AnyRequest) -> Job:
-        job = Job(job_id=uuid.uuid4().hex[:12], request=request)
+    def submit(self, request: AnyRequest, body: dict[str, Any] | None = None) -> Job:
+        job = Job(job_id=uuid.uuid4().hex[:12], request=request, body=body)
         with self._lock:
             self._forget_old()
             self._jobs[job.job_id] = job
@@ -133,6 +142,7 @@ class RouteJobs:
             )
         except _Dropped:
             log.info("job %s: dropped before computing", job.job_id)
+            self._tell(job, None, None, self._clock() - started)
             return
         except Exception as exc:
             _, error = error_of(exc)
@@ -145,6 +155,7 @@ class RouteJobs:
                 error.code,
                 self._clock() - started,
             )
+            self._tell(job, None, error, self._clock() - started)
             return
         self._set(job, status="done", result=result)
         log.info(
@@ -154,6 +165,23 @@ class RouteJobs:
             result.similarity,
             self._clock() - started,
         )
+        self._tell(job, result, None, self._clock() - started)
+
+    def _tell(
+        self,
+        job: Job,
+        result: RouteResult | None,
+        error: ErrorDetail | None,
+        elapsed_s: float,
+    ) -> None:
+        """After the job has its answer, so the app does not wait for it;
+        whatever the listener does, the job stays as it ended."""
+        if self._on_end is None:
+            return
+        try:
+            self._on_end(job, result, error, elapsed_s)
+        except Exception:
+            log.exception("job %s: the listener of its end failed", job.job_id)
 
     def _set(
         self,

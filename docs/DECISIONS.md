@@ -2843,3 +2843,54 @@ perde punti. Il punteggio non riconosce una traccia finta o fatta in bici:
 annotato, non fatto. TASK-113 deve mandare all'API punti e somiglianza del
 percorso; presa dall'app, la somiglianza si può falsare: TASK-117 la
 ricalcola o la conserva col percorso.
+
+## ADR-0085 — Il registro delle richieste dell'API, spento per default
+**Stato**: Attiva · 2026-09-30 · la funzione è chiesta dall'utente («serve
+a correggere i difetti e non si vede nell'app»); tutto il resto deciso
+dall'agente su delega dell'utente (TASK-090)
+
+**Contesto**: in TASK-075 l'utente ha visto sull'iPhone un cuore brutto a
+Caldonazzo e non si è potuto rifare: la partenza era il GPS del telefono, e
+25–100 m portano la somiglianza da 0,73 a 0,92. L'API non tiene niente
+delle richieste. La richiesta contiene la posizione di chi la fa.
+
+**Decisione**:
+- Un modulo nuovo, `shaperoute_api/request_log.py`: una riga JSON (JSON
+  Lines) per ogni richiesta di percorso finita, in
+  `data/requests/requests.jsonl`, fuori dal repository (`.gitignore`), con
+  ora, tipo, id del job, il corpo com'è arrivato (`model_dump` del corpo
+  già controllato) e l'esito: distanza, somiglianza, secondi, numero di
+  punti e un'impronta SHA-256 dei punti; oppure il solo codice dell'errore.
+- **Spento per default**; acceso con `--request-log` o
+  `SHAPEROUTE_REQUEST_LOG=1`. Acceso per default sarebbe una scelta
+  dell'utente (le posizioni restano su disco): non è stata presa qui.
+- La riga si scrive nel thread del job, **dopo** che il job ha la sua
+  risposta (`on_end` di `RouteJobs`): l'app non aspetta il disco. Ogni
+  errore di scrittura è un avviso nel log, senza il corpo; un ascoltatore
+  che fallisce non cambia l'esito del job.
+- Tetto: a 5 MB il file diventa `requests.old.jsonl` e ne parte uno nuovo;
+  al massimo 10 MB. File creato con permessi `0600`, cartella `0700`.
+- Si registrano solo le richieste di percorso (`/route-jobs`,
+  `/image-route-jobs`, `/routes`). Niente intestazioni, chiave, indirizzo
+  del client, foto, punti del percorso, messaggio dell'errore.
+- `python -m shaperoute_api.replay`: legge una riga (`--job`, `--line`, o
+  l'ultima), ricostruisce la richiesta con `to_request`, la dà a
+  `plan_request` sui grafi in cache e confronta l'impronta; codice di
+  uscita 1 se il percorso non è quello registrato; `--gpx` lo scrive.
+
+**Alternative scartate**: registrare dentro `data/cache` (la cache si copia
+a un collega, `PASSAGGIO.md`: porterebbe con sé le posizioni); scrivere la
+riga all'arrivo della richiesta e l'esito in una seconda riga (due righe da
+ricomporre; si perde solo la richiesta in corso se l'API muore); salvare
+tutti i punti del percorso (file cento volte più grande: l'impronta basta a
+dire «uguale», e il percorso si rifà); un middleware HTTP (vedrebbe
+intestazioni e foto); `logging.handlers.RotatingFileHandler` (non crea il
+file con permessi ristretti).
+
+**Conseguenza**: un percorso si rifà uguale finché motore e grafi in cache
+sono gli stessi; se cambiano, il replay lo dice. Il motore non usa le
+partenze vicine quando la memoria libera è poca (ADR-0071): in quel caso un
+replay può dare un percorso diverso da quello registrato. Su un server il
+file conterrebbe le posizioni di tutti gli utenti: `DEPLOY.md` lo dice.
+Un'API su più processi scriverebbe nello stesso file da più parti: oggi è
+un processo solo.

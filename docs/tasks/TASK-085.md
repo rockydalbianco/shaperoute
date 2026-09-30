@@ -1,6 +1,6 @@
 # TASK-085 — I luoghi suggeriti mentre si scrive la partenza
 
-**Stato**: In corso — codice e test fatti, manca la prova sull'iPhone
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-085-place-suggestions`
 
 ## Obiettivo
@@ -26,7 +26,7 @@ sotto il campo, senza premere «Search».
 - [x] Una o due lettere non cercano e tolgono i suggerimenti.
 - [x] «Search» non fa partire una seconda richiesta uguale.
 - [x] Una risposta vecchia non copre quella nuova.
-- [ ] Prova sull'iPhone: scrivendo «via bel…» compaiono i luoghi.
+- [x] Prova sull'iPhone: scrivendo «via bel…» compaiono i luoghi.
 
 ## File toccati
 
@@ -47,4 +47,8 @@ docs/tasks/TASK-085.md
 
 ## Esito
 
-*(a fine task)*
+Fatto. Scrivendo la partenza i luoghi compaiono da soli, da 3 lettere e
+dopo mezzo secondo di pausa; «Search» cerca subito. Provata dall'utente
+sull'iPhone il 2026-09-30, dall'app pubblicata su Expo (`DEPLOY.md` A.6,
+commit `2c209fb`): funziona. Il task è stato chiuso dalla sessione di
+TASK-083, su richiesta dell'utente.

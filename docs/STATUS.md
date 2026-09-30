@@ -52,11 +52,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **App** — TASK-085: i luoghi suggeriti mentre si scrive la partenza
-  (ADR-0080). Codice e test fatti; manca la prova sull'iPhone.
+Niente.
 
 ## Completato
 
+- **App** — TASK-085: i luoghi suggeriti mentre si scrive la partenza
+  (ADR-0080): da 3 lettere, dopo mezzo secondo di pausa. Provata
+  dall'utente sull'iPhone (2026-09-30), dall'app pubblicata su Expo:
+  funziona.
 - **App e motore** — TASK-079: modificare il contorno di un'immagine
   (ADR-0074). «Edit the outline» apre una lavagna a tutto schermo con zoom:
   «Add a part» unisce una forma alla sagoma, «Add a detail» aggiunge un

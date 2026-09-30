@@ -177,6 +177,15 @@ lavagna deve essere a tutto schermo, con lo zoom. Fatto: «Edit the
 outline» apre la lavagna (`OutlineBoard.tsx`, `boardView.ts`), l'anteprima
 nella pagina mostra soltanto. Da ripetere la prova.
 
+## Seconda prova sull'iPhone (2026-09-30)
+
+La lavagna si apre e lo zoom va. L'utente vuole **disegnare dentro
+l'immagine**: «Add a part» con una forma tutta dentro dava `inside`. Fatto:
+un disegno lontano dalla linea si collega alla linea più vicina invece di
+essere rifiutato; tolti `not_joined`, `inside`, `not_on_line`; resta
+`crosses`, che l'utente ha accettato. I criteri sopra che nominano quei tre
+motivi valgono con questa regola. Da ripetere la prova.
+
 ## Esito
 
 *(a fine task)*

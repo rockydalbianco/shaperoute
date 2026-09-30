@@ -47,9 +47,9 @@ const EDIT_BUTTONS: { kind: EditKind; label: string }[] = [
 /** What to do, before and once a button is on. */
 const HINT = "Choose what to add. Two fingers zoom and move the picture.";
 const DRAW_HINT: Record<EditKind, string> = {
-  part: "Draw a closed shape across the yellow line: it joins the outline.",
+  part: "Draw a closed shape. Across the yellow line it becomes part of the outline; anywhere else it is joined to the nearest yellow line.",
   detail:
-    "Draw from the yellow line: the route runs along it and back. Cross your own line to close a loop, like an eye.",
+    "Draw a line anywhere: it is joined to the nearest yellow line, and the route runs along it and back. Close a loop to make an eye.",
 };
 
 type Point = [x: number, y: number];

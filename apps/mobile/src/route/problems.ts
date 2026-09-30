@@ -160,15 +160,10 @@ function isImageReason(reason: unknown): reason is ImageReason {
  */
 export const EDIT_REASON_TEXT: Record<EditReason, string> = {
   short: "This line is too short to add. Draw a longer one.",
-  not_joined:
-    "A part must overlap the yellow line, or the route would need two lines. Draw it across the line.",
-  inside:
-    "This part is inside the outline and adds nothing. Draw it across the yellow line.",
   covers_detail:
     "This part covers where a detail starts. Undo the detail first, or draw the part elsewhere.",
-  not_on_line: "A detail must start on the yellow line. Put your finger on it first.",
   crosses:
-    "A detail cannot cross the outline or another detail: the route would cross itself. Draw it again.",
+    "This line would cross the outline or another line, and the route would cross itself. Draw it where it crosses nothing.",
   too_many_corners:
     "That is too much for one route. Undo something, or draw simpler lines.",
 };

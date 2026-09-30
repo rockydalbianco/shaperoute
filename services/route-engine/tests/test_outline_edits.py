@@ -61,19 +61,47 @@ def test_a_part_that_only_shares_a_side_still_joins() -> None:
     assert Polygon(edited.points).area == pytest.approx(100 * 100 + 40 * 20)
 
 
-def test_a_part_away_from_the_silhouette_is_not_joined() -> None:
+def _loop(stroke: tuple[Point, ...]) -> tuple[Point, ...]:
+    """The loop at the end of a stroke, closed; empty when it has none."""
+    start = stroke.index(stroke[-1])
+    return stroke[start:] if start < len(stroke) - 1 else ()
+
+
+def test_a_part_away_from_the_silhouette_hangs_on_it_as_a_loop() -> None:
     drawn = [(120, 40), (140, 40), (140, 60), (120, 60)]
-    assert _reason(add_part, SQUARE, [], drawn) == "not_joined"
+    edited = add_part(SQUARE, [], drawn)
+    _valid(edited)
+    assert edited.points == tuple(SQUARE)  # the outline itself is unchanged
+    (stroke,) = edited.strokes
+    # Joined by the shortest stretch: straight across, 20 long.
+    assert stroke[0][0] == pytest.approx(100)
+    assert math.dist(stroke[0], stroke[1]) == pytest.approx(20)
+    assert Polygon(_loop(stroke)).area == pytest.approx(20 * 20)
 
 
-def test_a_part_touching_at_one_corner_is_not_joined() -> None:
+def test_a_part_touching_at_one_corner_hangs_there() -> None:
     drawn = [(100, 100), (140, 100), (140, 140), (100, 140)]
-    assert _reason(add_part, SQUARE, [], drawn) == "not_joined"
+    edited = add_part(SQUARE, [], drawn)
+    _valid(edited)
+    (stroke,) = edited.strokes
+    assert stroke[0] == stroke[-1] == (100, 100)
+    assert Polygon(stroke).area == pytest.approx(40 * 40)
 
 
-def test_a_part_inside_the_silhouette_adds_nothing() -> None:
+def test_a_part_inside_the_silhouette_hangs_on_it_as_a_loop() -> None:
     drawn = [(20, 20), (60, 20), (60, 60), (20, 60)]
-    assert _reason(add_part, SQUARE, [], drawn) == "inside"
+    edited = add_part(SQUARE, [], drawn)
+    _valid(edited)
+    assert edited.points == tuple(SQUARE)
+    (stroke,) = edited.strokes
+    assert stroke[1] == (20, 20)  # the corner nearest to the outline
+    assert math.dist(stroke[0], stroke[1]) == pytest.approx(20)
+    assert Polygon(_loop(stroke)).area == pytest.approx(40 * 40)
+
+
+def test_a_loop_inside_cannot_cross_a_detail() -> None:
+    drawn = [(20, 40), (40, 40), (40, 60), (20, 60)]
+    assert _reason(add_part, SQUARE, [LEFT_STROKE], drawn) == "crosses"
 
 
 def test_a_tiny_part_is_short() -> None:
@@ -177,8 +205,24 @@ def test_a_detail_can_start_on_an_earlier_detail() -> None:
     assert edited.strokes[1] == ((20, 50), (20, 80))
 
 
-def test_a_detail_away_from_the_line_is_refused() -> None:
-    assert _reason(add_detail, SQUARE, [], [(30, 50), (60, 50)]) == "not_on_line"
+def test_a_detail_away_from_the_line_is_joined_to_the_nearest() -> None:
+    (stroke,) = add_detail(SQUARE, [], [(30, 50), (60, 50)]).strokes
+    assert stroke == ((0, 50), (60, 50))
+    # From whichever end is nearer: here the last point drawn.
+    (stroke,) = add_detail(SQUARE, [], [(60, 50), (80, 50)]).strokes
+    assert stroke == ((100, 50), (60, 50))
+    # To an earlier detail when that is the nearest line.
+    edited = add_detail(SQUARE, [LEFT_STROKE], [(30, 60), (30, 80)])
+    _valid(edited)
+    assert edited.strokes[1] == ((30, 50), (30, 80))
+
+
+def test_an_eye_drawn_inside_is_a_loop_joined_to_the_line() -> None:
+    drawn = [(30, 50), (40, 60), (50, 50), (40, 40), (31, 49)]
+    edited = add_detail(SQUARE, [], drawn)
+    _valid(edited)
+    (stroke,) = edited.strokes
+    assert stroke == ((0, 50), (30, 50), (40, 60), (50, 50), (40, 40), (30, 50))
 
 
 def test_a_detail_across_the_outline_is_refused() -> None:

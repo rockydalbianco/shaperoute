@@ -133,14 +133,27 @@ def test_a_refused_drawing_says_why(
     client: tuple[TestClient, list[AnyRequest]],
 ) -> None:
     http, _ = client
-    response = _edit(http, kind="detail", line=[[0.5, 0.4], [0.55, 0.4]])
+    # From the left side, across the square and out through the right one.
+    response = _edit(http, kind="detail", line=[[0.4, 0.4], [0.5, 0.4], [0.8, 0.4]])
     assert response.status_code == 422
     error = response.json()["error"]
     assert error["code"] == "outline_edit_rejected"
-    assert error["reason"] == "not_on_line"
+    assert error["reason"] == "crosses"
+
+
+def test_a_drawing_away_from_the_outline_is_joined_to_it(
+    client: tuple[TestClient, list[AnyRequest]],
+) -> None:
+    http, _ = client
+    # An eye in the middle of the square, started away from every line.
+    body = _edit(http, kind="detail", line=[[0.47, 0.4], [0.53, 0.4]]).json()
+    assert body["image_strokes"] == [[[0.4, 0.4], [0.53, 0.4]]]
+    # A closed shape beside the square hangs on it as a loop.
     part = [[0.7, 0.3], [0.9, 0.3], [0.9, 0.5], [0.7, 0.5]]
-    error = _edit(http, kind="part", line=part).json()["error"]
-    assert (error["code"], error["reason"]) == ("outline_edit_rejected", "not_joined")
+    body = _edit(http, kind="part", line=part).json()
+    assert body["image_points"] == SQUARE
+    [stroke] = body["image_strokes"]
+    assert stroke[0][0] == 0.6 and stroke[-1] == stroke[1]
 
 
 @pytest.mark.parametrize(

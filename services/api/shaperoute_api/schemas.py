@@ -159,10 +159,7 @@ ImageReason = Literal[
 # route_engine/outline_edits.py (TASK-079, ADR-0074).
 EditReason = Literal[
     "short",
-    "not_joined",
-    "inside",
     "covers_detail",
-    "not_on_line",
     "crosses",
     "too_many_corners",
 ]

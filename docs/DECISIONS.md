@@ -2560,9 +2560,14 @@ L'utente vuole completarlo a mano sull'anteprima (ADR-0069).
     semplificazione all'1%, anello e gambo ognuno per sé;
   - limiti: al più 100 angoli per il contorno, 50 punti per tutti i
     dettagli insieme (ognuno si fa due volte), 2000 punti per un disegno;
-  - un rifiuto ha un motivo in una parola: `short`, `not_joined`,
-    `inside`, `covers_detail`, `not_on_line`, `crosses`,
-    `too_many_corners`.
+  - **un disegno lontano dalla linea si collega, non si rifiuta**
+    (seconda prova sull'iPhone, 2026-09-30: l'utente vuole disegnare dentro
+    l'immagine): una linea aperta prende un tratto dritto dal punto più
+    vicino al suo capo più vicino; una forma chiusa che non si sovrappone
+    alla sagoma, o che ci sta dentro, diventa un anello appeso. Si rifiuta
+    solo ciò che incrocerebbe un'altra linea;
+  - un rifiuto ha un motivo in una parola: `short`, `covers_detail`,
+    `crosses`, `too_many_corners`.
 - **L'API non tiene stato**: `POST /image-outline-edits` riceve il contorno
   mostrato, nella cornice della foto (`image_points`, `image_strokes`,
   `aspect`), il tipo e la linea disegnata, e risponde con un
@@ -2595,8 +2600,7 @@ di aggiustare di nascosto: il motivo dice come ridisegnare.
 
 **Conseguenza**: prova da capo a fondo con il motore vero, Milano, 10 km:
 una testa disegnata, due orecchie aggiunte, un occhio ad anello: 9,3 km,
-somiglianza 0,96, in 3 s, una linea sola. Un pezzo staccato si rifiuta
-(`not_joined`). Non si cancella una parte e non si spostano punti: per
+somiglianza 0,96, in 3 s, una linea sola. Non si cancella una parte e non si spostano punti: per
 togliere c'è solo «Undo». Un dettaglio che esce dalla sagoma è ammesso se
 non incrocia la linea (baffi, antenne).
 

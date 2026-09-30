@@ -302,10 +302,13 @@ Sopra i pulsanti una riga dice cosa fare:
 
 - nessun pulsante: *Choose what to add. Two fingers zoom and move the
   picture.*
-- parte: *Draw a closed shape across the yellow line: it joins the
-  outline.*
-- dettaglio: *Draw from the yellow line: the route runs along it and back.
-  Cross your own line to close a loop, like an eye.*
+- parte: *Draw a closed shape. Across the yellow line it becomes part of
+  the outline; anywhere else it is joined to the nearest yellow line.*
+- dettaglio: *Draw a line anywhere: it is joined to the nearest yellow
+  line, and the route runs along it and back. Close a loop to make an eye.*
+
+Si disegna dove si vuole, anche dentro l'immagine: ciò che non tocca la
+linea gialla il motore lo collega con un trattino nel punto più vicino.
 
 I dettagli si vedono gialli come il contorno. «Undo» toglie l'ultima
 modifica, fino al contorno ricavato dalla foto; è spento finché non c'è
@@ -315,11 +318,8 @@ linea, al posto della riga il motivo, con sotto il testo del motore:
 | `reason` | Messaggio |
 |---|---|
 | `short` | This line is too short to add. Draw a longer one. |
-| `not_joined` | A part must overlap the yellow line, or the route would need two lines. Draw it across the line. |
-| `inside` | This part is inside the outline and adds nothing. Draw it across the yellow line. |
 | `covers_detail` | This part covers where a detail starts. Undo the detail first, or draw the part elsewhere. |
-| `not_on_line` | A detail must start on the yellow line. Put your finger on it first. |
-| `crosses` | A detail cannot cross the outline or another detail: the route would cross itself. Draw it again. |
+| `crosses` | This line would cross the outline or another line, and the route would cross itself. Draw it where it crosses nothing. |
 | `too_many_corners` | That is too much for one route. Undo something, or draw simpler lines. |
 
 «Draw route» si accende solo con un contorno: il percorso si chiede come

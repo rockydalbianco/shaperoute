@@ -4,15 +4,18 @@ The user draws with a finger over the outline of `image_outline.py`, and
 the engine decides what the drawing becomes, always keeping one line the
 route can follow (ADR-0074):
 
-- a **part** is a closed line joined to the silhouette: the drawing is
-  closed, simplified like the outline, and merged with the silhouette. It
-  must overlap it, or the pieces would be two, and add something to it.
-  Holes are left out, as in the traced outline;
+- a **part** is a closed line. Drawn across the outline, it is merged
+  into the silhouette: the drawing is closed, simplified like the outline,
+  and joined. Holes are left out, as in the traced outline. Drawn away from
+  the outline, inside or outside it, it cannot be merged: it becomes a
+  detail, a loop hung on the line;
 - a **detail** is a stroke of an outline file (outline.py, TASK-037): it
   starts on the outline or on an earlier detail, and the route goes along it
-  and back. Its start is moved onto the nearest line when it is close
-  enough, since a finger is not precise; where the drawing crosses itself
-  the loop closes there (an eye hung on the line) and the rest is left out.
+  and back. A drawing that begins near a line starts on it, since a finger
+  is not precise; one that begins away from every line, such as an eye in
+  the middle of a face, is joined to the nearest line by the shortest
+  stretch, from whichever of its ends is nearer. Where the drawing crosses
+  itself the loop closes there and the rest is left out.
 
 Everything is in the frame of the drawing, x to the right and y upwards, at
 any scale: the distances below are shares of the outline's longer side.
@@ -56,10 +59,7 @@ _THIN_SHARE = 0.002
 
 EDIT_REASONS = (
     "short",
-    "not_joined",
-    "inside",
     "covers_detail",
-    "not_on_line",
     "crosses",
     "too_many_corners",
 )
@@ -86,23 +86,24 @@ class EditedOutline:
 def add_part(
     points: Sequence[Point], strokes: Sequence[Sequence[Point]], drawn: Sequence[Point]
 ) -> EditedOutline:
-    """The outline with the closed line `drawn` merged into it; the details
-    stay as they are. InvalidOutlineError if the outline given is not valid,
-    InvalidEditError if the drawing gives no single outline."""
+    """The outline with the closed line `drawn` merged into it, the details
+    staying as they are; or, when it does not overlap the outline or adds
+    nothing to it, hung on the nearest line as a detail. InvalidOutlineError
+    if the outline given is not valid, InvalidEditError if the drawing gives
+    no single line."""
     ring = _checked(points, strokes)
     size = _size(ring)
     part = _drawn_polygon(drawn, size)
     silhouette = Polygon(ring)
     merged = silhouette.union(part)
-    if not isinstance(merged, Polygon) or merged.is_empty:
-        raise InvalidEditError(
-            "not_joined",
-            "the part does not overlap the outline: draw it across the line",
-        )
-    if merged.area - silhouette.area < MIN_GAIN_SHARE * silhouette.area:
-        raise InvalidEditError(
-            "inside", "the part is inside the outline: draw it across the line"
-        )
+    if (
+        not isinstance(merged, Polygon)
+        or merged.is_empty
+        or merged.area - silhouette.area < MIN_GAIN_SHARE * silhouette.area
+    ):
+        # Away from the outline, or inside it: a loop hung on the line.
+        loop = _from_nearest(part, ring, strokes)
+        return _with_detail(ring, strokes, loop, size, closed=True)
     outside = Polygon(merged.exterior).simplify(
         _CLEAN_SHARE * size, preserve_topology=True
     )
@@ -126,26 +127,61 @@ def add_part(
 def add_detail(
     points: Sequence[Point], strokes: Sequence[Sequence[Point]], drawn: Sequence[Point]
 ) -> EditedOutline:
-    """The outline with one more detail, from the line `drawn`, which must
-    begin near the outline or an earlier detail. InvalidOutlineError if the
-    outline given is not valid, InvalidEditError if the drawing gives no
-    detail the route can follow."""
+    """The outline with one more detail, from the line `drawn`: it starts
+    on the outline or an earlier detail when it begins near one, and is
+    joined to the nearest otherwise. InvalidOutlineError if the outline
+    given is not valid, InvalidEditError if the drawing gives no detail the
+    route can follow."""
     ring = _checked(points, strokes)
     size = _size(ring)
     line = _distinct(drawn)
     if _length(line) < MIN_DRAWN_SHARE * size:
         raise InvalidEditError("short", "the line is too short: draw a longer one")
-    hosts = [LinearRing(ring), *(LineString(s) for s in strokes)]
-    line = _attached(line, hosts, size)
-    # Fewer points before looking for where it crosses itself, which
-    # compares every side with every other.
-    line = [
-        (x, y)
-        for x, y in LineString(line)
-        .simplify(_THIN_SHARE * size, preserve_topology=False)
-        .coords
-    ]
-    stroke = _simplified(_looped(line, size), size)
+    return _with_detail(ring, strokes, line, size)
+
+
+def _hosts(
+    ring: Sequence[Point], strokes: Sequence[Sequence[Point]]
+) -> list[LineString]:
+    """The lines a detail can start on."""
+    return [LinearRing(ring), *(LineString(s) for s in strokes)]
+
+
+def _from_nearest(
+    part: Polygon, ring: Sequence[Point], strokes: Sequence[Sequence[Point]]
+) -> list[Point]:
+    """The closed line of `part`, starting and ending at its corner nearest
+    to the lines it can hang on."""
+    corners = [(x, y) for x, y in part.exterior.coords][:-1]
+    hosts = _hosts(ring, strokes)
+    first = min(
+        range(len(corners)),
+        key=lambda i: min(h.distance(ShapelyPoint(corners[i])) for h in hosts),
+    )
+    turned = corners[first:] + corners[:first]
+    return [*turned, turned[0]]
+
+
+def _with_detail(
+    ring: list[Point],
+    strokes: Sequence[Sequence[Point]],
+    line: list[Point],
+    size: float,
+    closed: bool = False,
+) -> EditedOutline:
+    """The outline with `line` as one more detail. `closed` when the line is
+    a loop already, its last point repeating the first."""
+    line = _attached(line, _hosts(ring, strokes), size)
+    if closed:
+        # The loop closes on its first corner; begun on a host, on the host.
+        if line[1] != line[-1]:
+            line[-1] = line[0]
+    else:
+        # Fewer points before looking for where it crosses itself, which
+        # compares every side with every other.
+        thin = LineString(line).simplify(_THIN_SHARE * size, preserve_topology=False)
+        line = _looped([(x, y) for x, y in thin.coords], size)
+    stroke = _simplified(line, size)
     detail_points = sum(len(s) for s in strokes) + len(stroke)
     if detail_points > MAX_DETAIL_POINTS:
         raise InvalidEditError(
@@ -235,17 +271,26 @@ def _drawn_polygon(drawn: Sequence[Point], size: float) -> Polygon:
 def _attached(
     line: list[Point], hosts: Sequence[LineString], size: float
 ) -> list[Point]:
-    """The line starting exactly on the nearest host: the points it draws
-    along the host before leaving it are left out."""
+    """The line starting exactly on the nearest host. Begun near a host, it
+    starts on it, and the points it draws along the host before leaving it
+    are left out. Begun away from every host, it is joined to the nearest
+    by the shortest stretch, from its nearer end."""
     snap = SNAP_SHARE * size
 
     def distance(p: Point) -> float:
         return min(h.distance(ShapelyPoint(p)) for h in hosts)
 
+    def on_host(p: Point) -> Point:
+        near = ShapelyPoint(p)
+        host = min(hosts, key=lambda h: h.distance(near))
+        start = nearest_points(host, near)[0]
+        return start.x, start.y
+
     if distance(line[0]) > snap:
-        raise InvalidEditError(
-            "not_on_line", "the detail must start on the yellow line"
-        )
+        if distance(line[-1]) < distance(line[0]):
+            line = line[::-1]
+        if distance(line[0]) > snap:
+            return [on_host(line[0]), *line]
     last = 0
     while last + 1 < len(line) and distance(line[last + 1]) <= snap:
         last += 1
@@ -254,10 +299,7 @@ def _attached(
         raise InvalidEditError(
             "short", "the line stays on the yellow line: draw away from it"
         )
-    near = ShapelyPoint(line[last])
-    host = min(hosts, key=lambda h: h.distance(near))
-    start = nearest_points(host, near)[0]
-    return [(start.x, start.y), *rest]
+    return [on_host(line[last]), *rest]
 
 
 def _looped(line: list[Point], size: float) -> list[Point]:

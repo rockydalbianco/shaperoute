@@ -289,16 +289,18 @@ l'app manda il contorno che mostra e la linea disegnata.
 - `image_points`, `image_strokes`, `aspect`: quelli dell'`ImageOutline`
   mostrato; `line`: la linea disegnata, come frazioni della foto
   dall'angolo in alto a sinistra, da 2 a 2000 punti.
-- `kind`: `part`, una linea chiusa da unire alla sagoma, che deve
-  sovrapporsi; `detail`, una linea che parte dal contorno (o da un
-  dettaglio), che il percorso fa andata e ritorno. Dove si incrocia da
-  sola chiude un anello, come un occhio.
+- `kind`: `part`, una linea chiusa: a cavallo del contorno si unisce alla
+  sagoma, altrove (dentro o fuori) resta un anello appeso alla linea più
+  vicina; `detail`, una linea che il percorso fa andata e ritorno: parte
+  dal contorno (o da un dettaglio) se comincia lì vicino, altrimenti il
+  motore la collega alla linea più vicina. Dove si incrocia da sola chiude
+  un anello, come un occhio.
 - La risposta è un `ImageOutline`, con in più `strokes` (nella cornice di
   `points`) e `image_strokes` (sopra la foto). `/image-outlines` li dà
   vuoti.
 - Un disegno che non dà una linea sola è `422` `outline_edit_rejected`, con
-  il motivo del motore in `reason`: `short`, `not_joined`, `inside`,
-  `covers_detail`, `not_on_line`, `crosses`, `too_many_corners`
+  il motivo del motore in `reason`: `short`, `covers_detail`, `crosses`,
+  `too_many_corners`
   (`EDIT_REASONS` in `shared-types`). Punti fuori da [0, 1], un contorno
   non valido o `aspect` fuori da 1/20–20 sono `invalid_request`.
 - «Undo» è dell'app: torna al contorno di prima, senza chiamare l'API.

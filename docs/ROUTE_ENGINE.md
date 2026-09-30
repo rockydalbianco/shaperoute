@@ -298,11 +298,18 @@ disegnata col dito, e decide cosa diventa, con regole fisse:
   lascia, e così se la fine torna entro il 3% da un suo punto. Poi la
   semplificazione all'1%.
 
+Un disegno **lontano da ogni linea non si rifiuta**: si collega. Una linea
+aperta prende un tratto dritto dal punto più vicino del contorno o di un
+dettaglio fino al suo capo più vicino; una forma chiusa che non si
+sovrappone alla sagoma, o che ci sta tutta dentro, diventa un anello appeso
+per il suo angolo più vicino. Resta rifiutato ciò che incrocerebbe un'altra
+linea (`crosses`).
+
 Tutto nella cornice del disegno, x a destra e y in alto, a qualunque scala.
 Ogni risultato passa `parse_outline` con i suoi dettagli: la linea resta
 una sola. Un disegno che non va è rifiutato con il motivo
-(`InvalidEditError.reason`): `short`, `not_joined`, `inside`,
-`covers_detail`, `not_on_line`, `crosses`, `too_many_corners` (oltre 100
+(`InvalidEditError.reason`): `short`, `covers_detail`, `crosses`,
+`too_many_corners` (oltre 100
 angoli per il contorno, 50 punti per tutti i dettagli, 2000 per un
 disegno).
 

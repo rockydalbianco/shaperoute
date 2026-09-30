@@ -89,7 +89,7 @@ test("with a button on, one finger draws, and the line goes out when it lifts", 
   const value = edits();
   const area = await board(value);
   await fireEvent.press(screen.getByText("Add a detail"));
-  expect(screen.getByText(/Draw from the yellow line/)).toBeTruthy();
+  expect(screen.getByText(/joined to the nearest yellow line/)).toBeTruthy();
   await fireEvent(area, "responderGrant", fingers([200, 470]));
   await fireEvent(area, "responderMove", fingers([200, 350]));
   // The line follows the finger before it is sent.
@@ -160,15 +160,15 @@ test("a refused line says why; Undo and Done do what they say", async () => {
       problem: {
         kind: "api_error",
         code: "outline_edit_rejected",
-        message: "the detail must start on the yellow line",
-        reason: "not_on_line",
+        message: "the detail crosses a line",
+        reason: "crosses",
       },
     },
     [OUTLINE],
   );
   const onClose = jest.fn();
   await board(value, onClose);
-  expect(screen.getByText(EDIT_REASON_TEXT.not_on_line)).toBeTruthy();
+  expect(screen.getByText(EDIT_REASON_TEXT.crosses)).toBeTruthy();
   await fireEvent.press(screen.getByText("Undo"));
   expect(value.undo).toHaveBeenCalled();
   await fireEvent.press(screen.getByText("Done"));

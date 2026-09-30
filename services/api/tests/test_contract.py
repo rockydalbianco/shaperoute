@@ -226,7 +226,7 @@ def test_outline_edit_fixtures_are_valid_bodies() -> None:
     assert len(ImageOutlineBody.model_validate(edited).strokes) == 1
     error = _load("outline-edit-error.json")
     assert set(error["error"]) == _names(ErrorDetail)
-    assert ErrorBody.model_validate(error).error.reason == "not_on_line"
+    assert ErrorBody.model_validate(error).error.reason == "crosses"
 
 
 def test_the_api_answers_the_edited_outline_fixture() -> None:

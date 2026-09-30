@@ -2684,6 +2684,76 @@ leggibili da chi lo scarica; cambiare indirizzo o app vuol dire
 ripubblicare. Con `expo start --no-dev` l'app non ricava più l'API
 dall'host di Expo: serve `EXPO_PUBLIC_API_URL`.
 
+## ADR-0079 — Più soggetti in una foto: fino a 4, appesi con un collegamento nel punto più vicino
+**Stato**: Attiva · 2026-09-30 · il cosa deciso dall'utente (al più 4
+soggetti, oltre la foto è rifiutata; il collegamento si vede sulla mappa,
+fatto andata e ritorno; si collega «nel punto meno problematico per non
+intaccare il disegno», cioè dove i soggetti sono più vicini); il come
+deciso dall'agente su delega dell'utente (TASK-084)
+
+Una foto con più soggetti era rifiutata (`scattered`, ADR-0068), o ne
+restava solo il più grande. L'utente, provando TASK-079, vuole che si
+disegnino tutti.
+
+**Decisione**:
+- **Il formato c'è già**: un soggetto in più è uno `stroke` con l'anello in
+  fondo (TASK-037, ADR-0074). Il gambo è il collegamento, l'anello il
+  contorno del soggetto. `parse_outline`, `plan_shape`, l'API e l'app li
+  portano e li disegnano già: il lavoro è in `image_outline.py`.
+- **Soggetto** è ogni pezzo sopra l'1% del più grande (la soglia delle
+  macchioline di prima), tranne: un pezzo dentro un altro; un pezzo
+  secondario tagliato dal bordo (prima si ignorava, e si ignora ancora: il
+  bordo rifiuta solo il soggetto più grande); un pezzo che la lisciatura
+  consuma. Sparisce la regola del 75%.
+- **Una scala sola**: lisciatura e semplificazione usano il lato lungo di
+  tutto il disegno, non del singolo soggetto. Sulla mappa la scala è una,
+  e un soggetto piccolo non può avere più dettagli di quanti le strade ne
+  disegnino. Con un soggetto solo il disegno è il soggetto: il contorno è
+  quello di prima, punto per punto (verificato su 9 immagini contro il
+  codice di `main`).
+- **Il collegamento** è il tratto più corto fra il soggetto e tutto ciò
+  che è già disegnato: contorno, soggetti e collegamenti di prima
+  (`shapely.ops.nearest_points` sulle linee già semplificate). Si attacca
+  ogni volta il soggetto più vicino al già disegnato. Per costruzione il
+  tratto non attraversa niente: se attraversasse una linea, quella linea
+  sarebbe più vicina. Il controllo severo di `parse_outline` (niente
+  incroci) lo conferma a ogni foto.
+- **Soggetti quasi attaccati diventano uno**: sotto il 2,5% del disegno,
+  perché la semplificazione sposta ogni linea fino all'1% e due linee
+  potrebbero toccarsi.
+- **Limiti**: `MAX_SUBJECTS` = 4; oltre, `scattered`, lo stesso motivo con
+  un testo nuovo («more than 4 separate things»): nessun valore nuovo nel
+  contratto. Gli `strokes` dei soggetti hanno al più 150 punti
+  (`MAX_SUBJECT_POINTS`), altrimenti `jagged`. `MAX_DETAIL_POINTS`, il
+  limite di tutti gli `strokes` nell'API e nelle modifiche a mano, passa da
+  50 a **200 punti percorsi** (`travelled_points`): un anello conta una
+  volta, il gambo e un tratto senza anello due volte, andata e ritorno.
+  Sono circa 100 punti di dettagli a mano senza anello: lo ha chiesto
+  l'utente dopo i rifiuti `too_many_corners` provando TASK-079 (richiesta
+  passata dalla sessione di TASK-079, con le sue misure: a Milano 100
+  punti a zig-zag vanno a 5, 10 e 15 km; 120 falliscono a 15 km).
+  Contare i punti percorsi tiene insieme le due cose: i soggetti, che si
+  fanno una volta, pesano la metà di un dettaglio andata e ritorno.
+  Misurato a Milano: 4 ingranaggi, 43 angoli più 118 punti di soggetti,
+  a 10 e 15 km con somiglianza 0,99–1,00.
+
+**Motivo**: riusare lo `stroke` ad anello tiene il principio (una linea
+sola, decisa dal motore) senza toccare il motore dei percorsi né il
+contratto. Il punto più vicino è quello che l'utente ha chiesto, ed è
+anche il collegamento più corto da correre due volte.
+
+**Conseguenza**: una foto con un pezzo secondario sopra l'1% (prima
+ignorato) ora lo disegna come soggetto, con il suo collegamento. Il limite
+resta un'approssimazione: a far fallire la distanza è la lunghezza dei
+tratti ripassati, non il numero dei punti. Tre soggetti da 118 punti più
+uno zig-zag fitto da 40 punti, dentro il limite, a Milano non si
+disegnano né a 10 né a 15 km («does not fit», dopo l'attesa). «Add a part»
+unisce solo al contorno principale: una parte disegnata sopra un soggetto
+secondario diventa un anello appeso alla linea più vicina. Campioni a
+12 km: a Milano somiglianza 0,96–0,98; a Levico 0,76–0,84, come le altre
+forme con tratti in montagna.
+
+
 ## ADR-0081 — Comandi più visibili: bordo e fondo schiariti nei token
 **Stato**: Attiva · 2026-09-30 · chiesto dall'utente («devono essere più
 visibili i vari pulsanti, vedi tu come fare»); valori decisi dall'agente su
@@ -2843,6 +2913,57 @@ perde punti. Il punteggio non riconosce una traccia finta o fatta in bici:
 annotato, non fatto. TASK-113 deve mandare all'API punti e somiglianza del
 percorso; presa dall'app, la somiglianza si può falsare: TASK-117 la
 ricalcola o la conserva col percorso.
+
+## ADR-0085 — Il registro delle richieste dell'API, spento per default
+**Stato**: Attiva · 2026-09-30 · la funzione è chiesta dall'utente («serve
+a correggere i difetti e non si vede nell'app»); tutto il resto deciso
+dall'agente su delega dell'utente (TASK-090)
+
+**Contesto**: in TASK-075 l'utente ha visto sull'iPhone un cuore brutto a
+Caldonazzo e non si è potuto rifare: la partenza era il GPS del telefono, e
+25–100 m portano la somiglianza da 0,73 a 0,92. L'API non tiene niente
+delle richieste. La richiesta contiene la posizione di chi la fa.
+
+**Decisione**:
+- Un modulo nuovo, `shaperoute_api/request_log.py`: una riga JSON (JSON
+  Lines) per ogni richiesta di percorso finita, in
+  `data/requests/requests.jsonl`, fuori dal repository (`.gitignore`), con
+  ora, tipo, id del job, il corpo com'è arrivato (`model_dump` del corpo
+  già controllato) e l'esito: distanza, somiglianza, secondi, numero di
+  punti e un'impronta SHA-256 dei punti; oppure il solo codice dell'errore.
+- **Spento per default**; acceso con `--request-log` o
+  `SHAPEROUTE_REQUEST_LOG=1`. Acceso per default sarebbe una scelta
+  dell'utente (le posizioni restano su disco): non è stata presa qui.
+- La riga si scrive nel thread del job, **dopo** che il job ha la sua
+  risposta (`on_end` di `RouteJobs`): l'app non aspetta il disco. Ogni
+  errore di scrittura è un avviso nel log, senza il corpo; un ascoltatore
+  che fallisce non cambia l'esito del job.
+- Tetto: a 5 MB il file diventa `requests.old.jsonl` e ne parte uno nuovo;
+  al massimo 10 MB. File creato con permessi `0600`, cartella `0700`.
+- Si registrano solo le richieste di percorso (`/route-jobs`,
+  `/image-route-jobs`, `/routes`). Niente intestazioni, chiave, indirizzo
+  del client, foto, punti del percorso, messaggio dell'errore.
+- `python -m shaperoute_api.replay`: legge una riga (`--job`, `--line`, o
+  l'ultima), ricostruisce la richiesta con `to_request`, la dà a
+  `plan_request` sui grafi in cache e confronta l'impronta; codice di
+  uscita 1 se il percorso non è quello registrato; `--gpx` lo scrive.
+
+**Alternative scartate**: registrare dentro `data/cache` (la cache si copia
+a un collega, `PASSAGGIO.md`: porterebbe con sé le posizioni); scrivere la
+riga all'arrivo della richiesta e l'esito in una seconda riga (due righe da
+ricomporre; si perde solo la richiesta in corso se l'API muore); salvare
+tutti i punti del percorso (file cento volte più grande: l'impronta basta a
+dire «uguale», e il percorso si rifà); un middleware HTTP (vedrebbe
+intestazioni e foto); `logging.handlers.RotatingFileHandler` (non crea il
+file con permessi ristretti).
+
+**Conseguenza**: un percorso si rifà uguale finché motore e grafi in cache
+sono gli stessi; se cambiano, il replay lo dice. Il motore non usa le
+partenze vicine quando la memoria libera è poca (ADR-0071): in quel caso un
+replay può dare un percorso diverso da quello registrato. Su un server il
+file conterrebbe le posizioni di tutti gli utenti: `DEPLOY.md` lo dice.
+Un'API su più processi scriverebbe nello stesso file da più parti: oggi è
+un processo solo.
 
 ## ADR-0091 — La traccia della corsa: registrata nella navigazione, in un file
 **Stato**: Attiva · 2026-09-30 · la traccia chiesta dall'utente per il

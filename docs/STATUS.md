@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-28 · **Fase corrente**: 4 — Estensione (scritte)
+**Ultimo aggiornamento**: 2026-09-30 · **Fase corrente**: 4 — Estensione (scritte)
 
 ---
 
@@ -70,6 +70,20 @@ Niente.
   **TASK-113**, che deve anche salvare la somiglianza del percorso e
   chiedere «riprendi o scarta» alla riapertura.
 
+- **Motore, API e app** — TASK-084: più soggetti in una foto, fino a 4,
+  in una linea sola (ADR-0079). Il più grande è il contorno, gli altri
+  sono appesi con un trattino nel punto più vicino, fatto andata e
+  ritorno; con più di 4 la foto è rifiutata («more than 4 separate
+  things»). I dettagli a mano passano da 50 punti a 200 punti percorsi
+  (circa 100 andata e ritorno). Campioni a 12 km: Milano «sì», Levico
+  «quasi». Provato sull'iPhone dall'utente (2026-09-30): funziona.
+- **API** — TASK-090: il registro delle richieste (ADR-0085). Con
+  `--request-log` l'API scrive ogni richiesta di percorso, partenza
+  compresa, in `data/requests/requests.jsonl`; `python -m
+  shaperoute_api.replay` la rifà e dice se il percorso è lo stesso punto
+  per punto. **Spento per default**: accenderlo sempre sul Mac è una scelta
+  dell'utente. Non si vede nell'app. Provato: cuore 10 km a Caldonazzo e
+  «CIAO» a Levico, rifatti identici (467 e 626 punti).
 - **Motore** — TASK-111: il punteggio di una traccia corsa, da 0 a 100
   (`track_score.py`, ADR-0090): la somiglianza del percorso per la fedeltà
   della corsa al percorso, entro 40 m. Dalla CLI con `--score-track

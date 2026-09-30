@@ -56,6 +56,12 @@ Niente.
 
 ## Completato
 
+- **API e motore** — TASK-087: il ritaglio della zona più veloce, a
+  percorsi identici (ADR-0082, la proposta 2 di TASK-063). A Milano, con
+  la zona in memoria, da 2–6 s a 0,3–1 s a richiesta su questo Mac; stessi
+  percorsi punto per punto su 8 casi (Milano 10, 15, 21 km; Levico
+  10 km). Da misurare Levico a 15 e 21 km quando la zona è in cache.
+  L'API va riavviata dopo il merge per prenderlo.
 - **App** — TASK-085: i luoghi della partenza suggeriti mentre si scrive,
   da 3 lettere, prima quelli vicini alla posizione (ADR-0080). Provato
   sull'iPhone (2026-09-30).

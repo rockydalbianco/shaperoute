@@ -327,7 +327,7 @@ Ogni risultato passa `parse_outline` con i suoi dettagli: la linea resta
 una sola. Un disegno che non va è rifiutato con il motivo
 (`InvalidEditError.reason`): `short`, `covers_detail`,
 `too_many_corners` (oltre 100
-angoli per il contorno, 50 punti per tutti i dettagli, 2000 per un
+angoli per il contorno, 200 punti percorsi per tutti i tratti (un tratto senza anello conta due volte, andata e ritorno: circa 100 punti di dettagli; TASK-084), 2000 per un
 disegno).
 
 ## 3. Proiezione geografica

@@ -302,7 +302,8 @@ class ImageRouteRequestBody(BaseModel):
         max_length=MAX_DETAIL_POINTS // 2,
         description=(
             f"The strokes of an ImageOutline, unchanged (TASK-079): at most "
-            f"{MAX_DETAIL_POINTS} points in all. None for an outline without."
+            f"{MAX_DETAIL_POINTS} points in all, those run out and back "
+            f"counted twice. None for an outline without."
         ),
     )
     distance_m: int = Field(

@@ -2726,7 +2726,16 @@ disegnino tutti.
   contratto. Gli `strokes` dei soggetti hanno al più 150 punti
   (`MAX_SUBJECT_POINTS`), altrimenti `jagged`. `MAX_DETAIL_POINTS`, il
   limite di tutti gli `strokes` nell'API e nelle modifiche a mano, passa da
-  50 a 200: 150 per i soggetti più i 50 dei dettagli.
+  50 a **200 punti percorsi** (`travelled_points`): un anello conta una
+  volta, il gambo e un tratto senza anello due volte, andata e ritorno.
+  Sono circa 100 punti di dettagli a mano senza anello: lo ha chiesto
+  l'utente dopo i rifiuti `too_many_corners` provando TASK-079 (richiesta
+  passata dalla sessione di TASK-079, con le sue misure: a Milano 100
+  punti a zig-zag vanno a 5, 10 e 15 km; 120 falliscono a 15 km).
+  Contare i punti percorsi tiene insieme le due cose: i soggetti, che si
+  fanno una volta, pesano la metà di un dettaglio andata e ritorno.
+  Misurato a Milano: 4 ingranaggi, 43 angoli più 118 punti di soggetti,
+  a 10 e 15 km con somiglianza 0,99–1,00.
 
 **Motivo**: riusare lo `stroke` ad anello tiene il principio (una linea
 sola, decisa dal motore) senza toccare il motore dei percorsi né il
@@ -2735,8 +2744,10 @@ anche il collegamento più corto da correre due volte.
 
 **Conseguenza**: una foto con un pezzo secondario sopra l'1% (prima
 ignorato) ora lo disegna come soggetto, con il suo collegamento. Il limite
-unico degli `strokes` non distingue soggetti e dettagli: una foto con un
-soggetto solo accetta fino a 200 punti di dettagli a mano. «Add a part»
+resta un'approssimazione: a far fallire la distanza è la lunghezza dei
+tratti ripassati, non il numero dei punti. Tre soggetti da 118 punti più
+uno zig-zag fitto da 40 punti, dentro il limite, a Milano non si
+disegnano né a 10 né a 15 km («does not fit», dopo l'attesa). «Add a part»
 unisce solo al contorno principale: una parte disegnata sopra un soggetto
 secondario diventa un anello appeso alla linea più vicina. Campioni a
 12 km: a Milano somiglianza 0,96–0,98; a Levico 0,76–0,84, come le altre

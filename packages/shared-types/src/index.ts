@@ -302,9 +302,10 @@ export interface ImageRouteRequest {
   activity: Activity;
 }
 
-/** The most points of all the strokes of an outline together: the other
- * subjects of the image (TASK-084) and the details drawn by hand
- * (TASK-079). */
+/** The most points of all the strokes of an outline together, as the
+ * route travels them: the other subjects of the image (TASK-084) and the
+ * details drawn by hand (TASK-079). A line run out and back counts twice:
+ * about 100 points of details without loops. */
 export const MAX_DETAIL_POINTS = 200;
 /** The most points of a line drawn with a finger (TASK-079). */
 export const MAX_DRAWN_POINTS = 2_000;

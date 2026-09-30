@@ -129,7 +129,11 @@ rispetto all'idea tecnica:
   da un contorno: così non si incrociano mai;
 - soggetti più vicini del 2,5% del disegno diventano uno;
 - il motivo del rifiuto resta `scattered`, con un testo nuovo;
-- `MAX_DETAIL_POINTS` da 50 a 200 (150 per i soggetti, 50 per i dettagli);
+- `MAX_DETAIL_POINTS` da 50 a 200 **punti percorsi**: un anello conta una
+  volta, un tratto andata e ritorno due. Dentro c'è la richiesta arrivata
+  dalla sessione di TASK-079 (l'utente trovava `too_many_corners` sulla
+  lavagna): circa 100 punti di dettagli a mano invece di 50, il massimo
+  che a Milano si disegna ancora a 15 km secondo le sue misure;
 - «Add a part» su un soggetto secondario: diventa un anello appeso, non si
   unisce (l'unione resta solo sul contorno principale).
 

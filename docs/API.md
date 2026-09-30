@@ -275,8 +275,9 @@ un'immagine oltre il limite sono `invalid_request`.
 - `strokes` (dal TASK-079, facoltativo): gli altri soggetti della foto
   (TASK-084) e i dettagli disegnati a mano, gli `strokes` di un
   `ImageOutline`, senza cambiarli. Si controllano come il contorno: numeri
-  finiti, dentro [-1, 1], al più 200 punti in tutto (`MAX_DETAIL_POINTS`:
-  150 per i soggetti, 50 per i dettagli), poi `parse_outline` con i
+  finiti, dentro [-1, 1], al più 200 punti **percorsi** in tutto
+  (`MAX_DETAIL_POINTS`): un anello conta una volta, un tratto andata e
+  ritorno due, quindi circa 100 punti di dettagli senza anello; poi `parse_outline` con i
   dettagli (ognuno parte dalla linea o da un dettaglio prima; possono
   incrociarsi e incrociare il contorno). Il percorso segue ogni dettaglio e torna indietro.
 

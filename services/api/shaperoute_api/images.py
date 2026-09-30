@@ -33,7 +33,7 @@ from route_engine.optimizer import (
     plan_shape,
     tilt_limit,
 )
-from route_engine.outline_edits import MAX_DETAIL_POINTS
+from route_engine.outline_edits import MAX_DETAIL_POINTS, travelled_points
 from route_engine.shapes.outline import InvalidOutlineError, Outline, parse_outline
 
 from shaperoute_api.schemas import MAX_IMAGE_BYTES, ImageOutlineBody
@@ -139,10 +139,11 @@ def outline_of(
         raise InvalidRequestError(
             f"outline: at most {MAX_POINTS} corners, got {len(points) - 1}"
         )
-    detail_points = sum(len(stroke) for stroke in strokes)
+    detail_points = travelled_points(strokes) if all(strokes) else 0
     if detail_points > MAX_DETAIL_POINTS:
         raise InvalidRequestError(
-            f"strokes: at most {MAX_DETAIL_POINTS} points in all, got {detail_points}"
+            f"strokes: at most {MAX_DETAIL_POINTS} points to travel in all, "
+            f"got {detail_points}"
         )
     for x, y in [*points, *(p for stroke in strokes for p in stroke)]:
         if not (math.isfinite(x) and math.isfinite(y)):

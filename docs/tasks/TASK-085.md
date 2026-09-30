@@ -26,6 +26,8 @@ sotto il campo, senza premere «Search».
 - [x] Una o due lettere non cercano e tolgono i suggerimenti.
 - [x] «Search» non fa partire una seconda richiesta uguale.
 - [x] Una risposta vecchia non copre quella nuova.
+- [x] Con la posizione nota, Photon riceve `lat`/`lon` (dopo la prima
+      prova: «via bel» dava il Brasile).
 - [ ] Prova sull'iPhone: scrivendo «via bel…» compaiono i luoghi.
 
 ## File toccati
@@ -33,6 +35,10 @@ sotto il campo, senza premere «Search».
 ```
 apps/mobile/src/places/PlaceSearch.tsx
 apps/mobile/src/places/PlaceSearch.test.tsx
+apps/mobile/src/places/photon.ts
+apps/mobile/src/places/photon.test.ts
+apps/mobile/src/screens/ChooseScreen.tsx
+apps/mobile/App.tsx
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
@@ -41,7 +47,6 @@ docs/tasks/TASK-085.md
 
 ## Fuori scope
 
-- Suggerimenti ordinati per vicinanza alla posizione.
 - Un altro servizio di ricerca.
 - L'aspetto dei pulsanti: TASK-086.
 

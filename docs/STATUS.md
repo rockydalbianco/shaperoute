@@ -56,6 +56,19 @@ Niente.
 
 ## Completato
 
+- **App e motore** — TASK-079: modificare il contorno di un'immagine
+  (ADR-0074). «Edit the outline» apre una lavagna a tutto schermo con zoom:
+  «Add a part» unisce una forma alla sagoma, «Add a detail» aggiunge un
+  tratto fatto andata e ritorno, «Undo» toglie l'ultima modifica. Si
+  disegna dove si vuole: ciò che non tocca la linea è collegato alla linea
+  più vicina, e le linee possono incrociarsi. `POST /image-outline-edits`,
+  `strokes` in `/image-route-jobs`. Provato sull'iPhone dall'utente
+  (2026-09-30): funziona. Il seguito è **TASK-084**: più soggetti in una
+  foto, fino a 4, collegati in una linea sola.
+- **App** — TASK-083: l'app su Expo con EAS Update (ADR-0078). Si apre
+  in Expo Go sull'iPhone senza `npm run mobile` acceso; l'API serve
+  sempre (Mac + Tailscale). Si ripubblica dopo ogni modifica dell'app
+  (`DEPLOY.md` A.6). Provata dall'utente (2026-09-28): funziona.
 - **App** — TASK-080: le lettere di una parola «Round» o «Square»,
   scelte nell'app sotto il campo della parola; `style` in `RouteRequest`,
   API e `shared-types` (ADR-0075). Provato sull'iPhone (2026-09-28).

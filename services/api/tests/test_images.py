@@ -90,7 +90,8 @@ def test_an_image_gives_its_outline_for_the_route_and_for_the_picture(
     response = http.post("/image-outlines", json={"image": _png(_disc())})
     assert response.status_code == 200, response.json()
     body = response.json()
-    assert set(body) == {"points", "image_points", "aspect"}
+    assert set(body) == {"points", "image_points", "aspect", "strokes", "image_strokes"}
+    assert body["strokes"] == [] and body["image_strokes"] == []
     assert body["aspect"] == pytest.approx(4 / 3, rel=1e-4)
     points, over = body["points"], body["image_points"]
     assert points[0] == points[-1]

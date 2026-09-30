@@ -2528,6 +2528,89 @@ Go.
 come prima. La mappa sotto il nero continua a seguire la posizione (è in
 `App.tsx`, fuori dal task): costa un po' di batteria, stima nel task file.
 
+## ADR-0074 — Modificare il contorno di un'immagine: parti e dettagli disegnati col dito
+**Stato**: Attiva · 2026-09-28 · il cosa approvato dall'utente (aggiungere
+una parte unita alla sagoma, dettagli come occhi attaccati alla linea e
+fatti andata e ritorno, annullare; sempre un tratto solo); il come deciso
+dall'agente su delega dell'utente (TASK-079)
+
+Il contorno ricavato da un'immagine è solo la linea esterna (ADR-0068): il
+gatto di TASK-072 non si riconosceva, e i dettagli interni si perdevano.
+L'utente vuole completarlo a mano sull'anteprima (ADR-0069).
+
+**Decisione**:
+- **Il formato c'è già**: un dettaglio è uno `stroke` dei file dei contorni
+  (TASK-037): parte dalla linea o da un dettaglio prima, il percorso lo
+  segue e torna indietro; se finisce su un suo punto chiude un anello (un
+  occhio). `parse_outline` controlla che niente si incroci: la linea resta
+  una sola. Il motore non cambia: `plan_shape` disegna già i `strokes`.
+- **La geometria la decide il motore**, in un modulo nuovo
+  (`route_engine/outline_edits.py`, shapely come `image_outline.py`),
+  con regole fisse:
+  - *parte*: il disegno si chiude, si semplifica all'1% come il contorno e
+    si unisce alla sagoma. Deve sovrapporsi (una parte che tocca solo in un
+    punto farebbe due pezzi) e aggiungere almeno lo 0,5% dell'area. I buchi
+    si perdono. I dettagli già fatti devono restare attaccati alla linea
+    nuova, altrimenti `covers_detail`;
+  - *dettaglio*: l'inizio si aggancia al punto più vicino della linea o di
+    un dettaglio entro il 6% della sagoma (il dito non è preciso), e i
+    punti fatti scorrendo sulla linea si lasciano; dove il disegno si
+    incrocia da solo si chiude l'anello e il resto si lascia; se la fine
+    torna entro il 3% da un suo punto, l'anello si chiude lì. Poi la
+    semplificazione all'1%, anello e gambo ognuno per sé;
+  - limiti: al più 100 angoli per il contorno, 50 punti per tutti i
+    dettagli insieme (ognuno si fa due volte), 2000 punti per un disegno;
+  - **un disegno lontano dalla linea si collega, non si rifiuta**
+    (seconda prova sull'iPhone, 2026-09-30: l'utente vuole disegnare dentro
+    l'immagine): una linea aperta prende un tratto dritto dal punto più
+    vicino al suo capo più vicino; una forma chiusa che non si sovrappone
+    alla sagoma, o che ci sta dentro, diventa un anello appeso;
+  - **le linee disegnate possono incrociarsi** e incrociare il contorno
+    (scelta dell'utente, 2026-09-30: «a me va bene se si incrociano»):
+    `parse_outline` ha `allow_crossings`, usato solo per i contorni
+    modificati a mano; per i file dei contorni il controllo resta. Provato
+    a Milano, 10 km, con un occhio, una bocca e due linee che incrociano:
+    10,1 km, somiglianza 0,92; con tanti tratti interni il disegno si
+    riconosce meno, e l'andata e ritorno fa a volte un piccolo anello
+    (TASK-071);
+  - un rifiuto ha un motivo in una parola: `short`, `covers_detail`,
+    `too_many_corners`.
+- **L'API non tiene stato**: `POST /image-outline-edits` riceve il contorno
+  mostrato, nella cornice della foto (`image_points`, `image_strokes`,
+  `aspect`), il tipo e la linea disegnata, e risponde con un
+  `ImageOutline` nuovo, che ha anche `strokes` e `image_strokes`. Il motore
+  lavora con x a destra e y in alto, in altezze della foto, così un
+  cerchio su una foto larga resta un cerchio. Il rifiuto è `422`
+  `outline_edit_rejected` con `reason`.
+- **«Undo» è dell'app**: la pila dei contorni di prima, senza chiamare
+  l'API. Una foto nuova azzera la pila.
+- **`/image-route-jobs` e `/gpx` accettano `strokes`**, facoltativo, e lo
+  controllano come il contorno (numeri finiti, dentro [-1, 1], al più 50
+  punti, poi `parse_outline` con i dettagli). Un'app o un'API più vecchie
+  vanno come prima: senza `strokes` il contorno è quello di TASK-073.
+- **App**: «Edit the outline» apre una lavagna a tutto schermo (`Modal`),
+  fuori dalla pagina che scorre, con «Add a part», «Add a detail», «Undo».
+  Un dito disegna con un pulsante acceso, due dita ingrandiscono (fino a 8
+  volte) e spostano; le linee restano larghe uguali. Tutto con i gestori di
+  tocco di React Native (nessuna dipendenza nuova). I punti più vicini
+  dell'1% della foto, diviso l'ingrandimento, si lasciano prima di
+  mandarla. Le azioni arrivano al pannello dell'immagine con un contesto
+  React, senza passare dal pannello del percorso. Prima prova sull'iPhone
+  (2026-09-28): disegnando sull'anteprima dentro la pagina, la pagina
+  scorreva; l'utente ha chiesto la lavagna a tutto schermo e lo zoom.
+
+**Motivo**: il formato e il disegno dei tratti ripassati esistevano già
+(gatto, pesce, testa di cane): basta produrli. Decidere nel motore tiene il
+principio (il percorso lo decide il motore, e ora anche cosa diventa un
+disegno) e rende tutto provabile con test deterministici. Rifiutare invece
+di aggiustare di nascosto: il motivo dice come ridisegnare.
+
+**Conseguenza**: prova da capo a fondo con il motore vero, Milano, 10 km:
+una testa disegnata, due orecchie aggiunte, un occhio ad anello: 9,3 km,
+somiglianza 0,96, in 3 s, una linea sola. Non si cancella una parte e non si spostano punti: per
+togliere c'è solo «Undo». Un dettaglio che esce dalla sagoma è ammesso se
+non incrocia la linea (baffi, antenne).
+
 ## ADR-0075 — Lo stile delle lettere nella richiesta e nell'app
 **Stato**: Attiva · 2026-09-28 · chiesto dall'utente dopo TASK-077
 («tutti e due gli stili, da scegliere nell'app»); forma del campo, nomi e
@@ -2560,3 +2643,43 @@ anche per le forme (non hanno lettere).
 **Conseguenza**: un'app vecchia che non manda `style` ha le lettere di
 prima; un'API vecchia rifiuta `style` (`extra="forbid"`): app e API vanno
 aggiornate insieme, come per ogni campo nuovo.
+
+---
+
+## ADR-0078 — L'app pubblicata con EAS Update, aperta da Expo Go
+
+**Data**: 2026-09-28 · **Task**: TASK-083 · **Stato**: accettata ·
+strada scelta dall'utente (tramite `PASSAGGIO.md`); `expo-updates`
+approvato dall'utente; dettagli decisi dall'agente su delega dell'utente
+
+L'utente vuole aprire l'app dall'iPhone senza tenere acceso Expo sul PC.
+
+**Decisione**:
+
+- **EAS Update** sul progetto Expo `@lppl1316/shaperoute` (account
+  personale dell'utente, non il team: Expo Go su iPhone apre solo i
+  progetti dell'account con cui si entra). `expo-updates` ~57.0.23,
+  `runtimeVersion` `exposdk:57.0.0` (l'unica forma che Expo Go accetta),
+  `updates.url` e `projectId` in `app.json`; nessun `eas.json`, finché non
+  servono build.
+- Si pubblica a mano sul branch `preview` (`DEPLOY.md` A.6), non dalla CI:
+  servirebbe `EXPO_TOKEN` fra i segreti di GitHub (proposta a parte).
+- L'indirizzo dell'API viene da `EXPO_PUBLIC_API_URL` al momento della
+  pubblicazione, salvato come variabile dell'ambiente `preview` su EAS
+  (visibilità «plain text»: finisce comunque nell'app), non nel `.env` del
+  PC: chiunque pubblichi, da qualunque PC, usa lo stesso indirizzo (chiesto
+  dall'utente). L'app ricava l'API dall'host di Expo **solo** con
+  `__DEV__` (`devServerHost` in `apiUrl.ts`): un update pubblicato è un
+  bundle di produzione servito da Expo, e il suo host non è il PC.
+
+**Scartata**: `expo publish` (non esiste più); una build propria o
+TestFlight (serve l'account Apple Developer); un indirizzo dell'API letto
+da un file remoto a ogni avvio (più codice, un servizio in più).
+
+**Motivo**: una dipendenza ufficiale Expo, nessun codice nuovo tranne
+l'host, e Expo Go resta quello di oggi.
+
+**Conseguenza**: indirizzo e chiave dell'API sono dentro l'update,
+leggibili da chi lo scarica; cambiare indirizzo o app vuol dire
+ripubblicare. Con `expo start --no-dev` l'app non ricava più l'API
+dall'host di Expo: serve `EXPO_PUBLIC_API_URL`.

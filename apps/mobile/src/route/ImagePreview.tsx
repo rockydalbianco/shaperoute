@@ -6,7 +6,7 @@ import { color, radius } from "../theme/tokens";
 import type { Picture } from "./pickImage";
 
 /** The line of the outline, in points: thick enough to read at a glance. */
-const LINE = 3;
+export const LINE = 3;
 /** A tall picture is kept this high, so the distance stays in view. */
 export const MAX_PREVIEW_HEIGHT = 320;
 
@@ -22,6 +22,7 @@ export function segmentsOf(
   points: OutlinePoint[],
   width: number,
   height: number,
+  line: number = LINE,
 ): Segment[] {
   const segments: Segment[] = [];
   for (let i = 1; i < points.length; i += 1) {
@@ -33,9 +34,9 @@ export function segmentsOf(
     }
     segments.push({
       // Overlapping by the line's width, so the corners have no gaps.
-      left: (x1 + x2) / 2 - (length + LINE) / 2,
-      top: (y1 + y2) / 2 - LINE / 2,
-      length: length + LINE,
+      left: (x1 + x2) / 2 - (length + line) / 2,
+      top: (y1 + y2) / 2 - line / 2,
+      length: length + line,
       angle: Math.atan2(y2 - y1, x2 - x1),
     });
   }
@@ -47,16 +48,20 @@ export function segmentsOf(
  * picture it came from (TASK-073). The picture is dimmed: the line is what
  * the route will draw, and what did not become line (a piece left out, a
  * detail smoothed away) stays visible under it. `showPicture` false leaves
- * the line alone, as it will look on the map.
+ * the line alone, as it will look on the map. The details drawn by hand
+ * (TASK-079) are drawn like the outline; drawing happens on the full-screen
+ * board (OutlineBoard), not here, where the page scrolls.
  */
 export function ImagePreview({
   picture,
   points,
+  strokes = [],
   aspect,
   showPicture = true,
 }: {
   picture: Picture;
   points: OutlinePoint[];
+  strokes?: OutlinePoint[][];
   aspect: number;
   showPicture?: boolean;
 }) {
@@ -85,25 +90,85 @@ export function ImagePreview({
             testID="preview-picture"
           />
         )}
-        {width > 0 &&
-          segmentsOf(points, width, height).map((segment, index) => (
-            <View
-              key={index}
-              testID="outline-side"
-              style={[
-                styles.side,
-                {
-                  left: segment.left,
-                  top: segment.top,
-                  width: segment.length,
-                  transform: [{ rotate: `${segment.angle}rad` }],
-                },
-              ]}
-            />
-          ))}
+        {width > 0 && (
+          <OutlineLines
+            points={points}
+            strokes={strokes}
+            width={width}
+            height={height}
+          />
+        )}
       </View>
     </View>
   );
+}
+
+/** The outline and its details over a box `width` × `height`, as the
+ * route's yellow line `line` points thick. */
+export function OutlineLines({
+  points,
+  strokes = [],
+  width,
+  height,
+  line = LINE,
+}: {
+  points: OutlinePoint[];
+  strokes?: OutlinePoint[][];
+  width: number;
+  height: number;
+  line?: number;
+}) {
+  return (
+    <>
+      <Sides
+        segments={segmentsOf(points, width, height, line)}
+        line={line}
+        testID="outline-side"
+      />
+      {strokes.map((stroke, index) => (
+        <Sides
+          key={index}
+          segments={segmentsOf(stroke, width, height, line)}
+          line={line}
+          testID="detail-side"
+        />
+      ))}
+    </>
+  );
+}
+
+/** Sides of a line, each a thin box turned along it; they take no touches.
+ * `faint` for a line not yet part of the outline. */
+export function Sides({
+  segments,
+  line = LINE,
+  testID,
+  faint = false,
+}: {
+  segments: Segment[];
+  line?: number;
+  testID: string;
+  faint?: boolean;
+}) {
+  return segments.map((segment, index) => (
+    <View
+      key={index}
+      testID={testID}
+      pointerEvents="none"
+      style={[
+        styles.side,
+        faint && styles.faint,
+        {
+          height: line,
+          borderRadius: line / 2,
+          left: segment.left,
+          top: segment.top,
+          width: segment.length,
+          transform: [{ rotate: `${segment.angle}rad` }],
+        },
+      ]}
+    />
+  ));
 }
 
 const styles = StyleSheet.create({
@@ -123,11 +188,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     opacity: 0.35,
+    pointerEvents: "none",
   },
   side: {
     position: "absolute",
-    height: LINE,
-    borderRadius: LINE / 2,
     backgroundColor: color.accent,
+  },
+  faint: {
+    opacity: 0.7,
   },
 });

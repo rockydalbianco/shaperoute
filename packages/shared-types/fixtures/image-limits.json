@@ -1,4 +1,6 @@
 {
   "max_image_bytes": 10000000,
-  "max_outline_points": 100
+  "max_outline_points": 100,
+  "max_detail_points": 50,
+  "max_drawn_points": 2000
 }

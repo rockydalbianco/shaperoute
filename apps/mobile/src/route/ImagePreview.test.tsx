@@ -61,3 +61,24 @@ test("a tall picture is kept low enough to see the rest", async () => {
     height: MAX_PREVIEW_HEIGHT,
   });
 });
+
+// TASK-079: the details drawn by hand, drawn like the outline.
+test("the details are drawn like the outline", async () => {
+  const stroke: [number, number][] = [
+    [0.25, 0.5],
+    [0.5, 0.5],
+  ];
+  await render(
+    <ImagePreview
+      picture={PICTURE}
+      points={SQUARE}
+      strokes={[stroke]}
+      aspect={4 / 3}
+    />,
+  );
+  await fireEvent(screen.getByTestId("image-preview"), "layout", {
+    nativeEvent: { layout: { width: 400, height: 0 } },
+  });
+  expect(screen.getAllByTestId("outline-side")).toHaveLength(4);
+  expect(screen.getAllByTestId("detail-side")).toHaveLength(1);
+});

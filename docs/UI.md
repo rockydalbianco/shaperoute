@@ -273,16 +273,58 @@ colore del percorso, perché è quello che il percorso disegnerà. Quello che
 non è diventato linea resta visibile sotto: un pezzo staccato (la
 Sardegna), un dettaglio lisciato. Sotto, *The yellow line is what the route
 will draw. If it does not look like the subject, the route will not
-either: try another picture. Only the largest piece is kept.* e un link
+either: try another picture, or add to the line below. Only the largest
+piece is kept.* e un link
 «Hide the picture» che lascia solo la linea, come sarà sulla mappa: il
 gatto di TASK-072 non si riconosceva già dal contorno, e senza la foto
 sotto si vede. Un'immagine alta resta entro 320 punti d'altezza, così la
 distanza resta a vista. La linea è fatta di rettangoli sottili ruotati,
 senza SVG (`react-native-svg` non è una dipendenza dell'app).
 
+**Modificare il contorno** (TASK-079, ADR-0074). Sotto l'anteprima,
+**«Edit the outline»** apre una **lavagna a tutto schermo**: la foto
+attenuata con il contorno, e sotto **«Add a part»**, **«Add a detail»**,
+**«Undo»**; in alto «Done» per tornare e «Fit» quando la foto è ingrandita.
+La lavagna sta fuori dalla pagina che scorre: mentre si disegna lo schermo
+resta fermo (nella prima prova sull'iPhone l'anteprima, dentro la pagina,
+scorreva col dito). L'anteprima nella pagina mostra soltanto.
+
+- **Due dita** ingrandiscono (fino a 8 volte) e spostano la foto, sempre.
+- **Un dito**, con «Add a part» o «Add a detail» acceso (giallo), disegna:
+  la linea segue il dito, gialla e più sottile, e quando il dito si alza va
+  all'API, che risponde con il contorno nuovo (*Adding the part…*). Se
+  durante il tratto si appoggia un secondo dito, il tratto si lascia e si
+  ingrandisce. Senza pulsante acceso, un dito sposta la foto ingrandita.
+- Le linee restano larghe uguali a ogni ingrandimento; ingranditi si
+  disegnano dettagli più fini.
+
+Sopra i pulsanti una riga dice cosa fare:
+
+- nessun pulsante: *Choose what to add. Two fingers zoom and move the
+  picture.*
+- parte: *Draw a closed shape. Across the yellow line it becomes part of
+  the outline; anywhere else it is joined to the nearest yellow line.*
+- dettaglio: *Draw a line anywhere: it is joined to the nearest yellow
+  line, and the route runs along it and back. Close a loop to make an eye.*
+
+Si disegna dove si vuole, anche dentro l'immagine: ciò che non tocca la
+linea gialla il motore lo collega con un trattino nel punto più vicino. Le linee
+possono incrociarsi e uscire dal contorno.
+
+I dettagli si vedono gialli come il contorno. «Undo» toglie l'ultima
+modifica, fino al contorno ricavato dalla foto; è spento finché non c'è
+niente da togliere. «Choose another» riparte da capo. Se l'API rifiuta la
+linea, al posto della riga il motivo, con sotto il testo del motore:
+
+| `reason` | Messaggio |
+|---|---|
+| `short` | This line is too short to add. Draw a longer one. |
+| `covers_detail` | This part covers where a detail starts. Undo the detail first, or draw the part elsewhere. |
+| `too_many_corners` | That is too much for one route. Undo something, or draw simpler lines. |
+
 «Draw route» si accende solo con un contorno: il percorso si chiede come
 per una forma, con la distanza del campo sotto, e manda il contorno
-dell'anteprima (`POST /image-route-jobs`). «Choose another» sostituisce la
+dell'anteprima, con i dettagli disegnati (`POST /image-route-jobs`). «Choose another» sostituisce la
 foto; annullare il selettore lascia quella di prima. Sotto la distanza del
 risultato si legge «Picture · on roads · target 15 km».
 

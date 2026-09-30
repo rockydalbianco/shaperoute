@@ -6,6 +6,7 @@
   "http_error",
   "ai_unavailable",
   "image_not_usable",
+  "outline_edit_rejected",
   "unauthorized",
   "too_many_requests"
 ]

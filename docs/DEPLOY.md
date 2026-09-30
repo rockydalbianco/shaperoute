@@ -119,6 +119,68 @@ Expo; se `EXPO_PUBLIC_API_KEY` c'è, lo manda in ogni richiesta. Expo li
 legge all'avvio di `npm.cmd run mobile`: dopo una modifica va riavviato.
 Servono per le strade B–E, dove l'API non è sullo stesso PC di Expo.
 
+### A.6 L'app senza Expo acceso (EAS Update, TASK-083)
+
+Invece di tenere acceso `npm.cmd run mobile`, l'app si pubblica su Expo
+una volta e Expo Go la apre da lì (ADR-0078). **L'API serve sempre**: il
+PC acceso con Tailscale (A) o un server (B–E). Non serve più Expo (porta
+8081) né il QR del terminale.
+
+Il progetto su Expo è `@lppl1316/shaperoute`
+(<https://expo.dev/accounts/lppl1316/projects/shaperoute>). Su iPhone
+Expo Go apre solo i progetti dell'account con cui si è entrati in Expo Go:
+entra con `lppl1316`, o fatti aggiungere al progetto.
+
+1. Una volta: `npx eas-cli login` (su Windows `npx.cmd`), con l'account
+   Expo. Lo fa l'utente, con le sue credenziali.
+2. L'indirizzo dell'API sta **su EAS**, come variabile dell'ambiente
+   `preview` del progetto (oggi `http://100.84.99.112:8000`, il Mac su
+   Tailscale). **Obbligatorio**: un'app pubblicata non ricava l'API
+   dall'host di Expo e, senza, dice che non trova l'API. Per vederlo o
+   cambiarlo, da `apps/mobile`:
+
+   ```
+   npx eas-cli env:list --environment preview
+   ```
+
+   ```
+   npx eas-cli env:set preview --name EXPO_PUBLIC_API_URL --value http://NUOVO-INDIRIZZO:8000 --visibility plaintext
+   ```
+
+   Poi si ripubblica (punto 3). La variabile di EAS vince su
+   `apps/mobile/.env`, che serve solo a `npm.cmd run mobile` (A.5).
+3. Pubblicare, da `apps/mobile`:
+
+   ```
+   npx eas-cli update --branch preview --environment preview --message "cosa è cambiato"
+   ```
+
+   Circa un minuto. `--environment preview` porta dentro le variabili
+   del punto 2. Alla fine stampa il link della pagina dell'update su
+   expo.dev.
+4. Sull'iPhone: apri quel link e inquadra il QR della pagina, oppure apri
+   Expo Go → il progetto `shaperoute` nella scheda dell'account → branch
+   `preview`.
+
+**Dopo ogni modifica dell'app**, o dell'indirizzo dell'API, si rifà il
+punto 3: l'app pubblicata non cambia da sola. Expo Go scarica l'update
+nuovo alla prossima apertura (se non lo fa, chiudila del tutto e
+riaprila).
+
+**Limiti**:
+
+- `EXPO_PUBLIC_API_URL` ed `EXPO_PUBLIC_API_KEY` finiscono **dentro**
+  l'app pubblicata, leggibili da chi scarica l'update. Con Tailscale (tailnet
+  privata) non è un problema; con un indirizzo pubblico (B–E) la chiave
+  dell'API va considerata debole: cambiala se il link dell'update gira.
+- Vale per la versione di Expo Go dell'SDK 57 (`runtimeVersion`
+  `exposdk:57.0.0` in `app.json`): quando si aggiorna l'SDK si aggiorna
+  anche quella riga.
+- Solo iPhone provato: Expo Go su Android ha un problema noto con gli
+  update dell'SDK 57 (expo/expo#50139).
+- Una build propria (TestFlight) resta fuori: serve l'account Apple
+  Developer.
+
 ---
 
 ## La chiave dell'API

@@ -67,6 +67,13 @@ Niente.
   della partenza né delle partenze vicine provate (ADR-0092); resta
   «start N: score…, approach … m». Il nome del file della zona in cache
   (un riquadro di chilometri) c'è ancora.
+- **App** — TASK-112 (prova sull'iPhone da fare con TASK-113): durante la
+  navigazione l'app registra la traccia della corsa e la tiene in un file
+  sul telefono, anche se l'app si chiude (`trackRecorder.ts`,
+  `trackStore.ts`, ADR-0091). Sullo schermo non cambia niente: la usa
+  **TASK-113**, che deve anche salvare la somiglianza del percorso e
+  chiedere «riprendi o scarta» alla riapertura.
+
 - **Motore, API e app** — TASK-084: più soggetti in una foto, fino a 4,
   in una linea sola (ADR-0079). Il più grande è il contorno, gli altri
   sono appesi con un trattino nel punto più vicino, fatto andata e
@@ -90,8 +97,8 @@ Niente.
 - **API e motore** — TASK-087: il ritaglio della zona più veloce, a
   percorsi identici (ADR-0082, la proposta 2 di TASK-063). A Milano, con
   la zona in memoria, da 2–6 s a 0,3–1 s a richiesta su questo Mac; stessi
-  percorsi punto per punto su 8 casi (Milano 10, 15, 21 km; Levico
-  10 km). Da misurare Levico a 15 e 21 km quando la zona è in cache.
+  percorsi punto per punto su 12 casi (Milano e Levico a 10, 15 e
+  21 km; a Levico il ritaglio pesava già meno di mezzo secondo).
   L'API va riavviata dopo il merge per prenderlo.
 - **App** — TASK-089: un suggerimento toccato riempie il campo, chiude la
   tastiera e non fa ripartire la ricerca; i suggerimenti arrivano anche

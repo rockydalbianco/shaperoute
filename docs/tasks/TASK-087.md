@@ -91,10 +91,16 @@ Alla prima richiesta (zona letta dal disco) il grafo passa da 2,8–9,0 s a
 stessa somiglianza, stesse aree caricate con lo stesso numero di nodi e di
 archi, nei due giri di fila.
 
-**Non misurati**: Levico a 15 e 21 km. Le loro zone non sono nella cache di
-questo Mac e non si scarica per una misura (anche TASK-063 non le aveva).
-Per la montagna c'è quindi solo il 10 km; l'uguaglianza del grafo è
-comunque provata dai test sulle strade di Levico.
+**Levico a 15 e 21 km**, misurati dopo il merge (2026-09-30) scaricando
+la zona `foot_45.91000_11.15500_46.11500_11.44500` (16 899 nodi, 30 s da
+Overpass), stesso script:
+
+| Caso | Percorso | Identico punto per punto | Grafo prima → dopo (s) | Totale prima → dopo (s) |
+|---|---|---|---|---|
+| Levico, cuore 15 km | 554 punti, 14751 m, 0,743 | sì | 0,3 → 0,0 | 1,9 → 1,9 |
+| Levico, cuore 21 km | 1086 punti, 20917 m, 0,862 | sì | 0,4 → 0,1 | 2,4 → 2,2 |
+| Levico, cerchio 15 km | 776 punti, 16048 m, 0,794 | sì | 0,3 → 0,0 | 2,5 → 2,3 |
+| Levico, cerchio 21 km | 1112 punti, 22403 m, 0,737 | sì | 0,4 → 0,1 | 3,8 → 3,5 |
 
 Il cerchio da 15 km ha un totale più alto dopo in quel giro: il grafo è
 sceso di 3 s, il resto è il Mac occupato da altre sessioni.
@@ -122,8 +128,7 @@ docs/STATUS.md
 ## Esito
 
 Il ritaglio dalla memoria passa a Milano da 2–6 s a 0,3–1 s, con gli stessi
-percorsi punto per punto sugli 8 casi misurati. Su questo Mac il risparmio
+percorsi punto per punto sui 12 casi misurati. Su questo Mac il risparmio
 è di 1,5–5 s a richiesta, meno dei 6–13 s di TASK-063, misurati su un PC
-più lento. A Levico il ritaglio era già sotto il mezzo secondo. Restano da
-misurare Levico a 15 e 21 km, quando la zona sarà in cache. L'API
+più lento. A Levico il ritaglio era già sotto il mezzo secondo. Levico a 15 e 21 km, misurata dopo: percorsi identici, 0,3 s in meno. L'API
 dell'utente prende la modifica al prossimo riavvio dopo il merge.

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -9,6 +9,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import type { LatLon } from "@shaperoute/shared-types";
+
 import { type Place, searchPlaces } from "./photon";
 
 type SearchState =
@@ -20,6 +22,8 @@ type SearchState =
 
 type Props = {
   onSelect: (place: Place) => void;
+  /** Where the user is, when known: places around it come first. */
+  near?: LatLon | null;
 };
 
 /** Suggestions start at this many letters, this long after the last one
@@ -32,7 +36,7 @@ export const SUGGEST_DELAY_MS = 500;
  * are suggested while typing, once the typing pauses; "Search" and the
  * keyboard's return key search at once.
  */
-export function PlaceSearch({ onSelect }: Props) {
+export function PlaceSearch({ onSelect, near = null }: Props) {
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState<SearchState>({ status: "idle" });
   // Only the answer to the last search asked is shown: an older one may
@@ -41,22 +45,25 @@ export function PlaceSearch({ onSelect }: Props) {
   // The text of that search: the pause after "Search" does not ask it twice.
   const askedText = useRef("");
 
-  async function searchFor(text: string) {
-    const mine = ++asked.current;
-    askedText.current = text.trim();
-    // The places already suggested stay until the new ones come.
-    setSearch((now) => (now.status === "found" ? now : { status: "searching" }));
-    try {
-      const places = await searchPlaces(text);
-      if (mine === asked.current) {
-        setSearch(places.length ? { status: "found", places } : { status: "none" });
+  const searchFor = useCallback(
+    async (text: string) => {
+      const mine = ++asked.current;
+      askedText.current = text.trim();
+      // The places already suggested stay until the new ones come.
+      setSearch((now) => (now.status === "found" ? now : { status: "searching" }));
+      try {
+        const places = await searchPlaces(text, fetch, near);
+        if (mine === asked.current) {
+          setSearch(places.length ? { status: "found", places } : { status: "none" });
+        }
+      } catch {
+        if (mine === asked.current) {
+          setSearch({ status: "failed" });
+        }
       }
-    } catch {
-      if (mine === asked.current) {
-        setSearch({ status: "failed" });
-      }
-    }
-  }
+    },
+    [near],
+  );
 
   useEffect(() => {
     const text = query.trim();
@@ -69,7 +76,7 @@ export function PlaceSearch({ onSelect }: Props) {
       }
     }, SUGGEST_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, searchFor]);
 
   function onText(text: string) {
     setQuery(text);

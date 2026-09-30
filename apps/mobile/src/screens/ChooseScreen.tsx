@@ -12,6 +12,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { PlaceSearch } from "../places/PlaceSearch";
+import type { LatLon } from "@shaperoute/shared-types";
+
 import type { Place } from "../places/photon";
 import type { StartMode } from "../location/startMode";
 import {
@@ -42,6 +44,8 @@ type Props = {
   /** Show the search: another place was asked for, or there is no GPS. */
   searching: boolean;
   onPlace: (place: Place) => void;
+  /** The GPS position when known: the search prefers places around it. */
+  near: LatLon | null;
   mapError: string | null;
   /** Shape and distance (RouteChoice). */
   children: ReactNode;
@@ -60,6 +64,7 @@ export function ChooseScreen({
   onMode,
   searching,
   onPlace,
+  near,
   mapError,
   children,
   footer,
@@ -92,7 +97,7 @@ export function ChooseScreen({
               <Text style={styles.link}>Open Settings</Text>
             </Pressable>
           )}
-          {searching && <PlaceSearch onSelect={onPlace} />}
+          {searching && <PlaceSearch onSelect={onPlace} near={near} />}
         </View>
         {mapError && <MapError reason={mapError} />}
         {children}

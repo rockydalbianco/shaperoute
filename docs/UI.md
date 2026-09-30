@@ -131,6 +131,9 @@ punto, ricentra la mappa.
   campo vuoto. I suggerimenti di prima restano finché arrivano i nuovi;
   sotto le 3 lettere spariscono. Una risposta a un testo che non è più nel
   campo non si mostra.
+- Con la posizione GPS nota (o l'ultimo luogo scelto), Photon riceve
+  `lat`/`lon` e mette prima i luoghi attorno: «via bel» a Trento trova vie
+  del Trentino, non del Brasile.
 - Al massimo 5 risultati. Ognuno si legge come nome e prima area più ampia
   diversa dal nome: «Via Rodolfo Belenzani, Trento», «Levico Terme,
   Provincia di Trento». Le etichette uguali si mostrano una volta sola (una

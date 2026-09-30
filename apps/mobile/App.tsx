@@ -231,6 +231,7 @@ function Sgrava() {
           }}
           searching={showsSearch(startMode, position)}
           onPlace={setPlace}
+          near={position.status === "ok" ? position.point : (place?.point ?? null)}
           mapError={mapError}
           footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
         >

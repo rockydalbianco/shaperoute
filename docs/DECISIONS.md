@@ -2643,3 +2643,43 @@ anche per le forme (non hanno lettere).
 **Conseguenza**: un'app vecchia che non manda `style` ha le lettere di
 prima; un'API vecchia rifiuta `style` (`extra="forbid"`): app e API vanno
 aggiornate insieme, come per ogni campo nuovo.
+
+---
+
+## ADR-0078 — L'app pubblicata con EAS Update, aperta da Expo Go
+
+**Data**: 2026-09-28 · **Task**: TASK-083 · **Stato**: accettata ·
+strada scelta dall'utente (tramite `PASSAGGIO.md`); `expo-updates`
+approvato dall'utente; dettagli decisi dall'agente su delega dell'utente
+
+L'utente vuole aprire l'app dall'iPhone senza tenere acceso Expo sul PC.
+
+**Decisione**:
+
+- **EAS Update** sul progetto Expo `@lppl1316/shaperoute` (account
+  personale dell'utente, non il team: Expo Go su iPhone apre solo i
+  progetti dell'account con cui si entra). `expo-updates` ~57.0.23,
+  `runtimeVersion` `exposdk:57.0.0` (l'unica forma che Expo Go accetta),
+  `updates.url` e `projectId` in `app.json`; nessun `eas.json`, finché non
+  servono build.
+- Si pubblica a mano sul branch `preview` (`DEPLOY.md` A.6), non dalla CI:
+  servirebbe `EXPO_TOKEN` fra i segreti di GitHub (proposta a parte).
+- L'indirizzo dell'API viene da `EXPO_PUBLIC_API_URL` al momento della
+  pubblicazione, salvato come variabile dell'ambiente `preview` su EAS
+  (visibilità «plain text»: finisce comunque nell'app), non nel `.env` del
+  PC: chiunque pubblichi, da qualunque PC, usa lo stesso indirizzo (chiesto
+  dall'utente). L'app ricava l'API dall'host di Expo **solo** con
+  `__DEV__` (`devServerHost` in `apiUrl.ts`): un update pubblicato è un
+  bundle di produzione servito da Expo, e il suo host non è il PC.
+
+**Scartata**: `expo publish` (non esiste più); una build propria o
+TestFlight (serve l'account Apple Developer); un indirizzo dell'API letto
+da un file remoto a ogni avvio (più codice, un servizio in più).
+
+**Motivo**: una dipendenza ufficiale Expo, nessun codice nuovo tranne
+l'host, e Expo Go resta quello di oggi.
+
+**Conseguenza**: indirizzo e chiave dell'API sono dentro l'update,
+leggibili da chi lo scarica; cambiare indirizzo o app vuol dire
+ripubblicare. Con `expo start --no-dev` l'app non ricava più l'API
+dall'host di Expo: serve `EXPO_PUBLIC_API_URL`.

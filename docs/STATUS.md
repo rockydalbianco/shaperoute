@@ -63,6 +63,13 @@ Niente.
 
 ## Completato
 
+- **App** — TASK-112 (PR aperta, manca la prova sull'iPhone): durante la
+  navigazione l'app registra la traccia della corsa e la tiene in un file
+  sul telefono, anche se l'app si chiude (`trackRecorder.ts`,
+  `trackStore.ts`, ADR-0091). Sullo schermo non cambia niente: la usa
+  **TASK-113**, che deve anche salvare la somiglianza del percorso e
+  chiedere «riprendi o scarta» alla riapertura.
+
 - **Motore** — TASK-111: il punteggio di una traccia corsa, da 0 a 100
   (`track_score.py`, ADR-0090): la somiglianza del percorso per la fedeltà
   della corsa al percorso, entro 40 m. Dalla CLI con `--score-track

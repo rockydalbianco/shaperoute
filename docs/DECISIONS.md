@@ -2843,3 +2843,41 @@ perde punti. Il punteggio non riconosce una traccia finta o fatta in bici:
 annotato, non fatto. TASK-113 deve mandare all'API punti e somiglianza del
 percorso; presa dall'app, la somiglianza si può falsare: TASK-117 la
 ricalcola o la conserva col percorso.
+
+## ADR-0091 — La traccia della corsa: registrata nella navigazione, in un file
+**Stato**: Attiva · 2026-09-30 · la traccia chiesta dall'utente per il
+punteggio; il come deciso dall'agente su delega dell'utente (TASK-112)
+
+**Contesto**: il punteggio (ADR-0090) vuole la traccia GPS della corsa.
+L'app riceve già le posizioni durante la navigazione (`useNavigation`), con
+lo schermo acceso o in modalità tasca; a telefono bloccato Expo Go non le
+dà.
+
+**Decisione**:
+- `trackRecorder.ts`, puro: tiene una posizione se ha errore entro 40 m
+  (`POOR_FIX_M`, ADR-0070), è ad almeno 5 m dall'ultima tenuta e non ha un
+  orario precedente. Salti e velocità li giudica il motore (ADR-0090).
+- `trackStore.ts`: un solo file, `current-run.json`, nei **documenti**
+  dell'app (la cache il sistema la può svuotare), con `expo-file-system`
+  già presente. Dentro: percorso pianificato, traccia, stato (`running`,
+  `stopped`, `arrived`). Scritto alla prima posizione, poi al più ogni
+  15 s, a «Stop» e all'arrivo. `running` trovato alla riapertura vuol dire
+  app chiusa durante la corsa.
+- **Riprendere senza chiedere**: «Start» sullo stesso percorso, con
+  l'ultima posizione a meno di 30 minuti, continua la traccia; se no ne
+  comincia una nuova, che sostituisce il file alla prima posizione tenuta.
+- Un file che il telefono rifiuta non ferma né la navigazione né la
+  traccia in memoria.
+
+**Scartate**: *chiedere «riprendi o scarta» alla riapertura*: serve una
+schermata in `App.tsx`, fuori dai file del task; va con la schermata di
+fine corsa (TASK-113). *Più corse nel file*: per ora serve solo l'ultima;
+i disegni salvati sono di TASK-117. *GPS in background*: serve una build
+propria, non Expo Go.
+
+**Conseguenze**: il file tiene i punti del percorso ma non la sua
+somiglianza né la richiesta, che `useNavigation` non riceve: TASK-113, che
+tocca `App.tsx`, deve passarle e salvarle. Una corsa da 21 km sono circa
+4000 posizioni, mezzo MB riscritto ogni 15 s. Dopo la chiusura dell'app il
+percorso sullo schermo non c'è più: la traccia resta nel file ma si
+riprende solo se l'app ridisegna lo stesso identico percorso.

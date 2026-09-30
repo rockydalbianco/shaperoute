@@ -459,6 +459,18 @@ screen for 2 seconds.» La luminosità torna com'era all'uscita, all'arrivo
 (che toglie anche il pulsante), con «Stop» e quando l'app esce dal primo
 piano.
 
+**La traccia della corsa** (TASK-112, ADR-0091). Durante la navigazione
+l'app tiene la linea di quello che si è corso: ogni posizione del GPS,
+tranne quelle con errore oltre 40 m e quelle a meno di 5 m dalla
+precedente, con distanza e durata. Anche in modalità tasca. La traccia sta
+in un file nei documenti dell'app (`current-run.json`), insieme al percorso
+pianificato: si scrive alla prima posizione, poi al più ogni 15 secondi, a
+«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Una corsa per volta:
+«Start» sullo stesso percorso entro 30 minuti continua la traccia, un altro
+percorso la sostituisce alla prima posizione. Sullo schermo non cambia
+niente, e la traccia non esce dal telefono: la usa la schermata di fine
+corsa (TASK-113).
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di

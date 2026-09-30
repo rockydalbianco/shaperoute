@@ -204,6 +204,54 @@ class GpxRequestBody(BaseModel):
     result: RouteResultBody
 
 
+# The longest run POST /track-scores takes: a fix every 5 m (the app's
+# FIX_EVERY_M) along twice the longest route.
+MAX_TRACK_FIXES = 2 * MAX_DISTANCE_M // 5
+# The longest planned route it takes: far more points than the engine writes.
+MAX_ROUTE_POINTS = 50_000
+
+
+class TrackFixBody(BaseModel):
+    """One GPS fix of a run: TrackFix in packages/shared-types."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    point: tuple[float, float] = Field(description="Where, as [lat, lon].")
+    time_ms: float = Field(description="When, in milliseconds on the phone's clock.")
+    accuracy_m: float | None = Field(
+        default=None, description="Radius of the fix's error; null when unknown."
+    )
+
+
+class TrackScoreRequestBody(BaseModel):
+    """What the app sends to POST /track-scores: TrackScoreRequest in
+    packages/shared-types."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    points: list[tuple[float, float]] = Field(
+        max_length=MAX_ROUTE_POINTS,
+        description="The planned route: RouteResult.points.",
+    )
+    similarity: float = Field(
+        ge=0.0, le=1.0, description="The planned route's: RouteResult.similarity."
+    )
+    track: list[TrackFixBody] = Field(
+        max_length=MAX_TRACK_FIXES, description="The run, fix by fix, in order."
+    )
+
+
+class TrackScoreBody(BaseModel):
+    """What the app gets back: TrackScore in packages/shared-types
+    (route_engine/track_score.py, ADR-0090)."""
+
+    score: int = Field(description="From 0 to 100.")
+    fidelity: float = Field(description="How much of the plan was run, 0 to 1.")
+    covered: float = Field(description="Share of the route with the run near it.")
+    on_route: float = Field(description="Share of the run near the route.")
+    distance_m: float = Field(description="Length of the run, in metres.")
+
+
 class ShapeReadingRequestBody(BaseModel):
     """What the app sends to POST /shape-readings: ShapeReadingRequest in
     packages/shared-types."""

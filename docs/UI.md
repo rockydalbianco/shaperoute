@@ -474,6 +474,33 @@ percorso la sostituisce alla prima posizione. Sullo schermo non cambia
 niente, e la traccia non esce dal telefono: la usa la schermata di fine
 corsa (TASK-113).
 
+## La fine della corsa
+
+«Stop» durante la navigazione, o «Finish» all'arrivo (lo stesso pulsante),
+chiude la corsa e apre la schermata di fine corsa (TASK-113, ADR-0092), se
+la traccia ha almeno due posizioni; se no si torna al risultato come
+prima. Sulla mappa il percorso giallo e, sopra, più sottile e chiara
+(`track` nei token), la linea di quello che si è corso. In alto «Your run»
+con la legenda «Yellow: the route. White: what you ran.». Sotto, il
+punteggio in grande («91», «out of 100») e una riga «4.0 km · 32 min · 97%
+of the route»: distanza e durata della corsa, e quanta parte del percorso
+è stata coperta. Il punteggio lo calcola l'API (`POST /track-scores`);
+nell'attesa «Scoring your run…», con distanza e durata già lì.
+
+- **Senza rete o senza API**: «The score will come later», la corsa resta
+  nel file sul telefono, «Try again» la richiede. Anche con «Done» la
+  corsa resta: alla prossima apertura l'app si apre su questa schermata e
+  chiede di nuovo il punteggio.
+- **Corsa troppo corta**: «Too short for a score».
+- **«Keep running»**, dopo uno «Stop» e con il percorso ancora sullo
+  schermo: torna alla navigazione, e la traccia continua (ADR-0091).
+- **«Done»**: torna al risultato, o alla prima schermata se il percorso
+  non c'è più. Con il punteggio arrivato, o la corsa troppo corta, la
+  traccia si cancella dal telefono: salvarla è di TASK-117.
+
+Il punteggio non è giallo: il giallo resta del percorso e dell'azione
+principale.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di

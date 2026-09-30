@@ -1,6 +1,6 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { color, route } from "../theme/tokens";
+import { color, route, track } from "../theme/tokens";
 import { toLngLat } from "./coordinates";
 import { sgravaDarkStyle } from "./mapStyle";
 
@@ -39,6 +39,11 @@ export const FOLLOW_ZOOM = 17;
 export const ROUTE_COLOR = route.color;
 export const ROUTE_WIDTH = route.width;
 export const ROUTE_OPACITY = route.opacity;
+
+/** The run over its route (TASK-113). */
+export const TRACK_COLOR = track.color;
+export const TRACK_WIDTH = track.width;
+export const TRACK_OPACITY = track.opacity;
 
 /**
  * The start asked for. MapLibre's default marker is a light blue that reads
@@ -105,6 +110,7 @@ export function buildMapPage(): string {
     var startHere = null;
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
+    var track = noRoute;
     var map = new maplibregl.Map({
       container: "map",
       style: ${toScript(MAP_STYLE)},
@@ -129,6 +135,19 @@ export function buildMapPage(): string {
           "line-opacity": ${ROUTE_OPACITY},
         },
       });
+      // The run, over the route it followed.
+      map.addSource("track", { type: "geojson", data: track });
+      map.addLayer({
+        id: "track",
+        type: "line",
+        source: "track",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(TRACK_COLOR)},
+          "line-width": ${TRACK_WIDTH},
+          "line-opacity": ${TRACK_OPACITY},
+        },
+      });
     });
     function setStartHere(lngLat) {
       if (startHere) {
@@ -150,6 +169,13 @@ export function buildMapPage(): string {
       var source = map.getSource("route");
       if (source) {
         source.setData(route);
+      }
+    }
+    function setTrack(data) {
+      track = data;
+      var source = map.getSource("track");
+      if (source) {
+        source.setData(track);
       }
     }
     // The first time every tile in view is drawn: the app hides its bar.
@@ -201,6 +227,14 @@ export function buildMapPage(): string {
               .addTo(map);
           }
           map.easeTo({ center: message.lngLat, zoom: ${FOLLOW_ZOOM}, duration: 500 });
+        } else if (message.type === "showTrack") {
+          setTrack({
+            type: "Feature",
+            properties: {},
+            geometry: { type: "LineString", coordinates: message.coordinates },
+          });
+        } else if (message.type === "clearTrack") {
+          setTrack(noRoute);
         } else if (message.type === "clearRoute") {
           setRoute(noRoute);
           setStartHere(null);

@@ -14,6 +14,8 @@ export type ToPage =
   | { type: "setPosition"; lngLat: LngLat }
   | { type: "showRoute"; coordinates: LngLat[]; startHere: LngLat | null }
   | { type: "clearRoute" }
+  | { type: "showTrack"; coordinates: LngLat[] }
+  | { type: "clearTrack" }
   | { type: "follow"; lngLat: LngLat };
 
 /** From the map page to the app, through `window.ReactNativeWebView`. */
@@ -47,6 +49,15 @@ export function showRoute(points: LatLon[], requested: LatLon | null = null): To
  */
 export function follow(point: LatLon): ToPage {
   return { type: "follow", lngLat: toLngLat(point) };
+}
+
+/** Draws the run over the route, without moving the map (TASK-113). */
+export function showTrack(points: LatLon[]): ToPage {
+  return { type: "showTrack", coordinates: points.map(toLngLat) };
+}
+
+export function clearTrack(): ToPage {
+  return { type: "clearTrack" };
 }
 
 export function clearRoute(): ToPage {

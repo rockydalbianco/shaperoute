@@ -52,7 +52,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-Niente.
+- **App** — TASK-085: i luoghi suggeriti mentre si scrive la partenza
+  (ADR-0080). Codice e test fatti; manca la prova sull'iPhone.
 
 ## Completato
 

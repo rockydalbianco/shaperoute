@@ -3382,3 +3382,36 @@ quando il percorso è pronto (blocca l'utente); il consenso all'apertura
 **Conseguenza**: in Expo Go nessun annuncio. Per vederli serve una build
 EAS (iPhone: account Apple Developer); per annunci veri l'account AdMob e
 l'app in uno store.
+
+## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
+(TASK-133, miglioramento generale)
+
+**Contesto**: GraphML, pickle e vie con nome si scrivevano direttamente sul
+nome definitivo. Un GraphML di zona pesa 50–120 MB e si scrive in secondi:
+un'API o uno script fermati in quel momento lasciavano un file a metà, che
+la cache trovava per nome. Un GraphML a metà o un pickle a metà (più
+recente del GraphML, quindi letto per primo) facevano fallire ogni percorso
+della zona; un file di vie con nome a metà mandava il percorso in
+`engine_error`. Si usciva solo cancellando il file a mano. Sul Mac, il
+2026-10-01, nessuno dei 355 GraphML in cache era rotto: è prevenzione.
+
+**Decisione**: in `network.py` ogni file della cache si scrive su un nome
+temporaneo accanto, `.<nome>.<8 cifre esadecimali>.part`, e prende il suo
+nome con `os.replace` solo quando è scritto per intero (`_whole`). Un
+errore o un'interruzione (Ctrl+C) tolgono il file temporaneo; un processo
+ucciso lo lascia, ma un nome che comincia col punto non è trovato da
+nessuna ricerca della cache (`foot_*.graphml`, `names_*.json`). Il pickle,
+che fa solo risparmiare tempo: se non si legge si legge il GraphML e lo si
+riscrive; se non si riesce a scrivere (`OSError`: disco pieno, cartella in
+sola lettura) il caricamento va avanti senza.
+
+**Alternative scartate**: `tempfile.mkstemp` (crea il file coi permessi
+0600, diversi da quelli di oggi); un lock fra processi (non serve: due
+scritture dello stesso file finiscono in due file temporanei diversi, e
+vince l'ultima, intera); riscaricare da solo un GraphML già rotto (il
+GraphML è il formato di riferimento: cancellarlo è una scelta di chi guarda
+la cache).
+
+**Conseguenza**: nessun cambio nei percorsi né nei tempi; un `.part`
+rimasto da un processo ucciso si può cancellare a mano quando si vuole.

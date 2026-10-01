@@ -11,6 +11,9 @@ failure stops the command. Run again, it goes on from the missing cities.
 
     python -m shaperoute_api.prefetch_zones --preset italy
     python -m shaperoute_api.prefetch_zones "Vercelli" "Lucca" --dry-run
+
+With `--extract italy-highways.osm.pbf` the zones come from an OpenStreetMap
+extract instead (zone_extract.py): no request to Overpass, no pause.
 """
 
 from __future__ import annotations
@@ -24,6 +27,7 @@ import sys
 import time
 import urllib.request
 from collections.abc import Callable, Iterable, Sequence
+from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, Protocol
@@ -39,6 +43,7 @@ from shaperoute_api.cities import CitySearch
 from shaperoute_api.places import KEY_VARIABLE, PlaceSearch
 from shaperoute_api.themed import search_radius_m
 from shaperoute_api.themes import THEMES
+from shaperoute_api.zone_extract import zone_from_extract
 
 BBox = tuple[float, float, float, float]
 
@@ -256,6 +261,7 @@ def prefetch(
     pause_s: float = DEFAULT_PAUSE_S,
     max_downloads: int | None = None,
     dry_run: bool = False,
+    zone_data: Callable[[BBox], AbstractContextManager[None]] | None = None,
     sleep: Callable[[float], None] = time.sleep,
     clock: Callable[[], float] = time.monotonic,
     report: Callable[[Outcome], None] = lambda o: None,
@@ -307,9 +313,9 @@ def prefetch(
             stopped = "less than 5 GB free on the disk"
             done(Outcome(city, "missing", stopped))
             continue
-        if tries > 0:
+        if tries > 0 and zone_data is None:
             sleep(pause_s)
-        wait = overpass_wait()
+        wait = 0.0 if zone_data is not None else overpass_wait()
         if wait is None:
             stopped = "Overpass did not answer, or had no slot for minutes"
             done(Outcome(city, "missing", stopped))
@@ -319,9 +325,10 @@ def prefetch(
         started = clock()
         tries += 1
         try:
-            if not graph:
-                source.load(box)
-            source.named_roads(box, download=True)
+            with nullcontext() if zone_data is None else zone_data(box):
+                if not graph:
+                    source.load(box)
+                source.named_roads(box, download=True)
         except Exception as exc:
             code = http_code(exc)
             failed = f"the download failed ({type(exc).__name__}" + (
@@ -364,6 +371,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--dry-run", action="store_true", help="say what is ready, download nothing"
     )
+    parser.add_argument(
+        "--extract",
+        type=Path,
+        default=None,
+        help="an OpenStreetMap .pbf to cut the zones from, instead of Overpass",
+    )
     args = parser.parse_args(argv)
     cities = list(args.cities)
     for preset in args.preset or []:
@@ -381,6 +394,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         pause_s=args.pause_s,
         max_downloads=args.max_downloads,
         dry_run=args.dry_run,
+        zone_data=(
+            None
+            if args.extract is None
+            else lambda box: zone_from_extract(args.extract, box)
+        ),
         report=lambda o: print(o.line(), flush=True),
     )
     tally = {

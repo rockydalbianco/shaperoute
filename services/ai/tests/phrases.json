@@ -11,7 +11,9 @@
     "butterfly",
     "snail",
     "dog_head",
-    "rabbit_head"
+    "rabbit_head",
+    "pumpkin",
+    "christmas_tree"
   ],
   "phrases": [
     { "text": "stemma della Ferrari", "accept": ["horse"] },
@@ -58,6 +60,16 @@
     { "text": "Roger Rabbit", "accept": ["rabbit_head"] },
     { "text": "lepre", "accept": ["rabbit_head", null] },
 
+    { "text": "Halloween", "accept": ["pumpkin"] },
+    { "text": "zucca intagliata", "accept": ["pumpkin"] },
+    { "text": "dolcetto o scherzetto", "accept": ["pumpkin", null] },
+
+    { "text": "Natale", "accept": ["christmas_tree"] },
+    { "text": "abete addobbato", "accept": ["christmas_tree"] },
+    { "text": "xmas", "accept": ["christmas_tree"] },
+    { "text": "albero", "accept": [null] },
+    { "text": "tree", "accept": [null] },
+
     { "text": "San Valentino", "accept": ["heart"] },
     { "text": "ti amo", "accept": ["heart"] },
     { "text": "innamorati", "accept": ["heart"] },
@@ -88,6 +100,6 @@
     { "text": "Pikachu", "accept": [null] },
     { "text": "aereo", "accept": [null] },
     { "text": "chitarra", "accept": [null] },
-    { "text": "albero di Natale", "accept": [null] }
+    { "text": "quercia", "accept": [null] }
   ]
 }

@@ -65,7 +65,8 @@ Una forma può anche arrivare da un **contorno** in JSON (ADR-0035): dalla
 CLI con `--outline FILE`, oppure registrata in `SHAPES` come le altre. Le
 forme registrate sono il **catalogo** e sono contratto (ADR-0036): `circle`,
 `heart`, `star`, `horse`, `moon`, `cat`, `fish`, `butterfly`, `snail`,
-`dog_head`, `rabbit_head`. Un contorno entra nel catalogo solo dopo il
+`dog_head`, `rabbit_head`, `pumpkin`, `christmas_tree`. `tree`
+(TASK-034) è un altro contorno, e non è nel catalogo. Un contorno entra nel catalogo solo dopo il
 giudizio a occhio dell'utente sulle strade.
 
 ```json

@@ -8,5 +8,11 @@
   "image_not_usable",
   "outline_edit_rejected",
   "unauthorized",
-  "too_many_requests"
+  "too_many_requests",
+  "email_taken",
+  "username_taken",
+  "wrong_credentials",
+  "not_signed_in",
+  "session_expired",
+  "accounts_unavailable"
 ]

@@ -14,6 +14,9 @@ dependencies = [
     "shaperoute-ai",
     "fastapi>=0.141,<1",
     "uvicorn>=0.53,<1",
+    # Accounts (TASK-114, ADR-0115): PostgreSQL and Argon2id password hashes.
+    "psycopg[binary]>=3.2,<4",
+    "argon2-cffi>=23.1,<26",
 ]
 
 [project.optional-dependencies]

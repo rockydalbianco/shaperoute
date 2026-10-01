@@ -3339,3 +3339,45 @@ corrisponderebbe); uno script fuori dal motore (non vale per l'API).
 **Conseguenza**: il centro di Verona, mai scaricato, in 10 s. Il cambio è
 globale al processo per la durata del download: altri nomi non sono
 toccati.
+
+## ADR-0102 — Un annuncio AdMob fra «percorso pronto» e «percorso mostrato»
+**Stato**: Attiva · 2026-10-01 · AdMob con una build dell'app: scelta
+dell'utente; il come deciso dall'agente su delega dell'utente (TASK-132)
+
+**Contesto**: l'utente vuole pubblicità solo dopo «Draw route» (o «Ask for
+a route» in «Explore»), prima del percorso; con una rete ufficiale, consenso
+e privacy rispettati, e il percorso subito se non c'è annuncio. L'app gira
+in Expo Go, che non ha il codice nativo di nessuna rete pubblicitaria
+ufficiale: l'utente ha scelto AdMob e una build propria dell'app.
+
+**Decisione**:
+- `react-native-google-mobile-ads` (AdMob), interstitial (immagine o
+  video, con la X di Google). Nessuna schermata nostra: niente annunci finti.
+- `useAdBeforeRoute` sta fra lo stato della richiesta e lo schermo: mentre
+  il motore lavora prepara un annuncio; quando il percorso è pronto, se
+  l'annuncio è carico lo mostra e tiene sullo schermo l'attesa; alla
+  chiusura (o a un errore) mostra il percorso. Senza annuncio carico, il
+  percorso subito: non si aspetta il caricamento.
+- Al massimo un annuncio ogni 3 minuti (`MIN_GAP_MS`): un «Try 4 km» o una
+  seconda prova non ne mostrano un altro.
+- Consenso: il modulo di Google (UMP, `gatherConsent`) alla prima richiesta
+  di percorso, mentre il motore lavora; mai all'apertura. Senza
+  `canRequestAds`, nessun annuncio. Niente richiesta ATT di Apple: su iOS
+  annunci senza IDFA.
+- In Expo Go, sul web e nei test il modulo nativo manca
+  (`TurboModuleRegistry.get`): `NO_ADS`, l'app come prima. Lo stesso
+  `eas update` va bene per Expo Go e per la build.
+- ID di prova di Google (app e annuncio) finché non c'è l'account AdMob:
+  gli ID veri in `app.json` e in `EXPO_PUBLIC_ADMOB_INTERSTITIAL_*`.
+- `apps/mobile/eas.json`, profilo `preview` (distribuzione interna, canale
+  `preview`).
+
+**Alternative scartate**: AdSense in una WebView (vietato dalle regole
+AdMob nelle app); un annuncio fatto da noi (finto); mostrare l'annuncio a
+ogni percorso (più del necessario); aspettare il caricamento dell'annuncio
+quando il percorso è pronto (blocca l'utente); il consenso all'apertura
+(l'utente non vuole nulla all'apertura).
+
+**Conseguenza**: in Expo Go nessun annuncio. Per vederli serve una build
+EAS (iPhone: account Apple Developer); per annunci veri l'account AdMob e
+l'app in uno store.

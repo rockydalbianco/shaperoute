@@ -64,6 +64,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-132 — Un annuncio prima del percorso**
+  (`feat/TASK-132-route-ads`, ADR-0102): interstitial AdMob dopo «Draw
+  route» e «Ask for a route», percorso subito se non c'è. In Expo Go nessun
+  annuncio; da provare con una build EAS `preview` (account Apple Developer).
 - **TASK-129 — «Explore» per ogni città e percorsi a tema**
   (`feat/TASK-129-explore-themes`, ADR-0099): «Search a city» e «Ask for a
   route», una forma che passa dai luoghi veri di un tema. Provato a Torino,

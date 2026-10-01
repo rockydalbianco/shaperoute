@@ -5,6 +5,8 @@ import {
   type Shape,
   SHAPES,
 } from "@shaperoute/shared-types";
+import type { Signal } from "@shaperoute/shared-types/src/signals";
+import { useRef } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -16,6 +18,7 @@ import {
   space,
 } from "../theme/tokens";
 import { isImageRequest } from "../api/routes";
+import { drawnOf, sendSignal } from "../api/signals";
 import { Segmented } from "../screens/Segmented";
 import { LONG_DISTANCE_KM, MAX_APP_DISTANCE_KM, MIN_DISTANCE_KM } from "./distance";
 import { DistanceStepper } from "./DistanceStepper";
@@ -225,6 +228,9 @@ type OutcomeProps = {
   choices?: RouteResult[];
   chosen?: number;
   onChoose?: (index: number) => void;
+  /** Tells the API the route taken among A, B, C, and a way out taken
+   * (TASK-142); POST /signals. */
+  onSignal?: (signal: Signal) => void;
 };
 
 /** Under the map: the wait, the route, or why there is none. */
@@ -239,7 +245,35 @@ export function RouteOutcome({
   choices = [],
   chosen = 0,
   onChoose = () => {},
+  onSignal = (signal) => void sendSignal(signal),
 }: OutcomeProps) {
+  // Each route of an answer counts once as chosen, by its first use: a
+  // second export of it is no second choice.
+  const told = useRef<{ of: RouteResult | null; routes: Set<number> }>({
+    of: null,
+    routes: new Set(),
+  });
+
+  /** Start or export the route on screen, and say which one it was. */
+  function use(via: "start" | "gpx", then: () => void) {
+    if (view.status === "done") {
+      if (told.current.of !== view.result) {
+        told.current = { of: view.result, routes: new Set() };
+      }
+      if (!told.current.routes.has(chosen)) {
+        told.current.routes.add(chosen);
+        onSignal({
+          kind: "route_chosen",
+          ...drawnOf(view.request),
+          index: chosen,
+          of: Math.max(choices.length, 1),
+          via,
+        });
+      }
+    }
+    then();
+  }
+
   switch (view.status) {
     case "waiting":
       return (
@@ -279,13 +313,17 @@ export function RouteOutcome({
           ))}
           {/* Only with directions: a route traced without them has no turns. */}
           {view.result.directions.length > 0 && (
-            <Pressable style={styles.draw} onPress={onStart} accessibilityRole="button">
+            <Pressable
+              style={styles.draw}
+              onPress={() => use("start", onStart)}
+              accessibilityRole="button"
+            >
               <Text style={styles.drawText}>Start</Text>
             </Pressable>
           )}
           <Pressable
             style={[styles.secondary, styles.export]}
-            onPress={onExport}
+            onPress={() => use("gpx", onExport)}
             disabled={exporting.status === "preparing"}
             accessibilityRole="button"
           >
@@ -295,7 +333,7 @@ export function RouteOutcome({
           </Pressable>
           {exporting.status === "failed" && <Problem problem={exporting.problem} />}
           {/* Strava's official flow: a GPX imported there (TASK-135). */}
-          <RunWithStrava exporting={exporting} onExport={onExport} />
+          <RunWithStrava exporting={exporting} onExport={() => use("gpx", onExport)} />
         </View>
       );
     case "failed":
@@ -303,8 +341,25 @@ export function RouteOutcome({
         <Problem
           problem={view.problem}
           kind={kindOf(view.request)}
-          onTryDistance={onTryDistance}
-          onPickShape={onPickShape}
+          onTryDistance={(distanceM) => {
+            onSignal({
+              kind: "hint_taken",
+              ...drawnOf(view.request),
+              hint: "try_distance",
+              distance_m: view.request.distance_m,
+              to_m: distanceM,
+            });
+            onTryDistance(distanceM);
+          }}
+          onPickShape={(shape) => {
+            onSignal({
+              kind: "hint_taken",
+              shape,
+              hint: "catalog_shape",
+              distance_m: view.request.distance_m,
+            });
+            onPickShape(shape);
+          }}
         />
       );
     default:

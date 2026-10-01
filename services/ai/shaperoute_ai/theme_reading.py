@@ -24,6 +24,14 @@ DESCRIPTIONS: dict[str, str] = {
     "panoramic": "viewpoints, views over the city, parks",
     "nature": "parks, gardens, nature",
     "culture": "museums, art, culture",
+    "shopping": "shops, malls, markets",
+    "nightlife": "bars, pubs, clubs, nightlife",
+    "hidden": "hidden gems, lesser-known places",
+    "photography": "photo spots, landmarks worth a picture",
+    "family": "playgrounds, zoos, aquariums, places for children",
+    "running": "a run through parks",
+    "walking": "a walk past sights and parks",
+    "local": "local markets, cafés, authentic places",
 }
 
 SYSTEM = """\

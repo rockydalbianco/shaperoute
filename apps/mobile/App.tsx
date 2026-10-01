@@ -24,6 +24,11 @@ import {
 import { ExploredCard } from "./src/explore/ExploredCard";
 import { useExplored } from "./src/explore/explored";
 import { ExploreScreen } from "./src/explore/ExploreScreen";
+import {
+  loadRecentCities,
+  remember,
+  saveRecentCities,
+} from "./src/explore/recentCities";
 import { ThemedCard, themedGpx } from "./src/explore/ThemedCard";
 import { useThemedRoute } from "./src/explore/useThemedRoute";
 import { MapView } from "./src/map/MapView";
@@ -133,6 +138,8 @@ function Sgrava() {
   const { explored, open: openExplored, close: closeExplored } = useExplored(API_URL);
   // "Explore" for any city, and a shape through a theme's places (TASK-129).
   const [exploreCity, setExploreCity] = useState<Place | null>(null);
+  // The cities chosen last, kept on the phone (TASK-134).
+  const [recentCities, setRecentCities] = useState<Place[]>(loadRecentCities);
   const themed = useThemedRoute(API_URL);
   const themedExport = useMemo(
     () => (themed.state.status === "done" ? themedGpx(themed.state.result) : null),
@@ -467,7 +474,15 @@ function Sgrava() {
             setScreen("map");
           }}
           city={exploreCity}
-          onCity={setExploreCity}
+          onCity={(city) => {
+            setExploreCity(city);
+            if (city !== null) {
+              const recent = remember(recentCities, city);
+              setRecentCities(recent);
+              saveRecentCities(recent);
+            }
+          }}
+          recent={recentCities}
           onAsk={(request) => {
             Keyboard.dismiss();
             closeExplored();

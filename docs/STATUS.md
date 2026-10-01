@@ -5,83 +5,97 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-10-01 · **Fase corrente**: 4 — Estensione (scritte)
+**Ultimo aggiornamento**: 2026-10-01 · **Fase corrente**: 4 — Estensione
 
 ---
 
 ## In una riga
 
-Fase 2 chiusa: il MVP gira dall'iPhone, con l'API sul PC. Si scrivono
-forma e distanza, fino a 21 km, e il percorso compare sulla mappa: 3–10 km nelle zone in cache in 5–25 s, da 15 a 21 km in 30–50 s,
-con l'attesa che dice cosa succede. Una zona nuova aggiunge il suo download
-da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
-percorso si esporta in GPX, e Garmin Connect lo apre. La forma si scrive
-in un riquadro, in italiano o in inglese, fra quelle del catalogo:
-cerchio, cuore, stella, cavallo, luna, gatto, pesce, farfalla, lumaca,
-testa di cane e testa di coniglio, anche da toccare come tessere. Gatto,
-pesce e i quattro animali nuovi hanno tratti interni, fatti andata e
-ritorno (occhi, antenne, spirale). Quando la forma non va
-attorno alla partenza, il motore cerca un posto fino a 2 km e l'app mostra
-«Start here»: così gatto e pesce si disegnano anche a Levico. Le parole che
-la tabella non conosce («stemma della Ferrari») le legge un modello aperto
-in Ollama sul PC, che sceglie una forma del catalogo o nessuna; se è
-nessuna, l'app propone le forme del catalogo da toccare. Se la forma non ci
-sta per la distanza, l'app propone quella che ci sta («Try N km»).
+Il MVP gira dall'iPhone in Expo Go, con l'API sul Mac raggiungibile anche
+da fuori casa (Tailscale). Si sceglie una forma del catalogo (cerchio,
+cuore, stella, cavallo, luna, gatto, pesce, farfalla, lumaca, testa di
+cane, testa di coniglio), una parola dalla A alla Z, tonda o squadrata, o
+una foto, e una distanza fino a 21 km. Il percorso compare sulla mappa,
+fino a tre fra cui scegliere; si esporta in GPX (Garmin Connect lo apre),
+si corre con la navigazione a voce o con Strava («Run with Strava»), e a
+fine corsa ha un punteggio. Le parole che la tabella non conosce le legge
+un modello aperto in Ollama; se la forma non va attorno alla partenza il
+motore cerca un posto fino a 2 km («Start here»), se non ci sta per la
+distanza l'app propone «Try N km». **«Explore»** propone percorsi in ogni
+città: città in evidenza e suggerite mentre si scrive, 13 categorie,
+percorsi a tema che passano dai luoghi veri. L'API registra le ricerche,
+senza dati personali, e ne ricava sinonimi e correzioni da applicare a mano
+(`INSIGHTS.md`). Tempi: 3–10 km nelle zone in cache in 5–25 s, da 15 a
+21 km in 30–50 s. Una zona nuova si scarica da Overpass dal Mac
+(ADR-0100), che dopo molti download smette di rispondere per qualche ora
+(`MAPS.md`).
 
 ## Prossimo passo
 
-**TASK-050 — Lettere una per una** (`ROADMAP.md`, fase 4): fatto,
-giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
-(ADR-0051). Per le scritte il seguito è **TASK-057**, il campo nell'app,
-chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
-fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
-dalla cima, e una scala per lettera vicina a quella delle vicine
-(ADR-0063, dopo TASK-063, che ha `optimizer.py`). Da TASK-071: lettere più
-piccole si leggono peggio. Le lettere squadrate si scelgono nell'app da TASK-080.
-Per le indicazioni di svolta il seguito è
-**TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
-**TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
-nome della strada accanto (a Milano 213 indicazioni su 264 sono «footway»).
+**TASK-110 — Le scelte della parte social** (`ROADMAP.md`, «La parte
+social»): account, dati, hosting e privacy. Non è codice, sono domande per
+l'utente; branch `docs/TASK-110-social-decisions`, sessione «Decide
+TASK-110», ancora senza commit. Il punteggio è fatto (TASK-111, 112, 113);
+dopo TASK-110 vengono TASK-114 (database e account), poi 115 (iscriversi)
+e 122 (API e database sempre accesi), poi 116–121. Tutti Todo.
 
-**App: TASK-058 — Barra anche durante il download della zona e la
-connessione all'API**, chiesto dall'utente dopo TASK-055; poi TASK-057, il
-campo per le parole (dopo TASK-056 e TASK-049).
+In coda, dopo o accanto:
 
-**Parte social, chiesta dall'utente (2026-09-30)**: punteggio del disegno
-corso, account, profilo, like e commenti. Tredici task scritti, TASK-110 …
-122, con l'ordine in `ROADMAP.md` («La parte social»). Partono subito
-**TASK-111** (punteggio nel motore) e **TASK-112** (traccia registrata
-nell'app); **TASK-110** sono le scelte dell'utente da cui dipendono gli
-account. Dopo, **TASK-092 — Percorsi consigliati** (ADR-0086, scelta
-dell'utente del 2026-10-01): tutti i percorsi generati si salvano, i
-migliori si consigliano agli utenti e si usano sui social; parte dopo il
-database (TASK-114) e l'API sempre accesa (TASK-122).
-
-**TASK-093 — Scegliere fra più percorsi**: fatto (sotto, «Completato»).
-
-**TASK-131 — Un cuore più bello a occhio**: fatto e provato sull'iPhone
-(2026-10-01). Il cuore evita i pezzi fatti avanti e indietro (ADR-0107);
-la forma ideale resta quella di oggi, preferita dall'utente. Seguito
-possibile: lo stesso peso per cerchio e stella, con un loro giudizio.
+- **TASK-092 — Percorsi consigliati** (ADR-0086, scelta dell'utente del
+  2026-10-01): tutti i percorsi generati si salvano, i migliori si
+  consigliano agli utenti e si usano sui social. Todo, dopo il database
+  (TASK-114) e l'API sempre accesa (TASK-122); intanto «Explore» legge il
+  catalogo nei file (ADR-0098).
+- **TASK-067 — Lettere unite dall'alto, scala per lettera** (ADR-0063),
+  chiesto dall'utente: in coda, da rivedere, senza task file. Da TASK-071
+  e TASK-077: lettere più piccole si leggono peggio.
+- **Seguiti possibili, da approvare**, scritti nei task fatti: i segnali
+  dell'app per le ricerche che insegnano (percorso scelto fra A·B·C, «Try
+  N km») e le città e frasi desiderate lette da TASK-128 (TASK-130);
+  l'import in Strava con un account vero (TASK-135); riparare un GraphML
+  già rotto e la dimensione della cache, 36 GB sul Mac (TASK-133).
+- **Da provare sull'iPhone**: la navigazione col GPS camminando un
+  percorso vero (TASK-049), il punteggio a fine corsa (TASK-112 e 113),
+  «Explore» (TASK-126 e 134).
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
-- **TASK-134 — «Explore»: città → categoria → percorso**
-  (`feat/TASK-134-explore-ux`, ADR-0105): città in evidenza e recenti,
-  suggerimenti mentre si scrive, 13 categorie da toccare.
-- **TASK-129 — «Explore» per ogni città e percorsi a tema**
-  (`feat/TASK-129-explore-themes`, ADR-0099): «Search a city» e «Ask for a
-  route», una forma che passa dai luoghi veri di un tema. Provato a Torino,
-  Bologna, Milano, Roma e New York; Parigi e Tokyo quando Overpass riapre.
-- **TASK-126 — «Explore»** (`feat/TASK-126-explore`, ADR-0098):
-  `GET /recommended-routes` dai file del catalogo e la terza schermata
-  dell'app. Da provare sull'iPhone.
+Un task per riga, con branch e sessione: i suoi file sono suoi.
+
+- **TASK-088 — Zucca e albero di Natale nel catalogo**
+  (`feat/TASK-088-seasonal-catalog`, PR #112, sessione «Add pumpkin and
+  Christmas tree to the shape catalogue»): task file Done, aspetta il
+  merge.
+- **TASK-128 — Il seme del catalogo in altre città**
+  (`feat/TASK-128-seed-catalog-more`, sessione «Task progression senza
+  blocchi»): il nuovo giro dei percorsi consigliati aspetta che Overpass
+  risponda dal Mac. Senza PR né task file.
+- **TASK-132 — Un annuncio prima del percorso** (`feat/TASK-132-route-ads`,
+  PR #130, sessione «Sistema pubblicitario non invasivo»): un interstitial
+  AdMob prima del percorso pronto. In corso.
+- **TASK-136 — La CLI non salva più i ritagli dei grafi**
+  (`fix/TASK-136-no-saved-crops`, PR #137, sessione «Miglioramento
+  generale»): task file Done, aspetta il merge.
+- **TASK-137 — Le zone delle città in evidenza, scaricate prima**
+  (`docs/TASK-137-featured-zones`, PR #136 col task file, sessione
+  «Potenziamento sezione Explore»): Todo; il lavoro andrà in
+  `feat/TASK-137-featured-zones`.
+- **TASK-138 — «Explore»: suggerimenti di città e luoghi mentre si
+  scrive** (`feat/TASK-138-place-suggestions`, PR #139, sessione
+  «Suggerimenti città in Explore»): task file Done, aspetta il merge.
+- **TASK-140 — Anche le altre forme senza «baffi»**
+  (`feat/TASK-140-whiskers-other-shapes`, sessione del worktree
+  `goofy-ishizaka-82df04`): modifiche al motore non ancora committate;
+  senza PR né task file.
 
 ## Completato
 
+- **Documentazione** — TASK-141: `STATUS.md` allineato ai task file e
+  alle PR del 2026-10-01 (prossimo passo, task in lavorazione, In una
+  riga).
 - **Motore** — TASK-139: anche cerchio e stella evitano i pezzi fatti
   avanti e indietro (ADR-0109), con lo stesso peso del cuore. Il cerchio
   non cambia sulle 7 prove; 3 stelle su 7 cambiano, 2 giudicate meglio.
@@ -100,6 +114,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   approvare: i segnali dell'app (percorso scelto fra A·B·C, «Try N km»),
   e TASK-128 che legge città e frasi desiderate.
 
+- **Motore** — TASK-131: un cuore più bello a occhio, provato
+  sull'iPhone (2026-10-01). Il cuore evita i pezzi fatti avanti e indietro
+  (ADR-0107); la forma ideale resta quella di oggi, preferita dall'utente.
+  Il seguito, lo stesso peso per cerchio e stella, è TASK-139.
+- **App e API** — TASK-134: «Explore»: città → categoria → percorso
+  (ADR-0105): città in evidenza e recenti, suggerimenti mentre si scrive,
+  13 categorie da toccare. In `main` (PR #135), da provare sull'iPhone
+  (task file «In revisione»). Delle 14 città in evidenza solo New York,
+  Roma, Milano e Torino hanno la zona in cache sul Mac: è TASK-137.
 - **App** — TASK-135: «Run with Strava» in ogni scheda di percorso, il
   flusso ufficiale (ADR-0106): salvare il GPX, importarlo nel route builder
   di Strava, seguirlo dall'app Strava. Strava non permette di creare
@@ -110,6 +133,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   un GraphML, un pickle o un file di vie con nome rotti, che facevano
   fallire ogni percorso della zona finché non si cancellavano a mano; un
   pickle che non si legge cede al GraphML. Stessi percorsi, stessi tempi.
+- **API e app** — TASK-129: «Explore» per ogni città e percorsi a tema
+  (ADR-0099): «Search a city» e «Ask for a route», una forma che passa dai
+  luoghi veri di un tema. Provato a Torino, Bologna, Milano, Roma e New
+  York; Parigi e Tokyo quando Overpass riapre. In `main` (PR #126; task
+  file «In revisione»).
 - **Motore** — TASK-127: Overpass dall'indirizzo che risponde (ADR-0100);
   le zone nuove si scaricano dal Mac. Dopo una serie di download Overpass
   smette comunque di rispondere per qualche ora (MAPS.md).
@@ -121,6 +149,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   un piano già buono le partenze vicine si aspettano al più 3 s. Provato
   sull'iPhone (2026-10-01): funziona. L'utente: «il cuore ad occhio
   saprei farlo un po' meglio» (da proporre come task sul motore).
+- **API e app** — TASK-126: «Explore» (ADR-0098): `GET
+  /recommended-routes` dai file del catalogo e la terza schermata
+  dell'app. In `main` (PR #124), da provare sull'iPhone (task file «In
+  corso»).
 - **Catalogo** — TASK-125: il seme dei percorsi consigliati, 137 in 6
   città (Trento, Levico, Milano, Roma, Torino, Bologna), guardati a occhio
   (ADR-0097). Lo script ha già le frasi di ogni città e New York: si

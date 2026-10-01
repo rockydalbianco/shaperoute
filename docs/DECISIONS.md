@@ -3867,8 +3867,11 @@ server Hetzner, che l'app usa dal 2026-10-01, risponde.
   comprese); `--preset featured`, le 14 città in evidenza dell'app. Solo
   nomi, nessuna coordinata scritta.
 - **Prudenza con Overpass**: un download alla volta, 60 s fra una città e
-  l'altra, un tentativo per città, stop alla prima risposta mancata o al
-  primo errore, `--max-downloads` per stare nell'uso corretto del servizio
+  l'altra; prima di ognuna la pagina di stato, e se un posto si libera fra
+  N secondi si aspetta (fino a 5 minuti): è quello che il servizio chiede, e
+  il primo giro sul server senza attesa si era fermato a Milano con un
+  errore HTTP subito dopo Roma. Un tentativo per città, stop alla prima
+  risposta mancata o al primo errore, `--max-downloads` per stare nell'uso corretto del servizio
   pubblico; stop sotto i 5 GB liberi. Rilanciato riparte dalle mancanti.
 - **Sul server, in un container a parte** con la cartella della cache
   dell'API: l'API in servizio non si ferma, e legge le zone nuove dal disco

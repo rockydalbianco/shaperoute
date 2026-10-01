@@ -124,8 +124,13 @@ ogni forma dei temi a 10 km da qualunque partenza entro 2,5 km
 5 km) da qualunque partenza entro 2 km (`FAR_OFFSET_M`); più i nomi delle
 strade (ADR-0057). Una città già coperta è «ready»; le altre si scaricano
 **una alla volta**, con una pausa (`--pause-s`, 60 s) e un tetto
-(`--max-downloads`). Si ferma alla prima risposta mancata di Overpass, al
-primo download fallito o sotto i 5 GB liberi; rilanciato, riparte dalle
+(`--max-downloads`). Prima di ogni città legge la pagina di stato di
+Overpass: con un posto libero scarica, con «Slot available after … in N
+seconds» aspetta quei secondi (fino a 5 minuti). Overpass dà due posti per
+indirizzo, e dopo una richiesta grande il posto resta occupato più dei 60 s
+di pausa: senza l'attesa, il secondo download prendeva un errore HTTP. Si
+ferma alla prima risposta mancata di Overpass, al primo download fallito
+(col codice HTTP) o sotto i 5 GB liberi; rilanciato, riparte dalle
 città mancanti. `--dry-run` dice cosa manca senza scaricare. Si lancia
 dove gira l'API usata dall'app, con la sua cartella della cache e
 `GEOAPIFY_API_KEY`.

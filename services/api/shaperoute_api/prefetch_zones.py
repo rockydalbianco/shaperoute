@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import shutil
 import sys
 import time
@@ -48,6 +49,9 @@ EXAMPLE_DISTANCE_M = 5_000
 # Below this the cache stops growing (MAPS.md: the disk fills up).
 MIN_FREE_BYTES = 5 * 1024**3
 DEFAULT_PAUSE_S = 60.0
+# Overpass gives each address two slots; a slot is free again some seconds
+# after a query. Longer than this, the command stops instead of waiting.
+MAX_SLOT_WAIT_S = 300.0
 OVERPASS_STATUS = "https://overpass-api.de/api/status"
 USER_AGENT = "ShapeRoute zone prefetch (https://github.com/rockydalbianco/shaperoute)"
 
@@ -208,14 +212,35 @@ def names_cached(cache_dir: Path, box: BBox) -> bool:
     return False
 
 
-def overpass_answers(url: str = OVERPASS_STATUS, timeout_s: float = 20.0) -> bool:
-    """Overpass's status page answers, through an address that accepts."""
+def slot_wait_s(status: str) -> float | None:
+    """From Overpass's status page: 0 when a slot is free now, the seconds
+    until the first one is, or None when it says neither."""
+    if "slots available now" in status or "slot available now" in status:
+        return 0.0
+    waits = [float(s) for s in re.findall(r"in (\d+) seconds", status)]
+    return min(waits) if waits else None
+
+
+def overpass_wait_s(
+    url: str = OVERPASS_STATUS, timeout_s: float = 20.0
+) -> float | None:
+    """Seconds to wait for a free slot of Overpass, through an address that
+    accepts; None when it does not answer or makes us wait too long."""
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     try:
         with reachable(url), urllib.request.urlopen(request, timeout=timeout_s) as r:
-            return bool(r.status == 200)
+            wait = slot_wait_s(r.read().decode("utf-8", "replace"))
     except Exception:
-        return False
+        return None
+    return wait if wait is not None and wait <= MAX_SLOT_WAIT_S else None
+
+
+def http_code(exc: BaseException) -> int | None:
+    """The HTTP status of a failed download (urllib or requests)."""
+    code = getattr(exc, "code", None) or getattr(
+        getattr(exc, "response", None), "status_code", None
+    )
+    return code if isinstance(code, int) else None
 
 
 def prefetch(
@@ -223,7 +248,7 @@ def prefetch(
     source: ZoneSource,
     find_centre: Callable[[str], tuple[str, LatLon] | None],
     *,
-    overpass_ok: Callable[[], bool] = overpass_answers,
+    overpass_wait: Callable[[], float | None] = overpass_wait_s,
     free_bytes: Callable[[], int] | None = None,
     pause_s: float = DEFAULT_PAUSE_S,
     max_downloads: int | None = None,
@@ -249,7 +274,7 @@ def prefetch(
 
     for city in cities:
         if stopped is not None:
-            done(Outcome(city, "missing", stopped))
+            done(Outcome(city, "missing", f"not tried: {stopped}"))
             continue
         found = find_centre(city)
         if found is None:
@@ -278,17 +303,23 @@ def prefetch(
             continue
         if downloads > 0:
             sleep(pause_s)
-        if not overpass_ok():
-            stopped = "Overpass did not answer"
+        wait = overpass_wait()
+        if wait is None:
+            stopped = "Overpass did not answer, or had no slot for minutes"
             done(Outcome(city, "missing", stopped))
             continue
+        if wait > 0:
+            sleep(wait + 2)
         started = clock()
         try:
             if not graph:
                 source.load(box)
             source.named_roads(box, download=True)
         except Exception as exc:
-            stopped = f"the download failed ({type(exc).__name__})"
+            code = http_code(exc)
+            stopped = f"the download failed ({type(exc).__name__}" + (
+                f" {code})" if code is not None else ")"
+            )
             done(Outcome(city, "missing", stopped))
             continue
         downloads += 1

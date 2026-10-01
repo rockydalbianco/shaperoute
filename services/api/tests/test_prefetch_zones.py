@@ -21,9 +21,11 @@ from shaperoute_api.prefetch_zones import (
     THEMED_DISTANCE_M,
     Outcome,
     box_size_km,
+    http_code,
     main,
     names_cached,
     prefetch,
+    slot_wait_s,
     zone_box,
 )
 from shaperoute_api.themed import search_radius_m
@@ -119,7 +121,7 @@ def run(source: Source, cities: list[str], **kwargs: object) -> list[Outcome]:
         return None if centre is None else (f"{city}, Italy", centre)
 
     options: dict[str, object] = {
-        "overpass_ok": lambda: True,
+        "overpass_wait": lambda: 0.0,
         "free_bytes": lambda: 50 * 1024**3,
         "sleep": lambda s: None,
     }
@@ -163,9 +165,9 @@ def test_the_first_failure_stops_and_names_the_cities_left(tmp_path: Path) -> No
 
 def test_overpass_silent_or_a_full_disk_downloads_nothing(tmp_path: Path) -> None:
     source = Source(tmp_path)
-    silent = run(source, ["Vercelli", "Lucca"], overpass_ok=lambda: False)
+    silent = run(source, ["Vercelli", "Lucca"], overpass_wait=lambda: None)
     assert [o.status for o in silent] == ["missing", "missing"]
-    assert "Overpass" in silent[0].detail
+    assert "Overpass" in silent[0].detail and "not tried" in silent[1].detail
     full = run(source, ["Vercelli"], free_bytes=lambda: MIN_FREE_BYTES - 1)
     assert full[0].status == "missing" and "5 GB" in full[0].detail
     assert source.loaded == []
@@ -180,10 +182,10 @@ def test_a_budget_of_downloads_and_unknown_cities(tmp_path: Path) -> None:
 
 def test_a_dry_run_says_what_is_missing_and_downloads_nothing(tmp_path: Path) -> None:
     source = Source(tmp_path)
-    outcomes = run(source, ["Vercelli"], dry_run=True, overpass_ok=pytest.fail)
+    outcomes = run(source, ["Vercelli"], dry_run=True, overpass_wait=pytest.fail)
     assert outcomes[0].status == "missing" and "to download" in outcomes[0].detail
     source.cache_path(zone_box(VERCELLI)).write_bytes(b"graph")
-    names = run(source, ["Vercelli"], dry_run=True, overpass_ok=pytest.fail)
+    names = run(source, ["Vercelli"], dry_run=True, overpass_wait=pytest.fail)
     assert "street names to download" in names[0].detail
     assert source.loaded == []
 
@@ -201,3 +203,26 @@ def test_without_the_city_key_the_command_says_so(
     monkeypatch.delenv("GEOAPIFY_API_KEY", raising=False)
     assert main(["Vercelli", "--dry-run"]) == 2
     assert "GEOAPIFY_API_KEY" in capsys.readouterr().out
+
+
+def test_a_busy_overpass_is_waited_for_as_its_status_page_says(tmp_path: Path) -> None:
+    source = Source(tmp_path)
+    slept: list[float] = []
+    outcomes = run(source, ["Vercelli"], overpass_wait=lambda: 37.0, sleep=slept.append)
+    assert outcomes[0].status == "downloaded" and slept == [39.0]
+    busy = "Rate limit: 2\nSlot available after: 2026-10-01T22:30:00Z, in 37 seconds.\n"
+    assert slot_wait_s(busy) == 37.0
+    assert slot_wait_s("Rate limit: 2\n2 slots available now.\n") == 0.0
+    assert slot_wait_s("<html>error</html>") is None
+
+
+def test_a_failed_download_says_its_http_status(tmp_path: Path) -> None:
+    class TooMany(Exception):
+        code = 429
+
+    assert http_code(TooMany()) == 429
+    assert http_code(ValueError()) is None
+    source = Source(tmp_path, fail_on={"Lucca"})
+    source.load = lambda bbox: (_ for _ in ()).throw(TooMany())  # type: ignore[method-assign]
+    (outcome,) = run(source, ["Lucca"])
+    assert outcome.detail == "the download failed (TooMany 429)"

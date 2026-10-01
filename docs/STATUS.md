@@ -67,7 +67,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-Niente.
+- **TASK-126 — «Explore»** (`feat/TASK-126-explore`, ADR-0098):
+  `GET /recommended-routes` dai file del catalogo e la terza schermata
+  dell'app. Da provare sull'iPhone; dopo il merge di TASK-125.
 
 ## Completato
 

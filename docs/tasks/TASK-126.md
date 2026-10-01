@@ -60,4 +60,16 @@ samples/LOG.md
 - «Start» con le indicazioni di svolta sui percorsi di «Explore».
 - Il catalogo nell'immagine Docker.
 
+## Dove sono arrivato (2026-10-01, 17:10)
+
+- API e app fatte, test verdi (API 232, app 502), lint e tipi puliti.
+- Provata l'API vera sul catalogo di TASK-125 (porta 8002): 19–33
+  percorsi per città, 46 KB l'elenco di Milano, 404 per un id che non c'è.
+- L'app non si è potuta provare su questo Mac (niente simulatore iOS):
+  va provata sull'iPhone dopo il merge e `eas update` (`DEPLOY.md` A.6).
+- Le 6 città guardate una per una (`samples/LOG.md`): 36 percorsi
+  illeggibili tolti in TASK-125 (`UNREADABLE`), i più belli annotati.
+- Il catalogo vero arriva con il merge di TASK-125; prima, in `main` la
+  lista è vuota.
+
 ## Esito

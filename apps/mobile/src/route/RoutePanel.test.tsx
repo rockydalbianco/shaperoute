@@ -231,3 +231,45 @@ test("an image route that does not fit offers no shapes", async () => {
   expect(screen.getByText(/This outline does not fit the roads here/)).toBeTruthy();
   expect(screen.queryByText("heart")).toBeNull();
 });
+
+test("the route alone has no tiles to choose from (TASK-093)", async () => {
+  const result = {
+    points: [
+      [46.0671, 11.1214],
+      [46.0671, 11.1214],
+    ] as [number, number][],
+    distance_m: 4000,
+    similarity: 0.8,
+    shape: "heart" as const,
+    warnings: [],
+    directions: [],
+  };
+  const request = {
+    start: [46.0671, 11.1214] as [number, number],
+    shape: "heart" as const,
+    distance_m: 5000,
+    activity: "running" as const,
+  };
+  const onChoose = jest.fn();
+  const outcome = (choices: (typeof result)[]) => (
+    <RouteOutcome
+      view={{ status: "done", request, result }}
+      onCancel={jest.fn()}
+      exporting={{ status: "idle" }}
+      onExport={jest.fn()}
+      onTryDistance={jest.fn()}
+      onPickShape={jest.fn()}
+      onStart={jest.fn()}
+      choices={choices}
+      chosen={0}
+      onChoose={onChoose}
+    />
+  );
+  const { rerender } = await render(outcome([result]));
+  expect(screen.queryByRole("radio")).not.toBeOnTheScreen();
+
+  await rerender(outcome([result, { ...result, similarity: 0.75 }]));
+  expect(screen.getAllByRole("radio")).toHaveLength(2);
+  await fireEvent.press(screen.getByTestId("route-B"));
+  expect(onChoose).toHaveBeenCalledWith(1);
+});

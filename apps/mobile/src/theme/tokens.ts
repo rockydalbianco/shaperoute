@@ -127,6 +127,14 @@ export const track = {
   opacity: 0.9,
 } as const;
 
+/** The other routes to choose from (TASK-093): thin and grey, under the
+ * chosen one, so yellow still means the route that will be run. */
+export const otherRoute = {
+  color: color.textFaint,
+  width: 2.5,
+  opacity: 0.8,
+} as const;
+
 /** The route drawn on the map. */
 export const route = {
   color: color.accent,

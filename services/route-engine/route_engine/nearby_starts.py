@@ -30,6 +30,7 @@ from typing import Any, Protocol
 import networkx as nx
 import numpy as np
 
+from route_engine.alternatives import alternatives
 from route_engine.geo import LatLon, latlon_to_local_array, path_length_m
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import (
@@ -85,6 +86,10 @@ APPROACH_MAX_M = 150.0
 # not made slower still (PRODUCT.md: 30 s at most).
 NEARBY_GRACE_S = 8.0
 NEARBY_BUDGET_S = 25.0
+# When the start's own plan is already good, the nearby ones get this long:
+# not for a better route but for the alternatives to choose from (TASK-093,
+# ADR-0087). Nearby plans take 1-2 s on a zone in memory (Trento, 12-15 km).
+NEARBY_GOOD_GRACE_S = 3.0
 # The best shape wins, wherever it starts: the user's start, a nearby one,
 # or where the search moved it ("Start here"; the user's choice, ADR-0071).
 # Plans within this much of the best score count as equal, and of those the
@@ -528,6 +533,7 @@ def plan_nearby(
     count: int = NEARBY_COUNT,
     grace_s: float = NEARBY_GRACE_S,
     budget_s: float = NEARBY_BUDGET_S,
+    good_grace_s: float = NEARBY_GOOD_GRACE_S,
     processes: bool = True,
     free_mb: Callable[[], float | None] = free_memory_mb,
 ) -> NearbyPlan:
@@ -572,7 +578,8 @@ def plan_nearby(
         done = time.monotonic()
         deadline = max(done, min(done + grace_s, began + budget_s))
         if _good(tried[0].plan):
-            deadline = done  # what is ready counts; nobody is waited for
+            # Waited for briefly, for the alternatives only (TASK-093).
+            deadline = min(deadline, done + good_grace_s)
         for i, n in enumerate(nearby):
             if pool is None:
                 assert here is not None  # there are nearby starts
@@ -598,6 +605,17 @@ def plan_nearby(
         raise first.error or ShapeNotDrawableError(first.note)
     plan = tried[chosen].plan
     assert plan is not None
+    # The other starts' routes, best first, to choose from (TASK-093).
+    others = sorted(
+        (
+            (t.score, -t.away_m, -i, t.plan)
+            for i, t in enumerate(tried)
+            if i != chosen and t.plan is not None and t.score is not None
+        ),
+        key=lambda other: other[:3],
+        reverse=True,
+    )
+    plan = replace(plan, alternatives=alternatives(plan, [o[3] for o in others]))
     return NearbyPlan(plan, chosen, tried, None if chosen == 0 else graph, skipped)
 
 

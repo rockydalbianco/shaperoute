@@ -80,10 +80,15 @@ def test_result_fixture_is_a_valid_body() -> None:
 
 def test_the_api_answers_the_result_fixture_unchanged() -> None:
     data = _load("route-result.json")
-    result = RouteResult(**{**data, "points": [tuple(p) for p in data["points"]]})
+
+    def result_of(fields: dict[str, Any]) -> RouteResult:
+        points = [tuple(p) for p in fields["points"]]
+        return RouteResult(**{**fields, "points": points, "alternatives": []})
+
+    others = [Plan(result_of(other), None) for other in data["alternatives"]]
 
     def planner(request: RouteRequest, source: GraphLoader) -> Plan:
-        return Plan(result=result, search=None)
+        return Plan(result=result_of(data), search=None, alternatives=others)
 
     app = create_app(FileSource(FIXTURES / "unused.graphml"), planner=planner)
     response = TestClient(app).post("/routes", json=_load("route-request.json"))

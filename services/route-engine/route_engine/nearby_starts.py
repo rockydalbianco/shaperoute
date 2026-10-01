@@ -58,6 +58,7 @@ from route_engine.optimizer import (
     GraphLoader,
     Plan,
     ShapeNotDrawableError,
+    doubled_weight,
     plan_shape,
     planned_distance,
     required_area,
@@ -65,6 +66,7 @@ from route_engine.optimizer import (
     tilt_limit,
 )
 from route_engine.projection import Point, start_at_phase
+from route_engine.retracing import doubled_share
 from route_engine.shapes import get_shape
 from route_engine.validation import check_closed, measure, validate
 from route_engine.words import Word, compose
@@ -210,6 +212,7 @@ class ShapeJob:
             max_tilt_deg=self.max_tilt_deg,
             phases=phases,
             word=self.word,
+            doubled=doubled_weight(self.name),
         )
         best = found.best
         gap = (best.route.distance_m - self.planned_m) * kept
@@ -390,8 +393,11 @@ def score(plan: Plan, distance_m: float) -> float:
     TASK-075's cuts closest to 10 km were not the ones judged best. Where
     the route starts does not count here (`_choose`)."""
     ratio = plan.result.distance_m / distance_m
-    return plan.result.similarity - W_DISTANCE / W_SHAPE * max(
-        0.0, abs(ratio - 1) - DISTANCE_TOLERANCE
+    whiskers = doubled_weight(plan.result.shape or "") / W_SHAPE
+    return (
+        plan.result.similarity
+        - W_DISTANCE / W_SHAPE * max(0.0, abs(ratio - 1) - DISTANCE_TOLERANCE)
+        - whiskers * doubled_share(plan.result.points)
     )
 
 

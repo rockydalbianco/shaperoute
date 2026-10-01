@@ -284,7 +284,8 @@ class Reading:
     shape: str | None
     distance_m: int
     city: str | None
-    # "table" or "ai": how the theme was found, for the log and the tests.
+    # "table", "learned" (TASK-130) or "ai": how the theme was found, for
+    # the log, the search events and the tests.
     by: str = "table"
 
 
@@ -306,16 +307,61 @@ def read_request(text: str) -> Reading:
     )
 
 
+def request_core(text: str) -> str:
+    """The words of a request without its city and its km, plain: what the
+    learned vocabulary is keyed by (TASK-130), so that "un giro per
+    innamorati a Bologna" teaches "un giro per innamorati" for every city."""
+    stripped = text.strip()
+    found = list(_CITY.finditer(stripped))
+    if found:
+        city = found[-1]
+        # The preposition before the city goes too: "a", "in", "à"...
+        stripped = stripped[: city.start()] + stripped[city.end() :]
+    words = re.sub(r"[^\w' ]", " ", _KM.sub(" ", plain(stripped)))
+    return " ".join(w for w in words.split() if w not in {"di", "da", "of"})
+
+
 ThemeChooser = Callable[[str, list[str]], str | None]
 """The AI: the theme of the list the words ask for, or None. Raises
 shaperoute_ai.reading.ModelUnavailableError when it cannot answer."""
 
 
-def read_with_ai(text: str, ai: ThemeChooser | None) -> Reading:
-    """The tables; the AI only when they find no theme. Its answer is
-    checked: a theme not in THEMES counts as none."""
-    reading = read_request(text)
-    if reading.theme is not None or ai is None:
+Learned = Callable[[str], str | None]
+"""The learned vocabulary (TASK-130): the theme of a request's core."""
+
+Correct = Callable[[str], str]
+"""The learned vocabulary (TASK-130): the words with misspellings fixed."""
+
+
+def read_with_ai(
+    text: str,
+    ai: ThemeChooser | None,
+    learned: Learned | None = None,
+    correct: Correct | None = None,
+) -> Reading:
+    """The tables, on the words with the learned misspellings fixed; then
+    what was learned from past answers (TASK-130); the AI only when neither
+    finds a theme. Every answer is checked: a theme not in THEMES counts as
+    none."""
+    fixed = text if correct is None else correct(text)
+    reading = read_request(fixed)
+    if reading.theme is not None:
+        if fixed != text:
+            return Reading(
+                reading.theme,
+                reading.shape,
+                reading.distance_m,
+                reading.city,
+                by="learned",
+            )
+        return reading
+    if learned is not None:
+        known = learned(request_core(text))
+        if known in THEMES:
+            return Reading(
+                known, reading.shape, reading.distance_m, reading.city, by="learned"
+            )
+    if ai is None:
         return reading
     chosen = ai(text, list(THEMES))
     if chosen not in THEMES:

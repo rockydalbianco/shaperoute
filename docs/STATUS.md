@@ -89,6 +89,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore, API e app** — TASK-145: «Start» anche sui percorsi di
+  «Explore» (consigliati, esempi delle città, a tema), chiesto dall'utente
+  (ADR-0117). Al tocco l'app chiede le indicazioni a `POST
+  /route-directions`, che ritrova i nodi della linea sul grafo della zona
+  (`route_nodes.py`), poi la navigazione di sempre; «Stop» torna alla
+  scheda. Sull'API del Mac 0,1–0,5 s, e indicazioni identiche a quelle
+  del motore su 4 percorsi appena pianificati. Per vederlo sull'iPhone:
+  riavviare l'API del Mac (endpoint nuovo) e ripubblicare l'app con `eas
+  update`.
 - **App** — TASK-143: «Ask for a route» mostra Food, Famous Places e
   «More…»; una città senza percorsi consigliati disegna da sola cuore,
   cerchio e stella da 5 km, uno alla volta, che si aprono sulla mappa e

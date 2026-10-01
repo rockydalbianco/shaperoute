@@ -89,8 +89,8 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    forma o parola e per distanza. Ogni riga ha la miniatura della linea
    (gialla, il percorso), forma e km, città e distanza dalla partenza, la
    somiglianza. Toccata, il percorso si apre sulla mappa con «Export GPX» e
-   «Back to the list»; «←» torna all'elenco. Niente «Start»: questi
-   percorsi non hanno le indicazioni di svolta.
+   «Back to the list»; «←» torna all'elenco. Da TASK-145 ha anche «Start»
+   (sotto).
 
    Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
    qualsiasi città del mondo (l'elenco e la richiesta partono dal suo
@@ -136,6 +136,17 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    non si scarica, un messaggio solo e «Try again». Gli esempi pronti
    restano sul telefono (ultime 8 città): la volta dopo sono subito lì.
    Una città con percorsi consigliati mostra quelli e non chiede esempi.
+
+   **Da TASK-145** ogni percorso di «Explore» aperto sulla mappa
+   (consigliato, esempio, a tema) ha «Start», giallo, sopra «Export GPX».
+   Questi percorsi arrivano senza indicazioni: al tocco l'app le chiede
+   all'API (`POST /route-directions`) e il pulsante dice «Getting
+   directions…»; poi la navigazione parte come per un percorso disegnato
+   (sotto, «La navigazione»), lungo la linea di «Explore». «Stop» e la fine
+   della corsa tornano alla sua scheda. Le indicazioni avute restano finché
+   la scheda è aperta: un secondo «Start» non aspetta. Se non arrivano, la
+   scheda dice perché in rosso e «Start» riprova; «Back to the list» o «←»
+   lasciano perdere l'attesa.
 
 Passare da una schermata all'altra:
 
@@ -497,7 +508,8 @@ l'avviso dice di quanto e in che direzione.
 ## La navigazione
 
 Sotto il risultato, «Start» giallo, quando il percorso ha le indicazioni di
-svolta (TASK-049, ADR-0052). Si resta sulla schermata della mappa: al posto
+svolta (TASK-049, ADR-0052). Anche sotto un percorso di «Explore», che le
+chiede all'API al tocco (TASK-145). Si resta sulla schermata della mappa: al posto
 di «←» un banner con la prossima svolta (freccia gialla, distanza dal GPS
 dal vivo, «Turn left onto Via Roma», e una seconda riga per le svolte a
 pochi metri da leggere insieme); sotto, i km rimasti e «Stop», che torna al

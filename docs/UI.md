@@ -560,7 +560,10 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   locale, una volta; l'API non la salva e non la scrive nel log. Poi viaggia
   solo il contorno. Non va a nessun servizio esterno né all'AI.
 - **Le tile**: il provider vede quale zona si guarda, come con ogni mappa.
-- **La ricerca**: il testo cercato arriva a Photon (komoot).
+- **La ricerca**: il testo cercato e la posizione (per mettere prima i
+  luoghi vicini) vanno all'API, che li gira a Geoapify (TASK-123); senza
+  API o senza chiave, a Photon (komoot). Il log dell'API scrive solo
+  `GET /places`, né testo né posizione (TASK-124, ADR-0096).
 - **La libreria**: MapLibre GL JS arriva da unpkg a ogni avvio a freddo.
 
 ## Quando la mappa non si carica

@@ -66,6 +66,9 @@ Niente.
 
 ## Completato
 
+- **API** — TASK-124: il log di accesso dell'API non scrive più le query
+  string, quindi niente posizione né testo di `GET /places` (ADR-0096);
+  provato sull'API del Mac, che gira con `--request-log`.
 - **API e app** — TASK-123: i luoghi della partenza da Geoapify attraverso
   l'API (`GET /places`, ADR-0095), con cache; l'app torna a Photon senza
   API o senza chiave. Serve `GEOAPIFY_API_KEY` sull'API (`DEPLOY.md`, «La

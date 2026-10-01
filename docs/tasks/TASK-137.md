@@ -1,7 +1,16 @@
 # TASK-137 — Le zone delle città in evidenza, scaricate prima
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 4 · **Branch**: `feat/TASK-137-featured-zones`
+
+Ripreso il 2026-10-02, chiesto dall'utente: «scarica un po' di mappe almeno
+per l'Italia». Due cambi rispetto a quanto scritto sotto, decisi
+dall'agente su delega dell'utente (ADR-0118): oltre alle città in evidenza
+(`--preset featured`), **52 città italiane** (`--preset italy`: i
+capoluoghi di regione, poi le più grandi e visitate); e si scarica **sul
+server Hetzner**, l'API che l'app usa dal 2026-10-01 e da cui Overpass
+risponde, non sul Mac. Il riquadro contiene anche gli esempi di TASK-143
+(cuore, cerchio e stella da 5 km) e i nomi delle strade.
 
 Chiesto dall'utente il 2026-10-01, dopo le prove di «Explore»: «sì, apri il
 task per le zone». Il numero è il primo libero fra `main`, i branch remoti e

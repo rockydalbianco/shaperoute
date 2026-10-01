@@ -113,6 +113,23 @@ Valsugana 7.156, Milano 85.336. Il ritaglio di Levico sull'area del cuore
 da 5 km dà 905 nodi contro i 904 del download diretto di TASK-017:
 ritagliare equivale a scaricare.
 
+### Zone scaricate prima (TASK-137, ADR-0118)
+
+`python -m shaperoute_api.prefetch_zones --preset italy` (o `featured`, o
+nomi di città) scarica prima che qualcuno le chieda le zone di «Explore»:
+per ogni città il centro dalla ricerca delle città (lo stesso che l'app
+riceve), poi un riquadro di circa **14 × 14 km** (196 km²) che contiene
+ogni forma dei temi a 10 km da qualunque partenza entro 2,5 km
+(`search_radius_m`) e gli esempi di TASK-143 (cuore, cerchio e stella da
+5 km) da qualunque partenza entro 2 km (`FAR_OFFSET_M`); più i nomi delle
+strade (ADR-0057). Una città già coperta è «ready»; le altre si scaricano
+**una alla volta**, con una pausa (`--pause-s`, 60 s) e un tetto
+(`--max-downloads`). Si ferma alla prima risposta mancata di Overpass, al
+primo download fallito o sotto i 5 GB liberi; rilanciato, riparte dalle
+città mancanti. `--dry-run` dice cosa manca senza scaricare. Si lancia
+dove gira l'API usata dall'app, con la sua cartella della cache e
+`GEOAPIFY_API_KEY`.
+
 ## Dal disegno alla strada
 
 1. La partenza (primo punto della forma) si aggancia al **nodo più

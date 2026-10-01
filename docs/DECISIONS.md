@@ -3839,3 +3839,47 @@ catalogo a Trento (5 e 23 km), Bologna, Milano e Levico, tutta la linea
 ritrovata in 0,1–0,5 s; 4 percorsi appena pianificati (Trento e Bologna,
 con le alternative) danno indicazioni identiche a quelle del motore. Da
 provare sull'iPhone.
+
+## ADR-0118 — Le zone delle città scaricate prima, sul server dell'app
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («scarica un po' di
+mappe almeno per l'Italia»); quali città, il riquadro e il come decisi
+dall'agente su delega dell'utente (TASK-137).
+
+**Contesto**: la prima richiesta per una città nuova scarica la sua zona da
+Overpass: Vercelli, la prima volta, 94 s per i tre esempi (TASK-143), quasi
+tutti download. Dal Mac Overpass rifiuta per ore dopo pochi download; dal
+server Hetzner, che l'app usa dal 2026-10-01, risponde.
+
+**Decisione**:
+- **Un comando dell'API**, `python -m shaperoute_api.prefetch_zones`: usa la
+  stessa ricerca delle città di `GET /cities`, quindi lo stesso centro che
+  l'app riceve al tocco.
+- **Il riquadro di «Explore»**: ogni forma dei temi (lette da `THEMES`) a
+  10 km da qualunque partenza entro `search_radius_m(10 km)` (2,5 km), e
+  gli esempi di TASK-143 a 5 km da qualunque partenza entro `FAR_OFFSET_M`
+  (2 km). Bastano le quattro partenze più lontane a nord, est, sud e ovest:
+  i riquadri sono allineati agli assi. Circa 14 × 14 km, 196 km².
+- **Con i nomi delle strade** (ADR-0057): l'API li legge solo dalla cache,
+  e «Start» (TASK-145) li dice. Una città con la zona ma senza nomi scarica
+  solo i nomi.
+- **Le città**: `--preset italy`, 52 città (i 21 capoluoghi di regione e
+  provincia autonoma, poi le più grandi e visitate, Vercelli e Levico
+  comprese); `--preset featured`, le 14 città in evidenza dell'app. Solo
+  nomi, nessuna coordinata scritta.
+- **Prudenza con Overpass**: un download alla volta, 60 s fra una città e
+  l'altra, un tentativo per città, stop alla prima risposta mancata o al
+  primo errore, `--max-downloads` per stare nell'uso corretto del servizio
+  pubblico; stop sotto i 5 GB liberi. Rilanciato riparte dalle mancanti.
+- **Sul server, in un container a parte** con la cartella della cache
+  dell'API: l'API in servizio non si ferma, e legge le zone nuove dal disco
+  alla prima richiesta (le scritture sono intere, ADR-0104).
+
+**Alternative scartate**: un estratto OSM dell'Italia (Geofabrik) e i grafi
+costruiti in locale: niente limiti di Overpass, ma un formato e uno
+strumento nuovi (osmium), da chiedere; zone più grandi per le città grandi:
+più download per le stesse richieste di «Explore»; scaricare sul Mac:
+Overpass lo rifiuta, e l'app non usa più il Mac.
+
+**Conseguenza**: nelle città scaricate «Explore» non aspetta Overpass;
+fuori, la prima richiesta scarica ancora. Il riquadro non copre «Draw
+route» da partenze lontane dal centro né percorsi a tema oltre i 10 km.

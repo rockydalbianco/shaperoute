@@ -7,6 +7,9 @@ Chiesto dall'utente il 2026-10-01, dopo il mockup di TASK-092 (variante C,
 la schermata «Explore»): «inizia a creare tu un po' di esempi, scegli
 quelli venuti meglio e inizia a fare un catalogo», partendo da 13 città.
 
+Allargato dall'utente lo stesso giorno: anche le frasi (ciao, ti amo,
+grazie, buongiorno, hello…) nella lingua di ogni città, e New York.
+
 ## Obiettivo
 
 I percorsi migliori del motore in 13 città italiane, salvati in file nel
@@ -25,6 +28,9 @@ mostrare in «Explore» (TASK-092).
    pianifica ogni forma del catalogo a 5, 10 e 21 km dal centro di 13
    città, come l'API (`plan_nearby`), con un registro che riprende da dove
    si era fermato.
+1b. Le frasi di `PHRASES`, per città, nella lingua del posto, tonde e
+   squadrate (`--kinds words`), e New York fra le città (ADR-0097,
+   aggiunta).
 2. Tenere i percorsi con somiglianza da `MIN_SIMILARITY` (0,88) in su,
    tutti, anche se equivalenti; un file per città in `catalog/seed/`.
 3. Guardare a occhio un campione dei tenuti per città e annotare in

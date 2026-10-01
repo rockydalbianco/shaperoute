@@ -46,7 +46,33 @@ CITIES: dict[str, LatLon] = {
     "genova": (44.40720, 8.93390),  # Piazza De Ferrari
     "bari": (41.12060, 16.87000),  # Piazza Umberto I
     "palermo": (38.11570, 13.36150),  # Quattro Canti
+    # Asked by the user (2026-10-01): the first city outside Italy.
+    "newyork": (40.73590, -73.99110),  # Union Square, on Manhattan's grid
 }
+
+# Words written in each city (asked by the user, 2026-10-01): common and
+# famous greetings, in the language used there. The engine writes A-Z only,
+# no spaces, at most MAX_PHRASE_LETTERS at 21 km (words.LETTER_DISTANCE_M):
+# BUONGIORNO and BUONANOTTE do not fit, BUONDI and NOTTE do.
+MAX_PHRASE_LETTERS = 7
+ITALIAN = ("CIAO", "TIAMO", "GRAZIE", "BUONDI", "NOTTE", "AMORE", "HELLO")
+PHRASES: dict[str, tuple[str, ...]] = {
+    "trento": ITALIAN,
+    "levico": ITALIAN,
+    "milano": (*ITALIAN, "UELA"),  # uèla: the Milanese hello
+    "roma": (*ITALIAN, "AO", "AMOR"),  # Roma backwards: Amor
+    "torino": (*ITALIAN, "CEREA"),  # the Piedmontese greeting
+    "bologna": ITALIAN,
+    "firenze": (*ITALIAN, "BONA"),  # the Tuscan "bye"
+    "napoli": (*ITALIAN, "UAGLIO", "AMMORE"),
+    "verona": (*ITALIAN, "ROMEO"),  # the city of Romeo and Juliet
+    "padova": ITALIAN,
+    "genova": ITALIAN,
+    "bari": (*ITALIAN, "UE"),  # uè: the hello of Bari
+    "palermo": (*ITALIAN, "AMURI"),  # love, in Sicilian
+    "newyork": ("HELLO", "ILOVENY", "THANKS", "LOVE", "HEY", "NYC"),
+}
+STYLES: tuple[str, ...] = ("round", "block")
 
 # Largest first: the zone of 21 km contains those of 10 and 5, which then
 # come from the cache instead of another download.
@@ -76,13 +102,17 @@ FAILED = "failed"
 
 @dataclass(frozen=True)
 class Case:
+    """A shape of the catalogue, or with a `style` a word (`shape` holds it)."""
+
     city: str
     shape: str
     distance_m: int
+    style: str | None = None
 
     @property
     def key(self) -> str:
-        return f"{self.city}/{self.shape}/{self.distance_m}"
+        what = self.shape if self.style is None else f"{self.shape}:{self.style}"
+        return f"{self.city}/{what}/{self.distance_m}"
 
 
 Planner = Callable[[Case, LatLon], RouteResult]
@@ -95,6 +125,30 @@ def cases(
     shapes, distances = list(shapes), sorted(distances, reverse=True)
     return [
         Case(city, shape, d) for city in cities for d in distances for shape in shapes
+    ]
+
+
+def word_distance(word: str) -> int:
+    """The distance a word is written at: 3.75 km a letter, as CIAO at 15 km
+    (words.py), within what the engine needs and the app allows."""
+    letters = len(word)
+    wanted = -(-letters * 3750 // 1000) * 1000
+    return max(5_000, min(21_000, wanted))
+
+
+def word_cases(
+    cities: Iterable[str],
+    phrases: dict[str, tuple[str, ...]] = PHRASES,
+    styles: Iterable[str] = STYLES,
+) -> list[Case]:
+    """City by city, phrase by phrase, each style: one distance a word."""
+    styles = list(styles)
+    return [
+        Case(city, word, word_distance(word), style)
+        for city in cities
+        for word in phrases.get(city, ())
+        if len(word) <= MAX_PHRASE_LETTERS
+        for style in styles
     ]
 
 
@@ -122,9 +176,12 @@ def plan_case(case: Case, start: LatLon, planner: Planner) -> dict[str, Any]:
     run: dict[str, Any] = {
         "key": case.key,
         "city": case.city,
-        "shape": case.shape,
         "distance_m": case.distance_m,
     }
+    if case.style is None:
+        run["shape"] = case.shape
+    else:
+        run.update(word=case.shape, style=case.style)
     try:
         result = planner(case, start)
     except ShapeNotDrawableError as exc:
@@ -178,9 +235,21 @@ def select(
         for r in runs
         if "error_kind" not in r
         and r["similarity"] >= min_similarity
-        and (r["city"], r["shape"]) not in REJECTED
+        and (r["city"], name_of(r)) not in REJECTED
     ]
     return sorted(kept, key=lambda r: (r["city"], -r["similarity"], r["key"]))
+
+
+def name_of(run: dict[str, Any]) -> str:
+    """The shape, or the word."""
+    return str(run["shape"] if "shape" in run else run["word"])
+
+
+def drawn(run: dict[str, Any]) -> dict[str, Any]:
+    """What a catalogue route draws: {"shape"} or {"word", "style"}."""
+    if "shape" in run:
+        return {"shape": run["shape"]}
+    return {"word": run["word"], "style": run["style"]}
 
 
 def catalogue_files(
@@ -200,7 +269,7 @@ def catalogue_files(
             "license": LICENSE,
             "routes": [
                 {
-                    "shape": r["shape"],
+                    **drawn(r),
                     "distance_m": r["distance_m"],
                     "route_m": r["route_m"],
                     "similarity": r["similarity"],
@@ -244,11 +313,10 @@ def gpx_files(selected: Iterable[dict[str, Any]]) -> dict[str, str]:
         when = datetime.strptime(r["planned_at"], "%Y-%m-%dT%H:%M:%SZ")
         when = when.replace(tzinfo=UTC)
         km = r["distance_m"] // 1000
-        name = f"{r['city']}_{r['shape']}_{km}km.gpx"
+        what = r["shape"] if "shape" in r else f"{r['word']}-{r['style']}"
+        name = f"{r['city']}_{what}_{km}km.gpx"
         points = [(lat, lon) for lat, lon in r["points"]]
-        files[name] = to_gpx(
-            points, route_name(r["shape"], r["distance_m"], when), when
-        )
+        files[name] = to_gpx(points, route_name(what, r["distance_m"], when), when)
     return files
 
 
@@ -259,9 +327,17 @@ def engine_planner(cache_dir: Path) -> Planner:
     source = OsmnxSource(cache_dir)
 
     def plan(case: Case, start: LatLon) -> RouteResult:
-        request = RouteRequest(
-            start=start, shape=case.shape, distance_m=case.distance_m
-        )
+        if case.style is None:
+            request = RouteRequest(
+                start=start, shape=case.shape, distance_m=case.distance_m
+            )
+        else:
+            request = RouteRequest(
+                start=start,
+                word=case.shape,
+                style=case.style,  # type: ignore[arg-type]
+                distance_m=case.distance_m,
+            )
         return plan_nearby(ShapeJob.of_request(request), start, source).plan.result
 
     return plan
@@ -287,7 +363,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--cities",
         type=lambda v: _names(v, CITIES, "city"),
         default=list(CITIES),
-        help="comma-separated (default: all thirteen)",
+        help="comma-separated (default: all of them)",
     )
     parser.add_argument(
         "--shapes",
@@ -300,6 +376,12 @@ def _build_parser() -> argparse.ArgumentParser:
         type=lambda v: [int(d) for d in v.split(",")],
         default=list(DISTANCES_M),
         help="comma-separated metres (default: 21000,10000,5000)",
+    )
+    parser.add_argument(
+        "--kinds",
+        choices=("all", "shapes", "words"),
+        default="all",
+        help="shapes of the catalogue, the phrases of PHRASES, or both (default)",
     )
     parser.add_argument("--min-similarity", type=float, default=MIN_SIMILARITY)
     parser.add_argument(
@@ -327,7 +409,11 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None, planner: Planner | None = None) -> int:
     args = _build_parser().parse_args(argv)
     if args.run:
-        todo = cases(args.cities, args.shapes, args.distances)
+        todo = []
+        if args.kinds != "words":
+            todo += cases(args.cities, args.shapes, args.distances)
+        if args.kinds != "shapes":
+            todo += word_cases(args.cities)
         run_cases(todo, planner or engine_planner(args.cache_dir), args.log)
     runs = [r for r in read_runs(args.log) if r["city"] in args.cities]
     selected = select(runs, args.min_similarity)

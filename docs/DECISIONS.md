@@ -3189,3 +3189,15 @@ del nord).
 **Conseguenza**: una partenza per città: chi è a 5 km dal centro non ha
 ancora niente vicino. Il registro locale serve per rifare la selezione con
 un'altra soglia senza ripianificare.
+
+**Aggiunta (2026-10-01, scelta dell'utente)**: anche **le frasi** e **New
+York** (Union Square, sulla griglia di Manhattan). Ogni città ha le sue
+parole, nella lingua del posto (`PHRASES`): CIAO, TIAMO, GRAZIE, BUONDI,
+NOTTE, AMORE, HELLO in Italia, più quelle locali (UELA a Milano, CEREA a
+Torino, AO e AMOR a Roma, BONA a Firenze, UAGLIO e AMMORE a Napoli, ROMEO a
+Verona, UE a Bari, AMURI a Palermo); HELLO, ILOVENY, THANKS, LOVE, HEY, NYC
+a New York. Il motore scrive solo A–Z, senza spazi, al più 7 lettere a
+21 km: BUONGIORNO e BUONANOTTE non ci stanno, BUONDI e NOTTE sì. Una parola
+si scrive a 3,75 km a lettera (come CIAO a 15 km), da 5 a 21 km, nei due
+stili, tonde e squadrate; nel catalogo ha `word` e `style` invece di
+`shape`.

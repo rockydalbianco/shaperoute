@@ -16,6 +16,7 @@ from route_engine.seed_catalog import (
     FAILED,
     LICENSE,
     NOT_DRAWABLE,
+    PHRASES,
     Case,
     cases,
     catalogue_files,
@@ -24,6 +25,8 @@ from route_engine.seed_catalog import (
     read_runs,
     run_cases,
     select,
+    word_cases,
+    word_distance,
 )
 
 
@@ -191,3 +194,55 @@ def test_gpx_files_one_per_kept_route() -> None:
 def test_unknown_city_is_refused() -> None:
     with pytest.raises(SystemExit):
         main(["--cities", "atlantide"])
+
+
+def test_word_distance_is_3750_m_a_letter_within_the_limits() -> None:
+    assert word_distance("UE") == 8000
+    assert word_distance("CIAO") == 15000
+    assert word_distance("HELLO") == 19000
+    assert word_distance("GRAZIE") == 21000
+    assert word_distance("ILOVENY") == 21000
+
+
+def test_every_city_has_phrases_the_engine_can_write() -> None:
+    assert set(PHRASES) == set(CITIES)
+    for words in PHRASES.values():
+        for word in words:
+            assert word.isalpha() and word.isupper() and len(word) <= 7
+
+
+def test_word_cases_each_style_and_their_keys() -> None:
+    got = word_cases(["bari"], {"bari": ("UE", "BUONGIORNO")}, ["round", "block"])
+    assert [c.key for c in got] == ["bari/UE:round/8000", "bari/UE:block/8000"]
+
+
+def test_a_word_is_logged_and_kept_as_a_word(tmp_path: Path) -> None:
+    styles: set[str | None] = set()
+
+    def planner(case: Case, start: LatLon) -> RouteResult:
+        styles.add(case.style)
+        return _result(0.95)
+
+    out = tmp_path / "seed"
+    main(
+        [
+            "--run",
+            "--kinds",
+            "words",
+            "--cities",
+            "torino",
+            "--log",
+            str(tmp_path / "runs.jsonl"),
+            "--out",
+            str(out),
+            "--gpx",
+            str(tmp_path / "gpx"),
+        ],
+        planner=planner,
+    )
+    torino = json.loads((out / "torino.json").read_text(encoding="utf-8"))
+    words = {r["word"] for r in torino["routes"]}
+    assert words == set(PHRASES["torino"])
+    assert all("shape" not in r for r in torino["routes"])
+    assert styles == {"round", "block"}
+    assert (tmp_path / "gpx" / "torino_CEREA-round_19km.gpx").exists()

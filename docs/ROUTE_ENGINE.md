@@ -667,6 +667,18 @@ andando e tornando): cambiano Levico 5 km (59% → 52%), Levico 8 km
 (39% → 17%) e Trento 15 km (6% → 2%), gli altri 4 no. Un peso doppio
 toglie più baffi ma fa perdere la forma (Levico 5 km 0,81 → 0,73): scartato.
 
+Da TASK-140 (ADR-0118) si contano solo i baffi **in più** rispetto ai
+tratti che la forma ripassa apposta (`extra_doubled_share`): la quota
+della forma piazzata fatta due volte (occhi, antenne, spirale) si toglie
+da quella del percorso. Per una forma senza tratti è zero, quindi cuore,
+cerchio e stella restano quelli di prima. Il peso vale anche per
+**cavallo, luna, farfalla e lumaca**; non per gatto, pesce, testa di cane e
+testa di coniglio, dove l'utente ha preferito i percorsi di prima (meno
+baffi, ma la forma si legge peggio). Sulle 7 partenze di prova, per le 11
+forme del catalogo (77 percorsi), cambiano solo luna a Trento 15 km
+(14% → 0%), farfalla a Levico 8 km e lumaca a Levico 12 km (75% → 42%);
+il cavallo non cambia mai.
+
 ### Misura della somiglianza
 
 Si confronta il percorso con la forma piazzata (ruotata e scalata), in tre

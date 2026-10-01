@@ -104,7 +104,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   possibili: esportare il tipo dei segnali da `shared-types/src/index.ts`,
   ora che TASK-088 è entrato; la forma toccata dopo parole non lette
   (`ShapeTiles.tsx`) come prova per i sinonimi.
-
+- **Motore** — TASK-140: luna, farfalla, lumaca (e il cavallo, che non
+  cambia) evitano i baffi come cuore, cerchio e stella; si contano solo
+  quelli oltre i tratti voluti della forma (ADR-0118). Gatto, pesce e le
+  teste restano come prima, per scelta dell'utente. Provato sull'iPhone
+  (2026-10-02): funziona.
 - **Catalogo** — TASK-088: zucca di Halloween (`pumpkin`) e albero di
   Natale (`christmas_tree`) nel catalogo, con parole, tessere 🎃 🎄 e AI
   (ADR-0084); «albero» e «tree» da soli restano nessuna forma. Le tessere

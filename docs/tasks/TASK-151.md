@@ -81,7 +81,7 @@ docs/tasks/TASK-151.md
 
 Fatto. A New York (API del Mac, zona in cache) il cuore da 5 km arriva con
 tre percorsi, 5,2 · 5,1 · 4,9 km, e così cerchio e stella: ora l'app li
-tiene e li fa scegliere. 613 test verdi (10 nuovi), lint, tipi e formato
+tiene e li fa scegliere. 637 test verdi (10 nuovi), lint, tipi e formato
 verdi. **Da provare sull'iPhone**: serve ripubblicare l'app (`eas update`,
 a fine coda dei merge). Rimandati, scritti qui sopra: le linee grigie sulla
 mappa e il segnale della scelta.

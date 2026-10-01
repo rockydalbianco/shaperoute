@@ -19,7 +19,7 @@ import time
 import urllib.parse
 import uuid
 from collections import OrderedDict
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Any, Literal
@@ -31,10 +31,11 @@ from route_engine.optimizer import (
     GraphLoader,
     Plan,
     plan_shape,
+    required_area,
     tilt_limit,
 )
 from route_engine.shapes import get_shape
-from route_engine.stops import Stop, StopsPlan, plan_through_stops
+from route_engine.stops import Stop, StopsPlan, plan_through_stops, union
 
 from shaperoute_api.cities import CitySearch
 from shaperoute_api.errors import error_of
@@ -223,7 +224,11 @@ def plan_shape_through(
             outline, shape, start, distance_m, source, max_tilt_deg=tilt_limit(shape)
         )
 
-    return plan_through_stops(centre, stops, plan_from)
+    def prepare(starts: Sequence[LatLon]) -> None:
+        # One download for every start: Overpass refuses after a few.
+        source.load(union([required_area(outline, s, distance_m) for s in starts]))
+
+    return plan_through_stops(centre, stops, plan_from, prepare=prepare)
 
 
 @dataclass

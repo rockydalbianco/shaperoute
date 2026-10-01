@@ -65,7 +65,15 @@ def test_keeps_the_route_through_most_stops_if_it_still_reads() -> None:
             return routes[start]
         raise ShapeNotDrawableError("no roads")
 
-    got = plan_through_stops(CENTRE, stops, plan_from, max_starts=3)
+    prepared: list[list[LatLon]] = []
+    got = plan_through_stops(
+        CENTRE,
+        stops,
+        plan_from,
+        max_starts=3,
+        prepare=lambda s: prepared.append(list(s)),
+    )
+    assert prepared == [starts_for(CENTRE, stops, 3)]
     assert [s.name for s in got.passed] == ["a", "b"]
     assert got.plan is routes[stops[0].point]
     assert (got.tried, got.drawn) == (3, 2)
@@ -79,3 +87,9 @@ def test_a_shape_that_does_not_read_is_not_kept_for_its_stops() -> None:
 
     with pytest.raises(ShapeNotDrawableError):
         plan_through_stops(CENTRE, stops, plan_from)
+
+
+def test_union_holds_every_box() -> None:
+    from route_engine.stops import union
+
+    assert union([(1.0, 2.0, 3.0, 4.0), (0.5, 2.5, 3.5, 3.0)]) == (0.5, 2.0, 3.5, 4.0)

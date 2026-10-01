@@ -53,6 +53,24 @@ class StopsPlan:
 PlanFrom = Callable[[LatLon], Plan]
 """The shape planned from a start: plan_shape with everything else fixed."""
 
+Prepare = Callable[[Sequence[LatLon]], None]
+"""Called once with every start before any is planned: loads the one zone
+that holds them all, so each start's own zone is cut from it instead of
+downloaded again. Overpass refuses connections after a few downloads in a
+row (MAPS.md)."""
+
+
+def union(
+    boxes: Sequence[tuple[float, float, float, float]],
+) -> tuple[float, float, float, float]:
+    """The (south, west, north, east) box that holds all of `boxes`."""
+    return (
+        min(b[0] for b in boxes),
+        min(b[1] for b in boxes),
+        max(b[2] for b in boxes),
+        max(b[3] for b in boxes),
+    )
+
 
 def _local(origin: LatLon, points: Sequence[LatLon]) -> np.ndarray:
     return latlon_to_local_array(origin, np.asarray(points, dtype=float))
@@ -111,6 +129,7 @@ def plan_through_stops(
     *,
     max_starts: int = MAX_STARTS,
     min_similarity: float = MIN_SIMILARITY,
+    prepare: Prepare | None = None,
 ) -> StopsPlan:
     """The shape from the centre and from starts among the stops; of the
     routes at `min_similarity` or more, the one passing by most stops, the
@@ -118,6 +137,8 @@ def plan_through_stops(
     draws the shape well enough."""
     best: tuple[int, float, Plan, tuple[Stop, ...]] | None = None
     starts = starts_for(centre, stops, max_starts)
+    if prepare is not None:
+        prepare(starts)
     drawn = 0
     last_error: ShapeNotDrawableError | None = None
     for start in starts:

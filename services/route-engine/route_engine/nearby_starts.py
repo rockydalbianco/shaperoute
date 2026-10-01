@@ -210,7 +210,8 @@ class ShapeJob:
         gap = (best.route.distance_m - self.planned_m) * kept
         if best.similarity < MIN_SIMILARITY or abs(gap) > DISTANCE_FALLBACK_M:
             raise ShapeNotDrawableError(
-                f"from {start}: similarity {best.similarity:.2f}, "
+                # No position: the message ends in the log (TASK-091).
+                f"from this start: similarity {best.similarity:.2f}, "
                 f"{gap / 1000:+.1f} km from the target"
             )
         route, placed = best.route, best.shape
@@ -589,7 +590,8 @@ def plan_nearby(
             pool.join()
     for i, t in enumerate(tried):
         what = t.note or f"score {t.score:.3f}, approach {t.approach_m:.0f} m"
-        log.info("start %d %s: %s", i, t.start, what)
+        # Not t.start: where the user is stays out of the log (TASK-091).
+        log.info("start %d: %s", i, what)
     chosen = _choose(tried)
     if chosen is None:
         first = tried[0]

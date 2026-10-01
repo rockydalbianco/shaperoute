@@ -144,7 +144,7 @@ export const REASON_TEXT: Record<ImageReason, string> = {
   no_subject:
     "Nothing stands out from the background. Use a subject much darker or brighter than what is around it.",
   scattered:
-    "The picture shows more than one thing. Use a picture with a single subject.",
+    "The picture shows more than 4 separate things. Use a picture with 4 subjects at most.",
   edge: "The subject touches the edge of the picture. Leave some background all around it.",
   small: "The subject is too small. Get closer, or use a bigger picture.",
   jagged: "The outline is too jagged to run on roads. Try a simpler subject.",

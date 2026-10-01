@@ -1,6 +1,6 @@
 # TASK-113 — Il punteggio a fine corsa, nell'API e nell'app
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-113-finish-score`
 **Dipende da**: TASK-111, TASK-112
 
@@ -31,12 +31,12 @@ il punteggio da 0 a 100. Senza account: resta tutto sul telefono.
 
 ## Criteri di accettazione
 
-- [ ] `POST /track-scores` con il percorso come traccia risponde
+- [x] `POST /track-scores` con il percorso come traccia risponde
       `round(similarity*100)`.
-- [ ] Traccia troppo corta o malformata: `invalid_request` con il motivo.
-- [ ] L'app mostra il punteggio a fine corsa; senza rete dice che arriverà
+- [x] Traccia troppo corta o malformata: `invalid_request` con il motivo.
+- [x] L'app mostra il punteggio a fine corsa; senza rete dice che arriverà
       e non perde la traccia.
-- [ ] Colori solo dai token; testi in inglese.
+- [x] Colori solo dai token; testi in inglese.
 - [ ] Test di API e app verdi; prova sull'iPhone con una camminata vera.
 
 ## File toccati
@@ -60,9 +60,27 @@ docs/STATUS.md
 docs/tasks/TASK-113.md
 ```
 
+Toccati in più, detti nella PR (ADR-0093):
+
+```
+apps/mobile/src/map/MapView.tsx, mapPage.ts, messages.ts (e i loro test)
+apps/mobile/src/theme/tokens.ts
+apps/mobile/src/navigation/trackStore.ts (e test), useNavigation.ts
+apps/mobile/src/screens/NavigateScreen.test.tsx
+packages/shared-types/fixtures/track-score-request.json, track-score.json
+```
+
 ## Fuori scope
 
 - Salvare il disegno su un server, pubblicarlo (TASK-117).
 - Classifiche, record personali.
 
 ## Esito
+
+Codice e test fatti (2026-09-30): API 15 test nuovi, app 22. **Manca la
+prova sull'iPhone** con una camminata vera, che chiude anche quella di
+TASK-112. La traccia si cancella a «Done» dopo il punteggio: salvarla è di
+TASK-117, che deve anche non fidarsi della somiglianza mandata dall'app.
+
+Mergiato su richiesta dell'utente («merge 116», 2026-10-01); la prova
+sull'iPhone non è stata riportata in chat.

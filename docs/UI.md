@@ -285,17 +285,20 @@ consegna in JPEG anche se è HEIC; un PNG trasparente perde la trasparenza.
 
 Prima di scegliere, una riga dice cosa funziona: *One subject on a plain
 background works best: a drawing, a logo, an object on a bare table. The
-route follows its outside line.*
+route follows its outside line. Up to 4 separate subjects are joined in one
+line.*
 
 La foto va all'API (`POST /image-outlines`, ADR-0069) e mentre il motore
 ricava il contorno la riga dice *Tracing the outline…* (meno di 2 s). Poi
 l'**anteprima**: la foto attenuata, e sopra il contorno in giallo, il
 colore del percorso, perché è quello che il percorso disegnerà. Quello che
-non è diventato linea resta visibile sotto: un pezzo staccato (la
-Sardegna), un dettaglio lisciato. Sotto, *The yellow line is what the route
+non è diventato linea resta visibile sotto: un dettaglio lisciato, una
+macchiolina. Con più soggetti staccati, fino a 4 (TASK-084, ADR-0079),
+ognuno ha la sua linea gialla, e un trattino giallo lo collega al più
+vicino: il percorso lo fa andata e ritorno. Sotto, *The yellow line is what the route
 will draw. If it does not look like the subject, the route will not
-either: try another picture, or add to the line below. Only the largest
-piece is kept.* e un link
+either: try another picture, or edit the outline. Separate subjects are
+joined by a short line, which the route runs there and back.* e un link
 «Hide the picture» che lascia solo la linea, come sarà sulla mappa: il
 gatto di TASK-072 non si riconosceva già dal contorno, e senza la foto
 sotto si vede. Un'immagine alta resta entro 320 punti d'altezza, così la
@@ -356,7 +359,7 @@ semplici, con sotto il testo del motore:
 |---|---|
 | `background` | The background is too busy. Use one subject on a plain background, like a drawing on white paper or an object on a bare table. |
 | `no_subject` | Nothing stands out from the background. Use a subject much darker or brighter than what is around it. |
-| `scattered` | The picture shows more than one thing. Use a picture with a single subject. |
+| `scattered` | The picture shows more than 4 separate things. Use a picture with 4 subjects at most. |
 | `edge` | The subject touches the edge of the picture. Leave some background all around it. |
 | `small` | The subject is too small. Get closer, or use a bigger picture. |
 | `jagged` | The outline is too jagged to run on roads. Try a simpler subject. |
@@ -468,6 +471,45 @@ screen for 2 seconds.» La luminosità torna com'era all'uscita, all'arrivo
 (che toglie anche il pulsante), con «Stop» e quando l'app esce dal primo
 piano.
 
+**La traccia della corsa** (TASK-112, ADR-0091). Durante la navigazione
+l'app tiene la linea di quello che si è corso: ogni posizione del GPS,
+tranne quelle con errore oltre 40 m e quelle a meno di 5 m dalla
+precedente, con distanza e durata. Anche in modalità tasca. La traccia sta
+in un file nei documenti dell'app (`current-run.json`), insieme al percorso
+pianificato: si scrive alla prima posizione, poi al più ogni 15 secondi, a
+«Stop» e all'arrivo, e resta lì se l'app viene chiusa. Una corsa per volta:
+«Start» sullo stesso percorso entro 30 minuti continua la traccia, un altro
+percorso la sostituisce alla prima posizione. Sullo schermo non cambia
+niente, e la traccia non esce dal telefono: la usa la schermata di fine
+corsa (TASK-113).
+
+## La fine della corsa
+
+«Stop» durante la navigazione, o «Finish» all'arrivo (lo stesso pulsante),
+chiude la corsa e apre la schermata di fine corsa (TASK-113, ADR-0093), se
+la traccia ha almeno due posizioni; se no si torna al risultato come
+prima. Sulla mappa il percorso giallo e, sopra, più sottile e chiara
+(`track` nei token), la linea di quello che si è corso. In alto «Your run»
+con la legenda «Yellow: the route. White: what you ran.». Sotto, il
+punteggio in grande («91», «out of 100») e una riga «4.0 km · 32 min · 97%
+of the route»: distanza e durata della corsa, e quanta parte del percorso
+è stata coperta. Il punteggio lo calcola l'API (`POST /track-scores`);
+nell'attesa «Scoring your run…», con distanza e durata già lì.
+
+- **Senza rete o senza API**: «The score will come later», la corsa resta
+  nel file sul telefono, «Try again» la richiede. Anche con «Done» la
+  corsa resta: alla prossima apertura l'app si apre su questa schermata e
+  chiede di nuovo il punteggio.
+- **Corsa troppo corta**: «Too short for a score».
+- **«Keep running»**, dopo uno «Stop» e con il percorso ancora sullo
+  schermo: torna alla navigazione, e la traccia continua (ADR-0091).
+- **«Done»**: torna al risultato, o alla prima schermata se il percorso
+  non c'è più. Con il punteggio arrivato, o la corsa troppo corta, la
+  traccia si cancella dal telefono: salvarla è di TASK-117.
+
+Il punteggio non è giallo: il giallo resta del percorso e dell'azione
+principale.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di
@@ -505,8 +547,18 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 ## Cosa esce dal telefono
 
 - **La partenza**: va all'API sul PC, in rete locale, con forma e
-  distanza. L'API non la scrive nel log. Se la zona non è in cache, il PC
-  la scarica da Overpass, che vede quale area si chiede.
+  distanza. Se la zona non è in cache, il PC la scarica da Overpass, che
+  vede quale area si chiede. Il log dell'API non la scrive (TASK-091,
+  ADR-0092: prima il motore scriveva le partenze vicine provate); dice
+  solo quale zona in cache ha letto, un riquadro largo chilometri. Resta
+  scritta solo nel **registro delle richieste**, e solo se chi avvia l'API
+  lo accende (`--request-log`, spento per default; TASK-090, ADR-0085): un
+  file sul computer dell'API, `data/requests/requests.jsonl`, con partenza,
+  distanza, forma, parola o contorno dell'immagine di ogni richiesta, per
+  poterla rifare (`API.md`). Mai la foto, mai la chiave. Non entra nel
+  repository, non torna al telefono, non va a nessun servizio; al massimo
+  10 MB, poi le righe vecchie si perdono. Per cancellarlo basta cancellare
+  il file.
 - **Le parole della forma** che la tabella non conosce: vanno all'API sul
   PC, e da lì al modello in Ollama, sullo stesso PC. Non escono dalla rete
   di casa; il log dell'API le scrive, con la forma scelta.

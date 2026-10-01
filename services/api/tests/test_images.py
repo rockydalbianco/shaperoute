@@ -115,6 +115,61 @@ def test_an_image_gives_its_outline_for_the_route_and_for_the_picture(
     assert drawn.intersection(disc).area / drawn.union(disc).area > 0.95
 
 
+def test_two_subjects_come_back_as_a_stroke_and_go_on_to_the_route_and_the_edits(
+    client: tuple[TestClient, list[AnyRequest]],
+) -> None:
+    """TASK-084: the second subject is a stroke with a loop, over the picture
+    too; the route request and an edit take it as it is."""
+    http, asked = client
+    image = _disc()
+    ImageDraw.Draw(image).ellipse((280, 100, 380, 200), fill="black")
+    response = http.post("/image-outlines", json={"image": _png(image)})
+    assert response.status_code == 200, response.json()
+    outline = response.json()
+    [stroke], [over] = outline["strokes"], outline["image_strokes"]
+    assert len(stroke) == len(over)
+    assert stroke[1] == stroke[-1] and over[1] == over[-1]
+    # Over the picture: the stem across the gap, then the second disc.
+    (x0, _), (x1, _) = over[0], over[1]
+    assert x0 * 400 == pytest.approx(220, abs=4)
+    assert x1 * 400 == pytest.approx(280, abs=4)
+    second = Polygon([(x * 400, y * 300) for x, y in over[1:]])
+    assert second.contains(Polygon([(320, 140), (340, 140), (330, 160)]))
+    xs = [x for x, _ in [*outline["points"], *stroke]]
+    assert max(xs) == pytest.approx(1) and min(xs) == pytest.approx(-1)
+
+    response = http.post(
+        "/image-route-jobs",
+        json={
+            "start": START,
+            "outline": outline["points"],
+            "strokes": outline["strokes"],
+            "distance_m": 15000,
+        },
+    )
+    assert response.status_code == 202, response.json()
+    assert _finished(http, response.json()["job_id"])["status"] == "done"
+    [request] = asked
+    assert isinstance(request, ImageRequest)
+    assert len(request.outline.strokes) == 1
+
+    # A detail drawn from the second subject hangs on it.
+    response = http.post(
+        "/image-outline-edits",
+        json={
+            "image_points": outline["image_points"],
+            "image_strokes": outline["image_strokes"],
+            "aspect": outline["aspect"],
+            "kind": "detail",
+            "line": [[0.825, 0.34], [0.825, 0.2], [0.85, 0.1]],
+        },
+    )
+    assert response.status_code == 200, response.json()
+    edited = response.json()
+    assert len(edited["strokes"]) == 2
+    assert edited["image_strokes"][0] == over
+
+
 def test_a_large_photo_turned_by_exif_gives_the_upright_aspect(
     client: tuple[TestClient, list[AnyRequest]],
 ) -> None:
@@ -136,7 +191,7 @@ def test_a_large_photo_turned_by_exif_gives_the_upright_aspect(
     ("draw", "reason"),
     [
         ("noise", "background"),
-        ("two", "scattered"),
+        ("five", "scattered"),
         ("empty", "no_subject"),
         ("gif", "format"),
     ],
@@ -153,9 +208,9 @@ def test_an_image_without_one_clear_subject_is_refused_with_the_reason(
         image.putdata(
             [(rng.randrange(256),) * 3 for _ in range(image.width * image.height)]
         )
-    elif draw == "two":
-        pen.ellipse((40, 80, 160, 200), fill="black")
-        pen.ellipse((240, 80, 360, 200), fill="black")
+    elif draw == "five":  # one more than can be joined in one line
+        for k in range(5):
+            pen.ellipse((15 + 76 * k, 120, 65 + 76 * k, 170), fill="black")
     elif draw == "gif":
         pen.ellipse((60, 70, 220, 230), fill="black")
         kind = "GIF"

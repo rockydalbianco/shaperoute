@@ -14,11 +14,13 @@ import { color, space } from "../theme/tokens";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
   clearRoute,
+  clearTrack,
   follow,
   pageScript,
   parsePageMessage,
   setPosition,
   showRoute,
+  showTrack,
 } from "./messages";
 
 const MAP_PAGE = buildMapPage();
@@ -28,6 +30,8 @@ type Props = {
   start: LatLon | null;
   /** The route to draw over the roads, or null for none. */
   route: LatLon[] | null;
+  /** The run to draw over the route, or null for none (TASK-113). */
+  track?: LatLon[] | null;
   /** While navigating, the phone's position: the map follows it (TASK-049). */
   following?: LatLon | null;
   /** Called when the map cannot be shown, with a reason for the log. */
@@ -35,7 +39,14 @@ type Props = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function MapView({ start, route, following = null, onError, style }: Props) {
+export function MapView({
+  start,
+  route,
+  track = null,
+  following = null,
+  onError,
+  style,
+}: Props) {
   const webView = useRef<WebView>(null);
   const [ready, setReady] = useState(false);
   // Until the first tiles are drawn, a bar over the map (TASK-058); an error
@@ -43,6 +54,7 @@ export function MapView({ start, route, following = null, onError, style }: Prop
   const [loading, setLoading] = useState(true);
   const routeShown = useRef(false);
   const followed = useRef(false);
+  const trackShown = useRef(false);
 
   // A new start, even at the same place, centres the map on it again.
   useEffect(() => {
@@ -64,6 +76,19 @@ export function MapView({ start, route, following = null, onError, style }: Prop
       routeShown.current = false;
     }
   }, [ready, route, start]);
+
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (track && track.length > 1) {
+      webView.current?.injectJavaScript(pageScript(showTrack(track)));
+      trackShown.current = true;
+    } else if (trackShown.current) {
+      webView.current?.injectJavaScript(pageScript(clearTrack()));
+      trackShown.current = false;
+    }
+  }, [ready, track]);
 
   // Navigating: the map stays on the runner. After, the whole route again.
   useEffect(() => {

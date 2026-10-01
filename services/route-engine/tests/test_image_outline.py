@@ -1,5 +1,6 @@
-"""The outline of the subject of an image (TASK-072). Every image is drawn
-here with Pillow: no image files in the repository."""
+"""The outline of the subject of an image (TASK-072), or of its few
+subjects in one line (TASK-084). Every image is drawn here with Pillow: no
+image files in the repository."""
 
 import io
 import json
@@ -14,11 +15,12 @@ from shapely.geometry import Polygon
 
 from route_engine.image_outline import (
     MAX_POINTS,
+    MAX_SUBJECTS,
     InvalidImageError,
     outline_data,
     outline_from_image,
 )
-from route_engine.shapes.outline import read_outline
+from route_engine.shapes.outline import parse_outline, read_outline
 
 WIDTH, HEIGHT = 400, 300
 Xy = tuple[float, float]
@@ -175,6 +177,120 @@ def test_the_saved_outline_reads_back_as_the_same_outline(tmp_path: Path) -> Non
     assert outline(64)[0] != outline(64)[1]
 
 
+# --- Several subjects, joined in one line (TASK-084) ---
+
+# Discs of radius 35 in a row, 100 apart: the gaps are 30 wide.
+ROW = [(60 + 100 * k, 150) for k in range(5)]
+
+
+def _discs(centres: list[Xy], radius: float = 35) -> bytes:
+    image, draw = _canvas(size=(520, 300))
+    for x, y in centres:
+        draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill="black")
+    return _encode(image)
+
+
+def _strokes(data: dict[str, object]) -> list[list[Xy]]:
+    """The strokes in image pixels, y downwards like the drawing."""
+    strokes = data.get("strokes", [])
+    assert isinstance(strokes, list)
+    return [[(x, -y) for x, y in stroke] for stroke in strokes]
+
+
+def _loop(stroke: list[Xy]) -> Polygon:
+    """The subject at the end of a stroke: its stem is the first side."""
+    assert stroke[1] == stroke[-1]
+    return Polygon(stroke[1:])
+
+
+def test_two_subjects_give_an_outline_and_a_stroke_with_a_loop() -> None:
+    image, draw = _canvas()
+    draw.ellipse((20, 50, 180, 250), fill="black")  # the larger one
+    draw.ellipse((260, 90, 380, 210), fill="black")
+    data = outline_data(_encode(image))
+    assert _overlap(_traced(data), Disc(100, 150).buffer(80).envelope) > 0.7
+    assert _traced(data).contains(Disc(100, 150))
+    [stroke] = _strokes(data)
+    assert _overlap(_loop(stroke), Disc(320, 150).buffer(60)) > 0.95
+    # The stem is the shortest stretch between the two: the gap at y = 150.
+    (x0, y0), (x1, y1) = stroke[:2]
+    assert math.dist((x0, y0), (x1, y1)) == pytest.approx(80, abs=4)
+    assert abs(y0 - 150) < 12 and abs(y1 - 150) < 12
+    # One line draws both: the outline, the stem out, the loop, the stem back.
+    outline = parse_outline(data)  # no line crosses another
+    path = outline.path()
+    assert path[0] == path[-1]
+    assert path.count(outline.strokes[0][0]) == 2  # out and back
+    assert all(path.count(point) == 1 for point in outline.strokes[0][2:-1])
+
+
+def test_three_and_four_subjects_are_hung_nearest_first() -> None:
+    for count in (3, 4):
+        data = outline_data(_discs(ROW[:count]))
+        strokes = _strokes(data)
+        assert len(strokes) == count - 1
+        parse_outline(data)
+        # Each disc hangs on the one before it, across the gap between them.
+        for k, stroke in enumerate(strokes, start=1):
+            assert _loop(stroke).contains(Disc(ROW[k]))
+            assert math.dist(*stroke[:2]) == pytest.approx(30, abs=6)
+            assert stroke[0][0] == pytest.approx(ROW[k][0] - 65, abs=6)
+
+
+def test_a_subject_hangs_on_the_nearest_line_not_on_the_largest() -> None:
+    """The small disc is far from the large one and next to the middle one:
+    its stem starts on the middle one and crosses nothing."""
+    image, draw = _canvas(size=(520, 300))
+    draw.ellipse((20, 50, 220, 250), fill="black")
+    draw.ellipse((260, 100, 360, 200), fill="black")
+    draw.ellipse((400, 120, 460, 180), fill="black")
+    data = outline_data(_encode(image))
+    middle, small = _strokes(data)
+    assert _loop(middle).contains(Disc(310, 150))
+    assert _loop(small).contains(Disc(430, 150))
+    assert _loop(middle).exterior.distance(Disc(small[0])) < 1
+    parse_outline(data)
+
+
+def test_more_subjects_than_the_limit_are_refused() -> None:
+    assert MAX_SUBJECTS == 4
+    with pytest.raises(InvalidImageError, match="5 subjects: at most 4") as info:
+        outline_data(_discs(ROW))
+    assert info.value.reason == "scattered"
+
+
+def test_a_piece_inside_another_is_not_a_subject() -> None:
+    image, draw = _canvas()
+    draw.ellipse((100, 50, 300, 250), fill="black")
+    draw.ellipse((130, 80, 270, 220), fill="white")
+    draw.ellipse((170, 120, 230, 180), fill="black")
+    data = outline_data(_encode(image))
+    assert "strokes" not in data
+    assert _overlap(_traced(data), Disc(200, 150).buffer(100)) > 0.97
+
+
+def test_a_second_piece_cut_by_the_edge_is_left_out() -> None:
+    image, draw = _canvas()
+    draw.ellipse((100, 50, 300, 250), fill="black")
+    alone = outline_data(_encode(image))
+    draw.ellipse((350, 120, 450, 180), fill="black")
+    assert outline_data(_encode(image)) == alone
+
+
+def test_subjects_nearly_touching_become_one() -> None:
+    image, draw = _canvas()
+    draw.rectangle((60, 80, 196, 220), fill="black")
+    draw.rectangle((203, 80, 340, 220), fill="black")  # a gap of 6 pixels
+    data = outline_data(_encode(image))
+    assert "strokes" not in data
+    assert _overlap(_traced(data), Polygon.from_bounds(60, 80, 341, 221)) > 0.97
+
+
+def test_several_subjects_give_the_same_outline_every_time() -> None:
+    raw = _discs(ROW[:4])
+    assert outline_data(raw) == outline_data(raw)
+
+
 # --- Images refused, with the reason ---
 
 
@@ -191,13 +307,6 @@ def test_a_busy_background_is_refused() -> None:
 def test_an_empty_image_is_refused() -> None:
     image, _ = _canvas()
     assert _refusal(_encode(image)) == "no_subject"
-
-
-def test_two_subjects_are_refused() -> None:
-    image, draw = _canvas()
-    draw.ellipse((20, 50, 150, 250), fill="black")
-    draw.ellipse((250, 50, 380, 250), fill="black")
-    assert _refusal(_encode(image)) == "scattered"
 
 
 def test_a_subject_cut_by_the_edge_is_refused() -> None:

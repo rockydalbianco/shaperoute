@@ -1,10 +1,12 @@
 import {
   clearRoute,
+  clearTrack,
   follow,
   pageScript,
   parsePageMessage,
   setPosition,
   showRoute,
+  showTrack,
   START_HERE_M,
 } from "./messages";
 
@@ -79,4 +81,20 @@ test("follow sends the position in MapLibre order", () => {
     type: "follow",
     lngLat: [11.1214, 46.0671],
   });
+});
+
+test("showTrack sends the run in MapLibre order, clearTrack removes it", () => {
+  expect(
+    showTrack([
+      [46.0671, 11.1214],
+      [46.0122, 11.2986],
+    ]),
+  ).toEqual({
+    type: "showTrack",
+    coordinates: [
+      [11.1214, 46.0671],
+      [11.2986, 46.0122],
+    ],
+  });
+  expect(clearTrack()).toEqual({ type: "clearTrack" });
 });

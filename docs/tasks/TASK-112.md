@@ -1,6 +1,6 @@
 # TASK-112 — App: registrare la traccia durante la navigazione
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-112-track-recording`
 
 ## Obiettivo
@@ -30,10 +30,10 @@ che ha corso, e la conserva sul telefono anche se l'app si chiude.
 
 ## Criteri di accettazione
 
-- [ ] Una sequenza di posizioni finte produce la traccia attesa, senza i
+- [x] Una sequenza di posizioni finte produce la traccia attesa, senza i
       punti scartati, con distanza in metri.
-- [ ] La traccia sopravvive alla chiusura dell'app (test sul file).
-- [ ] Nessuna dipendenza nuova; nessun dato lascia il telefono.
+- [x] La traccia sopravvive alla chiusura dell'app (test sul file).
+- [x] Nessuna dipendenza nuova; nessun dato lascia il telefono.
 - [ ] Test dell'app verdi; prova sull'iPhone camminando almeno 500 m.
 
 ## File toccati
@@ -59,3 +59,16 @@ docs/tasks/TASK-112.md
 - Registrare una corsa senza un percorso pianificato.
 
 ## Esito
+
+Codice e test fatti (2026-09-30); **manca la prova sull'iPhone** camminando
+500 m. La traccia si registra dentro `useNavigation` e finisce in
+`current-run.json` nei documenti dell'app (ADR-0091). Diverso dal passo 3,
+perché `App.tsx` non è fra i file del task: il file tiene il percorso
+pianificato ma non la richiesta né la somiglianza; e una corsa interrotta
+si riprende da sola con «Start» sullo stesso percorso entro 30 minuti,
+senza la domanda «riprendi o scarta». Tutte e due le cose passano a
+TASK-113, che tocca `App.tsx`.
+
+Mergiato su richiesta dell'utente («merge 113», 2026-09-30) **senza la
+prova sull'iPhone**: la camminata di 500 m si fa con TASK-113, quando la
+traccia si vede sullo schermo.

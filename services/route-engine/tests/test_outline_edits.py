@@ -12,6 +12,7 @@ from route_engine.outline_edits import (
     InvalidEditError,
     add_detail,
     add_part,
+    travelled_points,
 )
 from route_engine.shapes.outline import InvalidOutlineError, parse_outline
 
@@ -272,11 +273,27 @@ def test_a_detail_that_stays_on_the_line_is_short() -> None:
     assert _reason(add_detail, SQUARE, [], drawn) == "short"
 
 
-def test_too_many_detail_corners_are_refused() -> None:
-    zigzag = [(0.0, 50.0)] + [
-        (1.5 * k, 45.0 if k % 2 else 55.0) for k in range(1, MAX_DETAIL_POINTS + 5)
+def _zigzag(points: int) -> list[Point]:
+    """A line of that many points from the left side, run out and back."""
+    return [(0.0, 50.0)] + [
+        (0.9 * k, 45.0 if k % 2 else 55.0) for k in range(1, points)
     ]
-    assert _reason(add_detail, SQUARE, [], zigzag) == "too_many_corners"
+
+
+def test_details_run_out_and_back_count_twice() -> None:
+    """TASK-084: 100 points of zig-zag are fine, a few more are refused."""
+    assert MAX_DETAIL_POINTS == 200
+    [stroke] = add_detail(SQUARE, [], _zigzag(100)).strokes
+    # The points drawn along the side it starts on are left out.
+    assert 90 <= len(stroke) <= 100
+    assert travelled_points([stroke]) == 2 * len(stroke) - 1
+    assert _reason(add_detail, SQUARE, [], _zigzag(110)) == "too_many_corners"
+
+
+def test_a_loop_counts_once_and_its_stem_twice() -> None:
+    eye = [(0.0, 50.0), (30.0, 50.0), (40.0, 60.0), (50.0, 50.0), (30.0, 50.0)]
+    assert travelled_points([eye]) == 6
+    assert travelled_points([LEFT_STROKE]) == 3
 
 
 def test_a_drawing_with_too_many_points_is_refused() -> None:

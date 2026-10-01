@@ -141,3 +141,15 @@ describe("pocket mode", () => {
     expect(Brightness.setBrightnessAsync).toHaveBeenLastCalledWith(0.6);
   });
 });
+
+test("the way out is Stop during the run and Finish at the end (TASK-113)", async () => {
+  const { navigation } = startNavigation(points, directions);
+  const onStop = jest.fn();
+  const view = await render(<NavigationCard navigation={navigation} onStop={onStop} />);
+  expect(screen.getByText("Stop")).toBeTruthy();
+  await view.rerender(
+    <NavigationCard navigation={{ ...navigation, arrived: true }} onStop={onStop} />,
+  );
+  await fireEvent.press(screen.getByText("Finish"));
+  expect(onStop).toHaveBeenCalledTimes(1);
+});

@@ -214,6 +214,39 @@ export interface GpxRequest {
   result: RouteResult;
 }
 
+/** One GPS fix of a run, as the app recorded it (TASK-112). */
+export interface TrackFix {
+  point: LatLon;
+  /** When the fix was taken, in milliseconds on the phone's clock. */
+  time_ms: number;
+  /** Radius of the fix's error, in metres; null or absent when unknown. */
+  accuracy_m?: number | null;
+}
+
+/** What the app sends to POST /track-scores (TASK-113, ADR-0093). */
+export interface TrackScoreRequest {
+  /** The planned route: RouteResult.points. */
+  points: LatLon[];
+  /** The planned route's: RouteResult.similarity. */
+  similarity: number;
+  /** The run, fix by fix, in order. */
+  track: TrackFix[];
+}
+
+/** The score of a run (route_engine/track_score.py, ADR-0090). */
+export interface TrackScoreResult {
+  /** From 0 to 100: the route's similarity times `fidelity`. */
+  score: number;
+  /** How much of the plan was run, and nothing else, from 0 to 1. */
+  fidelity: number;
+  /** Share of the planned route with the run near it. */
+  covered: number;
+  /** Share of the run near the planned route. */
+  on_route: number;
+  /** Length of the run, in metres. */
+  distance_m: number;
+}
+
 /** The longest text of the shape field the AI reads: a word or a few. */
 export const MAX_SHAPE_TEXT_LENGTH = 60;
 
@@ -241,7 +274,8 @@ export const MAX_OUTLINE_POINTS = 100;
 /**
  * Why an image gives no outline (route_engine/image_outline.py, ADR-0068):
  * not PNG or JPEG, unreadable, a background that is not plain, no subject,
- * more than one, a subject on the edge, too small, too jagged.
+ * more than 4 subjects (TASK-084), a subject on the edge, too small, too
+ * jagged.
  */
 export const IMAGE_REASONS = [
   "format",
@@ -276,12 +310,13 @@ export interface ImageOutline {
   image_points: OutlinePoint[];
   /** Width over height of the image, upright. */
   aspect: number;
-  /** Details drawn by hand (TASK-079), in the frame of `points`: each starts
-   * on the outline or on an earlier one, and the route goes along it and
-   * back. Empty for a traced outline; missing from an API older than
-   * TASK-079. */
+  /** The other subjects of the image (TASK-084) and the details drawn by
+   * hand (TASK-079), in the frame of `points`: each starts on the outline
+   * or on an earlier one, and the route goes along it and back; one that
+   * ends on its own second point closes a loop, drawn once. Empty for one
+   * subject as traced; missing from an API older than TASK-079. */
   strokes?: OutlinePoint[][];
-  /** The same details over the image, like `image_points`. */
+  /** The same strokes over the image, like `image_points`. */
   image_strokes?: OutlinePoint[][];
 }
 
@@ -295,16 +330,18 @@ export interface ImageRouteRequest {
   /** The `points` of an ImageOutline, unchanged. */
   outline: OutlinePoint[];
   /** The `strokes` of an ImageOutline, unchanged (TASK-079); absent or
-   * empty for an outline as traced. */
+   * empty for an outline without. */
   strokes?: OutlinePoint[][];
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
 }
 
-/** The most points of all the details of an outline together (TASK-079):
- * each is run out and back. */
-export const MAX_DETAIL_POINTS = 50;
+/** The most points of all the strokes of an outline together, as the
+ * route travels them: the other subjects of the image (TASK-084) and the
+ * details drawn by hand (TASK-079). A line run out and back counts twice:
+ * about 100 points of details without loops. */
+export const MAX_DETAIL_POINTS = 200;
 /** The most points of a line drawn with a finger (TASK-079). */
 export const MAX_DRAWN_POINTS = 2_000;
 

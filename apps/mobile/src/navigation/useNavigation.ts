@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Vibration } from "react-native";
 
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
+import { type RunRecorder, startRun } from "./trackStore";
 
 /** A fix at least this often apart, in metres: a stride or two. */
 export const FIX_EVERY_M = 5;
@@ -29,12 +30,15 @@ export function play(cues: Cue[]): void {
 
 /**
  * Follows the phone's position along the route while `active`, with the
- * screen on (TASK-049). The position never leaves the phone.
+ * screen on (TASK-049), and records the track that is run in a file on the
+ * phone (TASK-112). The position never leaves the phone.
  */
 export function useNavigation(
   points: LatLon[] | null,
   directions: Direction[],
   active: boolean,
+  /** The route's similarity to its shape, kept with the track for the score. */
+  similarity?: number,
 ): NavigationState {
   const [state, setState] = useState<NavigationState>({ status: "starting" });
   const navigation = useRef<Navigation | null>(null);
@@ -45,6 +49,7 @@ export function useNavigation(
     }
     let stopped = false;
     let subscription: Location.LocationSubscription | null = null;
+    let run: RunRecorder | null = null;
     void (async () => {
       const permission = await Location.requestForegroundPermissionsAsync();
       if (stopped) {
@@ -62,6 +67,7 @@ export function useNavigation(
         position: null,
       });
       play(started.cues);
+      run = startRun(points, Date.now(), similarity);
       subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.BestForNavigation,
@@ -77,6 +83,10 @@ export function useNavigation(
             timeMs: timestamp,
           });
           navigation.current = next.navigation;
+          run?.onFix(
+            { point: fix, timeMs: timestamp, accuracyM: coords.accuracy },
+            next.navigation.arrived,
+          );
           setState({ status: "following", navigation: next.navigation, position: fix });
           play(next.cues);
         },
@@ -88,10 +98,11 @@ export function useNavigation(
     return () => {
       stopped = true;
       subscription?.remove();
+      run?.stop();
       void Speech.stop();
       setState({ status: "starting" });
     };
-  }, [active, points, directions]);
+  }, [active, points, directions, similarity]);
 
   return state;
 }

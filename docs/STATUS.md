@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-28 · **Fase corrente**: 4 — Estensione (scritte)
+**Ultimo aggiornamento**: 2026-09-30 · **Fase corrente**: 4 — Estensione (scritte)
 
 ---
 
@@ -65,11 +65,48 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-113 (prova sull'iPhone non riportata, vale anche
+  per TASK-112): a fine corsa l'app mostra
+  la corsa sopra il percorso e il punteggio da 0 a 100, chiesto a `POST
+  /track-scores` (ADR-0093). Senza rete la corsa resta sul telefono e il
+  punteggio si richiede dopo. Il seguito della parte social è **TASK-110**,
+  le scelte dell'utente su account e dati.
+- **Motore** — TASK-091: il log dell'API non scrive più le coordinate
+  della partenza né delle partenze vicine provate (ADR-0092); resta
+  «start N: score…, approach … m». Il nome del file della zona in cache
+  (un riquadro di chilometri) c'è ancora.
+- **App** — TASK-112 (prova sull'iPhone da fare con TASK-113): durante la
+  navigazione l'app registra la traccia della corsa e la tiene in un file
+  sul telefono, anche se l'app si chiude (`trackRecorder.ts`,
+  `trackStore.ts`, ADR-0091). Sullo schermo non cambia niente: la usa
+  **TASK-113**, che deve anche salvare la somiglianza del percorso e
+  chiedere «riprendi o scarta» alla riapertura.
+
+- **Motore, API e app** — TASK-084: più soggetti in una foto, fino a 4,
+  in una linea sola (ADR-0079). Il più grande è il contorno, gli altri
+  sono appesi con un trattino nel punto più vicino, fatto andata e
+  ritorno; con più di 4 la foto è rifiutata («more than 4 separate
+  things»). I dettagli a mano passano da 50 punti a 200 punti percorsi
+  (circa 100 andata e ritorno). Campioni a 12 km: Milano «sì», Levico
+  «quasi». Provato sull'iPhone dall'utente (2026-09-30): funziona.
+- **API** — TASK-090: il registro delle richieste (ADR-0085). Con
+  `--request-log` l'API scrive ogni richiesta di percorso, partenza
+  compresa, in `data/requests/requests.jsonl`; `python -m
+  shaperoute_api.replay` la rifà e dice se il percorso è lo stesso punto
+  per punto. **Spento per default**: accenderlo sempre sul Mac è una scelta
+  dell'utente. Non si vede nell'app. Provato: cuore 10 km a Caldonazzo e
+  «CIAO» a Levico, rifatti identici (467 e 626 punti).
+- **Motore** — TASK-111: il punteggio di una traccia corsa, da 0 a 100
+  (`track_score.py`, ADR-0090): la somiglianza del percorso per la fedeltà
+  della corsa al percorso, entro 40 m. Dalla CLI con `--score-track
+  corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
+  poi TASK-113.
+
 - **API e motore** — TASK-087: il ritaglio della zona più veloce, a
   percorsi identici (ADR-0082, la proposta 2 di TASK-063). A Milano, con
   la zona in memoria, da 2–6 s a 0,3–1 s a richiesta su questo Mac; stessi
-  percorsi punto per punto su 8 casi (Milano 10, 15, 21 km; Levico
-  10 km). Da misurare Levico a 15 e 21 km quando la zona è in cache.
+  percorsi punto per punto su 12 casi (Milano e Levico a 10, 15 e
+  21 km; a Levico il ritaglio pesava già meno di mezzo secondo).
   L'API va riavviata dopo il merge per prenderlo.
 - **App** — TASK-089: un suggerimento toccato riempie il campo, chiude la
   tastiera e non fa ripartire la ricerca; i suggerimenti arrivano anche

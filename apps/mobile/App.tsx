@@ -21,6 +21,12 @@ import {
   useCurrentPosition,
 } from "./src/location/useCurrentPosition";
 import { MapView } from "./src/map/MapView";
+import {
+  clearRun,
+  endRun,
+  pendingRun,
+  type ScorableRun,
+} from "./src/navigation/trackStore";
 import { useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
 import { toDistanceM } from "./src/route/distance";
@@ -39,6 +45,7 @@ import {
 import { useShapeReading } from "./src/route/useShapeReading";
 import { checkWord } from "./src/route/wordInput";
 import { ChooseScreen } from "./src/screens/ChooseScreen";
+import { FinishBanner, FinishCard } from "./src/screens/FinishScreen";
 import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
 import { color } from "./src/theme/tokens";
@@ -49,9 +56,28 @@ const NO_DIRECTIONS: Direction[] = [];
 /** The API on the PC that serves the app (ADR-0031); null if unknown. */
 const API_URL = apiUrl();
 
-/** The screens (TASK-051): what to draw, the map with the route, and the
- * turn-by-turn along it (TASK-049). */
-type Screen = "choose" | "map" | "navigate";
+/** The screens (TASK-051): what to draw, the map with the route, the
+ * turn-by-turn along it (TASK-049) and the run with its score (TASK-113). */
+type Screen = "choose" | "map" | "navigate" | "finish";
+
+/** A run that ended, shown on the finish screen. */
+type Finished = {
+  run: ScorableRun;
+  /** Its points, once: a new list would draw the line again. */
+  line: ScorableRun["route"];
+  /** Stopped just now, its route still on screen: it can go on. */
+  resumable: boolean;
+};
+
+function finishedRun(run: ScorableRun, resumable: boolean): Finished {
+  return { run, line: run.track.fixes.map((fix) => fix.point), resumable };
+}
+
+/** A run left without its score when the app was last open, if any. */
+function leftRun(): Finished | null {
+  const run = pendingRun();
+  return run === null ? null : finishedRun(run, false);
+}
 
 export default function App() {
   return (
@@ -64,7 +90,11 @@ export default function App() {
 }
 
 function Sgrava() {
-  const [screen, setScreen] = useState<Screen>("choose");
+  // A run still waiting for its score comes first (TASK-113).
+  const [finished, setFinished] = useState<Finished | null>(leftRun);
+  const [screen, setScreen] = useState<Screen>(() =>
+    finished === null ? "choose" : "finish",
+  );
   const { position, refresh } = useCurrentPosition();
   const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
@@ -140,7 +170,29 @@ function Sgrava() {
     view.status === "done" ? view.result.points : null,
     view.status === "done" ? view.result.directions : NO_DIRECTIONS,
     navigating,
+    view.status === "done" ? view.result.similarity : undefined,
   );
+  const finishing = screen === "finish" && finished !== null;
+
+  /** Stop or Finish: the run ends, and with a line to judge shows its score. */
+  function onEndRun() {
+    const run = endRun();
+    if (run === null) {
+      setScreen("map");
+      return;
+    }
+    setFinished(finishedRun(run, run.status !== "arrived"));
+    setScreen("finish");
+  }
+
+  function onFinishDone(settled: boolean) {
+    // Without its score the run stays in the file, for the next opening.
+    if (settled) {
+      clearRun();
+    }
+    setFinished(null);
+    setScreen(view.status === "done" ? "map" : "choose");
+  }
 
   function onDraw() {
     // The decimal pad has no return key: drawing closes it.
@@ -168,15 +220,28 @@ function Sgrava() {
   return (
     <View style={styles.screen}>
       <MapScreen
-        active={screen === "map" || navigating}
+        active={screen === "map" || navigating || finishing}
         onBack={onBack}
         mapError={mapError}
-        banner={navigating ? <NavigationBanner state={navigation} /> : undefined}
+        banner={
+          finishing ? (
+            <FinishBanner />
+          ) : navigating ? (
+            <NavigationBanner state={navigation} />
+          ) : undefined
+        }
         map={
           <MapView
             style={styles.map}
             start={start?.point ?? null}
-            route={view.status === "done" ? view.result.points : null}
+            route={
+              finishing
+                ? finished.run.route
+                : view.status === "done"
+                  ? view.result.points
+                  : null
+            }
+            track={finishing ? finished.line : null}
             following={
               navigating && navigation.status === "following"
                 ? navigation.position
@@ -186,12 +251,26 @@ function Sgrava() {
           />
         }
       >
-        {navigating ? (
+        {finishing ? (
+          <FinishCard
+            apiUrl={API_URL}
+            run={finished.run}
+            onDone={onFinishDone}
+            onResume={
+              finished.resumable && view.status === "done"
+                ? () => {
+                    setFinished(null);
+                    setScreen("navigate");
+                  }
+                : undefined
+            }
+          />
+        ) : navigating ? (
           <NavigationCard
             navigation={
               navigation.status === "following" ? navigation.navigation : null
             }
-            onStop={() => setScreen("map")}
+            onStop={onEndRun}
           />
         ) : (
           <RouteOutcome

@@ -119,6 +119,14 @@ export const fontWeight = {
  */
 export const MIN_TAP_SIZE = 44;
 
+/** The run drawn over its route (TASK-113): thin and light, so the yellow
+ * of the plan shows on both sides where the run followed it. */
+export const track = {
+  color: color.text,
+  width: 2,
+  opacity: 0.9,
+} as const;
+
 /** The route drawn on the map. */
 export const route = {
   color: color.accent,

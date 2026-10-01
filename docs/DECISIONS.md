@@ -2684,6 +2684,76 @@ leggibili da chi lo scarica; cambiare indirizzo o app vuol dire
 ripubblicare. Con `expo start --no-dev` l'app non ricava più l'API
 dall'host di Expo: serve `EXPO_PUBLIC_API_URL`.
 
+## ADR-0079 — Più soggetti in una foto: fino a 4, appesi con un collegamento nel punto più vicino
+**Stato**: Attiva · 2026-09-30 · il cosa deciso dall'utente (al più 4
+soggetti, oltre la foto è rifiutata; il collegamento si vede sulla mappa,
+fatto andata e ritorno; si collega «nel punto meno problematico per non
+intaccare il disegno», cioè dove i soggetti sono più vicini); il come
+deciso dall'agente su delega dell'utente (TASK-084)
+
+Una foto con più soggetti era rifiutata (`scattered`, ADR-0068), o ne
+restava solo il più grande. L'utente, provando TASK-079, vuole che si
+disegnino tutti.
+
+**Decisione**:
+- **Il formato c'è già**: un soggetto in più è uno `stroke` con l'anello in
+  fondo (TASK-037, ADR-0074). Il gambo è il collegamento, l'anello il
+  contorno del soggetto. `parse_outline`, `plan_shape`, l'API e l'app li
+  portano e li disegnano già: il lavoro è in `image_outline.py`.
+- **Soggetto** è ogni pezzo sopra l'1% del più grande (la soglia delle
+  macchioline di prima), tranne: un pezzo dentro un altro; un pezzo
+  secondario tagliato dal bordo (prima si ignorava, e si ignora ancora: il
+  bordo rifiuta solo il soggetto più grande); un pezzo che la lisciatura
+  consuma. Sparisce la regola del 75%.
+- **Una scala sola**: lisciatura e semplificazione usano il lato lungo di
+  tutto il disegno, non del singolo soggetto. Sulla mappa la scala è una,
+  e un soggetto piccolo non può avere più dettagli di quanti le strade ne
+  disegnino. Con un soggetto solo il disegno è il soggetto: il contorno è
+  quello di prima, punto per punto (verificato su 9 immagini contro il
+  codice di `main`).
+- **Il collegamento** è il tratto più corto fra il soggetto e tutto ciò
+  che è già disegnato: contorno, soggetti e collegamenti di prima
+  (`shapely.ops.nearest_points` sulle linee già semplificate). Si attacca
+  ogni volta il soggetto più vicino al già disegnato. Per costruzione il
+  tratto non attraversa niente: se attraversasse una linea, quella linea
+  sarebbe più vicina. Il controllo severo di `parse_outline` (niente
+  incroci) lo conferma a ogni foto.
+- **Soggetti quasi attaccati diventano uno**: sotto il 2,5% del disegno,
+  perché la semplificazione sposta ogni linea fino all'1% e due linee
+  potrebbero toccarsi.
+- **Limiti**: `MAX_SUBJECTS` = 4; oltre, `scattered`, lo stesso motivo con
+  un testo nuovo («more than 4 separate things»): nessun valore nuovo nel
+  contratto. Gli `strokes` dei soggetti hanno al più 150 punti
+  (`MAX_SUBJECT_POINTS`), altrimenti `jagged`. `MAX_DETAIL_POINTS`, il
+  limite di tutti gli `strokes` nell'API e nelle modifiche a mano, passa da
+  50 a **200 punti percorsi** (`travelled_points`): un anello conta una
+  volta, il gambo e un tratto senza anello due volte, andata e ritorno.
+  Sono circa 100 punti di dettagli a mano senza anello: lo ha chiesto
+  l'utente dopo i rifiuti `too_many_corners` provando TASK-079 (richiesta
+  passata dalla sessione di TASK-079, con le sue misure: a Milano 100
+  punti a zig-zag vanno a 5, 10 e 15 km; 120 falliscono a 15 km).
+  Contare i punti percorsi tiene insieme le due cose: i soggetti, che si
+  fanno una volta, pesano la metà di un dettaglio andata e ritorno.
+  Misurato a Milano: 4 ingranaggi, 43 angoli più 118 punti di soggetti,
+  a 10 e 15 km con somiglianza 0,99–1,00.
+
+**Motivo**: riusare lo `stroke` ad anello tiene il principio (una linea
+sola, decisa dal motore) senza toccare il motore dei percorsi né il
+contratto. Il punto più vicino è quello che l'utente ha chiesto, ed è
+anche il collegamento più corto da correre due volte.
+
+**Conseguenza**: una foto con un pezzo secondario sopra l'1% (prima
+ignorato) ora lo disegna come soggetto, con il suo collegamento. Il limite
+resta un'approssimazione: a far fallire la distanza è la lunghezza dei
+tratti ripassati, non il numero dei punti. Tre soggetti da 118 punti più
+uno zig-zag fitto da 40 punti, dentro il limite, a Milano non si
+disegnano né a 10 né a 15 km («does not fit», dopo l'attesa). «Add a part»
+unisce solo al contorno principale: una parte disegnata sopra un soggetto
+secondario diventa un anello appeso alla linea più vicina. Campioni a
+12 km: a Milano somiglianza 0,96–0,98; a Levico 0,76–0,84, come le altre
+forme con tratti in montagna.
+
+
 ## ADR-0081 — Comandi più visibili: bordo e fondo schiariti nei token
 **Stato**: Attiva · 2026-09-30 · chiesto dall'utente («devono essere più
 visibili i vari pulsanti, vedi tu come fare»); valori decisi dall'agente su
@@ -2783,6 +2853,7 @@ visite. Se una versione nuova lo cambia, `test_zone_crop.py` fallisce (il
 confronto è con `network.crop` nello stesso processo): si aggiorna
 `ZoneCrop`, o si torna a `crop` in `graphs.py`, una riga. Una zona in
 memoria non va modificata dopo essere stata data a `ZoneCrop`.
+
 ## ADR-0083 — Suggerimenti dei luoghi: risposte intermedie e tocco che chiude
 **Stato**: Attiva · 2026-09-30 · chiesto dall'utente («la ricerca è lenta,
 il suggerimento non riesco a premerlo»); deciso dall'agente su delega
@@ -2805,6 +2876,197 @@ servizio o ospitare Photon (scelta dell'utente, fuori dal task).
 
 **Conseguenza**: qualche richiesta in più a Photon. I suggerimenti possono
 essere per il testo di un attimo prima, finché arriva la risposta nuova.
+
+## ADR-0090 — Il punteggio di una corsa: somiglianza del percorso per fedeltà
+**Stato**: Attiva · 2026-09-30 · il punteggio chiesto dall'utente; il come
+deciso dall'agente su delega dell'utente (TASK-111)
+
+**Contesto**: l'utente vuole un punteggio per il disegno corso, «in base
+alla somiglianza». Il task proponeva di confrontare la traccia GPS con la
+forma ideale, con `shape_similarity`. Ma la forma piazzata (ruotata,
+scalata, per le parole con le lettere spostate) non esce dal motore:
+`RouteResult` porta i punti del percorso e la sua somiglianza, e così API
+e app. Parole e immagini poi non usano la stessa misura delle forme.
+
+**Decisione** (`track_score.py`):
+- **Punteggio = arrotonda(100 · somiglianza del percorso · fedeltà).** La
+  fedeltà è la media armonica fra la quota del percorso pianificato con la
+  traccia entro 40 m e la quota della traccia entro 40 m dal percorso.
+- **40 m**, come `OFF_ROUTE_M` dell'app (ADR-0070): chi non ha mai sentito
+  «Off the route» non perde punti.
+- **Pulizia prima del confronto**: errore oltre 40 m, passi sotto 1 m,
+  salti oltre 12 m/s (solo con gli orari).
+- **Niente punteggio** sotto 2 posizioni buone o sotto il 10% della
+  lunghezza del percorso: un errore con il motivo, non uno zero.
+- CLI: `--score-track FILE`, che ripianifica il percorso della richiesta.
+
+**Scartata**: *traccia contro forma piazzata, con la somiglianza del
+motore.* Chiede di portare il piazzamento nel contratto (API,
+`shared-types`, app) e una strada diversa per parole e immagini; e la sua
+tolleranza, il 2% del perimetro, a 15 km è 300 m: chi corre la via
+parallela prenderebbe lo stesso voto.
+
+**Conseguenze**: chi corre il percorso per intero prende il voto del
+percorso, mai di più: una forma che le strade disegnano male ha un tetto
+basso anche corsa bene. Chi devia e disegna la forma *meglio* del piano
+perde punti. Il punteggio non riconosce una traccia finta o fatta in bici:
+annotato, non fatto. TASK-113 deve mandare all'API punti e somiglianza del
+percorso; presa dall'app, la somiglianza si può falsare: TASK-117 la
+ricalcola o la conserva col percorso.
+
+## ADR-0085 — Il registro delle richieste dell'API, spento per default
+**Stato**: Attiva · 2026-09-30 · la funzione è chiesta dall'utente («serve
+a correggere i difetti e non si vede nell'app»); tutto il resto deciso
+dall'agente su delega dell'utente (TASK-090)
+
+**Contesto**: in TASK-075 l'utente ha visto sull'iPhone un cuore brutto a
+Caldonazzo e non si è potuto rifare: la partenza era il GPS del telefono, e
+25–100 m portano la somiglianza da 0,73 a 0,92. L'API non tiene niente
+delle richieste. La richiesta contiene la posizione di chi la fa.
+
+**Decisione**:
+- Un modulo nuovo, `shaperoute_api/request_log.py`: una riga JSON (JSON
+  Lines) per ogni richiesta di percorso finita, in
+  `data/requests/requests.jsonl`, fuori dal repository (`.gitignore`), con
+  ora, tipo, id del job, il corpo com'è arrivato (`model_dump` del corpo
+  già controllato) e l'esito: distanza, somiglianza, secondi, numero di
+  punti e un'impronta SHA-256 dei punti; oppure il solo codice dell'errore.
+- **Spento per default**; acceso con `--request-log` o
+  `SHAPEROUTE_REQUEST_LOG=1`. Acceso per default sarebbe una scelta
+  dell'utente (le posizioni restano su disco): non è stata presa qui.
+- La riga si scrive nel thread del job, **dopo** che il job ha la sua
+  risposta (`on_end` di `RouteJobs`): l'app non aspetta il disco. Ogni
+  errore di scrittura è un avviso nel log, senza il corpo; un ascoltatore
+  che fallisce non cambia l'esito del job.
+- Tetto: a 5 MB il file diventa `requests.old.jsonl` e ne parte uno nuovo;
+  al massimo 10 MB. File creato con permessi `0600`, cartella `0700`.
+- Si registrano solo le richieste di percorso (`/route-jobs`,
+  `/image-route-jobs`, `/routes`). Niente intestazioni, chiave, indirizzo
+  del client, foto, punti del percorso, messaggio dell'errore.
+- `python -m shaperoute_api.replay`: legge una riga (`--job`, `--line`, o
+  l'ultima), ricostruisce la richiesta con `to_request`, la dà a
+  `plan_request` sui grafi in cache e confronta l'impronta; codice di
+  uscita 1 se il percorso non è quello registrato; `--gpx` lo scrive.
+
+**Alternative scartate**: registrare dentro `data/cache` (la cache si copia
+a un collega, `PASSAGGIO.md`: porterebbe con sé le posizioni); scrivere la
+riga all'arrivo della richiesta e l'esito in una seconda riga (due righe da
+ricomporre; si perde solo la richiesta in corso se l'API muore); salvare
+tutti i punti del percorso (file cento volte più grande: l'impronta basta a
+dire «uguale», e il percorso si rifà); un middleware HTTP (vedrebbe
+intestazioni e foto); `logging.handlers.RotatingFileHandler` (non crea il
+file con permessi ristretti).
+
+**Conseguenza**: un percorso si rifà uguale finché motore e grafi in cache
+sono gli stessi; se cambiano, il replay lo dice. Il motore non usa le
+partenze vicine quando la memoria libera è poca (ADR-0071): in quel caso un
+replay può dare un percorso diverso da quello registrato. Su un server il
+file conterrebbe le posizioni di tutti gli utenti: `DEPLOY.md` lo dice.
+Un'API su più processi scriverebbe nello stesso file da più parti: oggi è
+un processo solo.
+
+## ADR-0091 — La traccia della corsa: registrata nella navigazione, in un file
+**Stato**: Attiva · 2026-09-30 · la traccia chiesta dall'utente per il
+punteggio; il come deciso dall'agente su delega dell'utente (TASK-112)
+
+**Contesto**: il punteggio (ADR-0090) vuole la traccia GPS della corsa.
+L'app riceve già le posizioni durante la navigazione (`useNavigation`), con
+lo schermo acceso o in modalità tasca; a telefono bloccato Expo Go non le
+dà.
+
+**Decisione**:
+- `trackRecorder.ts`, puro: tiene una posizione se ha errore entro 40 m
+  (`POOR_FIX_M`, ADR-0070), è ad almeno 5 m dall'ultima tenuta e non ha un
+  orario precedente. Salti e velocità li giudica il motore (ADR-0090).
+- `trackStore.ts`: un solo file, `current-run.json`, nei **documenti**
+  dell'app (la cache il sistema la può svuotare), con `expo-file-system`
+  già presente. Dentro: percorso pianificato, traccia, stato (`running`,
+  `stopped`, `arrived`). Scritto alla prima posizione, poi al più ogni
+  15 s, a «Stop» e all'arrivo. `running` trovato alla riapertura vuol dire
+  app chiusa durante la corsa.
+- **Riprendere senza chiedere**: «Start» sullo stesso percorso, con
+  l'ultima posizione a meno di 30 minuti, continua la traccia; se no ne
+  comincia una nuova, che sostituisce il file alla prima posizione tenuta.
+- Un file che il telefono rifiuta non ferma né la navigazione né la
+  traccia in memoria.
+
+**Scartate**: *chiedere «riprendi o scarta» alla riapertura*: serve una
+schermata in `App.tsx`, fuori dai file del task; va con la schermata di
+fine corsa (TASK-113). *Più corse nel file*: per ora serve solo l'ultima;
+i disegni salvati sono di TASK-117. *GPS in background*: serve una build
+propria, non Expo Go.
+
+**Conseguenze**: il file tiene i punti del percorso ma non la sua
+somiglianza né la richiesta, che `useNavigation` non riceve: TASK-113, che
+tocca `App.tsx`, deve passarle e salvarle. Una corsa da 21 km sono circa
+4000 posizioni, mezzo MB riscritto ogni 15 s. Dopo la chiusura dell'app il
+percorso sullo schermo non c'è più: la traccia resta nel file ma si
+riprende solo se l'app ridisegna lo stesso identico percorso.
+
+## ADR-0092 — Nessuna posizione nel log dell'API
+**Stato**: Attiva · 2026-09-30 · chiesto dall'utente («togli le partenze
+dal log a schermo dell'API»); il come deciso dall'agente su delega
+dell'utente (TASK-091)
+
+**Contesto**: da TASK-076 il motore scriveva nel log, per ogni richiesta di
+forma o parola, le coordinate della partenza e delle partenze vicine
+provate («start 0 (45.9934, 11.258): score…»), e l'errore di una partenza
+vicina che non disegna le ripeteva («from (45.99…)»). Emerso in TASK-090.
+
+**Decisione**: `nearby_starts.py` scrive «start N: score…, approach … m»
+senza coordinate, e l'errore dice «from this start». Restano il numero
+della partenza e i metri di avvicinamento, che bastano a leggere la scelta.
+Per rifare una richiesta c'è il registro (ADR-0085), che è spento finché
+non lo si accende.
+
+**Non toccato**: il log dice ancora quale file di grafo è stato letto
+(`foot_45.97750_11.24860_….graphml`): è il nome del file in cache, cioè il
+riquadro di una zona larga chilometri, non la partenza. Cambiarlo tocca
+`graphs.py` / `network.py` e i nomi della cache.
+
+**Conseguenza**: chi legge il log non vede più dove si trova l'utente;
+per sapere la partenza di una richiesta serve il registro.
+
+## ADR-0093 — Il punteggio a fine corsa: l'API lo calcola, l'app tiene la corsa
+**Stato**: Attiva · 2026-09-30 · la schermata chiesta dall'utente; il come
+deciso dall'agente su delega dell'utente (TASK-113)
+
+**Contesto**: il motore sa dare il punteggio (ADR-0090) e l'app registra la
+traccia (ADR-0091). Manca il giro: chiedere il punteggio e mostrarlo.
+
+**Decisione**:
+- **`POST /track-scores`**: punti e somiglianza del percorso più le
+  posizioni della corsa; risponde il `TrackScore` del motore. Niente grafo,
+  niente stato. La corsa troppo corta è `422 invalid_request` con il motivo
+  del motore: nessun codice d'errore nuovo.
+- **La somiglianza la manda l'app**, che l'ha avuta col percorso: senza
+  account non c'è niente da difendere. Quando il punteggio si salva o si
+  pubblica (TASK-117) il server non può fidarsi: va ricalcolata o tenuta
+  col percorso.
+- **La traccia porta con sé la somiglianza**: `useNavigation` la riceve e
+  `trackStore` la scrive nel file (campo facoltativo, la versione resta 1).
+- **Fine corsa**: «Stop»/«Finish» chiama `endRun()`, che scrive subito il
+  file e restituisce la corsa; la schermata è `FinishCard` dentro
+  `MapScreen`, con la mappa che disegna la corsa sopra il percorso (un
+  secondo strato, `showTrack`, colori dal token `track`).
+- **La corsa si cancella solo dopo il punteggio** (o se è troppo corta).
+  Senza rete resta nel file, e alla riapertura l'app parte dalla schermata
+  di fine corsa: è la risposta a «riprendi o scarta» rimandata da TASK-112.
+  Riprendere la navigazione dopo aver chiuso l'app no: il percorso e le
+  indicazioni non sono nel file.
+
+**Scartate**: *calcolare il punteggio nell'app*: sarebbe una seconda copia
+della misura del motore, in un altro linguaggio. *Un codice d'errore
+`track_not_scorable`*: l'app non chiede altro a questo endpoint che possa
+essere rifiutato. *Una domanda «riprendi o scarta» all'avvio*: la schermata
+di fine corsa dice già tutto, e «Done» la chiude.
+
+**Conseguenze**: toccati anche file fuori dall'elenco del task, detti nella
+PR: `src/map/` (la linea della corsa), `theme/tokens.ts` (il token
+`track`), `trackStore.ts` e `useNavigation.ts` (la somiglianza, `endRun`),
+i test accanto, e due fixture in `shared-types`. Una corsa senza punteggio
+blocca l'avvio sulla schermata di fine corsa finché l'API non risponde o
+un'altra corsa la sostituisce.
 
 ## ADR-0084 — Zucca e albero di Natale nel catalogo; «albero» da solo resta fuori
 **Stato**: Attiva · 2026-09-30 · le forme scelte dall'utente; parole,

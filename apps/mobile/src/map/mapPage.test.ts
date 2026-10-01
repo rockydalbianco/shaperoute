@@ -12,8 +12,10 @@ import {
   MAPLIBRE_VERSION,
   POSITION_COLOR,
   ROUTE_COLOR,
+  ROUTE_WIDTH,
   START_HERE_COLOR,
   START_HERE_LABEL,
+  TRACK_WIDTH,
 } from "./mapPage";
 
 const page = buildMapPage();
@@ -120,5 +122,16 @@ test("marks where a moved route begins, and frames it with the start", () => {
 test("the page follows the runner close up, without framing the route again", () => {
   const handler = page.slice(page.indexOf('message.type === "follow"'));
   expect(handler).toContain(`zoom: ${FOLLOW_ZOOM}`);
+  expect(handler.slice(0, handler.indexOf("clearRoute"))).not.toContain("fitBounds");
+});
+
+test("the run is a line of its own, over the route and thinner", () => {
+  const page = buildMapPage();
+  expect(page).toContain('message.type === "showTrack"');
+  expect(page).toContain('message.type === "clearTrack"');
+  expect(page.indexOf('id: "track"')).toBeGreaterThan(page.indexOf('id: "route"'));
+  expect(TRACK_WIDTH).toBeLessThan(ROUTE_WIDTH);
+  // Showing the run does not move the map: the route has framed it.
+  const handler = page.slice(page.indexOf('message.type === "showTrack"'));
   expect(handler.slice(0, handler.indexOf("clearRoute"))).not.toContain("fitBounds");
 });

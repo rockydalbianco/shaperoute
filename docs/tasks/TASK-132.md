@@ -58,3 +58,6 @@ Codice e test fatti; manca la prova su una build vera (sopra).
 si può provare con il simulatore iOS: profilo EAS `preview-simulator`
 (nessun account Apple; per aprirla serve Xcode, che l'utente installerà
 dopo l'aggiornamento di macOS) o con una build Android.
+Build `preview-simulator` riuscita su EAS (build
+`1532e993-9806-413b-989e-7fc434cded94`): AdMob e la configurazione nativa
+compilano. Si installa con `npx eas-cli build:run -p ios --latest`.

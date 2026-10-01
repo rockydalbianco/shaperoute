@@ -83,6 +83,12 @@ la fa l'utente**, una domanda per volta.
    nessun consenso dei genitori in Europa; all'iscrizione la casella «I am
    at least 16». Scelta dell'utente (2026-10-01), fra 14, 16 e 18.
 
+7. **Cancellare l'account**: si cancella **tutto**, anche i percorsi
+   generati da quell'iscritto che stavano nel catalogo dei consigliati.
+   Quindi un percorso generato da chi è entrato resta legato al suo
+   account; uno generato senza account non è di nessuno e resta. Scelta
+   dell'utente (2026-10-01), fra «restano anonimi» e «si cancellano».
+
 ## Criteri di accettazione
 
 - [ ] ADR-0013 ha stato «Attiva» o è sostituita da ADR nuovi, con hosting,

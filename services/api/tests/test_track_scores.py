@@ -1,4 +1,4 @@
-"""POST /track-scores: the engine's score of a run (ADR-0090, ADR-0092)."""
+"""POST /track-scores: the engine's score of a run (ADR-0090, ADR-0093)."""
 
 from __future__ import annotations
 

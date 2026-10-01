@@ -191,7 +191,7 @@ di vita di una richiesta in due tempi. Un corpo non valido risponde
 
 ### `POST /track-scores`
 
-Il punteggio di una corsa (TASK-113, ADR-0092). Riceve un
+Il punteggio di una corsa (TASK-113, ADR-0093). Riceve un
 `TrackScoreRequest`:
 
 ```json

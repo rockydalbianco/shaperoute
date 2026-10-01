@@ -3003,7 +3003,31 @@ tocca `App.tsx`, deve passarle e salvarle. Una corsa da 21 km sono circa
 percorso sullo schermo non c'è più: la traccia resta nel file ma si
 riprende solo se l'app ridisegna lo stesso identico percorso.
 
-## ADR-0092 — Il punteggio a fine corsa: l'API lo calcola, l'app tiene la corsa
+## ADR-0092 — Nessuna posizione nel log dell'API
+**Stato**: Attiva · 2026-09-30 · chiesto dall'utente («togli le partenze
+dal log a schermo dell'API»); il come deciso dall'agente su delega
+dell'utente (TASK-091)
+
+**Contesto**: da TASK-076 il motore scriveva nel log, per ogni richiesta di
+forma o parola, le coordinate della partenza e delle partenze vicine
+provate («start 0 (45.9934, 11.258): score…»), e l'errore di una partenza
+vicina che non disegna le ripeteva («from (45.99…)»). Emerso in TASK-090.
+
+**Decisione**: `nearby_starts.py` scrive «start N: score…, approach … m»
+senza coordinate, e l'errore dice «from this start». Restano il numero
+della partenza e i metri di avvicinamento, che bastano a leggere la scelta.
+Per rifare una richiesta c'è il registro (ADR-0085), che è spento finché
+non lo si accende.
+
+**Non toccato**: il log dice ancora quale file di grafo è stato letto
+(`foot_45.97750_11.24860_….graphml`): è il nome del file in cache, cioè il
+riquadro di una zona larga chilometri, non la partenza. Cambiarlo tocca
+`graphs.py` / `network.py` e i nomi della cache.
+
+**Conseguenza**: chi legge il log non vede più dove si trova l'utente;
+per sapere la partenza di una richiesta serve il registro.
+
+## ADR-0093 — Il punteggio a fine corsa: l'API lo calcola, l'app tiene la corsa
 **Stato**: Attiva · 2026-09-30 · la schermata chiesta dall'utente; il come
 deciso dall'agente su delega dell'utente (TASK-113)
 

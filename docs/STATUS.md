@@ -66,10 +66,13 @@ Niente.
 - **API e app** — TASK-113 (PR aperta, manca la prova sull'iPhone con una
   camminata vera, che vale anche per TASK-112): a fine corsa l'app mostra
   la corsa sopra il percorso e il punteggio da 0 a 100, chiesto a `POST
-  /track-scores` (ADR-0092). Senza rete la corsa resta sul telefono e il
+  /track-scores` (ADR-0093). Senza rete la corsa resta sul telefono e il
   punteggio si richiede dopo. Il seguito della parte social è **TASK-110**,
   le scelte dell'utente su account e dati.
-
+- **Motore** — TASK-091: il log dell'API non scrive più le coordinate
+  della partenza né delle partenze vicine provate (ADR-0092); resta
+  «start N: score…, approach … m». Il nome del file della zona in cache
+  (un riquadro di chilometri) c'è ancora.
 - **App** — TASK-112 (prova sull'iPhone da fare con TASK-113): durante la
   navigazione l'app registra la traccia della corsa e la tiene in un file
   sul telefono, anche se l'app si chiude (`trackRecorder.ts`,

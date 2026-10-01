@@ -60,7 +60,7 @@ docs/STATUS.md
 docs/tasks/TASK-113.md
 ```
 
-Toccati in più, detti nella PR (ADR-0092):
+Toccati in più, detti nella PR (ADR-0093):
 
 ```
 apps/mobile/src/map/MapView.tsx, mapPage.ts, messages.ts (e i loro test)

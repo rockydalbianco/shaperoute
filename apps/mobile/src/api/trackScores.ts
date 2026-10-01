@@ -31,7 +31,7 @@ export function toScoreRequest(run: ScorableRun): TrackScoreRequest {
 
 /**
  * Asks the API for the score of a run against the route it followed
- * (TASK-113, ADR-0092). The API keeps nothing. Never throws.
+ * (TASK-113, ADR-0093). The API keeps nothing. Never throws.
  */
 export async function requestTrackScore(
   baseUrl: string,

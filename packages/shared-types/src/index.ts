@@ -221,7 +221,7 @@ export interface TrackFix {
   accuracy_m?: number | null;
 }
 
-/** What the app sends to POST /track-scores (TASK-113, ADR-0092). */
+/** What the app sends to POST /track-scores (TASK-113, ADR-0093). */
 export interface TrackScoreRequest {
   /** The planned route: RouteResult.points. */
   points: LatLon[];

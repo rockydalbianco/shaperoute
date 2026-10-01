@@ -556,11 +556,12 @@ Poi **dal Mac**, dalla cartella del progetto:
 
 ```bash
 cd ~/Progetti/shaperoute
-rsync -av --partial --progress data/cache/ root@shaperoute:shaperoute/data/cache/
+rsync -avz --partial --progress data/cache/ root@shaperoute:shaperoute/data/cache/
 ```
 
-Con 20 Mbit/s in upload ci vogliono circa due ore; se si interrompe, lo
-stesso comando riprende da dove era. La barra finale di `data/cache/`
+Con `-z` i 19 GB viaggiano compressi, circa 4 GB (misurato copiando sul
+server di oggi): con 20 Mbit/s in upload, una mezz'ora. Se si interrompe,
+lo stesso comando riprende da dove era. La barra finale di `data/cache/`
 conta: copia il contenuto, non la cartella. Al primo avvio (F.6) la
 cartella torna all'utente dell'API da sola (`data-owner` in
 `compose.yaml`); per un'altra copia, più avanti, si rifà prima il `chown`
@@ -683,8 +684,12 @@ persone, e per gli store, serve un indirizzo pubblico in HTTPS.
    (`ai,public` se c'è anche l'AI), e sul server:
 
    ```bash
+   sudo tailscale serve reset
    docker compose up -d
    ```
+
+   La prima riga spegne `tailscale serve` di F.7, se c'è: tiene la porta
+   443 e Caddy non riuscirebbe ad aprirla (successo sul server di oggi).
 
    Caddy chiede il certificato a Let's Encrypt e lo rinnova da solo.
 5. **La prova, dal Mac**: `curl https://api.tuodominio.it/health`
@@ -782,7 +787,9 @@ Quanto costa, a gradini (2026-10-01, IVA compresa, indicativo):
   cambio.
 - **Caddy non ottiene il certificato** (`docker compose logs caddy`): il
   DNS non punta ancora al server, o le porte 80 e 443 sono chiuse nel
-  firewall del provider.
+  firewall del provider. Se dice che la porta 443 è occupata:
+  `tailscale serve` è ancora acceso (`sudo tailscale serve reset`), o c'è
+  ancora il Caddy di apt (F.12, punto 4).
 - **`map_data_unavailable` in una zona nuova**: Overpass rifiuta il
   server. Riprova più tardi, o scaricala dal Mac e copiala (F.5).
 - **Lento o senza memoria**: `docker stats` e `free -h`. Con l'AI su un

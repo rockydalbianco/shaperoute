@@ -1,4 +1,4 @@
-"""Zones downloaded before they are asked for (TASK-137, ADR-0118): the box
+"""Zones downloaded before they are asked for (TASK-137, ADR-0119): the box
 holds what "Explore" asks, and the command is careful with Overpass and the
 disk. No network: the source and Overpass are stand-ins."""
 

@@ -3840,7 +3840,7 @@ ritrovata in 0,1–0,5 s; 4 percorsi appena pianificati (Trento e Bologna,
 con le alternative) danno indicazioni identiche a quelle del motore. Da
 provare sull'iPhone.
 
-## ADR-0118 — Le zone delle città scaricate prima, sul server dell'app
+## ADR-0119 — Le zone delle città scaricate prima, sul server dell'app
 **Stato**: Attiva · 2026-10-02 · chiesto dall'utente («scarica un po' di
 mappe almeno per l'Italia»); quali città, il riquadro e il come decisi
 dall'agente su delega dell'utente (TASK-137).

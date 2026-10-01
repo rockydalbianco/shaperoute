@@ -5,7 +5,7 @@
 
 Ripreso il 2026-10-02, chiesto dall'utente: «scarica un po' di mappe almeno
 per l'Italia». Due cambi rispetto a quanto scritto sotto, decisi
-dall'agente su delega dell'utente (ADR-0118): oltre alle città in evidenza
+dall'agente su delega dell'utente (ADR-0119): oltre alle città in evidenza
 (`--preset featured`), **52 città italiane** (`--preset italy`: i
 capoluoghi di regione, poi le più grandi e visitate); e si scarica **sul
 server Hetzner**, l'API che l'app usa dal 2026-10-01 e da cui Overpass
@@ -96,7 +96,7 @@ ritagli: TASK-136).
       `shape_not_drawable`), mai `map_data_unavailable`, con Overpass
       irraggiungibile (tabella sotto).
 - [ ] Mai due download insieme; due errori di Overpass di fila fermano il
-      comando (prima: il primo errore, ADR-0118); sotto i 5 GB liberi non
+      comando (prima: il primo errore, ADR-0119); sotto i 5 GB liberi non
       scarica (test).
 - [ ] Test dell'API verdi; `ruff`, `black` e tipi puliti; il motore non
       importa niente dall'API.

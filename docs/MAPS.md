@@ -113,7 +113,7 @@ Valsugana 7.156, Milano 85.336. Il ritaglio di Levico sull'area del cuore
 da 5 km dà 905 nodi contro i 904 del download diretto di TASK-017:
 ritagliare equivale a scaricare.
 
-### Zone scaricate prima (TASK-137, ADR-0118)
+### Zone scaricate prima (TASK-137, ADR-0119)
 
 `python -m shaperoute_api.prefetch_zones --preset italy` (o `featured`, o
 nomi di città) scarica prima che qualcuno le chieda le zone di «Explore»:

@@ -1,4 +1,4 @@
-"""Zones downloaded before anyone asks for them (TASK-137, ADR-0118).
+"""Zones downloaded before anyone asks for them (TASK-137, ADR-0119).
 
 For each city, the zone that serves "Explore" from its centre: the shape of
 every theme at 10 km from any start the themed search may take (within
@@ -58,7 +58,7 @@ MAX_FAILURES_IN_A_ROW = 2
 OVERPASS_STATUS = "https://overpass-api.de/api/status"
 USER_AGENT = "ShapeRoute zone prefetch (https://github.com/rockydalbianco/shaperoute)"
 
-# The cities of Italy first asked (ADR-0118): the regional capitals, then
+# The cities of Italy first asked (ADR-0119): the regional capitals, then
 # the largest and most visited. Names only: each centre comes from the city
 # search, as the app gets it when the city is tapped.
 ITALY = (

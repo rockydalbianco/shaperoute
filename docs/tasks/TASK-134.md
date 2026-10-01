@@ -1,6 +1,6 @@
 # TASK-134 — «Explore»: città → categoria → percorso
 
-**Stato**: In revisione
+**Stato**: Done, da provare sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-134-explore-ux`
 
 Chiesto dall'utente il 2026-10-01: città predefinite in alto, «Type a
@@ -81,3 +81,5 @@ Roma, Milano e Torino: le altre danno `map_data_unavailable` finché
 Overpass rifiuta il Mac (segnalato dalla sessione «Potenziamento sezione
 Explore»). Non è un difetto del codice: la prima richiesta per una città
 ne scarica la zona quando Overpass risponde.
+
+Mergiato con la PR #135 (la #131 si era chiusa col cambio di numero).

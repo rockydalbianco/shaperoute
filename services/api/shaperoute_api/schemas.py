@@ -146,8 +146,18 @@ ErrorCode = Literal[
     "outline_edit_rejected",
     # A key is set and the request has the wrong one (TASK-081, ADR-0076).
     "unauthorized",
-    # Too many POSTs from one client in a minute (TASK-081).
+    # Too many POSTs from one client in a minute (TASK-081); with accounts,
+    # also too many wrong passwords for one email (TASK-114).
     "too_many_requests",
+    # Accounts (TASK-114, ADR-0115): signing up with an email or a username
+    # already used; a wrong email or password; no token, or an unknown one;
+    # a session unused for 90 days; an API without a database.
+    "email_taken",
+    "username_taken",
+    "wrong_credentials",
+    "not_signed_in",
+    "session_expired",
+    "accounts_unavailable",
 ]
 
 # Why an image gives no outline: InvalidImageError.reason in

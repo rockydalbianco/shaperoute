@@ -3,7 +3,8 @@
 
 The key and the limit come from the environment, never from the command
 line, which stays in the shell history (SHAPEROUTE_API_KEY and
-SHAPEROUTE_RATE_LIMIT, docs/DEPLOY.md).
+SHAPEROUTE_RATE_LIMIT, docs/DEPLOY.md); so does the address of the accounts'
+database, which holds a password (SHAPEROUTE_DATABASE_URL, docs/DATABASE.md).
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ import socket
 from collections.abc import Sequence
 from pathlib import Path
 
+import psycopg
 import uvicorn
 from route_engine.network import OsmnxSource
 from route_engine.shapes import SUPPORTED_SHAPES
@@ -23,8 +25,10 @@ from shaperoute_ai.theme_reading import ThemeReader
 
 from shaperoute_api.access import KEY_HEADER, KEY_VARIABLE, Access, AccessConfigError
 from shaperoute_api.access_log import hide_query_strings
+from shaperoute_api.accounts import Accounts
 from shaperoute_api.app import create_app
 from shaperoute_api.cities import CitySearch
+from shaperoute_api.db import DATABASE_VARIABLE, Database, MigrationError
 from shaperoute_api.graphs import ZoneGraphs
 from shaperoute_api.insights import Insights
 from shaperoute_api.insights.events import DEFAULT_DIR as INSIGHTS_DIR
@@ -133,6 +137,17 @@ def main(argv: Sequence[str] | None = None) -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
     # GET /places carries the position: not in the access log (ADR-0096).
     hide_query_strings()
+    # Accounts (TASK-114): the schema brought up to date before the first
+    # request. A database set but out of reach stops the API: better than
+    # accounts that fail one request at a time.
+    database = Database.from_env()
+    migrated: list[str] = []
+    if database is not None:
+        try:
+            migrated = database.migrate()
+        except (psycopg.Error, MigrationError) as exc:
+            raise SystemExit(f"Database ({DATABASE_VARIABLE}): {exc}") from None
+    accounts = None if database is None else Accounts(database)
     reader = ShapeReader(OllamaModel(args.ai_model, args.ai_url), SUPPORTED_SHAPES)
     request_log = RequestLog(args.request_log_dir) if wanted(args.request_log) else None
     places = PlaceSearch.from_env()
@@ -163,6 +178,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         themed=themed,
         cities=cities,
         insights=insights,
+        accounts=accounts,
     )
     host = "0.0.0.0" if args.lan else "127.0.0.1"
     here = f"http://127.0.0.1:{args.port}"
@@ -186,6 +202,11 @@ def main(argv: Sequence[str] | None = None) -> None:
         )
     else:
         print(f"Search events not recorded; vocabulary v{insights.vocab.version}")
+    if accounts is None:
+        print(f"Accounts off ({DATABASE_VARIABLE} not set): sign-up answers 503")
+    else:
+        done = ", ".join(migrated) if migrated else "none, schema up to date"
+        print(f"Accounts in PostgreSQL ({DATABASE_VARIABLE}); migrations: {done}")
     if request_log is None:
         print("Route requests are not recorded (--request-log records them)")
     else:

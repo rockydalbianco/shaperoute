@@ -105,6 +105,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   vuoto, e si riapre con l'app se si chiude a metà. **Da provare
   sull'iPhone** (ripubblicare l'app, a fine coda dei merge). Seguito
   possibile: inquadrare tutta la linea a fine corsa.
+- **App** — TASK-148: tolto da `ExploreTools.tsx` il vecchio «Ask for a
+  route», con i suoi test e gli stili che usava solo lui: è il «da fare
+  dopo il merge di TASK-142» di TASK-143. Quello vero è in
+  `AskForRoute.tsx`; l'app non cambia, niente da ripubblicare.
 - **App** — TASK-146: `apps/mobile/app.json` nomina il proprietario vero
   del progetto Expo, l'organizzazione `lppl1316s-team` (trasferito
   dall'account `lppl1316` il 2026-10-02). `eas update` da una copia pulita

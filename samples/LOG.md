@@ -341,6 +341,7 @@ chiude ADR-0010.
 | 2026-10-02 | TASK-140_butterfly_8km_levico_v1.gpx | levico | 0.84 | 7.5 / 8.0 km | meglio | TASK-140, peso dei baffi oltre i tratti; preferita dall'utente |
 | 2026-10-02 | TASK-140_snail_12km_levico_v0.gpx | levico | 0.94 | 14.0 / 12.0 km | — | TASK-140, la lumaca di prima; 75% fatto due volte (spirale compresa) |
 | 2026-10-02 | TASK-140_snail_12km_levico_v1.gpx | levico | 0.87 | 12.6 / 12.0 km | meglio | TASK-140, peso dei baffi oltre i tratti: 42%; preferita dall'utente |
+| 2026-10-02 | catalog/seed/firenze.json | firenze | 0.88–1.00 | 5, 10, 21 km | sì | TASK-128, giudizio a occhio: tenuti 22 su 32; fuori farfalla, gatto, testa di cane, cavallo, testa di coniglio e lumaca a 5 km, testa di cane a 10 e 21, lumaca a 10, cuore a 21 (una coda). I più belli: luna 10 e 21, pesce 21, gatto 21, stella 10, cuore 10, cavallo 21 |
 
 <!--
 Esempio di riga compilata:

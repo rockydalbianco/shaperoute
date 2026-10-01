@@ -77,6 +77,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-128 — Il catalogo seme: Firenze** (`feat/TASK-128-seed-catalog-more`,
+  in revisione): Firenze nel catalogo (22 percorsi, 159 in 7 città); una
+  zona per città, e la città salta se Overpass rifiuta. Mancano Napoli,
+  Verona, Padova, Genova, Bari, Palermo, New York e le frasi: un seguito.
 - **TASK-134 — «Explore»: città → categoria → percorso**
   (`feat/TASK-134-explore-ux`, ADR-0105): città in evidenza e recenti,
   suggerimenti mentre si scrive, 13 categorie da toccare.
@@ -95,6 +99,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dall'account `lppl1316` il 2026-10-02). `eas update` da una copia pulita
   di `main` non chiede più di correggere `owner` a mano; `DEPLOY.md` A.6
   aggiornato. L'app non cambia: niente da ripubblicare per questo.
+- **API** — TASK-114: gli account nell'API, su PostgreSQL con PostGIS
+  (ADR-0115, ADR-0120). `POST /accounts` per iscriversi, `POST /session`
+  ed `DELETE /session` per entrare e uscire, `GET /me`, `DELETE /me` che
+  cancella tutto; token in `Authorization: Bearer`, password Argon2id,
+  sessioni di 90 giorni dall'ultimo uso, 5 password sbagliate per email in
+  15 minuti. I percorsi restano aperti. Con `SHAPEROUTE_DATABASE_URL`
+  l'API applica le migrazioni all'avvio; senza, gli account rispondono 503.
+  Test su un PostGIS vero, avviato con docker (sul Mac Colima,
+  `SETUP.md` 10.4). Il database sul server è di TASK-122; il seguito è
+  TASK-115, le schermate dell'app. La password dimenticata resta fuori:
+  serve la posta (Brevo).
 - **Server** — TASK-144: la guida per portare l'API su un server a
   pagamento, con il Mac spento (`DEPLOY.md`, strada F, ADR-0111), e la
   configurazione pronta in `deploy/`: l'API con zone, eventi e catalogo,

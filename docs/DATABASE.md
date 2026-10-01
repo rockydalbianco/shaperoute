@@ -5,9 +5,11 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 
 ## Dove e come
 
-- **PostgreSQL 16 con PostGIS**, in Docker sulla VM Oracle dell'API
-  (ADR-0114). L'indirizzo del database solo in `.env`
-  (`SHAPEROUTE_DATABASE_URL`).
+- **PostgreSQL 16 con PostGIS**, in Docker sulla stessa VM dell'API
+  (ADR-0115; ADR-0114 la voleva su Oracle, l'API pubblicata oggi è su
+  Hetzner). L'indirizzo del database solo in `.env`
+  (`SHAPEROUTE_DATABASE_URL`), mai da riga di comando: contiene una
+  password. Codice in `services/api/shaperoute_api/db.py`.
 - **Migrazioni**: `services/api/migrations/NNNN_cosa.sql`, applicate
   all'avvio dell'API in ordine, una transazione ciascuna, registrate in
   `schema_migrations`. Una migrazione già in `main` non si modifica mai:
@@ -16,8 +18,13 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 - **Coordinate**: geometrie in WGS84 (SRID 4326), punti in `(lon, lat)`
   come vuole PostGIS; all'API e all'app escono `(lat, lon)` come sempre.
   Le distanze si misurano in metri con `geography`.
-- **Test**: un database vero usa-e-getta (PostGIS in Docker, anche nella
-  CI); niente finti.
+- **Test**: un database vero usa-e-getta, niente finti
+  (`services/api/tests/conftest.py`). I test avviano l'immagine
+  `postgis/postgis:16-3.4` con docker, una volta per giro, e danno a ogni
+  test un database vuoto, cancellato dopo; con
+  `SHAPEROUTE_TEST_DATABASE_URL` usano invece quel server. Senza docker né
+  variabile i test del database si saltano sul PC e falliscono nella CI
+  (`CI=true`), che ha docker. Sul Mac docker è Colima (`SETUP.md`, 10.4).
 
 ## Schema di partenza
 
@@ -37,6 +44,24 @@ Tutte le tabelle legate a un utente hanno `ON DELETE CASCADE`: cancellare
 la riga di `users` cancella tutto il resto, anche i suoi
 `generated_routes` (ADR-0114, punto 7). I percorsi generati senza account
 non hanno utente e restano.
+
+## Com'è oggi
+
+Migrazione `0001_users_sessions.sql` (TASK-114, ADR-0120):
+
+- `users`: `id`, `email` (minuscola, unica), `password_hash` (Argon2id),
+  `username` (3–20 fra lettere, cifre, `_` e `.`; unico con
+  `lower(username)`), `role` (`user` o `admin`, default `user`),
+  `confirmed_16_at`, `created_at`. La bio arriva con il profilo
+  (TASK-116).
+- `sessions`: `token_hash` (SHA-256 del token, 32 byte, chiave),
+  `user_id` (`ON DELETE CASCADE`), `created_at`, `last_used_at`. Valida
+  finché `last_used_at` è più recente di 90 giorni; ogni uso la sposta.
+  Una sessione scaduta si cancella quando qualcuno la usa.
+- L'estensione PostGIS la crea la prima migrazione che usa una geometria
+  (TASK-092 o TASK-117): l'immagine la ha già.
+- Un admin si nomina a mano sulla VM:
+  `UPDATE users SET role = 'admin' WHERE email = '…';`
 
 ## Come si memorizza una traccia
 

@@ -96,8 +96,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   delle zone) invece di quella disponibile (MemAvailable, 6,8 GB), e non
   avviava mai le partenze vicine. Provato nel container del server: cuore
   da 5 km a Trento con 1 alternativa (10,8 s), stella con 2 (5,8 s), prima
-  0. Il server prende la correzione quando il coordinatore lo aggiorna a
-  fine coda dei merge; l'app non va ripubblicata.
+  0. Il server si aggiorna a `main` subito dopo il merge, perché l'utente
+  vuole le alternative presto; l'app non va ripubblicata.
+- **API e app** — TASK-142: le ricerche imparano anche da cosa fa l'app
+  (ADR-0112, `docs/INSIGHTS.md`). `POST /signals` riceve la città scelta in
+  «Explore» e come, il percorso usato fra A·B·C, «Try N km» e la forma presa
+  dopo un errore; i percorsi annullati sono eventi. Nuove proposte:
+  `city_name` («levic» → Levico Terme, applicata `/cities` la cerca),
+  `review_ranking`, `review_distance`; Vercelli scelta fra i suggerimenti
+  ora si propone per il catalogo. Comandi `why`, `compare --split`, `trend`,
+  `--since/--until`. Corretto un errore di TASK-130: nessun percorso
+  dell'API era mai stato registrato. Provato su un'API di prova con
+  Geoapify. Per averlo sull'iPhone: riavviare l'API che l'app usa e
+  ripubblicare l'app (a fine coda dei merge, col coordinatore). Seguiti
+  possibili: esportare il tipo dei segnali da `shared-types/src/index.ts`,
+  ora che TASK-088 è entrato; la forma toccata dopo parole non lette
+  (`ShapeTiles.tsx`) come prova per i sinonimi.
 - **Motore** — TASK-140: luna, farfalla, lumaca (e il cavallo, che non
   cambia) evitano i baffi come cuore, cerchio e stella; si contano solo
   quelli oltre i tratti voluti della forma (ADR-0118). Gatto, pesce e le

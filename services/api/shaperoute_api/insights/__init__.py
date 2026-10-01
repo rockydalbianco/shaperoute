@@ -64,9 +64,12 @@ class Insights:
         text: str | None = None,
         point: tuple[float, float] | None = None,
         started: float | None = None,
+        ms: int | None = None,
         **fields: Any,
     ) -> None:
-        """One event; never raises, never slows the answer down much."""
+        """One event; never raises, never slows the answer down much. Its
+        milliseconds since `started`, or `ms` when they were counted
+        elsewhere (a route job's)."""
         if self.events is None:
             return
         try:
@@ -77,7 +80,7 @@ class Insights:
                 lang=None if clean is None else language(clean),
                 cell=cell(point),
                 ms=(
-                    None
+                    ms
                     if started is None
                     else round((time.monotonic() - started) * 1000)
                 ),
@@ -94,8 +97,10 @@ def route_fields(
     body: Mapping[str, Any] | None,
     similarity: float | None,
     error_code: str | None,
+    offered: int | None = None,
 ) -> dict[str, Any]:
-    """The fields of a "route" event from a request body and how it ended."""
+    """The fields of a "route" event from a request body and how it ended;
+    `offered` routes to choose from (TASK-142: A, B, C)."""
     body = body or {}
     kind = "image" if "outline" in body else ("word" if body.get("word") else "shape")
     start = body.get("start")
@@ -104,6 +109,7 @@ def route_fields(
         if isinstance(start, list | tuple) and len(start) == 2
         else None
     )
+    distance = body.get("distance_m")
     return {
         "point": point,
         # An image has no shape name: "image" says what was drawn.
@@ -112,6 +118,8 @@ def route_fields(
         "outcome": "error" if error_code else "ok",
         "code": error_code,
         "quality": None if similarity is None else round(float(similarity), 3),
+        "distance_m": int(distance) if isinstance(distance, int | float) else None,
+        "n": offered,
     }
 
 

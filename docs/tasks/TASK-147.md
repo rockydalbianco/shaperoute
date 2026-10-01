@@ -53,8 +53,8 @@ leggeva già la memoria disponibile.
 - [x] Nel container del server, cuore e stella da 5 km a Trento hanno di
       nuovo le alternative (cuore 10,8 s, 1 alternativa; stella 5,8 s,
       2), con le 2 partenze vicine pianificate invece di 0.
-- [ ] ~~Server aggiornato dopo il merge~~ Lo fa il coordinatore a fine
-      coda dei merge, con `deploy/compose.yaml`; poi prova sull'iPhone.
+- [ ] Server aggiornato a `main` subito dopo il merge (chiesto
+      dall'utente, d'accordo col coordinatore), poi prova sull'iPhone.
 
 ## File toccati
 
@@ -80,5 +80,5 @@ in altri punti dei file: chi mergia per secondo unisce.
 
 Sul server Linux le partenze vicine, e con loro le alternative, tornano a
 partire: la memoria si legge da MemAvailable, non da MemFree. Provato nel
-container dell'API. Resta da aggiornare il server (coordinatore) e
-guardarlo sull'iPhone.
+container dell'API. Resta da aggiornare il server, subito dopo il
+merge, e guardarlo sull'iPhone.

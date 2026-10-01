@@ -72,6 +72,7 @@ richiesta risponde subito e il percorso si chiede dopo.
 - `DELETE /route-jobs/{job_id}` annulla: `204`. Una richiesta in coda non
   parte; una che sta caricando il grafo si ferma prima di calcolare; una
   che sta già calcolando finisce nel suo thread e il risultato si butta.
+  L'annullamento è un evento delle ricerche (`cancelled`, TASK-142).
 - Un `job_id` sconosciuto (annullato, finito da più di 10 minuti, o API
   riavviata) risponde `404 http_error`.
 
@@ -232,7 +233,9 @@ Le città di tutto il mondo per nome, `?q=…`, al più 5, ognuna col suo
 centro: la geocodifica di Geoapify per sole città (`type=city`), con la
 chiave di `/places`. Non l'autocompletamento, che per una città dà il
 centro dell'area del comune (Milano: Baggio, 6 km dal Duomo). Corpo come
-`/places` (`places.json`); 503 senza chiave. Cache di un giorno.
+`/places` (`places.json`); 503 senza chiave. Cache di un giorno. Parole
+imparate dal vocabolario (`city_names`, TASK-142) cercano il nome imparato:
+«levic» cerca «Levico Terme», non Levič.
 
 ### `GET /city-suggestions` (TASK-134, TASK-138, ADR-0110)
 
@@ -314,6 +317,25 @@ niente rete, e l'API non ricorda niente. Una corsa con meno di 2 posizioni
 buone o più corta del 10% del percorso risponde `422 invalid_request`, con
 il motivo del motore nel messaggio («This run cannot be scored: …»). Al più
 20 000 posizioni e 50 000 punti di percorso.
+
+### `POST /signals` (TASK-142, ADR-0112)
+
+Cosa ha fatto l'app con una ricerca, per gli eventi delle ricerche
+(`docs/INSIGHTS.md`). Tre corpi, distinti da `kind` (in
+`packages/shared-types/fixtures/signals.json`, tipi in
+`packages/shared-types/src/signals.ts`):
+
+| `kind` | Campi | Quando |
+|---|---|---|
+| `city_chosen` | `label`, `point`, `place` (facoltativo), `via`: `suggestion`, `recent`, `featured`, `typed` | una città o un luogo scelto in «Explore» |
+| `route_chosen` | `shape` (o `"image"`) o `word`; `index` (0 è A), `of` (1–3), `via`: `start`, `gpx` | il primo uso di un percorso fra quelli offerti |
+| `hint_taken` | `shape` o `word`; `hint`: `try_distance` (con `to_m`) o `catalog_shape`; `distance_m` | «Try N km», o una forma del catalogo dopo un percorso fallito |
+
+Risponde sempre `204` a un corpo valido, anche con gli eventi spenti; un
+campo in più, una forma fuori catalogo, un indice fuori dai percorsi offerti
+o una posizione fuori dalla Terra: `422 invalid_request`. Oltre 60 segnali
+al minuto, tutti i client insieme, il segnale non si registra (avviso nel
+log). Il `point` si registra come cella di ~1 km; la partenza non c'è mai.
 
 ### `POST /route-directions` (TASK-145, ADR-0117)
 
@@ -537,7 +559,9 @@ l'app manda il contorno che mostra e la linea disegnata.
 Ogni ricerca e ogni segnale d'uso lascia un evento in `data/insights/`
 (spento con `--no-insights`); `--insights-dir` e `--vocabulary` cambiano
 cartella e vocabolario. Il funzionamento, i comandi e la privacy sono in
-`docs/INSIGHTS.md`. Le risposte degli endpoint non cambiano.
+`docs/INSIGHTS.md`. Le risposte degli endpoint non cambiano, tranne
+`/cities` corretto dal vocabolario; i segnali dell'app arrivano da
+`POST /signals` (TASK-142).
 
 ## Errori
 

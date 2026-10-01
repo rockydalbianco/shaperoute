@@ -33,9 +33,9 @@ Tailscale, chiave dell'API facoltativa, pacchetto Docker e guida
 I numeri (aggiornati il 2026-10-01): il prossimo task libero è
 **TASK-092**; **TASK-110 … 122** sono riservati alla parte social
 (`ROADMAP.md`, «La parte social»), quindi dopo TASK-109 si salta a
-TASK-123. Il prossimo ADR libero è **ADR-0093**; ADR-0062 è riservato e non
+TASK-123. Il prossimo ADR libero è **ADR-0094**; ADR-0062 è riservato e non
 usato, ADR-0086 … 0089 sono liberi ma saltati (la parte social ha preso
-0090 … 0092). Prima di prendere un numero, controllare anche i branch
+0090, 0091 e 0093). Prima di prendere un numero, controllare anche i branch
 remoti e i worktree (`CLAUDE.md`).
 
 **Idee non ancora approvate** (serve l'ok dell'utente sul cosa): scegliere

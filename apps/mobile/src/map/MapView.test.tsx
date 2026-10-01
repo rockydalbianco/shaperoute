@@ -120,3 +120,25 @@ test("a map that cannot load shows no bar, the error instead", async () => {
   expect(onError).toHaveBeenCalledWith("style not found");
   expect(screen.queryByTestId("map-loading")).toBeNull();
 });
+
+test("draws the run over the route, then clears it", async () => {
+  const route: LatLon[] = [TRENTO, LEVICO, TRENTO];
+  const run: LatLon[] = [TRENTO, LEVICO];
+  const { rerender } = await render(
+    <MapView start={null} route={route} onError={jest.fn()} />,
+  );
+  await pagePosts('{"type":"ready"}');
+  const before = injectJavaScript.mock.calls.length;
+  await rerender(
+    <MapView start={null} route={route} track={run} onError={jest.fn()} />,
+  );
+  expect(injectJavaScript).toHaveBeenCalledTimes(before + 1);
+  expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain(
+    '{"type":"showTrack","coordinates":[[11.1214,46.0671],[11.2986,46.0122]]}',
+  );
+
+  await rerender(
+    <MapView start={null} route={route} track={null} onError={jest.fn()} />,
+  );
+  expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain('{"type":"clearTrack"}');
+});

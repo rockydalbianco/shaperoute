@@ -3026,3 +3026,45 @@ riquadro di una zona larga chilometri, non la partenza. Cambiarlo tocca
 
 **Conseguenza**: chi legge il log non vede più dove si trova l'utente;
 per sapere la partenza di una richiesta serve il registro.
+
+## ADR-0093 — Il punteggio a fine corsa: l'API lo calcola, l'app tiene la corsa
+**Stato**: Attiva · 2026-09-30 · la schermata chiesta dall'utente; il come
+deciso dall'agente su delega dell'utente (TASK-113)
+
+**Contesto**: il motore sa dare il punteggio (ADR-0090) e l'app registra la
+traccia (ADR-0091). Manca il giro: chiedere il punteggio e mostrarlo.
+
+**Decisione**:
+- **`POST /track-scores`**: punti e somiglianza del percorso più le
+  posizioni della corsa; risponde il `TrackScore` del motore. Niente grafo,
+  niente stato. La corsa troppo corta è `422 invalid_request` con il motivo
+  del motore: nessun codice d'errore nuovo.
+- **La somiglianza la manda l'app**, che l'ha avuta col percorso: senza
+  account non c'è niente da difendere. Quando il punteggio si salva o si
+  pubblica (TASK-117) il server non può fidarsi: va ricalcolata o tenuta
+  col percorso.
+- **La traccia porta con sé la somiglianza**: `useNavigation` la riceve e
+  `trackStore` la scrive nel file (campo facoltativo, la versione resta 1).
+- **Fine corsa**: «Stop»/«Finish» chiama `endRun()`, che scrive subito il
+  file e restituisce la corsa; la schermata è `FinishCard` dentro
+  `MapScreen`, con la mappa che disegna la corsa sopra il percorso (un
+  secondo strato, `showTrack`, colori dal token `track`).
+- **La corsa si cancella solo dopo il punteggio** (o se è troppo corta).
+  Senza rete resta nel file, e alla riapertura l'app parte dalla schermata
+  di fine corsa: è la risposta a «riprendi o scarta» rimandata da TASK-112.
+  Riprendere la navigazione dopo aver chiuso l'app no: il percorso e le
+  indicazioni non sono nel file.
+
+**Scartate**: *calcolare il punteggio nell'app*: sarebbe una seconda copia
+della misura del motore, in un altro linguaggio. *Un codice d'errore
+`track_not_scorable`*: l'app non chiede altro a questo endpoint che possa
+essere rifiutato. *Una domanda «riprendi o scarta» all'avvio*: la schermata
+di fine corsa dice già tutto, e «Done» la chiude.
+
+**Conseguenze**: toccati anche file fuori dall'elenco del task, detti nella
+PR: `src/map/` (la linea della corsa), `theme/tokens.ts` (il token
+`track`), `trackStore.ts` e `useNavigation.ts` (la somiglianza, `endRun`),
+i test accanto, e due fixture in `shared-types`. Una corsa senza punteggio
+blocca l'avvio sulla schermata di fine corsa finché l'API non risponde o
+un'altra corsa la sostituisce.
+

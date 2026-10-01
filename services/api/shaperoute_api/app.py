@@ -61,7 +61,10 @@ from shaperoute_api.schemas import (
     RouteResultBody,
     ShapeReadingBody,
     ShapeReadingRequestBody,
+    TrackScoreBody,
+    TrackScoreRequestBody,
 )
+from shaperoute_api.track_scores import score_run
 
 log = logging.getLogger(__name__)
 
@@ -257,6 +260,12 @@ def create_app(
                 )
             },
         )
+
+    # The score of a run against the route it followed (ADR-0093). Nothing
+    # is kept and no graph is read: the engine compares two lines.
+    @app.post("/track-scores", responses={422: SHAPE_READING_RESPONSES[422]})
+    def score_track_run(body: TrackScoreRequestBody) -> TrackScoreBody:
+        return score_run(body)
 
     # The words the app's table does not know (ADR-0012). A plain def, like
     # /routes: a model on a laptop takes seconds, in a thread of its own.

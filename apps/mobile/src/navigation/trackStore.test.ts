@@ -3,6 +3,8 @@ import type { LatLon } from "@shaperoute/shared-types";
 import type { TrackFix } from "./trackRecorder";
 import {
   clearRun,
+  endRun,
+  pendingRun,
   loadRun,
   RESUME_WITHIN_MS,
   RUN_FILE,
@@ -194,4 +196,46 @@ test("clearing removes the run", () => {
   clearRun();
   expect(loadRun()).toBeNull();
   clearRun();
+});
+
+test("a run with a line and its route's similarity waits for its score", () => {
+  expect(pendingRun()).toBeNull();
+  const run = startRun(ROUTE, 0, 0.88);
+  run.onFix(fix(0, 0), false);
+  // One fix is not a line yet.
+  expect(pendingRun()).toBeNull();
+  run.onFix(fix(60, SAVE_EVERY_MS / 1000), false);
+  expect(pendingRun()).toMatchObject({ similarity: 0.88, status: "running" });
+});
+
+test("a run without the route's similarity cannot be scored", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(60, 20), false);
+  run.stop();
+  expect(loadRun()?.track.fixes).toHaveLength(2);
+  expect(pendingRun()).toBeNull();
+});
+
+test("ending the run writes what there is and gives it back", () => {
+  const run = startRun(ROUTE, 0, 0.88);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), false);
+  run.onFix(fix(20, 8), false);
+  // The file is behind: only the first fix was written.
+  expect(loadRun()?.track.fixes).toHaveLength(1);
+  const ended = endRun();
+  expect(ended?.status).toBe("stopped");
+  expect(ended?.track.fixes).toHaveLength(3);
+  // Navigation stopping after it changes nothing.
+  run.stop();
+  expect(loadRun()).toEqual(ended);
+});
+
+test("ending with no run in progress gives what the file has", () => {
+  expect(endRun()).toBeNull();
+  const run = startRun(ROUTE, 0, 0.88);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), true);
+  expect(endRun()?.status).toBe("arrived");
 });

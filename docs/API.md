@@ -189,6 +189,32 @@ L'API non ricorda niente, quindi l'export funziona anche dopo i 10 minuti
 di vita di una richiesta in due tempi. Un corpo non valido risponde
 `422 invalid_request` (ADR-0033).
 
+### `POST /track-scores`
+
+Il punteggio di una corsa (TASK-113, ADR-0093). Riceve un
+`TrackScoreRequest`:
+
+```json
+{
+  "points": [[46.0671, 11.1214], [46.0671, 11.1344]],
+  "similarity": 0.91,
+  "track": [
+    { "point": [46.0671, 11.1214], "time_ms": 1790000000000, "accuracy_m": 6.0 }
+  ]
+}
+```
+
+`points` e `similarity` sono quelli del `RouteResult` del percorso seguito;
+`track` sono le posizioni registrate dall'app, in ordine (`accuracy_m` può
+mancare o essere `null`). Risponde `200` con un `TrackScoreResult`:
+`score` da 0 a 100, `fidelity`, `covered` (quota del percorso corsa),
+`on_route` (quota della corsa sul percorso) e `distance_m`, calcolati da
+`track_score.py` del motore (`ROUTE_ENGINE.md` §5, ADR-0090). Niente grafo,
+niente rete, e l'API non ricorda niente. Una corsa con meno di 2 posizioni
+buone o più corta del 10% del percorso risponde `422 invalid_request`, con
+il motivo del motore nel messaggio («This run cannot be scored: …»). Al più
+20 000 posizioni e 50 000 punti di percorso.
+
 ### `POST /shape-readings`
 
 Le parole del riquadro della forma che la tabella dell'app non conosce
@@ -398,6 +424,7 @@ motore, in una parola.
 |---|---|---|
 | JSON malformato, campo mancante, in più o fuori limite | 422 | `invalid_request` |
 | `shape` e `word` insieme o nessuno; una lettera che l'alfabeto non ha; più di 8 lettere; meno di 3 km a lettera; `style` sconosciuto o `"block"` con una forma | 422 | `invalid_request` |
+| `/track-scores`: corsa troppo corta per un punteggio, `similarity` fuori da 0–1, troppe posizioni | 422 | `invalid_request` |
 | Forma non disponibile in quella zona (ADR-0025) | 422 | `shape_not_drawable` |
 | Zona non in cache e dati OSM non scaricabili | 503 | `map_data_unavailable` |
 | Il modello che legge le parole della forma non risponde (`AI.md`) | 503 | `ai_unavailable` |

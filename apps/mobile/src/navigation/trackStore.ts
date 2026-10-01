@@ -22,6 +22,9 @@ export type SavedRun = {
   version: 1;
   /** The planned route the run follows. */
   route: LatLon[];
+  /** How much that route looks like its shape (RouteResult.similarity):
+   * the score needs it (ADR-0090). Absent in a file older than TASK-113. */
+  similarity?: number;
   track: Track;
   status: RunStatus;
 };
@@ -98,6 +101,7 @@ function isSavedRun(value: unknown): value is SavedRun {
     run.version === 1 &&
     Array.isArray(run.route) &&
     run.route.every(isLatLon) &&
+    (run.similarity === undefined || typeof run.similarity === "number") &&
     (run.status === "running" ||
       run.status === "stopped" ||
       run.status === "arrived") &&
@@ -145,18 +149,22 @@ export type RunRecorder = {
  * again the route of a run stopped lately goes on with its track; anything
  * else in the file is replaced at the first fix kept.
  */
-export function startRun(route: LatLon[], nowMs: number): RunRecorder {
+export function startRun(
+  route: LatLon[],
+  nowMs: number,
+  similarity?: number,
+): RunRecorder {
   let track = resumable(loadRun(), route, nowMs) ?? emptyTrack();
   let status: RunStatus = "running";
   let savedMs: number | null = null;
   let unsaved = false;
 
   function save(): void {
-    saveRun({ version: 1, route, track, status });
+    saveRun({ version: 1, route, similarity, track, status });
     unsaved = false;
   }
 
-  return {
+  const recorder: RunRecorder = {
     onFix(fix, arrived) {
       if (status === "arrived") {
         return;
@@ -182,4 +190,32 @@ export function startRun(route: LatLon[], nowMs: number): RunRecorder {
     },
     track: () => track,
   };
+  active = recorder;
+  return recorder;
+}
+
+/** The recorder of the run in progress, if navigation started one. */
+let active: RunRecorder | null = null;
+
+/** A run with enough in it to ask for a score: a line, and the route's
+ * similarity. */
+export type ScorableRun = SavedRun & { similarity: number };
+
+/** The run in the file when it can be scored, or null. */
+export function pendingRun(): ScorableRun | null {
+  const run = loadRun();
+  return run !== null && run.similarity !== undefined && run.track.fixes.length > 1
+    ? { ...run, similarity: run.similarity }
+    : null;
+}
+
+/**
+ * Ends the run in progress, writing what there is, and gives it back when
+ * it can be scored (TASK-113): for the finish screen, before navigation
+ * itself has stopped.
+ */
+export function endRun(): ScorableRun | null {
+  active?.stop();
+  active = null;
+  return pendingRun();
 }

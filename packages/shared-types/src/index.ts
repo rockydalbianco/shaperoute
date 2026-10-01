@@ -212,6 +212,39 @@ export interface GpxRequest {
   result: RouteResult;
 }
 
+/** One GPS fix of a run, as the app recorded it (TASK-112). */
+export interface TrackFix {
+  point: LatLon;
+  /** When the fix was taken, in milliseconds on the phone's clock. */
+  time_ms: number;
+  /** Radius of the fix's error, in metres; null or absent when unknown. */
+  accuracy_m?: number | null;
+}
+
+/** What the app sends to POST /track-scores (TASK-113, ADR-0093). */
+export interface TrackScoreRequest {
+  /** The planned route: RouteResult.points. */
+  points: LatLon[];
+  /** The planned route's: RouteResult.similarity. */
+  similarity: number;
+  /** The run, fix by fix, in order. */
+  track: TrackFix[];
+}
+
+/** The score of a run (route_engine/track_score.py, ADR-0090). */
+export interface TrackScoreResult {
+  /** From 0 to 100: the route's similarity times `fidelity`. */
+  score: number;
+  /** How much of the plan was run, and nothing else, from 0 to 1. */
+  fidelity: number;
+  /** Share of the planned route with the run near it. */
+  covered: number;
+  /** Share of the run near the planned route. */
+  on_route: number;
+  /** Length of the run, in metres. */
+  distance_m: number;
+}
+
 /** The longest text of the shape field the AI reads: a word or a few. */
 export const MAX_SHAPE_TEXT_LENGTH = 60;
 

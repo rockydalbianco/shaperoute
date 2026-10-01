@@ -37,6 +37,8 @@ export function useNavigation(
   points: LatLon[] | null,
   directions: Direction[],
   active: boolean,
+  /** The route's similarity to its shape, kept with the track for the score. */
+  similarity?: number,
 ): NavigationState {
   const [state, setState] = useState<NavigationState>({ status: "starting" });
   const navigation = useRef<Navigation | null>(null);
@@ -65,7 +67,7 @@ export function useNavigation(
         position: null,
       });
       play(started.cues);
-      run = startRun(points, Date.now());
+      run = startRun(points, Date.now(), similarity);
       subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.BestForNavigation,
@@ -100,7 +102,7 @@ export function useNavigation(
       void Speech.stop();
       setState({ status: "starting" });
     };
-  }, [active, points, directions]);
+  }, [active, points, directions, similarity]);
 
   return state;
 }

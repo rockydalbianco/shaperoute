@@ -105,7 +105,8 @@ export function NavigationCard({
           </Pressable>
         )}
         <Pressable style={styles.stop} onPress={onStop} accessibilityRole="button">
-          <Text style={styles.stopText}>Stop</Text>
+          {/* Both end the run and show its score (TASK-113). */}
+          <Text style={styles.stopText}>{navigation?.arrived ? "Finish" : "Stop"}</Text>
         </Pressable>
       </View>
       <PocketScreen on={pocket.on} onExit={pocket.exit} />

@@ -54,6 +54,8 @@ def test_short_words_are_whole_words() -> None:
 SUGGESTIONS = {
     "results": [
         {
+            "result_type": "city",
+            "name": "Parma",
             "city": "Parma",
             "state": "Emilia-Romagna",
             "country": "Italy",
@@ -61,6 +63,8 @@ SUGGESTIONS = {
             "lon": 10.33,
         },
         {
+            "result_type": "city",
+            "name": "Paris",
             "city": "Paris",
             "state": "Ile-de-France",
             "country": "France",
@@ -68,6 +72,8 @@ SUGGESTIONS = {
             "lon": 2.32,
         },
         {
+            "result_type": "city",
+            "name": "Paris",
             "city": "Paris",
             "state": "Ile-de-France",
             "country": "France",
@@ -89,7 +95,7 @@ def test_suggestions_while_typing_once_each() -> None:
     assert len(calls) == 1
     assert search.suggest("P") == []
     q = parse_qs(urlparse(suggest_url("K", "Par")).query)
-    assert (q["type"], q["text"]) == (["city"], ["Par"])
+    assert "type" not in q and q["text"] == ["Par"]  # places too (TASK-138)
     assert "autocomplete" in suggest_url("K", "Par")
 
 

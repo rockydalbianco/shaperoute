@@ -63,6 +63,10 @@ Niente.
 
 ## Completato
 
+- **API e app** — TASK-123: i luoghi della partenza da Geoapify attraverso
+  l'API (`GET /places`, ADR-0095), con cache; l'app torna a Photon senza
+  API o senza chiave. Serve `GEOAPIFY_API_KEY` sull'API (`DEPLOY.md`, «La
+  ricerca dei luoghi»): da creare e provare sull'iPhone.
 - **API e app** — TASK-113 (prova sull'iPhone non riportata, vale anche
   per TASK-112): a fine corsa l'app mostra
   la corsa sopra il percorso e il punteggio da 0 a 100, chiesto a `POST

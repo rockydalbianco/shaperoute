@@ -189,6 +189,24 @@ L'API non ricorda niente, quindi l'export funziona anche dopo i 10 minuti
 di vita di una richiesta in due tempi. Un corpo non valido risponde
 `422 invalid_request` (ADR-0033).
 
+### `GET /places`
+
+I luoghi della partenza, suggeriti mentre si scrive (TASK-123, ADR-0095).
+`?q=via bel&lat=46.07&lon=11.12`: `q` da 1 a 200 caratteri, `lat` e `lon`
+facoltativi, insieme, per mettere prima i luoghi attorno. Risponde `200`
+con al più 5 luoghi (`packages/shared-types/fixtures/places.json`):
+
+```json
+{ "places": [{ "label": "Via Rodolfo Belenzani, Trento", "point": [46.0692621, 11.1211947] }] }
+```
+
+I luoghi vengono dall'autocompletamento di Geoapify (dati OpenStreetMap),
+con la chiave `GEOAPIFY_API_KEY` dell'API: l'app non la vede. Le risposte
+restano in memoria un'ora (500 ricerche): le stesse lettere non si chiedono
+due volte. Senza chiave, o se Geoapify non risponde, `503 http_error`;
+l'app allora chiede a Photon, come prima. È un `GET`: non conta nel limite
+dei POST al minuto.
+
 ### `POST /track-scores`
 
 Il punteggio di una corsa (TASK-113, ADR-0093). Riceve un

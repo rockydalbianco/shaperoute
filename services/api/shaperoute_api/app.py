@@ -17,7 +17,7 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from route_engine.export_gpx import route_name, to_gpx
@@ -46,6 +46,13 @@ from shaperoute_api.images import (
 )
 from shaperoute_api.jobs import Job, JobEnd, Planner, RouteJobs
 from shaperoute_api.outline_edits import edit_outline
+from shaperoute_api.places import (
+    MAX_QUERY_LENGTH,
+    MIN_QUERY_LENGTH,
+    PlacesBody,
+    PlaceSearch,
+    PlacesUnavailableError,
+)
 from shaperoute_api.request_log import RequestLog
 from shaperoute_api.schemas import (
     ErrorBody,
@@ -167,6 +174,7 @@ def create_app(
     now: Callable[[], datetime] = now_utc,
     reader: ShapeReader | None = None,
     request_log: RequestLog | None = None,
+    places: PlaceSearch | None = None,
 ) -> FastAPI:
     # The request log (TASK-090) hears how each job ended; None: no log.
     on_end = None if request_log is None else job_recorder(request_log)
@@ -260,6 +268,22 @@ def create_app(
                 )
             },
         )
+
+    # Places for the start, while typing (TASK-123, ADR-0095). 503 when the
+    # API has no key or the service fails: the app then asks Photon itself.
+    @app.get("/places", responses={503: {"model": ErrorBody}})
+    def search_places(
+        q: str = Query(min_length=MIN_QUERY_LENGTH, max_length=MAX_QUERY_LENGTH),
+        lat: float | None = Query(default=None, ge=-90, le=90),
+        lon: float | None = Query(default=None, ge=-180, le=180),
+    ) -> PlacesBody:
+        if places is None:
+            raise HTTPException(503, "Place search is off on this API.")
+        near = None if lat is None or lon is None else (lat, lon)
+        try:
+            return PlacesBody(places=places.search(q, near))
+        except PlacesUnavailableError as exc:
+            raise HTTPException(503, str(exc)) from None
 
     # The score of a run against the route it followed (ADR-0093). Nothing
     # is kept and no graph is read: the engine compares two lines.

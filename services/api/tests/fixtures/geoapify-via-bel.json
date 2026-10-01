@@ -1,0 +1,45 @@
+{
+  "results": [
+    {
+      "country": "Italy",
+      "country_code": "it",
+      "state": "Trentino-Alto Adige/Südtirol",
+      "county": "Provincia di Trento",
+      "city": "Trento",
+      "postcode": "38122",
+      "street": "Via Rodolfo Belenzani",
+      "lon": 11.1211947,
+      "lat": 46.0692621,
+      "result_type": "street",
+      "formatted": "Via Rodolfo Belenzani, 38122 Trento TN, Italy",
+      "address_line1": "Via Rodolfo Belenzani",
+      "address_line2": "38122 Trento TN, Italy"
+    },
+    {
+      "country": "Italy",
+      "country_code": "it",
+      "state": "Trentino-Alto Adige/Südtirol",
+      "county": "Provincia di Trento",
+      "city": "Trento",
+      "street": "Via Rodolfo Belenzani",
+      "lon": 11.1213,
+      "lat": 46.0689,
+      "result_type": "street",
+      "formatted": "Via Rodolfo Belenzani, Trento TN, Italy"
+    },
+    {
+      "name": "Trento",
+      "country": "Italy",
+      "state": "Trentino-Alto Adige/Südtirol",
+      "county": "Provincia di Trento",
+      "city": "Trento",
+      "lon": 11.1257601,
+      "lat": 46.0664228,
+      "result_type": "city",
+      "formatted": "Trento, TN, Italy"
+    },
+    { "country": "Italy", "lon": 11.0, "lat": 46.0, "result_type": "unknown" },
+    { "name": "No point", "city": "Trento" }
+  ],
+  "query": { "text": "via bel" }
+}

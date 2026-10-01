@@ -76,7 +76,7 @@ THEMES: dict[str, Theme] = {
         shape="star",
         label="museums and culture",
     ),
-    # The categories of "Ask for a route" (TASK-131), each a theme.
+    # The categories of "Ask for a route" (TASK-134), each a theme.
     "shopping": Theme(
         "commercial.shopping_mall,commercial.department_store,"
         "commercial.marketplace,commercial.clothing",

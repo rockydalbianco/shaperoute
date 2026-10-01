@@ -37,7 +37,7 @@ type Props = {
   /** A city searched for (TASK-129): the list and the request start there. */
   city?: Place | null;
   onCity?: (city: Place | null) => void;
-  /** The cities chosen last, first among the chips (TASK-131). */
+  /** The cities chosen last, first among the chips (TASK-134). */
   recent?: Place[];
   /** A shape through the places of a theme (TASK-129). */
   onAsk?: (request: ThemedRequest) => void;

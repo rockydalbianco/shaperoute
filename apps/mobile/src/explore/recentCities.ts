@@ -3,7 +3,7 @@ import { File, Paths } from "expo-file-system";
 import type { Place } from "../places/photon";
 import { isPlaces } from "../places/placeFinder";
 
-/** The cities chosen last in "Explore", first (TASK-131). */
+/** The cities chosen last in "Explore", first (TASK-134). */
 export const MAX_RECENT = 5;
 const RECENT_FILE = "recent-cities.json";
 

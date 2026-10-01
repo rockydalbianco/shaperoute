@@ -138,7 +138,7 @@ function Sgrava() {
   const { explored, open: openExplored, close: closeExplored } = useExplored(API_URL);
   // "Explore" for any city, and a shape through a theme's places (TASK-129).
   const [exploreCity, setExploreCity] = useState<Place | null>(null);
-  // The cities chosen last, kept on the phone (TASK-131).
+  // The cities chosen last, kept on the phone (TASK-134).
   const [recentCities, setRecentCities] = useState<Place[]>(loadRecentCities);
   const themed = useThemedRoute(API_URL);
   const themedExport = useMemo(

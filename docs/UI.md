@@ -103,7 +103,7 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    «Export GPX» e «Back to Explore». Se i luoghi verificati sono troppo
    pochi, la scheda lo dice.
 
-   **Da TASK-131** il percorso è: città → categoria → percorso, due tocchi.
+   **Da TASK-134** il percorso è: città → categoria → percorso, due tocchi.
    «City» mostra in alto le città recenti (↺, le ultime 5, salvate sul
    telefono) e una fila di città di tutto il mondo (New York, London,
    Paris, Tokyo, Rome, Milan, Torino, Barcelona, Dubai…): un tocco la

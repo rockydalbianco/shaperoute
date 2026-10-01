@@ -32,7 +32,7 @@ export async function searchCities(
 }
 
 /**
- * Cities while typing (TASK-131): GET /city-suggestions, "Par" → Parma,
+ * Cities while typing (TASK-134): GET /city-suggestions, "Par" → Parma,
  * Paris. Never throws: null when the API does not answer.
  */
 export async function suggestCities(

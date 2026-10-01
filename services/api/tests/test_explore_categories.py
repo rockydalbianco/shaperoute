@@ -1,4 +1,4 @@
-"""The categories of "Ask for a route" and the city suggestions (TASK-131):
+"""The categories of "Ask for a route" and the city suggestions (TASK-134):
 the app's words read as themes, cities while typing. No network."""
 
 from __future__ import annotations

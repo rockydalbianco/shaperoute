@@ -36,7 +36,7 @@ type CityProps = {
   apiUrl: string | null;
   city: Place | null;
   onCity: (city: Place | null) => void;
-  /** The cities chosen last, first among the chips (TASK-131). */
+  /** The cities chosen last, first among the chips (TASK-134). */
   recent?: Place[];
   /** Injected in tests. */
   fetchFn?: typeof fetch;
@@ -44,7 +44,7 @@ type CityProps = {
 };
 
 /**
- * "City" (TASK-129, TASK-131): cities to tap, the recent first, then cities
+ * "City" (TASK-129, TASK-134): cities to tap, the recent first, then cities
  * from around the world; or "Type a city", with suggestions while typing.
  * The list below and the requests then start from the city's centre.
  */
@@ -226,7 +226,7 @@ type AskProps = {
 };
 
 /**
- * "Ask for a route" (TASK-129, TASK-131): a category is one tap, "Food in
+ * "Ask for a route" (TASK-129, TASK-134): a category is one tap, "Food in
  * New York" straight away; or a request in words.
  */
 export function AskForRoute({ city = null, where, onAsk }: AskProps) {

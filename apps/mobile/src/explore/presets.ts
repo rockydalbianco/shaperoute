@@ -1,7 +1,7 @@
 import type { Place } from "../places/photon";
 
 /**
- * The quick choices of "Explore" (TASK-131): cities from around the world,
+ * The quick choices of "Explore" (TASK-134): cities from around the world,
  * and the categories of "Ask for a route", Food first. A city is a name
  * only: its centre comes from the API when it is tapped, never written here.
  */

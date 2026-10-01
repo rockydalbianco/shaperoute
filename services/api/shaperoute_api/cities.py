@@ -25,7 +25,7 @@ from shaperoute_api.places import (
 )
 
 GEOCODE_URL = "https://api.geoapify.com/v1/geocode/search"
-# While typing (TASK-131): the autocomplete, cities only. Its city points are
+# While typing (TASK-134): the autocomplete, cities only. Its city points are
 # the cities' own, as the geocoding's; only without `type` it gives areas.
 AUTOCOMPLETE_URL = "https://api.geoapify.com/v1/geocode/autocomplete"
 # Fewer letters say too little about which city.

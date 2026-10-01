@@ -335,7 +335,7 @@ def create_app(
         except PlacesUnavailableError as exc:
             raise HTTPException(503, str(exc)) from None
 
-    # Cities while typing, for "Type a city" (TASK-131): "Par" → Parma,
+    # Cities while typing, for "Type a city" (TASK-134): "Par" → Parma,
     # Paris. Empty below two letters.
     @app.get("/city-suggestions", responses={503: {"model": ErrorBody}})
     def suggest_cities(

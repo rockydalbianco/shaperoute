@@ -81,7 +81,13 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
 - Accanto a ogni GraphML c'è una copia **pickle** dello stesso grafo:
   leggere il GraphML di una zona richiede 5–13 s (fino a un minuto a
   Milano), il pickle pochi secondi. Il GraphML resta il formato di
-  riferimento; il pickle si rigenera da solo se manca o è più vecchio.
+  riferimento; il pickle si rigenera da solo se manca, è più vecchio o
+  non si legge, e se non si riesce a scrivere si va avanti senza.
+- Ogni file della cache (GraphML, pickle, vie con nome) si scrive prima
+  su un nome temporaneo accanto, `.<nome>.<cifre>.part`, e prende il suo
+  nome solo quando è intero (ADR-0104): un'API o uno script fermati a metà
+  non lasciano un file rotto che faccia fallire la zona. Un `.part`
+  rimasto da un processo ucciso non viene mai letto, e si può cancellare.
 
 ## Area scaricata
 

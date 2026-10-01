@@ -92,7 +92,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **Motore** — TASK-140: luna, farfalla, lumaca (e il cavallo, che non
   cambia) evitano i baffi come cuore, cerchio e stella; si contano solo
   quelli oltre i tratti voluti della forma (ADR-0118). Gatto, pesce e le
-  teste restano come prima, per scelta dell'utente. Da provare.
+  teste restano come prima, per scelta dell'utente. Provato sull'iPhone
+  (2026-10-02): funziona.
 - **Motore** — TASK-136 (miglioramento generale scelto dall'agente): la
   CLI e `seed_catalog` non salvano più i ritagli dei grafi, come già
   l'API (ADR-0108). Una partenza nuova è più veloce (Milano, cuore da

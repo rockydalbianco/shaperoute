@@ -1,6 +1,6 @@
 # TASK-140 — Anche le altre forme senza «baffi»
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-140-whiskers-other-shapes`
 
 Chiesto dall'utente il 2026-10-01, dopo TASK-139: «fai lo stesso per le
@@ -34,7 +34,8 @@ che la forma ripassa apposta.
       cavallo non cambia).
 - [x] Sulle prove cambiano solo i 3 percorsi giudicati meglio.
 - [x] Test deterministici; ADR-0118; `ROUTE_ENGINE.md`.
-- [ ] Provato sull'iPhone dall'utente.
+- [x] Provato sull'iPhone dall'utente (2026-10-02), con l'API sul server
+      Hetzner aggiornata al branch: «funziona».
 
 ## File toccati
 

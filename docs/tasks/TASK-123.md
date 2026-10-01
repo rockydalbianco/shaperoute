@@ -29,7 +29,7 @@ arrivano senza i 2–4 s di Photon.
       in un'ora.
 - [x] Senza API, con l'API lenta o senza chiave l'app trova i luoghi con
       Photon.
-- [ ] Chiave creata dall'utente e ricerca provata sull'iPhone.
+- [x] Chiave creata dall'utente e ricerca provata sull'iPhone (2026-10-01): veloce.
 
 ## File toccati
 
@@ -64,4 +64,4 @@ Fatto nel codice, con i test (API 209, app 486). Provato dal vivo il
 2026-10-01 con la chiave dell'utente: Geoapify risponde in 0,4–1,2 s
 (Photon 2–4 s), la stessa ricerca dalla cache in 2 ms; «via bel» vicino a
 Trento dà Via Rodolfo Belenzani per prima. L'API sul Mac gira con la
-chiave, letta da `.env`. Da fare: la prova sull'iPhone.
+chiave, letta da `.env`. Provato sull'iPhone dall'utente: «funziona, è veloce».

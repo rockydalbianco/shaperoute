@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-10-01 · **Fase corrente**: 4 — Estensione (scritte)
+**Ultimo aggiornamento**: 2026-10-02 · **Fase corrente**: 4 — Estensione (scritte)
 
 ---
 
@@ -90,6 +90,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore** — TASK-147: sul server Linux tornano le alternative A · B · C
+  (forme, parole, immagini), che l'utente non vedeva più (ADR-0121). Il
+  motore leggeva la memoria libera (MemFree, 534 MB: il resto è cache
+  delle zone) invece di quella disponibile (MemAvailable, 6,8 GB), e non
+  avviava mai le partenze vicine. Provato nel container del server: cuore
+  da 5 km a Trento con 1 alternativa (10,8 s), stella con 2 (5,8 s), prima
+  0. Il server prende la correzione quando il coordinatore lo aggiorna a
+  fine coda dei merge; l'app non va ripubblicata.
 - **Motore** — TASK-140: luna, farfalla, lumaca (e il cavallo, che non
   cambia) evitano i baffi come cuore, cerchio e stella; si contano solo
   quelli oltre i tratti voluti della forma (ADR-0118). Gatto, pesce e le

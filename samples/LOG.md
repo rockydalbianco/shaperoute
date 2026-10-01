@@ -320,6 +320,11 @@ chiude ADR-0010.
 | 2026-09-30 | TASK-084_village_12km_levico_v1.gpx | levico | 0.84 | 11.6 / 12.0 km | quasi | casa, albero, sole e nuvola; partenza spostata di 250 m a est; scala 60%; 14 s |
 | 2026-10-01 | catalog/seed/trento.json | trento | 0.80–1.00 | 5, 10, 21 km | sì | TASK-125: 27 tenuti su 33 (≥ 0,88), visti tutti dall'utente; il pesce scartato a occhio (0,79–0,87, già sotto soglia), escluso per nome (`REJECTED`) |
 | 2026-10-01 | catalog/seed/milano.json | milano | 0.90–1.00 | 5, 10, 21 km | sì | TASK-125: 33 tenuti su 33, visti tutti dall'utente |
+| 2026-10-01 | catalog/seed/roma.json | roma | 0.91–1.00 | 5, 10, 21 km | sì | TASK-126, giudizio a occhio: tenuti 24 su 31; fuori farfalla, testa di cane, testa di coniglio, lumaca e luna a 5 km, testa di cane e lumaca a 10 km (`UNREADABLE`). I più belli: cerchio 21, luna 21, cavallo 10, farfalla 21, lumaca 21 |
+| 2026-10-01 | catalog/seed/bologna.json | bologna | 0.90–1.00 | 5, 10, 21 km | sì | TASK-126: tenuti 21 su 31; fuori farfalla, testa di cane, testa di coniglio, lumaca, cavallo e stella a 5 km, farfalla, testa di cane e lumaca a 10, lumaca a 21. I più belli: cuore 10 e 21, cerchio 21, luna 21, testa di coniglio 10 |
+| 2026-10-01 | catalog/seed/torino.json | torino | 0.90–1.00 | 5, 10, 21 km | sì | TASK-126: tenuti 25 su 32; fuori farfalla, gatto, testa di cane, testa di coniglio, lumaca e pesce a 5 km, lumaca a 10. I più belli: gatto 21, pesce 21, cuore 21, lumaca 21, stella 10, testa di coniglio 21 |
+| 2026-10-01 | catalog/seed/levico.json | levico | 0.90–1.00 | 10, 21 km | quasi | TASK-126: tenuti 7 su 19; la rete rada disegna male i dettagli: fuori testa di cane e testa di coniglio a ogni distanza, lumaca 10 e 21, cuore 21, cavallo, stella e luna a 5. I più belli: cavallo 21, luna 21 |
+| 2026-10-01 | catalog/seed/milano.json, trento.json | milano, trento | — | 5, 10, 21 km | sì | TASK-126: già visti dall'utente, tenuti tutti. I più belli: Milano cuore 21, stella 21, luna 10, pesce 21, gatto 21, farfalla 10; Trento stella 21, cuore 21, luna 21, gatto 10. Riserve dell'agente, non applicate: testa di cane e lumaca a 5 km, a Trento anche a 10 e 21 |
 
 <!--
 Esempio di riga compilata:

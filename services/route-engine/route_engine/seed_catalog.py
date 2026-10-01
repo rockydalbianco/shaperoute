@@ -88,6 +88,33 @@ REJECTED: frozenset[tuple[str, str]] = frozenset(
     {("trento", "fish")}  # 2026-10-01: not a fish on Trento's roads
 )
 
+# (city, shape, distance) looked at by eye one by one (TASK-126, 2026-10-01)
+# and left out: above the threshold, but the shape does not read. Mostly
+# 5 km, where a detailed shape is smaller than the blocks that draw it.
+# Trento and Milano are not here: the user judged them, "the rest is fine".
+UNREADABLE: frozenset[tuple[str, str, int]] = frozenset(
+    {
+        *(("roma", s, 5000) for s in ("butterfly", "dog_head", "rabbit_head")),
+        *(("roma", s, 5000) for s in ("snail", "moon")),
+        ("roma", "dog_head", 10000),
+        ("roma", "snail", 10000),
+        *(("bologna", s, 5000) for s in ("butterfly", "dog_head", "rabbit_head")),
+        *(("bologna", s, 5000) for s in ("snail", "horse", "star")),
+        *(("bologna", s, 10000) for s in ("butterfly", "dog_head", "snail")),
+        ("bologna", "snail", 21000),
+        *(("torino", s, 5000) for s in ("butterfly", "cat", "dog_head")),
+        *(("torino", s, 5000) for s in ("rabbit_head", "snail", "fish")),
+        ("torino", "snail", 10000),
+        *(("levico", "dog_head", d) for d in (5000, 10000, 21000)),
+        *(("levico", "rabbit_head", d) for d in (5000, 10000, 21000)),
+        *(("levico", "snail", d) for d in (10000, 21000)),
+        ("levico", "heart", 21000),
+        ("levico", "horse", 5000),
+        ("levico", "star", 5000),
+        ("levico", "moon", 5000),
+    }
+)
+
 # Coordinates to 6 decimals: 0.1 m, far below what the GPS sees.
 DECIMALS = 6
 
@@ -229,13 +256,14 @@ def select(
 ) -> list[dict[str, Any]]:
     """Every drawn route at `min_similarity` or more, best first within a
     city. Equally good routes are all kept, even on the same roads: none
-    replaces another (TASK-092, point 3). REJECTED pairs never."""
+    replaces another (TASK-092, point 3). REJECTED and UNREADABLE never."""
     kept = [
         r
         for r in runs
         if "error_kind" not in r
         and r["similarity"] >= min_similarity
         and (r["city"], name_of(r)) not in REJECTED
+        and (r["city"], name_of(r), r["distance_m"]) not in UNREADABLE
     ]
     return sorted(kept, key=lambda r: (r["city"], -r["similarity"], r["key"]))
 

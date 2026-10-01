@@ -139,6 +139,11 @@ def test_select_leaves_out_what_the_eye_rejected() -> None:
     assert [r["key"] for r in select(runs, 0.5)] == ["milano/fish/21000"]
 
 
+def test_select_leaves_out_one_distance_judged_unreadable() -> None:
+    runs = [_run("levico/star/5000", 0.99), _run("levico/star/10000", 0.99)]
+    assert [r["key"] for r in select(runs, 0.5)] == ["levico/star/10000"]
+
+
 def test_catalogue_files_one_per_city_same_input_same_text() -> None:
     selected = select([_run("trento/heart/5000", 0.9), _run("bari/star/10000", 0.93)])
     files = catalogue_files(selected, 0.88)

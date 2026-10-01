@@ -3592,3 +3592,24 @@ la zona. I ritagli già salvati restano e si leggono come prima finché non
 li si cancella con `prune_crops --delete`: è una scelta dell'utente, perché
 i casi di riferimento letti dal loro ritaglio passerebbero a un ritaglio
 fatto dalla zona.
+
+## ADR-0109 — Anche cerchio e stella evitano i «baffi»
+**Stato**: Attiva · 2026-10-01 · chiesto dall'utente («fai lo stesso per
+cerchio e stella») e giudicato da lui; il peso deciso dall'agente su
+delega dell'utente (TASK-139). Segue ADR-0107.
+
+**Decisione**: `W_DOUBLED` vale 1,5 anche per `circle` e `star`, come per
+il cuore. Le forme con tratti ripassati apposta (gatto, pesce, lettere,
+immagini) restano senza.
+
+**Misure** (7 partenze: Caldonazzo 10 km, Levico 12, 5, 8 km, Trento 10,
+15 km, Milano 10 km): il cerchio non cambia in nessuna. La stella cambia in
+3: Levico 5 km, Levico 8 km, Trento 15 km.
+
+**Giudizio dell'utente**: Levico 8 km e Trento 15 km meglio la stella
+nuova; Levico 5 km nessuna preferenza. Peso doppio (3,0) scartato: a
+Levico 5 km la stella somiglia meno (0,81 → 0,73).
+
+**Conseguenza**: alcune stelle cambiano, con la somiglianza a volte un
+po' più bassa (Levico 8 km 0,93 → 0,86); i tempi no. Cavallo, farfalla,
+CIAO e il cerchio del registro danno gli stessi percorsi di prima.

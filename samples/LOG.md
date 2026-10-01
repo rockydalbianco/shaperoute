@@ -331,6 +331,10 @@ chiude ADR-0010.
 | 2026-10-01 | TASK-131_heart_8km_levico_v1.gpx | levico | 0.78 | 8.1 / 8.0 km | meglio | TASK-131, con il peso dei baffi: 4% fatto due volte; preferito a v0 dall'utente |
 | 2026-10-01 | TASK-131_heart_15km_trento_v0.gpx | trento | 0.90 | 14.5 / 15.0 km | quasi | TASK-131, il cuore di oggi |
 | 2026-10-01 | TASK-131_heart_15km_trento_v1.gpx | trento | 0.90 | 15.5 / 15.0 km | meglio | TASK-131, con il peso dei baffi: disegnato altrove, preferito a v0 dall'utente |
+| 2026-10-01 | TASK-139_star_8km_levico_v0.gpx | levico | 0.93 | 7.4 / 8.0 km | — | TASK-139, la stella di oggi; 39% fatto due volte |
+| 2026-10-01 | TASK-139_star_8km_levico_v1.gpx | levico | 0.86 | 7.6 / 8.0 km | meglio | TASK-139, peso dei baffi (ADR-0109): 17%; preferita dall'utente |
+| 2026-10-01 | TASK-139_star_15km_trento_v0.gpx | trento | 0.99 | 15.2 / 15.0 km | — | TASK-139, la stella di oggi; 6% fatto due volte |
+| 2026-10-01 | TASK-139_star_15km_trento_v1.gpx | trento | 0.96 | 13.7 / 15.0 km | meglio | TASK-139, peso dei baffi: 2%; preferita dall'utente |
 
 <!--
 Esempio di riga compilata:

@@ -17,7 +17,8 @@ compare prima del percorso; chiuso, o se non c'è, il percorso si vede subito.
 1. `react-native-google-mobile-ads` con gli ID di prova di Google.
 2. `src/ads/`: rete pubblicitaria dietro un'interfaccia, `useAdBeforeRoute`.
 3. In `App.tsx` lo stato dei due percorsi passa da `useAdBeforeRoute`.
-4. `eas.json` con il profilo `preview`.
+4. `eas.json` con il profilo `preview`; bundle identifier iOS
+   `com.lppl1316.sgrava`, scelto dall'utente.
 
 ## Criteri di accettazione
 
@@ -49,7 +50,6 @@ docs/tasks/TASK-132.md
 
 - Account AdMob, ID veri, `app-ads.txt`, pubblicazione negli store.
 - Un pulsante «Privacy options» per cambiare il consenso dopo.
-- Bundle identifier dell'app (lo chiede EAS alla prima build).
 
 ## Esito
 

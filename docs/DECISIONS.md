@@ -3370,7 +3370,8 @@ ufficiale: l'utente ha scelto AdMob e una build propria dell'app.
 - ID di prova di Google (app e annuncio) finché non c'è l'account AdMob:
   gli ID veri in `app.json` e in `EXPO_PUBLIC_ADMOB_INTERSTITIAL_*`.
 - `apps/mobile/eas.json`, profilo `preview` (distribuzione interna, canale
-  `preview`).
+  `preview`). Bundle identifier iOS `com.lppl1316.sgrava`, scelto
+  dall'utente.
 
 **Alternative scartate**: AdSense in una WebView (vietato dalle regole
 AdMob nelle app); un annuncio fatto da noi (finto); mostrare l'annuncio a

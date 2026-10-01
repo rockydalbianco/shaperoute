@@ -66,7 +66,7 @@ from route_engine.optimizer import (
     tilt_limit,
 )
 from route_engine.projection import Point, start_at_phase
-from route_engine.retracing import doubled_share
+from route_engine.retracing import extra_doubled_share
 from route_engine.shapes import get_shape
 from route_engine.validation import check_closed, measure, validate
 from route_engine.words import Word, compose
@@ -397,8 +397,14 @@ def score(plan: Plan, distance_m: float) -> float:
     return (
         plan.result.similarity
         - W_DISTANCE / W_SHAPE * max(0.0, abs(ratio - 1) - DISTANCE_TOLERANCE)
-        - whiskers * doubled_share(plan.result.points)
+        - whiskers * extra_doubled_share(plan.result.points, _placed(plan))
     )
+
+
+def _placed(plan: Plan) -> list[LatLon] | None:
+    """The shape as the search placed it, strokes and all; None without a
+    search."""
+    return None if plan.search is None else list(plan.search.best.shape)
 
 
 def _good(plan: Plan | None) -> bool:

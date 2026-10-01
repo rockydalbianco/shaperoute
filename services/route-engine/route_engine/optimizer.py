@@ -54,7 +54,7 @@ from route_engine.projection import (
     project_shape,
     start_at_phase,
 )
-from route_engine.retracing import doubled_share
+from route_engine.retracing import extra_doubled_share
 from route_engine.shapes import FREE_ROTATION, get_shape
 from route_engine.street_grid import StreetDirections
 from route_engine.validation import check_closed, measure, validate
@@ -104,11 +104,15 @@ SIMILARITY = "shape"
 # the shape matters most.
 W_SHAPE = 3.0
 W_DISTANCE = 1.0
-# The route run twice over the same street, as a share of its length, for
-# the shapes whose eye judgement asked for it (TASK-131, TASK-139): a
-# whisker the similarity does not see. Shapes with strokes drawn twice on
-# purpose (cat, fish, letters) keep their routes as before.
-W_DOUBLED: dict[str, float] = {"heart": 1.5, "circle": 1.5, "star": 1.5}
+# The route run twice over the same street beyond what the shape draws
+# twice on purpose, as a share of its length (retracing.py): a whisker the
+# similarity does not see. Only for the shapes whose eye judgement asked
+# for it (TASK-131, TASK-139, TASK-140); cat, fish, dog and rabbit heads
+# keep their routes as before, as the user preferred.
+W_DOUBLED: dict[str, float] = {
+    name: 1.5
+    for name in ("heart", "circle", "star", "horse", "moon", "butterfly", "snail")
+}
 # Moving the start by START_OFFSET_M costs as much as 5% of coverage, both
 # when ranking placements by roads and when choosing among traced routes.
 OFFSET_FIT_PENALTY = 0.05
@@ -607,7 +611,7 @@ def search(
             + W_OFFSET * p.offset_m / START_OFFSET_M
         )
         if doubled:
-            cost += doubled * doubled_share(route.points)
+            cost += doubled * extra_doubled_share(route.points, outline)
         result = Attempt(p, scale, outline, route, sim, ratio, cost, shifts)
         attempts.append(result)
         return result

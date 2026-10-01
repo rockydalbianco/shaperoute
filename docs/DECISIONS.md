@@ -3399,3 +3399,56 @@ da custodire per poco); URI `strava://` non documentati.
 **Conseguenza**: l'import su Strava resta un passo a mano dell'utente,
 dal sito. Se Strava aprirà la creazione di percorsi via API, il pulsante
 potrà farlo da solo.
+
+## ADR-0108 — La CLI non salva più i ritagli dei grafi
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
+(TASK-136); supera ADR-0023 solo sul salvataggio dei ritagli
+
+**Contesto**: da ADR-0023 `OsmnxSource.load` salva col suo nome ogni
+ritaglio di una zona in cache, GraphML e pickle. L'API non lo fa
+(ADR-0030), ma la CLI e `seed_catalog` sì, una volta per partenza. Sul Mac,
+il 2026-10-01, `data/cache/` pesava 18,6 GB: 346 grafi su 355 (17,9 GB)
+stavano per intero dentro un grafo più grande della cache, con 19 GB
+liberi sul disco. E `covering_path` sceglie il grafo più piccolo che
+contiene l'area: con i ritagli salvati, lo stesso percorso può venire da un
+ritaglio di un ritaglio, a seconda delle richieste fatte prima su quel
+disco, e l'API tiene in memoria quei ritagli invece della zona.
+
+**Decisione**:
+- Un'area dentro una zona in cache si **ritaglia in memoria e non si
+  salva**, come nell'API. Il file esatto, se c'è, si legge ancora; una zona
+  nuova scaricata si salva come prima (ADR-0104).
+- `python -m route_engine.prune_crops` elenca i grafi contenuti in un altro
+  grafo della cache, raggruppati per zona; con `--delete` li cancella
+  (GraphML e pickle). Senza, non cancella nulla. Un grafo si cancella solo
+  se lo contiene un grafo che resta; zone, `names_*.json`, `walk_*` e
+  `http/` non si toccano.
+
+**Misure** (Mac, cache di prova con la sola zona, stesso percorso punto per
+punto prima e dopo):
+
+| Caso | Prima | Dopo |
+|---|---|---|
+| Trento, cuore 5 km, partenza nuova | 2,4 s, scrive 19,7 MB | 1,4 s, niente |
+| Milano, cuore 10 km, partenza nuova | 11,8 s, scrive 108 MB | 5,5 s, niente |
+| Trento, stessa richiesta rifatta | 0,9 s | 1,3 s |
+| Milano, stessa richiesta rifatta | 2,9 s | 5,5 s |
+
+Scrivere il GraphML del ritaglio era metà del tempo di una partenza nuova.
+
+**Alternative scartate**:
+- *Tenere i ritagli, con un limite di spazio o di numero*: la cache
+  cancellerebbe da sola file dell'utente, e il percorso dipenderebbe ancora
+  da quali ritagli ci sono.
+- *Salvare solo i ritagli dei casi di riferimento*: serve un elenco da
+  tenere allineato a `TESTING.md`, per guadagnare 0,4–2,6 s a richiesta.
+- *Tenere la zona in memoria fra una partenza e l'altra nella CLI e in
+  `seed_catalog`*, come `ZoneGraphs`: più veloce ancora, ma è un altro
+  cambiamento; annotato in `tasks/TASK-136.md`.
+
+**Conseguenza**: la cache cresce solo con le zone nuove. Rifare la stessa
+richiesta costa 0,4 s in più a Trento e 2,6 s a Milano, perché si rilegge
+la zona. I ritagli già salvati restano e si leggono come prima finché non
+li si cancella con `prune_crops --delete`: è una scelta dell'utente, perché
+i casi di riferimento letti dal loro ritaglio passerebbero a un ritaglio
+fatto dalla zona.

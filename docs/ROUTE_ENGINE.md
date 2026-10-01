@@ -549,7 +549,9 @@ da alcuni nodi della rete vicini e tiene il percorso migliore:
    al più altri 8 s, e mai oltre 25 s dalla richiesta; nessuno se il suo
    percorso è già buono. Quelle ancora in corso si lasciano. Non si provano
    su grafi oltre 30 000 nodi (Milano) né in più processi di quanti ne
-   entrano nella memoria libera.
+   entrano nella memoria che un processo nuovo può prendere: su Linux
+   MemAvailable, che conta anche la cache dei file, non la memoria libera
+   (TASK-147).
 4. **Quale si tiene** (scelta dell'utente): il cuore migliore fra tutti,
    anche quello che la ricerca ha spostato («Start here»). Conta la
    somiglianza, meno la distanza oltre il 10% dal target; fra i candidati

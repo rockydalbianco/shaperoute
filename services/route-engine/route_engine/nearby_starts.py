@@ -32,6 +32,7 @@ import numpy as np
 
 from route_engine.alternatives import alternatives
 from route_engine.geo import LatLon, latlon_to_local_array, path_length_m
+from route_engine.memory import available_mb
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import (
     EDGE_REUSE_PENALTY,
@@ -425,7 +426,8 @@ def _moved(plan: Plan) -> bool:
 
 
 def free_memory_mb() -> float | None:
-    """Physical memory free now, in MB; None where it is not known."""
+    """Memory a new process can take now, in MB; None where it is not
+    known."""
     if sys.platform == "win32":
         import ctypes
 
@@ -449,6 +451,11 @@ def free_memory_mb() -> float | None:
         if not kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
             return None
         return status.free / 2**20
+    if sys.platform.startswith("linux"):
+        # Not the free pages: they leave out the page cache (memory.py).
+        available = available_mb()
+        if available is not None:
+            return available
     try:
         return os.sysconf("SC_AVPHYS_PAGES") * os.sysconf("SC_PAGE_SIZE") / 2**20
     except (ValueError, OSError, AttributeError):

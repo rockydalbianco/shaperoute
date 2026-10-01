@@ -3965,3 +3965,34 @@ avrebbero perso forma, giudicati peggio); un peso diverso per forma (con
 **Conseguenza**: sulle prove cambiano solo i 3 percorsi giudicati meglio.
 Gatto, pesce e le teste possono tenere dei baffi: se l'occhio lo chiede,
 servono altre idee (ritoccare la forma, o la somiglianza delle teste).
+
+## ADR-0121 — Su Linux la memoria per le partenze vicine è MemAvailable
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-147), dopo che l'utente non vedeva più le alternative sul server.
+
+**Contesto**: le partenze vicine (ADR-0071) partono ciascuna in un
+processo solo se c'entra nella memoria, lasciando 1000 MB al piano della
+partenza dell'utente; le alternative (ADR-0087) sono i loro percorsi. Su
+Linux la memoria si leggeva da `SC_AVPHYS_PAGES`, cioè MemFree, che non
+conta la cache dei file. Sul server Hetzner la cache è piena delle zone
+lette dal disco: 534 MB liberi su 6,8 GB disponibili, quindi nessuna
+partenza vicina e nessuna alternativa, per forme, parole e immagini. Sul
+Mac `SC_AVPHYS_PAGES` non esiste (si provano sempre tutte), su Windows si
+legge già la memoria disponibile: per questo non si era visto.
+
+**Decisione**:
+- Su Linux si legge **MemAvailable** da `/proc/meminfo`: la stima del
+  kernel della memoria che un processo nuovo può prendere senza swap,
+  cache liberabile compresa.
+- Sotto un **limite cgroup v2** (container con `--memory`, servizio
+  systemd con `MemoryMax`) non più di quanto resta del limite, contando
+  come libera la cache inattiva (`inactive_file`), come fa `docker stats`.
+  Senza limite (`max`), solo MemAvailable.
+- Senza MemAvailable (kernel prima di 3.14) si torna a `SC_AVPHYS_PAGES`.
+- In un modulo nuovo, `route_engine/memory.py`; `free_memory_mb` lo usa su
+  Linux. Riserva, peso per processo e attese restano quelli di ADR-0071.
+
+**Conseguenza**: sul server, nel container dell'API, il cuore da 5 km a
+Trento torna con un'alternativa (10,8 s) e la stella con due (5,8 s),
+come sul Mac. Due richieste insieme contano la memoria ognuna quando
+parte, come prima.

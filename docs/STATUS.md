@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-10-01 · **Fase corrente**: 4 — Estensione (scritte)
+**Ultimo aggiornamento**: 2026-10-02 · **Fase corrente**: 4 — Estensione (scritte)
 
 ---
 
@@ -90,6 +90,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore** — TASK-147: sul server Linux tornano le alternative A · B · C
+  (forme, parole, immagini), che l'utente non vedeva più (ADR-0121). Il
+  motore leggeva la memoria libera (MemFree, 534 MB: il resto è cache
+  delle zone) invece di quella disponibile (MemAvailable, 6,8 GB), e non
+  avviava mai le partenze vicine. Provato nel container del server: cuore
+  da 5 km a Trento con 1 alternativa (10,8 s), stella con 2 (5,8 s), prima
+  0. Il server si aggiorna a `main` subito dopo il merge, perché l'utente
+  vuole le alternative presto; l'app non va ripubblicata.
 - **API e app** — TASK-142: le ricerche imparano anche da cosa fa l'app
   (ADR-0112, `docs/INSIGHTS.md`). `POST /signals` riceve la città scelta in
   «Explore» e come, il percorso usato fra A·B·C, «Try N km» e la forma presa

@@ -220,7 +220,7 @@ function isNullableString(value: unknown): boolean {
   return value === null || typeof value === "string";
 }
 
-function isDirection(value: unknown): value is Direction {
+export function isDirection(value: unknown): value is Direction {
   return (
     isRecord(value) &&
     typeof value.node === "number" &&

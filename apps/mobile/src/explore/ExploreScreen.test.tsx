@@ -1,6 +1,9 @@
 import list from "@shaperoute/shared-types/fixtures/recommended-routes.json";
+import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
+import type { Place } from "../places/photon";
+import { forgetExamples } from "./exampleRoutes";
 import { awayText, ExploreScreen, filtered, kmLabel } from "./ExploreScreen";
 import type { RecommendedRoute } from "./recommendedRoutes";
 
@@ -14,6 +17,67 @@ const routes = list.routes as RecommendedRoute[];
 
 beforeEach(() => {
   fetchMock.mockReset();
+  forgetExamples();
+});
+
+const vercelli: Place = {
+  label: "Vercelli, Piedmont, Italy",
+  point: [45.3252, 8.4228],
+};
+
+/** The API: an empty catalog here, and every route done at once. */
+function emptyCatalog(input: RequestInfo | URL): Promise<Response> {
+  const url = String(input);
+  return Promise.resolve(
+    url.includes("/recommended-routes")
+      ? Response.json({ routes: [] })
+      : Response.json(jobDone, { status: 202 }),
+  );
+}
+
+function routeJobShapes(): (string | undefined)[] {
+  return fetchMock.mock.calls
+    .filter(([url]) => String(url).endsWith("/route-jobs"))
+    .map(([, init]) => JSON.parse(String(init?.body)).shape);
+}
+
+test("a city without recommended routes: three examples at once (TASK-143)", async () => {
+  fetchMock.mockImplementation(emptyCatalog);
+  const onOpen = jest.fn();
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={[46.067, 11.1215]}
+      onBack={jest.fn()}
+      onOpen={onOpen}
+      city={vercelli}
+      onCity={jest.fn()}
+    />,
+  );
+  expect(await screen.findByText("EXAMPLES IN VERCELLI")).toBeOnTheScreen();
+  const heart = await screen.findByLabelText(/^Heart, /);
+  await screen.findByLabelText(/^Star, /);
+  expect(routeJobShapes()).toEqual(["heart", "circle", "star"]);
+  expect(screen.queryByText(/No recommended routes near this start yet/)).toBeNull();
+  await fireEvent.press(heart);
+  expect(onOpen.mock.calls[0][0]).toMatchObject({ shape: "heart", city: "Vercelli" });
+});
+
+test("a city with recommended routes asks for no example", async () => {
+  fetchMock.mockResolvedValue(Response.json(list));
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={null}
+      onBack={jest.fn()}
+      onOpen={jest.fn()}
+      city={vercelli}
+      onCity={jest.fn()}
+    />,
+  );
+  expect(await screen.findByText("Star · 5.1 km")).toBeOnTheScreen();
+  expect(screen.queryByText("EXAMPLES IN VERCELLI")).toBeNull();
+  expect(routeJobShapes()).toEqual([]);
 });
 
 afterAll(() => {

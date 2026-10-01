@@ -95,5 +95,6 @@ Duomo di Milano scelto → Food: cerchio di 9,8 km, somiglianza 1,00, 4
 ristoranti, partenza a 60 m dal Duomo. «ver» dà solo città: i luoghi
 famosi di una città per prefisso restano fuori (vedi Fuori scope).
 Prima scelta «prima le città», cambiata dopo la prova: «casa di giu»
-metteva davanti una frazione. La prova sull'iPhone dopo riavvio dell'API
-ed `eas update`.
+metteva davanti una frazione. Provato sull'iPhone il 2026-10-01, dopo riavvio
+dell'API ed `eas update`: funziona (l'utente). Il seguito, chiesto nella
+stessa prova, è TASK-143.

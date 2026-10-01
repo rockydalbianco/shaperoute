@@ -3,7 +3,8 @@
 A write stopped half-way (Ctrl+C on the API, a restart, a killed script)
 is simulated by a writer that writes part of the file, then raises an
 exception that `except Exception` does not catch, as KeyboardInterrupt.
-No network: the graphs are the Levico fixture, cropped or read.
+No network: the graphs are the Levico fixture, read, cropped or given as
+the download of a new zone.
 """
 
 from __future__ import annotations
@@ -11,12 +12,15 @@ from __future__ import annotations
 import os
 import pickle
 import shutil
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
 import osmnx as ox
 import pytest
 
+import route_engine.network as network
 from route_engine.network import (
     OsmnxSource,
     area_around,
@@ -46,10 +50,20 @@ def _zone(tmp_path: Path) -> tuple[OsmnxSource, Path]:
     return source, zone
 
 
-def test_a_crop_stopped_while_saving_leaves_no_file_under_its_name(
+@contextmanager
+def _anywhere(url: str) -> Iterator[None]:
+    yield None
+
+
+def test_a_zone_stopped_while_saving_leaves_no_file_under_its_name(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    source, zone = _zone(tmp_path)
+    """The download of a new zone, the only graph saved (crops are not,
+    ADR-0108); OSMnx's download is the fixture, without the network."""
+    monkeypatch.setattr(ox, "graph_from_bbox", lambda **_: ox.load_graphml(FIXTURE))
+    monkeypatch.setattr(network, "reachable", _anywhere)
+    monkeypatch.setattr(ox.settings, "cache_folder", ox.settings.cache_folder)
+    source = OsmnxSource(tmp_path)
     bbox = area_around([LEVICO], margin_m=300.0)
     real_save = ox.save_graphml
 
@@ -62,8 +76,8 @@ def test_a_crop_stopped_while_saving_leaves_no_file_under_its_name(
     monkeypatch.setattr(ox, "save_graphml", stopped)
     with pytest.raises(_Stopped):
         source.load(bbox)
-    assert _names(tmp_path) == {zone.name, zone.with_suffix(".pickle").name}
-    assert source.covering_path(bbox) == zone
+    assert _names(tmp_path) == set()
+    assert source.covering_path(bbox) is None
 
     monkeypatch.setattr(ox, "save_graphml", real_save)
     graph = source.load(bbox)

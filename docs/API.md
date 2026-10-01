@@ -315,6 +315,25 @@ buone o più corta del 10% del percorso risponde `422 invalid_request`, con
 il motivo del motore nel messaggio («This run cannot be scored: …»). Al più
 20 000 posizioni e 50 000 punti di percorso.
 
+### `POST /route-directions` (TASK-145, ADR-0117)
+
+Le indicazioni di svolta di un percorso che l'app ha solo come punti: uno
+di «Explore» (consigliato, esempio di una città o a tema), prima di
+«Start». Riceve `{"points": [[lat, lon], …]}`, da 2 a 50 000 punti, la
+linea come l'ha disegnata il motore
+(`packages/shared-types/fixtures/route-directions-request.json`). Risponde
+`200` con `{"directions": [...]}`, le stesse `Direction` di
+`RouteResult.directions`, partenza compresa, con gli `along` (ADR-0057)
+(`route-directions.json`).
+
+Il grafo è quello della zona, come per i percorsi: in memoria, dalla
+cache, o scaricato; si ritaglia 250 m attorno alla linea. I nodi della
+linea li ritrova `route_nodes.py` del motore (`ROUTE_ENGINE.md` §4). Una
+linea che non segue le strade della mappa risponde `422 invalid_request`
+(«The route does not follow the roads of this map.»), una zona che non si
+scarica `503 map_data_unavailable`. Niente si salva. Misurato il
+2026-10-01 sul Mac, zone in cache: 0,1–0,5 s per percorsi di 5–23 km.
+
 ### `POST /shape-readings`
 
 Le parole del riquadro della forma che la tabella dell'app non conosce

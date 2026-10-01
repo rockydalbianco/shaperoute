@@ -5,42 +5,50 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-10-01 · **Fase corrente**: 4 — Estensione
+**Ultimo aggiornamento**: 2026-10-02 · **Fase corrente**: 4 — Estensione
 
 ---
 
 ## In una riga
 
-Il MVP gira dall'iPhone in Expo Go, con l'API sul Mac raggiungibile anche
-da fuori casa (Tailscale). Si sceglie una forma del catalogo (cerchio,
-cuore, stella, cavallo, luna, gatto, pesce, farfalla, lumaca, testa di
-cane, testa di coniglio), una parola dalla A alla Z, tonda o squadrata, o
-una foto, e una distanza fino a 21 km. Il percorso compare sulla mappa,
-fino a tre fra cui scegliere; si esporta in GPX (Garmin Connect lo apre),
-si corre con la navigazione a voce o con Strava («Run with Strava»), e a
-fine corsa ha un punteggio. Le parole che la tabella non conosce le legge
-un modello aperto in Ollama; se la forma non va attorno alla partenza il
-motore cerca un posto fino a 2 km («Start here»), se non ci sta per la
-distanza l'app propone «Try N km». **«Explore»** propone percorsi in ogni
-città: città in evidenza e suggerite mentre si scrive, 13 categorie,
-percorsi a tema che passano dai luoghi veri. L'API registra le ricerche,
-senza dati personali, e ne ricava sinonimi e correzioni da applicare a mano
+Il MVP gira dall'iPhone in Expo Go; l'app pubblicata usa l'API sul server
+Hetzner, il Mac resta per lo sviluppo. Si sceglie una forma del catalogo
+(cerchio, cuore, stella, cavallo, luna, gatto, pesce, farfalla, lumaca,
+testa di cane, testa di coniglio), una parola dalla A alla Z, tonda o
+squadrata, o una foto, e una distanza fino a 21 km. Il percorso compare
+sulla mappa, fino a tre fra cui scegliere; si esporta in GPX (Garmin
+Connect lo apre), si corre con la navigazione a voce o con Strava («Run
+with Strava»), e a fine corsa ha un punteggio. Le parole che la tabella
+non conosce le legge un modello aperto in Ollama; se la forma non va
+attorno alla partenza il motore cerca un posto fino a 2 km («Start
+here»), se non ci sta per la distanza l'app propone «Try N km».
+**«Explore»** propone percorsi in ogni città: città in evidenza e
+suggerite mentre si scrive, categorie, percorsi a tema che passano dai
+luoghi veri, esempi disegnati al momento dove il catalogo non ha niente,
+e «Start» con le indicazioni. L'API registra le ricerche, senza dati
+personali, e ne ricava sinonimi e correzioni da applicare a mano
 (`INSIGHTS.md`). Tempi: 3–10 km nelle zone in cache in 5–25 s, da 15 a
-21 km in 30–50 s. Una zona nuova si scarica da Overpass dal Mac
-(ADR-0100), che dopo molti download smette di rispondere per qualche ora
+21 km in 30–50 s. Una zona nuova si scarica da Overpass: dal server
+risponde, dal Mac (ADR-0100) smette per qualche ora dopo molti download
 (`MAPS.md`).
 
 ## Prossimo passo
 
-**TASK-110 — Le scelte della parte social** (`ROADMAP.md`, «La parte
-social»): account, dati, hosting e privacy. Non è codice, sono domande per
-l'utente; branch `docs/TASK-110-social-decisions`, sessione «Decide
-TASK-110», ancora senza commit. Il punteggio è fatto (TASK-111, 112, 113);
-dopo TASK-110 vengono TASK-114 (database e account), poi 115 (iscriversi)
-e 122 (API e database sempre accesi), poi 116–121. Tutti Todo.
+**TASK-114 — API: database e account** (`ROADMAP.md`, «La parte
+social»): TASK-110, le scelte dell'utente, è fatto (ADR-0114, ADR-0115).
+Prima di partire va chiarito dove sta il database: ADR-0114 sceglie
+Oracle Always Free, ma l'API pubblicata oggi gira su Hetzner (TASK-144,
+in lavorazione). Dopo TASK-114: 115 (iscriversi) e 122 (API e database
+sempre accesi), poi 116–121. Tutti Todo.
 
 In coda, dopo o accanto:
 
+- **TASK-137 — Le zone delle città in evidenza, scaricate prima**,
+  chiesto dall'utente il 2026-10-01: delle 14 città di «Explore» (TASK-134)
+  solo New York, Roma, Milano e Torino hanno la zona sul Mac; le altre 10
+  danno `map_data_unavailable` finché Overpass rifiuta il Mac. Un comando
+  le scarica una alla volta e si ferma al primo rifiuto; parte quando
+  Overpass risponde. Todo, nessun branch.
 - **TASK-092 — Percorsi consigliati** (ADR-0086, scelta dell'utente del
   2026-10-01): tutti i percorsi generati si salvano, i migliori si
   consigliano agli utenti e si usano sui social. Todo, dopo il database
@@ -49,14 +57,15 @@ In coda, dopo o accanto:
 - **TASK-067 — Lettere unite dall'alto, scala per lettera** (ADR-0063),
   chiesto dall'utente: in coda, da rivedere, senza task file. Da TASK-071
   e TASK-077: lettere più piccole si leggono peggio.
-- **Seguiti possibili, da approvare**, scritti nei task fatti: i segnali
-  dell'app per le ricerche che insegnano (percorso scelto fra A·B·C, «Try
-  N km») e le città e frasi desiderate lette da TASK-128 (TASK-130);
-  l'import in Strava con un account vero (TASK-135); riparare un GraphML
-  già rotto e la dimensione della cache, 36 GB sul Mac (TASK-133).
+- **Da fare dopo il merge di TASK-142** (scritto in TASK-143): togliere il
+  vecchio `AskForRoute` da `ExploreTools.tsx` e i suoi test.
+- **Seguiti possibili, da approvare**, scritti nei task fatti: zone
+  scaricate con un margine, perché il cerchio non riscarichi una zona più
+  larga di 30 m (TASK-143); l'import in Strava con un account vero
+  (TASK-135); riparare un GraphML già rotto (TASK-133).
 - **Da provare sull'iPhone**: la navigazione col GPS camminando un
   percorso vero (TASK-049), il punteggio a fine corsa (TASK-112 e 113),
-  «Explore» (TASK-126 e 134).
+  «Explore» (TASK-126 e 134) e «Start» sui suoi percorsi (TASK-145).
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
@@ -69,30 +78,63 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   (`feat/TASK-088-seasonal-catalog`, PR #112, sessione «Add pumpkin and
   Christmas tree to the shape catalogue»): task file Done, aspetta il
   merge.
-- **TASK-128 — Il seme del catalogo in altre città**
-  (`feat/TASK-128-seed-catalog-more`, sessione «Task progression senza
-  blocchi»): il nuovo giro dei percorsi consigliati aspetta che Overpass
-  risponda dal Mac. Senza PR né task file.
+- **TASK-128 — Il catalogo seme: le città mancanti, New York e le frasi**
+  (`feat/TASK-128-seed-catalog-more`, PR #147, sessione «Task
+  progression senza blocchi»): Firenze aggiunta, una zona per città; in
+  revisione.
 - **TASK-132 — Un annuncio prima del percorso** (`feat/TASK-132-route-ads`,
   PR #130, sessione «Sistema pubblicitario non invasivo»): un interstitial
   AdMob prima del percorso pronto. In corso.
-- **TASK-136 — La CLI non salva più i ritagli dei grafi**
-  (`fix/TASK-136-no-saved-crops`, PR #137, sessione «Miglioramento
-  generale»): task file Done, aspetta il merge.
-- **TASK-137 — Le zone delle città in evidenza, scaricate prima**
-  (`docs/TASK-137-featured-zones`, PR #136 col task file, sessione
-  «Potenziamento sezione Explore»): Todo; il lavoro andrà in
-  `feat/TASK-137-featured-zones`.
 - **TASK-140 — Anche le altre forme senza «baffi»**
   (`feat/TASK-140-whiskers-other-shapes`, sessione del worktree
-  `goofy-ishizaka-82df04`): modifiche al motore non ancora committate;
-  senza PR né task file.
+  `goofy-ishizaka-82df04`): modifiche al motore non committate, ferme dal
+  2026-10-01; senza PR né task file.
+- **TASK-142 — Le ricerche che insegnano: i segnali dell'app e le città**
+  (`feat/TASK-142-app-signals`, PR #142, sessione «Sistema di
+  auto-miglioramento ricerca»): task file Done, aspetta il merge. È il
+  seguito di TASK-130.
+- **TASK-144 — Un server a pagamento: la guida e la configurazione
+  pronta** (`chore/TASK-144-server-guide`, PR #141, sessione «Istruzioni
+  deployment server remoto»): in corso.
 
 ## Completato
 
 - **Documentazione** — TASK-141: `STATUS.md` allineato ai task file e
-  alle PR del 2026-10-01 (prossimo passo, task in lavorazione, In una
+  alle PR del 2026-10-02 (prossimo passo, task in lavorazione, In una
   riga).
+- **Motore** — TASK-136 (miglioramento generale scelto dall'agente): la
+  CLI e `seed_catalog` non salvano più i ritagli dei grafi, come già
+  l'API (ADR-0108). Una partenza nuova è più veloce (Milano, cuore da
+  10 km: da 11,8 a 5,5 s) e non scrive 20–110 MB; la stessa richiesta
+  rifatta costa 0,4–2,6 s in più. Stessi percorsi. I ritagli già salvati
+  si elencano con `python -m route_engine.prune_crops` e si cancellano con
+  `--delete`: sul Mac erano 346 su 355 grafi, 17,9 GB su 18,6, cancellati
+  dopo il merge su richiesta dell'utente (2026-10-01).
+- **Motore, API e app** — TASK-145: «Start» anche sui percorsi di
+  «Explore» (consigliati, esempi delle città, a tema), chiesto dall'utente
+  (ADR-0117). Al tocco l'app chiede le indicazioni a `POST
+  /route-directions`, che ritrova i nodi della linea sul grafo della zona
+  (`route_nodes.py`), poi la navigazione di sempre; «Stop» torna alla
+  scheda. Sull'API del Mac 0,1–0,5 s, e indicazioni identiche a quelle
+  del motore su 4 percorsi appena pianificati. Per vederlo sull'iPhone:
+  riavviare l'API del Mac (endpoint nuovo) e ripubblicare l'app con `eas
+  update`.
+- **App** — TASK-143: «Ask for a route» mostra Food, Famous Places e
+  «More…»; una città senza percorsi consigliati disegna da sola cuore,
+  cerchio e stella da 5 km, uno alla volta, che si aprono sulla mappa e
+  restano sul telefono (ADR-0116). Pergine Valsugana: 6 s per tutti e tre.
+  Sul server Hetzner, che l'app usa, Vercelli la prima volta: 94 s (cuore
+  40, cerchio 48, stella 5), quasi tutti download da Overpass; il cerchio
+  riscarica una zona più larga di soli 30 m per lato (proposta: zone
+  scaricate con un margine, dopo TASK-136). Da
+  fare dopo il merge di TASK-142: togliere il vecchio `AskForRoute` da
+  `ExploreTools.tsx` e i suoi test. TASK-138 provato sull'iPhone
+  (2026-10-01): funziona.
+- **Scelte** — TASK-110: la parte social decisa dall'utente (ADR-0114):
+  Oracle Always Free, email e password, corse private finché pubblicate,
+  consigliati da un punto del giro, 16 anni, cancellazione totale, due
+  moderatori; il come in ADR-0115, lo schema in `DATABASE.md`.
+
 - **API e app** — TASK-138: in «Explore» il campo «Type a city or a
   place» suggerisce a metà parola città e luoghi (ADR-0110): «arena di ver»
   → Verona Arena, «duomo di mil» → Duomo, «ver» → Verona come centro città.
@@ -118,7 +160,6 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   letto dal vocabolario, senza AI (1,0 s → 0 ms). Seguiti possibili, da
   approvare: i segnali dell'app (percorso scelto fra A·B·C, «Try N km»),
   e TASK-128 che legge città e frasi desiderate.
-
 - **Motore** — TASK-131: un cuore più bello a occhio, provato
   sull'iPhone (2026-10-01). Il cuore evita i pezzi fatti avanti e indietro
   (ADR-0107); la forma ideale resta quella di oggi, preferita dall'utente.
@@ -457,7 +498,7 @@ Niente.
   "Overpass: come si scarica".
 - Per generare campioni senza salvare ritagli in `data/cache/`: uno script
   usa-e-getta che chiama `plan_shape` con `ZoneGraphs` dell'API, come in
-  TASK-032. La CLI invece salva un ritaglio per ogni caso.
+  TASK-032. Da TASK-136 anche la CLI non salva più i ritagli (ADR-0108).
 - Per giudicare le forme senza mappa basta un PNG scritto con la libreria
   standard (`zlib`, `struct`), come `out/TASK-037-before-after.png`: niente
   matplotlib né PIL.
@@ -495,9 +536,10 @@ Niente.
   dopo la pulizia: tolti MATLAB, i ritagli in `data/cache/` e la venv del
   route-engine). Ogni zona nuova scaricata vale circa 40 MB, più le
   risposte di Overpass in `data/cache/http/`; Expo si ferma con `ENOSPC`
-  quando finisce lo spazio. La CLI salva un ritaglio per ogni partenza o
-  distanza nuova dentro una zona in cache: si possono togliere a mano. Il
-  disco D: ha più di 270 GB liberi.
+  quando finisce lo spazio. Fino a TASK-136 la CLI salvava un ritaglio per
+  ogni partenza o distanza nuova dentro una zona in cache: quelli rimasti
+  si elencano e si cancellano con `python -m route_engine.prune_crops`
+  (ADR-0108). Il disco D: ha più di 270 GB liberi.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.
 - Nell'app la partenza è la posizione GPS o un luogo cercato (`UI.md`);
   le zone fisse servono solo a confrontare le prove.

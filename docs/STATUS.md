@@ -18,7 +18,8 @@ da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
 percorso si esporta in GPX, e Garmin Connect lo apre. La forma si scrive
 in un riquadro, in italiano o in inglese, fra quelle del catalogo:
 cerchio, cuore, stella, cavallo, luna, gatto, pesce, farfalla, lumaca,
-testa di cane e testa di coniglio, anche da toccare come tessere. Gatto,
+testa di cane, testa di coniglio, zucca e albero di Natale, anche da
+toccare come tessere. Gatto,
 pesce e i quattro animali nuovi hanno tratti interni, fatti andata e
 ritorno (occhi, antenne, spirale). Quando la forma non va
 attorno alla partenza, il motore cerca un posto fino a 2 km e l'app mostra
@@ -94,6 +95,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   quelli oltre i tratti voluti della forma (ADR-0118). Gatto, pesce e le
   teste restano come prima, per scelta dell'utente. Provato sull'iPhone
   (2026-10-02): funziona.
+- **Catalogo** — TASK-088: zucca di Halloween (`pumpkin`) e albero di
+  Natale (`christmas_tree`) nel catalogo, con parole, tessere 🎃 🎄 e AI
+  (ADR-0084); «albero» e «tree» da soli restano nessuna forma. Le tessere
+  ora sono una riga che scorre di lato. Provato sull'iPhone a Milano
+  (2026-10-01): «va tutto». Da decidere con l'utente: quali altri contorni
+  già disegnati (uccello, cane intero, albero, freccia, corona) mettere
+  nella riga.
+
 - **Motore** — TASK-136 (miglioramento generale scelto dall'agente): la
   CLI e `seed_catalog` non salvano più i ritagli dei grafi, come già
   l'API (ADR-0108). Una partenza nuova è più veloce (Milano, cuore da

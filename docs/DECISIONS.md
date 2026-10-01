@@ -3840,6 +3840,47 @@ ritrovata in 0,1–0,5 s; 4 percorsi appena pianificati (Trento e Bologna,
 con le alternative) danno indicazioni identiche a quelle del motore. Da
 provare sull'iPhone.
 
+## ADR-0084 — Zucca e albero di Natale nel catalogo; «albero» da solo resta fuori
+**Stato**: Attiva · 2026-09-30 · le forme scelte dall'utente; parole,
+tessere e domanda all'AI decise dall'agente su delega dell'utente (TASK-088)
+
+**Contesto**: TASK-078 (ADR-0073) ha disegnato zucca di Halloween e albero
+di Natale, giudicati a 15 km: zucca `sì` a Milano, `no` a Trento, `quasi`
+a Levico; albero `sì` a Milano, `quasi` a Trento, `no` a Levico. ADR-0061
+li aveva lasciati contorni da CLI. Nel motore c'è anche `tree.json`
+(TASK-034/037), un albero qualsiasi, mai entrato nel catalogo.
+
+**Decisione**:
+- **Entrano `pumpkin` e `christmas_tree`**, scelti dall'utente
+  (2026-09-30) sapendo il giudizio: fuori da una rete fitta possono non
+  riuscire, e l'app propone già un'altra distanza o le altre forme
+  (ADR-0041). Come le forme di ADR-0061: `SHAPES` del motore,
+  `shared-types`, `contract.json`, `shapeWords.ts`, `OUTLINES`. Sullo
+  schermo «pumpkin» e «christmas tree».
+- **Parole**: «zucca», «zucche», «zucca di halloween», «pumpkin»,
+  «halloween pumpkin», «jack-o'-lantern»; «albero di natale», «alberi di
+  natale», «alberello di natale», «christmas tree», «xmas tree».
+- **«albero» e «tree» da soli non cambiano significato**: non sono nella
+  tabella e per l'AI restano «nessuna forma» (due voci nella lista di
+  messa a punto lo controllano). La riga dell'AI dice «a decorated
+  Christmas tree with a star on top, not a plain tree»: senza le ultime
+  parole qwen3:4b sceglieva l'albero di Natale per «tree». «Natale»,
+  «Halloween», «abete addobbato» le legge l'AI, e portano alle due forme.
+- **Tessere** 🎃 e 🎄, **in una riga sola che scorre di lato** (chiesto
+  dall'utente, 2026-10-01: nella griglia di quattro per riga zucca e albero
+  non si trovavano). Tessere larghe 88 punti, poco meno di quattro per
+  schermo: quella tagliata sul bordo dice che la riga continua. Una forma
+  scritta nel campo («zucca») porta la sua tessera in vista.
+
+**Alternative scartate**: portare «albero» all'albero di Natale (chi
+scrive «albero» a luglio non vuole la stella in cima; è una scelta di
+prodotto, non delegata); mettere «halloween» e «natale» nella tabella
+(sono feste, non disegni: le legge l'AI, e si possono spostare se sbaglia).
+
+**Conseguenza**: il catalogo ha tredici forme. Chieste all'API a Milano a
+15 km danno, punto per punto, i campioni giudicati di TASK-078. Se un
+giorno `tree` entra nel catalogo, «albero» e «tree» sono liberi per lui.
+
 ## ADR-0118 — I baffi delle altre forme: solo quelli oltre i tratti voluti
 **Stato**: Attiva · 2026-10-02 · chiesto dall'utente («fai lo stesso per
 le altre forme») e giudicato da lui forma per forma; misura e peso decisi

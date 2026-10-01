@@ -1,7 +1,7 @@
 """The candidate shapes of TASK-078: a rabbit's head, a Halloween pumpkin and
-a Christmas tree. Only tried from the CLI (`--outline`) until the user
-judges them on real roads (ADR-0036, ADR-0073); every outline is also
-checked by test_outline.py.
+a Christmas tree. Judged by the user on real roads (ADR-0073) and in the
+catalogue since TASK-065 (the rabbit) and TASK-088 (the other two); every
+outline is also checked by test_outline.py.
 
 As for the dog's head (ADR-0065), the silhouette is in the outline and the
 thin details are strokes, drawn out and back (ADR-0039, ADR-0060).

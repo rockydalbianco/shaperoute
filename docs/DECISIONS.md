@@ -3996,3 +3996,67 @@ legge già la memoria disponibile: per questo non si era visto.
 Trento torna con un'alternativa (10,8 s) e la stella con due (5,8 s),
 come sul Mac. Due richieste insieme contano la memoria ognuna quando
 parte, come prima.
+
+## ADR-0XXX — Account nell'API: endpoint, errori, tentativi, test
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente,
+dentro ADR-0114 e ADR-0115 (TASK-114); Colima sul Mac scelto dall'utente
+
+**Contesto**: ADR-0115 decide database, libreria, hash della password e
+token. Restavano i nomi degli endpoint, gli errori che l'app deve
+distinguere, il limite ai tentativi, cosa fa l'API senza database e come
+girano i test con un database vero.
+
+**Decisione**:
+- **Endpoint**: `POST /accounts` (iscriversi, e si entra), `POST /session`
+  (entrare), `DELETE /session` (uscire da questo telefono), `GET /me`,
+  `DELETE /me`. Il token va in `Authorization: Bearer`, separato dalla
+  chiave dell'API in `X-API-Key` (ADR-0076). Gli altri endpoint restano
+  aperti; quelli che verranno usano la dipendenza `current_user`.
+- **Errori**: sei codici nuovi, in `schemas.py` e `shared-types`:
+  `email_taken` e `username_taken` (409), `wrong_credentials`,
+  `not_signed_in` e `session_expired` (401), `accounts_unavailable` (503).
+  Troppi tentativi riusano `too_many_requests` (429, `Retry-After`).
+- **Email sconosciuta e password sbagliata** danno la stessa risposta, nello
+  stesso tempo (la password si verifica contro un hash finto): la risposta
+  non dice chi è iscritto. L'iscrizione con un'email già usata invece lo
+  dice (`email_taken`): il task lo chiede, e senza l'app non saprebbe cosa
+  rispondere.
+- **Tentativi**: 5 password sbagliate per la stessa email in 15 minuti,
+  poi 429 finché la più vecchia esce dalla finestra, anche con la password
+  giusta. In memoria: un riavvio li azzera, accettato per un'API con un
+  solo processo. Il limite dei POST di ADR-0076 vale in più.
+- **Valori**: email in minuscolo, fino a 254 caratteri; password 8–128
+  (Argon2 legge tutto: il tetto evita un «password» da un megabyte); nome
+  3–20 fra lettere, cifre, `_` e `.`, unico senza badare alle maiuscole e
+  mostrato com'è scritto.
+- **Scadenza**: una sessione vale finché l'ultimo uso è entro 90 giorni, e
+  ogni uso la allunga. Quella scaduta si cancella al primo uso e risponde
+  `session_expired` una volta, poi `not_signed_in`.
+- **`DELETE /me`** basta il token, senza ripetere la password: la conferma
+  la chiede l'app (TASK-115, TASK-121).
+- **Senza database** (`SHAPEROUTE_DATABASE_URL` vuota) l'API parte come
+  prima e gli account rispondono `503 accounts_unavailable`. **Con
+  l'indirizzo ma il database irraggiungibile**, o una migrazione che
+  fallisce, l'API non parte e dice perché: meglio che account rotti una
+  richiesta alla volta.
+- **Migrazioni**: le applica `__main__` prima di aprire la porta, ognuna
+  nella sua transazione, sotto un advisory lock; una che fallisce non
+  lascia niente. L'estensione PostGIS la crea la prima migrazione con una
+  geometria.
+- **Connessioni**: una per richiesta, nessun pool (`psycopg_pool` sarebbe
+  un pacchetto in più); da rivedere se gli account diventano tanti.
+- **Test**: `conftest.py` avvia `postgis/postgis:16-3.4` con docker, una
+  volta per giro, e dà a ogni test un database vuoto. I runner della CI
+  hanno docker: `ci.yml` non cambia. Senza docker i test del database si
+  saltano sul PC e falliscono in CI. Sul Mac docker è Colima (scelta
+  dell'utente, 2026-10-02): niente Docker Desktop né licenze.
+
+**Scartate**: `/signup` e `/login` (verbi, mentre l'API nomina le cose);
+un servizio `postgres` nella CI (cambia `ci.yml`, e il conftest basta);
+un database finto o SQLite nei test (`DATABASE.md`: niente finti);
+un 401 diverso per l'email sconosciuta (direbbe chi è iscritto).
+
+**Conseguenze**: TASK-115 usa questi endpoint e i tipi di `shared-types`
+(`SignUpRequest`, `Session`, `User`). TASK-122 mette il database sul
+server, accanto all'API, con `SHAPEROUTE_DATABASE_URL`. La password
+dimenticata resta fuori: serve la posta (Brevo, ADR-0115).

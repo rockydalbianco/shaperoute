@@ -126,14 +126,14 @@ docs/tasks/TASK-110.md
 
 ## Esito
 
-Fatto il 2026-10-01: nove scelte dell'utente (sopra, ADR-0112), il come in
-ADR-0113, `DATABASE.md` pieno, un paragrafo in `PRODUCT.md`. Nessun codice.
+Fatto il 2026-10-01: nove scelte dell'utente (sopra, ADR-0114), il come in
+ADR-0115, `DATABASE.md` pieno, un paragrafo in `PRODUCT.md`. Nessun codice.
 
 **Cosa cambia nei task già scritti** (da correggere nel task file prima
 che parta, non a metà):
 
 - **TASK-114**: database come in `DATABASE.md`, psycopg e Argon2id, token
-  come in ADR-0113; `role` negli utenti. «Password dimenticata» non è più
+  come in ADR-0115; `role` negli utenti. «Password dimenticata» non è più
   fuori scope per mancanza di posta: con Brevo approvato si può fare, in
   TASK-114 o in un task a parte.
 - **TASK-115**: la casella «I am at least 16» all'iscrizione;

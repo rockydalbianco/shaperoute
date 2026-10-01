@@ -51,8 +51,8 @@ campo per le parole (dopo TASK-056 e TASK-049).
 corso, account, profilo, like e commenti. Tredici task scritti, TASK-110 …
 122, con l'ordine in `ROADMAP.md` («La parte social»). Partono subito
 **TASK-111** (punteggio nel motore) e **TASK-112** (traccia registrata
-nell'app); **TASK-110**, le scelte dell'utente, è fatto (ADR-0112,
-ADR-0113): il prossimo è **TASK-114**, database e account nell'API. Dopo, **TASK-092 — Percorsi consigliati** (ADR-0086, scelta
+nell'app); **TASK-110**, le scelte dell'utente, è fatto (ADR-0114,
+ADR-0115): il prossimo è **TASK-114**, database e account nell'API. Dopo, **TASK-092 — Percorsi consigliati** (ADR-0086, scelta
 dell'utente del 2026-10-01): tutti i percorsi generati si salvano, i
 migliori si consigliano agli utenti e si usano sui social; parte dopo il
 database (TASK-114) e l'API sempre accesa (TASK-122).
@@ -89,10 +89,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
-- **Scelte** — TASK-110: la parte social decisa dall'utente (ADR-0112):
+- **Scelte** — TASK-110: la parte social decisa dall'utente (ADR-0114):
   Oracle Always Free, email e password, corse private finché pubblicate,
   consigliati da un punto del giro, 16 anni, cancellazione totale, due
-  moderatori; il come in ADR-0113, lo schema in `DATABASE.md`.
+  moderatori; il come in ADR-0115, lo schema in `DATABASE.md`.
 
 - **API e app** — TASK-138: in «Explore» il campo «Type a city or a
   place» suggerisce a metà parola città e luoghi (ADR-0110): «arena di ver»

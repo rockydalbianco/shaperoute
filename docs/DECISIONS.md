@@ -165,7 +165,7 @@ ferrari», «spirit»): l'utente ha scelto di tenere il limite, documentato in
 `AI.md`, «Limiti», invece di cercare un modello più grande.
 
 ## ADR-0013 — Database, hosting e autenticazione
-**Stato**: Superata da ADR-0112 (scelte dell'utente) e ADR-0113 (come) ·
+**Stato**: Superata da ADR-0114 (scelte dell'utente) e ADR-0115 (come) ·
 2026-10-01 (TASK-110)
 
 Ipotesi di partenza: PostgreSQL + PostGIS. Non serve prima di avere account
@@ -3605,9 +3605,9 @@ categoria da un luogo parte dal suo punto (provato: Duomo di Milano →
 Food, cerchio di 9,8 km, 4 ristoranti). Etichette in inglese, come le
 città di TASK-134.
 
-## ADR-0112 — La parte social: le scelte dell'utente
+## ADR-0114 — La parte social: le scelte dell'utente
 **Stato**: Attiva · 2026-10-01 · **scelte dell'utente**, una domanda per
-volta (TASK-110). Chiude, con ADR-0113, ADR-0013.
+volta (TASK-110). Chiude, con ADR-0115, ADR-0013.
 
 **Contesto**: la parte social (`ROADMAP.md`, TASK-110 … 122) aspettava le
 scelte su dove stanno i dati, come si entra, chi vede cosa e chi modera.
@@ -3640,9 +3640,9 @@ Le proposte, con le alternative scartate, sono nel task file.
 **Conseguenze sui task già scritti**: nel task file di TASK-110,
 «Esito».
 
-## ADR-0113 — Database, account e server: come
+## ADR-0115 — Database, account e server: come
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega
-dell'utente, dentro le scelte di ADR-0112 (TASK-110)
+dell'utente, dentro le scelte di ADR-0114 (TASK-110)
 
 **Decisione**:
 - **PostgreSQL 16 con PostGIS**, in Docker sulla stessa VM dell'API
@@ -3665,7 +3665,7 @@ dell'utente, dentro le scelte di ADR-0112 (TASK-110)
 - **Copie di sicurezza**: `pg_dump` ogni notte sulla VM, caricato
   nell'Object Storage gratuito di Oracle (20 GB), 14 copie; un ripristino
   provato in TASK-122. Le copie stanno fuori dalla VM perché Oracle può
-  reclamarla (ADR-0112).
+  reclamarla (ADR-0114).
 - **Admin**: una colonna `role` negli utenti; i due admin si nominano con
   una riga SQL sulla VM, senza schermate.
 - **Email** con Brevo, dall'API soltanto: la chiave in `.env`, mai

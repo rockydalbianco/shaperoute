@@ -1,12 +1,12 @@
 # DATABASE — Persistenza
 
-Da TASK-110 (ADR-0112, ADR-0113). Lo schema qui sotto è quello di
+Da TASK-110 (ADR-0114, ADR-0115). Lo schema qui sotto è quello di
 partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 
 ## Dove e come
 
 - **PostgreSQL 16 con PostGIS**, in Docker sulla VM Oracle dell'API
-  (ADR-0112). L'indirizzo del database solo in `.env`
+  (ADR-0114). L'indirizzo del database solo in `.env`
   (`SHAPEROUTE_DATABASE_URL`).
 - **Migrazioni**: `services/api/migrations/NNNN_cosa.sql`, applicate
   all'avvio dell'API in ordine, una transazione ciascuna, registrate in
@@ -35,7 +35,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 
 Tutte le tabelle legate a un utente hanno `ON DELETE CASCADE`: cancellare
 la riga di `users` cancella tutto il resto, anche i suoi
-`generated_routes` (ADR-0112, punto 7). I percorsi generati senza account
+`generated_routes` (ADR-0114, punto 7). I percorsi generati senza account
 non hanno utente e restano.
 
 ## Come si memorizza una traccia
@@ -57,7 +57,7 @@ una VM gratuita poco usata.
 
 - Agli altri iscritti una corsa arriva solo pubblicata e tagliata; un
   percorso consigliato parte dal punto mostrato, mai da quello vero, e non
-  dice chi l'ha chiesto (ADR-0112).
+  dice chi l'ha chiesto (ADR-0114).
 - Senza account non si legge niente degli iscritti.
 - Nel database non ci sono indirizzi IP; i log dell'API non hanno
   posizioni (ADR-0092).

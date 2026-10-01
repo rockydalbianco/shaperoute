@@ -61,7 +61,7 @@ se il risultato è buono: quello lo decide l'occhio. Vedi `ROUTE_ENGINE.md` §5.
 
 ## La parte social
 
-Scelte dell'utente, 2026-10-01 (ADR-0112). Chi corre un percorso ha un
+Scelte dell'utente, 2026-10-01 (ADR-0114). Chi corre un percorso ha un
 **punteggio da 0 a 100**: quanto il percorso somiglia alla forma, per
 quanto la corsa l'ha seguito (ADR-0090). Ci si iscrive con email e
 password, da 16 anni. Una corsa salvata è **privata finché non la si

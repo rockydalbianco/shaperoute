@@ -108,7 +108,18 @@ test("Enter takes the first suggestion", async () => {
     "submitEditing",
   );
   expect(onCity).toHaveBeenCalledWith(arena);
-  expect(fetchFn).toHaveBeenCalledTimes(1);
+  // Asked once; then the choice told to the API (TASK-142).
+  expect(fetchFn.mock.calls.map(([url]) => url)).toEqual([
+    "http://api/city-suggestions?q=arena",
+    "http://api/signals",
+  ]);
+  expect(JSON.parse(fetchFn.mock.calls[1][1].body)).toEqual({
+    kind: "city_chosen",
+    label: arena.label,
+    point: arena.point,
+    place: true,
+    via: "suggestion",
+  });
   jest.useRealTimers();
 });
 
@@ -197,4 +208,49 @@ test("a request in words still works, with an example for the city", async () =>
   await fireEvent.changeText(field, " a romantic heart ");
   await fireEvent.press(screen.getByText("Make my route"));
   expect(onAsk).toHaveBeenCalledWith("a romantic heart");
+});
+
+test("the city chosen is told to the API, with how it was chosen (TASK-142)", async () => {
+  const onSignal = jest.fn();
+  const onCity = jest.fn();
+  await render(
+    <CityPicker
+      apiUrl="http://api"
+      city={null}
+      onCity={onCity}
+      recent={[parma]}
+      fetchFn={answers([newYork])}
+      onSignal={onSignal}
+    />,
+  );
+  await fireEvent.press(screen.getByText("↺ Parma"));
+  await fireEvent.press(screen.getByText("New York"));
+  expect(onSignal.mock.calls.map(([signal]) => signal)).toEqual([
+    { kind: "city_chosen", label: parma.label, point: parma.point, via: "recent" },
+    {
+      kind: "city_chosen",
+      label: newYork.label,
+      point: newYork.point,
+      via: "featured",
+    },
+  ]);
+});
+
+test("a name typed and searched with Enter is told as typed", async () => {
+  const onSignal = jest.fn();
+  await render(
+    <CityPicker
+      apiUrl="http://api"
+      city={null}
+      onCity={jest.fn()}
+      fetchFn={answers([paris])}
+      onSignal={onSignal}
+    />,
+  );
+  const field = screen.getByPlaceholderText("Type a city or a place");
+  await fireEvent.changeText(field, "Paris");
+  await fireEvent(field, "submitEditing");
+  expect(onSignal).toHaveBeenCalledWith(
+    expect.objectContaining({ kind: "city_chosen", label: paris.label, via: "typed" }),
+  );
 });

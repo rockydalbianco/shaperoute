@@ -8,7 +8,10 @@ What a line holds, and what it never holds:
 - how it went: outcome, error code, number of results, similarity, places
   passed, milliseconds; which vocabulary version and which reader (table,
   learned, ai) answered;
-- never a person: no id, no address, no header, no key, no exact point.
+- what the app did with it (TASK-142, signals.py): the city chosen and how,
+  the route chosen among A, B and C, a hint taken ("Try N km");
+- never a person: no id, no address, no header, no key, no exact point,
+  no letters typed while the suggestions came.
 
 Files are monthly (events-YYYY-MM.jsonl), never rewritten nor deleted, so
 the history stays; readable by their owner only. Writing never stops a
@@ -47,17 +50,24 @@ Kind = Literal[
     "recommended_open",  # a route of "Explore" opened
     "gpx_export",  # a route exported: it was worth running
     "run_scored",  # a run scored after it was run
+    # Signals of the app (TASK-142, POST /signals):
+    "city_chosen",  # a city or a place chosen in "Explore", and how
+    "route_chosen",  # the route started or exported, among A, B, C
+    "hint_taken",  # a way out of a failed route: "Try N km", a shape
 ]
-Outcome = Literal["ok", "empty", "error"]
+# "cancelled": a route job given up by the app before it ended (TASK-142).
+Outcome = Literal["ok", "empty", "error", "cancelled"]
 
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 _NUMBER = re.compile(r"\d[\d .-]{4,}\d")
 
 
-def redact(text: str) -> str:
+def redact(text: str, lower: bool = True) -> str:
     """Single spaces, lower case, no e-mail address nor long number (a
-    phone, a house number with its post code), at most MAX_TEXT."""
-    plain = " ".join(text.split()).lower()
+    phone, a house number with its post code), at most MAX_TEXT. A place's
+    name keeps its capitals (`lower=False`): they are the name."""
+    plain = " ".join(text.split())
+    plain = plain.lower() if lower else plain
     plain = _EMAIL.sub("[email]", plain)
     plain = _NUMBER.sub("[number]", plain)
     return plain[:MAX_TEXT]
@@ -109,6 +119,15 @@ class Event:
     # How long the words took to read (tables, vocabulary or AI), apart
     # from planning the route: what the AI costs in time.
     read_ms: int | None = None
+    # The distance asked for; a hint's new one (TASK-142).
+    distance_m: int | None = None
+    to_m: int | None = None
+    # The route chosen (0 is A, the engine's first) of `n` offered; how a
+    # city was chosen or a route used; which hint; a place, not a city.
+    index: int | None = None
+    via: str | None = None
+    hint: str | None = None
+    place: bool | None = None
     vocab: int = 0
     ts: str = field(
         default_factory=lambda: datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")

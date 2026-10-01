@@ -3658,6 +3658,58 @@ categoria da un luogo parte dal suo punto (provato: Duomo di Milano →
 Food, cerchio di 9,8 km, 4 ristoranti). Etichette in inglese, come le
 città di TASK-134.
 
+## ADR-0112 — Le ricerche imparano anche da cosa fa l'app
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
+(TASK-142), che ha chiesto di nuovo il sistema di auto-miglioramento
+
+**Contesto**: ADR-0101 impara da cosa l'API vede. Ma l'API non vede le
+scelte: da TASK-134/138 una città scelta fra i suggerimenti non passa da
+`/cities` (dal vivo: Vercelli, «Explore» vuoto 3 volte, nessuna proposta);
+non sa quale percorso si usa fra A, B e C, né se si prende «Try N km».
+Una ricerca sbagliata e corretta subito («levic» → Levič, Slovenia → 16 s
+dopo Levico) non insegnava nulla. Un cambio del motore o del catalogo non
+si misurava: `impact` confronta solo versioni del vocabolario.
+
+**Decisione**:
+- **`POST /signals`** (`signals.py`): tre corpi in lista bianca,
+  `city_chosen`, `route_chosen`, `hint_taken`; un campo in più è un 422.
+  Sempre `204`, mai un errore sul telefono. Oltre 60 al minuto, tutti i
+  client insieme, non si registrano. Il nome di una città è pubblico e si
+  tiene con le maiuscole; il punto diventa la cella di ~1 km; mai le lettere
+  digitate, mai la partenza. Nell'app un invio che non fallisce mai, da
+  `ExploreTools.tsx` (la città e come) e `RoutePanel.tsx` (il primo uso di
+  un percorso, «Try N km», una forma del catalogo), senza toccare `App.tsx`.
+- **Percorsi annullati** come eventi (`cancelled`, con lo stato a cui
+  erano), registrati da `DELETE`; il risultato buttato non conta.
+- **`city_name`**, una proposta applicabile: parole cercate come città e
+  lasciate entro 3 minuti per una città il cui nome comincia con quelle
+  parole o ne dista poche lettere, ≥ 2 volte, in ≥ 2 giorni, in metà delle
+  ricerche. Nel vocabolario (`city_names`), `/cities` cerca il nome
+  imparato. Senza un identificativo, ricerca e scelta si legano solo per
+  tempo: da qui le tre condizioni.
+- **Metriche di comportamento** (`cancel_rate`, `first_choice_rate`): si
+  leggono, ma non chiedono di tornare indietro col vocabolario, che non le
+  cambia. `city_left_rate` sì: è quella che un nome imparato abbassa.
+- **`compare --split GIORNO`** per ogni cambio, con lo stesso test di
+  `impact`; `trend` per settimana; `why` per sapere cosa manca a una
+  proposta.
+
+**Alternative scartate**: un identificativo di sessione nei segnali
+(legherebbe ricerca e scelta con certezza, ma è un dato di una persona:
+scelta dell'utente, con gli account di TASK-110); registrare le lettere di
+`/city-suggestions` (ADR-0101); imparare dalle scelte fra A, B e C (la
+classifica è codice del motore: `review_ranking`, per una persona);
+il tipo dei segnali in `shared-types/src/index.ts` (è di TASK-088, aperto:
+per ora `src/signals.ts`).
+
+**Conseguenza**: provato dal vivo su un'API di prova con Geoapify: il primo
+giorno ricostruito dall'evento vero di «levic», il secondo dal vivo →
+proposta `city_name` → `apply` → `GET /cities?q=levic` risponde Levico
+Terme (`"by":"learned"`). Vercelli scelta fra i suggerimenti → proposta per
+il catalogo. Trovato e corretto un errore di TASK-130: `Insights.record`
+riceveva `ms` due volte, e nessun percorso dell'API era mai stato
+registrato (c'erano solo quelli importati dallo storico).
+
 ## ADR-0114 — La parte social: le scelte dell'utente
 **Stato**: Attiva · 2026-10-01 · **scelte dell'utente**, una domanda per
 volta (TASK-110). Chiude, con ADR-0115, ADR-0013.
@@ -3880,3 +3932,67 @@ prodotto, non delegata); mettere «halloween» e «natale» nella tabella
 **Conseguenza**: il catalogo ha tredici forme. Chieste all'API a Milano a
 15 km danno, punto per punto, i campioni giudicati di TASK-078. Se un
 giorno `tree` entra nel catalogo, «albero» e «tree» sono liberi per lui.
+
+## ADR-0118 — I baffi delle altre forme: solo quelli oltre i tratti voluti
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («fai lo stesso per
+le altre forme») e giudicato da lui forma per forma; misura e peso decisi
+dall'agente su delega dell'utente (TASK-140). Segue ADR-0107 e ADR-0109.
+
+**Contesto**: senza tratti ripassati restano solo cavallo e luna. Gatto,
+pesce, farfalla, lumaca, testa di cane e di coniglio ripassano apposta
+occhi, antenne, spirale (TASK-037): contare tutto il percorso fatto due
+volte li avrebbe puniti per i loro tratti.
+
+**Decisione**:
+- `extra_doubled_share(percorso, forma)`: la quota fatta due volte del
+  percorso meno quella della forma piazzata; mai sotto zero. Sostituisce
+  `doubled_share` nel costo della ricerca e nello `score` delle partenze
+  vicine. Per una forma senza tratti è la stessa cosa: cuore, cerchio e
+  stella restano identici (77 percorsi confrontati con `main`).
+- `W_DOUBLED` = 1,5 per cuore, cerchio, stella, cavallo, luna, farfalla,
+  lumaca.
+
+**Giudizio dell'utente** sui 13 percorsi che cambiavano con il peso su
+tutte le forme: meglio i nuovi per luna (1 su 1), farfalla (1 su 1),
+lumaca (1 su 1); meglio quelli di prima per gatto (3 su 4), pesce (1 su 1),
+testa di cane (2 su 3), testa di coniglio (1 su 1, l'altro indifferente).
+Il cavallo non cambiava: entra come il cerchio, perché non ha tratti.
+
+**Alternative scartate**: il peso per tutte le forme (gatto, pesce e teste
+avrebbero perso forma, giudicati peggio); un peso diverso per forma (con
+7 prove ciascuna non c'è abbastanza per tararlo).
+
+**Conseguenza**: sulle prove cambiano solo i 3 percorsi giudicati meglio.
+Gatto, pesce e le teste possono tenere dei baffi: se l'occhio lo chiede,
+servono altre idee (ritoccare la forma, o la somiglianza delle teste).
+
+## ADR-0121 — Su Linux la memoria per le partenze vicine è MemAvailable
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-147), dopo che l'utente non vedeva più le alternative sul server.
+
+**Contesto**: le partenze vicine (ADR-0071) partono ciascuna in un
+processo solo se c'entra nella memoria, lasciando 1000 MB al piano della
+partenza dell'utente; le alternative (ADR-0087) sono i loro percorsi. Su
+Linux la memoria si leggeva da `SC_AVPHYS_PAGES`, cioè MemFree, che non
+conta la cache dei file. Sul server Hetzner la cache è piena delle zone
+lette dal disco: 534 MB liberi su 6,8 GB disponibili, quindi nessuna
+partenza vicina e nessuna alternativa, per forme, parole e immagini. Sul
+Mac `SC_AVPHYS_PAGES` non esiste (si provano sempre tutte), su Windows si
+legge già la memoria disponibile: per questo non si era visto.
+
+**Decisione**:
+- Su Linux si legge **MemAvailable** da `/proc/meminfo`: la stima del
+  kernel della memoria che un processo nuovo può prendere senza swap,
+  cache liberabile compresa.
+- Sotto un **limite cgroup v2** (container con `--memory`, servizio
+  systemd con `MemoryMax`) non più di quanto resta del limite, contando
+  come libera la cache inattiva (`inactive_file`), come fa `docker stats`.
+  Senza limite (`max`), solo MemAvailable.
+- Senza MemAvailable (kernel prima di 3.14) si torna a `SC_AVPHYS_PAGES`.
+- In un modulo nuovo, `route_engine/memory.py`; `free_memory_mb` lo usa su
+  Linux. Riserva, peso per processo e attese restano quelli di ADR-0071.
+
+**Conseguenza**: sul server, nel container dell'API, il cuore da 5 km a
+Trento torna con un'alternativa (10,8 s) e la stella con due (5,8 s),
+come sul Mac. Due richieste insieme contano la memoria ognuna quando
+parte, come prima.

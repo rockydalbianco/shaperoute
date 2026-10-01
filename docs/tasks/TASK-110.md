@@ -79,6 +79,10 @@ la fa l'utente**, una domanda per volta.
    partenza vera; il giro è lo stesso. Il nome di chi l'ha chiesto non si
    mostra mai. Scelta dell'utente (2026-10-01).
 
+6. **Età minima**: **16 anni**, il limite più alto dei paesi UE, così
+   nessun consenso dei genitori in Europa; all'iscrizione la casella «I am
+   at least 16». Scelta dell'utente (2026-10-01), fra 14, 16 e 18.
+
 ## Criteri di accettazione
 
 - [ ] ADR-0013 ha stato «Attiva» o è sostituita da ADR nuovi, con hosting,

@@ -619,6 +619,20 @@ costo = w_forma · (1 − somiglianza) + w_dist · |dist_reale − dist_target| 
 con `w_forma` = 3 e `w_dist` = 1: la forma conta più della distanza. Una
 partenza spostata di 500 m aggiunge 0,15, cioè vale 5 punti di copertura.
 
+**I baffi del cuore** (TASK-131, ADR-0106): per il cuore il costo ha un
+termine in più, `w_baffi · quota fatta due volte`, con `w_baffi` = 1,5
+(`W_DOUBLED`, `retracing.py`). La quota è la parte della lunghezza su pezzi
+di strada percorsi più di una volta, in un verso o nell'altro: un «baffo»
+che va a un punto della forma e torna indietro. La somiglianza non lo vede,
+perché le due andate stanno sulla forma; l'occhio sì: l'unico cuore
+giudicato `sì` (Milano) ne aveva 0%, gli altri 4–23%. Lo stesso termine,
+diviso per `w_forma`, toglie punteggio nella scelta fra le partenze vicine
+(`score`). Le altre forme non lo hanno: gatto, pesce e lettere ripassano
+apposta i loro tratti, e le loro strade restano quelle di prima. Sui 7
+cuori di prova cambiano Caldonazzo 10 km (17% → 7%), Levico 8 km
+(23% → 4%) e Trento 15 km; la somiglianza può scendere un po' (Levico
+0,84 → 0,78), i tempi no.
+
 ### Misura della somiglianza
 
 Si confronta il percorso con la forma piazzata (ruotata e scalata), in tre

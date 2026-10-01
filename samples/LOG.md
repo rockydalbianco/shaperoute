@@ -325,6 +325,12 @@ chiude ADR-0010.
 | 2026-10-01 | catalog/seed/torino.json | torino | 0.90–1.00 | 5, 10, 21 km | sì | TASK-126: tenuti 25 su 32; fuori farfalla, gatto, testa di cane, testa di coniglio, lumaca e pesce a 5 km, lumaca a 10. I più belli: gatto 21, pesce 21, cuore 21, lumaca 21, stella 10, testa di coniglio 21 |
 | 2026-10-01 | catalog/seed/levico.json | levico | 0.90–1.00 | 10, 21 km | quasi | TASK-126: tenuti 7 su 19; la rete rada disegna male i dettagli: fuori testa di cane e testa di coniglio a ogni distanza, lumaca 10 e 21, cuore 21, cavallo, stella e luna a 5. I più belli: cavallo 21, luna 21 |
 | 2026-10-01 | catalog/seed/milano.json, trento.json | milano, trento | — | 5, 10, 21 km | sì | TASK-126: già visti dall'utente, tenuti tutti. I più belli: Milano cuore 21, stella 21, luna 10, pesce 21, gatto 21, farfalla 10; Trento stella 21, cuore 21, luna 21, gatto 10. Riserve dell'agente, non applicate: testa di cane e lumaca a 5 km, a Trento anche a 10 e 21 |
+| 2026-10-01 | TASK-131_heart_10km_caldonazzo_v0.gpx | caldonazzo | 0.86 | 11.8 / 10.0 km | quasi | TASK-131, il cuore di oggi; 17% del percorso fatto due volte («baffi») |
+| 2026-10-01 | TASK-131_heart_10km_caldonazzo_v1.gpx | caldonazzo | 0.82 | 9.4 / 10.0 km | — | TASK-131, con il peso dei baffi (ADR-0106): 7% fatto due volte; l'utente non ha scelto fra i due |
+| 2026-10-01 | TASK-131_heart_8km_levico_v0.gpx | levico | 0.84 | 8.5 / 8.0 km | quasi | TASK-131, il cuore di oggi; 23% fatto due volte |
+| 2026-10-01 | TASK-131_heart_8km_levico_v1.gpx | levico | 0.78 | 8.1 / 8.0 km | meglio | TASK-131, con il peso dei baffi: 4% fatto due volte; preferito a v0 dall'utente |
+| 2026-10-01 | TASK-131_heart_15km_trento_v0.gpx | trento | 0.90 | 14.5 / 15.0 km | quasi | TASK-131, il cuore di oggi |
+| 2026-10-01 | TASK-131_heart_15km_trento_v1.gpx | trento | 0.90 | 15.5 / 15.0 km | meglio | TASK-131, con il peso dei baffi: disegnato altrove, preferito a v0 dall'utente |
 
 <!--
 Esempio di riga compilata:

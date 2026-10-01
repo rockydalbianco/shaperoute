@@ -3339,3 +3339,41 @@ corrisponderebbe); uno script fuori dal motore (non vale per l'API).
 **Conseguenza**: il centro di Verona, mai scaricato, in 10 s. Il cambio è
 globale al processo per la durata del download: altri nomi non sono
 toccati.
+
+## ADR-0106 — Il cuore evita i «baffi»: le strade fatte due volte costano
+**Stato**: Attiva · 2026-10-01 · giudizio e scelte dell'utente; misura e
+peso decisi dall'agente su delega dell'utente (TASK-131). ADR-0103 non è
+usato da nessuno ma lasciato libero: più sessioni prendono numeri insieme.
+
+**Contesto**: «ad occhio saprei farlo un po' meglio il cuore». Su 7 cuori
+veri (Caldonazzo, Levico, Trento, Milano) l'utente ha dato 6 `quasi` e un
+`sì` (Milano). Tre forme ideali più larghe o con lobi più tondi (che aveva
+chiesto) hanno perso contro quella di oggi su 5 righe su 7: la forma non è
+il problema. Alla domanda «cosa rende Milano migliore» ha risposto: linee
+più pulite, senza pezzi avanti e indietro. Misurati: Milano 0% del
+percorso fatto due volte, gli altri cuori scelti 1–23%.
+
+**Decisione**:
+- `route_engine/retracing.py` (nuovo): `doubled_share`, la quota della
+  lunghezza su pezzi di strada percorsi più di una volta (dai punti degli
+  archi del grafo, in un verso o nell'altro).
+- Nel costo della ricerca, solo per il cuore: `+ 1,5 · doubled_share`
+  (`W_DOUBLED`, `doubled_weight(nome)`); nella scelta fra le partenze
+  vicine lo stesso termine diviso per `W_SHAPE`. Pesi 1,5 e 3 danno gli
+  stessi cuori sulle 7 prove; si tiene il più piccolo.
+- La forma ideale del cuore non cambia.
+
+**Giudizio dell'utente** sui cuori cambiati: Levico 8 km e Trento 15 km
+meglio i nuovi; Caldonazzo 10 km nessuna preferenza; gli altri 4 uguali.
+
+**Alternative scartate**: cuore più largo (A) o a lobi tondi (B, C):
+preferito quello di oggi; penalizzare i baffi per tutte le forme (gatto,
+pesce e lettere li hanno apposta; sarebbe da rigiudicare tutto il
+catalogo); un filtro dopo la ricerca invece del costo (scarta, non cerca
+un percorso pulito).
+
+**Conseguenza**: alcuni cuori cambiano e la loro somiglianza può scendere
+di qualche punto; nessun tempo in più. Le altre forme e le parole danno gli
+stessi percorsi (registro rifatto: stella, cavallo, farfalla, CIAO,
+cerchio identici). Se l'occhio lo chiede, il peso si può dare ad altre
+forme senza tratti (cerchio, stella), con un loro giudizio.

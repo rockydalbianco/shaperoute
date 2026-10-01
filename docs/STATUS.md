@@ -108,8 +108,9 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   10 km: da 11,8 a 5,5 s) e non scrive 20–110 MB; la stessa richiesta
   rifatta costa 0,4–2,6 s in più. Stessi percorsi. I ritagli già salvati
   si elencano con `python -m route_engine.prune_crops` e si cancellano con
-  `--delete`: sul Mac erano 346 su 355 grafi, 17,9 GB su 18,6, cancellati
-  dopo il merge su richiesta dell'utente (2026-10-01).
+  `--delete`: sul Mac erano 346 su 355 grafi, 17,9 GB su 18,6; alla
+  cancellazione, dopo il merge su richiesta dell'utente (2026-10-01), erano
+  382, per 19,4 GB.
 - **Motore, API e app** — TASK-145: «Start» anche sui percorsi di
   «Explore» (consigliati, esempi delle città, a tema), chiesto dall'utente
   (ADR-0117). Al tocco l'app chiede le indicazioni a `POST

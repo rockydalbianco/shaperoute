@@ -57,6 +57,11 @@ dell'utente del 2026-10-01): tutti i percorsi generati si salvano, i
 migliori si consigliano agli utenti e si usano sui social; parte dopo il
 database (TASK-114) e l'API sempre accesa (TASK-122).
 
+**TASK-093 — Scegliere fra più percorsi**, chiesto dall'utente il
+2026-10-01: fino a 3 percorsi per richiesta (oggi il motore ne calcola 4 e
+ne tiene uno), scelti nell'app. Non dipende dalla parte social; parte con
+le scelte di come si vedono.
+
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
@@ -380,8 +385,7 @@ Niente.
   download di una zona nuova (TASK-023, TASK-026; `API.md`, «Tempi»). Le
   richieste in due tempi lo rendono sopportabile, non veloce: `PRODUCT.md`
   chiede al massimo 30 s.
-- In sospeso, piccolo: più avanti, far scegliere all'utente fra più
-  percorsi alternativi (la ricerca li ha già).
+- Far scegliere all'utente fra più percorsi alternativi: è TASK-093.
 - La Valsugana è sospesa su richiesta dell'utente: cuore e cerchio da 5 km
   lì non sono disponibili (ADR-0025, ADR-0027).
 - matplotlib non è una dipendenza: per guardare le forme basta uno script

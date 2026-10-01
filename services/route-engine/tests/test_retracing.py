@@ -1,5 +1,5 @@
-"""Whiskers (TASK-131): the share of a route run twice over the same street,
-and its weight in the choice of a heart only."""
+"""Whiskers (TASK-131, TASK-139): the share of a route run twice over the same
+street, and its weight for the heart, the circle and the star only."""
 
 from __future__ import annotations
 
@@ -36,9 +36,11 @@ def test_a_road_run_back_the_other_way_counts_too() -> None:
     assert doubled_share(at((0, 0))) == 0.0
 
 
-def test_only_the_heart_weighs_its_whiskers() -> None:
-    assert doubled_weight("heart") == W_DOUBLED["heart"] > 0
-    for other in ("circle", "star", "cat", "CIAO", "image", ""):
+def test_heart_circle_and_star_weigh_their_whiskers_and_no_other() -> None:
+    for weighed in ("heart", "circle", "star"):
+        assert doubled_weight(weighed) == W_DOUBLED[weighed] > 0
+    # Cat, fish and letters run their strokes twice on purpose.
+    for other in ("cat", "fish", "horse", "CIAO", "image", ""):
         assert doubled_weight(other) == 0.0
 
 
@@ -51,5 +53,5 @@ def test_a_heart_with_whiskers_scores_less_and_other_shapes_do_not() -> None:
     assert score(whiskered, 500.0) < score(clean, 500.0)
     loss = W_DOUBLED["heart"] / 3.0 * doubled_share(WHISKER)
     assert score(clean, 500.0) - score(whiskered, 500.0) == pytest.approx(loss)
-    assert score(plan(WHISKER, "star"), 500.0) == score(plan(SQUARE, "star"), 500.0)
+    assert score(plan(WHISKER, "cat"), 500.0) == score(plan(SQUARE, "cat"), 500.0)
     assert score(plan(WHISKER, None), 500.0) == score(plan(SQUARE, None), 500.0)

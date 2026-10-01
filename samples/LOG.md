@@ -318,6 +318,8 @@ chiude ADR-0010.
 | 2026-09-30 | TASK-084_hearts_12km_levico_v1.gpx | levico | 0.76 | 12.8 / 12.0 km | quasi | tre cuori; ruotati di 15°; partenza spostata di 250 m a sud-est; 1523 m strade principali; 70 s |
 | 2026-09-30 | TASK-084_village_12km_milano_v1.gpx | milano | 0.98 | 12.3 / 12.0 km | sì | da `TASK-084_village.png` (casa, albero, sole e nuvola): 4 soggetti, il massimo; scala 81%; 303 m scale; 662 m gallerie; 12 s |
 | 2026-09-30 | TASK-084_village_12km_levico_v1.gpx | levico | 0.84 | 11.6 / 12.0 km | quasi | casa, albero, sole e nuvola; partenza spostata di 250 m a est; scala 60%; 14 s |
+| 2026-10-01 | catalog/seed/trento.json | trento | 0.80–1.00 | 5, 10, 21 km | sì | TASK-125: 27 tenuti su 33 (≥ 0,88), visti tutti dall'utente; il pesce scartato a occhio (0,79–0,87, già sotto soglia), escluso per nome (`REJECTED`) |
+| 2026-10-01 | catalog/seed/milano.json | milano | 0.90–1.00 | 5, 10, 21 km | sì | TASK-125: 33 tenuti su 33, visti tutti dall'utente |
 
 <!--
 Esempio di riga compilata:

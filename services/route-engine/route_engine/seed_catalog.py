@@ -56,6 +56,12 @@ DISTANCES_M: tuple[int, ...] = (21_000, 10_000, 5_000)
 # `almost` (TASK-076); 0.85 got both (TASK-075).
 MIN_SIMILARITY = 0.88
 
+# (city, shape) the user judged by eye and turned down, whatever the
+# similarity: they stay out even with a lower threshold.
+REJECTED: frozenset[tuple[str, str]] = frozenset(
+    {("trento", "fish")}  # 2026-10-01: not a fish on Trento's roads
+)
+
 # Coordinates to 6 decimals: 0.1 m, far below what the GPS sees.
 DECIMALS = 6
 
@@ -166,9 +172,13 @@ def select(
 ) -> list[dict[str, Any]]:
     """Every drawn route at `min_similarity` or more, best first within a
     city. Equally good routes are all kept, even on the same roads: none
-    replaces another (TASK-092, point 3)."""
+    replaces another (TASK-092, point 3). REJECTED pairs never."""
     kept = [
-        r for r in runs if "error_kind" not in r and r["similarity"] >= min_similarity
+        r
+        for r in runs
+        if "error_kind" not in r
+        and r["similarity"] >= min_similarity
+        and (r["city"], r["shape"]) not in REJECTED
     ]
     return sorted(kept, key=lambda r: (r["city"], -r["similarity"], r["key"]))
 

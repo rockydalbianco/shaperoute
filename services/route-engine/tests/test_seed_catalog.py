@@ -131,6 +131,11 @@ def test_select_keeps_every_route_above_the_threshold_best_first() -> None:
     ]
 
 
+def test_select_leaves_out_what_the_eye_rejected() -> None:
+    runs = [_run("trento/fish/21000", 0.99), _run("milano/fish/21000", 0.99)]
+    assert [r["key"] for r in select(runs, 0.5)] == ["milano/fish/21000"]
+
+
 def test_catalogue_files_one_per_city_same_input_same_text() -> None:
     selected = select([_run("trento/heart/5000", 0.9), _run("bari/star/10000", 0.93)])
     files = catalogue_files(selected, 0.88)

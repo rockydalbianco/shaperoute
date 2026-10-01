@@ -230,6 +230,13 @@ I suggerimenti della partenza vengono dall'API, che li chiede a Geoapify
    $env:GEOAPIFY_API_KEY = "la-chiave-di-geoapify"
    ```
 
+   Sul Mac la chiave sta in `.env` alla radice (fuori dal repository),
+   letta all'avvio:
+
+   ```bash
+   set -a; . ./.env; set +a; services/api/.venv/bin/python -m shaperoute_api --lan
+   ```
+
    L'API stampa «Places suggested by Geoapify».
 3. L'app non cambia: niente da mettere in `apps/mobile/.env` né su EAS.
 

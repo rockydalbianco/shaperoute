@@ -60,7 +60,8 @@ docs/tasks/TASK-123.md
 
 ## Esito
 
-Fatto nel codice, con i test (API 209, app 486). La risposta di Geoapify
-nei test è scritta dalla documentazione, non presa dal servizio: senza
-chiave non si è potuto provarlo dal vivo. Da fare: la chiave sull'API e la
-prova sull'iPhone.
+Fatto nel codice, con i test (API 209, app 486). Provato dal vivo il
+2026-10-01 con la chiave dell'utente: Geoapify risponde in 0,4–1,2 s
+(Photon 2–4 s), la stessa ricerca dalla cache in 2 ms; «via bel» vicino a
+Trento dà Via Rodolfo Belenzani per prima. L'API sul Mac gira con la
+chiave, letta da `.env`. Da fare: la prova sull'iPhone.

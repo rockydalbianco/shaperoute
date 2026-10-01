@@ -46,3 +46,14 @@ def doubled_share(points: Sequence[LatLon]) -> float:
         if len(key) == 2 and counts[key] > 1
     )
     return doubled / total
+
+
+def extra_doubled_share(
+    points: Sequence[LatLon], shape: Sequence[LatLon] | None = None
+) -> float:
+    """`doubled_share` of the route beyond what its shape draws twice on
+    purpose: the strokes of a cat's eyes or a butterfly's antennae
+    (TASK-037) are run out and back, and are not whiskers (TASK-140). A
+    shape without strokes asks for nothing twice."""
+    expected = doubled_share(shape) if shape else 0.0
+    return max(0.0, doubled_share(points) - expected)

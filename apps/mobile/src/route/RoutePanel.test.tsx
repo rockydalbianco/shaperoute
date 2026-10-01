@@ -273,3 +273,95 @@ test("the route alone has no tiles to choose from (TASK-093)", async () => {
   await fireEvent.press(screen.getByTestId("route-B"));
   expect(onChoose).toHaveBeenCalledWith(1);
 });
+
+// --- what the app tells the API (TASK-142) ---------------------------------
+
+const heartRequest: RouteRequest = {
+  start: [46.0671, 11.1214],
+  shape: "heart",
+  distance_m: 5000,
+  activity: "running",
+};
+
+const heartResult = {
+  points: [
+    [46.0671, 11.1214],
+    [46.0671, 11.1214],
+  ] as [number, number][],
+  distance_m: 4900,
+  similarity: 0.9,
+  shape: "heart" as const,
+  warnings: [],
+  directions: [],
+};
+
+test("the route used is told once, as A, B or C among the ones offered", async () => {
+  const onSignal = jest.fn();
+  const onExport = jest.fn();
+  const choices = [heartResult, { ...heartResult, similarity: 0.85 }];
+  const outcome = (chosen: number) => (
+    <RouteOutcome
+      view={{ status: "done", request: heartRequest, result: choices[chosen] }}
+      onCancel={jest.fn()}
+      exporting={{ status: "idle" }}
+      onExport={onExport}
+      onTryDistance={jest.fn()}
+      onPickShape={jest.fn()}
+      onStart={jest.fn()}
+      choices={choices}
+      chosen={chosen}
+      onSignal={onSignal}
+    />
+  );
+  const { rerender } = await render(outcome(0));
+  await fireEvent.press(screen.getByText("Export GPX"));
+  await fireEvent.press(screen.getByText("Export GPX"));
+  expect(onExport).toHaveBeenCalledTimes(2);
+  await rerender(outcome(1));
+  await fireEvent.press(screen.getByText("Export GPX"));
+  expect(onSignal.mock.calls.map(([signal]) => signal)).toEqual([
+    { kind: "route_chosen", shape: "heart", index: 0, of: 2, via: "gpx" },
+    { kind: "route_chosen", shape: "heart", index: 1, of: 2, via: "gpx" },
+  ]);
+});
+
+test("Try N km and a shape of the catalogue are told as hints taken", async () => {
+  const onSignal = jest.fn();
+  const onTryDistance = jest.fn();
+  const failed = (suggested: number | null) => (
+    <RouteOutcome
+      view={{
+        status: "failed",
+        request: heartRequest,
+        problem: {
+          kind: "api_error",
+          code: "shape_not_drawable",
+          message: "no",
+          suggested_distance_m: suggested,
+        },
+      }}
+      onCancel={jest.fn()}
+      exporting={{ status: "idle" }}
+      onExport={jest.fn()}
+      onTryDistance={onTryDistance}
+      onPickShape={jest.fn()}
+      onStart={jest.fn()}
+      onSignal={onSignal}
+    />
+  );
+  const { rerender } = await render(failed(7000));
+  await fireEvent.press(screen.getByText("Try 7 km"));
+  expect(onTryDistance).toHaveBeenCalledWith(7000);
+  await rerender(failed(null));
+  await fireEvent.press(screen.getByText("star"));
+  expect(onSignal.mock.calls.map(([signal]) => signal)).toEqual([
+    {
+      kind: "hint_taken",
+      shape: "heart",
+      hint: "try_distance",
+      distance_m: 5000,
+      to_m: 7000,
+    },
+    { kind: "hint_taken", shape: "star", hint: "catalog_shape", distance_m: 5000 },
+  ]);
+});

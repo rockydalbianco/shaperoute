@@ -32,6 +32,7 @@ import numpy as np
 
 from route_engine.alternatives import alternatives
 from route_engine.geo import LatLon, latlon_to_local_array, path_length_m
+from route_engine.memory import available_mb
 from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import (
     EDGE_REUSE_PENALTY,
@@ -66,7 +67,7 @@ from route_engine.optimizer import (
     tilt_limit,
 )
 from route_engine.projection import Point, start_at_phase
-from route_engine.retracing import doubled_share
+from route_engine.retracing import extra_doubled_share
 from route_engine.shapes import get_shape
 from route_engine.validation import check_closed, measure, validate
 from route_engine.words import Word, compose
@@ -397,8 +398,14 @@ def score(plan: Plan, distance_m: float) -> float:
     return (
         plan.result.similarity
         - W_DISTANCE / W_SHAPE * max(0.0, abs(ratio - 1) - DISTANCE_TOLERANCE)
-        - whiskers * doubled_share(plan.result.points)
+        - whiskers * extra_doubled_share(plan.result.points, _placed(plan))
     )
+
+
+def _placed(plan: Plan) -> list[LatLon] | None:
+    """The shape as the search placed it, strokes and all; None without a
+    search."""
+    return None if plan.search is None else list(plan.search.best.shape)
 
 
 def _good(plan: Plan | None) -> bool:
@@ -419,7 +426,8 @@ def _moved(plan: Plan) -> bool:
 
 
 def free_memory_mb() -> float | None:
-    """Physical memory free now, in MB; None where it is not known."""
+    """Memory a new process can take now, in MB; None where it is not
+    known."""
     if sys.platform == "win32":
         import ctypes
 
@@ -443,6 +451,11 @@ def free_memory_mb() -> float | None:
         if not kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
             return None
         return status.free / 2**20
+    if sys.platform.startswith("linux"):
+        # Not the free pages: they leave out the page cache (memory.py).
+        available = available_mb()
+        if available is not None:
+            return available
     try:
         return os.sysconf("SC_AVPHYS_PAGES") * os.sysconf("SC_PAGE_SIZE") / 2**20
     except (ValueError, OSError, AttributeError):

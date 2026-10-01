@@ -11,7 +11,9 @@
     "butterfly",
     "snail",
     "dog_head",
-    "rabbit_head"
+    "rabbit_head",
+    "pumpkin",
+    "christmas_tree"
   ],
   "phrases": [
     { "text": "cavallo a dondolo", "accept": ["horse"] },
@@ -41,6 +43,13 @@
 
     { "text": "Bianconiglio", "accept": ["rabbit_head"] },
     { "text": "coniglio pasquale", "accept": ["rabbit_head"] },
+
+    { "text": "lanterna di Halloween", "accept": ["pumpkin"] },
+    { "text": "zucca di Cenerentola", "accept": ["pumpkin", null] },
+
+    { "text": "albero natalizio", "accept": ["christmas_tree"] },
+    { "text": "abete di Natale con le luci", "accept": ["christmas_tree"] },
+    { "text": "pino", "accept": ["christmas_tree", null] },
 
     { "text": "cuore spezzato", "accept": ["heart"] },
     { "text": "festa degli innamorati", "accept": ["heart"] },

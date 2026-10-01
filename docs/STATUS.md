@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-10-01 · **Fase corrente**: 4 — Estensione (scritte)
+**Ultimo aggiornamento**: 2026-10-02 · **Fase corrente**: 4 — Estensione (scritte)
 
 ---
 
@@ -18,7 +18,8 @@ da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
 percorso si esporta in GPX, e Garmin Connect lo apre. La forma si scrive
 in un riquadro, in italiano o in inglese, fra quelle del catalogo:
 cerchio, cuore, stella, cavallo, luna, gatto, pesce, farfalla, lumaca,
-testa di cane e testa di coniglio, anche da toccare come tessere. Gatto,
+testa di cane, testa di coniglio, zucca e albero di Natale, anche da
+toccare come tessere. Gatto,
 pesce e i quattro animali nuovi hanno tratti interni, fatti andata e
 ritorno (occhi, antenne, spirale). Quando la forma non va
 attorno alla partenza, il motore cerca un posto fino a 2 km e l'app mostra
@@ -93,6 +94,59 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Server** — TASK-144: la guida per portare l'API su un server a
+  pagamento, con il Mac spento (`DEPLOY.md`, strada F, ADR-0111), e la
+  configurazione pronta in `deploy/`: l'API con zone, eventi e catalogo,
+  l'AI (profilo `ai`) e HTTPS con Caddy (profilo `public`) a scelta. Prima
+  privato con Tailscale e `tailscale serve`, poi un dominio, poi gli
+  store, e i prezzi del 2026-10-01. Il server scelto dall'utente, Hetzner
+  CX33 (10,97 €/mese IVA compresa), è già acceso ma messo su a mano:
+  **spostarlo su `deploy/compose.yaml`** (F.12, stessi dati e stesso
+  indirizzo, l'app non cambia) è il passo dopo, a fine coda dei merge. La
+  CI avvia la configurazione.
+- **Motore** — TASK-147: sul server Linux tornano le alternative A · B · C
+  (forme, parole, immagini), che l'utente non vedeva più (ADR-0121). Il
+  motore leggeva la memoria libera (MemFree, 534 MB: il resto è cache
+  delle zone) invece di quella disponibile (MemAvailable, 6,8 GB), e non
+  avviava mai le partenze vicine. Provato nel container del server: cuore
+  da 5 km a Trento con 1 alternativa (10,8 s), stella con 2 (5,8 s), prima
+  0. Il server si aggiorna a `main` subito dopo il merge, perché l'utente
+  vuole le alternative presto; l'app non va ripubblicata.
+- **API e app** — TASK-142: le ricerche imparano anche da cosa fa l'app
+  (ADR-0112, `docs/INSIGHTS.md`). `POST /signals` riceve la città scelta in
+  «Explore» e come, il percorso usato fra A·B·C, «Try N km» e la forma presa
+  dopo un errore; i percorsi annullati sono eventi. Nuove proposte:
+  `city_name` («levic» → Levico Terme, applicata `/cities` la cerca),
+  `review_ranking`, `review_distance`; Vercelli scelta fra i suggerimenti
+  ora si propone per il catalogo. Comandi `why`, `compare --split`, `trend`,
+  `--since/--until`. Corretto un errore di TASK-130: nessun percorso
+  dell'API era mai stato registrato. Provato su un'API di prova con
+  Geoapify. Per averlo sull'iPhone: riavviare l'API che l'app usa e
+  ripubblicare l'app (a fine coda dei merge, col coordinatore). Seguiti
+  possibili: esportare il tipo dei segnali da `shared-types/src/index.ts`,
+  ora che TASK-088 è entrato; la forma toccata dopo parole non lette
+  (`ShapeTiles.tsx`) come prova per i sinonimi.
+- **Motore** — TASK-140: luna, farfalla, lumaca (e il cavallo, che non
+  cambia) evitano i baffi come cuore, cerchio e stella; si contano solo
+  quelli oltre i tratti voluti della forma (ADR-0118). Gatto, pesce e le
+  teste restano come prima, per scelta dell'utente. Provato sull'iPhone
+  (2026-10-02): funziona.
+- **Catalogo** — TASK-088: zucca di Halloween (`pumpkin`) e albero di
+  Natale (`christmas_tree`) nel catalogo, con parole, tessere 🎃 🎄 e AI
+  (ADR-0084); «albero» e «tree» da soli restano nessuna forma. Le tessere
+  ora sono una riga che scorre di lato. Provato sull'iPhone a Milano
+  (2026-10-01): «va tutto». Da decidere con l'utente: quali altri contorni
+  già disegnati (uccello, cane intero, albero, freccia, corona) mettere
+  nella riga.
+
+- **Motore** — TASK-136 (miglioramento generale scelto dall'agente): la
+  CLI e `seed_catalog` non salvano più i ritagli dei grafi, come già
+  l'API (ADR-0108). Una partenza nuova è più veloce (Milano, cuore da
+  10 km: da 11,8 a 5,5 s) e non scrive 20–110 MB; la stessa richiesta
+  rifatta costa 0,4–2,6 s in più. Stessi percorsi. I ritagli già salvati
+  si elencano con `python -m route_engine.prune_crops` e si cancellano con
+  `--delete`: sul Mac erano 346 su 355 grafi, 17,9 GB su 18,6, cancellati
+  dopo il merge su richiesta dell'utente (2026-10-01).
 - **Motore, API e app** — TASK-145: «Start» anche sui percorsi di
   «Explore» (consigliati, esempi delle città, a tema), chiesto dall'utente
   (ADR-0117). Al tocco l'app chiede le indicazioni a `POST
@@ -106,7 +160,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «More…»; una città senza percorsi consigliati disegna da sola cuore,
   cerchio e stella da 5 km, uno alla volta, che si aprono sulla mappa e
   restano sul telefono (ADR-0116). Pergine Valsugana: 6 s per tutti e tre.
-  Vercelli e le città senza zona sul Mac aspettano Overpass (TASK-137). Da
+  Sul server Hetzner, che l'app usa, Vercelli la prima volta: 94 s (cuore
+  40, cerchio 48, stella 5), quasi tutti download da Overpass; il cerchio
+  riscarica una zona più larga di soli 30 m per lato (proposta: zone
+  scaricate con un margine, dopo TASK-136). Da
   fare dopo il merge di TASK-142: togliere il vecchio `AskForRoute` da
   `ExploreTools.tsx` e i suoi test. TASK-138 provato sull'iPhone
   (2026-10-01): funziona.
@@ -140,7 +197,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   letto dal vocabolario, senza AI (1,0 s → 0 ms). Seguiti possibili, da
   approvare: i segnali dell'app (percorso scelto fra A·B·C, «Try N km»),
   e TASK-128 che legge città e frasi desiderate.
-
 - **App** — TASK-135: «Run with Strava» in ogni scheda di percorso, il
   flusso ufficiale (ADR-0106): salvare il GPX, importarlo nel route builder
   di Strava, seguirlo dall'app Strava. Strava non permette di creare
@@ -461,7 +517,7 @@ Niente.
   "Overpass: come si scarica".
 - Per generare campioni senza salvare ritagli in `data/cache/`: uno script
   usa-e-getta che chiama `plan_shape` con `ZoneGraphs` dell'API, come in
-  TASK-032. La CLI invece salva un ritaglio per ogni caso.
+  TASK-032. Da TASK-136 anche la CLI non salva più i ritagli (ADR-0108).
 - Per giudicare le forme senza mappa basta un PNG scritto con la libreria
   standard (`zlib`, `struct`), come `out/TASK-037-before-after.png`: niente
   matplotlib né PIL.
@@ -499,9 +555,10 @@ Niente.
   dopo la pulizia: tolti MATLAB, i ritagli in `data/cache/` e la venv del
   route-engine). Ogni zona nuova scaricata vale circa 40 MB, più le
   risposte di Overpass in `data/cache/http/`; Expo si ferma con `ENOSPC`
-  quando finisce lo spazio. La CLI salva un ritaglio per ogni partenza o
-  distanza nuova dentro una zona in cache: si possono togliere a mano. Il
-  disco D: ha più di 270 GB liberi.
+  quando finisce lo spazio. Fino a TASK-136 la CLI salvava un ritaglio per
+  ogni partenza o distanza nuova dentro una zona in cache: quelli rimasti
+  si elencano e si cancellano con `python -m route_engine.prune_crops`
+  (ADR-0108). Il disco D: ha più di 270 GB liberi.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.
 - Nell'app la partenza è la posizione GPS o un luogo cercato (`UI.md`);
   le zone fisse servono solo a confrontare le prove.

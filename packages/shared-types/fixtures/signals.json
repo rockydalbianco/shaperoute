@@ -1,0 +1,26 @@
+[
+  {
+    "kind": "city_chosen",
+    "label": "Vercelli, Piedmont, Italy",
+    "point": [45.3256, 8.4231],
+    "place": false,
+    "via": "suggestion"
+  },
+  {
+    "kind": "city_chosen",
+    "label": "Arena di Verona, Verona, Italy",
+    "point": [45.439, 10.9944],
+    "place": true,
+    "via": "suggestion"
+  },
+  { "kind": "route_chosen", "shape": "heart", "index": 1, "of": 3, "via": "gpx" },
+  { "kind": "route_chosen", "word": "CIAO", "index": 0, "of": 1, "via": "start" },
+  {
+    "kind": "hint_taken",
+    "shape": "heart",
+    "hint": "try_distance",
+    "distance_m": 3000,
+    "to_m": 5000
+  },
+  { "kind": "hint_taken", "shape": "star", "hint": "catalog_shape", "distance_m": 8000 }
+]

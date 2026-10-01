@@ -92,8 +92,14 @@ riavvio del Mac):
 | New York | 0 | 5,1 km, 0,98 | 4,9 km, 0,98 | 5,2 km, 0,99 |
 | Vercelli | 0 | `map_data_unavailable` dopo 63 s | — | — |
 
-Vercelli dà un percorso solo quando Overpass torna a rispondere al Mac, o
-con la zona scaricata prima (TASK-137); da lì in poi gli esempi restano sul
-telefono. Il file del componente si chiamava `cityExamples.ts`: sul Mac,
+Vercelli dal Mac aspetta Overpass, che rifiuta il Mac. Ma dal 2026-10-01
+l'app pubblicata usa l'API sul server Hetzner, da cui Overpass risponde: lì,
+con le stesse richieste, Vercelli dà cuore 4,8 km 0,74 in 40 s, cerchio
+5,4 km 0,85 in 48 s, stella 4,6 km 0,98 in 5 s (94 s la prima volta, poi la
+zona è in cache e gli esempi restano sul telefono). Dal log: il cuore
+scarica due zone (il riquadro della forma, poi uno più largo), il cerchio
+una terza larga solo 30 m in più per lato, perché una zona si riusa solo se
+copre tutto il riquadro (`graphs.py`). Proposto a parte: scaricare le zone
+con un margine, dopo il merge di TASK-136, che ha quei file. Il file del componente si chiamava `cityExamples.ts`: sul Mac,
 che non distingue le maiuscole, `./CityExamples` prendeva quello; ora è
 `exampleRoutes.ts`. La prova sull'iPhone dopo merge ed `eas update`.

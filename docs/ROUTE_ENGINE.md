@@ -65,7 +65,8 @@ Una forma può anche arrivare da un **contorno** in JSON (ADR-0035): dalla
 CLI con `--outline FILE`, oppure registrata in `SHAPES` come le altre. Le
 forme registrate sono il **catalogo** e sono contratto (ADR-0036): `circle`,
 `heart`, `star`, `horse`, `moon`, `cat`, `fish`, `butterfly`, `snail`,
-`dog_head`, `rabbit_head`. Un contorno entra nel catalogo solo dopo il
+`dog_head`, `rabbit_head`, `pumpkin`, `christmas_tree`. `tree`
+(TASK-034) è un altro contorno, e non è nel catalogo. Un contorno entra nel catalogo solo dopo il
 giudizio a occhio dell'utente sulle strade.
 
 ```json
@@ -548,7 +549,9 @@ da alcuni nodi della rete vicini e tiene il percorso migliore:
    al più altri 8 s, e mai oltre 25 s dalla richiesta; nessuno se il suo
    percorso è già buono. Quelle ancora in corso si lasciano. Non si provano
    su grafi oltre 30 000 nodi (Milano) né in più processi di quanti ne
-   entrano nella memoria libera.
+   entrano nella memoria che un processo nuovo può prendere: su Linux
+   MemAvailable, che conta anche la cache dei file, non la memoria libera
+   (TASK-147).
 4. **Quale si tiene** (scelta dell'utente): il cuore migliore fra tutti,
    anche quello che la ricerca ha spostato («Start here»). Conta la
    somiglianza, meno la distanza oltre il 10% dal target; fra i candidati
@@ -665,6 +668,18 @@ cambia. La stella ne ha molti (5–59%: le punte si raggiungono spesso
 andando e tornando): cambiano Levico 5 km (59% → 52%), Levico 8 km
 (39% → 17%) e Trento 15 km (6% → 2%), gli altri 4 no. Un peso doppio
 toglie più baffi ma fa perdere la forma (Levico 5 km 0,81 → 0,73): scartato.
+
+Da TASK-140 (ADR-0118) si contano solo i baffi **in più** rispetto ai
+tratti che la forma ripassa apposta (`extra_doubled_share`): la quota
+della forma piazzata fatta due volte (occhi, antenne, spirale) si toglie
+da quella del percorso. Per una forma senza tratti è zero, quindi cuore,
+cerchio e stella restano quelli di prima. Il peso vale anche per
+**cavallo, luna, farfalla e lumaca**; non per gatto, pesce, testa di cane e
+testa di coniglio, dove l'utente ha preferito i percorsi di prima (meno
+baffi, ma la forma si legge peggio). Sulle 7 partenze di prova, per le 11
+forme del catalogo (77 percorsi), cambiano solo luna a Trento 15 km
+(14% → 0%), farfalla a Levico 8 km e lumaca a Levico 12 km (75% → 42%);
+il cavallo non cambia mai.
 
 ### Misura della somiglianza
 

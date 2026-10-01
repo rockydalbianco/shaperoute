@@ -2,9 +2,15 @@
 (TASK-130, ADR-0101, docs/INSIGHTS.md).
 
   report            metrics, overall and for each vocabulary version; what is
-                    asked most: cities, languages, shapes, failing requests
+                    asked most: cities, places, themes, languages, shapes,
+                    how cities are chosen, failing requests
   impact            did each version help? Rates against the version before,
                     with a verdict only when the events are enough
+  compare --split D any change of day D (engine, catalogue, app): the rates
+                    before it against after it, with the same test
+  trend             the main rates week by week
+  why WORDS         every rule against the events of some words: what they
+                    have, what each rule still misses
   propose           what the events suggest, with evidence
   explain ID        why a proposal was made: the checks it passed, its events
   apply ID          a new vocabulary version with the proposal (validated;
@@ -14,7 +20,8 @@
   validate          the vocabulary checked against the catalogue and tables
   import-history    the old request log as events, without the starts
 
-It reads files of this computer only: no AI, no service, no cost.
+--since/--until YYYY-MM-DD keep the events of those days only, for any
+command. It reads files of this computer only: no AI, no service, no cost.
 """
 
 from __future__ import annotations
@@ -31,7 +38,11 @@ from route_engine.seed_catalog import CITIES, PHRASES
 from shaperoute_api.insights import problems_of, route_fields
 from shaperoute_api.insights.analyze import (
     Proposal,
+    between,
+    by_week,
+    compare_periods,
     demand,
+    diagnose,
     impact,
     key_of,
     metrics,
@@ -70,6 +81,25 @@ def _find(found: list[Proposal], proposal_id: str) -> Proposal:
     raise SystemExit(f"no proposal {proposal_id}: run `propose` to see them")
 
 
+def replay(events: list[dict[str, Any]], p: Proposal) -> str:
+    """What the proposal would have changed in the past events, in words."""
+    names = p.additions.get("city_names", {})
+    if names:
+        searched = sum(
+            1
+            for e in events
+            if e["kind"] == "city_search"
+            and e.get("text")
+            and phrase_key(e["text"]) in names
+        )
+        return f"would have searched {_names(names)}: {searched} past city searches"
+    return f"would have answered without the AI: {would_change(events, p)} past events"
+
+
+def _names(names: dict[str, str]) -> str:
+    return ", ".join(sorted(set(names.values())))
+
+
 def would_change(events: list[dict[str, Any]], p: Proposal) -> int:
     """How many past events the proposal would have answered without the
     AI, or at all: the replay that checks a change before it is applied."""
@@ -106,9 +136,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--dir", type=Path, default=DEFAULT_DIR, help="the events")
     parser.add_argument("--vocab", type=Path, default=DEFAULT_PATH)
     parser.add_argument("--json", action="store_true", help="machine-readable")
+    parser.add_argument("--since", help="from this day on, YYYY-MM-DD")
+    parser.add_argument("--until", help="before this day, YYYY-MM-DD")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("report")
     sub.add_parser("impact")
+    compared = sub.add_parser("compare")
+    compared.add_argument("--split", required=True, help="the day of the change")
+    sub.add_parser("trend")
+    why = sub.add_parser("why")
+    why.add_argument("words", nargs="+")
     propose = sub.add_parser("propose")
     propose.add_argument("--all", action="store_true", help="the reverted too")
     sub.add_parser("history")
@@ -128,7 +165,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     vocab = Vocabulary.load(args.vocab)
     if args.command == "import-history":
         return import_history(args.requests, args.dir)
-    events = list(read_events(args.dir))
+    events = between(read_events(args.dir), args.since, args.until)
 
     if args.command == "validate":
         problems = problems_of(vocab)
@@ -143,6 +180,47 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(json.dumps(found_impact, indent=1, ensure_ascii=False))
         else:
             print_impact(found_impact)
+        return 0
+
+    if args.command == "compare":
+        found_periods = compare_periods(events, args.split)
+        if args.json:
+            print(json.dumps(found_periods, indent=1, ensure_ascii=False))
+        else:
+            print_periods(found_periods)
+        return 0
+
+    if args.command == "trend":
+        weeks = by_week(events)
+        if args.json:
+            print(json.dumps(weeks, indent=1, ensure_ascii=False))
+        else:
+            print_trend(weeks)
+        return 0
+
+    if args.command == "why":
+        words = " ".join(args.words)
+        found_why = diagnose(
+            events,
+            vocab,
+            words,
+            core=request_core,
+            theme_words=THEME_WORDS,
+            shape_words=SHAPE_WORDS,
+        )
+        keys = {found_why["key"], phrase_key(words), words.upper()}
+        related = [
+            {"id": p.id, "kind": p.kind, "status": status_of(vocab, p)}
+            for p in _proposals(events, Vocabulary())
+            if keys & {str(k) for section in p.additions.values() for k in section}
+        ]
+        found_why["proposals"] = related
+        reading = read_request(words)
+        found_why["tables"] = reading.theme or reading.shape
+        if args.json:
+            print(json.dumps(found_why, indent=1, ensure_ascii=False))
+        else:
+            print_why(found_why)
         return 0
 
     if args.command == "report":
@@ -209,9 +287,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         es = [e for e in events if e.get("text") and _about(e, p)]
         print(f"status: {status_of(vocab, p)}")
         print(f"events about it: {len(es)}, from {sources(es)} days or places")
-        print(
-            f"would have answered without the AI: {would_change(events, p)} past events"
-        )
+        print(replay(events, p))
         return 0
 
     # apply: checked, validated, then a new version; the file is to be
@@ -228,17 +304,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         for problem in problems:
             print(problem)
         raise SystemExit(f"{p.id} not applied: v{new.version} would not validate")
-    saved = would_change(events, p)
+    saved = replay(events, p)
     if args.dry_run:
         print(f"would be v{new.version}: {json.dumps(p.additions, ensure_ascii=False)}")
-        print(
-            f"valid; {saved} past events would not have needed the AI. Nothing saved."
-        )
+        print(f"valid; {saved}. Nothing saved.")
         return 0
     new.save(args.vocab)
     print(
-        f"v{new.version}: {p.kind} applied ({saved} past events "
-        f"would not have needed the AI). Restart the API, and commit {args.vocab}."
+        f"v{new.version}: {p.kind} applied ({saved}). Restart the API, and "
+        f"commit {args.vocab}."
     )
     return 0
 
@@ -274,14 +348,69 @@ def print_report(report: dict[str, Any]) -> None:
     for kind, text, times, ok in report["top_queries"]:
         print(f"  {times:4}  {ok!s:5}  {kind:16} {text}")
     asked = report["demand"]
-    for name in ("languages", "cities", "shapes", "words"):
-        print(f"{name:9} {asked[name]}")
+    for name in (
+        "languages",
+        "cities",
+        "places",
+        "chosen_via",
+        "hints",
+        "themes",
+        "shapes",
+        "words",
+    ):
+        print(f"{name:10} {asked[name]}")
     print("worth suggesting (asked often, nearly always fine):")
     for text, times in asked["worth_suggesting"]:
         print(f"  {times:4}  {text}")
     print("failing (asked again, mostly not fine): what is missing")
     for kind, text, times, ok in asked["failing"]:
         print(f"  {times:4}  {ok!s:5}  {kind:16} {text}")
+
+
+def print_periods(found: dict[str, Any]) -> None:
+    print(
+        f"before {found['split']} ({found['events_before']} events) against "
+        f"from it on ({found['events_after']} events): {found['verdict']}"
+    )
+    for name, c in found["rates"].items():
+        if c["n_before"] or c["n_after"]:
+            mark = "  (what people did)" if c["behaviour"] else ""
+            print(
+                f"    {name:20} {c['before']!s:6} (n {c['n_before']}) -> "
+                f"{c['after']!s:6} (n {c['n_after']})  {c['verdict']}{mark}"
+            )
+    for name, m in found["means"].items():
+        print(f"    {name:20} {m['before']!s:6} -> {m['after']!s:6}")
+
+
+def print_trend(weeks: dict[str, dict[str, Any]]) -> None:
+    if not weeks:
+        print("No events.")
+        return
+    names = [k for k in next(iter(weeks.values())) if k != "events"]
+    print(f"{'week':9} {'events':>6}  " + "  ".join(f"{n[:12]:>12}" for n in names))
+    for week, m in weeks.items():
+        cells = "  ".join(f"{m[n]!s:>12}" for n in names)
+        print(f"{week:9} {m['events']:>6}  {cells}")
+
+
+def print_why(found: dict[str, Any]) -> None:
+    print(
+        f'"{found["words"]}" (grouped as "{found["key"]}"): {found["events"]} '
+        f"events from {found['sources']} days or places"
+    )
+    print(
+        f"    {found['by_kind']}  outcomes {found['outcomes']}  "
+        f"read by {found['readers']}"
+    )
+    if found["tables"]:
+        print(f"  the tables read it as {found['tables']}: nothing to learn there")
+    for c in found["checks"]:
+        print(f"  [{'x' if c['met'] else ' '}] {c['rule']}: {c['detail']}")
+    for p in found["proposals"]:
+        print(f"  proposal [{p['id']}] {p['kind']}: {p['status']}")
+    if not found["proposals"]:
+        print("  no proposal about these words")
 
 
 def print_impact(found: list[dict[str, Any]]) -> None:

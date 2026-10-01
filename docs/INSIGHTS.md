@@ -1,25 +1,44 @@
 # INSIGHTS — La ricerca che impara dalle ricerche
 
-TASK-130, ADR-0101. Il codice è in `services/api/shaperoute_api/insights/`.
+TASK-130, ADR-0101; i segnali dell'app e le città imparate: TASK-142,
+ADR-0112. Il codice è in `services/api/shaperoute_api/insights/` e
+`signals.py`; nell'app, `apps/mobile/src/api/signals.ts`.
 
 ## Il ciclo
 
 ```
-ricerche ──► eventi ──► report + propose ──► explain ──► apply ──► vocabolario vN
-   ▲          (data/insights,                (prove e    (a mano,    (nel repo,
-   │           mai cancellati)                 controlli)  validato)   versionato)
-   └──────── l'API legge il vocabolario: correzioni → tabelle → vocabolario → AI ◄─┘
-                  impact: la versione ha aiutato?  →  se peggio, revert
+ricerche ─┐
+          ├─► eventi ──► report + propose ──► explain / why ──► apply ──► vocabolario vN
+scelte    │   (data/insights,                 (prove, controlli, (a mano,    (nel repo,
+dell'app ─┘    mai cancellati)                 cosa manca)        validato)   versionato)
+(/signals)
+   ▲
+   └── l'API legge il vocabolario: correzioni → tabelle → vocabolario → AI;
+       /cities cerca il nome imparato
+         impact: la versione ha aiutato?  →  se peggio, revert
+         compare --split GIORNO: e un cambio del motore, del catalogo, dell'app?
 ```
 
 1. **Raccolta.** L'API scrive un evento per: parole della forma
-   (`shape_reading`), percorsi (`route`), percorsi a tema (`themed`), città
-   cercate (`city_search`), «Explore» (`recommended_list`,
-   `recommended_open`), e i segnali d'uso (`gpx_export`, `run_scored`).
-   Ogni evento ha esito, codice d'errore, numero di risultati, somiglianza,
-   tappe trovate e toccate, millisecondi (`ms`; per i percorsi a tema anche
-   `read_ms`, la sola lettura delle parole), chi ha risposto (`table`,
-   `learned`, `ai`) e la **versione del vocabolario**.
+   (`shape_reading`), percorsi (`route`, con i percorsi offerti `n` e la
+   distanza chiesta; `cancelled` se l'app li annulla mentre aspetta),
+   percorsi a tema (`themed`), città cercate (`city_search`), «Explore»
+   (`recommended_list`, `recommended_open`), e i segnali d'uso
+   (`gpx_export`, `run_scored`). Ogni evento ha esito, codice d'errore,
+   numero di risultati, somiglianza, tappe trovate e toccate, millisecondi
+   (`ms`; per i percorsi a tema anche `read_ms`, la sola lettura delle
+   parole), chi ha risposto (`table`, `learned`, `ai`) e la **versione del
+   vocabolario**. (Fino a TASK-142 i percorsi dell'API non si registravano:
+   un errore li scartava in silenzio; c'erano solo quelli importati.)
+
+   **Cosa fa l'app** (TASK-142, `POST /signals`): solo l'app sa cosa è
+   venuto da una ricerca. `city_chosen`: la città o il luogo scelto in
+   «Explore» e come (`suggestion`, `recent`, `featured`, `typed`): un
+   suggerimento toccato non chiama `/cities`, quindi senza questo segnale
+   la città si perdeva (dal vivo: Vercelli, vuota 3 volte, mai proposta).
+   `route_chosen`: il percorso usato (Start, Export GPX, Strava) fra A, B e
+   C, una volta per percorso. `hint_taken`: «Try N km», o una forma del
+   catalogo dopo un percorso fallito.
 2. **Analisi** (`report`): metriche totali e per versione; cosa si chiede di
    più (lingue, città, forme, parole); le richieste che vanno quasi sempre
    bene, da suggerire come esempi, e quelle che falliscono più volte, cioè
@@ -37,10 +56,23 @@ ricerche ──► eventi ──► report + propose ──► explain ──►
    - `conflict`: l'AI e l'ortografia non concordano (dal vivo, qwen3:4b
      legge «curoe» come cerchio). Non si impara mai da solo: se una persona
      la applica, vince l'ortografia.
-   - `catalog_city`: una città dove «Explore» è stato vuoto ≥ 3 volte.
+   - `city_name` (TASK-142): parole cercate come città e lasciate entro 3
+     minuti per una città che le parole possono voler dire (l'inizio del
+     nome, o poche lettere diverse): «levic» → Levič → Levico Terme. Almeno
+     2 volte, in ≥ 2 giorni, e in almeno metà delle ricerche di quelle
+     parole. Applicata, `/cities` cerca il nome imparato.
+   - `catalog_city`: una città, cercata o scelta fra i suggerimenti, dove
+     «Explore» è stato vuoto ≥ 3 volte. Un luogo (Arena di Verona) no: il
+     catalogo è per città.
    - `catalog_phrase`: una parola disegnata ≥ 3 volte che il catalogo non ha.
    - `review_unknown_theme`, `review_no_places`: per una persona; non si
      applicano.
+   - `review_ranking` (TASK-142): per una forma, B o C scelti al posto di A
+     in almeno metà di ≥ 5 scelte, in ≥ 2 giorni: la classifica del motore
+     non è quella delle persone. `review_distance`: «Try N km» preso ≥ 3
+     volte per la stessa forma, in ≥ 2 giorni: dirlo prima, o partire da
+     quella distanza? Riguardano il motore e l'app, non il vocabolario: per
+     una persona.
 4. **Spiegazione** (`explain ID`): la proposta, i controlli, gli esempi, lo
    stato (nuova, in vigore, annullata), da quanti giorni o luoghi vengono le
    prove, e quanti eventi passati avrebbe risolto senza l'AI (il replay).
@@ -58,6 +90,10 @@ ricerche ──► eventi ──► report + propose ──► explain ──►
    quanto durava la lettura prima e dopo. «worse» indica la versione a cui
    tornare: `revert N` aggiunge una versione uguale alla N. Una proposta
    annullata non si ripropone (`propose --all` la mostra).
+7. **Ogni altro cambio** (`compare --split GIORNO`, TASK-142): un merge del
+   motore, un catalogo nuovo, un'app ripubblicata non cambiano il
+   vocabolario; si misurano prima e dopo il giorno in cui sono arrivati,
+   con lo stesso test. `trend` mostra le metriche settimana per settimana.
 
 ## Perché le regole sono queste
 
@@ -69,6 +105,10 @@ ricerche ──► eventi ──► report + propose ──► explain ──►
   tabelle, più le richieste ripetute (e l'AI d'accordo, se le ha lette):
   bastano 2 eventi. Parole sotto le 5 lettere non si correggono.
 - **Mai contro le tabelle, mai contro l'ortografia senza una persona.**
+- **Nessuna persona negli eventi, quindi niente sessioni.** Una ricerca e la
+  scelta che la segue si legano solo per tempo (3 minuti): due persone
+  vicine nel tempo possono mescolarsi. Per questo una `city_name` vuole che
+  le parole somiglino al nome, giorni diversi, e metà delle ricerche.
 - **Dati, mai codice.** Il vocabolario è JSON, validato contro il catalogo
   delle forme, i temi e le tabelle; una voce sbagliata (scritta a mano) non
   arriva all'app: l'API la scarta all'avvio con un avviso, e un test della CI
@@ -88,7 +128,13 @@ services/api/.venv/bin/python -m shaperoute_api.insights history
 services/api/.venv/bin/python -m shaperoute_api.insights revert <versione>
 services/api/.venv/bin/python -m shaperoute_api.insights validate
 services/api/.venv/bin/python -m shaperoute_api.insights import-history
+services/api/.venv/bin/python -m shaperoute_api.insights compare --split 2026-10-01
+services/api/.venv/bin/python -m shaperoute_api.insights trend
+services/api/.venv/bin/python -m shaperoute_api.insights why levic
 ```
+
+`--since` / `--until AAAA-MM-GG` tengono solo gli eventi di quei giorni,
+per ogni comando.
 
 `--dir` cambia la cartella degli eventi, `--vocab` il vocabolario,
 `--json` dà l'uscita per un programma (`report`, `impact`, `propose`).
@@ -107,16 +153,26 @@ in un file a parte rigenerato ogni volta, senza le partenze.
 | `route_success_rate`, `route_mean_similarity` | salgono | utilità |
 | `explore_empty_rate` | scende | utilità |
 | `gpx_per_route`: GPX esportati per percorso mostrato | sale | utilità |
+| `city_left_rate`: ricerche di città lasciate per un'altra entro 3 minuti | scende | utilità |
+| `cancel_rate`: percorsi annullati mentre si aspetta | scende | comportamento |
+| `first_choice_rate`: A, il primo del motore, scelto fra due o tre | sale | comportamento |
 
 `impact` chiede il ritorno indietro solo per una metrica d'utilità peggiore:
-una di costo peggiore si legge, ma da sola non basta.
+una di costo o di comportamento peggiore si legge, ma da sola non basta (il
+vocabolario non cambia cosa si sceglie fra A, B e C). `compare` le misura
+tutte. `route_success_rate` conta solo i percorsi finiti: un annullato non
+è un fallimento del motore.
 
 ## Privacy, sicurezza, costi
 
 - Nessun identificativo, nessun indirizzo, nessuna posizione precisa:
   celle di ~1 km, o il nome di una città. Email e numeri lunghi oscurati.
   `/places` non si registra (indirizzi digitati), né `/city-suggestions`
-  (le lettere mentre si scrive: conta la città cercata, `city_search`).
+  (le lettere mentre si scrive): conta la città scelta (`city_chosen`), un
+  nome pubblico con la sua cella, mai le lettere né la partenza.
+- I segnali sono validati campo per campo (`signals.py`): un campo in più
+  è un 422. Oltre 60 al minuto, tutti i client insieme, non si registrano:
+  un client che ne manda tanti non riempie il disco né conta più degli altri.
 - File in `data/insights/`, fuori dal repository (`.gitignore`), modo 600.
   Mensili, mai riscritti né cancellati: la storia resta, e gli eventi
   vecchi si leggono anche quando se ne aggiungono campi.
@@ -133,6 +189,10 @@ una di costo peggiore si legge, ma da sola non basta.
 
 - `explain <id>`: perché una proposta esiste (motivo, controlli, prove,
   stato, replay).
+- `why <parole>`: il contrario, perché una proposta **non** c'è ancora: per
+  ogni regola cosa hanno quelle parole e cosa manca («2 times (needs 3)»,
+  «1 days or places (needs 2)»), se le tabelle le leggono già, e le
+  proposte che le riguardano.
 - `history`: ogni versione del vocabolario, quando, da quale proposta,
   perché.
 - `validate`: cosa c'è di sbagliato nel vocabolario.
@@ -152,3 +212,14 @@ una di costo peggiore si legge, ma da sola non basta.
    `read_ms` 0: l'AI non è chiamata. `impact` confronta v2 con v1.
 5. `revert 1`, riavvio: l'AI torna a rispondere; `propose` nasconde la
    correzione annullata.
+
+Le città imparate (TASK-142), sulla stessa API di prova:
+
+1. In due giorni diversi: `GET /cities?q=levic` (Geoapify: Levič,
+   Slovenia), poi entro 3 minuti `POST /signals` con
+   `{"kind":"city_chosen","label":"Levico Terme, …","point":[46.01,11.30],"via":"recent"}`,
+   come fa l'app quando si torna a Levico.
+2. `propose` mostra `city_name` «levic» → Levico Terme; `why levic` dice
+   cosa è soddisfatto; `apply`, riavvio.
+3. `GET /cities?q=levic` risponde Levico Terme (`"by":"learned"`);
+   `impact` mostra `city_left_rate` prima e dopo.

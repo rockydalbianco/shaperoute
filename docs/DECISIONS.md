@@ -3541,6 +3541,59 @@ stessi percorsi (registro rifatto: stella, cavallo, farfalla, CIAO,
 cerchio identici). Se l'occhio lo chiede, il peso si può dare ad altre
 forme senza tratti (cerchio, stella), con un loro giudizio.
 
+## ADR-0108 — La CLI non salva più i ritagli dei grafi
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
+(TASK-136); supera ADR-0023 solo sul salvataggio dei ritagli
+
+**Contesto**: da ADR-0023 `OsmnxSource.load` salva col suo nome ogni
+ritaglio di una zona in cache, GraphML e pickle. L'API non lo fa
+(ADR-0030), ma la CLI e `seed_catalog` sì, una volta per partenza. Sul Mac,
+il 2026-10-01, `data/cache/` pesava 18,6 GB: 346 grafi su 355 (17,9 GB)
+stavano per intero dentro un grafo più grande della cache, con 19 GB
+liberi sul disco. E `covering_path` sceglie il grafo più piccolo che
+contiene l'area: con i ritagli salvati, lo stesso percorso può venire da un
+ritaglio di un ritaglio, a seconda delle richieste fatte prima su quel
+disco, e l'API tiene in memoria quei ritagli invece della zona.
+
+**Decisione**:
+- Un'area dentro una zona in cache si **ritaglia in memoria e non si
+  salva**, come nell'API. Il file esatto, se c'è, si legge ancora; una zona
+  nuova scaricata si salva come prima (ADR-0104).
+- `python -m route_engine.prune_crops` elenca i grafi contenuti in un altro
+  grafo della cache, raggruppati per zona; con `--delete` li cancella
+  (GraphML e pickle). Senza, non cancella nulla. Un grafo si cancella solo
+  se lo contiene un grafo che resta; zone, `names_*.json`, `walk_*` e
+  `http/` non si toccano.
+
+**Misure** (Mac, cache di prova con la sola zona, stesso percorso punto per
+punto prima e dopo):
+
+| Caso | Prima | Dopo |
+|---|---|---|
+| Trento, cuore 5 km, partenza nuova | 2,4 s, scrive 19,7 MB | 1,4 s, niente |
+| Milano, cuore 10 km, partenza nuova | 11,8 s, scrive 108 MB | 5,5 s, niente |
+| Trento, stessa richiesta rifatta | 0,9 s | 1,3 s |
+| Milano, stessa richiesta rifatta | 2,9 s | 5,5 s |
+
+Scrivere il GraphML del ritaglio era metà del tempo di una partenza nuova.
+
+**Alternative scartate**:
+- *Tenere i ritagli, con un limite di spazio o di numero*: la cache
+  cancellerebbe da sola file dell'utente, e il percorso dipenderebbe ancora
+  da quali ritagli ci sono.
+- *Salvare solo i ritagli dei casi di riferimento*: serve un elenco da
+  tenere allineato a `TESTING.md`, per guadagnare 0,4–2,6 s a richiesta.
+- *Tenere la zona in memoria fra una partenza e l'altra nella CLI e in
+  `seed_catalog`*, come `ZoneGraphs`: più veloce ancora, ma è un altro
+  cambiamento; annotato in `tasks/TASK-136.md`.
+
+**Conseguenza**: la cache cresce solo con le zone nuove. Rifare la stessa
+richiesta costa 0,4 s in più a Trento e 2,6 s a Milano, perché si rilegge
+la zona. I ritagli già salvati restano e si leggono come prima finché non
+li si cancella con `prune_crops --delete`: è una scelta dell'utente, perché
+i casi di riferimento letti dal loro ritaglio passerebbero a un ritaglio
+fatto dalla zona.
+
 ## ADR-0109 — Anche cerchio e stella evitano i «baffi»
 **Stato**: Attiva · 2026-10-01 · chiesto dall'utente («fai lo stesso per
 cerchio e stella») e giudicato da lui; il peso deciso dall'agente su
@@ -3604,6 +3657,124 @@ lascerebbe codice morto.
 categoria da un luogo parte dal suo punto (provato: Duomo di Milano →
 Food, cerchio di 9,8 km, 4 ristoranti). Etichette in inglese, come le
 città di TASK-134.
+
+## ADR-0111 — Il server a pagamento: quale, e la configurazione in `deploy/`
+**Stato**: Attiva · 2026-10-01 · TASK-144 · la configurazione decisa
+dall'agente su delega dell'utente; il server scelto dall'utente
+
+Chiesto dall'utente: le istruzioni per mettere l'app su un server, da
+usare con il computer spento e un giorno da pubblicare, e i server a
+pagamento migliori per qualità e prezzo.
+
+**Contesto**: la strada C di ADR-0076 aveva i prezzi del 2026-09-26, e
+Hetzner li ha alzati il 1° aprile e il 15 giugno 2026 (CX33 da 6,49 a
+8,49 €, CPX e CCX più che raddoppiati). Il solo `docker run` del
+pacchetto lascia fuori `catalog/` («Explore» vuoto), perde gli eventi di
+TASK-130 a ogni container nuovo e non ha HTTPS né l'AI.
+
+**Decisione**:
+- **Il server** (`DEPLOY.md`, F.1, prezzi del 2026-10-01): **Hetzner
+  CX33** (4 vCPU, 8 GB, 80 GB, 10,97 €/mese IVA compresa, a ore), scelto
+  dall'utente il 2026-10-01 al posto dell'Oracle di ADR-0114, che
+  rispondeva «Out of capacity», e già acceso: messo su a mano, con
+  `docker run` e Caddy da apt su un nome `sslip.io`. L'alternativa
+  annotata è OVHcloud VPS-3 (6 vCore, 12 GB, 100 GB, 12,69 €/mese con 12
+  mesi, backup incluso).
+- **`deploy/compose.yaml`**: l'API dal `Dockerfile`, senza cambiarlo.
+  Zone, eventi e registro in `data/` del checkout con bind mount (cartelle
+  normali: `rsync` dal Mac le riempie, e sopravvivono alle immagini
+  nuove); `catalog/` in sola lettura; un servizio `data-owner` (busybox)
+  che a ogni avvio crea le cartelle e le dà all'utente 10001 dell'API.
+  Porta 8000 solo su `127.0.0.1`: Docker aprirebbe `0.0.0.0` scavalcando
+  `ufw`. Log di Docker limitati a 3 × 10 MB per servizio.
+- **Profili** in `COMPOSE_PROFILES` di `deploy/.env`: `ai` (immagine
+  `ollama/ollama`, `--ai-url http://ollama:11434`; senza il profilo il nome
+  non si risolve e le parole fuori tabella danno `ai_unavailable`, come con
+  Ollama spento) e `public` (Caddy).
+- **Privato prima di pubblico**, nella guida: `tailscale serve` sul
+  server dà HTTPS con certificato vero solo alla tailnet, senza dominio né
+  porte aperte. Per il pubblico **Caddy**, che chiede e rinnova da solo il
+  certificato di `SHAPEROUTE_DOMAIN`: un dominio vostro, o per cominciare
+  un nome `sslip.io`, come il server di oggi. Non Tailscale Funnel: il
+  suo nome pubblico non è stato creato (tailscale/tailscale#21502).
+- **Il limite per telefono anche dietro il proxy**:
+  `FORWARDED_ALLOW_IPS="*"`, letto da uvicorn, fa vedere all'API
+  l'indirizzo di `X-Forwarded-For`. Si può fidare di tutti perché alla
+  porta arrivano solo Caddy e `tailscale serve`.
+- **Segreti in `deploy/.env`**, copia di `.env.example` (`.gitignore` lo
+  esclude già); variabili nuove `SHAPEROUTE_DOMAIN` e `COMPOSE_PROFILES`.
+- **CI**: il job `docker` avvia `deploy/compose.yaml` e controlla
+  `/health`, la chiave (401/200), il proprietario di `data/cache`, i
+  percorsi di «Explore» a Trento e il `Caddyfile` (`caddy validate`).
+
+**Alternative scartate**: DigitalOcean, Vultr, Linode, Lightsail (4–5
+volte il prezzo per la stessa RAM); Render, Railway, Fly.io (RAM e disco
+permanente a parte); netcup (14,50 € per 8 GB); vCPU dedicati Hetzner
+dopo i rincari; Contabo come prima scelta (processore e disco più lenti,
+impegno di 24 mesi); nginx con certbot (più passi e un rinnovo da
+controllare); Cloudflare Tunnel con dominio (il dominio deve stare su
+Cloudflare e il traffico passa da loro); volumi Docker con nome per le
+zone (da riempire servirebbe root); cambiare il `Dockerfile` per
+`catalog/` (il montaggio basta, e un catalogo nuovo non chiede
+un'immagine nuova).
+
+**Conseguenza**: dal server comprato all'app sull'iPhone a Mac spento sono
+i passi F.2–F.7 di `DEPLOY.md`. Il server di oggi non usa ancora questa
+configurazione: spostarlo (F.12, stessi dati e stesso indirizzo) si fa a
+parte, a fine coda dei merge. Misurato lì, a mano: cuore da 5 km a Trento
+in 18,7 s con la zona in cache, l'API in 0,56 GB; l'AI su CPU è da
+provare. TASK-122 aggiunge il database a `deploy/compose.yaml`.
+## ADR-0112 — Le ricerche imparano anche da cosa fa l'app
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
+(TASK-142), che ha chiesto di nuovo il sistema di auto-miglioramento
+
+**Contesto**: ADR-0101 impara da cosa l'API vede. Ma l'API non vede le
+scelte: da TASK-134/138 una città scelta fra i suggerimenti non passa da
+`/cities` (dal vivo: Vercelli, «Explore» vuoto 3 volte, nessuna proposta);
+non sa quale percorso si usa fra A, B e C, né se si prende «Try N km».
+Una ricerca sbagliata e corretta subito («levic» → Levič, Slovenia → 16 s
+dopo Levico) non insegnava nulla. Un cambio del motore o del catalogo non
+si misurava: `impact` confronta solo versioni del vocabolario.
+
+**Decisione**:
+- **`POST /signals`** (`signals.py`): tre corpi in lista bianca,
+  `city_chosen`, `route_chosen`, `hint_taken`; un campo in più è un 422.
+  Sempre `204`, mai un errore sul telefono. Oltre 60 al minuto, tutti i
+  client insieme, non si registrano. Il nome di una città è pubblico e si
+  tiene con le maiuscole; il punto diventa la cella di ~1 km; mai le lettere
+  digitate, mai la partenza. Nell'app un invio che non fallisce mai, da
+  `ExploreTools.tsx` (la città e come) e `RoutePanel.tsx` (il primo uso di
+  un percorso, «Try N km», una forma del catalogo), senza toccare `App.tsx`.
+- **Percorsi annullati** come eventi (`cancelled`, con lo stato a cui
+  erano), registrati da `DELETE`; il risultato buttato non conta.
+- **`city_name`**, una proposta applicabile: parole cercate come città e
+  lasciate entro 3 minuti per una città il cui nome comincia con quelle
+  parole o ne dista poche lettere, ≥ 2 volte, in ≥ 2 giorni, in metà delle
+  ricerche. Nel vocabolario (`city_names`), `/cities` cerca il nome
+  imparato. Senza un identificativo, ricerca e scelta si legano solo per
+  tempo: da qui le tre condizioni.
+- **Metriche di comportamento** (`cancel_rate`, `first_choice_rate`): si
+  leggono, ma non chiedono di tornare indietro col vocabolario, che non le
+  cambia. `city_left_rate` sì: è quella che un nome imparato abbassa.
+- **`compare --split GIORNO`** per ogni cambio, con lo stesso test di
+  `impact`; `trend` per settimana; `why` per sapere cosa manca a una
+  proposta.
+
+**Alternative scartate**: un identificativo di sessione nei segnali
+(legherebbe ricerca e scelta con certezza, ma è un dato di una persona:
+scelta dell'utente, con gli account di TASK-110); registrare le lettere di
+`/city-suggestions` (ADR-0101); imparare dalle scelte fra A, B e C (la
+classifica è codice del motore: `review_ranking`, per una persona);
+il tipo dei segnali in `shared-types/src/index.ts` (è di TASK-088, aperto:
+per ora `src/signals.ts`).
+
+**Conseguenza**: provato dal vivo su un'API di prova con Geoapify: il primo
+giorno ricostruito dall'evento vero di «levic», il secondo dal vivo →
+proposta `city_name` → `apply` → `GET /cities?q=levic` risponde Levico
+Terme (`"by":"learned"`). Vercelli scelta fra i suggerimenti → proposta per
+il catalogo. Trovato e corretto un errore di TASK-130: `Insights.record`
+riceveva `ms` due volte, e nessun percorso dell'API era mai stato
+registrato (c'erano solo quelli importati dallo storico).
 
 ## ADR-0114 — La parte social: le scelte dell'utente
 **Stato**: Attiva · 2026-10-01 · **scelte dell'utente**, una domanda per
@@ -3786,3 +3957,108 @@ catalogo a Trento (5 e 23 km), Bologna, Milano e Levico, tutta la linea
 ritrovata in 0,1–0,5 s; 4 percorsi appena pianificati (Trento e Bologna,
 con le alternative) danno indicazioni identiche a quelle del motore. Da
 provare sull'iPhone.
+
+## ADR-0084 — Zucca e albero di Natale nel catalogo; «albero» da solo resta fuori
+**Stato**: Attiva · 2026-09-30 · le forme scelte dall'utente; parole,
+tessere e domanda all'AI decise dall'agente su delega dell'utente (TASK-088)
+
+**Contesto**: TASK-078 (ADR-0073) ha disegnato zucca di Halloween e albero
+di Natale, giudicati a 15 km: zucca `sì` a Milano, `no` a Trento, `quasi`
+a Levico; albero `sì` a Milano, `quasi` a Trento, `no` a Levico. ADR-0061
+li aveva lasciati contorni da CLI. Nel motore c'è anche `tree.json`
+(TASK-034/037), un albero qualsiasi, mai entrato nel catalogo.
+
+**Decisione**:
+- **Entrano `pumpkin` e `christmas_tree`**, scelti dall'utente
+  (2026-09-30) sapendo il giudizio: fuori da una rete fitta possono non
+  riuscire, e l'app propone già un'altra distanza o le altre forme
+  (ADR-0041). Come le forme di ADR-0061: `SHAPES` del motore,
+  `shared-types`, `contract.json`, `shapeWords.ts`, `OUTLINES`. Sullo
+  schermo «pumpkin» e «christmas tree».
+- **Parole**: «zucca», «zucche», «zucca di halloween», «pumpkin»,
+  «halloween pumpkin», «jack-o'-lantern»; «albero di natale», «alberi di
+  natale», «alberello di natale», «christmas tree», «xmas tree».
+- **«albero» e «tree» da soli non cambiano significato**: non sono nella
+  tabella e per l'AI restano «nessuna forma» (due voci nella lista di
+  messa a punto lo controllano). La riga dell'AI dice «a decorated
+  Christmas tree with a star on top, not a plain tree»: senza le ultime
+  parole qwen3:4b sceglieva l'albero di Natale per «tree». «Natale»,
+  «Halloween», «abete addobbato» le legge l'AI, e portano alle due forme.
+- **Tessere** 🎃 e 🎄, **in una riga sola che scorre di lato** (chiesto
+  dall'utente, 2026-10-01: nella griglia di quattro per riga zucca e albero
+  non si trovavano). Tessere larghe 88 punti, poco meno di quattro per
+  schermo: quella tagliata sul bordo dice che la riga continua. Una forma
+  scritta nel campo («zucca») porta la sua tessera in vista.
+
+**Alternative scartate**: portare «albero» all'albero di Natale (chi
+scrive «albero» a luglio non vuole la stella in cima; è una scelta di
+prodotto, non delegata); mettere «halloween» e «natale» nella tabella
+(sono feste, non disegni: le legge l'AI, e si possono spostare se sbaglia).
+
+**Conseguenza**: il catalogo ha tredici forme. Chieste all'API a Milano a
+15 km danno, punto per punto, i campioni giudicati di TASK-078. Se un
+giorno `tree` entra nel catalogo, «albero» e «tree» sono liberi per lui.
+
+## ADR-0118 — I baffi delle altre forme: solo quelli oltre i tratti voluti
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («fai lo stesso per
+le altre forme») e giudicato da lui forma per forma; misura e peso decisi
+dall'agente su delega dell'utente (TASK-140). Segue ADR-0107 e ADR-0109.
+
+**Contesto**: senza tratti ripassati restano solo cavallo e luna. Gatto,
+pesce, farfalla, lumaca, testa di cane e di coniglio ripassano apposta
+occhi, antenne, spirale (TASK-037): contare tutto il percorso fatto due
+volte li avrebbe puniti per i loro tratti.
+
+**Decisione**:
+- `extra_doubled_share(percorso, forma)`: la quota fatta due volte del
+  percorso meno quella della forma piazzata; mai sotto zero. Sostituisce
+  `doubled_share` nel costo della ricerca e nello `score` delle partenze
+  vicine. Per una forma senza tratti è la stessa cosa: cuore, cerchio e
+  stella restano identici (77 percorsi confrontati con `main`).
+- `W_DOUBLED` = 1,5 per cuore, cerchio, stella, cavallo, luna, farfalla,
+  lumaca.
+
+**Giudizio dell'utente** sui 13 percorsi che cambiavano con il peso su
+tutte le forme: meglio i nuovi per luna (1 su 1), farfalla (1 su 1),
+lumaca (1 su 1); meglio quelli di prima per gatto (3 su 4), pesce (1 su 1),
+testa di cane (2 su 3), testa di coniglio (1 su 1, l'altro indifferente).
+Il cavallo non cambiava: entra come il cerchio, perché non ha tratti.
+
+**Alternative scartate**: il peso per tutte le forme (gatto, pesce e teste
+avrebbero perso forma, giudicati peggio); un peso diverso per forma (con
+7 prove ciascuna non c'è abbastanza per tararlo).
+
+**Conseguenza**: sulle prove cambiano solo i 3 percorsi giudicati meglio.
+Gatto, pesce e le teste possono tenere dei baffi: se l'occhio lo chiede,
+servono altre idee (ritoccare la forma, o la somiglianza delle teste).
+
+## ADR-0121 — Su Linux la memoria per le partenze vicine è MemAvailable
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-147), dopo che l'utente non vedeva più le alternative sul server.
+
+**Contesto**: le partenze vicine (ADR-0071) partono ciascuna in un
+processo solo se c'entra nella memoria, lasciando 1000 MB al piano della
+partenza dell'utente; le alternative (ADR-0087) sono i loro percorsi. Su
+Linux la memoria si leggeva da `SC_AVPHYS_PAGES`, cioè MemFree, che non
+conta la cache dei file. Sul server Hetzner la cache è piena delle zone
+lette dal disco: 534 MB liberi su 6,8 GB disponibili, quindi nessuna
+partenza vicina e nessuna alternativa, per forme, parole e immagini. Sul
+Mac `SC_AVPHYS_PAGES` non esiste (si provano sempre tutte), su Windows si
+legge già la memoria disponibile: per questo non si era visto.
+
+**Decisione**:
+- Su Linux si legge **MemAvailable** da `/proc/meminfo`: la stima del
+  kernel della memoria che un processo nuovo può prendere senza swap,
+  cache liberabile compresa.
+- Sotto un **limite cgroup v2** (container con `--memory`, servizio
+  systemd con `MemoryMax`) non più di quanto resta del limite, contando
+  come libera la cache inattiva (`inactive_file`), come fa `docker stats`.
+  Senza limite (`max`), solo MemAvailable.
+- Senza MemAvailable (kernel prima di 3.14) si torna a `SC_AVPHYS_PAGES`.
+- In un modulo nuovo, `route_engine/memory.py`; `free_memory_mb` lo usa su
+  Linux. Riserva, peso per processo e attese restano quelli di ADR-0071.
+
+**Conseguenza**: sul server, nel container dell'API, il cuore da 5 km a
+Trento torna con un'alternativa (10,8 s) e la stella con due (5,8 s),
+come sul Mac. Due richieste insieme contano la memoria ognuna quando
+parte, come prima.

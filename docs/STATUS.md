@@ -90,6 +90,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-146: `apps/mobile/app.json` nomina il proprietario vero
+  del progetto Expo, l'organizzazione `lppl1316s-team` (trasferito
+  dall'account `lppl1316` il 2026-10-02). `eas update` da una copia pulita
+  di `main` non chiede più di correggere `owner` a mano; `DEPLOY.md` A.6
+  aggiornato. L'app non cambia: niente da ripubblicare per questo.
 - **Server** — TASK-144: la guida per portare l'API su un server a
   pagamento, con il Mac spento (`DEPLOY.md`, strada F, ADR-0111), e la
   configurazione pronta in `deploy/`: l'API con zone, eventi e catalogo,

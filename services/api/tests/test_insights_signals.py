@@ -271,7 +271,7 @@ def test_city_searches_left_for_the_city_meant_are_a_rate_by_version() -> None:
         "vocab": 1,
     }
     (v1,) = impact(levic_then_levico(1) + [learned], vocab)
-    assert v1["answered"] == 1
+    assert (v1["answered"], v1["ai_calls_saved"]) == (1, 0)
     assert v1["rates"]["city_left_rate"]["before"] == 1.0
     assert v1["rates"]["city_left_rate"]["after"] == 0.0
 

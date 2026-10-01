@@ -450,7 +450,10 @@ def impact(
                 "rates": rates,
                 # The requests the change was made for, after it.
                 "answered": len(mine_after),
-                "ai_calls_saved": sum(e.get("by") == "learned" for e in mine_after),
+                # Readings only: a learned city name saves no call to the AI.
+                "ai_calls_saved": sum(
+                    _is_reading(e) and e.get("by") == "learned" for e in mine_after
+                ),
                 "ms_ai_before": _mean(ms_ai),
                 "ms_learned_after": _mean(ms_now),
                 "verdict": verdict,

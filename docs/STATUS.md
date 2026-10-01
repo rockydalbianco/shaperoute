@@ -64,15 +64,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-127 — Overpass dall'indirizzo che risponde**
-  (`fix/TASK-127-overpass-address`, ADR-0100): sblocca le zone nuove dal
-  Mac (Verona scaricata in 10 s).
+- **TASK-129 — «Explore» per ogni città e percorsi a tema**
+  (`feat/TASK-129-explore-themes`, ADR-0099): «Search a city» e «Ask for a
+  route», una forma che passa dai luoghi veri di un tema. Provato a Torino,
+  Bologna, Milano, Roma e New York; Parigi e Tokyo quando Overpass riapre.
 - **TASK-126 — «Explore»** (`feat/TASK-126-explore`, ADR-0098):
   `GET /recommended-routes` dai file del catalogo e la terza schermata
   dell'app. Da provare sull'iPhone.
 
 ## Completato
 
+- **Motore** — TASK-127: Overpass dall'indirizzo che risponde (ADR-0100);
+  le zone nuove si scaricano dal Mac. Dopo una serie di download Overpass
+  smette comunque di rispondere per qualche ora (MAPS.md).
 - **Motore, API e app** — TASK-093: fino a tre percorsi fra cui scegliere
   (ADR-0087). Sotto la mappa le tessere «A · B · C» con km e somiglianza,
   gli altri percorsi grigi sulla mappa; GPX, «Start» e avvisi del percorso

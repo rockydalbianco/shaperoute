@@ -127,6 +127,17 @@ export const track = {
   opacity: 0.9,
 } as const;
 
+/** The places a themed route passes by (TASK-129): light dots with their
+ * name; those it does not reach, fainter and unnamed. */
+export const stop = {
+  passed: color.text,
+  missed: color.textFaint,
+  outline: color.map.background,
+  radius: 6,
+  label: color.text,
+  halo: color.map.background,
+} as const;
+
 /** The other routes to choose from (TASK-093): thin and grey, under the
  * chosen one, so yellow still means the route that will be run. */
 export const otherRoute = {

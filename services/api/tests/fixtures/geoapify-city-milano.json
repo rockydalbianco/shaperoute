@@ -1,0 +1,22 @@
+{
+ "results": [
+  {
+   "name": "Milan",
+   "city": "Milan",
+   "state": "Lombardy",
+   "country": "Italy",
+   "lat": 45.4641943,
+   "lon": 9.1896346,
+   "result_type": "city"
+  },
+  {
+   "name": "Milano",
+   "city": "Milano",
+   "state": "Texas",
+   "country": "United States",
+   "lat": 30.7106407,
+   "lon": -96.864745,
+   "result_type": "city"
+  }
+ ]
+}

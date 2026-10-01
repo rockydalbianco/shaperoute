@@ -18,7 +18,10 @@ import {
   type RecommendedRoute,
   routeTitle,
 } from "./recommendedRoutes";
+import type { Place } from "../places/photon";
+import { AskForRoute, CityPicker } from "./ExploreTools";
 import { RouteThumb } from "./RouteThumb";
+import type { ThemedRequest } from "./themedRoutes";
 
 type ListState =
   | { status: "loading" }
@@ -31,6 +34,11 @@ type Props = {
   near: LatLon | null;
   onBack: () => void;
   onOpen: (route: RecommendedRoute) => void;
+  /** A city searched for (TASK-129): the list and the request start there. */
+  city?: Place | null;
+  onCity?: (city: Place | null) => void;
+  /** A shape through the places of a theme (TASK-129). */
+  onAsk?: (request: ThemedRequest) => void;
 };
 
 const ALL = "all";
@@ -68,7 +76,17 @@ export function awayText(awayM: number): string {
  * "Explore" (TASK-092 variant C, TASK-126): the best routes already planned
  * near the start, by shape or word and by distance. A route opens on the map.
  */
-export function ExploreScreen({ apiUrl, near, onBack, onOpen }: Props) {
+export function ExploreScreen({
+  apiUrl,
+  near: start,
+  onBack,
+  onOpen,
+  city = null,
+  onCity,
+  onAsk,
+}: Props) {
+  // A city searched for takes the place of the start (TASK-129).
+  const near = city?.point ?? start;
   const insets = useSafeAreaInsets();
   // The answer for one start: another start shows "loading" until its own.
   const [answer, setAnswer] = useState<{ key: string; list: ListState } | null>(null);
@@ -141,22 +159,30 @@ export function ExploreScreen({ apiUrl, near, onBack, onOpen }: Props) {
         <View style={styles.titles}>
           <Text style={styles.title}>Best near you</Text>
           <Text style={styles.subtitle}>
-            {`Starting within ${NEAR_RADIUS_M / 1000} km of your start`}
+            {`Starting within ${NEAR_RADIUS_M / 1000} km of ${city?.label ?? "your start"}`}
           </Text>
         </View>
       </View>
-      {list.status === "done" && routes.length > 0 && (
-        <View style={styles.filters}>
-          <Chips options={whats} value={what} onChange={setWhat} />
-          <Chips options={kms} value={km} onChange={setKm} />
-        </View>
-      )}
       <ScrollView
         contentContainerStyle={[
           styles.list,
           { paddingBottom: insets.bottom + space.lg },
         ]}
+        keyboardShouldPersistTaps="handled"
       >
+        {onCity && <CityPicker apiUrl={apiUrl} city={city} onCity={onCity} />}
+        {onAsk && (
+          <AskForRoute
+            where={city?.label ?? "your start"}
+            onAsk={(text) => onAsk({ text, centre: near, city: city?.label ?? null })}
+          />
+        )}
+        {list.status === "done" && routes.length > 0 && (
+          <View style={styles.filters}>
+            <Chips options={whats} value={what} onChange={setWhat} />
+            <Chips options={kms} value={km} onChange={setKm} />
+          </View>
+        )}
         {list.status === "loading" && <Text style={styles.note}>Loading routes…</Text>}
         {list.status === "failed" && (
           <Text style={styles.note}>
@@ -272,7 +298,6 @@ const styles = StyleSheet.create({
   },
   filters: {
     gap: space.sm,
-    paddingLeft: space.lg,
     paddingVertical: space.sm,
   },
   chips: {

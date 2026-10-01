@@ -26,7 +26,7 @@ export const TILE_SOURCE_URL = "https://tiles.openfreemap.org/planet";
  * rest of the map is fine. Check the labels on the phone, not in a test.
  */
 export const GLYPHS_URL = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
-const LABEL_FONT = ["Noto Sans Regular"];
+export const LABEL_FONT = ["Noto Sans Regular"];
 
 /**
  * The credit line the tile provider asks for, word for word from its TileJSON:

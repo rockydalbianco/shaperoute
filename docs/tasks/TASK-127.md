@@ -1,6 +1,6 @@
 # TASK-127 — Overpass dall'indirizzo che risponde
 
-**Stato**: In revisione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `fix/TASK-127-overpass-address`
 
 Chiesto dall'utente il 2026-10-01 («sì, procedi»): da questo Mac uno dei

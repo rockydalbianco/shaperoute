@@ -17,7 +17,12 @@ export type ToPage =
   | { type: "showOthers"; lines: LngLat[][] }
   | { type: "showTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
-  | { type: "follow"; lngLat: LngLat };
+  | { type: "follow"; lngLat: LngLat }
+  | { type: "showStops"; stops: StopFeature[] }
+  | { type: "clearStops" };
+
+/** A place of a themed route on the map (TASK-129). */
+export type StopFeature = { name: string; lngLat: LngLat; passed: boolean };
 
 /** From the map page to the app, through `window.ReactNativeWebView`. */
 export type FromPage =
@@ -59,6 +64,24 @@ export function showTrack(points: LatLon[]): ToPage {
 
 export function clearTrack(): ToPage {
   return { type: "clearTrack" };
+}
+
+/** Marks the places of a themed route, named when the route passes by. */
+export function showStops(
+  stops: { name: string; point: LatLon; passed: boolean }[],
+): ToPage {
+  return {
+    type: "showStops",
+    stops: stops.map((s) => ({
+      name: s.name,
+      lngLat: toLngLat(s.point),
+      passed: s.passed,
+    })),
+  };
+}
+
+export function clearStops(): ToPage {
+  return { type: "clearStops" };
 }
 
 export function clearRoute(): ToPage {

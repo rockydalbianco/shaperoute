@@ -14,6 +14,7 @@ import { color, space } from "../theme/tokens";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
   clearRoute,
+  clearStops,
   clearTrack,
   follow,
   pageScript,
@@ -21,6 +22,7 @@ import {
   setPosition,
   showOthers,
   showRoute,
+  showStops,
   showTrack,
 } from "./messages";
 
@@ -39,6 +41,8 @@ type Props = {
   track?: LatLon[] | null;
   /** While navigating, the phone's position: the map follows it (TASK-049). */
   following?: LatLon | null;
+  /** The places of a themed route (TASK-129), or null for none. */
+  stops?: { name: string; point: LatLon; passed: boolean }[] | null;
   /** Called when the map cannot be shown, with a reason for the log. */
   onError: (reason: string) => void;
   style?: StyleProp<ViewStyle>;
@@ -50,6 +54,7 @@ export function MapView({
   others = NO_OTHERS,
   track = null,
   following = null,
+  stops = null,
   onError,
   style,
 }: Props) {
@@ -61,6 +66,7 @@ export function MapView({
   const routeShown = useRef(false);
   const followed = useRef(false);
   const trackShown = useRef(false);
+  const stopsShown = useRef(false);
   const othersShown = useRef(false);
 
   // A new start, even at the same place, centres the map on it again.
@@ -108,6 +114,19 @@ export function MapView({
       trackShown.current = false;
     }
   }, [ready, track]);
+
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (stops && stops.length > 0) {
+      webView.current?.injectJavaScript(pageScript(showStops(stops)));
+      stopsShown.current = true;
+    } else if (stopsShown.current) {
+      webView.current?.injectJavaScript(pageScript(clearStops()));
+      stopsShown.current = false;
+    }
+  }, [ready, stops]);
 
   // Navigating: the map stays on the runner. After, the whole route again.
   useEffect(() => {

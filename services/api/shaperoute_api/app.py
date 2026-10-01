@@ -195,7 +195,7 @@ def create_app(
 ) -> FastAPI:
     # The search events and the learned vocabulary (TASK-130, ADR-0101).
     insights = insights or Insights(None)
-    # What the app did with the searches (TASK-142, ADR-0111).
+    # What the app did with the searches (TASK-142, ADR-0112).
     gate = signal_gate or SignalGate()
     # The request log (TASK-090) and the events hear how each job ended.
     logged = None if request_log is None else job_recorder(request_log)
@@ -416,7 +416,7 @@ def create_app(
         except PlacesUnavailableError as exc:
             raise HTTPException(503, str(exc)) from None
 
-    # What the app did with a search (TASK-142, ADR-0111): the city chosen,
+    # What the app did with a search (TASK-142, ADR-0112): the city chosen,
     # the route among A, B and C, a hint taken. Always 204: a signal is never
     # worth an error on the phone; past the gate's limit, not recorded.
     @app.post("/signals", status_code=204, responses={422: {"model": ErrorBody}})

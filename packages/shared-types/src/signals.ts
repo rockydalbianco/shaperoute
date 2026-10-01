@@ -1,5 +1,5 @@
 /**
- * POST /signals (TASK-142, ADR-0111): what the app did with a search, for
+ * POST /signals (TASK-142, ADR-0112): what the app did with a search, for
  * the API's search events (docs/INSIGHTS.md). The bodies are
  * fixtures/signals.json; the API's side is shaperoute_api/signals.py.
  * In a file of its own while TASK-088 changes index.ts: to be exported from

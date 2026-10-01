@@ -1,4 +1,4 @@
-"""What the app did with a search (TASK-142, ADR-0111): POST /signals.
+"""What the app did with a search (TASK-142, ADR-0112): POST /signals.
 
 The API sees the searches; only the app sees what came of them. Three
 signals, each a search event (insights/events.py), whitelisted field by

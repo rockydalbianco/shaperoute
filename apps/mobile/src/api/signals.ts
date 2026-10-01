@@ -4,7 +4,7 @@ import { apiKey, apiUrl, keyHeaders } from "./apiUrl";
 import { type AnyRouteRequest, isImageRequest } from "./routes";
 
 /**
- * Tells the API what came of a search (TASK-142, ADR-0111): POST /signals,
+ * Tells the API what came of a search (TASK-142, ADR-0112): POST /signals,
  * for its search events (docs/INSIGHTS.md). Fire and forget: never throws,
  * nothing waits for it, and without an API it sends nothing.
  */

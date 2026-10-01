@@ -1,6 +1,6 @@
 # TASK-142 — Le ricerche che insegnano: i segnali dell'app e le città
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-142-app-signals`
 
 Chiesto dall'utente il 2026-10-01, la terza volta con lo stesso messaggio
@@ -38,15 +38,15 @@ misura per data; si può chiedere perché una frase non è ancora proposta.
 
 ## Criteri di accettazione
 
-- [ ] Una città scelta dai suggerimenti è un evento; tre «Explore» vuoti
+- [x] Una città scelta dai suggerimenti è un evento; tre «Explore» vuoti
       lì propongono la città per il catalogo.
-- [ ] Una ricerca di città corretta dall'utente in 2 giorni diversi propone
+- [x] Una ricerca di città corretta dall'utente in 2 giorni diversi propone
       `city_name`; applicata, `/cities` cerca il nome imparato.
-- [ ] Segnali senza dati personali (celle, nessun testo digitato), validati,
+- [x] Segnali senza dati personali (celle, nessun testo digitato), validati,
       mai bloccanti; la scelta fra A·B·C e «Try N km» arrivano dall'app.
-- [ ] `why` dice per ogni regola cosa manca; `compare` dà meglio / peggio /
+- [x] `why` dice per ogni regola cosa manca; `compare` dà meglio / peggio /
       pochi eventi fra due periodi.
-- [ ] Test deterministici dell'API e dell'app verdi.
+- [x] Test deterministici dell'API e dell'app verdi.
 
 ## File toccati
 
@@ -86,4 +86,14 @@ docs/tasks/TASK-142.md
 
 ## Esito
 
-*(a fine task)*
+Dal vivo (API di prova sulla 8007 con Geoapify, 2026-10-01): il primo
+giorno ricostruito dall'evento vero del Mac («levic» → Levič → Levico 16 s
+dopo), il secondo dal vivo; `propose` → `city_name` «levic» → Levico Terme,
+`why levic` tutto soddisfatto, `apply` (v1), riavvio, `GET /cities?q=levic`
+→ Levico Terme, `"by":"learned"`. Vercelli scelta da un suggerimento e
+«Explore» vuoto 3 volte → `catalog_city`. Un percorso annullato mentre
+calcolava → `cancelled`, senza l'«ok» del risultato buttato. Un campo in
+più → 422. Trovato e corretto un errore di TASK-130: `Insights.record`
+riceveva `ms` due volte e scartava ogni percorso dell'API. ADR-0111 era
+stato preso da TASK-144 nel frattempo: questo task usa ADR-0112. Test: 388
+dell'API, 556 dell'app, shared-types verdi.

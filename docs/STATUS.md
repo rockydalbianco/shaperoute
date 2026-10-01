@@ -89,6 +89,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-142: le ricerche imparano anche da cosa fa l'app
+  (ADR-0112, `docs/INSIGHTS.md`). `POST /signals` riceve la città scelta in
+  «Explore» e come, il percorso usato fra A·B·C, «Try N km» e la forma presa
+  dopo un errore; i percorsi annullati sono eventi. Nuove proposte:
+  `city_name` («levic» → Levico Terme, applicata `/cities` la cerca),
+  `review_ranking`, `review_distance`; Vercelli scelta fra i suggerimenti
+  ora si propone per il catalogo. Comandi `why`, `compare --split`, `trend`,
+  `--since/--until`. Corretto un errore di TASK-130: nessun percorso
+  dell'API era mai stato registrato. Provato su un'API di prova con
+  Geoapify. Per averlo sull'iPhone: riavviare l'API della 8000 (con
+  `--request-log` e `.env`) e ripubblicare l'app. Seguiti possibili: il
+  tipo dei segnali in `shared-types/src/index.ts` dopo TASK-088; la forma
+  toccata dopo parole non lette (`ShapeTiles.tsx`, di TASK-088) come prova
+  per i sinonimi.
 - **API e app** — TASK-138: in «Explore» il campo «Type a city or a
   place» suggerisce a metà parola città e luoghi (ADR-0110): «arena di ver»
   → Verona Arena, «duomo di mil» → Duomo, «ver» → Verona come centro città.

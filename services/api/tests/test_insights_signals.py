@@ -1,4 +1,4 @@
-"""The app's signals and what they teach (TASK-142, ADR-0111): POST /signals,
+"""The app's signals and what they teach (TASK-142, ADR-0112): POST /signals,
 cancelled routes, learned city names, the reviews of what people did,
 periods, weeks and `why`. No network, no AI."""
 

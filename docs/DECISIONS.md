@@ -3603,3 +3603,55 @@ lascerebbe codice morto.
 categoria da un luogo parte dal suo punto (provato: Duomo di Milano →
 Food, cerchio di 9,8 km, 4 ristoranti). Etichette in inglese, come le
 città di TASK-134.
+
+## ADR-0112 — Le ricerche imparano anche da cosa fa l'app
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
+(TASK-142), che ha chiesto di nuovo il sistema di auto-miglioramento
+
+**Contesto**: ADR-0101 impara da cosa l'API vede. Ma l'API non vede le
+scelte: da TASK-134/138 una città scelta fra i suggerimenti non passa da
+`/cities` (dal vivo: Vercelli, «Explore» vuoto 3 volte, nessuna proposta);
+non sa quale percorso si usa fra A, B e C, né se si prende «Try N km».
+Una ricerca sbagliata e corretta subito («levic» → Levič, Slovenia → 16 s
+dopo Levico) non insegnava nulla. Un cambio del motore o del catalogo non
+si misurava: `impact` confronta solo versioni del vocabolario.
+
+**Decisione**:
+- **`POST /signals`** (`signals.py`): tre corpi in lista bianca,
+  `city_chosen`, `route_chosen`, `hint_taken`; un campo in più è un 422.
+  Sempre `204`, mai un errore sul telefono. Oltre 60 al minuto, tutti i
+  client insieme, non si registrano. Il nome di una città è pubblico e si
+  tiene con le maiuscole; il punto diventa la cella di ~1 km; mai le lettere
+  digitate, mai la partenza. Nell'app un invio che non fallisce mai, da
+  `ExploreTools.tsx` (la città e come) e `RoutePanel.tsx` (il primo uso di
+  un percorso, «Try N km», una forma del catalogo), senza toccare `App.tsx`.
+- **Percorsi annullati** come eventi (`cancelled`, con lo stato a cui
+  erano), registrati da `DELETE`; il risultato buttato non conta.
+- **`city_name`**, una proposta applicabile: parole cercate come città e
+  lasciate entro 3 minuti per una città il cui nome comincia con quelle
+  parole o ne dista poche lettere, ≥ 2 volte, in ≥ 2 giorni, in metà delle
+  ricerche. Nel vocabolario (`city_names`), `/cities` cerca il nome
+  imparato. Senza un identificativo, ricerca e scelta si legano solo per
+  tempo: da qui le tre condizioni.
+- **Metriche di comportamento** (`cancel_rate`, `first_choice_rate`): si
+  leggono, ma non chiedono di tornare indietro col vocabolario, che non le
+  cambia. `city_left_rate` sì: è quella che un nome imparato abbassa.
+- **`compare --split GIORNO`** per ogni cambio, con lo stesso test di
+  `impact`; `trend` per settimana; `why` per sapere cosa manca a una
+  proposta.
+
+**Alternative scartate**: un identificativo di sessione nei segnali
+(legherebbe ricerca e scelta con certezza, ma è un dato di una persona:
+scelta dell'utente, con gli account di TASK-110); registrare le lettere di
+`/city-suggestions` (ADR-0101); imparare dalle scelte fra A, B e C (la
+classifica è codice del motore: `review_ranking`, per una persona);
+il tipo dei segnali in `shared-types/src/index.ts` (è di TASK-088, aperto:
+per ora `src/signals.ts`).
+
+**Conseguenza**: provato dal vivo su un'API di prova con Geoapify: il primo
+giorno ricostruito dall'evento vero di «levic», il secondo dal vivo →
+proposta `city_name` → `apply` → `GET /cities?q=levic` risponde Levico
+Terme (`"by":"learned"`). Vercelli scelta fra i suggerimenti → proposta per
+il catalogo. Trovato e corretto un errore di TASK-130: `Insights.record`
+riceveva `ms` due volte, e nessun percorso dell'API era mai stato
+registrato (c'erano solo quelli importati dallo storico).

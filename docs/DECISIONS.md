@@ -3340,6 +3340,78 @@ corrisponderebbe); uno script fuori dal motore (non vale per l'API).
 globale al processo per la durata del download: altri nomi non sono
 toccati.
 
+## ADR-0101 — Le ricerche insegnano, ma solo con una firma
+**Stato**: Attiva · 2026-10-01 · raccolta sempre accesa: scelta dell'utente;
+il come deciso dall'agente su delega dell'utente (TASK-130)
+
+**Contesto**: l'utente vuole che la ricerca migliori con le ricerche vere:
+query frequenti, risultati mancanti, errori, città, lingue, segnali di
+utilità. Senza modifiche automatiche rischiose, con versioni e rollback,
+metriche, storia conservata, attenzione a privacy e costi.
+
+**Decisione**:
+- **Eventi, non log grezzi** (`shaperoute_api/insights/events.py`): una
+  riga per ricerca e per segnale (GPX esportato, corsa con punteggio), in
+  `data/insights/events-AAAA-MM.jsonl`, mai riscritti, leggibili solo dal
+  proprietario. Testo in minuscolo, email e numeri lunghi oscurati, 200
+  caratteri; posizioni solo come celle di 0,01° (~1 km); nessun
+  identificativo. **Accesi di default** (scelta dell'utente); si spengono
+  con `--no-insights` o `SHAPEROUTE_INSIGHTS=0`. `/places` non si registra
+  (indirizzi digitati, ADR-0096).
+- **Proposte da prove ripetute** (`analyze.py`): un sinonimo solo se l'AI
+  ha letto la stessa frase allo stesso modo almeno 3 volte e mai
+  diversamente, e se non contraddice le tabelle; una città se «Explore» vi
+  è stato vuoto 3 volte; una frase se disegnata 3 volte. Le richieste mai
+  capite e i temi senza luoghi sono proposte «review», per una persona.
+- **Dati, mai codice** (`vocabulary.py`): ciò che si applica va in
+  `shaperoute_api/learned/vocabulary.json`, nel repository, una versione
+  per cambio con data, motivo e prove; `revert` aggiunge una versione, non
+  cancella. Si applica solo a mano (`apply`), si rivede e si committa.
+- **Dove agisce**: tabelle, poi vocabolario, poi AI, per i temi
+  (`themes.read_with_ai`) e per le parole della forma (`/shape-readings`):
+  ogni frase imparata è una chiamata al modello in meno.
+- **Metriche per versione** del vocabolario (`report`): quota di letture
+  dall'AI, temi sconosciuti, successo dei percorsi a tema e tappe toccate,
+  «Explore» vuoto, GPX per percorso. Ogni evento porta la versione.
+- **Nessun costo**: l'analisi gira sul Mac, sui file; niente AI né servizi.
+
+**Alternative scartate**: un database (non c'è ancora: TASK-114); modifiche
+automatiche al vocabolario o al codice (rischio, scelta dell'utente);
+imparare dalla prima risposta dell'AI (una risposta può essere sbagliata:
+«zzz qualcosa di strano» è stato letto «romantic»).
+
+**Conseguenza**: provato dal vivo: tre richieste «un giro per innamorati»
+lette dall'AI → proposta → `apply` → la quarta, a Roma, letta dal
+vocabolario (v1: quota AI da 1,0 a 0,0). Lisbona proposta per il catalogo.
+
+**Aggiornamento** (2026-10-01, stesso task; deciso dall'agente su delega
+dell'utente, che ha chiesto di nuovo il sistema completo):
+- **Prove da giorni o luoghi diversi** (≥ 2): il modello gira a
+  temperatura 0, quindi tre risposte uguali alla stessa frase non provavano
+  nulla, e una persona sola poteva insegnare all'API ripetendo una
+  richiesta.
+- **Correzioni dei refusi** (`correction`): una parola vicina (distanza di
+  modifica 1, o 2 da 8 lettere) a una parola delle tabelle, ≥ 2 volte, mai
+  letta altrimenti dall'AI; per i temi si corregge la parola prima delle
+  tabelle, in ogni richiesta. **`conflict`** quando l'AI e l'ortografia non
+  concordano (dal vivo: «curoe» letto come cerchio): mai imparato da solo.
+- **Validazione** (`Vocabulary.check`, comando `validate`): risposte fuori
+  catalogo, chiavi mai cercate, correzioni di parole già note o verso parole
+  che le tabelle non leggono, storia con buchi. `apply` valida prima di
+  salvare; l'API scarta all'avvio le voci sbagliate; un test della CI
+  valida il file del repository.
+- **Impatto per versione** (`impact`): ogni tasso contro la versione
+  precedente con un test sulle proporzioni (|z| ≥ 1,96, almeno 20 eventi per
+  lato, altrimenti «too few»); un peggioramento di una metrica d'utilità
+  indica la versione a cui tornare. Il tempo della sola lettura
+  (`read_ms`) misura il costo dell'AI.
+- **Una proposta annullata non torna** da sola (`apply --again`).
+
+Scartato: correggere le parole sotto le 5 lettere (troppe parole vere
+vicine: «lana»/«luna»); dare ragione all'ortografia senza una persona.
+Dal vivo: «rmantico» a Bologna e Torino → correzione → a Milano letto dal
+vocabolario, lettura da 1,0 s a 0 ms.
+
 ## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
 (TASK-133, miglioramento generale)

@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-30 · **Fase corrente**: 4 — Estensione (scritte)
+**Ultimo aggiornamento**: 2026-10-01 · **Fase corrente**: 4 — Estensione (scritte)
 
 ---
 
@@ -81,6 +81,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'app. Da provare sull'iPhone.
 
 ## Completato
+
+- **API** — TASK-130: le ricerche che insegnano (ADR-0101,
+  `docs/INSIGHTS.md`). L'API registra ogni ricerca e ogni segnale d'uso in
+  `data/insights/` (acceso di default, senza dati personali); `python -m
+  shaperoute_api.insights` propone sinonimi, correzioni dei refusi, città e
+  frasi per il catalogo, con le prove e i controlli superati (`explain`).
+  Si impara solo da giorni o luoghi diversi (il modello risponde sempre
+  uguale) e mai se l'AI e l'ortografia non concordano. Si applica solo a
+  mano, validato (`validate`, anche in CI), versionato, reversibile;
+  `impact` dice se una versione ha aiutato, solo con eventi sufficienti.
+  Provato dal vivo: «rmantico» a Bologna e Torino → correzione → a Milano
+  letto dal vocabolario, senza AI (1,0 s → 0 ms). Seguiti possibili, da
+  approvare: i segnali dell'app (percorso scelto fra A·B·C, «Try N km»),
+  e TASK-128 che legge città e frasi desiderate.
 
 - **App** — TASK-135: «Run with Strava» in ogni scheda di percorso, il
   flusso ufficiale (ADR-0106): salvare il GPX, importarlo nel route builder

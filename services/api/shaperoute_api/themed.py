@@ -39,6 +39,8 @@ from route_engine.stops import Stop, StopsPlan, plan_through_stops, union
 
 from shaperoute_api.cities import CitySearch
 from shaperoute_api.errors import error_of
+from shaperoute_api.insights import Insights
+from shaperoute_api.insights.events import redact
 from shaperoute_api.places import Fetch, PlacesUnavailableError, fetch_json
 from shaperoute_api.themes import (
     THEMES,
@@ -46,6 +48,7 @@ from shaperoute_api.themes import (
     ThemeChooser,
     plain,
     read_with_ai,
+    request_core,
 )
 
 log = logging.getLogger(__name__)
@@ -256,6 +259,7 @@ class ThemedJobs:
         ai: ThemeChooser | None = None,
         plan: PlanThrough = plan_shape_through,
         run_inline: bool = False,
+        insights: Insights | None = None,
     ) -> None:
         self.source = source
         self.finder = finder
@@ -263,6 +267,8 @@ class ThemedJobs:
         self.ai = ai
         self.plan = plan
         self.run_inline = run_inline
+        # The search events, and the learned vocabulary (TASK-130).
+        self.insights = insights or Insights(None)
         self._jobs: dict[str, ThemedJob] = {}
         self._lock = threading.Lock()
         self._pool = ThreadPoolExecutor(1, thread_name_prefix="themed")
@@ -296,8 +302,11 @@ class ThemedJobs:
 
     def _run(self, job: ThemedJob) -> None:
         job.status = "running"
+        started = time.monotonic()
+        # What result_of found out, for the event even when it fails.
+        seen: dict[str, Any] = {}
         try:
-            job.result = self.result_of(job.body)
+            job.result = self.result_of(job.body, seen)
             job.status = "done"
         except ThemedRouteError as exc:
             job.error = ThemedError(code=exc.code, message=str(exc))
@@ -309,9 +318,32 @@ class ThemedJobs:
             job.error = ThemedError(code=detail.code, message=detail.message)
             job.status = "failed"
         job.finished_at = time.monotonic()
+        result = job.result
+        self.insights.record(
+            "themed",
+            text=job.body.text,
+            core=redact(request_core(job.body.text)),
+            started=started,
+            outcome="ok" if result is not None else "error",
+            code=None if job.error is None else job.error.code,
+            quality=None if result is None else round(result.similarity, 3),
+            passed=None if result is None else sum(s.passed for s in result.stops),
+            **seen,
+        )
 
-    def result_of(self, body: ThemedRequestBody) -> ThemedResultBody:
-        reading = read_with_ai(body.text, self.ai)
+    def result_of(
+        self, body: ThemedRequestBody, seen: dict[str, Any] | None = None
+    ) -> ThemedResultBody:
+        seen = {} if seen is None else seen
+        vocab = self.insights.vocab
+        reading_started = time.monotonic()
+        reading = read_with_ai(body.text, self.ai, vocab.theme_for, vocab.correct)
+        seen.update(
+            theme=reading.theme,
+            shape=reading.shape,
+            by=reading.by,
+            read_ms=round((time.monotonic() - reading_started) * 1000),
+        )
         if reading.theme is None:
             raise ThemedRouteError(
                 "theme_unknown",
@@ -321,7 +353,9 @@ class ThemedJobs:
         centre, city = self._centre(body, reading.city)
         theme = THEMES[reading.theme]
         shape = reading.shape or theme.shape
+        seen.update(city=city, shape=shape)
         stops = self.finder.find(theme, centre, search_radius_m(reading.distance_m))
+        seen["found"] = len(stops)
         log.info(
             "themed: %s, %s, %d m, %d places (%s)",
             reading.theme,

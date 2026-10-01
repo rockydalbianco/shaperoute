@@ -67,8 +67,9 @@ Quattro regole:
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
 
-1. **«What to draw»**, all'apertura. Dall'alto: il nome «Sgrava» con il
-   pulsante «My position»; una scheda che dice da dove partirà il percorso,
+1. **«What to draw»**, all'apertura. Dall'alto: il nome «Sgrava» con i
+   pulsanti «Run» (una corsa senza percorso, TASK-149, sotto) ed
+   «Explore»; una scheda che dice da dove partirà il percorso,
    con, quando servono, il rimando alle Impostazioni e la ricerca del
    luogo; l'errore della mappa; le forme del catalogo come tessere, con un
    simbolo e il nome (quella scelta ha il bordo chiaro); il campo per
@@ -589,6 +590,38 @@ nell'attesa «Scoring your run…», con distanza e durata già lì.
 
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
 principale.
+
+## Correre senza percorso (TASK-149, ADR-0122)
+
+**«Run»**, in alto nella prima schermata accanto a «Explore», fa partire
+una corsa senza disegnare niente: niente forma, niente percorso, niente
+API. Si apre la mappa, che segue la posizione come in navigazione (zoom
+17) e disegna la linea corsa fin lì, sottile e chiara (`track`). Al posto
+di «←» un banner con i km in grande, due decimali («2.34 km»), e sotto il
+tempo e il passo medio («12:34 · 5:21 /km»). Il tempo parte dalla prima
+posizione del GPS e va avanti ogni secondo; il passo compare dopo 100 m.
+Prima della prima posizione, «Finding your position…»; senza permesso,
+«Location is off for ShapeRoute: allow it in Settings to record a run.».
+Sotto la mappa «Run without a route», «Pocket» (la stessa modalità tasca
+della navigazione) e «Stop». A ogni km la voce, in inglese come il resto,
+dice il tempo e il passo medio: «1 kilometre. Time: 5 minutes 42 seconds.
+Average pace: 5 minutes 42 seconds per kilometre.» (oltre l'ora, ore e
+minuti). Anche in modalità tasca; niente vibrazione, che in navigazione
+vuol dire una svolta. «Keep running» non ripete i km già detti.
+
+La traccia è quella della navigazione (ADR-0091), con le stesse regole,
+nello stesso file `current-run.json`, con il percorso vuoto: resta se
+l'app si chiude, e una corsa per volta (una nuova sostituisce quella nel
+file alla prima posizione).
+
+**«Stop»** apre la fine della corsa: in alto «Your run» e «White: what you
+ran.»; sotto i km in grande e «25:00 · 5:56 /km». Senza forma non c'è
+punteggio, e niente va all'API. **«Keep running»** torna alla corsa, con la
+stessa traccia; **«Done»** torna alla prima schermata e cancella la corsa
+dal telefono. Uno «Stop» prima della prima posizione torna subito alla
+prima schermata. Se l'app si chiude durante la corsa, alla riapertura si
+apre su questa schermata; «Keep running» c'è solo se l'ultima posizione è
+di meno di 30 minuti prima.
 
 ## Correre con Strava (TASK-135, ADR-0106)
 

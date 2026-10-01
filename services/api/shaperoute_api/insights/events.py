@@ -106,6 +106,9 @@ class Event:
     theme: str | None = None
     by: str | None = None
     ms: int | None = None
+    # How long the words took to read (tables, vocabulary or AI), apart
+    # from planning the route: what the AI costs in time.
+    read_ms: int | None = None
     vocab: int = 0
     ts: str = field(
         default_factory=lambda: datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")

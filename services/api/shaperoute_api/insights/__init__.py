@@ -14,10 +14,33 @@ import time
 from collections.abc import Mapping
 from typing import Any
 
+from route_engine.shapes import SUPPORTED_SHAPES
+
 from shaperoute_api.insights.events import Event, EventLog, cell, language, redact
-from shaperoute_api.insights.vocabulary import Vocabulary
+from shaperoute_api.insights.vocabulary import Problem, Vocabulary
+from shaperoute_api.themes import THEMES, read_request
 
 log = logging.getLogger(__name__)
+
+
+def table_reads(words: str) -> str | None:
+    """What the API's tables read in some words: a theme, else a shape."""
+    reading = read_request(words)
+    return reading.theme or reading.shape
+
+
+def problems_of(vocab: Vocabulary) -> list[Problem]:
+    """The vocabulary checked against the catalogue and the tables."""
+    return vocab.check(THEMES, SUPPORTED_SHAPES, table_reads)
+
+
+def usable(vocab: Vocabulary) -> Vocabulary:
+    """The vocabulary without what is wrong in it, each a warning: a file
+    edited by hand never gives the app an answer outside the catalogue."""
+    problems = problems_of(vocab)
+    for p in problems:
+        log.warning("learned vocabulary v%d: %s (not used)", vocab.version, p)
+    return vocab.without(problems) if problems else vocab
 
 
 class Insights:
@@ -28,7 +51,7 @@ class Insights:
         self, events: EventLog | None, vocab: Vocabulary | None = None
     ) -> None:
         self.events = events
-        self.vocab = vocab or Vocabulary()
+        self.vocab = usable(vocab or Vocabulary())
 
     @property
     def on(self) -> bool:
@@ -92,4 +115,4 @@ def route_fields(
     }
 
 
-__all__ = ["Insights", "Vocabulary", "route_fields"]
+__all__ = ["Insights", "Vocabulary", "problems_of", "route_fields", "usable"]

@@ -8,6 +8,7 @@ import stat
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 from fastapi.testclient import TestClient
@@ -18,9 +19,18 @@ from route_engine.stops import Stop, StopsPlan
 
 from shaperoute_api.app import create_app
 from shaperoute_api.cities import CitySearch
-from shaperoute_api.insights import Insights, route_fields
+from shaperoute_api.insights import Insights, problems_of, route_fields, usable
 from shaperoute_api.insights.__main__ import main
-from shaperoute_api.insights.analyze import metrics, metrics_by_version, proposals
+from shaperoute_api.insights.analyze import (
+    compare,
+    demand,
+    impact,
+    metrics,
+    metrics_by_version,
+    near_stem,
+    proposals,
+    sources,
+)
 from shaperoute_api.insights.events import (
     Event,
     EventLog,
@@ -33,11 +43,23 @@ from shaperoute_api.insights.events import (
 from shaperoute_api.insights.vocabulary import Vocabulary
 from shaperoute_api.recommended import RecommendedCatalog
 from shaperoute_api.themed import StopFinder, ThemedJobs, ThemedRequestBody
-from shaperoute_api.themes import read_request, read_with_ai, request_core
+from shaperoute_api.themes import (
+    SHAPE_WORDS,
+    THEME_WORDS,
+    read_request,
+    read_with_ai,
+    request_core,
+)
 
 HERE = Path(__file__).parent
 PLACES = json.loads((HERE / "fixtures" / "geoapify-places-bologna.json").read_text())
 CITIES = json.loads((HERE / "fixtures" / "geoapify-city-milano.json").read_text())
+
+
+def per_city(url: str) -> dict[str, Any]:
+    """Geoapify finding the city asked for, whichever it is."""
+    name = parse_qs(urlparse(url).query)["text"][0]
+    return {"results": [{"name": name, "country": "Italy", "lat": 45.0, "lon": 9.0}]}
 
 
 # --- events -----------------------------------------------------------------
@@ -120,9 +142,17 @@ def test_the_repository_vocabulary_reads() -> None:
 
 
 def ai_reads(text: str, theme: str, times: int, vocab: int = 0) -> list[dict[str, Any]]:
+    """The AI reading the same words, once a day."""
     return [
-        {"kind": "themed", "text": text, "theme": theme, "by": "ai", "vocab": vocab}
-        for _ in range(times)
+        {
+            "kind": "themed",
+            "text": text,
+            "theme": theme,
+            "by": "ai",
+            "vocab": vocab,
+            "ts": f"2026-10-{day + 1:02d}T10:00:00Z",
+        }
+        for day in range(times)
     ]
 
 
@@ -132,6 +162,19 @@ def test_a_phrase_read_three_times_the_same_way_is_proposed() -> None:
     assert [p.kind for p in found] == ["theme_synonym"]
     assert found[0].additions == {"themes": {"un giro per innamorati": "romantic"}}
     assert found[0].evidence == 3 and len(found[0].examples) == 3
+    assert any("3 different days or places" in c for c in found[0].checks)
+
+
+def test_one_person_asking_again_and_again_teaches_nothing() -> None:
+    # The model answers the same words the same way: ten times, same day and
+    # place, is one source, not ten.
+    same = [
+        {**e, "ts": "2026-10-01T10:00:00Z", "city": "Roma"}
+        for e in ai_reads("zzz qualcosa di strano", "romantic", 10)
+    ]
+    assert sources(same) == 1
+    assert proposals(same, Vocabulary()) == []
+    assert sources(same[:1] + [{**same[1], "city": "Milano"}]) == 2
 
 
 def test_not_proposed_twice_nor_when_unsure_nor_against_the_tables() -> None:
@@ -243,6 +286,7 @@ def test_the_api_records_searches_and_signals(tmp_path: Path) -> None:
     assert listed["outcome"] == "empty" and listed["n"] == 0
     assert done["theme"] == "famous" and done["by"] == "table" and done["passed"] == 2
     assert done["found"] == 6 and done["outcome"] == "ok" and "ms" in done
+    assert 0 <= done["read_ms"] <= done["ms"]
     # Nothing finer than the cell, anywhere.
     assert "45.4642" not in (tmp_path / next(tmp_path.iterdir()).name).read_text()
 
@@ -275,7 +319,7 @@ def test_the_whole_loop_learns_and_the_ai_is_no_longer_asked(tmp_path: Path) -> 
         return ThemedJobs(
             FileSource(HERE),
             StopFinder("K", fetch=lambda url: PLACES),
-            cities=CitySearch("K", fetch=lambda url: CITIES),
+            cities=CitySearch("K", fetch=per_city),
             ai=ai,
             plan=fake_plan,
             run_inline=True,
@@ -284,7 +328,7 @@ def test_the_whole_loop_learns_and_the_ai_is_no_longer_asked(tmp_path: Path) -> 
 
     # 1. Three people ask in words the tables do not know: the AI answers.
     before = jobs()
-    for city in ("Milano", "Bologna", "Torino"):
+    for city in ("Milano", "Bologna", "Torino"):  # three places: three sources
         before.submit(ThemedRequestBody(text=f"un giro per innamorati a {city}"))
     assert len(asked) == 3
 
@@ -363,3 +407,223 @@ def test_request_core_drops_city_and_km() -> None:
         "learned",
         "Parigi",
     )
+
+
+# --- corrections ------------------------------------------------------------------
+
+
+def themed_unknown(text: str, day: int, **more: Any) -> dict[str, Any]:
+    return {
+        "kind": "themed",
+        "text": text,
+        "outcome": "error",
+        "code": "theme_unknown",
+        "by": "table",
+        "ts": f"2026-10-{day:02d}T10:00:00Z",
+        **more,
+    }
+
+
+def test_a_misspelt_theme_word_is_corrected_for_every_request() -> None:
+    assert near_stem("rmantico", THEME_WORDS) == ("romanti", "romantic")
+    assert near_stem("romantico", THEME_WORDS) is None  # the tables know it
+    assert near_stem("giardinetto", THEME_WORDS) is None
+    events = [
+        themed_unknown("un giro rmantico a Roma", 1, core="un giro rmantico"),
+        themed_unknown("giro rmantico", 2),
+    ]
+    (p,) = proposals(events, Vocabulary(), core=request_core, theme_words=THEME_WORDS)
+    assert (p.kind, p.additions) == (
+        "correction",
+        {"corrections": {"rmantico": "romanti"}},
+    )
+    assert "the AI did not read them: spelling only" in p.checks
+    vocab = Vocabulary().add(p.additions, p.id, p.reason)
+    assert problems_of(vocab) == []
+    # Any request, any city: the tables read it, no AI.
+    reading = read_with_ai("Un percorso rmantico a Torino", None, None, vocab.correct)
+    assert (reading.theme, reading.by, reading.city) == (
+        "romantic",
+        "learned",
+        "Torino",
+    )
+
+
+def test_no_correction_when_the_ai_read_it_otherwise_or_once() -> None:
+    against = [
+        {
+            **themed_unknown("cena rmantico", d),
+            "by": "ai",
+            "theme": "food",
+            "code": None,
+        }
+        for d in (1, 2)
+    ]
+    assert proposals(against, Vocabulary(), theme_words=THEME_WORDS) == []
+    once = [themed_unknown("giro rmantico", 1)]
+    assert proposals(once, Vocabulary(), theme_words=THEME_WORDS) == []
+
+
+def test_a_misspelt_shape_word_needs_the_ai_to_agree() -> None:
+    def read(text: str, shape: str | None, day: int) -> dict[str, Any]:
+        return {
+            "kind": "shape_reading",
+            "text": text,
+            "shape": shape,
+            "by": "ai",
+            "outcome": "ok" if shape else "empty",
+            "ts": f"2026-10-{day:02d}T09:00:00Z",
+        }
+
+    events = [read("curoe", "heart", 1), read("curoe", "heart", 2)]
+    # "pesca" is near "pesce", but the AI read no shape in it: not a typo.
+    events += [read("pesca", None, 1), read("pesca", None, 2)]
+    (p,) = proposals(events, Vocabulary(), shape_words=SHAPE_WORDS)
+    assert (p.kind, p.additions) == ("correction", {"shapes": {"curoe": "heart"}})
+    assert any('1 edit(s) from "cuore"' in c for c in p.checks)
+
+
+# --- validation -----------------------------------------------------------------
+
+
+def test_the_repository_vocabulary_is_valid() -> None:
+    # The gate of every change to learned/vocabulary.json: CI runs it.
+    assert problems_of(Vocabulary.load()) == []
+
+
+def test_a_wrong_vocabulary_is_never_used() -> None:
+    wrong = Vocabulary().add(
+        {
+            "themes": {"Giro Bello": "romantic", "un giro bello": "dragons"},
+            "shapes": {"stemma ferrari": "horse", "drago": "dragon"},
+            "corrections": {"cuore": "stella", "pizz": "xyzzy"},
+            "cities": {"Nowhere": [200.0, 0.0]},
+        },
+        "p",
+        "by hand",
+    )
+    problems = {(p.section, p.key) for p in problems_of(wrong)}
+    assert problems == {
+        ("themes", "Giro Bello"),
+        ("themes", "un giro bello"),
+        ("shapes", "drago"),
+        ("corrections", "cuore"),  # a word the tables know: it would change it
+        ("corrections", "pizz"),  # to a word the tables do not read
+        ("cities", "Nowhere"),
+    }
+    kept = Insights(None, wrong).vocab  # what the API uses
+    assert kept.shapes == {"stemma ferrari": "horse"} and kept.themes == {}
+    assert kept.corrections == {} and kept.version == 1
+    assert usable(Vocabulary()) == Vocabulary()
+
+
+def test_a_revert_is_remembered_and_a_revert_of_it_undone() -> None:
+    v1 = Vocabulary().add({"themes": {"un giro bello": "romantic"}}, "p1", "r")
+    v2 = v1.revert(0)
+    assert v2.reverted("p1") and not v2.applied("p1")
+    v3 = v2.revert(1)
+    assert v3.applied("p1") and not v3.reverted("p1")
+    assert v3.theme_for("un giro bello") == "romantic"
+
+
+def test_the_command_validates_hides_reverted_and_dry_runs(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    log = EventLog(tmp_path)
+    for e in ai_reads("un giro per innamorati", "romantic", 3):
+        log.write(Event(**e))
+    vocab_path = tmp_path / "v.json"
+    args = ["--dir", str(tmp_path), "--vocab", str(vocab_path)]
+    assert main([*args, "--json", "propose"]) == 0
+    (p,) = json.loads(capsys.readouterr().out)
+    assert main([*args, "apply", "--dry-run", p["id"]]) == 0
+    assert "Nothing saved" in capsys.readouterr().out and not vocab_path.exists()
+    assert main([*args, "apply", p["id"]]) == 0
+    assert main([*args, "validate"]) == 0
+    assert main([*args, "revert", "0"]) == 0
+    capsys.readouterr()
+    assert main([*args, "propose"]) == 0
+    assert "1 reverted before, hidden" in capsys.readouterr().out
+    with pytest.raises(SystemExit, match="--again"):
+        main([*args, "apply", p["id"]])
+    assert main([*args, "apply", "--again", p["id"]]) == 0
+    assert Vocabulary.load(vocab_path).applied(p["id"])
+    assert main([*args, "explain", p["id"]]) == 0
+    out = capsys.readouterr().out
+    assert "status: in effect in v3" in out and "3 days or places" in out
+    # A file edited by hand into something wrong does not validate.
+    body = json.loads(vocab_path.read_text())
+    body["changes"][-1]["add"]["themes"]["un giro per innamorati"] = "dragons"
+    vocab_path.write_text(json.dumps(body))
+    assert main([*args, "validate"]) == 1
+
+
+# --- did it help? ---------------------------------------------------------------
+
+
+def themed_runs(ok: int, failed: int, vocab: int) -> list[dict[str, Any]]:
+    good = {"kind": "themed", "outcome": "ok", "by": "table", "vocab": vocab}
+    bad = {**good, "outcome": "error", "code": "no_places"}
+    return [good] * ok + [bad] * failed
+
+
+def test_compare_tells_a_change_from_chance() -> None:
+    assert compare((15, 30), (28, 30), "up")["verdict"] == "better"
+    assert compare((15, 30), (28, 30), "down")["verdict"] == "worse"
+    assert compare((15, 30), (17, 30), "up")["verdict"] == "same"
+    small = compare((1, 5), (5, 5), "up")
+    assert (small["verdict"], small["z"]) == ("too few", None)
+    assert compare((0, 30), (0, 30), "up")["verdict"] == "same"
+
+
+def test_impact_says_better_worse_or_too_few_and_what_to_revert() -> None:
+    v1 = Vocabulary().add(
+        {"themes": {"un giro per innamorati": "romantic"}}, "p1", "r1"
+    )
+    v2 = v1.add({"themes": {"un giro bello": "nature"}}, "p2", "r2")
+    learned = {
+        "kind": "themed",
+        "text": "un giro per innamorati a roma",
+        "core": "un giro per innamorati",
+        "by": "learned",
+        "outcome": "ok",
+        "ms": 30_000,  # the whole job: reading and planning
+        "read_ms": 2,
+        "vocab": 1,
+    }
+    asked = {**learned, "by": "ai", "read_ms": 4100, "vocab": 0}
+    events = (
+        themed_runs(15, 15, 0)
+        + [asked] * 2
+        + themed_runs(28, 2, 1)
+        + [learned] * 3
+        + themed_runs(10, 20, 2)
+    )
+    found = {v["version"]: v for v in impact(events, v2, request_core)}
+    assert found[1]["verdict"].startswith("better (")
+    assert found[1]["rates"]["themed_success_rate"]["verdict"] == "better"
+    assert (found[1]["answered"], found[1]["ai_calls_saved"]) == (3, 3)
+    assert (found[1]["ms_ai_before"], found[1]["ms_learned_after"]) == (4100.0, 2.0)
+    assert metrics(events)["reading_ms"] == {"ai": 4100.0, "learned": 2.0}
+    assert found[2]["verdict"] == (
+        "worse (themed_success_rate, route_success_rate): consider `revert 1`"
+    )
+    few = impact(themed_runs(3, 1, 0) + themed_runs(4, 0, 1), v1)
+    assert few[0]["verdict"].startswith("too few events")
+
+
+def test_demand_shows_what_is_asked_what_works_and_what_fails() -> None:
+    good = {
+        "kind": "themed",
+        "text": "luoghi famosi a roma",
+        "outcome": "ok",
+        "city": "Rome, Lazio, Italy",
+        "lang": "it",
+    }
+    bad = {"kind": "city_search", "text": "atlantide", "outcome": "empty", "lang": None}
+    word = {"kind": "route", "word": "CIAO", "shape": None, "outcome": "ok"}
+    asked = demand([good] * 4 + [bad] * 2 + [word])
+    assert asked["languages"] == {"it": 4} and asked["cities"] == {"Rome": 4}
+    assert asked["worth_suggesting"] == [("luoghi famosi a roma", 4)]
+    assert asked["failing"] == [("city_search", "atlantide", 2, 0.0)]
+    assert asked["words"] == {"CIAO": 1}

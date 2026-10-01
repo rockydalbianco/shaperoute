@@ -335,8 +335,15 @@ class ThemedJobs:
         self, body: ThemedRequestBody, seen: dict[str, Any] | None = None
     ) -> ThemedResultBody:
         seen = {} if seen is None else seen
-        reading = read_with_ai(body.text, self.ai, self.insights.vocab.theme_for)
-        seen.update(theme=reading.theme, shape=reading.shape, by=reading.by)
+        vocab = self.insights.vocab
+        reading_started = time.monotonic()
+        reading = read_with_ai(body.text, self.ai, vocab.theme_for, vocab.correct)
+        seen.update(
+            theme=reading.theme,
+            shape=reading.shape,
+            by=reading.by,
+            read_ms=round((time.monotonic() - reading_started) * 1000),
+        )
         if reading.theme is None:
             raise ThemedRouteError(
                 "theme_unknown",

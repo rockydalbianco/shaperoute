@@ -3096,3 +3096,8 @@ frequentate**.
   Resta da decidere con TASK-110 (punto 6, «Dati personali») cosa dice il
   testo della privacy e se un percorso consigliato si mostra partendo da
   un punto del giro invece che dalla partenza vera.
+
+**Aggiunta** (2026-10-01, scelta dell'utente): due percorsi di qualità
+uguale si tengono e si propongono **tutti e due**; nessuno dei due passa
+davanti all'altro perché tocca strade meno frequentate (era la proposta
+dell'agente, scartata).

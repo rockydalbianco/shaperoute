@@ -3068,6 +3068,40 @@ i test accanto, e due fixture in `shared-types`. Una corsa senza punteggio
 blocca l'avvio sulla schermata di fine corsa finché l'API non risponde o
 un'altra corsa la sostituisce.
 
+
+## ADR-0086 — Tutti i percorsi generati si salvano, i migliori si consigliano
+**Stato**: Attiva · 2026-10-01 · **scelta dell'utente** (TASK-092). Il
+numero è uno di quelli lasciati liberi (0086 … 0089, `PASSAGGIO.md`), per
+non scontrarsi con gli ADR che TASK-110 sta per scrivere.
+
+**Contesto**: l'utente vede percorsi diversi a ogni richiesta (la partenza
+GPS si sposta di 25–100 m, TASK-075) e vuole tenere quelli venuti
+benissimo. Con la parte social (TASK-110 … 122) vuole un archivio delle
+ricerche di tutti, per consigliare i percorsi migliori agli utenti e usarli
+sui social del progetto. Proposta dell'agente: salvare e consigliare solo i
+percorsi che l'utente sceglie di condividere.
+
+**Decisione dell'utente**: si salvano **tutti** i percorsi generati, senza
+che l'utente scelga; i migliori si consigliano agli altri e si usano sui
+social. Motivo, con le sue parole: chi corre passa su strade pubbliche,
+al massimo davanti alla casa di un altro, senza fare male a nessuno; e
+consigliare i percorsi serve anche a **ripopolare strade di solito poco
+frequentate**.
+
+**Conseguenza**:
+- Serve il database (TASK-114) e l'API sempre accesa (TASK-122): sul Mac
+  il registro delle richieste (ADR-0085) raccoglie già le richieste
+  dell'utente, non quelle degli altri.
+- La partenza di un percorso salvato è spesso dove abita chi l'ha chiesto.
+  Resta da decidere con TASK-110 (punto 6, «Dati personali») cosa dice il
+  testo della privacy e se un percorso consigliato si mostra partendo da
+  un punto del giro invece che dalla partenza vera.
+
+**Aggiunta** (2026-10-01, scelta dell'utente): due percorsi di qualità
+uguale si tengono e si propongono **tutti e due**; nessuno dei due passa
+davanti all'altro perché tocca strade meno frequentate (era la proposta
+dell'agente, scartata).
+
 ## ADR-0095 — I luoghi da Geoapify, attraverso l'API
 **Stato**: Attiva · 2026-10-01 · servizio scelto dall'utente («Geoapify
 via l'API»); dettagli decisi dall'agente su delega dell'utente

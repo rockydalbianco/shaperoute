@@ -52,7 +52,10 @@ corso, account, profilo, like e commenti. Tredici task scritti, TASK-110 …
 122, con l'ordine in `ROADMAP.md` («La parte social»). Partono subito
 **TASK-111** (punteggio nel motore) e **TASK-112** (traccia registrata
 nell'app); **TASK-110** sono le scelte dell'utente da cui dipendono gli
-account.
+account. Dopo, **TASK-092 — Percorsi consigliati** (ADR-0086, scelta
+dell'utente del 2026-10-01): tutti i percorsi generati si salvano, i
+migliori si consigliano agli utenti e si usano sui social; parte dopo il
+database (TASK-114) e l'API sempre accesa (TASK-122).
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).

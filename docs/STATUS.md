@@ -79,6 +79,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore** — TASK-133 (miglioramento generale scelto dall'agente): i
+  file della cache delle zone si scrivono interi o non si scrivono
+  (ADR-0104). Un'API o uno script fermati a metà scrittura non lasciano più
+  un GraphML, un pickle o un file di vie con nome rotti, che facevano
+  fallire ogni percorso della zona finché non si cancellavano a mano; un
+  pickle che non si legge cede al GraphML. Stessi percorsi, stessi tempi.
 - **Motore** — TASK-127: Overpass dall'indirizzo che risponde (ADR-0100);
   le zone nuove si scaricano dal Mac. Dopo una serie di download Overpass
   smette comunque di rispondere per qualche ora (MAPS.md).

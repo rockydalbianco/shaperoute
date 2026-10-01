@@ -63,4 +63,19 @@ docs/STATUS.md
   ci sono utenti.
 - Toccare il motore per migliorare i percorsi.
 
+## Dove sono arrivato (2026-10-01, 13:52)
+
+- Fatte 6 città su 13: Trento 27 percorsi tenuti, Levico 19, Milano 33,
+  Roma 31, Torino 32, Bologna 31 (173 in tutto, su 197 disegnati; soglia
+  0,88). Trento e Milano viste a occhio dall'utente: il pesce di Trento
+  scartato (`REJECTED`), il resto va bene.
+- Firenze e Napoli: Overpass ha rifiutato la connessione («Connection
+  refused») per tutti i casi; giro fermato per non sprecare ore. Mancano
+  Firenze, Napoli, Verona, Padova, Genova, Bari, Palermo.
+- Per riprendere, quando Overpass risponde: dalla radice
+  `python -m route_engine.seed_catalog --run` (ambiente
+  `services/api/.venv`). Il registro `out/seed_catalog/runs.jsonl` è sul
+  Mac, fuori dal repository: i casi fatti non si rifanno, quelli falliti
+  sì.
+
 ## Esito

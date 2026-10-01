@@ -63,8 +63,8 @@ Niente.
 
 ## Completato
 
-- **API e app** — TASK-113 (PR aperta, manca la prova sull'iPhone con una
-  camminata vera, che vale anche per TASK-112): a fine corsa l'app mostra
+- **API e app** — TASK-113 (prova sull'iPhone non riportata, vale anche
+  per TASK-112): a fine corsa l'app mostra
   la corsa sopra il percorso e il punteggio da 0 a 100, chiesto a `POST
   /track-scores` (ADR-0093). Senza rete la corsa resta sul telefono e il
   punteggio si richiede dopo. Il seguito della parte social è **TASK-110**,

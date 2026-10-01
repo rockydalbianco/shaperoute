@@ -1,6 +1,6 @@
 # TASK-113 — Il punteggio a fine corsa, nell'API e nell'app
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-113-finish-score`
 **Dipende da**: TASK-111, TASK-112
 
@@ -81,3 +81,6 @@ Codice e test fatti (2026-09-30): API 15 test nuovi, app 22. **Manca la
 prova sull'iPhone** con una camminata vera, che chiude anche quella di
 TASK-112. La traccia si cancella a «Done» dopo il punteggio: salvarla è di
 TASK-117, che deve anche non fidarsi della somiglianza mandata dall'app.
+
+Mergiato su richiesta dell'utente («merge 116», 2026-10-01); la prova
+sull'iPhone non è stata riportata in chat.

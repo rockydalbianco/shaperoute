@@ -706,6 +706,14 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 | Nessun risultato in 5 minuti | The API took more than 5 minutes. Try again later, or a shorter distance. |
 | L'API non conosce più la richiesta (riavviata) | The API lost this request (was it restarted?). Try again. |
 | Indirizzo dell'API sconosciuto | The app does not know where the API is: open it from the QR code of npm run mobile on the PC. |
+| Account: email già usata (`email_taken`, TASK-115) | This email already has an account. Log in instead. |
+| Account: nome già usato (`username_taken`) | This username is taken. Try another one. |
+| Account: email o password sbagliate (`wrong_credentials`) | Wrong email or password. |
+| Account: troppi tentativi (`too_many_requests`, con `Retry-After`) | Too many tries. Wait 10 minutes and try again. (al minuto intero; sotto il minuto, «Wait a minute») |
+| Account: sessione scaduta o chiusa (`session_expired`, `not_signed_in`) | Your session has ended. Log in again. |
+| Account: l'API non ha un database (`accounts_unavailable`) | Accounts are not available on this API: it has no database. |
+| Account: API non raggiungibile | Cannot reach the API at http://…:8000. Check the connection and try again. |
+| Account: un campo che l'API rifiuterebbe | il primo che non va: Enter an email address, like name@example.com. · A username is 3 to 20 letters, digits, _ or . (no spaces). · A password is at least 8 characters. · You must be at least 16 to sign up. |
 
 ## Cosa esce dal telefono
 
@@ -734,6 +742,12 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   API o senza chiave, a Photon (komoot). Il log dell'API scrive solo
   `GET /places`, né testo né posizione (TASK-124, ADR-0096).
 - **La libreria**: MapLibre GL JS arriva da unpkg a ogni avvio a freddo.
+- **L'account** (TASK-115): email, nome e password vanno all'API solo con
+  «Sign up» e «Log in». Il telefono tiene la sessione, cioè il token e
+  l'utente (numero, email, nome, ruolo), nel portachiavi
+  (`expo-secure-store`, ADR-0125); mai la password. Il token va all'API
+  solo con le richieste dell'account (`GET /me`, `DELETE /session`,
+  `DELETE /me`), in `Authorization`.
 
 ## Quando la mappa non si carica
 

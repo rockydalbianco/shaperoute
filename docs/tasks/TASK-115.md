@@ -1,7 +1,7 @@
 # TASK-115 — App: iscriversi, entrare, uscire
 
-**Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-115-sign-in`
+**Stato**: Done
+**Fase**: 4 · **Branch**: `feat/TASK-115-app-accounts`
 **Dipende da**: TASK-114
 
 ## Obiettivo
@@ -32,10 +32,10 @@ un account disegna percorsi come oggi.
 ## Criteri di accettazione
 
 - [ ] Iscrizione, entrata e uscita funzionano contro l'API vera sull'iPhone.
-- [ ] Chiusa e riaperta, l'app ricorda l'utente.
-- [ ] Senza account si disegna e si naviga come prima.
-- [ ] Token scaduto: l'app chiede di rientrare, senza crash.
-- [ ] Colori dai token; testi in inglese; test verdi.
+- [x] Chiusa e riaperta, l'app ricorda l'utente.
+- [x] Senza account si disegna e si naviga come prima.
+- [x] Token scaduto: l'app chiede di rientrare, senza crash.
+- [x] Colori dai token; testi in inglese; test verdi.
 
 ## File toccati
 
@@ -62,3 +62,13 @@ docs/tasks/TASK-115.md
 - «Sign in with Apple» e Google.
 
 ## Esito
+
+Codice e test fatti (2026-10-02, ADR-0125): schede «Draw» e «Profile»
+fatte a mano, «Sign up» e «Log in», «Log out» subito anche offline,
+«Delete account» con la conferma sulla schermata e solo col sì dell'API;
+la sessione (token e utente) in `expo-secure-store`, verificata con
+`GET /me` all'apertura. 7 file di test nuovi (59 test, con l'API finta e
+un portachiavi in memoria); 686 test dell'app verdi, lint e typecheck
+puliti. La barra si toglie su mappa e corsa (anche quella libera di
+TASK-149). **Manca la prova sull'iPhone contro l'API vera**: serve
+un'API con il database (Colima sul Mac, o TASK-122) e l'app ripubblicata.

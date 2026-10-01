@@ -1,6 +1,6 @@
 # TASK-110 — Le scelte della parte social: account, dati, hosting, privacy
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `docs/TASK-110-decisions`
 
 ## Obiettivo
@@ -95,14 +95,18 @@ la fa l'utente**, una domanda per volta.
    Scelta dell'utente (2026-10-01), fra «solo l'utente, con email», «solo
    l'utente, senza avvisi» e «utente e collega».
 
+9. **Pacchetti e servizi nuovi**: approvata tutta la lista (2026-10-01):
+   psycopg, argon2-cffi, expo-secure-store, PostgreSQL con PostGIS in
+   Docker, Object Storage di Oracle, Brevo.
+
 ## Criteri di accettazione
 
-- [ ] ADR-0013 ha stato «Attiva» o è sostituita da ADR nuovi, con hosting,
+- [x] ADR-0013 ha stato «Attiva» o è sostituita da ADR nuovi, con hosting,
       database e autenticazione decisi dall'utente.
-- [ ] `DATABASE.md` non ha più «Stub» e risponde alle sue quattro domande.
-- [ ] `PRODUCT.md` ha un paragrafo sulla parte social con i punti 1, 5, 6.
-- [ ] Ogni pacchetto o servizio nuovo che servirà è elencato e approvato.
-- [ ] `docs/INDEX.md`: `DATABASE.md` «pieno».
+- [x] `DATABASE.md` non ha più «Stub» e risponde alle sue quattro domande.
+- [x] `PRODUCT.md` ha un paragrafo sulla parte social con i punti 1, 5, 6.
+- [x] Ogni pacchetto o servizio nuovo che servirà è elencato e approvato.
+- [x] `docs/INDEX.md`: `DATABASE.md` «pieno».
 
 ## File toccati
 
@@ -121,3 +125,33 @@ docs/tasks/TASK-110.md
 - Notifiche push, seguire altri utenti, classifiche, sfide.
 
 ## Esito
+
+Fatto il 2026-10-01: nove scelte dell'utente (sopra, ADR-0112), il come in
+ADR-0113, `DATABASE.md` pieno, un paragrafo in `PRODUCT.md`. Nessun codice.
+
+**Cosa cambia nei task già scritti** (da correggere nel task file prima
+che parta, non a metà):
+
+- **TASK-114**: database come in `DATABASE.md`, psycopg e Argon2id, token
+  come in ADR-0113; `role` negli utenti. «Password dimenticata» non è più
+  fuori scope per mancanza di posta: con Brevo approvato si può fare, in
+  TASK-114 o in un task a parte.
+- **TASK-115**: la casella «I am at least 16» all'iscrizione;
+  `expo-secure-store` è approvato.
+- **TASK-117**: la traccia tagliata si calcola al salvataggio e si
+  conserva (`DATABASE.md`).
+- **TASK-121**: niente nascondere da solo dopo 3 segnalazioni; email a
+  tutti e due gli admin a ogni segnalazione, con Brevo.
+- **TASK-122**: Oracle Always Free, non un servizio da scegliere; da
+  decidere lì con l'utente HTTPS (dominio) e il passaggio a «Pay As You
+  Go». `DEPLOY.md` dice 4 core e 24 GB per Oracle: oggi sono 2 e 12.
+- **TASK-092**: un percorso generato da chi è entrato porta il suo
+  utente, e si cancella con l'account; il punto di partenza mostrato si
+  sceglie al salvataggio.
+- **Nuovo, da numerare**: il testo della privacy pubblicato a un
+  indirizzo, che l'App Store chiede (cosa si raccoglie, perché, per
+  quanto, come si cancella).
+
+Le risposte le ha raccolte questa sessione; una sessione parallela
+(«Decide TASK-110») si è fermata senza commit e ha mandato i dati di
+Oracle, Hetzner e Supabase controllati il 2026-10-01.

@@ -51,7 +51,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | `API.md` | pieno | — |
 | `UI.md` | pieno per mappa e posizione | il resto con TASK-023 |
 | `AI.md` | pieno | — |
-| `DATABASE.md` | stub | fase 4 |
+| `DATABASE.md` | pieno | — |
 
 Uno stub si riempie **quando arriva il suo task**, non prima: scrivere oggi
 un `DATABASE.md` dettagliato significa documentare decisioni non ancora prese.

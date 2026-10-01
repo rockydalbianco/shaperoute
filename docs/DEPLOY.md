@@ -389,18 +389,32 @@ fa l'utente; i comandi sono tutti qui. La configurazione sta in
 `deploy/`: `compose.yaml` (l'API e, a scelta, Ollama e Caddy) e
 `Caddyfile`. La CI la avvia a ogni PR.
 
+**Il server di oggi.** Dal 2026-10-01 l'app pubblicata (`preview`) usa un
+**Hetzner CX33** a Falkenstein, `sgrava-api`, scelto dall'utente dopo che
+Oracle Always Free rispondeva «Out of capacity» anche a 1 OCPU e 6 GB, e
+un CAX21 a Norimberga non c'era. È stato messo su a mano, prima di questa
+configurazione: un `docker run` con le cartelle in `/srv/shaperoute/` e
+Caddy installato con apt, pubblico da subito su un nome `sslip.io`,
+senza dominio comprato (F.8). Misurato lì: un cuore da 5 km a Trento in
+18,7 s con la zona in cache, una stella in 3,2 s, l'API in circa 0,56 GB
+di RAM; e Overpass, che rifiuta il Mac, dal server risponde. Come
+portarlo su `deploy/compose.yaml`: F.12.
+
 ### F.1 Quale server
 
 Cosa serve all'app:
 
 - **RAM**: 8 GB per l'API (una zona grande in memoria occupa centinaia di
-  MB, l'API ne tiene due, più i calcoli). **12 GB o più** se sul server
-  gira anche l'AI (`qwen3:4b`, 3,2 GB mentre è caricata).
+  MB, l'API ne tiene due, più i calcoli; sul server di oggi, con Trento,
+  circa 0,56 GB). Con l'AI (`qwen3:4b`, 3,2 GB mentre è caricata) 8 GB
+  probabilmente bastano ancora, da provare con le zone grandi come New
+  York; **12 GB** per stare larghi.
 - **Disco**: almeno 80 GB. Le zone del Mac pesano 19 GB oggi (molti sono
   ritagli, che TASK-136 toglie) e crescono con le città.
-- **Processore**: il motore lavora a lungo. Un vCPU di un server condiviso
-  è più lento di un Mac recente, forse 1,5–2 volte: i tempi di `API.md`
-  vanno rimisurati sul server (F.7).
+- **Processore**: il motore lavora a lungo, e un vCPU di un server
+  condiviso è più lento di un Mac recente. Sul CX33 di oggi il cuore da
+  5 km a Trento ci mette 18,7 s, dentro i 5–25 s che `API.md` dà per 3–10
+  km; un server nuovo si misura allo stesso modo (F.7).
 - **In Europa**, per i dati degli utenti (GDPR) e per la latenza.
 - **Ubuntu 24.04 LTS**.
 
@@ -415,19 +429,18 @@ Cambiano spesso: controllali prima di comprare.
 | OVHcloud VPS-2 | 4 | 8 GB | 75 GB | 7,21 € | 8,80 € | impegno 12 mesi; backup giornaliero e IPv4 inclusi |
 | **OVHcloud VPS-3** | 6 | 12 GB | 100 GB | 10,40 € | **12,69 €** | come VPS-2; anche in Italia; a volte esaurito |
 | Contabo Cloud VPS 6 | 6 | 12 GB | 200 GB | da 7,50 € | — | impegno 24 mesi; processore e disco più lenti; IVA da controllare |
-| Oracle Always Free | 4 ARM | 24 GB | 200 GB | 0 € | 0 € | carta per la verifica; spesso senza posto; le VM ferme vengono ritirate |
+| Oracle Always Free | 4 ARM | 24 GB | 200 GB | 0 € | 0 € | carta per la verifica; le VM ferme vengono ritirate; provato il 2026-10-01: «Out of capacity» |
 
-**La raccomandazione**:
+**La raccomandazione**, e la scelta:
 
-- **Per cominciare: Hetzner CX33**, 10,97 €/mese. Si paga a ore e si
-  cancella quando si vuole: una settimana di prova costa circa 3 €. Il
-  pannello è il più semplice e il server è pronto in un minuto. Se
-  servono l'AI o più core, dal pannello si passa a CX43 (con il disco più
-  grande non si torna indietro).
-- **Se la prova va bene e volete l'AI sul server: OVHcloud VPS-3**,
-  12,69 €/mese pagando 12 mesi in anticipo (circa 152 €): la RAM per API
-  e AI insieme, il backup giornaliero incluso, un datacenter anche in
-  Italia. Conviene dopo aver misurato i tempi, non prima.
+- **Hetzner CX33**, 10,97 €/mese: **scelto dall'utente**, è il server di
+  oggi. Si paga a ore e si cancella quando si vuole. Il pannello è il più
+  semplice e il server è pronto in un minuto. Se servono più core o più
+  memoria, dal pannello si passa a CX43 (con il disco più grande non si
+  torna indietro).
+- **L'alternativa, se un giorno serve più RAM per meno: OVHcloud VPS-3**,
+  12,69 €/mese pagando 12 mesi in anticipo (circa 152 €): 12 GB, il
+  backup giornaliero incluso, un datacenter anche in Italia.
 
 Scartati: DigitalOcean, Vultr, Linode, AWS Lightsail (4–5 volte il
 prezzo per la stessa RAM); Render, Railway, Fly.io (la RAM si paga a parte
@@ -624,19 +637,28 @@ più 90 s (`AI.md`).
    resterebbe nella cronologia del Terminale.
 5. **Ripubblica** l'app (A.6 punto 3) e aprila in Expo Go.
 
+Il server di oggi non passa da qui: è pubblico da subito (F.8). Non
+Tailscale *Funnel*, che lo renderebbe pubblico: provato, il suo nome
+pubblico non è mai stato creato (tailscale/tailscale#21502).
+
 Ora il Mac si può spegnere. **La prova dei tempi**: un cuore da 5 km a
 Trento, che è in cache, e uno da 15 km; `API.md` dice quanto ci mettono
 sul Mac. Se sul server sono molto più lenti, è il momento di decidere fra
 il server più grande e una task per rendere più veloce il motore.
 
-### F.8 Un indirizzo pubblico, con un dominio
+### F.8 Un indirizzo pubblico
 
 Con Tailscale l'app la usa solo chi è nella vostra tailnet. Per altre
 persone, e per gli store, serve un indirizzo pubblico in HTTPS.
 
 1. **Un dominio**, lo compra l'utente: 10–15 €/anno da un registrar, ad
    esempio un `.it` o un `.app`. Servirà anche per la pagina della
-   privacy che gli store chiedono (F.10).
+   privacy che gli store chiedono (F.10). **Per cominciare se ne può fare
+   a meno**, come il server di oggi: `203-0-113-10.sslip.io` (l'IPv4 con
+   i trattini) porta già all'indirizzo del server, senza DNS da
+   configurare; si salta il punto 2 e si usa quel nome come
+   `SHAPEROUTE_DOMAIN`. Per gli store meglio un nome vostro, che resta
+   anche se cambia il server.
 2. **Il DNS**, nel pannello del registrar: un record `A` con nome `api` e
    per valore l'IPv4 del server; se il server ha IPv6, anche un `AAAA`.
    Dopo qualche minuto, dal Mac, `ping api.tuodominio.it` risponde
@@ -678,7 +700,9 @@ persone, e per gli store, serve un indirizzo pubblico in HTTPS.
    ripubblica.
 
 Il limite di 30 richieste al minuto vale per ogni telefono: Caddy passa
-all'API l'indirizzo vero (`FORWARDED_ALLOW_IPS` in `compose.yaml`). La
+all'API l'indirizzo vero (`FORWARDED_ALLOW_IPS` in `compose.yaml`). Il
+server di oggi, senza, conta tutti come uno, e ha alzato il limite a 120
+(`SHAPEROUTE_RATE_LIMIT`). La
 chiave dentro l'app resta debole (A.6, «Limiti»): chi ha l'app la può
 leggere. La protezione vera arriva con gli account (TASK-114, TASK-115).
 
@@ -763,6 +787,50 @@ Quanto costa, a gradini (2026-10-01, IVA compresa, indicativo):
   server. Riprova più tardi, o scaricala dal Mac e copiala (F.5).
 - **Lento o senza memoria**: `docker stats` e `free -h`. Con l'AI su un
   server da 8 GB, spegnila (F.9).
+
+### F.12 Dal server fatto a mano a questa configurazione
+
+Per il server di oggi (`sgrava-api`), quando si decide di spostarlo: la
+stessa API, gli stessi dati e lo stesso indirizzo, quindi l'app non
+cambia. Due minuti di API ferma. Sul server, come `root`:
+
+1. Il codice e i segreti:
+
+   ```bash
+   cd /root/shaperoute && git pull
+   cp /srv/shaperoute/shaperoute.env deploy/.env
+   ```
+
+   Il file ha già la chiave, Geoapify e il limite; `COMPOSE_PROFILES`
+   manca, cioè solo l'API.
+2. Il container vecchio fuori, i dati dentro `data/` (stesso disco: è uno
+   spostamento, non una copia):
+
+   ```bash
+   docker rm -f shaperoute
+   mkdir -p data
+   mv /srv/shaperoute/cache /srv/shaperoute/insights /srv/shaperoute/requests data/
+   ```
+
+3. Avviare e controllare (F.6):
+
+   ```bash
+   cd deploy && docker compose up -d --build
+   curl http://127.0.0.1:8000/health
+   ```
+
+4. **Caddy resta quello di apt**: il suo `reverse_proxy` va ancora a
+   `127.0.0.1:8000`, e con `FORWARDED_ALLOW_IPS` l'API ora vede ogni
+   telefono, quindi `SHAPEROUTE_RATE_LIMIT` in `deploy/.env` può tornare
+   vuoto (30 a telefono) con un `docker compose up -d`. Passare al Caddy
+   di `compose.yaml` è un passo a parte, facoltativo: `sudo systemctl
+   disable --now caddy`, poi in `deploy/.env` `SHAPEROUTE_DOMAIN` con il
+   nome `sslip.io` di oggi e `COMPOSE_PROFILES=public`, e `docker compose
+   up -d`.
+5. Dall'iPhone, un percorso: l'app non cambia indirizzo né chiave.
+
+Se qualcosa va storto si torna indietro: `docker compose down`, le tre
+cartelle di nuovo in `/srv/shaperoute/`, e il `docker run` di prima.
 
 ---
 

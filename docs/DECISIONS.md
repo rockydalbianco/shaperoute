@@ -3606,7 +3606,7 @@ città di TASK-134.
 
 ## ADR-0111 — Il server a pagamento: quale, e la configurazione in `deploy/`
 **Stato**: Attiva · 2026-10-01 · TASK-144 · la configurazione decisa
-dall'agente su delega dell'utente; **il server lo sceglie l'utente**
+dall'agente su delega dell'utente; il server scelto dall'utente
 
 Chiesto dall'utente: le istruzioni per mettere l'app su un server, da
 usare con il computer spento e un giorno da pubblicare, e i server a
@@ -3619,11 +3619,13 @@ pacchetto lascia fuori `catalog/` («Explore» vuoto), perde gli eventi di
 TASK-130 a ogni container nuovo e non ha HTTPS né l'AI.
 
 **Decisione**:
-- **Raccomandazione** (`DEPLOY.md`, F.1, prezzi del 2026-10-01): Hetzner
-  CX33 (4 vCPU, 8 GB, 80 GB, 10,97 €/mese IVA compresa) per cominciare,
-  a ore e senza impegno, per misurare i tempi del motore; OVHcloud VPS-3
-  (6 vCore, 12 GB, 100 GB, 12,69 €/mese con 12 mesi, backup incluso)
-  se la prova va bene e l'AI deve stare sul server.
+- **Il server** (`DEPLOY.md`, F.1, prezzi del 2026-10-01): **Hetzner
+  CX33** (4 vCPU, 8 GB, 80 GB, 10,97 €/mese IVA compresa, a ore), scelto
+  dall'utente il 2026-10-01 al posto dell'Oracle di ADR-0114, che
+  rispondeva «Out of capacity», e già acceso: messo su a mano, con
+  `docker run` e Caddy da apt su un nome `sslip.io`. L'alternativa
+  annotata è OVHcloud VPS-3 (6 vCore, 12 GB, 100 GB, 12,69 €/mese con 12
+  mesi, backup incluso).
 - **`deploy/compose.yaml`**: l'API dal `Dockerfile`, senza cambiarlo.
   Zone, eventi e registro in `data/` del checkout con bind mount (cartelle
   normali: `rsync` dal Mac le riempie, e sopravvivono alle immagini
@@ -3635,10 +3637,12 @@ TASK-130 a ogni container nuovo e non ha HTTPS né l'AI.
   `ollama/ollama`, `--ai-url http://ollama:11434`; senza il profilo il nome
   non si risolve e le parole fuori tabella danno `ai_unavailable`, come con
   Ollama spento) e `public` (Caddy).
-- **Privato prima di pubblico**: `tailscale serve` sul server dà HTTPS
-  con certificato vero solo alla tailnet, senza dominio né porte aperte.
-  Per il pubblico **Caddy**, che chiede e rinnova da solo il certificato
-  di `SHAPEROUTE_DOMAIN`.
+- **Privato prima di pubblico**, nella guida: `tailscale serve` sul
+  server dà HTTPS con certificato vero solo alla tailnet, senza dominio né
+  porte aperte. Per il pubblico **Caddy**, che chiede e rinnova da solo il
+  certificato di `SHAPEROUTE_DOMAIN`: un dominio vostro, o per cominciare
+  un nome `sslip.io`, come il server di oggi. Non Tailscale Funnel: il
+  suo nome pubblico non è stato creato (tailscale/tailscale#21502).
 - **Il limite per telefono anche dietro il proxy**:
   `FORWARDED_ALLOW_IPS="*"`, letto da uvicorn, fa vedere all'API
   l'indirizzo di `X-Forwarded-For`. Si può fidare di tutti perché alla
@@ -3661,6 +3665,8 @@ zone (da riempire servirebbe root); cambiare il `Dockerfile` per
 un'immagine nuova).
 
 **Conseguenza**: dal server comprato all'app sull'iPhone a Mac spento sono
-i passi F.2–F.7 di `DEPLOY.md`. Non è ancora provato su un server vero: i
-tempi del motore e dell'AI su CPU si misurano quando l'utente lo ha.
-TASK-122 aggiunge il database a `deploy/compose.yaml`.
+i passi F.2–F.7 di `DEPLOY.md`. Il server di oggi non usa ancora questa
+configurazione: spostarlo (F.12, stessi dati e stesso indirizzo) si fa a
+parte, a fine coda dei merge. Misurato lì, a mano: cuore da 5 km a Trento
+in 18,7 s con la zona in cache, l'API in 0,56 GB; l'AI su CPU è da
+provare. TASK-122 aggiunge il database a `deploy/compose.yaml`.

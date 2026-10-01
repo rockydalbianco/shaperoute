@@ -94,12 +94,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   configurazione pronta in `deploy/`: l'API con zone, eventi e catalogo,
   l'AI (profilo `ai`) e HTTPS con Caddy (profilo `public`) a scelta. Prima
   privato con Tailscale e `tailscale serve`, poi un dominio, poi gli
-  store. Raccomandati, prezzi del 2026-10-01: Hetzner CX33 (10,97 €/mese
-  IVA compresa, a ore) per cominciare; OVHcloud VPS-3 (12,69 €/mese con
-  12 mesi) per tenere anche l'AI sul server. La CI avvia la
-  configurazione; su un server vero non è ancora provata: **la scelta del
-  server e l'acquisto sono dell'utente**, poi si misurano i tempi del
-  motore (F.7).
+  store, e i prezzi del 2026-10-01. Il server scelto dall'utente, Hetzner
+  CX33 (10,97 €/mese IVA compresa), è già acceso ma messo su a mano:
+  **spostarlo su `deploy/compose.yaml`** (F.12, stessi dati e stesso
+  indirizzo, l'app non cambia) è il passo dopo, a fine coda dei merge. La
+  CI avvia la configurazione.
 
 - **API e app** — TASK-138: in «Explore» il campo «Type a city or a
   place» suggerisce a metà parola città e luoghi (ADR-0110): «arena di ver»

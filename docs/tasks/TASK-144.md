@@ -1,6 +1,6 @@
 # TASK-144 — Un server a pagamento: la guida e la configurazione pronta
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `chore/TASK-144-server-guide`
 
 Chiesto dall'utente il 2026-10-01: «le istruzioni per inserire la nostra
@@ -26,6 +26,10 @@ server prendere, quanto costa oggi, e cosa manca per pubblicare l'app.
   per HTTPS, per l'AI o per copiare le zone dal Mac (19 GB).
 - Dietro un proxy HTTPS l'API vedrebbe tutti i telefoni con un indirizzo
   solo, e il limite di 30 POST al minuto varrebbe per tutti insieme.
+- Durante il task l'utente ha scelto il server, **Hetzner CX33**, e
+  un'altra sessione l'ha messo su a mano (`docker run`, Caddy da apt,
+  `sslip.io`), con l'app pubblicata che lo usa già: la guida lo descrive
+  e dice come portarlo sulla configurazione nuova (F.12).
 
 ## Contesto da leggere
 
@@ -59,13 +63,13 @@ Creare account, pagare, comprare un dominio e inserire chiavi lo fa
 
 ## Criteri di accettazione
 
-- [ ] La CI avvia `deploy/compose.yaml` e `/health` risponde; senza
+- [x] La CI avvia `deploy/compose.yaml` e `/health` risponde; senza
       chiave `/docs` dà 401, con la chiave 200.
-- [ ] La CI convalida il `Caddyfile` e la configurazione con i profili
+- [x] La CI convalida il `Caddyfile` e la configurazione con i profili
       `ai` e `public`.
-- [ ] `DEPLOY.md` ha la strada F completa, dal server comprato all'app
+- [x] `DEPLOY.md` ha la strada F completa, dal server comprato all'app
       sull'iPhone, e i prezzi con la data della verifica.
-- [ ] Nessun segreto nel repository.
+- [x] Nessun segreto nel repository.
 
 ## File toccati
 
@@ -85,9 +89,17 @@ docs/tasks/TASK-144.md
 - Il database, gli account e la loro copia di sicurezza: TASK-114 e
   TASK-122, che partono da `deploy/`.
 - Comprare il server o il dominio, creare account: lo fa l'utente.
-- La prova dal vivo sul server (tempi del cuore a Trento, AI su CPU):
-  quando l'utente ha il server.
+- Spostare il server di oggi su `deploy/compose.yaml`: a fine coda dei
+  merge, come dice il coordinatore (F.12 dice come).
+- L'AI su CPU sul server: da provare dopo lo spostamento.
 - Cambiare il `Dockerfile` o il codice dell'API.
 - La build propria per App Store e Play Store (account Apple Developer).
 
 ## Esito
+
+La strada F di `DEPLOY.md` e `deploy/` (compose con API, AI e Caddy a
+scelta) ci sono, con i prezzi del 2026-10-01; la CI avvia la
+configurazione e controlla `/health`, la chiave, `data/cache`, «Explore» a
+Trento e il `Caddyfile`. Il server scelto dall'utente, Hetzner CX33, è
+acceso ma fatto a mano: spostarlo con F.12 e provare l'AI su CPU restano
+da fare, a fine coda dei merge.

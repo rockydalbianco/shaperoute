@@ -94,6 +94,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-148: tolto da `ExploreTools.tsx` il vecchio «Ask for a
+  route», con i suoi test e gli stili che usava solo lui: è il «da fare
+  dopo il merge di TASK-142» di TASK-143. Quello vero è in
+  `AskForRoute.tsx`; l'app non cambia, niente da ripubblicare.
+- **App** — TASK-146: `apps/mobile/app.json` nomina il proprietario vero
+  del progetto Expo, l'organizzazione `lppl1316s-team` (trasferito
+  dall'account `lppl1316` il 2026-10-02). `eas update` da una copia pulita
+  di `main` non chiede più di correggere `owner` a mano; `DEPLOY.md` A.6
+  aggiornato. L'app non cambia: niente da ripubblicare per questo.
 - **API** — TASK-114: gli account nell'API, su PostgreSQL con PostGIS
   (ADR-0115, ADR-0120). `POST /accounts` per iscriversi, `POST /session`
   ed `DELETE /session` per entrare e uscire, `GET /me`, `DELETE /me` che

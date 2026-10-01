@@ -2,6 +2,7 @@ import { type RouteResult, type Shape, SHAPES } from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ExportState } from "../route/useGpxExport";
+import { RunWithStrava } from "../strava/RunWithStrava";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
 import {
   color,
@@ -125,6 +126,8 @@ export function ThemedCard({ state, exporting, onExport, onCancel }: Props) {
       {exporting.status === "failed" && (
         <Text style={styles.error}>The GPX could not be made. Try again.</Text>
       )}
+      {/* Strava's official flow: a GPX imported there (TASK-135). */}
+      <RunWithStrava exporting={exporting} onExport={onExport} />
       <Pressable style={styles.secondary} onPress={onCancel} accessibilityRole="button">
         <Text style={styles.secondaryText}>Back to Explore</Text>
       </Pressable>

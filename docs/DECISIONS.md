@@ -3372,3 +3372,30 @@ la cache).
 
 **Conseguenza**: nessun cambio nei percorsi né nei tempi; un `.part`
 rimasto da un processo ucciso si può cancellare a mano quando si vuole.
+
+## ADR-0106 — Strava: il flusso ufficiale, senza account collegato
+**Stato**: Attiva · 2026-10-01 · scelta dell'utente («flusso ufficiale»);
+il come deciso dall'agente su delega dell'utente (TASK-135)
+
+**Contesto**: l'utente vuole «Avvia con Strava»: trasferire il percorso e
+seguirlo in Strava, solo con ciò che Strava supporta ufficialmente.
+Verificato sulla documentazione (2026-10-01): le API dei percorsi sono in
+sola lettura (`GET /routes/{id}`, export GPX/TCX, elenco dell'atleta);
+`POST /uploads` crea **attività**, non percorsi; nessun deep link
+documentato per aprire un percorso o avviare una registrazione; il GPX si
+importa come percorso dal route builder del sito; nell'app un percorso
+salvato si segue da Record → Add Route.
+
+**Decisione**: «Run with Strava» spiega e guida in tre passi: salvare il
+GPX (l'export esistente), aprire il route builder ufficiale, aprire Strava.
+Niente OAuth, niente token, niente dati inviati da noi. Funziona uguale su
+iOS e Android (`Linking.openURL` su indirizzi https).
+
+**Alternative scartate**: caricare il percorso come attività con
+`POST /uploads` (sul profilo comparirebbe una corsa mai fatta); OAuth per
+ritrovare il percorso importato (registrazione dell'app su Strava e token
+da custodire per poco); URI `strava://` non documentati.
+
+**Conseguenza**: l'import su Strava resta un passo a mano dell'utente,
+dal sito. Se Strava aprirà la creazione di percorsi via API, il pulsante
+potrà farlo da solo.

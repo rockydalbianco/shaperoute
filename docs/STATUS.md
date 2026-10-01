@@ -59,6 +59,11 @@ database (TASK-114) e l'API sempre accesa (TASK-122).
 
 **TASK-093 — Scegliere fra più percorsi**: fatto (sotto, «Completato»).
 
+**TASK-131 — Un cuore più bello a occhio**, chiesto dall'utente il
+2026-10-01 dopo la prova di TASK-093: parte chiedendo all'utente cosa
+correggerebbe su 6–8 cuori veri, poi prova varianti (forma ideale prima,
+somiglianza dopo) con giudizio sì / quasi / no.
+
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 

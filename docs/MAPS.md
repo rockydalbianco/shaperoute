@@ -49,6 +49,11 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   di sviluppo, e in produzione il download si ripensa con ADR-0009.
   Controllo rapido: un tentativo di connessione alla porta 443 dei due
   indirizzi dice quale risponde.
+  **Da TASK-127 (ADR-0100) il motore lo fa da solo**: prima di ogni
+  download prova gli indirizzi di Overpass e, per la durata del download,
+  fa risolvere il nome al primo che accetta la connessione
+  (`route_engine/overpass_address.py`). Il nome resta nell'URL, HTTPS
+  controlla il certificato come sempre; un download alla volta.
 - Per controllare Overpass senza scaricare nulla: la pagina
   `https://overpass-api.de/api/status`, con uno User-Agent vero (quello
   di default di curl riceve 406).

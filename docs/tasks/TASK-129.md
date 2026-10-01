@@ -66,6 +66,7 @@ docs/AI.md
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-129.md
+docs/tasks/TASK-127.md   (solo lo stato: Done, dopo il merge di #127)
 ```
 
 ## Fuori scope

@@ -1,6 +1,6 @@
 # TASK-125 — Il seme del catalogo dei percorsi consigliati
 
-**Stato**: In corso
+**Stato**: In revisione
 **Fase**: 4 · **Branch**: `feat/TASK-125-seed-catalog`
 
 Chiesto dall'utente il 2026-10-01, dopo il mockup di TASK-092 (variante C,
@@ -39,13 +39,16 @@ mostrare in «Explore» (TASK-092).
 
 ## Criteri di accettazione
 
-- [ ] `python -m route_engine.seed_catalog --run` gira da riga di comando,
+- [x] `python -m route_engine.seed_catalog --run` gira da riga di comando,
       senza API né chiavi; fermato e rilanciato non rifà i casi già fatti.
-- [ ] Test deterministici dello script, senza rete, verdi in CI.
-- [ ] `catalog/seed/` ha un file per ognuna delle città con almeno un
-      percorso tenuto, con la licenza dei dati OSM dentro.
-- [ ] Nessuna posizione di persone: solo piazze centrali.
-- [ ] TASK-092 dice che la scelta è la variante C.
+- [x] Test deterministici dello script, senza rete, verdi in CI.
+- [x] `catalog/seed/` ha un file per ognuna delle città con almeno un
+      percorso tenuto, con la licenza dei dati OSM dentro. **Per 6 città su
+      13**: l'utente ha chiesto di aprire la PR così (2026-10-01); le altre
+      7, New York e le frasi si generano con un nuovo giro, in un task a
+      parte.
+- [x] Nessuna posizione di persone: solo piazze centrali.
+- [x] TASK-092 dice che la scelta è la variante C.
 
 ## File toccati
 
@@ -85,3 +88,11 @@ docs/STATUS.md
   sì.
 
 ## Esito
+
+Catalogo seme di 137 percorsi in 6 città (Trento, Levico, Milano, Roma,
+Torino, Bologna), tutti guardati a occhio: 36 illeggibili tolti
+(`UNREADABLE`), i più belli in `samples/LOG.md`. Lo script ha anche le
+frasi di ogni città e New York, non ancora generate: Overpass, da questo
+Mac, risponde solo da uno dei due indirizzi (`MAPS.md`). Seguito: un nuovo
+giro per Firenze, Napoli, Verona, Padova, Genova, Bari, Palermo, New York
+e le frasi.

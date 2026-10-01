@@ -68,9 +68,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## In lavorazione
 
 - **TASK-125 — Il seme del catalogo dei percorsi consigliati**
-  (`feat/TASK-125-seed-catalog`, ADR-0097): ogni forma a 5, 10 e 21 km dal
-  centro di 13 città, tenute da 0,88 di somiglianza; file in
-  `catalog/seed/`. File toccati: quelli di `docs/tasks/TASK-125.md`.
+  (`feat/TASK-125-seed-catalog`, ADR-0097): in revisione. 137 percorsi in
+  6 città, guardati a occhio; lo script ha già le frasi e New York, da
+  generare con un nuovo giro.
 
 ## Completato
 

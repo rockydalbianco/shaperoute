@@ -1,6 +1,6 @@
 # TASK-135 — Correre con Strava
 
-**Stato**: In revisione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-135-run-with-strava`
 
 Chiesto dall'utente il 2026-10-01: «Avvia con Strava» nella schermata del

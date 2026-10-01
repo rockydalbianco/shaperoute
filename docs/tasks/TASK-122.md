@@ -51,6 +51,7 @@ docs/DATABASE.md            (aggiunto: le copie non sono più su Oracle)
 .gitignore                  (aggiunto: data/backups/, le copie fuori da git)
 .github/workflows/ci.yml    (aggiunto: database, iscrizione e copia nel job docker)
 tools/test_pull_backups.py  (nuovo: la copia sul Mac, provata senza rete)
+.dockerignore               (aggiunto: le migrazioni nell'immagine, mancavano da TASK-114)
 ```
 
 Le copie fuori dal server vanno sul Mac (scelta dell'utente, 2026-10-02,

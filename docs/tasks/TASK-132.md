@@ -1,6 +1,6 @@
 # TASK-132 — Un annuncio prima del percorso
 
-**Stato**: In corso
+**Stato**: Pronto, in coda per il merge (coordinatore)
 **Fase**: 4 · **Branch**: `feat/TASK-132-route-ads`
 
 ## Obiettivo
@@ -25,11 +25,13 @@ compare prima del percorso; chiuso, o se non c'è, il percorso si vede subito.
 - [x] Con un annuncio carico il percorso pronto resta dietro l'annuncio e
       compare alla chiusura (test).
 - [x] Senza annuncio, senza consenso, con un errore: percorso subito (test).
-- [x] Nessun annuncio per attese, errori, annullamenti; al massimo uno ogni
-      3 minuti (test).
+- [x] Nessun annuncio per attese, errori, annullamenti; uno a ogni
+      ricerca, il successivo caricato alla chiusura (test; scelta
+      dell'utente del 2026-10-02, prima era al più uno ogni 3 minuti).
 - [x] In Expo Go nessun modulo nativo caricato, l'app come prima (test).
-- [ ] Prova sull'iPhone con una build EAS `preview`: annuncio di prova di
-      Google, X, percorso. Serve l'account Apple Developer dell'utente.
+- [x] Prova su una build vera: nel simulatore iPhone (iOS 27, build
+      Release locale), scelto dall'utente al posto dell'iPhone (serviva
+      l'account Apple Developer). Annuncio di prova di Google, X, percorso.
 
 ## File toccati
 
@@ -61,3 +63,13 @@ dopo l'aggiornamento di macOS) o con una build Android.
 Build `preview-simulator` riuscita su EAS (build
 `1532e993-9806-413b-989e-7fc434cded94`): AdMob e la configurazione nativa
 compilano. Si installa con `npx eas-cli build:run -p ios --latest`.
+
+2026-10-02, prova nel simulatore (iPhone 18 Pro, iOS 27, build Release con
+Xcode 27, API del Mac, partenza a Trento): all'apertura nessun annuncio; il
+consenso di Google alla prima ricerca, mentre il motore lavora; il primo
+cuore arriva prima dell'annuncio e si vede subito. Poi stella, cerchio e
+luna, a meno di un minuto l'una dall'altra: ogni volta annuncio di prova,
+X, percorso subito. In «Explore» Famous Places e Best Views: annuncio, X,
+percorso. Un tocco sull'annuncio sopra la freccia indietro non arriva
+all'app. Con Xcode 27 la cartella `ios/` generata va adattata al ciclo di
+vita a scene (ADR-0102, «Conseguenza»); non è nel repository.

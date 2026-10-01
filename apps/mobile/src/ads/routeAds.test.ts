@@ -1,4 +1,4 @@
-import { type AdSdk, createRouteAds, type Interstitial, MIN_GAP_MS } from "./routeAds";
+import { type AdSdk, createRouteAds, type Interstitial } from "./routeAds";
 
 /** A stand-in ad network: the test says when the ad loads, fails or closes. */
 function fakeSdk({ allowed = true }: { allowed?: boolean } = {}) {
@@ -49,7 +49,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 describe("createRouteAds", () => {
   it("is ready once an ad has loaded, and shows it until it is closed", async () => {
     const { sdk, made } = fakeSdk();
-    const ads = createRouteAds(sdk, () => 0);
+    const ads = createRouteAds(sdk);
     ads.prepare();
     await flush();
     expect(ads.ready()).toBe(false);
@@ -103,7 +103,7 @@ describe("createRouteAds", () => {
 
   it("ends at once when the ad cannot be shown", async () => {
     const { sdk, made } = fakeSdk();
-    const ads = createRouteAds(sdk, () => 0);
+    const ads = createRouteAds(sdk);
     ads.prepare();
     await flush();
     made[0].showFails = true;
@@ -117,23 +117,37 @@ describe("createRouteAds", () => {
     await expect(ads.show()).resolves.toBeUndefined();
   });
 
-  it("shows at most one ad in MIN_GAP_MS", async () => {
+  it("loads the next ad as soon as one is closed, for the next route", async () => {
     const { sdk, made } = fakeSdk();
-    let now = 1_000_000;
-    const ads = createRouteAds(sdk, () => now);
+    const ads = createRouteAds(sdk);
     ads.prepare();
     await flush();
     made[0].loaded();
     const first = ads.show();
     made[0].closed();
     await first;
+    await flush();
 
+    expect(made).toHaveLength(2);
+    expect(ads.ready()).toBe(false);
+    made[1].loaded();
+    expect(ads.ready()).toBe(true);
+  });
+
+  it("shows an ad for every route, however close together", async () => {
+    const { sdk, made } = fakeSdk();
+    const ads = createRouteAds(sdk);
     ads.prepare();
     await flush();
-    made[1].loaded();
-    now += MIN_GAP_MS - 1;
-    expect(ads.ready()).toBe(false);
-    now += 1;
-    expect(ads.ready()).toBe(true);
+    for (const round of [0, 1, 2]) {
+      made[round].loaded();
+      expect(ads.ready()).toBe(true);
+      const shown = ads.show();
+      made[round].closed();
+      await shown;
+      await flush();
+    }
+    expect(made.filter((ad) => ad.destroyed)).toHaveLength(3);
+    expect(sdk.starts).toBe(1);
   });
 });

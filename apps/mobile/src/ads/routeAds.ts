@@ -39,14 +39,10 @@ export type AdSdk = {
   interstitial(): Interstitial;
 };
 
-/** At most one ad in this time, however many routes are asked for. */
-export const MIN_GAP_MS = 3 * 60 * 1000;
-
-export function createRouteAds(sdk: AdSdk, now: () => number = Date.now): RouteAds {
+export function createRouteAds(sdk: AdSdk): RouteAds {
   let started: Promise<boolean> | null = null;
   let ad: Interstitial | null = null;
   let loaded = false;
-  let lastShown = -Infinity;
 
   const discard = (which: Interstitial) => {
     if (ad === which) {
@@ -56,33 +52,36 @@ export function createRouteAds(sdk: AdSdk, now: () => number = Date.now): RouteA
     which.destroy();
   };
 
-  return {
-    prepare() {
-      if (ad !== null) {
+  const prepare = () => {
+    if (ad !== null) {
+      return;
+    }
+    // Consent asked once; asked again only after an error (no network).
+    started ??= sdk.start().catch(() => {
+      started = null;
+      return false;
+    });
+    void started.then((allowed) => {
+      if (!allowed || ad !== null) {
         return;
       }
-      // Consent asked once; asked again only after an error (no network).
-      started ??= sdk.start().catch(() => {
-        started = null;
-        return false;
-      });
-      void started.then((allowed) => {
-        if (!allowed || ad !== null) {
-          return;
+      const next = sdk.interstitial();
+      ad = next;
+      next.onLoaded(() => {
+        if (ad === next) {
+          loaded = true;
         }
-        const next = sdk.interstitial();
-        ad = next;
-        next.onLoaded(() => {
-          if (ad === next) {
-            loaded = true;
-          }
-        });
-        next.onError(() => discard(next));
-        next.load();
       });
-    },
+      next.onError(() => discard(next));
+      next.load();
+    });
+  };
 
-    ready: () => loaded && now() - lastShown >= MIN_GAP_MS,
+  return {
+    prepare,
+
+    // One ad for every route asked for: the user's choice (ADR-0102).
+    ready: () => loaded,
 
     show() {
       const showing = ad;
@@ -91,7 +90,6 @@ export function createRouteAds(sdk: AdSdk, now: () => number = Date.now): RouteA
       }
       ad = null;
       loaded = false;
-      lastShown = now();
       return new Promise<void>((resolve) => {
         let over = false;
         const end = () => {
@@ -99,6 +97,8 @@ export function createRouteAds(sdk: AdSdk, now: () => number = Date.now): RouteA
             over = true;
             showing.destroy();
             resolve();
+            // The next ad loads now, to be ready for the next route.
+            prepare();
           }
         };
         showing.onClosed(end);

@@ -3414,7 +3414,8 @@ vocabolario, lettura da 1,0 s a 0 ms.
 
 ## ADR-0102 — Un annuncio AdMob fra «percorso pronto» e «percorso mostrato»
 **Stato**: Attiva · 2026-10-01 · AdMob con una build dell'app: scelta
-dell'utente; il come deciso dall'agente su delega dell'utente (TASK-132)
+dell'utente; il come deciso dall'agente su delega dell'utente (TASK-132) ·
+2026-10-02: un annuncio a ogni ricerca, scelta dell'utente
 
 **Contesto**: l'utente vuole pubblicità solo dopo «Draw route» (o «Ask for
 a route» in «Explore»), prima del percorso; con una rete ufficiale, consenso
@@ -3430,8 +3431,12 @@ ufficiale: l'utente ha scelto AdMob e una build propria dell'app.
   l'annuncio è carico lo mostra e tiene sullo schermo l'attesa; alla
   chiusura (o a un errore) mostra il percorso. Senza annuncio carico, il
   percorso subito: non si aspetta il caricamento.
-- Al massimo un annuncio ogni 3 minuti (`MIN_GAP_MS`): un «Try 4 km» o una
-  seconda prova non ne mostrano un altro.
+- Un annuncio a ogni ricerca: scelta dell'utente del 2026-10-02, dopo la
+  prova nel simulatore (prima era al più uno ogni 3 minuti). Chiuso un
+  annuncio, il prossimo si carica subito, così è pronto alla ricerca dopo
+  anche quando il percorso arriva in 1–3 s. «Draw route» sullo stesso
+  percorso già disegnato non è una ricerca: lo mostra di nuovo, senza
+  annuncio.
 - Consenso: il modulo di Google (UMP, `gatherConsent`) alla prima richiesta
   di percorso, mentre il motore lavora; mai all'apertura. Senza
   `canRequestAds`, nessun annuncio. Niente richiesta ATT di Apple: su iOS
@@ -3446,14 +3451,22 @@ ufficiale: l'utente ha scelto AdMob e una build propria dell'app.
   dall'utente.
 
 **Alternative scartate**: AdSense in una WebView (vietato dalle regole
-AdMob nelle app); un annuncio fatto da noi (finto); mostrare l'annuncio a
-ogni percorso (più del necessario); aspettare il caricamento dell'annuncio
-quando il percorso è pronto (blocca l'utente); il consenso all'apertura
-(l'utente non vuole nulla all'apertura).
+AdMob nelle app); un annuncio fatto da noi (finto); al più un annuncio ogni
+3 minuti (la prima scelta, tolta dall'utente il 2026-10-02); aspettare il
+caricamento dell'annuncio quando il percorso è pronto (blocca l'utente); il
+consenso all'apertura (l'utente non vuole nulla all'apertura).
 
 **Conseguenza**: in Expo Go nessun annuncio. Per vederli serve una build
 EAS (iPhone: account Apple Developer); per annunci veri l'account AdMob e
-l'app in uno store.
+l'app in uno store. Con gli ID veri vanno aggiunti gli identificativi
+SKAdNetwork di Google (opzione `skAdNetworkItems` del plugin): l'SDK ne
+segnala 50 mancanti. La prima ricerca dopo l'installazione di solito non
+ha annuncio: il consenso e il caricamento arrivano dopo il percorso.
+Una build fatta con Xcode 27 (SDK iOS 27) non si apre senza il ciclo di
+vita a scene (`UIScene`), che il modello nativo di Expo SDK 57 non usa
+ancora: per la prova nel simulatore (2026-10-02) la cartella `ios/`
+generata, che non è nel repository, è stata adattata a mano con
+`ExpoAppSceneDelegate` di Expo. Le build EAS usano il loro Xcode.
 
 ## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente

@@ -70,10 +70,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## In lavorazione
 
 - **TASK-132 — Un annuncio prima del percorso**
-  (`feat/TASK-132-route-ads`, ADR-0102): interstitial AdMob dopo «Draw
-  route» e «Ask for a route», percorso subito se non c'è. In Expo Go nessun
-  annuncio. La build EAS per il simulatore compila; da provare nel simulatore
-  (Xcode) o sull'iPhone (account Apple Developer).
+  (`feat/TASK-132-route-ads`, ADR-0102): interstitial AdMob a ogni ricerca
+  («Draw route» e «Ask for a route»), percorso subito se non c'è. In Expo Go
+  nessun annuncio. Provato nel simulatore iPhone (2026-10-02): funziona; in
+  coda per il merge.
 - **TASK-134 — «Explore»: città → categoria → percorso**
   (`feat/TASK-134-explore-ux`, ADR-0105): città in evidenza e recenti,
   suggerimenti mentre si scrive, 13 categorie da toccare.

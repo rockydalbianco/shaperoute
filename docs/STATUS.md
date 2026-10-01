@@ -69,6 +69,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-135 — Correre con Strava** (`feat/TASK-135-run-with-strava`,
+  ADR-0106): «Run with Strava», il flusso ufficiale (GPX → route builder →
+  app Strava). L'import su Strava è da provare con un account vero.
 - **TASK-129 — «Explore» per ogni città e percorsi a tema**
   (`feat/TASK-129-explore-themes`, ADR-0099): «Search a city» e «Ask for a
   route», una forma che passa dai luoghi veri di un tema. Provato a Torino,

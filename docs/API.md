@@ -234,12 +234,27 @@ chiave di `/places`. Non l'autocompletamento, che per una città dà il
 centro dell'area del comune (Milano: Baggio, 6 km dal Duomo). Corpo come
 `/places` (`places.json`); 503 senza chiave. Cache di un giorno.
 
-### `GET /city-suggestions` (TASK-134)
+### `GET /city-suggestions` (TASK-134, TASK-138, ADR-0110)
 
-Le città mentre si scrive, `?q=Par` → Parma, Paris: l'autocompletamento di
-Geoapify per sole città (`type=city`), che dà il punto della città come
-`/cities`. Da 2 lettere (prima: lista vuota), al più 5, un'etichetta una
-volta sola; cache di un giorno. Corpo come `/places`; 503 senza chiave.
+Città e luoghi mentre si scrive, `?q=Par` → Paris, Parma; `?q=arena di
+ver` → Verona Arena: l'autocompletamento di Geoapify senza `type`, nel suo
+ordine. Si tengono le città (`result_type` `city`, col punto della città
+come `/cities`) e i luoghi (`amenity`, `building`, `street`, `suburb`,
+`district`, solo con un nome); contee, regioni, stati e CAP no (la contea
+di Milano ha il punto a Baggio). Due luoghi a meno di 150 m sono lo stesso:
+resta il primo. Da 2 lettere (prima: lista vuota), al più 6, un'etichetta
+una volta sola; cache di un giorno. 503 senza chiave.
+
+```json
+{"places": [
+  {"label": "Verona, Veneto, Italy", "point": [45.4385, 10.9924], "kind": "city"},
+  {"label": "Verona Arena, Verona, Italy", "point": [45.439, 10.9949], "kind": "place"}
+]}
+```
+
+`kind` dice all'app se nominare il posto nelle parole di una richiesta
+(una città) o mandarne solo il punto (un luogo). Prima di TASK-138 il campo
+non c'era: l'app tratta come città una voce senza `kind`.
 
 ### `POST /themed-route-jobs` (TASK-129, ADR-0099)
 
@@ -299,6 +314,25 @@ niente rete, e l'API non ricorda niente. Una corsa con meno di 2 posizioni
 buone o più corta del 10% del percorso risponde `422 invalid_request`, con
 il motivo del motore nel messaggio («This run cannot be scored: …»). Al più
 20 000 posizioni e 50 000 punti di percorso.
+
+### `POST /route-directions` (TASK-145, ADR-0117)
+
+Le indicazioni di svolta di un percorso che l'app ha solo come punti: uno
+di «Explore» (consigliato, esempio di una città o a tema), prima di
+«Start». Riceve `{"points": [[lat, lon], …]}`, da 2 a 50 000 punti, la
+linea come l'ha disegnata il motore
+(`packages/shared-types/fixtures/route-directions-request.json`). Risponde
+`200` con `{"directions": [...]}`, le stesse `Direction` di
+`RouteResult.directions`, partenza compresa, con gli `along` (ADR-0057)
+(`route-directions.json`).
+
+Il grafo è quello della zona, come per i percorsi: in memoria, dalla
+cache, o scaricato; si ritaglia 250 m attorno alla linea. I nodi della
+linea li ritrova `route_nodes.py` del motore (`ROUTE_ENGINE.md` §4). Una
+linea che non segue le strade della mappa risponde `422 invalid_request`
+(«The route does not follow the roads of this map.»), una zona che non si
+scarica `503 map_data_unavailable`. Niente si salva. Misurato il
+2026-10-01 sul Mac, zone in cache: 0,1–0,5 s per percorsi di 5–23 km.
 
 ### `POST /shape-readings`
 

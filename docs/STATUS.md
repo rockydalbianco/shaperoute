@@ -51,8 +51,8 @@ campo per le parole (dopo TASK-056 e TASK-049).
 corso, account, profilo, like e commenti. Tredici task scritti, TASK-110 …
 122, con l'ordine in `ROADMAP.md` («La parte social»). Partono subito
 **TASK-111** (punteggio nel motore) e **TASK-112** (traccia registrata
-nell'app); **TASK-110** sono le scelte dell'utente da cui dipendono gli
-account. Dopo, **TASK-092 — Percorsi consigliati** (ADR-0086, scelta
+nell'app); **TASK-110**, le scelte dell'utente, è fatto (ADR-0114,
+ADR-0115): il prossimo è **TASK-114**, database e account nell'API. Dopo, **TASK-092 — Percorsi consigliati** (ADR-0086, scelta
 dell'utente del 2026-10-01): tutti i percorsi generati si salvano, i
 migliori si consigliano agli utenti e si usano sui social; parte dopo il
 database (TASK-114) e l'API sempre accesa (TASK-122).
@@ -63,6 +63,13 @@ database (TASK-114) e l'API sempre accesa (TASK-122).
 (2026-10-01). Il cuore evita i pezzi fatti avanti e indietro (ADR-0107);
 la forma ideale resta quella di oggi, preferita dall'utente. Seguito
 possibile: lo stesso peso per cerchio e stella, con un loro giudizio.
+
+**TASK-137 — Le zone delle città in evidenza, scaricate prima**, chiesto
+dall'utente il 2026-10-01: delle 14 città di «Explore» (TASK-134) solo New
+York, Roma, Milano e Torino hanno la zona sul Mac; le altre 10 danno
+`map_data_unavailable` finché Overpass rifiuta il Mac. Un comando le
+scarica una alla volta e si ferma al primo rifiuto; parte quando Overpass
+risponde.
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
@@ -82,6 +89,47 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore** — TASK-136 (miglioramento generale scelto dall'agente): la
+  CLI e `seed_catalog` non salvano più i ritagli dei grafi, come già
+  l'API (ADR-0108). Una partenza nuova è più veloce (Milano, cuore da
+  10 km: da 11,8 a 5,5 s) e non scrive 20–110 MB; la stessa richiesta
+  rifatta costa 0,4–2,6 s in più. Stessi percorsi. I ritagli già salvati
+  si elencano con `python -m route_engine.prune_crops` e si cancellano con
+  `--delete`: sul Mac erano 346 su 355 grafi, 17,9 GB su 18,6, cancellati
+  dopo il merge su richiesta dell'utente (2026-10-01).
+- **Motore, API e app** — TASK-145: «Start» anche sui percorsi di
+  «Explore» (consigliati, esempi delle città, a tema), chiesto dall'utente
+  (ADR-0117). Al tocco l'app chiede le indicazioni a `POST
+  /route-directions`, che ritrova i nodi della linea sul grafo della zona
+  (`route_nodes.py`), poi la navigazione di sempre; «Stop» torna alla
+  scheda. Sull'API del Mac 0,1–0,5 s, e indicazioni identiche a quelle
+  del motore su 4 percorsi appena pianificati. Per vederlo sull'iPhone:
+  riavviare l'API del Mac (endpoint nuovo) e ripubblicare l'app con `eas
+  update`.
+- **App** — TASK-143: «Ask for a route» mostra Food, Famous Places e
+  «More…»; una città senza percorsi consigliati disegna da sola cuore,
+  cerchio e stella da 5 km, uno alla volta, che si aprono sulla mappa e
+  restano sul telefono (ADR-0116). Pergine Valsugana: 6 s per tutti e tre.
+  Sul server Hetzner, che l'app usa, Vercelli la prima volta: 94 s (cuore
+  40, cerchio 48, stella 5), quasi tutti download da Overpass; il cerchio
+  riscarica una zona più larga di soli 30 m per lato (proposta: zone
+  scaricate con un margine, dopo TASK-136). Da
+  fare dopo il merge di TASK-142: togliere il vecchio `AskForRoute` da
+  `ExploreTools.tsx` e i suoi test. TASK-138 provato sull'iPhone
+  (2026-10-01): funziona.
+- **Scelte** — TASK-110: la parte social decisa dall'utente (ADR-0114):
+  Oracle Always Free, email e password, corse private finché pubblicate,
+  consigliati da un punto del giro, 16 anni, cancellazione totale, due
+  moderatori; il come in ADR-0115, lo schema in `DATABASE.md`.
+
+- **API e app** — TASK-138: in «Explore» il campo «Type a city or a
+  place» suggerisce a metà parola città e luoghi (ADR-0110): «arena di ver»
+  → Verona Arena, «duomo di mil» → Duomo, «ver» → Verona come centro città.
+  Un luogo scelto fa partire le categorie dal suo punto. Per vederlo
+  sull'iPhone: riavviare l'API del Mac (era partita prima di TASK-134, e
+  `/city-suggestions` dava 404) e ripubblicare l'app con `eas update`.
+  «ver» non dà ancora i luoghi famosi di Verona: Geoapify non li ordina per
+  fama (Fuori scope del task file).
 - **Motore** — TASK-139: anche cerchio e stella evitano i pezzi fatti
   avanti e indietro (ADR-0109), con lo stesso peso del cuore. Il cerchio
   non cambia sulle 7 prove; 3 stelle su 7 cambiano, 2 giudicate meglio.
@@ -99,7 +147,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   letto dal vocabolario, senza AI (1,0 s → 0 ms). Seguiti possibili, da
   approvare: i segnali dell'app (percorso scelto fra A·B·C, «Try N km»),
   e TASK-128 che legge città e frasi desiderate.
-
 - **App** — TASK-135: «Run with Strava» in ogni scheda di percorso, il
   flusso ufficiale (ADR-0106): salvare il GPX, importarlo nel route builder
   di Strava, seguirlo dall'app Strava. Strava non permette di creare
@@ -420,7 +467,7 @@ Niente.
   "Overpass: come si scarica".
 - Per generare campioni senza salvare ritagli in `data/cache/`: uno script
   usa-e-getta che chiama `plan_shape` con `ZoneGraphs` dell'API, come in
-  TASK-032. La CLI invece salva un ritaglio per ogni caso.
+  TASK-032. Da TASK-136 anche la CLI non salva più i ritagli (ADR-0108).
 - Per giudicare le forme senza mappa basta un PNG scritto con la libreria
   standard (`zlib`, `struct`), come `out/TASK-037-before-after.png`: niente
   matplotlib né PIL.
@@ -458,9 +505,10 @@ Niente.
   dopo la pulizia: tolti MATLAB, i ritagli in `data/cache/` e la venv del
   route-engine). Ogni zona nuova scaricata vale circa 40 MB, più le
   risposte di Overpass in `data/cache/http/`; Expo si ferma con `ENOSPC`
-  quando finisce lo spazio. La CLI salva un ritaglio per ogni partenza o
-  distanza nuova dentro una zona in cache: si possono togliere a mano. Il
-  disco D: ha più di 270 GB liberi.
+  quando finisce lo spazio. Fino a TASK-136 la CLI salvava un ritaglio per
+  ogni partenza o distanza nuova dentro una zona in cache: quelli rimasti
+  si elencano e si cancellano con `python -m route_engine.prune_crops`
+  (ADR-0108). Il disco D: ha più di 270 GB liberi.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.
 - Nell'app la partenza è la posizione GPS o un luogo cercato (`UI.md`);
   le zone fisse servono solo a confrontare le prove.

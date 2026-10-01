@@ -10,6 +10,11 @@ const paris: Place = {
   point: [48.8535, 2.3484],
 };
 const parma: Place = { label: "Parma, Emilia-Romagna, Italy", point: [44.802, 10.328] };
+const arena: Place = {
+  label: "Verona Arena, Verona, Italy",
+  point: [45.439, 10.9949],
+  kind: "place",
+};
 
 function answers(places: Place[]) {
   return jest.fn().mockResolvedValue(Response.json({ places }));
@@ -36,6 +41,26 @@ test("cities from around the world, and the recent ones first", async () => {
   expect(screen.getByText("↺ Parma")).toBeOnTheScreen();
 });
 
+async function typeIn(text: string, fetchFn: typeof fetch, onCity = jest.fn()) {
+  await render(
+    <CityPicker
+      apiUrl="http://api"
+      city={null}
+      onCity={onCity}
+      fetchFn={fetchFn}
+      suggestDelayMs={10}
+    />,
+  );
+  await fireEvent.changeText(
+    screen.getByPlaceholderText("Type a city or a place"),
+    text,
+  );
+  await act(async () => {
+    jest.advanceTimersByTime(20);
+  });
+  return onCity;
+}
+
 test("typing suggests cities, and a tap chooses one", async () => {
   jest.useFakeTimers();
   const fetchFn = answers([parma, paris]);
@@ -49,13 +74,48 @@ test("typing suggests cities, and a tap chooses one", async () => {
       suggestDelayMs={10}
     />,
   );
-  await fireEvent.changeText(screen.getByPlaceholderText("Type a city"), "Par");
+  await fireEvent.changeText(
+    screen.getByPlaceholderText("Type a city or a place"),
+    "Par",
+  );
   await act(async () => {
     jest.advanceTimersByTime(20);
   });
   expect(fetchFn.mock.calls[0][0]).toBe("http://api/city-suggestions?q=Par");
-  await fireEvent.press(await screen.findByText(paris.label));
-  expect(onCity).toHaveBeenCalledWith(paris);
+  expect(screen.getByText("City centre · Ile-de-France, France")).toBeOnTheScreen();
+  await fireEvent.press(await screen.findByLabelText(paris.label));
+  // An API before TASK-138 says no kind: a city.
+  expect(onCity).toHaveBeenCalledWith({ ...paris, kind: "city" });
+  jest.useRealTimers();
+});
+
+test("places come too, half a word is enough (TASK-138)", async () => {
+  jest.useFakeTimers();
+  const onCity = await typeIn("arena di ver", answers([arena, parma]));
+  expect(screen.getByText("Verona Arena")).toBeOnTheScreen();
+  expect(screen.getByText("Verona, Italy")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByLabelText(arena.label));
+  expect(onCity).toHaveBeenCalledWith(arena);
+  jest.useRealTimers();
+});
+
+test("Enter takes the first suggestion", async () => {
+  jest.useFakeTimers();
+  const fetchFn = answers([arena, parma]);
+  const onCity = await typeIn("arena", fetchFn);
+  await fireEvent(
+    screen.getByPlaceholderText("Type a city or a place"),
+    "submitEditing",
+  );
+  expect(onCity).toHaveBeenCalledWith(arena);
+  expect(fetchFn).toHaveBeenCalledTimes(1);
+  jest.useRealTimers();
+});
+
+test("nothing found says so", async () => {
+  jest.useFakeTimers();
+  await typeIn("zzz", answers([]));
+  expect(screen.getByText("No city or place matches “zzz”.")).toBeOnTheScreen();
   jest.useRealTimers();
 });
 
@@ -71,7 +131,10 @@ test("one letter asks nothing", async () => {
       suggestDelayMs={10}
     />,
   );
-  await fireEvent.changeText(screen.getByPlaceholderText("Type a city"), "P");
+  await fireEvent.changeText(
+    screen.getByPlaceholderText("Type a city or a place"),
+    "P",
+  );
   await act(async () => {
     jest.advanceTimersByTime(50);
   });
@@ -112,6 +175,17 @@ test("without a city the categories are near the start", async () => {
   await render(<AskForRoute where="your start" onAsk={onAsk} />);
   await fireEvent.press(screen.getByText("Romantic"));
   expect(onAsk).toHaveBeenCalledWith("Romantic");
+});
+
+test("a place: the categories start from it, not from a city's name", async () => {
+  const onAsk = jest.fn();
+  await render(<AskForRoute city={arena} where={arena.label} onAsk={onAsk} />);
+  expect(screen.getAllByText("near Verona Arena").length).toBe(CATEGORIES.length);
+  await fireEvent.press(screen.getByText("Food"));
+  expect(onAsk).toHaveBeenCalledWith("Food");
+  expect(
+    screen.getByPlaceholderText("e.g. a romantic heart, famous places, food 8 km"),
+  ).toBeOnTheScreen();
 });
 
 test("a request in words still works, with an example for the city", async () => {

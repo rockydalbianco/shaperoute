@@ -35,7 +35,7 @@ from shaperoute_ai.reading import (
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from shaperoute_api.access import protect
-from shaperoute_api.cities import CitySearch
+from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.errors import error_of
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.images import (
@@ -48,6 +48,11 @@ from shaperoute_api.images import (
 )
 from shaperoute_api.insights import Insights, route_fields
 from shaperoute_api.jobs import Job, JobEnd, Planner, RouteJobs
+from shaperoute_api.line_directions import (
+    RouteDirectionsBody,
+    RouteDirectionsRequestBody,
+    directions_of,
+)
 from shaperoute_api.outline_edits import edit_outline
 from shaperoute_api.places import (
     MAX_QUERY_LENGTH,
@@ -382,16 +387,17 @@ def create_app(
         )
         return found
 
-    # Cities while typing, for "Type a city" (TASK-134): "Par" → Parma,
-    # Paris. Empty below two letters.
+    # Cities and places while typing, for "Explore" (TASK-134, TASK-138):
+    # "Par" → Parma, Paris; "arena di ver" → Arena di Verona. Empty below two
+    # letters.
     @app.get("/city-suggestions", responses={503: {"model": ErrorBody}})
     def suggest_cities(
         q: str = Query(min_length=MIN_QUERY_LENGTH, max_length=MAX_QUERY_LENGTH),
-    ) -> PlacesBody:
+    ) -> SuggestionsBody:
         if cities is None:
             raise HTTPException(503, "City search is off on this API.")
         try:
-            return PlacesBody(places=cities.suggest(q))
+            return SuggestionsBody(places=cities.suggest(q))
         except PlacesUnavailableError as exc:
             raise HTTPException(503, str(exc)) from None
 
@@ -420,6 +426,20 @@ def create_app(
         # Run after it was found: the search led somewhere (TASK-130).
         insights.record("run_scored", quality=round(scored.score / 100, 3))
         return scored
+
+    # The directions of a route of "Explore", which has only its points
+    # (TASK-145, ADR-0117). A plain def: loading the zone takes seconds.
+    @app.post("/route-directions", responses=ERROR_RESPONSES)
+    def find_route_directions(body: RouteDirectionsRequestBody) -> RouteDirectionsBody:
+        started = time.perf_counter()
+        directions = directions_of(source, body.points)
+        log.info(
+            "directions of %d points: %d, in %.1f s",
+            len(body.points),
+            len(directions),
+            time.perf_counter() - started,
+        )
+        return RouteDirectionsBody.of(directions)
 
     # The words the app's table does not know (ADR-0012). A plain def, like
     # /routes: a model on a laptop takes seconds, in a thread of its own.

@@ -726,7 +726,8 @@ metterla in App Store e Play Store, nell'ordine:
 4. **Una build propria** al posto di Expo Go, con EAS Build (il piano
    gratuito ha 15 build iOS e 15 Android al mese):
    - **Apple Developer Program**, 99 $ l'anno. Con TestFlight l'app si
-     prova sugli iPhone di altre persone prima della revisione di Apple.
+     prova sugli iPhone di altre persone prima di pubblicarla (per chi
+     non è nel vostro account, Apple fa prima una revisione breve).
    - **Google Play Console**, 25 $ una volta. Un account personale nuovo
      deve far provare l'app ad almeno 12 persone per 14 giorni (test
      chiuso) prima di poterla pubblicare.

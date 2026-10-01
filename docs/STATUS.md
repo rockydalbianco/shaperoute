@@ -69,10 +69,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-126 — «Explore»** (`feat/TASK-126-explore`, ADR-0098):
   `GET /recommended-routes` dai file del catalogo e la terza schermata
-  dell'app. Da provare sull'iPhone; dopo il merge di TASK-125.
+  dell'app. Da provare sull'iPhone.
 
 ## Completato
 
+- **Catalogo** — TASK-125: il seme dei percorsi consigliati, 137 in 6
+  città (Trento, Levico, Milano, Roma, Torino, Bologna), guardati a occhio
+  (ADR-0097). Lo script ha già le frasi di ogni città e New York: si
+  generano con un nuovo giro, insieme a Firenze, Napoli, Verona, Padova,
+  Genova, Bari e Palermo, quando Overpass risponde da questo Mac.
 - **API** — TASK-124: il log di accesso dell'API non scrive più le query
   string, quindi niente posizione né testo di `GET /places` (ADR-0096);
   provato sull'API del Mac, che gira con `--request-log`.

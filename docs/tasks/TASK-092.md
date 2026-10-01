@@ -39,9 +39,12 @@ Da precisare quando le dipendenze sono in `main`; oggi i punti sono questi.
    dell'utente, 2026-10-01): nessun percorso ne scarta un altro altrettanto
    buono, anche se passano dalle stesse strade. Così si propongono anche
    strade di solito poco frequentate, accanto a quelle già note.
-4. **Proporli nell'app**: cosa si vede e dove (per esempio «Best hearts
-   near you») è una scelta di prodotto: proposta con un'immagine prima di
-   scrivere codice.
+4. **Proporli nell'app**: scelta dell'utente (2026-10-01), sul mockup
+   «Recommended routes» (tre varianti): la **variante C**, una schermata
+   «Explore» a parte, «Best near you»: i percorsi entro qualche km dalla
+   partenza, filtri per forma e per distanza, ognuno con miniatura, km,
+   somiglianza e distanza da chi guarda. È una terza schermata (oggi sono
+   due, TASK-051). Il seme del catalogo, 13 città, è TASK-125 (ADR-0097).
 5. **Social**: come si esportano i migliori (immagine della mappa, GPX) per
    i canali del progetto.
 6. Privacy secondo quanto deciso in TASK-110.

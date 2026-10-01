@@ -46,6 +46,7 @@ from shaperoute_api.images import (
     plan_request,
     trace,
 )
+from shaperoute_api.insights import Insights, route_fields
 from shaperoute_api.jobs import Job, JobEnd, Planner, RouteJobs
 from shaperoute_api.outline_edits import edit_outline
 from shaperoute_api.places import (
@@ -188,9 +189,26 @@ def create_app(
     recommended: RecommendedCatalog | None = None,
     themed: ThemedJobs | None = None,
     cities: CitySearch | None = None,
+    insights: Insights | None = None,
 ) -> FastAPI:
-    # The request log (TASK-090) hears how each job ended; None: no log.
-    on_end = None if request_log is None else job_recorder(request_log)
+    # The search events and the learned vocabulary (TASK-130, ADR-0101).
+    insights = insights or Insights(None)
+    # The request log (TASK-090) and the events hear how each job ended.
+    logged = None if request_log is None else job_recorder(request_log)
+
+    def on_end(
+        job: Job, result: RouteResult | None, error: ErrorDetail | None, elapsed: float
+    ) -> None:
+        if logged is not None:
+            logged(job, result, error, elapsed)
+        if result is not None or error is not None:
+            fields = route_fields(
+                job.body,
+                None if result is None else result.similarity,
+                None if error is None else error.code,
+            )
+            insights.record("route", ms=round(elapsed * 1000), **fields)
+
     route_jobs = jobs or RouteJobs(source, planner, on_end=on_end)
 
     @asynccontextmanager
@@ -268,6 +286,10 @@ def create_app(
     )
     def export_gpx(body: GpxRequestBody) -> Response:
         request = to_request(body.request)
+        # A route worth running: the strongest sign a search was useful.
+        fields = route_fields(body.request.model_dump(), body.result.similarity, None)
+        fields.pop("point")
+        insights.record("gpx_export", **fields)
         when = now()
         document = to_gpx(
             body.result.points,
@@ -312,15 +334,28 @@ def create_app(
         shape: str | None = Query(default=None, max_length=40),
         distance_m: int | None = Query(default=None, ge=0),
     ) -> RecommendedRoutesBody:
-        return RecommendedRoutesBody(
-            routes=catalog.near((lat, lon), radius_m, shape, distance_m)
+        routes = catalog.near((lat, lon), radius_m, shape, distance_m)
+        insights.record(
+            "recommended_list",
+            point=(lat, lon),
+            n=len(routes),
+            outcome="ok" if routes else "empty",
+            shape=shape,
         )
+        return RecommendedRoutesBody(routes=routes)
 
     @app.get("/recommended-routes/{route_id}", responses={404: {"model": ErrorBody}})
     def get_recommended_route(route_id: str) -> RecommendedRouteDetailBody:
         route = catalog.get(route_id)
         if route is None:
             raise HTTPException(404, "No recommended route with this id.")
+        insights.record(
+            "recommended_open",
+            city=route.city,
+            shape=route.shape,
+            word=route.word,
+            quality=round(route.similarity, 3),
+        )
         return route
 
     # Cities of the world by name, their centre, for "Explore" (TASK-129).
@@ -331,9 +366,21 @@ def create_app(
         if cities is None:
             raise HTTPException(503, "City search is off on this API.")
         try:
-            return cities.body(q)
+            found = cities.body(q)
         except PlacesUnavailableError as exc:
+            insights.record("city_search", text=q, outcome="error", code="unavailable")
             raise HTTPException(503, str(exc)) from None
+        # A city's centre is no one's position: it is kept as the cell.
+        first = found.places[0] if found.places else None
+        insights.record(
+            "city_search",
+            text=q,
+            n=len(found.places),
+            outcome="ok" if first else "empty",
+            city=None if first is None else first.label,
+            point=None if first is None else first.point,
+        )
+        return found
 
     # A shape through the real places of a theme, in any city (TASK-129,
     # ADR-0099): a job, as a route, since it plans the shape a few times.
@@ -356,15 +403,38 @@ def create_app(
     # is kept and no graph is read: the engine compares two lines.
     @app.post("/track-scores", responses={422: SHAPE_READING_RESPONSES[422]})
     def score_track_run(body: TrackScoreRequestBody) -> TrackScoreBody:
-        return score_run(body)
+        scored = score_run(body)
+        # Run after it was found: the search led somewhere (TASK-130).
+        insights.record("run_scored", quality=round(scored.score / 100, 3))
+        return scored
 
     # The words the app's table does not know (ADR-0012). A plain def, like
     # /routes: a model on a laptop takes seconds, in a thread of its own.
     @app.post("/shape-readings", responses=SHAPE_READING_RESPONSES)
     def read_shape(body: ShapeReadingRequestBody) -> ShapeReadingBody:
+        started = time.monotonic()
+        # Learned from the AI's past answers (TASK-130): no call to the model.
+        learned = insights.vocab.shape_for(body.text)
+        if learned is not None:
+            insights.record(
+                "shape_reading",
+                text=body.text,
+                shape=learned,
+                by="learned",
+                started=started,
+            )
+            return ShapeReadingBody(text=clean(body.text), shape=learned)
         if reader is None:
             raise ModelUnavailableError(AI_OFF)
         choice = reader.read(body.text)
+        insights.record(
+            "shape_reading",
+            text=body.text,
+            shape=choice.shape,
+            by="ai",
+            outcome="ok" if choice.shape else "empty",
+            started=started,
+        )
         return ShapeReadingBody(text=clean(body.text), shape=choice.shape)
 
     # A plain def: FastAPI runs it in a thread, so a long route does not stop
@@ -383,6 +453,8 @@ def create_app(
             log.info("route %s: %s after %.1f s", what, type(exc).__name__, elapsed)
             if request_log is not None:
                 request_log.record(body.model_dump(), None, error_of(exc)[1], elapsed)
+            fields = route_fields(body.model_dump(), None, error_of(exc)[1].code)
+            insights.record("route", ms=round(elapsed * 1000), **fields)
             raise
         log.info(
             "route %s: %.0f m on roads, similarity %.2f, in %.1f s",
@@ -395,6 +467,10 @@ def create_app(
             request_log.record(
                 body.model_dump(), result, None, time.perf_counter() - started
             )
+        fields = route_fields(body.model_dump(), result.similarity, None)
+        insights.record(
+            "route", ms=round((time.perf_counter() - started) * 1000), **fields
+        )
         return RouteResultBody.from_result(result)
 
     @app.exception_handler(RequestValidationError)

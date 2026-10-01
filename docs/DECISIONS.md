@@ -3339,3 +3339,47 @@ corrisponderebbe); uno script fuori dal motore (non vale per l'API).
 **Conseguenza**: il centro di Verona, mai scaricato, in 10 s. Il cambio è
 globale al processo per la durata del download: altri nomi non sono
 toccati.
+
+## ADR-0101 — Le ricerche insegnano, ma solo con una firma
+**Stato**: Attiva · 2026-10-01 · raccolta sempre accesa: scelta dell'utente;
+il come deciso dall'agente su delega dell'utente (TASK-130)
+
+**Contesto**: l'utente vuole che la ricerca migliori con le ricerche vere:
+query frequenti, risultati mancanti, errori, città, lingue, segnali di
+utilità. Senza modifiche automatiche rischiose, con versioni e rollback,
+metriche, storia conservata, attenzione a privacy e costi.
+
+**Decisione**:
+- **Eventi, non log grezzi** (`shaperoute_api/insights/events.py`): una
+  riga per ricerca e per segnale (GPX esportato, corsa con punteggio), in
+  `data/insights/events-AAAA-MM.jsonl`, mai riscritti, leggibili solo dal
+  proprietario. Testo in minuscolo, email e numeri lunghi oscurati, 200
+  caratteri; posizioni solo come celle di 0,01° (~1 km); nessun
+  identificativo. **Accesi di default** (scelta dell'utente); si spengono
+  con `--no-insights` o `SHAPEROUTE_INSIGHTS=0`. `/places` non si registra
+  (indirizzi digitati, ADR-0096).
+- **Proposte da prove ripetute** (`analyze.py`): un sinonimo solo se l'AI
+  ha letto la stessa frase allo stesso modo almeno 3 volte e mai
+  diversamente, e se non contraddice le tabelle; una città se «Explore» vi
+  è stato vuoto 3 volte; una frase se disegnata 3 volte. Le richieste mai
+  capite e i temi senza luoghi sono proposte «review», per una persona.
+- **Dati, mai codice** (`vocabulary.py`): ciò che si applica va in
+  `shaperoute_api/learned/vocabulary.json`, nel repository, una versione
+  per cambio con data, motivo e prove; `revert` aggiunge una versione, non
+  cancella. Si applica solo a mano (`apply`), si rivede e si committa.
+- **Dove agisce**: tabelle, poi vocabolario, poi AI, per i temi
+  (`themes.read_with_ai`) e per le parole della forma (`/shape-readings`):
+  ogni frase imparata è una chiamata al modello in meno.
+- **Metriche per versione** del vocabolario (`report`): quota di letture
+  dall'AI, temi sconosciuti, successo dei percorsi a tema e tappe toccate,
+  «Explore» vuoto, GPX per percorso. Ogni evento porta la versione.
+- **Nessun costo**: l'analisi gira sul Mac, sui file; niente AI né servizi.
+
+**Alternative scartate**: un database (non c'è ancora: TASK-114); modifiche
+automatiche al vocabolario o al codice (rischio, scelta dell'utente);
+imparare dalla prima risposta dell'AI (una risposta può essere sbagliata:
+«zzz qualcosa di strano» è stato letto «romantic»).
+
+**Conseguenza**: provato dal vivo: tre richieste «un giro per innamorati»
+lette dall'AI → proposta → `apply` → la quarta, a Roma, letta dal
+vocabolario (v1: quota AI da 1,0 a 0,0). Lisbona proposta per il catalogo.

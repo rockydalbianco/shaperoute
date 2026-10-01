@@ -490,6 +490,13 @@ l'app manda il contorno che mostra e la linea disegnata.
   non valido o `aspect` fuori da 1/20–20 sono `invalid_request`.
 - «Undo» è dell'app: torna al contorno di prima, senza chiamare l'API.
 
+## Eventi delle ricerche (TASK-130, ADR-0101)
+
+Ogni ricerca e ogni segnale d'uso lascia un evento in `data/insights/`
+(spento con `--no-insights`); `--insights-dir` e `--vocabulary` cambiano
+cartella e vocabolario. Il funzionamento, i comandi e la privacy sono in
+`docs/INSIGHTS.md`. Le risposte degli endpoint non cambiano.
+
 ## Errori
 
 Ogni errore ha la stessa forma, con un messaggio in inglese come quelli

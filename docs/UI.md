@@ -92,6 +92,17 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    «Back to the list»; «←» torna all'elenco. Niente «Start»: questi
    percorsi non hanno le indicazioni di svolta.
 
+   Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
+   qualsiasi città del mondo (l'elenco e la richiesta partono dal suo
+   centro, «Change» torna alla partenza), e **«Ask for a route»**, una
+   richiesta in parole («a romantic heart», «famous places in Paris,
+   15 km») e «Make my route», giallo come «Draw route». Il percorso si
+   apre sulla mappa coi luoghi: pallini chiari col nome quelli da cui
+   passa, più tenui quelli trovati e non raggiunti (token `stop`). Sotto,
+   km, forma, città, somiglianza, «Passes by N of the M … found» coi nomi,
+   «Export GPX» e «Back to Explore». Se i luoghi verificati sono troppo
+   pochi, la scheda lo dice.
+
 Passare da una schermata all'altra:
 
 - «←» torna alla scelta con forma e distanza di prima. Se il percorso è

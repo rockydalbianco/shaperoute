@@ -67,6 +67,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-129 — «Explore» per ogni città e percorsi a tema**
+  (`feat/TASK-129-explore-themes`, ADR-0099): «Search a city» e «Ask for a
+  route», una forma che passa dai luoghi veri di un tema. Funziona dove le
+  strade sono in cache; per le altre città serve Overpass (TASK-127).
 - **TASK-126 — «Explore»** (`feat/TASK-126-explore`, ADR-0098):
   `GET /recommended-routes` dai file del catalogo e la terza schermata
   dell'app. Da provare sull'iPhone.

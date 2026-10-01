@@ -226,6 +226,46 @@ I percorsi vengono da `catalog/seed/` (ADR-0097), letti all'avvio:
 `--catalog-dir` per un'altra cartella; senza file la lista è vuota. Un file
 nuovo vuole un riavvio dell'API.
 
+### `GET /cities` (TASK-129, ADR-0099)
+
+Le città di tutto il mondo per nome, `?q=…`, al più 5, ognuna col suo
+centro: la geocodifica di Geoapify per sole città (`type=city`), con la
+chiave di `/places`. Non l'autocompletamento, che per una città dà il
+centro dell'area del comune (Milano: Baggio, 6 km dal Duomo). Corpo come
+`/places` (`places.json`); 503 senza chiave. Cache di un giorno.
+
+### `POST /themed-route-jobs` (TASK-129, ADR-0099)
+
+Una forma che passa dai luoghi veri di un tema: `{"text": "voglio un
+percorso romantico a Parigi", "centre": [lat, lon] | null, "city": … |
+null}`. Risponde 202 con un job, letto con `GET /themed-route-jobs/{id}`
+(`queued`, `running`, `done`, `failed`; i corpi in
+`themed-route-job-done.json` e `-failed.json`).
+
+- **Le parole**: tema, forma, km e città da tabelle in italiano, inglese
+  e francese (`themes.py`); l'AI solo per un tema che le tabelle non
+  trovano, e solo fra i temi elencati (`theme_reading.py`). Temi:
+  `romantic`, `food`, `famous`, `tourist`, `panoramic`, `nature`,
+  `culture`; la forma, se non è detta, quella del tema (cuore per
+  `romantic`, stella per i luoghi famosi, cerchio per gli altri); 10 km se
+  i km non sono detti, da 3 a 21.
+- **La città**: quella nominata nelle parole, cercata come `/cities`;
+  altrimenti `centre` dell'app (la città scelta o la partenza).
+- **I luoghi**: Geoapify Places, dati OpenStreetMap, con un nome; prima
+  quelli con una voce Wikidata, e per i temi «notevoli» solo quelli se
+  sono almeno 3. Al più 15, entro un quarto della distanza (0,8–5 km).
+  Cache di un giorno per città e tema.
+- **Il percorso**: il motore (`route_engine/stops.py`) pianifica la forma
+  dal centro e da 3 luoghi dove ce ne sono di più attorno; tiene, fra
+  quelle da 0,85 di somiglianza in su, quella che passa a 80 m dal maggior
+  numero di luoghi.
+- **Il risultato**: `points`, `distance_m`, `similarity`, `shape`,
+  `theme`, `city`, `centre` e **tutti** i luoghi trovati con `passed`.
+- **Errori del job** (`error.code`): `theme_unknown`, `city_unknown`,
+  `no_places` (meno di 2 luoghi verificati: lo dice, non inventa),
+  `places_unavailable`, e quelli dei percorsi (`shape_not_drawable`,
+  `map_data_unavailable`). 503 se l'API non ha i percorsi a tema.
+
 ### `POST /track-scores`
 
 Il punteggio di una corsa (TASK-113, ADR-0093). Riceve un

@@ -3229,3 +3229,37 @@ subito. Il database (TASK-114) non c'è ancora; il seme del catalogo sì
 **Conseguenza**: «Explore» mostra solo le città del seme, a 5 km dal
 centro; altrove dice che non ci sono ancora percorsi. Nell'immagine Docker
 `catalog/` non c'è: là la lista è vuota finché non la si copia.
+
+## ADR-0099 — Una forma che passa dai luoghi veri di un tema, in ogni città
+**Stato**: Attiva · 2026-10-01 · scelta dell'utente («forma + tappe», città
+di tutto il mondo); il come deciso dall'agente su delega dell'utente
+(TASK-129)
+
+**Contesto**: l'utente vuole cercare qualsiasi città in «Explore» e
+chiedere un percorso in parole («romantico a Parigi», «gastronomico a
+Tokyo»), con luoghi veri e niente inventato, al costo più basso.
+
+**Decisione**:
+- **L'AI interpreta, i dati danno i luoghi, il motore il percorso**: il
+  principio di `CLAUDE.md` resta. Tabelle di parole prima, AI solo per il
+  tema che manca e vincolata a una lista; mai luoghi né coordinate.
+- **I luoghi da Geoapify Places** (OpenStreetMap), con la chiave che
+  c'è già: con un nome, Wikidata per dire «notevole». Niente ricerca
+  libera su Internet: costa di più e non dà coordinate verificabili.
+- **Le città dalla geocodifica per città**, non dall'autocompletamento
+  (il centro vero, non quello dell'area del comune).
+- **Forma + tappe nel motore** (`stops.py`): la forma pianificata da
+  qualche partenza fra i luoghi, tenuta la più leggibile che ne tocca di
+  più; dice quali tocca. Nessun cambio all'ottimizzatore.
+- **Un job a parte** (`/themed-route-jobs`), non `/route-jobs`: il
+  contratto dei percorsi resta com'è.
+
+**Alternative scartate**: la ricerca web con un modello (luoghi e
+coordinate non verificabili, costo per richiesta); un percorso a tappe
+senza forma (scelta dell'utente); toccare `optimizer.py` per pesare i
+luoghi nella ricerca (più rischio, da rivedere coi risultati).
+
+**Conseguenza**: funziona dove le strade si scaricano. Da questo Mac
+Overpass risponde solo da un indirizzo (`MAPS.md`): oggi solo le zone in
+cache (Trento, Levico, Milano, Roma, Torino, Bologna); New York, Parigi,
+Tokyo dopo TASK-127. Una forma tocca di solito 2–9 luoghi, non tutti.

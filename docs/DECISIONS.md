@@ -165,7 +165,8 @@ ferrari», «spirit»): l'utente ha scelto di tenere il limite, documentato in
 `AI.md`, «Limiti», invece di cercare un modello più grande.
 
 ## ADR-0013 — Database, hosting e autenticazione
-**Stato**: Aperta · **Da decidere entro**: fase 4
+**Stato**: Superata da ADR-0114 (scelte dell'utente) e ADR-0115 (come) ·
+2026-10-01 (TASK-110)
 
 Ipotesi di partenza: PostgreSQL + PostGIS. Non serve prima di avere account
 e percorsi salvati.
@@ -3603,3 +3604,81 @@ lascerebbe codice morto.
 categoria da un luogo parte dal suo punto (provato: Duomo di Milano →
 Food, cerchio di 9,8 km, 4 ristoranti). Etichette in inglese, come le
 città di TASK-134.
+
+## ADR-0114 — La parte social: le scelte dell'utente
+**Stato**: Attiva · 2026-10-01 · **scelte dell'utente**, una domanda per
+volta (TASK-110). Chiude, con ADR-0115, ADR-0013.
+
+**Contesto**: la parte social (`ROADMAP.md`, TASK-110 … 122) aspettava le
+scelte su dove stanno i dati, come si entra, chi vede cosa e chi modera.
+Le proposte, con le alternative scartate, sono nel task file.
+
+**Decisione dell'utente**:
+1. **Punteggio**: la corsa contro il percorso pianificato (ADR-0090).
+2. **Hosting**: **Oracle Cloud Always Free**, VM ARM Ampere A1 (oggi 2
+   OCPU e 12 GB gratis), per API e database. Scartati Hetzner (circa
+   6–11 €/mese), un VPS con database e accessi gestiti (Supabase), un
+   Raspberry Pi a casa.
+3. **Accesso**: email e password. Apple e Google forse dopo, con una build
+   propria.
+4. **Corse salvate**: private finché l'iscritto non le pubblica;
+   pubblicate, le vedono gli iscritti (il feed non si legge senza account),
+   senza i primi e gli ultimi 200 m della traccia.
+5. **Percorsi consigliati** (ADR-0086): mostrati da un punto del giro a
+   più di 500 m dalla partenza vera, mai con il nome di chi li ha chiesti.
+6. **Età minima**: 16 anni, con la casella «I am at least 16».
+7. **Cancellare l'account** cancella tutto, anche i percorsi generati da
+   quell'iscritto nel catalogo dei consigliati. Un percorso generato senza
+   account non è di nessuno e resta.
+8. **Moderazione**: due admin, l'utente e il collega, avvisati per email a
+   ogni segnalazione; un contenuto si toglie entro 24 ore, a mano. Nessun
+   contenuto si nasconde da solo.
+9. **Pacchetti e servizi nuovi approvati**: psycopg e argon2-cffi
+   nell'API, expo-secure-store nell'app, PostgreSQL con PostGIS in Docker
+   sulla VM, Object Storage di Oracle per le copie, Brevo per le email.
+
+**Conseguenze sui task già scritti**: nel task file di TASK-110,
+«Esito».
+
+## ADR-0115 — Database, account e server: come
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega
+dell'utente, dentro le scelte di ADR-0114 (TASK-110)
+
+**Decisione**:
+- **PostgreSQL 16 con PostGIS**, in Docker sulla stessa VM dell'API
+  (immagine `postgis/postgis`). Tracce e percorsi come geometrie PostGIS in
+  WGS84: le domande «vicino a me» (TASK-092, TASK-118) si fanno nel
+  database con un indice spaziale. Schema in `DATABASE.md`.
+- **Migrazioni**: file SQL numerati in `services/api/migrations/`,
+  applicati all'avvio dell'API in una transazione, con la tabella
+  `schema_migrations`. Niente Alembic: una dipendenza in meno, e lo schema
+  si legge in SQL.
+- **psycopg 3** senza ORM: le query sono poche e PostGIS si scrive meglio
+  in SQL.
+- **Password** con Argon2id (`argon2-cffi`), mai nei log. **Sessione**: un
+  token casuale di 32 byte dato all'app; nel database solo il suo hash
+  (SHA-256), con scadenza a 90 giorni dall'ultimo uso. Niente JWT: un token
+  si revoca cancellando la riga. Nell'app il token sta in
+  `expo-secure-store`.
+- **Foto del profilo**: un JPEG quadrato piccolo (256 px) nel database,
+  così le copie di sicurezza le prendono con il resto.
+- **Copie di sicurezza**: `pg_dump` ogni notte sulla VM, caricato
+  nell'Object Storage gratuito di Oracle (20 GB), 14 copie; un ripristino
+  provato in TASK-122. Le copie stanno fuori dalla VM perché Oracle può
+  reclamarla (ADR-0114).
+- **Admin**: una colonna `role` negli utenti; i due admin si nominano con
+  una riga SQL sulla VM, senza schermate.
+- **Email** con Brevo, dall'API soltanto: la chiave in `.env`, mai
+  nell'app.
+
+**Da decidere in TASK-122, con l'utente**: HTTPS (serve un nome di
+dominio, qualche euro all'anno, o un altro modo) e se passare l'account
+Oracle a «Pay As You Go», che resta gratis dentro i limiti e, secondo le
+regole di Oracle, non reclama le VM poco usate: la VM dell'API usa poca
+CPU e rischia proprio quello.
+
+**Scartate**: *Supabase* per database e accessi (scelta dell'utente:
+tutto sulla VM); *SQLite* (niente PostGIS, un solo processo che scrive);
+*le foto nell'Object Storage* (un servizio in più da chiamare per ogni
+profilo, per pochi KB).
+

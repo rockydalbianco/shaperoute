@@ -125,6 +125,18 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    (le parole sono solo «Food»); l'esempio del campo libero non nomina
    città.
 
+   **Da TASK-143** «Ask for a route» mostra due categorie, Food e Famous
+   Places, e una terza tessera «More…» («11 more») che apre tutte le 13;
+   tre tessere per riga. Scelta una città senza percorsi consigliati entro
+   5 km, sotto «City» compare **«EXAMPLES IN VERCELLI»**: cuore, cerchio e
+   stella da 5 km dal centro, chiesti da soli, uno alla volta, il cuore per
+   primo. Ogni riga dice «Drawing…» o «Next», poi diventa come una riga di
+   «Best near you» (miniatura, km, somiglianza); un tocco apre il percorso
+   sulla mappa con «Export GPX» e «Back to Explore». Se la mappa della zona
+   non si scarica, un messaggio solo e «Try again». Gli esempi pronti
+   restano sul telefono (ultime 8 città): la volta dopo sono subito lì.
+   Una città con percorsi consigliati mostra quelli e non chiede esempi.
+
 Passare da una schermata all'altra:
 
 - «←» torna alla scelta con forma e distanza di prima. Se il percorso è

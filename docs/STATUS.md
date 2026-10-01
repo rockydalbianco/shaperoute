@@ -89,6 +89,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-143: «Ask for a route» mostra Food, Famous Places e
+  «More…»; una città senza percorsi consigliati disegna da sola cuore,
+  cerchio e stella da 5 km, uno alla volta, che si aprono sulla mappa e
+  restano sul telefono (ADR-0116). Pergine Valsugana: 6 s per tutti e tre.
+  Vercelli e le città senza zona sul Mac aspettano Overpass (TASK-137). Da
+  fare dopo il merge di TASK-142: togliere il vecchio `AskForRoute` da
+  `ExploreTools.tsx` e i suoi test. TASK-138 provato sull'iPhone
+  (2026-10-01): funziona.
 - **API e app** — TASK-138: in «Explore» il campo «Type a city or a
   place» suggerisce a metà parola città e luoghi (ADR-0110): «arena di ver»
   → Verona Arena, «duomo di mil» → Duomo, «ver» → Verona come centro città.

@@ -7,6 +7,7 @@ import {
 import { useCallback, useRef, useState } from "react";
 
 import type { AnyRouteRequest } from "../route/useRouteRequest";
+import { exampleDetail } from "./exampleRoutes";
 import {
   fetchRecommendedRoute,
   type RecommendedRoute,
@@ -57,7 +58,10 @@ export function toResult(detail: RecommendedRouteDetail): RouteResult {
   };
 }
 
-/** Opens a route of "Explore": fetches it whole. The last one asked wins. */
+/**
+ * Opens a route of "Explore": fetches it whole; a city's example (TASK-143)
+ * is already whole on the phone. The last one asked wins.
+ */
 export function useExplored(apiUrl: string | null): {
   explored: Explored | null;
   open: (route: RecommendedRoute) => void;
@@ -69,6 +73,18 @@ export function useExplored(apiUrl: string | null): {
   const open = useCallback(
     (route: RecommendedRoute) => {
       asked.current = route.id;
+      const example = exampleDetail(route.id);
+      const exampleRequest = example === undefined ? null : toRequest(example);
+      if (example !== undefined && exampleRequest !== null) {
+        setExplored({
+          status: "done",
+          route,
+          detail: example,
+          request: exampleRequest,
+          result: toResult(example),
+        });
+        return;
+      }
       if (apiUrl === null) {
         setExplored({ status: "failed", route });
         return;

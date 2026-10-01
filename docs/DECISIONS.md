@@ -2832,9 +2832,11 @@ li aveva lasciati contorni da CLI. Nel motore c'è anche `tree.json`
   Christmas tree with a star on top, not a plain tree»: senza le ultime
   parole qwen3:4b sceglieva l'albero di Natale per «tree». «Natale»,
   «Halloween», «abete addobbato» le legge l'AI, e portano alle due forme.
-- **Tessere** 🎃 e 🎄. Con tredici forme l'ultima riga avrebbe una tessera
-  sola, larga quanto lo schermo: `ShapeTiles` riempie l'ultima riga con
-  posti vuoti, così ogni tessera resta larga un quarto.
+- **Tessere** 🎃 e 🎄, **in una riga sola che scorre di lato** (chiesto
+  dall'utente, 2026-10-01: nella griglia di quattro per riga zucca e albero
+  non si trovavano). Tessere larghe 88 punti, poco meno di quattro per
+  schermo: quella tagliata sul bordo dice che la riga continua. Una forma
+  scritta nel campo («zucca») porta la sua tessera in vista.
 
 **Alternative scartate**: portare «albero» all'albero di Natale (chi
 scrive «albero» a luglio non vuole la stella in cima; è una scelta di

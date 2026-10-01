@@ -35,9 +35,9 @@ all'API come le altre forme del catalogo.
 - **B. «albero» e «tree» da soli non cambiano significato** (chiesto
   dall'utente): fuori dalla tabella, e «nessuna forma» per l'AI. Le parole
   della tabella sono in ADR-0084.
-- **C. Tessere** 🎃 e 🎄; l'ultima riga delle tessere si riempie di posti
-  vuoti, così la tredicesima non diventa larga quanto lo schermo (deciso
-  dall'agente su delega dell'utente, ADR-0084).
+- **C. Tessere** 🎃 e 🎄, in una riga sola che scorre di lato (chiesto
+  dall'utente il 2026-10-01, ADR-0084); la forma scritta nel campo porta la
+  sua tessera in vista.
 
 ## Cosa fare
 
@@ -81,6 +81,7 @@ apps/mobile/__tests__/App.test.tsx
 apps/mobile/src/route/shapeWords.ts
 apps/mobile/src/route/shapeWords.test.ts
 apps/mobile/src/route/ShapeTiles.tsx
+apps/mobile/src/route/ShapeTiles.test.tsx                (nuovo)
 services/ai/shaperoute_ai/prompt.py
 services/ai/tests/phrases.json
 services/ai/tests/phrases-holdout.json
@@ -114,7 +115,8 @@ Tutto nel branch, PR aperta. Manca la prova dell'utente sull'iPhone.
 API ed Expo dal worktree di questo task al posto di quelli del checkout
 principale, poi si rimettono com'erano. Partenza «Another place», Milano.
 
-- **Tessere**: tredici, l'ultima riga con 🎄 sola, larga come le altre.
+- **Tessere**: una riga che scorre di lato col dito; in fondo 🎃 e 🎄.
+  Scrivendo «zucca» la riga si sposta da sola sulla zucca.
   🎃 scrive «pumpkin», 🎄 «christmas tree».
 - **Parole**: «zucca» mostra «→ pumpkin», «albero di Natale»
   «→ christmas tree»; «albero» da solo non dà l'albero di Natale.

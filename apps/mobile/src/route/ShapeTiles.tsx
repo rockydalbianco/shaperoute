@@ -1,5 +1,6 @@
 import { type Shape, SHAPES } from "@shaperoute/shared-types";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 
 import {
   color,
@@ -31,10 +32,6 @@ export const SHAPE_SIGNS: Record<Shape, string> = {
   christmas_tree: "🎄",
 };
 
-const PER_ROW = 4;
-// Empty places that fill the last row, so its tiles stay as wide as the rest.
-const SPARE = (PER_ROW - (SHAPES.length % PER_ROW)) % PER_ROW;
-
 type Props = {
   /** The shape the field names now, shown as chosen; null for none. */
   chosen: Shape | null;
@@ -42,10 +39,30 @@ type Props = {
   onPick: (name: string) => void;
 };
 
-/** The shapes of the catalogue as tiles: touching one writes it in the field. */
+/**
+ * The shapes of the catalogue as tiles in one row that slides sideways
+ * (ADR-0084): touching one writes it in the field. A shape written in the
+ * field brings its tile into view.
+ */
 export function ShapeTiles({ chosen, onPick }: Props) {
+  const row = useRef<ScrollView>(null);
+  const places = useRef(new Map<Shape, number>());
+
+  useEffect(() => {
+    const x = chosen === null ? undefined : places.current.get(chosen);
+    if (x !== undefined) {
+      row.current?.scrollTo({ x: Math.max(0, x - space.sm), animated: true });
+    }
+  }, [chosen]);
+
   return (
-    <View style={styles.grid}>
+    <ScrollView
+      ref={row}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.row}
+      testID="shape-tiles"
+    >
       {SHAPES.map((shape) => {
         const selected = shape === chosen;
         return (
@@ -53,46 +70,41 @@ export function ShapeTiles({ chosen, onPick }: Props) {
             key={shape}
             style={[styles.tile, selected && styles.selected]}
             onPress={() => onPick(shapeName(shape))}
+            onLayout={(event) => places.current.set(shape, event.nativeEvent.layout.x)}
             accessibilityRole="button"
             accessibilityLabel={shapeName(shape)}
             accessibilityState={{ selected }}
           >
             <Text style={styles.sign}>{SHAPE_SIGNS[shape]}</Text>
-            <Text style={[styles.name, selected && styles.selectedName]}>
+            <Text
+              style={[styles.name, selected && styles.selectedName]}
+              numberOfLines={2}
+            >
               {shapeName(shape)}
             </Text>
           </Pressable>
         );
       })}
-      {Array.from({ length: SPARE }, (_, index) => (
-        <View key={`spare-${index}`} style={styles.spare} />
-      ))}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+  row: {
     gap: space.sm,
   },
   tile: {
-    // Four to a row on a phone, whatever its width.
-    flexBasis: "22%",
-    flexGrow: 1,
+    // A little under four to a phone's width: the cut tile says there is more.
+    width: MIN_TAP_SIZE * 2,
     minHeight: MIN_TAP_SIZE * 2,
     alignItems: "center",
     justifyContent: "center",
     gap: space.xs,
+    paddingHorizontal: space.xs,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: color.border,
     backgroundColor: color.surface,
-  },
-  spare: {
-    flexBasis: "22%",
-    flexGrow: 1,
   },
   // Chosen is told by the border, not by yellow: that is the route's.
   selected: {
@@ -106,6 +118,7 @@ const styles = StyleSheet.create({
   name: {
     color: color.textMuted,
     fontSize: fontSize.small,
+    textAlign: "center",
   },
   selectedName: {
     color: color.text,

@@ -160,8 +160,10 @@ emoji di gatto, pesce, cavallo, farfalla, lumaca, cane, coniglio, zucca
 e albero di Natale):
 disegnare i contorni veri vuole `react-native-svg`, una dipendenza non
 ancora chiesta.
-Le tessere sono quattro per riga; l'ultima riga, se non è piena, tiene le
-tessere larghe come le altre (TASK-088).
+Le tessere stanno in una riga sola che scorre di lato col dito (TASK-088,
+ADR-0084, chiesto dall'utente): se ne vedono poco meno di quattro, e la
+tessera tagliata sul bordo dice che ce ne sono altre. Una forma scritta nel
+campo porta la sua tessera in vista.
 
 La **forma** è una parola, in inglese o in italiano (ADR-0036). Le forme
 sono quelle del catalogo, le sole che l'utente ha giudicato riconoscibili

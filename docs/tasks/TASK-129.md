@@ -87,4 +87,5 @@ Prove reali (API del branch, 2026-10-01):
 | «luoghi famosi a Milano» | stella 9,9 km, 1,00; Duomo e Battistero (4 di 15); 5 s |
 | «giro gastronomico a Roma, 8 km» | cerchio 7,2 km, 0,91; 5 locali di 15; 4 s |
 | «un giro nella natura a Caldonazzo» (fuori catalogo) | `no_places`: 1 solo luogo verificato, detto |
-| New York turistico, Parigi famosi, Tokyo gastronomico | città e luoghi trovati (Woolworth Building, 9/11 Memorial; Notre-Dame; ramen a Tokyo), percorso `map_data_unavailable`: Overpass rifiuta da questo Mac → TASK-127 |
+| «percorso turistico a New York» (con TASK-127) | stella 9,8 km, 0,99; 7 di 15: One World Trade Center, One World Observatory, Soldiers' Monument…; 319 s, quasi tutti di download |
+| Parigi famosi, Tokyo gastronomico (con TASK-127) | città e luoghi trovati (Notre-Dame; ramen a Tokyo); il percorso no: dopo i download di New York Overpass ha smesso di accettare connessioni da entrambi gli indirizzi (il limite di MAPS.md). Da qui una sola zona per tutte le partenze (`prepare`), non una per partenza: da riprovare quando Overpass riapre |

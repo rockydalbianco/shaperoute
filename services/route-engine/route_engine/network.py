@@ -28,6 +28,7 @@ from route_engine.geo import (
     local_to_latlon,
     path_length_m,
 )
+from route_engine.overpass_address import reachable
 from route_engine.sidewalks import NamedRoad
 
 # Where a route drawn out and back turns (first_leg): a metre from the far
@@ -194,11 +195,13 @@ class OsmnxSource:
         south, west, north, east = bbox
         # network_type="walk" keeps every edge two-way: one-way streets do
         # not bind pedestrians. The filter picks the ways.
-        graph = ox.graph_from_bbox(
-            bbox=(west, south, east, north),
-            network_type="walk",
-            custom_filter=self.custom_filter,
-        )
+        # Through an address of Overpass that answers (TASK-127, ADR-0100).
+        with reachable(ox.settings.overpass_url):
+            graph = ox.graph_from_bbox(
+                bbox=(west, south, east, north),
+                network_type="walk",
+                custom_filter=self.custom_filter,
+            )
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         _write_graph(graph, path)
         return graph
@@ -330,7 +333,10 @@ def _overpass(query: str) -> dict[str, Any]:
         data=urllib.parse.urlencode({"data": query}).encode(),
         headers={"User-Agent": ox.settings.http_user_agent},
     )
-    with urllib.request.urlopen(request, timeout=NAMED_ROADS_TIMEOUT_S + 10) as answer:
+    with (
+        reachable(ox.settings.overpass_url),
+        urllib.request.urlopen(request, timeout=NAMED_ROADS_TIMEOUT_S + 10) as answer,
+    ):
         result: dict[str, Any] = json.load(answer)
     return result
 

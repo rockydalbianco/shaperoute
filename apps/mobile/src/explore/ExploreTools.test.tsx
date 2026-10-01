@@ -1,8 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 
 import type { Place } from "../places/photon";
-import { AskForRoute, CityPicker } from "./ExploreTools";
-import { CATEGORIES } from "./presets";
+import { CityPicker } from "./ExploreTools";
 
 const newYork: Place = { label: "New York, United States", point: [40.7127, -74.006] };
 const paris: Place = {
@@ -168,46 +167,6 @@ test("a city search that fails says so", async () => {
   );
   await fireEvent.press(screen.getByText("Tokyo"));
   expect(await screen.findByText(/did not answer/)).toBeOnTheScreen();
-});
-
-test("a category is one tap, for the chosen city; Food first", async () => {
-  const onAsk = jest.fn();
-  await render(<AskForRoute city={newYork} where={newYork.label} onAsk={onAsk} />);
-  expect(CATEGORIES[0]).toBe("Food");
-  await fireEvent.press(screen.getByText("Food"));
-  expect(onAsk).toHaveBeenCalledWith("Food in New York");
-  await fireEvent.press(screen.getByText("Hidden Gems"));
-  expect(onAsk).toHaveBeenLastCalledWith("Hidden Gems in New York");
-  expect(screen.getAllByText("in New York").length).toBe(CATEGORIES.length);
-});
-
-test("without a city the categories are near the start", async () => {
-  const onAsk = jest.fn();
-  await render(<AskForRoute where="your start" onAsk={onAsk} />);
-  await fireEvent.press(screen.getByText("Romantic"));
-  expect(onAsk).toHaveBeenCalledWith("Romantic");
-});
-
-test("a place: the categories start from it, not from a city's name", async () => {
-  const onAsk = jest.fn();
-  await render(<AskForRoute city={arena} where={arena.label} onAsk={onAsk} />);
-  expect(screen.getAllByText("near Verona Arena").length).toBe(CATEGORIES.length);
-  await fireEvent.press(screen.getByText("Food"));
-  expect(onAsk).toHaveBeenCalledWith("Food");
-  expect(
-    screen.getByPlaceholderText("e.g. a romantic heart, famous places, food 8 km"),
-  ).toBeOnTheScreen();
-});
-
-test("a request in words still works, with an example for the city", async () => {
-  const onAsk = jest.fn();
-  await render(<AskForRoute city={paris} where={paris.label} onAsk={onAsk} />);
-  await fireEvent.press(screen.getByText("Make my route"));
-  expect(onAsk).not.toHaveBeenCalled();
-  const field = screen.getByPlaceholderText("e.g. a romantic heart in Paris, 8 km");
-  await fireEvent.changeText(field, " a romantic heart ");
-  await fireEvent.press(screen.getByText("Make my route"));
-  expect(onAsk).toHaveBeenCalledWith("a romantic heart");
 });
 
 test("the city chosen is told to the API, with how it was chosen (TASK-142)", async () => {

@@ -28,7 +28,9 @@ compare prima del percorso; chiuso, o se non c'è, il percorso si vede subito.
 - [x] Nessun annuncio per attese, errori, annullamenti; uno a ogni
       ricerca, il successivo caricato alla chiusura (test; scelta
       dell'utente del 2026-10-02, prima era al più uno ogni 3 minuti).
-- [x] In Expo Go nessun modulo nativo caricato, l'app come prima (test).
+- [x] In Expo Go nessun modulo nativo caricato, l'app come prima (test:
+      `admob.test.ts`, il pacchetto AdMob non si carica senza il suo modulo
+      nativo).
 - [x] Prova su una build vera: nel simulatore iPhone (iOS 27, build
       Release locale), scelto dall'utente al posto dell'iPhone (serviva
       l'account Apple Developer). Annuncio di prova di Google, X, percorso.
@@ -52,6 +54,20 @@ docs/tasks/TASK-132.md
 
 - Account AdMob, ID veri, `app-ads.txt`, pubblicazione negli store.
 - Un pulsante «Privacy options» per cambiare il consenso dopo.
+
+## Seguiti
+
+Da trasformare in task quando servono (li assegna il coordinatore):
+
+- **Xcode 27 / SDK iOS 27**: un'app compilata così non si apre senza il
+  ciclo di vita a scene (`UIScene`); il modello nativo di Expo SDK 57 non lo
+  usa ancora. Expo ha già `ExpoAppSceneDelegate`: serve `AppDelegate`
+  conforme a `ExpoReactNativeFactoryProvider` e `UIApplicationSceneManifest`
+  in `Info.plist` (un config plugin, o un SDK di Expo che lo faccia da sé).
+  Le build EAS usano il loro Xcode: riguarda solo il passaggio a Xcode 27.
+- **ID veri di AdMob**: aggiungere gli identificativi SKAdNetwork di Google
+  (opzione `skAdNetworkItems` del plugin `react-native-google-mobile-ads`);
+  l'SDK ne segnala 50 mancanti.
 
 ## Esito
 

@@ -3682,3 +3682,53 @@ tutto sulla VM); *SQLite* (niente PostGIS, un solo processo che scrive);
 *le foto nell'Object Storage* (un servizio in più da chiamare per ogni
 profilo, per pochi KB).
 
+## ADR-0116 — «Explore»: due categorie, ed esempi disegnati subito per una città
+**Stato**: Attiva · 2026-10-01 · chiesto dall'utente dopo la prova di
+TASK-138 («solo due e poi altro con tre puntini»; «devono partire subito i
+cuori, le forme più semplici, e gli dai l'esempio»); forme, distanza e il
+come decisi dall'agente su delega dell'utente (TASK-143). Allarga ADR-0105.
+
+**Contesto**: 13 categorie occupavano lo schermo. Una città fuori dal
+catalogo (Vercelli) mostrava solo «No recommended routes near this start
+yet»: il catalogo ha percorsi per 6 città.
+
+**Decisione**:
+- **Due categorie e «More…»**: le prime due dell'ordine di ADR-0105 (Food,
+  Famous Places); «More…» apre le altre nella stessa griglia, a tre per
+  riga. Il componente sta in un file nuovo, `AskForRoute.tsx`: quello
+  vecchio in `ExploreTools.tsx` resta finché TASK-142, che ha quel file,
+  non è in `main`.
+- **Esempi solo dove il catalogo non ha niente**: cuore, cerchio e stella
+  da 5 km dal centro della città, le forme più semplici del catalogo e la
+  distanza più breve che si chiede di solito. Con `/route-jobs`, come
+  «Draw route»: nessun contratto nuovo.
+- **Uno alla volta, il cuore per primo**: ogni forma chiede un riquadro un
+  po' diverso, e due richieste insieme potevano scaricare due zone da
+  Overpass, che dopo pochi download rifiuta il Mac per ore. La prima
+  scarica, le altre la trovano in cache.
+- **Fuori dalla schermata**: gli esempi stanno in un modulo, non nello
+  stato di `ExploreScreen`; aprire un esempio sulla mappa non ferma quelli
+  in calcolo. Un'altra città sì: l'API ha 2 worker, la città nuova ha la
+  precedenza.
+- **Si aprono come un percorso consigliato** (`onOpen`, `useExplored`):
+  `explored.ts` trova il percorso intero già sul telefono e non lo chiede
+  al catalogo. `App.tsx` non cambia (lo tocca la PR #130).
+- **Restano sul telefono**: in memoria e in `city-examples.json` (ultime 8
+  città), come le città recenti. La seconda volta sono immediati, anche
+  dopo aver chiuso l'app.
+- **Mappa non scaricabile o API spenta**: un solo messaggio
+  (`problemText`) e «Try again»; le altre forme non si chiedono, finirebbero
+  uguali.
+
+**Alternative scartate**: salvare gli esempi nel catalogo dell'API per
+tutti (il catalogo è guardato a occhio, ADR-0097; i percorsi salvati per
+tutti aspettano il database, ADR-0086); un endpoint che disegni le tre
+forme in una volta (contratto nuovo per lo stesso effetto); chiedere gli
+esempi già mentre si scrive la città (scaricherebbe zone di città non
+scelte).
+
+**Conseguenza**: provato sull'API del Mac il 2026-10-01: Pergine Valsugana
+(zona in cache, niente catalogo) cuore 4,4 km 0,87, cerchio 4,6 km 0,77,
+stella 4,8 km 0,94, 2 s l'uno; New York uguale. Vercelli:
+`map_data_unavailable` dopo 63 s, finché Overpass rifiuta il Mac: lì
+servono le zone scaricate prima (TASK-137).

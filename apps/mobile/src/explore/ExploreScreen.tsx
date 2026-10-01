@@ -19,7 +19,10 @@ import {
   routeTitle,
 } from "./recommendedRoutes";
 import type { Place } from "../places/photon";
-import { AskForRoute, CityPicker } from "./ExploreTools";
+import { AskForRoute } from "./AskForRoute";
+import { useCityExamples } from "./exampleRoutes";
+import { CityExamples } from "./CityExamples";
+import { CityPicker } from "./ExploreTools";
 import { RouteThumb } from "./RouteThumb";
 import type { ThemedRequest } from "./themedRoutes";
 
@@ -147,6 +150,11 @@ export function ExploreScreen({
     [routes],
   );
   const shown = filtered(routes, what, km);
+  // A chosen city without recommended routes: examples, drawn at once
+  // (TASK-143). They go on while a route is open on the map.
+  const examplesCity =
+    city !== null && list.status === "done" && routes.length === 0 ? city : null;
+  const { examples, retry } = useCityExamples(apiUrl, examplesCity);
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.screen]}>
@@ -176,6 +184,14 @@ export function ExploreScreen({
         {onCity && (
           <CityPicker apiUrl={apiUrl} city={city} onCity={onCity} recent={recent} />
         )}
+        {examplesCity !== null && examples !== null && (
+          <CityExamples
+            city={examplesCity}
+            examples={examples}
+            onOpen={onOpen}
+            onRetry={retry}
+          />
+        )}
         {onAsk && (
           <AskForRoute
             city={city}
@@ -197,7 +213,7 @@ export function ExploreScreen({
               : "The routes could not load. Check the connection and try again."}
           </Text>
         )}
-        {list.status === "done" && routes.length === 0 && (
+        {list.status === "done" && routes.length === 0 && examplesCity === null && (
           <Text style={styles.note}>
             No recommended routes near this start yet. Draw one: the best ones will show
             up here.

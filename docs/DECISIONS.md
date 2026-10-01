@@ -3152,6 +3152,56 @@ appena usato dall'app pubblicata); arrotondarli a 1 km prima di mandarli
 **Conseguenza**: nel log non si legge più cosa è stato cercato. Le righe
 scritte prima del filtro restano nel file finché non si cancellano.
 
+
+## ADR-0097 — Il seme del catalogo dei percorsi consigliati
+**Stato**: Attiva · 2026-10-01 · scelta dell'utente (13 città, variante C
+di TASK-092); il come deciso dall'agente su delega dell'utente (TASK-125)
+
+**Contesto**: la schermata «Explore» di TASK-092 mostra i percorsi
+migliori vicino a chi guarda. Finché nessuno ne ha generati, sarebbe vuota
+proprio all'arrivo dei primi utenti. Un catalogo per tutta l'Italia costa
+ore di download da Overpass, e quasi tutto resterebbe lontano dagli utenti.
+
+**Decisione**:
+- **Un seme, poi la crescita dagli utenti**: 13 città (Trento, Levico,
+  Milano, Roma, Torino, Bologna, Firenze, Napoli, Verona, Padova, Genova,
+  Bari, Palermo), dal centro (una piazza, mai la posizione di qualcuno),
+  ogni forma del catalogo a 5, 10 e 21 km, pianificate come l'API
+  (`plan_nearby`). Il resto lo portano i percorsi degli utenti (ADR-0086).
+- **Si tiene da 0,88 di somiglianza in su**, tutti, anche se equivalenti
+  (TASK-092, punto 3). La somiglianza non basta da sola (la zucca a 0,92
+  giudicata «no», TASK-078): un campione per città si guarda a occhio.
+- **Nei file, non nel database**: `catalog/seed/<città>.json`, un file per
+  città, ricostruito ogni volta dal registro delle prove
+  (`out/seed_catalog/runs.jsonl`, fuori dal repository). Si caricano nel
+  database con TASK-114. Coordinate a 6 decimali.
+- **La licenza dei dati è nel file**: i percorsi stanno su strade di
+  OpenStreetMap (ODbL): chi li pubblica, anche sui social, cita
+  «© OpenStreetMap contributors».
+- **Lo script è nel motore** (`route_engine/seed_catalog.py`): usa il
+  motore e basta, gira senza API né chiavi; in `tools/` la CI ha solo la
+  libreria standard.
+
+**Alternative scartate**: tutta l'Italia subito (8000 comuni, percorsi che
+nessuno vede, mappe che invecchiano); solo le zone già in cache (tre città
+del nord).
+
+**Conseguenza**: una partenza per città: chi è a 5 km dal centro non ha
+ancora niente vicino. Il registro locale serve per rifare la selezione con
+un'altra soglia senza ripianificare.
+
+**Aggiunta (2026-10-01, scelta dell'utente)**: anche **le frasi** e **New
+York** (Union Square, sulla griglia di Manhattan). Ogni città ha le sue
+parole, nella lingua del posto (`PHRASES`): CIAO, TIAMO, GRAZIE, BUONDI,
+NOTTE, AMORE, HELLO in Italia, più quelle locali (UELA a Milano, CEREA a
+Torino, AO e AMOR a Roma, BONA a Firenze, UAGLIO e AMMORE a Napoli, ROMEO a
+Verona, UE a Bari, AMURI a Palermo); HELLO, ILOVENY, THANKS, LOVE, HEY, NYC
+a New York. Il motore scrive solo A–Z, senza spazi, al più 7 lettere a
+21 km: BUONGIORNO e BUONANOTTE non ci stanno, BUONDI e NOTTE sì. Una parola
+si scrive a 3,75 km a lettera (come CIAO a 15 km), da 5 a 21 km, nei due
+stili, tonde e squadrate; nel catalogo ha `word` e `style` invece di
+`shape`.
+
 ## ADR-0087 — Più percorsi fra cui scegliere: le partenze vicine non si buttano
 **Stato**: Attiva · 2026-10-01 · come si vedono, quanti e le immagini
 sono **scelte dell'utente**; il resto deciso dall'agente su delega

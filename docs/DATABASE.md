@@ -7,7 +7,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 
 - **PostgreSQL 16 con PostGIS**, in Docker sulla stessa VM dell'API
   (ADR-0115; ADR-0114 la voleva su Oracle, l'API pubblicata oggi è su
-  Hetzner). L'indirizzo del database solo in `.env`
+  Hetzner): il servizio `db` di `deploy/compose.yaml` (TASK-122). L'indirizzo del database solo in `.env`
   (`SHAPEROUTE_DATABASE_URL`), mai da riga di comando: contiene una
   password. Codice in `services/api/shaperoute_api/db.py`.
 - **Migrazioni**: `services/api/migrations/NNNN_cosa.sql`, applicate
@@ -73,10 +73,15 @@ della traccia intera. Il GPX si scrive al volo quando serve.
 
 ## Copie di sicurezza
 
-`pg_dump` ogni notte sulla VM, caricato nell'Object Storage gratuito di
-Oracle, 14 copie; il ripristino si prova in TASK-122 e si scrive in
-`DEPLOY.md`. Le copie stanno fuori dalla VM perché Oracle può reclamare
-una VM gratuita poco usata.
+Da TASK-122 (ADR-0123, `DEPLOY.md` F.13): `pg_dump` ogni notte sul
+server, nel servizio `backup` di `deploy/compose.yaml`, in
+`data/backups/`, 13 giorni tenuti; il Mac se le prende ogni 6 ore quando è
+acceso (`deploy/mac/pull-backups.sh`, scelta dell'utente) e cancella anche
+lui quelle con più di 13 giorni. Così un account cancellato è fuori da
+ogni copia entro 14 giorni. `backup.sh check` prova che una copia si
+ripristina, in un database a parte; il ripristino vero è in `DEPLOY.md`
+F.13. ADR-0115 le voleva nell'Object Storage di Oracle, che non c'è più
+(l'API è su Hetzner, ADR-0111).
 
 ## Privacy dei dati di posizione
 

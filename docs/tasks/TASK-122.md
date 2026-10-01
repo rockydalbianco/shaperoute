@@ -1,6 +1,6 @@
 # TASK-122 — L'API e il database sempre accesi
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 4 · **Branch**: `chore/TASK-122-hosting`
 **Dipende da**: TASK-110, TASK-114 · **Serve prima di** invitare altre persone
 
@@ -47,7 +47,15 @@ docs/STATUS.md
 docs/tasks/TASK-122.md
 .env.example
 deploy/
+docs/DATABASE.md            (aggiunto: le copie non sono più su Oracle)
+.gitignore                  (aggiunto: data/backups/, le copie fuori da git)
+.github/workflows/ci.yml    (aggiunto: database, iscrizione e copia nel job docker)
 ```
+
+Le copie fuori dal server vanno sul Mac (scelta dell'utente, 2026-10-02,
+ADR-0123): `deploy/mac/`. Lo spostamento del server su `compose.yaml`
+(`DEPLOY.md` F.12) è parte di questo task, deciso col coordinatore; sul
+server si lavora solo dopo il sì dell'utente.
 
 ## Fuori scope
 

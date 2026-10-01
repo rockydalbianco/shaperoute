@@ -4126,3 +4126,55 @@ un 401 diverso per l'email sconosciuta (direbbe chi è iscritto).
 (`SignUpRequest`, `Session`, `User`). TASK-122 mette il database sul
 server, accanto all'API, con `SHAPEROUTE_DATABASE_URL`. La password
 dimenticata resta fuori: serve la posta (Brevo, ADR-0115).
+
+## ADR-0123 — Il database sul server, e le sue copie sul Mac
+**Stato**: Attiva · 2026-10-02 · le copie sul Mac sono una **scelta
+dell'utente**; il resto deciso dall'agente su delega dell'utente
+(TASK-122). Cambia ADR-0115 per le copie di sicurezza.
+
+**Contesto**: ADR-0115 metteva il database sulla VM dell'API e le copie
+nell'Object Storage gratuito di Oracle. L'API pubblicata è su Hetzner
+(ADR-0111) e Oracle non c'è più. TASK-122 porta gli account (TASK-114)
+sul server, e con loro lo spostamento del server su `deploy/compose.yaml`
+(`DEPLOY.md` F.12), fatto una volta sola con il database dentro.
+
+**Decisione**:
+- **Il servizio `db`** in `deploy/compose.yaml`: `postgis/postgis:16-3.4`,
+  i dati nel volume `db` e non in `data/` (`data-owner` dà `data/`
+  all'utente dell'API, PostgreSQL vuole i suoi), nessuna porta verso
+  fuori, un controllo di salute; l'API parte quando il database risponde e
+  ha il suo indirizzo da `POSTGRES_PASSWORD` (solo lettere e cifre, perché
+  sta dentro un URL). Il database c'è sempre, senza profili: gli account
+  sono parte dell'app.
+- **La copia notturna** nel servizio `backup`, con la stessa immagine (un
+  `pg_dump` della stessa versione del server): ogni giorno alle 02:00 UTC,
+  formato custom, scritta con un nome nascosto e rinominata quando è
+  intera, leggibile solo dal proprietario. Le copie con più di 13 giorni
+  si cancellano, e solo dopo una copia riuscita: un account cancellato
+  esce da ogni copia entro 14 giorni (ADR-0114, punto 7). `backup.sh
+  check` ripristina una copia in un database a parte e lo cancella.
+- **Le copie sul Mac** (scelta dell'utente, fra il *Backup* di Hetzner, lo
+  Storage Box, un object storage S3 e il Mac): `launchd` ogni 6 ore e
+  all'accesso, `rsync` sopra SSH con la chiave che il Mac usa già; le
+  copie del database sono uguali a quelle del server e quelle con più di
+  13 giorni si cancellano anche a server irraggiungibile; gli eventi delle
+  ricerche si aggiungono e non si cancellano.
+- **La CI** (job `docker`): con `POSTGRES_PASSWORD`, un'iscrizione vera
+  (`201`), `/me` senza token (`401`, cioè account accesi), una copia, il
+  suo ripristino con un account dentro, il file in modo `600`.
+- **Il ripristino vero** cancella e ricrea il database e vi ripristina la
+  copia; l'API, riavviata, riapplica le migrazioni più nuove della copia.
+
+**Scartate**: il *Backup* di Hetzner (+20%), lo Storage Box e un object
+storage (scelta dell'utente: il Mac, gratis; il primo resta possibile in
+più); i dati del database in una cartella di `data/` (il `chown` di
+`data-owner` li toglierebbe a PostgreSQL); un `cron` sul server (un
+servizio di `compose.yaml` si avvia con tutto il resto, con un comando);
+tenere le ultime 14 copie invece dei 13 giorni (una copia fatta a mano in
+più accorcerebbe i giorni, e la promessa dei 14 giorni è sui giorni).
+
+**Conseguenze**: a Mac spento per giorni le copie stanno solo sul server.
+Il server passa su `compose.yaml` dentro TASK-122, dopo il sì
+dell'utente. Sul Mac Docker vuole il plugin `buildx`: senza BuildKit
+l'heredoc del `Dockerfile` si salta in silenzio e l'immagine nasce senza
+dipendenze (visto il 2026-10-02; la CI e il server hanno BuildKit).

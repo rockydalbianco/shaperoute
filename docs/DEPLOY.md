@@ -529,15 +529,18 @@ git clone https://github.com/rockydalbianco/shaperoute.git
 cd shaperoute
 cp .env.example deploy/.env
 openssl rand -base64 32
+openssl rand -hex 24
 nano deploy/.env
 ```
 
-`openssl` stampa una chiave nuova per l'API (sezione «La chiave
-dell'API»). In `nano` scrivi:
+Il primo `openssl` stampa una chiave nuova per l'API (sezione «La chiave
+dell'API»), il secondo la password del database (TASK-122, F.13): solo
+lettere e cifre, perché finisce dentro un indirizzo. In `nano` scrivi:
 
 ```
 SHAPEROUTE_API_KEY=la-chiave-appena-stampata
 GEOAPIFY_API_KEY=la-chiave-di-geoapify
+POSTGRES_PASSWORD=la-password-appena-stampata
 ```
 
 La chiave di Geoapify è quella che il Mac ha già nel suo `.env`. Salva
@@ -588,12 +591,13 @@ docker compose ps
 curl http://127.0.0.1:8000/health
 ```
 
-`api` deve essere `Up (healthy)`, dopo una ventina di secondi, e `/health`
-rispondere `{"status":"ok"}`. Cosa dice l'API, all'avvio e a ogni
+`db` e `api` devono essere `Up (healthy)`, dopo una ventina di secondi,
+`backup` `Up`, e `/health` rispondere `{"status":"ok"}`. Cosa dice l'API, all'avvio e a ogni
 richiesta: `docker compose logs -f api` (esci con `Ctrl+C`). All'avvio
 deve dire «API key required in the X-API-Key header», «Places suggested
-by Geoapify» e «… recommended routes from catalog/seed», con un numero
-più grande di zero.
+by Geoapify», «… recommended routes from catalog/seed», con un numero
+più grande di zero, e «Accounts in PostgreSQL» con le migrazioni applicate
+(la prima volta `0001_users_sessions`, poi «schema up to date»).
 
 Docker riavvia l'API se si ferma e quando il server si riaccende. La porta
 8000 è aperta solo verso il server stesso (`127.0.0.1`): da internet non
@@ -731,12 +735,11 @@ Sul server, da `~/shaperoute/deploy`:
 | Togliere le immagini vecchie | `docker image prune` |
 | Spegnere l'AI | togli `ai` da `COMPOSE_PROFILES`, poi `docker compose stop ollama` |
 
-- **Copie di sicurezza**: OVHcloud fa da sé il backup giornaliero; su
-  Hetzner si accende il *Backup* (+20%) o si fa uno *Snapshot* dal
-  pannello prima di un aggiornamento grosso. Da salvare ci sono
-  `data/insights/` (quello che l'app impara dalle ricerche, TASK-130) e le
-  zone; il resto si riprende da GitHub. Con il database (TASK-122) le
-  copie diventano obbligatorie.
+- **Copie di sicurezza**: il database si copia da solo ogni notte, e il
+  Mac si prende le copie e gli eventi delle ricerche (F.13). Le zone si
+  riprendono dal Mac (F.5), il resto da GitHub. Prima di un aggiornamento
+  grosso, una copia subito: `docker compose exec backup bash /backup.sh
+  now`.
 - **Sapere se si ferma**: con l'indirizzo pubblico di F.8, un servizio
   gratuito che chiama `/health` ogni pochi minuti e manda un'email se non
   risponde (ad esempio UptimeRobot).
@@ -804,17 +807,19 @@ Quanto costa, a gradini (2026-10-01, IVA compresa, indicativo):
 
 Per il server di oggi (`sgrava-api`), quando si decide di spostarlo: la
 stessa API, gli stessi dati e lo stesso indirizzo, quindi l'app non
-cambia. Due minuti di API ferma. Sul server, come `root`:
+cambia; in più il database degli account e le sue copie (TASK-122, F.13).
+Due minuti di API ferma. Sul server, come `root`:
 
-1. Il codice e i segreti:
+1. Il codice e i segreti, con la password nuova del database:
 
    ```bash
    cd /root/shaperoute && git pull
    cp /srv/shaperoute/shaperoute.env deploy/.env
+   echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)" >> deploy/.env
    ```
 
    Il file ha già la chiave, Geoapify e il limite; `COMPOSE_PROFILES`
-   manca, cioè solo l'API.
+   manca, cioè solo l'API (con il database, che c'è sempre).
 2. Il container vecchio fuori, i dati dentro `data/` (stesso disco: è uno
    spostamento, non una copia):
 
@@ -824,11 +829,15 @@ cambia. Due minuti di API ferma. Sul server, come `root`:
    mv /srv/shaperoute/cache /srv/shaperoute/insights /srv/shaperoute/requests data/
    ```
 
-3. Avviare e controllare (F.6):
+3. Avviare e controllare (F.6), poi la prima copia e la prova che si
+   ripristina (F.13):
 
    ```bash
    cd deploy && docker compose up -d --build
    curl http://127.0.0.1:8000/health
+   docker compose logs api | grep Accounts
+   docker compose exec backup bash /backup.sh now
+   docker compose exec backup bash /backup.sh check
    ```
 
 4. **Caddy resta quello di apt**: il suo `reverse_proxy` va ancora a
@@ -840,9 +849,73 @@ cambia. Due minuti di API ferma. Sul server, come `root`:
    nome `sslip.io` di oggi e `COMPOSE_PROFILES=public`, e `docker compose
    up -d`.
 5. Dall'iPhone, un percorso: l'app non cambia indirizzo né chiave.
+6. Dal Mac, le copie (F.13): `deploy/mac/install-pull-backups.sh
+   root@<server>`.
 
 Se qualcosa va storto si torna indietro: `docker compose down`, le tre
-cartelle di nuovo in `/srv/shaperoute/`, e il `docker run` di prima.
+cartelle di nuovo in `/srv/shaperoute/`, e il `docker run` di prima. Il
+database resta nel volume `shaperoute_db` per un altro tentativo.
+
+### F.13 Il database e le sue copie
+
+TASK-122, ADR-0123. Gli account (TASK-114, `DATABASE.md`) stanno nel
+servizio `db` di `compose.yaml`: PostgreSQL 16 con PostGIS, i dati nel
+volume Docker `shaperoute_db` (non in `data/`: sono di PostgreSQL, che li
+vuole suoi). Nessuna porta verso fuori: lo raggiungono solo gli altri
+servizi. L'API lo trova con l'indirizzo che `compose.yaml` compone da
+`POSTGRES_PASSWORD`, e all'avvio applica le migrazioni.
+
+**La copia notturna.** Il servizio `backup` fa un `pg_dump` ogni giorno
+alle 02:00 UTC (`BACKUP_AT` in `deploy/.env`) in
+`data/backups/shaperoute-<data>.dump`, leggibile solo da `root`, e
+cancella le copie con più di 13 giorni: un account cancellato oggi è
+fuori da ogni copia entro 14 (ADR-0114, punto 7). Una copia si scrive con
+un nome nascosto e prende il suo solo quando è intera.
+
+| Cosa | Comando, da `~/shaperoute/deploy` |
+|---|---|
+| Una copia adesso | `docker compose exec backup bash /backup.sh now` |
+| Provare che una copia si ripristina | `docker compose exec backup bash /backup.sh check` |
+| Le copie | `ls -l ../data/backups` |
+| Cosa ha fatto stanotte | `docker compose logs backup` |
+
+`check` ripristina la copia più recente (o `check /backups/<nome>`) in un
+database a parte, `restore_check`, conta gli account e le migrazioni, poi
+lo cancella: quello vero non si tocca.
+
+**Le copie sul Mac** (scelta dell'utente, 2026-10-02). Una volta, dalla
+cartella del progetto sul Mac:
+
+```bash
+deploy/mac/install-pull-backups.sh root@<server>
+```
+
+Da lì `launchd` prende ogni 6 ore, e quando si accede al Mac, le copie del
+database in `~/ShapeRouteBackups/db` (uguali a quelle del server) e gli
+eventi delle ricerche in `~/ShapeRouteBackups/insights`, con la chiave SSH
+che il Mac usa già per il server. Le copie con più di 13 giorni si
+cancellano anche se il server non risponde. Cosa ha fatto:
+`~/ShapeRouteBackups/pulls.log`. Per toglierlo:
+`deploy/mac/install-pull-backups.sh --remove` (le copie restano). Il
+limite di questa scelta: a Mac spento per giorni, le copie stanno solo
+sul server.
+
+**Ripristinare davvero** (sostituisce il database di adesso):
+
+```bash
+cd ~/shaperoute/deploy
+docker compose exec backup bash /backup.sh now
+docker compose stop api
+docker compose exec backup dropdb shaperoute
+docker compose exec backup createdb shaperoute
+docker compose exec backup pg_restore --no-owner --exit-on-error -d shaperoute /backups/shaperoute-<data>.dump
+docker compose start api
+```
+
+La prima riga è la copia di adesso, per tornare indietro. Una copia dal
+Mac va prima nella cartella del server:
+`scp ~/ShapeRouteBackups/db/shaperoute-<data>.dump root@<server>:shaperoute/data/backups/`.
+All'avvio l'API riapplica le migrazioni più nuove della copia.
 
 ---
 

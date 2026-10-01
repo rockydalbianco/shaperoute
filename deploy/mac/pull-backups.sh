@@ -17,7 +17,8 @@ server="${SHAPEROUTE_BACKUP_SERVER:?set SHAPEROUTE_BACKUP_SERVER, e.g. root@<ser
 dest="${SHAPEROUTE_BACKUP_DIR:-$HOME/ShapeRouteBackups}"
 keep_days="${SHAPEROUTE_BACKUP_KEEP_DAYS:-13}"
 remote="${SHAPEROUTE_BACKUP_REMOTE_DIR:-/root/shaperoute/data}"
-ssh_options="ssh -o BatchMode=yes -o ConnectTimeout=20"
+# Tests swap in a stand-in for ssh (tools/test_pull_backups.py).
+ssh_options="${SHAPEROUTE_BACKUP_SSH:-ssh -o BatchMode=yes -o ConnectTimeout=20}"
 
 # Copies of personal data: readable by this user only.
 umask 077

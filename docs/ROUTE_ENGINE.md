@@ -65,7 +65,8 @@ Una forma può anche arrivare da un **contorno** in JSON (ADR-0035): dalla
 CLI con `--outline FILE`, oppure registrata in `SHAPES` come le altre. Le
 forme registrate sono il **catalogo** e sono contratto (ADR-0036): `circle`,
 `heart`, `star`, `horse`, `moon`, `cat`, `fish`, `butterfly`, `snail`,
-`dog_head`, `rabbit_head`. Un contorno entra nel catalogo solo dopo il
+`dog_head`, `rabbit_head`, `pumpkin`, `christmas_tree`. `tree`
+(TASK-034) è un altro contorno, e non è nel catalogo. Un contorno entra nel catalogo solo dopo il
 giudizio a occhio dell'utente sulle strade.
 
 ```json
@@ -438,6 +439,32 @@ warning esplicito in `RouteResult.warnings`. Vedi `PRODUCT.md`, rischi.
 Il provider definitivo di routing (OSMnx locale, OSRM, GraphHopper, Valhalla)
 è una decisione aperta. Per la fase 1 si usa OSMnx perché gira in locale
 senza server, il che rende il ciclo di prova rapidissimo.
+
+### Da una linea ai suoi nodi (TASK-145)
+
+I percorsi di «Explore» arrivano all'app come soli punti: il catalogo non
+tiene altro. `route_nodes.nodes_along(graph, points)` ritrova i nodi del
+grafo per cui passa la linea, per darle le indicazioni di svolta
+(`directions.guidance`) come a un percorso pianificato (ADR-0117). Funziona
+perché i punti del motore sono i nodi e la geometria dell'arco più corto
+fra due nodi (`_edge_points`): ogni nodo è uno dei punti, anche arrotondato
+a 6 decimali come nei file (circa 0,1 m).
+
+- Un punto entro **1 m** da un nodo è quel nodo (`MATCH_M`); lo stesso
+  nodo su punti di fila conta una volta.
+- Un nodo che sta solo vicino alla linea (un ponte sopra una via, la
+  geometria di un arco che sfiora un incrocio di un'altra strada) si scarta
+  quando il nodo dopo si collega senza di lui.
+- Due nodi senza strada fra loro, perché la zona è stata riscaricata e
+  OpenStreetMap è cambiato, si uniscono con la via più breve se non supera
+  **2 volte** il tratto di linea fra i due, più **50 m**; altrimenti il
+  nodo si salta.
+- Meno di due nodi trovati: `RouteNotOnGraphError` (un
+  `InvalidRequestError`), la linea non è su questa mappa.
+
+Su 4 percorsi appena pianificati (Trento, Bologna, con le alternative) le
+indicazioni ricavate dai punti sono identiche a quelle del motore: nodo,
+svolta, via, `along` e distanza.
 
 ## 5. Ottimizzazione e somiglianza
 

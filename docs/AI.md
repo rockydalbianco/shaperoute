@@ -151,9 +151,9 @@ Due liste di parole e frasi, in italiano e in inglese, con le risposte
 accettate: due per quelle ambigue («stella marina»: stella o pesce), `null`
 per quelle che non devono dare una forma.
 
-- **Messa a punto**, `services/ai/tests/phrases.json`: 64 voci, 10 senza
+- **Messa a punto**, `services/ai/tests/phrases.json`: 72 voci, 12 senza
   forma. Su questa si è corretta la domanda al modello.
-- **Controllo**, `phrases-holdout.json`: 42 voci nuove, 10 senza forma,
+- **Controllo**, `phrases-holdout.json`: 47 voci nuove, 10 senza forma,
   scritte dopo e misurate una volta per modello. Non serve mai a cambiare
   la domanda: è il numero onesto.
 
@@ -163,6 +163,26 @@ tabella. Sono entrate 14 voci per le quattro forme nella messa a punto
 (fra queste «Snoopy», che valeva nessuna forma e ora accetta anche la testa
 di cane) e 9 nel controllo, scritte prima di misurarle; «ragno» e «ape»
 sono voci nuove senza forma.
+
+Con zucca e albero di Natale (TASK-088, ADR-0084) «albero di Natale», che
+valeva «nessuna forma», è uscita: ora la legge la tabella. Sono entrate 8
+voci nella messa a punto e 5 nel controllo, più «quercia» senza forma.
+«albero» e «tree» devono restare **nessuna forma**: con la prima riga
+scritta per l'albero di Natale («a fir in three tiers…») «tree» lo
+sceglieva; la riga ora dice «not a plain tree», e non lo sceglie più.
+Misura del 2026-09-30 con qwen3:4b su un Mac (Ollama, 1–2 s a parola):
+
+| Catalogo | Messa a punto | Controllo |
+|---|---|---|
+| undici forme (`main`) | 51/64 (80%) | 39/42 (93%) |
+| tredici forme | 58/72 (81%) | 43/47 (91%) |
+
+Le 13 voci nuove sono tutte giuste. Cambiano risposta tre voci vecchie, in
+modo non legato alle forme nuove: «Hello Kitty» non è più una testa di
+coniglio (ma nemmeno un gatto), «Turbo» e «bersaglio» sbagliano. Su questo
+Mac «Scooby-Doo» dà una risposta troncata a 64 token, già su `main`: l'API
+risponde `ai_unavailable` e `measure_phrases.py` si ferma lì (annotato in
+`tasks/TASK-088.md`, fuori scope).
 
 Un test dell'API controlla che le due liste usino il catalogo e non abbiano
 voci in comune. Risultati del 2026-09-24, con la domanda finale e le

@@ -90,6 +90,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-148: tolto da `ExploreTools.tsx` il vecchio «Ask for a
+  route», con i suoi test e gli stili che usava solo lui: è il «da fare
+  dopo il merge di TASK-142» di TASK-143. Quello vero è in
+  `AskForRoute.tsx`; l'app non cambia, niente da ripubblicare.
 - **Server** — TASK-144: la guida per portare l'API su un server a
   pagamento, con il Mac spento (`DEPLOY.md`, strada F, ADR-0111), e la
   configurazione pronta in `deploy/`: l'API con zone, eventi e catalogo,

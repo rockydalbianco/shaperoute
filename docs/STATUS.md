@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-09-30 · **Fase corrente**: 4 — Estensione (scritte)
+**Ultimo aggiornamento**: 2026-10-01 · **Fase corrente**: 4 — Estensione (scritte)
 
 ---
 
@@ -59,10 +59,10 @@ database (TASK-114) e l'API sempre accesa (TASK-122).
 
 **TASK-093 — Scegliere fra più percorsi**: fatto (sotto, «Completato»).
 
-**TASK-131 — Un cuore più bello a occhio**, chiesto dall'utente il
-2026-10-01 dopo la prova di TASK-093: parte chiedendo all'utente cosa
-correggerebbe su 6–8 cuori veri, poi prova varianti (forma ideale prima,
-somiglianza dopo) con giudizio sì / quasi / no.
+**TASK-131 — Un cuore più bello a occhio**: fatto e provato sull'iPhone
+(2026-10-01). Il cuore evita i pezzi fatti avanti e indietro (ADR-0107);
+la forma ideale resta quella di oggi, preferita dall'utente. Seguito
+possibile: lo stesso peso per cerchio e stella, con un loro giudizio.
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
@@ -88,8 +88,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   10 km: da 11,8 a 5,5 s) e non scrive 20–110 MB; la stessa richiesta
   rifatta costa 0,4–2,6 s in più. Stessi percorsi. I ritagli già salvati
   si elencano con `python -m route_engine.prune_crops` e si cancellano con
-  `--delete`: sul Mac sono 346 su 355 grafi, 17,9 GB su 18,6. Cancellarli
-  è una scelta dell'utente, non ancora fatta.
+  `--delete`: sul Mac erano 346 su 355 grafi, 17,9 GB su 18,6, cancellati
+  dopo il merge su richiesta dell'utente (2026-10-01).
+- **API** — TASK-130: le ricerche che insegnano (ADR-0101,
+  `docs/INSIGHTS.md`). L'API registra ogni ricerca e ogni segnale d'uso in
+  `data/insights/` (acceso di default, senza dati personali); `python -m
+  shaperoute_api.insights` propone sinonimi, correzioni dei refusi, città e
+  frasi per il catalogo, con le prove e i controlli superati (`explain`).
+  Si impara solo da giorni o luoghi diversi (il modello risponde sempre
+  uguale) e mai se l'AI e l'ortografia non concordano. Si applica solo a
+  mano, validato (`validate`, anche in CI), versionato, reversibile;
+  `impact` dice se una versione ha aiutato, solo con eventi sufficienti.
+  Provato dal vivo: «rmantico» a Bologna e Torino → correzione → a Milano
+  letto dal vocabolario, senza AI (1,0 s → 0 ms). Seguiti possibili, da
+  approvare: i segnali dell'app (percorso scelto fra A·B·C, «Try N km»),
+  e TASK-128 che legge città e frasi desiderate.
 - **App** — TASK-135: «Run with Strava» in ogni scheda di percorso, il
   flusso ufficiale (ADR-0106): salvare il GPX, importarlo nel route builder
   di Strava, seguirlo dall'app Strava. Strava non permette di creare

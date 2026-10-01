@@ -101,7 +101,7 @@ Fatto (ADR-0108). La CLI e `seed_catalog` ritagliano in memoria e non
 salvano più: una partenza nuova a Milano passa da 11,8 a 5,5 s senza
 scrivere 108 MB, la stessa richiesta rifatta costa 0,4–2,6 s in più;
 stesso percorso punto per punto. `prune_crops` sul Mac trova 346 ritagli,
-17,9 GB, in 8 zone; **non cancellati**: aspetta il sì dell'utente.
+17,9 GB, in 8 zone; l'utente ha detto sì, si cancellano dopo il merge.
 L'ADR è la 0108 perché la 0107 l'ha presa TASK-131 mentre il task era in
 corso. `docs/API.md` cita ancora la CLI che salva i ritagli (ADR-0023): è di
 TASK-130 e TASK-134, da correggere quando si libera.

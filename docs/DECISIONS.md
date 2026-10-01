@@ -3278,3 +3278,30 @@ e senza la strada fatta per arrivarci).
 **Conseguenza**: dove le partenze vicine sono poche o il grafo è troppo
 grande (Milano, oltre 30 000 nodi, ADR-0071) le alternative mancano. Una
 richiesta con piano buono può durare fino a 3 s di più.
+
+## ADR-0100 — Overpass dall'indirizzo che risponde
+**Stato**: Attiva · 2026-10-01 · via esplicito dell'utente; il come deciso
+dall'agente su delega dell'utente (TASK-127)
+
+**Contesto**: da questo Mac uno dei due indirizzi di `overpass-api.de`
+rifiuta ogni connessione, e OSMnx usa sempre quello (MAPS.md). Ogni zona
+nuova falliva: il catalogo fermo a 6 città, «Explore» a tema senza New
+York, Parigi, Tokyo (TASK-125, TASK-129). Nel 2026-09-23 si era deciso di
+lasciarlo così; l'utente ha chiesto di sistemarlo.
+
+**Decisione**: un modulo del motore, `overpass_address.py`. Prima di un
+download prova a connettersi agli indirizzi IPv4 del server nell'ordine del
+resolver; per la durata del download `socket.gethostbyname` e
+`socket.getaddrinfo` danno, per quel solo nome, il primo che risponde (come
+fa già OSMnx per tenere lo stesso server). Il nome resta nell'URL: il
+certificato HTTPS si controlla come sempre. Un lock: un download alla
+volta. Se nessun indirizzo risponde, nulla cambia. Vale per i grafi e per
+le vie con nome (`_overpass`).
+
+**Alternative scartate**: un altro server Overpass (quelli provati non
+rispondevano da qui); l'indirizzo nell'URL (il certificato non
+corrisponderebbe); uno script fuori dal motore (non vale per l'API).
+
+**Conseguenza**: il centro di Verona, mai scaricato, in 10 s. Il cambio è
+globale al processo per la durata del download: altri nomi non sono
+toccati.

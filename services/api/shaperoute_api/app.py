@@ -35,6 +35,7 @@ from shaperoute_ai.reading import (
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from shaperoute_api.access import protect
+from shaperoute_api.accounts import Accounts, install_accounts
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.errors import error_of
 from shaperoute_api.graphs import MapDataUnavailableError
@@ -197,6 +198,7 @@ def create_app(
     cities: CitySearch | None = None,
     insights: Insights | None = None,
     signal_gate: SignalGate | None = None,
+    accounts: Accounts | None = None,
 ) -> FastAPI:
     # The search events and the learned vocabulary (TASK-130, ADR-0101).
     insights = insights or Insights(None)
@@ -246,6 +248,8 @@ def create_app(
         lifespan=lifespan,
     )
     protect(app)
+    # Sign up, sign in, /me (TASK-114, ADR-0115); without a database, 503.
+    install_accounts(app, accounts)
 
     @app.get("/health")
     def health() -> dict[str, str]:

@@ -1,6 +1,6 @@
 # TASK-114 — API: database e account
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-114-accounts-api`
 **Dipende da**: TASK-110
 
@@ -34,12 +34,13 @@ non si scelgono. Se un pacchetto non è nell'elenco approvato lì, fermarsi.
 
 ## Criteri di accettazione
 
-- [ ] Iscrizione, entrata, `GET /me`, uscita e cancellazione passano nei test.
-- [ ] Email già usata, password sbagliata, token scaduto: errori distinti,
+- [x] Iscrizione, entrata, `GET /me`, uscita e cancellazione passano nei test.
+- [x] Email già usata, password sbagliata, token scaduto: errori distinti,
       nel formato di `API.md`.
-- [ ] Nessuna password o token nei log e nelle risposte.
-- [ ] `/route-jobs` e gli altri endpoint di oggi rispondono senza account.
-- [ ] `route-engine` non importa nulla di nuovo.
+- [x] Nessuna password o token nei log e nelle risposte (il token solo
+      nella risposta che apre la sessione).
+- [x] `/route-jobs` e gli altri endpoint di oggi rispondono senza account.
+- [x] `route-engine` non importa nulla di nuovo.
 - [ ] CI verde con il database di prova.
 
 ## File toccati
@@ -48,14 +49,18 @@ non si scelgono. Se un pacchetto non è nell'elenco approvato lì, fermarsi.
 services/api/shaperoute_api/db.py
 services/api/shaperoute_api/accounts.py
 services/api/shaperoute_api/app.py
+services/api/shaperoute_api/__main__.py        (aggiunto: le migrazioni all'avvio)
 services/api/shaperoute_api/schemas.py
 services/api/migrations/
 services/api/tests/test_accounts.py
 services/api/tests/conftest.py
 services/api/pyproject.toml
 .env.example
-.github/workflows/
 packages/shared-types/src/index.ts
+packages/shared-types/fixtures/api-error-codes.json   (aggiunto: i codici nuovi)
+packages/shared-types/fixtures/sign-up-request.json   (nuovo)
+packages/shared-types/fixtures/session.json           (nuovo)
+packages/shared-types/test/accounts.test.ts           (nuovo)
 docs/API.md
 docs/DATABASE.md
 docs/SETUP.md
@@ -64,6 +69,9 @@ docs/STATUS.md
 docs/tasks/TASK-114.md
 ```
 
+`.github/workflows/` non serve: i runner della CI hanno docker, e
+`conftest.py` vi avvia il database da solo.
+
 ## Fuori scope
 
 - Schermate dell'app (TASK-115). Profilo (TASK-116).
@@ -71,3 +79,12 @@ docs/tasks/TASK-114.md
 - Mettere l'API su un server (TASK-122).
 
 ## Esito
+
+Gli account funzionano nell'API (ADR-0120): iscrizione, entrata, uscita,
+`GET /me` e cancellazione, con errori distinti per email o nome già usati,
+password sbagliata, nessun token e sessione scaduta. 29 test su un
+PostgreSQL con PostGIS vero, avviato dai test con docker; 424 test
+dell'API verdi. Sul Mac docker è Colima, scelto dall'utente. Non provato
+con l'API avviata davvero e un database che resta: lo fa TASK-122 sul
+server. Rimandati: la password dimenticata (serve Brevo) e un pool di
+connessioni (`psycopg_pool`) se gli account diventano tanti.

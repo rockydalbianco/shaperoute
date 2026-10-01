@@ -105,9 +105,10 @@ SIMILARITY = "shape"
 W_SHAPE = 3.0
 W_DISTANCE = 1.0
 # The route run twice over the same street, as a share of its length, for
-# the shapes whose eye judgement asked for it (TASK-131): a whisker the
-# similarity does not see. Others keep their routes as before.
-W_DOUBLED: dict[str, float] = {"heart": 1.5}
+# the shapes whose eye judgement asked for it (TASK-131, TASK-139): a
+# whisker the similarity does not see. Shapes with strokes drawn twice on
+# purpose (cat, fish, letters) keep their routes as before.
+W_DOUBLED: dict[str, float] = {"heart": 1.5, "circle": 1.5, "star": 1.5}
 # Moving the start by START_OFFSET_M costs as much as 5% of coverage, both
 # when ranking placements by roads and when choosing among traced routes.
 OFFSET_FIT_PENALTY = 0.05

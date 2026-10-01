@@ -32,8 +32,9 @@ export async function searchCities(
 }
 
 /**
- * Cities while typing (TASK-134): GET /city-suggestions, "Par" → Parma,
- * Paris. Never throws: null when the API does not answer.
+ * Cities and places while typing (TASK-134, TASK-138): GET
+ * /city-suggestions, "Par" → Paris, Parma; "arena di ver" → Arena di Verona.
+ * Never throws: null when the API does not answer.
  */
 export async function suggestCities(
   baseUrl: string,
@@ -54,8 +55,13 @@ export async function suggestCities(
       { headers: keyHeaders(key), signal },
     );
     const body: unknown = await response.json();
-    return response.ok && isPlaces(body) ? body.places : null;
+    return response.ok && isPlaces(body) ? body.places.map(asSuggestion) : null;
   } catch {
     return signal?.aborted ? [] : null;
   }
+}
+
+/** A city unless the API says it is a place: before TASK-138 it sent cities. */
+export function asSuggestion({ label, point, kind }: Place): Place {
+  return { label, point, kind: kind === "place" ? "place" : "city" };
 }

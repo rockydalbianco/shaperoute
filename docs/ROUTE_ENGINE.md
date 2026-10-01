@@ -633,6 +633,13 @@ cuori di prova cambiano Caldonazzo 10 km (17% → 7%), Levico 8 km
 (23% → 4%) e Trento 15 km; la somiglianza può scendere un po' (Levico
 0,84 → 0,78), i tempi no.
 
+Da TASK-139 (ADR-0109) lo stesso peso, 1,5, vale per **cerchio e
+stella**. Il cerchio ha già pochi baffi (0–7%): nessuno dei 7 di prova
+cambia. La stella ne ha molti (5–59%: le punte si raggiungono spesso
+andando e tornando): cambiano Levico 5 km (59% → 52%), Levico 8 km
+(39% → 17%) e Trento 15 km (6% → 2%), gli altri 4 no. Un peso doppio
+toglie più baffi ma fa perdere la forma (Levico 5 km 0,81 → 0,73): scartato.
+
 ### Misura della somiglianza
 
 Si confronta il percorso con la forma piazzata (ruotata e scalata), in tre

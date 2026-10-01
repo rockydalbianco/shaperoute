@@ -82,6 +82,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-138: in «Explore» il campo «Type a city or a
+  place» suggerisce a metà parola città e luoghi (ADR-0110): «arena di ver»
+  → Verona Arena, «duomo di mil» → Duomo, «ver» → Verona come centro città.
+  Un luogo scelto fa partire le categorie dal suo punto. Per vederlo
+  sull'iPhone: riavviare l'API del Mac (era partita prima di TASK-134, e
+  `/city-suggestions` dava 404) e ripubblicare l'app con `eas update`.
+  «ver» non dà ancora i luoghi famosi di Verona: Geoapify non li ordina per
+  fama (Fuori scope del task file).
+- **Motore** — TASK-139: anche cerchio e stella evitano i pezzi fatti
+  avanti e indietro (ADR-0109), con lo stesso peso del cuore. Il cerchio
+  non cambia sulle 7 prove; 3 stelle su 7 cambiano, 2 giudicate meglio.
+  Provato sull'iPhone (2026-10-01): funziona.
 - **API** — TASK-130: le ricerche che insegnano (ADR-0101,
   `docs/INSIGHTS.md`). L'API registra ogni ricerca e ogni segnale d'uso in
   `data/insights/` (acceso di default, senza dati personali); `python -m

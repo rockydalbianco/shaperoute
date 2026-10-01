@@ -116,6 +116,15 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    «Food in New York». Il campo libero resta, con un esempio per la città.
    Ciò che si tocca si attenua (opacità), niente si sposta.
 
+   **Da TASK-138** il campo è «Type a city or a place»: a metà parola
+   suggerisce città e luoghi (monumenti, piazze, quartieri, vie), al più 6,
+   nell'ordine del servizio. Ogni voce ha due righe: il nome, e sotto
+   «City centre · Veneto, Italy» per una città o la sua città per un luogo
+   («Verona, Italy»). Invio sceglie il primo suggerimento. Scelto un luogo,
+   le categorie dicono «near Verona Arena» e chiedono il tema dal suo punto
+   (le parole sono solo «Food»); l'esempio del campo libero non nomina
+   città.
+
 Passare da una schermata all'altra:
 
 - «←» torna alla scelta con forma e distanza di prima. Se il percorso è

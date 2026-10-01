@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-02 · `main` = `56355f3`
+**Ultimo aggiornamento**: 2026-10-02 · `main` = `06b078a`
 
 ## Come si usa
 
@@ -34,15 +34,16 @@
 ## La coda dei merge
 
 ```
-1. #152  TASK-146  Il proprietario Expo in app.json              CI in corso
-2. #153  TASK-148  Via il vecchio AskForRoute                    la porta il coordinatore
+1. #153  TASK-148  Via il vecchio AskForRoute                    la porta il coordinatore
+2. #154  TASK-149  Corsa libera, senza disegno                   pronta
 3.  —    TASK-122  L'API e il database sempre accesi             PR non aperta
-4. #140  TASK-141  STATUS.md allineato (per ultima: lo rifà)     conflitto: STATUS.md
-5.  —    TASK-149  Corsa libera, senza disegno                   PR non aperta
-6.  —    TASK-115  App: iscriversi, entrare, uscire              PR non aperta
+4.  —    TASK-115  App: iscriversi, entrare, uscire              PR non aperta
+5.  —    TASK-151  Le alternative A·B·C negli esempi di Explore  PR non aperta
+6. #140  TASK-141  STATUS.md allineato (per ultima: lo rifà)     conflitto: STATUS.md
 7. #130  TASK-132  Un annuncio prima del percorso                ferma (vedi sotto)
    #150  TASK-137  Le zone delle città, scaricate prima          in corso (Geofabrik)
 ```
+Chi è pronto prima passa avanti; la #140 resta ultima fra le pronte.
 
 ## L'albero
 
@@ -55,8 +56,10 @@ Sistema di auto-miglioramento ricerca
                        fra le pronte (sposta anche TASK-128 in
                        «Completato»)
 
-Task proceeding
-  └─ Adesso  TASK-146  #152: owner Expo = lppl1316s-team              primo in coda
+Cuore mancante opzioni zona
+  └─ Adesso  TASK-151  Le alternative A·B·C negli esempi di città     nessuna;
+                       di Explore (ADR-0126); l'ombra degli altri     App.tsx non
+                       due percorsi sulla mappa è un seguito          toccato
 
 Prossimo task
   ├─ Fatto   TASK-148  #153: via il vecchio AskForRoute da            la mergia il
@@ -121,15 +124,14 @@ Da assegnare (servono l'ok dell'utente sul cosa)
 | TASK-137 | Le zone delle città, scaricate prima | Suggerimenti città in Explore | #150, in corso (Geofabrik) | — | 0119 |
 | TASK-150 | La fonte delle mappe (tenuto, se serve) | Suggerimenti città in Explore | tenuto | 137 | 0124 |
 | TASK-141 | STATUS.md allineato allo stato vero | Sistema di auto-miglioramento ricerca | #140, in coda | ultima fra le pronte | — |
-| TASK-146 | Il proprietario Expo in `app.json` | Task proceeding | #152, CI in corso | — | — |
-| TASK-148 | Via il vecchio AskForRoute | Prossimo task | #153, in coda | #152 | — |
+| TASK-148 | Via il vecchio AskForRoute | (il coordinatore porta la PR) | #153, CI in corso | — | — |
 | TASK-149 | Corsa libera, senza disegno | Corsa senza disegno | in corso | — | 0122 |
 | TASK-115 | App: iscriversi, entrare, uscire | Prossimo task | in corso | 114 ✓ | 0125 (se serve) |
+| TASK-151 | Le alternative A·B·C negli esempi di Explore | Cuore mancante opzioni zona | in corso | 093 ✓, 143 ✓ | 0126 |
 
 Perché quest'ordine:
 
-- **#152 prima di #130**: tutte e due toccano `apps/mobile/app.json`.
-- **#152 prima di TASK-122**: tutte e due toccano `docs/DEPLOY.md`.
+- **TASK-149 prima di TASK-151**: tutte e due scrivono in `docs/UI.md`.
 - **TASK-122 prima di #130**: tutte e due toccano `.env.example`.
 - **TASK-149, TASK-115 e #130** toccano `apps/mobile/App.tsx`: entra
   prima TASK-149, poi TASK-115; la #130 unisce da `main` al suo turno.
@@ -142,7 +144,7 @@ Perché quest'ordine:
 
 | File | Di chi |
 |---|---|
-| `apps/mobile/app.json`, `docs/DEPLOY.md` | TASK-146 (#152); poi `app.json` a TASK-132, `DEPLOY.md` a TASK-122 |
+| `apps/mobile/src/explore/exampleRoutes.ts`, `explored.ts`, `ExploredCard.tsx` e i loro test; righe sue in `docs/UI.md` | TASK-151 |
 | `apps/mobile/src/explore/ExploreTools.tsx`, `ExploreTools.test.tsx` | TASK-148 (#153) |
 | `deploy/`, `docs/DEPLOY.md` (dopo #152), `.env.example` | TASK-122 |
 | `apps/mobile/App.tsx` (col via del coordinatore), `src/screens/ChooseScreen.tsx`, `src/screens/FreeRunScreen*`, `src/navigation/freeRun*`, `src/navigation/useFreeRun*`, `__tests__/AppFreeRun.test.tsx` | TASK-149 |
@@ -155,12 +157,12 @@ Perché quest'ordine:
 
 ## Numeri
 
-- Task: presi fino a **TASK-150** (150 tenuto per «Suggerimenti città in
+- Task: presi fino a **TASK-151** (150 tenuto per «Suggerimenti città in
   Explore», se la fonte delle mappe diventa un task a parte). Il prossimo
-  libero è **TASK-151**.
-- ADR: presi fino a **ADR-0125** (0122 di TASK-149, 0123 di TASK-122, 0124
-  tenuto con TASK-150, 0125 tenuto con TASK-115). Il prossimo libero è
-  **ADR-0126**.
+  libero è **TASK-152**.
+- ADR: presi fino a **ADR-0126** (0122 di TASK-149, 0123 di TASK-122, 0124
+  tenuto con TASK-150, 0125 tenuto con TASK-115, 0126 di TASK-151). Il
+  prossimo libero è **ADR-0127**.
 
 ## Il server
 
@@ -176,7 +178,7 @@ Perché quest'ordine:
 
 Entrate in `main` nella notte: #137 (TASK-136), #112 (TASK-088), #148
 (TASK-140), #142 (TASK-142), #149 (TASK-147), #141 (TASK-144), #147
-(TASK-128), #151 (TASK-114). Prima, il 2026-10-01: TASK-110, 138, 139,
+(TASK-128), #151 (TASK-114), #152 (TASK-146). Prima, il 2026-10-01: TASK-110, 138, 139,
 143, 145.
 
 Dopo un merge che aggiunge pacchetti all'app: `npm install` dalla radice

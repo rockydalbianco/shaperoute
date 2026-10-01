@@ -1,6 +1,6 @@
 # TASK-088 — Zucca e albero di Natale nel catalogo (parole, AI, app)
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-088-seasonal-catalog` (parte da `main`)
 
 Approvato dall'utente il 2026-09-30. ADR-0084 (era 0083, preso intanto da TASK-089). Numeri presi senza
@@ -66,8 +66,8 @@ all'API come le altre forme del catalogo.
 - [x] `packages/shared-types` nel commit: ok dell'utente (2026-09-30) prima
       del merge di TASK-084, che tocca `index.ts` dalla riga 239 in poi e
       non `contract.json`; le due righe qui sono in `SHAPES`, riga 26.
-- [ ] Prova dell'utente sull'iPhone, a Milano.
-- [ ] I job della CI sono verdi sulla PR.
+- [x] Prova dell'utente sull'iPhone, a Milano (2026-10-01): «va tutto».
+- [x] I job della CI sono verdi sulla PR #112.
 
 ## File toccati
 
@@ -108,7 +108,7 @@ docs/tasks/TASK-088.md
 
 ## Dove siamo
 
-Tutto nel branch, PR aperta. Manca la prova dell'utente sull'iPhone.
+Fatto e provato; PR #112.
 
 ## Prova sull'iPhone: i passi
 
@@ -125,4 +125,10 @@ principale, poi si rimettono com'erano. Partenza «Another place», Milano.
 
 ## Esito
 
-*(a fine task)*
+Zucca e albero di Natale si scelgono nell'app dalle tessere e con le
+parole, l'API le disegna e l'AI le riconosce; provate dall'utente
+sull'iPhone a Milano: si vedono e si disegnano. Le tessere sono diventate
+una riga che scorre di lato, chiesto durante la prova. Emerso e lasciato
+all'utente: più forme nella riga, a partire dai contorni già disegnati
+(uccello, cane intero, albero, freccia, corona). Annotato: «Scooby-Doo»
+rompe la risposta dell'AI su questo Mac (sopra, «Fuori scope»).

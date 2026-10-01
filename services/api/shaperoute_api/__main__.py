@@ -19,16 +19,19 @@ from route_engine.network import OsmnxSource
 from route_engine.shapes import SUPPORTED_SHAPES
 from shaperoute_ai.ollama import DEFAULT_MODEL, DEFAULT_URL, OllamaModel
 from shaperoute_ai.reading import ShapeReader
+from shaperoute_ai.theme_reading import ThemeReader
 
 from shaperoute_api.access import KEY_HEADER, KEY_VARIABLE, Access, AccessConfigError
 from shaperoute_api.access_log import hide_query_strings
 from shaperoute_api.app import create_app
+from shaperoute_api.cities import CitySearch
 from shaperoute_api.graphs import ZoneGraphs
 from shaperoute_api.places import KEY_VARIABLE as PLACES_KEY
 from shaperoute_api.places import PlaceSearch
 from shaperoute_api.recommended import DEFAULT_DIR as CATALOG_DIR
 from shaperoute_api.recommended import RecommendedCatalog
 from shaperoute_api.request_log import DEFAULT_DIR, ON_VARIABLE, RequestLog, wanted
+from shaperoute_api.themed import StopFinder, ThemedJobs
 
 DEFAULT_PORT = 8000
 
@@ -109,12 +112,24 @@ def main(argv: Sequence[str] | None = None) -> None:
     request_log = RequestLog(args.request_log_dir) if wanted(args.request_log) else None
     places = PlaceSearch.from_env()
     recommended = RecommendedCatalog.from_dir(args.catalog_dir)
+    source = ZoneGraphs(OsmnxSource(args.cache_dir))
+    cities = CitySearch(places.key)
+    # Themed routes (TASK-129): the places with the key of the place search,
+    # the AI only for words the tables do not know.
+    themed = ThemedJobs(
+        source,
+        StopFinder(places.key),
+        cities=cities,
+        ai=ThemeReader(OllamaModel(args.ai_model, args.ai_url)),
+    )
     app = create_app(
-        ZoneGraphs(OsmnxSource(args.cache_dir)),
+        source,
         reader=reader,
         request_log=request_log,
         places=places,
         recommended=recommended,
+        themed=themed,
+        cities=cities,
     )
     host = "0.0.0.0" if args.lan else "127.0.0.1"
     here = f"http://127.0.0.1:{args.port}"

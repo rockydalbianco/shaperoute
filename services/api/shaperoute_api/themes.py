@@ -1,0 +1,230 @@
+"""What a themed request asks for: "a romantic heart in Paris, 10 km"
+(TASK-129, ADR-0099).
+
+A table of words first, in Italian, English and French: it costs nothing
+and answers most requests. Only what the table does not know goes to the AI,
+which may only choose a theme of THEMES or none (ADR-0012): it never names a
+place nor gives a point. The places come from OpenStreetMap (themed.py).
+"""
+
+from __future__ import annotations
+
+import re
+import unicodedata
+from collections.abc import Callable
+from dataclasses import dataclass
+
+from route_engine.models import MAX_DISTANCE_M
+
+# The app goes up to 21 km (ADR-0034); a shape smaller than 3 km has room
+# for no stop.
+MIN_THEMED_M = 3_000
+MAX_THEMED_M = min(21_000, MAX_DISTANCE_M)
+DEFAULT_THEMED_M = 10_000
+
+
+@dataclass(frozen=True)
+class Theme:
+    """Where its places come from (Geoapify categories, OSM data), whether
+    only notable ones count (with a Wikidata entry), and the shape drawn
+    when the request names none."""
+
+    categories: str
+    notable: bool
+    shape: str
+    label: str
+
+
+THEMES: dict[str, Theme] = {
+    "romantic": Theme(
+        "tourism.attraction.viewpoint,leisure.park,tourism.sights.bridge,"
+        "tourism.sights.castle,tourism.sights.tower,tourism.sights.city_gate",
+        notable=True,
+        shape="heart",
+        label="romantic spots",
+    ),
+    "food": Theme(
+        "catering.restaurant,catering.cafe",
+        notable=False,
+        shape="circle",
+        label="places to eat",
+    ),
+    "famous": Theme(
+        "tourism.sights,tourism.attraction",
+        notable=True,
+        shape="star",
+        label="famous places",
+    ),
+    "tourist": Theme(
+        "tourism.sights,tourism.attraction,entertainment.museum",
+        notable=True,
+        shape="star",
+        label="sights",
+    ),
+    "panoramic": Theme(
+        "tourism.attraction.viewpoint,leisure.park",
+        notable=False,
+        shape="circle",
+        label="viewpoints and parks",
+    ),
+    "nature": Theme(
+        "leisure.park,natural", notable=False, shape="circle", label="parks and nature"
+    ),
+    "culture": Theme(
+        "entertainment.museum,entertainment.culture",
+        notable=False,
+        shape="star",
+        label="museums and culture",
+    ),
+}
+
+# Words, without accents, in lower case. The first theme whose word is in
+# the request wins, in this order: "ristoranti romantici" is food.
+THEME_WORDS: dict[str, tuple[str, ...]] = {
+    "food": (
+        "ristorant",
+        "gastronom",
+        "cibo",
+        "mangiar",
+        "cucina",
+        "trattori",
+        "pizz",
+        "sushi",
+        "ramen",
+        "food",
+        "restaurant",
+        "eat",
+        "street food",
+        "gourmet",
+        "nourriture",
+        "manger",
+    ),
+    "panoramic": (
+        "panoram",
+        "belvedere",
+        "vista",
+        "view",
+        "skyline",
+        "point de vue",
+    ),
+    "nature": (
+        "parco",
+        "parchi",
+        "park",
+        "natura",
+        "nature",
+        "giardin",
+        "garden",
+        "jardin",
+        "verde",
+    ),
+    "culture": ("muse", "art", "cultur", "chiese", "church", "eglise"),
+    "romantic": ("romanti", "amore", "love", "coppia", "san valentino", "amour"),
+    "famous": (
+        "famos",
+        "famous",
+        "monument",
+        "landmark",
+        "celebr",
+        "imperdibil",
+        "must see",
+        "highlight",
+        "attrazion",
+        "attraction",
+        "iconic",
+        "iconi",
+        "celebre",
+    ),
+    "tourist": ("turistic", "tourist", "touristique", "sightseeing", "visita", "tour"),
+}
+
+# The shapes of the catalogue by their names, as in apps/mobile shapeWords.
+SHAPE_WORDS: dict[str, tuple[str, ...]] = {
+    "heart": ("cuore", "cuori", "heart", "hearts", "coeur"),
+    "star": ("stella", "stelle", "star", "stars", "etoile"),
+    "circle": ("cerchio", "circle", "cercle", "anello"),
+    "moon": ("luna", "moon", "lune"),
+    "cat": ("gatto", "cat", "chat"),
+    "fish": ("pesce", "fish", "poisson"),
+    "horse": ("cavallo", "horse", "cheval"),
+    "butterfly": ("farfalla", "butterfly", "papillon"),
+    "snail": ("lumaca", "snail", "escargot"),
+}
+
+_KM = re.compile(r"(\d+(?:[.,]\d+)?)\s*(?:km|chilometri|kilometri|kilometers?)\b")
+# "... a Parigi", "in Tokyo, 8 km", "à Paris !": a capitalised place after
+# one of these words, at the end of the request or before a comma or a stop.
+_CITY = re.compile(
+    r"\b(?:a|ad|in|à|at|nella|nel|per|di|to)\s+"
+    r"((?:[A-ZÀ-Ý][\w'’.-]*)(?:\s+[A-ZÀ-Ý][\w'’-]*){0,3})\s*(?=[,;.!?]|$)"
+)
+
+
+def plain(text: str) -> str:
+    """Lower case, accents off, single spaces: the form the tables use."""
+    folded = unicodedata.normalize("NFKD", text)
+    folded = "".join(c for c in folded if not unicodedata.combining(c))
+    return " ".join(folded.lower().split())
+
+
+def _first(
+    words: dict[str, tuple[str, ...]], text: str, whole: bool = False
+) -> str | None:
+    """The first name with a word in `text`: a word that starts with one of
+    its stems, or with `whole` is one of them; a stem of more words is
+    looked for as it is."""
+    tokens = text.split()
+    padded = f" {text} "
+    for name, stems in words.items():
+        for stem in stems:
+            if " " in stem:
+                if f" {stem} " in padded:
+                    return name
+            elif any(t == stem if whole else t.startswith(stem) for t in tokens):
+                return name
+    return None
+
+
+@dataclass(frozen=True)
+class Reading:
+    theme: str | None
+    shape: str | None
+    distance_m: int
+    city: str | None
+    # "table" or "ai": how the theme was found, for the log and the tests.
+    by: str = "table"
+
+
+def read_request(text: str) -> Reading:
+    """Theme, shape, distance and city from the words, by the tables only."""
+    words = plain(text)
+    km = _KM.search(words)
+    distance = DEFAULT_THEMED_M
+    if km is not None:
+        distance = round(float(km.group(1).replace(",", ".")) * 1000)
+        distance = min(max(distance, MIN_THEMED_M), MAX_THEMED_M)
+    found = list(_CITY.finditer(text.strip()))
+    city = found[-1] if found else None
+    return Reading(
+        theme=_first(THEME_WORDS, words),
+        shape=_first(SHAPE_WORDS, words, whole=True),
+        distance_m=distance,
+        city=None if city is None else city.group(1).strip(),
+    )
+
+
+ThemeChooser = Callable[[str, list[str]], str | None]
+"""The AI: the theme of the list the words ask for, or None. Raises
+shaperoute_ai.reading.ModelUnavailableError when it cannot answer."""
+
+
+def read_with_ai(text: str, ai: ThemeChooser | None) -> Reading:
+    """The tables; the AI only when they find no theme. Its answer is
+    checked: a theme not in THEMES counts as none."""
+    reading = read_request(text)
+    if reading.theme is not None or ai is None:
+        return reading
+    chosen = ai(text, list(THEMES))
+    if chosen not in THEMES:
+        return reading
+    return Reading(chosen, reading.shape, reading.distance_m, reading.city, by="ai")

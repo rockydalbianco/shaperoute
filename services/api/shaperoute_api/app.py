@@ -34,6 +34,7 @@ from shaperoute_ai.reading import (
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from shaperoute_api.access import protect
+from shaperoute_api.cities import CitySearch
 from shaperoute_api.errors import error_of
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.images import (
@@ -78,6 +79,7 @@ from shaperoute_api.schemas import (
     TrackScoreBody,
     TrackScoreRequestBody,
 )
+from shaperoute_api.themed import ThemedJobBody, ThemedJobs, ThemedRequestBody
 from shaperoute_api.track_scores import score_run
 
 log = logging.getLogger(__name__)
@@ -183,6 +185,8 @@ def create_app(
     request_log: RequestLog | None = None,
     places: PlaceSearch | None = None,
     recommended: RecommendedCatalog | None = None,
+    themed: ThemedJobs | None = None,
+    cities: CitySearch | None = None,
 ) -> FastAPI:
     # The request log (TASK-090) hears how each job ended; None: no log.
     on_end = None if request_log is None else job_recorder(request_log)
@@ -199,6 +203,8 @@ def create_app(
             ).start()
         yield
         route_jobs.shutdown()
+        if themed is not None:
+            themed.shutdown()
 
     app = FastAPI(
         title="ShapeRoute API",
@@ -315,6 +321,35 @@ def create_app(
         if route is None:
             raise HTTPException(404, "No recommended route with this id.")
         return route
+
+    # Cities of the world by name, their centre, for "Explore" (TASK-129).
+    @app.get("/cities", responses={503: {"model": ErrorBody}})
+    def search_cities(
+        q: str = Query(min_length=MIN_QUERY_LENGTH, max_length=MAX_QUERY_LENGTH),
+    ) -> PlacesBody:
+        if cities is None:
+            raise HTTPException(503, "City search is off on this API.")
+        try:
+            return cities.body(q)
+        except PlacesUnavailableError as exc:
+            raise HTTPException(503, str(exc)) from None
+
+    # A shape through the real places of a theme, in any city (TASK-129,
+    # ADR-0099): a job, as a route, since it plans the shape a few times.
+    @app.post(
+        "/themed-route-jobs", status_code=202, responses={503: {"model": ErrorBody}}
+    )
+    def create_themed_route_job(body: ThemedRequestBody) -> ThemedJobBody:
+        if themed is None:
+            raise HTTPException(503, "Themed routes are off on this API.")
+        return themed.submit(body).as_body()
+
+    @app.get("/themed-route-jobs/{job_id}", responses={404: {"model": ErrorBody}})
+    def get_themed_route_job(job_id: str) -> ThemedJobBody:
+        job = None if themed is None else themed.get(job_id)
+        if job is None:
+            raise HTTPException(404, UNKNOWN_JOB)
+        return job.as_body()
 
     # The score of a run against the route it followed (ADR-0093). Nothing
     # is kept and no graph is read: the engine compares two lines.

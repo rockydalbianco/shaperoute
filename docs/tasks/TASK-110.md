@@ -56,7 +56,17 @@ la fa l'utente**, una domanda per volta.
    ARM (Ampere). Scelta dell'utente (2026-10-01), fra Hetzner, Oracle,
    VPS con servizio gestito e Raspberry Pi. Rischio da gestire: Oracle può
    reclamare le VM gratuite poco usate, quindi copie di sicurezza fuori
-   dalla VM.
+   dalla VM. Dati controllati il 2026-10-01 dalla sessione «Decide
+   TASK-110» sulle pagine di Oracle: la quota gratuita Ampere A1 oggi
+   equivale a **2 OCPU e 12 GB** (non 4 e 24 come dice `DEPLOY.md`), 200 GB
+   di disco in tutto; una VM A1 con CPU, rete e memoria sotto il 20% per 7
+   giorni può essere reclamata; un account fermo da 30 giorni può essere
+   sospeso; serve una carta di credito (non prepagata) per la verifica, un
+   account gratuito a persona. 12 GB bastano: l'API con due zone ne usa
+   circa 0,4, il database poco.
+3. **Come si entra**: **email e password**, senza servizi esterni; funziona
+   in Expo Go. «Ho dimenticato la password» arriva dopo, con un servizio che
+   manda email. Scelta dell'utente (2026-10-01).
 
 ## Criteri di accettazione
 

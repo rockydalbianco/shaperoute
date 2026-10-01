@@ -619,7 +619,7 @@ costo = w_forma · (1 − somiglianza) + w_dist · |dist_reale − dist_target| 
 con `w_forma` = 3 e `w_dist` = 1: la forma conta più della distanza. Una
 partenza spostata di 500 m aggiunge 0,15, cioè vale 5 punti di copertura.
 
-**I baffi del cuore** (TASK-131, ADR-0106): per il cuore il costo ha un
+**I baffi del cuore** (TASK-131, ADR-0107): per il cuore il costo ha un
 termine in più, `w_baffi · quota fatta due volte`, con `w_baffi` = 1,5
 (`W_DOUBLED`, `retracing.py`). La quota è la parte della lunghezza su pezzi
 di strada percorsi più di una volta, in un verso o nell'altro: un «baffo»

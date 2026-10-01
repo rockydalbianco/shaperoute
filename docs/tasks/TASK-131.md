@@ -70,7 +70,7 @@ Cosa può cambiare, dal più semplice:
       (registro rifatto: stella, cavallo, farfalla, CIAO, cerchio).
 - [x] Il tempo di una richiesta di cuore non cresce più del 10%
       (Caldonazzo 10 km 1,8 → 2,0 s, Trento 15 km 6,3 → 6,6 s).
-- [x] Test deterministici; decisione in `DECISIONS.md` (ADR-0106);
+- [x] Test deterministici; decisione in `DECISIONS.md` (ADR-0107);
       `ROUTE_ENGINE.md` aggiornato.
 - [x] Provato sull'iPhone dall'utente (2026-10-01): «funziona».
 
@@ -109,6 +109,6 @@ docs/tasks/TASK-131.md
    indietro. Misura: Milano 0% del percorso fatto due volte, gli altri
    fino al 23%.
 4. Con il peso dei baffi: Levico 8 km e Trento 15 km meglio i nuovi,
-   Caldonazzo nessuna preferenza (ADR-0106, `samples/TASK-131_*`).
+   Caldonazzo nessuna preferenza (ADR-0107, `samples/TASK-131_*`).
 
 Provato sull'iPhone dall'utente (2026-10-01): «provato, funziona».

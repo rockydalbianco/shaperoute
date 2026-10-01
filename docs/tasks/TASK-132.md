@@ -54,3 +54,6 @@ docs/tasks/TASK-132.md
 ## Esito
 
 Codice e test fatti; manca la prova su una build vera (sopra).
+2026-10-01: l'utente non ha ancora un account Apple Developer. Senza account
+si può provare con il simulatore iOS (Xcode gratuito, profilo EAS con
+`ios.simulator: true`) o con una build Android.

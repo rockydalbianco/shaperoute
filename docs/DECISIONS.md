@@ -3152,3 +3152,30 @@ appena usato dall'app pubblicata); arrotondarli a 1 km prima di mandarli
 **Conseguenza**: nel log non si legge più cosa è stato cercato. Le righe
 scritte prima del filtro restano nel file finché non si cancellano.
 
+## ADR-0098 — «Explore» dal catalogo, prima del database
+**Stato**: Attiva · 2026-10-01 · variante C scelta dall'utente (TASK-092);
+il come deciso dall'agente su delega dell'utente (TASK-126)
+
+**Contesto**: l'utente ha chiesto di programmare «Explore» e provarlo
+subito. Il database (TASK-114) non c'è ancora; il seme del catalogo sì
+(ADR-0097).
+
+**Decisione**:
+- **L'API serve i file di `catalog/seed/`**, letti all'avvio:
+  `GET /recommended-routes` (vicino a un punto, con l'anteprima) e
+  `GET /recommended-routes/{id}` (intero). Con TASK-114 la stessa API
+  leggerà dal database: il contratto resta.
+- **L'anteprima la calcola l'API** (64 punti), così la lista pesa poco; la
+  miniatura nell'app sono segmenti di `View` ruotati: nessuna dipendenza
+  nuova (niente `react-native-svg`).
+- **Una terza schermata**, oltre alle due di TASK-051, nello stesso stato
+  di `App.tsx`, senza librerie di navigazione.
+- **Niente «Start»** sui percorsi di «Explore»: non hanno le indicazioni di
+  svolta. Restano mappa e GPX.
+- **I tipi nell'app** (`src/explore/recommendedRoutes.ts`), non in
+  `shared-types`, come `Place` (TASK-123): `shared-types` è toccato da
+  un'altra PR aperta (TASK-088).
+
+**Conseguenza**: «Explore» mostra solo le città del seme, a 5 km dal
+centro; altrove dice che non ci sono ancora percorsi. Nell'immagine Docker
+`catalog/` non c'è: là la lista è vuota finché non la si copia.

@@ -53,6 +53,13 @@ from shaperoute_api.places import (
     PlaceSearch,
     PlacesUnavailableError,
 )
+from shaperoute_api.recommended import (
+    DEFAULT_RADIUS_M,
+    MAX_RADIUS_M,
+    RecommendedCatalog,
+    RecommendedRouteDetailBody,
+    RecommendedRoutesBody,
+)
 from shaperoute_api.request_log import RequestLog
 from shaperoute_api.schemas import (
     ErrorBody,
@@ -175,6 +182,7 @@ def create_app(
     reader: ShapeReader | None = None,
     request_log: RequestLog | None = None,
     places: PlaceSearch | None = None,
+    recommended: RecommendedCatalog | None = None,
 ) -> FastAPI:
     # The request log (TASK-090) hears how each job ended; None: no log.
     on_end = None if request_log is None else job_recorder(request_log)
@@ -284,6 +292,29 @@ def create_app(
             return PlacesBody(places=places.search(q, near))
         except PlacesUnavailableError as exc:
             raise HTTPException(503, str(exc)) from None
+
+    # The best routes already planned near a point, for "Explore" (TASK-126,
+    # ADR-0098). The point is in the query: not in the access log (ADR-0096).
+    catalog = recommended or RecommendedCatalog([])
+
+    @app.get("/recommended-routes")
+    def list_recommended_routes(
+        lat: float = Query(ge=-90, le=90),
+        lon: float = Query(ge=-180, le=180),
+        radius_m: int = Query(default=DEFAULT_RADIUS_M, ge=100, le=MAX_RADIUS_M),
+        shape: str | None = Query(default=None, max_length=40),
+        distance_m: int | None = Query(default=None, ge=0),
+    ) -> RecommendedRoutesBody:
+        return RecommendedRoutesBody(
+            routes=catalog.near((lat, lon), radius_m, shape, distance_m)
+        )
+
+    @app.get("/recommended-routes/{route_id}", responses={404: {"model": ErrorBody}})
+    def get_recommended_route(route_id: str) -> RecommendedRouteDetailBody:
+        route = catalog.get(route_id)
+        if route is None:
+            raise HTTPException(404, "No recommended route with this id.")
+        return route
 
     # The score of a run against the route it followed (ADR-0093). Nothing
     # is kept and no graph is read: the engine compares two lines.

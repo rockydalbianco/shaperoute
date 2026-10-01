@@ -23,6 +23,8 @@ import {
 import { ExploredCard } from "./src/explore/ExploredCard";
 import { useExplored } from "./src/explore/explored";
 import { ExploreScreen } from "./src/explore/ExploreScreen";
+import { ThemedCard, themedGpx } from "./src/explore/ThemedCard";
+import { useThemedRoute } from "./src/explore/useThemedRoute";
 import { MapView } from "./src/map/MapView";
 import {
   clearRun,
@@ -125,6 +127,13 @@ function Sgrava() {
   const { state, draw, cancel } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
   const { explored, open: openExplored, close: closeExplored } = useExplored(API_URL);
+  // "Explore" for any city, and a shape through a theme's places (TASK-129).
+  const [exploreCity, setExploreCity] = useState<Place | null>(null);
+  const themed = useThemedRoute(API_URL);
+  const themedExport = useMemo(
+    () => (themed.state.status === "done" ? themedGpx(themed.state.result) : null),
+    [themed.state],
+  );
 
   const start = useMemo(
     () => chooseStart(startMode, position, place),
@@ -169,6 +178,12 @@ function Sgrava() {
     gpx.state.result === view.result
       ? gpx.state
       : { status: "idle" };
+  const themedExporting: ExportState =
+    themedExport !== null &&
+    gpx.state.status !== "idle" &&
+    gpx.state.result === themedExport.result
+      ? gpx.state
+      : { status: "idle" };
 
   const navigating = screen === "navigate" && view.status === "done";
   const navigation = useNavigation(
@@ -179,6 +194,8 @@ function Sgrava() {
   );
   const finishing = screen === "finish" && finished !== null;
   // A route of "Explore" on the map, in place of the drawn one (TASK-126).
+  const theming =
+    screen === "map" && explored === null && themed.state.status !== "idle";
   const exploring = screen === "map" && explored !== null;
   const exploredExport: ExportState =
     explored?.status === "done" &&
@@ -212,6 +229,7 @@ function Sgrava() {
     Keyboard.dismiss();
     // The drawn route takes the map back from "Explore".
     closeExplored();
+    themed.close();
     // The same route already drawn is shown again, not asked for again.
     if (request && view.status !== "done") {
       draw(request);
@@ -220,6 +238,11 @@ function Sgrava() {
   }
 
   function onBack() {
+    if (theming) {
+      themed.close();
+      setScreen("explore");
+      return;
+    }
     if (exploring) {
       closeExplored();
       setScreen("explore");
@@ -253,17 +276,34 @@ function Sgrava() {
         map={
           <MapView
             style={styles.map}
-            start={exploring ? explored.route.start : (start?.point ?? null)}
+            start={
+              theming
+                ? themed.state.status === "done"
+                  ? themed.state.result.centre
+                  : null
+                : exploring
+                  ? explored.route.start
+                  : (start?.point ?? null)
+            }
+            stops={
+              theming && themed.state.status === "done"
+                ? themed.state.result.stops
+                : null
+            }
             route={
               finishing
                 ? finished.run.route
-                : exploring
-                  ? explored.status === "done"
-                    ? explored.detail.points
+                : theming
+                  ? themed.state.status === "done"
+                    ? themed.state.result.points
                     : null
-                  : view.status === "done"
-                    ? view.result.points
-                    : null
+                  : exploring
+                    ? explored.status === "done"
+                      ? explored.detail.points
+                      : null
+                    : view.status === "done"
+                      ? view.result.points
+                      : null
             }
             track={finishing ? finished.line : null}
             following={
@@ -275,7 +315,21 @@ function Sgrava() {
           />
         }
       >
-        {exploring ? (
+        {theming ? (
+          <ThemedCard
+            state={themed.state}
+            exporting={themedExporting}
+            onExport={() => {
+              if (themedExport !== null) {
+                gpx.exportGpx(themedExport.request, themedExport.result);
+              }
+            }}
+            onCancel={() => {
+              themed.close();
+              setScreen("explore");
+            }}
+          />
+        ) : exploring ? (
           <ExploredCard
             explored={explored}
             exporting={exploredExport}
@@ -386,7 +440,16 @@ function Sgrava() {
           near={start?.point ?? null}
           onBack={() => setScreen("choose")}
           onOpen={(route) => {
+            themed.close();
             openExplored(route);
+            setScreen("map");
+          }}
+          city={exploreCity}
+          onCity={setExploreCity}
+          onAsk={(request) => {
+            Keyboard.dismiss();
+            closeExplored();
+            themed.ask(request);
             setScreen("map");
           }}
         />

@@ -221,3 +221,14 @@ def test_the_endpoints() -> None:
     off = TestClient(create_app(FileSource(HERE)))
     assert off.post("/themed-route-jobs", json={"text": "x"}).status_code == 503
     assert off.get("/cities", params={"q": "Milano"}).status_code == 503
+
+
+CONTRACT = HERE.parents[2] / "packages" / "shared-types" / "fixtures"
+
+
+@pytest.mark.parametrize("name", ["themed-route-job-done", "themed-route-job-failed"])
+def test_the_shared_fixtures_are_bodies_of_the_api(name: str) -> None:
+    from shaperoute_api.themed import ThemedJobBody
+
+    body = json.loads((CONTRACT / f"{name}.json").read_text("utf-8"))
+    assert ThemedJobBody.model_validate(body).model_dump(mode="json") == body

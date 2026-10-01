@@ -1,8 +1,8 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { color, route, track } from "../theme/tokens";
+import { color, route, stop, track } from "../theme/tokens";
 import { toLngLat } from "./coordinates";
-import { sgravaDarkStyle } from "./mapStyle";
+import { LABEL_FONT, sgravaDarkStyle } from "./mapStyle";
 
 /**
  * The map page shown in the WebView (ADR-0029): MapLibre GL JS from a CDN,
@@ -111,6 +111,7 @@ export function buildMapPage(): string {
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
     var track = noRoute;
+    var stops = noRoute;
     var map = new maplibregl.Map({
       container: "map",
       style: ${toScript(MAP_STYLE)},
@@ -133,6 +134,43 @@ export function buildMapPage(): string {
           "line-color": ${toScript(ROUTE_COLOR)},
           "line-width": ${ROUTE_WIDTH},
           "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      // The places of a themed route, over the route (TASK-129).
+      map.addSource("stops", { type: "geojson", data: stops });
+      map.addLayer({
+        id: "stops",
+        type: "circle",
+        source: "stops",
+        paint: {
+          "circle-radius": ${stop.radius},
+          "circle-color": [
+            "case",
+            ["get", "passed"],
+            ${toScript(stop.passed)},
+            ${toScript(stop.missed)},
+          ],
+          "circle-stroke-color": ${toScript(stop.outline)},
+          "circle-stroke-width": 2,
+        },
+      });
+      map.addLayer({
+        id: "stop-names",
+        type: "symbol",
+        source: "stops",
+        filter: ["get", "passed"],
+        layout: {
+          "text-field": ["get", "name"],
+          "text-font": ${toScript(LABEL_FONT)},
+          "text-size": 12,
+          "text-offset": [0, 1.1],
+          "text-anchor": "top",
+          "text-optional": true,
+        },
+        paint: {
+          "text-color": ${toScript(stop.label)},
+          "text-halo-color": ${toScript(stop.halo)},
+          "text-halo-width": 1.5,
         },
       });
       // The run, over the route it followed.
@@ -169,6 +207,13 @@ export function buildMapPage(): string {
       var source = map.getSource("route");
       if (source) {
         source.setData(route);
+      }
+    }
+    function setStops(data) {
+      stops = data;
+      var source = map.getSource("stops");
+      if (source) {
+        source.setData(stops);
       }
     }
     function setTrack(data) {
@@ -233,6 +278,19 @@ export function buildMapPage(): string {
             properties: {},
             geometry: { type: "LineString", coordinates: message.coordinates },
           });
+        } else if (message.type === "showStops") {
+          setStops({
+            type: "FeatureCollection",
+            features: message.stops.map(function (s) {
+              return {
+                type: "Feature",
+                properties: { name: s.name, passed: s.passed },
+                geometry: { type: "Point", coordinates: s.lngLat },
+              };
+            }),
+          });
+        } else if (message.type === "clearStops") {
+          setStops(noRoute);
         } else if (message.type === "clearTrack") {
           setTrack(noRoute);
         } else if (message.type === "clearRoute") {

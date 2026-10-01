@@ -1,0 +1,9 @@
+{
+  "job_id": "beef",
+  "status": "failed",
+  "result": null,
+  "error": {
+    "code": "no_places",
+    "message": "Not enough verified famous places here (0 found): try another theme or a bigger city."
+  }
+}

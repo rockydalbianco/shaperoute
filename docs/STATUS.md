@@ -90,6 +90,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Server** — TASK-144: la guida per portare l'API su un server a
+  pagamento, con il Mac spento (`DEPLOY.md`, strada F, ADR-0111), e la
+  configurazione pronta in `deploy/`: l'API con zone, eventi e catalogo,
+  l'AI (profilo `ai`) e HTTPS con Caddy (profilo `public`) a scelta. Prima
+  privato con Tailscale e `tailscale serve`, poi un dominio, poi gli
+  store, e i prezzi del 2026-10-01. Il server scelto dall'utente, Hetzner
+  CX33 (10,97 €/mese IVA compresa), è già acceso ma messo su a mano:
+  **spostarlo su `deploy/compose.yaml`** (F.12, stessi dati e stesso
+  indirizzo, l'app non cambia) è il passo dopo, a fine coda dei merge. La
+  CI avvia la configurazione.
 - **Motore** — TASK-147: sul server Linux tornano le alternative A · B · C
   (forme, parole, immagini), che l'utente non vedeva più (ADR-0121). Il
   motore leggeva la memoria libera (MemFree, 534 MB: il resto è cache

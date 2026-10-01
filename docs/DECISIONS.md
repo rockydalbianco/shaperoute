@@ -3658,6 +3658,72 @@ categoria da un luogo parte dal suo punto (provato: Duomo di Milano →
 Food, cerchio di 9,8 km, 4 ristoranti). Etichette in inglese, come le
 città di TASK-134.
 
+## ADR-0111 — Il server a pagamento: quale, e la configurazione in `deploy/`
+**Stato**: Attiva · 2026-10-01 · TASK-144 · la configurazione decisa
+dall'agente su delega dell'utente; il server scelto dall'utente
+
+Chiesto dall'utente: le istruzioni per mettere l'app su un server, da
+usare con il computer spento e un giorno da pubblicare, e i server a
+pagamento migliori per qualità e prezzo.
+
+**Contesto**: la strada C di ADR-0076 aveva i prezzi del 2026-09-26, e
+Hetzner li ha alzati il 1° aprile e il 15 giugno 2026 (CX33 da 6,49 a
+8,49 €, CPX e CCX più che raddoppiati). Il solo `docker run` del
+pacchetto lascia fuori `catalog/` («Explore» vuoto), perde gli eventi di
+TASK-130 a ogni container nuovo e non ha HTTPS né l'AI.
+
+**Decisione**:
+- **Il server** (`DEPLOY.md`, F.1, prezzi del 2026-10-01): **Hetzner
+  CX33** (4 vCPU, 8 GB, 80 GB, 10,97 €/mese IVA compresa, a ore), scelto
+  dall'utente il 2026-10-01 al posto dell'Oracle di ADR-0114, che
+  rispondeva «Out of capacity», e già acceso: messo su a mano, con
+  `docker run` e Caddy da apt su un nome `sslip.io`. L'alternativa
+  annotata è OVHcloud VPS-3 (6 vCore, 12 GB, 100 GB, 12,69 €/mese con 12
+  mesi, backup incluso).
+- **`deploy/compose.yaml`**: l'API dal `Dockerfile`, senza cambiarlo.
+  Zone, eventi e registro in `data/` del checkout con bind mount (cartelle
+  normali: `rsync` dal Mac le riempie, e sopravvivono alle immagini
+  nuove); `catalog/` in sola lettura; un servizio `data-owner` (busybox)
+  che a ogni avvio crea le cartelle e le dà all'utente 10001 dell'API.
+  Porta 8000 solo su `127.0.0.1`: Docker aprirebbe `0.0.0.0` scavalcando
+  `ufw`. Log di Docker limitati a 3 × 10 MB per servizio.
+- **Profili** in `COMPOSE_PROFILES` di `deploy/.env`: `ai` (immagine
+  `ollama/ollama`, `--ai-url http://ollama:11434`; senza il profilo il nome
+  non si risolve e le parole fuori tabella danno `ai_unavailable`, come con
+  Ollama spento) e `public` (Caddy).
+- **Privato prima di pubblico**, nella guida: `tailscale serve` sul
+  server dà HTTPS con certificato vero solo alla tailnet, senza dominio né
+  porte aperte. Per il pubblico **Caddy**, che chiede e rinnova da solo il
+  certificato di `SHAPEROUTE_DOMAIN`: un dominio vostro, o per cominciare
+  un nome `sslip.io`, come il server di oggi. Non Tailscale Funnel: il
+  suo nome pubblico non è stato creato (tailscale/tailscale#21502).
+- **Il limite per telefono anche dietro il proxy**:
+  `FORWARDED_ALLOW_IPS="*"`, letto da uvicorn, fa vedere all'API
+  l'indirizzo di `X-Forwarded-For`. Si può fidare di tutti perché alla
+  porta arrivano solo Caddy e `tailscale serve`.
+- **Segreti in `deploy/.env`**, copia di `.env.example` (`.gitignore` lo
+  esclude già); variabili nuove `SHAPEROUTE_DOMAIN` e `COMPOSE_PROFILES`.
+- **CI**: il job `docker` avvia `deploy/compose.yaml` e controlla
+  `/health`, la chiave (401/200), il proprietario di `data/cache`, i
+  percorsi di «Explore» a Trento e il `Caddyfile` (`caddy validate`).
+
+**Alternative scartate**: DigitalOcean, Vultr, Linode, Lightsail (4–5
+volte il prezzo per la stessa RAM); Render, Railway, Fly.io (RAM e disco
+permanente a parte); netcup (14,50 € per 8 GB); vCPU dedicati Hetzner
+dopo i rincari; Contabo come prima scelta (processore e disco più lenti,
+impegno di 24 mesi); nginx con certbot (più passi e un rinnovo da
+controllare); Cloudflare Tunnel con dominio (il dominio deve stare su
+Cloudflare e il traffico passa da loro); volumi Docker con nome per le
+zone (da riempire servirebbe root); cambiare il `Dockerfile` per
+`catalog/` (il montaggio basta, e un catalogo nuovo non chiede
+un'immagine nuova).
+
+**Conseguenza**: dal server comprato all'app sull'iPhone a Mac spento sono
+i passi F.2–F.7 di `DEPLOY.md`. Il server di oggi non usa ancora questa
+configurazione: spostarlo (F.12, stessi dati e stesso indirizzo) si fa a
+parte, a fine coda dei merge. Misurato lì, a mano: cuore da 5 km a Trento
+in 18,7 s con la zona in cache, l'API in 0,56 GB; l'AI su CPU è da
+provare. TASK-122 aggiunge il database a `deploy/compose.yaml`.
 ## ADR-0112 — Le ricerche imparano anche da cosa fa l'app
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
 (TASK-142), che ha chiesto di nuovo il sistema di auto-miglioramento

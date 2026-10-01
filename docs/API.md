@@ -561,7 +561,7 @@ l'app manda il contorno che mostra e la linea disegnata.
   non valido o `aspect` fuori da 1/20–20 sono `invalid_request`.
 - «Undo» è dell'app: torna al contorno di prima, senza chiamare l'API.
 
-### Account (TASK-114, ADR-0XXX)
+### Account (TASK-114, ADR-0120)
 
 Email e password (ADR-0114), nel database di `DATABASE.md` (ADR-0115).
 Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,

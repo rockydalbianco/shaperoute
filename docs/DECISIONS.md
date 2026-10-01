@@ -3997,7 +3997,7 @@ Trento torna con un'alternativa (10,8 s) e la stella con due (5,8 s),
 come sul Mac. Due richieste insieme contano la memoria ognuna quando
 parte, come prima.
 
-## ADR-0XXX — Account nell'API: endpoint, errori, tentativi, test
+## ADR-0120 — Account nell'API: endpoint, errori, tentativi, test
 **Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente,
 dentro ADR-0114 e ADR-0115 (TASK-114); Colima sul Mac scelto dall'utente
 

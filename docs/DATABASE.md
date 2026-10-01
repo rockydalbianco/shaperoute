@@ -47,7 +47,7 @@ non hanno utente e restano.
 
 ## Com'è oggi
 
-Migrazione `0001_users_sessions.sql` (TASK-114, ADR-0XXX):
+Migrazione `0001_users_sessions.sql` (TASK-114, ADR-0120):
 
 - `users`: `id`, `email` (minuscola, unica), `password_hash` (Argon2id),
   `username` (3–20 fra lettere, cifre, `_` e `.`; unico con

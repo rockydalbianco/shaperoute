@@ -64,6 +64,13 @@ database (TASK-114) e l'API sempre accesa (TASK-122).
 correggerebbe su 6–8 cuori veri, poi prova varianti (forma ideale prima,
 somiglianza dopo) con giudizio sì / quasi / no.
 
+**TASK-137 — Le zone delle città in evidenza, scaricate prima**, chiesto
+dall'utente il 2026-10-01: delle 14 città di «Explore» (TASK-134) solo New
+York, Roma, Milano e Torino hanno la zona sul Mac; le altre 10 danno
+`map_data_unavailable` finché Overpass rifiuta il Mac. Un comando le
+scarica una alla volta e si ferma al primo rifiuto; parte quando Overpass
+risponde.
+
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 

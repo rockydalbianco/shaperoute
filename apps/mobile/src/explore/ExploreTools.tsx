@@ -25,6 +25,8 @@ import {
   exampleFor,
   FEATURED_CITIES,
   requestFor,
+  suggestionDetail,
+  whereFor,
 } from "./presets";
 
 /** The longest request the API reads (themed.py). */
@@ -45,8 +47,9 @@ type CityProps = {
 
 /**
  * "City" (TASK-129, TASK-134): cities to tap, the recent first, then cities
- * from around the world; or "Type a city", with suggestions while typing.
- * The list below and the requests then start from the city's centre.
+ * from around the world; or "Type a city or a place", with cities and places
+ * suggested while typing (TASK-138). The list below and the requests then
+ * start from the city's centre, or from the place.
  */
 export function CityPicker({
   apiUrl,
@@ -112,6 +115,15 @@ export function CityPicker({
 
   const typed = query.trim();
   const suggestions = typed.length >= 2 && found?.query === typed ? found.places : null;
+
+  /** Enter takes the first suggestion, as a tap on it; else the city by name. */
+  function submit() {
+    if (suggestions !== null && suggestions.length > 0) {
+      choose(suggestions[0]);
+    } else if (typed !== "") {
+      void open(typed);
+    }
+  }
   const recentNames = new Set(recent.map((p) => cityShort(p.label)));
   const featured = FEATURED_CITIES.filter((name) => !recentNames.has(name));
 
@@ -146,13 +158,13 @@ export function CityPicker({
           setQuery(text);
           setFailed(false);
         }}
-        placeholder="Type a city"
+        placeholder="Type a city or a place"
         placeholderTextColor={color.textFaint}
         returnKeyType="search"
-        onSubmitEditing={() => typed && void open(typed)}
+        onSubmitEditing={submit}
         keyboardAppearance="dark"
         autoCorrect={false}
-        accessibilityLabel="Type a city"
+        accessibilityLabel="Type a city or a place"
       />
       {suggestions?.map((place) => (
         <Pressable
@@ -160,15 +172,21 @@ export function CityPicker({
           style={({ pressed }) => [styles.choice, pressed && styles.pressed]}
           onPress={() => choose(place)}
           accessibilityRole="button"
+          accessibilityLabel={place.label}
         >
-          <Text style={styles.choiceText}>{place.label}</Text>
+          <Text style={styles.choiceText} numberOfLines={1}>
+            {cityShort(place.label)}
+          </Text>
+          <Text style={styles.choiceDetail} numberOfLines={1}>
+            {suggestionDetail(place)}
+          </Text>
         </Pressable>
       ))}
       {suggestions !== null && suggestions.length === 0 && (
-        <Text style={styles.note}>{`No city starts with “${typed}”.`}</Text>
+        <Text style={styles.note}>{`No city or place matches “${typed}”.`}</Text>
       )}
       {(failed || (suggestions === null && found?.query === typed && typed !== "")) && (
-        <Text style={styles.error}>The city search did not answer. Try again.</Text>
+        <Text style={styles.error}>The search did not answer. Try again.</Text>
       )}
       {city !== null && (
         <View style={styles.row}>
@@ -232,7 +250,7 @@ type AskProps = {
 export function AskForRoute({ city = null, where, onAsk }: AskProps) {
   const [text, setText] = useState("");
   const ready = text.trim() !== "";
-  const place = city === null ? "near your start" : `in ${cityShort(city.label)}`;
+  const place = whereFor(city);
   return (
     <View style={styles.section}>
       <Text style={styles.label}>ASK FOR A ROUTE</Text>
@@ -362,12 +380,17 @@ const styles = StyleSheet.create({
     minHeight: MIN_TAP_SIZE,
     justifyContent: "center",
     paddingHorizontal: space.sm,
+    paddingVertical: space.xs,
     borderRadius: radius.md,
     backgroundColor: color.surfaceRaised,
   },
   choiceText: {
     color: color.text,
     fontSize: fontSize.body,
+  },
+  choiceDetail: {
+    color: color.textMuted,
+    fontSize: fontSize.detail,
   },
   // Two columns on a phone, more where there is room.
   grid: {

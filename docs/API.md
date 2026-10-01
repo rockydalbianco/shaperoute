@@ -234,12 +234,27 @@ chiave di `/places`. Non l'autocompletamento, che per una città dà il
 centro dell'area del comune (Milano: Baggio, 6 km dal Duomo). Corpo come
 `/places` (`places.json`); 503 senza chiave. Cache di un giorno.
 
-### `GET /city-suggestions` (TASK-134)
+### `GET /city-suggestions` (TASK-134, TASK-138, ADR-0110)
 
-Le città mentre si scrive, `?q=Par` → Parma, Paris: l'autocompletamento di
-Geoapify per sole città (`type=city`), che dà il punto della città come
-`/cities`. Da 2 lettere (prima: lista vuota), al più 5, un'etichetta una
-volta sola; cache di un giorno. Corpo come `/places`; 503 senza chiave.
+Città e luoghi mentre si scrive, `?q=Par` → Paris, Parma; `?q=arena di
+ver` → Verona Arena: l'autocompletamento di Geoapify senza `type`, nel suo
+ordine. Si tengono le città (`result_type` `city`, col punto della città
+come `/cities`) e i luoghi (`amenity`, `building`, `street`, `suburb`,
+`district`, solo con un nome); contee, regioni, stati e CAP no (la contea
+di Milano ha il punto a Baggio). Due luoghi a meno di 150 m sono lo stesso:
+resta il primo. Da 2 lettere (prima: lista vuota), al più 6, un'etichetta
+una volta sola; cache di un giorno. 503 senza chiave.
+
+```json
+{"places": [
+  {"label": "Verona, Veneto, Italy", "point": [45.4385, 10.9924], "kind": "city"},
+  {"label": "Verona Arena, Verona, Italy", "point": [45.439, 10.9949], "kind": "place"}
+]}
+```
+
+`kind` dice all'app se nominare il posto nelle parole di una richiesta
+(una città) o mandarne solo il punto (un luogo). Prima di TASK-138 il campo
+non c'era: l'app tratta come città una voce senza `kind`.
 
 ### `POST /themed-route-jobs` (TASK-129, ADR-0099)
 

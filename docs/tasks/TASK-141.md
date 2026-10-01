@@ -23,7 +23,8 @@ la sua PR: chi apre una sessione trova il prossimo passo vero.
    `main` (PR #124, #126, #135), con quello che resta da provare; TASK-131
    anche, che era solo in «Prossimo passo».
 3. Aggiungere i task davvero aperti, una riga con branch, PR e sessione:
-   TASK-088, 128, 132, 136, 137, 138, 140.
+   TASK-088, 128, 132, 136, 137, 140 (TASK-138 è entrato in `main`
+   durante il task, con la sua riga in «Completato»).
 4. «In una riga» e «Ultimo aggiornamento» del 2026-10-01.
 
 ## Criteri di accettazione
@@ -51,6 +52,6 @@ docs/tasks/TASK-141.md
 ## Esito
 
 `STATUS.md` allineato il 2026-10-01: il prossimo passo è TASK-110, in
-lavorazione sette task con branch, PR e sessione. TASK-139, segnalato
+lavorazione sei task con branch, PR e sessione. TASK-139, segnalato
 come aperto, era già in `main` e in «Completato». Restano disallineati i
 task file di TASK-065, 126, 129 e 134 (fuori scope).

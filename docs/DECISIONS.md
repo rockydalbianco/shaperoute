@@ -3560,3 +3560,46 @@ Levico 5 km la stella somiglia meno (0,81 → 0,73).
 **Conseguenza**: alcune stelle cambiano, con la somiglianza a volte un
 po' più bassa (Levico 8 km 0,93 → 0,86); i tempi no. Cavallo, farfalla,
 CIAO e il cerchio del registro danno gli stessi percorsi di prima.
+
+## ADR-0110 — «Explore»: città e luoghi mentre si scrive
+**Stato**: Attiva · 2026-10-01 · la funzione chiesta dall'utente («scrivo
+ver, devono uscirmi Verona centro, Arena di Verona»); il come deciso
+dall'agente su delega dell'utente (TASK-138). Allarga ADR-0105, che
+suggeriva solo città.
+
+**Contesto**: provata «Explore» sull'iPhone, il campo della città non
+suggeriva nulla: l'app pubblicata era di prima di TASK-134 e l'API del Mac
+era partita prima del suo merge (`/city-suggestions` → 404). Ma anche con
+TASK-134 i suggerimenti erano solo città (`type=city`).
+
+**Decisione**:
+- **Una sola chiamata**, l'autocompletamento di Geoapify senza `type`.
+  Provato su 10 città (Milano, Roma, Parigi, New York, Londra, Torino,
+  Trento, Levico, Tokyo, Barcellona): i risultati `city` hanno lo stesso
+  punto di `type=city` (Parigi 2 km più a est, all'Hôtel de Ville). Il
+  centro dell'area del comune che ADR-0105 temeva (Milano: Baggio) viene
+  dai risultati `county`, che si scartano con regioni, stati e CAP.
+- **L'ordine del servizio**, non prima le città: «casa di giu» mette
+  davanti la Casa di Giulietta, non una frazione col nome simile.
+- **`kind` nella risposta** (`city` | `place`): una città si nomina nelle
+  parole («Food in Verona», come prima); un luogo no, la richiesta è solo
+  «Food» col suo punto, come dalla partenza. Le parole «Food in Verona
+  Arena» farebbero cercare una città con quel nome (`themed.py`).
+- **Etichetta col nome del risultato**: «Parè, Colverde, Italy», non
+  «Colverde» per chi scrive «par». Niente luoghi senza nome (edifici con
+  il solo indirizzo); due luoghi a meno di 150 m sono un solo punto.
+- **Invio sceglie il primo suggerimento**: è quello che si vede.
+
+**Alternative scartate**: i luoghi famosi della prima città già da «ver»,
+come Google: la ricerca dei luoghi di Geoapify li dà per distanza (a Roma
+statue prima del Colosseo, provato) e l'autocompletamento non ha un
+ordine per fama; servirebbe un'altra fonte. Photon trova meglio i
+monumenti a metà parola («colos» → Colosseo) ma risponde in 3 s contro
+1 s (ADR-0095). Un endpoint nuovo accanto a `/city-suggestions`:
+lascerebbe codice morto.
+
+**Conseguenza**: «arena di ver» → Verona Arena, «duomo di mil» → Duomo,
+«colosseo» → Piazza del Colosseo; «ver» dà ancora solo città. Una
+categoria da un luogo parte dal suo punto (provato: Duomo di Milano →
+Food, cerchio di 9,8 km, 4 ristoranti). Etichette in inglese, come le
+città di TASK-134.

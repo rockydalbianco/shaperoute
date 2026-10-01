@@ -83,9 +83,6 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   (`docs/TASK-137-featured-zones`, PR #136 col task file, sessione
   «Potenziamento sezione Explore»): Todo; il lavoro andrà in
   `feat/TASK-137-featured-zones`.
-- **TASK-138 — «Explore»: suggerimenti di città e luoghi mentre si
-  scrive** (`feat/TASK-138-place-suggestions`, PR #139, sessione
-  «Suggerimenti città in Explore»): task file Done, aspetta il merge.
 - **TASK-140 — Anche le altre forme senza «baffi»**
   (`feat/TASK-140-whiskers-other-shapes`, sessione del worktree
   `goofy-ishizaka-82df04`): modifiche al motore non ancora committate;
@@ -96,6 +93,14 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
 - **Documentazione** — TASK-141: `STATUS.md` allineato ai task file e
   alle PR del 2026-10-01 (prossimo passo, task in lavorazione, In una
   riga).
+- **API e app** — TASK-138: in «Explore» il campo «Type a city or a
+  place» suggerisce a metà parola città e luoghi (ADR-0110): «arena di ver»
+  → Verona Arena, «duomo di mil» → Duomo, «ver» → Verona come centro città.
+  Un luogo scelto fa partire le categorie dal suo punto. Per vederlo
+  sull'iPhone: riavviare l'API del Mac (era partita prima di TASK-134, e
+  `/city-suggestions` dava 404) e ripubblicare l'app con `eas update`.
+  «ver» non dà ancora i luoghi famosi di Verona: Geoapify non li ordina per
+  fama (Fuori scope del task file).
 - **Motore** — TASK-139: anche cerchio e stella evitano i pezzi fatti
   avanti e indietro (ADR-0109), con lo stesso peso del cuore. Il cerchio
   non cambia sulle 7 prove; 3 stelle su 7 cambiano, 2 giudicate meglio.

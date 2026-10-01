@@ -94,6 +94,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-151: in «Explore» un esempio di città (il cuore da 5 km
+  di New York) si apre con le tessere «A · B · C», chiesto dall'utente
+  (ADR-0126): l'API mandava già le alternative, l'app teneva solo la prima.
+  Scheda, mappa, «Start» e GPX sono del percorso scelto; gli esempi già
+  sul telefono si ridisegnano una volta. `App.tsx` non è toccato, quindi
+  gli altri percorsi non sono ancora in grigio sulla mappa: seguito nel
+  task file. I percorsi del catalogo restano uno solo. **Da provare
+  sull'iPhone** (ripubblicare l'app, a fine coda dei merge).
 - **App** — TASK-148: tolto da `ExploreTools.tsx` il vecchio «Ask for a
   route», con i suoi test e gli stili che usava solo lui: è il «da fare
   dopo il merge di TASK-142» di TASK-143. Quello vero è in

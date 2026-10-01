@@ -51,6 +51,7 @@ docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-126.md
+docs/tasks/TASK-125.md   (solo lo stato: Done, dopo il merge di #123)
 samples/LOG.md
 ```
 

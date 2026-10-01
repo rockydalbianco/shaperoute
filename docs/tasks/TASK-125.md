@@ -1,6 +1,6 @@
 # TASK-125 — Il seme del catalogo dei percorsi consigliati
 
-**Stato**: In revisione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-125-seed-catalog`
 
 Chiesto dall'utente il 2026-10-01, dopo il mockup di TASK-092 (variante C,

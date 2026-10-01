@@ -352,7 +352,8 @@ def impact(
 class Proposal:
     id: str
     kind: str
-    """theme_synonym, shape_synonym, correction, catalog_city,
+    """theme_synonym, shape_synonym, correction, conflict (the AI and the
+    spelling disagree: applied, the spelling wins), catalog_city,
     catalog_phrase: they change the vocabulary when applied; review_*: for a
     person to look at, nothing to apply."""
     reason: str
@@ -545,11 +546,38 @@ def proposals(
         if len(answers) != 1 or None in answers or vocab.shape_for(phrase) is not None:
             continue
         shape = str(answers.pop())
-        spelt = [
-            (t, hit[0])
+        near = [
+            (t, *hit)
             for t in _tokens(phrase)
-            if (hit := near_word(t, shape_words or {})) is not None and hit[1] == shape
+            if (hit := near_word(t, shape_words or {})) is not None
         ]
+        spelt = [(t, word) for t, word, name in near if name == shape]
+        other = [(t, word, name) for t, word, name in near if name != shape]
+        if other and not spelt:
+            # The AI and the spelling disagree ("curoe": the circle for the
+            # AI, "cuore" misspelt): never learned alone, a person decides.
+            token, word, name = other[0]
+            if n >= MIN_CORRECTION and places >= MIN_SOURCES:
+                found.append(
+                    Proposal(
+                        _id("conflict", ["shapes", phrase, name]),
+                        "conflict",
+                        f'The AI read "{phrase}" as the {shape} {n} times, but it '
+                        f'looks like "{word}" misspelt (the {name}). Apply to answer '
+                        f"the {name}; leave it if the AI is right.",
+                        {"shapes": {phrase: name}},
+                        n,
+                        [_example(e) for e in es[:EXAMPLES]],
+                        [
+                            f'"{token}" is {osa(token, word)} edit(s) from "{word}", '
+                            f"a word of the {name} in the tables",
+                            f"read by the AI {n} times as the {shape}: the two "
+                            "disagree, so it is not learned without a person",
+                            f"on {places} different days (at least {MIN_SOURCES})",
+                        ],
+                    )
+                )
+            continue
         if spelt and n >= MIN_CORRECTION and places >= MIN_SOURCES:
             token, word = spelt[0]
             found.append(

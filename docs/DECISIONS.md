@@ -3384,6 +3384,34 @@ imparare dalla prima risposta dell'AI (una risposta può essere sbagliata:
 lette dall'AI → proposta → `apply` → la quarta, a Roma, letta dal
 vocabolario (v1: quota AI da 1,0 a 0,0). Lisbona proposta per il catalogo.
 
+**Aggiornamento** (2026-10-01, stesso task; deciso dall'agente su delega
+dell'utente, che ha chiesto di nuovo il sistema completo):
+- **Prove da giorni o luoghi diversi** (≥ 2): il modello gira a
+  temperatura 0, quindi tre risposte uguali alla stessa frase non provavano
+  nulla, e una persona sola poteva insegnare all'API ripetendo una
+  richiesta.
+- **Correzioni dei refusi** (`correction`): una parola vicina (distanza di
+  modifica 1, o 2 da 8 lettere) a una parola delle tabelle, ≥ 2 volte, mai
+  letta altrimenti dall'AI; per i temi si corregge la parola prima delle
+  tabelle, in ogni richiesta. **`conflict`** quando l'AI e l'ortografia non
+  concordano (dal vivo: «curoe» letto come cerchio): mai imparato da solo.
+- **Validazione** (`Vocabulary.check`, comando `validate`): risposte fuori
+  catalogo, chiavi mai cercate, correzioni di parole già note o verso parole
+  che le tabelle non leggono, storia con buchi. `apply` valida prima di
+  salvare; l'API scarta all'avvio le voci sbagliate; un test della CI
+  valida il file del repository.
+- **Impatto per versione** (`impact`): ogni tasso contro la versione
+  precedente con un test sulle proporzioni (|z| ≥ 1,96, almeno 20 eventi per
+  lato, altrimenti «too few»); un peggioramento di una metrica d'utilità
+  indica la versione a cui tornare. Il tempo della sola lettura
+  (`read_ms`) misura il costo dell'AI.
+- **Una proposta annullata non torna** da sola (`apply --again`).
+
+Scartato: correggere le parole sotto le 5 lettere (troppe parole vere
+vicine: «lana»/«luna»); dare ragione all'ortografia senza una persona.
+Dal vivo: «rmantico» a Bologna e Torino → correzione → a Milano letto dal
+vocabolario, lettura da 1,0 s a 0 ms.
+
 ## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
 (TASK-133, miglioramento generale)

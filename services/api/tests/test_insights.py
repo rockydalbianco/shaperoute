@@ -483,6 +483,24 @@ def test_a_misspelt_shape_word_needs_the_ai_to_agree() -> None:
     assert any('1 edit(s) from "cuore"' in c for c in p.checks)
 
 
+def test_when_the_ai_and_the_spelling_disagree_a_person_decides() -> None:
+    # Seen live (qwen3:4b, 2026-10-01): "curoe" read as the circle.
+    circle = [
+        {
+            "kind": "shape_reading",
+            "text": "curoe",
+            "shape": "circle",
+            "by": "ai",
+            "ts": f"2026-10-{day:02d}T09:00:00Z",
+        }
+        for day in (1, 2, 3, 4)
+    ]
+    (p,) = proposals(circle, Vocabulary(), shape_words=SHAPE_WORDS)
+    assert p.kind == "conflict"  # not a shape_synonym "curoe" = circle
+    assert p.additions == {"shapes": {"curoe": "heart"}}  # if a person applies it
+    assert "not learned without a person" in " ".join(p.checks)
+
+
 # --- validation -----------------------------------------------------------------
 
 

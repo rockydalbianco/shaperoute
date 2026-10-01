@@ -51,6 +51,8 @@ type Props = {
   children: ReactNode;
   /** "Draw route", kept at the foot of the screen. */
   footer: ReactNode;
+  /** Opens "Explore", the best routes near the start (TASK-126). */
+  onExplore?: () => void;
 };
 
 /**
@@ -68,6 +70,7 @@ export function ChooseScreen({
   mapError,
   children,
   footer,
+  onExplore,
 }: Props) {
   const insets = useSafeAreaInsets();
   return (
@@ -83,6 +86,15 @@ export function ChooseScreen({
       >
         <View style={styles.titleRow}>
           <Text style={styles.title}>Sgrava</Text>
+          {onExplore && (
+            <Pressable
+              style={styles.explore}
+              onPress={onExplore}
+              accessibilityRole="button"
+            >
+              <Text style={styles.exploreText}>Explore</Text>
+            </Pressable>
+          )}
         </View>
         <View style={styles.startCard}>
           <Text style={styles.label}>START</Text>
@@ -136,6 +148,20 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.title,
     fontWeight: fontWeight.bold,
+  },
+  explore: {
+    minHeight: MIN_TAP_SIZE,
+    paddingHorizontal: space.md,
+    borderRadius: radius.pill,
+    justifyContent: "center",
+    backgroundColor: color.surfaceRaised,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+  },
+  exploreText: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
   },
   startCard: {
     gap: space.sm,

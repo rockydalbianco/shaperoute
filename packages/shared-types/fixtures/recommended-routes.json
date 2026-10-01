@@ -1,0 +1,77 @@
+{
+  "routes": [
+    {
+      "id": "trento-star-5000-0",
+      "city": "trento",
+      "shape": "star",
+      "word": null,
+      "style": null,
+      "distance_m": 5000,
+      "route_m": 5120,
+      "similarity": 0.996,
+      "start": [46.067, 11.1215],
+      "away_m": 0,
+      "preview": [
+        [46.067, 11.1215],
+        [46.07, 11.123],
+        [46.071, 11.126],
+        [46.068, 11.127],
+        [46.067, 11.1215]
+      ]
+    },
+    {
+      "id": "trento-heart-10000-1",
+      "city": "trento",
+      "shape": "heart",
+      "word": null,
+      "style": null,
+      "distance_m": 10000,
+      "route_m": 10240,
+      "similarity": 0.93,
+      "start": [46.0672, 11.1219],
+      "away_m": 38,
+      "preview": [
+        [46.0672, 11.1219],
+        [46.075, 11.13],
+        [46.08, 11.12],
+        [46.0672, 11.1219]
+      ]
+    },
+    {
+      "id": "trento-heart-21000-2",
+      "city": "trento",
+      "shape": "heart",
+      "word": null,
+      "style": null,
+      "distance_m": 21000,
+      "route_m": 21300,
+      "similarity": 0.93,
+      "start": [46.09, 11.15],
+      "away_m": 3372,
+      "preview": [
+        [46.09, 11.15],
+        [46.1, 11.16],
+        [46.095, 11.17],
+        [46.09, 11.15]
+      ]
+    },
+    {
+      "id": "trento-ciao-15000-3",
+      "city": "trento",
+      "shape": null,
+      "word": "CIAO",
+      "style": "block",
+      "distance_m": 15000,
+      "route_m": 15200,
+      "similarity": 0.9,
+      "start": [46.0675, 11.122],
+      "away_m": 68,
+      "preview": [
+        [46.0675, 11.122],
+        [46.07, 11.13],
+        [46.072, 11.125],
+        [46.0675, 11.122]
+      ]
+    }
+  ]
+}

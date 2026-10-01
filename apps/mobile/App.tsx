@@ -20,6 +20,9 @@ import {
   type PositionState,
   useCurrentPosition,
 } from "./src/location/useCurrentPosition";
+import { ExploredCard } from "./src/explore/ExploredCard";
+import { useExplored } from "./src/explore/explored";
+import { ExploreScreen } from "./src/explore/ExploreScreen";
 import { MapView } from "./src/map/MapView";
 import {
   clearRun,
@@ -57,8 +60,9 @@ const NO_DIRECTIONS: Direction[] = [];
 const API_URL = apiUrl();
 
 /** The screens (TASK-051): what to draw, the map with the route, the
- * turn-by-turn along it (TASK-049) and the run with its score (TASK-113). */
-type Screen = "choose" | "map" | "navigate" | "finish";
+ * turn-by-turn along it (TASK-049), the run with its score (TASK-113) and
+ * the best routes near the start (TASK-126). */
+type Screen = "choose" | "map" | "navigate" | "finish" | "explore";
 
 /** A run that ended, shown on the finish screen. */
 type Finished = {
@@ -120,6 +124,7 @@ function Sgrava() {
   const imageEdits = useMemo(() => ({ ...edits, add, undo }), [edits, add, undo]);
   const { state, draw, cancel } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
+  const { explored, open: openExplored, close: closeExplored } = useExplored(API_URL);
 
   const start = useMemo(
     () => chooseStart(startMode, position, place),
@@ -173,6 +178,14 @@ function Sgrava() {
     view.status === "done" ? view.result.similarity : undefined,
   );
   const finishing = screen === "finish" && finished !== null;
+  // A route of "Explore" on the map, in place of the drawn one (TASK-126).
+  const exploring = screen === "map" && explored !== null;
+  const exploredExport: ExportState =
+    explored?.status === "done" &&
+    gpx.state.status !== "idle" &&
+    gpx.state.result === explored.result
+      ? gpx.state
+      : { status: "idle" };
 
   /** Stop or Finish: the run ends, and with a line to judge shows its score. */
   function onEndRun() {
@@ -197,6 +210,8 @@ function Sgrava() {
   function onDraw() {
     // The decimal pad has no return key: drawing closes it.
     Keyboard.dismiss();
+    // The drawn route takes the map back from "Explore".
+    closeExplored();
     // The same route already drawn is shown again, not asked for again.
     if (request && view.status !== "done") {
       draw(request);
@@ -205,6 +220,11 @@ function Sgrava() {
   }
 
   function onBack() {
+    if (exploring) {
+      closeExplored();
+      setScreen("explore");
+      return;
+    }
     // Nobody is left watching the wait: drop it, as Cancel does.
     if (view.status === "waiting") {
       cancel();
@@ -233,13 +253,17 @@ function Sgrava() {
         map={
           <MapView
             style={styles.map}
-            start={start?.point ?? null}
+            start={exploring ? explored.route.start : (start?.point ?? null)}
             route={
               finishing
                 ? finished.run.route
-                : view.status === "done"
-                  ? view.result.points
-                  : null
+                : exploring
+                  ? explored.status === "done"
+                    ? explored.detail.points
+                    : null
+                  : view.status === "done"
+                    ? view.result.points
+                    : null
             }
             track={finishing ? finished.line : null}
             following={
@@ -251,7 +275,21 @@ function Sgrava() {
           />
         }
       >
-        {finishing ? (
+        {exploring ? (
+          <ExploredCard
+            explored={explored}
+            exporting={exploredExport}
+            onExport={() => {
+              if (explored.status === "done") {
+                gpx.exportGpx(explored.request, explored.result);
+              }
+            }}
+            onList={() => {
+              closeExplored();
+              setScreen("explore");
+            }}
+          />
+        ) : finishing ? (
           <FinishCard
             apiUrl={API_URL}
             run={finished.run}
@@ -313,6 +351,7 @@ function Sgrava() {
           near={position.status === "ok" ? position.point : (place?.point ?? null)}
           mapError={mapError}
           footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
+          onExplore={() => setScreen("explore")}
         >
           <ImageEditsContext.Provider value={imageEdits}>
             <RouteChoice
@@ -340,6 +379,17 @@ function Sgrava() {
             />
           </ImageEditsContext.Provider>
         </ChooseScreen>
+      )}
+      {screen === "explore" && (
+        <ExploreScreen
+          apiUrl={API_URL}
+          near={start?.point ?? null}
+          onBack={() => setScreen("choose")}
+          onOpen={(route) => {
+            openExplored(route);
+            setScreen("map");
+          }}
+        />
       )}
     </View>
   );

@@ -104,11 +104,15 @@ SIMILARITY = "shape"
 # the shape matters most.
 W_SHAPE = 3.0
 W_DISTANCE = 1.0
-# The route run twice over the same street, as a share of its length, for
-# the shapes whose eye judgement asked for it (TASK-131, TASK-139): a
-# whisker the similarity does not see. Shapes with strokes drawn twice on
-# purpose (cat, fish, letters) keep their routes as before.
-W_DOUBLED: dict[str, float] = {name: 1.5 for name in ("heart", "circle", "star", "horse", "moon", "cat", "fish", "butterfly", "snail", "dog_head", "rabbit_head")}
+# The route run twice over the same street beyond what the shape draws
+# twice on purpose, as a share of its length (retracing.py): a whisker the
+# similarity does not see. Only for the shapes whose eye judgement asked
+# for it (TASK-131, TASK-139, TASK-140); cat, fish, dog and rabbit heads
+# keep their routes as before, as the user preferred.
+W_DOUBLED: dict[str, float] = {
+    name: 1.5
+    for name in ("heart", "circle", "star", "horse", "moon", "butterfly", "snail")
+}
 # Moving the start by START_OFFSET_M costs as much as 5% of coverage, both
 # when ranking placements by roads and when choosing among traced routes.
 OFFSET_FIT_PENALTY = 0.05

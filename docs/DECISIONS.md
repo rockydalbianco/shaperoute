@@ -3839,3 +3839,36 @@ catalogo a Trento (5 e 23 km), Bologna, Milano e Levico, tutta la linea
 ritrovata in 0,1–0,5 s; 4 percorsi appena pianificati (Trento e Bologna,
 con le alternative) danno indicazioni identiche a quelle del motore. Da
 provare sull'iPhone.
+
+## ADR-0118 — I baffi delle altre forme: solo quelli oltre i tratti voluti
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («fai lo stesso per
+le altre forme») e giudicato da lui forma per forma; misura e peso decisi
+dall'agente su delega dell'utente (TASK-140). Segue ADR-0107 e ADR-0109.
+
+**Contesto**: senza tratti ripassati restano solo cavallo e luna. Gatto,
+pesce, farfalla, lumaca, testa di cane e di coniglio ripassano apposta
+occhi, antenne, spirale (TASK-037): contare tutto il percorso fatto due
+volte li avrebbe puniti per i loro tratti.
+
+**Decisione**:
+- `extra_doubled_share(percorso, forma)`: la quota fatta due volte del
+  percorso meno quella della forma piazzata; mai sotto zero. Sostituisce
+  `doubled_share` nel costo della ricerca e nello `score` delle partenze
+  vicine. Per una forma senza tratti è la stessa cosa: cuore, cerchio e
+  stella restano identici (77 percorsi confrontati con `main`).
+- `W_DOUBLED` = 1,5 per cuore, cerchio, stella, cavallo, luna, farfalla,
+  lumaca.
+
+**Giudizio dell'utente** sui 13 percorsi che cambiavano con il peso su
+tutte le forme: meglio i nuovi per luna (1 su 1), farfalla (1 su 1),
+lumaca (1 su 1); meglio quelli di prima per gatto (3 su 4), pesce (1 su 1),
+testa di cane (2 su 3), testa di coniglio (1 su 1, l'altro indifferente).
+Il cavallo non cambiava: entra come il cerchio, perché non ha tratti.
+
+**Alternative scartate**: il peso per tutte le forme (gatto, pesce e teste
+avrebbero perso forma, giudicati peggio); un peso diverso per forma (con
+7 prove ciascuna non c'è abbastanza per tararlo).
+
+**Conseguenza**: sulle prove cambiano solo i 3 percorsi giudicati meglio.
+Gatto, pesce e le teste possono tenere dei baffi: se l'occhio lo chiede,
+servono altre idee (ritoccare la forma, o la somiglianza delle teste).

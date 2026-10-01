@@ -64,6 +64,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-131 — «Explore»: città → categoria → percorso**
+  (`feat/TASK-131-explore-ux`, ADR-0102): città in evidenza e recenti,
+  suggerimenti mentre si scrive, 13 categorie da toccare.
 - **TASK-129 — «Explore» per ogni città e percorsi a tema**
   (`feat/TASK-129-explore-themes`, ADR-0099): «Search a city» e «Ask for a
   route», una forma che passa dai luoghi veri di un tema. Provato a Torino,

@@ -335,6 +335,19 @@ def create_app(
         except PlacesUnavailableError as exc:
             raise HTTPException(503, str(exc)) from None
 
+    # Cities while typing, for "Type a city" (TASK-131): "Par" → Parma,
+    # Paris. Empty below two letters.
+    @app.get("/city-suggestions", responses={503: {"model": ErrorBody}})
+    def suggest_cities(
+        q: str = Query(min_length=MIN_QUERY_LENGTH, max_length=MAX_QUERY_LENGTH),
+    ) -> PlacesBody:
+        if cities is None:
+            raise HTTPException(503, "City search is off on this API.")
+        try:
+            return PlacesBody(places=cities.suggest(q))
+        except PlacesUnavailableError as exc:
+            raise HTTPException(503, str(exc)) from None
+
     # A shape through the real places of a theme, in any city (TASK-129,
     # ADR-0099): a job, as a route, since it plans the shape a few times.
     @app.post(

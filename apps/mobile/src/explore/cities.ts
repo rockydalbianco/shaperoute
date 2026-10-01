@@ -30,3 +30,32 @@ export async function searchCities(
     return null;
   }
 }
+
+/**
+ * Cities while typing (TASK-131): GET /city-suggestions, "Par" → Parma,
+ * Paris. Never throws: null when the API does not answer.
+ */
+export async function suggestCities(
+  baseUrl: string,
+  query: string,
+  {
+    fetchFn = fetch,
+    key = apiKey(),
+    signal,
+  }: { fetchFn?: typeof fetch; key?: string | null; signal?: AbortSignal } = {},
+): Promise<Place[] | null> {
+  const text = query.trim();
+  if (text.length < 2) {
+    return [];
+  }
+  try {
+    const response = await fetchFn(
+      `${baseUrl}/city-suggestions?q=${encodeURIComponent(text)}`,
+      { headers: keyHeaders(key), signal },
+    );
+    const body: unknown = await response.json();
+    return response.ok && isPlaces(body) ? body.places : null;
+  } catch {
+    return signal?.aborted ? [] : null;
+  }
+}

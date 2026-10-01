@@ -3339,3 +3339,33 @@ corrisponderebbe); uno script fuori dal motore (non vale per l'API).
 **Conseguenza**: il centro di Verona, mai scaricato, in 10 s. Il cambio è
 globale al processo per la durata del download: altri nomi non sono
 toccati.
+
+## ADR-0102 — «Explore»: città → categoria → percorso
+**Stato**: Attiva · 2026-10-01 · le funzioni chieste dall'utente; il come
+deciso dall'agente su delega dell'utente (TASK-131)
+
+**Contesto**: l'utente vuole meno passaggi: città già pronte, ricerca con
+suggerimenti, categorie da toccare, esempi che seguono la città.
+
+**Decisione**:
+- **Le città in evidenza sono solo nomi**: il centro lo dà `/cities` al
+  tocco (una chiamata, in cache un giorno). Nessuna coordinata scritta
+  nell'app (il principio di `CLAUDE.md`).
+- **Suggerimenti** da `GET /city-suggestions` (autocompletamento per
+  città), non da `/places`: lì le città hanno il centro dell'area.
+- **Una categoria è un tema**: l'app manda le parole «Food in New York»,
+  che le tabelle dell'API leggono; nessun campo nuovo nel contratto.
+  Otto temi nuovi in `themes.py`, con categorie di Geoapify provate a New
+  York. Parole brevi («bar», «pub», «run») si confrontano intere.
+- **Recenti, non preferiti**: le ultime 5 città scelte, in un file sul
+  telefono come la corsa (`trackStore`). I preferiti sarebbero un'altra
+  lista da gestire per lo stesso scopo.
+- **Le categorie sono gli esempi**: ognuna mostra «in <città>», così gli
+  esempi cambiano con la città senza una seconda lista.
+
+**Alternative scartate**: coordinate delle città nell'app; un campo
+`theme` nella richiesta (contratto più grande per lo stesso effetto);
+animazioni di layout (su Android chiedono API sperimentali).
+
+**Conseguenza**: due tocchi per un percorso. Le categorie dove OSM ha pochi
+luoghi (Family, Running in centro) lo dicono con `no_places`.

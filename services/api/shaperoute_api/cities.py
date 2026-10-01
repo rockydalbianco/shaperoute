@@ -25,12 +25,28 @@ from shaperoute_api.places import (
 )
 
 GEOCODE_URL = "https://api.geoapify.com/v1/geocode/search"
+# While typing (TASK-131): the autocomplete, cities only. Its city points are
+# the cities' own, as the geocoding's; only without `type` it gives areas.
+AUTOCOMPLETE_URL = "https://api.geoapify.com/v1/geocode/autocomplete"
+# Fewer letters say too little about which city.
+MIN_SUGGEST_LETTERS = 2
 MAX_CITIES = 5
 CACHE_SIZE = 500
 CACHE_TTL_S = 24 * 3600.0
 
 NO_KEY = "City search is off on this API."
 SERVICE_FAILED = "The city search service did not answer; try again."
+
+
+def suggest_url(key: str, query: str) -> str:
+    params = {
+        "text": query.strip(),
+        "type": "city",
+        "limit": str(MAX_CITIES + 3),  # duplicates are dropped
+        "format": "json",
+        "apiKey": key,
+    }
+    return f"{AUTOCOMPLETE_URL}?{urllib.parse.urlencode(params)}"
 
 
 def cities_url(key: str, query: str) -> str:
@@ -108,6 +124,31 @@ class CitySearch:
         cities = parse_cities(body)
         with self._lock:
             self._cache[text] = (now, cities)
+            while len(self._cache) > CACHE_SIZE:
+                self._cache.popitem(last=False)
+        return cities
+
+    def suggest(self, query: str) -> list[PlaceBody]:
+        """Cities whose name begins with what is typed: "Par" gives Parma,
+        Paris... Each label once, at most MAX_CITIES."""
+        if self.key is None:
+            raise PlacesUnavailableError(NO_KEY)
+        text = " ".join(query.split()).lower()
+        if len(text) < MIN_SUGGEST_LETTERS:
+            return []
+        key = f"suggest:{text}"
+        now = self._clock()
+        with self._lock:
+            kept = self._cache.get(key)
+            if kept is not None and now - kept[0] < CACHE_TTL_S:
+                return kept[1]
+        try:
+            body = self._fetch(suggest_url(self.key, query))
+        except Exception:
+            raise PlacesUnavailableError(SERVICE_FAILED) from None
+        cities = parse_cities(body)[:MAX_CITIES]
+        with self._lock:
+            self._cache[key] = (now, cities)
             while len(self._cache) > CACHE_SIZE:
                 self._cache.popitem(last=False)
         return cities

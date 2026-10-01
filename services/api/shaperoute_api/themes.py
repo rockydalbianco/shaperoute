@@ -76,10 +76,59 @@ THEMES: dict[str, Theme] = {
         shape="star",
         label="museums and culture",
     ),
+    # The categories of "Ask for a route" (TASK-131), each a theme.
+    "shopping": Theme(
+        "commercial.shopping_mall,commercial.department_store,"
+        "commercial.marketplace,commercial.clothing",
+        notable=False,
+        shape="circle",
+        label="shops",
+    ),
+    "nightlife": Theme(
+        "catering.bar,catering.pub,adult.nightclub",
+        notable=False,
+        shape="moon",
+        label="bars and clubs",
+    ),
+    "hidden": Theme(
+        "tourism.attraction,heritage",
+        notable=False,
+        shape="star",
+        label="lesser-known places",
+    ),
+    "photography": Theme(
+        "tourism.attraction.viewpoint,tourism.sights,building.historic",
+        notable=True,
+        shape="star",
+        label="photo spots",
+    ),
+    "family": Theme(
+        "leisure.playground,entertainment.zoo,entertainment.aquarium,"
+        "entertainment.theme_park,leisure.park",
+        notable=False,
+        shape="circle",
+        label="places for families",
+    ),
+    "running": Theme(
+        "leisure.park,sport.track", notable=False, shape="circle", label="parks"
+    ),
+    "walking": Theme(
+        "tourism.sights,leisure.park,highway.pedestrian",
+        notable=False,
+        shape="circle",
+        label="places to walk by",
+    ),
+    "local": Theme(
+        "commercial.marketplace,catering.cafe,commercial.food_and_drink",
+        notable=False,
+        shape="circle",
+        label="local spots",
+    ),
 }
 
 # Words, without accents, in lower case. The first theme whose word is in
-# the request wins, in this order: "ristoranti romantici" is food.
+# the request wins, in this order: "ristoranti romantici" is food. A word
+# that starts with "=" must be the whole word: "bar" is not "Barcelona".
 THEME_WORDS: dict[str, tuple[str, ...]] = {
     "food": (
         "ristorant",
@@ -99,6 +148,47 @@ THEME_WORDS: dict[str, tuple[str, ...]] = {
         "nourriture",
         "manger",
     ),
+    "nightlife": (
+        "nightlife",
+        "night life",
+        "vita notturna",
+        "=bar",
+        "=bars",
+        "=pub",
+        "=pubs",
+        "=club",
+        "clubs",
+        "discotec",
+        "aperitiv",
+        "cocktail",
+        "vie nocturne",
+        "vida nocturna",
+    ),
+    "shopping": ("shopping", "negozi", "=shops", "boutique", "compras", "acquisti"),
+    "hidden": (
+        "hidden",
+        "nascost",
+        "segret",
+        "secret",
+        "insolit",
+        "unusual",
+        "off the beaten",
+        "meno conosciut",
+        "cache",
+    ),
+    "photography": ("photo", "foto", "instagram", "fotograf"),
+    "family": (
+        "family",
+        "famiglia",
+        "famiglie",
+        "bambini",
+        "kids",
+        "children",
+        "famille",
+    ),
+    "running": ("running", "=run", "jogging", "=corsa", "correre", "courir", "correr"),
+    "walking": ("walking", "=walk", "passeggiat", "camminat", "balade", "paseo"),
+    "local": ("=local", "locale", "tipic", "autentic", "authentic", "typique"),
     "panoramic": (
         "panoram",
         "belvedere",
@@ -179,6 +269,9 @@ def _first(
         for stem in stems:
             if " " in stem:
                 if f" {stem} " in padded:
+                    return name
+            elif stem.startswith("="):
+                if stem[1:] in tokens:
                     return name
             elif any(t == stem if whole else t.startswith(stem) for t in tokens):
                 return name

@@ -234,6 +234,13 @@ chiave di `/places`. Non l'autocompletamento, che per una città dà il
 centro dell'area del comune (Milano: Baggio, 6 km dal Duomo). Corpo come
 `/places` (`places.json`); 503 senza chiave. Cache di un giorno.
 
+### `GET /city-suggestions` (TASK-131)
+
+Le città mentre si scrive, `?q=Par` → Parma, Paris: l'autocompletamento di
+Geoapify per sole città (`type=city`), che dà il punto della città come
+`/cities`. Da 2 lettere (prima: lista vuota), al più 5, un'etichetta una
+volta sola; cache di un giorno. Corpo come `/places`; 503 senza chiave.
+
 ### `POST /themed-route-jobs` (TASK-129, ADR-0099)
 
 Una forma che passa dai luoghi veri di un tema: `{"text": "voglio un
@@ -246,7 +253,8 @@ null}`. Risponde 202 con un job, letto con `GET /themed-route-jobs/{id}`
   e francese (`themes.py`); l'AI solo per un tema che le tabelle non
   trovano, e solo fra i temi elencati (`theme_reading.py`). Temi:
   `romantic`, `food`, `famous`, `tourist`, `panoramic`, `nature`,
-  `culture`; la forma, se non è detta, quella del tema (cuore per
+  `culture`, e da TASK-131 le categorie dell'app: `shopping`, `nightlife`,
+  `hidden`, `photography`, `family`, `running`, `walking`, `local`; la forma, se non è detta, quella del tema (cuore per
   `romantic`, stella per i luoghi famosi, cerchio per gli altri); 10 km se
   i km non sono detti, da 3 a 21.
 - **La città**: quella nominata nelle parole, cercata come `/cities`;

@@ -103,6 +103,19 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    «Export GPX» e «Back to Explore». Se i luoghi verificati sono troppo
    pochi, la scheda lo dice.
 
+   **Da TASK-131** il percorso è: città → categoria → percorso, due tocchi.
+   «City» mostra in alto le città recenti (↺, le ultime 5, salvate sul
+   telefono) e una fila di città di tutto il mondo (New York, London,
+   Paris, Tokyo, Rome, Milan, Torino, Barcelona, Dubai…): un tocco la
+   sceglie, il centro viene dall'API, mai scritto nell'app. Sotto, «Type a
+   city» suggerisce le città mentre si scrive (da 2 lettere, pausa 250 ms);
+   «My start» torna alla partenza. «Ask for a route» ha le categorie come
+   pulsanti, Food per prima (Famous Places, Romantic, Best Views, Shopping,
+   Culture, Nightlife, Hidden Gems, Running, Walking, Family, Photography,
+   Local Experience), ognuna con «in <città>» sotto: un tocco chiede
+   «Food in New York». Il campo libero resta, con un esempio per la città.
+   Ciò che si tocca si attenua (opacità), niente si sposta.
+
 Passare da una schermata all'altra:
 
 - «←» torna alla scelta con forma e distanza di prima. Se il percorso è

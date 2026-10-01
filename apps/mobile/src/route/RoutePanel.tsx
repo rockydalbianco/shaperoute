@@ -24,6 +24,7 @@ import { LoadingBar, ReadingBar } from "./LoadingBar";
 import type { ImageSource } from "./pickImage";
 import { type ChoiceKind, problemText } from "./problems";
 import { RouteTiles } from "./RouteTiles";
+import { RunWithStrava } from "../strava/RunWithStrava";
 import { ShapeTiles } from "./ShapeTiles";
 import { shapeList, shapeName } from "./shapeWords";
 import type { ExportState } from "./useGpxExport";
@@ -293,6 +294,8 @@ export function RouteOutcome({
             </Text>
           </Pressable>
           {exporting.status === "failed" && <Problem problem={exporting.problem} />}
+          {/* Strava's official flow: a GPX imported there (TASK-135). */}
+          <RunWithStrava exporting={exporting} onExport={onExport} />
         </View>
       );
     case "failed":

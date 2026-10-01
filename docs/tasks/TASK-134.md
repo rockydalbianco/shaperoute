@@ -53,6 +53,7 @@ docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-134.md
+docs/tasks/TASK-135.md   (solo lo stato: Done, dopo il merge di #133)
 ```
 
 ## Fuori scope
@@ -74,3 +75,9 @@ Dall'API del branch, come fa l'app (2026-10-01):
 | «Bolo» → Bologna → Culture | stella 9,4 km, 0,98; 7 musei; 8 s |
 | Bologna → Hidden Gems | stella 10,6 km, 0,92; 9 luoghi; 5 s |
 | «Mila» → Milan → Nightlife | luna 10,1 km, 0,98; 8 locali; 11 s |
+
+Delle 14 città in evidenza, sul Mac hanno la zona in cache solo New York,
+Roma, Milano e Torino: le altre danno `map_data_unavailable` finché
+Overpass rifiuta il Mac (segnalato dalla sessione «Potenziamento sezione
+Explore»). Non è un difetto del codice: la prima richiesta per una città
+ne scarica la zona quando Overpass risponde.

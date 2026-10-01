@@ -82,6 +82,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-135: «Run with Strava» in ogni scheda di percorso, il
+  flusso ufficiale (ADR-0106): salvare il GPX, importarlo nel route builder
+  di Strava, seguirlo dall'app Strava. Strava non permette di creare
+  percorsi via API. L'import va provato con un account vero.
 - **Motore** — TASK-133 (miglioramento generale scelto dall'agente): i
   file della cache delle zone si scrivono interi o non si scrivono
   (ADR-0104). Un'API o uno script fermati a metà scrittura non lasciano più

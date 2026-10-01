@@ -74,6 +74,11 @@ la fa l'utente**, una domanda per volta.
    dell'utente (2026-10-01), fra privata, pubblica con 200 m nascosti e
    pubblica intera.
 
+5. **Da dove parte un percorso consigliato** (ADR-0086, il punto lasciato
+   a TASK-110): da un punto del giro scelto a caso a più di 500 m dalla
+   partenza vera; il giro è lo stesso. Il nome di chi l'ha chiesto non si
+   mostra mai. Scelta dell'utente (2026-10-01).
+
 ## Criteri di accettazione
 
 - [ ] ADR-0013 ha stato «Attiva» o è sostituita da ADR nuovi, con hosting,

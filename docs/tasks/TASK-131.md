@@ -1,6 +1,6 @@
 # TASK-131 — Un cuore più bello a occhio
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-131-better-heart`
 
 Chiesto dall'utente il 2026-10-01, dopo la prova di TASK-093: «ad occhio
@@ -61,17 +61,18 @@ Cosa può cambiare, dal più semplice:
 
 ## Criteri di accettazione
 
-- [ ] L'utente ha detto cosa correggerebbe, scritto qui sotto con i cuori
+- [x] L'utente ha detto cosa correggerebbe, scritto qui sotto con i cuori
       guardati.
-- [ ] Una variante giudicata dall'utente migliore di oggi sulla maggior
-      parte dei cuori di prova (`samples/LOG.md`), e nessuno peggiore.
-- [ ] Le altre forme danno gli stessi percorsi di prima punto per punto
-      (o, se si cambia la somiglianza per tutte, rigiudicate).
-- [ ] Il tempo di una richiesta di cuore non cresce più del 10% (cuore
-      10 km Caldonazzo, 15 km Trento).
-- [ ] Test deterministici; decisione in `DECISIONS.md`;
+- [x] Una variante giudicata dall'utente migliore di oggi sulla maggior
+      parte dei cuori di prova (`samples/LOG.md`), e nessuno peggiore:
+      dei 3 cuori che cambiano, 2 meglio e 1 senza preferenza; 4 uguali.
+- [x] Le altre forme danno gli stessi percorsi di prima punto per punto
+      (registro rifatto: stella, cavallo, farfalla, CIAO, cerchio).
+- [x] Il tempo di una richiesta di cuore non cresce più del 10%
+      (Caldonazzo 10 km 1,8 → 2,0 s, Trento 15 km 6,3 → 6,6 s).
+- [x] Test deterministici; decisione in `DECISIONS.md` (ADR-0107);
       `ROUTE_ENGINE.md` aggiornato.
-- [ ] Provato sull'iPhone dall'utente.
+- [x] Provato sull'iPhone dall'utente (2026-10-01): «funziona».
 
 ## File toccati
 
@@ -79,9 +80,10 @@ Previsti, da confermare all'inizio con `STATUS.md` «In lavorazione» e le PR
 aperte (`shapes/__init__.py` è di TASK-088, PR #112, finché non entra):
 
 ```
-services/route-engine/route_engine/shapes/heart.py      (strada 1)
-services/route-engine/route_engine/metrics.py o optimizer.py (strade 2-3)
-services/route-engine/tests/
+services/route-engine/route_engine/retracing.py         (nuovo)
+services/route-engine/route_engine/optimizer.py          (W_DOUBLED, costo)
+services/route-engine/route_engine/nearby_starts.py      (score, here)
+services/route-engine/tests/test_retracing.py            (nuovo)
 samples/TASK-131_*, samples/LOG.md
 docs/ROUTE_ENGINE.md, docs/DECISIONS.md, docs/STATUS.md,
 docs/tasks/TASK-131.md
@@ -95,3 +97,18 @@ docs/tasks/TASK-131.md
 - Imparare in automatico dalle scelte degli utenti (TASK-130).
 
 ## Esito
+
+**Cosa ha detto l'utente** (2026-10-01):
+1. Sette cuori di oggi (Caldonazzo 10, Levico 12, 5, 8, Trento 10, 15,
+   Milano 10 km): `quasi` tutti tranne Milano, `sì`. Cambierebbe: «lobi più
+   tondi, più largo che alto».
+2. Tre forme ideali (A più larga, B lobi tondi, C lobi tondi e punta
+   corta) sulle stesse partenze: preferito il cuore di oggi su 5 righe, A
+   su 2; nel complesso «oggi». La forma ideale resta com'è.
+3. «Cosa rende Milano migliore?»: linee più pulite, senza pezzi avanti e
+   indietro. Misura: Milano 0% del percorso fatto due volte, gli altri
+   fino al 23%.
+4. Con il peso dei baffi: Levico 8 km e Trento 15 km meglio i nuovi,
+   Caldonazzo nessuna preferenza (ADR-0107, `samples/TASK-131_*`).
+
+Provato sull'iPhone dall'utente (2026-10-01): «provato, funziona».

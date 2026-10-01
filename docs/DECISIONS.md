@@ -3732,3 +3732,57 @@ scelte).
 stella 4,8 km 0,94, 2 s l'uno; New York uguale. Vercelli:
 `map_data_unavailable` dopo 63 s, finché Overpass rifiuta il Mac: lì
 servono le zone scaricate prima (TASK-137).
+
+## ADR-0117 — «Start» sui percorsi di «Explore»: le indicazioni dai punti
+**Stato**: Attiva · 2026-10-01 · chiesto dall'utente («dalla sezione di
+explore implementa la stessa funzione di start del percorso con le
+indicazioni»); il come deciso dall'agente su delega dell'utente
+(TASK-145). Toccare `App.tsx` (anche di TASK-132) e `app.py` (anche di
+TASK-142) approvato dall'utente.
+
+**Contesto**: un percorso aperto da «Explore» aveva solo «Export GPX»: il
+catalogo tiene i punti e basta (ADR-0097), il percorso a tema e gli
+esempi di una città arrivano all'app allo stesso modo. Le indicazioni di
+svolta (ADR-0045) vogliono i nodi del grafo, che l'app non ha.
+
+**Decisione**:
+- **Le indicazioni si ricavano dai punti, sull'API**: i punti del motore
+  sono i nodi e la geometria degli archi fra loro, quindi ogni nodo è uno
+  dei punti (entro 1 m, anche coi 6 decimali dei file). Un modulo nuovo
+  del motore, `route_nodes.py`, ritrova i nodi; l'API ci mette
+  `guidance` e gli `along` come per un percorso pianificato. Un solo
+  endpoint, `POST /route-directions` (`{points}` → `{directions}`), per
+  tutti i percorsi di «Explore», qualunque sia la loro origine.
+- **Una richiesta sola, non un job**: con la zona in cache bastano 0,1–
+  0,5 s; i percorsi di «Explore» stanno in zone già usate (il catalogo è
+  stato pianificato lì, a tema ed esempi sono appena stati disegnati). Una
+  zona da scaricare può metterci di più: la scheda lo dice se fallisce, e
+  «Start» riprova.
+- **Errori senza codici nuovi**: una linea fuori dalla mappa è
+  `invalid_request` (`RouteNotOnGraphError` è un `InvalidRequestError`),
+  una zona che non si scarica `map_data_unavailable`.
+- **Nell'app**: «Start» giallo nelle due schede di «Explore», sopra
+  «Export GPX» come per un percorso disegnato. Le indicazioni si chiedono
+  al tocco, non all'apertura: chi guarda e basta non chiede niente.
+  Restano in memoria per quella linea (stessa lista di punti), così un
+  secondo «Start» dopo «Stop» parte subito. La navigazione, la traccia e
+  il punteggio sono quelli di sempre (ADR-0052, ADR-0091, ADR-0093), sulla
+  linea di «Explore»; uscire da «Explore» lascia perdere l'attesa e la
+  corsa.
+- **Tipi nel modulo dell'app** (`routeDirections.ts`), come
+  `themedRoutes.ts`: `packages/shared-types/src/index.ts` è di TASK-088
+  (PR #112). Il contratto sta nelle fixture.
+
+**Alternative scartate**: salvare le indicazioni nel catalogo
+(`seed_catalog.py` è di TASK-128, e un percorso a tema o un esempio non
+passano dal catalogo); mandarle già con `GET /recommended-routes/{id}` e
+nel risultato a tema (due endpoint da cambiare, e indicazioni calcolate
+anche per chi non parte); calcolarle sul telefono dalla sola geometria
+(senza grafo niente nomi delle vie né incroci veri); ricalcolare il
+percorso dalla partenza (sarebbe un altro percorso).
+
+**Conseguenza**: provato sull'API del Mac il 2026-10-01: percorsi del
+catalogo a Trento (5 e 23 km), Bologna, Milano e Levico, tutta la linea
+ritrovata in 0,1–0,5 s; 4 percorsi appena pianificati (Trento e Bologna,
+con le alternative) danno indicazioni identiche a quelle del motore. Da
+provare sull'iPhone.

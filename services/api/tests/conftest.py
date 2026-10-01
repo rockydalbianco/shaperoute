@@ -40,12 +40,16 @@ def _docker_server() -> Iterator[str]:
         check=True, capture_output=True, text=True,
     ).stdout.strip()  # fmt: skip
     try:
-        port = subprocess.run(
-            ["docker", "port", container, "5432"],
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.split(":")[-1].strip()
+        port = (
+            subprocess.run(
+                ["docker", "port", container, "5432"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            .stdout.split(":")[-1]
+            .strip()
+        )
         url = f"postgresql://postgres:{PASSWORD}@127.0.0.1:{port}/postgres"
         _wait_for(url)
         yield url

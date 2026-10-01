@@ -11,9 +11,10 @@
   route-engine, che l'API importa (ARCHITECTURE §4).
 - `RouteRequest` e `RouteResult` come in `ARCHITECTURE.md` §3, con gli
   stessi campi di `packages/shared-types`: il contratto non cambia.
-- Per ora gira solo sul PC di sviluppo: nessuna autenticazione, nessun
-  prefisso di versione, nessun CORS (l'app è nativa). Si decidono con
-  hosting e account (ADR-0013, fase 4).
+- Nessun prefisso di versione, nessun CORS (l'app è nativa). Fuori casa
+  l'API può chiedere una chiave (`X-API-Key`, TASK-081); gli account, da
+  TASK-114, hanno un token di sessione a parte (`Authorization: Bearer`).
+  I percorsi restano aperti a tutti: si disegna anche senza account.
 
 ## Avvio
 
@@ -37,6 +38,12 @@ quel valore; senza, l'API è aperta come prima. I POST sono limitati a
 `SHAPEROUTE_RATE_LIMIT` al minuto per client (default 30, 0 = nessun
 limite); il polling dei job è GET e non conta. La chiave non si passa mai
 da riga di comando.
+
+Con `SHAPEROUTE_DATABASE_URL` (un indirizzo `postgresql://…`) l'API usa il
+database degli account (TASK-114, `DATABASE.md`): all'avvio applica le
+migrazioni che mancano e lo scrive; se il database non risponde, non
+parte. Senza, gli account rispondono `503 accounts_unavailable` e il resto
+funziona come prima. Come accenderne uno sul PC: `SETUP.md`, 10.4.
 
 Con `--request-log`, o con `SHAPEROUTE_REQUEST_LOG=1`, l'API scrive ogni
 richiesta di percorso in un file, per poterla rifare: «Registro delle
@@ -554,6 +561,41 @@ l'app manda il contorno che mostra e la linea disegnata.
   non valido o `aspect` fuori da 1/20–20 sono `invalid_request`.
 - «Undo» è dell'app: torna al contorno di prima, senza chiamare l'API.
 
+### Account (TASK-114, ADR-0XXX)
+
+Email e password (ADR-0114), nel database di `DATABASE.md` (ADR-0115).
+Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,
+`Session`, `User`; `fixtures/sign-up-request.json`, `fixtures/session.json`).
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /accounts` | iscriversi: `email`, `password`, `username`, `at_least_16` | `201` `Session`: iscriversi fa anche entrare |
+| `POST /session` | entrare: `email`, `password` | `200` `Session` |
+| `DELETE /session` | uscire, solo da questo telefono | `204` |
+| `GET /me` | chi sono | `200` `User` |
+| `DELETE /me` | cancellare l'account e tutto ciò che è suo, subito | `204` |
+
+- `Session` è `{ "token": "…", "user": User }`; `User` è `id`, `email`,
+  `username`, `role` (`user` o `admin`) e `created_at`. Il token è l'unica
+  cosa segreta che l'API dà, e solo qui: l'app lo tiene in
+  `expo-secure-store` e lo rimanda come `Authorization: Bearer <token>` a
+  `GET /me`, `DELETE /session`, `DELETE /me` e agli endpoint che verranno
+  (la dipendenza `current_user` di `accounts.py`).
+- L'email si salva in minuscolo; la password da 8 a 128 caratteri; il nome
+  da 3 a 20 fra lettere, cifre, `_` e `.`, unico senza badare alle
+  maiuscole. `at_least_16` falso è `422 invalid_request` (ADR-0114, punto
+  6). Campi in più, come `role`, sono `invalid_request`.
+- La password resta solo come hash Argon2id; del token il database tiene
+  solo lo SHA-256. Né l'una né l'altro finiscono nei log.
+- Una sessione finisce 90 giorni dopo l'ultimo uso (`session_expired`, una
+  volta, poi `not_signed_in`) o con `DELETE /session`. Ogni telefono ha la
+  sua: uscire da uno non fa uscire gli altri.
+- Password sbagliata ed email sconosciuta danno lo stesso
+  `401 wrong_credentials`, nello stesso tempo. Dopo 5 password sbagliate in
+  15 minuti per la stessa email, `429 too_many_requests` con `Retry-After`,
+  anche con quella giusta. Il limite dei POST di `SHAPEROUTE_RATE_LIMIT`
+  vale in più.
+
 ## Eventi delle ricerche (TASK-130, ADR-0101)
 
 Ogni ricerca e ogni segnale d'uso lascia un evento in `data/insights/`
@@ -595,6 +637,13 @@ motore, in una parola.
 | Indirizzo o metodo sbagliato | 404, 405 | `http_error` |
 | Con `SHAPEROUTE_API_KEY` impostata: `X-API-Key` mancante o sbagliata (TASK-081) | 401 | `unauthorized` |
 | Più di `SHAPEROUTE_RATE_LIMIT` POST in un minuto dallo stesso client (default 30; `Retry-After` in secondi) | 429 | `too_many_requests` |
+| Account: 5 password sbagliate in 15 minuti per la stessa email (`Retry-After` in secondi) | 429 | `too_many_requests` |
+| Account: iscrizione con un'email già usata | 409 | `email_taken` |
+| Account: iscrizione con un nome già usato, anche con altre maiuscole | 409 | `username_taken` |
+| Account: email o password sbagliate | 401 | `wrong_credentials` |
+| Account: nessun token, o uno di una sessione chiusa | 401 | `not_signed_in` |
+| Account: sessione non usata da 90 giorni | 401 | `session_expired` |
+| Account: l'API non ha un database (`SHAPEROUTE_DATABASE_URL`) | 503 | `accounts_unavailable` |
 
 Forma e codici sono anche nel contratto condiviso con l'app: `ApiError` e
 `API_ERROR_CODES` in `shared-types` (ADR-0031). Un codice nuovo va aggiunto

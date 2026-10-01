@@ -1,6 +1,6 @@
 # TASK-093 — Scegliere fra più percorsi
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-093-route-choice`
 
 Chiesto dall'utente il 2026-10-01, dopo le prove dall'iPhone di TASK-090:
@@ -78,7 +78,7 @@ app, chiedendo il numero del secondo task.
 - [x] Un'app che non conosce il campo nuovo funziona come oggi (test di
       contratto; `alternatives?` facoltativo, `/gpx` con e senza).
 - [x] Nell'app si sceglie un'alternativa e GPX e mappa la usano (test).
-- [ ] Provato sull'iPhone dall'utente.
+- [x] Provato sull'iPhone dall'utente (2026-10-01): «funziona».
 
 ## File toccati
 
@@ -120,4 +120,10 @@ chi mergia per secondo unisce le due versioni.
 
 ## Esito
 
-*(dopo la prova sull'iPhone)*
+Fatto e provato sull'iPhone dall'utente (2026-10-01): «provato,
+funziona». Tessere A · B · C, altri percorsi grigi sulla mappa, GPX del
+percorso scelto, anche per le immagini; il percorso scelto dal motore è lo
+stesso di prima. Commento dell'utente sulla qualità: «ad occhio saprei
+farlo un po' meglio il cuore»: è un lavoro sul motore (la forma del cuore e
+come la ricerca la mette sulle strade), non su questo task; da proporre
+come task a parte se l'utente lo vuole.

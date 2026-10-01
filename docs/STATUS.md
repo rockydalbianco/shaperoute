@@ -102,7 +102,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «More…»; una città senza percorsi consigliati disegna da sola cuore,
   cerchio e stella da 5 km, uno alla volta, che si aprono sulla mappa e
   restano sul telefono (ADR-0116). Pergine Valsugana: 6 s per tutti e tre.
-  Vercelli e le città senza zona sul Mac aspettano Overpass (TASK-137). Da
+  Sul server Hetzner, che l'app usa, Vercelli la prima volta: 94 s (cuore
+  40, cerchio 48, stella 5), quasi tutti download da Overpass; il cerchio
+  riscarica una zona più larga di soli 30 m per lato (proposta: zone
+  scaricate con un margine, dopo TASK-136). Da
   fare dopo il merge di TASK-142: togliere il vecchio `AskForRoute` da
   `ExploreTools.tsx` e i suoi test. TASK-138 provato sull'iPhone
   (2026-10-01): funziona.

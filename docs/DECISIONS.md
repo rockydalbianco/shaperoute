@@ -4126,3 +4126,51 @@ un 401 diverso per l'email sconosciuta (direbbe chi è iscritto).
 (`SignUpRequest`, `Session`, `User`). TASK-122 mette il database sul
 server, accanto all'API, con `SHAPEROUTE_DATABASE_URL`. La password
 dimenticata resta fuori: serve la posta (Brevo, ADR-0115).
+
+## ADR-0122 — Correre senza percorso: «Run» registra solo la traccia
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («la possibilità
+anche di iniziare una corsa senza disegnare nulla, magari la prima
+facciata scrivi Run»); il come deciso dall'agente su delega dell'utente
+(TASK-149). Toccare `App.tsx`, che è anche di TASK-132 (in corso), è
+segnalato nella PR: le righe cambiate sono altre.
+
+**Contesto**: fino a qui una corsa partiva solo da un percorso (disegnato
+o di «Explore») con le indicazioni, e la traccia registrata (ADR-0091)
+serviva al punteggio (ADR-0090). Chi vuole solo correre doveva disegnare
+qualcosa.
+
+**Decisione**:
+- **«Run» nella prima schermata**, un pulsante come «Explore», accanto a
+  lui: la corsa parte subito, dal GPS, senza scegliere partenza, forma o
+  distanza.
+- **Stessa traccia, stesso file**: `startRun` di TASK-112 con il percorso
+  vuoto (`FREE_ROUTE`). Valgono le regole di ADR-0091 (posizioni scartate,
+  salvataggio ogni 15 s, «una corsa per volta», ripresa entro 30 minuti),
+  e un percorso vuoto basta a riconoscere una corsa libera nel file
+  (`pendingFreeRun`). Nessuna modifica a `trackStore.ts`.
+- **Niente punteggio e niente API**: senza forma non c'è niente da
+  giudicare. La fine della corsa mostra km, tempo e passo medio; «Done» la
+  cancella subito dal telefono (una corsa con la forma resta finché non ha
+  il punteggio).
+- **Banner da corsa**: km con due decimali, tempo dalla prima posizione
+  (va avanti ogni secondo), passo medio dopo 100 m.
+- **La voce a ogni km** (chiesta dall'utente dopo la prima versione): km,
+  tempo e passo medio, come un orologio da corsa, con la voce della
+  navigazione (`play`, inglese). Una volta per km: se il GPS ne salta uno,
+  si dice l'ultimo; una corsa ripresa non ripete i km già detti. Senza
+  vibrazione: in navigazione la vibrazione è una svolta.
+- **Codice in file nuovi** (`freeRun.ts`, `useFreeRun.ts`,
+  `FreeRunScreen.tsx`); `App.tsx` collega le due schermate nuove (`run`,
+  `runFinish`) e `ChooseScreen.tsx` ha il pulsante.
+
+**Alternative scartate**: un file a parte per le corse libere (due corse
+in corso insieme, e la ripresa da riscrivere); usare `useNavigation` con
+un percorso vuoto (il navigatore vuole una linea e dice «You have
+arrived»); chiedere un punteggio di sola distanza all'API (non c'è niente
+da confrontare); salvare le corse finite (è la cronologia, TASK-117).
+
+**Conseguenza**: dopo uno «Stop» la mappa resta dove si è partiti a zoom
+15, non inquadra tutta la linea: inquadrarla vuole un messaggio nuovo
+della pagina della mappa (seguito possibile). Il messaggio di «Pocket»
+parla di indicazioni anche qui. Da provare sull'iPhone, anche la voce a
+schermo nero.

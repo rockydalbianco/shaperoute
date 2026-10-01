@@ -94,6 +94,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-149: si può correre senza disegnare niente, chiesto
+  dall'utente (ADR-0122). «Run» in alto nella prima schermata, accanto a
+  «Explore», apre la mappa che segue la posizione e disegna la linea
+  corsa; il banner dice km, tempo e passo medio, sotto «Pocket» e «Stop»;
+  a ogni km la voce dice tempo e passo.
+  A «Stop» il riepilogo (km, tempo, passo), «Keep running» e «Done», che
+  cancella la corsa dal telefono. Niente forma, niente punteggio, niente
+  API: la traccia è quella di TASK-112, nello stesso file, con il percorso
+  vuoto, e si riapre con l'app se si chiude a metà. **Da provare
+  sull'iPhone** (ripubblicare l'app, a fine coda dei merge). Seguito
+  possibile: inquadrare tutta la linea a fine corsa.
 - **App** — TASK-148: tolto da `ExploreTools.tsx` il vecchio «Ask for a
   route», con i suoi test e gli stili che usava solo lui: è il «da fare
   dopo il merge di TASK-142» di TASK-143. Quello vero è in

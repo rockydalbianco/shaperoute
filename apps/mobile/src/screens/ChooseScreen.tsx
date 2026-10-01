@@ -53,6 +53,8 @@ type Props = {
   footer: ReactNode;
   /** Opens "Explore", the best routes near the start (TASK-126). */
   onExplore?: () => void;
+  /** Starts a run without a route, the track only (TASK-149). */
+  onRun?: () => void;
 };
 
 /**
@@ -71,6 +73,7 @@ export function ChooseScreen({
   children,
   footer,
   onExplore,
+  onRun,
 }: Props) {
   const insets = useSafeAreaInsets();
   return (
@@ -86,15 +89,27 @@ export function ChooseScreen({
       >
         <View style={styles.titleRow}>
           <Text style={styles.title}>Sgrava</Text>
-          {onExplore && (
-            <Pressable
-              style={styles.explore}
-              onPress={onExplore}
-              accessibilityRole="button"
-            >
-              <Text style={styles.exploreText}>Explore</Text>
-            </Pressable>
-          )}
+          <View style={styles.titleButtons}>
+            {onRun && (
+              <Pressable
+                style={styles.explore}
+                onPress={onRun}
+                accessibilityRole="button"
+                accessibilityLabel="Run without a route"
+              >
+                <Text style={styles.exploreText}>Run</Text>
+              </Pressable>
+            )}
+            {onExplore && (
+              <Pressable
+                style={styles.explore}
+                onPress={onExplore}
+                accessibilityRole="button"
+              >
+                <Text style={styles.exploreText}>Explore</Text>
+              </Pressable>
+            )}
+          </View>
         </View>
         <View style={styles.startCard}>
           <Text style={styles.label}>START</Text>
@@ -148,6 +163,10 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.title,
     fontWeight: fontWeight.bold,
+  },
+  titleButtons: {
+    flexDirection: "row",
+    gap: space.sm,
   },
   explore: {
     minHeight: MIN_TAP_SIZE,

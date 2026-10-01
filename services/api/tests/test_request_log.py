@@ -137,6 +137,7 @@ def test_a_shape_is_recorded_with_its_request_and_its_outcome(
         "similarity": 0.8765,
         "points": 3,
         "route": fingerprint(RESULT.points),
+        "alternatives": [],
     }
 
 

@@ -1,6 +1,6 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { color, route, track } from "../theme/tokens";
+import { color, otherRoute, route, track } from "../theme/tokens";
 import { toLngLat } from "./coordinates";
 import { sgravaDarkStyle } from "./mapStyle";
 
@@ -39,6 +39,11 @@ export const FOLLOW_ZOOM = 17;
 export const ROUTE_COLOR = route.color;
 export const ROUTE_WIDTH = route.width;
 export const ROUTE_OPACITY = route.opacity;
+
+/** The other routes to choose from, under the route (TASK-093). */
+export const OTHER_ROUTE_COLOR = otherRoute.color;
+export const OTHER_ROUTE_WIDTH = otherRoute.width;
+export const OTHER_ROUTE_OPACITY = otherRoute.opacity;
 
 /** The run over its route (TASK-113). */
 export const TRACK_COLOR = track.color;
@@ -111,6 +116,7 @@ export function buildMapPage(): string {
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
     var track = noRoute;
+    var others = noRoute;
     var map = new maplibregl.Map({
       container: "map",
       style: ${toScript(MAP_STYLE)},
@@ -122,6 +128,19 @@ export function buildMapPage(): string {
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
     map.once("style.load", function () {
       styleLoaded = true;
+      // The other routes to choose from, under the route.
+      map.addSource("others", { type: "geojson", data: others });
+      map.addLayer({
+        id: "others",
+        type: "line",
+        source: "others",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(OTHER_ROUTE_COLOR)},
+          "line-width": ${OTHER_ROUTE_WIDTH},
+          "line-opacity": ${OTHER_ROUTE_OPACITY},
+        },
+      });
       // A route that arrived before the style is drawn now.
       map.addSource("route", { type: "geojson", data: route });
       map.addLayer({
@@ -169,6 +188,13 @@ export function buildMapPage(): string {
       var source = map.getSource("route");
       if (source) {
         source.setData(route);
+      }
+    }
+    function setOthers(data) {
+      others = data;
+      var source = map.getSource("others");
+      if (source) {
+        source.setData(others);
       }
     }
     function setTrack(data) {
@@ -232,6 +258,12 @@ export function buildMapPage(): string {
             type: "Feature",
             properties: {},
             geometry: { type: "LineString", coordinates: message.coordinates },
+          });
+        } else if (message.type === "showOthers") {
+          setOthers({
+            type: "Feature",
+            properties: {},
+            geometry: { type: "MultiLineString", coordinates: message.lines },
           });
         } else if (message.type === "clearTrack") {
           setTrack(noRoute);

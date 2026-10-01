@@ -72,5 +72,36 @@
       "along": null
     }
   ],
-  "word": null
+  "word": null,
+  "alternatives": [
+    {
+      "points": [
+        [46.0671, 11.1214],
+        [46.0675, 11.135],
+        [46.0768, 11.135],
+        [46.0768, 11.121],
+        [46.0671, 11.1214]
+      ],
+      "distance_m": 4210.0,
+      "similarity": 0.88,
+      "shape": "heart",
+      "warnings": [],
+      "directions": [
+        {
+          "node": 1,
+          "point": [46.0671, 11.1214],
+          "distance_m": 0.0,
+          "turn": "depart",
+          "angle_deg": 0.0,
+          "street": "Via Belenzani",
+          "road_type": "residential",
+          "branches": 3,
+          "joined": false,
+          "along": null
+        }
+      ],
+      "word": null,
+      "alternatives": []
+    }
+  ]
 }

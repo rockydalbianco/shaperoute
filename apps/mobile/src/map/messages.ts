@@ -14,6 +14,7 @@ export type ToPage =
   | { type: "setPosition"; lngLat: LngLat }
   | { type: "showRoute"; coordinates: LngLat[]; startHere: LngLat | null }
   | { type: "clearRoute" }
+  | { type: "showOthers"; lines: LngLat[][] }
   | { type: "showTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
   | { type: "follow"; lngLat: LngLat };
@@ -62,6 +63,12 @@ export function clearTrack(): ToPage {
 
 export function clearRoute(): ToPage {
   return { type: "clearRoute" };
+}
+
+/** Draws the other routes to choose from under the route, without moving
+ * the map (TASK-093); none clears them. */
+export function showOthers(routes: LatLon[][]): ToPage {
+  return { type: "showOthers", lines: routes.map((points) => points.map(toLngLat)) };
 }
 
 /** JavaScript that hands a message to the page (see `mapPage.ts`). */

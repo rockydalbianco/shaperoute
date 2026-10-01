@@ -137,7 +137,7 @@ class RouteJobs:
         try:
             plan = self._planner(job.request, source)
             names = self._source if isinstance(self._source, KnowsNames) else None
-            result = with_directions(
+            result = with_choices(
                 plan, source.graphs, None if names is None else names.named_roads
             )
         except _Dropped:
@@ -244,6 +244,18 @@ class _Reporting:
             self._report("computing")
         self.graphs.append(graph)
         return graph
+
+
+def with_choices(
+    plan: Plan, graphs: list[Graph], named_roads: NamedRoads | None = None
+) -> RouteResult:
+    """The plan's result with its directions, and its alternatives, each
+    with its own directions (TASK-093): the app may choose any of them."""
+    result = with_directions(plan, graphs, named_roads)
+    others = [
+        with_directions(other, graphs, named_roads) for other in plan.alternatives
+    ]
+    return replace(result, alternatives=others)
 
 
 def with_directions(

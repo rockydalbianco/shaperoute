@@ -30,7 +30,6 @@ from route_engine.optimizer import (
     SHAPE_POINTS,
     GraphLoader,
     Plan,
-    plan_shape,
     tilt_limit,
 )
 from route_engine.outline_edits import MAX_DETAIL_POINTS, travelled_points
@@ -168,23 +167,31 @@ def outline_of(
         raise InvalidRequestError(f"outline: {exc}") from None
 
 
-def plan_image(request: ImageRequest, source: GraphLoader) -> Plan:
+def image_job(request: ImageRequest) -> ShapeJob:
     """The route of an image's outline, as the CLI's --image plans it: kept
-    upright (ADR-0038). The result names no shape and no word."""
-    plan = plan_shape(
-        request.outline(SHAPE_POINTS),
+    upright (ADR-0038), from any start. The nearby starts give an image its
+    alternatives too (TASK-093, the user's choice), and may find a better
+    route than the start's own, as for a shape (ADR-0071)."""
+    return ShapeJob(
+        tuple(request.outline(SHAPE_POINTS)),
         IMAGE_NAME,
-        request.start,
         request.distance_m,
-        source,
         max_tilt_deg=tilt_limit(IMAGE_NAME),
     )
-    return replace(plan, result=replace(plan.result, shape=None, word=None))
 
 
 def plan_request(request: AnyRequest, source: GraphLoader) -> Plan:
-    """The API's planner: a shape or a word, also from a few road nodes near
-    the start, keeping the best (TASK-076, ADR-0071); or an image."""
+    """The API's planner: a shape, a word or an image, also from a few road
+    nodes near the start, keeping the best (TASK-076, ADR-0071) and the
+    others worth choosing (TASK-093, ADR-0087)."""
     if isinstance(request, ImageRequest):
-        return plan_image(request, source)
+        plan = plan_nearby(image_job(request), request.start, source).plan
+        return replace(
+            _unnamed(plan), alternatives=[_unnamed(p) for p in plan.alternatives]
+        )
     return plan_nearby(ShapeJob.of_request(request), request.start, source).plan
+
+
+def _unnamed(plan: Plan) -> Plan:
+    """An image's route names no shape and no word."""
+    return replace(plan, result=replace(plan.result, shape=None, word=None))

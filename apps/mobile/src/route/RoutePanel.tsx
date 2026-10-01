@@ -1,6 +1,7 @@
 import {
   type LetterStyle,
   MAX_SHAPE_TEXT_LENGTH,
+  type RouteResult,
   type Shape,
   SHAPES,
 } from "@shaperoute/shared-types";
@@ -22,6 +23,7 @@ import { ImageChoice } from "./ImageChoice";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
 import type { ImageSource } from "./pickImage";
 import { type ChoiceKind, problemText } from "./problems";
+import { RouteTiles } from "./RouteTiles";
 import { ShapeTiles } from "./ShapeTiles";
 import { shapeList, shapeName } from "./shapeWords";
 import type { ExportState } from "./useGpxExport";
@@ -217,6 +219,11 @@ type OutcomeProps = {
   onPickShape: (shape: Shape) => void;
   /** Turn-by-turn along the route on screen (TASK-049). */
   onStart: () => void;
+  /** The routes to choose from and the one on screen (TASK-093); `view`
+   * shows the one chosen. None: the route alone, as before. */
+  choices?: RouteResult[];
+  chosen?: number;
+  onChoose?: (index: number) => void;
 };
 
 /** Under the map: the wait, the route, or why there is none. */
@@ -228,6 +235,9 @@ export function RouteOutcome({
   onTryDistance,
   onPickShape,
   onStart,
+  choices = [],
+  chosen = 0,
+  onChoose = () => {},
 }: OutcomeProps) {
   switch (view.status) {
     case "waiting":
@@ -262,6 +272,7 @@ export function RouteOutcome({
               {`${nameOf(view.request)} · on roads · target ${view.request.distance_m / 1000} km`}
             </Text>
           </View>
+          <RouteTiles choices={choices} chosen={chosen} onChoose={onChoose} />
           {toNotes(view.result.warnings).map((note) => (
             <NoteRow key={note.text} note={note} />
           ))}

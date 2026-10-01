@@ -10,5 +10,6 @@
   "shape": null,
   "warnings": ["338 m of the route on steps"],
   "directions": [],
-  "word": "CIAO"
+  "word": "CIAO",
+  "alternatives": []
 }

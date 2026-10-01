@@ -20,6 +20,7 @@ import jobDone from "../fixtures/route-job-done.json" with { type: "json" };
 import jobFailed from "../fixtures/route-job-failed.json" with { type: "json" };
 import jobRunning from "../fixtures/route-job-running.json" with { type: "json" };
 import jobStatuses from "../fixtures/route-job-statuses.json" with { type: "json" };
+import alternativeLimits from "../fixtures/route-alternatives.json" with { type: "json" };
 import wordRequest from "../fixtures/route-request-word.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
 import imageResult from "../fixtures/route-result-image.json" with { type: "json" };
@@ -39,6 +40,7 @@ import {
   LETTER_DISTANCE_M,
   LETTER_STYLES,
   LETTERS,
+  MAX_ALTERNATIVES,
   MAX_DETAIL_POINTS,
   MAX_DISTANCE_M,
   MAX_DRAWN_POINTS,
@@ -276,4 +278,20 @@ test("a line drawn on an outline, the outline it gives, and its refusal", () => 
   // The traced outline and its request are as an API and an app older than
   // TASK-079 send them: without details, still of the types.
   assert.ok(!("strokes" in imageOutline) && !("strokes" in imageRouteRequest));
+});
+
+test("alternatives are whole results from the same start, without their own", () => {
+  assert.equal(MAX_ALTERNATIVES, alternativeLimits.max_alternatives);
+  const alternatives = result.alternatives;
+  assert.ok(alternatives.length > 0 && alternatives.length <= MAX_ALTERNATIVES);
+  for (const other of alternatives) {
+    const fields: Same<keyof typeof other, keyof RouteResult> = true;
+    assert.ok(fields);
+    assert.deepEqual(other.points.at(0), result.points.at(0));
+    assert.deepEqual(other.points.at(0), other.points.at(-1));
+    assert.equal(other.shape, result.shape);
+    assert.deepEqual(other.alternatives, []);
+  }
+  assert.deepEqual(wordResult.alternatives, []);
+  assert.deepEqual(imageResult.alternatives, []);
 });

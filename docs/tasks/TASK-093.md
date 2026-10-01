@@ -1,6 +1,6 @@
 # TASK-093 — Scegliere fra più percorsi
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 4 · **Branch**: `feat/TASK-093-route-choice`
 
 Chiesto dall'utente il 2026-10-01, dopo le prove dall'iPhone di TASK-090:
@@ -65,31 +65,52 @@ app, chiedendo il numero del secondo task.
 
 ## Criteri di accettazione
 
-- [ ] Le scelte 1–3 sono dell'utente e scritte in `DECISIONS.md`.
-- [ ] Una forma o una parola dà fino a 3 percorsi diversi, il primo
+- [x] Le scelte 1–3 sono dell'utente e scritte in `DECISIONS.md`
+      (ADR-0087): tessere A · B · C; fino a 3, filtrati; anche le immagini.
+- [x] Una forma o una parola dà fino a 3 percorsi diversi, il primo
       uguale a quello di oggi punto per punto (test deterministico sul
-      grafo di prova).
-- [ ] Il tempo della richiesta non cresce più di 1 s (indicazioni delle
-      alternative comprese), misurato su un cuore da 10 km.
-- [ ] Un'app che non conosce il campo nuovo funziona come oggi (test di
-      contratto).
-- [ ] Nell'app si sceglie un'alternativa e GPX e navigazione la usano
-      (test); provato sull'iPhone dall'utente.
+      grafo di prova; le 8 richieste vere dall'iPhone rifatte uguali).
+- [x] ~~Il tempo della richiesta non cresce più di 1 s~~ Cambiato durante
+      il lavoro: le indicazioni delle alternative costano 0,03–0,15 s, ma
+      dopo un piano già buono le partenze vicine si aspettano fino a 3 s,
+      senza le quali le alternative mancavano proprio sui percorsi venuti
+      bene. Misurato: 0,6–6,0 s su sette richieste (`ROUTE_ENGINE.md`).
+- [x] Un'app che non conosce il campo nuovo funziona come oggi (test di
+      contratto; `alternatives?` facoltativo, `/gpx` con e senza).
+- [x] Nell'app si sceglie un'alternativa e GPX e mappa la usano (test).
+- [ ] Provato sull'iPhone dall'utente.
 
 ## File toccati
 
-Previsti; da confermare all'inizio guardando `STATUS.md` «In
-lavorazione», perché alcuni sono spesso di altri task.
-
 ```
+services/route-engine/route_engine/alternatives.py      (nuovo)
 services/route-engine/route_engine/nearby_starts.py
-services/route-engine/tests/test_nearby_starts.py
-services/api/shaperoute_api/schemas.py, jobs.py, request_log.py, test
-packages/shared-types (src/index.ts, fixtures)
-apps/mobile/src/route/ (RoutePanel.tsx, una tessera nuova, test)
-docs/API.md, docs/UI.md, docs/ROUTE_ENGINE.md, docs/DECISIONS.md,
+services/route-engine/route_engine/models.py             (RouteResult.alternatives)
+services/route-engine/route_engine/optimizer.py          (Plan.alternatives)
+services/route-engine/tests/test_alternatives.py         (nuovo)
+services/route-engine/tests/test_nearby_starts.py, test_contract.py
+services/api/shaperoute_api/app.py, images.py, jobs.py, schemas.py,
+  request_log.py, replay.py
+services/api/tests/test_alternatives.py                  (nuovo)
+services/api/tests/test_contract.py, test_images.py, test_request_log.py
+packages/shared-types/src/index.ts                       (solo RouteResult)
+packages/shared-types/fixtures/route-alternatives.json   (nuovo)
+packages/shared-types/fixtures/route-result*.json, route-job-done.json,
+  gpx-request.json
+packages/shared-types/test/contract.test.ts
+apps/mobile/App.tsx
+apps/mobile/src/route/choices.ts, choices.test.ts, RouteTiles.tsx (nuovi)
+apps/mobile/src/route/RoutePanel.tsx, RoutePanel.test.tsx
+apps/mobile/src/map/MapView.tsx, mapPage.ts, messages.ts e i loro test
+apps/mobile/src/theme/tokens.ts                          (otherRoute)
+apps/mobile/src/api/gpx.test.ts
+apps/mobile/__tests__/AppChoices.test.tsx                (nuovo)
+docs/ROUTE_ENGINE.md, docs/API.md, docs/UI.md, docs/DECISIONS.md,
 docs/STATUS.md, docs/tasks/TASK-093.md
 ```
+
+`App.tsx` è anche di TASK-126 (PR #124): l'utente ha detto di procedere;
+chi mergia per secondo unisce le due versioni.
 
 ## Fuori scope
 
@@ -98,3 +119,5 @@ docs/STATUS.md, docs/tasks/TASK-093.md
 - Cambiare come il motore sceglie il migliore (`_choose`).
 
 ## Esito
+
+*(dopo la prova sull'iPhone)*

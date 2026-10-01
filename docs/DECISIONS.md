@@ -3132,3 +3132,23 @@ per un caso che l'app tratta come ogni altro errore).
 piano gratuito di Geoapify regge 3000 ricerche al giorno, una per pausa
 di scrittura, meno quelle in cache.
 
+## ADR-0096 — Nessuna query string nel log di accesso dell'API
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
+(TASK-124), su segnalazione della sessione di TASK-090/091.
+
+**Contesto**: con TASK-123 l'app chiama `GET /places?q=…&lat=…&lon=…`, e
+il log di accesso di uvicorn scrive l'URL intero: la posizione
+dell'utente tornava nel log dell'API, che non ne deve avere (ADR-0092).
+
+**Decisione**: un filtro sul logger `uvicorn.access`
+(`shaperoute_api/access_log.py`), messo all'avvio, toglie la query string
+da ogni riga: restano metodo, percorso e stato. Vale per tutti gli
+endpoint, così un parametro nuovo non può riportare dati nel log.
+
+**Alternative scartate**: `lat`/`lon` in un `POST` (cambia il contratto
+appena usato dall'app pubblicata); arrotondarli a 1 km prima di mandarli
+(nel log resterebbe comunque la zona, e il testo cercato).
+
+**Conseguenza**: nel log non si legge più cosa è stato cercato. Le righe
+scritte prima del filtro restano nel file finché non si cancellano.
+

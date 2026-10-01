@@ -21,6 +21,7 @@ from shaperoute_ai.ollama import DEFAULT_MODEL, DEFAULT_URL, OllamaModel
 from shaperoute_ai.reading import ShapeReader
 
 from shaperoute_api.access import KEY_HEADER, KEY_VARIABLE, Access, AccessConfigError
+from shaperoute_api.access_log import hide_query_strings
 from shaperoute_api.app import create_app
 from shaperoute_api.graphs import ZoneGraphs
 from shaperoute_api.places import KEY_VARIABLE as PLACES_KEY
@@ -94,6 +95,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     except AccessConfigError as exc:
         raise SystemExit(str(exc)) from None
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
+    # GET /places carries the position: not in the access log (ADR-0096).
+    hide_query_strings()
     reader = ShapeReader(OllamaModel(args.ai_model, args.ai_url), SUPPORTED_SHAPES)
     request_log = RequestLog(args.request_log_dir) if wanted(args.request_log) else None
     places = PlaceSearch.from_env()

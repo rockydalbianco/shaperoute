@@ -107,11 +107,26 @@ class Rate:
     of: Callable[[Event], bool]
     cost: bool = False
     behaviour: bool = False
+    # (part, of) from all the events at once, for a rate of sequences.
+    whole: Callable[[list[Event]], tuple[int, int]] | None = None
 
     @property
     def guards(self) -> bool:
         """Worse, it asks to revert the vocabulary."""
         return not (self.cost or self.behaviour)
+
+
+def _never(_: Event) -> bool:
+    return False
+
+
+def _cities_left(events: list[Event]) -> tuple[int, int]:
+    """City searches left for another city soon after, of all of them."""
+    seen = switches(events).values()
+    return (
+        sum(len(es) for s in seen for es in s["to"].values()),
+        sum(len(s["searches"]) for s in seen),
+    )
 
 
 RATES: dict[str, Rate] = {
@@ -159,6 +174,9 @@ RATES: dict[str, Rate] = {
         _is_choice,
         behaviour=True,
     ),
+    # City searches whose answer people left for the city they meant
+    # (TASK-142): what a learned city name brings down.
+    "city_left_rate": Rate("down", _never, _never, whole=_cities_left),
 }
 
 
@@ -166,7 +184,11 @@ def counts(events: Iterable[Event]) -> dict[str, tuple[int, int]]:
     """Each rate as (part, of): what the comparisons need."""
     events = list(events)
     return {
-        name: (sum(r.part(e) for e in events), sum(r.of(e) for e in events))
+        name: (
+            r.whole(events)
+            if r.whole is not None
+            else (sum(r.part(e) for e in events), sum(r.of(e) for e in events))
+        )
         for name, r in RATES.items()
     }
 
@@ -362,6 +384,10 @@ def _touches(e: Event, additions: dict[str, dict[str, Any]], core: Core) -> bool
     if e["kind"] == "themed" and key_of(e, core) in additions.get("themes", {}):
         return True
     if e["kind"] == "shape_reading" and e["text"] in additions.get("shapes", {}):
+        return True
+    if e["kind"] == "city_search" and phrase_key(e["text"]) in additions.get(
+        "city_names", {}
+    ):
         return True
     words = {fold(w) for w in e["text"].split()}
     return bool(words & set(additions.get("corrections", {})))
@@ -1111,6 +1137,7 @@ TREND = (
     "cancel_rate",
     "first_choice_rate",
     "explore_empty_rate",
+    "city_left_rate",
     "themed_success_rate",
     "ai_rate",
     "gpx_per_route",

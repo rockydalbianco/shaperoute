@@ -28,6 +28,7 @@ from shaperoute_api.insights.analyze import (
     compare_periods,
     demand,
     diagnose,
+    impact,
     metrics,
     near_name,
     proposals,
@@ -257,6 +258,22 @@ def test_no_city_name_when_late_unlike_the_words_or_seldom() -> None:
     kept = [{**levic_then_levico(d)[0], "ts": day(d, 30)} for d in range(3, 9)]
     events = levic_then_levico(1) + levic_then_levico(2) + kept
     assert "city_name" not in kinds(proposals(events, Vocabulary()))
+
+
+def test_city_searches_left_for_the_city_meant_are_a_rate_by_version() -> None:
+    kept = {**levic_then_levico(3)[0], "text": "trento", "city": "Trento, Italy"}
+    assert metrics(levic_then_levico(1) + [kept])["city_left_rate"] == 0.5
+    vocab = Vocabulary().add({"city_names": {"levic": "Levico Terme"}}, "p", "r")
+    learned = {
+        **levic_then_levico(4)[0],
+        "city": "Levico Terme, Italy",
+        "by": "learned",
+        "vocab": 1,
+    }
+    (v1,) = impact(levic_then_levico(1) + [learned], vocab)
+    assert v1["answered"] == 1
+    assert v1["rates"]["city_left_rate"]["before"] == 1.0
+    assert v1["rates"]["city_left_rate"]["after"] == 0.0
 
 
 def test_near_name_is_the_start_or_a_few_letters() -> None:

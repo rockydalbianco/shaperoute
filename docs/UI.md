@@ -103,6 +103,19 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    «Export GPX» e «Back to Explore». Se i luoghi verificati sono troppo
    pochi, la scheda lo dice.
 
+   **Da TASK-134** il percorso è: città → categoria → percorso, due tocchi.
+   «City» mostra in alto le città recenti (↺, le ultime 5, salvate sul
+   telefono) e una fila di città di tutto il mondo (New York, London,
+   Paris, Tokyo, Rome, Milan, Torino, Barcelona, Dubai…): un tocco la
+   sceglie, il centro viene dall'API, mai scritto nell'app. Sotto, «Type a
+   city» suggerisce le città mentre si scrive (da 2 lettere, pausa 250 ms);
+   «My start» torna alla partenza. «Ask for a route» ha le categorie come
+   pulsanti, Food per prima (Famous Places, Romantic, Best Views, Shopping,
+   Culture, Nightlife, Hidden Gems, Running, Walking, Family, Photography,
+   Local Experience), ognuna con «in <città>» sotto: un tocco chiede
+   «Food in New York». Il campo libero resta, con un esempio per la città.
+   Ciò che si tocca si attenua (opacità), niente si sposta.
+
 Passare da una schermata all'altra:
 
 - «←» torna alla scelta con forma e distanza di prima. Se il percorso è
@@ -534,6 +547,19 @@ nell'attesa «Scoring your run…», con distanza e durata già lì.
 
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
 principale.
+
+## Correre con Strava (TASK-135, ADR-0106)
+
+Sotto «Export GPX», in ogni scheda di un percorso (disegnato, di «Explore»,
+a tema), **«Run with Strava»** apre una scheda che spiega prima di fare
+qualunque cosa: Strava non permette ad altre app di aggiungere percorsi,
+e nulla va a Strava finché l'utente non carica il file. Tre passi:
+1. «Save GPX»: l'esportazione di sempre (foglio di condivisione).
+2. «Open Strava route builder»: `https://www.strava.com/maps/create`, dove
+   si accede, si carica il GPX e si salva il percorso.
+3. «Open Strava»: l'app se c'è (link universale), altrimenti il sito; lì
+   Record → Add Route → il percorso → Start.
+Se un link non si apre, la scheda lo dice con l'indirizzo da aprire a mano.
 
 ## Export del GPX
 

@@ -69,6 +69,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-134 — «Explore»: città → categoria → percorso**
+  (`feat/TASK-134-explore-ux`, ADR-0105): città in evidenza e recenti,
+  suggerimenti mentre si scrive, 13 categorie da toccare.
 - **TASK-129 — «Explore» per ogni città e percorsi a tema**
   (`feat/TASK-129-explore-themes`, ADR-0099): «Search a city» e «Ask for a
   route», una forma che passa dai luoghi veri di un tema. Provato a Torino,
@@ -93,6 +96,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   approvare: i segnali dell'app (percorso scelto fra A·B·C, «Try N km»),
   e TASK-128 che legge città e frasi desiderate.
 
+- **App** — TASK-135: «Run with Strava» in ogni scheda di percorso, il
+  flusso ufficiale (ADR-0106): salvare il GPX, importarlo nel route builder
+  di Strava, seguirlo dall'app Strava. Strava non permette di creare
+  percorsi via API. L'import va provato con un account vero.
 - **Motore** — TASK-133 (miglioramento generale scelto dall'agente): i
   file della cache delle zone si scrivono interi o non si scrivono
   (ADR-0104). Un'API o uno script fermati a metà scrittura non lasciano più

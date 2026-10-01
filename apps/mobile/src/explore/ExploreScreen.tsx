@@ -37,6 +37,8 @@ type Props = {
   /** A city searched for (TASK-129): the list and the request start there. */
   city?: Place | null;
   onCity?: (city: Place | null) => void;
+  /** The cities chosen last, first among the chips (TASK-134). */
+  recent?: Place[];
   /** A shape through the places of a theme (TASK-129). */
   onAsk?: (request: ThemedRequest) => void;
 };
@@ -83,6 +85,7 @@ export function ExploreScreen({
   onOpen,
   city = null,
   onCity,
+  recent = [],
   onAsk,
 }: Props) {
   // A city searched for takes the place of the start (TASK-129).
@@ -170,9 +173,12 @@ export function ExploreScreen({
         ]}
         keyboardShouldPersistTaps="handled"
       >
-        {onCity && <CityPicker apiUrl={apiUrl} city={city} onCity={onCity} />}
+        {onCity && (
+          <CityPicker apiUrl={apiUrl} city={city} onCity={onCity} recent={recent} />
+        )}
         {onAsk && (
           <AskForRoute
+            city={city}
             where={city?.label ?? "your start"}
             onAsk={(text) => onAsk({ text, centre: near, city: city?.label ?? null })}
           />

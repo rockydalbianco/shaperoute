@@ -115,7 +115,8 @@ una di costo peggiore si legge, ma da sola non basta.
 
 - Nessun identificativo, nessun indirizzo, nessuna posizione precisa:
   celle di ~1 km, o il nome di una città. Email e numeri lunghi oscurati.
-  `/places` non si registra.
+  `/places` non si registra (indirizzi digitati), né `/city-suggestions`
+  (le lettere mentre si scrive: conta la città cercata, `city_search`).
 - File in `data/insights/`, fuori dal repository (`.gitignore`), modo 600.
   Mensili, mai riscritti né cancellati: la storia resta, e gli eventi
   vecchi si leggono anche quando se ne aggiungono campi.

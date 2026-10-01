@@ -129,10 +129,15 @@ una volta e Expo Go la apre da lì (ADR-0078). **L'API serve sempre**: il
 PC acceso con Tailscale (A) o un server (B–E). Non serve più Expo (porta
 8081) né il QR del terminale.
 
-Il progetto su Expo è `@lppl1316/shaperoute`
-(<https://expo.dev/accounts/lppl1316/projects/shaperoute>). Su iPhone
-Expo Go apre solo i progetti dell'account con cui si è entrati in Expo Go:
-entra con `lppl1316`, o fatti aggiungere al progetto.
+Il progetto su Expo è `@lppl1316s-team/shaperoute`
+(<https://expo.dev/accounts/lppl1316s-team/projects/shaperoute>): dal
+2026-10-02 è dell'organizzazione `lppl1316s-team`, non più dell'account
+`lppl1316`, così altri possono entrarci come membri (TASK-146). Il
+proprietario scritto in `apps/mobile/app.json` (`owner`) deve essere lo
+stesso, o `eas update` si ferma con «Owner of project ... does not
+match». Su iPhone Expo Go apre solo i progetti a cui l'account con cui si
+è entrati in Expo Go ha accesso: entra con un account membro
+dell'organizzazione, o fatti aggiungere.
 
 1. Una volta: `npx eas-cli login` (su Windows `npx.cmd`), con l'account
    Expo. Lo fa l'utente, con le sue credenziali.

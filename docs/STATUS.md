@@ -104,6 +104,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   vuoto, e si riapre con l'app se si chiude a metà. **Da provare
   sull'iPhone** (ripubblicare l'app, a fine coda dei merge). Seguiti
   possibili: inquadrare tutta la linea a fine corsa, voce a ogni km.
+- **App** — TASK-146: `apps/mobile/app.json` nomina il proprietario vero
+  del progetto Expo, l'organizzazione `lppl1316s-team` (trasferito
+  dall'account `lppl1316` il 2026-10-02). `eas update` da una copia pulita
+  di `main` non chiede più di correggere `owner` a mano; `DEPLOY.md` A.6
+  aggiornato. L'app non cambia: niente da ripubblicare per questo.
 - **API** — TASK-114: gli account nell'API, su PostgreSQL con PostGIS
   (ADR-0115, ADR-0120). `POST /accounts` per iscriversi, `POST /session`
   ed `DELETE /session` per entrare e uscire, `GET /me`, `DELETE /me` che

@@ -32,6 +32,9 @@ data/cache/
 
 # Registro delle richieste dell'API: contiene le partenze (ADR-0085)
 data/requests/
+
+# Eventi delle ricerche (TASK-130, ADR-0101): testi e celle di ~1 km
+data/insights/
 .osmnx_cache/
 
 # Output di lavoro usa-e-getta

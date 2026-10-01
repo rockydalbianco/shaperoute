@@ -440,6 +440,32 @@ Il provider definitivo di routing (OSMnx locale, OSRM, GraphHopper, Valhalla)
 è una decisione aperta. Per la fase 1 si usa OSMnx perché gira in locale
 senza server, il che rende il ciclo di prova rapidissimo.
 
+### Da una linea ai suoi nodi (TASK-145)
+
+I percorsi di «Explore» arrivano all'app come soli punti: il catalogo non
+tiene altro. `route_nodes.nodes_along(graph, points)` ritrova i nodi del
+grafo per cui passa la linea, per darle le indicazioni di svolta
+(`directions.guidance`) come a un percorso pianificato (ADR-0117). Funziona
+perché i punti del motore sono i nodi e la geometria dell'arco più corto
+fra due nodi (`_edge_points`): ogni nodo è uno dei punti, anche arrotondato
+a 6 decimali come nei file (circa 0,1 m).
+
+- Un punto entro **1 m** da un nodo è quel nodo (`MATCH_M`); lo stesso
+  nodo su punti di fila conta una volta.
+- Un nodo che sta solo vicino alla linea (un ponte sopra una via, la
+  geometria di un arco che sfiora un incrocio di un'altra strada) si scarta
+  quando il nodo dopo si collega senza di lui.
+- Due nodi senza strada fra loro, perché la zona è stata riscaricata e
+  OpenStreetMap è cambiato, si uniscono con la via più breve se non supera
+  **2 volte** il tratto di linea fra i due, più **50 m**; altrimenti il
+  nodo si salta.
+- Meno di due nodi trovati: `RouteNotOnGraphError` (un
+  `InvalidRequestError`), la linea non è su questa mappa.
+
+Su 4 percorsi appena pianificati (Trento, Bologna, con le alternative) le
+indicazioni ricavate dai punti sono identiche a quelle del motore: nodo,
+svolta, via, `along` e distanza.
+
 ## 5. Ottimizzazione e somiglianza
 
 La forma non si disegna a scala e rotazione fisse: si adatta alle strade
@@ -536,8 +562,45 @@ da alcuni nodi della rete vicini e tiene il percorso migliore:
    resta quella della forma.
 
 Dalla CLI: `--nearby N` (N partenze vicine; senza, solo la partenza come
-prima). L'API la usa per le forme e le parole (`plan_request`), non per
-le immagini.
+prima). L'API la usa per le forme, le parole e, da TASK-093, le immagini
+(`plan_request`).
+
+### Altri percorsi fra cui scegliere (TASK-093)
+
+I percorsi delle partenze che non vincono non si buttano più
+(`alternatives.py`, ADR-0087): `Plan.alternatives` ne tiene fino a **2**,
+dal migliore, e l'API li manda all'app come `alternatives` del risultato.
+Un percorso entra solo se:
+
+- la sua somiglianza è al massimo **0,10** sotto la migliore fra tutti
+  (scelta dell'utente: «10 punti» del percento che l'app mostra);
+- non è **lo stesso percorso** di quello scelto o di uno già tenuto: lo è
+  quando ciascuno corre entro **20 m** dall'altro per il **90%** della sua
+  lunghezza (shapely, in metri), come una partenza a pochi metri che poi
+  prende le stesse strade, o il marciapiede di fronte. Due percorsi diversi
+  e buoni uguali si tengono tutti e due (ADR-0086).
+
+Il percorso scelto resta quello di prima. Una differenza sola: se il
+piano della partenza dell'utente è già buono, prima le vicine non si
+aspettavano; ora si aspettano al più **3 s** (`NEARBY_GOOD_GRACE_S`), solo
+per avere le alternative. Se in quei 3 s una vicina trova un percorso
+nettamente migliore (oltre 0,01), vince quello, come succedeva già senza
+piano buono. Misure del 2026-10-01 sul Mac, zone in memoria:
+
+| Richiesta | Tempo | Scelto | Alternative |
+|---|---|---|---|
+| cuore 10 km, Caldonazzo | 1,7 s | 0,86, uguale a ieri | 0,82 · 0,79 |
+| «CIAO» squadrato 12 km, Levico | 2,9 s | 0,89, uguale | nessuna (0,78 e meno) |
+| stella 5 km, Levico | 0,9 s | 0,81, uguale | 0,77 |
+| cuore 15 km, Trento | 6,0 s | 0,90 | 0,88 · 0,86 |
+| immagine 12 km, Trento | 2,8 s (1,5 prima) | 0,91 | 0,92 · 0,91 |
+| immagine 10 km, Caldonazzo | 1,5 s | 0,85 (0,75 prima) | 0,80 · 0,80 |
+
+Le indicazioni di svolta delle alternative costano 0,03–0,15 s in tutto.
+Le 8 richieste fatte dall'iPhone il 2026-10-01, rifatte dal registro,
+danno lo stesso percorso scelto punto per punto. Dove le partenze vicine
+sono poche (una sola a Levico, via Montebello) le alternative possono
+mancare: l'app mostra allora il percorso da solo, come prima.
 
 ### Lettere che si spostano (TASK-050)
 
@@ -582,6 +645,27 @@ costo = w_forma · (1 − somiglianza) + w_dist · |dist_reale − dist_target| 
 
 con `w_forma` = 3 e `w_dist` = 1: la forma conta più della distanza. Una
 partenza spostata di 500 m aggiunge 0,15, cioè vale 5 punti di copertura.
+
+**I baffi del cuore** (TASK-131, ADR-0107): per il cuore il costo ha un
+termine in più, `w_baffi · quota fatta due volte`, con `w_baffi` = 1,5
+(`W_DOUBLED`, `retracing.py`). La quota è la parte della lunghezza su pezzi
+di strada percorsi più di una volta, in un verso o nell'altro: un «baffo»
+che va a un punto della forma e torna indietro. La somiglianza non lo vede,
+perché le due andate stanno sulla forma; l'occhio sì: l'unico cuore
+giudicato `sì` (Milano) ne aveva 0%, gli altri 4–23%. Lo stesso termine,
+diviso per `w_forma`, toglie punteggio nella scelta fra le partenze vicine
+(`score`). Le altre forme non lo hanno: gatto, pesce e lettere ripassano
+apposta i loro tratti, e le loro strade restano quelle di prima. Sui 7
+cuori di prova cambiano Caldonazzo 10 km (17% → 7%), Levico 8 km
+(23% → 4%) e Trento 15 km; la somiglianza può scendere un po' (Levico
+0,84 → 0,78), i tempi no.
+
+Da TASK-139 (ADR-0109) lo stesso peso, 1,5, vale per **cerchio e
+stella**. Il cerchio ha già pochi baffi (0–7%): nessuno dei 7 di prova
+cambia. La stella ne ha molti (5–59%: le punte si raggiungono spesso
+andando e tornando): cambiano Levico 5 km (59% → 52%), Levico 8 km
+(39% → 17%) e Trento 15 km (6% → 2%), gli altri 4 no. Un peso doppio
+toglie più baffi ma fa perdere la forma (Levico 5 km 0,81 → 0,73): scartato.
 
 ### Misura della somiglianza
 

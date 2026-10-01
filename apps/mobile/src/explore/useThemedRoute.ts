@@ -1,0 +1,85 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import {
+  getThemed,
+  postThemed,
+  type ThemedRequest,
+  type ThemedResult,
+} from "./themedRoutes";
+
+/** How often the job is asked about while the engine works. */
+export const POLL_MS = 1500;
+/** A themed route plans the shape a few times: up to a few minutes. */
+export const GIVE_UP_MS = 5 * 60 * 1000;
+
+export type ThemedState =
+  | { status: "idle" }
+  | { status: "waiting"; request: ThemedRequest }
+  | { status: "done"; request: ThemedRequest; result: ThemedResult }
+  | { status: "failed"; request: ThemedRequest; message: string };
+
+const UNREACHABLE = "The API did not answer. Check the connection and try again.";
+
+/** Asks for a themed route and follows its job until it ends (TASK-129). */
+export function useThemedRoute(
+  apiUrl: string | null,
+  {
+    fetchFn = fetch,
+    pollMs = POLL_MS,
+  }: { fetchFn?: typeof fetch; pollMs?: number } = {},
+): { state: ThemedState; ask: (request: ThemedRequest) => void; close: () => void } {
+  const [state, setState] = useState<ThemedState>({ status: "idle" });
+  const run = useRef<AbortController | null>(null);
+
+  const close = useCallback(() => {
+    run.current?.abort();
+    run.current = null;
+    setState({ status: "idle" });
+  }, []);
+
+  useEffect(() => () => run.current?.abort(), []);
+
+  const ask = useCallback(
+    (request: ThemedRequest) => {
+      run.current?.abort();
+      const controller = new AbortController();
+      run.current = controller;
+      const { signal } = controller;
+      if (apiUrl === null) {
+        setState({ status: "failed", request, message: UNREACHABLE });
+        return;
+      }
+      setState({ status: "waiting", request });
+      void (async () => {
+        const began = Date.now();
+        let job = await postThemed(apiUrl, request, { fetchFn, signal });
+        while (job !== null && (job.status === "queued" || job.status === "running")) {
+          if (Date.now() - began > GIVE_UP_MS) {
+            job = null;
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, pollMs));
+          if (signal.aborted) {
+            return;
+          }
+          job = await getThemed(apiUrl, job.job_id, { fetchFn, signal });
+        }
+        if (signal.aborted) {
+          return;
+        }
+        if (job?.status === "done" && job.result) {
+          setState({ status: "done", request, result: job.result });
+        } else {
+          setState({
+            status: "failed",
+            request,
+            message: job?.error?.message ?? UNREACHABLE,
+          });
+        }
+      })();
+    },
+    [apiUrl, fetchFn, pollMs],
+  );
+
+  return { state, ask, close };
+}

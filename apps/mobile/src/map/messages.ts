@@ -14,9 +14,15 @@ export type ToPage =
   | { type: "setPosition"; lngLat: LngLat }
   | { type: "showRoute"; coordinates: LngLat[]; startHere: LngLat | null }
   | { type: "clearRoute" }
+  | { type: "showOthers"; lines: LngLat[][] }
   | { type: "showTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
-  | { type: "follow"; lngLat: LngLat };
+  | { type: "follow"; lngLat: LngLat }
+  | { type: "showStops"; stops: StopFeature[] }
+  | { type: "clearStops" };
+
+/** A place of a themed route on the map (TASK-129). */
+export type StopFeature = { name: string; lngLat: LngLat; passed: boolean };
 
 /** From the map page to the app, through `window.ReactNativeWebView`. */
 export type FromPage =
@@ -60,8 +66,32 @@ export function clearTrack(): ToPage {
   return { type: "clearTrack" };
 }
 
+/** Marks the places of a themed route, named when the route passes by. */
+export function showStops(
+  stops: { name: string; point: LatLon; passed: boolean }[],
+): ToPage {
+  return {
+    type: "showStops",
+    stops: stops.map((s) => ({
+      name: s.name,
+      lngLat: toLngLat(s.point),
+      passed: s.passed,
+    })),
+  };
+}
+
+export function clearStops(): ToPage {
+  return { type: "clearStops" };
+}
+
 export function clearRoute(): ToPage {
   return { type: "clearRoute" };
+}
+
+/** Draws the other routes to choose from under the route, without moving
+ * the map (TASK-093); none clears them. */
+export function showOthers(routes: LatLon[][]): ToPage {
+  return { type: "showOthers", lines: routes.map((points) => points.map(toLngLat)) };
 }
 
 /** JavaScript that hands a message to the page (see `mapPage.ts`). */

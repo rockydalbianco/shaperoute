@@ -1,8 +1,8 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { color, route, track } from "../theme/tokens";
+import { color, otherRoute, route, stop, track } from "../theme/tokens";
 import { toLngLat } from "./coordinates";
-import { sgravaDarkStyle } from "./mapStyle";
+import { LABEL_FONT, sgravaDarkStyle } from "./mapStyle";
 
 /**
  * The map page shown in the WebView (ADR-0029): MapLibre GL JS from a CDN,
@@ -39,6 +39,11 @@ export const FOLLOW_ZOOM = 17;
 export const ROUTE_COLOR = route.color;
 export const ROUTE_WIDTH = route.width;
 export const ROUTE_OPACITY = route.opacity;
+
+/** The other routes to choose from, under the route (TASK-093). */
+export const OTHER_ROUTE_COLOR = otherRoute.color;
+export const OTHER_ROUTE_WIDTH = otherRoute.width;
+export const OTHER_ROUTE_OPACITY = otherRoute.opacity;
 
 /** The run over its route (TASK-113). */
 export const TRACK_COLOR = track.color;
@@ -111,6 +116,8 @@ export function buildMapPage(): string {
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
     var track = noRoute;
+    var stops = noRoute;
+    var others = noRoute;
     var map = new maplibregl.Map({
       container: "map",
       style: ${toScript(MAP_STYLE)},
@@ -122,6 +129,19 @@ export function buildMapPage(): string {
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
     map.once("style.load", function () {
       styleLoaded = true;
+      // The other routes to choose from, under the route.
+      map.addSource("others", { type: "geojson", data: others });
+      map.addLayer({
+        id: "others",
+        type: "line",
+        source: "others",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": ${toScript(OTHER_ROUTE_COLOR)},
+          "line-width": ${OTHER_ROUTE_WIDTH},
+          "line-opacity": ${OTHER_ROUTE_OPACITY},
+        },
+      });
       // A route that arrived before the style is drawn now.
       map.addSource("route", { type: "geojson", data: route });
       map.addLayer({
@@ -133,6 +153,43 @@ export function buildMapPage(): string {
           "line-color": ${toScript(ROUTE_COLOR)},
           "line-width": ${ROUTE_WIDTH},
           "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      // The places of a themed route, over the route (TASK-129).
+      map.addSource("stops", { type: "geojson", data: stops });
+      map.addLayer({
+        id: "stops",
+        type: "circle",
+        source: "stops",
+        paint: {
+          "circle-radius": ${stop.radius},
+          "circle-color": [
+            "case",
+            ["get", "passed"],
+            ${toScript(stop.passed)},
+            ${toScript(stop.missed)},
+          ],
+          "circle-stroke-color": ${toScript(stop.outline)},
+          "circle-stroke-width": 2,
+        },
+      });
+      map.addLayer({
+        id: "stop-names",
+        type: "symbol",
+        source: "stops",
+        filter: ["get", "passed"],
+        layout: {
+          "text-field": ["get", "name"],
+          "text-font": ${toScript(LABEL_FONT)},
+          "text-size": 12,
+          "text-offset": [0, 1.1],
+          "text-anchor": "top",
+          "text-optional": true,
+        },
+        paint: {
+          "text-color": ${toScript(stop.label)},
+          "text-halo-color": ${toScript(stop.halo)},
+          "text-halo-width": 1.5,
         },
       });
       // The run, over the route it followed.
@@ -169,6 +226,20 @@ export function buildMapPage(): string {
       var source = map.getSource("route");
       if (source) {
         source.setData(route);
+      }
+    }
+    function setStops(data) {
+      stops = data;
+      var source = map.getSource("stops");
+      if (source) {
+        source.setData(stops);
+      }
+    }
+    function setOthers(data) {
+      others = data;
+      var source = map.getSource("others");
+      if (source) {
+        source.setData(others);
       }
     }
     function setTrack(data) {
@@ -232,6 +303,25 @@ export function buildMapPage(): string {
             type: "Feature",
             properties: {},
             geometry: { type: "LineString", coordinates: message.coordinates },
+          });
+        } else if (message.type === "showStops") {
+          setStops({
+            type: "FeatureCollection",
+            features: message.stops.map(function (s) {
+              return {
+                type: "Feature",
+                properties: { name: s.name, passed: s.passed },
+                geometry: { type: "Point", coordinates: s.lngLat },
+              };
+            }),
+          });
+        } else if (message.type === "clearStops") {
+          setStops(noRoute);
+        } else if (message.type === "showOthers") {
+          setOthers({
+            type: "Feature",
+            properties: {},
+            geometry: { type: "MultiLineString", coordinates: message.lines },
           });
         } else if (message.type === "clearTrack") {
           setTrack(noRoute);

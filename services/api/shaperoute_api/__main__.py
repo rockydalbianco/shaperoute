@@ -19,13 +19,26 @@ from route_engine.network import OsmnxSource
 from route_engine.shapes import SUPPORTED_SHAPES
 from shaperoute_ai.ollama import DEFAULT_MODEL, DEFAULT_URL, OllamaModel
 from shaperoute_ai.reading import ShapeReader
+from shaperoute_ai.theme_reading import ThemeReader
 
 from shaperoute_api.access import KEY_HEADER, KEY_VARIABLE, Access, AccessConfigError
+from shaperoute_api.access_log import hide_query_strings
 from shaperoute_api.app import create_app
+from shaperoute_api.cities import CitySearch
 from shaperoute_api.graphs import ZoneGraphs
+from shaperoute_api.insights import Insights
+from shaperoute_api.insights.events import DEFAULT_DIR as INSIGHTS_DIR
+from shaperoute_api.insights.events import OFF_VARIABLE as INSIGHTS_OFF
+from shaperoute_api.insights.events import EventLog
+from shaperoute_api.insights.events import wanted as insights_wanted
+from shaperoute_api.insights.vocabulary import DEFAULT_PATH as VOCABULARY
+from shaperoute_api.insights.vocabulary import Vocabulary
 from shaperoute_api.places import KEY_VARIABLE as PLACES_KEY
 from shaperoute_api.places import PlaceSearch
+from shaperoute_api.recommended import DEFAULT_DIR as CATALOG_DIR
+from shaperoute_api.recommended import RecommendedCatalog
 from shaperoute_api.request_log import DEFAULT_DIR, ON_VARIABLE, RequestLog, wanted
+from shaperoute_api.themed import StopFinder, ThemedJobs
 
 DEFAULT_PORT = 8000
 
@@ -71,6 +84,30 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=DEFAULT_DIR,
         help=f"where the request log is written (default: {DEFAULT_DIR})",
     )
+    parser.add_argument(
+        "--catalog-dir",
+        type=Path,
+        default=CATALOG_DIR,
+        help=f"the recommended routes, one file per city (default: {CATALOG_DIR})",
+    )
+    parser.add_argument(
+        "--no-insights",
+        action="store_true",
+        help=f"do not record search events (also {INSIGHTS_OFF}=0); "
+        "they are recorded by default (TASK-130)",
+    )
+    parser.add_argument(
+        "--insights-dir",
+        type=Path,
+        default=INSIGHTS_DIR,
+        help=f"where search events are written (default: {INSIGHTS_DIR})",
+    )
+    parser.add_argument(
+        "--vocabulary",
+        type=Path,
+        default=VOCABULARY,
+        help="the learned vocabulary (default: the one in the repository)",
+    )
     return parser.parse_args(argv)
 
 
@@ -94,14 +131,38 @@ def main(argv: Sequence[str] | None = None) -> None:
     except AccessConfigError as exc:
         raise SystemExit(str(exc)) from None
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
+    # GET /places carries the position: not in the access log (ADR-0096).
+    hide_query_strings()
     reader = ShapeReader(OllamaModel(args.ai_model, args.ai_url), SUPPORTED_SHAPES)
     request_log = RequestLog(args.request_log_dir) if wanted(args.request_log) else None
     places = PlaceSearch.from_env()
+    recommended = RecommendedCatalog.from_dir(args.catalog_dir)
+    source = ZoneGraphs(OsmnxSource(args.cache_dir))
+    cities = CitySearch(places.key)
+    # Search events, on by default (the user's choice, ADR-0101), and the
+    # learned vocabulary: tables, then it, then the AI.
+    insights = Insights(
+        EventLog(args.insights_dir) if insights_wanted(args.no_insights) else None,
+        Vocabulary.load(args.vocabulary),
+    )
+    # Themed routes (TASK-129): the places with the key of the place search,
+    # the AI only for words the tables do not know.
+    themed = ThemedJobs(
+        source,
+        StopFinder(places.key),
+        cities=cities,
+        insights=insights,
+        ai=ThemeReader(OllamaModel(args.ai_model, args.ai_url)),
+    )
     app = create_app(
-        ZoneGraphs(OsmnxSource(args.cache_dir)),
+        source,
         reader=reader,
         request_log=request_log,
         places=places,
+        recommended=recommended,
+        themed=themed,
+        cities=cities,
+        insights=insights,
     )
     host = "0.0.0.0" if args.lan else "127.0.0.1"
     here = f"http://127.0.0.1:{args.port}"
@@ -117,6 +178,14 @@ def main(argv: Sequence[str] | None = None) -> None:
         print(f"Place search off ({PLACES_KEY} not set): the app asks Photon")
     else:
         print(f"Places suggested by Geoapify ({PLACES_KEY})")
+    print(f"{len(recommended)} recommended routes from {args.catalog_dir}")
+    if insights.on:
+        print(
+            f"Search events in {args.insights_dir}, vocabulary "
+            f"v{insights.vocab.version} (--no-insights to stop)"
+        )
+    else:
+        print(f"Search events not recorded; vocabulary v{insights.vocab.version}")
     if request_log is None:
         print("Route requests are not recorded (--request-log records them)")
     else:

@@ -11,6 +11,8 @@ import {
   MAPLIBRE_JS_URL,
   MAPLIBRE_VERSION,
   POSITION_COLOR,
+  OTHER_ROUTE_COLOR,
+  OTHER_ROUTE_WIDTH,
   ROUTE_COLOR,
   ROUTE_WIDTH,
   START_HERE_COLOR,
@@ -134,4 +136,14 @@ test("the run is a line of its own, over the route and thinner", () => {
   // Showing the run does not move the map: the route has framed it.
   const handler = page.slice(page.indexOf('message.type === "showTrack"'));
   expect(handler.slice(0, handler.indexOf("clearRoute"))).not.toContain("fitBounds");
+});
+
+test("the other routes are thin and grey, under the route (TASK-093)", () => {
+  const page = buildMapPage();
+  expect(page).toContain('message.type === "showOthers"');
+  expect(page.indexOf('id: "others"')).toBeLessThan(page.indexOf('id: "route"'));
+  expect(OTHER_ROUTE_WIDTH).toBeLessThan(ROUTE_WIDTH);
+  expect(OTHER_ROUTE_COLOR).not.toBe(ROUTE_COLOR);
+  const handler = page.slice(page.indexOf('message.type === "showOthers"'));
+  expect(handler.slice(0, handler.indexOf("clearTrack"))).not.toContain("fitBounds");
 });

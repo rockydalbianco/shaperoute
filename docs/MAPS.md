@@ -49,6 +49,11 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   di sviluppo, e in produzione il download si ripensa con ADR-0009.
   Controllo rapido: un tentativo di connessione alla porta 443 dei due
   indirizzi dice quale risponde.
+  **Da TASK-127 (ADR-0100) il motore lo fa da solo**: prima di ogni
+  download prova gli indirizzi di Overpass e, per la durata del download,
+  fa risolvere il nome al primo che accetta la connessione
+  (`route_engine/overpass_address.py`). Il nome resta nell'URL, HTTPS
+  controlla il certificato come sempre; un download alla volta.
 - Per controllare Overpass senza scaricare nulla: la pagina
   `https://overpass-api.de/api/status`, con uno User-Agent vero (quello
   di default di curl riceve 406).
@@ -76,7 +81,19 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
 - Accanto a ogni GraphML c'è una copia **pickle** dello stesso grafo:
   leggere il GraphML di una zona richiede 5–13 s (fino a un minuto a
   Milano), il pickle pochi secondi. Il GraphML resta il formato di
-  riferimento; il pickle si rigenera da solo se manca o è più vecchio.
+  riferimento; il pickle si rigenera da solo se manca, è più vecchio o
+  non si legge, e se non si riesce a scrivere si va avanti senza.
+- Ogni file della cache (GraphML, pickle, vie con nome) si scrive prima
+  su un nome temporaneo accanto, `.<nome>.<cifre>.part`, e prende il suo
+  nome solo quando è intero (ADR-0104): un'API o uno script fermati a metà
+  non lasciano un file rotto che faccia fallire la zona. Un `.part`
+  rimasto da un processo ucciso non viene mai letto, e si può cancellare.
+- **Ritagli salvati prima di TASK-136** (ADR-0108): `python -m
+  route_engine.prune_crops` elenca, zona per zona, i grafi che un altro
+  grafo della cache contiene; con `--delete` li cancella, GraphML e
+  pickle. Si rifanno dalla zona senza rete. Sul Mac, il 2026-10-01, erano
+  346 su 355, 17,9 GB su 18,6. Zone, nomi delle vie, `walk_*` e `http/`
+  restano.
 
 ## Area scaricata
 
@@ -85,8 +102,9 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   più la partenza spostabile (500 m, ADR-0025) e 500 m di margine
   (`zone_area`). Per 15 km circa 12,5 km di lato (155 km²). Si scarica **un grafo per zona**, partendo dal caso
   più grande (cerchio da 15 km): ogni area più piccola si **ritaglia** da un
-  grafo in cache che la contiene (`crop`) e il ritaglio si salva col suo
-  nome.
+  grafo in cache che la contiene (`crop`). Il ritaglio resta in memoria e
+  non si salva (ADR-0108): fino a TASK-136 la CLI lo salvava col suo nome,
+  3–170 MB per partenza.
 - **Senza** (`--no-optimize`): il rettangolo della forma teorica proiettata,
   più **500 m per lato** (`AREA_MARGIN_M`).
 

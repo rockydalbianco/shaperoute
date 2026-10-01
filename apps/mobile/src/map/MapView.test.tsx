@@ -142,3 +142,23 @@ test("draws the run over the route, then clears it", async () => {
   );
   expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain('{"type":"clearTrack"}');
 });
+
+test("draws the other routes, and takes them away when there are none", async () => {
+  const others: LatLon[][] = [[TRENTO, LEVICO, TRENTO]];
+  const { rerender } = await render(
+    <MapView start={null} route={null} others={[]} onError={jest.fn()} />,
+  );
+  await pagePosts('{"type":"ready"}');
+  expect(injectJavaScript).not.toHaveBeenCalled();
+  await rerender(
+    <MapView start={null} route={null} others={others} onError={jest.fn()} />,
+  );
+  expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain(
+    '{"type":"showOthers","lines":[[[11.1214,46.0671],[11.2986,46.0122],[11.1214,46.0671]]]}',
+  );
+  await rerender(<MapView start={null} route={null} others={[]} onError={jest.fn()} />);
+  expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain(
+    '{"type":"showOthers","lines":[]}',
+  );
+  expect(injectJavaScript).toHaveBeenCalledTimes(2);
+});

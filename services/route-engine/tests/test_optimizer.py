@@ -200,7 +200,7 @@ def test_a_zone_graph_in_cache_is_cropped_without_downloading(
         south <= d["y"] <= north and west <= d["x"] <= east
         for _, d in graph.nodes(data=True)
     )
-    assert source.cache_path(inner).exists()  # the crop is cached too
+    assert not source.cache_path(inner).exists()  # in memory only (ADR-0108)
 
 
 def test_polish_uses_the_budget_left_to_fix_the_distance(

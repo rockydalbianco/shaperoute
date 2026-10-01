@@ -54,6 +54,7 @@ from route_engine.projection import (
     project_shape,
     start_at_phase,
 )
+from route_engine.retracing import doubled_share
 from route_engine.shapes import FREE_ROTATION, get_shape
 from route_engine.street_grid import StreetDirections
 from route_engine.validation import check_closed, measure, validate
@@ -103,6 +104,11 @@ SIMILARITY = "shape"
 # the shape matters most.
 W_SHAPE = 3.0
 W_DISTANCE = 1.0
+# The route run twice over the same street, as a share of its length, for
+# the shapes whose eye judgement asked for it (TASK-131, TASK-139): a
+# whisker the similarity does not see. Shapes with strokes drawn twice on
+# purpose (cat, fish, letters) keep their routes as before.
+W_DOUBLED: dict[str, float] = {"heart": 1.5, "circle": 1.5, "star": 1.5}
 # Moving the start by START_OFFSET_M costs as much as 5% of coverage, both
 # when ranking placements by roads and when choosing among traced routes.
 OFFSET_FIT_PENALTY = 0.05
@@ -473,6 +479,7 @@ def search(
     starts: Sequence[tuple[LatLon, float]] | None = None,
     phases: Sequence[float] = PHASES,
     word: Word | None = None,
+    doubled: float = 0.0,
 ) -> Search:
     """Best route for `shape` near `distance_m` on `graph`, starting at
     `start` or, with `move_start`, up to START_OFFSET_M away from it; or
@@ -599,6 +606,8 @@ def search(
             + W_DISTANCE * abs(ratio - 1)
             + W_OFFSET * p.offset_m / START_OFFSET_M
         )
+        if doubled:
+            cost += doubled * doubled_share(route.points)
         result = Attempt(p, scale, outline, route, sim, ratio, cost, shifts)
         attempts.append(result)
         return result
@@ -865,6 +874,8 @@ class Plan:
     search: Search | None  # None when the shape was not optimized
     checks: dict[str, float] = field(default_factory=dict)  # validation.measure
     far: Search | None = None  # the second search, when there was one
+    # Other plans to choose from, best first (TASK-093, alternatives.py).
+    alternatives: list[Plan] = field(default_factory=list)
 
 
 def plan_route(
@@ -909,6 +920,12 @@ def plan_route(
         reuse_penalty,
         tilt_limit(request.shape),
     )
+
+
+def doubled_weight(name: str) -> float:
+    """How much a route run twice over the same street costs for the shape
+    called `name` (W_DOUBLED); nothing for the others."""
+    return W_DOUBLED.get(name, 0.0)
 
 
 def tilt_limit(name: str) -> float:
@@ -961,6 +978,7 @@ def plan_shape(
             max_tilt_deg=max_tilt_deg,
             phases=phases,
             word=word,
+            doubled=doubled_weight(name),
         )
         if not found.converged:
             # Not good here: look for a place farther away (ADR-0040).
@@ -978,6 +996,7 @@ def plan_shape(
                 starts=far_starts(start),
                 phases=phases,
                 word=word,
+                doubled=doubled_weight(name),
             )
             if far.converged or (
                 not _drawable(found.best, planned_m, kept)

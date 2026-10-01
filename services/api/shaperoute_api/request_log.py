@@ -64,6 +64,15 @@ def fingerprint(points: Sequence[tuple[float, float]]) -> str:
     return hashlib.sha256(text.encode("ascii")).hexdigest()[:16]
 
 
+def route_of(result: RouteResult) -> dict[str, Any]:
+    return {
+        "distance_m": round(result.distance_m, 1),
+        "similarity": round(result.similarity, 4),
+        "points": len(result.points),
+        "route": fingerprint(result.points),
+    }
+
+
 def outcome_of(
     result: RouteResult | None, error: ErrorDetail | None, elapsed_s: float
 ) -> dict[str, Any]:
@@ -73,11 +82,10 @@ def outcome_of(
     if result is not None:
         return {
             "status": "done",
-            "distance_m": round(result.distance_m, 1),
-            "similarity": round(result.similarity, 4),
-            "points": len(result.points),
-            "route": fingerprint(result.points),
+            **route_of(result),
             "elapsed_s": elapsed,
+            # The other routes offered, to choose from (TASK-093).
+            "alternatives": [route_of(other) for other in result.alternatives],
         }
     if error is not None:
         return {"status": "failed", "code": error.code, "elapsed_s": elapsed}

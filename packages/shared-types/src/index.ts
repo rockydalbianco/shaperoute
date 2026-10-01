@@ -103,7 +103,16 @@ export interface RouteResult {
   directions: Direction[];
   /** The word in capitals, null for a shape or an image (TASK-056). */
   word?: string | null;
+  /**
+   * Other routes for the same request, best first, to choose from (TASK-093,
+   * ADR-0087): at most MAX_ALTERNATIVES, each a whole result with no
+   * alternatives of its own. Missing from an older API.
+   */
+  alternatives?: RouteResult[];
 }
+
+/** Routes besides the one chosen by the engine: three to choose from. */
+export const MAX_ALTERNATIVES = 2;
 
 /** What a direction says to do (route_engine/directions.py, ADR-0045). */
 export const TURNS = [

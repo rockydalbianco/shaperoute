@@ -120,6 +120,14 @@ class RouteResultBody(BaseModel):
     word: str | None = Field(
         default=None, description="The word in capitals; null for a shape or an image."
     )
+    # Missing in a GPX request from an older app.
+    alternatives: list[RouteResultBody] = Field(
+        default_factory=list,
+        description=(
+            "Other routes for the same request, best first, to choose from "
+            "(TASK-093): whole results, with no alternatives of their own."
+        ),
+    )
 
     @classmethod
     def from_result(cls, result: RouteResult) -> RouteResultBody:

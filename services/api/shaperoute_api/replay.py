@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import time
 from collections.abc import Sequence
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -46,7 +47,8 @@ def request_of(entry: Entry) -> AnyRequest:
 def replay(
     entry: Entry, source: GraphLoader, planner: Planner = plan_request
 ) -> RouteResult:
-    return planner(request_of(entry), source).result
+    plan = planner(request_of(entry), source)
+    return replace(plan.result, alternatives=[o.result for o in plan.alternatives])
 
 
 def choose(entries: list[Entry], job_id: str | None, line: int | None) -> Entry:
@@ -95,6 +97,10 @@ def compare(entry: Entry, now: dict[str, Any]) -> bool:
             f"{now['similarity']:.2f}, {now['points']} points, in {now['elapsed_s']} s"
         )
         same = before.get("route") == now["route"]
+        if "alternatives" in before:  # recorded since TASK-093
+            routes = [other["route"] for other in now["alternatives"]]
+            print(f"          and {len(routes)} other routes to choose from")
+            same = same and [o["route"] for o in before["alternatives"]] == routes
     else:
         print(f"Now:      {now['code']}")
         same = before.get("code") == now["code"]

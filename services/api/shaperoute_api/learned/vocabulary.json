@@ -1,0 +1,9 @@
+{
+ "about": "python -m shaperoute_api.insights; docs/INSIGHTS.md",
+ "version": 0,
+ "themes": {},
+ "shapes": {},
+ "cities": {},
+ "phrases": {},
+ "changes": []
+}

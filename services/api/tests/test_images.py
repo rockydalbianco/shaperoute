@@ -19,6 +19,7 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw
 from route_engine.models import InvalidRequestError, RouteRequest, RouteResult
+from route_engine.nearby_starts import NearbyPlan
 from route_engine.network import FileSource
 from route_engine.optimizer import MAX_TILT_DEG, GraphLoader, Plan
 from shapely.geometry import Polygon
@@ -339,26 +340,36 @@ def test_an_image_route_is_planned_upright_and_names_no_shape(
 ) -> None:
     called: dict[str, Any] = {}
 
-    def plan_shape(
-        shape: Any, name: str, start: Any, distance_m: int, source: Any, **options: Any
-    ) -> Plan:
-        called.update(name=name, start=start, distance_m=distance_m, **options)
-        called["points"] = len(shape)
-        result = RouteResult(
-            points=RESULT.points, distance_m=15100.0, similarity=0.9, shape=name
-        )
-        return Plan(result=result, search=None)
+    def plan_nearby(job: Any, start: Any, source: Any) -> Any:
+        called.update(job=job, start=start)
 
-    monkeypatch.setattr(images, "plan_shape", plan_shape)
+        def planned(similarity: float) -> Plan:
+            result = RouteResult(
+                points=RESULT.points,
+                distance_m=15100.0,
+                similarity=similarity,
+                shape=job.name,
+            )
+            return Plan(result=result, search=None)
+
+        plan = Plan(planned(0.9).result, None, alternatives=[planned(0.85)])
+        return NearbyPlan(plan, 0, [])
+
+    monkeypatch.setattr(images, "plan_nearby", plan_nearby)
     request = ImageRequest(
         start=(46.0671, 11.1214), outline=outline_of(SQUARE), distance_m=15000
     )
     plan = plan_request(request, FileSource(Path("unused.graphml")))
-    assert called["name"] == "image"
-    assert called["max_tilt_deg"] == MAX_TILT_DEG
-    assert called["points"] == images.SHAPE_POINTS + 1
-    assert plan.result.shape is None
-    assert plan.result.word is None
+    job = called["job"]
+    assert job.name == "image"
+    assert job.max_tilt_deg == MAX_TILT_DEG
+    assert len(job.shape) == images.SHAPE_POINTS + 1
+    assert called["start"] == (46.0671, 11.1214)
+    # The nearby starts give an image its alternatives too (TASK-093).
+    for planned in (plan, *plan.alternatives):
+        assert planned.result.shape is None
+        assert planned.result.word is None
+    assert [p.result.similarity for p in plan.alternatives] == [0.85]
 
 
 def test_the_gpx_of_an_image_route_is_named_image(

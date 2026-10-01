@@ -8,12 +8,16 @@ when the road is not straight, a `geometry` LineString in (lon, lat).
 from __future__ import annotations
 
 import json
+import logging
 import math
+import os
 import pickle
 import urllib.parse
 import urllib.request
+import uuid
 import weakref
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Iterator, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
@@ -28,7 +32,10 @@ from route_engine.geo import (
     local_to_latlon,
     path_length_m,
 )
+from route_engine.overpass_address import reachable
 from route_engine.sidewalks import NamedRoad
+
+log = logging.getLogger(__name__)
 
 # Where a route drawn out and back turns (first_leg): a metre from the far
 # end of the shape weighs as much as ten from half-way along the route. The
@@ -179,7 +186,11 @@ class OsmnxSource:
 
     def load(self, bbox: BBox) -> Graph:
         """Graph of `bbox`: from its cache file, cropped from a larger cached
-        graph (and saved under its own name), or downloaded."""
+        graph, or downloaded and saved.
+
+        A crop is never saved (TASK-136, ADR-0108): it is 3 to 170 MB for
+        each new start, and it is made again from its zone without the
+        network. The API does the same (ADR-0030)."""
         import osmnx as ox
 
         path = self.cache_path(bbox)
@@ -187,18 +198,18 @@ class OsmnxSource:
             return read_graph(path)
         covering = self.covering_path(bbox)
         if covering is not None:
-            graph = crop(read_graph(covering), bbox)
-            _write_graph(graph, path)
-            return graph
+            return crop(read_graph(covering), bbox)
         ox.settings.cache_folder = str(self.cache_dir / "http")
         south, west, north, east = bbox
         # network_type="walk" keeps every edge two-way: one-way streets do
         # not bind pedestrians. The filter picks the ways.
-        graph = ox.graph_from_bbox(
-            bbox=(west, south, east, north),
-            network_type="walk",
-            custom_filter=self.custom_filter,
-        )
+        # Through an address of Overpass that answers (TASK-127, ADR-0100).
+        with reachable(ox.settings.overpass_url):
+            graph = ox.graph_from_bbox(
+                bbox=(west, south, east, north),
+                network_type="walk",
+                custom_filter=self.custom_filter,
+            )
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         _write_graph(graph, path)
         return graph
@@ -210,26 +221,57 @@ def read_graph(path: Path) -> Graph:
     GraphML is the cache of record (readable, what OSMnx writes); the pickle
     beside it only saves time, since parsing a zone's GraphML takes up to a
     minute. Both are written by this module into the ignored cache folder.
+
+    A pickle that cannot be read, half written by a process stopped before
+    TASK-133 or from another version of networkx, gives way to the GraphML
+    and is written again (ADR-0104).
     """
     import osmnx as ox
 
     fast = path.with_suffix(".pickle")
     if fast.exists() and fast.stat().st_mtime >= path.stat().st_mtime:
-        with fast.open("rb") as file:
-            graph: Graph = pickle.load(file)
-        return graph
+        try:
+            with fast.open("rb") as file:
+                graph: Graph = pickle.load(file)
+            return graph
+        except Exception as exc:
+            log.warning("%s cannot be read (%r): reading the GraphML", fast.name, exc)
     graph = ox.load_graphml(path)
-    with fast.open("wb") as file:
-        pickle.dump(graph, file, protocol=pickle.HIGHEST_PROTOCOL)
+    _write_pickle(graph, fast)
     return graph
 
 
 def _write_graph(graph: Graph, path: Path) -> None:
     import osmnx as ox
 
-    ox.save_graphml(graph, path)
-    with path.with_suffix(".pickle").open("wb") as file:
-        pickle.dump(graph, file, protocol=pickle.HIGHEST_PROTOCOL)
+    with _whole(path) as temporary:
+        ox.save_graphml(graph, temporary)
+    _write_pickle(graph, path.with_suffix(".pickle"))
+
+
+def _write_pickle(graph: Graph, path: Path) -> None:
+    """The pickle only saves time: one that cannot be written (disk full,
+    a folder that is read-only) is left out, and the GraphML is read."""
+    try:
+        with _whole(path) as temporary, temporary.open("wb") as file:
+            pickle.dump(graph, file, protocol=pickle.HIGHEST_PROTOCOL)
+    except OSError as exc:
+        log.warning("%s not written (%s): the GraphML stays", path.name, exc)
+
+
+@contextmanager
+def _whole(path: Path) -> Iterator[Path]:
+    """A temporary file beside `path`, which takes the name `path` only once
+    written to the end (TASK-133, ADR-0104): a write stopped half-way never
+    leaves half a file under a name the cache looks for. An error removes
+    it; a process killed outright leaves it, and its name, starting with a
+    dot, matches none of the cache's names."""
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex[:8]}.part")
+    try:
+        yield temporary
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def area_around(points: Sequence[LatLon], margin_m: float = AREA_MARGIN_M) -> BBox:
@@ -277,7 +319,9 @@ def write_named_roads(roads: Sequence[NamedRoad], path: Path) -> None:
         {"name": r.name, "points": [[round(a, 7), round(b, 7)] for a, b in r.points]}
         for r in roads
     ]
-    path.write_text(json.dumps({"roads": rows}, ensure_ascii=False), encoding="utf-8")
+    text = json.dumps({"roads": rows}, ensure_ascii=False)
+    with _whole(path) as temporary:
+        temporary.write_text(text, encoding="utf-8")
 
 
 def read_named_roads(path: Path) -> list[NamedRoad]:
@@ -330,7 +374,10 @@ def _overpass(query: str) -> dict[str, Any]:
         data=urllib.parse.urlencode({"data": query}).encode(),
         headers={"User-Agent": ox.settings.http_user_agent},
     )
-    with urllib.request.urlopen(request, timeout=NAMED_ROADS_TIMEOUT_S + 10) as answer:
+    with (
+        reachable(ox.settings.overpass_url),
+        urllib.request.urlopen(request, timeout=NAMED_ROADS_TIMEOUT_S + 10) as answer,
+    ):
         result: dict[str, Any] = json.load(answer)
     return result
 

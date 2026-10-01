@@ -1,0 +1,54 @@
+{
+  "job_id": "f00d",
+  "status": "done",
+  "result": {
+    "points": [
+      [45.4642, 9.1896],
+      [45.4652, 9.1906],
+      [45.4662, 9.1896],
+      [45.4642, 9.1896]
+    ],
+    "distance_m": 10120.0,
+    "similarity": 0.95,
+    "shape": "star",
+    "theme": "famous",
+    "theme_label": "famous places",
+    "target_m": 10000,
+    "city": "Milan, Lombardy, Italy",
+    "centre": [45.4641943, 9.1896346],
+    "stops": [
+      {
+        "name": "Strada di Galliera",
+        "point": [44.511644, 11.3470742],
+        "passed": true
+      },
+      {
+        "name": "La lotta tra la tigre e il serpente",
+        "point": [44.5025217, 11.3461454],
+        "passed": true
+      },
+      {
+        "name": "Memoriale alle vittime di Marcinelle",
+        "point": [44.5047563, 11.3671021],
+        "passed": false
+      },
+      {
+        "name": "Locomotiva FS Gr 835.255",
+        "point": [44.5075937, 11.352835],
+        "passed": false
+      },
+      {
+        "name": "Giovannini Alceste «Gino»",
+        "point": [44.5108165, 11.3503592],
+        "passed": false
+      },
+      {
+        "name": "2 agosto 1980 - Vittime del terrorismo fascista",
+        "point": [44.5058878, 11.3429076],
+        "passed": false
+      }
+    ],
+    "license": "Places and roads © OpenStreetMap contributors"
+  },
+  "error": null
+}

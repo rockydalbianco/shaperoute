@@ -13,6 +13,8 @@ export interface Place {
   /** What the user reads, e.g. "Via Rodolfo Belenzani, Trento". */
   label: string;
   point: LatLon;
+  /** In "Explore" (TASK-138): a city, or a place in one. Unknown elsewhere. */
+  kind?: "city" | "place";
 }
 
 /** With `near`, places around it come first (TASK-085): "via bel" typed in

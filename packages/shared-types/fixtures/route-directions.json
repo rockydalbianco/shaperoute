@@ -1,0 +1,40 @@
+{
+  "directions": [
+    {
+      "node": 1,
+      "point": [46.0, 10.997410751401945],
+      "distance_m": 0.0,
+      "turn": "depart",
+      "angle_deg": 0.0,
+      "street": "Via Roma",
+      "road_type": "residential",
+      "branches": 1,
+      "joined": false,
+      "along": null
+    },
+    {
+      "node": 3,
+      "point": [45.998201356788165, 11.002589248598055],
+      "distance_m": 570.7108217700728,
+      "turn": "straight",
+      "angle_deg": 0.0,
+      "street": "Corso Italia",
+      "road_type": "residential",
+      "branches": 3,
+      "joined": false,
+      "along": null
+    },
+    {
+      "node": 4,
+      "point": [45.99640271357632, 11.002589248598055],
+      "distance_m": 770.7108217703832,
+      "turn": "right",
+      "angle_deg": 90.0,
+      "street": "SP12",
+      "road_type": "tertiary",
+      "branches": 4,
+      "joined": false,
+      "along": null
+    }
+  ]
+}

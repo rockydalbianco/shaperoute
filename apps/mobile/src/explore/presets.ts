@@ -1,0 +1,94 @@
+import type { Place } from "../places/photon";
+
+/**
+ * The quick choices of "Explore" (TASK-134): cities from around the world,
+ * and the categories of "Ask for a route", Food first. A city is a name
+ * only: its centre comes from the API when it is tapped, never written here.
+ */
+export const FEATURED_CITIES = [
+  "New York",
+  "London",
+  "Paris",
+  "Tokyo",
+  "Rome",
+  "Milan",
+  "Torino",
+  "Barcelona",
+  "Dubai",
+  "Amsterdam",
+  "Berlin",
+  "Lisbon",
+  "Sydney",
+  "San Francisco",
+] as const;
+
+/** Each category is a theme of the API, named in words its tables read. */
+export const CATEGORIES = [
+  "Food",
+  "Famous Places",
+  "Romantic",
+  "Best Views",
+  "Shopping",
+  "Culture",
+  "Nightlife",
+  "Hidden Gems",
+  "Running",
+  "Walking",
+  "Family",
+  "Photography",
+  "Local Experience",
+] as const;
+
+export type Category = (typeof CATEGORIES)[number];
+
+/** "Milan, Lombardy, Italy" → "Milan". */
+export function cityShort(label: string): string {
+  return label.split(",")[0].trim();
+}
+
+/** A place in a city rather than a city (TASK-138): "Arena di Verona". */
+export function isSpot(place: Place | null): boolean {
+  return place?.kind === "place";
+}
+
+/**
+ * The words sent for a category: "Food in New York". For a place, the
+ * category alone: the request starts from its point, as from the start, and
+ * its name is no city to look up (TASK-138).
+ */
+export function requestFor(category: string, city: Place | null): string {
+  return city === null || isSpot(city)
+    ? category
+    : `${category} in ${cityShort(city.label)}`;
+}
+
+/** Where the routes start, in words: "in Milan", "near Arena di Verona". */
+export function whereFor(city: Place | null): string {
+  if (city === null) {
+    return "near your start";
+  }
+  return `${isSpot(city) ? "near" : "in"} ${cityShort(city.label)}`;
+}
+
+/** The hint in the request field, for the chosen city. */
+export function exampleFor(city: Place | null): string {
+  return city === null || isSpot(city)
+    ? "e.g. a romantic heart, famous places, food 8 km"
+    : `e.g. a romantic heart in ${cityShort(city.label)}, 8 km`;
+}
+
+/**
+ * The second line of a suggestion (TASK-138): a city is its centre, "City
+ * centre · Veneto, Italy"; a place says its city, "Verona, Italy".
+ */
+export function suggestionDetail(place: Place): string {
+  const rest = place.label
+    .split(",")
+    .slice(1)
+    .map((part) => part.trim());
+  const where = rest.filter((part) => part !== "").join(", ");
+  if (isSpot(place)) {
+    return where;
+  }
+  return where === "" ? "City centre" : `City centre · ${where}`;
+}

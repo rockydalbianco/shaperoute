@@ -80,6 +80,15 @@ dell'API lo controlla. Cambiano anche le liste di prova («Misure»): le
 parole che diventano della tabella escono, perché al modello non arrivano
 più, e ne entrano di nuove per la forma (TASK-065).
 
+## Il tema di una richiesta (TASK-129)
+
+Per «Explore» l'AI legge anche il **tema** di una richiesta in parole,
+solo quando le tabelle dell'API non lo trovano (`shaperoute_api/themes.py`):
+`shaperoute_ai/theme_reading.py`, stesso modello, risposta vincolata a uno
+dei temi elencati o `none`, controllata. Non nomina luoghi né dà
+coordinate: i luoghi sono di OpenStreetMap (ADR-0099). Le stesse parole si
+chiedono una volta.
+
 ## Cache
 
 Le stesse parole, a meno di maiuscole e spazi, si chiedono al modello una

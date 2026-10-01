@@ -83,6 +83,71 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    −. L'attribuzione dei dati è sempre visibile in basso, per intero; i
    suoi link si aprono nel browser del telefono.
 
+3. **«Explore»** (TASK-126, variante C di TASK-092), dal pulsante
+   «Explore» in alto nella prima schermata: «Best near you», i percorsi
+   migliori che partono entro 5 km dalla partenza scelta, con i filtri per
+   forma o parola e per distanza. Ogni riga ha la miniatura della linea
+   (gialla, il percorso), forma e km, città e distanza dalla partenza, la
+   somiglianza. Toccata, il percorso si apre sulla mappa con «Export GPX» e
+   «Back to the list»; «←» torna all'elenco. Da TASK-145 ha anche «Start»
+   (sotto).
+
+   Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
+   qualsiasi città del mondo (l'elenco e la richiesta partono dal suo
+   centro, «Change» torna alla partenza), e **«Ask for a route»**, una
+   richiesta in parole («a romantic heart», «famous places in Paris,
+   15 km») e «Make my route», giallo come «Draw route». Il percorso si
+   apre sulla mappa coi luoghi: pallini chiari col nome quelli da cui
+   passa, più tenui quelli trovati e non raggiunti (token `stop`). Sotto,
+   km, forma, città, somiglianza, «Passes by N of the M … found» coi nomi,
+   «Export GPX» e «Back to Explore». Se i luoghi verificati sono troppo
+   pochi, la scheda lo dice.
+
+   **Da TASK-134** il percorso è: città → categoria → percorso, due tocchi.
+   «City» mostra in alto le città recenti (↺, le ultime 5, salvate sul
+   telefono) e una fila di città di tutto il mondo (New York, London,
+   Paris, Tokyo, Rome, Milan, Torino, Barcelona, Dubai…): un tocco la
+   sceglie, il centro viene dall'API, mai scritto nell'app. Sotto, «Type a
+   city» suggerisce le città mentre si scrive (da 2 lettere, pausa 250 ms);
+   «My start» torna alla partenza. «Ask for a route» ha le categorie come
+   pulsanti, Food per prima (Famous Places, Romantic, Best Views, Shopping,
+   Culture, Nightlife, Hidden Gems, Running, Walking, Family, Photography,
+   Local Experience), ognuna con «in <città>» sotto: un tocco chiede
+   «Food in New York». Il campo libero resta, con un esempio per la città.
+   Ciò che si tocca si attenua (opacità), niente si sposta.
+
+   **Da TASK-138** il campo è «Type a city or a place»: a metà parola
+   suggerisce città e luoghi (monumenti, piazze, quartieri, vie), al più 6,
+   nell'ordine del servizio. Ogni voce ha due righe: il nome, e sotto
+   «City centre · Veneto, Italy» per una città o la sua città per un luogo
+   («Verona, Italy»). Invio sceglie il primo suggerimento. Scelto un luogo,
+   le categorie dicono «near Verona Arena» e chiedono il tema dal suo punto
+   (le parole sono solo «Food»); l'esempio del campo libero non nomina
+   città.
+
+   **Da TASK-143** «Ask for a route» mostra due categorie, Food e Famous
+   Places, e una terza tessera «More…» («11 more») che apre tutte le 13;
+   tre tessere per riga. Scelta una città senza percorsi consigliati entro
+   5 km, sotto «City» compare **«EXAMPLES IN VERCELLI»**: cuore, cerchio e
+   stella da 5 km dal centro, chiesti da soli, uno alla volta, il cuore per
+   primo. Ogni riga dice «Drawing…» o «Next», poi diventa come una riga di
+   «Best near you» (miniatura, km, somiglianza); un tocco apre il percorso
+   sulla mappa con «Export GPX» e «Back to Explore». Se la mappa della zona
+   non si scarica, un messaggio solo e «Try again». Gli esempi pronti
+   restano sul telefono (ultime 8 città): la volta dopo sono subito lì.
+   Una città con percorsi consigliati mostra quelli e non chiede esempi.
+
+   **Da TASK-145** ogni percorso di «Explore» aperto sulla mappa
+   (consigliato, esempio, a tema) ha «Start», giallo, sopra «Export GPX».
+   Questi percorsi arrivano senza indicazioni: al tocco l'app le chiede
+   all'API (`POST /route-directions`) e il pulsante dice «Getting
+   directions…»; poi la navigazione parte come per un percorso disegnato
+   (sotto, «La navigazione»), lungo la linea di «Explore». «Stop» e la fine
+   della corsa tornano alla sua scheda. Le indicazioni avute restano finché
+   la scheda è aperta: un secondo «Start» non aspetta. Se non arrivano, la
+   scheda dice perché in rosso e «Start» riprova; «Back to the list» o «←»
+   lasciano perdere l'attesa.
+
 Passare da una schermata all'altra:
 
 - «←» torna alla scelta con forma e distanza di prima. Se il percorso è
@@ -423,6 +488,16 @@ Sulla mappa la linea del percorso, inquadrata. Sotto, la distanza in grande
 o «“CIAO” · on roads · target 12 km» (TASK-057); poi gli avvisi del motore, uno per
 riga, e «Export GPX» largo (sotto, «Export del GPX»).
 
+**Più percorsi fra cui scegliere** (TASK-093, ADR-0087, scelte
+dell'utente): quando l'API manda delle alternative, sotto il nome ci sono
+fino a tre tessere «A · B · C», con km e somiglianza in percento
+(«4.0 km · 91%»); A è il percorso scelto dal motore ed è selezionata. Sulla
+mappa il percorso selezionato è giallo, gli altri sono linee sottili grigie
+sotto (`otherRoute` nei token); una tessera toccata diventa il percorso:
+distanza, avvisi, «Start» e «Export GPX» sono i suoi. Durante la corsa le
+linee grigie spariscono. Un nuovo risultato riparte da A. Con un percorso
+solo, niente tessere, come prima.
+
 Gli avvisi sono **in parole semplici** (TASK-054, ADR-0048): l'app
 riconosce i testi che il motore scrive e li riscrive brevi, con una
 striscia arancio (`warning`) per quelli a cui fare attenzione (scale,
@@ -431,8 +506,9 @@ grigia per quelli da sapere (partenza spostata, distanza diversa da quella
 chiesta, strade ripercorse); prima quelli a cui fare attenzione, e la
 stessa frase una volta sola. Un testo che l'app non conosce resta com'è,
 in inglese. La somiglianza non si mostra come
-numero: la forma la giudica l'occhio (`PRODUCT.md`), e sotto 0,90 il
-motore aggiunge già un avviso. Il segnaposto resta sulla partenza chiesta.
+numero, tranne nelle tessere dei percorsi alternativi, dove serve a
+confrontarli (TASK-093, scelta dell'utente): la forma la giudica l'occhio
+(`PRODUCT.md`), e sotto 0,90 il motore aggiunge già un avviso. Il segnaposto resta sulla partenza chiesta.
 Se il percorso comincia a più di 50 m da lì, perché il motore ha spostato la
 forma dove ci sta (fino a 2 km, ADR-0040), un secondo segnaposto ciano con
 l'etichetta «Start here» segna dove andare, e la mappa inquadra tutti e due;
@@ -441,7 +517,8 @@ l'avviso dice di quanto e in che direzione.
 ## La navigazione
 
 Sotto il risultato, «Start» giallo, quando il percorso ha le indicazioni di
-svolta (TASK-049, ADR-0052). Si resta sulla schermata della mappa: al posto
+svolta (TASK-049, ADR-0052). Anche sotto un percorso di «Explore», che le
+chiede all'API al tocco (TASK-145). Si resta sulla schermata della mappa: al posto
 di «←» un banner con la prossima svolta (freccia gialla, distanza dal GPS
 dal vivo, «Turn left onto Via Roma», e una seconda riga per le svolte a
 pochi metri da leggere insieme); sotto, i km rimasti e «Stop», che torna al
@@ -513,6 +590,19 @@ nell'attesa «Scoring your run…», con distanza e durata già lì.
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
 principale.
 
+## Correre con Strava (TASK-135, ADR-0106)
+
+Sotto «Export GPX», in ogni scheda di un percorso (disegnato, di «Explore»,
+a tema), **«Run with Strava»** apre una scheda che spiega prima di fare
+qualunque cosa: Strava non permette ad altre app di aggiungere percorsi,
+e nulla va a Strava finché l'utente non carica il file. Tre passi:
+1. «Save GPX»: l'esportazione di sempre (foglio di condivisione).
+2. «Open Strava route builder»: `https://www.strava.com/maps/create`, dove
+   si accede, si carica il GPX e si salva il percorso.
+3. «Open Strava»: l'app se c'è (link universale), altrimenti il sito; lì
+   Record → Add Route → il percorso → Start.
+Se un link non si apre, la scheda lo dice con l'indirizzo da aprire a mano.
+
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di
@@ -569,7 +659,10 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   locale, una volta; l'API non la salva e non la scrive nel log. Poi viaggia
   solo il contorno. Non va a nessun servizio esterno né all'AI.
 - **Le tile**: il provider vede quale zona si guarda, come con ogni mappa.
-- **La ricerca**: il testo cercato arriva a Photon (komoot).
+- **La ricerca**: il testo cercato e la posizione (per mettere prima i
+  luoghi vicini) vanno all'API, che li gira a Geoapify (TASK-123); senza
+  API o senza chiave, a Photon (komoot). Il log dell'API scrive solo
+  `GET /places`, né testo né posizione (TASK-124, ADR-0096).
 - **La libreria**: MapLibre GL JS arriva da unpkg a ogni avvio a freddo.
 
 ## Quando la mappa non si carica
@@ -592,6 +685,7 @@ iOS chiude la pagina per liberare memoria, la WebView la ricarica da sola.
 - Miglia al posto dei km.
 - Avvisi in parole semplici: oggi l'app riconosce i testi del motore
   (ADR-0048); la strada pulita sono i codici negli avvisi del contratto.
-- Rigenerare o scegliere fra percorsi alternativi.
+- Rigenerare altri percorsi oltre a quelli proposti (scegliere fra quelli
+  calcolati c'è da TASK-093).
 - Contorni disegnati delle forme e cursore della distanza: vogliono
   dipendenze (TASK-051).

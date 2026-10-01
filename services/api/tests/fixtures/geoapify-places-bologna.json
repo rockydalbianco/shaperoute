@@ -1,0 +1,146 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Strada di Galliera",
+    "lat": 44.511644,
+    "lon": 11.3470742,
+    "categories": [
+     "tourism",
+     "tourism.sights",
+     "tourism.sights.memorial"
+    ],
+    "datasource": {
+     "sourcename": "openstreetmap"
+    }
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     11.3470742,
+     44.511644
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "La lotta tra la tigre e il serpente",
+    "lat": 44.5025217,
+    "lon": 11.3461454,
+    "categories": [
+     "tourism",
+     "tourism.attraction",
+     "tourism.attraction.artwork",
+     "tourism.attraction.artwork.sculpture"
+    ],
+    "datasource": {
+     "sourcename": "openstreetmap"
+    }
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     11.3461454,
+     44.5025217
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Memoriale alle vittime di Marcinelle",
+    "lat": 44.5047563,
+    "lon": 11.3671021,
+    "categories": [
+     "tourism",
+     "tourism.sights",
+     "tourism.sights.memorial"
+    ],
+    "datasource": {
+     "sourcename": "openstreetmap"
+    }
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     11.3671021,
+     44.5047563
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Locomotiva FS Gr 835.255",
+    "lat": 44.5075937,
+    "lon": 11.352835,
+    "categories": [
+     "tourism",
+     "tourism.attraction",
+     "tourism.sights",
+     "tourism.sights.memorial",
+     "tourism.sights.memorial.locomotive"
+    ],
+    "datasource": {
+     "sourcename": "openstreetmap"
+    }
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     11.352835,
+     44.5075937
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Giovannini Alceste «Gino»",
+    "lat": 44.5108165,
+    "lon": 11.3503592,
+    "categories": [
+     "tourism",
+     "tourism.sights",
+     "tourism.sights.memorial"
+    ],
+    "datasource": {
+     "sourcename": "openstreetmap"
+    }
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     11.3503592,
+     44.5108165
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "2 agosto 1980 - Vittime del terrorismo fascista",
+    "lat": 44.5058878,
+    "lon": 11.3429076,
+    "categories": [
+     "tourism",
+     "tourism.sights",
+     "tourism.sights.memorial"
+    ],
+    "datasource": {
+     "sourcename": "openstreetmap"
+    }
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     11.3429076,
+     44.5058878
+    ]
+   }
+  }
+ ]
+}

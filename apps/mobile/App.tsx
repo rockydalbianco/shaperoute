@@ -1,5 +1,6 @@
 import type {
   Direction,
+  LatLon,
   LetterStyle,
   OutlinePoint,
   Shape,
@@ -20,6 +21,17 @@ import {
   type PositionState,
   useCurrentPosition,
 } from "./src/location/useCurrentPosition";
+import { ExploredCard } from "./src/explore/ExploredCard";
+import { useExplored } from "./src/explore/explored";
+import { ExploreScreen } from "./src/explore/ExploreScreen";
+import {
+  loadRecentCities,
+  remember,
+  saveRecentCities,
+} from "./src/explore/recentCities";
+import { ThemedCard, themedGpx } from "./src/explore/ThemedCard";
+import { startViewOf, useStartDirections } from "./src/explore/useStartDirections";
+import { useThemedRoute } from "./src/explore/useThemedRoute";
 import { MapView } from "./src/map/MapView";
 import {
   clearRun,
@@ -29,6 +41,7 @@ import {
 } from "./src/navigation/trackStore";
 import { useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
+import { choicesOf, type Picked, pickedIndex } from "./src/route/choices";
 import { toDistanceM } from "./src/route/distance";
 import { ImageEditsContext } from "./src/route/imageEdits";
 import type { ChoiceKind } from "./src/route/problems";
@@ -52,13 +65,16 @@ import { color } from "./src/theme/tokens";
 
 /** A route without directions: one list, so navigation does not restart. */
 const NO_DIRECTIONS: Direction[] = [];
+/** No other routes on the map: one list, so the map is not told again. */
+const NO_OTHERS: LatLon[][] = [];
 
 /** The API on the PC that serves the app (ADR-0031); null if unknown. */
 const API_URL = apiUrl();
 
 /** The screens (TASK-051): what to draw, the map with the route, the
- * turn-by-turn along it (TASK-049) and the run with its score (TASK-113). */
-type Screen = "choose" | "map" | "navigate" | "finish";
+ * turn-by-turn along it (TASK-049), the run with its score (TASK-113) and
+ * the best routes near the start (TASK-126). */
+type Screen = "choose" | "map" | "navigate" | "finish" | "explore";
 
 /** A run that ended, shown on the finish screen. */
 type Finished = {
@@ -68,6 +84,9 @@ type Finished = {
   /** Stopped just now, its route still on screen: it can go on. */
   resumable: boolean;
 };
+
+/** A route of "Explore" run with the directions asked for it (TASK-145). */
+type ExploreRun = { points: LatLon[]; directions: Direction[]; similarity: number };
 
 function finishedRun(run: ScorableRun, resumable: boolean): Finished {
   return { run, line: run.track.fixes.map((fix) => fix.point), resumable };
@@ -120,6 +139,16 @@ function Sgrava() {
   const imageEdits = useMemo(() => ({ ...edits, add, undo }), [edits, add, undo]);
   const { state, draw, cancel } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
+  const { explored, open: openExplored, close: closeExplored } = useExplored(API_URL);
+  // "Explore" for any city, and a shape through a theme's places (TASK-129).
+  const [exploreCity, setExploreCity] = useState<Place | null>(null);
+  // The cities chosen last, kept on the phone (TASK-134).
+  const [recentCities, setRecentCities] = useState<Place[]>(loadRecentCities);
+  const themed = useThemedRoute(API_URL);
+  const themedExport = useMemo(
+    () => (themed.state.status === "done" ? themedGpx(themed.state.result) : null),
+    [themed.state],
+  );
 
   const start = useMemo(
     () => chooseStart(startMode, position, place),
@@ -157,22 +186,57 @@ function Sgrava() {
     request && state.status !== "idle" && sameRequest(state.request, request)
       ? state
       : { status: "idle" };
+  // The routes to choose from (TASK-093): what follows shows, runs and
+  // exports the one chosen; a new result starts from the engine's.
+  const [picked, setPicked] = useState<Picked>(null);
+  const answer = view.status === "done" ? view.result : null;
+  const choices = useMemo(() => (answer ? choicesOf(answer) : []), [answer]);
+  const chosenIndex = pickedIndex(picked, answer);
+  const chosen = choices[chosenIndex] ?? null;
+  const shown: RouteState =
+    view.status === "done" && chosen !== null ? { ...view, result: chosen } : view;
+  const others = useMemo(
+    () =>
+      choices.length < 2
+        ? NO_OTHERS
+        : choices.filter((_, i) => i !== chosenIndex).map((other) => other.points),
+    [choices, chosenIndex],
+  );
   // The export state of another route does not belong on screen.
   const exporting: ExportState =
-    view.status === "done" &&
+    chosen !== null && gpx.state.status !== "idle" && gpx.state.result === chosen
+      ? gpx.state
+      : { status: "idle" };
+  const themedExporting: ExportState =
+    themedExport !== null &&
     gpx.state.status !== "idle" &&
-    gpx.state.result === view.result
+    gpx.state.result === themedExport.result
       ? gpx.state
       : { status: "idle" };
 
-  const navigating = screen === "navigate" && view.status === "done";
+  // Start on a route of "Explore": its directions are asked for first,
+  // then it is the route followed, in place of the drawn one (TASK-145).
+  const startDirections = useStartDirections(API_URL);
+  const [exploreRun, setExploreRun] = useState<ExploreRun | null>(null);
+  const followed = exploreRun ?? chosen;
+  const navigating = screen === "navigate" && followed !== null;
   const navigation = useNavigation(
-    view.status === "done" ? view.result.points : null,
-    view.status === "done" ? view.result.directions : NO_DIRECTIONS,
+    followed?.points ?? null,
+    followed?.directions ?? NO_DIRECTIONS,
     navigating,
-    view.status === "done" ? view.result.similarity : undefined,
+    followed?.similarity,
   );
   const finishing = screen === "finish" && finished !== null;
+  // A route of "Explore" on the map, in place of the drawn one (TASK-126).
+  const theming =
+    screen === "map" && explored === null && themed.state.status !== "idle";
+  const exploring = screen === "map" && explored !== null;
+  const exploredExport: ExportState =
+    explored?.status === "done" &&
+    gpx.state.status !== "idle" &&
+    gpx.state.result === explored.result
+      ? gpx.state
+      : { status: "idle" };
 
   /** Stop or Finish: the run ends, and with a line to judge shows its score. */
   function onEndRun() {
@@ -191,12 +255,31 @@ function Sgrava() {
       clearRun();
     }
     setFinished(null);
-    setScreen(view.status === "done" ? "map" : "choose");
+    // A run of "Explore" goes back to its route's card.
+    setScreen(exploreRun !== null || view.status === "done" ? "map" : "choose");
+  }
+
+  /** "Explore" leaves the map: its route, its directions, its run. */
+  function closeExplore() {
+    closeExplored();
+    themed.close();
+    startDirections.reset();
+    setExploreRun(null);
+  }
+
+  /** Start on a route of "Explore": its directions first (TASK-145). */
+  function onStartExplore(route: { points: LatLon[]; similarity: number }) {
+    startDirections.start(route.points, (directions) => {
+      setExploreRun({ points: route.points, directions, similarity: route.similarity });
+      setScreen("navigate");
+    });
   }
 
   function onDraw() {
     // The decimal pad has no return key: drawing closes it.
     Keyboard.dismiss();
+    // The drawn route takes the map back from "Explore".
+    closeExplore();
     // The same route already drawn is shown again, not asked for again.
     if (request && view.status !== "done") {
       draw(request);
@@ -205,6 +288,11 @@ function Sgrava() {
   }
 
   function onBack() {
+    if (theming || exploring) {
+      closeExplore();
+      setScreen("explore");
+      return;
+    }
     // Nobody is left watching the wait: drop it, as Cancel does.
     if (view.status === "waiting") {
       cancel();
@@ -233,14 +321,36 @@ function Sgrava() {
         map={
           <MapView
             style={styles.map}
-            start={start?.point ?? null}
+            start={
+              theming
+                ? themed.state.status === "done"
+                  ? themed.state.result.centre
+                  : null
+                : exploring
+                  ? explored.route.start
+                  : (exploreRun?.points[0] ?? start?.point ?? null)
+            }
+            stops={
+              theming && themed.state.status === "done"
+                ? themed.state.result.stops
+                : null
+            }
             route={
               finishing
                 ? finished.run.route
-                : view.status === "done"
-                  ? view.result.points
-                  : null
+                : theming
+                  ? themed.state.status === "done"
+                    ? themed.state.result.points
+                    : null
+                  : exploring
+                    ? explored.status === "done"
+                      ? explored.detail.points
+                      : null
+                    : (followed?.points ?? null)
             }
+            // Only while choosing a drawn route: running, or on a route of
+            // "Explore", one route is the route.
+            others={screen === "map" && !exploring && !theming ? others : NO_OTHERS}
             track={finishing ? finished.line : null}
             following={
               navigating && navigation.status === "following"
@@ -251,13 +361,59 @@ function Sgrava() {
           />
         }
       >
-        {finishing ? (
+        {theming ? (
+          <ThemedCard
+            state={themed.state}
+            exporting={themedExporting}
+            onExport={() => {
+              if (themedExport !== null) {
+                gpx.exportGpx(themedExport.request, themedExport.result);
+              }
+            }}
+            onCancel={() => {
+              closeExplore();
+              setScreen("explore");
+            }}
+            start={startViewOf(
+              startDirections.state,
+              themed.state.status === "done" ? themed.state.result.points : null,
+            )}
+            onStart={() => {
+              if (themed.state.status === "done") {
+                onStartExplore(themed.state.result);
+              }
+            }}
+          />
+        ) : exploring ? (
+          <ExploredCard
+            explored={explored}
+            exporting={exploredExport}
+            onExport={() => {
+              if (explored.status === "done") {
+                gpx.exportGpx(explored.request, explored.result);
+              }
+            }}
+            onList={() => {
+              closeExplore();
+              setScreen("explore");
+            }}
+            start={startViewOf(
+              startDirections.state,
+              explored.status === "done" ? explored.result.points : null,
+            )}
+            onStart={() => {
+              if (explored.status === "done") {
+                onStartExplore(explored.result);
+              }
+            }}
+          />
+        ) : finishing ? (
           <FinishCard
             apiUrl={API_URL}
             run={finished.run}
             onDone={onFinishDone}
             onResume={
-              finished.resumable && view.status === "done"
+              finished.resumable && (exploreRun !== null || view.status === "done")
                 ? () => {
                     setFinished(null);
                     setScreen("navigate");
@@ -274,15 +430,15 @@ function Sgrava() {
           />
         ) : (
           <RouteOutcome
-            view={view}
+            view={shown}
             onCancel={() => {
               cancel();
               setScreen("choose");
             }}
             exporting={exporting}
             onExport={() => {
-              if (view.status === "done") {
-                gpx.exportGpx(view.request, view.result);
+              if (view.status === "done" && chosen !== null) {
+                gpx.exportGpx(view.request, chosen);
               }
             }}
             onTryDistance={(distance_m) => {
@@ -293,6 +449,9 @@ function Sgrava() {
             }}
             onPickShape={onPickShape}
             onStart={() => setScreen("navigate")}
+            choices={choices}
+            chosen={chosenIndex}
+            onChoose={(index) => answer && setPicked({ of: answer, index })}
           />
         )}
       </MapScreen>
@@ -313,6 +472,7 @@ function Sgrava() {
           near={position.status === "ok" ? position.point : (place?.point ?? null)}
           mapError={mapError}
           footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
+          onExplore={() => setScreen("explore")}
         >
           <ImageEditsContext.Provider value={imageEdits}>
             <RouteChoice
@@ -340,6 +500,34 @@ function Sgrava() {
             />
           </ImageEditsContext.Provider>
         </ChooseScreen>
+      )}
+      {screen === "explore" && (
+        <ExploreScreen
+          apiUrl={API_URL}
+          near={start?.point ?? null}
+          onBack={() => setScreen("choose")}
+          onOpen={(route) => {
+            closeExplore();
+            openExplored(route);
+            setScreen("map");
+          }}
+          city={exploreCity}
+          onCity={(city) => {
+            setExploreCity(city);
+            if (city !== null) {
+              const recent = remember(recentCities, city);
+              setRecentCities(recent);
+              saveRecentCities(recent);
+            }
+          }}
+          recent={recentCities}
+          onAsk={(request) => {
+            Keyboard.dismiss();
+            closeExplore();
+            themed.ask(request);
+            setScreen("map");
+          }}
+        />
       )}
     </View>
   );

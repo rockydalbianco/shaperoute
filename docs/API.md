@@ -207,6 +207,88 @@ due volte. Senza chiave, o se Geoapify non risponde, `503 http_error`;
 l'app allora chiede a Photon, come prima. È un `GET`: non conta nel limite
 dei POST al minuto.
 
+### `GET /recommended-routes` (TASK-126, ADR-0098)
+
+I percorsi migliori già pianificati vicino a un punto, per «Explore»:
+`?lat=…&lon=…`, facoltativi `radius_m` (100–50 000, default 5000),
+`shape` (una forma, o una parola in maiuscolo) e `distance_m`. Prima la
+somiglianza più alta; a parità, il più vicino. Tutti, anche se equivalenti
+(TASK-092, punto 3). Ogni percorso ha `id`, `city`, `shape` o `word` (con
+`style`), `distance_m`, `route_m`, `similarity`, `start`, `away_m` e
+`preview`, al più 64 punti della linea per la miniatura. Corpo in
+`packages/shared-types/fixtures/recommended-routes.json`. Il punto sta
+nella query: il log di accesso non la scrive (ADR-0096).
+
+`GET /recommended-routes/{id}` dà il percorso intero (`points`, `license`;
+`recommended-route.json`), 404 per un id che non c'è.
+
+I percorsi vengono da `catalog/seed/` (ADR-0097), letti all'avvio:
+`--catalog-dir` per un'altra cartella; senza file la lista è vuota. Un file
+nuovo vuole un riavvio dell'API.
+
+### `GET /cities` (TASK-129, ADR-0099)
+
+Le città di tutto il mondo per nome, `?q=…`, al più 5, ognuna col suo
+centro: la geocodifica di Geoapify per sole città (`type=city`), con la
+chiave di `/places`. Non l'autocompletamento, che per una città dà il
+centro dell'area del comune (Milano: Baggio, 6 km dal Duomo). Corpo come
+`/places` (`places.json`); 503 senza chiave. Cache di un giorno.
+
+### `GET /city-suggestions` (TASK-134, TASK-138, ADR-0110)
+
+Città e luoghi mentre si scrive, `?q=Par` → Paris, Parma; `?q=arena di
+ver` → Verona Arena: l'autocompletamento di Geoapify senza `type`, nel suo
+ordine. Si tengono le città (`result_type` `city`, col punto della città
+come `/cities`) e i luoghi (`amenity`, `building`, `street`, `suburb`,
+`district`, solo con un nome); contee, regioni, stati e CAP no (la contea
+di Milano ha il punto a Baggio). Due luoghi a meno di 150 m sono lo stesso:
+resta il primo. Da 2 lettere (prima: lista vuota), al più 6, un'etichetta
+una volta sola; cache di un giorno. 503 senza chiave.
+
+```json
+{"places": [
+  {"label": "Verona, Veneto, Italy", "point": [45.4385, 10.9924], "kind": "city"},
+  {"label": "Verona Arena, Verona, Italy", "point": [45.439, 10.9949], "kind": "place"}
+]}
+```
+
+`kind` dice all'app se nominare il posto nelle parole di una richiesta
+(una città) o mandarne solo il punto (un luogo). Prima di TASK-138 il campo
+non c'era: l'app tratta come città una voce senza `kind`.
+
+### `POST /themed-route-jobs` (TASK-129, ADR-0099)
+
+Una forma che passa dai luoghi veri di un tema: `{"text": "voglio un
+percorso romantico a Parigi", "centre": [lat, lon] | null, "city": … |
+null}`. Risponde 202 con un job, letto con `GET /themed-route-jobs/{id}`
+(`queued`, `running`, `done`, `failed`; i corpi in
+`themed-route-job-done.json` e `-failed.json`).
+
+- **Le parole**: tema, forma, km e città da tabelle in italiano, inglese
+  e francese (`themes.py`); l'AI solo per un tema che le tabelle non
+  trovano, e solo fra i temi elencati (`theme_reading.py`). Temi:
+  `romantic`, `food`, `famous`, `tourist`, `panoramic`, `nature`,
+  `culture`, e da TASK-134 le categorie dell'app: `shopping`, `nightlife`,
+  `hidden`, `photography`, `family`, `running`, `walking`, `local`; la forma, se non è detta, quella del tema (cuore per
+  `romantic`, stella per i luoghi famosi, cerchio per gli altri); 10 km se
+  i km non sono detti, da 3 a 21.
+- **La città**: quella nominata nelle parole, cercata come `/cities`;
+  altrimenti `centre` dell'app (la città scelta o la partenza).
+- **I luoghi**: Geoapify Places, dati OpenStreetMap, con un nome; prima
+  quelli con una voce Wikidata, e per i temi «notevoli» solo quelli se
+  sono almeno 3. Al più 15, entro un quarto della distanza (0,8–5 km).
+  Cache di un giorno per città e tema.
+- **Il percorso**: il motore (`route_engine/stops.py`) pianifica la forma
+  dal centro e da 3 luoghi dove ce ne sono di più attorno; tiene, fra
+  quelle da 0,85 di somiglianza in su, quella che passa a 80 m dal maggior
+  numero di luoghi.
+- **Il risultato**: `points`, `distance_m`, `similarity`, `shape`,
+  `theme`, `city`, `centre` e **tutti** i luoghi trovati con `passed`.
+- **Errori del job** (`error.code`): `theme_unknown`, `city_unknown`,
+  `no_places` (meno di 2 luoghi verificati: lo dice, non inventa),
+  `places_unavailable`, e quelli dei percorsi (`shape_not_drawable`,
+  `map_data_unavailable`). 503 se l'API non ha i percorsi a tema.
+
 ### `POST /track-scores`
 
 Il punteggio di una corsa (TASK-113, ADR-0093). Riceve un
@@ -232,6 +314,25 @@ niente rete, e l'API non ricorda niente. Una corsa con meno di 2 posizioni
 buone o più corta del 10% del percorso risponde `422 invalid_request`, con
 il motivo del motore nel messaggio («This run cannot be scored: …»). Al più
 20 000 posizioni e 50 000 punti di percorso.
+
+### `POST /route-directions` (TASK-145, ADR-0117)
+
+Le indicazioni di svolta di un percorso che l'app ha solo come punti: uno
+di «Explore» (consigliato, esempio di una città o a tema), prima di
+«Start». Riceve `{"points": [[lat, lon], …]}`, da 2 a 50 000 punti, la
+linea come l'ha disegnata il motore
+(`packages/shared-types/fixtures/route-directions-request.json`). Risponde
+`200` con `{"directions": [...]}`, le stesse `Direction` di
+`RouteResult.directions`, partenza compresa, con gli `along` (ADR-0057)
+(`route-directions.json`).
+
+Il grafo è quello della zona, come per i percorsi: in memoria, dalla
+cache, o scaricato; si ritaglia 250 m attorno alla linea. I nodi della
+linea li ritrova `route_nodes.py` del motore (`ROUTE_ENGINE.md` §4). Una
+linea che non segue le strade della mappa risponde `422 invalid_request`
+(«The route does not follow the roads of this map.»), una zona che non si
+scarica `503 map_data_unavailable`. Niente si salva. Misurato il
+2026-10-01 sul Mac, zone in cache: 0,1–0,5 s per percorsi di 5–23 km.
 
 ### `POST /shape-readings`
 
@@ -282,6 +383,16 @@ Risponde `200` con un `RouteResult`:
 
 Qui `directions` resta vuoto: le indicazioni arrivano solo con le
 richieste in due tempi (sopra). Nel `GpxRequest` si può omettere.
+
+**`alternatives`** (TASK-093, ADR-0087): altri percorsi per la stessa
+richiesta, dal migliore, al più 2 (`MAX_ALTERNATIVES`). Ognuno è un
+`RouteResult` intero, con i suoi `points`, `distance_m`, `similarity`,
+avvisi e, nei job, le sue `directions`; il suo `alternatives` è vuoto. Si
+sceglie nell'app: il `GpxRequest` manda poi il risultato scelto, con o
+senza il campo. Un'API precedente non lo manda, e l'app mostra il percorso
+da solo. Quali entrano: `ROUTE_ENGINE.md`, «Altri percorsi fra cui
+scegliere». Il registro delle richieste scrive anche le loro impronte
+(`outcome.alternatives`), e il replay le confronta.
 
 La richiesta è sincrona: la risposta arriva quando il percorso è pronto
 (tempi sotto). Resta per `/docs`, `curl` e le misure; l'app usa
@@ -420,6 +531,13 @@ l'app manda il contorno che mostra e la linea disegnata.
   (`EDIT_REASONS` in `shared-types`). Punti fuori da [0, 1], un contorno
   non valido o `aspect` fuori da 1/20–20 sono `invalid_request`.
 - «Undo» è dell'app: torna al contorno di prima, senza chiamare l'API.
+
+## Eventi delle ricerche (TASK-130, ADR-0101)
+
+Ogni ricerca e ogni segnale d'uso lascia un evento in `data/insights/`
+(spento con `--no-insights`); `--insights-dir` e `--vocabulary` cambiano
+cartella e vocabolario. Il funzionamento, i comandi e la privacy sono in
+`docs/INSIGHTS.md`. Le risposte degli endpoint non cambiano.
 
 ## Errori
 

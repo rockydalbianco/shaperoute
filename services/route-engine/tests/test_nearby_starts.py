@@ -357,9 +357,9 @@ def test_nearby_starts_past_the_budget_are_dropped() -> None:
     assert all("still running" in t.note for t in found.tried[1:])
 
 
-def test_a_good_start_waits_for_nobody() -> None:
+def test_a_good_start_waits_only_briefly() -> None:
     """The start's plan is good (`converged`), so a nearby one that is not
-    ready at once is left, better as it may be."""
+    ready within `good_grace_s` is left, better as it may be."""
     job = SlowNearbyJob(similarity=(((0, 2), 0.99),), converged=True)
     found = plan_nearby(
         job,
@@ -368,10 +368,26 @@ def test_a_good_start_waits_for_nobody() -> None:
         count=2,
         grace_s=120,
         budget_s=120,
+        good_grace_s=0.5,
         free_mb=lambda: None,
     )
     assert found.chosen == 0
     assert all("still running" in t.note for t in found.tried[1:])
+
+
+def test_a_good_start_still_gets_the_nearby_routes_ready_in_time() -> None:
+    """Alternatives to choose from (TASK-093): the nearby plans that end
+    within `good_grace_s` count, even after a good start."""
+    job = LoopJob(converged=True)
+    found = plan_nearby(
+        job,
+        ORIGIN,
+        GridSource(),
+        count=2,
+        good_grace_s=60,
+        free_mb=lambda: None,
+    )
+    assert [t.score is not None for t in found.tried] == [True, True, True]
 
 
 def test_one_graph_pickles_as_the_same_graph() -> None:

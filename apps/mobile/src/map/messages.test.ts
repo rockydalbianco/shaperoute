@@ -1,11 +1,14 @@
 import {
   clearRoute,
+  clearStops,
   clearTrack,
   follow,
   pageScript,
   parsePageMessage,
   setPosition,
+  showOthers,
   showRoute,
+  showStops,
   showTrack,
   START_HERE_M,
 } from "./messages";
@@ -97,4 +100,40 @@ test("showTrack sends the run in MapLibre order, clearTrack removes it", () => {
     ],
   });
   expect(clearTrack()).toEqual({ type: "clearTrack" });
+});
+
+test("showStops sends each place in MapLibre order, passed or not", () => {
+  expect(
+    showStops([
+      { name: "Piazza del Duomo", point: [45.4642, 9.19], passed: true },
+      { name: "Brera", point: [45.472, 9.188], passed: false },
+    ]),
+  ).toEqual({
+    type: "showStops",
+    stops: [
+      { name: "Piazza del Duomo", lngLat: [9.19, 45.4642], passed: true },
+      { name: "Brera", lngLat: [9.188, 45.472], passed: false },
+    ],
+  });
+  expect(clearStops()).toEqual({ type: "clearStops" });
+});
+
+test("showOthers sends each route in MapLibre order, and none to clear", () => {
+  expect(
+    showOthers([
+      [
+        [46.0671, 11.1214],
+        [46.068, 11.122],
+      ],
+    ]),
+  ).toEqual({
+    type: "showOthers",
+    lines: [
+      [
+        [11.1214, 46.0671],
+        [11.122, 46.068],
+      ],
+    ],
+  });
+  expect(showOthers([])).toEqual({ type: "showOthers", lines: [] });
 });

@@ -89,6 +89,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Server** — TASK-144: la guida per portare l'API su un server a
+  pagamento, con il Mac spento (`DEPLOY.md`, strada F, ADR-0111), e la
+  configurazione pronta in `deploy/`: l'API con zone, eventi e catalogo,
+  l'AI (profilo `ai`) e HTTPS con Caddy (profilo `public`) a scelta. Prima
+  privato con Tailscale e `tailscale serve`, poi un dominio, poi gli
+  store. Raccomandati, prezzi del 2026-10-01: Hetzner CX33 (10,97 €/mese
+  IVA compresa, a ore) per cominciare; OVHcloud VPS-3 (12,69 €/mese con
+  12 mesi) per tenere anche l'AI sul server. La CI avvia la
+  configurazione; su un server vero non è ancora provata: **la scelta del
+  server e l'acquisto sono dell'utente**, poi si misurano i tempi del
+  motore (F.7).
+
 - **API e app** — TASK-138: in «Explore» il campo «Type a city or a
   place» suggerisce a metà parola città e luoghi (ADR-0110): «arena di ver»
   → Verona Arena, «duomo di mil» → Duomo, «ver» → Verona come centro città.

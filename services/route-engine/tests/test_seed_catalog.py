@@ -267,13 +267,18 @@ def test_each_city_is_prepared_once_before_its_cases(tmp_path: Path) -> None:
 
     todo = cases(["bari", "verona"], ["heart", "star"], [5000])
     said: list[str] = []
-    run_cases(todo, planner, tmp_path / "runs.jsonl", say=said.append, prepare=prepare)
+    assert (
+        run_cases(
+            todo, planner, tmp_path / "runs.jsonl", say=said.append, prepare=prepare
+        )
+        == 2
+    )
+    # Bari's zone did not load: its cases wait for the next run.
     assert order == [
         "prepare bari (2)",
-        "bari/heart/5000",
-        "bari/star/5000",
         "prepare verona (2)",
         "verona/heart/5000",
         "verona/star/5000",
     ]
-    assert said[0] == "bari: zone not loaded (OSError)"
+    assert said[0] == "bari: zone not loaded (OSError), skipped"
+    assert run_cases(todo, planner, tmp_path / "runs.jsonl", say=said.append) == 2

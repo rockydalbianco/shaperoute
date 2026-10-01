@@ -249,25 +249,34 @@ def run_cases(
     prepare: Prepare | None = None,
 ) -> int:
     """Plans the cases of `todo` not yet in `log`, appending one line each;
-    before a city's first case, `prepare` with all of them. Returns how many
-    were planned."""
+    before a city's first case, `prepare` with all of them; a city whose
+    zone does not load is skipped, for the next run. Returns how many were
+    planned."""
     done = _done(read_runs(log))
     left = [c for c in todo if c.key not in done]
     log.parent.mkdir(parents=True, exist_ok=True)
     prepared: set[str] = set()
+    skipped: set[str] = set()
+    planned = 0
     for i, case in enumerate(left, 1):
         if prepare is not None and case.city not in prepared:
             prepared.add(case.city)
             try:
                 prepare(case.city, [c for c in left if c.city == case.city])
-            except Exception as exc:  # each case says it again, and is retried
-                say(f"{case.city}: zone not loaded ({type(exc).__name__})")
+            except Exception as exc:
+                # Without its zone every case would ask Overpass again, which
+                # has just refused: the city waits for the next run.
+                skipped.add(case.city)
+                say(f"{case.city}: zone not loaded ({type(exc).__name__}), skipped")
+        if case.city in skipped:
+            continue
+        planned += 1
         run = plan_case(case, starts[case.city], planner)
         with log.open("a", encoding="utf-8") as f:
             f.write(json.dumps(run, separators=(",", ":")) + "\n")
         what = run.get("error_kind") or f"similarity {run['similarity']:.2f}"
         say(f"[{i}/{len(left)}] {case.key}: {what}, {run['seconds']:.0f} s")
-    return len(left)
+    return planned
 
 
 def select(

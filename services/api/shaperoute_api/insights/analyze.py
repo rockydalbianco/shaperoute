@@ -2,7 +2,9 @@
 
 `metrics` measures how useful the searches were, overall and for each
 vocabulary version; `impact` says whether a version did better than the one
-before, and only when the events are enough to tell. `proposals` turns
+before, and only when the events are enough to tell; `compare_periods` does
+the same before and after a date, for any change (the engine, the catalogue,
+the app: TASK-142), and `by_week` shows the trend. `proposals` turns
 repeated evidence into changes of the vocabulary: never code, never applied
 here. Each proposal carries its evidence (how many events, from how many
 days and places, a few examples), the checks it passed and why it was made;
@@ -19,6 +21,7 @@ import math
 from collections import Counter, defaultdict
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
+from datetime import date, datetime
 from typing import Any
 
 from shaperoute_api.insights.vocabulary import Vocabulary, fold, phrase_key
@@ -39,6 +42,13 @@ EXAMPLES = 3
 # side, and called better or worse only past this |z| (95%, two-sided).
 MIN_COMPARE = 20
 Z_SIGNIFICANT = 1.96
+# A city search left for another city this soon after: the search was wrong
+# (TASK-142). Seconds.
+REFORMULATED_S = 180
+# ...in at least this share of the searches of the same words.
+MIN_SWITCH_SHARE = 0.5
+# Choices among A, B, C before the ranking is questioned.
+MIN_CHOICES = 5
 
 Event = dict[str, Any]
 # The tables of the API, to check a proposal does not contradict them:
@@ -64,7 +74,13 @@ def _is_reading(e: Event) -> bool:
 
 
 def _is_route(e: Event) -> bool:
-    return e["kind"] in ("route", "themed")
+    """A route that ended: found, or failed. A cancelled one never ended."""
+    return e["kind"] in ("route", "themed") and e.get("outcome") != "cancelled"
+
+
+def _is_choice(e: Event) -> bool:
+    """A route chosen among two or three: the ones that tell a preference."""
+    return e["kind"] == "route_chosen" and int(e.get("n") or 1) >= 2
 
 
 def read_ms(e: Event) -> float | None:
@@ -82,12 +98,20 @@ def _ok_route(e: Event) -> bool:
 class Rate:
     """A metric as a share of events: `part` of the events `of`. `better` is
     the way it should move: "up" or "down". `cost` rates tell what a search
-    costs, not how useful it was: a worse one never asks for a revert."""
+    costs, not how useful it was; `behaviour` rates tell what people did, which
+    the vocabulary does not change: a worse one of either never asks for a
+    revert (compare_periods measures them, for the engine and the app)."""
 
     better: str
     part: Callable[[Event], bool]
     of: Callable[[Event], bool]
     cost: bool = False
+    behaviour: bool = False
+
+    @property
+    def guards(self) -> bool:
+        """Worse, it asks to revert the vocabulary."""
+        return not (self.cost or self.behaviour)
 
 
 RATES: dict[str, Rate] = {
@@ -119,6 +143,21 @@ RATES: dict[str, Rate] = {
         "up",
         lambda e: e["kind"] == "gpx_export",
         lambda e: _ok_route(e) or e["kind"] == "recommended_open",
+    ),
+    # Routes given up while waiting (TASK-142): too slow, or not wanted.
+    "cancel_rate": Rate(
+        "down",
+        lambda e: e["kind"] == "route" and e.get("outcome") == "cancelled",
+        lambda e: e["kind"] == "route",
+        behaviour=True,
+    ),
+    # A, the engine's first, is the one people start or export: the ranking
+    # agrees with them.
+    "first_choice_rate": Rate(
+        "up",
+        lambda e: _is_choice(e) and e.get("index") == 0,
+        _is_choice,
+        behaviour=True,
     ),
 }
 
@@ -197,21 +236,70 @@ def top_queries(
     ]
 
 
+def name_of(label: Any) -> str:
+    """ "Paris, Ile-de-France, France" → "Paris"."""
+    return str(label).split(",")[0].strip()
+
+
+def _chose_city(e: Event) -> bool:
+    return e["kind"] == "city_chosen" and bool(e.get("city")) and not e.get("place")
+
+
+def _asked_city(events: list[Event]) -> Callable[[Event], bool]:
+    """The events that tell a city was wanted: the cities chosen and the
+    themed requests; city searches too, before the app sent its choices
+    (TASK-142), when they were the only trace and a search was a choice."""
+    first = next((e.get("ts", "") for e in events if e["kind"] == "city_chosen"), None)
+
+    def asked(e: Event) -> bool:
+        if not e.get("city"):
+            return False
+        if e["kind"] == "city_search":
+            return first is None or str(e.get("ts", "")) < str(first)
+        return _chose_city(e) or e["kind"] == "themed"
+
+    return asked
+
+
 def demand(events: Iterable[Event], limit: int = 10) -> dict[str, Any]:
-    """What is asked for most: languages, cities, shapes and words; the
-    requests that work and could be suggested to others, and the ones that
-    keep failing (a result missing from the catalogue or the tables)."""
+    """What is asked for most: languages, cities, places, themes, shapes and
+    words, and how cities are chosen; the requests that work and could be
+    suggested to others, and the ones that keep failing (a result missing
+    from the catalogue or the tables)."""
     events = list(events)
     queries = top_queries(events, limit=10_000)
+    asked = _asked_city(events)
     return {
         "languages": dict(
             Counter(e["lang"] for e in events if e.get("lang")).most_common()
         ),
         "cities": dict(
+            Counter(name_of(e["city"]) for e in events if asked(e)).most_common(limit)
+        ),
+        # Places in a city chosen for "Explore" (TASK-138): Arena di Verona.
+        "places": dict(
             Counter(
-                str(e["city"]).split(",")[0]
+                name_of(e["city"])
                 for e in events
-                if e.get("city") and e["kind"] in ("themed", "city_search")
+                if e["kind"] == "city_chosen" and e.get("place") and e.get("city")
+            ).most_common(limit)
+        ),
+        # Suggestion, recent, featured, typed: which way of choosing works.
+        "chosen_via": dict(
+            Counter(
+                e["via"] for e in events if e["kind"] == "city_chosen" and e.get("via")
+            ).most_common()
+        ),
+        # Ways out of a failed route taken (TASK-142): "Try N km", a shape.
+        "hints": dict(
+            Counter(
+                e["hint"] for e in events if e["kind"] == "hint_taken" and e.get("hint")
+            ).most_common()
+        ),
+        # The categories of "Ask for a route" and the themes in words.
+        "themes": dict(
+            Counter(
+                e["theme"] for e in events if e["kind"] == "themed" and e.get("theme")
             ).most_common(limit)
         ),
         "shapes": dict(
@@ -315,7 +403,7 @@ def impact(
             if e.get("by") == "learned" and (ms := read_ms(e)) is not None
         ]
         worse = [
-            n for n, c in rates.items() if c["verdict"] == "worse" and not RATES[n].cost
+            n for n, c in rates.items() if c["verdict"] == "worse" and RATES[n].guards
         ]
         better = [n for n, c in rates.items() if c["verdict"] == "better"]
         if worse:
@@ -385,7 +473,24 @@ def _id(kind: str, what: Any) -> str:
 
 
 def _example(e: Event) -> Event:
-    keep = ("ts", "kind", "text", "theme", "shape", "by", "outcome", "code", "city")
+    keep = (
+        "ts",
+        "kind",
+        "text",
+        "theme",
+        "shape",
+        "word",
+        "by",
+        "outcome",
+        "code",
+        "city",
+        "via",
+        "index",
+        "n",
+        "hint",
+        "distance_m",
+        "to_m",
+    )
     return {k: e[k] for k in keep if k in e}
 
 
@@ -665,12 +770,16 @@ def proposals(
                 )
             )
 
-    # Cities searched for whose "Explore" was empty: the catalogue lacks them.
+    found.extend(city_names(events, vocab))
+
+    # Cities searched for, or chosen among the suggestions (TASK-142), whose
+    # "Explore" was empty: the catalogue lacks them.
     known = {c.lower() for c in catalog_cities} | {c.lower() for c in vocab.cities}
     centres: dict[str, list[float]] = {}
     for e in events:
-        if e["kind"] == "city_search" and e.get("city") and e.get("cell"):
-            centres.setdefault(e["city"], e["cell"])
+        if (e["kind"] == "city_search" or _chose_city(e)) and e.get("cell"):
+            if e.get("city"):
+                centres.setdefault(e["city"], e["cell"])
     empty = defaultdict(list)
     for e in events:
         if (
@@ -681,12 +790,12 @@ def proposals(
             empty[tuple(e["cell"])].append(e)
     for city, centre in centres.items():
         times = len(empty.get(tuple(centre), []))
-        name = city.split(",")[0].strip()
+        name = name_of(city)
         if times >= MIN_EVIDENCE and name.lower() not in known:
             es = [
                 e
                 for e in events
-                if e["kind"] == "city_search" and e.get("city") == city
+                if e["kind"] in ("city_search", "city_chosen") and e.get("city") == city
             ]
             found.append(
                 Proposal(
@@ -700,7 +809,7 @@ def proposals(
                     [
                         f'"Explore" empty {times} times at its centre (at least '
                         f"{MIN_EVIDENCE})",
-                        f"searched for {len(es)} times",
+                        f"searched for or chosen {len(es)} times",
                         "not in the seed catalogue nor wished for already",
                     ],
                 )
@@ -770,4 +879,433 @@ def proposals(
                 )
             )
 
+    found.extend(review_behaviour(events))
     return sorted(found, key=lambda p: (-p.evidence, p.kind, p.id))
+
+
+# --- what people did: signals of the app (TASK-142) ---------------------------
+
+
+def when(e: Event) -> datetime | None:
+    try:
+        return datetime.strptime(str(e.get("ts", "")), "%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:
+        return None
+
+
+def near_name(words: str, name: str) -> bool:
+    """Whether words searched could mean a city's name: its start ("levic",
+    Levico Terme), or a few letters off ("milano", Milan)."""
+    typed, full = fold(phrase_key(words)), fold(phrase_key(name))
+    if len(typed) < 3 or typed == full:
+        return False
+    if full.startswith(typed):
+        return True
+    return osa(typed, full[: len(typed)]) <= _allowed(full) or osa(
+        typed, full
+    ) <= _allowed(full)
+
+
+def switches(events: list[Event]) -> dict[str, dict[str, Any]]:
+    """For the words of each city search: its searches, and the ones left
+    within REFORMULATED_S for a city whose name the words could mean, by
+    that city. Events carry no person: two people's events close in time can
+    mix, which is why a switch needs the words to fit the name, and several
+    days."""
+    chosen = [(t, e) for e in events if _chose_city(e) and (t := when(e)) is not None]
+    out: dict[str, dict[str, Any]] = {}
+    for e in events:
+        t = when(e)
+        if e["kind"] != "city_search" or not e.get("text") or t is None:
+            continue
+        words = phrase_key(e["text"])
+        seen = out.setdefault(words, {"searches": [], "to": defaultdict(list)})
+        seen["searches"].append(e)
+        got = name_of(e.get("city") or "")
+        for t2, c in chosen:
+            name = name_of(c["city"])
+            if (
+                0 <= (t2 - t).total_seconds() <= REFORMULATED_S
+                and fold(name) != fold(got)
+                and near_name(words, name)
+            ):
+                seen["to"][name].append(e)
+                break
+    return out
+
+
+def city_names(events: list[Event], vocab: Vocabulary) -> list[Proposal]:
+    """Words searched as a city that people left for another city, the one
+    the words could mean ("levic": Levič, then Levico Terme): search that
+    name instead (vocabulary city_names, read by GET /cities)."""
+    found = []
+    for words, seen in sorted(switches(events).items()):
+        if vocab.city_for(words) is not None:
+            continue
+        searches = seen["searches"]
+        for name, es in sorted(seen["to"].items(), key=lambda kv: -len(kv[1])):
+            n, places = len(es), sources(es)
+            share = n / len(searches)
+            if n < MIN_CORRECTION or places < MIN_SOURCES or share < MIN_SWITCH_SHARE:
+                continue
+            got = sorted({name_of(e.get("city") or "?") for e in es})
+            found.append(
+                Proposal(
+                    _id("city_name", [words, name]),
+                    "city_name",
+                    f'"{words}" found {", ".join(got)}, and people went to {name} '
+                    f"within {REFORMULATED_S // 60} minutes {n} times out of "
+                    f"{len(searches)}: search {name} for it.",
+                    {"city_names": {words: name}},
+                    n,
+                    [_example(e) for e in es[:EXAMPLES]],
+                    [
+                        f'"{words}" is the start of "{name}", or a few letters off',
+                        f"left for {name} after {n} of {len(searches)} searches "
+                        f"(at least {MIN_CORRECTION}, and "
+                        f"{MIN_SWITCH_SHARE:.0%} of them)",
+                        f"on {places} different days (at least {MIN_SOURCES})",
+                    ],
+                )
+            )
+            break
+    return found
+
+
+def drawn(e: Event) -> str:
+    """What a route drew: its shape, its word, or "image"."""
+    return str(e.get("shape") or (f"word {e['word']}" if e.get("word") else "?"))
+
+
+def review_behaviour(events: list[Event]) -> list[Proposal]:
+    """For a person: what people did says something the vocabulary cannot
+    fix, in the engine or in the app."""
+    found = []
+    # The engine's first route is not the one people take.
+    choices: dict[str, list[Event]] = defaultdict(list)
+    for e in events:
+        if _is_choice(e):
+            choices[drawn(e)].append(e)
+    for what, es in sorted(choices.items()):
+        others = [e for e in es if e.get("index") != 0]
+        n, places = len(es), sources(es)
+        if n < MIN_CHOICES or places < MIN_SOURCES or len(others) / n < 0.5:
+            continue
+        picked = dict(
+            sorted(Counter("ABC"[int(e.get("index") or 0)] for e in es).items())
+        )
+        found.append(
+            Proposal(
+                _id("review_ranking", what),
+                "review_ranking",
+                f"For the {what}, people took another route than A, the engine's "
+                f"first, {len(others)} times out of {n} ({picked})"
+                ": does the ranking miss what they like (smoother, shorter)?",
+                evidence=n,
+                examples=[_example(e) for e in es[:EXAMPLES]],
+                checks=[
+                    f"{n} choices among two or three routes (at least {MIN_CHOICES})",
+                    f"not A in {len(others)} of them (at least half)",
+                    f"on {places} different days (at least {MIN_SOURCES})",
+                ],
+            )
+        )
+    # "Try N km" taken, again and again, for the same drawing.
+    tried: dict[str, list[Event]] = defaultdict(list)
+    for e in events:
+        if e["kind"] == "hint_taken" and e.get("hint") == "try_distance":
+            tried[drawn(e)].append(e)
+    for what, es in sorted(tried.items()):
+        n, places = len(es), sources(es)
+        if n < MIN_EVIDENCE or places < MIN_SOURCES:
+            continue
+        before = sorted(int(e.get("distance_m") or 0) for e in es)
+        after = sorted(int(e.get("to_m") or 0) for e in es)
+        found.append(
+            Proposal(
+                _id("review_distance", what),
+                "review_distance",
+                f"The {what} did not fit at {before[n // 2] / 1000:g} km (the "
+                f'median), and people took "Try {after[n // 2] / 1000:g} km" {n} '
+                "times: say it before drawing, or start from that distance?",
+                evidence=n,
+                examples=[_example(e) for e in es[:EXAMPLES]],
+                checks=[
+                    f'"Try N km" taken {n} times (at least {MIN_EVIDENCE})',
+                    f"on {places} different days (at least {MIN_SOURCES})",
+                ],
+            )
+        )
+    return found
+
+
+# --- any change, by date (TASK-142) -------------------------------------------
+
+
+def between(
+    events: Iterable[Event], since: str | None = None, until: str | None = None
+) -> list[Event]:
+    """The events from the day `since` to the day before `until`
+    (YYYY-MM-DD); events without a time are kept only without limits."""
+    out = []
+    for e in events:
+        day = str(e.get("ts", ""))[:10]
+        if (since and day < since) or (until and day >= until):
+            continue
+        out.append(e)
+    return out
+
+
+def compare_periods(events: Iterable[Event], split: str) -> dict[str, Any]:
+    """Every rate before the day `split` against from it on: what a change
+    of that day did (a merge of the engine, a new catalogue, an app update),
+    whatever it changed. The same test as `impact`."""
+    events = list(events)
+    before, after = between(events, until=split), between(events, since=split)
+    b, a = counts(before), counts(after)
+    rates = {
+        name: compare(b[name], a[name], r.better) | {"behaviour": r.behaviour}
+        for name, r in RATES.items()
+    }
+    worse = [n for n, c in rates.items() if c["verdict"] == "worse"]
+    better = [n for n, c in rates.items() if c["verdict"] == "better"]
+    if worse:
+        verdict = f"worse ({', '.join(worse)})"
+        if better:
+            verdict += f", better ({', '.join(better)})"
+    elif better:
+        verdict = f"better ({', '.join(better)})"
+    elif all(c["verdict"] == "too few" for c in rates.values()):
+        verdict = f"too few events to tell (at least {MIN_COMPARE} each side)"
+    else:
+        verdict = "no clear change"
+    means = {
+        name: {"before": f(before), "after": f(after)}
+        for name, f in (
+            (
+                "route_mean_similarity",
+                lambda es: _mean(
+                    [float(e["quality"]) for e in es if _is_route(e) and "quality" in e]
+                ),
+            ),
+            (
+                "route_mean_ms",
+                lambda es: _mean(
+                    [float(e["ms"]) for e in es if _ok_route(e) and "ms" in e]
+                ),
+            ),
+        )
+    }
+    return {
+        "split": split,
+        "events_before": len(before),
+        "events_after": len(after),
+        "rates": rates,
+        "means": means,
+        "verdict": verdict,
+    }
+
+
+TREND = (
+    "route_success_rate",
+    "cancel_rate",
+    "first_choice_rate",
+    "explore_empty_rate",
+    "themed_success_rate",
+    "ai_rate",
+    "gpx_per_route",
+)
+
+
+def week_of(e: Event) -> str:
+    t = when(e)
+    if t is None:
+        return "?"
+    year, week, _ = date(t.year, t.month, t.day).isocalendar()
+    return f"{year}-W{week:02d}"
+
+
+def by_week(events: Iterable[Event]) -> dict[str, dict[str, Any]]:
+    """The main rates week by week: whether the search gets better."""
+    grouped: dict[str, list[Event]] = defaultdict(list)
+    for e in events:
+        grouped[week_of(e)].append(e)
+    out = {}
+    for week, es in sorted(grouped.items()):
+        m = metrics(es)
+        out[week] = {"events": m["events"], **{k: m[k] for k in TREND}}
+    return out
+
+
+# --- why (not) a proposal (TASK-142) -------------------------------------------
+
+
+@dataclass
+class Check:
+    """One rule of the proposals, for some words: met, and what is missing."""
+
+    rule: str
+    met: bool
+    detail: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return {"rule": self.rule, "met": self.met, "detail": self.detail}
+
+
+def _needs(have: int, need: int, what: str) -> str:
+    return f"{have} {what} (needs {need})" if have < need else f"{have} {what}"
+
+
+def diagnose(
+    events: Iterable[Event],
+    vocab: Vocabulary,
+    words: str,
+    core: Core = phrase_key,
+    theme_words: Words | None = None,
+    shape_words: Words | None = None,
+) -> dict[str, Any]:
+    """Every rule of `proposals` against the events of some words: what they
+    have, and what each rule still misses. The answer to "why was this not
+    learned?", and the evidence of why it was."""
+    events = list(events)
+    key = core(words)
+    text = phrase_key(words)
+    mine = [
+        e
+        for e in events
+        if (e.get("text") and (phrase_key(e["text"]) == text or key_of(e, core) == key))
+        or str(e.get("word") or "").lower() == text
+    ]
+    checks: list[Check] = []
+
+    themed = [e for e in mine if e["kind"] == "themed" and e.get("by") == "ai"]
+    answers = sorted({str(e.get("theme")) for e in themed})
+    n, places = len(themed), sources(themed)
+    checks.append(
+        Check(
+            "theme_synonym",
+            n >= MIN_EVIDENCE
+            and places >= MIN_SOURCES
+            and len(answers) == 1
+            and "None" not in answers,
+            f"read by the AI as a theme: {_needs(n, MIN_EVIDENCE, 'times')}, "
+            f"answers {answers or 'none'}, "
+            f"{_needs(places, MIN_SOURCES, 'days or places')}"
+            + (
+                f"; in the vocabulary: {vocab.theme_for(key)}"
+                if vocab.theme_for(key)
+                else ""
+            ),
+        )
+    )
+
+    shaped = [e for e in mine if e["kind"] == "shape_reading" and e.get("by") == "ai"]
+    answers = sorted({str(e.get("shape")) for e in shaped})
+    n, places = len(shaped), sources(shaped)
+    near = [
+        (t, *hit)
+        for t in _tokens(text)
+        if (hit := near_word(t, shape_words or {})) is not None
+    ]
+    spelt = ", ".join(f'"{t}" ~ "{w}" ({name})' for t, w, name in near) or "none"
+    checks.append(
+        Check(
+            "shape_synonym / correction / conflict",
+            places >= MIN_SOURCES
+            and len(answers) == 1
+            and "None" not in answers
+            and n >= (MIN_CORRECTION if near else MIN_EVIDENCE),
+            f"read by the AI as a shape: {n} times (needs {MIN_EVIDENCE}, or "
+            f"{MIN_CORRECTION} when misspelt), answers {answers or 'none'}, "
+            f"{_needs(places, MIN_SOURCES, 'days or places')}; near the "
+            f"tables' words: {spelt}",
+        )
+    )
+
+    if theme_words:
+        tokens = [(t, near_stem(t, theme_words)) for t in _tokens(key)]
+        hits = [(t, hit) for t, hit in tokens if hit is not None]
+        failed = [
+            e
+            for e in mine
+            if e["kind"] == "themed"
+            and (e.get("by") in ("ai", "learned") or e.get("code") == "theme_unknown")
+        ]
+        n, places = len(failed), sources(failed)
+        checks.append(
+            Check(
+                "correction (themes)",
+                bool(hits) and n >= MIN_CORRECTION and places >= MIN_SOURCES,
+                "misspelt words: "
+                + (", ".join(f'"{t}" ~ "{s}…" ({th})' for t, (s, th) in hits) or "none")
+                + f"; requests the tables did not read: "
+                f"{_needs(n, MIN_CORRECTION, 'times')}, "
+                f"{_needs(places, MIN_SOURCES, 'days or places')}",
+            )
+        )
+
+    seen = switches(events).get(text)
+    if seen is None:
+        checks.append(Check("city_name", False, "never searched as a city"))
+    else:
+        searches = seen["searches"]
+        best = max(seen["to"].items(), key=lambda kv: len(kv[1]), default=None)
+        if best is None:
+            detail = (
+                f"searched {len(searches)} times as a city, never left within "
+                f"{REFORMULATED_S // 60} minutes for a city it could mean"
+            )
+            met = False
+        else:
+            name, es = best
+            n, places = len(es), sources(es)
+            met = (
+                n >= MIN_CORRECTION
+                and places >= MIN_SOURCES
+                and n / len(searches) >= MIN_SWITCH_SHARE
+            )
+            detail = (
+                f"left for {name}: {_needs(n, MIN_CORRECTION, 'times')} of "
+                f"{len(searches)} searches (needs {MIN_SWITCH_SHARE:.0%}), "
+                f"{_needs(places, MIN_SOURCES, 'days')}"
+            )
+        if vocab.city_for(text):
+            detail += f"; in the vocabulary: {vocab.city_for(text)}"
+        checks.append(Check("city_name", met, detail))
+
+    drawn_word = sum(
+        e["kind"] == "route"
+        and e.get("outcome") == "ok"
+        and e.get("word") == text.upper()
+        for e in events
+    )
+    checks.append(
+        Check(
+            "catalog_phrase",
+            drawn_word >= MIN_EVIDENCE,
+            f"drawn as a word: {_needs(drawn_word, MIN_EVIDENCE, 'times')}",
+        )
+    )
+    unknown = sum(
+        e["kind"] == "themed" and e.get("code") == "theme_unknown" for e in mine
+    )
+    checks.append(
+        Check(
+            "review_unknown_theme",
+            unknown >= MIN_EVIDENCE,
+            f"no theme found: {_needs(unknown, MIN_EVIDENCE, 'times')}",
+        )
+    )
+    return {
+        "words": words,
+        "key": key,
+        "events": len(mine),
+        "by_kind": dict(sorted(Counter(e["kind"] for e in mine).items())),
+        "outcomes": dict(sorted(Counter(str(e.get("outcome")) for e in mine).items())),
+        "readers": dict(
+            sorted(Counter(str(e.get("by")) for e in mine if e.get("by")).items())
+        ),
+        "sources": sources(mine),
+        "checks": [c.as_dict() for c in checks],
+        "examples": [_example(e) for e in mine[-EXAMPLES:]],
+    }

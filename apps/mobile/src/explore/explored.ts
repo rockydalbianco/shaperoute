@@ -52,7 +52,7 @@ export function toResult(detail: RecommendedRouteDetail): RouteResult {
     similarity: detail.similarity,
     shape: isShape(detail.shape) ? detail.shape : null,
     warnings: [],
-    // Planned ahead, without turn-by-turn: no Start, only the GPX.
+    // Planned ahead, without turn-by-turn: Start asks for them (TASK-145).
     directions: [],
     word: detail.word,
   };

@@ -15,6 +15,8 @@ test("shows the route, the places it passes by, and exports", async () => {
       exporting={{ status: "idle" }}
       onExport={onExport}
       onCancel={jest.fn()}
+      start={{ status: "idle" }}
+      onStart={jest.fn()}
     />,
   );
   expect(screen.getByText("10.1 km")).toBeOnTheScreen();
@@ -33,6 +35,8 @@ test("waiting, it can be cancelled; failed, it says why", async () => {
       exporting={{ status: "idle" }}
       onExport={jest.fn()}
       onCancel={onCancel}
+      start={{ status: "idle" }}
+      onStart={jest.fn()}
     />,
   );
   await fireEvent.press(screen.getByText("Cancel"));
@@ -43,6 +47,8 @@ test("waiting, it can be cancelled; failed, it says why", async () => {
       exporting={{ status: "idle" }}
       onExport={jest.fn()}
       onCancel={onCancel}
+      start={{ status: "idle" }}
+      onStart={jest.fn()}
     />,
   );
   expect(screen.getByText("No places here.")).toBeOnTheScreen();

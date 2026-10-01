@@ -251,3 +251,29 @@ def test_a_word_is_logged_and_kept_as_a_word(tmp_path: Path) -> None:
     assert all("shape" not in r for r in torino["routes"])
     assert styles == {"round", "block"}
     assert (tmp_path / "gpx" / "torino_CEREA-round_19km.gpx").exists()
+
+
+def test_each_city_is_prepared_once_before_its_cases(tmp_path: Path) -> None:
+    order: list[str] = []
+
+    def planner(case: Case, start: LatLon) -> RouteResult:
+        order.append(case.key)
+        return _result(0.9)
+
+    def prepare(city: str, todo: list[Case]) -> None:
+        order.append(f"prepare {city} ({len(todo)})")
+        if city == "bari":
+            raise OSError("Overpass refused")
+
+    todo = cases(["bari", "verona"], ["heart", "star"], [5000])
+    said: list[str] = []
+    run_cases(todo, planner, tmp_path / "runs.jsonl", say=said.append, prepare=prepare)
+    assert order == [
+        "prepare bari (2)",
+        "bari/heart/5000",
+        "bari/star/5000",
+        "prepare verona (2)",
+        "verona/heart/5000",
+        "verona/star/5000",
+    ]
+    assert said[0] == "bari: zone not loaded (OSError)"

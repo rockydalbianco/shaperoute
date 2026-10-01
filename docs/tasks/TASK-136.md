@@ -1,6 +1,6 @@
 # TASK-136 — La CLI non salva più i ritagli dei grafi
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `fix/TASK-136-no-saved-crops`
 
 Task di miglioramento generale scelto dall'agente su delega dell'utente
@@ -60,13 +60,14 @@ Due effetti in più:
 
 ## Criteri di accettazione
 
-- [ ] Un percorso dalla CLI dentro una zona in cache non aggiunge file in
+- [x] Un percorso dalla CLI dentro una zona in cache non aggiunge file in
       `data/cache/` (test).
-- [ ] Il grafo ritagliato è lo stesso di `crop(zona, area)` (test).
-- [ ] Una zona nuova scaricata si salva ancora (test esistenti verdi).
-- [ ] `prune_crops` senza `--delete` non cancella nulla; con `--delete`
+- [x] Il grafo ritagliato è lo stesso di `crop(zona, area)` (test).
+- [x] Una zona nuova scaricata si salva ancora (test, con un download
+      finto: quello vero è marcato `network`).
+- [x] `prune_crops` senza `--delete` non cancella nulla; con `--delete`
       toglie solo grafi contenuti in un altro che resta (test).
-- [ ] Test del route-engine e dell'API verdi; `ruff` e `black` puliti.
+- [x] Test del route-engine e dell'API verdi; `ruff` e `black` puliti.
 
 ## File toccati
 
@@ -96,4 +97,11 @@ TASK-130 e TASK-134: non si tocca qui.
 
 ## Esito
 
-*(a fine task)*
+Fatto (ADR-0108). La CLI e `seed_catalog` ritagliano in memoria e non
+salvano più: una partenza nuova a Milano passa da 11,8 a 5,5 s senza
+scrivere 108 MB, la stessa richiesta rifatta costa 0,4–2,6 s in più;
+stesso percorso punto per punto. `prune_crops` sul Mac trova 346 ritagli,
+17,9 GB, in 8 zone; **non cancellati**: aspetta il sì dell'utente.
+L'ADR è la 0108 perché la 0107 l'ha presa TASK-131 mentre il task era in
+corso. `docs/API.md` cita ancora la CLI che salva i ritagli (ADR-0023): è di
+TASK-130 e TASK-134, da correggere quando si libera.

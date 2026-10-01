@@ -68,6 +68,12 @@ la fa l'utente**, una domanda per volta.
    in Expo Go. «Ho dimenticato la password» arriva dopo, con un servizio che
    manda email. Scelta dell'utente (2026-10-01).
 
+4. **Chi vede una corsa salvata**: solo chi l'ha fatta, finché non la
+   pubblica con «Public»; pubblicata, la vedono tutti gli iscritti. Agli
+   altri non si mostrano i primi e gli ultimi 200 m della traccia. Scelta
+   dell'utente (2026-10-01), fra privata, pubblica con 200 m nascosti e
+   pubblica intera.
+
 ## Criteri di accettazione
 
 - [ ] ADR-0013 ha stato «Attiva» o è sostituita da ADR nuovi, con hosting,

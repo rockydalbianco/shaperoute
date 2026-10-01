@@ -26,6 +26,8 @@ SHAPES = (
     "snail",
     "dog_head",
     "rabbit_head",
+    "pumpkin",
+    "christmas_tree",
 )
 
 

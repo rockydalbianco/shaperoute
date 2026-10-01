@@ -27,6 +27,8 @@ OUTLINES: dict[str, str] = {
     "snail": "a snail seen from the side, with a spiral shell and two horns",
     "dog_head": "the head of a dog, with long hanging ears, eyes and a nose",
     "rabbit_head": "the head of a rabbit, with two long upright ears and eyes",
+    "pumpkin": "a Halloween pumpkin, with a stem, carved eyes and a grin",
+    "christmas_tree": "a decorated Christmas tree with a star on top, not a plain tree",
 }
 
 SYSTEM = """\

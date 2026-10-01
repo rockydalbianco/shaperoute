@@ -65,7 +65,8 @@ Una forma può anche arrivare da un **contorno** in JSON (ADR-0035): dalla
 CLI con `--outline FILE`, oppure registrata in `SHAPES` come le altre. Le
 forme registrate sono il **catalogo** e sono contratto (ADR-0036): `circle`,
 `heart`, `star`, `horse`, `moon`, `cat`, `fish`, `butterfly`, `snail`,
-`dog_head`, `rabbit_head`. Un contorno entra nel catalogo solo dopo il
+`dog_head`, `rabbit_head`, `pumpkin`, `christmas_tree`. `tree`
+(TASK-034) è un altro contorno, e non è nel catalogo. Un contorno entra nel catalogo solo dopo il
 giudizio a occhio dell'utente sulle strade.
 
 ```json
@@ -439,6 +440,32 @@ Il provider definitivo di routing (OSMnx locale, OSRM, GraphHopper, Valhalla)
 è una decisione aperta. Per la fase 1 si usa OSMnx perché gira in locale
 senza server, il che rende il ciclo di prova rapidissimo.
 
+### Da una linea ai suoi nodi (TASK-145)
+
+I percorsi di «Explore» arrivano all'app come soli punti: il catalogo non
+tiene altro. `route_nodes.nodes_along(graph, points)` ritrova i nodi del
+grafo per cui passa la linea, per darle le indicazioni di svolta
+(`directions.guidance`) come a un percorso pianificato (ADR-0117). Funziona
+perché i punti del motore sono i nodi e la geometria dell'arco più corto
+fra due nodi (`_edge_points`): ogni nodo è uno dei punti, anche arrotondato
+a 6 decimali come nei file (circa 0,1 m).
+
+- Un punto entro **1 m** da un nodo è quel nodo (`MATCH_M`); lo stesso
+  nodo su punti di fila conta una volta.
+- Un nodo che sta solo vicino alla linea (un ponte sopra una via, la
+  geometria di un arco che sfiora un incrocio di un'altra strada) si scarta
+  quando il nodo dopo si collega senza di lui.
+- Due nodi senza strada fra loro, perché la zona è stata riscaricata e
+  OpenStreetMap è cambiato, si uniscono con la via più breve se non supera
+  **2 volte** il tratto di linea fra i due, più **50 m**; altrimenti il
+  nodo si salta.
+- Meno di due nodi trovati: `RouteNotOnGraphError` (un
+  `InvalidRequestError`), la linea non è su questa mappa.
+
+Su 4 percorsi appena pianificati (Trento, Bologna, con le alternative) le
+indicazioni ricavate dai punti sono identiche a quelle del motore: nodo,
+svolta, via, `along` e distanza.
+
 ## 5. Ottimizzazione e somiglianza
 
 La forma non si disegna a scala e rotazione fisse: si adatta alle strade
@@ -522,7 +549,9 @@ da alcuni nodi della rete vicini e tiene il percorso migliore:
    al più altri 8 s, e mai oltre 25 s dalla richiesta; nessuno se il suo
    percorso è già buono. Quelle ancora in corso si lasciano. Non si provano
    su grafi oltre 30 000 nodi (Milano) né in più processi di quanti ne
-   entrano nella memoria libera.
+   entrano nella memoria che un processo nuovo può prendere: su Linux
+   MemAvailable, che conta anche la cache dei file, non la memoria libera
+   (TASK-147).
 4. **Quale si tiene** (scelta dell'utente): il cuore migliore fra tutti,
    anche quello che la ricerca ha spostato («Start here»). Conta la
    somiglianza, meno la distanza oltre il 10% dal target; fra i candidati
@@ -639,6 +668,18 @@ cambia. La stella ne ha molti (5–59%: le punte si raggiungono spesso
 andando e tornando): cambiano Levico 5 km (59% → 52%), Levico 8 km
 (39% → 17%) e Trento 15 km (6% → 2%), gli altri 4 no. Un peso doppio
 toglie più baffi ma fa perdere la forma (Levico 5 km 0,81 → 0,73): scartato.
+
+Da TASK-140 (ADR-0118) si contano solo i baffi **in più** rispetto ai
+tratti che la forma ripassa apposta (`extra_doubled_share`): la quota
+della forma piazzata fatta due volte (occhi, antenne, spirale) si toglie
+da quella del percorso. Per una forma senza tratti è zero, quindi cuore,
+cerchio e stella restano quelli di prima. Il peso vale anche per
+**cavallo, luna, farfalla e lumaca**; non per gatto, pesce, testa di cane e
+testa di coniglio, dove l'utente ha preferito i percorsi di prima (meno
+baffi, ma la forma si legge peggio). Sulle 7 partenze di prova, per le 11
+forme del catalogo (77 percorsi), cambiano solo luna a Trento 15 km
+(14% → 0%), farfalla a Levico 8 km e lumaca a Levico 12 km (75% → 42%);
+il cavallo non cambia mai.
 
 ### Misura della somiglianza
 

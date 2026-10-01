@@ -88,6 +88,12 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   nome solo quando è intero (ADR-0104): un'API o uno script fermati a metà
   non lasciano un file rotto che faccia fallire la zona. Un `.part`
   rimasto da un processo ucciso non viene mai letto, e si può cancellare.
+- **Ritagli salvati prima di TASK-136** (ADR-0108): `python -m
+  route_engine.prune_crops` elenca, zona per zona, i grafi che un altro
+  grafo della cache contiene; con `--delete` li cancella, GraphML e
+  pickle. Si rifanno dalla zona senza rete. Sul Mac, il 2026-10-01, erano
+  346 su 355, 17,9 GB su 18,6. Zone, nomi delle vie, `walk_*` e `http/`
+  restano.
 
 ## Area scaricata
 
@@ -96,8 +102,9 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   più la partenza spostabile (500 m, ADR-0025) e 500 m di margine
   (`zone_area`). Per 15 km circa 12,5 km di lato (155 km²). Si scarica **un grafo per zona**, partendo dal caso
   più grande (cerchio da 15 km): ogni area più piccola si **ritaglia** da un
-  grafo in cache che la contiene (`crop`) e il ritaglio si salva col suo
-  nome.
+  grafo in cache che la contiene (`crop`). Il ritaglio resta in memoria e
+  non si salva (ADR-0108): fino a TASK-136 la CLI lo salvava col suo nome,
+  3–170 MB per partenza.
 - **Senza** (`--no-optimize`): il rettangolo della forma teorica proiettata,
   più **500 m per lato** (`AREA_MARGIN_M`).
 

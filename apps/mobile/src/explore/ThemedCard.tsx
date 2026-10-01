@@ -12,7 +12,9 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { ExploreStart } from "./ExploreStart";
 import type { ThemedResult } from "./themedRoutes";
+import type { StartView } from "./useStartDirections";
 import type { ThemedState } from "./useThemedRoute";
 
 function isShape(value: string): value is Shape {
@@ -39,7 +41,7 @@ export function themedGpx(
       similarity: result.similarity,
       shape: result.shape,
       warnings: [],
-      // Planned without turn-by-turn: no Start, only the GPX.
+      // Planned without turn-by-turn: Start asks for them (TASK-145).
       directions: [],
     },
   };
@@ -60,10 +62,20 @@ type Props = {
   exporting: ExportState;
   onExport: () => void;
   onCancel: () => void;
+  /** Turn-by-turn along it, the directions asked for first (TASK-145). */
+  start: StartView;
+  onStart: () => void;
 };
 
 /** Under the map: a shape through the places of a theme (TASK-129). */
-export function ThemedCard({ state, exporting, onExport, onCancel }: Props) {
+export function ThemedCard({
+  state,
+  exporting,
+  onExport,
+  onCancel,
+  start,
+  onStart,
+}: Props) {
   if (state.status === "idle") {
     return null;
   }
@@ -113,6 +125,7 @@ export function ThemedCard({ state, exporting, onExport, onCancel }: Props) {
       {passed.length > 0 && (
         <Text style={styles.places}>{passed.map((s) => s.name).join(" · ")}</Text>
       )}
+      <ExploreStart start={start} onStart={onStart} />
       <Pressable
         style={styles.secondary}
         onPress={onExport}

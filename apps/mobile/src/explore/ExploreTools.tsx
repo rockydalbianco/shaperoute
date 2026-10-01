@@ -1,3 +1,4 @@
+import type { CityChosenSignal, Signal } from "@shaperoute/shared-types/src/signals";
 import { useEffect, useState } from "react";
 import {
   Keyboard,
@@ -9,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import { sendSignal } from "../api/signals";
 import type { Place } from "../places/photon";
 import {
   color,
@@ -24,6 +26,7 @@ import {
   cityShort,
   exampleFor,
   FEATURED_CITIES,
+  isSpot,
   requestFor,
   suggestionDetail,
   whereFor,
@@ -43,6 +46,8 @@ type CityProps = {
   /** Injected in tests. */
   fetchFn?: typeof fetch;
   suggestDelayMs?: number;
+  /** Tells the API the city chosen, and how (TASK-142); POST /signals. */
+  onSignal?: (signal: Signal) => void;
 };
 
 /**
@@ -58,6 +63,7 @@ export function CityPicker({
   recent = [],
   fetchFn = fetch,
   suggestDelayMs = SUGGEST_DELAY_MS,
+  onSignal = (signal) => void sendSignal(signal, { baseUrl: apiUrl, fetchFn }),
 }: CityProps) {
   const [query, setQuery] = useState("");
   const [found, setFound] = useState<{ query: string; places: Place[] | null } | null>(
@@ -88,16 +94,25 @@ export function CityPicker({
     };
   }, [apiUrl, query, fetchFn, suggestDelayMs]);
 
-  function choose(place: Place) {
+  /** A city or a place chosen, and how: a suggestion picked never calls
+   * /cities, so the API hears of it only from the signal (TASK-142). */
+  function choose(place: Place, via: CityChosenSignal["via"]) {
     Keyboard.dismiss();
     setQuery("");
     setFound(null);
     setFailed(false);
     onCity(place);
+    onSignal({
+      kind: "city_chosen",
+      label: place.label,
+      point: place.point,
+      ...(isSpot(place) ? { place: true } : {}),
+      via,
+    });
   }
 
   /** A city by name (a chip, or Enter): its centre from the API. */
-  async function open(name: string) {
+  async function open(name: string, via: "featured" | "typed") {
     if (apiUrl === null) {
       setFailed(true);
       return;
@@ -107,7 +122,7 @@ export function CityPicker({
     const cities = await searchCities(apiUrl, name, { fetchFn });
     setOpening(null);
     if (cities !== null && cities.length > 0) {
-      choose(cities[0]);
+      choose(cities[0], via);
     } else {
       setFailed(true);
     }
@@ -119,9 +134,9 @@ export function CityPicker({
   /** Enter takes the first suggestion, as a tap on it; else the city by name. */
   function submit() {
     if (suggestions !== null && suggestions.length > 0) {
-      choose(suggestions[0]);
+      choose(suggestions[0], "suggestion");
     } else if (typed !== "") {
-      void open(typed);
+      void open(typed, "typed");
     }
   }
   const recentNames = new Set(recent.map((p) => cityShort(p.label)));
@@ -138,7 +153,7 @@ export function CityPicker({
               label={cityShort(place.label)}
               on={city?.label === place.label}
               recent
-              onPress={() => choose(place)}
+              onPress={() => choose(place, "recent")}
             />
           ))}
           {featured.map((name) => (
@@ -146,7 +161,7 @@ export function CityPicker({
               key={name}
               label={opening === name ? `${name} …` : name}
               on={city !== null && cityShort(city.label) === name}
-              onPress={() => void open(name)}
+              onPress={() => void open(name, "featured")}
             />
           ))}
         </View>
@@ -170,7 +185,7 @@ export function CityPicker({
         <Pressable
           key={place.label}
           style={({ pressed }) => [styles.choice, pressed && styles.pressed]}
-          onPress={() => choose(place)}
+          onPress={() => choose(place, "suggestion")}
           accessibilityRole="button"
           accessibilityLabel={place.label}
         >

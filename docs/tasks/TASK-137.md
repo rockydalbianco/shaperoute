@@ -95,8 +95,9 @@ ritagli: TASK-136).
       danno un percorso o un errore onesto (`no_places`,
       `shape_not_drawable`), mai `map_data_unavailable`, con Overpass
       irraggiungibile (tabella sotto).
-- [ ] Mai due download insieme; il primo errore di Overpass ferma il
-      comando; sotto i 5 GB liberi non scarica (test).
+- [ ] Mai due download insieme; due errori di Overpass di fila fermano il
+      comando (prima: il primo errore, ADR-0118); sotto i 5 GB liberi non
+      scarica (test).
 - [ ] Test dell'API verdi; `ruff`, `black` e tipi puliti; il motore non
       importa niente dall'API.
 - [ ] Lo spazio aggiunto alla cache è annotato.

@@ -52,6 +52,9 @@ DEFAULT_PAUSE_S = 60.0
 # Overpass gives each address two slots; a slot is free again some seconds
 # after a query. Longer than this, the command stops instead of waiting.
 MAX_SLOT_WAIT_S = 300.0
+# A busy Overpass answers 504 now and then: a city that fails is left for
+# the next run; this many failures in a row stop the command.
+MAX_FAILURES_IN_A_ROW = 2
 OVERPASS_STATUS = "https://overpass-api.de/api/status"
 USER_AGENT = "ShapeRoute zone prefetch (https://github.com/rockydalbianco/shaperoute)"
 
@@ -257,8 +260,9 @@ def prefetch(
     clock: Callable[[], float] = time.monotonic,
     report: Callable[[Outcome], None] = lambda o: None,
 ) -> list[Outcome]:
-    """Each city ready, downloaded, missing or not found, in order. After
-    the first stop, the cities left are missing without being tried."""
+    """Each city ready, downloaded, missing or not found, in order. A city
+    whose download fails is missing; after a stop (failures in a row,
+    Overpass silent, the disk, the budget) the cities left are not tried."""
     if free_bytes is None:
 
         def free_bytes() -> int:
@@ -267,6 +271,8 @@ def prefetch(
     outcomes: list[Outcome] = []
     stopped: str | None = None
     downloads = 0
+    tries = 0
+    failures = 0
 
     def done(outcome: Outcome) -> None:
         outcomes.append(outcome)
@@ -301,7 +307,7 @@ def prefetch(
             stopped = "less than 5 GB free on the disk"
             done(Outcome(city, "missing", stopped))
             continue
-        if downloads > 0:
+        if tries > 0:
             sleep(pause_s)
         wait = overpass_wait()
         if wait is None:
@@ -311,17 +317,22 @@ def prefetch(
         if wait > 0:
             sleep(wait + 2)
         started = clock()
+        tries += 1
         try:
             if not graph:
                 source.load(box)
             source.named_roads(box, download=True)
         except Exception as exc:
             code = http_code(exc)
-            stopped = f"the download failed ({type(exc).__name__}" + (
+            failed = f"the download failed ({type(exc).__name__}" + (
                 f" {code})" if code is not None else ")"
             )
-            done(Outcome(city, "missing", stopped))
+            failures += 1
+            if failures >= MAX_FAILURES_IN_A_ROW:
+                stopped = f"{failures} downloads failed in a row, the last: {failed}"
+            done(Outcome(city, "missing", failed))
             continue
+        failures = 0
         downloads += 1
         path = source.covering_path(box)
         megabytes = (

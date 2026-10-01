@@ -155,12 +155,22 @@ def test_a_cached_zone_without_names_gets_only_the_names(tmp_path: Path) -> None
     assert names_cached(tmp_path, zone_box(VERCELLI))
 
 
-def test_the_first_failure_stops_and_names_the_cities_left(tmp_path: Path) -> None:
+def test_a_failed_city_is_left_two_failures_in_a_row_stop(tmp_path: Path) -> None:
     source = Source(tmp_path, fail_on={"Lucca"})
-    outcomes = run(source, ["Vercelli", "Lucca", "Lecce"])
-    assert [o.status for o in outcomes] == ["downloaded", "missing", "missing"]
-    assert "download failed" in outcomes[1].detail
-    assert len(source.loaded) == 1  # Lecce was not tried
+    pauses: list[float] = []
+    outcomes = run(
+        source, ["Lucca", "Vercelli", "Lecce"], pause_s=60.0, sleep=pauses.append
+    )
+    assert [o.status for o in outcomes] == ["missing", "downloaded", "downloaded"]
+    assert "download failed" in outcomes[0].detail
+    assert pauses == [60.0, 60.0]  # after the failure too
+
+    stopping = Source(tmp_path / "other", fail_on={"Lucca", "Lecce", "Vercelli"})
+    stopping.cache_dir.mkdir()
+    cities = ["Lucca", "Lecce", "Vercelli"]
+    outcomes = run(stopping, cities)
+    assert [o.status for o in outcomes] == ["missing", "missing", "missing"]
+    assert "not tried: 2 downloads failed in a row" in outcomes[2].detail
 
 
 def test_overpass_silent_or_a_full_disk_downloads_nothing(tmp_path: Path) -> None:

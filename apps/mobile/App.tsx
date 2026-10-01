@@ -61,6 +61,7 @@ import { ChooseScreen } from "./src/screens/ChooseScreen";
 import { FinishBanner, FinishCard } from "./src/screens/FinishScreen";
 import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
+import { Tabs, useTabBar } from "./src/screens/Tabs";
 import { color } from "./src/theme/tokens";
 
 /** A route without directions: one list, so navigation does not restart. */
@@ -101,7 +102,10 @@ function leftRun(): Finished | null {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <Sgrava />
+      {/* «Draw» is the app as it was; «Profile» the account (TASK-115). */}
+      <Tabs apiUrl={API_URL}>
+        <Sgrava />
+      </Tabs>
       {/* The app is dark: light status bar text on any phone setting. */}
       <StatusBar style="light" />
     </SafeAreaProvider>
@@ -304,6 +308,10 @@ function Sgrava() {
     setShapeText(shapeName(picked));
     setScreen("choose");
   }
+
+  // The tabs under the screens that choose; the map and the run take the
+  // whole screen (TASK-115).
+  useTabBar(screen === "choose" || screen === "explore");
 
   return (
     <View style={styles.screen}>

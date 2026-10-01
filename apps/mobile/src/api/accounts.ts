@@ -1,0 +1,152 @@
+import {
+  type ApiError,
+  type Session,
+  type SignInRequest,
+  type SignUpRequest,
+  type User,
+  USER_ROLES,
+} from "@shaperoute/shared-types";
+
+import { apiKey, keyHeaders } from "./apiUrl";
+import { isApiError } from "./routes";
+
+/**
+ * Every way an account request can end (TASK-115). `retryAfterS` is the
+ * API's Retry-After, in seconds, when it says how long to wait.
+ */
+export type AccountOutcome<T> =
+  | { kind: "ok"; value: T }
+  | ({ kind: "api_error"; retryAfterS: number | null } & ApiError["error"])
+  | { kind: "unreachable"; url: string }
+  | { kind: "bad_answer"; status: number };
+
+type Options = { fetchFn?: typeof fetch; key?: string | null };
+
+/** The header that carries the session token (ADR-0120). */
+export function authHeaders(token: string): Record<string, string> {
+  return { Authorization: `Bearer ${token}` };
+}
+
+/** POST /accounts: signing up also signs in (docs/API.md, «Account»). */
+export function signUp(
+  baseUrl: string,
+  request: SignUpRequest,
+  options: Options = {},
+): Promise<AccountOutcome<Session>> {
+  return ask(
+    baseUrl,
+    "/accounts",
+    { method: "POST", body: request },
+    isSession,
+    options,
+  );
+}
+
+/** POST /session: the same answer as signing up. */
+export function signIn(
+  baseUrl: string,
+  request: SignInRequest,
+  options: Options = {},
+): Promise<AccountOutcome<Session>> {
+  return ask(
+    baseUrl,
+    "/session",
+    { method: "POST", body: request },
+    isSession,
+    options,
+  );
+}
+
+/** DELETE /session: signs out this phone only. */
+export function signOut(
+  baseUrl: string,
+  token: string,
+  options: Options = {},
+): Promise<AccountOutcome<null>> {
+  return ask(baseUrl, "/session", { method: "DELETE", token }, isEmpty, options);
+}
+
+/** GET /me: who the token belongs to, while its session lasts. */
+export function fetchMe(
+  baseUrl: string,
+  token: string,
+  options: Options = {},
+): Promise<AccountOutcome<User>> {
+  return ask(baseUrl, "/me", { method: "GET", token }, isUser, options);
+}
+
+/** DELETE /me: the account and everything that is its own, at once. */
+export function deleteAccount(
+  baseUrl: string,
+  token: string,
+  options: Options = {},
+): Promise<AccountOutcome<null>> {
+  return ask(baseUrl, "/me", { method: "DELETE", token }, isEmpty, options);
+}
+
+/** One account request. Never throws. */
+async function ask<T>(
+  baseUrl: string,
+  path: string,
+  { method, body, token }: { method: string; body?: unknown; token?: string },
+  accept: (body: unknown, status: number) => body is T,
+  { fetchFn = fetch, key = apiKey() }: Options,
+): Promise<AccountOutcome<T>> {
+  let response: Response;
+  try {
+    response = await fetchFn(`${baseUrl}${path}`, {
+      method,
+      headers: {
+        ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+        ...keyHeaders(key),
+        ...(token === undefined ? {} : authHeaders(token)),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    return { kind: "unreachable", url: baseUrl };
+  }
+  // A 204 has no body: reading it as JSON fails, and that is no answer.
+  const answer: unknown =
+    response.status === 204 ? null : await response.json().catch(() => undefined);
+  if (response.ok && accept(answer, response.status)) {
+    return { kind: "ok", value: answer };
+  }
+  return !response.ok && isApiError(answer)
+    ? { kind: "api_error", ...answer.error, retryAfterS: retryAfterOf(response) }
+    : { kind: "bad_answer", status: response.status };
+}
+
+/** Retry-After in seconds; the API never sends it as a date. */
+function retryAfterOf(response: Response): number | null {
+  const seconds = Number(response.headers.get("Retry-After") ?? undefined);
+  return Number.isFinite(seconds) && seconds >= 0 ? seconds : null;
+}
+
+function isEmpty(body: unknown, status: number): body is null {
+  return status === 204 && body === null;
+}
+
+export function isSession(body: unknown): body is Session {
+  return (
+    isRecord(body) &&
+    typeof body.token === "string" &&
+    body.token !== "" &&
+    isUser(body.user)
+  );
+}
+
+export function isUser(body: unknown): body is User {
+  return (
+    isRecord(body) &&
+    typeof body.id === "number" &&
+    typeof body.email === "string" &&
+    typeof body.username === "string" &&
+    (USER_ROLES as readonly unknown[]).includes(body.role) &&
+    typeof body.created_at === "string"
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}

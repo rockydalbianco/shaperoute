@@ -3101,3 +3101,34 @@ frequentate**.
 uguale si tengono e si propongono **tutti e due**; nessuno dei due passa
 davanti all'altro perché tocca strade meno frequentate (era la proposta
 dell'agente, scartata).
+
+## ADR-0095 — I luoghi da Geoapify, attraverso l'API
+**Stato**: Attiva · 2026-10-01 · servizio scelto dall'utente («Geoapify
+via l'API»); dettagli decisi dall'agente su delega dell'utente
+(TASK-123). Modifica ADR-0029 per i suggerimenti della partenza.
+
+**Contesto**: Photon pubblico risponde in 2–4 s (misurato il 2026-09-30 e
+il 2026-10-01, quasi tutto tempo del server). Nominatim è veloce ma le sue
+regole vietano l'autocompletamento.
+
+**Decisione**: `GET /places` nell'API chiede l'autocompletamento di
+Geoapify con la chiave `GEOAPIFY_API_KEY`, che resta sull'API. Stesse
+etichette di Photon («nome, area»), al più 5 luoghi, `lat`/`lon` come
+`bias=proximity`. Cache in memoria di 500 ricerche per un'ora, chiave del
+testo in minuscolo a spazi singoli e del punto arrotondato a 0,01°.
+Richiesta con `urllib` della libreria standard: nessuna dipendenza nuova.
+Il corpo è in `packages/shared-types/fixtures/places.json`, letto dai test
+dell'API e dell'app; senza tipo nuovo in `shared-types` (`Place` resta in
+`photon.ts`). L'app chiede all'API con 2,5 s di tempo; se manca, è lenta o
+dà errore usa Photon; dopo un 503 (niente chiave) non la richiede fino al
+riavvio. Senza chiave, `503 http_error`: nessun codice d'errore nuovo.
+
+**Alternative scartate**: la chiave nell'app (`EXPO_PUBLIC_…`): chiunque
+la legge dal pacchetto pubblicato; MapTiler e Photon sul Mac (scelta
+dell'utente); un codice d'errore `places_unavailable` (tocca il contratto
+per un caso che l'app tratta come ogni altro errore).
+
+**Conseguenza**: con l'API spenta la ricerca resta su Photon, lenta. Il
+piano gratuito di Geoapify regge 3000 ricerche al giorno, una per pausa
+di scrittura, meno quelle in cache.
+

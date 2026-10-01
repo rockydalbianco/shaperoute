@@ -23,6 +23,8 @@ from shaperoute_ai.reading import ShapeReader
 from shaperoute_api.access import KEY_HEADER, KEY_VARIABLE, Access, AccessConfigError
 from shaperoute_api.app import create_app
 from shaperoute_api.graphs import ZoneGraphs
+from shaperoute_api.places import KEY_VARIABLE as PLACES_KEY
+from shaperoute_api.places import PlaceSearch
 from shaperoute_api.request_log import DEFAULT_DIR, ON_VARIABLE, RequestLog, wanted
 
 DEFAULT_PORT = 8000
@@ -94,8 +96,12 @@ def main(argv: Sequence[str] | None = None) -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
     reader = ShapeReader(OllamaModel(args.ai_model, args.ai_url), SUPPORTED_SHAPES)
     request_log = RequestLog(args.request_log_dir) if wanted(args.request_log) else None
+    places = PlaceSearch.from_env()
     app = create_app(
-        ZoneGraphs(OsmnxSource(args.cache_dir)), reader=reader, request_log=request_log
+        ZoneGraphs(OsmnxSource(args.cache_dir)),
+        reader=reader,
+        request_log=request_log,
+        places=places,
     )
     host = "0.0.0.0" if args.lan else "127.0.0.1"
     here = f"http://127.0.0.1:{args.port}"
@@ -107,6 +113,10 @@ def main(argv: Sequence[str] | None = None) -> None:
         print(f"API key required in the {KEY_HEADER} header ({KEY_VARIABLE})")
     if access.posts_per_minute:
         print(f"At most {access.posts_per_minute} POSTs a minute from each client")
+    if places.key is None:
+        print(f"Place search off ({PLACES_KEY} not set): the app asks Photon")
+    else:
+        print(f"Places suggested by Geoapify ({PLACES_KEY})")
     if request_log is None:
         print("Route requests are not recorded (--request-log records them)")
     else:

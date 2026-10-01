@@ -77,6 +77,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-122 — L'API e il database sempre accesi** (`chore/TASK-122-hosting`,
+  ADR-0123): il database PostGIS e la sua copia notturna in
+  `deploy/compose.yaml`, le copie sul Mac (scelta dell'utente), la CI con
+  un'iscrizione e un ripristino. Manca lo spostamento del server su
+  `compose.yaml` (`DEPLOY.md` F.12), dopo il sì dell'utente.
 - **TASK-128 — Il catalogo seme: Firenze** (`feat/TASK-128-seed-catalog-more`,
   in revisione): Firenze nel catalogo (22 percorsi, 159 in 7 città); una
   zona per città, e la città salta se Overpass rifiuta. Mancano Napoli,

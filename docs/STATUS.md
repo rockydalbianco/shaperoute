@@ -90,6 +90,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-142: le ricerche imparano anche da cosa fa l'app
+  (ADR-0112, `docs/INSIGHTS.md`). `POST /signals` riceve la città scelta in
+  «Explore» e come, il percorso usato fra A·B·C, «Try N km» e la forma presa
+  dopo un errore; i percorsi annullati sono eventi. Nuove proposte:
+  `city_name` («levic» → Levico Terme, applicata `/cities` la cerca),
+  `review_ranking`, `review_distance`; Vercelli scelta fra i suggerimenti
+  ora si propone per il catalogo. Comandi `why`, `compare --split`, `trend`,
+  `--since/--until`. Corretto un errore di TASK-130: nessun percorso
+  dell'API era mai stato registrato. Provato su un'API di prova con
+  Geoapify. Per averlo sull'iPhone: riavviare l'API che l'app usa e
+  ripubblicare l'app (a fine coda dei merge, col coordinatore). Seguiti
+  possibili: esportare il tipo dei segnali da `shared-types/src/index.ts`,
+  ora che TASK-088 è entrato; la forma toccata dopo parole non lette
+  (`ShapeTiles.tsx`) come prova per i sinonimi.
 - **Motore** — TASK-140: luna, farfalla, lumaca (e il cavallo, che non
   cambia) evitano i baffi come cuore, cerchio e stella; si contano solo
   quelli oltre i tratti voluti della forma (ADR-0118). Gatto, pesce e le

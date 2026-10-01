@@ -535,8 +535,45 @@ da alcuni nodi della rete vicini e tiene il percorso migliore:
    resta quella della forma.
 
 Dalla CLI: `--nearby N` (N partenze vicine; senza, solo la partenza come
-prima). L'API la usa per le forme e le parole (`plan_request`), non per
-le immagini.
+prima). L'API la usa per le forme, le parole e, da TASK-093, le immagini
+(`plan_request`).
+
+### Altri percorsi fra cui scegliere (TASK-093)
+
+I percorsi delle partenze che non vincono non si buttano più
+(`alternatives.py`, ADR-0087): `Plan.alternatives` ne tiene fino a **2**,
+dal migliore, e l'API li manda all'app come `alternatives` del risultato.
+Un percorso entra solo se:
+
+- la sua somiglianza è al massimo **0,10** sotto la migliore fra tutti
+  (scelta dell'utente: «10 punti» del percento che l'app mostra);
+- non è **lo stesso percorso** di quello scelto o di uno già tenuto: lo è
+  quando ciascuno corre entro **20 m** dall'altro per il **90%** della sua
+  lunghezza (shapely, in metri), come una partenza a pochi metri che poi
+  prende le stesse strade, o il marciapiede di fronte. Due percorsi diversi
+  e buoni uguali si tengono tutti e due (ADR-0086).
+
+Il percorso scelto resta quello di prima. Una differenza sola: se il
+piano della partenza dell'utente è già buono, prima le vicine non si
+aspettavano; ora si aspettano al più **3 s** (`NEARBY_GOOD_GRACE_S`), solo
+per avere le alternative. Se in quei 3 s una vicina trova un percorso
+nettamente migliore (oltre 0,01), vince quello, come succedeva già senza
+piano buono. Misure del 2026-10-01 sul Mac, zone in memoria:
+
+| Richiesta | Tempo | Scelto | Alternative |
+|---|---|---|---|
+| cuore 10 km, Caldonazzo | 1,7 s | 0,86, uguale a ieri | 0,82 · 0,79 |
+| «CIAO» squadrato 12 km, Levico | 2,9 s | 0,89, uguale | nessuna (0,78 e meno) |
+| stella 5 km, Levico | 0,9 s | 0,81, uguale | 0,77 |
+| cuore 15 km, Trento | 6,0 s | 0,90 | 0,88 · 0,86 |
+| immagine 12 km, Trento | 2,8 s (1,5 prima) | 0,91 | 0,92 · 0,91 |
+| immagine 10 km, Caldonazzo | 1,5 s | 0,85 (0,75 prima) | 0,80 · 0,80 |
+
+Le indicazioni di svolta delle alternative costano 0,03–0,15 s in tutto.
+Le 8 richieste fatte dall'iPhone il 2026-10-01, rifatte dal registro,
+danno lo stesso percorso scelto punto per punto. Dove le partenze vicine
+sono poche (una sola a Levico, via Montebello) le alternative possono
+mancare: l'app mostra allora il percorso da solo, come prima.
 
 ### Lettere che si spostano (TASK-050)
 

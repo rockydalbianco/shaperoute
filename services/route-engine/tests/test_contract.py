@@ -6,6 +6,7 @@ from dataclasses import fields
 from pathlib import Path
 from typing import Any
 
+from route_engine.alternatives import MAX_ALTERNATIVES
 from route_engine.models import (
     MAX_DISTANCE_M,
     MIN_DISTANCE_M,
@@ -63,3 +64,10 @@ def test_shapes_activities_and_limits_match() -> None:
         "letter_distance_m": LETTER_DISTANCE_M,
         "styles": list(STYLES),
     }
+
+
+def test_alternatives_have_the_engine_limit_and_the_result_fields() -> None:
+    assert _load("route-alternatives.json") == {"max_alternatives": MAX_ALTERNATIVES}
+    for other in _load("route-result.json")["alternatives"]:
+        assert set(other) == _names(RouteResult)
+        assert other["alternatives"] == []

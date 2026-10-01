@@ -342,6 +342,16 @@ Risponde `200` con un `RouteResult`:
 Qui `directions` resta vuoto: le indicazioni arrivano solo con le
 richieste in due tempi (sopra). Nel `GpxRequest` si può omettere.
 
+**`alternatives`** (TASK-093, ADR-0087): altri percorsi per la stessa
+richiesta, dal migliore, al più 2 (`MAX_ALTERNATIVES`). Ognuno è un
+`RouteResult` intero, con i suoi `points`, `distance_m`, `similarity`,
+avvisi e, nei job, le sue `directions`; il suo `alternatives` è vuoto. Si
+sceglie nell'app: il `GpxRequest` manda poi il risultato scelto, con o
+senza il campo. Un'API precedente non lo manda, e l'app mostra il percorso
+da solo. Quali entrano: `ROUTE_ENGINE.md`, «Altri percorsi fra cui
+scegliere». Il registro delle richieste scrive anche le loro impronte
+(`outcome.alternatives`), e il replay le confronta.
+
 La richiesta è sincrona: la risposta arriva quando il percorso è pronto
 (tempi sotto). Resta per `/docs`, `curl` e le misure; l'app usa
 `/route-jobs`.

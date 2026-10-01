@@ -20,18 +20,23 @@ import {
   pageScript,
   parsePageMessage,
   setPosition,
+  showOthers,
   showRoute,
   showStops,
   showTrack,
 } from "./messages";
 
 const MAP_PAGE = buildMapPage();
+/** One empty list, so the map is not told again and again of no routes. */
+const NO_OTHERS: LatLon[][] = [];
 
 type Props = {
   /** Where the route will start; the map centres on it with a marker. */
   start: LatLon | null;
   /** The route to draw over the roads, or null for none. */
   route: LatLon[] | null;
+  /** The other routes to choose from, grey under the route (TASK-093). */
+  others?: LatLon[][];
   /** The run to draw over the route, or null for none (TASK-113). */
   track?: LatLon[] | null;
   /** While navigating, the phone's position: the map follows it (TASK-049). */
@@ -46,6 +51,7 @@ type Props = {
 export function MapView({
   start,
   route,
+  others = NO_OTHERS,
   track = null,
   following = null,
   stops = null,
@@ -61,6 +67,7 @@ export function MapView({
   const followed = useRef(false);
   const trackShown = useRef(false);
   const stopsShown = useRef(false);
+  const othersShown = useRef(false);
 
   // A new start, even at the same place, centres the map on it again.
   useEffect(() => {
@@ -68,6 +75,18 @@ export function MapView({
       webView.current?.injectJavaScript(pageScript(setPosition(start)));
     }
   }, [ready, start]);
+
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    // Before the route, which frames the map and is sent last.
+    // None after some: the routes of the last result go away.
+    if (others.length > 0 || othersShown.current) {
+      webView.current?.injectJavaScript(pageScript(showOthers(others)));
+      othersShown.current = others.length > 0;
+    }
+  }, [ready, others]);
 
   // After the start, so the map frames the route rather than the start.
   useEffect(() => {

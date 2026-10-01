@@ -434,6 +434,16 @@ Sulla mappa la linea del percorso, inquadrata. Sotto, la distanza in grande
 o «“CIAO” · on roads · target 12 km» (TASK-057); poi gli avvisi del motore, uno per
 riga, e «Export GPX» largo (sotto, «Export del GPX»).
 
+**Più percorsi fra cui scegliere** (TASK-093, ADR-0087, scelte
+dell'utente): quando l'API manda delle alternative, sotto il nome ci sono
+fino a tre tessere «A · B · C», con km e somiglianza in percento
+(«4.0 km · 91%»); A è il percorso scelto dal motore ed è selezionata. Sulla
+mappa il percorso selezionato è giallo, gli altri sono linee sottili grigie
+sotto (`otherRoute` nei token); una tessera toccata diventa il percorso:
+distanza, avvisi, «Start» e «Export GPX» sono i suoi. Durante la corsa le
+linee grigie spariscono. Un nuovo risultato riparte da A. Con un percorso
+solo, niente tessere, come prima.
+
 Gli avvisi sono **in parole semplici** (TASK-054, ADR-0048): l'app
 riconosce i testi che il motore scrive e li riscrive brevi, con una
 striscia arancio (`warning`) per quelli a cui fare attenzione (scale,
@@ -442,8 +452,9 @@ grigia per quelli da sapere (partenza spostata, distanza diversa da quella
 chiesta, strade ripercorse); prima quelli a cui fare attenzione, e la
 stessa frase una volta sola. Un testo che l'app non conosce resta com'è,
 in inglese. La somiglianza non si mostra come
-numero: la forma la giudica l'occhio (`PRODUCT.md`), e sotto 0,90 il
-motore aggiunge già un avviso. Il segnaposto resta sulla partenza chiesta.
+numero, tranne nelle tessere dei percorsi alternativi, dove serve a
+confrontarli (TASK-093, scelta dell'utente): la forma la giudica l'occhio
+(`PRODUCT.md`), e sotto 0,90 il motore aggiunge già un avviso. Il segnaposto resta sulla partenza chiesta.
 Se il percorso comincia a più di 50 m da lì, perché il motore ha spostato la
 forma dove ci sta (fino a 2 km, ADR-0040), un secondo segnaposto ciano con
 l'etichetta «Start here» segna dove andare, e la mappa inquadra tutti e due;
@@ -606,6 +617,7 @@ iOS chiude la pagina per liberare memoria, la WebView la ricarica da sola.
 - Miglia al posto dei km.
 - Avvisi in parole semplici: oggi l'app riconosce i testi del motore
   (ADR-0048); la strada pulita sono i codici negli avvisi del contratto.
-- Rigenerare o scegliere fra percorsi alternativi.
+- Rigenerare altri percorsi oltre a quelli proposti (scegliere fra quelli
+  calcolati c'è da TASK-093).
 - Contorni disegnati delle forme e cursore della distanza: vogliono
   dipendenze (TASK-051).

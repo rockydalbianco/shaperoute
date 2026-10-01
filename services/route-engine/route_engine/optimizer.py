@@ -865,6 +865,8 @@ class Plan:
     search: Search | None  # None when the shape was not optimized
     checks: dict[str, float] = field(default_factory=dict)  # validation.measure
     far: Search | None = None  # the second search, when there was one
+    # Other plans to choose from, best first (TASK-093, alternatives.py).
+    alternatives: list[Plan] = field(default_factory=list)
 
 
 def plan_route(

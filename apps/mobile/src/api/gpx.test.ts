@@ -4,7 +4,8 @@ import gpxRequest from "@shaperoute/shared-types/fixtures/gpx-request.json";
 import { FALLBACK_FILE_NAME, fileNameOf, requestGpx } from "./gpx";
 
 const URL = "http://192.168.1.23:8000";
-const BODY = gpxRequest as GpxRequest;
+// Through unknown: JSON reads [lat, lon] as number[], not a pair.
+const BODY = gpxRequest as unknown as GpxRequest;
 const GPX = '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1"></gpx>\n';
 
 function answers(response: Response): jest.MockedFunction<typeof fetch> {

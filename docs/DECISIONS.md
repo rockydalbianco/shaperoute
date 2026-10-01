@@ -3230,6 +3230,55 @@ subito. Il database (TASK-114) non c'è ancora; il seme del catalogo sì
 centro; altrove dice che non ci sono ancora percorsi. Nell'immagine Docker
 `catalog/` non c'è: là la lista è vuota finché non la si copia.
 
+## ADR-0087 — Più percorsi fra cui scegliere: le partenze vicine non si buttano
+**Stato**: Attiva · 2026-10-01 · come si vedono, quanti e le immagini
+sono **scelte dell'utente**; il resto deciso dall'agente su delega
+dell'utente (TASK-093). Numero preso fra quelli lasciati liberi (0086 …
+0089, `PASSAGGIO.md`).
+
+**Contesto**: dalla stessa partenza il percorso è sempre lo stesso, ma
+pochi metri di GPS ne danno un altro, a volte più bello (TASK-075,
+TASK-090). Il motore ne calcola già fino a 4 per richiesta (ADR-0071) e ne
+tiene uno.
+
+**Scelte dell'utente**: tessere «A · B · C» sotto la mappa, con gli altri
+percorsi grigi sulla mappa (proposta A di tre); fino a 3 percorsi, solo se
+diversi e con somiglianza non più di 10 punti sotto il migliore; le
+alternative anche per le immagini, sapendo che possono costare tempo.
+
+**Decisioni tecniche**:
+- `route_engine/alternatives.py` (nuovo): sceglie fra i percorsi delle
+  partenze provate. «Stesso percorso»: ciascuno entro 20 m dall'altro per
+  il 90% della lunghezza (shapely, già dipendenza). `Plan.alternatives` e
+  `RouteResult.alternatives`, con default vuoto: niente cambia per chi non
+  li usa (CLI, test).
+- Il percorso scelto non cambia. Dopo un piano già buono le vicine si
+  aspettano al più 3 s (prima: per niente), altrimenti le alternative
+  mancavano proprio sui percorsi venuti bene (Trento 12 km: tutte e tre le
+  vicine «still running» dopo 1,5 s).
+- Le immagini passano anch'esse da `plan_nearby` (`image_job`), con il
+  piano di sempre per la partenza dell'utente; nelle misure il tempo è
+  rimasto 1,5–2,8 s, e a Caldonazzo l'immagine è migliorata (0,75 → 0,85).
+- API: ogni alternativa ha le sue indicazioni (`with_choices`), calcolate
+  sugli stessi grafi; +0,03–0,15 s. `/routes` le manda senza indicazioni.
+- Contratto: `alternatives?` facoltativo in `shared-types`, un'app o
+  un'API vecchie funzionano come prima; `MAX_ALTERNATIVES` in un file di
+  esempio nuovo (`route-alternatives.json`), per non toccare
+  `contract.json`, modificato in quel momento da TASK-088.
+- App: lo stato del percorso scelto (`Picked`) resta legato al risultato a
+  cui appartiene, così un risultato nuovo riparte da A senza effetti.
+  Navigazione, GPX e avvisi leggono il percorso scelto.
+
+**Alternative scartate**: più ricerche apposta per avere alternative (più
+tempo per ogni richiesta); mostrare tutti e 4 i percorsi senza filtri
+(scelta dell'utente); alternative dalle prove interne della ricerca
+(posizioni o rotazioni diverse dalla stessa partenza: spesso quasi uguali,
+e senza la strada fatta per arrivarci).
+
+**Conseguenza**: dove le partenze vicine sono poche o il grafo è troppo
+grande (Milano, oltre 30 000 nodi, ADR-0071) le alternative mancano. Una
+richiesta con piano buono può durare fino a 3 s di più.
+
 ## ADR-0099 — Una forma che passa dai luoghi veri di un tema, in ogni città
 **Stato**: Attiva · 2026-10-01 · scelta dell'utente («forma + tappe», città
 di tutto il mondo); il come deciso dall'agente su delega dell'utente

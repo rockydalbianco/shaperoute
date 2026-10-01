@@ -127,3 +127,6 @@ class RouteResult:
     directions: list[Direction] = field(default_factory=list)
     # The word in capitals, or None for a shape (TASK-056).
     word: str | None = None
+    # Other routes for the same request, to choose from (TASK-093): whole
+    # results, each with no alternatives of its own.
+    alternatives: list[RouteResult] = field(default_factory=list)

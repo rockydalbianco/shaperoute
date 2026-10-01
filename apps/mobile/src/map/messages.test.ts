@@ -6,6 +6,7 @@ import {
   pageScript,
   parsePageMessage,
   setPosition,
+  showOthers,
   showRoute,
   showStops,
   showTrack,
@@ -115,4 +116,24 @@ test("showStops sends each place in MapLibre order, passed or not", () => {
     ],
   });
   expect(clearStops()).toEqual({ type: "clearStops" });
+});
+
+test("showOthers sends each route in MapLibre order, and none to clear", () => {
+  expect(
+    showOthers([
+      [
+        [46.0671, 11.1214],
+        [46.068, 11.122],
+      ],
+    ]),
+  ).toEqual({
+    type: "showOthers",
+    lines: [
+      [
+        [11.1214, 46.0671],
+        [11.122, 46.068],
+      ],
+    ],
+  });
+  expect(showOthers([])).toEqual({ type: "showOthers", lines: [] });
 });

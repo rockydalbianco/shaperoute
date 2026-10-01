@@ -14,6 +14,7 @@ import threading
 import time
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
 
@@ -374,7 +375,9 @@ def create_app(
         what = f"{request.name} {request.distance_m} m"
         started = time.perf_counter()
         try:
-            result = planner(request, source).result
+            plan = planner(request, source)
+            others = [other.result for other in plan.alternatives]
+            result = replace(plan.result, alternatives=others)
         except Exception as exc:
             elapsed = time.perf_counter() - started
             log.info("route %s: %s after %.1f s", what, type(exc).__name__, elapsed)

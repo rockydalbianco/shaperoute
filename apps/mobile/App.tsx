@@ -1,5 +1,6 @@
 import type {
   Direction,
+  LatLon,
   LetterStyle,
   OutlinePoint,
   Shape,
@@ -34,6 +35,7 @@ import {
 } from "./src/navigation/trackStore";
 import { useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
+import { choicesOf, type Picked, pickedIndex } from "./src/route/choices";
 import { toDistanceM } from "./src/route/distance";
 import { ImageEditsContext } from "./src/route/imageEdits";
 import type { ChoiceKind } from "./src/route/problems";
@@ -57,6 +59,8 @@ import { color } from "./src/theme/tokens";
 
 /** A route without directions: one list, so navigation does not restart. */
 const NO_DIRECTIONS: Direction[] = [];
+/** No other routes on the map: one list, so the map is not told again. */
+const NO_OTHERS: LatLon[][] = [];
 
 /** The API on the PC that serves the app (ADR-0031); null if unknown. */
 const API_URL = apiUrl();
@@ -171,11 +175,25 @@ function Sgrava() {
     request && state.status !== "idle" && sameRequest(state.request, request)
       ? state
       : { status: "idle" };
+  // The routes to choose from (TASK-093): what follows shows, runs and
+  // exports the one chosen; a new result starts from the engine's.
+  const [picked, setPicked] = useState<Picked>(null);
+  const answer = view.status === "done" ? view.result : null;
+  const choices = useMemo(() => (answer ? choicesOf(answer) : []), [answer]);
+  const chosenIndex = pickedIndex(picked, answer);
+  const chosen = choices[chosenIndex] ?? null;
+  const shown: RouteState =
+    view.status === "done" && chosen !== null ? { ...view, result: chosen } : view;
+  const others = useMemo(
+    () =>
+      choices.length < 2
+        ? NO_OTHERS
+        : choices.filter((_, i) => i !== chosenIndex).map((other) => other.points),
+    [choices, chosenIndex],
+  );
   // The export state of another route does not belong on screen.
   const exporting: ExportState =
-    view.status === "done" &&
-    gpx.state.status !== "idle" &&
-    gpx.state.result === view.result
+    chosen !== null && gpx.state.status !== "idle" && gpx.state.result === chosen
       ? gpx.state
       : { status: "idle" };
   const themedExporting: ExportState =
@@ -185,12 +203,12 @@ function Sgrava() {
       ? gpx.state
       : { status: "idle" };
 
-  const navigating = screen === "navigate" && view.status === "done";
+  const navigating = screen === "navigate" && chosen !== null;
   const navigation = useNavigation(
-    view.status === "done" ? view.result.points : null,
-    view.status === "done" ? view.result.directions : NO_DIRECTIONS,
+    chosen?.points ?? null,
+    chosen?.directions ?? NO_DIRECTIONS,
     navigating,
-    view.status === "done" ? view.result.similarity : undefined,
+    chosen?.similarity,
   );
   const finishing = screen === "finish" && finished !== null;
   // A route of "Explore" on the map, in place of the drawn one (TASK-126).
@@ -301,10 +319,11 @@ function Sgrava() {
                     ? explored.status === "done"
                       ? explored.detail.points
                       : null
-                    : view.status === "done"
-                      ? view.result.points
-                      : null
+                    : (chosen?.points ?? null)
             }
+            // Only while choosing a drawn route: running, or on a route of
+            // "Explore", one route is the route.
+            others={screen === "map" && !exploring && !theming ? others : NO_OTHERS}
             track={finishing ? finished.line : null}
             following={
               navigating && navigation.status === "following"
@@ -366,15 +385,15 @@ function Sgrava() {
           />
         ) : (
           <RouteOutcome
-            view={view}
+            view={shown}
             onCancel={() => {
               cancel();
               setScreen("choose");
             }}
             exporting={exporting}
             onExport={() => {
-              if (view.status === "done") {
-                gpx.exportGpx(view.request, view.result);
+              if (view.status === "done" && chosen !== null) {
+                gpx.exportGpx(view.request, chosen);
               }
             }}
             onTryDistance={(distance_m) => {
@@ -385,6 +404,9 @@ function Sgrava() {
             }}
             onPickShape={onPickShape}
             onStart={() => setScreen("navigate")}
+            choices={choices}
+            chosen={chosenIndex}
+            onChoose={(index) => answer && setPicked({ of: answer, index })}
           />
         )}
       </MapScreen>

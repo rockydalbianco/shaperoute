@@ -57,10 +57,7 @@ dell'utente del 2026-10-01): tutti i percorsi generati si salvano, i
 migliori si consigliano agli utenti e si usano sui social; parte dopo il
 database (TASK-114) e l'API sempre accesa (TASK-122).
 
-**TASK-093 — Scegliere fra più percorsi**, chiesto dall'utente il
-2026-10-01: fino a 3 percorsi per richiesta (oggi il motore ne calcola 4 e
-ne tiene uno), scelti nell'app. Non dipende dalla parte social; parte con
-le scelte di come si vedono.
+**TASK-093 — Scegliere fra più percorsi**: fatto (sotto, «Completato»).
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
@@ -77,6 +74,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore, API e app** — TASK-093: fino a tre percorsi fra cui scegliere
+  (ADR-0087). Sotto la mappa le tessere «A · B · C» con km e somiglianza,
+  gli altri percorsi grigi sulla mappa; GPX, «Start» e avvisi del percorso
+  scelto. Anche per le immagini. Il percorso scelto dal motore resta lo
+  stesso (le 8 richieste dall'iPhone del 2026-10-01 rifatte uguali); dopo
+  un piano già buono le partenze vicine si aspettano al più 3 s. Provato
+  sull'iPhone (2026-10-01): funziona. L'utente: «il cuore ad occhio
+  saprei farlo un po' meglio» (da proporre come task sul motore).
 - **Catalogo** — TASK-125: il seme dei percorsi consigliati, 137 in 6
   città (Trento, Levico, Milano, Roma, Torino, Bologna), guardati a occhio
   (ADR-0097). Lo script ha già le frasi di ogni città e New York: si

@@ -35,9 +35,10 @@ Da precisare quando le dipendenze sono in `main`; oggi i punti sono questi.
 2. **Scegliere i migliori**: per zona e per forma, la somiglianza più alta;
    da decidere con l'utente se contano anche like (TASK-119) e corse fatte
    (punteggio di TASK-113).
-3. **Ripopolare strade poco frequentate** (richiesta dell'utente): a parità
-   di somiglianza, preferire i percorsi su strade che gli altri percorsi
-   salvati toccano meno. Come misurarlo è una scelta tecnica.
+3. **A parità di qualità si tengono e si propongono tutti** (scelta
+   dell'utente, 2026-10-01): nessun percorso ne scarta un altro altrettanto
+   buono, anche se passano dalle stesse strade. Così si propongono anche
+   strade di solito poco frequentate, accanto a quelle già note.
 4. **Proporli nell'app**: cosa si vede e dove (per esempio «Best hearts
    near you») è una scelta di prodotto: proposta con un'immagine prima di
    scrivere codice.

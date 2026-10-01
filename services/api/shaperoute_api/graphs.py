@@ -1,8 +1,8 @@
 """Road graphs for the API: zones kept in memory, crops never saved (ADR-0030).
 
-The CLI's OsmnxSource saves every crop beside its zone, from 3 to 110 MB for
-each new start: fine for a few reference cases, not for an API that gets a
-new start with every request. Here zone graphs stay in memory and each
+Crops are 3 to 170 MB for each new start, and the API gets a new start
+with every request; since TASK-136 the CLI's OsmnxSource does not save them
+either (ADR-0108). Here zone graphs stay in memory and each
 request gets its own crop, which the engine is free to change. The crop is
 ZoneCrop's: the graph `network.crop` gives, made in a fraction of the time
 (ADR-0082).

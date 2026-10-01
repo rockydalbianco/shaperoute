@@ -89,6 +89,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore** — TASK-136 (miglioramento generale scelto dall'agente): la
+  CLI e `seed_catalog` non salvano più i ritagli dei grafi, come già
+  l'API (ADR-0108). Una partenza nuova è più veloce (Milano, cuore da
+  10 km: da 11,8 a 5,5 s) e non scrive 20–110 MB; la stessa richiesta
+  rifatta costa 0,4–2,6 s in più. Stessi percorsi. I ritagli già salvati
+  si elencano con `python -m route_engine.prune_crops` e si cancellano con
+  `--delete`: sul Mac erano 346 su 355 grafi, 17,9 GB su 18,6, cancellati
+  dopo il merge su richiesta dell'utente (2026-10-01).
 - **Motore, API e app** — TASK-145: «Start» anche sui percorsi di
   «Explore» (consigliati, esempi delle città, a tema), chiesto dall'utente
   (ADR-0117). Al tocco l'app chiede le indicazioni a `POST
@@ -139,7 +147,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   letto dal vocabolario, senza AI (1,0 s → 0 ms). Seguiti possibili, da
   approvare: i segnali dell'app (percorso scelto fra A·B·C, «Try N km»),
   e TASK-128 che legge città e frasi desiderate.
-
 - **App** — TASK-135: «Run with Strava» in ogni scheda di percorso, il
   flusso ufficiale (ADR-0106): salvare il GPX, importarlo nel route builder
   di Strava, seguirlo dall'app Strava. Strava non permette di creare
@@ -460,7 +467,7 @@ Niente.
   "Overpass: come si scarica".
 - Per generare campioni senza salvare ritagli in `data/cache/`: uno script
   usa-e-getta che chiama `plan_shape` con `ZoneGraphs` dell'API, come in
-  TASK-032. La CLI invece salva un ritaglio per ogni caso.
+  TASK-032. Da TASK-136 anche la CLI non salva più i ritagli (ADR-0108).
 - Per giudicare le forme senza mappa basta un PNG scritto con la libreria
   standard (`zlib`, `struct`), come `out/TASK-037-before-after.png`: niente
   matplotlib né PIL.
@@ -498,9 +505,10 @@ Niente.
   dopo la pulizia: tolti MATLAB, i ritagli in `data/cache/` e la venv del
   route-engine). Ogni zona nuova scaricata vale circa 40 MB, più le
   risposte di Overpass in `data/cache/http/`; Expo si ferma con `ENOSPC`
-  quando finisce lo spazio. La CLI salva un ritaglio per ogni partenza o
-  distanza nuova dentro una zona in cache: si possono togliere a mano. Il
-  disco D: ha più di 270 GB liberi.
+  quando finisce lo spazio. Fino a TASK-136 la CLI salvava un ritaglio per
+  ogni partenza o distanza nuova dentro una zona in cache: quelli rimasti
+  si elencano e si cancellano con `python -m route_engine.prune_crops`
+  (ADR-0108). Il disco D: ha più di 270 GB liberi.
 - Le partenze delle tre zone sono in `docs/TESTING.md`.
 - Nell'app la partenza è la posizione GPS o un luogo cercato (`UI.md`);
   le zone fisse servono solo a confrontare le prove.

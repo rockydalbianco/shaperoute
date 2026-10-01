@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The server's database copies to this Mac every 6 hours, and when the
+     Mac logs in (TASK-122, ADR-0123). install-pull-backups.sh fills the
+     paths and the server, and loads it. -->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.shaperoute.pull-backups</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>__DEST__/pull-backups.sh</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>SHAPEROUTE_BACKUP_SERVER</key>
+        <string>__SERVER__</string>
+        <key>SHAPEROUTE_BACKUP_DIR</key>
+        <string>__DEST__</string>
+    </dict>
+    <key>StartInterval</key>
+    <integer>21600</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>__DEST__/pulls.log</string>
+    <key>StandardErrorPath</key>
+    <string>__DEST__/pulls.log</string>
+</dict>
+</plist>

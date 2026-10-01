@@ -1,6 +1,6 @@
 # TASK-139 — Anche cerchio e stella senza «baffi»
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-139-clean-circle-star`
 
 Chiesto dall'utente il 2026-10-01, dopo TASK-131: «fai lo stesso per
@@ -32,7 +32,7 @@ cuore (ADR-0107), senza cambiare le altre forme.
 - [x] Le altre forme danno gli stessi percorsi (registro rifatto:
       cavallo, farfalla, CIAO, cerchio).
 - [x] Test deterministici; ADR-0109; `ROUTE_ENGINE.md`.
-- [ ] Provato sull'iPhone dall'utente.
+- [x] Provato sull'iPhone dall'utente (2026-10-01): «funziona».
 
 ## File toccati
 
@@ -54,4 +54,5 @@ docs/tasks/TASK-139.md
 
 Cerchio: nessuno dei 7 cambia (aveva già 0–7% di baffi). Stella: 3 su 7
 cambiano; Levico 8 km (39% → 17%) e Trento 15 km (6% → 2%) giudicate
-meglio, Levico 5 km senza preferenza. Peso doppio scartato.
+meglio, Levico 5 km senza preferenza. Peso doppio scartato. Provato
+sull'iPhone dall'utente: funziona.

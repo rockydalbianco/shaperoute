@@ -85,7 +85,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **Motore** — TASK-139: anche cerchio e stella evitano i pezzi fatti
   avanti e indietro (ADR-0109), con lo stesso peso del cuore. Il cerchio
   non cambia sulle 7 prove; 3 stelle su 7 cambiano, 2 giudicate meglio.
-  Da provare sull'iPhone.
+  Provato sull'iPhone (2026-10-01): funziona.
 - **API** — TASK-130: le ricerche che insegnano (ADR-0101,
   `docs/INSIGHTS.md`). L'API registra ogni ricerca e ogni segnale d'uso in
   `data/insights/` (acceso di default, senza dati personali); `python -m

@@ -1,6 +1,6 @@
 # TASK-131 — Un cuore più bello a occhio
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-131-better-heart`
 
 Chiesto dall'utente il 2026-10-01, dopo la prova di TASK-093: «ad occhio
@@ -72,7 +72,7 @@ Cosa può cambiare, dal più semplice:
       (Caldonazzo 10 km 1,8 → 2,0 s, Trento 15 km 6,3 → 6,6 s).
 - [x] Test deterministici; decisione in `DECISIONS.md` (ADR-0106);
       `ROUTE_ENGINE.md` aggiornato.
-- [ ] Provato sull'iPhone dall'utente.
+- [x] Provato sull'iPhone dall'utente (2026-10-01): «funziona».
 
 ## File toccati
 
@@ -111,4 +111,4 @@ docs/tasks/TASK-131.md
 4. Con il peso dei baffi: Levico 8 km e Trento 15 km meglio i nuovi,
    Caldonazzo nessuna preferenza (ADR-0106, `samples/TASK-131_*`).
 
-Da provare sull'iPhone.
+Provato sull'iPhone dall'utente (2026-10-01): «provato, funziona».

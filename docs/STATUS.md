@@ -59,9 +59,10 @@ database (TASK-114) e l'API sempre accesa (TASK-122).
 
 **TASK-093 — Scegliere fra più percorsi**: fatto (sotto, «Completato»).
 
-**TASK-131 — Un cuore più bello a occhio**: in PR, da provare
-sull'iPhone. Il cuore evita i pezzi fatti avanti e indietro (ADR-0106);
-la forma ideale resta quella di oggi, preferita dall'utente.
+**TASK-131 — Un cuore più bello a occhio**: fatto e provato sull'iPhone
+(2026-10-01). Il cuore evita i pezzi fatti avanti e indietro (ADR-0106);
+la forma ideale resta quella di oggi, preferita dall'utente. Seguito
+possibile: lo stesso peso per cerchio e stella, con un loro giudizio.
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).

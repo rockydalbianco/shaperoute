@@ -11,7 +11,8 @@ import {
 } from "../theme/tokens";
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { type Place, searchPlaces } from "./photon";
+import type { Place } from "./photon";
+import { type FindPlaces, placeFinder } from "./placeFinder";
 
 type SearchState =
   | { status: "idle" }
@@ -24,6 +25,8 @@ type Props = {
   onSelect: (place: Place) => void;
   /** Where the user is, when known: places around it come first. */
   near?: LatLon | null;
+  /** Where places come from: the API, else Photon (TASK-123). */
+  find?: FindPlaces;
 };
 
 /** Suggestions start at this many letters, this long after the last one
@@ -37,7 +40,10 @@ export const SUGGEST_DELAY_MS = 300;
  * are suggested while typing, once the typing pauses; "Search" and the
  * keyboard's return key search at once.
  */
-export function PlaceSearch({ onSelect, near = null }: Props) {
+export function PlaceSearch({ onSelect, near = null, find }: Props) {
+  // One finder per field: it remembers an API without the key.
+  const [ownFind] = useState(() => placeFinder());
+  const findPlaces = find ?? ownFind;
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState<SearchState>({ status: "idle" });
   // Searches are numbered. An answer is shown unless a later one already
@@ -55,7 +61,7 @@ export function PlaceSearch({ onSelect, near = null }: Props) {
       // The places already suggested stay until the new ones come.
       setSearch((now) => (now.status === "found" ? now : { status: "searching" }));
       try {
-        const places = await searchPlaces(text, fetch, near);
+        const places = await findPlaces(text, near);
         if (mine <= shown.current) {
           return;
         }
@@ -73,7 +79,7 @@ export function PlaceSearch({ onSelect, near = null }: Props) {
         }
       }
     },
-    [near],
+    [near, findPlaces],
   );
 
   useEffect(() => {

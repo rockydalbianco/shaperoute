@@ -216,6 +216,32 @@ client (percorsi, contorni, parole, GPX), poi 429 `too_many_requests`.
 Si cambia con `SHAPEROUTE_RATE_LIMIT` (0 = nessun limite). Dietro un
 tunnel tutti i telefoni contano come un client solo.
 
+## La ricerca dei luoghi (Geoapify, TASK-123)
+
+I suggerimenti della partenza vengono dall'API, che li chiede a Geoapify
+(ADR-0095). Senza chiave l'app usa Photon, più lento (2–4 s).
+
+1. Crea un account gratuito su <https://www.geoapify.com> (lo fa l'utente)
+   e un progetto: la chiave è nella pagina del progetto. Il piano gratuito
+   arriva a 3000 richieste al giorno.
+2. Sul PC o sul server, prima di avviare l'API, come la chiave dell'API:
+
+   ```powershell
+   $env:GEOAPIFY_API_KEY = "la-chiave-di-geoapify"
+   ```
+
+   Sul Mac la chiave sta in `.env` alla radice (fuori dal repository),
+   letta all'avvio:
+
+   ```bash
+   set -a; . ./.env; set +a; services/api/.venv/bin/python -m shaperoute_api --lan
+   ```
+
+   L'API stampa «Places suggested by Geoapify».
+3. L'app non cambia: niente da mettere in `apps/mobile/.env` né su EAS.
+
+Come ogni chiave, mai in un file del repository o in una chat.
+
 ## Il registro delle richieste e le posizioni
 
 L'API può scrivere ogni richiesta di percorso in un file, per rifarla

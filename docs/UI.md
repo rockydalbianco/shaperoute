@@ -133,6 +133,9 @@ punto, ricentra la mappa.
   sotto le 3 lettere spariscono. Una risposta si mostra se è più nuova di
   quella sullo schermo, anche con un'altra ricerca in corso (TASK-089,
   ADR-0083): Photon impiega 2–3 s.
+- I luoghi li dà l'API (`GET /places`, Geoapify, TASK-123, ADR-0095); se
+  l'API non c'è, non risponde entro 2,5 s o non ha la chiave, Photon come
+  prima. Dopo un «non ho la chiave» l'API non si richiede fino al riavvio.
 - Toccato un suggerimento, il campo ne prende il nome, la tastiera si
   chiude e l'elenco sparisce; la riga si illumina mentre è premuta.
 - Con la posizione GPS nota (o l'ultimo luogo scelto), Photon riceve

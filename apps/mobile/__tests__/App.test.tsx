@@ -168,7 +168,7 @@ test("with the position, the map centres on it and there is no search", async ()
 
 test("without permission, a searched place becomes the start", async () => {
   requestPermission.mockResolvedValue(permission(false));
-  fetchSpy.mockResolvedValue(Response.json(response));
+  fetchSpy.mockImplementation(async () => Response.json(response));
   await render(<App />);
   await mapIsReady();
   expect(await screen.findByText(/Location is off for ShapeRoute/)).toBeOnTheScreen();
@@ -190,7 +190,7 @@ test("without permission, a searched place becomes the start", async () => {
 
 test("once the GPS answers, it takes over from the searched place", async () => {
   requestPermission.mockResolvedValue(permission(false));
-  fetchSpy.mockResolvedValue(Response.json(response));
+  fetchSpy.mockImplementation(async () => Response.json(response));
   await render(<App />);
   await mapIsReady();
   await fireEvent.changeText(
@@ -746,7 +746,7 @@ test("with the GPS on, another place can be the start, and stays so", async () =
 });
 
 test("My position goes back to the GPS after another place", async () => {
-  fetchSpy.mockResolvedValue(Response.json(response));
+  fetchSpy.mockImplementation(async () => Response.json(response));
   await atTrento();
   await fireEvent.press(screen.getByRole("button", { name: "Another place" }));
   await fireEvent.changeText(

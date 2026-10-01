@@ -83,6 +83,15 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    −. L'attribuzione dei dati è sempre visibile in basso, per intero; i
    suoi link si aprono nel browser del telefono.
 
+3. **«Explore»** (TASK-126, variante C di TASK-092), dal pulsante
+   «Explore» in alto nella prima schermata: «Best near you», i percorsi
+   migliori che partono entro 5 km dalla partenza scelta, con i filtri per
+   forma o parola e per distanza. Ogni riga ha la miniatura della linea
+   (gialla, il percorso), forma e km, città e distanza dalla partenza, la
+   somiglianza. Toccata, il percorso si apre sulla mappa con «Export GPX» e
+   «Back to the list»; «←» torna all'elenco. Niente «Start»: questi
+   percorsi non hanno le indicazioni di svolta.
+
 Passare da una schermata all'altra:
 
 - «←» torna alla scelta con forma e distanza di prima. Se il percorso è

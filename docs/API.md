@@ -207,6 +207,25 @@ due volte. Senza chiave, o se Geoapify non risponde, `503 http_error`;
 l'app allora chiede a Photon, come prima. È un `GET`: non conta nel limite
 dei POST al minuto.
 
+### `GET /recommended-routes` (TASK-126, ADR-0098)
+
+I percorsi migliori già pianificati vicino a un punto, per «Explore»:
+`?lat=…&lon=…`, facoltativi `radius_m` (100–50 000, default 5000),
+`shape` (una forma, o una parola in maiuscolo) e `distance_m`. Prima la
+somiglianza più alta; a parità, il più vicino. Tutti, anche se equivalenti
+(TASK-092, punto 3). Ogni percorso ha `id`, `city`, `shape` o `word` (con
+`style`), `distance_m`, `route_m`, `similarity`, `start`, `away_m` e
+`preview`, al più 64 punti della linea per la miniatura. Corpo in
+`packages/shared-types/fixtures/recommended-routes.json`. Il punto sta
+nella query: il log di accesso non la scrive (ADR-0096).
+
+`GET /recommended-routes/{id}` dà il percorso intero (`points`, `license`;
+`recommended-route.json`), 404 per un id che non c'è.
+
+I percorsi vengono da `catalog/seed/` (ADR-0097), letti all'avvio:
+`--catalog-dir` per un'altra cartella; senza file la lista è vuota. Un file
+nuovo vuole un riavvio dell'API.
+
 ### `POST /track-scores`
 
 Il punteggio di una corsa (TASK-113, ADR-0093). Riceve un

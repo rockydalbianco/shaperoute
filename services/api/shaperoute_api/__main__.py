@@ -26,6 +26,8 @@ from shaperoute_api.app import create_app
 from shaperoute_api.graphs import ZoneGraphs
 from shaperoute_api.places import KEY_VARIABLE as PLACES_KEY
 from shaperoute_api.places import PlaceSearch
+from shaperoute_api.recommended import DEFAULT_DIR as CATALOG_DIR
+from shaperoute_api.recommended import RecommendedCatalog
 from shaperoute_api.request_log import DEFAULT_DIR, ON_VARIABLE, RequestLog, wanted
 
 DEFAULT_PORT = 8000
@@ -72,6 +74,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=DEFAULT_DIR,
         help=f"where the request log is written (default: {DEFAULT_DIR})",
     )
+    parser.add_argument(
+        "--catalog-dir",
+        type=Path,
+        default=CATALOG_DIR,
+        help=f"the recommended routes, one file per city (default: {CATALOG_DIR})",
+    )
     return parser.parse_args(argv)
 
 
@@ -100,11 +108,13 @@ def main(argv: Sequence[str] | None = None) -> None:
     reader = ShapeReader(OllamaModel(args.ai_model, args.ai_url), SUPPORTED_SHAPES)
     request_log = RequestLog(args.request_log_dir) if wanted(args.request_log) else None
     places = PlaceSearch.from_env()
+    recommended = RecommendedCatalog.from_dir(args.catalog_dir)
     app = create_app(
         ZoneGraphs(OsmnxSource(args.cache_dir)),
         reader=reader,
         request_log=request_log,
         places=places,
+        recommended=recommended,
     )
     host = "0.0.0.0" if args.lan else "127.0.0.1"
     here = f"http://127.0.0.1:{args.port}"
@@ -120,6 +130,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         print(f"Place search off ({PLACES_KEY} not set): the app asks Photon")
     else:
         print(f"Places suggested by Geoapify ({PLACES_KEY})")
+    print(f"{len(recommended)} recommended routes from {args.catalog_dir}")
     if request_log is None:
         print("Route requests are not recorded (--request-log records them)")
     else:

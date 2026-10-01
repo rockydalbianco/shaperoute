@@ -90,6 +90,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API** — TASK-114: gli account nell'API, su PostgreSQL con PostGIS
+  (ADR-0115, ADR-0120). `POST /accounts` per iscriversi, `POST /session`
+  ed `DELETE /session` per entrare e uscire, `GET /me`, `DELETE /me` che
+  cancella tutto; token in `Authorization: Bearer`, password Argon2id,
+  sessioni di 90 giorni dall'ultimo uso, 5 password sbagliate per email in
+  15 minuti. I percorsi restano aperti. Con `SHAPEROUTE_DATABASE_URL`
+  l'API applica le migrazioni all'avvio; senza, gli account rispondono 503.
+  Test su un PostGIS vero, avviato con docker (sul Mac Colima,
+  `SETUP.md` 10.4). Il database sul server è di TASK-122; il seguito è
+  TASK-115, le schermate dell'app. La password dimenticata resta fuori:
+  serve la posta (Brevo).
 - **Server** — TASK-144: la guida per portare l'API su un server a
   pagamento, con il Mac spento (`DEPLOY.md`, strada F, ADR-0111), e la
   configurazione pronta in `deploy/`: l'API con zone, eventi e catalogo,

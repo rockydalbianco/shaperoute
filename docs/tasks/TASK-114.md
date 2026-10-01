@@ -1,6 +1,6 @@
 # TASK-114 — API: database e account
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-114-accounts-api`
 **Dipende da**: TASK-110
 
@@ -79,3 +79,12 @@ docs/tasks/TASK-114.md
 - Mettere l'API su un server (TASK-122).
 
 ## Esito
+
+Gli account funzionano nell'API (ADR-0120): iscrizione, entrata, uscita,
+`GET /me` e cancellazione, con errori distinti per email o nome già usati,
+password sbagliata, nessun token e sessione scaduta. 29 test su un
+PostgreSQL con PostGIS vero, avviato dai test con docker; 424 test
+dell'API verdi. Sul Mac docker è Colima, scelto dall'utente. Non provato
+con l'API avviata davvero e un database che resta: lo fa TASK-122 sul
+server. Rimandati: la password dimenticata (serve Brevo) e un pool di
+connessioni (`psycopg_pool`) se gli account diventano tanti.

@@ -112,6 +112,13 @@ UNREADABLE: frozenset[tuple[str, str, int]] = frozenset(
         ("levico", "horse", 5000),
         ("levico", "star", 5000),
         ("levico", "moon", 5000),
+        # TASK-128, Firenze: the same fragile shapes, and a heart with a tail.
+        *(("firenze", s, 5000) for s in ("butterfly", "cat", "dog_head")),
+        *(("firenze", s, 5000) for s in ("horse", "rabbit_head", "snail")),
+        ("firenze", "dog_head", 10000),
+        ("firenze", "dog_head", 21000),
+        ("firenze", "snail", 10000),
+        ("firenze", "heart", 21000),
     }
 )
 

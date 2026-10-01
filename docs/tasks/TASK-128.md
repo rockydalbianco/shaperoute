@@ -1,6 +1,6 @@
 # TASK-128 — Il catalogo seme: le città mancanti, New York e le frasi
 
-**Stato**: In corso
+**Stato**: In revisione
 **Fase**: 4 · **Branch**: `feat/TASK-128-seed-catalog-more`
 
 Seguito di TASK-125 (ADR-0097), chiesto dall'utente il 2026-10-01:
@@ -28,11 +28,13 @@ continuare il giro del catalogo quando Overpass riapre.
 
 ## Criteri di accettazione
 
-- [ ] Ogni città ha la sua zona scaricata una volta; test della
-      preparazione (verde: `test_each_city_is_prepared_once_before_its_cases`).
+- [x] Ogni città ha la sua zona scaricata una volta; una città la cui zona
+      non si scarica si salta e resta per il giro dopo (test verdi).
 - [ ] Firenze, Napoli, Verona, Padova, Genova, Bari, Palermo e New York in
-      `catalog/seed/`, con le frasi.
-- [ ] Ogni percorso nuovo guardato; gli illeggibili fuori.
+      `catalog/seed/`, con le frasi. **Solo Firenze**: Overpass ha chiuso
+      dopo la sua zona (20:40 del 2026-10-01) e non ha riaperto nella
+      notte; si chiude con le città fatte, il resto è un seguito.
+- [x] Ogni percorso nuovo guardato; gli illeggibili fuori.
 
 ## File toccati
 
@@ -53,10 +55,16 @@ docs/tasks/TASK-134.md   (solo lo stato: Done, mergiato)
 - Altre città oltre le 13 e New York (le zone delle città in evidenza sono
   TASK-137).
 
-## Dove sono arrivato (2026-10-01, sera)
-
-Preparazione per città scritta e testata. Il giro aspetta in background
-che Overpass riapra (controllo ogni 5 minuti, fino a 8 ore), poi parte da
-solo e scrive in questo worktree.
-
 ## Esito
+
+Firenze aggiunta al catalogo: 22 percorsi tenuti su 33, guardati a occhio
+(10 illeggibili in `UNREADABLE`, i più belli in `samples/LOG.md`). Il
+catalogo ha 159 percorsi in 7 città. Il giro prepara una zona per città e
+salta quelle che non si scaricano: Overpass ha concesso un solo download
+grosso (Firenze, 20:35) e poi ha rifiutato per tutta la notte.
+
+**Seguito** (un task nuovo): Napoli, Verona, Padova, Genova, Bari,
+Palermo, New York e le frasi di tutte le città. Basta rilanciare, quando
+Overpass risponde, `python -m route_engine.seed_catalog --run` dalla radice
+(ambiente `services/api/.venv`): riprende dal registro
+`out/seed_catalog/runs.jsonl` (sul Mac, 268 righe), una città per giro.

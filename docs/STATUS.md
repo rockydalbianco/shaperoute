@@ -76,6 +76,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-128 — Il catalogo seme: Firenze** (`feat/TASK-128-seed-catalog-more`,
+  in revisione): Firenze nel catalogo (22 percorsi, 159 in 7 città); una
+  zona per città, e la città salta se Overpass rifiuta. Mancano Napoli,
+  Verona, Padova, Genova, Bari, Palermo, New York e le frasi: un seguito.
 - **TASK-134 — «Explore»: città → categoria → percorso**
   (`feat/TASK-134-explore-ux`, ADR-0105): città in evidenza e recenti,
   suggerimenti mentre si scrive, 13 categorie da toccare.

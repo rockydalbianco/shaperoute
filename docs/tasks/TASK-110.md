@@ -1,7 +1,7 @@
 # TASK-110 — Le scelte della parte social: account, dati, hosting, privacy
 
-**Stato**: Todo
-**Fase**: 4 · **Branch**: `docs/TASK-110-social-decisions`
+**Stato**: In corso
+**Fase**: 4 · **Branch**: `docs/TASK-110-decisions`
 
 ## Obiettivo
 
@@ -46,6 +46,17 @@ la fa l'utente**, una domanda per volta.
    like, commenti), aggiornare `PRODUCT.md` e, se le scelte cambiano i task
    111–122, scriverlo nell'«Esito» di questo task e dirlo all'utente: quei
    task file si correggono prima che partano, non a metà.
+
+## Scelte prese (si aggiorna a ogni risposta)
+
+1. **Cosa prende il punteggio**: la corsa confrontata col percorso
+   pianificato, per la somiglianza del percorso (ADR-0090). Approvato
+   dall'utente col merge di TASK-111 (2026-09-30).
+2. **Dove girano API e database**: **Oracle Cloud Always Free**, una VM
+   ARM (Ampere). Scelta dell'utente (2026-10-01), fra Hetzner, Oracle,
+   VPS con servizio gestito e Raspberry Pi. Rischio da gestire: Oracle può
+   reclamare le VM gratuite poco usate, quindi copie di sicurezza fuori
+   dalla VM.
 
 ## Criteri di accettazione
 

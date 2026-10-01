@@ -1,11 +1,12 @@
 import type { LatLon } from "@shaperoute/shared-types";
 import * as Location from "expo-location";
+import * as Speech from "expo-speech";
 import { useEffect, useState } from "react";
 
-import { FREE_ROUTE } from "./freeRun";
+import { FREE_ROUTE, kmAnnouncement, wholeKm } from "./freeRun";
 import { emptyTrack, type Track } from "./trackRecorder";
 import { type RunRecorder, startRun } from "./trackStore";
-import { FIX_EVERY_M } from "./useNavigation";
+import { FIX_EVERY_M, play } from "./useNavigation";
 
 export type FreeRunState =
   | { status: "starting" }
@@ -16,7 +17,8 @@ export type FreeRunState =
 /**
  * Records a run without a route while `active` (TASK-149): the phone's
  * position, with the screen on or in pocket mode, into the run file of
- * TASK-112. No directions, no voice. The position never leaves the phone.
+ * TASK-112. No directions: the voice says each kilometre, with the time
+ * and the pace. The position never leaves the phone.
  */
 export function useFreeRun(active: boolean): FreeRunState {
   const [state, setState] = useState<FreeRunState>({ status: "starting" });
@@ -40,6 +42,8 @@ export function useFreeRun(active: boolean): FreeRunState {
       // A free run stopped lately goes on with its track (trackStore).
       const recorder = startRun(FREE_ROUTE, Date.now());
       run = recorder;
+      // A run that goes on does not say again the kilometres it has said.
+      let saidKm = wholeKm(recorder.track());
       setState({ status: "running", track: recorder.track(), position: null });
       subscription = await Location.watchPositionAsync(
         {
@@ -55,7 +59,13 @@ export function useFreeRun(active: boolean): FreeRunState {
             { point: fix, timeMs: timestamp, accuracyM: coords.accuracy },
             false,
           );
-          setState({ status: "running", track: recorder.track(), position: fix });
+          const track = recorder.track();
+          const km = wholeKm(track);
+          if (km > saidKm) {
+            saidKm = km;
+            play([{ say: kmAnnouncement(km, track), vibrate: false }]);
+          }
+          setState({ status: "running", track, position: fix });
         },
       );
       if (stopped) {
@@ -66,6 +76,7 @@ export function useFreeRun(active: boolean): FreeRunState {
       stopped = true;
       subscription?.remove();
       run?.stop();
+      void Speech.stop();
       setState({ status: "starting" });
     };
   }, [active]);

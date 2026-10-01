@@ -1,6 +1,6 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import type { Track } from "./trackRecorder";
+import { durationMs, type Track } from "./trackRecorder";
 import { endRun, loadRun, RESUME_WITHIN_MS, type SavedRun } from "./trackStore";
 
 /**
@@ -76,4 +76,46 @@ export function paceLabel(metres: number, ms: number): string | null {
   const secondsPerKm = Math.round(ms / metres);
   const minutes = Math.floor(secondsPerKm / 60);
   return `${minutes}:${String(secondsPerKm % 60).padStart(2, "0")} /km`;
+}
+
+/** "1 hour", "5 minutes", "1 second": a number with its unit, as said. */
+function units(count: number, unit: string): string {
+  return `${count} ${unit}${count === 1 ? "" : "s"}`;
+}
+
+/** "25 minutes 10 seconds", "1 hour 2 minutes": a time as the voice says it. */
+export function spokenTime(ms: number): string {
+  const total = Math.max(0, Math.round(ms / 1000));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  if (hours > 0) {
+    return minutes > 0
+      ? `${units(hours, "hour")} ${units(minutes, "minute")}`
+      : units(hours, "hour");
+  }
+  if (minutes === 0) {
+    return units(seconds, "second");
+  }
+  return seconds > 0
+    ? `${units(minutes, "minute")} ${units(seconds, "second")}`
+    : units(minutes, "minute");
+}
+
+/** The whole kilometres in `track`: the voice says each one once. */
+export function wholeKm(track: Track): number {
+  return Math.floor(track.distanceM / 1000);
+}
+
+/**
+ * What the voice says when the run passes `km` kilometres: the time so far
+ * and the average pace, as a running watch does.
+ */
+export function kmAnnouncement(km: number, track: Track): string {
+  const ms = durationMs(track);
+  const pace = track.distanceM > 0 ? (ms / track.distanceM) * 1000 : 0;
+  return (
+    `${units(km, "kilometre")}. Time: ${spokenTime(ms)}. ` +
+    `Average pace: ${spokenTime(pace)} per kilometre.`
+  );
 }

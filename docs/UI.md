@@ -603,7 +603,11 @@ posizione del GPS e va avanti ogni secondo; il passo compare dopo 100 m.
 Prima della prima posizione, «Finding your position…»; senza permesso,
 «Location is off for ShapeRoute: allow it in Settings to record a run.».
 Sotto la mappa «Run without a route», «Pocket» (la stessa modalità tasca
-della navigazione) e «Stop». Niente voce né vibrazioni.
+della navigazione) e «Stop». A ogni km la voce, in inglese come il resto,
+dice il tempo e il passo medio: «1 kilometre. Time: 5 minutes 42 seconds.
+Average pace: 5 minutes 42 seconds per kilometre.» (oltre l'ora, ore e
+minuti). Anche in modalità tasca; niente vibrazione, che in navigazione
+vuol dire una svolta. «Keep running» non ripete i km già detti.
 
 La traccia è quella della navigazione (ADR-0091), con le stesse regole,
 nello stesso file `current-run.json`, con il percorso vuoto: resta se

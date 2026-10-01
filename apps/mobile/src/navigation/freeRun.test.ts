@@ -6,9 +6,12 @@ import {
   elapsedMs,
   endFreeRun,
   FREE_ROUTE,
+  kmAnnouncement,
   kmLabel,
   paceLabel,
   pendingFreeRun,
+  spokenTime,
+  wholeKm,
 } from "./freeRun";
 import { emptyTrack, type TrackFix } from "./trackRecorder";
 import { clearRun, loadRun, RESUME_WITHIN_MS, saveRun, startRun } from "./trackStore";
@@ -134,4 +137,32 @@ test("Run again goes on with a free run stopped lately, and not with an old one"
   const again = startRun(FREE_ROUTE, 60_000);
   again.onFix(fix(40, 60), false);
   expect(again.track().fixes).toHaveLength(3);
+});
+
+test("the voice says a time in hours, minutes and seconds, with singulars", () => {
+  expect(spokenTime(42_000)).toBe("42 seconds");
+  expect(spokenTime(61_000)).toBe("1 minute 1 second");
+  expect(spokenTime(300_000)).toBe("5 minutes");
+  expect(spokenTime(342_400)).toBe("5 minutes 42 seconds");
+  expect(spokenTime(3_600_000)).toBe("1 hour");
+  // Past an hour the seconds do not matter.
+  expect(spokenTime(3_725_000)).toBe("1 hour 2 minutes");
+});
+
+test("each kilometre is said with the time and the average pace", () => {
+  // 1 km in 5 min 42 s.
+  const first = { fixes: [fix(0, 0), fix(1000, 342)], distanceM: 1000 };
+  expect(wholeKm(first)).toBe(1);
+  expect(kmAnnouncement(1, first)).toBe(
+    "1 kilometre. Time: 5 minutes 42 seconds. " +
+      "Average pace: 5 minutes 42 seconds per kilometre.",
+  );
+  // 2.01 km in 12 min 3 s: 6 min per km.
+  const second = { fixes: [fix(0, 0), fix(2010, 723)], distanceM: 2010 };
+  expect(wholeKm(second)).toBe(2);
+  expect(kmAnnouncement(2, second)).toBe(
+    "2 kilometres. Time: 12 minutes 3 seconds. " +
+      "Average pace: 6 minutes per kilometre.",
+  );
+  expect(wholeKm({ fixes: [], distanceM: 999 })).toBe(0);
 });

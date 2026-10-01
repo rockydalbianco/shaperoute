@@ -4153,8 +4153,12 @@ qualcosa.
   cancella subito dal telefono (una corsa con la forma resta finché non ha
   il punteggio).
 - **Banner da corsa**: km con due decimali, tempo dalla prima posizione
-  (va avanti ogni secondo), passo medio dopo 100 m. Niente voce: non ci
-  sono svolte da dire.
+  (va avanti ogni secondo), passo medio dopo 100 m.
+- **La voce a ogni km** (chiesta dall'utente dopo la prima versione): km,
+  tempo e passo medio, come un orologio da corsa, con la voce della
+  navigazione (`play`, inglese). Una volta per km: se il GPS ne salta uno,
+  si dice l'ultimo; una corsa ripresa non ripete i km già detti. Senza
+  vibrazione: in navigazione la vibrazione è una svolta.
 - **Codice in file nuovi** (`freeRun.ts`, `useFreeRun.ts`,
   `FreeRunScreen.tsx`); `App.tsx` collega le due schermate nuove (`run`,
   `runFinish`) e `ChooseScreen.tsx` ha il pulsante.
@@ -4168,4 +4172,5 @@ da confrontare); salvare le corse finite (è la cronologia, TASK-117).
 **Conseguenza**: dopo uno «Stop» la mappa resta dove si è partiti a zoom
 15, non inquadra tutta la linea: inquadrarla vuole un messaggio nuovo
 della pagina della mappa (seguito possibile). Il messaggio di «Pocket»
-parla di indicazioni anche qui. Da provare sull'iPhone.
+parla di indicazioni anche qui. Da provare sull'iPhone, anche la voce a
+schermo nero.

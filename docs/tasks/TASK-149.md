@@ -21,7 +21,9 @@ riepilogo. Chiesto dall'utente il 2026-10-02.
 2. Un hook che registra la traccia col GPS, senza percorso, nel file di
    TASK-112 (`startRun` con il percorso vuoto).
 3. La schermata della corsa: la mappa segue la posizione e disegna la
-   linea; banner con km, tempo e passo; «Pocket» e «Stop».
+   linea; banner con km, tempo e passo; «Pocket» e «Stop». A ogni km la
+   voce dice tempo e passo medio (chiesto dall'utente il 2026-10-02, prima
+   del merge).
 4. La fine della corsa: km, tempo, passo, «Keep running» e «Done»; una
    corsa lasciata a metà si riapre con l'app.
 5. Test; `UI.md`, ADR.
@@ -31,6 +33,8 @@ riepilogo. Chiesto dall'utente il 2026-10-02.
 - [x] «Run» apre la corsa senza chiedere niente all'API.
 - [x] Le posizioni finte diventano la traccia nel file, con il percorso
       vuoto; il banner mostra km, tempo e passo.
+- [x] La voce dice ogni km una volta, con tempo e passo, e non ripete i
+      km di una corsa ripresa.
 - [x] «Stop» mostra il riepilogo; «Keep running» continua la stessa
       traccia; «Done» torna alla prima schermata e cancella il file.
 - [x] Una corsa libera lasciata nel file si apre con l'app.
@@ -61,7 +65,7 @@ PR.
 ## Fuori scope
 
 - Salvare le corse finite, la cronologia: TASK-117.
-- Annunci a voce a ogni km, pausa e ripresa del tempo.
+- Pausa e ripresa del tempo.
 - Inquadrare tutta la linea a fine corsa (messaggio nuovo della mappa).
 - Esportare la corsa libera in GPX.
 - GPS a telefono bloccato: serve una build propria, come per la
@@ -69,8 +73,9 @@ PR.
 
 ## Esito
 
-Codice e test fatti (2026-10-02): 4 file di test nuovi, 627 test dell'app
-verdi. Il riepilogo non inquadra tutta la linea (resta a zoom 15 sulla
+Codice e test fatti (2026-10-02): 4 file di test nuovi, 631 test dell'app
+verdi; la voce a ogni km aggiunta su richiesta dell'utente prima del
+merge. Il riepilogo non inquadra tutta la linea (resta a zoom 15 sulla
 partenza): seguito possibile, annotato in ADR-0122 e in `STATUS.md`.
 **Manca la prova sull'iPhone**, che si fa dopo la ripubblicazione
 dell'app.

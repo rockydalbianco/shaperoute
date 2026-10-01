@@ -89,6 +89,12 @@ la fa l'utente**, una domanda per volta.
    account; uno generato senza account non è di nessuno e resta. Scelta
    dell'utente (2026-10-01), fra «restano anonimi» e «si cancellano».
 
+8. **Chi modera**: due admin, **l'utente e il collega**, avvisati tutti e
+   due per email a ogni segnalazione, per togliere un contenuto entro 24
+   ore come chiede l'App Store. Nessun contenuto si nasconde da solo.
+   Scelta dell'utente (2026-10-01), fra «solo l'utente, con email», «solo
+   l'utente, senza avvisi» e «utente e collega».
+
 ## Criteri di accettazione
 
 - [ ] ADR-0013 ha stato «Attiva» o è sostituita da ADR nuovi, con hosting,

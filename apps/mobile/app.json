@@ -12,7 +12,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lppl1316.sgrava"
+      "bundleIdentifier": "com.lppl1316.sgrava",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {

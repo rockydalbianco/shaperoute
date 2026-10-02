@@ -118,6 +118,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `offsite` è in `main` dalla PR #167): manca che l'utente lo crei
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
+- **TASK-191 — Percorsi in canoa e paddle, parte A1** (ADR-0154): nel
+  motore, solo file nuovi (`water.py`, `water_fit.py`), l'acqua di laghi e
+  mare, la fascia entro 1 km dalla riva, dove la forma ci sta e la
+  partenza dalla riva dove si arriva a piedi; provato sui dati veri
+  dell'API di OSM a Riccione, Jesolo e Riva del Garda (nove campioni da
+  giudicare), Overpass non provato (rifiutava il Mac), Como no. Al mare,
+  con 1 km, le forme stanno fino a circa 3 km: le distanze vanno chieste
+  all'utente. **A2** (`activity: "paddling"`, limiti, CLI, validazione)
+  aspetta il merge della bici (TASK-190 parte A); poi B (API) e C (app).
+  Da dove riprendere: `tasks/TASK-191.md`, «Esito».
 
 ## Completato
 

@@ -6131,3 +6131,159 @@ solo quelli di Levico: dalla posizione di qualcuno non si disegna
 (ADR-0136), cambiarlo è una scelta dell'utente. Paesi piccoli e frazioni
 non sono disegnati in anticipo sul server (`draw_examples`): da fare lì,
 con l'ok dell'utente. Da provare con il dito sull'iPhone.
+
+## ADR-0154 — Sull'acqua la forma è il percorso: la fascia entro 1 km dalla riva, la ricerca di dove ci sta, la partenza dalla riva dove si arriva a piedi
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa (il
+disegno resta entro circa 1 km dalla riva; esempi a Lago di Garda, Lago di
+Como, Jesolo, Riccione); il come deciso dall'agente su delega dell'utente
+(TASK-191, parte A1: solo moduli nuovi del motore).
+
+**Contesto**: sull'acqua non c'è una rete di strade. La forma proiettata
+(`ROUTE_ENGINE.md` §3) **è** il percorso, se sta tutta sull'acqua: il
+lavoro è trovare rotazione, scala e posizione in cui ci sta, e una
+partenza sulla riva. Il motore aveva solo le strade; serve l'acqua da
+OpenStreetMap, che per il mare non ha un poligono ma la linea
+`natural=coastline`, con la terra a sinistra del suo verso.
+
+**Decisione** (`route_engine/water.py`, `route_engine/water_fit.py`):
+
+- **L'acqua.** I laghi sono `natural=water` con `water=lake`,
+  `water=reservoir` o senza `water`, di almeno **10 ha**, e non marine,
+  porti o fontane; una relazione multipoligono si ricompone dalle sue way
+  (esterne meno interne: le isole). Il mare è **il riquadro meno la
+  terra**: la coastline taglia il riquadro in facce, e ogni faccia sta a
+  sinistra (terra) o a destra (mare) dei tratti di coastline che la
+  delimitano, a voti dei suoi lati più lunghi. Senza coastline nel
+  riquadro non c'è mare: il mare aperto lontano da ogni riva non serve
+  alla fascia. Tutto il resto del riquadro è **terra**, isole comprese.
+- **Gli ostacoli**: moli, frangiflutti e pennelli (`man_made=pier`,
+  `breakwater`, `groyne`; una way aperta conta larga 6 m), scogliere
+  (`natural=reef`), marine e porti (`leisure=marina`, `landuse=harbour`) e
+  ogni altra acqua (fiumi, canali, lagune, darsene, stagni): si tolgono
+  dall'acqua navigabile. Fiumi, canali e lagune sono fuori dal task.
+- **La fascia**: l'acqua navigabile entro **1000 m** dalla riva, meno
+  **50 m** dalla riva e **30 m** dagli ostacoli, e a 50 m dal bordo del
+  riquadro (oltre il bordo non si sa cosa c'è). La riva che conta per il
+  chilometro è la terraferma e le isole di almeno **1 ha**: uno scoglio o
+  un frangiflutti staccato si evita, ma non allunga la fascia di un
+  chilometro in mare aperto.
+- **I margini, sui dati** (API di OSM, 2026-10-02): a Jesolo i 17 pennelli
+  di legno di 1,7 km di spiaggia escono dalla riva di 17–66 m (mediana
+  37); a Riva del Garda i moli di 1–36 m (mediana 14), i frangiflutti di
+  2–7 m, una scogliera di 12 m, una marina di 9 m; a Riccione nessuno.
+  Con 50 m dalla riva la forma passa oltre la metà dei pennelli senza
+  contarli; i 30 m dagli ostacoli tengono la forma lontana dalle punte
+  degli altri (il pennello più lungo, 66 m, la spinge a 96 m dalla
+  riva). 50 m tengono anche il disegno staccato dalla spiaggia sulla
+  mappa, alla scala di un percorso di 2–3 km; 30 m tengono conto della
+  base di un frangiflutti a scogliera, più larga della linea disegnata.
+- **La ricerca** (`fit_shape`): la forma a grandezza intera (contorno
+  lungo quanto la distanza chiesta), poi più piccola del 3% alla volta fino
+  al 40%; dritta entro ±15° ogni 5°, il cerchio una volta sola (ADR-0038).
+  Per ogni scala e angolo, la fascia su una griglia di celle di
+  1/200 del contorno (10–40 m), ristretta di 1,25 celle: un centro va
+  bene se tutti i punti del contorno cadono su celle della fascia, e allora
+  il contorno è nella fascia. I centri si guardano dal più vicino alla
+  partenza, 20 000 alla volta, finché 200 vanno bene; dei centri buoni se
+  ne tengono 3, lontani fra loro, il cui contorno passa più vicino alla
+  partenza, e si controllano esattamente con shapely
+  (`band.contains`). Nessuna linea esce dal motore senza quel controllo.
+- **Il costo** = |distanza − chiesta| / chiesta + **2** × (i due tratti
+  dalla riva) / chiesta + **0,1** × km fra la partenza chiesta e quella
+  sulla riva. Un metro di tratto costa il doppio di un metro mancato: un
+  tratto più lungo non compra mai una forma più piccola. La forma «ci sta»
+  se la distanza è entro **±10%** (come sulle strade); altrimenti è un
+  errore che dice a quanti km ci sta (`best_distance_m`, come TASK-031).
+  La somiglianza è quella della forma con sé stessa: il costo dice quanto
+  si è rimpicciolita (`scale`) e spostata (`move_m`).
+- **La partenza sulla riva**: i punti della riva della **terraferma** ogni
+  10 m, che toccano l'acqua navigabile e stanno entro **40 m** da una
+  spiaggia (`natural=beach`, `leisure=beach_resort`), uno scivolo
+  (`leisure=slipway`), un molo o una via che si percorre a piedi
+  (`highway`, non autostrade, superstrade, `foot=no` o private). Un nodo
+  conta solo se è uno scivolo. Per una forma piazzata si tengono i punti
+  entro 2 km dalla partenza chiesta e entro **300 m** dalla forma, e vince
+  quello di costo minore il cui tratto dritto fino al punto più vicino
+  della forma sta tutto sull'acqua navigabile (mezzo metro di tolleranza
+  sul bordo). Il percorso: riva, tratto, la forma intera da lì, lo stesso
+  tratto, riva. I tratti contano nella distanza e sono nel GPX.
+- **Gli errori** sono `ShapeNotDrawableError`, come `NoRoadsError`
+  (ADR-0148), quindi ogni chiamante li sa già trattare: `NoWaterError`
+  («there is no lake or sea to paddle on within 2 km of here»), e
+  `WaterFitError` («the heart does not fit at 6 km … it fits at 3.1 km»;
+  «… even at 4.0 km»; «… no shore within 300 m of it can be reached on
+  foot»).
+- **La cache**: `data/cache/water/water_<s>_<w>_<n>_<e>.json`, separata
+  dalle strade, scritta intera o niente (ADR-0104); un file che contiene
+  l'area la serve. Un mancato è **una** richiesta Overpass
+  (`WATER_QUERY`: coastline, `natural=water`, ostacoli, spiagge, scivoli
+  e le sole vie entro 40 m dall'acqua), dall'indirizzo che risponde
+  (ADR-0100). L'area di una richiesta è la partenza ± (2 km + 300 m + il
+  diametro della forma + 1 km).
+- **Per i campioni**, quando Overpass rifiuta: `python -m
+  route_engine.water --osm-api …` legge le risposte dell'API di OSM
+  (`map.json` di un riquadro piccolo, più `relation/<id>/full.json` per un
+  lago grande, di cui `map` dà solo le way nel riquadro). Mai nell'API.
+
+**Verificato sui dati veri** (API di OSM, 2026-10-02, sei chiamate: due
+strisce sottili per trovare la costa, un riquadro a Riccione, uno a
+Jesolo, uno a Riva del Garda e la relazione 8569 del lago intera):
+il mare dalla coastline a Riccione (1,5 × 1,4 km) e a Jesolo
+(1,7 × 1,8 km), il lago dalla relazione a Riva (1,9 × 2,3 km), gli
+ostacoli e i punti di partenza; nove campioni (cuore e cerchio da 2 km,
+stella da 3 km nei tre posti), chiusi, sull'acqua, fra 63 e 81 m dalla
+terra, al più 835 m dalla riva. Fin dove le forme ci stanno, chiedendo
+1, 2, 3, 4, 5, 6, 8 e 10 km: l'ultima distanza chiesta che dà un
+percorso, la prima che non lo dà, e a quanto l'errore dice che la forma ci
+sta (fra parentesi i km del percorso, quando non sono quelli chiesti):
+
+| Dove | cuore | cerchio | stella |
+|---|---|---|---|
+| Riccione (costa dritta) | 3 sì · 4 no, «3,3» | 3 sì (2,9) · 4 no, «2,9» | 4 sì (3,7) · 5 no, «3,7» |
+| Jesolo (costa dritta) | 3 sì · 4 no, «3,2» | 3 sì (2,9) · 4 no, «2,9» | 4 sì (3,7) · 5 no, «3,7» |
+| Riva del Garda (riquadro di 1,9 × 2,3 km) | 4 sì · 5 no, «4,3» | 4 sì (3,6) · 5 no, «3,6» | 6 sì (5,7) · 8 no, «5,5» |
+| Lago della fixture (largo 1,8 km) | 6 sì (5,6) · 8 no, «5,8» | 5 sì · 6 no, «5,1» | 6 sì · 8 no, «6,3» |
+
+Ogni piano sui dati veri richiede meno di un secondo; costruire l'acqua
+di un'area intera (8–9 km, con la relazione del Garda) 0,1 s.
+
+**Solo sulle fixture o non verificato**: la richiesta Overpass (un
+tentativo il 2026-10-02: «No route to host»; la query non è mai stata
+eseguita), e quindi un riquadro intero di una richiesta vera con tutti
+i suoi ostacoli e accessi; isole in mare e un lago con un'isola (fixture);
+il Lago di Como (nessun dato scaricato). I campioni sono fatti solo dentro
+i riquadri scaricati: oltre il bordo non si vede niente, e la fascia si
+ferma a 50 m dal bordo.
+
+**Alternative scartate**: un grafo sull'acqua a cui agganciare la forma
+(non c'è una rete da prendere: sarebbe inventarla); spostare o piegare i
+punti della forma dove escono dalla fascia (la forma non sarebbe più
+quella, e sull'acqua niente obbliga a deformarla); 200 m dalla riva, la
+fascia dei bagnanti delle ordinanze balneari sul mare (è una regola del
+posto, fuori dal task; con 200 m restano 800 m, e la scelta va fatta
+dall'utente); girare liberamente le forme lungo una costa obliqua
+(ADR-0038: una forma inclinata non si riconosce; riaprirlo è una scelta
+dell'utente); `features_from_bbox` di OSMnx (scarica tutte le strade del
+riquadro per trovare quelle vicino all'acqua, e un GeoDataFrame per
+leggerle; la query fatta a mano chiede solo le vie entro 40 m
+dall'acqua, e basta shapely); la partenza sulla riva più vicina alla
+partenza chiesta invece che alla forma (un tratto lungo fino alla forma,
+o un posto da cui la forma non si vede); unire e allargare tutte le vie
+per trovare la riva raggiungibile (2,7 s su Riva; con un indice spaziale
+0,1 s per tutta l'acqua).
+
+**Conseguenze**: con la fascia di 1 km, **su una costa dritta le forme
+stanno fino a circa 3 km** (la stella fino a 4): la proposta di 1–10 km
+del task non regge al mare, e le distanze per la canoa vanno chieste
+all'utente (domanda 2 del task). Su un lago stretto, dove tutto è entro
+1 km da una riva, si arriva a 5–6 km. I due tratti dalla riva (60–90 m
+l'uno) pesano su un percorso corto: un cuore da 1 km si disegna all'88%.
+Il motore non conosce le regole del posto (bagnanti, corridoi di lancio,
+traffico di barche): l'avviso di sicurezza della parte C deve dirlo.
+`activity: "paddling"`, i limiti, la CLI `--activity paddling` e la
+validazione di §6 sull'acqua sono la parte A2, dopo la bici (TASK-190),
+che tocca gli stessi file (`models.py`, `validation.py`, `__main__.py`).
+La corsa non cambia: nessun file del motore che già c'era è toccato; ma
+`engine_fingerprint` dell'API legge ogni `.py` del motore, quindi dopo il
+prossimo aggiornamento del server gli esempi tenuti (ADR-0136) si
+ridisegnano alla prima richiesta, uguali a prima.

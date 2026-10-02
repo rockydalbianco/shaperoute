@@ -868,3 +868,55 @@ Il GPX si apre in un visualizzatore (gpx.studio, geojson.io) e si guarda.
 Questo è il ciclo di lavoro di tutta la fase 1: **generare, guardare,
 correggere**. Finché non produce un cuore riconoscibile, non si costruisce
 nulla sopra.
+
+## 8. Sull'acqua (TASK-191)
+
+Per la canoa e il paddle non c'è una rete: la forma piazzata (§3) **è** il
+percorso, se sta tutta sull'acqua (ADR-0154). Dove ci sta lo decide il
+motore, mai l'AI. Due moduli, senza rete né chiavi una volta che l'acqua
+è in cache:
+
+- `water.py` — **l'acqua attorno alla partenza**, in metri sul piano
+  tangente: i laghi (`natural=water`, almeno 10 ha), il mare come il
+  riquadro meno la terra della `natural=coastline` (terra a sinistra del
+  suo verso), gli ostacoli (moli, frangiflutti, pennelli, scogliere,
+  marine, porti, fiumi, lagune) e **la fascia**: acqua entro 1000 m dalla
+  riva, meno 50 m dalla riva e 30 m dagli ostacoli. Poi i punti della riva
+  dove si arriva a piedi: entro 40 m da una spiaggia, uno scivolo, un molo
+  o una via pedonabile.
+- `water_fit.py` — **dove la forma ci sta**: grandezza intera, poi più
+  piccola del 3% alla volta fino al 40%, dritta entro ±15° (il cerchio
+  una volta sola); per ogni scala e angolo, i centri della griglia della
+  fascia in cui tutto il contorno cade nella fascia, dal più vicino alla
+  partenza; i tre migliori si controllano esattamente con shapely. Poi la
+  partenza sulla riva di costo minore, entro 300 m dalla forma e 2 km
+  dalla partenza chiesta, con un tratto dritto sull'acqua fino alla forma;
+  il percorso è riva → forma → riva per lo stesso tratto.
+
+```
+costo = |distanza − chiesta| / chiesta + 2 · tratti / chiesta + 0,1 · km spostati
+```
+
+La somiglianza è quella della forma con sé stessa: il costo dice quanto si
+è dovuta rimpicciolire e spostare. Entro ±10% della distanza c'è un
+percorso; fuori, `WaterFitError` dice a quanti km la forma ci sta
+(`best_distance_m`). Lontano dall'acqua, `NoWaterError`. Tutti e due sono
+`ShapeNotDrawableError`. `measure` dà quello che la validazione guarda
+sull'acqua: metri sulla terra (oltre mezzo metro dentro), la distanza
+massima dalla riva, la distanza, se è chiuso.
+
+Con la fascia di 1 km una costa dritta tiene forme fino a circa 3 km (la
+stella 4), un lago stretto 5–6 km (tabella in ADR-0154). Il motore non
+conosce le regole del posto: bagnanti, corridoi, traffico di barche.
+
+Per ora si prova da `python -m route_engine.water` (campioni, fixture,
+risposte dell'API di OSM); `--activity paddling` nella CLI di §7, i
+limiti di distanza e la validazione di §6 sull'acqua sono la parte A2 di
+TASK-191:
+
+```
+python -m route_engine.water --shape heart --distance 2000 \
+    --start 44.0007195,12.6512502 \
+    --water-file services/route-engine/tests/fixtures/water_coast.json \
+    --out heart_coast.gpx
+```

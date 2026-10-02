@@ -157,6 +157,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   vero. File della parte app: `apps/mobile/src/strava/`,
   `src/api/strava.ts`, `src/activities/RunEnd.tsx`, `outbox.ts`,
   `src/theme/tokens.ts`. Da dove riprendere: `tasks/TASK-187.md`.
+- **TASK-191 — Percorsi in canoa e paddle, parte A1** (ADR-0154): nel
+  motore, solo file nuovi (`water.py`, `water_fit.py`), l'acqua di laghi e
+  mare, la fascia entro 1 km dalla riva, dove la forma ci sta e la
+  partenza dalla riva dove si arriva a piedi; provato sui dati veri
+  dell'API di OSM a Riccione, Jesolo e Riva del Garda (nove campioni da
+  giudicare), Overpass non provato (rifiutava il Mac), Como no. Al mare,
+  con 1 km, le forme stanno fino a circa 3 km: le distanze vanno chieste
+  all'utente. **A2** (`activity: "paddling"`, limiti, CLI, validazione)
+  può partire ora che la bici è in `main` (PR #214); poi B (API) e C
+  (app). Da dove riprendere: `tasks/TASK-191.md`, «Esito».
 
 ## Completato
 

@@ -113,6 +113,17 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   nome solo quando è intero (ADR-0104): un'API o uno script fermati a metà
   non lasciano un file rotto che faccia fallire la zona. Un `.part`
   rimasto da un processo ucciso non viene mai letto, e si può cancellare.
+- **L'acqua** (TASK-191, ADR-0154), separata dalle strade:
+  `data/cache/water/water_<sud>_<ovest>_<nord>_<est>.json`, gli elementi
+  di OpenStreetMap che servono all'acqua (coastline, `natural=water`,
+  moli, frangiflutti, pennelli, scogliere, marine, spiagge, scivoli e le
+  vie entro 40 m dall'acqua) nel formato `out tags geom` di Overpass,
+  coordinate a 7 decimali. Un file che contiene l'area chiesta la serve;
+  altrimenti **una** richiesta Overpass (`water.WATER_QUERY`), scritta
+  intera o niente come gli altri file. Il 2026-10-02 la richiesta non è
+  stata provata: Overpass rifiutava il Mac. I file fatti dalle risposte
+  dell'API di OSM per i campioni (`python -m route_engine.water --osm-api
+  … --save-water …`) hanno lo stesso formato.
 - **Ritagli salvati prima di TASK-136** (ADR-0108): `python -m
   route_engine.prune_crops` elenca, zona per zona, i grafi che un altro
   grafo della cache contiene; con `--delete` li cancella, GraphML e

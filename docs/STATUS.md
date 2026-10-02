@@ -48,8 +48,9 @@ In coda, dopo o accanto:
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
   account dell'utente.
-- **Seguiti scritti nei task fatti**: le altre città del catalogo seme e
-  le frasi (TASK-128); Berlino, che resta a Overpass, e le zone da rifare
+- **Seguiti scritti nei task fatti**: le forme a 21 km di Bari, Palermo
+  e New York, quando Overpass riapre, e il feed d'esempio da rifare sulle
+  14 città (TASK-161); Berlino, che resta a Overpass, e le zone da rifare
   quando l'estratto invecchia (TASK-137); il segnale della scelta fra
   A · B · C negli esempi (TASK-151); la linea intera a fine corsa
   (TASK-149); zone scaricate con un margine (TASK-143); l'import in Strava
@@ -81,6 +82,17 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   `offsite` è in `main` dalla PR #167): manca che l'utente lo crei
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
+- **TASK-163 — «Explore»: le città in evidenza già disegnate, e il feed
+  mentre una città si disegna**, chiesto dall'utente il 2026-10-02. Branch
+  `feat/TASK-163-explore-featured-and-feed`. **In due PR**, per richiesta
+  dell'utente («pubblica intanto la parte dei post sul telefono»). La
+  prima, la parte dell'app (ADR-0132): in una città cercata, finché cuore,
+  cerchio e stella si disegnano, sotto ci sono 5 disegni del feed, con la
+  foto della mappa di TASK-162 (vista in un simulatore). **Da provare
+  sull'iPhone.** La seconda, ferma: cuore, cerchio e stella già pronti nel
+  catalogo per le 14 città in evidenza (oggi li hanno Roma, Milano e
+  Torino); parte dopo TASK-161, che ha `catalog/seed/` e
+  `seed_catalog.py`. Da dove riprendere: il task file.
 
 ## Completato
 
@@ -95,6 +107,13 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   simulato. **Da provare sull'iPhone** camminando (ripubblicare l'app).
   Fuori, da chiedere all'utente: «Pause», «Stop» da tenere premuto, la voce
   a ogni km nella corsa con percorso.
+- **Catalogo** — TASK-161: il catalogo seme in tutte le 14 città, 323
+  percorsi (Napoli, Verona, Padova, Genova, Bari, Palermo e New York
+  nuove; Genova, Bari, Palermo e New York con le zone del server), e le
+  parole. Solo parole corte, scelta dell'utente (ADR-0130); parole e forme
+  illeggibili tolte a occhio (ADR-0097, aggiornamento 2026-10-02).
+  Mancano le forme a 21 km di Bari, Palermo e New York (Overpass).
+
 - **App** — TASK-162: in «Feed» ogni disegno ha sotto la mappa della sua
   zona, chiesta dall'utente (ADR-0131): strade, acqua, verde e nomi, con
   lo stile dell'app. È una foto: una pagina MapLibre nascosta sotto

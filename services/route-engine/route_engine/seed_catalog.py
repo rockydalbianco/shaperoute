@@ -52,25 +52,26 @@ CITIES: dict[str, LatLon] = {
 
 # Words written in each city (asked by the user, 2026-10-01): common and
 # famous greetings, in the language used there. The engine writes A-Z only,
-# no spaces, at most MAX_PHRASE_LETTERS at 21 km (words.LETTER_DISTANCE_M):
-# BUONGIORNO and BUONANOTTE do not fit, BUONDI and NOTTE do.
+# no spaces, at most MAX_PHRASE_LETTERS at 21 km (words.LETTER_DISTANCE_M).
 MAX_PHRASE_LETTERS = 7
-ITALIAN = ("CIAO", "TIAMO", "GRAZIE", "BUONDI", "NOTTE", "AMORE", "HELLO")
+# Short words only (the user's choice, 2026-10-02, ADR-0130): at the 21 km
+# cap, words of more than 4-5 letters do not read on a city's roads.
+ITALIAN = ("CIAO", "TIAMO")
 PHRASES: dict[str, tuple[str, ...]] = {
     "trento": ITALIAN,
     "levico": ITALIAN,
     "milano": (*ITALIAN, "UELA"),  # uèla: the Milanese hello
     "roma": (*ITALIAN, "AO", "AMOR"),  # Roma backwards: Amor
-    "torino": (*ITALIAN, "CEREA"),  # the Piedmontese greeting
+    "torino": ITALIAN,
     "bologna": ITALIAN,
     "firenze": (*ITALIAN, "BONA"),  # the Tuscan "bye"
-    "napoli": (*ITALIAN, "UAGLIO", "AMMORE"),
-    "verona": (*ITALIAN, "ROMEO"),  # the city of Romeo and Juliet
+    "napoli": ITALIAN,
+    "verona": ITALIAN,
     "padova": ITALIAN,
     "genova": ITALIAN,
     "bari": (*ITALIAN, "UE"),  # uè: the hello of Bari
-    "palermo": (*ITALIAN, "AMURI"),  # love, in Sicilian
-    "newyork": ("HELLO", "ILOVENY", "THANKS", "LOVE", "HEY", "NYC"),
+    "palermo": ITALIAN,
+    "newyork": ("LOVE", "HEY", "NYC"),
 }
 STYLES: tuple[str, ...] = ("round", "block")
 
@@ -119,6 +120,61 @@ UNREADABLE: frozenset[tuple[str, str, int]] = frozenset(
         ("firenze", "dog_head", 21000),
         ("firenze", "snail", 10000),
         ("firenze", "heart", 21000),
+        # TASK-161, the cities of the 2026-10-02 run.
+        *(("napoli", s, 5000) for s in ("butterfly", "cat", "dog_head")),
+        *(("napoli", s, 5000) for s in ("rabbit_head", "snail")),
+        *(("napoli", "dog_head", d) for d in (10000, 21000)),
+        ("napoli", "snail", 10000),
+        *(("verona", s, 5000) for s in ("butterfly", "cat", "dog_head")),
+        *(("verona", s, 5000) for s in ("rabbit_head", "snail")),
+        *(("verona", s, 10000) for s in ("dog_head", "rabbit_head", "snail")),
+        ("verona", "horse", 10000),
+        ("verona", "dog_head", 21000),
+        ("verona", "moon", 21000),
+        *(("padova", "dog_head", d) for d in (5000, 10000, 21000)),
+        *(("padova", "rabbit_head", d) for d in (5000, 10000)),
+        ("padova", "snail", 10000),
+        ("padova", "moon", 5000),
+        *(("genova", "dog_head", d) for d in (5000, 10000, 21000)),
+        *(("genova", s, 5000) for s in ("rabbit_head", "snail", "horse")),
+        ("genova", "snail", 10000),
+        *(("bari", "dog_head", d) for d in (5000, 10000)),
+        ("bari", "heart", 10000),
+        ("bari", "horse", 10000),
+        *(("palermo", "dog_head", d) for d in (5000, 10000)),
+        *(("palermo", s, 5000) for s in ("rabbit_head", "snail")),
+        ("palermo", "horse", 10000),
+        *(("newyork", s, 5000) for s in ("butterfly", "dog_head", "rabbit_head")),
+        ("newyork", "snail", 5000),
+        ("newyork", "dog_head", 10000),
+    }
+)
+
+# (city, word, style) looked at by eye (TASK-161, 2026-10-02) and left out:
+# above the threshold, but the letters do not read on those roads.
+UNREADABLE_WORDS: frozenset[tuple[str, str, str]] = frozenset(
+    {
+        ("trento", "CIAO", "block"),
+        *(("milano", "UELA", s) for s in ("round", "block")),
+        ("roma", "AO", "block"),
+        *(("roma", "AMOR", s) for s in ("round", "block")),
+        ("roma", "CIAO", "block"),
+        ("roma", "TIAMO", "round"),
+        ("torino", "CIAO", "block"),
+        *(("torino", "TIAMO", s) for s in ("round", "block")),
+        *(("bologna", w, s) for w in ITALIAN for s in ("round", "block")),
+        ("firenze", "CIAO", "round"),
+        *(("firenze", "TIAMO", s) for s in ("round", "block")),
+        ("firenze", "BONA", "round"),
+        *(("napoli", w, "block") for w in ITALIAN),
+        ("verona", "CIAO", "block"),
+        ("verona", "TIAMO", "round"),
+        *(("padova", w, "round") for w in ITALIAN),
+        *(("genova", "CIAO", s) for s in ("round", "block")),
+        ("genova", "TIAMO", "round"),
+        *(("palermo", w, "block") for w in ITALIAN),
+        *(("newyork", w, "block") for w in ("HEY", "LOVE", "NYC")),
+        ("newyork", "LOVE", "round"),
     }
 )
 
@@ -291,7 +347,8 @@ def select(
 ) -> list[dict[str, Any]]:
     """Every drawn route at `min_similarity` or more, best first within a
     city. Equally good routes are all kept, even on the same roads: none
-    replaces another (TASK-092, point 3). REJECTED and UNREADABLE never."""
+    replaces another (TASK-092, point 3). REJECTED and UNREADABLE never,
+    nor a word judged unreadable or no longer in the city's PHRASES."""
     kept = [
         r
         for r in runs
@@ -299,8 +356,17 @@ def select(
         and r["similarity"] >= min_similarity
         and (r["city"], name_of(r)) not in REJECTED
         and (r["city"], name_of(r), r["distance_m"]) not in UNREADABLE
+        and ("word" not in r or _word_kept(r))
     ]
     return sorted(kept, key=lambda r: (r["city"], -r["similarity"], r["key"]))
+
+
+def _word_kept(run: dict[str, Any]) -> bool:
+    city, word = run["city"], run["word"]
+    return (
+        word in PHRASES.get(city, ())
+        and (city, word, run["style"]) not in UNREADABLE_WORDS
+    )
 
 
 def name_of(run: dict[str, Any]) -> str:
@@ -431,6 +497,10 @@ def engine_prepare(
                 outline = list(word.points)
             planned = planned_distance(case.distance_m, False)
             boxes.append(required_area(outline, start, planned, word=word))
+        # Every case's own zone already cached (a zone built elsewhere, e.g.
+        # from the server's Geofabrik extract): nothing to download.
+        if all(source.is_cached(box) for box in boxes):
+            return
         south, west, north, east = union(boxes)
         m = PREPARE_MARGIN_DEG
         zone = (south - m, west - m, north + m, east + m)

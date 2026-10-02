@@ -64,7 +64,7 @@ docs/tasks/TASK-155.md
 ## Esito
 
 Fatto: sulla mappa di un esempio di «Explore» gli altri percorsi sono
-grigi sotto quello scelto, e cambiano con la tessera. 696 test verdi,
+grigi sotto quello scelto, e cambiano con la tessera. 713 test verdi,
 lint, tipi e formato verdi. TASK-154 (lo swipe) rifà le condizioni su
 `screen` in `App.tsx` e unirà questa espressione. **Da provare
 sull'iPhone** dopo la ripubblicazione dell'app.

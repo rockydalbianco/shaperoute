@@ -41,6 +41,11 @@ ora ha il database e il server. Tutti Todo.
 
 In coda, dopo o accanto:
 
+- **TASK-172 — «My activities»** (ADR-0140 tenuto), chiesto dall'utente il
+  2026-10-02 insieme a «Favorites» (TASK-171): le corse registrate nel
+  profilo, con giorno, ora, luogo e l'anteprima del disegno. Il task file è
+  scritto; prima di partire l'utente conferma tre scelte (lì, «Da
+  decidere»). Dipende da TASK-171 e, per la fine della corsa, da TASK-169.
 - **TASK-067 — Lettere unite anche dalla cima** (ADR-0063): il task file
   è scritto (2026-10-02), da assegnare. La scala per lettera non si fa,
   scelta dell'utente: da TASK-071 lettere più piccole si leggono peggio.

@@ -64,6 +64,7 @@ percorsi vicini c'è una voce che si capisce.
 ```
 apps/mobile/src/explore/ExploreScreen.tsx
 apps/mobile/src/explore/ExploreScreen.test.tsx
+apps/mobile/src/explore/ExploreMoreShapes.test.tsx (nuovo)
 apps/mobile/src/explore/RouteFilters.tsx           (cancellato)
 apps/mobile/src/explore/RouteFilters.test.tsx      (cancellato)
 apps/mobile/src/explore/exampleRoutes.ts
@@ -153,3 +154,14 @@ Seguiti:
   «Draw»: per dire il nome del luogo serve una riga in `App.tsx`.
 - Il test di TASK-174 in `CityExamples.test.tsx` stampa un avviso di React
   (`forgetFeedMaps` fuori da `act`): non è di questo task.
+- **I test in CI e i file grandi.** Senza cache jest esegue per primi i
+  file di test più grandi, e il primo render di un file partito mentre
+  React Native si sta ancora caricando per gli altri può superare i 5 s
+  del primo test: è successo due volte a `ExploreScreen.test.tsx`, che con
+  i test nuovi era diventato il quarto file per grandezza (da 11,7 a
+  17 kB). Non aspettava niente: a cache calda quel test dura 0,3 s. I
+  test delle forme in più stanno ora in `ExploreMoreShapes.test.tsx`, e
+  `ExploreScreen.test.tsx` è tornato grande come prima; da una cache vuota
+  il suo primo test dura 0,6 s. Lo stesso vale per ogni file di test che
+  cresce: `AppFavorites.test.tsx`, oggi fra i primi, in locale da cache
+  vuota va in timeout sul suo primo test quando il Mac è carico.

@@ -1,20 +1,23 @@
 # DEPLOY — Chiedere percorsi da fuori casa
 
 Oggi l'API gira sul PC di casa e l'iPhone la trova solo sulla stessa Wi-Fi
-(`SETUP.md`, passo 10.1). Qui ci sono le strade per usarla da ovunque,
-tutte **gratis e senza carta di credito**, salvo dove è detto (ADR-0076).
+(`SETUP.md`, passo 10.1). Qui ci sono le strade per usarla da ovunque:
+A–E gratis o quasi (ADR-0076), F a pagamento, con il computer spento
+(ADR-0111).
 
 | Strada | PC acceso? | Costo | Quando |
 |---|---|---|---|
 | **A — PC + Tailscale** | sì | gratis | **da provare subito** |
 | **B — PC + Cloudflare Tunnel** | sì | gratis | subito, se serve un indirizzo pubblico |
-| C — Server con Docker (Hetzner, Oracle) | no | 0–7 €/mese, **carta** | più avanti |
+| C — Server con Docker (Hetzner, Oracle) | no | **carta** | sostituita da F |
 | D — Raspberry Pi 5 a casa | no (il Pi sì) | il Pi, una volta | più avanti, senza carta |
 | E — VPS pagato con PayPal | no | pochi €/mese | più avanti, senza carta |
+| **F — Server a pagamento, configurazione pronta** | **no** | **9–13 €/mese** | **per non tenere acceso il computer, e poi per pubblicare** |
 
-Tutti i comandi sono per **PowerShell** sul PC, dalla radice del
+I comandi di A–E sono per **PowerShell** sul PC, dalla radice del
 repository (`cd ~\PycharmProjects\shaperoute`). Si scrive `npm.cmd`, non
-`npm` (`SETUP.md`, passo 0).
+`npm` (`SETUP.md`, passo 0). Quelli di F sono per il **Terminale del Mac**
+e per il server (Linux).
 
 ---
 
@@ -126,10 +129,15 @@ una volta e Expo Go la apre da lì (ADR-0078). **L'API serve sempre**: il
 PC acceso con Tailscale (A) o un server (B–E). Non serve più Expo (porta
 8081) né il QR del terminale.
 
-Il progetto su Expo è `@lppl1316/shaperoute`
-(<https://expo.dev/accounts/lppl1316/projects/shaperoute>). Su iPhone
-Expo Go apre solo i progetti dell'account con cui si è entrati in Expo Go:
-entra con `lppl1316`, o fatti aggiungere al progetto.
+Il progetto su Expo è `@lppl1316s-team/shaperoute`
+(<https://expo.dev/accounts/lppl1316s-team/projects/shaperoute>): dal
+2026-10-02 è dell'organizzazione `lppl1316s-team`, non più dell'account
+`lppl1316`, così altri possono entrarci come membri (TASK-146). Il
+proprietario scritto in `apps/mobile/app.json` (`owner`) deve essere lo
+stesso, o `eas update` si ferma con «Owner of project ... does not
+match». Su iPhone Expo Go apre solo i progetti a cui l'account con cui si
+è entrati in Expo Go ha accesso: entra con un account membro
+dell'organizzazione, o fatti aggiungere.
 
 1. Una volta: `npx eas-cli login` (su Windows `npx.cmd`), con l'account
    Expo. Lo fa l'utente, con le sue credenziali.
@@ -290,10 +298,11 @@ Cloudflare e un dominio tuo: per ora non serve.
 
 ---
 
-## Il pacchetto Docker (strade C, D, E)
+## Il pacchetto Docker (strade C, D, E, F)
 
-Su un server l'API gira in un container Docker, costruito dal
-`Dockerfile` alla radice: motore compreso, AI esclusa (senza Ollama le
+Su un server a pagamento conviene la configurazione pronta della strada
+F, che usa questo stesso pacchetto. Su un server l'API gira in un
+container Docker, costruito dal `Dockerfile` alla radice: motore compreso, AI esclusa (senza Ollama le
 parole fuori tabella rispondono `ai_unavailable`, il resto funziona). La CI
 lo costruisce a ogni PR per Intel/AMD e per ARM64 (Raspberry Pi, Oracle
 Ampere), senza pubblicarlo. Docker **non** si installa sul PC di casa: i
@@ -328,9 +337,10 @@ un server con **almeno 4 GB** di RAM; 8 GB per stare tranquilli.
 
 ## C — Server con carta: Hetzner, Oracle Always Free
 
-- **Hetzner Cloud** (circa 7 €/mese, carta): un server CAX21 o CPX21 con
-  Ubuntu, Docker installato con `apt install docker.io`, poi il pacchetto
-  Docker qui sopra.
+- **Hetzner Cloud**: sostituita dalla strada **F**, con i prezzi del
+  2026-10-01 (Hetzner li ha alzati due volte nel 2026) e una
+  configurazione che porta anche il catalogo di «Explore», gli eventi
+  delle ricerche, HTTPS e l'AI.
 - **Oracle Cloud Always Free** (gratis, ma la carta serve come verifica
   all'iscrizione): una VM Ampere (ARM64) fino a 4 core e 24 GB. L'immagine
   si costruisce anche per ARM64.
@@ -363,6 +373,573 @@ pagamento e per la verifica dell'account, prima di dare qualsiasi dato.
 
 Poi è come C: Ubuntu, Docker, il pacchetto Docker, la chiave, e
 `EXPO_PUBLIC_API_URL` nell'app (o Tailscale sul VPS). Almeno 4 GB di RAM.
+
+---
+
+## F — Server a pagamento, con la configurazione pronta (TASK-144)
+
+L'API, il motore e, se si vuole, l'AI su un server in affitto, sempre
+acceso: il Mac si può spegnere (ADR-0111). Tre gradini, e ognuno funziona
+da solo:
+
+1. **Privato** (F.1–F.7): il server lo raggiungono solo i vostri
+   dispositivi, con Tailscale e HTTPS, senza porte aperte. Basta per usare
+   l'app voi due, da ovunque.
+2. **Pubblico** (F.8): un dominio vostro e HTTPS per tutti, per far
+   provare l'app ad altre persone.
+3. **Negli store** (F.10): cosa manca per App Store e Play Store.
+
+Creare gli account, pagare, comprare il dominio e scrivere le chiavi lo
+fa l'utente; i comandi sono tutti qui. La configurazione sta in
+`deploy/`: `compose.yaml` (l'API e, a scelta, Ollama e Caddy) e
+`Caddyfile`. La CI la avvia a ogni PR.
+
+**Il server di oggi.** Dal 2026-10-01 l'app pubblicata (`preview`) usa un
+**Hetzner CX33** a Falkenstein, `sgrava-api`, scelto dall'utente dopo che
+Oracle Always Free rispondeva «Out of capacity» anche a 1 OCPU e 6 GB, e
+un CAX21 a Norimberga non c'era. È stato messo su a mano, prima di questa
+configurazione: un `docker run` con le cartelle in `/srv/shaperoute/` e
+Caddy installato con apt, pubblico da subito su un nome `sslip.io`,
+senza dominio comprato (F.8). Misurato lì: un cuore da 5 km a Trento in
+18,7 s con la zona in cache, una stella in 3,2 s, l'API in circa 0,56 GB
+di RAM; e Overpass, che rifiuta il Mac, dal server risponde. Come
+portarlo su `deploy/compose.yaml`: F.12.
+
+### F.1 Quale server
+
+Cosa serve all'app:
+
+- **RAM**: 8 GB per l'API (una zona grande in memoria occupa centinaia di
+  MB, l'API ne tiene due, più i calcoli; sul server di oggi, con Trento,
+  circa 0,56 GB). Con l'AI (`qwen3:4b`, 3,2 GB mentre è caricata) 8 GB
+  probabilmente bastano ancora, da provare con le zone grandi come New
+  York; **12 GB** per stare larghi.
+- **Disco**: almeno 80 GB. Le zone del Mac pesano 19 GB oggi (molti sono
+  ritagli, che TASK-136 toglie) e crescono con le città.
+- **Processore**: il motore lavora a lungo, e un vCPU di un server
+  condiviso è più lento di un Mac recente. Sul CX33 di oggi il cuore da
+  5 km a Trento ci mette 18,7 s, dentro i 5–25 s che `API.md` dà per 3–10
+  km; un server nuovo si misura allo stesso modo (F.7).
+- **In Europa**, per i dati degli utenti (GDPR) e per la latenza.
+- **Ubuntu 24.04 LTS**.
+
+Prezzi verificati il **2026-10-01** sulle pagine dei provider, al mese,
+IVA esclusa; un privato in Italia paga il 22% in più (colonna «con IVA»).
+Cambiano spesso: controllali prima di comprare.
+
+| Server | vCPU | RAM | Disco | Prezzo | Con IVA | Note |
+|---|---|---|---|---|---|---|
+| **Hetzner CX33** | 4 | 8 GB | 80 GB | 8,49 € + 0,50 € IPv4 | **10,97 €** | a ore, senza impegno; backup +20% |
+| Hetzner CX43 | 8 | 16 GB | 160 GB | 15,99 € + 0,50 € IPv4 | 20,12 € | come CX33, con posto per l'AI |
+| OVHcloud VPS-2 | 4 | 8 GB | 75 GB | 7,21 € | 8,80 € | impegno 12 mesi; backup giornaliero e IPv4 inclusi |
+| **OVHcloud VPS-3** | 6 | 12 GB | 100 GB | 10,40 € | **12,69 €** | come VPS-2; anche in Italia; a volte esaurito |
+| Contabo Cloud VPS 6 | 6 | 12 GB | 200 GB | da 7,50 € | — | impegno 24 mesi; processore e disco più lenti; IVA da controllare |
+| Oracle Always Free | 4 ARM | 24 GB | 200 GB | 0 € | 0 € | carta per la verifica; le VM ferme vengono ritirate; provato il 2026-10-01: «Out of capacity» |
+
+**La raccomandazione**, e la scelta:
+
+- **Hetzner CX33**, 10,97 €/mese: **scelto dall'utente**, è il server di
+  oggi. Si paga a ore e si cancella quando si vuole. Il pannello è il più
+  semplice e il server è pronto in un minuto. Se servono più core o più
+  memoria, dal pannello si passa a CX43 (con il disco più grande non si
+  torna indietro).
+- **L'alternativa, se un giorno serve più RAM per meno: OVHcloud VPS-3**,
+  12,69 €/mese pagando 12 mesi in anticipo (circa 152 €): 12 GB, il
+  backup giornaliero incluso, un datacenter anche in Italia.
+
+Scartati: DigitalOcean, Vultr, Linode, AWS Lightsail (4–5 volte il
+prezzo per la stessa RAM); Render, Railway, Fly.io (la RAM si paga a parte
+e il disco permanente costa: per 8 GB, decine di euro al mese); netcup
+(14,50 € + IVA per 8 GB, 12 mesi); i vCPU dedicati di Hetzner (CCX, CPX),
+più che raddoppiati nel 2026. Senza canone resta il Raspberry Pi (D).
+
+### F.2 Comprare e creare il server (lo fa l'utente)
+
+1. **Una chiave SSH sul Mac**, per entrare nel server senza password. Se
+   `ls ~/.ssh/id_ed25519.pub` dice che il file non c'è:
+
+   ```bash
+   ssh-keygen -t ed25519 -C "shaperoute"
+   ```
+
+   Invio a ogni domanda (una frase segreta è meglio, se la ricordi). Poi
+   copia la parte pubblica, quella da dare al provider:
+
+   ```bash
+   pbcopy < ~/.ssh/id_ed25519.pub
+   ```
+
+2. **L'account dal provider**, con i tuoi dati e il pagamento. Hetzner a
+   volte chiede un documento ai clienti nuovi.
+3. **Il server**:
+   - **Hetzner**: Cloud Console → nuovo progetto `shaperoute` → *Add
+     Server*: posizione Nuremberg o Falkenstein, immagine **Ubuntu
+     24.04**, tipo **CX33** (*Cost-Optimized*, x86), IPv4 e IPv6 accesi,
+     *SSH key* la chiave del punto 1, nome `shaperoute`. Il backup è
+     facoltativo (F.9).
+   - **OVHcloud**: VPS → **VPS-3** (o VPS-2) → posizione (Milano, se
+     c'è) → **Ubuntu 24.04** → la chiave SSH del punto 1.
+4. Il pannello mostra l'**indirizzo IPv4** del server, come
+   `203.0.113.10`. Dal Mac:
+
+   ```bash
+   ssh root@203.0.113.10
+   ```
+
+   Su OVHcloud l'utente è `ubuntu` al posto di `root`, qui e in tutti i
+   comandi che seguono. Alla prima connessione rispondi `yes`. Da qui i
+   comandi sono **sul server**, finché non è scritto «dal Mac».
+
+### F.3 Preparare il server (una volta)
+
+Sul server, una riga alla volta:
+
+```bash
+sudo apt update && sudo apt -y upgrade
+sudo ufw allow OpenSSH
+sudo ufw --force enable
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker "$USER"
+curl -fsSL https://tailscale.com/install.sh | sudo sh
+sudo tailscale up --hostname shaperoute
+```
+
+- `ufw` è il firewall: resta aperta solo la porta di SSH.
+- Docker arriva con `docker compose`; l'utente entra nel gruppo `docker`
+  per usarlo senza `sudo` (con `root` non serve, e non fa danni).
+- `tailscale up` stampa un link: aprilo sul Mac ed entra con **lo stesso
+  account Tailscale** del Mac e dell'iPhone (strada A). Il server compare
+  nella tailnet come `shaperoute`.
+
+Esci (`exit`) e rientra, questa volta attraverso Tailscale, dal Mac:
+
+```bash
+ssh root@shaperoute
+```
+
+Se il nome non risponde, usa l'indirizzo `100.x` che l'app Tailscale
+mostra per il server. Ubuntu installa da solo gli aggiornamenti di
+sicurezza; un `sudo reboot` ogni tanto li completa, e l'API riparte da
+sola.
+
+### F.4 Il codice e i segreti
+
+```bash
+git clone https://github.com/rockydalbianco/shaperoute.git
+cd shaperoute
+cp .env.example deploy/.env
+openssl rand -base64 32
+openssl rand -hex 24
+nano deploy/.env
+```
+
+Il primo `openssl` stampa una chiave nuova per l'API (sezione «La chiave
+dell'API»), il secondo la password del database (TASK-122, F.13): solo
+lettere e cifre, perché finisce dentro un indirizzo. In `nano` scrivi:
+
+```
+SHAPEROUTE_API_KEY=la-chiave-appena-stampata
+GEOAPIFY_API_KEY=la-chiave-di-geoapify
+POSTGRES_PASSWORD=la-password-appena-stampata
+```
+
+La chiave di Geoapify è quella che il Mac ha già nel suo `.env`. Salva
+con `Ctrl+O` e Invio, esci con `Ctrl+X`. Le altre righe restano come
+sono; `SHAPEROUTE_REQUEST_LOG` vuota (sezione «Il registro delle
+richieste e le posizioni»). `deploy/.env` non entra nel repository
+(`.gitignore`) e non va scritto in una chat.
+
+### F.5 Le zone dal Mac
+
+Il server scarica una zona da Overpass alla prima richiesta, ma Overpass a
+volte rifiuta (`MAPS.md`): conviene copiare quelle che il Mac ha già,
+circa 19 GB. Sul server, prima, la cartella diventa tua per la copia:
+
+```bash
+mkdir -p ~/shaperoute/data/cache
+sudo chown -R "$USER" ~/shaperoute/data
+```
+
+Poi **dal Mac**, dalla cartella del progetto:
+
+```bash
+cd ~/Progetti/shaperoute
+rsync -avz --partial --progress data/cache/ root@shaperoute:shaperoute/data/cache/
+```
+
+Con `-z` i 19 GB viaggiano compressi, circa 4 GB (misurato copiando sul
+server di oggi): con 20 Mbit/s in upload, una mezz'ora. Se si interrompe,
+lo stesso comando riprende da dove era. La barra finale di `data/cache/`
+conta: copia il contenuto, non la cartella. Al primo avvio (F.6) la
+cartella torna all'utente dell'API da sola (`data-owner` in
+`compose.yaml`); per un'altra copia, più avanti, si rifà prima il `chown`
+qui sopra.
+
+### F.6 Avviare
+
+Sul server:
+
+```bash
+cd ~/shaperoute/deploy
+docker compose up -d --build
+```
+
+La prima volta costruisce l'immagine, qualche minuto. Poi:
+
+```bash
+docker compose ps
+curl http://127.0.0.1:8000/health
+```
+
+`db` e `api` devono essere `Up (healthy)`, dopo una ventina di secondi,
+`backup` e `offsite` `Up`, e `/health` rispondere `{"status":"ok"}`. Cosa dice l'API, all'avvio e a ogni
+richiesta: `docker compose logs -f api` (esci con `Ctrl+C`). All'avvio
+deve dire «API key required in the X-API-Key header», «Places suggested
+by Geoapify», «… recommended routes from catalog/seed», con un numero
+più grande di zero, e «Accounts in PostgreSQL» con le migrazioni applicate
+(la prima volta `0001_users_sessions`, poi «schema up to date»).
+
+Docker riavvia l'API se si ferma e quando il server si riaccende. La porta
+8000 è aperta solo verso il server stesso (`127.0.0.1`): da internet non
+si raggiunge, nemmeno a firewall spento.
+
+**L'AI sul server** (facoltativa, solo con 12 GB o più): in `deploy/.env`
+scrivi `COMPOSE_PROFILES=ai`, poi
+
+```bash
+docker compose up -d
+docker compose exec ollama ollama pull qwen3:4b
+```
+
+Senza, le parole fuori tabella rispondono `ai_unavailable` e l'app
+propone le forme del catalogo da toccare; tutto il resto funziona. Sul
+server l'AI gira sul processore, senza la grafica del Mac: è più lenta, da
+misurare con una parola come «stemma della ferrari». L'API la aspetta al
+più 90 s (`AI.md`).
+
+### F.7 L'iPhone verso il server (privato, con Tailscale)
+
+1. **HTTPS nella tailnet** (una volta, lo fa l'utente): nella console di
+   Tailscale, <https://login.tailscale.com/admin/dns>, accendi
+   **MagicDNS** e, più sotto, **HTTPS Certificates**.
+2. Sul server:
+
+   ```bash
+   sudo tailscale serve --bg 8000
+   ```
+
+   Stampa un indirizzo come `https://shaperoute.tail1234.ts.net`: porta
+   all'API con un certificato vero, ma solo dai dispositivi della
+   tailnet, e resta acceso dopo un riavvio. Il nome della tailnet finisce
+   nei registri pubblici dei certificati; non dice altro.
+3. **La prova**: sull'iPhone, con Tailscale acceso, anche in 5G, apri in
+   Safari `https://shaperoute.tail1234.ts.net/health` (il tuo indirizzo).
+4. **L'app**: l'indirizzo va su EAS, come in A.6 punto 2. Dal Mac, da
+   `apps/mobile`:
+
+   ```bash
+   npx eas-cli env:set preview --name EXPO_PUBLIC_API_URL --value https://shaperoute.tail1234.ts.net --visibility plaintext
+   ```
+
+   La chiave, `EXPO_PUBLIC_API_KEY`, la stessa di `deploy/.env`, mettila
+   dalla pagina del progetto su expo.dev, *Environment variables*,
+   ambiente `preview`, visibilità *Sensitive*: scritta in un comando
+   resterebbe nella cronologia del Terminale.
+5. **Ripubblica** l'app (A.6 punto 3) e aprila in Expo Go.
+
+Il server di oggi non passa da qui: è pubblico da subito (F.8). Non
+Tailscale *Funnel*, che lo renderebbe pubblico: provato, il suo nome
+pubblico non è mai stato creato (tailscale/tailscale#21502).
+
+Ora il Mac si può spegnere. **La prova dei tempi**: un cuore da 5 km a
+Trento, che è in cache, e uno da 15 km; `API.md` dice quanto ci mettono
+sul Mac. Se sul server sono molto più lenti, è il momento di decidere fra
+il server più grande e una task per rendere più veloce il motore.
+
+### F.8 Un indirizzo pubblico
+
+Con Tailscale l'app la usa solo chi è nella vostra tailnet. Per altre
+persone, e per gli store, serve un indirizzo pubblico in HTTPS.
+
+1. **Un dominio**, lo compra l'utente: 10–15 €/anno da un registrar, ad
+   esempio un `.it` o un `.app`. Servirà anche per la pagina della
+   privacy che gli store chiedono (F.10). **Per cominciare se ne può fare
+   a meno**, come il server di oggi: `203-0-113-10.sslip.io` (l'IPv4 con
+   i trattini) porta già all'indirizzo del server, senza DNS da
+   configurare; si salta il punto 2 e si usa quel nome come
+   `SHAPEROUTE_DOMAIN`. Per gli store meglio un nome vostro, che resta
+   anche se cambia il server.
+2. **Il DNS**, nel pannello del registrar: un record `A` con nome `api` e
+   per valore l'IPv4 del server; se il server ha IPv6, anche un `AAAA`.
+   Dopo qualche minuto, dal Mac, `ping api.tuodominio.it` risponde
+   dall'indirizzo del server.
+3. **Il firewall**, sul server (e nel pannello del provider, se lì ce n'è
+   uno acceso):
+
+   ```bash
+   sudo ufw allow 80,443/tcp
+   sudo ufw allow 443/udp
+   ```
+
+4. **Controlla la chiave**: con un indirizzo pubblico, senza chiave l'API
+   è aperta a tutti. In `deploy/.env` `SHAPEROUTE_API_KEY` deve avere un
+   valore (F.4). Poi, sempre in `deploy/.env`:
+
+   ```
+   SHAPEROUTE_DOMAIN=api.tuodominio.it
+   COMPOSE_PROFILES=public
+   ```
+
+   (`ai,public` se c'è anche l'AI), e sul server:
+
+   ```bash
+   sudo tailscale serve reset
+   docker compose up -d
+   ```
+
+   La prima riga spegne `tailscale serve` di F.7, se c'è: tiene la porta
+   443 e Caddy non riuscirebbe ad aprirla (successo sul server di oggi).
+
+   Caddy chiede il certificato a Let's Encrypt e lo rinnova da solo.
+5. **La prova, dal Mac**: `curl https://api.tuodominio.it/health`
+   risponde `{"status":"ok"}`, e
+
+   ```bash
+   curl -s -o /dev/null -w '%{http_code}\n' https://api.tuodominio.it/docs
+   ```
+
+   risponde `401`.
+6. **L'app**: `EXPO_PUBLIC_API_URL` su EAS diventa
+   `https://api.tuodominio.it` (F.7, punto 4), la chiave resta, e si
+   ripubblica.
+
+Il limite di 30 richieste al minuto vale per ogni telefono: Caddy passa
+all'API l'indirizzo vero (`FORWARDED_ALLOW_IPS` in `compose.yaml`). Il
+server di oggi, senza, conta tutti come uno, e ha alzato il limite a 120
+(`SHAPEROUTE_RATE_LIMIT`). La
+chiave dentro l'app resta debole (A.6, «Limiti»): chi ha l'app la può
+leggere. La protezione vera arriva con gli account (TASK-114, TASK-115).
+
+### F.9 Tenerlo in ordine
+
+Sul server, da `~/shaperoute/deploy`:
+
+| Cosa | Comando |
+|---|---|
+| Aggiornare dopo un merge | `git pull && docker compose up -d --build` |
+| I log dell'API | `docker compose logs -f api` |
+| Riavviare l'API | `docker compose restart api` |
+| Spegnere tutto | `docker compose down` (zone e dati restano in `data/`) |
+| Memoria e processore | `docker stats` (esci con `Ctrl+C`) |
+| Spazio | `df -h /` e `du -sh ~/shaperoute/data/cache` |
+| Togliere le immagini vecchie | `docker image prune` |
+| Spegnere l'AI | togli `ai` da `COMPOSE_PROFILES`, poi `docker compose stop ollama` |
+
+- **Copie di sicurezza**: il database si copia da solo ogni notte, e le
+  copie e gli eventi delle ricerche vanno nello Storage Box (F.13). Le zone si
+  riprendono dal Mac (F.5), il resto da GitHub. Prima di un aggiornamento
+  grosso, una copia subito: `docker compose exec backup bash /backup.sh
+  now`.
+- **Sapere se si ferma**: con l'indirizzo pubblico di F.8, un servizio
+  gratuito che chiama `/health` ogni pochi minuti e manda un'email se non
+  risponde (ad esempio UptimeRobot).
+
+### F.10 Verso gli store
+
+Oggi l'app si apre in Expo Go, con l'account Expo del progetto (A.6). Per
+metterla in App Store e Play Store, nell'ordine:
+
+1. **L'indirizzo pubblico** (F.8).
+2. **Account e database**: le scelte di TASK-110, poi TASK-114 (database
+   e account nell'API), TASK-115 (iscriversi dall'app), TASK-121
+   (segnalare, bloccare, cancellare i propri dati) e TASK-122 (il database
+   sul server, con le copie di sicurezza). `ROADMAP.md` li vuole fatti
+   prima di invitare persone che non si conoscono. Il database può stare
+   sullo stesso server, accanto all'API in `deploy/compose.yaml`.
+3. **La privacy**: una pagina sul vostro dominio che dica cosa si
+   raccoglie (la partenza di un percorso è di solito dove si trova chi
+   corre), per quanto e come si cancella; il registro delle richieste
+   spento; l'attribuzione delle mappe, «© OpenStreetMap contributors».
+4. **Una build propria** al posto di Expo Go, con EAS Build (il piano
+   gratuito ha 15 build iOS e 15 Android al mese):
+   - **Apple Developer Program**, 99 $ l'anno. Con TestFlight l'app si
+     prova sugli iPhone di altre persone prima di pubblicarla (per chi
+     non è nel vostro account, Apple fa prima una revisione breve).
+   - **Google Play Console**, 25 $ una volta. Un account personale nuovo
+     deve far provare l'app ad almeno 12 persone per 14 giorni (test
+     chiuso) prima di poterla pubblicare.
+
+   La build propria serve anche alla voce a telefono bloccato e alla
+   pubblicità (TASK-132).
+5. **Un server più grande** solo quando i tempi o la memoria lo dicono
+   (F.9, `docker stats`): prima si misura.
+
+Quanto costa, a gradini (2026-10-01, IVA compresa, indicativo):
+
+| Gradino | Cosa si aggiunge | Al mese |
+|---|---|---|
+| Privato (F.1–F.7) | il server | 11–13 € |
+| Pubblico (F.8) | il dominio, 10–15 €/anno | 12–14 € |
+| Negli store (F.10) | Apple 99 $/anno, Google 25 $ una volta | 21–24 € il primo anno |
+
+### F.11 Se qualcosa non va
+
+- **`api` non diventa `healthy`, o riparte di continuo**: `docker compose
+  logs api`. Una chiave con meno di 16 caratteri ferma l'API all'avvio.
+- **Safari non apre l'indirizzo `.ts.net`**: Tailscale è acceso
+  sull'iPhone? *HTTPS Certificates* è acceso nella console (F.7, punto 1)?
+  Sul server, `tailscale serve status` deve mostrare
+  `proxy http://127.0.0.1:8000`.
+- **«The API refused this app's key»**: la chiave su EAS è diversa da
+  quella di `deploy/.env`, o l'app non è stata ripubblicata dopo il
+  cambio.
+- **Caddy non ottiene il certificato** (`docker compose logs caddy`): il
+  DNS non punta ancora al server, o le porte 80 e 443 sono chiuse nel
+  firewall del provider. Se dice che la porta 443 è occupata:
+  `tailscale serve` è ancora acceso (`sudo tailscale serve reset`), o c'è
+  ancora il Caddy di apt (F.12, punto 4).
+- **`map_data_unavailable` in una zona nuova**: Overpass rifiuta il
+  server. Riprova più tardi, o scaricala dal Mac e copiala (F.5).
+- **Lento o senza memoria**: `docker stats` e `free -h`. Con l'AI su un
+  server da 8 GB, spegnila (F.9).
+
+### F.12 Dal server fatto a mano a questa configurazione
+
+Per il server di oggi (`sgrava-api`), quando si decide di spostarlo: la
+stessa API, gli stessi dati e lo stesso indirizzo, quindi l'app non
+cambia; in più il database degli account e le sue copie (TASK-122, F.13).
+Due minuti di API ferma. Sul server, come `root`:
+
+1. Il codice e i segreti, con la password nuova del database:
+
+   ```bash
+   cd /root/shaperoute && git pull
+   cp /srv/shaperoute/shaperoute.env deploy/.env
+   echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)" >> deploy/.env
+   ```
+
+   Il file ha già la chiave, Geoapify e il limite; `COMPOSE_PROFILES`
+   manca, cioè solo l'API (con il database, che c'è sempre).
+2. Il container vecchio fuori, i dati dentro `data/` (stesso disco: è uno
+   spostamento, non una copia):
+
+   ```bash
+   docker rm -f shaperoute
+   mkdir -p data
+   mv /srv/shaperoute/cache /srv/shaperoute/insights /srv/shaperoute/requests data/
+   ```
+
+3. Avviare e controllare (F.6), poi la prima copia e la prova che si
+   ripristina (F.13):
+
+   ```bash
+   cd deploy && docker compose up -d --build
+   curl http://127.0.0.1:8000/health
+   docker compose logs api | grep Accounts
+   docker compose exec backup bash /backup.sh now
+   docker compose exec backup bash /backup.sh check
+   ```
+
+4. **Caddy resta quello di apt**: il suo `reverse_proxy` va ancora a
+   `127.0.0.1:8000`, e con `FORWARDED_ALLOW_IPS` l'API ora vede ogni
+   telefono, quindi `SHAPEROUTE_RATE_LIMIT` in `deploy/.env` può tornare
+   vuoto (30 a telefono) con un `docker compose up -d`. Passare al Caddy
+   di `compose.yaml` è un passo a parte, facoltativo: `sudo systemctl
+   disable --now caddy`, poi in `deploy/.env` `SHAPEROUTE_DOMAIN` con il
+   nome `sslip.io` di oggi e `COMPOSE_PROFILES=public`, e `docker compose
+   up -d`.
+5. Dall'iPhone, un percorso: l'app non cambia indirizzo né chiave.
+6. Le copie fuori dal server: lo Storage Box (F.13), quando c'è.
+
+Se qualcosa va storto si torna indietro: `docker compose down`, le tre
+cartelle di nuovo in `/srv/shaperoute/`, e il `docker run` di prima. Il
+database resta nel volume `shaperoute_db` per un altro tentativo.
+
+### F.13 Il database e le sue copie
+
+TASK-122, ADR-0123. Gli account (TASK-114, `DATABASE.md`) stanno nel
+servizio `db` di `compose.yaml`: PostgreSQL 16 con PostGIS, i dati nel
+volume Docker `shaperoute_db` (non in `data/`: sono di PostgreSQL, che li
+vuole suoi). Nessuna porta verso fuori: lo raggiungono solo gli altri
+servizi. L'API lo trova con l'indirizzo che `compose.yaml` compone da
+`POSTGRES_PASSWORD`, e all'avvio applica le migrazioni.
+
+**La copia notturna.** Il servizio `backup` fa un `pg_dump` ogni giorno
+alle 02:00 UTC (`BACKUP_AT` in `deploy/.env`) in
+`data/backups/shaperoute-<data>.dump`, leggibile solo da `root`, e
+cancella le copie con più di 13 giorni: un account cancellato oggi è
+fuori da ogni copia entro 14 (ADR-0114, punto 7). Una copia si scrive con
+un nome nascosto e prende il suo solo quando è intera.
+
+| Cosa | Comando, da `~/shaperoute/deploy` |
+|---|---|
+| Una copia adesso | `docker compose exec backup bash /backup.sh now` |
+| Le copie allo Storage Box adesso | `docker compose exec offsite bash /backup.sh push` |
+| Provare che una copia si ripristina | `docker compose exec backup bash /backup.sh check` |
+| Le copie | `ls -l ../data/backups` |
+| Cosa ha fatto stanotte | `docker compose logs backup offsite` |
+
+`check` ripristina la copia più recente (o `check /backups/<nome>`) in un
+database a parte, `restore_check`, conta gli account e le migrazioni, poi
+lo cancella: quello vero non si tocca.
+
+**Le copie nello Storage Box** (scelta dell'utente, 2026-10-02, ADR-0123).
+Lo Storage Box è un disco di Hetzner separato dal server. Ogni notte alle
+02:30 UTC (`PUSH_AT`), mezz'ora dopo la copia, il servizio `offsite` ci
+manda con `rsync`, sopra SSH sulla porta 23, le copie del database in
+`sgrava-db/` (le stesse del server: quelle
+con più di 13 giorni spariscono anche lì) e gli eventi delle ricerche in
+`sgrava-insights/` (che si aggiungono soltanto). Finché lo Storage Box non
+c'è, le copie restano sul server e `push` lo dice.
+
+1. **La chiave, sul server** (una volta; fatto il 2026-10-02):
+
+   ```bash
+   install -d -m 700 /root/.ssh/storagebox
+   ssh-keygen -t ed25519 -N "" -C "sgrava-api backups to Storage Box" -f /root/.ssh/storagebox/id_ed25519
+   cat /root/.ssh/storagebox/id_ed25519.pub
+   ```
+
+   La chiave privata resta lì, fuori dal repository; la riga stampata è la
+   parte pubblica, da incollare al punto 2.
+2. **Lo Storage Box, lo crea l'utente** nella Hetzner Console:
+   *Storage Boxes* → *Create Storage Box*; posizione **Falkenstein (FSN1)**,
+   come il server; tipo **BX11**, il più piccolo (1 TB); in *SSH keys* la
+   riga del punto 1; accesso **SSH** acceso (Samba e WebDAV non servono).
+   Nome utente e indirizzo (`u123456`, `u123456.your-storagebox.de`) sono
+   nella pagina dello Storage Box: non sono segreti. Una password, se il
+   pannello la chiede, la tiene l'utente: alle copie non serve.
+3. **Sul server**, la chiave dello Storage Box fra quelle conosciute, le
+   due variabili in `deploy/.env` e il servizio ricostruito:
+
+   ```bash
+   ssh-keyscan -p 23 u123456.your-storagebox.de > /root/.ssh/storagebox/known_hosts
+   cd ~/shaperoute/deploy && nano .env    # STORAGEBOX_HOST=u123456.your-storagebox.de, STORAGEBOX_USER=u123456
+   docker compose up -d --build offsite
+   docker compose exec offsite bash /backup.sh push
+   ```
+
+   `push` deve dire «… copies and the search events to
+   u123456.your-storagebox.de»; da lì ogni notte, dopo la copia. Un `push`
+   fallito resta nel log (`docker compose logs offsite`) e si riprova la
+   notte dopo, con le copie ancora sul server.
+
+**Ripristinare davvero** (sostituisce il database di adesso):
+
+```bash
+cd ~/shaperoute/deploy
+docker compose exec backup bash /backup.sh now
+docker compose stop api
+docker compose exec backup dropdb shaperoute
+docker compose exec backup createdb shaperoute
+docker compose exec backup pg_restore --no-owner --exit-on-error -d shaperoute /backups/shaperoute-<data>.dump
+docker compose start api
+```
+
+La prima riga è la copia di adesso, per tornare indietro. Una copia che
+c'è solo nello Storage Box va prima nella cartella del server:
+`rsync -a -e "ssh -p 23 -i /root/.ssh/storagebox/id_ed25519" u123456@u123456.your-storagebox.de:sgrava-db/shaperoute-<data>.dump ~/shaperoute/data/backups/`.
+All'avvio l'API riapplica le migrazioni più nuove della copia.
 
 ---
 

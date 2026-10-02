@@ -35,6 +35,10 @@ data/requests/
 
 # Eventi delle ricerche (TASK-130, ADR-0101): testi e celle di ~1 km
 data/insights/
+
+# Copie del database (TASK-122, ADR-0123): email e hash delle password
+data/backups/
+*.dump
 .osmnx_cache/
 
 # Output di lavoro usa-e-getta

@@ -3,7 +3,8 @@
 A JSON file in the repository, `learned/vocabulary.json`, read when the API
 starts: phrases the AI has read the same way many times, so the API answers
 them without the AI (fewer calls, fewer tokens), misspelt words and the word
-the tables know, and the wishlist of cities and phrases the catalogue lacks.
+the tables know, cities searched for by other words and the name to search
+(TASK-142), and the wishlist of cities and phrases the catalogue lacks.
 It changes only through `apply` and `revert` (python -m
 shaperoute_api.insights), each a new version with its reason in `changes`;
 the file is reviewed and committed like code, so git keeps every version
@@ -26,7 +27,7 @@ from typing import Any
 
 DEFAULT_PATH = Path(__file__).resolve().parent.parent / "learned" / "vocabulary.json"
 
-SECTIONS = ("themes", "shapes", "corrections", "cities", "phrases")
+SECTIONS = ("themes", "shapes", "corrections", "city_names", "cities", "phrases")
 # As events.MAX_TEXT: a longer phrase was never recorded whole.
 MAX_PHRASE = 200
 
@@ -69,6 +70,9 @@ class Vocabulary:
     shapes: dict[str, str] = field(default_factory=dict)
     # a misspelt word -> the word (or stem) the tables know
     corrections: dict[str, str] = field(default_factory=dict)
+    # words searched as a city -> the name to search instead (TASK-142):
+    # "levic" -> "Levico Terme", where people went after Levič
+    city_names: dict[str, str] = field(default_factory=dict)
     # wished for in the catalogue: city -> [lat, lon]; phrase -> times asked
     cities: dict[str, list[float]] = field(default_factory=dict)
     phrases: dict[str, int] = field(default_factory=dict)
@@ -121,6 +125,10 @@ class Vocabulary:
 
     def shape_for(self, text: str) -> str | None:
         return self.shapes.get(phrase_key(text))
+
+    def city_for(self, text: str) -> str | None:
+        """The name to search for words searched as a city, if learned."""
+        return self.city_names.get(phrase_key(text))
 
     def correct(self, text: str) -> str:
         """The words with the misspelt ones replaced, the rest as typed
@@ -196,6 +204,17 @@ class Vocabulary:
                 found.append(
                     Problem("corrections", wrong, f"the tables do not read {right!r}")
                 )
+        for words, name in self.city_names.items():
+            ok = (
+                bool(words)
+                and len(words) <= MAX_PHRASE
+                and words == phrase_key(words)
+                and isinstance(name, str)
+                and 0 < len(name) <= MAX_PHRASE
+                and phrase_key(name) != words
+            )
+            if not ok:
+                found.append(Problem("city_names", words, "not words and a name"))
         for city, centre in self.cities.items():
             ok = (
                 isinstance(centre, list)

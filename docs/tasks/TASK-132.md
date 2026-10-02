@@ -1,0 +1,96 @@
+# TASK-132 — Un annuncio prima del percorso
+
+**Stato**: Done
+**Fase**: 4 · **Branch**: `feat/TASK-132-route-ads`
+
+## Obiettivo
+
+Dopo «Draw route» (e «Ask for a route» in «Explore») un interstitial AdMob
+compare prima del percorso; chiuso, o se non c'è, il percorso si vede subito.
+
+## Contesto da leggere
+
+- `docs/DECISIONS.md` ADR-0102
+
+## Cosa fare
+
+1. `react-native-google-mobile-ads` con gli ID di prova di Google.
+2. `src/ads/`: rete pubblicitaria dietro un'interfaccia, `useAdBeforeRoute`.
+3. In `App.tsx` lo stato dei due percorsi passa da `useAdBeforeRoute`.
+4. `eas.json` con il profilo `preview`; bundle identifier iOS
+   `com.lppl1316.sgrava`, scelto dall'utente.
+
+## Criteri di accettazione
+
+- [x] Con un annuncio carico il percorso pronto resta dietro l'annuncio e
+      compare alla chiusura (test).
+- [x] Senza annuncio, senza consenso, con un errore: percorso subito (test).
+- [x] Nessun annuncio per attese, errori, annullamenti; uno a ogni
+      ricerca, il successivo caricato alla chiusura (test; scelta
+      dell'utente del 2026-10-02, prima era al più uno ogni 3 minuti).
+- [x] In Expo Go nessun modulo nativo caricato, l'app come prima (test:
+      `admob.test.ts`, il pacchetto AdMob non si carica senza il suo modulo
+      nativo).
+- [x] Prova su una build vera: nel simulatore iPhone (iOS 27, build
+      Release locale), scelto dall'utente al posto dell'iPhone (serviva
+      l'account Apple Developer). Annuncio di prova di Google, X, percorso.
+
+## File toccati
+
+```
+apps/mobile/App.tsx
+apps/mobile/app.json
+apps/mobile/eas.json
+apps/mobile/package.json
+apps/mobile/src/ads/
+package-lock.json
+.env.example
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-132.md
+```
+
+## Fuori scope
+
+- Account AdMob, ID veri, `app-ads.txt`, pubblicazione negli store.
+- Un pulsante «Privacy options» per cambiare il consenso dopo.
+
+## Seguiti
+
+Da trasformare in task quando servono (li assegna il coordinatore):
+
+- **Xcode 27 / SDK iOS 27**: un'app compilata così non si apre senza il
+  ciclo di vita a scene (`UIScene`); il modello nativo di Expo SDK 57 non lo
+  usa ancora. Expo ha già `ExpoAppSceneDelegate`: serve `AppDelegate`
+  conforme a `ExpoReactNativeFactoryProvider` e `UIApplicationSceneManifest`
+  in `Info.plist` (un config plugin, o un SDK di Expo che lo faccia da sé).
+  Le build EAS usano il loro Xcode: riguarda solo il passaggio a Xcode 27.
+- **ID veri di AdMob**: aggiungere gli identificativi SKAdNetwork di Google
+  (opzione `skAdNetworkItems` del plugin `react-native-google-mobile-ads`);
+  l'SDK ne segnala 50 mancanti.
+
+## Esito
+
+**Done (2026-10-02)**: un annuncio AdMob a ogni ricerca, prima del percorso,
+provato nel simulatore iPhone; in Expo Go nessun annuncio e l'app come prima
+(test e prova in Expo Go). Gli annunci veri sono TASK-150, TASK-152 e
+TASK-153; i seguiti sono sopra.
+
+Codice e test fatti; manca la prova su una build vera (sopra).
+2026-10-01: l'utente non ha ancora un account Apple Developer. Senza account
+si può provare con il simulatore iOS: profilo EAS `preview-simulator`
+(nessun account Apple; per aprirla serve Xcode, che l'utente installerà
+dopo l'aggiornamento di macOS) o con una build Android.
+Build `preview-simulator` riuscita su EAS (build
+`1532e993-9806-413b-989e-7fc434cded94`): AdMob e la configurazione nativa
+compilano. Si installa con `npx eas-cli build:run -p ios --latest`.
+
+2026-10-02, prova nel simulatore (iPhone 18 Pro, iOS 27, build Release con
+Xcode 27, API del Mac, partenza a Trento): all'apertura nessun annuncio; il
+consenso di Google alla prima ricerca, mentre il motore lavora; il primo
+cuore arriva prima dell'annuncio e si vede subito. Poi stella, cerchio e
+luna, a meno di un minuto l'una dall'altra: ogni volta annuncio di prova,
+X, percorso subito. In «Explore» Famous Places e Best Views: annuncio, X,
+percorso. Un tocco sull'annuncio sopra la freccia indietro non arriva
+all'app. Con Xcode 27 la cartella `ios/` generata va adattata al ciclo di
+vita a scene (ADR-0102, «Conseguenza»); non è nel repository.

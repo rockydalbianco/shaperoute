@@ -54,10 +54,14 @@ docs/tasks/TASK-141.md
 
 ## Esito
 
-Allineato sul `main` del 2026-10-02: il prossimo passo è TASK-114, con
-una domanda prima (ADR-0114 dice Oracle, l'API oggi è su Hetzner); in
-lavorazione TASK-088, 128, 132, 140, 142 e 144. Restano disallineati i
-task file di TASK-065, 126, 129 e 134 (fuori scope).
+Allineato sul `main` del 2026-10-02 (`bad06f2`), per ultimo nella coda
+del coordinatore. Il prossimo passo è chiudere TASK-122 (lo Storage Box
+dell'utente), poi TASK-116, 117, 118 e TASK-092. In lavorazione resta solo
+TASK-122; TASK-126, 128, 129, 131 e 134 sono in «Completato». Corrette su
+richiesta del coordinatore le righe di TASK-136 (382 ritagli, 19,4 GB) e
+di TASK-154 (app già pubblicata). Restano aperti i task file di TASK-055,
+065 e 076, e quelli di TASK-126, 129 e 134 benché in `main`: scritti nel
+prossimo passo, fuori scope qui.
 
 ## Appunti per il ripasso finale
 

@@ -526,6 +526,49 @@ chiama su `http://127.0.0.1:11434`; con `--ai-model` se ne prova un altro.
 I controlli della CI del pacchetto, da `services\ai`, sono gli stessi del
 motore, con `..\api\.venv\Scripts\python.exe`.
 
+### 10.4 Il database degli account (da TASK-114)
+
+Gli account stanno in PostgreSQL con PostGIS, in Docker (`DATABASE.md`).
+Senza database l'API funziona lo stesso, con gli account spenti; i test
+del database invece vogliono docker.
+
+Sul Mac, una volta sola: `brew install colima docker`. Colima è Docker da
+riga di comando, senza Docker Desktop; la sua macchina virtuale si accende
+con `colima start` e si spegne con `colima stop`, e non parte da sola al
+login. Su Windows serve Docker Desktop.
+
+I test dell'API avviano da soli un database usa-e-getta: basta che
+`docker` risponda (`colima start` prima). Per provare gli account con
+l'API vera, un database che resta (`shaperoute-db`, con i dati nel volume
+omonimo):
+
+```bash
+docker run -d --name shaperoute-db -e POSTGRES_PASSWORD=<una password> -p 127.0.0.1:5432:5432 -v shaperoute-db:/var/lib/postgresql/data postgis/postgis:16-3.4
+```
+
+poi in `.env` alla radice
+`SHAPEROUTE_DATABASE_URL=postgresql://postgres:<la password>@127.0.0.1:5432/postgres`,
+caricato come le altre chiavi (`set -a; . ./.env; set +a` prima di
+avviare l'API, `DEPLOY.md`). L'API scrive «Accounts in PostgreSQL» con le
+migrazioni applicate. Sul Mac Apple l'immagine gira in emulazione x86: parte in circa
+10 s, poi va bene per provare.
+
+### 10.5 Le zone delle città da un estratto (da TASK-137)
+
+Solo per chi rifà le zone delle città prima che l'app le chieda
+(`python -m shaperoute_api.prefetch_zones --extract …`, `docs/MAPS.md`,
+«Zone scaricate prima»): serve **osmium-tool**, il programma che ritaglia
+gli estratti di OpenStreetMap (dipendenza approvata dall'utente il
+2026-10-02, ADR-0119). L'API e l'app non ne hanno bisogno.
+
+- Mac: `brew install osmium-tool`
+- Linux (anche il server, nel container dei download): `apt-get install osmium-tool`
+- Windows: dentro WSL come su Linux, oppure `conda install -c conda-forge osmium-tool`
+
+Poi `osmium --version` deve rispondere. L'estratto dell'Italia pesa 2,2 GB
+e le zone di 52 città circa 3,5 GB: sul Mac, prima, guardare lo spazio
+libero.
+
 ### 10.1 App e API insieme
 
 Per chiedere percorsi dal telefono servono due finestre di PowerShell,

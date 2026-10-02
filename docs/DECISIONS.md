@@ -3413,6 +3413,62 @@ vicine: «lana»/«luna»); dare ragione all'ortografia senza una persona.
 Dal vivo: «rmantico» a Bologna e Torino → correzione → a Milano letto dal
 vocabolario, lettura da 1,0 s a 0 ms.
 
+## ADR-0102 — Un annuncio AdMob fra «percorso pronto» e «percorso mostrato»
+**Stato**: Attiva · 2026-10-01 · AdMob con una build dell'app: scelta
+dell'utente; il come deciso dall'agente su delega dell'utente (TASK-132) ·
+2026-10-02: un annuncio a ogni ricerca, scelta dell'utente
+
+**Contesto**: l'utente vuole pubblicità solo dopo «Draw route» (o «Ask for
+a route» in «Explore»), prima del percorso; con una rete ufficiale, consenso
+e privacy rispettati, e il percorso subito se non c'è annuncio. L'app gira
+in Expo Go, che non ha il codice nativo di nessuna rete pubblicitaria
+ufficiale: l'utente ha scelto AdMob e una build propria dell'app.
+
+**Decisione**:
+- `react-native-google-mobile-ads` (AdMob), interstitial (immagine o
+  video, con la X di Google). Nessuna schermata nostra: niente annunci finti.
+- `useAdBeforeRoute` sta fra lo stato della richiesta e lo schermo: mentre
+  il motore lavora prepara un annuncio; quando il percorso è pronto, se
+  l'annuncio è carico lo mostra e tiene sullo schermo l'attesa; alla
+  chiusura (o a un errore) mostra il percorso. Senza annuncio carico, il
+  percorso subito: non si aspetta il caricamento.
+- Un annuncio a ogni ricerca: scelta dell'utente del 2026-10-02, dopo la
+  prova nel simulatore (prima era al più uno ogni 3 minuti). Chiuso un
+  annuncio, il prossimo si carica subito, così è pronto alla ricerca dopo
+  anche quando il percorso arriva in 1–3 s. «Draw route» sullo stesso
+  percorso già disegnato non è una ricerca: lo mostra di nuovo, senza
+  annuncio.
+- Consenso: il modulo di Google (UMP, `gatherConsent`) alla prima richiesta
+  di percorso, mentre il motore lavora; mai all'apertura. Senza
+  `canRequestAds`, nessun annuncio. Niente richiesta ATT di Apple: su iOS
+  annunci senza IDFA.
+- In Expo Go, sul web e nei test il modulo nativo manca
+  (`TurboModuleRegistry.get`): `NO_ADS`, l'app come prima. Lo stesso
+  `eas update` va bene per Expo Go e per la build.
+- ID di prova di Google (app e annuncio) finché non c'è l'account AdMob:
+  gli ID veri in `app.json` e in `EXPO_PUBLIC_ADMOB_INTERSTITIAL_*`.
+- `apps/mobile/eas.json`, profilo `preview` (distribuzione interna, canale
+  `preview`). Bundle identifier iOS `com.lppl1316.sgrava`, scelto
+  dall'utente.
+
+**Alternative scartate**: AdSense in una WebView (vietato dalle regole
+AdMob nelle app); un annuncio fatto da noi (finto); al più un annuncio ogni
+3 minuti (la prima scelta, tolta dall'utente il 2026-10-02); aspettare il
+caricamento dell'annuncio quando il percorso è pronto (blocca l'utente); il
+consenso all'apertura (l'utente non vuole nulla all'apertura).
+
+**Conseguenza**: in Expo Go nessun annuncio. Per vederli serve una build
+EAS (iPhone: account Apple Developer); per annunci veri l'account AdMob e
+l'app in uno store. Con gli ID veri vanno aggiunti gli identificativi
+SKAdNetwork di Google (opzione `skAdNetworkItems` del plugin): l'SDK ne
+segnala 50 mancanti. La prima ricerca dopo l'installazione di solito non
+ha annuncio: il consenso e il caricamento arrivano dopo il percorso.
+Una build fatta con Xcode 27 (SDK iOS 27) non si apre senza il ciclo di
+vita a scene (`UIScene`), che il modello nativo di Expo SDK 57 non usa
+ancora: per la prova nel simulatore (2026-10-02) la cartella `ios/`
+generata, che non è nel repository, è stata adattata a mano con
+`ExpoAppSceneDelegate` di Expo. Le build EAS usano il loro Xcode.
+
 ## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
 (TASK-133, miglioramento generale)
@@ -3658,6 +3714,124 @@ categoria da un luogo parte dal suo punto (provato: Duomo di Milano →
 Food, cerchio di 9,8 km, 4 ristoranti). Etichette in inglese, come le
 città di TASK-134.
 
+## ADR-0111 — Il server a pagamento: quale, e la configurazione in `deploy/`
+**Stato**: Attiva · 2026-10-01 · TASK-144 · la configurazione decisa
+dall'agente su delega dell'utente; il server scelto dall'utente
+
+Chiesto dall'utente: le istruzioni per mettere l'app su un server, da
+usare con il computer spento e un giorno da pubblicare, e i server a
+pagamento migliori per qualità e prezzo.
+
+**Contesto**: la strada C di ADR-0076 aveva i prezzi del 2026-09-26, e
+Hetzner li ha alzati il 1° aprile e il 15 giugno 2026 (CX33 da 6,49 a
+8,49 €, CPX e CCX più che raddoppiati). Il solo `docker run` del
+pacchetto lascia fuori `catalog/` («Explore» vuoto), perde gli eventi di
+TASK-130 a ogni container nuovo e non ha HTTPS né l'AI.
+
+**Decisione**:
+- **Il server** (`DEPLOY.md`, F.1, prezzi del 2026-10-01): **Hetzner
+  CX33** (4 vCPU, 8 GB, 80 GB, 10,97 €/mese IVA compresa, a ore), scelto
+  dall'utente il 2026-10-01 al posto dell'Oracle di ADR-0114, che
+  rispondeva «Out of capacity», e già acceso: messo su a mano, con
+  `docker run` e Caddy da apt su un nome `sslip.io`. L'alternativa
+  annotata è OVHcloud VPS-3 (6 vCore, 12 GB, 100 GB, 12,69 €/mese con 12
+  mesi, backup incluso).
+- **`deploy/compose.yaml`**: l'API dal `Dockerfile`, senza cambiarlo.
+  Zone, eventi e registro in `data/` del checkout con bind mount (cartelle
+  normali: `rsync` dal Mac le riempie, e sopravvivono alle immagini
+  nuove); `catalog/` in sola lettura; un servizio `data-owner` (busybox)
+  che a ogni avvio crea le cartelle e le dà all'utente 10001 dell'API.
+  Porta 8000 solo su `127.0.0.1`: Docker aprirebbe `0.0.0.0` scavalcando
+  `ufw`. Log di Docker limitati a 3 × 10 MB per servizio.
+- **Profili** in `COMPOSE_PROFILES` di `deploy/.env`: `ai` (immagine
+  `ollama/ollama`, `--ai-url http://ollama:11434`; senza il profilo il nome
+  non si risolve e le parole fuori tabella danno `ai_unavailable`, come con
+  Ollama spento) e `public` (Caddy).
+- **Privato prima di pubblico**, nella guida: `tailscale serve` sul
+  server dà HTTPS con certificato vero solo alla tailnet, senza dominio né
+  porte aperte. Per il pubblico **Caddy**, che chiede e rinnova da solo il
+  certificato di `SHAPEROUTE_DOMAIN`: un dominio vostro, o per cominciare
+  un nome `sslip.io`, come il server di oggi. Non Tailscale Funnel: il
+  suo nome pubblico non è stato creato (tailscale/tailscale#21502).
+- **Il limite per telefono anche dietro il proxy**:
+  `FORWARDED_ALLOW_IPS="*"`, letto da uvicorn, fa vedere all'API
+  l'indirizzo di `X-Forwarded-For`. Si può fidare di tutti perché alla
+  porta arrivano solo Caddy e `tailscale serve`.
+- **Segreti in `deploy/.env`**, copia di `.env.example` (`.gitignore` lo
+  esclude già); variabili nuove `SHAPEROUTE_DOMAIN` e `COMPOSE_PROFILES`.
+- **CI**: il job `docker` avvia `deploy/compose.yaml` e controlla
+  `/health`, la chiave (401/200), il proprietario di `data/cache`, i
+  percorsi di «Explore» a Trento e il `Caddyfile` (`caddy validate`).
+
+**Alternative scartate**: DigitalOcean, Vultr, Linode, Lightsail (4–5
+volte il prezzo per la stessa RAM); Render, Railway, Fly.io (RAM e disco
+permanente a parte); netcup (14,50 € per 8 GB); vCPU dedicati Hetzner
+dopo i rincari; Contabo come prima scelta (processore e disco più lenti,
+impegno di 24 mesi); nginx con certbot (più passi e un rinnovo da
+controllare); Cloudflare Tunnel con dominio (il dominio deve stare su
+Cloudflare e il traffico passa da loro); volumi Docker con nome per le
+zone (da riempire servirebbe root); cambiare il `Dockerfile` per
+`catalog/` (il montaggio basta, e un catalogo nuovo non chiede
+un'immagine nuova).
+
+**Conseguenza**: dal server comprato all'app sull'iPhone a Mac spento sono
+i passi F.2–F.7 di `DEPLOY.md`. Il server di oggi non usa ancora questa
+configurazione: spostarlo (F.12, stessi dati e stesso indirizzo) si fa a
+parte, a fine coda dei merge. Misurato lì, a mano: cuore da 5 km a Trento
+in 18,7 s con la zona in cache, l'API in 0,56 GB; l'AI su CPU è da
+provare. TASK-122 aggiunge il database a `deploy/compose.yaml`.
+## ADR-0112 — Le ricerche imparano anche da cosa fa l'app
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
+(TASK-142), che ha chiesto di nuovo il sistema di auto-miglioramento
+
+**Contesto**: ADR-0101 impara da cosa l'API vede. Ma l'API non vede le
+scelte: da TASK-134/138 una città scelta fra i suggerimenti non passa da
+`/cities` (dal vivo: Vercelli, «Explore» vuoto 3 volte, nessuna proposta);
+non sa quale percorso si usa fra A, B e C, né se si prende «Try N km».
+Una ricerca sbagliata e corretta subito («levic» → Levič, Slovenia → 16 s
+dopo Levico) non insegnava nulla. Un cambio del motore o del catalogo non
+si misurava: `impact` confronta solo versioni del vocabolario.
+
+**Decisione**:
+- **`POST /signals`** (`signals.py`): tre corpi in lista bianca,
+  `city_chosen`, `route_chosen`, `hint_taken`; un campo in più è un 422.
+  Sempre `204`, mai un errore sul telefono. Oltre 60 al minuto, tutti i
+  client insieme, non si registrano. Il nome di una città è pubblico e si
+  tiene con le maiuscole; il punto diventa la cella di ~1 km; mai le lettere
+  digitate, mai la partenza. Nell'app un invio che non fallisce mai, da
+  `ExploreTools.tsx` (la città e come) e `RoutePanel.tsx` (il primo uso di
+  un percorso, «Try N km», una forma del catalogo), senza toccare `App.tsx`.
+- **Percorsi annullati** come eventi (`cancelled`, con lo stato a cui
+  erano), registrati da `DELETE`; il risultato buttato non conta.
+- **`city_name`**, una proposta applicabile: parole cercate come città e
+  lasciate entro 3 minuti per una città il cui nome comincia con quelle
+  parole o ne dista poche lettere, ≥ 2 volte, in ≥ 2 giorni, in metà delle
+  ricerche. Nel vocabolario (`city_names`), `/cities` cerca il nome
+  imparato. Senza un identificativo, ricerca e scelta si legano solo per
+  tempo: da qui le tre condizioni.
+- **Metriche di comportamento** (`cancel_rate`, `first_choice_rate`): si
+  leggono, ma non chiedono di tornare indietro col vocabolario, che non le
+  cambia. `city_left_rate` sì: è quella che un nome imparato abbassa.
+- **`compare --split GIORNO`** per ogni cambio, con lo stesso test di
+  `impact`; `trend` per settimana; `why` per sapere cosa manca a una
+  proposta.
+
+**Alternative scartate**: un identificativo di sessione nei segnali
+(legherebbe ricerca e scelta con certezza, ma è un dato di una persona:
+scelta dell'utente, con gli account di TASK-110); registrare le lettere di
+`/city-suggestions` (ADR-0101); imparare dalle scelte fra A, B e C (la
+classifica è codice del motore: `review_ranking`, per una persona);
+il tipo dei segnali in `shared-types/src/index.ts` (è di TASK-088, aperto:
+per ora `src/signals.ts`).
+
+**Conseguenza**: provato dal vivo su un'API di prova con Geoapify: il primo
+giorno ricostruito dall'evento vero di «levic», il secondo dal vivo →
+proposta `city_name` → `apply` → `GET /cities?q=levic` risponde Levico
+Terme (`"by":"learned"`). Vercelli scelta fra i suggerimenti → proposta per
+il catalogo. Trovato e corretto un errore di TASK-130: `Insights.record`
+riceveva `ms` due volte, e nessun percorso dell'API era mai stato
+registrato (c'erano solo quelli importati dallo storico).
+
 ## ADR-0114 — La parte social: le scelte dell'utente
 **Stato**: Attiva · 2026-10-01 · **scelte dell'utente**, una domanda per
 volta (TASK-110). Chiude, con ADR-0115, ADR-0013.
@@ -3839,3 +4013,557 @@ catalogo a Trento (5 e 23 km), Bologna, Milano e Levico, tutta la linea
 ritrovata in 0,1–0,5 s; 4 percorsi appena pianificati (Trento e Bologna,
 con le alternative) danno indicazioni identiche a quelle del motore. Da
 provare sull'iPhone.
+
+## ADR-0084 — Zucca e albero di Natale nel catalogo; «albero» da solo resta fuori
+**Stato**: Attiva · 2026-09-30 · le forme scelte dall'utente; parole,
+tessere e domanda all'AI decise dall'agente su delega dell'utente (TASK-088)
+
+**Contesto**: TASK-078 (ADR-0073) ha disegnato zucca di Halloween e albero
+di Natale, giudicati a 15 km: zucca `sì` a Milano, `no` a Trento, `quasi`
+a Levico; albero `sì` a Milano, `quasi` a Trento, `no` a Levico. ADR-0061
+li aveva lasciati contorni da CLI. Nel motore c'è anche `tree.json`
+(TASK-034/037), un albero qualsiasi, mai entrato nel catalogo.
+
+**Decisione**:
+- **Entrano `pumpkin` e `christmas_tree`**, scelti dall'utente
+  (2026-09-30) sapendo il giudizio: fuori da una rete fitta possono non
+  riuscire, e l'app propone già un'altra distanza o le altre forme
+  (ADR-0041). Come le forme di ADR-0061: `SHAPES` del motore,
+  `shared-types`, `contract.json`, `shapeWords.ts`, `OUTLINES`. Sullo
+  schermo «pumpkin» e «christmas tree».
+- **Parole**: «zucca», «zucche», «zucca di halloween», «pumpkin»,
+  «halloween pumpkin», «jack-o'-lantern»; «albero di natale», «alberi di
+  natale», «alberello di natale», «christmas tree», «xmas tree».
+- **«albero» e «tree» da soli non cambiano significato**: non sono nella
+  tabella e per l'AI restano «nessuna forma» (due voci nella lista di
+  messa a punto lo controllano). La riga dell'AI dice «a decorated
+  Christmas tree with a star on top, not a plain tree»: senza le ultime
+  parole qwen3:4b sceglieva l'albero di Natale per «tree». «Natale»,
+  «Halloween», «abete addobbato» le legge l'AI, e portano alle due forme.
+- **Tessere** 🎃 e 🎄, **in una riga sola che scorre di lato** (chiesto
+  dall'utente, 2026-10-01: nella griglia di quattro per riga zucca e albero
+  non si trovavano). Tessere larghe 88 punti, poco meno di quattro per
+  schermo: quella tagliata sul bordo dice che la riga continua. Una forma
+  scritta nel campo («zucca») porta la sua tessera in vista.
+
+**Alternative scartate**: portare «albero» all'albero di Natale (chi
+scrive «albero» a luglio non vuole la stella in cima; è una scelta di
+prodotto, non delegata); mettere «halloween» e «natale» nella tabella
+(sono feste, non disegni: le legge l'AI, e si possono spostare se sbaglia).
+
+**Conseguenza**: il catalogo ha tredici forme. Chieste all'API a Milano a
+15 km danno, punto per punto, i campioni giudicati di TASK-078. Se un
+giorno `tree` entra nel catalogo, «albero» e «tree» sono liberi per lui.
+
+## ADR-0118 — I baffi delle altre forme: solo quelli oltre i tratti voluti
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («fai lo stesso per
+le altre forme») e giudicato da lui forma per forma; misura e peso decisi
+dall'agente su delega dell'utente (TASK-140). Segue ADR-0107 e ADR-0109.
+
+**Contesto**: senza tratti ripassati restano solo cavallo e luna. Gatto,
+pesce, farfalla, lumaca, testa di cane e di coniglio ripassano apposta
+occhi, antenne, spirale (TASK-037): contare tutto il percorso fatto due
+volte li avrebbe puniti per i loro tratti.
+
+**Decisione**:
+- `extra_doubled_share(percorso, forma)`: la quota fatta due volte del
+  percorso meno quella della forma piazzata; mai sotto zero. Sostituisce
+  `doubled_share` nel costo della ricerca e nello `score` delle partenze
+  vicine. Per una forma senza tratti è la stessa cosa: cuore, cerchio e
+  stella restano identici (77 percorsi confrontati con `main`).
+- `W_DOUBLED` = 1,5 per cuore, cerchio, stella, cavallo, luna, farfalla,
+  lumaca.
+
+**Giudizio dell'utente** sui 13 percorsi che cambiavano con il peso su
+tutte le forme: meglio i nuovi per luna (1 su 1), farfalla (1 su 1),
+lumaca (1 su 1); meglio quelli di prima per gatto (3 su 4), pesce (1 su 1),
+testa di cane (2 su 3), testa di coniglio (1 su 1, l'altro indifferente).
+Il cavallo non cambiava: entra come il cerchio, perché non ha tratti.
+
+**Alternative scartate**: il peso per tutte le forme (gatto, pesce e teste
+avrebbero perso forma, giudicati peggio); un peso diverso per forma (con
+7 prove ciascuna non c'è abbastanza per tararlo).
+
+**Conseguenza**: sulle prove cambiano solo i 3 percorsi giudicati meglio.
+Gatto, pesce e le teste possono tenere dei baffi: se l'occhio lo chiede,
+servono altre idee (ritoccare la forma, o la somiglianza delle teste).
+
+## ADR-0119 — Le zone delle città scaricate prima, sul server dell'app
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («scarica un po' di
+mappe almeno per l'Italia»); quali città, il riquadro e il come decisi
+dall'agente su delega dell'utente (TASK-137).
+
+**Contesto**: la prima richiesta per una città nuova scarica la sua zona da
+Overpass: Vercelli, la prima volta, 94 s per i tre esempi (TASK-143), quasi
+tutti download. Dal Mac Overpass rifiuta per ore dopo pochi download; dal
+server Hetzner, che l'app usa dal 2026-10-01, risponde.
+
+**Decisione**:
+- **Un comando dell'API**, `python -m shaperoute_api.prefetch_zones`: usa la
+  stessa ricerca delle città di `GET /cities`, quindi lo stesso centro che
+  l'app riceve al tocco.
+- **Il riquadro di «Explore»**: ogni forma dei temi (lette da `THEMES`) a
+  10 km da qualunque partenza entro `search_radius_m(10 km)` (2,5 km), con
+  l'area della ricerca lontana del motore da quelle partenze
+  (`zone_area(..., FAR_OFFSET_M)`), e gli esempi di TASK-143 a 5 km da
+  qualunque partenza entro `FAR_OFFSET_M` (2 km). Bastano le quattro
+  partenze più lontane a nord, est, sud e ovest: i riquadri sono allineati
+  agli assi. Circa 17 × 17 km, 289 km². Il primo riquadro, senza la ricerca
+  lontana, era di 14 km: Romantic a Verona e Bolzano usciva di 0,4–0,7 km a
+  nord e chiedeva Overpass. Le zone a 14 km già fatte restano: l'API prende
+  la zona più piccola che copre la richiesta, quindi la più leggera.
+- **Con i nomi delle strade** (ADR-0057): l'API li legge solo dalla cache,
+  e «Start» (TASK-145) li dice. Una città con la zona ma senza nomi scarica
+  solo i nomi.
+- **Le città**: `--preset italy`, 52 città (i 21 capoluoghi di regione e
+  provincia autonoma, poi le più grandi e visitate, Vercelli e Levico
+  comprese); `--preset featured`, le 14 città in evidenza dell'app. Solo
+  nomi, nessuna coordinata scritta.
+- **Prudenza con Overpass**: un download alla volta, 60 s fra una città e
+  l'altra; prima di ognuna la pagina di stato, e se un posto si libera fra
+  N secondi si aspetta (fino a 5 minuti): è quello che il servizio chiede, e
+  il primo giro sul server senza attesa si era fermato a Milano con un
+  errore HTTP subito dopo Roma. Un tentativo per città; una città che
+  fallisce resta per il giro dopo, e due errori di fila fermano il comando
+  (TASK-137 diceva «il primo errore»: pensato per il Mac, che Overpass
+  blocca per ore; dal server l'errore tipico è un 504 passeggero, e il
+  secondo giro si era fermato a Torino per uno solo). Stop anche se Overpass
+  non risponde, `--max-downloads` per stare nell'uso corretto del servizio
+  pubblico; stop sotto i 5 GB liberi. Rilanciato riparte dalle mancanti.
+- **Sul server, in un container a parte** con la cartella della cache
+  dell'API: l'API in servizio non si ferma, e legge le zone nuove dal disco
+  alla prima richiesta (le scritture sono intere, ADR-0104).
+
+- **Dall'estratto di Geofabrik** (scelta dell'utente del 2026-10-02, dopo
+  che Overpass aveva bloccato il server alla quinta città): `--extract`,
+  osmium solo nell'immagine dei download. **osmium-tool è una dipendenza
+  nuova, approvata dall'utente** il 2026-10-02 (nell'opzione scelta, poi
+  alla domanda diretta del Coordinatore); serve solo a chi rifà le zone
+  (`SETUP.md` 10.5: `brew install osmium-tool` sul Mac), non all'API né
+  all'app. OSMnx e il motore ricevono dal
+  ritaglio le risposte di Overpass (sostituendo per la durata del download
+  `osmnx._overpass._download_overpass_network` e `network._overpass`) e
+  fanno tutto il resto come sempre: così la zona è quella di un download,
+  verificato su Napoli e Palermo (stessa linea per cuore e stella).
+  Costruire il grafo da un file `.osm` con `graph_from_xml` saltava il
+  taglio al riquadro e il filtro: zone diverse.
+
+**Alternative scartate**: Overpass molto piano (una città ogni due ore,
+giorni per l'Italia, e il server ribloccato ogni tanto anche per l'app);
+pyosmium nel progetto (una dipendenza Python in più per l'API, che non ne ha
+bisogno); zone più grandi per le città grandi:
+più download per le stesse richieste di «Explore»; scaricare sul Mac:
+Overpass lo rifiuta, e l'app non usa più il Mac.
+
+**Conseguenza**: nelle città scaricate «Explore» non aspetta Overpass;
+fuori, la prima richiesta scarica ancora. Il riquadro non copre «Draw
+route» da partenze lontane dal centro né percorsi a tema oltre i 10 km.
+
+## ADR-0121 — Su Linux la memoria per le partenze vicine è MemAvailable
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-147), dopo che l'utente non vedeva più le alternative sul server.
+
+**Contesto**: le partenze vicine (ADR-0071) partono ciascuna in un
+processo solo se c'entra nella memoria, lasciando 1000 MB al piano della
+partenza dell'utente; le alternative (ADR-0087) sono i loro percorsi. Su
+Linux la memoria si leggeva da `SC_AVPHYS_PAGES`, cioè MemFree, che non
+conta la cache dei file. Sul server Hetzner la cache è piena delle zone
+lette dal disco: 534 MB liberi su 6,8 GB disponibili, quindi nessuna
+partenza vicina e nessuna alternativa, per forme, parole e immagini. Sul
+Mac `SC_AVPHYS_PAGES` non esiste (si provano sempre tutte), su Windows si
+legge già la memoria disponibile: per questo non si era visto.
+
+**Decisione**:
+- Su Linux si legge **MemAvailable** da `/proc/meminfo`: la stima del
+  kernel della memoria che un processo nuovo può prendere senza swap,
+  cache liberabile compresa.
+- Sotto un **limite cgroup v2** (container con `--memory`, servizio
+  systemd con `MemoryMax`) non più di quanto resta del limite, contando
+  come libera la cache inattiva (`inactive_file`), come fa `docker stats`.
+  Senza limite (`max`), solo MemAvailable.
+- Senza MemAvailable (kernel prima di 3.14) si torna a `SC_AVPHYS_PAGES`.
+- In un modulo nuovo, `route_engine/memory.py`; `free_memory_mb` lo usa su
+  Linux. Riserva, peso per processo e attese restano quelli di ADR-0071.
+
+**Conseguenza**: sul server, nel container dell'API, il cuore da 5 km a
+Trento torna con un'alternativa (10,8 s) e la stella con due (5,8 s),
+come sul Mac. Due richieste insieme contano la memoria ognuna quando
+parte, come prima.
+
+## ADR-0120 — Account nell'API: endpoint, errori, tentativi, test
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente,
+dentro ADR-0114 e ADR-0115 (TASK-114); Colima sul Mac scelto dall'utente
+
+**Contesto**: ADR-0115 decide database, libreria, hash della password e
+token. Restavano i nomi degli endpoint, gli errori che l'app deve
+distinguere, il limite ai tentativi, cosa fa l'API senza database e come
+girano i test con un database vero.
+
+**Decisione**:
+- **Endpoint**: `POST /accounts` (iscriversi, e si entra), `POST /session`
+  (entrare), `DELETE /session` (uscire da questo telefono), `GET /me`,
+  `DELETE /me`. Il token va in `Authorization: Bearer`, separato dalla
+  chiave dell'API in `X-API-Key` (ADR-0076). Gli altri endpoint restano
+  aperti; quelli che verranno usano la dipendenza `current_user`.
+- **Errori**: sei codici nuovi, in `schemas.py` e `shared-types`:
+  `email_taken` e `username_taken` (409), `wrong_credentials`,
+  `not_signed_in` e `session_expired` (401), `accounts_unavailable` (503).
+  Troppi tentativi riusano `too_many_requests` (429, `Retry-After`).
+- **Email sconosciuta e password sbagliata** danno la stessa risposta, nello
+  stesso tempo (la password si verifica contro un hash finto): la risposta
+  non dice chi è iscritto. L'iscrizione con un'email già usata invece lo
+  dice (`email_taken`): il task lo chiede, e senza l'app non saprebbe cosa
+  rispondere.
+- **Tentativi**: 5 password sbagliate per la stessa email in 15 minuti,
+  poi 429 finché la più vecchia esce dalla finestra, anche con la password
+  giusta. In memoria: un riavvio li azzera, accettato per un'API con un
+  solo processo. Il limite dei POST di ADR-0076 vale in più.
+- **Valori**: email in minuscolo, fino a 254 caratteri; password 8–128
+  (Argon2 legge tutto: il tetto evita un «password» da un megabyte); nome
+  3–20 fra lettere, cifre, `_` e `.`, unico senza badare alle maiuscole e
+  mostrato com'è scritto.
+- **Scadenza**: una sessione vale finché l'ultimo uso è entro 90 giorni, e
+  ogni uso la allunga. Quella scaduta si cancella al primo uso e risponde
+  `session_expired` una volta, poi `not_signed_in`.
+- **`DELETE /me`** basta il token, senza ripetere la password: la conferma
+  la chiede l'app (TASK-115, TASK-121).
+- **Senza database** (`SHAPEROUTE_DATABASE_URL` vuota) l'API parte come
+  prima e gli account rispondono `503 accounts_unavailable`. **Con
+  l'indirizzo ma il database irraggiungibile**, o una migrazione che
+  fallisce, l'API non parte e dice perché: meglio che account rotti una
+  richiesta alla volta.
+- **Migrazioni**: le applica `__main__` prima di aprire la porta, ognuna
+  nella sua transazione, sotto un advisory lock; una che fallisce non
+  lascia niente. L'estensione PostGIS la crea la prima migrazione con una
+  geometria.
+- **Connessioni**: una per richiesta, nessun pool (`psycopg_pool` sarebbe
+  un pacchetto in più); da rivedere se gli account diventano tanti.
+- **Test**: `conftest.py` avvia `postgis/postgis:16-3.4` con docker, una
+  volta per giro, e dà a ogni test un database vuoto. I runner della CI
+  hanno docker: `ci.yml` non cambia. Senza docker i test del database si
+  saltano sul PC e falliscono in CI. Sul Mac docker è Colima (scelta
+  dell'utente, 2026-10-02): niente Docker Desktop né licenze.
+
+**Scartate**: `/signup` e `/login` (verbi, mentre l'API nomina le cose);
+un servizio `postgres` nella CI (cambia `ci.yml`, e il conftest basta);
+un database finto o SQLite nei test (`DATABASE.md`: niente finti);
+un 401 diverso per l'email sconosciuta (direbbe chi è iscritto).
+
+**Conseguenze**: TASK-115 usa questi endpoint e i tipi di `shared-types`
+(`SignUpRequest`, `Session`, `User`). TASK-122 mette il database sul
+server, accanto all'API, con `SHAPEROUTE_DATABASE_URL`. La password
+dimenticata resta fuori: serve la posta (Brevo, ADR-0115).
+
+## ADR-0122 — Correre senza percorso: «Run» registra solo la traccia
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («la possibilità
+anche di iniziare una corsa senza disegnare nulla, magari la prima
+facciata scrivi Run»); il come deciso dall'agente su delega dell'utente
+(TASK-149). Toccare `App.tsx`, che è anche di TASK-132 (in corso), è
+segnalato nella PR: le righe cambiate sono altre.
+
+**Contesto**: fino a qui una corsa partiva solo da un percorso (disegnato
+o di «Explore») con le indicazioni, e la traccia registrata (ADR-0091)
+serviva al punteggio (ADR-0090). Chi vuole solo correre doveva disegnare
+qualcosa.
+
+**Decisione**:
+- **«Run» nella prima schermata**, un pulsante come «Explore», accanto a
+  lui: la corsa parte subito, dal GPS, senza scegliere partenza, forma o
+  distanza.
+- **Stessa traccia, stesso file**: `startRun` di TASK-112 con il percorso
+  vuoto (`FREE_ROUTE`). Valgono le regole di ADR-0091 (posizioni scartate,
+  salvataggio ogni 15 s, «una corsa per volta», ripresa entro 30 minuti),
+  e un percorso vuoto basta a riconoscere una corsa libera nel file
+  (`pendingFreeRun`). Nessuna modifica a `trackStore.ts`.
+- **Niente punteggio e niente API**: senza forma non c'è niente da
+  giudicare. La fine della corsa mostra km, tempo e passo medio; «Done» la
+  cancella subito dal telefono (una corsa con la forma resta finché non ha
+  il punteggio).
+- **Banner da corsa**: km con due decimali, tempo dalla prima posizione
+  (va avanti ogni secondo), passo medio dopo 100 m.
+- **La voce a ogni km** (chiesta dall'utente dopo la prima versione): km,
+  tempo e passo medio, come un orologio da corsa, con la voce della
+  navigazione (`play`, inglese). Una volta per km: se il GPS ne salta uno,
+  si dice l'ultimo; una corsa ripresa non ripete i km già detti. Senza
+  vibrazione: in navigazione la vibrazione è una svolta.
+- **Codice in file nuovi** (`freeRun.ts`, `useFreeRun.ts`,
+  `FreeRunScreen.tsx`); `App.tsx` collega le due schermate nuove (`run`,
+  `runFinish`) e `ChooseScreen.tsx` ha il pulsante.
+
+**Alternative scartate**: un file a parte per le corse libere (due corse
+in corso insieme, e la ripresa da riscrivere); usare `useNavigation` con
+un percorso vuoto (il navigatore vuole una linea e dice «You have
+arrived»); chiedere un punteggio di sola distanza all'API (non c'è niente
+da confrontare); salvare le corse finite (è la cronologia, TASK-117).
+
+**Conseguenza**: dopo uno «Stop» la mappa resta dove si è partiti a zoom
+15, non inquadra tutta la linea: inquadrarla vuole un messaggio nuovo
+della pagina della mappa (seguito possibile). Il messaggio di «Pocket»
+parla di indicazioni anche qui. Da provare sull'iPhone, anche la voce a
+schermo nero.
+
+## ADR-0123 — Il database sul server, e le sue copie sul Mac
+**Stato**: Attiva · 2026-10-02 · le copie sul Mac sono una **scelta
+dell'utente**; il resto deciso dall'agente su delega dell'utente
+(TASK-122). Cambia ADR-0115 per le copie di sicurezza.
+
+**Contesto**: ADR-0115 metteva il database sulla VM dell'API e le copie
+nell'Object Storage gratuito di Oracle. L'API pubblicata è su Hetzner
+(ADR-0111) e Oracle non c'è più. TASK-122 porta gli account (TASK-114)
+sul server, e con loro lo spostamento del server su `deploy/compose.yaml`
+(`DEPLOY.md` F.12), fatto una volta sola con il database dentro.
+
+**Decisione**:
+- **Il servizio `db`** in `deploy/compose.yaml`: `postgis/postgis:16-3.4`,
+  i dati nel volume `db` e non in `data/` (`data-owner` dà `data/`
+  all'utente dell'API, PostgreSQL vuole i suoi), nessuna porta verso
+  fuori, un controllo di salute; l'API parte quando il database risponde e
+  ha il suo indirizzo da `POSTGRES_PASSWORD` (solo lettere e cifre, perché
+  sta dentro un URL). Il database c'è sempre, senza profili: gli account
+  sono parte dell'app.
+- **La copia notturna** nel servizio `backup`, con la stessa immagine (un
+  `pg_dump` della stessa versione del server): ogni giorno alle 02:00 UTC,
+  formato custom, scritta con un nome nascosto e rinominata quando è
+  intera, leggibile solo dal proprietario. Le copie con più di 13 giorni
+  si cancellano, e solo dopo una copia riuscita: un account cancellato
+  esce da ogni copia entro 14 giorni (ADR-0114, punto 7). `backup.sh
+  check` ripristina una copia in un database a parte e lo cancella.
+- **Le copie sul Mac** (scelta dell'utente, fra il *Backup* di Hetzner, lo
+  Storage Box, un object storage S3 e il Mac): `launchd` ogni 6 ore e
+  all'accesso, `rsync` sopra SSH con la chiave che il Mac usa già; le
+  copie del database sono uguali a quelle del server e quelle con più di
+  13 giorni si cancellano anche a server irraggiungibile; gli eventi delle
+  ricerche si aggiungono e non si cancellano.
+- **La CI** (job `docker`): con `POSTGRES_PASSWORD`, un'iscrizione vera
+  (`201`), `/me` senza token (`401`, cioè account accesi), una copia, il
+  suo ripristino con un account dentro, il file in modo `600`.
+- **Il ripristino vero** cancella e ricrea il database e vi ripristina la
+  copia; l'API, riavviata, riapplica le migrazioni più nuove della copia.
+
+**Scartate**: il *Backup* di Hetzner (+20%), lo Storage Box e un object
+storage (scelta dell'utente: il Mac, gratis; il primo resta possibile in
+più); i dati del database in una cartella di `data/` (il `chown` di
+`data-owner` li toglierebbe a PostgreSQL); un `cron` sul server (un
+servizio di `compose.yaml` si avvia con tutto il resto, con un comando);
+tenere le ultime 14 copie invece dei 13 giorni (una copia fatta a mano in
+più accorcerebbe i giorni, e la promessa dei 14 giorni è sui giorni).
+
+**Conseguenze**: a Mac spento per giorni le copie stanno solo sul server.
+Il server passa su `compose.yaml` dentro TASK-122, dopo il sì
+dell'utente. Sul Mac Docker vuole il plugin `buildx`: senza BuildKit
+l'heredoc del `Dockerfile` si salta in silenzio e l'immagine nasce senza
+dipendenze (visto il 2026-10-02; la CI e il server hanno BuildKit).
+
+**Aggiornamento 2026-10-02** (scelta dell'utente: «Storage Box, sposto
+ora»): le copie fuori dal server vanno in uno **Storage Box Hetzner**
+(BX11, Falkenstein), non sul Mac; `deploy/mac/` è tolto. Un servizio
+`offsite` le manda ogni notte alle 02:30 UTC, mezz'ora dopo la copia, con
+`rsync` sopra SSH sulla porta 23: le copie del database in `sgrava-db/`,
+le stesse del server (quelle con più di 13 giorni spariscono anche lì, e
+la promessa dei 14 giorni vale anche fuori), e gli eventi delle ricerche
+in `sgrava-insights/`, solo aggiunti. `offsite` è un'immagine Alpine a
+parte: quella di `postgis/postgis:16-3.4` è su Debian 11, il suo archivio
+di PostgreSQL non c'è più e lì non si installa niente. La chiave è una
+chiave SSH dedicata, generata sul server in `/root/.ssh/storagebox/`, fuori
+dal repository; la chiave dello Storage Box si fissa una volta in
+`known_hosts`. Lo Storage Box lo crea l'utente nel pannello; finché non
+c'è, le copie restano sul server. Il server è passato su `compose.yaml`
+con il database lo stesso giorno, alle 07:27Z, con 18 s di API ferma. Un
+server di sviluppo, se l'utente lo vorrà, è un task a parte.
+
+## ADR-0125 — L'account nell'app: due schede, la sessione nel portachiavi, l'uscita
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente,
+dentro ADR-0114, ADR-0115 e ADR-0120 (TASK-115)
+
+**Contesto**: ADR-0114 e ADR-0115 decidono email e password e il token in
+`expo-secure-store`; ADR-0120 gli endpoint e gli errori. Restavano come
+fare le schede senza librerie di navigazione (TASK-051), cosa tiene il
+telefono, cosa fa l'app senza rete e cosa fa quando la sessione finisce.
+
+**Decisione**:
+- **Schede fatte a mano** (`src/screens/Tabs.tsx`), come le schermate di
+  TASK-051: niente `react-navigation`. «Draw» resta montata sotto
+  «Profile», così la mappa non si ricarica e le scelte restano.
+- **La barra solo sotto le schermate che scelgono** («What to draw»,
+  «Explore»): ognuna lo dice con `useTabBar`; mappa, corsa e fine della
+  corsa la tolgono, come le app iOS nelle schermate di dettaglio. È
+  l'elenco di chi la vuole, non di chi non la vuole: una schermata nuova
+  (TASK-149) parte senza. Sopra la barra il margine in basso vale zero
+  (`SafeAreaInsetsContext`): l'indicatore di home lo tiene la barra.
+- **Nel portachiavi la `Session` intera**, token e `User`, sotto una chiave
+  sola (`shaperoute.session`), letta in modo sincrono all'avvio come la
+  corsa non giudicata (TASK-113): la prima schermata è già giusta, e il
+  nome si vede anche senza rete. La password non resta mai sul telefono.
+- **All'apertura un `GET /me`**: aggiorna l'utente; `session_expired` o
+  `not_signed_in` fanno uscire e «Profile» lo dice, con un pallino
+  `warning` sulla scheda; senza risposta l'app resta dentro (offline non
+  è uscito). Lo stesso vale per ogni richiesta dell'account.
+- **«Log out» esce subito**, anche senza rete: il telefono dimentica il
+  token e `DELETE /session` parte senza aspettarlo. Un'API irraggiungibile
+  non tiene nessuno dentro; la sessione rimasta sull'API scade in 90
+  giorni.
+- **«Delete account» esce solo con il 204 dell'API**: altrimenti
+  l'account resterebbe sull'API e sparirebbe dal telefono. La conferma è
+  sulla schermata, non un `Alert` di sistema: si prova nei test.
+- **I campi si controllano nell'app** con le regole di `accounts.py`
+  (email, nome 3–20, password 8–128, casella dei 16 anni), e si dice il
+  primo che non va: l'API resta il giudice, l'app evita un `invalid_request`
+  che sarebbe un bug.
+
+**Scartate**: `react-navigation` (una dipendenza in più contro TASK-051);
+il solo token nel portachiavi (senza rete l'app non saprebbe chi è
+dentro); la barra sempre visibile (ruba spazio alla mappa e alla corsa);
+un «Log out» che aspetta l'API; un `Alert` per la conferma.
+
+**Conseguenze**: i task che useranno il token (TASK-116 e seguenti)
+lo prendono dallo stato di `useAccount` (`src/account/`, oggi tenuto da
+`Tabs.tsx`: un contesto React quando servirà a più schermate) e lo
+mandano con `authHeaders` di `src/api/accounts.ts`.
+
+## ADR-0126 — «Explore»: gli esempi di una città con le alternative A · B · C
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («seleziono New York
+e un cuore da 5,2 km: non ci sono le tre opzioni»); il come deciso
+dall'agente su delega dell'utente (TASK-151).
+
+**Contesto**: un esempio di città (ADR-0116) è un percorso chiesto
+all'API come uno disegnato, e l'API manda già fino a due alternative
+(ADR-0087; sul server da ADR-0121). L'app teneva solo il primo percorso,
+quindi la scheda di «Explore» non aveva le tessere. `App.tsx`, che passa
+alla scheda il percorso aperto, è di altri tre task in corso.
+
+**Decisione**:
+- **L'esempio tiene le alternative**, ognuna un percorso intero
+  (`ExampleDetail.alternatives`), in memoria e nel file sul telefono. Il
+  campo c'è sempre, anche vuoto.
+- **Un esempio salvato senza il campo si ridisegna**, una volta: è di
+  prima di questo task, e senza rifarlo le città già viste non avrebbero
+  mai le tessere. Con la zona in cache sono pochi secondi a forma.
+- **La scelta sta dentro il percorso aperto** (`useExplored`): `choices`,
+  `chosen`, `choose`, e `route`, `detail`, `request`, `result` sono quelli
+  del percorso scelto. `App.tsx` li legge già così, quindi mappa, «Start»
+  (ADR-0117) e GPX seguono la scelta senza toccarlo. Ogni percorso ha il
+  suo `result`, fatto una volta: è da quello che «Start» e l'export
+  riconoscono un percorso.
+- **Le tessere sono quelle di sempre** (`RouteTiles`), sopra «Start».
+  Mentre si aspettano le indicazioni un tocco non cambia percorso: la
+  risposta in arrivo è di quello scelto.
+
+**Scartate**: tenere la scelta in `App.tsx` come per i percorsi disegnati
+(il file è occupato; da rivedere insieme alle linee grigie); mostrare gli
+esempi vecchi senza tessere (l'utente non le vedrebbe mai sul cuore che
+ha già); un file nuovo sul telefono (lascerebbe il vecchio orfano).
+
+**Conseguenze**: gli altri percorsi non sono in grigio sulla mappa e la
+scelta non manda il segnale di ADR-0112: tutte e due le cose passano da
+`App.tsx`, seguiti scritti in `tasks/TASK-151.md`. I percorsi del catalogo
+e quelli a tema restano uno solo. Provato sull'API del Mac a New York:
+cuore, cerchio e stella da 5 km arrivano con due alternative ciascuno.
+
+## ADR-0124 — Tre pagine affiancate con lo swipe, al posto delle schede in basso
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («vai
+con lo swipe fra le tre pagine», fra la variante con i nomi in alto e
+quella con la barra in basso); il come deciso dall'agente su delega
+dell'utente (TASK-154). **Supera**, di ADR-0125, i punti «Schede fatte a
+mano» e «La barra solo sotto le schermate che scelgono».
+
+**Contesto**: l'utente ha chiesto di passare fra le schermate con uno
+swipe a destra e a sinistra, con «Explore» da un lato e dall'altro una
+pagina con i disegni pubblicati dagli iscritti. TASK-115 aveva appena
+messo due schede in basso, «Draw» e «Profile»; «Explore» si apriva da un
+pulsante della prima schermata e si chiudeva con «←».
+
+**Decisione**:
+- **Tre pagine, in quest'ordine**: «Feed», «Draw», «Explore». L'app si
+  apre su «Draw», al centro. I nomi in alto sono anche i comandi: si
+  toccano, e mostrano l'ordine delle pagine.
+- **Lo scorrimento a pagine di React Native** (`ScrollView` orizzontale
+  con `pagingEnabled`, `src/screens/Pager.tsx`): nessuna dipendenza nuova,
+  nessuna libreria di navigazione, come in TASK-051.
+- **Lo stato resta in `App.tsx`**: `feed`, `choose` ed `explore` sono tre
+  valori di `Screen`, e il pager dice quale è sullo schermo. Mappa, corsa e
+  fine corsa restano schermate intere: lì il pager non è montato, così lo
+  swipe non compete con il dito sulla mappa.
+- **«Explore» si monta alla prima visita** (`lazy`): chiede i percorsi
+  all'API appena si apre, e non deve farlo a ogni avvio dell'app. Si monta
+  ai primi pixel dello swipe verso di lei, così entra già disegnata. Le
+  altre due pagine sono montate subito.
+- **La barra in basso sparisce**. «Profile» si apre da un pulsante tondo
+  accanto ai nomi e si chiude con «←» (`src/screens/ProfileLayer.tsx`, al
+  posto di `Tabs.tsx`); il pallino `warning` della sessione finita passa
+  sul pulsante. `useTabBar` non serve più.
+- **La figura del pulsante è disegnata con due `View`**, testa e spalle:
+  l'app non ha icone né `react-native-svg`. Con un account, l'iniziale.
+- **«Feed» per ora è una pagina vuota e onesta**: dice che lì arriveranno
+  i disegni pubblicati. La riempie TASK-118.
+- **Sotto l'intestazione il margine in alto vale zero**
+  (`SafeAreaInsetsContext`): la tacca la tiene l'intestazione, e le
+  schermate di prima non cambiano.
+- **Una pagina fuori dallo schermo è nascosta all'accessibilità**: uno
+  screen reader legge solo la pagina che si vede.
+
+**Scartate**: la barra in basso con quattro schede (la variante B del
+canvas: l'utente ha scelto l'altra); `react-navigation` o
+`react-native-pager-view` (dipendenze nuove contro TASK-051); un gesto
+fatto a mano con `PanResponder` (lo scorrimento a pagine del sistema ha già
+inerzia e rimbalzo giusti); montare «Explore» all'avvio (una richiesta
+all'API a ogni apertura, anche per chi non la guarda).
+
+**Conseguenze**: TASK-118 riempie `FeedScreen.tsx` e non ha più `Tabs.tsx`
+da toccare. Le righe che scorrono di lato dentro una pagina (le tessere,
+le città) dovrebbero tenere il gesto per sé, con lo swipe fra le pagine
+che parte da fuori: va provato con il dito sull'iPhone, e su Android non è
+stato provato niente. Il nome «Sgrava» resta in
+cima a «Draw» e «Best near you» in cima a «Explore»: toglierli o no è
+parte del ridisegno delle due pagine, non ancora scelto.
+
+## ADR-0127 — «Feed» con quindici esempi dal catalogo, finché non pubblicano gli iscritti
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («nella
+sezione feed crea già in automatico 15 attività con nomi inventati, utenti
+inventati, che hanno fatto delle figure in sette città differenti d'Italia,
+e seleziona le figure che sono venute meglio»); il come deciso dall'agente
+su delega dell'utente (TASK-156).
+
+**Contesto**: dopo TASK-154 «Feed» era una pagina vuota. Il feed vero
+(TASK-118) vuole account, disegni salvati e un endpoint: non c'è ancora.
+L'utente vuole la pagina piena da subito.
+
+**Decisione**:
+- **Le linee vengono dal catalogo seme** (`catalog/seed/`, sette città): le
+  ha tracciate il motore, e uno script (`tools/sample_feed.py`) le sceglie
+  e le scrive in `apps/mobile/src/feed/sampleFeed.json`. Nessuna coordinata
+  è inventata, né dall'AI né a mano (`CLAUDE.md`).
+- **La scelta**: ogni città dà due figure di forme diverse, le sue meglio
+  riuscite; fra quelle riuscite almeno al 95% prende prima una forma non
+  ancora nel feed; nessuna forma più di due volte; scelgono prima le città
+  con meno figure buone; la quindicesima è la migliore rimasta. Oggi: 11
+  forme, somiglianza minima 0,954, Firenze con tre.
+- **Meno punti, stessi angoli**: ogni linea scende a 120 punti al più con
+  Douglas-Peucker in metri, non un punto ogni tanti come l'anteprima
+  dell'API a 64: a tutta larghezza gli angoli contano.
+- **Inventati e sempre uguali**: corridori, titoli, tempi (da 5:15 a 6:40
+  al km) e punteggi (qualche punto sotto la somiglianza) escono dallo
+  script con regole fisse. Il file cambia solo se cambia il catalogo, e si
+  rifà a mano: nessun test lo lega al catalogo, così chi aggiunge una città
+  non rompe la CI di questo.
+- **Niente sulla pagina dice che sono esempi**: scelta dell'utente
+  (2026-10-02). L'agente aveva messo una riga in cima («Examples, drawn by
+  the route engine on real streets…») perché corridori finti mostrati come
+  veri ingannano chi entra; l'utente, sentito il motivo, l'ha fatta
+  togliere. Niente like, commenti o tocchi: quelle cose non esistono ancora.
+- **I dati stanno nell'app**, non nell'API: nessuna richiesta, funziona
+  senza rete. Il disegno si fa come le miniature di «Explore»
+  (`thumbSegments`), una `View` per tratto, in un elenco che monta poche
+  schede alla volta.
+
+**Scartate**: scrivere a mano corridori e linee; chiedere i percorsi
+all'API a ogni apertura (sette richieste per una pagina di esempi); like e
+commenti finti; orari finti («2 h ago» per sempre).
+
+**Conseguenze**: TASK-118 sostituisce gli esempi con i disegni veri, o li
+tiene sotto finché sono pochi: lo decide l'utente allora. **Prima di
+invitare persone che non conoscono l'app** (il cancello di `ROADMAP.md`,
+«La parte social») va rivisto se gli esempi restano senza dirlo: chi entra
+li prende per corse di iscritti veri. Gli `id` sono
+quelli che l'API dà ai percorsi del catalogo: servono a TASK-118 per aprire
+il percorso dal feed. Se il catalogo cambia, `python tools/sample_feed.py`
+rifà il file.

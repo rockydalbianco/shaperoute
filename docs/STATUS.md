@@ -220,8 +220,8 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   ora si propone per il catalogo. Comandi `why`, `compare --split`, `trend`,
   `--since/--until`. Corretto un errore di TASK-130: nessun percorso
   dell'API era mai stato registrato. Provato su un'API di prova con
-  Geoapify. Per averlo sull'iPhone: riavviare l'API che l'app usa e
-  ripubblicare l'app (a fine coda dei merge, col coordinatore). Seguiti
+  Geoapify. L'API sul server e l'app sono aggiornate (app pubblicata il
+  2026-10-02; resta la prova sull'iPhone). Seguiti
   possibili: esportare il tipo dei segnali da `shared-types/src/index.ts`,
   ora che TASK-088 è entrato; la forma toccata dopo parole non lette
   (`ShapeTiles.tsx`) come prova per i sinonimi.
@@ -253,9 +253,9 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   /route-directions`, che ritrova i nodi della linea sul grafo della zona
   (`route_nodes.py`), poi la navigazione di sempre; «Stop» torna alla
   scheda. Sull'API del Mac 0,1–0,5 s, e indicazioni identiche a quelle
-  del motore su 4 percorsi appena pianificati. Per vederlo sull'iPhone:
-  riavviare l'API del Mac (endpoint nuovo) e ripubblicare l'app con `eas
-  update`.
+  del motore su 4 percorsi appena pianificati. L'API sul server e l'app
+  sono aggiornate (app pubblicata il 2026-10-02; resta la prova
+  sull'iPhone).
 - **App** — TASK-143: «Ask for a route» mostra Food, Famous Places e
   «More…»; una città senza percorsi consigliati disegna da sola cuore,
   cerchio e stella da 5 km, uno alla volta, che si aprono sulla mappa e
@@ -274,9 +274,9 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
 - **API e app** — TASK-138: in «Explore» il campo «Type a city or a
   place» suggerisce a metà parola città e luoghi (ADR-0110): «arena di ver»
   → Verona Arena, «duomo di mil» → Duomo, «ver» → Verona come centro città.
-  Un luogo scelto fa partire le categorie dal suo punto. Per vederlo
-  sull'iPhone: riavviare l'API del Mac (era partita prima di TASK-134, e
-  `/city-suggestions` dava 404) e ripubblicare l'app con `eas update`.
+  Un luogo scelto fa partire le categorie dal suo punto. L'API sul server
+  e l'app sono aggiornate (app pubblicata il 2026-10-02); provato
+  sull'iPhone il 2026-10-01 (voce di TASK-143).
   «ver» non dà ancora i luoghi famosi di Verona: Geoapify non li ordina per
   fama (Fuori scope del task file).
 - **Motore** — TASK-139: anche cerchio e stella evitano i pezzi fatti

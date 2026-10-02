@@ -22,6 +22,7 @@ from typing import Any, Protocol
 
 import numpy as np
 
+from route_engine.errors import NoRoadsError, ShapeNotDrawableError
 from route_engine.geo import LatLon, latlon_to_local_array, local_to_latlon
 from route_engine.metrics import (
     CORNER_PENALTY,
@@ -208,6 +209,10 @@ class RoadMask:
                 (len(coords) + i, len(coords) + i + 1) for i in range(len(line) - 1)
             )
             coords.extend(line)
+        if not segments:
+            # A graph without a road, like the one node left of a crop: said
+            # as it is, not an index into no samples (TASK-180).
+            raise NoRoadsError()
         xy = latlon_to_local_array(origin, np.array(coords))
         idx = np.array(segments)
         a, b = xy[idx[:, 0]], xy[idx[:, 1]]
@@ -826,19 +831,6 @@ def _scale_of(placed: Sequence[LatLon], shape: Sequence[Point]) -> float:
     """Metres per normalized unit of a placed shape."""
     xy = latlon_to_local_array(placed[0], np.array(placed))
     return _perimeter_m(xy) / perimeter(shape)
-
-
-class ShapeNotDrawableError(ValueError):
-    """The roads around the start cannot draw the requested shape.
-
-    best_distance_m is the length of the best route found when it followed
-    the shape but missed the distance: that distance the shape fits
-    (TASK-031). None when the best route did not follow the shape.
-    """
-
-    def __init__(self, message: str, best_distance_m: float | None = None) -> None:
-        super().__init__(message)
-        self.best_distance_m = best_distance_m
 
 
 def _compass(origin: LatLon, point: LatLon) -> str:

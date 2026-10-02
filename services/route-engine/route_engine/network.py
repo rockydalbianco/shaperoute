@@ -25,6 +25,7 @@ from typing import Any, Protocol
 import networkx as nx
 import numpy as np
 
+from route_engine.errors import NoRoadsError
 from route_engine.geo import (
     LatLon,
     latlon_to_local,
@@ -190,12 +191,16 @@ class OsmnxSource:
 
         A crop is never saved (TASK-136, ADR-0108): it is 3 to 170 MB for
         each new start, and it is made again from its zone without the
-        network. The API does the same (ADR-0030)."""
+        network. The API does the same (ADR-0030).
+
+        The file of a zone holds every connected piece of its roads
+        (TASK-180, ADR-0148); what is returned is one piece, the largest of
+        the area asked, as before."""
         import osmnx as ox
 
         path = self.cache_path(bbox)
         if path.exists():
-            return read_graph(path)
+            return largest_piece(read_graph(path))
         covering = self.covering_path(bbox)
         if covering is not None:
             return crop(read_graph(covering), bbox)
@@ -209,10 +214,15 @@ class OsmnxSource:
                 bbox=(west, south, east, north),
                 network_type="walk",
                 custom_filter=self.custom_filter,
+                # Without it OSMnx keeps the largest piece of the whole
+                # zone, and an island with fewer roads than the mainland
+                # beside it is left with none: Venice (ADR-0148). The
+                # largest piece is chosen area by area, in `crop`.
+                retain_all=True,
             )
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         _write_graph(graph, path)
-        return graph
+        return largest_piece(graph)
 
 
 def read_graph(path: Path) -> Graph:
@@ -385,8 +395,10 @@ def _overpass(query: str) -> dict[str, Any]:
 def crop(graph: Graph, bbox: BBox) -> Graph:
     """Nodes inside `bbox`, the edges between them, largest connected piece.
 
-    Close to what downloading `bbox` gives: OSMnx also keeps only the
-    largest piece, but simplifies the ways before cutting them at the border.
+    Close to what downloading `bbox` alone gives: there too only the largest
+    piece is kept (`largest_piece`), but OSMnx simplifies the ways before
+    cutting them at the border. With no node inside there is no piece to
+    keep: NoRoadsError (TASK-180).
     """
     south, west, north, east = bbox
     inside = [
@@ -394,8 +406,21 @@ def crop(graph: Graph, bbox: BBox) -> Graph:
         for n, d in graph.nodes(data=True)
         if south <= d["y"] <= north and west <= d["x"] <= east
     ]
+    if not inside:
+        raise NoRoadsError()
     pieces = nx.weakly_connected_components(graph.subgraph(inside))
     return graph.subgraph(max(pieces, key=len)).copy()
+
+
+def largest_piece(graph: Graph) -> Graph:
+    """`graph` itself when its roads are all joined, as in every zone saved
+    before TASK-180; else a copy of its largest connected piece, which is
+    what OSMnx kept of a download until then (ADR-0148)."""
+    pieces = nx.weakly_connected_components(graph)
+    largest = max(pieces, key=len, default=set())
+    if len(largest) == len(graph):
+        return graph
+    return graph.subgraph(largest).copy()
 
 
 @dataclass

@@ -4567,3 +4567,58 @@ li prende per corse di iscritti veri. Gli `id` sono
 quelli che l'API dà ai percorsi del catalogo: servono a TASK-118 per aprire
 il percorso dal feed. Se il catalogo cambia, `python tools/sample_feed.py`
 rifà il file.
+
+## ADR-0131 — La mappa sotto i disegni di «Feed» è una foto, fatta da una pagina nascosta
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («nella
+sezione feed sotto le immagini, bisogna aggiungere la mappa»); il come
+deciso dall'agente su delega dell'utente (TASK-162).
+
+**Contesto**: da TASK-156 una scheda di «Feed» è la linea gialla su un
+fondo vuoto. L'utente vuole sotto la mappa. La mappa dell'app è MapLibre
+GL JS in una WebView (ADR-0029): una per scheda vorrebbe dire fino a una
+decina di pagine con WebGL vive insieme in un elenco che scorre.
+OpenFreeMap dà solo tile vettoriali: non c'è un'immagine da chiedere.
+
+**Decisione**:
+- **Una foto, non una mappa**: la scheda non si tocca (ADR-0127), quindi
+  le basta un'immagine. **Una sola pagina MapLibre**, in «Feed», sotto
+  l'elenco che la copre: inquadra una mappa alla volta, aspetta che ogni
+  tile sia disegnata (`idle`) e manda all'app il canvas come JPEG
+  (`toDataURL`, `preserveDrawingBuffer`). La scheda lo mostra con `Image`
+  sotto la linea.
+- **Stesso stile e stessa libreria della mappa grande** (`MAP_STYLE`,
+  MapLibre con SRI): i colori restano i token, niente chiave. Senza
+  controlli e senza gesti.
+- **La linea resta dell'app**: le `View` di `thumbSegments`, sopra la foto.
+  `lineCamera` dà a MapLibre centro e zoom dello stesso riquadro; su pochi
+  chilometri la proiezione della mappa e quella piana della linea
+  differiscono di meno di un punto (un test lo misura). Così la scheda è
+  subito quella di prima, e la mappa le arriva sotto.
+- **Una alla volta, a richiesta**: la foto la chiede la scheda quando
+  l'elenco la monta (`useFeedMap`); la pagina c'è solo finché c'è una foto
+  da fare, poi si smonta e libera la memoria. Ogni richiesta porta la sua
+  misura: la pagina si ridimensiona da sola.
+- **Le foto restano in memoria** per tutta la vita dell'app, per `id` e
+  misura: il `Pager` smonta «Feed» ogni volta che si apre la mappa grande.
+- **Quando non va**: una tile che manca dà una scheda senza mappa, non
+  mezza mappa; una foto che non arriva in 20 s si salta; se MapLibre non si
+  carica la pagina si smonta. Nessun messaggio: la scheda senza mappa è
+  quella di TASK-156. Una scheda che torna sullo schermo richiede.
+- **Il credito su ogni foto**: «OpenFreeMap © OpenMapTiles / Data from
+  OpenStreetMap», il testo di `ATTRIBUTION`, senza link perché la scheda
+  non si tocca. In due righe, in basso a destra, accanto al punteggio.
+
+**Scartate**: una WebView per scheda (memoria, e i gesti della mappa
+contro lo swipe delle pagine); immagini già pronte nell'app, fatte da uno
+script (vuole un browser senza testa fra gli strumenti, e non serve al feed
+vero); tile raster di un altro fornitore (un'altra mappa, chiara, e una
+chiave); disegnare anche la linea in MapLibre (la scheda resterebbe vuota
+finché la foto non arriva).
+
+**Conseguenze**: all'apertura dell'app partono le foto delle prime schede
+(«Feed» è costruita subito: `App.tsx` non si tocca qui), cioè MapLibre da
+unpkg e qualche tile per città; nel simulatore 2 s la prima volta, meno di
+1 s con le tile in cache. Le foto non restano fra un'apertura e l'altra.
+Con il feed vero (TASK-118) la stessa pagina fotografa qualsiasi linea, ma
+serve un tetto alle foto in memoria. `FeedPost` mostrato altrove (TASK-163)
+ha la mappa finché «Feed» è montata. Android non è stato provato.

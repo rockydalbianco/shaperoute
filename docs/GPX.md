@@ -71,7 +71,7 @@ Sotto un percorso disegnato, «Export GPX» (TASK-024):
 
 1. l'app manda a `POST /gpx` la richiesta e il risultato che ha già;
 2. l'API risponde il GPX con il nome del file, per esempio
-   `shaperoute-heart-5km-2026-09-23.gpx`: senza spazi né caratteri strani,
+   `sgrava-heart-5km-2026-09-23.gpx`: senza spazi né caratteri strani,
    che alcune app rifiutano;
 3. l'app lo salva nella propria cartella temporanea (`expo-file-system`),
    che il sistema può svuotare;

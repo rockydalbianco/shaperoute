@@ -4354,6 +4354,23 @@ dell'utente. Sul Mac Docker vuole il plugin `buildx`: senza BuildKit
 l'heredoc del `Dockerfile` si salta in silenzio e l'immagine nasce senza
 dipendenze (visto il 2026-10-02; la CI e il server hanno BuildKit).
 
+**Aggiornamento 2026-10-02** (scelta dell'utente: «Storage Box, sposto
+ora»): le copie fuori dal server vanno in uno **Storage Box Hetzner**
+(BX11, Falkenstein), non sul Mac; `deploy/mac/` è tolto. Un servizio
+`offsite` le manda ogni notte alle 02:30 UTC, mezz'ora dopo la copia, con
+`rsync` sopra SSH sulla porta 23: le copie del database in `sgrava-db/`,
+le stesse del server (quelle con più di 13 giorni spariscono anche lì, e
+la promessa dei 14 giorni vale anche fuori), e gli eventi delle ricerche
+in `sgrava-insights/`, solo aggiunti. `offsite` è un'immagine Alpine a
+parte: quella di `postgis/postgis:16-3.4` è su Debian 11, il suo archivio
+di PostgreSQL non c'è più e lì non si installa niente. La chiave è una
+chiave SSH dedicata, generata sul server in `/root/.ssh/storagebox/`, fuori
+dal repository; la chiave dello Storage Box si fissa una volta in
+`known_hosts`. Lo Storage Box lo crea l'utente nel pannello; finché non
+c'è, le copie restano sul server. Il server è passato su `compose.yaml`
+con il database lo stesso giorno, alle 07:27Z, con 18 s di API ferma. Un
+server di sviluppo, se l'utente lo vorrà, è un task a parte.
+
 ## ADR-0125 — L'account nell'app: due schede, la sessione nel portachiavi, l'uscita
 **Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente,
 dentro ADR-0114, ADR-0115 e ADR-0120 (TASK-115)

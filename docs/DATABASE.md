@@ -75,13 +75,15 @@ della traccia intera. Il GPX si scrive al volo quando serve.
 
 Da TASK-122 (ADR-0123, `DEPLOY.md` F.13): `pg_dump` ogni notte sul
 server, nel servizio `backup` di `deploy/compose.yaml`, in
-`data/backups/`, 13 giorni tenuti; il Mac se le prende ogni 6 ore quando è
-acceso (`deploy/mac/pull-backups.sh`, scelta dell'utente) e cancella anche
-lui quelle con più di 13 giorni. Così un account cancellato è fuori da
-ogni copia entro 14 giorni. `backup.sh check` prova che una copia si
-ripristina, in un database a parte; il ripristino vero è in `DEPLOY.md`
-F.13. ADR-0115 le voleva nell'Object Storage di Oracle, che non c'è più
-(l'API è su Hetzner, ADR-0111).
+`data/backups/`, 13 giorni tenuti; mezz'ora dopo il servizio `offsite` le
+manda in uno Storage Box Hetzner, separato dal server (scelta dell'utente,
+aggiornamento del 2026-10-02), dove restano le stesse: quelle con più di
+13 giorni spariscono anche lì. Così un account cancellato è fuori da ogni
+copia entro 14 giorni. Senza Storage Box le copie restano sul server.
+`backup.sh check` prova che una copia si ripristina, in un database a
+parte; il ripristino vero è in `DEPLOY.md` F.13. ADR-0115 le voleva
+nell'Object Storage di Oracle, che non c'è più (l'API è su Hetzner,
+ADR-0111).
 
 ## Privacy dei dati di posizione
 

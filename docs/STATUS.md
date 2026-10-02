@@ -84,13 +84,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-122 — L'API e il database sempre accesi** (`chore/TASK-122-hosting`,
-  ADR-0123): il database PostGIS e la sua copia notturna in
-  `deploy/compose.yaml`, le copie sul Mac (scelta dell'utente), la CI con
-  un'iscrizione e un ripristino. Fermi per scelta dell'utente lo
-  spostamento del server su `compose.yaml` (`DEPLOY.md` F.12) e la
-  destinazione delle copie: l'utente pensa a un server di sviluppo, dove
-  andrebbero al posto del Mac. Da dove riprendere: il task file.
+- **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
+  Hetzner gira su `deploy/compose.yaml` con il database e la copia
+  notturna dal 2026-10-02 (07:27Z, 18 s di API ferma); iscrizione,
+  cancellazione e ripristino provati dal vivo. Le copie fuori dal server
+  vanno in uno Storage Box Hetzner (scelta dell'utente,
+  `chore/TASK-122-offsite`): manca che l'utente lo crei (`DEPLOY.md`
+  F.13). Da dove riprendere: il task file.
 - **TASK-128 — Il catalogo seme: Firenze** (`feat/TASK-128-seed-catalog-more`,
   in revisione): Firenze nel catalogo (22 percorsi, 159 in 7 città); una
   zona per città, e la città salta se Overpass rifiuta. Mancano Napoli,

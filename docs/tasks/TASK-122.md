@@ -32,40 +32,39 @@ Creare account su servizi esterni, pagare e inserire chiavi lo fa
 
 ## Criteri di accettazione
 
-- [ ] `GET /health` risponde in HTTPS da una rete diversa da quella di casa.
-- [ ] Un cuore da 5 km a Trento si genera dal server nei tempi di `API.md`.
-- [ ] Iscrizione ed entrata funzionano dall'iPhone senza Tailscale.
-- [ ] Un ripristino della copia di sicurezza è stato provato e annotato.
+- [x] `GET /health` risponde in HTTPS da una rete diversa da quella di casa.
+- [x] Un cuore da 5 km a Trento si genera dal server nei tempi di `API.md`.
+- [ ] Iscrizione ed entrata funzionano dall'iPhone senza Tailscale
+      (sull'indirizzo pubblico sì, provato con `curl`; dall'iPhone, con
+      le schermate di TASK-115, è la prova dell'utente).
+- [x] Un ripristino della copia di sicurezza è stato provato e annotato.
 - [x] Nessun segreto nel repository.
+- [ ] Le copie arrivano nello Storage Box (aggiunto il 2026-10-02, scelta
+      dell'utente): dopo che l'utente lo ha creato.
 
 ### Dove si è fermato (2026-10-02)
 
-Fatto, nella PR #157: il database e la copia notturna in
-`deploy/compose.yaml` e `deploy/backup.sh`, le copie sul Mac in
-`deploy/mac/`, la CI (job `docker`: iscrizione, copia, ripristino con un
-account), `DEPLOY.md` F.12 e F.13, la correzione del `.dockerignore` che
-lasciava fuori le migrazioni. Provati in locale, con Colima: la stessa
-sequenza della CI e il ripristino vero di F.13 (dopo, l'account della
-copia entra, quello creato dopo la copia no).
+PR #157 (in `main`): il database e la copia notturna in
+`deploy/compose.yaml` e `deploy/backup.sh`, la CI (job `docker`:
+iscrizione, copia, ripristino con un account), `DEPLOY.md` F.12 e F.13, la
+correzione del `.dockerignore` che lasciava fuori le migrazioni.
 
-Fermo per scelta dell'utente: **lo spostamento del server** (F.12) e
-**dove vanno le copie** fuori dal server. L'utente pensa di lavorare da un
-server di sviluppo; in quel caso le copie andrebbero lì e non sul Mac
-(ADR-0123 dice il Mac). Nessuna delle due cose è stata fatta: il server
-gira ancora col `docker run` a mano, senza database.
+**Il server è spostato** (2026-10-02, 07:27Z), da `main` 609a647: sul
+server mancava `docker compose`, installato da Ubuntu
+(`docker-compose-v2`, senza riavviare Docker); `deploy/.env` dal vecchio
+`shaperoute.env` più `POSTGRES_PASSWORD`, generata lì; `cache`,
+`insights` e `requests` spostate in `/root/shaperoute/data/`
+(`/srv/shaperoute/extracts` di TASK-137 lasciata com'era); l'immagine di
+prima tenuta come `shaperoute-api:before-task122`. API ferma 18 s.
 
-Per riprendere, dopo la scelta:
-1. Se cambia la destinazione delle copie, adattare `deploy/mac/` (o
-   uno script gemello per il server di sviluppo) e scriverlo in ADR-0123.
-2. Sul server, da `main`: F.12 passi 1–6. Prima e dopo avvisare la
-   sessione di TASK-137, che usa la stessa cartella della cache e il
-   container `shaperoute-prefetch` (da non toccare, con
-   `/srv/shaperoute/extracts`).
-3. I quattro criteri qui sopra, annotati in «Esito»: HTTPS da fuori, il
-   cuore da 5 km a Trento, un'iscrizione di prova sull'indirizzo pubblico
-   (poi `DELETE /me`; dall'iPhone serve TASK-115), `backup.sh now` e
-   `check` sul server e un ripristino della copia arrivata a destinazione.
-4. L'`eas update` lo fa il coordinatore, non questo task.
+**Lo Storage Box** (scelta dell'utente, ADR-0123, aggiornamento del
+2026-10-02), PR nuova `chore/TASK-122-offsite`: un servizio `offsite`
+(Alpine) manda copie ed eventi ogni notte alle 02:30 UTC; `deploy/mac/` è
+tolto. La chiave SSH dedicata c'è già sul server
+(`/root/.ssh/storagebox/`). Manca: l'utente crea lo Storage Box e incolla
+la chiave pubblica (`DEPLOY.md` F.13, punto 2); poi, sul server, il
+punto 3 (`known_hosts`, le due variabili, `push`), e il criterio qui
+sopra.
 
 ## File toccati
 
@@ -77,16 +76,18 @@ docs/tasks/TASK-122.md
 .env.example
 deploy/
 docs/DATABASE.md            (aggiunto: le copie non sono più su Oracle)
+deploy/offsite/Dockerfile   (nuovo: l'immagine del servizio offsite)
+tools/test_backup_push.py   (nuovo: l'invio allo Storage Box, provato senza rete)
 .gitignore                  (aggiunto: data/backups/, le copie fuori da git)
 .github/workflows/ci.yml    (aggiunto: database, iscrizione e copia nel job docker)
-tools/test_pull_backups.py  (nuovo: la copia sul Mac, provata senza rete)
+tools/test_pull_backups.py  (tolto con deploy/mac/, il 2026-10-02)
 .dockerignore               (aggiunto: le migrazioni nell'immagine, mancavano da TASK-114)
 ```
 
-Le copie fuori dal server vanno sul Mac (scelta dell'utente, 2026-10-02,
-ADR-0123): `deploy/mac/`. Lo spostamento del server su `compose.yaml`
-(`DEPLOY.md` F.12) è parte di questo task, deciso col coordinatore; sul
-server si lavora solo dopo il sì dell'utente.
+Le copie fuori dal server vanno in uno Storage Box Hetzner (scelta
+dell'utente, 2026-10-02, ADR-0123 e il suo aggiornamento): prima erano sul
+Mac, in `deploy/mac/`, tolto. Lo spostamento del server su `compose.yaml`
+(`DEPLOY.md` F.12) è parte di questo task, deciso col coordinatore.
 
 ## Fuori scope
 
@@ -94,3 +95,15 @@ server si lavora solo dopo il sì dell'utente.
 - Rendere più veloce il motore.
 
 ## Esito
+
+Il server con il database, dal vivo (2026-10-02, dopo lo spostamento):
+`/health` in HTTPS dal Mac 200 in 0,14 s; un cuore da 5 km a Trento
+dall'indirizzo pubblico in 18,0 s, 4,9 km, somiglianza 0,92; un account di
+prova sull'indirizzo pubblico: iscrizione 201, `/me` 200, entrata 200,
+`DELETE /me` 204, poi `not_signed_in`, e nel database 0 utenti e 0
+sessioni; la prima copia (modo 600) si ripristina con `backup.sh check`.
+All'avvio l'API scrive la chiave, Geoapify, 159 percorsi consigliati e
+«Accounts in PostgreSQL; migrations: 0001_users_sessions». Il ripristino
+vero di F.13 è provato in locale, con Colima: dopo, l'account della copia
+entra, quello creato dopo la copia no. Restano lo Storage Box (dell'utente)
+e la prova dall'iPhone.

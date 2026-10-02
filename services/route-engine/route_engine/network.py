@@ -113,7 +113,9 @@ BIKE_ROADS = frozenset(
 BIKE_PATHS = frozenset({"path", "footway", "bridleway"})
 # Two Overpass filters, one request each: the roads, and only those paths
 # and pedestrian streets whose tags let bikes on, a few km a zone instead of
-# every footway. Wider than `rideable`, which decides on the tags kept.
+# every footway. Wider than `rideable`, which decides on the tags kept,
+# save the roads with `access=private`, left out as on foot even when a
+# `bicycle` tag would open them.
 BIKE_FILTER = [
     f'["highway"~"^({"|".join(sorted(BIKE_ROADS))})$"]["area"!~"yes"]'
     '["access"!~"private"]["service"!~"private"]',

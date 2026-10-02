@@ -548,7 +548,10 @@ La richiesta è sincrona: la risposta arriva quando il percorso è pronto
   quelli a piedi: cosa mostra «Explore» con la bici lo decide l'utente
   (TASK-190, parte C).
 - Le indicazioni di un percorso di «Explore» (`/route-directions`) e i
-  percorsi a tema restano a piedi.
+  percorsi a tema restano a piedi. Un preferito in bici ricorda la sua
+  attività (TASK-200, «Favorites»): la sua esportazione GPX la manda; le
+  sue indicazioni, chieste a `/route-directions` con i soli punti, restano
+  a piedi.
 - **Tempi**: non ancora misurati su una zona vera della bici (task file
   di TASK-190).
 
@@ -813,6 +816,20 @@ tipi dell'app in `apps/mobile/src/api/favorites.ts`.
   precedente rifiuta il campo: l'app lo manda solo per una parola con la
   penna alzata, e se il `PUT` torna `422 invalid_request` lo rimanda una
   volta senza `walks`.
+- **L'attività** (TASK-200, ADR-0160): il corpo del `PUT` può avere
+  `activity`, quella di `RouteRequest` (`running` o `cycling`, «In bici»),
+  facoltativa: senza, `running`. Un'attività che l'API non offre è `422
+  invalid_request`, con le parole di `POST /routes` (`unsupported activity
+  'paddling'; choose one of: running, cycling`). L'elenco e il preferito
+  intero hanno **sempre** `activity`: `running` per quelli tenuti prima. La
+  chiave resta quella della linea: la stessa linea tenuta come corsa e poi
+  in bici è un preferito solo, com'era la prima volta. Esempi:
+  `favorite-request-cycling.json`, `favorites-cycling.json`,
+  `favorite-cycling.json`. Un'API precedente rifiuta il campo: l'app lo
+  manda solo quando non è `running` (la richiesta di una corsa resta byte
+  per byte quella di prima), e se il `PUT` torna `422 invalid_request` lo
+  rimanda una volta come un'app precedente a TASK-199, senza `activity` né
+  `walks`: il preferito si tiene come una corsa.
 
 ### My activities (TASK-172, ADR-0140)
 
@@ -872,7 +889,17 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   `fidelity`, e due anteprime leggere, al più 64 punti l'una:
   `route_preview` (`null` senza percorso) e `track_preview`. Quella intera
   ha al loro posto `points` (o `null`), `track` (la traccia pulita, come
-  `[lat, lon]`) e `similarity`.
+  `[lat, lon]`) e `similarity`, e in più `walks` (sotto) e `pauses`.
+- **Le pause della corsa intera** (TASK-200, ADR-0160): `pauses` c'è
+  **sempre**, `[]` per una corsa senza. Ognuna è `{"from_s", "to_s",
+  "auto"}`, più `"pen": true` solo per una pausa della penna, come le
+  tiene la riga (`DATABASE.md`): in secondi dal primo punto di `track`,
+  lo stesso orologio della traccia, e solo quello che di ogni pausa sta
+  dentro la corsa; nell'ordine in cui l'app le ha mandate, due che si
+  sovrappongono restano due. Una pausa tutta fuori dalla corsa non c'è.
+  L'elenco non le ha. Esempio: `activity-pauses.json`, la corsa di
+  `activity-walks.json` con la sua pausa della penna. Un'API precedente non
+  le manda: l'app legge il dettaglio anche senza, e oggi non le mostra.
 - **Le pagine**: `GET /me/activities?limit=20&cursor=…`, `limit` da 1 a
   50. `next` è il `cursor` della pagina dopo, `null` all'ultima; `total` è
   il numero di tutte le corse dell'account, su ogni pagina. L'ordine è
@@ -899,7 +926,7 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   - una pausa può avere **`pen`**, vero se l'app l'ha messa da sola fra due
     lettere, falso se manca. Per km e tempo conta come una pausa chiesta dal
     corridore (`auto` falso): il tratto a piedi non è corsa. Si tiene nella
-    riga (`DATABASE.md`), non torna nel dettaglio, che le pause non le ha;
+    riga (`DATABASE.md`), e da TASK-200 torna nelle `pauses` del dettaglio;
   - la corsa intera ha **sempre** `walks`, vuoto per ogni altra corsa e per
     quelle salvate prima; l'elenco non cambia.
 

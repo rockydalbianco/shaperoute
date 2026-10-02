@@ -1,0 +1,18 @@
+{
+  "city": "",
+  "shape": "heart",
+  "word": null,
+  "style": null,
+  "title": null,
+  "distance_m": 20000,
+  "route_m": 20480,
+  "similarity": 0.87,
+  "points": [
+    [46.0671, 11.1214],
+    [46.0802, 11.1391],
+    [46.0905, 11.1236],
+    [46.0836, 11.1081],
+    [46.0671, 11.1214]
+  ],
+  "activity": "cycling"
+}

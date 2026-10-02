@@ -2,7 +2,8 @@
 listed a page at a time, opened and deleted; the API counts metres, seconds
 and score itself; each account sees only its own; the bodies are the
 examples of packages/shared-types/fixtures. A run along a word with the pen
-up keeps its walks and its pauses of the pen (TASK-199)."""
+up keeps its walks and its pauses of the pen (TASK-199); a run opened whole
+has its pauses (TASK-200)."""
 
 from __future__ import annotations
 
@@ -159,15 +160,19 @@ def test_the_fixtures_are_the_contract() -> None:
         assert set(activity) == set(ActivityBody.model_fields)
     ActivitiesBody.model_validate(listed)
     whole = _load("activity.json")
-    assert set(whole) == set(ActivityDetailBody.model_fields) - {"walks"}
+    assert set(whole) == set(ActivityDetailBody.model_fields) - {"walks", "pauses"}
     # A word with the pen up (TASK-199): every field.
     walked = _load("activity-request-walks.json")
     assert set(walked) == set(ActivityRequestBody.model_fields)
     assert set(walked["pauses"][0]) == set(PauseBody.model_fields)
     ActivityRequestBody.model_validate(walked)
     whole_walked = _load("activity-walks.json")
-    assert set(whole_walked) == set(ActivityDetailBody.model_fields)
-    ActivityDetailBody.model_validate(whole_walked)
+    assert set(whole_walked) == set(ActivityDetailBody.model_fields) - {"pauses"}
+    # The same run opened from the API of TASK-200: every field.
+    whole_paused = _load("activity-pauses.json")
+    assert set(whole_paused) == set(ActivityDetailBody.model_fields)
+    assert {**whole_paused, "pauses": None} == {**whole_walked, "pauses": None}
+    ActivityDetailBody.model_validate(whole_paused)
 
 
 def test_the_migration_comes_after_the_favorites() -> None:
@@ -219,8 +224,13 @@ def test_a_run_opens_whole_as_the_example(client: TestClient) -> None:
     client.put(f"/me/activities/{KEY}", json=request(), headers=me)
     whole = client.get(f"/me/activities/{KEY}", headers=me)
     assert whole.status_code == 200
-    # The example of before TASK-199, and no walks.
-    assert whole.json() == {**_load("activity.json"), "walks": []}
+    # The example of before TASK-199, no walks, and its pause standing still
+    # on the clock of the track.
+    assert whole.json() == {
+        **_load("activity.json"),
+        "walks": [],
+        "pauses": [{"from_s": 300.0, "to_s": 360.0, "auto": True}],
+    }
 
 
 def test_a_run_without_a_route_has_no_score(client: TestClient) -> None:
@@ -350,6 +360,44 @@ def test_a_pause_while_standing_still_takes_only_time(client: TestClient) -> Non
     assert run["duration_s"] == 1200 - 90 - 10
 
 
+def test_a_run_opened_whole_has_its_pauses_as_kept(client: TestClient) -> None:
+    me = signed_up(client)
+    pauses = [
+        {"from_ms": 1790000300000, "to_ms": 1790000360000, "auto": True},
+        {"from_ms": 1790000330000, "to_ms": 1790000390000, "auto": True},
+        {"from_ms": 1790001190000, "to_ms": 1790009990000, "auto": True},
+        {"from_ms": 1780000000000, "to_ms": 1789999999000, "auto": False},
+    ]
+    track = [
+        # Too uncertain: not kept, and the clock starts at the next fix.
+        {"point": [46.0670, 11.1214], "time_ms": 1789999940000, "accuracy_m": 90.0},
+        *request()["track"],
+    ]
+    client.put(
+        f"/me/activities/{KEY}",
+        json=request(track=track, pauses=pauses),
+        headers=me,
+    )
+    whole = client.get(f"/me/activities/{KEY}", headers=me).json()
+    assert whole["track"] == _load("activity.json")["track"]
+    # In the order sent, in seconds since the first point of the track, and
+    # only what of each lies inside the run; overlaps are kept as they are.
+    assert whole["pauses"] == [
+        {"from_s": 300.0, "to_s": 360.0, "auto": True},
+        {"from_s": 330.0, "to_s": 390.0, "auto": True},
+        {"from_s": 1190.0, "to_s": 1200.0, "auto": True},
+    ]
+    # The list does not have them.
+    listed = client.get("/me/activities", headers=me).json()["activities"]
+    assert "pauses" not in listed[0]
+
+
+def test_a_run_without_pauses_opens_with_none(client: TestClient) -> None:
+    me = signed_up(client)
+    client.put(f"/me/activities/{KEY}", json=free(pauses=[]), headers=me)
+    assert client.get(f"/me/activities/{KEY}", headers=me).json()["pauses"] == []
+
+
 def test_saving_twice_saves_once(client: TestClient, wall: WallClock) -> None:
     me = signed_up(client)
     first = client.put(f"/me/activities/{KEY}", json=request(), headers=me)
@@ -429,7 +477,8 @@ def test_a_run_with_walks_has_the_score_of_its_letters(client: TestClient) -> No
     assert (run["distance_m"], run["duration_s"]) == (4003, 1200)
     whole = client.get(f"/me/activities/{KEY}", headers=me)
     assert whole.status_code == 200
-    assert whole.json() == _load("activity-walks.json")
+    # With its pause of the pen (TASK-200).
+    assert whole.json() == _load("activity-pauses.json")
 
 
 def test_the_same_run_without_walks_is_scored_on_the_whole_route(
@@ -469,6 +518,13 @@ def test_a_pause_of_the_pen_is_kept_as_one(
         {"from_s": 1300.0, "to_s": 1320.0, "auto": False},
     ]
     assert row["walks"] == [[2, 5]]
+    # Opened whole: `pen` only on the pause of the pen, as the row keeps it
+    # (TASK-200).
+    whole = client.get(f"/me/activities/{KEY}", headers=me).json()
+    assert whole["pauses"] == [
+        {"from_s": 600.0, "to_s": 900.0, "auto": False, "pen": True},
+        {"from_s": 1300.0, "to_s": 1320.0, "auto": False},
+    ]
 
 
 @pytest.mark.parametrize(
@@ -550,6 +606,8 @@ def test_runs_saved_before_the_walks_read_as_they_did(
     whole = new.get(f"/me/activities/{KEY}", headers=me)
     assert whole.status_code == 200
     assert whole.json()["walks"] == []
+    # Its pauses, as they were kept (TASK-200).
+    assert whole.json()["pauses"] == [{"from_s": 1.0, "to_s": 2.0, "auto": True}]
     assert whole.json()["score"] == 91
     assert whole.json()["points"] == [[46.0671, 11.1214], [46.0671, 11.1344]]
     assert new.get("/me/activities", headers=me).json()["total"] == 1

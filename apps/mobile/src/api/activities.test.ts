@@ -1,4 +1,5 @@
 import activities from "@shaperoute/shared-types/fixtures/activities.json";
+import pausedActivity from "@shaperoute/shared-types/fixtures/activity-pauses.json";
 import walkedRequest from "@shaperoute/shared-types/fixtures/activity-request-walks.json";
 import request from "@shaperoute/shared-types/fixtures/activity-request.json";
 import walkedActivity from "@shaperoute/shared-types/fixtures/activity-walks.json";
@@ -213,4 +214,47 @@ test("any other refusal, or a run without walks, is not sent again", async () =>
     await saveActivity(URL, TOKEN, ID, plain, { fetchFn: once, key: null }),
   ).toMatchObject({ kind: "api_error", code: "invalid_request" });
   expect(once).toHaveBeenCalledTimes(1);
+});
+
+// --- The pauses of a run opened whole (TASK-200) ---
+
+test("a run with its pauses, and one of an older API without, are both read", async () => {
+  expect(isActivityDetail(pausedActivity)).toBe(true);
+  expect(pausedActivity.pauses).toEqual([
+    { from_s: 600, to_s: 900, auto: false, pen: true },
+  ]);
+  for (const older of [activity, walkedActivity]) {
+    expect("pauses" in older).toBe(false);
+    expect(isActivityDetail(older)).toBe(true);
+  }
+  expect(isActivityDetail({ ...activity, pauses: [] })).toBe(true);
+  expect(
+    isActivityDetail({ ...activity, pauses: [{ from_s: 1, to_s: 2, auto: true }] }),
+  ).toBe(true);
+  // Opened as it comes: nothing taken out, nothing added.
+  const fetchFn: jest.Mock = answers(
+    { status: 200, body: pausedActivity },
+    { status: 200, body: activity },
+  );
+  const options = { fetchFn, key: null };
+  expect(await fetchActivity(URL, TOKEN, ID, options)).toEqual({
+    kind: "ok",
+    value: pausedActivity,
+  });
+  expect(await fetchActivity(URL, TOKEN, ID, options)).toEqual({
+    kind: "ok",
+    value: activity,
+  });
+});
+
+test("pauses that are not pauses are a bad answer", () => {
+  for (const pauses of [
+    null,
+    {},
+    [{ from_s: 1, to_s: 2 }],
+    [{ from_s: "1", to_s: 2, auto: true }],
+    [{ from_s: 1, to_s: 2, auto: true, pen: "yes" }],
+  ]) {
+    expect(isActivityDetail({ ...activity, pauses })).toBe(false);
+  }
 });

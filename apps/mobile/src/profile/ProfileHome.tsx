@@ -10,6 +10,7 @@ import {
   space,
 } from "../theme/tokens";
 import { Avatar } from "./Avatar";
+import { useProfilePhoto } from "./useProfilePhoto";
 
 /** What «Profile» opens from its first page. */
 export type ProfileSection = "favorites" | "activities" | "settings";
@@ -37,10 +38,11 @@ type Props = {
  * keeps in two tiles with their number, and the way to «Settings».
  */
 export function ProfileHome({ user, favorites, activities, onOpen }: Props) {
+  const photo = useProfilePhoto();
   return (
     <View style={styles.home}>
       <View style={styles.who}>
-        <Avatar name={user.username} size={AVATAR_SIZE} />
+        <Avatar name={user.username} size={AVATAR_SIZE} photo={photo.uri} />
         <Text style={styles.username}>{user.username}</Text>
         <Text style={styles.email}>{user.email}</Text>
       </View>

@@ -47,8 +47,8 @@ In coda, dopo o accanto:
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
   TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
 - **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
-  sulla pagina con «Soon» (TASK-177): **TASK-178** la foto del profilo
-  (ADR-0146, migrazione `0004`; è la metà «foto» di TASK-116), **TASK-183**
+  sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
+  (TASK-178, sotto); restano **TASK-183**
   cambiare email e numero di telefono (ADR-0150, migrazione `0006`; a cosa
   serve il numero va chiesto all'utente prima), **TASK-182** le unità di
   misura, km o miglia (ADR-0149, solo app, tocca molti file), **TASK-184**
@@ -135,8 +135,52 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `cycling` all'API finisce in `engine_error`. Da dove riprendere: il task
   file, «Esito».
 
+- **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
+  dell'utente: «Sì, fallo vero»): **la parte API è fatta**, PR #210:
+  collegare l'atleta dal browser (`POST /me/strava/connect`, `GET
+  /strava/callback`), `GET` e `DELETE /me/strava`, mandare una corsa
+  salvata (`POST /me/activities/{key}/strava`) con il GPX dei suoi orari,
+  una volta sola; token rinnovati dall'API, mai in una risposta o nei log;
+  provata contro uno Strava finto, senza rete. Spenta finché il server non
+  ha `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`. **Manca la parte app**
+  (seconda PR: `RunEnd`, «My activities», «Settings», la coda senza rete,
+  `UI.md`). **Aspettano l'utente**: creare la sua app Strava e scrivere il
+  secret sul server (`DEPLOY.md`, «Strava»), l'ok per aggiornare il server
+  (migrazione `0004`), le quattro domande del task file, la prova dal
+  vero. File della parte app: `apps/mobile/src/strava/`,
+  `src/api/strava.ts`, `src/activities/RunEnd.tsx`, `outbox.ts`,
+  `src/theme/tokens.ts`. Da dove riprendere: `tasks/TASK-187.md`.
+
 ## Completato
 
+- **API e app** — TASK-178: la foto del profilo, chiesta dall'utente con
+  TASK-177 (ADR-0146). In «Settings» la riga «Profile picture» apre
+  «Choose a picture», «Take a photo» e «Remove picture»; la foto si
+  ritaglia al quadrato nel telefono e si vede nella riga, nel cerchio di
+  «Profile» e nel pulsante in alto, al posto dell'iniziale. Nell'API la
+  tabella `profile_photos` (migrazione `0005`) e `GET`, `PUT`, `DELETE
+  /me/photo`: l'API tiene solo un JPEG quadrato di 256 px fatto da lei,
+  dritto e senza i dati dello scatto. `DELETE /me` la cancella. Nessuna
+  dipendenza nuova. Il resto di TASK-116 (nome, bio, profilo visto dagli
+  altri) avrà una migrazione sua. **Sul telefono si vede dopo due passi
+  che vogliono l'ok dell'utente**: l'API del server aggiornata con la
+  migrazione `0005` (`DEPLOY.md` F.12) e l'app pubblicata; prima, chi
+  prova vede «Profile pictures are not available on this API yet.». Poi
+  **da provare sull'iPhone**: libreria, fotocamera, il ritaglio.
+- **App** — TASK-192: in «Explore» il luogo scelto ha sempre i suoi
+  percorsi, chiesto dall'utente (ADR-0155: «premo su Caldonazzo e mi
+  vengono fuori Levico»). Prima un paese accanto a una città con percorsi
+  mostrava solo quelli della città, entro 5 km, e dal paese non partiva
+  niente. Ora un percorso è del luogo solo se parte entro 1,5 km dal punto
+  scelto: Caldonazzo, e una frazione come Barco, hanno prima cuore,
+  cerchio e stella da 5 km dal loro centro e poi le altre forme; i
+  percorsi di Levico restano sotto, con l'etichetta «NEAR CALDONAZZO». Il
+  raggio resta 5 km, l'API non cambia. Solo test, non visto in un
+  simulatore; il motore sul Mac disegna da Caldonazzo cuore 0,88, cerchio
+  0,72, stella 0,90. **Da pubblicare su `preview`** con l'ok dell'utente, poi
+  **da provare sull'iPhone**. Fuori: «Near me» da Caldonazzo mostra ancora
+  solo Levico (dalla posizione non si disegna, ADR-0136: scelta
+  dell'utente); i paesi piccoli non sono disegnati in anticipo sul server.
 - **App** — TASK-189: «Sport» in «Settings», chiesto dall'utente
   (ADR-0152). Una sezione con «Run» scelto e «Bike» e «Paddle» con «Soon»
   (scelta dell'utente): non si toccano finché il motore non disegna i loro
@@ -258,6 +302,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   voce delle svolte con la musica accesa (la abbassa, la ferma, ci parla
   sopra?); la corsa mentre si è in Spotify. **Una domanda per l'utente**
   nel task file: brano, pausa e avanti dentro Sgrava.
+- **App, test** — TASK-193: i test dell'app non cadono più per la macchina
+  carica. Ogni test ha 30 s invece di 5: il primo disegno di un file a
+  cache fredda prendeva 5,1–5,2 s in CI (oggi rossi #194, #199, #207) e
+  fino a 22 s sul Mac con più agenti al lavoro. `AppFreeRun.test.tsx` gira
+  su un orologio finto: prima quattro punti dipendevano dall'orologio vero.
+  `AppFavorites.test.tsx` non è stato diviso: provato, il primo disegno
+  lento passa solo a un altro file (numeri nel task file). L'app non
+  cambia.
 - **App** — TASK-175: la mappa non ha più i pulsanti «+» e «−» in alto a
   destra, chiesto dall'utente (ADR-0143): si ingrandisce solo con le dita.
   Il cuore dei preferiti sale nell'angolo, alla stessa altezza di «←».
@@ -350,6 +402,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   rimandata a quando Overpass riapre: la sua zona non è sul server.
   Il catalogo è sul server dal 2026-10-02 10:38Z (aggiornamento a
   ec84042, con l'ok dell'utente): l'app pubblicata le vede.
+- **App** — TASK-196: uno swipe che finisce sopra una scheda di «Explore»
+  non la apre più (seguito di TASK-188, stessa soluzione di ADR-0151: la
+  scheda ricorda dove il dito è sceso e ignora un dito che si è mosso più
+  di 12 punti). La correzione è in `RouteCard`, quindi vale per i percorsi
+  di «Best near you», per gli esempi di una città e per i preferiti in
+  «Profile». Solo app, con un test; **da provare con il dito
+  sull'iPhone**, dopo la prossima pubblicazione su `preview`. Restano com'erano i
+  pulsanti piccoli della pagina (le città, «Ask for a route», «Try
+  again»): vedi il task file.
 - **App** — TASK-167: in «Explore» i percorsi sono schede, due per riga,
   con il disegno grande in alto, scelto dall'utente fra le proposte
   grafiche (ADR-0135). I filtri stanno in una riga sola, «Shape» e

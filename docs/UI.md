@@ -143,7 +143,13 @@ pagine»):
    fino a TASK-167 sopra le schede c'erano «Shape» e «Distance». Toccata
    una scheda, il percorso si apre sulla
    mappa con «Export GPX» e «Back to the list»; «←» torna all'elenco. Da
-   TASK-145 ha anche «Start» (sotto).
+   TASK-145 ha anche «Start» (sotto). **Un dito che scorre sopra una scheda
+   non la apre** (TASK-196, come in «Feed» da TASK-188): «Explore» è
+   l'ultima pagina, uno swipe verso sinistra non fa scorrere niente e il
+   dito alzato sopra una scheda contava come un tocco. La scheda ricorda
+   dove il dito è sceso e ignora un dito che si è mosso più di 12 punti;
+   vale per ogni scheda di questo tipo: i percorsi di «Best near you», gli
+   esempi di una città, i preferiti in «Profile».
 
    Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
    qualsiasi città del mondo (l'elenco e la richiesta partono dal suo
@@ -227,6 +233,21 @@ pagine»):
    scheda «Drawing…» per quella in corso. La città vi è chiamata come sulle
    schede del catalogo («Milano», non il «Milan» della ricerca). Senza una
    città scelta («Near me») non si disegna niente.
+
+   **Da TASK-192** (ADR-0155, chiesto dall'utente: «premo su Caldonazzo e
+   mi vengono fuori Levico … bisogna lavorare anche sul paese
+   selezionato»): un percorso è **del luogo scelto** solo se parte entro
+   1,5 km dal suo punto; gli altri, entro i 5 km, sono **dei vicini**. Un
+   paese o una frazione accanto a una città con percorsi (Caldonazzo o
+   Barco accanto a Levico) è come una città senza percorsi consigliati:
+   prima la sezione «EXAMPLES IN CALDONAZZO» con cuore, cerchio e stella
+   dal suo centro e poi le altre forme; sotto, l'etichetta **«NEAR
+   CALDONAZZO»** e le schede dei vicini («Levico · 3.3 km away»), già lì
+   mentre gli esempi si disegnano. In quel caso i disegni del feed
+   nell'attesa non compaiono, e il credito della mappa resta uno solo. Una
+   città con percorsi suoi mostra quelli e le forme aggiunte, poi, se ce
+   ne sono, i vicini sotto la stessa etichetta. Con «Near me» resta una
+   lista sola, senza etichetta.
 
    **Da TASK-163**, chiesto dall'utente: finché uno dei primi tre esempi è
    «Next» o «Drawing…», sotto «EXAMPLES IN …» c'è **«MEANWHILE, FROM THE FEED»**,
@@ -333,11 +354,11 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   che la riga scorra lei e che lo swipe fra le pagine parta da fuori; su
   Android non è stato provato niente.
 
-## «Profile» (TASK-115, ADR-0125; TASK-154; TASK-177, ADR-0145)
+## «Profile» (TASK-115, ADR-0125; TASK-154; TASK-177, ADR-0145; TASK-178, ADR-0146)
 
 In alto a destra, accanto ai nomi delle pagine, un pulsante tondo apre
-**«Profile»**, l'account: mostra l'iniziale di chi è entrato, o una
-figura quando non c'è nessuno. «Profile» si apre sopra l'app e si chiude
+**«Profile»**, l'account: mostra la foto di chi è entrato, o la sua
+iniziale se non ne ha messa una, o una figura quando non c'è nessuno. «Profile» si apre sopra l'app e si chiude
 con «←»: sotto, forma, distanza e mappa restano come erano. Sulla mappa e
 durante la corsa il pulsante non c'è.
 
@@ -350,7 +371,7 @@ regole dell'API, e l'errore si dice in parole sotto il pulsante (sotto,
 finita, su «Log in».
 
 **«Profile» con l'account** (TASK-177, ADR-0145): in alto un cerchio con
-l'iniziale, il nome e l'email. Sotto, due riquadri affiancati: **«Favorites»**
+la foto o l'iniziale, il nome e l'email. Sotto, due riquadri affiancati: **«Favorites»**
 con un cuore (❤️) e **«My activities»** con l'uomo che corre (🏃‍♂️), ognuno
 con il suo numero in grande (un trattino finché l'elenco non è arrivato);
 aprono le loro pagine (sotto, «Favorites» e «My activities»). Poi la riga
@@ -359,8 +380,8 @@ nessun pulsante dell'account è giallo.
 
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 
-- **«Account»**: nome ed email; poi «Profile picture», «Change email» e
-  «Phone number», con la scritta «Soon».
+- **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,
+  sotto); poi «Change email» e «Phone number», con la scritta «Soon».
 - **«Sport»** (TASK-189, ADR-0152): per cosa sono i percorsi. Tre righe:
   «Run» (🏃‍♂️), scelto, con un «✓» bianco; «Bike» (🚴) e «Paddle» (🛶:
   canoa, kayak, SUP) con «Soon», che non si toccano finché il motore non
@@ -373,9 +394,33 @@ nessun pulsante dell'account è giallo.
   sulla schermata stessa: «Delete my account» o «Keep my account».
 
 Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
-interruttori, perché dietro non c'è ancora niente (le accendono TASK-178,
-182, 183, 184, 185). Usciti dall'account da «Settings», chi rientra trova
+interruttori, perché dietro non c'è ancora niente (le accendono TASK-182,
+183, 184, 185). Usciti dall'account da «Settings», chi rientra trova
 «Profile».
+
+**«Profile picture»** (TASK-178, ADR-0146): una riga con 📷, il nome e, in
+fondo, la foto in piccolo (o l'iniziale). Un tocco apre sotto la riga
+«Choose a picture» (la libreria del telefono), «Take a photo» (la
+fotocamera, che chiede il permesso la prima volta) e, se c'è una foto,
+«Remove picture»; un altro tocco li richiude. La foto si ritaglia al
+quadrato nell'editor del telefono; l'API la raddrizza, la riduce a 256 px
+e ne tiene solo quel quadrato, senza i dati dello scatto (la posizione). Mentre
+la manda la riga dice «Saving…» (o «Removing…») e non si tocca; fatto, la
+foto è nella riga, nel cerchio di «Profile» e nel pulsante in alto. Riaperta
+l'app, la foto si chiede all'API (`GET /me/photo`): per un attimo, o senza
+rete, si vede l'iniziale. Gli errori si dicono sotto la riga, e la foto di
+prima resta:
+
+| Quando | Cosa dice |
+|---|---|
+| fotocamera negata | The camera is off for this app. Allow it in Settings, or choose a picture instead. |
+| foto oltre 10 MB | This picture is too large. Choose a smaller one. |
+| il selettore non si apre | Could not open the picture. Try again. |
+| l'API non legge l'immagine | This picture cannot be used. Choose another one. |
+| un'API senza le foto (non ancora aggiornata) | Profile pictures are not available on this API yet. |
+| API irraggiungibile, sessione finita… | come l'account (sotto) |
+
+Chiuso il selettore senza scegliere non si dice niente.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale

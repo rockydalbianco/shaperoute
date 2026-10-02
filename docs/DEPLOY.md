@@ -250,6 +250,63 @@ I suggerimenti della partenza vengono dall'API, che li chiede a Geoapify
 
 Come ogni chiave, mai in un file del repository o in una chat.
 
+## Strava (TASK-187)
+
+«Send to Strava» manda una corsa salvata sul profilo Strava di chi ha
+collegato il suo atleta (`API.md`, «Send to Strava»; ADR-0156). Serve
+un'**applicazione Strava dell'utente**: senza, Strava è spento e l'app non
+mostra niente. Finché Strava non l'ha approvata può collegarsi **un solo
+atleta**, chi l'ha creata; per gli altri l'utente chiede la revisione a
+Strava, dalla stessa pagina.
+
+1. Su <https://www.strava.com/settings/api> (lo fa l'utente) crea
+   l'applicazione: nome «Sgrava», un sito qualunque suo, un'icona, e in
+   **Authorization Callback Domain** il dominio dell'API, senza `https://`
+   e senza percorso: `188-245-9-220.sslip.io`. La pagina mostra il
+   **Client ID** (un numero, non è un segreto) e il **Client Secret**.
+2. Sul server, in `deploy/.env`. Il Client ID si può scrivere com'è; il
+   secret lo scrive l'utente, con un comando che non lo mostra e non lo
+   lascia nella cronologia della shell:
+
+   ```bash
+   cd /root/shaperoute/deploy
+   echo "STRAVA_CLIENT_ID=il-numero-di-strava" >> .env
+   read -rs -p "Strava Client Secret: " S && printf 'STRAVA_CLIENT_SECRET=%s\n' "$S" >> .env; unset S
+   grep -q '^SHAPEROUTE_DOMAIN=.' .env || echo "SHAPEROUTE_DOMAIN=188-245-9-220.sslip.io" >> .env
+   ```
+
+   `SHAPEROUTE_DOMAIN` è il dominio a cui Strava rimanda il browser
+   (`https://<dominio>/strava/callback`): deve essere quello scritto al
+   punto 1. Serve solo se `.env` non l'ha già; con il Caddy di apt (F.12)
+   non accende niente d'altro, perché il Caddy di `compose.yaml` parte solo
+   con `COMPOSE_PROFILES=public`.
+3. L'API nuova, che al primo avvio applica la migrazione `0004`
+   (`DATABASE.md`), come ogni aggiornamento del server:
+
+   ```bash
+   cd /root/shaperoute && git pull
+   cd deploy && docker compose up -d --build
+   docker compose logs api | grep Accounts
+   ```
+
+   La riga «Accounts in PostgreSQL» elenca `0004_strava` fra le migrazioni
+   applicate.
+4. La prova: nell'app, entrati con un account, «Connect with Strava»; poi
+   una corsa salvata con «Send to Strava». Da riga di comando, con la
+   chiave dell'API e il token di un account, `GET /me/strava` risponde
+   `"available": true`.
+
+Per spegnere Strava basta togliere una delle due righe da `deploy/.env` e
+`docker compose up -d`: i token già salvati restano nel database finché
+ogni atleta non si scollega (o l'account non si cancella), ma l'API non li
+usa. Sul Mac le due variabili vanno in `.env` alla radice, come la chiave
+di Geoapify; lì Strava rimanda il browser all'indirizzo a cui l'app ha
+chiamato l'API, e accetta solo `localhost` oltre al dominio del punto 1.
+
+Il secret, come ogni chiave, mai in un file del repository o in una chat.
+Se finisce dove non deve, dalla pagina del punto 1 se ne genera uno nuovo
+e si riscrive la riga in `deploy/.env`: gli atleti collegati restano.
+
 ## Il registro delle richieste e le posizioni
 
 L'API può scrivere ogni richiesta di percorso in un file, per rifarla

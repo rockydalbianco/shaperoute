@@ -3,6 +3,7 @@ import type { User } from "@shaperoute/shared-types";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import { ProfileHome } from "./ProfileHome";
+import { ProfilePhotoContext, type ProfilePhotoState } from "./useProfilePhoto";
 
 const user = session.user as User;
 
@@ -27,6 +28,19 @@ test("who is signed in: the letter, the name and the email", async () => {
   expect(screen.getByText("R")).toBeOnTheScreen();
   expect(screen.getByText("Runner_42")).toBeOnTheScreen();
   expect(screen.getByText("runner@example.com")).toBeOnTheScreen();
+});
+
+test("with a picture (TASK-178) the circle shows it instead of the letter", async () => {
+  const uri = "data:image/jpeg;base64,aGVsbG8=";
+  const photo = { uri, busy: null, problem: null } as ProfilePhotoState;
+  await render(
+    <ProfilePhotoContext.Provider value={photo}>
+      <ProfileHome user={user} favorites={2} activities={5} onOpen={jest.fn()} />
+    </ProfilePhotoContext.Provider>,
+  );
+  expect(screen.getByTestId("avatar-photo")).toHaveProp("source", { uri });
+  expect(screen.queryByText("R")).toBeNull();
+  expect(screen.getByText("Runner_42")).toBeOnTheScreen();
 });
 
 test("a heart by «Favorites», a running man by «My activities», each with its number", async () => {

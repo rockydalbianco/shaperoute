@@ -6232,3 +6232,249 @@ del grafo (le zone a piedi già salvate non l'avrebbero).
   i campioni da far giudicare all'utente (cuore, cerchio e stella a 10, 20
   e 30 km a Trento e in una città di pianura). Da fare appena Overpass
   riapre o con l'estratto (parte B, `prefetch_zones --extract`).
+
+## ADR-0155 — «Explore»: il luogo scelto ha i suoi percorsi, quelli dei vicini stanno sotto
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
+(«premo su Caldonazzo, ma non vengono fuori suggerimenti a Caldonazzo: mi
+vengono fuori Levico perché è vicino … va bene dare le alternative, ma
+bisogna lavorare anche su Caldonazzo, ad esempio anche le frazioni, Barco
+eccetera; va bene tenere 5 km, però bisogna lavorare anche sul paese
+selezionato»); il come deciso dall'agente su delega dell'utente
+(TASK-192). Precisa ADR-0116 e ADR-0144.
+
+**Contesto**: una città scelta in «Explore» riceve i percorsi del catalogo
+che partono entro 5 km dal suo centro, e gli esempi disegnati dal suo
+centro solo se quelli mancano (ADR-0116); da TASK-176 una città con
+percorsi riceve le forme che non ha (ADR-0144). «Entro 5 km» però non vuol
+dire «suoi»: Caldonazzo ha gli otto percorsi di Levico fra 3,3 e 4,3 km,
+quindi mostrava solo quelli, e da Caldonazzo non partiva niente. Lo stesso
+per ogni paese o frazione accanto a una città del catalogo.
+
+**Decisione**:
+- **I percorsi vicini a un luogo scelto si dividono in due** (`byPlace` in
+  `ownRoutes.ts`): **suoi**, con la partenza entro `OWN_RADIUS_M` =
+  **1500 m** dal punto scelto, e **dei vicini**, il resto entro i 5 km.
+- **La soglia viene dal catalogo**, misurato il 2026-10-02: dei 350
+  percorsi di `catalog/seed/`, il 98% parte entro 500 m dal centro della
+  propria città e il più lontano a 1013 m (Levico, Trento, Verona e Padova
+  ne hanno attorno a 1 km); quelli di un altro paese partono più lontano:
+  i percorsi di Levico sono a 3,3 km dal centro di Caldonazzo e a 1,8 km
+  da Barco. 1500 m sta in mezzo.
+- **Vale per ogni luogo scelto**: città, paesi, frazioni e luoghi arrivano
+  tutti da `/city-suggestions` come un punto con un nome (`Place`, `kind`
+  «city» o «place»), e la divisione guarda solo il punto. Barco, a 2,8 km
+  dal centro di Levico, ha i suoi esempi; un luogo dentro Levico ha i
+  percorsi di Levico come suoi.
+- **Le forme che il luogo «ha» sono solo quelle dei percorsi suoi.** Senza
+  percorsi suoi è una città senza percorsi consigliati: la sezione
+  «EXAMPLES IN …» con cuore, cerchio e stella da 5 km dal suo centro, poi le
+  altre cinque forme, come in ADR-0116 e ADR-0144. Con percorsi suoi resta
+  com'era: le sue schede più le forme che non ha.
+- **I percorsi dei vicini stanno sotto**, in una griglia loro con
+  l'etichetta **«NEAR <LUOGO>»**; le schede dicono già il paese e la
+  distanza («Levico · 3.3 km away»). Il raggio resta 5 km e l'API non
+  cambia.
+- **Con i vicini sotto gli esempi, i disegni del feed nell'attesa non
+  compaiono** (ADR-0132): c'è già qualcosa da guardare. Il credito della
+  mappa resta uno solo: quello della sezione degli esempi appena uno è
+  pronto, prima quello della pagina.
+- **Una soglia sola**: `ownCityName` di TASK-176 usava 1000 m per lo stesso
+  concetto; ora usa `OWN_RADIUS_M`.
+- **Senza città scelta («Near me») non cambia niente**: una lista sola,
+  nessuna etichetta, niente disegnato (ADR-0136).
+
+**Alternative scartate**: stringere il raggio di «near you» (l'utente
+tiene i 5 km, e le alternative vicine gli vanno bene); riconoscere il paese
+dal nome (il catalogo dice «milano» dove la ricerca dice «Milan», e una
+frazione nel catalogo non ha nome); 1000 m come soglia (quattro percorsi
+del catalogo partono fra 1001 e 1013 m dal proprio centro); una griglia sola
+con i suoi e quelli dei vicini mescolati per somiglianza (è quello che
+l'utente ha visto: Levico al posto di Caldonazzo); disegnare cuore,
+cerchio e stella dal centro anche a una città che ha già percorsi suoi
+(doppioni delle sue schede); cambiare l'API perché dica di che paese è un
+percorso (serve un confine per ogni paese, e la distanza dalla partenza
+basta).
+
+**Conseguenze**: il motore, provato sul Mac da Caldonazzo a 5 km con le
+tre partenze vicine dell'API, disegna cuore 0,88, cerchio 0,72 e stella
+0,90: in un paese piccolo le forme vengono, non tutte bene. Un paese
+accanto a una città del catalogo chiede all'API
+otto percorsi la prima volta che lo si sceglie, uno alla volta; se la sua
+zona non è sul server la scarica (fino a un minuto), poi i percorsi restano
+sull'API (ADR-0136) e la volta dopo sono subito lì. Nell'attesa sotto ci
+sono già i percorsi dei vicini. Da «Near me» a Caldonazzo si vedono ancora
+solo quelli di Levico: dalla posizione di qualcuno non si disegna
+(ADR-0136), cambiarlo è una scelta dell'utente. Paesi piccoli e frazioni
+non sono disegnati in anticipo sul server (`draw_examples`): da fare lì,
+con l'ok dell'utente. Da provare con il dito sull'iPhone.
+
+## ADR-0156 — «Send to Strava»: il collegamento passa dal server, e la corsa tiene cosa ne ha fatto Strava
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («Sì,
+fallo vero»: l'invio vero della corsa fatta, con un'app Strava sua, fra
+tre proposte); il come deciso dall'agente su delega dell'utente
+(TASK-187, parte API). Non riapre ADR-0138: quello toglieva il passaggio a
+mano di un *percorso*; questo carica la *corsa fatta*, che Strava permette
+alle altre app (`POST /uploads`).
+
+**Contesto**: l'utente vuole, a fine corsa, «salva, cancella, invia a
+Strava». Le corse salvate ci sono (`runs`, ADR-0140). Per caricare
+un'attività Strava chiede OAuth con il permesso `activity:write`, un
+Client Secret che non può stare in un'app, token d'accesso che scadono
+dopo sei ore e un file con l'orario di ogni punto. Documentazione riletta
+il 2026-10-02: la revoca si fa con `POST /oauth/revoke` (dal 1° giugno
+2026; `/oauth/deauthorize` finisce il 1° giugno 2027); un'app non rivista
+collega un atleta solo; 200 richieste ogni quarto d'ora e 2 000 al giorno.
+
+**Decisione**:
+- **Tutto OAuth sta sul server.** L'app chiede `POST /me/strava/connect`,
+  apre nel browser l'indirizzo che riceve e non vede altro: né il secret
+  né un token. Strava rimanda il browser a `GET /strava/callback`
+  dell'API, che scambia il codice e risponde una pagina. Nessuna
+  dipendenza nuova, né nell'app né nell'API (`urllib`, come per Geoapify).
+- **Lo `state` lega la callback all'account**: casuale, 32 byte, vale una
+  volta per 10 minuti, uno per account, nel database solo il suo SHA-256
+  (tabella `strava_states`). La callback è fuori da `X-API-Key`
+  (`OPEN_PATHS`): un browser non ha la chiave, e senza uno `state` buono
+  la pagina non fa niente.
+- **Si chiede solo `activity:write`**, e si controlla che l'atleta non
+  l'abbia tolto: senza, non si chiede nemmeno il token.
+- **I token in chiaro nel database** (`strava_accounts`). Vanno rimandati
+  a Strava, quindi un hash non basta; cifrarli vorrebbe una dipendenza e
+  una chiave in più da custodire nello stesso `.env`. Chi copia il
+  database ha token d'accesso che durano al più sei ore e refresh token
+  inutili senza il Client Secret, che sta solo nell'ambiente del server.
+- **Un atleta è di un account solo, l'ultimo che l'ha collegato**: Strava
+  dà una sola serie di token per atleta, e due righe se li romperebbero a
+  vicenda a ogni rinnovo.
+- **Il rinnovo è dell'API**: prima di usare un token a meno di cinque
+  minuti dalla scadenza lo rinnova, una richiesta alla volta per atleta
+  (`FOR UPDATE`), e tiene il refresh token nuovo. Un token rifiutato
+  mentre è ancora buono per l'orologio si rinnova una volta: se Strava
+  rifiuta anche il refresh token l'atleta ha tolto l'accesso, la riga si
+  cancella e l'app torna a «Connect with Strava» (`409`). Un Client Secret
+  sbagliato sul server (`401` di Strava) non scollega nessuno.
+- **La corsa tiene cosa ne ha fatto Strava** (`strava_status`,
+  `strava_upload_id`, `strava_activity_id` su `runs`): una già mandata non
+  si rimanda, una in lettura si riprende a guardare. Due invii insieme si
+  mettono in fila sulla riga della corsa. `external_id` è la chiave della
+  corsa: se il server dimentica, Strava rifiuta il doppione dicendo quale
+  attività è, e l'API la prende per mandata.
+- **L'invio aspetta Strava per pochi secondi** (5 sguardi, uno al
+  secondo, come Strava chiede), poi risponde `202 processing` e la stessa
+  chiamata rifatta riprende: niente lavori in sottofondo nell'API, e la
+  coda dell'app (`outbox`) sa già riprovare.
+- **Lo stato dell'invio ha un endpoint suo** (`GET
+  /me/activities/{key}/strava`) invece di un campo in più nelle corse di
+  «My activities»: `activities.py`, i suoi esempi e i tipi dell'app non
+  cambiano, e chi non ha Strava non riceve niente di Strava.
+- **Nessun codice d'errore nuovo**: `http_error` con `503` (Strava
+  spento), `409` (non collegato), `502` (Strava non risponde),
+  `too_many_requests` con `Retry-After` (il limite di Strava),
+  `invalid_request` (`422`, Strava non legge la corsa). L'app li distingue
+  dallo stato HTTP; il contratto degli errori (`schemas.py`,
+  `shared-types`) resta com'è.
+- **Il GPX della corsa lo scrive l'API** (`run_gpx.py`), non il motore:
+  non è un percorso, è la traccia salvata con i suoi orari, e una pausa
+  chiude un `<trkseg>` (`GPX.md`, «La corsa fatta»). Il motore resta
+  l'unico a scrivere il GPX di un percorso (ADR-0033).
+- **Scollegare cancella i token comunque**, poi revoca su Strava; se
+  Strava non risponde non resta niente da noi, e l'atleta può togliere
+  Sgrava dalle impostazioni di Strava. `DELETE /me` fa lo stesso prima di
+  cancellare l'account, senza aspettare Strava (`before_account_delete` in
+  `accounts.py`: `accounts.py` non sa niente di Strava).
+- **Il dominio della callback** è `SHAPEROUTE_DOMAIN`, che il server ha
+  già per Caddy; vuota, l'indirizzo a cui è arrivata la richiesta. Nessuna
+  variabile in più oltre a `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`.
+- **Proposte del task file, costruite e in attesa dell'utente**: il nome
+  dell'attività («Heart in Trento»; senza percorso quello di Strava) e la
+  riga «Drawn with Sgrava», solo per una corsa che ha seguito un percorso.
+
+**Scartate**: OAuth nell'app con `expo-auth-session` (una dipendenza, e il
+secret dovrebbe comunque stare sul server per lo scambio del codice); lo
+`state` in memoria (si perde a ogni riavvio e non si prova con l'orologio
+dei test); cifrare i token (sopra); rifiutare un atleta già collegato a un
+altro account (chi prova con due account resterebbe bloccato; e non ferma
+chi convince una persona ad autorizzare un collegamento non suo, che
+resta il limite di ogni collegamento cominciato nell'app e finito nel
+browser: si vede solo `activity:write`, e la persona lo toglie da Strava);
+un lavoro in sottofondo che segue l'upload (un'altra cosa che gira, per
+due secondi di attesa); il campo `strava` dentro `Activity` (sopra);
+codici d'errore nuovi (tre file del contratto in più, per casi che lo
+stato HTTP già distingue); scrivere il GPX nel motore (il motore non sa
+niente di corse salvate, pause e orari); `/oauth/deauthorize` (in
+dismissione).
+
+**Conseguenze**: sul server arrivano la migrazione `0004` e due variabili
+(`DEPLOY.md`, «Strava»); finché l'utente non crea la sua app Strava,
+Strava è spento e niente cambia. Finché Strava non approva l'app si
+collega solo l'atleta dell'utente. La prova dal vero (data, ora e durata
+dell'attività; se Strava legge i `<trkseg>` come pause) è dell'utente,
+dopo la parte app. Strava conta le sue richieste per tutta l'app: 200
+ogni quarto d'ora bastano a qualche decina di corse mandate insieme, non
+a migliaia. Un'attività cancellata su Strava resta `sent` da noi: per
+rimandarla serve un task. La parte app (`RunEnd`, «My activities»,
+«Settings», la coda senza rete) è la seconda PR di TASK-187.
+
+## ADR-0146 — La foto del profilo: un quadrato di 256 px fatto dall'API, cambiato da «Settings»
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa (la
+foto del profilo, da mettere in «Settings», chiesta con TASK-177); il come
+deciso dall'agente su delega dell'utente (TASK-178).
+
+**Contesto**: ADR-0115 aveva già detto dove sta la foto, un JPEG quadrato
+di 256 px nel database, perché le copie di sicurezza la prendano con il
+resto. TASK-116 doveva farla insieme a nome utente, bio e profilo
+pubblico; l'utente l'ha chiesta prima, da «Settings», dove ADR-0145 l'ha
+messa con «Soon».
+
+**Decisione**:
+- **Una tabella sua**, `profile_photos` (migrazione `0005`): una riga per
+  account con la foto, `bytea`, `ON DELETE CASCADE`. Non una colonna di
+  `users`: ogni `GET /me` e ogni richiesta con il token leggono `users`,
+  e non devono trascinarsi i KB della foto.
+- **Tre endpoint con il token**, `GET`, `PUT` e `DELETE /me/photo`, come i
+  preferiti. La foto va e viene in base64 dentro JSON, come per i contorni
+  delle immagini (ADR-0069): nessun formato nuovo per l'app e per i test.
+  Nella risposta il JPEG intero (pochi KB), che l'app mostra come
+  `data:image/jpeg;base64,…`: niente indirizzo da chiedere con il token,
+  niente cache da invalidare.
+- **L'API fa il quadrato**, sempre: raddrizza con l'EXIF, prende il
+  quadrato in mezzo, riduce a 256 px, salva un JPEG nuovo. Il file del
+  telefono non si tiene, e con lui l'EXIF: dove è stata scattata una foto
+  non arriva nel database. Oltre 50 megapixel, o un formato che non è JPEG
+  o PNG, è `422` prima di leggere i pixel.
+- **Il quadrato lo sceglie la persona** nell'editor del telefono
+  (`allowsEditing` con `aspect: [1, 1]` di `expo-image-picker`, già una
+  dipendenza); quello dell'API, in mezzo, conta per una foto che arriva
+  non quadrata (Android, o un'altra app).
+- **10 `PUT` al minuto per account**, in memoria come le password
+  sbagliate: il limite di `access.py` conta solo i POST per indirizzo, e
+  ridurre una foto è il lavoro più caro degli account.
+- **Nell'app**: la riga «Profile picture» di «Settings» (in un file suo,
+  `PhotoRow.tsx`, lontano dalle righe che TASK-189 cambia) apre sotto di sé
+  «Choose a picture», «Take a photo» e «Remove picture», come «Delete
+  account» apre la sua domanda: niente menu del sistema, che in Expo Go e
+  nei test si comporta in un altro modo. La foto la tiene un contesto di
+  `ProfileLayer.tsx`, come preferiti e corse: il pulsante in alto, il
+  cerchio di «Profile» e la riga la leggono dallo stesso posto, e si
+  cambiano insieme.
+- **Senza foto, senza rete o con un'API non ancora aggiornata** si vede
+  l'iniziale, come prima, e non si dice niente: una foto non vale un
+  errore sullo schermo. Gli errori si dicono solo quando la persona prova a
+  cambiarla.
+
+**Scartate**: la foto come colonna di `users` (sopra); un file su disco o
+un servizio a parte (ADR-0115); `multipart/form-data` (una dipendenza nuova
+nell'API, `python-multipart`, per un solo endpoint); un indirizzo della
+foto da caricare con `Image` (vorrebbe il token in un'intestazione di
+`Image`, o un indirizzo pubblico, che è TASK-116); tenere la foto sul
+telefono fra un'apertura e l'altra (un'altra copia da tenere allineata;
+per ora l'iniziale per un attimo va bene); `ActionSheetIOS` o `Alert` per
+le tre scelte (diversi su Android, non provabili nei test come il resto di
+«Settings»).
+
+**Conseguenze**: all'apertura l'app chiede una richiesta in più, `GET
+/me/photo`, con l'account. Sul server serve la migrazione `0005` (un
+aggiornamento dell'API, con l'ok dell'utente); finché non c'è, la riga
+dice «Profile pictures are not available on this API yet.» a chi prova. La
+foto la vede solo il suo proprietario: mostrarla agli altri, con nome e
+bio, resta a TASK-116, con una migrazione sua.

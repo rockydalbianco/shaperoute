@@ -32,7 +32,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 |---|---|---|
 | `users` | email (unica, minuscola), hash della password (Argon2id), nome utente (unico, 3–20 caratteri), bio, `role` (`user` o `admin`), quando ha detto di avere 16 anni, data d'iscrizione | TASK-114, TASK-116 |
 | `sessions` | hash del token (SHA-256), utente, ultimo uso, scadenza a 90 giorni | TASK-114 |
-| `profile_photos` | utente, JPEG quadrato 256 px | TASK-116 |
+| `profile_photos` | utente, JPEG quadrato 256 px | TASK-178 |
 | `generated_routes` | ogni percorso dell'API (ADR-0086): richiesta, tipo (forma, parola, immagine), distanza, somiglianza, linea, **punto di partenza mostrato** (a più di 500 m da quello vero), centro, data; utente se era entrato, se no nessuno | TASK-092 |
 | `favorites` | percorso tenuto fra i preferiti: utente, chiave fatta dall'app sulla linea (unica per utente), città, forma o parola e stile, titolo, distanza chiesta e sulle strade, somiglianza, **linea intera**, data | TASK-171 |
 | `runs` | corsa salvata: utente, chiave fatta dall'app, percorso pianificato, cosa disegna, traccia (`LineStringM`, M = secondi dall'inizio), pause, inizio, distanza, durata, punteggio, fedeltà, luogo (TASK-172); **traccia tagliata** (senza 200 m all'inizio e alla fine), titolo dato dall'utente, pubblica sì/no (TASK-117) | TASK-172, TASK-117 |
@@ -102,6 +102,37 @@ Migrazione `0003_runs.sql` (TASK-172, ADR-0140):
 - Solo il proprietario legge una riga. Le colonne per gli altri (traccia
   tagliata, «pubblica», titolo) le aggiunge TASK-117 con la sua migrazione.
 
+Migrazione `0004_strava.sql` (TASK-187, ADR-0156):
+
+- `strava_states`: `state_hash` (SHA-256 dello `state`, chiave), `user_id`
+  (unico, `ON DELETE CASCADE`), `created_at`. Un collegamento a Strava
+  cominciato e non finito: vale una volta, per 10 minuti, uno per account.
+- `strava_accounts`: `user_id` (chiave, `ON DELETE CASCADE`), `athlete_id`
+  (unico: un atleta è di un account solo), `athlete_name`, `access_token`,
+  `refresh_token`, `expires_at`, `connected_at`. I token sono **in
+  chiaro**: l'API li deve rimandare a Strava, quindi un hash non basta.
+  Quello d'accesso dura sei ore; il refresh token non serve a niente senza
+  il Client Secret, che sta solo nell'ambiente del server. Una copia del
+  database non fa entrare nessuno in Strava da sola.
+- `runs` prende tre colonne: `strava_status` (assente: mai mandata;
+  `processing`: Strava ha il file e lo sta leggendo; `sent`: è
+  un'attività), `strava_upload_id` (l'upload su Strava) e
+  `strava_activity_id` (l'attività; assente anche da `sent` quando Strava
+  aveva già la corsa e non ha detto dove).
+- «Disconnect» e la cancellazione dell'account non lasciano righe in
+  `strava_accounts` né in `strava_states`.
+
+Migrazione `0005_profile_photos.sql` (TASK-178, ADR-0146):
+
+- `profile_photos`: `user_id` (chiave, `ON DELETE CASCADE`), `jpeg`
+  (`bytea`, da 1 a 200 000 byte), `updated_at`. Una riga per account con
+  la foto; senza riga, nessuna foto. Una foto nuova prende il posto di
+  quella di prima.
+- `jpeg` è il quadrato di 256 px fatto dall'API, mai il file del telefono:
+  niente EXIF, quindi niente posizione dello scatto (`API.md`, «Profile
+  picture»). Le copie di sicurezza la prendono con il resto (ADR-0115).
+- Il nome utente e la bio di TASK-116 vengono con una migrazione sua.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» e il taglio
@@ -135,4 +166,7 @@ ADR-0111).
   posizioni (ADR-0092).
 - Cancellare l'account cancella tutto, subito; le copie di sicurezza lo
   perdono entro 14 giorni.
+- Una corsa va a Strava solo quando il suo proprietario lo chiede, e solo
+  all'atleta che lui ha collegato (TASK-187); a Strava si chiede il solo
+  permesso di aggiungere attività, niente in lettura.
 - Età minima 16 anni.

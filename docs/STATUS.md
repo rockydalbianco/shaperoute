@@ -86,6 +86,15 @@ In coda, dopo o accanto:
   avanti dentro Sgrava (app Spotify Developer sua, Premium, dipendenze
   nuove, 5 persone al massimo finché è in sviluppo); la proposta è di non
   farlo adesso (`tasks/TASK-173.md`, «La seconda parte»).
+- **Altri sport**, chiesti dall'utente il 2026-10-02: **TASK-189** («Sport»
+  in «Settings»: «Run» scelto, «Bike» e «Paddle» con «Soon»; ADR-0152, in
+  lavorazione, aspetta TASK-177), poi **TASK-190 — percorsi in bici**
+  (ADR-0153 tenuto; 10–30 km, scelta dell'utente) e **TASK-191 — percorsi
+  in canoa e paddle** (ADR-0154 tenuto; sull'acqua entro 1 km dalla riva,
+  scelta dell'utente; esempi a Lago di Garda, Lago di Como, Jesolo,
+  Riccione). I due task file sono scritti, con le domande ancora aperte:
+  da assegnare, ognuno in tre parti (motore, API, app). Nel contratto si
+  usa `activity`, che c'è già.
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 

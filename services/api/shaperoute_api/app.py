@@ -71,6 +71,7 @@ from shaperoute_api.recommended import (
     RecommendedRoutesBody,
 )
 from shaperoute_api.request_log import RequestLog
+from shaperoute_api.route_store import RouteStore
 from shaperoute_api.schemas import (
     ErrorBody,
     ErrorCode,
@@ -200,6 +201,7 @@ def create_app(
     insights: Insights | None = None,
     signal_gate: SignalGate | None = None,
     accounts: Accounts | None = None,
+    route_store: RouteStore | None = None,
 ) -> FastAPI:
     # The search events and the learned vocabulary (TASK-130, ADR-0101).
     insights = insights or Insights(None)
@@ -226,7 +228,8 @@ def create_app(
             )
             insights.record("route", ms=round(elapsed * 1000), **fields)
 
-    route_jobs = jobs or RouteJobs(source, planner, on_end=on_end)
+    # A city's examples are kept once drawn (ADR-0136).
+    route_jobs = jobs or RouteJobs(source, planner, on_end=on_end, store=route_store)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -412,6 +415,8 @@ def create_app(
             point=None if first is None else first.point,
             by=None if learned is None else "learned",
         )
+        if route_store is not None:
+            route_store.learn(place.point for place in found.places)
         return found
 
     # Cities and places while typing, for "Explore" (TASK-134, TASK-138):
@@ -424,9 +429,13 @@ def create_app(
         if cities is None:
             raise HTTPException(503, "City search is off on this API.")
         try:
-            return SuggestionsBody(places=cities.suggest(q))
+            suggested = cities.suggest(q)
         except PlacesUnavailableError as exc:
             raise HTTPException(503, str(exc)) from None
+        if route_store is not None:
+            # The cities only: a place may be the street someone lives in.
+            route_store.learn(s.point for s in suggested if s.kind == "city")
+        return SuggestionsBody(places=suggested)
 
     # What the app did with a search (TASK-142, ADR-0112): the city chosen,
     # the route among A, B and C, a hint taken. Always 204: a signal is never

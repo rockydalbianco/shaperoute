@@ -888,6 +888,7 @@ def plan_route(
     optimize: bool = True,
     reuse_penalty: float = EDGE_REUSE_PENALTY,
     style: Style | None = None,
+    top_joins: bool | None = None,
 ) -> Plan:
     """RouteRequest in, RouteResult out (docs/ARCHITECTURE.md §3).
 
@@ -896,10 +897,11 @@ def plan_route(
     as in TASK-017. A word is written one letter at a time (TASK-050), in
     the letters of `style` (TASK-077), the request's when None (TASK-080),
     and comes back with `word` instead
-    of `shape` (TASK-056).
+    of `shape` (TASK-056). `top_joins` says whether its letters may be
+    joined along the top line too (TASK-067), words.TOP_JOINS when None.
     """
     if request.word is not None:
-        word = compose(request.word, style=style or request.style)
+        word = compose(request.word, style=style or request.style, top_joins=top_joins)
         plan = plan_shape(
             list(word.points),
             word.text,

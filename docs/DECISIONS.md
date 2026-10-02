@@ -1921,6 +1921,85 @@ Un'app più vecchia dell'API non conosce le forme nuove: se l'AI risponde
 aggiornano insieme, come oggi dallo stesso checkout. Le tessere sono undici:
 tre righe da quattro, l'ultima con tre.
 
+## ADR-0063 — Lettere unite anche dalla cima: tre regole di lettura, la parola più corta
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente nel giudizio di
+TASK-059 (2026-09-25: «anche connetterle dalla cima», se non confonde o
+aiuta); formato, regole e scelta decisi dall'agente su delega dell'utente
+(TASK-067); accese per difetto in tutti e due gli stili per scelta
+dell'utente (2026-10-02)
+
+**Contesto**: ogni lettera entra ed esce sulla base, e le unioni si corrono
+due volte. U, V, W, Y e T toccano la base a metà: l'unione passa sotto
+mezza lettera, mentre in cima hanno un angolo sul bordo. A pari chilometri
+una parola più corta dà lettere più alte, e lettere più basse si leggono
+peggio (ADR-0067). Le misure sono in `docs/tasks/TASK-067.md`.
+
+**Decisione**:
+- **Il formato**: una lettera che si può unire in cima lo dichiara in
+  `letters.json` e `letters_block.json` con `"top": {"in": [x, 1], "out":
+  [x, 1]}`, uno o tutti e due. Il task chiedeva per ogni ingresso e uscita
+  i suoi `out` e `back` scritti a mano; li ricava invece il motore
+  (`Letter.route`) dalla linea chiusa che la lettera ha già, cominciata
+  dall'ingresso e tagliata all'uscita. La lettera è per costruzione la
+  stessa, corsa lo stesso numero di volte, e non ci sono 150 linee in più
+  da tenere uguali a mano. Ne segue che la lunghezza delle lettere non
+  cambia mai: una coppia si accorcia solo per lo spazio.
+- **Tre regole di lettura**, controllate da `parse_letters` sull'alfabeto
+  (un `top` che ne viola una è rifiutato), ognuna con un test e una coppia
+  che la viola:
+  1. un'unione in cima non allunga un tratto che finisce sulla cima (la
+     sbarra della T, il braccio alto di E, F, Z e delle C, G, S squadrate):
+     «TU», «EH», «CH» squadrata restano sulla base. Era la regola già
+     scritta nel task, sul modello di ADR-0056;
+  2. un'unione in cima non passa sopra la lettera, entra dal bordo sinistro
+     ed esce dal destro: «PU» resta sulla base. Sotto la lettera la linea è
+     il rigo; sopra è un tratto in più;
+  3. una lettera che tocca la cima in un punto solo non si unisce lì: «VI»
+     e «UL» restano sulla base. La I fra due unioni in cima è una T («VIVA»
+     si legge «VTVA»); con la cima da un lato e la base dall'altro la I e
+     la L sono un gradino, il caso che il task chiedeva di guardare.
+- **Cima da un lato e base dall'altro è permesso** alle lettere che passano
+  le tre regole (H, M, N, U, V, W, X, Y…): hanno due punti in cima e
+  restano loro stesse (la V di «UVA»).
+- **La scelta** (`choose_joins`): ogni spazio tutto sulla base o tutto in
+  cima; fra le combinazioni permesse, al più 128, la parola più corta; a
+  pari lunghezza meno unioni in cima, poi la base per prima. Deterministica.
+- **Accese per difetto in tutti e due gli stili** (`words.TOP_JOINS`),
+  scelta dell'utente. Sui campioni l'utente ha preferito il percorso di
+  oggi in tutti e sette i casi giudicati (unioni in cima: 5 «no», 2
+  «quasi», nessun «sì») e ha detto che le tre regole vanno bene; nella
+  scelta finale ha chiesto di accenderle per tonde e squadrate, e
+  interpellato sulla differenza fra le due risposte ha confermato
+  «accendi in cima». `compose` e `plan_route` hanno `top_joins`,
+  `measure_words.py` ha `--no-top-joins`: con le unioni spente ogni parola
+  è identica a prima, punto per punto (test). API, `shared-types` e app
+  non cambiano.
+- **La scala per lettera non si fa**: era l'altra metà della richiesta del
+  2026-09-25, che ADR-0056 rimanda qui. L'utente la lascia fuori
+  (2026-10-02), perché lettere più piccole si leggono peggio (ADR-0067).
+
+**Alternative scartate**: `out` e `back` scritti a mano per ogni ingresso e
+uscita (sopra); i punti in cima dedotti dalla geometria senza dichiararli
+(togliere una lettera dopo il giudizio dell'utente vorrebbe codice, non una
+riga dell'alfabeto); unire anche la I e la T, che danno quasi tutto il
+guadagno senza regole («TUTTI» −16,6%, «VIVA» −6,3%) ma cambiano la
+parola; unioni a metà altezza o in diagonale (fuori scope).
+
+**Conseguenze**: con le regole si accorciano solo le coppie in cui una
+lettera è U, V, W o Y (tonde), P, U, V o Y (squadrate), e l'altra arriva in
+cima con un angolo: 68 coppie tonde e 87 squadrate su 676. Delle sette
+parole misurate cambia solo «UVA» (−7,4% tonda, −8,6% squadrata); «NUVOLA»
+−5,2%, «LUNA» −2,6%. Le altre parole restano identiche. Sulle strade le
+lettere non vengono sempre più alte: su nove campioni a 15 km lo sono in
+cinque, e sempre per «UVA» squadrata (`docs/tasks/TASK-067.md`). La ricerca
+non dura di più. `nearby_starts.py`, la CLI e `seed_catalog.py`
+compongono la parola con il predefinito dello stile, quindi le seguono
+senza altre modifiche. L'app pubblicata le vede quando l'API sul server è
+aggiornata (`DEPLOY.md` F.12, con l'ok dell'utente). Le parole già nel
+catalogo restano com'erano finché non si ridisegnano: fra quelle di oggi
+cambierebbe solo «NYC» tonda. Per tornare indietro basta `TOP_JOINS` a
+`False`.
+
 ## ADR-0064 — La barra stima una parola dalle sue lettere
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
 (TASK-069)
@@ -5176,6 +5255,20 @@ due corse: conto alla rovescia, «Map», «Data», pausa a mano e da sola,
 splits. Lo swipe col dito e «Stop» tenuto premuto no (il simulatore non si
 poteva toccare): restano per l'iPhone.
 
+**Aggiornamento 2026-10-02 (TASK-186)**: **scelta dell'utente** per il
+cosa («ingrandiscimi pulsante map e data sotto»); il come deciso
+dall'agente su delega dell'utente. «Map» e «Data» erano due scritte da 13
+punti con un trattino sotto, larghe quanto la parola. Ora sono due
+pulsanti che si dividono la larghezza della scheda, alti 56 punti
+(`MIN_TAP_SIZE` più un passo), con la scritta da 16 in grassetto; la pagina
+aperta ha la superficie più chiara e il bordo, come `Segmented` nel resto
+dell'app. Restano due `tab` per VoiceOver. Scartati: il giallo per la
+pagina aperta (è del percorso); solo la scritta più grande (il bersaglio
+del dito restava stretto); riusare `Segmented` (i suoi pulsanti sono
+`button`, e la sua altezza serve ad altre schermate). Conseguenza: la
+scheda sotto la mappa è più alta di circa 36 punti, tolti alla mappa. Visto in
+un simulatore con un GPS simulato, sulle due pagine.
+
 ## ADR-0139 — «Favorites»: una copia del percorso, legata all'account
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («mettere
 nei preferiti i percorsi che gli utenti vedono», con la voce «Favorites» nel
@@ -5421,3 +5514,113 @@ nativa è nera con il logo giallo e poi arriva il giallo: farla gialla è
 una riga di `app.json`, lasciata all'utente. La barra di stato resta
 chiara sul giallo: la decide `App.tsx`. Chi ha «Riduci movimento» vede la
 stessa animazione.
+
+## ADR-0140 — «My activities»: «Save» a fine corsa, e i numeri della corsa li conta l'API
+**Stato**: Attiva · 2026-10-02 · **scelte dell'utente** per il cosa («le
+mie attività con tutte le attività che hanno registrato, con lo storico:
+data, ora, posizione e l'anteprima di cosa aveva disegnato»; senza account
+resta com'è, con una riga che invita a entrare; il luogo lo trova l'API);
+il come deciso dall'agente su delega dell'utente (TASK-172).
+
+**Scelta nuova dell'utente, lo stesso giorno** (riferita dal coordinatore
+da un'altra sessione): «quando termino l'attività devi salvarmi l'attività
+in activity sul mio profilo, e prima mi fai comparire una nuova schermata
+nella quale mi dici salva, cancella, invia a Strava». Quindi **la corsa
+non si salva più da sola**, com'era nella prima scelta («sì a tutte e
+tre»): a fine corsa «Save» e «Discard», e solo «Save» la mette in «My
+activities». «Send to Strava» è un task a parte (TASK-187), da chiedere
+all'utente: ADR-0138 aveva tolto Strava dall'app.
+
+**Contesto**: una corsa finita si perdeva: il telefono la teneva solo
+finché non aveva il punteggio (ADR-0093), e quella senza percorso fino a
+«Done» (ADR-0122). L'utente vuole ritrovarle nel profilo. È la metà
+privata di TASK-117 («salvare un disegno»): titolo, «Public» e traccia
+tagliata restano là.
+
+**Decisione**:
+- **La tabella `runs`** (migrazione `0003`), una riga per corsa, solo del
+  proprietario. Tiene il percorso seguito (o nessuno), cosa disegnava, la
+  traccia, le pause, l'inizio, km, tempo, punteggio e luogo.
+- **L'app manda la corsa com'è stata registrata**, posizione per
+  posizione con le pause; **km, tempo e punteggio li conta l'API** e l'app
+  non li può nemmeno mandare (campi in più: `422`). Il punteggio è quello
+  di `track_score.py` (ADR-0090), come `POST /track-scores`; la traccia
+  tenuta è quella pulita dal motore (`clean_track`), non la grezza. Così
+  un numero in «My activities» non dipende dalla versione dell'app che ha
+  corso, e TASK-117 potrà pubblicarlo senza fidarsi del telefono.
+- **Le pause sono nel contratto** (`pauses`, da TASK-169, ADR-0137): il
+  tempo le toglie tutte; i metri tolgono solo il passo a cavallo di una
+  pausa chiesta dal corridore, come fa l'app (`gap`). M della traccia sono
+  i secondi dalla prima posizione, pause comprese, e le pause stanno
+  accanto in `jsonb`: dalla riga si rifà l'orario di ogni punto.
+- **Una corsa troppo corta per il punteggio si salva lo stesso**, senza
+  punteggio; con meno di due posizioni buone non si salva. Non c'è una
+  lunghezza minima: con «Save» e «Discard» lo decide chi ha corso.
+- **La chiave la fa l'app dalla prima posizione** (`activityKey`: orario e
+  punto), come per i preferiti la fa dalla linea: `PUT` due volte salva una
+  volta, e resta la prima. Dall'inizio e non da tutta la traccia perché una
+  corsa ripresa è la stessa corsa.
+- **Il luogo**: geocoding inverso di Geoapify, con la chiave che l'API ha
+  già, per la partenza **arrotondata a due decimali** (circa 1 km), come la
+  ricerca dei luoghi fa con `near` (ADR-0095). Chiesto una volta, al
+  salvataggio; se non arriva, la corsa non ha luogo. Il servizio non vede
+  la porta di casa, e l'API non scrive posizioni nel log (ADR-0092).
+- **L'elenco a pagine con cursore** sull'ordine `(inizio, id)`, dalla più
+  recente, 20 per volta, con il totale: cancellare o salvare fra due pagine
+  non ne ripete e non ne salta. Anteprime di 64 punti per linea, come i
+  preferiti. Al massimo 2 000 corse per account.
+- **«Save» e «Discard» stanno sulla schermata di fine corsa**, quella che
+  «Stop» già apre con la mappa, i numeri e il punteggio: è la schermata
+  che l'utente chiede, e una in più dopo «Done» sarebbe un tocco in più
+  per dire la stessa cosa. Con un account prendono il posto di «Done»,
+  sotto la scheda; «Keep running» resta. «Discard» chiede conferma: un
+  tocco sbagliato butterebbe una corsa che non si rifà. Con «Save» o
+  «Discard» la corsa lascia il file della corsa in corso anche senza
+  punteggio: non torna alla prossima apertura.
+- **Niente parte a «Stop»**: fra «Stop» e «Save» c'è «Keep running», e
+  una corsa mandata a metà resterebbe a metà (resta la prima). Con «Save»
+  la corsa va in un file del telefono (`activities-outbox.json`), con
+  l'account di chi l'ha corsa, e da lì all'API: subito, o alla prossima
+  apertura con la rete, o aprendo «My activities». Un `422` la toglie dalla
+  coda (rimandarla non cambierebbe niente); ogni altro errore la lascia.
+  Dopo un salvataggio l'elenco si richiede all'API: i numeri sono i suoi.
+- **Cosa disegnava il percorso** l'app lo sa finché quel percorso è ancora
+  sullo schermo (disegnato, di «Explore», a tema, un preferito); una corsa
+  rimasta da un'altra apertura manda solo la linea.
+- **La pagina** è una riga per corsa, non due schede affiancate come i
+  preferiti: giorno, ora, luogo, km, tempo, passo e punteggio non stanno
+  sotto mezzo schermo. Il disegno ha le due linee nella stessa cornice
+  (`fitLines`), come a fine corsa.
+- **Una corsa aperta è sulla mappa come a fine corsa**, non come un
+  percorso di «Explore»: niente «Start», niente cuore. «Delete» chiede
+  prima, sulla scheda.
+- **Le schede di fine corsa cambiano di poco**: `FinishCard` e
+  `FreeFinishCard` non mostrano «Done» quando non ricevono `onDone`; i due
+  pulsanti e la riga per chi non ha account sono un pezzo solo sotto la
+  scheda (`RunEnd`), uguale con un percorso e senza. `POST /track-scores`
+  resta com'è: la scheda mostra il punteggio subito, il salvataggio va per
+  conto suo.
+
+**Scartate**: salvare da sola a «Done» (la prima scelta dell'utente,
+cambiata da lui); salvare a «Stop» (vedi sopra); una schermata a parte
+dopo «Done» con i due pulsanti; «Discard» senza conferma; fidarsi di km, tempo e punteggio dell'app; tenere la traccia
+grezza (sulla mappa avrebbe i salti del GPS, e il punteggio è già sulla
+pulita); la chiave da tutta la traccia (la stessa corsa, ripresa,
+cambierebbe nome); mandare a Geoapify la partenza
+esatta; un elenco di città dentro l'API (vale solo dove c'è il catalogo);
+pagine con `offset` (saltano o ripetono quando l'elenco cambia); tenere le
+corse senza account sul telefono (scelta dell'utente: restano com'erano).
+
+**Conseguenze**: il database tiene tracce intere, con gli orari: il dato
+più personale dell'app; le vede solo il loro account, spariscono con lui e
+dalle copie entro 14 giorni (`UI.md`, «Cosa esce dal telefono»). Geoapify
+riceve un punto al chilometro per ogni corsa salvata. Sul server la
+migrazione `0003` parte al primo avvio dell'API nuova (`DEPLOY.md` F.12):
+finché non c'è, l'app nuova tiene le corse nella coda. Una corsa chiusa
+con «Discard» non si recupera. Chi chiude l'app sulla schermata di fine
+corsa senza scegliere la ritrova alla prossima apertura, da salvare o
+buttare. L'altitudine delle posizioni (TASK-169) non si salva. Il
+punteggio di una corsa salvata non cambia se il motore cambia. TASK-117 parte da
+`runs` con una migrazione sua (traccia tagliata, «pubblica», il titolo
+dell'utente: `title` qui è cosa disegna il percorso) e il suo task file
+va aggiornato da chi lo prende.

@@ -5176,6 +5176,20 @@ due corse: conto alla rovescia, «Map», «Data», pausa a mano e da sola,
 splits. Lo swipe col dito e «Stop» tenuto premuto no (il simulatore non si
 poteva toccare): restano per l'iPhone.
 
+**Aggiornamento 2026-10-02 (TASK-186)**: **scelta dell'utente** per il
+cosa («ingrandiscimi pulsante map e data sotto»); il come deciso
+dall'agente su delega dell'utente. «Map» e «Data» erano due scritte da 13
+punti con un trattino sotto, larghe quanto la parola. Ora sono due
+pulsanti che si dividono la larghezza della scheda, alti 56 punti
+(`MIN_TAP_SIZE` più un passo), con la scritta da 16 in grassetto; la pagina
+aperta ha la superficie più chiara e il bordo, come `Segmented` nel resto
+dell'app. Restano due `tab` per VoiceOver. Scartati: il giallo per la
+pagina aperta (è del percorso); solo la scritta più grande (il bersaglio
+del dito restava stretto); riusare `Segmented` (i suoi pulsanti sono
+`button`, e la sua altezza serve ad altre schermate). Conseguenza: la
+scheda sotto la mappa è più alta di circa 36 punti, tolti alla mappa. Visto in
+un simulatore con un GPS simulato, sulle due pagine.
+
 ## ADR-0139 — «Favorites»: una copia del percorso, legata all'account
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («mettere
 nei preferiti i percorsi che gli utenti vedono», con la voce «Favorites» nel

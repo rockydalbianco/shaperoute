@@ -108,6 +108,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-186: nella corsa «Map» e «Data» sono due pulsanti grandi,
+  chiesto dall'utente (ADR-0137, aggiornamento): metà scheda ciascuno, alti
+  56 punti, la pagina aperta più chiara. Solo app, niente API, nessuna
+  dipendenza nuova. Visto nel simulatore sulle due pagine. **Da pubblicare
+  su `preview`**, con l'ok dell'utente, poi da provare sull'iPhone. Della
+  stessa richiesta: la schermata «Save» / «Discard» a fine corsa va dentro
+  TASK-172 (deciso dal coordinatore); «Send to Strava» è TASK-187, che
+  aspetta la risposta dell'utente.
 - **App** — TASK-179: l'animazione all'avvio, chiesta dall'utente
   (ADR-0147). Aprendo l'app il giallo riempie lo schermo, una penna disegna
   il cuore di Milano del video, sotto c'è il logo nero; 2,4 secondi, poi

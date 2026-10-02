@@ -1,10 +1,8 @@
 # TASK-201 — Le partenze vicine senza processi nuovi a ogni richiesta
 
-**Stato**: In lavorazione — fermo dopo le misure (punto 1), aspetta il
-coordinatore
+**Stato**: Done — misurato, non conviene (2026-10-02)
 **Fase**: 4 · **Branch**: `feat/TASK-201-nearby-pool`
-**ADR**: ADR-0161, dal coordinatore il 2026-10-02, solo se la scelta del
-pool lo merita
+**ADR**: nessuno (ADR-0161, tenuto per la scelta del pool, resta libero)
 **Dipende da**: niente; seguito di TASK-168 («Esito», i tempi del server)
 
 ## Obiettivo
@@ -34,17 +32,18 @@ Assegnato dal coordinatore il 2026-10-02 sera su delega dell'utente.
 ## Criteri di accettazione
 
 - [x] Numeri di prima nel task file (sotto, «Misure»).
-- [ ] Decisione del coordinatore sul punto 2, visti i numeri.
-- [ ] Se il punto 2 si fa: test verdi, stessi piani e stessa scelta,
-      numeri di dopo, `ROUTE_ENGINE.md` (partenze vicine) aggiornato.
+- [x] Decisione del coordinatore sul punto 2, visti i numeri: non si fa.
+- [ ] ~~Se il punto 2 si fa: test verdi, stessi piani e stessa scelta,
+      numeri di dopo, `ROUTE_ENGINE.md` (partenze vicine) aggiornato.~~
+      Non si fa: nessun codice cambiato.
 
 ## File toccati
 
 - `docs/tasks/TASK-201.md` (nuovo)
-- `services/route-engine/route_engine/nearby_starts.py`
-- `services/route-engine/tests/test_nearby_starts.py` e test nuovi
-- `docs/ROUTE_ENGINE.md` (solo «Partenze vicine»)
-- `docs/STATUS.md`, `docs/DECISIONS.md` (solo le righe di questo task)
+- `docs/STATUS.md` (solo la riga di questo task)
+
+Erano tenuti anche `nearby_starts.py`, `test_nearby_starts.py`,
+`ROUTE_ENGINE.md` e `DECISIONS.md`, per il punto 2: non toccati.
 
 ## Misure (punto 1)
 
@@ -101,8 +100,22 @@ lettura dentro il container dell'API
 (`python -X importtime -c "import route_engine.nearby_starts"`, e lo
 stesso script) lo direbbe in un minuto, con l'ok dell'utente.
 
+## Esito
+
+Fatto il 2026-10-02: **misurato, non conviene**. Il coordinatore, visti i
+numeri, ha scelto di non tenere i processi accesi: sul Mac aprirli costa
+circa 0,25 s a richiesta, nascosti dietro il piano della partenza (5–8 s)
+in tre richieste su quattro; ci si aspetta lo stesso sul server, dove
+anche il piano della partenza è più lento. Nessun codice cambiato, quindi
+l'impronta degli esempi resta quella di prima.
+
+**Seguito**: il tempo è nel **piano della partenza** (`optimizer.py`: la
+ricerca, gli anelli a 250–500 m), non nei processi delle partenze vicine.
+Lì va cercato, con un task nuovo. Misurare sul server (sola lettura, nel
+container dell'API) solo se serve, e con l'ok dell'utente. Piccolo e a
+parte: il pickle del grafo (0,1–0,24 s) si fa prima del piano della
+partenza ed è sul cammino della richiesta.
+
 ## Note per il deploy
 
-Nessuna finché il codice del motore non cambia. Se cambia, l'impronta
-degli esempi tenuti cambia: dopo l'aggiornamento del server va rilanciato
-`draw_examples` (`AGENTI.md` regola 11).
+Nessuna: il motore non cambia.

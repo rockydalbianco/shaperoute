@@ -86,6 +86,15 @@ In coda, dopo o accanto:
   avanti dentro Sgrava (app Spotify Developer sua, Premium, dipendenze
   nuove, 5 persone al massimo finché è in sviluppo); la proposta è di non
   farlo adesso (`tasks/TASK-173.md`, «La seconda parte»).
+- **Altri sport**, chiesti dall'utente il 2026-10-02: **TASK-189** («Sport»
+  in «Settings»: «Run» scelto, «Bike» e «Paddle» con «Soon»; ADR-0152, in
+  lavorazione, aspetta TASK-177), poi **TASK-190 — percorsi in bici**
+  (ADR-0153 tenuto; 10–30 km, scelta dell'utente) e **TASK-191 — percorsi
+  in canoa e paddle** (ADR-0154 tenuto; sull'acqua entro 1 km dalla riva,
+  scelta dell'utente; esempi a Lago di Garda, Lago di Como, Jesolo,
+  Riccione). I due task file sono scritti, con le domande ancora aperte:
+  da assegnare, ognuno in tre parti (motore, API, app). Nel contratto si
+  usa `activity`, che c'è già.
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -115,6 +124,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   in un simulatore. **Da pubblicare su `preview`** con l'ok dell'utente (in
   Expo Go cambia l'inizio dell'animazione); la schermata nativa **si vede
   solo in una build propria** (TASK-152).
+- **App** — TASK-186: nella corsa «Map» e «Data» sono due pulsanti grandi,
+  chiesto dall'utente (ADR-0137, aggiornamento): metà scheda ciascuno, alti
+  56 punti, la pagina aperta più chiara. Solo app, niente API, nessuna
+  dipendenza nuova. Visto nel simulatore sulle due pagine. **Da pubblicare
+  su `preview`**, con l'ok dell'utente, poi da provare sull'iPhone. Della
+  stessa richiesta: la schermata «Save» / «Discard» a fine corsa va dentro
+  TASK-172 (deciso dal coordinatore); «Send to Strava» è TASK-187, che
+  aspetta la risposta dell'utente.
 - **Motore** — TASK-067: due lettere di una parola si uniscono anche lungo
   la cima, dove la parola viene più corta e si legge uguale, chiesto
   dall'utente (ADR-0063). Tre regole di lettura: non si allunga un tratto

@@ -99,8 +99,8 @@ Da assegnare
 
 | File | Di chi |
 |---|---|
-| `apps/mobile/src/settings/sport.ts`, `apps/mobile/App.tsx`, `docs/tasks/TASK-190.md` | TASK-190 C |
-| i file del suo task file (da scrivere: attività e preferiti, API e app) | TASK-199 |
+| `apps/mobile/src/settings/sport.ts`, `apps/mobile/App.tsx`, `src/route/distance.ts`, `src/route/useRouteRequest.ts` (e i loro test), `docs/tasks/TASK-190.md` | TASK-190 C |
+| attività e preferiti, API e app, come dice `docs/tasks/TASK-199.md` (`App.tsx` solo dopo la C) | TASK-199 |
 | `deploy/`, `docs/DEPLOY.md` | TASK-122 (in attesa dello Storage Box) |
 | `docs/PUBBLICITA.md` | TASK-150 |
 | `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md` | tutti, ognuno solo le sue righe |

@@ -95,7 +95,9 @@ test("a city without recommended routes: three examples at once (TASK-143)", asy
   expect(screen.queryByText(/No recommended routes near this start yet/)).toBeNull();
   await fireEvent.press(heart);
   expect(onOpen.mock.calls[0][0]).toMatchObject({ shape: "heart", city: "Vercelli" });
-});
+  // The first render of the file, with React Native still to load: on a
+  // busy CI runner, with a cold cache, it alone went past five seconds.
+}, 20_000);
 
 /** The API with the catalog of the fixture, and every route done at once. */
 function catalog(input: RequestInfo | URL): Promise<Response> {

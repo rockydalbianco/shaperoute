@@ -90,6 +90,24 @@ scrivono solo i file nuovi di `src/profile/` e i loro test.
   183, 184, 185.
 - Le pagine «Favorites» e «My activities»: restano come sono.
 
+## A che punto è (2026-10-02, 15:00)
+
+Fatti e pushati: `src/profile/` (`Avatar`, `ProfileHome`, `SettingsPage` con
+le nove voci «Soon») e i loro 9 test, ADR-0145. Mancano, tutti dopo
+TASK-172 (#194, verde e CLEAN alle 15:00, non ancora in `main`):
+
+1. aggiornare il branch da `origin/main`;
+2. `ProfileScreen.tsx`: pagina `"settings"`, `ProfileHome` al posto di
+   `SignedIn`, `SettingsPage`, ritorno a `"account"` quando si esce da
+   «Settings»; `Profile.test.tsx` («Log out», «Delete account» passano da
+   «Settings»), la riga «LOGGED IN AS» di `AppFavorites.test.tsx`;
+3. `UI.md` «Profile», `STATUS.md`, prova nel simulatore, PR, coda.
+
+Dell'utente, dati in questa sessione: l'ok ad aggiornare il server a `main`
+dopo TASK-172 (`DEPLOY.md` F.12, immagine `shaperoute-api:before-task172`,
+avvisando il coordinatore prima e dopo) e a pubblicare su `preview` quando
+TASK-177 è in `main`, a server pronto.
+
 ## Esito
 
 *(si compila a fine task)*

@@ -36,9 +36,9 @@ giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
 (ADR-0051). Per le scritte il seguito è **TASK-057**, il campo nell'app,
 chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
 fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
-dalla cima, e una scala per lettera vicina a quella delle vicine
-(ADR-0063, dopo TASK-063, che ha `optimizer.py`). Da TASK-071: lettere più
-piccole si leggono peggio. Le lettere squadrate si scelgono nell'app da TASK-080.
+dalla cima (ADR-0063). Il task file è scritto (2026-10-02), da assegnare.
+La scala per lettera, l'altra metà della richiesta, ne resta fuori: da
+TASK-071 lettere più piccole si leggono peggio. Le lettere squadrate si scelgono nell'app da TASK-080.
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il

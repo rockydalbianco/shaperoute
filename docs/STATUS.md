@@ -93,17 +93,17 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   scrive `tools/sample_feed.py`. Niente sulla pagina dice che sono esempi,
   per scelta dell'utente: da rivedere prima di invitare altre persone.
   Niente API, niente like o commenti: il feed vero resta TASK-118. Visto
-  su un simulatore. **Da provare sull'iPhone** (ripubblicare l'app).
+  su un simulatore. **Da provare sull'iPhone** (pubblicata il 2026-10-02; resta la prova sull'iPhone).
 - **App** — TASK-157: in «Explore», «Ask for a route» sta in fondo alla
   pagina, sotto gli esempi della città e i percorsi consigliati, chiuso
   dietro una riga grigia e sottolineata; un tocco lo apre lì, e la pagina
   scorre fino a lui. Chiesto dall'utente: prima le figure già pronte delle
   zone, la richiesta in parole quasi nascosta. **Da provare sull'iPhone**
-  (ripubblicare l'app).
+  (pubblicata il 2026-10-02; resta la prova sull'iPhone).
 - **App** — TASK-158: il pulsante della corsa libera, in cima a «Draw», dice
   «Run without a route» invece di «Run», chiesto dall'utente: «Run» da solo
   si leggeva come correre il percorso scelto sotto. **Da provare
-  sull'iPhone** (ripubblicare l'app).
+  sull'iPhone** (pubblicata il 2026-10-02; resta la prova sull'iPhone).
 - **Mappe** — TASK-137: 52 città italiane con la zona già sul server
   Hetzner (circa 17 × 17 km attorno al centro, nomi delle strade compresi),
   da `python -m shaperoute_api.prefetch_zones --preset italy --extract …`
@@ -119,8 +119,8 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   altri percorsi fra «A · B · C» sono linee grigie sotto quello scelto,
   come per un percorso disegnato; chiesto dall'utente dopo aver provato
   TASK-151 sull'iPhone (2026-10-02: «ora funziona»). In `App.tsx` cambia
-  solo cosa riceve la mappa. **Da provare sull'iPhone** (app da
-  ripubblicare). Resta il segnale della scelta (`TASK-151.md`).
+  solo cosa riceve la mappa. **Da provare sull'iPhone** (app
+  pubblicata il 2026-10-02; resta la prova sull'iPhone). Resta il segnale della scelta (`TASK-151.md`).
 - **App** — TASK-154: tre pagine affiancate, «Feed», «Draw», «Explore»,
   scelta dell'utente dopo le proposte grafiche (ADR-0124). Si passa con
   uno swipe a destra o a sinistra, o toccando i nomi in alto; l'app si apre
@@ -130,7 +130,7 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   TASK-118. Mappa e corsa restano a tutto schermo, senza swipe. Viste le
   tre pagine e «Profile» su un simulatore. **Da provare con il dito
   sull'iPhone**: lo swipe, e le righe che scorrono di lato dentro le
-  pagine (l'app è pubblicata da `27be368`, 2026-10-02). Seguiti nel task
+  pagine (app pubblicata il 2026-10-02; resta la prova sull'iPhone). Seguiti nel task
   file, fra cui i «File toccati» di TASK-118.
 - **App** — TASK-132: un annuncio AdMob a schermo intero a ogni ricerca
   («Draw route» e «Ask for a route» in «Explore»), prima del percorso; alla
@@ -147,8 +147,8 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   riaperta, l'app è già dentro e lo verifica con `GET /me`; una sessione
   finita fa uscire e «Profile» chiede di rientrare. La barra si toglie
   sulla mappa e durante la corsa. **Da provare sull'iPhone contro l'API
-  vera**: serve un'API con `SHAPEROUTE_DATABASE_URL` (sul Mac con Colima,
-  o il server di TASK-122) e l'app ripubblicata a fine coda. Seguito:
+  vera**: serve un'API con `SHAPEROUTE_DATABASE_URL`, che il server di
+  TASK-122 ha dal 2026-10-02 (app pubblicata il 2026-10-02; resta la prova sull'iPhone). Seguito:
   TASK-116 (il profilo).
 - **App** — TASK-151: in «Explore» un esempio di città (il cuore da 5 km
   di New York) si apre con le tessere «A · B · C», chiesto dall'utente
@@ -157,7 +157,7 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   sul telefono si ridisegnano una volta. `App.tsx` non è toccato, quindi
   gli altri percorsi non sono ancora in grigio sulla mappa: seguito nel
   task file. I percorsi del catalogo restano uno solo. **Da provare
-  sull'iPhone** (ripubblicare l'app, a fine coda dei merge).
+  sull'iPhone** (app pubblicata il 2026-10-02; resta la prova sull'iPhone).
 - **App** — TASK-149: si può correre senza disegnare niente, chiesto
   dall'utente (ADR-0122). «Run» in alto nella prima schermata, accanto a
   «Explore», apre la mappa che segue la posizione e disegna la linea
@@ -167,7 +167,7 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   cancella la corsa dal telefono. Niente forma, niente punteggio, niente
   API: la traccia è quella di TASK-112, nello stesso file, con il percorso
   vuoto, e si riapre con l'app se si chiude a metà. **Da provare
-  sull'iPhone** (ripubblicare l'app, a fine coda dei merge). Seguito
+  sull'iPhone** (app pubblicata il 2026-10-02; resta la prova sull'iPhone). Seguito
   possibile: inquadrare tutta la linea a fine corsa.
 - **App** — TASK-148: tolto da `ExploreTools.tsx` il vecchio «Ask for a
   route», con i suoi test e gli stili che usava solo lui: è il «da fare

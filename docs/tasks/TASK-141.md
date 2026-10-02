@@ -63,6 +63,11 @@ di TASK-154 (app già pubblicata). Restano aperti i task file di TASK-055,
 065 e 076, e quelli di TASK-126, 129 e 134 benché in `main`: scritti nel
 prossimo passo, fuori scope qui.
 
+Seguito (2026-10-02, PR a parte dopo la #140, chiesto dal
+coordinatore): l'app è ripubblicata da `bad06f2` (update `5ec93905…`);
+nelle voci di TASK-115, 149, 151, 154, 155, 156, 157 e 158 «ripubblicare
+l'app» diventa «pubblicata il 2026-10-02; resta la prova sull'iPhone».
+
 ## Appunti per il ripasso finale
 
 Il merge della #140 arriva per ultimo nella coda del coordinatore: si

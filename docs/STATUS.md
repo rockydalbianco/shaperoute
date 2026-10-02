@@ -82,16 +82,17 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
 - **TASK-163 — «Explore»: le città in evidenza già disegnate, e il feed
-  mentre una città si disegna**, chiesto dall'utente il 2026-10-02. Branch
-  `feat/TASK-163-explore-featured-and-feed`. **In due PR**, per richiesta
-  dell'utente («pubblica intanto la parte dei post sul telefono»). La
-  prima, la parte dell'app (ADR-0132): in una città cercata, finché cuore,
-  cerchio e stella si disegnano, sotto ci sono 5 disegni del feed, con la
-  foto della mappa di TASK-162 (vista in un simulatore). **Da provare
-  sull'iPhone.** La seconda, ferma: cuore, cerchio e stella già pronti nel
-  catalogo per le 14 città in evidenza (oggi li hanno Roma, Milano e
-  Torino); parte dopo TASK-161, che ha `catalog/seed/` e
-  `seed_catalog.py`. Da dove riprendere: il task file.
+  mentre una città si disegna** (ADR-0132), chiesto dall'utente il
+  2026-10-02, in due PR. **La prima (#174) è pubblicata** (2026-10-02,
+  update `4cab12c4`): in una città cercata, finché cuore, cerchio e stella
+  si disegnano, sotto ci sono 5 disegni del feed con la foto della mappa.
+  **Da provare sull'iPhone.** **La seconda**: cuore, cerchio e stella da
+  5 km già nel catalogo per 13 delle 14 città in evidenza (nove file nuovi,
+  27 forme fra 0,91 e 1,00, da `seed_catalog.py --featured` con le zone
+  copiate dal server). **Manca Berlino**: la sua zona non è sul server e
+  Overpass rifiuta il Mac. **Per vederle nell'app va aggiornato `catalog/`
+  sul server** (`DEPLOY.md` F.12), con l'ok dell'utente. Da dove
+  riprendere: il task file.
 
 ## Completato
 

@@ -4781,10 +4781,33 @@ hanno le tre forme nel catalogo: le altre le disegnano al tocco.
 - **Un file nuovo** (`WhileDrawing.tsx`), e in `ExploreScreen.tsx` solo
   l'aggancio.
 
-**Decisione, le città in evidenza (parte A)**: nel catalogo, con lo
-strumento del catalogo (ADR-0097) e le zone copiate dal server in sola
-lettura; parte dopo TASK-161, che ha quei file. Qui si scrive, a lavoro
-fatto, cosa si tiene quando una forma resta sotto 0,88.
+**Decisione, le città in evidenza (parte A)**:
+- **Nel catalogo, con lo strumento del catalogo** (ADR-0097):
+  `seed_catalog.py --featured`. Le città in evidenza che il seme non ha
+  stanno in una tabella a parte (`FEATURED`), non in `CITIES`: così il giro
+  intero (ogni forma a 5, 10 e 21 km, le frasi) non parte anche per loro,
+  che hanno le zone solo sul server e a 17 km.
+- **Solo cuore, cerchio e stella da 5 km**, come gli esempi che l'app
+  disegnava al tocco (ADR-0116), da una piazza del centro entro 5 km dal
+  centro che l'API dà per il nome della città: è il raggio dell'elenco di
+  «Explore».
+- **Le zone copiate dal server in sola lettura** (`rsync`, 1,2 GB per nove
+  città, nella cache del Mac): niente Overpass, niente chiave dell'API,
+  niente scritto sul server.
+- **La soglia resta 0,88**: le 27 forme sono fra 0,91 e 1,00, tutte viste a
+  occhio dall'agente (`samples/LOG.md`). Le più deboli sono il cuore e la
+  stella di Dubai: da far vedere all'utente.
+- **Un test tiene il patto**: `tools/test_featured_catalog.py` legge
+  `FEATURED_CITIES` dall'app e fallisce se una città in evidenza non ha le
+  tre forme vicino al suo centro.
+- **Berlino manca**: la sua zona non è sul server (TASK-137) e Overpass
+  rifiuta il Mac. Nel test è una mancanza dichiarata (`MISSING`, `xfail`
+  rigido: il giorno che le forme ci sono, il test chiede di toglierla). In
+  app Berlino continua a disegnarle al tocco, con i disegni del feed
+  nell'attesa.
+- **Il registro delle prove** è lo stesso del seme
+  (`out/seed_catalog/runs.jsonl`, fuori dal repository): le 27 righe sono
+  state aggiunte lì.
 
 **Scartate**: disegnare le forme delle città in evidenza chiedendole
 all'API del server con uno script a parte (uno strumento parallelo a
@@ -4801,4 +4824,8 @@ mappa sotto la linea: la chiede la scheda, la fa la pagina nascosta di
 senza aver mai aperto «Feed». Il feed vero (TASK-118) deciderà se qui
 restano gli esempi o entrano i disegni degli iscritti. **In due PR**, per
 richiesta dell'utente (2026-10-02, «pubblica intanto la parte dei post
-sul telefono»): prima l'attesa, poi il catalogo.
+sul telefono»): prima l'attesa, poi il catalogo. Una città in evidenza
+ora mostra «Best near you» con tre righe invece di «EXAMPLES IN …»: senza
+le alternative A · B · C degli esempi (ADR-0126), che il catalogo non
+tiene. **Per vederle nell'app pubblicata va aggiornato `catalog/` sul
+server** e riavviata l'API (`DEPLOY.md` F.12): con l'ok dell'utente.

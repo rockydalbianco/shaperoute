@@ -1,7 +1,8 @@
 # TASK-163 — «Explore»: le città in evidenza già disegnate, e il feed mentre una città si disegna
 
 **Stato**: In corso
-**Fase**: 4 · **Branch**: `feat/TASK-163-explore-featured-and-feed` · ADR-0132
+**Fase**: 4 · **Branch**: `feat/TASK-163-explore-featured-and-feed` (#174), poi
+`feat/TASK-163-featured-catalog` · ADR-0132
 
 Chiesto dall'utente il 2026-10-02: «nella sezione Explore almeno un cuore,
 un cerchio e la stella devono essere già disegnate [in] tutte le città che
@@ -76,10 +77,15 @@ sono dei disegni del feed da guardare.
       esempio arriva; con percorsi consigliati non compaiono.
 - [x] «Ask for a route» resta in fondo alla pagina.
 - [ ] Ognuna delle 14 città in evidenza ha nel catalogo almeno un cuore, un
-      cerchio e una stella entro 5 km dal suo centro (test).
+      cerchio e una stella entro 5 km dal suo centro (test). **13 su 14**:
+      manca Berlino, dichiarata nel test (`MISSING`).
 - [ ] Toccata una città in evidenza nell'app, con l'API aggiornata, le tre
-      forme sono nell'elenco senza «Drawing…».
-- [x] Test verdi (app 780); lint, tipi e formattazione.
+      forme sono nell'elenco senza «Drawing…». Controllato con il
+      catalogo dell'API sul Mac (`RecommendedCatalog.near` a ogni centro:
+      tre righe per ognuna delle nove città nuove); sull'app pubblicata
+      serve `catalog/` aggiornato sul server.
+- [x] Test verdi (app 780, motore 971, strumenti 42, API 417 senza quelli
+      che vogliono Docker); lint, tipi e formattazione.
 
 ## File toccati
 
@@ -95,6 +101,9 @@ services/route-engine/tests/test_seed_catalog.py    (parte A, dopo TASK-161)
 catalog/seed/<città in evidenza>.json               (parte A, dopo TASK-161)
 catalog/README.md                                   (parte A, dopo TASK-161)
 samples/LOG.md                                      (parte A: il giudizio a occhio)
+tools/test_featured_catalog.py                      (parte A: il test del criterio)
+tools/test_sample_feed.py                           (parte A: con 23 città e 15 post
+                                                     non può più volerle tutte nel feed)
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
@@ -124,9 +133,32 @@ docs/tasks/TASK-163.md
   con TASK-162: i disegni in «Explore» hanno la foto della mappa, anche
   senza aver aperto «Feed»; una città con gli esempi già sul telefono non
   mostra i disegni. App 780 test verdi.
-- **Parte A ferma**: aspetta TASK-161 in `main` (`catalog/seed/`,
-  `catalog/README.md` e `seed_catalog.py` sono suoi). Fatto solo
-  `cityName` («San Francisco»), che non è di nessuno.
+- **Parte A fatta per 13 città su 14**, sul branch
+  `feat/TASK-163-featured-catalog`. New York aveva già le tre forme
+  (TASK-161). Per le altre: `FEATURED` in `seed_catalog.py` (una piazza
+  del centro ciascuna) e `--featured`; nove zone copiate dal server con
+  `rsync` nella cache del Mac (1,2 GB, solo `.graphml` e i nomi delle
+  strade); `python -m route_engine.seed_catalog --run --featured`: 27
+  forme, da 2 a 13 s l'una, somiglianza fra 0,91 e 1,00, tutte tenute e
+  viste a occhio (`samples/LOG.md`). Le più deboli: cuore e stella di
+  Dubai. Le 27 righe del registro sono anche in
+  `out/seed_catalog/runs.jsonl` del checkout principale.
+- **Berlino manca.** La sua zona non è sul server (TASK-137: non stava in
+  4 GiB), Overpass rifiuta il Mac, e gli specchi di Overpass provati non
+  rispondono. Da Geofabrik c'è solo il `.pbf`, che sul Mac nessuno
+  strumento legge. Strade possibili, **da decidere con l'utente**:
+  installare `osmium-tool` sul Mac (Homebrew; è lo strumento già approvato
+  per il server) e costruire la zona dall'estratto di Berlino (circa
+  80 MB), oppure aspettare che Overpass riapra e rilanciare
+  `--run --featured` (riparte da Berlino da solo). Poi togliere Berlino da
+  `MISSING` in `tools/test_featured_catalog.py`.
+- **`tools/test_sample_feed.py`** voleva ogni città del catalogo nel feed
+  d'esempio: con 23 città e 15 post ora chiede un post a città per quante
+  ce ne stanno. `sampleFeed.json` dell'app non è stato rigenerato (lo
+  chiede TASK-161 all'utente).
+- **Dopo il merge**: `catalog/` sul server e riavvio dell'API (F.12), lo
+  chiede il coordinatore all'utente. In `STATUS.md` la prima PR è scritta
+  come pubblicata.
 - **I centri che l'app usa** (`GET /cities` sull'API del Mac, 2026-10-02):
   le forme del catalogo devono partire entro 5 km da questi.
 

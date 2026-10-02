@@ -142,9 +142,14 @@ docs/tasks/TASK-163.md
 
   New York nel seme parte da Union Square (40.7359, -73.9911), a 2,9 km
   dal centro che dà l'API: dentro i 5 km.
-- **Da concordare con TASK-162**: se `FeedPost` cambia props o prende una
-  mappa dentro, `WhileDrawing` si adatta al merge (chiesto alla sessione
-  «Mappa nella sezione feed»).
+- **Concordato con TASK-162** (PR #173, non ancora in `main`): `FeedPost`
+  tiene le props `post` e `width`. La foto della mappa sotto il disegno la
+  fa `FeedMapShooter`, montato in `FeedScreen` (il Pager tiene «Feed»
+  montata), e ogni richiesta porta la sua misura: in «Explore» non c'è
+  niente da montare. Al merge da `main`: rifare i test (`FeedPost` importa
+  `react-native-webview` attraverso `FeedMaps`, il mock entra da solo;
+  `forgetFeedMaps()` se un test deve partire pulito) e guardare nel
+  simulatore che le foto compaiano anche in «Explore».
 
 ## Esito
 

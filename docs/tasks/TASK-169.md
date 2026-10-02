@@ -112,10 +112,10 @@ docs/tasks/TASK-169.md
   il sensore Bluetooth (fascia, bracciale, orologio che trasmette) con
   `react-native-ble-plx`, dipendenza nuova da approvare; Apple Watch con
   HealthKit e un'app per l'orologio, dopo TASK-152.
-- **La musica.** Da chiedere all'utente quale app usa (Spotify, Apple
-  Music): un pulsante che la apre si fa in Expo Go; brano e comandi nella
-  schermata vogliono un'app Spotify Developer dell'utente, o la build
-  propria per Apple Music. Da provare anche se la voce ferma la musica.
+- **La musica.** L'utente usa Spotify (TASK-173): lì il pulsante «Music»
+  che lo apre, fatto in Expo Go, e la domanda su brano e comandi nella
+  schermata, che vogliono un'app Spotify Developer dell'utente. Da provare
+  sull'iPhone anche se la voce ferma la musica.
 - La cadenza e il dislivello dal barometro: vogliono `expo-sensors`.
 - Il peso nel profilo, per le calorie: oggi 70 kg per tutti.
 - La linea sulla mappa spezzata dove c'è stata una pausa: oggi un tratto
@@ -141,4 +141,4 @@ simulatore, che non si lasciava toccare.
 Emerso: «Keep running» contava nel tempo anche i minuti fra «Stop» e la
 ripresa; ora sono una pausa (ADR-0137). Rimandati, con la risposta
 dell'utente già avuta: il battito da sensore Bluetooth e da Apple Watch.
-Da chiedere ancora: quale app di musica.
+La musica: l'utente usa Spotify (TASK-173).

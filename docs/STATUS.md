@@ -135,6 +135,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   applicata, 15 s di API ferma, immagine di prima
   `shaperoute-api:before-task172`). **Da fare**: pubblicare l'app su
   `preview` (ok dell'utente già dato), poi **da provare sull'iPhone**.
+- **App** — TASK-188: un tocco su un disegno di «Feed» apre il suo
+  percorso sulla mappa, chiesto dall'utente (ADR-0151): la scheda di
+  «Explore», con il cuore dei preferiti, «Start» e il GPX; «←» torna a
+  «Feed». Il percorso è quello del catalogo: se il suo `id` è cambiato lo
+  si ritrova dalla partenza, se non c'è più la scheda lo dice e non ne
+  apre un altro. Uno swipe sopra una scheda non la apre. Solo app. Provato
+  in un simulatore con un'API e un database usa e getta: aprire, salvare
+  il preferito, «Start», «←». **Da pubblicare su `preview`** con l'ok
+  dell'utente, poi **da provare sull'iPhone**. Seguiti: lo stesso swipe
+  sulle schede di «Explore»; una domanda per l'utente nel task file (cuore
+  e «Start» anche sulla scheda del feed).
 - **App** — TASK-181: l'avvio tutto giallo, chiesto dall'utente (seguito di
   TASK-179; aggiornamenti di ADR-0134 e ADR-0147). La schermata di avvio
   nativa è gialla con il logo nero (`app.json`), e l'animazione parte già

@@ -277,8 +277,16 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   of 100»), il titolo e una riga «Horse · 19.2 km · 1 h 41 min». Sono le
   figure venute meglio nelle sette città del catalogo, due per città e
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
-  inventati. Le schede non si toccano: aprire un disegno arriva con
-  TASK-118.
+  inventati.
+  **Un tocco su una scheda apre il suo percorso** sulla mappa (TASK-188,
+  ADR-0151, chiesto dall'utente), come un percorso di «Explore»: la stessa
+  scheda con km, forma e città, «Start» per correrlo, «Export GPX», e il
+  cuore dei preferiti in alto a destra. «←» e «Back to the list» tornano a
+  «Feed». Il percorso è quello del catalogo da cui il disegno è nato: se
+  nel catalogo non c'è più, la scheda dice «The route could not load. Try
+  again.» e non mostra un altro percorso al suo posto. Un dito che scorre
+  sopra una scheda non la apre. Like, commenti e il profilo di chi ha corso
+  arrivano con TASK-118.
   **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
   chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
   stile dell'app. È una foto, non una mappa da muovere: la fa una pagina
@@ -292,7 +300,8 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   ha più «←»: per tornare c'è lo swipe, o il nome «Draw».
 - La mappa, la corsa e la sua fine prendono tutto lo schermo: lì i nomi e
   lo swipe non ci sono. «←» da un percorso di «Explore» torna sulla pagina
-  «Explore», da un percorso disegnato su «Draw».
+  «Explore», da un disegno di «Feed» su «Feed» (TASK-188), da un percorso
+  disegnato su «Draw».
 - Uno swipe chiude la tastiera.
 - Una pagina fuori dallo schermo non la legge nemmeno VoiceOver.
 - **Da provare con il dito**: lo swipe stesso, e le righe che scorrono di

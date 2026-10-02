@@ -190,6 +190,19 @@ test("the end of a free run has its numbers, Keep running and Done", async () =>
   expect(onDone).toHaveBeenCalledTimes(1);
 });
 
+test("without a way out of its own the end has no Done: Save and Discard are under it", async () => {
+  const run: FreeRun = {
+    version: 1,
+    route: [],
+    track: track(4210, 0, 1_500_000),
+    status: "stopped",
+  };
+  await render(<FreeFinishCard run={run} onResume={jest.fn()} />);
+  expect(screen.getByText("4.21 km")).toBeOnTheScreen();
+  expect(screen.getByText("Keep running")).toBeOnTheScreen();
+  expect(screen.queryByText("Done")).toBeNull();
+});
+
 test("a run that can no longer go on has Done only", async () => {
   const run: FreeRun = {
     version: 1,

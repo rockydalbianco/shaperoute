@@ -36,6 +36,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from shaperoute_api.access import protect
 from shaperoute_api.accounts import Accounts, install_accounts
+from shaperoute_api.activities import PlaceNames, install_activities
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.errors import error_of
 from shaperoute_api.favorites import install_favorites
@@ -202,6 +203,7 @@ def create_app(
     signal_gate: SignalGate | None = None,
     accounts: Accounts | None = None,
     route_store: RouteStore | None = None,
+    run_places: PlaceNames | None = None,
 ) -> FastAPI:
     # The search events and the learned vocabulary (TASK-130, ADR-0101).
     insights = insights or Insights(None)
@@ -256,6 +258,9 @@ def create_app(
     install_accounts(app, accounts)
     # The routes an account keeps (TASK-171); they need its token.
     install_favorites(app)
+    # The runs an account recorded (TASK-172); the name of their place comes
+    # from the place search's key, when the environment has one.
+    install_activities(app, run_places)
 
     @app.get("/health")
     def health() -> dict[str, str]:

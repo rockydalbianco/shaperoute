@@ -78,23 +78,28 @@ adattiva, il fondo è nero e l'icona a un colore è il segno bianco. In Expo
 Go sulla schermata di casa resta l'icona di Expo Go: la nostra si vede con
 una build propria. Dentro l'app il nome in cima a «Draw» resta un testo.
 
-**La schermata di avvio** (TASK-165, ADR-0134): fondo `background`, il logo
-giallo al centro. Su iOS il logo intero, largo 260 punti
-(`assets/splash-logo.png`); su Android il segno da solo
-(`assets/splash-icon.png`), perché il sistema ritaglia l'immagine in un
-cerchio. La genera il plugin `expo-splash-screen` da `app.json`: nessun
-codice la tiene aperta, sparisce quando l'app è pronta. Come l'icona, si
-vede solo in una build propria.
+**La schermata di avvio** (TASK-165, ADR-0134; gialla da TASK-181): fondo
+giallo `accent`, il logo nero al centro. Su iOS il logo intero, largo 260
+punti (`assets/splash-logo-dark.png`); su Android il segno da solo
+(`assets/splash-icon-dark.png`), perché il sistema ritaglia l'immagine in
+un cerchio. La genera il plugin `expo-splash-screen` da `app.json`, dove il
+giallo è scritto (`#FFD02B`: `app.json` non legge i token). Nessun codice la
+tiene aperta, sparisce quando l'app è pronta. Come l'icona, si vede solo in
+una build propria.
 
-**L'animazione all'avvio** (TASK-179, ADR-0147): dopo la schermata di avvio,
-e in Expo Go al suo posto, il giallo `accent` riempie lo schermo dal centro
-e una penna disegna un cuore, nero `onAccent`: è il percorso a cuore di
-Milano da 10 km, quello del video. Sotto, il logo intero, nero. Tempi:
-0,35 s il giallo, 1,6 s il disegno, 0,45 s fermo, 0,3 s di dissolvenza
-sull'app; il giallo si vede 2,4 secondi. L'app parte sotto e si carica
-intanto; l'animazione prende i tocchi finché c'è, non si salta, e si vede
-una volta a ogni apertura. Sta in `src/intro/`, sopra `App`
-(`index.ts`). Al lettore di schermo dice «Sgrava».
+**L'animazione all'avvio** (TASK-179, ADR-0147; TASK-181): dopo la
+schermata di avvio, e in Expo Go al suo posto, lo schermo è giallo `accent`
+dal primo fotogramma, senza nero in mezzo, e una penna disegna un cuore,
+nero `onAccent`: è il percorso a cuore di Milano da 10 km, quello del
+video. Sotto, il logo intero, nero (la stessa immagine della schermata di
+avvio). Tempi: 0,35 s la penna aspetta sul punto di partenza, 1,6 s il
+disegno, 0,45 s fermo, 0,3 s di dissolvenza sull'app; il giallo si vede
+almeno 2,4 secondi. Il cuore finito resta sempre i suoi 0,45 s: se il
+telefono è lento e il disegno finisce tardi, la dissolvenza aspetta.
+L'app parte sotto e si carica intanto; l'animazione prende i tocchi finché
+c'è, non si salta, e si vede una volta a ogni apertura. Sta in
+`src/intro/`, sopra `App` (`index.ts`). Al lettore di schermo dice
+«Sgrava».
 
 ## Le due schermate
 
@@ -272,8 +277,16 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   of 100»), il titolo e una riga «Horse · 19.2 km · 1 h 41 min». Sono le
   figure venute meglio nelle sette città del catalogo, due per città e
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
-  inventati. Le schede non si toccano: aprire un disegno arriva con
-  TASK-118.
+  inventati.
+  **Un tocco su una scheda apre il suo percorso** sulla mappa (TASK-188,
+  ADR-0151, chiesto dall'utente), come un percorso di «Explore»: la stessa
+  scheda con km, forma e città, «Start» per correrlo, «Export GPX», e il
+  cuore dei preferiti in alto a destra. «←» e «Back to the list» tornano a
+  «Feed». Il percorso è quello del catalogo da cui il disegno è nato: se
+  nel catalogo non c'è più, la scheda dice «The route could not load. Try
+  again.» e non mostra un altro percorso al suo posto. Un dito che scorre
+  sopra una scheda non la apre. Like, commenti e il profilo di chi ha corso
+  arrivano con TASK-118.
   **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
   chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
   stile dell'app. È una foto, non una mappa da muovere: la fa una pagina
@@ -287,7 +300,8 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   ha più «←»: per tornare c'è lo swipe, o il nome «Draw».
 - La mappa, la corsa e la sua fine prendono tutto lo schermo: lì i nomi e
   lo swipe non ci sono. «←» da un percorso di «Explore» torna sulla pagina
-  «Explore», da un percorso disegnato su «Draw».
+  «Explore», da un disegno di «Feed» su «Feed» (TASK-188), da un percorso
+  disegnato su «Draw».
 - Uno swipe chiude la tastiera.
 - Una pagina fuori dallo schermo non la legge nemmeno VoiceOver.
 - **Da provare con il dito**: lo swipe stesso, e le righe che scorrono di
@@ -295,7 +309,7 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   che la riga scorra lei e che lo swipe fra le pagine parta da fuori; su
   Android non è stato provato niente.
 
-## «Profile» (TASK-115, ADR-0125; TASK-154)
+## «Profile» (TASK-115, ADR-0125; TASK-154; TASK-177, ADR-0145)
 
 In alto a destra, accanto ai nomi delle pagine, un pulsante tondo apre
 **«Profile»**, l'account: mostra l'iniziale di chi è entrato, o una
@@ -311,11 +325,28 @@ regole dell'API, e l'errore si dice in parole sotto il pulsante (sotto,
 «Quando non va»). Si apre su «Sign up»; dopo «Log out» o una sessione
 finita, su «Log in».
 
-**«Profile» con l'account**: «LOGGED IN AS», il nome e l'email; la riga
-«Favorites», con quanti sono, che apre la pagina dei preferiti (sotto,
-«Favorites»); «Log out»; «Delete account», in rosso, che chiede prima sulla
-schermata stessa: «Delete my account» o «Keep my account». Nessun pulsante
-dell'account è giallo.
+**«Profile» con l'account** (TASK-177, ADR-0145): in alto un cerchio con
+l'iniziale, il nome e l'email. Sotto, due riquadri affiancati: **«Favorites»**
+con un cuore (❤️) e **«My activities»** con l'uomo che corre (🏃‍♂️), ognuno
+con il suo numero in grande (un trattino finché l'elenco non è arrivato);
+aprono le loro pagine (sotto, «Favorites» e «My activities»). Poi la riga
+**«Settings»** (⚙️). Le emoji sono l'unico colore che non viene dai token;
+nessun pulsante dell'account è giallo.
+
+**«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
+
+- **«Account»**: nome ed email; poi «Profile picture», «Change email» e
+  «Phone number», con la scritta «Soon».
+- **«Preferences»**: «Units», «Soon». **«Notifications»**: «Email
+  notifications» e «Push notifications», «Soon». **«About»**: «Help»,
+  «Terms», «Privacy», «Soon».
+- In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
+  sulla schermata stessa: «Delete my account» o «Keep my account».
+
+Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
+interruttori, perché dietro non c'è ancora niente (le accendono TASK-178,
+182, 183, 184, 185). Usciti dall'account da «Settings», chi rientra trova
+«Profile».
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -324,13 +355,13 @@ dell'account è giallo.
   o a una richiesta: l'app esce da sola, il pulsante di «Profile» ha un
   pallino arancio e «Profile» dice «Your session has ended. Log in
   again.». «Draw» va come prima.
-- **«Log out»** esce subito, anche senza rete, e dice «You are logged out
-  on this phone.».
-- **«Delete account»** esce solo con il sì dell'API; se l'API non risponde
-  l'account resta e la scheda dice perché. Fatto, dice «Your account and
+- **«Log out»**, in «Settings», esce subito, anche senza rete, e dice «You
+  are logged out on this phone.».
+- **«Delete account»**, in «Settings», esce solo con il sì dell'API; se
+  l'API non risponde l'account resta e la pagina dice perché. Fatto, dice «Your account and
   everything that was yours have been deleted.» e torna a «Sign up».
 - **Senza account** si disegna, si esplora e si corre come prima: il token
-  lo vogliono solo l'account e i preferiti.
+  lo vogliono solo l'account, i preferiti e le corse salvate.
 
 ## «Favorites» (TASK-171, ADR-0139)
 
@@ -368,6 +399,55 @@ dell'account.
 - **Sessione finita** a una richiesta dei preferiti: l'app esce, come dice
   «Profile», e il cuore torna a chiedere di entrare.
 - **Al massimo 200**: oltre, l'API dice di toglierne uno e l'app lo ripete.
+
+## «My activities» (TASK-172, ADR-0140)
+
+Le corse che chi ha un account salva si ritrovano in «Profile», da ogni
+telefono dell'account: con un percorso o senza.
+
+- **«Save» alla fine della corsa** (sotto, «La fine della corsa») mette la
+  corsa in «My activities»; «Discard» la butta. Niente si salva da solo
+  (scelta dell'utente, 2026-10-02). Va all'API la corsa com'è stata
+  registrata, posizione per posizione, con le pause e, se c'era, il
+  percorso seguito; km, tempo e punteggio li conta l'API, non il telefono.
+- **Senza rete** la corsa salvata resta sul telefono, in un file a parte
+  (`activities-outbox.json`, al più 20 corse), e parte da sola alla
+  prossima apertura dell'app con la rete, o quando si apre «My
+  activities»; mandata due volte, è salvata una volta. Una corsa che
+  aspetta è dell'account con cui è stata corsa: un altro account sullo
+  stesso telefono non la manda. In cima alla pagina, finché aspetta:
+  «1 run is on this phone, waiting for a connection.».
+- **Senza account** non si salva niente, com'era: sotto la scheda di fine
+  corsa la riga «Sign up or log in to keep your runs in My activities.»
+  apre «Profile» con la stessa frase sopra il modulo. Chi entra da lì e
+  torna alla scheda trova «Save» e «Discard» al posto di «Done».
+- **La pagina «My activities»**, da «Profile»: una scheda per corsa, dalla
+  più recente. A sinistra il disegno, come a fine corsa: il percorso
+  giallo e sopra, sottile e chiara, la linea corsa; una corsa senza
+  percorso ha solo la sua linea. A destra il giorno e l'ora dell'inizio,
+  con l'orologio del telefono («Fri 2 Oct 2026 · 08:12»); il luogo e cosa
+  disegnava («Trento · Star»; il luogo è il paese da cui si parte, trovato
+  dall'API, e manca se non lo trova; senza luogo né percorso, «Run»); «4.01
+  km · 19:00 · 4:45 /km», cioè km, tempo senza le pause e passo medio;
+  «Score 91» quando c'è. Niente è giallo, tranne il percorso nel disegno.
+- **Venti per volta**: in fondo «Show more» porta le venti successive. Il
+  numero in «Profile» le conta tutte.
+- **Una scheda apre la corsa sulla mappa**: il percorso giallo e la linea
+  corsa, come a fine corsa; sotto, giorno e ora, luogo e disegno, il
+  punteggio («91», «out of 100»), km, tempo e passo, la legenda («Yellow:
+  the route. White: what you ran.»). «←» e «Back to the list» tornano
+  all'elenco. Niente cuore e niente «Start»: è una corsa, non un percorso.
+- **«Delete»**, in rosso, sulla scheda dell'elenco e sotto la mappa, chiede
+  prima sulla scheda stessa: «Delete this run? It cannot be undone.», con
+  «Keep it» e «Delete run». La corsa sparisce subito; se l'API rifiuta
+  torna dov'era, con il motivo in cima all'elenco.
+- **Vuoto**: «No activities yet. Save a run when you finish it, and it is
+  kept here.». **Elenco non arrivato**: «Your activities could not load.» e «Try
+  again». L'elenco si chiede all'apertura dell'app, se c'è un account, e
+  ogni volta che la pagina si apre.
+- **Sessione finita** a una richiesta delle corse: l'app esce, come dice
+  «Profile»; una corsa che aspettava resta sul telefono per quando si
+  rientra con lo stesso account.
 
 ## La partenza
 
@@ -746,9 +826,12 @@ TASK-164, di cui tiene i numeri.
   riparte subito, senza conto.
 - **Due pagine, una accanto all'altra**: «Map» a sinistra, «Data» a destra.
   Si passa con uno swipe (verso sinistra per «Data», verso destra per
-  tornare a «Map») o toccando i due nomi in fondo; la corsa si apre su
+  tornare a «Map») o toccando i due pulsanti in fondo; la corsa si apre su
   «Map». Lo swipe parte dalla scheda, non dalla mappa: lì un dito sposta
-  la mappa.
+  la mappa. I due pulsanti si dividono la larghezza della scheda e sono
+  alti 56 punti, più del tocco minimo: si prendono col pollice correndo
+  (TASK-186). La pagina aperta ha la superficie più chiara e il bordo,
+  come le altre scelte dell'app; il giallo resta del percorso.
 - **«Map»**: la mappa con sopra il banner (la svolta, o la partenza senza
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra
@@ -872,7 +955,22 @@ nell'attesa «Scoring your run…», con distanza e durata già lì.
   schermo: torna alla navigazione, e la traccia continua (ADR-0091).
 - **«Done»**: torna al risultato, o alla prima schermata se il percorso
   non c'è più. Con il punteggio arrivato, o la corsa troppo corta, la
-  traccia si cancella dal telefono: salvarla è di TASK-117.
+  traccia si cancella dal file della corsa. «Done» c'è solo senza
+  account.
+- **Con un account, «Save» e «Discard»** al posto di «Done», sotto la
+  scheda, larghi mezza riga l'uno (TASK-172, chiesto dall'utente il
+  2026-10-02: prima di salvare, una schermata che lo chiede). **«Save»**
+  mette la corsa in «My activities» (sopra) e torna dove tornava «Done»;
+  la corsa lascia il file anche senza punteggio, perché l'API la giudica
+  da sé. **«Discard»**, in rosso, chiede prima sulla scheda stessa:
+  «Discard this run? It will not be saved.», con «Keep it» e «Discard
+  run»; poi la corsa sparisce dal telefono e non va da nessuna parte.
+  Finché non si tocca né l'uno né l'altro niente è salvato; «Keep running»
+  resta nella scheda. Se il telefono non riesce a scrivere la corsa: «This
+  run could not be kept on the phone. Try again.», e si resta lì. Nessuno
+  dei due è giallo. «Send to Strava» non c'è: è un task a parte.
+- **Senza account**, sotto la scheda, la riga «Sign up or log in to keep
+  your runs in My activities.», che apre «Profile».
 
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
 principale.
@@ -911,9 +1009,12 @@ file alla prima posizione).
 «Your run» e «White: what you ran.»; sotto i km in grande e i sei riquadri
 di «Data» (tempo senza le pause, passo medio, ultimo km, salita,
 calorie). Senza forma non c'è
-punteggio, e niente va all'API. **«Keep running»** torna alla corsa, con la
-stessa traccia; **«Done»** torna alla prima schermata e cancella la corsa
-dal telefono. Uno «Stop» prima della prima posizione torna subito alla
+punteggio, e niente va a `POST /track-scores`. **«Keep running»** torna
+alla corsa, con la stessa traccia; **«Done»**, senza account, torna alla
+prima schermata e toglie la corsa dal file: si perde, com'era, e sotto la
+scheda c'è la riga che invita a entrare. Con un account al posto di
+«Done» ci sono **«Save»** e **«Discard»** («La fine della corsa», sopra):
+salvata, la corsa va in «My activities» senza punteggio (TASK-172). Uno «Stop» prima della prima posizione torna subito alla
 prima schermata. Se l'app si chiude durante la corsa, alla riapertura si
 apre su questa schermata; «Keep running» c'è solo se l'ultima posizione è
 di meno di 30 minuti prima.
@@ -998,12 +1099,25 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   l'utente (numero, email, nome, ruolo), nel portachiavi
   (`expo-secure-store`, ADR-0125); mai la password. Il token va all'API
   solo con le richieste dell'account (`GET /me`, `DELETE /session`,
-  `DELETE /me`) e dei preferiti, in `Authorization`.
+  `DELETE /me`), dei preferiti e delle corse, in `Authorization`.
 - **I preferiti** (TASK-171): un percorso tenuto va all'API intero, con la
   sua linea, e resta nel database legato all'account finché non lo si
   toglie o si cancella l'account. La linea di un percorso disegnato parte
   da dove si è scelto di partire: spesso vicino a casa. Lo vede solo il suo
   account.
+- **Le corse** (TASK-172): con un account, con «Save» a fine corsa la
+  corsa va all'API **intera**: ogni posizione con il suo orario, le pause e il percorso
+  seguito. Resta nel database legata all'account finché non la si cancella
+  da «My activities» o si cancella l'account; la vede solo il suo account
+  (niente è pubblico: «Public» e la traccia tagliata sono di TASK-117).
+  Una corsa parte e finisce spesso davanti a casa: è il dato più personale
+  che l'app manda. Per il nome del luogo l'API chiede a Geoapify il paese
+  intorno alla partenza **arrotondata a circa un chilometre** (due
+  decimali), come per la ricerca dei luoghi: il servizio non vede mai la
+  porta da cui si parte, né la corsa, né chi è. Il log dell'API non scrive
+  posizioni (ADR-0092). Senza rete la corsa aspetta in un file del
+  telefono, che non esce da lì finché non parte per l'API. Senza account,
+  o con «Discard», non va niente.
 
 ## Quando la mappa non si carica
 

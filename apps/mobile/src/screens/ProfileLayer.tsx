@@ -2,6 +2,7 @@ import { createContext, type ReactNode, useContext, useMemo, useState } from "re
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useAccount } from "../account/useAccount";
+import { ActivitiesContext, useActivitiesOf } from "../activities/activitiesDoor";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import {
   color,
@@ -63,6 +64,23 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   );
   const favorites = useFavoritesOf(apiUrl, account, doors);
   const { forgetWaiting } = favorites;
+  // The runs of the account (TASK-172): one opened from its list leaves
+  // «Profile» for the map, and comes back to the list.
+  const activityDoors = useMemo(
+    () => ({
+      onList: () => {
+        setHint(null);
+        setPage("activities");
+      },
+      onAccount: (why: string) => {
+        setHint(why);
+        setPage("account");
+      },
+      onOpened: () => setPage(null),
+    }),
+    [],
+  );
+  const activities = useActivitiesOf(apiUrl, account, activityDoors);
   const attention = state.status === "signedOut" && state.notice === "ended";
   const initial =
     state.status === "signedIn"
@@ -82,29 +100,31 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   return (
     <DoorContext.Provider value={door}>
       <FavoritesContext.Provider value={favorites}>
-        <View style={styles.layer}>
-          <View
-            style={styles.app}
-            // Under «Profile» the app is out of the screen reader's sight too.
-            accessibilityElementsHidden={shown}
-            importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
-          >
-            {children}
+        <ActivitiesContext.Provider value={activities}>
+          <View style={styles.layer}>
+            <View
+              style={styles.app}
+              // Under «Profile» the app is out of the screen reader's sight too.
+              accessibilityElementsHidden={shown}
+              importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
+            >
+              {children}
+            </View>
+            {page !== null && (
+              <ProfileScreen
+                account={account}
+                page={page}
+                onPage={setPage}
+                hint={hint}
+                onBack={() => {
+                  // Closed without an account: the heart's route waits no more.
+                  forgetWaiting();
+                  setPage(null);
+                }}
+              />
+            )}
           </View>
-          {page !== null && (
-            <ProfileScreen
-              account={account}
-              page={page}
-              onPage={setPage}
-              hint={hint}
-              onBack={() => {
-                // Closed without an account: the heart's route waits no more.
-                forgetWaiting();
-                setPage(null);
-              }}
-            />
-          )}
-        </View>
+        </ActivitiesContext.Provider>
       </FavoritesContext.Provider>
     </DoorContext.Provider>
   );

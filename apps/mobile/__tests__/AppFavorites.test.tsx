@@ -257,7 +257,7 @@ test("«Favorites» in «Profile» lists them, and one opens on the map", async 
   await fireEvent.press(screen.getByText("Back to the list"));
   expect(screen.getByRole("header", { name: "Favorites" })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
-  expect(screen.getByText("LOGGED IN AS")).toBeOnTheScreen();
+  expect(screen.getByRole("header", { name: "Profile" })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.getByRole("tab", { name: "Draw", selected: true })).toBeOnTheScreen();
   expect(screen.queryByRole("button", { name: /favorites/ })).toBeNull();

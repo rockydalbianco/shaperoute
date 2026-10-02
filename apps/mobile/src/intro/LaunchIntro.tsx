@@ -12,16 +12,27 @@ import { color } from "../theme/tokens";
 import { heartHeight, heartStrokes } from "./heartLine";
 
 /**
- * The launch animation, step by step (TASK-179, ADR-0147): the yellow floods
- * the screen, the heart is drawn, it stays a moment, the app comes up.
+ * The launch animation, step by step (TASK-179, ADR-0147): the yellow screen
+ * waits a moment, the heart is drawn, it stays a moment, the app comes up.
  */
-export const INTRO_MS = { flood: 350, draw: 1600, hold: 450, fade: 300 } as const;
+export const INTRO_MS = { wait: 350, draw: 1600, hold: 450, fade: 300 } as const;
 
 /** How long the yellow screen with the heart is seen, before it fades. */
-export const INTRO_SHOWN_MS = INTRO_MS.flood + INTRO_MS.draw + INTRO_MS.hold;
+export const INTRO_SHOWN_MS = INTRO_MS.wait + INTRO_MS.draw + INTRO_MS.hold;
 
 /** From the first frame to the app alone on screen. */
 export const INTRO_TOTAL_MS = INTRO_SHOWN_MS + INTRO_MS.fade;
+
+const WAIT_SHARE = INTRO_MS.wait / (INTRO_MS.wait + INTRO_MS.draw);
+const drawEase = Easing.inOut(Easing.quad);
+
+/**
+ * How much of the line is drawn at `t`, 0 to 1 of the wait and the drawing
+ * together: nothing while the pen waits, then gently off and gently in.
+ */
+export function penProgress(t: number): number {
+  return t <= WAIT_SHARE ? 0 : drawEase((t - WAIT_SHARE) / (1 - WAIT_SHARE));
+}
 
 /** The heart's width: most of a phone, never huge on a tablet. */
 const HEART_SHARE = 0.6;
@@ -30,7 +41,8 @@ const LINE = 5;
 const PEN = 13;
 const START_DOT = 15;
 /** The logo's image is a square with the logo across its middle
- * (`assets/splash-logo.png`, TASK-165): it shows through a low window. */
+ * (`assets/splash-logo-dark.png`, the one of the launch screen, TASK-181): it
+ * shows through a low window. */
 const LOGO_SHARE = 0.7;
 const LOGO_WINDOW = 0.26;
 const LOGO_GAP = 36;
@@ -46,8 +58,7 @@ type Props = {
  * app, which starts underneath, and takes the touches until it is gone.
  */
 export function LaunchIntro({ onDone }: Props) {
-  const { width, height } = useWindowDimensions();
-  const [flood] = useState(() => new Animated.Value(0));
+  const { width } = useWindowDimensions();
   const [draw] = useState(() => new Animated.Value(0));
   const [shown] = useState(() => new Animated.Value(1));
   // The newest `onDone`, without starting the animation again.
@@ -57,42 +68,43 @@ export function LaunchIntro({ onDone }: Props) {
   }, [onDone]);
 
   useEffect(() => {
-    const drawing = Animated.sequence([
-      Animated.timing(flood, {
-        toValue: 1,
-        duration: INTRO_MS.flood,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(draw, {
-        toValue: 1,
-        duration: INTRO_MS.draw,
-        easing: Easing.inOut(Easing.quad),
-        useNativeDriver: true,
-      }),
-    ]);
+    const startedAt = Date.now();
+    let leave: ReturnType<typeof setTimeout> | undefined;
+    // One animation from the first frame, its wait inside it: nothing has to
+    // come back to JavaScript, busy starting the app, for the pen to start.
+    const drawing = Animated.timing(draw, {
+      toValue: 1,
+      duration: INTRO_MS.wait + INTRO_MS.draw,
+      easing: penProgress,
+      useNativeDriver: true,
+    });
     const leaving = Animated.timing(shown, {
       toValue: 0,
       duration: INTRO_MS.fade,
       useNativeDriver: true,
     });
-    drawing.start();
-    // The clock decides when it leaves, not the end of the drawing: with the
-    // phone's animations switched off the drawing is over at once, and the
-    // heart must still be seen for its time.
-    const leave = setTimeout(() => {
-      leaving.start(({ finished }) => {
-        if (finished) {
-          done.current();
-        }
-      });
-    }, INTRO_SHOWN_MS);
+    drawing.start(({ finished }) => {
+      if (!finished) {
+        return;
+      }
+      // The finished heart stays its moment, however late the drawing ended.
+      // And the whole is never shorter than its time: with the phone's
+      // animations switched off the drawing is over at once.
+      const left = Math.max(INTRO_MS.hold, INTRO_SHOWN_MS - (Date.now() - startedAt));
+      leave = setTimeout(() => {
+        leaving.start((end) => {
+          if (end.finished) {
+            done.current();
+          }
+        });
+      }, left);
+    });
     return () => {
       clearTimeout(leave);
       drawing.stop();
       leaving.stop();
     };
-  }, [flood, draw, shown]);
+  }, [draw, shown]);
 
   const heartWidth = Math.min(width * HEART_SHARE, HEART_WIDEST);
   const strokes = useMemo(() => heartStrokes(heartWidth), [heartWidth]);
@@ -111,8 +123,6 @@ export function LaunchIntro({ onDone }: Props) {
     };
   }, [draw, strokes]);
 
-  // The circle that floods the screen from its centre reaches the corners.
-  const reach = Math.hypot(width, height) + 2;
   const logoWidth = heartWidth * LOGO_SHARE;
 
   return (
@@ -123,27 +133,6 @@ export function LaunchIntro({ onDone }: Props) {
       accessibilityLabel="Sgrava"
       testID="launch-intro"
     >
-      <Animated.View
-        style={[
-          styles.flood,
-          {
-            width: reach,
-            height: reach,
-            borderRadius: reach / 2,
-            left: (width - reach) / 2,
-            top: (height - reach) / 2,
-            // Never quite nothing: Android cannot turn back a scale of zero.
-            transform: [
-              {
-                scale: flood.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.01, 1],
-                }),
-              },
-            ],
-          },
-        ]}
-      />
       <View style={{ width: heartWidth, height: heartHeight(heartWidth) }}>
         {strokes.map((s, i) => (
           <Animated.View
@@ -169,20 +158,16 @@ export function LaunchIntro({ onDone }: Props) {
         <Animated.View
           style={[
             styles.pen,
-            {
-              opacity: flood,
-              transform: [{ translateX: pen.x }, { translateY: pen.y }],
-            },
+            { transform: [{ translateX: pen.x }, { translateY: pen.y }] },
           ]}
         />
         {/* Where the route starts and ends, as on the logo and on the map. */}
-        <Animated.View
+        <View
           style={[
             styles.startDot,
             {
               left: strokes[0].x1 - START_DOT / 2,
               top: strokes[0].y1 - START_DOT / 2,
-              opacity: flood,
             },
           ]}
         />
@@ -194,8 +179,8 @@ export function LaunchIntro({ onDone }: Props) {
         ]}
       >
         <Image
-          source={require("../../assets/splash-logo.png")}
-          style={[styles.logo, { width: logoWidth, height: logoWidth }]}
+          source={require("../../assets/splash-logo-dark.png")}
+          style={{ width: logoWidth, height: logoWidth }}
           accessible={false}
         />
       </View>
@@ -207,12 +192,7 @@ const styles = StyleSheet.create({
   cover: {
     alignItems: "center",
     justifyContent: "center",
-    // What the launch screen leaves behind (TASK-165), until the yellow comes.
-    backgroundColor: color.background,
-    overflow: "hidden",
-  },
-  flood: {
-    position: "absolute",
+    // The yellow of the launch screen (TASK-181): no black in between.
     backgroundColor: color.accent,
   },
   stroke: {
@@ -244,9 +224,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
-  },
-  logo: {
-    // The image is the yellow logo: on yellow it is drawn in the dark colour.
-    tintColor: color.onAccent,
   },
 });

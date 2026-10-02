@@ -10,6 +10,10 @@ import { useMemo, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { useActivitiesDoor } from "./src/activities/activitiesDoor";
+import { ActivityCard } from "./src/activities/ActivityCard";
+import { type Drawn, sameLine } from "./src/activities/recordedRun";
+import { RunEnd } from "./src/activities/RunEnd";
 import { useAdBeforeRoute } from "./src/ads/useAdBeforeRoute";
 import { apiUrl } from "./src/api/apiUrl";
 import {
@@ -40,6 +44,7 @@ import {
   themedKeepable,
 } from "./src/favorites/favoriteRoute";
 import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
+import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
 import { MapView } from "./src/map/MapView";
 import {
   canResume,
@@ -178,8 +183,33 @@ function Sgrava() {
     close: closeFavorite,
     showList: showFavorites,
   } = useFavoritesDoor();
+  // And so does a run opened from «My activities» (TASK-172).
+  const {
+    opened: activity,
+    close: closeActivity,
+    showList: showActivities,
+    remove: removeActivity,
+    record: recordRun,
+    signedIn,
+  } = useActivitiesDoor();
   const onPage = PAGES.includes(screenNow);
-  const screen: Screen = favorite !== null && onPage ? "map" : screenNow;
+  const screen: Screen =
+    (favorite !== null || activity !== null) && onPage ? "map" : screenNow;
+  // A run of «My activities» on the map, as the end of a run shows one: its
+  // route, and over it what was run.
+  const reviewing = screen === "map" && activity !== null;
+  const reviewed = useMemo(
+    () =>
+      activity === null
+        ? null
+        : {
+            start: activity.track[0] ?? null,
+            route: activity.points,
+            others: NO_OTHERS,
+            track: activity.track,
+          },
+    [activity],
+  );
   const { position, refresh } = useCurrentPosition();
   const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
@@ -214,6 +244,9 @@ function Sgrava() {
     close: closeExplored,
   } = useExplored(API_URL);
   const explored = favorite ?? exploredRoute;
+  // The page a route was opened from, where «←» goes back to: a drawing of
+  // «Feed» opens as a route of "Explore" does (TASK-188).
+  const [routeList, setRouteList] = useState<"explore" | "feed">("explore");
   // "Explore" for any city, and a shape through a theme's places (TASK-129).
   const [exploreCity, setExploreCity] = useState<Place | null>(null);
   // The cities chosen last, kept on the phone (TASK-134).
@@ -318,8 +351,11 @@ function Sgrava() {
   const heading = useMemo(() => headingDeg(runTrack), [runTrack]);
   // A route of "Explore" on the map, in place of the drawn one (TASK-126).
   const theming =
-    screen === "map" && explored === null && themed.state.status !== "idle";
-  const exploring = screen === "map" && explored !== null;
+    screen === "map" &&
+    !reviewing &&
+    explored === null &&
+    themed.state.status !== "idle";
+  const exploring = screen === "map" && !reviewing && explored !== null;
   const exploredExport: ExportState =
     explored?.status === "done" &&
     gpx.state.status !== "idle" &&
@@ -347,7 +383,7 @@ function Sgrava() {
     [themed.state],
   );
   const onMap =
-    screen !== "map"
+    screen !== "map" || reviewing
       ? null
       : theming
         ? themedFavorite
@@ -377,21 +413,70 @@ function Sgrava() {
     setScreen("runFinish");
   }
 
-  /** With no score to wait for, the run leaves the phone at once. */
-  function onFreeDone() {
-    clearRun();
+  /** What the route of a run draws, while the app still has that route: a
+   * run left from another opening has only its line. */
+  function drawnBy(route: LatLon[]): Drawn | null {
+    const kept = [
+      drawnFavorite,
+      exploredFavorite,
+      themedFavorite,
+      favorite?.keepable ?? null,
+    ].find((known) => known != null && sameLine(known.request.points, route));
+    return kept?.request ?? null;
+  }
+
+  /** The end of a run without a route leaves the screen. */
+  function leaveFreeFinish() {
     setFreeFinished(null);
     setScreen("choose");
   }
 
+  /** «Done», with nobody signed in: with no score to wait for, the run
+   * leaves the phone at once. */
+  function onFreeDone() {
+    clearRun();
+    leaveFreeFinish();
+  }
+
+  /** The end of a run along a route leaves the screen. */
+  function leaveFinish() {
+    setFinished(null);
+    // A run of "Explore" goes back to its route's card.
+    setScreen(exploreRun !== null || view.status === "done" ? "map" : "choose");
+  }
+
+  /** «Done», with nobody signed in. */
   function onFinishDone(settled: boolean) {
     // Without its score the run stays in the file, for the next opening.
     if (settled) {
       clearRun();
     }
-    setFinished(null);
-    // A run of "Explore" goes back to its route's card.
-    setScreen(exploreRun !== null || view.status === "done" ? "map" : "choose");
+    leaveFinish();
+  }
+
+  /** «Save» (TASK-172): the run that ended goes to «My activities», where
+   * the API scores it by itself, and leaves the screen. False when the
+   * phone could not keep it: the run stays where it is. */
+  function onSaveRun(): boolean {
+    const kept =
+      finished !== null
+        ? recordRun(finished.run, drawnBy(finished.run.route))
+        : freeFinished !== null && recordRun(freeFinished.run, null);
+    if (kept) {
+      onDiscardRun();
+    }
+    return kept;
+  }
+
+  /** «Discard», or what follows «Save»: the run leaves the file of the run
+   * in progress, with its score or without, and the screen. */
+  function onDiscardRun() {
+    clearRun();
+    if (finished !== null) {
+      leaveFinish();
+    } else {
+      leaveFreeFinish();
+    }
   }
 
   /** "Explore" leaves the map: its route, its directions, its run. */
@@ -423,7 +508,17 @@ function Sgrava() {
     setScreen("map");
   }
 
+  /** A run of «My activities» leaves the map for the list it came from. */
+  function onActivityList() {
+    closeActivity();
+    showActivities();
+  }
+
   function onBack() {
+    if (reviewing) {
+      onActivityList();
+      return;
+    }
     if (favorite !== null) {
       // Back to the list it was opened from, over the page left under it.
       closeExplore();
@@ -435,7 +530,7 @@ function Sgrava() {
     }
     if (theming || exploring) {
       closeExplore();
-      setScreen("explore");
+      setScreen(routeList);
       return;
     }
     // Nobody is left watching the wait: drop it, as Cancel does.
@@ -535,10 +630,23 @@ function Sgrava() {
             }
             heading={heading}
             onError={setMapError}
+            // A run of «My activities» takes the map from whatever was on it.
+            {...(reviewing ? reviewed : null)}
           />
         }
       >
-        {freeFinishing ? (
+        {reviewing ? (
+          <ActivityCard
+            // A new card for each run: «Delete» asks again.
+            key={activity.id}
+            activity={activity}
+            onList={onActivityList}
+            onDelete={() => {
+              removeActivity(activity.id);
+              onActivityList();
+            }}
+          />
+        ) : freeFinishing ? (
           <FreeFinishCard
             run={freeFinished.run}
             onResume={
@@ -549,7 +657,8 @@ function Sgrava() {
                   }
                 : undefined
             }
-            onDone={onFreeDone}
+            // With an account the way out is «Save» or «Discard», below.
+            onDone={signedIn ? undefined : onFreeDone}
           />
         ) : running ? (
           <FreeRunCard
@@ -605,7 +714,7 @@ function Sgrava() {
           <FinishCard
             apiUrl={API_URL}
             run={finished.run}
-            onDone={onFinishDone}
+            onDone={signedIn ? undefined : onFinishDone}
             onResume={
               finished.resumable && (exploreRun !== null || view.status === "done")
                 ? () => {
@@ -649,6 +758,11 @@ function Sgrava() {
             onChoose={(index) => answer && setPicked({ of: answer, index })}
           />
         )}
+        {/* Under the card of a run that ended: «Save» or «Discard», with an
+            account (TASK-172). */}
+        {(finishing || freeFinishing) && (
+          <RunEnd onSave={onSaveRun} onDiscard={onDiscardRun} />
+        )}
       </MapScreen>
       {/* Over the map, opposite the way back: keep the route shown. */}
       <FavoriteHeart route={onMap} />
@@ -662,7 +776,19 @@ function Sgrava() {
           }}
           action={<ProfileButton />}
           pages={[
-            { title: "Feed", render: () => <FeedScreen /> },
+            {
+              title: "Feed",
+              render: () => (
+                <FeedScreen
+                  onOpen={(post) => {
+                    closeExplore();
+                    openExplored(postRoute(post), fetchPostRoute(post));
+                    setRouteList("feed");
+                    setScreen("map");
+                  }}
+                />
+              ),
+            },
             {
               title: "Draw",
               render: () => (
@@ -728,6 +854,7 @@ function Sgrava() {
                   onOpen={(route) => {
                     closeExplore();
                     openExplored(route);
+                    setRouteList("explore");
                     setScreen("map");
                   }}
                   city={exploreCity}
@@ -744,6 +871,7 @@ function Sgrava() {
                     Keyboard.dismiss();
                     closeExplore();
                     themed.ask(request);
+                    setRouteList("explore");
                     setScreen("map");
                   }}
                 />

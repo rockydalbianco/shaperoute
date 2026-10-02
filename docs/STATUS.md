@@ -256,6 +256,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   voce delle svolte con la musica accesa (la abbassa, la ferma, ci parla
   sopra?); la corsa mentre si è in Spotify. **Una domanda per l'utente**
   nel task file: brano, pausa e avanti dentro Sgrava.
+- **App, test** — TASK-193: i test dell'app non cadono più per la macchina
+  carica. Ogni test ha 30 s invece di 5: il primo disegno di un file a
+  cache fredda prendeva 5,1–5,2 s in CI (oggi rossi #194, #199, #207) e
+  fino a 22 s sul Mac con più agenti al lavoro. `AppFreeRun.test.tsx` gira
+  su un orologio finto: prima quattro punti dipendevano dall'orologio vero.
+  `AppFavorites.test.tsx` non è stato diviso: provato, il primo disegno
+  lento passa solo a un altro file (numeri nel task file). L'app non
+  cambia.
 - **App** — TASK-175: la mappa non ha più i pulsanti «+» e «−» in alto a
   destra, chiesto dall'utente (ADR-0143): si ingrandisce solo con le dita.
   Il cuore dei preferiti sale nell'angolo, alla stessa altezza di «←».

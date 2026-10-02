@@ -228,6 +228,63 @@ tratti (ADR-0061); cane intero, uccello, zucca e albero di Natale restano
 candidate da CLI (TASK-064, TASK-078). Lumaca e teste hanno più di 64
 vertici: con i tratti restano tutti, e la forma ha più punti.
 
+### Lettere unite anche dalla cima (TASK-067)
+
+Due lettere si possono unire anche lungo la cima, y = 1, invece che lungo
+la base (ADR-0063): dove accorcia la parola, perché a pari chilometri una
+linea più corta dà lettere più alte. Fra una U e una V l'unione dalla base
+va dal fondo dell'una alla punta dell'altra (1,2 altezze), dalla cima
+dall'asta destra dell'una al braccio sinistro dell'altra (0,6).
+
+Una lettera che si può unire in cima lo dice nell'alfabeto, con i suoi due
+angoli alti:
+
+```json
+"V": {"top": {"in": [0, 1], "out": [0.6, 1]}, "out": [[0.3, 0], [0, 1], ...]}
+```
+
+- `in` è dove entra un'unione che arriva da sinistra, `out` dove esce
+  quella verso destra; una lettera può avere solo `in` (B, D, P, R e K
+  tonde: a destra la cima non arriva al bordo). Senza `top` la lettera si
+  unisce solo dalla base, come prima.
+- **La lettera resta la stessa**: entrata o lasciata in cima è la stessa
+  linea chiusa, cominciata dall'ingresso e tagliata all'uscita
+  (`Letter.route`). Stessi tratti, corsi lo stesso numero di volte: la
+  lunghezza delle lettere non cambia, cambiano solo gli spazi.
+- **Tre regole di lettura**, controllate sull'alfabeto da `parse_letters`:
+  un `top` che ne viola una è rifiutato.
+  1. Un'unione in cima non allunga un tratto che finisce sulla cima: la
+     sbarra della T, il braccio alto di E, F e Z, e nelle squadrate anche
+     di C, G e S. Il braccio si confonderebbe con l'unione, come la base
+     inghiottiva il braccio basso di E e L (ADR-0056). Il lato alto di una
+     pancia chiusa (P, R, la O squadrata) non finisce lì, e va bene.
+  2. Un'unione in cima non passa sopra la lettera: entra dal bordo
+     sinistro ed esce dal destro. Sotto una lettera la linea è il rigo su
+     cui la parola sta; sopra è un tratto in più (la L diventerebbe una C,
+     la A avrebbe una bandiera).
+  3. Una lettera che tocca la cima in un punto solo non si unisce lì: la I
+     fra due unioni in cima è una T («VIVA» si leggerebbe «VTVA»), e con
+     la cima da un lato e la base dall'altro la I e la L sono un gradino.
+- **La scelta** (`choose_joins`): ogni spazio va tutto lungo la base o
+  tutto lungo la cima, mai in diagonale. Fra tutte le combinazioni che le
+  lettere permettono, al più 128, vale la parola più corta; a pari
+  lunghezza quella con meno unioni in cima. Stessa parola, stesse unioni.
+  Una lettera può avere la cima da un lato e la base dall'altro (la V di
+  «UVA»).
+
+In cima si uniscono, tonde: H, M, N, U, V, W, X, Y da tutti e due i lati;
+B, D, K, P, R solo da sinistra. Squadrate: H, K, M, N, O, P, Q, R, U, V, W,
+X, Y; B e D solo da sinistra. Accorciano solo le coppie con U, V, W o Y
+(tonde) e con P, U, V o Y (squadrate), che dalla base si uniscono a metà:
+«UVA» 7,4% (8,6% squadrata), «NUVOLA» 5,2% (8,5%), «LUNA» 2,6%. Le altre
+parole restano identiche. Misure e campioni: `docs/tasks/TASK-067.md`.
+
+**Accese per difetto** in tutti e due gli stili (`words.TOP_JOINS`), per
+scelta dell'utente (2026-10-02, ADR-0063). `compose` e `plan_route` hanno
+`top_joins`, e `tests/measure_words.py` `--no-top-joins`: con `False` la
+parola è quella di prima, punto per punto. La richiesta all'API resta la
+stessa: cambia il percorso delle parole con U, V, W o Y.
+
 ### Il contorno da un'immagine (TASK-072, TASK-084)
 
 `route_engine/image_outline.py` ricava un contorno dal soggetto di
@@ -620,7 +677,9 @@ Per una parola composta (§2) la ricerca è la stessa, con due differenze
   parola intera premia gli spostamenti che accorciano gli spazi. Gli spazi
   si allungano o accorciano, e lo spazio da cui parte il percorso resta
   fermo nel suo centro, dove sta la partenza. Le lettere non ruotano e non
-  cambiano misura.
+  cambiano misura. Uno spazio lungo la cima (§2, TASK-067) si comporta
+  come uno lungo la base: si allunga e si accorcia con le sue due lettere,
+  e il percorso può partire dal suo centro.
 
 La somiglianza si misura sulla parola con le lettere spostate: è quella
 che il percorso deve disegnare.

@@ -373,14 +373,15 @@ dell'account.
 
 ## «My activities» (TASK-172, ADR-0140)
 
-Le corse di chi ha un account si salvano da sole e si ritrovano in
-«Profile», da ogni telefono dell'account: con un percorso o senza.
+Le corse che chi ha un account salva si ritrovano in «Profile», da ogni
+telefono dell'account: con un percorso o senza.
 
-- **Si salva da sola**, con «Done» alla fine della corsa (sotto, «La fine
-  della corsa»): nessun pulsante «Save». Va all'API la corsa com'è stata
+- **«Save» alla fine della corsa** (sotto, «La fine della corsa») mette la
+  corsa in «My activities»; «Discard» la butta. Niente si salva da solo
+  (scelta dell'utente, 2026-10-02). Va all'API la corsa com'è stata
   registrata, posizione per posizione, con le pause e, se c'era, il
   percorso seguito; km, tempo e punteggio li conta l'API, non il telefono.
-- **Senza rete** la corsa resta sul telefono, in un file a parte
+- **Senza rete** la corsa salvata resta sul telefono, in un file a parte
   (`activities-outbox.json`, al più 20 corse), e parte da sola alla
   prossima apertura dell'app con la rete, o quando si apre «My
   activities»; mandata due volte, è salvata una volta. Una corsa che
@@ -390,7 +391,7 @@ Le corse di chi ha un account si salvano da sole e si ritrovano in
 - **Senza account** non si salva niente, com'era: sotto la scheda di fine
   corsa la riga «Sign up or log in to keep your runs in My activities.»
   apre «Profile» con la stessa frase sopra il modulo. Chi entra da lì e
-  torna alla scheda salva la corsa con «Done».
+  torna alla scheda trova «Save» e «Discard» al posto di «Done».
 - **La pagina «My activities»**, da «Profile»: una scheda per corsa, dalla
   più recente. A sinistra il disegno, come a fine corsa: il percorso
   giallo e sopra, sottile e chiara, la linea corsa; una corsa senza
@@ -411,8 +412,8 @@ Le corse di chi ha un account si salvano da sole e si ritrovano in
   prima sulla scheda stessa: «Delete this run? It cannot be undone.», con
   «Keep it» e «Delete run». La corsa sparisce subito; se l'API rifiuta
   torna dov'era, con il motivo in cima all'elenco.
-- **Vuoto**: «No activities yet. Your runs are saved here when you finish
-  them.». **Elenco non arrivato**: «Your activities could not load.» e «Try
+- **Vuoto**: «No activities yet. Save a run when you finish it, and it is
+  kept here.». **Elenco non arrivato**: «Your activities could not load.» e «Try
   again». L'elenco si chiede all'apertura dell'app, se c'è un account, e
   ogni volta che la pagina si apre.
 - **Sessione finita** a una richiesta delle corse: l'app esce, come dice
@@ -922,12 +923,21 @@ nell'attesa «Scoring your run…», con distanza e durata già lì.
   schermo: torna alla navigazione, e la traccia continua (ADR-0091).
 - **«Done»**: torna al risultato, o alla prima schermata se il percorso
   non c'è più. Con il punteggio arrivato, o la corsa troppo corta, la
-  traccia si cancella dal file della corsa. Con un account, «Done» manda
-  la corsa a «My activities» (sopra; TASK-172), anche senza punteggio:
-  l'API la giudica da sé. Prima di «Done» non parte niente, perché con
-  «Keep running» la corsa può ancora continuare.
-- **Sotto la scheda** una riga dice dove va la corsa: «Done saves this run
-  in My activities.» con un account; senza, «Sign up or log in to keep
+  traccia si cancella dal file della corsa. «Done» c'è solo senza
+  account.
+- **Con un account, «Save» e «Discard»** al posto di «Done», sotto la
+  scheda, larghi mezza riga l'uno (TASK-172, chiesto dall'utente il
+  2026-10-02: prima di salvare, una schermata che lo chiede). **«Save»**
+  mette la corsa in «My activities» (sopra) e torna dove tornava «Done»;
+  la corsa lascia il file anche senza punteggio, perché l'API la giudica
+  da sé. **«Discard»**, in rosso, chiede prima sulla scheda stessa:
+  «Discard this run? It will not be saved.», con «Keep it» e «Discard
+  run»; poi la corsa sparisce dal telefono e non va da nessuna parte.
+  Finché non si tocca né l'uno né l'altro niente è salvato; «Keep running»
+  resta nella scheda. Se il telefono non riesce a scrivere la corsa: «This
+  run could not be kept on the phone. Try again.», e si resta lì. Nessuno
+  dei due è giallo. «Send to Strava» non c'è: è un task a parte.
+- **Senza account**, sotto la scheda, la riga «Sign up or log in to keep
   your runs in My activities.», che apre «Profile».
 
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
@@ -968,10 +978,11 @@ file alla prima posizione).
 di «Data» (tempo senza le pause, passo medio, ultimo km, salita,
 calorie). Senza forma non c'è
 punteggio, e niente va a `POST /track-scores`. **«Keep running»** torna
-alla corsa, con la stessa traccia; **«Done»** torna alla prima schermata e
-toglie la corsa dal file: con un account va in «My activities», senza
-punteggio (TASK-172); senza account si perde, com'era, e sotto la scheda
-c'è la riga che invita a entrare. Uno «Stop» prima della prima posizione torna subito alla
+alla corsa, con la stessa traccia; **«Done»**, senza account, torna alla
+prima schermata e toglie la corsa dal file: si perde, com'era, e sotto la
+scheda c'è la riga che invita a entrare. Con un account al posto di
+«Done» ci sono **«Save»** e **«Discard»** («La fine della corsa», sopra):
+salvata, la corsa va in «My activities» senza punteggio (TASK-172). Uno «Stop» prima della prima posizione torna subito alla
 prima schermata. Se l'app si chiude durante la corsa, alla riapertura si
 apre su questa schermata; «Keep running» c'è solo se l'ultima posizione è
 di meno di 30 minuti prima.
@@ -1062,8 +1073,8 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   toglie o si cancella l'account. La linea di un percorso disegnato parte
   da dove si è scelto di partire: spesso vicino a casa. Lo vede solo il suo
   account.
-- **Le corse** (TASK-172): con un account, a «Done» la corsa va all'API
-  **intera**: ogni posizione con il suo orario, le pause e il percorso
+- **Le corse** (TASK-172): con un account, con «Save» a fine corsa la
+  corsa va all'API **intera**: ogni posizione con il suo orario, le pause e il percorso
   seguito. Resta nel database legata all'account finché non la si cancella
   da «My activities» o si cancella l'account; la vede solo il suo account
   (niente è pubblico: «Public» e la traccia tagliata sono di TASK-117).
@@ -1073,8 +1084,8 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   decimali), come per la ricerca dei luoghi: il servizio non vede mai la
   porta da cui si parte, né la corsa, né chi è. Il log dell'API non scrive
   posizioni (ADR-0092). Senza rete la corsa aspetta in un file del
-  telefono, che non esce da lì finché non parte per l'API. Senza account
-  non va niente.
+  telefono, che non esce da lì finché non parte per l'API. Senza account,
+  o con «Discard», non va niente.
 
 ## Quando la mappa non si carica
 

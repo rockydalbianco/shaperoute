@@ -13,7 +13,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useActivitiesDoor } from "./src/activities/activitiesDoor";
 import { ActivityCard } from "./src/activities/ActivityCard";
 import { type Drawn, sameLine } from "./src/activities/recordedRun";
-import { RunKeptLine } from "./src/activities/RunKeptLine";
+import { RunEnd } from "./src/activities/RunEnd";
 import { useAdBeforeRoute } from "./src/ads/useAdBeforeRoute";
 import { apiUrl } from "./src/api/apiUrl";
 import {
@@ -189,6 +189,7 @@ function Sgrava() {
     showList: showActivities,
     remove: removeActivity,
     record: recordRun,
+    signedIn,
   } = useActivitiesDoor();
   const onPage = PAGES.includes(screenNow);
   const screen: Screen =
@@ -420,30 +421,58 @@ function Sgrava() {
     return kept?.request ?? null;
   }
 
-  /** With no score to wait for, the run leaves the phone at once: with an
-   * account, for «My activities» (TASK-172). */
-  function onFreeDone() {
-    if (freeFinished !== null) {
-      recordRun(freeFinished.run, null);
-    }
-    clearRun();
+  /** The end of a run without a route leaves the screen. */
+  function leaveFreeFinish() {
     setFreeFinished(null);
     setScreen("choose");
   }
 
+  /** «Done», with nobody signed in: with no score to wait for, the run
+   * leaves the phone at once. */
+  function onFreeDone() {
+    clearRun();
+    leaveFreeFinish();
+  }
+
+  /** The end of a run along a route leaves the screen. */
+  function leaveFinish() {
+    setFinished(null);
+    // A run of "Explore" goes back to its route's card.
+    setScreen(exploreRun !== null || view.status === "done" ? "map" : "choose");
+  }
+
+  /** «Done», with nobody signed in. */
   function onFinishDone(settled: boolean) {
-    // The run is over: with an account it goes to «My activities», where
-    // the API scores it again by itself (TASK-172).
-    if (finished !== null) {
-      recordRun(finished.run, drawnBy(finished.run.route));
-    }
     // Without its score the run stays in the file, for the next opening.
     if (settled) {
       clearRun();
     }
-    setFinished(null);
-    // A run of "Explore" goes back to its route's card.
-    setScreen(exploreRun !== null || view.status === "done" ? "map" : "choose");
+    leaveFinish();
+  }
+
+  /** «Save» (TASK-172): the run that ended goes to «My activities», where
+   * the API scores it by itself, and leaves the screen. False when the
+   * phone could not keep it: the run stays where it is. */
+  function onSaveRun(): boolean {
+    const kept =
+      finished !== null
+        ? recordRun(finished.run, drawnBy(finished.run.route))
+        : freeFinished !== null && recordRun(freeFinished.run, null);
+    if (kept) {
+      onDiscardRun();
+    }
+    return kept;
+  }
+
+  /** «Discard», or what follows «Save»: the run leaves the file of the run
+   * in progress, with its score or without, and the screen. */
+  function onDiscardRun() {
+    clearRun();
+    if (finished !== null) {
+      leaveFinish();
+    } else {
+      leaveFreeFinish();
+    }
   }
 
   /** "Explore" leaves the map: its route, its directions, its run. */
@@ -624,7 +653,8 @@ function Sgrava() {
                   }
                 : undefined
             }
-            onDone={onFreeDone}
+            // With an account the way out is «Save» or «Discard», below.
+            onDone={signedIn ? undefined : onFreeDone}
           />
         ) : running ? (
           <FreeRunCard
@@ -680,7 +710,7 @@ function Sgrava() {
           <FinishCard
             apiUrl={API_URL}
             run={finished.run}
-            onDone={onFinishDone}
+            onDone={signedIn ? undefined : onFinishDone}
             onResume={
               finished.resumable && (exploreRun !== null || view.status === "done")
                 ? () => {
@@ -724,8 +754,11 @@ function Sgrava() {
             onChoose={(index) => answer && setPicked({ of: answer, index })}
           />
         )}
-        {/* Under the card of a run that ended: where it is kept (TASK-172). */}
-        {(finishing || freeFinishing) && <RunKeptLine />}
+        {/* Under the card of a run that ended: «Save» or «Discard», with an
+            account (TASK-172). */}
+        {(finishing || freeFinishing) && (
+          <RunEnd onSave={onSaveRun} onDiscard={onDiscardRun} />
+        )}
       </MapScreen>
       {/* Over the map, opposite the way back: keep the route shown. */}
       <FavoriteHeart route={onMap} />

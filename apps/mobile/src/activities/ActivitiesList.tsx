@@ -92,7 +92,7 @@ export function ActivitiesList() {
         </>
       ) : (
         <Text style={styles.message}>
-          No activities yet. Your runs are saved here when you finish them.
+          No activities yet. Save a run when you finish it, and it is kept here.
         </Text>
       )}
     </View>

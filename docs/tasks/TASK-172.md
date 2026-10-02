@@ -38,9 +38,15 @@ perché il suo task file parla ancora di «Save drawing» e di `POST
 Scelte di prodotto, confermate dall'utente il 2026-10-02 («sì a tutte e
 tre»):
 
-1. **Si salva da sola.** A fine corsa, chi è entrato ha la corsa in «My
+1. ~~**Si salva da sola.** A fine corsa, chi è entrato ha la corsa in «My
    activities» senza toccare niente; si può cancellare dall'elenco. Non c'è
-   un pulsante «Save» (com'era scritto in TASK-117).
+   un pulsante «Save» (com'era scritto in TASK-117).~~ **Cambiata
+   dall'utente lo stesso giorno** (riferita dal coordinatore): «quando
+   termino l'attività devi salvarmi l'attività in activity sul mio profilo,
+   e prima mi fai comparire una nuova schermata nella quale mi dici salva,
+   cancella, invia a Strava». Quindi: a fine corsa **«Save»** e
+   **«Discard»**, e solo «Save» mette la corsa in «My activities». «Send
+   to Strava» è TASK-187.
 2. **Senza account** la corsa resta com'è oggi (sul telefono finché ha il
    punteggio, poi si perde), con una riga che invita a entrare per tenerla.
 3. **Il luogo** è il nome del posto da cui si parte («Trento»), trovato
@@ -63,8 +69,9 @@ tre»):
    un'anteprima leggera di percorso e traccia), `GET /me/activities/{key}`
    (intera), `DELETE /me/activities/{key}`. Solo il proprietario.
 4. App: a fine corsa, con un percorso (`FinishCard`) e senza
-   (`FreeFinishCard`), la corsa va all'API; senza rete resta sul telefono e
-   parte alla prossima apertura, senza perdersi né raddoppiare.
+   (`FreeFinishCard`), «Save» manda la corsa all'API e «Discard» la butta;
+   senza rete la corsa salvata resta sul telefono e parte alla prossima
+   apertura, senza perdersi né raddoppiare.
 5. App: in «Profile» la riga «My activities» con il numero, sotto
    «Favorites»; la pagina elenca le corse: anteprima (percorso giallo,
    traccia chiara, come a fine corsa), giorno e ora, luogo, km, tempo,
@@ -90,6 +97,8 @@ tre»):
       luogo, km, tempo, e l'anteprima del disegno.
 - [x] Due pagine consecutive dell'elenco non ripetono e non saltano corse.
 - [x] Senza account si corre come prima.
+- [x] (aggiunto con la scelta nuova) Con un account niente si salva senza
+      «Save»; «Discard» chiede conferma e la corsa non va all'API.
 - [x] Colori dai token; testi in inglese; test verdi.
 
 ## File toccati
@@ -109,6 +118,10 @@ apps/mobile/src/api/activities.test.ts
 apps/mobile/src/activities/
 apps/mobile/src/screens/ProfileLayer.tsx
 apps/mobile/src/screens/ProfileScreen.tsx
+apps/mobile/src/screens/FinishScreen.tsx
+apps/mobile/src/screens/FinishScreen.test.tsx
+apps/mobile/src/screens/FreeRunScreen.tsx
+apps/mobile/src/screens/FreeRunScreen.test.tsx
 docs/API.md
 docs/DATABASE.md
 docs/UI.md
@@ -118,9 +131,10 @@ docs/tasks/TASK-172.md
 ```
 
 `FinishScreen.tsx`, `FreeRunScreen.tsx`, `trackStore.ts` e `freeRun.ts` sono
-di TASK-169 finché non è in `main`: se servono, dopo. Non sono serviti:
-l'invio a «Done» e la riga sotto la scheda stanno in `App.tsx` e in
-`src/activities/`. La migrazione `0003`
+di TASK-169 finché non è in `main`: se servono, dopo. Con «Save» e
+«Discard» (la scelta nuova, messa dentro questo task dal coordinatore)
+sono servite le due schede, per poche righe: senza `onDone` non mostrano
+«Done». `trackStore.ts` e `freeRun.ts` non sono toccati. La migrazione `0003`
 è assegnata dal coordinatore a questo task (`0004` è tenuta per TASK-116).
 
 ## Fuori scope
@@ -133,9 +147,10 @@ l'invio a «Done» e la riga sotto la scheda stanno in `App.tsx` e in
 
 ## Esito
 
-Fatto il 2026-10-02 (ADR-0140). Con un account, «Done» a fine corsa manda
-la corsa a `PUT /me/activities/{key}`; senza rete aspetta in
-`activities-outbox.json` e parte alla prossima apertura. «Profile» ha la
+Fatto il 2026-10-02 (ADR-0140). Con un account, a fine corsa «Save» manda
+la corsa a `PUT /me/activities/{key}` e «Discard» la butta, dopo una
+conferma; senza «Save» niente è salvato. Senza rete la corsa salvata
+aspetta in `activities-outbox.json` e parte alla prossima apertura. «Profile» ha la
 riga «My activities» con il numero e la pagina a venti per volta; una
 corsa si apre sulla mappa e si cancella con una conferma. Nell'API la
 tabella `runs` (migrazione `0003`), con km, tempo e punteggio contati dalla
@@ -157,12 +172,12 @@ l'app nuova e il server vecchio le corse restano nella coda del telefono
   `runs` è cosa disegna il percorso, non il titolo dato dall'utente.
 - L'altitudine delle posizioni (TASK-169) non si salva: `track` è
   `LineStringM`. Servirebbe per il dislivello in «My activities».
-- Una corsa ripresa entro 30 minuti dopo un «Done» senza punteggio
-  (ADR-0091) ha la stessa chiave: resta salvata la prima parte.
+- «Send to Strava» sulla schermata di fine corsa: TASK-187, da chiedere
+  all'utente (ADR-0138 aveva tolto Strava).
 - Il GPX di una corsa salvata, il cuore e «Start» sul percorso di una
   corsa aperta, statistiche e filtri: fuori scope.
-- Una corsa di pochi metri si salva come le altre: nessuna lunghezza
-  minima. Da decidere con l'utente se dà fastidio.
+- Nessuna lunghezza minima: con «Save» si salva anche una corsa di pochi
+  metri, se l'utente lo vuole.
 - `__tests__/AppFreeRun.test.tsx` (TASK-149/169) confronta il passo con
   l'orologio vero e, con la macchina carica, a volte fallisce di un
   secondo («3:18» invece di «3:19»): visto una volta, non è di questo task.

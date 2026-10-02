@@ -43,9 +43,9 @@ ora ha il database e il server. Tutti Todo.
 In coda, dopo o accanto:
 
 - **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
-  posizioni non si salva; una corsa ripresa dopo un «Done» senza rete
-  salva solo la prima parte; il GPX di una corsa salvata; il cuore dei
-  preferiti e «Start» da una corsa aperta. Tutti in `tasks/TASK-172.md`.
+  posizioni non si salva; il GPX di una corsa salvata; il cuore dei
+  preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
+  TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
 - **Pubblicità che paga**, chiesta dall'utente il 2026-10-02: **TASK-150**
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
@@ -104,9 +104,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## Completato
 
 - **API e app** — TASK-172: «My activities», chiesto dall'utente
-  (ADR-0140). Con un account, «Done» a fine corsa salva la corsa da sola,
-  con un percorso o senza; senza rete aspetta sul telefono e parte alla
-  prossima apertura, una volta sola. In «Profile» la riga «My activities»
+  (ADR-0140). Con un account, a fine corsa «Save» mette la corsa in «My
+  activities» e «Discard» la butta, dopo una conferma (scelta nuova
+  dell'utente: non si salva più da sola), con un percorso o senza; senza
+  rete la corsa salvata aspetta sul telefono e parte alla prossima
+  apertura, una volta sola. In «Profile» la riga «My activities»
   le conta e le elenca, venti per volta: il disegno (percorso giallo,
   corsa chiara), giorno e ora, luogo, km, tempo, passo, punteggio; una
   corsa si apre sulla mappa e si cancella con una conferma. Km, tempo e

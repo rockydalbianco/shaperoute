@@ -23,15 +23,19 @@ import { activityProblem, type ActivitiesState, useActivities } from "./useActiv
 
 /**
  * The runs of the account as the whole app reaches them (TASK-172): the
- * run that just ended, which is saved by itself; the list in «Profile»;
- * and the run opened from it, which the map shows.
+ * run that just ended, which «Save» keeps; the list in «Profile»; and the
+ * run opened from it, which the map shows.
  */
 export type ActivitiesDoor = ActivitiesState & {
+  /** Somebody is signed in: a run that ends can be saved. */
+  signedIn: boolean;
   /**
-   * A run ended: it goes to the API, now or when there is a network.
-   * `drawn` is what its route draws. With nobody signed in nothing is kept.
+   * «Save» on a run that ended: it goes to the API, now or when there is a
+   * network. `drawn` is what its route draws. True once the run is safe on
+   * the phone; false with nobody signed in, with less than a line, or when
+   * the phone refuses the file.
    */
-  record: (run: SavedRun, drawn: Drawn | null) => void;
+  record: (run: SavedRun, drawn: Drawn | null) => boolean;
   /** The runs of this account still on the phone, waiting for the API. */
   waiting: number;
   /** Opens «Profile» to sign up or log in, saying it keeps the runs. */
@@ -59,7 +63,8 @@ const NOTHING: ActivitiesDoor = {
   loadMore: () => {},
   remove: () => {},
   clearProblem: () => {},
-  record: () => {},
+  signedIn: false,
+  record: () => false,
   waiting: 0,
   signIn: () => {},
   opening: null,
@@ -187,12 +192,15 @@ export function useActivitiesOf(
     (run: SavedRun, drawn: Drawn | null) => {
       const recorded = owner === null ? null : recordedRun(run, drawn);
       if (owner === null || recorded === null) {
-        return;
+        return false;
       }
       // On the phone first: the run is not lost if the app closes now.
-      keepWaiting({ ...recorded, owner });
+      if (!keepWaiting({ ...recorded, owner })) {
+        return false;
+      }
       recount();
       void send();
+      return true;
     },
     [owner, recount, send],
   );
@@ -262,6 +270,7 @@ export function useActivitiesOf(
       refresh,
       problem: activities.problem ?? openProblem,
       clearProblem,
+      signedIn: owner !== null,
       record,
       waiting,
       signIn,
@@ -277,6 +286,7 @@ export function useActivitiesOf(
       refresh,
       openProblem,
       clearProblem,
+      owner,
       record,
       waiting,
       signIn,

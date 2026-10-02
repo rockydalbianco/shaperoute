@@ -1,8 +1,8 @@
 /**
  * «My activities» (TASK-172): the runs of the account in «Profile», a page
  * at a time, one opened on the map, and deleted with a yes; and a run that
- * ends, which «Done» saves by itself, now or when there is a network. The
- * hook alone is in src/activities/useActivities.test.ts.
+ * ends, which «Save» keeps, now or when there is a network, and «Discard»
+ * throws away. The hook alone is in src/activities/useActivities.test.ts.
  */
 import activities from "@shaperoute/shared-types/fixtures/activities.json";
 import activity from "@shaperoute/shared-types/fixtures/activity.json";
@@ -494,7 +494,7 @@ async function openOnRun(run: SavedRun) {
   await screen.findByText("Your run");
 }
 
-test("«Done» saves the run by itself: the fixes and the route, never the app's numbers", async () => {
+test("«Save» keeps the run: the fixes and the route, never the app's numbers", async () => {
   signedIn();
   let saved = false;
   api({
@@ -512,12 +512,15 @@ test("«Done» saves the run by itself: the fixes and the route, never the app's
     },
   });
   await openOnRun(ENDED);
-  expect(screen.getByText("Done saves this run in My activities.")).toBeOnTheScreen();
-  // Nothing goes before «Done»: the run may still go on.
+  // With an account the way out is «Save» or «Discard», not «Done».
+  expect(screen.queryByText("Done")).toBeNull();
+  expect(screen.getByRole("button", { name: "Discard" })).toBeOnTheScreen();
+  // Nothing is saved by itself: only «Save» sends the run.
   await screen.findByText("91");
   expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(0);
+  expect(loadOutbox()).toEqual([]);
 
-  await fireEvent.press(screen.getByText("Done"));
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
   await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
   const [, init] = calls("PUT", `/me/activities/${KEY}`)[0];
   expect(init?.headers).toMatchObject({ Authorization: `Bearer ${session.token}` });
@@ -541,8 +544,9 @@ test("a run without a route is saved too, with no route in it", async () => {
       Response.json({ ...FREE, id: KEY }, { status: 201 }),
   });
   await openOnRun(FREE_ENDED);
-  expect(screen.getByText("Done saves this run in My activities.")).toBeOnTheScreen();
-  await fireEvent.press(screen.getByText("Done"));
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
+  // Back to the first screen, as «Done» was.
+  expect(await screen.findByText("Starting from your position.")).toBeOnTheScreen();
   await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
   const [, init] = calls("PUT", `/me/activities/${KEY}`)[0];
   expect(JSON.parse(String(init?.body))).toEqual({
@@ -555,13 +559,82 @@ test("a run without a route is saved too, with no route in it", async () => {
   await waitFor(() => expect(loadOutbox()).toEqual([]));
 });
 
+test("«Discard» asks first, and then the run is gone and nothing is saved", async () => {
+  signedIn();
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
+    "POST /track-scores": () => Response.json(trackScore),
+  });
+  await openOnRun(ENDED);
+  await fireEvent.press(screen.getByRole("button", { name: "Discard" }));
+  expect(screen.getByText("Discard this run? It will not be saved.")).toBeOnTheScreen();
+  // No: the run is still there, to save.
+  await fireEvent.press(screen.getByRole("button", { name: "Keep it" }));
+  expect(
+    screen.getByRole("button", { name: "Save to My activities" }),
+  ).toBeOnTheScreen();
+  expect(loadRun()).not.toBeNull();
+  // Yes: it leaves the phone, and never reaches the API.
+  await fireEvent.press(screen.getByRole("button", { name: "Discard" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Discard run" }));
+  expect(await screen.findByText("Starting from your position.")).toBeOnTheScreen();
+  expect(loadRun()).toBeNull();
+  expect(loadOutbox()).toEqual([]);
+  expect(fetchSpy.mock.calls.filter(([, init]) => init?.method === "PUT")).toEqual([]);
+});
+
+test("a run without its score is saved all the same, and does not come back", async () => {
+  signedIn();
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
+    "POST /track-scores": () =>
+      Response.json(apiError("engine_error", "…"), { status: 500 }),
+    [`PUT /me/activities/${KEY}`]: () => Response.json(SAVED, { status: 201 }),
+  });
+  await openOnRun(ENDED);
+  expect(await screen.findByText("The score did not arrive")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
+  await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
+  // The API scores it by itself: the phone has no reason to keep the run
+  // for the next opening.
+  expect(loadRun()).toBeNull();
+});
+
+test("a phone that cannot keep the run says so, and the run stays", async () => {
+  signedIn();
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
+  });
+  await openOnRun(FREE_ENDED);
+  const { File } = jest.requireMock<{ File: { prototype: { write: () => void } } }>(
+    "expo-file-system",
+  );
+  const write = jest.spyOn(File.prototype, "write").mockImplementation(() => {
+    throw new Error("disk full");
+  });
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "This run could not be kept on the phone. Try again.",
+  );
+  write.mockRestore();
+  expect(loadRun()).not.toBeNull();
+  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(0);
+  // Again, with a phone that takes the file: saved.
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
+  expect(await screen.findByText("Starting from your position.")).toBeOnTheScreen();
+  expect(loadRun()).toBeNull();
+});
+
 test("without a network the run waits on the phone", async () => {
   signedIn();
   fetchSpy.mockImplementation(async () => {
     throw new Error("no network");
   });
   await openOnRun(FREE_ENDED);
-  await fireEvent.press(screen.getByText("Done"));
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
   await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
   // The run left the finish screen, not the phone: it waits for its account.
   expect(loadRun()).toBeNull();
@@ -639,7 +712,7 @@ test("a run the API will never take stops waiting", async () => {
       }),
   });
   await openOnRun(FREE_ENDED);
-  await fireEvent.press(screen.getByText("Done"));
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
   await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
   await waitFor(() => expect(loadOutbox()).toEqual([]));
 });
@@ -653,7 +726,7 @@ test("an API that is away keeps the run waiting", async () => {
       Response.json(apiError("engine_error", "…"), { status: 500 }),
   });
   await openOnRun(FREE_ENDED);
-  await fireEvent.press(screen.getByText("Done"));
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
   await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
   expect(loadOutbox().map((run) => run.id)).toEqual([KEY]);
 });
@@ -675,10 +748,11 @@ test("a run that waits belongs to its account: another one does not send it", as
   expect(loadOutbox()).toHaveLength(1);
 });
 
-test("without an account the run ends as before, with a line that invites to sign in", async () => {
+test("without an account the run ends with «Done», as before, and a line invites to sign in", async () => {
   api({});
   await openOnRun(FREE_ENDED);
-  expect(screen.queryByText("Done saves this run in My activities.")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Save to My activities" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Discard" })).toBeNull();
   // The line opens «Profile», which says why.
   await fireEvent.press(screen.getByRole("button", { name: SIGN_IN_TO_KEEP_RUNS }));
   expect(screen.getByRole("header", { name: "Profile" })).toBeOnTheScreen();
@@ -747,7 +821,7 @@ test("a run along a route still on the map is saved with what the route draws", 
   await fireEvent.press(screen.getByLabelText("Pause"));
   await fireEvent(screen.getByLabelText("Stop"), "longPress");
   await screen.findByText("Your run");
-  await fireEvent.press(screen.getByText("Done"));
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
 
   const puts = () =>
     fetchSpy.mock.calls.filter(

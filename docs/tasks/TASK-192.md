@@ -1,6 +1,6 @@
 # TASK-192 — «Explore»: il paese scelto ha sempre i suoi percorsi
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-192-chosen-town-own-routes` · ADR-0155
 
 Chiesto dall'utente il 2026-10-02: «Premo su Caldonazzo, ma non vengono
@@ -25,9 +25,8 @@ farfalla) contano come già avute.
 
 ## Dipendenze
 
-**TASK-176 in `main`**: riscrive le stesse righe di `ExploreScreen.tsx` e
-`exampleRoutes.ts`. Fino ad allora in questo branch ci sono solo file
-nuovi (`ownRoutes.ts`, il suo test, questo task file).
+**TASK-176 in `main`** (dal 2026-10-02, #199): riscrive le stesse righe di
+`ExploreScreen.tsx`. Questo branch l'ha aspettato e parte da lì.
 
 ## Contesto da leggere
 
@@ -57,17 +56,17 @@ nuovi (`ownRoutes.ts`, il suo test, questo task file).
 
 ## Criteri di accettazione
 
-- [ ] Scelta Caldonazzo, le prime schede sono cuore, cerchio e stella di
+- [x] Scelta Caldonazzo, le prime schede sono cuore, cerchio e stella di
       5 km disegnati da Caldonazzo; sotto ci sono i percorsi di Levico, con
       «Levico» e la distanza.
-- [ ] Vale per ogni luogo scelto, frazioni comprese (Barco): conta il punto
+- [x] Vale per ogni luogo scelto, frazioni comprese (Barco): conta il punto
       scelto, non il nome.
-- [ ] Una città con percorsi suoi (Levico, Trento) resta com'è con
+- [x] Una città con percorsi suoi (Levico, Trento) resta com'è con
       TASK-176: le sue schede, più le forme che non ha.
-- [ ] Il raggio di «near you» resta 5 km; l'API non cambia.
-- [ ] Senza città scelta niente cambia.
-- [ ] Nessuna dipendenza nuova; colori dai token; testi in inglese.
-- [ ] Test, lint, typecheck e prettier verdi.
+- [x] Il raggio di «near you» resta 5 km; l'API non cambia.
+- [x] Senza città scelta niente cambia.
+- [x] Nessuna dipendenza nuova; colori dai token; testi in inglese.
+- [x] Test, lint, typecheck e prettier verdi.
 - [ ] Prova con il dito sull'iPhone (dell'utente, dopo la pubblicazione).
 
 ## File toccati
@@ -76,7 +75,7 @@ nuovi (`ownRoutes.ts`, il suo test, questo task file).
 apps/mobile/src/explore/ownRoutes.ts               (nuovo)
 apps/mobile/src/explore/ownRoutes.test.ts          (nuovo)
 apps/mobile/src/explore/ExploreScreen.tsx
-apps/mobile/src/explore/ExploreScreen.test.tsx
+apps/mobile/src/explore/ExploreOwnRoutes.test.tsx  (nuovo)
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
@@ -94,26 +93,17 @@ docs/tasks/TASK-192.md
   (zona da scaricare), poi restano sull'API (TASK-168).
 - Il testo di `CityExamples.tsx` e l'API.
 
-## Da dove riprendere
-
-Stato al 2026-10-02: nel branch ci sono `ownRoutes.ts`, il suo test e
-questo file. Il resto aspetta TASK-176 in `main`.
-
-La modifica di `ExploreScreen.tsx` e i suoi test sono già provati su una
-copia di TASK-176 (commit `fc3d7ca`), 23 test verdi: la differenza è in
-`out/TASK-192-glue.patch` (cartella ignorata da git, sul Mac). Con
-TASK-176 in `main`: `git merge origin/main` nel branch, applicare la
-patch (o rifarla a mano, sono 40 righe), poi `UI.md`, ADR-0155,
-`STATUS.md`. In breve la patch:
-
-- `byPlace(routes)` solo con una città scelta; `has` e `ownCityName`
-  guardano i percorsi suoi; `OWN_ROUTE_M` di TASK-176 lascia il posto a
-  `OWN_RADIUS_M`;
-- la griglia delle schede è dei percorsi suoi più le forme aggiunte; sotto,
-  l'etichetta «NEAR <PAESE>» e le schede dei vicini;
-- con i vicini sotto gli esempi il feed d'attesa non compare, e il credito
-  della mappa resta uno solo.
-
 ## Esito
 
-*(a fine task)*
+Fatto il 2026-10-02. Scelto un luogo, un percorso è suo solo se parte entro
+1,5 km dal punto scelto (`OWN_RADIUS_M`, dai dati del catalogo: ADR-0155);
+Caldonazzo e Barco hanno prima cuore, cerchio e stella dal loro centro e
+poi le altre forme, e sotto «NEAR CALDONAZZO» i percorsi di Levico. I test
+della schermata sono in un file nuovo, `ExploreOwnRoutes.test.tsx`, come
+quelli di TASK-176; quelli che c'erano passano senza modifiche. La soglia
+di 1000 m di `ownCityName` (TASK-176) è diventata la stessa `OWN_RADIUS_M`.
+Solo test (1055 verdi): non visto in un simulatore.
+
+Rimandato, scritto in `STATUS.md` e nell'ADR: «Near me» da un paese senza
+percorsi suoi mostra ancora solo i vicini (scelta dell'utente); i paesi
+piccoli non sono disegnati in anticipo sul server; la prova sull'iPhone.

@@ -36,6 +36,8 @@ import {
 } from "./exampleRoutes";
 import { CityExamples } from "./CityExamples";
 import { CityPicker } from "./ExploreTools";
+import { byPlace, OWN_RADIUS_M } from "./ownRoutes";
+import { cityShort } from "./presets";
 import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
 import type { ThemedRequest } from "./themedRoutes";
 import { stillDrawing, useWaited, WhileDrawing } from "./WhileDrawing";
@@ -63,9 +65,6 @@ type Props = {
 };
 
 const NO_ROUTES: RecommendedRoute[] = [];
-/** A route starting this near a city's centre is one of the city's own. */
-const OWN_ROUTE_M = 1000;
-
 /**
  * The name the city's own routes give it: the catalog says "milano" where
  * the search says "Milan". From the route starting nearest the centre;
@@ -76,7 +75,7 @@ export function ownCityName(routes: RecommendedRoute[]): string | undefined {
     (best, route) => (best === undefined || route.away_m < best.away_m ? route : best),
     undefined,
   );
-  return nearest !== undefined && nearest.away_m <= OWN_ROUTE_M
+  return nearest !== undefined && nearest.away_m <= OWN_RADIUS_M
     ? nearest.city
     : undefined;
 }
@@ -160,24 +159,29 @@ export function ExploreScreen({
         : NO_ROUTES,
     [answer, key],
   );
+  // Near a chosen city, its own routes and its neighbours' (TASK-192):
+  // Caldonazzo has Levico's within "near you", and none starting in it.
+  // Near the start they are all one list.
+  const chosen = city !== null;
+  const { own, nearby } = useMemo(
+    () => (chosen ? byPlace(routes) : { own: routes, nearby: NO_ROUTES }),
+    [chosen, routes],
+  );
   // A chosen city has shapes drawn at once, and they go on while a route is
-  // open on the map. Without recommended routes they are its examples
+  // open on the map. Without routes of its own they are its examples
   // (TASK-143); with them, the shapes it has none of, added to its cards
   // while those are looked at (TASK-176).
   const drawnCity = city !== null && list.status === "done" ? city : null;
-  const has = useMemo(
-    () => (routes.length === 0 ? undefined : shapesOf(routes)),
-    [routes],
-  );
+  const has = useMemo(() => (own.length === 0 ? undefined : shapesOf(own)), [own]);
   const { examples, retry } = useCityExamples(apiUrl, drawnCity, { has });
   const examplesCity = has === undefined ? drawnCity : null;
   const added =
     has === undefined || examples === null ? [] : addedExamples(examples, has);
   // The city's routes, then the shapes drawn for it now: the same cards,
   // and the same name for the city, on the card and then on the map.
-  const ownName = useMemo(() => ownCityName(routes), [routes]);
+  const ownName = useMemo(() => ownCityName(own), [own]);
   const cards = [
-    ...routes,
+    ...own,
     ...added.flatMap((example) =>
       example.status === "ready"
         ? [ownName === undefined ? example.route : { ...example.route, city: ownName }]
@@ -188,7 +192,27 @@ export function ExploreScreen({
   // other shapes arrive when there is already something to choose.
   const examplesKey = examplesCity === null ? null : cityKey(examplesCity.point);
   const drawing = stillDrawing(examples === null ? null : firstExamples(examples));
-  const waited = useWaited(examplesKey, drawing);
+  // With the neighbours' routes under the examples there is already
+  // something to look at: the feed stays out.
+  const waited = useWaited(nearby.length > 0 ? null : examplesKey, drawing);
+  // The examples' section has the maps' credit once one of them is ready.
+  const credited =
+    examplesCity !== null &&
+    examples !== null &&
+    examples.some((example) => example.status === "ready");
+  const routeCard = (route: RecommendedRoute) => (
+    <RouteCard
+      key={route.id}
+      width={card}
+      line={route.preview}
+      title={`${capitalised(routeTitle(route))} · ${(route.route_m / 1000).toFixed(1)} km`}
+      detail={`${cityName(route.city)} · ${awayText(route.away_m)}`}
+      match={route.similarity}
+      map
+      onPress={() => onOpen(route)}
+      accessibilityLabel={`${routeTitle(route)}, ${kmLabel(route.route_m)}, ${awayText(route.away_m)}`}
+    />
+  );
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.screen]}>
@@ -255,23 +279,11 @@ export function ExploreScreen({
           </Text>
         )}
         {/* Above the cards: there it is read without scrolling to their end. */}
-        {routes.length > 0 && <CardMapsCredit />}
+        {routes.length > 0 && !credited && <CardMapsCredit />}
         {/* The drawing first: two cards side by side (TASK-167). */}
-        {routes.length > 0 && (
+        {own.length > 0 && (
           <View style={styles.grid}>
-            {cards.map((route) => (
-              <RouteCard
-                key={route.id}
-                width={card}
-                line={route.preview}
-                title={`${capitalised(routeTitle(route))} · ${(route.route_m / 1000).toFixed(1)} km`}
-                detail={`${cityName(route.city)} · ${awayText(route.away_m)}`}
-                match={route.similarity}
-                map
-                onPress={() => onOpen(route)}
-                accessibilityLabel={`${routeTitle(route)}, ${kmLabel(route.route_m)}, ${awayText(route.away_m)}`}
-              />
-            ))}
+            {cards.map(routeCard)}
             {/* The shape being drawn for the city: the next card, on its way. */}
             {added.map(
               (example) =>
@@ -289,6 +301,14 @@ export function ExploreScreen({
             )}
           </View>
         )}
+        {/* The neighbours' routes, under the city's own: alternatives a short
+            run away (TASK-192). */}
+        {city !== null && nearby.length > 0 && (
+          <Text
+            style={styles.label}
+          >{`NEAR ${cityShort(city.label).toUpperCase()}`}</Text>
+        )}
+        {nearby.length > 0 && <View style={styles.grid}>{nearby.map(routeCard)}</View>}
         {/* Under the routes already there, and closed: the page is for looking
             first (TASK-157). */}
         {onAsk &&
@@ -361,6 +381,14 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.body,
     paddingVertical: space.lg,
+  },
+  // As the label of the examples' section (CityExamples).
+  label: {
+    color: color.textMuted,
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
+    letterSpacing: 1.2,
+    marginTop: space.sm,
   },
   // Quiet on purpose: a line of text at the foot of the page, not a card.
   ask: {

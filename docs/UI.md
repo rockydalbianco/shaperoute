@@ -228,6 +228,21 @@ pagine»):
    schede del catalogo («Milano», non il «Milan» della ricerca). Senza una
    città scelta («Near me») non si disegna niente.
 
+   **Da TASK-192** (ADR-0155, chiesto dall'utente: «premo su Caldonazzo e
+   mi vengono fuori Levico … bisogna lavorare anche sul paese
+   selezionato»): un percorso è **del luogo scelto** solo se parte entro
+   1,5 km dal suo punto; gli altri, entro i 5 km, sono **dei vicini**. Un
+   paese o una frazione accanto a una città con percorsi (Caldonazzo o
+   Barco accanto a Levico) è come una città senza percorsi consigliati:
+   prima la sezione «EXAMPLES IN CALDONAZZO» con cuore, cerchio e stella
+   dal suo centro e poi le altre forme; sotto, l'etichetta **«NEAR
+   CALDONAZZO»** e le schede dei vicini («Levico · 2.8 km away»), già lì
+   mentre gli esempi si disegnano. In quel caso i disegni del feed
+   nell'attesa non compaiono, e il credito della mappa resta uno solo. Una
+   città con percorsi suoi mostra quelli e le forme aggiunte, poi, se ce
+   ne sono, i vicini sotto la stessa etichetta. Con «Near me» resta una
+   lista sola, senza etichetta.
+
    **Da TASK-163**, chiesto dall'utente: finché uno dei primi tre esempi è
    «Next» o «Drawing…», sotto «EXAMPLES IN …» c'è **«MEANWHILE, FROM THE FEED»**,
    con una riga che dice perché si aspetta (la prima volta in una città la

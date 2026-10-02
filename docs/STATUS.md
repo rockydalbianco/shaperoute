@@ -111,6 +111,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sull'iPhone**: lo swipe, e le righe che scorrono di lato dentro le
   pagine (ripubblicare l'app, a fine coda dei merge). Seguiti nel task
   file, fra cui i «File toccati» di TASK-118.
+- **App** — TASK-132: un annuncio AdMob a schermo intero a ogni ricerca
+  («Draw route» e «Ask for a route» in «Explore»), prima del percorso; alla
+  X, o senza annuncio, il percorso subito (ADR-0102). Consenso di Google
+  alla prima ricerca, mai all'apertura. Solo in una build propria: in Expo
+  Go nessun annuncio e l'app come prima. Annunci di prova di Google finché
+  non ci sono account e app sullo store (TASK-150, 152, 153). Provato nel
+  simulatore iPhone e in Expo Go (2026-10-02).
 - **App** — TASK-115: ci si iscrive, si entra e si esce dall'app
   (ADR-0125). Due schede in fondo, «Draw» (le schermate di prima, intatte)
   e «Profile»: «Sign up» (email, nome, password, «I am at least 16») e

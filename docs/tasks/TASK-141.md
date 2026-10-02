@@ -58,3 +58,25 @@ Allineato sul `main` del 2026-10-02: il prossimo passo è TASK-114, con
 una domanda prima (ADR-0114 dice Oracle, l'API oggi è su Hetzner); in
 lavorazione TASK-088, 128, 132, 140, 142 e 144. Restano disallineati i
 task file di TASK-065, 126, 129 e 134 (fuori scope).
+
+## Appunti per il ripasso finale
+
+Il merge della #140 arriva per ultimo nella coda del coordinatore: si
+riparte da `origin/main` di quel momento (lo script del 2026-10-02 rifà
+le sezioni in alto e sposta le voci finite in «Completato»). Da
+controllare, dal coordinatore:
+
+- TASK-136: alla cancellazione i ritagli erano 382, per 19,4 GB (non 346
+  su 355 e 17,9 GB): già nello script.
+- TASK-128 è in `main` (#147): in «Completato».
+- TASK-114 è in `main` (#151); TASK-122 resta in corso: lo spostamento
+  del server aspetta la scelta dell'utente sul server di sviluppo.
+- TASK-132 (#130) e TASK-115 (#158) sono in `main`; per TASK-115 e
+  TASK-149 resta la prova sull'iPhone.
+- TASK-154: l'app è già pubblicata da `27be368` (update `bd88b89a…`), non
+  «da ripubblicare a fine coda»; dopo la #160 ci sarà un'altra
+  pubblicazione.
+- TASK-143: la riga che dà ancora «da fare» il vecchio `AskForRoute` la
+  corregge la #150.
+- TASK-146 era il numero per il proprietario di `app.json` → controllare
+  se è fatto.

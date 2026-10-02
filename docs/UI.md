@@ -752,7 +752,7 @@ TASK-164, di cui tiene i numeri.
   kilometre will show here.»). Poi i due interruttori della corsa,
   «Auto-pause» e «Voice».
 - **«Pause»**, un pulsante tondo e chiaro in mezzo, su tutte e due le
-  pagine; accanto, «Pocket». In pausa il tempo si ferma, le posizioni non
+  pagine; da una parte «Pocket», dall'altra «Music». In pausa il tempo si ferma, le posizioni non
   entrano nella traccia e «Pace now» è «–»; la mappa continua a seguire, e
   con un percorso le svolte si dicono ancora. Su «Map» la scheda si alza
   e mostra i km e i sei riquadri, come su «Data»: la mappa sopra, i numeri
@@ -770,6 +770,13 @@ TASK-164, di cui tiene i numeri.
   il tempo conta anche le soste.
 - **«Voice»** (accesa): spenta, l'app non dice più niente, né svolte né
   km; la vibrazione delle svolte resta.
+- **«Music»** (TASK-173, ADR-0141): mentre si corre, di fronte a «Pocket»,
+  su tutte e due le pagine. Apre Spotify, dove lo si era lasciato; a Sgrava
+  si torna da soli (su iPhone, «◀» in alto a sinistra). Sgrava non suona
+  niente e non sa cosa suona. La corsa non va in pausa, ma finché Sgrava
+  sta dietro a Spotify non riceve posizioni. Su un telefono senza Spotify
+  si apre la sua pagina nello store. In pausa, prima della prima posizione
+  e all'arrivo il pulsante non c'è.
 - **Dopo «Resume»** la prima posizione non si unisce all'ultima di prima:
   i metri fatti in pausa non sono della corsa. Lo stesso dopo «Keep
   running»: il tempo fra «Stop» e la ripresa è una pausa.

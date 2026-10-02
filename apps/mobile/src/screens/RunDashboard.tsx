@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 
+import { openMusic } from "../navigation/music";
 import {
   pauseRun,
   resumeRun,
@@ -208,8 +209,9 @@ type ButtonsProps = {
 /**
  * The way out and the way on. Before the first fix and without the GPS,
  * «Stop» as it was (nothing is lost by a touch); running, «Pause» with
- * «Pocket» beside it; paused, «Stop» to hold and «Resume»; at the end of a
- * route, «Finish».
+ * «Pocket» on one side and «Music», which opens Spotify (TASK-173), on the
+ * other; paused, «Stop» to hold and «Resume»; at the end of a route,
+ * «Finish».
  */
 function RunButtons({
   live,
@@ -278,7 +280,17 @@ function RunButtons({
           <View style={styles.bar} />
         </View>
       </Pressable>
-      <View style={styles.side} />
+      <View style={[styles.side, styles.sideEnd]}>
+        <Pressable
+          style={styles.small}
+          onPress={() => void openMusic()}
+          accessibilityRole="button"
+          accessibilityLabel="Music"
+          accessibilityHint="Opens Spotify"
+        >
+          <Text style={styles.pillText}>Music</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -552,6 +564,9 @@ const styles = StyleSheet.create({
   side: {
     flex: 1,
     alignItems: "flex-start",
+  },
+  sideEnd: {
+    alignItems: "flex-end",
   },
   small: {
     minHeight: MIN_TAP_SIZE,

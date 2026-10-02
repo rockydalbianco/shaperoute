@@ -1,7 +1,7 @@
 import type { LatLon } from "@shaperoute/shared-types";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useEffect, useState } from "react";
-import { Text } from "react-native";
+import { Linking, Text } from "react-native";
 
 import {
   AUTO_PAUSE_AFTER_MS,
@@ -183,6 +183,21 @@ test("Stop is held: a touch only says so, a hold ends the run", async () => {
   await fireEvent(stop, "pressIn");
   await fireEvent(stop, "longPress");
   expect(onStop).toHaveBeenCalledTimes(1);
+});
+
+test("Music, across from Pocket on both pages, opens Spotify; not on a paused run", async () => {
+  const openURL = jest.spyOn(Linking, "openURL").mockResolvedValue(true);
+  await render(<LiveRun fixes={north(300)} />);
+  await fireEvent.press(screen.getByLabelText("Music"));
+  expect(openURL.mock.calls).toEqual([["spotify:"]]);
+  // The run is as it was: Sgrava plays and pauses nothing.
+  expect(runControl().phase).toBe("running");
+
+  await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+  expect(screen.getAllByLabelText("Music")).toHaveLength(2);
+  await fireEvent.press(screen.getAllByLabelText("Pause").at(-1)!);
+  expect(screen.queryByLabelText("Music")).toBeNull();
+  openURL.mockRestore();
 });
 
 test("standing still, the card says why the run is paused, and moving resumes it", async () => {

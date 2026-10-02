@@ -70,6 +70,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-166 — L'annuncio durante l'attesa, e l'ID vero dell'app AdMob**
+  (`feat/TASK-166-ad-while-waiting`, ADR-0102): l'annuncio compare
+  all'inizio della ricerca e copre il calcolo; tutto in `src/ads/`, senza
+  toccare `App.tsx`.
 Un task per riga, con branch e sessione: i suoi file sono suoi.
 
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server

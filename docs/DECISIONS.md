@@ -3469,6 +3469,18 @@ ancora: per la prova nel simulatore (2026-10-02) la cartella `ios/`
 generata, che non è nel repository, è stata adattata a mano con
 `ExpoAppSceneDelegate` di Expo. Le build EAS usano il loro Xcode.
 
+**Aggiornamento 2026-10-02 (TASK-166)**: l'annuncio copre l'attesa invece
+di stare fra «percorso pronto» e «percorso mostrato», scelta dell'utente.
+Quando una ricerca parte, un annuncio già carico si mostra subito e il
+motore lavora dietro; alla chiusura lo schermo mostra quello che c'è (il
+percorso, o l'attesa). Senza annuncio carico la ricerca va avanti senza, e
+se ne carica uno per la prossima: di solito resta senza solo la prima
+ricerca dopo l'installazione. Uno per ricerca, mai all'apertura, come
+prima. Lo stato della ricerca non si trattiene più: `useAdBeforeRoute` lo
+passa com'è e guarda solo l'inizio dell'attesa. L'ID dell'app AdMob vero
+dell'utente sostituisce quello di prova in `app.json`; l'unità resta quella
+di prova di Google fino a TASK-153.
+
 ## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
 (TASK-133, miglioramento generale)

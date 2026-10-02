@@ -1,53 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { routeAds } from "./admob";
 import type { RouteAds } from "./routeAds";
 
 /**
- * The state the screen shows (TASK-132): a route that is ready waits behind
- * the ad, if one is ready, and shows as soon as the ad is closed. Without an
- * ad it shows at once. Every other state passes straight through.
+ * The ad of a search covers its wait (TASK-132, TASK-166, ADR-0102): when a
+ * search starts, an ad already loaded shows at once while the engine works
+ * behind it. Closed, the screen shows whatever is there by then: the route
+ * if it is ready, the wait if not. Without a loaded ad the search goes on
+ * without one, and an ad loads for the next. The state passes through.
  */
 export function useAdBeforeRoute<S extends { status: string }>(
   state: S,
   ads: () => RouteAds = routeAds,
 ): S {
-  // The state before the route was ready: what stays on screen behind the ad.
-  const [before, setBefore] = useState(state);
-  // Decided once per route, when it arrives.
-  const [gate, setGate] = useState<{ for: S; hold: boolean; released: boolean } | null>(
-    null,
-  );
-  if (state.status !== "done" && before !== state) {
-    setBefore(state);
-  }
-  if (state.status === "done" && gate?.for !== state) {
-    setGate({ for: state, hold: ads().ready(), released: false });
-  }
-  const adFor = gate?.for === state && gate.hold ? state : null;
+  const waiting = state.status === "waiting";
+  // Progress updates keep the search "waiting": one ad per search, at its start.
+  const wasWaiting = useRef(false);
 
   useEffect(() => {
-    if (state.status === "waiting") {
-      ads().prepare();
-    }
-  }, [state, ads]);
-
-  useEffect(() => {
-    if (adFor === null) {
+    const started = waiting && !wasWaiting.current;
+    wasWaiting.current = waiting;
+    if (!started) {
       return;
     }
-    let live = true;
-    void ads()
-      .show()
-      .then(() => {
-        if (live) {
-          setGate((now) => (now?.for === adFor ? { ...now, released: true } : now));
-        }
-      });
-    return () => {
-      live = false;
-    };
-  }, [adFor, ads]);
+    const network = ads();
+    if (network.ready()) {
+      void network.show();
+    } else {
+      network.prepare();
+    }
+  }, [waiting, ads]);
 
-  return adFor !== null && !gate?.released ? before : state;
+  return state;
 }

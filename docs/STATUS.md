@@ -97,6 +97,20 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
 
 ## Completato
 
+- **API e app** — TASK-168: gli esempi di una città in «Explore» più
+  veloci, chiesto dall'utente (ADR-0136). Un cuore, un cerchio o una stella
+  disegnati dal centro di una città restano sull'API
+  (`data/cache/routes/`), e la stessa richiesta riceve il percorso nella
+  risposta al `POST`: aspetta solo il primo telefono in una città (sul
+  Mac: 0,0 s invece di 10–14 s). Solo dai centri delle città, mai dalla
+  posizione di qualcuno; un motore cambiato ridisegna. L'app chiede lo
+  stato di ogni percorso ogni 0,5 s all'inizio, non più ogni 2 s.
+  `python -m shaperoute_api.draw_examples` disegna prima gli esempi di un
+  elenco di città. **Mancano, con l'ok dell'utente**: aggiornare l'API sul
+  server (l'app pubblicata ci guadagna senza essere ripubblicata per la
+  parte dell'API), lanciare `draw_examples` sulle città con la zona, e le
+  zone delle città medie come Rovereto. Da capire dai log del server
+  perché un esempio lì costa 18 s e sul Mac 2.
 - **App** — TASK-167: in «Explore» i percorsi sono schede, due per riga,
   con il disegno grande in alto, scelto dall'utente fra le proposte
   grafiche (ADR-0135). I filtri stanno in una riga sola, «Shape» e

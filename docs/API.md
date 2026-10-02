@@ -49,6 +49,10 @@ Con `--request-log`, o con `SHAPEROUTE_REQUEST_LOG=1`, l'API scrive ogni
 richiesta di percorso in un file, per poterla rifare: «Registro delle
 richieste», più sotto. Senza, non scrive niente (è il default).
 
+Gli esempi di una città restano sul disco una volta disegnati, in
+`routes/` dentro la cartella dei grafi: «Gli esempi di una città, tenuti»,
+più sotto. `--no-route-store` li fa disegnare ogni volta.
+
 ## Endpoint
 
 ### `GET /health`
@@ -125,6 +129,60 @@ Le richieste vivono nella memoria dell'API: un riavvio le perde. Lavorano
 due alla volta, così un 15 km annullato non ferma la richiesta dopo; le due
 però si dividono il processore, quindi la seconda va più piano finché la
 prima non finisce.
+
+### Gli esempi di una città, tenuti (TASK-168, ADR-0136)
+
+In «Explore» ogni telefono chiede a una città le stesse tre cose: un
+cuore, un cerchio e una stella da 5 km dal suo centro. Il motore le
+disegna uguali ogni volta, una dopo l'altra. Dal TASK-168 un percorso
+disegnato **dal centro di una città** resta in un file
+(`shaperoute_api/route_store.py`), e la stessa richiesta riceve il job già
+`done`, con il `result`, **nella risposta al `POST /route-jobs`**: nessun
+thread di lavoro, nessun calcolo, niente da chiedere dopo. Il contratto non
+cambia: `202` e un `RouteJob`, che si legge e si annulla come gli altri.
+Aspetta solo il primo telefono in una città.
+
+- **Solo dal centro di una città.** Una richiesta porta la posizione di
+  chi la fa, e l'API non tiene la posizione di nessuno (ADR-0085,
+  ADR-0092). I centri sono quelli che l'API stessa ha dato con `GET
+  /cities` e, per le sole città, con `GET /city-suggestions`; una partenza
+  è un centro quando cade nello stesso quadrato di circa 10 m (4 decimali,
+  come `cityKey` dell'app). Un percorso da qualsiasi altra partenza non
+  viene mai scritto, e il contorno di un'immagine nemmeno.
+- **La stessa richiesta**: stessa forma o parola, stile, distanza,
+  attività, stesso centro, **stesso motore**. Il nome del file viene da
+  un'impronta del codice del motore (`engine_fingerprint`: i `.py` e i
+  `.json` di `route_engine`): un motore cambiato ridisegna, senza
+  cancellare niente a mano.
+- **Dove**: `routes/` nella cartella dei grafi (`data/cache/routes/`), che
+  sul server è già una cartella tenuta fuori dal contenitore. Un file JSON
+  per percorso, circa 90 kB con le alternative e le indicazioni, e
+  `city-centres.txt` con i centri imparati. Al massimo 3000 percorsi (i
+  più vecchi escono) e 30 giorni: poi si ridisegna, perché la zona può
+  essere più nuova.
+- **Errori**: un percorso non riuscito non si tiene. Un file che non si
+  legge vale come non tenuto e si ridisegna; una cartella che non si può
+  scrivere lascia l'API com'era prima.
+- **Nel registro delle richieste e negli eventi** una risposta tenuta
+  compare come le altre, con 0 secondi.
+
+Per non far aspettare nemmeno il primo telefono, gli esempi si disegnano
+prima, chiedendo a un'API accesa quello che chiede l'app:
+
+```
+python -m shaperoute_api.draw_examples --api http://127.0.0.1:8000 Rovereto
+python -m shaperoute_api.draw_examples --api https://… --preset italy --preset featured
+```
+
+Una riga per città (`heart drawn, circle drawn, star kept`), una forma
+alla volta; la chiave dell'API, se serve, da `SHAPEROUTE_API_KEY`. Rifatto,
+passa in un attimo sulle città già tenute. Una città senza la zona sul
+disco dell'API la fa scaricare, come un telefono: per le zone di molte
+città c'è `prefetch_zones` (ADR-0119).
+
+Misurato sul Mac il 2026-10-02 (Trento, zona in cache, il Mac occupato da
+altri lavori): i tre esempi 10–14 s la prima volta, **0,0 s** la seconda,
+tutti e tre nella risposta al `POST`.
 
 ### Registro delle richieste (TASK-090, ADR-0085)
 

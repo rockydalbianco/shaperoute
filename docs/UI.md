@@ -154,8 +154,9 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    mandato delle alternative: A è il percorso del motore. Una tessera
    toccata diventa il percorso: km e somiglianza della scheda, la linea
    sulla mappa, «Start» e «Export GPX» sono i suoi. Mentre si aspettano le
-   indicazioni la scelta resta ferma. Gli altri percorsi non sono ancora
-   disegnati in grigio sulla mappa. Un percorso consigliato o a tema è uno
+   indicazioni la scelta resta ferma. Da TASK-155 gli altri percorsi sono
+   linee grigie sulla mappa, sotto quello scelto, e spariscono durante la
+   corsa. Un percorso consigliato o a tema è uno
    solo: niente tessere. Gli esempi salvati prima si ridisegnano una volta.
 
 Passare da una schermata all'altra:

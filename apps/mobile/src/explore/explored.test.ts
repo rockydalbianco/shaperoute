@@ -101,6 +101,8 @@ test("a city's example opens with the routes to choose from (TASK-151)", async (
   expect(first.choices.map((c) => c.points)).toEqual([drawn.points, other.points]);
   expect(first.chosen).toBe(0);
   expect(first.result).toBe(first.choices[0]);
+  // The route not chosen is the grey line of the map (TASK-155).
+  expect(first.others).toEqual([other.points]);
 
   // B: the card, the map, Start and the export are about it from now on.
   await act(async () => first.choose(1));
@@ -117,6 +119,7 @@ test("a city's example opens with the routes to choose from (TASK-151)", async (
     start: other.points[0],
   });
   expect(second.request).toMatchObject({ shape: "heart", start: other.points[0] });
+  expect(second.others).toEqual([drawn.points]);
 
   // A route that is not there is not chosen; A again is the same route.
   await act(async () => second.choose(5));
@@ -140,5 +143,6 @@ test("a route of the catalogue is the only one to choose", async () => {
   expect(hook.current.explored).toMatchObject({ status: "done", chosen: 0 });
   const opened = hook.current.explored;
   expect(opened?.status === "done" && opened.choices).toHaveLength(1);
+  expect(opened?.status === "done" && opened.others).toEqual([]);
   fetchFn.mockRestore();
 });

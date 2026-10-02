@@ -27,6 +27,7 @@ function opened(others: RecommendedRouteDetail[], chosen = 0) {
     choices: options.map((option): RouteResult => option.result),
     chosen,
     choose,
+    others: [],
   };
   return { explored, choose };
 }

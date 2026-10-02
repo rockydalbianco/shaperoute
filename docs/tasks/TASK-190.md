@@ -104,7 +104,7 @@ preferisce, tre task: i numeri li dà lui).
 
 Ogni PR dichiara i suoi.
 
-**Parte A** (motore, fatta):
+**Parte A** (motore, fatta, PR #214):
 
 ```
 services/route-engine/route_engine/network.py
@@ -169,7 +169,7 @@ Una per volta, con una proposta, quando si arriva alla parte C:
 
 ## Esito
 
-**Parte A — il motore (2026-10-02)**, ADR-0153. Fatto:
+**Parte A — il motore (2026-10-02)**, PR #214, ADR-0153. Fatto:
 
 - la rete `bike` (`network.py`): `rideable` decide le strade (ciclabili e
   strade fino alle `primary`, `track` comprese; `path`, `footway`,

@@ -118,8 +118,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `offsite` è in `main` dalla PR #167): manca che l'utente lo crei
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
-- **TASK-190 — Percorsi in bici** (ADR-0153): **parte A, il motore**, in
-  una PR sua (il merge è del coordinatore). La rete `bike`: ciclabili e
+- **TASK-190 — Percorsi in bici** (ADR-0153): **parte A, il motore**,
+  PR #214 (il merge è del coordinatore). La rete `bike`: ciclabili e
   strade fino alle `primary`, i sentieri e i marciapiedi solo se segnati
   come ciclabili, mai scale, `trunk`, autostrade né vie vietate alle bici;
   i sensi unici valgono (contromano solo dove OSM lo apre alle bici, con

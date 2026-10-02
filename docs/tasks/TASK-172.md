@@ -14,8 +14,11 @@ dall'utente il 2026-10-02 insieme a «Favorites» (TASK-171): «le mie
 attività con tutte le attività che hanno registrato, con lo storico: data,
 ora, posizione e l'anteprima di cosa aveva disegnato».
 
-È la metà privata di TASK-117: salvare e ritrovare. Titolo, «Public» e la
-traccia tagliata per gli altri restano a TASK-117, che parte da qui.
+È la metà privata di TASK-117: salvare e ritrovare (deciso con il
+coordinatore). Titolo, «Public» e la traccia tagliata per gli altri restano
+a TASK-117, che parte da qui: chi prende TASK-117 ne aggiorna lo scope,
+perché il suo task file parla ancora di «Save drawing» e di `POST
+/drawings`.
 
 ## Contesto da leggere
 
@@ -30,15 +33,14 @@ traccia tagliata per gli altri restano a TASK-117, che parte da qui.
   (`onEndRun`, `onFinishDone`, `onFreeDone`), `src/screens/FinishScreen.tsx`,
   `FreeRunScreen.tsx`, `src/navigation/trackStore.ts`, `freeRun.ts`
 
-## Da decidere con l'utente prima di partire
+## Scelte dell'utente (2026-10-02)
 
-Scelte di prodotto, non delegate. La proposta è già scritta: se l'utente
-dice sì, si parte così.
+Scelte di prodotto, confermate dall'utente il 2026-10-02 («sì a tutte e
+tre»):
 
 1. **Si salva da sola.** A fine corsa, chi è entrato ha la corsa in «My
-   activities» senza toccare niente («tutte le attività che hanno
-   registrato»); si può cancellare dall'elenco. L'alternativa è un pulsante
-   «Save» nella schermata di fine corsa (com'era scritto in TASK-117).
+   activities» senza toccare niente; si può cancellare dall'elenco. Non c'è
+   un pulsante «Save» (com'era scritto in TASK-117).
 2. **Senza account** la corsa resta com'è oggi (sul telefono finché ha il
    punteggio, poi si perde), con una riga che invita a entrare per tenerla.
 3. **Il luogo** è il nome del posto da cui si parte («Trento»), trovato
@@ -114,8 +116,8 @@ docs/tasks/TASK-172.md
 ```
 
 `FinishScreen.tsx`, `FreeRunScreen.tsx`, `trackStore.ts` e `freeRun.ts` sono
-di TASK-169 finché non è in `main`: se servono, dopo. Il numero della
-migrazione è il primo libero al momento di partire.
+di TASK-169 finché non è in `main`: se servono, dopo. La migrazione `0003`
+è assegnata dal coordinatore a questo task (`0004` è tenuta per TASK-116).
 
 ## Fuori scope
 

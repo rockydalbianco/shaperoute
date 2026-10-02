@@ -3480,6 +3480,18 @@ ancora: per la prova nel simulatore (2026-10-02) la cartella `ios/`
 generata, che non è nel repository, è stata adattata a mano con
 `ExpoAppSceneDelegate` di Expo. Le build EAS usano il loro Xcode.
 
+**Aggiornamento 2026-10-02 (TASK-166)**: l'annuncio copre l'attesa invece
+di stare fra «percorso pronto» e «percorso mostrato», scelta dell'utente.
+Quando una ricerca parte, un annuncio già carico si mostra subito e il
+motore lavora dietro; alla chiusura lo schermo mostra quello che c'è (il
+percorso, o l'attesa). Senza annuncio carico la ricerca va avanti senza, e
+se ne carica uno per la prossima: di solito resta senza solo la prima
+ricerca dopo l'installazione. Uno per ricerca, mai all'apertura, come
+prima. Lo stato della ricerca non si trattiene più: `useAdBeforeRoute` lo
+passa com'è e guarda solo l'inizio dell'attesa. L'ID dell'app AdMob vero
+dell'utente sostituisce quello di prova in `app.json`; l'unità resta quella
+di prova di Google fino a TASK-153.
+
 ## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
 (TASK-133, miglioramento generale)
@@ -3544,7 +3556,7 @@ animazioni di layout (su Android chiedono API sperimentali).
 luoghi (Family, Running in centro) lo dicono con `no_places`.
 
 ## ADR-0106 — Strava: il flusso ufficiale, senza account collegato
-**Stato**: Attiva · 2026-10-01 · scelta dell'utente («flusso ufficiale»);
+**Stato**: Superata da ADR-0138 · 2026-10-01 · scelta dell'utente («flusso ufficiale»);
 il come deciso dall'agente su delega dell'utente (TASK-135)
 
 **Contesto**: l'utente vuole «Avvia con Strava»: trasferire il percorso e
@@ -4781,10 +4793,34 @@ hanno le tre forme nel catalogo: le altre le disegnano al tocco.
 - **Un file nuovo** (`WhileDrawing.tsx`), e in `ExploreScreen.tsx` solo
   l'aggancio.
 
-**Decisione, le città in evidenza (parte A)**: nel catalogo, con lo
-strumento del catalogo (ADR-0097) e le zone copiate dal server in sola
-lettura; parte dopo TASK-161, che ha quei file. Qui si scrive, a lavoro
-fatto, cosa si tiene quando una forma resta sotto 0,88.
+**Decisione, le città in evidenza (parte A)**:
+- **Nel catalogo, con lo strumento del catalogo** (ADR-0097):
+  `seed_catalog.py --featured`. Le città in evidenza che il seme non ha
+  stanno in una tabella a parte (`FEATURED`), non in `CITIES`: così il giro
+  intero (ogni forma a 5, 10 e 21 km, le frasi) non parte anche per loro,
+  che hanno le zone solo sul server e a 17 km.
+- **Solo cuore, cerchio e stella da 5 km**, come gli esempi che l'app
+  disegnava al tocco (ADR-0116), da una piazza del centro entro 5 km dal
+  centro che l'API dà per il nome della città: è il raggio dell'elenco di
+  «Explore».
+- **Le zone copiate dal server in sola lettura** (`rsync`, 1,2 GB per nove
+  città, nella cache del Mac): niente Overpass, niente chiave dell'API,
+  niente scritto sul server.
+- **La soglia resta 0,88**: le 27 forme sono fra 0,91 e 1,00, tutte viste a
+  occhio dall'agente (`samples/LOG.md`). Le più deboli sono il cuore e la
+  stella di Dubai: da far vedere all'utente.
+- **Un test tiene il patto**: `tools/test_featured_catalog.py` legge
+  `FEATURED_CITIES` dall'app e fallisce se una città in evidenza non ha le
+  tre forme vicino al suo centro.
+- **Berlino manca**: la sua zona non è sul server (TASK-137) e Overpass
+  rifiuta il Mac. Nel test è una mancanza dichiarata (`MISSING`, `xfail`
+  rigido: il giorno che le forme ci sono, il test chiede di toglierla). In
+  app Berlino continua a disegnarle al tocco, con i disegni del feed
+  nell'attesa. **Scelta dell'utente (2026-10-02)**: il catalogo entra con
+  13 città, Berlino dopo, quando Overpass riapre.
+- **Il registro delle prove** è lo stesso del seme
+  (`out/seed_catalog/runs.jsonl`, fuori dal repository): le 27 righe sono
+  state aggiunte lì.
 
 **Scartate**: disegnare le forme delle città in evidenza chiedendole
 all'API del server con uno script a parte (uno strumento parallelo a
@@ -4801,7 +4837,11 @@ mappa sotto la linea: la chiede la scheda, la fa la pagina nascosta di
 senza aver mai aperto «Feed». Il feed vero (TASK-118) deciderà se qui
 restano gli esempi o entrano i disegni degli iscritti. **In due PR**, per
 richiesta dell'utente (2026-10-02, «pubblica intanto la parte dei post
-sul telefono»): prima l'attesa, poi il catalogo.
+sul telefono»): prima l'attesa, poi il catalogo. Una città in evidenza
+ora mostra «Best near you» con tre righe invece di «EXAMPLES IN …»: senza
+le alternative A · B · C degli esempi (ADR-0126), che il catalogo non
+tiene. **Per vederle nell'app pubblicata va aggiornato `catalog/` sul
+server** e riavviata l'API (`DEPLOY.md` F.12): con l'ok dell'utente.
 
 ## ADR-0133 — La schermata della corsa: gli stessi numeri con un percorso e senza, e una freccia di direzione dalla traccia
 **Stato**: Attiva · 2026-10-02 · chiesto dall'utente («mi devi dire la
@@ -4872,3 +4912,72 @@ lontano dall'inizio del percorso («Start here») ha nei km e nel passo anche
 il tratto per arrivarci: la traccia parte con «Start» (ADR-0091), e i km
 rimasti no. Provato nel simulatore con un GPS simulato, nelle due corse;
 camminando con l'iPhone no.
+## ADR-0135 — «Explore» a schede: due per riga, e i filtri in una riga sola
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («Pagina
+Explore a schede», fra le proposte del canvas); il come deciso dall'agente
+su delega dell'utente (TASK-167).
+
+**Contesto**: in «Explore» ogni percorso era una riga con una miniatura da
+72 × 60: il disegno, che è il motivo per cui si sceglie un percorso, era la
+cosa più piccola della riga. I filtri erano due file di chip, una sopra
+l'altra, prima dell'elenco.
+
+**Decisione**:
+- **Una scheda per percorso** (`src/explore/RouteCard.tsx`), due per riga:
+  il disegno in alto, largo quanto la scheda e alto due terzi, poi forma e
+  km, poi città e distanza. La somiglianza sta in un angolo del disegno.
+  Il disegno è fatto come le miniature, una `View` per tratto
+  (`thumbSegments`), con la linea da 3: nessuna dipendenza nuova.
+- **La larghezza viene dalla finestra**, non da una misura dopo il primo
+  disegno: i tratti si calcolano in punti, e la scheda non salta.
+- **Gli esempi di una città sono le stesse schede**: una non ancora
+  disegnata tiene il posto del disegno vuoto e dice «Drawing…» o «Next»,
+  e non è un pulsante.
+- **I filtri in una riga** (`src/explore/RouteFilters.tsx`): un pulsante
+  per filtro, che dice cosa tiene («Shape: Star ▾»); le scelte si aprono
+  sotto la riga, lì dove sono, e una scelta le richiude. Niente menu a
+  comparsa né fogli: non servono librerie, e la pagina non perde il posto.
+  «▾» e «▴» sono caratteri, come «←» e «↺» nel resto dell'app.
+- **«Scelto» è il bordo chiaro**, non il fondo chiaro di prima: è il modo
+  delle tessere delle forme, e il giallo resta del percorso.
+- **Due filtri che insieme non lasciano niente lo dicono**, invece di una
+  pagina vuota.
+
+**Scartate**: una colonna sola di schede larghe (metà dei percorsi a
+schermo); la foto della mappa sotto il disegno come in «Feed» (ADR-0131:
+una foto per scheda, con decine di percorsi a città); un menu a comparsa
+per i filtri; tenere le due file di chip.
+
+**Conseguenze**: il componente `RouteThumb` non è più usato da «Explore»
+(resta ai suoi test; `thumbSegments`, nello stesso file, lo usano le schede
+e «Feed»); `Chips` non c'è più. Le righe che scorrono di lato
+dentro la pagina restano due, le città e le scelte di un filtro aperto. Da
+provare con il dito sull'iPhone.
+
+## ADR-0138 — Niente «Run with Strava»: da un percorso si esce con il GPX
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («L'impostazione
+run with strava la vorrei togliere»); il come deciso dall'agente su delega
+dell'utente (TASK-170). Supera ADR-0106.
+
+**Contesto**: «Run with Strava» (ADR-0106) era un pulsante sotto «Export
+GPX» in ogni scheda di un percorso. Strava non lascia creare percorsi ad
+altre app, quindi il pulsante apriva solo una spiegazione in tre passi:
+salvare il GPX, importarlo a mano dal sito di Strava, seguirlo dall'app
+Strava. L'utente non lo vuole più.
+
+**Decisione**: il pulsante e la sua scheda si tolgono dalle tre schede
+(percorso disegnato, di «Explore», a tema), e `apps/mobile/src/strava/` si
+cancella. Per portare un percorso in un'altra app resta «Export GPX», che
+già apre il foglio di condivisione. Il segnale `route_chosen` non cambia:
+il pulsante di Strava contava come `via: "gpx"`, lo stesso valore di
+«Export GPX».
+
+**Alternative scartate**: tenere il codice e nascondere il pulsante dietro
+un interruttore (codice morto da mantenere e da provare; torna con git se
+serve); tenere una riga di aiuto su Strava vicino a «Export GPX» (non
+chiesta: è una scelta di prodotto).
+
+**Conseguenza**: una riga in meno in ogni scheda di un percorso. Fuori
+dall'app non c'era niente da togliere: ADR-0106 non aveva account
+collegati, token, chiavi né parti nell'API o sul server. Se Strava aprirà
+la creazione di percorsi via API, si riparte da ADR-0106.

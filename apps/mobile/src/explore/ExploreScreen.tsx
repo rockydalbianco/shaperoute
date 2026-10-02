@@ -1,6 +1,13 @@
 import type { LatLon } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
@@ -23,7 +30,8 @@ import { AskForRoute } from "./AskForRoute";
 import { cityKey, useCityExamples } from "./exampleRoutes";
 import { CityExamples } from "./CityExamples";
 import { CityPicker } from "./ExploreTools";
-import { RouteThumb } from "./RouteThumb";
+import { cardWidth, RouteCard } from "./RouteCard";
+import { ALL, RouteFilters } from "./RouteFilters";
 import type { ThemedRequest } from "./themedRoutes";
 import { stillDrawing, useWaited, WhileDrawing } from "./WhileDrawing";
 
@@ -49,7 +57,6 @@ type Props = {
   onAsk?: (request: ThemedRequest) => void;
 };
 
-const ALL = "all";
 const NO_ROUTES: RecommendedRoute[] = [];
 
 /** The chips of one filter: "All" first, then what the list has. */
@@ -97,6 +104,10 @@ export function ExploreScreen({
   // A city searched for takes the place of the start (TASK-129).
   const near = city?.point ?? start;
   const insets = useSafeAreaInsets();
+  // What the page has between its side margins: two cards side by side.
+  const { width } = useWindowDimensions();
+  const contentWidth = width - 2 * space.lg;
+  const card = cardWidth(contentWidth);
   // The answer for one start: another start shows "loading" until its own.
   const [answer, setAnswer] = useState<{ key: string; list: ListState } | null>(null);
   const [what, setWhat] = useState(ALL);
@@ -211,16 +222,19 @@ export function ExploreScreen({
             examples={examples}
             onOpen={onOpen}
             onRetry={retry}
+            width={contentWidth}
           />
         )}
         {examplesKey !== null && waited && (
           <WhileDrawing cityKey={examplesKey} drawing={drawing} />
         )}
         {list.status === "done" && routes.length > 0 && (
-          <View style={styles.filters}>
-            <Chips options={whats} value={what} onChange={setWhat} />
-            <Chips options={kms} value={km} onChange={setKm} />
-          </View>
+          <RouteFilters
+            filters={[
+              { name: "Shape", options: whats, value: what, onChange: setWhat },
+              { name: "Distance", options: kms, value: km, onChange: setKm },
+            ]}
+          />
         )}
         {list.status === "loading" && <Text style={styles.note}>Loading routes…</Text>}
         {list.status === "failed" && (
@@ -236,26 +250,28 @@ export function ExploreScreen({
             up here.
           </Text>
         )}
-        {shown.map((route) => (
-          <Pressable
-            key={route.id}
-            style={styles.row}
-            onPress={() => onOpen(route)}
-            accessibilityRole="button"
-            accessibilityLabel={`${routeTitle(route)}, ${kmLabel(route.route_m)}, ${awayText(route.away_m)}`}
-          >
-            <RouteThumb line={route.preview} width={72} height={60} />
-            <View style={styles.rowText}>
-              <Text style={styles.rowTitle}>
-                {`${capitalised(routeTitle(route))} · ${(route.route_m / 1000).toFixed(1)} km`}
-              </Text>
-              <Text style={styles.rowLine}>
-                {`${cityName(route.city)} · ${awayText(route.away_m)}`}
-              </Text>
-            </View>
-            <Text style={styles.match}>{`${Math.round(route.similarity * 100)}%`}</Text>
-          </Pressable>
-        ))}
+        {routes.length > 0 && shown.length === 0 && (
+          <Text style={styles.note}>
+            No route here is both: change one of the two filters.
+          </Text>
+        )}
+        {/* The drawing first: two cards side by side (TASK-167). */}
+        {shown.length > 0 && (
+          <View style={styles.grid}>
+            {shown.map((route) => (
+              <RouteCard
+                key={route.id}
+                width={card}
+                line={route.preview}
+                title={`${capitalised(routeTitle(route))} · ${(route.route_m / 1000).toFixed(1)} km`}
+                detail={`${cityName(route.city)} · ${awayText(route.away_m)}`}
+                match={route.similarity}
+                onPress={() => onOpen(route)}
+                accessibilityLabel={`${routeTitle(route)}, ${kmLabel(route.route_m)}, ${awayText(route.away_m)}`}
+              />
+            ))}
+          </View>
+        )}
         {/* Under the routes already there, and closed: the page is for looking
             first (TASK-157). */}
         {onAsk &&
@@ -281,39 +297,6 @@ export function ExploreScreen({
 
 function capitalised(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
-function Chips({
-  options,
-  value,
-  onChange,
-}: {
-  options: string[];
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <View style={styles.chips}>
-        {options.map((option) => {
-          const on = option === value;
-          return (
-            <Pressable
-              key={option}
-              style={[styles.chip, on && styles.chipOn]}
-              onPress={() => onChange(option)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: on }}
-            >
-              <Text style={[styles.chipText, on && styles.chipTextOn]}>
-                {option === ALL ? "All" : capitalised(option)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    </ScrollView>
-  );
 }
 
 const styles = StyleSheet.create({
@@ -353,35 +336,6 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.small,
   },
-  filters: {
-    gap: space.sm,
-    paddingVertical: space.sm,
-  },
-  chips: {
-    flexDirection: "row",
-    gap: space.sm,
-    paddingRight: space.lg,
-  },
-  chip: {
-    minHeight: MIN_TAP_SIZE,
-    paddingHorizontal: space.md,
-    borderRadius: radius.pill,
-    justifyContent: "center",
-    backgroundColor: color.surfaceRaised,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-  },
-  chipOn: {
-    backgroundColor: color.text,
-    borderColor: color.text,
-  },
-  chipText: {
-    color: color.text,
-    fontSize: fontSize.body,
-  },
-  chipTextOn: {
-    color: color.background,
-  },
   list: {
     paddingHorizontal: space.lg,
     gap: space.sm,
@@ -403,34 +357,9 @@ const styles = StyleSheet.create({
     fontSize: fontSize.body,
     textDecorationLine: "underline",
   },
-  row: {
+  grid: {
     flexDirection: "row",
-    alignItems: "center",
+    flexWrap: "wrap",
     gap: space.md,
-    padding: space.sm,
-    minHeight: 76,
-    borderRadius: radius.md,
-    backgroundColor: color.surface,
-    borderWidth: 1,
-    borderColor: color.border,
-  },
-  rowText: {
-    flex: 1,
-    gap: 2,
-  },
-  rowTitle: {
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
-  },
-  rowLine: {
-    color: color.textMuted,
-    fontSize: fontSize.detail,
-  },
-  match: {
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
-    paddingRight: space.xs,
   },
 });

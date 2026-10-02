@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import type { Place } from "../places/photon";
 import {
@@ -12,13 +12,15 @@ import {
 import { EXAMPLE_DISTANCE_M, type Example } from "./exampleRoutes";
 import { cityShort } from "./presets";
 import type { RecommendedRoute } from "./recommendedRoutes";
-import { RouteThumb } from "./RouteThumb";
+import { cardWidth, RouteCard } from "./RouteCard";
 
 type Props = {
   city: Place;
   examples: Example[];
   onOpen: (route: RecommendedRoute) => void;
   onRetry: () => void;
+  /** How wide the section is; without it, the window less the page's margins. */
+  width?: number;
 };
 
 const STATUS: Record<"waiting" | "drawing", string> = {
@@ -34,7 +36,10 @@ function capitalised(text: string): string {
  * Examples for a city without recommended routes (TASK-143): one card per
  * shape, filled when its route arrives; a ready one opens on the map.
  */
-export function CityExamples({ city, examples, onOpen, onRetry }: Props) {
+export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) {
+  const window = useWindowDimensions();
+  // Two cards side by side inside the section, as in «Best near you».
+  const card = cardWidth((width ?? window.width - 2 * space.lg) - 2 * space.md);
   const failed = examples.filter((e) => e.status === "failed");
   const messages = Array.from(new Set(failed.map((e) => e.message)));
   return (
@@ -45,38 +50,37 @@ export function CityExamples({ city, examples, onOpen, onRetry }: Props) {
       <Text style={styles.note}>
         {`No recommended routes here yet: three shapes of ${EXAMPLE_DISTANCE_M / 1000} km from the centre, drawn now.`}
       </Text>
-      {examples.map((example) => {
-        const name = capitalised(example.shape);
-        if (example.status === "ready") {
-          const { route } = example;
+      <View style={styles.grid}>
+        {examples.map((example) => {
+          const name = capitalised(example.shape);
+          if (example.status === "ready") {
+            const { route } = example;
+            const km = (route.route_m / 1000).toFixed(1);
+            return (
+              <RouteCard
+                key={example.shape}
+                width={card}
+                line={route.preview}
+                title={`${name} · ${km} km`}
+                match={route.similarity}
+                onPress={() => onOpen(route)}
+                accessibilityLabel={`${name}, ${km} km`}
+              />
+            );
+          }
           return (
-            <Pressable
+            <RouteCard
               key={example.shape}
-              style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-              onPress={() => onOpen(route)}
-              accessibilityRole="button"
-              accessibilityLabel={`${name}, ${(route.route_m / 1000).toFixed(1)} km`}
-            >
-              <RouteThumb line={route.preview} width={72} height={60} />
-              <Text style={styles.rowTitle}>
-                {`${name} · ${(route.route_m / 1000).toFixed(1)} km`}
-              </Text>
-              <Text
-                style={styles.match}
-              >{`${Math.round(route.similarity * 100)}%`}</Text>
-            </Pressable>
+              width={card}
+              line={null}
+              title={name}
+              detail={
+                example.status === "failed" ? "Not drawn" : STATUS[example.status]
+              }
+            />
           );
-        }
-        return (
-          <View key={example.shape} style={styles.row}>
-            <View style={styles.thumb} />
-            <Text style={styles.rowTitle}>{name}</Text>
-            <Text style={styles.status}>
-              {example.status === "failed" ? "Not drawn" : STATUS[example.status]}
-            </Text>
-          </View>
-        );
-      })}
+        })}
+      </View>
       {messages.map((message) => (
         <Text key={message} style={styles.error}>
           {message}
@@ -116,38 +120,11 @@ const styles = StyleSheet.create({
     color: color.error,
     fontSize: fontSize.small,
   },
-  // As a row of "Best near you", inside the section.
-  row: {
+  // As the cards of "Best near you", inside the section.
+  grid: {
     flexDirection: "row",
-    alignItems: "center",
+    flexWrap: "wrap",
     gap: space.md,
-    padding: space.sm,
-    minHeight: 76,
-    borderRadius: radius.md,
-    backgroundColor: color.surfaceRaised,
-  },
-  thumb: {
-    width: 72,
-    height: 60,
-    borderRadius: radius.md,
-    backgroundColor: color.surface,
-  },
-  rowTitle: {
-    flex: 1,
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
-  },
-  match: {
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
-    paddingRight: space.xs,
-  },
-  status: {
-    color: color.textMuted,
-    fontSize: fontSize.detail,
-    paddingRight: space.xs,
   },
   pressed: {
     opacity: 0.6,

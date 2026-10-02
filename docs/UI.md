@@ -112,11 +112,19 @@ pagine»):
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
    migliori che partono entro 5 km dalla partenza scelta, con i filtri per
-   forma o parola e per distanza. Ogni riga ha la miniatura della linea
-   (gialla, il percorso), forma e km, città e distanza dalla partenza, la
-   somiglianza. Toccata, il percorso si apre sulla mappa con «Export GPX» e
-   «Back to the list»; «←» torna all'elenco. Da TASK-145 ha anche «Start»
-   (sotto).
+   forma o parola e per distanza. **I percorsi sono schede, due per riga**
+   (TASK-167, ADR-0135, scelto dall'utente): in alto il disegno, largo
+   quanto la scheda, giallo su fondo scuro, con la somiglianza in un angolo
+   («97%»); sotto, forma e km («Star · 5.1 km») e città e distanza dalla
+   partenza («Trento · 450 m away»). **I filtri stanno in una riga sola**:
+   due pulsanti, «Shape: All ▾» e «Distance: All ▾», che dicono cosa
+   tengono; toccato uno, sotto la riga si aprono le sue scelte («All»,
+   «Star», «Circle»…, che scorrono di lato), e una scelta le richiude. Se ne
+   apre uno alla volta; un filtro che tiene qualcosa ha il bordo chiaro. Se
+   i due filtri insieme non lasciano niente: «No route here is both: change
+   one of the two filters.». Toccata una scheda, il percorso si apre sulla
+   mappa con «Export GPX» e «Back to the list»; «←» torna all'elenco. Da
+   TASK-145 ha anche «Start» (sotto).
 
    Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
    qualsiasi città del mondo (l'elenco e la richiesta partono dal suo
@@ -159,9 +167,11 @@ pagine»):
    tre tessere per riga. Scelta una città senza percorsi consigliati entro
    5 km, sotto «City» compare **«EXAMPLES IN VERCELLI»**: cuore, cerchio e
    stella da 5 km dal centro, chiesti da soli, uno alla volta, il cuore per
-   primo. Ogni riga dice «Drawing…» o «Next», poi diventa come una riga di
-   «Best near you» (miniatura, km, somiglianza); un tocco apre il percorso
-   sulla mappa con «Export GPX» e «Back to Explore». Se la mappa della zona
+   primo. Sono schede come quelle di «Best near you», due per riga
+   (TASK-167): una scheda dice «Drawing…» o «Next» con il posto del
+   disegno vuoto, poi ha il disegno, i km e la somiglianza; un tocco apre il
+   percorso sulla mappa con «Export GPX» e «Back to Explore». Se la mappa
+   della zona
    non si scarica, un messaggio solo e «Try again». Gli esempi pronti
    restano sul telefono (ultime 8 città): la volta dopo sono subito lì.
    Una città con percorsi consigliati mostra quelli e non chiede esempi.
@@ -176,6 +186,13 @@ pagine»):
    of this city are ready above.»; spariscono cambiando città. Una città
    con gli esempi già sul telefono non li mostra. «Ask for a route» resta
    in fondo, sotto i disegni.
+
+   Le città in evidenza nella fila (New York, London, Paris, Tokyo, Rome,
+   Milan, Torino, Barcelona, Dubai, Amsterdam, Lisbon, Sydney, San
+   Francisco) hanno cuore, cerchio e stella da 5 km già nel catalogo
+   (TASK-163): toccata la città, sono subito righe di «Best near you»,
+   senza «Drawing…». Berlin non ancora: li disegna al tocco, come una città
+   cercata.
 
    **Da TASK-145** ogni percorso di «Explore» aperto sulla mappa
    (consigliato, esempio, a tema) ha «Start», giallo, sopra «Export GPX».
@@ -776,19 +793,6 @@ dal telefono. Uno «Stop» prima della prima posizione torna subito alla
 prima schermata. Se l'app si chiude durante la corsa, alla riapertura si
 apre su questa schermata; «Keep running» c'è solo se l'ultima posizione è
 di meno di 30 minuti prima.
-
-## Correre con Strava (TASK-135, ADR-0106)
-
-Sotto «Export GPX», in ogni scheda di un percorso (disegnato, di «Explore»,
-a tema), **«Run with Strava»** apre una scheda che spiega prima di fare
-qualunque cosa: Strava non permette ad altre app di aggiungere percorsi,
-e nulla va a Strava finché l'utente non carica il file. Tre passi:
-1. «Save GPX»: l'esportazione di sempre (foglio di condivisione).
-2. «Open Strava route builder»: `https://www.strava.com/maps/create`, dove
-   si accede, si carica il GPX e si salva il percorso.
-3. «Open Strava»: l'app se c'è (link universale), altrimenti il sito; lì
-   Record → Add Route → il percorso → Start.
-Se un link non si apre, la scheda lo dice con l'indirizzo da aprire a mano.
 
 ## Export del GPX
 

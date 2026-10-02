@@ -7039,3 +7039,80 @@ profile» si vede sul telefono solo dopo la pubblicazione dell'app, tutti e
 due con l'ok dell'utente; finché il server non è aggiornato, «Save» dice
 che l'API non ha i profili. TASK-117 conta i disegni pubblicati; TASK-118
 e seguenti aprono il profilo di un altro con `public_id`.
+
+## ADR-0160 — L'attività nei preferiti e le pause nel dettaglio di una corsa: una colonna con le attività dell'API, un rimando solo come prima
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-200). Il cosa (un preferito ricorda l'attività, il dettaglio di una
+corsa ha le pause) è nei seguiti di TASK-190 parte C e TASK-199, assegnati
+dal coordinatore su delega dell'utente; le aggiunte al contratto seguono
+ADR-0157 e ADR-0158, i preferiti ADR-0139, le corse ADR-0140, la bici
+ADR-0153. Numero tenuto dal coordinatore per TASK-200.
+
+**Contesto**: `favorites` non sapeva l'attività: un percorso in bici,
+riaperto, si esportava come una corsa. Il dettaglio di una corsa non aveva
+le pause, che la riga tiene, `pen` compreso, da TASK-199 (ADR-0158 le
+lasciava fuori perché nessuno le leggeva). `PUT /me/favorites/{key}`
+rifiuta un campo che non conosce, e server e app si aggiornano in momenti
+diversi.
+
+**Decisione**:
+
+1. **Una colonna `activity`** in `favorites` (migrazione `0008`), `text
+   NOT NULL DEFAULT 'running'`, con il vincolo `activity IN ('running',
+   'cycling')`: le attività dell'API (`SUPPORTED_ACTIVITIES`), come
+   `style` elenca i suoi valori. Un'attività nuova vuole una migrazione che
+   allarghi il vincolo; un test tiene un preferito per ogni attività
+   dell'API, così l'API non può offrirne una che il database rifiuta
+   (sarebbe un 500). I preferiti di prima diventano `running`.
+2. **Nella richiesta è facoltativa** (`running` se manca), controllata con
+   `check_supported`, le parole di `POST /routes`; l'elenco e il dettaglio
+   la hanno **sempre**. La chiave resta quella della linea (ADR-0139): la
+   stessa linea è un preferito solo, con l'attività della prima volta.
+3. **L'app la manda solo quando non è `running`**, ultima dopo `walks`: la
+   richiesta di una corsa resta quella di prima, campo per campo. La
+   prende dalla richiesta del percorso disegnato; quelli di «Explore» e a
+   tema non la mandano. Un preferito riaperto la mette nella sua richiesta
+   (quella che «Export GPX» manda), qualunque sport dica «Settings».
+4. **Un rifiuto si rimanda una volta sola, come un'app precedente a
+   TASK-199**: se `PUT` torna `422 invalid_request` a un preferito con
+   `walks` o `activity`, l'app lo rimanda subito senza tutti e due
+   (`asBefore`), la richiesta che ogni API da TASK-171 accetta. Un'API con
+   TASK-199 e senza TASK-200 perde così i `walks` di una parola con la
+   penna alzata tenuta in bici: un caso che non c'è (il server prenderà
+   TASK-199 e TASK-200 insieme), contro un secondo rimando in più.
+5. **L'app legge un'attività che manca, o che non conosce, come `running`**
+   (`favoriteActivity`): l'elenco accetta qualunque stringa, come fa con
+   `style`, perché un preferito di un'attività arrivata dopo (la canoa)
+   non deve far sparire l'elenco a un'app più vecchia; quel preferito si
+   esporta come una corsa, come prima di TASK-200.
+6. **`pauses` nel dettaglio di una corsa**, sempre (`[]` se non ce ne
+   sono), così come la colonna le tiene: `from_s`, `to_s`, `auto`, e
+   `pen` solo quando è vero; in secondi dal primo punto di `track`, solo
+   quello che di ogni pausa sta dentro la corsa, nell'ordine mandato, le
+   sovrapposte come sono. L'elenco non le legge (una colonna in meno per
+   20 righe). Nella risposta sono un `TypedDict` con `pen` non
+   obbligatorio: così `pen: false` non compare, su ogni Pydantic 2 e su
+   Python 3.11 (da `typing_extensions`, che Pydantic ha già). L'app le
+   accetta solo ben fatte, e non le mostra: spezzare la linea corsa sulle
+   pause è una scelta dell'utente. Questo toglie una delle «Scartate» di
+   ADR-0158, che le lasciava fuori perché nessuno le leggeva.
+
+**Scartate**: un'attività senza vincolo nel database (un errore di
+battitura dell'API resterebbe scritto); un formato (`^[a-z]+$`) invece
+dell'elenco (non dice quali sono); rimandare due volte, prima senza
+`activity` e poi senza `walks` (due richieste per un caso che non c'è);
+leggere dagli errori di Pydantic quale campo l'API non conosce (testi che
+cambiano con le versioni); un'attività sconosciuta come risposta sbagliata
+(tutto l'elenco non si aprirebbe); `exclude_if` di Pydantic per `pen`
+(una funzione recente, mentre FastAPI chiede soltanto Pydantic 2.9); un `model_serializer` (lo
+schema OpenAPI della pausa resterebbe vuoto).
+
+**Conseguenze**: la migrazione `0008` e i campi nuovi arrivano al telefono
+solo dopo l'aggiornamento del server e la pubblicazione dell'app, tutti e
+due con l'ok dell'utente. Un preferito in bici tenuto con un'API
+precedente a TASK-200 è una corsa, e resta tale (si toglie e si rimette).
+Le indicazioni di «Start» e il punteggio non hanno l'attività: `POST
+/route-directions` prende solo i punti e cerca sulla rete a piedi, `POST
+/track-scores` confronta due linee; dare l'attività a `/route-directions`
+è un'aggiunta al suo contratto, da decidere con cosa fa «Start» in bici
+(TASK-190, parte C, seguito 2).

@@ -122,11 +122,9 @@ beforeEach(() => {
   jest.mocked(Location.getCurrentPositionAsync).mockResolvedValue({
     coords: { latitude: 46.0671, longitude: 11.1214 },
   } as Location.LocationObject);
-  jest
-    .mocked(Location.watchPositionAsync)
-    .mockResolvedValue({
-      remove: jest.fn(),
-    } as unknown as Location.LocationSubscription);
+  jest.mocked(Location.watchPositionAsync).mockResolvedValue({
+    remove: jest.fn(),
+  } as unknown as Location.LocationSubscription);
   jest.mocked(Sharing.isAvailableAsync).mockResolvedValue(true);
   jest.mocked(Sharing.shareAsync).mockResolvedValue(undefined);
   fetchSpy = jest.spyOn(globalThis, "fetch");

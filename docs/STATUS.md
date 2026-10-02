@@ -187,6 +187,26 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-200: l'attività nei preferiti e le pause nel
+  dettaglio di una corsa, i seguiti 1, 5 e 6 di TASK-190 C e TASK-199
+  (ADR-0160, migrazione `0008`; la PR la apre questo task, il merge è del
+  coordinatore). Un percorso in bici tenuto col cuore si riapre in bici,
+  qualunque sport dica «Settings»: «Export GPX» lo chiede con `cycling`;
+  quelli di «Explore» e a tema sono a piedi. `GET /me/activities/{key}` ha
+  le `pauses` (`pen` solo sulle pause «penna»); l'app le legge e non mostra
+  niente di nuovo. Migrazione `0008_favorite_activity.sql`: `activity` in
+  `favorites` (`running` per i preferiti di prima, vincolo sulle attività
+  dell'API), provata su dati dello schema 0001–0007. Per una corsa l'app
+  manda la richiesta di prima, byte per byte (test); un'API più vecchia che
+  rifiuta `activity` riceve il preferito una volta come prima, e lo tiene
+  come corsa. **Migrazione e campi nuovi arrivano al telefono solo dopo**
+  l'aggiornamento del server (con la `0008`) e la pubblicazione dell'app,
+  tutti e due con l'ok dell'utente. Non provato su un telefono. **Da
+  decidere** (`tasks/TASK-200.md`, «Esito»): le indicazioni di «Start» per
+  un preferito in bici restano a piedi, perché `POST /route-directions`
+  non ha l'attività; i preferiti tenuti prima di TASK-199 restano senza
+  `walks` (si tolgono e si rimettono).
+
 - **API e app** — TASK-116: il profilo, nome utente, bio e «Edit profile»
   (ADR-0128, migrazione `0007`), PR #224 (il merge è del coordinatore). In
   «Profile» sotto il nome ci sono la bio e «Edit profile», che apre una

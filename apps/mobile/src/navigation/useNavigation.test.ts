@@ -80,13 +80,22 @@ test("the fixes of a navigation are the track of the run, kept on the phone", as
       timestamp: seconds * 1000,
     }) as Location.LocationObject;
 
-  const { unmount } = await renderHook(() => useNavigation(route, NO_DIRECTIONS, true));
+  const { result, unmount } = await renderHook(() =>
+    useNavigation(route, NO_DIRECTIONS, true),
+  );
   await act(async () => {
     onPosition(position(0, 0, 5));
     onPosition(position(10, 4, 5));
     onPosition(position(20, 8, 90));
     onPosition(position(30, 12, 5));
   });
+  // The screen has the same track, for the numbers of the run (TASK-164).
+  const state = result.current;
+  expect(state.status).toBe("following");
+  if (state.status === "following") {
+    expect(state.track.fixes.map((fix) => fix.timeMs)).toEqual([0, 4000, 12_000]);
+    expect(state.track.distanceM).toBeCloseTo(30, 0);
+  }
   await unmount();
 
   const run = loadRun();

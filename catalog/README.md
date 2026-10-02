@@ -37,6 +37,9 @@ Ogni file:
 
 Una parola (le frasi di `PHRASES`, ADR-0097) ha `"word"` e `"style"`
 (`round` o `block`) al posto di `"shape"`.
+Solo parole corte (ADR-0130): CIAO e TIAMO nelle città italiane, più AO e
+AMOR a Roma, BONA a Firenze, UE a Bari, UELA a Milano; a New York LOVE,
+HEY e NYC. Oltre le 4–5 lettere, al tetto dei 21 km, non si leggono.
 
 Distanze in metri, punti `[lat, lon]` WGS84. I percorsi stanno su strade
 di OpenStreetMap: chi li pubblica cita «© OpenStreetMap contributors».

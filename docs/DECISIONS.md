@@ -3203,6 +3203,17 @@ si scrive a 3,75 km a lettera (come CIAO a 15 km), da 5 a 21 km, nei due
 stili, tonde e squadrate; nel catalogo ha `word` e `style` invece di
 `shape`.
 
+**Aggiornamento 2026-10-02** (deciso dall'agente su delega dell'utente,
+TASK-161): anche le parole si guardano a occhio, una per città e stile, e
+quelle che non si leggono restano fuori come le forme: `UNREADABLE_WORDS`,
+terne (città, parola, stile), accanto a `UNREADABLE`. Una parola tolta da
+`PHRASES` (ADR-0130) resta nel registro ma non entra più nel catalogo. Le
+forme illeggibili delle città nuove vanno in `UNREADABLE` come le altre.
+Prima di scaricare la zona di una città, se la zona di ogni suo caso è già
+in cache (per esempio costruita sul server dall'estratto Geofabrik,
+TASK-137) non si scarica niente: Genova, Bari, Palermo e New York sono
+entrate così, con Overpass che rifiutava il Mac.
+
 ## ADR-0098 — «Explore» dal catalogo, prima del database
 **Stato**: Attiva · 2026-10-01 · variante C scelta dall'utente (TASK-092);
 il come deciso dall'agente su delega dell'utente (TASK-126)
@@ -4719,6 +4730,33 @@ scrive anche `android.package` in `app.json` e cambia due script di
 schermata finché i dati sono pronti vorrebbe `preventAutoHide` in `App.tsx`:
 un task a parte, se servirà.
 
+## ADR-0130 — Nel catalogo solo parole corte
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («Solo parole
+corte»); l'elenco preciso deciso dall'agente su delega dell'utente
+(TASK-161).
+
+**Contesto**: il giro del 2026-10-02 ha scritto le frasi di ADR-0097 in 14
+città. Guardate a occhio, al tetto dei 21 km si leggono solo le parole fino
+a 4 lettere (CIAO, AO, BONA, UE) e qualche TIAMO sulle griglie regolari;
+da 5–6 lettere in su (AMORE, BUONDI, GRAZIE, NOTTE, HELLO, CEREA, UAGLIO)
+le lettere sono più piccole degli isolati e non si leggono. Sotto 0,88 di
+somiglianza nessuna parola si legge.
+
+**Decisione**: `PHRASES` tiene solo parole corte. In Italia CIAO e TIAMO,
+più AO e AMOR a Roma, BONA a Firenze, UE a Bari, UELA a Milano; a New York
+LOVE, HEY e NYC. Escono GRAZIE, BUONDI, NOTTE, AMORE, HELLO, CEREA,
+UAGLIO, AMMORE, ROMEO, AMURI, ILOVENY, THANKS. Fra quelle rimaste, il
+catalogo tiene solo le combinazioni di città e stile che si leggono
+(ADR-0097, aggiornamento 2026-10-02).
+
+**Alternative scartate**: tenere tutte le frasi e lasciare decidere la
+soglia (parole illeggibili sopra 0,88); alzare il tetto oltre i 21 km per
+le parole lunghe (percorsi che quasi nessuno corre).
+
+**Conseguenze**: meno parole nel catalogo (Bologna nessuna), ma tutte
+leggibili. Parole più lunghe torneranno con un motore che le scriva meglio,
+non allungando la lista.
+
 ## ADR-0132 — «Explore»: i disegni del feed mentre una città si disegna, e le città in evidenza già nel catalogo
 **Stato**: Attiva · 2026-10-02 · chiesto dall'utente («almeno un cuore, un
 cerchio e la stella devono essere già disegnate [in] tutte le città che
@@ -4776,3 +4814,114 @@ senza aver mai aperto «Feed». Il feed vero (TASK-118) deciderà se qui
 restano gli esempi o entrano i disegni degli iscritti. **In due PR**, per
 richiesta dell'utente (2026-10-02, «pubblica intanto la parte dei post
 sul telefono»): prima l'attesa, poi il catalogo.
+
+## ADR-0133 — La schermata della corsa: gli stessi numeri con un percorso e senza, e una freccia di direzione dalla traccia
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («mi devi dire la
+andatura media, chilometri fatti, tra quanti metri devo girare, ci deve
+essere la freccia di indicazione dove sto andando… così è troppo
+semplice»); il cosa scelto dall'utente su un mockup in chat («sì, fallo»),
+il come deciso dall'agente su delega dell'utente (TASK-164).
+
+**Contesto**: la corsa con un percorso mostrava la svolta e i km rimasti,
+ma né i km fatti né il passo; la corsa senza percorso (ADR-0122) mostrava
+km, tempo e passo medio, e nient'altro. Senza percorso le svolte non
+esistono: non c'è una linea da seguire. La mappa non sapeva disegnare un
+segnaposto orientato, e l'app non leggeva la direzione.
+
+**Decisione**:
+- **Un pannello solo per le due corse** (`RunPanel.tsx`), sotto la mappa:
+  km fatti in grande, «Avg pace», «Pace now», «Time». Con un percorso,
+  accanto ai km, «… to go» e «about … min», e la barra del percorso fatto;
+  senza, «Last km» con il passo dell'ultimo km intero.
+- **I km fatti sono quelli della traccia**, anche con un percorso: è
+  quello che si è corso davvero, lo stesso numero della fine della corsa
+  (ADR-0093). I km rimasti e la barra vengono invece dalla posizione lungo
+  il percorso (`alongM`).
+- **«Pace now» è il passo degli ultimi 200 m di traccia**, fino a adesso:
+  abbastanza lungo da non seguire gli errori del GPS, abbastanza corto da
+  mostrare un cambio di ritmo. Il tempo va avanti fra una posizione e
+  l'altra, quindi da fermi il passo rallenta, e oltre 20:00 /km sparisce:
+  è stare fermi, non correre. Come il passo medio, compare dopo 100 m.
+- **«about 17 min» è i km rimasti al passo medio fin lì**: una stima, e lo
+  dice. Il tempo conta anche le soste, come prima (ADR-0091).
+- **La direzione viene dalla traccia, non dalla bussola**: il verso dalla
+  posizione di 10 m prima all'ultima (`headingDeg`). Funziona uguale su
+  ogni telefono e nei test; la bussola del telefono sbaglia in tasca e
+  vicino al metallo, e `coords.heading` del GPS manca da fermi. Una sola
+  posizione di distanza (5 m) sta dentro l'errore del GPS e la freccia
+  tremerebbe. Da fermi la direzione resta l'ultima.
+- **La freccia sulla mappa**: `follow` porta `heading` (gradi interi, o
+  null), e la pagina mette al posto del segnaposto una freccia chiara,
+  `rotationAlignment: "map"`, con il bordo scuro per leggersi sul giallo.
+  `stopFollow`, mandato quando la corsa finisce, rimette il segnaposto.
+  La mappa resta col nord in alto.
+- **Senza percorso, la partenza al posto della svolta**: freccia, distanza
+  in linea d'aria e «Your start, in a straight line». È l'unica direzione
+  che una corsa senza percorso può dare senza inventare niente, e dice
+  quanto manca per tornare. La freccia è relativa a chi corre (in su =
+  davanti), come le frecce delle svolte; è azzurra, il colore della
+  partenza (ADR-0040), non gialla (ADR-0046). «In a straight line» è
+  scritto: non è la strada da fare.
+- **Il giallo della barra è quello del percorso** (ADR-0046): la barra è
+  il percorso, per quanto è stato corso. I km restano bianchi.
+- **`useNavigation` dà la traccia** nello stato, come `useFreeRun`: il
+  registratore parte prima del primo stato. Nessuna modifica a
+  `trackStore.ts`, `freeRun.ts`, `navigator.ts`.
+
+**Alternative scartate**: girare la mappa nel verso di marcia (la figura
+del percorso si legge col nord in alto, e i gesti della mappa vanno
+ripensati); la bussola del telefono (`expo-sensors`: dipendenza nuova, e
+inaffidabile in corsa); il passo istantaneo fra due posizioni (salta di
+minuti con un errore di pochi metri); il nome della via in cui si è, senza
+percorso (vuole l'API o i dati delle strade sul telefono); tenere due
+schermate diverse per le due corse.
+
+**Conseguenze**: il pannello è più alto della riga di prima, e la mappa
+più bassa di circa 90 punti. «Pause», lo «Stop» da tenere premuto e la
+voce a ogni km nella corsa con percorso restano fuori: task a parte, se
+l'utente li vuole. La freccia compare dopo i primi 10 m. Chi preme «Start»
+lontano dall'inizio del percorso («Start here») ha nei km e nel passo anche
+il tratto per arrivarci: la traccia parte con «Start» (ADR-0091), e i km
+rimasti no. Provato nel simulatore con un GPS simulato, nelle due corse;
+camminando con l'iPhone no.
+## ADR-0135 — «Explore» a schede: due per riga, e i filtri in una riga sola
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («Pagina
+Explore a schede», fra le proposte del canvas); il come deciso dall'agente
+su delega dell'utente (TASK-167).
+
+**Contesto**: in «Explore» ogni percorso era una riga con una miniatura da
+72 × 60: il disegno, che è il motivo per cui si sceglie un percorso, era la
+cosa più piccola della riga. I filtri erano due file di chip, una sopra
+l'altra, prima dell'elenco.
+
+**Decisione**:
+- **Una scheda per percorso** (`src/explore/RouteCard.tsx`), due per riga:
+  il disegno in alto, largo quanto la scheda e alto due terzi, poi forma e
+  km, poi città e distanza. La somiglianza sta in un angolo del disegno.
+  Il disegno è fatto come le miniature, una `View` per tratto
+  (`thumbSegments`), con la linea da 3: nessuna dipendenza nuova.
+- **La larghezza viene dalla finestra**, non da una misura dopo il primo
+  disegno: i tratti si calcolano in punti, e la scheda non salta.
+- **Gli esempi di una città sono le stesse schede**: una non ancora
+  disegnata tiene il posto del disegno vuoto e dice «Drawing…» o «Next»,
+  e non è un pulsante.
+- **I filtri in una riga** (`src/explore/RouteFilters.tsx`): un pulsante
+  per filtro, che dice cosa tiene («Shape: Star ▾»); le scelte si aprono
+  sotto la riga, lì dove sono, e una scelta le richiude. Niente menu a
+  comparsa né fogli: non servono librerie, e la pagina non perde il posto.
+  «▾» e «▴» sono caratteri, come «←» e «↺» nel resto dell'app.
+- **«Scelto» è il bordo chiaro**, non il fondo chiaro di prima: è il modo
+  delle tessere delle forme, e il giallo resta del percorso.
+- **Due filtri che insieme non lasciano niente lo dicono**, invece di una
+  pagina vuota.
+
+**Scartate**: una colonna sola di schede larghe (metà dei percorsi a
+schermo); la foto della mappa sotto il disegno come in «Feed» (ADR-0131:
+una foto per scheda, con decine di percorsi a città); un menu a comparsa
+per i filtri; tenere le due file di chip.
+
+**Conseguenze**: il componente `RouteThumb` non è più usato da «Explore»
+(resta ai suoi test; `thumbSegments`, nello stesso file, lo usano le schede
+e «Feed»); `Chips` non c'è più. Le righe che scorrono di lato
+dentro la pagina restano due, le città e le scelte di un filtro aperto. Da
+provare con il dito sull'iPhone.

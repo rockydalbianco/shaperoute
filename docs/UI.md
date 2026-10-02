@@ -112,11 +112,19 @@ pagine»):
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
    migliori che partono entro 5 km dalla partenza scelta, con i filtri per
-   forma o parola e per distanza. Ogni riga ha la miniatura della linea
-   (gialla, il percorso), forma e km, città e distanza dalla partenza, la
-   somiglianza. Toccata, il percorso si apre sulla mappa con «Export GPX» e
-   «Back to the list»; «←» torna all'elenco. Da TASK-145 ha anche «Start»
-   (sotto).
+   forma o parola e per distanza. **I percorsi sono schede, due per riga**
+   (TASK-167, ADR-0135, scelto dall'utente): in alto il disegno, largo
+   quanto la scheda, giallo su fondo scuro, con la somiglianza in un angolo
+   («97%»); sotto, forma e km («Star · 5.1 km») e città e distanza dalla
+   partenza («Trento · 450 m away»). **I filtri stanno in una riga sola**:
+   due pulsanti, «Shape: All ▾» e «Distance: All ▾», che dicono cosa
+   tengono; toccato uno, sotto la riga si aprono le sue scelte («All»,
+   «Star», «Circle»…, che scorrono di lato), e una scelta le richiude. Se ne
+   apre uno alla volta; un filtro che tiene qualcosa ha il bordo chiaro. Se
+   i due filtri insieme non lasciano niente: «No route here is both: change
+   one of the two filters.». Toccata una scheda, il percorso si apre sulla
+   mappa con «Export GPX» e «Back to the list»; «←» torna all'elenco. Da
+   TASK-145 ha anche «Start» (sotto).
 
    Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
    qualsiasi città del mondo (l'elenco e la richiesta partono dal suo
@@ -159,9 +167,11 @@ pagine»):
    tre tessere per riga. Scelta una città senza percorsi consigliati entro
    5 km, sotto «City» compare **«EXAMPLES IN VERCELLI»**: cuore, cerchio e
    stella da 5 km dal centro, chiesti da soli, uno alla volta, il cuore per
-   primo. Ogni riga dice «Drawing…» o «Next», poi diventa come una riga di
-   «Best near you» (miniatura, km, somiglianza); un tocco apre il percorso
-   sulla mappa con «Export GPX» e «Back to Explore». Se la mappa della zona
+   primo. Sono schede come quelle di «Best near you», due per riga
+   (TASK-167): una scheda dice «Drawing…» o «Next» con il posto del
+   disegno vuoto, poi ha il disegno, i km e la somiglianza; un tocco apre il
+   percorso sulla mappa con «Export GPX» e «Back to Explore». Se la mappa
+   della zona
    non si scarica, un messaggio solo e «Try again». Gli esempi pronti
    restano sul telefono (ultime 8 città): la volta dopo sono subito lì.
    Una città con percorsi consigliati mostra quelli e non chiede esempi.
@@ -650,9 +660,28 @@ svolta (TASK-049, ADR-0052). Anche sotto un percorso di «Explore», che le
 chiede all'API al tocco (TASK-145). Si resta sulla schermata della mappa: al posto
 di «←» un banner con la prossima svolta (freccia gialla, distanza dal GPS
 dal vivo, «Turn left onto Via Roma», e una seconda riga per le svolte a
-pochi metri da leggere insieme); sotto, i km rimasti e «Stop», che torna al
-risultato. La mappa segue la posizione, vicina (zoom 17), e dopo «Stop»
-inquadra di nuovo il percorso.
+pochi metri da leggere insieme); sotto la mappa i numeri della corsa e
+«Stop», che torna al risultato. La mappa segue la posizione, vicina (zoom
+17), e dopo «Stop» inquadra di nuovo il percorso.
+
+**I numeri della corsa** (TASK-164, ADR-0133), chiesti dall'utente: uguali
+con un percorso e senza. Sotto la mappa i km fatti in grande, due decimali
+(«2.34 km»), e tre riquadri: «Avg pace» (il passo medio, «5:21», /km),
+«Pace now» (il passo degli ultimi 200 m) e «Time», che va avanti ogni
+secondo dalla prima posizione del GPS. I passi compaiono dopo 100 m, prima
+c'è «–»; «Pace now» torna «–» anche da fermi (più lenti di 20:00 /km).
+Con un percorso, accanto ai km, «3.2 km to go» e «about 17 min» (i km
+rimasti al passo medio), e sotto una barra gialla con la parte di percorso
+fatta; all'arrivo il tempo si ferma. Sotto il banner della svolta due
+etichette piccole: «42% drawn», quanta parte del disegno è fatta, e il
+punto cardinale verso cui si corre («NE»). Poi «Pocket» e «Stop», larghi
+uguali.
+
+**La freccia di direzione** (TASK-164). Mentre si corre il segnaposto sulla
+mappa è una freccia chiara, girata dove si sta andando; la mappa resta col
+nord in alto. La direzione viene dalla traccia, dagli ultimi 10 m: serve
+qualche passo perché compaia (prima c'è il segnaposto di sempre), e da
+fermi resta quella di prima. A fine corsa torna il segnaposto.
 
 Ogni svolta si dice a voce 50 m prima, in inglese come il resto dell'app
 («In 50 metres, turn left onto Via Roma, then turn right onto the
@@ -725,14 +754,20 @@ principale.
 fa partire una corsa senza disegnare niente: niente forma, niente percorso,
 niente API. La scritta è per intero (TASK-158, chiesto dall'utente): «Run» da
 solo si leggeva come correre il percorso scelto sotto. Si apre la mappa, che segue la posizione come in navigazione (zoom
-17) e disegna la linea corsa fin lì, sottile e chiara (`track`). Al posto
-di «←» un banner con i km in grande, due decimali («2.34 km»), e sotto il
-tempo e il passo medio («12:34 · 5:21 /km»). Il tempo parte dalla prima
-posizione del GPS e va avanti ogni secondo; il passo compare dopo 100 m.
-Prima della prima posizione, «Finding your position…»; senza permesso,
-«Location is off for Sgrava: allow it in Settings to record a run.».
-Sotto la mappa «Run without a route», «Pocket» (la stessa modalità tasca
-della navigazione) e «Stop». A ogni km la voce, in inglese come il resto,
+17) e disegna la linea corsa fin lì, sottile e chiara (`track`), con la
+freccia di direzione della navigazione. Senza percorso non ci sono svolte
+da dire: al posto di «←» un banner con il punto di partenza (TASK-164,
+ADR-0133), cioè una freccia azzurra, il colore della partenza, la distanza
+in grande («1.2 km») e «Your start, in a straight line»; sotto, «Heading
+north-east». La freccia è come la vede chi corre: in su vuol dire davanti,
+in giù alle spalle. A meno di 30 m dalla partenza, «You are at your start»
+senza freccia. Prima della prima posizione, «Finding your position…»; senza
+permesso, «Location is off for Sgrava: allow it in Settings to record a
+run.». Sotto la mappa i numeri della corsa, gli stessi della navigazione
+(km, «Avg pace», «Pace now», «Time»); accanto ai km, dal primo km in poi,
+«Last km» e il passo dell'ultimo km intero («5:14 /km»). Poi «Pocket» (la
+stessa modalità tasca della navigazione) e «Stop». A ogni km la voce, in
+inglese come il resto,
 dice il tempo e il passo medio: «1 kilometre. Time: 5 minutes 42 seconds.
 Average pace: 5 minutes 42 seconds per kilometre.» (oltre l'ora, ore e
 minuti). Anche in modalità tasca; niente vibrazione, che in navigazione

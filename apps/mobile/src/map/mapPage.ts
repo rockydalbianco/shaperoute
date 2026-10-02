@@ -56,6 +56,18 @@ export const TRACK_OPACITY = track.opacity;
  */
 export const POSITION_COLOR = color.text;
 
+/**
+ * The runner while running (TASK-164): an arrow in the marker's colour,
+ * turned where the runner is heading, on a faint disc of the same colour;
+ * the dark edge keeps it readable over the yellow of the route.
+ */
+export const HEADING_ARROW_SIZE = 36;
+export const HEADING_ARROW_SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${HEADING_ARROW_SIZE}" height="${HEADING_ARROW_SIZE}" viewBox="0 0 36 36">` +
+  `<circle cx="18" cy="18" r="17" fill="${POSITION_COLOR}" fill-opacity="0.18"/>` +
+  `<path d="M18 5 L27.5 28 L18 23 L8.5 28 Z" fill="${POSITION_COLOR}" stroke="${color.map.background}" stroke-width="1.5" stroke-linejoin="round"/>` +
+  `</svg>`;
+
 /** Where a moved route begins (ADR-0040): a cyan marker and its label. */
 export const START_HERE_COLOR = color.startHere;
 export const START_HERE_LABEL = "Start here";
@@ -112,6 +124,7 @@ export function buildMapPage(): string {
     }
     var styleLoaded = false;
     var marker = null;
+    var arrow = null;
     var startHere = null;
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
@@ -206,6 +219,41 @@ export function buildMapPage(): string {
         },
       });
     });
+    // The position: a pin, or while running an arrow turned to the heading.
+    function showPin(lngLat) {
+      if (arrow) {
+        arrow.remove();
+        arrow = null;
+      }
+      if (marker) {
+        marker.setLngLat(lngLat);
+      } else {
+        marker = new maplibregl.Marker({ color: ${toScript(POSITION_COLOR)} })
+          .setLngLat(lngLat)
+          .addTo(map);
+      }
+    }
+    function showArrow(lngLat, heading) {
+      if (marker) {
+        marker.remove();
+        marker = null;
+      }
+      if (!arrow) {
+        var element = document.createElement("div");
+        element.style.width = "${HEADING_ARROW_SIZE}px";
+        element.style.height = "${HEADING_ARROW_SIZE}px";
+        element.style.lineHeight = "0";
+        element.innerHTML = ${toScript(HEADING_ARROW_SVG)};
+        // Turned with the map: north of the arrow is north of the map.
+        arrow = new maplibregl.Marker({ element: element, rotationAlignment: "map" })
+          .setLngLat(lngLat)
+          .addTo(map);
+      }
+      arrow.setLngLat(lngLat);
+      if (typeof heading === "number") {
+        arrow.setRotation(heading);
+      }
+    }
     function setStartHere(lngLat) {
       if (startHere) {
         startHere.remove();
@@ -265,13 +313,7 @@ export function buildMapPage(): string {
     window.shaperoute = {
       receive: function (message) {
         if (message.type === "setPosition") {
-          if (marker) {
-            marker.setLngLat(message.lngLat);
-          } else {
-            marker = new maplibregl.Marker({ color: ${toScript(POSITION_COLOR)} })
-              .setLngLat(message.lngLat)
-              .addTo(map);
-          }
+          showPin(message.lngLat);
           map.flyTo({ center: message.lngLat, zoom: ${START_ZOOM} });
         } else if (message.type === "showRoute") {
           var points = message.coordinates;
@@ -290,14 +332,18 @@ export function buildMapPage(): string {
           }
           map.fitBounds(bounds, { padding: 40 });
         } else if (message.type === "follow") {
-          if (marker) {
-            marker.setLngLat(message.lngLat);
+          // An arrow once the heading is known; it stays one when a fix
+          // comes without it.
+          if (typeof message.heading === "number" || arrow) {
+            showArrow(message.lngLat, message.heading);
           } else {
-            marker = new maplibregl.Marker({ color: ${toScript(POSITION_COLOR)} })
-              .setLngLat(message.lngLat)
-              .addTo(map);
+            showPin(message.lngLat);
           }
           map.easeTo({ center: message.lngLat, zoom: ${FOLLOW_ZOOM}, duration: 500 });
+        } else if (message.type === "stopFollow") {
+          if (arrow) {
+            showPin(arrow.getLngLat());
+          }
         } else if (message.type === "showTrack") {
           setTrack({
             type: "Feature",

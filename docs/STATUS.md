@@ -48,8 +48,9 @@ In coda, dopo o accanto:
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
   account dell'utente.
-- **Seguiti scritti nei task fatti**: le altre città del catalogo seme e
-  le frasi (TASK-128); Berlino, che resta a Overpass, e le zone da rifare
+- **Seguiti scritti nei task fatti**: le forme a 21 km di Bari, Palermo
+  e New York, quando Overpass riapre, e il feed d'esempio da rifare sulle
+  14 città (TASK-161); Berlino, che resta a Overpass, e le zone da rifare
   quando l'estratto invecchia (TASK-137); il segnale della scelta fra
   A · B · C negli esempi (TASK-151); la linea intera a fine corsa
   (TASK-149); zone scaricate con un margine (TASK-143); l'import in Strava
@@ -61,7 +62,9 @@ In coda, dopo o accanto:
   «Explore» (TASK-126, 134) e il suo «Start» (TASK-145), correre senza
   percorso (TASK-149), «A · B · C» negli esempi (TASK-151, 155), lo swipe
   col dito (TASK-154), il feed d'esempio e i ritocchi di TASK-156, 157,
-  158, la mappa sotto i disegni di «Feed» (TASK-162).
+  158, la schermata della corsa con i numeri e la freccia di direzione
+  (TASK-164). Tutti pubblicati su `preview` il 2026-10-02 (ultimo update
+  `eba74321`, da 73095e7).
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -98,13 +101,38 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
 
 ## Completato
 
+- **App** — TASK-167: in «Explore» i percorsi sono schede, due per riga,
+  con il disegno grande in alto, scelto dall'utente fra le proposte
+  grafiche (ADR-0135). I filtri stanno in una riga sola, «Shape» e
+  «Distance», e le scelte si aprono sotto. Anche gli esempi di una città
+  sono schede. Visto su un simulatore con il catalogo di Trento. **Da
+  provare sull'iPhone** (ripubblicare l'app).
+- **App** — TASK-164: la schermata della corsa rifatta, chiesta dall'utente
+  (ADR-0133). Sotto la mappa, con un percorso e senza: km fatti, passo
+  medio, passo di adesso (ultimi 200 m) e tempo; con un percorso anche i km
+  rimasti, i minuti stimati e la barra del disegno fatto («42% drawn»
+  sotto la svolta), senza percorso il passo dell'ultimo km. Sulla mappa il
+  segnaposto è una freccia girata dove si sta andando. Senza percorso le
+  svolte non esistono: al loro posto freccia e distanza verso la partenza.
+  Nessuna dipendenza nuova, niente API. Visto nel simulatore con un GPS
+  simulato. Pubblicata il 2026-10-02 (update `eba74321`). **Da provare
+  sull'iPhone** camminando.
+  Fuori, da chiedere all'utente: «Pause», «Stop» da tenere premuto, la voce
+  a ogni km nella corsa con percorso.
+- **Catalogo** — TASK-161: il catalogo seme in tutte le 14 città, 323
+  percorsi (Napoli, Verona, Padova, Genova, Bari, Palermo e New York
+  nuove; Genova, Bari, Palermo e New York con le zone del server), e le
+  parole. Solo parole corte, scelta dell'utente (ADR-0130); parole e forme
+  illeggibili tolte a occhio (ADR-0097, aggiornamento 2026-10-02).
+  Mancano le forme a 21 km di Bari, Palermo e New York (Overpass).
+
 - **App** — TASK-162: in «Feed» ogni disegno ha sotto la mappa della sua
   zona, chiesta dall'utente (ADR-0131): strade, acqua, verde e nomi, con
   lo stile dell'app. È una foto: una pagina MapLibre nascosta sotto
   l'elenco ne fa una alla volta e la scheda la mette sotto la linea, con
   il credito della mappa. Senza rete le schede restano come prima. Nessuna
-  dipendenza nuova, niente API. Visto su un simulatore. **Da provare
-  sull'iPhone**, con l'app ripubblicata.
+  dipendenza nuova, niente API. Pubblicata il 2026-10-02 (update
+  `d186a9ef`) e provata dall'utente sull'iPhone: «la mappa nei feed c'è».
 - **App** — TASK-165: la schermata di avvio con il logo, chiesta
   dall'utente (ADR-0134): fondo nero, su iOS il logo intero, su Android il
   segno. Usa `expo-splash-screen`, dipendenza nuova approvata dall'utente;

@@ -418,7 +418,7 @@ def message(answer: Any) -> str:
 
 def test_the_migration_comes_after_the_runs() -> None:
     names = [path.name for path in migrations()]
-    assert names.index("0007_strava.sql") > names.index("0003_runs.sql")
+    assert names.index("0004_strava.sql") > names.index("0003_runs.sql")
 
 
 def test_the_examples_are_the_bodies() -> None:

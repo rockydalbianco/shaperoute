@@ -280,7 +280,7 @@ Strava, dalla stessa pagina.
    punto 1. Serve solo se `.env` non l'ha già; con il Caddy di apt (F.12)
    non accende niente d'altro, perché il Caddy di `compose.yaml` parte solo
    con `COMPOSE_PROFILES=public`.
-3. L'API nuova, che al primo avvio applica la migrazione `0007`
+3. L'API nuova, che al primo avvio applica la migrazione `0004`
    (`DATABASE.md`), come ogni aggiornamento del server:
 
    ```bash
@@ -289,7 +289,7 @@ Strava, dalla stessa pagina.
    docker compose logs api | grep Accounts
    ```
 
-   La riga «Accounts in PostgreSQL» elenca `0007_strava` fra le migrazioni
+   La riga «Accounts in PostgreSQL» elenca `0004_strava` fra le migrazioni
    applicate.
 4. La prova: nell'app, entrati con un account, «Connect with Strava»; poi
    una corsa salvata con «Send to Strava». Da riga di comando, con la

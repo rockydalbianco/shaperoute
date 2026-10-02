@@ -119,7 +119,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
 
-- **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0007`; scelta
+- **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»): **la parte API è fatta**, PR #210:
   collegare l'atleta dal browser (`POST /me/strava/connect`, `GET
   /strava/callback`), `GET` e `DELETE /me/strava`, mandare una corsa
@@ -130,7 +130,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (seconda PR: `RunEnd`, «My activities», «Settings», la coda senza rete,
   `UI.md`). **Aspettano l'utente**: creare la sua app Strava e scrivere il
   secret sul server (`DEPLOY.md`, «Strava»), l'ok per aggiornare il server
-  (migrazione `0007`), le quattro domande del task file, la prova dal
+  (migrazione `0004`), le quattro domande del task file, la prova dal
   vero. File della parte app: `apps/mobile/src/strava/`,
   `src/api/strava.ts`, `src/activities/RunEnd.tsx`, `outbox.ts`,
   `src/theme/tokens.ts`. Da dove riprendere: `tasks/TASK-187.md`.

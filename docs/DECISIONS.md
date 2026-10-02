@@ -6153,7 +6153,7 @@ stato HTTP già distingue); scrivere il GPX nel motore (il motore non sa
 niente di corse salvate, pause e orari); `/oauth/deauthorize` (in
 dismissione).
 
-**Conseguenze**: sul server arrivano la migrazione `0007` e due variabili
+**Conseguenze**: sul server arrivano la migrazione `0004` e due variabili
 (`DEPLOY.md`, «Strava»); finché l'utente non crea la sua app Strava,
 Strava è spento e niente cambia. Finché Strava non approva l'app si
 collega solo l'atleta dell'utente. La prova dal vero (data, ora e durata

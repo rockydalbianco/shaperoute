@@ -4,8 +4,10 @@
 **Fase**: 4 · **Branch**: `feat/TASK-187-send-to-strava`
 **Dipende da**: TASK-172 in `main`, con la sua schermata «Save» /
 «Discard» a fine corsa (`src/activities/RunEnd.tsx`) e la tabella `runs`
-**ADR e migrazione**: ADR-0156 e migrazione `0007`, assegnati dal
-coordinatore il 2026-10-02 (la `0006` è di TASK-183)
+**ADR e migrazione**: ADR-0156 e migrazione `0004`, dal coordinatore il
+2026-10-02. Prima era la `0007`; il coordinatore ha cambiato la regola: il
+numero di una migrazione è il primo libero in `main` quando la PR entra,
+così si applicano nello stesso ordine su ogni database
 
 ## Obiettivo
 
@@ -168,7 +170,7 @@ non serve (sotto, «A che punto siamo»).
 Prima PR, la parte API:
 
 ```
-services/api/migrations/0007_strava.sql
+services/api/migrations/0004_strava.sql
 services/api/shaperoute_api/strava.py
 services/api/shaperoute_api/strava_client.py
 services/api/shaperoute_api/run_gpx.py
@@ -261,7 +263,7 @@ docs/tasks/TASK-187.md
 - `UI.md`, «Cosa esce dal telefono».
 
 **Aspetta l'utente**: le quattro domande sopra; creare l'app Strava e
-scrivere il secret sul server; l'ok per il server (migrazione `0007`) e
+scrivere il secret sul server; l'ok per il server (migrazione `0004`) e
 per pubblicare l'app; la prova dal vero, compreso come Strava conta la
 durata di una corsa con una pausa (il GPX chiude un `<trkseg>` a ogni
 pausa: da vedere se Strava lo legge come tempo fermo).

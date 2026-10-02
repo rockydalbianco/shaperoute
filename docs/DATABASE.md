@@ -102,8 +102,7 @@ Migrazione `0003_runs.sql` (TASK-172, ADR-0140):
 - Solo il proprietario legge una riga. Le colonne per gli altri (traccia
   tagliata, «pubblica», titolo) le aggiunge TASK-117 con la sua migrazione.
 
-Migrazione `0007_strava.sql` (TASK-187, ADR-0156; i numeri da `0004` a
-`0006` sono di altri task e arrivano con loro):
+Migrazione `0004_strava.sql` (TASK-187, ADR-0156):
 
 - `strava_states`: `state_hash` (SHA-256 dello `state`, chiave), `user_id`
   (unico, `ON DELETE CASCADE`), `created_at`. Un collegamento a Strava

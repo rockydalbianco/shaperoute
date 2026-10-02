@@ -4872,3 +4872,44 @@ lontano dall'inizio del percorso («Start here») ha nei km e nel passo anche
 il tratto per arrivarci: la traccia parte con «Start» (ADR-0091), e i km
 rimasti no. Provato nel simulatore con un GPS simulato, nelle due corse;
 camminando con l'iPhone no.
+## ADR-0135 — «Explore» a schede: due per riga, e i filtri in una riga sola
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («Pagina
+Explore a schede», fra le proposte del canvas); il come deciso dall'agente
+su delega dell'utente (TASK-167).
+
+**Contesto**: in «Explore» ogni percorso era una riga con una miniatura da
+72 × 60: il disegno, che è il motivo per cui si sceglie un percorso, era la
+cosa più piccola della riga. I filtri erano due file di chip, una sopra
+l'altra, prima dell'elenco.
+
+**Decisione**:
+- **Una scheda per percorso** (`src/explore/RouteCard.tsx`), due per riga:
+  il disegno in alto, largo quanto la scheda e alto due terzi, poi forma e
+  km, poi città e distanza. La somiglianza sta in un angolo del disegno.
+  Il disegno è fatto come le miniature, una `View` per tratto
+  (`thumbSegments`), con la linea da 3: nessuna dipendenza nuova.
+- **La larghezza viene dalla finestra**, non da una misura dopo il primo
+  disegno: i tratti si calcolano in punti, e la scheda non salta.
+- **Gli esempi di una città sono le stesse schede**: una non ancora
+  disegnata tiene il posto del disegno vuoto e dice «Drawing…» o «Next»,
+  e non è un pulsante.
+- **I filtri in una riga** (`src/explore/RouteFilters.tsx`): un pulsante
+  per filtro, che dice cosa tiene («Shape: Star ▾»); le scelte si aprono
+  sotto la riga, lì dove sono, e una scelta le richiude. Niente menu a
+  comparsa né fogli: non servono librerie, e la pagina non perde il posto.
+  «▾» e «▴» sono caratteri, come «←» e «↺» nel resto dell'app.
+- **«Scelto» è il bordo chiaro**, non il fondo chiaro di prima: è il modo
+  delle tessere delle forme, e il giallo resta del percorso.
+- **Due filtri che insieme non lasciano niente lo dicono**, invece di una
+  pagina vuota.
+
+**Scartate**: una colonna sola di schede larghe (metà dei percorsi a
+schermo); la foto della mappa sotto il disegno come in «Feed» (ADR-0131:
+una foto per scheda, con decine di percorsi a città); un menu a comparsa
+per i filtri; tenere le due file di chip.
+
+**Conseguenze**: il componente `RouteThumb` non è più usato da «Explore»
+(resta ai suoi test; `thumbSegments`, nello stesso file, lo usano le schede
+e «Feed»); `Chips` non c'è più. Le righe che scorrono di lato
+dentro la pagina restano due, le città e le scelte di un filtro aperto. Da
+provare con il dito sull'iPhone.

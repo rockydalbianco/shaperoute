@@ -190,6 +190,13 @@ pagine»):
    con gli esempi già sul telefono non li mostra. «Ask for a route» resta
    in fondo, sotto i disegni.
 
+   Le città in evidenza nella fila (New York, London, Paris, Tokyo, Rome,
+   Milan, Torino, Barcelona, Dubai, Amsterdam, Lisbon, Sydney, San
+   Francisco) hanno cuore, cerchio e stella da 5 km già nel catalogo
+   (TASK-163): toccata la città, sono subito righe di «Best near you»,
+   senza «Drawing…». Berlin non ancora: li disegna al tocco, come una città
+   cercata.
+
    **Da TASK-145** ogni percorso di «Explore» aperto sulla mappa
    (consigliato, esempio, a tema) ha «Start», giallo, sopra «Export GPX».
    Questi percorsi arrivano senza indicazioni: al tocco l'app le chiede

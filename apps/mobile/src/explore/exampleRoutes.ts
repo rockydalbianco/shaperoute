@@ -48,6 +48,16 @@ const ALL_SHAPES: readonly Shape[] = [...EXAMPLE_SHAPES, ...MORE_SHAPES];
 export const DRAW_ORDER: readonly Shape[] = ["circle", "heart", "star", ...MORE_SHAPES];
 /** Short: the quickest to plan, and the smallest zone to download. */
 export const EXAMPLE_DISTANCE_M = 5000;
+/**
+ * The API takes 30 POSTs a minute from a phone (ADR-0076), and a city it
+ * has already drawn answers its eight at once: three such cities in a
+ * minute would use them all, and "Start" or "Export GPX" would be refused.
+ * So the other shapes are asked only while fewer example requests than this
+ * went out in the last minute, the first shapes counted; past that they
+ * wait. The first shapes never wait: they cost what they always did.
+ */
+export const EXAMPLES_PER_MINUTE = 18;
+const MINUTE_MS = 60_000;
 /** The cities whose examples the file keeps, the last first. */
 export const MAX_KEPT_CITIES = 8;
 export const EXAMPLES_FILE = "city-examples.json";
@@ -193,6 +203,31 @@ const listeners = new Set<() => void>();
 // The other shapes the API could not draw in a city, in this run of the
 // app: asked again they would fail the same, at the cost of a whole search.
 const leftOut = new Set<string>();
+// When each example of the last minute was asked, the oldest first.
+const sent: number[] = [];
+
+/** How long before another of the other shapes may be asked; 0 when now. */
+export function moreWaitMs(now: number): number {
+  while (sent.length > 0 && sent[0] <= now - MINUTE_MS) {
+    sent.shift();
+  }
+  return sent.length < EXAMPLES_PER_MINUTE
+    ? 0
+    : sent[sent.length - EXAMPLES_PER_MINUTE] + MINUTE_MS - now;
+}
+
+/** Waits `ms`, or until `signal` aborts: it never rejects. */
+function pause(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const done = () => {
+      clearTimeout(timer);
+      signal.removeEventListener("abort", done);
+      resolve();
+    };
+    const timer = setTimeout(done, ms);
+    signal.addEventListener("abort", done, { once: true });
+  });
+}
 let running: { key: string; controller: AbortController } | null = null;
 
 function show(key: string, list: Example[]): void {
@@ -381,6 +416,20 @@ export function drawExamples(
           key,
           (examples.get(key) ?? []).map((e) => (e.shape === shape ? example : e)),
         );
+      if (quiet(shape)) {
+        // No card yet while it waits for the minute's allowance.
+        for (
+          let wait = moreWaitMs(Date.now());
+          wait > 0;
+          wait = moreWaitMs(Date.now())
+        ) {
+          await pause(wait, controller.signal);
+          if (controller.signal.aborted) {
+            return;
+          }
+        }
+      }
+      sent.push(Date.now());
       put({ shape, status: "drawing" });
       const outcome = await request(
         apiUrl,
@@ -446,6 +495,7 @@ export function forgetExamples(): void {
   examples.clear();
   details.clear();
   leftOut.clear();
+  sent.length = 0;
 }
 
 /**

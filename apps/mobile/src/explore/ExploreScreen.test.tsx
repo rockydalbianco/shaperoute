@@ -259,6 +259,7 @@ test("the drawings stay when the last example arrives", async () => {
 });
 
 afterAll(() => {
+  forgetExamples();
   fetchMock.mockRestore();
 });
 

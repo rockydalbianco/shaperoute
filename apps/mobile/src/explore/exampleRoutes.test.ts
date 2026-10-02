@@ -11,6 +11,7 @@ import {
   drawExamples,
   EXAMPLE_DISTANCE_M,
   EXAMPLE_SHAPES,
+  EXAMPLES_PER_MINUTE,
   exampleDetail,
   type Example,
   firstExamples,
@@ -18,6 +19,7 @@ import {
   isMore,
   MAX_KEPT_CITIES,
   MORE_SHAPES,
+  moreWaitMs,
   readKept,
   shownExamples,
   type Storage,
@@ -96,6 +98,11 @@ const notDrawable: RouteOutcome = {
 };
 
 beforeEach(() => {
+  forgetExamples();
+});
+
+// A shape waiting for the minute's allowance holds a timer.
+afterAll(() => {
   forgetExamples();
 });
 
@@ -465,4 +472,84 @@ test("examples kept before the other shapes: only those are asked", async () => 
     "heart:ready circle:ready star:ready (kept)",
   );
   expect(asked.map((a) => a.shape)).toEqual([MORE_SHAPES[0]]);
+});
+
+test("cities the API has drawn already: the other shapes keep to the minute's allowance", async () => {
+  jest.useFakeTimers();
+  try {
+    const { request, asked } = api();
+    const storage = memory();
+    const cities = [0, 1, 2].map((i): Place => ({
+      label: `City ${i}`,
+      point: [45 + i / 10, 8],
+    }));
+    const answerNext = () =>
+      act(async () => asked.at(-1)?.answer({ kind: "route", result }));
+    // Two cities, every shape answered at once: all sixteen are asked.
+    expect(2 * EVERY_SHAPE).toBeLessThan(EXAMPLES_PER_MINUTE);
+    for (const city of cities.slice(0, 2)) {
+      drawExamples("http://api", city, { request, storage });
+      for (let i = 0; i < EVERY_SHAPE; i += 1) {
+        await answerNext();
+      }
+    }
+    expect(asked).toHaveLength(2 * EVERY_SHAPE);
+    expect(moreWaitMs(Date.now())).toBe(0);
+
+    // The third city has its first three at once, as ever; the others wait:
+    // the API takes 30 POSTs a minute, and they are not all for examples.
+    drawExamples("http://api", cities[2], { request, storage });
+    for (let i = 0; i < EXAMPLE_SHAPES.length; i += 1) {
+      await answerNext();
+    }
+    const first = 2 * EVERY_SHAPE + EXAMPLE_SHAPES.length;
+    expect(first).toBeGreaterThanOrEqual(EXAMPLES_PER_MINUTE);
+    expect(asked).toHaveLength(first);
+    expect(moreWaitMs(Date.now())).toBe(60_000);
+
+    // A minute later the requests of before no longer count.
+    await act(async () => {
+      jest.advanceTimersByTime(60_000);
+    });
+    expect(asked).toHaveLength(first + 1);
+    expect(asked.at(-1)?.shape).toBe(MORE_SHAPES[0]);
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
+test("another city chosen while a shape waits for its allowance: it stops waiting", async () => {
+  jest.useFakeTimers();
+  try {
+    const { request, asked } = api();
+    const storage = memory();
+    const cities = [0, 1, 2, 3].map((i): Place => ({
+      label: `City ${i}`,
+      point: [45 + i / 10, 8],
+    }));
+    const answerNext = () =>
+      act(async () => asked.at(-1)?.answer({ kind: "route", result }));
+    for (const city of cities.slice(0, 2)) {
+      drawExamples("http://api", city, { request, storage });
+      for (let i = 0; i < EVERY_SHAPE; i += 1) {
+        await answerNext();
+      }
+    }
+    drawExamples("http://api", cities[2], { request, storage });
+    for (let i = 0; i < EXAMPLE_SHAPES.length; i += 1) {
+      await answerNext();
+    }
+    const before = asked.length;
+    // The fourth city's first three are asked at once all the same.
+    drawExamples("http://api", cities[3], { request, storage });
+    expect(asked).toHaveLength(before + 1);
+    expect(asked.at(-1)?.shape).toBe(DRAW_ORDER[0]);
+    // And the third city's other shapes are not asked behind its back.
+    await act(async () => {
+      jest.advanceTimersByTime(120_000);
+    });
+    expect(asked).toHaveLength(before + 1);
+  } finally {
+    jest.useRealTimers();
+  }
 });

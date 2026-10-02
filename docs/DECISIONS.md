@@ -5553,6 +5553,14 @@ della città, sotto il campo di ricerca.
   guaio che non è della forma (rete, troppe richieste al minuto) ferma le
   altre in silenzio; si richiedono alla prossima scelta della città. Le
   prime tre si comportano come prima: scheda, messaggio, «Try again».
+- **Le forme in più stanno dentro una parte del limite dell'API**
+  (`EXAMPLES_PER_MINUTE`, 18). L'API accetta 30 POST al minuto da un
+  telefono (ADR-0076), e una città che ha già disegnato risponde subito
+  alle sue otto richieste: tre città così in un minuto li userebbero
+  tutti, e verrebbero rifiutati «Start», «Export GPX» o le prime tre forme
+  della città dopo. Le prime tre non aspettano mai, e costano quanto
+  prima; una forma in più parte solo se nell'ultimo minuto sono partite
+  meno di 18 richieste di esempi, altrimenti aspetta, senza scheda.
 - **Il cerchio si chiede per primo**, anche se la prima scheda resta il
   cuore. La zona di una forma è un quadrato attorno al centro, largo quanto
   la forma arriva lontano, e l'API ne scarica una solo se nessuna di quelle
@@ -5605,10 +5613,9 @@ dalla fila in cui si sceglie).
 tre, sempre uno alla volta: sul server 7–19 s l'uno (TASK-168, dai log),
 ma solo al primo telefono, perché restano sull'API come le prime tre. Nelle
 62 città disegnate prima con `draw_examples` le prime tre arrivano subito,
-e il primo telefono disegna le altre cinque. Il limite è
-di 30 POST al minuto per telefono (ADR-0076): otto per città, quando sono
-già sull'API e rispondono subito, bastano per tre città nuove al minuto
-prima che le forme in più si fermino da sole. Il file degli esempi sul
+e il primo telefono disegna le altre cinque. Chi sfoglia più di due città
+già disegnate per intero in un minuto vede le forme in più della terza
+arrivare quando il minuto è passato. Il file degli esempi sul
 telefono tiene fino a otto percorsi per città invece di tre (ultime 8
 città). Quando si aggiunge una riga di schede i disegni del feed scendono
 di una riga, al più due volte. `draw_examples` e `prefetch_zones`

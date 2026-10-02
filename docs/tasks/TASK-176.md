@@ -48,6 +48,8 @@ percorsi vicini c'è una voce che si capisce.
       viene richiesta finché l'app resta aperta; un guaio di rete o il
       limite delle richieste ferma le altre senza toccare le prime tre.
 - [x] Il cerchio è la prima richiesta; la prima scheda resta il cuore.
+- [x] Le forme in più non superano 18 richieste di esempi al minuto, le
+      prime tre comprese; le prime tre non aspettano mai.
 - [x] Una città con percorsi consigliati riceve, in coda alle sue schede,
       le forme che non ha, con la città chiamata come sulle sue schede;
       senza città scelta non si disegna niente.
@@ -101,9 +103,12 @@ Fatto (2026-10-02, ADR-0144).
   Bologna e Padova (la tabella è in ADR-0144).
 - Una città con percorsi consigliati riceve le forme che non ha, in coda
   alle sue schede.
+- Le forme in più lasciano all'app 12 dei 30 POST al minuto che l'API
+  accetta da un telefono: sfogliando città già disegnate, quelle della
+  terza aspettano che il minuto passi.
 - «Near me» è la prima voce della fila delle città; «My start» non c'è più.
 
-939 test dell'app verdi, con i nuovi di «Explore», degli esempi e della
+941 test dell'app verdi, con i nuovi di «Explore», degli esempi e della
 fila delle città; lint, typecheck e prettier puliti.
 
 Visto su un simulatore (iPhone 17, Expo Go) con un'API locale sul Mac.

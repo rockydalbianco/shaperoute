@@ -95,8 +95,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (ADR-0119): esempi e categorie di «Explore» lì non aspettano Overpass
   (provato in 7 città, nessun download). Overpass aveva bloccato il server
   dopo 5 città; le altre vengono dall'estratto Geofabrik dell'Italia, con
-  osmium solo nell'immagine dei download. Da fare: le 14 città in evidenza
-  (estere) con i loro estratti; rifare le zone quando l'estratto invecchia.
+  osmium solo nell'immagine dei download. Anche 10 delle 11 città estere in
+  evidenza, dai loro estratti; Berlino no (memoria: non sta in 4 GiB). Una
+  zona estera grande pesa 0,5–0,76 GB nella memoria dell'API. Da fare:
+  Berlino con un tetto più alto; rifare le zone quando l'estratto invecchia.
 - **Motore** — TASK-136 (miglioramento generale scelto dall'agente): la
   CLI e `seed_catalog` non salvano più i ritagli dei grafi, come già
   l'API (ADR-0108). Una partenza nuova è più veloce (Milano, cuore da

@@ -92,8 +92,8 @@ ritagli: TASK-136).
 ## Criteri di accettazione
 
 Le città sono diventate le 52 italiane (`--preset italy`), chieste
-dall'utente il 2026-10-02; le 14 città in evidenza restano per il seguito
-(sotto, Esito).
+dall'utente il 2026-10-02, più le 11 estere in evidenza (Roma, Milano e
+Torino sono fra le italiane): 10 pronte, Berlino no (sotto, Esito).
 
 - [x] Il comando, rilanciato a lavoro finito, dice «ready» per tutte le 52
       città italiane (sul server, 2026-10-02).
@@ -170,3 +170,20 @@ lasciava fuori Romantic a Verona e Bolzano (0,4–0,7 km a nord); allargato a
 Palermo: stessi percorsi). Rimandato: le 14 città in evidenza (estere,
 fuori dall'estratto dell'Italia: servono i loro estratti o Overpass quando
 risponde) e le zone per percorsi oltre i 10 km o lontani dal centro.
+
+**Le città estere in evidenza** (2026-10-02, l'utente: «continua»), dagli
+estratti regionali di Geofabrik, uno alla volta, cancellato dopo (4,3 GB
+scaricati in tutto): New York 93 MB, London 203 MB, Paris 223 MB, Tokyo
+226 MB, Barcelona 157 MB, Dubai 66 MB, Amsterdam 132 MB, Lisbon 73 MB,
+Sydney 109 MB, San Francisco 70 MB, da 2 a 6 minuti l'una. **Berlino no**:
+Python chiuso dall'OOM del suo container a 4,18 GB (la rete pedonale di
+Berlino a 17 km non sta in 4 GiB; il limite era del container, l'API non
+ne ha risentito). Si rifà con un tetto più alto, se il server lo concede,
+o resta a Overpass. Cache del server a 25,4 GB.
+
+**Memoria nell'API**: una zona estera grande caricata come fa l'API
+(`read_graph` del pickle) occupa 0,5–0,76 GB (Paris 758 MB, Tokyo 584,
+London 515) e si legge in 8–11 s; con due zone in memoria (`MAX_ZONES`) il
+processo arriva a circa 1,6 GB, picco 2 GB. In queste città la prima
+richiesta legge una zona di 17 km dal disco invece di scaricarne una più
+piccola da Overpass.

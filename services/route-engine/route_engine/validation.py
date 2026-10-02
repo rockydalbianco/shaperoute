@@ -15,7 +15,7 @@ from typing import Any
 import numpy as np
 
 from route_engine.geo import LatLon, haversine_m, latlon_to_local_array
-from route_engine.network import Graph, distance_to_segments
+from route_engine.network import Graph, distance_to_segments, one_way_streets
 
 # Sides of a shape, as (start, end), that the shape draws twice on purpose:
 # its strokes, out and back (TASK-037).
@@ -30,6 +30,28 @@ RETRACE_STEP_M = 10.0  # sampling step along the route
 # Ways a runner should know about (OSM `highway` values), and tunnels.
 BUSY_ROADS = frozenset({"trunk", "trunk_link", "primary", "primary_link"})
 STEPS = frozenset({"steps"})
+# Unpaved, for a bike (ADR-0153): the `surface` values of OSM without a
+# hard top, and a `track` that says nothing of its surface unless it is
+# `tracktype=grade1` (paved). The bike network has neither steps nor trunk
+# roads: on it `busy` is the metres on primary roads.
+UNPAVED = frozenset(
+    {
+        "unpaved",
+        "gravel",
+        "fine_gravel",
+        "compacted",
+        "dirt",
+        "earth",
+        "ground",
+        "grass",
+        "mud",
+        "sand",
+        "pebblestone",
+        "rock",
+        "woodchips",
+        "grass_paver",
+    }
+)
 
 
 class InvalidRouteError(RuntimeError):
@@ -161,8 +183,12 @@ def visual_retrace(
 
 
 def usability(graph: Graph, nodes: Sequence[Any]) -> dict[str, float]:
-    """Metres of the route on steps, on busy roads and in tunnels."""
+    """Metres of the route on steps, on busy roads and in tunnels; on the
+    bike network also unpaved (`unpaved`)."""
     metres = {"steps": 0.0, "busy": 0.0, "tunnel": 0.0}
+    bike = one_way_streets(graph)
+    if bike:
+        metres["unpaved"] = 0.0
     for u, v in zip(nodes, nodes[1:], strict=False):
         data = _edge_data(graph, u, v)
         length = float(data["length"])
@@ -173,7 +199,21 @@ def usability(graph: Graph, nodes: Sequence[Any]) -> dict[str, float]:
             metres["busy"] += length
         if "yes" in _values(data.get("tunnel")):
             metres["tunnel"] += length
+        if bike and unpaved(data):
+            metres["unpaved"] += length
     return metres
+
+
+def unpaved(data: dict[str, Any]) -> bool:
+    """Whether an edge of the bike network is unpaved, all or in part: an
+    edge joins several ways, each with its own tags."""
+    if _values(data.get("surface")) & UNPAVED:
+        return True
+    return (
+        "track" in _values(data.get("highway"))
+        and data.get("surface") is None
+        and "grade1" not in _values(data.get("tracktype"))
+    )
 
 
 def check_closed(
@@ -244,9 +284,14 @@ def validate(measures: dict[str, float]) -> list[Issue]:
                 f"within {RETRACE_NEAR_M:.0f} m (limit {VISUAL_RETRACE_MAX:.0%})",
             )
         )
-    labels = {"steps": "on steps", "busy": "on main roads", "tunnel": "in tunnels"}
+    labels = {
+        "steps": "on steps",
+        "busy": "on main roads",
+        "tunnel": "in tunnels",
+        "unpaved": "on unpaved roads",
+    }
     for code, label in labels.items():
-        if measures[code] > 0:
+        if measures.get(code, 0.0) > 0:
             issues.append(
                 Issue(
                     code,

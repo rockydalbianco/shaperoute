@@ -6057,6 +6057,182 @@ componente a parte (`SportSetting`), con gli stili delle righe di
 «Settings» ripetuti: `SettingsPage.tsx` era di TASK-177 mentre si
 scriveva.
 
+## ADR-0153 — La rete della bici: strade e ciclabili, sensi unici rispettati, una cache sua
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-190, parte A: il motore). Le distanze, 10–30 km, e `activity:
+"cycling"` invece di un campo `sport` sono **scelte dell'utente** (task
+file).
+
+**Contesto**: il motore aveva una rete sola, `foot` (ADR-0022): ogni
+strada nei due sensi, scale e marciapiedi compresi, le strade col
+marciapiede disegnato a parte escluse. In bici servono altre strade, i
+sensi unici, e una cache che non si mescoli con quella a piedi.
+
+**Misure sui dati veri, e il loro limite.** Overpass il 2026-10-02 rifiuta
+le connessioni dal Mac: un tentativo solo, alle 18:23Z, dalla CLI
+(`--activity cycling`, cerchio da 10 km dal centro di Trento), «Connection
+refused» su tutti e due gli indirizzi. **Nessuna zona della bici è stata
+scaricata.** Le misure vengono dalle risposte di Overpass già in cache sul
+Mac (`data/cache/http/`, lette senza scriverci), che sono quelle del
+filtro **a piedi**: ci sono i tag veri di ogni strada, ma **mancano le
+strade col marciapiede disegnato a parte** (`sidewalk=separate`, spesso le
+vie principali di una città) e quelle con `foot=no`. Quattro zone: Trento
+(città, 17 km), Valsugana (valle: Levico, Caldonazzo, Pergine), Padova
+(città di pianura), Bologna. Km di strada:
+
+| | Trento | Valsugana | Padova | Bologna |
+|---|---|---|---|---|
+| tutta la risposta | 4.102 | 3.883 | 4.619 | 3.561 |
+| `highway=cycleway` | 113 | 29 | 86 | 277 |
+| `path` + `bicycle=designated` | 19 | 25 | **310** | 13 |
+| `footway` + `bicycle=designated` | 0,9 | 0 | 15,6 | 8,4 |
+| `path`/`footway` + `bicycle=yes` | 63 | 79 | 26 | 50 |
+| pedonali aperte alle bici | 4,2 | 1,4 | 7,0 | 12,6 |
+| `trunk` (con le rampe) | 51,5 | 50,4 | 125,3 | 11,7 |
+| `primary` (con le rampe) | 29,6 | 83,3 | 60,6 | 134,4 |
+| `track` | 1.168 | 1.361 | 248 | 174 |
+| vietate alle bici¹ | 45 | 46 | 29 | 27 |
+| sensi unici, fra le strade della bici | 147 | 56 | 520 | 519 |
+| … aperti alle bici in contromano² | 4,1 | 1,0 | 13,9 | 8,1 |
+| … con una corsia ciclabile nell'altro senso³ | 0,2 | 0 | 7,8 | 5,1 |
+| sterrato (`surface`, o `track` senza) | 1.096 | 1.271 | 375 | 251 |
+
+¹ `bicycle=no|dismount|use_sidepath|private`, `access=no|private|
+agricultural|forestry`, `vehicle=no|private`, `motorroad=yes`.
+² `oneway:bicycle=no` (Padova 113 strade, Bologna 65, Trento 68,
+Valsugana 5) o `cycleway*=opposite*` (Padova 21, Trento 1).
+³ `cycleway:left|right:oneway=-1|no`, spesso insieme al tag di ².
+
+Rete della bici costruita **dal codice del motore** su quelle risposte
+(sempre senza le strade col marciapiede a parte): con i sensi unici, il
+pezzo più grande in cui ogni nodo si raggiunge da ogni altro è il 99,0%
+del pezzo più grande senza sensi (Valsugana), il 98,1% (Padova), il 79,5%
+(Trento); nessun arco su scale, marciapiedi, `trunk` o vie vietate. Percorsi
+pianificati lì (cuore, cerchio, stella; somiglianza, sterrato):
+
+- **Valsugana** (partenza a Levico): tutti e sei disegnati, 0,62–0,92; a
+  10 km 0,79 cuore, 0,68 cerchio, 0,83 stella; a 20 km 0,76, 0,62, 0,92;
+  sterrato 0–6,2 km, `primary` 0–1,5 km; 2–4 s l'uno.
+- **Padova** (centro): a 20 km cuore 0,86, cerchio 0,93, stella 0,91; a
+  10 km stella 0,79, cuore e cerchio non disegnabili.
+- **Trento** (centro): stella 0,90 a 10 km e 0,74 a 20, cuore 0,66 a
+  10 km, il resto non disegnabile. Nell'area del cuore da 10 km la rete
+  approssimata è a pezzi già senza i sensi unici (il pezzo più grande ha
+  7.152 nodi su 9.978), e coi sensi unici 3.763, senza la partenza: mancano
+  proprio le vie principali col marciapiede a parte.
+
+Queste misure dicono **quali tag contano** e che il motore li legge; non
+dicono come viene una forma sulla rete vera della bici in città. Non sono
+campioni da giudicare.
+
+**Decisione**:
+
+1. **Quali strade** (`network.rideable`, `BIKE_ROADS`): ciclabili e strade
+   fino alle `primary` (`primary`, `secondary`, `tertiary` con le rampe,
+   `unclassified`, `residential`, `living_street`, `service`, `road`,
+   `track`). `path`, `footway` e `bridleway` **solo con
+   `bicycle=designated`** (a Padova sono 310 km, più delle sue `cycleway`);
+   non con `bicycle=yes`, che a Trento e in Valsugana è soprattutto un
+   sentiero di montagna (58 e 76 km di `path`) e in città un marciapiede.
+   Zone pedonali con `bicycle=yes|designated|permissive|destination`. **Mai**
+   scale, `trunk` e autostrade. Una strada è chiusa con `bicycle=no|
+   private|dismount|use_sidepath`, `motorroad=yes`, `vehicle=no|private`,
+   `access=no|private|agricultural|forestry`, salvo un `bicycle=yes|
+   designated|permissive|destination` esplicito. Le `track` restano (in
+   valle sono la rete fra i paesi) e le `primary` anche: tutte e due
+   diventano warning (punto 5).
+2. **Il download**: `network_type="bike"` (OSMnx tiene i sensi unici:
+   `oneway=yes|-1`, rotatorie), con **due filtri Overpass** (`BIKE_FILTER`):
+   le strade, e solo i sentieri e le zone pedonali con un tag `bicycle` che
+   le apre. Due richieste per zona invece di una, ma la seconda porta pochi
+   km: un filtro solo con tutti i `footway` e `path` scaricherebbe il 25%
+   delle vie a Trento (7.644 `footway` su 30.910) e l'80% a Parigi e New
+   York, per buttarle. Sono condizioni semplici, come `FOOT_FILTER`, che
+   l'estratto (`zone_extract.tag_filter`) sa leggere. I tag che servono
+   (`BIKE_TAGS`) si aggiungono a quelli che OSMnx tiene, solo per il
+   download. Il grafo arriva **non semplificato**: `bike_ways` decide
+   strada per strada, poi semplifica come OSMnx.
+3. **Sensi unici: un percorso contromano non esiste.** Il grafo è
+   orientato e il percorso segue gli archi, quindi non è un warning ma
+   un'impossibilità. Un senso unico è aperto alle bici nei due sensi solo
+   dove OSM lo dice: `oneway:bicycle=no`, `cycleway[:both|:left|:right]=
+   opposite*`, `cycleway:left|right:oneway=-1|no` con una corsia
+   (`bike_direction`); `oneway:bicycle=yes|-1` su una strada a doppio
+   senso la fa a senso unico per le bici. Conseguenze nel motore:
+   - un ritaglio della rete `bike` tiene il pezzo più grande **in cui ogni
+     nodo si raggiunge da ogni altro** (`crop`, `largest_piece`), non solo
+     quello con le strade unite: da un senso unico cieco non si torna. Per
+     le zone `bike`, `ZoneCrop` passa da `crop` (la scorciatoia di
+     ADR-0082 segue i pezzi a piedi);
+   - da una partenza vicina (ADR-0071) **il ritorno è la via più breve
+     consentita**, non l'andata al contrario (`with_approach`); se non c'è,
+     quella partenza si scarta.
+4. **Una cache sua**: `bike_<sud>_<ovest>_<nord>_<est>.graphml` col suo
+   pickle, accanto ai `foot_*`; una zona si cerca solo fra i file della sua
+   rete. I `foot_*` non cambiano nome né contenuto. Un grafo `bike` porta
+   `network="bike"`; i grafi a piedi non hanno l'attributo, quindi tutti
+   quelli già salvati restano «foot». `plan_shape` e `ShapeJob` ricevono
+   l'`activity` e rifiutano un grafo di un'altra rete (`check_network`,
+   `WrongNetworkError`): una sorgente sbagliata è un errore, non un
+   percorso a piedi chiamato bici.
+5. **Le attività** (`models.py`): `DISTANCE_LIMITS_M` con `running` 1–50 km
+   (come prima) e `cycling` **10–30 km**; `ACTIVITIES` sono quelle che il
+   motore disegna e che `check_activity` accetta; `check_distance(distance,
+   activity)`: «distance must be between 10000 and 30000 metres for
+   cycling, got 5000». Per la corsa messaggi e ordine dei controlli sono
+   quelli di prima. **`SUPPORTED_ACTIVITIES` resta `("running",)`**: è il
+   contratto che `packages/shared-types` rispecchia (ADR-0028), e
+   `test_contract.py` lo confronta con `fixtures/contract.json`;
+   cambiarlo da solo rompe quel test, e `shared-types` è della parte B.
+   Passa a `("running", "cycling")` nella parte B, insieme al suo
+   specchio.
+6. **Validazione (§6) in bici**: le stesse misure; le scale non possono
+   esserci; le strade principali sono le `primary`; in più `unpaved`, solo
+   sulla rete `bike`: metri su `surface` senza fondo duro
+   (`validation.UNPAVED`) o su `track` senza `surface` e non
+   `tracktype=grade1`, warning appena c'è («… m of the route on unpaved
+   roads»). A piedi le misure restano cinque, senza `unpaved`.
+7. **La CLI**: `--activity cycling` usa la rete `bike` e stampa i metri di
+   sterrato.
+
+**Scartate**: il filtro `bike` di OSMnx com'è (prende ogni `path` e
+`bridleway`, le `trunk`, e non legge `oneway:bicycle` né `cycleway`); un
+solo filtro Overpass con tutti i marciapiedi (sopra); escludere tutti i
+`path` (Padova perde 310 km di ciclabili); prendere anche i `path` con
+`bicycle=yes` (sentieri); escludere le `track` (la valle resta senza rete
+fra i paesi; la superficie è fuori scope, e lo sterrato è un warning come
+chiede il task); i sensi unici come warning invece che come regola (il
+task: un percorso contromano non è accettabile); i pezzi «con le strade
+unite» anche in bici; aggiungere ora `cycling` a `SUPPORTED_ACTIVITIES`
+(sopra); un campo nuovo nel grafo per ogni arco al posto dell'attributo
+del grafo (le zone a piedi già salvate non l'avrebbero).
+
+**Conseguenze**:
+
+- La corsa non cambia: stessi file, stesso filtro, stessi percorsi; i test
+  di prima passano senza toccarli (motore 1.026, API 574).
+- **Fra la parte A e la B** il motore accetta `cycling` (`RouteRequest`), e
+  quindi anche l'API: una richiesta `cycling` a `/route-jobs` o `/routes`
+  finisce in `WrongNetworkError` (`engine_error`), perché l'API dà ancora
+  la rete a piedi. Le foto (`images.py`) invece costruiscono `ShapeJob`
+  senza `activity` e controllano la distanza della corsa: una foto
+  `cycling` uscirebbe a piedi. L'app non manda `cycling` (la riga «Bike» è
+  «Soon», ADR-0152). La parte B chiude tutti e due.
+- Una zona della bici costa **due richieste a Overpass**.
+- **Le zone della bici sono grandi**: cerchio da 10 km, 9 km di lato; da
+  20 km, 16; da 30 km, **23 km** (530 km²), 26 con la ricerca lontana. Le
+  zone di oggi (17 × 17 km, ADR-0119) non bastano per 30 km: va misurato
+  nella parte B prima di promettere i tempi.
+- `ZoneCrop` non accelera le zone `bike`: in una città grande il ritaglio
+  costa di più che a piedi (da misurare nella parte B).
+- `engine_fingerprint` cambia come a ogni modifica del motore: gli esempi
+  tenuti sul server si ridisegnano alla prima richiesta.
+- **Non verificato**: una zona vera della bici (Overpass), i tempi su di
+  essa, quanto la rete vera di una città resta a pezzi coi sensi unici, e
+  i campioni da far giudicare all'utente (cuore, cerchio e stella a 10, 20
+  e 30 km a Trento e in una città di pianura). Da fare appena Overpass
+  riapre o con l'estratto (parte B, `prefetch_zones --extract`).
+
 ## ADR-0155 — «Explore»: il luogo scelto ha i suoi percorsi, quelli dei vicini stanno sotto
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
 («premo su Caldonazzo, ma non vengono fuori suggerimenti a Caldonazzo: mi

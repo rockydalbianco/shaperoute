@@ -1,6 +1,6 @@
 # TASK-190 — Percorsi in bici
 
-**Stato**: Todo
+**Stato**: In corso (parte A fatta; B e C da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-190-bike-routes`
 **Dipende da**: TASK-189 («Sport» in «Settings»: la riga «Bike» da
 accendere), TASK-177 (la pagina «Settings»)
@@ -84,35 +84,61 @@ preferisce, tre task: i numeri li dà lui).
 
 ## Criteri di accettazione
 
-- [ ] Dalla CLI, senza rete e senza chiavi, sulle fixture: un percorso
+- [x] Dalla CLI, senza rete e senza chiavi, sulle fixture: un percorso
       `cycling` chiuso, che non passa su scale né su vie vietate alle
-      bici e rispetta i sensi unici.
-- [ ] Una richiesta `cycling` sotto 10 km o sopra 30 km è un errore che
+      bici e rispetta i sensi unici. *(Parte A: su una città sintetica,
+      `tests/test_bike_network.py`.)*
+- [x] Una richiesta `cycling` sotto 10 km o sopra 30 km è un errore che
       dice i limiti; una `running` si comporta come prima (i test di oggi
-      restano verdi senza modifiche ai valori attesi).
-- [ ] La cache a piedi di una zona non viene usata per la bici.
-- [ ] Campioni in `samples/` giudicati dall'utente.
+      restano verdi senza modifiche ai valori attesi). *(Parte A, nel
+      motore e quindi nell'API, che usa `RouteRequest`.)*
+- [x] La cache a piedi di una zona non viene usata per la bici.
+- [ ] Campioni in `samples/` giudicati dall'utente. *(Non fatti nella
+      parte A: Overpass rifiuta le connessioni dal Mac, e nessuna zona
+      della bici è stata scaricata; vedi «Esito».)*
 - [ ] Nell'app, con «Bike» scelto, «Draw» chiede un percorso `cycling`
       fra 10 e 30 km; con «Run» tutto è come prima.
-- [ ] Test deterministici per motore, API e app.
+- [ ] Test deterministici per motore, API e app. *(Motore: parte A.)*
 
 ## File toccati
 
-Elenco previsto; ogni PR dichiara i suoi.
+Ogni PR dichiara i suoi.
+
+**Parte A** (motore, fatta, PR #214):
 
 ```
 services/route-engine/route_engine/network.py
 services/route-engine/route_engine/models.py
 services/route-engine/route_engine/validation.py
+services/route-engine/route_engine/optimizer.py
+services/route-engine/route_engine/nearby_starts.py
+services/route-engine/route_engine/zone_crop.py
 services/route-engine/route_engine/__main__.py
-services/route-engine/tests/
+services/route-engine/tests/test_bike_network.py
+docs/ROUTE_ENGINE.md
+docs/MAPS.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-190.md
+```
+
+`optimizer.py`, `nearby_starts.py` e `zone_crop.py` non erano
+nell'elenco previsto: il controllo della rete giusta (`check_network`),
+il ritorno da una partenza vicina coi sensi unici e il ritaglio della zona
+della bici stanno lì (ADR-0153).
+
+**Parti B e C** (previsto):
+
+```
+services/route-engine/route_engine/models.py
+packages/shared-types/fixtures/contract.json
 services/api/shaperoute_api/schemas.py
 services/api/shaperoute_api/prefetch_zones.py
+services/api/shaperoute_api/images.py
 services/api/tests/
 packages/shared-types/src/index.ts
 apps/mobile/src/settings/sport.ts
 apps/mobile/App.tsx
-docs/ROUTE_ENGINE.md
 docs/MAPS.md
 docs/API.md
 docs/UI.md
@@ -143,4 +169,73 @@ Una per volta, con una proposta, quando si arriva alla parte C:
 
 ## Esito
 
-*(si compila a fine task)*
+**Parte A — il motore (2026-10-02)**, PR #214, ADR-0153. Fatto:
+
+- la rete `bike` (`network.py`): `rideable` decide le strade (ciclabili e
+  strade fino alle `primary`, `track` comprese; `path`, `footway`,
+  `bridleway` solo con `bicycle=designated`; zone pedonali aperte alle
+  bici; mai scale, `trunk`, autostrade, `bicycle=no|dismount|
+  use_sidepath`, `motorroad=yes`, strade chiuse ai veicoli salvo
+  `bicycle=yes`); due filtri Overpass (`BIKE_FILTER`), `network_type=
+  "bike"`, grafo non semplificato finché `bike_ways` non ha deciso strada
+  per strada;
+- i sensi unici: valgono; aperti nei due sensi solo con
+  `oneway:bicycle=no`, `cycleway*=opposite*`, `cycleway:<lato>:oneway=-1`
+  (`bike_direction`). Un ritaglio tiene il pezzo dove ogni nodo si
+  raggiunge da ogni altro; il ritorno da una partenza vicina è la via più
+  breve consentita;
+- la cache `bike_*.graphml` (e pickle), separata da `foot_*`, che non
+  cambia; i grafi `bike` portano `network="bike"` e il motore rifiuta un
+  grafo dell'attività sbagliata (`check_network`);
+- `models.py`: `DISTANCE_LIMITS_M` (`running` 1–50 km come prima,
+  `cycling` 10–30 km), `ACTIVITIES`, `check_distance(distance, activity)`
+  con l'errore che dice i limiti. **`SUPPORTED_ACTIVITIES` resta
+  `("running",)`** fino alla parte B: è il contratto rispecchiato da
+  `shared-types` (`test_contract.py`), che la parte A non tocca. Il punto 4
+  qui sopra va quindi finito nella parte B, insieme a `contract.json` e
+  `ACTIVITIES` di `shared-types`;
+- validazione: `unpaved` (sterrato) solo sulla rete `bike`, warning;
+  scale impossibili; strade principali = `primary`;
+- CLI: `--activity cycling`, con i metri di sterrato.
+
+Verificato: 55 test nuovi in `tests/test_bike_network.py`, su una città
+sintetica data a OSMnx come risposta di Overpass (sensi unici, scale,
+marciapiede, `trunk`, via vietata, ciclabile `path`, `track`): grafo,
+sensi, un cerchio da 10 km chiuso e solo su archi consentiti
+(`plan_route`), la CLI che disegna un cuore da 10 km, le due cache, il
+ritaglio, il ritorno da una partenza vicina, i limiti, lo sterrato, la
+rete sbagliata. Motore 1.081 test verdi (i 1.026 di prima senza
+modifiche), API 574; `ruff` e `black` puliti.
+
+**Non verificato, e perché**: Overpass rifiuta le connessioni dal Mac (un
+tentativo dalla CLI alle 18:23Z, «Connection refused» su tutti e due gli
+indirizzi); nessuna zona della bici scaricata, quindi **nessun campione**
+in `samples/`. Le misure dell'ADR vengono dalle risposte **a piedi** già
+in cache (Trento, Valsugana, Padova, Bologna), che non hanno le strade col
+marciapiede a parte: dicono quali tag contano, non come viene una forma
+sulla rete vera. Su quelle reti approssimate la Valsugana disegna tutto
+(0,62–0,92), Padova bene a 20 km, il centro di Trento quasi niente (la rete
+senza le vie principali è a pezzi).
+
+**Per la parte B**: `SUPPORTED_ACTIVITIES` con `cycling` insieme a
+`contract.json` e `shared-types`; l'API deve dare a una richiesta
+`cycling` la sorgente `OsmnxSource.for_activity(cache, "cycling")` (oggi
+finisce in `WrongNetworkError`, `engine_error`); `images.py` costruisce
+`ShapeJob` senza `activity` e controlla la distanza della corsa
+(`check_distance(distance)`): da passare; `errors.suggested_distance`
+usa i limiti della corsa; `ZoneCrop` non accelera le zone `bike`; le zone:
+cerchio da 30 km = 23 km di lato (26 con la ricerca lontana), più delle
+17 di oggi; una zona `bike` sono due richieste a Overpass (o l'estratto:
+i filtri sono leggibili da `zone_extract`). Poi i campioni: cuore, cerchio
+e stella a 10, 20 e 30 km a Trento e in una città di pianura, da far
+giudicare all'utente.
+
+## Note per il deploy
+
+La PR #214 cambia `route_engine`, quindi cambia l'impronta del motore
+(`engine_fingerprint`) degli esempi delle città tenuti sull'API
+(ADR-0136): su un server con questo codice **ogni esempio tenuto si
+ridisegna alla sua prima richiesta**. Il server ha appena finito
+`draw_examples` col motore di adesso. Quindi, finché l'utente non vuole la
+bici sul server, il prossimo aggiornamento del server (Strava e la foto del
+profilo) si fa dal commit **`fdb34ea`**, non dalla punta di `main`.

@@ -437,7 +437,8 @@ Procedura di base:
 
 1. Scaricare il grafo del rettangolo che contiene la forma proiettata,
    più un margine (ADR-0020), filtrato per l'attività: a piedi, la rete
-   pedonale **con le ciclopedonali** (ADR-0022).
+   pedonale **con le ciclopedonali** (ADR-0022); in bici, la rete `bike`,
+   con i sensi unici (ADR-0153, «La rete della bici» qui sotto).
 2. Il primo punto della forma è la partenza: il percorso inizia e finisce
    al **nodo più vicino**.
 3. Ogni altro punto della forma è una **zona**: i nodi entro un raggio dal
@@ -498,6 +499,40 @@ ritaglio senza nodi, o con un nodo solo), non c'è niente da agganciare: il
 motore rifiuta con `NoRoadsError` (`errors.py`), un `ShapeNotDrawableError`
 come ogni forma che lì non si disegna (TASK-180, ADR-0148; `MAPS.md`,
 «Warning»).
+
+### La rete della bici (TASK-190)
+
+Una richiesta `activity: "cycling"` (10–30 km, `DISTANCE_LIMITS_M` in
+`models.py`) si disegna sulla rete `bike` (ADR-0153, filtro e regole in
+`network.py`):
+
+- **Quali strade**: ciclabili e strade fino alle `primary` (`BIKE_ROADS`:
+  anche `service` e `track`); i `path`, `footway` e `bridleway` solo se
+  segnati come ciclabili (`bicycle=designated`); le zone pedonali dove le
+  bici sono ammesse. Mai scale, `trunk` e autostrade; mai le strade chiuse
+  alle bici (`bicycle=no`, `dismount`, `use_sidepath`, `motorroad=yes`) o
+  a tutti i veicoli (`access`, `vehicle`), salvo un `bicycle=yes` esplicito
+  (`rideable`).
+- **Sensi unici**: valgono. Il grafo è orientato e il percorso segue gli
+  archi: **un tratto contromano non esiste**, non è un warning. Un senso
+  unico è percorribile nei due sensi in bici solo dove OSM lo dice
+  (`oneway:bicycle=no`, `cycleway=opposite*`, una corsia ciclabile
+  dall'altro lato con `cycleway:<lato>:oneway=-1`); una strada a doppio
+  senso con `oneway:bicycle=yes` è a senso unico per le bici
+  (`bike_direction`). Le regole si applicano strada per strada, prima che
+  OSMnx unisca le strade in archi.
+- **Pezzi**: un ritaglio della rete `bike` tiene il pezzo più grande in cui
+  **ogni nodo si raggiunge da ogni altro** (`crop`, `largest_piece`; per le
+  zone `bike` anche `ZoneCrop` passa da `crop`): da un senso unico cieco
+  non si torna. A piedi resta il pezzo con le strade unite, come prima.
+- **Partenze vicine** (§5): il ritorno alla partenza è la via più breve
+  consentita, non l'andata al contrario (`with_approach`).
+- **La rete giusta**: un grafo `bike` porta `network="bike"`; `plan_shape`
+  e `ShapeJob` rifiutano un grafo di un'altra rete con
+  `WrongNetworkError` (`check_network`): un percorso in bici sulla rete a
+  piedi passerebbe per scale e contromano.
+
+La rete a piedi non cambia: stesso filtro, stessi file, stessi percorsi.
 
 Il provider definitivo di routing (OSMnx locale, OSRM, GraphHopper, Valhalla)
 è una decisione aperta. Per la fase 1 si usa OSMnx perché gira in locale
@@ -810,6 +845,15 @@ con misura e limite (`validation.py`, ADR-0026):
 - percorribilità: metri su scale, strade principali (`trunk`, `primary`) e
   in galleria, appena ci sono.
 
+**In bici** (ADR-0153) le stesse misure, sulla rete `bike`: le scale non
+ci sono (la rete non le ha, quindi 0 m); le strade principali sono le
+`primary` (le `trunk` sono escluse); in più lo **sterrato**, `unpaved`,
+solo per la bici: metri su `surface` senza fondo duro (`gravel`,
+`compacted`, `dirt`, `ground`…, `validation.UNPAVED`) o su `track` senza
+`surface` e non `tracktype=grade1`. Appena ci sono è un warning («… m of
+the route on unpaved roads»), come le strade principali. Una richiesta a
+piedi ha le misure e i messaggi di sempre, senza `unpaved`.
+
 Lungo i **tratti** della forma (§2), entro il 2% del perimetro, la strada
 ripercorsa è voluta: non conta né nella ripercorrenza esatta né in quella
 visiva (ADR-0039).
@@ -862,6 +906,15 @@ traccia corsa»); `--out` non serve:
 ```
 python -m route_engine --shape heart --distance 10000 \
     --start 45.9934,11.2580 --score-track corsa.gpx
+```
+
+Con `--activity cycling` un percorso in bici, 10–30 km, sulla rete `bike`
+(§4, «La rete della bici»), con la sua cache (`bike_*.graphml`); la CLI
+stampa anche i metri di sterrato:
+
+```
+python -m route_engine --shape heart --distance 20000 \
+    --start 46.0671,11.1214 --activity cycling --out heart_bici_trento.gpx
 ```
 
 Il GPX si apre in un visualizzatore (gpx.studio, geojson.io) e si guarda.

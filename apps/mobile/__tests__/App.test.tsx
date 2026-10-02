@@ -802,6 +802,8 @@ test("a word is sent as `word`, and named while waiting and on the result", asyn
     start: [46.0671, 11.1214],
     word: "CIAO",
     style: "round",
+    // The pen is lifted between the letters unless switched off (TASK-202).
+    pen_up: true,
     distance_m: 12000,
     activity: "running",
   });

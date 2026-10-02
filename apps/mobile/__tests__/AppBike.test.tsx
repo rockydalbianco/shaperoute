@@ -247,6 +247,8 @@ test("by bike a word may have 8 letters", async () => {
     start: [46.0671, 11.1214],
     word: "SGRAVATA",
     style: "round",
+    // The pen is lifted between the letters unless switched off (TASK-202).
+    pen_up: true,
     distance_m: 24_000,
     activity: "cycling",
   });

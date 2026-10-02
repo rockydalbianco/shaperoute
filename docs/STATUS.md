@@ -99,16 +99,25 @@ In coda, dopo o accanto:
   (ADR-0153 tenuto; 10–30 km, scelta dell'utente) e **TASK-191 — percorsi
   in canoa e paddle** (ADR-0154 tenuto; sull'acqua entro 1 km dalla riva,
   scelta dell'utente; esempi a Lago di Garda, Lago di Como, Jesolo,
-  Riccione). I due task file sono scritti, con le domande ancora aperte:
-  da assegnare, ognuno in tre parti (motore, API, app). Nel contratto si
-  usa `activity`, che c'è già.
+  Riccione). La bici: motore (PR #214) e API (PR #219) in `main`, l'app
+  (parte C) assegnata il 2026-10-02 sera. La canoa: il motore dell'acqua
+  (A1, PR #216) in `main`; **A2 aspetta l'utente**: il giudizio sui nove
+  campioni e le distanze in mare (con 1 km dalla riva le forme stanno
+  fino a circa 3–4 km). Nel contratto si usa `activity`, che c'è già.
 - **La penna alzata nelle parole**, chiesta e confermata dall'utente il
   2026-10-02: fra una lettera e l'altra si cammina senza disegnare, e
   l'app mette in pausa la registrazione da sola, con un avviso a voce.
   **TASK-197** (motore e API, ADR-0157: `pen_up` nella richiesta, `walks`
   nel risultato, aggiunti senza togliere niente), poi **TASK-198** (l'app).
-  Tutti e due Todo, con il task file; TASK-197 si accorda con TASK-190 e
-  TASK-191, che cambiano gli stessi file del motore.
+  Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
+  telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
+  preferiti (assegnato il 2026-10-02 sera).
+- **Server e app da aggiornare, con l'ok dell'utente**: in `main` ma non
+  sul server ci sono le migrazioni `0004` (Strava, TASK-187) e `0005`
+  (foto, TASK-178) e il motore di TASK-190, 191 A1 e 197, che cambia
+  l'impronta: dopo l'aggiornamento va rilanciato `draw_examples` (circa 35
+  minuti, `AGENTI.md` regola 11). Poi la pubblicazione dell'app (la foto
+  del profilo, la penna alzata). Ordine: server, esempi, app.
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -129,18 +138,25 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `main` (PR #214): la rete `bike` (ciclabili e strade fino alle
   `primary`, mai scale, `trunk` né vie vietate alle bici, sensi unici
   rispettati), la cache `bike_*` accanto ai `foot_*`, `cycling` di 10–30 km
-  nel motore e nella CLI. **Parte B, l'API**, PR #219 (il merge è del
-  coordinatore): `cycling` nel contratto (`shared-types`, anche
+  nel motore e nella CLI. **Parte B, l'API**, in `main` (PR #219,
+  2026-10-02 20:10Z): `cycling` nel contratto (`shared-types`, anche
   `DISTANCE_LIMITS_M`), ogni richiesta sulle zone della rete della sua
   attività (una zona della bici in memoria, due a piedi come prima), fuori
   da 10–30 km un `invalid_request` che dice i limiti, le foto in bici, la
   distanza suggerita nei limiti, e `prefetch_zones --activity cycling
   --extract` per zone della bici di 26 × 26 km (stima 0,15–0,6 GB in
-  memoria ciascuna). La corsa non cambia. **Non provata su una zona
-  vera**: la prova sul server (Trento) vuole l'ok dell'utente, comandi nel
-  task file. Da fare: quella prova, i campioni da far giudicare
-  all'utente, la parte C (app, con le due domande del task file). Da dove
-  riprendere: il task file, «Esito».
+  memoria ciascuna). La corsa non cambia. **Parte C, l'app** (assegnata il
+  2026-10-02 sera), PR #221 (il merge è del coordinatore): «Bike» si
+  sceglie in «Settings» e vale subito; con «Bike» «Draw» chiede `cycling`
+  fra 10 e 30 km (parole fino a 8 lettere, «Ride without a route»); con
+  «Run» le richieste sono quelle di prima, byte per byte. Due testi da
+  confermare con l'utente («Ride without a route», «At most 8 letters.»).
+  **Aspettano l'utente**: le due «Domande aperte» del task file (fino alla
+  risposta «Explore», «Feed» e la schermata della corsa restano come oggi
+  anche con «Bike»); l'ok per la prova sul server (Trento, comandi nel task
+  file) e poi per pubblicare l'app, in quest'ordine (un'API senza la parte
+  B rifiuta `cycling`); i campioni da giudicare. Da provare sull'iPhone. Da
+  dove riprendere: il task file, «Esito».
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»): **la parte API è fatta**, PR #210:
@@ -171,8 +187,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## Completato
 
 - **App** — TASK-198: la penna alzata nella corsa, chiesta e confermata
-  dall'utente («pausa automatica con avviso a voce»), PR #218 (il merge è
-  del coordinatore). In «Draw», con
+  dall'utente («pausa automatica con avviso a voce»), PR #218, in `main`
+  dal 2026-10-02 20:02Z. In «Draw», con
   una parola, l'interruttore «Lift the pen between letters» manda
   `pen_up: true`; **spento all'avvio** finché l'utente non sceglie (la
   proposta è acceso). Sulla mappa i tratti a piedi sono tratteggiati e
@@ -190,10 +206,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Aspettano l'utente**: l'interruttore acceso di default, i due testi
   della voce e la riga dei km (`tasks/TASK-198.md`, «Esito»). Seguiti: i
   `walks` in «My activities» (il suo punteggio non li conosce) e nei
-  preferiti.
+  preferiti: TASK-199.
 
 - **Motore e API** — TASK-197: la penna alzata nelle parole, chiesta
-  dall'utente (ADR-0157), PR #217 (il merge è del coordinatore). Con `pen_up: true` e una parola ogni lettera
+  dall'utente (ADR-0157), PR #217, in `main` dal 2026-10-02 19:35Z. Con `pen_up: true` e una parola ogni lettera
   si disegna da sola, una volta, e fra una e l'altra si prende a piedi la
   strada più breve; il `RouteResult` ha `walks`, coppie `[da, a]` di indici
   in `points` (n − 1 per n lettere), e il percorso non è chiuso.
@@ -1062,6 +1078,10 @@ Niente.
 
 ## Note per la prossima sessione
 
+- Sul Mac l'API che lancia il motore dal thread di una richiesta può
+  mandare in errore (segfault) in loop i processi delle partenze vicine:
+  è il fork su macOS, visto da TASK-197; sul server Linux no. Se l'API del
+  Mac (porta 8000) rallenta o scrive questi errori, riavviarla.
 - Navigazione col GPS (TASK-049): da provare sull'iPhone camminando un
   percorso vero; dopo il merge serve `npm install` dalla radice
   (`expo-speech`).

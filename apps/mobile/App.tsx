@@ -63,7 +63,7 @@ import { trackOf, useFreeRun } from "./src/navigation/useFreeRun";
 import { trackOfNavigation, useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
 import { choicesOf, type Picked, pickedIndex } from "./src/route/choices";
-import { toDistanceM } from "./src/route/distance";
+import { fitDistance, toDistanceM } from "./src/route/distance";
 import { ImageEditsContext } from "./src/route/imageEdits";
 import type { ChoiceKind } from "./src/route/problems";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
@@ -91,6 +91,8 @@ import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
 import { Pager } from "./src/screens/Pager";
 import { ProfileButton, ProfileLayer } from "./src/screens/ProfileLayer";
+import { activityOf } from "./src/settings/sport";
+import { useSport } from "./src/settings/useSport";
 import { color } from "./src/theme/tokens";
 
 /** A route without directions: one list, so navigation does not restart. */
@@ -226,10 +228,22 @@ function Sgrava() {
       ? shapeReading.stateOf(shapeText)
       : null;
   const shape = tableShape ?? (reading?.status === "read" ? reading.shape : null);
-  const [distanceText, setDistanceText] = useState("5");
-  const distanceM = toDistanceM(distanceText);
+  // The sport of «Settings» (TASK-190): «Bike» asks for routes a bike may
+  // ride, at its own distances; «Explore», «Feed» and the run stay a run's.
+  const sport = useSport();
+  const sportActivity = activityOf(sport);
+  const [distanceText, setDistanceText] = useState(() =>
+    fitDistance("5", sportActivity),
+  );
+  // A sport just chosen brings the distance within its limits.
+  const [distanceActivity, setDistanceActivity] = useState(sportActivity);
+  if (distanceActivity !== sportActivity) {
+    setDistanceActivity(sportActivity);
+    setDistanceText(fitDistance(distanceText, sportActivity));
+  }
+  const distanceM = toDistanceM(distanceText, sportActivity);
   const [wordText, setWordText] = useState("");
-  const wordCheck = checkWord(wordText, distanceM);
+  const wordCheck = checkWord(wordText, distanceM, sportActivity);
   const [letterStyle, setLetterStyle] = useState<LetterStyle>("round");
   // The pen lifted between the letters (TASK-198): off until the user
   // chooses otherwise, so an API older than TASK-197 is never asked for it.
@@ -298,7 +312,7 @@ function Sgrava() {
           : null;
   const request: AnyRouteRequest | null =
     start && drawn !== null && distanceM !== null
-      ? { start: start.point, ...drawn, distance_m: distanceM, activity: "running" }
+      ? { start: start.point, ...drawn, distance_m: distanceM, activity: sportActivity }
       : null;
   // A new start, shape, word or distance leaves the last answer behind.
   const view: RouteState =
@@ -838,6 +852,7 @@ function Sgrava() {
                     Keyboard.dismiss();
                     setScreen("run");
                   }}
+                  runLabel={sport === "bike" ? "Ride without a route" : undefined}
                 >
                   <ImageEditsContext.Provider value={imageEdits}>
                     <RouteChoice
@@ -864,6 +879,7 @@ function Sgrava() {
                       distanceText={distanceText}
                       distanceM={distanceM}
                       onDistanceText={setDistanceText}
+                      activity={sportActivity}
                     />
                   </ImageEditsContext.Provider>
                 </ChooseScreen>

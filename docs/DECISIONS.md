@@ -6338,6 +6338,43 @@ vi compare come una corsa (il registro delle richieste invece ha il corpo
 intero). **Non verificato**: una zona vera della bici, i tempi di un
 percorso su di essa, i campioni da far giudicare all'utente.
 
+**Aggiornamento (parte C, l'app, 2026-10-02)** — deciso dall'agente su
+delega dell'utente (TASK-190, parte C). Le due domande di prodotto
+(«Explore», «Feed» e la corsa con «Bike» scelto) restano dell'utente: con
+la bici quelle pagine non cambiano.
+
+1. **Lo sport arriva a «Draw» subito**: `saveSport` avvisa chi ascolta
+   (`subscribeSport`), `useSport` lo legge dal telefono una volta e poi
+   segue le scelte. Scartati: rileggere `sport.json` a ogni disegno (un
+   accesso al disco per ogni render) e un contesto React attorno all'app
+   (`App.tsx` e `ProfileLayer` da cambiare per una scelta sola).
+2. **Sport e attività**: `activityOf` in `sport.ts` («Bike» → `cycling`,
+   il resto → `running`); uno sport non pronto non è mai quello scelto. Con
+   «Run» la richiesta resta la stessa, campo per campo e nello stesso
+   ordine.
+3. **Le distanze di ogni sport nell'app**: `APP_DISTANCE_LIMITS_KM`
+   (`distance.ts`), corsa 1–21 km (`MAX_APP_DISTANCE_KM`, come prima), bici
+   i limiti del contratto, 10–30 km (`DISTANCE_LIMITS_M.cycling`). Campo,
+   messaggio, − e +, «Try N km» e il numero di lettere di una parola (7 a
+   piedi, 8 in bici) li leggono da lì; ogni funzione ha la corsa come
+   valore di partenza, così chi non passa un'attività fa quello di prima.
+4. **Uno sport nuovo porta la distanza nei suoi limiti** (`fitDistance`,
+   la regola di − e +): 5 → 10 in bici, 25 → 21 a piedi, una distanza che
+   sta nei due resta. Scartato: tenere una distanza per sport (due stati da
+   ricordare per un caso raro) e lasciare il campo fuori dai limiti con
+   «Draw route» spento (l'utente vedrebbe un errore senza aver fatto
+   niente).
+5. **Gli errori restano quelli di prima**: un'API senza la parte B
+   (`invalid_request`) e i 5 minuti (`MAX_WAIT_MS`, che non cambia) hanno i
+   loro testi di sempre. Due testi nuovi, da confermare con l'utente: «Ride
+   without a route» al posto di «Run without a route» con «Bike», e «At most
+   8 letters.» per una parola troppo lunga in bici.
+
+**Conseguenze**: l'app pubblicata con questa parte chiede `cycling` solo
+con «Bike» scelto; va pubblicata dopo che il server ha la parte B, o chi
+sceglie «Bike» legge «The app and the API do not agree». **Non
+verificato**: niente sull'iPhone.
+
 ## ADR-0155 — «Explore»: il luogo scelto ha i suoi percorsi, quelli dei vicini stanno sotto
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
 («premo su Caldonazzo, ma non vengono fuori suggerimenti a Caldonazzo: mi

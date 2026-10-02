@@ -1,6 +1,7 @@
+import type { Activity } from "@shaperoute/shared-types";
 import { File, Paths } from "expo-file-system";
 
-/** What a route is for. Only "run" is drawn today. */
+/** What a route is for: a run, or a bike ride since TASK-190. */
 export type Sport = "run" | "bike" | "paddle";
 
 export type SportOption = {
@@ -10,7 +11,7 @@ export type SportOption = {
   /**
    * False until the Route Engine draws routes for it: «Settings» shows it
    * with «Soon» and it cannot be chosen. The task that brings the sport
-   * turns this on, and nothing else here changes.
+   * turns this on and gives it its activity (activityOf).
    */
   ready: boolean;
 };
@@ -18,7 +19,7 @@ export type SportOption = {
 /** The sports of «Settings», in the order they are shown. */
 export const SPORTS: readonly SportOption[] = [
   { id: "run", emoji: "🏃‍♂️", name: "Run", ready: true },
-  { id: "bike", emoji: "🚴", name: "Bike", ready: false },
+  { id: "bike", emoji: "🚴", name: "Bike", ready: true },
   { id: "paddle", emoji: "🛶", name: "Paddle", ready: false },
 ];
 
@@ -52,6 +53,18 @@ export function loadSport(sports: readonly SportOption[] = SPORTS): Sport {
   }
 }
 
+/** Told of each sport saved, while the app is open (TASK-190). */
+const listeners = new Set<(sport: Sport) => void>();
+
+/** Calls `listener` with each sport saved from now on, until the returned
+ * function is called: «Draw» follows «Settings» at once (useSport). */
+export function subscribeSport(listener: (sport: Sport) => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
 /** Keeps the choice for the next opening; a phone that refuses keeps nothing. */
 export function saveSport(sport: Sport): void {
   try {
@@ -61,4 +74,16 @@ export function saveSport(sport: Sport): void {
   } catch {
     // The choice still holds while the app is open.
   }
+  for (const listener of listeners) {
+    listener(sport);
+  }
+}
+
+/**
+ * What «Draw» asks the API for (TASK-190, ADR-0153): a route on the roads a
+ * bike may ride for «Bike», a run for anything else. A sport not ready yet is
+ * never the one chosen (loadSport), so it never asks for a run in its name.
+ */
+export function activityOf(sport: Sport): Activity {
+  return sport === "bike" ? "cycling" : "running";
 }

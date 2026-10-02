@@ -113,8 +113,10 @@ export function FinishBanner() {
 type Props = {
   apiUrl: string | null;
   run: ScorableRun;
-  /** Leaves the screen; `settled` when the run has its score and can go. */
-  onDone: (settled: boolean) => void;
+  /** Leaves the screen; `settled` when the run has its score and can go.
+   * Absent when the way out is not the card's: «Save» and «Discard», under
+   * it (TASK-172). */
+  onDone?: (settled: boolean) => void;
   /** Goes back to the run, when it was stopped and its route is still here. */
   onResume?: () => void;
   fetchFn?: typeof fetch;
@@ -166,13 +168,15 @@ export function FinishCard({ apiUrl, run, onDone, onResume, fetchFn }: Props) {
             <Text style={styles.buttonText}>Keep running</Text>
           </Pressable>
         )}
-        <Pressable
-          style={styles.button}
-          onPress={() => onDone(isSettled(state))}
-          accessibilityRole="button"
-        >
-          <Text style={styles.buttonText}>Done</Text>
-        </Pressable>
+        {onDone && (
+          <Pressable
+            style={styles.button}
+            onPress={() => onDone(isSettled(state))}
+            accessibilityRole="button"
+          >
+            <Text style={styles.buttonText}>Done</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );

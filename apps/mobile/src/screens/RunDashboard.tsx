@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 
+import { openMusic } from "../navigation/music";
 import {
   pauseRun,
   resumeRun,
@@ -208,8 +209,9 @@ type ButtonsProps = {
 /**
  * The way out and the way on. Before the first fix and without the GPS,
  * «Stop» as it was (nothing is lost by a touch); running, «Pause» with
- * «Pocket» beside it; paused, «Stop» to hold and «Resume»; at the end of a
- * route, «Finish».
+ * «Pocket» on one side and «Music», which opens Spotify (TASK-173), on the
+ * other; paused, «Stop» to hold and «Resume»; at the end of a route,
+ * «Finish».
  */
 function RunButtons({
   live,
@@ -278,17 +280,34 @@ function RunButtons({
           <View style={styles.bar} />
         </View>
       </Pressable>
-      <View style={styles.side} />
+      <View style={[styles.side, styles.sideEnd]}>
+        <Pressable
+          style={styles.small}
+          onPress={() => void openMusic()}
+          accessibilityRole="button"
+          accessibilityLabel="Music"
+          accessibilityHint="Opens Spotify"
+        >
+          <Text style={styles.pillText}>Music</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
+
+/** «Map» and «Data»: a thumb's height, not the smallest a control may be. */
+export const PAGE_TAB_HEIGHT = MIN_TAP_SIZE + space.md;
 
 const PAGES: readonly { page: RunPage; title: string }[] = [
   { page: "map", title: "Map" },
   { page: "data", title: "Data" },
 ];
 
-/** The two pages by name, in the order they lie in: touched, or swiped to. */
+/**
+ * The two pages by name, in the order they lie in: touched, or swiped to.
+ * Two buttons as wide as the card and taller than the smallest tap (TASK-186):
+ * they are hit while running, without looking for them.
+ */
 function PageTabs({
   page,
   onPage,
@@ -303,7 +322,7 @@ function PageTabs({
         return (
           <Pressable
             key={each.page}
-            style={styles.tab}
+            style={[styles.tab, selected && styles.tabSelected]}
             onPress={() => onPage(each.page)}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
@@ -312,7 +331,6 @@ function PageTabs({
             <Text style={[styles.tabText, selected && styles.tabTextSelected]}>
               {each.title}
             </Text>
-            <View style={[styles.mark, selected && styles.markSelected]} />
           </Pressable>
         );
       })}
@@ -553,6 +571,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "flex-start",
   },
+  sideEnd: {
+    alignItems: "flex-end",
+  },
   small: {
     minHeight: MIN_TAP_SIZE,
     justifyContent: "center",
@@ -623,31 +644,33 @@ const styles = StyleSheet.create({
   },
   tabs: {
     flexDirection: "row",
-    justifyContent: "center",
-    gap: space.xl,
+    padding: space.xs,
+    gap: space.xs,
+    borderRadius: radius.pill,
+    backgroundColor: color.background,
   },
   tab: {
-    minWidth: MIN_TAP_SIZE,
+    flex: 1,
+    minHeight: PAGE_TAB_HEIGHT,
     alignItems: "center",
-    gap: space.xs,
-    paddingTop: space.xs,
+    justifyContent: "center",
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+  // The page on screen is told by a lighter surface, not by yellow: that is
+  // the route's.
+  tabSelected: {
+    backgroundColor: color.surfaceRaised,
+    borderColor: color.borderStrong,
   },
   tabText: {
     color: color.textMuted,
-    fontSize: fontSize.small,
-    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.input,
+    fontWeight: fontWeight.bold,
   },
-  // The page on screen is told by light, not by yellow: that is the route's.
   tabTextSelected: {
     color: color.text,
-  },
-  mark: {
-    width: space.xl,
-    height: 3,
-    borderRadius: radius.pill,
-  },
-  markSelected: {
-    backgroundColor: color.text,
   },
   splits: {
     flex: 1,

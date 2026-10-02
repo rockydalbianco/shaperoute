@@ -35,7 +35,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 | `profile_photos` | utente, JPEG quadrato 256 px | TASK-116 |
 | `generated_routes` | ogni percorso dell'API (ADR-0086): richiesta, tipo (forma, parola, immagine), distanza, somiglianza, linea, **punto di partenza mostrato** (a più di 500 m da quello vero), centro, data; utente se era entrato, se no nessuno | TASK-092 |
 | `favorites` | percorso tenuto fra i preferiti: utente, chiave fatta dall'app sulla linea (unica per utente), città, forma o parola e stile, titolo, distanza chiesta e sulle strade, somiglianza, **linea intera**, data | TASK-171 |
-| `runs` | corsa salvata: utente, percorso pianificato, traccia (`LineStringM`, M = secondi dall'inizio), **traccia tagliata** (senza 200 m all'inizio e alla fine), punteggio, fedeltà, distanza, durata, titolo, pubblica sì/no, data | TASK-117 |
+| `runs` | corsa salvata: utente, chiave fatta dall'app, percorso pianificato, cosa disegna, traccia (`LineStringM`, M = secondi dall'inizio), pause, inizio, distanza, durata, punteggio, fedeltà, luogo (TASK-172); **traccia tagliata** (senza 200 m all'inizio e alla fine), titolo dato dall'utente, pubblica sì/no (TASK-117) | TASK-172, TASK-117 |
 | `likes` | utente, corsa (coppia unica) | TASK-119 |
 | `comments` | corsa, autore, testo (1–500), data, nascosto sì/no | TASK-120 |
 | `reports` | chi segnala, cosa (corsa, commento, utente), motivo, data, gestita da e quando | TASK-121 |
@@ -79,13 +79,37 @@ Migrazione `0002_favorites.sql` (TASK-171, ADR-0139):
   `ST_AsGeoJSON(line, 15)`: l'app ritrova gli stessi punti, e quindi la
   stessa chiave.
 
+Migrazione `0003_runs.sql` (TASK-172, ADR-0140):
+
+- `runs`: `id`, `user_id` (`ON DELETE CASCADE`), `key` (da 8 a 40 fra
+  minuscole e cifre, unica con `user_id`), `route`
+  (`geometry(LineString, 4326)`) e `route_similarity`, tutti e due o
+  nessuno; `shape`, `word`, `style`, `title` (cosa disegna il percorso,
+  come in `favorites`: non il titolo che l'utente darà alla corsa, che è di
+  TASK-117); `track` (`geometry(LineStringM, 4326)`), `pauses` (`jsonb`),
+  `started_at`, `distance_m`, `duration_s`, `score` e `fidelity` (tutti e
+  due o nessuno, e solo con un percorso), `place`, `created_at`. Un indice
+  per l'elenco di un utente, dall'inizio più recente.
+- `track` è la traccia **pulita dal motore**, non quella grezza del
+  telefono: le posizioni scartate non tornano. M sono i secondi dalla
+  prima posizione, con l'orologio che corre anche nelle pause; `pauses` le
+  dice, come `[{"from_s", "to_s", "auto"}]` sullo stesso orologio.
+  `started_at` più M dà l'orario di ogni punto. L'altitudine non c'è.
+- `distance_m`, `duration_s`, `score` e `fidelity` sono contati dall'API al
+  salvataggio (`API.md`, «My activities») e non si ricalcolano: se il
+  motore cambia il modo di giudicare, le corse già salvate tengono il loro
+  punteggio.
+- Solo il proprietario legge una riga. Le colonne per gli altri (traccia
+  tagliata, «pubblica», titolo) le aggiunge TASK-117 con la sua migrazione.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» e il taglio
-dei 200 m si fanno nel database. Una corsa salvata ha due linee: quella
-intera, che vede solo il proprietario, e quella tagliata, calcolata al
-salvataggio, che vedono gli altri. Gli orari stanno nella coordinata M
-della traccia intera. Il GPX si scrive al volo quando serve.
+dei 200 m si fanno nel database. Una corsa salvata avrà due linee: quella
+intera, che vede solo il proprietario (c'è da TASK-172), e quella
+tagliata, calcolata al salvataggio, che vedranno gli altri (TASK-117). Gli
+orari stanno nella coordinata M della traccia intera. Il GPX si scrive al
+volo quando serve.
 
 ## Copie di sicurezza
 

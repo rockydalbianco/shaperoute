@@ -86,6 +86,16 @@ cerchio. La genera il plugin `expo-splash-screen` da `app.json`: nessun
 codice la tiene aperta, sparisce quando l'app è pronta. Come l'icona, si
 vede solo in una build propria.
 
+**L'animazione all'avvio** (TASK-179, ADR-0147): dopo la schermata di avvio,
+e in Expo Go al suo posto, il giallo `accent` riempie lo schermo dal centro
+e una penna disegna un cuore, nero `onAccent`: è il percorso a cuore di
+Milano da 10 km, quello del video. Sotto, il logo intero, nero. Tempi:
+0,35 s il giallo, 1,6 s il disegno, 0,45 s fermo, 0,3 s di dissolvenza
+sull'app; il giallo si vede 2,4 secondi. L'app parte sotto e si carica
+intanto; l'animazione prende i tocchi finché c'è, non si salta, e si vede
+una volta a ogni apertura. Sta in `src/intro/`, sopra `App`
+(`index.ts`). Al lettore di schermo dice «Sgrava».
+
 ## Le due schermate
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La
@@ -105,9 +115,10 @@ pagine»):
    scheda con l'attesa, il risultato o il problema. All'apertura la mappa
    mostra l'Italia intera, poi la partenza con un segnaposto, a zoom 15
    (qualche via attorno); con un percorso, la linea e la mappa inquadrata
-   su di lui. Si sposta e si ingrandisce con le dita o con i pulsanti + e
-   −. L'attribuzione dei dati è sempre visibile in basso, per intero; i
-   suoi link si aprono nel browser del telefono.
+   su di lui. Si sposta e si ingrandisce con le dita: i pulsanti + e − non
+   ci sono più (TASK-175, chiesto dall'utente). L'attribuzione dei dati è
+   sempre visibile in basso, per intero; i suoi link si aprono nel browser
+   del telefono.
 
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
@@ -116,7 +127,13 @@ pagine»):
    (TASK-167, ADR-0135, scelto dall'utente): in alto il disegno, largo
    quanto la scheda, giallo su fondo scuro, con la somiglianza in un angolo
    («97%»); sotto, forma e km («Star · 5.1 km») e città e distanza dalla
-   partenza («Trento · 450 m away»). **I filtri stanno in una riga sola**:
+   partenza («Trento · 450 m away»). **Sotto la linea c'è la mappa** della
+   zona, con i nomi dei paesi (TASK-174, ADR-0142, chiesto dall'utente): è
+   la foto di «Feed» (TASK-162), fatta dalla stessa pagina nascosta; finché
+   non arriva la scheda è la linea sul fondo scuro, e senza rete resta
+   così. Il credito della mappa non è su ogni foto, che è larga mezzo
+   telefono: sta una volta sola sopra le schede, «Maps: OpenFreeMap ©
+   OpenMapTiles · Data from OpenStreetMap». **I filtri stanno in una riga sola**:
    due pulsanti, «Shape: All ▾» e «Distance: All ▾», che dicono cosa
    tengono; toccato uno, sotto la riga si aprono le sue scelte («All»,
    «Star», «Circle»…, che scorrono di lato), e una scelta le richiude. Se ne
@@ -169,7 +186,10 @@ pagine»):
    stella da 5 km dal centro, chiesti da soli, uno alla volta, il cuore per
    primo. Sono schede come quelle di «Best near you», due per riga
    (TASK-167): una scheda dice «Drawing…» o «Next» con il posto del
-   disegno vuoto, poi ha il disegno, i km e la somiglianza; un tocco apre il
+   disegno vuoto, poi ha il disegno, i km e la somiglianza, il nome del
+   paese sotto («Vercelli») e la mappa sotto la linea come in «Best near
+   you» (TASK-174), con il credito della mappa una volta sotto le schede;
+   un tocco apre il
    percorso sulla mappa con «Export GPX» e «Back to Explore». Se la mappa
    della zona
    non si scarica, un messaggio solo e «Try again». Gli esempi pronti
@@ -293,7 +313,9 @@ finita, su «Log in».
 
 **«Profile» con l'account**: «LOGGED IN AS», il nome e l'email; la riga
 «Favorites», con quanti sono, che apre la pagina dei preferiti (sotto,
-«Favorites»); «Log out»; «Delete account», in rosso, che chiede prima sulla
+«Favorites»), e sotto la riga «My activities», con quante sono le corse
+salvate, che apre la loro pagina (sotto, «My activities»); «Log out»;
+«Delete account», in rosso, che chiede prima sulla
 schermata stessa: «Delete my account» o «Keep my account». Nessun pulsante
 dell'account è giallo.
 
@@ -310,7 +332,7 @@ dell'account è giallo.
   l'account resta e la scheda dice perché. Fatto, dice «Your account and
   everything that was yours have been deleted.» e torna a «Sign up».
 - **Senza account** si disegna, si esplora e si corre come prima: il token
-  lo vogliono solo l'account e i preferiti.
+  lo vogliono solo l'account, i preferiti e le corse salvate.
 
 ## «Favorites» (TASK-171, ADR-0139)
 
@@ -318,8 +340,8 @@ Un percorso che piace si tiene, e si ritrova in «Profile» da ogni telefono
 dell'account.
 
 - **Il cuore sulla mappa**: quando sulla mappa c'è un percorso (disegnato in
-  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e sotto
-  i pulsanti dello zoom della mappa, c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
+  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e alla
+  sua altezza (dal TASK-175 la mappa non ha più i pulsanti dello zoom), c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
   («♥»): lo toglie. Cambia subito, senza aspettare l'API; se l'API rifiuta
   torna com'era e sotto il cuore c'è il motivo in una riga, che un tocco
   chiude. Non è giallo: il giallo è del percorso. Durante l'attesa, la
@@ -348,6 +370,55 @@ dell'account.
 - **Sessione finita** a una richiesta dei preferiti: l'app esce, come dice
   «Profile», e il cuore torna a chiedere di entrare.
 - **Al massimo 200**: oltre, l'API dice di toglierne uno e l'app lo ripete.
+
+## «My activities» (TASK-172, ADR-0140)
+
+Le corse che chi ha un account salva si ritrovano in «Profile», da ogni
+telefono dell'account: con un percorso o senza.
+
+- **«Save» alla fine della corsa** (sotto, «La fine della corsa») mette la
+  corsa in «My activities»; «Discard» la butta. Niente si salva da solo
+  (scelta dell'utente, 2026-10-02). Va all'API la corsa com'è stata
+  registrata, posizione per posizione, con le pause e, se c'era, il
+  percorso seguito; km, tempo e punteggio li conta l'API, non il telefono.
+- **Senza rete** la corsa salvata resta sul telefono, in un file a parte
+  (`activities-outbox.json`, al più 20 corse), e parte da sola alla
+  prossima apertura dell'app con la rete, o quando si apre «My
+  activities»; mandata due volte, è salvata una volta. Una corsa che
+  aspetta è dell'account con cui è stata corsa: un altro account sullo
+  stesso telefono non la manda. In cima alla pagina, finché aspetta:
+  «1 run is on this phone, waiting for a connection.».
+- **Senza account** non si salva niente, com'era: sotto la scheda di fine
+  corsa la riga «Sign up or log in to keep your runs in My activities.»
+  apre «Profile» con la stessa frase sopra il modulo. Chi entra da lì e
+  torna alla scheda trova «Save» e «Discard» al posto di «Done».
+- **La pagina «My activities»**, da «Profile»: una scheda per corsa, dalla
+  più recente. A sinistra il disegno, come a fine corsa: il percorso
+  giallo e sopra, sottile e chiara, la linea corsa; una corsa senza
+  percorso ha solo la sua linea. A destra il giorno e l'ora dell'inizio,
+  con l'orologio del telefono («Fri 2 Oct 2026 · 08:12»); il luogo e cosa
+  disegnava («Trento · Star»; il luogo è il paese da cui si parte, trovato
+  dall'API, e manca se non lo trova; senza luogo né percorso, «Run»); «4.01
+  km · 19:00 · 4:45 /km», cioè km, tempo senza le pause e passo medio;
+  «Score 91» quando c'è. Niente è giallo, tranne il percorso nel disegno.
+- **Venti per volta**: in fondo «Show more» porta le venti successive. Il
+  numero in «Profile» le conta tutte.
+- **Una scheda apre la corsa sulla mappa**: il percorso giallo e la linea
+  corsa, come a fine corsa; sotto, giorno e ora, luogo e disegno, il
+  punteggio («91», «out of 100»), km, tempo e passo, la legenda («Yellow:
+  the route. White: what you ran.»). «←» e «Back to the list» tornano
+  all'elenco. Niente cuore e niente «Start»: è una corsa, non un percorso.
+- **«Delete»**, in rosso, sulla scheda dell'elenco e sotto la mappa, chiede
+  prima sulla scheda stessa: «Delete this run? It cannot be undone.», con
+  «Keep it» e «Delete run». La corsa sparisce subito; se l'API rifiuta
+  torna dov'era, con il motivo in cima all'elenco.
+- **Vuoto**: «No activities yet. Save a run when you finish it, and it is
+  kept here.». **Elenco non arrivato**: «Your activities could not load.» e «Try
+  again». L'elenco si chiede all'apertura dell'app, se c'è un account, e
+  ogni volta che la pagina si apre.
+- **Sessione finita** a una richiesta delle corse: l'app esce, come dice
+  «Profile»; una corsa che aspettava resta sul telefono per quando si
+  rientra con lo stesso account.
 
 ## La partenza
 
@@ -726,9 +797,12 @@ TASK-164, di cui tiene i numeri.
   riparte subito, senza conto.
 - **Due pagine, una accanto all'altra**: «Map» a sinistra, «Data» a destra.
   Si passa con uno swipe (verso sinistra per «Data», verso destra per
-  tornare a «Map») o toccando i due nomi in fondo; la corsa si apre su
+  tornare a «Map») o toccando i due pulsanti in fondo; la corsa si apre su
   «Map». Lo swipe parte dalla scheda, non dalla mappa: lì un dito sposta
-  la mappa.
+  la mappa. I due pulsanti si dividono la larghezza della scheda e sono
+  alti 56 punti, più del tocco minimo: si prendono col pollice correndo
+  (TASK-186). La pagina aperta ha la superficie più chiara e il bordo,
+  come le altre scelte dell'app; il giallo resta del percorso.
 - **«Map»**: la mappa con sopra il banner (la svolta, o la partenza senza
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra
@@ -742,7 +816,7 @@ TASK-164, di cui tiene i numeri.
   kilometre will show here.»). Poi i due interruttori della corsa,
   «Auto-pause» e «Voice».
 - **«Pause»**, un pulsante tondo e chiaro in mezzo, su tutte e due le
-  pagine; accanto, «Pocket». In pausa il tempo si ferma, le posizioni non
+  pagine; da una parte «Pocket», dall'altra «Music». In pausa il tempo si ferma, le posizioni non
   entrano nella traccia e «Pace now» è «–»; la mappa continua a seguire, e
   con un percorso le svolte si dicono ancora. Su «Map» la scheda si alza
   e mostra i km e i sei riquadri, come su «Data»: la mappa sopra, i numeri
@@ -760,6 +834,13 @@ TASK-164, di cui tiene i numeri.
   il tempo conta anche le soste.
 - **«Voice»** (accesa): spenta, l'app non dice più niente, né svolte né
   km; la vibrazione delle svolte resta.
+- **«Music»** (TASK-173, ADR-0141): mentre si corre, di fronte a «Pocket»,
+  su tutte e due le pagine. Apre Spotify, dove lo si era lasciato; a Sgrava
+  si torna da soli (su iPhone, «◀» in alto a sinistra). Sgrava non suona
+  niente e non sa cosa suona. La corsa non va in pausa, ma finché Sgrava
+  sta dietro a Spotify non riceve posizioni. Su un telefono senza Spotify
+  si apre la sua pagina nello store. In pausa, prima della prima posizione
+  e all'arrivo il pulsante non c'è.
 - **Dopo «Resume»** la prima posizione non si unisce all'ultima di prima:
   i metri fatti in pausa non sono della corsa. Lo stesso dopo «Keep
   running»: il tempo fra «Stop» e la ripresa è una pausa.
@@ -845,7 +926,22 @@ nell'attesa «Scoring your run…», con distanza e durata già lì.
   schermo: torna alla navigazione, e la traccia continua (ADR-0091).
 - **«Done»**: torna al risultato, o alla prima schermata se il percorso
   non c'è più. Con il punteggio arrivato, o la corsa troppo corta, la
-  traccia si cancella dal telefono: salvarla è di TASK-117.
+  traccia si cancella dal file della corsa. «Done» c'è solo senza
+  account.
+- **Con un account, «Save» e «Discard»** al posto di «Done», sotto la
+  scheda, larghi mezza riga l'uno (TASK-172, chiesto dall'utente il
+  2026-10-02: prima di salvare, una schermata che lo chiede). **«Save»**
+  mette la corsa in «My activities» (sopra) e torna dove tornava «Done»;
+  la corsa lascia il file anche senza punteggio, perché l'API la giudica
+  da sé. **«Discard»**, in rosso, chiede prima sulla scheda stessa:
+  «Discard this run? It will not be saved.», con «Keep it» e «Discard
+  run»; poi la corsa sparisce dal telefono e non va da nessuna parte.
+  Finché non si tocca né l'uno né l'altro niente è salvato; «Keep running»
+  resta nella scheda. Se il telefono non riesce a scrivere la corsa: «This
+  run could not be kept on the phone. Try again.», e si resta lì. Nessuno
+  dei due è giallo. «Send to Strava» non c'è: è un task a parte.
+- **Senza account**, sotto la scheda, la riga «Sign up or log in to keep
+  your runs in My activities.», che apre «Profile».
 
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
 principale.
@@ -884,9 +980,12 @@ file alla prima posizione).
 «Your run» e «White: what you ran.»; sotto i km in grande e i sei riquadri
 di «Data» (tempo senza le pause, passo medio, ultimo km, salita,
 calorie). Senza forma non c'è
-punteggio, e niente va all'API. **«Keep running»** torna alla corsa, con la
-stessa traccia; **«Done»** torna alla prima schermata e cancella la corsa
-dal telefono. Uno «Stop» prima della prima posizione torna subito alla
+punteggio, e niente va a `POST /track-scores`. **«Keep running»** torna
+alla corsa, con la stessa traccia; **«Done»**, senza account, torna alla
+prima schermata e toglie la corsa dal file: si perde, com'era, e sotto la
+scheda c'è la riga che invita a entrare. Con un account al posto di
+«Done» ci sono **«Save»** e **«Discard»** («La fine della corsa», sopra):
+salvata, la corsa va in «My activities» senza punteggio (TASK-172). Uno «Stop» prima della prima posizione torna subito alla
 prima schermata. Se l'app si chiude durante la corsa, alla riapertura si
 apre su questa schermata; «Keep running» c'è solo se l'ultima posizione è
 di meno di 30 minuti prima.
@@ -958,6 +1057,9 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   Da TASK-162 anche le zone dei disegni di «Feed», a ogni apertura
   dell'app: sono le città degli esempi, uguali per tutti, non la posizione
   di chi guarda.
+  Da TASK-174 anche le zone dei percorsi mostrati in «Explore», quando si
+  apre la pagina o si sceglie una città: sono attorno alla partenza o alla
+  città scelta, come la mappa grande quando si apre un percorso.
 - **La ricerca**: il testo cercato e la posizione (per mettere prima i
   luoghi vicini) vanno all'API, che li gira a Geoapify (TASK-123); senza
   API o senza chiave, a Photon (komoot). Il log dell'API scrive solo
@@ -968,12 +1070,25 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   l'utente (numero, email, nome, ruolo), nel portachiavi
   (`expo-secure-store`, ADR-0125); mai la password. Il token va all'API
   solo con le richieste dell'account (`GET /me`, `DELETE /session`,
-  `DELETE /me`) e dei preferiti, in `Authorization`.
+  `DELETE /me`), dei preferiti e delle corse, in `Authorization`.
 - **I preferiti** (TASK-171): un percorso tenuto va all'API intero, con la
   sua linea, e resta nel database legato all'account finché non lo si
   toglie o si cancella l'account. La linea di un percorso disegnato parte
   da dove si è scelto di partire: spesso vicino a casa. Lo vede solo il suo
   account.
+- **Le corse** (TASK-172): con un account, con «Save» a fine corsa la
+  corsa va all'API **intera**: ogni posizione con il suo orario, le pause e il percorso
+  seguito. Resta nel database legata all'account finché non la si cancella
+  da «My activities» o si cancella l'account; la vede solo il suo account
+  (niente è pubblico: «Public» e la traccia tagliata sono di TASK-117).
+  Una corsa parte e finisce spesso davanti a casa: è il dato più personale
+  che l'app manda. Per il nome del luogo l'API chiede a Geoapify il paese
+  intorno alla partenza **arrotondata a circa un chilometre** (due
+  decimali), come per la ricerca dei luoghi: il servizio non vede mai la
+  porta da cui si parte, né la corsa, né chi è. Il log dell'API non scrive
+  posizioni (ADR-0092). Senza rete la corsa aspetta in un file del
+  telefono, che non esce da lì finché non parte per l'API. Senza account,
+  o con «Discard», non va niente.
 
 ## Quando la mappa non si carica
 

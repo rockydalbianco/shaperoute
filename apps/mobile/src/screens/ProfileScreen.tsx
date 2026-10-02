@@ -13,6 +13,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SESSION_ENDED } from "../account/messages";
 import type { Account, SignedOutNotice } from "../account/useAccount";
+import { ActivitiesList } from "../activities/ActivitiesList";
+import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { FavoritesList } from "../favorites/FavoritesList";
 import { useFavoritesDoor } from "../favorites/favoritesDoor";
 import {
@@ -34,8 +36,15 @@ const NOTICES: Record<SignedOutNotice, { text: string; tone: "warning" | "muted"
   loggedOut: { text: "You are logged out on this phone.", tone: "muted" },
 };
 
-/** The pages of «Profile»: the account, and what it keeps (TASK-171). */
-export type ProfilePage = "account" | "favorites";
+/** The pages of «Profile»: the account, the routes it keeps (TASK-171) and
+ * the runs it recorded (TASK-172). */
+export type ProfilePage = "account" | "favorites" | "activities";
+
+const TITLES: Record<ProfilePage, string> = {
+  account: "Profile",
+  favorites: "Favorites",
+  activities: "My activities",
+};
 
 type Props = {
   account: Account;
@@ -51,8 +60,9 @@ type Props = {
 
 /**
  * «Profile» (TASK-115): sign up or log in; with an account, who it is, its
- * favorites (TASK-171), log out, and delete the account. Over the app, which
- * stays as it was; it opens from the header of the pages (TASK-154).
+ * favorites (TASK-171), its runs (TASK-172), log out, and delete the
+ * account. Over the app, which stays as it was; it opens from the header of
+ * the pages (TASK-154).
  */
 export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
   const insets = useSafeAreaInsets();
@@ -84,11 +94,15 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             <Text style={styles.backText}>←</Text>
           </Pressable>
           <Text style={styles.title} accessibilityRole="header">
-            {inside ? "Favorites" : "Profile"}
+            {TITLES[inside ? page : "account"]}
           </Text>
         </View>
         {inside ? (
-          <FavoritesList margin={space.lg} />
+          page === "activities" ? (
+            <ActivitiesList />
+          ) : (
+            <FavoritesList margin={space.lg} />
+          )
         ) : state.status === "signedIn" ? (
           <SignedIn session={state.session} account={account} onPage={onPage} />
         ) : (
@@ -134,6 +148,7 @@ function SignedIn({
   const [confirming, setConfirming] = useState(false);
   const deleting = account.busy === "delete";
   const favorites = useFavoritesDoor();
+  const activities = useActivitiesDoor();
   return (
     <View style={styles.signedIn}>
       <View style={styles.card}>
@@ -152,6 +167,19 @@ function SignedIn({
           <Text style={styles.rowText}>Favorites</Text>
           <Text style={styles.rowCount}>
             {favorites.status === "ready" ? String(favorites.list.length) : ""}
+          </Text>
+          <Text style={styles.rowArrow}>›</Text>
+        </Pressable>
+        <View style={styles.divider} />
+        <Pressable
+          style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+          onPress={() => onPage("activities")}
+          accessibilityRole="button"
+          accessibilityLabel={`My activities, ${activities.total ?? 0}`}
+        >
+          <Text style={styles.rowText}>My activities</Text>
+          <Text style={styles.rowCount}>
+            {activities.total !== null ? String(activities.total) : ""}
           </Text>
           <Text style={styles.rowArrow}>›</Text>
         </Pressable>
@@ -277,6 +305,11 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.6,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginHorizontal: space.md,
+    backgroundColor: color.border,
   },
   rowText: {
     flex: 1,

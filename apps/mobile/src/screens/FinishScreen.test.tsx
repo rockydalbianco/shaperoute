@@ -130,3 +130,10 @@ test("durations read in minutes, then hours and minutes", () => {
   expect(durationLabel(32 * 60_000 + 20_000)).toBe("32 min");
   expect(durationLabel(65 * 60_000)).toBe("1 h 05 min");
 });
+
+test("without a way out of its own the card has no Done: Save and Discard are under it", async () => {
+  const fetchFn = answering(200, scored);
+  await render(<FinishCard apiUrl={URL} run={RUN} fetchFn={fetchFn} />);
+  await screen.findByText("91");
+  expect(screen.queryByText("Done")).toBeNull();
+});

@@ -138,8 +138,8 @@ export function buildMapPage(): string {
       fitBoundsOptions: { padding: 16 },
       attributionControl: false,
     });
+    // No zoom buttons: the map zooms with two fingers only.
     map.addControl(new maplibregl.AttributionControl({ compact: false }));
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
     map.once("style.load", function () {
       styleLoaded = true;
       // The other routes to choose from, under the route.

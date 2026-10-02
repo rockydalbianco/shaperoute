@@ -108,6 +108,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-156: «Feed» mostra quindici disegni di esempio, chiesti
+  dall'utente (ADR-0127): le figure venute meglio nelle sette città del
+  catalogo, due per città, undici forme, con corridori, titoli, tempi e
+  punteggi inventati. Le linee sono quelle del motore; le sceglie e le
+  scrive `tools/sample_feed.py`. Niente sulla pagina dice che sono esempi,
+  per scelta dell'utente: da rivedere prima di invitare altre persone.
+  Niente API, niente like o commenti: il feed vero resta TASK-118. Visto
+  su un simulatore. **Da provare sull'iPhone** (ripubblicare l'app).
 - **App** — TASK-155: in «Explore», sulla mappa di un esempio di città gli
   altri percorsi fra «A · B · C» sono linee grigie sotto quello scelto,
   come per un percorso disegnato; chiesto dall'utente dopo aver provato

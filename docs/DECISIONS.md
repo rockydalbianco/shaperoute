@@ -4427,3 +4427,55 @@ che parte da fuori: va provato con il dito sull'iPhone, e su Android non è
 stato provato niente. Il nome «Sgrava» resta in
 cima a «Draw» e «Best near you» in cima a «Explore»: toglierli o no è
 parte del ridisegno delle due pagine, non ancora scelto.
+
+## ADR-0127 — «Feed» con quindici esempi dal catalogo, finché non pubblicano gli iscritti
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («nella
+sezione feed crea già in automatico 15 attività con nomi inventati, utenti
+inventati, che hanno fatto delle figure in sette città differenti d'Italia,
+e seleziona le figure che sono venute meglio»); il come deciso dall'agente
+su delega dell'utente (TASK-156).
+
+**Contesto**: dopo TASK-154 «Feed» era una pagina vuota. Il feed vero
+(TASK-118) vuole account, disegni salvati e un endpoint: non c'è ancora.
+L'utente vuole la pagina piena da subito.
+
+**Decisione**:
+- **Le linee vengono dal catalogo seme** (`catalog/seed/`, sette città): le
+  ha tracciate il motore, e uno script (`tools/sample_feed.py`) le sceglie
+  e le scrive in `apps/mobile/src/feed/sampleFeed.json`. Nessuna coordinata
+  è inventata, né dall'AI né a mano (`CLAUDE.md`).
+- **La scelta**: ogni città dà due figure di forme diverse, le sue meglio
+  riuscite; fra quelle riuscite almeno al 95% prende prima una forma non
+  ancora nel feed; nessuna forma più di due volte; scelgono prima le città
+  con meno figure buone; la quindicesima è la migliore rimasta. Oggi: 11
+  forme, somiglianza minima 0,954, Firenze con tre.
+- **Meno punti, stessi angoli**: ogni linea scende a 120 punti al più con
+  Douglas-Peucker in metri, non un punto ogni tanti come l'anteprima
+  dell'API a 64: a tutta larghezza gli angoli contano.
+- **Inventati e sempre uguali**: corridori, titoli, tempi (da 5:15 a 6:40
+  al km) e punteggi (qualche punto sotto la somiglianza) escono dallo
+  script con regole fisse. Il file cambia solo se cambia il catalogo, e si
+  rifà a mano: nessun test lo lega al catalogo, così chi aggiunge una città
+  non rompe la CI di questo.
+- **Niente sulla pagina dice che sono esempi**: scelta dell'utente
+  (2026-10-02). L'agente aveva messo una riga in cima («Examples, drawn by
+  the route engine on real streets…») perché corridori finti mostrati come
+  veri ingannano chi entra; l'utente, sentito il motivo, l'ha fatta
+  togliere. Niente like, commenti o tocchi: quelle cose non esistono ancora.
+- **I dati stanno nell'app**, non nell'API: nessuna richiesta, funziona
+  senza rete. Il disegno si fa come le miniature di «Explore»
+  (`thumbSegments`), una `View` per tratto, in un elenco che monta poche
+  schede alla volta.
+
+**Scartate**: scrivere a mano corridori e linee; chiedere i percorsi
+all'API a ogni apertura (sette richieste per una pagina di esempi); like e
+commenti finti; orari finti («2 h ago» per sempre).
+
+**Conseguenze**: TASK-118 sostituisce gli esempi con i disegni veri, o li
+tiene sotto finché sono pochi: lo decide l'utente allora. **Prima di
+invitare persone che non conoscono l'app** (il cancello di `ROADMAP.md`,
+«La parte social») va rivisto se gli esempi restano senza dirlo: chi entra
+li prende per corse di iscritti veri. Gli `id` sono
+quelli che l'API dà ai percorsi del catalogo: servono a TASK-118 per aprire
+il percorso dal feed. Se il catalogo cambia, `python tools/sample_feed.py`
+rifà il file.

@@ -47,8 +47,8 @@ In coda, dopo o accanto:
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
   TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
 - **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
-  sulla pagina con «Soon» (TASK-177): **TASK-178** la foto del profilo
-  (ADR-0146, migrazione `0004`; è la metà «foto» di TASK-116), **TASK-183**
+  sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
+  (TASK-178, sotto); restano **TASK-183**
   cambiare email e numero di telefono (ADR-0150, migrazione `0006`; a cosa
   serve il numero va chiesto all'utente prima), **TASK-182** le unità di
   misura, km o miglia (ADR-0149, solo app, tocca molti file), **TASK-184**
@@ -144,6 +144,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-178: la foto del profilo, chiesta dall'utente con
+  TASK-177 (ADR-0146). In «Settings» la riga «Profile picture» apre
+  «Choose a picture», «Take a photo» e «Remove picture»; la foto si
+  ritaglia al quadrato nel telefono e si vede nella riga, nel cerchio di
+  «Profile» e nel pulsante in alto, al posto dell'iniziale. Nell'API la
+  tabella `profile_photos` (migrazione `0005`) e `GET`, `PUT`, `DELETE
+  /me/photo`: l'API tiene solo un JPEG quadrato di 256 px fatto da lei,
+  dritto e senza i dati dello scatto. `DELETE /me` la cancella. Nessuna
+  dipendenza nuova. Il resto di TASK-116 (nome, bio, profilo visto dagli
+  altri) avrà una migrazione sua. **Sul telefono si vede dopo due passi
+  che vogliono l'ok dell'utente**: l'API del server aggiornata con la
+  migrazione `0005` (`DEPLOY.md` F.12) e l'app pubblicata; prima, chi
+  prova vede «Profile pictures are not available on this API yet.». Poi
+  **da provare sull'iPhone**: libreria, fotocamera, il ritaglio.
 - **App** — TASK-192: in «Explore» il luogo scelto ha sempre i suoi
   percorsi, chiesto dall'utente (ADR-0155: «premo su Caldonazzo e mi
   vengono fuori Levico»). Prima un paese accanto a una città con percorsi

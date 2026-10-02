@@ -64,6 +64,7 @@ from shaperoute_api.places import (
     PlaceSearch,
     PlacesUnavailableError,
 )
+from shaperoute_api.profile_photos import install_profile_photos
 from shaperoute_api.recommended import (
     DEFAULT_RADIUS_M,
     MAX_RADIUS_M,
@@ -267,6 +268,8 @@ def create_app(
     # A run sent to the runner's Strava (TASK-187); off unless the
     # environment has this server's Strava application.
     install_strava(app, strava)
+    # The profile picture of an account (TASK-178); it needs its token.
+    install_profile_photos(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

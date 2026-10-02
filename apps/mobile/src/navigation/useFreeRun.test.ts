@@ -74,16 +74,8 @@ test("the fixes of a free run are its track, kept on the phone with no route", a
     track: { fixes: [], distanceM: 0 },
     position: null,
   });
-  // A new run begins with the countdown (TASK-169): the map follows the
-  // runner, the track waits.
+  // A new run begins with the countdown (TASK-169).
   expect(runControl().phase).toBe("countdown");
-  await act(async () => {
-    onPosition(position(-20, 0, 5));
-  });
-  expect(result.current).toMatchObject({
-    track: { fixes: [] },
-    position: [START[0] - 20 * METRE, START[1]],
-  });
   await act(async () => {
     skipCountdown();
     onPosition(position(0, 0, 5));
@@ -253,5 +245,37 @@ test("with the voice off, a kilometre is not said", async () => {
   });
   expect(Speech.speak).not.toHaveBeenCalled();
   setVoice(true);
+  await unmount();
+});
+
+test("during the countdown the map follows the runner and the track waits", async () => {
+  clearRun();
+  let onPosition: (position: Location.LocationObject) => void = () => {};
+  jest
+    .mocked(Location.requestForegroundPermissionsAsync)
+    .mockResolvedValue(permission(true));
+  jest
+    .mocked(Location.watchPositionAsync)
+    .mockImplementation(async (_options, callback) => {
+      onPosition = callback;
+      return { remove: jest.fn() };
+    });
+  const { result, unmount } = await renderHook(() => useFreeRun(true));
+  const before = Date.now();
+  await act(async () => {
+    onPosition(position(20, 1, 5));
+  });
+  expect(result.current).toMatchObject({
+    track: { fixes: [] },
+    position: [START[0] + 20 * METRE, START[1]],
+  });
+  // At its end the run starts there, then: the screen has its first fix.
+  await act(async () => skipCountdown());
+  const state = result.current;
+  expect(state.status === "running" && state.track.fixes).toHaveLength(1);
+  if (state.status === "running") {
+    expect(state.track.fixes[0].point).toEqual([START[0] + 20 * METRE, START[1]]);
+    expect(state.track.fixes[0].timeMs).toBeGreaterThanOrEqual(before);
+  }
   await unmount();
 });

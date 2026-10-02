@@ -76,7 +76,7 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test("a new run begins with a countdown, and its fixes are not of the run", () => {
+test("a new run begins with a countdown, and nothing is recorded until it ends", () => {
   const { recorder, session } = begin();
   expect(runControl().phase).toBe("countdown");
   expect(runControl().startsAtMs).toBe(NOW + COUNTDOWN_MS);
@@ -86,10 +86,28 @@ test("a new run begins with a countdown, and its fixes are not of the run", () =
   jest.advanceTimersByTime(COUNTDOWN_MS);
   expect(runControl().phase).toBe("running");
   expect(runControl().startsAtMs).toBeNull();
-  session.onFix(fix(5, 3), false);
+  // The one fix of the countdown is where the run starts; the next is its line.
   expect(recorder.track().fixes).toHaveLength(1);
+  session.onFix(fix(10, 5), false);
+  expect(recorder.track().fixes).toHaveLength(2);
   session.end();
   expect(runControl().phase).toBe("idle");
+});
+
+test("the run starts where the countdown left the runner, at the moment it ends", () => {
+  const { recorder, session, onChange } = begin();
+  session.onFix(fix(0, 0.5), false);
+  session.onFix(fix(3, 2), false);
+  jest.advanceTimersByTime(COUNTDOWN_MS);
+  // Standing still, the GPS gives nothing more: the clock runs all the same.
+  expect(recorder.track().fixes).toEqual([
+    { ...fix(3, 2), timeMs: NOW + COUNTDOWN_MS },
+  ]);
+  expect(onChange).toHaveBeenCalledTimes(1);
+  session.onFix(fix(13, 6), false);
+  expect(recorder.track().distanceM).toBeCloseTo(10, 0);
+  expect(durationMs(recorder.track())).toBe(3000);
+  session.end();
 });
 
 test("a run taken up again goes on at once, without a countdown", () => {

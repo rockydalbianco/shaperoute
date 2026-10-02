@@ -77,6 +77,8 @@ type Session = {
   onChange: () => void;
   say: (text: string) => void;
   arrived: boolean;
+  /** Where the runner was last seen during the countdown. */
+  waiting: TrackFix | null;
   countdown: ReturnType<typeof setTimeout> | null;
   watch: ReturnType<typeof setInterval>;
 };
@@ -109,8 +111,17 @@ export function skipCountdown(): void {
     clearTimeout(session.countdown);
     session.countdown = null;
   }
-  if (state.phase === "countdown") {
-    set({ phase: "running", startsAtMs: null });
+  if (state.phase !== "countdown") {
+    return;
+  }
+  set({ phase: "running", startsAtMs: null });
+  // The run starts here and now, where the runner stands: the GPS gives
+  // nothing more until the first metres, and the clock should not wait.
+  if (session?.waiting) {
+    const { recorder, waiting, onChange } = session;
+    session.waiting = null;
+    recorder.onFix({ ...waiting, timeMs: Date.now() }, false);
+    onChange();
   }
 }
 
@@ -146,7 +157,8 @@ function watchStanding(): void {
 }
 
 export type RunSession = {
-  /** A fix from the GPS, for the track: dropped during the countdown. */
+  /** A fix from the GPS, for the track. During the countdown only the last
+   * one is kept, and it becomes the run's first when the countdown ends. */
   onFix(fix: TrackFix, arrived: boolean): void;
   /** The run is left: the controls are free for the next one. */
   end(): void;
@@ -175,6 +187,7 @@ export function controlRun(
     onChange,
     say,
     arrived: false,
+    waiting: null,
     countdown: fresh ? setTimeout(skipCountdown, COUNTDOWN_MS) : null,
     watch: setInterval(watchStanding, AUTO_PAUSE_CHECK_MS),
   };
@@ -186,7 +199,11 @@ export function controlRun(
   });
   return {
     onFix(fix, arrived) {
-      if (session !== mine || state.phase === "countdown") {
+      if (session !== mine) {
+        return;
+      }
+      if (state.phase === "countdown") {
+        mine.waiting = fix;
         return;
       }
       recorder.onFix(fix, arrived);

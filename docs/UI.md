@@ -679,7 +679,9 @@ TASK-164, di cui tiene i numeri.
 - **Il conto alla rovescia.** Una corsa nuova parte con «3», «2», «1» a
   tutto schermo, gialli su nero, e «Get ready». In quei tre secondi il GPS
   cerca la posizione e la mappa la segue, ma metri e tempo non contano
-  ancora. Una corsa ripresa («Keep running») riparte subito, senza conto.
+  ancora: la corsa parte dal punto in cui si è quando il conto finisce, in
+  quell'istante, anche da fermi. Una corsa ripresa («Keep running»)
+  riparte subito, senza conto.
 - **Due pagine, una accanto all'altra**: «Map» a sinistra, «Data» a destra.
   Si passa con uno swipe (verso sinistra per «Data», verso destra per
   tornare a «Map») o toccando i due nomi in fondo; la corsa si apre su

@@ -5036,7 +5036,10 @@ tenere premuto, la voce a ogni km con un percorso) aspettavano l'utente.
   resta lo «Stop» da toccare, e all'arrivo «Finish».
 - **Il conto alla rovescia è tempo, non una schermata da aspettare**:
   `runControl` lo chiude da solo dopo 3 secondi; lo schermo lo mostra
-  soltanto. Il GPS parte prima, la traccia dopo.
+  soltanto. Il GPS parte prima, la traccia dopo: l'ultima posizione vista
+  durante il conto diventa la prima della corsa, con l'ora in cui il conto
+  finisce. Senza, chi parte da fermo non avrebbe una posizione fino ai
+  primi 5 m (il GPS ne dà una ogni 5 m) e l'orologio aspetterebbe.
 - **Dislivello dalla quota del GPS** (`coords.altitude`, già nel
   permesso): la somma delle salite di almeno 3 m, perché da fermi la quota
   oscilla di qualche metro. Il barometro sarebbe più preciso ma è una

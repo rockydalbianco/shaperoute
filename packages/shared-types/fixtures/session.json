@@ -5,6 +5,8 @@
     "email": "runner@example.com",
     "username": "Runner_42",
     "role": "user",
-    "created_at": "2026-10-02T08:30:00Z"
+    "created_at": "2026-10-02T08:30:00Z",
+    "bio": "",
+    "public_id": "8c1f7a52-3d4e-4b9a-9f61-2a7c0e5d9b13"
   }
 }

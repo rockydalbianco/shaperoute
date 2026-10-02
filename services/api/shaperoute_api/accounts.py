@@ -30,6 +30,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any, Literal
+from uuid import UUID
 
 import psycopg
 from argon2 import PasswordHasher
@@ -109,14 +110,23 @@ class SignInRequestBody(BaseModel):
         return value.strip().lower() if isinstance(value, str) else value
 
 
+# What the API reads of an account for its owner, in the order of UserBody.
+USER_COLUMNS = "id, email, username, role, created_at, bio, public_id"
+
+
 class UserBody(BaseModel):
-    """What the API tells about an account: never the password or a token."""
+    """What the API tells an account about itself: never the password or a
+    token. The others see only its profile (profiles.py)."""
 
     id: int
     email: str
     username: str
     role: Role
     created_at: datetime
+    # The profile (TASK-116): the bio, empty without one, and the id the
+    # others open the profile with (GET /users/{public_id}).
+    bio: str
+    public_id: UUID
 
 
 class SessionBody(BaseModel):
@@ -206,7 +216,7 @@ class Accounts:
                     "INSERT INTO users"
                     " (email, password_hash, username, confirmed_16_at, created_at)"
                     " VALUES (%s, %s, %s, %s, %s)"
-                    " RETURNING id, email, username, role, created_at",
+                    f" RETURNING {USER_COLUMNS}",
                     (body.email, password_hash, body.username, now, now),
                 ).fetchone()
             except pg_errors.UniqueViolation as exc:
@@ -226,8 +236,7 @@ class Accounts:
         now = self.now()
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT id, email, username, role, created_at, password_hash"
-                " FROM users WHERE email = %s",
+                f"SELECT {USER_COLUMNS}, password_hash FROM users WHERE email = %s",
                 (body.email,),
             ).fetchone()
             if not self._matches(row, body.password):
@@ -252,8 +261,8 @@ class Accounts:
                 " UPDATE sessions SET last_used_at = %s"
                 " WHERE token_hash = %s AND last_used_at > %s"
                 " RETURNING user_id)"
-                " SELECT u.id, u.email, u.username, u.role, u.created_at"
-                " FROM users u JOIN used ON u.id = used.user_id",
+                f" SELECT {USER_COLUMNS}"
+                " FROM users JOIN used ON users.id = used.user_id",
                 (now, token_hash(token), now - timedelta(days=SESSION_DAYS)),
             ).fetchone()
             if row is not None:

@@ -9,7 +9,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { Avatar } from "./Avatar";
+import { ProfileHeader } from "./ProfileHeader";
+import { bioOf } from "./profileFields";
 import { useProfilePhoto } from "./useProfilePhoto";
 
 /** What «Profile» opens from its first page. */
@@ -22,8 +23,6 @@ export const SECTION_EMOJI: Record<ProfileSection, string> = {
   settings: "⚙️",
 };
 
-const AVATAR_SIZE = 2 * MIN_TAP_SIZE;
-
 type Props = {
   user: User;
   /** How many routes the account keeps; null until the list has come. */
@@ -31,20 +30,33 @@ type Props = {
   /** How many runs it recorded; null until the list has come. */
   activities: number | null;
   onOpen: (section: ProfileSection) => void;
+  /** «Edit profile»: username and bio (TASK-116). */
+  onEdit: () => void;
 };
 
 /**
- * The first page of «Profile» with an account (TASK-177): who it is, what it
- * keeps in two tiles with their number, and the way to «Settings».
+ * The first page of «Profile» with an account (TASK-177): who it is, with
+ * the bio and «Edit profile» (TASK-116), what it keeps in two tiles with
+ * their number, and the way to «Settings».
  */
-export function ProfileHome({ user, favorites, activities, onOpen }: Props) {
+export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Props) {
   const photo = useProfilePhoto();
   return (
     <View style={styles.home}>
-      <View style={styles.who}>
-        <Avatar name={user.username} size={AVATAR_SIZE} photo={photo.uri} />
-        <Text style={styles.username}>{user.username}</Text>
-        <Text style={styles.email}>{user.email}</Text>
+      <View style={styles.top}>
+        <ProfileHeader
+          username={user.username}
+          bio={bioOf(user)}
+          photo={photo.uri}
+          detail={user.email}
+        />
+        <Pressable
+          style={({ pressed }) => [styles.edit, pressed && styles.pressed]}
+          onPress={onEdit}
+          accessibilityRole="button"
+        >
+          <Text style={styles.editText}>Edit profile</Text>
+        </Pressable>
       </View>
       <View style={styles.tiles}>
         <Tile
@@ -113,20 +125,23 @@ const styles = StyleSheet.create({
   home: {
     gap: space.lg,
   },
-  who: {
+  top: {
+    gap: space.md,
+  },
+  // Neutral, as «Log out»: the yellow belongs to the route.
+  edit: {
+    minHeight: MIN_TAP_SIZE,
+    borderRadius: radius.pill,
     alignItems: "center",
-    gap: space.xs,
-    paddingBottom: space.sm,
+    justifyContent: "center",
+    backgroundColor: color.surfaceRaised,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
   },
-  username: {
-    marginTop: space.sm,
+  editText: {
     color: color.text,
-    fontSize: fontSize.title,
-    fontWeight: fontWeight.bold,
-  },
-  email: {
-    color: color.textMuted,
     fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
   },
   tiles: {
     flexDirection: "row",

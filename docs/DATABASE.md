@@ -30,7 +30,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 
 | Tabella | Cosa | Chi la crea |
 |---|---|---|
-| `users` | email (unica, minuscola), hash della password (Argon2id), nome utente (unico, 3–20 caratteri), bio, `role` (`user` o `admin`), quando ha detto di avere 16 anni, data d'iscrizione | TASK-114, TASK-116 |
+| `users` | email (unica, minuscola), hash della password (Argon2id), nome utente (unico, 3–20 caratteri), bio, id pubblico casuale del profilo, `role` (`user` o `admin`), quando ha detto di avere 16 anni, data d'iscrizione | TASK-114, TASK-116 |
 | `sessions` | hash del token (SHA-256), utente, ultimo uso, scadenza a 90 giorni | TASK-114 |
 | `profile_photos` | utente, JPEG quadrato 256 px | TASK-178 |
 | `generated_routes` | ogni percorso dell'API (ADR-0086): richiesta, tipo (forma, parola, immagine), distanza, somiglianza, linea, **punto di partenza mostrato** (a più di 500 m da quello vero), centro, data; utente se era entrato, se no nessuno | TASK-092 |
@@ -150,6 +150,24 @@ Migrazione `0006_pen_up_walks.sql` (TASK-199, ADR-0157 e ADR-0158):
   da sola fra due lettere) ha in più `"pen": true`, e solo lei; le altre
   restano `{"from_s", "to_s", "auto"}` come prima. Per km e tempo conta
   come una pausa chiesta dal corridore (`auto` falso).
+
+Migrazione `0007_profiles.sql` (TASK-116, ADR-0128):
+
+- `users` prende `bio` (`text`, `NOT NULL`, default `''`, al più 160
+  caratteri) e `public_id` (`uuid`, `NOT NULL`, unico, default
+  `gen_random_uuid()`). Il nome utente c'era già dalla `0001`, obbligatorio
+  all'iscrizione: ogni account ne ha uno, e `PATCH /me` lo cambia con la
+  stessa regola.
+- `public_id` è l'id con cui gli altri iscritti aprono il profilo (`GET
+  /users/{public_id}`, `API.md` «Profile»): casuale, perché `id` è in
+  sequenza e direbbe quanti sono gli account. Non cambia con il nome.
+- Gli account di prima prendono la bio vuota e ognuno il suo `public_id`
+  quando la colonna si aggiunge (il default si calcola riga per riga, e la
+  tabella si riscrive una volta: pochi account, un attimo). Le sessioni di
+  prima restano valide (test con dati sullo schema 0001–0006).
+- Il numero di disegni del profilo non è una colonna: si conterà sulle
+  corse pubblicate, che arrivano con TASK-117; fino ad allora è 0, perché
+  le corse salvate sono private.
 
 ## Come si memorizza una traccia
 

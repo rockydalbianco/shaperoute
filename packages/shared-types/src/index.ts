@@ -485,6 +485,44 @@ export interface User {
   role: UserRole;
   /** ISO 8601, UTC. */
   created_at: string;
+  /**
+   * The profile (TASK-116): a few words, "" without; missing from an API
+   * older than TASK-116, which has no bio.
+   */
+  bio?: string;
+  /**
+   * The id the others open the profile with, GET /users/{public_id}: a
+   * random UUID, never `id`. Missing from an API older than TASK-116.
+   */
+  public_id?: string;
+}
+
+/** The limit of a bio, checked by the API too (TASK-116). */
+export const BIO_MAX_LENGTH = 160;
+
+/**
+ * PATCH /me (TASK-116): only what changes. A username follows the rule of
+ * SignUpRequest; an empty bio takes the bio away. The answer is the User.
+ */
+export interface EditProfileRequest {
+  username?: string;
+  /** At most BIO_MAX_LENGTH characters; new lines are kept. */
+  bio?: string;
+}
+
+/**
+ * GET /users/{public_id} (TASK-116): an account as every member sees it.
+ * Never the email, the role or `id`.
+ */
+export interface PublicProfile {
+  public_id: string;
+  username: string;
+  /** "" without one. */
+  bio: string;
+  /** The square JPEG of the picture in base64, as /me/photo; null without. */
+  photo: string | null;
+  /** The drawings it published: 0 for all until TASK-117 publishes runs. */
+  drawings: number;
 }
 
 /**

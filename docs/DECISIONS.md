@@ -3888,7 +3888,11 @@ server Hetzner, che l'app usa dal 2026-10-01, risponde.
 
 - **Dall'estratto di Geofabrik** (scelta dell'utente del 2026-10-02, dopo
   che Overpass aveva bloccato il server alla quinta città): `--extract`,
-  osmium solo nell'immagine dei download. OSMnx e il motore ricevono dal
+  osmium solo nell'immagine dei download. **osmium-tool è una dipendenza
+  nuova, approvata dall'utente** il 2026-10-02 (nell'opzione scelta, poi
+  alla domanda diretta del Coordinatore); serve solo a chi rifà le zone
+  (`SETUP.md` 10.4: `brew install osmium-tool` sul Mac), non all'API né
+  all'app. OSMnx e il motore ricevono dal
   ritaglio le risposte di Overpass (sostituendo per la durata del download
   `osmnx._overpass._download_overpass_network` e `network._overpass`) e
   fanno tutto il resto come sempre: così la zona è quella di un download,

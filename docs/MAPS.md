@@ -151,8 +151,10 @@ download. Napoli e Palermo, scaricate prima da Overpass, rifatte
 dall'estratto (30 settembre): Palermo identica (18.681 nodi, 53.930 archi,
 44 strade con nome); Napoli 26.977 nodi contro 26.979, 6 archi su 76.628 in
 meno (un giorno di modifiche a OSM); cuore e stella da 5 km dal centro con
-la stessa linea nelle due. Circa un minuto per città. osmium sta solo
-nell'immagine dei download, non in quella dell'API:
+la stessa linea nelle due. Circa un minuto per città. osmium-tool
+(dipendenza approvata dall'utente, ADR-0119; sul Mac `brew install
+osmium-tool`, `SETUP.md` 10.4) sta solo nell'immagine dei download, non in
+quella dell'API:
 
 ```bash
 curl -O https://download.geofabrik.de/europe/italy-latest.osm.pbf

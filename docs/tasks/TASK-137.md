@@ -116,6 +116,7 @@ services/api/tests/test_prefetch_zones.py         (nuovo)
 services/api/shaperoute_api/zone_extract.py       (nuovo, dall'estratto)
 services/api/tests/test_zone_extract.py           (nuovo)
 docs/MAPS.md
+docs/SETUP.md                                     (osmium-tool, 10.4)
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-137.md
@@ -146,8 +147,9 @@ dall'estratto Geofabrik del 30 settembre (`--extract`, un processo per
 città, container separato con 4 GiB). Da 20 a 30 s (solo i nomi) a 228 s
 (Roma, 126 MB) per città; un'ora in tutto. Cache del server da circa 20 a
 23,6 GB (le zone a 14 km del primo giro restano, l'API preferisce la più
-piccola che copre); estratto 2,2 GB e strade 647 MB in
-`/srv/shaperoute/extracts`. Memoria del container: picco 3,7–4,0 GiB,
+piccola che copre); estratto 2,2 GB e strade 647 MB lasciati sul server
+accanto alla cache (allora `/srv/shaperoute/extracts`; dopo il passaggio a
+compose di TASK-144, le cartelle del server sono in `DEPLOY.md`). Memoria del container: picco 3,7–4,0 GiB,
 quasi tutto osmium mentre ritaglia (una decina di secondi per città), mai
 OOM; l'API intorno ai 0,3–0,5 GB.
 

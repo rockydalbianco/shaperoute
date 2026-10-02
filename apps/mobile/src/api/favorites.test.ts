@@ -1,11 +1,18 @@
+import cyclingFavorite from "@shaperoute/shared-types/fixtures/favorite-cycling.json";
+import cyclingRequest from "@shaperoute/shared-types/fixtures/favorite-request-cycling.json";
 import walkedRequest from "@shaperoute/shared-types/fixtures/favorite-request-walks.json";
 import request from "@shaperoute/shared-types/fixtures/favorite-request.json";
 import walkedFavorite from "@shaperoute/shared-types/fixtures/favorite-walks.json";
 import favorite from "@shaperoute/shared-types/fixtures/favorite.json";
+import cyclingFavorites from "@shaperoute/shared-types/fixtures/favorites-cycling.json";
 import favorites from "@shaperoute/shared-types/fixtures/favorites.json";
 
 import { answers, apiError } from "../account/testing";
 import {
+  asBefore,
+  type Favorite,
+  favoriteActivity,
+  type FavoriteDetail,
   type FavoriteRequest,
   fetchFavorite,
   fetchFavorites,
@@ -151,4 +158,78 @@ test("a favorite without walks that is refused is not sent again", async () => {
     message: "You have 200 favorites.",
   });
   expect(fetchFn).toHaveBeenCalledTimes(1);
+});
+
+// --- The activity a route was drawn for (TASK-200) ---
+
+test("a bike favorite, and those of an older API, are read with their activity", () => {
+  expect(cyclingFavorites.favorites.every(isFavorite)).toBe(true);
+  expect(isFavoriteDetail(cyclingFavorite)).toBe(true);
+  expect(favoriteActivity(cyclingFavorite)).toBe("cycling");
+  expect(cyclingFavorites.favorites.map(favoriteActivity)).toEqual([
+    "cycling",
+    "running",
+  ]);
+  // Without the field, an older API's: a run.
+  for (const older of [
+    favorite as FavoriteDetail,
+    walkedFavorite as FavoriteDetail,
+    ...(favorites.favorites as Favorite[]),
+  ]) {
+    expect("activity" in older).toBe(false);
+    expect(favoriteActivity(older)).toBe("running");
+  }
+  // An activity this app does not know is read as a run, as before.
+  expect(isFavorite({ ...favorites.favorites[0], activity: "paddling" })).toBe(true);
+  expect(favoriteActivity({ activity: "paddling" })).toBe("running");
+  expect(isFavorite({ ...favorites.favorites[0], activity: 3 })).toBe(false);
+  expect(isFavoriteDetail({ ...favorite, activity: null })).toBe(false);
+  // The request: the fields of before, and the activity last.
+  const typed: FavoriteRequest = cyclingRequest as FavoriteRequest;
+  expect(Object.keys(typed)).toEqual([...Object.keys(request), "activity"]);
+});
+
+test("a run is kept with the request of before, a bike route with its activity", async () => {
+  const [bike, star] = cyclingFavorites.favorites;
+  const fetchFn: jest.Mock = answers(
+    { status: 201, body: star },
+    { status: 201, body: bike },
+  );
+  const options = { fetchFn, key: null };
+  await keepFavorite(URL, TOKEN, ID, request as FavoriteRequest, options);
+  await keepFavorite(URL, TOKEN, bike.id, cyclingRequest as FavoriteRequest, options);
+  // Byte for byte: an API older than TASK-200 takes the first.
+  expect(String(fetchFn.mock.calls[0][1]?.body)).toBe(JSON.stringify(request));
+  expect(String(fetchFn.mock.calls[1][1]?.body)).toBe(JSON.stringify(cyclingRequest));
+  expect(asBefore(request as FavoriteRequest)).toBe(request);
+});
+
+test("a bike route an older API refuses is kept as an older app keeps it", async () => {
+  const [kept] = favorites.favorites;
+  const refused = {
+    status: 422,
+    body: apiError("invalid_request", "activity: Extra inputs are not permitted"),
+  };
+  const fetchFn: jest.Mock = answers(refused, { status: 201, body: kept });
+  const options = { fetchFn, key: null };
+  const bike = cyclingRequest as FavoriteRequest;
+  expect(await keepFavorite(URL, TOKEN, ID, bike, options)).toEqual({
+    kind: "ok",
+    value: kept,
+  });
+  const { activity: _activity, ...older } = cyclingRequest;
+  expect(String(fetchFn.mock.calls[1][1]?.body)).toBe(JSON.stringify(older));
+  // A word with the pen up by bike: once more without both, as before
+  // TASK-199; and only once.
+  const again: jest.Mock = answers(refused, refused);
+  const word = { ...(walkedRequest as FavoriteRequest), activity: "cycling" as const };
+  expect(
+    await keepFavorite(URL, TOKEN, ID, word, { fetchFn: again, key: null }),
+  ).toMatchObject({
+    kind: "api_error",
+    code: "invalid_request",
+  });
+  expect(again).toHaveBeenCalledTimes(2);
+  const { walks: _walks, ...unwalked } = walkedRequest;
+  expect(String(again.mock.calls[1][1]?.body)).toBe(JSON.stringify(unwalked));
 });

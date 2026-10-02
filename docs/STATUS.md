@@ -192,6 +192,39 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-200: l'attività nei preferiti e le pause nel
+  dettaglio di una corsa, i seguiti 1, 5 e 6 di TASK-190 C e TASK-199
+  (ADR-0160, migrazione `0008`; la PR la apre questo task, il merge è del
+  coordinatore). Un percorso in bici tenuto col cuore si riapre in bici,
+  qualunque sport dica «Settings»: «Export GPX» lo chiede con `cycling`;
+  quelli di «Explore» e a tema sono a piedi. `GET /me/activities/{key}` ha
+  le `pauses` (`pen` solo sulle pause «penna»); l'app le legge e non mostra
+  niente di nuovo. Migrazione `0008_favorite_activity.sql`: `activity` in
+  `favorites` (`running` per i preferiti di prima, vincolo sulle attività
+  dell'API), provata su dati dello schema 0001–0007. Per una corsa l'app
+  manda la richiesta di prima, byte per byte (test); un'API più vecchia che
+  rifiuta `activity` riceve il preferito una volta come prima, e lo tiene
+  come corsa. **Migrazione e campi nuovi arrivano al telefono solo dopo**
+  l'aggiornamento del server (con la `0008`) e la pubblicazione dell'app,
+  tutti e due con l'ok dell'utente. Non provato su un telefono. **Da
+  decidere** (`tasks/TASK-200.md`, «Esito»): le indicazioni di «Start» per
+  un preferito in bici restano a piedi, perché `POST /route-directions`
+  non ha l'attività; i preferiti tenuti prima di TASK-199 restano senza
+  `walks` (si tolgono e si rimettono).
+
+- **Motore** — TASK-201: le partenze vicine senza processi nuovi a ogni
+  richiesta, **misurato, non conviene** (decisione del coordinatore),
+  PR di soli documenti, nessun codice cambiato. Sul Mac, Trento in
+  memoria, quattro richieste: aprire i tre processi costa 0,21–0,30 s
+  (0,05 l'interprete, 0,17 l'import del motore), mandare il grafo meno di
+  0,1 s, il pickle 0,1–0,24 s; il piano dalla partenza 5–8 s copre tutto
+  (cuore 10 km, «CIAO» 12 km, cerchio 15 km), e solo la stella da 5 km
+  guadagnerebbe 0,2 s con i processi accesi. Il tempo è nel piano della
+  partenza (`optimizer.py`), non nei processi: la voce «processi tenuti
+  accesi» dei seguiti di TASK-168 non è la strada. Numeri e seguito in
+  `tasks/TASK-201.md`; il server non è misurato, solo se serve e con
+  l'ok dell'utente.
+
 - **API e app** — TASK-116: il profilo, nome utente, bio e «Edit profile»
   (ADR-0128, migrazione `0007`), PR #224 (il merge è del coordinatore). In
   «Profile» sotto il nome ci sono la bio e «Edit profile», che apre una

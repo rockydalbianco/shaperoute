@@ -1,24 +1,28 @@
 """Favorites in a real PostgreSQL (TASK-171, ADR-0139): keep a route, list,
 open and remove it; each account sees only its own; the bodies are the
 examples of packages/shared-types/fixtures. A word with the pen up keeps its
-walks (TASK-199)."""
+walks (TASK-199); a route keeps the activity it was drawn for, and those
+kept before are runs (TASK-200)."""
 
 from __future__ import annotations
 
 import json
+import shutil
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import psycopg
 import pytest
 from argon2 import PasswordHasher
 from fastapi.testclient import TestClient
+from route_engine.models import SUPPORTED_ACTIVITIES
 from route_engine.network import FileSource
 
 from shaperoute_api import favorites as favorites_module
 from shaperoute_api.accounts import Accounts
 from shaperoute_api.app import create_app
-from shaperoute_api.db import Database, migrations
+from shaperoute_api.db import MIGRATIONS_DIR, Database, migrations
 from shaperoute_api.favorites import (
     MAX_POINTS,
     FavoriteBody,
@@ -34,6 +38,7 @@ FIXTURES = REPO / "packages" / "shared-types" / "fixtures"
 FAST_HASHER = PasswordHasher(time_cost=1, memory_cost=1024, parallelism=1)
 KEY = "3f9a1c0e7b2d4a65"
 OTHER_KEY = "a41b77c2d09e5f13"
+BIKE_KEY = "b7d2e94a0c3f6158"
 
 
 def _load(name: str) -> Any:
@@ -93,27 +98,48 @@ def code(answer: Any) -> str:
 
 def test_the_fixtures_are_the_contract() -> None:
     # Written before TASK-199: the request of an older app, the answer of an
-    # older API, without the walks.
+    # older API, without the walks and the activity.
     body = _load("favorite-request.json")
-    assert set(body) == set(FavoriteRequestBody.model_fields) - {"walks"}
+    assert set(body) == set(FavoriteRequestBody.model_fields) - {"walks", "activity"}
     FavoriteRequestBody.model_validate(body)
     listed = _load("favorites.json")
-    assert set(listed["favorites"][0]) == set(FavoriteBody.model_fields)
-    FavoritesBody.model_validate(listed)
+    assert set(listed["favorites"][0]) == set(FavoriteBody.model_fields) - {"activity"}
     whole = _load("favorite.json")
-    assert set(whole) == set(FavoriteDetailBody.model_fields) - {"walks"}
-    # A word with the pen up (TASK-199): every field.
+    assert set(whole) == set(FavoriteDetailBody.model_fields) - {"walks", "activity"}
+    # A word with the pen up (TASK-199), still without the activity: a run.
     walked = _load("favorite-request-walks.json")
-    assert set(walked) == set(FavoriteRequestBody.model_fields)
+    assert set(walked) == set(FavoriteRequestBody.model_fields) - {"activity"}
     FavoriteRequestBody.model_validate(walked)
     whole_walked = _load("favorite-walks.json")
-    assert set(whole_walked) == set(FavoriteDetailBody.model_fields)
-    FavoriteDetailBody.model_validate(whole_walked)
+    assert set(whole_walked) == set(FavoriteDetailBody.model_fields) - {"activity"}
+    # A bike route (TASK-200): a shape, so no walks in the request.
+    cycling = _load("favorite-request-cycling.json")
+    assert set(cycling) == set(FavoriteRequestBody.model_fields) - {"walks"}
+    assert FavoriteRequestBody.model_validate(cycling).activity == "cycling"
+    listed_now = _load("favorites-cycling.json")
+    for favorite in listed_now["favorites"]:
+        assert set(favorite) == set(FavoriteBody.model_fields)
+    FavoritesBody.model_validate(listed_now)
+    whole_cycling = _load("favorite-cycling.json")
+    assert set(whole_cycling) == set(FavoriteDetailBody.model_fields)
+    FavoriteDetailBody.model_validate(whole_cycling)
 
 
 def test_the_migration_comes_after_the_accounts() -> None:
     names = [path.name for path in migrations()]
     assert names.index("0002_favorites.sql") > names.index("0001_users_sessions.sql")
+
+
+def test_the_activity_comes_after_the_walks() -> None:
+    names = [path.name for path in migrations()]
+    activity = next(
+        i for i, name in enumerate(names) if name.endswith("_favorite_activity.sql")
+    )
+    walks = next(
+        i for i, name in enumerate(names) if name.endswith("_pen_up_walks.sql")
+    )
+    # The last one: a database of before has every other.
+    assert activity == len(names) - 1 > walks > names.index("0002_favorites.sql")
 
 
 # --- Keeping, listing, opening, removing ---
@@ -123,7 +149,8 @@ def test_a_route_kept_is_listed_as_the_example(client: TestClient) -> None:
     me = signed_up(client)
     kept = client.put(f"/me/favorites/{KEY}", json=request(), headers=me)
     assert kept.status_code == 201
-    expected = _load("favorites.json")["favorites"][0]
+    # The example of before TASK-200: a run.
+    expected = {**_load("favorites.json")["favorites"][0], "activity": "running"}
     assert kept.json() == expected
     listed = client.get("/me/favorites", headers=me)
     assert listed.status_code == 200
@@ -135,8 +162,12 @@ def test_a_favorite_opens_whole_as_the_example(client: TestClient) -> None:
     client.put(f"/me/favorites/{KEY}", json=request(), headers=me)
     whole = client.get(f"/me/favorites/{KEY}", headers=me)
     assert whole.status_code == 200
-    # The example of before TASK-199, and no walks.
-    assert whole.json() == {**_load("favorite.json"), "walks": []}
+    # The example of before TASK-199, and no walks; a run.
+    assert whole.json() == {
+        **_load("favorite.json"),
+        "walks": [],
+        "activity": "running",
+    }
 
 
 def test_the_line_comes_back_digit_for_digit(client: TestClient) -> None:
@@ -211,7 +242,7 @@ def test_a_favorite_keeps_its_walks(client: TestClient) -> None:
     assert "walks" not in listed[0]
     whole = client.get(f"/me/favorites/{KEY}", headers=me)
     assert whole.status_code == 200
-    assert whole.json() == _load("favorite-walks.json")
+    assert whole.json() == {**_load("favorite-walks.json"), "activity": "running"}
 
 
 @pytest.mark.parametrize(
@@ -234,6 +265,152 @@ def test_walks_that_are_not_of_the_route_are_refused(
     assert answer.status_code == 422
     assert code(answer) == "invalid_request"
     assert client.get("/me/favorites", headers=me).json() == {"favorites": []}
+
+
+# --- The activity it was drawn for (TASK-200) ---
+
+
+def cycling(**changes: Any) -> dict[str, Any]:
+    return {**_load("favorite-request-cycling.json"), **changes}
+
+
+def test_a_bike_route_comes_back_a_bike_route(
+    client: TestClient, wall: WallClock
+) -> None:
+    me = signed_up(client)
+    # A run, as an app before TASK-200 keeps it: without the activity.
+    client.put(f"/me/favorites/{KEY}", json=request(), headers=me)
+    wall.t += timedelta(minutes=5)
+    kept = client.put(f"/me/favorites/{BIKE_KEY}", json=cycling(), headers=me)
+    assert kept.status_code == 201
+    expected = _load("favorites-cycling.json")
+    assert kept.json() == expected["favorites"][0]
+    listed = client.get("/me/favorites", headers=me)
+    assert listed.json() == expected
+    whole = client.get(f"/me/favorites/{BIKE_KEY}", headers=me)
+    assert whole.json() == _load("favorite-cycling.json")
+    assert client.get(f"/me/favorites/{KEY}", headers=me).json()["activity"] == (
+        "running"
+    )
+
+
+@pytest.mark.parametrize("activity", SUPPORTED_ACTIVITIES)
+def test_every_activity_offered_is_kept(client: TestClient, activity: str) -> None:
+    # The database's check lists them too: an activity added to the API
+    # without a migration that widens it fails here.
+    me = signed_up(client)
+    kept = client.put(
+        f"/me/favorites/{BIKE_KEY}", json=cycling(activity=activity), headers=me
+    )
+    assert kept.status_code == 201
+    assert kept.json()["activity"] == activity
+    whole = client.get(f"/me/favorites/{BIKE_KEY}", headers=me).json()
+    assert whole["activity"] == activity
+
+
+@pytest.mark.parametrize("activity", ["paddling", "Cycling", "", None, 1])
+def test_an_activity_the_api_does_not_offer_is_refused(
+    client: TestClient, activity: Any
+) -> None:
+    me = signed_up(client)
+    answer = client.put(
+        f"/me/favorites/{BIKE_KEY}", json=cycling(activity=activity), headers=me
+    )
+    assert answer.status_code == 422
+    assert code(answer) == "invalid_request"
+    if isinstance(activity, str):
+        # The words of POST /routes.
+        assert (
+            f"unsupported activity {activity!r}; choose one of: running, cycling"
+            in answer.json()["error"]["message"]
+        )
+    assert client.get("/me/favorites", headers=me).json() == {"favorites": []}
+
+
+def test_the_database_keeps_only_the_activities_offered(
+    client: TestClient, database: Database
+) -> None:
+    signed_up(client)
+    with database.connect() as conn:
+        user = conn.execute("SELECT id FROM users").fetchone()
+        assert user is not None
+    with pytest.raises(psycopg.errors.CheckViolation):
+        with database.connect() as conn:
+            conn.execute(
+                "INSERT INTO favorites (user_id, key, city, distance_m, route_m,"
+                " similarity, line, created_at, activity) VALUES (%s, %s, '',"
+                " 5000, 5120, 0.9, ST_GeomFromText("
+                "'LINESTRING(11.1215 46.067,11.123 46.07)', 4326), now(),"
+                " 'paddling')",
+                (user["id"], KEY),
+            )
+
+
+def test_favorites_kept_before_are_runs(
+    database_url: str, tmp_path: Path, wall: WallClock
+) -> None:
+    database = Database(database_url)
+    # The schema of before TASK-200, 0001 to 0007, with two favorites in it.
+    before = [
+        path
+        for path in migrations()
+        if not path.name.endswith("_favorite_activity.sql")
+    ]
+    assert len(before) == len(migrations()) - 1
+    for path in before:
+        shutil.copy(path, tmp_path / path.name)
+    database.migrate(tmp_path)
+    accounts = Accounts(database, now=wall, hasher=FAST_HASHER)
+    old = TestClient(create_app(FileSource(Path("unused.graphml")), accounts=accounts))
+    me = signed_up(old)
+    walked_key = "c0ffee00d15ea5e1"
+    with database.connect() as conn:
+        user = conn.execute("SELECT id FROM users").fetchone()
+        assert user is not None
+        # As the API of TASK-199 wrote them: a star, and a word with its walks.
+        for key, body in ((KEY, request()), (walked_key, walked())):
+            line = ",".join(f"{lon!r} {lat!r}" for lat, lon in body["points"])
+            conn.execute(
+                "INSERT INTO favorites (user_id, key, city, shape, word, style,"
+                " title, distance_m, route_m, similarity, line, created_at, walks)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
+                " ST_GeomFromText(%s, 4326), %s, %s)",
+                (
+                    user["id"],
+                    key,
+                    body["city"],
+                    body["shape"],
+                    body["word"],
+                    body["style"],
+                    body["title"],
+                    body["distance_m"],
+                    body["route_m"],
+                    body["similarity"],
+                    f"LINESTRING({line})",
+                    wall.t,
+                    json.dumps(body.get("walks", [])),
+                ),
+            )
+    # The API of TASK-200 starts: the activity's migration, and nothing else.
+    assert database.migrate(MIGRATIONS_DIR) == [
+        path.stem
+        for path in migrations()
+        if path.name.endswith("_favorite_activity.sql")
+    ]
+    new = TestClient(create_app(FileSource(Path("unused.graphml")), accounts=accounts))
+    listed = new.get("/me/favorites", headers=me).json()["favorites"]
+    assert [favorite["activity"] for favorite in listed] == ["running", "running"]
+    assert new.get(f"/me/favorites/{KEY}", headers=me).json() == {
+        **_load("favorite.json"),
+        "walks": [],
+        "activity": "running",
+    }
+    whole_walked = new.get(f"/me/favorites/{walked_key}", headers=me).json()
+    assert whole_walked == {
+        **_load("favorite-walks.json"),
+        "id": walked_key,
+        "activity": "running",
+    }
 
 
 # --- Whose they are ---

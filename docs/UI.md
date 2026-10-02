@@ -527,6 +527,18 @@ dell'account.
   l'API non conosce ancora i `walks` (più vecchia di TASK-199) e rifiuta,
   l'app tiene il preferito senza, come una linea sola, invece di mostrare
   l'errore; tenuto così, resta così.
+- **Un percorso in bici** (TASK-200, ADR-0160): il cuore tiene anche
+  l'attività con cui il percorso è stato chiesto in «Draw» («Bike» in
+  «Settings», `cycling`); i percorsi di «Explore» e quelli a tema sono a
+  piedi. Riaperto, il preferito resta in bici qualunque sport sia scelto in
+  «Settings»: «Export GPX» lo chiede come percorso in bici. Cosa si vede
+  non cambia (stessa scheda, stessi testi), e «Start» fa quello di oggi: la
+  navigazione della corsa, con le indicazioni chieste per i soli punti,
+  che l'API trova sulla rete a piedi (cosa debba fare «Start» in bici lo
+  decide l'utente, TASK-190). Un preferito tenuto prima di TASK-200 è una
+  corsa. Se l'API non conosce ancora l'attività (più vecchia di TASK-200) e
+  rifiuta, l'app lo tiene come una corsa, senza mostrare l'errore; tenuto
+  così, resta così.
 
 ## «My activities» (TASK-172, ADR-0140)
 
@@ -598,6 +610,10 @@ telefono dell'account: con un percorso o senza.
   (più vecchia di TASK-199) e rifiuta la corsa, l'app la rimanda subito
   come prima, senza `walks` né `pen`: si salva con il punteggio su tutto
   il percorso, tratti a piedi compresi, invece di perdersi.
+- **Le pause di una corsa riaperta** (TASK-200): l'API ora le manda con la
+  corsa intera, quelle della penna segnate; l'app le legge e **non mostra
+  niente di nuovo**: la linea corsa resta unita (spezzarla sulle pause è
+  una scelta dell'utente).
 
 ## La partenza
 

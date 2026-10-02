@@ -4,8 +4,8 @@
 **Fase**: 4 · **Branch**: `feat/TASK-187-send-to-strava`
 **Dipende da**: TASK-172 in `main`, con la sua schermata «Save» /
 «Discard» a fine corsa (`src/activities/RunEnd.tsx`) e la tabella `runs`
-**ADR e migrazione**: da chiedere al coordinatore prima di partire (ha
-tenuto il numero del task; la migrazione viene dopo `0005`)
+**ADR e migrazione**: ADR-0156 e migrazione `0007`, assegnati dal
+coordinatore il 2026-10-02 (la `0006` è di TASK-183)
 
 ## Obiettivo
 
@@ -110,7 +110,7 @@ il task la conferma o la cambia con un ADR.
 9. Test deterministici: l'API contro uno Strava finto (nessuna rete), l'app
    con un'API finta. `API.md`, `DATABASE.md`, `UI.md` («Cosa esce dal
    telefono»: la corsa va a Strava solo quando l'utente lo chiede),
-   `DEPLOY.md` (le due variabili, l'app Strava), ADR, `STATUS.md`.
+   `DEPLOY.md` (le due variabili, l'app Strava), ADR-0156, `STATUS.md`.
 
 ## Da chiedere all'utente durante il task (una per volta, con la proposta)
 
@@ -148,7 +148,7 @@ il task la conferma o la cambia con un ADR.
 Elenco previsto; chi prende il task lo conferma con il coordinatore.
 
 ```
-services/api/migrations/000X_strava.sql
+services/api/migrations/0007_strava.sql
 services/api/shaperoute_api/strava.py
 services/api/shaperoute_api/app.py
 services/api/shaperoute_api/access.py

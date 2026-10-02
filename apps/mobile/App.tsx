@@ -40,6 +40,7 @@ import {
   themedKeepable,
 } from "./src/favorites/favoriteRoute";
 import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
+import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
 import { MapView } from "./src/map/MapView";
 import {
   canResume,
@@ -214,6 +215,9 @@ function Sgrava() {
     close: closeExplored,
   } = useExplored(API_URL);
   const explored = favorite ?? exploredRoute;
+  // The page a route was opened from, where «←» goes back to: a drawing of
+  // «Feed» opens as a route of "Explore" does (TASK-188).
+  const [routeList, setRouteList] = useState<"explore" | "feed">("explore");
   // "Explore" for any city, and a shape through a theme's places (TASK-129).
   const [exploreCity, setExploreCity] = useState<Place | null>(null);
   // The cities chosen last, kept on the phone (TASK-134).
@@ -435,7 +439,7 @@ function Sgrava() {
     }
     if (theming || exploring) {
       closeExplore();
-      setScreen("explore");
+      setScreen(routeList);
       return;
     }
     // Nobody is left watching the wait: drop it, as Cancel does.
@@ -662,7 +666,19 @@ function Sgrava() {
           }}
           action={<ProfileButton />}
           pages={[
-            { title: "Feed", render: () => <FeedScreen /> },
+            {
+              title: "Feed",
+              render: () => (
+                <FeedScreen
+                  onOpen={(post) => {
+                    closeExplore();
+                    openExplored(postRoute(post), fetchPostRoute(post));
+                    setRouteList("feed");
+                    setScreen("map");
+                  }}
+                />
+              ),
+            },
             {
               title: "Draw",
               render: () => (
@@ -728,6 +744,7 @@ function Sgrava() {
                   onOpen={(route) => {
                     closeExplore();
                     openExplored(route);
+                    setRouteList("explore");
                     setScreen("map");
                   }}
                   city={exploreCity}
@@ -744,6 +761,7 @@ function Sgrava() {
                     Keyboard.dismiss();
                     closeExplore();
                     themed.ask(request);
+                    setRouteList("explore");
                     setScreen("map");
                   }}
                 />

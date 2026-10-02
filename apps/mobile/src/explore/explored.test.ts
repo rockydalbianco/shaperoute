@@ -146,3 +146,21 @@ test("a route of the catalogue is the only one to choose", async () => {
   expect(opened?.status === "done" && opened.others).toEqual([]);
   fetchFn.mockRestore();
 });
+
+test("who opens a route may know a surer way to fetch it whole (TASK-188)", async () => {
+  const fetchFn = jest.spyOn(globalThis, "fetch");
+  const moved = { ...star, id: "trento-star-5000-7" };
+  const fetchWhole = jest.fn().mockResolvedValue({ kind: "route", route: moved });
+  const { result: hook } = await renderHook(() => useExplored("http://api"));
+  const listed = { ...star, start: star.points[0], away_m: 0, preview: star.points };
+  await act(async () => hook.current.open(listed, fetchWhole));
+  expect(fetchWhole).toHaveBeenCalledWith("http://api", star.id);
+  expect(hook.current.explored).toMatchObject({ status: "done", detail: moved });
+  expect(fetchFn).not.toHaveBeenCalled();
+
+  // And when that way fails, the route does not load.
+  fetchWhole.mockResolvedValue({ kind: "failed" });
+  await act(async () => hook.current.open(listed, fetchWhole));
+  expect(hook.current.explored).toMatchObject({ status: "failed" });
+  fetchFn.mockRestore();
+});

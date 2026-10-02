@@ -1,6 +1,6 @@
 # TASK-188 — Un tocco su un disegno di «Feed» apre il suo percorso
 
-**Stato**: In corso
+**Stato**: In revisione
 **Fase**: 4 · **Branch**: `feat/TASK-188-feed-open-route`
 
 Chiesto dall'utente il 2026-10-02 («Dai la possibilità, quando sono in
@@ -51,12 +51,14 @@ cuore, si corre con «Start», si esporta il GPX. «←» torna a «Feed».
       oggi, anche quello il cui `id` è cambiato (la farfalla di Roma).
 - [x] Un disegno il cui percorso non è più nel catalogo non apre un altro
       percorso al suo posto: «The route could not load.»
+- [x] Uno swipe che finisce sopra una scheda non la apre.
 - [x] Test, lint, typecheck e prettier verdi.
 
 ## File toccati
 
 ```
 apps/mobile/App.tsx
+apps/mobile/__tests__/AppFeed.test.tsx
 apps/mobile/src/feed/feedRoute.ts
 apps/mobile/src/feed/feedRoute.test.ts
 apps/mobile/src/feed/FeedPost.tsx
@@ -85,25 +87,13 @@ docs/tasks/TASK-188.md
   feed.
 - Pubblicare su `preview`: con l'ok dell'utente, da `main` pulito.
 
-## Dove sono arrivato (2026-10-02)
+## Una domanda per l'utente
 
-Codice e test fatti e committati sul branch. Provato in un simulatore, con
-un'API propria e un database usa e getta: un tocco sul disegno apre il
-percorso sulla mappa; «←» torna a «Feed»; il cuore senza account apre
-«Profile», con un account salva il preferito (PUT 201, cuore pieno);
-«Start» chiede le indicazioni e parte la corsa. Uno swipe verso destra
-sopra una scheda la apriva come un tocco («Feed» è la prima pagina, niente
-scorre e nessuno toglie il tocco): la scheda ora ignora un dito che si è
-mosso più di 12 punti. Lo stesso vale probabilmente per le schede di
-«Explore», ultima pagina, con uno swipe verso sinistra: da guardare, fuori
-da questo task.
-
-**Manca**: `UI.md` (la riga «Le schede non si toccano» di «Feed» e «←» da
-un percorso del feed), ADR-0151 in `DECISIONS.md`, la voce in `STATUS.md`,
-l'esito qui; rifare test, lint, typecheck e prettier interi; la PR, la coda
-dei merge del coordinatore. Non provato nel simulatore: la farfalla di Roma
-(l'`id` cambiato; coperto dai test e da un controllo sul catalogo: tutti e
-quindici i disegni trovano il loro percorso) e «Back to the list».
+Il tocco apre la mappa, e lì ci sono il cuore e «Start»: due tocchi per
+salvare o partire. **Proposta, già fatta così**: tenere la scheda del
+feed pulita e passare dalla mappa, dove si vede anche da dove si parte.
+Se l'utente vuole il cuore (o «Start») già sulla scheda del feed, è un
+task piccolo sopra questo.
 
 ## Esito
 

@@ -36,7 +36,7 @@ dell'app ─┘    mai cancellati)                 cosa manca)        validato) 
    «Explore» e come (`suggestion`, `recent`, `featured`, `typed`): un
    suggerimento toccato non chiama `/cities`, quindi senza questo segnale
    la città si perdeva (dal vivo: Vercelli, vuota 3 volte, mai proposta).
-   `route_chosen`: il percorso usato (Start, Export GPX, Strava) fra A, B e
+   `route_chosen`: il percorso usato (Start, Export GPX) fra A, B e
    C, una volta per percorso. `hint_taken`: «Try N km», o una forma del
    catalogo dopo un percorso fallito.
 2. **Analisi** (`report`): metriche totali e per versione; cosa si chiede di

@@ -129,7 +129,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `main` (PR #214): la rete `bike` (ciclabili e strade fino alle
   `primary`, mai scale, `trunk` né vie vietate alle bici, sensi unici
   rispettati), la cache `bike_*` accanto ai `foot_*`, `cycling` di 10–30 km
-  nel motore e nella CLI. **Parte B, l'API**, PR #PRNUM (il merge è del
+  nel motore e nella CLI. **Parte B, l'API**, PR #219 (il merge è del
   coordinatore): `cycling` nel contratto (`shared-types`, anche
   `DISTANCE_LIMITS_M`), ogni richiesta sulle zone della rete della sua
   attività (una zona della bici in memoria, due a piedi come prima), fuori

@@ -130,7 +130,7 @@ nell'elenco previsto: il controllo della rete giusta (`check_network`),
 il ritorno da una partenza vicina coi sensi unici e il ritaglio della zona
 della bici stanno lì (ADR-0153).
 
-**Parte B** (API e contratto, fatta):
+**Parte B** (API e contratto, fatta, PR #219):
 
 ```
 services/route-engine/route_engine/models.py
@@ -264,7 +264,7 @@ i filtri sono leggibili da `zone_extract`). Poi i campioni: cuore, cerchio
 e stella a 10, 20 e 30 km a Trento e in una città di pianura, da far
 giudicare all'utente.
 
-**Parte B — l'API e il contratto (2026-10-02)**, ADR-0153
+**Parte B — l'API e il contratto (2026-10-02)**, PR #219, ADR-0153
 («Aggiornamento»). Fatto:
 
 - **il contratto**: `SUPPORTED_ACTIVITIES = ("running", "cycling")` in

@@ -68,7 +68,7 @@ docs/tasks/TASK-170.md
 ## Esito
 
 Fatto (2026-10-02). Il pulsante e la scheda non ci sono più; le tre schede
-finiscono con «Export GPX» e il loro «Back…». 817 test dell'app verdi
+finiscono con «Export GPX» e il loro «Back…». 818 test dell'app verdi
 (tre controlli nuovi, tolti i cinque test di `RunWithStrava`), lint,
 typecheck e prettier puliti. Non guardato su un telefono: si vede dopo la
 prossima pubblicazione su `preview`.

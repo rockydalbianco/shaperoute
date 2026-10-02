@@ -108,7 +108,7 @@ Fatto (2026-10-02, ADR-0144).
   terza aspettano che il minuto passi.
 - «Near me» è la prima voce della fila delle città; «My start» non c'è più.
 
-941 test dell'app verdi, con i nuovi di «Explore», degli esempi e della
+942 test dell'app verdi, con i nuovi di «Explore», degli esempi e della
 fila delle città; lint, typecheck e prettier puliti.
 
 Visto su un simulatore (iPhone 17, Expo Go) con un'API locale sul Mac.

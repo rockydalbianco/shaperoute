@@ -1,9 +1,14 @@
+import hashlib
 import string
+from collections import Counter
+from dataclasses import replace
+from itertools import pairwise
 
 import networkx as nx
 import numpy as np
 import pytest
 
+from route_engine import optimizer
 from route_engine.geo import haversine_m, local_to_latlon
 from route_engine.models import InvalidRequestError, RouteRequest
 from route_engine.network import twice_drawn
@@ -13,10 +18,14 @@ from route_engine.words import (
     ALPHABET,
     LETTER_GAP,
     SIDE_STEP,
+    STYLES,
+    TOP_JOINS,
     InvalidWordError,
     Letter,
     Place,
+    Style,
     Word,
+    choose_joins,
     compose,
     parse_letters,
     spell_letters,
@@ -332,3 +341,285 @@ def test_plan_route_writes_a_word_and_names_it() -> None:
     assert result.shape is None
     assert haversine_m(result.points[0], result.points[-1]) < 1.0
     assert result.distance_m == pytest.approx(6000.0, rel=0.25)
+
+
+# --- Letters joined along the top line too (TASK-067) ---
+
+UVA = compose("uva", top_joins=True)
+# What `compose` drew before TASK-067, on main at fa6462b: `_digest` of the
+# seven words measured in the task file and of the alphabet, in both styles.
+BEFORE = {
+    ("round", "CIAO"): "1366924a9e7d32fd",
+    ("round", "BELLO"): "71aa806b580404bb",
+    ("round", "MAX"): "754535c6aba495fd",
+    ("round", "KIWI"): "7549db76bc6313b4",
+    ("round", "VIVA"): "94818c21474e7498",
+    ("round", "TUTTI"): "617c63e8f11f278e",
+    ("round", "UVA"): "435558851d7af379",
+    ("round", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"): "49a4e9c1406651ee",
+    ("block", "CIAO"): "e317165f3b645894",
+    ("block", "BELLO"): "c2ffe8d1f33e522c",
+    ("block", "MAX"): "9166d7291755511f",
+    ("block", "KIWI"): "72a381fb85c8b5a2",
+    ("block", "VIVA"): "04aeb74caf7b5b50",
+    ("block", "TUTTI"): "0490b5938637ecad",
+    ("block", "UVA"): "f09f85f86bc8b943",
+    ("block", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"): "f591cbac0a0f4f54",
+}
+
+
+def _digest(word: Word) -> str:
+    """Every point of `word`, where it lies and where the route may start."""
+
+    def rounded(points: tuple[tuple[float, float], ...]) -> list[tuple[float, float]]:
+        return [(round(x, 9), round(y, 9)) for x, y in points]
+
+    text = repr(
+        (
+            rounded(word.units),
+            word.places,
+            word.starts,
+            rounded(word.points),
+            round(word.height, 9),
+            [round(phase, 9) for phase in word.phases],
+        )
+    )
+    return hashlib.sha256(text.encode()).hexdigest()[:16]
+
+
+def _length(word: Word) -> float:
+    return float(np.hypot(*np.diff(np.array(word.units), axis=0).T).sum())
+
+
+def _sides(lines: tuple[tuple[tuple[float, float], ...], ...]) -> Counter[frozenset]:
+    """The sides a letter draws, each with how many times."""
+    return Counter(frozenset(side) for line in lines for side in pairwise(line))
+
+
+def _corners(letter: Letter) -> tuple[tuple[float, float], tuple[float, float]]:
+    """The leftmost and the rightmost point of `letter` on the top line."""
+    tops = sorted(p for p in (*letter.out, *letter.back) if p[1] == 1.0)
+    return tops[0], tops[-1]
+
+
+def _loose(style: Style) -> dict[str, Letter]:
+    """The alphabet of `style` with every letter joined along the top, at
+    its points there: what the rules of reading forbid, to measure it."""
+    return {
+        char: replace(letter, top_in=_corners(letter)[0], top_out=_corners(letter)[1])
+        for char, letter in STYLES[style][0].items()
+    }
+
+
+@pytest.mark.parametrize(("style", "text"), sorted(BEFORE))
+def test_without_top_joins_a_word_is_the_one_of_before(style: Style, text: str) -> None:
+    word = compose(text, style=style, top_joins=False)
+    assert _digest(word) == BEFORE[style, text]
+    assert not any(word.tops)
+
+
+def test_top_joins_are_off_unless_asked() -> None:
+    assert TOP_JOINS == {"round": False, "block": False}
+    for style in STYLES:
+        assert compose("uva", style=style) == compose(  # type: ignore[arg-type]
+            "uva", style=style, top_joins=False  # type: ignore[arg-type]
+        )
+
+
+def test_a_join_along_the_top_makes_the_word_shorter() -> None:
+    assert UVA.tops == (True, False)
+    # From the right arm of the U to the left one of the V, instead of from
+    # the middle of the one to the middle of the other: 0.3 less at each
+    # end, out and back.
+    assert _length(compose("uva")) - _length(UVA) == pytest.approx(1.2)
+    block = compose("uva", style="block", top_joins=True)
+    assert block.tops == (True, False)
+    assert _length(compose("uva", style="block")) - _length(block) == pytest.approx(1.5)
+
+
+@pytest.mark.parametrize(
+    ("text", "style"),
+    [("uva", "round"), ("nuvola", "round"), ("yummy", "round"), ("punk", "block")],
+)
+def test_a_gap_runs_along_the_top_or_the_base_never_across(
+    text: str, style: Style
+) -> None:
+    word = compose(text, style=style, top_joins=True)
+    assert any(word.tops) and not all(word.tops)
+    assert word.units[0] == word.units[-1]
+    units = np.array(word.units)
+    assert np.hypot(*np.diff(units, axis=0).T).max() <= SIDE_STEP + 1e-12
+    twice = twice_drawn(units, near_m=1e-9)
+    for i, (a, b) in enumerate(pairwise(word.places)):
+        if a.along is not None or b.along is not None:
+            gap = a.index if a.along is not None else b.index
+            level = 1.0 if word.tops[gap] else 0.0
+            assert units[i, 1] == units[i + 1, 1] == level
+            assert twice[i]
+
+
+@pytest.mark.parametrize("style", sorted(STYLES))
+def test_a_letter_joined_at_the_top_is_drawn_the_same(style: Style) -> None:
+    joined = 0
+    for letter in STYLES[style][0].values():
+        for top_in in (False, letter.top_in is not None):
+            for top_out in (False, letter.top_out is not None):
+                out, back = letter.route(top_in, top_out)
+                assert out[0] == (letter.top_in if top_in else letter.out[0])
+                assert out[-1] == (letter.top_out if top_out else letter.out[-1])
+                assert (
+                    (back[0], back[-1]) == (out[-1], out[0])
+                    if back
+                    else (out[0] == out[-1])
+                )
+                assert _sides((out, back)) == _sides((letter.out, letter.back))
+                joined += top_in or top_out
+    assert joined > 20
+
+
+@pytest.mark.parametrize("style", sorted(STYLES))
+def test_the_alphabet_joins_at_the_top_the_corners_the_rules_allow(
+    style: Style,
+) -> None:
+    alphabet = STYLES[style][0]
+    loose = {
+        char: {
+            "out": [list(p) for p in letter.out],
+            "back": [list(p) for p in letter.back],
+        }
+        for char, letter in alphabet.items()
+    }
+    for char, letter in alphabet.items():
+        for key, corner, declared in zip(
+            ("in", "out"),
+            ((letter.left, 1.0), (letter.right, 1.0)),
+            (letter.top_in, letter.top_out),
+            strict=True,
+        ):
+            try:
+                top = {"top": {key: list(corner)}}
+                parse_letters({"letters": {char: {**loose[char], **top}}})
+            except InvalidWordError:
+                assert declared is None, f"{char} {key}"
+            else:
+                assert declared == corner, f"{char} {key}"
+    assert "".join(c for c, a in ALPHABET.items() if a.top_in) == "BDHKMNPRUVWXY"
+    assert "".join(c for c, a in ALPHABET.items() if a.top_out) == "HMNUVWXY"
+
+
+@pytest.mark.parametrize(
+    ("text", "style", "saved"),
+    [
+        # A stroke that ends on the top line would grow into the join: the
+        # bar of the T, the upper arm of the E and of the block C.
+        ("tu", "round", 1.2),
+        ("eh", "round", 1.1),
+        ("ch", "block", 1.6),
+        # A join that runs over the letter gives it a stroke more: the P
+        # would be left from the middle of its top.
+        ("pu", "round", 1.1),
+        # A letter that reaches the top line in one point only: the I would
+        # read as a T, the L as a step.
+        ("vi", "round", 0.6),
+        ("ul", "round", 0.6),
+    ],
+)
+def test_a_pair_that_would_not_read_stays_on_the_base(
+    text: str, style: Style, saved: float
+) -> None:
+    kept = compose(text, style=style, top_joins=True)
+    assert kept.tops == (False,)
+    assert kept == compose(text, style=style, top_joins=False)
+    # Without the rules of reading it would be joined along the top.
+    loose = compose(text, alphabet=_loose(style), style=style, top_joins=True)
+    assert loose.tops == (True,)
+    assert _length(kept) - _length(loose) == pytest.approx(saved, abs=0.01)
+
+
+_T = {"out": [[0.3, 0], [0.3, 1], [0, 1], [0.6, 1], [0.3, 1], [0.3, 0]]}
+_P = {"out": [[0, 0], [0, 1], [0.25, 1], [0.5, 0.75], [0.25, 0.5], [0, 0.5], [0, 0]]}
+_I = {"out": [[0, 0], [0, 1], [0, 0]]}
+_V = {"out": [[0.3, 0], [0, 1], [0.3, 0], [0.6, 1], [0.3, 0]]}
+
+
+@pytest.mark.parametrize(
+    ("letters", "message"),
+    [
+        ({"T": {**_T, "top": {"in": [0, 1]}}}, "must not lengthen a stroke"),
+        ({"T": {**_T, "top": {"out": [0.6, 1]}}}, "must not lengthen a stroke"),
+        ({"P": {**_P, "top": {"out": [0.25, 1]}}}, "must not run over the letter"),
+        ({"I": {**_I, "top": {"in": [0, 1]}}}, "in one point only"),
+        ({"V": {**_V, "top": {"in": [0.1, 1]}}}, "a point of the letter on the top"),
+        ({"V": {**_V, "top": {"in": [0.3, 0]}}}, "a point of the letter on the top"),
+        ({"V": {**_V, "top": {"in": 0}}}, r"must be an \[x, y\] point"),
+        ({"V": {**_V, "top": [0, 1]}}, "'top' must be an object"),
+        ({"V": {**_V, "top": {"up": [0, 1]}}}, "'top' must be an object"),
+    ],
+)
+def test_a_top_join_that_would_not_read_is_refused(
+    letters: dict[str, object], message: str
+) -> None:
+    with pytest.raises(InvalidWordError, match=message):
+        parse_letters({"source": "test", "license": "test", "letters": letters})
+    fine = parse_letters({"letters": {"V": {**_V, "top": {"in": [0, 1]}}}})
+    assert fine["V"].top_in == (0.0, 1.0) and fine["V"].top_out is None
+
+
+def test_a_letter_without_a_top_is_joined_along_the_base_as_before() -> None:
+    assert compose("ciao", top_joins=True) == compose("ciao", top_joins=False)
+    with pytest.raises(InvalidWordError, match="I is not joined along the top"):
+        ALPHABET["I"].route(top_in=True)
+
+
+def test_the_same_word_has_the_same_joins() -> None:
+    for text in ("uva", "nuvola", "yummy", "hub"):
+        assert compose(text, top_joins=True) == compose(text, top_joins=True)
+    assert compose("nuvola", top_joins=True).tops == (True, True, False, False, False)
+    assert compose("punk", style="block", top_joins=True).tops == (True, True, False)
+    # The base on a tie: the H and the M are as far apart either way.
+    letters = (ALPHABET["H"], ALPHABET["M"])
+    assert letters[0].top_out is not None and letters[1].top_in is not None
+    assert choose_joins(letters, LETTER_GAP) == (False,)
+
+
+def test_the_route_may_start_half_way_along_a_gap_at_the_top() -> None:
+    word = compose("hub", top_joins=True)
+    assert word.tops == (True, True)
+    for k in range(2):
+        start = word.starts[k]
+        assert word.places[start] == Place(k, 0.5)
+        assert word.units[start][1] == 1.0
+        points, _ = word.line(k)
+        drawn = start_at_phase(list(word.points), word.phases[k])
+        assert np.array_equal(points, np.array(drawn))
+        # The gaps at the top stretch like the ones on the base, and the
+        # start stays where it is.
+        shifts = np.zeros((3, 2))
+        shifts[1] = (0.25, -0.125)  # the U
+        moved = (np.array(word.moved(k, shifts)) - points) / word.height
+        assert np.allclose(moved[0], 0.0) and np.allclose(moved[-1], 0.0)
+        for place, move in zip(_line_places(word, k), moved, strict=True):
+            if place.along is None:
+                assert np.allclose(move, shifts[place.index])
+        for rows in word.strokes(k):
+            sides = np.hypot(*np.diff(points[rows], axis=0).T)
+            assert sides.max() <= SIDE_STEP * word.height + 1e-12
+
+
+def test_plan_route_joins_the_letters_along_the_top_when_asked(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    composed: list[Word] = []
+
+    def spy(*args: object, **kwargs: object) -> Word:
+        composed.append(compose(*args, **kwargs))  # type: ignore[arg-type]
+        return composed[-1]
+
+    monkeypatch.setattr(optimizer, "compose", spy)
+    request = RouteRequest(start=TRENTO, distance_m=6000, word="uv")
+    result = plan_route(request, _Grid(), top_joins=True).result
+    assert result.word == "UV"
+    assert haversine_m(result.points[0], result.points[-1]) < 1.0
+    assert composed[-1].tops == (True,)
+    plan_route(request, _Grid(), optimize=False)
+    assert composed[-1].tops == (False,)

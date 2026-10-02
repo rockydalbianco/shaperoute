@@ -1,4 +1,4 @@
-"""Write words in either style and measure them (TASK-077).
+"""Write words in either style and measure them (TASK-077, TASK-067).
 
 Not a test: it reads the zone graphs from data/cache/ and never downloads
 nor saves one (a zone not cached is skipped), plans each word with
@@ -10,6 +10,9 @@ compared on the same numbers.
         --out-dir ../../samples --tag TASK-077 --version v1
 
 A sample is named by word and style: TASK-077_ciao-block_15km_trento_v1.gpx.
+With `--top-joins` the letters may be joined along the top line too
+(TASK-067): the case says where («uva-round-top», joins `‾_`, one sign for
+each gap), and the row is to be read next to the one without.
 
 Columns: distance on roads / target, similarity (letter by letter), letter
 height, rotation of the word and the directions of the streets around its
@@ -21,11 +24,13 @@ traced and time.
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 import time
 from collections import Counter
 from collections.abc import Sequence
 from datetime import UTC, datetime
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
@@ -101,6 +106,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--zones", default=",".join(ZONES))
     parser.add_argument("--style", choices=sorted(STYLES), default="round")
     parser.add_argument("--distance", type=int, default=15000)
+    parser.add_argument(
+        "--top-joins",
+        action="store_true",
+        help="join the letters along the top line too, where shorter (TASK-067)",
+    )
     parser.add_argument("--out-dir", type=Path, help="also write GPX samples here")
     parser.add_argument("--tag", default="TASK-077", help="sample prefix")
     parser.add_argument("--version", default="v1", help="sample version, e.g. v1")
@@ -111,17 +121,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         f" {'streets':>11} {'move':>5} {'twice':>11} {'traces':>6} {'time':>5}"
     )
     for text in args.words.split(","):
-        word = compose(text, style=args.style)
+        word = compose(text, style=args.style, top_joins=args.top_joins)
         shape = list(word.points)
+        look = f"{args.style}-top" if args.top_joins else args.style
+        joins = "".join("‾" if top else "_" for top in word.tops)
+        length = sum(math.dist(a, b) for a, b in pairwise(word.units))
+        print(f"{word.text} {look}: joins {joins}, {length:.1f} letter heights")
         for zone in args.zones.split(","):
-            case = f"{word.text.lower()}-{args.style}_{args.distance // 1000}km_{zone}"
+            case = f"{word.text.lower()}-{look}_{args.distance // 1000}km_{zone}"
             zones = CachedZones(args.cache_dir)
             request = RouteRequest(
                 start=ZONES[zone], distance_m=args.distance, word=word.text
             )
             began = time.perf_counter()
             try:
-                plan = plan_route(request, zones, style=args.style)
+                plan = plan_route(
+                    request, zones, style=args.style, top_joins=args.top_joins
+                )
             except LookupError:
                 print(f"{case:<30} skipped: zone not in the cache")
                 continue
@@ -157,7 +173,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     print(f"{'':<30} {path.name} exists: not overwritten")
                     continue
                 when = datetime.now(UTC)
-                name = f"{word.text} {args.distance // 1000} km {zone} {args.style}"
+                name = f"{word.text} {args.distance // 1000} km {zone} {look}"
                 path.write_text(to_gpx(result.points, name, when), encoding="utf-8")
     return 0
 

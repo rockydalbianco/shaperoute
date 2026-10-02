@@ -36,9 +36,9 @@ giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
 (ADR-0051). Per le scritte il seguito è **TASK-057**, il campo nell'app,
 chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
 fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
-dalla cima, e una scala per lettera vicina a quella delle vicine
-(ADR-0063, dopo TASK-063, che ha `optimizer.py`). Da TASK-071: lettere più
-piccole si leggono peggio. Le lettere squadrate si scelgono nell'app da TASK-080.
+dalla cima (ADR-0063). Il task file è scritto (2026-10-02), da assegnare.
+La scala per lettera, l'altra metà della richiesta, ne resta fuori: da
+TASK-071 lettere più piccole si leggono peggio. Le lettere squadrate si scelgono nell'app da TASK-080.
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -71,6 +71,12 @@ York, Roma, Milano e Torino hanno la zona sul Mac; le altre 10 danno
 `map_data_unavailable` finché Overpass rifiuta il Mac. Un comando le
 scarica una alla volta e si ferma al primo rifiuto; parte quando Overpass
 risponde.
+
+**Pubblicità che paga**, chiesto dall'utente il 2026-10-02 dopo TASK-132:
+**TASK-150** (account AdMob e pagamenti sul conto, con le domande per il
+commercialista) e **TASK-152** (Sgrava sull'App Store) in parallelo, poi
+**TASK-153** (AdMob dagli annunci di prova a quelli veri). Tutti e tre
+partono da scelte e account dell'utente.
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).

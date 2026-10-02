@@ -1,7 +1,15 @@
 import type { LatLon } from "@shaperoute/shared-types";
 import { File, Paths } from "expo-file-system";
 
-import { addFix, emptyTrack, type Track, type TrackFix } from "./trackRecorder";
+import {
+  addFix,
+  continueTrack,
+  emptyTrack,
+  pauseTrack,
+  resumeTrack,
+  type Track,
+  type TrackFix,
+} from "./trackRecorder";
 
 /**
  * The run in progress, kept in a file of the app's documents (TASK-112,
@@ -87,7 +95,23 @@ function isFix(value: unknown): value is TrackFix {
   return (
     isLatLon(fix.point) &&
     typeof fix.timeMs === "number" &&
-    (fix.accuracyM === null || typeof fix.accuracyM === "number")
+    (fix.accuracyM === null || typeof fix.accuracyM === "number") &&
+    (fix.altitudeM === undefined ||
+      fix.altitudeM === null ||
+      typeof fix.altitudeM === "number") &&
+    (fix.gap === undefined || fix.gap === true)
+  );
+}
+
+function isPause(value: unknown): boolean {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const pause = value as Record<string, unknown>;
+  return (
+    typeof pause.fromMs === "number" &&
+    (pause.toMs === null || typeof pause.toMs === "number") &&
+    (pause.auto === undefined || pause.auto === true)
   );
 }
 
@@ -109,7 +133,10 @@ function isSavedRun(value: unknown): value is SavedRun {
     track !== null &&
     typeof track.distanceM === "number" &&
     Array.isArray(track.fixes) &&
-    track.fixes.every(isFix)
+    track.fixes.every(isFix) &&
+    // Absent in a file older than TASK-169.
+    (track.pauses === undefined ||
+      (Array.isArray(track.pauses) && track.pauses.every(isPause)))
   );
 }
 
@@ -120,7 +147,8 @@ function sameRoute(a: LatLon[], b: LatLon[]): boolean {
   );
 }
 
-/** The saved track when it is an unfinished run of `route`, stopped lately. */
+/** The saved track when it is an unfinished run of `route`, stopped lately:
+ * it goes on from `nowMs`, and the time in between is a pause (TASK-169). */
 function resumable(
   saved: SavedRun | null,
   route: LatLon[],
@@ -133,12 +161,17 @@ function resumable(
   if (last === undefined || nowMs - last.timeMs > RESUME_WITHIN_MS) {
     return null;
   }
-  return saved.track;
+  return continueTrack(saved.track, nowMs);
 }
 
 export type RunRecorder = {
   /** A fix from the GPS; `arrived` when the navigator says the run is over. */
   onFix(fix: TrackFix, arrived: boolean): void;
+  /** The run waits from `nowMs` (TASK-169): by the runner's hand, or `auto`
+   * when the runner stands still. Until it goes on, time does not count. */
+  pause(nowMs: number, auto?: boolean): void;
+  /** The run goes on from `nowMs`. */
+  resume(nowMs: number): void;
   /** The run is left: what there is goes to the file. */
   stop(): void;
   track(): Track;
@@ -180,6 +213,23 @@ export function startRun(
       if (unsaved && (savedMs === null || fix.timeMs - savedMs >= SAVE_EVERY_MS)) {
         savedMs = fix.timeMs;
         save();
+      }
+    },
+    pause(nowMs, auto = false) {
+      const next = pauseTrack(track, nowMs, auto);
+      // A pause is rare and worth keeping: written at once.
+      if (status === "running" && next !== track) {
+        track = next;
+        if (track.fixes.length > 0) {
+          save();
+        }
+      }
+    },
+    resume(nowMs) {
+      const next = resumeTrack(track, nowMs);
+      if (status === "running" && next !== track) {
+        track = next;
+        unsaved = true;
       }
     },
     stop() {

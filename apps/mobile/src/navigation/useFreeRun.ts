@@ -4,8 +4,9 @@ import * as Speech from "expo-speech";
 import { useEffect, useState } from "react";
 
 import { FREE_ROUTE, kmAnnouncement, wholeKm } from "./freeRun";
+import { controlRun, type RunSession } from "./runControl";
 import { emptyTrack, type Track } from "./trackRecorder";
-import { type RunRecorder, startRun } from "./trackStore";
+import { startRun } from "./trackStore";
 import { FIX_EVERY_M, play } from "./useNavigation";
 
 export type FreeRunState =
@@ -18,7 +19,8 @@ export type FreeRunState =
  * Records a run without a route while `active` (TASK-149): the phone's
  * position, with the screen on or in pocket mode, into the run file of
  * TASK-112. No directions: the voice says each kilometre, with the time
- * and the pace. The position never leaves the phone.
+ * and the pace. The countdown, «Pause» and the pause by standing still are
+ * runControl's (TASK-169). The position never leaves the phone.
  */
 export function useFreeRun(active: boolean): FreeRunState {
   const [state, setState] = useState<FreeRunState>({ status: "starting" });
@@ -29,7 +31,8 @@ export function useFreeRun(active: boolean): FreeRunState {
     }
     let stopped = false;
     let subscription: Location.LocationSubscription | null = null;
-    let run: RunRecorder | null = null;
+    let run: RunSession | null = null;
+    let stopRecording: (() => void) | null = null;
     void (async () => {
       const permission = await Location.requestForegroundPermissionsAsync();
       if (stopped) {
@@ -41,10 +44,21 @@ export function useFreeRun(active: boolean): FreeRunState {
       }
       // A free run stopped lately goes on with its track (trackStore).
       const recorder = startRun(FREE_ROUTE, Date.now());
-      run = recorder;
+      stopRecording = recorder.stop;
       // A run that goes on does not say again the kilometres it has said.
       let saidKm = wholeKm(recorder.track());
-      setState({ status: "running", track: recorder.track(), position: null });
+      let position: LatLon | null = null;
+      const session = controlRun(recorder, {
+        // «Pause» and «Resume» change the track between two fixes.
+        onChange: () => {
+          if (!stopped) {
+            setState({ status: "running", track: recorder.track(), position });
+          }
+        },
+        say: (text) => play([{ say: text, vibrate: false }]),
+      });
+      run = session;
+      setState({ status: "running", track: recorder.track(), position });
       subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.BestForNavigation,
@@ -55,8 +69,14 @@ export function useFreeRun(active: boolean): FreeRunState {
             return;
           }
           const fix: LatLon = [coords.latitude, coords.longitude];
-          recorder.onFix(
-            { point: fix, timeMs: timestamp, accuracyM: coords.accuracy },
+          position = fix;
+          session.onFix(
+            {
+              point: fix,
+              timeMs: timestamp,
+              accuracyM: coords.accuracy,
+              altitudeM: coords.altitude,
+            },
             false,
           );
           const track = recorder.track();
@@ -75,7 +95,8 @@ export function useFreeRun(active: boolean): FreeRunState {
     return () => {
       stopped = true;
       subscription?.remove();
-      run?.stop();
+      run?.end();
+      stopRecording?.();
       void Speech.stop();
       setState({ status: "starting" });
     };

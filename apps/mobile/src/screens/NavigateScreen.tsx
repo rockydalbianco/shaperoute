@@ -1,27 +1,18 @@
 import { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { type Navigation, remainingM, upcoming } from "../navigation/navigator";
 import { ARROWS, distanceLabel, instruction, thenText } from "../navigation/phrases";
 import { compassPoint, headingDeg, share } from "../navigation/runStats";
 import { emptyTrack, type Track } from "../navigation/trackRecorder";
 import type { NavigationState } from "../navigation/useNavigation";
-import { usePocketMode } from "../navigation/usePocketMode";
-import {
-  color,
-  fontSize,
-  fontWeight,
-  MIN_TAP_SIZE,
-  radius,
-  space,
-} from "../theme/tokens";
-import { confirmPocketMode, PocketScreen } from "./PocketScreen";
-import { RunPanel } from "./RunPanel";
+import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
+import { RunCard } from "./RunDashboard";
 
 /**
  * Navigation over the map (TASK-049): the next turn at the top, big enough
- * to read while running, and under the map the numbers of the run and the
- * way out (TASK-164). Voice and vibration say the same (useNavigation).
+ * to read while running, and under the map the run's card, with its two
+ * pages (TASK-169). Voice and vibration say the same (useNavigation).
  */
 
 /** The share of the route that is run, 0 to 1. */
@@ -125,38 +116,30 @@ export function NavigationCard({
   track?: Track;
   onStop: () => void;
 }) {
-  // Pocket mode only while there is a route to follow: arriving ends it.
-  const following = navigation !== null && !navigation.arrived;
-  const pocket = usePocketMode(following);
+  const arrived = navigation?.arrived ?? false;
   return (
-    <View style={styles.card}>
-      <RunPanel
-        track={track}
-        ticking={following && track.fixes.length > 0}
-        route={
-          navigation
-            ? { remainingM: remainingM(navigation), done: doneOf(navigation) }
-            : undefined
-        }
-      />
-      <View style={styles.buttons}>
-        {following && (
-          <Pressable
-            style={styles.stop}
-            onPress={() => confirmPocketMode(pocket.enter)}
-            accessibilityRole="button"
-            accessibilityLabel="Pocket mode"
-          >
-            <Text style={styles.stopText}>Pocket</Text>
-          </Pressable>
-        )}
-        <Pressable style={styles.stop} onPress={onStop} accessibilityRole="button">
-          {/* Both end the run and show its score (TASK-113). */}
-          <Text style={styles.stopText}>{navigation?.arrived ? "Finish" : "Stop"}</Text>
-        </Pressable>
-      </View>
-      <PocketScreen on={pocket.on} onExit={pocket.exit} />
-    </View>
+    <RunCard
+      track={track}
+      // Without the GPS there is no run to pause, and no pocket mode.
+      live={navigation !== null}
+      arrived={arrived}
+      route={
+        navigation
+          ? { remainingM: remainingM(navigation), done: doneOf(navigation) }
+          : undefined
+      }
+      // On the page of the data the turn stays, in place of the map.
+      heading={
+        navigation === null ? undefined : arrived ? (
+          <View style={styles.box}>
+            <Text style={styles.instruction}>You have arrived.</Text>
+          </View>
+        ) : (
+          <NextTurn navigation={navigation} />
+        )
+      }
+      onStop={onStop}
+    />
   );
 }
 
@@ -226,28 +209,5 @@ const styles = StyleSheet.create({
   message: {
     color: color.textMuted,
     fontSize: fontSize.small,
-  },
-  card: {
-    gap: space.md,
-  },
-  buttons: {
-    flexDirection: "row",
-    gap: space.sm,
-  },
-  stop: {
-    flex: 1,
-    minHeight: MIN_TAP_SIZE,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: space.xl,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-    backgroundColor: color.surfaceRaised,
-  },
-  stopText: {
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
   },
 });

@@ -15,7 +15,13 @@ import {
   share,
   toStart,
 } from "./runStats";
-import { addFix, emptyTrack, type Track } from "./trackRecorder";
+import {
+  addFix,
+  emptyTrack,
+  pauseTrack,
+  resumeTrack,
+  type Track,
+} from "./trackRecorder";
 
 const START: LatLon = [46.067, 11.1215];
 /** A degree of latitude in metres, as `metresBetween` measures it. */
@@ -199,4 +205,20 @@ test("a share stays between nothing and all", () => {
   expect(share(1200, 1000)).toBe(1);
   expect(share(-5, 1000)).toBe(0);
   expect(share(10, 0)).toBe(0);
+});
+
+test("a pause is not of the pace now, nor of the last kilometre (TASK-169)", () => {
+  // 1.1 km at 5:00 /km, five minutes paused, then 300 m more at 5:00 /km.
+  let track = north(1100, 300);
+  track = resumeTrack(pauseTrack(track, 330_000), 630_000);
+  for (let m = 1100; m <= 1400; m += 50) {
+    track = addFix(track, {
+      point: at(m + 10, 0),
+      timeMs: 630_000 + (m - 1100) * 300,
+      accuracyM: 5,
+    });
+  }
+  const last = track.fixes[track.fixes.length - 1].timeMs;
+  expect(recentPaceS(track, last)).toBeCloseTo(300, 0);
+  expect(lastKmS(track)).toBeCloseTo(300, 0);
 });

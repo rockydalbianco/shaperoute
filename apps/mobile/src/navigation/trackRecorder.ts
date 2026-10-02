@@ -7,6 +7,8 @@ import { POOR_FIX_M } from "./navigator";
  * The track of a run (TASK-112, ADR-0091): pure functions from GPS fixes to
  * the line that was run, its length and how long it took. What to do with a
  * doubtful fix is decided here once; the score cleans the rest (ADR-0090).
+ * A run can be paused (TASK-169, ADR-0137): what happens in a pause is not
+ * of the run, neither its metres nor its time.
  */
 
 /** A fix closer than this to the last one kept adds nothing to the line. */
@@ -20,20 +22,107 @@ export type TrackFix = {
   timeMs: number;
   /** Radius of the fix's error, in metres, when the phone gives it. */
   accuracyM: number | null;
+  /** Height above the sea, in metres, when the phone gives it (TASK-169). */
+  altitudeM?: number | null;
+  /** The first fix after the runner's pause: no metres from the one before,
+   * wherever the pause was spent. */
+  gap?: true;
+};
+
+/** A stretch of time that is not of the run. Open while `toMs` is null. */
+export type Pause = {
+  fromMs: number;
+  toMs: number | null;
+  /** The runner stood still and the app paused by itself: the next fix
+   * that moves ends it. Absent when the runner asked. */
+  auto?: true;
 };
 
 export type Track = {
   fixes: TrackFix[];
   /** Length of the line through the fixes, in metres. */
   distanceM: number;
+  /** The pauses, in the order they came. Absent before TASK-169. */
+  pauses?: Pause[];
 };
 
 export function emptyTrack(): Track {
   return { fixes: [], distanceM: 0 };
 }
 
+/** The pause the track is in, or null while the run goes on. */
+export function openPause(track: Track): Pause | null {
+  const last = track.pauses?.[track.pauses.length - 1];
+  return last !== undefined && last.toMs === null ? last : null;
+}
+
+/** `track` paused from `atMs`; the same track when it is paused already. */
+export function pauseTrack(track: Track, atMs: number, auto = false): Track {
+  if (openPause(track) !== null) {
+    return track;
+  }
+  // Never before the last fix: the pause is what comes after it.
+  const last = track.fixes[track.fixes.length - 1];
+  const fromMs = last === undefined ? atMs : Math.max(atMs, last.timeMs);
+  const pause: Pause = auto
+    ? { fromMs, toMs: null, auto: true }
+    : { fromMs, toMs: null };
+  return { ...track, pauses: [...(track.pauses ?? []), pause] };
+}
+
+/** `track` going on from `atMs`; the same track when it is not paused. */
+export function resumeTrack(track: Track, atMs: number): Track {
+  const pause = openPause(track);
+  if (pause === null || track.pauses === undefined) {
+    return track;
+  }
+  return {
+    ...track,
+    pauses: [
+      ...track.pauses.slice(0, -1),
+      { ...pause, toMs: Math.max(pause.fromMs, atMs) },
+    ],
+  };
+}
+
+/**
+ * A track taken up again at `nowMs`, after «Stop» or after the app closed:
+ * the time since it was left is a pause of the runner's, so the clock does
+ * not count it and the next fix is not joined to the last.
+ */
+export function continueTrack(track: Track, nowMs: number): Track {
+  const last = track.fixes[track.fixes.length - 1];
+  if (last === undefined) {
+    return emptyTrack();
+  }
+  const open = openPause(track);
+  const earlier =
+    open === null ? (track.pauses ?? []) : (track.pauses ?? []).slice(0, -1);
+  const fromMs = open === null ? last.timeMs : open.fromMs;
+  return {
+    ...track,
+    pauses: [...earlier, { fromMs, toMs: Math.max(fromMs, nowMs) }],
+  };
+}
+
+/** Whether the next fix kept comes after a pause of the runner's. */
+function afterPause(track: Track, last: TrackFix): boolean {
+  const pause = track.pauses?.[track.pauses.length - 1];
+  return (
+    pause !== undefined &&
+    pause.auto !== true &&
+    pause.toMs !== null &&
+    pause.fromMs >= last.timeMs
+  );
+}
+
 /** `track` with `fix` at its end, or `track` itself when the fix is dropped. */
 export function addFix(track: Track, fix: TrackFix): Track {
+  const pause = openPause(track);
+  // Paused by the runner: nothing is of the run until «Resume».
+  if (pause !== null && pause.auto !== true) {
+    return track;
+  }
   const [lat, lon] = fix.point;
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(fix.timeMs)) {
     return track;
@@ -43,7 +132,7 @@ export function addFix(track: Track, fix: TrackFix): Track {
   }
   const last = track.fixes[track.fixes.length - 1];
   if (last === undefined) {
-    return { fixes: [fix], distanceM: 0 };
+    return { ...track, fixes: [fix], distanceM: 0 };
   }
   // The phone's clock can step back; the line goes on in the order of arrival.
   if (fix.timeMs < last.timeMs) {
@@ -53,12 +142,58 @@ export function addFix(track: Track, fix: TrackFix): Track {
   if (stepM < MIN_STEP_M) {
     return track;
   }
-  return { fixes: [...track.fixes, fix], distanceM: track.distanceM + stepM };
+  // Moving again ends a pause that standing still began.
+  const moving = pause === null ? track : resumeTrack(track, fix.timeMs);
+  if (afterPause(moving, last)) {
+    return { ...moving, fixes: [...track.fixes, { ...fix, gap: true }] };
+  }
+  return {
+    ...moving,
+    fixes: [...track.fixes, fix],
+    distanceM: track.distanceM + stepM,
+  };
 }
 
-/** From the first fix to the last, in milliseconds: pauses included. */
-export function durationMs(track: Track): number {
+/** The milliseconds of pause between `fromMs` and `toMs`. */
+export function pausedMs(track: Track, fromMs: number, toMs: number): number {
+  let total = 0;
+  for (const pause of track.pauses ?? []) {
+    const start = Math.max(fromMs, pause.fromMs);
+    const end = Math.min(toMs, pause.toMs ?? toMs);
+    if (end > start) {
+      total += end - start;
+    }
+  }
+  return total;
+}
+
+/** The time of the run from `fromMs` to `toMs`: what passed, less the pauses. */
+export function activeBetween(track: Track, fromMs: number, toMs: number): number {
+  return Math.max(0, toMs - fromMs - pausedMs(track, fromMs, toMs));
+}
+
+/** The time of the run up to `nowMs`, from the first fix: 0 before it. */
+export function activeMs(track: Track, nowMs: number): number {
   const first = track.fixes[0];
+  return first === undefined ? 0 : activeBetween(track, first.timeMs, nowMs);
+}
+
+/** From the first fix to the last, in milliseconds: pauses left out. */
+export function durationMs(track: Track): number {
   const last = track.fixes[track.fixes.length - 1];
-  return first === undefined || last === undefined ? 0 : last.timeMs - first.timeMs;
+  return last === undefined ? 0 : activeMs(track, last.timeMs);
+}
+
+/** One step of the line, from the fix before `index` to it: its metres and
+ * its time, both nothing of what a pause took. */
+export function stepAt(track: Track, index: number): { metres: number; ms: number } {
+  const from = track.fixes[index - 1];
+  const to = track.fixes[index];
+  if (from === undefined || to === undefined) {
+    return { metres: 0, ms: 0 };
+  }
+  return {
+    metres: to.gap ? 0 : metresBetween(from.point, to.point),
+    ms: activeBetween(track, from.timeMs, to.timeMs),
+  };
 }

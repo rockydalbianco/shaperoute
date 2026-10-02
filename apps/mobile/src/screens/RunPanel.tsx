@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { clockLabel, kmLabel } from "../navigation/freeRun";
+import { clockLabel, kmNumber } from "../navigation/freeRun";
 import { distanceLabel } from "../navigation/phrases";
+import { useRunControl } from "../navigation/runControl";
+import { climbM, kcal } from "../navigation/runMetrics";
 import {
   aboutMinutes,
   averagePaceS,
@@ -11,13 +13,15 @@ import {
   paceClock,
   recentPaceS,
 } from "../navigation/runStats";
-import type { Track } from "../navigation/trackRecorder";
+import { activeMs, openPause, type Track } from "../navigation/trackRecorder";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
 
 /**
- * The numbers of a run in progress (TASK-164), the same with a route and
- * without one: how far in large, beside it what is left or the last
- * kilometre, and under it the average pace, the pace now and the time.
+ * The numbers of a run in progress (TASK-164, TASK-169), the same with a
+ * route and without one. Few of them under the map (`RunStrip`): how far,
+ * the pace now and the time. All of them on the page of the data and while
+ * the run is paused (`RunGrid`): also the average pace, the last kilometre,
+ * the metres climbed and the energy.
  */
 
 /** The clock ticks once a second. */
@@ -40,81 +44,129 @@ export function useNow(on: boolean, everyMs: number): number {
   return now;
 }
 
-type Props = {
-  /** The line run so far. */
-  track: Track;
-  /** The clock runs: the GPS is on and the run is not over. */
-  ticking: boolean;
-  /** Along a route: the metres left, and the share of it done, 0 to 1. */
-  route?: { remainingM: number; done: number };
+/** Along a route: the metres left, and the share of it done, 0 to 1. */
+export type RouteProgress = { remainingM: number; done: number };
+
+export type RunNumbers = {
+  /** "2.34": the kilometres, without their unit. */
+  km: string;
+  /** "5:21", or NO_NUMBER before the pace means anything. */
+  average: string;
+  recent: string;
+  lastKm: string;
+  /** "12:34". */
+  time: string;
+  /** "42", metres, or NO_NUMBER when the phone gives no height. */
+  climb: string;
+  /** "187", kilocalories. */
+  energy: string;
+  /** "3.2 km to go" and "about 17 min", along a route. */
+  toGo: string | null;
+  eta: string | null;
 };
 
-export function RunPanel({ track, ticking, route }: Props) {
+/**
+ * The numbers of `track`, again every second while `live`: the GPS is on
+ * and the run is not over. The clock waits during the countdown and during
+ * a pause, and a run that is over stops it at its last fix.
+ */
+export function useRunNumbers(
+  track: Track,
+  live: boolean,
+  route?: RouteProgress,
+): RunNumbers {
+  const { phase } = useRunControl();
+  const pause = openPause(track);
+  const ticking =
+    live && pause === null && phase !== "countdown" && track.fixes.length > 0;
   const now = useNow(ticking, TICK_MS);
-  const first = track.fixes[0];
   const last = track.fixes[track.fixes.length - 1];
-  // A run that is over stops its clock at the last fix.
-  const at = ticking ? now : (last?.timeMs ?? 0);
-  const ms = first === undefined ? 0 : Math.max(0, at - first.timeMs);
+  const at = pause !== null ? pause.fromMs : ticking ? now : (last?.timeMs ?? 0);
+  const ms = activeMs(track, at);
   const average = averagePaceS(track, ms);
-  const recent = recentPaceS(track, at);
+  const recent = pause === null ? recentPaceS(track, at) : null;
   // Every fix of the run, once per fix and not once per second.
   const lastKm = useMemo(() => lastKmS(track), [track]);
+  const climbed = useMemo(() => climbM(track), [track]);
   const eta = route ? etaMs(route.remainingM, track, ms) : null;
-  const side = route
-    ? {
-        top: `${distanceLabel(route.remainingM)} to go`,
-        bottom: eta === null ? null : aboutMinutes(eta),
-      }
-    : lastKm === null
-      ? null
-      : { top: "Last km", bottom: `${paceClock(lastKm)} /km` };
+  return {
+    km: kmNumber(track.distanceM),
+    average: average === null ? NO_NUMBER : paceClock(average),
+    recent: recent === null ? NO_NUMBER : paceClock(recent),
+    lastKm: lastKm === null ? NO_NUMBER : paceClock(lastKm),
+    time: clockLabel(ms),
+    climb: climbed === null ? NO_NUMBER : String(Math.round(climbed)),
+    energy: String(kcal(track.distanceM)),
+    toGo: route ? `${distanceLabel(route.remainingM)} to go` : null,
+    eta: eta === null ? null : aboutMinutes(eta),
+  };
+}
+
+/** Under the map, where the map is what is looked at: three numbers. */
+export function RunStrip({ numbers }: { numbers: RunNumbers }) {
   return (
-    <View style={styles.panel}>
-      <View style={styles.head}>
-        <Text
-          style={styles.km}
-          accessibilityLabel={`Distance: ${kmLabel(track.distanceM)}`}
-        >
-          {kmLabel(track.distanceM)}
-        </Text>
-        {side && (
-          <View style={styles.side}>
-            <Text style={styles.sideText}>{side.top}</Text>
-            {side.bottom !== null && <Text style={styles.sideText}>{side.bottom}</Text>}
-          </View>
-        )}
-      </View>
-      {route && (
-        <View
-          style={styles.bar}
-          accessibilityRole="progressbar"
-          accessibilityValue={{ min: 0, max: 100, now: Math.round(route.done * 100) }}
-        >
-          <View
-            testID="route-done"
-            style={[styles.done, { width: `${Math.round(route.done * 100)}%` }]}
-          />
-        </View>
-      )}
+    <View style={styles.tiles}>
+      <Tile label="Distance" value={numbers.km} unit="km" />
+      <Tile label="Pace now" value={numbers.recent} unit="/km" />
+      <Tile label="Time" value={numbers.time} />
+    </View>
+  );
+}
+
+/** Every number but the distance, three to a row: beside the kilometres
+ * on the page of the data, and under them while the run is paused. */
+export function RunGrid({ numbers }: { numbers: RunNumbers }) {
+  return (
+    <View style={styles.grid}>
       <View style={styles.tiles}>
-        <Tile
-          label="Avg pace"
-          value={average === null ? NO_NUMBER : paceClock(average)}
-          unit="/km"
-        />
-        <Tile
-          label="Pace now"
-          value={recent === null ? NO_NUMBER : paceClock(recent)}
-          unit="/km"
-        />
-        <Tile label="Time" value={clockLabel(ms)} />
+        <Tile label="Pace now" value={numbers.recent} unit="/km" />
+        <Tile label="Avg pace" value={numbers.average} unit="/km" />
+        <Tile label="Time" value={numbers.time} />
+      </View>
+      <View style={styles.tiles}>
+        <Tile label="Last km" value={numbers.lastKm} unit="/km" />
+        <Tile label="Elev. gain" value={numbers.climb} unit="m" />
+        <Tile label="Calories" value={numbers.energy} unit="kcal" />
       </View>
     </View>
   );
 }
 
-function Tile({ label, value, unit }: { label: string; value: string; unit?: string }) {
+/** How much of the route is run, and what is left of it. */
+export function RouteBar({
+  route,
+  numbers,
+}: {
+  route: RouteProgress;
+  numbers: RunNumbers;
+}) {
+  const percent = Math.round(route.done * 100);
+  return (
+    <View style={styles.route}>
+      <View
+        style={styles.bar}
+        accessibilityRole="progressbar"
+        accessibilityValue={{ min: 0, max: 100, now: percent }}
+      >
+        <View testID="route-done" style={[styles.done, { width: `${percent}%` }]} />
+      </View>
+      <View style={styles.left}>
+        <Text style={styles.leftText}>{numbers.toGo}</Text>
+        {numbers.eta !== null && <Text style={styles.leftText}>{numbers.eta}</Text>}
+      </View>
+    </View>
+  );
+}
+
+export function Tile({
+  label,
+  value,
+  unit,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+}) {
   return (
     <View
       style={styles.tile}
@@ -134,40 +186,8 @@ function Tile({ label, value, unit }: { label: string; value: string; unit?: str
 }
 
 const styles = StyleSheet.create({
-  panel: {
-    gap: space.md,
-  },
-  head: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    gap: space.md,
-  },
-  // Not the yellow: that is the route's and the main action's (ADR-0046).
-  km: {
-    color: color.text,
-    fontSize: fontSize.display,
-    fontWeight: fontWeight.bold,
-  },
-  side: {
-    alignItems: "flex-end",
-    paddingBottom: space.xs,
-  },
-  sideText: {
-    color: color.textMuted,
-    fontSize: fontSize.small,
-  },
-  bar: {
-    height: space.xs,
-    borderRadius: radius.pill,
-    backgroundColor: color.surfaceRaised,
-    overflow: "hidden",
-  },
-  // The route, as far as it is run: the yellow is the route's.
-  done: {
-    height: space.xs,
-    borderRadius: radius.pill,
-    backgroundColor: color.accent,
+  grid: {
+    gap: space.sm,
   },
   tiles: {
     flexDirection: "row",
@@ -190,9 +210,35 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.detail,
   },
+  // Not the yellow: that is the route's and the main action's (ADR-0046).
   value: {
     color: color.text,
     fontSize: fontSize.title,
     fontWeight: fontWeight.bold,
+    fontVariant: ["tabular-nums"],
+  },
+  route: {
+    gap: space.xs,
+  },
+  bar: {
+    height: space.xs,
+    borderRadius: radius.pill,
+    backgroundColor: color.surfaceRaised,
+    overflow: "hidden",
+  },
+  // The route, as far as it is run: the yellow is the route's.
+  done: {
+    height: space.xs,
+    borderRadius: radius.pill,
+    backgroundColor: color.accent,
+  },
+  left: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: space.md,
+  },
+  leftText: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
   },
 });

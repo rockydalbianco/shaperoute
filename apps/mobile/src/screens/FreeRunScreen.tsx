@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { clockLabel, type FreeRun, kmLabel, paceLabel } from "../navigation/freeRun";
+import { type FreeRun, kmLabel } from "../navigation/freeRun";
 import { distanceLabel } from "../navigation/phrases";
 import {
   AT_START_M,
@@ -10,9 +10,8 @@ import {
   relativeDeg,
   toStart,
 } from "../navigation/runStats";
-import { durationMs, emptyTrack, type Track } from "../navigation/trackRecorder";
+import { emptyTrack, type Track } from "../navigation/trackRecorder";
 import type { FreeRunState } from "../navigation/useFreeRun";
-import { usePocketMode } from "../navigation/usePocketMode";
 import {
   color,
   fontSize,
@@ -21,26 +20,17 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { confirmPocketMode, PocketScreen } from "./PocketScreen";
-import { RunPanel } from "./RunPanel";
+import { RunCard } from "./RunDashboard";
+import { RunGrid, useRunNumbers } from "./RunPanel";
 
 /**
  * A run without a route (TASK-149): over the map that follows the runner,
- * where the start is and which way the runner heads; under it the numbers
- * of the run (TASK-164), «Pocket» and «Stop». At the end, how far, how long
- * and the pace, and the line that was run.
+ * where the start is and which way the runner heads; under it the run's
+ * card, with its two pages (TASK-169). At the end, how far, how long and
+ * the rest of the numbers, and the line that was run.
  */
 
-/** "12:34 · 5:42 /km", or the time alone before the pace means anything. */
-function timeAndPace(track: Track, ms: number): string {
-  const pace = paceLabel(track.distanceM, ms);
-  return pace === null ? clockLabel(ms) : `${clockLabel(ms)} · ${pace}`;
-}
-
 export function FreeRunBanner({ state }: { state: FreeRunState }) {
-  const track = state.status === "running" ? state.track : null;
-  const heading = useMemo(() => (track ? headingDeg(track) : null), [track]);
-  const start = useMemo(() => (track ? toStart(track) : null), [track]);
   if (state.status === "denied") {
     return (
       <View style={styles.banner}>
@@ -50,9 +40,24 @@ export function FreeRunBanner({ state }: { state: FreeRunState }) {
       </View>
     );
   }
+  return <StartPointer track={state.status === "running" ? state.track : null} />;
+}
+
+/** Where the start is and which way the runner heads: over the map, and on
+ * the page of the data in its place. */
+function StartPointer({
+  track,
+  flat = false,
+}: {
+  track: Track | null;
+  flat?: boolean;
+}) {
+  const heading = useMemo(() => (track ? headingDeg(track) : null), [track]);
+  const start = useMemo(() => (track ? toStart(track) : null), [track]);
+  const box = flat ? styles.flat : styles.banner;
   if (start === null) {
     return (
-      <View style={styles.banner}>
+      <View style={box}>
         <Text style={styles.message}>Finding your position…</Text>
       </View>
     );
@@ -60,7 +65,7 @@ export function FreeRunBanner({ state }: { state: FreeRunState }) {
   const headingText = heading === null ? null : `Heading ${compassWords(heading)}`;
   if (start.distanceM < AT_START_M) {
     return (
-      <View style={styles.banner}>
+      <View style={box}>
         <Text style={styles.title}>You are at your start</Text>
         {headingText && <Text style={styles.message}>{headingText}</Text>}
       </View>
@@ -71,7 +76,7 @@ export function FreeRunBanner({ state }: { state: FreeRunState }) {
   const turn = Math.round(relativeDeg(start.bearing, heading ?? 0));
   return (
     <View
-      style={styles.banner}
+      style={box}
       accessible
       accessibilityLabel={
         `Your start: ${distanceLabel(start.distanceM)} in a straight line, ` +
@@ -103,37 +108,19 @@ export function FreeRunCard({
   track = NO_TRACK,
   onStop,
 }: {
-  /** The GPS is on: pocket mode makes sense. */
+  /** The GPS is on: there is a run to pause, and pocket mode makes sense. */
   running: boolean;
   /** The line run so far, for the numbers (TASK-164). */
   track?: Track;
   onStop: () => void;
 }) {
-  const pocket = usePocketMode(running);
   return (
-    <View style={styles.card}>
-      <RunPanel track={track} ticking={running && track.fixes.length > 0} />
-      <View style={styles.buttons}>
-        {running && (
-          <Pressable
-            style={[styles.button, styles.wide]}
-            onPress={() => confirmPocketMode(pocket.enter)}
-            accessibilityRole="button"
-            accessibilityLabel="Pocket mode"
-          >
-            <Text style={styles.buttonText}>Pocket</Text>
-          </Pressable>
-        )}
-        <Pressable
-          style={[styles.button, styles.wide]}
-          onPress={onStop}
-          accessibilityRole="button"
-        >
-          <Text style={styles.buttonText}>Stop</Text>
-        </Pressable>
-      </View>
-      <PocketScreen on={pocket.on} onExit={pocket.exit} />
-    </View>
+    <RunCard
+      track={track}
+      live={running}
+      heading={<StartPointer track={running ? track : null} flat />}
+      onStop={onStop}
+    />
   );
 }
 
@@ -156,17 +143,17 @@ type FinishProps = {
 
 export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
   const { track } = run;
+  // A run that is over: its clock stands at the last fix.
+  const numbers = useRunNumbers(track, false);
   return (
     <View style={styles.finish}>
-      <View style={styles.result}>
-        <Text
-          style={styles.total}
-          accessibilityLabel={`Distance: ${kmLabel(track.distanceM)}`}
-        >
-          {kmLabel(track.distanceM)}
-        </Text>
-        <Text style={styles.message}>{timeAndPace(track, durationMs(track))}</Text>
-      </View>
+      <Text
+        style={styles.total}
+        accessibilityLabel={`Distance: ${kmLabel(track.distanceM)}`}
+      >
+        {kmLabel(track.distanceM)}
+      </Text>
+      <RunGrid numbers={numbers} />
       <View style={styles.finishButtons}>
         {onResume && (
           <Pressable
@@ -185,16 +172,23 @@ export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
   );
 }
 
+const box = {
+  gap: space.xs,
+  padding: space.md,
+  borderRadius: radius.lg,
+  borderWidth: 1,
+  borderColor: color.borderStrong,
+  backgroundColor: color.surfaceRaised,
+} as const;
+
 const styles = StyleSheet.create({
+  // Alone at the top of the map: it takes the width the way back leaves.
   banner: {
+    ...box,
     flex: 1,
-    gap: space.xs,
-    padding: space.md,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-    backgroundColor: color.surfaceRaised,
   },
+  // On the page of the data: as tall as what it says.
+  flat: box,
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -224,23 +218,8 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.small,
   },
-  card: {
-    gap: space.md,
-  },
-  buttons: {
-    flexDirection: "row",
-    gap: space.sm,
-  },
-  // Side by side, as wide as each other: easier to hit while running.
-  wide: {
-    flex: 1,
-    alignItems: "center",
-  },
   finish: {
     gap: space.md,
-  },
-  result: {
-    gap: space.xs,
   },
   total: {
     color: color.text,

@@ -143,7 +143,13 @@ pagine»):
    fino a TASK-167 sopra le schede c'erano «Shape» e «Distance». Toccata
    una scheda, il percorso si apre sulla
    mappa con «Export GPX» e «Back to the list»; «←» torna all'elenco. Da
-   TASK-145 ha anche «Start» (sotto).
+   TASK-145 ha anche «Start» (sotto). **Un dito che scorre sopra una scheda
+   non la apre** (TASK-196, come in «Feed» da TASK-188): «Explore» è
+   l'ultima pagina, uno swipe verso sinistra non fa scorrere niente e il
+   dito alzato sopra una scheda contava come un tocco. La scheda ricorda
+   dove il dito è sceso e ignora un dito che si è mosso più di 12 punti;
+   vale per ogni scheda di questo tipo: i percorsi di «Best near you», gli
+   esempi di una città, i preferiti in «Profile».
 
    Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
    qualsiasi città del mondo (l'elenco e la richiesta partono dal suo

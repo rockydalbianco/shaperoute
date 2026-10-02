@@ -113,6 +113,66 @@ Valsugana 7.156, Milano 85.336. Il ritaglio di Levico sull'area del cuore
 da 5 km dà 905 nodi contro i 904 del download diretto di TASK-017:
 ritagliare equivale a scaricare.
 
+### Zone scaricate prima (TASK-137, ADR-0119)
+
+`python -m shaperoute_api.prefetch_zones --preset italy` (o `featured`, o
+nomi di città) scarica prima che qualcuno le chieda le zone di «Explore»:
+per ogni città il centro dalla ricerca delle città (lo stesso che l'app
+riceve), poi un riquadro di circa **17 × 17 km** (289 km²) che contiene
+ogni forma dei temi a 10 km da qualunque partenza entro 2,5 km
+(`search_radius_m`), con la ricerca lontana del motore da lì
+(`zone_area(..., FAR_OFFSET_M)`: senza, Romantic a Verona chiedeva 0,7 km
+oltre un riquadro di 14 km), e gli esempi di TASK-143 (cuore, cerchio e
+stella da 5 km) da qualunque partenza entro 2 km (`FAR_OFFSET_M`); più i
+nomi delle strade (ADR-0057). Una città già coperta è «ready»; le altre si scaricano
+**una alla volta**, con una pausa (`--pause-s`, 60 s) e un tetto
+(`--max-downloads`). Prima di ogni città legge la pagina di stato di
+Overpass: con un posto libero scarica, con «Slot available after … in N
+seconds» aspetta quei secondi (fino a 5 minuti). Overpass dà due posti per
+indirizzo, e dopo una richiesta grande il posto resta occupato più dei 60 s
+di pausa: senza l'attesa, il secondo download prendeva un errore HTTP. Una
+città il cui download fallisce (col codice HTTP: Overpass carico risponde
+504) resta per il giro dopo e si passa alla seguente; si ferma dopo **due
+errori di fila**, se Overpass non risponde o sotto i 5 GB liberi; rilanciato, riparte dalle
+città mancanti. `--dry-run` dice cosa manca senza scaricare. Si lancia
+dove gira l'API usata dall'app, con la sua cartella della cache e
+`GEOAPIFY_API_KEY`.
+
+**Da un estratto, senza Overpass** (`--extract FILE.pbf`, scelta
+dell'utente del 2026-10-02): Overpass blocca l'indirizzo dopo pochi
+download grandi, anche quello del server (2026-10-01: dopo 5 città). Con
+l'estratto di Geofabrik, filtrato una volta alle sole strade, ogni zona si
+ritaglia con `osmium extract --strategy complete_ways` (riquadro più 700 m:
+OSMnx chiede 500 m attorno) e, per la durata del download, OSMnx e il
+motore leggono da lì le risposte che Overpass darebbe
+(`zone_extract.served_from`): il filtro `FOOT_FILTER` letto com'è, i nodi e
+le strade in ordine di id. Il resto è di OSMnx e del motore come per un
+download. Napoli e Palermo, scaricate prima da Overpass, rifatte
+dall'estratto (30 settembre): Palermo identica (18.681 nodi, 53.930 archi,
+44 strade con nome); Napoli 26.977 nodi contro 26.979, 6 archi su 76.628 in
+meno (un giorno di modifiche a OSM); cuore e stella da 5 km dal centro con
+la stessa linea nelle due. Circa un minuto per città. osmium-tool
+(dipendenza approvata dall'utente, ADR-0119; sul Mac `brew install
+osmium-tool`, `SETUP.md` 10.5) sta solo nell'immagine dei download, non in
+quella dell'API:
+
+```bash
+curl -O https://download.geofabrik.de/europe/italy-latest.osm.pbf
+```
+
+```bash
+printf 'FROM shaperoute-api\nUSER root\nRUN apt-get update && apt-get install -y --no-install-recommends osmium-tool\nUSER shaperoute\n' | docker build -t shaperoute-prefetch -
+```
+
+```bash
+docker run --rm -v "$PWD":/extracts shaperoute-prefetch osmium tags-filter /extracts/italy-latest.osm.pbf w/highway -o /extracts/italy-highways.osm.pbf
+```
+
+Poi il comando nel container, con la cache dell'API montata e `--extract
+/extracts/italy-highways.osm.pbf` (2,2 GB l'estratto, 647 MB le sole
+strade, 90 s il filtro). Le città fuori dall'estratto (le estere in
+evidenza) vogliono il loro estratto o Overpass.
+
 ## Dal disegno alla strada
 
 1. La partenza (primo punto della forma) si aggancia al **nodo più

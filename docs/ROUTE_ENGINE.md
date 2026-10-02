@@ -285,6 +285,29 @@ scelta dell'utente (2026-10-02, ADR-0063). `compose` e `plan_route` hanno
 parola è quella di prima, punto per punto. La richiesta all'API resta la
 stessa: cambia il percorso delle parole con U, V, W o Y.
 
+### Parole con la penna alzata (TASK-197)
+
+Una parola si può chiedere **con la penna alzata** (`pen_up`, ADR-0157):
+fra una lettera e l'altra si cammina senza disegnare, e l'app mette in
+pausa la registrazione (TASK-198). `compose(..., pen_up=True)`:
+
+- ogni lettera è solo il suo `out`, dall'ingresso all'uscita sulla base,
+  una volta: niente `back`, niente linea di base che la unisce alla
+  successiva, niente ritorno alla partenza. La linea è **aperta**: parte
+  dall'ingresso della prima lettera e finisce all'uscita dell'ultima;
+- le lettere stanno dove le mette la parola chiusa senza unioni in cima,
+  con lo spazio dello stile (0,6 dell'altezza, 0,3 le squadrate) fra
+  l'uscita di una e l'ingresso dell'altra. Niente unioni in cima: la linea
+  dritta che Strava traccia durante una pausa cade sulla base;
+- i punti degli spazi restano nella linea, con il loro `Place`, per
+  piazzare la parola e per allungarsi quando una lettera si sposta; il
+  percorso non li disegna (§5, «La penna alzata»).
+
+A parità di km le lettere vengono più alte, perché la distanza vale per le
+lettere sole: «CIAO» è lungo 9,5 altezze invece delle 16,2 della linea
+chiusa (andata, ritorno e base), 1,7 volte meno. A Trento, a 15 km, lettere
+di 1.121 m invece di 659.
+
 ### Il contorno da un'immagine (TASK-072, TASK-084)
 
 `route_engine/image_outline.py` ricava un contorno dal soggetto di
@@ -739,6 +762,59 @@ fuori dall'orizzontale (dritta se non ce n'è), e la rifinitura gira di al
 più 5° attorno a una di esse. A Levico una griglia a 43° metteva la parola
 di traverso sulla mappa, e non si leggeva.
 
+### La penna alzata (TASK-197)
+
+Una parola con la penna alzata (§2) si cerca come le altre parole, con
+queste differenze (`pen_up.py`, ADR-0157):
+
+1. **Ogni lettera si traccia da sola**, come linea aperta:
+   `snap_to_network(closed=False)` fa zone e corridoio come sempre, ma il
+   percorso finisce nella zona dell'ultimo punto invece di tornare alla
+   partenza. Zone e corridoio sono quelli del disegno intero, una quota
+   della lunghezza di tutte le lettere insieme (dimezzata se una lettera ha
+   tratti ripassati, ADR-0039), non della lettera sola. Una lettera che
+   cade su un nodo solo è quel nodo.
+2. **Fra una lettera e l'altra, un tratto a piedi**: dall'ultimo nodo di
+   una lettera, la strada più breve fino al primo della successiva (il nodo
+   più vicino al suo ingresso), senza zone né corridoio. Il percorso resta una
+   linea sola, lettere e tratti a piedi in fila; `walks` dice quali punti
+   sono a piedi: coppie `[da, a]` di indici in `points`, compresi, in
+   ordine. Dove finisce un tratto comincia la lettera successiva; n lettere,
+   n − 1 tratti.
+3. **Una fase sola**: la partenza è l'ingresso della prima lettera, e la
+   parola si scrive da sinistra a destra. Le lettere si spostano come in
+   «Lettere che si spostano», **tranne la prima**, che tiene la partenza.
+4. **La somiglianza è delle sole lettere** (`pen_up.similarity`): la
+   copertura di ogni lettera, linea aperta, in media sulle lettere, e la
+   precisione del percorso senza i tratti a piedi, entro 1/8 dell'altezza
+   come per le altre parole. Allungare un tratto a piedi non la cambia.
+5. **La distanza chiesta è delle lettere**, la parte che la corsa registra
+   (`pen_up.drawn_m`, `optimizer.drawn_distance`): da lì la scala iniziale
+   (`first_scale`), il ±10% della ricerca, i ±2 km oltre cui la forma non è
+   disponibile, la scelta fra le partenze vicine. `distance_m` resta la
+   lunghezza di tutti i `points`, tratti a piedi compresi.
+6. **Partenze vicine**: l'avvicinamento si corre, non è un tratto a piedi;
+   i `walks` si spostano con i punti, e dopo l'ultima lettera non si torna
+   alla partenza.
+
+Senza `pen_up` niente cambia: una parola dà lo stesso percorso di prima,
+punto per punto (`tests/test_pen_up.py`, sul grafo dei fixture e su una
+griglia, contro le impronte di `main` a 59dd8a7).
+
+Misure del 2026-10-02 sul Mac, dalla CLI con `--nearby 3`, zone già in
+cache (Overpass rifiutava il Mac). **Non giudicate a occhio dall'utente**;
+le due somiglianze non si confrontano fra loro, perché quella della penna
+alzata non vede né la base né i ritorni:
+
+| Richiesta | Linea chiusa | Penna alzata |
+|---|---|---|
+| «CIAO» 15 km, Trento centro | 0,83, 15,96 km, lettere alte 659 m, 11 s | 0,90; lettere 15,37 km + a piedi 2,09, 1,05 e 1,09 km = 19,59 km; lettere alte 1.121 m, partenza spostata di 1 km; 18 s |
+| «IO» 6 km, Levico | 0,97, 5,12 km, lettere alte 543 m, 1 s | 0,92; lettere 5,13 km + 0,98 km a piedi; lettere alte 737 m; 2 s |
+
+I tratti a piedi aggiungono il 20–30% ai km delle lettere: lo spazio fra
+le lettere cresce con la loro altezza, e per strada è più lungo che in
+linea d'aria.
+
 ### Funzione obiettivo
 
 ```
@@ -827,12 +903,24 @@ o più corta del 10% del percorso, non ha punteggio
 Vale per forme, parole e immagini allo stesso modo: servono solo i punti e
 la somiglianza del percorso, niente grafo e niente rete.
 
+Con i `walks` di una parola con la penna alzata (TASK-197) la corsa si
+confronta con le **sole lettere**: «coperta» è la parte delle lettere con
+la traccia vicina; in «sul percorso» non contano le posizioni vicine a un
+tratto a piedi o alla linea dritta fra il suo inizio e la sua fine (dove
+salta una registrazione in pausa), se non sono vicine anche a una lettera.
+Il 10% minimo della traccia è delle lettere. Senza `walks`, come prima.
+
 ## 6. Validazione
 
 Un percorso esce dal motore solo se (altrimenti è un errore, non un warning):
 
 - è chiuso e parte dal punto di strada più vicino alla sua partenza;
 - la partenza è entro 500 m da quella richiesta (ADR-0025).
+
+Una parola con la penna alzata (TASK-197) non è chiusa: finisce sull'ultima
+lettera, e si controlla solo dove comincia (`pen_up.check_begins`). Le
+misure qui sotto sono di tutto il percorso, tratti a piedi compresi: anche
+lì si cammina.
 
 Poi si misurano, e oltre soglia diventano warning in `RouteResult.warnings`
 con misura e limite (`validation.py`, ADR-0026):
@@ -906,6 +994,16 @@ traccia corsa»); `--out` non serve:
 ```
 python -m route_engine --shape heart --distance 10000 \
     --start 45.9934,11.2580 --score-track corsa.gpx
+```
+
+Con `--pen-up`, solo insieme a `--word`, la parola con la penna alzata
+(§5, «La penna alzata»); la CLI stampa i metri delle lettere contro il
+target, la lunghezza di ogni tratto a piedi e il totale, e il GPX ha i
+waypoint «Pause» e «Resume» (`GPX.md`):
+
+```
+python -m route_engine --word CIAO --distance 15000 --pen-up \
+    --start 46.0671,11.1214 --nearby 3 --out ciao_penna_trento.gpx
 ```
 
 Con `--activity cycling` un percorso in bici, 10–30 km, sulla rete `bike`

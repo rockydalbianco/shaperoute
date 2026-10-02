@@ -31,15 +31,40 @@ GPX **1.1**, namespace `http://www.topografix.com/GPX/1/1`.
 </gpx>
 ```
 
-- **Un solo `<trk>` con un solo `<trkseg>`.** Niente `<rte>` né `<wpt>`:
-  un track è ciò che i visualizzatori e gli orologi trattano come "percorso
-  da seguire" senza ricalcolarlo.
+- **Un solo `<trk>` con un solo `<trkseg>`.** Niente `<rte>`: un track è
+  ciò che i visualizzatori e gli orologi trattano come "percorso da
+  seguire" senza ricalcolarlo. Niente `<wpt>`, tranne per una parola con
+  la penna alzata (sotto).
 - **Primo e ultimo punto coincidono** e sono il punto di partenza
-  dell'utente (ADR-0018): il percorso è un anello.
+  dell'utente (ADR-0018): il percorso è un anello. Tranne una parola con la
+  penna alzata, che finisce sull'ultima lettera.
 - **Coordinate con 7 decimali** (≈ 1 cm). Di più è rumore; di meno
   sposterebbe i punti in modo visibile a zoom stradale.
 - **Niente quote** (`<ele>`) e niente tempi per punto: non esiste ancora una
   sorgente altimetrica, e un tempo inventato sarebbe un dato falso.
+
+## La penna alzata (TASK-197, ADR-0157)
+
+Una parola con la penna alzata ha i suoi tratti a piedi fra una lettera e
+l'altra (`RouteResult.walks`, `API.md`). La linea resta **una sola**, da
+seguire, tratti a piedi compresi; per ogni tratto a piedi il GPX ha **due
+waypoint**, prima del `<trk>` come GPX 1.1 chiede, nell'ordine del
+percorso:
+
+```
+<wpt lat="46.0671000" lon="11.1214000"><name>Pause</name></wpt>
+<wpt lat="46.0671000" lon="11.1253000"><name>Resume</name></wpt>
+```
+
+- «Pause» sul primo punto del tratto a piedi, dove finisce una lettera;
+  «Resume» sull'ultimo, dove comincia la successiva. Con n lettere,
+  2 × (n − 1) waypoint.
+- Servono a chi corre con l'orologio e mette in pausa a mano: molti
+  orologi mostrano i waypoint lungo il percorso. L'app di Sgrava mette in
+  pausa da sola (TASK-198), e il GPX della corsa fatta apre un `<trkseg>`
+  nuovo a ogni pausa (sotto).
+- Senza `walks` (una forma, un'immagine, una parola senza penna alzata,
+  un'app che non li manda) il file è quello di prima, senza `<wpt>`.
 
 ## Metadati
 
@@ -135,3 +160,5 @@ sovrascrive mai (ADR-0014). La nomenclatura dei file in `samples/` è in
   dell'utente del 2026-09-23). **Strava** e **Komoot** non sono ancora stati
   provati.
 - Quote altimetriche: servono in fase 4 (dislivello), sorgente da decidere.
+- I waypoint «Pause» e «Resume» della penna alzata (TASK-197): scritti e
+  provati nei test, non ancora aperti su un orologio né su Garmin Connect.

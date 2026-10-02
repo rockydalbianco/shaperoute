@@ -160,6 +160,25 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore e API** — TASK-197: la penna alzata nelle parole, chiesta
+  dall'utente (ADR-0157), nella PR di `feat/TASK-197-pen-up-words` (il
+  merge è del coordinatore). Con `pen_up: true` e una parola ogni lettera
+  si disegna da sola, una volta, e fra una e l'altra si prende a piedi la
+  strada più breve; il `RouteResult` ha `walks`, coppie `[da, a]` di indici
+  in `points` (n − 1 per n lettere), e il percorso non è chiuso.
+  Somiglianza e distanza chiesta sono delle sole lettere, `distance_m` di
+  tutto: a Trento «CIAO» da 15 km fa 15,4 km di lettere alte 1,1 km (0,66
+  chiusa) e 19,6 in tutto. `POST /track-scores` prende i `walks`, il GPX ha
+  «Pause» e «Resume», la CLI `--pen-up`. Tutto facoltativo: l'app
+  pubblicata non manda `pen_up` e ignora `walks`, e una parola senza
+  `pen_up` dà lo stesso percorso di prima, punto per punto (test). Provato
+  solo sulle zone già in cache (Trento, Levico), non giudicato a occhio.
+  **Aspettano l'ok dell'utente**: l'aggiornamento del server e poi
+  `draw_examples` rilanciato, da `origin/main` pulito; ogni cambio del
+  motore cambia `engine_fingerprint` e ridisegna gli esempi tenuti, anche
+  se i percorsi senza `pen_up` restano gli stessi. Dopo: TASK-198, l'app
+  (cosa deve sapere: `tasks/TASK-197.md`, «Esito»).
+
 - **API e app** — TASK-178: la foto del profilo, chiesta dall'utente con
   TASK-177 (ADR-0146). In «Settings» la riga «Profile picture» apre
   «Choose a picture», «Take a photo» e «Remove picture»; la foto si

@@ -119,6 +119,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
 
+- **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
+  dell'utente: «Sì, fallo vero»): **la parte API è fatta**, PR #210:
+  collegare l'atleta dal browser (`POST /me/strava/connect`, `GET
+  /strava/callback`), `GET` e `DELETE /me/strava`, mandare una corsa
+  salvata (`POST /me/activities/{key}/strava`) con il GPX dei suoi orari,
+  una volta sola; token rinnovati dall'API, mai in una risposta o nei log;
+  provata contro uno Strava finto, senza rete. Spenta finché il server non
+  ha `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`. **Manca la parte app**
+  (seconda PR: `RunEnd`, «My activities», «Settings», la coda senza rete,
+  `UI.md`). **Aspettano l'utente**: creare la sua app Strava e scrivere il
+  secret sul server (`DEPLOY.md`, «Strava»), l'ok per aggiornare il server
+  (migrazione `0004`), le quattro domande del task file, la prova dal
+  vero. File della parte app: `apps/mobile/src/strava/`,
+  `src/api/strava.ts`, `src/activities/RunEnd.tsx`, `outbox.ts`,
+  `src/theme/tokens.ts`. Da dove riprendere: `tasks/TASK-187.md`.
+
 ## Completato
 
 - **App** — TASK-192: in «Explore» il luogo scelto ha sempre i suoi

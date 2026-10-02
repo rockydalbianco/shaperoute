@@ -6131,3 +6131,110 @@ solo quelli di Levico: dalla posizione di qualcuno non si disegna
 (ADR-0136), cambiarlo è una scelta dell'utente. Paesi piccoli e frazioni
 non sono disegnati in anticipo sul server (`draw_examples`): da fare lì,
 con l'ok dell'utente. Da provare con il dito sull'iPhone.
+
+## ADR-0156 — «Send to Strava»: il collegamento passa dal server, e la corsa tiene cosa ne ha fatto Strava
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («Sì,
+fallo vero»: l'invio vero della corsa fatta, con un'app Strava sua, fra
+tre proposte); il come deciso dall'agente su delega dell'utente
+(TASK-187, parte API). Non riapre ADR-0138: quello toglieva il passaggio a
+mano di un *percorso*; questo carica la *corsa fatta*, che Strava permette
+alle altre app (`POST /uploads`).
+
+**Contesto**: l'utente vuole, a fine corsa, «salva, cancella, invia a
+Strava». Le corse salvate ci sono (`runs`, ADR-0140). Per caricare
+un'attività Strava chiede OAuth con il permesso `activity:write`, un
+Client Secret che non può stare in un'app, token d'accesso che scadono
+dopo sei ore e un file con l'orario di ogni punto. Documentazione riletta
+il 2026-10-02: la revoca si fa con `POST /oauth/revoke` (dal 1° giugno
+2026; `/oauth/deauthorize` finisce il 1° giugno 2027); un'app non rivista
+collega un atleta solo; 200 richieste ogni quarto d'ora e 2 000 al giorno.
+
+**Decisione**:
+- **Tutto OAuth sta sul server.** L'app chiede `POST /me/strava/connect`,
+  apre nel browser l'indirizzo che riceve e non vede altro: né il secret
+  né un token. Strava rimanda il browser a `GET /strava/callback`
+  dell'API, che scambia il codice e risponde una pagina. Nessuna
+  dipendenza nuova, né nell'app né nell'API (`urllib`, come per Geoapify).
+- **Lo `state` lega la callback all'account**: casuale, 32 byte, vale una
+  volta per 10 minuti, uno per account, nel database solo il suo SHA-256
+  (tabella `strava_states`). La callback è fuori da `X-API-Key`
+  (`OPEN_PATHS`): un browser non ha la chiave, e senza uno `state` buono
+  la pagina non fa niente.
+- **Si chiede solo `activity:write`**, e si controlla che l'atleta non
+  l'abbia tolto: senza, non si chiede nemmeno il token.
+- **I token in chiaro nel database** (`strava_accounts`). Vanno rimandati
+  a Strava, quindi un hash non basta; cifrarli vorrebbe una dipendenza e
+  una chiave in più da custodire nello stesso `.env`. Chi copia il
+  database ha token d'accesso che durano al più sei ore e refresh token
+  inutili senza il Client Secret, che sta solo nell'ambiente del server.
+- **Un atleta è di un account solo, l'ultimo che l'ha collegato**: Strava
+  dà una sola serie di token per atleta, e due righe se li romperebbero a
+  vicenda a ogni rinnovo.
+- **Il rinnovo è dell'API**: prima di usare un token a meno di cinque
+  minuti dalla scadenza lo rinnova, una richiesta alla volta per atleta
+  (`FOR UPDATE`), e tiene il refresh token nuovo. Un token rifiutato
+  mentre è ancora buono per l'orologio si rinnova una volta: se Strava
+  rifiuta anche il refresh token l'atleta ha tolto l'accesso, la riga si
+  cancella e l'app torna a «Connect with Strava» (`409`). Un Client Secret
+  sbagliato sul server (`401` di Strava) non scollega nessuno.
+- **La corsa tiene cosa ne ha fatto Strava** (`strava_status`,
+  `strava_upload_id`, `strava_activity_id` su `runs`): una già mandata non
+  si rimanda, una in lettura si riprende a guardare. Due invii insieme si
+  mettono in fila sulla riga della corsa. `external_id` è la chiave della
+  corsa: se il server dimentica, Strava rifiuta il doppione dicendo quale
+  attività è, e l'API la prende per mandata.
+- **L'invio aspetta Strava per pochi secondi** (5 sguardi, uno al
+  secondo, come Strava chiede), poi risponde `202 processing` e la stessa
+  chiamata rifatta riprende: niente lavori in sottofondo nell'API, e la
+  coda dell'app (`outbox`) sa già riprovare.
+- **Lo stato dell'invio ha un endpoint suo** (`GET
+  /me/activities/{key}/strava`) invece di un campo in più nelle corse di
+  «My activities»: `activities.py`, i suoi esempi e i tipi dell'app non
+  cambiano, e chi non ha Strava non riceve niente di Strava.
+- **Nessun codice d'errore nuovo**: `http_error` con `503` (Strava
+  spento), `409` (non collegato), `502` (Strava non risponde),
+  `too_many_requests` con `Retry-After` (il limite di Strava),
+  `invalid_request` (`422`, Strava non legge la corsa). L'app li distingue
+  dallo stato HTTP; il contratto degli errori (`schemas.py`,
+  `shared-types`) resta com'è.
+- **Il GPX della corsa lo scrive l'API** (`run_gpx.py`), non il motore:
+  non è un percorso, è la traccia salvata con i suoi orari, e una pausa
+  chiude un `<trkseg>` (`GPX.md`, «La corsa fatta»). Il motore resta
+  l'unico a scrivere il GPX di un percorso (ADR-0033).
+- **Scollegare cancella i token comunque**, poi revoca su Strava; se
+  Strava non risponde non resta niente da noi, e l'atleta può togliere
+  Sgrava dalle impostazioni di Strava. `DELETE /me` fa lo stesso prima di
+  cancellare l'account, senza aspettare Strava (`before_account_delete` in
+  `accounts.py`: `accounts.py` non sa niente di Strava).
+- **Il dominio della callback** è `SHAPEROUTE_DOMAIN`, che il server ha
+  già per Caddy; vuota, l'indirizzo a cui è arrivata la richiesta. Nessuna
+  variabile in più oltre a `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`.
+- **Proposte del task file, costruite e in attesa dell'utente**: il nome
+  dell'attività («Heart in Trento»; senza percorso quello di Strava) e la
+  riga «Drawn with Sgrava», solo per una corsa che ha seguito un percorso.
+
+**Scartate**: OAuth nell'app con `expo-auth-session` (una dipendenza, e il
+secret dovrebbe comunque stare sul server per lo scambio del codice); lo
+`state` in memoria (si perde a ogni riavvio e non si prova con l'orologio
+dei test); cifrare i token (sopra); rifiutare un atleta già collegato a un
+altro account (chi prova con due account resterebbe bloccato; e non ferma
+chi convince una persona ad autorizzare un collegamento non suo, che
+resta il limite di ogni collegamento cominciato nell'app e finito nel
+browser: si vede solo `activity:write`, e la persona lo toglie da Strava);
+un lavoro in sottofondo che segue l'upload (un'altra cosa che gira, per
+due secondi di attesa); il campo `strava` dentro `Activity` (sopra);
+codici d'errore nuovi (tre file del contratto in più, per casi che lo
+stato HTTP già distingue); scrivere il GPX nel motore (il motore non sa
+niente di corse salvate, pause e orari); `/oauth/deauthorize` (in
+dismissione).
+
+**Conseguenze**: sul server arrivano la migrazione `0004` e due variabili
+(`DEPLOY.md`, «Strava»); finché l'utente non crea la sua app Strava,
+Strava è spento e niente cambia. Finché Strava non approva l'app si
+collega solo l'atleta dell'utente. La prova dal vero (data, ora e durata
+dell'attività; se Strava legge i `<trkseg>` come pause) è dell'utente,
+dopo la parte app. Strava conta le sue richieste per tutta l'app: 200
+ogni quarto d'ora bastano a qualche decina di corse mandate insieme, non
+a migliaia. Un'attività cancellata su Strava resta `sent` da noi: per
+rimandarla serve un task. La parte app (`RunEnd`, «My activities»,
+«Settings», la coda senza rete) è la seconda PR di TASK-187.

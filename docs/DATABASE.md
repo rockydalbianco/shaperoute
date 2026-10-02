@@ -102,6 +102,26 @@ Migrazione `0003_runs.sql` (TASK-172, ADR-0140):
 - Solo il proprietario legge una riga. Le colonne per gli altri (traccia
   tagliata, «pubblica», titolo) le aggiunge TASK-117 con la sua migrazione.
 
+Migrazione `0004_strava.sql` (TASK-187, ADR-0156):
+
+- `strava_states`: `state_hash` (SHA-256 dello `state`, chiave), `user_id`
+  (unico, `ON DELETE CASCADE`), `created_at`. Un collegamento a Strava
+  cominciato e non finito: vale una volta, per 10 minuti, uno per account.
+- `strava_accounts`: `user_id` (chiave, `ON DELETE CASCADE`), `athlete_id`
+  (unico: un atleta è di un account solo), `athlete_name`, `access_token`,
+  `refresh_token`, `expires_at`, `connected_at`. I token sono **in
+  chiaro**: l'API li deve rimandare a Strava, quindi un hash non basta.
+  Quello d'accesso dura sei ore; il refresh token non serve a niente senza
+  il Client Secret, che sta solo nell'ambiente del server. Una copia del
+  database non fa entrare nessuno in Strava da sola.
+- `runs` prende tre colonne: `strava_status` (assente: mai mandata;
+  `processing`: Strava ha il file e lo sta leggendo; `sent`: è
+  un'attività), `strava_upload_id` (l'upload su Strava) e
+  `strava_activity_id` (l'attività; assente anche da `sent` quando Strava
+  aveva già la corsa e non ha detto dove).
+- «Disconnect» e la cancellazione dell'account non lasciano righe in
+  `strava_accounts` né in `strava_states`.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» e il taglio
@@ -135,4 +155,7 @@ ADR-0111).
   posizioni (ADR-0092).
 - Cancellare l'account cancella tutto, subito; le copie di sicurezza lo
   perdono entro 14 giorni.
+- Una corsa va a Strava solo quando il suo proprietario lo chiede, e solo
+  all'atleta che lui ha collegato (TASK-187); a Strava si chiede il solo
+  permesso di aggiungere attività, niente in lettura.
 - Età minima 16 anni.

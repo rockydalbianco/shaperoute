@@ -763,6 +763,39 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   `DELETE /me` cancella anche le corse. Niente di una corsa è pubblico:
   titolo, «Public» e traccia tagliata arrivano con TASK-117.
 
+### Profile picture (TASK-178, ADR-0146)
+
+La foto del profilo di un account. Tutti gli endpoint vogliono il token:
+senza, `401 not_signed_in`; senza database, `503 accounts_unavailable`.
+Esempio in `shared-types` (`fixtures/profile-photo.json`); il tipo dell'app
+in `apps/mobile/src/api/profilePhoto.ts`; il codice in `profile_photos.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /me/photo` | la foto | `200` `{ "image": "…", "updated_at": "…" }`, o `404 http_error` senza foto |
+| `PUT /me/photo` | mettere la foto, al posto di quella di prima | `200`, la foto come l'API l'ha tenuta |
+| `DELETE /me/photo` | toglierla | `204`, anche se non c'era |
+
+- **Il corpo del `PUT`** è `{ "image": "…" }`: un file JPEG o PNG in
+  base64, al più 10 MB prima della codifica, come per `POST
+  /image-outlines`. Campi in più, base64 rotto, un file che non è
+  un'immagine, un altro formato (GIF, HEIC…) o più di 50 megapixel:
+  `422 invalid_request`, con il motivo nel messaggio; la foto di prima
+  resta.
+- **Cosa si tiene** (ADR-0115): l'API raddrizza la foto con il suo EXIF,
+  ne prende il quadrato in mezzo, lo riduce a **256 × 256 px** e lo salva
+  come JPEG nuovo (qualità 85, pochi KB). Il file del telefono non si
+  tiene, quindi nemmeno il suo EXIF (dove e quando è stata scattata). Una
+  foto trasparente ha il fondo bianco.
+- **`image`** nelle risposte è quel JPEG in base64: l'app lo mostra così
+  com'è (`data:image/jpeg;base64,…`), senza un'altra richiesta.
+- Al più **10 `PUT` al minuto per account** (`429 too_many_requests` con
+  `Retry-After`): ridurre una foto costa un momento di CPU. Il limite dei
+  POST di `SHAPEROUTE_RATE_LIMIT` non conta i `PUT`. Leggere non ha limiti.
+- Ognuno legge, cambia e toglie solo la sua; nessuno vede quella degli
+  altri finché TASK-116 non fa il profilo pubblico. `DELETE /me` cancella
+  anche la foto.
+
 ## Eventi delle ricerche (TASK-130, ADR-0101)
 
 Ogni ricerca e ogni segnale d'uso lascia un evento in `data/insights/`

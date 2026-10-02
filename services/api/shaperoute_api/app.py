@@ -64,6 +64,7 @@ from shaperoute_api.places import (
     PlaceSearch,
     PlacesUnavailableError,
 )
+from shaperoute_api.profile_photos import install_profile_photos
 from shaperoute_api.recommended import (
     DEFAULT_RADIUS_M,
     MAX_RADIUS_M,
@@ -261,6 +262,8 @@ def create_app(
     # The runs an account recorded (TASK-172); the name of their place comes
     # from the place search's key, when the environment has one.
     install_activities(app, run_places)
+    # The profile picture of an account (TASK-178); it needs its token.
+    install_profile_photos(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

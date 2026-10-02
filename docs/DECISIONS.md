@@ -5779,3 +5779,67 @@ mostra nove voci che ancora non fanno niente: le accendono TASK-178 (la
 foto, ADR-0146, che riusa `Avatar`), TASK-183 (email e telefono), TASK-182
 (unità), TASK-184 (help, termini, privacy, dopo TASK-152) e TASK-185
 (notifiche, per ultime).
+
+## ADR-0146 — La foto del profilo: un quadrato di 256 px fatto dall'API, cambiato da «Settings»
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa (la
+foto del profilo, da mettere in «Settings», chiesta con TASK-177); il come
+deciso dall'agente su delega dell'utente (TASK-178).
+
+**Contesto**: ADR-0115 aveva già detto dove sta la foto, un JPEG quadrato
+di 256 px nel database, perché le copie di sicurezza la prendano con il
+resto. TASK-116 doveva farla insieme a nome utente, bio e profilo
+pubblico; l'utente l'ha chiesta prima, da «Settings», dove ADR-0145 l'ha
+messa con «Soon».
+
+**Decisione**:
+- **Una tabella sua**, `profile_photos` (migrazione `0004`): una riga per
+  account con la foto, `bytea`, `ON DELETE CASCADE`. Non una colonna di
+  `users`: ogni `GET /me` e ogni richiesta con il token leggono `users`,
+  e non devono trascinarsi i KB della foto.
+- **Tre endpoint con il token**, `GET`, `PUT` e `DELETE /me/photo`, come i
+  preferiti. La foto va e viene in base64 dentro JSON, come per i contorni
+  delle immagini (ADR-0069): nessun formato nuovo per l'app e per i test.
+  Nella risposta il JPEG intero (pochi KB), che l'app mostra come
+  `data:image/jpeg;base64,…`: niente indirizzo da chiedere con il token,
+  niente cache da invalidare.
+- **L'API fa il quadrato**, sempre: raddrizza con l'EXIF, prende il
+  quadrato in mezzo, riduce a 256 px, salva un JPEG nuovo. Il file del
+  telefono non si tiene, e con lui l'EXIF: dove è stata scattata una foto
+  non arriva nel database. Oltre 50 megapixel, o un formato che non è JPEG
+  o PNG, è `422` prima di leggere i pixel.
+- **Il quadrato lo sceglie la persona** nell'editor del telefono
+  (`allowsEditing` con `aspect: [1, 1]` di `expo-image-picker`, già una
+  dipendenza); quello dell'API, in mezzo, conta per una foto che arriva
+  non quadrata (Android, o un'altra app).
+- **10 `PUT` al minuto per account**, in memoria come le password
+  sbagliate: il limite di `access.py` conta solo i POST per indirizzo, e
+  ridurre una foto è il lavoro più caro degli account.
+- **Nell'app**: la riga «Profile picture» di «Settings» (in un file suo,
+  `PhotoRow.tsx`, lontano dalle righe che TASK-189 cambia) apre sotto di sé
+  «Choose a picture», «Take a photo» e «Remove picture», come «Delete
+  account» apre la sua domanda: niente menu del sistema, che in Expo Go e
+  nei test si comporta in un altro modo. La foto la tiene un contesto di
+  `ProfileLayer.tsx`, come preferiti e corse: il pulsante in alto, il
+  cerchio di «Profile» e la riga la leggono dallo stesso posto, e si
+  cambiano insieme.
+- **Senza foto, senza rete o con un'API non ancora aggiornata** si vede
+  l'iniziale, come prima, e non si dice niente: una foto non vale un
+  errore sullo schermo. Gli errori si dicono solo quando la persona prova a
+  cambiarla.
+
+**Scartate**: la foto come colonna di `users` (sopra); un file su disco o
+un servizio a parte (ADR-0115); `multipart/form-data` (una dipendenza nuova
+nell'API, `python-multipart`, per un solo endpoint); un indirizzo della
+foto da caricare con `Image` (vorrebbe il token in un'intestazione di
+`Image`, o un indirizzo pubblico, che è TASK-116); tenere la foto sul
+telefono fra un'apertura e l'altra (un'altra copia da tenere allineata;
+per ora l'iniziale per un attimo va bene); `ActionSheetIOS` o `Alert` per
+le tre scelte (diversi su Android, non provabili nei test come il resto di
+«Settings»).
+
+**Conseguenze**: all'apertura l'app chiede una richiesta in più, `GET
+/me/photo`, con l'account. Sul server serve la migrazione `0004` (un
+aggiornamento dell'API, con l'ok dell'utente); finché non c'è, la riga
+dice «Profile pictures are not available on this API yet.» a chi prova. La
+foto la vede solo il suo proprietario: mostrarla agli altri, con nome e
+bio, resta a TASK-116, la cui migrazione diventa la `0005`.

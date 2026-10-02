@@ -34,7 +34,6 @@ test("the account, by name and email", async () => {
 test("the settings to come are named, say «Soon» and take no tap", async () => {
   await show();
   for (const name of [
-    "Profile picture",
     "Change email",
     "Phone number",
     "Units",
@@ -46,10 +45,11 @@ test("the settings to come are named, say «Soon» and take no tap", async () =>
   ]) {
     expect(screen.getByLabelText(`${name}, coming soon`)).toBeOnTheScreen();
   }
-  // Nine settings to come, and the two sports to come («Sport», TASK-189).
-  expect(screen.getAllByText("Soon")).toHaveLength(11);
-  // Only the ways out are buttons.
-  expect(screen.getAllByRole("button")).toHaveLength(2);
+  // Eight settings to come, and the two sports to come («Sport», TASK-189).
+  expect(screen.getAllByText("Soon")).toHaveLength(10);
+  // Only the picture (TASK-178) and the ways out are buttons.
+  expect(screen.getAllByRole("button")).toHaveLength(3);
+  expect(screen.getByRole("button", { name: "Profile picture" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Log out" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Delete account" })).toBeOnTheScreen();
 });

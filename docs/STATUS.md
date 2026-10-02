@@ -48,9 +48,6 @@ In coda, dopo o accanto:
   senza account resta com'è; il luogo lo trova l'API). Dipende da TASK-171
   e, per la fine della corsa, da TASK-169. Prende la metà privata di
   TASK-117: chi prende TASK-117 ne aggiorna lo scope.
-- **TASK-067 — Lettere unite anche dalla cima** (ADR-0063): il task file
-  è scritto (2026-10-02), da assegnare. La scala per lettera non si fa,
-  scelta dell'utente: da TASK-071 lettere più piccole si leggono peggio.
 - **Pubblicità che paga**, chiesta dall'utente il 2026-10-02: **TASK-150**
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
@@ -108,6 +105,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore** — TASK-067: due lettere di una parola si uniscono anche lungo
+  la cima, dove la parola viene più corta e si legge uguale, chiesto
+  dall'utente (ADR-0063). Tre regole di lettura: non si allunga un tratto
+  che finisce in cima (la T, il braccio della E), non si passa sopra la
+  lettera, non si tocca una lettera con un solo punto in cima (la I
+  sarebbe una T). Cambiano solo le parole con U, V, W o Y (P, U, V, Y nelle
+  squadrate): «UVA» −7,4%, «NUVOLA» −5,2%; le altre restano identiche.
+  Diciotto campioni a 15 km: l'utente ha preferito il percorso di prima
+  nei sette casi giudicati, e ha scelto lo stesso di accenderle per tonde
+  e squadrate (`words.TOP_JOINS`; `False` per tornare indietro). La ricerca
+  non dura di più. API e app non cambiano. **L'app pubblicata le vede dopo
+  aver aggiornato l'API sul server** (`DEPLOY.md` F.12), con l'ok
+  dell'utente. La scala per lettera non si fa, per scelta dell'utente.
 - **App** — TASK-179: l'animazione all'avvio, chiesta dall'utente
   (ADR-0147). Aprendo l'app il giallo riempie lo schermo, una penna disegna
   il cuore di Milano del video, sotto c'è il logo nero; 2,4 secondi, poi

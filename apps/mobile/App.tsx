@@ -4,6 +4,7 @@ import type {
   LetterStyle,
   OutlinePoint,
   Shape,
+  Walk,
 } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
@@ -124,7 +125,14 @@ type Finished = {
 };
 
 /** A route of "Explore" run with the directions asked for it (TASK-145). */
-type ExploreRun = { points: LatLon[]; directions: Direction[]; similarity: number };
+type ExploreRun = {
+  points: LatLon[];
+  directions: Direction[];
+  similarity: number;
+  /** A favorite of a word with the pen up (TASK-199): its walks and word. */
+  walks?: Walk[];
+  word?: string | null;
+};
 
 function finishedRun(run: ScorableRun, resumable: boolean): Finished {
   return { run, line: run.track.fixes.map((fix) => fix.point), resumable };
@@ -207,8 +215,9 @@ function Sgrava() {
         : {
             start: activity.track[0] ?? null,
             route: activity.points,
-            // «My activities» keeps no walks: its route is one line.
-            walks: null,
+            // A word with the pen up, dashed as at the end of the run
+            // (TASK-199); none from an API older than that.
+            walks: activity.walks ?? null,
             others: NO_OTHERS,
             track: activity.track,
           },
@@ -352,9 +361,10 @@ function Sgrava() {
   const startDirections = useStartDirections(API_URL);
   const [exploreRun, setExploreRun] = useState<ExploreRun | null>(null);
   const followed = exploreRun ?? chosen;
-  // The walks of a drawn word with the pen up (TASK-198); a route of
-  // "Explore" has none.
-  const followedWalks = exploreRun === null ? (chosen?.walks ?? null) : null;
+  // The walks of a drawn word with the pen up (TASK-198), or of a favorite
+  // (TASK-199); a route of "Explore" has none.
+  const followedWalks =
+    exploreRun === null ? (chosen?.walks ?? null) : (exploreRun.walks ?? null);
   const navigating = screen === "navigate" && followed !== null;
   const navigation = useNavigation(
     followed?.points ?? null,
@@ -363,7 +373,7 @@ function Sgrava() {
     followed?.similarity,
     {
       walks: followedWalks ?? undefined,
-      word: exploreRun === null ? chosen?.word : null,
+      word: exploreRun === null ? chosen?.word : (exploreRun.word ?? null),
     },
   );
   const finishing = screen === "finish" && finished !== null;
@@ -519,10 +529,23 @@ function Sgrava() {
     setExploreRun(null);
   }
 
-  /** Start on a route of "Explore": its directions first (TASK-145). */
-  function onStartExplore(route: { points: LatLon[]; similarity: number }) {
+  /** Start on a route of "Explore": its directions first (TASK-145). A
+   * favorite of a word with the pen up brings its walks (TASK-199). */
+  function onStartExplore(route: {
+    points: LatLon[];
+    similarity: number;
+    walks?: Walk[];
+    word?: string | null;
+  }) {
     startDirections.start(route.points, (directions) => {
-      setExploreRun({ points: route.points, directions, similarity: route.similarity });
+      setExploreRun({
+        points: route.points,
+        directions,
+        similarity: route.similarity,
+        ...(route.walks !== undefined && route.walks.length > 0
+          ? { walks: route.walks, word: route.word ?? null }
+          : {}),
+      });
       setScreen("navigate");
     });
   }
@@ -635,9 +658,14 @@ function Sgrava() {
             walks={
               finishing
                 ? finished.run.walks
-                : running || freeFinishing || theming || exploring
+                : running || freeFinishing || theming
                   ? null
-                  : followedWalks
+                  : exploring
+                    ? // A favorite of a word with the pen up (TASK-199).
+                      explored.status === "done"
+                      ? (explored.result.walks ?? null)
+                      : null
+                    : followedWalks
             }
             // Only while choosing, a drawn route or an example of "Explore"
             // (TASK-155): running, or on a themed route, one route is the route.

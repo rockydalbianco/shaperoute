@@ -113,8 +113,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   punto. Sostituisce il segnaposto di Expo, anche su Android (icona
   adattiva e a un colore); i vettoriali in `docs/brand/`. In Expo Go sulla
   schermata di casa non si vede: **da guardare in una build propria**
-  (TASK-152). Restano da decidere il nome sotto l'icona (`app.json` dice
-  «ShapeRoute») e la schermata di avvio.
+  (TASK-152). Sotto l'icona il nome è «Sgrava», non più «ShapeRoute»
+  (`name` in `app.json`). Restano la schermata di avvio, da decidere, e tre
+  testi dell'app che dicono ancora «Location is off for ShapeRoute…».
 - **App** — TASK-156: «Feed» mostra quindici disegni di esempio, chiesti
   dall'utente (ADR-0127): le figure venute meglio nelle sette città del
   catalogo, due per città, undici forme, con corridori, titoli, tempi e

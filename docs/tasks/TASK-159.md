@@ -1,15 +1,16 @@
-# TASK-159 — L'icona dell'app con il nuovo logo
+# TASK-159 — L'icona dell'app con il nuovo logo, e il nome «Sgrava»
 
 **Stato**: Done
 **Fase**: 4 · **Branch**: `chore/TASK-159-app-icon`
 
 Chiesto dall'utente il 2026-10-02, dopo aver visto tre proposte di logo:
-«scelgo la A, metti l'icona nell'app».
+«scelgo la A, metti l'icona nell'app». Poi, vista la PR: «cambia il nome
+sotto l'icona in Sgrava».
 
 ## Obiettivo
 
 L'icona dell'app è il nuovo segno di Sgrava (ADR-0129), non più il
-segnaposto di Expo.
+segnaposto di Expo, e sotto c'è scritto «Sgrava», non «ShapeRoute».
 
 ## Contesto da leggere
 
@@ -25,7 +26,9 @@ segnaposto di Expo.
    `#0A0A0B`.
 3. Il segno e il logo in vettoriale in `docs/brand/`, da cui rifare le
    immagini.
-4. `DECISIONS.md`, `UI.md`, `STATUS.md`.
+4. `app.json`: `name` da «ShapeRoute» a «Sgrava». `slug`,
+   `bundleIdentifier` e il progetto EAS restano com'erano.
+5. `DECISIONS.md`, `UI.md`, `STATUS.md`.
 
 ## Criteri di accettazione
 
@@ -34,7 +37,7 @@ segnaposto di Expo.
 - [x] Su Android il segno sta nel cerchio sicuro dell'icona adattiva
       (61% del lato) e il fondo è nero; l'icona a un colore è il segno
       bianco su trasparente.
-- [x] `npx expo config` legge `app.json` senza errori.
+- [x] `npx expo config` legge `app.json` senza errori e dà `name: Sgrava`.
 - [x] Test, lint, typecheck e prettier verdi.
 - [ ] Vista sul telefono in una build propria (TASK-152): in Expo Go
       l'icona sulla schermata di casa resta quella di Expo Go.
@@ -61,7 +64,10 @@ docs/tasks/TASK-159.md
 
 - La schermata di avvio: `splash-icon.png` è ridisegnata ma `app.json` non
   la usa, come prima. Mostrarla è una scelta su cosa si vede all'apertura.
-- Il nome sotto l'icona: `app.json` dice ancora «ShapeRoute».
+- I testi dell'app che nominano «ShapeRoute» («Location is off for
+  ShapeRoute…» in `App.tsx`, `NavigateScreen.tsx`, `FreeRunScreen.tsx`):
+  un seguito, segnalato al coordinatore perché `App.tsx` non è di questo
+  task.
 - Il logo dentro l'app (la scritta «Sgrava» in cima a «Draw»).
 - I post per Instagram e l'immagine del profilo: stanno nel canvas.
 
@@ -71,5 +77,8 @@ Fatto (2026-10-02). L'icona è il segno giallo su nero, anche su Android;
 `npx expo config` legge `app.json`, 739 test dell'app verdi, lint, typecheck
 e prettier puliti. Le immagini sono state guardate una per una, non su un
 telefono: **da vedere in una build propria** (TASK-152), perché in Expo Go
-sulla schermata di casa resta l'icona di Expo Go. Restano all'utente il
-nome sotto l'icona («ShapeRoute» in `app.json`) e la schermata di avvio.
+sulla schermata di casa resta l'icona di Expo Go. Il nome dell'app è
+«Sgrava» (`name` in `app.json`), chiesto dall'utente a PR aperta; una
+cartella `ios/` già generata in locale porta ancora il nome vecchio e va
+rifatta con `npx expo prebuild --clean`. Restano: la schermata di avvio,
+all'utente, e i tre testi «Location is off for ShapeRoute…», un seguito.

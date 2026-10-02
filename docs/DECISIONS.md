@@ -4568,10 +4568,11 @@ quelli che l'API dà ai percorsi del catalogo: servono a TASK-118 per aprire
 il percorso dal feed. Se il catalogo cambia, `python tools/sample_feed.py`
 rifà il file.
 
-## ADR-0129 — Il logo: una S fatta come un percorso, e l'icona dell'app
+## ADR-0129 — Il logo: una S fatta come un percorso, l'icona dell'app e il suo nome
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** fra tre proposte
-(«scelgo la A, metti l'icona nell'app»); le misure e i file decisi
-dall'agente su delega dell'utente (TASK-159).
+(«scelgo la A, metti l'icona nell'app») e per il nome («cambia il nome
+sotto l'icona in Sgrava»); le misure e i file decisi dall'agente su delega
+dell'utente (TASK-159).
 
 **Contesto**: l'utente ha chiesto un logo «più futuristico, più moderno» di
 quello disegnato a mano il 2026-09-20 («grava» su asfalto). L'icona
@@ -4591,6 +4592,9 @@ dell'app era ancora il segnaposto di Expo, azzurro.
   senza trasparenza (l'App Store la rifiuta). Su Android il segno è alto il
   43% del lato, dentro il cerchio sicuro dell'icona adattiva; fondo nero,
   icona a un colore bianca su trasparente.
+- **Il nome sotto l'icona è «Sgrava»**: `name` in `app.json`, che era
+  ancora «ShapeRoute». `slug` (`shaperoute`), `bundleIdentifier` e il
+  progetto EAS non cambiano: gli aggiornamenti arrivano come prima.
 - **I vettoriali stanno in `docs/brand/`**: le immagini si rifanno da lì.
   Nessuno script nel repository: sono sei immagini, rifatte di rado.
 
@@ -4602,5 +4606,8 @@ giallo è il percorso su fondo nero, e l'icona lo anticipa).
 **Conseguenze**: le proposte, l'immagine del profilo e i post per Instagram
 stanno in un canvas privato dell'utente, non nel repository. La schermata
 di avvio non è configurata in `app.json`: `splash-icon.png` è ridisegnata
-ma non usata. Il nome sotto l'icona è ancora «ShapeRoute». L'icona sulla
-schermata di casa si vede solo in una build propria (TASK-152).
+ma non usata. L'icona e il nome sulla schermata di casa si vedono solo in
+una build propria (TASK-152). Una cartella `ios/` generata prima porta il
+nome vecchio: si rifà con `npx expo prebuild --clean`. Tre testi dell'app
+dicono ancora «Location is off for ShapeRoute…»: da allineare in un task a
+parte, perché in una build propria le Impostazioni elencano «Sgrava».

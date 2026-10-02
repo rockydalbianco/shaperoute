@@ -45,6 +45,7 @@
   },
   "jest": {
     "preset": "jest-expo",
-    "testTimeout": 120000
+    "testTimeout": 120000,
+    "verbose": true
   }
 }

@@ -108,6 +108,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-158: il pulsante della corsa libera, in cima a «Draw», dice
+  «Run without a route» invece di «Run», chiesto dall'utente: «Run» da solo
+  si leggeva come correre il percorso scelto sotto. **Da provare
+  sull'iPhone** (ripubblicare l'app).
 - **App** — TASK-155: in «Explore», sulla mappa di un esempio di città gli
   altri percorsi fra «A · B · C» sono linee grigie sotto quello scelto,
   come per un percorso disegnato; chiesto dall'utente dopo aver provato

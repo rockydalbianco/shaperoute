@@ -10,6 +10,7 @@ import { useMemo, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { useAdBeforeRoute } from "./src/ads/useAdBeforeRoute";
 import { apiUrl } from "./src/api/apiUrl";
 import {
   chooseStart,
@@ -179,14 +180,19 @@ function Sgrava() {
   // Past RouteChoice to the image panel (TASK-079).
   const { edits, add, undo } = image;
   const imageEdits = useMemo(() => ({ ...edits, add, undo }), [edits, add, undo]);
-  const { state, draw, cancel } = useRouteRequest(API_URL);
+  const routeRequest = useRouteRequest(API_URL);
+  const { draw, cancel } = routeRequest;
+  // A ready route waits behind the ad, if there is one (TASK-132).
+  const state = useAdBeforeRoute(routeRequest.state);
   const gpx = useGpxExport(API_URL);
   const { explored, open: openExplored, close: closeExplored } = useExplored(API_URL);
   // "Explore" for any city, and a shape through a theme's places (TASK-129).
   const [exploreCity, setExploreCity] = useState<Place | null>(null);
   // The cities chosen last, kept on the phone (TASK-134).
   const [recentCities, setRecentCities] = useState<Place[]>(loadRecentCities);
-  const themed = useThemedRoute(API_URL);
+  const themedRoute = useThemedRoute(API_URL);
+  const themedState = useAdBeforeRoute(themedRoute.state);
+  const themed = { ...themedRoute, state: themedState };
   const themedExport = useMemo(
     () => (themed.state.status === "done" ? themedGpx(themed.state.result) : null),
     [themed.state],

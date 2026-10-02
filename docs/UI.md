@@ -63,6 +63,29 @@ Quattro regole:
    villaggi; non i nomi delle vie, i numeri civici e i punti d'interesse.
    Nessuno strato della mappa usa il giallo.
 
+## Il logo e l'icona (TASK-159, ADR-0129)
+
+Il segno è una S fatta come un percorso: un tratto solo, di spessore
+costante, con gli angoli arrotondati, e un punto in alto a destra da cui
+parte. Giallo `accent` su `background`, o nero su giallo. Il logo intero è
+il segno seguito da «GRAVA» con lo stesso tratto, le due A senza trattino.
+I vettoriali stanno in `docs/brand/` (`sgrava-mark.svg`, `sgrava-logo.svg`).
+
+Sotto l'icona il nome è «Sgrava» (`name` in `app.json`). L'icona dell'app
+è il segno giallo su nero (`assets/icon.png`, 1024 × 1024,
+senza trasparenza). Su Android il segno sta nel cerchio sicuro dell'icona
+adattiva, il fondo è nero e l'icona a un colore è il segno bianco. In Expo
+Go sulla schermata di casa resta l'icona di Expo Go: la nostra si vede con
+una build propria. Dentro l'app il nome in cima a «Draw» resta un testo.
+
+**La schermata di avvio** (TASK-165, ADR-0134): fondo `background`, il logo
+giallo al centro. Su iOS il logo intero, largo 260 punti
+(`assets/splash-logo.png`); su Android il segno da solo
+(`assets/splash-icon.png`), perché il sistema ritaglia l'immagine in un
+cerchio. La genera il plugin `expo-splash-screen` da `app.json`: nessun
+codice la tiene aperta, sparisce quando l'app è pronta. Come l'icona, si
+vede solo in una build propria.
+
 ## Le due schermate
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La
@@ -211,6 +234,14 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
   inventati. Le schede non si toccano: aprire un disegno arriva con
   TASK-118.
+  **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
+  chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
+  stile dell'app. È una foto, non una mappa da muovere: la fa una pagina
+  MapLibre che l'elenco copre, una mappa alla volta, inquadrata come la
+  linea; finché non arriva la scheda è la linea sul fondo scuro, e senza
+  rete resta così. In basso a destra di ogni mappa il credito,
+  «OpenFreeMap © OpenMapTiles / Data from OpenStreetMap», in due righe
+  accanto al punteggio. Le foto fatte restano finché l'app è aperta.
 - **«Explore»** chiede i suoi percorsi all'API la prima volta che ci si
   arriva, non all'apertura dell'app; tornandoci l'elenco è ancora lì. Non
   ha più «←»: per tornare c'è lo swipe, o il nome «Draw».
@@ -269,7 +300,7 @@ giallo.
 |---|---|---|
 | In attesa del GPS | «Finding your position…» | — |
 | GPS riuscito | «Starting from your position.» | — |
-| Permesso negato | «Location is off for ShapeRoute…» | «Open Settings», ricerca |
+| Permesso negato | «Location is off for Sgrava…» | «Open Settings», ricerca |
 | GPS spento, errore, nessuna risposta in 15 s | «Your position is not available right now…» | ricerca |
 | «Another place», nessun luogo ancora | «Search for a city or street to start from.» | ricerca |
 | Luogo scelto dalla ricerca | «Starting from Via Rodolfo Belenzani, Trento.» | ricerca, per cambiarlo |
@@ -699,7 +730,7 @@ di «←» un banner con i km in grande, due decimali («2.34 km»), e sotto il
 tempo e il passo medio («12:34 · 5:21 /km»). Il tempo parte dalla prima
 posizione del GPS e va avanti ogni secondo; il passo compare dopo 100 m.
 Prima della prima posizione, «Finding your position…»; senza permesso,
-«Location is off for ShapeRoute: allow it in Settings to record a run.».
+«Location is off for Sgrava: allow it in Settings to record a run.».
 Sotto la mappa «Run without a route», «Pocket» (la stessa modalità tasca
 della navigazione) e «Stop». A ogni km la voce, in inglese come il resto,
 dice il tempo e il passo medio: «1 kilometre. Time: 5 minutes 42 seconds.
@@ -798,6 +829,9 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   locale, una volta; l'API non la salva e non la scrive nel log. Poi viaggia
   solo il contorno. Non va a nessun servizio esterno né all'AI.
 - **Le tile**: il provider vede quale zona si guarda, come con ogni mappa.
+  Da TASK-162 anche le zone dei disegni di «Feed», a ogni apertura
+  dell'app: sono le città degli esempi, uguali per tutti, non la posizione
+  di chi guarda.
 - **La ricerca**: il testo cercato e la posizione (per mettere prima i
   luoghi vicini) vanno all'API, che li gira a Geoapify (TASK-123); senza
   API o senza chiave, a Photon (komoot). Il log dell'API scrive solo

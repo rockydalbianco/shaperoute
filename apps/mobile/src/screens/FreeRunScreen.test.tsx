@@ -69,7 +69,7 @@ test("without the location, the banner says how to turn it on", async () => {
   await render(<FreeRunBanner state={{ status: "denied" }} />);
   expect(
     screen.getByText(
-      "Location is off for ShapeRoute: allow it in Settings to record a run.",
+      "Location is off for Sgrava: allow it in Settings to record a run.",
     ),
   ).toBeOnTheScreen();
 });

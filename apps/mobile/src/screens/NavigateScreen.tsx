@@ -24,7 +24,7 @@ export function NavigationBanner({ state }: { state: NavigationState }) {
     return (
       <View style={styles.banner}>
         <Text style={styles.message}>
-          Location is off for ShapeRoute: allow it in Settings to navigate.
+          Location is off for Sgrava: allow it in Settings to navigate.
         </Text>
       </View>
     );

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ShapeRoute",
+    "name": "Sgrava",
     "slug": "shaperoute",
     "version": "0.0.0",
     "runtimeVersion": "exposdk:57.0.0",
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0A0A0B",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -27,6 +27,18 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0A0A0B",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 240,
+          "ios": {
+            "image": "./assets/splash-logo.png",
+            "imageWidth": 260
+          }
+        }
+      ],
       "expo-sharing",
       [
         "expo-image-picker",

@@ -4568,6 +4568,145 @@ quelli che l'API dà ai percorsi del catalogo: servono a TASK-118 per aprire
 il percorso dal feed. Se il catalogo cambia, `python tools/sample_feed.py`
 rifà il file.
 
+## ADR-0129 — Il logo: una S fatta come un percorso, l'icona dell'app e il suo nome
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** fra tre proposte
+(«scelgo la A, metti l'icona nell'app») e per il nome («cambia il nome
+sotto l'icona in Sgrava»); le misure e i file decisi dall'agente su delega
+dell'utente (TASK-159).
+
+**Contesto**: l'utente ha chiesto un logo «più futuristico, più moderno» di
+quello disegnato a mano il 2026-09-20 («grava» su asfalto). L'icona
+dell'app era ancora il segnaposto di Expo, azzurro.
+
+**Decisione**:
+- **Il segno**: una S di un tratto solo, con gli angoli arrotondati, e un
+  punto in alto a destra: il percorso e la sua partenza. In un quadro di
+  77 × 87: tratto `M40 24H12Q0 24 0 36V48Q0 60 12 60H48Q60 60 60 72V84Q60
+  96 48 96H0`, largo 14, estremità tonde; punto in (62, 24), raggio 8.
+- **Il logo**: il segno fa da S, seguito da «GRAVA» con lo stesso tratto;
+  le due A senza trattino, come la V rovesciata. Come nel logo di prima, il
+  segno è la prima lettera del nome.
+- **I colori sono quelli del tema** (ADR-0046): giallo `#FFD02B` su nero
+  `#0A0A0B`, o nero su giallo. Nessun colore nuovo.
+- **L'icona**: il segno giallo su nero, alto il 53% del lato; 1024 × 1024,
+  senza trasparenza (l'App Store la rifiuta). Su Android il segno è alto il
+  43% del lato, dentro il cerchio sicuro dell'icona adattiva; fondo nero,
+  icona a un colore bianca su trasparente.
+- **Il nome sotto l'icona è «Sgrava»**: `name` in `app.json`, che era
+  ancora «ShapeRoute». `slug` (`shaperoute`), `bundleIdentifier` e il
+  progetto EAS non cambiano: gli aggiornamenti arrivano come prima.
+- **I vettoriali stanno in `docs/brand/`**: le immagini si rifanno da lì.
+  Nessuno script nel repository: sono sei immagini, rifatte di rado.
+
+**Scartate**: «Nodi», la S su una griglia di incroci (i puntini si perdono
+sotto i 30 px); «Scatto», due frecce inclinate (simile a molti marchi
+sportivi); il fondo giallo con il segno nero per l'icona (nell'app il
+giallo è il percorso su fondo nero, e l'icona lo anticipa).
+
+**Conseguenze**: le proposte, l'immagine del profilo e i post per Instagram
+stanno in un canvas privato dell'utente, non nel repository. La schermata
+di avvio non è configurata in `app.json`: `splash-icon.png` è ridisegnata
+ma non usata. L'icona e il nome sulla schermata di casa si vedono solo in
+una build propria (TASK-152). Una cartella `ios/` generata prima porta il
+nome vecchio: si rifà con `npx expo prebuild --clean`. Tre testi dell'app
+dicono ancora «Location is off for ShapeRoute…»: da allineare in un task a
+parte, perché in una build propria le Impostazioni elencano «Sgrava».
+
+## ADR-0131 — La mappa sotto i disegni di «Feed» è una foto, fatta da una pagina nascosta
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («nella
+sezione feed sotto le immagini, bisogna aggiungere la mappa»); il come
+deciso dall'agente su delega dell'utente (TASK-162).
+
+**Contesto**: da TASK-156 una scheda di «Feed» è la linea gialla su un
+fondo vuoto. L'utente vuole sotto la mappa. La mappa dell'app è MapLibre
+GL JS in una WebView (ADR-0029): una per scheda vorrebbe dire fino a una
+decina di pagine con WebGL vive insieme in un elenco che scorre.
+OpenFreeMap dà solo tile vettoriali: non c'è un'immagine da chiedere.
+
+**Decisione**:
+- **Una foto, non una mappa**: la scheda non si tocca (ADR-0127), quindi
+  le basta un'immagine. **Una sola pagina MapLibre**, in «Feed», sotto
+  l'elenco che la copre: inquadra una mappa alla volta, aspetta che ogni
+  tile sia disegnata (`idle`) e manda all'app il canvas come JPEG
+  (`toDataURL`, `preserveDrawingBuffer`). La scheda lo mostra con `Image`
+  sotto la linea.
+- **Stesso stile e stessa libreria della mappa grande** (`MAP_STYLE`,
+  MapLibre con SRI): i colori restano i token, niente chiave. Senza
+  controlli e senza gesti.
+- **La linea resta dell'app**: le `View` di `thumbSegments`, sopra la foto.
+  `lineCamera` dà a MapLibre centro e zoom dello stesso riquadro; su pochi
+  chilometri la proiezione della mappa e quella piana della linea
+  differiscono di meno di un punto (un test lo misura). Così la scheda è
+  subito quella di prima, e la mappa le arriva sotto.
+- **Una alla volta, a richiesta**: la foto la chiede la scheda quando
+  l'elenco la monta (`useFeedMap`); la pagina c'è solo finché c'è una foto
+  da fare, poi si smonta e libera la memoria. Ogni richiesta porta la sua
+  misura: la pagina si ridimensiona da sola.
+- **Le foto restano in memoria** per tutta la vita dell'app, per `id` e
+  misura: il `Pager` smonta «Feed» ogni volta che si apre la mappa grande.
+- **Quando non va**: una tile che manca dà una scheda senza mappa, non
+  mezza mappa; una foto che non arriva in 20 s si salta; se MapLibre non si
+  carica la pagina si smonta. Nessun messaggio: la scheda senza mappa è
+  quella di TASK-156. Una scheda che torna sullo schermo richiede.
+- **Il credito su ogni foto**: «OpenFreeMap © OpenMapTiles / Data from
+  OpenStreetMap», il testo di `ATTRIBUTION`, senza link perché la scheda
+  non si tocca. In due righe, in basso a destra, accanto al punteggio.
+
+**Scartate**: una WebView per scheda (memoria, e i gesti della mappa
+contro lo swipe delle pagine); immagini già pronte nell'app, fatte da uno
+script (vuole un browser senza testa fra gli strumenti, e non serve al feed
+vero); tile raster di un altro fornitore (un'altra mappa, chiara, e una
+chiave); disegnare anche la linea in MapLibre (la scheda resterebbe vuota
+finché la foto non arriva).
+
+**Conseguenze**: all'apertura dell'app partono le foto delle prime schede
+(«Feed» è costruita subito: `App.tsx` non si tocca qui), cioè MapLibre da
+unpkg e qualche tile per città; nel simulatore 2 s la prima volta, meno di
+1 s con le tile in cache. Le foto non restano fra un'apertura e l'altra.
+Con il feed vero (TASK-118) la stessa pagina fotografa qualsiasi linea, ma
+serve un tetto alle foto in memoria. `FeedPost` mostrato altrove (TASK-163)
+ha la mappa finché «Feed» è montata. Android non è stato provato.
+
+## ADR-0134 — La schermata di avvio: `expo-splash-screen`, logo su nero
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («metti
+anche la schermata di avvio con il logo») e per la dipendenza («Sì,
+aggiungila»); il come deciso dall'agente su delega dell'utente (TASK-165).
+
+**Contesto**: l'app non aveva una schermata di avvio. In Expo SDK 57 la
+chiave `splash` di `app.json` non esiste più, tranne che per il web: la
+schermata nativa la scrive solo il plugin del pacchetto `expo-splash-screen`,
+che nel progetto non c'era.
+
+**Decisione**:
+- **Dipendenza nuova: `expo-splash-screen` ~57.0.9**, il pacchetto ufficiale
+  di Expo per l'SDK 57 (è in `bundledNativeModules.json` di `expo`, quindi
+  fra i moduli che Expo Go ha già dentro). Con sé porta `xml2js`,
+  `@expo/image-utils` e `@expo/config-plugins`, già nel lock.
+- **Solo il plugin, nessun codice**: l'app non importa il modulo e non
+  chiama `preventAutoHide`. La schermata sparisce quando l'app è pronta.
+  In Expo Go quindi non cambia niente, e un `eas update` resta sicuro.
+- **Fondo `#0A0A0B`, logo giallo** (ADR-0129, ADR-0046).
+- **Su iOS il logo intero**, largo 260 punti: `assets/splash-logo.png`,
+  1040 × 1040 trasparente, perché il plugin mette l'immagine in un quadrato
+  largo `imageWidth`.
+- **Su Android il segno da solo**, `assets/splash-icon.png` a 240 dp: da
+  Android 12 il sistema ritaglia l'immagine in un cerchio di 192 dp, dove
+  il logo largo starebbe minuscolo; il segno ha una diagonale di 131 dp.
+
+**Scartate**: un plugin scritto da noi per non aggiungere il pacchetto
+(codice nativo generato a mano, da provare e mantenere); un componente
+React che mostra il logo all'avvio (prima che parta il JavaScript lo schermo
+resta vuoto, e toccava `App.tsx`); il logo intero anche su Android.
+
+**Conseguenze**: si vede solo in una build propria (TASK-152). Il prebuild
+di prova genera `SplashScreen.storyboard` con il logo in un riquadro di
+260 × 260 al centro e il colore `SplashScreenBackground` a `#0A0A0B`; su
+Android `windowSplashScreenBackground` e `splashscreen_logo`. Il prebuild
+scrive anche `android.package` in `app.json` e cambia due script di
+`package.json`: sono effetti della prova, non vanno committati. Tenere la
+schermata finché i dati sono pronti vorrebbe `preventAutoHide` in `App.tsx`:
+un task a parte, se servirà.
+
 ## ADR-0132 — «Explore»: i disegni del feed mentre una città si disegna, e le città in evidenza già nel catalogo
 **Stato**: Attiva · 2026-10-02 · chiesto dall'utente («almeno un cuore, un
 cerchio e la stella devono essere già disegnate [in] tutte le città che

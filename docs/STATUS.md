@@ -61,7 +61,7 @@ In coda, dopo o accanto:
   «Explore» (TASK-126, 134) e il suo «Start» (TASK-145), correre senza
   percorso (TASK-149), «A · B · C» negli esempi (TASK-151, 155), lo swipe
   col dito (TASK-154), il feed d'esempio e i ritocchi di TASK-156, 157,
-  158.
+  158, la mappa sotto i disegni di «Feed» (TASK-162).
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -91,6 +91,32 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
 
 ## Completato
 
+- **App** — TASK-162: in «Feed» ogni disegno ha sotto la mappa della sua
+  zona, chiesta dall'utente (ADR-0131): strade, acqua, verde e nomi, con
+  lo stile dell'app. È una foto: una pagina MapLibre nascosta sotto
+  l'elenco ne fa una alla volta e la scheda la mette sotto la linea, con
+  il credito della mappa. Senza rete le schede restano come prima. Nessuna
+  dipendenza nuova, niente API. Visto su un simulatore. **Da provare
+  sull'iPhone**, con l'app ripubblicata.
+- **App** — TASK-165: la schermata di avvio con il logo, chiesta
+  dall'utente (ADR-0134): fondo nero, su iOS il logo intero, su Android il
+  segno. Usa `expo-splash-screen`, dipendenza nuova approvata dall'utente;
+  è fra i moduli di Expo Go, e l'app non lo importa: in Expo Go non cambia
+  niente. **Da guardare in una build propria** (TASK-152). Dopo il merge:
+  `npm install` nel checkout principale.
+- **App** — TASK-160: i tre messaggi sulla posizione spenta dicono
+  «Location is off for Sgrava…» invece di «…for ShapeRoute…» (prima
+  schermata, navigazione, corsa libera): è il nome sotto l'icona da
+  TASK-159, e quello che le Impostazioni elencano in una build propria. In
+  Expo Go il permesso resta sotto «Expo Go».
+- **App** — TASK-159: l'icona dell'app è il nuovo logo scelto dall'utente
+  (ADR-0129): una S gialla su nero, fatta come un percorso che parte da un
+  punto. Sostituisce il segnaposto di Expo, anche su Android (icona
+  adattiva e a un colore); i vettoriali in `docs/brand/`. In Expo Go sulla
+  schermata di casa non si vede: **da guardare in una build propria**
+  (TASK-152). Sotto l'icona il nome è «Sgrava», non più «ShapeRoute»
+  (`name` in `app.json`). Restano la schermata di avvio, da decidere, e tre
+  testi dell'app che dicono ancora «Location is off for ShapeRoute…».
 - **Documentazione** — TASK-141: `STATUS.md` allineato ai task file e
   alle PR del 2026-10-02: prossimo passo, task in lavorazione, In una riga;
   TASK-126, 128, 129, 131 e 134 qui sotto.

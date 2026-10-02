@@ -44,6 +44,7 @@ services/route-engine/tests/test_seed_catalog.py
 catalog/README.md
 catalog/seed/*.json
 samples/LOG.md
+tools/test_sample_feed.py
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-161.md
@@ -63,7 +64,13 @@ docs/tasks/TASK-161.md
   sceglierebbe altre figure. 12 su 15 cambiano: entrano Verona, Palermo,
   Bari, Genova, Napoli, Padova e New York; restano Levico cavallo 21,
   Trento stella 5, Bologna luna 5. Il feed dell'app non cambia finché
-  qualcuno non rilancia lo script.
+  qualcuno non rilancia lo script. `tools/test_sample_feed.py` legge il
+  catalogo vero: con 14 città e 15 post non può dare due figure a città,
+  quindi ne chiede almeno una (ok del coordinatore).
+- **Seguito, da decidere con l'utente**: il Feed di esempio l'utente l'aveva
+  chiesto con «sette città d'Italia». Rilanciato sul catalogo nuovo,
+  `sample_feed.py` sceglierebbe anche New York e le altre: prima di
+  rigenerare `sampleFeed.json` va chiesto all'utente.
 - **Per TASK-163**: `newyork.json` ha già a 5 km il cerchio (0,98), il
   cuore (0,97) e la stella (0,98), tutti tenuti a occhio; anche cavallo,
   luna e pesce.

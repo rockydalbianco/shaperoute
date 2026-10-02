@@ -91,7 +91,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   la riga «Favorites» li elenca a schede e li riapre sulla mappa, da
   correre ed esportare. Senza account il cuore porta a «Sign up». Nell'API
   la tabella `favorites` (migrazione `0002`, la prima con PostGIS) e
-  `/me/favorites`. **Sul telefono si vede dopo due passi che vogliono l'ok
+  `/me/favorites`. Visto in un simulatore, con un'API e un database
+  locali: l'elenco, un preferito aperto sulla mappa con il suo cuore, la
+  riga in «Profile». **Sul telefono si vede dopo due passi che vogliono l'ok
   dell'utente**: l'API del server aggiornata (`DEPLOY.md` F.12) e l'app
   pubblicata. Poi **da provare sull'iPhone**. Segue TASK-172, «My
   activities»: le corse registrate, nel profilo.

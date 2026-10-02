@@ -88,6 +88,9 @@ docs/tasks/TASK-171.md
 
 API e app fatte, test verdi (API 29 nuovi, app 37 nuovi). Il cuore è sulla
 mappa per i percorsi disegnati, di «Explore» e a tema; «Favorites» in
-«Profile» li elenca e li riapre. Sul telefono si vede solo dopo che l'API
+«Profile» li elenca e li riapre. Visto in un simulatore con un'API e un
+database locali (elenco, preferito aperto, riga in «Profile»); il tocco sul
+cuore lo provano i test, non il simulatore (l'utente non era al computer
+per dare l'accesso ai tocchi). Sul telefono si vede solo dopo che l'API
 del server ha la migrazione `0002` (`DEPLOY.md` F.12) e l'app è pubblicata:
 tutte e due con l'ok dell'utente. Rimandato a TASK-172 «My activities».

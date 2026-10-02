@@ -5017,8 +5017,8 @@ con l'account, sul server, non sul telefono.
 - **Il cuore sta sulla mappa**, di fronte a «←», non dentro le schede del
   percorso: vale per i tre modi di arrivare a un percorso con un solo
   pezzo, e non tocca `RoutePanel`, `ExploredCard` e `ThemedCard`, che
-  TASK-170 ha cambiato lo stesso giorno. È un carattere («♡», «♥»), come «←»: l'app non
-  ha icone. Non è giallo.
+  TASK-170 ha cambiato lo stesso giorno. È un carattere («♡», «♥»), come
+  «←»: l'app non ha icone. Non è giallo.
 - **Cambia subito e torna indietro se l'API rifiuta**: il modo già scritto
   per il like (TASK-119).
 - **Un preferito aperto è un percorso di «Explore»**: la stessa scheda, lo

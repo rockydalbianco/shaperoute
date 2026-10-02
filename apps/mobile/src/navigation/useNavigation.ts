@@ -4,9 +4,11 @@ import * as Speech from "expo-speech";
 import { useEffect, useRef, useState } from "react";
 import { Vibration } from "react-native";
 
+import { kmAnnouncement, wholeKm } from "./freeRun";
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
+import { controlRun, runControl, type RunSession } from "./runControl";
 import { emptyTrack, type Track } from "./trackRecorder";
-import { type RunRecorder, startRun } from "./trackStore";
+import { startRun } from "./trackStore";
 
 /** A fix at least this often apart, in metres: a stride or two. */
 export const FIX_EVERY_M = 5;
@@ -24,21 +26,26 @@ export type NavigationState =
     }
   | { status: "denied" };
 
-/** Says and vibrates what the navigator decided. */
+/** Says and vibrates what the navigator decided. With the voice off
+ * (TASK-169) a turn still vibrates. */
 export function play(cues: Cue[]): void {
   for (const cue of cues) {
     if (cue.vibrate) {
       Vibration.vibrate(VIBRATE_MS);
     }
-    // Each cue after the last one: a turn is never cut by the next.
-    Speech.speak(cue.say, { language: "en-US" });
+    if (runControl().voice) {
+      // Each cue after the last one: a turn is never cut by the next.
+      Speech.speak(cue.say, { language: "en-US" });
+    }
   }
 }
 
 /**
  * Follows the phone's position along the route while `active`, with the
  * screen on (TASK-049), and records the track that is run in a file on the
- * phone (TASK-112). The position never leaves the phone.
+ * phone (TASK-112). The countdown, «Pause» and the pause by standing still
+ * are runControl's, and each kilometre is said as in a run without a route
+ * (TASK-169). The position never leaves the phone.
  */
 export function useNavigation(
   points: LatLon[] | null,
@@ -56,7 +63,8 @@ export function useNavigation(
     }
     let stopped = false;
     let subscription: Location.LocationSubscription | null = null;
-    let run: RunRecorder | null = null;
+    let run: RunSession | null = null;
+    let stopRecording: (() => void) | null = null;
     void (async () => {
       const permission = await Location.requestForegroundPermissionsAsync();
       if (stopped) {
@@ -70,11 +78,29 @@ export function useNavigation(
       navigation.current = started.navigation;
       // A route stopped lately goes on with its track (trackStore).
       const recorder = startRun(points, Date.now(), similarity);
-      run = recorder;
+      stopRecording = recorder.stop;
+      // A run that goes on does not say again the kilometres it has said.
+      let saidKm = wholeKm(recorder.track());
+      let position: LatLon | null = null;
+      const session = controlRun(recorder, {
+        // «Pause» and «Resume» change the track between two fixes.
+        onChange: () => {
+          if (!stopped && navigation.current !== null) {
+            setState({
+              status: "following",
+              navigation: navigation.current,
+              position,
+              track: recorder.track(),
+            });
+          }
+        },
+        say: (text) => play([{ say: text, vibrate: false }]),
+      });
+      run = session;
       setState({
         status: "following",
         navigation: started.navigation,
-        position: null,
+        position,
         track: recorder.track(),
       });
       play(started.cues);
@@ -88,22 +114,35 @@ export function useNavigation(
             return;
           }
           const fix: LatLon = [coords.latitude, coords.longitude];
+          position = fix;
           const next = onFix(navigation.current, fix, {
             accuracyM: coords.accuracy,
             timeMs: timestamp,
           });
           navigation.current = next.navigation;
-          recorder.onFix(
-            { point: fix, timeMs: timestamp, accuracyM: coords.accuracy },
+          session.onFix(
+            {
+              point: fix,
+              timeMs: timestamp,
+              accuracyM: coords.accuracy,
+              altitudeM: coords.altitude,
+            },
             next.navigation.arrived,
           );
+          const track = recorder.track();
           setState({
             status: "following",
             navigation: next.navigation,
             position: fix,
-            track: recorder.track(),
+            track,
           });
           play(next.cues);
+          // After the turn, so a kilometre never delays one.
+          const km = wholeKm(track);
+          if (km > saidKm) {
+            saidKm = km;
+            play([{ say: kmAnnouncement(km, track), vibrate: false }]);
+          }
         },
       );
       if (stopped) {
@@ -113,7 +152,8 @@ export function useNavigation(
     return () => {
       stopped = true;
       subscription?.remove();
-      run?.stop();
+      run?.end();
+      stopRecording?.();
       void Speech.stop();
       setState({ status: "starting" });
     };

@@ -1,6 +1,6 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import type { TrackFix } from "./trackRecorder";
+import { durationMs, type TrackFix } from "./trackRecorder";
 import {
   clearRun,
   endRun,
@@ -124,9 +124,64 @@ test("the same route started again soon goes on with the track", () => {
 
   const again = startRun(ROUTE, 60_000);
   expect(again.track().fixes).toHaveLength(2);
+  // The time it was left is a pause (TASK-169): the clock does not count
+  // it, and the line is not joined across it.
+  expect(again.track().pauses).toEqual([{ fromMs: 20_000, toMs: 60_000 }]);
   again.onFix(fix(100, 80), false);
+  again.onFix(fix(150, 100), false);
   expect(again.track().distanceM).toBeCloseTo(100, 0);
+  expect(durationMs(again.track())).toBe(60_000);
   expect(loadRun()?.status).toBe("running");
+});
+
+test("a pause is written at once, and read back with the run (TASK-169)", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), false);
+  run.pause(5000);
+  expect(loadRun()?.track.pauses).toEqual([{ fromMs: 5000, toMs: null }]);
+  // Paused, nothing is added to the line.
+  run.onFix(fix(60, 20), false);
+  expect(run.track().fixes).toHaveLength(2);
+  run.resume(30_000);
+  run.onFix(fix(70, 31), false);
+  run.onFix(fix(80, 35), false);
+  run.stop();
+  const saved = loadRun();
+  expect(saved?.track.pauses).toEqual([{ fromMs: 5000, toMs: 30_000 }]);
+  expect(saved?.track.fixes[2].gap).toBe(true);
+  expect(saved?.track.distanceM).toBeCloseTo(20, 0);
+});
+
+test("a pause by standing still is kept as one", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.pause(12_000, true);
+  expect(loadRun()?.track.pauses).toEqual([{ fromMs: 12_000, toMs: null, auto: true }]);
+});
+
+test("a file from before the pauses is still a run", () => {
+  disk.files.set(
+    RUN_URI,
+    JSON.stringify({
+      version: 1,
+      route: ROUTE,
+      track: { fixes: [fix(0, 0), fix(10, 4)], distanceM: 10 },
+      status: "stopped",
+    }),
+  );
+  expect(loadRun()?.track.fixes).toHaveLength(2);
+  // Pauses that are not pauses: not a run.
+  disk.files.set(
+    RUN_URI,
+    JSON.stringify({
+      version: 1,
+      route: ROUTE,
+      track: { fixes: [fix(0, 0)], distanceM: 0, pauses: [{ fromMs: "now" }] },
+      status: "stopped",
+    }),
+  );
+  expect(loadRun()).toBeNull();
 });
 
 test.each([

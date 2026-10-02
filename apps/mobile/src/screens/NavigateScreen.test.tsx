@@ -136,8 +136,7 @@ describe("the numbers of the run", () => {
     await render(
       <NavigationCard navigation={navigation} track={north(1500)} onStop={() => {}} />,
     );
-    expect(screen.getByText("1.50 km")).toBeOnTheScreen();
-    expect(screen.getByLabelText("Avg pace: 6:00 /km")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Distance: 1.50 km")).toBeOnTheScreen();
     expect(screen.getByLabelText("Pace now: 6:00 /km")).toBeOnTheScreen();
     expect(screen.getByLabelText("Time: 9:00")).toBeOnTheScreen();
     expect(
@@ -145,7 +144,24 @@ describe("the numbers of the run", () => {
     ).toBeOnTheScreen();
     expect(screen.getByText(/^about \d+ min$/)).toBeOnTheScreen();
     expect(screen.getByTestId("route-done")).toBeOnTheScreen();
-    expect(screen.getByText("Stop")).toBeOnTheScreen();
+    // A run with a line is paused, not stopped by a touch (TASK-169).
+    expect(screen.getByLabelText("Pause")).toBeOnTheScreen();
+    expect(screen.queryByText("Stop")).toBeNull();
+  });
+
+  test("on the page of the data the turn stays, with every number", async () => {
+    const navigation = beforeFootway(directions[2]);
+    await render(
+      <NavigationCard navigation={navigation} track={north(1500)} onStop={() => {}} />,
+    );
+    expect(screen.queryByText(/^Turn /)).toBeNull();
+    await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+    expect(screen.getByText(/^Turn /)).toBeOnTheScreen();
+    expect(screen.getByLabelText("Avg pace: 6:00 /km")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Last km: 6:00 /km")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Kilometre 1: 6:00")).toBeOnTheScreen();
+    // What is left of the route, on both pages.
+    expect(screen.getAllByTestId("route-done")).toHaveLength(2);
   });
 
   test("arrived, the clock stops and the button says Finish", async () => {

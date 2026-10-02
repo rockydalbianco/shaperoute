@@ -4,7 +4,8 @@ import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { Vibration } from "react-native";
 
-import { loadRun } from "./trackStore";
+import { setVoice, skipCountdown } from "./runControl";
+import { clearRun, loadRun } from "./trackStore";
 import { play, useNavigation, VIBRATE_MS } from "./useNavigation";
 
 jest.mock("expo-speech", () => ({ speak: jest.fn(), stop: jest.fn() }));
@@ -38,6 +39,19 @@ jest.mock("expo-file-system", () => {
     }
   }
   return { File, Paths: { document: { uri: "file:///documents/" } } };
+});
+
+test("with the voice off, a turn still vibrates but nothing is said", () => {
+  const vibrate = jest.spyOn(Vibration, "vibrate").mockImplementation(() => {});
+  vibrate.mockClear();
+  jest.mocked(Speech.speak).mockClear();
+  setVoice(false);
+  play([{ say: "In 50 metres, turn left onto Via Verdi", vibrate: true }]);
+  setVoice(true);
+  expect(Speech.speak).not.toHaveBeenCalled();
+  expect(vibrate).toHaveBeenCalledWith(VIBRATE_MS);
+  jest.mocked(Speech.speak).mockClear();
+  vibrate.mockClear();
 });
 
 test("each cue is said in English, and a turn also vibrates", () => {
@@ -84,6 +98,8 @@ test("the fixes of a navigation are the track of the run, kept on the phone", as
     useNavigation(route, NO_DIRECTIONS, true),
   );
   await act(async () => {
+    // The countdown is over (TASK-169): every fix is of the run.
+    skipCountdown();
     onPosition(position(0, 0, 5));
     onPosition(position(10, 4, 5));
     onPosition(position(20, 8, 90));
@@ -103,4 +119,43 @@ test("the fixes of a navigation are the track of the run, kept on the phone", as
   expect(run?.route).toEqual(route);
   expect(run?.track.fixes.map((fix) => fix.timeMs)).toEqual([0, 4000, 12_000]);
   expect(run?.track.distanceM).toBeCloseTo(30, 0);
+});
+
+test("along a route too, the voice says each kilometre (TASK-169)", async () => {
+  clearRun();
+  const start: LatLon = [46.0122, 11.2986];
+  const metre = 1 / 111_195;
+  const route: LatLon[] = [start, [start[0] + 3000 * metre, start[1]]];
+  const NO_DIRECTIONS: Direction[] = [];
+  let onPosition: (position: Location.LocationObject) => void = () => {};
+  jest
+    .mocked(Location.requestForegroundPermissionsAsync)
+    .mockResolvedValue({ granted: true } as Location.LocationPermissionResponse);
+  jest
+    .mocked(Location.watchPositionAsync)
+    .mockImplementation(async (_options, callback) => {
+      onPosition = callback;
+      return { remove: jest.fn() };
+    });
+  const position = (northM: number, seconds: number) =>
+    ({
+      coords: { latitude: start[0] + northM * metre, longitude: start[1], accuracy: 5 },
+      timestamp: seconds * 1000,
+    }) as Location.LocationObject;
+
+  const { unmount } = await renderHook(() => useNavigation(route, NO_DIRECTIONS, true));
+  await act(async () => {
+    skipCountdown();
+    onPosition(position(0, 0));
+    onPosition(position(600, 180));
+  });
+  const said = () => jest.mocked(Speech.speak).mock.calls.map(([text]) => text);
+  expect(said().filter((text) => text.includes("kilometre."))).toHaveLength(0);
+  await act(async () => {
+    onPosition(position(1005, 300));
+  });
+  expect(said()).toContain(
+    "1 kilometre. Time: 5 minutes. Average pace: 4 minutes 59 seconds per kilometre.",
+  );
+  await unmount();
 });

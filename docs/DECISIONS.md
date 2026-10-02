@@ -5072,6 +5072,109 @@ dall'app non c'era niente da togliere: ADR-0106 non aveva account
 collegati, token, chiavi né parti nell'API o sul server. Se Strava aprirà
 la creazione di percorsi via API, si riparte da ADR-0106.
 
+## ADR-0137 — La corsa: conto alla rovescia, due pagine, pausa, «Stop» da tenere premuto e tutti i numeri che il telefono sa misurare
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente con una registrazione
+di Nike Run Club («voglio che sia simile a questa, sempre con il nostro
+stile, ma deve esserci tutto: metriche; mancano battito, musica») e poi
+precisato («in tutti i casi tieni dislivello e passo dell'ultimo km;
+dividi in due schermate, una con meno dati e la mappa con le indicazioni,
+una con solo i dati, con uno swipe»); il come deciso dall'agente su delega
+dell'utente (TASK-169). Aggiorna ADR-0133 (il pannello), ADR-0091 (la
+traccia), ADR-0122 (la corsa senza percorso).
+
+**Contesto**: la corsa di TASK-164 aveva un pannello solo sotto la mappa e
+«Stop» da toccare; il tempo contava le soste, non c'erano dislivello,
+calorie né i km uno per uno, e la corsa partiva al tocco, senza un attimo
+per mettere via il telefono. I tre seguiti di TASK-164 («Pause», «Stop» da
+tenere premuto, la voce a ogni km con un percorso) aspettavano l'utente.
+
+**Decisione**:
+- **Due pagine, non tre**: «Map» (mappa, banner, tre numeri: km, passo di
+  adesso, tempo) e «Data» (tutti i numeri, i km uno per uno, gli
+  interruttori, nessuna mappa). Nike ne ha tre («Controls», numeri,
+  «Splits») perché non ha una mappa da seguire: qui la mappa con le
+  svolte è la pagina principale, e l'utente ha chiesto due schermate.
+- **«Data» scorre sopra «Map»**, da destra, in un `Modal` trasparente con
+  la sua animazione; il dito la trascina via verso destra. Così la mappa
+  resta una sola (`MapView` in `App.tsx`, mai ricaricata) e `App.tsx` non
+  cambia: la scheda (`RunCard`) vive dentro `FreeRunCard` e
+  `NavigationCard`, che tengono le loro props. Lo swipe verso «Data» parte
+  dalla scheda, perché sulla mappa il dito sposta la mappa. I due nomi in
+  fondo fanno lo stesso con un tocco.
+- **I comandi della corsa in un modulo** (`runControl.ts`), uno per volta
+  come il file della corsa: conto alla rovescia, «Pause», «Resume», pausa
+  da sola, «Voice». Le schermate premono lì e i due registratori
+  (`useFreeRun`, `useNavigation`) eseguono: la pausa non poteva passare
+  dalle props senza toccare `App.tsx`.
+- **La pausa sta nella traccia** (`Track.pauses`, da quando a quando): il
+  tempo della corsa è quello passato meno le pause, ovunque (orologio,
+  passi, ultimo km, splits, voce, fine corsa). In pausa le posizioni non
+  entrano nella traccia; la prima dopo «Resume» ha `gap` e non aggiunge
+  metri. Si scrive nel file subito, così regge alla chiusura dell'app.
+- **«Keep running» è una pausa**: il tempo fra «Stop» (o la chiusura
+  dell'app) e la ripresa non conta più, e la linea non si unisce. Prima
+  contava: era il difetto annotato in ADR-0091.
+- **La pausa da sola**: dieci secondi senza una posizione tenuta. Le
+  posizioni arrivano ogni 5 m, quindi chi cammina piano ne dà una ogni
+  4–5 secondi; dieci stanno sopra. La pausa parte da quel momento, non
+  dall'ultima posizione: l'orologio non torna indietro sotto gli occhi di
+  chi lo guarda, al costo di dieci secondi contati per sosta. Finisce con
+  la prima posizione che si sposta di 5 m, che tiene i suoi metri. Accesa
+  di default, come nel riferimento; si spegne da «Data».
+- **«Stop» solo dalla pausa, e tenuto un secondo**: una mano che sfiora
+  lo schermo in corsa non chiude più la corsa. Prima della prima posizione
+  resta lo «Stop» da toccare, e all'arrivo «Finish».
+- **Il conto alla rovescia è tempo, non una schermata da aspettare**:
+  `runControl` lo chiude da solo dopo 3 secondi; lo schermo lo mostra
+  soltanto. Il GPS parte prima, la traccia dopo: l'ultima posizione vista
+  durante il conto diventa la prima della corsa, con l'ora in cui il conto
+  finisce. Senza, chi parte da fermo non avrebbe una posizione fino ai
+  primi 5 m (il GPS ne dà una ogni 5 m) e l'orologio aspetterebbe.
+- **Dislivello dalla quota del GPS** (`coords.altitude`, già nel
+  permesso): la somma delle salite di almeno 3 m, perché da fermi la quota
+  oscilla di qualche metro. Il barometro sarebbe più preciso ma è una
+  dipendenza nuova (`expo-sensors`).
+- **Calorie stimate**: 1,036 kcal per kg e per km, con 70 kg finché il
+  profilo non ha il peso (TASK-116 e seguiti). È una stima e come tale va
+  letta; il numero giusto arriva col peso.
+- **La voce a ogni km anche con un percorso**, dopo la svolta se cadono
+  insieme. «Voice» spenta toglie tutta la voce e lascia la vibrazione.
+- **Niente giallo su «Pause»**: è chiaro; il giallo resta del percorso e
+  dell'azione principale (ADR-0046), che in pausa è «Resume». «Stop» si
+  riempie di arancio (`warning`).
+- **Un token nuovo**, `fontSize.hero` (88): i km a braccio teso.
+
+**Battito e musica, fuori da qui**. L'utente vuole il battito sia da un
+sensore Bluetooth sia da Apple Watch, e la casella solo quando un sensore
+è collegato. Il telefono non lo misura: il sensore Bluetooth vuole
+`react-native-ble-plx`, Apple Watch vuole HealthKit e un'app per
+l'orologio; tutti e due solo in una build propria, non in Expo Go, dove
+l'utente prova oggi. Finché non c'è un sensore la casella non c'è, quindi
+qui non cambia niente da vedere. La musica (aprire Spotify o Apple Music,
+o i comandi nella schermata) aspetta la risposta dell'utente su quale app
+usa. Sono task a parte (`tasks/TASK-169.md`, «Fuori scope»).
+
+**Alternative scartate**: tre pagine come Nike (la mappa finirebbe dietro
+un pulsante); un pager vero con la mappa dentro (vuole riscrivere
+`App.tsx` e il `MapView`, occupati da altri task, e lo swipe sulla mappa
+resterebbe della mappa); la pausa da sola retroattiva dall'ultima
+posizione (più giusta di dieci secondi, ma l'orologio salta indietro); la
+pausa come stato delle schermate e non della traccia (si perdeva alla
+chiusura dell'app, e ogni numero avrebbe dovuto sottrarla per conto suo);
+la cadenza (vuole il contapassi, `expo-sensors`).
+
+**Conseguenze**: il tempo di una corsa è il tempo senza le pause, anche a
+fine corsa e nella voce; il punteggio non cambia (usa i punti, non il
+tempo). La linea sulla mappa unisce ancora con un tratto dritto il punto
+della pausa e quello della ripresa: i metri non contano, il segno sì. Un
+tunnel o un GPS che si perde più di dieci secondi mettono in pausa la
+corsa, se «Auto-pause» è accesa. Con «Data» aperta i pulsanti esistono due
+volte nell'albero (sotto e sopra): è voluto, la scheda sotto si vede
+mentre la pagina scorre. Provato nel simulatore con un GPS simulato, nelle
+due corse: conto alla rovescia, «Map», «Data», pausa a mano e da sola,
+splits. Lo swipe col dito e «Stop» tenuto premuto no (il simulatore non si
+poteva toccare): restano per l'iPhone.
+
 ## ADR-0139 — «Favorites»: una copia del percorso, legata all'account
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («mettere
 nei preferiti i percorsi che gli utenti vedono», con la voce «Favorites» nel

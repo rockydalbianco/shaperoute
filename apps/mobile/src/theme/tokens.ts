@@ -104,6 +104,9 @@ export const fontSize = {
   title: 25,
   /** The distance on the result: the number people look for. */
   display: 40,
+  /** The kilometres of a run in progress, read at arm's length while
+   * running (TASK-169). */
+  hero: 88,
 } as const;
 
 export const fontWeight = {

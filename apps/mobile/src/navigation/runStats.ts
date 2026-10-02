@@ -2,7 +2,8 @@ import type { LatLon } from "@shaperoute/shared-types";
 
 import { metresBetween } from "../map/coordinates";
 import { MIN_PACE_M } from "./freeRun";
-import type { Track } from "./trackRecorder";
+import { kmTimesMs } from "./runMetrics";
+import { activeBetween, stepAt, type Track } from "./trackRecorder";
 
 /**
  * The numbers of a run in progress (TASK-164, ADR-0133): pure functions from
@@ -88,7 +89,8 @@ export const STANDING_S_PER_KM = 20 * 60;
 /**
  * Seconds per kilometre over the last RECENT_M up to `nowMs`; null before
  * MIN_PACE_M, and when the runner stands. The time goes on between fixes, so
- * a runner who stops sees the pace slow down, then nothing.
+ * a runner who stops sees the pace slow down, then nothing. A pause counts
+ * neither its time nor its metres (TASK-169).
  */
 export function recentPaceS(track: Track, nowMs: number): number | null {
   const { fixes } = track;
@@ -99,13 +101,13 @@ export function recentPaceS(track: Track, nowMs: number): number | null {
   let metres = 0;
   let from = fixes.length - 1;
   while (from > 0 && metres < RECENT_M) {
-    metres += metresBetween(fixes[from - 1].point, fixes[from].point);
+    metres += stepAt(track, from).metres;
     from -= 1;
   }
   if (metres < MIN_PACE_M) {
     return null;
   }
-  const ms = Math.max(nowMs, last.timeMs) - fixes[from].timeMs;
+  const ms = activeBetween(track, fixes[from].timeMs, Math.max(nowMs, last.timeMs));
   const pace = ms / metres;
   return pace > STANDING_S_PER_KM ? null : pace;
 }
@@ -120,25 +122,12 @@ export function averagePaceS(track: Track, ms: number): number | null {
  * moment a kilometre ends falls between two fixes, in proportion.
  */
 export function lastKmS(track: Track): number | null {
-  const { fixes } = track;
-  if (fixes.length === 0) {
+  const times = kmTimesMs(track);
+  if (times.length === 0) {
     return null;
   }
-  let metres = 0;
-  let km = 0;
-  let before = fixes[0].timeMs;
-  let crossed = fixes[0].timeMs;
-  for (let i = 1; i < fixes.length; i += 1) {
-    const step = metresBetween(fixes[i - 1].point, fixes[i].point);
-    while (step > 0 && metres + step >= (km + 1) * 1000) {
-      const share = ((km + 1) * 1000 - metres) / step;
-      before = crossed;
-      crossed = fixes[i - 1].timeMs + share * (fixes[i].timeMs - fixes[i - 1].timeMs);
-      km += 1;
-    }
-    metres += step;
-  }
-  return km === 0 ? null : (crossed - before) / 1000;
+  const before = times.length === 1 ? 0 : times[times.length - 2];
+  return (times[times.length - 1] - before) / 1000;
 }
 
 /** "5:42": a pace as runners read it, minutes and seconds per kilometre. */

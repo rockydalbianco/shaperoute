@@ -142,9 +142,9 @@ def test_the_example_of_shared_types_is_a_picture_as_the_api_keeps_it() -> None:
     assert picture.size == (PHOTO_SIDE, PHOTO_SIDE)
 
 
-def test_the_migration_comes_after_the_runs() -> None:
+def test_the_migration_comes_after_strava() -> None:
     names = [path.name for path in migrations()]
-    assert names.index("0004_profile_photos.sql") > names.index("0003_runs.sql")
+    assert names.index("0005_profile_photos.sql") > names.index("0004_strava.sql")
 
 
 def test_a_wide_picture_is_cropped_to_the_square_in_its_middle() -> None:

@@ -142,13 +142,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Choose a picture», «Take a photo» e «Remove picture»; la foto si
   ritaglia al quadrato nel telefono e si vede nella riga, nel cerchio di
   «Profile» e nel pulsante in alto, al posto dell'iniziale. Nell'API la
-  tabella `profile_photos` (migrazione `0004`) e `GET`, `PUT`, `DELETE
+  tabella `profile_photos` (migrazione `0005`) e `GET`, `PUT`, `DELETE
   /me/photo`: l'API tiene solo un JPEG quadrato di 256 px fatto da lei,
   dritto e senza i dati dello scatto. `DELETE /me` la cancella. Nessuna
   dipendenza nuova. Il resto di TASK-116 (nome, bio, profilo visto dagli
-  altri) avrà la migrazione `0005`. **Sul telefono si vede dopo due passi
+  altri) avrà una migrazione sua. **Sul telefono si vede dopo due passi
   che vogliono l'ok dell'utente**: l'API del server aggiornata con la
-  migrazione `0004` (`DEPLOY.md` F.12) e l'app pubblicata; prima, chi
+  migrazione `0005` (`DEPLOY.md` F.12) e l'app pubblicata; prima, chi
   prova vede «Profile pictures are not available on this API yet.». Poi
   **da provare sull'iPhone**: libreria, fotocamera, il ritaglio.
 - **App** — TASK-192: in «Explore» il luogo scelto ha sempre i suoi

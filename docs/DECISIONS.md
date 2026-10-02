@@ -6251,7 +6251,7 @@ pubblico; l'utente l'ha chiesta prima, da «Settings», dove ADR-0145 l'ha
 messa con «Soon».
 
 **Decisione**:
-- **Una tabella sua**, `profile_photos` (migrazione `0004`): una riga per
+- **Una tabella sua**, `profile_photos` (migrazione `0005`): una riga per
   account con la foto, `bytea`, `ON DELETE CASCADE`. Non una colonna di
   `users`: ogni `GET /me` e ogni richiesta con il token leggono `users`,
   e non devono trascinarsi i KB della foto.
@@ -6297,8 +6297,8 @@ le tre scelte (diversi su Android, non provabili nei test come il resto di
 «Settings»).
 
 **Conseguenze**: all'apertura l'app chiede una richiesta in più, `GET
-/me/photo`, con l'account. Sul server serve la migrazione `0004` (un
+/me/photo`, con l'account. Sul server serve la migrazione `0005` (un
 aggiornamento dell'API, con l'ok dell'utente); finché non c'è, la riga
 dice «Profile pictures are not available on this API yet.» a chi prova. La
 foto la vede solo il suo proprietario: mostrarla agli altri, con nome e
-bio, resta a TASK-116, la cui migrazione diventa la `0005`.
+bio, resta a TASK-116, con una migrazione sua.

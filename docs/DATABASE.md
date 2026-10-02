@@ -122,7 +122,7 @@ Migrazione `0004_strava.sql` (TASK-187, ADR-0156):
 - «Disconnect» e la cancellazione dell'account non lasciano righe in
   `strava_accounts` né in `strava_states`.
 
-Migrazione `0004_profile_photos.sql` (TASK-178, ADR-0146):
+Migrazione `0005_profile_photos.sql` (TASK-178, ADR-0146):
 
 - `profile_photos`: `user_id` (chiave, `ON DELETE CASCADE`), `jpeg`
   (`bytea`, da 1 a 200 000 byte), `updated_at`. Una riga per account con
@@ -131,8 +131,7 @@ Migrazione `0004_profile_photos.sql` (TASK-178, ADR-0146):
 - `jpeg` è il quadrato di 256 px fatto dall'API, mai il file del telefono:
   niente EXIF, quindi niente posizione dello scatto (`API.md`, «Profile
   picture»). Le copie di sicurezza la prendono con il resto (ADR-0115).
-- Il nome utente e la bio di TASK-116 vengono con la sua migrazione, la
-  `0005`.
+- Il nome utente e la bio di TASK-116 vengono con una migrazione sua.
 
 ## Come si memorizza una traccia
 

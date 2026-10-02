@@ -26,7 +26,7 @@ pulsante in alto al posto dell'iniziale. Chiesto dall'utente il 2026-10-02
 
 ## Cosa fare
 
-1. **API**: migrazione `0004_profile_photos.sql` (una riga per account,
+1. **API**: migrazione `0005_profile_photos.sql` (una riga per account,
    `ON DELETE CASCADE`); `PUT /me/photo` riceve un'immagine in base64, la
    raddrizza, la ritaglia al quadrato centrale, la riduce a 256 px e la
    salva come JPEG senza i dati della fotocamera; `GET /me/photo` la
@@ -59,7 +59,7 @@ pulsante in alto al posto dell'iniziale. Chiesto dall'utente il 2026-10-02
 ## File toccati
 
 ```
-services/api/migrations/0004_profile_photos.sql
+services/api/migrations/0005_profile_photos.sql
 services/api/shaperoute_api/profile_photos.py
 services/api/shaperoute_api/app.py
 services/api/tests/test_profile_photos.py
@@ -88,16 +88,19 @@ toccano anche TASK-194 (#204) e TASK-187, in altri punti.
 ## Fuori scope
 
 - Nome utente e bio da cambiare, `GET /users/{id}`, «Edit profile», la
-  foto vista dagli altri: restano a TASK-116, la cui migrazione diventa
-  la `0005` (la `0004` è questa).
+  foto vista dagli altri: restano a TASK-116, con una migrazione sua.
 - La foto tenuta sul telefono fra un'apertura e l'altra: all'apertura
   l'app la richiede all'API, e per un attimo si vede l'iniziale.
 - Le altre voci «Soon» di «Settings» (TASK-182, 183, 184, 185).
 
 ## Esito
 
+La migrazione doveva essere la `0004` (AGENTI.md); TASK-187 l'ha presa
+entrando prima in `main` (#210), e con la regola nuova del primo numero
+libero il coordinatore ha dato a questo task la `0005`.
+
 Fatto il 2026-10-02. API: `profile_photos.py` (il quadrato con Pillow,
-già dipendenza del motore), migrazione `0004`, 22 test nuovi, quelli degli
+già dipendenza del motore), migrazione `0005`, 22 test nuovi, quelli degli
 endpoint con il PostGIS vero (raddrizzare, ritagliare, togliere l'EXIF,
 rifiuti con il motivo, la foto di prima che resta, `DELETE /me`, il limite
 di 10 al minuto). App: `api/profilePhoto.ts`, `profile/pickPhoto.ts`,
@@ -110,7 +113,7 @@ puliti.
 Non visto in un simulatore: scegliere una foto vuole tocchi nel selettore
 del sistema, che il simulatore qui non concede; lo coprono i test con il
 selettore finto. **Da provare sull'iPhone** dopo l'aggiornamento del
-server (migrazione `0004`) e la pubblicazione, tutti e due con l'ok
+server (migrazione `0005`) e la pubblicazione, tutti e due con l'ok
 dell'utente.
 
 Lasciato fuori: la foto tenuta sul telefono fra un'apertura e l'altra

@@ -66,6 +66,11 @@ In coda, dopo o accanto:
   158, la schermata della corsa con i numeri e la freccia di direzione
   (TASK-164). Tutti pubblicati su `preview` il 2026-10-02 (ultimo update
   `eba74321`, da 73095e7).
+- **Battito e musica nella corsa**, chiesti dall'utente il 2026-10-02
+  (seguiti di TASK-169, numeri dal coordinatore): il battito da un sensore
+  Bluetooth (`react-native-ble-plx`, dipendenza nuova) e da Apple Watch
+  (HealthKit e un'app per l'orologio, dopo TASK-152), tutti e due solo in
+  una build propria; la musica, dopo aver chiesto all'utente quale app usa.
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -85,6 +90,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-169: la corsa rifatta sul modello di Nike Run Club, chiesta
+  dall'utente (ADR-0137), con un percorso e senza. Parte con «3 · 2 · 1»;
+  due pagine da scorrere, «Map» (mappa, indicazioni, km, passo di adesso e
+  tempo) e «Data» (i km in grande, passo medio, ultimo km, dislivello,
+  calorie stimate, i km uno per uno); «Pause» e «Resume», la pausa da sola
+  dopo 10 secondi fermi, «Stop» da tenere premuto. Il tempo non conta più
+  le pause, nemmeno fra «Stop» e «Keep running»; la voce dice i km anche
+  con un percorso, e «Voice» la spegne. Chiude i tre seguiti di TASK-164.
+  Nessuna dipendenza nuova, niente API, `App.tsx` non toccato. Visto nel
+  simulatore con un GPS simulato. **Da pubblicare e da provare
+  sull'iPhone**: lo swipe col dito, «Stop» tenuto premuto, la pausa da sola.
+  Fuori, già chiesto dall'utente: il battito da sensore Bluetooth e da
+  Apple Watch (solo in una build propria). Da chiedere: quale app di musica.
 - **App** — TASK-170: «Run with Strava» tolto, chiesto dall'utente
   (ADR-0138, che supera ADR-0106). Nelle tre schede di un percorso
   (disegnato, di «Explore», a tema) restano «Start» ed «Export GPX»; il

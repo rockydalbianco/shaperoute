@@ -1,7 +1,10 @@
 import type { LatLon } from "@shaperoute/shared-types";
 import { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { type Camera, lineCamera } from "../feed/feedMapPage";
+import { useFeedMap } from "../feed/FeedMaps";
+import { MAP_CREDIT } from "../feed/FeedPost";
 import {
   color,
   fontSize,
@@ -19,6 +22,9 @@ const LINE_WIDTH = 3;
 /** Clear around the line, on every side. */
 const DRAWING_PAD = space.md;
 
+/** No line: nothing to lay a map under. */
+const NO_LINE: LatLon[] = [];
+
 /** How wide a card is when two stand side by side in `width`, `gap` apart. */
 export function cardWidth(width: number, gap: number = space.md): number {
   return Math.max(0, Math.floor((width - gap) / 2));
@@ -27,6 +33,31 @@ export function cardWidth(width: number, gap: number = space.md): number {
 /** How tall the drawing of a card `width` wide is. */
 export function cardDrawingHeight(width: number): number {
   return Math.round(width * DRAWING_RATIO);
+}
+
+/**
+ * What the map under a line is called among the pictures taken: by what it
+ * frames, not by its route. An example drawn again keeps its id and may
+ * change its line; the same streets are the same picture.
+ */
+export function framingName(camera: Camera | null): string {
+  if (camera === null) {
+    return "card";
+  }
+  const [lon, lat] = camera.center;
+  return `card:${lat.toFixed(5)},${lon.toFixed(5)}@${camera.zoom.toFixed(2)}`;
+}
+
+/**
+ * Whose the maps under the cards are, as their makers ask to be named
+ * (`MAP_CREDIT`), in one line. A card is half a phone wide: written on each
+ * picture, the credit would cover the names of its towns.
+ */
+export const CARD_MAPS_CREDIT = `Maps: ${MAP_CREDIT.replace("\n", " · ")}`;
+
+/** The credit of the maps of a group of cards: once, beside the cards. */
+export function CardMapsCredit() {
+  return <Text style={styles.credit}>{CARD_MAPS_CREDIT}</Text>;
 }
 
 type Props = {
@@ -40,6 +71,8 @@ type Props = {
   detail?: string;
   /** How much it looks like the shape, from 0 to 1; shown as "97%". */
   match?: number;
+  /** Lays the map of its streets under the line, as in «Feed» (TASK-174). */
+  map?: boolean;
   /** Opens the route; without it the card is not a button. */
   onPress?: () => void;
   /** What a screen reader says in place of the texts. */
@@ -50,6 +83,10 @@ type Props = {
  * A route as a card of «Explore» (TASK-167, ADR-0135): the drawing first,
  * as wide as the card, then what it is and where. Two stand side by side.
  * The line is yellow, the route's colour; nothing else on the card is.
+ * With `map`, under the line is the map of where it runs, towns named, once
+ * its picture is taken (TASK-174): the pictures are those of «Feed»
+ * (TASK-162), taken by its page. Who shows cards with `map` shows
+ * `CardMapsCredit` beside them.
  */
 export function RouteCard({
   width,
@@ -57,10 +94,17 @@ export function RouteCard({
   title,
   detail,
   match,
+  map = false,
   onPress,
   accessibilityLabel,
 }: Props) {
   const height = cardDrawingHeight(width);
+  const mapped = map && line !== null ? line : NO_LINE;
+  const framing = useMemo(
+    () => framingName(lineCamera(mapped, width, height, DRAWING_PAD)),
+    [mapped, width, height],
+  );
+  const picture = useFeedMap(framing, mapped, width, height, DRAWING_PAD);
   const segments = useMemo(
     () => (line === null ? [] : thumbSegments(line, width, height, DRAWING_PAD)),
     [line, width, height],
@@ -68,6 +112,14 @@ export function RouteCard({
   const body = (
     <>
       <View style={[styles.drawing, { width, height }]} testID="route-card-drawing">
+        {picture !== null && (
+          <Image
+            testID="route-card-map"
+            style={StyleSheet.absoluteFill}
+            source={{ uri: picture }}
+            accessible={false}
+          />
+        )}
         {segments.map((s, i) => (
           <View
             key={i}
@@ -157,6 +209,11 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.detail,
     fontWeight: fontWeight.semibold,
+  },
+  credit: {
+    color: color.textFaint,
+    fontSize: fontSize.label,
+    textAlign: "right",
   },
   words: {
     gap: 2,

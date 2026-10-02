@@ -1921,6 +1921,85 @@ Un'app più vecchia dell'API non conosce le forme nuove: se l'AI risponde
 aggiornano insieme, come oggi dallo stesso checkout. Le tessere sono undici:
 tre righe da quattro, l'ultima con tre.
 
+## ADR-0063 — Lettere unite anche dalla cima: tre regole di lettura, la parola più corta
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente nel giudizio di
+TASK-059 (2026-09-25: «anche connetterle dalla cima», se non confonde o
+aiuta); formato, regole e scelta decisi dall'agente su delega dell'utente
+(TASK-067); accese per difetto in tutti e due gli stili per scelta
+dell'utente (2026-10-02)
+
+**Contesto**: ogni lettera entra ed esce sulla base, e le unioni si corrono
+due volte. U, V, W, Y e T toccano la base a metà: l'unione passa sotto
+mezza lettera, mentre in cima hanno un angolo sul bordo. A pari chilometri
+una parola più corta dà lettere più alte, e lettere più basse si leggono
+peggio (ADR-0067). Le misure sono in `docs/tasks/TASK-067.md`.
+
+**Decisione**:
+- **Il formato**: una lettera che si può unire in cima lo dichiara in
+  `letters.json` e `letters_block.json` con `"top": {"in": [x, 1], "out":
+  [x, 1]}`, uno o tutti e due. Il task chiedeva per ogni ingresso e uscita
+  i suoi `out` e `back` scritti a mano; li ricava invece il motore
+  (`Letter.route`) dalla linea chiusa che la lettera ha già, cominciata
+  dall'ingresso e tagliata all'uscita. La lettera è per costruzione la
+  stessa, corsa lo stesso numero di volte, e non ci sono 150 linee in più
+  da tenere uguali a mano. Ne segue che la lunghezza delle lettere non
+  cambia mai: una coppia si accorcia solo per lo spazio.
+- **Tre regole di lettura**, controllate da `parse_letters` sull'alfabeto
+  (un `top` che ne viola una è rifiutato), ognuna con un test e una coppia
+  che la viola:
+  1. un'unione in cima non allunga un tratto che finisce sulla cima (la
+     sbarra della T, il braccio alto di E, F, Z e delle C, G, S squadrate):
+     «TU», «EH», «CH» squadrata restano sulla base. Era la regola già
+     scritta nel task, sul modello di ADR-0056;
+  2. un'unione in cima non passa sopra la lettera, entra dal bordo sinistro
+     ed esce dal destro: «PU» resta sulla base. Sotto la lettera la linea è
+     il rigo; sopra è un tratto in più;
+  3. una lettera che tocca la cima in un punto solo non si unisce lì: «VI»
+     e «UL» restano sulla base. La I fra due unioni in cima è una T («VIVA»
+     si legge «VTVA»); con la cima da un lato e la base dall'altro la I e
+     la L sono un gradino, il caso che il task chiedeva di guardare.
+- **Cima da un lato e base dall'altro è permesso** alle lettere che passano
+  le tre regole (H, M, N, U, V, W, X, Y…): hanno due punti in cima e
+  restano loro stesse (la V di «UVA»).
+- **La scelta** (`choose_joins`): ogni spazio tutto sulla base o tutto in
+  cima; fra le combinazioni permesse, al più 128, la parola più corta; a
+  pari lunghezza meno unioni in cima, poi la base per prima. Deterministica.
+- **Accese per difetto in tutti e due gli stili** (`words.TOP_JOINS`),
+  scelta dell'utente. Sui campioni l'utente ha preferito il percorso di
+  oggi in tutti e sette i casi giudicati (unioni in cima: 5 «no», 2
+  «quasi», nessun «sì») e ha detto che le tre regole vanno bene; nella
+  scelta finale ha chiesto di accenderle per tonde e squadrate, e
+  interpellato sulla differenza fra le due risposte ha confermato
+  «accendi in cima». `compose` e `plan_route` hanno `top_joins`,
+  `measure_words.py` ha `--no-top-joins`: con le unioni spente ogni parola
+  è identica a prima, punto per punto (test). API, `shared-types` e app
+  non cambiano.
+- **La scala per lettera non si fa**: era l'altra metà della richiesta del
+  2026-09-25, che ADR-0056 rimanda qui. L'utente la lascia fuori
+  (2026-10-02), perché lettere più piccole si leggono peggio (ADR-0067).
+
+**Alternative scartate**: `out` e `back` scritti a mano per ogni ingresso e
+uscita (sopra); i punti in cima dedotti dalla geometria senza dichiararli
+(togliere una lettera dopo il giudizio dell'utente vorrebbe codice, non una
+riga dell'alfabeto); unire anche la I e la T, che danno quasi tutto il
+guadagno senza regole («TUTTI» −16,6%, «VIVA» −6,3%) ma cambiano la
+parola; unioni a metà altezza o in diagonale (fuori scope).
+
+**Conseguenze**: con le regole si accorciano solo le coppie in cui una
+lettera è U, V, W o Y (tonde), P, U, V o Y (squadrate), e l'altra arriva in
+cima con un angolo: 68 coppie tonde e 87 squadrate su 676. Delle sette
+parole misurate cambia solo «UVA» (−7,4% tonda, −8,6% squadrata); «NUVOLA»
+−5,2%, «LUNA» −2,6%. Le altre parole restano identiche. Sulle strade le
+lettere non vengono sempre più alte: su nove campioni a 15 km lo sono in
+cinque, e sempre per «UVA» squadrata (`docs/tasks/TASK-067.md`). La ricerca
+non dura di più. `nearby_starts.py`, la CLI e `seed_catalog.py`
+compongono la parola con il predefinito dello stile, quindi le seguono
+senza altre modifiche. L'app pubblicata le vede quando l'API sul server è
+aggiornata (`DEPLOY.md` F.12, con l'ok dell'utente). Le parole già nel
+catalogo restano com'erano finché non si ridisegnano: fra quelle di oggi
+cambierebbe solo «NYC» tonda. Per tornare indietro basta `TOP_JOINS` a
+`False`.
+
 ## ADR-0064 — La barra stima una parola dalle sue lettere
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
 (TASK-069)
@@ -5152,7 +5231,8 @@ l'orologio; tutti e due solo in una build propria, non in Expo Go, dove
 l'utente prova oggi. Finché non c'è un sensore la casella non c'è, quindi
 qui non cambia niente da vedere. La musica (aprire Spotify o Apple Music,
 o i comandi nella schermata) aspetta la risposta dell'utente su quale app
-usa. Sono task a parte (`tasks/TASK-169.md`, «Fuori scope»).
+usa. Sono task a parte (`tasks/TASK-169.md`, «Fuori scope»). La risposta è
+arrivata lo stesso giorno, «uso Spotify»: ADR-0141 (TASK-173).
 
 **Alternative scartate**: tre pagine come Nike (la mappa finirebbe dietro
 un pulsante); un pager vero con la mappa dentro (vuole riscrivere
@@ -5238,6 +5318,58 @@ con un account: una richiesta in più. Sul server la migrazione parte al
 primo avvio dell'API nuova (`DEPLOY.md` F.12). «My activities» (TASK-172,
 ADR-0140) userà la stessa pagina di «Profile» e la tabella `runs`.
 
+## ADR-0141 — La musica nella corsa: «Music» apre Spotify, Sgrava non suona niente
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa (la
+musica nella corsa, chiesta con ADR-0137; «uso Spotify»); il come deciso
+dall'agente su delega dell'utente (TASK-173). Aggiorna ADR-0137 (la musica
+era rimasta fuori).
+
+**Contesto**: il riferimento dell'utente (Nike Run Club) ha «Connect
+Music». La corsa di TASK-169 non ha niente per la musica; l'utente prova in
+Expo Go, dove non entrano moduli nativi nuovi.
+
+**Decisione**:
+- **Un pulsante che apre l'app di musica, non un lettore.** «Music» apre
+  Spotify con il suo link (`spotify:`): l'app si apre dove era rimasta, e
+  si torna a Sgrava da soli. Sgrava non suona, non mette in pausa e non sa
+  cosa suona. Nessuna dipendenza: `Linking` di React Native.
+- **Si apre, non si chiede prima.** `canOpenURL` risponde no per ogni
+  schema che la build non dichiara (`LSApplicationQueriesSchemes`), ed
+  Expo Go non dichiara i nostri: direbbe «Spotify non c'è» anche quando
+  c'è. `openURL` invece non vuole dichiarazioni e fallisce da solo se
+  l'app manca (visto nel simulatore: «Unable to open URL: spotify:»).
+- **Senza Spotify, la sua pagina nello store** del telefono (App Store,
+  Google Play; altrove `open.spotify.com`). Se non si apre nemmeno quella,
+  niente: nessun avviso sopra una corsa.
+- **Di fronte a «Pocket»**, nel posto vuoto accanto a «Pause», quindi su
+  «Map» e su «Data» con un pezzo solo. Solo mentre si corre: in pausa la
+  scheda ha «Stop» e «Resume» ed è già alta, e prima della prima posizione
+  e all'arrivo c'è un pulsante solo.
+- **«Music» non mette in pausa la corsa.** Chi sceglie una playlist
+  correndo non vuole trovare la corsa ferma.
+- **Solo Spotify**, scritto in un file (`music.ts`): è l'app dell'utente.
+  Un'altra app di musica è un altro link nello stesso file.
+
+**Scartate**: brano, pausa e avanti dentro Sgrava adesso (vogliono un'app
+Spotify Developer dell'utente con Premium, l'accesso al conto Spotify con
+tre dipendenze nuove, e in sviluppo valgono per 5 persone aggiunte a mano:
+è la domanda aperta in `tasks/TASK-173.md`); `canOpenURL` e il pulsante
+nascosto senza Spotify (in Expo Go sarebbe sempre nascosto); un avviso
+«Spotify is not installed» (un testo in più da leggere correndo; lo store
+dice la stessa cosa); il link `https://open.spotify.com` per tutti (senza
+l'app apre il sito in Safari, non lo store); la scelta fra più app di
+musica (nessuno l'ha chiesta).
+
+**Conseguenze**: mentre Spotify è davanti, Sgrava non registra (registra
+solo in primo piano): i secondi passati a scegliere la musica sono un buco
+nella traccia, come ogni uscita dall'app. Come si mescolano la voce delle
+svolte e la musica lo decide iOS, perché l'app non imposta niente
+dell'audio: se la voce ferma la musica o non si sente, serve `expo-audio`
+(dipendenza nuova, task a parte). Tutte e due le cose si vedono solo
+sull'iPhone e sono fra le prove di `tasks/TASK-173.md`. Con una build
+propria si potrà dichiarare lo schema e mostrare «Music» solo a chi ha
+Spotify.
+
 ## ADR-0143 — La mappa senza pulsanti di zoom: si ingrandisce solo con le dita
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («togli la
 possibilità di zumare in alto a destra […] si potrà zumare solamente con
@@ -5262,6 +5394,112 @@ chiesto).
 **Conseguenza**: chi non può fare il gesto con due dita ha il doppio
 tocco per avvicinare. I pulsanti mancano apposta: un test della pagina
 controlla che il controllo non torni e che il gesto non venga spento.
+
+## ADR-0142 — La mappa anche sotto le schede di «Explore», con un credito solo
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («nella
+sezione explore, quando ci sono i vari sample, mettimi sotto anche la
+mappa […] con scritto il nome del paese»); il come deciso dall'agente su
+delega dell'utente (TASK-174). Cambia un punto di ADR-0135, che aveva
+scartato la foto della mappa nelle schede.
+
+**Contesto**: da TASK-167 un percorso di «Explore» è una scheda larga mezzo
+telefono, la linea gialla su un fondo vuoto. In «Feed» sotto la linea c'è
+la foto della mappa (ADR-0131), e l'utente la vuole anche qui. ADR-0135
+l'aveva scartata per il numero: una foto per scheda, decine di percorsi a
+città.
+
+**Decisione**:
+- **Le stesse foto di «Feed»**: `RouteCard` con `map` chiede la foto a
+  `useFeedMap` e la mette sotto la linea. Le fa la pagina nascosta di
+  «Feed», che il `Pager` tiene montata accanto a «Explore»: nessuna pagina
+  MapLibre in più. Misurato sul simulatore: 27 foto in 1,6 s con le tile
+  della zona già scaricate, perché i percorsi di una città stanno sulle
+  stesse tile.
+- **La foto ha il nome di ciò che inquadra** (centro e zoom di
+  `lineCamera`), non l'`id` del percorso: un esempio ridisegnato tiene il
+  suo `id` e può cambiare linea, e due percorsi con lo stesso riquadro
+  hanno la stessa foto.
+- **`map` va chiesto**: lo passano le schede di «Explore» (esempi e «Best
+  near you»). «Favorites» usa lo stesso componente e resta com'è.
+- **Il credito una volta sola, accanto alle schede**, in una riga: «Maps:
+  OpenFreeMap © OpenMapTiles · Data from OpenStreetMap». Sopra le schede di
+  «Best near you», che sono molte e scorrono; sotto quelle degli esempi,
+  che sono tre. Scritto su ogni foto, come in «Feed», su una scheda di 170
+  punti andava a capo, perdeva «Data from OpenStreetMap» e copriva i nomi
+  dei paesi, che sono ciò che l'utente ha chiesto.
+- **Il nome del paese anche in parole** negli esempi: la scheda pronta lo
+  dice sotto forma e km, come le schede di «Best near you» dicono già la
+  città. Sulla mappa il nome c'è quando il centro del paese cade nel
+  riquadro, cioè quasi sempre, non sempre.
+
+**Scartate**: una pagina delle foto anche in «Explore» (due pagine
+farebbero la stessa foto due volte); il credito su ogni foto con un
+carattere più piccolo (sotto gli 11 punti non c'è un token, e resta sopra
+i nomi); un'etichetta con il nome del paese disegnata sopra la foto
+(doppia, quando la mappa lo scrive già).
+
+**Conseguenze**: aprire «Explore» chiede a OpenFreeMap le tile delle zone
+dei percorsi mostrati (`UI.md`, «Cosa esce dal telefono»). Le foto restano
+in memoria finché l'app è aperta, una per scheda vista; cambiata città, le
+foto già in coda per quella di prima si fanno lo stesso. Fuori dal `Pager`
+(«Explore» aperta con `onBack`) la pagina delle foto non c'è e le schede
+restano senza mappa.
+
+## ADR-0147 — L'animazione all'avvio: un componente sopra l'app, il cuore del video sul giallo
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («il
+logo e l'animazione che deve durare almeno due secondi quando apri
+l'applicazione: un cuore che si disegna su uno sfondo giallo, come il
+video»); il come deciso dall'agente su delega dell'utente (TASK-179).
+
+**Contesto**: la schermata di avvio di ADR-0134 è nativa, ferma, e si vede
+solo in una build propria. L'utente apre l'app in Expo Go: non vedeva né il
+logo né un'animazione. ADR-0134 aveva scartato un componente React perché
+prima che parta il JavaScript lo schermo resta vuoto e perché toccava
+`App.tsx`; per un'animazione il componente è l'unica strada, e le due cose
+stanno insieme: la schermata nativa copre l'attesa del JavaScript,
+l'animazione viene dopo.
+
+**Decisione**:
+- **Un componente sopra l'app**, `src/intro/LaunchIntro.tsx`, montato da
+  `src/intro/Root.tsx`, che `index.ts` registra al posto di `App`.
+  `App.tsx` non cambia. L'app parte subito sotto: posizione, mappa e prime
+  richieste si caricano mentre il cuore si disegna.
+- **Il cuore è quello del video**: il percorso a cuore di Milano da 10 km
+  del catalogo seme (`catalog/seed/milano.json`), semplificato a 8 m, 99
+  punti in `src/intro/heartLine.ts`. È un percorso vero del Route Engine,
+  con le sue strade: il segno che dice cosa fa l'app.
+- **I tempi**: 0,35 s il giallo `accent` riempie lo schermo dal centro,
+  1,6 s il cuore si disegna, 0,45 s resta, 0,3 s l'animazione sfuma
+  sull'app. Il giallo si vede 2,4 secondi: sopra i due chiesti, sotto i tre
+  che a ogni apertura peserebbero.
+- **Nero su giallo**: la linea, la penna e il logo sono `onAccent`; il logo
+  è `assets/splash-logo.png` (giallo) colorato con `tintColor`. Il punto di
+  partenza è chiaro con il bordo scuro, come sul logo e sulla mappa.
+- **Senza SVG e senza dipendenze**: la linea è fatta di tratti, View
+  sottili e girate come in `RouteThumb`; ognuno compare al suo momento da
+  un solo valore animato sul thread nativo. I tratti lunghi sono tagliati
+  (al più 1/110 della linea) perché la linea non salti.
+- **La durata la tiene un timer**, non la fine dell'animazione: con le
+  animazioni spente sul telefono il disegno finisce subito, e il cuore deve
+  restare comunque il suo tempo. È anche ciò che rende il test
+  deterministico (sotto jest le animazioni finiscono all'istante).
+- **Una volta per apertura**: non si salta con un tocco, e finché c'è
+  prende i tocchi.
+
+**Scartate**: una riga in `App.tsx` (è di TASK-172 e TASK-174, e non
+serve); `react-native-svg` o Lottie (dipendenze nuove per un disegno che
+l'app sa già fare); una pagina in una WebView (parte tardi e lampeggia); un
+cuore geometrico pulito (non è «come il video», e non dice che il disegno
+è fatto di strade); `preventAutoHide` di `expo-splash-screen` per tenere
+la schermata nativa (resta ferma, e in Expo Go non c'è).
+
+**Conseguenze**: ogni apertura costa 2,7 secondi prima di poter toccare
+l'app, che intanto si carica. In Expo Go prima dell'animazione resta la
+schermata di caricamento di Expo Go. In una build propria la schermata
+nativa è nera con il logo giallo e poi arriva il giallo: farla gialla è
+una riga di `app.json`, lasciata all'utente. La barra di stato resta
+chiara sul giallo: la decide `App.tsx`. Chi ha «Riduci movimento» vede la
+stessa animazione.
 
 ## ADR-0140 — «My activities»: la corsa si salva da sola, e i suoi numeri li conta l'API
 **Stato**: Attiva · 2026-10-02 · **scelte dell'utente** per il cosa («le

@@ -25,7 +25,7 @@ fine corsa; si corre anche senza percorso.
 percorsi a tema dai luoghi veri, e «Start». Un annuncio di prova prima di
 ogni percorso, solo nella build propria. Le ricerche insegnano sinonimi e
 correzioni, applicati a mano (`INSIGHTS.md`). Tempi: 3–10 km nelle zone in
-cache in 5–25 s, da 15 a 21 km in 30–50 s. 52 città italiane e 10 estere
+cache in 5–25 s, da 15 a 21 km in 30–50 s. 52 città italiane, Rovereto e 10 estere
 hanno la zona già sul server; le altre la scaricano da Overpass, che dopo
 molti download rifiuta per qualche ora (`MAPS.md`).
 
@@ -46,9 +46,6 @@ In coda, dopo o accanto:
   posizioni non si salva; una corsa ripresa dopo un «Done» senza rete
   salva solo la prima parte; il GPX di una corsa salvata; il cuore dei
   preferiti e «Start» da una corsa aperta. Tutti in `tasks/TASK-172.md`.
-- **TASK-067 — Lettere unite anche dalla cima** (ADR-0063): il task file
-  è scritto (2026-10-02), da assegnare. La scala per lettera non si fa,
-  scelta dell'utente: da TASK-071 lettere più piccole si leggono peggio.
 - **Pubblicità che paga**, chiesta dall'utente il 2026-10-02: **TASK-150**
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
@@ -61,7 +58,14 @@ In coda, dopo o accanto:
   quando l'estratto invecchia (TASK-137); il segnale della scelta fra
   A · B · C negli esempi (TASK-151); la linea intera a fine corsa
   (TASK-149); zone scaricate con un margine (TASK-143); un GraphML già
-  rotto (TASK-133); la password dimenticata, che vuole la posta (TASK-114).
+  rotto (TASK-133); la password dimenticata, che vuole la posta (TASK-114);
+  un esempio sul server costa 7–19 s contro 1–2,5 del Mac (TASK-168, dai
+  log): il piano dalla partenza, più l'attesa delle tre partenze vicine,
+  che ogni richiesta fa in tre processi nuovi su 4 vCPU condivise (fino a
+  3 s dopo un piano buono, 8 altrimenti); il grafo pesa 0,3–2 s, 8,8 alla
+  prima lettura di una zona estera grande; i 4 minuti di Rovereto erano
+  tre download da Overpass, uno per forma. Per scendere serve il motore:
+  processi tenuti accesi, o esempi senza A · B · C (scelta dell'utente).
 - **Da provare sull'iPhone**: la navigazione camminando un percorso vero
   (TASK-049), il punteggio a fine corsa (TASK-112, 113), iscriversi ed
   entrare (TASK-115: l'API sul server ha il database dal 2026-10-02),
@@ -75,7 +79,11 @@ In coda, dopo o accanto:
   (seguiti di TASK-169, numeri dal coordinatore): il battito da un sensore
   Bluetooth (`react-native-ble-plx`, dipendenza nuova) e da Apple Watch
   (HealthKit e un'app per l'orologio, dopo TASK-152), tutti e due solo in
-  una build propria; la musica, dopo aver chiesto all'utente quale app usa.
+  una build propria; la musica: l'utente usa Spotify, «Music» lo apre
+  (TASK-173, fatto). **Aspetta la risposta dell'utente**: brano, pausa e
+  avanti dentro Sgrava (app Spotify Developer sua, Premium, dipendenze
+  nuove, 5 persone al massimo finché è in sviluppo); la proposta è di non
+  farlo adesso (`tasks/TASK-173.md`, «La seconda parte»).
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -108,11 +116,49 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Da fare con l'ok dell'utente**: aggiornare il server (migrazione
   `0003`, `DEPLOY.md` F.12) e pubblicare l'app; **da provare
   sull'iPhone**: una corsa vera che compare in «My activities».
+- **Motore** — TASK-067: due lettere di una parola si uniscono anche lungo
+  la cima, dove la parola viene più corta e si legge uguale, chiesto
+  dall'utente (ADR-0063). Tre regole di lettura: non si allunga un tratto
+  che finisce in cima (la T, il braccio della E), non si passa sopra la
+  lettera, non si tocca una lettera con un solo punto in cima (la I
+  sarebbe una T). Cambiano solo le parole con U, V, W o Y (P, U, V, Y nelle
+  squadrate): «UVA» −7,4%, «NUVOLA» −5,2%; le altre restano identiche.
+  Diciotto campioni a 15 km: l'utente ha preferito il percorso di prima
+  nei sette casi giudicati, e ha scelto lo stesso di accenderle per tonde
+  e squadrate (`words.TOP_JOINS`; `False` per tornare indietro). La ricerca
+  non dura di più. API e app non cambiano. **L'app pubblicata le vede dopo
+  aver aggiornato l'API sul server** (`DEPLOY.md` F.12), con l'ok
+  dell'utente. La scala per lettera non si fa, per scelta dell'utente.
+- **App** — TASK-179: l'animazione all'avvio, chiesta dall'utente
+  (ADR-0147). Aprendo l'app il giallo riempie lo schermo, una penna disegna
+  il cuore di Milano del video, sotto c'è il logo nero; 2,4 secondi, poi
+  l'app, che intanto si è caricata sotto. Si vede anche in Expo Go, dove la
+  schermata di avvio di TASK-165 non c'è. Nessuna dipendenza nuova,
+  `App.tsx` non toccato (monta da `index.ts`). Filmata in un simulatore.
+  Pubblicata il 2026-10-02 (update `3ce1aaf2`, da 9b1968b): **da guardare
+  sull'iPhone**. La schermata di avvio nativa gialla, scelta dall'utente, è
+  TASK-181.
+- **App** — TASK-174: le schede di «Explore» hanno la mappa sotto la linea,
+  con i nomi dei paesi, chiesto dall'utente (ADR-0142): negli esempi di una
+  città e in «Best near you». Sono le foto di «Feed» (TASK-162), fatte
+  dalla stessa pagina nascosta; il credito della mappa sta una volta sola
+  accanto alle schede. Negli esempi la scheda dice anche il paese. Solo
+  app, niente API. Pubblicata il 2026-10-02 (update `3ce1aaf2`): **da
+  provare sull'iPhone**.
+- **App** — TASK-173: la musica nella corsa, chiesta dall'utente («uso
+  Spotify», ADR-0141). Mentre si corre, sulle pagine «Map» e «Data», «Music»
+  di fronte a «Pocket» apre Spotify; su un telefono senza Spotify, la sua
+  pagina nello store. Sgrava non suona niente e la corsa non va in pausa.
+  Nessuna dipendenza nuova. Visto nel simulatore, dove Spotify non c'è.
+  Pubblicata il 2026-10-02 (update `3ce1aaf2`). **Da provare
+  sull'iPhone**: «Music» con Spotify vero; la
+  voce delle svolte con la musica accesa (la abbassa, la ferma, ci parla
+  sopra?); la corsa mentre si è in Spotify. **Una domanda per l'utente**
+  nel task file: brano, pausa e avanti dentro Sgrava.
 - **App** — TASK-175: la mappa non ha più i pulsanti «+» e «−» in alto a
   destra, chiesto dall'utente (ADR-0143): si ingrandisce solo con le dita.
   Il cuore dei preferiti sale nell'angolo, alla stessa altezza di «←».
-  Solo app, niente API. **Da pubblicare su `preview`**, con l'ok
-  dell'utente.
+  Solo app, niente API. Pubblicata il 2026-10-02 (update `3ce1aaf2`).
 - **App** — TASK-169: la corsa rifatta sul modello di Nike Run Club, chiesta
   dall'utente (ADR-0137), con un percorso e senza. Parte con «3 · 2 · 1»;
   due pagine da scorrere, «Map» (mappa, indicazioni, km, passo di adesso e
@@ -122,10 +168,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   le pause, nemmeno fra «Stop» e «Keep running»; la voce dice i km anche
   con un percorso, e «Voice» la spegne. Chiude i tre seguiti di TASK-164.
   Nessuna dipendenza nuova, niente API, `App.tsx` non toccato. Visto nel
-  simulatore con un GPS simulato. **Da pubblicare e da provare
-  sull'iPhone**: lo swipe col dito, «Stop» tenuto premuto, la pausa da sola.
+  simulatore con un GPS simulato. Pubblicato su `preview` il 2026-10-02
+  (update `38f9a17b`, da fa6462b). **Da provare sull'iPhone**: lo swipe col
+  dito, «Stop» tenuto premuto, la pausa da sola.
   Fuori, già chiesto dall'utente: il battito da sensore Bluetooth e da
-  Apple Watch (solo in una build propria). Da chiedere: quale app di musica.
+  Apple Watch (solo in una build propria). La musica: l'utente usa Spotify
+  (TASK-173).
 - **API e app** — TASK-171: «Favorites», chiesti dall'utente (ADR-0139).
   Sulla mappa, di fronte a «←», un cuore tiene fra i preferiti dell'account
   il percorso che si vede (disegnato, di «Explore», a tema); in «Profile»
@@ -147,16 +195,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   posizione di qualcuno; un motore cambiato ridisegna. L'app chiede lo
   stato di ogni percorso ogni 0,5 s all'inizio, non più ogni 2 s.
   `python -m shaperoute_api.draw_examples` disegna prima gli esempi di un
-  elenco di città. **Mancano, con l'ok dell'utente**: aggiornare l'API sul
-  server (l'app pubblicata ci guadagna senza essere ripubblicata per la
-  parte dell'API), lanciare `draw_examples` sulle città con la zona, e le
-  zone delle città medie come Rovereto. Da capire dai log del server
-  perché un esempio lì costa 18 s e sul Mac 2.
+  elenco di città. **Sul server dal 2026-10-02** (10:38Z, ok dell'utente;
+  commit `ec84042`, 14 s di API ferma, immagine di prima
+  `shaperoute-api:before-task171`): `draw_examples` ha disegnato gli
+  esempi di 62 città (le 52 italiane, Rovereto e le città in evidenza
+  tranne Berlino), 186 percorsi, 13 MB, 30 minuti; lì compaiono appena
+  scelta la città. La zona di Rovereto è stata aggiunta dall'estratto
+  (84 s, 35 MB). **Venezia non riesce**: `engine_error` sulle tre forme,
+  il ritaglio attorno al centro storico è senza nodi (TASK-180). Il
+  controllo ogni 0,5 s arriva con la prossima pubblicazione dell'app.
 - **App** — TASK-170: «Run with Strava» tolto, chiesto dall'utente
   (ADR-0138, che supera ADR-0106). Nelle tre schede di un percorso
   (disegnato, di «Explore», a tema) restano «Start» ed «Export GPX»; il
   GPX è il modo di portare un percorso in un'altra app. Solo app, niente
-  API. **Da pubblicare su `preview`**, con l'ok dell'utente.
+  API. Pubblicata il 2026-10-02 (update `38f9a17b`, da fa6462b).
 - **App** — TASK-166: l'annuncio AdMob compare all'inizio della ricerca
   («Draw route», «Ask for a route») e copre il calcolo; alla X lo schermo
   mostra il percorso, se è pronto, o l'attesa (ADR-0102, aggiornamento).
@@ -172,14 +224,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `seed_catalog.py --featured` con le zone copiate dal server (New York
   le aveva da TASK-161). **Manca Berlino**, per scelta dell'utente
   rimandata a quando Overpass riapre: la sua zona non è sul server.
-  **L'app pubblicata le vede solo dopo aver aggiornato `catalog/` sul
-  server** (`DEPLOY.md` F.12), con l'ok dell'utente.
+  Il catalogo è sul server dal 2026-10-02 10:38Z (aggiornamento a
+  ec84042, con l'ok dell'utente): l'app pubblicata le vede.
 - **App** — TASK-167: in «Explore» i percorsi sono schede, due per riga,
   con il disegno grande in alto, scelto dall'utente fra le proposte
   grafiche (ADR-0135). I filtri stanno in una riga sola, «Shape» e
   «Distance», e le scelte si aprono sotto. Anche gli esempi di una città
-  sono schede. Visto su un simulatore con il catalogo di Trento. **Da
-  provare sull'iPhone** (ripubblicare l'app).
+  sono schede. Visto su un simulatore con il catalogo di Trento.
+  Pubblicata il 2026-10-02 (update `7950b7c0`): **da provare
+  sull'iPhone**.
 - **App** — TASK-164: la schermata della corsa rifatta, chiesta dall'utente
   (ADR-0133). Sotto la mappa, con un percorso e senza: km fatti, passo
   medio, passo di adesso (ultimi 200 m) e tempo; con un percorso anche i km

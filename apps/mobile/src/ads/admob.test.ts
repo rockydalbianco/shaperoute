@@ -29,9 +29,8 @@ function load({
         TestIds: { INTERSTITIAL: "test-interstitial" },
       };
     });
-    const { TurboModuleRegistry } = jest.requireActual<typeof import("react-native")>(
-      "react-native",
-    );
+    const { TurboModuleRegistry } =
+      jest.requireActual<typeof import("react-native")>("react-native");
     jest
       .spyOn(TurboModuleRegistry, "get")
       .mockImplementation((name: string) =>
@@ -61,7 +60,10 @@ describe("routeAds in Expo Go and in a build", () => {
   });
 
   it("has no ads when the package fails to load", () => {
-    const { ads, noAds, packageLoaded } = load({ nativeModule: true, packageThrows: true });
+    const { ads, noAds, packageLoaded } = load({
+      nativeModule: true,
+      packageThrows: true,
+    });
     expect(packageLoaded).toHaveBeenCalledTimes(1);
     expect(ads).toBe(noAds);
   });

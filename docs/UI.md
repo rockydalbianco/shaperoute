@@ -318,8 +318,8 @@ Un percorso che piace si tiene, e si ritrova in «Profile» da ogni telefono
 dell'account.
 
 - **Il cuore sulla mappa**: quando sulla mappa c'è un percorso (disegnato in
-  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←», c'è un
-  cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
+  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e sotto
+  i pulsanti dello zoom della mappa, c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
   («♥»): lo toglie. Cambia subito, senza aspettare l'API; se l'API rifiuta
   torna com'era e sotto il cuore c'è il motivo in una riga, che un tocco
   chiude. Non è giallo: il giallo è del percorso. Durante l'attesa, la

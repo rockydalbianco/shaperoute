@@ -9,14 +9,22 @@ import { useFavoritesDoor } from "./favoritesDoor";
 export const HEART_KEPT = "♥︎";
 export const HEART_EMPTY = "♡";
 
+/**
+ * Where the map's zoom buttons end, from the top of the screen: MapLibre
+ * puts them 10 from the corner, two of 29, whatever the notch. The heart
+ * stays under them on every phone.
+ */
+const ZOOM_BUTTONS_BOTTOM = 68;
+
 type Props = {
   /** The route on the map; null while there is none to keep. */
   route: Keepable | null;
 };
 
 /**
- * The heart over the map, opposite the way back (TASK-171): keeps the route
- * shown among the favorites of the account, or removes it. Full when kept.
+ * The heart over the map, opposite the way back and under the zoom buttons
+ * (TASK-171): keeps the route shown among the favorites of the account, or
+ * removes it. Full when kept.
  */
 export function FavoriteHeart({ route }: Props) {
   const insets = useSafeAreaInsets();
@@ -27,7 +35,10 @@ export function FavoriteHeart({ route }: Props) {
   const kept = favorites.has(route.id);
   return (
     <View
-      style={[styles.corner, { top: insets.top + space.sm }]}
+      style={[
+        styles.corner,
+        { top: Math.max(insets.top, ZOOM_BUTTONS_BOTTOM) + space.sm },
+      ]}
       pointerEvents="box-none"
     >
       <Pressable

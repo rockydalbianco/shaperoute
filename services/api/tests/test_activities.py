@@ -448,6 +448,19 @@ def test_a_page_stays_right_when_the_list_changes(client: TestClient) -> None:
     assert second.json()["total"] == 5
 
 
+def test_a_cursor_past_every_run_is_the_first_page(client: TestClient) -> None:
+    me = signed_up(client)
+    client.put(f"/me/activities/{KEY}", json=free(), headers=me)
+    # As far ahead as a cursor may say, and as far back.
+    ahead = client.get(
+        "/me/activities", params={"cursor": "99999999999999999-1"}, headers=me
+    )
+    assert ahead.status_code == 200 and ids(ahead) == [KEY]
+    behind = client.get("/me/activities", params={"cursor": "0-0"}, headers=me)
+    assert behind.status_code == 200 and ids(behind) == []
+    assert behind.json()["total"] == 1
+
+
 def test_runs_begun_together_are_each_on_one_page(client: TestClient) -> None:
     me = signed_up(client)
     keys = [f"same{n}key000" for n in range(3)]
@@ -465,7 +478,14 @@ def test_runs_begun_together_are_each_on_one_page(client: TestClient) -> None:
 
 @pytest.mark.parametrize(
     "params",
-    [{"limit": 0}, {"limit": 51}, {"cursor": "yesterday"}, {"cursor": "12-"}],
+    [
+        {"limit": 0},
+        {"limit": 51},
+        {"cursor": "yesterday"},
+        {"cursor": "12-"},
+        # More microseconds than a date holds.
+        {"cursor": "999999999999999999-1"},
+    ],
 )
 def test_a_page_that_is_not_one_is_refused(
     client: TestClient, params: dict[str, Any]

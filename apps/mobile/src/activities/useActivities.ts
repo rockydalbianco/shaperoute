@@ -204,12 +204,14 @@ export function useActivities(
 
   const remove = useCallback(
     (id: string) => {
-      const list = current.current?.token === token ? current.current.list : NONE;
-      const index = list.findIndex((activity) => activity.id === id);
-      if (token === null || baseUrl === null || index === -1) {
+      if (token === null || baseUrl === null) {
         return;
       }
-      const removed = list[index];
+      const list = current.current?.token === token ? current.current.list : NONE;
+      // Not in the pages here when it is a run opened on the map from a
+      // page the list has let go since: deleted all the same.
+      const index = list.findIndex((activity) => activity.id === id);
+      const removed = index === -1 ? null : list[index];
       change(token, (was) => ({
         list: was.list.filter((activity) => activity.id !== id),
         total: was.total === null ? null : Math.max(0, was.total - 1),
@@ -221,16 +223,17 @@ export function useActivities(
         }
         // Back where it was, unless the list has it again in the meantime.
         change(token, (was) => {
+          const problem = activityProblem(outcome);
           if (was.list.some((activity) => activity.id === id)) {
-            return { problem: activityProblem(outcome) };
+            return { problem };
+          }
+          const total = was.total === null ? null : was.total + 1;
+          if (removed === null) {
+            return { total, problem };
           }
           const next = [...was.list];
           next.splice(Math.min(index, next.length), 0, removed);
-          return {
-            list: next,
-            total: was.total === null ? null : was.total + 1,
-            problem: activityProblem(outcome),
-          };
+          return { list: next, total, problem };
         });
         if (sessionEnded(outcome)) {
           onSessionEnded(token);

@@ -73,8 +73,9 @@ KEY_PATTERN = r"^[a-z0-9]{8,40}$"
 # A page of the list: what a phone shows in a few screens.
 PAGE_SIZE = 20
 MAX_PAGE_SIZE = 50
-# Where a page ended: the start of its last run, in microseconds, and its row.
-CURSOR_PATTERN = r"^\d{1,18}-\d{1,18}$"
+# Where a page ended: the start of its last run, in microseconds, and its
+# row. Seventeen digits of microseconds reach the year 5138: a datetime.
+CURSOR_PATTERN = r"^\d{1,17}-\d{1,18}$"
 # A phone's clock that says a run began before this, or after tomorrow, is
 # not a clock.
 EARLIEST_RUN = datetime(2020, 1, 1, tzinfo=UTC)

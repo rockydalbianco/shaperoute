@@ -184,12 +184,23 @@ test("a run the API does not delete comes back where it was", async () => {
   expect(result.current.problem).toBeNull();
 });
 
-test("a run that is not in the list is not asked away", async () => {
-  const fetchFn = answers({ status: 200, body: activities });
+test("a run on a page not here is deleted all the same, and counted", async () => {
+  const fetchFn = answers(
+    { status: 200, body: page([STAR], CURSOR, 2) },
+    { status: 204 },
+    { status: 500, body: apiError("engine_error", "The database is away.") },
+  );
   const { result } = await hook(fetchFn);
-  await act(async () => result.current.remove("0000000000000000"));
-  expect(fetchFn).toHaveBeenCalledTimes(1);
-  expect(result.current.total).toBe(2);
+  // Opened on the map from a page the list has let go since.
+  await act(async () => result.current.remove(FREE.id));
+  const [url, init] = fetchFn.mock.calls[1];
+  expect(url).toBe(`http://api/me/activities/${FREE.id}`);
+  expect(init).toMatchObject({ method: "DELETE" });
+  expect(result.current).toMatchObject({ list: [STAR], total: 1, problem: null });
+  // Refused: counted again, and the list as it was.
+  await act(async () => result.current.remove(earlier(3).id));
+  expect(result.current).toMatchObject({ list: [STAR], total: 1 });
+  expect(result.current.problem).toContain("The database is away.");
 });
 
 test("a list that never came can be asked again; one that did stays", async () => {

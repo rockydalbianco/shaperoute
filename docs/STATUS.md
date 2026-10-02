@@ -112,6 +112,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-194: il file GPX esportato si chiama
+  `sgrava-heart-5km-2026-09-23.gpx`, non più `shaperoute-…` (seguito di
+  TASK-160); senza un nome dall'API, `sgrava.gpx`. Un'API non aggiornata
+  che risponde ancora il nome vecchio continua a funzionare. Sul telefono
+  il nome nuovo arriva solo dopo l'aggiornamento del server e la
+  pubblicazione dell'app: tutti e due aspettano l'OK dell'utente. Dentro
+  il file, `creator` dice ancora «ShapeRoute route-engine»: seguito
+  possibile (`tasks/TASK-194.md`).
 - **API e app** — TASK-172: «My activities», chiesto dall'utente
   (ADR-0140). Con un account, a fine corsa «Save» mette la corsa in «My
   activities» e «Discard» la butta, dopo una conferma (scelta nuova

@@ -404,7 +404,18 @@ di Levico. L'impronta copre percorso scelto, alternative, punteggi e note
 di tutte le partenze. Altri test: un tracciamento non conta gli archi; ciò
 che è tenuto resta dopo il nodo pozzo; un grafo cambiato da NetworkX si
 rivede; una vista segue il suo grafo; le coordinate tenute sono quelle dei
-nodi.
+nodi; e lo stesso piano, con niente tenuto per nessun grafo (tutto rifatto
+a ogni chiamata), dà la stessa impronta (Levico e il cerchio della città),
+su qualunque piattaforma.
+
+**Il cuore di Levico fra Mac e CI.** In CI (Linux, Python 3.11, NetworkX
+3.6, NumPy 2.4) quel percorso viene diverso da quello del Mac (Python 3.12,
+NetworkX 3.7, NumPy 2.5) **già con il codice di prima**: un commit di prova
+nella PR, con il `network.py` di prima, ha dato in CI `c252f402c7b05d09`
+come il codice nuovo (poi tolto). Le altre 6 impronte sono uguali nei due
+posti. Il test accetta per quel caso le due impronte di prima, una per
+ambiente; il test «niente tenuto» lo prova in ogni ambiente. Perché le
+librerie lo cambino non è cercato qui (seguito, se serve).
 
 **Tempi dopo**, stesso script e stessa macchina, prima e dopo uno dietro
 l'altro (giri 1–3 di 4, zona in memoria, load average 3,2–3,9):
@@ -421,8 +432,10 @@ Un altro giro di dopo, con il Mac più scarico (load 2,3–3,2): cuore
 3,48–3,57 s, cerchio 4,98–5,07, «CIAO» 6,54–6,67, stella 0,83–0,85, penna
 alzata 2,64–2,68.
 
-**Test.** `pytest -m "not network"`: motore 1150 passati (sul codice di
-prima 1147, più i 3 nuovi che lì fallivano come atteso); API 761 passati.
+**Test.** `pytest -m "not network"`: motore 1152 passati (sul codice di
+prima 1147, più i nuovi: 3 lì fallivano come atteso, 2 aggiunti dopo); API
+761 passati (prima del merge di `origin/main`, che ha portato solo i file
+Strava dell'API).
 
 **Il registro delle richieste.** Le 61 richieste del registro locale
 (`data/requests/requests.jsonl`) rifatte come fa `replay.py`

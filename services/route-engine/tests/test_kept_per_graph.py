@@ -104,10 +104,13 @@ class _Source:
 
 # --- The routes of before ---
 
-# `_digest` of plan_nearby, the API's planner, on main at 3f905d7.
-BEFORE = {
+# `_digest` of plan_nearby, the API's planner, on main at 3f905d7. The
+# Levico heart comes out another way with the libraries of CI (Python 3.11,
+# NetworkX 3.6, NumPy 2.4) than on the Mac (3.12, 3.7, 2.5), already with
+# the code of before: both are its route of before, each where it ran.
+BEFORE: dict[str, str | tuple[str, ...]] = {
     "grid heart 5000": "3df8155c69e599f7",
-    "levico heart 2000": "fe1ece7d303c7430",
+    "levico heart 2000": ("fe1ece7d303c7430", "c252f402c7b05d09"),
     "town CIAO 12000": "ab7b0837f088a672",
     "town CIAO pen up 12000": "8faf66cd46b5c9c9",
     "town circle 10000": "96eb22388f95078e",
@@ -173,7 +176,18 @@ def _digest(found: NearbyPlan) -> str:
 
 @pytest.mark.parametrize("case", sorted(BEFORE))
 def test_the_routes_are_those_of_before(case: str) -> None:
-    assert _digest(_plan(case)) == BEFORE[case]
+    before = BEFORE[case]
+    assert _digest(_plan(case)) in (before if isinstance(before, tuple) else (before,))
+
+
+@pytest.mark.parametrize("case", ["levico heart 2000", "town circle 10000"])
+def test_keeping_changes_no_route(case: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The same plan with nothing kept for any graph, all worked out again
+    at every call: on any platform and library, what is kept per graph
+    cannot change a route."""
+    kept = _digest(_plan(case))
+    monkeypatch.setattr(network, "_mark", lambda graph: None)
+    assert _digest(_plan(case)) == kept
 
 
 # --- Kept while the graph stays as it is ---

@@ -116,6 +116,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   per scelta dell'utente: da rivedere prima di invitare altre persone.
   Niente API, niente like o commenti: il feed vero resta TASK-118. Visto
   su un simulatore. **Da provare sull'iPhone** (ripubblicare l'app).
+- **Mappe** — TASK-137: 52 città italiane con la zona già sul server
+  Hetzner (circa 17 × 17 km attorno al centro, nomi delle strade compresi),
+  da `python -m shaperoute_api.prefetch_zones --preset italy --extract …`
+  (ADR-0119): esempi e categorie di «Explore» lì non aspettano Overpass
+  (provato in 7 città, nessun download). Overpass aveva bloccato il server
+  dopo 5 città; le altre vengono dall'estratto Geofabrik dell'Italia, con
+  osmium solo nell'immagine dei download. Anche 10 delle 11 città estere in
+  evidenza, dai loro estratti; Berlino no (memoria: non sta in 4 GiB). Una
+  zona estera grande pesa 0,5–0,76 GB nella memoria dell'API (seguiti per
+  TASK-122 nel task file). Berlino resta a Overpass. Da fare: rifare le zone
+  quando l'estratto invecchia.
 - **App** — TASK-155: in «Explore», sulla mappa di un esempio di città gli
   altri percorsi fra «A · B · C» sono linee grigie sotto quello scelto,
   come per un percorso disegnato; chiesto dall'utente dopo aver provato
@@ -259,9 +270,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Sul server Hetzner, che l'app usa, Vercelli la prima volta: 94 s (cuore
   40, cerchio 48, stella 5), quasi tutti download da Overpass; il cerchio
   riscarica una zona più larga di soli 30 m per lato (proposta: zone
-  scaricate con un margine, dopo TASK-136). Da
-  fare dopo il merge di TASK-142: togliere il vecchio `AskForRoute` da
-  `ExploreTools.tsx` e i suoi test. TASK-138 provato sull'iPhone
+  scaricate con un margine, dopo TASK-136). Il vecchio `AskForRoute` di
+  `ExploreTools.tsx` l'ha tolto TASK-148. TASK-138 provato sull'iPhone
   (2026-10-01): funziona.
 - **Scelte** — TASK-110: la parte social decisa dall'utente (ADR-0114):
   Oracle Always Free, email e password, corse private finché pubblicate,

@@ -4088,6 +4088,77 @@ avrebbero perso forma, giudicati peggio); un peso diverso per forma (con
 Gatto, pesce e le teste possono tenere dei baffi: se l'occhio lo chiede,
 servono altre idee (ritoccare la forma, o la somiglianza delle teste).
 
+## ADR-0119 — Le zone delle città scaricate prima, sul server dell'app
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («scarica un po' di
+mappe almeno per l'Italia»); quali città, il riquadro e il come decisi
+dall'agente su delega dell'utente (TASK-137).
+
+**Contesto**: la prima richiesta per una città nuova scarica la sua zona da
+Overpass: Vercelli, la prima volta, 94 s per i tre esempi (TASK-143), quasi
+tutti download. Dal Mac Overpass rifiuta per ore dopo pochi download; dal
+server Hetzner, che l'app usa dal 2026-10-01, risponde.
+
+**Decisione**:
+- **Un comando dell'API**, `python -m shaperoute_api.prefetch_zones`: usa la
+  stessa ricerca delle città di `GET /cities`, quindi lo stesso centro che
+  l'app riceve al tocco.
+- **Il riquadro di «Explore»**: ogni forma dei temi (lette da `THEMES`) a
+  10 km da qualunque partenza entro `search_radius_m(10 km)` (2,5 km), con
+  l'area della ricerca lontana del motore da quelle partenze
+  (`zone_area(..., FAR_OFFSET_M)`), e gli esempi di TASK-143 a 5 km da
+  qualunque partenza entro `FAR_OFFSET_M` (2 km). Bastano le quattro
+  partenze più lontane a nord, est, sud e ovest: i riquadri sono allineati
+  agli assi. Circa 17 × 17 km, 289 km². Il primo riquadro, senza la ricerca
+  lontana, era di 14 km: Romantic a Verona e Bolzano usciva di 0,4–0,7 km a
+  nord e chiedeva Overpass. Le zone a 14 km già fatte restano: l'API prende
+  la zona più piccola che copre la richiesta, quindi la più leggera.
+- **Con i nomi delle strade** (ADR-0057): l'API li legge solo dalla cache,
+  e «Start» (TASK-145) li dice. Una città con la zona ma senza nomi scarica
+  solo i nomi.
+- **Le città**: `--preset italy`, 52 città (i 21 capoluoghi di regione e
+  provincia autonoma, poi le più grandi e visitate, Vercelli e Levico
+  comprese); `--preset featured`, le 14 città in evidenza dell'app. Solo
+  nomi, nessuna coordinata scritta.
+- **Prudenza con Overpass**: un download alla volta, 60 s fra una città e
+  l'altra; prima di ognuna la pagina di stato, e se un posto si libera fra
+  N secondi si aspetta (fino a 5 minuti): è quello che il servizio chiede, e
+  il primo giro sul server senza attesa si era fermato a Milano con un
+  errore HTTP subito dopo Roma. Un tentativo per città; una città che
+  fallisce resta per il giro dopo, e due errori di fila fermano il comando
+  (TASK-137 diceva «il primo errore»: pensato per il Mac, che Overpass
+  blocca per ore; dal server l'errore tipico è un 504 passeggero, e il
+  secondo giro si era fermato a Torino per uno solo). Stop anche se Overpass
+  non risponde, `--max-downloads` per stare nell'uso corretto del servizio
+  pubblico; stop sotto i 5 GB liberi. Rilanciato riparte dalle mancanti.
+- **Sul server, in un container a parte** con la cartella della cache
+  dell'API: l'API in servizio non si ferma, e legge le zone nuove dal disco
+  alla prima richiesta (le scritture sono intere, ADR-0104).
+
+- **Dall'estratto di Geofabrik** (scelta dell'utente del 2026-10-02, dopo
+  che Overpass aveva bloccato il server alla quinta città): `--extract`,
+  osmium solo nell'immagine dei download. **osmium-tool è una dipendenza
+  nuova, approvata dall'utente** il 2026-10-02 (nell'opzione scelta, poi
+  alla domanda diretta del Coordinatore); serve solo a chi rifà le zone
+  (`SETUP.md` 10.5: `brew install osmium-tool` sul Mac), non all'API né
+  all'app. OSMnx e il motore ricevono dal
+  ritaglio le risposte di Overpass (sostituendo per la durata del download
+  `osmnx._overpass._download_overpass_network` e `network._overpass`) e
+  fanno tutto il resto come sempre: così la zona è quella di un download,
+  verificato su Napoli e Palermo (stessa linea per cuore e stella).
+  Costruire il grafo da un file `.osm` con `graph_from_xml` saltava il
+  taglio al riquadro e il filtro: zone diverse.
+
+**Alternative scartate**: Overpass molto piano (una città ogni due ore,
+giorni per l'Italia, e il server ribloccato ogni tanto anche per l'app);
+pyosmium nel progetto (una dipendenza Python in più per l'API, che non ne ha
+bisogno); zone più grandi per le città grandi:
+più download per le stesse richieste di «Explore»; scaricare sul Mac:
+Overpass lo rifiuta, e l'app non usa più il Mac.
+
+**Conseguenza**: nelle città scaricate «Explore» non aspetta Overpass;
+fuori, la prima richiesta scarica ancora. Il riquadro non copre «Draw
+route» da partenze lontane dal centro né percorsi a tema oltre i 10 km.
+
 ## ADR-0121 — Su Linux la memoria per le partenze vicine è MemAvailable
 **Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
 (TASK-147), dopo che l'utente non vedeva più le alternative sul server.

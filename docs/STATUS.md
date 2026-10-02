@@ -291,6 +291,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (84 s, 35 MB). **Venezia non riesce**: `engine_error` sulle tre forme,
   il ritaglio attorno al centro storico è senza nodi (TASK-180). Il
   controllo ogni 0,5 s arriva con la prossima pubblicazione dell'app.
+- **API** — TASK-195: il cerchio per primo in `draw_examples` è entrato
+  con TASK-176 (#199), che l'ha fatto mentre questo task partiva. Qui resta
+  solo il test che tiene vera la ragione: l'area del cerchio da 5 km
+  contiene quella di cuore e stella dallo stesso centro. Vale sul server
+  dal prossimo aggiornamento dell'API (ok dell'utente); niente da rifare lì.
 - **App** — TASK-170: «Run with Strava» tolto, chiesto dall'utente
   (ADR-0138, che supera ADR-0106). Nelle tre schede di un percorso
   (disegnato, di «Explore», a tema) restano «Start» ed «Export GPX»; il

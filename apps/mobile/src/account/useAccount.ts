@@ -43,6 +43,11 @@ export type Account = {
   signOut: () => void;
   deleteAccount: () => void;
   clearProblem: () => void;
+  /**
+   * A request sent with `token` elsewhere in the app (the favorites) was
+   * answered «the session is over»: the account signs out here too.
+   */
+  sessionEnded: (token: string) => void;
 };
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
@@ -216,5 +221,6 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
     signOut,
     deleteAccount: () => void deleteAccount(),
     clearProblem,
+    sessionEnded: ended,
   };
 }

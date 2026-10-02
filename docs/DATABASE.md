@@ -34,6 +34,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 | `sessions` | hash del token (SHA-256), utente, ultimo uso, scadenza a 90 giorni | TASK-114 |
 | `profile_photos` | utente, JPEG quadrato 256 px | TASK-116 |
 | `generated_routes` | ogni percorso dell'API (ADR-0086): richiesta, tipo (forma, parola, immagine), distanza, somiglianza, linea, **punto di partenza mostrato** (a più di 500 m da quello vero), centro, data; utente se era entrato, se no nessuno | TASK-092 |
+| `favorites` | percorso tenuto fra i preferiti: utente, chiave fatta dall'app sulla linea (unica per utente), città, forma o parola e stile, titolo, distanza chiesta e sulle strade, somiglianza, **linea intera**, data | TASK-171 |
 | `runs` | corsa salvata: utente, percorso pianificato, traccia (`LineStringM`, M = secondi dall'inizio), **traccia tagliata** (senza 200 m all'inizio e alla fine), punteggio, fedeltà, distanza, durata, titolo, pubblica sì/no, data | TASK-117 |
 | `likes` | utente, corsa (coppia unica) | TASK-119 |
 | `comments` | corsa, autore, testo (1–500), data, nascosto sì/no | TASK-120 |
@@ -58,10 +59,25 @@ Migrazione `0001_users_sessions.sql` (TASK-114, ADR-0120):
   `user_id` (`ON DELETE CASCADE`), `created_at`, `last_used_at`. Valida
   finché `last_used_at` è più recente di 90 giorni; ogni uso la sposta.
   Una sessione scaduta si cancella quando qualcuno la usa.
-- L'estensione PostGIS la crea la prima migrazione che usa una geometria
-  (TASK-092 o TASK-117): l'immagine la ha già.
+- L'estensione PostGIS la crea la prima migrazione che usa una geometria:
+  è la `0002` (`CREATE EXTENSION IF NOT EXISTS postgis`); l'immagine la ha
+  già.
 - Un admin si nomina a mano sulla VM:
   `UPDATE users SET role = 'admin' WHERE email = '…';`
+
+Migrazione `0002_favorites.sql` (TASK-171, ADR-0139):
+
+- `favorites`: `id`, `user_id` (`ON DELETE CASCADE`), `key` (da 8 a 40 fra
+  minuscole e cifre, unica con `user_id`), `city`, `shape`, `word`, `style`
+  (`round` o `block`), `title`, `distance_m`, `route_m`, `similarity`,
+  `line` (`geometry(LineString, 4326)`, punti in `(lon, lat)`),
+  `created_at`. Un indice per l'elenco di un utente, dal più recente.
+- Il preferito è una **copia** del percorso, non un rimando al catalogo o
+  a `generated_routes`: resta com'era anche se il catalogo cambia, e un
+  percorso disegnato sul telefono non sta da nessun'altra parte.
+- La linea entra come WKT con tutte le cifre e torna con
+  `ST_AsGeoJSON(line, 15)`: l'app ritrova gli stessi punti, e quindi la
+  stessa chiave.
 
 ## Come si memorizza una traccia
 

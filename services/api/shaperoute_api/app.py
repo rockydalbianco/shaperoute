@@ -38,6 +38,7 @@ from shaperoute_api.access import protect
 from shaperoute_api.accounts import Accounts, install_accounts
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.errors import error_of
+from shaperoute_api.favorites import install_favorites
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.images import (
     AnyRequest,
@@ -253,6 +254,8 @@ def create_app(
     protect(app)
     # Sign up, sign in, /me (TASK-114, ADR-0115); without a database, 503.
     install_accounts(app, accounts)
+    # The routes an account keeps (TASK-171); they need its token.
+    install_favorites(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

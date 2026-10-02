@@ -84,8 +84,11 @@ export function deleteAccount(
   return ask(baseUrl, "/me", { method: "DELETE", token }, isEmpty, options);
 }
 
-/** One account request. Never throws. */
-async function ask<T>(
+/**
+ * One request of the account, or in its name with `token` (the favorites,
+ * src/api/favorites.ts). Never throws.
+ */
+export async function ask<T>(
   baseUrl: string,
   path: string,
   { method, body, token }: { method: string; body?: unknown; token?: string },

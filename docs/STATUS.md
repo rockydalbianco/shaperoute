@@ -114,31 +114,30 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   l'app, che intanto si è caricata sotto. Si vede anche in Expo Go, dove la
   schermata di avvio di TASK-165 non c'è. Nessuna dipendenza nuova,
   `App.tsx` non toccato (monta da `index.ts`). Filmata in un simulatore.
-  **Da pubblicare su `preview`** con l'ok dell'utente, poi **da guardare
-  sull'iPhone**. Da chiedere all'utente: la schermata di avvio nativa
-  gialla invece che nera (una riga di `app.json`, si vede solo in una build
-  propria).
+  Pubblicata il 2026-10-02 (update `3ce1aaf2`, da 9b1968b): **da guardare
+  sull'iPhone**. La schermata di avvio nativa gialla, scelta dall'utente, è
+  TASK-181.
 - **App** — TASK-174: le schede di «Explore» hanno la mappa sotto la linea,
   con i nomi dei paesi, chiesto dall'utente (ADR-0142): negli esempi di una
   città e in «Best near you». Sono le foto di «Feed» (TASK-162), fatte
   dalla stessa pagina nascosta; il credito della mappa sta una volta sola
   accanto alle schede. Negli esempi la scheda dice anche il paese. Solo
-  app, niente API. **Da pubblicare su `preview`**, con l'ok dell'utente,
-  poi da provare sull'iPhone.
+  app, niente API. Pubblicata il 2026-10-02 (update `3ce1aaf2`): **da
+  provare sull'iPhone**.
 - **App** — TASK-173: la musica nella corsa, chiesta dall'utente («uso
   Spotify», ADR-0141). Mentre si corre, sulle pagine «Map» e «Data», «Music»
   di fronte a «Pocket» apre Spotify; su un telefono senza Spotify, la sua
   pagina nello store. Sgrava non suona niente e la corsa non va in pausa.
   Nessuna dipendenza nuova. Visto nel simulatore, dove Spotify non c'è.
-  **Da pubblicare e da provare sull'iPhone**: «Music» con Spotify vero; la
+  Pubblicata il 2026-10-02 (update `3ce1aaf2`). **Da provare
+  sull'iPhone**: «Music» con Spotify vero; la
   voce delle svolte con la musica accesa (la abbassa, la ferma, ci parla
   sopra?); la corsa mentre si è in Spotify. **Una domanda per l'utente**
   nel task file: brano, pausa e avanti dentro Sgrava.
 - **App** — TASK-175: la mappa non ha più i pulsanti «+» e «−» in alto a
   destra, chiesto dall'utente (ADR-0143): si ingrandisce solo con le dita.
   Il cuore dei preferiti sale nell'angolo, alla stessa altezza di «←».
-  Solo app, niente API. **Da pubblicare su `preview`**, con l'ok
-  dell'utente.
+  Solo app, niente API. Pubblicata il 2026-10-02 (update `3ce1aaf2`).
 - **App** — TASK-169: la corsa rifatta sul modello di Nike Run Club, chiesta
   dall'utente (ADR-0137), con un percorso e senza. Parte con «3 · 2 · 1»;
   due pagine da scorrere, «Map» (mappa, indicazioni, km, passo di adesso e
@@ -188,7 +187,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (ADR-0138, che supera ADR-0106). Nelle tre schede di un percorso
   (disegnato, di «Explore», a tema) restano «Start» ed «Export GPX»; il
   GPX è il modo di portare un percorso in un'altra app. Solo app, niente
-  API. **Da pubblicare su `preview`**, con l'ok dell'utente.
+  API. Pubblicata il 2026-10-02 (update `38f9a17b`, da fa6462b).
 - **App** — TASK-166: l'annuncio AdMob compare all'inizio della ricerca
   («Draw route», «Ask for a route») e copre il calcolo; alla X lo schermo
   mostra il percorso, se è pronto, o l'attesa (ADR-0102, aggiornamento).
@@ -204,14 +203,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `seed_catalog.py --featured` con le zone copiate dal server (New York
   le aveva da TASK-161). **Manca Berlino**, per scelta dell'utente
   rimandata a quando Overpass riapre: la sua zona non è sul server.
-  **L'app pubblicata le vede solo dopo aver aggiornato `catalog/` sul
-  server** (`DEPLOY.md` F.12), con l'ok dell'utente.
+  Il catalogo è sul server dal 2026-10-02 10:38Z (aggiornamento a
+  ec84042, con l'ok dell'utente): l'app pubblicata le vede.
 - **App** — TASK-167: in «Explore» i percorsi sono schede, due per riga,
   con il disegno grande in alto, scelto dall'utente fra le proposte
   grafiche (ADR-0135). I filtri stanno in una riga sola, «Shape» e
   «Distance», e le scelte si aprono sotto. Anche gli esempi di una città
-  sono schede. Visto su un simulatore con il catalogo di Trento. **Da
-  provare sull'iPhone** (ripubblicare l'app).
+  sono schede. Visto su un simulatore con il catalogo di Trento.
+  Pubblicata il 2026-10-02 (update `7950b7c0`): **da provare
+  sull'iPhone**.
 - **App** — TASK-164: la schermata della corsa rifatta, chiesta dall'utente
   (ADR-0133). Sotto la mappa, con un percorso e senza: km fatti, passo
   medio, passo di adesso (ultimi 200 m) e tempo; con un percorso anche i km

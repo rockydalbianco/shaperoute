@@ -30,6 +30,10 @@ import {
   saveRun,
 } from "../src/navigation/trackStore";
 
+// Every test renders the whole app, and the first one loads it cold: on a
+// busy machine that alone can take the five seconds a test has.
+jest.setTimeout(20_000);
+
 jest.mock("react-native-webview");
 jest.mock(
   "react-native-safe-area-context",

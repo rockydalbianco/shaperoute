@@ -309,7 +309,7 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   che la riga scorra lei e che lo swipe fra le pagine parta da fuori; su
   Android non è stato provato niente.
 
-## «Profile» (TASK-115, ADR-0125; TASK-154)
+## «Profile» (TASK-115, ADR-0125; TASK-154; TASK-177, ADR-0145)
 
 In alto a destra, accanto ai nomi delle pagine, un pulsante tondo apre
 **«Profile»**, l'account: mostra l'iniziale di chi è entrato, o una
@@ -325,13 +325,28 @@ regole dell'API, e l'errore si dice in parole sotto il pulsante (sotto,
 «Quando non va»). Si apre su «Sign up»; dopo «Log out» o una sessione
 finita, su «Log in».
 
-**«Profile» con l'account**: «LOGGED IN AS», il nome e l'email; la riga
-«Favorites», con quanti sono, che apre la pagina dei preferiti (sotto,
-«Favorites»), e sotto la riga «My activities», con quante sono le corse
-salvate, che apre la loro pagina (sotto, «My activities»); «Log out»;
-«Delete account», in rosso, che chiede prima sulla
-schermata stessa: «Delete my account» o «Keep my account». Nessun pulsante
-dell'account è giallo.
+**«Profile» con l'account** (TASK-177, ADR-0145): in alto un cerchio con
+l'iniziale, il nome e l'email. Sotto, due riquadri affiancati: **«Favorites»**
+con un cuore (❤️) e **«My activities»** con l'uomo che corre (🏃‍♂️), ognuno
+con il suo numero in grande (un trattino finché l'elenco non è arrivato);
+aprono le loro pagine (sotto, «Favorites» e «My activities»). Poi la riga
+**«Settings»** (⚙️). Le emoji sono l'unico colore che non viene dai token;
+nessun pulsante dell'account è giallo.
+
+**«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
+
+- **«Account»**: nome ed email; poi «Profile picture», «Change email» e
+  «Phone number», con la scritta «Soon».
+- **«Preferences»**: «Units», «Soon». **«Notifications»**: «Email
+  notifications» e «Push notifications», «Soon». **«About»**: «Help»,
+  «Terms», «Privacy», «Soon».
+- In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
+  sulla schermata stessa: «Delete my account» o «Keep my account».
+
+Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
+interruttori, perché dietro non c'è ancora niente (le accendono TASK-178,
+182, 183, 184, 185). Usciti dall'account da «Settings», chi rientra trova
+«Profile».
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -340,10 +355,10 @@ dell'account è giallo.
   o a una richiesta: l'app esce da sola, il pulsante di «Profile» ha un
   pallino arancio e «Profile» dice «Your session has ended. Log in
   again.». «Draw» va come prima.
-- **«Log out»** esce subito, anche senza rete, e dice «You are logged out
-  on this phone.».
-- **«Delete account»** esce solo con il sì dell'API; se l'API non risponde
-  l'account resta e la scheda dice perché. Fatto, dice «Your account and
+- **«Log out»**, in «Settings», esce subito, anche senza rete, e dice «You
+  are logged out on this phone.».
+- **«Delete account»**, in «Settings», esce solo con il sì dell'API; se
+  l'API non risponde l'account resta e la pagina dice perché. Fatto, dice «Your account and
   everything that was yours have been deleted.» e torna a «Sign up».
 - **Senza account** si disegna, si esplora e si corre come prima: il token
   lo vogliono solo l'account, i preferiti e le corse salvate.

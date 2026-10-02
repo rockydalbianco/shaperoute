@@ -94,6 +94,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-154: tre pagine affiancate, «Feed», «Draw», «Explore»,
+  scelta dell'utente dopo le proposte grafiche (ADR-0124). Si passa con
+  uno swipe a destra o a sinistra, o toccando i nomi in alto; l'app si apre
+  su «Draw». La barra in basso di TASK-115 non c'è più: «Profile» si apre
+  da un pulsante tondo accanto ai nomi e si chiude con «←». «Explore»
+  chiede i percorsi alla prima visita; «Feed» è vuota finché non arriva
+  TASK-118. Mappa e corsa restano a tutto schermo, senza swipe. Viste le
+  tre pagine e «Profile» su un simulatore. **Da provare con il dito
+  sull'iPhone**: lo swipe, e le righe che scorrono di lato dentro le
+  pagine (ripubblicare l'app, a fine coda dei merge). Seguiti nel task
+  file, fra cui i «File toccati» di TASK-118.
 - **App** — TASK-115: ci si iscrive, si entra e si esce dall'app
   (ADR-0125). Due schede in fondo, «Draw» (le schermate di prima, intatte)
   e «Profile»: «Sign up» (email, nome, password, «I am at least 16») e

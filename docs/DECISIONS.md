@@ -4262,3 +4262,60 @@ scelta non manda il segnale di ADR-0112: tutte e due le cose passano da
 `App.tsx`, seguiti scritti in `tasks/TASK-151.md`. I percorsi del catalogo
 e quelli a tema restano uno solo. Provato sull'API del Mac a New York:
 cuore, cerchio e stella da 5 km arrivano con due alternative ciascuno.
+
+## ADR-0124 — Tre pagine affiancate con lo swipe, al posto delle schede in basso
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («vai
+con lo swipe fra le tre pagine», fra la variante con i nomi in alto e
+quella con la barra in basso); il come deciso dall'agente su delega
+dell'utente (TASK-154). **Supera**, di ADR-0125, i punti «Schede fatte a
+mano» e «La barra solo sotto le schermate che scelgono».
+
+**Contesto**: l'utente ha chiesto di passare fra le schermate con uno
+swipe a destra e a sinistra, con «Explore» da un lato e dall'altro una
+pagina con i disegni pubblicati dagli iscritti. TASK-115 aveva appena
+messo due schede in basso, «Draw» e «Profile»; «Explore» si apriva da un
+pulsante della prima schermata e si chiudeva con «←».
+
+**Decisione**:
+- **Tre pagine, in quest'ordine**: «Feed», «Draw», «Explore». L'app si
+  apre su «Draw», al centro. I nomi in alto sono anche i comandi: si
+  toccano, e mostrano l'ordine delle pagine.
+- **Lo scorrimento a pagine di React Native** (`ScrollView` orizzontale
+  con `pagingEnabled`, `src/screens/Pager.tsx`): nessuna dipendenza nuova,
+  nessuna libreria di navigazione, come in TASK-051.
+- **Lo stato resta in `App.tsx`**: `feed`, `choose` ed `explore` sono tre
+  valori di `Screen`, e il pager dice quale è sullo schermo. Mappa, corsa e
+  fine corsa restano schermate intere: lì il pager non è montato, così lo
+  swipe non compete con il dito sulla mappa.
+- **«Explore» si monta alla prima visita** (`lazy`): chiede i percorsi
+  all'API appena si apre, e non deve farlo a ogni avvio dell'app. Si monta
+  ai primi pixel dello swipe verso di lei, così entra già disegnata. Le
+  altre due pagine sono montate subito.
+- **La barra in basso sparisce**. «Profile» si apre da un pulsante tondo
+  accanto ai nomi e si chiude con «←» (`src/screens/ProfileLayer.tsx`, al
+  posto di `Tabs.tsx`); il pallino `warning` della sessione finita passa
+  sul pulsante. `useTabBar` non serve più.
+- **La figura del pulsante è disegnata con due `View`**, testa e spalle:
+  l'app non ha icone né `react-native-svg`. Con un account, l'iniziale.
+- **«Feed» per ora è una pagina vuota e onesta**: dice che lì arriveranno
+  i disegni pubblicati. La riempie TASK-118.
+- **Sotto l'intestazione il margine in alto vale zero**
+  (`SafeAreaInsetsContext`): la tacca la tiene l'intestazione, e le
+  schermate di prima non cambiano.
+- **Una pagina fuori dallo schermo è nascosta all'accessibilità**: uno
+  screen reader legge solo la pagina che si vede.
+
+**Scartate**: la barra in basso con quattro schede (la variante B del
+canvas: l'utente ha scelto l'altra); `react-navigation` o
+`react-native-pager-view` (dipendenze nuove contro TASK-051); un gesto
+fatto a mano con `PanResponder` (lo scorrimento a pagine del sistema ha già
+inerzia e rimbalzo giusti); montare «Explore» all'avvio (una richiesta
+all'API a ogni apertura, anche per chi non la guarda).
+
+**Conseguenze**: TASK-118 riempie `FeedScreen.tsx` e non ha più `Tabs.tsx`
+da toccare. Le righe che scorrono di lato dentro una pagina (le tessere,
+le città) dovrebbero tenere il gesto per sé, con lo swipe fra le pagine
+che parte da fuori: va provato con il dito sull'iPhone, e su Android non è
+stato provato niente. Il nome «Sgrava» resta in
+cima a «Draw» e «Best near you» in cima a «Explore»: toglierli o no è
+parte del ridisegno delle due pagine, non ancora scelto.

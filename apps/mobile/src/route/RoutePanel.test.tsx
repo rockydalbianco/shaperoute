@@ -314,6 +314,8 @@ test("the route used is told once, as A, B or C among the ones offered", async (
     />
   );
   const { rerender } = await render(outcome(0));
+  // The GPX is the one way out of the app: no "Run with Strava" (TASK-170).
+  expect(screen.queryByText("Run with Strava")).toBeNull();
   await fireEvent.press(screen.getByText("Export GPX"));
   await fireEvent.press(screen.getByText("Export GPX"));
   expect(onExport).toHaveBeenCalledTimes(2);

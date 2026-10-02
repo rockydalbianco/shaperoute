@@ -71,6 +71,13 @@ test("a route alone has no tiles", async () => {
   expect(screen.getByText("Start")).toBeOnTheScreen();
 });
 
+test("the GPX is the one way out of the app: no Run with Strava", async () => {
+  const { explored } = opened([]);
+  await card(explored);
+  expect(screen.getByText("Export GPX")).toBeOnTheScreen();
+  expect(screen.queryByText("Run with Strava")).toBeNull();
+});
+
 test("while the directions come, the route chosen stays", async () => {
   const { explored, choose } = opened([shorter]);
   await card(explored, { status: "loading" });

@@ -1,6 +1,6 @@
 # TASK-132 — Un annuncio prima del percorso
 
-**Stato**: Pronto, in coda per il merge (coordinatore)
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-132-route-ads`
 
 ## Obiettivo
@@ -70,6 +70,11 @@ Da trasformare in task quando servono (li assegna il coordinatore):
   l'SDK ne segnala 50 mancanti.
 
 ## Esito
+
+**Done (2026-10-02)**: un annuncio AdMob a ogni ricerca, prima del percorso,
+provato nel simulatore iPhone; in Expo Go nessun annuncio e l'app come prima
+(test e prova in Expo Go). Gli annunci veri sono TASK-150, TASK-152 e
+TASK-153; i seguiti sono sopra.
 
 Codice e test fatti; manca la prova su una build vera (sopra).
 2026-10-01: l'utente non ha ancora un account Apple Developer. Senza account

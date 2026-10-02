@@ -4954,6 +4954,96 @@ e «Feed»); `Chips` non c'è più. Le righe che scorrono di lato
 dentro la pagina restano due, le città e le scelte di un filtro aperto. Da
 provare con il dito sull'iPhone.
 
+## ADR-0136 — Gli esempi di una città restano sull'API una volta disegnati
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («in Explore deve
+essere molto più veloce quando seleziono una nuova città, gli esempi in
+Rovereto»); il come deciso dall'agente su delega dell'utente (TASK-168).
+Allarga ADR-0116, che aveva scartato «salvare gli esempi nel catalogo
+dell'API per tutti».
+
+**Contesto**: in una città senza percorsi consigliati l'app chiede cuore,
+cerchio e stella da 5 km dal centro, uno alla volta (ADR-0116). Misurato
+il 2026-10-02: sul Mac libero 1,2–2,4 s di calcolo l'uno, sul server circa
+18 s (5 km a Trento), più il download della zona dove manca. L'app chiede
+lo stato ogni 2 s fissi: nel registro del Mac i tre esempi di Pergine,
+calcolati in 2 s l'uno, arrivano a 4 s l'uno dall'altro. E ogni telefono
+rifà gli stessi tre calcoli: la richiesta di una città è uguale per tutti,
+e il motore dà lo stesso percorso.
+
+**Decisione**:
+- **Un percorso disegnato dal centro di una città resta in un file**
+  (`shaperoute_api/route_store.py`), e la stessa richiesta riceve il job
+  già `done` nella risposta al `POST /route-jobs`. Nessun contratto nuovo:
+  l'app pubblicata legge già un job `done` alla prima risposta, e ci
+  guadagna senza essere ripubblicata.
+- **Solo dal centro di una città.** Tenere **ogni** percorso è la scelta
+  dell'utente di ADR-0086, ed è di TASK-092: nel database, con le regole
+  sui dati personali di TASK-110 (la partenza è spesso dove abita chi
+  chiede) ancora da scrivere. Qui non la si anticipa: su disco vanno solo
+  i percorsi che partono da un centro, che non è la posizione di nessuno
+  (come per gli eventi di ADR-0101). I centri sono quelli che l'API stessa
+  ha dato con `GET /cities` e, per le sole città, con `GET
+  /city-suggestions`; un posto suggerito può essere la via di qualcuno, e
+  resta fuori. Una partenza è un centro nello stesso quadrato di circa
+  10 m (4 decimali, il `cityKey` dell'app). Le immagini mai.
+- **Come si lega ad ADR-0086 / TASK-092.** Questo è una memoria delle
+  risposte, non l'archivio dei percorsi: non sceglie i migliori, non
+  propone niente, e si può cancellare senza perdere nulla. Non è un
+  secondo archivio accanto a quello di TASK-092, che in `main` oggi ha
+  solo i documenti (#118, #120). È fatto perché TASK-092 lo prenda:
+  `RouteJobs` parla a un `KeepsRoutes` con due metodi (`get`, `put`), e
+  `put` è chiamato per **ogni** percorso finito, nel punto dove TASK-092
+  deve salvare; oggi `RouteStore` scarta quelli che non partono da un
+  centro. Una versione sul database dello stesso `KeepsRoutes` salva
+  tutto e risponde agli esempi dalla stessa tabella. Ogni file porta già
+  quello che TASK-092 vuole di un percorso (la richiesta, i punti, la
+  distanza, la somiglianza, le alternative, la data) più l'impronta del
+  motore, e si importa così com'è.
+- **Non è il catalogo.** Il catalogo dei percorsi consigliati resta
+  guardato a occhio (ADR-0097). Qui c'è solo quello che l'API risponderebbe
+  comunque alla stessa richiesta, senza rifare il calcolo.
+- **Un motore cambiato ridisegna**: nel nome del file entra un'impronta dei
+  `.py` e `.json` di `route_engine`, dal contenuto e non dalle date (una
+  immagine Docker rifatta con lo stesso codice tiene quello che ha). Chi
+  prova una modifica al motore sull'API del Mac non riceve percorsi vecchi.
+  Dopo 30 giorni si ridisegna comunque: la zona può essere più nuova.
+- **In `routes/` dentro la cartella dei grafi**: sul server `data/cache` è
+  già montata fuori dal contenitore, e `deploy/compose.yaml` (di TASK-122)
+  non si tocca. I file dei grafi si cercano per nome (`foot_*`), la
+  cartella non li disturba. Al massimo 3000 percorsi, circa 90 kB l'uno.
+- **Anche un job annullato si tiene**, se il motore l'ha finito: chi cambia
+  città mentre una si disegna la trova pronta tornando.
+- **`draw_examples`**: un comando che fa il primo telefono per un elenco
+  di città, contro un'API accesa. Con le zone già sul server (ADR-0119)
+  rende gli esempi immediati dal primo utente.
+- **L'app chiede lo stato più spesso all'inizio** (`pollDelay` in
+  `routes.ts`): ogni 0,5 s nei primi 6 s, ogni secondo fino a 20 s, poi
+  ogni 2 s come prima. Il controllo è un GET senza limite (ADR-0076) e la
+  risposta di un job non finito è di poche decine di byte. Vale per ogni
+  percorso.
+
+**Alternative scartate**: tenere già qui ogni percorso, da qualsiasi
+partenza (è ADR-0086, che aspetta il database di TASK-092 e le regole di
+TASK-110); un campo `example` nella richiesta, messo dall'app
+(contratto nuovo, app da ripubblicare, e la riservatezza affidata al
+telefono); un endpoint che disegni le tre forme insieme (ADR-0116: stesso
+effetto, contratto nuovo); i tre esempi chiesti insieme (l'API ha due
+thread e il motore usa già più processi: sul server si pesterebbero i
+piedi); il database (sul Mac l'API gira senza; un file basta); tenerli
+solo in memoria (un riavvio li perde, e sul server l'API si riavvia a ogni
+aggiornamento); disegnare gli esempi già quando la città compare fra i
+suggerimenti (calcoli per città non scelte, ADR-0116).
+
+**Conseguenze**: aspetta solo il primo telefono in una città; sul Mac la
+seconda richiesta dei tre esempi di Trento risponde in 0,0 s invece di
+10–14 s. Una città **nuova per tutti** costa come prima: per quelle servono
+le zone sul server e `draw_examples`, che toccano il server e aspettano
+l'ok dell'utente. Il tempo di un esempio sul server (18 s contro 2 del
+Mac) resta da capire dai log del server. Negli eventi delle ricerche una
+risposta tenuta conta come un percorso da 0 ms. In «Explore» i disegni del
+feed («MEANWHILE, FROM THE FEED», ADR-0132) compaiono anche quando gli
+esempi arrivano subito: da rivedere in un task dell'app.
+
 ## ADR-0138 — Niente «Run with Strava»: da un percorso si esce con il GPX
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («L'impostazione
 run with strava la vorrei togliere»); il come deciso dall'agente su delega

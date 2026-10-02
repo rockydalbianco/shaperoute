@@ -17,6 +17,7 @@ import {
   isRouteResult,
   MAX_WAIT_MS,
   POLL_MS,
+  pollDelay,
   requestRoute,
   type RouteOutcome,
 } from "./routes";
@@ -79,7 +80,7 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test("posts the request, then asks every 2 s until the route is done", async () => {
+test("posts the request, then asks until the route is done", async () => {
   const { fetchFn, calls } = api(
     { status: 202, body: job("queued") },
     { status: 200, body: job("computing") },
@@ -94,6 +95,44 @@ test("posts the request, then asks every 2 s until the route is done", async () 
   expect(url).toBe(`${URL}/route-jobs`);
   expect(JSON.parse(String(init?.body))).toEqual(request);
   expect(calls("GET").map(([getUrl]) => getUrl)).toEqual([JOB_URL, JOB_URL]);
+});
+
+test("the first asks come sooner, a long route is asked every 2 s", async () => {
+  expect(pollDelay(0)).toBe(500);
+  expect(pollDelay(5_999)).toBe(500);
+  expect(pollDelay(6_000)).toBe(1_000);
+  expect(pollDelay(19_999)).toBe(1_000);
+  expect(pollDelay(20_000)).toBe(POLL_MS);
+  expect(pollDelay(MAX_WAIT_MS)).toBe(POLL_MS);
+  // Never slower than the caller asked.
+  expect(pollDelay(0, 100)).toBe(100);
+
+  const { fetchFn, calls } = api(
+    { status: 202, body: job("queued") },
+    { status: 200, body: job("computing") },
+  );
+  const controller = new AbortController();
+  const pending = requestRoute(URL, REQUEST, { fetchFn, signal: controller.signal });
+  const asks = async (ms: number) => {
+    await jest.advanceTimersByTimeAsync(ms);
+    return calls("GET").length;
+  };
+  expect(await asks(499)).toBe(0);
+  expect(await asks(1)).toBe(1);
+  // 12 in the first 6 s, 14 more up to 20 s, then one every 2 s.
+  expect(await asks(5_500)).toBe(12);
+  expect(await asks(14_000)).toBe(26);
+  expect(await asks(10_000)).toBe(31);
+  controller.abort();
+  await pending;
+});
+
+test("a route the API kept is done in the answer to the POST", async () => {
+  const { fetchFn, calls } = api({ status: 202, body: jobDone });
+  const pending = requestRoute(URL, REQUEST, { fetchFn });
+  // No timer runs: the route is there before the first wait.
+  expect(await pending).toEqual({ kind: "route", result });
+  expect(calls("GET")).toHaveLength(0);
 });
 
 test("a download is reported before the computing", async () => {

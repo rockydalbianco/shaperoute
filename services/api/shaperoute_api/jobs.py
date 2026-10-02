@@ -55,6 +55,13 @@ class KnowsNames(Protocol):
     def named_roads(self, bbox: BBox) -> list[NamedRoad]: ...
 
 
+class KeepsRoutes(Protocol):
+    """Routes already drawn for the same request (route_store.RouteStore)."""
+
+    def get(self, request: object) -> RouteResult | None: ...
+    def put(self, request: object, result: RouteResult) -> bool: ...
+
+
 class _Dropped(Exception):
     """The job was cancelled while its graph was loading: stop before the
     engine starts computing."""
@@ -86,10 +93,12 @@ class RouteJobs:
         keep_s: float = KEEP_S,
         clock: Callable[[], float] = time.monotonic,
         on_end: JobEnd | None = None,
+        store: KeepsRoutes | None = None,
     ) -> None:
         self._source = source
         self._planner = planner
         self._on_end = on_end
+        self._store = store
         self._keep_s = keep_s
         self._clock = clock
         self._jobs: dict[str, Job] = {}
@@ -98,11 +107,21 @@ class RouteJobs:
 
     def submit(self, request: AnyRequest, body: dict[str, Any] | None = None) -> Job:
         job = Job(job_id=uuid.uuid4().hex[:12], request=request, body=body)
+        # A city's example someone already asked for (ADR-0136): done at
+        # once, no worker and no engine. The app reads it from this answer.
+        kept = None if self._store is None else self._store.get(request)
+        if kept is not None:
+            job.status, job.result, job.finished_at = "done", kept, self._clock()
         with self._lock:
             self._forget_old()
             self._jobs[job.job_id] = job
             snapshot = replace(job)
-        log.info("job %s: %s %d m queued", job.job_id, request.name, request.distance_m)
+        what = f"{request.name} {request.distance_m} m"
+        if kept is not None:
+            log.info("job %s: %s already drawn", job.job_id, what)
+            self._tell(job, kept, None, 0.0)
+            return snapshot
+        log.info("job %s: %s queued", job.job_id, what)
         self._pool.submit(self._run, job)
         return snapshot
 
@@ -165,6 +184,9 @@ class RouteJobs:
             result.similarity,
             self._clock() - started,
         )
+        # Also when cancelled meanwhile: the next to ask does not wait.
+        if self._store is not None and self._store.put(job.request, result):
+            log.info("job %s: kept for the next to ask", job.job_id)
         self._tell(job, result, None, self._clock() - started)
 
     def _tell(

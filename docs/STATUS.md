@@ -85,6 +85,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-168: gli esempi di una città in «Explore» più
+  veloci, chiesto dall'utente (ADR-0136). Un cuore, un cerchio o una stella
+  disegnati dal centro di una città restano sull'API
+  (`data/cache/routes/`), e la stessa richiesta riceve il percorso nella
+  risposta al `POST`: aspetta solo il primo telefono in una città (sul
+  Mac: 0,0 s invece di 10–14 s). Solo dai centri delle città, mai dalla
+  posizione di qualcuno; un motore cambiato ridisegna. L'app chiede lo
+  stato di ogni percorso ogni 0,5 s all'inizio, non più ogni 2 s.
+  `python -m shaperoute_api.draw_examples` disegna prima gli esempi di un
+  elenco di città. **Mancano, con l'ok dell'utente**: aggiornare l'API sul
+  server (l'app pubblicata ci guadagna senza essere ripubblicata per la
+  parte dell'API), lanciare `draw_examples` sulle città con la zona, e le
+  zone delle città medie come Rovereto. Da capire dai log del server
+  perché un esempio lì costa 18 s e sul Mac 2.
 - **App** — TASK-170: «Run with Strava» tolto, chiesto dall'utente
   (ADR-0138, che supera ADR-0106). Nelle tre schede di un percorso
   (disegnato, di «Explore», a tema) restano «Start» ed «Export GPX»; il

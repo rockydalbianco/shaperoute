@@ -66,6 +66,7 @@ import {
 import { useShapeReading } from "./src/route/useShapeReading";
 import { checkWord } from "./src/route/wordInput";
 import { ChooseScreen } from "./src/screens/ChooseScreen";
+import { FeedScreen } from "./src/screens/FeedScreen";
 import { FinishBanner, FinishCard } from "./src/screens/FinishScreen";
 import {
   FreeFinishBanner,
@@ -75,7 +76,8 @@ import {
 } from "./src/screens/FreeRunScreen";
 import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
-import { Tabs, useTabBar } from "./src/screens/Tabs";
+import { Pager } from "./src/screens/Pager";
+import { ProfileButton, ProfileLayer } from "./src/screens/ProfileLayer";
 import { color } from "./src/theme/tokens";
 
 /** A route without directions: one list, so navigation does not restart. */
@@ -88,10 +90,14 @@ const API_URL = apiUrl();
 
 /** The screens (TASK-051): what to draw, the map with the route, the
  * turn-by-turn along it (TASK-049), the run with its score (TASK-113), the
- * best routes near the start (TASK-126), and a run without a route with its
- * end (TASK-149). */
+ * best routes near the start (TASK-126), a run without a route with its
+ * end (TASK-149), and what runners publish (TASK-154, then TASK-118). */
 type Screen =
-  "choose" | "map" | "navigate" | "finish" | "explore" | "run" | "runFinish";
+  "choose" | "map" | "navigate" | "finish" | "explore" | "run" | "runFinish" | "feed";
+
+/** The screens that are pages side by side, left to right, one swipe apart
+ * (TASK-154, ADR-0124); the others take the whole screen. */
+const PAGES: readonly Screen[] = ["feed", "choose", "explore"];
 
 /** A run that ended, shown on the finish screen. */
 type Finished = {
@@ -137,10 +143,10 @@ function leftFreeRun(): FreeFinished | null {
 export default function App() {
   return (
     <SafeAreaProvider>
-      {/* «Draw» is the app as it was; «Profile» the account (TASK-115). */}
-      <Tabs apiUrl={API_URL}>
+      {/* The account, and «Profile» over the app (TASK-115, TASK-154). */}
+      <ProfileLayer apiUrl={API_URL}>
         <Sgrava />
-      </Tabs>
+      </ProfileLayer>
       {/* The app is dark: light status bar text on any phone setting. */}
       <StatusBar style="light" />
     </SafeAreaProvider>
@@ -380,9 +386,8 @@ function Sgrava() {
     setScreen("choose");
   }
 
-  // The tabs under the screens that choose; the map and the run take the
-  // whole screen (TASK-115).
-  useTabBar(screen === "choose" || screen === "explore");
+  // The page on screen; -1 while the map or a run takes the whole screen.
+  const page = PAGES.indexOf(screen);
 
   return (
     <View style={styles.screen}>
@@ -577,82 +582,104 @@ function Sgrava() {
           />
         )}
       </MapScreen>
-      {screen === "choose" && (
-        <ChooseScreen
-          status={statusText(startMode, position, start)}
-          denied={startMode === "gps" && position.status === "denied"}
-          mode={startMode}
-          onMode={(mode) => {
-            setStartMode(mode);
-            if (mode === "gps") {
-              // Asked again, as the old button did: the permission may be on now.
-              refresh();
-            }
-          }}
-          searching={showsSearch(startMode, position)}
-          onPlace={setPlace}
-          near={position.status === "ok" ? position.point : (place?.point ?? null)}
-          mapError={mapError}
-          footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
-          onExplore={() => setScreen("explore")}
-          onRun={() => {
+      {page !== -1 && (
+        <Pager
+          page={page}
+          onPage={(index) => {
+            // A keyboard left open would follow to the next page.
             Keyboard.dismiss();
-            setScreen("run");
+            setScreen(PAGES[index]);
           }}
-        >
-          <ImageEditsContext.Provider value={imageEdits}>
-            <RouteChoice
-              kind={kind}
-              onKind={setKind}
-              shapeText={shapeText}
-              shape={shape}
-              onShapeText={setShapeText}
-              reading={reading}
-              onShapeDone={() => {
-                if (reading) {
-                  shapeReading.read(shapeText);
-                }
-              }}
-              wordText={wordText}
-              onWordText={setWordText}
-              wordCheck={wordCheck}
-              letterStyle={letterStyle}
-              onLetterStyle={setLetterStyle}
-              image={image.state}
-              onChooseImage={image.choose}
-              distanceText={distanceText}
-              distanceM={distanceM}
-              onDistanceText={setDistanceText}
-            />
-          </ImageEditsContext.Provider>
-        </ChooseScreen>
-      )}
-      {screen === "explore" && (
-        <ExploreScreen
-          apiUrl={API_URL}
-          near={start?.point ?? null}
-          onBack={() => setScreen("choose")}
-          onOpen={(route) => {
-            closeExplore();
-            openExplored(route);
-            setScreen("map");
-          }}
-          city={exploreCity}
-          onCity={(city) => {
-            setExploreCity(city);
-            if (city !== null) {
-              const recent = remember(recentCities, city);
-              setRecentCities(recent);
-              saveRecentCities(recent);
-            }
-          }}
-          recent={recentCities}
-          onAsk={(request) => {
-            Keyboard.dismiss();
-            closeExplore();
-            themed.ask(request);
-            setScreen("map");
-          }}
+          action={<ProfileButton />}
+          pages={[
+            { title: "Feed", render: () => <FeedScreen /> },
+            {
+              title: "Draw",
+              render: () => (
+                <ChooseScreen
+                  status={statusText(startMode, position, start)}
+                  denied={startMode === "gps" && position.status === "denied"}
+                  mode={startMode}
+                  onMode={(mode) => {
+                    setStartMode(mode);
+                    if (mode === "gps") {
+                      // Asked again, as the old button did: the permission may be on now.
+                      refresh();
+                    }
+                  }}
+                  searching={showsSearch(startMode, position)}
+                  onPlace={setPlace}
+                  near={
+                    position.status === "ok" ? position.point : (place?.point ?? null)
+                  }
+                  mapError={mapError}
+                  footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
+                  onRun={() => {
+                    Keyboard.dismiss();
+                    setScreen("run");
+                  }}
+                >
+                  <ImageEditsContext.Provider value={imageEdits}>
+                    <RouteChoice
+                      kind={kind}
+                      onKind={setKind}
+                      shapeText={shapeText}
+                      shape={shape}
+                      onShapeText={setShapeText}
+                      reading={reading}
+                      onShapeDone={() => {
+                        if (reading) {
+                          shapeReading.read(shapeText);
+                        }
+                      }}
+                      wordText={wordText}
+                      onWordText={setWordText}
+                      wordCheck={wordCheck}
+                      letterStyle={letterStyle}
+                      onLetterStyle={setLetterStyle}
+                      image={image.state}
+                      onChooseImage={image.choose}
+                      distanceText={distanceText}
+                      distanceM={distanceM}
+                      onDistanceText={setDistanceText}
+                    />
+                  </ImageEditsContext.Provider>
+                </ChooseScreen>
+              ),
+            },
+            {
+              title: "Explore",
+              // It asks the API for its routes as it opens: not before.
+              lazy: true,
+              render: () => (
+                <ExploreScreen
+                  apiUrl={API_URL}
+                  near={start?.point ?? null}
+                  onOpen={(route) => {
+                    closeExplore();
+                    openExplored(route);
+                    setScreen("map");
+                  }}
+                  city={exploreCity}
+                  onCity={(city) => {
+                    setExploreCity(city);
+                    if (city !== null) {
+                      const recent = remember(recentCities, city);
+                      setRecentCities(recent);
+                      saveRecentCities(recent);
+                    }
+                  }}
+                  recent={recentCities}
+                  onAsk={(request) => {
+                    Keyboard.dismiss();
+                    closeExplore();
+                    themed.ask(request);
+                    setScreen("map");
+                  }}
+                />
+              ),
+            },
+          ]}
         />
       )}
     </View>

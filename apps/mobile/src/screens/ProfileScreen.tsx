@@ -32,11 +32,18 @@ const NOTICES: Record<SignedOutNotice, { text: string; tone: "warning" | "muted"
   loggedOut: { text: "You are logged out on this phone.", tone: "muted" },
 };
 
+type Props = {
+  account: Account;
+  /** Back to the app underneath, as it was left. */
+  onBack: () => void;
+};
+
 /**
- * The «Profile» tab (TASK-115): for now, sign up or log in, log out, and
- * delete the account. Over the «Draw» tab, which stays as it was.
+ * «Profile» (TASK-115): for now, sign up or log in, log out, and delete the
+ * account. Over the app, which stays as it was; it opens from the header of
+ * the pages (TASK-154).
  */
-export function ProfileScreen({ account }: { account: Account }) {
+export function ProfileScreen({ account, onBack }: Props) {
   const insets = useSafeAreaInsets();
   const { state } = account;
   return (
@@ -54,7 +61,17 @@ export function ProfileScreen({ account }: { account: Account }) {
         ]}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Profile</Text>
+        <View style={styles.titleRow}>
+          <Pressable
+            style={styles.back}
+            onPress={onBack}
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+          >
+            <Text style={styles.backText}>←</Text>
+          </Pressable>
+          <Text style={styles.title}>Profile</Text>
+        </View>
         {state.status === "signedIn" ? (
           <SignedIn session={state.session} account={account} />
         ) : (
@@ -150,6 +167,25 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: space.lg,
     gap: space.xl,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+  },
+  back: {
+    width: MIN_TAP_SIZE,
+    height: MIN_TAP_SIZE,
+    borderRadius: radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: color.surfaceRaised,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+  },
+  backText: {
+    color: color.text,
+    fontSize: fontSize.title,
   },
   title: {
     color: color.text,

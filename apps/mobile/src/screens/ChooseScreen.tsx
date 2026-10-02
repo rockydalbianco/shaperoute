@@ -51,8 +51,6 @@ type Props = {
   children: ReactNode;
   /** "Draw route", kept at the foot of the screen. */
   footer: ReactNode;
-  /** Opens "Explore", the best routes near the start (TASK-126). */
-  onExplore?: () => void;
   /** Starts a run without a route, the track only (TASK-149). */
   onRun?: () => void;
 };
@@ -72,7 +70,6 @@ export function ChooseScreen({
   mapError,
   children,
   footer,
-  onExplore,
   onRun,
 }: Props) {
   const insets = useSafeAreaInsets();
@@ -98,15 +95,6 @@ export function ChooseScreen({
                 accessibilityLabel="Run without a route"
               >
                 <Text style={styles.exploreText}>Run</Text>
-              </Pressable>
-            )}
-            {onExplore && (
-              <Pressable
-                style={styles.explore}
-                onPress={onExplore}
-                accessibilityRole="button"
-              >
-                <Text style={styles.exploreText}>Explore</Text>
               </Pressable>
             )}
           </View>

@@ -106,6 +106,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   TASK-151 sull'iPhone (2026-10-02: «ora funziona»). In `App.tsx` cambia
   solo cosa riceve la mappa. **Da provare sull'iPhone** (app da
   ripubblicare). Resta il segnale della scelta (`TASK-151.md`).
+- **App** — TASK-154: tre pagine affiancate, «Feed», «Draw», «Explore»,
+  scelta dell'utente dopo le proposte grafiche (ADR-0124). Si passa con
+  uno swipe a destra o a sinistra, o toccando i nomi in alto; l'app si apre
+  su «Draw». La barra in basso di TASK-115 non c'è più: «Profile» si apre
+  da un pulsante tondo accanto ai nomi e si chiude con «←». «Explore»
+  chiede i percorsi alla prima visita; «Feed» è vuota finché non arriva
+  TASK-118. Mappa e corsa restano a tutto schermo, senza swipe. Viste le
+  tre pagine e «Profile» su un simulatore. **Da provare con il dito
+  sull'iPhone**: lo swipe, e le righe che scorrono di lato dentro le
+  pagine (ripubblicare l'app, a fine coda dei merge). Seguiti nel task
+  file, fra cui i «File toccati» di TASK-118.
 - **App** — TASK-132: un annuncio AdMob a schermo intero a ogni ricerca
   («Draw route» e «Ask for a route» in «Explore»), prima del percorso; alla
   X, o senza annuncio, il percorso subito (ADR-0102). Consenso di Google

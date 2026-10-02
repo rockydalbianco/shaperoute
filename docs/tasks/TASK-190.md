@@ -96,7 +96,9 @@ preferisce, tre task: i numeri li dà lui).
 - [x] La cache a piedi di una zona non viene usata per la bici.
 - [ ] Campioni in `samples/` giudicati dall'utente. *(Non fatti nella
       parte A: Overpass rifiuta le connessioni dal Mac, e nessuna zona
-      della bici è stata scaricata; vedi «Esito».)*
+      della bici è stata scaricata; nemmeno nella parte B: la prima zona
+      vera si fa dall'estratto sul server, con l'ok dell'utente; vedi
+      «Esito».)*
 - [ ] Nell'app, con «Bike» scelto, «Draw» chiede un percorso `cycling`
       fra 10 e 30 km; con «Run» tutto è come prima.
 - [ ] Test deterministici per motore, API e app. *(Motore: parte A; API:

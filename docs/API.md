@@ -1007,7 +1007,7 @@ posto con i suoi indirizzi).
 | `GET /strava/callback` | dove Strava rimanda il browser; senza chiave e senza token | una pagina HTML |
 | `DELETE /me/strava` | scollegare | `204`, anche se non era collegato |
 | `GET /me/activities/{key}/strava` | cosa ha Strava di una corsa | `200` `{ "status", "url" }`, o `404 http_error` |
-| `POST /me/activities/{key}/strava` | mandare la corsa | `200` è un'attività; `202` Strava la sta ancora leggendo |
+| `POST /me/activities/{key}/strava` | mandare la corsa; corpo facoltativo `{ "name": … }` | `200` è un'attività; `202` Strava la sta ancora leggendo |
 
 - **Spento o acceso**: senza `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`
   nell'ambiente dell'API, `GET /me/strava` risponde `available: false`
@@ -1054,12 +1054,19 @@ posto con i suoi indirizzi).
   e `url` (la pagina dell'attività) appena Strava l'ha letto; se ci mette
   di più, `202` con `status: "processing"`, e la stessa chiamata rifatta
   riprende a guardare senza caricare un'altra volta.
-- **Il nome** dell'attività è cosa è stato disegnato e dove: «Heart in
-  Trento», «CIAO in Trento», il tema di un percorso a tema; senza il luogo
-  solo cosa. Una corsa senza percorso non manda un nome e Strava le dà il
-  suo («Morning Run»). La descrizione è «Drawn with Sgrava», solo per una
-  corsa che ha seguito un percorso. *Proposte in attesa dell'utente
-  (`tasks/TASK-187.md`).*
+- **Il nome** dell'attività è quello scritto nell'app prima di «Save»
+  (scelta dell'utente, 2026-10-02): il corpo facoltativo `{ "name": "Sunday
+  heart" }` (`fixtures/strava-send.json`), messo su una riga e tagliato a
+  100 caratteri, non rifiutato. Vuoto, `null` o senza corpo (come prima
+  della parte app), il nome di Sgrava: cosa è stato disegnato e dove,
+  «Heart in Trento», «CIAO in Trento», il tema di un percorso a tema; senza
+  il luogo solo cosa. Una corsa senza percorso e senza nome scritto non
+  manda un nome e Strava le dà il suo («Morning Run»). Il nome conta solo
+  per il primo invio: una corsa già mandata, o che Strava sta leggendo,
+  resta com'è. Lo stesso nome va nel `<name>` del GPX.
+- **La descrizione** è «Drawn with Sgrava» per una corsa che ha seguito un
+  percorso, «Recorded with Sgrava» per una corsa libera (scelta
+  dell'utente: su ogni corsa).
 - **Una corsa mandata due volte è un'attività sola**: la corsa tiene cosa
   ne è stato (`status`: `not_sent`, `processing`, `sent`), e una già
   mandata risponde `200` com'era, senza chiedere a Strava. Due invii

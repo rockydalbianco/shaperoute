@@ -160,20 +160,25 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dove riprendere: il task file, «Esito».
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
-  dell'utente: «Sì, fallo vero»): **la parte API è fatta**, PR #210:
-  collegare l'atleta dal browser (`POST /me/strava/connect`, `GET
-  /strava/callback`), `GET` e `DELETE /me/strava`, mandare una corsa
-  salvata (`POST /me/activities/{key}/strava`) con il GPX dei suoi orari,
-  una volta sola; token rinnovati dall'API, mai in una risposta o nei log;
-  provata contro uno Strava finto, senza rete. Spenta finché il server non
-  ha `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`. **Manca la parte app**
-  (seconda PR: `RunEnd`, «My activities», «Settings», la coda senza rete,
-  `UI.md`). **Aspettano l'utente**: creare la sua app Strava e scrivere il
-  secret sul server (`DEPLOY.md`, «Strava»), l'ok per aggiornare il server
-  (migrazione `0004`), le quattro domande del task file, la prova dal
-  vero. File della parte app: `apps/mobile/src/strava/`,
-  `src/api/strava.ts`, `src/activities/RunEnd.tsx`, `outbox.ts`,
-  `src/theme/tokens.ts`. Da dove riprendere: `tasks/TASK-187.md`.
+  dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).
+  **Parte app** fatta il 2026-10-02 sera, seconda PR (il merge è del
+  coordinatore), con le quattro risposte dell'utente: il nome si scrive
+  prima di «Save», la descrizione va su ogni corsa («Recorded with Sgrava»
+  per una corsa libera), l'interruttore ricorda l'ultima scelta, «Connect
+  with Strava» è arancione. A fine corsa, sopra «Save» e «Discard», «Connect
+  with Strava» o l'interruttore «Send to Strava» con «Name on Strava»; su
+  una corsa aperta di «My activities» «Send to Strava» o «View on Strava»;
+  in «Settings» la sezione «Strava» con «Disconnect». Senza rete la corsa
+  va all'API e poi a Strava alla prossima apertura, una volta. Nell'API il
+  corpo facoltativo `{ "name" }` di `POST /me/activities/{key}/strava`.
+  Nessuna dipendenza, nessuna migrazione nuova. Come funziona: `UI.md` («La
+  fine della corsa», «My activities», «Settings», «Cosa esce dal
+  telefono»), `API.md` («Send to Strava»). **Aspettano l'utente**: creare
+  la sua app Strava e scrivere il secret sul server (`DEPLOY.md`,
+  «Strava»), l'ok per aggiornare il server (migrazioni `0004`–`0007`) e
+  pubblicare l'app, la prova dal vero (data, ora, durata, le pause). Finché
+  il server non ha Strava l'app non mostra niente di Strava. Da dove
+  riprendere: `tasks/TASK-187.md`, «Esito».
 - **TASK-191 — Percorsi in canoa e paddle, parte A1** (ADR-0154): nel
   motore, solo file nuovi (`water.py`, `water_fit.py`), l'acqua di laghi e
   mare, la fascia entro 1 km dalla riva, dove la forma ci sta e la

@@ -122,9 +122,11 @@ docs/tasks/TASK-067.md
 
 ## Fuori scope
 
-- La scala per lettera, l'altra metà della richiesta del 2026-09-25: da
-  TASK-071 si sa che lettere più piccole si leggono peggio. Se l'utente la
-  vuole ancora, sarà un task a parte, dopo questo.
+- La scala per lettera, l'altra metà della richiesta del 2026-09-25. Il
+  2026-10-02 l'utente ha chiesto il task solo per le lettere unite dalla
+  cima, e la scala resta **una domanda per l'utente**. La proposta è di
+  lasciarla fuori, perché TASK-071 ha mostrato che lettere più piccole si
+  leggono peggio; se l'utente la vuole, sarà un task a parte, dopo questo.
 - Un tratto di base prima della prima lettera e dopo l'ultima: l'utente
   non lo vuole (ADR-0056).
 - Unioni a metà altezza o in diagonale.

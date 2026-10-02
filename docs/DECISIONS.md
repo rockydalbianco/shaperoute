@@ -5721,6 +5721,65 @@ da un disegno è il percorso, non il post: non ricorda chi l'ha «corso».
 Le schede di «Explore», ultima pagina, hanno probabilmente lo stesso
 difetto dello swipe verso sinistra: da guardare in un task suo.
 
+## ADR-0145 — «Profile»: emoji per le voci, due riquadri con il numero, l'account in «Settings»
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («cambia
+un po' la grafica, rendila più accattivante», un cuore accanto a
+«Favorites», l'uomo che corre «come emoji» accanto alle attività, una
+sezione «Settings» da riempire «con calma»); il come deciso dall'agente su
+delega dell'utente (TASK-177).
+
+**Contesto**: «Profile» con l'account era una scheda «LOGGED IN AS», un
+elenco di righe di solo testo e, sotto, «Log out» e «Delete account»: tutto
+grigio, con i due comandi che si usano una volta sola in vista quanto le
+cose che si aprono ogni giorno.
+
+**Decisione**:
+- **Le voci hanno un'emoji**: ❤️ «Favorites», 🏃‍♂️ «My activities», ⚙️
+  «Settings», ognuna in un tondo `surfaceRaised`. L'app non ha icone e
+  una libreria di icone sarebbe una dipendenza nuova; l'emoji è il
+  carattere che l'utente ha chiesto, e porta l'unico colore di «Profile»
+  che non viene dai token. Non è giallo, quindi non si confonde con il
+  percorso. Il cuore sulla mappa resta il carattere «♡»/«♥» di ADR-0139: è
+  un comando con due stati, neutro come «←».
+- **«Favorites» e «My activities» sono due riquadri affiancati** con il
+  numero in grande (`fontSize.display`) e il nome sotto: il numero è la
+  cosa che cambia, e si legge senza aprire la pagina. Finché l'elenco non
+  è arrivato c'è un trattino, non uno zero.
+- **In alto chi è**: un cerchio con l'iniziale, come il pulsante che apre
+  «Profile», poi nome ed email. «LOGGED IN AS» sparisce: lo dice il
+  cerchio. La foto prenderà il posto dell'iniziale con TASK-178.
+- **«Log out» e «Delete account» stanno in «Settings»**, con l'account
+  (nome, email), senza cambiare comportamento né testi. «Settings» è una
+  pagina di «Profile» come «Favorites»: «←» torna a «Profile».
+- **Le voci da sviluppare ci sono già, con «Soon»**: l'utente ha
+  elencato cosa vuole in «Settings» (foto, cambiare email, numero di
+  telefono, unità di misura, notifiche email e push, help, termini,
+  privacy) e ha chiesto di aggiungerle subito e svilupparle dopo. Sono
+  righe con il nome e «Soon», senza interruttori e senza tocco: si vede
+  cosa arriverà e niente finge di funzionare. Ogni task che ne accende una
+  la toglie dall'elenco `COMING` di `SettingsPage.tsx`.
+- **Usciti da «Settings»**, per «Log out» o per l'account cancellato, la
+  pagina torna «Profile»: chi rientra non si ritrova in «Settings».
+- **Pezzi nuovi in `src/profile/`** (`Avatar`, `ProfileHome`,
+  `SettingsPage`), che ricevono numeri e account come proprietà:
+  `ProfileScreen.tsx`, che TASK-172 cambiava nelle stesse ore, li monta e
+  basta.
+
+**Scartate**: una libreria di icone (`@expo/vector-icons`: dipendenza
+nuova, e l'utente ha chiesto un'emoji); il giallo per dare colore (il
+giallo è del percorso, `UI.md` «Il tema»); un ingranaggio accanto al titolo
+al posto della riga «Settings» (l'utente ha chiesto una sezione, come le
+altre due); lasciare «Log out» sulla prima pagina (resterebbe la cosa più
+in vista di «Profile»; l'utente ha confermato lo spostamento); interruttori
+già disegnati per le notifiche (prometterebbero una cosa che non c'è).
+
+**Conseguenze**: per uscire dall'account serve un tocco in più. Le emoji
+le disegna il telefono: su Android hanno un altro tratto. «Settings»
+mostra nove voci che ancora non fanno niente: le accendono TASK-178 (la
+foto, ADR-0146, che riusa `Avatar`), TASK-183 (email e telefono), TASK-182
+(unità), TASK-184 (help, termini, privacy, dopo TASK-152) e TASK-185
+(notifiche, per ultime).
+
 ## ADR-0144 — «Explore»: niente filtri, altre forme dopo le prime tre, «Near me» al posto di «My start»
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
 («toglimi i filtri, non mi piacciono»; le prime tre figure «più velocemente

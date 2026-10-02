@@ -6,8 +6,8 @@ import { type AccountOutcome, ask } from "./accounts";
  * The runs an account recorded (TASK-172): GET, PUT and DELETE
  * /me/activities, all with the session token (docs/API.md, «My
  * activities»). The bodies are packages/shared-types/fixtures/
- * activities.json, activity.json and activity-request.json; the types live
- * here, like `Favorite`.
+ * activities.json, activity.json and activity-request.json, and since
+ * TASK-200 activity-pauses.json; the types live here, like `Favorite`.
  */
 
 /** One run of the list, with a light preview of its lines. */
@@ -48,6 +48,21 @@ export type ActivityDetail = Omit<Activity, "route_preview" | "track_preview"> &
    * walks that fit the points.
    */
   walks?: Walk[];
+  /**
+   * Its pauses, in the order they were recorded (TASK-200); missing from an
+   * API older than TASK-200. Nothing shows them yet.
+   */
+  pauses?: SavedPause[];
+};
+
+/** A pause of a run saved, in seconds since the first point of its `track`,
+ * only what of it lies inside the run. */
+export type SavedPause = {
+  from_s: number;
+  to_s: number;
+  auto: boolean;
+  /** Only as true: a pause of the pen between two letters (TASK-199). */
+  pen?: boolean;
 };
 
 /** A page of the list, the latest run first. */
@@ -213,6 +228,16 @@ function isNumber(value: unknown): value is number | null {
   return value === null || typeof value === "number";
 }
 
+function isPause(value: unknown): value is SavedPause {
+  return (
+    isRecord(value) &&
+    typeof value.from_s === "number" &&
+    typeof value.to_s === "number" &&
+    typeof value.auto === "boolean" &&
+    (value.pen === undefined || typeof value.pen === "boolean")
+  );
+}
+
 /** What the list and the whole run share. */
 function hasFields(body: Record<string, unknown>): boolean {
   return (
@@ -246,7 +271,9 @@ export function isActivityDetail(body: unknown): body is ActivityDetail {
     isNumber(body.similarity) &&
     (body.points === null || isLine(body.points)) &&
     isLine(body.track) &&
-    body.track.length >= 2
+    body.track.length >= 2 &&
+    (body.pauses === undefined ||
+      (Array.isArray(body.pauses) && body.pauses.every(isPause)))
   );
 }
 

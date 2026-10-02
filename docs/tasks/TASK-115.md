@@ -68,7 +68,7 @@ fatte a mano, «Sign up» e «Log in», «Log out» subito anche offline,
 «Delete account» con la conferma sulla schermata e solo col sì dell'API;
 la sessione (token e utente) in `expo-secure-store`, verificata con
 `GET /me` all'apertura. 7 file di test nuovi (59 test, con l'API finta e
-un portachiavi in memoria); 686 test dell'app verdi, lint e typecheck
+un portachiavi in memoria); 696 test dell'app verdi, lint e typecheck
 puliti. La barra si toglie su mappa e corsa (anche quella libera di
 TASK-149). **Manca la prova sull'iPhone contro l'API vera**: serve
 un'API con il database (Colima sul Mac, o TASK-122) e l'app ripubblicata.

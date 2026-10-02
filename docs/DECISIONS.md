@@ -4756,7 +4756,11 @@ bundle, e chi è vicino a quelle città senza toccare la tessera non le
 vedrebbe); una fila orizzontale di disegni; i post che si aprono sulla
 mappa da «Explore» prima che lo facciano in «Feed».
 
-**Conseguenze**: `WhileDrawing` dipende da `FeedPost`: se TASK-162 gli
-cambia le props o gli mette dentro una mappa che vive solo in «Feed», va
-adattato al merge. Il feed vero (TASK-118) deciderà se qui restano gli
-esempi o entrano i disegni degli iscritti.
+**Conseguenze**: `WhileDrawing` dipende da `FeedPost`. Con la mappa di
+TASK-162 (ADR-0131) i disegni in «Explore» hanno anche loro la foto della
+mappa sotto la linea: la chiede la scheda, la fa la pagina nascosta di
+«Feed», che resta montata accanto a «Explore»; visto in un simulatore
+senza aver mai aperto «Feed». Il feed vero (TASK-118) deciderà se qui
+restano gli esempi o entrano i disegni degli iscritti. **In due PR**, per
+richiesta dell'utente (2026-10-02, «pubblica intanto la parte dei post
+sul telefono»): prima l'attesa, poi il catalogo.

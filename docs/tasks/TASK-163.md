@@ -79,7 +79,7 @@ sono dei disegni del feed da guardare.
       cerchio e una stella entro 5 km dal suo centro (test).
 - [ ] Toccata una città in evidenza nell'app, con l'API aggiornata, le tre
       forme sono nell'elenco senza «Drawing…».
-- [x] Test verdi (app 748); lint, tipi e formattazione.
+- [x] Test verdi (app 780); lint, tipi e formattazione.
 
 ## File toccati
 
@@ -113,10 +113,17 @@ docs/tasks/TASK-163.md
 
 ## Dove sono arrivato (2026-10-02)
 
+- **In due PR**, per richiesta dell'utente («pubblica intanto la parte dei
+  post sul telefono»): la prima porta la parte B in `main`, e si pubblica
+  su `preview`; la seconda, dallo stesso task, il catalogo. Il task resta
+  «In corso» fino alla seconda.
 - **Parte B fatta** sul branch: `WhileDrawing.tsx` e l'aggancio in
   `ExploreScreen.tsx`, con i test. Vista in un simulatore (iPhone 17, Expo
   Go, API del Mac): Pergine Valsugana, «Drawing…» e sotto i disegni del
-  feed; arrivati i tre esempi, i disegni restano.
+  feed; arrivati i tre esempi, i disegni restano. Dopo il merge da `main`
+  con TASK-162: i disegni in «Explore» hanno la foto della mappa, anche
+  senza aver aperto «Feed»; una città con gli esempi già sul telefono non
+  mostra i disegni. App 780 test verdi.
 - **Parte A ferma**: aspetta TASK-161 in `main` (`catalog/seed/`,
   `catalog/README.md` e `seed_catalog.py` sono suoi). Fatto solo
   `cityName` («San Francisco»), che non è di nessuno.
@@ -142,14 +149,11 @@ docs/tasks/TASK-163.md
 
   New York nel seme parte da Union Square (40.7359, -73.9911), a 2,9 km
   dal centro che dà l'API: dentro i 5 km.
-- **Concordato con TASK-162** (PR #173, non ancora in `main`): `FeedPost`
-  tiene le props `post` e `width`. La foto della mappa sotto il disegno la
-  fa `FeedMapShooter`, montato in `FeedScreen` (il Pager tiene «Feed»
-  montata), e ogni richiesta porta la sua misura: in «Explore» non c'è
-  niente da montare. Al merge da `main`: rifare i test (`FeedPost` importa
-  `react-native-webview` attraverso `FeedMaps`, il mock entra da solo;
-  `forgetFeedMaps()` se un test deve partire pulito) e guardare nel
-  simulatore che le foto compaiano anche in «Explore».
+- **TASK-162 è in `main`** (#173): `FeedPost` tiene le props `post` e
+  `width`; la foto della mappa la fa `FeedMapShooter`, montato in
+  `FeedScreen`, e arriva anche alle schede di «Explore». Niente da
+  adattare. Se si volessero i disegni senza foto in «Explore», TASK-162
+  ha offerto una prop facoltativa.
 
 ## Esito
 

@@ -1,6 +1,6 @@
 # TASK-175 — La mappa senza i pulsanti dello zoom
 
-**Stato**: In revisione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `chore/TASK-175-no-zoom-buttons`
 
 Chiesto dall'utente il 2026-10-02 («Quando visualizzo un'anteprima, togli

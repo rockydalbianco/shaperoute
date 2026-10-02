@@ -102,6 +102,13 @@ In coda, dopo o accanto:
   Riccione). I due task file sono scritti, con le domande ancora aperte:
   da assegnare, ognuno in tre parti (motore, API, app). Nel contratto si
   usa `activity`, che c'è già.
+- **La penna alzata nelle parole**, chiesta e confermata dall'utente il
+  2026-10-02: fra una lettera e l'altra si cammina senza disegnare, e
+  l'app mette in pausa la registrazione da sola, con un avviso a voce.
+  **TASK-197** (motore e API, ADR-0157: `pen_up` nella richiesta, `walks`
+  nel risultato, aggiunti senza togliere niente), poi **TASK-198** (l'app).
+  Tutti e due Todo, con il task file; TASK-197 si accorda con TASK-190 e
+  TASK-191, che cambiano gli stessi file del motore.
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 

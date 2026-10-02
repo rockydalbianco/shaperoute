@@ -15,9 +15,10 @@ import {
 } from "../navigation/runControl";
 import { emptyTrack, type Track, type TrackFix } from "../navigation/trackRecorder";
 import { clearRun, startRun } from "../navigation/trackStore";
+import { MIN_TAP_SIZE } from "../theme/tokens";
 import { countdownNumber } from "./Countdown";
 import { HOLD_STOP_MS } from "./HoldButton";
-import { RunCard, swipedTo } from "./RunDashboard";
+import { PAGE_TAB_HEIGHT, RunCard, swipedTo } from "./RunDashboard";
 
 jest.mock("expo-brightness", () => ({
   getBrightnessAsync: jest.fn(() => Promise.resolve(0.6)),
@@ -183,6 +184,23 @@ test("Stop is held: a touch only says so, a hold ends the run", async () => {
   await fireEvent(stop, "pressIn");
   await fireEvent(stop, "longPress");
   expect(onStop).toHaveBeenCalledTimes(1);
+});
+
+test("Map and Data are two buttons as wide as the card, taller than a tap", async () => {
+  await render(<LiveRun fixes={north(300)} />);
+  expect(PAGE_TAB_HEIGHT).toBeGreaterThan(MIN_TAP_SIZE);
+  for (const name of ["Map", "Data"]) {
+    expect(screen.getByRole("tab", { name })).toHaveStyle({
+      flex: 1,
+      minHeight: PAGE_TAB_HEIGHT,
+    });
+  }
+  // The same two on «Data», where they slide the page back.
+  await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+  expect(screen.getAllByRole("tab", { name: "Map" }).at(-1)).toHaveStyle({
+    flex: 1,
+    minHeight: PAGE_TAB_HEIGHT,
+  });
 });
 
 test("Music, across from Pocket on both pages, opens Spotify; not on a paused run", async () => {

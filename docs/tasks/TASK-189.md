@@ -1,6 +1,6 @@
 # TASK-189 — «Sport» in «Settings»
 
-**Stato**: In lavorazione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-189-sport-setting`
 **Dipende da**: TASK-177 (la pagina «Settings»: `SettingsPage.tsx` si
 tocca solo dopo il suo merge)
@@ -46,8 +46,8 @@ lo stesso giorno).
 - [x] Una scelta salvata che non è pronta, o un file che non si legge,
       vale «Run»; un telefono che non scrive non rompe niente.
 - [x] Nessun colore scritto a mano, niente dipendenze nuove.
-- [ ] La sezione «Sport» si vede in «Settings».
-- [ ] Test verdi con la sezione montata.
+- [x] La sezione «Sport» si vede in «Settings».
+- [x] Test verdi con la sezione montata.
 
 ## File toccati
 
@@ -74,16 +74,14 @@ prima si scrivono solo i file nuovi di `src/settings/`.
 - Tenere la scelta nell'account, da un telefono all'altro.
 - «Units» e le altre voci «Soon» di «Settings».
 
-## Dove siamo
-
-2026-10-02: i passi 1 e 2 sono fatti e committati, con 9 test verdi
-(typecheck, lint e formato anche). Worktree
-`.claude/worktrees/sport-setting`. Mancano i passi 3 e 4, che aspettano
-TASK-177 in `main`: poi una riga di import e `<SportSetting />` in
-`SettingsPage.tsx`, il conto delle scritte «Soon» nel suo test (da 9 a
-11), `UI.md`, `STATUS.md`, la prova nel simulatore e la PR. La sessione
-di TASK-177 è avvisata.
-
 ## Esito
 
-*(si compila a fine task)*
+«Settings» ha la sezione «Sport», fra «Account» e «Preferences»: «Run»
+scelto con il «✓», «Bike» e «Paddle» con «Soon», che non si toccano. La
+scelta resta sul telefono (`sport.json`); accendere uno sport è
+`ready: true` nella sua riga di `src/settings/sport.ts`, e lo fa il task
+che porta lo sport (TASK-190 bici, TASK-191 canoa e paddle: task file in
+`main`). Vista in un simulatore, sulla pagina «Settings» da sola con un
+account finto; 1046 test dell'app verdi. Da pubblicare su `preview` con
+l'ok dell'utente. Rimandato ai task degli sport: mandare la scelta
+all'API in `activity` e cambiare «Draw» secondo lo sport.

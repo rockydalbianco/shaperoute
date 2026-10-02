@@ -98,6 +98,8 @@ docs/tasks/TASK-168.md
   (`ExploreScreen.tsx`, `WhileDrawing.tsx`): oggi compare lo stesso, con
   «The shapes of this city are ready above.».
 - Gli esempi senza A · B · C per fare prima: scelta dell'utente.
+- Salvare tutti i percorsi generati (ADR-0086): è TASK-092, nel database.
+  ADR-0136 dice come prende questo archivio di risposte.
 
 ## Esito
 

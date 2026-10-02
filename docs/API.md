@@ -144,7 +144,8 @@ Aspetta solo il primo telefono in una città.
 
 - **Solo dal centro di una città.** Una richiesta porta la posizione di
   chi la fa, e l'API non tiene la posizione di nessuno (ADR-0085,
-  ADR-0092). I centri sono quelli che l'API stessa ha dato con `GET
+  ADR-0092): salvare tutti i percorsi è ADR-0086, nel database, con
+  TASK-092. I centri sono quelli che l'API stessa ha dato con `GET
   /cities` e, per le sole città, con `GET /city-suggestions`; una partenza
   è un centro quando cade nello stesso quadrato di circa 10 m (4 decimali,
   come `cityKey` dell'app). Un percorso da qualsiasi altra partenza non

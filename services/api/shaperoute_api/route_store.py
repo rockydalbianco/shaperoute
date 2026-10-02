@@ -7,9 +7,12 @@ one after the other. Here a route drawn from a city's centre is kept in a
 file, and the same request is answered from it at once, as a job already
 done: only the first phone in a city waits.
 
-Only from a city's centre. A request carries where the user is, and the API
-keeps no one's position (ADR-0085, ADR-0092); a city's centre is no one's
-position. The centres are those the API itself gave to GET /cities and GET
+Only from a city's centre. A request carries where the user is; keeping
+every route is the user's choice of ADR-0086, and belongs to TASK-092, in
+the database, with the rules on personal data still to write. Until then
+the API keeps no one's position (ADR-0085, ADR-0092), and a city's centre is
+no one's position. TASK-092 can take this over: RouteJobs calls `put` for
+every route that ends, and here the ones from elsewhere are dropped. The centres are those the API itself gave to GET /cities and GET
 /city-suggestions, and a start is one of them when it falls in the same
 square of about 10 m (4 decimals, as the app's `cityKey`). A route from
 anywhere else is never written, and an image's outline neither.

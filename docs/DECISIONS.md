@@ -4936,15 +4936,29 @@ e il motore dà lo stesso percorso.
   già `done` nella risposta al `POST /route-jobs`. Nessun contratto nuovo:
   l'app pubblicata legge già un job `done` alla prima risposta, e ci
   guadagna senza essere ripubblicata.
-- **Solo dal centro di una città.** Tenere ogni percorso vorrebbe dire
-  tenere sul disco le partenze, cioè dove sono gli utenti: ADR-0085 la
-  lascia una scelta dell'utente, e qui non serve. I centri sono quelli
-  che l'API stessa ha dato con `GET /cities` e, per le sole città, con
-  `GET /city-suggestions` («il centro di una città non è la posizione di
-  nessuno», come per gli eventi di ADR-0101); un posto suggerito può essere
-  la via di qualcuno, e resta fuori. Una partenza è un centro nello stesso
-  quadrato di circa 10 m (4 decimali, il `cityKey` dell'app). Le immagini
-  mai.
+- **Solo dal centro di una città.** Tenere **ogni** percorso è la scelta
+  dell'utente di ADR-0086, ed è di TASK-092: nel database, con le regole
+  sui dati personali di TASK-110 (la partenza è spesso dove abita chi
+  chiede) ancora da scrivere. Qui non la si anticipa: su disco vanno solo
+  i percorsi che partono da un centro, che non è la posizione di nessuno
+  (come per gli eventi di ADR-0101). I centri sono quelli che l'API stessa
+  ha dato con `GET /cities` e, per le sole città, con `GET
+  /city-suggestions`; un posto suggerito può essere la via di qualcuno, e
+  resta fuori. Una partenza è un centro nello stesso quadrato di circa
+  10 m (4 decimali, il `cityKey` dell'app). Le immagini mai.
+- **Come si lega ad ADR-0086 / TASK-092.** Questo è una memoria delle
+  risposte, non l'archivio dei percorsi: non sceglie i migliori, non
+  propone niente, e si può cancellare senza perdere nulla. Non è un
+  secondo archivio accanto a quello di TASK-092, che in `main` oggi ha
+  solo i documenti (#118, #120). È fatto perché TASK-092 lo prenda:
+  `RouteJobs` parla a un `KeepsRoutes` con due metodi (`get`, `put`), e
+  `put` è chiamato per **ogni** percorso finito, nel punto dove TASK-092
+  deve salvare; oggi `RouteStore` scarta quelli che non partono da un
+  centro. Una versione sul database dello stesso `KeepsRoutes` salva
+  tutto e risponde agli esempi dalla stessa tabella. Ogni file porta già
+  quello che TASK-092 vuole di un percorso (la richiesta, i punti, la
+  distanza, la somiglianza, le alternative, la data) più l'impronta del
+  motore, e si importa così com'è.
 - **Non è il catalogo.** Il catalogo dei percorsi consigliati resta
   guardato a occhio (ADR-0097). Qui c'è solo quello che l'API risponderebbe
   comunque alla stessa richiesta, senza rifare il calcolo.
@@ -4968,8 +4982,9 @@ e il motore dà lo stesso percorso.
   risposta di un job non finito è di poche decine di byte. Vale per ogni
   percorso.
 
-**Alternative scartate**: tenere ogni percorso, da qualsiasi partenza (le
-posizioni sul disco); un campo `example` nella richiesta, messo dall'app
+**Alternative scartate**: tenere già qui ogni percorso, da qualsiasi
+partenza (è ADR-0086, che aspetta il database di TASK-092 e le regole di
+TASK-110); un campo `example` nella richiesta, messo dall'app
 (contratto nuovo, app da ripubblicare, e la riservatezza affidata al
 telefono); un endpoint che disegni le tre forme insieme (ADR-0116: stesso
 effetto, contratto nuovo); i tre esempi chiesti insieme (l'API ha due

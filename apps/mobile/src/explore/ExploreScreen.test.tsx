@@ -103,6 +103,73 @@ test("lists the routes near the start, the best first, and opens one", async () 
   expect(onOpen).toHaveBeenCalledWith(routes[0]);
 });
 
+/** Every text on the screen, top to bottom. */
+function texts(): string[] {
+  return screen.getAllByText(/./).map((node) => String(node.props.children));
+}
+
+test("«Ask for a route» waits closed under the routes, and a touch opens it", async () => {
+  fetchMock.mockResolvedValue(Response.json(list));
+  const onAsk = jest.fn();
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={[46.067, 11.1215]}
+      onOpen={jest.fn()}
+      onCity={jest.fn()}
+      onAsk={onAsk}
+    />,
+  );
+  await screen.findByText("Star · 5.1 km");
+  // A quiet line at the foot of the page: its categories are not there yet.
+  const closed = screen.getByRole("button", { name: "Ask for a route" });
+  expect(screen.queryByText("ASK FOR A ROUTE")).toBeNull();
+  expect(screen.queryByText("Food")).toBeNull();
+  const order = texts();
+  expect(order.indexOf("Ask for a route")).toBeGreaterThan(
+    order.indexOf("CIAO · 15.2 km"),
+  );
+  expect(order.indexOf("Ask for a route")).toBeGreaterThan(order.indexOf("CITY"));
+
+  await fireEvent.press(closed);
+  expect(screen.getByText("ASK FOR A ROUTE")).toBeOnTheScreen();
+  expect(screen.queryByRole("button", { name: "Ask for a route" })).toBeNull();
+  // Opened, it is where it was: under the routes.
+  expect(texts().indexOf("ASK FOR A ROUTE")).toBeGreaterThan(
+    texts().indexOf("CIAO · 15.2 km"),
+  );
+  await fireEvent.press(screen.getByText("Food"));
+  expect(onAsk).toHaveBeenCalledWith({
+    text: "Food",
+    centre: [46.067, 11.1215],
+    city: null,
+  });
+});
+
+test("«Ask for a route» is at the foot of the page also without routes", async () => {
+  fetchMock.mockResolvedValue(Response.json({ routes: [] }));
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={[46.067, 11.1215]}
+      onOpen={jest.fn()}
+      onAsk={jest.fn()}
+    />,
+  );
+  await screen.findByText(/No recommended routes near this start yet/);
+  const order = texts();
+  expect(order.at(-1)).toBe("Ask for a route");
+});
+
+test("without a way to ask there is no line to open", async () => {
+  fetchMock.mockResolvedValue(Response.json(list));
+  await render(
+    <ExploreScreen apiUrl="http://api" near={[46.067, 11.1215]} onOpen={jest.fn()} />,
+  );
+  await screen.findByText("Star · 5.1 km");
+  expect(screen.queryByText("Ask for a route")).toBeNull();
+});
+
 test("the filters keep one shape or one distance", async () => {
   fetchMock.mockResolvedValue(Response.json(list));
   await render(

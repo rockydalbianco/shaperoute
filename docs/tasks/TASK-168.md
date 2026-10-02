@@ -59,7 +59,7 @@ vede appena sono pronti.
       altro; i primi controlli arrivano ogni 0,5 s (test).
 - [x] `draw_examples` dice per ogni città cosa ha disegnato e cosa ha
       trovato già tenuto (test).
-- [x] Test verdi: API 465 (24 nuovi), app 823 (2 nuovi); ruff, black,
+- [x] Test verdi: API 465 (24 nuovi), app 820 (2 nuovi); ruff, black,
       lint, tipi, formattazione.
 - [x] Visto dal vivo sul Mac (API del worktree, zona di Trento): primi tre
       esempi 10–14 s, gli stessi alla seconda richiesta 0,0 s.

@@ -35,7 +35,9 @@ type Props = {
   apiUrl: string | null;
   /** Where the routes should start near: the start of the first screen. */
   near: LatLon | null;
-  onBack: () => void;
+  /** A way back, when the screen is not a page beside the others
+   * (TASK-154): there the names in the header are the way. */
+  onBack?: () => void;
   onOpen: (route: RecommendedRoute) => void;
   /** A city searched for (TASK-129): the list and the request start there. */
   city?: Place | null;
@@ -159,14 +161,16 @@ export function ExploreScreen({
   return (
     <View style={[StyleSheet.absoluteFill, styles.screen]}>
       <View style={[styles.header, { paddingTop: insets.top + space.sm }]}>
-        <Pressable
-          style={styles.back}
-          onPress={onBack}
-          accessibilityRole="button"
-          accessibilityLabel="Back"
-        >
-          <Text style={styles.backText}>←</Text>
-        </Pressable>
+        {onBack && (
+          <Pressable
+            style={styles.back}
+            onPress={onBack}
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+          >
+            <Text style={styles.backText}>←</Text>
+          </Pressable>
+        )}
         <View style={styles.titles}>
           <Text style={styles.title}>Best near you</Text>
           <Text style={styles.subtitle}>

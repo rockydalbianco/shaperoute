@@ -1,12 +1,9 @@
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import signUpRequest from "@shaperoute/shared-types/fixtures/sign-up-request.json";
-import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import * as Location from "expo-location";
-import { Text } from "react-native";
-import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import App from "../../App";
-import { Tabs, useTabBar } from "../screens/Tabs";
 import { apiError, type MemorySecureStore } from "./testing";
 
 jest.mock("react-native-webview");
@@ -56,8 +53,9 @@ function calls(method: string, path: string) {
   );
 }
 
+/** «Profile» opens from the button in the header of the pages (TASK-154). */
 async function openProfile() {
-  await fireEvent.press(screen.getByRole("tab", { name: /^Profile/ }));
+  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
 }
 
 beforeEach(() => {
@@ -78,9 +76,11 @@ test("without an account the app opens on «Draw» as before, and asks the API n
   expect(screen.getByRole("tab", { name: "Draw", selected: true })).toBeTruthy();
   expect(screen.getByText("Draw route")).toBeTruthy();
   await openProfile();
-  expect(screen.getByRole("tab", { name: "Profile", selected: true })).toBeTruthy();
   expect(screen.getByTestId("account-submit")).toBeTruthy();
-  await fireEvent.press(screen.getByRole("tab", { name: "Draw" }));
+  // The app is underneath, as it was left, and out of reach.
+  expect(screen.queryByText("Draw route")).toBeNull();
+  expect(screen.getByText("Draw route", { includeHiddenElements: true })).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.queryByTestId("account-submit")).toBeNull();
   expect(screen.getByText("Draw route")).toBeTruthy();
   expect(fetchSpy).not.toHaveBeenCalled();
@@ -123,7 +123,8 @@ test("an expired token asks to log in again, without a crash", async () => {
   });
   await render(<App />);
   // «Profile» shows it needs a look, from «Draw».
-  expect(await screen.findByTestId("tab-attention")).toBeTruthy();
+  expect(await screen.findByTestId("profile-attention")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Profile, log in again" })).toBeTruthy();
   expect(screen.getByText("Draw route")).toBeTruthy();
   await openProfile();
   expect(screen.getByText("Your session has ended. Log in again.")).toBeTruthy();
@@ -173,7 +174,16 @@ test("«Delete account» asks first, then deletes", async () => {
   expect(screen.getByRole("button", { name: "Sign up", selected: true })).toBeTruthy();
 });
 
-test("drawing a route, the map takes the whole screen; back, the tabs return", async () => {
+test("signed in, the button to «Profile» shows who with a letter", async () => {
+  store.kept.set(KEY, JSON.stringify(session));
+  accountApi({ "GET /me": () => Response.json(session.user) });
+  await render(<App />);
+  expect(screen.getByText("R")).toBeTruthy();
+  await openProfile();
+  expect(screen.getByText("Runner_42")).toBeTruthy();
+});
+
+test("drawing a route, the map takes the whole screen; back, the pages return", async () => {
   requestPermission.mockResolvedValue({ granted: true } as never);
   getPosition.mockResolvedValue({
     coords: { latitude: 46.0671, longitude: 11.1214 },
@@ -188,40 +198,10 @@ test("drawing a route, the map takes the whole screen; back, the tabs return", a
   await screen.findByText("Starting from your position.");
   await fireEvent.press(screen.getByText("Draw route"));
   expect(calls("POST", "/route-jobs")).toHaveLength(1);
+  // Neither the names of the pages nor the way to «Profile» over the map.
   expect(screen.queryByRole("tab")).toBeNull();
+  expect(screen.queryByRole("button", { name: /^Profile/ })).toBeNull();
   await fireEvent.press(screen.getByLabelText("Back"));
-  expect(screen.getAllByRole("tab")).toHaveLength(2);
-});
-
-/** A «Draw» screen that says whether it wants the bar, and shows its inset. */
-function DrawScreen({ wantsBar }: { wantsBar: boolean }) {
-  useTabBar(wantsBar);
-  return <Text>{`bottom inset ${useSafeAreaInsets().bottom}`}</Text>;
-}
-
-function withTabs(wantsBar: boolean) {
-  return (
-    <SafeAreaProvider
-      initialMetrics={{
-        frame: { x: 0, y: 0, width: 390, height: 844 },
-        insets: { top: 47, left: 0, right: 0, bottom: 34 },
-      }}
-    >
-      <Tabs apiUrl={API}>
-        <DrawScreen wantsBar={wantsBar} />
-      </Tabs>
-    </SafeAreaProvider>
-  );
-}
-
-test("the bar steps aside for the map and the run, and gives back the bottom edge", async () => {
-  const shown = await render(withTabs(true));
-  // Over the bar, the screen ends at the bar: the bar keeps the home indicator clear.
-  expect(screen.getByText("bottom inset 0")).toBeTruthy();
-  expect(screen.getAllByRole("tab")).toHaveLength(2);
-  await shown.rerender(withTabs(false));
-  expect(screen.queryByRole("tab")).toBeNull();
-  expect(screen.getByText("bottom inset 34")).toBeTruthy();
-  await act(async () => shown.rerender(withTabs(true)));
-  expect(screen.getAllByRole("tab")).toHaveLength(2);
+  expect(screen.getAllByRole("tab")).toHaveLength(3);
+  expect(screen.getByRole("button", { name: "Profile" })).toBeTruthy();
 });

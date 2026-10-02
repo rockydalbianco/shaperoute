@@ -15,11 +15,23 @@ from route_engine.words import (
     compose,
 )
 
+# The activities of the contract, what the API and the app offer:
+# packages/shared-types mirrors them (ADR-0028). "cycling" joins them with
+# the API's part of TASK-190, together with its mirror (ADR-0153).
 SUPPORTED_ACTIVITIES: tuple[str, ...] = ("running",)
 
 # Plausible target distances for running, in metres.
 MIN_DISTANCE_M = 1_000
 MAX_DISTANCE_M = 50_000
+
+# Every activity the engine draws, each on its own network
+# (network.NETWORKS), and its target distances in metres: a bike route is
+# 10-30 km, the user's choice for a first step (TASK-190, ADR-0153).
+DISTANCE_LIMITS_M: dict[str, tuple[int, int]] = {
+    "running": (MIN_DISTANCE_M, MAX_DISTANCE_M),
+    "cycling": (10_000, 30_000),
+}
+ACTIVITIES: tuple[str, ...] = tuple(DISTANCE_LIMITS_M)
 
 
 class InvalidRequestError(ValueError):
@@ -40,7 +52,7 @@ class RouteRequest:
 
     def __post_init__(self) -> None:
         check_start(self.start)
-        check_distance(self.distance_m)
+        check_distance(self.distance_m, self.activity)
         if (self.shape is None) == (self.word is None):
             raise InvalidRequestError("give either a shape or a word, one of the two")
         if self.word is not None:
@@ -79,11 +91,17 @@ def check_start(start: tuple[float, float]) -> None:
         raise InvalidRequestError(f"longitude must be between -180 and 180, got {lon}")
 
 
-def check_distance(distance_m: int) -> None:
-    if not MIN_DISTANCE_M <= distance_m <= MAX_DISTANCE_M:
+def check_distance(distance_m: int, activity: str = "running") -> None:
+    """Within the limits of `activity` (DISTANCE_LIMITS_M); an activity the
+    engine does not draw has those of running, and check_activity refuses
+    it afterwards, as before TASK-190."""
+    own = activity != "running" and activity in DISTANCE_LIMITS_M
+    low, high = DISTANCE_LIMITS_M[activity if own else "running"]
+    if not low <= distance_m <= high:
+        which = f" for {activity}" if own else ""
         raise InvalidRequestError(
-            f"distance must be between {MIN_DISTANCE_M} and "
-            f"{MAX_DISTANCE_M} metres, got {distance_m}"
+            f"distance must be between {low} and {high} metres{which}, "
+            f"got {distance_m}"
         )
 
 
@@ -108,10 +126,10 @@ def check_word(word: str, distance_m: int) -> None:
 
 
 def check_activity(activity: str) -> None:
-    if activity not in SUPPORTED_ACTIVITIES:
+    if activity not in ACTIVITIES:
         raise InvalidRequestError(
             f"unsupported activity {activity!r}; "
-            f"choose one of: {', '.join(SUPPORTED_ACTIVITIES)}"
+            f"choose one of: {', '.join(ACTIVITIES)}"
         )
 
 

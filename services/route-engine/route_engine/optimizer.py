@@ -41,6 +41,7 @@ from route_engine.network import (
     Graph,
     NetworkRoute,
     area_around,
+    check_network,
     corner_indices,
     detail_scale,
     first_leg,
@@ -904,6 +905,7 @@ def plan_route(
             reuse_penalty,
             MAX_TILT_DEG,
             word=word,
+            activity=request.activity,
         )
         result = replace(plan.result, shape=None, word=word.text)
         return replace(plan, result=result)
@@ -917,6 +919,7 @@ def plan_route(
         optimize,
         reuse_penalty,
         tilt_limit(request.shape),
+        activity=request.activity,
     )
 
 
@@ -943,11 +946,13 @@ def plan_shape(
     max_tilt_deg: float = MAX_TILT_DEG,
     one_way: bool = False,
     word: Word | None = None,
+    activity: str = "running",
 ) -> Plan:
     """plan_route for any normalized shape, also an outline read from a file
     (TASK-032). `name` only labels the result and its messages; start and
     distance are the caller's to check, as RouteRequest does. An outline
-    stays upright unless told otherwise (ADR-0038).
+    stays upright unless told otherwise (ADR-0038). The graphs `source`
+    gives must be of the network of `activity` (network.check_network).
 
     A `one_way` shape is drawn out and back (Outline.one_way): it is planned
     as a closed shape twice `distance_m` long, entered at its first point,
@@ -965,6 +970,7 @@ def plan_shape(
     if word is not None:
         phases = word.phases
     graph = source.load(required_area(shape, start, planned_m, optimize, word))
+    check_network(graph, activity)
     far: Search | None = None
     if optimize:
         found = search(
@@ -983,6 +989,7 @@ def plan_shape(
             far_graph = source.load(
                 zone_area(shape, start, planned_m, FAR_OFFSET_M, word)
             )
+            check_network(far_graph, activity)
             far = search(
                 far_graph,
                 shape,

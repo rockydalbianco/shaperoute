@@ -39,9 +39,11 @@ from route_engine.network import (
     BBox,
     Graph,
     _edge_points,
+    check_network,
     corner_indices,
     first_leg,
     nearest_nodes,
+    one_way_streets,
     twice_drawn,
 )
 from route_engine.optimizer import (
@@ -145,6 +147,8 @@ class ShapeJob:
     one_way: bool = False
     word: Word | None = None
     word_result: bool = False
+    # The network the graphs must be of (network.check_network, ADR-0153).
+    activity: str = "running"
 
     @classmethod
     def of_request(cls, request: RouteRequest) -> ShapeJob:
@@ -157,6 +161,7 @@ class ShapeJob:
                 request.distance_m,
                 word=word,
                 word_result=True,
+                activity=request.activity,
             )
         assert request.shape is not None  # RouteRequest has one of the two
         return cls(
@@ -164,6 +169,7 @@ class ShapeJob:
             request.shape,
             request.distance_m,
             max_tilt_deg=tilt_limit(request.shape),
+            activity=request.activity,
         )
 
     @property
@@ -184,6 +190,7 @@ class ShapeJob:
             max_tilt_deg=self.max_tilt_deg,
             one_way=self.one_way,
             word=self.word,
+            activity=self.activity,
         )
         return self._as_asked(plan)
 
@@ -203,6 +210,7 @@ class ShapeJob:
         if self.word is not None:
             phases = self.word.phases
         graph = source.load(self.area(start))
+        check_network(graph, self.activity)
         found = search(
             graph,
             self.shape,
@@ -363,14 +371,21 @@ def nearby_starts(
 
 def with_approach(graph: Graph, plan: Plan, approach: list[Any]) -> Plan:
     """`plan` reached along `approach` (nodes from the start's node to where
-    the route begins) and, when the route closes, back along it."""
+    the route begins) and, when the route closes, back along it; with
+    one-way streets (the bike network) back along the shortest way allowed,
+    which may be another (NetworkXNoPath if there is none)."""
     if len(approach) < 2 or plan.search is None:
         return plan
     best = plan.search.best
     route = best.route
     if route.nodes[0] != approach[-1]:
         raise ValueError("the approach does not lead to the start of the route")
-    back = approach[::-1] if route.nodes[-1] == route.nodes[0] else [approach[-1]]
+    if route.nodes[-1] != route.nodes[0]:
+        back = [approach[-1]]
+    elif one_way_streets(graph):
+        back = nx.shortest_path(graph, approach[-1], approach[0], weight="length")
+    else:
+        back = approach[::-1]
     nodes = approach[:-1] + list(route.nodes) + back[1:]
     points = [(graph.nodes[approach[0]]["y"], graph.nodes[approach[0]]["x"])]
     for u, v in zip(approach, approach[1:], strict=False):
@@ -682,5 +697,8 @@ def _nearby_tried(
         # Not the node asked for (a small piece the crop left out): the way
         # there is not known.
         return dropped("the route begins elsewhere")
-    plan = with_approach(graph, outcome, nearby.path)
+    try:
+        plan = with_approach(graph, outcome, nearby.path)
+    except nx.NetworkXNoPath:  # one-way streets only
+        return dropped("no way back to the start")
     return Tried(nearby.point, nearby.length_m, plan, score(plan, distance_m), seconds)

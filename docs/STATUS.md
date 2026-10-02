@@ -48,8 +48,9 @@ In coda, dopo o accanto:
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
   account dell'utente.
-- **Seguiti scritti nei task fatti**: le altre città del catalogo seme e
-  le frasi (TASK-128); Berlino, che resta a Overpass, e le zone da rifare
+- **Seguiti scritti nei task fatti**: le forme a 21 km di Bari, Palermo
+  e New York, quando Overpass riapre, e il feed d'esempio da rifare sulle
+  14 città (TASK-161); Berlino, che resta a Overpass, e le zone da rifare
   quando l'estratto invecchia (TASK-137); il segnale della scelta fra
   A · B · C negli esempi (TASK-151); la linea intera a fine corsa
   (TASK-149); zone scaricate con un margine (TASK-143); l'import in Strava
@@ -82,6 +83,13 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   dove riprendere: il task file.
 
 ## Completato
+
+- **Catalogo** — TASK-161: il catalogo seme in tutte le 14 città, 323
+  percorsi (Napoli, Verona, Padova, Genova, Bari, Palermo e New York
+  nuove; Genova, Bari, Palermo e New York con le zone del server), e le
+  parole. Solo parole corte, scelta dell'utente (ADR-0130); parole e forme
+  illeggibili tolte a occhio (ADR-0097, aggiornamento 2026-10-02).
+  Mancano le forme a 21 km di Bari, Palermo e New York (Overpass).
 
 - **App** — TASK-162: in «Feed» ogni disegno ha sotto la mappa della sua
   zona, chiesta dall'utente (ADR-0131): strade, acqua, verde e nomi, con

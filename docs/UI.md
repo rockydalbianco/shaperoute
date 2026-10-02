@@ -797,9 +797,12 @@ TASK-164, di cui tiene i numeri.
   riparte subito, senza conto.
 - **Due pagine, una accanto all'altra**: «Map» a sinistra, «Data» a destra.
   Si passa con uno swipe (verso sinistra per «Data», verso destra per
-  tornare a «Map») o toccando i due nomi in fondo; la corsa si apre su
+  tornare a «Map») o toccando i due pulsanti in fondo; la corsa si apre su
   «Map». Lo swipe parte dalla scheda, non dalla mappa: lì un dito sposta
-  la mappa.
+  la mappa. I due pulsanti si dividono la larghezza della scheda e sono
+  alti 56 punti, più del tocco minimo: si prendono col pollice correndo
+  (TASK-186). La pagina aperta ha la superficie più chiara e il bordo,
+  come le altre scelte dell'app; il giallo resta del percorso.
 - **«Map»**: la mappa con sopra il banner (la svolta, o la partenza senza
   percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
   (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra

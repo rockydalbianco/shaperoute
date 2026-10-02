@@ -1,6 +1,12 @@
 import type { RouteRequest } from "@shaperoute/shared-types";
 
-import { checkWord, MAX_APP_WORD_LETTERS, routeName, wordDistanceM } from "./wordInput";
+import {
+  checkWord,
+  MAX_APP_WORD_LETTERS,
+  maxWordLetters,
+  routeName,
+  wordDistanceM,
+} from "./wordInput";
 
 test("a word of known letters goes in capitals, trimmed", () => {
   expect(checkWord("  ciao ", 12_000)).toEqual({ ok: true, word: "CIAO" });
@@ -46,6 +52,29 @@ test("the app stops at 7 letters: 3 km each, up to 21 km", () => {
   expect(checkWord("abcdefgh", 21_000)).toEqual({
     ok: false,
     problem: "At most 7 letters: each needs 3 km, and the app goes up to 21 km.",
+  });
+});
+
+test("by bike, up to 30 km, a word has the contract's 8 letters (TASK-190)", () => {
+  expect(maxWordLetters("running")).toBe(MAX_APP_WORD_LETTERS);
+  expect(maxWordLetters("cycling")).toBe(8);
+  expect(checkWord("abcdefgh", 24_000, "cycling")).toEqual({
+    ok: true,
+    word: "ABCDEFGH",
+  });
+  expect(checkWord("abcdefghi", 30_000, "cycling")).toEqual({
+    ok: false,
+    problem: "At most 8 letters.",
+  });
+  // A run says what it always said.
+  expect(checkWord("abcdefgh", 21_000, "running")).toEqual(
+    checkWord("abcdefgh", 21_000),
+  );
+  // The least distance is the same by bike.
+  expect(checkWord("ciao", 10_000, "cycling")).toEqual({
+    ok: false,
+    problem: "“CIAO” needs at least 12 km: 3 km for each letter.",
+    needsDistanceM: 12_000,
   });
 });
 

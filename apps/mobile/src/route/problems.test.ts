@@ -103,6 +103,36 @@ test.each([null, undefined, 30_000])(
   },
 );
 
+test("by bike the distance offered is within 10–30 km (TASK-190)", () => {
+  const notDrawable = {
+    kind: "api_error" as const,
+    code: "shape_not_drawable",
+    message: FAR,
+  };
+  // Over a run's 21 km, within the bike's 30.
+  expect(
+    problemText({ ...notDrawable, suggested_distance_m: 25_000 }, "shape", "cycling"),
+  ).toEqual({
+    text: "This shape does not fit the roads here at this distance. It fits at about 25 km.",
+    detail: FAR,
+    tryDistanceM: 25_000,
+  });
+  // The same suggestion for a run is not offered, as before.
+  expect(problemText({ ...notDrawable, suggested_distance_m: 25_000 })).toMatchObject({
+    pickShape: true,
+  });
+  // Outside the bike's limits it is not offered either.
+  for (const outside of [4000, 31_000]) {
+    expect(
+      problemText(
+        { ...notDrawable, suggested_distance_m: outside },
+        "shape",
+        "cycling",
+      ),
+    ).not.toHaveProperty("tryDistanceM");
+  }
+});
+
 test("a word that fits at another distance offers it, as a word", () => {
   expect(
     problemText(

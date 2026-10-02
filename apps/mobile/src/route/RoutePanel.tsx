@@ -1,4 +1,5 @@
 import {
+  type Activity,
   type LetterStyle,
   MAX_SHAPE_TEXT_LENGTH,
   type RouteResult,
@@ -20,7 +21,7 @@ import {
 import { isImageRequest } from "../api/routes";
 import { drawnOf, sendSignal } from "../api/signals";
 import { Segmented } from "../screens/Segmented";
-import { LONG_DISTANCE_KM, MAX_APP_DISTANCE_KM, MIN_DISTANCE_KM } from "./distance";
+import { APP_DISTANCE_LIMITS_KM, LONG_DISTANCE_KM } from "./distance";
 import { DistanceStepper } from "./DistanceStepper";
 import { ImageChoice } from "./ImageChoice";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
@@ -84,6 +85,8 @@ type ChoiceProps = {
   distanceText: string;
   distanceM: number | null;
   onDistanceText: (text: string) => void;
+  /** Whose distances the field offers (TASK-190): a run's unless said. */
+  activity?: Activity;
 };
 
 /**
@@ -112,7 +115,9 @@ export function RouteChoice({
   distanceText,
   distanceM,
   onDistanceText,
+  activity = "running",
 }: ChoiceProps) {
+  const [lowest, highest] = APP_DISTANCE_LIMITS_KM[activity];
   return (
     <View style={styles.panel}>
       <Text style={styles.label}>DRAW</Text>
@@ -188,10 +193,15 @@ export function RouteChoice({
         </>
       )}
       <Text style={[styles.label, styles.section]}>DISTANCE</Text>
-      <DistanceStepper text={distanceText} onText={onDistanceText} editable />
+      <DistanceStepper
+        text={distanceText}
+        onText={onDistanceText}
+        editable
+        activity={activity}
+      />
       {distanceM === null ? (
         <Text style={styles.problem}>
-          {`Enter a distance between ${MIN_DISTANCE_KM} and ${MAX_APP_DISTANCE_KM} km.`}
+          {`Enter a distance between ${lowest} and ${highest} km.`}
         </Text>
       ) : (
         distanceM > LONG_DISTANCE_KM * 1000 && (
@@ -353,6 +363,7 @@ export function RouteOutcome({
         <Problem
           problem={view.problem}
           kind={kindOf(view.request)}
+          activity={view.request.activity}
           onTryDistance={(distanceM) => {
             onSignal({
               kind: "hint_taken",
@@ -542,15 +553,22 @@ function waitingText({ phase, request }: Extract<RouteState, { status: "waiting"
 function Problem({
   problem,
   kind,
+  activity,
   onTryDistance,
   onPickShape,
 }: {
   problem: RouteProblem;
   kind?: ChoiceKind;
+  /** The request's: a distance offered is within its limits (TASK-190). */
+  activity?: Activity;
   onTryDistance?: (distanceM: number) => void;
   onPickShape?: (shape: Shape) => void;
 }) {
-  const { text, detail, tryDistanceM, pickShape } = problemText(problem, kind);
+  const { text, detail, tryDistanceM, pickShape } = problemText(
+    problem,
+    kind,
+    activity,
+  );
   return (
     <View style={styles.problemBox}>
       <Text style={styles.problem}>{text}</Text>

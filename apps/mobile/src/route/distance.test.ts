@@ -1,4 +1,12 @@
-import { MAX_APP_DISTANCE_KM, stepDistance, toDistanceM } from "./distance";
+import { DISTANCE_LIMITS_M } from "@shaperoute/shared-types";
+
+import {
+  APP_DISTANCE_LIMITS_KM,
+  fitDistance,
+  MAX_APP_DISTANCE_KM,
+  stepDistance,
+  toDistanceM,
+} from "./distance";
 
 test.each([
   ["7", 7000],
@@ -43,4 +51,58 @@ test.each([
   ["abc", -1, "1"],
 ])("%j stepped by %i is %j", (text, steps, expected) => {
   expect(stepDistance(text, steps)).toBe(expected);
+});
+
+// By bike (TASK-190): the contract's limits, 10–30 km.
+
+test("a run keeps 1 to 21 km; a bike route has the contract's 10 to 30", () => {
+  expect(APP_DISTANCE_LIMITS_KM.running).toEqual([1, MAX_APP_DISTANCE_KM]);
+  expect(APP_DISTANCE_LIMITS_KM.cycling).toEqual([10, 30]);
+  expect(APP_DISTANCE_LIMITS_KM.cycling.map((km) => km * 1000)).toEqual(
+    DISTANCE_LIMITS_M.cycling,
+  );
+});
+
+test.each([
+  ["10", 10000],
+  ["12,5", 12500],
+  ["21.1", 21100],
+  ["30", 30000],
+])("by bike %j km is %i m", (text, metres) => {
+  expect(toDistanceM(text, "cycling")).toBe(metres);
+});
+
+test.each([
+  ["9,9", "just under the bike's least"],
+  ["5", "a run's distance"],
+  ["30,1", "just over the bike's most"],
+  ["50", "within the engine limit of a run"],
+  ["", "empty"],
+])("by bike %j is not a distance: %s", (text) => {
+  expect(toDistanceM(text, "cycling")).toBeNull();
+});
+
+test.each([
+  ["10", -1, "10"],
+  ["10", 1, "11"],
+  ["29,5", 1, "30"],
+  ["30", 1, "30"],
+  ["5", 1, "10"],
+  ["40", -1, "30"],
+  ["", 1, "10"],
+  ["abc", -1, "10"],
+])("by bike %j stepped by %i is %j", (text, steps, expected) => {
+  expect(stepDistance(text, steps, "cycling")).toBe(expected);
+});
+
+test.each([
+  ["5", "running", "5"],
+  ["7,5", "running", "7,5"],
+  ["5", "cycling", "10"],
+  ["12,5", "cycling", "12,5"],
+  ["25", "running", "21"],
+  ["25", "cycling", "25"],
+  ["abc", "cycling", "10"],
+] as const)("%j fits a %s as %j", (text, activity, expected) => {
+  expect(fitDistance(text, activity)).toBe(expected);
 });

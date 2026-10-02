@@ -21,15 +21,19 @@ import jobFailed from "../fixtures/route-job-failed.json" with { type: "json" };
 import jobRunning from "../fixtures/route-job-running.json" with { type: "json" };
 import jobStatuses from "../fixtures/route-job-statuses.json" with { type: "json" };
 import alternativeLimits from "../fixtures/route-alternatives.json" with { type: "json" };
+import penUpRequest from "../fixtures/route-request-pen-up.json" with { type: "json" };
 import wordRequest from "../fixtures/route-request-word.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
 import imageResult from "../fixtures/route-result-image.json" with { type: "json" };
+import penUpResult from "../fixtures/route-result-pen-up.json" with { type: "json" };
 import wordResult from "../fixtures/route-result-word.json" with { type: "json" };
 import result from "../fixtures/route-result.json" with { type: "json" };
 import shapeReadingLimits from "../fixtures/shape-reading-limits.json" with { type: "json" };
 import shapeReadingNone from "../fixtures/shape-reading-none.json" with { type: "json" };
 import shapeReadingRequest from "../fixtures/shape-reading-request.json" with { type: "json" };
 import shapeReading from "../fixtures/shape-reading.json" with { type: "json" };
+import trackScoreRequest from "../fixtures/track-score-request.json" with { type: "json" };
+import trackWalksRequest from "../fixtures/track-score-request-walks.json" with { type: "json" };
 import {
   ACTIVITIES,
   API_ERROR_CODES,
@@ -63,15 +67,33 @@ import {
   type RouteResult,
   type ShapeReading,
   type ShapeReadingRequest,
+  type TrackScoreRequest,
+  type Walk,
 } from "../src/index.ts";
 
 // Checked by `tsc`: the fixtures have exactly the fields of the types, so a
 // field added or renamed on one side only fails the typecheck.
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
-const requestFields: Same<keyof typeof request, keyof RouteRequest> = true;
-const resultFields: Same<keyof typeof result, keyof RouteResult> = true;
-const wordFields: Same<keyof typeof wordRequest, keyof RouteRequest> &
-  Same<keyof typeof wordResult, keyof RouteResult> = true;
+// The fixtures written before TASK-197 are what an older app sends and an
+// older API answers: without the pen up and the walks, both optional.
+// Member by member: a shape's request and a word's stay apart.
+type OlderRequest = RouteRequest extends infer R
+  ? R extends RouteRequest
+    ? Omit<R, "pen_up">
+    : never
+  : never;
+type OlderResult = Omit<RouteResult, "walks">;
+const requestFields: Same<keyof typeof request, keyof OlderRequest> = true;
+const resultFields: Same<keyof typeof result, keyof OlderResult> = true;
+const wordFields: Same<keyof typeof wordRequest, keyof OlderRequest> &
+  Same<keyof typeof wordResult, keyof OlderResult> = true;
+const penUpFields: Same<keyof typeof penUpRequest, keyof RouteRequest> &
+  Same<keyof typeof penUpResult, keyof RouteResult> = true;
+const trackFields: Same<
+  keyof typeof trackScoreRequest,
+  keyof Omit<TrackScoreRequest, "walks">
+> &
+  Same<keyof typeof trackWalksRequest, keyof TrackScoreRequest> = true;
 const directionFields: Same<keyof (typeof result.directions)[number], keyof Direction> =
   true;
 const errorFields: Same<keyof typeof apiError, keyof ApiError> = true;
@@ -81,13 +103,13 @@ const errorDetailFields: Same<keyof typeof apiError.error, keyof ApiError["error
 const jobFields: Same<keyof typeof jobRunning, keyof RouteJob> &
   Same<keyof typeof jobDone, keyof RouteJob> &
   Same<keyof typeof jobFailed, keyof RouteJob> = true;
-const jobResultFields: Same<keyof typeof jobDone.result, keyof RouteResult> = true;
+const jobResultFields: Same<keyof typeof jobDone.result, keyof OlderResult> = true;
 const jobErrorFields: Same<keyof typeof jobFailed.error, keyof ApiError["error"]> =
   true;
 
 const gpxFields: Same<keyof typeof gpxRequest, keyof GpxRequest> &
-  Same<keyof typeof gpxRequest.request, keyof RouteRequest> &
-  Same<keyof typeof gpxRequest.result, keyof RouteResult> = true;
+  Same<keyof typeof gpxRequest.request, keyof OlderRequest> &
+  Same<keyof typeof gpxRequest.result, keyof OlderResult> = true;
 
 const shapeReadingFields: Same<
   keyof typeof shapeReadingRequest,
@@ -102,8 +124,11 @@ const imageFields: Same<keyof typeof imageOutlineRequest, keyof ImageOutlineRequ
     keyof typeof imageOutline,
     keyof Omit<ImageOutline, "strokes" | "image_strokes">
   > &
-  Same<keyof typeof imageRouteRequest, keyof Omit<ImageRouteRequest, "strokes">> &
-  Same<keyof typeof imageResult, keyof RouteResult> &
+  Same<
+    keyof typeof imageRouteRequest,
+    keyof Omit<ImageRouteRequest, "strokes" | "pen_up">
+  > &
+  Same<keyof typeof imageResult, keyof OlderResult> &
   Same<keyof typeof imageError.error, keyof ApiError["error"]> = true;
 
 const editFields: Same<keyof typeof imageEditRequest, keyof ImageOutlineEditRequest> &
@@ -122,6 +147,12 @@ const typedEdit: [ImageOutlineEditRequest, ImageOutline, ApiError] = [
   imageEdited as ImageOutline,
   editError as ApiError,
 ];
+// JSON arrays are not tuples to tsc: through unknown too (TASK-197).
+const typedPenUp: [RouteRequest, RouteResult, TrackScoreRequest] = [
+  penUpRequest as unknown as RouteRequest,
+  penUpResult as unknown as RouteResult,
+  trackWalksRequest as unknown as TrackScoreRequest,
+];
 
 const isShape = (value: string): boolean =>
   (SHAPES as readonly string[]).includes(value);
@@ -130,6 +161,42 @@ test("the fixtures have the fields of the types", () => {
   assert.ok(requestFields && resultFields && errorFields && errorDetailFields);
   assert.ok(jobFields && jobResultFields && jobErrorFields && gpxFields);
   assert.ok(shapeReadingFields && directionFields && wordFields);
+  assert.ok(penUpFields && trackFields);
+});
+
+/** Whether `walks` are stretches of a route of `count` points, in order. */
+const walksFit = (walks: Walk[], count: number): boolean => {
+  let end = 0;
+  for (const [from, to] of walks) {
+    if (!(0 <= from && from <= to && to < count) || from < end) return false;
+    end = to;
+  }
+  return true;
+};
+
+test("a word with the pen up walks once fewer than its letters", () => {
+  const [request, result, track] = typedPenUp;
+  assert.equal(request.pen_up, true);
+  assert.equal(result.word, request.word?.toUpperCase());
+  const walks = result.walks ?? [];
+  assert.equal(walks.length, (result.word ?? "").length - 1);
+  assert.ok(walksFit(walks, result.points.length));
+  // Open: from the first letter to the last.
+  assert.notDeepEqual(result.points.at(0), result.points.at(-1));
+  assert.ok(walksFit(track.walks ?? [], track.points.length));
+  assert.ok((track.walks ?? []).length > 0);
+});
+
+test("a result without walks, from an older API, is still a result", () => {
+  // tsc: an older API's result is a RouteResult, and so is its request.
+  const older: OlderResult extends RouteResult ? true : false = true;
+  const asked: OlderRequest extends RouteRequest ? true : false = true;
+  assert.ok(older && asked);
+  for (const fixture of [result, wordResult, imageResult, jobDone.result]) {
+    assert.ok(!("walks" in fixture));
+  }
+  assert.ok(!("pen_up" in request) && !("pen_up" in wordRequest));
+  assert.ok(!("walks" in trackScoreRequest));
 });
 
 test("a shape reading names a shape of the catalogue, or none", () => {
@@ -285,7 +352,7 @@ test("alternatives are whole results from the same start, without their own", ()
   const alternatives = result.alternatives;
   assert.ok(alternatives.length > 0 && alternatives.length <= MAX_ALTERNATIVES);
   for (const other of alternatives) {
-    const fields: Same<keyof typeof other, keyof RouteResult> = true;
+    const fields: Same<keyof typeof other, keyof OlderResult> = true;
     assert.ok(fields);
     assert.deepEqual(other.points.at(0), result.points.at(0));
     assert.deepEqual(other.points.at(0), other.points.at(-1));

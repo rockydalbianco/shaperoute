@@ -4,6 +4,11 @@ The route says how much the plan looks like the shape (`similarity`); the
 track says how much of the plan was run, and nothing else (`fidelity`).
 The score is the two together, so running the planned route exactly scores
 what the route scored (ADR-0090).
+
+A word with the pen up (TASK-197) is judged on its letters alone: the run is
+compared with the route without its walks, and the positions on a walk are
+not counted, nor those on the straight line a paused recording draws from
+where a walk begins to where it ends.
 """
 
 from __future__ import annotations
@@ -17,7 +22,8 @@ from datetime import datetime
 import numpy as np
 
 from route_engine.geo import LatLon, haversine_m, latlon_to_local_array
-from route_engine.network import distance_to_polyline
+from route_engine.network import distance_to_polyline, distance_to_segments
+from route_engine.pen_up import Walk, drawn_pieces, walks_problem
 
 # How far a position may be from the planned route and still be on it: the
 # opposite pavement plus the error of a GPS between houses, as the app's
@@ -93,6 +99,18 @@ def _length(xy: np.ndarray) -> float:
     return float(np.hypot(*np.diff(xy, axis=0).T).sum())
 
 
+def _local(origin: LatLon, points: Sequence[LatLon]) -> np.ndarray:
+    return latlon_to_local_array(origin, np.array(points, dtype=float))
+
+
+def _sides(lines: Sequence[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+    """The sides of several lines, never one from a line to the next; a
+    line of one point is a side of no length."""
+    starts = [xy[:-1] if len(xy) > 1 else xy for xy in lines]
+    ends = [xy[1:] if len(xy) > 1 else xy for xy in lines]
+    return np.vstack(starts), np.vstack(ends)
+
+
 def _dense(xy: np.ndarray) -> np.ndarray:
     """Points every SAMPLE_STEP_M along a polyline, both ends included."""
     cumulative = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(xy, axis=0).T))])
@@ -107,10 +125,15 @@ def _dense(xy: np.ndarray) -> np.ndarray:
 
 
 def score_track(
-    track: Sequence[TrackPoint], route: Sequence[LatLon], similarity: float
+    track: Sequence[TrackPoint],
+    route: Sequence[LatLon],
+    similarity: float,
+    walks: Sequence[Walk] = (),
 ) -> TrackScore:
     """Score the `track` run along the planned `route`, whose similarity to
-    its shape is `similarity` (RouteResult.points and .similarity).
+    its shape is `similarity` (RouteResult.points and .similarity); with the
+    `walks` of a word with the pen up (RouteResult.walks), against its
+    letters alone.
 
     Raises TrackNotScorableError when there is too little track to judge.
     """
@@ -118,6 +141,9 @@ def score_track(
         raise TrackNotScorableError("the planned route has fewer than 2 points")
     if not 0.0 <= similarity <= 1.0:
         raise ValueError(f"similarity must be in [0, 1], got {similarity}")
+    problem = walks_problem(walks, len(route))
+    if problem is not None:
+        raise ValueError(problem)
     clean = clean_track(track)
     if len(clean) < 2:
         raise TrackNotScorableError(
@@ -125,19 +151,29 @@ def score_track(
         )
 
     origin = route[0]
-    planned = latlon_to_local_array(origin, np.array(route, dtype=float))
-    run = latlon_to_local_array(origin, np.array([p.latlon for p in clean]))
-    planned_m, run_m = _length(planned), _length(run)
+    # The letters of a word with the pen up; the whole route otherwise.
+    pieces = [_local(origin, piece) for piece in drawn_pieces(route, walks)]
+    run = _local(origin, [p.latlon for p in clean])
+    planned_m, run_m = sum(_length(piece) for piece in pieces), _length(run)
     if run_m < MIN_TRACK_SHARE * planned_m:
         raise TrackNotScorableError(
             f"the track is {run_m:.0f} m long, less than {MIN_TRACK_SHARE:.0%} "
             f"of the {planned_m:.0f} m planned"
         )
 
-    to_track = distance_to_polyline(run, _dense(planned))
-    to_route = distance_to_polyline(planned, _dense(run))
+    to_track = distance_to_polyline(run, np.vstack([_dense(p) for p in pieces]))
+    samples = _dense(run)
+    to_route = distance_to_segments(*_sides(pieces), samples)
+    counted = np.ones(len(samples), bool)
+    if walks:
+        # Walked, or the straight line of a recording paused meanwhile.
+        ways = [_local(origin, route[a : b + 1]) for a, b in walks]
+        ways += [_local(origin, [route[a], route[b]]) for a, b in walks]
+        on_walk = distance_to_segments(*_sides(ways), samples) <= TRACK_TOLERANCE_M
+        counted = ~on_walk | (to_route <= TRACK_TOLERANCE_M)
     covered = float((to_track <= TRACK_TOLERANCE_M).mean())
-    on_route = float((to_route <= TRACK_TOLERANCE_M).mean())
+    near = to_route[counted] <= TRACK_TOLERANCE_M
+    on_route = float(near.mean()) if len(near) else 0.0
     total = covered + on_route
     fidelity = 0.0 if total == 0 else 2 * covered * on_route / total
     return TrackScore(

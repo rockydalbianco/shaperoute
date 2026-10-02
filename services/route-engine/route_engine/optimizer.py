@@ -22,6 +22,7 @@ from typing import Any, Protocol
 
 import numpy as np
 
+from route_engine import pen_up
 from route_engine.errors import NoRoadsError, ShapeNotDrawableError
 from route_engine.geo import LatLon, latlon_to_local_array, local_to_latlon
 from route_engine.metrics import (
@@ -155,6 +156,30 @@ def reach(shape: Sequence[Point], phases: Sequence[float] = PHASES) -> float:
     return farthest
 
 
+def first_scale(
+    shape: Sequence[Point], distance_m: float, word: Word | None = None
+) -> float:
+    """`initial_scale`; for a word with the pen up, that of its letters
+    alone, which the distance asked for applies to (TASK-197)."""
+    if word is not None and word.pen_up:
+        return distance_m / word.drawn_length
+    return initial_scale(shape, distance_m)
+
+
+def _word_reach(shape: Sequence[Point], word: Word) -> float:
+    """`reach` of a word from its own phases; from the first point of the
+    open line of a word with the pen up."""
+    if word.pen_up:
+        return pen_up.reach(shape)
+    return reach(shape, word.phases)
+
+
+def drawn_distance(route: NetworkRoute) -> float:
+    """The length of `route` the distance asked for applies to: all of it,
+    but the walks between the letters of a word with the pen up (TASK-197)."""
+    return pen_up.drawn_m(route.points, route.distance_m, route.walks)
+
+
 def zone_area(
     shape: Sequence[Point],
     start: LatLon,
@@ -168,10 +193,10 @@ def zone_area(
 
     One graph of this area serves every attempt of the search (ADR-0023).
     """
-    largest_scale = initial_scale(shape, distance_m) * SCALE_RANGE[1]
+    largest_scale = first_scale(shape, distance_m, word) * SCALE_RANGE[1]
     far = reach(shape)
     if word is not None:
-        far = reach(shape, word.phases) + MAX_SHIFT * word.height
+        far = _word_reach(shape, word) + MAX_SHIFT * word.height
     return area_around(
         [start],
         margin_m=far * largest_scale + offset_m + AREA_MARGIN_M,
@@ -414,7 +439,8 @@ def letter_moves(
     the share of its strokes with a road within `band_m`, less
     SHIFT_PENALTY for the longest move. Only the letter counts: a share of
     the whole word would reward the moves that shorten the gaps. A lone
-    letter does not move: the search places the word.
+    letter does not move: the search places the word. Nor does the first
+    letter of a word with the pen up, where the route starts (TASK-197).
     """
     grid = shift_grid() if len(word.letters) > 1 else np.zeros((1, 2))
     points, _ = word.line(start)
@@ -426,8 +452,10 @@ def letter_moves(
     costs = SHIFT_PENALTY * np.hypot(grid[:, 0], grid[:, 1]) / MAX_SHIFT
     chosen: list[int] = []
     scores: list[float] = []
-    for rows in word.strokes(start):
-        score = mask.fits_xy(xy[rows], moves, band_m) - costs
+    for k, rows in enumerate(word.strokes(start)):
+        # The first move of the grid is staying put.
+        tried = 1 if word.pen_up and k == 0 else len(grid)
+        score = mask.fits_xy(xy[rows], moves[:tried], band_m) - costs[:tried]
         chosen.append(int(np.argmax(score)))  # the shortest move on a tie
         scores.append(float(score[chosen[-1]]))
     return grid[chosen], np.array(scores)
@@ -500,16 +528,20 @@ def search(
     When `shape` is the `word`'s points and `phases` its phases, every
     trace first moves the letters to where the roads are (fit_letters). A
     word in block letters turns the way the streets run around each start
-    (`grid_turns`), whatever `max_tilt_deg` says (TASK-077)."""
+    (`grid_turns`), whatever `max_tilt_deg` says (TASK-077). A word with the
+    pen up is traced letter by letter, walking between them (pen_up.py):
+    its similarity and its distance are those of the letters alone."""
     similarity = similarity or SIMILARITIES[SIMILARITY]
 
     def allowed(rotation_deg: float) -> bool:
         return _angle_gap(rotation_deg, 0.0) <= max_tilt_deg + 1e-9
 
     retrace = 1.0 if word is None else WORD_RETRACE
+    if trace is None and word is not None and word.pen_up:
+        trace = pen_up.tracer(graph, word, reuse_penalty, retrace)
     trace = trace or _tracer(graph, reuse_penalty, retrace)
     mask = RoadMask(graph, start)
-    base_scale = initial_scale(shape, distance_m)
+    base_scale = first_scale(shape, distance_m, word)
     low, high = (base_scale * f for f in SCALE_RANGE)
     if starts is None:
         starts = candidate_starts(start) if move_start else [(start, 0.0)]
@@ -525,7 +557,8 @@ def search(
     letter_band = float(round(LETTER_BAND * base_scale * word.height)) if word else 0.0
     grid: dict[LatLon, list[float]] = {}
     if word is not None and word.style == "block":
-        grid = grid_turns(graph, start, starts, reach(shape, phases) * base_scale)
+        far = pen_up.reach(shape) if word.pen_up else reach(shape, phases)
+        grid = grid_turns(graph, start, starts, far * base_scale)
 
     def rotations(s: LatLon) -> list[float]:
         """The rotations a placement from `s` tries first."""
@@ -600,17 +633,21 @@ def search(
                 mask,
                 letter_band,
             )
-            outline = project_shape(drawn, p.start, scale, p.rotation_deg)
+            place = pen_up.place_line if word.pen_up else project_shape
+            outline = place(drawn, p.start, scale, p.rotation_deg)
             shifts = tuple((float(x), float(y)) for x, y in moved)
         route = trace(outline)
         if word is None:
             sim = similarity(route.points, outline)
+        elif word.pen_up:
+            tolerance = WORD_TOLERANCE * scale * word.height
+            sim = pen_up.similarity(word, route.points, route.walks, outline, tolerance)
         else:
             index = word.phases.index(p.phase)
             sim = word_similarity(
                 word, index, route.points, outline, scale * word.height
             )
-        ratio = route.distance_m / distance_m
+        ratio = drawn_distance(route) / distance_m
         cost = (
             W_SHAPE * (1 - sim)
             + W_DISTANCE * abs(ratio - 1)
@@ -639,7 +676,7 @@ def search(
         guess = last.scale_m / last.ratio
         if len(history) >= 2:
             prev = history[-2]
-            d0, d1 = prev.route.distance_m, last.route.distance_m
+            d0, d1 = drawn_distance(prev.route), drawn_distance(last.route)
             if not math.isclose(d0, d1):
                 slope = (last.scale_m - prev.scale_m) / (d1 - d0)
                 secant = last.scale_m + (distance_m - d1) * slope
@@ -680,7 +717,7 @@ def search(
             if short and long:
                 a = max(short, key=lambda x: x.ratio)
                 b = min(long, key=lambda x: x.ratio)
-                da, db = a.route.distance_m, b.route.distance_m
+                da, db = drawn_distance(a.route), drawn_distance(b.route)
                 scale = a.scale_m + (distance_m - da) * (b.scale_m - a.scale_m) / (
                     db - da
                 )
@@ -795,7 +832,7 @@ def _done(
     within = [
         a
         for a in attempts
-        if abs(a.route.distance_m - distance_m) <= DISTANCE_FALLBACK_M
+        if abs(drawn_distance(a.route) - distance_m) <= DISTANCE_FALLBACK_M
     ]
     best = min(good_ones or within or attempts, key=lambda a: a.cost)
     warnings = list(best.route.warnings)
@@ -862,7 +899,18 @@ def required_area(
     `distance_m` is the planned one (`planned_distance`)."""
     if optimize:
         return zone_area(shape, start, distance_m, word=word)
-    return area_around(project_shape(shape, start, initial_scale(shape, distance_m)))
+    return area_around(_placed_once(shape, start, distance_m, word))
+
+
+def _placed_once(
+    shape: Sequence[Point], start: LatLon, distance_m: float, word: Word | None
+) -> list[LatLon]:
+    """The shape at its initial placement, as traced without a search; the
+    open line of a word with the pen up stays open."""
+    scale = first_scale(shape, distance_m, word)
+    if word is not None and word.pen_up:
+        return pen_up.place_line(shape, start, scale)
+    return project_shape(shape, start, scale)
 
 
 @dataclass
@@ -892,9 +940,16 @@ def plan_route(
     and comes back with `word` instead
     of `shape` (TASK-056). `top_joins` says whether its letters may be
     joined along the top line too (TASK-067), words.TOP_JOINS when None.
+    With the request's `pen_up` each letter is drawn on its own, and the
+    result says where the route walks between them (TASK-197).
     """
     if request.word is not None:
-        word = compose(request.word, style=style or request.style, top_joins=top_joins)
+        word = compose(
+            request.word,
+            style=style or request.style,
+            top_joins=top_joins,
+            pen_up=request.pen_up,
+        )
         plan = plan_shape(
             list(word.points),
             word.text,
@@ -961,7 +1016,10 @@ def plan_shape(
 
     A `word` is a closed line whose `points` are `shape`: the search enters
     it half-way along a gap between letters, and moves the letters to where
-    the roads are (TASK-050).
+    the roads are (TASK-050). A word with the pen up is an open line
+    entered at its first letter; the route is open too, and its `walks`
+    say where it goes from one letter to the next without drawing
+    (TASK-197): `distance_m` is planned for the letters alone.
     """
     similarity = SIMILARITIES[SIMILARITY]
     planned_m = planned_distance(distance_m, one_way)
@@ -1017,13 +1075,13 @@ def plan_shape(
                 f"{what}: the best route scores "
                 f"{best.similarity:.2f} for shape, {MIN_SIMILARITY:.2f} needed"
             )
-        gap = (best.route.distance_m - planned_m) * kept
+        gap = (drawn_distance(best.route) - planned_m) * kept
         if abs(gap) > DISTANCE_FALLBACK_M:
             raise ShapeNotDrawableError(
                 f"{what}: the best shape is "
                 f"{gap / 1000:+.1f} km from the target, at most "
                 f"{DISTANCE_FALLBACK_M / 1000:g} km allowed",
-                best_distance_m=best.route.distance_m * kept,
+                best_distance_m=drawn_distance(best.route) * kept,
             )
         route, sim, warnings = best.route, best.similarity, list(found.warnings)
         placed, chosen_start = best.shape, best.placement.start
@@ -1039,6 +1097,16 @@ def plan_shape(
                 f"start moved {moved} {direction} of the requested point, "
                 "where the shape closes on the roads",
             )
+    elif word is not None and word.pen_up:
+        found = None
+        projected = _placed_once(shape, start, planned_m, word)
+        route = pen_up.trace(graph, word, projected, reuse_penalty, WORD_RETRACE)
+        height_m = first_scale(shape, planned_m, word) * word.height
+        sim = pen_up.similarity(
+            word, route.points, route.walks, projected, WORD_TOLERANCE * height_m
+        )
+        warnings = list(route.warnings)
+        placed, chosen_start = projected, start
     else:
         found = None
         projected = project_shape(shape, start, initial_scale(shape, planned_m))
@@ -1050,7 +1118,9 @@ def plan_shape(
             sim = word_similarity(word, 0, route.points, projected, height_m)
         placed, chosen_start = projected, start
     [first], _ = nearest_nodes(graph, [chosen_start])
-    check_closed(
+    # A word with the pen up ends at its last letter: only where it begins.
+    check = pen_up.check_begins if word is not None and word.pen_up else check_closed
+    check(
         route.points,
         (graph.nodes[first]["y"], graph.nodes[first]["x"]),
         start,
@@ -1079,6 +1149,7 @@ def plan_shape(
         similarity=sim,
         shape=name,
         warnings=warnings,
+        walks=list(route.walks),
     )
     return Plan(result, found, measures, far)
 
@@ -1088,5 +1159,5 @@ def _drawable(best: Attempt, distance_m: float, kept: float = 1.0) -> bool:
     keeping that share of its route."""
     return (
         best.similarity >= MIN_SIMILARITY
-        and abs(best.route.distance_m - distance_m) * kept <= DISTANCE_FALLBACK_M
+        and abs(drawn_distance(best.route) - distance_m) * kept <= DISTANCE_FALLBACK_M
     )

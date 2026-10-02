@@ -122,7 +122,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   in coda alle loro schede. Il cerchio si chiede per primo: una città nuova
   scarica una zona sola invece di due. **«My start» è diventato «Near
   me»**, la prima voce della fila delle città, accesa finché non se ne
-  sceglie una. Solo app, niente API. Visto in un simulatore con un'API
+  sceglie una. Nell'API cambia solo l'ordine in cui `draw_examples`
+  chiede le prime tre forme. Visto in un simulatore con un'API
   locale: le otto forme a Padova, e Milano con tre forme nel catalogo che
   ne riceve altre cinque. **Da pubblicare su `preview`** con l'ok
   dell'utente, poi **da provare sull'iPhone**. Nelle 62 città con gli esempi già disegnati sul server

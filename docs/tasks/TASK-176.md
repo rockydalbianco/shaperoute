@@ -72,6 +72,9 @@ apps/mobile/src/explore/CityExamples.tsx
 apps/mobile/src/explore/CityExamples.test.tsx
 apps/mobile/src/explore/ExploreTools.tsx
 apps/mobile/src/explore/ExploreTools.test.tsx
+services/api/shaperoute_api/prefetch_zones.py      (EXAMPLE_SHAPES: il cerchio per primo)
+services/api/shaperoute_api/draw_examples.py       (solo il commento in testa)
+services/api/tests/test_draw_examples.py
 docs/UI.md
 docs/API.md
 docs/DECISIONS.md
@@ -81,11 +84,12 @@ docs/tasks/TASK-176.md
 
 ## Fuori scope
 
-- L'API: `draw_examples` e `prefetch_zones` chiedono ancora cuore, cerchio
-  e stella in quest'ordine (vedi «Seguiti»).
-- Il server: aggiornare l'API con TASK-168, lanciare `draw_examples`, le
-  zone delle città medie. È quello che rende subito pronte le prime tre
-  forme, e aspetta l'ok dell'utente.
+- Nell'API solo l'ordine delle prime tre forme (il cerchio per primo in
+  `EXAMPLE_SHAPES`, chiesto dal coordinatore): `draw_examples` non disegna
+  le altre cinque (vedi «Seguiti»).
+- Il server: l'API ha TASK-168 dal 2026-10-02 e gli esempi di 62 città
+  disegnati prima. Rilanciare `draw_examples`, o aggiornare il server, lo
+  chiede il coordinatore all'utente.
 - `App.tsx`: la voce «Near me» non sa se la partenza è la posizione o un
   luogo cercato.
 - Le altre proposte del canvas: la pagina «Draw», la scheda del percorso,
@@ -106,10 +110,13 @@ Fatto (2026-10-02, ADR-0144).
 - Le forme in più lasciano all'app 12 dei 30 POST al minuto che l'API
   accetta da un telefono: sfogliando città già disegnate, quelle della
   terza aspettano che il minuto passi.
+- Nell'API `EXAMPLE_SHAPES` ha il cerchio per primo: `draw_examples`
+  chiede le prime tre forme nell'ordine dell'app.
 - «Near me» è la prima voce della fila delle città; «My start» non c'è più.
 
-942 test dell'app verdi, con i nuovi di «Explore», degli esempi e della
-fila delle città; lint, typecheck e prettier puliti.
+1018 test dell'app verdi, con i nuovi di «Explore», degli esempi e della
+fila delle città, e 567 dell'API; lint, typecheck, prettier, ruff e black
+puliti.
 
 Visto su un simulatore (iPhone 17, Expo Go) con un'API locale sul Mac.
 Con il codice già unito a TASK-174:
@@ -137,11 +144,11 @@ Seguiti:
   riga: i disegni del feed, nelle città senza catalogo. Succede al più due
   volte. `maintainVisibleContentPosition` non va bene su questa pagina
   (ADR-0144, «Scartate»).
-- `draw_examples` e `prefetch_zones` dell'API chiedono ancora cuore,
-  cerchio e stella in quest'ordine, e solo quelle: in una città senza zona
-  il cuore e il cerchio scaricano una zona ciascuno. Mettere il cerchio per
-  primo in `EXAMPLE_SHAPES` è una riga; disegnare prima anche le altre
-  cinque forme costa circa un'ora e mezza di calcolo sulle 62 città.
+- `draw_examples` disegna solo le prime tre forme: le altre cinque le
+  disegna il primo telefono in ogni città. Disegnarle prima costa circa
+  un'ora e mezza di calcolo sulle 62 città, e va chiesto all'utente.
+- Il tetto di 18 richieste di esempi al minuto è preso sul limite di 30
+  che l'API ha da sola; sul server oggi è 120 (ADR-0144).
 - «Near me» dice così anche quando la partenza è un luogo cercato in
   «Draw»: per dire il nome del luogo serve una riga in `App.tsx`.
 - Il test di TASK-174 in `CityExamples.test.tsx` stampa un avviso di React

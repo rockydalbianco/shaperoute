@@ -5686,6 +5686,12 @@ della città, sotto il campo di ricerca.
   della città dopo. Le prime tre non aspettano mai, e costano quanto
   prima; una forma in più parte solo se nell'ultimo minuto sono partite
   meno di 18 richieste di esempi, altrimenti aspetta, senza scheda.
+  Il tetto è preso sul 30 che l'API ha da sola, non su quello del server:
+  lì oggi `SHAPEROUTE_RATE_LIMIT` è 120 a telefono (`deploy/.env`, rimasto
+  da quando tutti i telefoni contavano come uno), e `DEPLOY.md` F.12 dice
+  che può tornare vuoto, cioè a 30. L'app non sa quale dei due vale, e
+  con 120 il tetto costa solo l'attesa delle forme in più della terza
+  città sfogliata in un minuto.
 - **Il cerchio si chiede per primo**, anche se la prima scheda resta il
   cuore. La zona di una forma è un quadrato attorno al centro, largo quanto
   la forma arriva lontano, e l'API ne scarica una solo se nessuna di quelle
@@ -5696,7 +5702,11 @@ della città, sotto il campo di ricerca.
   del cerchio, 33 m più larga per lato: due download da Overpass invece di
   uno (a Rovereto, prima che avesse la zona, i log di TASK-168 ne contano
   uno per forma). Fra le altre forme la luna va per prima per lo stesso
-  motivo.
+  motivo. **Lo stesso ordine nell'API**: `EXAMPLE_SHAPES` in
+  `prefetch_zones.py` diventa cerchio, cuore, stella, e da lì lo prende
+  `draw_examples`, così app e server chiedono le prime tre allo stesso
+  modo. Per le zone di `prefetch_zones` l'ordine non conta: sono
+  l'unione delle aree.
 - **Anche le città con percorsi consigliati**: fra le otto forme l'app
   disegna quelle che la città non ha, e le aggiunge in coda alle sue
   schede, uguali alle altre. Sono tutte «in più»: niente sezione degli
@@ -5725,10 +5735,11 @@ altre forme (le prime tre non l'hanno, e la scheda dice già la
 percentuale); `maintainVisibleContentPosition` sulla pagina, per non
 spostare i disegni del feed quando si aggiunge una riga di schede (terrebbe
 fermo anche quello che sta sotto il campo della città quando compaiono i
-suggerimenti, spingendo il campo fuori dallo schermo); cambiare
-`EXAMPLE_SHAPES` dell'API perché `draw_examples` disegni prima anche le
-altre cinque (oltre un'ora e mezza di calcolo in più sulle 66 città già
-previste, e restano comunque sull'API dal primo telefono); chiamare la voce col nome
+suggerimenti, spingendo il campo fuori dallo schermo); aggiungere le
+altre cinque forme a `EXAMPLE_SHAPES` dell'API perché `draw_examples` le
+disegni prima (oltre un'ora e mezza di calcolo in più sulle città già
+previste, e restano comunque sull'API dal primo telefono: si può fare
+dopo, rilanciando il comando); chiamare la voce col nome
 della partenza quando è un luogo cercato (servirebbe una riga in `App.tsx`,
 che è di altri task in lavorazione); un pulsante con una freccia, o «Back
 to my position» scritto per esteso (resta un pulsante in più, lontano
@@ -5743,9 +5754,8 @@ già disegnate per intero in un minuto vede le forme in più della terza
 arrivare quando il minuto è passato. Il file degli esempi sul
 telefono tiene fino a otto percorsi per città invece di tre (ultime 8
 città). Quando si aggiunge una riga di schede i disegni del feed scendono
-di una riga, al più due volte. `draw_examples` e `prefetch_zones`
-dell'API chiedono ancora cuore, cerchio e stella in quest'ordine: in una
-città senza zona scaricano due zone, da sistemare lì. Se la partenza è un
+di una riga, al più due volte. `draw_examples` disegna ancora solo le
+prime tre forme. Se la partenza è un
 luogo cercato e non la posizione, la voce dice comunque «Near me». Con la
 mappa sotto le schede (ADR-0142) ogni forma in più chiede anche la sua
 foto. Da provare con il dito sull'iPhone.

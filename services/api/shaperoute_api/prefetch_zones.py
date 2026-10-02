@@ -50,7 +50,10 @@ BBox = tuple[float, float, float, float]
 
 # What "Explore" asks (themed.py; apps/mobile/src/explore/exampleRoutes.ts).
 THEMED_DISTANCE_M = 10_000
-EXAMPLE_SHAPES = ("heart", "circle", "star")
+# In the order the app asks them (ADR-0144): the circle first, because its
+# zone holds the heart's and the star's. With the heart first, a city
+# without a zone had a second one downloaded for the circle.
+EXAMPLE_SHAPES = ("circle", "heart", "star")
 EXAMPLE_DISTANCE_M = 5_000
 # Below this the cache stops growing (MAPS.md: the disk fills up).
 MIN_FREE_BYTES = 5 * 1024**3

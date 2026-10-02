@@ -5658,6 +5658,110 @@ punteggio di una corsa salvata non cambia se il motore cambia. TASK-117 parte da
 dell'utente: `title` qui è cosa disegna il percorso) e il suo task file
 va aggiornato da chi lo prende.
 
+## ADR-0148 — Una zona tiene ogni pezzo della sua rete, e dove non ci sono strade il motore lo dice
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-180).
+
+**Contesto**: sul server gli esempi di Venezia finivano in `engine_error`
+(TASK-168): il ritaglio attorno al centro storico non aveva nodi. Due
+difetti, uno sopra l'altro.
+
+Il primo: un grafo senza strade non aveva un nome. `crop` chiamava `max()`
+su nessun pezzo (`ValueError`), e un ritaglio di un nodo solo arrivava a
+`RoadMask`, che indicizzava nessun campione (`IndexError`): l'API poteva
+solo dire `engine_error`, «vedi il log».
+
+Il secondo, la causa: OSMnx di un download tiene **il pezzo connesso più
+grande** (`retain_all=False`, due volte in `graph_from_polygon`) e butta
+gli altri. Verificato:
+
+- il centro che dà la ricerca delle città è giusto: 45,4372 N 12,3346 E,
+  in mezzo al centro storico; l'area del cuore da 5 km (45,4127–45,4617 N,
+  12,2997–12,3695 E) è tutta isola e laguna;
+- a piedi l'isola non è unita alla terraferma. Sui dati di OpenStreetMap
+  del 2026-10-02, letti dall'API di OSM in una striscia attraverso il
+  Ponte della Libertà e al suo capo verso Venezia, e passati per
+  `FOOT_FILTER`: le due carreggiate cadono (`highway=trunk` con `foot=no`
+  o `sidewalk:right=separate`); la ciclopedonale «Ciclabile per Venezia»
+  resta (`foot=designated`, poi `foot=yes`) fino al nodo 5690409049
+  (45,44258 N 12,31505 E), dove continua come way 597743868,
+  `highway=cycleway` con `foot=no`, che cade. Il marciapiede dell'isola
+  corre lì accanto, a 5 m, senza un nodo in comune. Il pezzo che arriva
+  dalla terraferma ha 57 nodi in quel riquadro e non tocca la rete
+  dell'isola (2.881 nodi nello stesso riquadro);
+- l'estratto (`prefetch_zones --extract`) non c'entra: dà a OSMnx le
+  stesse strade di Overpass, e il taglio lo fa OSMnx. Un test costruisce
+  la zona da un estratto con una terraferma, un'isola e un ponte `foot=no`
+  e, col motore di prima, trova il file senza l'isola e l'area dell'isola
+  vuota.
+
+**Non verificato**: che nella zona vera di Venezia (17 × 17 km, con Mestre
+e Marghera) la terraferma abbia più nodi dell'isola. Lo dice il ritaglio
+vuoto visto sul server; contarlo voleva la zona, e il 2026-10-02 Overpass
+rifiutava le connessioni dal Mac (niente estratto né osmium in locale).
+
+**Decisione**:
+
+- **Chi scarica una zona tiene tutti i pezzi** (`retain_all=True` in
+  `OsmnxSource.load`): il file della zona è la rete com'è. **Il pezzo più
+  grande si sceglie area per area**, nel ritaglio, come `crop` e
+  `ZoneCrop` fanno già; chi chiede la zona intera riceve il suo pezzo più
+  grande (`largest_piece`), cioè quello che OSMnx dava prima. Una zona
+  salvata prima, tutta d'un pezzo, torna com'è.
+- **Dove non ci sono strade il motore rifiuta col suo nome**:
+  `NoRoadsError`, da `crop` (nessun nodo nell'area) e da `RoadMask`
+  (nessun arco). È un `ShapeNotDrawableError`: lì nessuna forma si
+  disegna, e la CLI («No route: …»), i job e `POST /routes` rispondono già
+  a quell'errore, con `shape_not_drawable`. Niente codice d'errore nuovo:
+  l'app lo mostra già («This shape does not fit the roads here… another
+  start»), e un codice nuovo sarebbe stato un contratto da cambiare
+  nell'app.
+- I due errori stanno in un modulo loro, `route_engine/errors.py`:
+  `network.py` non può importare da `optimizer.py`, che lo importa.
+  `optimizer.ShapeNotDrawableError` resta lo stesso oggetto, e nessun
+  import cambia.
+
+**Motivo**: buttare i pezzi piccoli ha senso per l'area di una richiesta,
+dove la partenza si aggancia alla rete che c'è; non per una zona di 17 km
+scaricata una volta per tutti, dove «il più grande» è deciso da cosa c'è a
+8 km dal centro. Per le città di terraferma non cambia niente, e si è
+visto sui dati veri: quattro zone del Mac rifatte dalle risposte di
+Overpass in cache, senza rete (Trento e Verona a 17 km, 32.728 e 30.838
+nodi; la zona piccola di Verona; Rosolina Mare). Con tutti i pezzi le due
+grandi hanno il 3% circa di nodi in più (Trento 33.880 in 425 pezzi,
+Verona 31.761 in 300; i pezzi in più hanno al massimo 36 nodi), Rosolina,
+fra canali e lidi, il 26%. In tutte il pezzo più grande è il grafo di
+prima: stessi nodi e stessi archi nello stesso ordine, stesse lunghezze e
+geometrie; così i ritagli (cuore, cerchio e stella da 5 km da tre
+partenze per zona), e il cuore da 5 km dal centro di Trento e di Verona
+esce con la stessa linea. Cambia solo l'ordine dei valori dentro le
+etichette di una strada fatta di più tratti (`name`, `highway`, `lanes`,
+`maxspeed`…), che OSMnx mette in un insieme e non tiene fermo nemmeno fra
+due costruzioni dello stesso download: la linea non ne dipende.
+
+**Scartate**: un codice `no_roads` nell'API (contratto nuovo per l'app,
+scelta di prodotto); mappare l'errore in `errors.py` e `app.py` dell'API
+(`app.py` è di un altro task in corso, e la CLI sarebbe rimasta fuori);
+restituire un grafo vuoto da `crop` e controllare in ogni chiamante (tre
+punti nel motore, e uno dimenticato torna `engine_error`); una zona più
+piccola solo per Venezia (un dato da ricordare, non una regola); scegliere
+nel ritaglio il pezzo **della partenza** invece del più grande (più giusto
+per chi parte da un'isola piccola, ma cambia i percorsi di oggi dove la
+partenza sta su un pezzo minore: è un task a parte, da misurare).
+
+**Conseguenze**: le zone già in cache restano col solo pezzo più grande:
+**quella di Venezia sul server va rifatta** dopo l'aggiornamento dell'API
+(con l'ok dell'utente; i comandi in `tasks/TASK-180.md`), poi i suoi tre
+esempi. Che il centro storico dia un buon cuore da 5 km non è stato
+provato: calli e ponti sono una rete molto diversa da una città di
+strade. Le zone nuove pesano qualche punto percento in più. Un'area che
+prende più terraferma che isola dà ancora la terraferma (una forma lunga
+da Venezia, una partenza alla Giudecca vista da un'area che prende il
+centro storico). Una zona scaricata al momento dall'API resta in memoria
+col solo pezzo più grande fino al riavvio. `engine_fingerprint` cambia
+come a ogni modifica del motore: gli esempi tenuti sul server si
+ridisegnano alla prima richiesta.
+
 ## ADR-0151 — Un disegno di «Feed» si apre come un percorso di «Explore», e il suo percorso si ritrova dalla partenza
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («quando
 sono in feed […] cliccare sull'attività delle persone inventate e mettere
@@ -5779,6 +5883,361 @@ mostra nove voci che ancora non fanno niente: le accendono TASK-178 (la
 foto, ADR-0146, che riusa `Avatar`), TASK-183 (email e telefono), TASK-182
 (unità), TASK-184 (help, termini, privacy, dopo TASK-152) e TASK-185
 (notifiche, per ultime).
+
+## ADR-0144 — «Explore»: niente filtri, altre forme dopo le prime tre, «Near me» al posto di «My start»
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
+(«toglimi i filtri, non mi piacciono»; le prime tre figure «più velocemente
+possibile, ma poi allo stesso tempo cerca di farne altre mentre li
+selezionano»; «non mi piace il tasto My start … non è intuibile, devi
+rivederla»); il come deciso dall'agente su delega dell'utente
+(TASK-176). Supera la parte dei filtri di ADR-0135 e allarga ADR-0116.
+
+**Contesto**: «Best near you» aveva due filtri in una riga, «Shape» e
+«Distance» (ADR-0135). Una città scelta senza percorsi consigliati
+disegnava tre esempi, cuore, cerchio e stella da 5 km, e poi si fermava
+(ADR-0116); una con percorsi consigliati mostrava solo quelli. Per tornare
+dalla città ai percorsi vicini c'era un pulsante «My start» accanto al nome
+della città, sotto il campo di ricerca.
+
+**Decisione**:
+- **I filtri si tolgono**, non si nascondono: `RouteFilters.tsx` e i suoi
+  test si cancellano, con `filterOptions` e `filtered`. «Best near you»
+  mostra tutti i percorsi nell'ordine dell'API, i migliori per primi.
+- **Dopo le prime tre forme l'app ne disegna altre cinque**: luna, cavallo,
+  lumaca, testa di cane, testa di coniglio (`MORE_SHAPES` in
+  `exampleRoutes.ts`). Scelte misurando, il 2026-10-02 sul Mac, ogni forma
+  del catalogo a 5 km dal centro di quattro città, come la chiede l'app
+  (somiglianza del percorso scelto dal motore):
+
+  | Forma | Trento | Verona | Bologna | Padova | Media |
+  |---|---|---|---|---|---|
+  | cavallo | 0,98 | 0,97 | 0,99 | 0,94 | 0,97 |
+  | lumaca | 0,92 | 0,99 | 0,95 | 0,94 | 0,95 |
+  | stella | 0,92 | 0,97 | 0,96 | 0,94 | 0,95 |
+  | luna | 0,92 | 0,94 | 0,97 | 0,92 | 0,94 |
+  | testa di cane | 0,92 | 0,90 | 0,98 | 0,90 | 0,92 |
+  | testa di coniglio | 0,91 | 0,91 | 0,94 | 0,92 | 0,92 |
+  | cerchio | 0,91 | 0,92 | 0,92 | 0,91 | 0,92 |
+  | cuore | 0,81 | 0,91 | 0,95 | 0,94 | 0,90 |
+  | farfalla | 0,89 | 0,94 | 0,89 | 0,88 | 0,90 |
+  | gatto | 0,83 | 0,92 | 0,88 | 0,81 | 0,86 |
+  | pesce | 0,87 | 0,77 | 0,75 | 0,75 | 0,79 |
+
+  Le cinque scelte vengono come il cerchio e il cuore o meglio; farfalla,
+  gatto e pesce restano fuori, zucca e albero di Natale sono di stagione.
+- **Una alla volta, come le prime**: l'API lavora due richieste alla volta e
+  il motore usa già più processi (ADR-0136 ha scartato le richieste
+  insieme). Le altre forme partono solo quando le prime tre sono finite.
+- **Una scheda solo quando tocca a lei.** La forma in corso ha la scheda
+  «Drawing…», quelle dopo non si annunciano: nessuno le ha chieste, e una
+  fila di schede vuote spingerebbe sotto lo schermo i disegni del feed
+  (ADR-0132). Una forma che l'API non riesce a disegnare lì
+  (`shape_not_drawable`) non compare e non viene richiesta finché l'app
+  resta aperta: darebbe lo stesso esito al costo di una ricerca intera. Un
+  guaio che non è della forma (rete, troppe richieste al minuto) ferma le
+  altre in silenzio; si richiedono alla prossima scelta della città. Le
+  prime tre si comportano come prima: scheda, messaggio, «Try again».
+- **Le forme in più stanno dentro una parte del limite dell'API**
+  (`EXAMPLES_PER_MINUTE`, 18). L'API accetta 30 POST al minuto da un
+  telefono (ADR-0076), e una città che ha già disegnato risponde subito
+  alle sue otto richieste: tre città così in un minuto li userebbero
+  tutti, e verrebbero rifiutati «Start», «Export GPX» o le prime tre forme
+  della città dopo. Le prime tre non aspettano mai, e costano quanto
+  prima; una forma in più parte solo se nell'ultimo minuto sono partite
+  meno di 18 richieste di esempi, altrimenti aspetta, senza scheda.
+  Il tetto è preso sul 30 che l'API ha da sola, non su quello del server:
+  lì oggi `SHAPEROUTE_RATE_LIMIT` è 120 a telefono (`deploy/.env`, rimasto
+  da quando tutti i telefoni contavano come uno), e `DEPLOY.md` F.12 dice
+  che può tornare vuoto, cioè a 30. L'app non sa quale dei due vale, e
+  con 120 il tetto costa solo l'attesa delle forme in più della terza
+  città sfogliata in un minuto.
+- **Il cerchio si chiede per primo**, anche se la prima scheda resta il
+  cuore. La zona di una forma è un quadrato attorno al centro, largo quanto
+  la forma arriva lontano, e l'API ne scarica una solo se nessuna di quelle
+  sul disco la contiene (`covering_path`). Mezzo lato a 5 km, dal motore:
+  cerchio 2751 m, cuore 2718, luna 2579, stella 2471, cavallo 2426, lumaca
+  1971, testa di coniglio 1794, testa di cane 1681. Col cuore per primo una
+  città nuova per l'API scaricava la zona del cuore e subito dopo quella
+  del cerchio, 33 m più larga per lato: due download da Overpass invece di
+  uno (a Rovereto, prima che avesse la zona, i log di TASK-168 ne contano
+  uno per forma). Fra le altre forme la luna va per prima per lo stesso
+  motivo. **Lo stesso ordine nell'API**: `EXAMPLE_SHAPES` in
+  `prefetch_zones.py` diventa cerchio, cuore, stella, e da lì lo prende
+  `draw_examples`, così app e server chiedono le prime tre allo stesso
+  modo. Per le zone di `prefetch_zones` l'ordine non conta: sono
+  l'unione delle aree.
+- **Anche le città con percorsi consigliati**: fra le otto forme l'app
+  disegna quelle che la città non ha, e le aggiunge in coda alle sue
+  schede, uguali alle altre. Sono tutte «in più»: niente sezione degli
+  esempi, niente messaggi. Le città in evidenza, che dal catalogo hanno
+  solo cuore, cerchio e stella (ADR-0132), ricevono così le altre cinque.
+  Senza una città scelta non si disegna niente: una richiesta dalla
+  posizione di chi usa l'app non resta sull'API (ADR-0136), e si rifarebbe
+  a ogni apertura. Sulle schede aggiunte la città ha il nome che le danno
+  le sue schede del catalogo («Milano», dove la ricerca dice «Milan»): è
+  quello del percorso che parte più vicino al centro, entro un chilometro
+  (`ownCityName`); vale anche per la scheda sulla mappa.
+- **I disegni del feed sotto gli esempi** (ADR-0132) restano legati alle
+  prime tre forme: quando arrivano le altre c'è già qualcosa da scegliere.
+- **«Near me» è la prima voce della fila delle città**, con il segno della
+  posizione (un anello col suo centro, due `View`: nessuna icona nuova). È
+  accesa finché non si sceglie una città; da una città, un tocco riporta
+  ai percorsi vicini alla partenza. La riga col nome della città e «My
+  start» sparisce: la città scelta è la voce accesa, e il suo nome intero
+  è già sotto il titolo della pagina («Starting within 5 km of …»).
+
+**Scartate**: nascondere i filtri dietro un pulsante (l'utente non li
+vuole); disegnare le otto forme insieme, o a coppie (i due thread
+dell'API); annunciare subito tutte le schede (cinque schede vuote in più, e
+i disegni del feed fuori dallo schermo); una soglia di somiglianza per le
+altre forme (le prime tre non l'hanno, e la scheda dice già la
+percentuale); `maintainVisibleContentPosition` sulla pagina, per non
+spostare i disegni del feed quando si aggiunge una riga di schede (terrebbe
+fermo anche quello che sta sotto il campo della città quando compaiono i
+suggerimenti, spingendo il campo fuori dallo schermo); aggiungere le
+altre cinque forme a `EXAMPLE_SHAPES` dell'API perché `draw_examples` le
+disegni prima (oltre un'ora e mezza di calcolo in più sulle città già
+previste, e restano comunque sull'API dal primo telefono: si può fare
+dopo, rilanciando il comando); chiamare la voce col nome
+della partenza quando è un luogo cercato (servirebbe una riga in `App.tsx`,
+che è di altri task in lavorazione); un pulsante con una freccia, o «Back
+to my position» scritto per esteso (resta un pulsante in più, lontano
+dalla fila in cui si sceglie).
+
+**Conseguenze**: una città nuova chiede all'API otto percorsi invece di
+tre, sempre uno alla volta: sul server 7–19 s l'uno (TASK-168, dai log),
+ma solo al primo telefono, perché restano sull'API come le prime tre. Nelle
+62 città disegnate prima con `draw_examples` le prime tre arrivano subito,
+e il primo telefono disegna le altre cinque. Chi sfoglia più di due città
+già disegnate per intero in un minuto vede le forme in più della terza
+arrivare quando il minuto è passato. Il file degli esempi sul
+telefono tiene fino a otto percorsi per città invece di tre (ultime 8
+città). Quando si aggiunge una riga di schede i disegni del feed scendono
+di una riga, al più due volte. `draw_examples` disegna ancora solo le
+prime tre forme. Se la partenza è un
+luogo cercato e non la posizione, la voce dice comunque «Near me». Con la
+mappa sotto le schede (ADR-0142) ogni forma in più chiede anche la sua
+foto. Da provare con il dito sull'iPhone.
+
+## ADR-0152 — «Sport» in «Settings»: un elenco nell'app, la scelta sul telefono, «Soon» finché il motore non c'è
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («Nelle
+impostazioni, fai scegliere anche il tipo di sport, perché poi
+implementiamo anche per Bici e padel canoa»; fra tre proposte: «Run»
+scelto, gli altri visibili con «Soon»); il come deciso dall'agente su
+delega dell'utente (TASK-189).
+
+**Contesto**: il motore disegna solo percorsi da corsa (la richiesta
+all'API ha già `activity`, che oggi vale solo `"running"`). Bici e canoa
+sono task del motore (TASK-190, TASK-191). «Settings» (ADR-0145) è a
+sezioni, e le voci non ancora fatte dicono «Soon» senza prendere il tocco.
+
+**Decisione**: gli sport sono un elenco nell'app,
+`src/settings/sport.ts`: «Run», «Bike», «Paddle» (canoa, kayak, SUP),
+ognuno con `ready`. In «Settings» hanno una sezione loro, «SPORT», tre
+righe: uno sport pronto è un pulsante di scelta, con «✓» su quello
+scelto; uno non pronto dice «Soon» e non si tocca, come le altre voci da
+fare. La scelta resta nei documenti del telefono (`sport.json`), come le
+città recenti; senza scelta, o con una scelta non pronta, vale «Run». Il
+«✓» è bianco: il giallo è del percorso. Per ora la scelta non va all'API:
+con un solo sport non cambierebbe niente.
+
+**Alternative scartate**: far scegliere subito bici e canoa, con una
+riga che avvisa che i percorsi sono da corsa (scartata dall'utente:
+promette una cosa che non c'è); una riga sola «Sport» con «Soon»
+(scartata dall'utente); tenere la scelta nell'account (serve l'API e una
+migrazione, per una scelta che oggi ha un valore solo); una riga in
+«Preferences» che apre una pagina (per tre voci basta l'elenco sul
+posto, e «Settings» non ha altre pagine sotto).
+
+**Conseguenza**: accendere uno sport è `ready: true` nella sua riga, più
+il lavoro del motore: lo fa il task che lo porta, che manda anche la
+scelta all'API in `activity`. La scelta vale per il telefono, non per
+l'account: su un altro telefono si riparte da «Run». La sezione è un
+componente a parte (`SportSetting`), con gli stili delle righe di
+«Settings» ripetuti: `SettingsPage.tsx` era di TASK-177 mentre si
+scriveva.
+
+## ADR-0155 — «Explore»: il luogo scelto ha i suoi percorsi, quelli dei vicini stanno sotto
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
+(«premo su Caldonazzo, ma non vengono fuori suggerimenti a Caldonazzo: mi
+vengono fuori Levico perché è vicino … va bene dare le alternative, ma
+bisogna lavorare anche su Caldonazzo, ad esempio anche le frazioni, Barco
+eccetera; va bene tenere 5 km, però bisogna lavorare anche sul paese
+selezionato»); il come deciso dall'agente su delega dell'utente
+(TASK-192). Precisa ADR-0116 e ADR-0144.
+
+**Contesto**: una città scelta in «Explore» riceve i percorsi del catalogo
+che partono entro 5 km dal suo centro, e gli esempi disegnati dal suo
+centro solo se quelli mancano (ADR-0116); da TASK-176 una città con
+percorsi riceve le forme che non ha (ADR-0144). «Entro 5 km» però non vuol
+dire «suoi»: Caldonazzo ha gli otto percorsi di Levico fra 3,3 e 4,3 km,
+quindi mostrava solo quelli, e da Caldonazzo non partiva niente. Lo stesso
+per ogni paese o frazione accanto a una città del catalogo.
+
+**Decisione**:
+- **I percorsi vicini a un luogo scelto si dividono in due** (`byPlace` in
+  `ownRoutes.ts`): **suoi**, con la partenza entro `OWN_RADIUS_M` =
+  **1500 m** dal punto scelto, e **dei vicini**, il resto entro i 5 km.
+- **La soglia viene dal catalogo**, misurato il 2026-10-02: dei 350
+  percorsi di `catalog/seed/`, il 98% parte entro 500 m dal centro della
+  propria città e il più lontano a 1013 m (Levico, Trento, Verona e Padova
+  ne hanno attorno a 1 km); quelli di un altro paese partono più lontano:
+  i percorsi di Levico sono a 3,3 km dal centro di Caldonazzo e a 1,8 km
+  da Barco. 1500 m sta in mezzo.
+- **Vale per ogni luogo scelto**: città, paesi, frazioni e luoghi arrivano
+  tutti da `/city-suggestions` come un punto con un nome (`Place`, `kind`
+  «city» o «place»), e la divisione guarda solo il punto. Barco, a 2,8 km
+  dal centro di Levico, ha i suoi esempi; un luogo dentro Levico ha i
+  percorsi di Levico come suoi.
+- **Le forme che il luogo «ha» sono solo quelle dei percorsi suoi.** Senza
+  percorsi suoi è una città senza percorsi consigliati: la sezione
+  «EXAMPLES IN …» con cuore, cerchio e stella da 5 km dal suo centro, poi le
+  altre cinque forme, come in ADR-0116 e ADR-0144. Con percorsi suoi resta
+  com'era: le sue schede più le forme che non ha.
+- **I percorsi dei vicini stanno sotto**, in una griglia loro con
+  l'etichetta **«NEAR <LUOGO>»**; le schede dicono già il paese e la
+  distanza («Levico · 3.3 km away»). Il raggio resta 5 km e l'API non
+  cambia.
+- **Con i vicini sotto gli esempi, i disegni del feed nell'attesa non
+  compaiono** (ADR-0132): c'è già qualcosa da guardare. Il credito della
+  mappa resta uno solo: quello della sezione degli esempi appena uno è
+  pronto, prima quello della pagina.
+- **Una soglia sola**: `ownCityName` di TASK-176 usava 1000 m per lo stesso
+  concetto; ora usa `OWN_RADIUS_M`.
+- **Senza città scelta («Near me») non cambia niente**: una lista sola,
+  nessuna etichetta, niente disegnato (ADR-0136).
+
+**Alternative scartate**: stringere il raggio di «near you» (l'utente
+tiene i 5 km, e le alternative vicine gli vanno bene); riconoscere il paese
+dal nome (il catalogo dice «milano» dove la ricerca dice «Milan», e una
+frazione nel catalogo non ha nome); 1000 m come soglia (quattro percorsi
+del catalogo partono fra 1001 e 1013 m dal proprio centro); una griglia sola
+con i suoi e quelli dei vicini mescolati per somiglianza (è quello che
+l'utente ha visto: Levico al posto di Caldonazzo); disegnare cuore,
+cerchio e stella dal centro anche a una città che ha già percorsi suoi
+(doppioni delle sue schede); cambiare l'API perché dica di che paese è un
+percorso (serve un confine per ogni paese, e la distanza dalla partenza
+basta).
+
+**Conseguenze**: il motore, provato sul Mac da Caldonazzo a 5 km con le
+tre partenze vicine dell'API, disegna cuore 0,88, cerchio 0,72 e stella
+0,90: in un paese piccolo le forme vengono, non tutte bene. Un paese
+accanto a una città del catalogo chiede all'API
+otto percorsi la prima volta che lo si sceglie, uno alla volta; se la sua
+zona non è sul server la scarica (fino a un minuto), poi i percorsi restano
+sull'API (ADR-0136) e la volta dopo sono subito lì. Nell'attesa sotto ci
+sono già i percorsi dei vicini. Da «Near me» a Caldonazzo si vedono ancora
+solo quelli di Levico: dalla posizione di qualcuno non si disegna
+(ADR-0136), cambiarlo è una scelta dell'utente. Paesi piccoli e frazioni
+non sono disegnati in anticipo sul server (`draw_examples`): da fare lì,
+con l'ok dell'utente. Da provare con il dito sull'iPhone.
+
+## ADR-0156 — «Send to Strava»: il collegamento passa dal server, e la corsa tiene cosa ne ha fatto Strava
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («Sì,
+fallo vero»: l'invio vero della corsa fatta, con un'app Strava sua, fra
+tre proposte); il come deciso dall'agente su delega dell'utente
+(TASK-187, parte API). Non riapre ADR-0138: quello toglieva il passaggio a
+mano di un *percorso*; questo carica la *corsa fatta*, che Strava permette
+alle altre app (`POST /uploads`).
+
+**Contesto**: l'utente vuole, a fine corsa, «salva, cancella, invia a
+Strava». Le corse salvate ci sono (`runs`, ADR-0140). Per caricare
+un'attività Strava chiede OAuth con il permesso `activity:write`, un
+Client Secret che non può stare in un'app, token d'accesso che scadono
+dopo sei ore e un file con l'orario di ogni punto. Documentazione riletta
+il 2026-10-02: la revoca si fa con `POST /oauth/revoke` (dal 1° giugno
+2026; `/oauth/deauthorize` finisce il 1° giugno 2027); un'app non rivista
+collega un atleta solo; 200 richieste ogni quarto d'ora e 2 000 al giorno.
+
+**Decisione**:
+- **Tutto OAuth sta sul server.** L'app chiede `POST /me/strava/connect`,
+  apre nel browser l'indirizzo che riceve e non vede altro: né il secret
+  né un token. Strava rimanda il browser a `GET /strava/callback`
+  dell'API, che scambia il codice e risponde una pagina. Nessuna
+  dipendenza nuova, né nell'app né nell'API (`urllib`, come per Geoapify).
+- **Lo `state` lega la callback all'account**: casuale, 32 byte, vale una
+  volta per 10 minuti, uno per account, nel database solo il suo SHA-256
+  (tabella `strava_states`). La callback è fuori da `X-API-Key`
+  (`OPEN_PATHS`): un browser non ha la chiave, e senza uno `state` buono
+  la pagina non fa niente.
+- **Si chiede solo `activity:write`**, e si controlla che l'atleta non
+  l'abbia tolto: senza, non si chiede nemmeno il token.
+- **I token in chiaro nel database** (`strava_accounts`). Vanno rimandati
+  a Strava, quindi un hash non basta; cifrarli vorrebbe una dipendenza e
+  una chiave in più da custodire nello stesso `.env`. Chi copia il
+  database ha token d'accesso che durano al più sei ore e refresh token
+  inutili senza il Client Secret, che sta solo nell'ambiente del server.
+- **Un atleta è di un account solo, l'ultimo che l'ha collegato**: Strava
+  dà una sola serie di token per atleta, e due righe se li romperebbero a
+  vicenda a ogni rinnovo.
+- **Il rinnovo è dell'API**: prima di usare un token a meno di cinque
+  minuti dalla scadenza lo rinnova, una richiesta alla volta per atleta
+  (`FOR UPDATE`), e tiene il refresh token nuovo. Un token rifiutato
+  mentre è ancora buono per l'orologio si rinnova una volta: se Strava
+  rifiuta anche il refresh token l'atleta ha tolto l'accesso, la riga si
+  cancella e l'app torna a «Connect with Strava» (`409`). Un Client Secret
+  sbagliato sul server (`401` di Strava) non scollega nessuno.
+- **La corsa tiene cosa ne ha fatto Strava** (`strava_status`,
+  `strava_upload_id`, `strava_activity_id` su `runs`): una già mandata non
+  si rimanda, una in lettura si riprende a guardare. Due invii insieme si
+  mettono in fila sulla riga della corsa. `external_id` è la chiave della
+  corsa: se il server dimentica, Strava rifiuta il doppione dicendo quale
+  attività è, e l'API la prende per mandata.
+- **L'invio aspetta Strava per pochi secondi** (5 sguardi, uno al
+  secondo, come Strava chiede), poi risponde `202 processing` e la stessa
+  chiamata rifatta riprende: niente lavori in sottofondo nell'API, e la
+  coda dell'app (`outbox`) sa già riprovare.
+- **Lo stato dell'invio ha un endpoint suo** (`GET
+  /me/activities/{key}/strava`) invece di un campo in più nelle corse di
+  «My activities»: `activities.py`, i suoi esempi e i tipi dell'app non
+  cambiano, e chi non ha Strava non riceve niente di Strava.
+- **Nessun codice d'errore nuovo**: `http_error` con `503` (Strava
+  spento), `409` (non collegato), `502` (Strava non risponde),
+  `too_many_requests` con `Retry-After` (il limite di Strava),
+  `invalid_request` (`422`, Strava non legge la corsa). L'app li distingue
+  dallo stato HTTP; il contratto degli errori (`schemas.py`,
+  `shared-types`) resta com'è.
+- **Il GPX della corsa lo scrive l'API** (`run_gpx.py`), non il motore:
+  non è un percorso, è la traccia salvata con i suoi orari, e una pausa
+  chiude un `<trkseg>` (`GPX.md`, «La corsa fatta»). Il motore resta
+  l'unico a scrivere il GPX di un percorso (ADR-0033).
+- **Scollegare cancella i token comunque**, poi revoca su Strava; se
+  Strava non risponde non resta niente da noi, e l'atleta può togliere
+  Sgrava dalle impostazioni di Strava. `DELETE /me` fa lo stesso prima di
+  cancellare l'account, senza aspettare Strava (`before_account_delete` in
+  `accounts.py`: `accounts.py` non sa niente di Strava).
+- **Il dominio della callback** è `SHAPEROUTE_DOMAIN`, che il server ha
+  già per Caddy; vuota, l'indirizzo a cui è arrivata la richiesta. Nessuna
+  variabile in più oltre a `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`.
+- **Proposte del task file, costruite e in attesa dell'utente**: il nome
+  dell'attività («Heart in Trento»; senza percorso quello di Strava) e la
+  riga «Drawn with Sgrava», solo per una corsa che ha seguito un percorso.
+
+**Scartate**: OAuth nell'app con `expo-auth-session` (una dipendenza, e il
+secret dovrebbe comunque stare sul server per lo scambio del codice); lo
+`state` in memoria (si perde a ogni riavvio e non si prova con l'orologio
+dei test); cifrare i token (sopra); rifiutare un atleta già collegato a un
+altro account (chi prova con due account resterebbe bloccato; e non ferma
+chi convince una persona ad autorizzare un collegamento non suo, che
+resta il limite di ogni collegamento cominciato nell'app e finito nel
+browser: si vede solo `activity:write`, e la persona lo toglie da Strava);
+un lavoro in sottofondo che segue l'upload (un'altra cosa che gira, per
+due secondi di attesa); il campo `strava` dentro `Activity` (sopra);
+codici d'errore nuovi (tre file del contratto in più, per casi che lo
+stato HTTP già distingue); scrivere il GPX nel motore (il motore non sa
+niente di corse salvate, pause e orari); `/oauth/deauthorize` (in
+dismissione).
+
+**Conseguenze**: sul server arrivano la migrazione `0004` e due variabili
+(`DEPLOY.md`, «Strava»); finché l'utente non crea la sua app Strava,
+Strava è spento e niente cambia. Finché Strava non approva l'app si
+collega solo l'atleta dell'utente. La prova dal vero (data, ora e durata
+dell'attività; se Strava legge i `<trkseg>` come pause) è dell'utente,
+dopo la parte app. Strava conta le sue richieste per tutta l'app: 200
+ogni quarto d'ora bastano a qualche decina di corse mandate insieme, non
+a migliaia. Un'attività cancellata su Strava resta `sent` da noi: per
+rimandarla serve un task. La parte app (`RunEnd`, «My activities»,
+«Settings», la coda senza rete) è la seconda PR di TASK-187.
 
 ## ADR-0146 — La foto del profilo: un quadrato di 256 px fatto dall'API, cambiato da «Settings»
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa (la

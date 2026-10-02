@@ -92,6 +92,8 @@ from shaperoute_api.schemas import (
     TrackScoreRequestBody,
 )
 from shaperoute_api.signals import SignalBody, SignalGate, event_of
+from shaperoute_api.strava import install_strava
+from shaperoute_api.strava_client import Strava
 from shaperoute_api.themed import ThemedJobBody, ThemedJobs, ThemedRequestBody
 from shaperoute_api.track_scores import score_run
 
@@ -158,10 +160,10 @@ def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
 
 def gpx_file_name(request: AnyRequest, when: datetime) -> str:
     """No spaces or odd characters: some apps refuse them, e.g.
-    'shaperoute-heart-5km-2026-09-23.gpx', 'shaperoute-CIAO-15km-2026-09-24.gpx',
-    'shaperoute-image-15km-2026-09-26.gpx'."""
+    'sgrava-heart-5km-2026-09-23.gpx', 'sgrava-CIAO-15km-2026-09-24.gpx',
+    'sgrava-image-15km-2026-09-26.gpx'."""
     km = f"{request.distance_m / 1000:g}km"
-    return f"shaperoute-{request.name}-{km}-{when:%Y-%m-%d}.gpx"
+    return f"sgrava-{request.name}-{km}-{when:%Y-%m-%d}.gpx"
 
 
 def job_body(job: Job) -> RouteJobBody:
@@ -205,6 +207,7 @@ def create_app(
     accounts: Accounts | None = None,
     route_store: RouteStore | None = None,
     run_places: PlaceNames | None = None,
+    strava: Strava | None = None,
 ) -> FastAPI:
     # The search events and the learned vocabulary (TASK-130, ADR-0101).
     insights = insights or Insights(None)
@@ -262,6 +265,9 @@ def create_app(
     # The runs an account recorded (TASK-172); the name of their place comes
     # from the place search's key, when the environment has one.
     install_activities(app, run_places)
+    # A run sent to the runner's Strava (TASK-187); off unless the
+    # environment has this server's Strava application.
+    install_strava(app, strava)
     # The profile picture of an account (TASK-178); it needs its token.
     install_profile_photos(app)
 

@@ -10,6 +10,7 @@ import * as Location from "expo-location";
 import App from "../App";
 import { skipCountdown } from "../src/navigation/runControl";
 import { clearRun, loadRun, saveRun } from "../src/navigation/trackStore";
+import { TICK_MS } from "../src/screens/RunPanel";
 
 jest.mock("react-native-webview");
 jest.mock(
@@ -79,6 +80,8 @@ const { injectJavaScript } =
 
 const START: LatLon = [46.067, 11.1215];
 const METRE = 1 / 111_195;
+/** When each test begins, on the clock the tests move by hand. */
+const BEGAN = new Date("2026-10-02T08:00:00Z");
 
 let onPosition: (position: Location.LocationObject) => void = () => {};
 let fetchSpy: jest.SpiedFunction<typeof fetch>;
@@ -97,6 +100,10 @@ function scripts(type: string): string[] {
 }
 
 beforeEach(() => {
+  // The countdown, the clock of the run and the pause by standing still are
+  // timers that read the time: with the real ones, how busy the machine is
+  // decides what the screen says. Here time passes only when a test says so.
+  jest.useFakeTimers({ now: BEGAN });
   clearRun();
   injectJavaScript.mockClear();
   jest
@@ -119,6 +126,7 @@ beforeEach(() => {
 
 afterEach(() => {
   fetchSpy.mockRestore();
+  jest.useRealTimers();
 });
 
 async function openApp() {
@@ -148,16 +156,18 @@ test("Run records a run without a route, and Stop shows it", async () => {
   const now = Date.now();
   await act(async () => {
     skipCountdown();
-    onPosition(position(0, now - 60_000));
+    onPosition(position(0, now - 59_000));
     onPosition(position(150, now - 30_000));
     onPosition(position(300, now));
   });
   expect(screen.queryByText("Get ready")).toBeNull();
+  // The clock of the run is the phone's, read once a second: at its first
+  // tick, a second after the last fix, the run is a minute old.
+  await act(() => jest.advanceTimersByTimeAsync(TICK_MS));
   // A few numbers of the run under the map, the start over it (TASK-164).
-  // The clock is the phone's, a moment behind the fixes of this test.
   expect(screen.getByLabelText("Distance: 0.30 km")).toBeOnTheScreen();
-  expect(screen.getByLabelText(/^Pace now: 3:(19|20) \/km$/)).toBeOnTheScreen();
-  expect(screen.getByLabelText(/^Time: (0:59|1:00)$/)).toBeOnTheScreen();
+  expect(screen.getByLabelText("Pace now: 3:20 /km")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Time: 1:00")).toBeOnTheScreen();
   expect(screen.getByText("300 m")).toBeOnTheScreen();
   expect(screen.getByText("Your start, in a straight line")).toBeOnTheScreen();
   expect(screen.getByText("Heading north")).toBeOnTheScreen();
@@ -192,8 +202,7 @@ test("Run records a run without a route, and Stop shows it", async () => {
   await fireEvent.press(screen.getByText("Done"));
   expect(await screen.findByText("Starting from your position.")).toBeOnTheScreen();
   expect(loadRun()).toBeNull();
-  // The whole run, from the first screen to the last: slow on a busy machine.
-}, 20_000);
+});
 
 test("Keep running goes on with the same track", async () => {
   await openApp();

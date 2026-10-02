@@ -15,13 +15,49 @@ import {
 
 /**
  * Examples drawn at once for a city without recommended routes (TASK-143):
- * the simplest shapes, the heart first, asked one after the other so the
- * first downloads the zone and the others use it. Each opens on the map as
- * a recommended route. Kept in memory and in a file, for the next time.
+ * the simplest shapes, the heart the first card, asked one after the other
+ * so the first downloads the zone and the others use it. Each opens on the
+ * map as a recommended route. Kept in memory and in a file, for the next
+ * time.
  */
 export const EXAMPLE_SHAPES: readonly Shape[] = ["heart", "circle", "star"];
+/**
+ * Drawn after those, while they are looked at (TASK-176): the shapes of
+ * the catalogue that come out best at this distance from a city's centre
+ * (ADR-0144 has the numbers), one at a time as well. One is a card from
+ * its turn on, and is left out when it does not come out. A city with
+ * recommended routes gets them too: the shapes it has none of, added to
+ * its cards.
+ */
+export const MORE_SHAPES: readonly Shape[] = [
+  "moon",
+  "horse",
+  "snail",
+  "dog_head",
+  "rabbit_head",
+];
+const ALL_SHAPES: readonly Shape[] = [...EXAMPLE_SHAPES, ...MORE_SHAPES];
+/**
+ * The order they are asked in: the circle before the heart, and the moon
+ * first of the others. A shape's zone is a square around the centre, as
+ * large as the shape reaches, and the API downloads one only when none on
+ * its disk holds it: the circle's holds every other, and the moon's those
+ * after it. With the heart first, as it was, a city new to the API had a
+ * second zone downloaded for the circle, some 30 m larger a side.
+ */
+export const DRAW_ORDER: readonly Shape[] = ["circle", "heart", "star", ...MORE_SHAPES];
 /** Short: the quickest to plan, and the smallest zone to download. */
 export const EXAMPLE_DISTANCE_M = 5000;
+/**
+ * The API takes 30 POSTs a minute from a phone (ADR-0076), and a city it
+ * has already drawn answers its eight at once: three such cities in a
+ * minute would use them all, and "Start" or "Export GPX" would be refused.
+ * So the other shapes are asked only while fewer example requests than this
+ * went out in the last minute, the first shapes counted; past that they
+ * wait. The first shapes never wait: they cost what they always did.
+ */
+export const EXAMPLES_PER_MINUTE = 18;
+const MINUTE_MS = 60_000;
 /** The cities whose examples the file keeps, the last first. */
 export const MAX_KEPT_CITIES = 8;
 export const EXAMPLES_FILE = "city-examples.json";
@@ -45,6 +81,44 @@ export type Example =
   | { shape: Shape; status: "drawing" }
   | { shape: Shape; status: "ready"; route: RecommendedRoute }
   | { shape: Shape; status: "failed"; message: string };
+
+/** One of the shapes drawn after the first ones. */
+export function isMore(shape: Shape): boolean {
+  return !EXAMPLE_SHAPES.includes(shape);
+}
+
+/** The first shapes of a city, whatever they are doing. */
+export function firstExamples(list: Example[]): Example[] {
+  return list.filter((e) => !isMore(e.shape));
+}
+
+/**
+ * The cards a city shows: its first shapes always; another shape while it
+ * is drawn and once it is ready. Waiting it is not announced, and failed
+ * it is left out: nobody asked for it.
+ */
+export function shownExamples(list: Example[]): Example[] {
+  return list.filter((e) => !isMore(e.shape) || arrived(e));
+}
+
+/**
+ * The cards added to a city that has routes of its own: every shape drawn
+ * for it, from its turn on, but those the city `has` already.
+ */
+export function addedExamples(list: Example[], has: readonly string[]): Example[] {
+  return list.filter((e) => !has.includes(e.shape) && arrived(e));
+}
+
+function arrived(example: Example): boolean {
+  return example.status === "drawing" || example.status === "ready";
+}
+
+/** The shapes among a city's routes, as the API names them; a word is none. */
+export function shapesOf(routes: readonly { shape: string | null }[]): string[] {
+  return Array.from(
+    new Set(routes.flatMap((r) => (r.shape === null ? [] : [r.shape]))),
+  );
+}
 
 /** One city's examples: the same point, the same examples. */
 export function cityKey(point: LatLon): string {
@@ -116,11 +190,44 @@ function stopsAll(outcome: RouteOutcome): boolean {
   );
 }
 
+/** The API looked for the shape here and did not find it: so it would again. */
+function cannotBeDrawn(outcome: RouteOutcome): boolean {
+  return outcome.kind === "api_error" && outcome.code === "shape_not_drawable";
+}
+
 // The examples of every city asked in this run of the app, and their routes
 // whole, to open. Outside the screen: going to the map stops nothing.
 const examples = new Map<string, Example[]>();
 const details = new Map<string, ExampleDetail>();
 const listeners = new Set<() => void>();
+// The other shapes the API could not draw in a city, in this run of the
+// app: asked again they would fail the same, at the cost of a whole search.
+const leftOut = new Set<string>();
+// When each example of the last minute was asked, the oldest first.
+const sent: number[] = [];
+
+/** How long before another of the other shapes may be asked; 0 when now. */
+export function moreWaitMs(now: number): number {
+  while (sent.length > 0 && sent[0] <= now - MINUTE_MS) {
+    sent.shift();
+  }
+  return sent.length < EXAMPLES_PER_MINUTE
+    ? 0
+    : sent[sent.length - EXAMPLES_PER_MINUTE] + MINUTE_MS - now;
+}
+
+/** Waits `ms`, or until `signal` aborts: it never rejects. */
+function pause(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const done = () => {
+      clearTimeout(timer);
+      signal.removeEventListener("abort", done);
+      resolve();
+    };
+    const timer = setTimeout(done, ms);
+    signal.addEventListener("abort", done, { once: true });
+  });
+}
 let running: { key: string; controller: AbortController } | null = null;
 
 function show(key: string, list: Example[]): void {
@@ -212,7 +319,7 @@ function keep(storage: Storage, key: string, list: Example[]): void {
  */
 function fromFile(storage: Storage, city: Place, key: string): Example[] {
   const saved = storage.load()[key] ?? [];
-  return EXAMPLE_SHAPES.map((shape): Example => {
+  return ALL_SHAPES.map((shape): Example => {
     const detail = saved.find((d) => d.shape === shape);
     if (detail === undefined || detail.alternatives === undefined) {
       return { shape, status: "waiting" };
@@ -239,28 +346,50 @@ function fromFile(storage: Storage, city: Place, key: string): Example[] {
 type Options = {
   request?: typeof requestRoute;
   storage?: Storage;
+  /**
+   * The shapes among the city's recommended routes, when it has some
+   * (TASK-176): those are not drawn, and the others are drawn as the
+   * shapes after the first ones, a card from their turn on and no word
+   * when they fail. Without it the city has no routes: the first shapes
+   * are its examples, announced at once.
+   */
+  has?: readonly string[];
 };
 
 /**
- * Draws what `city` misses, one shape after the other. Nothing when it is
- * already drawing or every example is ready; another city stops the one
- * drawing. Failed examples are asked again.
+ * Draws what `city` misses, one shape after the other: the first ones, then
+ * the others (TASK-176). Nothing when it is already drawing or every
+ * example is ready; another city stops the one drawing. Failed examples are
+ * asked again, but for the other shapes the API could not draw.
  */
 export function drawExamples(
   apiUrl: string,
   city: Place,
-  { request = requestRoute, storage = fileStorage }: Options = {},
+  { request = requestRoute, storage = fileStorage, has }: Options = {},
 ): void {
   const key = cityKey(city.point);
   if (running?.key === key) {
     return;
   }
-  let list = examples.get(key) ?? fromFile(storage, city, key);
-  list = list.map((e) =>
-    e.status === "ready" ? e : { shape: e.shape, status: "waiting" },
-  );
+  // Nobody waits for these: they fail without a card or a word.
+  const quiet = (shape: Shape) => has !== undefined || isMore(shape);
+  const before = examples.get(key) ?? fromFile(storage, city, key);
+  const list = ALL_SHAPES.flatMap((shape): Example[] => {
+    const was = before.find((e) => e.shape === shape);
+    if (was?.status === "ready") {
+      return [was];
+    }
+    if (has?.includes(shape)) {
+      return [];
+    }
+    return [
+      was !== undefined && leftOut.has(`${key} ${shape}`)
+        ? was
+        : { shape, status: "waiting" },
+    ];
+  });
   show(key, list);
-  if (list.every((e) => e.status === "ready")) {
+  if (list.every((e) => e.status !== "waiting")) {
     return;
   }
   if (running !== null) {
@@ -277,7 +406,7 @@ export function drawExamples(
   const controller = new AbortController();
   running = { key, controller };
   void (async () => {
-    for (const shape of EXAMPLE_SHAPES) {
+    for (const shape of DRAW_ORDER) {
       const now = examples.get(key) ?? [];
       if (now.find((e) => e.shape === shape)?.status !== "waiting") {
         continue;
@@ -287,6 +416,20 @@ export function drawExamples(
           key,
           (examples.get(key) ?? []).map((e) => (e.shape === shape ? example : e)),
         );
+      if (quiet(shape)) {
+        // No card yet while it waits for the minute's allowance.
+        for (
+          let wait = moreWaitMs(Date.now());
+          wait > 0;
+          wait = moreWaitMs(Date.now())
+        ) {
+          await pause(wait, controller.signal);
+          if (controller.signal.aborted) {
+            return;
+          }
+        }
+      }
+      sent.push(Date.now());
       put({ shape, status: "drawing" });
       const outcome = await request(
         apiUrl,
@@ -309,6 +452,25 @@ export function drawExamples(
         continue;
       }
       const message = failureText(outcome);
+      if (quiet(shape)) {
+        if (cannotBeDrawn(outcome)) {
+          leftOut.add(`${key} ${shape}`);
+          put({ shape, status: "failed", message });
+          continue;
+        }
+        // Trouble that is not this shape's (no network, too many requests):
+        // the other shapes are for the next time, and the first stay as
+        // they are.
+        show(
+          key,
+          (examples.get(key) ?? []).map((e) =>
+            quiet(e.shape) && e.status !== "ready"
+              ? { shape: e.shape, status: "failed", message }
+              : e,
+          ),
+        );
+        break;
+      }
       if (stopsAll(outcome)) {
         show(
           key,
@@ -332,11 +494,14 @@ export function forgetExamples(): void {
   running = null;
   examples.clear();
   details.clear();
+  leftOut.clear();
+  sent.length = 0;
 }
 
 /**
- * The examples of `city` while it is chosen and has no recommended routes;
- * null otherwise. They start at once, and go on when the screen closes.
+ * The shapes drawn for `city` while it is chosen: its examples when it has
+ * no recommended routes, or the shapes it does not `has` yet; null without
+ * a city. They start at once, and go on when the screen closes.
  */
 export function useCityExamples(
   apiUrl: string | null,
@@ -347,19 +512,21 @@ export function useCityExamples(
   const list = useSyncExternalStore(subscribe, () =>
     key === null ? null : (examples.get(key) ?? null),
   );
-  const { request, storage } = options;
+  const { request, storage, has } = options;
+  // The same shapes in another array are the same city's routes.
+  const hasKey = has?.join(",");
   useEffect(() => {
     if (apiUrl !== null && city !== null) {
-      drawExamples(apiUrl, city, { request, storage });
+      drawExamples(apiUrl, city, { request, storage, has });
     }
     // The city's point is the key: a new label for it changes nothing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiUrl, key, request, storage]);
+  }, [apiUrl, key, request, storage, hasKey]);
   return {
     examples: list,
     retry: () => {
       if (apiUrl !== null && city !== null) {
-        drawExamples(apiUrl, city, { request, storage });
+        drawExamples(apiUrl, city, { request, storage, has });
       }
     },
   };

@@ -113,6 +113,41 @@ Valsugana 7.156, Milano 85.336. Il ritaglio di Levico sull'area del cuore
 da 5 km dà 905 nodi contro i 904 del download diretto di TASK-017:
 ritagliare equivale a scaricare.
 
+**Una zona tiene ogni pezzo della sua rete** (TASK-180, ADR-0148). OSMnx
+da solo, di quello che scarica, tiene il pezzo connesso più grande e butta
+gli altri. Per una zona di 17 km è sbagliato dove la città sta su un'isola:
+la zona di **Venezia** prende anche Mestre e Marghera, e sul server il
+centro storico è rimasto senza un nodo (TASK-168). A piedi isola e
+terraferma non si toccano (dati OSM del 2026-10-02): sul Ponte della
+Libertà la ciclopedonale è `foot=designated` fino a 5 m dalla rete
+dell'isola, poi l'ultimo tratto è `highway=cycleway` con `foot=no` (way
+597743868), che `FOOT_FILTER` scarta come le due carreggiate. Ora il
+download chiede `retain_all=True` e il file della zona ha tutti i pezzi; il
+più grande si sceglie **area per area**, nel ritaglio (`crop`), e chi
+chiede la zona intera riceve il suo pezzo più grande, come prima
+(`largest_piece`). Per le città di terraferma non cambia niente: i pezzi in
+più sono piccoli (cortili, sentieri isolati) e nel ritaglio vince la stessa
+rete. Rifatte sul Mac dalle risposte di Overpass in cache, senza rete:
+
+| Zona | Nodi prima | Con tutti i pezzi | Pezzi | Il secondo pezzo |
+|---|---|---|---|---|
+| Trento, 17 km | 32.728 | 33.880 | 425 | 36 nodi |
+| Verona, 17 km | 30.838 | 31.761 | 300 | 36 nodi |
+| Verona, zona piccola | 2.459 | 2.523 | 27 | 8 nodi |
+| Rosolina Mare | 1.286 | 1.624 | 129 | 26 nodi |
+
+In tutte e quattro il pezzo più grande è il grafo di prima, nodo per nodo
+e arco per arco, nello stesso ordine, con le stesse lunghezze e geometrie;
+così i ritagli di cuore, cerchio e stella da 5 km, e il cuore da 5 km dal
+centro di Trento e di Verona ha la stessa linea. **Le zone salvate prima
+di TASK-180 restano col solo pezzo più grande** finché non si rifanno:
+quella di Venezia sul server va rifatta.
+
+Limite che resta: nel ritaglio vince il pezzo più grande **dell'area
+chiesta**, non quello della partenza. Dal centro di Venezia a 5 km l'area
+è tutta laguna e isola; un'area che prende più terraferma che isola dà la
+terraferma, e la partenza si aggancia lì.
+
 ### Zone scaricate prima (TASK-137, ADR-0119)
 
 `python -m shaperoute_api.prefetch_zones --preset italy` (o `featured`, o
@@ -206,6 +241,15 @@ quindi crescono con la distanza richiesta.
   dal punto dell'utente.
 - **Punto della forma irraggiungibile**: nessuna strada porta alla sua
   zona; il punto si salta e la CLI lo dice.
+
+**Nessuna strada** non è un warning ma un rifiuto (TASK-180, ADR-0148):
+se nell'area chiesta il grafo non ha un nodo (mare aperto, o un posto che
+la zona non copre), o ne ha uno solo senza archi, il motore alza
+`NoRoadsError`, che è un `ShapeNotDrawableError`: la CLI dice «No route:
+there are no roads to run on around here», l'API risponde
+`shape_not_drawable`. Prima il grafo vuoto si rompeva più avanti (`max()`
+di nessun pezzo, un indice in nessuna strada) e l'API diceva
+`engine_error`.
 
 In TASK-014 e TASK-017 il warning di rete rada è comparso solo in
 `valsugana` a 15 km, a 151 m e 158 m: appena sopra la soglia.

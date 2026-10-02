@@ -61,7 +61,7 @@ function lastScript(): string | undefined {
 
 const API = "http://192.168.1.23:8000";
 const GPX = '<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1"></gpx>';
-const GPX_FILE = "shaperoute-heart-5km-2026-09-23.gpx";
+const GPX_FILE = "sgrava-heart-5km-2026-09-23.gpx";
 
 let fetchSpy: jest.SpiedFunction<typeof fetch>;
 /** How the AI on the PC answers POST /shape-readings in the next test. */

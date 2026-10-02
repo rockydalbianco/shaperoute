@@ -60,10 +60,48 @@ viaggia. I campioni scritti prima non la hanno, e restano come sono
 ## Dove vive il codice
 
 `services/route-engine/route_engine/export_gpx.py`, solo libreria standard
-(`xml.etree.ElementTree`). È l'unico scrittore di GPX: lo usano la CLI e
-l'API (`POST /gpx`, `API.md`), quindi il file del telefono e quello della
-CLI sono uguali per lo stesso percorso. Niente `services/export/` finché
+(`xml.etree.ElementTree`). È l'unico scrittore del GPX di un percorso: lo
+usano la CLI e l'API (`POST /gpx`, `API.md`), quindi il file del telefono e
+quello della CLI sono uguali per lo stesso percorso. Il GPX di una corsa
+fatta è un'altra cosa e lo scrive l'API: «La corsa fatta», sotto. Niente `services/export/` finché
 non arrivano i formati per orologi (ADR-0033).
+
+## La corsa fatta (TASK-187, ADR-0156)
+
+Una corsa salvata (`runs`, `DATABASE.md`) diventa un GPX quando va a
+Strava (`API.md`, «Send to Strava»): `services/api/shaperoute_api/run_gpx.py`,
+solo libreria standard. Non è il file del percorso: è dove il corridore è
+stato e quando, quindi ha quello che là manca e non ha quello che là c'è.
+
+```
+<gpx version="1.1" creator="Sgrava">
+  <metadata>
+    <name>Heart in Trento</name>
+    <time>2026-09-21T14:13:20.000Z</time>
+  </metadata>
+  <trk>
+    <name>Heart in Trento</name>
+    <trkseg>
+      <trkpt lat="46.0671000" lon="11.1214000">
+        <time>2026-09-21T14:13:20.000Z</time>
+      </trkpt>
+      …
+    </trkseg>
+    <trkseg>…</trkseg>
+  </trk>
+</gpx>
+```
+
+- **Ogni punto ha il suo orario**, in UTC al millisecondo: l'inizio della
+  corsa più i secondi del punto (la coordinata M della traccia).
+- **Una pausa chiude un `<trkseg>`** e il punto dopo ne apre un altro, come
+  GPX chiede per un ricevitore spento. I punti presi dentro una pausa non
+  ci sono: non sono della corsa. Una pausa che comincia su un punto lo
+  lascia nel segmento di prima, come l'API conta i metri.
+- **Niente attribuzione a OpenStreetMap**: la traccia è il GPS del
+  corridore, non un dato di OSM. Niente quote: `runs` non le ha.
+- Il nome c'è solo se la corsa ha disegnato qualcosa di noto.
+- Il file non si salva da nessuna parte: si scrive quando parte.
 
 ## Dal telefono
 

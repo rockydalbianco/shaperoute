@@ -362,9 +362,16 @@ def account_routes() -> APIRouter:
 
     @router.delete("/me", status_code=204)
     def delete_me(
+        request: Request,
         accounts: Annotated[Accounts, Depends(accounts_of)],
         user: Annotated[UserBody, Depends(current_user)],
     ) -> Response:
+        # What the account has outside this database goes first: the access
+        # an athlete gave on Strava (strava.py). Each sees to its own
+        # failures: none of them keeps the account from being deleted.
+        leaving: list[Callable[[int], None]] = request.app.state.before_account_delete
+        for leave in leaving:
+            leave(user.id)
         accounts.delete(user.id)
         return Response(status_code=204)
 
@@ -385,5 +392,6 @@ def account_answer(_: Request, exc: Exception) -> JSONResponse:
 def install_accounts(app: FastAPI, accounts: Accounts | None) -> None:
     """The account endpoints and their errors; `accounts` None: 503."""
     app.state.accounts = accounts
+    app.state.before_account_delete = []
     app.add_exception_handler(AccountError, account_answer)
     app.include_router(account_routes())

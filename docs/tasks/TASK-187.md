@@ -1,6 +1,6 @@
 # TASK-187 — «Send to Strava»: la corsa fatta va sul profilo Strava
 
-**Stato**: Todo
+**Stato**: In corso — parte API fatta (prima PR), parte app da fare (seconda PR)
 **Fase**: 4 · **Branch**: `feat/TASK-187-send-to-strava`
 **Dipende da**: TASK-172 in `main`, con la sua schermata «Save» /
 «Discard» a fine corsa (`src/activities/RunEnd.tsx`) e la tabella `runs`
@@ -114,13 +114,28 @@ il task la conferma o la cambia con un ADR.
 
 ## Da chiedere all'utente durante il task (una per volta, con la proposta)
 
+**Tutte e quattro in attesa dell'utente** (2026-10-02: era via, il lavoro è
+andato avanti in automatico). La parte API è costruita con la proposta
+dove le serviva; cambiarla è una riga (`activity_name` e `DESCRIPTION` in
+`strava.py`).
+
 - Il **nome dell'attività** su Strava. Proposta: cosa è stato disegnato e
   dove («Heart in Trento»), o «Morning run» senza percorso; modificabile
   nella schermata prima di «Save»?
+  *Costruito così*: «Heart in Trento», «CIAO in Trento», il tema di un
+  percorso a tema; senza il luogo solo cosa. Una corsa senza percorso non
+  manda un nome e Strava mette il suo («Morning Run», «Evening Run»: lo
+  sceglie Strava dall'ora e nella lingua dell'atleta; l'API non sa il fuso
+  del corridore). Il nome **non** è modificabile: l'endpoint non prende un
+  corpo. Se l'utente lo vuole modificabile, è un campo `name` facoltativo
+  in più, senza rompere niente.
 - Una riga nella descrizione, «Drawn with Sgrava». Proposta: sì.
-- L'interruttore ricorda l'ultima scelta. Proposta: sì.
+  *Costruito così*: sì, ma solo per una corsa che ha seguito un percorso;
+  una corsa libera non ha disegnato niente e va senza descrizione. Da
+  confermare anche questo.
+- L'interruttore ricorda l'ultima scelta. Proposta: sì. *(Parte app.)*
 - Il colore arancione di Strava per «Connect with Strava» (le regole del
-  marchio lo chiedono): un token nuovo in `tokens.ts`.
+  marchio lo chiedono): un token nuovo in `tokens.ts`. *(Parte app.)*
 
 ## Criteri di accettazione
 
@@ -145,16 +160,37 @@ il task la conferma o la cambia con un ADR.
 
 ## File toccati
 
-Elenco previsto; chi prende il task lo conferma con il coordinatore.
+Elenco aggiornato il 2026-10-02 con la parte API e detto al coordinatore.
+Rispetto a quello previsto: tre file nuovi (`strava_client.py`,
+`run_gpx.py`, `test_run_gpx.py`) e `docs/GPX.md`; `deploy/compose.yaml`
+non serve (sotto, «A che punto siamo»).
+
+Prima PR, la parte API:
 
 ```
 services/api/migrations/0007_strava.sql
 services/api/shaperoute_api/strava.py
+services/api/shaperoute_api/strava_client.py
+services/api/shaperoute_api/run_gpx.py
 services/api/shaperoute_api/app.py
 services/api/shaperoute_api/access.py
 services/api/shaperoute_api/accounts.py
 services/api/tests/test_strava.py
+services/api/tests/test_run_gpx.py
 packages/shared-types/fixtures/strava-*.json
+.env.example
+docs/API.md
+docs/DATABASE.md
+docs/GPX.md
+docs/DEPLOY.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-187.md
+```
+
+Seconda PR, la parte app:
+
+```
 apps/mobile/src/strava/
 apps/mobile/src/api/strava.ts
 apps/mobile/src/api/strava.test.ts
@@ -162,12 +198,8 @@ apps/mobile/src/activities/RunEnd.tsx
 apps/mobile/src/activities/outbox.ts
 apps/mobile/src/theme/tokens.ts
 apps/mobile/__tests__/AppStrava.test.tsx
-.env.example
-deploy/compose.yaml
 docs/API.md
-docs/DATABASE.md
 docs/UI.md
-docs/DEPLOY.md
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-187.md
@@ -182,6 +214,56 @@ docs/tasks/TASK-187.md
   l'utente, quando vorrà aprire la funzione agli altri.
 - Altre destinazioni (Garmin, Apple Salute, Instagram): task nuovi.
 - Foto e descrizione scritta dall'utente.
+
+## A che punto siamo (2026-10-02)
+
+**Fatta la parte API** (punti 2–5 e la parte API del 9), ADR-0156:
+
+- `strava_client.py` parla con Strava (OAuth, revoca, upload) e non sa
+  niente del database; `strava.py` tiene atleti e corse e ha gli endpoint;
+  `run_gpx.py` scrive il GPX della corsa salvata. Come funziona: `API.md`,
+  «Send to Strava».
+- Oltre ai cinque endpoint del punto 3–4 c'è `GET
+  /me/activities/{key}/strava`: lo stato dell'invio di una corsa
+  (`not_sent`, `processing`, `sent` con `url`), per «Send to Strava» /
+  «View on Strava» di una corsa aperta (punto 7). `Activity` non cambia.
+- `POST /me/activities/{key}/strava` risponde `200` (`sent`) o `202`
+  (`processing`: rifare la stessa chiamata più tardi). Errori: `409` non
+  collegato (tornare a «Connect with Strava»), `429` con `Retry-After`,
+  `502` riprovare, `422` Strava non legge la corsa (non riprovare), `503`
+  Strava spento. Nessun codice d'errore nuovo.
+- `deploy/compose.yaml` non è cambiato: il servizio `api` ha `env_file:
+  .env`, le due variabili arrivano da sole. La callback usa
+  `SHAPEROUTE_DOMAIN`.
+- La revoca usa `POST /oauth/revoke`, non `/oauth/deauthorize` (in
+  dismissione dal 2026-06-01).
+- Criteri di accettazione coperti dai test dell'API (`test_strava.py`, 47
+  test contro uno Strava finto; `test_run_gpx.py`): il secondo, il terzo,
+  il quarto, il quinto, il settimo, e il primo per la parte API (`available:
+  false`). Restano alla parte app il sesto (la coda senza rete) e il nono;
+  l'ottavo è la prova dal vero.
+
+**Da fare, la parte app** (punti 1, 6, 7, 8 e la parte app del 9):
+
+- `src/api/strava.ts`: i tipi e le chiamate, sugli esempi
+  `fixtures/strava-status.json`, `strava-connect.json`,
+  `strava-activity.json`.
+- `RunEnd`: la riga «Send to Strava» solo se `available`; «Connect with
+  Strava» apre `url` con `Linking.openURL` (come `music.ts`); al ritorno
+  nell'app (`AppState`) si richiede `GET /me/strava`.
+- `outbox`: dopo il `PUT` della corsa, il `POST …/strava`; `202` e `502` e
+  `429` si riprovano alla prossima apertura, `409` e `422` no. Il server
+  non raddoppia: riprovare è sempre sicuro.
+- «My activities», corsa aperta: `GET /me/activities/{key}/strava`.
+- «Settings» (TASK-177 è in `main` dalla #202): «Strava», «Connected as
+  …», «Disconnect» (`DELETE /me/strava`).
+- `UI.md`, «Cosa esce dal telefono».
+
+**Aspetta l'utente**: le quattro domande sopra; creare l'app Strava e
+scrivere il secret sul server; l'ok per il server (migrazione `0007`) e
+per pubblicare l'app; la prova dal vero, compreso come Strava conta la
+durata di una corsa con una pausa (il GPX chiude un `<trkseg>` a ogni
+pausa: da vedere se Strava lo legge come tempo fermo).
 
 ## Esito
 

@@ -1,6 +1,6 @@
 # TASK-188 — Un tocco su un disegno di «Feed» apre il suo percorso
 
-**Stato**: In revisione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-188-feed-open-route`
 
 Chiesto dall'utente il 2026-10-02 («Dai la possibilità, quando sono in
@@ -97,3 +97,14 @@ task piccolo sopra questo.
 
 ## Esito
 
+Fatto (2026-10-02, PR #201). In «Feed» un tocco su un disegno apre il suo
+percorso sulla mappa con la scheda di «Explore»: il cuore lo mette nei
+preferiti, «Start» lo fa correre, «←» torna a «Feed». Provato in un
+simulatore con un'API propria e un database usa e getta: il tocco, il
+cuore senza account («Profile») e con un account (PUT 201, cuore pieno),
+«Start» (indicazioni e corsa), «←». Uno swipe verso destra sopra una
+scheda la apriva come un tocco: corretto qui, e per le schede di «Explore»
+è nato TASK-196. Non aperta nel simulatore la farfalla di Roma, il cui
+`id` è cambiato: la coprono i test e un controllo sul catalogo (tutti e
+quindici i disegni ritrovano il loro percorso). Non visto su un telefono:
+si vede dopo la prossima pubblicazione su `preview`, con l'ok dell'utente.

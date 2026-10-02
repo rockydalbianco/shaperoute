@@ -7116,3 +7116,59 @@ Le indicazioni di «Start» e il punteggio non hanno l'attività: `POST
 /track-scores` confronta due linee; dare l'attività a `/route-directions`
 è un'aggiunta al suo contratto, da decidere con cosa fa «Start» in bici
 (TASK-190, parte C, seguito 2).
+
+## ADR-0162 — Ciò che il motore tiene per grafo vale finché NetworkX non cambia il grafo
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-203; proposte A1 e A2 approvate dal coordinatore)
+
+Il piano della partenza costa 4,5–7,5 s sulle richieste lunghe di Trento
+(TASK-203). Fra l'11 e il 30% era il controllo delle cache del corridoio:
+ADR-0059 le rifaceva «se cambia il numero di archi», e `number_of_edges()`
+di NetworkX su un `MultiDiGraph` conta gli archi nodo per nodo (7–12 ms),
+due volte per tracciamento, fino a 40 tracciamenti per richiesta e
+altrettanti in ogni partenza vicina. In più `nearest_nodes` e
+`_route_through_zones` rifacevano a ogni chiamata la lista delle coordinate
+di tutti i nodi (quasi un milione di letture per un cuore da 10 km).
+
+**Decisione**:
+- I dati tenuti per grafo (campioni degli archi, punti distinti, passi
+  u→v, e ora id e coordinate dei nodi, `_node_table`) valgono finché il
+  grafo ha lo stesso **segno** in `graph.__networkx_cache__`. NetworkX
+  (dalla 3.3, che `ZoneCrop` già richiede) svuota quel dizionario a ogni
+  nodo o arco aggiunto o tolto: un segno sparito vuol dire grafo cambiato.
+  Niente più conteggio degli archi. Sostituisce il «rifatta se cambia il
+  numero di archi» di ADR-0059; il resto di ADR-0059 resta.
+- Il nodo pozzo di `_route_through_zones` entra e esce a ogni zona: tolto,
+  il grafo è quello di prima nodo per nodo e arco per arco, nello stesso
+  ordine, e il segno gli si ridà (`_same_graph`).
+- Una vista di un altro grafo (`subgraph`) cambia con lui senza che
+  NetworkX lo dica: per una vista non si tiene niente.
+- `nearest_nodes` e `_route_through_zones` prendono id e coordinate dei
+  nodi dalla tabella del grafo: gli stessi numeri, nello stesso ordine.
+
+**Perché così**: gli stessi percorsi punto per punto, e lo dicono tre
+prove: 7 casi fissati in `test_kept_per_graph.py` sul codice di prima
+(griglia, una città finta con parchi e un fiume, la fixture di Levico; con
+partenze vicine, alternative e ricerca lontana), i 5 casi di Trento di
+TASK-203 e le richieste del registro rifatte prima e dopo. Sul Mac tolgono
+1,1–1,6 s alle richieste lunghe di Trento (14–36%) e il 15–43% della CPU di
+una richiesta, contando le partenze vicine. Il
+segno vede anche ciò che il conteggio non vedeva: un arco tolto e uno
+aggiunto lasciano lo stesso numero di archi.
+
+**Scartato**: passare i dati dalla ricerca ai tracciamenti (cambia la firma
+di `snap_to_network` e tocca `pen_up.py`, i cui tracciamenti delle lettere
+sono quelli che guadagnano di più); tenere i dati per grafo senza nessun
+controllo (un grafo cambiato, in un test o in una richiesta futura, li
+troverebbe vecchi); controllare solo il numero dei nodi (non vede gli
+archi).
+
+**Conseguenze**: una modifica fatta sul posto agli attributi di un arco non
+si vede, come prima. Con una NetworkX che non svuota `__networkx_cache__`
+(prima della 3.3) i dati resterebbero vecchi: lo dice
+`test_a_change_to_the_graph_is_seen`, e `ZoneCrop` già non funzionerebbe.
+Il grafo mandato alle partenze vicine (`OneGraph`) porta con sé il segno,
+pochi byte, che nel processo nuovo non corrisponde a niente: lì i dati si
+calcolano da capo, come prima. Cambia l'impronta del motore
+(`engine_fingerprint`): i percorsi tenuti si buttano e dopo l'aggiornamento
+del server va rilanciato `draw_examples` (`AGENTI.md`, regola 11).

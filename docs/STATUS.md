@@ -187,6 +187,24 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore** — TASK-203: dove va il tempo del piano dalla partenza, e le
+  due correzioni che lasciano i percorsi identici (ADR-0162; la PR la apre
+  questo task, il merge è del coordinatore). Misurato sul Mac, Trento in
+  memoria, cinque richieste: metà del piano dei casi lunghi è la ricerca
+  lontana (ADR-0040), il resto quasi tutto lavoro rifatto a ogni
+  tracciamento. Nel motore (`network.py`): ciò che si tiene per grafo
+  vale finché NetworkX non cambia il grafo, senza contarne gli archi a
+  ogni tracciamento, e le coordinate dei nodi una volta per grafo. Stessi
+  percorsi, alternative e punteggi (impronte prima e dopo nel task file,
+  un test che li fissa, le richieste del registro rifatte); richieste
+  lunghe 14–36% più veloci sul Mac, CPU di una richiesta −15…−43%; il
+  server non è misurato. **Da decidere dall'utente, con campioni**:
+  niente ricerca lontana quando vicino c'è già un percorso disegnabile
+  (o `FAR_TRACES` 20 → 10), e `NEARBY_GOOD_GRACE_S` 3 → 1 s. Le altre
+  proposte che non cambiano i percorsi sono seguiti (`tasks/TASK-203.md`,
+  «Proposte»). **Deploy**: cambia l'impronta del motore; meglio un solo
+  aggiornamento del server con TASK-191 A2, poi `draw_examples`.
+
 - **API e app** — TASK-200: l'attività nei preferiti e le pause nel
   dettaglio di una corsa, i seguiti 1, 5 e 6 di TASK-190 C e TASK-199
   (ADR-0160, migrazione `0008`; la PR la apre questo task, il merge è del

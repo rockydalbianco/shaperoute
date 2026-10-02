@@ -1,16 +1,17 @@
 # TASK-203 — Dove va il tempo del piano dalla partenza
 
-**Stato**: In corso — misurato e proposto, aspetta la decisione del coordinatore
+**Stato**: Done — A1 e A2 nel motore, stessi percorsi; le (B) all'utente (2026-10-03)
 **Fase**: 4 · **Branch**: `feat/TASK-203-start-plan-time`
-**ADR**: ADR-0162 tenuto, solo se si decide qualcosa
+**ADR**: ADR-0162 (ciò che il motore tiene per grafo)
 **Dipende da**: TASK-201 («Seguito»: il tempo è nel piano della partenza)
 
 ## Obiettivo
 
 Sapere dove vanno i 5–8 s del piano dalla partenza (TASK-201) e proporre
 come scendere, separando ciò che lascia i percorsi identici punto per punto
-(A) da ciò che li cambia (B, scelta dell'utente). In questo passo nessun
-codice del motore cambia.
+(A) da ciò che li cambia (B, scelta dell'utente). Poi, scelte dal
+coordinatore, le due (A) misurate, A1 e A2, nel motore: stessi percorsi,
+meno tempo.
 
 Assegnato dal coordinatore il 2026-10-03 su delega dell'utente.
 
@@ -31,8 +32,10 @@ Assegnato dal coordinatore il 2026-10-03 su delega dell'utente.
    chiamate. **Fatto**.
 3. Proporre, in ordine di guadagno, (A) o (B), con risparmio, rischio e
    prova. **Fatto** (sotto, «Proposte»).
-4. Il coordinatore sceglie; le (A) scelte diventano un task con codice e
-   test, le (B) vanno all'utente con i campioni.
+4. Il coordinatore sceglie: A1 e A2 in questo task, con un test che fissa
+   i percorsi sul codice di prima. **Fatto** (sotto, «A1 e A2 nel
+   motore»). Le (B) vanno all'utente con i campioni; le altre (A) sono
+   seguiti.
 
 ## Criteri di accettazione
 
@@ -41,19 +44,31 @@ Assegnato dal coordinatore il 2026-10-03 su delega dell'utente.
       TASK-202).
 - [x] Tempi per fase e funzioni calde con il numero di chiamate.
 - [x] Proposte (A)/(B) con risparmio atteso, rischio e prova.
-- [x] Nessun codice del motore cambiato.
-- [ ] Decisione del coordinatore sulle proposte.
+- [x] Decisione del coordinatore: A1 e A2 qui, le (B) all'utente.
+- [x] A1 e A2: percorso scelto, alternative e punteggi di ogni partenza
+      identici nei cinque casi di Trento (impronte di prima e di dopo
+      sotto).
+- [x] Un test deterministico fissa i percorsi, scritto e verde sul codice
+      di prima (`tests/test_kept_per_graph.py`, 7 casi senza rete).
+- [x] `pytest -m "not network"` verde nel motore e nell'API; le richieste
+      del registro rifatte prima e dopo danno gli stessi percorsi; i tempi
+      di dopo nel task file.
 
 ## File toccati
 
+- `services/route-engine/route_engine/network.py`
+- `services/route-engine/tests/test_kept_per_graph.py` (nuovo)
 - `docs/tasks/TASK-203.md` (nuovo)
+- `docs/DECISIONS.md` (ADR-0162)
+- `docs/STATUS.md` (la riga di questo task)
 
-Gli script di misura stanno fuori dal repository (scratchpad della
-sessione), come in TASK-201; il modo di rifarli è qui sotto.
+`docs/ROUTE_ENGINE.md` non descrive queste cache: non cambia. Gli script di
+misura stanno fuori dal repository (scratchpad della sessione), come in
+TASK-201; il modo di rifarli è qui sotto.
 
 ## Fuori scope
 
-- Cambiare il motore o l'API: viene dopo, con un task suo.
+- Le altre proposte (A): seguiti, ognuna con un task suo.
 - Misurare sul server (sola lettura nel container, con l'ok dell'utente).
 - Le scelte (B): sono dell'utente.
 
@@ -228,20 +243,21 @@ stessa distribuzione: `number_of_edges` circa un terzo sotto profiler.
 ## Proposte
 
 In ordine di guadagno atteso sul Mac. (A): stessi percorsi punto per punto.
-(B): cambia i percorsi, scelta dell'utente con campioni.
+(B): cambia i percorsi, scelta dell'utente con campioni. L'ultima colonna
+dice che cosa ne è stato (2026-10-03, decisione del coordinatore).
 
-| # | Proposta | Tipo | Risparmio atteso | Rischio |
-|---|---|---|---|---|
-| 1 | Niente ricerca lontana quando vicino c'è già un percorso disegnabile (o `FAR_TRACES` 20 → 10) | B | 2,0 / 2,5 / 3,7 s (cuore, cerchio, «CIAO»); 0 dove la partenza è buona | si perde lo «Start here» a 1–2 km dove vicino si disegna male |
-| 2 | La ricerca lontana in anticipo, in un processo suo, buttata se non serve | A | fino a 2,0–3,9 s sul Mac | alto sul server: un quinto processo su 4 vCPU |
-| 3 | **A1** — le cache del corridoio senza ricontare gli archi a ogni tracciamento | A | **0,5–0,9 s misurati** | basso |
-| 4 | Campioni, passi e `RoadMask` dalla zona, non da ogni ritaglio | A | 0,2–1,1 s, più 0,2–0,5 in ogni vicina (stima) | medio |
-| 5 | **A2** — le coordinate dei nodi una volta per grafo | A | **0,4–0,6 s misurati** (oltre A1) | basso |
-| 6 | Attesa per le alternative più corta (`NEARBY_GOOD_GRACE_S` 3 → 1 s) | B | fino a 1,5 s, solo con la partenza già buona | meno alternative |
-| 7 | Parole: spostamenti delle lettere e distanza dal contorno in un colpo solo | A | 0,5–1,0 s su «CIAO» tondo (stima) | basso-medio |
-| 8 | Cerchio: conteggio delle strade dei piazzamenti in un colpo solo | A | 0,3–0,5 s (stima) | basso-medio |
-| 9 | Garbage collector fuori dalla zona in memoria | A | ~0,1 s sul Mac, di più sul server | basso |
-| 10 | Il pickle del grafo fuori dal cammino della richiesta | A | 0,1–0,2 s | basso |
+| # | Proposta | Tipo | Risparmio atteso | Rischio | Stato |
+|---|---|---|---|---|---|
+| 1 | Niente ricerca lontana quando vicino c'è già un percorso disegnabile (o `FAR_TRACES` 20 → 10) | B | 2,0 / 2,5 / 3,7 s (cuore, cerchio, «CIAO»); 0 dove la partenza è buona | si perde lo «Start here» a 1–2 km dove vicino si disegna male | **da decidere dall'utente, con campioni** |
+| 2 | La ricerca lontana in anticipo, in un processo suo, buttata se non serve | A | fino a 2,0–3,9 s sul Mac | alto sul server: un quinto processo su 4 vCPU | seguito, dopo una misura sul server |
+| 3 | **A1** — le cache del corridoio senza ricontare gli archi a ogni tracciamento | A | **0,5–0,9 s misurati** | basso | **fatta** (ADR-0162) |
+| 4 | Campioni, passi e `RoadMask` dalla zona, non da ogni ritaglio | A | 0,2–1,1 s, più 0,2–0,5 in ogni vicina (stima) | medio | seguito |
+| 5 | **A2** — le coordinate dei nodi una volta per grafo | A | **0,4–0,6 s misurati** (oltre A1) | basso | **fatta** (ADR-0162) |
+| 6 | Attesa per le alternative più corta (`NEARBY_GOOD_GRACE_S` 3 → 1 s) | B | fino a 1,5 s, solo con la partenza già buona | meno alternative | **da decidere dall'utente, con campioni** |
+| 7 | Parole: spostamenti delle lettere e distanza dal contorno in un colpo solo | A | 0,5–1,0 s su «CIAO» tondo (stima) | basso-medio | seguito |
+| 8 | Cerchio: conteggio delle strade dei piazzamenti in un colpo solo | A | 0,3–0,5 s (stima) | basso-medio | seguito |
+| 9 | Garbage collector fuori dalla zona in memoria | A | ~0,1 s sul Mac, di più sul server | basso | seguito |
+| 10 | Il pickle del grafo fuori dal cammino della richiesta | A | 0,1–0,2 s | basso | seguito |
 
 **1 (B) — Ricerca lontana.** Oggi parte appena la ricerca vicina non è
 buona (ADR-0040), anche se ha già un percorso da 0,83. Varianti: partire
@@ -321,11 +337,12 @@ congelati finché non si scongelano.
 **10 (A) — Il pickle.** `OneGraph` trasforma il grafo in byte prima del
 piano della partenza (0,09–0,21 s, già notato da TASK-201).
 
-**Primo passo consigliato**: A1 e A2 insieme, un task e un aggiornamento
-del server. Sono misurati, lasciano i percorsi identici, tolgono 0,9–1,5 s
-alle richieste lunghe sul Mac e il 12–43% della CPU di una richiesta, che
-sul server (4 vCPU condivise fra la partenza e tre vicine) dovrebbe contare
-di più.
+**Primo passo consigliato** (fatto, sotto «A1 e A2 nel motore»): A1 e A2
+insieme, un task e un aggiornamento del server. Sono misurati, lasciano i
+percorsi identici, tolgono 0,9–1,5 s alle richieste lunghe sul Mac e il
+12–43% della CPU di una richiesta (dalla prova fuori dal repository), che
+sul server (4 vCPU condivise fra la partenza e tre vicine) dovrebbe
+contare di più.
 
 **Come provare le (A).**
 
@@ -344,15 +361,78 @@ tenuti si buttano e dopo l'aggiornamento del server va rilanciato
 percorsi identici. Meglio raccogliere le (A) in un aggiornamento solo. La 9
 sta nell'API e l'impronta non la vede.
 
-**Impronte di prima** (`main` a `3f905d7`, Trento centro):
+**Impronte di prima e di dopo** (Trento centro; prima: `main` a
+`3f905d7`; dopo: questo branch, con A1 e A2):
 
-| Caso | Scelto | Alternative |
-|---|---|---|
-| cuore 10 km | `0c9cb198491a0906` (0,883; 8 652 m; vicina 2) | `71f46a1810bc0532` · `ecc51e4b109a0737` |
-| cerchio 15 km | `78255caddef6e01e` (0,970; 14 594 m; vicina 1) | `596b462eddebd6d4` · `15ed4e9c6ec49d30` |
-| «CIAO» 12 km | `c6a22a5b3aeb0103` (0,835; 11 384 m; partenza) | `1212305a33f45982` · `50b0954c4ddc45e7` |
-| stella 5 km | `7b54a0cf04b185ae` (0,992; 4 938 m; partenza) | `5f113df32363c56d` · `8f800c711720425f` |
-| «CIAO» penna alzata 12 km | `d3d24e68de65fbeb` (0,974; 14 777 m; partenza) | `5a603e81d9134dfd` · `e1db67986d16843c` |
+| Caso | Scelto, prima | Scelto, dopo | Alternative, prima | Alternative, dopo |
+|---|---|---|---|---|
+| cuore 10 km | `0c9cb198491a0906` (0,883; 8 652 m; vicina 2) | `0c9cb198491a0906` | `71f46a1810bc0532` · `ecc51e4b109a0737` | `71f46a1810bc0532` · `ecc51e4b109a0737` |
+| cerchio 15 km | `78255caddef6e01e` (0,970; 14 594 m; vicina 1) | `78255caddef6e01e` | `596b462eddebd6d4` · `15ed4e9c6ec49d30` | `596b462eddebd6d4` · `15ed4e9c6ec49d30` |
+| «CIAO» 12 km | `c6a22a5b3aeb0103` (0,835; 11 384 m; partenza) | `c6a22a5b3aeb0103` | `1212305a33f45982` · `50b0954c4ddc45e7` | `1212305a33f45982` · `50b0954c4ddc45e7` |
+| stella 5 km | `7b54a0cf04b185ae` (0,992; 4 938 m; partenza) | `7b54a0cf04b185ae` | `5f113df32363c56d` · `8f800c711720425f` | `5f113df32363c56d` · `8f800c711720425f` |
+| «CIAO» penna alzata 12 km | `d3d24e68de65fbeb` (0,974; 14 777 m; partenza) | `d3d24e68de65fbeb` | `5a603e81d9134dfd` · `e1db67986d16843c` | `5a603e81d9134dfd` · `e1db67986d16843c` |
+
+Uguali anche i punteggi di tutte le partenze (la partenza e le tre
+vicine), a ogni giro.
+
+## A1 e A2 nel motore
+
+Scelte dal coordinatore il 2026-10-03 (ADR-0162). Cambia solo
+`network.py`:
+
+- **A1.** I dati che il motore tiene per grafo (campioni degli archi,
+  punti distinti, passi u→v del corridoio) valgono finché il grafo ha lo
+  stesso segno in `graph.__networkx_cache__`, che NetworkX svuota a ogni
+  nodo o arco aggiunto o tolto (`_mark`, `_kept`). Niente più
+  `number_of_edges()` a ogni tracciamento. Il nodo pozzo di
+  `_route_through_zones` entra e esce: tolto, il grafo è quello di prima e
+  il segno gli si ridà (`_same_graph`). Per una vista (`subgraph`) non si
+  tiene niente.
+- **A2.** Id e coordinate dei nodi una volta per grafo (`_node_table`), per
+  `nearest_nodes` e `_route_through_zones`: gli stessi numeri nello stesso
+  ordine.
+
+**Il test che li tiene** (`tests/test_kept_per_graph.py`): `BEFORE` fissa
+l'impronta di `plan_nearby` (con `processes=False`, la strada dell'API) di
+7 richieste senza rete, calcolata sul codice di `main` a `3f905d7` **prima**
+della modifica, con lo stesso test verde lì: un cuore su una griglia
+regolare (tanti costi uguali), cuore, cerchio, stella, «CIAO» e «CIAO» con
+la penna alzata su una città finta (griglia mossa, parchi, un fiume con i
+ponti, un terzo delle strade tolte, sempre uguale da un seme fisso: la
+ricerca lontana parte, alcune vicine non disegnano), un cuore sulla fixture
+di Levico. L'impronta copre percorso scelto, alternative, punteggi e note
+di tutte le partenze. Altri test: un tracciamento non conta gli archi; ciò
+che è tenuto resta dopo il nodo pozzo; un grafo cambiato da NetworkX si
+rivede; una vista segue il suo grafo; le coordinate tenute sono quelle dei
+nodi.
+
+**Tempi dopo**, stesso script e stessa macchina, prima e dopo uno dietro
+l'altro (giri 1–3 di 4, zona in memoria, load average 3,2–3,9):
+
+| Caso | Richiesta prima | Richiesta dopo | Piano partenza prima → dopo | CPU prima → dopo |
+|---|---|---|---|---|
+| cuore 10 km | 4,95–5,06 s | 3,66–3,69 (−26%) | 4,51 → 3,19 | 10,6 → 7,8 s (−27%) |
+| cerchio 15 km | 6,55–6,73 | 5,19–5,23 (−22%) | 5,96 → 4,51 | 14,9 → 11,1 (−25%) |
+| «CIAO» 12 km | 7,86–7,96 | 6,78–6,80 (−14%) | 7,53 → 6,41 | 16,9 → 14,4 (−15%) |
+| stella 5 km | 0,91–0,92 | 0,86–0,90 (−4%) | 0,44 → 0,36 | 1,9 → 1,7 (−10%) |
+| «CIAO» penna alzata 12 km | 4,29–4,35 | 2,76–2,79 (−36%) | 2,19 → 1,22 | 11,9 → 6,7 (−43%) |
+
+Un altro giro di dopo, con il Mac più scarico (load 2,3–3,2): cuore
+3,48–3,57 s, cerchio 4,98–5,07, «CIAO» 6,54–6,67, stella 0,83–0,85, penna
+alzata 2,64–2,68.
+
+**Test.** `pytest -m "not network"`: motore 1150 passati (sul codice di
+prima 1147, più i 3 nuovi che lì fallivano come atteso); API 761 passati.
+
+**Il registro delle richieste.** Le 61 richieste del registro locale
+(`data/requests/requests.jsonl`) rifatte come fa `replay.py`
+(`shaperoute_api.replay.replay`, con le partenze vicine), sulle zone in
+cache e senza rete, una volta con il codice di prima e una con quello di
+dopo: 59 disegnate (56 forme, una parola, 2 immagini), 2 senza zona in
+cache (`MapDataUnavailableError` tutte e due le volte). Le 59 danno lo
+stesso percorso scelto e le stesse 93 alternative, prima e dopo; 52 sono
+anche quelle registrate (le altre 7 vengono da motori più vecchi, prima
+come dopo). In tutto 98 s prima, 85 dopo.
 
 ## Che cosa non è misurato
 
@@ -365,7 +445,26 @@ sta nell'API e l'impronta non la vede.
 - **Le proposte 2, 4, 7, 8, 10**: stime, non provate.
 - **Altre zone**: solo Trento.
 
+## Note per il deploy
+
+- Cambia l'impronta del motore (`engine_fingerprint()`, il contenuto di
+  `route_engine`): dopo l'aggiornamento del server i percorsi tenuti si
+  buttano e va rilanciato `draw_examples` (circa 35 minuti, `AGENTI.md`
+  regola 11), anche se i percorsi sono identici.
+- Meglio **un aggiornamento solo** del server, con `draw_examples` dopo,
+  quando ci sono questo task e TASK-191 A2: tutti e due cambiano
+  l'impronta.
+- Niente da migrare, nessuna variabile nuova, niente nell'app.
+
 ## Esito
 
-*(In corso: misure e proposte fatte il 2026-10-03; aspetta la decisione
-del coordinatore.)*
+Fatto il 2026-10-03. Il tempo del piano dalla partenza è misurato e diviso
+per fase: metà dei casi lunghi è la ricerca lontana, il resto quasi tutto
+lavoro rifatto a ogni tracciamento. A1 e A2 sono nel motore (ADR-0162):
+stessi percorsi punto per punto, richieste lunghe di Trento più veloci del
+14–36% sul Mac e 15–43% di CPU in meno, che sul server (4 vCPU fra la
+partenza e tre vicine) dovrebbe contare di più; non misurato lì. **Da
+decidere dall'utente, con campioni**: la proposta 1 (niente ricerca lontana
+quando vicino c'è già un percorso disegnabile, o `FAR_TRACES` 20 → 10) e la
+6 (`NEARBY_GOOD_GRACE_S` 3 → 1 s). **Seguiti**: le (A) non provate, 2, 4,
+7, 8, 9 e 10 della tabella «Proposte».

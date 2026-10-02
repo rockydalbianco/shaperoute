@@ -71,6 +71,7 @@ from shaperoute_api.places import (
     PlacesUnavailableError,
 )
 from shaperoute_api.profile_photos import install_profile_photos
+from shaperoute_api.profiles import install_profiles
 from shaperoute_api.recommended import (
     DEFAULT_RADIUS_M,
     MAX_RADIUS_M,
@@ -282,6 +283,9 @@ def create_app(
     install_strava(app, strava)
     # The profile picture of an account (TASK-178); it needs its token.
     install_profile_photos(app)
+    # Username and bio, and the profile the others see (TASK-116); both need
+    # a token.
+    install_profiles(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

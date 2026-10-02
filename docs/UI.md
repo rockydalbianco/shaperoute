@@ -86,6 +86,16 @@ cerchio. La genera il plugin `expo-splash-screen` da `app.json`: nessun
 codice la tiene aperta, sparisce quando l'app è pronta. Come l'icona, si
 vede solo in una build propria.
 
+**L'animazione all'avvio** (TASK-179, ADR-0147): dopo la schermata di avvio,
+e in Expo Go al suo posto, il giallo `accent` riempie lo schermo dal centro
+e una penna disegna un cuore, nero `onAccent`: è il percorso a cuore di
+Milano da 10 km, quello del video. Sotto, il logo intero, nero. Tempi:
+0,35 s il giallo, 1,6 s il disegno, 0,45 s fermo, 0,3 s di dissolvenza
+sull'app; il giallo si vede 2,4 secondi. L'app parte sotto e si carica
+intanto; l'animazione prende i tocchi finché c'è, non si salta, e si vede
+una volta a ogni apertura. Sta in `src/intro/`, sopra `App`
+(`index.ts`). Al lettore di schermo dice «Sgrava».
+
 ## Le due schermate
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La

@@ -4,7 +4,7 @@ import {
   type Shape,
   SHAPES,
 } from "@shaperoute/shared-types";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import type { AnyRouteRequest } from "../route/useRouteRequest";
 import { exampleDetail } from "./exampleRoutes";
@@ -24,8 +24,53 @@ export type Explored =
       /** As a drawn route has them: for the GPX export. */
       request: AnyRouteRequest;
       result: RouteResult;
+      /**
+       * The routes to choose from, A first (TASK-151): a city's example with
+       * the API's alternatives, or the route alone. `route`, `detail`,
+       * `request` and `result` are those of the one chosen.
+       */
+      choices: RouteResult[];
+      chosen: number;
+      choose: (index: number) => void;
     }
   | { status: "failed"; route: RecommendedRoute };
+
+/** One route to choose, as the card, the map, Start and the export read it. */
+type Option = {
+  route: RecommendedRoute;
+  detail: RecommendedRouteDetail;
+  request: AnyRouteRequest;
+  result: RouteResult;
+};
+
+type Opened =
+  | { status: "loading"; route: RecommendedRoute }
+  | { status: "done"; options: Option[]; chosen: number }
+  | { status: "failed"; route: RecommendedRoute };
+
+/**
+ * The route opened and the others to choose from, each made once: Start
+ * and the export know a route by its result (useStartDirections).
+ */
+export function optionsOf(
+  route: RecommendedRoute,
+  detail: RecommendedRouteDetail,
+  others: RecommendedRouteDetail[] = [],
+): Option[] {
+  return [detail, ...others].flatMap((one) => {
+    const request = toRequest(one);
+    if (request === null) {
+      return [];
+    }
+    const shown: RecommendedRoute = {
+      ...route,
+      route_m: one.route_m,
+      similarity: one.similarity,
+      start: one.points[0],
+    };
+    return [{ route: shown, detail: one, request, result: toResult(one) }];
+  });
+}
 
 function isShape(value: string | null): value is Shape {
   return value !== null && (SHAPES as readonly string[]).includes(value);
@@ -67,43 +112,32 @@ export function useExplored(apiUrl: string | null): {
   open: (route: RecommendedRoute) => void;
   close: () => void;
 } {
-  const [explored, setExplored] = useState<Explored | null>(null);
+  const [opened, setOpened] = useState<Opened | null>(null);
   const asked = useRef<string | null>(null);
 
   const open = useCallback(
     (route: RecommendedRoute) => {
       asked.current = route.id;
       const example = exampleDetail(route.id);
-      const exampleRequest = example === undefined ? null : toRequest(example);
-      if (example !== undefined && exampleRequest !== null) {
-        setExplored({
-          status: "done",
-          route,
-          detail: example,
-          request: exampleRequest,
-          result: toResult(example),
-        });
+      const examples =
+        example === undefined ? [] : optionsOf(route, example, example.alternatives);
+      if (examples.length > 0) {
+        setOpened({ status: "done", options: examples, chosen: 0 });
         return;
       }
       if (apiUrl === null) {
-        setExplored({ status: "failed", route });
+        setOpened({ status: "failed", route });
         return;
       }
-      setExplored({ status: "loading", route });
+      setOpened({ status: "loading", route });
       void fetchRecommendedRoute(apiUrl, route.id).then((outcome) => {
         if (asked.current !== route.id) {
           return;
         }
-        const request = outcome.kind === "route" ? toRequest(outcome.route) : null;
-        setExplored(
-          outcome.kind === "route" && request !== null
-            ? {
-                status: "done",
-                route,
-                detail: outcome.route,
-                request,
-                result: toResult(outcome.route),
-              }
+        const options = outcome.kind === "route" ? optionsOf(route, outcome.route) : [];
+        setOpened(
+          options.length > 0
+            ? { status: "done", options, chosen: 0 }
             : { status: "failed", route },
         );
       });
@@ -113,8 +147,29 @@ export function useExplored(apiUrl: string | null): {
 
   const close = useCallback(() => {
     asked.current = null;
-    setExplored(null);
+    setOpened(null);
   }, []);
+
+  const choose = useCallback((index: number) => {
+    setOpened((now) =>
+      now?.status === "done" && index >= 0 && index < now.options.length
+        ? { ...now, chosen: index }
+        : now,
+    );
+  }, []);
+
+  const explored = useMemo((): Explored | null => {
+    if (opened === null || opened.status !== "done") {
+      return opened;
+    }
+    return {
+      status: "done",
+      ...opened.options[opened.chosen],
+      choices: opened.options.map((option) => option.result),
+      chosen: opened.chosen,
+      choose,
+    };
+  }, [opened, choose]);
 
   return { explored, open, close };
 }

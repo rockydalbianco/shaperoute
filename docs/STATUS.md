@@ -36,9 +36,9 @@ giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
 (ADR-0051). Per le scritte il seguito è **TASK-057**, il campo nell'app,
 chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
 fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
-dalla cima, e una scala per lettera vicina a quella delle vicine
-(ADR-0063, dopo TASK-063, che ha `optimizer.py`). Da TASK-071: lettere più
-piccole si leggono peggio. Le lettere squadrate si scelgono nell'app da TASK-080.
+dalla cima (ADR-0063). Il task file è scritto (2026-10-02), da assegnare.
+La scala per lettera, l'altra metà della richiesta, ne resta fuori: da
+TASK-071 lettere più piccole si leggono peggio. Le lettere squadrate si scelgono nell'app da TASK-080.
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -72,6 +72,12 @@ York, Roma, Milano e Torino hanno la zona sul Mac; le altre 10 danno
 scarica una alla volta e si ferma al primo rifiuto; parte quando Overpass
 risponde.
 
+**Pubblicità che paga**, chiesto dall'utente il 2026-10-02 dopo TASK-132:
+**TASK-150** (account AdMob e pagamenti sul conto, con le domande per il
+commercialista) e **TASK-152** (Sgrava sull'App Store) in parallelo, poi
+**TASK-153** (AdMob dagli annunci di prova a quelli veri). Tutti e tre
+partono da scelte e account dell'utente.
+
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
@@ -101,6 +107,32 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-132: un annuncio AdMob a schermo intero a ogni ricerca
+  («Draw route» e «Ask for a route» in «Explore»), prima del percorso; alla
+  X, o senza annuncio, il percorso subito (ADR-0102). Consenso di Google
+  alla prima ricerca, mai all'apertura. Solo in una build propria: in Expo
+  Go nessun annuncio e l'app come prima. Annunci di prova di Google finché
+  non ci sono account e app sullo store (TASK-150, 152, 153). Provato nel
+  simulatore iPhone e in Expo Go (2026-10-02).
+- **App** — TASK-115: ci si iscrive, si entra e si esce dall'app
+  (ADR-0125). Due schede in fondo, «Draw» (le schermate di prima, intatte)
+  e «Profile»: «Sign up» (email, nome, password, «I am at least 16») e
+  «Log in», con gli errori in parole; dentro, «Log out» e «Delete account»
+  con la conferma. La sessione sta nel portachiavi (`expo-secure-store`):
+  riaperta, l'app è già dentro e lo verifica con `GET /me`; una sessione
+  finita fa uscire e «Profile» chiede di rientrare. La barra si toglie
+  sulla mappa e durante la corsa. **Da provare sull'iPhone contro l'API
+  vera**: serve un'API con `SHAPEROUTE_DATABASE_URL` (sul Mac con Colima,
+  o il server di TASK-122) e l'app ripubblicata a fine coda. Seguito:
+  TASK-116 (il profilo).
+- **App** — TASK-151: in «Explore» un esempio di città (il cuore da 5 km
+  di New York) si apre con le tessere «A · B · C», chiesto dall'utente
+  (ADR-0126): l'API mandava già le alternative, l'app teneva solo la prima.
+  Scheda, mappa, «Start» e GPX sono del percorso scelto; gli esempi già
+  sul telefono si ridisegnano una volta. `App.tsx` non è toccato, quindi
+  gli altri percorsi non sono ancora in grigio sulla mappa: seguito nel
+  task file. I percorsi del catalogo restano uno solo. **Da provare
+  sull'iPhone** (ripubblicare l'app, a fine coda dei merge).
 - **App** — TASK-149: si può correre senza disegnare niente, chiesto
   dall'utente (ADR-0122). «Run» in alto nella prima schermata, accanto a
   «Explore», apre la mappa che segue la posizione e disegna la linea

@@ -3413,6 +3413,62 @@ vicine: «lana»/«luna»); dare ragione all'ortografia senza una persona.
 Dal vivo: «rmantico» a Bologna e Torino → correzione → a Milano letto dal
 vocabolario, lettura da 1,0 s a 0 ms.
 
+## ADR-0102 — Un annuncio AdMob fra «percorso pronto» e «percorso mostrato»
+**Stato**: Attiva · 2026-10-01 · AdMob con una build dell'app: scelta
+dell'utente; il come deciso dall'agente su delega dell'utente (TASK-132) ·
+2026-10-02: un annuncio a ogni ricerca, scelta dell'utente
+
+**Contesto**: l'utente vuole pubblicità solo dopo «Draw route» (o «Ask for
+a route» in «Explore»), prima del percorso; con una rete ufficiale, consenso
+e privacy rispettati, e il percorso subito se non c'è annuncio. L'app gira
+in Expo Go, che non ha il codice nativo di nessuna rete pubblicitaria
+ufficiale: l'utente ha scelto AdMob e una build propria dell'app.
+
+**Decisione**:
+- `react-native-google-mobile-ads` (AdMob), interstitial (immagine o
+  video, con la X di Google). Nessuna schermata nostra: niente annunci finti.
+- `useAdBeforeRoute` sta fra lo stato della richiesta e lo schermo: mentre
+  il motore lavora prepara un annuncio; quando il percorso è pronto, se
+  l'annuncio è carico lo mostra e tiene sullo schermo l'attesa; alla
+  chiusura (o a un errore) mostra il percorso. Senza annuncio carico, il
+  percorso subito: non si aspetta il caricamento.
+- Un annuncio a ogni ricerca: scelta dell'utente del 2026-10-02, dopo la
+  prova nel simulatore (prima era al più uno ogni 3 minuti). Chiuso un
+  annuncio, il prossimo si carica subito, così è pronto alla ricerca dopo
+  anche quando il percorso arriva in 1–3 s. «Draw route» sullo stesso
+  percorso già disegnato non è una ricerca: lo mostra di nuovo, senza
+  annuncio.
+- Consenso: il modulo di Google (UMP, `gatherConsent`) alla prima richiesta
+  di percorso, mentre il motore lavora; mai all'apertura. Senza
+  `canRequestAds`, nessun annuncio. Niente richiesta ATT di Apple: su iOS
+  annunci senza IDFA.
+- In Expo Go, sul web e nei test il modulo nativo manca
+  (`TurboModuleRegistry.get`): `NO_ADS`, l'app come prima. Lo stesso
+  `eas update` va bene per Expo Go e per la build.
+- ID di prova di Google (app e annuncio) finché non c'è l'account AdMob:
+  gli ID veri in `app.json` e in `EXPO_PUBLIC_ADMOB_INTERSTITIAL_*`.
+- `apps/mobile/eas.json`, profilo `preview` (distribuzione interna, canale
+  `preview`). Bundle identifier iOS `com.lppl1316.sgrava`, scelto
+  dall'utente.
+
+**Alternative scartate**: AdSense in una WebView (vietato dalle regole
+AdMob nelle app); un annuncio fatto da noi (finto); al più un annuncio ogni
+3 minuti (la prima scelta, tolta dall'utente il 2026-10-02); aspettare il
+caricamento dell'annuncio quando il percorso è pronto (blocca l'utente); il
+consenso all'apertura (l'utente non vuole nulla all'apertura).
+
+**Conseguenza**: in Expo Go nessun annuncio. Per vederli serve una build
+EAS (iPhone: account Apple Developer); per annunci veri l'account AdMob e
+l'app in uno store. Con gli ID veri vanno aggiunti gli identificativi
+SKAdNetwork di Google (opzione `skAdNetworkItems` del plugin): l'SDK ne
+segnala 50 mancanti. La prima ricerca dopo l'installazione di solito non
+ha annuncio: il consenso e il caricamento arrivano dopo il percorso.
+Una build fatta con Xcode 27 (SDK iOS 27) non si apre senza il ciclo di
+vita a scene (`UIScene`), che il modello nativo di Expo SDK 57 non usa
+ancora: per la prova nel simulatore (2026-10-02) la cartella `ios/`
+generata, che non è nel repository, è stata adattata a mano con
+`ExpoAppSceneDelegate` di Expo. Le build EAS usano il loro Xcode.
+
 ## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
 (TASK-133, miglioramento generale)
@@ -4226,3 +4282,91 @@ Il server passa su `compose.yaml` dentro TASK-122, dopo il sì
 dell'utente. Sul Mac Docker vuole il plugin `buildx`: senza BuildKit
 l'heredoc del `Dockerfile` si salta in silenzio e l'immagine nasce senza
 dipendenze (visto il 2026-10-02; la CI e il server hanno BuildKit).
+
+## ADR-0125 — L'account nell'app: due schede, la sessione nel portachiavi, l'uscita
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente,
+dentro ADR-0114, ADR-0115 e ADR-0120 (TASK-115)
+
+**Contesto**: ADR-0114 e ADR-0115 decidono email e password e il token in
+`expo-secure-store`; ADR-0120 gli endpoint e gli errori. Restavano come
+fare le schede senza librerie di navigazione (TASK-051), cosa tiene il
+telefono, cosa fa l'app senza rete e cosa fa quando la sessione finisce.
+
+**Decisione**:
+- **Schede fatte a mano** (`src/screens/Tabs.tsx`), come le schermate di
+  TASK-051: niente `react-navigation`. «Draw» resta montata sotto
+  «Profile», così la mappa non si ricarica e le scelte restano.
+- **La barra solo sotto le schermate che scelgono** («What to draw»,
+  «Explore»): ognuna lo dice con `useTabBar`; mappa, corsa e fine della
+  corsa la tolgono, come le app iOS nelle schermate di dettaglio. È
+  l'elenco di chi la vuole, non di chi non la vuole: una schermata nuova
+  (TASK-149) parte senza. Sopra la barra il margine in basso vale zero
+  (`SafeAreaInsetsContext`): l'indicatore di home lo tiene la barra.
+- **Nel portachiavi la `Session` intera**, token e `User`, sotto una chiave
+  sola (`shaperoute.session`), letta in modo sincrono all'avvio come la
+  corsa non giudicata (TASK-113): la prima schermata è già giusta, e il
+  nome si vede anche senza rete. La password non resta mai sul telefono.
+- **All'apertura un `GET /me`**: aggiorna l'utente; `session_expired` o
+  `not_signed_in` fanno uscire e «Profile» lo dice, con un pallino
+  `warning` sulla scheda; senza risposta l'app resta dentro (offline non
+  è uscito). Lo stesso vale per ogni richiesta dell'account.
+- **«Log out» esce subito**, anche senza rete: il telefono dimentica il
+  token e `DELETE /session` parte senza aspettarlo. Un'API irraggiungibile
+  non tiene nessuno dentro; la sessione rimasta sull'API scade in 90
+  giorni.
+- **«Delete account» esce solo con il 204 dell'API**: altrimenti
+  l'account resterebbe sull'API e sparirebbe dal telefono. La conferma è
+  sulla schermata, non un `Alert` di sistema: si prova nei test.
+- **I campi si controllano nell'app** con le regole di `accounts.py`
+  (email, nome 3–20, password 8–128, casella dei 16 anni), e si dice il
+  primo che non va: l'API resta il giudice, l'app evita un `invalid_request`
+  che sarebbe un bug.
+
+**Scartate**: `react-navigation` (una dipendenza in più contro TASK-051);
+il solo token nel portachiavi (senza rete l'app non saprebbe chi è
+dentro); la barra sempre visibile (ruba spazio alla mappa e alla corsa);
+un «Log out» che aspetta l'API; un `Alert` per la conferma.
+
+**Conseguenze**: i task che useranno il token (TASK-116 e seguenti)
+lo prendono dallo stato di `useAccount` (`src/account/`, oggi tenuto da
+`Tabs.tsx`: un contesto React quando servirà a più schermate) e lo
+mandano con `authHeaders` di `src/api/accounts.ts`.
+
+## ADR-0126 — «Explore»: gli esempi di una città con le alternative A · B · C
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («seleziono New York
+e un cuore da 5,2 km: non ci sono le tre opzioni»); il come deciso
+dall'agente su delega dell'utente (TASK-151).
+
+**Contesto**: un esempio di città (ADR-0116) è un percorso chiesto
+all'API come uno disegnato, e l'API manda già fino a due alternative
+(ADR-0087; sul server da ADR-0121). L'app teneva solo il primo percorso,
+quindi la scheda di «Explore» non aveva le tessere. `App.tsx`, che passa
+alla scheda il percorso aperto, è di altri tre task in corso.
+
+**Decisione**:
+- **L'esempio tiene le alternative**, ognuna un percorso intero
+  (`ExampleDetail.alternatives`), in memoria e nel file sul telefono. Il
+  campo c'è sempre, anche vuoto.
+- **Un esempio salvato senza il campo si ridisegna**, una volta: è di
+  prima di questo task, e senza rifarlo le città già viste non avrebbero
+  mai le tessere. Con la zona in cache sono pochi secondi a forma.
+- **La scelta sta dentro il percorso aperto** (`useExplored`): `choices`,
+  `chosen`, `choose`, e `route`, `detail`, `request`, `result` sono quelli
+  del percorso scelto. `App.tsx` li legge già così, quindi mappa, «Start»
+  (ADR-0117) e GPX seguono la scelta senza toccarlo. Ogni percorso ha il
+  suo `result`, fatto una volta: è da quello che «Start» e l'export
+  riconoscono un percorso.
+- **Le tessere sono quelle di sempre** (`RouteTiles`), sopra «Start».
+  Mentre si aspettano le indicazioni un tocco non cambia percorso: la
+  risposta in arrivo è di quello scelto.
+
+**Scartate**: tenere la scelta in `App.tsx` come per i percorsi disegnati
+(il file è occupato; da rivedere insieme alle linee grigie); mostrare gli
+esempi vecchi senza tessere (l'utente non le vedrebbe mai sul cuore che
+ha già); un file nuovo sul telefono (lascerebbe il vecchio orfano).
+
+**Conseguenze**: gli altri percorsi non sono in grigio sulla mappa e la
+scelta non manda il segnale di ADR-0112: tutte e due le cose passano da
+`App.tsx`, seguiti scritti in `tasks/TASK-151.md`. I percorsi del catalogo
+e quelli a tema restano uno solo. Provato sull'API del Mac a New York:
+cuore, cerchio e stella da 5 km arrivano con due alternative ciascuno.

@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-02 · `main` = `06b078a`
+**Ultimo aggiornamento**: 2026-10-02, mattina · `main` = `a844084`
 
 ## Come si usa
 
@@ -15,171 +15,126 @@
    Se non lo sono, avvisa il coordinatore e aspetta.
 3. Il messaggio di partenza lo manda il coordinatore, completo (numero,
    ADR, file, confini). Se non arriva, chiedilo: non partire da solo.
-4. Numeri di task e di ADR: solo dal coordinatore (`CLAUDE.md`).
+4. Numeri di task e di ADR: solo dal coordinatore (`CLAUDE.md`). Se il
+   coordinatore non risponde e l'utente ha fretta, prendi i primi liberi
+   scritti qui sotto e **diglielo prima** di creare i file.
 5. **Worktree in `.claude/worktrees/TASK-XXX`**, sul Mac. I controlli JS in
-   un worktree usano i `node_modules` del checkout principale.
+   un worktree usano i `node_modules` del checkout principale; prima del
+   push anche `npm run format:check` (prettier non è in `expo lint`).
 6. **La coda dei merge è una sola e la tiene il coordinatore.** Nessuna
-   sessione mergia fuori coda, nemmeno su richiesta dell'utente, senza
-   dirlo prima al coordinatore: un merge fuori coda rimette in conflitto
-   le PR che stanno facendo girare la CI. Quando la
-   tua PR è pronta, scrivigli «#NNN pronta» e aspetta. Al tuo turno
-   aggiorni il branch da `origin/main`, risolvi i conflitti tenendo
-   entrambe le voci, rifai i test, fai push e scrivi «#NNN CI in corso».
+   sessione mergia fuori coda senza dirlo prima al coordinatore, nemmeno
+   su richiesta dell'utente: un merge fuori coda rimette in conflitto le
+   PR che stanno facendo girare la CI. Quando la tua PR è pronta, scrivi
+   «#NNN pronta» e aspetta. Al tuo turno aggiorni il branch da
+   `origin/main`, risolvi i conflitti tenendo tutte le voci, rifai i test,
+   fai push e scrivi «#NNN CI in corso».
 7. **La CI non la aspetta nessuno da solo.** La guarda la sessione
-   «Assistente», che avvisa il coordinatore quando una PR della coda è
-   5/5 verde e MERGEABLE, o quando un job fallisce. Il «merge NNN» lo dà
-   il coordinatore alla sessione proprietaria, che mergia la sua PR.
-   Nessuna sessione mergia la PR di un'altra.
+   «Agente di assistenza coordinamento», che avvisa il coordinatore quando
+   una PR è 5/5 verde e MERGEABLE, o quando un job fallisce. Il «merge NNN»
+   lo dà il coordinatore alla sessione proprietaria, che mergia la sua PR.
+8. **PR di soli documenti** (task file, STATUS, AGENTI) entrano appena
+   sono verdi e CLEAN, senza aspettare la coda: non toccano codice.
+9. **Pubblicare l'app** (`eas update`) e **toccare il server** si fanno
+   solo con l'ok dell'utente, da `origin/main` pulito (memoria
+   «publish-from-clean-main», `DEPLOY.md` F.12).
 
 ## La coda dei merge
 
 ```
-1. #153  TASK-148  Via il vecchio AskForRoute                    la porta il coordinatore
-2. #154  TASK-149  Corsa libera, senza disegno                   pronta
-3.  —    TASK-122  L'API e il database sempre accesi             PR non aperta
-4.  —    TASK-115  App: iscriversi, entrare, uscire              PR non aperta
-5.  —    TASK-151  Le alternative A·B·C negli esempi di Explore  PR non aperta
-6. #140  TASK-141  STATUS.md allineato (per ultima: lo rifà)     conflitto: STATUS.md
-7. #130  TASK-132  Un annuncio prima del percorso                ferma (vedi sotto)
-   #150  TASK-137  Le zone delle città, scaricate prima          in corso (Geofabrik)
+1. #168  TASK-159  Icona e nome «Sgrava»                         si aggiorna dopo la #140
+2.  —    TASK-160  Il nome «Sgrava» nei testi dell'app          parte dopo la #168
+3.  —    TASK-161  Città e frasi nuove del catalogo              PR non aperta
 ```
-Chi è pronto prima passa avanti; la #140 resta ultima fra le pronte.
 
 ## L'albero
 
 ```
-Sistema di auto-miglioramento ricerca
-  ├─ Adesso  TASK-122  L'API e il database sempre accesi, con lo      114 ✓ 144 ✓
-  │                    spostamento del server su deploy/compose.yaml  ok dell'utente
-  │                    (F.12)                                         per il server
-  └─ Dopo    TASK-141  #140: rifà STATUS.md da capo, per ultima       dopo 122
-                       fra le pronte (sposta anche TASK-128 in
-                       «Completato»)
+Agente di assistenza coordinamento («Assistente»)
+  └─ Sempre  —         Guarda CI, server e sessioni; avvisa il coordinatore;
+                       non mergia e non assegna numeri
 
-Cuore mancante opzioni zona
-  └─ Adesso  TASK-151  Le alternative A·B·C negli esempi di città     nessuna;
-                       di Explore (ADR-0126); l'ombra degli altri     App.tsx non
-                       due percorsi sulla mappa è un seguito          toccato
-
-Prossimo task
-  ├─ Fatto   TASK-148  #153: via il vecchio AskForRoute da            la mergia il
-  │                    ExploreTools.tsx                               coordinatore
-  └─ Adesso  TASK-115  App: iscriversi, entrare, uscire (ADR-0125     114 ✓; App.tsx e
-                       se serve una scelta fuori da 0114/0115)        package.json col
-                                                                      via del coord.
-
-Corsa senza disegno
-  └─ Adesso  TASK-149  Corsa libera, senza disegno                    App.tsx col via
-                                                                      del coordinatore
-
-Suggerimenti città in Explore
-  ├─ Adesso  TASK-137  #150: le zone delle 14 città scaricate prima;  scelta dell'utente
-  │                    l'utente ha scelto Geofabrik come fonte        (2026-10-02)
-  └─ Forse   TASK-150  La fonte delle mappe, se diventa un task a     ADR-0124 tenuto
-                       parte
-
-Sistema pubblicitario non invasivo
-  └─ Ferma   TASK-132  #130: un annuncio AdMob prima del percorso     licenza Xcode e
-                                                                      runtime iOS;
-                                                                      modulo nativo
-                                                                      fuori da Expo Go
-
-Task progression senza blocchi
-  └─ Attesa  —         Giro del catalogo sul Mac (seguito di          Overpass non
-                       TASK-128): Napoli, Verona, Padova, Genova,     risponde;
-                       Bari, Palermo, New York, le frasi              chiederà un numero
+Logo e post Instagram
+  └─ Adesso  TASK-159  #168: icona dal logo nuovo e nome «Sgrava»     ADR-0129
+                       sotto l'icona (in Expo Go l'icona non si vede)
 
 Proposte di miglioramento grafico
-  └─ Adesso  —         Inventario delle schermate e proposte          nessun numero;
-                       grafiche con un prototipo: nessun file del     scelta di prodotto
-                       repository toccato finora                      dell'utente
+  └─ Dopo    TASK-160  «Location is off for Sgrava…» nei tre testi    dopo la #168
+                       (App.tsx, NavigateScreen, FreeRunScreen)
 
-Agente di assistenza coordinamento («Assistente»)
-  └─ Sempre  —         Guarda la CI e le postazioni, avvisa il
-                       coordinatore; non mergia, non assegna numeri
+Task progression senza blocchi
+  └─ Adesso  TASK-161  Napoli, Verona, Padova, Genova, Bari, Palermo, ADR-0097 (agg.);
+                       New York nel catalogo, con le frasi            ADR-0130 se l'utente
+                                                                      sceglie le frasi
+                                                                      fino a 4 lettere
+
+Sistema di auto-miglioramento ricerca
+  └─ Attesa  TASK-122  Server su compose col database: fatto          lo Storage Box lo
+                       (2026-10-02 07:27Z). Manca la copia fuori      compra l'utente
+                       dal server: Storage Box (DEPLOY.md F.13)       (F.13)
+
+Sistema pubblicitario non invasivo
+  └─ Attesa  TASK-150  Conto AdMob e pagamento (docs/PUBBLICITA.md)   scelte dell'utente
+                                                                      e del commercialista
+
+Sessioni nuove, da avviare dall'utente con un clic
+  ├─ TASK-067  Lettere unite anche dalla cima (scala per lettera fuori,
+  │            ADR-0063)
+  └─ TASK-116  Il profilo: nome, foto, due righe (ADR-0128)
 
 Quanti task mancano
-  └─ —       —         Nessun task
+  └─ —       —         Libera
 
-Da assegnare (servono l'ok dell'utente sul cosa)
-  ├─ TASK-116 e seguenti della parte social: dopo TASK-115
-  ├─ TASK-092 Percorsi consigliati: dopo 114 ✓ e 122
-  ├─ eas update di fine coda (142, 145, 146, 148 nell'app): come e quando,
-  │  lo chiede il coordinatore all'utente
-  ├─ Quali altri contorni già disegnati mettere nella riga delle tessere
-  │  (uccello, cane intero, albero, freccia, corona)
-  ├─ Zone scaricate con un margine (proposta di TASK-143, dopo TASK-136)
-  ├─ TASK-067 Lettere unite dall'alto, scala per lettera: senza task file,
-  │  da rivedere (`PASSAGGIO.md`)
-  └─ Task file rimasti «In corso» o «In revisione» ma già in `main`:
-     TASK-055, TASK-065, TASK-076 (PR #93 mergiata). Li chiude la #140
+Da assegnare
+  ├─ TASK-117 / 118 / 119 / 120 / 121: la parte social, dopo TASK-116
+  ├─ TASK-092 Percorsi consigliati: 114 ✓, 122 quasi
+  ├─ TASK-152 L'app sull'App Store: cinque domande all'utente nel task file
+  ├─ TASK-153 AdMob vero: dopo 150 e 152
+  ├─ Seguiti senza numero: la scelta A·B·C degli esempi di Explore come
+  │  segnale (TASK-151); lo splash con il logo (scelta dell'utente,
+  │  TASK-159); UIScene con Xcode 27 (TASK-132); Berlino resta a Overpass
+  │  (TASK-137)
+  └─ Task file rimasti aperti ma già in main: TASK-055, 065, 076
 ```
-
-## I task, uno per uno
-
-| Task | Titolo | Chi | Stato | Dipende da | ADR |
-|---|---|---|---|---|---|
-| TASK-122 | L'API e il database sempre accesi | Sistema di auto-miglioramento ricerca | in corso | 114 ✓, 144 ✓ | 0123 |
-| TASK-132 | Un annuncio prima del percorso | Sistema pubblicitario non invasivo | #130, ferma | prova nel simulatore | — |
-| TASK-137 | Le zone delle città, scaricate prima | Suggerimenti città in Explore | #150, in corso (Geofabrik) | — | 0119 |
-| TASK-150 | La fonte delle mappe (tenuto, se serve) | Suggerimenti città in Explore | tenuto | 137 | 0124 |
-| TASK-141 | STATUS.md allineato allo stato vero | Sistema di auto-miglioramento ricerca | #140, in coda | ultima fra le pronte | — |
-| TASK-148 | Via il vecchio AskForRoute | (il coordinatore porta la PR) | #153, CI in corso | — | — |
-| TASK-149 | Corsa libera, senza disegno | Corsa senza disegno | in corso | — | 0122 |
-| TASK-115 | App: iscriversi, entrare, uscire | Prossimo task | in corso | 114 ✓ | 0125 (se serve) |
-| TASK-151 | Le alternative A·B·C negli esempi di Explore | Cuore mancante opzioni zona | in corso | 093 ✓, 143 ✓ | 0126 |
-
-Perché quest'ordine:
-
-- **TASK-149 prima di TASK-151**: tutte e due scrivono in `docs/UI.md`.
-- **TASK-122 prima di #130**: tutte e due toccano `.env.example`.
-- **TASK-149, TASK-115 e #130** toccano `apps/mobile/App.tsx`: entra
-  prima TASK-149, poi TASK-115; la #130 unisce da `main` al suo turno.
-- **#140 per ultima fra le pronte**: riscrive `docs/STATUS.md`, quindi deve
-  vedere tutte le voci già entrate.
-- **Il server si sposta una volta sola**, in TASK-122, con il database
-  dentro, invece di spostarlo prima senza e poi rifarlo.
 
 ## File occupati adesso
 
 | File | Di chi |
 |---|---|
-| `apps/mobile/src/explore/exampleRoutes.ts`, `explored.ts`, `ExploredCard.tsx` e i loro test; righe sue in `docs/UI.md` | TASK-151 |
-| `apps/mobile/src/explore/ExploreTools.tsx`, `ExploreTools.test.tsx` | TASK-148 (#153) |
-| `deploy/`, `docs/DEPLOY.md` (dopo #152), `.env.example` | TASK-122 |
-| `apps/mobile/App.tsx` (col via del coordinatore), `src/screens/ChooseScreen.tsx`, `src/screens/FreeRunScreen*`, `src/navigation/freeRun*`, `src/navigation/useFreeRun*`, `__tests__/AppFreeRun.test.tsx` | TASK-149 |
-| `apps/mobile/App.tsx` e `package.json` (solo l'aggancio e la riga di `expo-secure-store`, col via del coordinatore), file nuovi in `src/` | TASK-115 |
-| `apps/mobile/App.tsx`, `app.json`, `eas.json`, `package.json`, `src/ads/`, `package-lock.json`, `.env.example` | TASK-132 (#130), dopo chi li ha prima in coda |
-| `services/api/shaperoute_api/prefetch_zones.py`, `tests/test_prefetch_zones.py`, `docs/MAPS.md` | TASK-137 (#150) |
-| `docs/STATUS.md` (intero) | TASK-141 (#140), al suo turno |
-| `docs/STATUS.md`, `docs/DECISIONS.md`, `samples/LOG.md` | tutti, ognuno solo le sue righe |
+| `apps/mobile/assets/*`, `apps/mobile/app.json`, `docs/brand/` | TASK-159 (#168) |
+| `apps/mobile/App.tsx` (solo il testo), `src/screens/NavigateScreen.tsx`, `src/screens/FreeRunScreen.tsx` e i loro test | TASK-160, dopo la #168 |
+| `catalog/seed/`, `catalog/README.md`, `tools/seed_catalog.py` e test, `samples/LOG.md` | TASK-161 |
+| `deploy/`, `docs/DEPLOY.md` | TASK-122 |
+| `docs/PUBBLICITA.md` | TASK-150 |
+| `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md` | tutti, ognuno solo le sue righe |
 | `docs/AGENTI.md`, `CLAUDE.md` | coordinatore |
 
 ## Numeri
 
-- Task: presi fino a **TASK-151** (150 tenuto per «Suggerimenti città in
-  Explore», se la fonte delle mappe diventa un task a parte). Il prossimo
-  libero è **TASK-152**.
-- ADR: presi fino a **ADR-0126** (0122 di TASK-149, 0123 di TASK-122, 0124
-  tenuto con TASK-150, 0125 tenuto con TASK-115, 0126 di TASK-151). Il
-  prossimo libero è **ADR-0127**.
+- Task: presi fino a **TASK-161**. Il prossimo libero è **TASK-162**.
+- ADR: presi fino a **ADR-0130** (0128 tenuto per TASK-116, 0130 per le
+  frasi di TASK-161 se l'utente sceglie). Il prossimo libero è
+  **ADR-0131**.
 
-## Il server
+## Il server e l'app
 
-- Hetzner CX33, `https://188-245-9-220.sslip.io` via Caddy: è l'API che
-  l'app usa. Il container `shaperoute` gira a `51701a5`; l'immagine di
-  prima è salvata come `shaperoute-api:before-task147`.
-- Sul server non si tocca niente senza il via del coordinatore, che lo
-  chiede all'utente.
-- Overpass non risponde all'indirizzo del server da circa le 22:35Z del
-  2026-10-01, e dal Mac solo a volte (`MAPS.md`).
+- **Server**: Hetzner CX33, `https://188-245-9-220.sslip.io`. Dal
+  2026-10-02 07:27Z gira da `deploy/compose.yaml` con PostgreSQL e la copia
+  notturna (TASK-122); immagine di prima `shaperoute-api:before-task122`.
+  Cache delle zone in `/root/shaperoute/data/cache` (52 città italiane e 10
+  estere, TASK-137); `/srv/shaperoute/extracts` va lasciato. Overpass non
+  risponde a questo indirizzo dal 2026-10-01 22:35Z: le zone nuove vengono
+  da Geofabrik (`prefetch_zones`, osmium-tool approvato dall'utente).
+- **App**: ultima pubblicazione su `preview` da `bad06f2` (update
+  `5ec93905`, 2026-10-02 09:52): scorrimento Feed · Draw · Explore,
+  account, annunci (solo in una build propria), corsa libera, A·B·C e
+  linee grigie in Explore, Feed di esempio. Da provare sull'iPhone: la
+  lista è in `STATUS.md`.
 
 ## Fatto in questa tornata (2026-10-01/02)
 
-Entrate in `main` nella notte: #137 (TASK-136), #112 (TASK-088), #148
-(TASK-140), #142 (TASK-142), #149 (TASK-147), #141 (TASK-144), #147
-(TASK-128), #151 (TASK-114), #152 (TASK-146). Prima, il 2026-10-01: TASK-110, 138, 139,
-143, 145.
-
-Dopo un merge che aggiunge pacchetti all'app: `npm install` dalla radice
-del checkout principale.
+In `main`: #137 (TASK-136), #112 (088), #148 (140), #142 (142), #149 (147),
+#141 (144), #147 (128), #151 (114), #152 (146), #153 (148), #155 (AGENTI),
+#154 (149), #156 (151), #158 (115), #161 e #163 (task file di 067), #159
+(task file 150/152/153), #130 (132), #162 (154), #160 (155), #157 (122),
+#150 (137), #166 (158), #165 (157), #164 (156), #167 (122, copie), #140
+(141).

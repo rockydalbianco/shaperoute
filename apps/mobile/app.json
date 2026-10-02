@@ -27,6 +27,18 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0A0A0B",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "ios": {
+            "image": "./assets/splash-logo.png",
+            "imageWidth": 260
+          }
+        }
+      ],
       "expo-sharing",
       [
         "expo-image-picker",

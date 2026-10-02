@@ -1,12 +1,12 @@
 /**
- * One interstitial ad between "route ready" and "route shown" (TASK-132,
+ * One interstitial ad per search, over the wait (TASK-132, TASK-166,
  * ADR-0102). Nothing here may hold the route back: without an ad, consent
  * or network, the route shows as before.
  */
 
 /** What the route screens need from an ad network. */
 export type RouteAds = {
-  /** A route was asked for: get an ad ready while the engine works. */
+  /** A search started with no ad loaded: get one ready for the next. */
   prepare(): void;
   /** An ad is loaded and may be shown now. */
   ready(): boolean;

@@ -75,8 +75,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-Un task per riga, con branch e sessione: i suoi file sono suoi.
-
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia
   notturna dal 2026-10-02 (07:27Z, 18 s di API ferma); iscrizione,
@@ -88,6 +86,12 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
 
 ## Completato
 
+- **App** — TASK-166: l'annuncio AdMob compare all'inizio della ricerca
+  («Draw route», «Ask for a route») e copre il calcolo; alla X lo schermo
+  mostra il percorso, se è pronto, o l'attesa (ADR-0102, aggiornamento).
+  L'ID vero dell'app AdMob dell'utente per iOS è in `app.json`; l'unità
+  resta quella di prova finché non ci sono profilo pagamenti, app sullo
+  store e annunci veri (TASK-150, 152, 153). Provato nel simulatore.
 - **App e catalogo** — TASK-163 (ADR-0132), chiesto dall'utente: in
   «Explore», finché una città cercata disegna cuore, cerchio e stella,
   sotto ci sono 5 disegni del feed con la foto della mappa (#174,

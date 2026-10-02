@@ -99,6 +99,12 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   rimandata a quando Overpass riapre: la sua zona non è sul server.
   **L'app pubblicata le vede solo dopo aver aggiornato `catalog/` sul
   server** (`DEPLOY.md` F.12), con l'ok dell'utente.
+- **App** — TASK-167: in «Explore» i percorsi sono schede, due per riga,
+  con il disegno grande in alto, scelto dall'utente fra le proposte
+  grafiche (ADR-0135). I filtri stanno in una riga sola, «Shape» e
+  «Distance», e le scelte si aprono sotto. Anche gli esempi di una città
+  sono schede. Visto su un simulatore con il catalogo di Trento. **Da
+  provare sull'iPhone** (ripubblicare l'app).
 - **App** — TASK-164: la schermata della corsa rifatta, chiesta dall'utente
   (ADR-0133). Sotto la mappa, con un percorso e senza: km fatti, passo
   medio, passo di adesso (ultimi 200 m) e tempo; con un percorso anche i km

@@ -112,11 +112,19 @@ pagine»):
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
    migliori che partono entro 5 km dalla partenza scelta, con i filtri per
-   forma o parola e per distanza. Ogni riga ha la miniatura della linea
-   (gialla, il percorso), forma e km, città e distanza dalla partenza, la
-   somiglianza. Toccata, il percorso si apre sulla mappa con «Export GPX» e
-   «Back to the list»; «←» torna all'elenco. Da TASK-145 ha anche «Start»
-   (sotto).
+   forma o parola e per distanza. **I percorsi sono schede, due per riga**
+   (TASK-167, ADR-0135, scelto dall'utente): in alto il disegno, largo
+   quanto la scheda, giallo su fondo scuro, con la somiglianza in un angolo
+   («97%»); sotto, forma e km («Star · 5.1 km») e città e distanza dalla
+   partenza («Trento · 450 m away»). **I filtri stanno in una riga sola**:
+   due pulsanti, «Shape: All ▾» e «Distance: All ▾», che dicono cosa
+   tengono; toccato uno, sotto la riga si aprono le sue scelte («All»,
+   «Star», «Circle»…, che scorrono di lato), e una scelta le richiude. Se ne
+   apre uno alla volta; un filtro che tiene qualcosa ha il bordo chiaro. Se
+   i due filtri insieme non lasciano niente: «No route here is both: change
+   one of the two filters.». Toccata una scheda, il percorso si apre sulla
+   mappa con «Export GPX» e «Back to the list»; «←» torna all'elenco. Da
+   TASK-145 ha anche «Start» (sotto).
 
    Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
    qualsiasi città del mondo (l'elenco e la richiesta partono dal suo
@@ -159,9 +167,11 @@ pagine»):
    tre tessere per riga. Scelta una città senza percorsi consigliati entro
    5 km, sotto «City» compare **«EXAMPLES IN VERCELLI»**: cuore, cerchio e
    stella da 5 km dal centro, chiesti da soli, uno alla volta, il cuore per
-   primo. Ogni riga dice «Drawing…» o «Next», poi diventa come una riga di
-   «Best near you» (miniatura, km, somiglianza); un tocco apre il percorso
-   sulla mappa con «Export GPX» e «Back to Explore». Se la mappa della zona
+   primo. Sono schede come quelle di «Best near you», due per riga
+   (TASK-167): una scheda dice «Drawing…» o «Next» con il posto del
+   disegno vuoto, poi ha il disegno, i km e la somiglianza; un tocco apre il
+   percorso sulla mappa con «Export GPX» e «Back to Explore». Se la mappa
+   della zona
    non si scarica, un messaggio solo e «Try again». Gli esempi pronti
    restano sul telefono (ultime 8 città): la volta dopo sono subito lì.
    Una città con percorsi consigliati mostra quelli e non chiede esempi.

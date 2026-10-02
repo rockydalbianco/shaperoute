@@ -69,3 +69,76 @@ test("a city's example opens at once, without asking the API (TASK-143)", async 
   expect(fetchFn).not.toHaveBeenCalled();
   fetchFn.mockRestore();
 });
+
+test("a city's example opens with the routes to choose from (TASK-151)", async () => {
+  forgetExamples();
+  const place = { label: "Vercelli, Piedmont, Italy", point: [45.3252, 8.4228] } as {
+    label: string;
+    point: [number, number];
+  };
+  const drawn = routeResult as unknown as RouteResult;
+  const [other] = drawn.alternatives ?? [];
+  const request = jest.fn().mockResolvedValue({
+    kind: "route",
+    result: drawn,
+  }) as unknown as typeof requestRoute;
+  const storage = { load: () => ({}), save: jest.fn() };
+  const { result: examples } = await renderHook(() =>
+    useCityExamples("http://api", place, { request, storage }),
+  );
+  await act(async () => undefined);
+  const heart = examples.current.examples?.[0];
+  if (heart?.status !== "ready") {
+    throw new Error("the heart should be ready");
+  }
+
+  const { result: hook } = await renderHook(() => useExplored("http://api"));
+  await act(async () => hook.current.open(heart.route));
+  const first = hook.current.explored;
+  if (first?.status !== "done") {
+    throw new Error("the heart should be open");
+  }
+  expect(first.choices.map((c) => c.points)).toEqual([drawn.points, other.points]);
+  expect(first.chosen).toBe(0);
+  expect(first.result).toBe(first.choices[0]);
+
+  // B: the card, the map, Start and the export are about it from now on.
+  await act(async () => first.choose(1));
+  const second = hook.current.explored;
+  if (second?.status !== "done") {
+    throw new Error("the heart should be open");
+  }
+  expect(second.chosen).toBe(1);
+  expect(second.result).toBe(first.choices[1]);
+  expect(second.detail.points).toBe(other.points);
+  expect(second.route).toMatchObject({
+    route_m: other.distance_m,
+    similarity: other.similarity,
+    start: other.points[0],
+  });
+  expect(second.request).toMatchObject({ shape: "heart", start: other.points[0] });
+
+  // A route that is not there is not chosen; A again is the same route.
+  await act(async () => second.choose(5));
+  expect(hook.current.explored).toMatchObject({ chosen: 1 });
+  await act(async () => second.choose(0));
+  expect(hook.current.explored).toMatchObject({ chosen: 0, result: first.result });
+});
+
+test("a route of the catalogue is the only one to choose", async () => {
+  const fetchFn = jest
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValue(Response.json(detail));
+  const { result: hook } = await renderHook(() => useExplored("http://api"));
+  const listed = {
+    ...star,
+    start: star.points[0],
+    away_m: 0,
+    preview: star.points,
+  };
+  await act(async () => hook.current.open(listed));
+  expect(hook.current.explored).toMatchObject({ status: "done", chosen: 0 });
+  const opened = hook.current.explored;
+  expect(opened?.status === "done" && opened.choices).toHaveLength(1);
+  fetchFn.mockRestore();
+});

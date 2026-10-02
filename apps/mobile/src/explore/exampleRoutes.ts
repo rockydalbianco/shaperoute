@@ -31,6 +31,15 @@ const PREVIEW_POINTS = 60;
 const LICENSE =
   "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright";
 
+/**
+ * An example whole, with the other routes to choose from (TASK-151): the
+ * API's alternatives, each a whole route. Without the field the example was
+ * kept before them, and is drawn again.
+ */
+export type ExampleDetail = RecommendedRouteDetail & {
+  alternatives?: RecommendedRouteDetail[];
+};
+
 export type Example =
   | { shape: Shape; status: "waiting" }
   | { shape: Shape; status: "drawing" }
@@ -56,27 +65,38 @@ export function asRecommended(
   city: Place,
   shape: Shape,
   result: RouteResult,
-): { route: RecommendedRoute; detail: RecommendedRouteDetail } {
+): { route: RecommendedRoute; detail: ExampleDetail } {
   const id = `${ID_PREFIX}${shape}:${cityKey(city.point)}`;
   const name = cityShort(city.label);
-  const common = {
-    id,
+  const whole = (of: RouteResult, routeId: string): RecommendedRouteDetail => ({
+    id: routeId,
     city: name,
     shape,
     word: null,
     style: null,
     distance_m: EXAMPLE_DISTANCE_M,
-    route_m: result.distance_m,
-    similarity: result.similarity,
-  };
+    route_m: of.distance_m,
+    similarity: of.similarity,
+    points: of.points,
+    license: LICENSE,
+  });
+  const { points, license, ...common } = whole(result, id);
   return {
     route: {
       ...common,
-      start: result.points[0],
-      away_m: metresBetween(city.point, result.points[0]),
-      preview: thinned(result.points),
+      start: points[0],
+      away_m: metresBetween(city.point, points[0]),
+      preview: thinned(points),
     },
-    detail: { ...common, points: result.points, license: LICENSE },
+    detail: {
+      ...common,
+      points,
+      license,
+      // B, C: the routes the engine found besides its own (TASK-093).
+      alternatives: (result.alternatives ?? []).map((other, i) =>
+        whole(other, `${id}:${i + 1}`),
+      ),
+    },
   };
 }
 
@@ -99,7 +119,7 @@ function stopsAll(outcome: RouteOutcome): boolean {
 // The examples of every city asked in this run of the app, and their routes
 // whole, to open. Outside the screen: going to the map stops nothing.
 const examples = new Map<string, Example[]>();
-const details = new Map<string, RecommendedRouteDetail>();
+const details = new Map<string, ExampleDetail>();
 const listeners = new Set<() => void>();
 let running: { key: string; controller: AbortController } | null = null;
 
@@ -114,13 +134,13 @@ function subscribe(listener: () => void): () => void {
 }
 
 /** The route whole of a ready example, to open without asking the API. */
-export function exampleDetail(id: string): RecommendedRouteDetail | undefined {
+export function exampleDetail(id: string): ExampleDetail | undefined {
   return details.get(id);
 }
 
 export type Storage = {
-  load: () => Record<string, RecommendedRouteDetail[]>;
-  save: (kept: Record<string, RecommendedRouteDetail[]>) => void;
+  load: () => Record<string, ExampleDetail[]>;
+  save: (kept: Record<string, ExampleDetail[]>) => void;
 };
 
 /** The file in the app's documents, as the recent cities (recentCities.ts). */
@@ -149,17 +169,25 @@ export const fileStorage: Storage = {
 };
 
 /** The file's routes, checked one by one: what does not read is dropped. */
-export function readKept(data: unknown): Record<string, RecommendedRouteDetail[]> {
+export function readKept(data: unknown): Record<string, ExampleDetail[]> {
   if (typeof data !== "object" || data === null || Array.isArray(data)) {
     return {};
   }
-  const kept: Record<string, RecommendedRouteDetail[]> = {};
+  const kept: Record<string, ExampleDetail[]> = {};
   for (const [key, list] of Object.entries(data)) {
     if (Array.isArray(list)) {
-      kept[key] = list.filter(isRecommendedDetail);
+      kept[key] = list.filter(isRecommendedDetail).map(readAlternatives);
     }
   }
   return kept;
+}
+
+/** Alternatives that do not read are as none kept: the example is drawn again. */
+function readAlternatives(detail: ExampleDetail): ExampleDetail {
+  const { alternatives, ...route } = detail;
+  return Array.isArray(alternatives) && alternatives.every(isRecommendedDetail)
+    ? detail
+    : route;
 }
 
 /** `city`'s routes first in the file, the oldest cities out. */
@@ -171,19 +199,22 @@ function keep(storage: Storage, key: string, list: Example[]): void {
   const kept = storage.load();
   delete kept[key];
   const order = [key, ...Object.keys(kept)].slice(0, MAX_KEPT_CITIES);
-  const next: Record<string, RecommendedRouteDetail[]> = {};
+  const next: Record<string, ExampleDetail[]> = {};
   for (const k of order) {
     next[k] = k === key ? ready : kept[k];
   }
   storage.save(next);
 }
 
-/** The examples the file had for this city, as ready cards. */
+/**
+ * The examples the file had for this city, as ready cards. One kept before
+ * the alternatives (TASK-151) is drawn again, to have them.
+ */
 function fromFile(storage: Storage, city: Place, key: string): Example[] {
   const saved = storage.load()[key] ?? [];
   return EXAMPLE_SHAPES.map((shape): Example => {
     const detail = saved.find((d) => d.shape === shape);
-    if (detail === undefined) {
+    if (detail === undefined || detail.alternatives === undefined) {
       return { shape, status: "waiting" };
     }
     details.set(detail.id, detail);

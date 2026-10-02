@@ -247,3 +247,58 @@ test("no city or no API: no examples", async () => {
   expect(none.current.examples).toBeNull();
   expect(request).not.toHaveBeenCalled();
 });
+
+test("an example keeps the routes to choose from, and so does the file (TASK-151)", async () => {
+  const [other] = result.alternatives ?? [];
+  expect(other).toBeDefined();
+  const { detail } = asRecommended(vercelli, "heart", result);
+  expect(detail.alternatives).toHaveLength(1);
+  expect(detail.alternatives?.[0]).toMatchObject({
+    shape: "heart",
+    distance_m: EXAMPLE_DISTANCE_M,
+    route_m: other.distance_m,
+    similarity: other.similarity,
+    points: other.points,
+  });
+  // An older API sends none: an example with nothing else to choose.
+  const alone = { ...result, alternatives: undefined };
+  expect(asRecommended(vercelli, "heart", alone).detail.alternatives).toEqual([]);
+
+  const { request, asked } = api();
+  const storage = memory();
+  drawExamples("http://api", vercelli, { request, storage });
+  await act(async () => asked[0].answer({ kind: "route", result }));
+  const [kept] = readKept(storage.load())[cityKey(vercelli.point)];
+  expect(kept.alternatives?.map((a) => a.points)).toEqual([other.points]);
+});
+
+test("an example kept before the routes to choose from is drawn again", async () => {
+  const storage = memory();
+  const { alternatives: _none, ...old } = asRecommended(
+    vercelli,
+    "heart",
+    result,
+  ).detail;
+  const star = asRecommended(vercelli, "star", result).detail;
+  storage.kept = { [cityKey(vercelli.point)]: [old, star] };
+
+  const { request, asked } = api();
+  const { result: hook } = await renderHook(() =>
+    useCityExamples("http://api", vercelli, { request, storage }),
+  );
+  expect(statuses("old file", () => hook.current.examples)).toBe(
+    "heart:drawing circle:waiting star:ready (old file)",
+  );
+  expect(asked.map((a) => a.shape)).toEqual(["heart"]);
+});
+
+test("alternatives that do not read are as none kept", () => {
+  const detail = asRecommended(vercelli, "heart", result).detail;
+  const { alternatives: _none, ...route } = detail;
+  expect(readKept({ a: [{ ...detail, alternatives: [{ id: "bad" }] }] })).toEqual({
+    a: [route],
+  });
+  expect(readKept({ a: [{ ...detail, alternatives: "nonsense" }] })).toEqual({
+    a: [route],
+  });
+});

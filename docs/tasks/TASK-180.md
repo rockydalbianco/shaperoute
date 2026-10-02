@@ -126,10 +126,11 @@ tiene ogni pezzo connesso; il più grande si sceglie nel ritaglio.
   dal Mac (porta 443 chiusa sui due indirizzi, all'inizio del task e di
   nuovo più tardi), la cache del Mac non ha una zona di Venezia, e in
   locale non ci sono né l'estratto né osmium: il download della zona non
-  è stato tentato. Durante una prova due richieste del motore sono partite
-  per sbaglio verso Overpass, per un'area fuori dalla zona di prova,
-  rifiutate alla connessione; da lì ogni prova e ogni test ha il download
-  bloccato.
+  è stato tentato. Quattro richieste sono partite per sbaglio verso
+  Overpass, tutte rifiutate alla connessione: due da una prova che
+  chiedeva un'area fuori dalla sua zona, due dal test `network` del
+  motore lanciato senza `-m "not network"`. Le prove e i test nuovi hanno
+  il download bloccato.
 
 **Le città di oggi non cambiano**, sui dati veri: Trento e Verona a 17 km,
 la zona piccola di Verona e Rosolina Mare, rifatte sul Mac dalle risposte

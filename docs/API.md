@@ -260,7 +260,7 @@ Riceve un `GpxRequest`, cioè `{"request": RouteRequest, "result":
 RouteResult}`, e risponde `200` con il percorso in GPX 1.1
 (`application/gpx+xml`), scritto da `export_gpx.py` del motore come fa la
 CLI (`GPX.md`). Il nome del file è nell'intestazione:
-`Content-Disposition: attachment; filename="shaperoute-heart-5km-2026-09-23.gpx"`.
+`Content-Disposition: attachment; filename="sgrava-heart-5km-2026-09-23.gpx"`.
 L'API non ricorda niente, quindi l'export funziona anche dopo i 10 minuti
 di vita di una richiesta in due tempi. Un corpo non valido risponde
 `422 invalid_request` (ADR-0033).
@@ -514,7 +514,7 @@ con `--word` (ADR-0044):
   only the letters A to Z`.
 - Il `RouteResult` ha `"shape": null` e `"word": "CIAO"`, la parola in
   maiuscole; per una forma è il contrario, con `"word": null`.
-- Il nome del file GPX usa la parola: `shaperoute-CIAO-15km-2026-09-24.gpx`.
+- Il nome del file GPX usa la parola: `sgrava-CIAO-15km-2026-09-24.gpx`.
 - `style` sceglie le lettere (TASK-080, ADR-0075): `"round"`, il
   predefinito, oppure `"block"`, le lettere squadrate girate sulla griglia
   delle vie (ADR-0072). Solo con una parola: `"block"` con una forma, o uno
@@ -587,7 +587,7 @@ un'immagine oltre il limite sono `invalid_request`.
   null` e `"word": null`. Con la mela di TASK-072 a Trento, 10 km:
   9,2 km, somiglianza 0,94, in 27 s.
 - Il GPX si chiede a `POST /gpx` con questa richiesta al posto del
-  `RouteRequest`; il file si chiama `shaperoute-image-15km-2026-09-26.gpx`.
+  `RouteRequest`; il file si chiama `sgrava-image-15km-2026-09-26.gpx`.
 - `strokes` (dal TASK-079, facoltativo): gli altri soggetti della foto
   (TASK-084) e i dettagli disegnati a mano, gli `strokes` di un
   `ImageOutline`, senza cambiarli. Si controllano come il contorno: numeri

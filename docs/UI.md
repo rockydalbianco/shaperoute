@@ -281,7 +281,7 @@ giallo.
 |---|---|---|
 | In attesa del GPS | «Finding your position…» | — |
 | GPS riuscito | «Starting from your position.» | — |
-| Permesso negato | «Location is off for ShapeRoute…» | «Open Settings», ricerca |
+| Permesso negato | «Location is off for Sgrava…» | «Open Settings», ricerca |
 | GPS spento, errore, nessuna risposta in 15 s | «Your position is not available right now…» | ricerca |
 | «Another place», nessun luogo ancora | «Search for a city or street to start from.» | ricerca |
 | Luogo scelto dalla ricerca | «Starting from Via Rodolfo Belenzani, Trento.» | ricerca, per cambiarlo |
@@ -711,7 +711,7 @@ di «←» un banner con i km in grande, due decimali («2.34 km»), e sotto il
 tempo e il passo medio («12:34 · 5:21 /km»). Il tempo parte dalla prima
 posizione del GPS e va avanti ogni secondo; il passo compare dopo 100 m.
 Prima della prima posizione, «Finding your position…»; senza permesso,
-«Location is off for ShapeRoute: allow it in Settings to record a run.».
+«Location is off for Sgrava: allow it in Settings to record a run.».
 Sotto la mappa «Run without a route», «Pocket» (la stessa modalità tasca
 della navigazione) e «Stop». A ogni km la voce, in inglese come il resto,
 dice il tempo e il passo medio: «1 kilometre. Time: 5 minutes 42 seconds.

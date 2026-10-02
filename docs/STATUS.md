@@ -89,6 +89,11 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   è fra i moduli di Expo Go, e l'app non lo importa: in Expo Go non cambia
   niente. **Da guardare in una build propria** (TASK-152). Dopo il merge:
   `npm install` nel checkout principale.
+- **App** — TASK-160: i tre messaggi sulla posizione spenta dicono
+  «Location is off for Sgrava…» invece di «…for ShapeRoute…» (prima
+  schermata, navigazione, corsa libera): è il nome sotto l'icona da
+  TASK-159, e quello che le Impostazioni elencano in una build propria. In
+  Expo Go il permesso resta sotto «Expo Go».
 - **App** — TASK-159: l'icona dell'app è il nuovo logo scelto dall'utente
   (ADR-0129): una S gialla su nero, fatta come un percorso che parte da un
   punto. Sostituisce il segnaposto di Expo, anche su Android (icona

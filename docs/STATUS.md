@@ -131,7 +131,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   cerchio e stella da 5 km dal loro centro e poi le altre forme; i
   percorsi di Levico restano sotto, con l'etichetta «NEAR CALDONAZZO». Il
   raggio resta 5 km, l'API non cambia. Solo test, non visto in un
-  simulatore. **Da pubblicare su `preview`** con l'ok dell'utente, poi
+  simulatore; il motore sul Mac disegna da Caldonazzo cuore 0,88, cerchio
+  0,72, stella 0,90. **Da pubblicare su `preview`** con l'ok dell'utente, poi
   **da provare sull'iPhone**. Fuori: «Near me» da Caldonazzo mostra ancora
   solo Levico (dalla posizione non si disegna, ADR-0136: scelta
   dell'utente); i paesi piccoli non sono disegnati in anticipo sul server.

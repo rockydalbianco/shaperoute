@@ -19,7 +19,7 @@ schede sono percorsi che partono da lì; quelli dei paesi vicini, entro
 
 `ExploreScreen.tsx` disegna gli esempi dal centro del luogo scelto solo se
 entro 5 km non c'è **nessun** percorso del catalogo. Caldonazzo ha gli otto
-di Levico fra 2,7 e 3,6 km: li mostra, e da Caldonazzo non disegna niente.
+di Levico fra 3,3 e 4,3 km: li mostra, e da Caldonazzo non disegna niente.
 Con TASK-176 cambia poco: le forme che Levico ha (stella, luna, cavallo,
 farfalla) contano come già avute.
 
@@ -102,7 +102,8 @@ poi le altre forme, e sotto «NEAR CALDONAZZO» i percorsi di Levico. I test
 della schermata sono in un file nuovo, `ExploreOwnRoutes.test.tsx`, come
 quelli di TASK-176; quelli che c'erano passano senza modifiche. La soglia
 di 1000 m di `ownCityName` (TASK-176) è diventata la stessa `OWN_RADIUS_M`.
-Solo test (1055 verdi): non visto in un simulatore.
+Solo test (1055 verdi): non visto in un simulatore. Il motore sul Mac
+disegna da Caldonazzo a 5 km: cuore 0,88, cerchio 0,72, stella 0,90.
 
 Rimandato, scritto in `STATUS.md` e nell'ADR: «Near me» da un paese senza
 percorsi suoi mostra ancora solo i vicini (scelta dell'utente); i paesi

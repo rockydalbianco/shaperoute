@@ -15,9 +15,9 @@ function route(id: string, awayM: number): RecommendedRoute {
 test("a town beside another has no route of its own: all are nearby", () => {
   // Levico's catalogue as Caldonazzo's centre sees it.
   const routes = [
-    route("levico-star", 2757),
-    route("levico-moon", 2849),
-    route("levico-ciao", 3514),
+    route("levico-star", 3336),
+    route("levico-moon", 3493),
+    route("levico-ciao", 3858),
   ];
   expect(byPlace(routes)).toEqual({ own: [], nearby: routes });
 });

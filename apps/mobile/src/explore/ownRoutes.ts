@@ -3,8 +3,8 @@ import type { RecommendedRoute } from "./recommendedRoutes";
 /**
  * How far from the place chosen a route may start and still be the place's
  * own (TASK-192, ADR-0155). The catalogue's routes start at most 1013 m from
- * the centre of their city, 98 of 100 within 500 m; the nearest of a
- * neighbour, Levico's seen from Caldonazzo, starts 2757 m away.
+ * the centre of their city, 98 of 100 within 500 m; a neighbour's start
+ * farther: Levico's are 3.3 km from Caldonazzo's centre, 1.8 km from Barco.
  */
 export const OWN_RADIUS_M = 1500;
 

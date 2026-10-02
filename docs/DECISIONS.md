@@ -5928,7 +5928,7 @@ selezionato»); il come deciso dall'agente su delega dell'utente
 che partono entro 5 km dal suo centro, e gli esempi disegnati dal suo
 centro solo se quelli mancano (ADR-0116); da TASK-176 una città con
 percorsi riceve le forme che non ha (ADR-0144). «Entro 5 km» però non vuol
-dire «suoi»: Caldonazzo ha gli otto percorsi di Levico fra 2757 e 3572 m,
+dire «suoi»: Caldonazzo ha gli otto percorsi di Levico fra 3,3 e 4,3 km,
 quindi mostrava solo quelli, e da Caldonazzo non partiva niente. Lo stesso
 per ogni paese o frazione accanto a una città del catalogo.
 
@@ -5939,9 +5939,9 @@ per ogni paese o frazione accanto a una città del catalogo.
 - **La soglia viene dal catalogo**, misurato il 2026-10-02: dei 350
   percorsi di `catalog/seed/`, il 98% parte entro 500 m dal centro della
   propria città e il più lontano a 1013 m (Levico, Trento, Verona e Padova
-  ne hanno attorno a 1 km); il più vicino di un altro paese, Levico
-  visto da Caldonazzo, parte a 2757 m. 1500 m sta in mezzo, con margine da
-  tutte e due le parti.
+  ne hanno attorno a 1 km); quelli di un altro paese partono più lontano:
+  i percorsi di Levico sono a 3,3 km dal centro di Caldonazzo e a 1,8 km
+  da Barco. 1500 m sta in mezzo.
 - **Vale per ogni luogo scelto**: città, paesi, frazioni e luoghi arrivano
   tutti da `/city-suggestions` come un punto con un nome (`Place`, `kind`
   «city» o «place»), e la divisione guarda solo il punto. Barco, a 2,8 km
@@ -5977,7 +5977,10 @@ cerchio e stella dal centro anche a una città che ha già percorsi suoi
 percorso (serve un confine per ogni paese, e la distanza dalla partenza
 basta).
 
-**Conseguenze**: un paese accanto a una città del catalogo chiede all'API
+**Conseguenze**: il motore, provato sul Mac da Caldonazzo a 5 km con le
+tre partenze vicine dell'API, disegna cuore 0,88, cerchio 0,72 e stella
+0,90: in un paese piccolo le forme vengono, non tutte bene. Un paese
+accanto a una città del catalogo chiede all'API
 otto percorsi la prima volta che lo si sceglie, uno alla volta; se la sua
 zona non è sul server la scarica (fino a un minuto), poi i percorsi restano
 sull'API (ADR-0136) e la volta dopo sono subito lì. Nell'attesa sotto ci

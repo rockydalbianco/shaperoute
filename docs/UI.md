@@ -236,7 +236,7 @@ pagine»):
    Barco accanto a Levico) è come una città senza percorsi consigliati:
    prima la sezione «EXAMPLES IN CALDONAZZO» con cuore, cerchio e stella
    dal suo centro e poi le altre forme; sotto, l'etichetta **«NEAR
-   CALDONAZZO»** e le schede dei vicini («Levico · 2.8 km away»), già lì
+   CALDONAZZO»** e le schede dei vicini («Levico · 3.3 km away»), già lì
    mentre gli esempi si disegnano. In quel caso i disegni del feed
    nell'attesa non compaiono, e il credito della mappa resta uno solo. Una
    città con percorsi suoi mostra quelli e le forme aggiunte, poi, se ce

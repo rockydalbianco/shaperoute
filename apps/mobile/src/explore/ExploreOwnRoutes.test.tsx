@@ -36,10 +36,10 @@ afterAll(() => {
 
 const caldonazzo: Place = {
   label: "Caldonazzo, Trentino-Alto Adige, Italy",
-  point: [46.0046, 11.2646],
+  point: [45.9944, 11.2639],
 };
 /** Levico's catalog as Caldonazzo sees it: every start in the other town. */
-const levico = routes.map((r) => ({ ...r, city: "levico", away_m: r.away_m + 2757 }));
+const levico = routes.map((r) => ({ ...r, city: "levico", away_m: r.away_m + 3336 }));
 
 /** The API with `catalog` near the place, and every route done at once. */
 function withCatalog(catalog: RecommendedRoute[]) {
@@ -179,7 +179,7 @@ test("near the start, with no city chosen: one list, no label", async () => {
   await render(
     <ExploreScreen
       apiUrl="http://api"
-      near={[46.0046, 11.2646]}
+      near={[45.9944, 11.2639]}
       onOpen={jest.fn()}
       onCity={jest.fn()}
     />,

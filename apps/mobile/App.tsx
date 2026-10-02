@@ -442,9 +442,17 @@ function Sgrava() {
                         : null
                       : (followed?.points ?? null)
             }
-            // Only while choosing a drawn route: running, or on a route of
-            // "Explore", one route is the route.
-            others={screen === "map" && !exploring && !theming ? others : NO_OTHERS}
+            // Only while choosing, a drawn route or an example of "Explore"
+            // (TASK-155): running, or on a themed route, one route is the route.
+            others={
+              screen !== "map" || theming
+                ? NO_OTHERS
+                : exploring
+                  ? explored.status === "done"
+                    ? explored.others
+                    : NO_OTHERS
+                  : others
+            }
             track={
               finishing
                 ? finished.line

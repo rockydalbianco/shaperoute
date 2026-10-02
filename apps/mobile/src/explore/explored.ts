@@ -1,4 +1,5 @@
 import {
+  type LatLon,
   type LetterStyle,
   type RouteResult,
   type Shape,
@@ -32,6 +33,8 @@ export type Explored =
       choices: RouteResult[];
       chosen: number;
       choose: (index: number) => void;
+      /** The lines of the routes not chosen, grey on the map (TASK-155). */
+      others: LatLon[][];
     }
   | { status: "failed"; route: RecommendedRoute };
 
@@ -168,6 +171,9 @@ export function useExplored(apiUrl: string | null): {
       choices: opened.options.map((option) => option.result),
       chosen: opened.chosen,
       choose,
+      others: opened.options
+        .filter((_, index) => index !== opened.chosen)
+        .map((option) => option.detail.points),
     };
   }, [opened, choose]);
 

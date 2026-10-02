@@ -101,6 +101,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-155: in «Explore», sulla mappa di un esempio di città gli
+  altri percorsi fra «A · B · C» sono linee grigie sotto quello scelto,
+  come per un percorso disegnato; chiesto dall'utente dopo aver provato
+  TASK-151 sull'iPhone (2026-10-02: «ora funziona»). In `App.tsx` cambia
+  solo cosa riceve la mappa. **Da provare sull'iPhone** (app da
+  ripubblicare). Resta il segnale della scelta (`TASK-151.md`).
 - **App** — TASK-154: tre pagine affiancate, «Feed», «Draw», «Explore»,
   scelta dell'utente dopo le proposte grafiche (ADR-0124). Si passa con
   uno swipe a destra o a sinistra, o toccando i nomi in alto; l'app si apre

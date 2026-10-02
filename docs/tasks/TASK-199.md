@@ -1,6 +1,6 @@
 # TASK-199 — La penna alzata in «My activities» e nei preferiti
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-199-pen-up-saved`
 **ADR**: ADR-0158, dal coordinatore il 2026-10-02, solo se serve una scelta
 nuova (il contratto dei `walks` è già ADR-0157)
@@ -103,28 +103,29 @@ Sono i seguiti 1 e 2 di TASK-198, assegnati dal coordinatore il
 
 ## Criteri di accettazione
 
-- [ ] Una corsa salvata con `walks` ha il punteggio delle sole lettere:
+- [x] Una corsa salvata con `walks` ha il punteggio delle sole lettere:
       uguale a quello di `POST /track-scores` con gli stessi dati (test).
-- [ ] Una corsa salvata senza `walks` ha lo stesso punteggio di oggi
+- [x] Una corsa salvata senza `walks` ha lo stesso punteggio di oggi
       (test con i fixture di oggi, valori attesi invariati).
-- [ ] `walks` che non stanno in `points`, o `walks` senza `points`:
+- [x] `walks` che non stanno in `points`, o `walks` senza `points`:
       `invalid_request` (test).
-- [ ] Una pausa con `pen: true` torna con `pen: true` nel dettaglio; una
-      senza `pen` torna come oggi (test).
-- [ ] Un preferito con `walks` li restituisce nel dettaglio; uno di prima
+- [x] Una pausa con `pen: true` torna con `pen: true` nel dettaglio; una
+      senza `pen` torna come oggi (test). Nella riga: il dettaglio non ha
+      le pause (vedi «Esito»).
+- [x] Un preferito con `walks` li restituisce nel dettaglio; uno di prima
       ha `walks` vuoto (test).
-- [ ] La migrazione parte su un database con corse e preferiti di prima e
+- [x] La migrazione parte su un database con corse e preferiti di prima e
       li lascia leggibili (test su PostGIS, come gli altri dell'API).
-- [ ] L'app non manda `walks` né `pen` per un percorso senza penna alzata:
+- [x] L'app non manda `walks` né `pen` per un percorso senza penna alzata:
       la richiesta è uguale a quella di oggi (test).
-- [ ] Un preferito con la penna alzata, riaperto e corso, mette in pausa
+- [x] Un preferito con la penna alzata, riaperto e corso, mette in pausa
       da solo alla fine di una lettera (test con posizioni simulate).
-- [ ] Test verdi: motore, API, `shared-types`, app; `ruff`, `black`,
+- [x] Test verdi: motore, API, `shared-types`, app; `ruff`, `black`,
       lint, `tsc`, `format:check`.
 
 ## File toccati
 
-Elenco previsto; la PR dichiara i suoi.
+Elenco previsto all'inizio; sotto, quelli della PR.
 
 ```
 services/api/migrations/0006_pen_up_walks.sql   (il numero libero al merge)
@@ -153,6 +154,59 @@ docs/tasks/TASK-199.md
 momento: se serve toccarlo, prima si aspetta che la C sia in `main` e si
 riparte da lì (indicazione del coordinatore).
 
+**Quelli della PR** (il diff con `main`):
+
+```
+services/api/migrations/0006_pen_up_walks.sql
+services/api/shaperoute_api/activities.py
+services/api/shaperoute_api/favorites.py
+services/api/tests/test_activities.py
+services/api/tests/test_favorites.py
+packages/shared-types/fixtures/activity-request-walks.json
+packages/shared-types/fixtures/activity-walks.json
+packages/shared-types/fixtures/favorite-request-walks.json
+packages/shared-types/fixtures/favorite-walks.json
+packages/shared-types/test/contract.test.ts
+apps/mobile/App.tsx
+apps/mobile/__tests__/AppPenUpSaved.test.tsx
+apps/mobile/src/api/activities.ts
+apps/mobile/src/api/activities.test.ts
+apps/mobile/src/api/favorites.ts
+apps/mobile/src/api/favorites.test.ts
+apps/mobile/src/activities/recordedRun.ts
+apps/mobile/src/activities/recordedRun.test.ts
+apps/mobile/src/activities/outbox.test.ts
+apps/mobile/src/favorites/favoriteRoute.ts
+apps/mobile/src/favorites/favoriteRoute.test.ts
+apps/mobile/src/favorites/favoritePenUpRun.test.ts
+apps/mobile/src/favorites/useFavorites.test.ts
+docs/API.md
+docs/DATABASE.md
+docs/DECISIONS.md
+docs/UI.md
+docs/STATUS.md
+docs/tasks/TASK-199.md
+```
+
+Fuori dall'elenco previsto, e perché:
+
+- `apps/mobile/src/api/activities.ts` e `src/api/favorites.ts`: i tipi
+  delle richieste e dei dettagli di corse e preferiti stanno lì, non in
+  `shared-types` (scelta di TASK-171 e TASK-172, scritta nei due file e in
+  `API.md`); il punto 7 li supponeva in `shared-types`. Lì sta anche il
+  rimando «come prima» dopo un rifiuto (ADR-0158, punto 5).
+- `apps/mobile/App.tsx`: i `walks` di una corsa riaperta e di un preferito
+  alla mappa e a «Start». Toccato dopo il merge di TASK-190 parte C
+  (#221, 2592103), con `main` unito prima, come chiesto dal coordinatore.
+- `apps/mobile/__tests__/AppPenUpSaved.test.tsx`: file nuovo, il test
+  dell'app intera (fuori da `src/**`, dove stanno quelli di ogni pezzo).
+- `docs/DECISIONS.md`: ADR-0158 (punto 11).
+
+Previsti e non toccati: `packages/shared-types/src/index.ts` (i tipi sono
+nell'app, sopra), `outbox.ts` (tiene la richiesta com'è: basta il suo
+test), `activitiesDoor.ts`, `favoritesDoor.ts`, `useFavorites.ts` (passano
+richieste e dettagli come sono: cambiano i tipi, non loro).
+
 ## Fuori scope
 
 - **La linea corsa spezzata sulle pause** in «My activities» (oggi unita,
@@ -165,7 +219,91 @@ riparte da lì (indicazione del coordinatore).
   migrazione) e `eas update` solo con l'ok dell'utente. Finché il server
   non ha TASK-197, la penna alzata non esiste e l'app non manda niente di
   nuovo.
+- **Un preferito in bici non ricorda la sua attività** (`favoriteRoute.ts`,
+  segnalato da TASK-190 parte C, 2026-10-02): riaperto è di corsa. Non
+  toccato qui, su indicazione del coordinatore: un seguito.
 
 ## Esito
 
-*(a fine task)*
+**Fatto**, API e app, PR #PR dal branch `feat/TASK-199-pen-up-saved`
+(ADR-0158; il contratto dei `walks` resta ADR-0157). Come funziona:
+`API.md`, «Favorites» e «My activities»; `DATABASE.md`, migrazione `0006`;
+`UI.md`, «Favorites», «My activities», «Il risultato», «La fine della
+corsa».
+
+- **API, corse**: `PUT /me/activities/{key}` prende `walks`, facoltativo e
+  solo con `points`, controllato con `walks_problem` come `POST
+  /track-scores` (`422 invalid_request` per `walks` fuori, all'indietro,
+  sovrapposti o senza `points`); `recorded` li passa a `score_track`. Una
+  pausa prende `pen`, falso se manca, scritto nel `pauses` della riga solo
+  quando è vero; per km e tempo vale come una pausa del corridore. `GET
+  /me/activities/{key}` ha sempre `walks` (vuoto per le altre corse e per
+  quelle di prima); l'elenco non cambia.
+- **API, preferiti**: `PUT /me/favorites/{key}` prende `walks`, controllato
+  allo stesso modo; `GET /me/favorites/{key}` li ha sempre; l'elenco non
+  cambia.
+- **Migrazione `0006_pen_up_walks.sql`**: `walks jsonb NOT NULL DEFAULT
+  '[]'` (sempre una lista) in `runs` e in `favorites`; in `runs` un vincolo
+  vuole `walks` vuoto senza `route`. Le righe di prima prendono `[]`.
+- **App**: `recordedRun` manda `walks` (quelli che stanno nel percorso,
+  `walksOf`) e `pen: true` sulle pause «penna» solo quando il percorso ha
+  i `walks`; per ogni altra corsa la richiesta è quella di prima, campo per
+  campo e nello stesso ordine. Il cuore tiene i `walks` di una parola con
+  la penna alzata (`drawnKeepable`); un preferito riaperto
+  (`openedFavorite`) ha i `walks` nel risultato e `pen_up: true` nella
+  richiesta: la mappa li tratteggia, «Start» li passa alla navigazione
+  (pause automatiche e voce di TASK-198), «Export GPX» e il punteggio a
+  fine corsa li hanno. Una corsa riaperta da «My activities» ha i tratti a
+  piedi tratteggiati, come a fine corsa; la linea corsa resta unita.
+- **Un rifiuto si rimanda come prima** (ADR-0158, punto 5): `saveActivity`
+  e `keepFavorite`, a un `422 invalid_request` di una richiesta con
+  `walks` o `pen`, la rimandano una volta senza. Un'API precedente a
+  TASK-199 salva la corsa (punteggio su tutto il percorso) invece di
+  perderla dalla coda, e tiene il preferito come una linea sola.
+- **«Torna con `pen: true` nel dettaglio»** (criterio 4): il dettaglio di
+  una corsa non ha le pause, né prima né ora, e la linea corsa resta unita
+  (punto 9); `pen` sta nella riga, e il test la legge da lì
+  (`test_a_pause_of_the_pen_is_kept_as_one`): una pausa senza `pen` è
+  scritta byte per byte come prima. Letto così, senza aggiungere le pause
+  al dettaglio.
+
+**La prova che le altre richieste non cambiano**: in
+`recordedRun.test.ts` la corsa della fixture di prima dà, come testo
+(`JSON.stringify`), esattamente `activity-request.json`, anche con `walks:
+[]` nel file; una pausa «penna» senza `walks` va senza `pen`. In
+`favoriteRoute.test.ts` un percorso senza `walks`, o con `walks: []`, dà
+il testo di prima del preferito; un preferito di prima riaperto non ha
+`walks` né `pen_up`. In `outbox.test.ts` una corsa di prima esce dal file
+com'era. Le risposte senza `walks` (un'API vecchia) si leggono
+(`activities.test.ts`, `favorites.test.ts`, `AppPenUpSaved.test.tsx`).
+
+**Test** (deterministici, senza rete; timer finti dove si legge
+l'orologio): API `test_activities.py` (la corsa di «II» con la penna
+alzata: 88 e fedeltà 1,0 come `POST /track-scores`, 80 senza `walks`;
+`walks` sbagliati o senza `points`; la pausa «penna» nella riga; la
+migrazione su un database con una corsa e un preferito di prima, scritti
+con lo schema `0001`–`0005`) e `test_favorites.py`; `shared-types` il
+controllo delle fixture nuove; app `recordedRun`, `outbox`, `activities`,
+`favorites`, `favoriteRoute`, `useFavorites`, `favoritePenUpRun` (un
+preferito di «SUN» riaperto e corso con posizioni simulate: due pause
+«penna», la voce, il punteggio e il salvataggio con `walks` e `pen`) e
+`AppPenUpSaved` (l'app intera: la corsa riaperta con i tratti a piedi e
+quella di prima senza; il preferito aperto, «Start», la pausa alla fine
+della S, «Save» con `walks` e `pen`). Mutazioni provate a mano: senza le
+righe di `App.tsx` cadono tutti e due i test di `AppPenUpSaved`, senza i
+`walks` a «Start» cade il secondo.
+
+**Non provato**: niente su un telefono; nessun server ha TASK-199 (né
+TASK-197). Il rimando «come prima» è provato contro un `422` finto, non
+contro un'API vera di prima.
+
+**Si vede sul telefono solo dopo** l'aggiornamento del server (con la
+migrazione `0006`, `DEPLOY.md` F.12) e la pubblicazione dell'app, tutti e
+due con l'ok dell'utente.
+
+**Seguiti** (non fatti): la riga «… km of letters + … km walking between
+them» sulla scheda di un preferito riaperto (la scheda è quella di
+«Explore», `ExploredCard`, e la riga sarebbe un testo nuovo lì: da
+chiedere); un preferito tenuto da un'API precedente a TASK-199 resta una
+linea sola anche dopo l'aggiornamento (va tolto e rimesso); un preferito in
+bici non ricorda l'attività («Fuori scope»).

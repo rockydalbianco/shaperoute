@@ -135,6 +135,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   applicata, 15 s di API ferma, immagine di prima
   `shaperoute-api:before-task172`). **Da fare**: pubblicare l'app su
   `preview` (ok dell'utente già dato), poi **da provare sull'iPhone**.
+- **App** — TASK-181: l'avvio tutto giallo, chiesto dall'utente (seguito di
+  TASK-179; aggiornamenti di ADR-0134 e ADR-0147). La schermata di avvio
+  nativa è gialla con il logo nero (`app.json`), e l'animazione parte già
+  gialla, senza il nero iniziale. Corretto anche un difetto visto filmando
+  con il Mac carico: il cuore poteva partire tardi ed essere tagliato dalla
+  dissolvenza; ora attesa e disegno sono una sola animazione e l'uscita
+  aspetta il cuore finito. Prebuild di iOS controllato, animazione filmata
+  in un simulatore. **Da pubblicare su `preview`** con l'ok dell'utente (in
+  Expo Go cambia l'inizio dell'animazione); la schermata nativa **si vede
+  solo in una build propria** (TASK-152).
 - **API e app** — TASK-172: «My activities», chiesto dall'utente
   (ADR-0140). Con un account, a fine corsa «Save» mette la corsa in «My
   activities» e «Discard» la butta, dopo una conferma (scelta nuova

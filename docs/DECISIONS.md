@@ -4809,6 +4809,16 @@ scrive anche `android.package` in `app.json` e cambia due script di
 schermata finché i dati sono pronti vorrebbe `preventAutoHide` in `App.tsx`:
 un task a parte, se servirà.
 
+**Aggiornamento 2026-10-02 (TASK-181)** — **scelta dell'utente** («sì, fai
+gialla anche la schermata di avvio nativa»): il fondo è `#FFD02B`, il
+giallo `accent`, e le immagini sono nere: `assets/splash-logo-dark.png` su
+iOS e `assets/splash-icon-dark.png` su Android, le stesse di prima con ogni
+pixel a `#0A0A0B`. Larghezze invariate (260 e 240). Le due immagini gialle
+sono cancellate: niente le usa più. Così l'avvio è giallo dall'inizio alla
+fine, schermata nativa e animazione (ADR-0147). Il prebuild di iOS genera
+`SplashScreenBackground` a 255, 208, 43 e il logo nero di 260 × 260 al
+centro.
+
 ## ADR-0130 — Nel catalogo solo parole corte
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («Solo parole
 corte»); l'elenco preciso deciso dall'agente su delega dell'utente
@@ -5514,6 +5524,29 @@ nativa è nera con il logo giallo e poi arriva il giallo: farla gialla è
 una riga di `app.json`, lasciata all'utente. La barra di stato resta
 chiara sul giallo: la decide `App.tsx`. Chi ha «Riduci movimento» vede la
 stessa animazione.
+
+**Aggiornamento 2026-10-02 (TASK-181)**, deciso dall'agente su delega
+dell'utente dopo la sua scelta della schermata nativa gialla (ADR-0134,
+aggiornamento):
+- **L'animazione parte già gialla.** Il fondo è `accent` dal primo
+  fotogramma e il cerchio che riempiva lo schermo dal nero non c'è più:
+  dopo una schermata nativa gialla sarebbe stato giallo, nero, giallo. I
+  0,35 s restano come attesa della penna sul punto di partenza; il giallo
+  si vede sempre 2,4 secondi. Il logo è `splash-logo-dark.png`, senza
+  `tintColor`.
+- **Attesa e disegno sono una sola animazione nativa**, che parte al primo
+  fotogramma (`penProgress`: ferma per l'attesa, poi il disegno). Filmando
+  con il Mac molto carico, il disegno partiva in ritardo: fra l'attesa e il
+  disegno serviva un passaggio dal JavaScript, occupato ad avviare l'app,
+  mentre il timer dell'uscita scattava puntuale e la dissolvenza tagliava
+  il cuore a metà. Era così anche nella versione pubblicata di TASK-179.
+- **L'uscita segue la fine del disegno**: il cuore finito resta 0,45 s, e
+  comunque l'animazione non dura meno di 2,4 s (con le animazioni spente
+  il disegno finisce subito). Il timer da solo è scartato per il motivo
+  qui sopra; la sola fine del disegno era già scartata.
+
+Resta com'era: il logo passa dal centro (schermata nativa) a sotto il cuore
+con un salto. Si giudica in una build propria.
 
 ## ADR-0140 — «My activities»: «Save» a fine corsa, e i numeri della corsa li conta l'API
 **Stato**: Attiva · 2026-10-02 · **scelte dell'utente** per il cosa («le

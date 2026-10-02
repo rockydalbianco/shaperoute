@@ -80,6 +80,12 @@ test("keeps the attribution expanded", () => {
   expect(page).toContain("new maplibregl.AttributionControl({ compact: false })");
 });
 
+test("has no zoom buttons: the fingers zoom the map", () => {
+  expect(page).not.toContain("NavigationControl");
+  // MapLibre's pinch is on unless the page turns it off.
+  expect(page).not.toContain("touchZoomRotate");
+});
+
 test("starts on Italy, with the bounds in MapLibre order", () => {
   expect(page).toContain("bounds: [[6.6,35.5],[18.6,47.1]]");
 });

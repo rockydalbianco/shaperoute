@@ -5152,7 +5152,8 @@ l'orologio; tutti e due solo in una build propria, non in Expo Go, dove
 l'utente prova oggi. Finché non c'è un sensore la casella non c'è, quindi
 qui non cambia niente da vedere. La musica (aprire Spotify o Apple Music,
 o i comandi nella schermata) aspetta la risposta dell'utente su quale app
-usa. Sono task a parte (`tasks/TASK-169.md`, «Fuori scope»).
+usa. Sono task a parte (`tasks/TASK-169.md`, «Fuori scope»). La risposta è
+arrivata lo stesso giorno, «uso Spotify»: ADR-0141 (TASK-173).
 
 **Alternative scartate**: tre pagine come Nike (la mappa finirebbe dietro
 un pulsante); un pager vero con la mappa dentro (vuole riscrivere
@@ -5237,6 +5238,83 @@ di chi le ha disegnate; le vede solo il loro account e spariscono con lui
 con un account: una richiesta in più. Sul server la migrazione parte al
 primo avvio dell'API nuova (`DEPLOY.md` F.12). «My activities» (TASK-172,
 ADR-0140) userà la stessa pagina di «Profile» e la tabella `runs`.
+
+## ADR-0141 — La musica nella corsa: «Music» apre Spotify, Sgrava non suona niente
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa (la
+musica nella corsa, chiesta con ADR-0137; «uso Spotify»); il come deciso
+dall'agente su delega dell'utente (TASK-173). Aggiorna ADR-0137 (la musica
+era rimasta fuori).
+
+**Contesto**: il riferimento dell'utente (Nike Run Club) ha «Connect
+Music». La corsa di TASK-169 non ha niente per la musica; l'utente prova in
+Expo Go, dove non entrano moduli nativi nuovi.
+
+**Decisione**:
+- **Un pulsante che apre l'app di musica, non un lettore.** «Music» apre
+  Spotify con il suo link (`spotify:`): l'app si apre dove era rimasta, e
+  si torna a Sgrava da soli. Sgrava non suona, non mette in pausa e non sa
+  cosa suona. Nessuna dipendenza: `Linking` di React Native.
+- **Si apre, non si chiede prima.** `canOpenURL` risponde no per ogni
+  schema che la build non dichiara (`LSApplicationQueriesSchemes`), ed
+  Expo Go non dichiara i nostri: direbbe «Spotify non c'è» anche quando
+  c'è. `openURL` invece non vuole dichiarazioni e fallisce da solo se
+  l'app manca (visto nel simulatore: «Unable to open URL: spotify:»).
+- **Senza Spotify, la sua pagina nello store** del telefono (App Store,
+  Google Play; altrove `open.spotify.com`). Se non si apre nemmeno quella,
+  niente: nessun avviso sopra una corsa.
+- **Di fronte a «Pocket»**, nel posto vuoto accanto a «Pause», quindi su
+  «Map» e su «Data» con un pezzo solo. Solo mentre si corre: in pausa la
+  scheda ha «Stop» e «Resume» ed è già alta, e prima della prima posizione
+  e all'arrivo c'è un pulsante solo.
+- **«Music» non mette in pausa la corsa.** Chi sceglie una playlist
+  correndo non vuole trovare la corsa ferma.
+- **Solo Spotify**, scritto in un file (`music.ts`): è l'app dell'utente.
+  Un'altra app di musica è un altro link nello stesso file.
+
+**Scartate**: brano, pausa e avanti dentro Sgrava adesso (vogliono un'app
+Spotify Developer dell'utente con Premium, l'accesso al conto Spotify con
+tre dipendenze nuove, e in sviluppo valgono per 5 persone aggiunte a mano:
+è la domanda aperta in `tasks/TASK-173.md`); `canOpenURL` e il pulsante
+nascosto senza Spotify (in Expo Go sarebbe sempre nascosto); un avviso
+«Spotify is not installed» (un testo in più da leggere correndo; lo store
+dice la stessa cosa); il link `https://open.spotify.com` per tutti (senza
+l'app apre il sito in Safari, non lo store); la scelta fra più app di
+musica (nessuno l'ha chiesta).
+
+**Conseguenze**: mentre Spotify è davanti, Sgrava non registra (registra
+solo in primo piano): i secondi passati a scegliere la musica sono un buco
+nella traccia, come ogni uscita dall'app. Come si mescolano la voce delle
+svolte e la musica lo decide iOS, perché l'app non imposta niente
+dell'audio: se la voce ferma la musica o non si sente, serve `expo-audio`
+(dipendenza nuova, task a parte). Tutte e due le cose si vedono solo
+sull'iPhone e sono fra le prove di `tasks/TASK-173.md`. Con una build
+propria si potrà dichiarare lo schema e mostrare «Music» solo a chi ha
+Spotify.
+
+## ADR-0143 — La mappa senza pulsanti di zoom: si ingrandisce solo con le dita
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («togli la
+possibilità di zumare in alto a destra […] si potrà zumare solamente con
+il touch»); il come deciso dall'agente su delega dell'utente (TASK-175).
+
+**Contesto**: la pagina della mappa aveva il `NavigationControl` di
+MapLibre, due pulsanti «+» e «−» in alto a destra. Su un telefono
+ripetono un gesto che si fa già con due dita, e occupavano l'angolo: il
+cuore dei preferiti (ADR-0139) stava sotto di loro, più in basso di «←».
+
+**Decisione**: la pagina non crea più il controllo. Lo zoom resta quello
+dei gesti di MapLibre, che la pagina non tocca: due dita, doppio tocco.
+Il cuore dei preferiti sale nell'angolo, alla stessa altezza di «←»
+(`insets.top` più lo stesso margine).
+
+**Alternative scartate**: nascondere i pulsanti con il CSS (il controllo
+resterebbe nella pagina, da mantenere); toglierli solo dall'anteprima di
+un percorso e tenerli in corsa (la pagina è una sola, e in corsa la mappa
+segue la posizione da sé); spegnere anche la rotazione con due dita (non
+chiesto).
+
+**Conseguenza**: chi non può fare il gesto con due dita ha il doppio
+tocco per avvicinare. I pulsanti mancano apposta: un test della pagina
+controlla che il controllo non torni e che il gesto non venga spento.
 
 ## ADR-0147 — L'animazione all'avvio: un componente sopra l'app, il cuore del video sul giallo
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («il

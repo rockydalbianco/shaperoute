@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-02, 11:30 · `main` = `73095e7`
+**Ultimo aggiornamento**: 2026-10-02, 13:00 · `main` = `fa6462b`
 
 ## Come si usa
 
@@ -41,10 +41,15 @@
 ## La coda dei merge
 
 ```
-—   TASK-163  Le città in evidenza già disegnate (seconda PR,     PR non aperta
-              solo catalogo)
-—   TASK-166  L'annuncio durante l'attesa, l'App ID vero          PR non aperta
-—   TASK-167  «Explore» a schede                                  PR non aperta
+#186  TASK-175  Zoom solo con le dita                        CI in corso
+ —    TASK-172  «My activities» (API, Profile)               PR non aperta
+ —    TASK-173  La musica nella corsa (Spotify)              PR non aperta
+ —    TASK-174  La mappa sotto le schede di «Explore»        PR non aperta
+ —    TASK-176  «Explore»: via i filtri, «Near me», più forme PR non aperta
+ —    TASK-067  Lettere unite anche dalla cima               PR non aperta
+ —    TASK-177  «Profile»: aspetto e «Settings»              dopo TASK-172
+ —    TASK-178  La foto del profilo                          dopo TASK-177
+ —    TASK-179  L'animazione all'avvio                       PR non aperta
 ```
 Entra prima chi è pronto prima. Senza altre PR davanti, la sessione
 proprietaria mergia da sola al 5/5 verde e CLEAN, e lo dice al coordinatore.
@@ -55,44 +60,34 @@ proprietaria mergia da sola al 5/5 verde e CLEAN, e lo dice al coordinatore.
 Agente di assistenza coordinamento («Assistente»)
   └─ Sempre  —         Guarda CI, server e sessioni; avvisa il coordinatore
 
-Explore: città consigliate e contenuti in caricamento
-  └─ Adesso  TASK-163  Seconda PR: cuore, cerchio e stella da 5 km nel    ADR-0132; poi il
-                       catalogo per le città in evidenza che non li       catalogo sul server
-                       hanno (`seed_catalog.py`, zone dal server)         (ok dell'utente)
+Anteprima: zoom solo touch           └─ Adesso TASK-175 (#186)      ADR-0143
+Preferiti percorsi e attività utente └─ Adesso TASK-172             ADR-0140, migrazione 0003
+R Without Ruth app design            └─ Adesso TASK-173             ADR-0141 se serve
+Mappa nella sezione Explore          └─ Adesso TASK-174             ADR-0142
+Proposte di miglioramento grafico    └─ Adesso TASK-176             ADR-0144
+Task completion                      └─ Adesso TASK-067             ADR-0063
+Profilo: favoriti, attività e impostazioni
+  ├─ Adesso  TASK-177  «Profile»: aspetto e «Settings»   ADR-0145, dopo TASK-172
+  └─ Dopo    TASK-178  La foto del profilo               ADR-0146, migrazione 0004
+Logo e animazione avvio app          └─ Adesso TASK-179             ADR-0147 (dipendenza
+                                                                     da far approvare)
+Sistema pubblicitario non invasivo   └─ Attesa TASK-150             profilo pagamenti
+Velocità Explore con nuova città     └─ Server: esempi in anticipo e zone mancanti
 
-Sistema pubblicitario non invasivo
-  ├─ Adesso  TASK-166  L'annuncio durante l'attesa dopo «Draw route»,     ADR-0102 (agg.)
-  │                    l'App ID vero di AdMob in `app.json`
-  └─ Attesa  TASK-150  Conto AdMob e pagamento                            profilo pagamenti
-                                                                          dell'utente
-
-Proposte di miglioramento grafico
-  └─ Adesso  TASK-167  «Explore» a schede: griglia a due colonne e        ADR-0135
-                       filtri in una riga
-
-Sistema di auto-miglioramento ricerca
-  └─ Attesa  TASK-122  Manca solo lo Storage Box (DEPLOY.md F.13)         lo compra l'utente
-
-Task progression senza blocchi
-  └─ Attesa  —         Seguito di TASK-161: forme a 21 km di Bari,        Overpass
-                       Palermo, New York
-
-Logo e post Instagram · Redesign Run Without Ruth · Quanti task mancano
-  └─ Libere
-
-Sessioni nuove, da avviare dall'utente con un clic
-  ├─ TASK-067  Lettere unite anche dalla cima (ADR-0063)
-  └─ TASK-116  Il profilo: nome, foto, due righe (ADR-0128)
+Aspettano l'utente
+  ├─ TASK-122 lo Storage Box (DEPLOY.md F.13)
+  ├─ TASK-150 il profilo dei pagamenti AdMob
+  ├─ Il metodo nuovo: una voce per task in un file nuovo (bozza in
+  │  `out/voci-per-task-bozza.md`)
+  └─ TASK-116 resta (nome, bio, «Edit profile»): ADR-0128, migrazione 0005
 
 Da assegnare
-  ├─ TASK-117 / 118 / 119 / 120 / 121: la parte social, dopo TASK-116
-  ├─ TASK-092 Percorsi consigliati, dopo TASK-122
-  ├─ TASK-152 App Store (domande all'utente) · TASK-153 AdMob vero
-  ├─ Seguiti senza numero: «Pause», «Stop» da tenere premuto e la voce a
-  │  ogni km con un percorso (TASK-164); il nome del file GPX ancora
-  │  «shaperoute-…» (TASK-160); la scelta A·B·C come segnale (TASK-151);
-  │  il Feed d'esempio rigenerato sul catalogo nuovo, da decidere con
-  │  l'utente (TASK-161); UIScene con Xcode 27 (TASK-132)
+  ├─ TASK-117 / 118 / 119 / 120 / 121: la parte social
+  ├─ TASK-092 Percorsi consigliati (TASK-168 ha già il punto dove salvare)
+  ├─ TASK-152 App Store · TASK-153 AdMob vero
+  ├─ Il battito (sensore Bluetooth, Apple Watch): dipendenze e build propria
+  ├─ Seguiti: il nome del file GPX (TASK-160); Berlino (TASK-163); il Feed
+  │  d'esempio sul catalogo nuovo (TASK-161); UIScene con Xcode 27 (TASK-132)
   └─ Task file rimasti aperti ma già in main: TASK-055, 065, 076
 ```
 
@@ -100,35 +95,41 @@ Da assegnare
 
 | File | Di chi |
 |---|---|
-| `catalog/seed/`, `catalog/README.md` | TASK-163 (seconda PR) |
-| `apps/mobile/app.json`, `src/ads/`, poche righe di `App.tsx` | TASK-166 |
-| `src/explore/ExploreScreen.tsx`, `CityExamples.tsx`, `RouteCard.tsx`, `RouteFilters.tsx` e i loro test | TASK-167 |
-| `deploy/`, `docs/DEPLOY.md` | TASK-122 |
-| `docs/PUBBLICITA.md` | TASK-150 |
+| `src/map/mapPage.ts`, `src/favorites/FavoriteHeart.tsx` | TASK-175 (#186) |
+| API `runs`, `/me/activities`, migrazione 0003, «My activities»; poi la fine della corsa | TASK-172 |
+| `src/screens/RunDashboard.tsx` | TASK-173 |
+| `src/explore/RouteCard.tsx` | TASK-174 |
+| `src/explore/ExploreScreen.tsx`, `CityExamples.tsx` | TASK-174 e TASK-176 (cambi piccoli, chi viene dopo unisce) |
+| `src/explore/RouteFilters.tsx` (da cancellare), `exampleRoutes.ts`, `prefetch_zones.py` (EXAMPLE_SHAPES) | TASK-176 |
+| `words.py`, `letters*.json`, `optimizer.py` | TASK-067 |
+| `src/profile/` (nuovo), poi `ProfileScreen.tsx`, `ProfileLayer.tsx` | TASK-177, dopo TASK-172 |
+| `src/intro/` (nuovo), una riga di `App.tsx` | TASK-179 |
+| `App.tsx` | TASK-172 e TASK-174 (modifiche in corso); poche righe per TASK-179 |
 | `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md` | tutti, ognuno solo le sue righe |
 | `docs/AGENTI.md`, `CLAUDE.md` | coordinatore |
 
 ## Numeri
 
-- Task: presi fino a **TASK-167**. Il prossimo libero è **TASK-168**.
-- ADR: presi fino a **ADR-0135** (0128 tenuto per TASK-116). Il prossimo
-  libero è **ADR-0136**.
+- Task: presi fino a **TASK-179**. Il prossimo libero è **TASK-180**.
+- ADR: presi fino a **ADR-0147** (0128 tenuto per TASK-116). Il prossimo
+  libero è **ADR-0148**.
+- Migrazioni del database (le assegna il coordinatore): 0001 account,
+  0002 preferiti (in main e sul server), **0003 TASK-172**, **0004
+  TASK-178**, **0005 TASK-116**.
 
 ## Il server e l'app
 
-- **Server**: Hetzner CX33, `https://188-245-9-220.sslip.io`. Dal
-  2026-10-02 07:27Z gira da `deploy/compose.yaml` con PostgreSQL e la copia
-  notturna (TASK-122); immagine di prima `shaperoute-api:before-task122`.
-  Cache delle zone in `/root/shaperoute/data/cache` (52 città italiane e 10
-  estere, TASK-137); `/srv/shaperoute/extracts` va lasciato. Overpass non
-  risponde a questo indirizzo dal 2026-10-01 22:35Z: le zone nuove vengono
-  da Geofabrik (`prefetch_zones`, osmium-tool approvato dall'utente).
-- **App**: ultima pubblicazione su `preview` da `73095e7` (update
-  `eba74321`, 2026-10-02 11:26): tutto `main`, fino alla schermata della
-  corsa (TASK-164). Icona, nome e schermata di avvio nuovi si vedono solo
-  in una build propria. Le città nuove del catalogo (TASK-161) arrivano
-  nell'app quando si aggiorna il catalogo sul server. Da provare
-  sull'iPhone: la lista è in `STATUS.md`.
+- **Server**: Hetzner CX33, `https://188-245-9-220.sslip.io`, da
+  `deploy/compose.yaml` con PostgreSQL. Aggiornato il 2026-10-02 alle
+  10:38Z a `ec84042` (migrazione 0002, esempi tenuti di TASK-168, catalogo
+  con 350 percorsi); immagine di prima `shaperoute-api:before-task171`.
+  Rovereto costruita dall'estratto; `draw_examples` in corso. Le
+  migrazioni 0003 e 0004 arriveranno con un altro aggiornamento, con l'ok
+  dell'utente.
+- **App**: ultima pubblicazione su `preview` da `fa6462b` (update
+  `38f9a17b`, 2026-10-02 10:45Z): la corsa (TASK-169), i preferiti
+  (TASK-171), gli esempi più veloci (TASK-168), niente Strava (TASK-170),
+  «Explore» a schede (TASK-167).
 
 ## Fatto in questa tornata (2026-10-01/02)
 

@@ -115,9 +115,10 @@ pagine»):
    scheda con l'attesa, il risultato o il problema. All'apertura la mappa
    mostra l'Italia intera, poi la partenza con un segnaposto, a zoom 15
    (qualche via attorno); con un percorso, la linea e la mappa inquadrata
-   su di lui. Si sposta e si ingrandisce con le dita o con i pulsanti + e
-   −. L'attribuzione dei dati è sempre visibile in basso, per intero; i
-   suoi link si aprono nel browser del telefono.
+   su di lui. Si sposta e si ingrandisce con le dita: i pulsanti + e − non
+   ci sono più (TASK-175, chiesto dall'utente). L'attribuzione dei dati è
+   sempre visibile in basso, per intero; i suoi link si aprono nel browser
+   del telefono.
 
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
@@ -328,8 +329,8 @@ Un percorso che piace si tiene, e si ritrova in «Profile» da ogni telefono
 dell'account.
 
 - **Il cuore sulla mappa**: quando sulla mappa c'è un percorso (disegnato in
-  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e sotto
-  i pulsanti dello zoom della mappa, c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
+  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e alla
+  sua altezza (dal TASK-175 la mappa non ha più i pulsanti dello zoom), c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
   («♥»): lo toglie. Cambia subito, senza aspettare l'API; se l'API rifiuta
   torna com'era e sotto il cuore c'è il motivo in una riga, che un tocco
   chiude. Non è giallo: il giallo è del percorso. Durante l'attesa, la
@@ -752,7 +753,7 @@ TASK-164, di cui tiene i numeri.
   kilometre will show here.»). Poi i due interruttori della corsa,
   «Auto-pause» e «Voice».
 - **«Pause»**, un pulsante tondo e chiaro in mezzo, su tutte e due le
-  pagine; accanto, «Pocket». In pausa il tempo si ferma, le posizioni non
+  pagine; da una parte «Pocket», dall'altra «Music». In pausa il tempo si ferma, le posizioni non
   entrano nella traccia e «Pace now» è «–»; la mappa continua a seguire, e
   con un percorso le svolte si dicono ancora. Su «Map» la scheda si alza
   e mostra i km e i sei riquadri, come su «Data»: la mappa sopra, i numeri
@@ -770,6 +771,13 @@ TASK-164, di cui tiene i numeri.
   il tempo conta anche le soste.
 - **«Voice»** (accesa): spenta, l'app non dice più niente, né svolte né
   km; la vibrazione delle svolte resta.
+- **«Music»** (TASK-173, ADR-0141): mentre si corre, di fronte a «Pocket»,
+  su tutte e due le pagine. Apre Spotify, dove lo si era lasciato; a Sgrava
+  si torna da soli (su iPhone, «◀» in alto a sinistra). Sgrava non suona
+  niente e non sa cosa suona. La corsa non va in pausa, ma finché Sgrava
+  sta dietro a Spotify non riceve posizioni. Su un telefono senza Spotify
+  si apre la sua pagina nello store. In pausa, prima della prima posizione
+  e all'arrivo il pulsante non c'è.
 - **Dopo «Resume»** la prima posizione non si unisce all'ultima di prima:
   i metri fatti in pausa non sono della corsa. Lo stesso dopo «Keep
   running»: il tempo fra «Stop» e la ripresa è una pausa.

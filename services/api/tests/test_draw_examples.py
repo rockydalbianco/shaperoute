@@ -66,12 +66,12 @@ def test_a_city_is_drawn_once_and_then_found_kept(tmp_path: Path) -> None:
     with api(tmp_path, [ROVERETO]) as client:
         first = draw_city("Rovereto", over(client), sleep=lambda s: None)
         assert first.label == "Rovereto, Trentino-Alto Adige, Italy"
-        assert first.shapes == {"heart": "drawn", "circle": "drawn", "star": "drawn"}
-        # The circle is asked first: the zone it downloads serves the others.
+        assert first.shapes == {"circle": "drawn", "heart": "drawn", "star": "drawn"}
+        # The circle first, as the app asks them: its zone holds the others'.
         assert list(first.shapes) == ["circle", "heart", "star"]
         assert first.ready
         again = draw_city("Rovereto", over(client), sleep=lambda s: None)
-        assert again.shapes == {"heart": "kept", "circle": "kept", "star": "kept"}
+        assert again.shapes == {"circle": "kept", "heart": "kept", "star": "kept"}
         assert again.line().startswith(
             "Rovereto, Trentino-Alto Adige, Italy: circle kept, heart kept, star kept"
         )
@@ -111,7 +111,7 @@ def test_too_many_requests_waits_as_long_as_the_api_says() -> None:
 
     drawn = draw_city("Rovereto", call, sleep=slept.append)
     assert slept == [12.0, draw_examples.POLL_S]
-    assert drawn.shapes == {"heart": "kept", "circle": "kept", "star": "x"}
+    assert drawn.shapes == {"circle": "kept", "heart": "kept", "star": "x"}
 
 
 def test_the_command_counts_the_cities_ready(

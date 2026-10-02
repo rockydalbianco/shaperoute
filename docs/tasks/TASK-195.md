@@ -21,28 +21,23 @@ cerchio per primo, l'API no.
 
 1. `EXAMPLE_SHAPES` in `prefetch_zones.py`: `("circle", "heart", "star")`.
    `draw_examples` le chiede in quell'ordine; il riquadro di
-   `prefetch_zones` è l'unione delle tre, e non cambia.
+   `prefetch_zones` è l'unione delle tre, e non cambia. **Fatto da TASK-176
+   (#199)**, con i test di `draw_examples` e `API.md`.
 2. Un test che lo tiene vero: l'area della prima forma chiesta contiene
-   quella delle altre due.
-3. I test di `draw_examples` con l'ordine nuovo; `API.md`.
+   quella delle altre due. **È quello che resta a questo task.**
 
 ## Criteri di accettazione
 
-- [x] `draw_examples` chiede cerchio, cuore, stella, in quest'ordine.
+- [x] `draw_examples` chiede cerchio, cuore, stella, in quest'ordine
+      (TASK-176, #199).
 - [x] L'area che il motore chiede per il cerchio da 5 km contiene quella
-      del cuore e della stella dallo stesso centro (Vercelli, Lucca, Lecce).
-- [x] Il riquadro di `prefetch_zones` è lo stesso di prima.
-- [x] Gli esempi già tenuti restano validi: il file di un percorso non
-      dipende dall'ordine delle richieste.
+      del cuore e della stella dallo stesso centro (Vercelli, Lucca, Lecce):
+      un test in `test_prefetch_zones.py`.
 
 ## File toccati
 
 ```
-services/api/shaperoute_api/prefetch_zones.py
-services/api/shaperoute_api/draw_examples.py
 services/api/tests/test_prefetch_zones.py
-services/api/tests/test_draw_examples.py
-docs/API.md
 docs/STATUS.md
 docs/tasks/TASK-195.md
 ```
@@ -59,15 +54,13 @@ docs/tasks/TASK-195.md
 
 ## Esito
 
-`draw_examples` chiede il cerchio per primo. Misurato dal centro di
-quattro città (Vercelli, Rovereto, Napoli, Berlino): a 5 km il cerchio
+Il cerchio per primo è entrato in `main` con TASK-176 (#199): il
+coordinatore l'aveva chiesto a quella sessione prima di assegnare questo
+task, e le due modifiche erano uguali. Di questo task resta un test: dal
+centro di Vercelli, Lucca e Lecce l'area che il motore chiede per la prima
+forma di `EXAMPLE_SHAPES` contiene quella delle altre due. Se un giorno
+l'ordine o le forme cambiano e il cerchio non basta più, il test lo dice.
+Misurato anche dal centro di Rovereto, Napoli e Berlino: a 5 km il cerchio
 chiede un riquadro di 5,50–5,52 km di lato, il cuore 5,44–5,45, la stella
-4,95–4,96, e quello del cerchio contiene gli altri due. Con il cuore per
-primo, una città senza zona scaricava la zona del cuore e poi una seconda,
-più larga di una trentina di metri per lato, per il cerchio (visto a
-Vercelli con TASK-143). Una forma che il motore deve cercare più lontano
-dal centro può ancora chiedere una zona sua: questo task toglie solo il
-download in più fra cuore e cerchio, e non è stato provato contro
-Overpass. La riga che il comando stampa per città ora dice `circle …,
-heart …, star …`. Nessuna decisione nuova: la ragione è quella di ADR-0144
-(TASK-176), che ha già messo il cerchio per primo nell'app.
+4,95–4,96. Non provato contro Overpass: una forma che il motore deve
+cercare più lontano dal centro può ancora chiedere una zona sua.

@@ -142,6 +142,15 @@ thread di lavoro, nessun calcolo, niente da chiedere dopo. Il contratto non
 cambia: `202` e un `RouteJob`, che si legge e si annulla come gli altri.
 Aspetta solo il primo telefono in una città.
 
+Dal TASK-176 (ADR-0144) l'app chiede il **cerchio per primo**, poi
+cuore e stella, e dopo altre cinque forme da 5 km dallo stesso centro:
+luna, cavallo, lumaca, testa di cane, testa di coniglio. Sono richieste
+come le altre, una alla volta, e restano allo stesso modo. Il cerchio va
+per primo perché la sua zona contiene quella di tutte le altre forme: una
+città senza zona ne scarica una sola. `draw_examples` chiede le prime tre
+nello stesso ordine (`EXAMPLE_SHAPES` in `prefetch_zones.py`); le altre
+cinque non le disegna, e restano dal primo telefono che le chiede.
+
 - **Solo dal centro di una città.** Una richiesta porta la posizione di
   chi la fa, e l'API non tiene la posizione di nessuno (ADR-0085,
   ADR-0092): salvare tutti i percorsi è ADR-0086, nel database, con
@@ -176,9 +185,7 @@ python -m shaperoute_api.draw_examples --api https://… --preset italy --preset
 ```
 
 Una riga per città (`circle drawn, heart drawn, star kept`), una forma
-alla volta, **il cerchio per primo** (TASK-195): l'area che chiede
-contiene quella del cuore e della stella dallo stesso centro, così in una
-città senza zona il cuore non ne scarica una seconda; la chiave dell'API, se serve, da `SHAPEROUTE_API_KEY`. Rifatto,
+alla volta; la chiave dell'API, se serve, da `SHAPEROUTE_API_KEY`. Rifatto,
 passa in un attimo sulle città già tenute. Una città senza la zona sul
 disco dell'API la fa scaricare, come un telefono: per le zone di molte
 città c'è `prefetch_zones` (ADR-0119).

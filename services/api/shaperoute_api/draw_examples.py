@@ -4,7 +4,9 @@ The API keeps a city's examples once drawn (route_store.py): the first phone
 in a city waits, the next do not. This command is that first phone, for a
 list of cities: it asks a running API what the app asks when a city is
 tapped, the city by name and then a circle, a heart and a star of 5 km from
-its centre, one at a time, and waits for each.
+its centre, one at a time, and waits for each. The circle goes first, as in
+the app: its zone holds the other two (ADR-0144). The shapes the app draws
+after those three are left to the first phone.
 
     python -m shaperoute_api.draw_examples --api http://127.0.0.1:8000 Rovereto
     python -m shaperoute_api.draw_examples --api https://... --preset italy

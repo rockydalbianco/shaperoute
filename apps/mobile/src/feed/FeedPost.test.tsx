@@ -107,3 +107,36 @@ test("a screen reader hears the drawing as one thing", async () => {
     ),
   ).toBeOnTheScreen();
 });
+
+test("with nowhere to open it, the drawing is not a button", async () => {
+  await render(<FeedPost post={POST} width={358} />);
+  expect(screen.queryByRole("button")).toBeNull();
+});
+
+test("a tap opens its route, and a screen reader hears where it leads", async () => {
+  const onOpen = jest.fn();
+  await render(<FeedPost post={POST} width={358} onOpen={onOpen} />);
+  const card = screen.getByRole("button", {
+    name: "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min. Score 92 out of 100.",
+  });
+  expect(card).toHaveProp("accessibilityHint", "Opens the route on the map");
+  await fireEvent.press(card);
+  expect(onOpen).toHaveBeenCalledTimes(1);
+});
+
+test("a swipe that ends on the card is not a tap", async () => {
+  const onOpen = jest.fn();
+  await render(<FeedPost post={POST} width={358} onOpen={onOpen} />);
+  const card = screen.getByRole("button");
+  const at = (pageX: number, pageY: number) => ({ nativeEvent: { pageX, pageY } });
+
+  // Across the card, on the first page: no page moves, the touch ends here.
+  await fireEvent(card, "pressIn", at(80, 300));
+  await fireEvent.press(card, at(340, 300));
+  expect(onOpen).not.toHaveBeenCalled();
+
+  // A finger that trembles has tapped.
+  await fireEvent(card, "pressIn", at(80, 300));
+  await fireEvent.press(card, at(86, 304));
+  expect(onOpen).toHaveBeenCalledTimes(1);
+});

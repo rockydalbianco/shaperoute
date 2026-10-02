@@ -255,20 +255,25 @@ dall'acqua» e «non ci sta» ci sono nel motore e nei test, ma da
 **nessuno giudicato** dall'utente. Restano aperti tutti finché A2 non
 collega.
 
-**Cosa deve fare A2** (dopo il merge di TASK-190 parte A, partendo da
-quello che la bici ha messo in `models.py`, `validation.py`,
+**Cosa deve fare A2** (TASK-190 parte A è in `main` dalla PR #214: si
+parte da quello che la bici ha messo in `models.py`, `validation.py`,
 `__main__.py`):
 
-1. `models.py`: `"paddling"` in `SUPPORTED_ACTIVITIES` e i suoi limiti di
-   distanza nel modo che la bici ha scelto per i suoi. I numeri sono una
-   **domanda all'utente** (domanda 2 qui sotto): su una costa dritta la
-   fascia di 1 km tiene forme fino a circa 3 km, non 10. Che cosa fare di
-   una parola o di un'immagine sull'acqua (`water_fit` prende qualunque
-   contorno chiuso) va deciso lì, o rifiutato con `InvalidRequestError`.
+1. `models.py`: `"paddling": (min, max)` in `DISTANCE_LIMITS_M`, come la
+   bici ha fatto per `"cycling"` (così entra in `ACTIVITIES`, le attività
+   del motore); `SUPPORTED_ACTIVITIES`, il contratto dell'API, lo prende
+   solo la parte B insieme a `shared-types`, come per la bici (ADR-0153).
+   I numeri sono una **domanda all'utente** (domanda 2 qui sotto): su una
+   costa dritta la fascia di 1 km tiene forme fino a circa 3 km, non 10.
+   Che cosa fare di una parola o di un'immagine sull'acqua (`water_fit`
+   prende qualunque contorno chiuso) va deciso lì, o rifiutato con
+   `InvalidRequestError`.
 2. `__main__.py`: con `--activity paddling` il piano è
    `water_fit.plan_on_water(shape, distance, start,
    water.OverpassWaterSource(args.cache_dir), name=..., free_rotation=nome
-   in FREE_ROTATION)` invece di `plan_shape`; il `RouteResult` ha
+   in FREE_ROTATION)` invece di `plan_shape`, deciso prima di
+   `_source(...)`: la canoa non ha una rete in `network.NETWORKS` e non
+   deve averla; il `RouteResult` ha
    `points` e `distance_m` del `WaterRoute`, `similarity=1.0` e i warning
    della validazione; stampare scala, rotazione, partenza sulla riva e il
    suo tipo, tratto, distanza dalla terra e dalla riva come fa `python -m

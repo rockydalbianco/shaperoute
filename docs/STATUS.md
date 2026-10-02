@@ -165,8 +165,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   giudicare), Overpass non provato (rifiutava il Mac), Como no. Al mare,
   con 1 km, le forme stanno fino a circa 3 km: le distanze vanno chieste
   all'utente. **A2** (`activity: "paddling"`, limiti, CLI, validazione)
-  aspetta il merge della bici (TASK-190 parte A); poi B (API) e C (app).
-  Da dove riprendere: `tasks/TASK-191.md`, «Esito».
+  può partire ora che la bici è in `main` (PR #214); poi B (API) e C
+  (app). Da dove riprendere: `tasks/TASK-191.md`, «Esito».
 
 ## Completato
 

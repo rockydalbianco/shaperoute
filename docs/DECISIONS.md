@@ -6628,8 +6628,9 @@ l'uno) pesano su un percorso corto: un cuore da 1 km si disegna all'88%.
 Il motore non conosce le regole del posto (bagnanti, corridoi di lancio,
 traffico di barche): l'avviso di sicurezza della parte C deve dirlo.
 `activity: "paddling"`, i limiti, la CLI `--activity paddling` e la
-validazione di §6 sull'acqua sono la parte A2, dopo la bici (TASK-190),
-che tocca gli stessi file (`models.py`, `validation.py`, `__main__.py`).
+validazione di §6 sull'acqua sono la parte A2, dopo la bici (TASK-190,
+PR #214), che ha toccato gli stessi file (`models.py`, `validation.py`,
+`__main__.py`).
 La corsa non cambia: nessun file del motore che già c'era è toccato; ma
 `engine_fingerprint` dell'API legge ogni `.py` del motore, quindi dopo il
 prossimo aggiornamento del server gli esempi tenuti (ADR-0136) si

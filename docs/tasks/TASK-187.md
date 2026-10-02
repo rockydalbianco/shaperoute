@@ -217,7 +217,8 @@ docs/tasks/TASK-187.md
 
 ## A che punto siamo (2026-10-02)
 
-**Fatta la parte API** (punti 2–5 e la parte API del 9), ADR-0156:
+**Fatta la parte API** (punti 2–5 e la parte API del 9), ADR-0156, PR
+#210:
 
 - `strava_client.py` parla con Strava (OAuth, revoca, upload) e non sa
   niente del database; `strava.py` tiene atleti e corse e ha gli endpoint;

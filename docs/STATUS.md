@@ -120,7 +120,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dove riprendere: il task file.
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0007`; scelta
-  dell'utente: «Sì, fallo vero»): **la parte API è fatta**, in una PR sua:
+  dell'utente: «Sì, fallo vero»): **la parte API è fatta**, PR #210:
   collegare l'atleta dal browser (`POST /me/strava/connect`, `GET
   /strava/callback`), `GET` e `DELETE /me/strava`, mandare una corsa
   salvata (`POST /me/activities/{key}/strava`) con il GPX dei suoi orari,

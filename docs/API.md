@@ -142,6 +142,14 @@ thread di lavoro, nessun calcolo, niente da chiedere dopo. Il contratto non
 cambia: `202` e un `RouteJob`, che si legge e si annulla come gli altri.
 Aspetta solo il primo telefono in una città.
 
+Dal TASK-176 (ADR-0144) l'app chiede il **cerchio per primo**, poi
+cuore e stella, e dopo altre cinque forme da 5 km dallo stesso centro:
+luna, cavallo, lumaca, testa di cane, testa di coniglio. Sono richieste
+come le altre, una alla volta, e restano allo stesso modo. Il cerchio va
+per primo perché la sua zona contiene quella di tutte le altre forme: una
+città senza zona ne scarica una sola. `draw_examples` e `prefetch_zones`
+chiedono ancora cuore, cerchio e stella in quest'ordine.
+
 - **Solo dal centro di una città.** Una richiesta porta la posizione di
   chi la fa, e l'API non tiene la posizione di nessuno (ADR-0085,
   ADR-0092): salvare tutti i percorsi è ADR-0086, nel database, con

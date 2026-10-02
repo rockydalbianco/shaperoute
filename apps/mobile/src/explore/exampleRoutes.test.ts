@@ -7,14 +7,19 @@ import type { Place } from "../places/photon";
 import {
   asRecommended,
   cityKey,
+  DRAW_ORDER,
   drawExamples,
   EXAMPLE_DISTANCE_M,
   EXAMPLE_SHAPES,
   exampleDetail,
   type Example,
+  firstExamples,
   forgetExamples,
+  isMore,
   MAX_KEPT_CITIES,
+  MORE_SHAPES,
   readKept,
+  shownExamples,
   type Storage,
   thinned,
   useCityExamples,
@@ -65,9 +70,30 @@ function api() {
   return { request, asked };
 }
 
+/** Where the first shapes are; the others have their own tests. */
 function statuses(key: string, read: () => Example[] | null): string {
-  return (read() ?? []).map((e) => `${e.shape}:${e.status}`).join(" ") + ` (${key})`;
+  return (
+    firstExamples(read() ?? [])
+      .map((e) => `${e.shape}:${e.status}`)
+      .join(" ") + ` (${key})`
+  );
 }
+
+/** Where the shapes drawn after the first ones are. */
+function others(read: () => Example[] | null): string {
+  return (read() ?? [])
+    .filter((e) => isMore(e.shape))
+    .map((e) => `${e.shape}:${e.status}`)
+    .join(" ");
+}
+
+const EVERY_SHAPE = EXAMPLE_SHAPES.length + MORE_SHAPES.length;
+const notDrawable: RouteOutcome = {
+  kind: "api_error",
+  code: "shape_not_drawable",
+  message: "no",
+  suggested_distance_m: null,
+};
 
 beforeEach(() => {
   forgetExamples();
@@ -101,55 +127,61 @@ test("a city's key, a thinned line, a route as the list has it", () => {
   expect(detail.license).toMatch(/OpenStreetMap/);
 });
 
-test("the heart first, then the circle and the star, one at a time", async () => {
+test("the heart is the first card, the circle the first asked, one at a time", async () => {
   const { request, asked } = api();
   const storage = memory();
   const { result: hook } = await renderHook(() =>
     useCityExamples("http://api", vercelli, { request, storage }),
   );
   const read = () => hook.current.examples;
+  // The circle's zone holds the others': asked first, one download for all.
   expect(statuses("start", read)).toBe(
-    "heart:drawing circle:waiting star:waiting (start)",
+    "heart:waiting circle:drawing star:waiting (start)",
   );
-  expect(asked.map((a) => a.shape)).toEqual(["heart"]);
+  expect(asked.map((a) => a.shape)).toEqual(["circle"]);
   expect(request.mock.calls[0][1]).toEqual({
-    shape: "heart",
+    shape: "circle",
     distance_m: EXAMPLE_DISTANCE_M,
     start: vercelli.point,
     activity: "running",
   });
 
   await act(async () => asked[0].answer({ kind: "route", result }));
-  expect(statuses("heart", read)).toBe(
-    "heart:ready circle:drawing star:waiting (heart)",
+  expect(statuses("circle", read)).toBe(
+    "heart:drawing circle:ready star:waiting (circle)",
   );
-  await act(async () =>
-    asked[1].answer({
-      kind: "api_error",
-      code: "shape_not_drawable",
-      message: "no",
-      suggested_distance_m: null,
-    }),
-  );
+  await act(async () => asked[1].answer(notDrawable));
   await act(async () => asked[2].answer({ kind: "route", result }));
-  expect(statuses("end", read)).toBe("heart:ready circle:failed star:ready (end)");
+  expect(statuses("end", read)).toBe("heart:failed circle:ready star:ready (end)");
+  expect(asked.map((a) => a.shape).slice(0, 3)).toEqual(["circle", "heart", "star"]);
 
   // The ready ones open whole, and the file has them for next time.
-  const heart = read()?.[0];
-  expect(heart?.status === "ready" && exampleDetail(heart.route.id)?.points).toBe(
+  const circle = read()?.[1];
+  expect(circle?.status === "ready" && exampleDetail(circle.route.id)?.points).toBe(
     result.points,
   );
   expect(storage.kept[cityKey(vercelli.point)].map((d) => d.shape)).toEqual([
-    "heart",
+    "circle",
     "star",
   ]);
+});
+
+test("the order of asking: the first three, then the others, largest zone first", () => {
+  expect([...DRAW_ORDER].sort()).toEqual([...EXAMPLE_SHAPES, ...MORE_SHAPES].sort());
+  expect(DRAW_ORDER.slice(0, EXAMPLE_SHAPES.length).sort()).toEqual(
+    [...EXAMPLE_SHAPES].sort(),
+  );
+  // Measured on the engine (ADR-0144): the circle reaches farthest of all,
+  // the moon of those drawn after the first three.
+  expect(DRAW_ORDER[0]).toBe("circle");
+  expect(DRAW_ORDER[EXAMPLE_SHAPES.length]).toBe("moon");
 });
 
 test("the next time, after closing the app: from the file, nothing asked", async () => {
   const first = api();
   const storage = memory();
   drawExamples("http://api", vercelli, { request: first.request, storage });
-  for (let i = 0; i < EXAMPLE_SHAPES.length; i += 1) {
+  for (let i = 0; i < EVERY_SHAPE; i += 1) {
     await act(async () => first.asked[i].answer({ kind: "route", result }));
   }
   forgetExamples(); // the app closed
@@ -158,11 +190,9 @@ test("the next time, after closing the app: from the file, nothing asked", async
   const { result: hook } = await renderHook(() =>
     useCityExamples("http://api", vercelli, { request: again.request, storage }),
   );
-  expect(hook.current.examples?.map((e) => e.status)).toEqual([
-    "ready",
-    "ready",
-    "ready",
-  ]);
+  expect(hook.current.examples?.map((e) => e.status)).toEqual(
+    Array.from({ length: EVERY_SHAPE }, () => "ready"),
+  );
   expect(again.request).not.toHaveBeenCalled();
   const star = hook.current.examples?.[2];
   expect(star?.status === "ready" && exampleDetail(star.route.id)).toBeTruthy();
@@ -182,14 +212,15 @@ test("no map for the zone: every shape says so, and Try again asks again", async
     }),
   );
   const examples = hook.current.examples ?? [];
-  expect(examples.map((e) => e.status)).toEqual(["failed", "failed", "failed"]);
+  expect(new Set(examples.map((e) => e.status))).toEqual(new Set(["failed"]));
+  expect(examples).toHaveLength(EVERY_SHAPE);
   expect(examples[0].status === "failed" && examples[0].message).toMatch(
     /could not be downloaded/,
   );
   expect(asked).toHaveLength(1);
 
   await act(async () => hook.current.retry());
-  expect(asked.map((a) => a.shape)).toEqual(["heart", "heart"]);
+  expect(asked.map((a) => a.shape)).toEqual(["circle", "circle"]);
 });
 
 test("another city stops the one drawing; coming back asks what is missing", async () => {
@@ -198,7 +229,7 @@ test("another city stops the one drawing; coming back asks what is missing", asy
   drawExamples("http://api", vercelli, { request, storage });
   drawExamples("http://api", levico, { request, storage });
   expect(asked[0].signal?.aborted).toBe(true);
-  expect(asked[1].shape).toBe("heart");
+  expect(asked[1].shape).toBe("circle");
   await act(async () => asked[0].answer({ kind: "cancelled" }));
 
   // The same city twice asks once.
@@ -207,7 +238,7 @@ test("another city stops the one drawing; coming back asks what is missing", asy
 
   drawExamples("http://api", vercelli, { request, storage });
   expect(asked[1].signal?.aborted).toBe(true);
-  expect(asked[2].shape).toBe("heart");
+  expect(asked[2].shape).toBe("circle");
 });
 
 test("the file keeps the last cities and drops what does not read", () => {
@@ -287,9 +318,9 @@ test("an example kept before the routes to choose from is drawn again", async ()
     useCityExamples("http://api", vercelli, { request, storage }),
   );
   expect(statuses("old file", () => hook.current.examples)).toBe(
-    "heart:drawing circle:waiting star:ready (old file)",
+    "heart:waiting circle:drawing star:ready (old file)",
   );
-  expect(asked.map((a) => a.shape)).toEqual(["heart"]);
+  expect(asked.map((a) => a.shape)).toEqual(["circle"]);
 });
 
 test("alternatives that do not read are as none kept", () => {
@@ -301,4 +332,137 @@ test("alternatives that do not read are as none kept", () => {
   expect(readKept({ a: [{ ...detail, alternatives: "nonsense" }] })).toEqual({
     a: [route],
   });
+});
+
+test("after the first three, other shapes, one at a time (TASK-176)", async () => {
+  const { request, asked } = api();
+  const storage = memory();
+  const { result: hook } = await renderHook(() =>
+    useCityExamples("http://api", vercelli, { request, storage }),
+  );
+  const read = () => hook.current.examples;
+  // While the first are drawn the others wait, and show no card.
+  expect(others(read)).toBe(MORE_SHAPES.map((shape) => `${shape}:waiting`).join(" "));
+  expect(shownExamples(read() ?? []).map((e) => e.shape)).toEqual([...EXAMPLE_SHAPES]);
+
+  for (let i = 0; i < EXAMPLE_SHAPES.length; i += 1) {
+    await act(async () => asked[i].answer({ kind: "route", result }));
+  }
+  expect(asked.map((a) => a.shape)).toEqual(DRAW_ORDER.slice(0, 4));
+  expect(request.mock.calls[3][1]).toEqual({
+    shape: MORE_SHAPES[0],
+    distance_m: EXAMPLE_DISTANCE_M,
+    start: vercelli.point,
+    activity: "running",
+  });
+  // The one being drawn is a card; the ones after it are not, yet.
+  expect(shownExamples(read() ?? []).map((e) => `${e.shape}:${e.status}`)).toEqual([
+    "heart:ready",
+    "circle:ready",
+    "star:ready",
+    `${MORE_SHAPES[0]}:drawing`,
+  ]);
+
+  await act(async () => asked[3].answer({ kind: "route", result }));
+  expect(asked[4].shape).toBe(MORE_SHAPES[1]);
+  const [first] = (read() ?? []).filter((e) => isMore(e.shape));
+  expect(first.status === "ready" && exampleDetail(first.route.id)?.points).toBe(
+    result.points,
+  );
+  // Kept with the first ones, for the next time.
+  expect(storage.kept[cityKey(vercelli.point)].map((d) => d.shape)).toEqual([
+    ...EXAMPLE_SHAPES,
+    MORE_SHAPES[0],
+  ]);
+});
+
+test("another shape that does not come out is left out, and not asked again", async () => {
+  const { request, asked } = api();
+  const storage = memory();
+  const { result: hook } = await renderHook(() =>
+    useCityExamples("http://api", vercelli, { request, storage }),
+  );
+  const read = () => hook.current.examples;
+  for (let i = 0; i < EXAMPLE_SHAPES.length; i += 1) {
+    await act(async () => asked[i].answer({ kind: "route", result }));
+  }
+  await act(async () => asked[3].answer(notDrawable));
+  // No card for it, no error: the next one is drawn.
+  expect(shownExamples(read() ?? []).map((e) => e.shape)).toEqual([
+    ...EXAMPLE_SHAPES,
+    MORE_SHAPES[1],
+  ]);
+  for (let i = 4; i < EVERY_SHAPE; i += 1) {
+    await act(async () => asked[i].answer({ kind: "route", result }));
+  }
+  expect(asked).toHaveLength(EVERY_SHAPE);
+
+  // Choosing the city again, or Try again, does not ask for it.
+  await act(async () => hook.current.retry());
+  await act(async () => {
+    drawExamples("http://api", levico, { request, storage });
+    drawExamples("http://api", vercelli, { request, storage });
+  });
+  expect(asked.map((a) => a.shape).slice(EVERY_SHAPE)).toEqual(["circle"]);
+  expect(asked.filter((a) => a.shape === MORE_SHAPES[0])).toHaveLength(1);
+});
+
+test("trouble that is not a shape's stops the other shapes, quietly", async () => {
+  const { request, asked } = api();
+  const storage = memory();
+  const { result: hook } = await renderHook(() =>
+    useCityExamples("http://api", vercelli, { request, storage }),
+  );
+  const read = () => hook.current.examples;
+  await act(async () => asked[0].answer({ kind: "route", result }));
+  await act(async () => asked[1].answer(notDrawable));
+  await act(async () => asked[2].answer({ kind: "route", result }));
+  const heart = () => read()?.[0];
+  const said = heart()?.status === "failed" ? heart() : undefined;
+  expect(said).toBeDefined();
+
+  // Too many requests in a minute, or no network: nothing to do with the moon.
+  await act(async () =>
+    asked[3].answer({
+      kind: "api_error",
+      code: "too_many_requests",
+      message: "slow down",
+      suggested_distance_m: null,
+    }),
+  );
+  // The first three stay as they were, the heart with its own words; no
+  // card and no error for the others, and none of them is asked.
+  expect(statuses("stopped", read)).toBe(
+    "heart:failed circle:ready star:ready (stopped)",
+  );
+  expect(heart()).toEqual(said);
+  expect(shownExamples(read() ?? [])).toHaveLength(EXAMPLE_SHAPES.length);
+  expect(others(read)).toBe(MORE_SHAPES.map((shape) => `${shape}:failed`).join(" "));
+  expect(asked).toHaveLength(4);
+
+  // The next time the city is chosen they are asked again, the heart first.
+  await act(async () => {
+    drawExamples("http://api", levico, { request, storage });
+    drawExamples("http://api", vercelli, { request, storage });
+  });
+  expect(asked.at(-1)?.shape).toBe("heart");
+  await act(async () => asked.at(-1)?.answer({ kind: "route", result }));
+  expect(asked.at(-1)?.shape).toBe(MORE_SHAPES[0]);
+});
+
+test("examples kept before the other shapes: only those are asked", async () => {
+  const storage = memory();
+  storage.kept = {
+    [cityKey(vercelli.point)]: EXAMPLE_SHAPES.map(
+      (shape) => asRecommended(vercelli, shape, result).detail,
+    ),
+  };
+  const { request, asked } = api();
+  const { result: hook } = await renderHook(() =>
+    useCityExamples("http://api", vercelli, { request, storage }),
+  );
+  expect(statuses("kept", () => hook.current.examples)).toBe(
+    "heart:ready circle:ready star:ready (kept)",
+  );
+  expect(asked.map((a) => a.shape)).toEqual([MORE_SHAPES[0]]);
 });

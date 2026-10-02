@@ -108,6 +108,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-176: tre richieste dell'utente su «Explore»
+  (ADR-0144). **I filtri non ci sono più**: «Best near you» mostra tutti
+  i percorsi. **Scelta una città, dopo cuore, cerchio e stella l'app
+  disegna altre cinque forme** mentre si guardano le prime (luna, cavallo,
+  lumaca, testa di cane, testa di coniglio: quelle che a 5 km dal centro
+  vengono meglio, misurate su quattro città), una alla volta, ognuna una
+  scheda quando tocca a lei; anche nelle città con percorsi consigliati,
+  in coda alle loro schede. Il cerchio si chiede per primo: una città nuova
+  scarica una zona sola invece di due. **«My start» è diventato «Near
+  me»**, la prima voce della fila delle città, accesa finché non se ne
+  sceglie una. Solo app, niente API. Visto in un simulatore con un'API
+  locale: le otto forme di Trento, e Verona con il suo catalogo. **Da
+  pubblicare su `preview`** con l'ok dell'utente, poi **da provare
+  sull'iPhone**. Nelle 62 città con gli esempi già disegnati sul server
+  (TASK-168) le prime tre forme arrivano subito e le altre cinque le
+  disegna il primo telefono, 7–19 s l'una; poi restano sull'API per tutti.
 - **App** — TASK-179: l'animazione all'avvio, chiesta dall'utente
   (ADR-0147). Aprendo l'app il giallo riempie lo schermo, una penna disegna
   il cuore di Milano del video, sotto c'è il logo nero; 2,4 secondi, poi

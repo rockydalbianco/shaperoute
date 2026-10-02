@@ -122,8 +122,8 @@ pagine»):
 
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
-   migliori che partono entro 5 km dalla partenza scelta, con i filtri per
-   forma o parola e per distanza. **I percorsi sono schede, due per riga**
+   migliori che partono entro 5 km dalla partenza scelta, tutti, i migliori
+   per primi. **I percorsi sono schede, due per riga**
    (TASK-167, ADR-0135, scelto dall'utente): in alto il disegno, largo
    quanto la scheda, giallo su fondo scuro, con la somiglianza in un angolo
    («97%»); sotto, forma e km («Star · 5.1 km») e città e distanza dalla
@@ -133,13 +133,10 @@ pagine»):
    non arriva la scheda è la linea sul fondo scuro, e senza rete resta
    così. Il credito della mappa non è su ogni foto, che è larga mezzo
    telefono: sta una volta sola sopra le schede, «Maps: OpenFreeMap ©
-   OpenMapTiles · Data from OpenStreetMap». **I filtri stanno in una riga sola**:
-   due pulsanti, «Shape: All ▾» e «Distance: All ▾», che dicono cosa
-   tengono; toccato uno, sotto la riga si aprono le sue scelte («All»,
-   «Star», «Circle»…, che scorrono di lato), e una scelta le richiude. Se ne
-   apre uno alla volta; un filtro che tiene qualcosa ha il bordo chiaro. Se
-   i due filtri insieme non lasciano niente: «No route here is both: change
-   one of the two filters.». Toccata una scheda, il percorso si apre sulla
+   OpenMapTiles · Data from OpenStreetMap». **Niente filtri** (TASK-176,
+   ADR-0144, chiesto dall'utente: «toglimi i filtri, non mi piacciono»):
+   fino a TASK-167 sopra le schede c'erano «Shape» e «Distance». Toccata
+   una scheda, il percorso si apre sulla
    mappa con «Export GPX» e «Back to the list»; «←» torna all'elenco. Da
    TASK-145 ha anche «Start» (sotto).
 
@@ -162,8 +159,14 @@ pagine»):
    telefono) e una fila di città di tutto il mondo (New York, London,
    Paris, Tokyo, Rome, Milan, Torino, Barcelona, Dubai…): un tocco la
    sceglie, il centro viene dall'API, mai scritto nell'app. Sotto, «Type a
-   city» suggerisce le città mentre si scrive (da 2 lettere, pausa 250 ms);
-   «My start» torna alla partenza. «Ask for a route» ha le categorie come
+   city» suggerisce le città mentre si scrive (da 2 lettere, pausa 250 ms).
+   **La prima voce della fila è «Near me»** (TASK-176, ADR-0144), con
+   il segno della posizione, un anello col suo centro: è accesa finché non
+   si sceglie una città, e da una città riporta ai percorsi vicini alla
+   partenza. La città scelta è la voce accesa della fila, e il suo nome
+   intero sta sotto il titolo della pagina. Prima c'era un pulsante «My
+   start» accanto al nome della città: l'utente non lo trovava chiaro.
+   «Ask for a route» ha le categorie come
    pulsanti, Food per prima (Famous Places, Romantic, Best Views, Shopping,
    Culture, Nightlife, Hidden Gems, Running, Walking, Family, Photography,
    Local Experience), ognuna con «in <città>» sotto: un tocco chiede
@@ -197,10 +200,29 @@ pagine»):
    Restano anche sull'API (TASK-168, ADR-0136): in una città che qualcuno ha
    già aperto, o disegnata prima con `draw_examples`, le tre schede hanno
    il disegno appena scelta la città, senza «Drawing…».
-   Una città con percorsi consigliati mostra quelli e non chiede esempi.
 
-   **Da TASK-163**, chiesto dall'utente: finché un esempio è «Next» o
-   «Drawing…», sotto «EXAMPLES IN …» c'è **«MEANWHILE, FROM THE FEED»**,
+   **Da TASK-176** (ADR-0144, chiesto dall'utente: le prime tre il più
+   in fretta possibile, e intanto altre mentre si sceglie): dopo cuore,
+   cerchio e stella l'app continua da sola con **luna, cavallo, lumaca,
+   testa di cane e testa di coniglio**, le forme del catalogo che a 5 km
+   dal centro vengono meglio, sempre una alla volta. Ognuna diventa una
+   scheda quando tocca a lei («Moon», «Drawing…») e poi ha il disegno, in
+   coda alle prime tre; quelle ancora in attesa non si annunciano, e una
+   che non riesce non compare, senza messaggi. Finché ne arrivano la nota
+   sotto il titolo finisce con «Three first, more while you choose.».
+   La prima scheda resta il cuore, ma **il primo a essere chiesto è il
+   cerchio**: la sua zona contiene quella di tutte le altre forme, così una
+   città nuova per l'API scarica una mappa sola (col cuore per primo ne
+   scaricava due). Per questo all'inizio il cuore dice «Next» e il cerchio
+   «Drawing…».
+   **Una città con percorsi consigliati** mostra quelli, senza la sezione
+   degli esempi, e in più fa disegnare le forme che non ha fra quelle otto:
+   si aggiungono in coda alle sue schede, uguali alle altre («Moon ·
+   5.0 km», «Milan · 120 m away»), con la scheda «Drawing…» per quella in
+   corso. Senza una città scelta («Near me») non si disegna niente.
+
+   **Da TASK-163**, chiesto dall'utente: finché uno dei primi tre esempi è
+   «Next» o «Drawing…», sotto «EXAMPLES IN …» c'è **«MEANWHILE, FROM THE FEED»**,
    con una riga che dice perché si aspetta (la prima volta in una città la
    mappa si scarica: fino a un minuto) e 5 disegni del feed d'esempio
    (TASK-156), uguali a come sono in «Feed». Partono da un punto del feed

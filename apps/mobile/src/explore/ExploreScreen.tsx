@@ -27,11 +27,16 @@ import {
 } from "./recommendedRoutes";
 import type { Place } from "../places/photon";
 import { AskForRoute } from "./AskForRoute";
-import { cityKey, useCityExamples } from "./exampleRoutes";
+import {
+  addedExamples,
+  cityKey,
+  firstExamples,
+  shapesOf,
+  useCityExamples,
+} from "./exampleRoutes";
 import { CityExamples } from "./CityExamples";
 import { CityPicker } from "./ExploreTools";
 import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
-import { ALL, RouteFilters } from "./RouteFilters";
 import type { ThemedRequest } from "./themedRoutes";
 import { stillDrawing, useWaited, WhileDrawing } from "./WhileDrawing";
 
@@ -59,24 +64,6 @@ type Props = {
 
 const NO_ROUTES: RecommendedRoute[] = [];
 
-/** The chips of one filter: "All" first, then what the list has. */
-export function filterOptions(values: string[]): string[] {
-  return [ALL, ...Array.from(new Set(values))];
-}
-
-/** The routes a filter keeps, in the order the API gave them. */
-export function filtered(
-  routes: RecommendedRoute[],
-  what: string,
-  km: string,
-): RecommendedRoute[] {
-  return routes.filter(
-    (r) =>
-      (what === ALL || routeTitle(r) === what) &&
-      (km === ALL || kmLabel(r.distance_m) === km),
-  );
-}
-
 export function kmLabel(distanceM: number): string {
   return `${Math.round(distanceM / 1000)} km`;
 }
@@ -89,7 +76,8 @@ export function awayText(awayM: number): string {
 
 /**
  * "Explore" (TASK-092 variant C, TASK-126): the best routes already planned
- * near the start, by shape or word and by distance. A route opens on the map.
+ * near the start, all of them, the best first: nothing to filter (TASK-176).
+ * A route opens on the map.
  */
 export function ExploreScreen({
   apiUrl,
@@ -110,8 +98,6 @@ export function ExploreScreen({
   const card = cardWidth(contentWidth);
   // The answer for one start: another start shows "loading" until its own.
   const [answer, setAnswer] = useState<{ key: string; list: ListState } | null>(null);
-  const [what, setWhat] = useState(ALL);
-  const [km, setKm] = useState(ALL);
   // "Ask for a route" waits closed at the foot of the page (TASK-157).
   const [asking, setAsking] = useState(false);
   const page = useRef<ScrollView>(null);
@@ -157,25 +143,28 @@ export function ExploreScreen({
         : NO_ROUTES,
     [answer, key],
   );
-  const whats = useMemo(() => filterOptions(routes.map(routeTitle)), [routes]);
-  const kms = useMemo(
-    () =>
-      filterOptions(
-        [...routes]
-          .sort((a, b) => a.distance_m - b.distance_m)
-          .map((r) => kmLabel(r.distance_m)),
-      ),
+  // A chosen city has shapes drawn at once, and they go on while a route is
+  // open on the map. Without recommended routes they are its examples
+  // (TASK-143); with them, the shapes it has none of, added to its cards
+  // while those are looked at (TASK-176).
+  const drawnCity = city !== null && list.status === "done" ? city : null;
+  const has = useMemo(
+    () => (routes.length === 0 ? undefined : shapesOf(routes)),
     [routes],
   );
-  const shown = filtered(routes, what, km);
-  // A chosen city without recommended routes: examples, drawn at once
-  // (TASK-143). They go on while a route is open on the map.
-  const examplesCity =
-    city !== null && list.status === "done" && routes.length === 0 ? city : null;
-  const { examples, retry } = useCityExamples(apiUrl, examplesCity);
-  // While they are drawn, drawings of «Feed» to look at (TASK-163).
+  const { examples, retry } = useCityExamples(apiUrl, drawnCity, { has });
+  const examplesCity = has === undefined ? drawnCity : null;
+  const added =
+    has === undefined || examples === null ? [] : addedExamples(examples, has);
+  // The city's routes, then the shapes drawn for it now: the same cards.
+  const cards = [
+    ...routes,
+    ...added.flatMap((example) => (example.status === "ready" ? [example.route] : [])),
+  ];
+  // While the first are drawn, drawings of «Feed» to look at (TASK-163): the
+  // other shapes arrive when there is already something to choose.
   const examplesKey = examplesCity === null ? null : cityKey(examplesCity.point);
-  const drawing = stillDrawing(examples);
+  const drawing = stillDrawing(examples === null ? null : firstExamples(examples));
   const waited = useWaited(examplesKey, drawing);
 
   return (
@@ -228,14 +217,6 @@ export function ExploreScreen({
         {examplesKey !== null && waited && (
           <WhileDrawing cityKey={examplesKey} drawing={drawing} />
         )}
-        {list.status === "done" && routes.length > 0 && (
-          <RouteFilters
-            filters={[
-              { name: "Shape", options: whats, value: what, onChange: setWhat },
-              { name: "Distance", options: kms, value: km, onChange: setKm },
-            ]}
-          />
-        )}
         {list.status === "loading" && <Text style={styles.note}>Loading routes…</Text>}
         {list.status === "failed" && (
           <Text style={styles.note}>
@@ -250,17 +231,12 @@ export function ExploreScreen({
             up here.
           </Text>
         )}
-        {routes.length > 0 && shown.length === 0 && (
-          <Text style={styles.note}>
-            No route here is both: change one of the two filters.
-          </Text>
-        )}
         {/* Above the cards: there it is read without scrolling to their end. */}
-        {shown.length > 0 && <CardMapsCredit />}
+        {routes.length > 0 && <CardMapsCredit />}
         {/* The drawing first: two cards side by side (TASK-167). */}
-        {shown.length > 0 && (
+        {routes.length > 0 && (
           <View style={styles.grid}>
-            {shown.map((route) => (
+            {cards.map((route) => (
               <RouteCard
                 key={route.id}
                 width={card}
@@ -273,6 +249,21 @@ export function ExploreScreen({
                 accessibilityLabel={`${routeTitle(route)}, ${kmLabel(route.route_m)}, ${awayText(route.away_m)}`}
               />
             ))}
+            {/* The shape being drawn for the city: the next card, on its way. */}
+            {added.map(
+              (example) =>
+                example.status === "drawing" && (
+                  <RouteCard
+                    key={example.shape}
+                    width={card}
+                    line={null}
+                    title={capitalised(
+                      routeTitle({ shape: example.shape, word: null }),
+                    )}
+                    detail="Drawing…"
+                  />
+                ),
+            )}
           </View>
         )}
         {/* Under the routes already there, and closed: the page is for looking

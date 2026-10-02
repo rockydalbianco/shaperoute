@@ -1,11 +1,17 @@
 import list from "@shaperoute/shared-types/fixtures/recommended-routes.json";
 import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 import { FeedMapShooter, forgetFeedMaps } from "../feed/FeedMaps";
+import { shapeLabel } from "../feed/FeedPost";
 import type { Place } from "../places/photon";
-import { forgetExamples } from "./exampleRoutes";
-import { awayText, ExploreScreen, filtered, kmLabel } from "./ExploreScreen";
+import {
+  DRAW_ORDER,
+  EXAMPLE_SHAPES,
+  forgetExamples,
+  MORE_SHAPES,
+} from "./exampleRoutes";
+import { awayText, ExploreScreen, kmLabel } from "./ExploreScreen";
 import type { RecommendedRoute } from "./recommendedRoutes";
 import { CARD_MAPS_CREDIT } from "./RouteCard";
 import { POSTS_SHOWN } from "./WhileDrawing";
@@ -17,6 +23,8 @@ jest.mock(
 
 const fetchMock = jest.spyOn(globalThis, "fetch");
 const routes = list.routes as RecommendedRoute[];
+/** The last shape drawn for a city: when its card is there, all are. */
+const LAST = MORE_SHAPES[MORE_SHAPES.length - 1];
 
 beforeEach(() => {
   fetchMock.mockReset();
@@ -61,28 +69,129 @@ test("a city without recommended routes: three examples at once (TASK-143)", asy
   expect(await screen.findByText("EXAMPLES IN VERCELLI")).toBeOnTheScreen();
   const heart = await screen.findByLabelText(/^Heart, /);
   await screen.findByLabelText(/^Star, /);
-  expect(routeJobShapes()).toEqual(["heart", "circle", "star"]);
+  // The circle is asked first: its zone holds the others'.
+  expect(routeJobShapes().slice(0, 3)).toEqual(["circle", "heart", "star"]);
   expect(screen.queryByText(/No recommended routes near this start yet/)).toBeNull();
   await fireEvent.press(heart);
   expect(onOpen.mock.calls[0][0]).toMatchObject({ shape: "heart", city: "Vercelli" });
 });
 
-test("a city with recommended routes asks for no example", async () => {
-  fetchMock.mockResolvedValue(Response.json(list));
+/** The API with the catalog of the fixture, and every route done at once. */
+function catalog(input: RequestInfo | URL): Promise<Response> {
+  return Promise.resolve(
+    String(input).includes("/recommended-routes")
+      ? Response.json(list)
+      : Response.json(jobDone, { status: 202 }),
+  );
+}
+
+test("a city with recommended routes: the shapes it lacks join its cards", async () => {
+  fetchMock.mockImplementation(catalog);
+  const onOpen = jest.fn();
   await render(
     <ExploreScreen
       apiUrl="http://api"
       near={null}
       onBack={jest.fn()}
-      onOpen={jest.fn()}
+      onOpen={onOpen}
       city={vercelli}
       onCity={jest.fn()}
     />,
   );
   expect(await screen.findByText("Star · 5.1 km")).toBeOnTheScreen();
+  const card = await screen.findByLabelText(
+    new RegExp(`^${LAST.replace(/_/g, " ")}, `),
+  );
+  // The catalog has a star and hearts: asked are the circle, then the others.
+  expect(routeJobShapes()).toEqual(["circle", ...MORE_SHAPES]);
+  // One grid: the city's routes first, then what was drawn now.
+  expect(screen.getAllByTestId("route-card")).toHaveLength(
+    routes.length + 1 + MORE_SHAPES.length,
+  );
+  const order = texts();
+  expect(order.findIndex((text) => text.startsWith("Circle · "))).toBeGreaterThan(
+    order.indexOf("CIAO · 15.2 km"),
+  );
+  // As the city's own cards: the shape and the km, the city and how far.
+  expect(screen.getAllByText(/^Vercelli · .* away$/)).toHaveLength(
+    1 + MORE_SHAPES.length,
+  );
+  // No section of examples, and nothing to wait for with the feed.
   expect(screen.queryByText("EXAMPLES IN VERCELLI")).toBeNull();
-  expect(routeJobShapes()).toEqual([]);
   expect(screen.queryByText("MEANWHILE, FROM THE FEED")).toBeNull();
+  await fireEvent.press(card);
+  expect(onOpen.mock.calls[0][0]).toMatchObject({ shape: LAST, city: "Vercelli" });
+});
+
+test("a city with recommended routes: the shape being drawn is the next card", async () => {
+  // The catalog answers; the first route never does.
+  fetchMock.mockImplementation((input) =>
+    String(input).includes("/recommended-routes")
+      ? Promise.resolve(Response.json(list))
+      : new Promise<Response>(() => {}),
+  );
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={null}
+      onOpen={jest.fn()}
+      city={vercelli}
+      onCity={jest.fn()}
+    />,
+  );
+  expect(await screen.findByText("Circle")).toBeOnTheScreen();
+  expect(screen.getByText("Drawing…")).toBeOnTheScreen();
+  // Only that one: the shapes after it are not announced.
+  expect(screen.getAllByTestId("route-card")).toHaveLength(routes.length + 1);
+  expect(routeJobShapes()).toEqual(["circle"]);
+});
+
+test("a city's shapes that fail say nothing when it has routes of its own", async () => {
+  fetchMock.mockImplementation((input) =>
+    Promise.resolve(
+      String(input).includes("/recommended-routes")
+        ? Response.json(list)
+        : Response.json(
+            {
+              error: {
+                code: "shape_not_drawable",
+                message: "no",
+                suggested_distance_m: null,
+              },
+            },
+            { status: 422 },
+          ),
+    ),
+  );
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={null}
+      onOpen={jest.fn()}
+      city={vercelli}
+      onCity={jest.fn()}
+    />,
+  );
+  await screen.findByText("Star · 5.1 km");
+  await waitFor(() => expect(routeJobShapes()).toEqual(["circle", ...MORE_SHAPES]));
+  expect(screen.getAllByTestId("route-card")).toHaveLength(routes.length);
+  expect(screen.queryByText("Try again")).toBeNull();
+  expect(screen.queryByText("Not drawn")).toBeNull();
+});
+
+test("near the start, with no city chosen, nothing is drawn", async () => {
+  fetchMock.mockImplementation(catalog);
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={[46.067, 11.1215]}
+      onOpen={jest.fn()}
+      onCity={jest.fn()}
+    />,
+  );
+  await screen.findByText("Star · 5.1 km");
+  expect(routeJobShapes()).toEqual([]);
+  expect(screen.getAllByTestId("route-card")).toHaveLength(routes.length);
 });
 
 test("while the examples are drawn, drawings of the feed to look at (TASK-163)", async () => {
@@ -125,6 +234,11 @@ test("the drawings stay when the last example arrives", async () => {
     />,
   );
   await screen.findByLabelText(/^Star, /);
+  // Ready above, though the other shapes are still coming.
+  expect(
+    screen.getByText("The shapes of this city are ready above."),
+  ).toBeOnTheScreen();
+  await screen.findByLabelText(new RegExp(`^${shapeLabel(LAST)}, `));
   expect(screen.queryByText("Drawing…")).toBeNull();
   expect(screen.getAllByTestId("feed-post")).toHaveLength(POSTS_SHOWN);
   expect(
@@ -222,27 +336,38 @@ test("without a way to ask there is no line to open", async () => {
   expect(screen.queryByText("Ask for a route")).toBeNull();
 });
 
-test("the filters, in one row, keep one shape or one distance", async () => {
+test("no filters: every route near the start is a card (TASK-176)", async () => {
   fetchMock.mockResolvedValue(Response.json(list));
   await render(
     <ExploreScreen apiUrl="http://api" near={[46.067, 11.1215]} onOpen={jest.fn()} />,
   );
   await screen.findByText("Star · 5.1 km");
-  // Closed, a filter shows no choice: only what it keeps.
-  expect(screen.queryByText("Heart")).toBeNull();
-  await fireEvent.press(screen.getByRole("button", { name: "Shape: All" }));
-  await fireEvent.press(screen.getByText("Heart"));
-  expect(screen.queryByText("Star · 5.1 km")).toBeNull();
-  expect(screen.getByText("Heart · 10.2 km")).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Shape: Heart" })).toBeOnTheScreen();
+  expect(screen.queryByText(/^Shape/)).toBeNull();
+  expect(screen.queryByText(/^Distance/)).toBeNull();
+  expect(screen.getAllByTestId("route-card")).toHaveLength(routes.length);
+  // The cards are the only buttons of the page: nothing to set first.
+  expect(screen.getAllByRole("button")).toHaveLength(routes.length);
+});
 
-  // No heart of 5 km in the list: the page says so instead of going blank.
-  await fireEvent.press(screen.getByRole("button", { name: "Distance: All" }));
-  await fireEvent.press(screen.getByText("5 km"));
-  expect(screen.queryByTestId("route-card")).toBeNull();
-  expect(
-    screen.getByText("No route here is both: change one of the two filters."),
-  ).toBeOnTheScreen();
+test("after the first three examples, other shapes while they are looked at", async () => {
+  fetchMock.mockImplementation(emptyCatalog);
+  const onOpen = jest.fn();
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={null}
+      onOpen={onOpen}
+      city={vercelli}
+      onCity={jest.fn()}
+    />,
+  );
+  const card = await screen.findByLabelText(new RegExp(`^${shapeLabel(LAST)}, `));
+  expect(routeJobShapes()).toEqual([...DRAW_ORDER]);
+  expect(screen.getAllByTestId("route-card")).toHaveLength(
+    EXAMPLE_SHAPES.length + MORE_SHAPES.length,
+  );
+  await fireEvent.press(card);
+  expect(onOpen.mock.calls[0][0]).toMatchObject({ shape: LAST, city: "Vercelli" });
 });
 
 test("the routes are cards, two side by side between the page's margins", async () => {
@@ -323,15 +448,8 @@ test("a failed list says so", async () => {
   expect(await screen.findByText(/could not load/)).toBeOnTheScreen();
 });
 
-test("labels and filters", () => {
+test("labels", () => {
   expect(kmLabel(21000)).toBe("21 km");
   expect(awayText(640)).toBe("640 m away");
   expect(awayText(1440)).toBe("1.4 km away");
-  expect(filtered(routes, "heart", "all").map((r) => r.id)).toEqual([
-    "trento-heart-10000-1",
-    "trento-heart-21000-2",
-  ]);
-  expect(filtered(routes, "all", "5 km").map((r) => r.id)).toEqual([
-    "trento-star-5000-0",
-  ]);
 });

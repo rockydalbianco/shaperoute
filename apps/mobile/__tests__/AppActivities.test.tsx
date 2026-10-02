@@ -216,7 +216,7 @@ test("«My activities» in «Profile» lists the runs, with how many they are", 
 
   // Back to «Profile», then to the app.
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
-  expect(screen.getByText("LOGGED IN AS")).toBeOnTheScreen();
+  expect(screen.getByRole("header", { name: "Profile" })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Back" }));
   expect(screen.getByRole("tab", { name: "Draw", selected: true })).toBeOnTheScreen();
 });

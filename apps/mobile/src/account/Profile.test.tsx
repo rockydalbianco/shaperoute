@@ -98,7 +98,7 @@ test("sign up in «Profile», and the app remembers who when reopened", async ()
   await fireEvent.changeText(screen.getByLabelText("password"), signUpRequest.password);
   await fireEvent.press(screen.getByRole("checkbox", { name: "I am at least 16" }));
   await fireEvent.press(screen.getByTestId("account-submit"));
-  expect(await screen.findByText("LOGGED IN AS")).toBeTruthy();
+  expect(await screen.findByRole("button", { name: "Settings" })).toBeTruthy();
   expect(screen.getByText("Runner_42")).toBeTruthy();
   expect(JSON.parse(String(calls("POST", "/accounts")[0][1]?.body))).toEqual(
     signUpRequest,
@@ -132,19 +132,53 @@ test("an expired token asks to log in again, without a crash", async () => {
   expect(store.kept.has(KEY)).toBe(false);
 });
 
+/** «Log out» and «Delete account» are in «Settings» (TASK-177). */
+async function openSettings() {
+  await openProfile();
+  await fireEvent.press(screen.getByRole("button", { name: "Settings" }));
+  expect(screen.getByRole("header", { name: "Settings" })).toBeTruthy();
+}
+
+test("«Settings» opens from «Profile», and «←» goes back to it", async () => {
+  store.kept.set(KEY, JSON.stringify(session));
+  accountApi({ "GET /me": () => Response.json(session.user) });
+  await render(<App />);
+  await openProfile();
+  // The first page has the ways to the pages, not the ways out.
+  expect(screen.getByRole("button", { name: /^Favorites/ })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /^My activities/ })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Log out" })).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Settings" }));
+  expect(screen.getByRole("header", { name: "Settings" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Log out" })).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  expect(screen.getByRole("header", { name: "Profile" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Settings" })).toBeTruthy();
+});
+
 test("log out, and the phone forgets the token", async () => {
   store.kept.set(KEY, JSON.stringify(session));
   accountApi({
     "GET /me": () => Response.json(session.user),
     "DELETE /session": () => new Response(null, { status: 204 }),
+    "POST /session": () => Response.json(session),
   });
   await render(<App />);
-  await openProfile();
+  await openSettings();
   await fireEvent.press(screen.getByRole("button", { name: "Log out" }));
   expect(screen.getByText("You are logged out on this phone.")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Log in", selected: true })).toBeTruthy();
+  expect(screen.getByRole("header", { name: "Profile" })).toBeTruthy();
   expect(calls("DELETE", "/session")).toHaveLength(1);
   expect(store.kept.has(KEY)).toBe(false);
+
+  // Back in: on «Profile», not on «Settings» where the account was left.
+  await fireEvent.changeText(screen.getByLabelText("email"), signUpRequest.email);
+  await fireEvent.changeText(screen.getByLabelText("password"), signUpRequest.password);
+  await fireEvent.press(screen.getByTestId("account-submit"));
+  expect(await screen.findByRole("button", { name: "Settings" })).toBeTruthy();
+  expect(screen.getByRole("header", { name: "Profile" })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Log out" })).toBeNull();
 });
 
 test("«Delete account» asks first, then deletes", async () => {
@@ -154,7 +188,7 @@ test("«Delete account» asks first, then deletes", async () => {
     "DELETE /me": () => new Response(null, { status: 204 }),
   });
   await render(<App />);
-  await openProfile();
+  await openSettings();
   await fireEvent.press(screen.getByRole("button", { name: "Delete account" }));
   expect(screen.getByText(/^Delete your account\?/)).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Keep my account" }));

@@ -78,23 +78,28 @@ adattiva, il fondo è nero e l'icona a un colore è il segno bianco. In Expo
 Go sulla schermata di casa resta l'icona di Expo Go: la nostra si vede con
 una build propria. Dentro l'app il nome in cima a «Draw» resta un testo.
 
-**La schermata di avvio** (TASK-165, ADR-0134): fondo `background`, il logo
-giallo al centro. Su iOS il logo intero, largo 260 punti
-(`assets/splash-logo.png`); su Android il segno da solo
-(`assets/splash-icon.png`), perché il sistema ritaglia l'immagine in un
-cerchio. La genera il plugin `expo-splash-screen` da `app.json`: nessun
-codice la tiene aperta, sparisce quando l'app è pronta. Come l'icona, si
-vede solo in una build propria.
+**La schermata di avvio** (TASK-165, ADR-0134; gialla da TASK-181): fondo
+giallo `accent`, il logo nero al centro. Su iOS il logo intero, largo 260
+punti (`assets/splash-logo-dark.png`); su Android il segno da solo
+(`assets/splash-icon-dark.png`), perché il sistema ritaglia l'immagine in
+un cerchio. La genera il plugin `expo-splash-screen` da `app.json`, dove il
+giallo è scritto (`#FFD02B`: `app.json` non legge i token). Nessun codice la
+tiene aperta, sparisce quando l'app è pronta. Come l'icona, si vede solo in
+una build propria.
 
-**L'animazione all'avvio** (TASK-179, ADR-0147): dopo la schermata di avvio,
-e in Expo Go al suo posto, il giallo `accent` riempie lo schermo dal centro
-e una penna disegna un cuore, nero `onAccent`: è il percorso a cuore di
-Milano da 10 km, quello del video. Sotto, il logo intero, nero. Tempi:
-0,35 s il giallo, 1,6 s il disegno, 0,45 s fermo, 0,3 s di dissolvenza
-sull'app; il giallo si vede 2,4 secondi. L'app parte sotto e si carica
-intanto; l'animazione prende i tocchi finché c'è, non si salta, e si vede
-una volta a ogni apertura. Sta in `src/intro/`, sopra `App`
-(`index.ts`). Al lettore di schermo dice «Sgrava».
+**L'animazione all'avvio** (TASK-179, ADR-0147; TASK-181): dopo la
+schermata di avvio, e in Expo Go al suo posto, lo schermo è giallo `accent`
+dal primo fotogramma, senza nero in mezzo, e una penna disegna un cuore,
+nero `onAccent`: è il percorso a cuore di Milano da 10 km, quello del
+video. Sotto, il logo intero, nero (la stessa immagine della schermata di
+avvio). Tempi: 0,35 s la penna aspetta sul punto di partenza, 1,6 s il
+disegno, 0,45 s fermo, 0,3 s di dissolvenza sull'app; il giallo si vede
+almeno 2,4 secondi. Il cuore finito resta sempre i suoi 0,45 s: se il
+telefono è lento e il disegno finisce tardi, la dissolvenza aspetta.
+L'app parte sotto e si carica intanto; l'animazione prende i tocchi finché
+c'è, non si salta, e si vede una volta a ogni apertura. Sta in
+`src/intro/`, sopra `App` (`index.ts`). Al lettore di schermo dice
+«Sgrava».
 
 ## Le due schermate
 
@@ -272,8 +277,16 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   of 100»), il titolo e una riga «Horse · 19.2 km · 1 h 41 min». Sono le
   figure venute meglio nelle sette città del catalogo, due per città e
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
-  inventati. Le schede non si toccano: aprire un disegno arriva con
-  TASK-118.
+  inventati.
+  **Un tocco su una scheda apre il suo percorso** sulla mappa (TASK-188,
+  ADR-0151, chiesto dall'utente), come un percorso di «Explore»: la stessa
+  scheda con km, forma e città, «Start» per correrlo, «Export GPX», e il
+  cuore dei preferiti in alto a destra. «←» e «Back to the list» tornano a
+  «Feed». Il percorso è quello del catalogo da cui il disegno è nato: se
+  nel catalogo non c'è più, la scheda dice «The route could not load. Try
+  again.» e non mostra un altro percorso al suo posto. Un dito che scorre
+  sopra una scheda non la apre. Like, commenti e il profilo di chi ha corso
+  arrivano con TASK-118.
   **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
   chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
   stile dell'app. È una foto, non una mappa da muovere: la fa una pagina
@@ -287,7 +300,8 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   ha più «←»: per tornare c'è lo swipe, o il nome «Draw».
 - La mappa, la corsa e la sua fine prendono tutto lo schermo: lì i nomi e
   lo swipe non ci sono. «←» da un percorso di «Explore» torna sulla pagina
-  «Explore», da un percorso disegnato su «Draw».
+  «Explore», da un disegno di «Feed» su «Feed» (TASK-188), da un percorso
+  disegnato su «Draw».
 - Uno swipe chiude la tastiera.
 - Una pagina fuori dallo schermo non la legge nemmeno VoiceOver.
 - **Da provare con il dito**: lo swipe stesso, e le righe che scorrono di
@@ -295,7 +309,7 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   che la riga scorra lei e che lo swipe fra le pagine parta da fuori; su
   Android non è stato provato niente.
 
-## «Profile» (TASK-115, ADR-0125; TASK-154)
+## «Profile» (TASK-115, ADR-0125; TASK-154; TASK-177, ADR-0145)
 
 In alto a destra, accanto ai nomi delle pagine, un pulsante tondo apre
 **«Profile»**, l'account: mostra l'iniziale di chi è entrato, o una
@@ -311,13 +325,28 @@ regole dell'API, e l'errore si dice in parole sotto il pulsante (sotto,
 «Quando non va»). Si apre su «Sign up»; dopo «Log out» o una sessione
 finita, su «Log in».
 
-**«Profile» con l'account**: «LOGGED IN AS», il nome e l'email; la riga
-«Favorites», con quanti sono, che apre la pagina dei preferiti (sotto,
-«Favorites»), e sotto la riga «My activities», con quante sono le corse
-salvate, che apre la loro pagina (sotto, «My activities»); «Log out»;
-«Delete account», in rosso, che chiede prima sulla
-schermata stessa: «Delete my account» o «Keep my account». Nessun pulsante
-dell'account è giallo.
+**«Profile» con l'account** (TASK-177, ADR-0145): in alto un cerchio con
+l'iniziale, il nome e l'email. Sotto, due riquadri affiancati: **«Favorites»**
+con un cuore (❤️) e **«My activities»** con l'uomo che corre (🏃‍♂️), ognuno
+con il suo numero in grande (un trattino finché l'elenco non è arrivato);
+aprono le loro pagine (sotto, «Favorites» e «My activities»). Poi la riga
+**«Settings»** (⚙️). Le emoji sono l'unico colore che non viene dai token;
+nessun pulsante dell'account è giallo.
+
+**«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
+
+- **«Account»**: nome ed email; poi «Profile picture», «Change email» e
+  «Phone number», con la scritta «Soon».
+- **«Preferences»**: «Units», «Soon». **«Notifications»**: «Email
+  notifications» e «Push notifications», «Soon». **«About»**: «Help»,
+  «Terms», «Privacy», «Soon».
+- In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
+  sulla schermata stessa: «Delete my account» o «Keep my account».
+
+Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
+interruttori, perché dietro non c'è ancora niente (le accendono TASK-178,
+182, 183, 184, 185). Usciti dall'account da «Settings», chi rientra trova
+«Profile».
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -326,10 +355,10 @@ dell'account è giallo.
   o a una richiesta: l'app esce da sola, il pulsante di «Profile» ha un
   pallino arancio e «Profile» dice «Your session has ended. Log in
   again.». «Draw» va come prima.
-- **«Log out»** esce subito, anche senza rete, e dice «You are logged out
-  on this phone.».
-- **«Delete account»** esce solo con il sì dell'API; se l'API non risponde
-  l'account resta e la scheda dice perché. Fatto, dice «Your account and
+- **«Log out»**, in «Settings», esce subito, anche senza rete, e dice «You
+  are logged out on this phone.».
+- **«Delete account»**, in «Settings», esce solo con il sì dell'API; se
+  l'API non risponde l'account resta e la pagina dice perché. Fatto, dice «Your account and
   everything that was yours have been deleted.» e torna a «Sign up».
 - **Senza account** si disegna, si esplora e si corre come prima: il token
   lo vogliono solo l'account, i preferiti e le corse salvate.

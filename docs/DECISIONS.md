@@ -4809,6 +4809,16 @@ scrive anche `android.package` in `app.json` e cambia due script di
 schermata finché i dati sono pronti vorrebbe `preventAutoHide` in `App.tsx`:
 un task a parte, se servirà.
 
+**Aggiornamento 2026-10-02 (TASK-181)** — **scelta dell'utente** («sì, fai
+gialla anche la schermata di avvio nativa»): il fondo è `#FFD02B`, il
+giallo `accent`, e le immagini sono nere: `assets/splash-logo-dark.png` su
+iOS e `assets/splash-icon-dark.png` su Android, le stesse di prima con ogni
+pixel a `#0A0A0B`. Larghezze invariate (260 e 240). Le due immagini gialle
+sono cancellate: niente le usa più. Così l'avvio è giallo dall'inizio alla
+fine, schermata nativa e animazione (ADR-0147). Il prebuild di iOS genera
+`SplashScreenBackground` a 255, 208, 43 e il logo nero di 260 × 260 al
+centro.
+
 ## ADR-0130 — Nel catalogo solo parole corte
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («Solo parole
 corte»); l'elenco preciso deciso dall'agente su delega dell'utente
@@ -5515,6 +5525,29 @@ una riga di `app.json`, lasciata all'utente. La barra di stato resta
 chiara sul giallo: la decide `App.tsx`. Chi ha «Riduci movimento» vede la
 stessa animazione.
 
+**Aggiornamento 2026-10-02 (TASK-181)**, deciso dall'agente su delega
+dell'utente dopo la sua scelta della schermata nativa gialla (ADR-0134,
+aggiornamento):
+- **L'animazione parte già gialla.** Il fondo è `accent` dal primo
+  fotogramma e il cerchio che riempiva lo schermo dal nero non c'è più:
+  dopo una schermata nativa gialla sarebbe stato giallo, nero, giallo. I
+  0,35 s restano come attesa della penna sul punto di partenza; il giallo
+  si vede sempre 2,4 secondi. Il logo è `splash-logo-dark.png`, senza
+  `tintColor`.
+- **Attesa e disegno sono una sola animazione nativa**, che parte al primo
+  fotogramma (`penProgress`: ferma per l'attesa, poi il disegno). Filmando
+  con il Mac molto carico, il disegno partiva in ritardo: fra l'attesa e il
+  disegno serviva un passaggio dal JavaScript, occupato ad avviare l'app,
+  mentre il timer dell'uscita scattava puntuale e la dissolvenza tagliava
+  il cuore a metà. Era così anche nella versione pubblicata di TASK-179.
+- **L'uscita segue la fine del disegno**: il cuore finito resta 0,45 s, e
+  comunque l'animazione non dura meno di 2,4 s (con le animazioni spente
+  il disegno finisce subito). Il timer da solo è scartato per il motivo
+  qui sopra; la sola fine del disegno era già scartata.
+
+Resta com'era: il logo passa dal centro (schermata nativa) a sotto il cuore
+con un salto. Si giudica in una build propria.
+
 ## ADR-0140 — «My activities»: «Save» a fine corsa, e i numeri della corsa li conta l'API
 **Stato**: Attiva · 2026-10-02 · **scelte dell'utente** per il cosa («le
 mie attività con tutte le attività che hanno registrato, con lo storico:
@@ -5624,3 +5657,125 @@ punteggio di una corsa salvata non cambia se il motore cambia. TASK-117 parte da
 `runs` con una migrazione sua (traccia tagliata, «pubblica», il titolo
 dell'utente: `title` qui è cosa disegna il percorso) e il suo task file
 va aggiornato da chi lo prende.
+
+## ADR-0151 — Un disegno di «Feed» si apre come un percorso di «Explore», e il suo percorso si ritrova dalla partenza
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («quando
+sono in feed […] cliccare sull'attività delle persone inventate e mettere
+nei preferiti o fare inizia percorso»); il come deciso dall'agente su
+delega dell'utente (TASK-188).
+
+**Contesto**: i disegni di «Feed» sono esempi (ADR-0127): corridori, titoli,
+tempi e punteggi inventati, ma la linea è di un percorso vero del catalogo
+(ADR-0098), e l'`id` del disegno è l'`id` di quel percorso. Sulla mappa un
+percorso di «Explore» ha già tutto ciò che l'utente chiede: il cuore dei
+preferiti (ADR-0139), «Start» con le indicazioni (TASK-145), il GPX. Il
+disegno ha la linea con 120 punti, pochi per correrla: serve il percorso
+intero. E l'`id` di un percorso del catalogo è la sua **posizione nel file
+della città**: il catalogo è cresciuto dopo che il feed è stato scritto, e
+sotto `roma-butterfly-21000-11` oggi c'è un cerchio di 5 km (la farfalla è
+alla posizione 12).
+
+**Decisione**:
+- **Un tocco sulla scheda apre il percorso sulla mappa**, con la scheda di
+  «Explore» (`useExplored`, `ExploredCard`): niente pulsanti nuovi sulla
+  scheda del feed. Cuore, «Start» e GPX sono quelli che ci sono già; «←» e
+  «Back to the list» tornano alla pagina da cui si è partiti, che `App.tsx`
+  ricorda in uno stato (`routeList`).
+- **Il percorso si chiede per `id` e si controlla**: è quello del disegno
+  solo se ha la stessa città, la stessa forma e la stessa lunghezza
+  (`isRouteOf`). Se sotto l'`id` c'è un altro percorso, o nessuno, lo si
+  cerca fra i percorsi che partono dove parte il disegno
+  (`GET /recommended-routes` attorno al primo punto della linea) e si
+  chiede quello. `useExplored.open` prende, da chi apre, un modo diverso
+  di chiedere il percorso intero; senza, chiede per `id` come prima.
+- **Se il percorso non c'è più, non se ne apre un altro**: la scheda dice
+  «The route could not load. Try again.», come per un percorso che non
+  arriva. Un percorso sbagliato sotto il titolo di un altro sarebbe peggio
+  di un messaggio.
+- **Uno swipe non è un tocco**: «Feed» è la prima pagina, uno swipe verso
+  destra non fa scorrere niente, nessuno toglie il tocco alla scheda e il
+  dito alzato sopra di lei contava come un tocco (visto nel simulatore).
+  La scheda ricorda dove il dito è sceso e ignora un dito che si è mosso
+  più di 12 punti.
+- La scheda è un pulsante solo quando chi la mostra le dà cosa aprire: in
+  «Explore», fra i disegni mostrati mentre una città si disegna (ADR-0132),
+  resta da guardare.
+
+**Alternative scartate**: cuore e «Start» sulla scheda del feed (due
+pulsanti per quindici schede, e «Start» senza aver visto dove si parte;
+si può aggiungere, vedi il task file); mettere il percorso intero nel
+file del feed (da 120 a 300–1600 punti per disegno, nel pacchetto
+dell'app, e una copia che invecchia); correggere a mano gli `id` nel file
+(lo scrive `tools/sample_feed.py`, e il catalogo cambierà ancora);
+riscrivere il feed sul catalogo nuovo (cambia i disegni che l'utente
+vede: è il seguito di TASK-161); `id` stabili nel catalogo (cambia un
+contratto dell'API usato dai preferiti e da «Explore»: un task suo).
+
+**Conseguenze**: un disegno apre in una richiesta se il suo `id` regge,
+in tre se è cambiato. La ricerca dalla partenza vede i 60 percorsi
+migliori entro 5 km (i limiti dell'API): la città più ricca ne ha 37.
+Mentre il percorso arriva, la scheda sulla mappa dice «looks N% like it»
+con il punteggio inventato del disegno, poi con la somiglianza vera del
+percorso (di solito più alta): meno di un secondo. Il preferito salvato
+da un disegno è il percorso, non il post: non ricorda chi l'ha «corso».
+Le schede di «Explore», ultima pagina, hanno probabilmente lo stesso
+difetto dello swipe verso sinistra: da guardare in un task suo.
+
+## ADR-0145 — «Profile»: emoji per le voci, due riquadri con il numero, l'account in «Settings»
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («cambia
+un po' la grafica, rendila più accattivante», un cuore accanto a
+«Favorites», l'uomo che corre «come emoji» accanto alle attività, una
+sezione «Settings» da riempire «con calma»); il come deciso dall'agente su
+delega dell'utente (TASK-177).
+
+**Contesto**: «Profile» con l'account era una scheda «LOGGED IN AS», un
+elenco di righe di solo testo e, sotto, «Log out» e «Delete account»: tutto
+grigio, con i due comandi che si usano una volta sola in vista quanto le
+cose che si aprono ogni giorno.
+
+**Decisione**:
+- **Le voci hanno un'emoji**: ❤️ «Favorites», 🏃‍♂️ «My activities», ⚙️
+  «Settings», ognuna in un tondo `surfaceRaised`. L'app non ha icone e
+  una libreria di icone sarebbe una dipendenza nuova; l'emoji è il
+  carattere che l'utente ha chiesto, e porta l'unico colore di «Profile»
+  che non viene dai token. Non è giallo, quindi non si confonde con il
+  percorso. Il cuore sulla mappa resta il carattere «♡»/«♥» di ADR-0139: è
+  un comando con due stati, neutro come «←».
+- **«Favorites» e «My activities» sono due riquadri affiancati** con il
+  numero in grande (`fontSize.display`) e il nome sotto: il numero è la
+  cosa che cambia, e si legge senza aprire la pagina. Finché l'elenco non
+  è arrivato c'è un trattino, non uno zero.
+- **In alto chi è**: un cerchio con l'iniziale, come il pulsante che apre
+  «Profile», poi nome ed email. «LOGGED IN AS» sparisce: lo dice il
+  cerchio. La foto prenderà il posto dell'iniziale con TASK-178.
+- **«Log out» e «Delete account» stanno in «Settings»**, con l'account
+  (nome, email), senza cambiare comportamento né testi. «Settings» è una
+  pagina di «Profile» come «Favorites»: «←» torna a «Profile».
+- **Le voci da sviluppare ci sono già, con «Soon»**: l'utente ha
+  elencato cosa vuole in «Settings» (foto, cambiare email, numero di
+  telefono, unità di misura, notifiche email e push, help, termini,
+  privacy) e ha chiesto di aggiungerle subito e svilupparle dopo. Sono
+  righe con il nome e «Soon», senza interruttori e senza tocco: si vede
+  cosa arriverà e niente finge di funzionare. Ogni task che ne accende una
+  la toglie dall'elenco `COMING` di `SettingsPage.tsx`.
+- **Usciti da «Settings»**, per «Log out» o per l'account cancellato, la
+  pagina torna «Profile»: chi rientra non si ritrova in «Settings».
+- **Pezzi nuovi in `src/profile/`** (`Avatar`, `ProfileHome`,
+  `SettingsPage`), che ricevono numeri e account come proprietà:
+  `ProfileScreen.tsx`, che TASK-172 cambiava nelle stesse ore, li monta e
+  basta.
+
+**Scartate**: una libreria di icone (`@expo/vector-icons`: dipendenza
+nuova, e l'utente ha chiesto un'emoji); il giallo per dare colore (il
+giallo è del percorso, `UI.md` «Il tema»); un ingranaggio accanto al titolo
+al posto della riga «Settings» (l'utente ha chiesto una sezione, come le
+altre due); lasciare «Log out» sulla prima pagina (resterebbe la cosa più
+in vista di «Profile»; l'utente ha confermato lo spostamento); interruttori
+già disegnati per le notifiche (prometterebbero una cosa che non c'è).
+
+**Conseguenze**: per uscire dall'account serve un tocco in più. Le emoji
+le disegna il telefono: su Android hanno un altro tratto. «Settings»
+mostra nove voci che ancora non fanno niente: le accendono TASK-178 (la
+foto, ADR-0146, che riusa `Avatar`), TASK-183 (email e telefono), TASK-182
+(unità), TASK-184 (help, termini, privacy, dopo TASK-152) e TASK-185
+(notifiche, per ultime).

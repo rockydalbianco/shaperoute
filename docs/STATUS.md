@@ -46,6 +46,16 @@ In coda, dopo o accanto:
   posizioni non si salva; il GPX di una corsa salvata; il cuore dei
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
   TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
+- **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
+  sulla pagina con «Soon» (TASK-177): **TASK-178** la foto del profilo
+  (ADR-0146, migrazione `0004`; è la metà «foto» di TASK-116), **TASK-183**
+  cambiare email e numero di telefono (ADR-0150, migrazione `0006`; a cosa
+  serve il numero va chiesto all'utente prima), **TASK-182** le unità di
+  misura, km o miglia (ADR-0149, solo app, tocca molti file), **TASK-184**
+  «Help», «Terms», «Privacy» (dopo TASK-152: testi e contatti), **TASK-185**
+  le notifiche email e push (per ultime: serve qualcosa da notificare, un
+  servizio di posta, `expo-notifications`, una build propria). Tutti Todo,
+  senza task file; l'utente: «li svilupperemo più avanti».
 - **Pubblicità che paga**, chiesta dall'utente il 2026-10-02: **TASK-150**
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
@@ -112,6 +122,40 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-177: «Profile» con un aspetto nuovo e «Settings», chiesti
+  dall'utente (ADR-0145). Con l'account, in alto il cerchio con l'iniziale,
+  il nome e l'email; due riquadri con ❤️ «Favorites» e 🏃‍♂️ «My activities»
+  e il loro numero in grande; la riga ⚙️ «Settings». «Settings» è una
+  pagina a sezioni: l'account, le nove voci che l'utente ha elencato
+  (foto, email, telefono, unità, notifiche, help, termini, privacy) con
+  «Soon» e senza tocco, e in fondo «Log out» e «Delete account», spostati
+  lì con il sì dell'utente. Visto nel simulatore con un'API locale; i
+  tocchi sono coperti dai test. **Il server è aggiornato** a `main`
+  `781fb18` dal 2026-10-02 13:32Z (ok dell'utente; migrazione `0003_runs`
+  applicata, 15 s di API ferma, immagine di prima
+  `shaperoute-api:before-task172`). **Da fare**: pubblicare l'app su
+  `preview` (ok dell'utente già dato), poi **da provare sull'iPhone**.
+- **App** — TASK-188: un tocco su un disegno di «Feed» apre il suo
+  percorso sulla mappa, chiesto dall'utente (ADR-0151): la scheda di
+  «Explore», con il cuore dei preferiti, «Start» e il GPX; «←» torna a
+  «Feed». Il percorso è quello del catalogo: se il suo `id` è cambiato lo
+  si ritrova dalla partenza, se non c'è più la scheda lo dice e non ne
+  apre un altro. Uno swipe sopra una scheda non la apre. Solo app. Provato
+  in un simulatore con un'API e un database usa e getta: aprire, salvare
+  il preferito, «Start», «←». **Da pubblicare su `preview`** con l'ok
+  dell'utente, poi **da provare sull'iPhone**. Seguiti: lo stesso swipe
+  sulle schede di «Explore»; una domanda per l'utente nel task file (cuore
+  e «Start» anche sulla scheda del feed).
+- **App** — TASK-181: l'avvio tutto giallo, chiesto dall'utente (seguito di
+  TASK-179; aggiornamenti di ADR-0134 e ADR-0147). La schermata di avvio
+  nativa è gialla con il logo nero (`app.json`), e l'animazione parte già
+  gialla, senza il nero iniziale. Corretto anche un difetto visto filmando
+  con il Mac carico: il cuore poteva partire tardi ed essere tagliato dalla
+  dissolvenza; ora attesa e disegno sono una sola animazione e l'uscita
+  aspetta il cuore finito. Prebuild di iOS controllato, animazione filmata
+  in un simulatore. **Da pubblicare su `preview`** con l'ok dell'utente (in
+  Expo Go cambia l'inizio dell'animazione); la schermata nativa **si vede
+  solo in una build propria** (TASK-152).
 - **API e app** — TASK-172: «My activities», chiesto dall'utente
   (ADR-0140). Con un account, a fine corsa «Save» mette la corsa in «My
   activities» e «Discard» la butta, dopo una conferma (scelta nuova

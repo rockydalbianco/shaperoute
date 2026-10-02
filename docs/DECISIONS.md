@@ -4174,3 +4174,42 @@ da confrontare); salvare le corse finite (è la cronologia, TASK-117).
 della pagina della mappa (seguito possibile). Il messaggio di «Pocket»
 parla di indicazioni anche qui. Da provare sull'iPhone, anche la voce a
 schermo nero.
+
+## ADR-0126 — «Explore»: gli esempi di una città con le alternative A · B · C
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («seleziono New York
+e un cuore da 5,2 km: non ci sono le tre opzioni»); il come deciso
+dall'agente su delega dell'utente (TASK-151).
+
+**Contesto**: un esempio di città (ADR-0116) è un percorso chiesto
+all'API come uno disegnato, e l'API manda già fino a due alternative
+(ADR-0087; sul server da ADR-0121). L'app teneva solo il primo percorso,
+quindi la scheda di «Explore» non aveva le tessere. `App.tsx`, che passa
+alla scheda il percorso aperto, è di altri tre task in corso.
+
+**Decisione**:
+- **L'esempio tiene le alternative**, ognuna un percorso intero
+  (`ExampleDetail.alternatives`), in memoria e nel file sul telefono. Il
+  campo c'è sempre, anche vuoto.
+- **Un esempio salvato senza il campo si ridisegna**, una volta: è di
+  prima di questo task, e senza rifarlo le città già viste non avrebbero
+  mai le tessere. Con la zona in cache sono pochi secondi a forma.
+- **La scelta sta dentro il percorso aperto** (`useExplored`): `choices`,
+  `chosen`, `choose`, e `route`, `detail`, `request`, `result` sono quelli
+  del percorso scelto. `App.tsx` li legge già così, quindi mappa, «Start»
+  (ADR-0117) e GPX seguono la scelta senza toccarlo. Ogni percorso ha il
+  suo `result`, fatto una volta: è da quello che «Start» e l'export
+  riconoscono un percorso.
+- **Le tessere sono quelle di sempre** (`RouteTiles`), sopra «Start».
+  Mentre si aspettano le indicazioni un tocco non cambia percorso: la
+  risposta in arrivo è di quello scelto.
+
+**Scartate**: tenere la scelta in `App.tsx` come per i percorsi disegnati
+(il file è occupato; da rivedere insieme alle linee grigie); mostrare gli
+esempi vecchi senza tessere (l'utente non le vedrebbe mai sul cuore che
+ha già); un file nuovo sul telefono (lascerebbe il vecchio orfano).
+
+**Conseguenze**: gli altri percorsi non sono in grigio sulla mappa e la
+scelta non manda il segnale di ADR-0112: tutte e due le cose passano da
+`App.tsx`, seguiti scritti in `tasks/TASK-151.md`. I percorsi del catalogo
+e quelli a tema restano uno solo. Provato sull'API del Mac a New York:
+cuore, cerchio e stella da 5 km arrivano con due alternative ciascuno.

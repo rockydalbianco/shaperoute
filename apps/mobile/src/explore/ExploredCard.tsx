@@ -8,6 +8,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { RouteTiles } from "../route/RouteTiles";
 import type { ExportState } from "../route/useGpxExport";
 import { RunWithStrava } from "../strava/RunWithStrava";
 import type { Explored } from "./explored";
@@ -50,6 +51,15 @@ export function ExploredCard({
       {explored.status === "failed" && (
         <Text style={styles.error}>The route could not load. Try again.</Text>
       )}
+      {/* A city's example with the API's alternatives: A · B · C (TASK-151). */}
+      {explored.status === "done" && (
+        <RouteTiles
+          choices={explored.choices}
+          chosen={explored.chosen}
+          // The directions being asked for are those of the route chosen.
+          onChoose={start.status === "loading" ? keepChoice : explored.choose}
+        />
+      )}
       {explored.status === "done" && <ExploreStart start={start} onStart={onStart} />}
       {explored.status === "done" && (
         <Pressable
@@ -76,6 +86,8 @@ export function ExploredCard({
     </View>
   );
 }
+
+function keepChoice(): void {}
 
 const styles = StyleSheet.create({
   panel: {

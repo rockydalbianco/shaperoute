@@ -149,6 +149,15 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    scheda dice perché in rosso e «Start» riprova; «Back to the list» o «←»
    lasciano perdere l'attesa.
 
+   **Da TASK-151** un esempio di città aperto sulla mappa ha le tessere
+   «A · B · C» (sotto, «Il risultato»), sopra «Start», quando l'API ha
+   mandato delle alternative: A è il percorso del motore. Una tessera
+   toccata diventa il percorso: km e somiglianza della scheda, la linea
+   sulla mappa, «Start» e «Export GPX» sono i suoi. Mentre si aspettano le
+   indicazioni la scelta resta ferma. Gli altri percorsi non sono ancora
+   disegnati in grigio sulla mappa. Un percorso consigliato o a tema è uno
+   solo: niente tessere. Gli esempi salvati prima si ridisegnano una volta.
+
 Passare da una schermata all'altra:
 
 - «←» torna alla scelta con forma e distanza di prima. Se il percorso è

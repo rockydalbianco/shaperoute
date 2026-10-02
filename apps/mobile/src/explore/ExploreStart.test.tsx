@@ -17,10 +17,20 @@ import type { StartView } from "./useStartDirections";
 const [route] = isRecommendedList(listed) ? listed.routes : [];
 const whole = detail as RecommendedRouteDetail;
 const request = toRequest(whole);
+const result = toResult(whole);
 const explored: Explored =
   request === null
     ? { status: "failed", route }
-    : { status: "done", route, detail: whole, request, result: toResult(whole) };
+    : {
+        status: "done",
+        route,
+        detail: whole,
+        request,
+        result,
+        choices: [result],
+        chosen: 0,
+        choose: jest.fn(),
+      };
 const themed = done.result as ThemedResult;
 const asked = { text: "luoghi famosi a Milano", centre: null, city: null };
 

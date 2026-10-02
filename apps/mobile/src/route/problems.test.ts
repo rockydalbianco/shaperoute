@@ -105,10 +105,10 @@ test.each([null, undefined, 30_000])(
 
 test("by bike the distance offered is within 10–30 km (TASK-190)", () => {
   const notDrawable = {
-    kind: "api_error" as const,
+    kind: "api_error",
     code: "shape_not_drawable",
     message: FAR,
-  };
+  } as const satisfies RouteProblem;
   // Over a run's 21 km, within the bike's 30.
   expect(
     problemText({ ...notDrawable, suggested_distance_m: 25_000 }, "shape", "cycling"),

@@ -5492,7 +5492,10 @@ della città, sotto il campo di ricerca.
   solo cuore, cerchio e stella (ADR-0132), ricevono così le altre cinque.
   Senza una città scelta non si disegna niente: una richiesta dalla
   posizione di chi usa l'app non resta sull'API (ADR-0136), e si rifarebbe
-  a ogni apertura.
+  a ogni apertura. Sulle schede aggiunte la città ha il nome che le danno
+  le sue schede del catalogo («Milano», dove la ricerca dice «Milan»): è
+  quello del percorso che parte più vicino al centro, entro un chilometro
+  (`ownCityName`); vale anche per la scheda sulla mappa.
 - **I disegni del feed sotto gli esempi** (ADR-0132) restano legati alle
   prime tre forme: quando arrivano le altre c'è già qualcosa da scegliere.
 - **«Near me» è la prima voce della fila delle città**, con il segno della

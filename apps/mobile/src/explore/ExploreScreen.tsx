@@ -63,6 +63,23 @@ type Props = {
 };
 
 const NO_ROUTES: RecommendedRoute[] = [];
+/** A route starting this near a city's centre is one of the city's own. */
+const OWN_ROUTE_M = 1000;
+
+/**
+ * The name the city's own routes give it: the catalog says "milano" where
+ * the search says "Milan". From the route starting nearest the centre;
+ * none when even that one starts in another town.
+ */
+export function ownCityName(routes: RecommendedRoute[]): string | undefined {
+  const nearest = routes.reduce<RecommendedRoute | undefined>(
+    (best, route) => (best === undefined || route.away_m < best.away_m ? route : best),
+    undefined,
+  );
+  return nearest !== undefined && nearest.away_m <= OWN_ROUTE_M
+    ? nearest.city
+    : undefined;
+}
 
 export function kmLabel(distanceM: number): string {
   return `${Math.round(distanceM / 1000)} km`;
@@ -156,10 +173,16 @@ export function ExploreScreen({
   const examplesCity = has === undefined ? drawnCity : null;
   const added =
     has === undefined || examples === null ? [] : addedExamples(examples, has);
-  // The city's routes, then the shapes drawn for it now: the same cards.
+  // The city's routes, then the shapes drawn for it now: the same cards,
+  // and the same name for the city, on the card and then on the map.
+  const ownName = useMemo(() => ownCityName(routes), [routes]);
   const cards = [
     ...routes,
-    ...added.flatMap((example) => (example.status === "ready" ? [example.route] : [])),
+    ...added.flatMap((example) =>
+      example.status === "ready"
+        ? [ownName === undefined ? example.route : { ...example.route, city: ownName }]
+        : [],
+    ),
   ];
   // While the first are drawn, drawings of «Feed» to look at (TASK-163): the
   // other shapes arrive when there is already something to choose.

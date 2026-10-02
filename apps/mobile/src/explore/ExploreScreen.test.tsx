@@ -11,7 +11,7 @@ import {
   forgetExamples,
   MORE_SHAPES,
 } from "./exampleRoutes";
-import { awayText, ExploreScreen, kmLabel } from "./ExploreScreen";
+import { awayText, ExploreScreen, kmLabel, ownCityName } from "./ExploreScreen";
 import type { RecommendedRoute } from "./recommendedRoutes";
 import { CARD_MAPS_CREDIT } from "./RouteCard";
 import { POSTS_SHOWN } from "./WhileDrawing";
@@ -112,15 +112,27 @@ test("a city with recommended routes: the shapes it lacks join its cards", async
   expect(order.findIndex((text) => text.startsWith("Circle · "))).toBeGreaterThan(
     order.indexOf("CIAO · 15.2 km"),
   );
-  // As the city's own cards: the shape and the km, the city and how far.
-  expect(screen.getAllByText(/^Vercelli · .* away$/)).toHaveLength(
-    1 + MORE_SHAPES.length,
+  // As the city's own cards: the shape and the km, the city and how far,
+  // and the city named as its own routes name it (the fixture's are Trento's).
+  expect(screen.queryByText(/^Vercelli · /)).toBeNull();
+  expect(screen.getAllByText(/^Trento · .* away$/)).toHaveLength(
+    routes.length + 1 + MORE_SHAPES.length,
   );
   // No section of examples, and nothing to wait for with the feed.
   expect(screen.queryByText("EXAMPLES IN VERCELLI")).toBeNull();
   expect(screen.queryByText("MEANWHILE, FROM THE FEED")).toBeNull();
   await fireEvent.press(card);
-  expect(onOpen.mock.calls[0][0]).toMatchObject({ shape: LAST, city: "Vercelli" });
+  expect(onOpen.mock.calls[0][0]).toMatchObject({ shape: LAST, city: "trento" });
+});
+
+test("the name of a city for the shapes added to its routes", () => {
+  // The route starting nearest the centre names the city...
+  expect(ownCityName(routes)).toBe("trento");
+  // ...unless even that one starts in another town: then the search's name.
+  expect(ownCityName(routes.map((r) => ({ ...r, away_m: r.away_m + 2500 })))).toBe(
+    undefined,
+  );
+  expect(ownCityName([])).toBe(undefined);
 });
 
 test("a city with recommended routes: the shape being drawn is the next card", async () => {

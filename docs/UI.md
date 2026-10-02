@@ -218,8 +218,10 @@ pagine»):
    **Una città con percorsi consigliati** mostra quelli, senza la sezione
    degli esempi, e in più fa disegnare le forme che non ha fra quelle otto:
    si aggiungono in coda alle sue schede, uguali alle altre («Moon ·
-   5.0 km», «Milan · 120 m away»), con la scheda «Drawing…» per quella in
-   corso. Senza una città scelta («Near me») non si disegna niente.
+   5.3 km», «Milano · 20 m away», con la mappa sotto la linea), con la
+   scheda «Drawing…» per quella in corso. La città vi è chiamata come sulle
+   schede del catalogo («Milano», non il «Milan» della ricerca). Senza una
+   città scelta («Near me») non si disegna niente.
 
    **Da TASK-163**, chiesto dall'utente: finché uno dei primi tre esempi è
    «Next» o «Drawing…», sotto «EXAMPLES IN …» c'è **«MEANWHILE, FROM THE FEED»**,

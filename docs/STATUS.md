@@ -15,7 +15,7 @@ Sgrava gira dall'iPhone in Expo Go; l'app pubblicata usa l'API sul server
 Hetzner, in HTTPS e sempre accesa, con il database degli account; il Mac
 serve per lavorare. L'app ha tre pagine da scorrere, «Feed» (per ora
 disegni d'esempio), «Draw» ed «Explore», e «Profile» per iscriversi ed
-entrare. In «Draw» si sceglie una forma del catalogo (cerchio, cuore,
+entrare, con i preferiti e le corse salvate («My activities»). In «Draw» si sceglie una forma del catalogo (cerchio, cuore,
 stella, cavallo, luna, gatto, pesce, farfalla, lumaca, testa di cane,
 testa di coniglio, zucca, albero di Natale), una parola dalla A alla Z,
 tonda o squadrata, o una foto, e una distanza fino a 21 km: fino a tre
@@ -35,19 +35,17 @@ molti download rifiuta per qualche ora (`MAPS.md`).
 Storage Box Hetzner, che crea l'utente (`DEPLOY.md` F.13, punto 2); poi
 il servizio `offsite` sul server. Dopo, la parte social (`ROADMAP.md`,
 «La parte social») riprende da **TASK-116** (il profilo), **TASK-117**
-(salvare un disegno) e **TASK-118** (il feed vero, al posto degli esempi
+(pubblicare una corsa: salvarla è già di TASK-172, e il suo task file va
+aggiornato da chi lo prende) e **TASK-118** (il feed vero, al posto degli esempi
 di TASK-156), poi 119–121. **TASK-092 — Percorsi consigliati** (ADR-0086)
 ora ha il database e il server. Tutti Todo.
 
 In coda, dopo o accanto:
 
-- **TASK-172 — «My activities»** (ADR-0140 tenuto), chiesto dall'utente il
-  2026-10-02 insieme a «Favorites» (TASK-171): le corse registrate nel
-  profilo, con giorno, ora, luogo e l'anteprima del disegno. Il task file è
-  scritto, con le tre scelte confermate dall'utente (si salva da sola;
-  senza account resta com'è; il luogo lo trova l'API). Dipende da TASK-171
-  e, per la fine della corsa, da TASK-169. Prende la metà privata di
-  TASK-117: chi prende TASK-117 ne aggiorna lo scope.
+- **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
+  posizioni non si salva; il GPX di una corsa salvata; il cuore dei
+  preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
+  TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
 - **Pubblicità che paga**, chiesta dall'utente il 2026-10-02: **TASK-150**
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
@@ -86,6 +84,15 @@ In coda, dopo o accanto:
   avanti dentro Sgrava (app Spotify Developer sua, Premium, dipendenze
   nuove, 5 persone al massimo finché è in sviluppo); la proposta è di non
   farlo adesso (`tasks/TASK-173.md`, «La seconda parte»).
+- **Altri sport**, chiesti dall'utente il 2026-10-02: **TASK-189** («Sport»
+  in «Settings»: «Run» scelto, «Bike» e «Paddle» con «Soon»; ADR-0152, in
+  lavorazione, aspetta TASK-177), poi **TASK-190 — percorsi in bici**
+  (ADR-0153 tenuto; 10–30 km, scelta dell'utente) e **TASK-191 — percorsi
+  in canoa e paddle** (ADR-0154 tenuto; sull'acqua entro 1 km dalla riva,
+  scelta dell'utente; esempi a Lago di Garda, Lago di Como, Jesolo,
+  Riccione). I due task file sono scritti, con le domande ancora aperte:
+  da assegnare, ognuno in tre parti (motore, API, app). Nel contratto si
+  usa `activity`, che c'è già.
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -121,11 +128,27 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'utente, poi **da provare sull'iPhone**. Nelle 62 città con gli esempi già disegnati sul server
   (TASK-168) le prime tre forme arrivano subito e le altre cinque le
   disegna il primo telefono, 7–19 s l'una; poi restano sull'API per tutti.
+- **API e app** — TASK-172: «My activities», chiesto dall'utente
+  (ADR-0140). Con un account, a fine corsa «Save» mette la corsa in «My
+  activities» e «Discard» la butta, dopo una conferma (scelta nuova
+  dell'utente: non si salva più da sola), con un percorso o senza; senza
+  rete la corsa salvata aspetta sul telefono e parte alla prossima
+  apertura, una volta sola. In «Profile» la riga «My activities»
+  le conta e le elenca, venti per volta: il disegno (percorso giallo,
+  corsa chiara), giorno e ora, luogo, km, tempo, passo, punteggio; una
+  corsa si apre sulla mappa e si cancella con una conferma. Km, tempo e
+  punteggio li conta l'API dalla traccia; il luogo lo trova l'API dal
+  chilometro della partenza. Senza account una riga invita a entrare.
+  Nell'API la tabella `runs` (migrazione `0003`) e `/me/activities`.
+  **Da fare con l'ok dell'utente**: aggiornare il server (migrazione
+  `0003`, `DEPLOY.md` F.12) e pubblicare l'app; **da provare
+  sull'iPhone**: una corsa vera che compare in «My activities».
 - **App** — TASK-186: nella corsa «Map» e «Data» sono due pulsanti grandi,
   chiesto dall'utente (ADR-0137, aggiornamento): metà scheda ciascuno, alti
   56 punti, la pagina aperta più chiara. Solo app, niente API, nessuna
-  dipendenza nuova. Visto nel simulatore sulle due pagine. **Da pubblicare
-  su `preview`**, con l'ok dell'utente, poi da provare sull'iPhone. Della
+  dipendenza nuova. Visto nel simulatore sulle due pagine. Pubblicata su
+  `preview` il 2026-10-02 (update `21496dce`, da c6f1fc7), con l'ok
+  dell'utente. **Da provare sull'iPhone**. Della
   stessa richiesta: la schermata «Save» / «Discard» a fine corsa va dentro
   TASK-172 (deciso dal coordinatore); «Send to Strava» è TASK-187, che
   aspetta la risposta dell'utente.

@@ -72,5 +72,5 @@ Una cosa vista e non di questo task: nel simulatore il primo tocco su
 pagina; i tre dopo sì. Da riguardare sull'iPhone: se si ripete, è del
 conto alla rovescia (TASK-169), non dei pulsanti.
 
-**Prima che serva a qualcuno**: l'app va pubblicata su `preview`, con l'ok
-dell'utente.
+Pubblicata su `preview` il 2026-10-02, con l'ok dell'utente (update
+`21496dce`, da c6f1fc7): resta da provare sull'iPhone.

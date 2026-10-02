@@ -25,7 +25,7 @@ fine corsa; si corre anche senza percorso.
 percorsi a tema dai luoghi veri, e «Start». Un annuncio di prova prima di
 ogni percorso, solo nella build propria. Le ricerche insegnano sinonimi e
 correzioni, applicati a mano (`INSIGHTS.md`). Tempi: 3–10 km nelle zone in
-cache in 5–25 s, da 15 a 21 km in 30–50 s. 52 città italiane e 10 estere
+cache in 5–25 s, da 15 a 21 km in 30–50 s. 52 città italiane, Rovereto e 10 estere
 hanno la zona già sul server; le altre la scaricano da Overpass, che dopo
 molti download rifiuta per qualche ora (`MAPS.md`).
 
@@ -63,7 +63,14 @@ In coda, dopo o accanto:
   quando l'estratto invecchia (TASK-137); il segnale della scelta fra
   A · B · C negli esempi (TASK-151); la linea intera a fine corsa
   (TASK-149); zone scaricate con un margine (TASK-143); un GraphML già
-  rotto (TASK-133); la password dimenticata, che vuole la posta (TASK-114).
+  rotto (TASK-133); la password dimenticata, che vuole la posta (TASK-114);
+  un esempio sul server costa 7–19 s contro 1–2,5 del Mac (TASK-168, dai
+  log): il piano dalla partenza, più l'attesa delle tre partenze vicine,
+  che ogni richiesta fa in tre processi nuovi su 4 vCPU condivise (fino a
+  3 s dopo un piano buono, 8 altrimenti); il grafo pesa 0,3–2 s, 8,8 alla
+  prima lettura di una zona estera grande; i 4 minuti di Rovereto erano
+  tre download da Overpass, uno per forma. Per scendere serve il motore:
+  processi tenuti accesi, o esempi senza A · B · C (scelta dell'utente).
 - **Da provare sull'iPhone**: la navigazione camminando un percorso vero
   (TASK-049), il punteggio a fine corsa (TASK-112, 113), iscriversi ed
   entrare (TASK-115: l'API sul server ha il database dal 2026-10-02),
@@ -151,11 +158,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   posizione di qualcuno; un motore cambiato ridisegna. L'app chiede lo
   stato di ogni percorso ogni 0,5 s all'inizio, non più ogni 2 s.
   `python -m shaperoute_api.draw_examples` disegna prima gli esempi di un
-  elenco di città. **Mancano, con l'ok dell'utente**: aggiornare l'API sul
-  server (l'app pubblicata ci guadagna senza essere ripubblicata per la
-  parte dell'API), lanciare `draw_examples` sulle città con la zona, e le
-  zone delle città medie come Rovereto. Da capire dai log del server
-  perché un esempio lì costa 18 s e sul Mac 2.
+  elenco di città. **Sul server dal 2026-10-02** (10:38Z, ok dell'utente;
+  commit `ec84042`, 14 s di API ferma, immagine di prima
+  `shaperoute-api:before-task171`): `draw_examples` ha disegnato gli
+  esempi di 62 città (le 52 italiane, Rovereto e le città in evidenza
+  tranne Berlino), 186 percorsi, 13 MB, 30 minuti; lì compaiono appena
+  scelta la città. La zona di Rovereto è stata aggiunta dall'estratto
+  (84 s, 35 MB). **Venezia non riesce**: `engine_error` sulle tre forme,
+  il ritaglio attorno al centro storico è senza nodi (TASK-180). Il
+  controllo ogni 0,5 s arriva con la prossima pubblicazione dell'app.
 - **App** — TASK-170: «Run with Strava» tolto, chiesto dall'utente
   (ADR-0138, che supera ADR-0106). Nelle tre schede di un percorso
   (disegnato, di «Explore», a tema) restano «Start» ed «Export GPX»; il

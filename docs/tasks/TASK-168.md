@@ -112,3 +112,14 @@ server, `draw_examples` sulle città con la zona, le zone delle città medie
 (Rovereto), e i log del server per capire i 18 s di un esempio. Emerso: i
 disegni del feed compaiono in «Explore» anche quando gli esempi arrivano
 subito (annotato in ADR-0136, «Conseguenze»).
+
+**Sul server (2026-10-02, 10:38Z, con l'ok dell'utente).** API aggiornata
+a `ec84042` (14 s ferma; immagine di prima `shaperoute-api:before-task171`).
+`draw_examples` nel container dell'API, così la chiave non esce dal server:
+62 città (le 52 italiane, Rovereto, le città in evidenza tranne Berlino),
+186 percorsi, 13 MB, 30 minuti, mediana 27 s per città; picco di memoria
+dell'API 1,87 GiB. Trento: 39 s la prima volta, 0 s la seconda. Zona di
+Rovereto dall'estratto (`prefetch_zones --extract`, container a parte con
+4 GiB): 84 s, 35 MB; il suo cuore da 62 s a 11 s, e ora tenuto. Venezia:
+`engine_error` sulle tre forme, grafo senza nodi attorno al centro
+(TASK-180). Dai log, i 18 s di un esempio: nei seguiti di `STATUS.md`.

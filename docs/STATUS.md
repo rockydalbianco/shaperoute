@@ -19,8 +19,8 @@ entrare. In «Draw» si sceglie una forma del catalogo (cerchio, cuore,
 stella, cavallo, luna, gatto, pesce, farfalla, lumaca, testa di cane,
 testa di coniglio, zucca, albero di Natale), una parola dalla A alla Z,
 tonda o squadrata, o una foto, e una distanza fino a 21 km: fino a tre
-percorsi fra cui scegliere, il GPX, la navigazione a voce, «Run with
-Strava», il punteggio a fine corsa; si corre anche senza percorso.
+percorsi fra cui scegliere, il GPX, la navigazione a voce, il punteggio a
+fine corsa; si corre anche senza percorso.
 «Explore» propone percorsi in ogni città: esempi già disegnati, categorie,
 percorsi a tema dai luoghi veri, e «Start». Un annuncio di prova prima di
 ogni percorso, solo nella build propria. Le ricerche insegnano sinonimi e
@@ -55,9 +55,8 @@ In coda, dopo o accanto:
   (TASK-163); Berlino, che resta a Overpass, e le zone da rifare
   quando l'estratto invecchia (TASK-137); il segnale della scelta fra
   A · B · C negli esempi (TASK-151); la linea intera a fine corsa
-  (TASK-149); zone scaricate con un margine (TASK-143); l'import in Strava
-  con un account vero (TASK-135); un GraphML già rotto (TASK-133); la
-  password dimenticata, che vuole la posta (TASK-114).
+  (TASK-149); zone scaricate con un margine (TASK-143); un GraphML già
+  rotto (TASK-133); la password dimenticata, che vuole la posta (TASK-114).
 - **Da provare sull'iPhone**: la navigazione camminando un percorso vero
   (TASK-049), il punteggio a fine corsa (TASK-112, 113), iscriversi ed
   entrare (TASK-115: l'API sul server ha il database dal 2026-10-02),
@@ -86,6 +85,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-170: «Run with Strava» tolto, chiesto dall'utente
+  (ADR-0138, che supera ADR-0106). Nelle tre schede di un percorso
+  (disegnato, di «Explore», a tema) restano «Start» ed «Export GPX»; il
+  GPX è il modo di portare un percorso in un'altra app. Solo app, niente
+  API. **Da pubblicare su `preview`**, con l'ok dell'utente.
 - **App** — TASK-166: l'annuncio AdMob compare all'inizio della ricerca
   («Draw route», «Ask for a route») e copre il calcolo; alla X lo schermo
   mostra il percorso, se è pronto, o l'attesa (ADR-0102, aggiornamento).

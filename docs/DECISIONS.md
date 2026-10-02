@@ -3556,7 +3556,7 @@ animazioni di layout (su Android chiedono API sperimentali).
 luoghi (Family, Running in centro) lo dicono con `no_places`.
 
 ## ADR-0106 — Strava: il flusso ufficiale, senza account collegato
-**Stato**: Attiva · 2026-10-01 · scelta dell'utente («flusso ufficiale»);
+**Stato**: Superata da ADR-0138 · 2026-10-01 · scelta dell'utente («flusso ufficiale»);
 il come deciso dall'agente su delega dell'utente (TASK-135)
 
 **Contesto**: l'utente vuole «Avvia con Strava»: trasferire il percorso e
@@ -4953,3 +4953,31 @@ per i filtri; tenere le due file di chip.
 e «Feed»); `Chips` non c'è più. Le righe che scorrono di lato
 dentro la pagina restano due, le città e le scelte di un filtro aperto. Da
 provare con il dito sull'iPhone.
+
+## ADR-0138 — Niente «Run with Strava»: da un percorso si esce con il GPX
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («L'impostazione
+run with strava la vorrei togliere»); il come deciso dall'agente su delega
+dell'utente (TASK-170). Supera ADR-0106.
+
+**Contesto**: «Run with Strava» (ADR-0106) era un pulsante sotto «Export
+GPX» in ogni scheda di un percorso. Strava non lascia creare percorsi ad
+altre app, quindi il pulsante apriva solo una spiegazione in tre passi:
+salvare il GPX, importarlo a mano dal sito di Strava, seguirlo dall'app
+Strava. L'utente non lo vuole più.
+
+**Decisione**: il pulsante e la sua scheda si tolgono dalle tre schede
+(percorso disegnato, di «Explore», a tema), e `apps/mobile/src/strava/` si
+cancella. Per portare un percorso in un'altra app resta «Export GPX», che
+già apre il foglio di condivisione. Il segnale `route_chosen` non cambia:
+il pulsante di Strava contava come `via: "gpx"`, lo stesso valore di
+«Export GPX».
+
+**Alternative scartate**: tenere il codice e nascondere il pulsante dietro
+un interruttore (codice morto da mantenere e da provare; torna con git se
+serve); tenere una riga di aiuto su Strava vicino a «Export GPX» (non
+chiesta: è una scelta di prodotto).
+
+**Conseguenza**: una riga in meno in ogni scheda di un percorso. Fuori
+dall'app non c'era niente da togliere: ADR-0106 non aveva account
+collegati, token, chiavi né parti nell'API o sul server. Se Strava aprirà
+la creazione di percorsi via API, si riparte da ADR-0106.

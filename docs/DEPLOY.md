@@ -592,7 +592,7 @@ curl http://127.0.0.1:8000/health
 ```
 
 `db` e `api` devono essere `Up (healthy)`, dopo una ventina di secondi,
-`backup` `Up`, e `/health` rispondere `{"status":"ok"}`. Cosa dice l'API, all'avvio e a ogni
+`backup` e `offsite` `Up`, e `/health` rispondere `{"status":"ok"}`. Cosa dice l'API, all'avvio e a ogni
 richiesta: `docker compose logs -f api` (esci con `Ctrl+C`). All'avvio
 deve dire «API key required in the X-API-Key header», «Places suggested
 by Geoapify», «… recommended routes from catalog/seed», con un numero
@@ -735,8 +735,8 @@ Sul server, da `~/shaperoute/deploy`:
 | Togliere le immagini vecchie | `docker image prune` |
 | Spegnere l'AI | togli `ai` da `COMPOSE_PROFILES`, poi `docker compose stop ollama` |
 
-- **Copie di sicurezza**: il database si copia da solo ogni notte, e il
-  Mac si prende le copie e gli eventi delle ricerche (F.13). Le zone si
+- **Copie di sicurezza**: il database si copia da solo ogni notte, e le
+  copie e gli eventi delle ricerche vanno nello Storage Box (F.13). Le zone si
   riprendono dal Mac (F.5), il resto da GitHub. Prima di un aggiornamento
   grosso, una copia subito: `docker compose exec backup bash /backup.sh
   now`.
@@ -849,8 +849,7 @@ Due minuti di API ferma. Sul server, come `root`:
    nome `sslip.io` di oggi e `COMPOSE_PROFILES=public`, e `docker compose
    up -d`.
 5. Dall'iPhone, un percorso: l'app non cambia indirizzo né chiave.
-6. Dal Mac, le copie (F.13): `deploy/mac/install-pull-backups.sh
-   root@<server>`.
+6. Le copie fuori dal server: lo Storage Box (F.13), quando c'è.
 
 Se qualcosa va storto si torna indietro: `docker compose down`, le tre
 cartelle di nuovo in `/srv/shaperoute/`, e il `docker run` di prima. Il
@@ -875,30 +874,55 @@ un nome nascosto e prende il suo solo quando è intera.
 | Cosa | Comando, da `~/shaperoute/deploy` |
 |---|---|
 | Una copia adesso | `docker compose exec backup bash /backup.sh now` |
+| Le copie allo Storage Box adesso | `docker compose exec offsite bash /backup.sh push` |
 | Provare che una copia si ripristina | `docker compose exec backup bash /backup.sh check` |
 | Le copie | `ls -l ../data/backups` |
-| Cosa ha fatto stanotte | `docker compose logs backup` |
+| Cosa ha fatto stanotte | `docker compose logs backup offsite` |
 
 `check` ripristina la copia più recente (o `check /backups/<nome>`) in un
 database a parte, `restore_check`, conta gli account e le migrazioni, poi
 lo cancella: quello vero non si tocca.
 
-**Le copie sul Mac** (scelta dell'utente, 2026-10-02). Una volta, dalla
-cartella del progetto sul Mac:
+**Le copie nello Storage Box** (scelta dell'utente, 2026-10-02, ADR-0123).
+Lo Storage Box è un disco di Hetzner separato dal server. Ogni notte alle
+02:30 UTC (`PUSH_AT`), mezz'ora dopo la copia, il servizio `offsite` ci
+manda con `rsync`, sopra SSH sulla porta 23, le copie del database in
+`sgrava-db/` (le stesse del server: quelle
+con più di 13 giorni spariscono anche lì) e gli eventi delle ricerche in
+`sgrava-insights/` (che si aggiungono soltanto). Finché lo Storage Box non
+c'è, le copie restano sul server e `push` lo dice.
 
-```bash
-deploy/mac/install-pull-backups.sh root@<server>
-```
+1. **La chiave, sul server** (una volta; fatto il 2026-10-02):
 
-Da lì `launchd` prende ogni 6 ore, e quando si accede al Mac, le copie del
-database in `~/ShapeRouteBackups/db` (uguali a quelle del server) e gli
-eventi delle ricerche in `~/ShapeRouteBackups/insights`, con la chiave SSH
-che il Mac usa già per il server. Le copie con più di 13 giorni si
-cancellano anche se il server non risponde. Cosa ha fatto:
-`~/ShapeRouteBackups/pulls.log`. Per toglierlo:
-`deploy/mac/install-pull-backups.sh --remove` (le copie restano). Il
-limite di questa scelta: a Mac spento per giorni, le copie stanno solo
-sul server.
+   ```bash
+   install -d -m 700 /root/.ssh/storagebox
+   ssh-keygen -t ed25519 -N "" -C "sgrava-api backups to Storage Box" -f /root/.ssh/storagebox/id_ed25519
+   cat /root/.ssh/storagebox/id_ed25519.pub
+   ```
+
+   La chiave privata resta lì, fuori dal repository; la riga stampata è la
+   parte pubblica, da incollare al punto 2.
+2. **Lo Storage Box, lo crea l'utente** nella Hetzner Console:
+   *Storage Boxes* → *Create Storage Box*; posizione **Falkenstein (FSN1)**,
+   come il server; tipo **BX11**, il più piccolo (1 TB); in *SSH keys* la
+   riga del punto 1; accesso **SSH** acceso (Samba e WebDAV non servono).
+   Nome utente e indirizzo (`u123456`, `u123456.your-storagebox.de`) sono
+   nella pagina dello Storage Box: non sono segreti. Una password, se il
+   pannello la chiede, la tiene l'utente: alle copie non serve.
+3. **Sul server**, la chiave dello Storage Box fra quelle conosciute, le
+   due variabili in `deploy/.env` e il servizio ricostruito:
+
+   ```bash
+   ssh-keyscan -p 23 u123456.your-storagebox.de > /root/.ssh/storagebox/known_hosts
+   cd ~/shaperoute/deploy && nano .env    # STORAGEBOX_HOST=u123456.your-storagebox.de, STORAGEBOX_USER=u123456
+   docker compose up -d --build offsite
+   docker compose exec offsite bash /backup.sh push
+   ```
+
+   `push` deve dire «… copies and the search events to
+   u123456.your-storagebox.de»; da lì ogni notte, dopo la copia. Un `push`
+   fallito resta nel log (`docker compose logs offsite`) e si riprova la
+   notte dopo, con le copie ancora sul server.
 
 **Ripristinare davvero** (sostituisce il database di adesso):
 
@@ -912,9 +936,9 @@ docker compose exec backup pg_restore --no-owner --exit-on-error -d shaperoute /
 docker compose start api
 ```
 
-La prima riga è la copia di adesso, per tornare indietro. Una copia dal
-Mac va prima nella cartella del server:
-`scp ~/ShapeRouteBackups/db/shaperoute-<data>.dump root@<server>:shaperoute/data/backups/`.
+La prima riga è la copia di adesso, per tornare indietro. Una copia che
+c'è solo nello Storage Box va prima nella cartella del server:
+`rsync -a -e "ssh -p 23 -i /root/.ssh/storagebox/id_ed25519" u123456@u123456.your-storagebox.de:sgrava-db/shaperoute-<data>.dump ~/shaperoute/data/backups/`.
 All'avvio l'API riapplica le migrazioni più nuove della copia.
 
 ---

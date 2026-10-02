@@ -56,7 +56,7 @@ services:
 
   # A pg_dump of the database every night into data/backups, the last 13
   # days kept: an account deleted today is out of every copy within 14
-  # (ADR-0114). The Mac takes them away (deploy/mac/pull-backups.sh).
+  # (ADR-0114). The offsite service then takes them to the Storage Box.
   backup:
     image: postgis/postgis:16-3.4
     restart: unless-stopped
@@ -76,6 +76,29 @@ services:
     volumes:
       - ./backup.sh:/backup.sh:ro
       - ../data/backups:/backups
+    logging: *logging
+
+  # The copies and the search events to the Hetzner Storage Box, every
+  # night after the copy (ADR-0123, update of 2026-10-02; DEPLOY.md F.13).
+  # Without STORAGEBOX_HOST it says so and the copies stay on the server.
+  offsite:
+    build: ./offsite
+    image: shaperoute-offsite
+    restart: unless-stopped
+    depends_on:
+      data-owner:
+        condition: service_completed_successfully
+    environment:
+      PUSH_AT: ${PUSH_AT:-02:30}
+      STORAGEBOX_HOST: ${STORAGEBOX_HOST:-}
+      STORAGEBOX_USER: ${STORAGEBOX_USER:-}
+    entrypoint: ["bash", "/backup.sh", "push-nightly"]
+    volumes:
+      - ./backup.sh:/backup.sh:ro
+      - ../data/backups:/backups:ro
+      - ../data/insights:/insights:ro
+      # The Storage Box key and its host key, outside the repository.
+      - ${STORAGEBOX_SSH_DIR:-/root/.ssh/storagebox}:/storagebox:ro
     logging: *logging
 
   api:

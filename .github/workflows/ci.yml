@@ -173,7 +173,7 @@ jobs:
       # checkout e catalog/ montati, la porta solo su 127.0.0.1. Da
       # TASK-122 (ADR-0123) anche il database: un'iscrizione vera, poi una
       # copia notturna fatta subito e il suo ripristino in un database a
-      # parte.
+      # parte; senza Storage Box il servizio offsite lascia le copie qui.
       - name: Compose
         run: |
           docker rm -f api
@@ -204,6 +204,7 @@ jobs:
           docker compose exec -T backup bash /backup.sh now
           docker compose exec -T backup bash /backup.sh check | tee /dev/stderr | grep -q ' 1 accounts'
           test "$(stat -c %a ../data/backups/shaperoute-*.dump)" = 600
+          docker compose exec -T offsite bash /backup.sh push | grep -q 'stay on this server'
           docker run --rm -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" \
             -e SHAPEROUTE_DOMAIN=api.example.com caddy:2 \
             caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile

@@ -112,14 +112,27 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
-- **API e app** — TASK-194: il file GPX esportato si chiama
-  `sgrava-heart-5km-2026-09-23.gpx`, non più `shaperoute-…` (seguito di
-  TASK-160); senza un nome dall'API, `sgrava.gpx`. Un'API non aggiornata
-  che risponde ancora il nome vecchio continua a funzionare. Sul telefono
-  il nome nuovo arriva solo dopo l'aggiornamento del server e la
-  pubblicazione dell'app: tutti e due aspettano l'OK dell'utente. Dentro
-  il file, `creator` dice ancora «ShapeRoute route-engine»: seguito
-  possibile (`tasks/TASK-194.md`).
+- **App** — TASK-188: un tocco su un disegno di «Feed» apre il suo
+  percorso sulla mappa, chiesto dall'utente (ADR-0151): la scheda di
+  «Explore», con il cuore dei preferiti, «Start» e il GPX; «←» torna a
+  «Feed». Il percorso è quello del catalogo: se il suo `id` è cambiato lo
+  si ritrova dalla partenza, se non c'è più la scheda lo dice e non ne
+  apre un altro. Uno swipe sopra una scheda non la apre. Solo app. Provato
+  in un simulatore con un'API e un database usa e getta: aprire, salvare
+  il preferito, «Start», «←». **Da pubblicare su `preview`** con l'ok
+  dell'utente, poi **da provare sull'iPhone**. Seguiti: lo stesso swipe
+  sulle schede di «Explore»; una domanda per l'utente nel task file (cuore
+  e «Start» anche sulla scheda del feed).
+- **App** — TASK-181: l'avvio tutto giallo, chiesto dall'utente (seguito di
+  TASK-179; aggiornamenti di ADR-0134 e ADR-0147). La schermata di avvio
+  nativa è gialla con il logo nero (`app.json`), e l'animazione parte già
+  gialla, senza il nero iniziale. Corretto anche un difetto visto filmando
+  con il Mac carico: il cuore poteva partire tardi ed essere tagliato dalla
+  dissolvenza; ora attesa e disegno sono una sola animazione e l'uscita
+  aspetta il cuore finito. Prebuild di iOS controllato, animazione filmata
+  in un simulatore. **Da pubblicare su `preview`** con l'ok dell'utente (in
+  Expo Go cambia l'inizio dell'animazione); la schermata nativa **si vede
+  solo in una build propria** (TASK-152).
 - **API e app** — TASK-172: «My activities», chiesto dall'utente
   (ADR-0140). Con un account, a fine corsa «Save» mette la corsa in «My
   activities» e «Discard» la butta, dopo una conferma (scelta nuova
@@ -293,6 +306,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   è fra i moduli di Expo Go, e l'app non lo importa: in Expo Go non cambia
   niente. **Da guardare in una build propria** (TASK-152). Dopo il merge:
   `npm install` nel checkout principale.
+- **API e app** — TASK-194: il file GPX esportato si chiama
+  `sgrava-heart-5km-2026-09-23.gpx`, non più `shaperoute-…` (seguito di
+  TASK-160); senza un nome dall'API, `sgrava.gpx`. Un'API non aggiornata
+  che risponde ancora il nome vecchio continua a funzionare. Sul telefono
+  il nome nuovo arriva solo dopo l'aggiornamento del server e la
+  pubblicazione dell'app: tutti e due aspettano l'OK dell'utente. Dentro
+  il file, `creator` dice ancora «ShapeRoute route-engine»: seguito
+  possibile (`tasks/TASK-194.md`).
 - **App** — TASK-160: i tre messaggi sulla posizione spenta dicono
   «Location is off for Sgrava…» invece di «…for ShapeRoute…» (prima
   schermata, navigazione, corsa libera): è il nome sotto l'icona da

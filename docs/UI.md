@@ -78,23 +78,28 @@ adattiva, il fondo è nero e l'icona a un colore è il segno bianco. In Expo
 Go sulla schermata di casa resta l'icona di Expo Go: la nostra si vede con
 una build propria. Dentro l'app il nome in cima a «Draw» resta un testo.
 
-**La schermata di avvio** (TASK-165, ADR-0134): fondo `background`, il logo
-giallo al centro. Su iOS il logo intero, largo 260 punti
-(`assets/splash-logo.png`); su Android il segno da solo
-(`assets/splash-icon.png`), perché il sistema ritaglia l'immagine in un
-cerchio. La genera il plugin `expo-splash-screen` da `app.json`: nessun
-codice la tiene aperta, sparisce quando l'app è pronta. Come l'icona, si
-vede solo in una build propria.
+**La schermata di avvio** (TASK-165, ADR-0134; gialla da TASK-181): fondo
+giallo `accent`, il logo nero al centro. Su iOS il logo intero, largo 260
+punti (`assets/splash-logo-dark.png`); su Android il segno da solo
+(`assets/splash-icon-dark.png`), perché il sistema ritaglia l'immagine in
+un cerchio. La genera il plugin `expo-splash-screen` da `app.json`, dove il
+giallo è scritto (`#FFD02B`: `app.json` non legge i token). Nessun codice la
+tiene aperta, sparisce quando l'app è pronta. Come l'icona, si vede solo in
+una build propria.
 
-**L'animazione all'avvio** (TASK-179, ADR-0147): dopo la schermata di avvio,
-e in Expo Go al suo posto, il giallo `accent` riempie lo schermo dal centro
-e una penna disegna un cuore, nero `onAccent`: è il percorso a cuore di
-Milano da 10 km, quello del video. Sotto, il logo intero, nero. Tempi:
-0,35 s il giallo, 1,6 s il disegno, 0,45 s fermo, 0,3 s di dissolvenza
-sull'app; il giallo si vede 2,4 secondi. L'app parte sotto e si carica
-intanto; l'animazione prende i tocchi finché c'è, non si salta, e si vede
-una volta a ogni apertura. Sta in `src/intro/`, sopra `App`
-(`index.ts`). Al lettore di schermo dice «Sgrava».
+**L'animazione all'avvio** (TASK-179, ADR-0147; TASK-181): dopo la
+schermata di avvio, e in Expo Go al suo posto, lo schermo è giallo `accent`
+dal primo fotogramma, senza nero in mezzo, e una penna disegna un cuore,
+nero `onAccent`: è il percorso a cuore di Milano da 10 km, quello del
+video. Sotto, il logo intero, nero (la stessa immagine della schermata di
+avvio). Tempi: 0,35 s la penna aspetta sul punto di partenza, 1,6 s il
+disegno, 0,45 s fermo, 0,3 s di dissolvenza sull'app; il giallo si vede
+almeno 2,4 secondi. Il cuore finito resta sempre i suoi 0,45 s: se il
+telefono è lento e il disegno finisce tardi, la dissolvenza aspetta.
+L'app parte sotto e si carica intanto; l'animazione prende i tocchi finché
+c'è, non si salta, e si vede una volta a ogni apertura. Sta in
+`src/intro/`, sopra `App` (`index.ts`). Al lettore di schermo dice
+«Sgrava».
 
 ## Le due schermate
 
@@ -272,8 +277,16 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   of 100»), il titolo e una riga «Horse · 19.2 km · 1 h 41 min». Sono le
   figure venute meglio nelle sette città del catalogo, due per città e
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
-  inventati. Le schede non si toccano: aprire un disegno arriva con
-  TASK-118.
+  inventati.
+  **Un tocco su una scheda apre il suo percorso** sulla mappa (TASK-188,
+  ADR-0151, chiesto dall'utente), come un percorso di «Explore»: la stessa
+  scheda con km, forma e città, «Start» per correrlo, «Export GPX», e il
+  cuore dei preferiti in alto a destra. «←» e «Back to the list» tornano a
+  «Feed». Il percorso è quello del catalogo da cui il disegno è nato: se
+  nel catalogo non c'è più, la scheda dice «The route could not load. Try
+  again.» e non mostra un altro percorso al suo posto. Un dito che scorre
+  sopra una scheda non la apre. Like, commenti e il profilo di chi ha corso
+  arrivano con TASK-118.
   **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
   chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
   stile dell'app. È una foto, non una mappa da muovere: la fa una pagina
@@ -287,7 +300,8 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   ha più «←»: per tornare c'è lo swipe, o il nome «Draw».
 - La mappa, la corsa e la sua fine prendono tutto lo schermo: lì i nomi e
   lo swipe non ci sono. «←» da un percorso di «Explore» torna sulla pagina
-  «Explore», da un percorso disegnato su «Draw».
+  «Explore», da un disegno di «Feed» su «Feed» (TASK-188), da un percorso
+  disegnato su «Draw».
 - Uno swipe chiude la tastiera.
 - Una pagina fuori dallo schermo non la legge nemmeno VoiceOver.
 - **Da provare con il dito**: lo swipe stesso, e le righe che scorrono di

@@ -3881,9 +3881,20 @@ server Hetzner, che l'app usa dal 2026-10-01, risponde.
   dell'API: l'API in servizio non si ferma, e legge le zone nuove dal disco
   alla prima richiesta (le scritture sono intere, ADR-0104).
 
-**Alternative scartate**: un estratto OSM dell'Italia (Geofabrik) e i grafi
-costruiti in locale: niente limiti di Overpass, ma un formato e uno
-strumento nuovi (osmium), da chiedere; zone più grandi per le città grandi:
+- **Dall'estratto di Geofabrik** (scelta dell'utente del 2026-10-02, dopo
+  che Overpass aveva bloccato il server alla quinta città): `--extract`,
+  osmium solo nell'immagine dei download. OSMnx e il motore ricevono dal
+  ritaglio le risposte di Overpass (sostituendo per la durata del download
+  `osmnx._overpass._download_overpass_network` e `network._overpass`) e
+  fanno tutto il resto come sempre: così la zona è quella di un download,
+  verificato su Napoli e Palermo (stessa linea per cuore e stella).
+  Costruire il grafo da un file `.osm` con `graph_from_xml` saltava il
+  taglio al riquadro e il filtro: zone diverse.
+
+**Alternative scartate**: Overpass molto piano (una città ogni due ore,
+giorni per l'Italia, e il server ribloccato ogni tanto anche per l'app);
+pyosmium nel progetto (una dipendenza Python in più per l'API, che non ne ha
+bisogno); zone più grandi per le città grandi:
 più download per le stesse richieste di «Explore»; scaricare sul Mac:
 Overpass lo rifiuta, e l'app non usa più il Mac.
 

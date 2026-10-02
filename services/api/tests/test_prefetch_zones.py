@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 from route_engine.geo import LatLon, local_to_latlon
-from route_engine.optimizer import FAR_OFFSET_M, SHAPE_POINTS, required_area
+from route_engine.optimizer import FAR_OFFSET_M, SHAPE_POINTS, required_area, zone_area
 from route_engine.shapes import get_shape
 
 from shaperoute_api.prefetch_zones import (
@@ -68,12 +68,15 @@ def test_the_box_holds_every_theme_and_example_from_any_start() -> None:
         radius = search_radius_m(THEMED_DISTANCE_M)
         for start in starts_on_circle(VERCELLI, radius) + [VERCELLI]:
             assert holds(box, required_area(outline, start, THEMED_DISTANCE_M)), shape
+            # The far search from that start (Verona's Romantic needed it).
+            far = zone_area(outline, start, THEMED_DISTANCE_M, FAR_OFFSET_M)
+            assert holds(box, far), shape
     for shape in EXAMPLE_SHAPES:
         outline = get_shape(shape)(SHAPE_POINTS)
         for start in starts_on_circle(VERCELLI, FAR_OFFSET_M):
             assert holds(box, required_area(outline, start, EXAMPLE_DISTANCE_M)), shape
     width, height = box_size_km(box)
-    assert 10 < width < 20 and 10 < height < 20
+    assert 15 < width < 20 and 15 < height < 20
 
 
 class Source:
@@ -137,7 +140,7 @@ def test_downloads_one_at_a_time_with_a_pause_then_is_ready(tmp_path: Path) -> N
         ("Vercelli", "downloaded"),
         ("Lucca", "downloaded"),
     ]
-    assert "MB" in first[0].detail and "Vercelli, Italy, 14 x 14 km" in first[0].detail
+    assert "MB" in first[0].detail and "Vercelli, Italy, 17 x 17 km" in first[0].detail
     assert pauses == [30.0]  # between the two, not before the first
     assert len(source.loaded) == 2 and len(source.named) == 2
 

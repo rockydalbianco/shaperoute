@@ -10,7 +10,9 @@ dall'agente su delega dell'utente (ADR-0119): oltre alle città in evidenza
 capoluoghi di regione, poi le più grandi e visitate); e si scarica **sul
 server Hetzner**, l'API che l'app usa dal 2026-10-01 e da cui Overpass
 risponde, non sul Mac. Il riquadro contiene anche gli esempi di TASK-143
-(cuore, cerchio e stella da 5 km) e i nomi delle strade.
+(cuore, cerchio e stella da 5 km) e i nomi delle strade. Dopo 5 città
+Overpass ha bloccato anche il server: su scelta dell'utente le altre
+vengono dall'estratto OSM dell'Italia di Geofabrik (`--extract`).
 
 Chiesto dall'utente il 2026-10-01, dopo le prove di «Explore»: «sì, apri il
 task per le zone». Il numero è il primo libero fra `main`, i branch remoti e
@@ -107,6 +109,8 @@ ritagli: TASK-136).
 ```
 services/api/shaperoute_api/prefetch_zones.py     (nuovo)
 services/api/tests/test_prefetch_zones.py         (nuovo)
+services/api/shaperoute_api/zone_extract.py       (nuovo, dall'estratto)
+services/api/tests/test_zone_extract.py           (nuovo)
 docs/MAPS.md
 docs/DECISIONS.md
 docs/STATUS.md
@@ -123,7 +127,8 @@ funzione del motore per il riquadro, va in un file nuovo.
   momento della richiesta.
 - Distanze diverse da 10 km: un percorso a tema da 15–21 km in quelle città
   può ancora scaricare.
-- Una sorgente di mappe diversa da Overpass, o un Overpass proprio.
+- Un Overpass proprio. (Una sorgente diversa da Overpass è entrata, su
+  scelta dell'utente del 2026-10-02: l'estratto di Geofabrik.)
 - Le zone sull'API sempre accesa (TASK-122), quando ci sarà.
 - Cancellare i ritagli della cache (TASK-136, scelta dell'utente).
 - I percorsi consigliati del catalogo per queste città (TASK-128).

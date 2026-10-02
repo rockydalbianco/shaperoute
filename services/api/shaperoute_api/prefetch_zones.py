@@ -2,8 +2,9 @@
 
 For each city, the zone that serves "Explore" from its centre: the shape of
 every theme at 10 km from any start the themed search may take (within
-`search_radius_m` of the centre), and the city's examples, a 5 km heart,
-circle and star from any start the engine may move them to (FAR_OFFSET_M).
+`search_radius_m` of the centre), with the engine's far search from there
+(FAR_OFFSET_M more), and the city's examples, a 5 km heart, circle and star
+from any start the engine may move them to (FAR_OFFSET_M).
 A city whose zone is already in the cache is ready; the others are
 downloaded one at a time, with their street names (ADR-0057), as MAPS.md
 asks of Overpass: a pause between cities, one attempt each, and the first
@@ -34,7 +35,7 @@ from typing import Literal, Protocol
 
 from route_engine.geo import LatLon, local_to_latlon
 from route_engine.network import OsmnxSource
-from route_engine.optimizer import FAR_OFFSET_M, SHAPE_POINTS, required_area
+from route_engine.optimizer import FAR_OFFSET_M, SHAPE_POINTS, required_area, zone_area
 from route_engine.overpass_address import reachable
 from route_engine.shapes import get_shape
 from route_engine.stops import union
@@ -184,7 +185,9 @@ def zone_box(centre: LatLon) -> BBox:
     for shape in themed:
         outline = get_shape(shape)(SHAPE_POINTS)
         for start in around(centre, search_radius_m(THEMED_DISTANCE_M)):
-            boxes.append(required_area(outline, start, THEMED_DISTANCE_M))
+            # A shape that does not fit near a start is looked for farther
+            # (optimizer: the far search), in this area.
+            boxes.append(zone_area(outline, start, THEMED_DISTANCE_M, FAR_OFFSET_M))
     for shape in EXAMPLE_SHAPES:
         outline = get_shape(shape)(SHAPE_POINTS)
         for start in around(centre, FAR_OFFSET_M):

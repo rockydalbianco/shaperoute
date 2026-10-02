@@ -136,6 +136,39 @@ città mancanti. `--dry-run` dice cosa manca senza scaricare. Si lancia
 dove gira l'API usata dall'app, con la sua cartella della cache e
 `GEOAPIFY_API_KEY`.
 
+**Da un estratto, senza Overpass** (`--extract FILE.pbf`, scelta
+dell'utente del 2026-10-02): Overpass blocca l'indirizzo dopo pochi
+download grandi, anche quello del server (2026-10-01: dopo 5 città). Con
+l'estratto di Geofabrik, filtrato una volta alle sole strade, ogni zona si
+ritaglia con `osmium extract --strategy complete_ways` (riquadro più 700 m:
+OSMnx chiede 500 m attorno) e, per la durata del download, OSMnx e il
+motore leggono da lì le risposte che Overpass darebbe
+(`zone_extract.served_from`): il filtro `FOOT_FILTER` letto com'è, i nodi e
+le strade in ordine di id. Il resto è di OSMnx e del motore come per un
+download. Napoli e Palermo, scaricate prima da Overpass, rifatte
+dall'estratto (30 settembre): Palermo identica (18.681 nodi, 53.930 archi,
+44 strade con nome); Napoli 26.977 nodi contro 26.979, 6 archi su 76.628 in
+meno (un giorno di modifiche a OSM); cuore e stella da 5 km dal centro con
+la stessa linea nelle due. Circa un minuto per città. osmium sta solo
+nell'immagine dei download, non in quella dell'API:
+
+```bash
+curl -O https://download.geofabrik.de/europe/italy-latest.osm.pbf
+```
+
+```bash
+printf 'FROM shaperoute-api\nUSER root\nRUN apt-get update && apt-get install -y --no-install-recommends osmium-tool\nUSER shaperoute\n' | docker build -t shaperoute-prefetch -
+```
+
+```bash
+docker run --rm -v "$PWD":/extracts shaperoute-prefetch osmium tags-filter /extracts/italy-latest.osm.pbf w/highway -o /extracts/italy-highways.osm.pbf
+```
+
+Poi il comando nel container, con la cache dell'API montata e `--extract
+/extracts/italy-highways.osm.pbf` (2,2 GB l'estratto, 647 MB le sole
+strade, 90 s il filtro). Le città fuori dall'estratto (le estere in
+evidenza) vogliono il loro estratto o Overpass.
+
 ## Dal disegno alla strada
 
 1. La partenza (primo punto della forma) si aggancia al **nodo più

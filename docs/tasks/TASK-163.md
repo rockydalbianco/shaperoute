@@ -1,7 +1,7 @@
 # TASK-163 — «Explore»: le città in evidenza già disegnate, e il feed mentre una città si disegna
 
 **Stato**: In corso
-**Fase**: 4 · **Branch**: `feat/TASK-163-explore-featured-and-feed`
+**Fase**: 4 · **Branch**: `feat/TASK-163-explore-featured-and-feed` · ADR-0132
 
 Chiesto dall'utente il 2026-10-02: «nella sezione Explore almeno un cuore,
 un cerchio e la stella devono essere già disegnate [in] tutte le città che
@@ -48,9 +48,13 @@ sono dei disegni del feed da guardare.
 
 **Parte A — il catalogo (parte dopo TASK-161, paletto del coordinatore)**
 
-4. Con lo strumento del catalogo (`route_engine/seed_catalog.py`), non con
-   uno parallelo, e con le zone copiate dal server in sola lettura (niente
-   chiave dell'API): le città in evidenza che mancano entrano in `CITIES`
+4. Con lo strumento del catalogo (`seed_catalog.py`, dove lo lascia
+   TASK-161), non con uno parallelo, e con le zone copiate dal server in
+   sola lettura (`rsync` da
+   `root@188.245.9.220:/root/shaperoute/data/cache/`, come TASK-161 per
+   Genova e New York; niente si scrive sul server, niente chiave
+   dell'API): prima si guarda quali città in evidenza mancano ancora delle
+   tre forme dopo TASK-161 (New York forse no), poi quelle entrano in `CITIES`
    con una piazza del centro, e si pianificano almeno cuore, cerchio e
    stella da 5 km.
 5. Ogni città in evidenza deve avere almeno un cuore, un cerchio e una

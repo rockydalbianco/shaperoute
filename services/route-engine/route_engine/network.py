@@ -671,6 +671,9 @@ class NetworkRoute:
     warnings: list[str] = field(default_factory=list)
     waypoints: list[Any] = field(default_factory=list)  # node reached per zone
     nodes: list[Any] = field(default_factory=list)  # graph nodes, in order
+    # A word with the pen up (TASK-197): [from, to] indices into `points`,
+    # each the stretch walked from one letter to the next, not drawn.
+    walks: list[tuple[int, int]] = field(default_factory=list)
 
 
 def nearest_nodes(
@@ -1005,8 +1008,10 @@ def _route_through_zones(
     corners: Collection[int] = frozenset(),
     twice: Collection[int] = frozenset(),
     retrace: float = 1.0,
+    closed: bool = True,
 ) -> tuple[list[Any], list[Any], list[int], set[Any]]:
-    """Closed route from `first` through a zone around each anchor, back to `first`.
+    """Closed route from `first` through a zone around each anchor, back to `first`;
+    not `closed`, it ends in the zone of the last anchor (TASK-197).
 
     A zone is every node within `radius_m` of its anchor, or the nearest
     one if none is that close. Reaching a zone node costs, on top of the
@@ -1068,6 +1073,8 @@ def _route_through_zones(
             corner_nodes.add(path[-2])
         if path[-2] != reached[-1]:
             reached.append(path[-2])
+    if not closed:
+        return route_nodes, reached, skipped, corner_nodes
     penalty = retrace if 0 in twice else reuse_penalty
     try:
         walk(nx.shortest_path(graph, route_nodes[-1], first, weight=weight))
@@ -1117,6 +1124,7 @@ def snap_to_network(
     corridor: float = CORRIDOR_WEIGHT,
     band: float = CORRIDOR_BAND,
     retrace: float = 1.0,
+    closed: bool = True,
 ) -> NetworkRoute:
     """Turn a projected shape into a closed route on the road network.
 
@@ -1127,6 +1135,10 @@ def snap_to_network(
     the shape perimeter, so they scale with the requested distance. Where
     the shape goes back along itself, used roads cost `retrace` times as
     much (_route_through_zones).
+
+    Not `closed`, the points are an open line, like a letter written with
+    the pen up (TASK-197): the route ends in the zone of the last point
+    instead of coming back, and the perimeter is the line's own length.
     """
     warnings: list[str] = []
     nodes, distances = nearest_nodes(graph, shape_points)
@@ -1147,21 +1159,25 @@ def snap_to_network(
 
     origin = shape_points[0]
     outline = latlon_to_local_array(origin, np.array(shape_points))
-    if not np.allclose(outline[0], outline[-1]):
+    if closed and not np.allclose(outline[0], outline[-1]):
         outline = np.vstack([outline, outline[:1]])
     drawn_twice = twice_drawn(outline)
     # Strokes have small details: finer zones and corridor (ADR-0039).
     fine = STROKE_DETAIL if drawn_twice.any() else 1.0
     perimeter = fine * float(np.hypot(*np.diff(outline, axis=0).T).sum())
     anchors = list(shape_points[1:])
-    if anchors and anchors[-1] == shape_points[0]:
+    if closed and anchors and anchors[-1] == shape_points[0]:
         anchors.pop()
 
     costs = _corridor_costs(graph, origin, outline, corridor, band * perimeter)
-    corners = set(corner_indices(outline[:-1]))
     # Side i - 1 of the outline leads to anchor i; the last one leads home.
     sides = len(outline) - 1
-    twice = {(i + 1) % sides for i in np.flatnonzero(drawn_twice)}
+    if closed:
+        corners = set(corner_indices(outline[:-1]))
+        twice = {(i + 1) % sides for i in np.flatnonzero(drawn_twice)}
+    else:  # no way home, and the two ends turn nowhere
+        corners = {i for i in corner_indices(outline) if 0 < i < sides}
+        twice = {int(i) + 1 for i in np.flatnonzero(drawn_twice)}
     route_nodes, reached, skipped, corner_nodes = _route_through_zones(
         graph,
         origin,
@@ -1173,6 +1189,7 @@ def snap_to_network(
         corners,
         twice,
         retrace,
+        closed,
     )
     for index in skipped:
         warnings.append(f"no road path to shape point {index}; skipped")

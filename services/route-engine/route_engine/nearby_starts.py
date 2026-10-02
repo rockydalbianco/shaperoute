@@ -62,12 +62,14 @@ from route_engine.optimizer import (
     Plan,
     ShapeNotDrawableError,
     doubled_weight,
+    drawn_distance,
     plan_shape,
     planned_distance,
     required_area,
     search,
     tilt_limit,
 )
+from route_engine.pen_up import check_begins, drawn_m
 from route_engine.projection import Point, start_at_phase
 from route_engine.retracing import extra_doubled_share
 from route_engine.shapes import get_shape
@@ -154,7 +156,7 @@ class ShapeJob:
     def of_request(cls, request: RouteRequest) -> ShapeJob:
         """What `plan_route` plans for `request`, from any start."""
         if request.word is not None:
-            word = compose(request.word, style=request.style)
+            word = compose(request.word, style=request.style, pen_up=request.pen_up)
             return cls(
                 tuple(word.points),
                 word.text,
@@ -224,7 +226,7 @@ class ShapeJob:
             doubled=doubled_weight(self.name),
         )
         best = found.best
-        gap = (best.route.distance_m - self.planned_m) * kept
+        gap = (drawn_distance(best.route) - self.planned_m) * kept
         if best.similarity < MIN_SIMILARITY or abs(gap) > DISTANCE_FALLBACK_M:
             raise ShapeNotDrawableError(
                 # No position: the message ends in the log (TASK-091).
@@ -234,7 +236,10 @@ class ShapeJob:
         route, placed = best.route, best.shape
         [first], _ = nearest_nodes(graph, [start])
         begins = (graph.nodes[first]["y"], graph.nodes[first]["x"])
-        check_closed(route.points, begins, start, start, START_OFFSET_M)
+        # A word with the pen up ends at its last letter (TASK-197).
+        pen_up = self.word is not None and self.word.pen_up
+        check = check_begins if pen_up else check_closed
+        check(route.points, begins, start, start, START_OFFSET_M)
         if self.one_way:  # the far end is half-way along the shape
             route = first_leg(graph, route, start_at_phase(placed, 0.5)[0])
         outline = latlon_to_local_array(placed[0], np.array(placed))
@@ -260,6 +265,7 @@ class ShapeJob:
             similarity=best.similarity,
             shape=self.name,
             warnings=warnings,
+            walks=list(route.walks),
         )
         if route is not best.route:
             found = replace(found, best=replace(best, route=route))
@@ -373,7 +379,9 @@ def with_approach(graph: Graph, plan: Plan, approach: list[Any]) -> Plan:
     """`plan` reached along `approach` (nodes from the start's node to where
     the route begins) and, when the route closes, back along it; with
     one-way streets (the bike network) back along the shortest way allowed,
-    which may be another (NetworkXNoPath if there is none)."""
+    which may be another (NetworkXNoPath if there is none). The walks of a
+    word with the pen up (TASK-197) move along with the points: the
+    approach is run, not walked."""
     if len(approach) < 2 or plan.search is None:
         return plan
     best = plan.search.best
@@ -390,14 +398,18 @@ def with_approach(graph: Graph, plan: Plan, approach: list[Any]) -> Plan:
     points = [(graph.nodes[approach[0]]["y"], graph.nodes[approach[0]]["x"])]
     for u, v in zip(approach, approach[1:], strict=False):
         points.extend(_edge_points(graph, u, v))
+    ahead = len(points) - 1  # points before the route's own first one
     points.extend(plan.result.points[1:])
     for u, v in zip(back, back[1:], strict=False):
         points.extend(_edge_points(graph, u, v))
     distance_m = path_length_m(points)
-    reached = replace(route, points=points, distance_m=distance_m, nodes=nodes)
+    walks = [(a + ahead, b + ahead) for a, b in plan.result.walks]
+    reached = replace(
+        route, points=points, distance_m=distance_m, nodes=nodes, walks=walks
+    )
     search = replace(plan.search, best=replace(best, route=reached))
     far = search if plan.far is plan.search else plan.far
-    result = replace(plan.result, points=points, distance_m=distance_m)
+    result = replace(plan.result, points=points, distance_m=distance_m, walks=walks)
     return replace(plan, result=result, search=search, far=far)
 
 
@@ -407,8 +419,10 @@ def score(plan: Plan, distance_m: float) -> float:
     search weighs it against the shape (optimizer.search). Within the
     tolerance the shape alone counts: the user judges the drawing, and
     TASK-075's cuts closest to 10 km were not the ones judged best. Where
-    the route starts does not count here (`_choose`)."""
-    ratio = plan.result.distance_m / distance_m
+    the route starts does not count here (`_choose`), nor do the walks of a
+    word with the pen up (TASK-197)."""
+    result = plan.result
+    ratio = drawn_m(result.points, result.distance_m, result.walks) / distance_m
     whiskers = doubled_weight(plan.result.shape or "") / W_SHAPE
     return (
         plan.result.similarity

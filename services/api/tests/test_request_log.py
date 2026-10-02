@@ -128,6 +128,7 @@ def test_a_shape_is_recorded_with_its_request_and_its_outcome(
         "distance_m": 10000,
         "activity": "running",
         "style": "round",
+        "pen_up": False,  # TASK-197
     }
     outcome = line["outcome"]
     assert outcome.pop("elapsed_s") >= 0

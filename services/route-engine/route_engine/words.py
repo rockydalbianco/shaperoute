@@ -57,6 +57,17 @@ read as a T). A letter entered or left at the top is the same closed line,
 started and cut elsewhere (`Letter.route`): it is drawn the same. Each gap
 runs along the base or along the top, never across, and `choose_joins`
 keeps the shortest word. On by default (TOP_JOINS), the user's choice.
+
+A word may also be written with the pen up (TASK-197): each letter is only
+its `out`, from its entry to its exit on the base line, once; no `back`, no
+line along the base joining it to the next, no way home. The runner walks
+from the exit of one letter to the entry of the next without drawing, and
+the app pauses the recording meanwhile. The line starts at the entry of the
+first letter and ends at the exit of the last: it is open. The letters keep
+the gap of their style, so the straight line a paused track shows between
+them (Strava draws one) lies on the base line. The points of the gaps are
+still there, to place the word and to stretch when a letter moves, but the
+route does not draw them (`pen_up.trace`).
 """
 
 from __future__ import annotations
@@ -169,11 +180,12 @@ class Word:
     letters: tuple[Letter, ...]
     # The closed line in letter heights, the first point repeated at the
     # end. It starts half-way along the first gap (at the entry of a lone
-    # letter).
+    # letter). With `pen_up`, the open line from the entry of the first
+    # letter to the exit of the last.
     units: tuple[Point, ...]
     places: tuple[Place, ...]  # one for each point of `units`
     # Where the route may start: the index in `units` of the middle of each
-    # gap, on the way out.
+    # gap, on the way out; with `pen_up`, the entry of the first letter.
     starts: tuple[int, ...]
     # `units` centred and scaled into [-1, 1]² like every shape, and one
     # letter height in that frame.
@@ -185,6 +197,8 @@ class Word:
     style: Style = "round"
     # For each gap, whether it runs along the top line (TASK-067).
     tops: tuple[bool, ...] = ()
+    # Each letter drawn on its own, the gaps walked (TASK-197).
+    pen_up: bool = False
 
     def line(self, start: int) -> tuple[np.ndarray, np.ndarray]:
         """The word as the route draws it from `starts[start]`: its
@@ -194,7 +208,8 @@ class Word:
         A letter's points move with it; a gap is stretched between the two
         letters it joins, and the gap the route starts from is pinned at
         its middle, so the first point never moves. A lone letter never
-        moves: the search places the word.
+        moves: the search places the word. With `pen_up` the line is open
+        and starts on the first letter, which is pinned instead.
         """
         order = self._order(start)
         weights = np.zeros((len(order), len(self.letters)))
@@ -204,7 +219,7 @@ class Word:
                 t = place.along
                 if t is None:
                     weights[row, place.index] = 1.0
-                elif place.index == start:
+                elif place.index == start and not self.pen_up:
                     if t <= 0.5:
                         weights[row, place.index] = 1.0 - 2.0 * t
                     else:
@@ -212,6 +227,8 @@ class Word:
                 else:
                     weights[row, place.index] = 1.0 - t
                     weights[row, place.index + 1] = t
+            if self.pen_up:
+                weights[:, 0] = 0.0
         return np.array(self.points)[order], weights * self.height
 
     def moved(self, start: int, shifts: np.ndarray) -> list[Point]:
@@ -234,8 +251,23 @@ class Word:
                 rows[place.index].append(row)
         return [np.array(r) for r in rows]
 
+    @property
+    def drawn_length(self) -> float:
+        """Length of the letters alone, without the gaps, in the frame of
+        `points`: what the route draws with the pen up (TASK-197)."""
+        return sum(
+            math.dist(a, b)
+            for a, b, pa, pb in zip(
+                self.points, self.points[1:], self.places, self.places[1:], strict=False
+            )
+            if pa == pb and pa.along is None
+        )
+
     def _order(self, start: int) -> list[int]:
-        """The indices of `points` from `starts[start]` round to it again."""
+        """The indices of `points` from `starts[start]` round to it again;
+        all of them in order for an open word (`pen_up`)."""
+        if self.pen_up:
+            return list(range(len(self.points)))
         i = self.starts[start]
         n = len(self.points) - 1
         return [*range(i, n), *range(i + 1)]
@@ -437,11 +469,15 @@ def compose(
     step: float = SIDE_STEP,
     style: Style = "round",
     top_joins: bool | None = None,
+    pen_up: bool = False,
 ) -> Word:
     """The closed line that writes `text` (any case) with `alphabet`, its
     letters `gap` apart: by default the alphabet and gap of `style`. With
     `top_joins` the letters may be joined along the top line too
-    (`choose_joins`); TOP_JOINS says whether, for the style, when None."""
+    (`choose_joins`); TOP_JOINS says whether, for the style, when None.
+
+    With `pen_up` the open line of TASK-197 instead (`_pen_up`): each
+    letter's `out` once, the gaps along the base line, never at the top."""
     if style not in STYLES:
         raise InvalidWordError(f"no style {style!r}: {' or '.join(STYLES)}")
     alphabet = STYLES[style][0] if alphabet is None else alphabet
@@ -457,6 +493,8 @@ def compose(
             f"a word can use only the letters {spell_letters(alphabet)}"
         )
     letters = tuple(alphabet[c] for c in chars)
+    if pen_up:
+        return _pen_up(chars, letters, gap, step, style)
     tops = choose_joins(letters, gap) if top_joins else (False,) * (len(letters) - 1)
     outs: list[list[Point]] = []
     backs: list[list[Point]] = []
@@ -524,6 +562,54 @@ def compose(
         phases=tuple(cumulative[i] / cumulative[-1] for i in starts),
         style=style,
         tops=tops,
+    )
+
+
+def _pen_up(
+    chars: str, letters: tuple[Letter, ...], gap: float, step: float, style: Style
+) -> Word:
+    """The open line of a word written with the pen up (TASK-197): each
+    letter's `out` from its entry to its exit, then the gap to the next
+    letter along the base line, cut like the closed word's. It starts at the
+    entry of the first letter, the only place the route may start."""
+    line: list[tuple[Point, Place]] = []
+    x = 0.0
+    exit_: Point | None = None
+    for k, letter in enumerate(letters):
+        dx = x - letter.left
+        out = [(px + dx, py) for px, py in letter.out]
+        if exit_ is not None:  # the gap from the letter before, as `compose` cuts it
+            half = _cuts(math.dist(exit_, out[0]) / 2, step)
+            shares = [f / 2 for f in half] + [0.5 + f / 2 for f in half]
+            line.extend(
+                (_along(exit_, out[0], t), Place(k - 1, t)) for t in shares[:-1]
+            )
+        line.append((out[0], Place(k)))
+        for a, b in zip(out, out[1:], strict=False):
+            line.extend(
+                (_along(a, b, f), Place(k)) for f in _cuts(math.dist(a, b), step)
+            )
+        exit_ = out[-1]
+        x += letter.right - letter.left + gap
+    units = tuple(p for p, _ in line)
+    xs = [px for px, _ in units]
+    ys = [py for _, py in units]
+    cx, cy = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
+    half_size = max(max(xs) - min(xs), max(ys) - min(ys)) / 2
+    return Word(
+        text=chars,
+        letters=letters,
+        units=units,
+        places=tuple(place for _, place in line),
+        starts=(0,),
+        points=tuple(
+            ((px - cx) / half_size, (py - cy) / half_size) for px, py in units
+        ),
+        height=1.0 / half_size,
+        phases=(0.0,),
+        style=style,
+        tops=(False,) * (len(letters) - 1),
+        pen_up=True,
     )
 
 

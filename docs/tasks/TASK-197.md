@@ -1,6 +1,6 @@
 # TASK-197 — La penna alzata nelle parole: motore e API
 
-**Stato**: Todo
+**Stato**: Done (2026-10-02; il merge è del coordinatore)
 **Fase**: 4 · **Branch**: `feat/TASK-197-pen-up-words`
 **ADR**: ADR-0157, dal coordinatore il 2026-10-02 (il contratto dei tratti
 a piedi)
@@ -103,42 +103,54 @@ voce** (è TASK-198).
 
 ## Criteri di accettazione
 
-- [ ] `pen_up: true` con `shape` o con un'immagine risponde
+- [x] `pen_up: true` con `shape` o con un'immagine risponde
       `invalid_request`, con il messaggio del punto 1.
-- [ ] Una parola senza `pen_up` dà lo stesso percorso di prima, punto per
+- [x] Una parola senza `pen_up` dà lo stesso percorso di prima, punto per
       punto: un test lo controlla sul grafo dei fixture.
-- [ ] Con `pen_up` e n lettere, `walks` ha n − 1 coppie; ognuna è dentro
+- [x] Con `pen_up` e n lettere, `walks` ha n − 1 coppie; ognuna è dentro
       `points`, in ordine, senza sovrapporsi; dove finisce un tratto a
       piedi comincia la lettera successiva.
-- [ ] La somiglianza con `pen_up` non cambia se si allunga un tratto a
+- [x] La somiglianza con `pen_up` non cambia se si allunga un tratto a
       piedi: test.
-- [ ] La lunghezza delle sole lettere sta nella tolleranza di distanza che
+- [x] La lunghezza delle sole lettere sta nella tolleranza di distanza che
       il motore usa oggi.
-- [ ] Un `RouteResult` senza `walks` (un'API vecchia) si legge ancora:
+- [x] Un `RouteResult` senza `walks` (un'API vecchia) si legge ancora:
       test del contratto.
-- [ ] `POST /track-scores` con `walks` non conta i punti della corsa sui
+- [x] `POST /track-scores` con `walks` non conta i punti della corsa sui
       tratti a piedi: test.
-- [ ] Il GPX di una parola con `pen_up` e n lettere ha 2 × (n − 1)
+- [x] Il GPX di una parola con `pen_up` e n lettere ha 2 × (n − 1)
       waypoint, nell'ordine del percorso.
-- [ ] Test verdi: motore, API, `shared-types`; `ruff`, `black`.
+- [x] Test verdi: motore, API, `shared-types`; `ruff`, `black`.
 
 ## File toccati
 
-Elenco previsto; la PR dichiara i suoi.
+Quelli della PR, file per file (i nuovi segnati):
 
 ```
+services/route-engine/route_engine/pen_up.py            (nuovo)
 services/route-engine/route_engine/words.py
 services/route-engine/route_engine/optimizer.py
+services/route-engine/route_engine/network.py
+services/route-engine/route_engine/nearby_starts.py
 services/route-engine/route_engine/models.py
 services/route-engine/route_engine/export_gpx.py
 services/route-engine/route_engine/track_score.py
 services/route-engine/route_engine/__main__.py
-services/route-engine/tests/
+services/route-engine/tests/test_pen_up.py              (nuovo)
+services/route-engine/tests/test_contract.py
 services/api/shaperoute_api/schemas.py
 services/api/shaperoute_api/track_scores.py
-services/api/tests/
+services/api/shaperoute_api/app.py
+services/api/shaperoute_api/route_store.py
+services/api/tests/test_pen_up.py                       (nuovo)
+services/api/tests/test_contract.py
+services/api/tests/test_track_scores.py
+services/api/tests/test_request_log.py
 packages/shared-types/src/index.ts
-packages/shared-types/fixtures/
+packages/shared-types/test/contract.test.ts
+packages/shared-types/fixtures/route-request-pen-up.json        (nuovo)
+packages/shared-types/fixtures/route-result-pen-up.json         (nuovo)
+packages/shared-types/fixtures/track-score-request-walks.json   (nuovo)
 docs/ROUTE_ENGINE.md
 docs/API.md
 docs/GPX.md
@@ -146,6 +158,26 @@ docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-197.md
 ```
+
+Fuori dall'elenco previsto, e perché (nessuna PR aperta li toccava il
+2026-10-02; nessun task in lavorazione li elenca):
+
+- `network.py`: `snap_to_network(closed=False)` traccia una lettera come
+  linea aperta, e `NetworkRoute.walks` porta i tratti a piedi fino al
+  risultato. Per difetto tutto com'era (ADR-0157, «Scartate»: le due
+  strade senza toccarlo).
+- `nearby_starts.py`: l'API pianifica le parole da lì
+  (`ShapeJob.of_request`): `pen_up` alla parola, i `walks` spostati con
+  l'avvicinamento, la distanza delle sole lettere nella scelta fra le
+  partenze.
+- `app.py`: `pen_up` al motore, rifiutato per un'immagine con il messaggio
+  del punto 1, i `walks` al GPX.
+- `route_store.py`: i percorsi tenuti distinguono la penna alzata e
+  rileggono i `walks` (quelli scritti prima, senza, come vuoti).
+- `test_request_log.py`: la riga del registro ha `pen_up`, come ebbe
+  `style` con TASK-080.
+- `shared-types/test/contract.test.ts`: i controlli del contratto dalla
+  parte di `tsc`.
 
 ## Fuori scope
 
@@ -161,4 +193,60 @@ docs/tasks/TASK-197.md
 
 ## Esito
 
-*(a fine task)*
+**Fatto**, motore e API, PR #217 dal branch `feat/TASK-197-pen-up-words`
+(ADR-0157). Come funziona: `ROUTE_ENGINE.md` §2 e §5, «La penna alzata»;
+`API.md`, «La penna alzata»; `GPX.md`, «La penna alzata».
+
+- **Richiesta**: `pen_up` in `RouteRequest`, falso se manca; con `shape`, o
+  in una richiesta d'immagine, `invalid_request` (`pen_up is for the
+  letters of a word`). La CLI ha `--pen-up`, solo con `--word`.
+- **Lettere e tratti a piedi** (`pen_up.py`): ogni lettera è il suo `out`
+  una volta, tracciata come linea aperta (`snap_to_network(closed=False)`)
+  con le zone e il corridoio del disegno intero; fra due lettere la strada
+  più breve, senza zone né corridoio. Una fase sola, l'ingresso della prima
+  lettera, che non si sposta; le altre si spostano come prima. Il percorso
+  è una linea sola e **non è chiuso**.
+- **`walks`** in `RouteResult` (e in ogni alternativa): coppie `[da, a]` di
+  indici in `points`, compresi, in ordine; n − 1 per n lettere; dove finisce
+  un tratto comincia la lettera successiva. Esempio in `API.md` e nella
+  fixture `route-result-pen-up.json`: `"walks": [[2, 5]]` per «IO».
+- **Somiglianza e distanza** delle sole lettere; `distance_m` di tutti i
+  `points`. Le partenze vicine spostano i `walks` con l'avvicinamento.
+- **`POST /track-scores`** prende `walks`: non contano le posizioni su un
+  tratto a piedi né sulla linea dritta di una registrazione in pausa.
+  **GPX**: una linea sola, più «Pause» e «Resume» per tratto, prima del
+  `<trk>`. **Percorsi tenuti**: la penna alzata è un'altra richiesta.
+- **Senza `pen_up` niente cambia**: un test di
+  `services/route-engine/tests/test_pen_up.py` confronta cinque percorsi
+  di parole (griglia e grafo dei fixture di Levico, anche con le partenze
+  vicine dell'API) con le impronte calcolate su `main` a 59dd8a7 prima di
+  cambiare il codice: uguali. I
+  test di prima restano verdi; cambiano solo i controlli del contratto che
+  confrontano i campi delle fixture vecchie (ora «senza `pen_up` e
+  `walks`», come per i dettagli di TASK-079) e l'atteso del registro delle
+  richieste (`pen_up: false` in più).
+
+**Sulle strade vere** (2026-10-02, dalla CLI con `--nearby 3`, zone di
+Trento e della Valsugana copiate da `data/cache/` del checkout principale
+in una cartella temporanea; Overpass non provato): «CIAO» 15 km dal centro
+di Trento, chiusa 0,83 e 15,96 km con lettere alte 659 m in 11 s; con la
+penna alzata 0,90, 15,37 km di lettere più 2,09, 1,05 e 1,09 km a piedi
+(19,59 in tutto), lettere alte 1.121 m, partenza spostata di 1 km, 18 s.
+«IO» 6 km da Levico: chiusa 0,97 (5,12 km), penna alzata 0,92 (5,13 km di
+lettere e 0,98 a piedi). **Non giudicati a occhio dall'utente.** Il resto
+(i criteri qui sopra) solo su griglie e sul grafo dei fixture.
+
+**Per TASK-198 (l'app)**: mandare `pen_up: true` solo con una parola;
+leggere `walks` se c'è (un'API vecchia non lo manda: una linea sola); il
+percorso con `walks` **non è chiuso**, va dalla prima lettera all'ultima,
+e l'ultimo punto non è la partenza; mettere in pausa la registrazione al
+punto `da` di ogni tratto e riprendere al punto `a`; mostrare i km delle
+lettere e quelli a piedi (le lettere a parità di km sono 1,7 volte più
+alte, e i tratti a piedi aggiungono il 20–30%); rimandare i `walks` a
+`POST /gpx` e a `POST /track-scores`; le indicazioni di svolta coprono
+anche i tratti a piedi.
+
+**Dopo il merge, con l'ok dell'utente**: l'aggiornamento del server
+(`DEPLOY.md` F.12) e poi `draw_examples` rilanciato, da `origin/main`
+pulito: il motore cambiato cambia `engine_fingerprint`, e gli esempi tenuti
+si ridisegnano anche se i percorsi senza `pen_up` restano gli stessi.

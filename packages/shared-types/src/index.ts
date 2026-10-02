@@ -84,13 +84,36 @@ interface RouteRequestFields {
 }
 
 /** A shape of the catalogue, or a word written one letter at a time: one
- * of the two, the other absent or null (TASK-056). */
+ * of the two, the other absent or null (TASK-056). `pen_up` only with a
+ * word (TASK-197, ADR-0157): each letter drawn on its own, and the route
+ * walks from one to the next without drawing (`RouteResult.walks`); the
+ * distance is the letters'. Absent means false, as an older app sends it. */
 export type RouteRequest =
-  | (RouteRequestFields & { shape: Shape; word?: null; style?: "round" })
-  | (RouteRequestFields & { shape?: null; word: string; style?: LetterStyle });
+  | (RouteRequestFields & {
+      shape: Shape;
+      word?: null;
+      style?: "round";
+      pen_up?: false;
+    })
+  | (RouteRequestFields & {
+      shape?: null;
+      word: string;
+      style?: LetterStyle;
+      pen_up?: boolean;
+    });
+
+/**
+ * A stretch of a route walked from one letter to the next of a word with
+ * the pen up (TASK-197): [from, to] indices into `RouteResult.points`, both
+ * included. Recording pauses at `from` and resumes at `to`.
+ */
+export type Walk = [from: number, to: number];
 
 export interface RouteResult {
-  /** The route, closed: the last point is the first. */
+  /**
+   * The route, closed: the last point is the first. A word with the pen up
+   * is open: from its first letter to its last (TASK-197).
+   */
   points: LatLon[];
   /** Distance actually covered, in metres. */
   distance_m: number;
@@ -109,6 +132,13 @@ export interface RouteResult {
    * alternatives of its own. Missing from an older API.
    */
   alternatives?: RouteResult[];
+  /**
+   * The walks of a word with the pen up (TASK-197, ADR-0157), in order: one
+   * fewer than its letters, the next letter beginning where a walk ends.
+   * Empty for a shape, an image and a word without; missing from an older
+   * API, which draws one line.
+   */
+  walks?: Walk[];
 }
 
 /** Routes besides the one chosen by the engine: three to choose from. */
@@ -255,6 +285,12 @@ export interface TrackScoreRequest {
   similarity: number;
   /** The run, fix by fix, in order. */
   track: TrackFix[];
+  /**
+   * The planned route's: RouteResult.walks (TASK-197). The run is judged on
+   * the letters alone, its positions on a walk not counted. Absent or empty
+   * for any other route.
+   */
+  walks?: Walk[];
 }
 
 /** The score of a run (route_engine/track_score.py, ADR-0090). */
@@ -359,6 +395,8 @@ export interface ImageRouteRequest {
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
+  /** No letters to draw with the pen up: true is refused (TASK-197). */
+  pen_up?: false;
 }
 
 /** The most points of all the strokes of an outline together, as the

@@ -23,7 +23,12 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.image_outline import InvalidImageError
-from route_engine.models import InvalidRequestError, RouteRequest, RouteResult
+from route_engine.models import (
+    PEN_UP_WITHOUT_WORD,
+    InvalidRequestError,
+    RouteRequest,
+    RouteResult,
+)
 from route_engine.optimizer import GraphLoader, ShapeNotDrawableError
 from route_engine.outline_edits import InvalidEditError
 from shaperoute_ai.reading import (
@@ -140,8 +145,11 @@ def validation_message(errors: Sequence[Any]) -> str:
 
 def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
     """The engine's RouteRequest checks the values, and ImageRequest those of
-    an image route: InvalidRequestError."""
+    an image route: InvalidRequestError. An image has no letters to draw
+    with the pen up (TASK-197)."""
     if isinstance(body, ImageRouteRequestBody):
+        if body.pen_up:
+            raise InvalidRequestError(PEN_UP_WITHOUT_WORD)
         return ImageRequest(
             start=body.start,
             outline=outline_of(body.outline, body.strokes),
@@ -155,6 +163,7 @@ def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
         distance_m=body.distance_m,
         activity=body.activity,
         style=body.style,  # type: ignore[arg-type]  # RouteRequest checks it
+        pen_up=body.pen_up,
     )
 
 
@@ -340,6 +349,8 @@ def create_app(
             body.result.points,
             route_name(request.name, request.distance_m, when),
             when,
+            # Where to pause between the letters of a word with the pen up.
+            body.result.walks,
         )
         return Response(
             document,

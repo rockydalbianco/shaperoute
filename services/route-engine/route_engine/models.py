@@ -34,6 +34,11 @@ DISTANCE_LIMITS_M: dict[str, tuple[int, int]] = {
 ACTIVITIES: tuple[str, ...] = tuple(DISTANCE_LIMITS_M)
 
 
+# Why a request with the pen up and no word is refused (TASK-197): the API
+# says it for an image too.
+PEN_UP_WITHOUT_WORD = "pen_up is for the letters of a word"
+
+
 class InvalidRequestError(ValueError):
     """A RouteRequest field is outside its allowed range."""
 
@@ -49,6 +54,9 @@ class RouteRequest:
     activity: str = "running"
     # The letters of a word (TASK-080, ADR-0075): "block" only for a word.
     style: Style = "round"
+    # Each letter drawn on its own, walking from one to the next without
+    # drawing (TASK-197, ADR-0157): only for a word.
+    pen_up: bool = False
 
     def __post_init__(self) -> None:
         check_start(self.start)
@@ -71,6 +79,8 @@ class RouteRequest:
             raise InvalidRequestError(
                 "a style is for the letters of a word, not a shape"
             )
+        if self.pen_up and self.word is None:
+            raise InvalidRequestError(PEN_UP_WITHOUT_WORD)
 
     @property
     def name(self) -> str:
@@ -148,3 +158,8 @@ class RouteResult:
     # Other routes for the same request, to choose from (TASK-093): whole
     # results, each with no alternatives of its own.
     alternatives: list[RouteResult] = field(default_factory=list)
+    # A word with the pen up (TASK-197, ADR-0157): [from, to] indices into
+    # `points`, both included, of each stretch walked from one letter to
+    # the next without drawing; in order, the next letter beginning where a
+    # walk ends. Empty for a shape, an image and a word without.
+    walks: list[tuple[int, int]] = field(default_factory=list)

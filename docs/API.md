@@ -168,7 +168,8 @@ cinque non le disegna, e restano dal primo telefono che le chiede.
   come `cityKey` dell'app). Un percorso da qualsiasi altra partenza non
   viene mai scritto, e il contorno di un'immagine nemmeno.
 - **La stessa richiesta**: stessa forma o parola, stile, distanza,
-  attività, stesso centro, **stesso motore**. Il nome del file viene da
+  attività, la penna alzata o no (TASK-197), stesso centro, **stesso
+  motore**. Il nome del file viene da
   un'impronta del codice del motore (`engine_fingerprint`: i `.py` e i
   `.json` di `route_engine`): un motore cambiato ridisegna, senza
   cancellare niente a mano.
@@ -271,7 +272,10 @@ CLI (`GPX.md`). Il nome del file è nell'intestazione:
 `Content-Disposition: attachment; filename="sgrava-heart-5km-2026-09-23.gpx"`.
 L'API non ricorda niente, quindi l'export funziona anche dopo i 10 minuti
 di vita di una richiesta in due tempi. Un corpo non valido risponde
-`422 invalid_request` (ADR-0033).
+`422 invalid_request` (ADR-0033). Con i `walks` di una parola con la penna
+alzata (TASK-197) il GPX ha un waypoint «Pause» e uno «Resume» per ogni
+tratto a piedi (`GPX.md`); dei `walks` che non stanno nei `points` sono
+`422 invalid_request`. Un'app che non li manda riceve il GPX di prima.
 
 ### `GET /places`
 
@@ -390,7 +394,8 @@ Il punteggio di una corsa (TASK-113, ADR-0093). Riceve un
 }
 ```
 
-`points` e `similarity` sono quelli del `RouteResult` del percorso seguito;
+`points` e `similarity` sono quelli del `RouteResult` del percorso seguito
+(e i suoi `walks`, sotto);
 `track` sono le posizioni registrate dall'app, in ordine (`accuracy_m` può
 mancare o essere `null`). Risponde `200` con un `TrackScoreResult`:
 `score` da 0 a 100, `fidelity`, `covered` (quota del percorso corsa),
@@ -400,6 +405,14 @@ niente rete, e l'API non ricorda niente. Una corsa con meno di 2 posizioni
 buone o più corta del 10% del percorso risponde `422 invalid_request`, con
 il motivo del motore nel messaggio («This run cannot be scored: …»). Al più
 20 000 posizioni e 50 000 punti di percorso.
+
+**`walks`** (TASK-197, facoltativo): quelli del `RouteResult` di una parola
+con la penna alzata. La corsa si confronta allora con le sole lettere: le
+posizioni su un tratto a piedi, o sulla linea dritta che una registrazione
+in pausa traccia fra il suo inizio e la sua fine, non contano
+(`ROUTE_ENGINE.md` §5, «Il punteggio di una traccia corsa»). Senza, o
+vuoto, il punteggio di prima; dei `walks` che non stanno nei `points` sono
+`422 invalid_request`.
 
 ### `POST /signals` (TASK-142, ADR-0112)
 
@@ -532,6 +545,52 @@ con `--word` (ADR-0044):
 - Una parola chiede più tempo di una forma: 40–140 s per «CIAO» a 15 km,
   quasi sempre con la ricerca fino a 2 km (ADR-0044); con le lettere di
   più tratti di più, fino a 258 s per «BELLO» (ADR-0056).
+
+### La penna alzata (TASK-197, ADR-0157)
+
+Una parola si può chiedere con **`"pen_up": true`**: ogni lettera si
+disegna da sola, e fra una e l'altra si cammina senza disegnare
+(`ROUTE_ENGINE.md` §2 e §5, «La penna alzata»):
+
+```json
+{ "start": [46.0671, 11.1214], "word": "ciao", "distance_m": 15000, "activity": "running", "pen_up": true }
+```
+
+- **Facoltativo**, `false` se manca: le app già installate non lo mandano
+  e ricevono il percorso di sempre. Solo con `word`: con `shape`, o in una
+  richiesta d'immagine, è `invalid_request` (`pen_up is for the letters of
+  a word`).
+- La distanza chiesta vale per le **lettere**, la parte che la corsa
+  registra; `distance_m` del risultato resta la lunghezza di tutti i
+  `points`, tratti a piedi compresi (a Trento, «CIAO» da 15 km: 15,4 km di
+  lettere, 19,6 in tutto).
+- Il `RouteResult` ha **`walks`**: una coppia `[da, a]` di indici in
+  `points` per ogni tratto a piedi, compresi tutti e due, in ordine; dove
+  finisce un tratto comincia la lettera successiva. Con n lettere n − 1
+  coppie. I `points` restano una linea sola, da seguire (navigazione,
+  indicazioni, GPX), ma **non è chiusa**: va dalla prima lettera all'ultima.
+  `similarity` è delle sole lettere. Ogni alternativa ha i suoi `walks`.
+
+```json
+{
+  "points": [[46.0671, 11.1214], "…", [46.0671, 11.1253], "…", [46.0671, 11.1253]],
+  "distance_m": 5506.5,
+  "similarity": 0.9,
+  "shape": null,
+  "word": "IO",
+  "walks": [[2, 5]],
+  "…": "…"
+}
+```
+
+  Qui i punti da 2 a 5 si camminano: la I finisce al punto 2, la O
+  comincia al 5.
+- **`walks` c'è sempre nelle risposte**, vuoto per una forma, un'immagine e
+  una parola senza `pen_up`. Un'API precedente non lo manda: in
+  `shared-types` è facoltativo, e un'app nuova legge anche un'API vecchia
+  come una linea sola. Le app installate ignorano il campo.
+- Nel `GpxRequest` e nel `TrackScoreRequest` i `walks` si rimandano come
+  sono arrivati (`POST /gpx`, `POST /track-scores`).
 
 ### Un'immagine invece di una forma (TASK-073)
 

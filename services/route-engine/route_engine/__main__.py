@@ -6,7 +6,8 @@
 (TASK-072); `--save-outline FILE` writes that outline as JSON to look at.
 `--nearby N` also plans from N road nodes near the start and keeps the best
 (TASK-076). `--activity cycling` draws a bike route, 10-30 km, on the bike
-network (TASK-190).
+network (TASK-190). `--pen-up` with `--word` draws each letter on its own and
+walks from one to the next (TASK-197).
 """
 
 from __future__ import annotations
@@ -20,10 +21,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from route_engine.export_gpx import route_name, to_gpx
+from route_engine.geo import path_length_m
 from route_engine.image_outline import InvalidImageError, outline_data
 from route_engine.models import (
     ACTIVITIES,
     DISTANCE_LIMITS_M,
+    PEN_UP_WITHOUT_WORD,
     InvalidRequestError,
     RouteRequest,
     check_activity,
@@ -47,12 +50,13 @@ from route_engine.optimizer import (
     SHAPE_POINTS,
     SIMILARITY,
     ShapeNotDrawableError,
+    first_scale,
     plan_shape,
     planned_distance,
     required_area,
     tilt_limit,
 )
-from route_engine.projection import initial_scale
+from route_engine.pen_up import Walk, drawn_m
 from route_engine.shapes import get_shape
 from route_engine.shapes.outline import (
     InvalidOutlineError,
@@ -166,6 +170,12 @@ def _build_parser() -> argparse.ArgumentParser:
         help="a word written one letter at a time, e.g. CIAO",
     )
     parser.add_argument(
+        "--pen-up",
+        action="store_true",
+        help="with --word: draw each letter on its own and walk, without "
+        "drawing, from one to the next; the distance is the letters'",
+    )
+    parser.add_argument(
         "--distance", required=True, type=int, help="target distance in metres"
     )
     parser.add_argument(
@@ -247,6 +257,8 @@ def parse_args(
         parser.error("--nearby must be 0 or more")
     if args.nearby and args.no_optimize:
         parser.error("--nearby needs the search: drop --no-optimize")
+    if args.pen_up and args.word is None:
+        parser.error(f"--pen-up: {PEN_UP_WITHOUT_WORD}")
     if args.save_outline is not None:
         if args.image is None:
             parser.error("--save-outline needs --image")
@@ -265,7 +277,7 @@ def parse_args(
         if args.word is not None:
             request = WordRequest(
                 start=args.start,
-                word=compose(args.word),
+                word=compose(args.word, pen_up=args.pen_up),
                 distance_m=args.distance,
                 activity=args.activity,
             )
@@ -323,6 +335,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         shape = request.outline(SHAPE_POINTS)
     elif isinstance(request, WordRequest):
         print(f"  shape:    {request.shape} (word, letters from {LETTERS.name})")
+        if request.word.pen_up:
+            print("            pen up: each letter on its own, walking between")
         shape = list(request.word.points)
     else:
         print(f"  shape:    {request.shape}")
@@ -384,11 +398,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     when = datetime.now(UTC)
     name = route_name(request.shape, request.distance_m, when)
     if args.out is not None:
-        args.out.write_text(to_gpx(route.points, name, when), encoding="utf-8")
+        document = to_gpx(route.points, name, when, route.walks)
+        args.out.write_text(document, encoding="utf-8")
         print(f"Wrote {args.out}: {len(route.points)} points")
     if plan.search is not None:
         best = plan.search.best
-        base = initial_scale(shape, planned_m)
+        base = first_scale(shape, planned_m, word)
         print(
             f"  placement:  rotation {best.rotation_deg:.0f} deg, "
             f"phase {best.phase:.2f}, "
@@ -412,7 +427,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         _print_nearby(nearby)
     measure_name = SIMILARITY if word is None else "letters"
     print(f"  similarity: {route.similarity:.2f} ({measure_name})")
-    print(f"  on roads:   {route.distance_m:.0f} m (target {request.distance_m} m)")
+    if route.walks:
+        _print_walks(route.points, route.distance_m, route.walks, request.distance_m)
+    else:
+        print(f"  on roads:   {route.distance_m:.0f} m (target {request.distance_m} m)")
     checks = plan.checks
     print(
         f"  checks:     {checks['reuse']:.0%} on roads already travelled, "
@@ -424,17 +442,35 @@ def main(argv: Sequence[str] | None = None) -> int:
     for warning in route.warnings:
         print(f"  warning: {warning}")
     if args.track is not None:
-        return _print_track_score(args.track, route.points, route.similarity)
+        return _print_track_score(
+            args.track, route.points, route.similarity, route.walks
+        )
     return 0
+
+
+def _print_walks(
+    points: Sequence[tuple[float, float]],
+    distance_m: float,
+    walks: Sequence[Walk],
+    target_m: int,
+) -> None:
+    """The letters' metres against the target, and each walk between them
+    (TASK-197)."""
+    drawn = drawn_m(points, distance_m, walks)
+    print(f"  letters:    {drawn:.0f} m drawn (target {target_m} m)")
+    lengths = ", ".join(f"{path_length_m(points[a : b + 1]):.0f} m" for a, b in walks)
+    print(f"  walks:      {len(walks)}, not drawn: {lengths}")
+    print(f"  on roads:   {distance_m:.0f} m in all, walks included")
 
 
 def _print_track_score(
     track: Sequence[TrackPoint],
     points: Sequence[tuple[float, float]],
     similarity: float,
+    walks: Sequence[Walk] = (),
 ) -> int:
     try:
-        scored = score_track(track, points, similarity)
+        scored = score_track(track, points, similarity, walks)
     except TrackNotScorableError as exc:
         print(f"No score: {exc}", file=sys.stderr)
         return 1

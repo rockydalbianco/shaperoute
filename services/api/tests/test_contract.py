@@ -58,6 +58,19 @@ def _names(model: type[BaseModel]) -> set[str]:
     return set(model.model_fields)
 
 
+# Added by TASK-197 (ADR-0157), both optional: the fixtures written before
+# are what an older app sends and an older API answers.
+PEN_UP = {"pen_up"}
+WALKS = {"walks"}
+
+
+def _with_no_walks(result: dict[str, Any]) -> dict[str, Any]:
+    """An older API's result as this one answers it: `walks` empty, in the
+    alternatives too."""
+    others = [_with_no_walks(other) for other in result.get("alternatives", [])]
+    return {**result, "alternatives": others, "walks": []}
+
+
 def test_bodies_have_the_fields_of_the_dataclasses() -> None:
     assert _names(RouteRequestBody) == {f.name for f in fields(RouteRequest)}
     assert _names(RouteResultBody) == {f.name for f in fields(RouteResult)}
@@ -66,16 +79,30 @@ def test_bodies_have_the_fields_of_the_dataclasses() -> None:
 
 def test_request_fixture_is_a_valid_body() -> None:
     data = _load("route-request.json")
-    assert set(data) == _names(RouteRequestBody)
+    assert set(data) == _names(RouteRequestBody) - PEN_UP
     body = RouteRequestBody.model_validate(data)
     assert body.start == (46.0671, 11.1214)
+    assert not body.pen_up
 
 
 def test_result_fixture_is_a_valid_body() -> None:
     data = _load("route-result.json")
-    assert set(data) == _names(RouteResultBody)
+    assert set(data) == _names(RouteResultBody) - WALKS
     body = RouteResultBody.model_validate(data)
     assert body.points[0] == body.points[-1]
+    assert body.walks == []  # an older API: one line, no walks
+
+
+def test_pen_up_fixtures_are_valid_bodies() -> None:
+    # TASK-197: a word with the pen up, and its route with the walks.
+    request = _load("route-request-pen-up.json")
+    assert set(request) == _names(RouteRequestBody)
+    assert RouteRequestBody.model_validate(request).pen_up
+    result = _load("route-result-pen-up.json")
+    assert set(result) == _names(RouteResultBody)
+    body = RouteResultBody.model_validate(result)
+    assert body.word is not None and len(body.walks) == len(body.word) - 1
+    assert body.points[0] != body.points[-1]
 
 
 def test_the_api_answers_the_result_fixture_unchanged() -> None:
@@ -93,7 +120,7 @@ def test_the_api_answers_the_result_fixture_unchanged() -> None:
     app = create_app(FileSource(FIXTURES / "unused.graphml"), planner=planner)
     response = TestClient(app).post("/routes", json=_load("route-request.json"))
     assert response.status_code == 200
-    assert response.json() == data
+    assert response.json() == _with_no_walks(data)
 
 
 def test_error_fixture_is_a_valid_error_body() -> None:
@@ -127,8 +154,8 @@ def test_job_statuses_match_shared_types() -> None:
 def test_gpx_request_fixture_is_a_valid_body() -> None:
     data = _load("gpx-request.json")
     assert set(data) == _names(GpxRequestBody)
-    assert set(data["request"]) == _names(RouteRequestBody)
-    assert set(data["result"]) == _names(RouteResultBody)
+    assert set(data["request"]) == _names(RouteRequestBody) - PEN_UP
+    assert set(data["result"]) == _names(RouteResultBody) - WALKS
     GpxRequestBody.model_validate(data)
 
 
@@ -149,10 +176,10 @@ def test_shape_text_limit_matches_shared_types() -> None:
 def test_word_fixtures_are_valid_bodies() -> None:
     # A word instead of a shape, the other null (TASK-056).
     request = _load("route-request-word.json")
-    assert set(request) == _names(RouteRequestBody)
+    assert set(request) == _names(RouteRequestBody) - PEN_UP
     assert RouteRequestBody.model_validate(request).word == "ciao"
     result = _load("route-result-word.json")
-    assert set(result) == _names(RouteResultBody)
+    assert set(result) == _names(RouteResultBody) - WALKS
     body = RouteResultBody.model_validate(result)
     assert body.shape is None
     assert body.word == "CIAO"
@@ -170,9 +197,29 @@ def test_the_api_passes_the_word_on_and_answers_its_result_unchanged() -> None:
     app = create_app(FileSource(FIXTURES / "unused.graphml"), planner=planner)
     response = TestClient(app).post("/routes", json=_load("route-request-word.json"))
     assert response.status_code == 200
-    assert response.json() == data
+    assert response.json() == _with_no_walks(data)
     assert asked[0].word == "ciao"
     assert asked[0].style == "block"  # TASK-080
+    assert not asked[0].pen_up  # TASK-197
+
+
+def test_the_api_passes_the_pen_up_on_and_answers_its_walks() -> None:
+    # TASK-197: the request's pen_up reaches the engine, the walks come back.
+    data = _load("route-result-pen-up.json")
+    points = [tuple(p) for p in data["points"]]
+    walks = [tuple(w) for w in data["walks"]]
+    result = RouteResult(**{**data, "points": points, "walks": walks})
+    asked: list[RouteRequest] = []
+
+    def planner(request: RouteRequest, source: GraphLoader) -> Plan:
+        asked.append(request)
+        return Plan(result=result, search=None)
+
+    app = create_app(FileSource(FIXTURES / "unused.graphml"), planner=planner)
+    response = TestClient(app).post("/routes", json=_load("route-request-pen-up.json"))
+    assert response.status_code == 200
+    assert response.json() == data
+    assert asked[0].pen_up and asked[0].word == "io"
 
 
 def test_image_fixtures_are_valid_bodies() -> None:
@@ -185,13 +232,14 @@ def test_image_fixtures_are_valid_bodies() -> None:
     assert set(outline) == _names(ImageOutlineBody) - {"strokes", "image_strokes"}
     ImageOutlineBody.model_validate(outline)
     route = _load("image-route-request.json")
-    # As an app older than TASK-079 sends it: no details.
-    assert set(route) == _names(ImageRouteRequestBody) - {"strokes"}
+    # As an app older than TASK-079 sends it: no details; nor the pen up,
+    # which an image refuses anyway (TASK-197).
+    assert set(route) == _names(ImageRouteRequestBody) - {"strokes"} - PEN_UP
     assert ImageRouteRequestBody.model_validate(route).outline == [
         tuple(p) for p in outline["points"]
     ]
     result = _load("route-result-image.json")
-    assert set(result) == _names(RouteResultBody)
+    assert set(result) == _names(RouteResultBody) - WALKS
     body = RouteResultBody.model_validate(result)
     assert body.shape is None and body.word is None
     error = _load("image-error.json")
@@ -200,7 +248,8 @@ def test_image_fixtures_are_valid_bodies() -> None:
 
 
 def test_an_image_route_request_is_a_route_request_with_an_outline() -> None:
-    # No letters in an image, so no style (TASK-080).
+    # No letters in an image, so no style (TASK-080); its pen_up is there to
+    # be refused with the reason (TASK-197).
     engine = {f.name for f in fields(RouteRequest)} - {"shape", "word", "style"}
     assert _names(ImageRouteRequestBody) == engine | {"outline", "strokes"}
 

@@ -6635,3 +6635,92 @@ La corsa non cambia: nessun file del motore che già c'era è toccato; ma
 `engine_fingerprint` dell'API legge ogni `.py` del motore, quindi dopo il
 prossimo aggiornamento del server gli esempi tenuti (ADR-0136) si
 ridisegnano alla prima richiesta, uguali a prima.
+
+## ADR-0157 — La penna alzata: indici dei tratti a piedi in `points`, non pezzi separati
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-197, motore e API). Il cosa è **scelta dell'utente** («per le
+scritte, stoppare il tragitto, camminare fino alla seconda lettera senza
+tracciare»), con la pausa automatica e l'avviso a voce nell'app (TASK-198).
+
+**Contesto**: una parola si scrive come una linea chiusa: ogni lettera
+andata e ritorno, unita alla successiva da una linea di base, e il ritorno
+alla partenza (ADR-0044). Quella base deve passare su una strada: dove non
+c'è, il percorso gira e sporca la parola. Con la penna alzata ogni lettera
+si disegna da sola e fra due lettere si cammina con la registrazione in
+pausa; Strava, in una pausa, traccia una linea dritta dal punto dove ci si
+è fermati a quello dove si riparte. Il contratto (`RouteRequest`,
+`RouteResult`) lo usa anche l'app già pubblicata: non deve rompersi.
+
+**Decisione**:
+
+1. **La richiesta**: `pen_up`, vero o falso, falso se manca. Solo con
+   `word`: con `shape` o in una richiesta d'immagine è `invalid_request`
+   (`pen_up is for the letters of a word`). L'immagine ha il campo solo per
+   rifiutarlo con questo messaggio invece di «Extra inputs».
+2. **La risposta**: `walks`, una lista di coppie `[da, a]` di indici in
+   `points`, compresi tutti e due, in ordine; dove finisce un tratto
+   comincia la lettera successiva; con n lettere n − 1 coppie. **Indici in
+   una linea sola, non pezzi separati**: tutto quello che oggi legge
+   `points` (la navigazione e il «fuori percorso» dell'app, le
+   indicazioni di svolta calcolate sui nodi del percorso, il GPX, i
+   preferiti e le corse salvate, le alternative, il registro e il replay)
+   continua a leggere una linea da seguire, e un'app che non conosce
+   `walks` la segue tutta, camminando dove non disegna. Pezzi separati
+   (una lista di linee) avrebbero voluto un campo nuovo al posto di
+   `points` o due copie del percorso, e ogni lettore da cambiare insieme.
+3. **Facoltativi in tutti e due i sensi**: l'API manda sempre `walks`
+   (vuoto per una forma, un'immagine, una parola senza `pen_up`); in
+   `shared-types` è `walks?`, così un'app nuova legge un'API vecchia come
+   una linea sola. `pen_up?` nella richiesta (`false` per una forma e
+   un'immagine). Le fixture scritte prima restano come sono, e i test le
+   leggono come richieste e risposte di un'app e di un'API precedenti
+   (come le fixture senza dettagli di ADR-0074).
+4. **Il motore** (`pen_up.py`, `ROUTE_ENGINE.md` §2 e §5): ogni lettera
+   è il suo `out` una volta, tracciato come linea aperta
+   (`snap_to_network(closed=False)`, un parametro nuovo che per difetto
+   lascia tutto com'era), con le zone e il corridoio del disegno intero;
+   fra due lettere la strada più breve, senza zone né corridoio. Una fase
+   sola, l'ingresso della prima lettera, che non si sposta perché tiene la
+   partenza; le altre si spostano come prima. Somiglianza e distanza sono
+   delle sole lettere; `distance_m` resta la lunghezza di tutti i
+   `points`. Il percorso non è chiuso: si controlla solo dove comincia.
+5. **Senza `pen_up` niente cambia**: le stesse funzioni con gli stessi
+   argomenti, e un test confronta i percorsi di cinque parole (sul grafo
+   dei fixture di Levico e su una griglia, anche con le partenze vicine)
+   con le impronte di `main` a 59dd8a7, punto per punto.
+6. **Il punteggio di una corsa** (`POST /track-scores`) prende i `walks`,
+   facoltativi: la corsa si confronta con le sole lettere, e non contano le
+   posizioni su un tratto a piedi né sulla linea dritta fra il suo inizio e
+   la sua fine (una registrazione in pausa salta lì). **Il GPX del
+   percorso** resta una linea sola e aggiunge un waypoint «Pause» e uno
+   «Resume» per tratto (`GPX.md`).
+7. **I percorsi tenuti** (`route_store.py`, ADR-0136) distinguono la penna
+   alzata; la chiave delle altre richieste non cambia.
+
+**Scartate**: pezzi separati al posto di `points` (sopra); un tratto a
+piedi anche dalla partenza alla prima lettera (n tratti invece di n − 1:
+la partenza è l'ingresso della prima lettera, come la fase 0 di una forma
+aperta, TASK-041); tracciare ogni lettera andata e ritorno e tenerne
+l'andata con `first_leg` (TASK-041), senza toccare `network.py`: costa il
+doppio dei tracciamenti e rende economico ripassare ogni strada già fatta
+anche all'andata (ogni lato sarebbe «ripassato»), col rischio di baffi
+nelle lettere chiuse come la O;
+copiare `snap_to_network` in `pen_up.py` per non cambiarlo (due copie
+dello stesso tracciamento da tenere allineate); misurare ripercorrenza e
+scale sulle sole lettere (le misure sono di tutto il percorso: anche nei
+tratti a piedi si cammina); un `walks` che manca invece che vuoto nelle
+risposte (un serializzatore apposta, e nessun vantaggio: le app installate
+ignorano un campo in più).
+
+**Conseguenze**: a parità di km le lettere sono più alte (la distanza è
+delle lettere: «CIAO» 9,5 altezze invece di 16,2) e i tratti a piedi
+aggiungono il 20–30% di strada: a Trento «CIAO» da 15 km fa 15,4 km di
+lettere e 19,6 in tutto. L'app lo deve dire (TASK-198). Il percorso di
+una parola con la penna alzata **non è chiuso**: chi legge `points`
+supponendo che l'ultimo punto sia il primo (l'app pubblicata non lo
+chiede mai) va guardato in TASK-198. Ogni cambio di `route_engine` cambia
+`engine_fingerprint`, quindi dopo l'aggiornamento del server gli esempi
+tenuti si ridisegnano (anche se i percorsi senza `pen_up` restano gli
+stessi): server e `draw_examples` con l'ok dell'utente. Provato sulle
+strade vere solo dalle zone già in cache (Trento, Levico), non giudicato
+a occhio dall'utente.

@@ -41,7 +41,8 @@ def _names(model: type) -> set[str]:
 
 def test_the_fixtures_are_the_contract() -> None:
     request = body()
-    assert set(request) == _names(TrackScoreRequestBody)
+    # As an app older than TASK-197 sends it: no walks.
+    assert set(request) == _names(TrackScoreRequestBody) - {"walks"}
     assert set(request["track"][0]) == _names(TrackFixBody)
     TrackScoreRequestBody.model_validate(request)
     answer = _load("track-score.json")

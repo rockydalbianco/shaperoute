@@ -12,6 +12,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { PhotoRow } from "./PhotoRow";
 
 type Props = {
   user: User;
@@ -26,7 +27,6 @@ type Coming = { emoji: string; name: string };
  * turned on by its own task and leaves this list then.
  */
 const ACCOUNT_COMING: Coming[] = [
-  { emoji: "📷", name: "Profile picture" },
   { emoji: "✉️", name: "Change email" },
   { emoji: "📱", name: "Phone number" },
 ];
@@ -98,6 +98,7 @@ export function SettingsPage({ user, account }: Props) {
           <Text style={styles.username}>{user.username}</Text>
           <Text style={styles.email}>{user.email}</Text>
         </View>
+        <PhotoRow name={user.username} />
         <ComingRows rows={ACCOUNT_COMING} />
       </Section>
       <SportSetting />

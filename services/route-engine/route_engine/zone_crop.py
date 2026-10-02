@@ -19,7 +19,7 @@ from typing import Any
 import networkx as nx
 import numpy as np
 
-from route_engine.network import BBox, Graph, crop
+from route_engine.network import BBox, Graph, crop, one_way_streets
 
 
 class ZoneCrop:
@@ -43,8 +43,13 @@ class ZoneCrop:
 
     def crop(self, bbox: BBox) -> Graph:
         """What `network.crop(zone, bbox)` gives, node for node and edge for
-        edge, in the same order."""
+        edge, in the same order. A bike zone is cropped by `network.crop`
+        itself: its piece is the largest one where every node is reached
+        from every other (ADR-0153), which the shortcut here does not
+        follow."""
         zone = self.zone
+        if one_way_streets(zone):
+            return crop(zone, bbox)
         south, west, north, east = bbox
         rows = np.flatnonzero(
             (south <= self._lat)

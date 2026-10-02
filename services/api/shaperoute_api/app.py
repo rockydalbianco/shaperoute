@@ -64,6 +64,7 @@ from shaperoute_api.places import (
     PlaceSearch,
     PlacesUnavailableError,
 )
+from shaperoute_api.profile_photos import install_profile_photos
 from shaperoute_api.recommended import (
     DEFAULT_RADIUS_M,
     MAX_RADIUS_M,
@@ -91,6 +92,8 @@ from shaperoute_api.schemas import (
     TrackScoreRequestBody,
 )
 from shaperoute_api.signals import SignalBody, SignalGate, event_of
+from shaperoute_api.strava import install_strava
+from shaperoute_api.strava_client import Strava
 from shaperoute_api.themed import ThemedJobBody, ThemedJobs, ThemedRequestBody
 from shaperoute_api.track_scores import score_run
 
@@ -204,6 +207,7 @@ def create_app(
     accounts: Accounts | None = None,
     route_store: RouteStore | None = None,
     run_places: PlaceNames | None = None,
+    strava: Strava | None = None,
 ) -> FastAPI:
     # The search events and the learned vocabulary (TASK-130, ADR-0101).
     insights = insights or Insights(None)
@@ -261,6 +265,11 @@ def create_app(
     # The runs an account recorded (TASK-172); the name of their place comes
     # from the place search's key, when the environment has one.
     install_activities(app, run_places)
+    # A run sent to the runner's Strava (TASK-187); off unless the
+    # environment has this server's Strava application.
+    install_strava(app, strava)
+    # The profile picture of an account (TASK-178); it needs its token.
+    install_profile_photos(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

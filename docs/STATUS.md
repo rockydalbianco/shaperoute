@@ -47,8 +47,8 @@ In coda, dopo o accanto:
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
   TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
 - **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
-  sulla pagina con «Soon» (TASK-177): **TASK-178** la foto del profilo
-  (ADR-0146, migrazione `0004`; è la metà «foto» di TASK-116), **TASK-183**
+  sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
+  (TASK-178, sotto); restano **TASK-183**
   cambiare email e numero di telefono (ADR-0150, migrazione `0006`; a cosa
   serve il numero va chiesto all'utente prima), **TASK-182** le unità di
   misura, km o miglia (ADR-0149, solo app, tocca molti file), **TASK-184**
@@ -102,6 +102,13 @@ In coda, dopo o accanto:
   Riccione). I due task file sono scritti, con le domande ancora aperte:
   da assegnare, ognuno in tre parti (motore, API, app). Nel contratto si
   usa `activity`, che c'è già.
+- **La penna alzata nelle parole**, chiesta e confermata dall'utente il
+  2026-10-02: fra una lettera e l'altra si cammina senza disegnare, e
+  l'app mette in pausa la registrazione da sola, con un avviso a voce.
+  **TASK-197** (motore e API, ADR-0157: `pen_up` nella richiesta, `walks`
+  nel risultato, aggiunti senza togliere niente), poi **TASK-198** (l'app).
+  Tutti e due Todo, con il task file; TASK-197 si accorda con TASK-190 e
+  TASK-191, che cambiano gli stessi file del motore.
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -118,6 +125,38 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `offsite` è in `main` dalla PR #167): manca che l'utente lo crei
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
+- **TASK-190 — Percorsi in bici** (ADR-0153): **parte A, il motore**,
+  PR #214 (il merge è del coordinatore). La rete `bike`: ciclabili e
+  strade fino alle `primary`, i sentieri e i marciapiedi solo se segnati
+  come ciclabili, mai scale, `trunk`, autostrade né vie vietate alle bici;
+  i sensi unici valgono (contromano solo dove OSM lo apre alle bici, con
+  `oneway:bicycle=no` e simili); una cache sua, `bike_*`, accanto ai
+  `foot_*` che non cambiano; `cycling` di 10–30 km nel motore e nella CLI
+  (`--activity cycling`); lo sterrato è un warning. La corsa non cambia
+  (test di prima tutti verdi senza toccarli). **Non provata su una zona
+  vera**: Overpass rifiuta il Mac (un tentativo, 18:23Z); misure solo
+  sulle risposte a piedi già in cache, nell'ADR. Da fare: parte B (API,
+  `SUPPORTED_ACTIVITIES` e `shared-types`, le foto, le zone: a 30 km
+  servono 23 km di lato), i campioni da far giudicare all'utente, parte C
+  (app, con le due domande del task file). Fino alla parte B una richiesta
+  `cycling` all'API finisce in `engine_error`. Da dove riprendere: il task
+  file, «Esito».
+
+- **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
+  dell'utente: «Sì, fallo vero»): **la parte API è fatta**, PR #210:
+  collegare l'atleta dal browser (`POST /me/strava/connect`, `GET
+  /strava/callback`), `GET` e `DELETE /me/strava`, mandare una corsa
+  salvata (`POST /me/activities/{key}/strava`) con il GPX dei suoi orari,
+  una volta sola; token rinnovati dall'API, mai in una risposta o nei log;
+  provata contro uno Strava finto, senza rete. Spenta finché il server non
+  ha `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`. **Manca la parte app**
+  (seconda PR: `RunEnd`, «My activities», «Settings», la coda senza rete,
+  `UI.md`). **Aspettano l'utente**: creare la sua app Strava e scrivere il
+  secret sul server (`DEPLOY.md`, «Strava»), l'ok per aggiornare il server
+  (migrazione `0004`), le quattro domande del task file, la prova dal
+  vero. File della parte app: `apps/mobile/src/strava/`,
+  `src/api/strava.ts`, `src/activities/RunEnd.tsx`, `outbox.ts`,
+  `src/theme/tokens.ts`. Da dove riprendere: `tasks/TASK-187.md`.
 - **TASK-191 — Percorsi in canoa e paddle, parte A1** (ADR-0154): nel
   motore, solo file nuovi (`water.py`, `water_fit.py`), l'acqua di laghi e
   mare, la fascia entro 1 km dalla riva, dove la forma ci sta e la
@@ -131,6 +170,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-178: la foto del profilo, chiesta dall'utente con
+  TASK-177 (ADR-0146). In «Settings» la riga «Profile picture» apre
+  «Choose a picture», «Take a photo» e «Remove picture»; la foto si
+  ritaglia al quadrato nel telefono e si vede nella riga, nel cerchio di
+  «Profile» e nel pulsante in alto, al posto dell'iniziale. Nell'API la
+  tabella `profile_photos` (migrazione `0005`) e `GET`, `PUT`, `DELETE
+  /me/photo`: l'API tiene solo un JPEG quadrato di 256 px fatto da lei,
+  dritto e senza i dati dello scatto. `DELETE /me` la cancella. Nessuna
+  dipendenza nuova. Il resto di TASK-116 (nome, bio, profilo visto dagli
+  altri) avrà una migrazione sua. **Sul telefono si vede dopo due passi
+  che vogliono l'ok dell'utente**: l'API del server aggiornata con la
+  migrazione `0005` (`DEPLOY.md` F.12) e l'app pubblicata; prima, chi
+  prova vede «Profile pictures are not available on this API yet.». Poi
+  **da provare sull'iPhone**: libreria, fotocamera, il ritaglio.
 - **App** — TASK-192: in «Explore» il luogo scelto ha sempre i suoi
   percorsi, chiesto dall'utente (ADR-0155: «premo su Caldonazzo e mi
   vengono fuori Levico»). Prima un paese accanto a una città con percorsi

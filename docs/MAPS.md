@@ -19,6 +19,19 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   che rende ogni strada percorribile nei due sensi. Con il solo filtro
   OSMnx rispetta i sensi unici, che a piedi non valgono, e alcuni punti
   della forma diventano irraggiungibili.
+- Rete **`bike`** per `activity: "cycling"` (TASK-190, ADR-0153): ciclabili
+  e strade fino alle `primary`, i sentieri e i marciapiedi solo se segnati
+  come ciclabili, mai scale, `trunk` e autostrade né le strade vietate alle
+  bici (`ROUTE_ENGINE.md` §4, «La rete della bici»). Si costruisce con
+  `network_type="bike"`, quindi **con i sensi unici**, e senza
+  semplificare: `bike_ways` scarta le strade e apre o chiude i sensi per
+  le bici strada per strada, con i tag che OSMnx di solito non tiene
+  (`BIKE_TAGS`: `bicycle`, `oneway:bicycle`, `cycleway*`, `surface`…), poi
+  semplifica come OSMnx. Due filtri Overpass (`BIKE_FILTER`), quindi **due
+  richieste per zona**: le strade, e solo i sentieri e le zone pedonali
+  con un tag `bicycle` che le apre (pochi km per zona, invece di tutti i
+  marciapiedi). Tutti e due fatti di condizioni semplici, come
+  `FOOT_FILTER`: l'estratto (`prefetch_zones --extract`) li sa leggere.
 
 ## Overpass: come si scarica
 
@@ -74,6 +87,18 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   rettangolo arrotondato verso l'esterno a 1e-4° (≈ 10 m), così la stessa
   richiesta trova sempre lo stesso file. `<rete>` è `foot` dalla TASK-017;
   i file `walk_*` sono quelli di TASK-014, tenuti per i confronti.
+- **La bici ha la sua cache** (TASK-190, ADR-0153): `bike_<sud>_<ovest>_
+  <nord>_<est>.graphml`, col suo pickle, accanto ai `foot_*` e con le
+  stesse regole (zona, ritagli non salvati, scrittura intera). Una zona si
+  cerca solo fra i file della sua rete: un `foot_*` non serve mai una
+  richiesta in bici, né un `bike_*` una a piedi (`OsmnxSource.for_activity`
+  dà la sorgente di un'attività). I file `foot_*` già sul Mac e sul server
+  restano validi, con gli stessi nomi. Un grafo `bike` porta anche
+  l'attributo `network="bike"`, che il motore controlla prima di disegnare
+  (`check_network`). Le risposte grezze stanno nella stessa `http/`: la
+  query è un'altra, quindi un'altra chiave. Le vie con nome (`names_*`)
+  servono alla rete a piedi; quella della bici ha già le strade col
+  marciapiede a parte.
 - Dimensioni tipiche: 1–20 MB per grafo. I 12 grafi `walk` di TASK-014
   occupano 78 MB.
 - I dati OSM cambiano: un campione è riproducibile solo con lo stesso
@@ -111,7 +136,10 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
 - **Con l'ottimizzatore** (TASK-015, ADR-0023): un quadrato attorno alla
   partenza che contiene la forma a ogni rotazione, fase e scala massima,
   più la partenza spostabile (500 m, ADR-0025) e 500 m di margine
-  (`zone_area`). Per 15 km circa 12,5 km di lato (155 km²). Si scarica **un grafo per zona**, partendo dal caso
+  (`zone_area`). Per 15 km circa 12,5 km di lato (155 km²); per le
+  distanze della bici (cerchio, TASK-190) 9 km a 10 km, 16 km a 20 km,
+  **23 km a 30 km** (530 km²), 26 km con la ricerca lontana: una zona di
+  oggi da 17 km non basta per 30 km. Si scarica **un grafo per zona**, partendo dal caso
   più grande (cerchio da 15 km): ogni area più piccola si **ritaglia** da un
   grafo in cache che la contiene (`crop`). Il ritaglio resta in memoria e
   non si salva (ADR-0108): fino a TASK-136 la CLI lo salvava col suo nome,

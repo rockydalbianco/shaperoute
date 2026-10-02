@@ -5,7 +5,8 @@
 `--image FILE` takes the outline of the subject of a PNG or JPEG image
 (TASK-072); `--save-outline FILE` writes that outline as JSON to look at.
 `--nearby N` also plans from N road nodes near the start and keeps the best
-(TASK-076).
+(TASK-076). `--activity cycling` draws a bike route, 10-30 km, on the bike
+network (TASK-190).
 """
 
 from __future__ import annotations
@@ -21,6 +22,8 @@ from pathlib import Path
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.image_outline import InvalidImageError, outline_data
 from route_engine.models import (
+    ACTIVITIES,
+    DISTANCE_LIMITS_M,
     InvalidRequestError,
     RouteRequest,
     check_activity,
@@ -33,7 +36,13 @@ from route_engine.nearby_starts import (
     ShapeJob,
     plan_nearby,
 )
-from route_engine.network import EDGE_REUSE_PENALTY, OsmnxSource
+from route_engine.network import (
+    BIKE_FILTER,
+    BIKE_NETWORK_NAME,
+    EDGE_REUSE_PENALTY,
+    NETWORKS,
+    OsmnxSource,
+)
 from route_engine.optimizer import (
     SHAPE_POINTS,
     SIMILARITY,
@@ -75,7 +84,7 @@ class OutlineRequest:
 
     def __post_init__(self) -> None:
         check_start(self.start)
-        check_distance(self.distance_m)
+        check_distance(self.distance_m, self.activity)
         check_activity(self.activity)
 
     @property
@@ -95,12 +104,25 @@ class WordRequest:
 
     def __post_init__(self) -> None:
         check_start(self.start)
-        check_distance(self.distance_m)
+        check_distance(self.distance_m, self.activity)
         check_activity(self.activity)
 
     @property
     def shape(self) -> str:
         return self.word.text
+
+
+def _km(limits: tuple[int, int]) -> str:
+    low, high = limits
+    return f"{low / 1000:g}-{high / 1000:g}"
+
+
+def _source(cache_dir: Path, activity: str) -> OsmnxSource:
+    """The graphs of the network `activity` is drawn on (network.NETWORKS):
+    the foot network as before TASK-190, the bike network in its own files."""
+    if NETWORKS[activity] == BIKE_NETWORK_NAME:
+        return OsmnxSource(cache_dir, BIKE_NETWORK_NAME, BIKE_FILTER)
+    return OsmnxSource(cache_dir)
 
 
 def _parse_start(value: str) -> tuple[float, float]:
@@ -171,7 +193,13 @@ def _build_parser() -> argparse.ArgumentParser:
         help="score from 0 to 100 the run recorded in this GPX file against "
         "the route planned for the request (with or without --out)",
     )
-    parser.add_argument("--activity", default="running", help="default: running")
+    parser.add_argument(
+        "--activity",
+        default="running",
+        help=f"one of: {', '.join(ACTIVITIES)}; cycling routes are "
+        f"{_km(DISTANCE_LIMITS_M['cycling'])} km, on the bike network "
+        "(default: running)",
+    )
     parser.add_argument(
         "--cache-dir",
         type=Path,
@@ -310,7 +338,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     optimize = not args.no_optimize
-    source = OsmnxSource(args.cache_dir)
+    source = _source(args.cache_dir, request.activity)
     one_way = isinstance(request, OutlineRequest) and request.outline.one_way
     word = request.word if isinstance(request, WordRequest) else None
     planned_m = planned_distance(request.distance_m, one_way)
@@ -330,6 +358,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 max_tilt_deg=tilt_limit(request.shape),
                 one_way=one_way,
                 word=word,
+                activity=request.activity,
             )
             nearby = plan_nearby(job, request.start, source, count=args.nearby)
             plan = nearby.plan
@@ -345,6 +374,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 max_tilt_deg=tilt_limit(request.shape),
                 one_way=one_way,
                 word=word,
+                activity=request.activity,
             )
     except ShapeNotDrawableError as exc:
         print(f"No route: {exc}", file=sys.stderr)
@@ -389,6 +419,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"{checks['retrace']:.0%} running beside itself; "
         f"{checks['steps']:.0f} m on steps, {checks['busy']:.0f} m on main roads, "
         f"{checks['tunnel']:.0f} m in tunnels"
+        + (f", {checks['unpaved']:.0f} m unpaved" if "unpaved" in checks else "")
     )
     for warning in route.warnings:
         print(f"  warning: {warning}")

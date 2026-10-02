@@ -16,7 +16,7 @@ import urllib.parse
 import urllib.request
 import uuid
 import weakref
-from collections.abc import Collection, Iterator, Sequence
+from collections.abc import Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -87,6 +87,73 @@ FOOT_FILTER = (
     '["sidewalk:right"!~"separate"]'
 )
 
+# The bike network (TASK-190, ADR-0153): roads and cycleways, and the paths
+# and pedestrian streets open to bikes; never steps, trunk roads or
+# motorways. Its graphs keep one-way streets one way.
+BIKE_NETWORK_NAME = "bike"
+# Ways a bike rides unless a tag says otherwise (`rideable`).
+BIKE_ROADS = frozenset(
+    {
+        "cycleway",
+        "primary",
+        "primary_link",
+        "secondary",
+        "secondary_link",
+        "tertiary",
+        "tertiary_link",
+        "unclassified",
+        "residential",
+        "living_street",
+        "service",
+        "road",
+        "track",
+    }
+)
+# Ways for walking, ridden only where marked as a cycle path.
+BIKE_PATHS = frozenset({"path", "footway", "bridleway"})
+# Two Overpass filters, one request each: the roads, and only those paths
+# and pedestrian streets whose tags let bikes on, a few km a zone instead of
+# every footway. Wider than `rideable`, which decides on the tags kept,
+# save the roads with `access=private`, left out as on foot even when a
+# `bicycle` tag would open them.
+BIKE_FILTER = [
+    f'["highway"~"^({"|".join(sorted(BIKE_ROADS))})$"]["area"!~"yes"]'
+    '["access"!~"private"]["service"!~"private"]',
+    '["highway"~"^(bridleway|footway|path|pedestrian)$"]'
+    '["bicycle"~"^(designated|permissive|yes)$"]["area"!~"yes"]',
+]
+# The tags `rideable`, `bike_direction` and the checks (validation.py) read,
+# kept on the edges of a bike graph besides OSMnx's own.
+BIKE_TAGS = (
+    "bicycle",
+    "vehicle",
+    "motorroad",
+    "oneway:bicycle",
+    "cycleway",
+    "cycleway:both",
+    "cycleway:left",
+    "cycleway:right",
+    "cycleway:left:oneway",
+    "cycleway:right:oneway",
+    "surface",
+    "tracktype",
+)
+BIKE_ALLOWED = frozenset({"yes", "designated", "permissive", "destination"})
+BIKE_BANNED = frozenset({"no", "private", "dismount", "use_sidepath"})
+NO_ENTRY = frozenset({"no", "private", "agricultural", "forestry"})
+ONE_WAY_FORWARD = frozenset({"yes", "true", "1"})
+ONE_WAY_BACKWARD = frozenset({"-1", "reverse"})
+
+# The network each activity is drawn on, by its name in the cache.
+NETWORKS: dict[str, str] = {
+    "running": FOOT_NETWORK_NAME,
+    "cycling": BIKE_NETWORK_NAME,
+}
+FILTERS: dict[str, str | list[str]] = {
+    FOOT_NETWORK_NAME: FOOT_FILTER,
+    BIKE_NETWORK_NAME: BIKE_FILTER,
+}
+
 # The named roads FOOT_FILTER leaves out because their sidewalks are drawn
 # apart: only to name those sidewalks (sidewalks.py, ADR-0054), never walked.
 NAMED_ROADS_QUERY = (
@@ -118,17 +185,25 @@ class FileSource:
 
 
 class OsmnxSource:
-    """Foot network from OpenStreetMap, cached as GraphML in `cache_dir`."""
+    """Foot network from OpenStreetMap, cached as GraphML in `cache_dir`;
+    the bike network with `network_name` BIKE_NETWORK_NAME (`for_activity`).
+    Each network has its own files: `<network_name>_<area>.graphml`."""
 
     def __init__(
         self,
         cache_dir: Path,
         network_name: str = FOOT_NETWORK_NAME,
-        custom_filter: str = FOOT_FILTER,
+        custom_filter: str | list[str] = FOOT_FILTER,
     ) -> None:
         self.cache_dir = cache_dir
         self.network_name = network_name
         self.custom_filter = custom_filter
+
+    @classmethod
+    def for_activity(cls, cache_dir: Path, activity: str) -> OsmnxSource:
+        """The source of the network `activity` is drawn on (NETWORKS)."""
+        name = NETWORKS[activity]
+        return cls(cache_dir, name, FILTERS[name])
 
     def cache_path(self, bbox: BBox) -> Path:
         south, west, north, east = bbox
@@ -206,20 +281,23 @@ class OsmnxSource:
             return crop(read_graph(covering), bbox)
         ox.settings.cache_folder = str(self.cache_dir / "http")
         south, west, north, east = bbox
-        # network_type="walk" keeps every edge two-way: one-way streets do
-        # not bind pedestrians. The filter picks the ways.
         # Through an address of Overpass that answers (TASK-127, ADR-0100).
         with reachable(ox.settings.overpass_url):
-            graph = ox.graph_from_bbox(
-                bbox=(west, south, east, north),
-                network_type="walk",
-                custom_filter=self.custom_filter,
-                # Without it OSMnx keeps the largest piece of the whole
-                # zone, and an island with fewer roads than the mainland
-                # beside it is left with none: Venice (ADR-0148). The
-                # largest piece is chosen area by area, in `crop`.
-                retain_all=True,
-            )
+            if self.network_name == BIKE_NETWORK_NAME:
+                graph = download_bike_graph(bbox, self.custom_filter)
+            else:
+                # network_type="walk" keeps every edge two-way: one-way
+                # streets do not bind pedestrians. The filter picks the ways.
+                graph = ox.graph_from_bbox(
+                    bbox=(west, south, east, north),
+                    network_type="walk",
+                    custom_filter=self.custom_filter,
+                    # Without it OSMnx keeps the largest piece of the whole
+                    # zone, and an island with fewer roads than the mainland
+                    # beside it is left with none: Venice (ADR-0148). The
+                    # largest piece is chosen area by area, in `crop`.
+                    retain_all=True,
+                )
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         _write_graph(graph, path)
         return largest_piece(graph)
@@ -282,6 +360,158 @@ def _whole(path: Path) -> Iterator[Path]:
         os.replace(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)
+
+
+class WrongNetworkError(ValueError):
+    """A route asked for one activity on the graph of another network: a
+    bug of the caller, which handed the wrong source (ADR-0153)."""
+
+
+def network_of(graph: Graph) -> str:
+    """The network a graph was built for: what its `network` attribute says,
+    set on bike graphs; foot graphs, also those cached before, have none."""
+    return str(graph.graph.get("network", FOOT_NETWORK_NAME))
+
+
+def one_way_streets(graph: Graph) -> bool:
+    """Whether `graph` keeps one-way streets one way, as the bike network
+    does; on foot every road goes both ways."""
+    return network_of(graph) == BIKE_NETWORK_NAME
+
+
+def check_network(graph: Graph, activity: str) -> None:
+    """Raise unless `graph` is of the network `activity` is drawn on: a
+    cycling route on the foot network would take steps and go against
+    one-way streets."""
+    wanted, found = NETWORKS[activity], network_of(graph)
+    if found != wanted:
+        raise WrongNetworkError(
+            f"a {activity} route is drawn on the {wanted} network, "
+            f"not on the {found} one"
+        )
+
+
+@contextmanager
+def _way_tags(extra: Sequence[str]) -> Iterator[None]:
+    """OSMnx keeps the `extra` tags of the ways too, for the block."""
+    import osmnx as ox
+
+    saved = list(ox.settings.useful_tags_way)
+    ox.settings.useful_tags_way = saved + [t for t in extra if t not in saved]
+    try:
+        yield
+    finally:
+        ox.settings.useful_tags_way = saved
+
+
+def download_bike_graph(bbox: BBox, custom_filter: str | list[str]) -> Graph:
+    """The bike network of `bbox` from Overpass, every piece of it.
+
+    network_type="bike" makes OSMnx keep one-way streets one way. The graph
+    comes unsimplified, one edge for each stretch of a way, so `bike_ways`
+    can drop ways and turn directions with each way's own tags before the
+    ways are joined into roads."""
+    import osmnx as ox
+
+    south, west, north, east = bbox
+    with _way_tags(BIKE_TAGS):
+        graph = ox.graph_from_bbox(
+            bbox=(west, south, east, north),
+            network_type="bike",
+            custom_filter=custom_filter,
+            retain_all=True,
+            simplify=False,
+        )
+    return bike_ways(graph)
+
+
+def rideable(tags: Mapping[str, Any]) -> bool:
+    """Whether a bike may ride a way with these tags (ADR-0153).
+
+    Roads and cycleways unless closed to bikes (`bicycle=no`, `dismount`,
+    `use_sidepath`, a road for motor vehicles only) or to every vehicle
+    (`access`, `vehicle`); an explicit `bicycle=yes` opens them. Paths,
+    footways and bridleways only when marked as cycle paths
+    (`bicycle=designated`), pedestrian streets when open to bikes. Steps,
+    trunk roads and motorways never."""
+    highway, bicycle = tags.get("highway"), tags.get("bicycle")
+    if highway in BIKE_PATHS:
+        return bicycle == "designated"
+    if highway == "pedestrian":
+        return bicycle in BIKE_ALLOWED
+    if highway not in BIKE_ROADS:
+        return False
+    if bicycle in BIKE_ALLOWED:
+        return True
+    if bicycle in BIKE_BANNED:
+        return False
+    return not (
+        tags.get("motorroad") == "yes"
+        or tags.get("vehicle") in NO_ENTRY
+        or tags.get("access") in NO_ENTRY
+    )
+
+
+def bike_direction(tags: Mapping[str, Any]) -> str | None:
+    """Which way a bike may ride a way, when its tags say so apart from
+    `oneway`: "both" on a one-way street open to bikes against the traffic
+    (`oneway:bicycle=no`, a `cycleway=opposite*`, a cycle lane the other way
+    on one side), "forward" or "backward" on a two-way road one-way for
+    bikes (`oneway:bicycle`). None: as `oneway` says, as for cars."""
+    oneway = tags.get("oneway:bicycle")
+    if oneway == "no":
+        return "both"
+    if oneway in ONE_WAY_FORWARD:
+        return "forward"
+    if oneway in ONE_WAY_BACKWARD:
+        return "backward"
+    for key in ("cycleway", "cycleway:both", "cycleway:left", "cycleway:right"):
+        if str(tags.get(key, "")).startswith("opposite"):
+            return "both"
+    for side in ("left", "right"):
+        lane = tags.get(f"cycleway:{side}")
+        if tags.get(f"cycleway:{side}:oneway") in {"-1", "no"} and lane not in {
+            None,
+            "no",
+            "separate",
+        }:
+            return "both"
+    return None
+
+
+def bike_ways(graph: Graph) -> Graph:
+    """An unsimplified OSMnx graph made with network_type="bike" turned
+    into the bike network: the ways a bike may not ride dropped, the one-way
+    streets open to bikes the other way joined both ways, and the two-way
+    roads one-way for bikes made one-way; then simplified as OSMnx does,
+    and marked as a bike graph (`one_way_streets`)."""
+    import osmnx as ox
+
+    edges = graph.edges(keys=True, data=True)
+    graph.remove_edges_from([(u, v, k) for u, v, k, d in edges if not rideable(d)])
+    added: list[tuple[Any, Any, dict[str, Any]]] = []
+    removed: list[tuple[Any, Any, Any]] = []
+    for u, v, k, data in graph.edges(keys=True, data=True):
+        way = bike_direction(data)
+        if way == "both" and data.get("oneway"):
+            data["oneway"] = False
+            added.append((v, u, {**data, "reversed": not data.get("reversed")}))
+        elif way in ("forward", "backward") and not data.get("oneway"):
+            if bool(data.get("reversed")) == (way == "forward"):
+                removed.append((u, v, k))
+            else:
+                data["oneway"] = True
+    graph.remove_edges_from(removed)
+    for u, v, data in added:
+        graph.add_edge(u, v, **data)
+    graph.remove_nodes_from(list(nx.isolates(graph)))
+    # Counted on the ways downloaded, footways too: simplify_graph counts
+    # them again on the bike network.
+    for _, node in graph.nodes(data=True):
+        node.pop("street_count", None)
+    graph = ox.simplify_graph(graph)
+    graph.graph["network"] = BIKE_NETWORK_NAME
+    return graph
 
 
 def area_around(points: Sequence[LatLon], margin_m: float = AREA_MARGIN_M) -> BBox:
@@ -408,7 +638,7 @@ def crop(graph: Graph, bbox: BBox) -> Graph:
     ]
     if not inside:
         raise NoRoadsError()
-    pieces = nx.weakly_connected_components(graph.subgraph(inside))
+    pieces = _pieces(graph.subgraph(inside))
     return graph.subgraph(max(pieces, key=len)).copy()
 
 
@@ -416,11 +646,22 @@ def largest_piece(graph: Graph) -> Graph:
     """`graph` itself when its roads are all joined, as in every zone saved
     before TASK-180; else a copy of its largest connected piece, which is
     what OSMnx kept of a download until then (ADR-0148)."""
-    pieces = nx.weakly_connected_components(graph)
+    pieces = _pieces(graph)
     largest = max(pieces, key=len, default=set())
     if len(largest) == len(graph):
         return graph
     return graph.subgraph(largest).copy()
+
+
+def _pieces(graph: Graph) -> Iterator[set[Any]]:
+    """The connected pieces of `graph`. With one-way streets (the bike
+    network) a piece is one where every node is reached from every other:
+    a route that rides into a one-way dead end never comes back
+    (ADR-0153). On foot every road goes both ways, and that is any piece
+    whose roads are joined."""
+    if one_way_streets(graph):
+        return iter(nx.strongly_connected_components(graph))
+    return iter(nx.weakly_connected_components(graph))
 
 
 @dataclass

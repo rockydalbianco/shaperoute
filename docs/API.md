@@ -34,7 +34,9 @@ codice. La documentazione interattiva è su `/docs`.
 Da fuori casa (TASK-081, ADR-0076, `DEPLOY.md`): se la variabile
 d'ambiente `SHAPEROUTE_API_KEY` è impostata (almeno 16 caratteri), ogni
 richiesta tranne `GET /health` deve avere l'intestazione `X-API-Key` con
-quel valore; senza, l'API è aperta come prima. I POST sono limitati a
+quel valore; senza, l'API è aperta come prima. Passa senza chiave anche
+`GET /strava/callback`, la pagina a cui Strava rimanda il browser («Send
+to Strava», più sotto): un browser non ha la chiave. I POST sono limitati a
 `SHAPEROUTE_RATE_LIMIT` al minuto per client (default 30, 0 = nessun
 limite); il polling dei job è GET e non conta. La chiave non si passa mai
 da riga di comando.
@@ -44,6 +46,12 @@ database degli account (TASK-114, `DATABASE.md`): all'avvio applica le
 migrazioni che mancano e lo scrive; se il database non risponde, non
 parte. Senza, gli account rispondono `503 accounts_unavailable` e il resto
 funziona come prima. Come accenderne uno sul PC: `SETUP.md`, 10.4.
+
+Con `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET` (l'app Strava di questo
+server, `DEPLOY.md`, «Strava») le corse salvate si possono mandare a Strava
+(TASK-187): «Send to Strava», più sotto. Senza anche una sola delle due,
+Strava è spento e il resto funziona come prima. Il secret non si passa mai
+da riga di comando.
 
 Con `--request-log`, o con `SHAPEROUTE_REQUEST_LOG=1`, l'API scrive ogni
 richiesta di percorso in un file, per poterla rifare: «Registro delle
@@ -772,6 +780,131 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   `DELETE /me` cancella anche le corse. Niente di una corsa è pubblico:
   titolo, «Public» e traccia tagliata arrivano con TASK-117.
 
+### Profile picture (TASK-178, ADR-0146)
+
+La foto del profilo di un account. Tutti gli endpoint vogliono il token:
+senza, `401 not_signed_in`; senza database, `503 accounts_unavailable`.
+Esempio in `shared-types` (`fixtures/profile-photo.json`); il tipo dell'app
+in `apps/mobile/src/api/profilePhoto.ts`; il codice in `profile_photos.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /me/photo` | la foto | `200` `{ "image": "…", "updated_at": "…" }`, o `404 http_error` senza foto |
+| `PUT /me/photo` | mettere la foto, al posto di quella di prima | `200`, la foto come l'API l'ha tenuta |
+| `DELETE /me/photo` | toglierla | `204`, anche se non c'era |
+
+- **Il corpo del `PUT`** è `{ "image": "…" }`: un file JPEG o PNG in
+  base64, al più 10 MB prima della codifica, come per `POST
+  /image-outlines`. Campi in più, base64 rotto, un file che non è
+  un'immagine, un altro formato (GIF, HEIC…) o più di 50 megapixel:
+  `422 invalid_request`, con il motivo nel messaggio; la foto di prima
+  resta.
+- **Cosa si tiene** (ADR-0115): l'API raddrizza la foto con il suo EXIF,
+  ne prende il quadrato in mezzo, lo riduce a **256 × 256 px** e lo salva
+  come JPEG nuovo (qualità 85, pochi KB). Il file del telefono non si
+  tiene, quindi nemmeno il suo EXIF (dove e quando è stata scattata). Una
+  foto trasparente ha il fondo bianco.
+- **`image`** nelle risposte è quel JPEG in base64: l'app lo mostra così
+  com'è (`data:image/jpeg;base64,…`), senza un'altra richiesta.
+- Al più **10 `PUT` al minuto per account** (`429 too_many_requests` con
+  `Retry-After`): ridurre una foto costa un momento di CPU. Il limite dei
+  POST di `SHAPEROUTE_RATE_LIMIT` non conta i `PUT`. Leggere non ha limiti.
+- Ognuno legge, cambia e toglie solo la sua; nessuno vede quella degli
+  altri finché TASK-116 non fa il profilo pubblico. `DELETE /me` cancella
+  anche la foto.
+
+### Send to Strava (TASK-187, ADR-0156)
+
+Una corsa salvata va sul profilo Strava di chi ha collegato il suo atleta,
+come attività, con la traccia e i tempi veri. Gli endpoint `/me/…` vogliono
+il token dell'account: senza, `401 not_signed_in`; senza database, `503
+accounts_unavailable`. Esempi in `shared-types` (`fixtures/strava-status.json`,
+`strava-connect.json`, `strava-activity.json`); il codice in `strava.py`
+(gli atleti e le corse) e `strava_client.py` (le chiamate a Strava, l'unico
+posto con i suoi indirizzi).
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /me/strava` | Strava c'è su questo server? L'account è collegato? | `200` `{ "available", "connected", "athlete" }` |
+| `POST /me/strava/connect` | cominciare il collegamento | `200` `{ "url": … }`: la pagina di Strava da aprire nel browser |
+| `GET /strava/callback` | dove Strava rimanda il browser; senza chiave e senza token | una pagina HTML |
+| `DELETE /me/strava` | scollegare | `204`, anche se non era collegato |
+| `GET /me/activities/{key}/strava` | cosa ha Strava di una corsa | `200` `{ "status", "url" }`, o `404 http_error` |
+| `POST /me/activities/{key}/strava` | mandare la corsa | `200` è un'attività; `202` Strava la sta ancora leggendo |
+
+- **Spento o acceso**: senza `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`
+  nell'ambiente dell'API, `GET /me/strava` risponde `available: false`
+  (l'app non mostra niente di Strava) e gli altri `503 http_error`;
+  `DELETE /me/strava` funziona lo stesso. `athlete` è il nome dell'atleta
+  su Strava («Ada Lovelace»), per «Connected as …», o `null`.
+- **Il collegamento** passa dal browser e dal server: l'app non vede mai
+  il secret né un token di Strava. `POST /me/strava/connect` crea uno
+  `state` casuale e risponde con l'indirizzo di Strava
+  (`/oauth/mobile/authorize`: sul telefono apre l'app Strava, se c'è) con
+  `scope=activity:write`, il solo permesso chiesto: aggiungere attività,
+  niente in lettura. Strava rimanda il browser a
+  `https://<dominio dell'API>/strava/callback` (`SHAPEROUTE_DOMAIN`; se è
+  vuota, l'indirizzo a cui è arrivata la richiesta dell'app).
+- **Lo `state`** dice alla callback di quale account è il collegamento:
+  vale una volta, per 10 minuti, e un account ne ha uno solo (chiedere di
+  nuovo il collegamento spegne quello di prima). Il database ne tiene solo
+  lo SHA-256. Uno `state` sconosciuto, usato o scaduto non collega niente:
+  pagina «This link has expired.», `400`.
+- **La callback risponde sempre una pagina**, perché la legge una persona:
+  «Strava is connected. Go back to Sgrava.» (`200`); «Strava is not
+  connected.» (`200`) se l'atleta ha detto di no o ha tolto la spunta al
+  permesso di caricare (allora non si chiede nemmeno il token); «Strava
+  did not answer.» (`502`); «Strava is not set up here.» (`503`); «Sgrava's
+  Strava app takes only its owner for now.» (`403`) quando un atleta
+  diverso da chi ha creato l'app Strava prova a collegarsi prima che
+  Strava l'abbia rivista. La pagina
+  non si tiene in cache e non passa il suo indirizzo ad altri.
+- **Un atleta è di un account solo**, l'ultimo che l'ha collegato: Strava
+  ha un'autorizzazione sola per atleta, quindi una sola serie di token.
+  Collegare un altro atleta allo stesso account revoca quello di prima.
+- **I token** stanno nel database, mai in una risposta né nei log. Quello
+  d'accesso dura sei ore: l'API lo rinnova da sola quando mancano meno di
+  cinque minuti alla scadenza, e tiene il refresh token nuovo che Strava
+  può dare a ogni rinnovo. Se Strava rifiuta il refresh token (l'atleta ha
+  tolto Sgrava dalle impostazioni di Strava) l'atleta si dimentica e
+  l'invio risponde `409 http_error`, «Strava is not connected: connect it
+  first.»: l'app torna a «Connect with Strava».
+- **L'invio** (`POST /me/activities/{key}/strava`): l'API scrive il GPX
+  della corsa salvata, con l'orario di ogni punto (`GPX.md`, «La corsa
+  fatta»), e lo dà a `POST /uploads` di Strava con `sport_type=Run`,
+  `external_id` = la chiave della corsa, il nome e la descrizione. Poi
+  guarda l'upload ogni secondo, al più 5 volte: `200` con `status: "sent"`
+  e `url` (la pagina dell'attività) appena Strava l'ha letto; se ci mette
+  di più, `202` con `status: "processing"`, e la stessa chiamata rifatta
+  riprende a guardare senza caricare un'altra volta.
+- **Il nome** dell'attività è cosa è stato disegnato e dove: «Heart in
+  Trento», «CIAO in Trento», il tema di un percorso a tema; senza il luogo
+  solo cosa. Una corsa senza percorso non manda un nome e Strava le dà il
+  suo («Morning Run»). La descrizione è «Drawn with Sgrava», solo per una
+  corsa che ha seguito un percorso. *Proposte in attesa dell'utente
+  (`tasks/TASK-187.md`).*
+- **Una corsa mandata due volte è un'attività sola**: la corsa tiene cosa
+  ne è stato (`status`: `not_sent`, `processing`, `sent`), e una già
+  mandata risponde `200` com'era, senza chiedere a Strava. Due invii
+  insieme aspettano uno l'altro. Se il server l'ha dimenticato e Strava
+  no, Strava rifiuta il doppione dicendo quale attività è: l'API risponde
+  `sent` con quella. `url` è `null` solo se Strava ha la corsa e non dice
+  dove.
+- **Gli errori di Strava**: non risponde, `502 http_error` (riprovare); ha
+  raggiunto il suo limite di richieste, `429 too_many_requests` con
+  `Retry-After` (i secondi al prossimo quarto d'ora, o a mezzanotte UTC
+  se è finito il limite del giorno); non riesce a leggere la corsa, `422
+  invalid_request`, «Strava could not read this run.», e la corsa torna
+  `not_sent`. Se Strava rifiuta il Client Secret del server, `502`, e
+  nessuno viene scollegato.
+- **Scollegare** (`DELETE /me/strava`) cancella i token dal database
+  comunque, poi revoca l'accesso su Strava (`POST /oauth/revoke`). Se
+  Strava non risponde i token sono già cancellati, e Sgrava resta
+  nell'elenco delle app dell'atleta su Strava finché non la toglie lui.
+  `DELETE /me` fa lo stesso prima di cancellare l'account. Le corse già
+  mandate restano su Strava.
+- Ognuno manda solo le sue corse: la chiave di un altro dà `404`.
+
 ## Eventi delle ricerche (TASK-130, ADR-0101)
 
 Ogni ricerca e ogni segnale d'uso lascia un evento in `data/insights/`
@@ -820,6 +953,11 @@ motore, in una parola.
 | Account: nessun token, o uno di una sessione chiusa | 401 | `not_signed_in` |
 | Account: sessione non usata da 90 giorni | 401 | `session_expired` |
 | Account: l'API non ha un database (`SHAPEROUTE_DATABASE_URL`) | 503 | `accounts_unavailable` |
+| Strava: il server non ha la sua app Strava (`STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`) | 503 | `http_error` |
+| Strava: l'account non ha un atleta collegato, o l'atleta ha tolto l'accesso | 409 | `http_error` |
+| Strava: non risponde | 502 | `http_error` |
+| Strava: il suo limite di richieste è raggiunto (`Retry-After` in secondi) | 429 | `too_many_requests` |
+| Strava: non riesce a leggere la corsa | 422 | `invalid_request` |
 
 Forma e codici sono anche nel contratto condiviso con l'app: `ApiError` e
 `API_ERROR_CODES` in `shared-types` (ADR-0031). Un codice nuovo va aggiunto

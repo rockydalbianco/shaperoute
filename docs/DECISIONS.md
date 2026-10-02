@@ -6057,6 +6057,182 @@ componente a parte (`SportSetting`), con gli stili delle righe di
 «Settings» ripetuti: `SettingsPage.tsx` era di TASK-177 mentre si
 scriveva.
 
+## ADR-0153 — La rete della bici: strade e ciclabili, sensi unici rispettati, una cache sua
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-190, parte A: il motore). Le distanze, 10–30 km, e `activity:
+"cycling"` invece di un campo `sport` sono **scelte dell'utente** (task
+file).
+
+**Contesto**: il motore aveva una rete sola, `foot` (ADR-0022): ogni
+strada nei due sensi, scale e marciapiedi compresi, le strade col
+marciapiede disegnato a parte escluse. In bici servono altre strade, i
+sensi unici, e una cache che non si mescoli con quella a piedi.
+
+**Misure sui dati veri, e il loro limite.** Overpass il 2026-10-02 rifiuta
+le connessioni dal Mac: un tentativo solo, alle 18:23Z, dalla CLI
+(`--activity cycling`, cerchio da 10 km dal centro di Trento), «Connection
+refused» su tutti e due gli indirizzi. **Nessuna zona della bici è stata
+scaricata.** Le misure vengono dalle risposte di Overpass già in cache sul
+Mac (`data/cache/http/`, lette senza scriverci), che sono quelle del
+filtro **a piedi**: ci sono i tag veri di ogni strada, ma **mancano le
+strade col marciapiede disegnato a parte** (`sidewalk=separate`, spesso le
+vie principali di una città) e quelle con `foot=no`. Quattro zone: Trento
+(città, 17 km), Valsugana (valle: Levico, Caldonazzo, Pergine), Padova
+(città di pianura), Bologna. Km di strada:
+
+| | Trento | Valsugana | Padova | Bologna |
+|---|---|---|---|---|
+| tutta la risposta | 4.102 | 3.883 | 4.619 | 3.561 |
+| `highway=cycleway` | 113 | 29 | 86 | 277 |
+| `path` + `bicycle=designated` | 19 | 25 | **310** | 13 |
+| `footway` + `bicycle=designated` | 0,9 | 0 | 15,6 | 8,4 |
+| `path`/`footway` + `bicycle=yes` | 63 | 79 | 26 | 50 |
+| pedonali aperte alle bici | 4,2 | 1,4 | 7,0 | 12,6 |
+| `trunk` (con le rampe) | 51,5 | 50,4 | 125,3 | 11,7 |
+| `primary` (con le rampe) | 29,6 | 83,3 | 60,6 | 134,4 |
+| `track` | 1.168 | 1.361 | 248 | 174 |
+| vietate alle bici¹ | 45 | 46 | 29 | 27 |
+| sensi unici, fra le strade della bici | 147 | 56 | 520 | 519 |
+| … aperti alle bici in contromano² | 4,1 | 1,0 | 13,9 | 8,1 |
+| … con una corsia ciclabile nell'altro senso³ | 0,2 | 0 | 7,8 | 5,1 |
+| sterrato (`surface`, o `track` senza) | 1.096 | 1.271 | 375 | 251 |
+
+¹ `bicycle=no|dismount|use_sidepath|private`, `access=no|private|
+agricultural|forestry`, `vehicle=no|private`, `motorroad=yes`.
+² `oneway:bicycle=no` (Padova 113 strade, Bologna 65, Trento 68,
+Valsugana 5) o `cycleway*=opposite*` (Padova 21, Trento 1).
+³ `cycleway:left|right:oneway=-1|no`, spesso insieme al tag di ².
+
+Rete della bici costruita **dal codice del motore** su quelle risposte
+(sempre senza le strade col marciapiede a parte): con i sensi unici, il
+pezzo più grande in cui ogni nodo si raggiunge da ogni altro è il 99,0%
+del pezzo più grande senza sensi (Valsugana), il 98,1% (Padova), il 79,5%
+(Trento); nessun arco su scale, marciapiedi, `trunk` o vie vietate. Percorsi
+pianificati lì (cuore, cerchio, stella; somiglianza, sterrato):
+
+- **Valsugana** (partenza a Levico): tutti e sei disegnati, 0,62–0,92; a
+  10 km 0,79 cuore, 0,68 cerchio, 0,83 stella; a 20 km 0,76, 0,62, 0,92;
+  sterrato 0–6,2 km, `primary` 0–1,5 km; 2–4 s l'uno.
+- **Padova** (centro): a 20 km cuore 0,86, cerchio 0,93, stella 0,91; a
+  10 km stella 0,79, cuore e cerchio non disegnabili.
+- **Trento** (centro): stella 0,90 a 10 km e 0,74 a 20, cuore 0,66 a
+  10 km, il resto non disegnabile. Nell'area del cuore da 10 km la rete
+  approssimata è a pezzi già senza i sensi unici (il pezzo più grande ha
+  7.152 nodi su 9.978), e coi sensi unici 3.763, senza la partenza: mancano
+  proprio le vie principali col marciapiede a parte.
+
+Queste misure dicono **quali tag contano** e che il motore li legge; non
+dicono come viene una forma sulla rete vera della bici in città. Non sono
+campioni da giudicare.
+
+**Decisione**:
+
+1. **Quali strade** (`network.rideable`, `BIKE_ROADS`): ciclabili e strade
+   fino alle `primary` (`primary`, `secondary`, `tertiary` con le rampe,
+   `unclassified`, `residential`, `living_street`, `service`, `road`,
+   `track`). `path`, `footway` e `bridleway` **solo con
+   `bicycle=designated`** (a Padova sono 310 km, più delle sue `cycleway`);
+   non con `bicycle=yes`, che a Trento e in Valsugana è soprattutto un
+   sentiero di montagna (58 e 76 km di `path`) e in città un marciapiede.
+   Zone pedonali con `bicycle=yes|designated|permissive|destination`. **Mai**
+   scale, `trunk` e autostrade. Una strada è chiusa con `bicycle=no|
+   private|dismount|use_sidepath`, `motorroad=yes`, `vehicle=no|private`,
+   `access=no|private|agricultural|forestry`, salvo un `bicycle=yes|
+   designated|permissive|destination` esplicito. Le `track` restano (in
+   valle sono la rete fra i paesi) e le `primary` anche: tutte e due
+   diventano warning (punto 5).
+2. **Il download**: `network_type="bike"` (OSMnx tiene i sensi unici:
+   `oneway=yes|-1`, rotatorie), con **due filtri Overpass** (`BIKE_FILTER`):
+   le strade, e solo i sentieri e le zone pedonali con un tag `bicycle` che
+   le apre. Due richieste per zona invece di una, ma la seconda porta pochi
+   km: un filtro solo con tutti i `footway` e `path` scaricherebbe il 25%
+   delle vie a Trento (7.644 `footway` su 30.910) e l'80% a Parigi e New
+   York, per buttarle. Sono condizioni semplici, come `FOOT_FILTER`, che
+   l'estratto (`zone_extract.tag_filter`) sa leggere. I tag che servono
+   (`BIKE_TAGS`) si aggiungono a quelli che OSMnx tiene, solo per il
+   download. Il grafo arriva **non semplificato**: `bike_ways` decide
+   strada per strada, poi semplifica come OSMnx.
+3. **Sensi unici: un percorso contromano non esiste.** Il grafo è
+   orientato e il percorso segue gli archi, quindi non è un warning ma
+   un'impossibilità. Un senso unico è aperto alle bici nei due sensi solo
+   dove OSM lo dice: `oneway:bicycle=no`, `cycleway[:both|:left|:right]=
+   opposite*`, `cycleway:left|right:oneway=-1|no` con una corsia
+   (`bike_direction`); `oneway:bicycle=yes|-1` su una strada a doppio
+   senso la fa a senso unico per le bici. Conseguenze nel motore:
+   - un ritaglio della rete `bike` tiene il pezzo più grande **in cui ogni
+     nodo si raggiunge da ogni altro** (`crop`, `largest_piece`), non solo
+     quello con le strade unite: da un senso unico cieco non si torna. Per
+     le zone `bike`, `ZoneCrop` passa da `crop` (la scorciatoia di
+     ADR-0082 segue i pezzi a piedi);
+   - da una partenza vicina (ADR-0071) **il ritorno è la via più breve
+     consentita**, non l'andata al contrario (`with_approach`); se non c'è,
+     quella partenza si scarta.
+4. **Una cache sua**: `bike_<sud>_<ovest>_<nord>_<est>.graphml` col suo
+   pickle, accanto ai `foot_*`; una zona si cerca solo fra i file della sua
+   rete. I `foot_*` non cambiano nome né contenuto. Un grafo `bike` porta
+   `network="bike"`; i grafi a piedi non hanno l'attributo, quindi tutti
+   quelli già salvati restano «foot». `plan_shape` e `ShapeJob` ricevono
+   l'`activity` e rifiutano un grafo di un'altra rete (`check_network`,
+   `WrongNetworkError`): una sorgente sbagliata è un errore, non un
+   percorso a piedi chiamato bici.
+5. **Le attività** (`models.py`): `DISTANCE_LIMITS_M` con `running` 1–50 km
+   (come prima) e `cycling` **10–30 km**; `ACTIVITIES` sono quelle che il
+   motore disegna e che `check_activity` accetta; `check_distance(distance,
+   activity)`: «distance must be between 10000 and 30000 metres for
+   cycling, got 5000». Per la corsa messaggi e ordine dei controlli sono
+   quelli di prima. **`SUPPORTED_ACTIVITIES` resta `("running",)`**: è il
+   contratto che `packages/shared-types` rispecchia (ADR-0028), e
+   `test_contract.py` lo confronta con `fixtures/contract.json`;
+   cambiarlo da solo rompe quel test, e `shared-types` è della parte B.
+   Passa a `("running", "cycling")` nella parte B, insieme al suo
+   specchio.
+6. **Validazione (§6) in bici**: le stesse misure; le scale non possono
+   esserci; le strade principali sono le `primary`; in più `unpaved`, solo
+   sulla rete `bike`: metri su `surface` senza fondo duro
+   (`validation.UNPAVED`) o su `track` senza `surface` e non
+   `tracktype=grade1`, warning appena c'è («… m of the route on unpaved
+   roads»). A piedi le misure restano cinque, senza `unpaved`.
+7. **La CLI**: `--activity cycling` usa la rete `bike` e stampa i metri di
+   sterrato.
+
+**Scartate**: il filtro `bike` di OSMnx com'è (prende ogni `path` e
+`bridleway`, le `trunk`, e non legge `oneway:bicycle` né `cycleway`); un
+solo filtro Overpass con tutti i marciapiedi (sopra); escludere tutti i
+`path` (Padova perde 310 km di ciclabili); prendere anche i `path` con
+`bicycle=yes` (sentieri); escludere le `track` (la valle resta senza rete
+fra i paesi; la superficie è fuori scope, e lo sterrato è un warning come
+chiede il task); i sensi unici come warning invece che come regola (il
+task: un percorso contromano non è accettabile); i pezzi «con le strade
+unite» anche in bici; aggiungere ora `cycling` a `SUPPORTED_ACTIVITIES`
+(sopra); un campo nuovo nel grafo per ogni arco al posto dell'attributo
+del grafo (le zone a piedi già salvate non l'avrebbero).
+
+**Conseguenze**:
+
+- La corsa non cambia: stessi file, stesso filtro, stessi percorsi; i test
+  di prima passano senza toccarli (motore 1.026, API 574).
+- **Fra la parte A e la B** il motore accetta `cycling` (`RouteRequest`), e
+  quindi anche l'API: una richiesta `cycling` a `/route-jobs` o `/routes`
+  finisce in `WrongNetworkError` (`engine_error`), perché l'API dà ancora
+  la rete a piedi. Le foto (`images.py`) invece costruiscono `ShapeJob`
+  senza `activity` e controllano la distanza della corsa: una foto
+  `cycling` uscirebbe a piedi. L'app non manda `cycling` (la riga «Bike» è
+  «Soon», ADR-0152). La parte B chiude tutti e due.
+- Una zona della bici costa **due richieste a Overpass**.
+- **Le zone della bici sono grandi**: cerchio da 10 km, 9 km di lato; da
+  20 km, 16; da 30 km, **23 km** (530 km²), 26 con la ricerca lontana. Le
+  zone di oggi (17 × 17 km, ADR-0119) non bastano per 30 km: va misurato
+  nella parte B prima di promettere i tempi.
+- `ZoneCrop` non accelera le zone `bike`: in una città grande il ritaglio
+  costa di più che a piedi (da misurare nella parte B).
+- `engine_fingerprint` cambia come a ogni modifica del motore: gli esempi
+  tenuti sul server si ridisegnano alla prima richiesta.
+- **Non verificato**: una zona vera della bici (Overpass), i tempi su di
+  essa, quanto la rete vera di una città resta a pezzi coi sensi unici, e
+  i campioni da far giudicare all'utente (cuore, cerchio e stella a 10, 20
+  e 30 km a Trento e in una città di pianura). Da fare appena Overpass
+  riapre o con l'estratto (parte B, `prefetch_zones --extract`).
+
 ## ADR-0155 — «Explore»: il luogo scelto ha i suoi percorsi, quelli dei vicini stanno sotto
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
 («premo su Caldonazzo, ma non vengono fuori suggerimenti a Caldonazzo: mi
@@ -6131,6 +6307,177 @@ solo quelli di Levico: dalla posizione di qualcuno non si disegna
 (ADR-0136), cambiarlo è una scelta dell'utente. Paesi piccoli e frazioni
 non sono disegnati in anticipo sul server (`draw_examples`): da fare lì,
 con l'ok dell'utente. Da provare con il dito sull'iPhone.
+
+## ADR-0156 — «Send to Strava»: il collegamento passa dal server, e la corsa tiene cosa ne ha fatto Strava
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («Sì,
+fallo vero»: l'invio vero della corsa fatta, con un'app Strava sua, fra
+tre proposte); il come deciso dall'agente su delega dell'utente
+(TASK-187, parte API). Non riapre ADR-0138: quello toglieva il passaggio a
+mano di un *percorso*; questo carica la *corsa fatta*, che Strava permette
+alle altre app (`POST /uploads`).
+
+**Contesto**: l'utente vuole, a fine corsa, «salva, cancella, invia a
+Strava». Le corse salvate ci sono (`runs`, ADR-0140). Per caricare
+un'attività Strava chiede OAuth con il permesso `activity:write`, un
+Client Secret che non può stare in un'app, token d'accesso che scadono
+dopo sei ore e un file con l'orario di ogni punto. Documentazione riletta
+il 2026-10-02: la revoca si fa con `POST /oauth/revoke` (dal 1° giugno
+2026; `/oauth/deauthorize` finisce il 1° giugno 2027); un'app non rivista
+collega un atleta solo; 200 richieste ogni quarto d'ora e 2 000 al giorno.
+
+**Decisione**:
+- **Tutto OAuth sta sul server.** L'app chiede `POST /me/strava/connect`,
+  apre nel browser l'indirizzo che riceve e non vede altro: né il secret
+  né un token. Strava rimanda il browser a `GET /strava/callback`
+  dell'API, che scambia il codice e risponde una pagina. Nessuna
+  dipendenza nuova, né nell'app né nell'API (`urllib`, come per Geoapify).
+- **Lo `state` lega la callback all'account**: casuale, 32 byte, vale una
+  volta per 10 minuti, uno per account, nel database solo il suo SHA-256
+  (tabella `strava_states`). La callback è fuori da `X-API-Key`
+  (`OPEN_PATHS`): un browser non ha la chiave, e senza uno `state` buono
+  la pagina non fa niente.
+- **Si chiede solo `activity:write`**, e si controlla che l'atleta non
+  l'abbia tolto: senza, non si chiede nemmeno il token.
+- **I token in chiaro nel database** (`strava_accounts`). Vanno rimandati
+  a Strava, quindi un hash non basta; cifrarli vorrebbe una dipendenza e
+  una chiave in più da custodire nello stesso `.env`. Chi copia il
+  database ha token d'accesso che durano al più sei ore e refresh token
+  inutili senza il Client Secret, che sta solo nell'ambiente del server.
+- **Un atleta è di un account solo, l'ultimo che l'ha collegato**: Strava
+  dà una sola serie di token per atleta, e due righe se li romperebbero a
+  vicenda a ogni rinnovo.
+- **Il rinnovo è dell'API**: prima di usare un token a meno di cinque
+  minuti dalla scadenza lo rinnova, una richiesta alla volta per atleta
+  (`FOR UPDATE`), e tiene il refresh token nuovo. Un token rifiutato
+  mentre è ancora buono per l'orologio si rinnova una volta: se Strava
+  rifiuta anche il refresh token l'atleta ha tolto l'accesso, la riga si
+  cancella e l'app torna a «Connect with Strava» (`409`). Un Client Secret
+  sbagliato sul server (`401` di Strava) non scollega nessuno.
+- **La corsa tiene cosa ne ha fatto Strava** (`strava_status`,
+  `strava_upload_id`, `strava_activity_id` su `runs`): una già mandata non
+  si rimanda, una in lettura si riprende a guardare. Due invii insieme si
+  mettono in fila sulla riga della corsa. `external_id` è la chiave della
+  corsa: se il server dimentica, Strava rifiuta il doppione dicendo quale
+  attività è, e l'API la prende per mandata.
+- **L'invio aspetta Strava per pochi secondi** (5 sguardi, uno al
+  secondo, come Strava chiede), poi risponde `202 processing` e la stessa
+  chiamata rifatta riprende: niente lavori in sottofondo nell'API, e la
+  coda dell'app (`outbox`) sa già riprovare.
+- **Lo stato dell'invio ha un endpoint suo** (`GET
+  /me/activities/{key}/strava`) invece di un campo in più nelle corse di
+  «My activities»: `activities.py`, i suoi esempi e i tipi dell'app non
+  cambiano, e chi non ha Strava non riceve niente di Strava.
+- **Nessun codice d'errore nuovo**: `http_error` con `503` (Strava
+  spento), `409` (non collegato), `502` (Strava non risponde),
+  `too_many_requests` con `Retry-After` (il limite di Strava),
+  `invalid_request` (`422`, Strava non legge la corsa). L'app li distingue
+  dallo stato HTTP; il contratto degli errori (`schemas.py`,
+  `shared-types`) resta com'è.
+- **Il GPX della corsa lo scrive l'API** (`run_gpx.py`), non il motore:
+  non è un percorso, è la traccia salvata con i suoi orari, e una pausa
+  chiude un `<trkseg>` (`GPX.md`, «La corsa fatta»). Il motore resta
+  l'unico a scrivere il GPX di un percorso (ADR-0033).
+- **Scollegare cancella i token comunque**, poi revoca su Strava; se
+  Strava non risponde non resta niente da noi, e l'atleta può togliere
+  Sgrava dalle impostazioni di Strava. `DELETE /me` fa lo stesso prima di
+  cancellare l'account, senza aspettare Strava (`before_account_delete` in
+  `accounts.py`: `accounts.py` non sa niente di Strava).
+- **Il dominio della callback** è `SHAPEROUTE_DOMAIN`, che il server ha
+  già per Caddy; vuota, l'indirizzo a cui è arrivata la richiesta. Nessuna
+  variabile in più oltre a `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`.
+- **Proposte del task file, costruite e in attesa dell'utente**: il nome
+  dell'attività («Heart in Trento»; senza percorso quello di Strava) e la
+  riga «Drawn with Sgrava», solo per una corsa che ha seguito un percorso.
+
+**Scartate**: OAuth nell'app con `expo-auth-session` (una dipendenza, e il
+secret dovrebbe comunque stare sul server per lo scambio del codice); lo
+`state` in memoria (si perde a ogni riavvio e non si prova con l'orologio
+dei test); cifrare i token (sopra); rifiutare un atleta già collegato a un
+altro account (chi prova con due account resterebbe bloccato; e non ferma
+chi convince una persona ad autorizzare un collegamento non suo, che
+resta il limite di ogni collegamento cominciato nell'app e finito nel
+browser: si vede solo `activity:write`, e la persona lo toglie da Strava);
+un lavoro in sottofondo che segue l'upload (un'altra cosa che gira, per
+due secondi di attesa); il campo `strava` dentro `Activity` (sopra);
+codici d'errore nuovi (tre file del contratto in più, per casi che lo
+stato HTTP già distingue); scrivere il GPX nel motore (il motore non sa
+niente di corse salvate, pause e orari); `/oauth/deauthorize` (in
+dismissione).
+
+**Conseguenze**: sul server arrivano la migrazione `0004` e due variabili
+(`DEPLOY.md`, «Strava»); finché l'utente non crea la sua app Strava,
+Strava è spento e niente cambia. Finché Strava non approva l'app si
+collega solo l'atleta dell'utente. La prova dal vero (data, ora e durata
+dell'attività; se Strava legge i `<trkseg>` come pause) è dell'utente,
+dopo la parte app. Strava conta le sue richieste per tutta l'app: 200
+ogni quarto d'ora bastano a qualche decina di corse mandate insieme, non
+a migliaia. Un'attività cancellata su Strava resta `sent` da noi: per
+rimandarla serve un task. La parte app (`RunEnd`, «My activities»,
+«Settings», la coda senza rete) è la seconda PR di TASK-187.
+
+## ADR-0146 — La foto del profilo: un quadrato di 256 px fatto dall'API, cambiato da «Settings»
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa (la
+foto del profilo, da mettere in «Settings», chiesta con TASK-177); il come
+deciso dall'agente su delega dell'utente (TASK-178).
+
+**Contesto**: ADR-0115 aveva già detto dove sta la foto, un JPEG quadrato
+di 256 px nel database, perché le copie di sicurezza la prendano con il
+resto. TASK-116 doveva farla insieme a nome utente, bio e profilo
+pubblico; l'utente l'ha chiesta prima, da «Settings», dove ADR-0145 l'ha
+messa con «Soon».
+
+**Decisione**:
+- **Una tabella sua**, `profile_photos` (migrazione `0005`): una riga per
+  account con la foto, `bytea`, `ON DELETE CASCADE`. Non una colonna di
+  `users`: ogni `GET /me` e ogni richiesta con il token leggono `users`,
+  e non devono trascinarsi i KB della foto.
+- **Tre endpoint con il token**, `GET`, `PUT` e `DELETE /me/photo`, come i
+  preferiti. La foto va e viene in base64 dentro JSON, come per i contorni
+  delle immagini (ADR-0069): nessun formato nuovo per l'app e per i test.
+  Nella risposta il JPEG intero (pochi KB), che l'app mostra come
+  `data:image/jpeg;base64,…`: niente indirizzo da chiedere con il token,
+  niente cache da invalidare.
+- **L'API fa il quadrato**, sempre: raddrizza con l'EXIF, prende il
+  quadrato in mezzo, riduce a 256 px, salva un JPEG nuovo. Il file del
+  telefono non si tiene, e con lui l'EXIF: dove è stata scattata una foto
+  non arriva nel database. Oltre 50 megapixel, o un formato che non è JPEG
+  o PNG, è `422` prima di leggere i pixel.
+- **Il quadrato lo sceglie la persona** nell'editor del telefono
+  (`allowsEditing` con `aspect: [1, 1]` di `expo-image-picker`, già una
+  dipendenza); quello dell'API, in mezzo, conta per una foto che arriva
+  non quadrata (Android, o un'altra app).
+- **10 `PUT` al minuto per account**, in memoria come le password
+  sbagliate: il limite di `access.py` conta solo i POST per indirizzo, e
+  ridurre una foto è il lavoro più caro degli account.
+- **Nell'app**: la riga «Profile picture» di «Settings» (in un file suo,
+  `PhotoRow.tsx`, lontano dalle righe che TASK-189 cambia) apre sotto di sé
+  «Choose a picture», «Take a photo» e «Remove picture», come «Delete
+  account» apre la sua domanda: niente menu del sistema, che in Expo Go e
+  nei test si comporta in un altro modo. La foto la tiene un contesto di
+  `ProfileLayer.tsx`, come preferiti e corse: il pulsante in alto, il
+  cerchio di «Profile» e la riga la leggono dallo stesso posto, e si
+  cambiano insieme.
+- **Senza foto, senza rete o con un'API non ancora aggiornata** si vede
+  l'iniziale, come prima, e non si dice niente: una foto non vale un
+  errore sullo schermo. Gli errori si dicono solo quando la persona prova a
+  cambiarla.
+
+**Scartate**: la foto come colonna di `users` (sopra); un file su disco o
+un servizio a parte (ADR-0115); `multipart/form-data` (una dipendenza nuova
+nell'API, `python-multipart`, per un solo endpoint); un indirizzo della
+foto da caricare con `Image` (vorrebbe il token in un'intestazione di
+`Image`, o un indirizzo pubblico, che è TASK-116); tenere la foto sul
+telefono fra un'apertura e l'altra (un'altra copia da tenere allineata;
+per ora l'iniziale per un attimo va bene); `ActionSheetIOS` o `Alert` per
+le tre scelte (diversi su Android, non provabili nei test come il resto di
+«Settings»).
+
+**Conseguenze**: all'apertura l'app chiede una richiesta in più, `GET
+/me/photo`, con l'account. Sul server serve la migrazione `0005` (un
+aggiornamento dell'API, con l'ok dell'utente); finché non c'è, la riga
+dice «Profile pictures are not available on this API yet.» a chi prova. La
+foto la vede solo il suo proprietario: mostrarla agli altri, con nome e
+bio, resta a TASK-116, con una migrazione sua.
 
 ## ADR-0154 — Sull'acqua la forma è il percorso: la fascia entro 1 km dalla riva, la ricerca di dove ci sta, la partenza dalla riva dove si arriva a piedi
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa (il

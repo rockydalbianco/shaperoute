@@ -47,6 +47,24 @@ function emptyCatalog(input: RequestInfo | URL): Promise<Response> {
   );
 }
 
+/**
+ * As `emptyCatalog`, but only the first three shapes are done at once: the
+ * others never answer. Eight cards in the first render of the file took
+ * the first test past its five seconds in CI.
+ */
+function firstThreeDone(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> {
+  if (String(input).includes("/recommended-routes")) {
+    return Promise.resolve(Response.json({ routes: [] }));
+  }
+  const { shape } = JSON.parse(String(init?.body));
+  return (EXAMPLE_SHAPES as readonly string[]).includes(shape)
+    ? Promise.resolve(Response.json(jobDone, { status: 202 }))
+    : new Promise<Response>(() => {});
+}
+
 function routeJobShapes(): (string | undefined)[] {
   return fetchMock.mock.calls
     .filter(([url]) => String(url).endsWith("/route-jobs"))
@@ -54,7 +72,7 @@ function routeJobShapes(): (string | undefined)[] {
 }
 
 test("a city without recommended routes: three examples at once (TASK-143)", async () => {
-  fetchMock.mockImplementation(emptyCatalog);
+  fetchMock.mockImplementation(firstThreeDone);
   const onOpen = jest.fn();
   await render(
     <ExploreScreen
@@ -69,8 +87,11 @@ test("a city without recommended routes: three examples at once (TASK-143)", asy
   expect(await screen.findByText("EXAMPLES IN VERCELLI")).toBeOnTheScreen();
   const heart = await screen.findByLabelText(/^Heart, /);
   await screen.findByLabelText(/^Star, /);
-  // The circle is asked first: its zone holds the others'.
-  expect(routeJobShapes().slice(0, 3)).toEqual(["circle", "heart", "star"]);
+  // The circle is asked first: its zone holds the others'. Then the next
+  // shape is on its way, a card of its own.
+  expect(routeJobShapes()).toEqual(["circle", "heart", "star", MORE_SHAPES[0]]);
+  expect(screen.getByText(shapeLabel(MORE_SHAPES[0]))).toBeOnTheScreen();
+  expect(screen.getByText("Drawing…")).toBeOnTheScreen();
   expect(screen.queryByText(/No recommended routes near this start yet/)).toBeNull();
   await fireEvent.press(heart);
   expect(onOpen.mock.calls[0][0]).toMatchObject({ shape: "heart", city: "Vercelli" });

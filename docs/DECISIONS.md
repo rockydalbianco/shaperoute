@@ -6057,6 +6057,81 @@ componente a parte (`SportSetting`), con gli stili delle righe di
 «Settings» ripetuti: `SettingsPage.tsx` era di TASK-177 mentre si
 scriveva.
 
+## ADR-0155 — «Explore»: il luogo scelto ha i suoi percorsi, quelli dei vicini stanno sotto
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
+(«premo su Caldonazzo, ma non vengono fuori suggerimenti a Caldonazzo: mi
+vengono fuori Levico perché è vicino … va bene dare le alternative, ma
+bisogna lavorare anche su Caldonazzo, ad esempio anche le frazioni, Barco
+eccetera; va bene tenere 5 km, però bisogna lavorare anche sul paese
+selezionato»); il come deciso dall'agente su delega dell'utente
+(TASK-192). Precisa ADR-0116 e ADR-0144.
+
+**Contesto**: una città scelta in «Explore» riceve i percorsi del catalogo
+che partono entro 5 km dal suo centro, e gli esempi disegnati dal suo
+centro solo se quelli mancano (ADR-0116); da TASK-176 una città con
+percorsi riceve le forme che non ha (ADR-0144). «Entro 5 km» però non vuol
+dire «suoi»: Caldonazzo ha gli otto percorsi di Levico fra 3,3 e 4,3 km,
+quindi mostrava solo quelli, e da Caldonazzo non partiva niente. Lo stesso
+per ogni paese o frazione accanto a una città del catalogo.
+
+**Decisione**:
+- **I percorsi vicini a un luogo scelto si dividono in due** (`byPlace` in
+  `ownRoutes.ts`): **suoi**, con la partenza entro `OWN_RADIUS_M` =
+  **1500 m** dal punto scelto, e **dei vicini**, il resto entro i 5 km.
+- **La soglia viene dal catalogo**, misurato il 2026-10-02: dei 350
+  percorsi di `catalog/seed/`, il 98% parte entro 500 m dal centro della
+  propria città e il più lontano a 1013 m (Levico, Trento, Verona e Padova
+  ne hanno attorno a 1 km); quelli di un altro paese partono più lontano:
+  i percorsi di Levico sono a 3,3 km dal centro di Caldonazzo e a 1,8 km
+  da Barco. 1500 m sta in mezzo.
+- **Vale per ogni luogo scelto**: città, paesi, frazioni e luoghi arrivano
+  tutti da `/city-suggestions` come un punto con un nome (`Place`, `kind`
+  «city» o «place»), e la divisione guarda solo il punto. Barco, a 2,8 km
+  dal centro di Levico, ha i suoi esempi; un luogo dentro Levico ha i
+  percorsi di Levico come suoi.
+- **Le forme che il luogo «ha» sono solo quelle dei percorsi suoi.** Senza
+  percorsi suoi è una città senza percorsi consigliati: la sezione
+  «EXAMPLES IN …» con cuore, cerchio e stella da 5 km dal suo centro, poi le
+  altre cinque forme, come in ADR-0116 e ADR-0144. Con percorsi suoi resta
+  com'era: le sue schede più le forme che non ha.
+- **I percorsi dei vicini stanno sotto**, in una griglia loro con
+  l'etichetta **«NEAR <LUOGO>»**; le schede dicono già il paese e la
+  distanza («Levico · 3.3 km away»). Il raggio resta 5 km e l'API non
+  cambia.
+- **Con i vicini sotto gli esempi, i disegni del feed nell'attesa non
+  compaiono** (ADR-0132): c'è già qualcosa da guardare. Il credito della
+  mappa resta uno solo: quello della sezione degli esempi appena uno è
+  pronto, prima quello della pagina.
+- **Una soglia sola**: `ownCityName` di TASK-176 usava 1000 m per lo stesso
+  concetto; ora usa `OWN_RADIUS_M`.
+- **Senza città scelta («Near me») non cambia niente**: una lista sola,
+  nessuna etichetta, niente disegnato (ADR-0136).
+
+**Alternative scartate**: stringere il raggio di «near you» (l'utente
+tiene i 5 km, e le alternative vicine gli vanno bene); riconoscere il paese
+dal nome (il catalogo dice «milano» dove la ricerca dice «Milan», e una
+frazione nel catalogo non ha nome); 1000 m come soglia (quattro percorsi
+del catalogo partono fra 1001 e 1013 m dal proprio centro); una griglia sola
+con i suoi e quelli dei vicini mescolati per somiglianza (è quello che
+l'utente ha visto: Levico al posto di Caldonazzo); disegnare cuore,
+cerchio e stella dal centro anche a una città che ha già percorsi suoi
+(doppioni delle sue schede); cambiare l'API perché dica di che paese è un
+percorso (serve un confine per ogni paese, e la distanza dalla partenza
+basta).
+
+**Conseguenze**: il motore, provato sul Mac da Caldonazzo a 5 km con le
+tre partenze vicine dell'API, disegna cuore 0,88, cerchio 0,72 e stella
+0,90: in un paese piccolo le forme vengono, non tutte bene. Un paese
+accanto a una città del catalogo chiede all'API
+otto percorsi la prima volta che lo si sceglie, uno alla volta; se la sua
+zona non è sul server la scarica (fino a un minuto), poi i percorsi restano
+sull'API (ADR-0136) e la volta dopo sono subito lì. Nell'attesa sotto ci
+sono già i percorsi dei vicini. Da «Near me» a Caldonazzo si vedono ancora
+solo quelli di Levico: dalla posizione di qualcuno non si disegna
+(ADR-0136), cambiarlo è una scelta dell'utente. Paesi piccoli e frazioni
+non sono disegnati in anticipo sul server (`draw_examples`): da fare lì,
+con l'ok dell'utente. Da provare con il dito sull'iPhone.
+
 ## ADR-0156 — «Send to Strava»: il collegamento passa dal server, e la corsa tiene cosa ne ha fatto Strava
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («Sì,
 fallo vero»: l'invio vero della corsa fatta, con un'app Strava sua, fra

@@ -4804,7 +4804,8 @@ hanno le tre forme nel catalogo: le altre le disegnano al tocco.
   rifiuta il Mac. Nel test è una mancanza dichiarata (`MISSING`, `xfail`
   rigido: il giorno che le forme ci sono, il test chiede di toglierla). In
   app Berlino continua a disegnarle al tocco, con i disegni del feed
-  nell'attesa.
+  nell'attesa. **Scelta dell'utente (2026-10-02)**: il catalogo entra con
+  13 città, Berlino dopo, quando Overpass riapre.
 - **Il registro delle prove** è lo stesso del seme
   (`out/seed_catalog/runs.jsonl`, fuori dal repository): le 27 righe sono
   state aggiunte lì.

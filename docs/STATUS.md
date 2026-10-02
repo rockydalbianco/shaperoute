@@ -50,7 +50,9 @@ In coda, dopo o accanto:
   account dell'utente.
 - **Seguiti scritti nei task fatti**: le forme a 21 km di Bari, Palermo
   e New York, quando Overpass riapre, e il feed d'esempio da rifare sulle
-  14 città (TASK-161); Berlino, che resta a Overpass, e le zone da rifare
+  14 città (TASK-161); cuore, cerchio e stella di Berlino nel catalogo,
+  quando Overpass riapre, e `catalog/` da aggiornare sul server
+  (TASK-163); Berlino, che resta a Overpass, e le zone da rifare
   quando l'estratto invecchia (TASK-137); il segnale della scelta fra
   A · B · C negli esempi (TASK-151); la linea intera a fine corsa
   (TASK-149); zone scaricate con un margine (TASK-143); l'import in Strava
@@ -81,21 +83,20 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   `offsite` è in `main` dalla PR #167): manca che l'utente lo crei
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
-- **TASK-163 — «Explore»: le città in evidenza già disegnate, e il feed
-  mentre una città si disegna** (ADR-0132), chiesto dall'utente il
-  2026-10-02, in due PR. **La prima (#174) è pubblicata** (2026-10-02,
-  update `4cab12c4`): in una città cercata, finché cuore, cerchio e stella
-  si disegnano, sotto ci sono 5 disegni del feed con la foto della mappa.
-  **Da provare sull'iPhone.** **La seconda**: cuore, cerchio e stella da
-  5 km già nel catalogo per 13 delle 14 città in evidenza (nove file nuovi,
-  27 forme fra 0,91 e 1,00, da `seed_catalog.py --featured` con le zone
-  copiate dal server). **Manca Berlino**: la sua zona non è sul server e
-  Overpass rifiuta il Mac. **Per vederle nell'app va aggiornato `catalog/`
-  sul server** (`DEPLOY.md` F.12), con l'ok dell'utente. Da dove
-  riprendere: il task file.
 
 ## Completato
 
+- **App e catalogo** — TASK-163 (ADR-0132), chiesto dall'utente: in
+  «Explore», finché una città cercata disegna cuore, cerchio e stella,
+  sotto ci sono 5 disegni del feed con la foto della mappa (#174,
+  pubblicata il 2026-10-02, update `4cab12c4`; **da provare
+  sull'iPhone**). E 13 delle 14 città in evidenza hanno le tre forme da
+  5 km già nel catalogo: nove file nuovi, 27 forme fra 0,91 e 1,00, da
+  `seed_catalog.py --featured` con le zone copiate dal server (New York
+  le aveva da TASK-161). **Manca Berlino**, per scelta dell'utente
+  rimandata a quando Overpass riapre: la sua zona non è sul server.
+  **L'app pubblicata le vede solo dopo aver aggiornato `catalog/` sul
+  server** (`DEPLOY.md` F.12), con l'ok dell'utente.
 - **Catalogo** — TASK-161: il catalogo seme in tutte le 14 città, 323
   percorsi (Napoli, Verona, Padova, Genova, Bari, Palermo e New York
   nuove; Genova, Bari, Palermo e New York con le zone del server), e le

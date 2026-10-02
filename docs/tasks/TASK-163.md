@@ -1,6 +1,6 @@
 # TASK-163 — «Explore»: le città in evidenza già disegnate, e il feed mentre una città si disegna
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-163-explore-featured-and-feed` (#174), poi
 `feat/TASK-163-featured-catalog` · ADR-0132
 
@@ -76,10 +76,11 @@ sono dei disegni del feed da guardare.
       disegnano, sotto ci sono 5 disegni del feed; restano quando l'ultimo
       esempio arriva; con percorsi consigliati non compaiono.
 - [x] «Ask for a route» resta in fondo alla pagina.
-- [ ] Ognuna delle 14 città in evidenza ha nel catalogo almeno un cuore, un
+- [x] Ognuna delle 14 città in evidenza ha nel catalogo almeno un cuore, un
       cerchio e una stella entro 5 km dal suo centro (test). **13 su 14**:
-      manca Berlino, dichiarata nel test (`MISSING`).
-- [ ] Toccata una città in evidenza nell'app, con l'API aggiornata, le tre
+      manca Berlino, dichiarata nel test (`MISSING`). **Scelta dell'utente
+      (2026-10-02): «Entra così, Berlino dopo».**
+- [x] Toccata una città in evidenza nell'app, con l'API aggiornata, le tre
       forme sono nell'elenco senza «Drawing…». Controllato con il
       catalogo dell'API sul Mac (`RecommendedCatalog.near` a ogni centro:
       tre righe per ognuna delle nove città nuove); sull'app pubblicata
@@ -146,12 +147,11 @@ docs/tasks/TASK-163.md
 - **Berlino manca.** La sua zona non è sul server (TASK-137: non stava in
   4 GiB), Overpass rifiuta il Mac, e gli specchi di Overpass provati non
   rispondono. Da Geofabrik c'è solo il `.pbf`, che sul Mac nessuno
-  strumento legge. Strade possibili, **da decidere con l'utente**:
-  installare `osmium-tool` sul Mac (Homebrew; è lo strumento già approvato
-  per il server) e costruire la zona dall'estratto di Berlino (circa
-  80 MB), oppure aspettare che Overpass riapra e rilanciare
-  `--run --featured` (riparte da Berlino da solo). Poi togliere Berlino da
-  `MISSING` in `tools/test_featured_catalog.py`.
+  strumento legge. **L'utente ha scelto (2026-10-02): entra così, Berlino
+  dopo**, quando Overpass riapre: rilanciare `--run --featured` (riparte
+  da Berlino da solo), guardare le tre linee, togliere Berlino da
+  `MISSING` in `tools/test_featured_catalog.py`. L'altra strada, non
+  scelta: `osmium-tool` sul Mac e l'estratto di Berlino da Geofabrik.
 - **`tools/test_sample_feed.py`** voleva ogni città del catalogo nel feed
   d'esempio: con 23 città e 15 post ora chiede un post a città per quante
   ce ne stanno. `sampleFeed.json` dell'app non è stato rigenerato (lo
@@ -189,4 +189,9 @@ docs/tasks/TASK-163.md
 
 ## Esito
 
-*(a fine task)*
+In «Explore», mentre una città cercata si disegna, sotto ci sono 5 disegni
+del feed (pubblicato il 2026-10-02, update `4cab12c4`); 13 città in
+evidenza su 14 hanno cuore, cerchio e stella da 5 km nel catalogo.
+Rimandati, annotati in `STATUS.md`: Berlino (quando Overpass riapre) e
+`catalog/` da aggiornare sul server perché l'app pubblicata le veda (lo
+chiede il coordinatore all'utente). Da provare sull'iPhone.

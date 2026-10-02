@@ -394,7 +394,7 @@ def test_the_gpx_of_an_image_route_is_named_image(
     )
     assert response.status_code == 200, response.text
     disposition = response.headers["content-disposition"]
-    assert 'filename="shaperoute-image-15km-2026-09-26.gpx"' in disposition
+    assert 'filename="sgrava-image-15km-2026-09-26.gpx"' in disposition
 
 
 def test_a_shape_or_a_word_is_planned_with_nearby_starts(

@@ -157,10 +157,10 @@ def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
 
 def gpx_file_name(request: AnyRequest, when: datetime) -> str:
     """No spaces or odd characters: some apps refuse them, e.g.
-    'shaperoute-heart-5km-2026-09-23.gpx', 'shaperoute-CIAO-15km-2026-09-24.gpx',
-    'shaperoute-image-15km-2026-09-26.gpx'."""
+    'sgrava-heart-5km-2026-09-23.gpx', 'sgrava-CIAO-15km-2026-09-24.gpx',
+    'sgrava-image-15km-2026-09-26.gpx'."""
     km = f"{request.distance_m / 1000:g}km"
-    return f"shaperoute-{request.name}-{km}-{when:%Y-%m-%d}.gpx"
+    return f"sgrava-{request.name}-{km}-{when:%Y-%m-%d}.gpx"
 
 
 def job_body(job: Job) -> RouteJobBody:

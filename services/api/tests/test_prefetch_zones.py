@@ -79,6 +79,18 @@ def test_the_box_holds_every_theme_and_example_from_any_start() -> None:
     assert 15 < width < 20 and 15 < height < 20
 
 
+@pytest.mark.parametrize("centre", CENTRES.values(), ids=CENTRES.keys())
+def test_the_first_example_asked_needs_the_area_of_all_three(centre: LatLon) -> None:
+    # draw_examples asks them in this order: the zone the first one
+    # downloads has to serve the others, or a city downloads twice.
+    first, *others = (
+        required_area(get_shape(shape)(SHAPE_POINTS), centre, EXAMPLE_DISTANCE_M)
+        for shape in EXAMPLE_SHAPES
+    )
+    assert EXAMPLE_SHAPES[0] == "circle"
+    assert all(holds(first, other) for other in others)
+
+
 class Source:
     """OsmnxSource without the network: zones are names in `cache_dir`."""
 

@@ -1,6 +1,6 @@
 # TASK-187 — «Send to Strava»: la corsa fatta va sul profilo Strava
 
-**Stato**: In corso — parte API fatta (prima PR), parte app da fare (seconda PR)
+**Stato**: Done per il codice — parte API (PR #210) e parte app (PR #229); la prova dal vero (criterio 8) aspetta l'utente
 **Fase**: 4 · **Branch**: `feat/TASK-187-send-to-strava`
 **Dipende da**: TASK-172 in `main`, con la sua schermata «Save» /
 «Discard» a fine corsa (`src/activities/RunEnd.tsx`) e la tabella `runs`
@@ -116,10 +116,22 @@ il task la conferma o la cambia con un ADR.
 
 ## Da chiedere all'utente durante il task (una per volta, con la proposta)
 
-**Tutte e quattro in attesa dell'utente** (2026-10-02: era via, il lavoro è
-andato avanti in automatico). La parte API è costruita con la proposta
-dove le serviva; cambiarla è una riga (`activity_name` e `DESCRIPTION` in
-`strava.py`).
+**Risposte dell'utente, 2026-10-02 sera** (sessione della parte app, una
+domanda per volta):
+
+1. Il nome: **modificabile prima di «Save»** (non la proposta). Un campo
+   nella schermata di fine corsa e nella scheda di una corsa aperta; vuoto,
+   il nome di Sgrava. Nell'API un corpo facoltativo `{ "name": … }` a
+   `POST /me/activities/{key}/strava`; senza corpo tutto come prima.
+2. La descrizione: **su ogni corsa** (non la proposta): «Drawn with Sgrava»
+   con un percorso, «Recorded with Sgrava» per una corsa libera.
+3. L'interruttore **ricorda l'ultima scelta** (la proposta); la prima volta
+   è acceso.
+4. **L'arancione di Strava** per «Connect with Strava» (la proposta): un
+   token nuovo in `tokens.ts`.
+
+Le domande com'erano, con quello che la parte API aveva costruito prima
+delle risposte:
 
 - Il **nome dell'attività** su Strava. Proposta: cosa è stato disegnato e
   dove («Heart in Trento»), o «Morning run» senza percorso; modificabile
@@ -141,24 +153,24 @@ dove le serviva; cambiarla è una riga (`activity_name` e `DESCRIPTION` in
 
 ## Criteri di accettazione
 
-- [ ] Senza le due variabili sul server, l'app non mostra niente di Strava
+- [x] Senza le due variabili sul server, l'app non mostra niente di Strava
       e tutto il resto funziona come prima.
-- [ ] Il secret e i token di Strava non compaiono mai in una risposta
+- [x] Il secret e i token di Strava non compaiono mai in una risposta
       dell'API, nei log, nell'app o nel repository.
-- [ ] Uno `state` scaduto, già usato o di un altro utente non collega
+- [x] Uno `state` scaduto, già usato o di un altro utente non collega
       niente.
-- [ ] Una corsa mandata due volte è un'attività sola su Strava, e l'API lo
+- [x] Una corsa mandata due volte è un'attività sola su Strava, e l'API lo
       dice senza errore.
-- [ ] Un token scaduto si rinnova da solo; uno revocato da Strava riporta
+- [x] Un token scaduto si rinnova da solo; uno revocato da Strava riporta
       l'utente a «Connect with Strava».
-- [ ] Una corsa salvata senza rete, con «Send to Strava» acceso, arriva su
+- [x] Una corsa salvata senza rete, con «Send to Strava» acceso, arriva su
       Strava dopo la prossima apertura con la rete, una volta sola.
-- [ ] «Disconnect» e la cancellazione dell'account revocano l'accesso su
+- [x] «Disconnect» e la cancellazione dell'account revocano l'accesso su
       Strava e non lasciano token nel database.
 - [ ] L'attività su Strava ha la traccia, la data e l'ora dell'inizio e la
       durata della corsa fatta (provato dal vero con l'account
       dell'utente).
-- [ ] Colori dai token; testi in inglese; test verdi.
+- [x] Colori dai token; testi in inglese; test verdi.
 
 ## File toccati
 
@@ -190,14 +202,26 @@ docs/STATUS.md
 docs/tasks/TASK-187.md
 ```
 
-Seconda PR, la parte app:
+Seconda PR, la parte app. Elenco aggiornato il 2026-10-02 sera e detto
+al coordinatore: in più `activitiesDoor.ts` (dopo il PUT, l'invio a
+Strava), `ActivityCard.tsx` (la corsa aperta), `SettingsPage.tsx` e
+`ProfileLayer.tsx` (la sezione e il context), e per le risposte
+dell'utente `strava.py`, `test_strava.py` e `fixtures/strava-send.json`.
+Nessuno è di TASK-200.
 
 ```
+services/api/shaperoute_api/strava.py
+services/api/tests/test_strava.py
+packages/shared-types/fixtures/strava-send.json
 apps/mobile/src/strava/
 apps/mobile/src/api/strava.ts
 apps/mobile/src/api/strava.test.ts
 apps/mobile/src/activities/RunEnd.tsx
+apps/mobile/src/activities/ActivityCard.tsx
+apps/mobile/src/activities/activitiesDoor.ts
 apps/mobile/src/activities/outbox.ts
+apps/mobile/src/profile/SettingsPage.tsx
+apps/mobile/src/screens/ProfileLayer.tsx
 apps/mobile/src/theme/tokens.ts
 apps/mobile/__tests__/AppStrava.test.tsx
 docs/API.md
@@ -270,4 +294,47 @@ pausa: da vedere se Strava lo legge come tempo fermo).
 
 ## Esito
 
-*(si compila a fine task)*
+**Codice fatto, in due PR** (2026-10-02): la parte API (#210) e la parte
+app (#229), con le quattro risposte dell'utente (sopra). Resta all'utente la
+prova dal vero.
+
+- **App**: a fine corsa, sopra «Save» e «Discard», «Connect with Strava»
+  (arancione, token `strava` e `onStrava`) o l'interruttore «Send to
+  Strava» con «Name on Strava»; l'interruttore ricorda l'ultima scelta
+  (`strava.json`, acceso la prima volta). Con l'interruttore acceso «Save»
+  salva e poi manda, anche senza rete: la corsa porta `strava: { name }`
+  in `activities-outbox.json`, e quando l'API la ha passa a
+  `strava-outbox.json` fino a che Strava non la prende (o non la prenderà
+  mai). Su una corsa aperta di «My activities» «Send to Strava», con il nome
+  dell'API come suggerimento, o «View on Strava». In «Settings» la sezione
+  «Strava», con «Connected as …» e «Disconnect» che chiede prima. Strava
+  si chiede all'API solo dove si vede; un'API senza Strava, o più vecchia,
+  e niente compare. Come funziona: `UI.md`; le scelte: ADR-0156, «Parte
+  app».
+- **API**: il corpo facoltativo `{ "name" }` (una riga, al più 100
+  caratteri, conta solo al primo invio) e «Recorded with Sgrava» per una
+  corsa libera; senza corpo tutto come prima.
+- **Test**: API 53 in `test_strava.py` (5 nuovi); app 39 nuovi
+  (`strava.test.ts`, `stravaOutbox.test.ts`, `stravaChoice.test.ts`,
+  `stravaName.test.ts`, `AppStrava.test.tsx` con 17 scenari dell'app
+  intera), suite dell'app 1280 verdi. Tolta apposta la messa in coda per
+  Strava, i tre test che la riguardano falliscono.
+- **Visto nel simulatore** (iPhone Air, Expo Go, API locale con un
+  database usa-e-getta e Strava acceso con un client finto): la fine
+  della corsa con «Connect with Strava», e con un atleta collegato
+  (riga finta nel database) l'interruttore acceso, il campo del nome e
+  «To Ada Lovelace's Strava, with Save.». «Settings» e la corsa aperta
+  non visti (il simulatore non accettava tocchi): li coprono i test.
+
+**Aspetta l'utente**, in quest'ordine: creare la sua app Strava e dire il
+Client ID, scrivere il secret nel `.env` del server (`DEPLOY.md`,
+«Strava»); l'ok per aggiornare il server a `main` (migrazioni
+`0004`–`0007`, poi `draw_examples`) e per pubblicare l'app; la prova dal
+vero (criterio 8: data, ora, durata, e come Strava legge le pause dei
+`<trkseg>`). Sull'iPhone da guardare anche: la tastiera sopra il campo del
+nome a fine corsa, il ritorno dal browser che aggiorna la riga da solo.
+
+**Seguiti**: una corsa in bici (TASK-190) va a Strava come `Run`, perché
+`runs` non tiene l'attività (`sport_type` da scegliere quando la tiene:
+TASK-200 lo fa per i preferiti); un'attività cancellata su Strava resta
+«View on Strava» da noi (ADR-0156).

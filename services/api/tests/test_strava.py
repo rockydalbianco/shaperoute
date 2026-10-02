@@ -31,11 +31,14 @@ from shaperoute_api.activities import PlaceNames
 from shaperoute_api.app import create_app
 from shaperoute_api.db import Database, migrations
 from shaperoute_api.strava import (
+    MAX_NAME,
     POLLS,
     StravaActivityBody,
     StravaConnectBody,
+    StravaSendBody,
     StravaStatusBody,
     activity_name,
+    typed_name,
 )
 from shaperoute_api.strava_client import (
     AUTHORIZE_URL,
@@ -426,6 +429,7 @@ def test_the_examples_are_the_bodies() -> None:
         ("strava-status.json", StravaStatusBody),
         ("strava-connect.json", StravaConnectBody),
         ("strava-activity.json", StravaActivityBody),
+        ("strava-send.json", StravaSendBody),
     ):
         example = _load(name)
         assert set(example) == set(model.model_fields)
@@ -810,7 +814,82 @@ def test_a_run_without_a_route_has_stravas_own_name(
 
     [form] = fake.files
     assert "name" not in form
-    assert "description" not in form
+    # It drew nothing: Sgrava only recorded it (the user's choice).
+    assert form["description"] == "Recorded with Sgrava"
+
+
+def test_the_name_typed_in_the_app_is_the_activitys(
+    client: TestClient, fake: FakeStrava
+) -> None:
+    headers = signed_up(client)
+    connected(client, fake, headers)
+    saved(client, headers)
+    answer = client.post(
+        f"/me/activities/{KEY}/strava",
+        json={"name": "  Sunday\nheart  run "},
+        headers=headers,
+    )
+
+    assert answer.status_code == 200
+    [form] = fake.files
+    assert form["name"] == "Sunday heart run"
+    assert form["description"] == "Drawn with Sgrava"
+    # The file has the same name as the activity.
+    root = ET.fromstring(form["file"])
+    assert root.findtext(f"{GPX}metadata/{GPX}name") == "Sunday heart run"
+
+
+def test_an_empty_name_is_sgravas_own(client: TestClient, fake: FakeStrava) -> None:
+    headers = signed_up(client)
+    connected(client, fake, headers)
+    saved(client, headers)
+    answer = client.post(
+        f"/me/activities/{KEY}/strava", json={"name": "   "}, headers=headers
+    )
+
+    assert answer.status_code == 200
+    [form] = fake.files
+    assert form["name"] == "Star in Trento"
+
+
+def test_a_name_typed_for_a_free_run_is_sent(
+    client: TestClient, fake: FakeStrava
+) -> None:
+    headers = signed_up(client)
+    connected(client, fake, headers)
+    saved(client, headers, points=None, similarity=None, shape=None)
+    client.post(
+        f"/me/activities/{KEY}/strava", json={"name": "Lunch run"}, headers=headers
+    )
+
+    [form] = fake.files
+    assert form["name"] == "Lunch run"
+
+
+def test_the_name_counts_only_for_the_first_upload(
+    client: TestClient, fake: FakeStrava
+) -> None:
+    headers = signed_up(client)
+    connected(client, fake, headers)
+    saved(client, headers)
+    path = f"/me/activities/{KEY}/strava"
+    first = client.post(path, json={"name": "First"}, headers=headers)
+
+    second = client.post(path, json={"name": "Second"}, headers=headers)
+
+    assert second.json() == first.json()
+    [form] = fake.files
+    assert form["name"] == "First"
+
+
+def test_a_typed_name_is_one_line_and_not_too_long() -> None:
+    assert typed_name(None) is None
+    assert typed_name("") is None
+    assert typed_name(" \t\n ") is None
+    assert typed_name("Heart\r\nin  Trento") == "Heart in Trento"
+    assert typed_name("x" * (MAX_NAME + 20)) == "x" * MAX_NAME
+    # Cut where a space was: no space left at its end.
+    assert typed_name("a" * (MAX_NAME - 1) + " b") == "a" * (MAX_NAME - 1)
 
 
 def test_a_run_sent_twice_is_one_activity(client: TestClient, fake: FakeStrava) -> None:

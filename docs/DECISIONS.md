@@ -6527,9 +6527,41 @@ collega un atleta solo; 200 richieste ogni quarto d'ora e 2 000 al giorno.
 - **Il dominio della callback** è `SHAPEROUTE_DOMAIN`, che il server ha
   già per Caddy; vuota, l'indirizzo a cui è arrivata la richiesta. Nessuna
   variabile in più oltre a `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`.
-- **Proposte del task file, costruite e in attesa dell'utente**: il nome
-  dell'attività («Heart in Trento»; senza percorso quello di Strava) e la
-  riga «Drawn with Sgrava», solo per una corsa che ha seguito un percorso.
+- **Il nome e la descrizione**, proposti dal task file e poi **scelti
+  dall'utente** il 2026-10-02 sera: il nome si scrive nell'app prima di
+  «Save» (`{ "name": … }`, facoltativo; vuoto, «Heart in Trento» o quello
+  di Strava); la descrizione su ogni corsa, «Drawn with Sgrava» con un
+  percorso, «Recorded with Sgrava» senza.
+
+**Parte app** (2026-10-02 sera; l'arancione di Strava e l'interruttore
+che ricorda sono **scelte dell'utente**, il resto deciso dall'agente su
+delega dell'utente):
+
+- **Strava si chiede all'API solo quando una schermata lo mostra** (fine
+  della corsa, una corsa aperta, «Settings»), una volta per account, e di
+  nuovo quando l'app torna in primo piano dopo aver aperto la pagina di
+  Strava. Un'API senza Strava, o più vecchia di TASK-187 (`404`), è
+  «Strava spento»: niente si vede. Il resto dell'app non fa richieste in
+  più all'apertura.
+- **La scelta passa da `RunEnd` a «Save» con `toStrava`** della porta
+  delle corse (`activitiesDoor.ts`), detta subito prima di `onSave`:
+  `App.tsx` non cambia (era di TASK-200).
+- **Le corse che aspettano Strava hanno un file loro**
+  (`strava-outbox.json`: account, chiave e nome), non restano in
+  `activities-outbox.json`: quello tiene la corsa intera e conta «runs
+  waiting for a connection»; una corsa che l'API ha già non aspetta più la
+  connessione per «My activities». Una corsa con l'interruttore acceso
+  porta `strava: { name }` nel primo file finché l'API non l'ha; poi passa
+  al secondo, scritto prima di togliere la corsa dal primo. Si riprova a
+  ogni apertura: `202`, `502`, `429` e senza rete restano; `409`, `422`,
+  `404` e `503` escono (rimandare non cambierebbe niente).
+- **Lo stato HTTP resta nella risposta** (`http` in `StravaOutcome`):
+  l'API dice `http_error` per `404`, `409`, `502` e `503`, e l'app fa una
+  cosa diversa per ognuno. `accounts.ts` non cambia.
+- **Nessun ritorno automatico nell'app** dopo il browser (uno schema
+  `sgrava://` nella callback): Expo Go non ha schemi nostri (come
+  `music.ts`), e la pagina della callback dice già «Go back to Sgrava.».
+- **Nessuna dipendenza nuova**: `Linking` e `AppState` di React Native.
 
 **Scartate**: OAuth nell'app con `expo-auth-session` (una dipendenza, e il
 secret dovrebbe comunque stare sul server per lo scambio del codice); lo

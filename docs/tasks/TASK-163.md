@@ -114,7 +114,30 @@ docs/tasks/TASK-163.md
   Go, API del Mac): Pergine Valsugana, «Drawing…» e sotto i disegni del
   feed; arrivati i tre esempi, i disegni restano.
 - **Parte A ferma**: aspetta TASK-161 in `main` (`catalog/seed/`,
-  `catalog/README.md` e `seed_catalog.py` sono suoi).
+  `catalog/README.md` e `seed_catalog.py` sono suoi). Fatto solo
+  `cityName` («San Francisco»), che non è di nessuno.
+- **I centri che l'app usa** (`GET /cities` sull'API del Mac, 2026-10-02):
+  le forme del catalogo devono partire entro 5 km da questi.
+
+  | Città | Centro `(lat, lon)` |
+  |---|---|
+  | New York | 40.7127, -74.0060 |
+  | London | 51.5074, -0.1278 |
+  | Paris | 48.8535, 2.3484 |
+  | Tokyo | 35.6769, 139.7639 |
+  | Rome | 41.8933, 12.4829 |
+  | Milan | 45.4642, 9.1896 |
+  | Torino | 45.0678, 7.6825 |
+  | Barcelona | 41.3826, 2.1771 |
+  | Dubai | 25.2647, 55.2924 |
+  | Amsterdam | 52.3731, 4.8925 |
+  | Berlin | 52.5174, 13.3951 |
+  | Lisbon | 38.7078, -9.1366 |
+  | Sydney | -33.8698, 151.2083 |
+  | San Francisco | 37.7879, -122.4075 |
+
+  New York nel seme parte da Union Square (40.7359, -73.9911), a 2,9 km
+  dal centro che dà l'API: dentro i 5 km.
 - **Da concordare con TASK-162**: se `FeedPost` cambia props o prende una
   mappa dentro, `WhileDrawing` si adatta al merge (chiesto alla sessione
   «Mappa nella sezione feed»).

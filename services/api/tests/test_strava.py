@@ -107,6 +107,8 @@ class FakeStrava:
             GRACE: {"id": GRACE, "firstname": "Grace", "lastname": "Hopper"},
         }
         self.codes: dict[str, int] = {}
+        # An application Strava has not reviewed takes one athlete only.
+        self.capacity: int | None = None
         self.access: dict[str, tuple[int, datetime]] = {}
         self.refresh: dict[str, int] = {}
         # Athletes who gave the access without the permission to upload.
@@ -187,6 +189,21 @@ class FakeStrava:
             athlete = self.codes.pop(form["code"], None)
             if athlete is None:
                 return _answer(400, {"message": "Bad Request"})
+            others = {a for a in self.refresh.values() if a != athlete}
+            if self.capacity is not None and len(others) >= self.capacity:
+                return _answer(
+                    403,
+                    {
+                        "message": "Forbidden",
+                        "errors": [
+                            {
+                                "resource": "Athlete",
+                                "field": "access",
+                                "code": "limit exceeded",
+                            }
+                        ],
+                    },
+                )
             return _answer(
                 200, {**self._issue(athlete), "athlete": self.athletes[athlete]}
             )
@@ -671,6 +688,22 @@ def test_strava_silent_at_the_callback_connects_nothing(
     assert answer.status_code == 502
     assert "Strava did not answer." in answer.text
     assert status(client, headers)["connected"] is False
+
+
+def test_a_second_athlete_on_an_app_not_reviewed_is_told_why(
+    client: TestClient, fake: FakeStrava
+) -> None:
+    fake.capacity = 1
+    mine, theirs = signed_up(client), other(client)
+    connected(client, fake, mine, ADA)
+
+    answer = back(
+        client, state=asked(client, theirs), code=fake.approve(GRACE), scope=GRANTED
+    )
+    assert answer.status_code == 403
+    assert "takes only its owner" in answer.text
+    assert status(client, theirs)["connected"] is False
+    assert status(client, mine)["athlete"] == "Ada Lovelace"
 
 
 def test_an_athlete_is_of_the_last_account_that_connected(

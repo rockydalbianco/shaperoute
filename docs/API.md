@@ -821,7 +821,10 @@ posto con i suoi indirizzi).
   «Strava is connected. Go back to Sgrava.» (`200`); «Strava is not
   connected.» (`200`) se l'atleta ha detto di no o ha tolto la spunta al
   permesso di caricare (allora non si chiede nemmeno il token); «Strava
-  did not answer.» (`502`); «Strava is not set up here.» (`503`). La pagina
+  did not answer.» (`502`); «Strava is not set up here.» (`503`); «Sgrava's
+  Strava app takes only its owner for now.» (`403`) quando un atleta
+  diverso da chi ha creato l'app Strava prova a collegarsi prima che
+  Strava l'abbia rivista. La pagina
   non si tiene in cache e non passa il suo indirizzo ad altri.
 - **Un atleta è di un account solo**, l'ultimo che l'ha collegato: Strava
   ha un'autorizzazione sola per atleta, quindi una sola serie di token.

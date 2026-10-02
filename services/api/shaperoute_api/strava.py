@@ -56,6 +56,7 @@ from shaperoute_api.strava_client import (
     StravaBusyError,
     StravaDownError,
     StravaError,
+    StravaFullError,
     StravaRefusedError,
     Tokens,
     Upload,
@@ -139,6 +140,11 @@ EXPIRED = Landing(
     400,
     "This link has expired.",
     "Go back to Sgrava and tap «Connect with Strava» again.",
+)
+FULL = Landing(
+    403,
+    "Strava is not connected.",
+    "Sgrava's Strava app takes only its owner for now. Go back to Sgrava.",
 )
 NO_ANSWER = Landing(
     502, "Strava did not answer.", "Go back to Sgrava and try again in a while."
@@ -295,6 +301,8 @@ class StravaRuns:
             tokens, athlete = self.strava.exchange(code)
         except StravaRefusedError:
             return EXPIRED
+        except StravaFullError:
+            return FULL
         except StravaError:
             return NO_ANSWER
         try:

@@ -238,7 +238,7 @@ docs/tasks/TASK-187.md
   `SHAPEROUTE_DOMAIN`.
 - La revoca usa `POST /oauth/revoke`, non `/oauth/deauthorize` (in
   dismissione dal 2026-06-01).
-- Criteri di accettazione coperti dai test dell'API (`test_strava.py`, 47
+- Criteri di accettazione coperti dai test dell'API (`test_strava.py`, 48
   test contro uno Strava finto; `test_run_gpx.py`): il secondo, il terzo,
   il quarto, il quinto, il settimo, e il primo per la parte API (`available:
   false`). Restano alla parte app il sesto (la coda senza rete) e il nono;

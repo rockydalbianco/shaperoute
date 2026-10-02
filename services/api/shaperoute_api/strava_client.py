@@ -114,6 +114,11 @@ class StravaRefusedError(StravaError):
     """Strava no longer takes this code or token."""
 
 
+class StravaFullError(StravaError):
+    """The application has all the athletes Strava lets it have: one,
+    its owner, until Strava has reviewed it."""
+
+
 class StravaBusyError(StravaError):
     """Strava's limit of requests is reached: the quarter of an hour's, or
     the day's."""
@@ -326,6 +331,10 @@ class Strava:
         if reply.status == 400:
             # The code or the refresh token is not good (any more).
             raise StravaRefusedError()
+        if reply.status == 403:
+            # Strava's "limit exceeded": another athlete than the owner, on
+            # an application Strava has not reviewed.
+            raise StravaFullError()
         if reply.status == 401:
             # Not the athlete's fault: nobody is disconnected for it.
             log.error(

@@ -1,6 +1,6 @@
 # TASK-165 — La schermata di avvio con il logo
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-165-splash-screen`
 
 Chiesto dall'utente il 2026-10-02, dopo l'icona (TASK-159): «metti anche la
@@ -48,7 +48,7 @@ schermata vuota.
      {
        "backgroundColor": "#0A0A0B",
        "image": "./assets/splash-icon.png",
-       "imageWidth": 200,
+       "imageWidth": 240,
        "ios": { "image": "./assets/splash-logo.png", "imageWidth": 260 }
      }
    ]
@@ -68,11 +68,11 @@ schermata vuota.
 
 ## Criteri di accettazione
 
-- [ ] `app.json` ha il plugin; `npx expo config` lo legge senza errori.
-- [ ] Il prebuild di iOS genera la schermata di avvio con fondo `#0A0A0B` e
+- [x] `app.json` ha il plugin; `npx expo config` lo legge senza errori.
+- [x] Il prebuild di iOS genera la schermata di avvio con fondo `#0A0A0B` e
       il logo.
-- [ ] L'app in Expo Go parte come prima (bundle esportato, test verdi).
-- [ ] Test, lint, typecheck e prettier verdi.
+- [x] L'app in Expo Go parte come prima (bundle esportato, test verdi).
+- [x] Test, lint, typecheck e prettier verdi.
 - [ ] Vista sul telefono in una build propria (TASK-152).
 
 ## File toccati
@@ -95,14 +95,34 @@ docs/tasks/TASK-165.md
 - Una versione chiara: il tema dell'app è solo scuro (ADR-0046).
 - I testi «Location is off for ShapeRoute…»: TASK-160.
 
-## Dove sono arrivato
+## Cosa è stato verificato
 
-2026-10-02: branch e worktree creati da `main` 69b289c (dopo la #168).
-Fatto: questo file e `apps/mobile/assets/splash-logo.png`. Da fare: tutto
-dal punto 1. Le immagini di partenza e gli script che le disegnano (Pillow,
-con il Python di `services/api/.venv`) stanno in `out/social/splash-draft/`,
-fuori dal repository.
+- **Expo Go**: `expo-splash-screen` ~57.0.9 è in
+  `node_modules/expo/bundledNativeModules.json`, l'elenco dei moduli
+  dell'SDK 57 che Expo Go ha dentro. L'app non lo importa (c'è solo il
+  plugin in `app.json`) e `npx expo export --platform ios` fa il bundle
+  come prima: un `eas update` non cambia niente per chi apre l'app in Expo
+  Go.
+- **iOS**: `npx expo prebuild --platform ios --no-install` genera
+  `Sgrava/SplashScreen.storyboard` con il logo in un riquadro di 260 × 260
+  al centro, il colore `SplashScreenBackground` a `#0A0A0B` e le tre
+  immagini del logo (780 × 780 a 3x). Composta su uno schermo di 390 × 844,
+  il logo è centrato e leggibile.
+- **Android**: il prebuild scrive `splashscreen_background` `#0A0A0B` e
+  `splashscreen_logo`. Provato con `imageWidth` 200: il segno occupava
+  296 × 333 px su 1152 a xxxhdpi. Poi portato a 240 senza rifare il
+  prebuild: 1,2 volte tanto, circa 355 × 400 px, diagonale 535 px, sempre
+  dentro il cerchio di 768 px.
+- Le cartelle `ios/` e `android/` generate sono state cancellate; le
+  modifiche che il prebuild aveva fatto a `app.json` (`android.package`) e a
+  `package.json` (due script) sono state annullate.
+- Non provata su un telefono né nel simulatore: serve una build propria.
 
 ## Esito
 
-*(si compila a fine task)*
+Fatto (2026-10-02). La schermata di avvio è configurata: fondo nero, logo
+intero su iOS, segno su Android. `npx expo config` legge il plugin; 739
+test dell'app verdi, lint, typecheck e prettier puliti. Una prima
+esecuzione dei test era fallita senza che il motivo restasse nel registro;
+le quattro successive sono passate tutte. **Da vedere in una build
+propria** (TASK-152). Dopo il merge: `npm install` nel checkout principale.

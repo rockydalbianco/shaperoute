@@ -83,6 +83,12 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
 
 ## Completato
 
+- **App** — TASK-165: la schermata di avvio con il logo, chiesta
+  dall'utente (ADR-0134): fondo nero, su iOS il logo intero, su Android il
+  segno. Usa `expo-splash-screen`, dipendenza nuova approvata dall'utente;
+  è fra i moduli di Expo Go, e l'app non lo importa: in Expo Go non cambia
+  niente. **Da guardare in una build propria** (TASK-152). Dopo il merge:
+  `npm install` nel checkout principale.
 - **App** — TASK-159: l'icona dell'app è il nuovo logo scelto dall'utente
   (ADR-0129): una S gialla su nero, fatta come un percorso che parte da un
   punto. Sostituisce il segnaposto di Expo, anche su Android (icona

@@ -65,11 +65,13 @@ Quattro regole:
 
 ## Le due schermate
 
-Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
+Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La
+prima ed «Explore» sono due delle tre pagine affiancate (sotto, «Le
+pagine»):
 
-1. **«What to draw»**, all'apertura. Dall'alto: il nome «Sgrava» con i
-   pulsanti «Run» (una corsa senza percorso, TASK-149, sotto) ed
-   «Explore»; una scheda che dice da dove partirà il percorso,
+1. **«What to draw»**, all'apertura: la pagina «Draw». Dall'alto: il nome
+   «Sgrava» con il pulsante «Run» (una corsa senza percorso, TASK-149,
+   sotto); una scheda che dice da dove partirà il percorso,
    con, quando servono, il rimando alle Impostazioni e la ricerca del
    luogo; l'errore della mappa; le forme del catalogo come tessere, con un
    simbolo e il nome (quella scelta ha il bordo chiaro); il campo per
@@ -84,8 +86,8 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    −. L'attribuzione dei dati è sempre visibile in basso, per intero; i
    suoi link si aprono nel browser del telefono.
 
-3. **«Explore»** (TASK-126, variante C di TASK-092), dal pulsante
-   «Explore» in alto nella prima schermata: «Best near you», i percorsi
+3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
+   di «Draw» (TASK-154): «Best near you», i percorsi
    migliori che partono entro 5 km dalla partenza scelta, con i filtri per
    forma o parola e per distanza. Ogni riga ha la miniatura della linea
    (gialla, il percorso), forma e km, città e distanza dalla partenza, la
@@ -154,8 +156,9 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    mandato delle alternative: A è il percorso del motore. Una tessera
    toccata diventa il percorso: km e somiglianza della scheda, la linea
    sulla mappa, «Start» e «Export GPX» sono i suoi. Mentre si aspettano le
-   indicazioni la scelta resta ferma. Gli altri percorsi non sono ancora
-   disegnati in grigio sulla mappa. Un percorso consigliato o a tema è uno
+   indicazioni la scelta resta ferma. Da TASK-155 gli altri percorsi sono
+   linee grigie sulla mappa, sotto quello scelto, e spariscono durante la
+   corsa. Un percorso consigliato o a tema è uno
    solo: niente tessere. Gli esempi salvati prima si ridisegnano una volta.
 
 Passare da una schermata all'altra:
@@ -172,15 +175,40 @@ non la ricarica. La scheda sta sotto la mappa, non sopra, così non copre
 l'attribuzione; i margini seguono la tacca e la barra in basso di ogni
 telefono.
 
-## Le schede: «Draw» e «Profile» (TASK-115, ADR-0125)
+## Le pagine: «Feed», «Draw», «Explore» (TASK-154, ADR-0124)
 
-In fondo allo schermo due schede, senza librerie di navigazione:
-**«Draw»**, le schermate di sopra come erano, e **«Profile»**, l'account.
-La barra si vede sotto «What to draw» ed «Explore»; sulla mappa, durante
-la corsa e alla sua fine si toglie, e lo schermo resta tutto loro. «Draw»
-resta caricata sotto «Profile»: tornando, forma, distanza e mappa sono
-come erano. La scheda scelta ha il nome chiaro e una lineetta sopra, non il
-giallo.
+Tre pagine affiancate, scelta dell'utente: **«Feed»** a sinistra,
+**«Draw»** al centro, **«Explore»** a destra. Si passa dall'una all'altra
+con uno swipe a destra o a sinistra, oppure toccando il nome in alto. I tre
+nomi stanno in alto a sinistra, nell'ordine in cui sono le pagine: dicono
+dove porta lo swipe. Il nome della pagina sullo schermo è chiaro, con una
+lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
+
+- L'app si apre su «Draw». Forma, parola, distanza e partenza restano come
+  erano dopo un giro sulle altre pagine.
+- **«Feed»** è la pagina dei disegni che gli iscritti pubblicano
+  (TASK-118). Finché non ci sono dice «No drawings yet» e «The drawings
+  that runners publish will show up here.».
+- **«Explore»** chiede i suoi percorsi all'API la prima volta che ci si
+  arriva, non all'apertura dell'app; tornandoci l'elenco è ancora lì. Non
+  ha più «←»: per tornare c'è lo swipe, o il nome «Draw».
+- La mappa, la corsa e la sua fine prendono tutto lo schermo: lì i nomi e
+  lo swipe non ci sono. «←» da un percorso di «Explore» torna sulla pagina
+  «Explore», da un percorso disegnato su «Draw».
+- Uno swipe chiude la tastiera.
+- Una pagina fuori dallo schermo non la legge nemmeno VoiceOver.
+- **Da provare con il dito**: lo swipe stesso, e le righe che scorrono di
+  lato dentro una pagina (le tessere delle forme, le città). L'attesa è
+  che la riga scorra lei e che lo swipe fra le pagine parta da fuori; su
+  Android non è stato provato niente.
+
+## «Profile» (TASK-115, ADR-0125; TASK-154)
+
+In alto a destra, accanto ai nomi delle pagine, un pulsante tondo apre
+**«Profile»**, l'account: mostra l'iniziale di chi è entrato, o una
+figura quando non c'è nessuno. «Profile» si apre sopra l'app e si chiude
+con «←»: sotto, forma, distanza e mappa restano come erano. Sulla mappa e
+durante la corsa il pulsante non c'è.
 
 **«Profile» senza account**: «Sign up» e «Log in», due pulsanti affiancati.
 «Sign up» chiede email, nome (da 3 a 20 fra lettere, cifre, `_` e `.`),
@@ -199,8 +227,9 @@ giallo.
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
   ancora; senza rete resta dentro.
 - **Sessione finita** (90 giorni senza uso, o chiusa altrove), all'apertura
-  o a una richiesta: l'app esce da sola, «Profile» ha un pallino arancio e
-  dice «Your session has ended. Log in again.». «Draw» va come prima.
+  o a una richiesta: l'app esce da sola, il pulsante di «Profile» ha un
+  pallino arancio e «Profile» dice «Your session has ended. Log in
+  again.». «Draw» va come prima.
 - **«Log out»** esce subito, anche senza rete, e dice «You are logged out
   on this phone.».
 - **«Delete account»** esce solo con il sì dell'API; se l'API non risponde
@@ -639,7 +668,7 @@ principale.
 
 ## Correre senza percorso (TASK-149, ADR-0122)
 
-**«Run»**, in alto nella prima schermata accanto a «Explore», fa partire
+**«Run»**, in alto nella pagina «Draw» accanto a «Sgrava», fa partire
 una corsa senza disegnare niente: niente forma, niente percorso, niente
 API. Si apre la mappa, che segue la posizione come in navigazione (zoom
 17) e disegna la linea corsa fin lì, sottile e chiara (`track`). Al posto

@@ -30,6 +30,7 @@ const explored: Explored =
         choices: [result],
         chosen: 0,
         choose: jest.fn(),
+        others: [],
       };
 const themed = done.result as ThemedResult;
 const asked = { text: "luoghi famosi a Milano", centre: null, city: null };

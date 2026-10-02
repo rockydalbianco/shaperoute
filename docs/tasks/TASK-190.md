@@ -229,3 +229,13 @@ cerchio da 30 km = 23 km di lato (26 con la ricerca lontana), più delle
 i filtri sono leggibili da `zone_extract`). Poi i campioni: cuore, cerchio
 e stella a 10, 20 e 30 km a Trento e in una città di pianura, da far
 giudicare all'utente.
+
+## Note per il deploy
+
+La PR #214 cambia `route_engine`, quindi cambia l'impronta del motore
+(`engine_fingerprint`) degli esempi delle città tenuti sull'API
+(ADR-0136): su un server con questo codice **ogni esempio tenuto si
+ridisegna alla sua prima richiesta**. Il server ha appena finito
+`draw_examples` col motore di adesso. Quindi, finché l'utente non vuole la
+bici sul server, il prossimo aggiornamento del server (Strava e la foto del
+profilo) si fa dal commit **`fdb34ea`**, non dalla punta di `main`.

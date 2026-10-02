@@ -626,7 +626,8 @@ disegna da sola, e fra una e l'altra si cammina senza disegnare
   `shared-types` è facoltativo, e un'app nuova legge anche un'API vecchia
   come una linea sola. Le app installate ignorano il campo.
 - Nel `GpxRequest` e nel `TrackScoreRequest` i `walks` si rimandano come
-  sono arrivati (`POST /gpx`, `POST /track-scores`).
+  sono arrivati (`POST /gpx`, `POST /track-scores`); da TASK-199 anche con
+  una corsa salvata e con un preferito («My activities», «Favorites»).
 
 ### Un'immagine invece di una forma (TASK-073)
 
@@ -801,6 +802,16 @@ tipi dell'app in `apps/mobile/src/api/favorites.ts`.
   messaggio che l'app mostra così com'è.
 - Ognuno vede solo i suoi: la chiave di un altro dà `404`. `DELETE /me`
   cancella anche i preferiti.
+- **Una parola con la penna alzata** (TASK-199, ADR-0158): il corpo del
+  `PUT` può avere `walks`, quelli del `RouteResult` (coppie `[da, a]` di
+  indici in `points`, «La penna alzata»), facoltativo. Si controllano come
+  in `POST /track-scores`: fuori dai punti, all'indietro o sovrapposti,
+  `422 invalid_request`. Il preferito intero ha **sempre** `walks`, vuoto
+  per ogni altro percorso e per quelli tenuti prima; l'elenco non cambia.
+  Esempi: `favorite-request-walks.json`, `favorite-walks.json`. Un'API
+  precedente rifiuta il campo: l'app lo manda solo per una parola con la
+  penna alzata, e se il `PUT` torna `422 invalid_request` lo rimanda una
+  volta senza `walks`.
 
 ### My activities (TASK-172, ADR-0140)
 
@@ -874,6 +885,29 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
 - Ognuno vede, apre e cancella solo le sue: la chiave di un altro dà `404`.
   `DELETE /me` cancella anche le corse. Niente di una corsa è pubblico:
   titolo, «Public» e traccia tagliata arrivano con TASK-117.
+- **Una corsa su una parola con la penna alzata** (TASK-199, ADR-0158):
+  - il corpo del `PUT` può avere `walks`, quelli del percorso seguito
+    (`RouteResult.walks`), facoltativo e solo con `points`: `walks` senza
+    `points`, o che non stanno nei `points` (fuori, all'indietro,
+    sovrapposti, controllati come in `POST /track-scores`), sono `422
+    invalid_request`;
+  - con i `walks` **il punteggio è delle sole lettere**: `score` e
+    `fidelity` sono quelli di `POST /track-scores` con gli stessi `points`,
+    `similarity`, `track` e `walks`, cioè quelli visti a fine corsa. Senza,
+    come prima;
+  - una pausa può avere **`pen`**, vero se l'app l'ha messa da sola fra due
+    lettere, falso se manca. Per km e tempo conta come una pausa chiesta dal
+    corridore (`auto` falso): il tratto a piedi non è corsa. Si tiene nella
+    riga (`DATABASE.md`), non torna nel dettaglio, che le pause non le ha;
+  - la corsa intera ha **sempre** `walks`, vuoto per ogni altra corsa e per
+    quelle salvate prima; l'elenco non cambia.
+
+  Esempi: `activity-request-walks.json` (la corsa su «II», con la pausa
+  della penna fra le due lettere) e `activity-walks.json`. Un'API
+  precedente rifiuta `walks` e `pen`: l'app li manda solo per una parola
+  con la penna alzata, e se il `PUT` torna `422 invalid_request` lo
+  rimanda una volta senza, come prima di TASK-199 (la corsa si salva con
+  il punteggio su tutto il percorso, invece di perdersi).
 
 ### Profile picture (TASK-178, ADR-0146)
 

@@ -34,8 +34,8 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 | `sessions` | hash del token (SHA-256), utente, ultimo uso, scadenza a 90 giorni | TASK-114 |
 | `profile_photos` | utente, JPEG quadrato 256 px | TASK-178 |
 | `generated_routes` | ogni percorso dell'API (ADR-0086): richiesta, tipo (forma, parola, immagine), distanza, somiglianza, linea, **punto di partenza mostrato** (a più di 500 m da quello vero), centro, data; utente se era entrato, se no nessuno | TASK-092 |
-| `favorites` | percorso tenuto fra i preferiti: utente, chiave fatta dall'app sulla linea (unica per utente), città, forma o parola e stile, titolo, distanza chiesta e sulle strade, somiglianza, **linea intera**, data | TASK-171 |
-| `runs` | corsa salvata: utente, chiave fatta dall'app, percorso pianificato, cosa disegna, traccia (`LineStringM`, M = secondi dall'inizio), pause, inizio, distanza, durata, punteggio, fedeltà, luogo (TASK-172); **traccia tagliata** (senza 200 m all'inizio e alla fine), titolo dato dall'utente, pubblica sì/no (TASK-117) | TASK-172, TASK-117 |
+| `favorites` | percorso tenuto fra i preferiti: utente, chiave fatta dall'app sulla linea (unica per utente), città, forma o parola e stile, titolo, distanza chiesta e sulle strade, somiglianza, **linea intera**, data; i tratti a piedi di una parola con la penna alzata (TASK-199) | TASK-171, TASK-199 |
+| `runs` | corsa salvata: utente, chiave fatta dall'app, percorso pianificato, cosa disegna, traccia (`LineStringM`, M = secondi dall'inizio), pause, inizio, distanza, durata, punteggio, fedeltà, luogo (TASK-172); i tratti a piedi del percorso di una parola con la penna alzata (TASK-199); **traccia tagliata** (senza 200 m all'inizio e alla fine), titolo dato dall'utente, pubblica sì/no (TASK-117) | TASK-172, TASK-199, TASK-117 |
 | `likes` | utente, corsa (coppia unica) | TASK-119 |
 | `comments` | corsa, autore, testo (1–500), data, nascosto sì/no | TASK-120 |
 | `reports` | chi segnala, cosa (corsa, commento, utente), motivo, data, gestita da e quando | TASK-121 |
@@ -93,7 +93,8 @@ Migrazione `0003_runs.sql` (TASK-172, ADR-0140):
 - `track` è la traccia **pulita dal motore**, non quella grezza del
   telefono: le posizioni scartate non tornano. M sono i secondi dalla
   prima posizione, con l'orologio che corre anche nelle pause; `pauses` le
-  dice, come `[{"from_s", "to_s", "auto"}]` sullo stesso orologio.
+  dice, come `[{"from_s", "to_s", "auto"}]` sullo stesso orologio (più
+  `"pen": true` per le pause della penna, da TASK-199).
   `started_at` più M dà l'orario di ogni punto. L'altitudine non c'è.
 - `distance_m`, `duration_s`, `score` e `fidelity` sono contati dall'API al
   salvataggio (`API.md`, «My activities») e non si ricalcolano: se il
@@ -132,6 +133,23 @@ Migrazione `0005_profile_photos.sql` (TASK-178, ADR-0146):
   niente EXIF, quindi niente posizione dello scatto (`API.md`, «Profile
   picture»). Le copie di sicurezza la prendono con il resto (ADR-0115).
 - Il nome utente e la bio di TASK-116 vengono con una migrazione sua.
+
+Migrazione `0006_pen_up_walks.sql` (TASK-199, ADR-0157 e ADR-0158):
+
+- `runs` e `favorites` prendono `walks` (`jsonb`, `NOT NULL`, default
+  `[]`, sempre una lista): i tratti a piedi di una parola con la penna
+  alzata, come `[[da, a], …]`, indici nei punti del percorso (`route` per
+  `runs`, `line` per `favorites`), compresi tutti e due, come
+  `RouteResult.walks`. Indici e non geometria: dicono quale pezzo della
+  linea si cammina, la linea resta una sola.
+- Le righe di prima prendono `[]` dal default, senza riscrivere la tabella
+  (PostgreSQL 11 e dopo): si leggono come prima, una linea sola.
+- In `runs` un vincolo vuole `walks` vuoto quando non c'è `route`: i tratti
+  a piedi sono pezzi di un percorso.
+- `pauses` non cambia colonna: una pausa della penna (l'app si è fermata
+  da sola fra due lettere) ha in più `"pen": true`, e solo lei; le altre
+  restano `{"from_s", "to_s", "auto"}` come prima. Per km e tempo conta
+  come una pausa chiesta dal corridore (`auto` falso).
 
 ## Come si memorizza una traccia
 

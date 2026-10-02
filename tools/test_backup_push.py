@@ -30,9 +30,14 @@ def _push(
     tmp_path: Path, box: bool = True, reachable: bool = True
 ) -> subprocess.CompletedProcess[str]:
     stand_in = tmp_path / "ssh"
-    # rsync calls "<ssh> <host> rsync --server …": drop the host and run the
-    # rest in the Storage Box folder; or fail as a box out of reach does.
-    body = 'shift\nexec "$@"\n' if reachable else "exit 255\n"
+    # rsync calls "<ssh> [-l user] <host> rsync --server …" (Linux splits
+    # user@host, macOS does not): drop them and run the rest in the Storage
+    # Box folder; or fail as a box out of reach does.
+    body = (
+        'if [ "$1" = "-l" ]; then shift 2; fi\nshift\nexec "$@"\n'
+        if reachable
+        else "exit 255\n"
+    )
     stand_in.write_text("#!/bin/sh\n" + body)
     stand_in.chmod(0o755)
     remote = tmp_path / "box"

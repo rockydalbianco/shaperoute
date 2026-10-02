@@ -4175,6 +4175,55 @@ della pagina della mappa (seguito possibile). Il messaggio di «Pocket»
 parla di indicazioni anche qui. Da provare sull'iPhone, anche la voce a
 schermo nero.
 
+## ADR-0125 — L'account nell'app: due schede, la sessione nel portachiavi, l'uscita
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente,
+dentro ADR-0114, ADR-0115 e ADR-0120 (TASK-115)
+
+**Contesto**: ADR-0114 e ADR-0115 decidono email e password e il token in
+`expo-secure-store`; ADR-0120 gli endpoint e gli errori. Restavano come
+fare le schede senza librerie di navigazione (TASK-051), cosa tiene il
+telefono, cosa fa l'app senza rete e cosa fa quando la sessione finisce.
+
+**Decisione**:
+- **Schede fatte a mano** (`src/screens/Tabs.tsx`), come le schermate di
+  TASK-051: niente `react-navigation`. «Draw» resta montata sotto
+  «Profile», così la mappa non si ricarica e le scelte restano.
+- **La barra solo sotto le schermate che scelgono** («What to draw»,
+  «Explore»): ognuna lo dice con `useTabBar`; mappa, corsa e fine della
+  corsa la tolgono, come le app iOS nelle schermate di dettaglio. È
+  l'elenco di chi la vuole, non di chi non la vuole: una schermata nuova
+  (TASK-149) parte senza. Sopra la barra il margine in basso vale zero
+  (`SafeAreaInsetsContext`): l'indicatore di home lo tiene la barra.
+- **Nel portachiavi la `Session` intera**, token e `User`, sotto una chiave
+  sola (`shaperoute.session`), letta in modo sincrono all'avvio come la
+  corsa non giudicata (TASK-113): la prima schermata è già giusta, e il
+  nome si vede anche senza rete. La password non resta mai sul telefono.
+- **All'apertura un `GET /me`**: aggiorna l'utente; `session_expired` o
+  `not_signed_in` fanno uscire e «Profile» lo dice, con un pallino
+  `warning` sulla scheda; senza risposta l'app resta dentro (offline non
+  è uscito). Lo stesso vale per ogni richiesta dell'account.
+- **«Log out» esce subito**, anche senza rete: il telefono dimentica il
+  token e `DELETE /session` parte senza aspettarlo. Un'API irraggiungibile
+  non tiene nessuno dentro; la sessione rimasta sull'API scade in 90
+  giorni.
+- **«Delete account» esce solo con il 204 dell'API**: altrimenti
+  l'account resterebbe sull'API e sparirebbe dal telefono. La conferma è
+  sulla schermata, non un `Alert` di sistema: si prova nei test.
+- **I campi si controllano nell'app** con le regole di `accounts.py`
+  (email, nome 3–20, password 8–128, casella dei 16 anni), e si dice il
+  primo che non va: l'API resta il giudice, l'app evita un `invalid_request`
+  che sarebbe un bug.
+
+**Scartate**: `react-navigation` (una dipendenza in più contro TASK-051);
+il solo token nel portachiavi (senza rete l'app non saprebbe chi è
+dentro); la barra sempre visibile (ruba spazio alla mappa e alla corsa);
+un «Log out» che aspetta l'API; un `Alert` per la conferma.
+
+**Conseguenze**: i task che useranno il token (TASK-116 e seguenti)
+lo prendono dallo stato di `useAccount` (`src/account/`, oggi tenuto da
+`Tabs.tsx`: un contesto React quando servirà a più schermate) e lo
+mandano con `authHeaders` di `src/api/accounts.ts`.
+
 ## ADR-0126 — «Explore»: gli esempi di una città con le alternative A · B · C
 **Stato**: Attiva · 2026-10-02 · chiesto dall'utente («seleziono New York
 e un cuore da 5,2 km: non ci sono le tre opzioni»); il come deciso

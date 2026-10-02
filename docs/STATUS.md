@@ -100,6 +100,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   TASK-151 sull'iPhone (2026-10-02: «ora funziona»). In `App.tsx` cambia
   solo cosa riceve la mappa. **Da provare sull'iPhone** (app da
   ripubblicare). Resta il segnale della scelta (`TASK-151.md`).
+- **App** — TASK-115: ci si iscrive, si entra e si esce dall'app
+  (ADR-0125). Due schede in fondo, «Draw» (le schermate di prima, intatte)
+  e «Profile»: «Sign up» (email, nome, password, «I am at least 16») e
+  «Log in», con gli errori in parole; dentro, «Log out» e «Delete account»
+  con la conferma. La sessione sta nel portachiavi (`expo-secure-store`):
+  riaperta, l'app è già dentro e lo verifica con `GET /me`; una sessione
+  finita fa uscire e «Profile» chiede di rientrare. La barra si toglie
+  sulla mappa e durante la corsa. **Da provare sull'iPhone contro l'API
+  vera**: serve un'API con `SHAPEROUTE_DATABASE_URL` (sul Mac con Colima,
+  o il server di TASK-122) e l'app ripubblicata a fine coda. Seguito:
+  TASK-116 (il profilo).
 - **App** — TASK-151: in «Explore» un esempio di città (il cuore da 5 km
   di New York) si apre con le tessere «A · B · C», chiesto dall'utente
   (ADR-0126): l'API mandava già le alternative, l'app teneva solo la prima.

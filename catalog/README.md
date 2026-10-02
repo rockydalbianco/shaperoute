@@ -41,6 +41,24 @@ Solo parole corte (ADR-0130): CIAO e TIAMO nelle città italiane, più AO e
 AMOR a Roma, BONA a Firenze, UE a Bari, UELA a Milano; a New York LOVE,
 HEY e NYC. Oltre le 4–5 lettere, al tetto dei 21 km, non si leggono.
 
+### Le città in evidenza
+
+Le città che «Explore» mostra per prime (`FEATURED_CITIES` nell'app) e che
+non sono nel seme hanno solo le tre forme più semplici, perché siano già lì
+quando si tocca la città (TASK-163, ADR-0132):
+
+```
+python -m route_engine.seed_catalog --run --featured
+```
+
+Un cuore, un cerchio e una stella da 5 km da una piazza del centro
+(`FEATURED` in `seed_catalog.py`): Londra, Parigi, Tokyo, Barcellona,
+Dubai, Amsterdam, Lisbona, Sydney, San Francisco. **Berlino manca**: la sua
+zona non è sul server e Overpass rifiuta il Mac (`MAPS.md`). Il giro
+intero (`--run` da solo) non le tocca. `tools/test_featured_catalog.py`
+controlla che ogni città in evidenza abbia le tre forme entro 5 km dal
+centro che l'API dà per il suo nome.
+
 Distanze in metri, punti `[lat, lon]` WGS84. I percorsi stanno su strade
 di OpenStreetMap: chi li pubblica cita «© OpenStreetMap contributors».
 

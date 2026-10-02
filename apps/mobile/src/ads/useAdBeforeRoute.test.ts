@@ -5,12 +5,15 @@ import { NO_ADS, type RouteAds } from "./routeAds";
 import { useAdBeforeRoute } from "./useAdBeforeRoute";
 
 type State =
-  { status: "idle" } | { status: "waiting" } | { status: "done"; id: number };
+  | { status: "idle" }
+  | { status: "waiting"; phase: number }
+  | { status: "done"; id: number }
+  | { status: "failed" };
 
 /** An ad network the test drives: ready or not, and closed when it says. */
 function fakeAds(ready: boolean) {
   let close: () => void = () => {};
-  const ads: RouteAds & { prepared: number; shown: number } = {
+  const ads: RouteAds & { prepared: number; shown: number; ready: () => boolean } = {
     prepared: 0,
     shown: 0,
     prepare: () => {
@@ -34,55 +37,72 @@ function render(ads: RouteAds, first: State) {
   });
 }
 
-const WAITING: State = { status: "waiting" };
+const IDLE: State = { status: "idle" };
+const waiting = (phase = 0): State => ({ status: "waiting", phase });
 
 describe("useAdBeforeRoute", () => {
-  it("gets an ad ready while the route is drawn", async () => {
-    const { ads } = fakeAds(false);
-    await render(ads, WAITING);
-    expect(ads.prepared).toBe(1);
+  it("shows a loaded ad as soon as a search starts, over the wait", async () => {
+    const { ads } = fakeAds(true);
+    const hook = await render(ads, IDLE);
+    expect(ads.shown).toBe(0);
+    const wait = waiting();
+    await hook.rerender({ state: wait });
+    expect(ads.shown).toBe(1);
+    // The wait stays on screen behind the ad.
+    expect(hook.result.current).toBe(wait);
   });
 
-  it("keeps the route behind the ad, and shows it when the ad is closed", async () => {
+  it("shows one ad per search, not one per progress step", async () => {
+    const { ads } = fakeAds(true);
+    const hook = await render(ads, IDLE);
+    await hook.rerender({ state: waiting(0) });
+    await hook.rerender({ state: waiting(1) });
+    await hook.rerender({ state: waiting(2) });
+    expect(ads.shown).toBe(1);
+  });
+
+  it("lets the route arrive behind the ad, shown as it is when the ad closes", async () => {
     const { ads, close } = fakeAds(true);
-    const hook = await render(ads, WAITING);
+    const hook = await render(ads, IDLE);
+    await hook.rerender({ state: waiting() });
     const route: State = { status: "done", id: 1 };
     await hook.rerender({ state: route });
-    expect(hook.result.current).toBe(WAITING);
-    expect(ads.shown).toBe(1);
-
+    expect(hook.result.current).toBe(route);
     await act(async () => close());
     expect(hook.result.current).toBe(route);
-    await hook.rerender({ state: route });
     expect(ads.shown).toBe(1);
   });
 
-  it("shows the route at once when there is no ad", async () => {
+  it("goes on without an ad when none is loaded, and loads one for the next", async () => {
     const { ads } = fakeAds(false);
-    const hook = await render(ads, WAITING);
+    const hook = await render(ads, IDLE);
+    await hook.rerender({ state: waiting() });
+    expect(ads.shown).toBe(0);
+    expect(ads.prepared).toBe(1);
     const route: State = { status: "done", id: 1 };
     await hook.rerender({ state: route });
     expect(hook.result.current).toBe(route);
     expect(ads.shown).toBe(0);
   });
 
-  it("shows no ad for anything but a ready route", async () => {
-    const { ads } = fakeAds(true);
-    const hook = await render(ads, { status: "idle" });
-    await hook.rerender({ state: WAITING });
-    const idle: State = { status: "idle" };
-    await hook.rerender({ state: idle });
-    expect(hook.result.current).toBe(idle);
-    expect(ads.shown).toBe(0);
+  it("shows an ad again for the next search", async () => {
+    const { ads, close } = fakeAds(true);
+    const hook = await render(ads, IDLE);
+    await hook.rerender({ state: waiting() });
+    await act(async () => close());
+    await hook.rerender({ state: { status: "done", id: 1 } });
+    await hook.rerender({ state: waiting() });
+    expect(ads.shown).toBe(2);
   });
 
-  it("lets a new state through while the ad is up", async () => {
+  it("shows no ad for anything but the start of a search", async () => {
     const { ads } = fakeAds(true);
-    const hook = await render(ads, WAITING);
+    const hook = await render(ads, IDLE);
     await hook.rerender({ state: { status: "done", id: 1 } });
-    const next: State = { status: "waiting" };
-    await hook.rerender({ state: next });
-    expect(hook.result.current).toBe(next);
+    await hook.rerender({ state: { status: "failed" } });
+    await hook.rerender({ state: IDLE });
+    expect(ads.shown).toBe(0);
+    expect(ads.prepared).toBe(0);
   });
 });
 

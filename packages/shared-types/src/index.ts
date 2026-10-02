@@ -28,12 +28,24 @@ export const SHAPES = [
 ] as const;
 export type Shape = (typeof SHAPES)[number];
 
-export const ACTIVITIES = ["running"] as const;
+/** What a route is for: on foot, or by bike on the roads a bike may ride,
+ * one-way streets kept (TASK-190, ADR-0153). */
+export const ACTIVITIES = ["running", "cycling"] as const;
 export type Activity = (typeof ACTIVITIES)[number];
 
 /** Plausible target distances for running, in metres. */
 export const MIN_DISTANCE_M = 1_000;
 export const MAX_DISTANCE_M = 50_000;
+
+/** The target distances of each activity, [lowest, highest] in metres:
+ * running as above, cycling 10–30 km (TASK-190). Outside them the API
+ * answers `invalid_request`, with the limits in the message. */
+export const DISTANCE_LIMITS_M: Readonly<
+  Record<Activity, readonly [lowest: number, highest: number]>
+> = {
+  running: [MIN_DISTANCE_M, MAX_DISTANCE_M],
+  cycling: [10_000, 30_000],
+};
 
 /**
  * The letters a word may use (route_engine/letters.json, ADR-0044): A to Z

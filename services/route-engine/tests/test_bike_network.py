@@ -423,8 +423,8 @@ def test_the_foot_source_and_its_files_are_those_of_before() -> None:
 def test_each_activity_has_a_network_and_distance_limits() -> None:
     assert set(NETWORKS) == set(DISTANCE_LIMITS_M) == set(ACTIVITIES)
     assert NETWORKS == {"running": "foot", "cycling": "bike"}
-    # The contract offers running alone until the API's part (ADR-0153).
-    assert SUPPORTED_ACTIVITIES == ("running",)
+    # The contract offers cycling since the API's part (TASK-190, ADR-0153).
+    assert SUPPORTED_ACTIVITIES == ("running", "cycling")
 
 
 # --- the Overpass filters ---

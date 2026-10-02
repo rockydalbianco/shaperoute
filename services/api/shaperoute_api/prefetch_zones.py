@@ -15,6 +15,14 @@ failure stops the command. Run again, it goes on from the missing cities.
 
 With `--extract italy-highways.osm.pbf` the zones come from an OpenStreetMap
 extract instead (zone_extract.py): no request to Overpass, no pause.
+
+With `--activity cycling` they are bike zones (TASK-190, ADR-0153): the bike
+network, the area of the longest bike route from the city's centre, and no
+street names. Only from an extract: a bike zone is two large Overpass
+queries, which Overpass refuses after a few.
+
+    python -m shaperoute_api.prefetch_zones --activity cycling \
+        --extract italy-highways.osm.pbf Trento
 """
 
 from __future__ import annotations
@@ -34,10 +42,11 @@ from pathlib import Path
 from typing import Literal, Protocol
 
 from route_engine.geo import LatLon, local_to_latlon
+from route_engine.models import DISTANCE_LIMITS_M, SUPPORTED_ACTIVITIES
 from route_engine.network import OsmnxSource
 from route_engine.optimizer import FAR_OFFSET_M, SHAPE_POINTS, required_area, zone_area
 from route_engine.overpass_address import reachable
-from route_engine.shapes import get_shape
+from route_engine.shapes import SUPPORTED_SHAPES, get_shape
 from route_engine.stops import union
 
 from shaperoute_api.cities import CitySearch
@@ -55,6 +64,8 @@ THEMED_DISTANCE_M = 10_000
 # without a zone had a second one downloaded for the circle.
 EXAMPLE_SHAPES = ("circle", "heart", "star")
 EXAMPLE_DISTANCE_M = 5_000
+# The longest bike route (TASK-190): its zone holds every shorter one.
+BIKE_DISTANCE_M = DISTANCE_LIMITS_M["cycling"][1]
 # Below this the cache stops growing (MAPS.md: the disk fills up).
 MIN_FREE_BYTES = 5 * 1024**3
 DEFAULT_PAUSE_S = 60.0
@@ -198,6 +209,31 @@ def zone_box(centre: LatLon) -> BBox:
     return union(boxes)
 
 
+def bike_zone_box(centre: LatLon) -> BBox:
+    """The area a bike route of up to 30 km from a city's centre needs, the
+    engine's far search included: every shape of the catalogue, the circle
+    the widest, about 26 x 26 km (ADR-0153). A shorter route fits it from a
+    start farther out: 20 km within about 3.4 km of the centre, 10 km within
+    6.9; a word, whose letters fold its line, needs less than a shape."""
+    return union(
+        [
+            zone_area(
+                get_shape(shape)(SHAPE_POINTS), centre, BIKE_DISTANCE_M, FAR_OFFSET_M
+            )
+            for shape in SUPPORTED_SHAPES
+        ]
+    )
+
+
+# The box of each activity's zones, and whether they keep the street names
+# (ADR-0057): the bike network has the roads whose sidewalks are apart.
+ZONE_BOXES: dict[str, Callable[[LatLon], BBox]] = {
+    "running": zone_box,
+    "cycling": bike_zone_box,
+}
+STREET_NAMES = {"running": True, "cycling": False}
+
+
 def box_size_km(box: BBox) -> tuple[float, float]:
     """(width, height) of `box` in kilometres."""
     south, west, north, east = box
@@ -268,13 +304,17 @@ def prefetch(
     max_downloads: int | None = None,
     dry_run: bool = False,
     zone_data: Callable[[BBox], AbstractContextManager[None]] | None = None,
+    box_of: Callable[[LatLon], BBox] = zone_box,
+    street_names: bool = True,
     sleep: Callable[[float], None] = time.sleep,
     clock: Callable[[], float] = time.monotonic,
     report: Callable[[Outcome], None] = lambda o: None,
 ) -> list[Outcome]:
     """Each city ready, downloaded, missing or not found, in order. A city
     whose download fails is missing; after a stop (failures in a row,
-    Overpass silent, the disk, the budget) the cities left are not tried."""
+    Overpass silent, the disk, the budget) the cities left are not tried.
+    `box_of` gives a city's zone and `street_names` says whether its names
+    are kept too: those of "Explore" on foot, by default."""
     if free_bytes is None:
 
         def free_bytes() -> int:
@@ -299,11 +339,11 @@ def prefetch(
             done(Outcome(city, "not_found", "the city search knows no such city"))
             continue
         label, centre = found
-        box = zone_box(centre)
+        box = box_of(centre)
         width, height = box_size_km(box)
         size = f"{label}, {width:.0f} x {height:.0f} km"
         graph = source.covering_path(box) is not None
-        names = names_cached(source.cache_dir, box)
+        names = not street_names or names_cached(source.cache_dir, box)
         if graph and names:
             done(Outcome(city, "ready", size))
             continue
@@ -334,7 +374,8 @@ def prefetch(
             with nullcontext() if zone_data is None else zone_data(box):
                 if not graph:
                     source.load(box)
-                source.named_roads(box, download=True)
+                if street_names:
+                    source.named_roads(box, download=True)
         except Exception as exc:
             code = http_code(exc)
             failed = f"the download failed ({type(exc).__name__}" + (
@@ -383,19 +424,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=None,
         help="an OpenStreetMap .pbf to cut the zones from, instead of Overpass",
     )
+    parser.add_argument(
+        "--activity",
+        choices=SUPPORTED_ACTIVITIES,
+        default="running",
+        help="the network of the zones: running, those of Explore (default), "
+        "or cycling, for bike routes up to 30 km from the centre (--extract)",
+    )
     args = parser.parse_args(argv)
     cities = list(args.cities)
     for preset in args.preset or []:
         cities += [c for c in PRESETS[preset] if c not in cities]
     if not cities:
         parser.error("name some cities, or a --preset")
+    if args.activity == "cycling" and args.extract is None and not args.dry_run:
+        parser.error("bike zones come from an extract: give --extract (ADR-0153)")
     search = PlaceSearch.from_env()
     if search.key is None:
         print(f"{KEY_VARIABLE} is not set: the city centres come from it.")
         return 2
     outcomes = prefetch(
         cities,
-        OsmnxSource(args.cache_dir),
+        OsmnxSource.for_activity(args.cache_dir, args.activity),
         centre_finder(CitySearch(search.key)),
         pause_s=args.pause_s,
         max_downloads=args.max_downloads,
@@ -405,6 +455,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             if args.extract is None
             else lambda box: zone_from_extract(args.extract, box)
         ),
+        box_of=ZONE_BOXES[args.activity],
+        street_names=STREET_NAMES[args.activity],
         report=lambda o: print(o.line(), flush=True),
     )
     tally = {

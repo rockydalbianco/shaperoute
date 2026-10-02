@@ -8,7 +8,14 @@ import shutil
 from pathlib import Path
 
 import pytest
-from route_engine.network import FOOT_FILTER, OsmnxSource, read_named_roads
+from route_engine.network import (
+    BIKE_FILTER,
+    FOOT_FILTER,
+    OsmnxSource,
+    network_of,
+    read_graph,
+    read_named_roads,
+)
 
 from shaperoute_api.zone_extract import (
     grown,
@@ -156,3 +163,87 @@ def test_osmium_cuts_the_box_with_a_margin(grid: Path, tmp_path: Path) -> None:
     assert s < BOX[0] and n > BOX[2]
     assert args[-1] == "/data/italy.pbf"
     assert osmium_extract_args(Path("x.pbf"), BOX, Path("o.osm"))[-1] == "x.pbf"
+
+
+# --- bike zones (TASK-190, ADR-0153) ---
+
+
+def test_the_bike_filters_read_as_overpass_does() -> None:
+    roads, paths = (tag_filter(f) for f in BIKE_FILTER)
+    assert roads({"highway": "residential"}) and roads({"highway": "cycleway"})
+    assert roads({"highway": "primary", "sidewalk": "separate"})  # not on foot
+    assert not roads({"highway": "footway"}) and not roads({"highway": "steps"})
+    assert not roads({"highway": "trunk"}) and not roads({"highway": "motorway"})
+    assert not roads({"highway": "primary_link_x"})  # whole values only
+    assert not roads({"highway": "service", "access": "private"})
+    assert paths({"highway": "path", "bicycle": "designated"})
+    assert paths({"highway": "pedestrian", "bicycle": "yes"})
+    assert not paths({"highway": "footway"})
+    assert not paths({"highway": "path", "bicycle": "designated", "area": "yes"})
+
+
+def bike_grid_xml() -> str:
+    """Nine nodes 200 m apart. Rows west to east: a one-way street, a
+    footway, a two-way street; columns south to north: a street, a cycle
+    path, a street. Steps and a motorway across."""
+    nodes = []
+    for row in range(3):
+        for col in range(3):
+            lat, lon = 45.0 + 0.0018 * row + 0.0002, 8.0 + 0.0025 * col + 0.0005
+            nodes.append(
+                f'<node id="{100 + 3 * row + col}" lat="{lat:.7f}" lon="{lon:.7f}"/>'
+            )
+    rows = [
+        '<tag k="highway" v="residential"/><tag k="oneway" v="yes"/>',
+        '<tag k="highway" v="footway"/>',
+        '<tag k="highway" v="residential"/>',
+    ]
+    columns = [
+        '<tag k="highway" v="residential"/>',
+        '<tag k="highway" v="path"/><tag k="bicycle" v="designated"/>',
+        '<tag k="highway" v="residential"/>',
+    ]
+    ways = []
+    for row, tags in enumerate(rows):
+        refs = "".join(f'<nd ref="{100 + 3 * row + c}"/>' for c in range(3))
+        ways.append(f'<way id="{10 + row}">{refs}{tags}</way>')
+    for col, tags in enumerate(columns):
+        refs = "".join(f'<nd ref="{100 + 3 * r + col}"/>' for r in range(3))
+        ways.append(f'<way id="{20 + col}">{refs}{tags}</way>')
+    motorway = '<tag k="highway" v="motorway"/>'
+    ways.append(f'<way id="90"><nd ref="100"/><nd ref="108"/>{motorway}</way>')
+    ways.append(
+        '<way id="91"><nd ref="102"/><nd ref="106"/><tag k="highway" v="steps"/></way>'
+    )
+    body = "".join(nodes + ways)
+    return f'<?xml version="1.0"?><osm version="0.6">{body}</osm>'
+
+
+def test_a_bike_zone_is_built_from_the_extract_with_the_bike_filters(
+    tmp_path: Path,
+) -> None:
+    grid = tmp_path / "bike.osm"
+    grid.write_text(bike_grid_xml())
+
+    def run(args: list[str]) -> None:
+        shutil.copy(grid, args[args.index("--output") + 1])
+
+    source = OsmnxSource.for_activity(tmp_path / "cache", "cycling")
+    with zone_from_extract(Path("/data/italy.pbf"), BOX, run=run):
+        source.load(BOX)
+    zone = read_graph(source.cache_path(BOX))
+    assert source.cache_path(BOX).name.startswith("bike_")
+    assert network_of(zone) == "bike"
+    ways: dict[int, list[tuple[int, int]]] = {}
+    for u, v, data in zone.edges(data=True):
+        osmids = data["osmid"] if isinstance(data["osmid"], list) else [data["osmid"]]
+        for osmid in osmids:
+            ways.setdefault(int(osmid), []).append((u, v))
+    # No footway, steps or motorway; the cycle path and the streets stay.
+    assert set(ways) == {10, 12, 20, 21, 22}
+    # The one-way street eastward only, the two-way street both ways.
+    east = [zone.nodes[v]["x"] > zone.nodes[u]["x"] for u, v in ways[10]]
+    assert east and all(east)
+    both = [zone.nodes[v]["x"] > zone.nodes[u]["x"] for u, v in ways[12]]
+    assert True in both and False in both
+    assert list((tmp_path / "cache").glob("foot_*")) == []

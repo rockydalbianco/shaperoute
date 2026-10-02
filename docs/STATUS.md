@@ -116,6 +116,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   per scelta dell'utente: da rivedere prima di invitare altre persone.
   Niente API, niente like o commenti: il feed vero resta TASK-118. Visto
   su un simulatore. **Da provare sull'iPhone** (ripubblicare l'app).
+- **App** — TASK-157: in «Explore», «Ask for a route» sta in fondo alla
+  pagina, sotto gli esempi della città e i percorsi consigliati, chiuso
+  dietro una riga grigia e sottolineata; un tocco lo apre lì, e la pagina
+  scorre fino a lui. Chiesto dall'utente: prima le figure già pronte delle
+  zone, la richiesta in parole quasi nascosta. **Da provare sull'iPhone**
+  (ripubblicare l'app).
+- **App** — TASK-158: il pulsante della corsa libera, in cima a «Draw», dice
+  «Run without a route» invece di «Run», chiesto dall'utente: «Run» da solo
+  si leggeva come correre il percorso scelto sotto. **Da provare
+  sull'iPhone** (ripubblicare l'app).
 - **Mappe** — TASK-137: 52 città italiane con la zona già sul server
   Hetzner (circa 17 × 17 km attorno al centro, nomi delle strade compresi),
   da `python -m shaperoute_api.prefetch_zones --preset italy --extract …`

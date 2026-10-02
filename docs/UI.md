@@ -70,8 +70,8 @@ prima ed «Explore» sono due delle tre pagine affiancate (sotto, «Le
 pagine»):
 
 1. **«What to draw»**, all'apertura: la pagina «Draw». Dall'alto: il nome
-   «Sgrava» con il pulsante «Run» (una corsa senza percorso, TASK-149,
-   sotto); una scheda che dice da dove partirà il percorso,
+   «Sgrava» con il pulsante «Run without a route» (TASK-149, sotto); una
+   scheda che dice da dove partirà il percorso,
    con, quando servono, il rimando alle Impostazioni e la ricerca del
    luogo; l'errore della mappa; le forme del catalogo come tessere, con un
    simbolo e il nome (quella scelta ha il bordo chiaro); il campo per
@@ -97,7 +97,10 @@ pagine»):
 
    Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
    qualsiasi città del mondo (l'elenco e la richiesta partono dal suo
-   centro, «Change» torna alla partenza), e **«Ask for a route»**, una
+   centro, «Change» torna alla partenza). **In fondo alla pagina**, sotto
+   gli esempi della città e l'elenco (TASK-157, chiesto dall'utente): una
+   riga discreta, «Ask for a route», grigia e sottolineata. Un tocco la
+   apre lì dov'è, e la pagina scorre fino a lei: **«Ask for a route»**, una
    richiesta in parole («a romantic heart», «famous places in Paris,
    15 km») e «Make my route», giallo come «Draw route». Il percorso si
    apre sulla mappa coi luoghi: pallini chiari col nome quelli da cui
@@ -676,9 +679,10 @@ principale.
 
 ## Correre senza percorso (TASK-149, ADR-0122)
 
-**«Run»**, in alto nella pagina «Draw» accanto a «Sgrava», fa partire
-una corsa senza disegnare niente: niente forma, niente percorso, niente
-API. Si apre la mappa, che segue la posizione come in navigazione (zoom
+**«Run without a route»**, in alto nella pagina «Draw» accanto a «Sgrava»,
+fa partire una corsa senza disegnare niente: niente forma, niente percorso,
+niente API. La scritta è per intero (TASK-158, chiesto dall'utente): «Run» da
+solo si leggeva come correre il percorso scelto sotto. Si apre la mappa, che segue la posizione come in navigazione (zoom
 17) e disegna la linea corsa fin lì, sottile e chiara (`track`). Al posto
 di «←» un banner con i km in grande, due decimali («2.34 km»), e sotto il
 tempo e il passo medio («12:34 · 5:21 /km»). Il tempo parte dalla prima

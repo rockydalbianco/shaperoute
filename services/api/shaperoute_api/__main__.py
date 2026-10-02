@@ -17,7 +17,6 @@ from pathlib import Path
 
 import psycopg
 import uvicorn
-from route_engine.network import OsmnxSource
 from route_engine.shapes import SUPPORTED_SHAPES
 from shaperoute_ai.ollama import DEFAULT_MODEL, DEFAULT_URL, OllamaModel
 from shaperoute_ai.reading import ShapeReader
@@ -26,10 +25,10 @@ from shaperoute_ai.theme_reading import ThemeReader
 from shaperoute_api.access import KEY_HEADER, KEY_VARIABLE, Access, AccessConfigError
 from shaperoute_api.access_log import hide_query_strings
 from shaperoute_api.accounts import Accounts
+from shaperoute_api.activity_graphs import ActivityGraphs
 from shaperoute_api.app import create_app
 from shaperoute_api.cities import CitySearch
 from shaperoute_api.db import DATABASE_VARIABLE, Database, MigrationError
-from shaperoute_api.graphs import ZoneGraphs
 from shaperoute_api.insights import Insights
 from shaperoute_api.insights.events import DEFAULT_DIR as INSIGHTS_DIR
 from shaperoute_api.insights.events import OFF_VARIABLE as INSIGHTS_OFF
@@ -161,7 +160,9 @@ def main(argv: Sequence[str] | None = None) -> None:
     request_log = RequestLog(args.request_log_dir) if wanted(args.request_log) else None
     places = PlaceSearch.from_env()
     recommended = RecommendedCatalog.from_dir(args.catalog_dir)
-    source = ZoneGraphs(OsmnxSource(args.cache_dir))
+    # The zones of each activity's network, foot and bike (TASK-190).
+    graphs = ActivityGraphs.from_cache(args.cache_dir)
+    source = graphs.for_activity("running")
     cities = CitySearch(places.key)
     # A city's examples, kept once drawn (ADR-0136): beside the zones.
     route_store = (
@@ -183,7 +184,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         ai=ThemeReader(OllamaModel(args.ai_model, args.ai_url)),
     )
     app = create_app(
-        source,
+        graphs,
         reader=reader,
         request_log=request_log,
         places=places,

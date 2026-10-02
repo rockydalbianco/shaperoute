@@ -23,6 +23,7 @@ from route_engine.network import BBox, Graph
 from route_engine.optimizer import GraphLoader, Plan
 from route_engine.sidewalks import NamedRoad
 
+from shaperoute_api.activity_graphs import Graphs, source_for
 from shaperoute_api.alongs import NamedRoads, with_alongs
 from shaperoute_api.errors import error_of
 from shaperoute_api.images import AnyRequest
@@ -87,7 +88,7 @@ JobEnd = Callable[[Job, RouteResult | None, ErrorDetail | None, float], None]
 class RouteJobs:
     def __init__(
         self,
-        source: GraphLoader,
+        source: Graphs,
         planner: Planner,
         workers: int = WORKERS,
         keep_s: float = KEEP_S,
@@ -148,14 +149,17 @@ class RouteJobs:
         if not self._set(job, status="computing"):
             return
         started = self._clock()
-        source = _Reporting(
-            self._source,
-            lambda status: self._set(job, status),
-            lambda: self._wanted(job),
-        )
+        activity = job.request.activity
         try:
+            # The zones of the network of the request's activity (TASK-190).
+            graphs = source_for(self._source, activity)
+            source = _Reporting(
+                graphs,
+                lambda status: self._set(job, status),
+                lambda: self._wanted(job),
+            )
             plan = self._planner(job.request, source)
-            names = self._source if isinstance(self._source, KnowsNames) else None
+            names = graphs if isinstance(graphs, KnowsNames) else None
             result = with_choices(
                 plan, source.graphs, None if names is None else names.named_roads
             )
@@ -164,7 +168,7 @@ class RouteJobs:
             self._tell(job, None, None, self._clock() - started)
             return
         except Exception as exc:
-            _, error = error_of(exc)
+            _, error = error_of(exc, activity)
             if error.code == "engine_error":
                 log.exception("job %s: the engine failed", job.job_id, exc_info=exc)
             self._set(job, status="failed", error=error)

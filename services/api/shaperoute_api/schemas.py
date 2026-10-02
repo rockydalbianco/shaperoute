@@ -13,8 +13,8 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from route_engine.directions import GROUP_M, Turn
 from route_engine.image_outline import MAX_POINTS as MAX_OUTLINE_POINTS
 from route_engine.models import (
+    DISTANCE_LIMITS_M,
     MAX_DISTANCE_M,
-    MIN_DISTANCE_M,
     SUPPORTED_ACTIVITIES,
     RouteResult,
 )
@@ -37,6 +37,16 @@ MAX_IMAGE_BASE64 = 4 * -(-MAX_IMAGE_BYTES // 3)
 # and last point, indices into the route's points; one fewer than letters.
 Walk = tuple[int, int]
 MAX_WALKS = MAX_WORD_LETTERS - 1
+# Each activity has its own distances (TASK-190): "1000–50000 for running,
+# 10000–30000 for cycling".
+DISTANCE_DESCRIPTION = "Target distance in metres, " + ", ".join(
+    f"{DISTANCE_LIMITS_M[a][0]}–{DISTANCE_LIMITS_M[a][1]} for {a}"
+    for a in SUPPORTED_ACTIVITIES
+)
+ACTIVITY_DESCRIPTION = (
+    f"One of: {', '.join(SUPPORTED_ACTIVITIES)}; cycling is drawn on the "
+    f"roads a bike may ride, one-way streets kept (TASK-190)."
+)
 WALKS_DESCRIPTION = (
     "A word with the pen up (TASK-197): [from, to] indices into points, both "
     "included, of each stretch walked from one letter to the next without "
@@ -77,13 +87,8 @@ class RouteRequestBody(BaseModel):
         ),
         examples=[None],
     )
-    distance_m: int = Field(
-        description=f"Target distance in metres, {MIN_DISTANCE_M}–{MAX_DISTANCE_M}.",
-        examples=[5000],
-    )
-    activity: str = Field(
-        default="running", description=f"One of: {', '.join(SUPPORTED_ACTIVITIES)}."
-    )
+    distance_m: int = Field(description=DISTANCE_DESCRIPTION, examples=[5000])
+    activity: str = Field(default="running", description=ACTIVITY_DESCRIPTION)
     style: str = Field(
         default="round",
         description=(
@@ -423,13 +428,8 @@ class ImageRouteRequestBody(BaseModel):
             f"counted twice. None for an outline without."
         ),
     )
-    distance_m: int = Field(
-        description=f"Target distance in metres, {MIN_DISTANCE_M}–{MAX_DISTANCE_M}.",
-        examples=[15000],
-    )
-    activity: str = Field(
-        default="running", description=f"One of: {', '.join(SUPPORTED_ACTIVITIES)}."
-    )
+    distance_m: int = Field(description=DISTANCE_DESCRIPTION, examples=[15000])
+    activity: str = Field(default="running", description=ACTIVITY_DESCRIPTION)
     pen_up: bool = Field(
         default=False,
         description="Only for a word (TASK-197): true is refused, invalid_request.",

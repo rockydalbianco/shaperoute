@@ -29,7 +29,7 @@ from route_engine.models import (
     RouteRequest,
     RouteResult,
 )
-from route_engine.optimizer import GraphLoader, ShapeNotDrawableError
+from route_engine.optimizer import ShapeNotDrawableError
 from route_engine.outline_edits import InvalidEditError
 from shaperoute_ai.reading import (
     InvalidTextError,
@@ -42,6 +42,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from shaperoute_api.access import protect
 from shaperoute_api.accounts import Accounts, install_accounts
 from shaperoute_api.activities import PlaceNames, install_activities
+from shaperoute_api.activity_graphs import Graphs, check_supported, source_for
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.errors import error_of
 from shaperoute_api.favorites import install_favorites
@@ -146,7 +147,9 @@ def validation_message(errors: Sequence[Any]) -> str:
 def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
     """The engine's RouteRequest checks the values, and ImageRequest those of
     an image route: InvalidRequestError. An image has no letters to draw
-    with the pen up (TASK-197)."""
+    with the pen up (TASK-197). The activity is one of the contract's: the
+    engine may draw more (TASK-190)."""
+    check_supported(body.activity)
     if isinstance(body, ImageRouteRequestBody):
         if body.pen_up:
             raise InvalidRequestError(PEN_UP_WITHOUT_WORD)
@@ -201,7 +204,7 @@ def now_utc() -> datetime:
 
 
 def create_app(
-    source: GraphLoader,
+    source: Graphs,
     planner: Planner = plan_request,
     jobs: RouteJobs | None = None,
     now: Callable[[], datetime] = now_utc,
@@ -505,7 +508,8 @@ def create_app(
     @app.post("/route-directions", responses=ERROR_RESPONSES)
     def find_route_directions(body: RouteDirectionsRequestBody) -> RouteDirectionsBody:
         started = time.perf_counter()
-        directions = directions_of(source, body.points)
+        # A route of "Explore" is a run (TASK-190: on the foot network).
+        directions = directions_of(source_for(source, "running"), body.points)
         log.info(
             "directions of %d points: %d, in %.1f s",
             len(body.points),
@@ -546,20 +550,24 @@ def create_app(
     # A plain def: FastAPI runs it in a thread, so a long route does not stop
     # the server from answering the other requests.
     @app.post("/routes", responses=ERROR_RESPONSES)
-    def create_route(body: RouteRequestBody) -> RouteResultBody:
+    def create_route(body: RouteRequestBody, http: Request) -> RouteResultBody:
+        # Its errors suggest a distance of its activity (engine_answer).
+        http.state.activity = body.activity
         request = to_request(body)
         what = f"{request.name} {request.distance_m} m"
         started = time.perf_counter()
         try:
-            plan = planner(request, source)
+            # On the network of its activity (TASK-190).
+            plan = planner(request, source_for(source, request.activity))
             others = [other.result for other in plan.alternatives]
             result = replace(plan.result, alternatives=others)
         except Exception as exc:
             elapsed = time.perf_counter() - started
             log.info("route %s: %s after %.1f s", what, type(exc).__name__, elapsed)
+            _, detail = error_of(exc, request.activity)
             if request_log is not None:
-                request_log.record(body.model_dump(), None, error_of(exc)[1], elapsed)
-            fields = route_fields(body.model_dump(), None, error_of(exc)[1].code)
+                request_log.record(body.model_dump(), None, detail, elapsed)
+            fields = route_fields(body.model_dump(), None, detail.code)
             insights.record("route", ms=round(elapsed * 1000), **fields)
             raise
         log.info(
@@ -585,8 +593,9 @@ def create_app(
     def invalid_body(_: Request, exc: RequestValidationError) -> JSONResponse:
         return error(422, "invalid_request", validation_message(exc.errors()))
 
-    def engine_answer(_: Request, exc: Exception) -> JSONResponse:
-        status, detail = error_of(exc)
+    def engine_answer(request: Request, exc: Exception) -> JSONResponse:
+        # POST /routes says the activity of the request (TASK-190).
+        status, detail = error_of(exc, getattr(request.state, "activity", "running"))
         body = ErrorBody(error=detail)
         return JSONResponse(status_code=status, content=body.model_dump())
 

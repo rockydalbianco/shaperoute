@@ -142,8 +142,15 @@ coordinatore. Nessun numero di ADR è stato assegnato a questo task.
   `jest.setTimeout(20_000)` e un `20_000` su un test: valgono più del
   valore di progetto, quindi quel file resta a 20 s. Era di un'altra PR: da
   togliere in un task a parte.
-- Dividere `AppFavorites.test.tsx` (vedi sopra): si può fare per ordine, non
-  cura i timeout.
+- **Seguito: dividere i file di test grandi dell'app**, a partire da
+  `AppFavorites.test.tsx`, che oggi ha fatto cadere quattro PR. Il
+  coordinatore la considera la cura vera, perché in TASK-176 la divisione
+  di `ExploreScreen.test.tsx` ha riportato il suo primo `render` a 0,6 s.
+  Le misure di questo task dicono che, da sola, la divisione di un file
+  sposta l'avvio a freddo sul file che diventa il primo a disegnare
+  (`RunDashboard.test.tsx`, da 0,6–0,8 a 2,8–3,0 s): va fatta su tutti i
+  file grandi insieme, misurando il test più lento della suite prima e
+  dopo, non quello del file diviso.
 - Togliere l'avvio a freddo invece di aspettarlo: tenere la cache di jest
   fra un run e l'altro della CI (`actions/cache`), che tocca il workflow; o
   meno worker per suite sul Mac quando più agenti provano insieme

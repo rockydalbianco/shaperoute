@@ -62,7 +62,10 @@ l'agente prepara le domande e la guida.
 
 ## Scelte prese (si aggiorna a ogni risposta)
 
-*(nessuna ancora)*
+1. **Persona o ditta**: **persona**, senza partita IVA per ora; la partita
+   IVA si apre quando arrivano i guadagni. Scelta dell'utente
+   (2026-10-02). Conseguenze in `docs/PUBBLICITA.md`, «Persona adesso,
+   partita IVA dopo».
 
 Fatto dall'agente il 2026-10-02: `docs/PUBBLICITA.md` con il calendario
 dei pagamenti, i passi in ordine e le domande per il commercialista. Il

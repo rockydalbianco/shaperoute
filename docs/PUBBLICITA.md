@@ -57,6 +57,22 @@ averlo creato; per cambiarlo si chiude l'account e se ne apre un altro
 7. **Primo pagamento**: il 21 del mese dopo quello in cui il saldo
    supera i 70 €.
 
+## Persona adesso, partita IVA dopo
+
+Scelta dell'utente del 2026-10-02 (TASK-150): l'account AdMob, e quello
+Apple Developer di TASK-152, si aprono come **persona**; la partita IVA si
+apre quando arrivano i guadagni. Cosa comporta:
+
+- I pagamenti arrivano sul conto personale dell'utente, intestati a lui.
+- Anche senza partita IVA i guadagni si dichiarano: come, lo dice il
+  commercialista (domanda 1 e 4 qui sotto).
+- Quando si apre la partita IVA, chiedere al commercialista se l'account
+  AdMob da persona può restare così. Se serve un account da ditta, Google
+  non cambia il tipo: si apre un account nuovo e l'app va ricollegata
+  (nuovi ID, TASK-153 da rifare in piccolo).
+- Segnale per chiamare il commercialista: i primi pagamenti regolari, o il
+  saldo che supera la soglia più mesi di fila.
+
 ## Domande per il commercialista
 
 L'agente non dà consigli fiscali: queste sono le domande da portare.

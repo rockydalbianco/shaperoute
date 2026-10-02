@@ -12,7 +12,7 @@ import {
 import { EXAMPLE_DISTANCE_M, type Example } from "./exampleRoutes";
 import { cityShort } from "./presets";
 import type { RecommendedRoute } from "./recommendedRoutes";
-import { cardWidth, RouteCard } from "./RouteCard";
+import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
 
 type Props = {
   city: Place;
@@ -62,7 +62,9 @@ export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) 
                 width={card}
                 line={route.preview}
                 title={`${name} · ${km} km`}
+                detail={route.city}
                 match={route.similarity}
+                map
                 onPress={() => onOpen(route)}
                 accessibilityLabel={`${name}, ${km} km`}
               />
@@ -81,6 +83,7 @@ export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) 
           );
         })}
       </View>
+      {examples.some((e) => e.status === "ready") && <CardMapsCredit />}
       {messages.map((message) => (
         <Text key={message} style={styles.error}>
           {message}

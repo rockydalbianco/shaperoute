@@ -5316,6 +5316,56 @@ chiesto).
 tocco per avvicinare. I pulsanti mancano apposta: un test della pagina
 controlla che il controllo non torni e che il gesto non venga spento.
 
+## ADR-0142 — La mappa anche sotto le schede di «Explore», con un credito solo
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («nella
+sezione explore, quando ci sono i vari sample, mettimi sotto anche la
+mappa […] con scritto il nome del paese»); il come deciso dall'agente su
+delega dell'utente (TASK-174). Cambia un punto di ADR-0135, che aveva
+scartato la foto della mappa nelle schede.
+
+**Contesto**: da TASK-167 un percorso di «Explore» è una scheda larga mezzo
+telefono, la linea gialla su un fondo vuoto. In «Feed» sotto la linea c'è
+la foto della mappa (ADR-0131), e l'utente la vuole anche qui. ADR-0135
+l'aveva scartata per il numero: una foto per scheda, decine di percorsi a
+città.
+
+**Decisione**:
+- **Le stesse foto di «Feed»**: `RouteCard` con `map` chiede la foto a
+  `useFeedMap` e la mette sotto la linea. Le fa la pagina nascosta di
+  «Feed», che il `Pager` tiene montata accanto a «Explore»: nessuna pagina
+  MapLibre in più. Misurato sul simulatore: 27 foto in 1,6 s con le tile
+  della zona già scaricate, perché i percorsi di una città stanno sulle
+  stesse tile.
+- **La foto ha il nome di ciò che inquadra** (centro e zoom di
+  `lineCamera`), non l'`id` del percorso: un esempio ridisegnato tiene il
+  suo `id` e può cambiare linea, e due percorsi con lo stesso riquadro
+  hanno la stessa foto.
+- **`map` va chiesto**: lo passano le schede di «Explore» (esempi e «Best
+  near you»). «Favorites» usa lo stesso componente e resta com'è.
+- **Il credito una volta sola, accanto alle schede**, in una riga: «Maps:
+  OpenFreeMap © OpenMapTiles · Data from OpenStreetMap». Sopra le schede di
+  «Best near you», che sono molte e scorrono; sotto quelle degli esempi,
+  che sono tre. Scritto su ogni foto, come in «Feed», su una scheda di 170
+  punti andava a capo, perdeva «Data from OpenStreetMap» e copriva i nomi
+  dei paesi, che sono ciò che l'utente ha chiesto.
+- **Il nome del paese anche in parole** negli esempi: la scheda pronta lo
+  dice sotto forma e km, come le schede di «Best near you» dicono già la
+  città. Sulla mappa il nome c'è quando il centro del paese cade nel
+  riquadro, cioè quasi sempre, non sempre.
+
+**Scartate**: una pagina delle foto anche in «Explore» (due pagine
+farebbero la stessa foto due volte); il credito su ogni foto con un
+carattere più piccolo (sotto gli 11 punti non c'è un token, e resta sopra
+i nomi); un'etichetta con il nome del paese disegnata sopra la foto
+(doppia, quando la mappa lo scrive già).
+
+**Conseguenze**: aprire «Explore» chiede a OpenFreeMap le tile delle zone
+dei percorsi mostrati (`UI.md`, «Cosa esce dal telefono»). Le foto restano
+in memoria finché l'app è aperta, una per scheda vista; cambiata città, le
+foto già in coda per quella di prima si fanno lo stesso. Fuori dal `Pager`
+(«Explore» aperta con `onBack`) la pagina delle foto non c'è e le schede
+restano senza mappa.
+
 ## ADR-0147 — L'animazione all'avvio: un componente sopra l'app, il cuore del video sul giallo
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («il
 logo e l'animazione che deve durare almeno due secondi quando apri

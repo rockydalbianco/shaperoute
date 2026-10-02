@@ -111,6 +111,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sull'iPhone**. Da chiedere all'utente: la schermata di avvio nativa
   gialla invece che nera (una riga di `app.json`, si vede solo in una build
   propria).
+- **App** — TASK-174: le schede di «Explore» hanno la mappa sotto la linea,
+  con i nomi dei paesi, chiesto dall'utente (ADR-0142): negli esempi di una
+  città e in «Best near you». Sono le foto di «Feed» (TASK-162), fatte
+  dalla stessa pagina nascosta; il credito della mappa sta una volta sola
+  accanto alle schede. Negli esempi la scheda dice anche il paese. Solo
+  app, niente API. **Da pubblicare su `preview`**, con l'ok dell'utente,
+  poi da provare sull'iPhone.
 - **App** — TASK-173: la musica nella corsa, chiesta dall'utente («uso
   Spotify», ADR-0141). Mentre si corre, sulle pagine «Map» e «Data», «Music»
   di fronte a «Pocket» apre Spotify; su un telefono senza Spotify, la sua

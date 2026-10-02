@@ -127,7 +127,13 @@ pagine»):
    (TASK-167, ADR-0135, scelto dall'utente): in alto il disegno, largo
    quanto la scheda, giallo su fondo scuro, con la somiglianza in un angolo
    («97%»); sotto, forma e km («Star · 5.1 km») e città e distanza dalla
-   partenza («Trento · 450 m away»). **I filtri stanno in una riga sola**:
+   partenza («Trento · 450 m away»). **Sotto la linea c'è la mappa** della
+   zona, con i nomi dei paesi (TASK-174, ADR-0142, chiesto dall'utente): è
+   la foto di «Feed» (TASK-162), fatta dalla stessa pagina nascosta; finché
+   non arriva la scheda è la linea sul fondo scuro, e senza rete resta
+   così. Il credito della mappa non è su ogni foto, che è larga mezzo
+   telefono: sta una volta sola sopra le schede, «Maps: OpenFreeMap ©
+   OpenMapTiles · Data from OpenStreetMap». **I filtri stanno in una riga sola**:
    due pulsanti, «Shape: All ▾» e «Distance: All ▾», che dicono cosa
    tengono; toccato uno, sotto la riga si aprono le sue scelte («All»,
    «Star», «Circle»…, che scorrono di lato), e una scelta le richiude. Se ne
@@ -180,7 +186,10 @@ pagine»):
    stella da 5 km dal centro, chiesti da soli, uno alla volta, il cuore per
    primo. Sono schede come quelle di «Best near you», due per riga
    (TASK-167): una scheda dice «Drawing…» o «Next» con il posto del
-   disegno vuoto, poi ha il disegno, i km e la somiglianza; un tocco apre il
+   disegno vuoto, poi ha il disegno, i km e la somiglianza, il nome del
+   paese sotto («Vercelli») e la mappa sotto la linea come in «Best near
+   you» (TASK-174), con il credito della mappa una volta sotto le schede;
+   un tocco apre il
    percorso sulla mappa con «Export GPX» e «Back to Explore». Se la mappa
    della zona
    non si scarica, un messaggio solo e «Try again». Gli esempi pronti
@@ -976,6 +985,9 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   Da TASK-162 anche le zone dei disegni di «Feed», a ogni apertura
   dell'app: sono le città degli esempi, uguali per tutti, non la posizione
   di chi guarda.
+  Da TASK-174 anche le zone dei percorsi mostrati in «Explore», quando si
+  apre la pagina o si sceglie una città: sono attorno alla partenza o alla
+  città scelta, come la mappa grande quando si apre un percorso.
 - **La ricerca**: il testo cercato e la posizione (per mettere prima i
   luoghi vicini) vanno all'API, che li gira a Geoapify (TASK-123); senza
   API o senza chiave, a Photon (komoot). Il log dell'API scrive solo

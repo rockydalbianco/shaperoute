@@ -40,6 +40,7 @@ import {
   type FreeRun,
   pendingFreeRun,
 } from "./src/navigation/freeRun";
+import { headingDeg } from "./src/navigation/runStats";
 import {
   clearRun,
   endRun,
@@ -47,7 +48,7 @@ import {
   type ScorableRun,
 } from "./src/navigation/trackStore";
 import { trackOf, useFreeRun } from "./src/navigation/useFreeRun";
-import { useNavigation } from "./src/navigation/useNavigation";
+import { trackOfNavigation, useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
 import { choicesOf, type Picked, pickedIndex } from "./src/route/choices";
 import { toDistanceM } from "./src/route/distance";
@@ -290,6 +291,10 @@ function Sgrava() {
   const freeStart =
     freeTrack.fixes[0]?.point ?? (position.status === "ok" ? position.point : null);
   const freeFinishing = screen === "runFinish" && freeFinished !== null;
+  // Where the runner is heading, with a route or without (TASK-164): the
+  // arrow on the map.
+  const runTrack = navigating ? trackOfNavigation(navigation) : freeTrack;
+  const heading = useMemo(() => headingDeg(runTrack), [runTrack]);
   // A route of "Explore" on the map, in place of the drawn one (TASK-126).
   const theming =
     screen === "map" && explored === null && themed.state.status !== "idle";
@@ -469,6 +474,7 @@ function Sgrava() {
                   ? freeRun.position
                   : null
             }
+            heading={heading}
             onError={setMapError}
           />
         }
@@ -487,7 +493,11 @@ function Sgrava() {
             onDone={onFreeDone}
           />
         ) : running ? (
-          <FreeRunCard running={freeRun.status === "running"} onStop={onStopFreeRun} />
+          <FreeRunCard
+            running={freeRun.status === "running"}
+            track={freeTrack}
+            onStop={onStopFreeRun}
+          />
         ) : theming ? (
           <ThemedCard
             state={themed.state}
@@ -553,6 +563,7 @@ function Sgrava() {
             navigation={
               navigation.status === "following" ? navigation.navigation : null
             }
+            track={trackOfNavigation(navigation)}
             onStop={onEndRun}
           />
         ) : (

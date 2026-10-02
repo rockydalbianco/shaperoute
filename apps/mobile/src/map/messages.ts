@@ -17,7 +17,8 @@ export type ToPage =
   | { type: "showOthers"; lines: LngLat[][] }
   | { type: "showTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
-  | { type: "follow"; lngLat: LngLat }
+  | { type: "follow"; lngLat: LngLat; heading: number | null }
+  | { type: "stopFollow" }
   | { type: "showStops"; stops: StopFeature[] }
   | { type: "clearStops" };
 
@@ -51,10 +52,20 @@ export function showRoute(points: LatLon[], requested: LatLon | null = null): To
 
 /**
  * Moves the position marker and keeps the map on it, close up, without
- * framing the route again: navigation (TASK-049).
+ * framing the route again: navigation (TASK-049). With `heading`, degrees
+ * clockwise from north, the marker is an arrow turned that way (TASK-164).
  */
-export function follow(point: LatLon): ToPage {
-  return { type: "follow", lngLat: toLngLat(point) };
+export function follow(point: LatLon, heading: number | null = null): ToPage {
+  return {
+    type: "follow",
+    lngLat: toLngLat(point),
+    heading: heading === null ? null : Math.round(heading) % 360,
+  };
+}
+
+/** The run is over: the arrow goes back to being the position marker. */
+export function stopFollow(): ToPage {
+  return { type: "stopFollow" };
 }
 
 /** Draws the run over the route, without moving the map (TASK-113). */

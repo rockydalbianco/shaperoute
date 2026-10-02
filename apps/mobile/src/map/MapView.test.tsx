@@ -162,3 +162,41 @@ test("draws the other routes, and takes them away when there are none", async ()
   );
   expect(injectJavaScript).toHaveBeenCalledTimes(2);
 });
+
+test("following sends the position with the heading, and ends with stopFollow", async () => {
+  const route: LatLon[] = [TRENTO, LEVICO, TRENTO];
+  const onError = jest.fn();
+  const { rerender } = await render(
+    <MapView start={TRENTO} route={route} onError={onError} />,
+  );
+  await pagePosts('{"type":"ready"}');
+  injectJavaScript.mockClear();
+
+  // The first fix has no heading yet: the pin.
+  await rerender(
+    <MapView start={TRENTO} route={route} following={TRENTO} onError={onError} />,
+  );
+  expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain(
+    '{"type":"follow","lngLat":[11.1214,46.0671],"heading":null}',
+  );
+  await rerender(
+    <MapView
+      start={TRENTO}
+      route={route}
+      following={LEVICO}
+      heading={113.4}
+      onError={onError}
+    />,
+  );
+  expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain(
+    '{"type":"follow","lngLat":[11.2986,46.0122],"heading":113}',
+  );
+
+  // The run ends: the arrow goes, then the whole route is framed again.
+  injectJavaScript.mockClear();
+  await rerender(<MapView start={TRENTO} route={route} onError={onError} />);
+  expect(injectJavaScript.mock.calls.map(([script]) => script)).toEqual([
+    expect.stringContaining('{"type":"stopFollow"}'),
+    expect.stringContaining('"type":"showRoute"'),
+  ]);
+});

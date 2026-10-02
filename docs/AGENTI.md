@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-02, mattina · `main` = `a844084`
+**Ultimo aggiornamento**: 2026-10-02, 11:30 · `main` = `73095e7`
 
 ## Come si usa
 
@@ -41,58 +41,58 @@
 ## La coda dei merge
 
 ```
-1. #168  TASK-159  Icona e nome «Sgrava»                         si aggiorna dopo la #140
-2.  —    TASK-160  Il nome «Sgrava» nei testi dell'app          parte dopo la #168
-3.  —    TASK-161  Città e frasi nuove del catalogo              PR non aperta
+—   TASK-163  Le città in evidenza già disegnate (seconda PR,     PR non aperta
+              solo catalogo)
+—   TASK-166  L'annuncio durante l'attesa, l'App ID vero          PR non aperta
+—   TASK-167  «Explore» a schede                                  PR non aperta
 ```
+Entra prima chi è pronto prima. Senza altre PR davanti, la sessione
+proprietaria mergia da sola al 5/5 verde e CLEAN, e lo dice al coordinatore.
 
 ## L'albero
 
 ```
 Agente di assistenza coordinamento («Assistente»)
-  └─ Sempre  —         Guarda CI, server e sessioni; avvisa il coordinatore;
-                       non mergia e non assegna numeri
+  └─ Sempre  —         Guarda CI, server e sessioni; avvisa il coordinatore
 
-Logo e post Instagram
-  └─ Adesso  TASK-159  #168: icona dal logo nuovo e nome «Sgrava»     ADR-0129
-                       sotto l'icona (in Expo Go l'icona non si vede)
-
-Proposte di miglioramento grafico
-  └─ Dopo    TASK-160  «Location is off for Sgrava…» nei tre testi    dopo la #168
-                       (App.tsx, NavigateScreen, FreeRunScreen)
-
-Task progression senza blocchi
-  └─ Adesso  TASK-161  Napoli, Verona, Padova, Genova, Bari, Palermo, ADR-0097 (agg.);
-                       New York nel catalogo, con le frasi            ADR-0130 se l'utente
-                                                                      sceglie le frasi
-                                                                      fino a 4 lettere
-
-Sistema di auto-miglioramento ricerca
-  └─ Attesa  TASK-122  Server su compose col database: fatto          lo Storage Box lo
-                       (2026-10-02 07:27Z). Manca la copia fuori      compra l'utente
-                       dal server: Storage Box (DEPLOY.md F.13)       (F.13)
+Explore: città consigliate e contenuti in caricamento
+  └─ Adesso  TASK-163  Seconda PR: cuore, cerchio e stella da 5 km nel    ADR-0132; poi il
+                       catalogo per le città in evidenza che non li       catalogo sul server
+                       hanno (`seed_catalog.py`, zone dal server)         (ok dell'utente)
 
 Sistema pubblicitario non invasivo
-  └─ Attesa  TASK-150  Conto AdMob e pagamento (docs/PUBBLICITA.md)   scelte dell'utente
-                                                                      e del commercialista
+  ├─ Adesso  TASK-166  L'annuncio durante l'attesa dopo «Draw route»,     ADR-0102 (agg.)
+  │                    l'App ID vero di AdMob in `app.json`
+  └─ Attesa  TASK-150  Conto AdMob e pagamento                            profilo pagamenti
+                                                                          dell'utente
+
+Proposte di miglioramento grafico
+  └─ Adesso  TASK-167  «Explore» a schede: griglia a due colonne e        ADR-0135
+                       filtri in una riga
+
+Sistema di auto-miglioramento ricerca
+  └─ Attesa  TASK-122  Manca solo lo Storage Box (DEPLOY.md F.13)         lo compra l'utente
+
+Task progression senza blocchi
+  └─ Attesa  —         Seguito di TASK-161: forme a 21 km di Bari,        Overpass
+                       Palermo, New York
+
+Logo e post Instagram · Redesign Run Without Ruth · Quanti task mancano
+  └─ Libere
 
 Sessioni nuove, da avviare dall'utente con un clic
-  ├─ TASK-067  Lettere unite anche dalla cima (scala per lettera fuori,
-  │            ADR-0063)
+  ├─ TASK-067  Lettere unite anche dalla cima (ADR-0063)
   └─ TASK-116  Il profilo: nome, foto, due righe (ADR-0128)
-
-Quanti task mancano
-  └─ —       —         Libera
 
 Da assegnare
   ├─ TASK-117 / 118 / 119 / 120 / 121: la parte social, dopo TASK-116
-  ├─ TASK-092 Percorsi consigliati: 114 ✓, 122 quasi
-  ├─ TASK-152 L'app sull'App Store: cinque domande all'utente nel task file
-  ├─ TASK-153 AdMob vero: dopo 150 e 152
-  ├─ Seguiti senza numero: la scelta A·B·C degli esempi di Explore come
-  │  segnale (TASK-151); lo splash con il logo (scelta dell'utente,
-  │  TASK-159); UIScene con Xcode 27 (TASK-132); Berlino resta a Overpass
-  │  (TASK-137)
+  ├─ TASK-092 Percorsi consigliati, dopo TASK-122
+  ├─ TASK-152 App Store (domande all'utente) · TASK-153 AdMob vero
+  ├─ Seguiti senza numero: «Pause», «Stop» da tenere premuto e la voce a
+  │  ogni km con un percorso (TASK-164); il nome del file GPX ancora
+  │  «shaperoute-…» (TASK-160); la scelta A·B·C come segnale (TASK-151);
+  │  il Feed d'esempio rigenerato sul catalogo nuovo, da decidere con
+  │  l'utente (TASK-161); UIScene con Xcode 27 (TASK-132)
   └─ Task file rimasti aperti ma già in main: TASK-055, 065, 076
 ```
 
@@ -100,9 +100,9 @@ Da assegnare
 
 | File | Di chi |
 |---|---|
-| `apps/mobile/assets/*`, `apps/mobile/app.json`, `docs/brand/` | TASK-159 (#168) |
-| `apps/mobile/App.tsx` (solo il testo), `src/screens/NavigateScreen.tsx`, `src/screens/FreeRunScreen.tsx` e i loro test | TASK-160, dopo la #168 |
-| `catalog/seed/`, `catalog/README.md`, `tools/seed_catalog.py` e test, `samples/LOG.md` | TASK-161 |
+| `catalog/seed/`, `catalog/README.md` | TASK-163 (seconda PR) |
+| `apps/mobile/app.json`, `src/ads/`, poche righe di `App.tsx` | TASK-166 |
+| `src/explore/ExploreScreen.tsx`, `CityExamples.tsx`, `RouteCard.tsx`, `RouteFilters.tsx` e i loro test | TASK-167 |
 | `deploy/`, `docs/DEPLOY.md` | TASK-122 |
 | `docs/PUBBLICITA.md` | TASK-150 |
 | `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md` | tutti, ognuno solo le sue righe |
@@ -110,10 +110,9 @@ Da assegnare
 
 ## Numeri
 
-- Task: presi fino a **TASK-161**. Il prossimo libero è **TASK-162**.
-- ADR: presi fino a **ADR-0130** (0128 tenuto per TASK-116, 0130 per le
-  frasi di TASK-161 se l'utente sceglie). Il prossimo libero è
-  **ADR-0131**.
+- Task: presi fino a **TASK-167**. Il prossimo libero è **TASK-168**.
+- ADR: presi fino a **ADR-0135** (0128 tenuto per TASK-116). Il prossimo
+  libero è **ADR-0136**.
 
 ## Il server e l'app
 
@@ -124,11 +123,12 @@ Da assegnare
   estere, TASK-137); `/srv/shaperoute/extracts` va lasciato. Overpass non
   risponde a questo indirizzo dal 2026-10-01 22:35Z: le zone nuove vengono
   da Geofabrik (`prefetch_zones`, osmium-tool approvato dall'utente).
-- **App**: ultima pubblicazione su `preview` da `bad06f2` (update
-  `5ec93905`, 2026-10-02 09:52): scorrimento Feed · Draw · Explore,
-  account, annunci (solo in una build propria), corsa libera, A·B·C e
-  linee grigie in Explore, Feed di esempio. Da provare sull'iPhone: la
-  lista è in `STATUS.md`.
+- **App**: ultima pubblicazione su `preview` da `73095e7` (update
+  `eba74321`, 2026-10-02 11:26): tutto `main`, fino alla schermata della
+  corsa (TASK-164). Icona, nome e schermata di avvio nuovi si vedono solo
+  in una build propria. Le città nuove del catalogo (TASK-161) arrivano
+  nell'app quando si aggiorna il catalogo sul server. Da provare
+  sull'iPhone: la lista è in `STATUS.md`.
 
 ## Fatto in questa tornata (2026-10-01/02)
 
@@ -137,4 +137,5 @@ In `main`: #137 (TASK-136), #112 (088), #148 (140), #142 (142), #149 (147),
 #154 (149), #156 (151), #158 (115), #161 e #163 (task file di 067), #159
 (task file 150/152/153), #130 (132), #162 (154), #160 (155), #157 (122),
 #150 (137), #166 (158), #165 (157), #164 (156), #167 (122, copie), #140
-(141).
+(141), #169 (141), #170 (AGENTI), #168 (159), #171 (160), #172 (165), #173
+(162), #174 (163, prima PR), #175 (161), #176 (164).

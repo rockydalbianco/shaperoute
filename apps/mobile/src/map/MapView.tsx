@@ -24,6 +24,7 @@ import {
   showRoute,
   showStops,
   showTrack,
+  stopFollow,
 } from "./messages";
 
 const MAP_PAGE = buildMapPage();
@@ -41,6 +42,9 @@ type Props = {
   track?: LatLon[] | null;
   /** While navigating, the phone's position: the map follows it (TASK-049). */
   following?: LatLon | null;
+  /** Where the runner is heading, in degrees clockwise from north: the
+   * marker followed is an arrow turned that way (TASK-164). */
+  heading?: number | null;
   /** The places of a themed route (TASK-129), or null for none. */
   stops?: { name: string; point: LatLon; passed: boolean }[] | null;
   /** Called when the map cannot be shown, with a reason for the log. */
@@ -54,6 +58,7 @@ export function MapView({
   others = NO_OTHERS,
   track = null,
   following = null,
+  heading = null,
   stops = null,
   onError,
   style,
@@ -134,15 +139,17 @@ export function MapView({
       return;
     }
     if (following) {
-      webView.current?.injectJavaScript(pageScript(follow(following)));
+      webView.current?.injectJavaScript(pageScript(follow(following, heading)));
       followed.current = true;
     } else if (followed.current) {
       followed.current = false;
+      webView.current?.injectJavaScript(pageScript(stopFollow()));
       if (route) {
         webView.current?.injectJavaScript(pageScript(showRoute(route, start)));
       }
     }
-    // Only a new position moves the map; the route effect above draws it.
+    // Only a new position moves the map, and the heading comes with it; the
+    // route effect above draws the route.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, following]);
 

@@ -49,7 +49,7 @@ In coda, dopo o accanto:
 - **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
   sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
   (TASK-178, sotto); restano **TASK-183**
-  cambiare email e numero di telefono (ADR-0150, migrazione `0006`; a cosa
+  cambiare email e numero di telefono (ADR-0150, migrazione: il primo numero libero in main al merge; a cosa
   serve il numero va chiesto all'utente prima), **TASK-182** le unità di
   misura, km o miglia (ADR-0149, solo app, tocca molti file), **TASK-184**
   «Help», «Terms», «Privacy» (dopo TASK-152: testi e contatti), **TASK-185**
@@ -157,6 +157,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   vero. File della parte app: `apps/mobile/src/strava/`,
   `src/api/strava.ts`, `src/activities/RunEnd.tsx`, `outbox.ts`,
   `src/theme/tokens.ts`. Da dove riprendere: `tasks/TASK-187.md`.
+- **TASK-191 — Percorsi in canoa e paddle, parte A1** (ADR-0154): nel
+  motore, solo file nuovi (`water.py`, `water_fit.py`), l'acqua di laghi e
+  mare, la fascia entro 1 km dalla riva, dove la forma ci sta e la
+  partenza dalla riva dove si arriva a piedi; provato sui dati veri
+  dell'API di OSM a Riccione, Jesolo e Riva del Garda (nove campioni da
+  giudicare), Overpass non provato (rifiutava il Mac), Como no. Al mare,
+  con 1 km, le forme stanno fino a circa 3 km: le distanze vanno chieste
+  all'utente. **A2** (`activity: "paddling"`, limiti, CLI, validazione)
+  può partire ora che la bici è in `main` (PR #214); poi B (API) e C
+  (app). Da dove riprendere: `tasks/TASK-191.md`, «Esito».
 
 ## Completato
 
@@ -203,8 +213,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   percorsi di Levico restano sotto, con l'etichetta «NEAR CALDONAZZO». Il
   raggio resta 5 km, l'API non cambia. Solo test, non visto in un
   simulatore; il motore sul Mac disegna da Caldonazzo cuore 0,88, cerchio
-  0,72, stella 0,90. **Da pubblicare su `preview`** con l'ok dell'utente, poi
-  **da provare sull'iPhone**. Fuori: «Near me» da Caldonazzo mostra ancora
+  0,72, stella 0,90. Pubblicata il 2026-10-02 (update `85fbf31e`): **da
+  provare sull'iPhone**. Fuori: «Near me» da Caldonazzo mostra ancora
   solo Levico (dalla posizione non si disegna, ADR-0136: scelta
   dell'utente); i paesi piccoli non sono disegnati in anticipo sul server.
 - **App** — TASK-189: «Sport» in «Settings», chiesto dall'utente
@@ -212,8 +222,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (scelta dell'utente): non si toccano finché il motore non disegna i loro
   percorsi (TASK-190 bici, TASK-191 canoa e paddle, Todo). La scelta resta
   sul telefono; accendere uno sport è una riga di `src/settings/sport.ts`.
-  Solo app, nessuna dipendenza nuova. **Da pubblicare su `preview`**, con
-  l'ok dell'utente.
+  Solo app, nessuna dipendenza nuova. Pubblicata il 2026-10-02 (update
+  `ae740677`).
 - **App** — TASK-176: tre richieste dell'utente su «Explore»
   (ADR-0144). **I filtri non ci sono più**: «Best near you» mostra tutti
   i percorsi. **Scelta una città, dopo cuore, cerchio e stella l'app
@@ -227,8 +237,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sceglie una. Nell'API cambia solo l'ordine in cui `draw_examples`
   chiede le prime tre forme. Visto in un simulatore con un'API
   locale: le otto forme a Padova, e Milano con tre forme nel catalogo che
-  ne riceve altre cinque. **Da pubblicare su `preview`** con l'ok
-  dell'utente, poi **da provare sull'iPhone**. Nelle 62 città con gli esempi già disegnati sul server
+  ne riceve altre cinque. Pubblicata il 2026-10-02 (update `ae740677`):
+  **da provare sull'iPhone**. Nelle 64 città con gli esempi già disegnati sul server
   (TASK-168) le prime tre forme arrivano subito e le altre cinque le
   disegna il primo telefono, 7–19 s l'una; poi restano sull'API per tutti.
 - **App** — TASK-177: «Profile» con un aspetto nuovo e «Settings», chiesti
@@ -242,8 +252,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   tocchi sono coperti dai test. **Il server è aggiornato** a `main`
   `781fb18` dal 2026-10-02 13:32Z (ok dell'utente; migrazione `0003_runs`
   applicata, 15 s di API ferma, immagine di prima
-  `shaperoute-api:before-task172`). **Da fare**: pubblicare l'app su
-  `preview` (ok dell'utente già dato), poi **da provare sull'iPhone**.
+  `shaperoute-api:before-task172`). Pubblicata il 2026-10-02 (update
+  `7bc3442f`): **da provare sull'iPhone**.
 - **App** — TASK-188: un tocco su un disegno di «Feed» apre il suo
   percorso sulla mappa, chiesto dall'utente (ADR-0151): la scheda di
   «Explore», con il cuore dei preferiti, «Start» e il GPX; «←» torna a
@@ -251,9 +261,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   si ritrova dalla partenza, se non c'è più la scheda lo dice e non ne
   apre un altro. Uno swipe sopra una scheda non la apre. Solo app. Provato
   in un simulatore con un'API e un database usa e getta: aprire, salvare
-  il preferito, «Start», «←». **Da pubblicare su `preview`** con l'ok
-  dell'utente, poi **da provare sull'iPhone**. Seguiti: lo stesso swipe
-  sulle schede di «Explore»; una domanda per l'utente nel task file (cuore
+  il preferito, «Start», «←». Pubblicata il 2026-10-02 (update
+  `7bc3442f`): **da provare sull'iPhone**. Seguiti: lo stesso swipe sulle
+  schede di «Explore» (fatto, TASK-196); una domanda per l'utente nel task file (cuore
   e «Start» anche sulla scheda del feed).
 - **App** — TASK-181: l'avvio tutto giallo, chiesto dall'utente (seguito di
   TASK-179; aggiornamenti di ADR-0134 e ADR-0147). La schermata di avvio
@@ -262,8 +272,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   con il Mac carico: il cuore poteva partire tardi ed essere tagliato dalla
   dissolvenza; ora attesa e disegno sono una sola animazione e l'uscita
   aspetta il cuore finito. Prebuild di iOS controllato, animazione filmata
-  in un simulatore. **Da pubblicare su `preview`** con l'ok dell'utente (in
-  Expo Go cambia l'inizio dell'animazione); la schermata nativa **si vede
+  in un simulatore. Pubblicata il 2026-10-02 (update `7bc3442f`; in Expo
+  Go cambia l'inizio dell'animazione); la schermata nativa **si vede
   solo in una build propria** (TASK-152).
 - **API e app** — TASK-172: «My activities», chiesto dall'utente
   (ADR-0140). Con un account, a fine corsa «Save» mette la corsa in «My
@@ -277,9 +287,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   punteggio li conta l'API dalla traccia; il luogo lo trova l'API dal
   chilometro della partenza. Senza account una riga invita a entrare.
   Nell'API la tabella `runs` (migrazione `0003`) e `/me/activities`.
-  **Da fare con l'ok dell'utente**: aggiornare il server (migrazione
-  `0003`, `DEPLOY.md` F.12) e pubblicare l'app; **da provare
-  sull'iPhone**: una corsa vera che compare in «My activities».
+  Server aggiornato (13:32Z, migrazione `0003`) e app pubblicata
+  (`7bc3442f`); **provata dall'utente sull'iPhone** il 2026-10-02:
+  «provata e funziona».
 - **App** — TASK-186: nella corsa «Map» e «Data» sono due pulsanti grandi,
   chiesto dall'utente (ADR-0137, aggiornamento): metà scheda ciascuno, alti
   56 punti, la pagina aperta più chiara. Solo app, niente API, nessuna
@@ -382,14 +392,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   esempi di 62 città (le 52 italiane, Rovereto e le città in evidenza
   tranne Berlino), 186 percorsi, 13 MB, 30 minuti; lì compaiono appena
   scelta la città. La zona di Rovereto è stata aggiunta dall'estratto
-  (84 s, 35 MB). **Venezia non riesce**: `engine_error` sulle tre forme,
-  il ritaglio attorno al centro storico è senza nodi (TASK-180). Il
-  controllo ogni 0,5 s arriva con la prossima pubblicazione dell'app.
+  (84 s, 35 MB). Il motore cambiato da TASK-067 e TASK-180 ha reso vecchi
+  quegli esempi (l'impronta del motore è cambiata): il 2026-10-02 alle
+  18:09Z il server è passato a `fa6ee9e` (ok dell'utente, immagine di
+  prima `shaperoute-api:before-task176`) e `draw_examples` li ha ridisegnati
+  per 64 città, Venezia e Berlino comprese (382 file, 33 minuti). **Dopo
+  ogni aggiornamento che cambia `route_engine` va rilanciato
+  `draw_examples`** (circa 35 minuti): seguito per `DEPLOY.md` F.12
+  (TASK-122). Il controllo ogni 0,5 s è pubblicato.
 - **API** — TASK-195: il cerchio per primo in `draw_examples` è entrato
   con TASK-176 (#199), che l'ha fatto mentre questo task partiva. Qui resta
   solo il test che tiene vera la ragione: l'area del cerchio da 5 km
   contiene quella di cuore e stella dallo stesso centro. Vale sul server
-  dal prossimo aggiornamento dell'API (ok dell'utente); niente da rifare lì.
+  dal 2026-10-02 18:09Z. Il task file dice «niente da rifare»: vale solo
+  per l'ordine delle forme. Un aggiornamento che cambia `route_engine`
+  invece fa ridisegnare gli esempi (vedi TASK-168).
 - **App** — TASK-170: «Run with Strava» tolto, chiesto dall'utente
   (ADR-0138, che supera ADR-0106). Nelle tre schede di un percorso
   (disegnato, di «Explore», a tema) restano «Start» ed «Export GPX»; il
@@ -406,11 +423,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   OSM del 2026-10-02). Ora chi scarica una zona tiene tutti i pezzi, e il
   più grande si sceglie nel ritaglio, area per area. Le città di oggi non
   cambiano: quattro zone del Mac rifatte dalle risposte in cache danno lo
-  stesso grafo e la stessa linea (`MAPS.md`, «Area scaricata»). **Manca,
-  con l'ok dell'utente**: sul server, dopo l'aggiornamento dell'API,
-  rifare la zona di Venezia e i suoi esempi (comandi in
-  `tasks/TASK-180.md`). Non provato: la zona vera di Venezia (Overpass
-  rifiutava il Mac) e che il centro storico dia un buon cuore da 5 km.
+  stesso grafo e la stessa linea (`MAPS.md`, «Area scaricata»). **Sul server dal
+  2026-10-02 18:09Z** (ok dell'utente): la zona di Venezia è rifatta
+  dall'estratto (26 MB, isola compresa; le zone vecchie messe da parte come
+  `before-task180-…`), e cuore, cerchio e stella si disegnano in 33 s.
 - **App** — TASK-166: l'annuncio AdMob compare all'inizio della ricerca
   («Draw route», «Ask for a route») e copre il calcolo; alla X lo schermo
   mostra il percorso, se è pronto, o l'attesa (ADR-0102, aggiornamento).

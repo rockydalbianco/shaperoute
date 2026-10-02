@@ -31,9 +31,21 @@ La foto del profilo, da mettere in «Settings», è TASK-178.
 2. «Favorites» e «My activities» sono due riquadri affiancati: l'emoji
    (❤️, 🏃‍♂️), il numero in grande, il nome. Ognuno apre la sua pagina,
    come le righe di prima.
-3. Sotto, la riga «Settings» (⚙️) apre la pagina «Settings», che per ora
-   contiene l'account: l'email, «Log out» e «Delete account» con la sua
-   conferma, spostati da «Profile» senza cambiarne il comportamento.
+3. Sotto, la riga «Settings» (⚙️) apre la pagina «Settings», a sezioni.
+   «Account»: nome ed email. In fondo «Log out» e «Delete account» con la
+   sua conferma, spostati da «Profile» senza cambiarne il comportamento
+   (confermato dall'utente il 2026-10-02: «va bene log out e delete
+   account dentro settings»).
+3b. Le voci che l'utente ha elencato per «Settings» lo stesso giorno
+   («change email, phone number, help, l'unità di misura da selezionare,
+   email notification, push notification, contract, privacy… aggiungili,
+   poi li svilupperemo più avanti») ci sono già, con il nome e la scritta
+   «Soon», e non si toccano: «Profile picture», «Change email», «Phone
+   number» in «Account»; «Units» in «Preferences»; «Email notifications» e
+   «Push notifications» in «Notifications»; «Help», «Terms», «Privacy» in
+   «About». Ognuna la accende il suo task: TASK-178 (foto), TASK-183
+   (email, telefono), TASK-182 (unità), TASK-184 (help, termini, privacy),
+   TASK-185 (notifiche).
 4. Usciti dall'account da «Settings», chi rientra trova «Profile», non
    «Settings».
 5. Test dell'app; `UI.md` «Profile»; ADR-0145.
@@ -46,6 +58,8 @@ La foto del profilo, da mettere in «Settings», è TASK-178.
       anche il numero («Favorites, 2»), e le emoji non si leggono due
       volte con il lettore di schermo.
 - [ ] «Log out» e «Delete account» funzionano come prima, da «Settings».
+- [ ] Le nove voci da sviluppare si vedono con «Soon», non sono pulsanti
+      e il lettore di schermo le dice «…, coming soon».
 - [ ] «←» da «Settings» torna a «Profile»; dopo «Log out» o l'account
       cancellato si vede «Log in» o «Sign up», e chi rientra è su
       «Profile».
@@ -72,8 +86,8 @@ scrivono solo i file nuovi di `src/profile/` e i loro test.
 
 - La foto del profilo e il pulsante in alto con la foto: TASK-178.
 - Nome utente e bio da cambiare, il profilo visto dagli altri: TASK-116.
-- Altre voci di «Settings» (unità, voce, notifiche…): le decide l'utente,
-  «con calma».
+- Far funzionare le voci di «Settings» segnate «Soon»: TASK-178, 182,
+  183, 184, 185.
 - Le pagine «Favorites» e «My activities»: restano come sono.
 
 ## Esito

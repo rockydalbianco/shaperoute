@@ -31,6 +31,28 @@ test("the account, by name and email", async () => {
   expect(screen.getByText("runner@example.com")).toBeOnTheScreen();
 });
 
+test("the settings to come are named, say «Soon» and take no tap", async () => {
+  await show();
+  for (const name of [
+    "Profile picture",
+    "Change email",
+    "Phone number",
+    "Units",
+    "Email notifications",
+    "Push notifications",
+    "Help",
+    "Terms",
+    "Privacy",
+  ]) {
+    expect(screen.getByLabelText(`${name}, coming soon`)).toBeOnTheScreen();
+  }
+  expect(screen.getAllByText("Soon")).toHaveLength(9);
+  // Only the ways out are buttons.
+  expect(screen.getAllByRole("button")).toHaveLength(2);
+  expect(screen.getByRole("button", { name: "Log out" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Delete account" })).toBeOnTheScreen();
+});
+
 test("«Log out» logs out at once", async () => {
   const account = await show();
   await fireEvent.press(screen.getByRole("button", { name: "Log out" }));

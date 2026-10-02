@@ -5268,6 +5268,13 @@ cose che si aprono ogni giorno.
 - **«Log out» e «Delete account» stanno in «Settings»**, con l'account
   (nome, email), senza cambiare comportamento né testi. «Settings» è una
   pagina di «Profile» come «Favorites»: «←» torna a «Profile».
+- **Le voci da sviluppare ci sono già, con «Soon»**: l'utente ha
+  elencato cosa vuole in «Settings» (foto, cambiare email, numero di
+  telefono, unità di misura, notifiche email e push, help, termini,
+  privacy) e ha chiesto di aggiungerle subito e svilupparle dopo. Sono
+  righe con il nome e «Soon», senza interruttori e senza tocco: si vede
+  cosa arriverà e niente finge di funzionare. Ogni task che ne accende una
+  la toglie dall'elenco `COMING` di `SettingsPage.tsx`.
 - **Usciti da «Settings»**, per «Log out» o per l'account cancellato, la
   pagina torna «Profile»: chi rientra non si ritrova in «Settings».
 - **Pezzi nuovi in `src/profile/`** (`Avatar`, `ProfileHome`,
@@ -5280,9 +5287,12 @@ nuova, e l'utente ha chiesto un'emoji); il giallo per dare colore (il
 giallo è del percorso, `UI.md` «Il tema»); un ingranaggio accanto al titolo
 al posto della riga «Settings» (l'utente ha chiesto una sezione, come le
 altre due); lasciare «Log out» sulla prima pagina (resterebbe la cosa più
-in vista di «Profile»).
+in vista di «Profile»; l'utente ha confermato lo spostamento); interruttori
+già disegnati per le notifiche (prometterebbero una cosa che non c'è).
 
 **Conseguenze**: per uscire dall'account serve un tocco in più. Le emoji
-le disegna il telefono: su Android hanno un altro tratto. Le altre voci di
-«Settings» le decide l'utente; la foto del profilo è TASK-178 (ADR-0146),
-che riusa `Avatar`.
+le disegna il telefono: su Android hanno un altro tratto. «Settings»
+mostra nove voci che ancora non fanno niente: le accendono TASK-178 (la
+foto, ADR-0146, che riusa `Avatar`), TASK-183 (email e telefono), TASK-182
+(unità), TASK-184 (help, termini, privacy, dopo TASK-152) e TASK-185
+(notifiche, per ultime).

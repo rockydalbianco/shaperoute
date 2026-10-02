@@ -17,6 +17,37 @@ type Props = {
   account: Account;
 };
 
+/** A setting with its name on the page and nothing behind it yet. */
+type Coming = { emoji: string; name: string };
+
+/**
+ * What «Settings» will hold, as the user listed it (ADR-0145): each row is
+ * turned on by its own task and leaves this list then.
+ */
+const ACCOUNT_COMING: Coming[] = [
+  { emoji: "📷", name: "Profile picture" },
+  { emoji: "✉️", name: "Change email" },
+  { emoji: "📱", name: "Phone number" },
+];
+const COMING: { label: string; rows: Coming[] }[] = [
+  { label: "PREFERENCES", rows: [{ emoji: "📏", name: "Units" }] },
+  {
+    label: "NOTIFICATIONS",
+    rows: [
+      { emoji: "📧", name: "Email notifications" },
+      { emoji: "🔔", name: "Push notifications" },
+    ],
+  },
+  {
+    label: "ABOUT",
+    rows: [
+      { emoji: "❓", name: "Help" },
+      { emoji: "📄", name: "Terms" },
+      { emoji: "🔒", name: "Privacy" },
+    ],
+  },
+];
+
 /** A group of «Settings» under its name; each new setting joins one. */
 function Section({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -27,10 +58,33 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
+/** Rows that say «Soon» and take no tap: nothing is promised to work. */
+function ComingRows({ rows }: { rows: Coming[] }) {
+  return (
+    <View style={styles.menu}>
+      {rows.map((row, at) => (
+        <View key={row.name}>
+          {at > 0 && <View style={styles.divider} />}
+          <View
+            style={styles.row}
+            accessible
+            // One name for the row: the emoji is not read on its own.
+            accessibilityLabel={`${row.name}, coming soon`}
+          >
+            <Text style={styles.emoji}>{row.emoji}</Text>
+            <Text style={styles.rowText}>{row.name}</Text>
+            <Text style={styles.soon}>Soon</Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 /**
- * «Settings» in «Profile» (TASK-177), in sections: for now the account, with
- * the ways out of it. «Delete account» asks first, on the screen (ADR-0120:
- * the API does not).
+ * «Settings» in «Profile» (TASK-177), in sections: the account with the
+ * ways out of it, and the settings to come, named and marked «Soon».
+ * «Delete account» asks first, on the screen (ADR-0120: the API does not).
  */
 export function SettingsPage({ user, account }: Props) {
   const [confirming, setConfirming] = useState(false);
@@ -42,6 +96,15 @@ export function SettingsPage({ user, account }: Props) {
           <Text style={styles.username}>{user.username}</Text>
           <Text style={styles.email}>{user.email}</Text>
         </View>
+        <ComingRows rows={ACCOUNT_COMING} />
+      </Section>
+      {COMING.map((section) => (
+        <Section key={section.label} label={section.label}>
+          <ComingRows rows={section.rows} />
+        </Section>
+      ))}
+      {/* The ways out of the account, last. */}
+      <View style={styles.section}>
         <Pressable
           style={styles.button}
           onPress={account.signOut}
@@ -89,7 +152,7 @@ export function SettingsPage({ user, account }: Props) {
           </Pressable>
         )}
         {account.problem && <Text style={styles.problem}>{account.problem}</Text>}
-      </Section>
+      </View>
     </View>
   );
 }
@@ -106,6 +169,37 @@ const styles = StyleSheet.create({
     fontSize: fontSize.label,
     fontWeight: fontWeight.semibold,
     letterSpacing: 1.2,
+  },
+  menu: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: color.surface,
+  },
+  row: {
+    minHeight: MIN_TAP_SIZE + space.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+    paddingHorizontal: space.md,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginHorizontal: space.md,
+    backgroundColor: color.border,
+  },
+  emoji: {
+    fontSize: fontSize.input + space.xs,
+  },
+  rowText: {
+    flex: 1,
+    color: color.text,
+    fontSize: fontSize.input,
+    fontWeight: fontWeight.medium,
+  },
+  soon: {
+    color: color.textFaint,
+    fontSize: fontSize.small,
   },
   card: {
     gap: space.xs,

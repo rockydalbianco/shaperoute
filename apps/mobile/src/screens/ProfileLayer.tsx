@@ -2,6 +2,7 @@ import { createContext, type ReactNode, useContext, useMemo, useState } from "re
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useAccount } from "../account/useAccount";
+import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import {
   color,
   fontSize,
@@ -10,7 +11,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { ProfileScreen } from "./ProfileScreen";
+import { type ProfilePage, ProfileScreen } from "./ProfileScreen";
 
 /** What the button in the header needs to know of the account. */
 type Door = {
@@ -41,31 +42,70 @@ type Props = {
  * choices as they were left.
  */
 export function ProfileLayer({ apiUrl, children }: Props) {
-  const [shown, setShown] = useState(false);
+  // The page of «Profile» on screen; null while the app is.
+  const [page, setPage] = useState<ProfilePage | null>(null);
+  // Why «Profile» opened on its own, in a line over «Sign up» (the heart).
+  const [hint, setHint] = useState<string | null>(null);
+  const shown = page !== null;
   const account = useAccount(apiUrl);
   const { state } = account;
+  // The favorites of the account (TASK-171): the heart on the map opens
+  // «Profile» when nobody is signed in; a favorite opened leaves it.
+  const doors = useMemo(
+    () => ({
+      onProfile: (to: ProfilePage, why: string | null) => {
+        setHint(why);
+        setPage(to);
+      },
+      onOpened: () => setPage(null),
+    }),
+    [],
+  );
+  const favorites = useFavoritesOf(apiUrl, account, doors);
+  const { forgetWaiting } = favorites;
   const attention = state.status === "signedOut" && state.notice === "ended";
   const initial =
     state.status === "signedIn"
       ? state.session.user.username.charAt(0).toUpperCase()
       : null;
   const door = useMemo(
-    () => ({ open: () => setShown(true), attention, initial }),
+    () => ({
+      open: () => {
+        setHint(null);
+        setPage("account");
+      },
+      attention,
+      initial,
+    }),
     [attention, initial],
   );
   return (
     <DoorContext.Provider value={door}>
-      <View style={styles.layer}>
-        <View
-          style={styles.app}
-          // Under «Profile» the app is out of the screen reader's sight too.
-          accessibilityElementsHidden={shown}
-          importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
-        >
-          {children}
+      <FavoritesContext.Provider value={favorites}>
+        <View style={styles.layer}>
+          <View
+            style={styles.app}
+            // Under «Profile» the app is out of the screen reader's sight too.
+            accessibilityElementsHidden={shown}
+            importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
+          >
+            {children}
+          </View>
+          {page !== null && (
+            <ProfileScreen
+              account={account}
+              page={page}
+              onPage={setPage}
+              hint={hint}
+              onBack={() => {
+                // Closed without an account: the heart's route waits no more.
+                forgetWaiting();
+                setPage(null);
+              }}
+            />
+          )}
         </View>
-        {shown && <ProfileScreen account={account} onBack={() => setShown(false)} />}
-      </View>
+      </FavoritesContext.Provider>
     </DoorContext.Provider>
   );
 }

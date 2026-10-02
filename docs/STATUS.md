@@ -103,6 +103,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sull'iPhone**: lo swipe col dito, «Stop» tenuto premuto, la pausa da sola.
   Fuori, già chiesto dall'utente: il battito da sensore Bluetooth e da
   Apple Watch (solo in una build propria). Da chiedere: quale app di musica.
+- **API e app** — TASK-171: «Favorites», chiesti dall'utente (ADR-0139).
+  Sulla mappa, di fronte a «←», un cuore tiene fra i preferiti dell'account
+  il percorso che si vede (disegnato, di «Explore», a tema); in «Profile»
+  la riga «Favorites» li elenca a schede e li riapre sulla mappa, da
+  correre ed esportare. Senza account il cuore porta a «Sign up». Nell'API
+  la tabella `favorites` (migrazione `0002`, la prima con PostGIS) e
+  `/me/favorites`. Visto in un simulatore, con un'API e un database
+  locali: l'elenco, un preferito aperto sulla mappa con il suo cuore, la
+  riga in «Profile». **Sul telefono si vede dopo due passi che vogliono l'ok
+  dell'utente**: l'API del server aggiornata (`DEPLOY.md` F.12) e l'app
+  pubblicata. Poi **da provare sull'iPhone**. Segue TASK-172, «My
+  activities»: le corse registrate, nel profilo.
 - **API e app** — TASK-168: gli esempi di una città in «Explore» più
   veloci, chiesto dall'utente (ADR-0136). Un cuore, un cerchio o una stella
   disegnati dal centro di una città restano sull'API

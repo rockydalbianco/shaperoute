@@ -5174,3 +5174,66 @@ mentre la pagina scorre. Provato nel simulatore con un GPS simulato, nelle
 due corse: conto alla rovescia, «Map», «Data», pausa a mano e da sola,
 splits. Lo swipe col dito e «Stop» tenuto premuto no (il simulatore non si
 poteva toccare): restano per l'iPhone.
+
+## ADR-0139 — «Favorites»: una copia del percorso, legata all'account
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («mettere
+nei preferiti i percorsi che gli utenti vedono», con la voce «Favorites» nel
+profilo di chi è entrato); il come deciso dall'agente su delega dell'utente
+(TASK-171).
+
+**Contesto**: un percorso che piace oggi si perde: quello disegnato sparisce
+con la richiesta successiva, quello di «Explore» va ricercato fra le schede.
+L'utente vuole ritrovarli nel profilo, «una volta loggati»: quindi stanno
+con l'account, sul server, non sul telefono.
+
+**Decisione**:
+- **Un preferito è una copia intera del percorso** nella tabella `favorites`
+  (migrazione `0002`): la linea, cosa disegna, le due distanze, la
+  somiglianza, la città. Non un rimando: un percorso disegnato non è
+  salvato da nessun'altra parte (TASK-092 non c'è ancora), e un percorso
+  del catalogo può cambiare o sparire quando il catalogo si rigenera.
+- **La chiave la fa l'app dalla linea** (`favoriteKey`: due hash FNV-1a sui
+  punti arrotondati a cinque decimali, 16 cifre esadecimali), unica per
+  account. Così il cuore sa se il percorso sulla mappa è già tenuto senza
+  chiedere niente, lo stesso percorso è un preferito solo comunque ci si
+  arrivi, e `PUT /me/favorites/{key}` è idempotente. L'API non ricalcola la
+  chiave: è un nome dentro un account, non una prova.
+- **La linea in PostGIS** (`geometry(LineString, 4326)`), come `DATABASE.md`
+  vuole per ogni geometria; è la prima, e la migrazione crea l'estensione.
+  Torna cifra per cifra (`ST_AsGeoJSON(line, 15)`), perché la chiave si
+  rifà sui punti.
+- **L'elenco è leggero**: 64 punti di anteprima per preferito, come i
+  percorsi consigliati; la linea intera solo aprendo un preferito.
+- **Al massimo 200 preferiti per account**, detto con `invalid_request` e
+  un messaggio che l'app mostra: niente codice d'errore nuovo, che avrebbe
+  toccato `schemas.py` e `shared-types` mentre altri task li usano.
+- **Il cuore sta sulla mappa**, di fronte a «←», non dentro le schede del
+  percorso: vale per i tre modi di arrivare a un percorso con un solo
+  pezzo, e non tocca `RoutePanel`, `ExploredCard` e `ThemedCard`, che
+  TASK-170 ha cambiato lo stesso giorno. È un carattere («♡», «♥»), come
+  «←»: l'app non ha icone. Non è giallo.
+- **Cambia subito e torna indietro se l'API rifiuta**: il modo già scritto
+  per il like (TASK-119).
+- **Un preferito aperto è un percorso di «Explore»**: la stessa scheda, lo
+  stesso «Start» e lo stesso export, senza un'altra schermata. Per un
+  preferito senza forma né parola (una foto) l'export manda come contorno
+  la linea stessa, ridotta a 100 punti: il contorno vero il telefono non
+  lo ha più.
+- **Senza account il cuore porta a «Profile»** e tiene il percorso appena
+  si entra; non ci sono preferiti senza account.
+- **`Account.sessionEnded`**: una richiesta dei preferiti che trova la
+  sessione finita fa uscire l'app, come `UI.md` già diceva («a una
+  richiesta»).
+
+**Scartate**: tenere i preferiti sul telefono (non seguono l'account);
+salvare solo l'id del catalogo (non vale per i percorsi disegnati); far
+calcolare la chiave all'API (l'app dovrebbe aspettarla per riempire il
+cuore); il cuore su ogni scheda di «Explore» e di «Feed» (dopo, se serve: i
+file sono di altri task); una linea in `jsonb` (contro `DATABASE.md`).
+
+**Conseguenze**: il database tiene linee che spesso partono vicino a casa
+di chi le ha disegnate; le vede solo il loro account e spariscono con lui
+(`UI.md`, «Cosa esce dal telefono»). L'app chiede l'elenco a ogni apertura
+con un account: una richiesta in più. Sul server la migrazione parte al
+primo avvio dell'API nuova (`DEPLOY.md` F.12). «My activities» (TASK-172,
+ADR-0140) userà la stessa pagina di «Profile» e la tabella `runs`.

@@ -291,10 +291,11 @@ regole dell'API, e l'errore si dice in parole sotto il pulsante (sotto,
 «Quando non va»). Si apre su «Sign up»; dopo «Log out» o una sessione
 finita, su «Log in».
 
-**«Profile» con l'account**: «LOGGED IN AS», il nome e l'email; «Log out»;
-«Delete account», in rosso, che chiede prima sulla schermata stessa:
-«Delete my account» o «Keep my account». Nessun pulsante dell'account è
-giallo.
+**«Profile» con l'account**: «LOGGED IN AS», il nome e l'email; la riga
+«Favorites», con quanti sono, che apre la pagina dei preferiti (sotto,
+«Favorites»); «Log out»; «Delete account», in rosso, che chiede prima sulla
+schermata stessa: «Delete my account» o «Keep my account». Nessun pulsante
+dell'account è giallo.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -308,8 +309,45 @@ giallo.
 - **«Delete account»** esce solo con il sì dell'API; se l'API non risponde
   l'account resta e la scheda dice perché. Fatto, dice «Your account and
   everything that was yours have been deleted.» e torna a «Sign up».
-- **Senza account** si disegna, si esplora e si corre come prima: oggi
-  nessun'altra richiesta vuole il token.
+- **Senza account** si disegna, si esplora e si corre come prima: il token
+  lo vogliono solo l'account e i preferiti.
+
+## «Favorites» (TASK-171, ADR-0139)
+
+Un percorso che piace si tiene, e si ritrova in «Profile» da ogni telefono
+dell'account.
+
+- **Il cuore sulla mappa**: quando sulla mappa c'è un percorso (disegnato in
+  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e sotto
+  i pulsanti dello zoom della mappa, c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
+  («♥»): lo toglie. Cambia subito, senza aspettare l'API; se l'API rifiuta
+  torna com'era e sotto il cuore c'è il motivo in una riga, che un tocco
+  chiude. Non è giallo: il giallo è del percorso. Durante l'attesa, la
+  corsa e la fine della corsa il cuore non c'è.
+- **Fra tre percorsi (A · B · C)** il cuore è di quello scelto: ognuno è un
+  preferito a sé.
+- **Senza account** il tocco apre «Profile» con la riga «Sign up or log in
+  to keep your favorite routes.» sopra il modulo; appena si entra il
+  percorso è tenuto. Chiuso «Profile» senza entrare, non si tiene niente.
+- **La pagina «Favorites»**, da «Profile»: i preferiti come le schede di
+  «Explore», due per riga, dal più recente: il disegno, «Star · 5.1 km», la
+  somiglianza in un angolo, e sotto la città («Trento») o, per un percorso
+  disegnato dal GPS, il giorno («Kept 2 Oct 2026»). Il titolo è la parola,
+  o il tema di un percorso a tema, o la forma; un percorso da una foto è
+  «Image». Il cuore nell'altro angolo del disegno toglie il preferito
+  dall'elenco, subito.
+- **Una scheda apre il percorso sulla mappa**, con la scheda dei percorsi di
+  «Explore»: km, «star · Trento · looks 97% like it» («Favorite» al posto
+  della città, quando non c'è), «Start», «Export GPX». «←» e «Back to the
+  list» tornano all'elenco dei preferiti, sopra la pagina da cui si era
+  partiti.
+- **Vuoto**: «No favorites yet. Tap ♡ on a route on the map to keep it
+  here.». **Elenco non arrivato**: «Your favorites could not load.» e «Try
+  again». L'elenco si chiede all'apertura dell'app, se c'è un account, e
+  ogni volta che la pagina si apre.
+- **Sessione finita** a una richiesta dei preferiti: l'app esce, come dice
+  «Profile», e il cuore torna a chiedere di entrare.
+- **Al massimo 200**: oltre, l'API dice di toglierne uno e l'app lo ripete.
 
 ## La partenza
 
@@ -930,7 +968,12 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   l'utente (numero, email, nome, ruolo), nel portachiavi
   (`expo-secure-store`, ADR-0125); mai la password. Il token va all'API
   solo con le richieste dell'account (`GET /me`, `DELETE /session`,
-  `DELETE /me`), in `Authorization`.
+  `DELETE /me`) e dei preferiti, in `Authorization`.
+- **I preferiti** (TASK-171): un percorso tenuto va all'API intero, con la
+  sua linea, e resta nel database legato all'account finché non lo si
+  toglie o si cancella l'account. La linea di un percorso disegnato parte
+  da dove si è scelto di partire: spesso vicino a casa. Lo vede solo il suo
+  account.
 
 ## Quando la mappa non si carica
 

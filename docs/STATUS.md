@@ -86,6 +86,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-171: «Favorites», chiesti dall'utente (ADR-0139).
+  Sulla mappa, di fronte a «←», un cuore tiene fra i preferiti dell'account
+  il percorso che si vede (disegnato, di «Explore», a tema); in «Profile»
+  la riga «Favorites» li elenca a schede e li riapre sulla mappa, da
+  correre ed esportare. Senza account il cuore porta a «Sign up». Nell'API
+  la tabella `favorites` (migrazione `0002`, la prima con PostGIS) e
+  `/me/favorites`. **Sul telefono si vede dopo due passi che vogliono l'ok
+  dell'utente**: l'API del server aggiornata (`DEPLOY.md` F.12) e l'app
+  pubblicata. Poi **da provare sull'iPhone**. Segue TASK-172, «My
+  activities»: le corse registrate, nel profilo.
 - **App** — TASK-166: l'annuncio AdMob compare all'inizio della ricerca
   («Draw route», «Ask for a route») e copre il calcolo; alla X lo schermo
   mostra il percorso, se è pronto, o l'attesa (ADR-0102, aggiornamento).

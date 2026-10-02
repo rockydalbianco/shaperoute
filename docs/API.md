@@ -579,8 +579,8 @@ Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,
   `username`, `role` (`user` o `admin`) e `created_at`. Il token è l'unica
   cosa segreta che l'API dà, e solo qui: l'app lo tiene in
   `expo-secure-store` e lo rimanda come `Authorization: Bearer <token>` a
-  `GET /me`, `DELETE /session`, `DELETE /me` e agli endpoint che verranno
-  (la dipendenza `current_user` di `accounts.py`).
+  `GET /me`, `DELETE /session`, `DELETE /me`, ai preferiti (sotto) e agli
+  endpoint che verranno (la dipendenza `current_user` di `accounts.py`).
 - L'email si salva in minuscolo; la password da 8 a 128 caratteri; il nome
   da 3 a 20 fra lettere, cifre, `_` e `.`, unico senza badare alle
   maiuscole. `at_least_16` falso è `422 invalid_request` (ADR-0114, punto
@@ -595,6 +595,40 @@ Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,
   15 minuti per la stessa email, `429 too_many_requests` con `Retry-After`,
   anche con quella giusta. Il limite dei POST di `SHAPEROUTE_RATE_LIMIT`
   vale in più.
+
+### Favorites (TASK-171, ADR-0139)
+
+I percorsi che un account tiene. Tutti gli endpoint vogliono il token
+(`Authorization: Bearer <token>`): senza, `401 not_signed_in`; senza
+database, `503 accounts_unavailable`. Esempi in `shared-types`
+(`fixtures/favorites.json`, `favorite.json`, `favorite-request.json`); i
+tipi dell'app in `apps/mobile/src/api/favorites.ts`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /me/favorites` | l'elenco, dal più recente | `200` `{ "favorites": [...] }` |
+| `GET /me/favorites/{key}` | un preferito intero, con la linea | `200`, o `404 http_error` |
+| `PUT /me/favorites/{key}` | tenere un percorso | `201` la prima volta, poi `200` |
+| `DELETE /me/favorites/{key}` | toglierlo | `204`, anche se non c'era |
+
+- **`key`** la fa l'app dalla linea del percorso (`favoriteKey`: 16 cifre
+  esadecimali; l'API accetta da 8 a 40 fra minuscole e cifre): lo stesso
+  percorso ha la stessa chiave su ogni telefono, e tenerlo due volte lo
+  tiene una volta, com'era la prima (il secondo `PUT` non cambia niente).
+- **Il corpo del `PUT`**: `city` (una città del catalogo, il luogo cercato,
+  o vuota; al più 80 caratteri), `shape`, `word`, `style` (`round` o
+  `block`), `title` (il tema di un percorso a tema, «Image» per una foto; al
+  più 60), `distance_m` (chiesta), `route_m` (sulle strade), `similarity`
+  (0–1), `points` come `[lat, lon]`, da 2 a 20 000. Campi in più, punti
+  fuori dalla Terra o misure fuori scala: `422 invalid_request`.
+- **Un preferito dell'elenco** ha `id` (la chiave), gli stessi campi senza
+  `points`, `start`, `preview` (al più 64 punti, come i percorsi
+  consigliati) e `created_at`. Quello intero ha `points`, cifra per cifra
+  come sono stati mandati.
+- **Al massimo 200 per account**: oltre, `422 invalid_request` con un
+  messaggio che l'app mostra così com'è.
+- Ognuno vede solo i suoi: la chiave di un altro dà `404`. `DELETE /me`
+  cancella anche i preferiti.
 
 ## Eventi delle ricerche (TASK-130, ADR-0101)
 

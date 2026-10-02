@@ -171,8 +171,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## Completato
 
 - **App** — TASK-198: la penna alzata nella corsa, chiesta e confermata
-  dall'utente («pausa automatica con avviso a voce»), dal branch
-  `feat/TASK-198-pen-up-run` (il merge è del coordinatore). In «Draw», con
+  dall'utente («pausa automatica con avviso a voce»), PR #218 (il merge è
+  del coordinatore). In «Draw», con
   una parola, l'interruttore «Lift the pen between letters» manda
   `pen_up: true`; **spento all'avvio** finché l'utente non sceglie (la
   proposta è acceso). Sulla mappa i tratti a piedi sono tratteggiati e

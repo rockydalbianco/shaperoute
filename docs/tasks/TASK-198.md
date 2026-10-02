@@ -169,7 +169,7 @@ token `walk` è aggiunto in fondo, senza toccare il resto.
 
 ## Esito
 
-**Fatto**, l'app, dal branch `feat/TASK-198-pen-up-run`. Come funziona:
+**Fatto**, l'app, PR #218 dal branch `feat/TASK-198-pen-up-run`. Come funziona:
 `UI.md`, «Forma e distanza», «Il risultato», «La navigazione», «La fine
 della corsa», «Export del GPX».
 

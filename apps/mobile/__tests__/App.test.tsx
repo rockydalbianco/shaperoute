@@ -171,7 +171,12 @@ test("without permission, a searched place becomes the start", async () => {
   fetchSpy.mockImplementation(async () => Response.json(response));
   await render(<App />);
   await mapIsReady();
-  expect(await screen.findByText(/Location is off for ShapeRoute/)).toBeOnTheScreen();
+  // By the name under the icon: that is what Settings lists (TASK-160).
+  expect(
+    await screen.findByText(
+      "Location is off for Sgrava. Allow it in Settings, or search for a place to start from.",
+    ),
+  ).toBeOnTheScreen();
   expect(screen.getByText("Open Settings")).toBeOnTheScreen();
   expect(injectJavaScript).not.toHaveBeenCalled();
 

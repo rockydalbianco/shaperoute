@@ -57,7 +57,7 @@ export function FreeRunBanner({ state }: { state: FreeRunState }) {
     return (
       <View style={styles.banner}>
         <Text style={styles.message}>
-          Location is off for ShapeRoute: allow it in Settings to record a run.
+          Location is off for Sgrava: allow it in Settings to record a run.
         </Text>
       </View>
     );

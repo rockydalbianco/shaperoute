@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Vibration } from "react-native";
 
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
+import { emptyTrack, type Track } from "./trackRecorder";
 import { type RunRecorder, startRun } from "./trackStore";
 
 /** A fix at least this often apart, in metres: a stride or two. */
@@ -14,7 +15,13 @@ export const VIBRATE_MS = 400;
 
 export type NavigationState =
   | { status: "starting" }
-  | { status: "following"; navigation: Navigation; position: LatLon | null }
+  /** `track` is the line run so far, for the numbers of the run (TASK-164). */
+  | {
+      status: "following";
+      navigation: Navigation;
+      position: LatLon | null;
+      track: Track;
+    }
   | { status: "denied" };
 
 /** Says and vibrates what the navigator decided. */
@@ -61,13 +68,16 @@ export function useNavigation(
       }
       const started = startNavigation(points, directions);
       navigation.current = started.navigation;
+      // A route stopped lately goes on with its track (trackStore).
+      const recorder = startRun(points, Date.now(), similarity);
+      run = recorder;
       setState({
         status: "following",
         navigation: started.navigation,
         position: null,
+        track: recorder.track(),
       });
       play(started.cues);
-      run = startRun(points, Date.now(), similarity);
       subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.BestForNavigation,
@@ -83,11 +93,16 @@ export function useNavigation(
             timeMs: timestamp,
           });
           navigation.current = next.navigation;
-          run?.onFix(
+          recorder.onFix(
             { point: fix, timeMs: timestamp, accuracyM: coords.accuracy },
             next.navigation.arrived,
           );
-          setState({ status: "following", navigation: next.navigation, position: fix });
+          setState({
+            status: "following",
+            navigation: next.navigation,
+            position: fix,
+            track: recorder.track(),
+          });
           play(next.cues);
         },
       );
@@ -106,3 +121,10 @@ export function useNavigation(
 
   return state;
 }
+
+/** The track so far, or an empty one: for the screens that show it. */
+export function trackOfNavigation(state: NavigationState): Track {
+  return state.status === "following" ? state.track : EMPTY;
+}
+
+const EMPTY = emptyTrack();

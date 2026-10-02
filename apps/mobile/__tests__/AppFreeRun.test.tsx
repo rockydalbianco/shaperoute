@@ -149,8 +149,16 @@ test("Run records a run without a route, and Stop shows it", async () => {
     onPosition(position(300, now));
   });
   expect(screen.getByText("0.30 km")).toBeOnTheScreen();
-  // The map follows the runner and draws the line so far.
-  expect(scripts("follow").length).toBeGreaterThan(0);
+  // The numbers of the run under the map, the start over it (TASK-164).
+  // The clock is the phone's, a moment behind the fixes of this test.
+  expect(screen.getByLabelText(/^Avg pace: 3:(19|20) \/km$/)).toBeOnTheScreen();
+  expect(screen.getByLabelText(/^Time: (0:59|1:00)$/)).toBeOnTheScreen();
+  expect(screen.getByText("300 m")).toBeOnTheScreen();
+  expect(screen.getByText("Your start, in a straight line")).toBeOnTheScreen();
+  expect(screen.getByText("Heading north")).toBeOnTheScreen();
+  // The map follows the runner, with an arrow turned north, the way of
+  // the run, and draws the line so far.
+  expect(scripts("follow").at(-1)).toContain('"heading":0');
   expect(scripts("showTrack").at(-1)).toContain(
     `[${START[1]},${START[0] + 300 * METRE}]`,
   );
@@ -158,6 +166,8 @@ test("Run records a run without a route, and Stop shows it", async () => {
 
   await fireEvent.press(screen.getByText("Stop"));
   expect(await screen.findByText("Your run")).toBeOnTheScreen();
+  // The arrow is the position marker again.
+  expect(scripts("stopFollow")).toHaveLength(1);
   expect(screen.getByText("0.30 km")).toBeOnTheScreen();
   expect(screen.getByText("1:00 · 3:20 /km")).toBeOnTheScreen();
   expect(loadRun()?.route).toEqual([]);

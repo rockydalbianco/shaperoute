@@ -2,8 +2,9 @@ import type { LatLon } from "@shaperoute/shared-types";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 
 import type { FreeRun } from "../navigation/freeRun";
-import type { Track } from "../navigation/trackRecorder";
-import { FreeFinishCard, FreeRunBanner, FreeRunCard, TICK_MS } from "./FreeRunScreen";
+import { addFix, emptyTrack, type Track } from "../navigation/trackRecorder";
+import { FreeFinishCard, FreeRunBanner, FreeRunCard } from "./FreeRunScreen";
+import { TICK_MS } from "./RunPanel";
 
 jest.mock("expo-brightness", () => ({
   getBrightnessAsync: jest.fn(() => Promise.resolve(0.6)),
@@ -28,6 +29,22 @@ function track(metres: number, startMs: number, endMs: number): Track {
   };
 }
 
+const METRE = 1 / 111_195;
+const METRE_EAST = METRE / Math.cos((START[0] * Math.PI) / 180);
+
+/** A track through `steps`: metres north, metres east, seconds before NOW. */
+function line(steps: [northM: number, eastM: number, secondsAgo: number][]): Track {
+  return steps.reduce(
+    (run, [northM, eastM, secondsAgo]) =>
+      addFix(run, {
+        point: [START[0] + northM * METRE, START[1] + eastM * METRE_EAST],
+        timeMs: NOW - secondsAgo * 1000,
+        accuracyM: 5,
+      }),
+    emptyTrack(),
+  );
+}
+
 beforeEach(() => {
   jest.useFakeTimers({ now: NOW });
 });
@@ -36,24 +53,55 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test("while running, the banner has the distance, the clock and the pace", async () => {
-  // 1.5 km, started 9 minutes ago: 6 min per km.
+test("while running, the banner points to the start and says the heading", async () => {
+  // North 300 m, then east 400 m: the start is 500 m behind, on the right.
+  const run = line([
+    [0, 0, 240],
+    [300, 0, 150],
+    [300, 380, 6],
+    [300, 400, 0],
+  ]);
   await render(
     <FreeRunBanner
-      state={{
-        status: "running",
-        track: track(1500, NOW - 540_000, NOW - 1000),
-        position: START,
-      }}
+      state={{ status: "running", track: run, position: run.fixes[3].point }}
     />,
   );
-  expect(screen.getByText("1.50 km")).toBeOnTheScreen();
-  expect(screen.getByText("9:00 · 6:00 /km")).toBeOnTheScreen();
-  // The clock goes on between fixes.
-  await act(async () => {
-    jest.advanceTimersByTime(TICK_MS);
+  expect(screen.getByText("500 m")).toBeOnTheScreen();
+  expect(screen.getByText("Your start, in a straight line")).toBeOnTheScreen();
+  expect(screen.getByText("Heading east")).toBeOnTheScreen();
+  // The start is to the south-west (233°); heading east (90°), that is 143°
+  // clockwise from straight ahead.
+  expect(screen.getByTestId("start-arrow")).toHaveStyle({
+    transform: [{ rotate: "143deg" }],
   });
-  expect(screen.getByText("9:01 · 6:01 /km")).toBeOnTheScreen();
+  expect(
+    screen.getByLabelText("Your start: 500 m in a straight line, to the south-west"),
+  ).toBeOnTheScreen();
+});
+
+test("near the start, the banner says so instead of pointing", async () => {
+  const run = line([
+    [0, 0, 10],
+    [12, 0, 5],
+    [20, 0, 0],
+  ]);
+  await render(
+    <FreeRunBanner
+      state={{ status: "running", track: run, position: run.fixes[2].point }}
+    />,
+  );
+  expect(screen.getByText("You are at your start")).toBeOnTheScreen();
+  expect(screen.getByText("Heading north")).toBeOnTheScreen();
+  expect(screen.queryByTestId("start-arrow")).toBeNull();
+});
+
+test("at the first fix there is no heading yet", async () => {
+  const run = line([[0, 0, 0]]);
+  await render(
+    <FreeRunBanner state={{ status: "running", track: run, position: START }} />,
+  );
+  expect(screen.getByText("You are at your start")).toBeOnTheScreen();
+  expect(screen.queryByText(/^Heading/)).toBeNull();
 });
 
 test("before the first fix, the banner waits for the GPS", async () => {
@@ -82,6 +130,25 @@ test("Stop ends the run; Pocket only once the GPS is on", async () => {
   expect(screen.getByText("Pocket")).toBeOnTheScreen();
   await fireEvent.press(screen.getByText("Stop"));
   expect(onStop).toHaveBeenCalledTimes(1);
+});
+
+test("under the map, the numbers of the run: distance, paces, clock", async () => {
+  // 300 m in a minute and a half: 5:00 /km.
+  const run = line([
+    [0, 0, 90],
+    [150, 0, 45],
+    [300, 0, 0],
+  ]);
+  await render(<FreeRunCard running track={run} onStop={jest.fn()} />);
+  expect(screen.getByText("0.30 km")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Avg pace: 5:00 /km")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Pace now: 5:00 /km")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Time: 1:30")).toBeOnTheScreen();
+  // The clock goes on between fixes.
+  await act(async () => {
+    jest.advanceTimersByTime(TICK_MS);
+  });
+  expect(screen.getByLabelText("Time: 1:31")).toBeOnTheScreen();
 });
 
 test("the end of a free run has its numbers, Keep running and Done", async () => {

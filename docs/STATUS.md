@@ -170,6 +170,28 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-198: la penna alzata nella corsa, chiesta e confermata
+  dall'utente («pausa automatica con avviso a voce»), dal branch
+  `feat/TASK-198-pen-up-run` (il merge è del coordinatore). In «Draw», con
+  una parola, l'interruttore «Lift the pen between letters» manda
+  `pen_up: true`; **spento all'avvio** finché l'utente non sceglie (la
+  proposta è acceso). Sulla mappa i tratti a piedi sono tratteggiati e
+  grigi (token `walk`), le lettere gialle; sotto il risultato «… km of
+  letters + … km walking between them». Correndo, alla fine di ogni lettera
+  la registrazione va in pausa da sola, una pausa «penna», e riparte 20 m
+  prima della lettera successiva (`PEN_DOWN_M`), con «Letter done. Walk to
+  the U: the drawing is paused.» e «Pen down: draw the U.»; una pausa
+  chiesta a mano resta sua. Tempo e distanza senza i tratti a piedi, i
+  `walks` a `POST /track-scores` e a `POST /gpx`. Senza `walks` tutto come
+  prima. Come funziona: `UI.md`, «Forma e distanza», «Il risultato», «La
+  navigazione». **Da provare sull'iPhone**, camminando una parola vera.
+  **Si vede sul telefono solo dopo** l'aggiornamento del server con
+  TASK-197 e la pubblicazione dell'app, tutti e due con l'ok dell'utente.
+  **Aspettano l'utente**: l'interruttore acceso di default, i due testi
+  della voce e la riga dei km (`tasks/TASK-198.md`, «Esito»). Seguiti: i
+  `walks` in «My activities» (il suo punteggio non li conosce) e nei
+  preferiti.
+
 - **Motore e API** — TASK-197: la penna alzata nelle parole, chiesta
   dall'utente (ADR-0157), PR #217 (il merge è del coordinatore). Con `pen_up: true` e una parola ogni lettera
   si disegna da sola, una volta, e fra una e l'altra si prende a piedi la

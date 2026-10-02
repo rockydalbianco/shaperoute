@@ -674,6 +674,18 @@ lettere di oggi o quelle squadrate, che nell'API sono `style: "block"`.
 va nella richiesta di ogni parola come `style` e non si salva fra un
 avvio e l'altro.
 
+Sotto, l'interruttore **«Lift the pen between letters»** (TASK-198,
+ADR-0157), «On» o «Off» come quelli della corsa. Acceso, la richiesta
+della parola ha `pen_up: true`: ogni lettera si disegna da sola e fra una e
+l'altra si cammina (`API.md`, «La penna alzata»); spento, o con una forma o
+un'immagine, il campo non c'è e la richiesta è quella di prima. La stessa
+parola con e senza la penna alzata sono due richieste diverse. **Spento
+all'avvio** finché l'utente non sceglie (correzione del coordinatore del
+2026-10-02: l'app pubblicata non cambia senza il suo sì, e un'API più
+vecchia di TASK-197 rifiuterebbe il campo con `invalid_request`); la
+proposta sul tavolo è acceso di default: **da confermare con l'utente**.
+Non si salva fra un avvio e l'altro.
+
 - Le lettere sono `LETTERS` di `shared-types`; il contratto ne ammette 8
   (`MAX_WORD_LETTERS`), ma a 3 km l'una (`LETTER_DISTANCE_M`) l'ottava
   vorrebbe 24 km, oltre i 21 dell'app: il limite dell'app è 7.
@@ -876,6 +888,25 @@ forma dove ci sta (fino a 2 km, ADR-0040), un secondo segnaposto ciano con
 l'etichetta «Start here» segna dove andare, e la mappa inquadra tutti e due;
 l'avviso dice di quanto e in che direzione.
 
+**Una parola con la penna alzata** (TASK-198, ADR-0157). Sulla mappa, qui
+e durante la corsa, le lettere sono gialle come ogni percorso e i tratti a
+piedi fra una lettera e l'altra sono tratteggiati, sotto, grigi e più
+sottili: il token `walk` (`textMuted`, largo 3, opacità 0,9, trattini di 2
+larghezze e spazi di 1,5, estremi dritti). Grigi e non gialli perché il
+giallo è il disegno: così la parola si legge. Sotto il nome del percorso
+una riga in più, «15.4 km of letters + 4.2 km walking between them»
+(testo **da confermare con l'utente**): i km delle lettere sono quelli che
+la corsa registra e quelli a cui va la distanza chiesta; a parità di km le
+lettere vengono 1,7 volte più alte e i tratti a piedi aggiungono il 20–30%.
+La distanza in grande e quella delle tessere «A · B · C» restano di tutto
+il percorso, tratti a piedi compresi (`distance_m`). Un risultato senza
+`walks` (un'API più vecchia di TASK-197) o con `walks` che non stanno nei
+`points` (l'app non si fida: `src/route/walks.ts`) si disegna come prima,
+una linea sola, con lo stesso messaggio alla mappa di prima. Il percorso
+con i `walks` non è chiuso: va dalla prima lettera all'ultima. Un
+preferito (TASK-171) tiene solo i `points`: riaperto è una linea sola, e si
+corre senza le pause «penna» (un seguito, se serve).
+
 ## La navigazione
 
 Sotto il risultato, «Start» giallo, quando il percorso ha le indicazioni di
@@ -947,6 +978,49 @@ TASK-164, di cui tiene i numeri.
 - **Dopo «Resume»** la prima posizione non si unisce all'ultima di prima:
   i metri fatti in pausa non sono della corsa. Lo stesso dopo «Keep
   running»: il tempo fra «Stop» e la ripresa è una pausa.
+- **La penna alzata** (TASK-198; chiesta e confermata dall'utente il
+  2026-10-02: «pausa automatica con avviso a voce»). Su una parola con i
+  `walks`, quando il navigatore porta chi corre al primo punto di un tratto
+  a piedi, la fine di una lettera, la corsa va in pausa da sola: una pausa
+  di tipo nuovo, **«penna»** (`pen` nel file e nei controlli della corsa,
+  accanto ad `auto`), che non si confonde con quella da fermi né con quella
+  chiesta a mano. Riparte quando il navigatore porta chi corre a **20 m**
+  dall'ultimo punto del tratto, l'inizio della lettera successiva
+  (`PEN_DOWN_M`, metà di `POOR_FIX_M`, in `src/navigation/penUp.ts`). La
+  voce, con una vibrazione, dice «Letter done. Walk to the U: the drawing is
+  paused.» alla fine della lettera e «Pen down: draw the U.» all'inizio
+  della successiva, una volta sola ciascuno e prima delle svolte della
+  stessa posizione (testi **da confermare con l'utente**; se la parola non
+  ha una lettera più dei tratti, «the next letter»). Sulla scheda è una
+  pausa come le altre: «Paused», «Resume» e «Stop».
+  - **Perché 20 m, e lungo il percorso**: una posizione che la corsa tiene
+    sbaglia fino a 40 m (`POOR_FIX_M`), in città 10–20 m. Ripartendo 20 m
+    prima della lettera, anche una posizione in ritardo fa partire la
+    registrazione sulla lettera; i metri di tratto a piedi che entrano così
+    sono su un tratto a piedi, che il punteggio non guarda, e alla distanza
+    aggiungono al più 20 m per lettera, più il passo fra due posizioni. Una
+    posizione con un errore dichiarato oltre 40 m non muove la penna. Conta
+    solo dove il navigatore mette chi corre lungo il percorso, mai la
+    distanza in linea d'aria dall'inizio della lettera: la strada più breve
+    può passare a pochi metri da una lettera dall'altra parte di un fiume e
+    arrivarci dopo un ponte.
+  - **Chi va per un'altra strada** durante un tratto a piedi esce dal
+    percorso («Off the route») e la penna non si abbassa da sola finché il
+    navigatore non lo ritrova: il percorso non si ricalcola (ADR-0052).
+    «Resume» a mano riprende la registrazione.
+  - **Una pausa chiesta a mano resta sua**: messa prima della fine di una
+    lettera, o durante il tratto a piedi dopo un «Resume», l'inizio della
+    lettera successiva non la toglie (la voce lo dice lo stesso). La
+    ripartenza da sola toglie solo una pausa «penna»; «Resume» toglie
+    qualsiasi pausa, anche quella. Una pausa da fermi alla fine di una
+    lettera diventa «penna», così riprendere a camminare non la chiude, e
+    durante una pausa «penna» la pausa da fermi non scatta.
+  - Le **indicazioni di svolta** continuano anche a piedi: il percorso da
+    seguire è uno solo, con i tratti a piedi. Tempo e distanza della corsa
+    non contano i tratti a piedi, perché sono pause, e la prima posizione di
+    ogni lettera non si unisce all'ultima della lettera prima.
+  - Solo nell'app: con il GPX sull'orologio la pausa si mette a mano, ai
+    waypoint «Pause» e «Resume» (TASK-197, `GPX.md`).
 
 I passi compaiono dopo 100 m, prima c'è «–»; «Pace now» torna «–» anche da
 fermi (più lenti di 20:00 /km). «Elev. gain» è «–» se il telefono non dà
@@ -1005,7 +1079,9 @@ telefono: la usano i numeri della corsa e la schermata di fine corsa
 quando, e se sono venute da sole), scritte subito, la quota di ogni
 posizione quando il telefono la dà, e il segno sulla prima posizione dopo
 una pausa; la durata è il tempo senza le pause. Un file di prima si legge
-come sempre.
+come sempre. Da TASK-198 una pausa «penna» ha `pen: true`, e il file di
+una parola a penna alzata ha anche i `walks` del percorso, per il
+punteggio; quello di ogni altro percorso è come prima.
 
 ## La fine della corsa
 
@@ -1019,6 +1095,18 @@ punteggio in grande («91», «out of 100») e una riga «4.0 km · 32 min · 97
 of the route»: distanza e durata della corsa, e quanta parte del percorso
 è stata coperta. Il punteggio lo calcola l'API (`POST /track-scores`);
 nell'attesa «Scoring your run…», con distanza e durata già lì.
+
+Con una parola a penna alzata (TASK-198) la mappa ha i tratti a piedi
+tratteggiati, e `POST /track-scores` riceve anche i `walks`: la corsa si
+giudica sulle sole lettere. Con «Save» le pause «penna» vanno in «My
+activities» con le altre, come pause di chi corre (`auto: false`). L'API di
+«My activities» non conosce i `walks` (TASK-172): il punteggio che calcola
+da sé confronta la corsa con tutto il percorso, tratti a piedi compresi, e
+la corsa riaperta da lì è una linea sola. Mandarle i `walks`, o dire che
+una pausa è «penna», è un campo in più nell'API, da concordare con il
+coordinatore: un seguito. Il GPX per Strava (TASK-187) apre un segmento
+nuovo a ogni pausa: Strava mostra le lettere unite da linee dritte sulla
+base.
 
 - **Senza rete o senza API**: «The score will come later», la corsa resta
   nel file sul telefono, «Try again» la richiede. Anche con «Done» la
@@ -1106,7 +1194,10 @@ compare sotto il pulsante, con i messaggi di «Quando non va»; in più:
 | Il telefono non ha il foglio di condivisione | This phone cannot open the share sheet. |
 | Il file non si salva sul telefono | The GPX could not be saved on the phone. Try again. |
 
-Un percorso nuovo toglie l'errore dell'export di prima.
+Un percorso nuovo toglie l'errore dell'export di prima. Una parola a
+penna alzata manda all'API la richiesta con `pen_up` e il risultato con i
+suoi `walks`, come sono arrivati (TASK-198): il file ha i waypoint «Pause»
+e «Resume» (`GPX.md`).
 
 ## Quando non va
 

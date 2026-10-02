@@ -105,9 +105,10 @@ pagine»):
    scheda con l'attesa, il risultato o il problema. All'apertura la mappa
    mostra l'Italia intera, poi la partenza con un segnaposto, a zoom 15
    (qualche via attorno); con un percorso, la linea e la mappa inquadrata
-   su di lui. Si sposta e si ingrandisce con le dita o con i pulsanti + e
-   −. L'attribuzione dei dati è sempre visibile in basso, per intero; i
-   suoi link si aprono nel browser del telefono.
+   su di lui. Si sposta e si ingrandisce con le dita: i pulsanti + e − non
+   ci sono più (TASK-175, chiesto dall'utente). L'attribuzione dei dati è
+   sempre visibile in basso, per intero; i suoi link si aprono nel browser
+   del telefono.
 
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
@@ -318,8 +319,8 @@ Un percorso che piace si tiene, e si ritrova in «Profile» da ogni telefono
 dell'account.
 
 - **Il cuore sulla mappa**: quando sulla mappa c'è un percorso (disegnato in
-  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e sotto
-  i pulsanti dello zoom della mappa, c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
+  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e alla
+  sua altezza (dal TASK-175 la mappa non ha più i pulsanti dello zoom), c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
   («♥»): lo toglie. Cambia subito, senza aspettare l'API; se l'API rifiuta
   torna com'era e sotto il cuore c'è il motivo in una riga, che un tocco
   chiude. Non è giallo: il giallo è del percorso. Durante l'attesa, la

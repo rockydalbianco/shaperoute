@@ -1,6 +1,6 @@
 # TASK-166 — L'annuncio durante l'attesa, e l'ID vero dell'app AdMob
 
-**Stato**: In corso
+**Stato**: Pronto, in coda per il merge (coordinatore)
 **Fase**: 4 · **Branch**: `feat/TASK-166-ad-while-waiting`
 **Dipende da**: TASK-132 (AdMob nell'app), TASK-150 (account AdMob)
 
@@ -41,8 +41,9 @@ l'ID vero della sua app AdMob.
       uno per la prossima (test).
 - [x] Nessun annuncio per percorso pronto, errore, annullamento (test).
 - [x] In Expo Go nessun annuncio, l'app come prima (test di TASK-132).
-- [ ] L'ID vero dell'app AdMob è in `app.json`, sulla piattaforma giusta.
-- [ ] Prova in una build propria nel simulatore: annuncio all'inizio della
+- [x] L'ID vero dell'app AdMob è in `app.json`, per iOS (piattaforma
+      confermata dall'utente).
+- [x] Prova in una build propria nel simulatore: annuncio all'inizio della
       ricerca, X, percorso o attesa.
 
 ## File toccati
@@ -65,4 +66,15 @@ docs/tasks/TASK-166.md
 
 ## Esito
 
-*(si compila a fine task)*
+Prova nel simulatore (2026-10-02, iPhone 18 Pro, iOS 27, build Release,
+API del Mac, Trento). Con gli ID di prova di Google: la prima ricerca
+(cuore) chiede il consenso europeo di Google e va senza annuncio; la
+seconda (stella) apre l'annuncio subito dopo il tocco, mentre l'API calcola
+la stella (2,9 s), e alla X la stella è già sullo schermo.
+
+Con l'ID vero dell'app l'SDK di Google non mostra il modulo di consenso e
+non carica annunci, né di prova né veri: in AdMob mancano ancora il
+messaggio di consenso europeo («Privacy e messaggi») e l'esame dell'app
+(profilo pagamenti in TASK-150, app sullo store in TASK-152). È atteso; si
+chiude con TASK-153. Fino ad allora la build con l'ID vero va avanti senza
+annunci, come in Expo Go.

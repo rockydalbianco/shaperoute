@@ -1,6 +1,6 @@
 # TASK-172 — «My activities»: le corse registrate, nel profilo
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-172-my-activities`
 **Dipende da**: TASK-171 (la pagina di «Profile», `ask`, `sessionEnded`),
 TASK-169 (la fine della corsa, la pausa nella traccia)
@@ -76,19 +76,21 @@ tre»):
 
 ## Criteri di accettazione
 
-- [ ] Il punteggio salvato è quello calcolato dall'API, anche se l'app ne
-      manda un altro; una corsa senza percorso non ha punteggio.
-- [ ] La stessa corsa mandata due volte è un'attività sola.
-- [ ] Una corsa finita senza rete compare in «My activities» dopo la
+- [x] Il punteggio salvato è quello calcolato dall'API, anche se l'app ne
+      manda un altro; una corsa senza percorso non ha punteggio. (L'API
+      rifiuta un corpo con `score`, `distance_m` o `duration_s`: l'app non
+      li può mandare.)
+- [x] La stessa corsa mandata due volte è un'attività sola.
+- [x] Una corsa finita senza rete compare in «My activities» dopo la
       prossima apertura con la rete, una volta sola.
-- [ ] Un account vede, apre e cancella solo le sue corse; senza token
+- [x] Un account vede, apre e cancella solo le sue corse; senza token
       `not_signed_in`.
-- [ ] Cancellato l'account, non resta nessuna riga di `runs`.
-- [ ] L'elenco mostra giorno e ora dell'inizio con l'orologio del telefono,
+- [x] Cancellato l'account, non resta nessuna riga di `runs`.
+- [x] L'elenco mostra giorno e ora dell'inizio con l'orologio del telefono,
       luogo, km, tempo, e l'anteprima del disegno.
-- [ ] Due pagine consecutive dell'elenco non ripetono e non saltano corse.
-- [ ] Senza account si corre come prima.
-- [ ] Colori dai token; testi in inglese; test verdi.
+- [x] Due pagine consecutive dell'elenco non ripetono e non saltano corse.
+- [x] Senza account si corre come prima.
+- [x] Colori dai token; testi in inglese; test verdi.
 
 ## File toccati
 
@@ -116,7 +118,9 @@ docs/tasks/TASK-172.md
 ```
 
 `FinishScreen.tsx`, `FreeRunScreen.tsx`, `trackStore.ts` e `freeRun.ts` sono
-di TASK-169 finché non è in `main`: se servono, dopo. La migrazione `0003`
+di TASK-169 finché non è in `main`: se servono, dopo. Non sono serviti:
+l'invio a «Done» e la riga sotto la scheda stanno in `App.tsx` e in
+`src/activities/`. La migrazione `0003`
 è assegnata dal coordinatore a questo task (`0004` è tenuta per TASK-116).
 
 ## Fuori scope
@@ -129,4 +133,36 @@ di TASK-169 finché non è in `main`: se servono, dopo. La migrazione `0003`
 
 ## Esito
 
-*(si compila a fine task)*
+Fatto il 2026-10-02 (ADR-0140). Con un account, «Done» a fine corsa manda
+la corsa a `PUT /me/activities/{key}`; senza rete aspetta in
+`activities-outbox.json` e parte alla prossima apertura. «Profile» ha la
+riga «My activities» con il numero e la pagina a venti per volta; una
+corsa si apre sulla mappa e si cancella con una conferma. Nell'API la
+tabella `runs` (migrazione `0003`), con km, tempo e punteggio contati dalla
+traccia pulita dal motore e il luogo dal chilometro della partenza.
+
+Non visto su un telefono: i test dell'app girano sull'app intera con
+un'API finta, quelli dell'API su PostGIS vero; il servizio dei luoghi è
+stato chiesto una volta dal vero per controllare la forma della risposta.
+
+**Prima che serva a qualcuno**: il server va aggiornato (migrazione
+`0003`, `DEPLOY.md` F.12) e l'app pubblicata, con l'ok dell'utente. Con
+l'app nuova e il server vecchio le corse restano nella coda del telefono
+(il server risponde `404`) e partono dopo l'aggiornamento.
+
+**Seguiti**, non fatti qui:
+
+- TASK-117 parte da `runs`: il suo task file parla ancora di «Save
+  drawing» e `POST /drawings`, da aggiornare da chi lo prende. `title` in
+  `runs` è cosa disegna il percorso, non il titolo dato dall'utente.
+- L'altitudine delle posizioni (TASK-169) non si salva: `track` è
+  `LineStringM`. Servirebbe per il dislivello in «My activities».
+- Una corsa ripresa entro 30 minuti dopo un «Done» senza punteggio
+  (ADR-0091) ha la stessa chiave: resta salvata la prima parte.
+- Il GPX di una corsa salvata, il cuore e «Start» sul percorso di una
+  corsa aperta, statistiche e filtri: fuori scope.
+- Una corsa di pochi metri si salva come le altre: nessuna lunghezza
+  minima. Da decidere con l'utente se dà fastidio.
+- `__tests__/AppFreeRun.test.tsx` (TASK-149/169) confronta il passo con
+  l'orologio vero e, con la macchina carica, a volte fallisce di un
+  secondo («3:18» invece di «3:19»): visto una volta, non è di questo task.

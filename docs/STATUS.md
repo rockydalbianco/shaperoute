@@ -15,7 +15,7 @@ Sgrava gira dall'iPhone in Expo Go; l'app pubblicata usa l'API sul server
 Hetzner, in HTTPS e sempre accesa, con il database degli account; il Mac
 serve per lavorare. L'app ha tre pagine da scorrere, «Feed» (per ora
 disegni d'esempio), «Draw» ed «Explore», e «Profile» per iscriversi ed
-entrare. In «Draw» si sceglie una forma del catalogo (cerchio, cuore,
+entrare, con i preferiti e le corse salvate («My activities»). In «Draw» si sceglie una forma del catalogo (cerchio, cuore,
 stella, cavallo, luna, gatto, pesce, farfalla, lumaca, testa di cane,
 testa di coniglio, zucca, albero di Natale), una parola dalla A alla Z,
 tonda o squadrata, o una foto, e una distanza fino a 21 km: fino a tre
@@ -35,19 +35,17 @@ molti download rifiuta per qualche ora (`MAPS.md`).
 Storage Box Hetzner, che crea l'utente (`DEPLOY.md` F.13, punto 2); poi
 il servizio `offsite` sul server. Dopo, la parte social (`ROADMAP.md`,
 «La parte social») riprende da **TASK-116** (il profilo), **TASK-117**
-(salvare un disegno) e **TASK-118** (il feed vero, al posto degli esempi
+(pubblicare una corsa: salvarla è già di TASK-172, e il suo task file va
+aggiornato da chi lo prende) e **TASK-118** (il feed vero, al posto degli esempi
 di TASK-156), poi 119–121. **TASK-092 — Percorsi consigliati** (ADR-0086)
 ora ha il database e il server. Tutti Todo.
 
 In coda, dopo o accanto:
 
-- **TASK-172 — «My activities»** (ADR-0140 tenuto), chiesto dall'utente il
-  2026-10-02 insieme a «Favorites» (TASK-171): le corse registrate nel
-  profilo, con giorno, ora, luogo e l'anteprima del disegno. Il task file è
-  scritto, con le tre scelte confermate dall'utente (si salva da sola;
-  senza account resta com'è; il luogo lo trova l'API). Dipende da TASK-171
-  e, per la fine della corsa, da TASK-169. Prende la metà privata di
-  TASK-117: chi prende TASK-117 ne aggiorna lo scope.
+- **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
+  posizioni non si salva; una corsa ripresa dopo un «Done» senza rete
+  salva solo la prima parte; il GPX di una corsa salvata; il cuore dei
+  preferiti e «Start» da una corsa aperta. Tutti in `tasks/TASK-172.md`.
 - **TASK-067 — Lettere unite anche dalla cima** (ADR-0063): il task file
   è scritto (2026-10-02), da assegnare. La scala per lettera non si fa,
   scelta dell'utente: da TASK-071 lettere più piccole si leggono peggio.
@@ -97,6 +95,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-172: «My activities», chiesto dall'utente
+  (ADR-0140). Con un account, «Done» a fine corsa salva la corsa da sola,
+  con un percorso o senza; senza rete aspetta sul telefono e parte alla
+  prossima apertura, una volta sola. In «Profile» la riga «My activities»
+  le conta e le elenca, venti per volta: il disegno (percorso giallo,
+  corsa chiara), giorno e ora, luogo, km, tempo, passo, punteggio; una
+  corsa si apre sulla mappa e si cancella con una conferma. Km, tempo e
+  punteggio li conta l'API dalla traccia; il luogo lo trova l'API dal
+  chilometro della partenza. Senza account una riga invita a entrare.
+  Nell'API la tabella `runs` (migrazione `0003`) e `/me/activities`.
+  **Da fare con l'ok dell'utente**: aggiornare il server (migrazione
+  `0003`, `DEPLOY.md` F.12) e pubblicare l'app; **da provare
+  sull'iPhone**: una corsa vera che compare in «My activities».
 - **App** — TASK-175: la mappa non ha più i pulsanti «+» e «−» in alto a
   destra, chiesto dall'utente (ADR-0143): si ingrandisce solo con le dita.
   Il cuore dei preferiti sale nell'angolo, alla stessa altezza di «←».

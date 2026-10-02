@@ -94,6 +94,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `offsite` è in `main` dalla PR #167): manca che l'utente lo crei
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
+- **TASK-067 — Lettere unite anche dalla cima** (ADR-0063, «In prova»):
+  il motore sa unire due lettere lungo la cima dove la parola viene più
+  corta e si legge uguale (tre regole di lettura), spento per difetto. Con
+  le regole cambiano solo le parole con U, V, W, Y: delle sette misurate
+  solo «UVA» (−7,4%). Diciotto campioni a 15 km e la pagina di giudizio
+  sono pronti: **manca il giudizio dell'utente**, che decide se accenderle
+  (anche per stile) o togliere il codice. Da dove riprendere: il task file.
 
 ## Completato
 

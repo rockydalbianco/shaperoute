@@ -359,6 +359,24 @@ chiude ADR-0010.
 | 2026-10-02 | catalog/seed/lisbon.json | lisbon | 0.94–0.97 | 5 km | sì | TASK-163, città in evidenza: cuore, cerchio e stella da una piazza del centro, zona copiata dal server; giudizio a occhio dell'agente: tutti e tre tenuti; stella un po' confusa in basso, si legge |
 | 2026-10-02 | catalog/seed/sydney.json | sydney | 0.97–1.00 | 5 km | sì | TASK-163, città in evidenza: cuore, cerchio e stella da una piazza del centro, zona copiata dal server; giudizio a occhio dell'agente: tutti e tre tenuti |
 | 2026-10-02 | catalog/seed/sanfrancisco.json | sanfrancisco | 0.99–1.00 | 5 km | sì | TASK-163, città in evidenza: cuore, cerchio e stella da una piazza del centro, zona copiata dal server; giudizio a occhio dell'agente: tutti e tre tenuti; a gradini sulla griglia, si leggono bene |
+| 2026-10-02 | TASK-067_uva-round_15km_trento_v1.gpx | trento | 0.96 | 14.7 / 15.0 km | — | TASK-067, UVA tonde com'è oggi, per il confronto; lettere alte 802 m; 7 tracciamenti, 12 s |
+| 2026-10-02 | TASK-067_uva-round_15km_levico_v1.gpx | levico | 0.90 | 14.9 / 15.0 km | — | TASK-067, UVA tonde com'è oggi, per il confronto; lettere alte 737 m; 2 tracciamenti, 29 s |
+| 2026-10-02 | TASK-067_uva-round_15km_milano_v1.gpx | milano | 0.97 | 15.5 / 15.0 km | — | TASK-067, UVA tonde com'è oggi, per il confronto; lettere alte 817 m; 2 tracciamenti, 40 s |
+| 2026-10-02 | TASK-067_uva-round-top_15km_trento_v1.gpx | trento | 0.93 | 16.5 / 15.0 km | — | TASK-067, UVA tonde con le unioni in cima (ADR-0063); lettere alte 692 m (oggi 802); 7 tracciamenti, 11 s |
+| 2026-10-02 | TASK-067_uva-round-top_15km_levico_v1.gpx | levico | 0.87 | 15.1 / 15.0 km | — | TASK-067, UVA tonde con le unioni in cima (ADR-0063); lettere alte 689 m (oggi 737); 11 tracciamenti, 12 s |
+| 2026-10-02 | TASK-067_uva-round-top_15km_milano_v1.gpx | milano | 0.98 | 14.4 / 15.0 km | — | TASK-067, UVA tonde con le unioni in cima (ADR-0063); lettere alte 829 m (oggi 817); 2 tracciamenti, 20 s |
+| 2026-10-02 | TASK-067_uva-block_15km_trento_v1.gpx | trento | 0.95 | 14.4 / 15.0 km | — | TASK-067, UVA squadrate com'è oggi, per il confronto; lettere alte 580 m; 7 tracciamenti, 59 s |
+| 2026-10-02 | TASK-067_uva-block_15km_levico_v1.gpx | levico | 0.86 | 14.5 / 15.0 km | — | TASK-067, UVA squadrate com'è oggi, per il confronto; lettere alte 612 m; 11 tracciamenti, 25 s |
+| 2026-10-02 | TASK-067_uva-block_15km_milano_v1.gpx | milano | 0.94 | 14.8 / 15.0 km | — | TASK-067, UVA squadrate com'è oggi, per il confronto; lettere alte 735 m; 2 tracciamenti, 22 s |
+| 2026-10-02 | TASK-067_uva-block-top_15km_trento_v1.gpx | trento | 0.93 | 13.8 / 15.0 km | — | TASK-067, UVA squadrate con le unioni in cima (ADR-0063); lettere alte 683 m (oggi 580); 6 tracciamenti, 12 s |
+| 2026-10-02 | TASK-067_uva-block-top_15km_levico_v1.gpx | levico | 0.95 | 15.2 / 15.0 km | — | TASK-067, UVA squadrate con le unioni in cima (ADR-0063); lettere alte 719 m (oggi 612); 18 tracciamenti, 6 s |
+| 2026-10-02 | TASK-067_uva-block-top_15km_milano_v1.gpx | milano | 0.98 | 15.2 / 15.0 km | — | TASK-067, UVA squadrate con le unioni in cima (ADR-0063); lettere alte 812 m (oggi 735); 2 tracciamenti, 20 s |
+| 2026-10-02 | TASK-067_hub-round_15km_trento_v1.gpx | trento | 0.88 | 14.8 / 15.0 km | — | TASK-067, HUB tonde com'è oggi, per il confronto; lettere alte 734 m; 14 tracciamenti, 67 s |
+| 2026-10-02 | TASK-067_hub-round_15km_levico_v1.gpx | levico | 0.96 | 14.1 / 15.0 km | — | TASK-067, HUB tonde com'è oggi, per il confronto; lettere alte 748 m; 2 tracciamenti, 19 s |
+| 2026-10-02 | TASK-067_hub-round_15km_milano_v1.gpx | milano | 0.94 | 14.7 / 15.0 km | — | TASK-067, HUB tonde com'è oggi, per il confronto; lettere alte 774 m; 2 tracciamenti, 19 s |
+| 2026-10-02 | TASK-067_hub-round-top_15km_trento_v1.gpx | trento | 0.91 | 14.0 / 15.0 km | — | TASK-067, HUB tonde con le unioni in cima (ADR-0063); lettere alte 722 m (oggi 734); 14 tracciamenti, 16 s |
+| 2026-10-02 | TASK-067_hub-round-top_15km_levico_v1.gpx | levico | 0.94 | 14.0 / 15.0 km | — | TASK-067, HUB tonde con le unioni in cima (ADR-0063); lettere alte 639 m (oggi 748); 10 tracciamenti, 5 s |
+| 2026-10-02 | TASK-067_hub-round-top_15km_milano_v1.gpx | milano | 0.97 | 16.4 / 15.0 km | — | TASK-067, HUB tonde con le unioni in cima (ADR-0063); lettere alte 947 m (oggi 774); 1 tracciamenti, 16 s |
 
 <!--
 Esempio di riga compilata:

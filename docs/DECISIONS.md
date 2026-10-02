@@ -1921,6 +1921,74 @@ Un'app più vecchia dell'API non conosce le forme nuove: se l'AI risponde
 aggiornano insieme, come oggi dallo stesso checkout. Le tessere sono undici:
 tre righe da quattro, l'ultima con tre.
 
+## ADR-0063 — Lettere unite anche dalla cima: tre regole di lettura, la parola più corta
+**Stato**: In prova · 2026-10-02 · chiesto dall'utente nel giudizio di
+TASK-059 (2026-09-25: «anche connetterle dalla cima», se non confonde o
+aiuta); formato, regole e scelta decisi dall'agente su delega dell'utente
+(TASK-067); spente per difetto finché l'utente non giudica i campioni
+
+**Contesto**: ogni lettera entra ed esce sulla base, e le unioni si corrono
+due volte. U, V, W, Y e T toccano la base a metà: l'unione passa sotto
+mezza lettera, mentre in cima hanno un angolo sul bordo. A pari chilometri
+una parola più corta dà lettere più alte, e lettere più basse si leggono
+peggio (ADR-0067). Le misure sono in `docs/tasks/TASK-067.md`.
+
+**Decisione**:
+- **Il formato**: una lettera che si può unire in cima lo dichiara in
+  `letters.json` e `letters_block.json` con `"top": {"in": [x, 1], "out":
+  [x, 1]}`, uno o tutti e due. Il task chiedeva per ogni ingresso e uscita
+  i suoi `out` e `back` scritti a mano; li ricava invece il motore
+  (`Letter.route`) dalla linea chiusa che la lettera ha già, cominciata
+  dall'ingresso e tagliata all'uscita. La lettera è per costruzione la
+  stessa, corsa lo stesso numero di volte, e non ci sono 150 linee in più
+  da tenere uguali a mano. Ne segue che la lunghezza delle lettere non
+  cambia mai: una coppia si accorcia solo per lo spazio.
+- **Tre regole di lettura**, controllate da `parse_letters` sull'alfabeto
+  (un `top` che ne viola una è rifiutato), ognuna con un test e una coppia
+  che la viola:
+  1. un'unione in cima non allunga un tratto che finisce sulla cima (la
+     sbarra della T, il braccio alto di E, F, Z e delle C, G, S squadrate):
+     «TU», «EH», «CH» squadrata restano sulla base. Era la regola già
+     scritta nel task, sul modello di ADR-0056;
+  2. un'unione in cima non passa sopra la lettera, entra dal bordo sinistro
+     ed esce dal destro: «PU» resta sulla base. Sotto la lettera la linea è
+     il rigo; sopra è un tratto in più;
+  3. una lettera che tocca la cima in un punto solo non si unisce lì: «VI»
+     e «UL» restano sulla base. La I fra due unioni in cima è una T («VIVA»
+     si legge «VTVA»); con la cima da un lato e la base dall'altro la I e
+     la L sono un gradino, il caso che il task chiedeva di guardare.
+- **Cima da un lato e base dall'altro è permesso** alle lettere che passano
+  le tre regole (H, M, N, U, V, W, X, Y…): hanno due punti in cima e
+  restano loro stesse (la V di «UVA»).
+- **La scelta** (`choose_joins`): ogni spazio tutto sulla base o tutto in
+  cima; fra le combinazioni permesse, al più 128, la parola più corta; a
+  pari lunghezza meno unioni in cima, poi la base per prima. Deterministica.
+- **Spente per difetto**, per stile (`words.TOP_JOINS`): `compose` e
+  `plan_route` hanno `top_joins`, `measure_words.py` ha `--top-joins`. Con
+  le unioni spente ogni parola è identica a prima, punto per punto (test).
+  API, `shared-types` e app non cambiano.
+- **La scala per lettera non si fa**: era l'altra metà della richiesta del
+  2026-09-25, che ADR-0056 rimanda qui. L'utente la lascia fuori
+  (2026-10-02), perché lettere più piccole si leggono peggio (ADR-0067).
+
+**Alternative scartate**: `out` e `back` scritti a mano per ogni ingresso e
+uscita (sopra); i punti in cima dedotti dalla geometria senza dichiararli
+(togliere una lettera dopo il giudizio dell'utente vorrebbe codice, non una
+riga dell'alfabeto); unire anche la I e la T, che danno quasi tutto il
+guadagno senza regole («TUTTI» −16,6%, «VIVA» −6,3%) ma cambiano la
+parola; unioni a metà altezza o in diagonale (fuori scope).
+
+**Conseguenze**: con le regole si accorciano solo le coppie in cui una
+lettera è U, V, W o Y (tonde), P, U, V o Y (squadrate), e l'altra arriva in
+cima con un angolo: 68 coppie tonde e 87 squadrate su 676. Delle sette
+parole misurate cambia solo «UVA» (−7,4% tonda, −8,6% squadrata); «NUVOLA»
+−5,2%, «LUNA» −2,6%. Le altre parole restano identiche. Sulle strade le
+lettere non vengono sempre più alte: su nove campioni a 15 km lo sono in
+cinque, e sempre per «UVA» squadrata (`docs/tasks/TASK-067.md`). La ricerca
+non dura di più. `nearby_starts.py` e la CLI compongono la parola con il
+predefinito dello stile: se l'utente accende le unioni, cambia
+`TOP_JOINS` e lo seguono senza altre modifiche.
+
 ## ADR-0064 — La barra stima una parola dalle sue lettere
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
 (TASK-069)

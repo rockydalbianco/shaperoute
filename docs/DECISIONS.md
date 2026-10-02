@@ -5514,3 +5514,113 @@ nativa è nera con il logo giallo e poi arriva il giallo: farla gialla è
 una riga di `app.json`, lasciata all'utente. La barra di stato resta
 chiara sul giallo: la decide `App.tsx`. Chi ha «Riduci movimento» vede la
 stessa animazione.
+
+## ADR-0140 — «My activities»: «Save» a fine corsa, e i numeri della corsa li conta l'API
+**Stato**: Attiva · 2026-10-02 · **scelte dell'utente** per il cosa («le
+mie attività con tutte le attività che hanno registrato, con lo storico:
+data, ora, posizione e l'anteprima di cosa aveva disegnato»; senza account
+resta com'è, con una riga che invita a entrare; il luogo lo trova l'API);
+il come deciso dall'agente su delega dell'utente (TASK-172).
+
+**Scelta nuova dell'utente, lo stesso giorno** (riferita dal coordinatore
+da un'altra sessione): «quando termino l'attività devi salvarmi l'attività
+in activity sul mio profilo, e prima mi fai comparire una nuova schermata
+nella quale mi dici salva, cancella, invia a Strava». Quindi **la corsa
+non si salva più da sola**, com'era nella prima scelta («sì a tutte e
+tre»): a fine corsa «Save» e «Discard», e solo «Save» la mette in «My
+activities». «Send to Strava» è un task a parte (TASK-187), da chiedere
+all'utente: ADR-0138 aveva tolto Strava dall'app.
+
+**Contesto**: una corsa finita si perdeva: il telefono la teneva solo
+finché non aveva il punteggio (ADR-0093), e quella senza percorso fino a
+«Done» (ADR-0122). L'utente vuole ritrovarle nel profilo. È la metà
+privata di TASK-117 («salvare un disegno»): titolo, «Public» e traccia
+tagliata restano là.
+
+**Decisione**:
+- **La tabella `runs`** (migrazione `0003`), una riga per corsa, solo del
+  proprietario. Tiene il percorso seguito (o nessuno), cosa disegnava, la
+  traccia, le pause, l'inizio, km, tempo, punteggio e luogo.
+- **L'app manda la corsa com'è stata registrata**, posizione per
+  posizione con le pause; **km, tempo e punteggio li conta l'API** e l'app
+  non li può nemmeno mandare (campi in più: `422`). Il punteggio è quello
+  di `track_score.py` (ADR-0090), come `POST /track-scores`; la traccia
+  tenuta è quella pulita dal motore (`clean_track`), non la grezza. Così
+  un numero in «My activities» non dipende dalla versione dell'app che ha
+  corso, e TASK-117 potrà pubblicarlo senza fidarsi del telefono.
+- **Le pause sono nel contratto** (`pauses`, da TASK-169, ADR-0137): il
+  tempo le toglie tutte; i metri tolgono solo il passo a cavallo di una
+  pausa chiesta dal corridore, come fa l'app (`gap`). M della traccia sono
+  i secondi dalla prima posizione, pause comprese, e le pause stanno
+  accanto in `jsonb`: dalla riga si rifà l'orario di ogni punto.
+- **Una corsa troppo corta per il punteggio si salva lo stesso**, senza
+  punteggio; con meno di due posizioni buone non si salva. Non c'è una
+  lunghezza minima: con «Save» e «Discard» lo decide chi ha corso.
+- **La chiave la fa l'app dalla prima posizione** (`activityKey`: orario e
+  punto), come per i preferiti la fa dalla linea: `PUT` due volte salva una
+  volta, e resta la prima. Dall'inizio e non da tutta la traccia perché una
+  corsa ripresa è la stessa corsa.
+- **Il luogo**: geocoding inverso di Geoapify, con la chiave che l'API ha
+  già, per la partenza **arrotondata a due decimali** (circa 1 km), come la
+  ricerca dei luoghi fa con `near` (ADR-0095). Chiesto una volta, al
+  salvataggio; se non arriva, la corsa non ha luogo. Il servizio non vede
+  la porta di casa, e l'API non scrive posizioni nel log (ADR-0092).
+- **L'elenco a pagine con cursore** sull'ordine `(inizio, id)`, dalla più
+  recente, 20 per volta, con il totale: cancellare o salvare fra due pagine
+  non ne ripete e non ne salta. Anteprime di 64 punti per linea, come i
+  preferiti. Al massimo 2 000 corse per account.
+- **«Save» e «Discard» stanno sulla schermata di fine corsa**, quella che
+  «Stop» già apre con la mappa, i numeri e il punteggio: è la schermata
+  che l'utente chiede, e una in più dopo «Done» sarebbe un tocco in più
+  per dire la stessa cosa. Con un account prendono il posto di «Done»,
+  sotto la scheda; «Keep running» resta. «Discard» chiede conferma: un
+  tocco sbagliato butterebbe una corsa che non si rifà. Con «Save» o
+  «Discard» la corsa lascia il file della corsa in corso anche senza
+  punteggio: non torna alla prossima apertura.
+- **Niente parte a «Stop»**: fra «Stop» e «Save» c'è «Keep running», e
+  una corsa mandata a metà resterebbe a metà (resta la prima). Con «Save»
+  la corsa va in un file del telefono (`activities-outbox.json`), con
+  l'account di chi l'ha corsa, e da lì all'API: subito, o alla prossima
+  apertura con la rete, o aprendo «My activities». Un `422` la toglie dalla
+  coda (rimandarla non cambierebbe niente); ogni altro errore la lascia.
+  Dopo un salvataggio l'elenco si richiede all'API: i numeri sono i suoi.
+- **Cosa disegnava il percorso** l'app lo sa finché quel percorso è ancora
+  sullo schermo (disegnato, di «Explore», a tema, un preferito); una corsa
+  rimasta da un'altra apertura manda solo la linea.
+- **La pagina** è una riga per corsa, non due schede affiancate come i
+  preferiti: giorno, ora, luogo, km, tempo, passo e punteggio non stanno
+  sotto mezzo schermo. Il disegno ha le due linee nella stessa cornice
+  (`fitLines`), come a fine corsa.
+- **Una corsa aperta è sulla mappa come a fine corsa**, non come un
+  percorso di «Explore»: niente «Start», niente cuore. «Delete» chiede
+  prima, sulla scheda.
+- **Le schede di fine corsa cambiano di poco**: `FinishCard` e
+  `FreeFinishCard` non mostrano «Done» quando non ricevono `onDone`; i due
+  pulsanti e la riga per chi non ha account sono un pezzo solo sotto la
+  scheda (`RunEnd`), uguale con un percorso e senza. `POST /track-scores`
+  resta com'è: la scheda mostra il punteggio subito, il salvataggio va per
+  conto suo.
+
+**Scartate**: salvare da sola a «Done» (la prima scelta dell'utente,
+cambiata da lui); salvare a «Stop» (vedi sopra); una schermata a parte
+dopo «Done» con i due pulsanti; «Discard» senza conferma; fidarsi di km, tempo e punteggio dell'app; tenere la traccia
+grezza (sulla mappa avrebbe i salti del GPS, e il punteggio è già sulla
+pulita); la chiave da tutta la traccia (la stessa corsa, ripresa,
+cambierebbe nome); mandare a Geoapify la partenza
+esatta; un elenco di città dentro l'API (vale solo dove c'è il catalogo);
+pagine con `offset` (saltano o ripetono quando l'elenco cambia); tenere le
+corse senza account sul telefono (scelta dell'utente: restano com'erano).
+
+**Conseguenze**: il database tiene tracce intere, con gli orari: il dato
+più personale dell'app; le vede solo il loro account, spariscono con lui e
+dalle copie entro 14 giorni (`UI.md`, «Cosa esce dal telefono»). Geoapify
+riceve un punto al chilometro per ogni corsa salvata. Sul server la
+migrazione `0003` parte al primo avvio dell'API nuova (`DEPLOY.md` F.12):
+finché non c'è, l'app nuova tiene le corse nella coda. Una corsa chiusa
+con «Discard» non si recupera. Chi chiude l'app sulla schermata di fine
+corsa senza scegliere la ritrova alla prossima apertura, da salvare o
+buttare. L'altitudine delle posizioni (TASK-169) non si salva. Il
+punteggio di una corsa salvata non cambia se il motore cambia. TASK-117 parte da
+`runs` con una migrazione sua (traccia tagliata, «pubblica», il titolo
+dell'utente: `title` qui è cosa disegna il percorso) e il suo task file
+va aggiornato da chi lo prende.

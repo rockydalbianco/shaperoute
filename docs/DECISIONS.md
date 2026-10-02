@@ -5500,3 +5500,41 @@ nativa è nera con il logo giallo e poi arriva il giallo: farla gialla è
 una riga di `app.json`, lasciata all'utente. La barra di stato resta
 chiara sul giallo: la decide `App.tsx`. Chi ha «Riduci movimento» vede la
 stessa animazione.
+
+## ADR-0152 — «Sport» in «Settings»: un elenco nell'app, la scelta sul telefono, «Soon» finché il motore non c'è
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («Nelle
+impostazioni, fai scegliere anche il tipo di sport, perché poi
+implementiamo anche per Bici e padel canoa»; fra tre proposte: «Run»
+scelto, gli altri visibili con «Soon»); il come deciso dall'agente su
+delega dell'utente (TASK-189).
+
+**Contesto**: il motore disegna solo percorsi da corsa (la richiesta
+all'API ha già `activity`, che oggi vale solo `"running"`). Bici e canoa
+sono task del motore (TASK-190, TASK-191). «Settings» (ADR-0145) è a
+sezioni, e le voci non ancora fatte dicono «Soon» senza prendere il tocco.
+
+**Decisione**: gli sport sono un elenco nell'app,
+`src/settings/sport.ts`: «Run», «Bike», «Paddle» (canoa, kayak, SUP),
+ognuno con `ready`. In «Settings» hanno una sezione loro, «SPORT», tre
+righe: uno sport pronto è un pulsante di scelta, con «✓» su quello
+scelto; uno non pronto dice «Soon» e non si tocca, come le altre voci da
+fare. La scelta resta nei documenti del telefono (`sport.json`), come le
+città recenti; senza scelta, o con una scelta non pronta, vale «Run». Il
+«✓» è bianco: il giallo è del percorso. Per ora la scelta non va all'API:
+con un solo sport non cambierebbe niente.
+
+**Alternative scartate**: far scegliere subito bici e canoa, con una
+riga che avvisa che i percorsi sono da corsa (scartata dall'utente:
+promette una cosa che non c'è); una riga sola «Sport» con «Soon»
+(scartata dall'utente); tenere la scelta nell'account (serve l'API e una
+migrazione, per una scelta che oggi ha un valore solo); una riga in
+«Preferences» che apre una pagina (per tre voci basta l'elenco sul
+posto, e «Settings» non ha altre pagine sotto).
+
+**Conseguenza**: accendere uno sport è `ready: true` nella sua riga, più
+il lavoro del motore: lo fa il task che lo porta, che manda anche la
+scelta all'API in `activity`. La scelta vale per il telefono, non per
+l'account: su un altro telefono si riparte da «Run». La sezione è un
+componente a parte (`SportSetting`), con gli stili delle righe di
+«Settings» ripetuti: `SettingsPage.tsx` era di TASK-177 mentre si
+scriveva.

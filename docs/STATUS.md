@@ -272,6 +272,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   voce delle svolte con la musica accesa (la abbassa, la ferma, ci parla
   sopra?); la corsa mentre si è in Spotify. **Una domanda per l'utente**
   nel task file: brano, pausa e avanti dentro Sgrava.
+- **App, test** — TASK-193: i test dell'app non cadono più per la macchina
+  carica. Ogni test ha 30 s invece di 5: il primo disegno di un file a
+  cache fredda prendeva 5,1–5,2 s in CI (oggi rossi #194, #199, #207) e
+  fino a 22 s sul Mac con più agenti al lavoro. `AppFreeRun.test.tsx` gira
+  su un orologio finto: prima quattro punti dipendevano dall'orologio vero.
+  `AppFavorites.test.tsx` non è stato diviso: provato, il primo disegno
+  lento passa solo a un altro file (numeri nel task file). L'app non
+  cambia.
 - **App** — TASK-175: la mappa non ha più i pulsanti «+» e «−» in alto a
   destra, chiesto dall'utente (ADR-0143): si ingrandisce solo con le dita.
   Il cuore dei preferiti sale nell'angolo, alla stessa altezza di «←».
@@ -364,6 +372,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   rimandata a quando Overpass riapre: la sua zona non è sul server.
   Il catalogo è sul server dal 2026-10-02 10:38Z (aggiornamento a
   ec84042, con l'ok dell'utente): l'app pubblicata le vede.
+- **App** — TASK-196: uno swipe che finisce sopra una scheda di «Explore»
+  non la apre più (seguito di TASK-188, stessa soluzione di ADR-0151: la
+  scheda ricorda dove il dito è sceso e ignora un dito che si è mosso più
+  di 12 punti). La correzione è in `RouteCard`, quindi vale per i percorsi
+  di «Best near you», per gli esempi di una città e per i preferiti in
+  «Profile». Solo app, con un test; **da provare con il dito
+  sull'iPhone**, dopo la prossima pubblicazione su `preview`. Restano com'erano i
+  pulsanti piccoli della pagina (le città, «Ask for a route», «Try
+  again»): vedi il task file.
 - **App** — TASK-167: in «Explore» i percorsi sono schede, due per riga,
   con il disegno grande in alto, scelto dall'utente fra le proposte
   grafiche (ADR-0135). I filtri stanno in una riga sola, «Shape» e

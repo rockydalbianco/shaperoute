@@ -11,6 +11,7 @@ import {
   framingName,
   RouteCard,
 } from "./RouteCard";
+import { TAP_SLOP } from "./useTapNotSwipe";
 
 // A square: four stretches to draw.
 const SQUARE: LatLon[] = [
@@ -68,6 +69,37 @@ test("a touch opens the route, and a screen reader hears what it is told", async
   );
   await fireEvent.press(screen.getByRole("button", { name: "star, 5 km, 450 m away" }));
   expect(onPress).toHaveBeenCalledTimes(1);
+});
+
+test("a swipe that ends on the card is not a touch", async () => {
+  const onPress = jest.fn();
+  await render(
+    <RouteCard width={173} line={SQUARE} title="Star · 5.1 km" onPress={onPress} />,
+  );
+  const card = screen.getByRole("button");
+  const at = (pageX: number, pageY: number) => ({ nativeEvent: { pageX, pageY } });
+
+  // To the left on the last page, within the card: no page moves, the touch
+  // ends here.
+  await fireEvent(card, "pressIn", at(160, 300));
+  await fireEvent.press(card, at(40, 300));
+  expect(onPress).not.toHaveBeenCalled();
+
+  // Just past what a tap may move.
+  await fireEvent(card, "pressIn", at(160, 300));
+  await fireEvent.press(card, at(160 - TAP_SLOP - 1, 300));
+  expect(onPress).not.toHaveBeenCalled();
+
+  // A finger that trembles has touched.
+  await fireEvent(card, "pressIn", at(160, 300));
+  await fireEvent.press(card, at(154, 304));
+  expect(onPress).toHaveBeenCalledTimes(1);
+
+  // The swipe before is forgotten: a touch with no finger seen coming down.
+  await fireEvent(card, "pressIn", at(160, 300));
+  await fireEvent.press(card, at(40, 300));
+  await fireEvent.press(card, at(40, 300));
+  expect(onPress).toHaveBeenCalledTimes(2);
 });
 
 test("a route not drawn yet is a card to read, not to touch", async () => {

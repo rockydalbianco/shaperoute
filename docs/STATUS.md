@@ -207,6 +207,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   non ha l'attività; i preferiti tenuti prima di TASK-199 restano senza
   `walks` (si tolgono e si rimettono).
 
+- **Motore** — TASK-201: le partenze vicine senza processi nuovi a ogni
+  richiesta, **misurato, non conviene** (decisione del coordinatore),
+  PR di soli documenti, nessun codice cambiato. Sul Mac, Trento in
+  memoria, quattro richieste: aprire i tre processi costa 0,21–0,30 s
+  (0,05 l'interprete, 0,17 l'import del motore), mandare il grafo meno di
+  0,1 s, il pickle 0,1–0,24 s; il piano dalla partenza 5–8 s copre tutto
+  (cuore 10 km, «CIAO» 12 km, cerchio 15 km), e solo la stella da 5 km
+  guadagnerebbe 0,2 s con i processi accesi. Il tempo è nel piano della
+  partenza (`optimizer.py`), non nei processi: la voce «processi tenuti
+  accesi» dei seguiti di TASK-168 non è la strada. Numeri e seguito in
+  `tasks/TASK-201.md`; il server non è misurato, solo se serve e con
+  l'ok dell'utente.
+
 - **API e app** — TASK-116: il profilo, nome utente, bio e «Edit profile»
   (ADR-0128, migrazione `0007`), PR #224 (il merge è del coordinatore). In
   «Profile» sotto il nome ci sono la bio e «Edit profile», che apre una

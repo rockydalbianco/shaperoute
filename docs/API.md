@@ -175,8 +175,10 @@ python -m shaperoute_api.draw_examples --api http://127.0.0.1:8000 Rovereto
 python -m shaperoute_api.draw_examples --api https://… --preset italy --preset featured
 ```
 
-Una riga per città (`heart drawn, circle drawn, star kept`), una forma
-alla volta; la chiave dell'API, se serve, da `SHAPEROUTE_API_KEY`. Rifatto,
+Una riga per città (`circle drawn, heart drawn, star kept`), una forma
+alla volta, **il cerchio per primo** (TASK-195): l'area che chiede
+contiene quella del cuore e della stella dallo stesso centro, così in una
+città senza zona il cuore non ne scarica una seconda; la chiave dell'API, se serve, da `SHAPEROUTE_API_KEY`. Rifatto,
 passa in un attimo sulle città già tenute. Una città senza la zona sul
 disco dell'API la fa scaricare, come un telefono: per le zone di molte
 città c'è `prefetch_zones` (ADR-0119).

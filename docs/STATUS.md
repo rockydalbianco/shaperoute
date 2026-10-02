@@ -112,6 +112,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API** — TASK-195: `draw_examples` chiede a una città il cerchio per
+  primo, poi cuore e stella, come fa l'app da TASK-176: l'area del cerchio
+  da 5 km contiene le altre due, e in una città senza zona il cuore non ne
+  scarica una seconda. Solo l'ordine: il riquadro di `prefetch_zones` e gli
+  esempi già tenuti non cambiano. Vale sul server dal prossimo
+  aggiornamento dell'API (ok dell'utente); niente da rifare lì.
 - **API e app** — TASK-172: «My activities», chiesto dall'utente
   (ADR-0140). Con un account, a fine corsa «Save» mette la corsa in «My
   activities» e «Discard» la butta, dopo una conferma (scelta nuova

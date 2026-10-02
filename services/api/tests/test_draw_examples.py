@@ -30,7 +30,7 @@ ROVERETO = {
 
 
 def planner(request: RouteRequest, source: GraphLoader) -> Plan:
-    if request.shape == "circle" and request.start[0] > 46:
+    if request.shape == "heart" and request.start[0] > 46:
         raise MapDataUnavailableError("no Overpass")
     result = RouteResult(
         points=[request.start, (45.8915, 11.0420), request.start],
@@ -67,11 +67,13 @@ def test_a_city_is_drawn_once_and_then_found_kept(tmp_path: Path) -> None:
         first = draw_city("Rovereto", over(client), sleep=lambda s: None)
         assert first.label == "Rovereto, Trentino-Alto Adige, Italy"
         assert first.shapes == {"heart": "drawn", "circle": "drawn", "star": "drawn"}
+        # The circle is asked first: the zone it downloads serves the others.
+        assert list(first.shapes) == ["circle", "heart", "star"]
         assert first.ready
         again = draw_city("Rovereto", over(client), sleep=lambda s: None)
         assert again.shapes == {"heart": "kept", "circle": "kept", "star": "kept"}
         assert again.line().startswith(
-            "Rovereto, Trentino-Alto Adige, Italy: heart kept, circle kept, star kept"
+            "Rovereto, Trentino-Alto Adige, Italy: circle kept, heart kept, star kept"
         )
 
 
@@ -84,8 +86,8 @@ def test_a_city_not_found_and_a_zone_not_there_say_so(tmp_path: Path) -> None:
     north = {**ROVERETO, "name": "Bolzano", "city": "Bolzano", "lat": 46.4983}
     with api(tmp_path, [north]) as client:
         bolzano = draw_city("Bolzano", over(client), sleep=lambda s: None)
-    # The heart is drawn; without the zone the star is not even asked.
-    assert bolzano.shapes == {"heart": "drawn", "circle": "map_data_unavailable"}
+    # The circle is drawn; without the zone the star is not even asked.
+    assert bolzano.shapes == {"circle": "drawn", "heart": "map_data_unavailable"}
     assert not bolzano.ready
 
 

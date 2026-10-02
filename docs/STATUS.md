@@ -48,9 +48,6 @@ In coda, dopo o accanto:
   senza account resta com'è; il luogo lo trova l'API). Dipende da TASK-171
   e, per la fine della corsa, da TASK-169. Prende la metà privata di
   TASK-117: chi prende TASK-117 ne aggiorna lo scope.
-- **TASK-067 — Lettere unite anche dalla cima** (ADR-0063): il task file
-  è scritto (2026-10-02), da assegnare. La scala per lettera non si fa,
-  scelta dell'utente: da TASK-071 lettere più piccole si leggono peggio.
 - **Pubblicità che paga**, chiesta dall'utente il 2026-10-02: **TASK-150**
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e

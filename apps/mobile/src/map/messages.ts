@@ -1,5 +1,6 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { LatLon, Walk } from "@shaperoute/shared-types";
 
+import { piecesOf, walksOf } from "../route/walks";
 import { type LngLat, metresBetween, toLngLat } from "./coordinates";
 
 /**
@@ -12,7 +13,15 @@ export const START_HERE_M = 50;
 /** From the app to the map page, delivered by `pageScript`. */
 export type ToPage =
   | { type: "setPosition"; lngLat: LngLat }
-  | { type: "showRoute"; coordinates: LngLat[]; startHere: LngLat | null }
+  | {
+      type: "showRoute";
+      coordinates: LngLat[];
+      startHere: LngLat | null;
+      /** A word with the pen up (TASK-198): the letters, drawn as the
+       * route, and the walks between them, dashed. Absent otherwise. */
+      letters?: LngLat[][];
+      walks?: LngLat[][];
+    }
   | { type: "clearRoute" }
   | { type: "showOthers"; lines: LngLat[][] }
   | { type: "showTrack"; coordinates: LngLat[] }
@@ -38,15 +47,31 @@ export function setPosition(point: LatLon): ToPage {
 
 /**
  * Draws the route and frames the map on it. When it begins away from
- * `requested`, the start the user asked for, it marks where to go.
+ * `requested`, the start the user asked for, it marks where to go. With the
+ * walks of a word with the pen up (TASK-198) the letters are the route and
+ * the walks are dashed; without, the message is the one of before.
  */
-export function showRoute(points: LatLon[], requested: LatLon | null = null): ToPage {
+export function showRoute(
+  points: LatLon[],
+  requested: LatLon | null = null,
+  walks: readonly Walk[] | null = null,
+): ToPage {
   const moved =
     requested !== null && metresBetween(requested, points[0]) > START_HERE_M;
-  return {
-    type: "showRoute",
+  const shown = {
+    type: "showRoute" as const,
     coordinates: points.map(toLngLat),
     startHere: moved ? toLngLat(points[0]) : null,
+  };
+  const walked = walksOf(points, walks);
+  if (walked.length === 0) {
+    return shown;
+  }
+  const pieces = piecesOf(points, walked);
+  return {
+    ...shown,
+    letters: pieces.letters.map((line) => line.map(toLngLat)),
+    walks: pieces.walks.map((line) => line.map(toLngLat)),
   };
 }
 

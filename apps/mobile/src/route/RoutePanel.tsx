@@ -33,6 +33,7 @@ import type { ExportState } from "./useGpxExport";
 import type { ImageState } from "./useImageOutline";
 import type { AnyRouteRequest, RouteProblem, RouteState } from "./useRouteRequest";
 import type { ShapeReadingState } from "./useShapeReading";
+import { penSplit } from "./walks";
 import { type Note, toNotes } from "./warnings";
 import {
   MAX_WORD_FIELD_LENGTH,
@@ -72,6 +73,10 @@ type ChoiceProps = {
   /** Round or square letters for the word (TASK-080). */
   letterStyle: LetterStyle;
   onLetterStyle: (style: LetterStyle) => void;
+  /** The pen lifted between the letters of the word (TASK-198): the switch
+   * shows only with a way to change it. */
+  penUp?: boolean;
+  onPenUp?: (on: boolean) => void;
   /** The picture chosen and its outline (TASK-073), and how to choose one. */
   image: ImageState;
   onChooseImage: (source: ImageSource) => void;
@@ -100,6 +105,8 @@ export function RouteChoice({
   wordCheck,
   letterStyle,
   onLetterStyle,
+  penUp = false,
+  onPenUp,
   image,
   onChooseImage,
   distanceText,
@@ -170,6 +177,13 @@ export function RouteChoice({
             <Text style={styles.note}>
               Square letters follow the street grid: best for short words.
             </Text>
+          )}
+          {onPenUp && (
+            <PenSwitch
+              label="Lift the pen between letters"
+              on={penUp}
+              onChange={onPenUp}
+            />
           )}
         </>
       )}
@@ -305,6 +319,7 @@ export function RouteOutcome({
             <Text style={styles.target}>
               {`${nameOf(view.request)} · on roads · target ${view.request.distance_m / 1000} km`}
             </Text>
+            <PenSplit result={view.result} />
           </View>
           <RouteTiles choices={choices} chosen={chosen} onChoose={onChoose} />
           {toNotes(view.result.warnings).map((note) => (
@@ -362,6 +377,53 @@ export function RouteOutcome({
     default:
       return null;
   }
+}
+
+/** On or off, as the run's switches are (RunDashboard). */
+function PenSwitch({
+  label,
+  on,
+  onChange,
+}: {
+  label: string;
+  on: boolean;
+  onChange: (on: boolean) => void;
+}) {
+  return (
+    <Pressable
+      style={[styles.switch, on && styles.switchOn]}
+      onPress={() => onChange(!on)}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: on }}
+      accessibilityLabel={label}
+    >
+      <Text style={styles.switchText}>{label}</Text>
+      <Text style={[styles.switchState, on && styles.switchStateOn]}>
+        {on ? "On" : "Off"}
+      </Text>
+    </Pressable>
+  );
+}
+
+/**
+ * A word with the pen up (TASK-198): the km of its letters, what the run
+ * records, apart from the km walked between them. Nothing for any other
+ * route, nor from an API that sends no walks.
+ */
+function PenSplit({ result }: { result: RouteResult }) {
+  const split = penSplit(result);
+  if (split === null) {
+    return null;
+  }
+  return (
+    <Text style={styles.target}>
+      {`${km(split.lettersM)} km of letters + ${km(split.walksM)} km walking between them`}
+    </Text>
+  );
+}
+
+function km(metres: number): string {
+  return (metres / 1000).toFixed(1);
 }
 
 /** Under the shape field: the shape the words name, or why there is none. */
@@ -578,6 +640,35 @@ const styles = StyleSheet.create({
   },
   note: {
     color: color.textMuted,
+  },
+  switch: {
+    minHeight: MIN_TAP_SIZE,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: space.sm,
+    marginTop: space.sm,
+    paddingHorizontal: space.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: color.surface,
+  },
+  switchOn: {
+    borderColor: color.borderStrong,
+  },
+  switchText: {
+    flex: 1,
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  switchState: {
+    color: color.textFaint,
+    fontWeight: fontWeight.semibold,
+  },
+  switchStateOn: {
+    color: color.text,
   },
   reading: {
     gap: space.sm,

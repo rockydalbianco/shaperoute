@@ -8,7 +8,8 @@ import { POOR_FIX_M } from "./navigator";
  * the line that was run, its length and how long it took. What to do with a
  * doubtful fix is decided here once; the score cleans the rest (ADR-0090).
  * A run can be paused (TASK-169, ADR-0137): what happens in a pause is not
- * of the run, neither its metres nor its time.
+ * of the run, neither its metres nor its time. The walks of a word with the
+ * pen up are pauses too, of the pen's (TASK-198).
  */
 
 /** A fix closer than this to the last one kept adds nothing to the line. */
@@ -36,6 +37,10 @@ export type Pause = {
   /** The runner stood still and the app paused by itself: the next fix
    * that moves ends it. Absent when the runner asked. */
   auto?: true;
+  /** The pen is up between two letters of a word (TASK-198): the app paused
+   * at the end of a letter, and the start of the next one ends it. Like the
+   * runner's own, nothing in it is of the run. Absent otherwise. */
+  pen?: true;
 };
 
 export type Track = {
@@ -86,6 +91,42 @@ export function resumeTrack(track: Track, atMs: number): Track {
 }
 
 /**
+ * `track` with the pen lifted from `atMs`, at the end of a letter (TASK-198):
+ * a pause of the pen's. A pause by standing still becomes the pen's, so
+ * moving on along the walk does not end it; a pause of the runner's stays
+ * as it is, and so does a track already paused by the pen.
+ */
+export function penUpTrack(track: Track, atMs: number): Track {
+  const open = openPause(track);
+  if (open === null) {
+    const last = track.fixes[track.fixes.length - 1];
+    const fromMs = last === undefined ? atMs : Math.max(atMs, last.timeMs);
+    return {
+      ...track,
+      pauses: [...(track.pauses ?? []), { fromMs, toMs: null, pen: true }],
+    };
+  }
+  if (open.auto !== true || track.pauses === undefined) {
+    return track;
+  }
+  return {
+    ...track,
+    pauses: [
+      ...track.pauses.slice(0, -1),
+      { fromMs: open.fromMs, toMs: null, pen: true },
+    ],
+  };
+}
+
+/**
+ * `track` going on from `atMs` when the pen paused it: the next letter
+ * starts. Any other pause, the runner's above all, is not the pen's to end.
+ */
+export function penDownTrack(track: Track, atMs: number): Track {
+  return openPause(track)?.pen === true ? resumeTrack(track, atMs) : track;
+}
+
+/**
  * A track taken up again at `nowMs`, after «Stop» or after the app closed:
  * the time since it was left is a pause of the runner's, so the clock does
  * not count it and the next fix is not joined to the last.
@@ -105,7 +146,8 @@ export function continueTrack(track: Track, nowMs: number): Track {
   };
 }
 
-/** Whether the next fix kept comes after a pause of the runner's. */
+/** Whether the next fix kept comes after a pause of the runner's, or of the
+ * pen's: no metres from where it began, wherever the walk went. */
 function afterPause(track: Track, last: TrackFix): boolean {
   const pause = track.pauses?.[track.pauses.length - 1];
   return (
@@ -119,7 +161,8 @@ function afterPause(track: Track, last: TrackFix): boolean {
 /** `track` with `fix` at its end, or `track` itself when the fix is dropped. */
 export function addFix(track: Track, fix: TrackFix): Track {
   const pause = openPause(track);
-  // Paused by the runner: nothing is of the run until «Resume».
+  // Paused by the runner, or by the pen between two letters: nothing is of
+  // the run until it goes on.
   if (pause !== null && pause.auto !== true) {
     return track;
   }

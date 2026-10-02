@@ -1,4 +1,4 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { LatLon, Walk } from "@shaperoute/shared-types";
 import { useEffect, useRef, useState } from "react";
 import {
   Linking,
@@ -36,6 +36,9 @@ type Props = {
   start: LatLon | null;
   /** The route to draw over the roads, or null for none. */
   route: LatLon[] | null;
+  /** The route's walks, for a word with the pen up (TASK-198): dashed, the
+   * letters alone in the route's colour. None draws the route as before. */
+  walks?: Walk[] | null;
   /** The other routes to choose from, grey under the route (TASK-093). */
   others?: LatLon[][];
   /** The run to draw over the route, or null for none (TASK-113). */
@@ -55,6 +58,7 @@ type Props = {
 export function MapView({
   start,
   route,
+  walks = null,
   others = NO_OTHERS,
   track = null,
   following = null,
@@ -99,13 +103,13 @@ export function MapView({
       return;
     }
     if (route) {
-      webView.current?.injectJavaScript(pageScript(showRoute(route, start)));
+      webView.current?.injectJavaScript(pageScript(showRoute(route, start, walks)));
       routeShown.current = true;
     } else if (routeShown.current) {
       webView.current?.injectJavaScript(pageScript(clearRoute()));
       routeShown.current = false;
     }
-  }, [ready, route, start]);
+  }, [ready, route, start, walks]);
 
   useEffect(() => {
     if (!ready) {
@@ -145,7 +149,7 @@ export function MapView({
       followed.current = false;
       webView.current?.injectJavaScript(pageScript(stopFollow()));
       if (route) {
-        webView.current?.injectJavaScript(pageScript(showRoute(route, start)));
+        webView.current?.injectJavaScript(pageScript(showRoute(route, start, walks)));
       }
     }
     // Only a new position moves the map, and the heading comes with it; the

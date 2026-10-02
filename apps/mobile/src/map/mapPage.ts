@@ -1,6 +1,6 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { color, otherRoute, route, stop, track } from "../theme/tokens";
+import { color, otherRoute, route, stop, track, walk } from "../theme/tokens";
 import { toLngLat } from "./coordinates";
 import { LABEL_FONT, sgravaDarkStyle } from "./mapStyle";
 
@@ -44,6 +44,12 @@ export const ROUTE_OPACITY = route.opacity;
 export const OTHER_ROUTE_COLOR = otherRoute.color;
 export const OTHER_ROUTE_WIDTH = otherRoute.width;
 export const OTHER_ROUTE_OPACITY = otherRoute.opacity;
+
+/** The walks of a word with the pen up, dashed under the route (TASK-198). */
+export const WALK_COLOR = walk.color;
+export const WALK_WIDTH = walk.width;
+export const WALK_OPACITY = walk.opacity;
+export const WALK_DASH = walk.dash;
 
 /** The run over its route (TASK-113). */
 export const TRACK_COLOR = track.color;
@@ -128,6 +134,7 @@ export function buildMapPage(): string {
     var startHere = null;
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
+    var walks = noRoute;
     var track = noRoute;
     var stops = noRoute;
     var others = noRoute;
@@ -153,6 +160,21 @@ export function buildMapPage(): string {
           "line-color": ${toScript(OTHER_ROUTE_COLOR)},
           "line-width": ${OTHER_ROUTE_WIDTH},
           "line-opacity": ${OTHER_ROUTE_OPACITY},
+        },
+      });
+      // The walks between the letters of a word with the pen up, dashed,
+      // under its letters (TASK-198).
+      map.addSource("walks", { type: "geojson", data: walks });
+      map.addLayer({
+        id: "walks",
+        type: "line",
+        source: "walks",
+        layout: { "line-join": "round", "line-cap": "butt" },
+        paint: {
+          "line-color": ${toScript(WALK_COLOR)},
+          "line-width": ${WALK_WIDTH},
+          "line-opacity": ${WALK_OPACITY},
+          "line-dasharray": ${toScript(WALK_DASH)},
         },
       });
       // A route that arrived before the style is drawn now.
@@ -276,6 +298,13 @@ export function buildMapPage(): string {
         source.setData(route);
       }
     }
+    function setWalks(data) {
+      walks = data;
+      var source = map.getSource("walks");
+      if (source) {
+        source.setData(walks);
+      }
+    }
     function setStops(data) {
       stops = data;
       var source = map.getSource("stops");
@@ -317,11 +346,23 @@ export function buildMapPage(): string {
           map.flyTo({ center: message.lngLat, zoom: ${START_ZOOM} });
         } else if (message.type === "showRoute") {
           var points = message.coordinates;
+          // A word with the pen up: its letters are the route, its walks dashed.
           setRoute({
             type: "Feature",
             properties: {},
-            geometry: { type: "LineString", coordinates: points },
+            geometry: message.walks
+              ? { type: "MultiLineString", coordinates: message.letters }
+              : { type: "LineString", coordinates: points },
           });
+          setWalks(
+            message.walks
+              ? {
+                  type: "Feature",
+                  properties: {},
+                  geometry: { type: "MultiLineString", coordinates: message.walks },
+                }
+              : noRoute,
+          );
           var bounds = points.reduce(function (box, point) {
             return box.extend(point);
           }, new maplibregl.LngLatBounds(points[0], points[0]));
@@ -373,6 +414,7 @@ export function buildMapPage(): string {
           setTrack(noRoute);
         } else if (message.type === "clearRoute") {
           setRoute(noRoute);
+          setWalks(noRoute);
           setStartHere(null);
         }
       },

@@ -367,3 +367,95 @@ test("Try N km and a shape of the catalogue are told as hints taken", async () =
     { kind: "hint_taken", shape: "star", hint: "catalog_shape", distance_m: 5000 },
   ]);
 });
+
+// --- the pen up between the letters (TASK-198) ------------------------------
+
+test("with a word, a switch lifts the pen between the letters", async () => {
+  const onPenUp = jest.fn();
+  const pen = (on: boolean) => (
+    <RouteChoice
+      kind="word"
+      onKind={jest.fn()}
+      shapeText="heart"
+      shape="heart"
+      onShapeText={jest.fn()}
+      reading={null}
+      onShapeDone={jest.fn()}
+      wordText="sun"
+      onWordText={jest.fn()}
+      wordCheck={checkWord("sun", 9000)}
+      letterStyle="round"
+      onLetterStyle={jest.fn()}
+      penUp={on}
+      onPenUp={onPenUp}
+      distanceText="9"
+      distanceM={9000}
+      image={{ status: "none" }}
+      onChooseImage={jest.fn()}
+      onDistanceText={jest.fn()}
+    />
+  );
+  const { rerender } = await render(pen(false));
+  const name = "Lift the pen between letters";
+  expect(screen.getByRole("switch", { name, checked: false })).toBeTruthy();
+  expect(screen.getByText("Off")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("switch", { name }));
+  expect(onPenUp).toHaveBeenCalledWith(true);
+  await rerender(pen(true));
+  expect(screen.getByRole("switch", { name, checked: true })).toBeTruthy();
+  await fireEvent.press(screen.getByRole("switch", { name }));
+  expect(onPenUp).toHaveBeenLastCalledWith(false);
+});
+
+test("no switch with a shape, nor without a way to change it", async () => {
+  await render(choice(null));
+  expect(screen.queryByRole("switch")).toBeNull();
+  await render(wordChoice("sun", 9000));
+  expect(screen.queryByRole("switch")).toBeNull();
+});
+
+test("a word with the pen up shows the km of its letters apart from the walks", async () => {
+  // North in a line: letters 0–100 m and 200–300 m, a walk of 100 m between.
+  const metre = 1 / 111_195;
+  const points = [0, 100, 200, 300].map((m): [number, number] => [
+    46.0122 + m * metre,
+    11.2986,
+  ]);
+  const result = {
+    points,
+    distance_m: 2900,
+    similarity: 0.9,
+    shape: null,
+    word: "IO",
+    warnings: [],
+    directions: [],
+    walks: [[1, 2]] as [number, number][],
+  };
+  const request = {
+    start: points[0],
+    word: "IO",
+    pen_up: true,
+    distance_m: 2000,
+    activity: "running" as const,
+  };
+  const outcome = (shown: typeof result) => (
+    <RouteOutcome
+      view={{ status: "done", request, result: shown }}
+      onCancel={jest.fn()}
+      exporting={{ status: "idle" }}
+      onExport={jest.fn()}
+      onTryDistance={jest.fn()}
+      onPickShape={jest.fn()}
+      onStart={jest.fn()}
+    />
+  );
+  const { rerender } = await render(outcome(result));
+  // The whole route on top, as for every route; the split under it.
+  expect(screen.getByText("2.9 km")).toBeTruthy();
+  expect(
+    screen.getByText("2.8 km of letters + 0.1 km walking between them"),
+  ).toBeTruthy();
+  // From an API that sends no walks: as before.
+  await rerender(outcome({ ...result, walks: [] }));
+  expect(screen.queryByText(/walking between them/)).toBeNull();
+});

@@ -6,7 +6,8 @@ import type { RunRecorder } from "./trackStore";
 /**
  * The controls of the run in progress (TASK-169, ADR-0137): the countdown
  * before it, «Pause» and «Resume», the pause that comes by itself when the
- * runner stands still, and whether the voice speaks. One run at a time, as
+ * runner stands still, the pause of the pen between two letters of a word
+ * (TASK-198), and whether the voice speaks. One run at a time, as
  * in the run file (trackStore): the screens press here, and the recording
  * (useFreeRun, useNavigation) does what was pressed.
  */
@@ -26,6 +27,9 @@ export type RunControl = {
   startsAtMs: number | null;
   /** Paused by standing still, not by the runner: moving again resumes. */
   auto: boolean;
+  /** Paused by the pen, lifted at the end of a letter of a word (TASK-198):
+   * the start of the next letter resumes. */
+  pen: boolean;
   /** The runner's choices; they stay for the next run. */
   autoPause: boolean;
   voice: boolean;
@@ -35,6 +39,7 @@ let state: RunControl = {
   phase: "idle",
   startsAtMs: null,
   auto: false,
+  pen: false,
   autoPause: true,
   voice: true,
 };
@@ -91,17 +96,17 @@ export function pauseRun(): void {
     return;
   }
   session.recorder.pause(Date.now());
-  set({ phase: "paused", auto: false });
+  set({ phase: "paused", auto: false, pen: false });
   session.onChange();
 }
 
-/** The run goes on, whoever paused it. */
+/** The run goes on, whoever paused it: the pen too, on a walk. */
 export function resumeRun(): void {
   if (session === null || state.phase !== "paused") {
     return;
   }
   session.recorder.resume(Date.now());
-  set({ phase: "running", auto: false });
+  set({ phase: "running", auto: false, pen: false });
   session.onChange();
 }
 
@@ -160,6 +165,13 @@ export type RunSession = {
   /** A fix from the GPS, for the track. During the countdown only the last
    * one is kept, and it becomes the run's first when the countdown ends. */
   onFix(fix: TrackFix, arrived: boolean): void;
+  /** The pen is lifted at the end of a letter (TASK-198): a running run
+   * pauses at `atMs`, and a pause by standing still becomes the pen's. A
+   * pause of the runner's stays theirs. */
+  liftPen(atMs: number): void;
+  /** The next letter starts: the pen's pause ends at `atMs`. Any other
+   * pause, the runner's above all, stays. */
+  lowerPen(atMs: number): void;
   /** The run is left: the controls are free for the next one. */
   end(): void;
 };
@@ -196,6 +208,7 @@ export function controlRun(
     phase: fresh ? "countdown" : "running",
     startsAtMs: fresh ? Date.now() + COUNTDOWN_MS : null,
     auto: false,
+    pen: false,
   });
   return {
     onFix(fix, arrived) {
@@ -214,6 +227,24 @@ export function controlRun(
         say("Resumed.");
       }
     },
+    liftPen(atMs) {
+      const running = state.phase === "running";
+      const standing = state.phase === "paused" && state.auto;
+      if (session !== mine || mine.arrived || !(running || standing)) {
+        return;
+      }
+      recorder.liftPen(atMs);
+      set({ phase: "paused", auto: false, pen: true });
+      onChange();
+    },
+    lowerPen(atMs) {
+      if (session !== mine || state.phase !== "paused" || !state.pen) {
+        return;
+      }
+      recorder.lowerPen(atMs);
+      set({ phase: "running", pen: false });
+      onChange();
+    },
     end() {
       if (mine.countdown) {
         clearTimeout(mine.countdown);
@@ -221,7 +252,7 @@ export function controlRun(
       clearInterval(mine.watch);
       if (session === mine) {
         session = null;
-        set({ phase: "idle", startsAtMs: null, auto: false });
+        set({ phase: "idle", startsAtMs: null, auto: false, pen: false });
       }
     },
   };

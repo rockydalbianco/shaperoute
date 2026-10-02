@@ -1,0 +1,10 @@
+{
+  "token": "Q2bJ0d7rT1sW5kZ8xYvN3mHcLpA9eGfR4uIoK6jBtXw",
+  "user": {
+    "id": 1,
+    "email": "runner@example.com",
+    "username": "Runner_42",
+    "role": "user",
+    "created_at": "2026-10-02T08:30:00Z"
+  }
+}

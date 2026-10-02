@@ -11,9 +11,10 @@
   route-engine, che l'API importa (ARCHITECTURE §4).
 - `RouteRequest` e `RouteResult` come in `ARCHITECTURE.md` §3, con gli
   stessi campi di `packages/shared-types`: il contratto non cambia.
-- Per ora gira solo sul PC di sviluppo: nessuna autenticazione, nessun
-  prefisso di versione, nessun CORS (l'app è nativa). Si decidono con
-  hosting e account (ADR-0013, fase 4).
+- Nessun prefisso di versione, nessun CORS (l'app è nativa). Fuori casa
+  l'API può chiedere una chiave (`X-API-Key`, TASK-081); gli account, da
+  TASK-114, hanno un token di sessione a parte (`Authorization: Bearer`).
+  I percorsi restano aperti a tutti: si disegna anche senza account.
 
 ## Avvio
 
@@ -37,6 +38,12 @@ quel valore; senza, l'API è aperta come prima. I POST sono limitati a
 `SHAPEROUTE_RATE_LIMIT` al minuto per client (default 30, 0 = nessun
 limite); il polling dei job è GET e non conta. La chiave non si passa mai
 da riga di comando.
+
+Con `SHAPEROUTE_DATABASE_URL` (un indirizzo `postgresql://…`) l'API usa il
+database degli account (TASK-114, `DATABASE.md`): all'avvio applica le
+migrazioni che mancano e lo scrive; se il database non risponde, non
+parte. Senza, gli account rispondono `503 accounts_unavailable` e il resto
+funziona come prima. Come accenderne uno sul PC: `SETUP.md`, 10.4.
 
 Con `--request-log`, o con `SHAPEROUTE_REQUEST_LOG=1`, l'API scrive ogni
 richiesta di percorso in un file, per poterla rifare: «Registro delle
@@ -72,6 +79,7 @@ richiesta risponde subito e il percorso si chiede dopo.
 - `DELETE /route-jobs/{job_id}` annulla: `204`. Una richiesta in coda non
   parte; una che sta caricando il grafo si ferma prima di calcolare; una
   che sta già calcolando finisce nel suo thread e il risultato si butta.
+  L'annullamento è un evento delle ricerche (`cancelled`, TASK-142).
 - Un `job_id` sconosciuto (annullato, finito da più di 10 minuti, o API
   riavviata) risponde `404 http_error`.
 
@@ -232,7 +240,9 @@ Le città di tutto il mondo per nome, `?q=…`, al più 5, ognuna col suo
 centro: la geocodifica di Geoapify per sole città (`type=city`), con la
 chiave di `/places`. Non l'autocompletamento, che per una città dà il
 centro dell'area del comune (Milano: Baggio, 6 km dal Duomo). Corpo come
-`/places` (`places.json`); 503 senza chiave. Cache di un giorno.
+`/places` (`places.json`); 503 senza chiave. Cache di un giorno. Parole
+imparate dal vocabolario (`city_names`, TASK-142) cercano il nome imparato:
+«levic» cerca «Levico Terme», non Levič.
 
 ### `GET /city-suggestions` (TASK-134, TASK-138, ADR-0110)
 
@@ -314,6 +324,25 @@ niente rete, e l'API non ricorda niente. Una corsa con meno di 2 posizioni
 buone o più corta del 10% del percorso risponde `422 invalid_request`, con
 il motivo del motore nel messaggio («This run cannot be scored: …»). Al più
 20 000 posizioni e 50 000 punti di percorso.
+
+### `POST /signals` (TASK-142, ADR-0112)
+
+Cosa ha fatto l'app con una ricerca, per gli eventi delle ricerche
+(`docs/INSIGHTS.md`). Tre corpi, distinti da `kind` (in
+`packages/shared-types/fixtures/signals.json`, tipi in
+`packages/shared-types/src/signals.ts`):
+
+| `kind` | Campi | Quando |
+|---|---|---|
+| `city_chosen` | `label`, `point`, `place` (facoltativo), `via`: `suggestion`, `recent`, `featured`, `typed` | una città o un luogo scelto in «Explore» |
+| `route_chosen` | `shape` (o `"image"`) o `word`; `index` (0 è A), `of` (1–3), `via`: `start`, `gpx` | il primo uso di un percorso fra quelli offerti |
+| `hint_taken` | `shape` o `word`; `hint`: `try_distance` (con `to_m`) o `catalog_shape`; `distance_m` | «Try N km», o una forma del catalogo dopo un percorso fallito |
+
+Risponde sempre `204` a un corpo valido, anche con gli eventi spenti; un
+campo in più, una forma fuori catalogo, un indice fuori dai percorsi offerti
+o una posizione fuori dalla Terra: `422 invalid_request`. Oltre 60 segnali
+al minuto, tutti i client insieme, il segnale non si registra (avviso nel
+log). Il `point` si registra come cella di ~1 km; la partenza non c'è mai.
 
 ### `POST /route-directions` (TASK-145, ADR-0117)
 
@@ -532,12 +561,49 @@ l'app manda il contorno che mostra e la linea disegnata.
   non valido o `aspect` fuori da 1/20–20 sono `invalid_request`.
 - «Undo» è dell'app: torna al contorno di prima, senza chiamare l'API.
 
+### Account (TASK-114, ADR-0120)
+
+Email e password (ADR-0114), nel database di `DATABASE.md` (ADR-0115).
+Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,
+`Session`, `User`; `fixtures/sign-up-request.json`, `fixtures/session.json`).
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `POST /accounts` | iscriversi: `email`, `password`, `username`, `at_least_16` | `201` `Session`: iscriversi fa anche entrare |
+| `POST /session` | entrare: `email`, `password` | `200` `Session` |
+| `DELETE /session` | uscire, solo da questo telefono | `204` |
+| `GET /me` | chi sono | `200` `User` |
+| `DELETE /me` | cancellare l'account e tutto ciò che è suo, subito | `204` |
+
+- `Session` è `{ "token": "…", "user": User }`; `User` è `id`, `email`,
+  `username`, `role` (`user` o `admin`) e `created_at`. Il token è l'unica
+  cosa segreta che l'API dà, e solo qui: l'app lo tiene in
+  `expo-secure-store` e lo rimanda come `Authorization: Bearer <token>` a
+  `GET /me`, `DELETE /session`, `DELETE /me` e agli endpoint che verranno
+  (la dipendenza `current_user` di `accounts.py`).
+- L'email si salva in minuscolo; la password da 8 a 128 caratteri; il nome
+  da 3 a 20 fra lettere, cifre, `_` e `.`, unico senza badare alle
+  maiuscole. `at_least_16` falso è `422 invalid_request` (ADR-0114, punto
+  6). Campi in più, come `role`, sono `invalid_request`.
+- La password resta solo come hash Argon2id; del token il database tiene
+  solo lo SHA-256. Né l'una né l'altro finiscono nei log.
+- Una sessione finisce 90 giorni dopo l'ultimo uso (`session_expired`, una
+  volta, poi `not_signed_in`) o con `DELETE /session`. Ogni telefono ha la
+  sua: uscire da uno non fa uscire gli altri.
+- Password sbagliata ed email sconosciuta danno lo stesso
+  `401 wrong_credentials`, nello stesso tempo. Dopo 5 password sbagliate in
+  15 minuti per la stessa email, `429 too_many_requests` con `Retry-After`,
+  anche con quella giusta. Il limite dei POST di `SHAPEROUTE_RATE_LIMIT`
+  vale in più.
+
 ## Eventi delle ricerche (TASK-130, ADR-0101)
 
 Ogni ricerca e ogni segnale d'uso lascia un evento in `data/insights/`
 (spento con `--no-insights`); `--insights-dir` e `--vocabulary` cambiano
 cartella e vocabolario. Il funzionamento, i comandi e la privacy sono in
-`docs/INSIGHTS.md`. Le risposte degli endpoint non cambiano.
+`docs/INSIGHTS.md`. Le risposte degli endpoint non cambiano, tranne
+`/cities` corretto dal vocabolario; i segnali dell'app arrivano da
+`POST /signals` (TASK-142).
 
 ## Errori
 
@@ -571,6 +637,13 @@ motore, in una parola.
 | Indirizzo o metodo sbagliato | 404, 405 | `http_error` |
 | Con `SHAPEROUTE_API_KEY` impostata: `X-API-Key` mancante o sbagliata (TASK-081) | 401 | `unauthorized` |
 | Più di `SHAPEROUTE_RATE_LIMIT` POST in un minuto dallo stesso client (default 30; `Retry-After` in secondi) | 429 | `too_many_requests` |
+| Account: 5 password sbagliate in 15 minuti per la stessa email (`Retry-After` in secondi) | 429 | `too_many_requests` |
+| Account: iscrizione con un'email già usata | 409 | `email_taken` |
+| Account: iscrizione con un nome già usato, anche con altre maiuscole | 409 | `username_taken` |
+| Account: email o password sbagliate | 401 | `wrong_credentials` |
+| Account: nessun token, o uno di una sessione chiusa | 401 | `not_signed_in` |
+| Account: sessione non usata da 90 giorni | 401 | `session_expired` |
+| Account: l'API non ha un database (`SHAPEROUTE_DATABASE_URL`) | 503 | `accounts_unavailable` |
 
 Forma e codici sono anche nel contratto condiviso con l'app: `ApiError` e
 `API_ERROR_CODES` in `shared-types` (ADR-0031). Un codice nuovo va aggiunto

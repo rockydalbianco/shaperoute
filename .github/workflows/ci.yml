@@ -168,6 +168,50 @@ jobs:
         if: always()
         run: docker logs api || true
 
+      # La configurazione del server della strada F (TASK-144, ADR-0111):
+      # deploy/compose.yaml con il .env copiato dal modello, data/ del
+      # checkout e catalog/ montati, la porta solo su 127.0.0.1. Da
+      # TASK-122 (ADR-0123) anche il database: un'iscrizione vera, poi una
+      # copia notturna fatta subito e il suo ripristino in un database a
+      # parte.
+      - name: Compose
+        run: |
+          docker rm -f api
+          cp .env.example deploy/.env
+          sed -i 's/^SHAPEROUTE_API_KEY=.*/SHAPEROUTE_API_KEY=ci-key-only-for-this-run/' deploy/.env
+          sed -i 's/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=ci0only0for0this0run/' deploy/.env
+          cd deploy
+          docker compose --profile ai --profile public config --quiet
+          docker compose up -d --build
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:8000/health && break
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:8000/health
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/docs)" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' \
+            -H 'X-API-Key: ci-key-only-for-this-run' http://127.0.0.1:8000/docs)" = 200
+          test "$(stat -c %u ../data/cache)" = 10001
+          curl -fsS -H 'X-API-Key: ci-key-only-for-this-run' \
+            'http://127.0.0.1:8000/recommended-routes?lat=46.067&lon=11.1215' \
+            | python3 -c 'import json, sys; assert json.load(sys.stdin)["routes"]'
+          test "$(curl -s -o /dev/null -w '%{http_code}' \
+            -H 'X-API-Key: ci-key-only-for-this-run' http://127.0.0.1:8000/me)" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+            -H 'X-API-Key: ci-key-only-for-this-run' -H 'Content-Type: application/json' \
+            -d '{"email":"ci@example.com","password":"ci-password-1","username":"ci_runner","at_least_16":true}' \
+            http://127.0.0.1:8000/accounts)" = 201
+          docker compose exec -T backup bash /backup.sh now
+          docker compose exec -T backup bash /backup.sh check | tee /dev/stderr | grep -q ' 1 accounts'
+          test "$(stat -c %a ../data/backups/shaperoute-*.dump)" = 600
+          docker run --rm -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            -e SHAPEROUTE_DOMAIN=api.example.com caddy:2 \
+            caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+      - name: Compose log
+        if: always()
+        run: docker compose -f deploy/compose.yaml logs || true
+
       # Raspberry Pi 5 e Oracle Ampere sono ARM64: l'immagine deve
       # costruirsi anche per loro (emulata con QEMU, solo la build).
       - uses: docker/setup-qemu-action@v3

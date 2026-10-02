@@ -65,10 +65,13 @@ Quattro regole:
 
 ## Le due schermate
 
-Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
+Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La
+prima ed «Explore» sono due delle tre pagine affiancate (sotto, «Le
+pagine»):
 
-1. **«What to draw»**, all'apertura. Dall'alto: il nome «Sgrava» con il
-   pulsante «My position»; una scheda che dice da dove partirà il percorso,
+1. **«What to draw»**, all'apertura: la pagina «Draw». Dall'alto: il nome
+   «Sgrava» con il pulsante «Run» (una corsa senza percorso, TASK-149,
+   sotto); una scheda che dice da dove partirà il percorso,
    con, quando servono, il rimando alle Impostazioni e la ricerca del
    luogo; l'errore della mappa; le forme del catalogo come tessere, con un
    simbolo e il nome (quella scelta ha il bordo chiaro); il campo per
@@ -83,8 +86,8 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    −. L'attribuzione dei dati è sempre visibile in basso, per intero; i
    suoi link si aprono nel browser del telefono.
 
-3. **«Explore»** (TASK-126, variante C di TASK-092), dal pulsante
-   «Explore» in alto nella prima schermata: «Best near you», i percorsi
+3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
+   di «Draw» (TASK-154): «Best near you», i percorsi
    migliori che partono entro 5 km dalla partenza scelta, con i filtri per
    forma o parola e per distanza. Ogni riga ha la miniatura della linea
    (gialla, il percorso), forma e km, città e distanza dalla partenza, la
@@ -148,6 +151,16 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    scheda dice perché in rosso e «Start» riprova; «Back to the list» o «←»
    lasciano perdere l'attesa.
 
+   **Da TASK-151** un esempio di città aperto sulla mappa ha le tessere
+   «A · B · C» (sotto, «Il risultato»), sopra «Start», quando l'API ha
+   mandato delle alternative: A è il percorso del motore. Una tessera
+   toccata diventa il percorso: km e somiglianza della scheda, la linea
+   sulla mappa, «Start» e «Export GPX» sono i suoi. Mentre si aspettano le
+   indicazioni la scelta resta ferma. Da TASK-155 gli altri percorsi sono
+   linee grigie sulla mappa, sotto quello scelto, e spariscono durante la
+   corsa. Un percorso consigliato o a tema è uno
+   solo: niente tessere. Gli esempi salvati prima si ridisegnano una volta.
+
 Passare da una schermata all'altra:
 
 - «←» torna alla scelta con forma e distanza di prima. Se il percorso è
@@ -161,6 +174,69 @@ La mappa resta caricata anche sotto la prima schermata: andare e tornare
 non la ricarica. La scheda sta sotto la mappa, non sopra, così non copre
 l'attribuzione; i margini seguono la tacca e la barra in basso di ogni
 telefono.
+
+## Le pagine: «Feed», «Draw», «Explore» (TASK-154, ADR-0124)
+
+Tre pagine affiancate, scelta dell'utente: **«Feed»** a sinistra,
+**«Draw»** al centro, **«Explore»** a destra. Si passa dall'una all'altra
+con uno swipe a destra o a sinistra, oppure toccando il nome in alto. I tre
+nomi stanno in alto a sinistra, nell'ordine in cui sono le pagine: dicono
+dove porta lo swipe. Il nome della pagina sullo schermo è chiaro, con una
+lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
+
+- L'app si apre su «Draw». Forma, parola, distanza e partenza restano come
+  erano dopo un giro sulle altre pagine.
+- **«Feed»** è la pagina dei disegni che gli iscritti pubblicano
+  (TASK-118). Finché non ci sono dice «No drawings yet» e «The drawings
+  that runners publish will show up here.».
+- **«Explore»** chiede i suoi percorsi all'API la prima volta che ci si
+  arriva, non all'apertura dell'app; tornandoci l'elenco è ancora lì. Non
+  ha più «←»: per tornare c'è lo swipe, o il nome «Draw».
+- La mappa, la corsa e la sua fine prendono tutto lo schermo: lì i nomi e
+  lo swipe non ci sono. «←» da un percorso di «Explore» torna sulla pagina
+  «Explore», da un percorso disegnato su «Draw».
+- Uno swipe chiude la tastiera.
+- Una pagina fuori dallo schermo non la legge nemmeno VoiceOver.
+- **Da provare con il dito**: lo swipe stesso, e le righe che scorrono di
+  lato dentro una pagina (le tessere delle forme, le città). L'attesa è
+  che la riga scorra lei e che lo swipe fra le pagine parta da fuori; su
+  Android non è stato provato niente.
+
+## «Profile» (TASK-115, ADR-0125; TASK-154)
+
+In alto a destra, accanto ai nomi delle pagine, un pulsante tondo apre
+**«Profile»**, l'account: mostra l'iniziale di chi è entrato, o una
+figura quando non c'è nessuno. «Profile» si apre sopra l'app e si chiude
+con «←»: sotto, forma, distanza e mappa restano come erano. Sulla mappa e
+durante la corsa il pulsante non c'è.
+
+**«Profile» senza account**: «Sign up» e «Log in», due pulsanti affiancati.
+«Sign up» chiede email, nome (da 3 a 20 fra lettere, cifre, `_` e `.`),
+password (almeno 8 caratteri) e la casella «I am at least 16» (ADR-0114);
+«Log in» email e password. I campi si controllano prima di partire, con le
+regole dell'API, e l'errore si dice in parole sotto il pulsante (sotto,
+«Quando non va»). Si apre su «Sign up»; dopo «Log out» o una sessione
+finita, su «Log in».
+
+**«Profile» con l'account**: «LOGGED IN AS», il nome e l'email; «Log out»;
+«Delete account», in rosso, che chiede prima sulla schermata stessa:
+«Delete my account» o «Keep my account». Nessun pulsante dell'account è
+giallo.
+
+- **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
+  portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
+  ancora; senza rete resta dentro.
+- **Sessione finita** (90 giorni senza uso, o chiusa altrove), all'apertura
+  o a una richiesta: l'app esce da sola, il pulsante di «Profile» ha un
+  pallino arancio e «Profile» dice «Your session has ended. Log in
+  again.». «Draw» va come prima.
+- **«Log out»** esce subito, anche senza rete, e dice «You are logged out
+  on this phone.».
+- **«Delete account»** esce solo con il sì dell'API; se l'API non risponde
+  l'account resta e la scheda dice perché. Fatto, dice «Your account and
+  everything that was yours have been deleted.» e torna a «Sign up».
+- **Senza account** si disegna, si esplora e si corre come prima: oggi
+  nessun'altra richiesta vuole il token.
 
 ## La partenza
 
@@ -224,10 +300,14 @@ non cancella quanto scritto o scelto negli altri.
 
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
 scrivendo nel campo. I simboli delle tessere sono caratteri (♥ ★ ◯ ☾ e le
-emoji di gatto, pesce, cavallo, farfalla, lumaca, cane e coniglio):
+emoji di gatto, pesce, cavallo, farfalla, lumaca, cane, coniglio, zucca
+e albero di Natale):
 disegnare i contorni veri vuole `react-native-svg`, una dipendenza non
 ancora chiesta.
-Le tessere sono quattro per riga.
+Le tessere stanno in una riga sola che scorre di lato col dito (TASK-088,
+ADR-0084, chiesto dall'utente): se ne vedono poco meno di quattro, e la
+tessera tagliata sul bordo dice che ce ne sono altre. Una forma scritta nel
+campo porta la sua tessera in vista.
 
 La **forma** è una parola, in inglese o in italiano (ADR-0036). Le forme
 sono quelle del catalogo, le sole che l'utente ha giudicato riconoscibili
@@ -246,6 +326,8 @@ sulle strade:
 | `snail` | snail · lumaca, lumachina, chiocciola |
 | `dog_head` | dog, dog head, doggy, puppy · cane, cagnolino, testa di cane |
 | `rabbit_head` | rabbit, rabbit head, bunny · coniglio, coniglietto, testa di coniglio |
+| `pumpkin` | pumpkin, halloween pumpkin, jack-o'-lantern · zucca, zucca di halloween |
+| `christmas_tree` | christmas tree, xmas tree · albero di natale, alberello di natale |
 
 - Anche al plurale («stelle», «hearts»), con l'articolo («una stella»,
   «l'amore»), con maiuscole e accenti qualsiasi. La tabella sta in
@@ -257,9 +339,12 @@ sulle strade:
   campo e nel nome del percorso (ADR-0061). «cane» e «dog» portano alla
   testa di cane, «coniglio» e «bunny» a quella di coniglio: gli animali
   interi non sono nel catalogo.
+- «albero» e «tree» da soli **non** sono l'albero di Natale (ADR-0084): un
+  albero qualsiasi non è nel catalogo, e resta «nessuna forma». Sullo
+  schermo `christmas_tree` si legge «christmas tree».
 - Il campo vuoto: «Unknown shape. Try: circle, heart, star, horse, moon,
-  cat, fish, butterfly, snail, dog head or rabbit head.» e «Draw route»
-  resta spento.
+  cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas
+  tree.» e «Draw route» resta spento.
 - Nel campo vuoto il suggerimento è «heart, star, horse…». Il campo
   accetta al massimo 60 caratteri.
 
@@ -581,6 +666,38 @@ nell'attesa «Scoring your run…», con distanza e durata già lì.
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
 principale.
 
+## Correre senza percorso (TASK-149, ADR-0122)
+
+**«Run»**, in alto nella pagina «Draw» accanto a «Sgrava», fa partire
+una corsa senza disegnare niente: niente forma, niente percorso, niente
+API. Si apre la mappa, che segue la posizione come in navigazione (zoom
+17) e disegna la linea corsa fin lì, sottile e chiara (`track`). Al posto
+di «←» un banner con i km in grande, due decimali («2.34 km»), e sotto il
+tempo e il passo medio («12:34 · 5:21 /km»). Il tempo parte dalla prima
+posizione del GPS e va avanti ogni secondo; il passo compare dopo 100 m.
+Prima della prima posizione, «Finding your position…»; senza permesso,
+«Location is off for ShapeRoute: allow it in Settings to record a run.».
+Sotto la mappa «Run without a route», «Pocket» (la stessa modalità tasca
+della navigazione) e «Stop». A ogni km la voce, in inglese come il resto,
+dice il tempo e il passo medio: «1 kilometre. Time: 5 minutes 42 seconds.
+Average pace: 5 minutes 42 seconds per kilometre.» (oltre l'ora, ore e
+minuti). Anche in modalità tasca; niente vibrazione, che in navigazione
+vuol dire una svolta. «Keep running» non ripete i km già detti.
+
+La traccia è quella della navigazione (ADR-0091), con le stesse regole,
+nello stesso file `current-run.json`, con il percorso vuoto: resta se
+l'app si chiude, e una corsa per volta (una nuova sostituisce quella nel
+file alla prima posizione).
+
+**«Stop»** apre la fine della corsa: in alto «Your run» e «White: what you
+ran.»; sotto i km in grande e «25:00 · 5:56 /km». Senza forma non c'è
+punteggio, e niente va all'API. **«Keep running»** torna alla corsa, con la
+stessa traccia; **«Done»** torna alla prima schermata e cancella la corsa
+dal telefono. Uno «Stop» prima della prima posizione torna subito alla
+prima schermata. Se l'app si chiude durante la corsa, alla riapertura si
+apre su questa schermata; «Keep running» c'è solo se l'ultima posizione è
+di meno di 30 minuti prima.
+
 ## Correre con Strava (TASK-135, ADR-0106)
 
 Sotto «Export GPX», in ogni scheda di un percorso (disegnato, di «Explore»,
@@ -621,12 +738,20 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 | Parola che non ci sta (TASK-057) | come per la forma, con «This word…»; senza distanza: This word does not fit the roads here. Try a shorter word, or another start. (niente forme da toccare) |
 | Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
 | Errore del motore (`engine_error`) | The route engine failed. Try again; if it happens again, look at the API log. |
-| L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head or rabbit head. |
+| L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas tree. |
 | `invalid_request`, `http_error`, risposta illeggibile | The app and the API do not agree (a bug): … |
 | API non raggiungibile | Cannot reach the API at http://…:8000. Start it on the PC with --lan, on the same Wi-Fi. |
 | Nessun risultato in 5 minuti | The API took more than 5 minutes. Try again later, or a shorter distance. |
 | L'API non conosce più la richiesta (riavviata) | The API lost this request (was it restarted?). Try again. |
 | Indirizzo dell'API sconosciuto | The app does not know where the API is: open it from the QR code of npm run mobile on the PC. |
+| Account: email già usata (`email_taken`, TASK-115) | This email already has an account. Log in instead. |
+| Account: nome già usato (`username_taken`) | This username is taken. Try another one. |
+| Account: email o password sbagliate (`wrong_credentials`) | Wrong email or password. |
+| Account: troppi tentativi (`too_many_requests`, con `Retry-After`) | Too many tries. Wait 10 minutes and try again. (al minuto intero; sotto il minuto, «Wait a minute») |
+| Account: sessione scaduta o chiusa (`session_expired`, `not_signed_in`) | Your session has ended. Log in again. |
+| Account: l'API non ha un database (`accounts_unavailable`) | Accounts are not available on this API: it has no database. |
+| Account: API non raggiungibile | Cannot reach the API at http://…:8000. Check the connection and try again. |
+| Account: un campo che l'API rifiuterebbe | il primo che non va: Enter an email address, like name@example.com. · A username is 3 to 20 letters, digits, _ or . (no spaces). · A password is at least 8 characters. · You must be at least 16 to sign up. |
 
 ## Cosa esce dal telefono
 
@@ -655,6 +780,12 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   API o senza chiave, a Photon (komoot). Il log dell'API scrive solo
   `GET /places`, né testo né posizione (TASK-124, ADR-0096).
 - **La libreria**: MapLibre GL JS arriva da unpkg a ogni avvio a freddo.
+- **L'account** (TASK-115): email, nome e password vanno all'API solo con
+  «Sign up» e «Log in». Il telefono tiene la sessione, cioè il token e
+  l'utente (numero, email, nome, ruolo), nel portachiavi
+  (`expo-secure-store`, ADR-0125); mai la password. Il token va all'API
+  solo con le richieste dell'account (`GET /me`, `DELETE /session`,
+  `DELETE /me`), in `Authorization`.
 
 ## Quando la mappa non si carica
 

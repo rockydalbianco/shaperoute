@@ -11,7 +11,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lppl1316.sgrava",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -31,6 +35,13 @@
           "cameraPermission": "Sgrava uses the photo you take to trace the outline your route will draw.",
           "microphonePermission": false
         }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
       ]
     ],
     "extra": {
@@ -38,6 +49,6 @@
         "projectId": "47bc672d-5824-4e77-84c4-b44132c6e87f"
       }
     },
-    "owner": "lppl1316"
+    "owner": "lppl1316s-team"
   }
 }

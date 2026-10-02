@@ -1,6 +1,6 @@
 # TASK-126 — «Explore»: i percorsi migliori vicino alla partenza
 
-**Stato**: In corso
+**Stato**: Done, da provare sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-126-explore`
 
 Chiesto dall'utente il 2026-10-01: «finisci la programmazione, poi testa
@@ -74,3 +74,5 @@ samples/LOG.md
   lista è vuota.
 
 ## Esito
+
+Mergiato con la PR #124.

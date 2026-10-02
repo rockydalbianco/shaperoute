@@ -7,6 +7,8 @@
 !services/ai/shaperoute_ai/
 !services/api/pyproject.toml
 !services/api/shaperoute_api/
+# The SQL the API applies when it starts (TASK-114, TASK-122).
+!services/api/migrations/
 **/__pycache__
 **/*.py[cod]
 **/.env

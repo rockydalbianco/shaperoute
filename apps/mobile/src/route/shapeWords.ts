@@ -55,6 +55,16 @@ export const SHAPE_WORDS: Record<
     en: ["rabbit", "rabbits", "rabbit head", "rabbit's head", "bunny"],
     it: ["coniglio", "conigli", "coniglietto", "testa di coniglio"],
   },
+  pumpkin: {
+    en: ["pumpkin", "pumpkins", "halloween pumpkin", "jack-o'-lantern"],
+    it: ["zucca", "zucche", "zucca di halloween"],
+  },
+  // Never "tree" or "albero" alone: a plain tree is another drawing, not in
+  // the catalogue (ADR-0084).
+  christmas_tree: {
+    en: ["christmas tree", "christmas trees", "xmas tree"],
+    it: ["albero di natale", "alberi di natale", "alberello di natale"],
+  },
 };
 
 const WORD_TO_SHAPE = new Map<string, Shape>(

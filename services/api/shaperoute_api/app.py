@@ -35,6 +35,7 @@ from shaperoute_ai.reading import (
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from shaperoute_api.access import protect
+from shaperoute_api.accounts import Accounts, install_accounts
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.errors import error_of
 from shaperoute_api.graphs import MapDataUnavailableError
@@ -86,6 +87,7 @@ from shaperoute_api.schemas import (
     TrackScoreBody,
     TrackScoreRequestBody,
 )
+from shaperoute_api.signals import SignalBody, SignalGate, event_of
 from shaperoute_api.themed import ThemedJobBody, ThemedJobs, ThemedRequestBody
 from shaperoute_api.track_scores import score_run
 
@@ -195,9 +197,13 @@ def create_app(
     themed: ThemedJobs | None = None,
     cities: CitySearch | None = None,
     insights: Insights | None = None,
+    signal_gate: SignalGate | None = None,
+    accounts: Accounts | None = None,
 ) -> FastAPI:
     # The search events and the learned vocabulary (TASK-130, ADR-0101).
     insights = insights or Insights(None)
+    # What the app did with the searches (TASK-142, ADR-0112).
+    gate = signal_gate or SignalGate()
     # The request log (TASK-090) and the events hear how each job ended.
     logged = None if request_log is None else job_recorder(request_log)
 
@@ -206,11 +212,16 @@ def create_app(
     ) -> None:
         if logged is not None:
             logged(job, result, error, elapsed)
+        # A cancelled job is already an event, from DELETE (TASK-142); one
+        # that ended anyway, its result dropped, is not a route shown.
+        if route_jobs.get(job.job_id) is None:
+            return
         if result is not None or error is not None:
             fields = route_fields(
                 job.body,
                 None if result is None else result.similarity,
                 None if error is None else error.code,
+                None if result is None else 1 + len(result.alternatives),
             )
             insights.record("route", ms=round(elapsed * 1000), **fields)
 
@@ -237,6 +248,8 @@ def create_app(
         lifespan=lifespan,
     )
     protect(app)
+    # Sign up, sign in, /me (TASK-114, ADR-0115); without a database, 503.
+    install_accounts(app, accounts)
 
     @app.get("/health")
     def health() -> dict[str, str]:
@@ -275,8 +288,15 @@ def create_app(
         "/route-jobs/{job_id}", status_code=204, responses={404: {"model": ErrorBody}}
     )
     def cancel_route_job(job_id: str) -> Response:
+        job = route_jobs.get(job_id)
         if not route_jobs.cancel(job_id):
             raise HTTPException(404, UNKNOWN_JOB)
+        # Given up before it ended: waited too long, or asked otherwise
+        # (TASK-142). The code says how far it had gone.
+        if job is not None and job.status not in ("done", "failed"):
+            fields = route_fields(job.body, None, None)
+            fields.update(outcome="cancelled", code=job.status)
+            insights.record("route", **fields)
         return Response(status_code=204)
 
     # The route as a GPX file, written by the engine's own export, the one the
@@ -370,8 +390,11 @@ def create_app(
     ) -> PlacesBody:
         if cities is None:
             raise HTTPException(503, "City search is off on this API.")
+        # Words people searched and then left for another city (TASK-142):
+        # "levic" searches "Levico Terme", not Levič.
+        learned = insights.vocab.city_for(q)
         try:
-            found = cities.body(q)
+            found = cities.body(learned or q)
         except PlacesUnavailableError as exc:
             insights.record("city_search", text=q, outcome="error", code="unavailable")
             raise HTTPException(503, str(exc)) from None
@@ -384,6 +407,7 @@ def create_app(
             outcome="ok" if first else "empty",
             city=None if first is None else first.label,
             point=None if first is None else first.point,
+            by=None if learned is None else "learned",
         )
         return found
 
@@ -400,6 +424,18 @@ def create_app(
             return SuggestionsBody(places=cities.suggest(q))
         except PlacesUnavailableError as exc:
             raise HTTPException(503, str(exc)) from None
+
+    # What the app did with a search (TASK-142, ADR-0112): the city chosen,
+    # the route among A, B and C, a hint taken. Always 204: a signal is never
+    # worth an error on the phone; past the gate's limit, not recorded.
+    @app.post("/signals", status_code=204, responses={422: {"model": ErrorBody}})
+    def record_signal(body: SignalBody) -> Response:
+        if gate.allows():
+            kind, fields = event_of(body.root)
+            insights.record(kind, **fields)
+        else:
+            log.warning("signal %s not recorded: too many this minute", body.root.kind)
+        return Response(status_code=204)
 
     # A shape through the real places of a theme, in any city (TASK-129,
     # ADR-0099): a job, as a route, since it plans the shape a few times.
@@ -500,7 +536,9 @@ def create_app(
             request_log.record(
                 body.model_dump(), result, None, time.perf_counter() - started
             )
-        fields = route_fields(body.model_dump(), result.similarity, None)
+        fields = route_fields(
+            body.model_dump(), result.similarity, None, 1 + len(others)
+        )
         insights.record(
             "route", ms=round((time.perf_counter() - started) * 1000), **fields
         )

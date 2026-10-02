@@ -153,7 +153,7 @@ dall'estratto (30 settembre): Palermo identica (18.681 nodi, 53.930 archi,
 meno (un giorno di modifiche a OSM); cuore e stella da 5 km dal centro con
 la stessa linea nelle due. Circa un minuto per città. osmium-tool
 (dipendenza approvata dall'utente, ADR-0119; sul Mac `brew install
-osmium-tool`, `SETUP.md` 10.4) sta solo nell'immagine dei download, non in
+osmium-tool`, `SETUP.md` 10.5) sta solo nell'immagine dei download, non in
 quella dell'API:
 
 ```bash

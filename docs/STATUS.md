@@ -5,7 +5,7 @@
 > Se è disallineato dalla realtà, tutto il resto del sistema smette di
 > funzionare: aggiornarlo non è burocrazia, è la parte che regge il metodo.
 
-**Ultimo aggiornamento**: 2026-10-01 · **Fase corrente**: 4 — Estensione (scritte)
+**Ultimo aggiornamento**: 2026-10-02 · **Fase corrente**: 4 — Estensione (scritte)
 
 ---
 
@@ -18,7 +18,8 @@ da Overpass, che da questo PC risponde solo a volte (`MAPS.md`). Il
 percorso si esporta in GPX, e Garmin Connect lo apre. La forma si scrive
 in un riquadro, in italiano o in inglese, fra quelle del catalogo:
 cerchio, cuore, stella, cavallo, luna, gatto, pesce, farfalla, lumaca,
-testa di cane e testa di coniglio, anche da toccare come tessere. Gatto,
+testa di cane, testa di coniglio, zucca e albero di Natale, anche da
+toccare come tessere. Gatto,
 pesce e i quattro animali nuovi hanno tratti interni, fatti andata e
 ritorno (occhi, antenne, spirale). Quando la forma non va
 attorno alla partenza, il motore cerca un posto fino a 2 km e l'app mostra
@@ -35,9 +36,10 @@ giudicato `sì` nelle tre zone. TASK-056, la parola nell'API: fatto
 (ADR-0051). Per le scritte il seguito è **TASK-057**, il campo nell'app,
 chiesto dall'utente. L'alfabeto dalla A alla Z (TASK-059, ADR-0056) è
 fatto; il seguito è **TASK-067**, chiesto dall'utente: lettere unite anche
-dalla cima, e una scala per lettera vicina a quella delle vicine
-(ADR-0063, dopo TASK-063, che ha `optimizer.py`). Da TASK-071: lettere più
-piccole si leggono peggio. Le lettere squadrate si scelgono nell'app da TASK-080.
+dalla cima (ADR-0063). Il task file è scritto (2026-10-02), da assegnare.
+La scala per lettera, l'altra metà della richiesta, non si fa: scelta
+dell'utente del 2026-10-02, perché da TASK-071 lettere più piccole si
+leggono peggio. Le lettere squadrate si scelgono nell'app da TASK-080.
 Per le indicazioni di svolta il seguito è
 **TASK-049**: mostrarle e dirle nell'app, dopo il tema. Dopo TASK-050,
 **TASK-053 — Nomi dei marciapiedi**: un marciapiede senza nome prende il
@@ -71,11 +73,28 @@ York, Roma, Milano e Torino hanno la zona sul Mac; le altre 10 danno
 scarica una alla volta e si ferma al primo rifiuto; parte quando Overpass
 risponde.
 
+**Pubblicità che paga**, chiesto dall'utente il 2026-10-02 dopo TASK-132:
+**TASK-150** (account AdMob e pagamenti sul conto, con le domande per il
+commercialista) e **TASK-152** (Sgrava sull'App Store) in parallelo, poi
+**TASK-153** (AdMob dagli annunci di prova a quelli veri). Tutti e tre
+partono da scelte e account dell'utente.
+
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
+- **TASK-122 — L'API e il database sempre accesi** (`chore/TASK-122-hosting`,
+  ADR-0123): il database PostGIS e la sua copia notturna in
+  `deploy/compose.yaml`, le copie sul Mac (scelta dell'utente), la CI con
+  un'iscrizione e un ripristino. Fermi per scelta dell'utente lo
+  spostamento del server su `compose.yaml` (`DEPLOY.md` F.12) e la
+  destinazione delle copie: l'utente pensa a un server di sviluppo, dove
+  andrebbero al posto del Mac. Da dove riprendere: il task file.
+- **TASK-128 — Il catalogo seme: Firenze** (`feat/TASK-128-seed-catalog-more`,
+  in revisione): Firenze nel catalogo (22 percorsi, 159 in 7 città); una
+  zona per città, e la città salta se Overpass rifiuta. Mancano Napoli,
+  Verona, Padova, Genova, Bari, Palermo, New York e le frasi: un seguito.
 - **TASK-134 — «Explore»: città → categoria → percorso**
   (`feat/TASK-134-explore-ux`, ADR-0105): città in evidenza e recenti,
   suggerimenti mentre si scrive, 13 categorie da toccare.
@@ -100,6 +119,125 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   zona estera grande pesa 0,5–0,76 GB nella memoria dell'API (seguiti per
   TASK-122 nel task file). Berlino resta a Overpass. Da fare: rifare le zone
   quando l'estratto invecchia.
+- **App** — TASK-155: in «Explore», sulla mappa di un esempio di città gli
+  altri percorsi fra «A · B · C» sono linee grigie sotto quello scelto,
+  come per un percorso disegnato; chiesto dall'utente dopo aver provato
+  TASK-151 sull'iPhone (2026-10-02: «ora funziona»). In `App.tsx` cambia
+  solo cosa riceve la mappa. **Da provare sull'iPhone** (app da
+  ripubblicare). Resta il segnale della scelta (`TASK-151.md`).
+- **App** — TASK-154: tre pagine affiancate, «Feed», «Draw», «Explore»,
+  scelta dell'utente dopo le proposte grafiche (ADR-0124). Si passa con
+  uno swipe a destra o a sinistra, o toccando i nomi in alto; l'app si apre
+  su «Draw». La barra in basso di TASK-115 non c'è più: «Profile» si apre
+  da un pulsante tondo accanto ai nomi e si chiude con «←». «Explore»
+  chiede i percorsi alla prima visita; «Feed» è vuota finché non arriva
+  TASK-118. Mappa e corsa restano a tutto schermo, senza swipe. Viste le
+  tre pagine e «Profile» su un simulatore. **Da provare con il dito
+  sull'iPhone**: lo swipe, e le righe che scorrono di lato dentro le
+  pagine (ripubblicare l'app, a fine coda dei merge). Seguiti nel task
+  file, fra cui i «File toccati» di TASK-118.
+- **App** — TASK-132: un annuncio AdMob a schermo intero a ogni ricerca
+  («Draw route» e «Ask for a route» in «Explore»), prima del percorso; alla
+  X, o senza annuncio, il percorso subito (ADR-0102). Consenso di Google
+  alla prima ricerca, mai all'apertura. Solo in una build propria: in Expo
+  Go nessun annuncio e l'app come prima. Annunci di prova di Google finché
+  non ci sono account e app sullo store (TASK-150, 152, 153). Provato nel
+  simulatore iPhone e in Expo Go (2026-10-02).
+- **App** — TASK-115: ci si iscrive, si entra e si esce dall'app
+  (ADR-0125). Due schede in fondo, «Draw» (le schermate di prima, intatte)
+  e «Profile»: «Sign up» (email, nome, password, «I am at least 16») e
+  «Log in», con gli errori in parole; dentro, «Log out» e «Delete account»
+  con la conferma. La sessione sta nel portachiavi (`expo-secure-store`):
+  riaperta, l'app è già dentro e lo verifica con `GET /me`; una sessione
+  finita fa uscire e «Profile» chiede di rientrare. La barra si toglie
+  sulla mappa e durante la corsa. **Da provare sull'iPhone contro l'API
+  vera**: serve un'API con `SHAPEROUTE_DATABASE_URL` (sul Mac con Colima,
+  o il server di TASK-122) e l'app ripubblicata a fine coda. Seguito:
+  TASK-116 (il profilo).
+- **App** — TASK-151: in «Explore» un esempio di città (il cuore da 5 km
+  di New York) si apre con le tessere «A · B · C», chiesto dall'utente
+  (ADR-0126): l'API mandava già le alternative, l'app teneva solo la prima.
+  Scheda, mappa, «Start» e GPX sono del percorso scelto; gli esempi già
+  sul telefono si ridisegnano una volta. `App.tsx` non è toccato, quindi
+  gli altri percorsi non sono ancora in grigio sulla mappa: seguito nel
+  task file. I percorsi del catalogo restano uno solo. **Da provare
+  sull'iPhone** (ripubblicare l'app, a fine coda dei merge).
+- **App** — TASK-149: si può correre senza disegnare niente, chiesto
+  dall'utente (ADR-0122). «Run» in alto nella prima schermata, accanto a
+  «Explore», apre la mappa che segue la posizione e disegna la linea
+  corsa; il banner dice km, tempo e passo medio, sotto «Pocket» e «Stop»;
+  a ogni km la voce dice tempo e passo.
+  A «Stop» il riepilogo (km, tempo, passo), «Keep running» e «Done», che
+  cancella la corsa dal telefono. Niente forma, niente punteggio, niente
+  API: la traccia è quella di TASK-112, nello stesso file, con il percorso
+  vuoto, e si riapre con l'app se si chiude a metà. **Da provare
+  sull'iPhone** (ripubblicare l'app, a fine coda dei merge). Seguito
+  possibile: inquadrare tutta la linea a fine corsa.
+- **App** — TASK-148: tolto da `ExploreTools.tsx` il vecchio «Ask for a
+  route», con i suoi test e gli stili che usava solo lui: è il «da fare
+  dopo il merge di TASK-142» di TASK-143. Quello vero è in
+  `AskForRoute.tsx`; l'app non cambia, niente da ripubblicare.
+- **App** — TASK-146: `apps/mobile/app.json` nomina il proprietario vero
+  del progetto Expo, l'organizzazione `lppl1316s-team` (trasferito
+  dall'account `lppl1316` il 2026-10-02). `eas update` da una copia pulita
+  di `main` non chiede più di correggere `owner` a mano; `DEPLOY.md` A.6
+  aggiornato. L'app non cambia: niente da ripubblicare per questo.
+- **API** — TASK-114: gli account nell'API, su PostgreSQL con PostGIS
+  (ADR-0115, ADR-0120). `POST /accounts` per iscriversi, `POST /session`
+  ed `DELETE /session` per entrare e uscire, `GET /me`, `DELETE /me` che
+  cancella tutto; token in `Authorization: Bearer`, password Argon2id,
+  sessioni di 90 giorni dall'ultimo uso, 5 password sbagliate per email in
+  15 minuti. I percorsi restano aperti. Con `SHAPEROUTE_DATABASE_URL`
+  l'API applica le migrazioni all'avvio; senza, gli account rispondono 503.
+  Test su un PostGIS vero, avviato con docker (sul Mac Colima,
+  `SETUP.md` 10.4). Il database sul server è di TASK-122; il seguito è
+  TASK-115, le schermate dell'app. La password dimenticata resta fuori:
+  serve la posta (Brevo).
+- **Server** — TASK-144: la guida per portare l'API su un server a
+  pagamento, con il Mac spento (`DEPLOY.md`, strada F, ADR-0111), e la
+  configurazione pronta in `deploy/`: l'API con zone, eventi e catalogo,
+  l'AI (profilo `ai`) e HTTPS con Caddy (profilo `public`) a scelta. Prima
+  privato con Tailscale e `tailscale serve`, poi un dominio, poi gli
+  store, e i prezzi del 2026-10-01. Il server scelto dall'utente, Hetzner
+  CX33 (10,97 €/mese IVA compresa), è già acceso ma messo su a mano:
+  **spostarlo su `deploy/compose.yaml`** (F.12, stessi dati e stesso
+  indirizzo, l'app non cambia) è il passo dopo, a fine coda dei merge. La
+  CI avvia la configurazione.
+- **Motore** — TASK-147: sul server Linux tornano le alternative A · B · C
+  (forme, parole, immagini), che l'utente non vedeva più (ADR-0121). Il
+  motore leggeva la memoria libera (MemFree, 534 MB: il resto è cache
+  delle zone) invece di quella disponibile (MemAvailable, 6,8 GB), e non
+  avviava mai le partenze vicine. Provato nel container del server: cuore
+  da 5 km a Trento con 1 alternativa (10,8 s), stella con 2 (5,8 s), prima
+  0. Il server si aggiorna a `main` subito dopo il merge, perché l'utente
+  vuole le alternative presto; l'app non va ripubblicata.
+- **API e app** — TASK-142: le ricerche imparano anche da cosa fa l'app
+  (ADR-0112, `docs/INSIGHTS.md`). `POST /signals` riceve la città scelta in
+  «Explore» e come, il percorso usato fra A·B·C, «Try N km» e la forma presa
+  dopo un errore; i percorsi annullati sono eventi. Nuove proposte:
+  `city_name` («levic» → Levico Terme, applicata `/cities` la cerca),
+  `review_ranking`, `review_distance`; Vercelli scelta fra i suggerimenti
+  ora si propone per il catalogo. Comandi `why`, `compare --split`, `trend`,
+  `--since/--until`. Corretto un errore di TASK-130: nessun percorso
+  dell'API era mai stato registrato. Provato su un'API di prova con
+  Geoapify. Per averlo sull'iPhone: riavviare l'API che l'app usa e
+  ripubblicare l'app (a fine coda dei merge, col coordinatore). Seguiti
+  possibili: esportare il tipo dei segnali da `shared-types/src/index.ts`,
+  ora che TASK-088 è entrato; la forma toccata dopo parole non lette
+  (`ShapeTiles.tsx`) come prova per i sinonimi.
+- **Motore** — TASK-140: luna, farfalla, lumaca (e il cavallo, che non
+  cambia) evitano i baffi come cuore, cerchio e stella; si contano solo
+  quelli oltre i tratti voluti della forma (ADR-0118). Gatto, pesce e le
+  teste restano come prima, per scelta dell'utente. Provato sull'iPhone
+  (2026-10-02): funziona.
+- **Catalogo** — TASK-088: zucca di Halloween (`pumpkin`) e albero di
+  Natale (`christmas_tree`) nel catalogo, con parole, tessere 🎃 🎄 e AI
+  (ADR-0084); «albero» e «tree» da soli restano nessuna forma. Le tessere
+  ora sono una riga che scorre di lato. Provato sull'iPhone a Milano
+  (2026-10-01): «va tutto». Da decidere con l'utente: quali altri contorni
+  già disegnati (uccello, cane intero, albero, freccia, corona) mettere
+  nella riga.
+
 - **Motore** — TASK-136 (miglioramento generale scelto dall'agente): la
   CLI e `seed_catalog` non salvano più i ritagli dei grafi, come già
   l'API (ADR-0108). Una partenza nuova è più veloce (Milano, cuore da
@@ -124,9 +262,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Sul server Hetzner, che l'app usa, Vercelli la prima volta: 94 s (cuore
   40, cerchio 48, stella 5), quasi tutti download da Overpass; il cerchio
   riscarica una zona più larga di soli 30 m per lato (proposta: zone
-  scaricate con un margine, dopo TASK-136). Da
-  fare dopo il merge di TASK-142: togliere il vecchio `AskForRoute` da
-  `ExploreTools.tsx` e i suoi test. TASK-138 provato sull'iPhone
+  scaricate con un margine, dopo TASK-136). Il vecchio `AskForRoute` di
+  `ExploreTools.tsx` l'ha tolto TASK-148. TASK-138 provato sull'iPhone
   (2026-10-01): funziona.
 - **Scelte** — TASK-110: la parte social decisa dall'utente (ADR-0114):
   Oracle Always Free, email e password, corse private finché pubblicate,

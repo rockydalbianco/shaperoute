@@ -116,7 +116,7 @@ services/api/tests/test_prefetch_zones.py         (nuovo)
 services/api/shaperoute_api/zone_extract.py       (nuovo, dall'estratto)
 services/api/tests/test_zone_extract.py           (nuovo)
 docs/MAPS.md
-docs/SETUP.md                                     (osmium-tool, 10.4)
+docs/SETUP.md                                     (osmium-tool, 10.5)
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-137.md
@@ -198,5 +198,5 @@ piccola da Overpass.
 - Berlino resta a Overpass (decisione del Coordinatore, 2026-10-02): un
   container da 6 GiB su un server da 8 GB, con l'API fino a 2 GB, lascia
   troppo poco margine. Se serve, si costruisce sul Mac con osmium
-  (`SETUP.md` 10.4) e si copia la zona.
+  (`SETUP.md` 10.5) e si copia la zona.
 - Rifare le zone quando l'estratto invecchia (questo è del 30 settembre).

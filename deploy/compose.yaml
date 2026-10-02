@@ -1,0 +1,150 @@
+# ShapeRoute on a server: the API with its database and the nightly copy
+# of it, and when wanted the AI and HTTPS (TASK-144, ADR-0111; TASK-122,
+# ADR-0123). docs/DEPLOY.md, road F, says how to use it.
+#
+#   cd deploy
+#   docker compose up -d --build                     # the API
+#   docker compose --profile ai up -d --build        # + Ollama, the AI
+#   docker compose --profile public up -d --build    # + Caddy, HTTPS
+#
+# The secrets come from deploy/.env, a copy of .env.example that never
+# enters the repository: POSTGRES_PASSWORD at least. Zones, search events,
+# the request log and the database copies stay in data/ at the root of the
+# checkout: plain folders, so rsync can fill them from the Mac or take the
+# copies to it, and they outlive every new image. The database itself is
+# in the volume db, owned by PostgreSQL's own user.
+
+name: shaperoute
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # The API runs as uid 10001 (Dockerfile) and must own its folders, also
+  # after rsync has copied zones in as another user. Making them here, and
+  # not leaving it to Docker, keeps them from being born root's.
+  data-owner:
+    image: busybox:1.36
+    command:
+      - sh
+      - -c
+      - mkdir -p /data/cache /data/insights /data/requests /data/backups && chown -R 10001:10001 /data
+    volumes:
+      - ../data:/data
+    logging: *logging
+
+  # The accounts (TASK-114, docs/DATABASE.md): PostgreSQL 16 with PostGIS,
+  # reached only by the other services, never from outside the server.
+  db:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shaperoute
+      POSTGRES_USER: shaperoute
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "shaperoute", "-d", "shaperoute"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    logging: *logging
+
+  # A pg_dump of the database every night into data/backups, the last 13
+  # days kept: an account deleted today is out of every copy within 14
+  # (ADR-0114). The Mac takes them away (deploy/mac/pull-backups.sh).
+  backup:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    depends_on:
+      data-owner:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: shaperoute
+      PGDATABASE: shaperoute
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+      BACKUP_AT: ${BACKUP_AT:-02:00}
+      BACKUP_KEEP_DAYS: "13"
+    entrypoint: ["bash", "/backup.sh"]
+    volumes:
+      - ./backup.sh:/backup.sh:ro
+      - ../data/backups:/backups
+    logging: *logging
+
+  api:
+    build:
+      context: ..
+    image: shaperoute-api
+    restart: unless-stopped
+    depends_on:
+      data-owner:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      # The API applies the migrations when it starts (TASK-114).
+      SHAPEROUTE_DATABASE_URL: postgresql://shaperoute:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}@db:5432/shaperoute
+      # Caddy puts the phone's address in X-Forwarded-For: trusting it
+      # keeps the rate limit per phone, not one for everybody. Nothing
+      # else reaches the API: its port is on 127.0.0.1 only.
+      FORWARDED_ALLOW_IPS: "*"
+    # Without the ai profile the name ollama does not resolve, and words
+    # outside the table answer ai_unavailable, as with Ollama off.
+    command:
+      - python
+      - -m
+      - shaperoute_api
+      - --lan
+      - --ai-url
+      - http://ollama:11434
+    volumes:
+      - ../data/cache:/app/data/cache
+      - ../data/insights:/app/data/insights
+      - ../data/requests:/app/data/requests
+      # The image has no catalog/: without it Explore has no routes.
+      - ../catalog:/app/catalog:ro
+    ports:
+      # Never 0.0.0.0: Docker would open it past the firewall. tailscale
+      # serve reaches it here, Caddy through Docker's own network.
+      - "127.0.0.1:8000:8000"
+    logging: *logging
+
+  ollama:
+    image: ollama/ollama
+    profiles: ["ai"]
+    restart: unless-stopped
+    volumes:
+      - ollama:/root/.ollama
+    logging: *logging
+
+  caddy:
+    image: caddy:2
+    profiles: ["public"]
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      SHAPEROUTE_DOMAIN: ${SHAPEROUTE_DOMAIN:-}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    logging: *logging
+
+volumes:
+  db:
+  ollama:
+  caddy-data:
+  caddy-config:

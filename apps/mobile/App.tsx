@@ -10,6 +10,7 @@ import { useMemo, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { useAdBeforeRoute } from "./src/ads/useAdBeforeRoute";
 import { apiUrl } from "./src/api/apiUrl";
 import {
   chooseStart,
@@ -34,11 +35,18 @@ import { startViewOf, useStartDirections } from "./src/explore/useStartDirection
 import { useThemedRoute } from "./src/explore/useThemedRoute";
 import { MapView } from "./src/map/MapView";
 import {
+  canResume,
+  endFreeRun,
+  type FreeRun,
+  pendingFreeRun,
+} from "./src/navigation/freeRun";
+import {
   clearRun,
   endRun,
   pendingRun,
   type ScorableRun,
 } from "./src/navigation/trackStore";
+import { trackOf, useFreeRun } from "./src/navigation/useFreeRun";
 import { useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
 import { choicesOf, type Picked, pickedIndex } from "./src/route/choices";
@@ -58,9 +66,18 @@ import {
 import { useShapeReading } from "./src/route/useShapeReading";
 import { checkWord } from "./src/route/wordInput";
 import { ChooseScreen } from "./src/screens/ChooseScreen";
+import { FeedScreen } from "./src/screens/FeedScreen";
 import { FinishBanner, FinishCard } from "./src/screens/FinishScreen";
+import {
+  FreeFinishBanner,
+  FreeFinishCard,
+  FreeRunBanner,
+  FreeRunCard,
+} from "./src/screens/FreeRunScreen";
 import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
+import { Pager } from "./src/screens/Pager";
+import { ProfileButton, ProfileLayer } from "./src/screens/ProfileLayer";
 import { color } from "./src/theme/tokens";
 
 /** A route without directions: one list, so navigation does not restart. */
@@ -72,9 +89,15 @@ const NO_OTHERS: LatLon[][] = [];
 const API_URL = apiUrl();
 
 /** The screens (TASK-051): what to draw, the map with the route, the
- * turn-by-turn along it (TASK-049), the run with its score (TASK-113) and
- * the best routes near the start (TASK-126). */
-type Screen = "choose" | "map" | "navigate" | "finish" | "explore";
+ * turn-by-turn along it (TASK-049), the run with its score (TASK-113), the
+ * best routes near the start (TASK-126), a run without a route with its
+ * end (TASK-149), and what runners publish (TASK-154, then TASK-118). */
+type Screen =
+  "choose" | "map" | "navigate" | "finish" | "explore" | "run" | "runFinish" | "feed";
+
+/** The screens that are pages side by side, left to right, one swipe apart
+ * (TASK-154, ADR-0124); the others take the whole screen. */
+const PAGES: readonly Screen[] = ["feed", "choose", "explore"];
 
 /** A run that ended, shown on the finish screen. */
 type Finished = {
@@ -98,10 +121,32 @@ function leftRun(): Finished | null {
   return run === null ? null : finishedRun(run, false);
 }
 
+/** A run without a route that ended (TASK-149). */
+type FreeFinished = {
+  run: FreeRun;
+  /** Its points, once: a new list would draw the line again. */
+  line: LatLon[];
+  /** «Run» again would go on with its track. */
+  resumable: boolean;
+};
+
+function freeFinishedRun(run: FreeRun, resumable: boolean): FreeFinished {
+  return { run, line: run.track.fixes.map((fix) => fix.point), resumable };
+}
+
+/** A run without a route left when the app was last open, if any. */
+function leftFreeRun(): FreeFinished | null {
+  const run = pendingFreeRun();
+  return run === null ? null : freeFinishedRun(run, canResume(run, Date.now()));
+}
+
 export default function App() {
   return (
     <SafeAreaProvider>
-      <Sgrava />
+      {/* The account, and «Profile» over the app (TASK-115, TASK-154). */}
+      <ProfileLayer apiUrl={API_URL}>
+        <Sgrava />
+      </ProfileLayer>
       {/* The app is dark: light status bar text on any phone setting. */}
       <StatusBar style="light" />
     </SafeAreaProvider>
@@ -111,8 +156,12 @@ export default function App() {
 function Sgrava() {
   // A run still waiting for its score comes first (TASK-113).
   const [finished, setFinished] = useState<Finished | null>(leftRun);
+  // Or a run without a route, closed with the app (TASK-149).
+  const [freeFinished, setFreeFinished] = useState<FreeFinished | null>(() =>
+    finished === null ? leftFreeRun() : null,
+  );
   const [screen, setScreen] = useState<Screen>(() =>
-    finished === null ? "choose" : "finish",
+    finished !== null ? "finish" : freeFinished !== null ? "runFinish" : "choose",
   );
   const { position, refresh } = useCurrentPosition();
   const [startMode, setStartMode] = useState<StartMode>("gps");
@@ -137,14 +186,19 @@ function Sgrava() {
   // Past RouteChoice to the image panel (TASK-079).
   const { edits, add, undo } = image;
   const imageEdits = useMemo(() => ({ ...edits, add, undo }), [edits, add, undo]);
-  const { state, draw, cancel } = useRouteRequest(API_URL);
+  const routeRequest = useRouteRequest(API_URL);
+  const { draw, cancel } = routeRequest;
+  // A ready route waits behind the ad, if there is one (TASK-132).
+  const state = useAdBeforeRoute(routeRequest.state);
   const gpx = useGpxExport(API_URL);
   const { explored, open: openExplored, close: closeExplored } = useExplored(API_URL);
   // "Explore" for any city, and a shape through a theme's places (TASK-129).
   const [exploreCity, setExploreCity] = useState<Place | null>(null);
   // The cities chosen last, kept on the phone (TASK-134).
   const [recentCities, setRecentCities] = useState<Place[]>(loadRecentCities);
-  const themed = useThemedRoute(API_URL);
+  const themedRoute = useThemedRoute(API_URL);
+  const themedState = useAdBeforeRoute(themedRoute.state);
+  const themed = { ...themedRoute, state: themedState };
   const themedExport = useMemo(
     () => (themed.state.status === "done" ? themedGpx(themed.state.result) : null),
     [themed.state],
@@ -227,6 +281,15 @@ function Sgrava() {
     followed?.similarity,
   );
   const finishing = screen === "finish" && finished !== null;
+  // A run without a route (TASK-149): the map follows the runner and draws
+  // the line run so far.
+  const running = screen === "run";
+  const freeRun = useFreeRun(running);
+  const freeTrack = trackOf(freeRun);
+  const freeLine = useMemo(() => freeTrack.fixes.map((fix) => fix.point), [freeTrack]);
+  const freeStart =
+    freeTrack.fixes[0]?.point ?? (position.status === "ok" ? position.point : null);
+  const freeFinishing = screen === "runFinish" && freeFinished !== null;
   // A route of "Explore" on the map, in place of the drawn one (TASK-126).
   const theming =
     screen === "map" && explored === null && themed.state.status !== "idle";
@@ -247,6 +310,24 @@ function Sgrava() {
     }
     setFinished(finishedRun(run, run.status !== "arrived"));
     setScreen("finish");
+  }
+
+  /** Stop on a run without a route: its end, when there is a line to show. */
+  function onStopFreeRun() {
+    const run = endFreeRun();
+    if (run === null) {
+      setScreen("choose");
+      return;
+    }
+    setFreeFinished(freeFinishedRun(run, true));
+    setScreen("runFinish");
+  }
+
+  /** With no score to wait for, the run leaves the phone at once. */
+  function onFreeDone() {
+    clearRun();
+    setFreeFinished(null);
+    setScreen("choose");
   }
 
   function onFinishDone(settled: boolean) {
@@ -305,15 +386,22 @@ function Sgrava() {
     setScreen("choose");
   }
 
+  // The page on screen; -1 while the map or a run takes the whole screen.
+  const page = PAGES.indexOf(screen);
+
   return (
     <View style={styles.screen}>
       <MapScreen
-        active={screen === "map" || navigating || finishing}
+        active={screen === "map" || navigating || finishing || running || freeFinishing}
         onBack={onBack}
         mapError={mapError}
         banner={
           finishing ? (
             <FinishBanner />
+          ) : freeFinishing ? (
+            <FreeFinishBanner />
+          ) : running ? (
+            <FreeRunBanner state={freeRun} />
           ) : navigating ? (
             <NavigationBanner state={navigation} />
           ) : undefined
@@ -322,13 +410,17 @@ function Sgrava() {
           <MapView
             style={styles.map}
             start={
-              theming
-                ? themed.state.status === "done"
-                  ? themed.state.result.centre
-                  : null
-                : exploring
-                  ? explored.route.start
-                  : (exploreRun?.points[0] ?? start?.point ?? null)
+              running
+                ? freeStart
+                : freeFinishing
+                  ? (freeFinished.line[0] ?? null)
+                  : theming
+                    ? themed.state.status === "done"
+                      ? themed.state.result.centre
+                      : null
+                    : exploring
+                      ? explored.route.start
+                      : (exploreRun?.points[0] ?? start?.point ?? null)
             }
             stops={
               theming && themed.state.status === "done"
@@ -338,30 +430,65 @@ function Sgrava() {
             route={
               finishing
                 ? finished.run.route
-                : theming
-                  ? themed.state.status === "done"
-                    ? themed.state.result.points
-                    : null
-                  : exploring
-                    ? explored.status === "done"
-                      ? explored.detail.points
+                : running || freeFinishing
+                  ? null
+                  : theming
+                    ? themed.state.status === "done"
+                      ? themed.state.result.points
                       : null
-                    : (followed?.points ?? null)
+                    : exploring
+                      ? explored.status === "done"
+                        ? explored.detail.points
+                        : null
+                      : (followed?.points ?? null)
             }
-            // Only while choosing a drawn route: running, or on a route of
-            // "Explore", one route is the route.
-            others={screen === "map" && !exploring && !theming ? others : NO_OTHERS}
-            track={finishing ? finished.line : null}
+            // Only while choosing, a drawn route or an example of "Explore"
+            // (TASK-155): running, or on a themed route, one route is the route.
+            others={
+              screen !== "map" || theming
+                ? NO_OTHERS
+                : exploring
+                  ? explored.status === "done"
+                    ? explored.others
+                    : NO_OTHERS
+                  : others
+            }
+            track={
+              finishing
+                ? finished.line
+                : freeFinishing
+                  ? freeFinished.line
+                  : running
+                    ? freeLine
+                    : null
+            }
             following={
               navigating && navigation.status === "following"
                 ? navigation.position
-                : null
+                : running && freeRun.status === "running"
+                  ? freeRun.position
+                  : null
             }
             onError={setMapError}
           />
         }
       >
-        {theming ? (
+        {freeFinishing ? (
+          <FreeFinishCard
+            run={freeFinished.run}
+            onResume={
+              freeFinished.resumable
+                ? () => {
+                    setFreeFinished(null);
+                    setScreen("run");
+                  }
+                : undefined
+            }
+            onDone={onFreeDone}
+          />
+        ) : running ? (
+          <FreeRunCard running={freeRun.status === "running"} onStop={onStopFreeRun} />
+        ) : theming ? (
           <ThemedCard
             state={themed.state}
             exporting={themedExporting}
@@ -455,78 +582,104 @@ function Sgrava() {
           />
         )}
       </MapScreen>
-      {screen === "choose" && (
-        <ChooseScreen
-          status={statusText(startMode, position, start)}
-          denied={startMode === "gps" && position.status === "denied"}
-          mode={startMode}
-          onMode={(mode) => {
-            setStartMode(mode);
-            if (mode === "gps") {
-              // Asked again, as the old button did: the permission may be on now.
-              refresh();
-            }
-          }}
-          searching={showsSearch(startMode, position)}
-          onPlace={setPlace}
-          near={position.status === "ok" ? position.point : (place?.point ?? null)}
-          mapError={mapError}
-          footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
-          onExplore={() => setScreen("explore")}
-        >
-          <ImageEditsContext.Provider value={imageEdits}>
-            <RouteChoice
-              kind={kind}
-              onKind={setKind}
-              shapeText={shapeText}
-              shape={shape}
-              onShapeText={setShapeText}
-              reading={reading}
-              onShapeDone={() => {
-                if (reading) {
-                  shapeReading.read(shapeText);
-                }
-              }}
-              wordText={wordText}
-              onWordText={setWordText}
-              wordCheck={wordCheck}
-              letterStyle={letterStyle}
-              onLetterStyle={setLetterStyle}
-              image={image.state}
-              onChooseImage={image.choose}
-              distanceText={distanceText}
-              distanceM={distanceM}
-              onDistanceText={setDistanceText}
-            />
-          </ImageEditsContext.Provider>
-        </ChooseScreen>
-      )}
-      {screen === "explore" && (
-        <ExploreScreen
-          apiUrl={API_URL}
-          near={start?.point ?? null}
-          onBack={() => setScreen("choose")}
-          onOpen={(route) => {
-            closeExplore();
-            openExplored(route);
-            setScreen("map");
-          }}
-          city={exploreCity}
-          onCity={(city) => {
-            setExploreCity(city);
-            if (city !== null) {
-              const recent = remember(recentCities, city);
-              setRecentCities(recent);
-              saveRecentCities(recent);
-            }
-          }}
-          recent={recentCities}
-          onAsk={(request) => {
+      {page !== -1 && (
+        <Pager
+          page={page}
+          onPage={(index) => {
+            // A keyboard left open would follow to the next page.
             Keyboard.dismiss();
-            closeExplore();
-            themed.ask(request);
-            setScreen("map");
+            setScreen(PAGES[index]);
           }}
+          action={<ProfileButton />}
+          pages={[
+            { title: "Feed", render: () => <FeedScreen /> },
+            {
+              title: "Draw",
+              render: () => (
+                <ChooseScreen
+                  status={statusText(startMode, position, start)}
+                  denied={startMode === "gps" && position.status === "denied"}
+                  mode={startMode}
+                  onMode={(mode) => {
+                    setStartMode(mode);
+                    if (mode === "gps") {
+                      // Asked again, as the old button did: the permission may be on now.
+                      refresh();
+                    }
+                  }}
+                  searching={showsSearch(startMode, position)}
+                  onPlace={setPlace}
+                  near={
+                    position.status === "ok" ? position.point : (place?.point ?? null)
+                  }
+                  mapError={mapError}
+                  footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
+                  onRun={() => {
+                    Keyboard.dismiss();
+                    setScreen("run");
+                  }}
+                >
+                  <ImageEditsContext.Provider value={imageEdits}>
+                    <RouteChoice
+                      kind={kind}
+                      onKind={setKind}
+                      shapeText={shapeText}
+                      shape={shape}
+                      onShapeText={setShapeText}
+                      reading={reading}
+                      onShapeDone={() => {
+                        if (reading) {
+                          shapeReading.read(shapeText);
+                        }
+                      }}
+                      wordText={wordText}
+                      onWordText={setWordText}
+                      wordCheck={wordCheck}
+                      letterStyle={letterStyle}
+                      onLetterStyle={setLetterStyle}
+                      image={image.state}
+                      onChooseImage={image.choose}
+                      distanceText={distanceText}
+                      distanceM={distanceM}
+                      onDistanceText={setDistanceText}
+                    />
+                  </ImageEditsContext.Provider>
+                </ChooseScreen>
+              ),
+            },
+            {
+              title: "Explore",
+              // It asks the API for its routes as it opens: not before.
+              lazy: true,
+              render: () => (
+                <ExploreScreen
+                  apiUrl={API_URL}
+                  near={start?.point ?? null}
+                  onOpen={(route) => {
+                    closeExplore();
+                    openExplored(route);
+                    setScreen("map");
+                  }}
+                  city={exploreCity}
+                  onCity={(city) => {
+                    setExploreCity(city);
+                    if (city !== null) {
+                      const recent = remember(recentCities, city);
+                      setRecentCities(recent);
+                      saveRecentCities(recent);
+                    }
+                  }}
+                  recent={recentCities}
+                  onAsk={(request) => {
+                    Keyboard.dismiss();
+                    closeExplore();
+                    themed.ask(request);
+                    setScreen("map");
+                  }}
+                />
+              ),
+            },
+          ]}
         />
       )}
     </View>

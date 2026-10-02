@@ -147,10 +147,13 @@ def test_the_address_comes_from_the_environment() -> None:
 
 def test_migrations_apply_once_each(database_url: str) -> None:
     database = Database(database_url)
-    assert database.migrate() == ["0001_users_sessions"]
+    # Every file of the folder, in order: a new migration needs no change here.
+    names = [p.stem for p in migrations(MIGRATIONS_DIR)]
+    assert names[0] == "0001_users_sessions"
+    assert database.migrate() == names
     assert database.migrate() == []
     versions = [r["version"] for r in rows(database, "schema_migrations")]
-    assert versions == [p.stem for p in migrations(MIGRATIONS_DIR)]
+    assert versions == names
 
 
 def test_a_failing_migration_leaves_nothing_behind(

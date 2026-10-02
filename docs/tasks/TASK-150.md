@@ -1,6 +1,6 @@
 # TASK-150 — Il conto AdMob e i pagamenti sul conto dell'utente
 
-**Stato**: Todo
+**Stato**: In corso
 **Fase**: 4 · **Branch**: `docs/TASK-150-admob-payments`
 **Dipende da**: nessuno · **Serve prima di**: TASK-153 · In parallelo con TASK-152
 
@@ -63,6 +63,11 @@ l'agente prepara le domande e la guida.
 ## Scelte prese (si aggiorna a ogni risposta)
 
 *(nessuna ancora)*
+
+Fatto dall'agente il 2026-10-02: `docs/PUBBLICITA.md` con il calendario
+dei pagamenti, i passi in ordine e le domande per il commercialista. Il
+tipo di account AdMob (persona o ditta) non si cambia dopo la creazione:
+le domande al commercialista vengono prima dell'account.
 
 ## Criteri di accettazione
 

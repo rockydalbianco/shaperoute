@@ -83,6 +83,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-150 — Il conto AdMob e i pagamenti sul conto dell'utente**
+  (`docs/TASK-150-admob-payments`): `docs/PUBBLICITA.md` con i passi e le
+  domande per il commercialista. Aspetta le scelte dell'utente (persona o
+  ditta, dopo il commercialista); niente codice.
 - **TASK-128 — Il catalogo seme: Firenze** (`feat/TASK-128-seed-catalog-more`,
   in revisione): Firenze nel catalogo (22 percorsi, 159 in 7 città); una
   zona per città, e la città salta se Overpass rifiuta. Mancano Napoli,

@@ -4567,3 +4567,40 @@ li prende per corse di iscritti veri. Gli `id` sono
 quelli che l'API dà ai percorsi del catalogo: servono a TASK-118 per aprire
 il percorso dal feed. Se il catalogo cambia, `python tools/sample_feed.py`
 rifà il file.
+
+## ADR-0129 — Il logo: una S fatta come un percorso, e l'icona dell'app
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** fra tre proposte
+(«scelgo la A, metti l'icona nell'app»); le misure e i file decisi
+dall'agente su delega dell'utente (TASK-159).
+
+**Contesto**: l'utente ha chiesto un logo «più futuristico, più moderno» di
+quello disegnato a mano il 2026-09-20 («grava» su asfalto). L'icona
+dell'app era ancora il segnaposto di Expo, azzurro.
+
+**Decisione**:
+- **Il segno**: una S di un tratto solo, con gli angoli arrotondati, e un
+  punto in alto a destra: il percorso e la sua partenza. In un quadro di
+  77 × 87: tratto `M40 24H12Q0 24 0 36V48Q0 60 12 60H48Q60 60 60 72V84Q60
+  96 48 96H0`, largo 14, estremità tonde; punto in (62, 24), raggio 8.
+- **Il logo**: il segno fa da S, seguito da «GRAVA» con lo stesso tratto;
+  le due A senza trattino, come la V rovesciata. Come nel logo di prima, il
+  segno è la prima lettera del nome.
+- **I colori sono quelli del tema** (ADR-0046): giallo `#FFD02B` su nero
+  `#0A0A0B`, o nero su giallo. Nessun colore nuovo.
+- **L'icona**: il segno giallo su nero, alto il 53% del lato; 1024 × 1024,
+  senza trasparenza (l'App Store la rifiuta). Su Android il segno è alto il
+  43% del lato, dentro il cerchio sicuro dell'icona adattiva; fondo nero,
+  icona a un colore bianca su trasparente.
+- **I vettoriali stanno in `docs/brand/`**: le immagini si rifanno da lì.
+  Nessuno script nel repository: sono sei immagini, rifatte di rado.
+
+**Scartate**: «Nodi», la S su una griglia di incroci (i puntini si perdono
+sotto i 30 px); «Scatto», due frecce inclinate (simile a molti marchi
+sportivi); il fondo giallo con il segno nero per l'icona (nell'app il
+giallo è il percorso su fondo nero, e l'icona lo anticipa).
+
+**Conseguenze**: le proposte, l'immagine del profilo e i post per Instagram
+stanno in un canvas privato dell'utente, non nel repository. La schermata
+di avvio non è configurata in `app.json`: `splash-icon.png` è ridisegnata
+ma non usata. Il nome sotto l'icona è ancora «ShapeRoute». L'icona sulla
+schermata di casa si vede solo in una build propria (TASK-152).

@@ -63,6 +63,20 @@ Quattro regole:
    villaggi; non i nomi delle vie, i numeri civici e i punti d'interesse.
    Nessuno strato della mappa usa il giallo.
 
+## Il logo e l'icona (TASK-159, ADR-0129)
+
+Il segno è una S fatta come un percorso: un tratto solo, di spessore
+costante, con gli angoli arrotondati, e un punto in alto a destra da cui
+parte. Giallo `accent` su `background`, o nero su giallo. Il logo intero è
+il segno seguito da «GRAVA» con lo stesso tratto, le due A senza trattino.
+I vettoriali stanno in `docs/brand/` (`sgrava-mark.svg`, `sgrava-logo.svg`).
+
+L'icona dell'app è il segno giallo su nero (`assets/icon.png`, 1024 × 1024,
+senza trasparenza). Su Android il segno sta nel cerchio sicuro dell'icona
+adattiva, il fondo è nero e l'icona a un colore è il segno bianco. In Expo
+Go sulla schermata di casa resta l'icona di Expo Go: la nostra si vede con
+una build propria. Dentro l'app il nome in cima a «Draw» resta un testo.
+
 ## Le due schermate
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La

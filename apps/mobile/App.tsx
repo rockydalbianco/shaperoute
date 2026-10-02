@@ -12,6 +12,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { useActivitiesDoor } from "./src/activities/activitiesDoor";
 import { ActivityCard } from "./src/activities/ActivityCard";
+import { type Drawn, sameLine } from "./src/activities/recordedRun";
+import { RunKeptLine } from "./src/activities/RunKeptLine";
 import { useAdBeforeRoute } from "./src/ads/useAdBeforeRoute";
 import { apiUrl } from "./src/api/apiUrl";
 import {
@@ -186,6 +188,7 @@ function Sgrava() {
     close: closeActivity,
     showList: showActivities,
     remove: removeActivity,
+    record: recordRun,
   } = useActivitiesDoor();
   const onPage = PAGES.includes(screenNow);
   const screen: Screen =
@@ -405,14 +408,35 @@ function Sgrava() {
     setScreen("runFinish");
   }
 
-  /** With no score to wait for, the run leaves the phone at once. */
+  /** What the route of a run draws, while the app still has that route: a
+   * run left from another opening has only its line. */
+  function drawnBy(route: LatLon[]): Drawn | null {
+    const kept = [
+      drawnFavorite,
+      exploredFavorite,
+      themedFavorite,
+      favorite?.keepable ?? null,
+    ].find((known) => known != null && sameLine(known.request.points, route));
+    return kept?.request ?? null;
+  }
+
+  /** With no score to wait for, the run leaves the phone at once: with an
+   * account, for «My activities» (TASK-172). */
   function onFreeDone() {
+    if (freeFinished !== null) {
+      recordRun(freeFinished.run, null);
+    }
     clearRun();
     setFreeFinished(null);
     setScreen("choose");
   }
 
   function onFinishDone(settled: boolean) {
+    // The run is over: with an account it goes to «My activities», where
+    // the API scores it again by itself (TASK-172).
+    if (finished !== null) {
+      recordRun(finished.run, drawnBy(finished.run.route));
+    }
     // Without its score the run stays in the file, for the next opening.
     if (settled) {
       clearRun();
@@ -700,6 +724,8 @@ function Sgrava() {
             onChoose={(index) => answer && setPicked({ of: answer, index })}
           />
         )}
+        {/* Under the card of a run that ended: where it is kept (TASK-172). */}
+        {(finishing || freeFinishing) && <RunKeptLine />}
       </MapScreen>
       {/* Over the map, opposite the way back: keep the route shown. */}
       <FavoriteHeart route={onMap} />

@@ -300,6 +300,19 @@ def test_the_runners_pause_is_not_of_the_run(
     assert row["pauses"] == [{"from_s": 300.5, "to_s": 599.0, "auto": False}]
 
 
+def test_a_pause_is_the_runners_from_where_it_begins(client: TestClient) -> None:
+    me = signed_up(client)
+    # Begun on the second fix itself, as when a run is taken up again, and
+    # ended a moment after the clock of the third: the phone's clock and the
+    # GPS's do not tick together.
+    pause = {"from_ms": 1790000300000, "to_ms": 1790000600400, "auto": False}
+    run = client.put(
+        f"/me/activities/{KEY}", json=request(pauses=[pause]), headers=me
+    ).json()
+    assert run["distance_m"] == 4007 - 1001
+    assert run["duration_s"] == round(1200 - 300.4)
+
+
 def test_a_pause_while_standing_still_takes_only_time(client: TestClient) -> None:
     me = signed_up(client)
     pauses = [

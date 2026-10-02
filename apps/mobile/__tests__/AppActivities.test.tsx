@@ -1,17 +1,34 @@
 /**
  * «My activities» (TASK-172): the runs of the account in «Profile», a page
- * at a time, one opened on the map, and deleted with a yes. The hook alone
- * is in src/activities/useActivities.test.ts.
+ * at a time, one opened on the map, and deleted with a yes; and a run that
+ * ends, which «Done» saves by itself, now or when there is a network. The
+ * hook alone is in src/activities/useActivities.test.ts.
  */
 import activities from "@shaperoute/shared-types/fixtures/activities.json";
 import activity from "@shaperoute/shared-types/fixtures/activity.json";
+import activityRequest from "@shaperoute/shared-types/fixtures/activity-request.json";
+import explored from "@shaperoute/shared-types/fixtures/recommended-route.json";
+import exploreList from "@shaperoute/shared-types/fixtures/recommended-routes.json";
+import directions from "@shaperoute/shared-types/fixtures/route-directions.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import trackScore from "@shaperoute/shared-types/fixtures/track-score.json";
+import type { LatLon } from "@shaperoute/shared-types";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import * as Location from "expo-location";
 
 import App from "../App";
 import { apiError, type MemorySecureStore } from "../src/account/testing";
+import { activityKey } from "../src/activities/activityKey";
+import { SIGN_IN_TO_KEEP_RUNS } from "../src/activities/activitiesDoor";
 import { startedLabel } from "../src/activities/activityText";
+import { loadOutbox, saveOutbox, type Waiting } from "../src/activities/outbox";
+import { skipCountdown } from "../src/navigation/runControl";
+import {
+  clearRun,
+  loadRun,
+  type SavedRun,
+  saveRun,
+} from "../src/navigation/trackStore";
 
 jest.mock("react-native-webview");
 jest.mock(
@@ -22,15 +39,56 @@ jest.mock("expo-constants", () => ({
   __esModule: true,
   default: { expoConfig: { hostUri: "192.168.1.23:8081" } },
 }));
-jest.mock("expo-file-system");
+// The phone's documents folder, in memory, as after closing the app.
+jest.mock("expo-file-system", () => {
+  const files = new Map<string, string>();
+  class File {
+    uri: string;
+    constructor(directory: { uri: string }, name: string) {
+      this.uri = `${directory.uri}${name}`;
+    }
+    get exists(): boolean {
+      return files.has(this.uri);
+    }
+    create(): void {
+      files.set(this.uri, "");
+    }
+    write(text: string): void {
+      files.set(this.uri, text);
+    }
+    textSync(): string {
+      return files.get(this.uri) ?? "";
+    }
+    delete(): void {
+      files.delete(this.uri);
+    }
+  }
+  return {
+    File,
+    Paths: {
+      document: { uri: "file:///documents/" },
+      cache: { uri: "file:///cache/" },
+    },
+  };
+});
 jest.mock("expo-sharing", () => ({
   isAvailableAsync: jest.fn(),
   shareAsync: jest.fn(),
 }));
 jest.mock("expo-location", () => ({
-  Accuracy: { Balanced: 3 },
+  Accuracy: { Balanced: 3, BestForNavigation: 6 },
   requestForegroundPermissionsAsync: jest.fn(),
   getCurrentPositionAsync: jest.fn(),
+  watchPositionAsync: jest.fn(),
+}));
+jest.mock("expo-speech", () => ({ speak: jest.fn(), stop: jest.fn() }));
+jest.mock("expo-brightness", () => ({
+  getBrightnessAsync: jest.fn(() => Promise.resolve(0.6)),
+  setBrightnessAsync: jest.fn(() => Promise.resolve()),
+}));
+jest.mock("expo-keep-awake", () => ({
+  activateKeepAwakeAsync: jest.fn(() => Promise.resolve()),
+  deactivateKeepAwake: jest.fn(() => Promise.resolve()),
 }));
 jest.mock("expo-secure-store", () =>
   jest
@@ -103,7 +161,12 @@ async function openActivities() {
 
 beforeEach(() => {
   store.kept.clear();
+  clearRun();
+  saveOutbox([]);
   injectJavaScript.mockClear();
+  jest
+    .mocked(Location.watchPositionAsync)
+    .mockResolvedValue({ remove: jest.fn() } as Location.LocationSubscription);
   jest
     .mocked(Location.requestForegroundPermissionsAsync)
     .mockResolvedValue({ granted: true } as Location.LocationPermissionResponse);
@@ -400,3 +463,312 @@ test("without an account there are no activities, and nothing is asked", async (
   expect(screen.queryByRole("button", { name: /^My activities/ })).toBeNull();
   expect(calls("GET", "/me/activities")).toHaveLength(0);
 });
+
+// --- A run that ends ---
+
+/** The run of the API's example, as the phone has it in its file: ended,
+ * and left there when the app closed. */
+const ENDED: SavedRun = {
+  version: 1,
+  route: activityRequest.points as LatLon[],
+  similarity: activityRequest.similarity,
+  track: {
+    fixes: activityRequest.track.map((fix) => ({
+      point: fix.point as LatLon,
+      timeMs: fix.time_ms,
+      accuracyM: fix.accuracy_m,
+    })),
+    distanceM: 4007,
+    pauses: [{ fromMs: 1790000300000, toMs: 1790000360000, auto: true }],
+  },
+  status: "arrived",
+};
+const FREE_ENDED: SavedRun = { ...ENDED, route: [], similarity: undefined };
+const KEY = activityKey(ENDED.track.fixes[0]);
+const SAVED = { ...STAR, id: KEY };
+
+/** The app opened on the end of the run left in the file. */
+async function openOnRun(run: SavedRun) {
+  saveRun(run);
+  await render(<App />);
+  await screen.findByText("Your run");
+}
+
+test("«Done» saves the run by itself: the fixes and the route, never the app's numbers", async () => {
+  signedIn();
+  let saved = false;
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () =>
+      Response.json(
+        saved
+          ? { activities: [SAVED], next: null, total: 1 }
+          : { activities: [], next: null, total: 0 },
+      ),
+    "POST /track-scores": () => Response.json(trackScore),
+    [`PUT /me/activities/${KEY}`]: () => {
+      saved = true;
+      return Response.json(SAVED, { status: 201 });
+    },
+  });
+  await openOnRun(ENDED);
+  expect(screen.getByText("Done saves this run in My activities.")).toBeOnTheScreen();
+  // Nothing goes before «Done»: the run may still go on.
+  await screen.findByText("91");
+  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(0);
+
+  await fireEvent.press(screen.getByText("Done"));
+  await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
+  const [, init] = calls("PUT", `/me/activities/${KEY}`)[0];
+  expect(init?.headers).toMatchObject({ Authorization: `Bearer ${session.token}` });
+  // What its route draws went with the app that drew it: the line alone.
+  expect(JSON.parse(String(init?.body))).toEqual({ ...activityRequest, shape: null });
+  // Saved: nothing waits on the phone, and «Profile» counts it.
+  await waitFor(() => expect(loadOutbox()).toEqual([]));
+  expect(loadRun()).toBeNull();
+  await fireEvent.press(await screen.findByRole("button", { name: /^Profile/ }));
+  expect(
+    await screen.findByRole("button", { name: "My activities, 1" }),
+  ).toBeOnTheScreen();
+});
+
+test("a run without a route is saved too, with no route in it", async () => {
+  signedIn();
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
+    [`PUT /me/activities/${KEY}`]: () =>
+      Response.json({ ...FREE, id: KEY }, { status: 201 }),
+  });
+  await openOnRun(FREE_ENDED);
+  expect(screen.getByText("Done saves this run in My activities.")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByText("Done"));
+  await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
+  const [, init] = calls("PUT", `/me/activities/${KEY}`)[0];
+  expect(JSON.parse(String(init?.body))).toEqual({
+    ...activityRequest,
+    points: null,
+    similarity: null,
+    shape: null,
+  });
+  expect(calls("POST", "/track-scores")).toHaveLength(0);
+  await waitFor(() => expect(loadOutbox()).toEqual([]));
+});
+
+test("without a network the run waits on the phone", async () => {
+  signedIn();
+  fetchSpy.mockImplementation(async () => {
+    throw new Error("no network");
+  });
+  await openOnRun(FREE_ENDED);
+  await fireEvent.press(screen.getByText("Done"));
+  await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
+  // The run left the finish screen, not the phone: it waits for its account.
+  expect(loadRun()).toBeNull();
+  await waitFor(() => expect(loadOutbox().map((run) => run.id)).toEqual([KEY]));
+  expect(loadOutbox()[0].owner).toBe(session.user.id);
+  expect(loadOutbox()[0].request.track).toHaveLength(5);
+  await fireEvent.press(await screen.findByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(await screen.findByRole("button", { name: /^My activities/ }));
+  expect(
+    await screen.findByText("1 run is on this phone, waiting for a connection."),
+  ).toBeOnTheScreen();
+  // Asked again with the page, and still there.
+  expect(loadOutbox()).toHaveLength(1);
+});
+
+test("what waited goes at the next opening with a network, once", async () => {
+  signedIn();
+  // The phone as the opening before left it: a run in the outbox.
+  saveOutbox([
+    {
+      id: KEY,
+      owner: session.user.id,
+      request: { ...activityRequest, points: null, similarity: null, shape: null },
+    } as Waiting,
+  ]);
+  let saved = false;
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () =>
+      Response.json(
+        saved
+          ? { activities: [{ ...FREE, id: KEY }], next: null, total: 1 }
+          : { activities: [], next: null, total: 0 },
+      ),
+    [`PUT /me/activities/${KEY}`]: () => {
+      saved = true;
+      return Response.json({ ...FREE, id: KEY }, { status: 201 });
+    },
+  });
+  await open();
+  // Nobody touched anything: it went with the opening.
+  await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
+  await waitFor(() => expect(loadOutbox()).toEqual([]));
+  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+  await fireEvent.press(
+    await screen.findByRole("button", { name: "My activities, 1" }),
+  );
+  expect(screen.getAllByTestId("activity-row")).toHaveLength(1);
+  expect(screen.queryByText(/waiting for a connection/)).toBeNull();
+  // The page asks its list again; the run is not sent again.
+  await waitFor(() => expect(calls("GET", "/me/activities").length).toBeGreaterThan(2));
+  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1);
+});
+
+test("with nothing waiting, an opening sends nothing", async () => {
+  signedIn();
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () => Response.json(activities),
+  });
+  await open();
+  await fireEvent.press(screen.getByRole("button", { name: /^Profile/ }));
+  await screen.findByRole("button", { name: "My activities, 2" });
+  expect(fetchSpy.mock.calls.filter(([, init]) => init?.method === "PUT")).toEqual([]);
+});
+
+test("a run the API will never take stops waiting", async () => {
+  signedIn();
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
+    [`PUT /me/activities/${KEY}`]: () =>
+      Response.json(apiError("invalid_request", "This run cannot be saved: …"), {
+        status: 422,
+      }),
+  });
+  await openOnRun(FREE_ENDED);
+  await fireEvent.press(screen.getByText("Done"));
+  await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
+  await waitFor(() => expect(loadOutbox()).toEqual([]));
+});
+
+test("an API that is away keeps the run waiting", async () => {
+  signedIn();
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
+    [`PUT /me/activities/${KEY}`]: () =>
+      Response.json(apiError("engine_error", "…"), { status: 500 }),
+  });
+  await openOnRun(FREE_ENDED);
+  await fireEvent.press(screen.getByText("Done"));
+  await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
+  expect(loadOutbox().map((run) => run.id)).toEqual([KEY]);
+});
+
+test("a run that waits belongs to its account: another one does not send it", async () => {
+  signedIn();
+  saveOutbox([
+    { id: KEY, owner: session.user.id + 1, request: activityRequest } as Waiting,
+  ]);
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
+  });
+  await open();
+  await openActivities();
+  await screen.findByText(/^No activities yet/);
+  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(0);
+  expect(screen.queryByText(/waiting for a connection/)).toBeNull();
+  expect(loadOutbox()).toHaveLength(1);
+});
+
+test("without an account the run ends as before, with a line that invites to sign in", async () => {
+  api({});
+  await openOnRun(FREE_ENDED);
+  expect(screen.queryByText("Done saves this run in My activities.")).toBeNull();
+  // The line opens «Profile», which says why.
+  await fireEvent.press(screen.getByRole("button", { name: SIGN_IN_TO_KEEP_RUNS }));
+  expect(screen.getByRole("header", { name: "Profile" })).toBeOnTheScreen();
+  expect(screen.getByText(SIGN_IN_TO_KEEP_RUNS)).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Back" }));
+  // «Done»: the run leaves the phone, and nothing goes anywhere.
+  await fireEvent.press(screen.getByText("Done"));
+  expect(await screen.findByText("Starting from your position.")).toBeOnTheScreen();
+  expect(loadRun()).toBeNull();
+  expect(loadOutbox()).toEqual([]);
+  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(0);
+});
+
+test("a run along a route still on the map is saved with what the route draws", async () => {
+  signedIn();
+  let onPosition: (position: Location.LocationObject) => void = () => {};
+  jest
+    .mocked(Location.watchPositionAsync)
+    .mockImplementation(async (_options, callback) => {
+      onPosition = callback;
+      return { remove: jest.fn() };
+    });
+  const answers: Answers = {
+    ...ACCOUNT,
+    "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
+    "POST /route-directions": () => Response.json(directions),
+    "POST /track-scores": () => Response.json(trackScore),
+  };
+  fetchSpy.mockImplementation(async (input, init) => {
+    const path = String(input).replace(API, "");
+    const method = init?.method ?? "GET";
+    const answer = answers[`${method} ${path}`];
+    if (answer !== undefined) {
+      return answer();
+    }
+    if (method === "PUT" && path.startsWith("/me/activities/")) {
+      return Response.json({ ...STAR, id: path.split("/").at(-1) }, { status: 201 });
+    }
+    if (path.startsWith("/recommended-routes/")) {
+      return Response.json(explored);
+    }
+    if (path.startsWith("/recommended-routes")) {
+      return Response.json(exploreList);
+    }
+    return Response.json(apiError("http_error", path), { status: 404 });
+  });
+  await open();
+  // The star of «Explore» in Trento, started and run for its first stretch.
+  await fireEvent.press(screen.getByRole("tab", { name: "Explore" }));
+  await fireEvent.press(await screen.findByText("Star · 5.1 km"));
+  await fireEvent.press(await screen.findByText("Start"));
+  await screen.findByText("Stop");
+  const now = Date.now();
+  const [first, second] = explored.points as LatLon[];
+  await act(async () => {
+    skipCountdown();
+    onPosition({
+      coords: { latitude: first[0], longitude: first[1], accuracy: 5 },
+      timestamp: now - 120_000,
+    } as Location.LocationObject);
+    onPosition({
+      coords: { latitude: second[0], longitude: second[1], accuracy: 5 },
+      timestamp: now,
+    } as Location.LocationObject);
+  });
+  await fireEvent.press(screen.getByLabelText("Pause"));
+  await fireEvent(screen.getByLabelText("Stop"), "longPress");
+  await screen.findByText("Your run");
+  await fireEvent.press(screen.getByText("Done"));
+
+  const puts = () =>
+    fetchSpy.mock.calls.filter(
+      ([input, init]) =>
+        init?.method === "PUT" && String(input).startsWith(`${API}/me/activities/`),
+    );
+  await waitFor(() => expect(puts()).toHaveLength(1));
+  const [url, init] = puts()[0];
+  const body = JSON.parse(String(init?.body));
+  expect(body).toMatchObject({
+    points: explored.points,
+    similarity: explored.similarity,
+    shape: "star",
+    word: null,
+    style: null,
+    title: null,
+  });
+  // The run began where and when its first fix says: that is its key.
+  expect(body.track[0]).toMatchObject({ point: first, time_ms: now - 120_000 });
+  expect(String(url)).toBe(
+    `${API}/me/activities/${activityKey({ point: first, timeMs: now - 120_000 })}`,
+  );
+  // The whole run, from the first screen to the last: slow on a busy machine.
+}, 20_000);

@@ -72,6 +72,10 @@ export function ProfileLayer({ apiUrl, children }: Props) {
         setHint(null);
         setPage("activities");
       },
+      onAccount: (why: string) => {
+        setHint(why);
+        setPage("account");
+      },
       onOpened: () => setPage(null),
     }),
     [],

@@ -329,11 +329,10 @@ def _paused_s(pauses: Sequence[Pause]) -> float:
 
 def _stopped_between(pauses: Sequence[Pause], from_s: float, to_s: float) -> bool:
     """Whether the runner paused the run between two points one after the
-    other: wherever the pause was spent, the step across it is not run."""
-    return any(
-        not pause.auto and from_s <= pause.from_s and pause.to_s <= to_s
-        for pause in pauses
-    )
+    other: wherever the pause was spent, the step across it is not run. As
+    the app counts it (trackRecorder.ts): the pause begins at the first of
+    the two or after it; when it ends is the clock's word, not the GPS's."""
+    return any(not pause.auto and from_s <= pause.from_s < to_s for pause in pauses)
 
 
 def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:

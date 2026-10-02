@@ -245,46 +245,11 @@ test("another account has its own list, and the answers of the first are dropped
 });
 
 test("without an API the list fails, and nothing is asked", async () => {
-  const fetchFn = answers();
+  const fetchFn: jest.Mock = answers();
   const ended = jest.fn();
   const { result } = await renderHook(() =>
     useActivities(null, "one", ended, { fetchFn, key: null }),
   );
   expect(result.current.status).toBe("failed");
   expect(fetchFn).not.toHaveBeenCalled();
-});
-
-test("a run just saved takes its place, the latest first", async () => {
-  const fetchFn = answers({ status: 200, body: page([STAR, earlier(4)], null, 2) });
-  const { result } = await hook(fetchFn);
-  await act(async () => result.current.saved("one", earlier(2)));
-  expect(result.current.list.map((activity) => activity.id)).toEqual([
-    STAR.id,
-    earlier(2).id,
-    earlier(4).id,
-  ]);
-  expect(result.current.total).toBe(3);
-  // Sent twice, saved once.
-  await act(async () => result.current.saved("one", earlier(2)));
-  expect(result.current).toMatchObject({ total: 3 });
-  expect(result.current.list).toHaveLength(3);
-  // A newer run than any goes first.
-  const newest = {
-    ...earlier(0),
-    id: "newestkey0000",
-    started_at: "2026-10-02T06:00:00Z",
-  };
-  await act(async () => result.current.saved("one", newest));
-  expect(result.current.list[0]).toEqual(newest);
-  // Another account's run is nobody's here.
-  await act(async () => result.current.saved("two", earlier(1)));
-  expect(result.current.list).toHaveLength(4);
-});
-
-test("a run of long ago, saved late, waits on its page", async () => {
-  const fetchFn = answers({ status: 200, body: page([STAR, earlier(1)], CURSOR, 5) });
-  const { result } = await hook(fetchFn);
-  await act(async () => result.current.saved("one", earlier(30)));
-  expect(result.current.list).toEqual([STAR, earlier(1)]);
-  expect(result.current.total).toBe(6);
 });

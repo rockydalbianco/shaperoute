@@ -30,8 +30,6 @@ export type ActivitiesState = {
   /** Asks for the page after the last one here. */
   loadMore: () => void;
   remove: (id: string) => void;
-  /** A run the API has just saved: first in the list it belongs to. */
-  saved: (token: string, activity: Activity) => void;
   clearProblem: () => void;
 };
 
@@ -62,12 +60,6 @@ type Held = {
 };
 
 const NONE: Activity[] = [];
-
-/** When a run began, in milliseconds; 0 for a moment that is not one. */
-function startOf(activity: Activity): number {
-  const ms = Date.parse(activity.started_at);
-  return Number.isNaN(ms) ? 0 : ms;
-}
 
 export function useActivities(
   baseUrl: string | null,
@@ -248,30 +240,6 @@ export function useActivities(
     [baseUrl, change, fetchFn, key, onSessionEnded, token],
   );
 
-  const saved = useCallback(
-    (of: string, activity: Activity) => {
-      change(of, (was) => {
-        if (was.status !== "ready" || was.list.some((a) => a.id === activity.id)) {
-          // No list yet: the one on its way has the run already.
-          return {};
-        }
-        const total = was.total === null ? null : was.total + 1;
-        const began = startOf(activity);
-        const last = was.list[was.list.length - 1];
-        // A run of long ago, sent late: it is on a page not asked for yet.
-        if (was.next !== null && last !== undefined && began < startOf(last)) {
-          return { total };
-        }
-        // Before the first run that began earlier: the latest stays first.
-        const at = was.list.findIndex((other) => startOf(other) < began);
-        const list = [...was.list];
-        list.splice(at === -1 ? list.length : at, 0, activity);
-        return { list, total };
-      });
-    },
-    [change],
-  );
-
   const mine = held !== null && held.token === token ? held : null;
   const list = mine?.list ?? NONE;
   const total = mine?.total ?? null;
@@ -298,7 +266,6 @@ export function useActivities(
       refresh,
       loadMore,
       remove,
-      saved,
       clearProblem,
     }),
     [
@@ -311,7 +278,6 @@ export function useActivities(
       refresh,
       loadMore,
       remove,
-      saved,
       clearProblem,
     ],
   );

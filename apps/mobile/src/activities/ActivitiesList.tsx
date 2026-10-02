@@ -40,6 +40,13 @@ export function ActivitiesList() {
           {activities.problem}
         </Text>
       )}
+      {activities.waiting > 0 && (
+        <Text style={styles.message}>
+          {activities.waiting === 1
+            ? "1 run is on this phone, waiting for a connection."
+            : `${activities.waiting} runs are on this phone, waiting for a connection.`}
+        </Text>
+      )}
       {activities.list.length > 0 ? (
         <>
           {activities.list.map((activity) => (

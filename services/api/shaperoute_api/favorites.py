@@ -20,7 +20,9 @@ from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path, Response
 from psycopg.rows import DictRow
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from psycopg.types.json import Jsonb
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from route_engine.pen_up import walks_problem
 
 from shaperoute_api.accounts import (
     ACCOUNT_ERRORS,
@@ -33,7 +35,7 @@ from shaperoute_api.accounts import (
 )
 from shaperoute_api.db import Database
 from shaperoute_api.recommended import preview
-from shaperoute_api.schemas import ErrorBody
+from shaperoute_api.schemas import MAX_WALKS, ErrorBody, Walk
 
 # A phone's list stays light, and one account cannot fill the database.
 MAX_FAVORITES = 200
@@ -63,6 +65,9 @@ class FavoriteRequestBody(BaseModel):
     route_m: int = Field(gt=0, le=MAX_ROUTE_M)
     similarity: float = Field(ge=0, le=1)
     points: list[LatLon] = Field(min_length=2, max_length=MAX_POINTS)
+    walks: list[Walk] = Field(default_factory=list, max_length=MAX_WALKS)
+    """RouteResult.walks, for a word with the pen up (TASK-199); missing
+    from an older app."""
 
     @field_validator("points")
     @classmethod
@@ -71,6 +76,14 @@ class FavoriteRequestBody(BaseModel):
             if not (-90 <= lat <= 90 and -180 <= lon <= 180):
                 raise ValueError("a point is (lat, lon) in degrees, WGS84")
         return points
+
+    @model_validator(mode="after")
+    def walks_within_points(self) -> FavoriteRequestBody:
+        # As POST /track-scores checks them (schemas.py).
+        problem = walks_problem(self.walks, len(self.points))
+        if problem is not None:
+            raise ValueError(problem)
+        return self
 
 
 class FavoriteBody(BaseModel):
@@ -110,11 +123,15 @@ class FavoriteDetailBody(BaseModel):
     similarity: float
     points: list[LatLon]
     created_at: datetime
+    walks: list[Walk]
+    """For a word with the pen up (TASK-199): [from, to] indices into
+    `points`; empty for any other route, and for the favorites kept
+    before."""
 
 
 COLUMNS = (
     "key, city, shape, word, style, title, distance_m, route_m, similarity,"
-    " created_at, ST_AsGeoJSON(line, 15) AS line"
+    " created_at, walks, ST_AsGeoJSON(line, 15) AS line"
 )
 
 
@@ -174,7 +191,11 @@ class Favorites:
             ).fetchone()
         if row is None:
             return None
-        return FavoriteDetailBody(**_fields(row), points=_points(row))
+        return FavoriteDetailBody(
+            **_fields(row),
+            points=_points(row),
+            walks=[(start, end) for start, end in row["walks"]],
+        )
 
     def keep(
         self, user_id: int, key: str, body: FavoriteRequestBody
@@ -201,9 +222,9 @@ class Favorites:
                 raise AccountError(422, "invalid_request", FAVORITES_FULL)
             row = conn.execute(
                 "INSERT INTO favorites (user_id, key, city, shape, word, style,"
-                " title, distance_m, route_m, similarity, line, created_at)"
+                " title, distance_m, route_m, similarity, line, created_at, walks)"
                 " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
-                " ST_GeomFromText(%s, 4326), %s)"
+                " ST_GeomFromText(%s, 4326), %s, %s)"
                 f" RETURNING {COLUMNS}",
                 (
                     user_id,
@@ -218,6 +239,7 @@ class Favorites:
                     body.similarity,
                     _wkt(body.points),
                     self.now(),
+                    Jsonb([list(walk) for walk in body.walks]),
                 ),
             ).fetchone()
             assert row is not None

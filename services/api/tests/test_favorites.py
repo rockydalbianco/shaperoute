@@ -1,6 +1,7 @@
 """Favorites in a real PostgreSQL (TASK-171, ADR-0139): keep a route, list,
 open and remove it; each account sees only its own; the bodies are the
-examples of packages/shared-types/fixtures."""
+examples of packages/shared-types/fixtures. A word with the pen up keeps its
+walks (TASK-199)."""
 
 from __future__ import annotations
 
@@ -91,15 +92,23 @@ def code(answer: Any) -> str:
 
 
 def test_the_fixtures_are_the_contract() -> None:
+    # Written before TASK-199: the request of an older app, the answer of an
+    # older API, without the walks.
     body = _load("favorite-request.json")
-    assert set(body) == set(FavoriteRequestBody.model_fields)
+    assert set(body) == set(FavoriteRequestBody.model_fields) - {"walks"}
     FavoriteRequestBody.model_validate(body)
     listed = _load("favorites.json")
     assert set(listed["favorites"][0]) == set(FavoriteBody.model_fields)
     FavoritesBody.model_validate(listed)
     whole = _load("favorite.json")
-    assert set(whole) == set(FavoriteDetailBody.model_fields)
-    FavoriteDetailBody.model_validate(whole)
+    assert set(whole) == set(FavoriteDetailBody.model_fields) - {"walks"}
+    # A word with the pen up (TASK-199): every field.
+    walked = _load("favorite-request-walks.json")
+    assert set(walked) == set(FavoriteRequestBody.model_fields)
+    FavoriteRequestBody.model_validate(walked)
+    whole_walked = _load("favorite-walks.json")
+    assert set(whole_walked) == set(FavoriteDetailBody.model_fields)
+    FavoriteDetailBody.model_validate(whole_walked)
 
 
 def test_the_migration_comes_after_the_accounts() -> None:
@@ -126,7 +135,8 @@ def test_a_favorite_opens_whole_as_the_example(client: TestClient) -> None:
     client.put(f"/me/favorites/{KEY}", json=request(), headers=me)
     whole = client.get(f"/me/favorites/{KEY}", headers=me)
     assert whole.status_code == 200
-    assert whole.json() == _load("favorite.json")
+    # The example of before TASK-199, and no walks.
+    assert whole.json() == {**_load("favorite.json"), "walks": []}
 
 
 def test_the_line_comes_back_digit_for_digit(client: TestClient) -> None:
@@ -182,6 +192,48 @@ def test_removing_is_done_once_or_twice(client: TestClient) -> None:
     gone = client.get(f"/me/favorites/{KEY}", headers=me)
     assert gone.status_code == 404
     assert code(gone) == "http_error"
+
+
+# --- A word with the pen up (TASK-199) ---
+
+
+def walked(**changes: Any) -> dict[str, Any]:
+    return {**_load("favorite-request-walks.json"), **changes}
+
+
+def test_a_favorite_keeps_its_walks(client: TestClient) -> None:
+    me = signed_up(client)
+    kept = client.put(f"/me/favorites/{KEY}", json=walked(), headers=me)
+    assert kept.status_code == 201
+    # The list is as before: no walks in it.
+    assert "walks" not in kept.json()
+    listed = client.get("/me/favorites", headers=me).json()["favorites"]
+    assert "walks" not in listed[0]
+    whole = client.get(f"/me/favorites/{KEY}", headers=me)
+    assert whole.status_code == 200
+    assert whole.json() == _load("favorite-walks.json")
+
+
+@pytest.mark.parametrize(
+    "walks",
+    [
+        [[2, 8]],
+        [[5, 2]],
+        [[-1, 2]],
+        [[2, 5], [3, 6]],
+        [[2, 5, 7]],
+        [[2, 5]] * 40,
+        "[2, 5]",
+    ],
+)
+def test_walks_that_are_not_of_the_route_are_refused(
+    client: TestClient, walks: Any
+) -> None:
+    me = signed_up(client)
+    answer = client.put(f"/me/favorites/{KEY}", json=walked(walks=walks), headers=me)
+    assert answer.status_code == 422
+    assert code(answer) == "invalid_request"
+    assert client.get("/me/favorites", headers=me).json() == {"favorites": []}
 
 
 # --- Whose they are ---

@@ -193,7 +193,7 @@ Fuori dall'elenco previsto, e perché (nessuna PR aperta li toccava il
 
 ## Esito
 
-**Fatto**, motore e API, nella PR del branch `feat/TASK-197-pen-up-words`
+**Fatto**, motore e API, PR #217 dal branch `feat/TASK-197-pen-up-words`
 (ADR-0157). Come funziona: `ROUTE_ENGINE.md` §2 e §5, «La penna alzata»;
 `API.md`, «La penna alzata»; `GPX.md`, «La penna alzata».
 

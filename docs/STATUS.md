@@ -171,8 +171,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## Completato
 
 - **Motore e API** — TASK-197: la penna alzata nelle parole, chiesta
-  dall'utente (ADR-0157), nella PR di `feat/TASK-197-pen-up-words` (il
-  merge è del coordinatore). Con `pen_up: true` e una parola ogni lettera
+  dall'utente (ADR-0157), PR #217 (il merge è del coordinatore). Con `pen_up: true` e una parola ogni lettera
   si disegna da sola, una volta, e fra una e l'altra si prende a piedi la
   strada più breve; il `RouteResult` ha `walks`, coppie `[da, a]` di indici
   in `points` (n − 1 per n lettere), e il percorso non è chiuso.

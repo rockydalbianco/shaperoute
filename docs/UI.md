@@ -190,8 +190,16 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
 - L'app si apre su «Draw». Forma, parola, distanza e partenza restano come
   erano dopo un giro sulle altre pagine.
 - **«Feed»** è la pagina dei disegni che gli iscritti pubblicano
-  (TASK-118). Finché non ci sono dice «No drawings yet» e «The drawings
-  that runners publish will show up here.».
+  (TASK-118). Finché non ci sono mostra **quindici disegni di esempio**
+  (TASK-156, ADR-0127, chiesto dall'utente). Niente sulla pagina dice che
+  sono esempi: scelta dell'utente. Ogni scheda ha l'iniziale e il nome di
+  chi ha corso, la
+  città, il disegno in giallo a tutta larghezza, il punteggio («98», «out
+  of 100»), il titolo e una riga «Horse · 19.2 km · 1 h 41 min». Sono le
+  figure venute meglio nelle sette città del catalogo, due per città e
+  nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
+  inventati. Le schede non si toccano: aprire un disegno arriva con
+  TASK-118.
 - **«Explore»** chiede i suoi percorsi all'API la prima volta che ci si
   arriva, non all'apertura dell'app; tornandoci l'elenco è ancora lì. Non
   ha più «←»: per tornare c'è lo swipe, o il nome «Draw».

@@ -120,11 +120,12 @@ test("a swipe to the left goes to «Explore», which asks for its routes then", 
   expect(listCalls()).toBe(1);
 });
 
-test("a swipe to the right goes to «Feed», empty until runners publish", async () => {
+test("a swipe to the right goes to «Feed», with its example drawings", async () => {
   await atTrento();
   await swipeTo(0);
   expect(screen.getByRole("tab", { name: "Feed", selected: true })).toBeOnTheScreen();
-  expect(screen.getByText("No drawings yet")).toBeOnTheScreen();
+  expect(screen.getByText("A horse through Levico")).toBeOnTheScreen();
+  expect(screen.getAllByTestId("feed-post").length).toBeGreaterThanOrEqual(2);
   expect(screen.queryByText("Draw route")).toBeNull();
   // «Explore» was never in view: it asked nothing.
   expect(fetchSpy).not.toHaveBeenCalled();

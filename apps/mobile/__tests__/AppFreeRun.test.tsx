@@ -128,6 +128,14 @@ async function openApp() {
   });
 }
 
+test("the button says what it starts: a run without a route", async () => {
+  await openApp();
+  // Written in full: "Run" alone read as running the route chosen below.
+  expect(screen.getByText("Run without a route")).toBeOnTheScreen();
+  expect(screen.queryByText("Run")).toBeNull();
+  expect(screen.getByRole("button", { name: "Run without a route" })).toBeOnTheScreen();
+});
+
 test("Run records a run without a route, and Stop shows it", async () => {
   await openApp();
   await fireEvent.press(screen.getByLabelText("Run without a route"));

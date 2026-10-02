@@ -1,5 +1,5 @@
 import type { LatLon } from "@shaperoute/shared-types";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -100,6 +100,10 @@ export function ExploreScreen({
   const [answer, setAnswer] = useState<{ key: string; list: ListState } | null>(null);
   const [what, setWhat] = useState(ALL);
   const [km, setKm] = useState(ALL);
+  // "Ask for a route" waits closed at the foot of the page (TASK-157).
+  const [asking, setAsking] = useState(false);
+  const page = useRef<ScrollView>(null);
+  const shownAsking = useRef(false);
   const lat = near?.[0];
   const lon = near?.[1];
   const key =
@@ -179,6 +183,14 @@ export function ExploreScreen({
         </View>
       </View>
       <ScrollView
+        ref={page}
+        // Opened, "Ask for a route" is below the fold: the page goes to it.
+        onContentSizeChange={() => {
+          if (asking && !shownAsking.current) {
+            shownAsking.current = true;
+            page.current?.scrollToEnd({ animated: true });
+          }
+        }}
         contentContainerStyle={[
           styles.list,
           { paddingBottom: insets.bottom + space.lg },
@@ -194,13 +206,6 @@ export function ExploreScreen({
             examples={examples}
             onOpen={onOpen}
             onRetry={retry}
-          />
-        )}
-        {onAsk && (
-          <AskForRoute
-            city={city}
-            where={city?.label ?? "your start"}
-            onAsk={(text) => onAsk({ text, centre: near, city: city?.label ?? null })}
           />
         )}
         {list.status === "done" && routes.length > 0 && (
@@ -243,6 +248,24 @@ export function ExploreScreen({
             <Text style={styles.match}>{`${Math.round(route.similarity * 100)}%`}</Text>
           </Pressable>
         ))}
+        {/* Under the routes already there, and closed: the page is for looking
+            first (TASK-157). */}
+        {onAsk &&
+          (asking ? (
+            <AskForRoute
+              city={city}
+              where={city?.label ?? "your start"}
+              onAsk={(text) => onAsk({ text, centre: near, city: city?.label ?? null })}
+            />
+          ) : (
+            <Pressable
+              style={styles.ask}
+              onPress={() => setAsking(true)}
+              accessibilityRole="button"
+            >
+              <Text style={styles.askText}>Ask for a route</Text>
+            </Pressable>
+          ))}
       </ScrollView>
     </View>
   );
@@ -359,6 +382,18 @@ const styles = StyleSheet.create({
     color: color.textMuted,
     fontSize: fontSize.body,
     paddingVertical: space.lg,
+  },
+  // Quiet on purpose: a line of text at the foot of the page, not a card.
+  ask: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    alignSelf: "flex-start",
+    marginTop: space.lg,
+  },
+  askText: {
+    color: color.textMuted,
+    fontSize: fontSize.body,
+    textDecorationLine: "underline",
   },
   row: {
     flexDirection: "row",

@@ -94,7 +94,9 @@ export function ChooseScreen({
                 accessibilityRole="button"
                 accessibilityLabel="Run without a route"
               >
-                <Text style={styles.exploreText}>Run</Text>
+                {/* The whole of it: "Run" alone read as running the route
+                    drawn below (TASK-158). */}
+                <Text style={styles.exploreText}>Run without a route</Text>
               </Pressable>
             )}
           </View>

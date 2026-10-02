@@ -175,7 +175,7 @@ un errore la sua distanza suggerita; `errors.py` ha `suggested_distance`
 rifà una richiesta in bici sulla rete della bici. `zone_extract.py` e
 `draw_examples.py` non sono cambiati («Esito», parte B).
 
-**Parte C** (app, fatta, PR #PR_C):
+**Parte C** (app, fatta, PR #221):
 
 ```
 apps/mobile/src/settings/sport.ts
@@ -449,7 +449,7 @@ l'app aspetta (`MAX_WAIT_MS`). Gli eventi delle ricerche (`insights`) non
 scrivono l'attività: un percorso in bici vi sembra una corsa (da decidere
 se serve). Le due «Domande aperte» restano dell'utente.
 
-**Parte C — l'app (2026-10-02)**, PR #PR_C, ADR-0153 («Aggiornamento
+**Parte C — l'app (2026-10-02)**, PR #221, ADR-0153 («Aggiornamento
 (parte C)»). Minima e reversibile, come chiesto dal coordinatore. Fatto:
 
 - **«Bike» si sceglie** in «Settings» (`ready: true` in `sport.ts`), e la

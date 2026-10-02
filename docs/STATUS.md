@@ -146,7 +146,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   distanza suggerita nei limiti, e `prefetch_zones --activity cycling
   --extract` per zone della bici di 26 × 26 km (stima 0,15–0,6 GB in
   memoria ciascuna). La corsa non cambia. **Parte C, l'app** (assegnata il
-  2026-10-02 sera), PR #PR_C (il merge è del coordinatore): «Bike» si
+  2026-10-02 sera), PR #221 (il merge è del coordinatore): «Bike» si
   sceglie in «Settings» e vale subito; con «Bike» «Draw» chiede `cycling`
   fra 10 e 30 km (parole fino a 8 lettere, «Ride without a route»); con
   «Run» le richieste sono quelle di prima, byte per byte. Due testi da

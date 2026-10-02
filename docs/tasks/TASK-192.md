@@ -94,6 +94,26 @@ docs/tasks/TASK-192.md
   (zona da scaricare), poi restano sull'API (TASK-168).
 - Il testo di `CityExamples.tsx` e l'API.
 
+## Da dove riprendere
+
+Stato al 2026-10-02: nel branch ci sono `ownRoutes.ts`, il suo test e
+questo file. Il resto aspetta TASK-176 in `main`.
+
+La modifica di `ExploreScreen.tsx` e i suoi test sono già provati su una
+copia di TASK-176 (commit `fc3d7ca`), 23 test verdi: la differenza è in
+`out/TASK-192-glue.patch` (cartella ignorata da git, sul Mac). Con
+TASK-176 in `main`: `git merge origin/main` nel branch, applicare la
+patch (o rifarla a mano, sono 40 righe), poi `UI.md`, ADR-0155,
+`STATUS.md`. In breve la patch:
+
+- `byPlace(routes)` solo con una città scelta; `has` e `ownCityName`
+  guardano i percorsi suoi; `OWN_ROUTE_M` di TASK-176 lascia il posto a
+  `OWN_RADIUS_M`;
+- la griglia delle schede è dei percorsi suoi più le forme aggiunte; sotto,
+  l'etichetta «NEAR <PAESE>» e le schede dei vicini;
+- con i vicini sotto gli esempi il feed d'attesa non compare, e il credito
+  della mappa resta uno solo.
+
 ## Esito
 
 *(a fine task)*

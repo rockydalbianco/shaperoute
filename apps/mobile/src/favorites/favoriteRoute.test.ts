@@ -1,3 +1,5 @@
+import walkedRequest from "@shaperoute/shared-types/fixtures/favorite-request-walks.json";
+import walkedFavorite from "@shaperoute/shared-types/fixtures/favorite-walks.json";
 import favorite from "@shaperoute/shared-types/fixtures/favorite.json";
 import favorites from "@shaperoute/shared-types/fixtures/favorites.json";
 import detail from "@shaperoute/shared-types/fixtures/recommended-route.json";
@@ -5,10 +7,12 @@ import list from "@shaperoute/shared-types/fixtures/recommended-routes.json";
 import result from "@shaperoute/shared-types/fixtures/route-result.json";
 import wordResult from "@shaperoute/shared-types/fixtures/route-result-word.json";
 import imageResult from "@shaperoute/shared-types/fixtures/route-result-image.json";
+import penUpResult from "@shaperoute/shared-types/fixtures/route-result-pen-up.json";
 import {
   type LatLon,
   MAX_OUTLINE_POINTS,
   type RouteResult,
+  type Walk,
 } from "@shaperoute/shared-types";
 
 import type { Favorite, FavoriteDetail } from "../api/favorites";
@@ -265,4 +269,138 @@ test("a favorite with no city and no shape still has a card and a GPX", () => {
     shape: null,
     title: "Image",
   });
+});
+
+// --- A word with the pen up (TASK-199) ---
+
+test("a route without walks is kept with the request of before, byte for byte", () => {
+  const drawn = result as unknown as RouteResult;
+  const request = { start: START, shape: "heart" as const, distance_m: 5000 };
+  // The text sent before TASK-199: an older API refuses a field it does not
+  // know.
+  const before = JSON.stringify({
+    city: "",
+    shape: drawn.shape,
+    word: null,
+    style: null,
+    title: null,
+    distance_m: 5000,
+    route_m: Math.round(drawn.distance_m),
+    points: drawn.points,
+    similarity: drawn.similarity,
+  });
+  for (const walks of [undefined, []]) {
+    const kept = drawnKeepable(
+      { ...request, activity: "running" },
+      { ...drawn, walks },
+      null,
+    );
+    expect(JSON.stringify(kept.request)).toBe(before);
+  }
+  // A word drawn with the pen down, from an API that sends `walks: []`.
+  const word = wordResult as unknown as RouteResult;
+  const kept = drawnKeepable(
+    {
+      start: START,
+      word: "CIAO",
+      style: "round",
+      distance_m: 12000,
+      activity: "running",
+    },
+    { ...word, walks: [] },
+    null,
+  );
+  expect(kept.request).not.toHaveProperty("walks");
+  // And a favorite opened again keeps itself as it was kept.
+  const opened = openedFavorite(favorite as FavoriteDetail);
+  expect(opened.keepable.request).not.toHaveProperty("walks");
+  expect(opened.result).not.toHaveProperty("walks");
+  expect(opened.request).not.toHaveProperty("pen_up");
+});
+
+test("a word drawn with the pen up is kept with its walks", () => {
+  const drawn = penUpResult as unknown as RouteResult;
+  const kept = drawnKeepable(
+    {
+      start: START,
+      word: "IO",
+      style: "round",
+      distance_m: 6000,
+      activity: "running",
+      pen_up: true,
+    },
+    drawn,
+    null,
+  );
+  expect(kept.id).toBe(favoriteKey(drawn.points));
+  expect(kept.request.walks).toEqual([[2, 5]]);
+  // The fields of the contract's example, no more and no fewer.
+  expect(Object.keys(kept.request).sort()).toEqual(Object.keys(walkedRequest).sort());
+  // The list shows it before the API answers, without walks, as the API's.
+  expect(keptNow(kept, new Date("2026-10-02T09:00:00Z"))).not.toHaveProperty("walks");
+});
+
+test("walks that do not fit the line, or of no word, are not kept", () => {
+  const drawn = penUpResult as unknown as RouteResult;
+  const word = {
+    start: START,
+    word: "IO",
+    style: "round" as const,
+    distance_m: 6000,
+    activity: "running" as const,
+  };
+  for (const walks of [
+    [[2, 99]],
+    [[5, 2]],
+    [
+      [2, 5],
+      [3, 6],
+    ],
+  ] as Walk[][]) {
+    expect(drawnKeepable(word, { ...drawn, walks }, null).request).not.toHaveProperty(
+      "walks",
+    );
+  }
+  const shape = { start: START, shape: "heart" as const, distance_m: 5000 };
+  expect(
+    drawnKeepable(
+      { ...shape, activity: "running" },
+      { ...drawn, word: null, shape: "heart" },
+      null,
+    ).request,
+  ).not.toHaveProperty("walks");
+  const nowhere = openedFavorite({
+    ...(walkedFavorite as FavoriteDetail),
+    walks: [[2, 99]],
+  });
+  expect(nowhere.result).not.toHaveProperty("walks");
+  expect(nowhere.request).not.toHaveProperty("pen_up");
+});
+
+test("a favorite with the pen up opens as a word just drawn with it", () => {
+  const opened = openedFavorite(walkedFavorite as FavoriteDetail);
+  // The map draws the walks dashed, Start pauses on them, the score and the
+  // GPX leave them out: all read them from the result.
+  expect(opened.result).toMatchObject({
+    points: walkedFavorite.points,
+    word: "II",
+    walks: [[2, 5]],
+    distance_m: walkedFavorite.route_m,
+    similarity: walkedFavorite.similarity,
+  });
+  // The export asks for a word with the pen up.
+  expect(opened.request).toEqual({
+    start: walkedFavorite.points[0],
+    distance_m: walkedFavorite.distance_m,
+    activity: "running",
+    word: "II",
+    style: "block",
+    pen_up: true,
+  });
+  // Kept again, it is what it was: its walks too.
+  expect(opened.keepable.id).toBe(walkedFavorite.id);
+  expect(opened.keepable.request).toEqual(walkedRequest);
+  // An API older than TASK-199 sends no walks: one line, as before.
+  const { walks: _walks, ...older } = walkedFavorite;
+  expect(openedFavorite(older as FavoriteDetail).result).not.toHaveProperty("walks");
 });

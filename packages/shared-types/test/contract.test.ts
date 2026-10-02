@@ -1,11 +1,19 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import activityRequestWalks from "../fixtures/activity-request-walks.json" with { type: "json" };
+import activityRequest from "../fixtures/activity-request.json" with { type: "json" };
+import activityWalks from "../fixtures/activity-walks.json" with { type: "json" };
+import activity from "../fixtures/activity.json" with { type: "json" };
 import apiErrorCodes from "../fixtures/api-error-codes.json" with { type: "json" };
 import apiError from "../fixtures/api-error.json" with { type: "json" };
 import contract from "../fixtures/contract.json" with { type: "json" };
 import directions from "../fixtures/directions.json" with { type: "json" };
 import editReasons from "../fixtures/edit-reasons.json" with { type: "json" };
+import favoriteRequestWalks from "../fixtures/favorite-request-walks.json" with { type: "json" };
+import favoriteRequest from "../fixtures/favorite-request.json" with { type: "json" };
+import favoriteWalks from "../fixtures/favorite-walks.json" with { type: "json" };
+import favorite from "../fixtures/favorite.json" with { type: "json" };
 import gpxRequest from "../fixtures/gpx-request.json" with { type: "json" };
 import imageError from "../fixtures/image-error.json" with { type: "json" };
 import imageLimits from "../fixtures/image-limits.json" with { type: "json" };
@@ -201,6 +209,33 @@ test("a result without walks, from an older API, is still a result", () => {
   }
   assert.ok(!("pen_up" in request) && !("pen_up" in wordRequest));
   assert.ok(!("walks" in trackScoreRequest));
+});
+
+test("saved runs and favorites keep the walks of a word with the pen up", () => {
+  // TASK-199: the same walks as the route's, in the request and the detail;
+  // the bodies are typed in the app (src/api/activities.ts, favorites.ts).
+  const walked = [
+    activityRequestWalks,
+    activityWalks,
+    favoriteRequestWalks,
+    favoriteWalks,
+  ];
+  for (const fixture of walked) {
+    assert.ok(fixture.word !== null);
+    assert.ok(fixture.walks.length > 0);
+    assert.ok(walksFit(fixture.walks as Walk[], fixture.points.length));
+  }
+  assert.deepEqual(activityRequestWalks.walks, trackWalksRequest.walks);
+  assert.deepEqual(activityRequestWalks.points, trackWalksRequest.points);
+  // A pause of the pen is the runner's: not one the app took standing still.
+  const [pen] = activityRequestWalks.pauses;
+  assert.equal(pen.pen, true);
+  assert.equal(pen.auto, false);
+  // Written before TASK-199: an older app's requests, an older API's answers.
+  for (const fixture of [activityRequest, activity, favoriteRequest, favorite]) {
+    assert.ok(!("walks" in fixture));
+  }
+  assert.ok(activityRequest.pauses.every((pause) => !("pen" in pause)));
 });
 
 test("a shape reading names a shape of the catalogue, or none", () => {

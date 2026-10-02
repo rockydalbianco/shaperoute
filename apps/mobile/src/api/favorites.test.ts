@@ -1,5 +1,7 @@
-import favorite from "@shaperoute/shared-types/fixtures/favorite.json";
+import walkedRequest from "@shaperoute/shared-types/fixtures/favorite-request-walks.json";
 import request from "@shaperoute/shared-types/fixtures/favorite-request.json";
+import walkedFavorite from "@shaperoute/shared-types/fixtures/favorite-walks.json";
+import favorite from "@shaperoute/shared-types/fixtures/favorite.json";
 import favorites from "@shaperoute/shared-types/fixtures/favorites.json";
 
 import { answers, apiError } from "../account/testing";
@@ -105,4 +107,48 @@ test("an error, no API, and an answer that is not one are told apart", async () 
     kind: "bad_answer",
     status: 200,
   });
+});
+
+// --- A word with the pen up (TASK-199) ---
+
+test("a favorite with walks, and one of an older API without, are both read", () => {
+  expect(isFavoriteDetail(walkedFavorite)).toBe(true);
+  expect(walkedFavorite.walks).toEqual([[2, 5]]);
+  expect("walks" in favorite).toBe(false);
+  expect(isFavoriteDetail(favorite)).toBe(true);
+  const typed: FavoriteRequest = walkedRequest as FavoriteRequest;
+  expect(Object.keys(typed)).toEqual([...Object.keys(request), "walks"]);
+});
+
+test("a favorite with walks an older API refuses is kept without them", async () => {
+  const [kept] = favorites.favorites;
+  const fetchFn: jest.Mock = answers(
+    {
+      status: 422,
+      body: apiError("invalid_request", "Extra inputs are not permitted"),
+    },
+    { status: 201, body: kept },
+  );
+  const body = walkedRequest as FavoriteRequest;
+  const outcome = await keepFavorite(URL, TOKEN, ID, body, { fetchFn, key: null });
+  expect(outcome).toEqual({ kind: "ok", value: kept });
+  expect(String(fetchFn.mock.calls[0][1]?.body)).toBe(JSON.stringify(walkedRequest));
+  const { walks: _walks, ...older } = walkedRequest;
+  expect(String(fetchFn.mock.calls[1][1]?.body)).toBe(JSON.stringify(older));
+});
+
+test("a favorite without walks that is refused is not sent again", async () => {
+  const fetchFn: jest.Mock = answers({
+    status: 422,
+    body: apiError("invalid_request", "You have 200 favorites."),
+  });
+  const body = request as FavoriteRequest;
+  expect(
+    await keepFavorite(URL, TOKEN, ID, body, { fetchFn, key: null }),
+  ).toMatchObject({
+    kind: "api_error",
+    code: "invalid_request",
+    message: "You have 200 favorites.",
+  });
+  expect(fetchFn).toHaveBeenCalledTimes(1);
 });

@@ -1,6 +1,8 @@
 import activities from "@shaperoute/shared-types/fixtures/activities.json";
-import activity from "@shaperoute/shared-types/fixtures/activity.json";
+import walkedRequest from "@shaperoute/shared-types/fixtures/activity-request-walks.json";
 import request from "@shaperoute/shared-types/fixtures/activity-request.json";
+import walkedActivity from "@shaperoute/shared-types/fixtures/activity-walks.json";
+import activity from "@shaperoute/shared-types/fixtures/activity.json";
 
 import { answers, apiError } from "../account/testing";
 import {
@@ -12,6 +14,7 @@ import {
   isActivityDetail,
   removeActivity,
   saveActivity,
+  withoutPenUp,
 } from "./activities";
 
 const URL = "http://api";
@@ -134,4 +137,80 @@ test("an answer that is not a run is a bad answer", async () => {
     kind: "bad_answer",
     status: 200,
   });
+});
+
+// --- A word with the pen up (TASK-199) ---
+
+test("a run with walks, and one of an older API without, are both read", () => {
+  expect(isActivityDetail(walkedActivity)).toBe(true);
+  expect(walkedActivity.walks).toEqual([[2, 5]]);
+  // The answer of an API older than TASK-199 has no walks: a run all the same.
+  expect("walks" in activity).toBe(false);
+  expect(isActivityDetail(activity)).toBe(true);
+  const typed: ActivityRequest = walkedRequest as ActivityRequest;
+  expect(Object.keys(typed)).toEqual([...Object.keys(request), "walks"]);
+  expect(Object.keys(typed.pauses[0])).toEqual(["from_ms", "to_ms", "auto", "pen"]);
+});
+
+test("the request of an older app has neither walks nor the pen", () => {
+  const typed = walkedRequest as ActivityRequest;
+  const older = withoutPenUp(typed);
+  expect(older).not.toHaveProperty("walks");
+  expect(older.pauses).toStrictEqual([
+    { from_ms: 1790000600000, to_ms: 1790000900000, auto: false },
+  ]);
+  expect({ ...older, walks: typed.walks, pauses: typed.pauses }).toEqual(typed);
+  // A run of any other route is that request already: the same object.
+  const plain = request as ActivityRequest;
+  expect(withoutPenUp(plain)).toBe(plain);
+});
+
+test("a run with walks an older API refuses goes once more as before", async () => {
+  const [saved] = activities.activities;
+  const fetchFn: jest.Mock = answers(
+    {
+      status: 422,
+      body: apiError("invalid_request", "Extra inputs are not permitted"),
+    },
+    { status: 201, body: saved },
+  );
+  const body = walkedRequest as ActivityRequest;
+  const outcome = await saveActivity(URL, TOKEN, ID, body, { fetchFn, key: null });
+  expect(outcome).toEqual({ kind: "ok", value: saved });
+  expect(fetchFn).toHaveBeenCalledTimes(2);
+  expect(String(fetchFn.mock.calls[0][1]?.body)).toBe(JSON.stringify(walkedRequest));
+  expect(String(fetchFn.mock.calls[1][1]?.body)).toBe(
+    JSON.stringify(withoutPenUp(body)),
+  );
+});
+
+test("any other refusal, or a run without walks, is not sent again", async () => {
+  const fetchFn: jest.Mock = answers(
+    { status: 422, body: apiError("invalid_request", "A list that is full.") },
+    { status: 422, body: apiError("invalid_request", "Still full.") },
+    new Error("no network"),
+  );
+  const options = { fetchFn, key: null };
+  // Refused as before TASK-199, then refused again: the API's own word.
+  const walked = walkedRequest as ActivityRequest;
+  expect(await saveActivity(URL, TOKEN, ID, walked, options)).toMatchObject({
+    kind: "api_error",
+    code: "invalid_request",
+    message: "Still full.",
+  });
+  // No network is no refusal: nothing is sent again.
+  expect(await saveActivity(URL, TOKEN, ID, walked, options)).toEqual({
+    kind: "unreachable",
+    url: URL,
+  });
+  expect(fetchFn).toHaveBeenCalledTimes(3);
+  const once: jest.Mock = answers({
+    status: 422,
+    body: apiError("invalid_request", "A list that is full."),
+  });
+  const plain = request as ActivityRequest;
+  expect(
+    await saveActivity(URL, TOKEN, ID, plain, { fetchFn: once, key: null }),
+  ).toMatchObject({ kind: "api_error", code: "invalid_request" });
+  expect(once).toHaveBeenCalledTimes(1);
 });

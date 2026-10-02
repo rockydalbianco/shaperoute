@@ -1,8 +1,9 @@
+import walkedRequest from "@shaperoute/shared-types/fixtures/favorite-request-walks.json";
 import favorites from "@shaperoute/shared-types/fixtures/favorites.json";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 
 import { answers, apiError, held } from "../account/testing";
-import type { Favorite } from "../api/favorites";
+import type { Favorite, FavoriteRequest } from "../api/favorites";
 import type { Keepable } from "./favoriteRoute";
 import { useFavorites } from "./useFavorites";
 
@@ -79,6 +80,32 @@ test("a route is kept at once, then as the API has it", async () => {
     STAR.id,
     WORD.id,
   ]);
+});
+
+test("the heart on a word with the pen up keeps its walks (TASK-199)", async () => {
+  const route: Keepable = {
+    id: "0123456789abcdef",
+    request: walkedRequest as FavoriteRequest,
+  };
+  const { walks: _walks, ...listed } = walkedRequest;
+  const fromApi = {
+    ...STAR,
+    ...listed,
+    id: route.id,
+    start: walkedRequest.points[0],
+    preview: walkedRequest.points,
+  };
+  const fetchFn = answers(
+    { status: 200, body: { favorites: [] } },
+    { status: 201, body: fromApi },
+  );
+  const { result } = await hook(fetchFn);
+  await waitFor(() => expect(result.current.status).toBe("ready"));
+  await act(async () => result.current.toggle(route));
+  await waitFor(() => expect(result.current.list[0]).toEqual(fromApi));
+  const [url, init] = fetchFn.mock.calls[1];
+  expect(url).toBe(`${URL}/me/favorites/${route.id}`);
+  expect(JSON.parse(String(init?.body))).toEqual(walkedRequest);
 });
 
 test("removed and refused, it goes back to its place", async () => {

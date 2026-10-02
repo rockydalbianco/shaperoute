@@ -76,8 +76,11 @@ voce** (è TASK-198).
    tratto a piedi. Vuota per una forma e per una parola senza `pen_up`. Le
    `alternatives` hanno ognuna i suoi `walks`.
 7. **Le app già installate continuano a funzionare** (attenzione del
-   coordinatore): si aggiunge `walks` senza togliere né cambiare niente.
-   Un'app che non lo conosce vede una linea sola, come oggi.
+   coordinatore: il contratto lo usa l'app pubblicata): `pen_up` e `walks`
+   sono **in aggiunta e facoltativi**, niente si toglie né cambia. Un'app
+   vecchia con l'API nuova non manda `pen_up` e non legge `walks`: vede
+   una linea sola, come oggi. In `shared-types` `walks` è facoltativo,
+   così l'app nuova legge anche un'API vecchia.
 8. **Il punteggio**: `POST /track-scores` prende anche `walks`, facoltativo,
    e confronta la corsa con le sole lettere.
 9. **Il GPX del percorso** (`export_gpx.py`): la linea resta una sola, da
@@ -87,19 +90,23 @@ voce** (è TASK-198).
 10. **La CLI**: `--pen-up` con `--word`; stampa la lunghezza di ogni
     tratto a piedi.
 11. **`shared-types`** e i suoi fixture: `pen_up` nella richiesta, `walks`
-    nel risultato.
+    nel risultato, tutti e due facoltativi.
 12. **ADR-0157** in `DECISIONS.md`: perché indici in `points` e non pezzi
     separati (le app installate e tutto ciò che legge `points`, come la
     navigazione, le indicazioni e il GPX, restano come sono). Deciso
     dall'agente su delega dell'utente.
+13. **Dopo il merge**: l'aggiornamento del server, poi `draw_examples`
+    rilanciato. Ogni cambio di `route_engine` cambia `engine_fingerprint`
+    e gli esempi tenuti si ridisegnano (`API.md`, TASK-168): anche se i
+    percorsi senza `pen_up` restano gli stessi. Tutti e due con l'ok
+    dell'utente, da `origin/main` pulito.
 
 ## Criteri di accettazione
 
 - [ ] `pen_up: true` con `shape` o con un'immagine risponde
       `invalid_request`, con il messaggio del punto 1.
 - [ ] Una parola senza `pen_up` dà lo stesso percorso di prima, punto per
-      punto: un test lo controlla sul grafo dei fixture. Così gli esempi
-      sul server non vanno ridisegnati per questo task.
+      punto: un test lo controlla sul grafo dei fixture.
 - [ ] Con `pen_up` e n lettere, `walks` ha n − 1 coppie; ognuna è dentro
       `points`, in ordine, senza sovrapporsi; dove finisce un tratto a
       piedi comincia la lettera successiva.
@@ -151,10 +158,6 @@ docs/tasks/TASK-197.md
   stessa idea, ma un'altra richiesta.
 - **Meno di 3 km per lettera** (`LETTER_DISTANCE_M`): con la penna alzata
   forse basta meno, ma si misura dopo, con le prove.
-- **Ridisegnare gli esempi** sul server: non serve se il secondo criterio
-  tiene. Se un cambio tocca anche i percorsi senza `pen_up`, va detto al
-  coordinatore, e gli esempi si ridisegnano dopo l'aggiornamento del
-  server, con l'ok dell'utente.
 
 ## Esito
 

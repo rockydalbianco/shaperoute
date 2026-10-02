@@ -143,6 +143,17 @@ pagine»):
    restano sul telefono (ultime 8 città): la volta dopo sono subito lì.
    Una città con percorsi consigliati mostra quelli e non chiede esempi.
 
+   **Da TASK-163**, chiesto dall'utente: finché un esempio è «Next» o
+   «Drawing…», sotto «EXAMPLES IN …» c'è **«MEANWHILE, FROM THE FEED»**,
+   con una riga che dice perché si aspetta (la prima volta in una città la
+   mappa si scarica: fino a un minuto) e 5 disegni del feed d'esempio
+   (TASK-156), uguali a come sono in «Feed». Partono da un punto del feed
+   che dipende dalla città: città diverse, disegni diversi per primi.
+   Arrivato l'ultimo esempio i disegni restano, e la riga dice «The shapes
+   of this city are ready above.»; spariscono cambiando città. Una città
+   con gli esempi già sul telefono non li mostra. «Ask for a route» resta
+   in fondo, sotto i disegni.
+
    **Da TASK-145** ogni percorso di «Explore» aperto sulla mappa
    (consigliato, esempio, a tema) ha «Start», giallo, sopra «Export GPX».
    Questi percorsi arrivano senza indicazioni: al tocco l'app le chiede

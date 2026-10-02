@@ -20,11 +20,12 @@ import {
 } from "./recommendedRoutes";
 import type { Place } from "../places/photon";
 import { AskForRoute } from "./AskForRoute";
-import { useCityExamples } from "./exampleRoutes";
+import { cityKey, useCityExamples } from "./exampleRoutes";
 import { CityExamples } from "./CityExamples";
 import { CityPicker } from "./ExploreTools";
 import { RouteThumb } from "./RouteThumb";
 import type { ThemedRequest } from "./themedRoutes";
+import { stillDrawing, useWaited, WhileDrawing } from "./WhileDrawing";
 
 type ListState =
   | { status: "loading" }
@@ -161,6 +162,10 @@ export function ExploreScreen({
   const examplesCity =
     city !== null && list.status === "done" && routes.length === 0 ? city : null;
   const { examples, retry } = useCityExamples(apiUrl, examplesCity);
+  // While they are drawn, drawings of «Feed» to look at (TASK-163).
+  const examplesKey = examplesCity === null ? null : cityKey(examplesCity.point);
+  const drawing = stillDrawing(examples);
+  const waited = useWaited(examplesKey, drawing);
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.screen]}>
@@ -207,6 +212,9 @@ export function ExploreScreen({
             onOpen={onOpen}
             onRetry={retry}
           />
+        )}
+        {examplesKey !== null && waited && (
+          <WhileDrawing cityKey={examplesKey} drawing={drawing} />
         )}
         {list.status === "done" && routes.length > 0 && (
           <View style={styles.filters}>

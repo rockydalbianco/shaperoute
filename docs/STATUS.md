@@ -80,6 +80,14 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   `offsite` è in `main` dalla PR #167): manca che l'utente lo crei
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
+- **TASK-163 — «Explore»: le città in evidenza già disegnate, e il feed
+  mentre una città si disegna**, chiesto dall'utente il 2026-10-02. Branch
+  `feat/TASK-163-explore-featured-and-feed`. Fatta la parte dell'app: in
+  una città cercata, finché cuore, cerchio e stella si disegnano, sotto ci
+  sono 5 disegni del feed (vista in un simulatore). Ferma la parte del
+  catalogo (cuore, cerchio e stella già pronti nelle 14 città in evidenza:
+  oggi li hanno Roma, Milano e Torino): parte dopo TASK-161, che ha
+  `catalog/seed/` e `seed_catalog.py`. Da dove riprendere: il task file.
 
 ## Completato
 

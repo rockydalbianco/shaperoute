@@ -6,6 +6,7 @@ import type { Place } from "../places/photon";
 import { forgetExamples } from "./exampleRoutes";
 import { awayText, ExploreScreen, filtered, kmLabel } from "./ExploreScreen";
 import type { RecommendedRoute } from "./recommendedRoutes";
+import { POSTS_SHOWN } from "./WhileDrawing";
 
 jest.mock(
   "react-native-safe-area-context",
@@ -78,6 +79,54 @@ test("a city with recommended routes asks for no example", async () => {
   expect(await screen.findByText("Star · 5.1 km")).toBeOnTheScreen();
   expect(screen.queryByText("EXAMPLES IN VERCELLI")).toBeNull();
   expect(routeJobShapes()).toEqual([]);
+  expect(screen.queryByText("MEANWHILE, FROM THE FEED")).toBeNull();
+});
+
+test("while the examples are drawn, drawings of the feed to look at (TASK-163)", async () => {
+  // The catalog answers; the first route never does: the map is downloading.
+  fetchMock.mockImplementation((input) =>
+    String(input).includes("/recommended-routes")
+      ? Promise.resolve(Response.json({ routes: [] }))
+      : new Promise<Response>(() => {}),
+  );
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={null}
+      onOpen={jest.fn()}
+      city={vercelli}
+      onCity={jest.fn()}
+      onAsk={jest.fn()}
+    />,
+  );
+  expect(await screen.findByText("MEANWHILE, FROM THE FEED")).toBeOnTheScreen();
+  expect(screen.getByText("Drawing…")).toBeOnTheScreen();
+  expect(screen.getAllByTestId("feed-post")).toHaveLength(POSTS_SHOWN);
+  // Under the examples, over «Ask for a route».
+  const order = texts();
+  expect(order.indexOf("MEANWHILE, FROM THE FEED")).toBeGreaterThan(
+    order.indexOf("EXAMPLES IN VERCELLI"),
+  );
+  expect(order.at(-1)).toBe("Ask for a route");
+});
+
+test("the drawings stay when the last example arrives", async () => {
+  fetchMock.mockImplementation(emptyCatalog);
+  await render(
+    <ExploreScreen
+      apiUrl="http://api"
+      near={null}
+      onOpen={jest.fn()}
+      city={vercelli}
+      onCity={jest.fn()}
+    />,
+  );
+  await screen.findByLabelText(/^Star, /);
+  expect(screen.queryByText("Drawing…")).toBeNull();
+  expect(screen.getAllByTestId("feed-post")).toHaveLength(POSTS_SHOWN);
+  expect(
+    screen.getByText("The shapes of this city are ready above."),
+  ).toBeOnTheScreen();
 });
 
 afterAll(() => {

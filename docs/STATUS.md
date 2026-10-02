@@ -94,9 +94,8 @@ In coda, dopo o accanto:
   avanti dentro Sgrava (app Spotify Developer sua, Premium, dipendenze
   nuove, 5 persone al massimo finché è in sviluppo); la proposta è di non
   farlo adesso (`tasks/TASK-173.md`, «La seconda parte»).
-- **Altri sport**, chiesti dall'utente il 2026-10-02: **TASK-189** («Sport»
-  in «Settings»: «Run» scelto, «Bike» e «Paddle» con «Soon»; ADR-0152, in
-  lavorazione, aspetta TASK-177), poi **TASK-190 — percorsi in bici**
+- **Altri sport**, chiesti dall'utente il 2026-10-02: dopo «Sport» in
+  «Settings» (TASK-189, fatto), **TASK-190 — percorsi in bici**
   (ADR-0153 tenuto; 10–30 km, scelta dell'utente) e **TASK-191 — percorsi
   in canoa e paddle** (ADR-0154 tenuto; sull'acqua entro 1 km dalla riva,
   scelta dell'utente; esempi a Lago di Garda, Lago di Como, Jesolo,
@@ -122,6 +121,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-189: «Sport» in «Settings», chiesto dall'utente
+  (ADR-0152). Una sezione con «Run» scelto e «Bike» e «Paddle» con «Soon»
+  (scelta dell'utente): non si toccano finché il motore non disegna i loro
+  percorsi (TASK-190 bici, TASK-191 canoa e paddle, Todo). La scelta resta
+  sul telefono; accendere uno sport è una riga di `src/settings/sport.ts`.
+  Solo app, nessuna dipendenza nuova. **Da pubblicare su `preview`**, con
+  l'ok dell'utente.
 - **App** — TASK-177: «Profile» con un aspetto nuovo e «Settings», chiesti
   dall'utente (ADR-0145). Con l'account, in alto il cerchio con l'iniziale,
   il nome e l'email; due riquadri con ❤️ «Favorites» e 🏃‍♂️ «My activities»

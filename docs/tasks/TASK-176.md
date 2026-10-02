@@ -114,7 +114,7 @@ Fatto (2026-10-02, ADR-0144).
   chiede le prime tre forme nell'ordine dell'app.
 - «Near me» è la prima voce della fila delle città; «My start» non c'è più.
 
-1018 test dell'app verdi, con i nuovi di «Explore», degli esempi e della
+1020 test dell'app verdi, con i nuovi di «Explore», degli esempi e della
 fila delle città, e 567 dell'API; lint, typecheck, prettier, ruff e black
 puliti.
 

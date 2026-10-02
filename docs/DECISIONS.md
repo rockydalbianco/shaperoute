@@ -5658,6 +5658,110 @@ punteggio di una corsa salvata non cambia se il motore cambia. TASK-117 parte da
 dell'utente: `title` qui è cosa disegna il percorso) e il suo task file
 va aggiornato da chi lo prende.
 
+## ADR-0148 — Una zona tiene ogni pezzo della sua rete, e dove non ci sono strade il motore lo dice
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-180).
+
+**Contesto**: sul server gli esempi di Venezia finivano in `engine_error`
+(TASK-168): il ritaglio attorno al centro storico non aveva nodi. Due
+difetti, uno sopra l'altro.
+
+Il primo: un grafo senza strade non aveva un nome. `crop` chiamava `max()`
+su nessun pezzo (`ValueError`), e un ritaglio di un nodo solo arrivava a
+`RoadMask`, che indicizzava nessun campione (`IndexError`): l'API poteva
+solo dire `engine_error`, «vedi il log».
+
+Il secondo, la causa: OSMnx di un download tiene **il pezzo connesso più
+grande** (`retain_all=False`, due volte in `graph_from_polygon`) e butta
+gli altri. Verificato:
+
+- il centro che dà la ricerca delle città è giusto: 45,4372 N 12,3346 E,
+  in mezzo al centro storico; l'area del cuore da 5 km (45,4127–45,4617 N,
+  12,2997–12,3695 E) è tutta isola e laguna;
+- a piedi l'isola non è unita alla terraferma. Sui dati di OpenStreetMap
+  del 2026-10-02, letti dall'API di OSM in una striscia attraverso il
+  Ponte della Libertà e al suo capo verso Venezia, e passati per
+  `FOOT_FILTER`: le due carreggiate cadono (`highway=trunk` con `foot=no`
+  o `sidewalk:right=separate`); la ciclopedonale «Ciclabile per Venezia»
+  resta (`foot=designated`, poi `foot=yes`) fino al nodo 5690409049
+  (45,44258 N 12,31505 E), dove continua come way 597743868,
+  `highway=cycleway` con `foot=no`, che cade. Il marciapiede dell'isola
+  corre lì accanto, a 5 m, senza un nodo in comune. Il pezzo che arriva
+  dalla terraferma ha 57 nodi in quel riquadro e non tocca la rete
+  dell'isola (2.881 nodi nello stesso riquadro);
+- l'estratto (`prefetch_zones --extract`) non c'entra: dà a OSMnx le
+  stesse strade di Overpass, e il taglio lo fa OSMnx. Un test costruisce
+  la zona da un estratto con una terraferma, un'isola e un ponte `foot=no`
+  e, col motore di prima, trova il file senza l'isola e l'area dell'isola
+  vuota.
+
+**Non verificato**: che nella zona vera di Venezia (17 × 17 km, con Mestre
+e Marghera) la terraferma abbia più nodi dell'isola. Lo dice il ritaglio
+vuoto visto sul server; contarlo voleva la zona, e il 2026-10-02 Overpass
+rifiutava le connessioni dal Mac (niente estratto né osmium in locale).
+
+**Decisione**:
+
+- **Chi scarica una zona tiene tutti i pezzi** (`retain_all=True` in
+  `OsmnxSource.load`): il file della zona è la rete com'è. **Il pezzo più
+  grande si sceglie area per area**, nel ritaglio, come `crop` e
+  `ZoneCrop` fanno già; chi chiede la zona intera riceve il suo pezzo più
+  grande (`largest_piece`), cioè quello che OSMnx dava prima. Una zona
+  salvata prima, tutta d'un pezzo, torna com'è.
+- **Dove non ci sono strade il motore rifiuta col suo nome**:
+  `NoRoadsError`, da `crop` (nessun nodo nell'area) e da `RoadMask`
+  (nessun arco). È un `ShapeNotDrawableError`: lì nessuna forma si
+  disegna, e la CLI («No route: …»), i job e `POST /routes` rispondono già
+  a quell'errore, con `shape_not_drawable`. Niente codice d'errore nuovo:
+  l'app lo mostra già («This shape does not fit the roads here… another
+  start»), e un codice nuovo sarebbe stato un contratto da cambiare
+  nell'app.
+- I due errori stanno in un modulo loro, `route_engine/errors.py`:
+  `network.py` non può importare da `optimizer.py`, che lo importa.
+  `optimizer.ShapeNotDrawableError` resta lo stesso oggetto, e nessun
+  import cambia.
+
+**Motivo**: buttare i pezzi piccoli ha senso per l'area di una richiesta,
+dove la partenza si aggancia alla rete che c'è; non per una zona di 17 km
+scaricata una volta per tutti, dove «il più grande» è deciso da cosa c'è a
+8 km dal centro. Per le città di terraferma non cambia niente, e si è
+visto sui dati veri: quattro zone del Mac rifatte dalle risposte di
+Overpass in cache, senza rete (Trento e Verona a 17 km, 32.728 e 30.838
+nodi; la zona piccola di Verona; Rosolina Mare). Con tutti i pezzi le due
+grandi hanno il 3% circa di nodi in più (Trento 33.880 in 425 pezzi,
+Verona 31.761 in 300; i pezzi in più hanno al massimo 36 nodi), Rosolina,
+fra canali e lidi, il 26%. In tutte il pezzo più grande è il grafo di
+prima: stessi nodi e stessi archi nello stesso ordine, stesse lunghezze e
+geometrie; così i ritagli (cuore, cerchio e stella da 5 km da tre
+partenze per zona), e il cuore da 5 km dal centro di Trento e di Verona
+esce con la stessa linea. Cambia solo l'ordine dei valori dentro le
+etichette di una strada fatta di più tratti (`name`, `highway`, `lanes`,
+`maxspeed`…), che OSMnx mette in un insieme e non tiene fermo nemmeno fra
+due costruzioni dello stesso download: la linea non ne dipende.
+
+**Scartate**: un codice `no_roads` nell'API (contratto nuovo per l'app,
+scelta di prodotto); mappare l'errore in `errors.py` e `app.py` dell'API
+(`app.py` è di un altro task in corso, e la CLI sarebbe rimasta fuori);
+restituire un grafo vuoto da `crop` e controllare in ogni chiamante (tre
+punti nel motore, e uno dimenticato torna `engine_error`); una zona più
+piccola solo per Venezia (un dato da ricordare, non una regola); scegliere
+nel ritaglio il pezzo **della partenza** invece del più grande (più giusto
+per chi parte da un'isola piccola, ma cambia i percorsi di oggi dove la
+partenza sta su un pezzo minore: è un task a parte, da misurare).
+
+**Conseguenze**: le zone già in cache restano col solo pezzo più grande:
+**quella di Venezia sul server va rifatta** dopo l'aggiornamento dell'API
+(con l'ok dell'utente; i comandi in `tasks/TASK-180.md`), poi i suoi tre
+esempi. Che il centro storico dia un buon cuore da 5 km non è stato
+provato: calli e ponti sono una rete molto diversa da una città di
+strade. Le zone nuove pesano qualche punto percento in più. Un'area che
+prende più terraferma che isola dà ancora la terraferma (una forma lunga
+da Venezia, una partenza alla Giudecca vista da un'area che prende il
+centro storico). Una zona scaricata al momento dall'API resta in memoria
+col solo pezzo più grande fino al riavvio. `engine_fingerprint` cambia
+come a ogni modifica del motore: gli esempi tenuti sul server si
+ridisegnano alla prima richiesta.
+
 ## ADR-0151 — Un disegno di «Feed» si apre come un percorso di «Explore», e il suo percorso si ritrova dalla partenza
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («quando
 sono in feed […] cliccare sull'attività delle persone inventate e mettere
@@ -5915,6 +6019,44 @@ luogo cercato e non la posizione, la voce dice comunque «Near me». Con la
 mappa sotto le schede (ADR-0142) ogni forma in più chiede anche la sua
 foto. Da provare con il dito sull'iPhone.
 
+## ADR-0152 — «Sport» in «Settings»: un elenco nell'app, la scelta sul telefono, «Soon» finché il motore non c'è
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («Nelle
+impostazioni, fai scegliere anche il tipo di sport, perché poi
+implementiamo anche per Bici e padel canoa»; fra tre proposte: «Run»
+scelto, gli altri visibili con «Soon»); il come deciso dall'agente su
+delega dell'utente (TASK-189).
+
+**Contesto**: il motore disegna solo percorsi da corsa (la richiesta
+all'API ha già `activity`, che oggi vale solo `"running"`). Bici e canoa
+sono task del motore (TASK-190, TASK-191). «Settings» (ADR-0145) è a
+sezioni, e le voci non ancora fatte dicono «Soon» senza prendere il tocco.
+
+**Decisione**: gli sport sono un elenco nell'app,
+`src/settings/sport.ts`: «Run», «Bike», «Paddle» (canoa, kayak, SUP),
+ognuno con `ready`. In «Settings» hanno una sezione loro, «SPORT», tre
+righe: uno sport pronto è un pulsante di scelta, con «✓» su quello
+scelto; uno non pronto dice «Soon» e non si tocca, come le altre voci da
+fare. La scelta resta nei documenti del telefono (`sport.json`), come le
+città recenti; senza scelta, o con una scelta non pronta, vale «Run». Il
+«✓» è bianco: il giallo è del percorso. Per ora la scelta non va all'API:
+con un solo sport non cambierebbe niente.
+
+**Alternative scartate**: far scegliere subito bici e canoa, con una
+riga che avvisa che i percorsi sono da corsa (scartata dall'utente:
+promette una cosa che non c'è); una riga sola «Sport» con «Soon»
+(scartata dall'utente); tenere la scelta nell'account (serve l'API e una
+migrazione, per una scelta che oggi ha un valore solo); una riga in
+«Preferences» che apre una pagina (per tre voci basta l'elenco sul
+posto, e «Settings» non ha altre pagine sotto).
+
+**Conseguenza**: accendere uno sport è `ready: true` nella sua riga, più
+il lavoro del motore: lo fa il task che lo porta, che manda anche la
+scelta all'API in `activity`. La scelta vale per il telefono, non per
+l'account: su un altro telefono si riparte da «Run». La sezione è un
+componente a parte (`SportSetting`), con gli stili delle righe di
+«Settings» ripetuti: `SettingsPage.tsx` era di TASK-177 mentre si
+scriveva.
+
 ## ADR-0155 — «Explore»: il luogo scelto ha i suoi percorsi, quelli dei vicini stanno sotto
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
 («premo su Caldonazzo, ma non vengono fuori suggerimenti a Caldonazzo: mi
@@ -5954,7 +6096,7 @@ per ogni paese o frazione accanto a una città del catalogo.
   com'era: le sue schede più le forme che non ha.
 - **I percorsi dei vicini stanno sotto**, in una griglia loro con
   l'etichetta **«NEAR <LUOGO>»**; le schede dicono già il paese e la
-  distanza («Levico · 2.8 km away»). Il raggio resta 5 km e l'API non
+  distanza («Levico · 3.3 km away»). Il raggio resta 5 km e l'API non
   cambia.
 - **Con i vicini sotto gli esempi, i disegni del feed nell'attesa non
   compaiono** (ADR-0132): c'è già qualcosa da guardare. Il credito della

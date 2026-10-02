@@ -26,10 +26,10 @@ beforeEach(() => {
 test("saves the file in the cache folder and shares it as GPX", async () => {
   isAvailable.mockResolvedValue(true);
   share.mockResolvedValue();
-  await expect(shareGpx(GPX, "shaperoute-heart-5km-2026-09-23.gpx")).resolves.toBe(
+  await expect(shareGpx(GPX, "sgrava-heart-5km-2026-09-23.gpx")).resolves.toBe(
     "shared",
   );
-  const uri = "file:///cache/shaperoute-heart-5km-2026-09-23.gpx";
+  const uri = "file:///cache/sgrava-heart-5km-2026-09-23.gpx";
   expect(written.get(uri)).toBe(GPX);
   expect(share).toHaveBeenCalledWith(uri, {
     mimeType: "application/gpx+xml",

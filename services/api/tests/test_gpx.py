@@ -56,7 +56,7 @@ def test_headers_give_type_and_file_name() -> None:
     response = client().post("/gpx", json=body())
     assert response.headers["content-type"].startswith("application/gpx+xml")
     assert response.headers["content-disposition"] == (
-        'attachment; filename="shaperoute-heart-5km-2026-09-23.gpx"'
+        'attachment; filename="sgrava-heart-5km-2026-09-23.gpx"'
     )
 
 
@@ -82,7 +82,7 @@ def test_a_word_names_the_file_and_the_track() -> None:
     response = client().post("/gpx", json=data)
     assert response.status_code == 200
     disposition = response.headers["content-disposition"]
-    assert disposition == 'attachment; filename="shaperoute-CIAO-15km-2026-09-23.gpx"'
+    assert disposition == 'attachment; filename="sgrava-CIAO-15km-2026-09-23.gpx"'
     root = ET.fromstring(response.content)
     assert root.findtext("gpx:metadata/gpx:name", namespaces=NS) == (
         "CIAO 15 km · 2026-09-23"

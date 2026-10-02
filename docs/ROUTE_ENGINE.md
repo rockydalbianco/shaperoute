@@ -493,6 +493,12 @@ metri, la forma è irrecuperabile in quel punto. Non va nascosto: si misura
 la distanza media punto-forma → nodo e, oltre una soglia, si restituisce un
 warning esplicito in `RouteResult.warnings`. Vedi `PRODUCT.md`, rischi.
 
+**Nessuna strada.** Se attorno alla partenza il grafo non ha strade (un
+ritaglio senza nodi, o con un nodo solo), non c'è niente da agganciare: il
+motore rifiuta con `NoRoadsError` (`errors.py`), un `ShapeNotDrawableError`
+come ogni forma che lì non si disegna (TASK-180, ADR-0148; `MAPS.md`,
+«Warning»).
+
 Il provider definitivo di routing (OSMnx locale, OSRM, GraphHopper, Valhalla)
 è una decisione aperta. Per la fase 1 si usa OSMnx perché gira in locale
 senza server, il che rende il ciclo di prova rapidissimo.

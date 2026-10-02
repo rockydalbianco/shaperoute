@@ -376,6 +376,11 @@ nessun pulsante dell'account è giallo.
 
 - **«Account»**: nome ed email; poi «Profile picture», «Change email» e
   «Phone number», con la scritta «Soon».
+- **«Sport»** (TASK-189, ADR-0152): per cosa sono i percorsi. Tre righe:
+  «Run» (🏃‍♂️), scelto, con un «✓» bianco; «Bike» (🚴) e «Paddle» (🛶:
+  canoa, kayak, SUP) con «Soon», che non si toccano finché il motore non
+  disegna i loro percorsi (TASK-190, TASK-191). Uno sport pronto si
+  sceglie con un tocco; la scelta resta sul telefono, non nell'account.
 - **«Preferences»**: «Units», «Soon». **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».

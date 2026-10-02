@@ -3,6 +3,7 @@ import { type ReactNode, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Account } from "../account/useAccount";
+import { SportSetting } from "../settings/SportSetting";
 import {
   color,
   fontSize,
@@ -83,7 +84,8 @@ function ComingRows({ rows }: { rows: Coming[] }) {
 
 /**
  * «Settings» in «Profile» (TASK-177), in sections: the account with the
- * ways out of it, and the settings to come, named and marked «Soon».
+ * ways out of it, the sport (TASK-189), and the settings to come, named
+ * and marked «Soon».
  * «Delete account» asks first, on the screen (ADR-0120: the API does not).
  */
 export function SettingsPage({ user, account }: Props) {
@@ -98,6 +100,7 @@ export function SettingsPage({ user, account }: Props) {
         </View>
         <ComingRows rows={ACCOUNT_COMING} />
       </Section>
+      <SportSetting />
       {COMING.map((section) => (
         <Section key={section.label} label={section.label}>
           <ComingRows rows={section.rows} />

@@ -17,15 +17,14 @@ test("posts request and result, and gets the file with its name", async () => {
     new Response(GPX, {
       headers: {
         "Content-Type": "application/gpx+xml",
-        "Content-Disposition":
-          'attachment; filename="shaperoute-heart-5km-2026-09-23.gpx"',
+        "Content-Disposition": 'attachment; filename="sgrava-heart-5km-2026-09-23.gpx"',
       },
     }),
   );
   await expect(requestGpx(URL, BODY, fetchFn)).resolves.toEqual({
     kind: "gpx",
     text: GPX,
-    fileName: "shaperoute-heart-5km-2026-09-23.gpx",
+    fileName: "sgrava-heart-5km-2026-09-23.gpx",
   });
   const [url, init] = fetchFn.mock.calls[0];
   expect(url).toBe(`${URL}/gpx`);
@@ -58,6 +57,11 @@ test("a 200 that is not GPX is a bad answer", async () => {
 
 test.each([
   [
+    'attachment; filename="sgrava-circle-3km-2026-09-23.gpx"',
+    "sgrava-circle-3km-2026-09-23.gpx",
+  ],
+  // An API from before TASK-194 still names the file like this: kept as is.
+  [
     'attachment; filename="shaperoute-circle-3km-2026-09-23.gpx"',
     "shaperoute-circle-3km-2026-09-23.gpx",
   ],
@@ -66,6 +70,11 @@ test.each([
   ['attachment; filename="route.txt"', FALLBACK_FILE_NAME],
 ])("fileNameOf(%p) is %p", (disposition, name) => {
   expect(fileNameOf(disposition)).toBe(name);
+});
+
+test("without a name from the API the file is sgrava.gpx (TASK-194)", () => {
+  expect(FALLBACK_FILE_NAME).toBe("sgrava.gpx");
+  expect(fileNameOf(null)).toBe("sgrava.gpx");
 });
 
 test("the key goes with the request (TASK-081)", async () => {

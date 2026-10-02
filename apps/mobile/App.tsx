@@ -10,6 +10,8 @@ import { useMemo, useState } from "react";
 import { Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { useActivitiesDoor } from "./src/activities/activitiesDoor";
+import { ActivityCard } from "./src/activities/ActivityCard";
 import { useAdBeforeRoute } from "./src/ads/useAdBeforeRoute";
 import { apiUrl } from "./src/api/apiUrl";
 import {
@@ -178,8 +180,31 @@ function Sgrava() {
     close: closeFavorite,
     showList: showFavorites,
   } = useFavoritesDoor();
+  // And so does a run opened from «My activities» (TASK-172).
+  const {
+    opened: activity,
+    close: closeActivity,
+    showList: showActivities,
+    remove: removeActivity,
+  } = useActivitiesDoor();
   const onPage = PAGES.includes(screenNow);
-  const screen: Screen = favorite !== null && onPage ? "map" : screenNow;
+  const screen: Screen =
+    (favorite !== null || activity !== null) && onPage ? "map" : screenNow;
+  // A run of «My activities» on the map, as the end of a run shows one: its
+  // route, and over it what was run.
+  const reviewing = screen === "map" && activity !== null;
+  const reviewed = useMemo(
+    () =>
+      activity === null
+        ? null
+        : {
+            start: activity.track[0] ?? null,
+            route: activity.points,
+            others: NO_OTHERS,
+            track: activity.track,
+          },
+    [activity],
+  );
   const { position, refresh } = useCurrentPosition();
   const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
@@ -318,8 +343,11 @@ function Sgrava() {
   const heading = useMemo(() => headingDeg(runTrack), [runTrack]);
   // A route of "Explore" on the map, in place of the drawn one (TASK-126).
   const theming =
-    screen === "map" && explored === null && themed.state.status !== "idle";
-  const exploring = screen === "map" && explored !== null;
+    screen === "map" &&
+    !reviewing &&
+    explored === null &&
+    themed.state.status !== "idle";
+  const exploring = screen === "map" && !reviewing && explored !== null;
   const exploredExport: ExportState =
     explored?.status === "done" &&
     gpx.state.status !== "idle" &&
@@ -347,7 +375,7 @@ function Sgrava() {
     [themed.state],
   );
   const onMap =
-    screen !== "map"
+    screen !== "map" || reviewing
       ? null
       : theming
         ? themedFavorite
@@ -423,7 +451,17 @@ function Sgrava() {
     setScreen("map");
   }
 
+  /** A run of «My activities» leaves the map for the list it came from. */
+  function onActivityList() {
+    closeActivity();
+    showActivities();
+  }
+
   function onBack() {
+    if (reviewing) {
+      onActivityList();
+      return;
+    }
     if (favorite !== null) {
       // Back to the list it was opened from, over the page left under it.
       closeExplore();
@@ -535,10 +573,23 @@ function Sgrava() {
             }
             heading={heading}
             onError={setMapError}
+            // A run of «My activities» takes the map from whatever was on it.
+            {...(reviewing ? reviewed : null)}
           />
         }
       >
-        {freeFinishing ? (
+        {reviewing ? (
+          <ActivityCard
+            // A new card for each run: «Delete» asks again.
+            key={activity.id}
+            activity={activity}
+            onList={onActivityList}
+            onDelete={() => {
+              removeActivity(activity.id);
+              onActivityList();
+            }}
+          />
+        ) : freeFinishing ? (
           <FreeFinishCard
             run={freeFinished.run}
             onResume={

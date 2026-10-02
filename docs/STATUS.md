@@ -125,22 +125,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `offsite` è in `main` dalla PR #167): manca che l'utente lo crei
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
-- **TASK-190 — Percorsi in bici** (ADR-0153): **parte A, il motore**,
-  PR #214 (il merge è del coordinatore). La rete `bike`: ciclabili e
-  strade fino alle `primary`, i sentieri e i marciapiedi solo se segnati
-  come ciclabili, mai scale, `trunk`, autostrade né vie vietate alle bici;
-  i sensi unici valgono (contromano solo dove OSM lo apre alle bici, con
-  `oneway:bicycle=no` e simili); una cache sua, `bike_*`, accanto ai
-  `foot_*` che non cambiano; `cycling` di 10–30 km nel motore e nella CLI
-  (`--activity cycling`); lo sterrato è un warning. La corsa non cambia
-  (test di prima tutti verdi senza toccarli). **Non provata su una zona
-  vera**: Overpass rifiuta il Mac (un tentativo, 18:23Z); misure solo
-  sulle risposte a piedi già in cache, nell'ADR. Da fare: parte B (API,
-  `SUPPORTED_ACTIVITIES` e `shared-types`, le foto, le zone: a 30 km
-  servono 23 km di lato), i campioni da far giudicare all'utente, parte C
-  (app, con le due domande del task file). Fino alla parte B una richiesta
-  `cycling` all'API finisce in `engine_error`. Da dove riprendere: il task
-  file, «Esito».
+- **TASK-190 — Percorsi in bici** (ADR-0153): **parte A, il motore**, in
+  `main` (PR #214): la rete `bike` (ciclabili e strade fino alle
+  `primary`, mai scale, `trunk` né vie vietate alle bici, sensi unici
+  rispettati), la cache `bike_*` accanto ai `foot_*`, `cycling` di 10–30 km
+  nel motore e nella CLI. **Parte B, l'API**, PR #PRNUM (il merge è del
+  coordinatore): `cycling` nel contratto (`shared-types`, anche
+  `DISTANCE_LIMITS_M`), ogni richiesta sulle zone della rete della sua
+  attività (una zona della bici in memoria, due a piedi come prima), fuori
+  da 10–30 km un `invalid_request` che dice i limiti, le foto in bici, la
+  distanza suggerita nei limiti, e `prefetch_zones --activity cycling
+  --extract` per zone della bici di 26 × 26 km (stima 0,15–0,6 GB in
+  memoria ciascuna). La corsa non cambia. **Non provata su una zona
+  vera**: la prova sul server (Trento) vuole l'ok dell'utente, comandi nel
+  task file. Da fare: quella prova, i campioni da far giudicare
+  all'utente, la parte C (app, con le due domande del task file). Da dove
+  riprendere: il task file, «Esito».
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»): **la parte API è fatta**, PR #210:

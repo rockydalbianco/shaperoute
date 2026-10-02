@@ -6233,6 +6233,111 @@ del grafo (le zone a piedi già salvate non l'avrebbero).
   e 30 km a Trento e in una città di pianura). Da fare appena Overpass
   riapre o con l'estratto (parte B, `prefetch_zones --extract`).
 
+**Aggiornamento (parte B, l'API, 2026-10-02)** — deciso dall'agente su
+delega dell'utente (TASK-190, parte B). Cosa mostrano «Explore», «Feed» e
+la corsa con «Bike» scelto resta una scelta dell'utente (parte C).
+
+1. **Il contratto**: `SUPPORTED_ACTIVITIES = ("running", "cycling")`,
+   rispecchiato da `ACTIVITIES` di `shared-types` e da
+   `fixtures/contract.json`, che ora porta anche i limiti di ogni attività
+   (`distance_limits_m`; in `shared-types` `DISTANCE_LIMITS_M`, per la
+   parte C). `min_distance_m` e `max_distance_m` restano quelli della
+   corsa. Una fixture nuova, `route-request-cycling.json`, letta dai test
+   dei due lati. L'app pubblicata manda `running` e legge le stesse
+   risposte: per lei non cambia niente.
+2. **Ogni richiesta sulla rete della sua attività**: l'API tiene un
+   `ZoneGraphs` per attività (`activity_graphs.ActivityGraphs`), ognuno
+   sulla sua cache (`OsmnxSource.for_activity`: `foot_*`, `bike_*`);
+   `/routes`, `/route-jobs`, `/image-route-jobs` e il replay danno al
+   motore quello della richiesta (`source_for`). Quello che non ha
+   un'attività resta a piedi: i percorsi a tema e `/route-directions` (i
+   percorsi di «Explore» sono corse). Un'API con un solo loader (i test) lo
+   dà a ogni richiesta, e il motore rifiuta una bici su un grafo a piedi
+   (`engine_error`): mai un percorso a piedi chiamato bici.
+3. **Solo le attività del contratto**: il motore può disegnarne di più
+   (`ACTIVITIES`; domani `paddling`, TASK-191), e una che l'API non serve è
+   `invalid_request` («unsupported activity 'paddling'; choose one of:
+   running, cycling», `check_supported`), non un 500.
+4. **Limiti ed errori**: in bici fuori da 10–30 km è `invalid_request` col
+   messaggio del motore («distance must be between 10000 and 30000 metres
+   for cycling, got 5000»); la corsa ha i messaggi di prima. La distanza
+   suggerita di `shape_not_drawable` resta nei limiti dell'attività (in
+   bici mai sotto 10 né sopra 30 km): `/routes` la sa dalla richiesta
+   (`request.state`), i job dal loro `RouteRequest`. Una foto in bici ha
+   limiti e rete della bici (`ImageRequest`, `image_job`).
+5. **Una zona della bici alla volta in memoria** (`ZONES_IN_MEMORY`): le
+   zone a piedi restano 2 (`MAX_ZONES`), quelle della bici 1. Una richiesta
+   in bici in un'altra città rilegge la sua zona dal disco (il pickle:
+   0,3–0,5 s sul Mac).
+6. **Le zone della bici** (`prefetch_zones --activity cycling`,
+   `bike_zone_box`): **26 × 26 km** attorno al centro della città, cioè
+   ogni forma del catalogo a 30 km dal centro con la ricerca lontana del
+   motore (la più larga è il cerchio; una parola, che ripiega la sua
+   linea, sta in meno). Ci stanno anche un 30 km da una partenza fino a
+   circa 1,4 km dal centro (senza ricerca lontana), un 20 km fino a circa
+   3,4 km, un 10 km fino a circa 6,9 km. Senza i nomi delle strade: la rete
+   della bici ha già le vie col marciapiede a parte (parte A).
+   **Solo dall'estratto**: il
+   comando rifiuta `--activity cycling` senza `--extract`, perché una zona
+   della bici sono due richieste grandi, e Overpass rifiuta il Mac e il
+   server. Un riquadro di 30 km (anche il 30 km da 2 km dal centro)
+   costerebbe un terzo in più di memoria e di disco: scartato per ora.
+   Fuori dalle zone, una richiesta in bici scarica da Overpass come una a
+   piedi.
+7. **Quali città**: prima **Trento**, la prova vera sul server (con l'ok
+   dell'utente; comandi nel task file). Poi, con un altro ok, le 52 di
+   `--preset italy`, una alla volta nel container da 4 GiB di TASK-137;
+   una città che non ci sta (come Berlino a piedi) resta senza. Le città
+   estere no: non c'è il loro estratto, restano a Overpass.
+8. **Gli esempi delle città** (`draw_examples`): nessuna variante della
+   bici adesso. Cosa mostra «Explore» con «Bike» scelto è la domanda 1 del
+   task file, una scelta di prodotto della parte C.
+9. **I percorsi tenuti** (`route_store`): la chiave aveva già
+   `activity`; un test lo prova (lo stesso cuore dallo stesso centro in
+   bici è un altro file, e quello della corsa resta). Nessun nome di file
+   cambia.
+
+**Misure, sul Mac e senza rete.** Zone `bike` costruite **per la strada
+dell'estratto** (`zone_extract.served_from`, che legge i due `BIKE_FILTER`
+senza modifiche) dalle risposte a piedi già in cache, sullo stesso
+riquadro della zona a piedi. Mancano quindi le vie col marciapiede a
+parte: nei file `names_*` del server sono lo 0–2% dei km di strada a
+Palermo, Bari e Genova, il 23% a Londra, più del doppio a New York.
+«In memoria» è quanto cresce un processo che fa `read_graph` e `ZoneCrop`
+come l'API:
+
+| Zona | Lato | Nodi | Archi | Pickle | In memoria | Costruzione |
+|---|---|---|---|---|---|---|
+| Trento, bici | 18,6 km | 20.424 | 43.110 | 11 MB | 127 MB | 10 s, picco 0,97 GB |
+| Valsugana, bici | 22,6 km | 12.152 | 27.540 | 9 MB | 105 MB | 8 s |
+| Milano, bici | 19,4 km | 52.493 | 104.856 | 24 MB | 236 MB | 29 s, picco 1,79 GB |
+| Roma, bici | 16,7 km | 41.073 | 77.995 | 19 MB | 186 MB | 18 s, picco 1,69 GB |
+| Trento, piedi | 18,6 km | 32.728 | 85.988 | 19 MB | 185 MB | |
+| Milano, piedi | 19,4 km | 136.447 | 406.392 | 72 MB | 618 MB | |
+| Roma, piedi | 16,7 km | 91.894 | 262.808 | 51 MB | 454 MB | |
+
+Il ritaglio di una zona della bici passa da `network.crop` (punto 3 della
+decisione):
+0,1–0,7 s (Milano, tutta la zona), e mentre c'è il processo cresce del
+25–35% della zona. **Stima per una zona di 26 km** (676 km²), in
+proporzione all'area: 0,14 GB in valle, 0,25 GB a Trento, 0,43–0,45 GB a
+Milano e Roma, fino a circa 0,6 GB contando le vie che qui mancano; più il
+ritaglio durante una richiesta. Una zona della bici pesa quanto o meno di
+una zona a piedi della stessa città di oggi (Milano a piedi 0,62 GB): con
+una sola in memoria, l'API sul server (8 GB) cresce al più di circa
+0,6–0,8 GB; i processi delle partenze vicine partono solo se la memoria
+c'è (ADR-0121). La costruzione dall'estratto, per 26 km: circa 1,9 GB a
+Trento e 3,2 GB a Milano oltre a osmium, dentro i 4 GiB del container per
+le città medie, da guardare per le grandi.
+
+**Conseguenze**: una richiesta `cycling` all'API ora arriva sulla rete
+della bici; cambia `models.py`, quindi di nuovo `engine_fingerprint` (gli
+esempi tenuti sul server si ridisegnano alla prima richiesta). Gli eventi
+delle ricerche (`insights`) non scrivono l'attività: un percorso in bici
+vi compare come una corsa (il registro delle richieste invece ha il corpo
+intero). **Non verificato**: una zona vera della bici, i tempi di un
+percorso su di essa, i campioni da far giudicare all'utente.
+
 ## ADR-0155 — «Explore»: il luogo scelto ha i suoi percorsi, quelli dei vicini stanno sotto
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
 («premo su Caldonazzo, ma non vengono fuori suggerimenti a Caldonazzo: mi

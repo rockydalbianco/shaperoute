@@ -483,8 +483,9 @@ Riceve un `RouteRequest`:
 { "start": [46.0671, 11.1214], "shape": "heart", "distance_m": 5000, "activity": "running" }
 ```
 
-`start` è `[lat, lon]`; `activity` si può omettere (`running`). Un campo in
-più o scritto male è un errore, non si ignora.
+`start` è `[lat, lon]`; `activity` si può omettere (`running`), oppure è
+`cycling`, un percorso in bici (sotto). Un campo in più o scritto male è
+un errore, non si ignora.
 
 Risponde `200` con un `RouteResult`:
 
@@ -515,6 +516,41 @@ scegliere». Il registro delle richieste scrive anche le loro impronte
 La richiesta è sincrona: la risposta arriva quando il percorso è pronto
 (tempi sotto). Resta per `/docs`, `curl` e le misure; l'app usa
 `/route-jobs`.
+
+### In bici: `"activity": "cycling"` (TASK-190, ADR-0153)
+
+```json
+{ "start": [46.0671, 11.1214], "shape": "circle", "distance_m": 20000, "activity": "cycling" }
+```
+
+- **La rete della bici**: ciclabili e strade fino alle `primary`, i sensi
+  unici rispettati, mai scale, `trunk`, autostrade o vie vietate alle bici
+  (`ROUTE_ENGINE.md`, `MAPS.md`). Vale per `/routes`, `/route-jobs` e
+  `/image-route-jobs`: forma, parola o foto. Il `RouteResult` è lo stesso
+  di una corsa; fra gli avvisi c'è in più lo sterrato («… m of the route on
+  unpaved roads»).
+- **Da 10 a 30 km** (`DISTANCE_LIMITS_M` in `shared-types`): fuori è `422
+  invalid_request`, `distance must be between 10000 and 30000 metres for
+  cycling, got 5000`. La corsa resta 1–50 km, con il messaggio di prima.
+  La distanza suggerita di `shape_not_drawable` resta in quei limiti.
+- **Solo le attività del contratto**, `running` e `cycling`
+  (`SUPPORTED_ACTIVITIES`): un'altra è `422 invalid_request`, `unsupported
+  activity 'paddling'; choose one of: running, cycling`.
+- **Le zone**: l'API ha le zone della bici accanto a quelle a piedi,
+  `bike_*` in `data/cache/` (`MAPS.md`, «Cache»), e ne tiene in memoria una
+  sola (sotto, «Grafi»). Le città con la zona della bici già fatta
+  (`prefetch_zones --activity cycling`, 26 × 26 km attorno al centro)
+  rispondono senza scaricare; altrove la prima richiesta scarica la zona da
+  Overpass (`downloading_map`), due richieste grandi che Overpass può
+  rifiutare (`503 map_data_unavailable`).
+- **Gli esempi tenuti** distinguono l'attività: la stessa forma dallo
+  stesso centro in bici è un altro percorso. `draw_examples` disegna solo
+  quelli a piedi: cosa mostra «Explore» con la bici lo decide l'utente
+  (TASK-190, parte C).
+- Le indicazioni di un percorso di «Explore» (`/route-directions`) e i
+  percorsi a tema restano a piedi.
+- **Tempi**: non ancora misurati su una zona vera della bici (task file
+  di TASK-190).
 
 ### Una parola invece di una forma (TASK-056)
 
@@ -985,7 +1021,7 @@ del motore:
 `suggested_distance_m` c'è in ogni errore ed è `null` tranne con
 `shape_not_drawable`, quando il percorso migliore seguiva la forma ma
 mancava la distanza: è la sua lunghezza, al km intero, fra 1 e 50 km
-(ADR-0041). Se il motivo è la somiglianza bassa resta `null`.
+(ADR-0041); in bici fra 10 e 30 km (TASK-190). Se il motivo è la somiglianza bassa resta `null`.
 `reason` c'è in ogni errore dal TASK-073 ed è `null` tranne con
 `image_not_usable` e `outline_edit_rejected` (TASK-079): il motivo del
 motore, in una parola.
@@ -993,6 +1029,7 @@ motore, in una parola.
 | Caso | HTTP | `code` |
 |---|---|---|
 | JSON malformato, campo mancante, in più o fuori limite | 422 | `invalid_request` |
+| `activity` che il contratto non offre (`running`, `cycling`); in bici una distanza fuori da 10–30 km (TASK-190) | 422 | `invalid_request` |
 | `shape` e `word` insieme o nessuno; una lettera che l'alfabeto non ha; più di 8 lettere; meno di 3 km a lettera; `style` sconosciuto o `"block"` con una forma | 422 | `invalid_request` |
 | `/track-scores`: corsa troppo corta per un punteggio, `similarity` fuori da 0–1, troppe posizioni | 422 | `invalid_request` |
 | Forma non disponibile in quella zona (ADR-0025); nessuna strada attorno alla partenza (ADR-0148: prima era `engine_error`) | 422 | `shape_not_drawable` |
@@ -1024,7 +1061,8 @@ in tutti e due i posti, e i test lo controllano.
 
 I limiti di distanza, forme, parole e attività stanno solo in
 `models.py` del route-engine: Pydantic controlla i tipi, il `RouteRequest` del motore i
-valori. Per `engine_error` il messaggio è generico e il dettaglio va nel
+valori. L'API accetta solo le attività del contratto
+(`SUPPORTED_ACTIVITIES`), anche se il motore ne disegna altre. Per `engine_error` il messaggio è generico e il dettaglio va nel
 log dell'API, non al telefono.
 
 ## Grafi
@@ -1032,7 +1070,11 @@ log dell'API, non al telefono.
 L'API non salva i ritagli dei grafi, come invece fa la CLI (ADR-0023): da
 3 a 110 MB per ogni partenza nuova avrebbero riempito il disco. Tiene in
 memoria gli ultimi 2 grafi di zona e ne ritaglia uno nuovo per ogni
-richiesta. Una zona non in cache si scarica e si salva come con la CLI,
+richiesta. **La bici ha le sue zone** (TASK-190, ADR-0153): un'altra cache
+(`bike_*`) e un altro insieme in memoria, di **una** zona sola, perché una
+zona della bici di 26 km pesa 0,15–0,6 GB (stima nel task file); una
+richiesta in bici in un'altra città la rilegge dal disco. Ogni richiesta
+va sulle zone della sua attività (`activity_graphs.py`). Una zona non in cache si scarica e si salva come con la CLI,
 anche se la richiesta viene annullata durante il download: una zona pesa
 circa 40 MB fra GraphML e pickle, e OSMnx tiene le risposte di Overpass
 in `data/cache/http/` (244 MB il 2026-09-23).

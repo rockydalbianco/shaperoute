@@ -139,7 +139,8 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   (`zone_area`). Per 15 km circa 12,5 km di lato (155 km²); per le
   distanze della bici (cerchio, TASK-190) 9 km a 10 km, 16 km a 20 km,
   **23 km a 30 km** (530 km²), 26 km con la ricerca lontana: una zona di
-  oggi da 17 km non basta per 30 km. Si scarica **un grafo per zona**, partendo dal caso
+  oggi da 17 km non basta per 30 km, e le zone della bici fatte prima sono
+  di 26 km («Zone scaricate prima», sotto). Si scarica **un grafo per zona**, partendo dal caso
   più grande (cerchio da 15 km): ogni area più piccola si **ritaglia** da un
   grafo in cache che la contiene (`crop`). Il ritaglio resta in memoria e
   non si salva (ADR-0108): fino a TASK-136 la CLI lo salvava col suo nome,
@@ -246,6 +247,32 @@ Poi il comando nel container, con la cache dell'API montata e `--extract
 /extracts/italy-highways.osm.pbf` (2,2 GB l'estratto, 647 MB le sole
 strade, 90 s il filtro). Le città fuori dall'estratto (le estere in
 evidenza) vogliono il loro estratto o Overpass.
+
+**Le zone della bici** (TASK-190, ADR-0153): `--activity cycling` fa la
+zona della rete `bike` (`bike_*`, accanto alle `foot_*`) di **26 × 26 km**
+attorno al centro della città (`bike_zone_box`): ogni forma del catalogo
+a 30 km dal centro, con la ricerca lontana. Da lì entrano anche un 30 km
+da una partenza fino a circa 1,4 km dal centro, un 20 km fino a 3,4 km e
+un 10 km fino a 6,9 km. Senza i nomi delle strade, che alla bici non
+servono. **Solo dall'estratto**: senza `--extract` il comando si ferma
+(una zona della bici sono due richieste grandi a Overpass). L'estratto
+filtrato a `w/highway` va bene così: `zone_extract` legge i due filtri
+`BIKE_FILTER` come legge `FOOT_FILTER`.
+
+```bash
+python -m shaperoute_api.prefetch_zones --activity cycling --extract /extracts/italy-highways.osm.pbf Trento
+```
+
+Quali città: prima Trento (la prova sul server), poi `--preset italy` con
+l'ok dell'utente; le estere no (ADR-0153, «Aggiornamento»). Misure fatte
+sul Mac dalle risposte a piedi in cache, quindi senza le vie col
+marciapiede a parte (stessa strada dell'estratto, stesso riquadro della
+zona a piedi): Trento 20.424 nodi, 11 MB di pickle, 127 MB in memoria
+contro i 185 della zona a piedi; Milano 52.493 nodi, 24 MB, 236 MB contro
+618; Roma 186 MB contro 454; costruzione in 10–29 s, picco 1–1,8 GB. Una
+zona di 26 km dovrebbe stare fra 0,15 e 0,6 GB in memoria e 70–150 MB su
+disco; l'API ne tiene una alla volta (`API.md`, «Grafi»). Non ancora
+provata su una zona vera (task file di TASK-190).
 
 ## Dal disegno alla strada
 

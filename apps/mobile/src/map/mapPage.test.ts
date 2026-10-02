@@ -2,6 +2,7 @@ import { color } from "../theme/tokens";
 import {
   buildMapPage,
   FOLLOW_ZOOM,
+  HEADING_ARROW_SVG,
   isExternalUrl,
   MAP_BACKGROUND,
   MAP_STYLE,
@@ -125,6 +126,35 @@ test("the page follows the runner close up, without framing the route again", ()
   const handler = page.slice(page.indexOf('message.type === "follow"'));
   expect(handler).toContain(`zoom: ${FOLLOW_ZOOM}`);
   expect(handler.slice(0, handler.indexOf("clearRoute"))).not.toContain("fitBounds");
+});
+
+test("while running the marker is an arrow turned to the heading (TASK-164)", () => {
+  // In the marker's colour, with a dark edge to stand on the yellow route.
+  expect(HEADING_ARROW_SVG).toContain(`fill="${POSITION_COLOR}"`);
+  expect(HEADING_ARROW_SVG).toContain(`stroke="${color.map.background}"`);
+  // In the page with no "<" that could close the script.
+  expect(page).toContain(JSON.stringify(HEADING_ARROW_SVG).replace(/</g, "\\u003c"));
+  // Turned with the map, so north of the arrow is north of the map.
+  expect(page).toContain('rotationAlignment: "map"');
+  expect(page).toContain("arrow.setRotation(heading)");
+  const handler = page.slice(page.indexOf('message.type === "follow"'));
+  const follow = handler.slice(0, handler.indexOf('message.type === "stopFollow"'));
+  expect(follow).toContain("showArrow(message.lngLat, message.heading)");
+  // Without a heading yet, the pin as before.
+  expect(follow).toContain("showPin(message.lngLat)");
+});
+
+test("after the run the arrow is the position marker again", () => {
+  const handler = page.slice(page.indexOf('message.type === "stopFollow"'));
+  const stop = handler.slice(0, handler.indexOf('message.type === "showTrack"'));
+  expect(stop).toContain("showPin(arrow.getLngLat())");
+  expect(stop).not.toContain("fitBounds");
+  // A new start is a pin too, never a stale arrow.
+  const setPosition = page.slice(
+    page.indexOf('message.type === "setPosition"'),
+    page.indexOf('message.type === "showRoute"'),
+  );
+  expect(setPosition).toContain("showPin(message.lngLat)");
 });
 
 test("the run is a line of its own, over the route and thinner", () => {

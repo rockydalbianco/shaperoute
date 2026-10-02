@@ -11,6 +11,7 @@ import {
   showStops,
   showTrack,
   START_HERE_M,
+  stopFollow,
 } from "./messages";
 
 test("setPosition sends the point in MapLibre order", () => {
@@ -83,7 +84,19 @@ test("follow sends the position in MapLibre order", () => {
   expect(follow([46.0671, 11.1214])).toEqual({
     type: "follow",
     lngLat: [11.1214, 46.0671],
+    heading: null,
   });
+});
+
+test("follow sends the heading in whole degrees, stopFollow ends it", () => {
+  expect(follow([46.0671, 11.1214], 44.6)).toEqual({
+    type: "follow",
+    lngLat: [11.1214, 46.0671],
+    heading: 45,
+  });
+  // 359.7 is north, not 360.
+  expect(follow([46.0671, 11.1214], 359.7)).toMatchObject({ heading: 0 });
+  expect(stopFollow()).toEqual({ type: "stopFollow" });
 });
 
 test("showTrack sends the run in MapLibre order, clearTrack removes it", () => {

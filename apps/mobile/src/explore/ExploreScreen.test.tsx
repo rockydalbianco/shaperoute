@@ -219,20 +219,45 @@ test("without a way to ask there is no line to open", async () => {
   expect(screen.queryByText("Ask for a route")).toBeNull();
 });
 
-test("the filters keep one shape or one distance", async () => {
+test("the filters, in one row, keep one shape or one distance", async () => {
   fetchMock.mockResolvedValue(Response.json(list));
   await render(
-    <ExploreScreen
-      apiUrl="http://api"
-      near={[46.067, 11.1215]}
-      onBack={jest.fn()}
-      onOpen={jest.fn()}
-    />,
+    <ExploreScreen apiUrl="http://api" near={[46.067, 11.1215]} onOpen={jest.fn()} />,
   );
   await screen.findByText("Star · 5.1 km");
+  // Closed, a filter shows no choice: only what it keeps.
+  expect(screen.queryByText("Heart")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Shape: All" }));
   await fireEvent.press(screen.getByText("Heart"));
   expect(screen.queryByText("Star · 5.1 km")).toBeNull();
   expect(screen.getByText("Heart · 10.2 km")).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Shape: Heart" })).toBeOnTheScreen();
+
+  // No heart of 5 km in the list: the page says so instead of going blank.
+  await fireEvent.press(screen.getByRole("button", { name: "Distance: All" }));
+  await fireEvent.press(screen.getByText("5 km"));
+  expect(screen.queryByTestId("route-card")).toBeNull();
+  expect(
+    screen.getByText("No route here is both: change one of the two filters."),
+  ).toBeOnTheScreen();
+});
+
+test("the routes are cards, two side by side between the page's margins", async () => {
+  fetchMock.mockResolvedValue(Response.json(list));
+  await render(
+    <ExploreScreen apiUrl="http://api" near={[46.067, 11.1215]} onOpen={jest.fn()} />,
+  );
+  await screen.findByText("Star · 5.1 km");
+  const cards = screen.getAllByTestId("route-card");
+  expect(cards).toHaveLength(routes.length);
+  // The window of the tests is 750 wide: 16 of margin a side, 12 between.
+  for (const card of cards) {
+    expect(card).toHaveStyle({ width: 353 });
+  }
+  expect(screen.getAllByTestId("route-card-drawing")[0]).toHaveStyle({
+    width: 353,
+    height: 233,
+  });
 });
 
 test("without a start, nothing is asked", async () => {

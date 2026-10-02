@@ -35,6 +35,9 @@ test("one card per shape: ready opens, the others say where they are", async () 
   expect(screen.getByText("Drawing…")).toBeOnTheScreen();
   expect(screen.getByText("Next")).toBeOnTheScreen();
   expect(screen.queryByText("Try again")).toBeNull();
+  // Three cards, two side by side in the section; only the ready one is a button.
+  expect(screen.getAllByTestId("route-card")).toHaveLength(3);
+  expect(screen.getAllByRole("button")).toHaveLength(1);
   await fireEvent.press(screen.getByLabelText(`Heart, ${km} km`));
   expect(onOpen).toHaveBeenCalledWith(heart);
 });

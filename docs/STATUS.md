@@ -114,6 +114,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-186: nella corsa «Map» e «Data» sono due pulsanti grandi,
+  chiesto dall'utente (ADR-0137, aggiornamento): metà scheda ciascuno, alti
+  56 punti, la pagina aperta più chiara. Solo app, niente API, nessuna
+  dipendenza nuova. Visto nel simulatore sulle due pagine. **Da pubblicare
+  su `preview`**, con l'ok dell'utente, poi da provare sull'iPhone. Della
+  stessa richiesta: la schermata «Save» / «Discard» a fine corsa va dentro
+  TASK-172 (deciso dal coordinatore); «Send to Strava» è TASK-187, che
+  aspetta la risposta dell'utente.
 - **Motore** — TASK-067: due lettere di una parola si uniscono anche lungo
   la cima, dove la parola viene più corta e si legge uguale, chiesto
   dall'utente (ADR-0063). Tre regole di lettura: non si allunga un tratto

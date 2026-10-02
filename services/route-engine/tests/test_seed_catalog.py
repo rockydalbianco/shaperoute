@@ -15,6 +15,7 @@ from route_engine.optimizer import ShapeNotDrawableError
 from route_engine.seed_catalog import (
     CITIES,
     FAILED,
+    FEATURED,
     LICENSE,
     NOT_DRAWABLE,
     PHRASES,
@@ -200,6 +201,34 @@ def test_gpx_files_one_per_kept_route() -> None:
 def test_unknown_city_is_refused() -> None:
     with pytest.raises(SystemExit):
         main(["--cities", "atlantide"])
+
+
+def test_featured_cities_stay_out_of_the_whole_tour() -> None:
+    assert not set(FEATURED) & set(CITIES)
+    assert seed_catalog._build_parser().parse_args([]).cities == list(CITIES)
+
+
+def test_featured_plans_a_heart_a_circle_and_a_star_of_5_km(tmp_path: Path) -> None:
+    asked: list[tuple[str, LatLon]] = []
+
+    def planner(case: Case, start: LatLon) -> RouteResult:
+        asked.append((case.key, start))
+        return _result(0.9)
+
+    out = tmp_path / "seed"
+    argv = ["--run", "--featured", "--log", str(tmp_path / "runs.jsonl")]
+    assert main([*argv, "--out", str(out)], planner=planner) == 0
+    assert [key for key, _ in asked] == [
+        f"{city}/{shape}/5000"
+        for city in FEATURED
+        for shape in ("heart", "circle", "star")
+    ]
+    # From its own square, which the file keeps as the centre.
+    assert asked[0][1] == FEATURED["london"]
+    london = json.loads((out / "london.json").read_text(encoding="utf-8"))
+    assert london["centre"] == list(FEATURED["london"])
+    assert [r["shape"] for r in london["routes"]] == ["circle", "heart", "star"]
+    assert sorted(p.stem for p in out.glob("*.json")) == sorted(FEATURED)
 
 
 def test_word_distance_is_3750_m_a_letter_within_the_limits() -> None:

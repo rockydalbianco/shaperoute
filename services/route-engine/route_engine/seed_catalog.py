@@ -11,6 +11,9 @@ Every case planned is one JSON line in the run log (`--log`), so a run
 stopped half-way resumes where it was; a case that failed on the network is
 tried again, one the engine could not draw is not. The selection is then
 written one file per city under `--out`, all of it rebuilt from the log.
+
+With `--featured` it plans only a heart, a circle and a star of 5 km for the
+cities "Explore" shows first and the seed does not have (TASK-163).
 """
 
 from __future__ import annotations
@@ -49,6 +52,31 @@ CITIES: dict[str, LatLon] = {
     # Asked by the user (2026-10-01): the first city outside Italy.
     "newyork": (40.73590, -73.99110),  # Union Square, on Manhattan's grid
 }
+
+# The other cities "Explore" shows first (apps/mobile/src/explore/presets.ts),
+# asked by the user (TASK-163, 2026-10-02): a heart, a circle and a star must
+# be there before anyone taps the city, instead of being drawn at the tap.
+# Only those (`--featured`): they are not in CITIES, so the whole catalogue
+# is not planned for them. A public square each, within 5 km of the centre
+# the API gives for the name: "Explore" lists what starts that near.
+FEATURED: dict[str, LatLon] = {
+    "london": (51.50800, -0.12810),  # Trafalgar Square
+    "paris": (48.85660, 2.35220),  # Place de l'Hôtel de Ville
+    "tokyo": (35.68120, 139.76710),  # Tokyo Station, the Marunouchi square
+    "barcelona": (41.38700, 2.17010),  # Plaça de Catalunya
+    "dubai": (25.26930, 55.30860),  # Baniyas Square
+    "amsterdam": (52.37310, 4.89320),  # Dam Square
+    "berlin": (52.51370, 13.39270),  # Gendarmenmarkt
+    "lisbon": (38.71390, -9.13940),  # Rossio
+    "sydney": (-33.87320, 151.20610),  # Sydney Square, by the Town Hall
+    "sanfrancisco": (37.78800, -122.40750),  # Union Square
+}
+# The simplest shapes at the shortest distance asked for, as the examples the
+# app draws for a city without recommended routes (ADR-0116).
+FEATURED_SHAPES: tuple[str, ...] = ("heart", "circle", "star")
+FEATURED_DISTANCE_M = 5_000
+# Where every city starts from: the seed and the featured ones.
+STARTS: dict[str, LatLon] = {**CITIES, **FEATURED}
 
 # Words written in each city (asked by the user, 2026-10-01): common and
 # famous greetings, in the language used there. The engine writes A-Z only,
@@ -307,7 +335,7 @@ def run_cases(
     todo: Sequence[Case],
     planner: Planner,
     log: Path,
-    starts: dict[str, LatLon] = CITIES,
+    starts: dict[str, LatLon] = STARTS,
     say: Callable[[str], None] = print,
     prepare: Prepare | None = None,
 ) -> int:
@@ -390,7 +418,7 @@ def catalogue_files(
         by_city.setdefault(r["city"], []).append(r)
     files = {}
     for city, routes in sorted(by_city.items()):
-        lat, lon = CITIES.get(city, (None, None))
+        lat, lon = STARTS.get(city, (None, None))
         body = {
             "city": city,
             "centre": [lat, lon],
@@ -430,7 +458,7 @@ def summary(runs: Sequence[dict[str, Any]], selected: Sequence[dict[str, Any]]) 
         kept = [r for r in selected if r["city"] == city]
         best = max((r["similarity"] for r in mine), default=0.0)
         lines.append(
-            f"  {city:<8} {len(kept):>3} kept of {len(mine):>3} drawn, best {best:.2f}"
+            f"  {city:<12} {len(kept):>3} kept of {len(mine):>3} drawn, best {best:.2f}"
         )
     return "\n".join(lines)
 
@@ -474,7 +502,7 @@ def engine_planner(cache_dir: Path) -> Planner:
 
 def engine_prepare(
     cache_dir: Path,
-    starts: dict[str, LatLon] = CITIES,
+    starts: dict[str, LatLon] = STARTS,
     pause: Callable[[float], None] = time.sleep,
 ) -> Prepare:
     """Loads, once per city, the zone of all its cases with a margin: then
@@ -530,9 +558,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--cities",
-        type=lambda v: _names(v, CITIES, "city"),
+        type=lambda v: _names(v, STARTS, "city"),
         default=list(CITIES),
-        help="comma-separated (default: all of them)",
+        help="comma-separated (default: the cities of the seed, not the featured)",
     )
     parser.add_argument(
         "--shapes",
@@ -551,6 +579,12 @@ def _build_parser() -> argparse.ArgumentParser:
         choices=("all", "shapes", "words"),
         default="all",
         help="shapes of the catalogue, the phrases of PHRASES, or both (default)",
+    )
+    parser.add_argument(
+        "--featured",
+        action="store_true",
+        help="the featured cities: a heart, a circle and a star of 5 km each, "
+        "instead of --cities, --shapes, --distances and --kinds",
     )
     parser.add_argument("--min-similarity", type=float, default=MIN_SIMILARITY)
     parser.add_argument(
@@ -577,6 +611,11 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None, planner: Planner | None = None) -> int:
     args = _build_parser().parse_args(argv)
+    if args.featured:
+        args.cities = list(FEATURED)
+        args.shapes = list(FEATURED_SHAPES)
+        args.distances = [FEATURED_DISTANCE_M]
+        args.kinds = "shapes"
     if args.run:
         todo = []
         if args.kinds != "words":

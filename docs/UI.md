@@ -223,6 +223,14 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
   inventati. Le schede non si toccano: aprire un disegno arriva con
   TASK-118.
+  **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
+  chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
+  stile dell'app. È una foto, non una mappa da muovere: la fa una pagina
+  MapLibre che l'elenco copre, una mappa alla volta, inquadrata come la
+  linea; finché non arriva la scheda è la linea sul fondo scuro, e senza
+  rete resta così. In basso a destra di ogni mappa il credito,
+  «OpenFreeMap © OpenMapTiles / Data from OpenStreetMap», in due righe
+  accanto al punteggio. Le foto fatte restano finché l'app è aperta.
 - **«Explore»** chiede i suoi percorsi all'API la prima volta che ci si
   arriva, non all'apertura dell'app; tornandoci l'elenco è ancora lì. Non
   ha più «←»: per tornare c'è lo swipe, o il nome «Draw».
@@ -810,6 +818,9 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   locale, una volta; l'API non la salva e non la scrive nel log. Poi viaggia
   solo il contorno. Non va a nessun servizio esterno né all'AI.
 - **Le tile**: il provider vede quale zona si guarda, come con ogni mappa.
+  Da TASK-162 anche le zone dei disegni di «Feed», a ogni apertura
+  dell'app: sono le città degli esempi, uguali per tutti, non la posizione
+  di chi guarda.
 - **La ricerca**: il testo cercato e la posizione (per mettere prima i
   luoghi vicini) vanno all'API, che li gira a Geoapify (TASK-123); senza
   API o senza chiave, a Photon (komoot). Il log dell'API scrive solo

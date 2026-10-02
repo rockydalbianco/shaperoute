@@ -61,7 +61,7 @@ In coda, dopo o accanto:
   «Explore» (TASK-126, 134) e il suo «Start» (TASK-145), correre senza
   percorso (TASK-149), «A · B · C» negli esempi (TASK-151, 155), lo swipe
   col dito (TASK-154), il feed d'esempio e i ritocchi di TASK-156, 157,
-  158.
+  158, la mappa sotto i disegni di «Feed» (TASK-162).
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -83,6 +83,13 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
 
 ## Completato
 
+- **App** — TASK-162: in «Feed» ogni disegno ha sotto la mappa della sua
+  zona, chiesta dall'utente (ADR-0131): strade, acqua, verde e nomi, con
+  lo stile dell'app. È una foto: una pagina MapLibre nascosta sotto
+  l'elenco ne fa una alla volta e la scheda la mette sotto la linea, con
+  il credito della mappa. Senza rete le schede restano come prima. Nessuna
+  dipendenza nuova, niente API. Visto su un simulatore. **Da provare
+  sull'iPhone**, con l'app ripubblicata.
 - **App** — TASK-165: la schermata di avvio con il logo, chiesta
   dall'utente (ADR-0134): fondo nero, su iOS il logo intero, su Android il
   segno. Usa `expo-splash-screen`, dipendenza nuova approvata dall'utente;

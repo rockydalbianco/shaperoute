@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 
-import { FeedPost, postFacts, shapeLabel } from "./FeedPost";
+import { FeedMapShooter, forgetFeedMaps } from "./FeedMaps";
+import { FeedPost, MAP_CREDIT, postFacts, shapeLabel } from "./FeedPost";
 import type { SamplePost } from "./sampleFeed";
 
 const POST: SamplePost = {
@@ -21,6 +22,10 @@ const POST: SamplePost = {
     [43.77, 11.25],
   ],
 };
+
+beforeEach(() => {
+  forgetFeedMaps();
+});
 
 test("a shape is written as it is read", () => {
   expect(shapeLabel("dog_head")).toBe("Dog head");
@@ -51,6 +56,47 @@ test("draws the line, one view for each stretch, as wide as the card", async () 
   expect(drawing).toHaveStyle({ width: 358, height: 222 });
   // Four stretches, and the score over them.
   expect(drawing.children).toHaveLength(5);
+});
+
+test("until its picture is taken there is no map, and no credit for one", async () => {
+  await render(<FeedPost post={POST} width={358} />);
+  expect(screen.queryByTestId("feed-map")).toBeNull();
+  expect(screen.queryByText(MAP_CREDIT)).toBeNull();
+});
+
+test("lays the map under the line, and says whose it is", async () => {
+  await render(
+    <>
+      <FeedMapShooter width={358} height={222} />
+      <FeedPost post={POST} width={358} />
+    </>,
+  );
+  const page = screen.getByTestId("feed-map-page", { includeHiddenElements: true });
+  await fireEvent(page, "message", { nativeEvent: { data: '{"type":"ready"}' } });
+  const picture = "data:image/jpeg;base64,AAAA";
+  await fireEvent(page, "message", {
+    nativeEvent: {
+      data: JSON.stringify({
+        type: "shot",
+        key: "firenze-dog_head-10000-4:358x222",
+        image: picture,
+      }),
+    },
+  });
+
+  const drawing = screen.getByTestId("feed-drawing");
+  // The map, the four stretches, the score, the credit: the map first, so
+  // that everything else is over it.
+  expect(drawing.children).toHaveLength(7);
+  const map = screen.getByTestId("feed-map", { includeHiddenElements: true });
+  expect(drawing.children[0]).toBe(map);
+  expect(map).toHaveProp("source", { uri: picture });
+  expect(map).toHaveStyle({ position: "absolute", left: 0, top: 0 });
+  // The makers of the map, named as they ask.
+  expect(MAP_CREDIT).toContain("OpenFreeMap");
+  expect(MAP_CREDIT).toContain("© OpenMapTiles");
+  expect(MAP_CREDIT).toContain("OpenStreetMap");
+  expect(screen.getByText(MAP_CREDIT)).toBeOnTheScreen();
 });
 
 test("a screen reader hears the drawing as one thing", async () => {

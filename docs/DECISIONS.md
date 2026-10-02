@@ -4666,3 +4666,43 @@ unpkg e qualche tile per città; nel simulatore 2 s la prima volta, meno di
 Con il feed vero (TASK-118) la stessa pagina fotografa qualsiasi linea, ma
 serve un tetto alle foto in memoria. `FeedPost` mostrato altrove (TASK-163)
 ha la mappa finché «Feed» è montata. Android non è stato provato.
+
+## ADR-0134 — La schermata di avvio: `expo-splash-screen`, logo su nero
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («metti
+anche la schermata di avvio con il logo») e per la dipendenza («Sì,
+aggiungila»); il come deciso dall'agente su delega dell'utente (TASK-165).
+
+**Contesto**: l'app non aveva una schermata di avvio. In Expo SDK 57 la
+chiave `splash` di `app.json` non esiste più, tranne che per il web: la
+schermata nativa la scrive solo il plugin del pacchetto `expo-splash-screen`,
+che nel progetto non c'era.
+
+**Decisione**:
+- **Dipendenza nuova: `expo-splash-screen` ~57.0.9**, il pacchetto ufficiale
+  di Expo per l'SDK 57 (è in `bundledNativeModules.json` di `expo`, quindi
+  fra i moduli che Expo Go ha già dentro). Con sé porta `xml2js`,
+  `@expo/image-utils` e `@expo/config-plugins`, già nel lock.
+- **Solo il plugin, nessun codice**: l'app non importa il modulo e non
+  chiama `preventAutoHide`. La schermata sparisce quando l'app è pronta.
+  In Expo Go quindi non cambia niente, e un `eas update` resta sicuro.
+- **Fondo `#0A0A0B`, logo giallo** (ADR-0129, ADR-0046).
+- **Su iOS il logo intero**, largo 260 punti: `assets/splash-logo.png`,
+  1040 × 1040 trasparente, perché il plugin mette l'immagine in un quadrato
+  largo `imageWidth`.
+- **Su Android il segno da solo**, `assets/splash-icon.png` a 240 dp: da
+  Android 12 il sistema ritaglia l'immagine in un cerchio di 192 dp, dove
+  il logo largo starebbe minuscolo; il segno ha una diagonale di 131 dp.
+
+**Scartate**: un plugin scritto da noi per non aggiungere il pacchetto
+(codice nativo generato a mano, da provare e mantenere); un componente
+React che mostra il logo all'avvio (prima che parta il JavaScript lo schermo
+resta vuoto, e toccava `App.tsx`); il logo intero anche su Android.
+
+**Conseguenze**: si vede solo in una build propria (TASK-152). Il prebuild
+di prova genera `SplashScreen.storyboard` con il logo in un riquadro di
+260 × 260 al centro e il colore `SplashScreenBackground` a `#0A0A0B`; su
+Android `windowSplashScreenBackground` e `splashscreen_logo`. Il prebuild
+scrive anche `android.package` in `app.json` e cambia due script di
+`package.json`: sono effetti della prova, non vanno committati. Tenere la
+schermata finché i dati sono pronti vorrebbe `preventAutoHide` in `App.tsx`:
+un task a parte, se servirà.

@@ -90,6 +90,12 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   il credito della mappa. Senza rete le schede restano come prima. Nessuna
   dipendenza nuova, niente API. Visto su un simulatore. **Da provare
   sull'iPhone**, con l'app ripubblicata.
+- **App** — TASK-165: la schermata di avvio con il logo, chiesta
+  dall'utente (ADR-0134): fondo nero, su iOS il logo intero, su Android il
+  segno. Usa `expo-splash-screen`, dipendenza nuova approvata dall'utente;
+  è fra i moduli di Expo Go, e l'app non lo importa: in Expo Go non cambia
+  niente. **Da guardare in una build propria** (TASK-152). Dopo il merge:
+  `npm install` nel checkout principale.
 - **App** — TASK-160: i tre messaggi sulla posizione spenta dicono
   «Location is off for Sgrava…» invece di «…for ShapeRoute…» (prima
   schermata, navigazione, corsa libera): è il nome sotto l'icona da

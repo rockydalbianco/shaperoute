@@ -114,9 +114,9 @@ function lastRouteRequest(): unknown {
   return JSON.parse(String(posts.at(-1)?.[1]?.body));
 }
 
-/** Lets the app poll the API once. */
+/** Lets the app poll the API once: the first asks come every 500 ms. */
 async function nextPoll() {
-  await act(() => jest.advanceTimersByTimeAsync(2000));
+  await act(() => jest.advanceTimersByTimeAsync(500));
 }
 
 async function atTrento() {

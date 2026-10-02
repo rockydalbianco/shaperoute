@@ -33,6 +33,13 @@ import {
 import { ThemedCard, themedGpx } from "./src/explore/ThemedCard";
 import { startViewOf, useStartDirections } from "./src/explore/useStartDirections";
 import { useThemedRoute } from "./src/explore/useThemedRoute";
+import { FavoriteHeart } from "./src/favorites/FavoriteHeart";
+import {
+  drawnKeepable,
+  exploredKeepable,
+  themedKeepable,
+} from "./src/favorites/favoriteRoute";
+import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
 import { MapView } from "./src/map/MapView";
 import {
   canResume,
@@ -161,9 +168,18 @@ function Sgrava() {
   const [freeFinished, setFreeFinished] = useState<FreeFinished | null>(() =>
     finished === null ? leftFreeRun() : null,
   );
-  const [screen, setScreen] = useState<Screen>(() =>
+  const [screenNow, setScreen] = useState<Screen>(() =>
     finished !== null ? "finish" : freeFinished !== null ? "runFinish" : "choose",
   );
+  // A favorite opened from «Profile» (TASK-171) takes the map at once, over
+  // the page it was opened from, as a route of "Explore" does.
+  const {
+    opened: favorite,
+    close: closeFavorite,
+    showList: showFavorites,
+  } = useFavoritesDoor();
+  const onPage = PAGES.includes(screenNow);
+  const screen: Screen = favorite !== null && onPage ? "map" : screenNow;
   const { position, refresh } = useCurrentPosition();
   const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
@@ -192,7 +208,12 @@ function Sgrava() {
   // A ready route waits behind the ad, if there is one (TASK-132).
   const state = useAdBeforeRoute(routeRequest.state);
   const gpx = useGpxExport(API_URL);
-  const { explored, open: openExplored, close: closeExplored } = useExplored(API_URL);
+  const {
+    explored: exploredRoute,
+    open: openExplored,
+    close: closeExplored,
+  } = useExplored(API_URL);
+  const explored = favorite ?? exploredRoute;
   // "Explore" for any city, and a shape through a theme's places (TASK-129).
   const [exploreCity, setExploreCity] = useState<Place | null>(null);
   // The cities chosen last, kept on the phone (TASK-134).
@@ -305,6 +326,34 @@ function Sgrava() {
     gpx.state.result === explored.result
       ? gpx.state
       : { status: "idle" };
+  // The route on the map as a favorite keeps it (TASK-171), made once per
+  // route: the heart knows it by its key.
+  const startPlace = start?.source === "search" ? start.label : null;
+  const drawnRequest = view.status === "done" ? view.request : null;
+  const drawnFavorite = useMemo(
+    () =>
+      drawnRequest && chosen ? drawnKeepable(drawnRequest, chosen, startPlace) : null,
+    [drawnRequest, chosen, startPlace],
+  );
+  const exploredFavorite = useMemo(
+    () =>
+      exploredRoute?.status === "done"
+        ? exploredKeepable(exploredRoute.route, exploredRoute.detail)
+        : null,
+    [exploredRoute],
+  );
+  const themedFavorite = useMemo(
+    () => (themed.state.status === "done" ? themedKeepable(themed.state.result) : null),
+    [themed.state],
+  );
+  const onMap =
+    screen !== "map"
+      ? null
+      : theming
+        ? themedFavorite
+        : exploring
+          ? (favorite?.keepable ?? exploredFavorite)
+          : drawnFavorite;
 
   /** Stop or Finish: the run ends, and with a line to judge shows its score. */
   function onEndRun() {
@@ -348,6 +397,7 @@ function Sgrava() {
   /** "Explore" leaves the map: its route, its directions, its run. */
   function closeExplore() {
     closeExplored();
+    closeFavorite();
     themed.close();
     startDirections.reset();
     setExploreRun(null);
@@ -374,6 +424,15 @@ function Sgrava() {
   }
 
   function onBack() {
+    if (favorite !== null) {
+      // Back to the list it was opened from, over the page left under it.
+      closeExplore();
+      if (!onPage) {
+        setScreen("choose");
+      }
+      showFavorites();
+      return;
+    }
     if (theming || exploring) {
       closeExplore();
       setScreen("explore");
@@ -530,10 +589,8 @@ function Sgrava() {
                 gpx.exportGpx(explored.request, explored.result);
               }
             }}
-            onList={() => {
-              closeExplore();
-              setScreen("explore");
-            }}
+            // The list it came from: "Explore", or the favorites.
+            onList={onBack}
             start={startViewOf(
               startDirections.state,
               explored.status === "done" ? explored.result.points : null,
@@ -593,6 +650,8 @@ function Sgrava() {
           />
         )}
       </MapScreen>
+      {/* Over the map, opposite the way back: keep the route shown. */}
+      <FavoriteHeart route={onMap} />
       {page !== -1 && (
         <Pager
           page={page}

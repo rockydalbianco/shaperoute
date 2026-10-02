@@ -1,0 +1,238 @@
+"""A city's examples, drawn once and kept for whoever asks next.
+
+In "Explore" every phone asks the same of a city: a heart, a circle and a
+star of 5 km from its centre (exampleRoutes.ts). The engine draws the same
+routes each time, some seconds each on the PC and many more on the server,
+one after the other. Here a route drawn from a city's centre is kept in a
+file, and the same request is answered from it at once, as a job already
+done: only the first phone in a city waits.
+
+Only from a city's centre. A request carries where the user is; keeping
+every route is the user's choice of ADR-0086, and belongs to TASK-092, in
+the database, with the rules on personal data still to write. Until then
+the API keeps no one's position (ADR-0085, ADR-0092), and a city's centre is
+no one's position. TASK-092 can take this over: RouteJobs calls `put` for
+every route that ends, and here the ones from elsewhere are dropped.
+
+The centres are those the API itself gave to GET /cities and GET
+/city-suggestions, and a start is one of them when it falls in the same
+square of about 10 m (4 decimals, as the app's `cityKey`). A route from
+anywhere else is never written, and an image's outline neither.
+
+The same request: the same shape or word, style, distance and activity, from
+the same centre, drawn by the same engine. A route is drawn again after
+KEEP_S, for the roads that changed, and at once when the engine's code is
+another: its fingerprint is part of the name of the file.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import logging
+import threading
+import time
+from collections.abc import Callable, Iterable
+from dataclasses import asdict
+from pathlib import Path
+from typing import Any
+
+import route_engine
+from route_engine.directions import Direction
+from route_engine.models import RouteRequest, RouteResult
+
+log = logging.getLogger(__name__)
+
+LatLon = tuple[float, float]
+
+# Beside the zones, in the folder the server already keeps (deploy/): a route
+# kept is a cache as they are, and their file names never match (`foot_*`).
+STORE_FOLDER = "routes"
+CENTRES_FILE = "city-centres.txt"
+# After this a route is drawn again: the zone may be newer than the route.
+KEEP_S = 30 * 24 * 3600.0
+# About 100 kB each with its alternatives: 300 MB at most.
+MAX_ROUTES = 3000
+# Six centres for each few letters typed (GET /city-suggestions): the oldest
+# are forgotten, and found again when someone types that city.
+MAX_CENTRES = 50_000
+# 4 decimals: 11 m of latitude, the app's `cityKey`.
+CELL_DECIMALS = 4
+
+
+def engine_fingerprint() -> str:
+    """The engine's code and outlines, as a few letters: another engine,
+    other routes. From the files' content, not their dates: a new image of
+    the same code keeps what it drew."""
+    folder = Path(route_engine.__file__).parent
+    digest = hashlib.sha256()
+    for path in sorted(folder.rglob("*")):
+        if path.suffix in (".py", ".json") and path.is_file():
+            digest.update(path.relative_to(folder).as_posix().encode())
+            digest.update(path.read_bytes())
+    return digest.hexdigest()[:12]
+
+
+def cell(point: LatLon) -> str:
+    """The square of about 10 m `point` falls in: "45.8906,11.0401"."""
+    return f"{point[0]:.{CELL_DECIMALS}f},{point[1]:.{CELL_DECIMALS}f}"
+
+
+def result_from(data: dict[str, Any]) -> RouteResult:
+    """A RouteResult as `asdict` wrote it, read from JSON: points are pairs
+    again. Raises on anything else: the file is then as not kept."""
+    return RouteResult(
+        points=[_pair(point) for point in data["points"]],
+        distance_m=float(data["distance_m"]),
+        similarity=float(data["similarity"]),
+        shape=data["shape"],
+        warnings=[str(warning) for warning in data["warnings"]],
+        directions=[
+            Direction(**{**direction, "point": _pair(direction["point"])})
+            for direction in data["directions"]
+        ],
+        word=data["word"],
+        alternatives=[result_from(other) for other in data["alternatives"]],
+    )
+
+
+def _pair(point: Any) -> LatLon:
+    lat, lon = point
+    return float(lat), float(lon)
+
+
+class RouteStore:
+    def __init__(
+        self,
+        directory: Path,
+        engine: str | None = None,
+        keep_s: float = KEEP_S,
+        max_routes: int = MAX_ROUTES,
+        max_centres: int = MAX_CENTRES,
+        clock: Callable[[], float] = time.time,
+    ) -> None:
+        self._directory = directory
+        self._engine = engine_fingerprint() if engine is None else engine
+        self._keep_s = keep_s
+        self._max_routes = max_routes
+        self._max_centres = max_centres
+        self._clock = clock
+        self._lock = threading.Lock()
+        # In the order they were learned: a dict keeps it, a set does not.
+        self._centres: dict[str, None] = dict.fromkeys(self._read_centres())
+
+    def __len__(self) -> int:
+        return sum(1 for _ in self._directory.glob("*.json"))
+
+    def learn(self, centres: Iterable[LatLon]) -> None:
+        """Centres the API gave for a city: a route from one may be kept."""
+        with self._lock:
+            new = [
+                c for c in dict.fromkeys(map(cell, centres)) if c not in self._centres
+            ]
+            if not new:
+                return
+            self._centres.update(dict.fromkeys(new))
+            try:
+                self._directory.mkdir(parents=True, exist_ok=True)
+                if len(self._centres) > self._max_centres:
+                    # The newest half, written again: the file stays small.
+                    kept = list(self._centres)[-(self._max_centres // 2) :]
+                    self._centres = dict.fromkeys(kept)
+                    self._centres_path.write_text("".join(f"{c}\n" for c in kept))
+                else:
+                    with self._centres_path.open("a") as file:
+                        file.writelines(f"{c}\n" for c in new)
+            except OSError as exc:
+                # Known until the API restarts: the routes are kept anyway.
+                log.warning("city centres not written: %s", type(exc).__name__)
+
+    def get(self, request: object) -> RouteResult | None:
+        """The route kept for `request`, or None: never asked, from no
+        city's centre, too old, drawn by another engine, or not readable."""
+        path = self._path(request)
+        if path is None:
+            return None
+        try:
+            text = path.read_text()
+        except OSError:
+            return None  # never asked, or the folder is not there
+        try:
+            data = json.loads(text)
+            if self._clock() - float(data["saved_at"]) <= self._keep_s:
+                return result_from(data["result"])
+        except Exception as exc:
+            # Half written, or of a model that changed: drawn again.
+            log.warning("kept route %s not readable: %s", path.name, type(exc).__name__)
+        path.unlink(missing_ok=True)
+        return None
+
+    def put(self, request: object, result: RouteResult) -> bool:
+        """Keeps `result` when `request` starts from a city's centre; says
+        whether it did. Never raises: without the file the route is drawn
+        again."""
+        path = self._path(request)
+        if path is None or not isinstance(request, RouteRequest):
+            return False
+        with self._lock:
+            if cell(request.start) not in self._centres:
+                return False
+        kept = {
+            "saved_at": self._clock(),
+            "engine": self._engine,
+            "request": self._same(request),
+            "result": asdict(result),
+        }
+        try:
+            self._directory.mkdir(parents=True, exist_ok=True)
+            # Whole or not at all: a reader never finds half a file.
+            draft = path.with_suffix(f".{threading.get_ident()}.tmp")
+            draft.write_text(json.dumps(kept, separators=(",", ":")))
+            draft.replace(path)
+            self._forget_oldest()
+        except (OSError, TypeError, ValueError) as exc:
+            log.warning("route not kept: %s", type(exc).__name__)
+            return False
+        return True
+
+    @property
+    def _centres_path(self) -> Path:
+        return self._directory / CENTRES_FILE
+
+    def _read_centres(self) -> list[str]:
+        try:
+            return self._centres_path.read_text().split()
+        except OSError:
+            return []
+
+    def _same(self, request: RouteRequest) -> dict[str, Any]:
+        """What makes two requests the same one."""
+        return {
+            "shape": request.shape,
+            "word": request.word,
+            "style": request.style,
+            "distance_m": request.distance_m,
+            "activity": request.activity,
+            "start": cell(request.start),
+        }
+
+    def _path(self, request: object) -> Path | None:
+        if not isinstance(request, RouteRequest):
+            return None  # an image: its outline is the user's own
+        same = json.dumps([self._engine, self._same(request)], sort_keys=True)
+        name = hashlib.sha256(same.encode()).hexdigest()[:24]
+        return self._directory / f"{name}.json"
+
+    def _forget_oldest(self) -> None:
+        paths = list(self._directory.glob("*.json"))
+        if len(paths) <= self._max_routes:
+            return
+
+        def written(path: Path) -> float:
+            try:
+                return path.stat().st_mtime
+            except OSError:
+                return 0.0
+
+        for path in sorted(paths, key=written)[: len(paths) - self._max_routes]:
+            path.unlink(missing_ok=True)

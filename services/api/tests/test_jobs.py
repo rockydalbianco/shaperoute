@@ -1,4 +1,5 @@
-"""RouteJobs: states in order, errors, cancelling, forgetting, two workers."""
+"""RouteJobs: states in order, errors, cancelling, forgetting, two workers,
+routes kept."""
 
 from __future__ import annotations
 
@@ -230,3 +231,76 @@ def test_a_job_cancelled_while_downloading_never_computes(
     jobs.shutdown()
     time.sleep(0.2)
     assert computed == []
+
+
+class Kept:
+    """A store that keeps every route by the shape asked."""
+
+    def __init__(self) -> None:
+        self.routes: dict[str | None, RouteResult] = {}
+
+    def get(self, request: object) -> RouteResult | None:
+        assert isinstance(request, RouteRequest)
+        return self.routes.get(request.shape)
+
+    def put(self, request: object, result: RouteResult) -> bool:
+        assert isinstance(request, RouteRequest)
+        self.routes[request.shape] = result
+        return True
+
+
+def test_a_route_already_drawn_is_done_at_once(made: list[RouteJobs]) -> None:
+    gate = Gate()
+    ends: list[tuple[str, RouteResult | None, float]] = []
+    kept = Kept()
+    jobs = RouteJobs(
+        Graphs(),
+        gate,
+        clock=Clock(),
+        on_end=lambda job, result, error, s: ends.append((job.job_id, result, s)),
+        store=kept,
+    )
+    made.append(jobs)
+    first = jobs.submit(REQUEST)
+    assert first.status == "queued"
+    gate.open()
+    wait_until(lambda: status(jobs, first.job_id) == "done")
+    wait_until(lambda: len(ends) == 1)
+    assert kept.routes == {"heart": RESULT}
+
+    # The same request again: no worker, no engine, the answer in the POST.
+    again = jobs.submit(REQUEST)
+    assert again.status == "done" and again.result == RESULT
+    assert again.job_id != first.job_id
+    assert gate.calls == 1
+    assert ends[1] == (again.job_id, RESULT, 0.0)
+    # Read and cancelled as any other job.
+    read = jobs.get(again.job_id)
+    assert read is not None and read.result == RESULT
+    assert jobs.cancel(again.job_id) is True
+
+
+def test_a_failed_route_is_not_kept(made: list[RouteJobs]) -> None:
+    gate = Gate(ShapeNotDrawableError("no heart here"))
+    kept = Kept()
+    jobs = RouteJobs(Graphs(), gate, clock=Clock(), store=kept)
+    made.append(jobs)
+    job = jobs.submit(REQUEST)
+    gate.open()
+    wait_until(lambda: status(jobs, job.job_id) == "failed")
+    assert kept.routes == {}
+
+
+def test_a_route_cancelled_while_drawn_is_kept_for_the_next(
+    made: list[RouteJobs],
+) -> None:
+    gate = Gate()
+    kept = Kept()
+    jobs = RouteJobs(Graphs(), gate, clock=Clock(), store=kept)
+    made.append(jobs)
+    job = jobs.submit(REQUEST)
+    wait_until(lambda: gate.calls == 1)
+    assert jobs.cancel(job.job_id) is True
+    gate.open()
+    wait_until(lambda: kept.routes == {"heart": RESULT})
+    assert jobs.submit(REQUEST).status == "done"

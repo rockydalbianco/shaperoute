@@ -49,6 +49,10 @@ Con `--request-log`, o con `SHAPEROUTE_REQUEST_LOG=1`, l'API scrive ogni
 richiesta di percorso in un file, per poterla rifare: «Registro delle
 richieste», più sotto. Senza, non scrive niente (è il default).
 
+Gli esempi di una città restano sul disco una volta disegnati, in
+`routes/` dentro la cartella dei grafi: «Gli esempi di una città, tenuti»,
+più sotto. `--no-route-store` li fa disegnare ogni volta.
+
 ## Endpoint
 
 ### `GET /health`
@@ -125,6 +129,61 @@ Le richieste vivono nella memoria dell'API: un riavvio le perde. Lavorano
 due alla volta, così un 15 km annullato non ferma la richiesta dopo; le due
 però si dividono il processore, quindi la seconda va più piano finché la
 prima non finisce.
+
+### Gli esempi di una città, tenuti (TASK-168, ADR-0136)
+
+In «Explore» ogni telefono chiede a una città le stesse tre cose: un
+cuore, un cerchio e una stella da 5 km dal suo centro. Il motore le
+disegna uguali ogni volta, una dopo l'altra. Dal TASK-168 un percorso
+disegnato **dal centro di una città** resta in un file
+(`shaperoute_api/route_store.py`), e la stessa richiesta riceve il job già
+`done`, con il `result`, **nella risposta al `POST /route-jobs`**: nessun
+thread di lavoro, nessun calcolo, niente da chiedere dopo. Il contratto non
+cambia: `202` e un `RouteJob`, che si legge e si annulla come gli altri.
+Aspetta solo il primo telefono in una città.
+
+- **Solo dal centro di una città.** Una richiesta porta la posizione di
+  chi la fa, e l'API non tiene la posizione di nessuno (ADR-0085,
+  ADR-0092): salvare tutti i percorsi è ADR-0086, nel database, con
+  TASK-092. I centri sono quelli che l'API stessa ha dato con `GET
+  /cities` e, per le sole città, con `GET /city-suggestions`; una partenza
+  è un centro quando cade nello stesso quadrato di circa 10 m (4 decimali,
+  come `cityKey` dell'app). Un percorso da qualsiasi altra partenza non
+  viene mai scritto, e il contorno di un'immagine nemmeno.
+- **La stessa richiesta**: stessa forma o parola, stile, distanza,
+  attività, stesso centro, **stesso motore**. Il nome del file viene da
+  un'impronta del codice del motore (`engine_fingerprint`: i `.py` e i
+  `.json` di `route_engine`): un motore cambiato ridisegna, senza
+  cancellare niente a mano.
+- **Dove**: `routes/` nella cartella dei grafi (`data/cache/routes/`), che
+  sul server è già una cartella tenuta fuori dal contenitore. Un file JSON
+  per percorso, circa 90 kB con le alternative e le indicazioni, e
+  `city-centres.txt` con i centri imparati. Al massimo 3000 percorsi (i
+  più vecchi escono) e 30 giorni: poi si ridisegna, perché la zona può
+  essere più nuova.
+- **Errori**: un percorso non riuscito non si tiene. Un file che non si
+  legge vale come non tenuto e si ridisegna; una cartella che non si può
+  scrivere lascia l'API com'era prima.
+- **Nel registro delle richieste e negli eventi** una risposta tenuta
+  compare come le altre, con 0 secondi.
+
+Per non far aspettare nemmeno il primo telefono, gli esempi si disegnano
+prima, chiedendo a un'API accesa quello che chiede l'app:
+
+```
+python -m shaperoute_api.draw_examples --api http://127.0.0.1:8000 Rovereto
+python -m shaperoute_api.draw_examples --api https://… --preset italy --preset featured
+```
+
+Una riga per città (`heart drawn, circle drawn, star kept`), una forma
+alla volta; la chiave dell'API, se serve, da `SHAPEROUTE_API_KEY`. Rifatto,
+passa in un attimo sulle città già tenute. Una città senza la zona sul
+disco dell'API la fa scaricare, come un telefono: per le zone di molte
+città c'è `prefetch_zones` (ADR-0119).
+
+Misurato sul Mac il 2026-10-02 (Trento, zona in cache, il Mac occupato da
+altri lavori): i tre esempi 10–14 s la prima volta, **0,0 s** la seconda,
+tutti e tre nella risposta al `POST`.
 
 ### Registro delle richieste (TASK-090, ADR-0085)
 
@@ -579,8 +638,8 @@ Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,
   `username`, `role` (`user` o `admin`) e `created_at`. Il token è l'unica
   cosa segreta che l'API dà, e solo qui: l'app lo tiene in
   `expo-secure-store` e lo rimanda come `Authorization: Bearer <token>` a
-  `GET /me`, `DELETE /session`, `DELETE /me` e agli endpoint che verranno
-  (la dipendenza `current_user` di `accounts.py`).
+  `GET /me`, `DELETE /session`, `DELETE /me`, ai preferiti (sotto) e agli
+  endpoint che verranno (la dipendenza `current_user` di `accounts.py`).
 - L'email si salva in minuscolo; la password da 8 a 128 caratteri; il nome
   da 3 a 20 fra lettere, cifre, `_` e `.`, unico senza badare alle
   maiuscole. `at_least_16` falso è `422 invalid_request` (ADR-0114, punto
@@ -595,6 +654,40 @@ Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,
   15 minuti per la stessa email, `429 too_many_requests` con `Retry-After`,
   anche con quella giusta. Il limite dei POST di `SHAPEROUTE_RATE_LIMIT`
   vale in più.
+
+### Favorites (TASK-171, ADR-0139)
+
+I percorsi che un account tiene. Tutti gli endpoint vogliono il token
+(`Authorization: Bearer <token>`): senza, `401 not_signed_in`; senza
+database, `503 accounts_unavailable`. Esempi in `shared-types`
+(`fixtures/favorites.json`, `favorite.json`, `favorite-request.json`); i
+tipi dell'app in `apps/mobile/src/api/favorites.ts`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /me/favorites` | l'elenco, dal più recente | `200` `{ "favorites": [...] }` |
+| `GET /me/favorites/{key}` | un preferito intero, con la linea | `200`, o `404 http_error` |
+| `PUT /me/favorites/{key}` | tenere un percorso | `201` la prima volta, poi `200` |
+| `DELETE /me/favorites/{key}` | toglierlo | `204`, anche se non c'era |
+
+- **`key`** la fa l'app dalla linea del percorso (`favoriteKey`: 16 cifre
+  esadecimali; l'API accetta da 8 a 40 fra minuscole e cifre): lo stesso
+  percorso ha la stessa chiave su ogni telefono, e tenerlo due volte lo
+  tiene una volta, com'era la prima (il secondo `PUT` non cambia niente).
+- **Il corpo del `PUT`**: `city` (una città del catalogo, il luogo cercato,
+  o vuota; al più 80 caratteri), `shape`, `word`, `style` (`round` o
+  `block`), `title` (il tema di un percorso a tema, «Image» per una foto; al
+  più 60), `distance_m` (chiesta), `route_m` (sulle strade), `similarity`
+  (0–1), `points` come `[lat, lon]`, da 2 a 20 000. Campi in più, punti
+  fuori dalla Terra o misure fuori scala: `422 invalid_request`.
+- **Un preferito dell'elenco** ha `id` (la chiave), gli stessi campi senza
+  `points`, `start`, `preview` (al più 64 punti, come i percorsi
+  consigliati) e `created_at`. Quello intero ha `points`, cifra per cifra
+  come sono stati mandati.
+- **Al massimo 200 per account**: oltre, `422 invalid_request` con un
+  messaggio che l'app mostra così com'è.
+- Ognuno vede solo i suoi: la chiave di un altro dà `404`. `DELETE /me`
+  cancella anche i preferiti.
 
 ## Eventi delle ricerche (TASK-130, ADR-0101)
 

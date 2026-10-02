@@ -118,6 +118,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `offsite` è in `main` dalla PR #167): manca che l'utente lo crei
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
+- **TASK-190 — Percorsi in bici** (ADR-0153): **parte A, il motore**, in
+  una PR sua (il merge è del coordinatore). La rete `bike`: ciclabili e
+  strade fino alle `primary`, i sentieri e i marciapiedi solo se segnati
+  come ciclabili, mai scale, `trunk`, autostrade né vie vietate alle bici;
+  i sensi unici valgono (contromano solo dove OSM lo apre alle bici, con
+  `oneway:bicycle=no` e simili); una cache sua, `bike_*`, accanto ai
+  `foot_*` che non cambiano; `cycling` di 10–30 km nel motore e nella CLI
+  (`--activity cycling`); lo sterrato è un warning. La corsa non cambia
+  (test di prima tutti verdi senza toccarli). **Non provata su una zona
+  vera**: Overpass rifiuta il Mac (un tentativo, 18:23Z); misure solo
+  sulle risposte a piedi già in cache, nell'ADR. Da fare: parte B (API,
+  `SUPPORTED_ACTIVITIES` e `shared-types`, le foto, le zone: a 30 km
+  servono 23 km di lato), i campioni da far giudicare all'utente, parte C
+  (app, con le due domande del task file). Fino alla parte B una richiesta
+  `cycling` all'API finisce in `engine_error`. Da dove riprendere: il task
+  file, «Esito».
 
 ## Completato
 

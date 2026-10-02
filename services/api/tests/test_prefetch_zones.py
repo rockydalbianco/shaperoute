@@ -10,9 +10,11 @@ from pathlib import Path
 import pytest
 from route_engine.geo import LatLon, local_to_latlon
 from route_engine.optimizer import FAR_OFFSET_M, SHAPE_POINTS, required_area, zone_area
-from route_engine.shapes import get_shape
+from route_engine.shapes import SUPPORTED_SHAPES, get_shape
 
+import shaperoute_api.prefetch_zones as prefetch_zones
 from shaperoute_api.prefetch_zones import (
+    BIKE_DISTANCE_M,
     EXAMPLE_DISTANCE_M,
     EXAMPLE_SHAPES,
     FEATURED,
@@ -20,6 +22,7 @@ from shaperoute_api.prefetch_zones import (
     MIN_FREE_BYTES,
     THEMED_DISTANCE_M,
     Outcome,
+    bike_zone_box,
     box_size_km,
     http_code,
     main,
@@ -251,3 +254,65 @@ def test_a_failed_download_says_its_http_status(tmp_path: Path) -> None:
     source.load = lambda bbox: (_ for _ in ()).throw(TooMany())  # type: ignore[method-assign]
     (outcome,) = run(source, ["Lucca"])
     assert outcome.detail == "the download failed (TooMany 429)"
+
+
+# --- bike zones (TASK-190, ADR-0153) ---
+
+
+def test_the_bike_box_holds_a_30_km_route_from_the_centre() -> None:
+    box = bike_zone_box(VERCELLI)
+    assert BIKE_DISTANCE_M == 30_000
+    for shape in SUPPORTED_SHAPES:
+        outline = get_shape(shape)(SHAPE_POINTS)
+        # With the far search, from the centre; without, a little off it.
+        far = zone_area(outline, VERCELLI, BIKE_DISTANCE_M, FAR_OFFSET_M)
+        assert holds(box, far), shape
+        for start in starts_on_circle(VERCELLI, 1_400.0):
+            assert holds(box, required_area(outline, start, BIKE_DISTANCE_M)), shape
+    # Shorter routes from farther out, with the far search.
+    circle = get_shape("circle")(SHAPE_POINTS)
+    for distance, radius in ((20_000, 3_400.0), (10_000, 6_900.0)):
+        for start in starts_on_circle(VERCELLI, radius):
+            assert holds(box, zone_area(circle, start, distance, FAR_OFFSET_M))
+    width, height = box_size_km(box)
+    assert 25 < width < 27 and 25 < height < 27
+    # Larger than a zone of "Explore", which does not hold it.
+    assert holds(box, zone_box(VERCELLI)) and not holds(zone_box(VERCELLI), box)
+
+
+def test_bike_zones_are_downloaded_without_street_names(tmp_path: Path) -> None:
+    source = Source(tmp_path)
+    options = {"box_of": bike_zone_box, "street_names": False}
+    (outcome,) = run(source, ["Vercelli"], **options)
+    assert outcome.status == "downloaded"
+    assert "Vercelli, Italy, 26 x 26 km" in outcome.detail
+    assert source.loaded == [bike_zone_box(VERCELLI)] and source.named == []
+    (again,) = run(source, ["Vercelli"], **options)
+    assert again.status == "ready"
+
+
+def test_the_command_takes_bike_zones_from_an_extract_only(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with pytest.raises(SystemExit):
+        main(["Trento", "--activity", "cycling"])
+    assert "--extract" in capsys.readouterr().err
+    asked: dict[str, object] = {}
+
+    def recorded(cities: list[str], source: object, find: object, **kw: object) -> list:
+        asked.update(kw, cities=cities, source=source)
+        return []
+
+    monkeypatch.setattr(prefetch_zones, "prefetch", recorded)
+    monkeypatch.setenv("GEOAPIFY_API_KEY", "a-key-of-the-tests")
+    argv = ["Trento", "--activity", "cycling", "--extract", "italy.osm.pbf"]
+    assert main([*argv, "--cache-dir", str(tmp_path)]) == 0
+    source = asked["source"]
+    assert source.network_name == "bike"  # type: ignore[attr-defined]
+    assert source.cache_dir == tmp_path  # type: ignore[attr-defined]
+    assert asked["box_of"] is bike_zone_box and asked["street_names"] is False
+    assert asked["zone_data"] is not None and asked["cities"] == ["Trento"]
+    # On foot, as before: the zones of "Explore", with the street names.
+    assert main(["Trento", "--cache-dir", str(tmp_path)]) == 0
+    assert asked["source"].network_name == "foot"  # type: ignore[attr-defined]
+    assert asked["box_of"] is zone_box and asked["street_names"] is True

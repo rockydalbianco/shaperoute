@@ -14,9 +14,13 @@
     "pumpkin",
     "christmas_tree"
   ],
-  "activities": ["running"],
+  "activities": ["running", "cycling"],
   "min_distance_m": 1000,
   "max_distance_m": 50000,
+  "distance_limits_m": {
+    "running": [1000, 50000],
+    "cycling": [10000, 30000]
+  },
   "letters": [
     "A",
     "B",

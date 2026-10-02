@@ -21,6 +21,7 @@ import jobFailed from "../fixtures/route-job-failed.json" with { type: "json" };
 import jobRunning from "../fixtures/route-job-running.json" with { type: "json" };
 import jobStatuses from "../fixtures/route-job-statuses.json" with { type: "json" };
 import alternativeLimits from "../fixtures/route-alternatives.json" with { type: "json" };
+import cyclingRequest from "../fixtures/route-request-cycling.json" with { type: "json" };
 import penUpRequest from "../fixtures/route-request-pen-up.json" with { type: "json" };
 import wordRequest from "../fixtures/route-request-word.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
@@ -37,6 +38,7 @@ import trackWalksRequest from "../fixtures/track-score-request-walks.json" with 
 import {
   ACTIVITIES,
   API_ERROR_CODES,
+  DISTANCE_LIMITS_M,
   EDIT_REASONS,
   GROUP_M,
   IMAGE_REASONS,
@@ -87,6 +89,8 @@ const requestFields: Same<keyof typeof request, keyof OlderRequest> = true;
 const resultFields: Same<keyof typeof result, keyof OlderResult> = true;
 const wordFields: Same<keyof typeof wordRequest, keyof OlderRequest> &
   Same<keyof typeof wordResult, keyof OlderResult> = true;
+// A bike route (TASK-190): the same fields, another activity.
+const cyclingFields: Same<keyof typeof cyclingRequest, keyof OlderRequest> = true;
 const penUpFields: Same<keyof typeof penUpRequest, keyof RouteRequest> &
   Same<keyof typeof penUpResult, keyof RouteResult> = true;
 const trackFields: Same<
@@ -161,7 +165,7 @@ test("the fixtures have the fields of the types", () => {
   assert.ok(requestFields && resultFields && errorFields && errorDetailFields);
   assert.ok(jobFields && jobResultFields && jobErrorFields && gpxFields);
   assert.ok(shapeReadingFields && directionFields && wordFields);
-  assert.ok(penUpFields && trackFields);
+  assert.ok(penUpFields && trackFields && cyclingFields);
 });
 
 /** Whether `walks` are stretches of a route of `count` points, in order. */
@@ -235,6 +239,8 @@ test("shapes, activities and distance limits match the route engine", () => {
   assert.deepEqual([...ACTIVITIES], contract.activities);
   assert.equal(MIN_DISTANCE_M, contract.min_distance_m);
   assert.equal(MAX_DISTANCE_M, contract.max_distance_m);
+  assert.deepEqual(DISTANCE_LIMITS_M, contract.distance_limits_m);
+  assert.deepEqual(Object.keys(DISTANCE_LIMITS_M), [...ACTIVITIES]);
   assert.deepEqual([...LETTERS], contract.letters);
   assert.equal(MAX_WORD_LETTERS, contract.max_word_letters);
   assert.equal(LETTER_DISTANCE_M, contract.letter_distance_m);
@@ -248,6 +254,18 @@ test("a request has a shape or a word, and a word the letters it may use", () =>
   assert.ok(letters.length <= MAX_WORD_LETTERS);
   assert.ok([...letters].every((c) => (LETTERS as readonly string[]).includes(c)));
   assert.ok(wordRequest.distance_m >= letters.length * LETTER_DISTANCE_M);
+});
+
+test("a cycling request is a request with the bike's distances", () => {
+  // TASK-190: the activity is the only difference, and the limits its own.
+  assert.ok((ACTIVITIES as readonly string[]).includes(cyclingRequest.activity));
+  assert.equal(cyclingRequest.activity, "cycling");
+  const [lowest, highest] = DISTANCE_LIMITS_M.cycling;
+  assert.ok(
+    lowest <= cyclingRequest.distance_m && cyclingRequest.distance_m <= highest,
+  );
+  assert.ok(isShape(cyclingRequest.shape));
+  assert.deepEqual(DISTANCE_LIMITS_M.running, [MIN_DISTANCE_M, MAX_DISTANCE_M]);
 });
 
 test("a result names its shape or its word", () => {

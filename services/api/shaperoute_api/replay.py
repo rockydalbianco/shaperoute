@@ -18,12 +18,10 @@ from typing import Any
 
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.models import RouteResult
-from route_engine.network import OsmnxSource
-from route_engine.optimizer import GraphLoader
 
+from shaperoute_api.activity_graphs import ActivityGraphs, Graphs, source_for
 from shaperoute_api.app import now_utc, to_request
 from shaperoute_api.errors import error_of
-from shaperoute_api.graphs import ZoneGraphs
 from shaperoute_api.images import AnyRequest, plan_request
 from shaperoute_api.jobs import Planner
 from shaperoute_api.request_log import (
@@ -45,9 +43,11 @@ def request_of(entry: Entry) -> AnyRequest:
 
 
 def replay(
-    entry: Entry, source: GraphLoader, planner: Planner = plan_request
+    entry: Entry, source: Graphs, planner: Planner = plan_request
 ) -> RouteResult:
-    plan = planner(request_of(entry), source)
+    request = request_of(entry)
+    # On the network of its activity, as the API drew it (TASK-190).
+    plan = planner(request, source_for(source, request.activity))
     return replace(plan.result, alternatives=[o.result for o in plan.alternatives])
 
 
@@ -143,7 +143,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def main(
     argv: Sequence[str] | None = None,
-    source: GraphLoader | None = None,
+    source: Graphs | None = None,
     planner: Planner = plan_request,
 ) -> None:
     args = parse_args(argv)
@@ -157,12 +157,14 @@ def main(
         return
     entry = choose(entries, args.job, args.line)
     print(f"Recorded: {describe(entry)}")
-    graphs = source or ZoneGraphs(OsmnxSource(args.cache_dir))
+    graphs = source or ActivityGraphs.from_cache(args.cache_dir)
     started = time.perf_counter()
     try:
         result = replay(entry, graphs, planner)
     except Exception as exc:
-        now = outcome_of(None, error_of(exc)[1], time.perf_counter() - started)
+        activity = str(entry["request"].get("activity", "running"))
+        detail = error_of(exc, activity)[1]
+        now = outcome_of(None, detail, time.perf_counter() - started)
         print(f"          {exc}")
     else:
         now = outcome_of(result, None, time.perf_counter() - started)

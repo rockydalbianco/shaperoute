@@ -8,6 +8,7 @@ from typing import Any
 
 from route_engine.alternatives import MAX_ALTERNATIVES
 from route_engine.models import (
+    DISTANCE_LIMITS_M,
     MAX_DISTANCE_M,
     MIN_DISTANCE_M,
     SUPPORTED_ACTIVITIES,
@@ -86,11 +87,26 @@ def test_shapes_activities_and_limits_match() -> None:
         "activities": list(SUPPORTED_ACTIVITIES),
         "min_distance_m": MIN_DISTANCE_M,
         "max_distance_m": MAX_DISTANCE_M,
+        # Those of each activity of the contract (TASK-190).
+        "distance_limits_m": {
+            activity: list(DISTANCE_LIMITS_M[activity])
+            for activity in SUPPORTED_ACTIVITIES
+        },
         "letters": sorted(ALPHABET),
         "max_word_letters": MAX_WORD_LETTERS,
         "letter_distance_m": LETTER_DISTANCE_M,
         "styles": list(STYLES),
     }
+
+
+def test_a_cycling_request_is_a_request_with_the_bike_limits() -> None:
+    # TASK-190: the same fields, another activity, within its own limits.
+    data = _load("route-request-cycling.json")
+    assert set(data) == _names(RouteRequest) - PEN_UP
+    request = RouteRequest(**{**data, "start": tuple(data["start"])})
+    assert request.activity == "cycling"
+    low, high = DISTANCE_LIMITS_M["cycling"]
+    assert low <= request.distance_m <= high
 
 
 def test_alternatives_have_the_engine_limit_and_the_result_fields() -> None:

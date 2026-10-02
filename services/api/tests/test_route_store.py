@@ -117,6 +117,24 @@ def test_another_request_is_another_route(tmp_path: Path) -> None:
     assert len(kept) == 2
 
 
+def test_a_bike_route_is_kept_apart_from_the_run(tmp_path: Path) -> None:
+    # TASK-190: the same shape from the same centre, by bike, is another
+    # route, and the run keeps the file it had.
+    kept = store(tmp_path)
+    kept.learn([ROVERETO])
+    run = replace(HEART, distance_m=10_000)
+    ride = replace(run, activity="cycling")
+    assert kept.put(run, RESULT)
+    run_files = sorted(tmp_path.glob("*.json"))
+    assert kept.get(ride) is None
+    bike = replace(RESULT, distance_m=10_200.0, alternatives=[])
+    assert kept.put(ride, bike)
+    assert kept.get(ride) == bike
+    assert kept.get(run) == RESULT
+    assert len(kept) == 2
+    assert set(run_files) < set(tmp_path.glob("*.json"))
+
+
 def test_a_new_engine_draws_again(tmp_path: Path) -> None:
     old = store(tmp_path, engine="engine-a")
     old.learn([ROVERETO])

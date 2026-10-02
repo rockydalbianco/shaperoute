@@ -222,6 +222,27 @@ def test_the_api_passes_the_pen_up_on_and_answers_its_walks() -> None:
     assert asked[0].pen_up and asked[0].word == "io"
 
 
+def test_the_api_passes_a_cycling_request_on_to_the_engine() -> None:
+    # TASK-190: the same fields as a run, "cycling" for the activity.
+    request = _load("route-request-cycling.json")
+    assert set(request) == _names(RouteRequestBody) - PEN_UP
+    assert RouteRequestBody.model_validate(request).activity == "cycling"
+    data = _load("route-result.json")
+    result = RouteResult(
+        **{**data, "points": [tuple(p) for p in data["points"]], "alternatives": []}
+    )
+    asked: list[RouteRequest] = []
+
+    def planner(request: RouteRequest, source: GraphLoader) -> Plan:
+        asked.append(request)
+        return Plan(result=result, search=None)
+
+    app = create_app(FileSource(FIXTURES / "unused.graphml"), planner=planner)
+    response = TestClient(app).post("/routes", json=request)
+    assert response.status_code == 200, response.json()
+    assert asked[0].activity == "cycling" and asked[0].distance_m == 20_000
+
+
 def test_image_fixtures_are_valid_bodies() -> None:
     # TASK-073, ADR-0069: the outline of an image, its route, its refusal.
     request = _load("image-outline-request.json")

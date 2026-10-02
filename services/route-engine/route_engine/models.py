@@ -16,9 +16,10 @@ from route_engine.words import (
 )
 
 # The activities of the contract, what the API and the app offer:
-# packages/shared-types mirrors them (ADR-0028). "cycling" joins them with
-# the API's part of TASK-190, together with its mirror (ADR-0153).
-SUPPORTED_ACTIVITIES: tuple[str, ...] = ("running",)
+# packages/shared-types mirrors them (ADR-0028). "cycling" joined them with
+# the API's part of TASK-190 (ADR-0153); an activity the engine draws joins
+# them only when the API gives it its network.
+SUPPORTED_ACTIVITIES: tuple[str, ...] = ("running", "cycling")
 
 # Plausible target distances for running, in metres.
 MIN_DISTANCE_M = 1_000

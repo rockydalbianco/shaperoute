@@ -60,7 +60,8 @@ class ImageRequest:
 
     def __post_init__(self) -> None:
         check_start(self.start)
-        check_distance(self.distance_m)
+        # The limits of its activity: 10-30 km by bike (TASK-190).
+        check_distance(self.distance_m, self.activity)
         check_activity(self.activity)
 
     @property
@@ -171,12 +172,14 @@ def image_job(request: ImageRequest) -> ShapeJob:
     """The route of an image's outline, as the CLI's --image plans it: kept
     upright (ADR-0038), from any start. The nearby starts give an image its
     alternatives too (TASK-093, the user's choice), and may find a better
-    route than the start's own, as for a shape (ADR-0071)."""
+    route than the start's own, as for a shape (ADR-0071). On the network
+    of its activity (TASK-190)."""
     return ShapeJob(
         tuple(request.outline(SHAPE_POINTS)),
         IMAGE_NAME,
         request.distance_m,
         max_tilt_deg=tilt_limit(IMAGE_NAME),
+        activity=request.activity,
     )
 
 

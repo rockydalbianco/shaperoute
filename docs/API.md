@@ -142,6 +142,15 @@ thread di lavoro, nessun calcolo, niente da chiedere dopo. Il contratto non
 cambia: `202` e un `RouteJob`, che si legge e si annulla come gli altri.
 Aspetta solo il primo telefono in una città.
 
+Dal TASK-176 (ADR-0144) l'app chiede il **cerchio per primo**, poi
+cuore e stella, e dopo altre cinque forme da 5 km dallo stesso centro:
+luna, cavallo, lumaca, testa di cane, testa di coniglio. Sono richieste
+come le altre, una alla volta, e restano allo stesso modo. Il cerchio va
+per primo perché la sua zona contiene quella di tutte le altre forme: una
+città senza zona ne scarica una sola. `draw_examples` chiede le prime tre
+nello stesso ordine (`EXAMPLE_SHAPES` in `prefetch_zones.py`); le altre
+cinque non le disegna, e restano dal primo telefono che le chiede.
+
 - **Solo dal centro di una città.** Una richiesta porta la posizione di
   chi la fa, e l'API non tiene la posizione di nessuno (ADR-0085,
   ADR-0092): salvare tutti i percorsi è ADR-0086, nel database, con
@@ -175,7 +184,7 @@ python -m shaperoute_api.draw_examples --api http://127.0.0.1:8000 Rovereto
 python -m shaperoute_api.draw_examples --api https://… --preset italy --preset featured
 ```
 
-Una riga per città (`heart drawn, circle drawn, star kept`), una forma
+Una riga per città (`circle drawn, heart drawn, star kept`), una forma
 alla volta; la chiave dell'API, se serve, da `SHAPEROUTE_API_KEY`. Rifatto,
 passa in un attimo sulle città già tenute. Una città senza la zona sul
 disco dell'API la fa scaricare, come un telefono: per le zone di molte
@@ -638,8 +647,9 @@ Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,
   `username`, `role` (`user` o `admin`) e `created_at`. Il token è l'unica
   cosa segreta che l'API dà, e solo qui: l'app lo tiene in
   `expo-secure-store` e lo rimanda come `Authorization: Bearer <token>` a
-  `GET /me`, `DELETE /session`, `DELETE /me`, ai preferiti (sotto) e agli
-  endpoint che verranno (la dipendenza `current_user` di `accounts.py`).
+  `GET /me`, `DELETE /session`, `DELETE /me`, ai preferiti e alle corse
+  (sotto) e agli endpoint che verranno (la dipendenza `current_user` di
+  `accounts.py`).
 - L'email si salva in minuscolo; la password da 8 a 128 caratteri; il nome
   da 3 a 20 fra lettere, cifre, `_` e `.`, unico senza badare alle
   maiuscole. `at_least_16` falso è `422 invalid_request` (ADR-0114, punto
@@ -688,6 +698,79 @@ tipi dell'app in `apps/mobile/src/api/favorites.ts`.
   messaggio che l'app mostra così com'è.
 - Ognuno vede solo i suoi: la chiave di un altro dà `404`. `DELETE /me`
   cancella anche i preferiti.
+
+### My activities (TASK-172, ADR-0140)
+
+Le corse che un account ha registrato, con un percorso o senza. Tutti gli
+endpoint vogliono il token: senza, `401 not_signed_in`; senza database,
+`503 accounts_unavailable`. Esempi in `shared-types`
+(`fixtures/activities.json`, `activity.json`, `activity-request.json`); i
+tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
+`activities.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /me/activities` | una pagina dell'elenco, dalla corsa più recente | `200` `{ "activities": [...], "next": …, "total": … }` |
+| `GET /me/activities/{key}` | una corsa intera, con le due linee | `200`, o `404 http_error` |
+| `PUT /me/activities/{key}` | salvare una corsa | `201` la prima volta, poi `200` |
+| `DELETE /me/activities/{key}` | cancellarla | `204`, anche se non c'era |
+
+- **`key`** la fa l'app dall'inizio della traccia (`activityKey`: 16 cifre
+  esadecimali dall'orario e dal punto della prima posizione; l'API accetta
+  da 8 a 40 fra minuscole e cifre): la stessa corsa mandata due volte è
+  salvata una volta, com'era la prima (il secondo `PUT` risponde `200` e
+  non cambia niente, nemmeno se il corpo è diverso).
+- **Il corpo del `PUT`** è la corsa come il telefono l'ha registrata:
+  `track`, le posizioni in ordine come per `POST /track-scores` (`point`,
+  `time_ms` sull'orologio del telefono, `accuracy_m`), da 2 a 20 000;
+  `pauses`, i tratti che non sono della corsa (`from_ms`, `to_ms`, `auto`:
+  vero se l'app si è fermata da sola perché il corridore era fermo, falso
+  se l'ha chiesto lui), al più 1 000, anche nessuna; `points` e
+  `similarity`, il percorso seguito e la sua somiglianza (`RouteResult`),
+  tutti e due o tutti e due `null` per una corsa senza percorso; `shape`,
+  `word`, `style`, `title`: cosa disegna il percorso, come nei preferiti.
+- **Km, tempo e punteggio li conta l'API**, e l'app non li può mandare
+  (`distance_m`, `duration_s`, `score` nel corpo sono `422`):
+  - la traccia tenuta è quella **pulita dal motore** (`clean_track`,
+    ADR-0090): senza le posizioni troppo incerte, ripetute o che nessun
+    corridore raggiunge. Con meno di 2 posizioni buone la corsa non si
+    salva: `422 invalid_request`, «This run cannot be saved: …»;
+  - `distance_m` è la lunghezza di quella traccia, in metri interi, senza
+    il passo a cavallo di una pausa chiesta dal corridore (dove sia stato
+    nella pausa non è corsa); una pausa `auto` non toglie metri;
+  - `duration_s` è il tempo dalla prima all'ultima posizione tenuta, meno
+    le pause (una volta sola dove due si sovrappongono), in secondi interi;
+  - `score` e `fidelity` sono quelli di `track_score.py` contro `points`,
+    come `POST /track-scores`; `null` senza percorso, e `null` anche quando
+    la corsa è troppo corta per essere giudicata (si salva lo stesso);
+  - `started_at` è l'orario della prima posizione tenuta. Un orario prima
+    del 2020 o oltre domani non è un orologio: `422 invalid_request`.
+- **`place`** è il nome del paese da cui la corsa parte («Trento»), o
+  `null`. L'API lo chiede al geocoding inverso di Geoapify, con la chiave
+  della ricerca dei luoghi (`GEOAPIFY_API_KEY`), per la partenza
+  **arrotondata a due decimali** (circa un chilometre): il servizio non
+  riceve mai il punto vero. Senza chiave, se il servizio non risponde o se
+  lì non c'è un paese, `null`, e la corsa si salva lo stesso. Le risposte
+  restano in memoria: due corse dallo stesso chilometro chiedono una volta.
+- **Una corsa dell'elenco** ha `id` (la chiave), `started_at`, `place`,
+  `shape`, `word`, `style`, `title`, `distance_m`, `duration_s`, `score`,
+  `fidelity`, e due anteprime leggere, al più 64 punti l'una:
+  `route_preview` (`null` senza percorso) e `track_preview`. Quella intera
+  ha al loro posto `points` (o `null`), `track` (la traccia pulita, come
+  `[lat, lon]`) e `similarity`.
+- **Le pagine**: `GET /me/activities?limit=20&cursor=…`, `limit` da 1 a
+  50. `next` è il `cursor` della pagina dopo, `null` all'ultima; `total` è
+  il numero di tutte le corse dell'account, su ogni pagina. L'ordine è
+  l'inizio della corsa, dalla più recente, non il momento in cui è stata
+  mandata: una corsa rimasta sul telefono senza rete va al suo posto. Il
+  cursore è un punto in quell'ordine, non una riga: due pagine di seguito
+  non ripetono e non saltano corse nemmeno se nel frattempo una è stata
+  cancellata o salvata. Un cursore o un `limit` che non lo sono: `422`.
+- **Al massimo 2 000 per account**: oltre, `422 invalid_request` con un
+  messaggio che dice di cancellarne una.
+- Ognuno vede, apre e cancella solo le sue: la chiave di un altro dà `404`.
+  `DELETE /me` cancella anche le corse. Niente di una corsa è pubblico:
+  titolo, «Public» e traccia tagliata arrivano con TASK-117.
 
 ## Eventi delle ricerche (TASK-130, ADR-0101)
 

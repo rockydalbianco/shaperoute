@@ -137,8 +137,9 @@ type FinishProps = {
   run: FreeRun;
   /** Goes back to the run, when its track can still go on. */
   onResume?: () => void;
-  /** Leaves the screen, and the run with it. */
-  onDone: () => void;
+  /** Leaves the screen, and the run with it. Absent when the way out is
+   * not the card's: «Save» and «Discard», under it (TASK-172). */
+  onDone?: () => void;
 };
 
 export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
@@ -164,9 +165,11 @@ export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
             <Text style={styles.buttonText}>Keep running</Text>
           </Pressable>
         )}
-        <Pressable style={styles.button} onPress={onDone} accessibilityRole="button">
-          <Text style={styles.buttonText}>Done</Text>
-        </Pressable>
+        {onDone && (
+          <Pressable style={styles.button} onPress={onDone} accessibilityRole="button">
+            <Text style={styles.buttonText}>Done</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );

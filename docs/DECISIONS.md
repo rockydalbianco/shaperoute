@@ -1921,6 +1921,85 @@ Un'app più vecchia dell'API non conosce le forme nuove: se l'AI risponde
 aggiornano insieme, come oggi dallo stesso checkout. Le tessere sono undici:
 tre righe da quattro, l'ultima con tre.
 
+## ADR-0063 — Lettere unite anche dalla cima: tre regole di lettura, la parola più corta
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente nel giudizio di
+TASK-059 (2026-09-25: «anche connetterle dalla cima», se non confonde o
+aiuta); formato, regole e scelta decisi dall'agente su delega dell'utente
+(TASK-067); accese per difetto in tutti e due gli stili per scelta
+dell'utente (2026-10-02)
+
+**Contesto**: ogni lettera entra ed esce sulla base, e le unioni si corrono
+due volte. U, V, W, Y e T toccano la base a metà: l'unione passa sotto
+mezza lettera, mentre in cima hanno un angolo sul bordo. A pari chilometri
+una parola più corta dà lettere più alte, e lettere più basse si leggono
+peggio (ADR-0067). Le misure sono in `docs/tasks/TASK-067.md`.
+
+**Decisione**:
+- **Il formato**: una lettera che si può unire in cima lo dichiara in
+  `letters.json` e `letters_block.json` con `"top": {"in": [x, 1], "out":
+  [x, 1]}`, uno o tutti e due. Il task chiedeva per ogni ingresso e uscita
+  i suoi `out` e `back` scritti a mano; li ricava invece il motore
+  (`Letter.route`) dalla linea chiusa che la lettera ha già, cominciata
+  dall'ingresso e tagliata all'uscita. La lettera è per costruzione la
+  stessa, corsa lo stesso numero di volte, e non ci sono 150 linee in più
+  da tenere uguali a mano. Ne segue che la lunghezza delle lettere non
+  cambia mai: una coppia si accorcia solo per lo spazio.
+- **Tre regole di lettura**, controllate da `parse_letters` sull'alfabeto
+  (un `top` che ne viola una è rifiutato), ognuna con un test e una coppia
+  che la viola:
+  1. un'unione in cima non allunga un tratto che finisce sulla cima (la
+     sbarra della T, il braccio alto di E, F, Z e delle C, G, S squadrate):
+     «TU», «EH», «CH» squadrata restano sulla base. Era la regola già
+     scritta nel task, sul modello di ADR-0056;
+  2. un'unione in cima non passa sopra la lettera, entra dal bordo sinistro
+     ed esce dal destro: «PU» resta sulla base. Sotto la lettera la linea è
+     il rigo; sopra è un tratto in più;
+  3. una lettera che tocca la cima in un punto solo non si unisce lì: «VI»
+     e «UL» restano sulla base. La I fra due unioni in cima è una T («VIVA»
+     si legge «VTVA»); con la cima da un lato e la base dall'altro la I e
+     la L sono un gradino, il caso che il task chiedeva di guardare.
+- **Cima da un lato e base dall'altro è permesso** alle lettere che passano
+  le tre regole (H, M, N, U, V, W, X, Y…): hanno due punti in cima e
+  restano loro stesse (la V di «UVA»).
+- **La scelta** (`choose_joins`): ogni spazio tutto sulla base o tutto in
+  cima; fra le combinazioni permesse, al più 128, la parola più corta; a
+  pari lunghezza meno unioni in cima, poi la base per prima. Deterministica.
+- **Accese per difetto in tutti e due gli stili** (`words.TOP_JOINS`),
+  scelta dell'utente. Sui campioni l'utente ha preferito il percorso di
+  oggi in tutti e sette i casi giudicati (unioni in cima: 5 «no», 2
+  «quasi», nessun «sì») e ha detto che le tre regole vanno bene; nella
+  scelta finale ha chiesto di accenderle per tonde e squadrate, e
+  interpellato sulla differenza fra le due risposte ha confermato
+  «accendi in cima». `compose` e `plan_route` hanno `top_joins`,
+  `measure_words.py` ha `--no-top-joins`: con le unioni spente ogni parola
+  è identica a prima, punto per punto (test). API, `shared-types` e app
+  non cambiano.
+- **La scala per lettera non si fa**: era l'altra metà della richiesta del
+  2026-09-25, che ADR-0056 rimanda qui. L'utente la lascia fuori
+  (2026-10-02), perché lettere più piccole si leggono peggio (ADR-0067).
+
+**Alternative scartate**: `out` e `back` scritti a mano per ogni ingresso e
+uscita (sopra); i punti in cima dedotti dalla geometria senza dichiararli
+(togliere una lettera dopo il giudizio dell'utente vorrebbe codice, non una
+riga dell'alfabeto); unire anche la I e la T, che danno quasi tutto il
+guadagno senza regole («TUTTI» −16,6%, «VIVA» −6,3%) ma cambiano la
+parola; unioni a metà altezza o in diagonale (fuori scope).
+
+**Conseguenze**: con le regole si accorciano solo le coppie in cui una
+lettera è U, V, W o Y (tonde), P, U, V o Y (squadrate), e l'altra arriva in
+cima con un angolo: 68 coppie tonde e 87 squadrate su 676. Delle sette
+parole misurate cambia solo «UVA» (−7,4% tonda, −8,6% squadrata); «NUVOLA»
+−5,2%, «LUNA» −2,6%. Le altre parole restano identiche. Sulle strade le
+lettere non vengono sempre più alte: su nove campioni a 15 km lo sono in
+cinque, e sempre per «UVA» squadrata (`docs/tasks/TASK-067.md`). La ricerca
+non dura di più. `nearby_starts.py`, la CLI e `seed_catalog.py`
+compongono la parola con il predefinito dello stile, quindi le seguono
+senza altre modifiche. L'app pubblicata le vede quando l'API sul server è
+aggiornata (`DEPLOY.md` F.12, con l'ok dell'utente). Le parole già nel
+catalogo restano com'erano finché non si ridisegnano: fra quelle di oggi
+cambierebbe solo «NYC» tonda. Per tornare indietro basta `TOP_JOINS` a
+`False`.
+
 ## ADR-0064 — La barra stima una parola dalle sue lettere
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente
 (TASK-069)
@@ -4730,6 +4809,16 @@ scrive anche `android.package` in `app.json` e cambia due script di
 schermata finché i dati sono pronti vorrebbe `preventAutoHide` in `App.tsx`:
 un task a parte, se servirà.
 
+**Aggiornamento 2026-10-02 (TASK-181)** — **scelta dell'utente** («sì, fai
+gialla anche la schermata di avvio nativa»): il fondo è `#FFD02B`, il
+giallo `accent`, e le immagini sono nere: `assets/splash-logo-dark.png` su
+iOS e `assets/splash-icon-dark.png` su Android, le stesse di prima con ogni
+pixel a `#0A0A0B`. Larghezze invariate (260 e 240). Le due immagini gialle
+sono cancellate: niente le usa più. Così l'avvio è giallo dall'inizio alla
+fine, schermata nativa e animazione (ADR-0147). Il prebuild di iOS genera
+`SplashScreenBackground` a 255, 208, 43 e il logo nero di 260 × 260 al
+centro.
+
 ## ADR-0130 — Nel catalogo solo parole corte
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («Solo parole
 corte»); l'elenco preciso deciso dall'agente su delega dell'utente
@@ -5176,6 +5265,20 @@ due corse: conto alla rovescia, «Map», «Data», pausa a mano e da sola,
 splits. Lo swipe col dito e «Stop» tenuto premuto no (il simulatore non si
 poteva toccare): restano per l'iPhone.
 
+**Aggiornamento 2026-10-02 (TASK-186)**: **scelta dell'utente** per il
+cosa («ingrandiscimi pulsante map e data sotto»); il come deciso
+dall'agente su delega dell'utente. «Map» e «Data» erano due scritte da 13
+punti con un trattino sotto, larghe quanto la parola. Ora sono due
+pulsanti che si dividono la larghezza della scheda, alti 56 punti
+(`MIN_TAP_SIZE` più un passo), con la scritta da 16 in grassetto; la pagina
+aperta ha la superficie più chiara e il bordo, come `Segmented` nel resto
+dell'app. Restano due `tab` per VoiceOver. Scartati: il giallo per la
+pagina aperta (è del percorso); solo la scritta più grande (il bersaglio
+del dito restava stretto); riusare `Segmented` (i suoi pulsanti sono
+`button`, e la sua altezza serve ad altre schermate). Conseguenza: la
+scheda sotto la mappa è più alta di circa 36 punti, tolti alla mappa. Visto in
+un simulatore con un GPS simulato, sulle due pagine.
+
 ## ADR-0139 — «Favorites»: una copia del percorso, legata all'account
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («mettere
 nei preferiti i percorsi che gli utenti vedono», con la voce «Favorites» nel
@@ -5421,3 +5524,393 @@ nativa è nera con il logo giallo e poi arriva il giallo: farla gialla è
 una riga di `app.json`, lasciata all'utente. La barra di stato resta
 chiara sul giallo: la decide `App.tsx`. Chi ha «Riduci movimento» vede la
 stessa animazione.
+
+**Aggiornamento 2026-10-02 (TASK-181)**, deciso dall'agente su delega
+dell'utente dopo la sua scelta della schermata nativa gialla (ADR-0134,
+aggiornamento):
+- **L'animazione parte già gialla.** Il fondo è `accent` dal primo
+  fotogramma e il cerchio che riempiva lo schermo dal nero non c'è più:
+  dopo una schermata nativa gialla sarebbe stato giallo, nero, giallo. I
+  0,35 s restano come attesa della penna sul punto di partenza; il giallo
+  si vede sempre 2,4 secondi. Il logo è `splash-logo-dark.png`, senza
+  `tintColor`.
+- **Attesa e disegno sono una sola animazione nativa**, che parte al primo
+  fotogramma (`penProgress`: ferma per l'attesa, poi il disegno). Filmando
+  con il Mac molto carico, il disegno partiva in ritardo: fra l'attesa e il
+  disegno serviva un passaggio dal JavaScript, occupato ad avviare l'app,
+  mentre il timer dell'uscita scattava puntuale e la dissolvenza tagliava
+  il cuore a metà. Era così anche nella versione pubblicata di TASK-179.
+- **L'uscita segue la fine del disegno**: il cuore finito resta 0,45 s, e
+  comunque l'animazione non dura meno di 2,4 s (con le animazioni spente
+  il disegno finisce subito). Il timer da solo è scartato per il motivo
+  qui sopra; la sola fine del disegno era già scartata.
+
+Resta com'era: il logo passa dal centro (schermata nativa) a sotto il cuore
+con un salto. Si giudica in una build propria.
+
+## ADR-0140 — «My activities»: «Save» a fine corsa, e i numeri della corsa li conta l'API
+**Stato**: Attiva · 2026-10-02 · **scelte dell'utente** per il cosa («le
+mie attività con tutte le attività che hanno registrato, con lo storico:
+data, ora, posizione e l'anteprima di cosa aveva disegnato»; senza account
+resta com'è, con una riga che invita a entrare; il luogo lo trova l'API);
+il come deciso dall'agente su delega dell'utente (TASK-172).
+
+**Scelta nuova dell'utente, lo stesso giorno** (riferita dal coordinatore
+da un'altra sessione): «quando termino l'attività devi salvarmi l'attività
+in activity sul mio profilo, e prima mi fai comparire una nuova schermata
+nella quale mi dici salva, cancella, invia a Strava». Quindi **la corsa
+non si salva più da sola**, com'era nella prima scelta («sì a tutte e
+tre»): a fine corsa «Save» e «Discard», e solo «Save» la mette in «My
+activities». «Send to Strava» è un task a parte (TASK-187), da chiedere
+all'utente: ADR-0138 aveva tolto Strava dall'app.
+
+**Contesto**: una corsa finita si perdeva: il telefono la teneva solo
+finché non aveva il punteggio (ADR-0093), e quella senza percorso fino a
+«Done» (ADR-0122). L'utente vuole ritrovarle nel profilo. È la metà
+privata di TASK-117 («salvare un disegno»): titolo, «Public» e traccia
+tagliata restano là.
+
+**Decisione**:
+- **La tabella `runs`** (migrazione `0003`), una riga per corsa, solo del
+  proprietario. Tiene il percorso seguito (o nessuno), cosa disegnava, la
+  traccia, le pause, l'inizio, km, tempo, punteggio e luogo.
+- **L'app manda la corsa com'è stata registrata**, posizione per
+  posizione con le pause; **km, tempo e punteggio li conta l'API** e l'app
+  non li può nemmeno mandare (campi in più: `422`). Il punteggio è quello
+  di `track_score.py` (ADR-0090), come `POST /track-scores`; la traccia
+  tenuta è quella pulita dal motore (`clean_track`), non la grezza. Così
+  un numero in «My activities» non dipende dalla versione dell'app che ha
+  corso, e TASK-117 potrà pubblicarlo senza fidarsi del telefono.
+- **Le pause sono nel contratto** (`pauses`, da TASK-169, ADR-0137): il
+  tempo le toglie tutte; i metri tolgono solo il passo a cavallo di una
+  pausa chiesta dal corridore, come fa l'app (`gap`). M della traccia sono
+  i secondi dalla prima posizione, pause comprese, e le pause stanno
+  accanto in `jsonb`: dalla riga si rifà l'orario di ogni punto.
+- **Una corsa troppo corta per il punteggio si salva lo stesso**, senza
+  punteggio; con meno di due posizioni buone non si salva. Non c'è una
+  lunghezza minima: con «Save» e «Discard» lo decide chi ha corso.
+- **La chiave la fa l'app dalla prima posizione** (`activityKey`: orario e
+  punto), come per i preferiti la fa dalla linea: `PUT` due volte salva una
+  volta, e resta la prima. Dall'inizio e non da tutta la traccia perché una
+  corsa ripresa è la stessa corsa.
+- **Il luogo**: geocoding inverso di Geoapify, con la chiave che l'API ha
+  già, per la partenza **arrotondata a due decimali** (circa 1 km), come la
+  ricerca dei luoghi fa con `near` (ADR-0095). Chiesto una volta, al
+  salvataggio; se non arriva, la corsa non ha luogo. Il servizio non vede
+  la porta di casa, e l'API non scrive posizioni nel log (ADR-0092).
+- **L'elenco a pagine con cursore** sull'ordine `(inizio, id)`, dalla più
+  recente, 20 per volta, con il totale: cancellare o salvare fra due pagine
+  non ne ripete e non ne salta. Anteprime di 64 punti per linea, come i
+  preferiti. Al massimo 2 000 corse per account.
+- **«Save» e «Discard» stanno sulla schermata di fine corsa**, quella che
+  «Stop» già apre con la mappa, i numeri e il punteggio: è la schermata
+  che l'utente chiede, e una in più dopo «Done» sarebbe un tocco in più
+  per dire la stessa cosa. Con un account prendono il posto di «Done»,
+  sotto la scheda; «Keep running» resta. «Discard» chiede conferma: un
+  tocco sbagliato butterebbe una corsa che non si rifà. Con «Save» o
+  «Discard» la corsa lascia il file della corsa in corso anche senza
+  punteggio: non torna alla prossima apertura.
+- **Niente parte a «Stop»**: fra «Stop» e «Save» c'è «Keep running», e
+  una corsa mandata a metà resterebbe a metà (resta la prima). Con «Save»
+  la corsa va in un file del telefono (`activities-outbox.json`), con
+  l'account di chi l'ha corsa, e da lì all'API: subito, o alla prossima
+  apertura con la rete, o aprendo «My activities». Un `422` la toglie dalla
+  coda (rimandarla non cambierebbe niente); ogni altro errore la lascia.
+  Dopo un salvataggio l'elenco si richiede all'API: i numeri sono i suoi.
+- **Cosa disegnava il percorso** l'app lo sa finché quel percorso è ancora
+  sullo schermo (disegnato, di «Explore», a tema, un preferito); una corsa
+  rimasta da un'altra apertura manda solo la linea.
+- **La pagina** è una riga per corsa, non due schede affiancate come i
+  preferiti: giorno, ora, luogo, km, tempo, passo e punteggio non stanno
+  sotto mezzo schermo. Il disegno ha le due linee nella stessa cornice
+  (`fitLines`), come a fine corsa.
+- **Una corsa aperta è sulla mappa come a fine corsa**, non come un
+  percorso di «Explore»: niente «Start», niente cuore. «Delete» chiede
+  prima, sulla scheda.
+- **Le schede di fine corsa cambiano di poco**: `FinishCard` e
+  `FreeFinishCard` non mostrano «Done» quando non ricevono `onDone`; i due
+  pulsanti e la riga per chi non ha account sono un pezzo solo sotto la
+  scheda (`RunEnd`), uguale con un percorso e senza. `POST /track-scores`
+  resta com'è: la scheda mostra il punteggio subito, il salvataggio va per
+  conto suo.
+
+**Scartate**: salvare da sola a «Done» (la prima scelta dell'utente,
+cambiata da lui); salvare a «Stop» (vedi sopra); una schermata a parte
+dopo «Done» con i due pulsanti; «Discard» senza conferma; fidarsi di km, tempo e punteggio dell'app; tenere la traccia
+grezza (sulla mappa avrebbe i salti del GPS, e il punteggio è già sulla
+pulita); la chiave da tutta la traccia (la stessa corsa, ripresa,
+cambierebbe nome); mandare a Geoapify la partenza
+esatta; un elenco di città dentro l'API (vale solo dove c'è il catalogo);
+pagine con `offset` (saltano o ripetono quando l'elenco cambia); tenere le
+corse senza account sul telefono (scelta dell'utente: restano com'erano).
+
+**Conseguenze**: il database tiene tracce intere, con gli orari: il dato
+più personale dell'app; le vede solo il loro account, spariscono con lui e
+dalle copie entro 14 giorni (`UI.md`, «Cosa esce dal telefono»). Geoapify
+riceve un punto al chilometro per ogni corsa salvata. Sul server la
+migrazione `0003` parte al primo avvio dell'API nuova (`DEPLOY.md` F.12):
+finché non c'è, l'app nuova tiene le corse nella coda. Una corsa chiusa
+con «Discard» non si recupera. Chi chiude l'app sulla schermata di fine
+corsa senza scegliere la ritrova alla prossima apertura, da salvare o
+buttare. L'altitudine delle posizioni (TASK-169) non si salva. Il
+punteggio di una corsa salvata non cambia se il motore cambia. TASK-117 parte da
+`runs` con una migrazione sua (traccia tagliata, «pubblica», il titolo
+dell'utente: `title` qui è cosa disegna il percorso) e il suo task file
+va aggiornato da chi lo prende.
+
+## ADR-0151 — Un disegno di «Feed» si apre come un percorso di «Explore», e il suo percorso si ritrova dalla partenza
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («quando
+sono in feed […] cliccare sull'attività delle persone inventate e mettere
+nei preferiti o fare inizia percorso»); il come deciso dall'agente su
+delega dell'utente (TASK-188).
+
+**Contesto**: i disegni di «Feed» sono esempi (ADR-0127): corridori, titoli,
+tempi e punteggi inventati, ma la linea è di un percorso vero del catalogo
+(ADR-0098), e l'`id` del disegno è l'`id` di quel percorso. Sulla mappa un
+percorso di «Explore» ha già tutto ciò che l'utente chiede: il cuore dei
+preferiti (ADR-0139), «Start» con le indicazioni (TASK-145), il GPX. Il
+disegno ha la linea con 120 punti, pochi per correrla: serve il percorso
+intero. E l'`id` di un percorso del catalogo è la sua **posizione nel file
+della città**: il catalogo è cresciuto dopo che il feed è stato scritto, e
+sotto `roma-butterfly-21000-11` oggi c'è un cerchio di 5 km (la farfalla è
+alla posizione 12).
+
+**Decisione**:
+- **Un tocco sulla scheda apre il percorso sulla mappa**, con la scheda di
+  «Explore» (`useExplored`, `ExploredCard`): niente pulsanti nuovi sulla
+  scheda del feed. Cuore, «Start» e GPX sono quelli che ci sono già; «←» e
+  «Back to the list» tornano alla pagina da cui si è partiti, che `App.tsx`
+  ricorda in uno stato (`routeList`).
+- **Il percorso si chiede per `id` e si controlla**: è quello del disegno
+  solo se ha la stessa città, la stessa forma e la stessa lunghezza
+  (`isRouteOf`). Se sotto l'`id` c'è un altro percorso, o nessuno, lo si
+  cerca fra i percorsi che partono dove parte il disegno
+  (`GET /recommended-routes` attorno al primo punto della linea) e si
+  chiede quello. `useExplored.open` prende, da chi apre, un modo diverso
+  di chiedere il percorso intero; senza, chiede per `id` come prima.
+- **Se il percorso non c'è più, non se ne apre un altro**: la scheda dice
+  «The route could not load. Try again.», come per un percorso che non
+  arriva. Un percorso sbagliato sotto il titolo di un altro sarebbe peggio
+  di un messaggio.
+- **Uno swipe non è un tocco**: «Feed» è la prima pagina, uno swipe verso
+  destra non fa scorrere niente, nessuno toglie il tocco alla scheda e il
+  dito alzato sopra di lei contava come un tocco (visto nel simulatore).
+  La scheda ricorda dove il dito è sceso e ignora un dito che si è mosso
+  più di 12 punti.
+- La scheda è un pulsante solo quando chi la mostra le dà cosa aprire: in
+  «Explore», fra i disegni mostrati mentre una città si disegna (ADR-0132),
+  resta da guardare.
+
+**Alternative scartate**: cuore e «Start» sulla scheda del feed (due
+pulsanti per quindici schede, e «Start» senza aver visto dove si parte;
+si può aggiungere, vedi il task file); mettere il percorso intero nel
+file del feed (da 120 a 300–1600 punti per disegno, nel pacchetto
+dell'app, e una copia che invecchia); correggere a mano gli `id` nel file
+(lo scrive `tools/sample_feed.py`, e il catalogo cambierà ancora);
+riscrivere il feed sul catalogo nuovo (cambia i disegni che l'utente
+vede: è il seguito di TASK-161); `id` stabili nel catalogo (cambia un
+contratto dell'API usato dai preferiti e da «Explore»: un task suo).
+
+**Conseguenze**: un disegno apre in una richiesta se il suo `id` regge,
+in tre se è cambiato. La ricerca dalla partenza vede i 60 percorsi
+migliori entro 5 km (i limiti dell'API): la città più ricca ne ha 37.
+Mentre il percorso arriva, la scheda sulla mappa dice «looks N% like it»
+con il punteggio inventato del disegno, poi con la somiglianza vera del
+percorso (di solito più alta): meno di un secondo. Il preferito salvato
+da un disegno è il percorso, non il post: non ricorda chi l'ha «corso».
+Le schede di «Explore», ultima pagina, hanno probabilmente lo stesso
+difetto dello swipe verso sinistra: da guardare in un task suo.
+
+## ADR-0145 — «Profile»: emoji per le voci, due riquadri con il numero, l'account in «Settings»
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («cambia
+un po' la grafica, rendila più accattivante», un cuore accanto a
+«Favorites», l'uomo che corre «come emoji» accanto alle attività, una
+sezione «Settings» da riempire «con calma»); il come deciso dall'agente su
+delega dell'utente (TASK-177).
+
+**Contesto**: «Profile» con l'account era una scheda «LOGGED IN AS», un
+elenco di righe di solo testo e, sotto, «Log out» e «Delete account»: tutto
+grigio, con i due comandi che si usano una volta sola in vista quanto le
+cose che si aprono ogni giorno.
+
+**Decisione**:
+- **Le voci hanno un'emoji**: ❤️ «Favorites», 🏃‍♂️ «My activities», ⚙️
+  «Settings», ognuna in un tondo `surfaceRaised`. L'app non ha icone e
+  una libreria di icone sarebbe una dipendenza nuova; l'emoji è il
+  carattere che l'utente ha chiesto, e porta l'unico colore di «Profile»
+  che non viene dai token. Non è giallo, quindi non si confonde con il
+  percorso. Il cuore sulla mappa resta il carattere «♡»/«♥» di ADR-0139: è
+  un comando con due stati, neutro come «←».
+- **«Favorites» e «My activities» sono due riquadri affiancati** con il
+  numero in grande (`fontSize.display`) e il nome sotto: il numero è la
+  cosa che cambia, e si legge senza aprire la pagina. Finché l'elenco non
+  è arrivato c'è un trattino, non uno zero.
+- **In alto chi è**: un cerchio con l'iniziale, come il pulsante che apre
+  «Profile», poi nome ed email. «LOGGED IN AS» sparisce: lo dice il
+  cerchio. La foto prenderà il posto dell'iniziale con TASK-178.
+- **«Log out» e «Delete account» stanno in «Settings»**, con l'account
+  (nome, email), senza cambiare comportamento né testi. «Settings» è una
+  pagina di «Profile» come «Favorites»: «←» torna a «Profile».
+- **Le voci da sviluppare ci sono già, con «Soon»**: l'utente ha
+  elencato cosa vuole in «Settings» (foto, cambiare email, numero di
+  telefono, unità di misura, notifiche email e push, help, termini,
+  privacy) e ha chiesto di aggiungerle subito e svilupparle dopo. Sono
+  righe con il nome e «Soon», senza interruttori e senza tocco: si vede
+  cosa arriverà e niente finge di funzionare. Ogni task che ne accende una
+  la toglie dall'elenco `COMING` di `SettingsPage.tsx`.
+- **Usciti da «Settings»**, per «Log out» o per l'account cancellato, la
+  pagina torna «Profile»: chi rientra non si ritrova in «Settings».
+- **Pezzi nuovi in `src/profile/`** (`Avatar`, `ProfileHome`,
+  `SettingsPage`), che ricevono numeri e account come proprietà:
+  `ProfileScreen.tsx`, che TASK-172 cambiava nelle stesse ore, li monta e
+  basta.
+
+**Scartate**: una libreria di icone (`@expo/vector-icons`: dipendenza
+nuova, e l'utente ha chiesto un'emoji); il giallo per dare colore (il
+giallo è del percorso, `UI.md` «Il tema»); un ingranaggio accanto al titolo
+al posto della riga «Settings» (l'utente ha chiesto una sezione, come le
+altre due); lasciare «Log out» sulla prima pagina (resterebbe la cosa più
+in vista di «Profile»; l'utente ha confermato lo spostamento); interruttori
+già disegnati per le notifiche (prometterebbero una cosa che non c'è).
+
+**Conseguenze**: per uscire dall'account serve un tocco in più. Le emoji
+le disegna il telefono: su Android hanno un altro tratto. «Settings»
+mostra nove voci che ancora non fanno niente: le accendono TASK-178 (la
+foto, ADR-0146, che riusa `Avatar`), TASK-183 (email e telefono), TASK-182
+(unità), TASK-184 (help, termini, privacy, dopo TASK-152) e TASK-185
+(notifiche, per ultime).
+
+## ADR-0144 — «Explore»: niente filtri, altre forme dopo le prime tre, «Near me» al posto di «My start»
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
+(«toglimi i filtri, non mi piacciono»; le prime tre figure «più velocemente
+possibile, ma poi allo stesso tempo cerca di farne altre mentre li
+selezionano»; «non mi piace il tasto My start … non è intuibile, devi
+rivederla»); il come deciso dall'agente su delega dell'utente
+(TASK-176). Supera la parte dei filtri di ADR-0135 e allarga ADR-0116.
+
+**Contesto**: «Best near you» aveva due filtri in una riga, «Shape» e
+«Distance» (ADR-0135). Una città scelta senza percorsi consigliati
+disegnava tre esempi, cuore, cerchio e stella da 5 km, e poi si fermava
+(ADR-0116); una con percorsi consigliati mostrava solo quelli. Per tornare
+dalla città ai percorsi vicini c'era un pulsante «My start» accanto al nome
+della città, sotto il campo di ricerca.
+
+**Decisione**:
+- **I filtri si tolgono**, non si nascondono: `RouteFilters.tsx` e i suoi
+  test si cancellano, con `filterOptions` e `filtered`. «Best near you»
+  mostra tutti i percorsi nell'ordine dell'API, i migliori per primi.
+- **Dopo le prime tre forme l'app ne disegna altre cinque**: luna, cavallo,
+  lumaca, testa di cane, testa di coniglio (`MORE_SHAPES` in
+  `exampleRoutes.ts`). Scelte misurando, il 2026-10-02 sul Mac, ogni forma
+  del catalogo a 5 km dal centro di quattro città, come la chiede l'app
+  (somiglianza del percorso scelto dal motore):
+
+  | Forma | Trento | Verona | Bologna | Padova | Media |
+  |---|---|---|---|---|---|
+  | cavallo | 0,98 | 0,97 | 0,99 | 0,94 | 0,97 |
+  | lumaca | 0,92 | 0,99 | 0,95 | 0,94 | 0,95 |
+  | stella | 0,92 | 0,97 | 0,96 | 0,94 | 0,95 |
+  | luna | 0,92 | 0,94 | 0,97 | 0,92 | 0,94 |
+  | testa di cane | 0,92 | 0,90 | 0,98 | 0,90 | 0,92 |
+  | testa di coniglio | 0,91 | 0,91 | 0,94 | 0,92 | 0,92 |
+  | cerchio | 0,91 | 0,92 | 0,92 | 0,91 | 0,92 |
+  | cuore | 0,81 | 0,91 | 0,95 | 0,94 | 0,90 |
+  | farfalla | 0,89 | 0,94 | 0,89 | 0,88 | 0,90 |
+  | gatto | 0,83 | 0,92 | 0,88 | 0,81 | 0,86 |
+  | pesce | 0,87 | 0,77 | 0,75 | 0,75 | 0,79 |
+
+  Le cinque scelte vengono come il cerchio e il cuore o meglio; farfalla,
+  gatto e pesce restano fuori, zucca e albero di Natale sono di stagione.
+- **Una alla volta, come le prime**: l'API lavora due richieste alla volta e
+  il motore usa già più processi (ADR-0136 ha scartato le richieste
+  insieme). Le altre forme partono solo quando le prime tre sono finite.
+- **Una scheda solo quando tocca a lei.** La forma in corso ha la scheda
+  «Drawing…», quelle dopo non si annunciano: nessuno le ha chieste, e una
+  fila di schede vuote spingerebbe sotto lo schermo i disegni del feed
+  (ADR-0132). Una forma che l'API non riesce a disegnare lì
+  (`shape_not_drawable`) non compare e non viene richiesta finché l'app
+  resta aperta: darebbe lo stesso esito al costo di una ricerca intera. Un
+  guaio che non è della forma (rete, troppe richieste al minuto) ferma le
+  altre in silenzio; si richiedono alla prossima scelta della città. Le
+  prime tre si comportano come prima: scheda, messaggio, «Try again».
+- **Le forme in più stanno dentro una parte del limite dell'API**
+  (`EXAMPLES_PER_MINUTE`, 18). L'API accetta 30 POST al minuto da un
+  telefono (ADR-0076), e una città che ha già disegnato risponde subito
+  alle sue otto richieste: tre città così in un minuto li userebbero
+  tutti, e verrebbero rifiutati «Start», «Export GPX» o le prime tre forme
+  della città dopo. Le prime tre non aspettano mai, e costano quanto
+  prima; una forma in più parte solo se nell'ultimo minuto sono partite
+  meno di 18 richieste di esempi, altrimenti aspetta, senza scheda.
+  Il tetto è preso sul 30 che l'API ha da sola, non su quello del server:
+  lì oggi `SHAPEROUTE_RATE_LIMIT` è 120 a telefono (`deploy/.env`, rimasto
+  da quando tutti i telefoni contavano come uno), e `DEPLOY.md` F.12 dice
+  che può tornare vuoto, cioè a 30. L'app non sa quale dei due vale, e
+  con 120 il tetto costa solo l'attesa delle forme in più della terza
+  città sfogliata in un minuto.
+- **Il cerchio si chiede per primo**, anche se la prima scheda resta il
+  cuore. La zona di una forma è un quadrato attorno al centro, largo quanto
+  la forma arriva lontano, e l'API ne scarica una solo se nessuna di quelle
+  sul disco la contiene (`covering_path`). Mezzo lato a 5 km, dal motore:
+  cerchio 2751 m, cuore 2718, luna 2579, stella 2471, cavallo 2426, lumaca
+  1971, testa di coniglio 1794, testa di cane 1681. Col cuore per primo una
+  città nuova per l'API scaricava la zona del cuore e subito dopo quella
+  del cerchio, 33 m più larga per lato: due download da Overpass invece di
+  uno (a Rovereto, prima che avesse la zona, i log di TASK-168 ne contano
+  uno per forma). Fra le altre forme la luna va per prima per lo stesso
+  motivo. **Lo stesso ordine nell'API**: `EXAMPLE_SHAPES` in
+  `prefetch_zones.py` diventa cerchio, cuore, stella, e da lì lo prende
+  `draw_examples`, così app e server chiedono le prime tre allo stesso
+  modo. Per le zone di `prefetch_zones` l'ordine non conta: sono
+  l'unione delle aree.
+- **Anche le città con percorsi consigliati**: fra le otto forme l'app
+  disegna quelle che la città non ha, e le aggiunge in coda alle sue
+  schede, uguali alle altre. Sono tutte «in più»: niente sezione degli
+  esempi, niente messaggi. Le città in evidenza, che dal catalogo hanno
+  solo cuore, cerchio e stella (ADR-0132), ricevono così le altre cinque.
+  Senza una città scelta non si disegna niente: una richiesta dalla
+  posizione di chi usa l'app non resta sull'API (ADR-0136), e si rifarebbe
+  a ogni apertura. Sulle schede aggiunte la città ha il nome che le danno
+  le sue schede del catalogo («Milano», dove la ricerca dice «Milan»): è
+  quello del percorso che parte più vicino al centro, entro un chilometro
+  (`ownCityName`); vale anche per la scheda sulla mappa.
+- **I disegni del feed sotto gli esempi** (ADR-0132) restano legati alle
+  prime tre forme: quando arrivano le altre c'è già qualcosa da scegliere.
+- **«Near me» è la prima voce della fila delle città**, con il segno della
+  posizione (un anello col suo centro, due `View`: nessuna icona nuova). È
+  accesa finché non si sceglie una città; da una città, un tocco riporta
+  ai percorsi vicini alla partenza. La riga col nome della città e «My
+  start» sparisce: la città scelta è la voce accesa, e il suo nome intero
+  è già sotto il titolo della pagina («Starting within 5 km of …»).
+
+**Scartate**: nascondere i filtri dietro un pulsante (l'utente non li
+vuole); disegnare le otto forme insieme, o a coppie (i due thread
+dell'API); annunciare subito tutte le schede (cinque schede vuote in più, e
+i disegni del feed fuori dallo schermo); una soglia di somiglianza per le
+altre forme (le prime tre non l'hanno, e la scheda dice già la
+percentuale); `maintainVisibleContentPosition` sulla pagina, per non
+spostare i disegni del feed quando si aggiunge una riga di schede (terrebbe
+fermo anche quello che sta sotto il campo della città quando compaiono i
+suggerimenti, spingendo il campo fuori dallo schermo); aggiungere le
+altre cinque forme a `EXAMPLE_SHAPES` dell'API perché `draw_examples` le
+disegni prima (oltre un'ora e mezza di calcolo in più sulle città già
+previste, e restano comunque sull'API dal primo telefono: si può fare
+dopo, rilanciando il comando); chiamare la voce col nome
+della partenza quando è un luogo cercato (servirebbe una riga in `App.tsx`,
+che è di altri task in lavorazione); un pulsante con una freccia, o «Back
+to my position» scritto per esteso (resta un pulsante in più, lontano
+dalla fila in cui si sceglie).
+
+**Conseguenze**: una città nuova chiede all'API otto percorsi invece di
+tre, sempre uno alla volta: sul server 7–19 s l'uno (TASK-168, dai log),
+ma solo al primo telefono, perché restano sull'API come le prime tre. Nelle
+62 città disegnate prima con `draw_examples` le prime tre arrivano subito,
+e il primo telefono disegna le altre cinque. Chi sfoglia più di due città
+già disegnate per intero in un minuto vede le forme in più della terza
+arrivare quando il minuto è passato. Il file degli esempi sul
+telefono tiene fino a otto percorsi per città invece di tre (ultime 8
+città). Quando si aggiunge una riga di schede i disegni del feed scendono
+di una riga, al più due volte. `draw_examples` disegna ancora solo le
+prime tre forme. Se la partenza è un
+luogo cercato e non la posizione, la voce dice comunque «Near me». Con la
+mappa sotto le schede (ADR-0142) ogni forma in più chiede anche la sua
+foto. Da provare con il dito sull'iPhone.

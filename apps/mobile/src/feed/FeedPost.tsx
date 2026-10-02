@@ -1,5 +1,12 @@
-import { useMemo } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { useMemo, useRef } from "react";
+import {
+  type GestureResponderEvent,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { cityName } from "../explore/recommendedRoutes";
 import { thumbSegments } from "../explore/RouteThumb";
@@ -22,6 +29,8 @@ const DRAWING_RATIO = 0.62;
 const LINE_WIDTH = 3;
 /** Clear around the line, on every side. */
 const DRAWING_PAD = space.xl;
+/** How far a finger may move, in points, and still have tapped. */
+const TAP_SLOP = 12;
 
 /** How tall the drawing of a card `width` wide is. */
 export function drawingHeight(width: number): number {
@@ -38,6 +47,8 @@ type Props = {
   post: SamplePost;
   /** How wide the card is: the drawing fills it. */
   width: number;
+  /** Opens its route on the map; without it the card is not a button. */
+  onOpen?: () => void;
 };
 
 /** "dog_head" → "Dog head". */
@@ -55,9 +66,10 @@ export function postFacts(post: SamplePost): string {
  * A drawing in «Feed» (TASK-156): who ran it and where, the line, its score,
  * its title. The line is yellow, the route's colour; the score is not. Under
  * the line, once its picture is taken, the map of where it was run
- * (TASK-162).
+ * (TASK-162). With `onOpen` a tap opens its route on the map, to keep among
+ * the favorites or to run (TASK-188).
  */
-export function FeedPost({ post, width }: Props) {
+export function FeedPost({ post, width, onOpen }: Props) {
   const height = drawingHeight(width);
   const segments = useMemo(
     () => thumbSegments(post.line, width, height, DRAWING_PAD),
@@ -65,13 +77,27 @@ export function FeedPost({ post, width }: Props) {
   );
   const map = useFeedMap(post.id, post.line, width, height, DRAWING_PAD);
   const city = cityName(post.city);
-  return (
-    <View
-      style={styles.card}
-      testID="feed-post"
-      accessible
-      accessibilityLabel={`${post.user} in ${city}: ${post.title}. ${postFacts(post)}. Score ${post.score} out of 100.`}
-    >
+  // Where the finger came down. «Feed» is the first page: a swipe towards
+  // it moves nothing, so nothing takes the touch away, and it would end as
+  // a tap on the card it crossed.
+  const down = useRef<{ x: number; y: number } | null>(null);
+  function onPressIn({ nativeEvent }: GestureResponderEvent) {
+    down.current = { x: nativeEvent.pageX, y: nativeEvent.pageY };
+  }
+  function onPress({ nativeEvent }: GestureResponderEvent) {
+    const from = down.current;
+    down.current = null;
+    const moved =
+      from === null
+        ? 0
+        : Math.hypot(nativeEvent.pageX - from.x, nativeEvent.pageY - from.y);
+    if (moved <= TAP_SLOP) {
+      onOpen?.();
+    }
+  }
+  const label = `${post.user} in ${city}: ${post.title}. ${postFacts(post)}. Score ${post.score} out of 100.`;
+  const body = (
+    <>
       <View style={styles.who}>
         <View style={styles.avatar}>
           <Text style={styles.initial}>{post.user.charAt(0).toUpperCase()}</Text>
@@ -114,7 +140,32 @@ export function FeedPost({ post, width }: Props) {
         <Text style={styles.title}>{post.title}</Text>
         <Text style={styles.facts}>{postFacts(post)}</Text>
       </View>
-    </View>
+    </>
+  );
+  if (onOpen === undefined) {
+    return (
+      <View
+        style={styles.card}
+        testID="feed-post"
+        accessible
+        accessibilityLabel={label}
+      >
+        {body}
+      </View>
+    );
+  }
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      onPressIn={onPressIn}
+      onPress={onPress}
+      testID="feed-post"
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint="Opens the route on the map"
+    >
+      {body}
+    </Pressable>
   );
 }
 
@@ -123,6 +174,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     backgroundColor: color.surface,
     overflow: "hidden",
+  },
+  pressed: {
+    opacity: 0.6,
   },
   who: {
     flexDirection: "row",

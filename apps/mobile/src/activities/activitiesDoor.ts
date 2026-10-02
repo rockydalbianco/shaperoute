@@ -17,7 +17,14 @@ import {
   saveActivity,
 } from "../api/activities";
 import type { SavedRun } from "../navigation/trackStore";
-import { keepWaiting, loadOutbox, stopWaiting } from "./outbox";
+import { keepForStrava, sendWaitingToStrava } from "../strava/stravaOutbox";
+import {
+  keepWaiting,
+  loadOutbox,
+  stopWaiting,
+  type ToStrava,
+  toStravaOf,
+} from "./outbox";
 import { type Drawn, recordedRun } from "./recordedRun";
 import { activityProblem, type ActivitiesState, useActivities } from "./useActivities";
 
@@ -36,6 +43,12 @@ export type ActivitiesDoor = ActivitiesState & {
    * the phone refuses the file.
    */
   record: (run: SavedRun, drawn: Drawn | null) => boolean;
+  /**
+   * What the next `record` does with Strava (TASK-187): the run goes on to
+   * Strava once the API has it, with this name; null: it does not. Told
+   * by the end of the run just before «Save», and forgotten by `record`.
+   */
+  toStrava: (choice: ToStrava | null) => void;
   /** The runs of this account still on the phone, waiting for the API. */
   waiting: number;
   /** Opens «Profile» to sign up or log in, saying it keeps the runs. */
@@ -65,6 +78,7 @@ const NOTHING: ActivitiesDoor = {
   clearProblem: () => {},
   signedIn: false,
   record: () => false,
+  toStrava: () => {},
   waiting: 0,
   signIn: () => {},
   opening: null,
@@ -141,6 +155,7 @@ export function useActivitiesOf(
     sending.current = true;
     let saved = false;
     let gone = false;
+    let ended = false;
     try {
       do {
         again.current = false;
@@ -150,6 +165,12 @@ export function useActivitiesOf(
             key,
           });
           if (outcome.kind === "ok") {
+            // To Strava now that the API has it: in the file of Strava
+            // first, so the run is not forgotten if the app closes here.
+            const strava = toStravaOf(run);
+            if (strava !== null) {
+              keepForStrava({ owner, key: run.id, name: strava.name });
+            }
             stopWaiting(owner, run.id);
             saved = true;
             gone = true;
@@ -163,13 +184,24 @@ export function useActivitiesOf(
             continue;
           }
           if (sessionEnded(outcome)) {
+            ended = true;
             endSession(token);
           }
           // No network, or the API is away: this run and the rest wait.
           again.current = false;
           break;
         }
-      } while (again.current);
+        // Then what waits for Strava, these runs and those of before. A run
+        // that ends meanwhile still makes another round.
+        if (
+          !ended &&
+          (await sendWaitingToStrava(baseUrl, token, owner, { fetchFn, key })) ===
+            "session_ended"
+        ) {
+          ended = true;
+          endSession(token);
+        }
+      } while (again.current && !ended);
     } finally {
       sending.current = false;
     }
@@ -188,14 +220,24 @@ export function useActivitiesOf(
     void send();
   }, [send]);
 
+  // Told by the end of the run just before «Save», read by `record` once.
+  const nextStrava = useRef<ToStrava | null>(null);
+  const toStrava = useCallback((choice: ToStrava | null) => {
+    nextStrava.current = choice;
+  }, []);
+
   const record = useCallback(
     (run: SavedRun, drawn: Drawn | null) => {
+      const strava = nextStrava.current;
+      nextStrava.current = null;
       const recorded = owner === null ? null : recordedRun(run, drawn);
       if (owner === null || recorded === null) {
         return false;
       }
       // On the phone first: the run is not lost if the app closes now.
-      if (!keepWaiting({ ...recorded, owner })) {
+      if (
+        !keepWaiting({ ...recorded, owner, ...(strava === null ? {} : { strava }) })
+      ) {
         return false;
       }
       recount();
@@ -272,6 +314,7 @@ export function useActivitiesOf(
       clearProblem,
       signedIn: owner !== null,
       record,
+      toStrava,
       waiting,
       signIn,
       opening,
@@ -288,6 +331,7 @@ export function useActivitiesOf(
       clearProblem,
       owner,
       record,
+      toStrava,
       waiting,
       signIn,
       opening,

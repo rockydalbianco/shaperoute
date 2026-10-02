@@ -43,6 +43,7 @@ ciano di «Start here».
 | `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
+| `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | solo «Connect with Strava» (TASK-187): l'arancione e il bianco che le regole del marchio Strava chiedono, scelti dall'utente |
 | `map.*` | dal `#0D0E10` al `#3A3D45` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
 
 Quattro regole:
@@ -394,6 +395,11 @@ nessun pulsante dell'account è giallo.
   10 a 30 km. «Explore», «Feed» e la schermata della corsa restano quelli
   della corsa: cosa mostrano con la bici è una scelta dell'utente ancora
   aperta (`tasks/TASK-190.md`, «Domande aperte»).
+- **«Strava»** (TASK-187), solo se l'API ha Strava: «Connect with
+  Strava» (arancione) con «Send the runs you save in Sgrava to your Strava
+  profile.»; collegato, «Connected as Ada Lovelace» e «Disconnect Strava»,
+  in rosso, che chiede prima: «Disconnect Strava? Runs already sent stay
+  on Strava.», con «Keep it» e «Disconnect».
 - **«Preferences»**: «Units», «Soon». **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».
@@ -571,6 +577,15 @@ telefono dell'account: con un percorso o senza.
   punteggio («91», «out of 100»), km, tempo e passo, la legenda («Yellow:
   the route. White: what you ran.»). «←» e «Back to the list» tornano
   all'elenco. Niente cuore e niente «Start»: è una corsa, non un percorso.
+- **Strava sulla corsa aperta** (TASK-187), sopra «Delete», solo se l'API
+  ha Strava: **«View on Strava»** se la corsa c'è già (apre la sua pagina);
+  se no il campo «Name on Strava», con il nome che l'API darebbe come
+  suggerimento («Star in Trento»), e **«Send to Strava»**, che manda subito
+  («Sending to Strava…»). Strava che sta ancora leggendo la corsa: «Strava
+  is still reading this run.» e «Check again». Gli errori in una riga
+  rossa sotto («Strava could not read this run.», «No connection. Try
+  again when you are online.»). Un atleta che ha tolto l'accesso da Strava
+  torna a «Connect with Strava».
 - **«Delete»**, in rosso, sulla scheda dell'elenco e sotto la mappa, chiede
   prima sulla scheda stessa: «Delete this run? It cannot be undone.», con
   «Keep it» e «Delete run». La corsa sparisce subito; se l'API rifiuta
@@ -1223,7 +1238,25 @@ mostra le lettere unite da linee dritte sulla base.
   Finché non si tocca né l'uno né l'altro niente è salvato; «Keep running»
   resta nella scheda. Se il telefono non riesce a scrivere la corsa: «This
   run could not be kept on the phone. Try again.», e si resta lì. Nessuno
-  dei due è giallo. «Send to Strava» non c'è: è un task a parte.
+  dei due è giallo.
+- **«Send to Strava»** (TASK-187, ADR-0156), sopra «Save» e «Discard», solo
+  se l'API ha Strava (`GET /me/strava` dice `available`; un'API senza
+  Strava, o più vecchia, e niente si vede). Atleta non collegato:
+  **«Connect with Strava»**, arancione con il testo bianco (l'unico
+  pulsante arancione dell'app), e sotto «Connect Strava, and Save sends
+  your runs there too.»; il tocco apre la pagina di Strava nel browser (o
+  nell'app Strava), e tornati in Sgrava la riga si aggiorna da sola.
+  Collegato: l'interruttore **«Send to Strava»**, acceso la prima volta e
+  poi come lo si è lasciato (scelta dell'utente, sul telefono, in
+  `strava.json`); acceso, sotto, il campo **«Name on Strava»** («Leave
+  empty for an automatic name»: vuoto, l'API dà «Heart in Trento», o per
+  una corsa libera il nome di Strava) e «To Ada Lovelace's Strava, with
+  Save.». Con l'interruttore acceso **«Save»** salva la corsa e poi la manda
+  a Strava, con il nome scritto (scelta dell'utente: modificabile prima di
+  «Save»); spento, o con «Discard», a Strava non va niente. Senza rete la
+  corsa aspetta sul telefono con la sua scelta, va all'API e poi a Strava
+  alla prossima apertura con la rete, una volta sola (sotto, «Cosa esce dal
+  telefono»).
 - **Senza account**, sotto la scheda, la riga «Sign up or log in to keep
   your runs in My activities.», che apre «Profile».
 
@@ -1378,6 +1411,16 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   posizioni (ADR-0092). Senza rete la corsa aspetta in un file del
   telefono, che non esce da lì finché non parte per l'API. Senza account,
   o con «Discard», non va niente.
+- **Strava** (TASK-187): una corsa va a Strava **solo quando l'utente lo
+  chiede**, con l'interruttore acceso a «Save» o con «Send to Strava» su
+  una corsa aperta, e solo dopo aver collegato il suo atleta. Il telefono
+  manda all'API la chiave della corsa e, se scritto, il nome; l'API manda a
+  Strava la traccia con gli orari, il nome e una riga di descrizione
+  («Drawn with Sgrava», o «Recorded with Sgrava» per una corsa libera).
+  Su Strava l'attività segue le impostazioni di privacy dell'atleta, non
+  quelle di Sgrava. Il telefono non vede mai un token di Strava; il
+  collegamento passa dal browser. Senza rete la corsa aspetta in
+  `strava-outbox.json` (chiave e nome, al più 20), poi parte una volta.
 
 ## Quando la mappa non si carica
 

@@ -97,7 +97,10 @@ pagine»):
 
    Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
    qualsiasi città del mondo (l'elenco e la richiesta partono dal suo
-   centro, «Change» torna alla partenza), e **«Ask for a route»**, una
+   centro, «Change» torna alla partenza). **In fondo alla pagina**, sotto
+   gli esempi della città e l'elenco (TASK-157, chiesto dall'utente): una
+   riga discreta, «Ask for a route», grigia e sottolineata. Un tocco la
+   apre lì dov'è, e la pagina scorre fino a lei: **«Ask for a route»**, una
    richiesta in parole («a romantic heart», «famous places in Paris,
    15 km») e «Make my route», giallo come «Draw route». Il percorso si
    apre sulla mappa coi luoghi: pallini chiari col nome quelli da cui

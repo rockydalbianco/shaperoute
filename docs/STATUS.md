@@ -108,6 +108,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-157: in «Explore», «Ask for a route» sta in fondo alla
+  pagina, sotto gli esempi della città e i percorsi consigliati, chiuso
+  dietro una riga grigia e sottolineata; un tocco lo apre lì, e la pagina
+  scorre fino a lui. Chiesto dall'utente: prima le figure già pronte delle
+  zone, la richiesta in parole quasi nascosta. **Da provare sull'iPhone**
+  (ripubblicare l'app).
 - **App** — TASK-158: il pulsante della corsa libera, in cima a «Draw», dice
   «Run without a route» invece di «Run», chiesto dall'utente: «Run» da solo
   si leggeva come correre il percorso scelto sotto. **Da provare

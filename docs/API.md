@@ -794,7 +794,7 @@ motore, in una parola.
 | JSON malformato, campo mancante, in più o fuori limite | 422 | `invalid_request` |
 | `shape` e `word` insieme o nessuno; una lettera che l'alfabeto non ha; più di 8 lettere; meno di 3 km a lettera; `style` sconosciuto o `"block"` con una forma | 422 | `invalid_request` |
 | `/track-scores`: corsa troppo corta per un punteggio, `similarity` fuori da 0–1, troppe posizioni | 422 | `invalid_request` |
-| Forma non disponibile in quella zona (ADR-0025) | 422 | `shape_not_drawable` |
+| Forma non disponibile in quella zona (ADR-0025); nessuna strada attorno alla partenza (ADR-0148: prima era `engine_error`) | 422 | `shape_not_drawable` |
 | Zona non in cache e dati OSM non scaricabili | 503 | `map_data_unavailable` |
 | Il modello che legge le parole della forma non risponde (`AI.md`) | 503 | `ai_unavailable` |
 | Un'immagine senza un contorno chiaro (TASK-073) | 422 | `image_not_usable` |

@@ -273,6 +273,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (disegnato, di «Explore», a tema) restano «Start» ed «Export GPX»; il
   GPX è il modo di portare un percorso in un'altra app. Solo app, niente
   API. Pubblicata il 2026-10-02 (update `38f9a17b`, da fa6462b).
+- **Motore e API** — TASK-180: dove non ci sono strade il motore lo dice,
+  e una zona tiene ogni pezzo della sua rete (ADR-0148). Gli esempi di
+  Venezia finivano in `engine_error` (TASK-168) per due difetti. Un
+  ritaglio senza nodi non aveva un nome: ora è `NoRoadsError`, che l'API
+  dice `shape_not_drawable` e la CLI «No route». E la zona di Venezia non
+  aveva l'isola: OSMnx tiene di un download il pezzo connesso più grande,
+  e a piedi il centro storico non è unito alla terraferma (sul Ponte della
+  Libertà l'ultimo tratto della ciclopedonale è `foot=no`: visto sui dati
+  OSM del 2026-10-02). Ora chi scarica una zona tiene tutti i pezzi, e il
+  più grande si sceglie nel ritaglio, area per area. Le città di oggi non
+  cambiano: quattro zone del Mac rifatte dalle risposte in cache danno lo
+  stesso grafo e la stessa linea (`MAPS.md`, «Area scaricata»). **Manca,
+  con l'ok dell'utente**: sul server, dopo l'aggiornamento dell'API,
+  rifare la zona di Venezia e i suoi esempi (comandi in
+  `tasks/TASK-180.md`). Non provato: la zona vera di Venezia (Overpass
+  rifiutava il Mac) e che il centro storico dia un buon cuore da 5 km.
 - **App** — TASK-166: l'annuncio AdMob compare all'inizio della ricerca
   («Draw route», «Ask for a route») e copre il calcolo; alla X lo schermo
   mostra il percorso, se è pronto, o l'attesa (ADR-0102, aggiornamento).

@@ -702,7 +702,7 @@ function statusText(
   }
   switch (position.status) {
     case "denied":
-      return "Location is off for ShapeRoute. Allow it in Settings, or search for a place to start from.";
+      return "Location is off for Sgrava. Allow it in Settings, or search for a place to start from.";
     case "unavailable":
       return "Your position is not available right now. Search for a place to start from.";
     default:

@@ -33,6 +33,13 @@ function beforeFootway(footway: Direction): Navigation {
   return { ...navigation, next: 2, saidUpTo: 2, alongM: 1900 };
 }
 
+test("without the location, the banner says how to turn it on, by the app's name", async () => {
+  await render(<NavigationBanner state={{ status: "denied" }} />);
+  expect(
+    screen.getByText("Location is off for Sgrava: allow it in Settings to navigate."),
+  ).toBeOnTheScreen();
+});
+
 test("the banner says the street beside an unnamed road", async () => {
   const navigation = beforeFootway(directions[2]);
   await render(

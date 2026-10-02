@@ -63,6 +63,21 @@ Quattro regole:
    villaggi; non i nomi delle vie, i numeri civici e i punti d'interesse.
    Nessuno strato della mappa usa il giallo.
 
+## Il logo e l'icona (TASK-159, ADR-0129)
+
+Il segno è una S fatta come un percorso: un tratto solo, di spessore
+costante, con gli angoli arrotondati, e un punto in alto a destra da cui
+parte. Giallo `accent` su `background`, o nero su giallo. Il logo intero è
+il segno seguito da «GRAVA» con lo stesso tratto, le due A senza trattino.
+I vettoriali stanno in `docs/brand/` (`sgrava-mark.svg`, `sgrava-logo.svg`).
+
+Sotto l'icona il nome è «Sgrava» (`name` in `app.json`). L'icona dell'app
+è il segno giallo su nero (`assets/icon.png`, 1024 × 1024,
+senza trasparenza). Su Android il segno sta nel cerchio sicuro dell'icona
+adattiva, il fondo è nero e l'icona a un colore è il segno bianco. In Expo
+Go sulla schermata di casa resta l'icona di Expo Go: la nostra si vede con
+una build propria. Dentro l'app il nome in cima a «Draw» resta un testo.
+
 ## Le due schermate
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La
@@ -266,7 +281,7 @@ giallo.
 |---|---|---|
 | In attesa del GPS | «Finding your position…» | — |
 | GPS riuscito | «Starting from your position.» | — |
-| Permesso negato | «Location is off for ShapeRoute…» | «Open Settings», ricerca |
+| Permesso negato | «Location is off for Sgrava…» | «Open Settings», ricerca |
 | GPS spento, errore, nessuna risposta in 15 s | «Your position is not available right now…» | ricerca |
 | «Another place», nessun luogo ancora | «Search for a city or street to start from.» | ricerca |
 | Luogo scelto dalla ricerca | «Starting from Via Rodolfo Belenzani, Trento.» | ricerca, per cambiarlo |
@@ -696,7 +711,7 @@ di «←» un banner con i km in grande, due decimali («2.34 km»), e sotto il
 tempo e il passo medio («12:34 · 5:21 /km»). Il tempo parte dalla prima
 posizione del GPS e va avanti ogni secondo; il passo compare dopo 100 m.
 Prima della prima posizione, «Finding your position…»; senza permesso,
-«Location is off for ShapeRoute: allow it in Settings to record a run.».
+«Location is off for Sgrava: allow it in Settings to record a run.».
 Sotto la mappa «Run without a route», «Pocket» (la stessa modalità tasca
 della navigazione) e «Stop». A ogni km la voce, in inglese come il resto,
 dice il tempo e il passo medio: «1 kilometre. Time: 5 minutes 42 seconds.

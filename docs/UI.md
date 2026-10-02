@@ -127,8 +127,8 @@ pagine»):
 
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
-   migliori che partono entro 5 km dalla partenza scelta, con i filtri per
-   forma o parola e per distanza. **I percorsi sono schede, due per riga**
+   migliori che partono entro 5 km dalla partenza scelta, tutti, i migliori
+   per primi. **I percorsi sono schede, due per riga**
    (TASK-167, ADR-0135, scelto dall'utente): in alto il disegno, largo
    quanto la scheda, giallo su fondo scuro, con la somiglianza in un angolo
    («97%»); sotto, forma e km («Star · 5.1 km») e città e distanza dalla
@@ -138,13 +138,10 @@ pagine»):
    non arriva la scheda è la linea sul fondo scuro, e senza rete resta
    così. Il credito della mappa non è su ogni foto, che è larga mezzo
    telefono: sta una volta sola sopra le schede, «Maps: OpenFreeMap ©
-   OpenMapTiles · Data from OpenStreetMap». **I filtri stanno in una riga sola**:
-   due pulsanti, «Shape: All ▾» e «Distance: All ▾», che dicono cosa
-   tengono; toccato uno, sotto la riga si aprono le sue scelte («All»,
-   «Star», «Circle»…, che scorrono di lato), e una scelta le richiude. Se ne
-   apre uno alla volta; un filtro che tiene qualcosa ha il bordo chiaro. Se
-   i due filtri insieme non lasciano niente: «No route here is both: change
-   one of the two filters.». Toccata una scheda, il percorso si apre sulla
+   OpenMapTiles · Data from OpenStreetMap». **Niente filtri** (TASK-176,
+   ADR-0144, chiesto dall'utente: «toglimi i filtri, non mi piacciono»):
+   fino a TASK-167 sopra le schede c'erano «Shape» e «Distance». Toccata
+   una scheda, il percorso si apre sulla
    mappa con «Export GPX» e «Back to the list»; «←» torna all'elenco. Da
    TASK-145 ha anche «Start» (sotto).
 
@@ -167,8 +164,14 @@ pagine»):
    telefono) e una fila di città di tutto il mondo (New York, London,
    Paris, Tokyo, Rome, Milan, Torino, Barcelona, Dubai…): un tocco la
    sceglie, il centro viene dall'API, mai scritto nell'app. Sotto, «Type a
-   city» suggerisce le città mentre si scrive (da 2 lettere, pausa 250 ms);
-   «My start» torna alla partenza. «Ask for a route» ha le categorie come
+   city» suggerisce le città mentre si scrive (da 2 lettere, pausa 250 ms).
+   **La prima voce della fila è «Near me»** (TASK-176, ADR-0144), con
+   il segno della posizione, un anello col suo centro: è accesa finché non
+   si sceglie una città, e da una città riporta ai percorsi vicini alla
+   partenza. La città scelta è la voce accesa della fila, e il suo nome
+   intero sta sotto il titolo della pagina. Prima c'era un pulsante «My
+   start» accanto al nome della città: l'utente non lo trovava chiaro.
+   «Ask for a route» ha le categorie come
    pulsanti, Food per prima (Famous Places, Romantic, Best Views, Shopping,
    Culture, Nightlife, Hidden Gems, Running, Walking, Family, Photography,
    Local Experience), ognuna con «in <città>» sotto: un tocco chiede
@@ -202,10 +205,31 @@ pagine»):
    Restano anche sull'API (TASK-168, ADR-0136): in una città che qualcuno ha
    già aperto, o disegnata prima con `draw_examples`, le tre schede hanno
    il disegno appena scelta la città, senza «Drawing…».
-   Una città con percorsi consigliati mostra quelli e non chiede esempi.
 
-   **Da TASK-163**, chiesto dall'utente: finché un esempio è «Next» o
-   «Drawing…», sotto «EXAMPLES IN …» c'è **«MEANWHILE, FROM THE FEED»**,
+   **Da TASK-176** (ADR-0144, chiesto dall'utente: le prime tre il più
+   in fretta possibile, e intanto altre mentre si sceglie): dopo cuore,
+   cerchio e stella l'app continua da sola con **luna, cavallo, lumaca,
+   testa di cane e testa di coniglio**, le forme del catalogo che a 5 km
+   dal centro vengono meglio, sempre una alla volta. Ognuna diventa una
+   scheda quando tocca a lei («Moon», «Drawing…») e poi ha il disegno, in
+   coda alle prime tre; quelle ancora in attesa non si annunciano, e una
+   che non riesce non compare, senza messaggi. Finché ne arrivano la nota
+   sotto il titolo finisce con «Three first, more while you choose.».
+   La prima scheda resta il cuore, ma **il primo a essere chiesto è il
+   cerchio**: la sua zona contiene quella di tutte le altre forme, così una
+   città nuova per l'API scarica una mappa sola (col cuore per primo ne
+   scaricava due). Per questo all'inizio il cuore dice «Next» e il cerchio
+   «Drawing…».
+   **Una città con percorsi consigliati** mostra quelli, senza la sezione
+   degli esempi, e in più fa disegnare le forme che non ha fra quelle otto:
+   si aggiungono in coda alle sue schede, uguali alle altre («Moon ·
+   5.3 km», «Milano · 20 m away», con la mappa sotto la linea), con la
+   scheda «Drawing…» per quella in corso. La città vi è chiamata come sulle
+   schede del catalogo («Milano», non il «Milan» della ricerca). Senza una
+   città scelta («Near me») non si disegna niente.
+
+   **Da TASK-163**, chiesto dall'utente: finché uno dei primi tre esempi è
+   «Next» o «Drawing…», sotto «EXAMPLES IN …» c'è **«MEANWHILE, FROM THE FEED»**,
    con una riga che dice perché si aspetta (la prima volta in una città la
    mappa si scarica: fino a un minuto) e 5 disegni del feed d'esempio
    (TASK-156), uguali a come sono in «Feed». Partono da un punto del feed
@@ -277,8 +301,16 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   of 100»), il titolo e una riga «Horse · 19.2 km · 1 h 41 min». Sono le
   figure venute meglio nelle sette città del catalogo, due per città e
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
-  inventati. Le schede non si toccano: aprire un disegno arriva con
-  TASK-118.
+  inventati.
+  **Un tocco su una scheda apre il suo percorso** sulla mappa (TASK-188,
+  ADR-0151, chiesto dall'utente), come un percorso di «Explore»: la stessa
+  scheda con km, forma e città, «Start» per correrlo, «Export GPX», e il
+  cuore dei preferiti in alto a destra. «←» e «Back to the list» tornano a
+  «Feed». Il percorso è quello del catalogo da cui il disegno è nato: se
+  nel catalogo non c'è più, la scheda dice «The route could not load. Try
+  again.» e non mostra un altro percorso al suo posto. Un dito che scorre
+  sopra una scheda non la apre. Like, commenti e il profilo di chi ha corso
+  arrivano con TASK-118.
   **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
   chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
   stile dell'app. È una foto, non una mappa da muovere: la fa una pagina
@@ -292,7 +324,8 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   ha più «←»: per tornare c'è lo swipe, o il nome «Draw».
 - La mappa, la corsa e la sua fine prendono tutto lo schermo: lì i nomi e
   lo swipe non ci sono. «←» da un percorso di «Explore» torna sulla pagina
-  «Explore», da un percorso disegnato su «Draw».
+  «Explore», da un disegno di «Feed» su «Feed» (TASK-188), da un percorso
+  disegnato su «Draw».
 - Uno swipe chiude la tastiera.
 - Una pagina fuori dallo schermo non la legge nemmeno VoiceOver.
 - **Da provare con il dito**: lo swipe stesso, e le righe che scorrono di
@@ -300,7 +333,7 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   che la riga scorra lei e che lo swipe fra le pagine parta da fuori; su
   Android non è stato provato niente.
 
-## «Profile» (TASK-115, ADR-0125; TASK-154)
+## «Profile» (TASK-115, ADR-0125; TASK-154; TASK-177, ADR-0145)
 
 In alto a destra, accanto ai nomi delle pagine, un pulsante tondo apre
 **«Profile»**, l'account: mostra l'iniziale di chi è entrato, o una
@@ -316,13 +349,33 @@ regole dell'API, e l'errore si dice in parole sotto il pulsante (sotto,
 «Quando non va»). Si apre su «Sign up»; dopo «Log out» o una sessione
 finita, su «Log in».
 
-**«Profile» con l'account**: «LOGGED IN AS», il nome e l'email; la riga
-«Favorites», con quanti sono, che apre la pagina dei preferiti (sotto,
-«Favorites»), e sotto la riga «My activities», con quante sono le corse
-salvate, che apre la loro pagina (sotto, «My activities»); «Log out»;
-«Delete account», in rosso, che chiede prima sulla
-schermata stessa: «Delete my account» o «Keep my account». Nessun pulsante
-dell'account è giallo.
+**«Profile» con l'account** (TASK-177, ADR-0145): in alto un cerchio con
+l'iniziale, il nome e l'email. Sotto, due riquadri affiancati: **«Favorites»**
+con un cuore (❤️) e **«My activities»** con l'uomo che corre (🏃‍♂️), ognuno
+con il suo numero in grande (un trattino finché l'elenco non è arrivato);
+aprono le loro pagine (sotto, «Favorites» e «My activities»). Poi la riga
+**«Settings»** (⚙️). Le emoji sono l'unico colore che non viene dai token;
+nessun pulsante dell'account è giallo.
+
+**«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
+
+- **«Account»**: nome ed email; poi «Profile picture», «Change email» e
+  «Phone number», con la scritta «Soon».
+- **«Sport»** (TASK-189, ADR-0152): per cosa sono i percorsi. Tre righe:
+  «Run» (🏃‍♂️), scelto, con un «✓» bianco; «Bike» (🚴) e «Paddle» (🛶:
+  canoa, kayak, SUP) con «Soon», che non si toccano finché il motore non
+  disegna i loro percorsi (TASK-190, TASK-191). Uno sport pronto si
+  sceglie con un tocco; la scelta resta sul telefono, non nell'account.
+- **«Preferences»**: «Units», «Soon». **«Notifications»**: «Email
+  notifications» e «Push notifications», «Soon». **«About»**: «Help»,
+  «Terms», «Privacy», «Soon».
+- In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
+  sulla schermata stessa: «Delete my account» o «Keep my account».
+
+Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
+interruttori, perché dietro non c'è ancora niente (le accendono TASK-178,
+182, 183, 184, 185). Usciti dall'account da «Settings», chi rientra trova
+«Profile».
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -331,10 +384,10 @@ dell'account è giallo.
   o a una richiesta: l'app esce da sola, il pulsante di «Profile» ha un
   pallino arancio e «Profile» dice «Your session has ended. Log in
   again.». «Draw» va come prima.
-- **«Log out»** esce subito, anche senza rete, e dice «You are logged out
-  on this phone.».
-- **«Delete account»** esce solo con il sì dell'API; se l'API non risponde
-  l'account resta e la scheda dice perché. Fatto, dice «Your account and
+- **«Log out»**, in «Settings», esce subito, anche senza rete, e dice «You
+  are logged out on this phone.».
+- **«Delete account»**, in «Settings», esce solo con il sì dell'API; se
+  l'API non risponde l'account resta e la pagina dice perché. Fatto, dice «Your account and
   everything that was yours have been deleted.» e torna a «Sign up».
 - **Senza account** si disegna, si esplora e si corre come prima: il token
   lo vogliono solo l'account, i preferiti e le corse salvate.

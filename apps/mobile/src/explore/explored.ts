@@ -10,6 +10,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
 import { exampleDetail } from "./exampleRoutes";
 import {
+  type DetailOutcome,
   fetchRecommendedRoute,
   type RecommendedRoute,
   type RecommendedRouteDetail,
@@ -107,19 +108,25 @@ export function toResult(detail: RecommendedRouteDetail): RouteResult {
 }
 
 /**
+ * How a route is fetched whole: by its id, unless who opens it knows a
+ * surer way (a drawing of «Feed», TASK-188).
+ */
+export type FetchWhole = (apiUrl: string, id: string) => Promise<DetailOutcome>;
+
+/**
  * Opens a route of "Explore": fetches it whole; a city's example (TASK-143)
  * is already whole on the phone. The last one asked wins.
  */
 export function useExplored(apiUrl: string | null): {
   explored: Explored | null;
-  open: (route: RecommendedRoute) => void;
+  open: (route: RecommendedRoute, fetchWhole?: FetchWhole) => void;
   close: () => void;
 } {
   const [opened, setOpened] = useState<Opened | null>(null);
   const asked = useRef<string | null>(null);
 
   const open = useCallback(
-    (route: RecommendedRoute) => {
+    (route: RecommendedRoute, fetchWhole: FetchWhole = fetchRecommendedRoute) => {
       asked.current = route.id;
       const example = exampleDetail(route.id);
       const examples =
@@ -133,7 +140,7 @@ export function useExplored(apiUrl: string | null): {
         return;
       }
       setOpened({ status: "loading", route });
-      void fetchRecommendedRoute(apiUrl, route.id).then((outcome) => {
+      void fetchWhole(apiUrl, route.id).then((outcome) => {
         if (asked.current !== route.id) {
           return;
         }

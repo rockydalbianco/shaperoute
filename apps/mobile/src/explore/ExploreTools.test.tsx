@@ -152,11 +152,35 @@ test("one letter asks nothing", async () => {
   jest.useRealTimers();
 });
 
-test("a chosen city shows, and goes back to the start", async () => {
+test("«Near me» is the first choice, on until a city is chosen (TASK-176)", async () => {
   const onCity = jest.fn();
-  await render(<CityPicker apiUrl="http://api" city={newYork} onCity={onCity} />);
-  expect(screen.getByText(newYork.label)).toBeOnTheScreen();
-  await fireEvent.press(screen.getByText("My start"));
+  await render(
+    <CityPicker apiUrl="http://api" city={null} onCity={onCity} recent={[parma]} />,
+  );
+  const chips = screen.getAllByRole("button");
+  expect(chips[0]).toHaveTextContent("Near me");
+  expect(chips[0]).toBeSelected();
+  expect(chips[1]).toHaveTextContent("↺ Parma");
+  expect(screen.getByTestId("near-me-mark")).toBeOnTheScreen();
+  // No button apart from the row: «My start» is gone.
+  expect(screen.queryByText("My start")).toBeNull();
+});
+
+test("from a chosen city, «Near me» goes back to the start", async () => {
+  const onCity = jest.fn();
+  await render(
+    <CityPicker
+      apiUrl="http://api"
+      city={newYork}
+      onCity={onCity}
+      recent={[newYork]}
+    />,
+  );
+  // The city is the chip that is on, «Near me» the way back.
+  expect(screen.getByRole("button", { name: "↺ New York" })).toBeSelected();
+  const nearMe = screen.getByRole("button", { name: "Near me" });
+  expect(nearMe).not.toBeSelected();
+  await fireEvent.press(nearMe);
   expect(onCity).toHaveBeenCalledWith(null);
 });
 

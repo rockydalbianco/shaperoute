@@ -62,9 +62,10 @@ viaggia. I campioni scritti prima non la hanno, e restano come sono
 `services/route-engine/route_engine/export_gpx.py`, solo libreria standard
 (`xml.etree.ElementTree`). È l'unico scrittore del GPX di un percorso: lo
 usano la CLI e l'API (`POST /gpx`, `API.md`), quindi il file del telefono e
-quello della CLI sono uguali per lo stesso percorso. Il GPX di una corsa
-fatta è un'altra cosa e lo scrive l'API: «La corsa fatta», sotto. Niente `services/export/` finché
-non arrivano i formati per orologi (ADR-0033).
+quello della CLI sono uguali per lo stesso percorso. Niente
+`services/export/` finché non arrivano i formati per orologi (ADR-0033).
+Il GPX di una corsa fatta è un'altra cosa e lo scrive l'API: «La corsa
+fatta», sotto.
 
 ## La corsa fatta (TASK-187, ADR-0156)
 
@@ -109,7 +110,7 @@ Sotto un percorso disegnato, «Export GPX» (TASK-024):
 
 1. l'app manda a `POST /gpx` la richiesta e il risultato che ha già;
 2. l'API risponde il GPX con il nome del file, per esempio
-   `shaperoute-heart-5km-2026-09-23.gpx`: senza spazi né caratteri strani,
+   `sgrava-heart-5km-2026-09-23.gpx`: senza spazi né caratteri strani,
    che alcune app rifiutano;
 3. l'app lo salva nella propria cartella temporanea (`expo-file-system`),
    che il sistema può svuotare;

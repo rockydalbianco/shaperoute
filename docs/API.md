@@ -150,6 +150,15 @@ thread di lavoro, nessun calcolo, niente da chiedere dopo. Il contratto non
 cambia: `202` e un `RouteJob`, che si legge e si annulla come gli altri.
 Aspetta solo il primo telefono in una città.
 
+Dal TASK-176 (ADR-0144) l'app chiede il **cerchio per primo**, poi
+cuore e stella, e dopo altre cinque forme da 5 km dallo stesso centro:
+luna, cavallo, lumaca, testa di cane, testa di coniglio. Sono richieste
+come le altre, una alla volta, e restano allo stesso modo. Il cerchio va
+per primo perché la sua zona contiene quella di tutte le altre forme: una
+città senza zona ne scarica una sola. `draw_examples` chiede le prime tre
+nello stesso ordine (`EXAMPLE_SHAPES` in `prefetch_zones.py`); le altre
+cinque non le disegna, e restano dal primo telefono che le chiede.
+
 - **Solo dal centro di una città.** Una richiesta porta la posizione di
   chi la fa, e l'API non tiene la posizione di nessuno (ADR-0085,
   ADR-0092): salvare tutti i percorsi è ADR-0086, nel database, con
@@ -183,7 +192,7 @@ python -m shaperoute_api.draw_examples --api http://127.0.0.1:8000 Rovereto
 python -m shaperoute_api.draw_examples --api https://… --preset italy --preset featured
 ```
 
-Una riga per città (`heart drawn, circle drawn, star kept`), una forma
+Una riga per città (`circle drawn, heart drawn, star kept`), una forma
 alla volta; la chiave dell'API, se serve, da `SHAPEROUTE_API_KEY`. Rifatto,
 passa in un attimo sulle città già tenute. Una città senza la zona sul
 disco dell'API la fa scaricare, come un telefono: per le zone di molte
@@ -259,7 +268,7 @@ Riceve un `GpxRequest`, cioè `{"request": RouteRequest, "result":
 RouteResult}`, e risponde `200` con il percorso in GPX 1.1
 (`application/gpx+xml`), scritto da `export_gpx.py` del motore come fa la
 CLI (`GPX.md`). Il nome del file è nell'intestazione:
-`Content-Disposition: attachment; filename="shaperoute-heart-5km-2026-09-23.gpx"`.
+`Content-Disposition: attachment; filename="sgrava-heart-5km-2026-09-23.gpx"`.
 L'API non ricorda niente, quindi l'export funziona anche dopo i 10 minuti
 di vita di una richiesta in due tempi. Un corpo non valido risponde
 `422 invalid_request` (ADR-0033).
@@ -513,7 +522,7 @@ con `--word` (ADR-0044):
   only the letters A to Z`.
 - Il `RouteResult` ha `"shape": null` e `"word": "CIAO"`, la parola in
   maiuscole; per una forma è il contrario, con `"word": null`.
-- Il nome del file GPX usa la parola: `shaperoute-CIAO-15km-2026-09-24.gpx`.
+- Il nome del file GPX usa la parola: `sgrava-CIAO-15km-2026-09-24.gpx`.
 - `style` sceglie le lettere (TASK-080, ADR-0075): `"round"`, il
   predefinito, oppure `"block"`, le lettere squadrate girate sulla griglia
   delle vie (ADR-0072). Solo con una parola: `"block"` con una forma, o uno
@@ -586,7 +595,7 @@ un'immagine oltre il limite sono `invalid_request`.
   null` e `"word": null`. Con la mela di TASK-072 a Trento, 10 km:
   9,2 km, somiglianza 0,94, in 27 s.
 - Il GPX si chiede a `POST /gpx` con questa richiesta al posto del
-  `RouteRequest`; il file si chiama `shaperoute-image-15km-2026-09-26.gpx`.
+  `RouteRequest`; il file si chiama `sgrava-image-15km-2026-09-26.gpx`.
 - `strokes` (dal TASK-079, facoltativo): gli altri soggetti della foto
   (TASK-084) e i dettagli disegnati a mano, gli `strokes` di un
   `ImageOutline`, senza cambiarli. Si controllano come il contorno: numeri
@@ -891,7 +900,7 @@ motore, in una parola.
 | JSON malformato, campo mancante, in più o fuori limite | 422 | `invalid_request` |
 | `shape` e `word` insieme o nessuno; una lettera che l'alfabeto non ha; più di 8 lettere; meno di 3 km a lettera; `style` sconosciuto o `"block"` con una forma | 422 | `invalid_request` |
 | `/track-scores`: corsa troppo corta per un punteggio, `similarity` fuori da 0–1, troppe posizioni | 422 | `invalid_request` |
-| Forma non disponibile in quella zona (ADR-0025) | 422 | `shape_not_drawable` |
+| Forma non disponibile in quella zona (ADR-0025); nessuna strada attorno alla partenza (ADR-0148: prima era `engine_error`) | 422 | `shape_not_drawable` |
 | Zona non in cache e dati OSM non scaricabili | 503 | `map_data_unavailable` |
 | Il modello che legge le parole della forma non risponde (`AI.md`) | 503 | `ai_unavailable` |
 | Un'immagine senza un contorno chiaro (TASK-073) | 422 | `image_not_usable` |

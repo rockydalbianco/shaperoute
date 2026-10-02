@@ -3,9 +3,10 @@ import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import { FeedMapShooter, forgetFeedMaps } from "../feed/FeedMaps";
+import { shapeLabel } from "../feed/FeedPost";
 import type { Place } from "../places/photon";
-import { forgetExamples } from "./exampleRoutes";
-import { awayText, ExploreScreen, filtered, kmLabel } from "./ExploreScreen";
+import { EXAMPLE_SHAPES, forgetExamples, MORE_SHAPES } from "./exampleRoutes";
+import { awayText, ExploreScreen, kmLabel } from "./ExploreScreen";
 import type { RecommendedRoute } from "./recommendedRoutes";
 import { CARD_MAPS_CREDIT } from "./RouteCard";
 import { POSTS_SHOWN } from "./WhileDrawing";
@@ -17,6 +18,8 @@ jest.mock(
 
 const fetchMock = jest.spyOn(globalThis, "fetch");
 const routes = list.routes as RecommendedRoute[];
+/** The last shape drawn for a city: when its card is there, all are. */
+const LAST = MORE_SHAPES[MORE_SHAPES.length - 1];
 
 beforeEach(() => {
   fetchMock.mockReset();
@@ -39,6 +42,24 @@ function emptyCatalog(input: RequestInfo | URL): Promise<Response> {
   );
 }
 
+/**
+ * As `emptyCatalog`, but only the first three shapes are done at once: the
+ * others never answer. The shapes after the first three have their tests
+ * in ExploreMoreShapes.test.tsx.
+ */
+function firstThreeDone(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> {
+  if (String(input).includes("/recommended-routes")) {
+    return Promise.resolve(Response.json({ routes: [] }));
+  }
+  const { shape } = JSON.parse(String(init?.body));
+  return (EXAMPLE_SHAPES as readonly string[]).includes(shape)
+    ? Promise.resolve(Response.json(jobDone, { status: 202 }))
+    : new Promise<Response>(() => {});
+}
+
 function routeJobShapes(): (string | undefined)[] {
   return fetchMock.mock.calls
     .filter(([url]) => String(url).endsWith("/route-jobs"))
@@ -46,7 +67,7 @@ function routeJobShapes(): (string | undefined)[] {
 }
 
 test("a city without recommended routes: three examples at once (TASK-143)", async () => {
-  fetchMock.mockImplementation(emptyCatalog);
+  fetchMock.mockImplementation(firstThreeDone);
   const onOpen = jest.fn();
   await render(
     <ExploreScreen
@@ -61,28 +82,14 @@ test("a city without recommended routes: three examples at once (TASK-143)", asy
   expect(await screen.findByText("EXAMPLES IN VERCELLI")).toBeOnTheScreen();
   const heart = await screen.findByLabelText(/^Heart, /);
   await screen.findByLabelText(/^Star, /);
-  expect(routeJobShapes()).toEqual(["heart", "circle", "star"]);
+  // The circle is asked first: its zone holds the others'. Then the next
+  // shape is on its way, a card of its own.
+  expect(routeJobShapes()).toEqual(["circle", "heart", "star", MORE_SHAPES[0]]);
+  expect(screen.getByText(shapeLabel(MORE_SHAPES[0]))).toBeOnTheScreen();
+  expect(screen.getByText("Drawing…")).toBeOnTheScreen();
   expect(screen.queryByText(/No recommended routes near this start yet/)).toBeNull();
   await fireEvent.press(heart);
   expect(onOpen.mock.calls[0][0]).toMatchObject({ shape: "heart", city: "Vercelli" });
-});
-
-test("a city with recommended routes asks for no example", async () => {
-  fetchMock.mockResolvedValue(Response.json(list));
-  await render(
-    <ExploreScreen
-      apiUrl="http://api"
-      near={null}
-      onBack={jest.fn()}
-      onOpen={jest.fn()}
-      city={vercelli}
-      onCity={jest.fn()}
-    />,
-  );
-  expect(await screen.findByText("Star · 5.1 km")).toBeOnTheScreen();
-  expect(screen.queryByText("EXAMPLES IN VERCELLI")).toBeNull();
-  expect(routeJobShapes()).toEqual([]);
-  expect(screen.queryByText("MEANWHILE, FROM THE FEED")).toBeNull();
 });
 
 test("while the examples are drawn, drawings of the feed to look at (TASK-163)", async () => {
@@ -125,6 +132,11 @@ test("the drawings stay when the last example arrives", async () => {
     />,
   );
   await screen.findByLabelText(/^Star, /);
+  // Ready above, though the other shapes are still coming.
+  expect(
+    screen.getByText("The shapes of this city are ready above."),
+  ).toBeOnTheScreen();
+  await screen.findByLabelText(new RegExp(`^${shapeLabel(LAST)}, `));
   expect(screen.queryByText("Drawing…")).toBeNull();
   expect(screen.getAllByTestId("feed-post")).toHaveLength(POSTS_SHOWN);
   expect(
@@ -133,6 +145,7 @@ test("the drawings stay when the last example arrives", async () => {
 });
 
 afterAll(() => {
+  forgetExamples();
   fetchMock.mockRestore();
 });
 
@@ -222,27 +235,17 @@ test("without a way to ask there is no line to open", async () => {
   expect(screen.queryByText("Ask for a route")).toBeNull();
 });
 
-test("the filters, in one row, keep one shape or one distance", async () => {
+test("no filters: every route near the start is a card (TASK-176)", async () => {
   fetchMock.mockResolvedValue(Response.json(list));
   await render(
     <ExploreScreen apiUrl="http://api" near={[46.067, 11.1215]} onOpen={jest.fn()} />,
   );
   await screen.findByText("Star · 5.1 km");
-  // Closed, a filter shows no choice: only what it keeps.
-  expect(screen.queryByText("Heart")).toBeNull();
-  await fireEvent.press(screen.getByRole("button", { name: "Shape: All" }));
-  await fireEvent.press(screen.getByText("Heart"));
-  expect(screen.queryByText("Star · 5.1 km")).toBeNull();
-  expect(screen.getByText("Heart · 10.2 km")).toBeOnTheScreen();
-  expect(screen.getByRole("button", { name: "Shape: Heart" })).toBeOnTheScreen();
-
-  // No heart of 5 km in the list: the page says so instead of going blank.
-  await fireEvent.press(screen.getByRole("button", { name: "Distance: All" }));
-  await fireEvent.press(screen.getByText("5 km"));
-  expect(screen.queryByTestId("route-card")).toBeNull();
-  expect(
-    screen.getByText("No route here is both: change one of the two filters."),
-  ).toBeOnTheScreen();
+  expect(screen.queryByText(/^Shape/)).toBeNull();
+  expect(screen.queryByText(/^Distance/)).toBeNull();
+  expect(screen.getAllByTestId("route-card")).toHaveLength(routes.length);
+  // The cards are the only buttons of the page: nothing to set first.
+  expect(screen.getAllByRole("button")).toHaveLength(routes.length);
 });
 
 test("the routes are cards, two side by side between the page's margins", async () => {
@@ -323,15 +326,8 @@ test("a failed list says so", async () => {
   expect(await screen.findByText(/could not load/)).toBeOnTheScreen();
 });
 
-test("labels and filters", () => {
+test("labels", () => {
   expect(kmLabel(21000)).toBe("21 km");
   expect(awayText(640)).toBe("640 m away");
   expect(awayText(1440)).toBe("1.4 km away");
-  expect(filtered(routes, "heart", "all").map((r) => r.id)).toEqual([
-    "trento-heart-10000-1",
-    "trento-heart-21000-2",
-  ]);
-  expect(filtered(routes, "all", "5 km").map((r) => r.id)).toEqual([
-    "trento-star-5000-0",
-  ]);
 });

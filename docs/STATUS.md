@@ -46,6 +46,16 @@ In coda, dopo o accanto:
   posizioni non si salva; il GPX di una corsa salvata; il cuore dei
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
   TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
+- **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
+  sulla pagina con «Soon» (TASK-177): **TASK-178** la foto del profilo
+  (ADR-0146, migrazione `0004`; è la metà «foto» di TASK-116), **TASK-183**
+  cambiare email e numero di telefono (ADR-0150, migrazione `0006`; a cosa
+  serve il numero va chiesto all'utente prima), **TASK-182** le unità di
+  misura, km o miglia (ADR-0149, solo app, tocca molti file), **TASK-184**
+  «Help», «Terms», «Privacy» (dopo TASK-152: testi e contatti), **TASK-185**
+  le notifiche email e push (per ultime: serve qualcosa da notificare, un
+  servizio di posta, `expo-notifications`, una build propria). Tutti Todo,
+  senza task file; l'utente: «li svilupperemo più avanti».
 - **Pubblicità che paga**, chiesta dall'utente il 2026-10-02: **TASK-150**
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
@@ -84,9 +94,8 @@ In coda, dopo o accanto:
   avanti dentro Sgrava (app Spotify Developer sua, Premium, dipendenze
   nuove, 5 persone al massimo finché è in sviluppo); la proposta è di non
   farlo adesso (`tasks/TASK-173.md`, «La seconda parte»).
-- **Altri sport**, chiesti dall'utente il 2026-10-02: **TASK-189** («Sport»
-  in «Settings»: «Run» scelto, «Bike» e «Paddle» con «Soon»; ADR-0152, in
-  lavorazione, aspetta TASK-177), poi **TASK-190 — percorsi in bici**
+- **Altri sport**, chiesti dall'utente il 2026-10-02: dopo «Sport» in
+  «Settings» (TASK-189, fatto), **TASK-190 — percorsi in bici**
   (ADR-0153 tenuto; 10–30 km, scelta dell'utente) e **TASK-191 — percorsi
   in canoa e paddle** (ADR-0154 tenuto; sull'acqua entro 1 km dalla riva,
   scelta dell'utente; esempi a Lago di Garda, Lago di Como, Jesolo,
@@ -128,6 +137,54 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-189: «Sport» in «Settings», chiesto dall'utente
+  (ADR-0152). Una sezione con «Run» scelto e «Bike» e «Paddle» con «Soon»
+  (scelta dell'utente): non si toccano finché il motore non disegna i loro
+  percorsi (TASK-190 bici, TASK-191 canoa e paddle, Todo). La scelta resta
+  sul telefono; accendere uno sport è una riga di `src/settings/sport.ts`.
+  Solo app, nessuna dipendenza nuova. **Da pubblicare su `preview`**, con
+  l'ok dell'utente.
+- **App** — TASK-176: tre richieste dell'utente su «Explore»
+  (ADR-0144). **I filtri non ci sono più**: «Best near you» mostra tutti
+  i percorsi. **Scelta una città, dopo cuore, cerchio e stella l'app
+  disegna altre cinque forme** mentre si guardano le prime (luna, cavallo,
+  lumaca, testa di cane, testa di coniglio: quelle che a 5 km dal centro
+  vengono meglio, misurate su quattro città), una alla volta, ognuna una
+  scheda quando tocca a lei; anche nelle città con percorsi consigliati,
+  in coda alle loro schede. Il cerchio si chiede per primo: una città nuova
+  scarica una zona sola invece di due. **«My start» è diventato «Near
+  me»**, la prima voce della fila delle città, accesa finché non se ne
+  sceglie una. Nell'API cambia solo l'ordine in cui `draw_examples`
+  chiede le prime tre forme. Visto in un simulatore con un'API
+  locale: le otto forme a Padova, e Milano con tre forme nel catalogo che
+  ne riceve altre cinque. **Da pubblicare su `preview`** con l'ok
+  dell'utente, poi **da provare sull'iPhone**. Nelle 62 città con gli esempi già disegnati sul server
+  (TASK-168) le prime tre forme arrivano subito e le altre cinque le
+  disegna il primo telefono, 7–19 s l'una; poi restano sull'API per tutti.
+- **App** — TASK-177: «Profile» con un aspetto nuovo e «Settings», chiesti
+  dall'utente (ADR-0145). Con l'account, in alto il cerchio con l'iniziale,
+  il nome e l'email; due riquadri con ❤️ «Favorites» e 🏃‍♂️ «My activities»
+  e il loro numero in grande; la riga ⚙️ «Settings». «Settings» è una
+  pagina a sezioni: l'account, le nove voci che l'utente ha elencato
+  (foto, email, telefono, unità, notifiche, help, termini, privacy) con
+  «Soon» e senza tocco, e in fondo «Log out» e «Delete account», spostati
+  lì con il sì dell'utente. Visto nel simulatore con un'API locale; i
+  tocchi sono coperti dai test. **Il server è aggiornato** a `main`
+  `781fb18` dal 2026-10-02 13:32Z (ok dell'utente; migrazione `0003_runs`
+  applicata, 15 s di API ferma, immagine di prima
+  `shaperoute-api:before-task172`). **Da fare**: pubblicare l'app su
+  `preview` (ok dell'utente già dato), poi **da provare sull'iPhone**.
+- **App** — TASK-188: un tocco su un disegno di «Feed» apre il suo
+  percorso sulla mappa, chiesto dall'utente (ADR-0151): la scheda di
+  «Explore», con il cuore dei preferiti, «Start» e il GPX; «←» torna a
+  «Feed». Il percorso è quello del catalogo: se il suo `id` è cambiato lo
+  si ritrova dalla partenza, se non c'è più la scheda lo dice e non ne
+  apre un altro. Uno swipe sopra una scheda non la apre. Solo app. Provato
+  in un simulatore con un'API e un database usa e getta: aprire, salvare
+  il preferito, «Start», «←». **Da pubblicare su `preview`** con l'ok
+  dell'utente, poi **da provare sull'iPhone**. Seguiti: lo stesso swipe
+  sulle schede di «Explore»; una domanda per l'utente nel task file (cuore
+  e «Start» anche sulla scheda del feed).
 - **App** — TASK-181: l'avvio tutto giallo, chiesto dall'utente (seguito di
   TASK-179; aggiornamenti di ADR-0134 e ADR-0147). La schermata di avvio
   nativa è gialla con il logo nero (`app.json`), e l'animazione parte già
@@ -250,11 +307,32 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (84 s, 35 MB). **Venezia non riesce**: `engine_error` sulle tre forme,
   il ritaglio attorno al centro storico è senza nodi (TASK-180). Il
   controllo ogni 0,5 s arriva con la prossima pubblicazione dell'app.
+- **API** — TASK-195: il cerchio per primo in `draw_examples` è entrato
+  con TASK-176 (#199), che l'ha fatto mentre questo task partiva. Qui resta
+  solo il test che tiene vera la ragione: l'area del cerchio da 5 km
+  contiene quella di cuore e stella dallo stesso centro. Vale sul server
+  dal prossimo aggiornamento dell'API (ok dell'utente); niente da rifare lì.
 - **App** — TASK-170: «Run with Strava» tolto, chiesto dall'utente
   (ADR-0138, che supera ADR-0106). Nelle tre schede di un percorso
   (disegnato, di «Explore», a tema) restano «Start» ed «Export GPX»; il
   GPX è il modo di portare un percorso in un'altra app. Solo app, niente
   API. Pubblicata il 2026-10-02 (update `38f9a17b`, da fa6462b).
+- **Motore e API** — TASK-180: dove non ci sono strade il motore lo dice,
+  e una zona tiene ogni pezzo della sua rete (ADR-0148). Gli esempi di
+  Venezia finivano in `engine_error` (TASK-168) per due difetti. Un
+  ritaglio senza nodi non aveva un nome: ora è `NoRoadsError`, che l'API
+  dice `shape_not_drawable` e la CLI «No route». E la zona di Venezia non
+  aveva l'isola: OSMnx tiene di un download il pezzo connesso più grande,
+  e a piedi il centro storico non è unito alla terraferma (sul Ponte della
+  Libertà l'ultimo tratto della ciclopedonale è `foot=no`: visto sui dati
+  OSM del 2026-10-02). Ora chi scarica una zona tiene tutti i pezzi, e il
+  più grande si sceglie nel ritaglio, area per area. Le città di oggi non
+  cambiano: quattro zone del Mac rifatte dalle risposte in cache danno lo
+  stesso grafo e la stessa linea (`MAPS.md`, «Area scaricata»). **Manca,
+  con l'ok dell'utente**: sul server, dopo l'aggiornamento dell'API,
+  rifare la zona di Venezia e i suoi esempi (comandi in
+  `tasks/TASK-180.md`). Non provato: la zona vera di Venezia (Overpass
+  rifiutava il Mac) e che il centro storico dia un buon cuore da 5 km.
 - **App** — TASK-166: l'annuncio AdMob compare all'inizio della ricerca
   («Draw route», «Ask for a route») e copre il calcolo; alla X lo schermo
   mostra il percorso, se è pronto, o l'attesa (ADR-0102, aggiornamento).
@@ -311,6 +389,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   è fra i moduli di Expo Go, e l'app non lo importa: in Expo Go non cambia
   niente. **Da guardare in una build propria** (TASK-152). Dopo il merge:
   `npm install` nel checkout principale.
+- **API e app** — TASK-194: il file GPX esportato si chiama
+  `sgrava-heart-5km-2026-09-23.gpx`, non più `shaperoute-…` (seguito di
+  TASK-160); senza un nome dall'API, `sgrava.gpx`. Un'API non aggiornata
+  che risponde ancora il nome vecchio continua a funzionare. Sul telefono
+  il nome nuovo arriva solo dopo l'aggiornamento del server e la
+  pubblicazione dell'app: tutti e due aspettano l'OK dell'utente. Dentro
+  il file, `creator` dice ancora «ShapeRoute route-engine»: seguito
+  possibile (`tasks/TASK-194.md`).
 - **App** — TASK-160: i tre messaggi sulla posizione spenta dicono
   «Location is off for Sgrava…» invece di «…for ShapeRoute…» (prima
   schermata, navigazione, corsa libera): è il nome sotto l'icona da

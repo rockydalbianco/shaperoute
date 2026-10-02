@@ -6,8 +6,8 @@ filtered to its roads once with `osmium tags-filter ... w/highway`): for
 each zone, `osmium extract` cuts the box OSMnx would ask for, and for the
 length of the download OSMnx and the engine read the answers Overpass would
 give from it. Everything after the answer is OSMnx's and the engine's own,
-as for a download: the cut at the border, the simplification, the largest
-connected piece, the files in the cache, the street names.
+as for a download: the cut at the border, the simplification, every
+connected piece kept (ADR-0148), the files in the cache, the street names.
 """
 
 from __future__ import annotations

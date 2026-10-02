@@ -1,7 +1,7 @@
 # TASK-110 — Le scelte della parte social: account, dati, hosting, privacy
 
-**Stato**: Todo
-**Fase**: 4 · **Branch**: `docs/TASK-110-social-decisions`
+**Stato**: Done
+**Fase**: 4 · **Branch**: `docs/TASK-110-decisions`
 
 ## Obiettivo
 
@@ -47,14 +47,66 @@ la fa l'utente**, una domanda per volta.
    111–122, scriverlo nell'«Esito» di questo task e dirlo all'utente: quei
    task file si correggono prima che partano, non a metà.
 
+## Scelte prese (si aggiorna a ogni risposta)
+
+1. **Cosa prende il punteggio**: la corsa confrontata col percorso
+   pianificato, per la somiglianza del percorso (ADR-0090). Approvato
+   dall'utente col merge di TASK-111 (2026-09-30).
+2. **Dove girano API e database**: **Oracle Cloud Always Free**, una VM
+   ARM (Ampere). Scelta dell'utente (2026-10-01), fra Hetzner, Oracle,
+   VPS con servizio gestito e Raspberry Pi. Rischio da gestire: Oracle può
+   reclamare le VM gratuite poco usate, quindi copie di sicurezza fuori
+   dalla VM. Dati controllati il 2026-10-01 dalla sessione «Decide
+   TASK-110» sulle pagine di Oracle: la quota gratuita Ampere A1 oggi
+   equivale a **2 OCPU e 12 GB** (non 4 e 24 come dice `DEPLOY.md`), 200 GB
+   di disco in tutto; una VM A1 con CPU, rete e memoria sotto il 20% per 7
+   giorni può essere reclamata; un account fermo da 30 giorni può essere
+   sospeso; serve una carta di credito (non prepagata) per la verifica, un
+   account gratuito a persona. 12 GB bastano: l'API con due zone ne usa
+   circa 0,4, il database poco.
+3. **Come si entra**: **email e password**, senza servizi esterni; funziona
+   in Expo Go. «Ho dimenticato la password» arriva dopo, con un servizio che
+   manda email. Scelta dell'utente (2026-10-01).
+
+4. **Chi vede una corsa salvata**: solo chi l'ha fatta, finché non la
+   pubblica con «Public»; pubblicata, la vedono tutti gli iscritti. Agli
+   altri non si mostrano i primi e gli ultimi 200 m della traccia. Scelta
+   dell'utente (2026-10-01), fra privata, pubblica con 200 m nascosti e
+   pubblica intera.
+
+5. **Da dove parte un percorso consigliato** (ADR-0086, il punto lasciato
+   a TASK-110): da un punto del giro scelto a caso a più di 500 m dalla
+   partenza vera; il giro è lo stesso. Il nome di chi l'ha chiesto non si
+   mostra mai. Scelta dell'utente (2026-10-01).
+
+6. **Età minima**: **16 anni**, il limite più alto dei paesi UE, così
+   nessun consenso dei genitori in Europa; all'iscrizione la casella «I am
+   at least 16». Scelta dell'utente (2026-10-01), fra 14, 16 e 18.
+
+7. **Cancellare l'account**: si cancella **tutto**, anche i percorsi
+   generati da quell'iscritto che stavano nel catalogo dei consigliati.
+   Quindi un percorso generato da chi è entrato resta legato al suo
+   account; uno generato senza account non è di nessuno e resta. Scelta
+   dell'utente (2026-10-01), fra «restano anonimi» e «si cancellano».
+
+8. **Chi modera**: due admin, **l'utente e il collega**, avvisati tutti e
+   due per email a ogni segnalazione, per togliere un contenuto entro 24
+   ore come chiede l'App Store. Nessun contenuto si nasconde da solo.
+   Scelta dell'utente (2026-10-01), fra «solo l'utente, con email», «solo
+   l'utente, senza avvisi» e «utente e collega».
+
+9. **Pacchetti e servizi nuovi**: approvata tutta la lista (2026-10-01):
+   psycopg, argon2-cffi, expo-secure-store, PostgreSQL con PostGIS in
+   Docker, Object Storage di Oracle, Brevo.
+
 ## Criteri di accettazione
 
-- [ ] ADR-0013 ha stato «Attiva» o è sostituita da ADR nuovi, con hosting,
+- [x] ADR-0013 ha stato «Attiva» o è sostituita da ADR nuovi, con hosting,
       database e autenticazione decisi dall'utente.
-- [ ] `DATABASE.md` non ha più «Stub» e risponde alle sue quattro domande.
-- [ ] `PRODUCT.md` ha un paragrafo sulla parte social con i punti 1, 5, 6.
-- [ ] Ogni pacchetto o servizio nuovo che servirà è elencato e approvato.
-- [ ] `docs/INDEX.md`: `DATABASE.md` «pieno».
+- [x] `DATABASE.md` non ha più «Stub» e risponde alle sue quattro domande.
+- [x] `PRODUCT.md` ha un paragrafo sulla parte social con i punti 1, 5, 6.
+- [x] Ogni pacchetto o servizio nuovo che servirà è elencato e approvato.
+- [x] `docs/INDEX.md`: `DATABASE.md` «pieno».
 
 ## File toccati
 
@@ -73,3 +125,33 @@ docs/tasks/TASK-110.md
 - Notifiche push, seguire altri utenti, classifiche, sfide.
 
 ## Esito
+
+Fatto il 2026-10-01: nove scelte dell'utente (sopra, ADR-0114), il come in
+ADR-0115, `DATABASE.md` pieno, un paragrafo in `PRODUCT.md`. Nessun codice.
+
+**Cosa cambia nei task già scritti** (da correggere nel task file prima
+che parta, non a metà):
+
+- **TASK-114**: database come in `DATABASE.md`, psycopg e Argon2id, token
+  come in ADR-0115; `role` negli utenti. «Password dimenticata» non è più
+  fuori scope per mancanza di posta: con Brevo approvato si può fare, in
+  TASK-114 o in un task a parte.
+- **TASK-115**: la casella «I am at least 16» all'iscrizione;
+  `expo-secure-store` è approvato.
+- **TASK-117**: la traccia tagliata si calcola al salvataggio e si
+  conserva (`DATABASE.md`).
+- **TASK-121**: niente nascondere da solo dopo 3 segnalazioni; email a
+  tutti e due gli admin a ogni segnalazione, con Brevo.
+- **TASK-122**: Oracle Always Free, non un servizio da scegliere; da
+  decidere lì con l'utente HTTPS (dominio) e il passaggio a «Pay As You
+  Go». `DEPLOY.md` dice 4 core e 24 GB per Oracle: oggi sono 2 e 12.
+- **TASK-092**: un percorso generato da chi è entrato porta il suo
+  utente, e si cancella con l'account; il punto di partenza mostrato si
+  sceglie al salvataggio.
+- **Nuovo, da numerare**: il testo della privacy pubblicato a un
+  indirizzo, che l'App Store chiede (cosa si raccoglie, perché, per
+  quanto, come si cancella).
+
+Le risposte le ha raccolte questa sessione; una sessione parallela
+(«Decide TASK-110») si è fermata senza commit e ha mandato i dati di
+Oracle, Hetzner e Supabase controllati il 2026-10-01.

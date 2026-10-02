@@ -10,7 +10,9 @@
     "butterfly",
     "snail",
     "dog_head",
-    "rabbit_head"
+    "rabbit_head",
+    "pumpkin",
+    "christmas_tree"
   ],
   "activities": ["running"],
   "min_distance_m": 1000,

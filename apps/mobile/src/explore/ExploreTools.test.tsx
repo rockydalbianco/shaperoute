@@ -1,8 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 
 import type { Place } from "../places/photon";
-import { AskForRoute, CityPicker } from "./ExploreTools";
-import { CATEGORIES } from "./presets";
+import { CityPicker } from "./ExploreTools";
 
 const newYork: Place = { label: "New York, United States", point: [40.7127, -74.006] };
 const paris: Place = {
@@ -10,6 +9,11 @@ const paris: Place = {
   point: [48.8535, 2.3484],
 };
 const parma: Place = { label: "Parma, Emilia-Romagna, Italy", point: [44.802, 10.328] };
+const arena: Place = {
+  label: "Verona Arena, Verona, Italy",
+  point: [45.439, 10.9949],
+  kind: "place",
+};
 
 function answers(places: Place[]) {
   return jest.fn().mockResolvedValue(Response.json({ places }));
@@ -36,6 +40,26 @@ test("cities from around the world, and the recent ones first", async () => {
   expect(screen.getByText("↺ Parma")).toBeOnTheScreen();
 });
 
+async function typeIn(text: string, fetchFn: typeof fetch, onCity = jest.fn()) {
+  await render(
+    <CityPicker
+      apiUrl="http://api"
+      city={null}
+      onCity={onCity}
+      fetchFn={fetchFn}
+      suggestDelayMs={10}
+    />,
+  );
+  await fireEvent.changeText(
+    screen.getByPlaceholderText("Type a city or a place"),
+    text,
+  );
+  await act(async () => {
+    jest.advanceTimersByTime(20);
+  });
+  return onCity;
+}
+
 test("typing suggests cities, and a tap chooses one", async () => {
   jest.useFakeTimers();
   const fetchFn = answers([parma, paris]);
@@ -49,13 +73,59 @@ test("typing suggests cities, and a tap chooses one", async () => {
       suggestDelayMs={10}
     />,
   );
-  await fireEvent.changeText(screen.getByPlaceholderText("Type a city"), "Par");
+  await fireEvent.changeText(
+    screen.getByPlaceholderText("Type a city or a place"),
+    "Par",
+  );
   await act(async () => {
     jest.advanceTimersByTime(20);
   });
   expect(fetchFn.mock.calls[0][0]).toBe("http://api/city-suggestions?q=Par");
-  await fireEvent.press(await screen.findByText(paris.label));
-  expect(onCity).toHaveBeenCalledWith(paris);
+  expect(screen.getByText("City centre · Ile-de-France, France")).toBeOnTheScreen();
+  await fireEvent.press(await screen.findByLabelText(paris.label));
+  // An API before TASK-138 says no kind: a city.
+  expect(onCity).toHaveBeenCalledWith({ ...paris, kind: "city" });
+  jest.useRealTimers();
+});
+
+test("places come too, half a word is enough (TASK-138)", async () => {
+  jest.useFakeTimers();
+  const onCity = await typeIn("arena di ver", answers([arena, parma]));
+  expect(screen.getByText("Verona Arena")).toBeOnTheScreen();
+  expect(screen.getByText("Verona, Italy")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByLabelText(arena.label));
+  expect(onCity).toHaveBeenCalledWith(arena);
+  jest.useRealTimers();
+});
+
+test("Enter takes the first suggestion", async () => {
+  jest.useFakeTimers();
+  const fetchFn = answers([arena, parma]);
+  const onCity = await typeIn("arena", fetchFn);
+  await fireEvent(
+    screen.getByPlaceholderText("Type a city or a place"),
+    "submitEditing",
+  );
+  expect(onCity).toHaveBeenCalledWith(arena);
+  // Asked once; then the choice told to the API (TASK-142).
+  expect(fetchFn.mock.calls.map(([url]) => url)).toEqual([
+    "http://api/city-suggestions?q=arena",
+    "http://api/signals",
+  ]);
+  expect(JSON.parse(fetchFn.mock.calls[1][1].body)).toEqual({
+    kind: "city_chosen",
+    label: arena.label,
+    point: arena.point,
+    place: true,
+    via: "suggestion",
+  });
+  jest.useRealTimers();
+});
+
+test("nothing found says so", async () => {
+  jest.useFakeTimers();
+  await typeIn("zzz", answers([]));
+  expect(screen.getByText("No city or place matches “zzz”.")).toBeOnTheScreen();
   jest.useRealTimers();
 });
 
@@ -71,7 +141,10 @@ test("one letter asks nothing", async () => {
       suggestDelayMs={10}
     />,
   );
-  await fireEvent.changeText(screen.getByPlaceholderText("Type a city"), "P");
+  await fireEvent.changeText(
+    screen.getByPlaceholderText("Type a city or a place"),
+    "P",
+  );
   await act(async () => {
     jest.advanceTimersByTime(50);
   });
@@ -96,31 +169,47 @@ test("a city search that fails says so", async () => {
   expect(await screen.findByText(/did not answer/)).toBeOnTheScreen();
 });
 
-test("a category is one tap, for the chosen city; Food first", async () => {
-  const onAsk = jest.fn();
-  await render(<AskForRoute city={newYork} where={newYork.label} onAsk={onAsk} />);
-  expect(CATEGORIES[0]).toBe("Food");
-  await fireEvent.press(screen.getByText("Food"));
-  expect(onAsk).toHaveBeenCalledWith("Food in New York");
-  await fireEvent.press(screen.getByText("Hidden Gems"));
-  expect(onAsk).toHaveBeenLastCalledWith("Hidden Gems in New York");
-  expect(screen.getAllByText("in New York").length).toBe(CATEGORIES.length);
+test("the city chosen is told to the API, with how it was chosen (TASK-142)", async () => {
+  const onSignal = jest.fn();
+  const onCity = jest.fn();
+  await render(
+    <CityPicker
+      apiUrl="http://api"
+      city={null}
+      onCity={onCity}
+      recent={[parma]}
+      fetchFn={answers([newYork])}
+      onSignal={onSignal}
+    />,
+  );
+  await fireEvent.press(screen.getByText("↺ Parma"));
+  await fireEvent.press(screen.getByText("New York"));
+  expect(onSignal.mock.calls.map(([signal]) => signal)).toEqual([
+    { kind: "city_chosen", label: parma.label, point: parma.point, via: "recent" },
+    {
+      kind: "city_chosen",
+      label: newYork.label,
+      point: newYork.point,
+      via: "featured",
+    },
+  ]);
 });
 
-test("without a city the categories are near the start", async () => {
-  const onAsk = jest.fn();
-  await render(<AskForRoute where="your start" onAsk={onAsk} />);
-  await fireEvent.press(screen.getByText("Romantic"));
-  expect(onAsk).toHaveBeenCalledWith("Romantic");
-});
-
-test("a request in words still works, with an example for the city", async () => {
-  const onAsk = jest.fn();
-  await render(<AskForRoute city={paris} where={paris.label} onAsk={onAsk} />);
-  await fireEvent.press(screen.getByText("Make my route"));
-  expect(onAsk).not.toHaveBeenCalled();
-  const field = screen.getByPlaceholderText("e.g. a romantic heart in Paris, 8 km");
-  await fireEvent.changeText(field, " a romantic heart ");
-  await fireEvent.press(screen.getByText("Make my route"));
-  expect(onAsk).toHaveBeenCalledWith("a romantic heart");
+test("a name typed and searched with Enter is told as typed", async () => {
+  const onSignal = jest.fn();
+  await render(
+    <CityPicker
+      apiUrl="http://api"
+      city={null}
+      onCity={jest.fn()}
+      fetchFn={answers([paris])}
+      onSignal={onSignal}
+    />,
+  );
+  const field = screen.getByPlaceholderText("Type a city or a place");
+  await fireEvent.changeText(field, "Paris");
+  await fireEvent(field, "submitEditing");
+  expect(onSignal).toHaveBeenCalledWith(
+    expect.objectContaining({ kind: "city_chosen", label: paris.label, via: "typed" }),
+  );
 });

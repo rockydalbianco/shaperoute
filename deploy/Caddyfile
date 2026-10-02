@@ -1,0 +1,8 @@
+# HTTPS in front of the API (TASK-144, docs/DEPLOY.md, F.8). Caddy asks
+# Let's Encrypt for the certificate of SHAPEROUTE_DOMAIN (deploy/.env) and
+# renews it alone; the domain's DNS must point to this server first.
+
+{$SHAPEROUTE_DOMAIN} {
+	encode gzip
+	reverse_proxy api:8000
+}

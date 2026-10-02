@@ -23,6 +23,8 @@ export const SHAPES = [
   "snail",
   "dog_head",
   "rabbit_head",
+  "pumpkin",
+  "christmas_tree",
 ] as const;
 export type Shape = (typeof SHAPES)[number];
 
@@ -167,8 +169,23 @@ export const API_ERROR_CODES = [
   "outline_edit_rejected",
   /** A key is set on the API and the request has the wrong one (TASK-081). */
   "unauthorized",
-  /** Too many requests from this phone in a minute (TASK-081). */
+  /**
+   * Too many requests from this phone in a minute (TASK-081), or too many
+   * wrong passwords for one email (TASK-114).
+   */
   "too_many_requests",
+  /** Signing up with an email that already has an account (TASK-114). */
+  "email_taken",
+  /** Signing up with a username already taken, whatever the case. */
+  "username_taken",
+  /** Signing in with a wrong email or password. */
+  "wrong_credentials",
+  /** No session token, or one that was signed out. */
+  "not_signed_in",
+  /** A session unused for 90 days: sign in again. */
+  "session_expired",
+  /** The API has no database: accounts are off on that server. */
+  "accounts_unavailable",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
@@ -381,4 +398,52 @@ export interface ImageOutlineEditRequest {
   kind: EditKind;
   /** The line drawn, as shares of the image from the top left. */
   line: OutlinePoint[];
+}
+
+/**
+ * Accounts (TASK-114, ADR-0115): email and password. What the app sends to
+ * POST /accounts to sign up; signing up also signs in.
+ */
+export interface SignUpRequest {
+  /** Stored in lower case: one address is one account. */
+  email: string;
+  /** PASSWORD_LENGTH.min to PASSWORD_LENGTH.max characters. */
+  password: string;
+  /** 3 to 20 letters, digits, "_" or "."; unique whatever the case. */
+  username: string;
+  /** The "I am at least 16" box (ADR-0114): false is refused. */
+  at_least_16: boolean;
+}
+
+/** The limits of a password, checked by the API too. */
+export const PASSWORD_LENGTH = { min: 8, max: 128 } as const;
+
+/** What the app sends to POST /session to sign in. */
+export interface SignInRequest {
+  email: string;
+  password: string;
+}
+
+export const USER_ROLES = ["user", "admin"] as const;
+export type UserRole = (typeof USER_ROLES)[number];
+
+/** GET /me, and the user of a Session: never the password or a token. */
+export interface User {
+  id: number;
+  email: string;
+  username: string;
+  role: UserRole;
+  /** ISO 8601, UTC. */
+  created_at: string;
+}
+
+/**
+ * The answer of POST /accounts and POST /session, the only one with the
+ * token: the app keeps it in expo-secure-store and sends it back as
+ * "Authorization: Bearer <token>". It ends 90 days after its last use, or
+ * with DELETE /session.
+ */
+export interface Session {
+  token: string;
+  user: User;
 }

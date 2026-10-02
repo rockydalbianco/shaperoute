@@ -186,7 +186,11 @@ class OsmnxSource:
 
     def load(self, bbox: BBox) -> Graph:
         """Graph of `bbox`: from its cache file, cropped from a larger cached
-        graph (and saved under its own name), or downloaded."""
+        graph, or downloaded and saved.
+
+        A crop is never saved (TASK-136, ADR-0108): it is 3 to 170 MB for
+        each new start, and it is made again from its zone without the
+        network. The API does the same (ADR-0030)."""
         import osmnx as ox
 
         path = self.cache_path(bbox)
@@ -194,9 +198,7 @@ class OsmnxSource:
             return read_graph(path)
         covering = self.covering_path(bbox)
         if covering is not None:
-            graph = crop(read_graph(covering), bbox)
-            _write_graph(graph, path)
-            return graph
+            return crop(read_graph(covering), bbox)
         ox.settings.cache_folder = str(self.cache_dir / "http")
         south, west, north, east = bbox
         # network_type="walk" keeps every edge two-way: one-way streets do

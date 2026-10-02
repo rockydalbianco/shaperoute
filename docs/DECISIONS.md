@@ -165,7 +165,8 @@ ferrari», «spirit»): l'utente ha scelto di tenere il limite, documentato in
 `AI.md`, «Limiti», invece di cercare un modello più grande.
 
 ## ADR-0013 — Database, hosting e autenticazione
-**Stato**: Aperta · **Da decidere entro**: fase 4
+**Stato**: Superata da ADR-0114 (scelte dell'utente) e ADR-0115 (come) ·
+2026-10-01 (TASK-110)
 
 Ipotesi di partenza: PostgreSQL + PostGIS. Non serve prima di avere account
 e percorsi salvati.
@@ -3595,3 +3596,676 @@ di qualche punto; nessun tempo in più. Le altre forme e le parole danno gli
 stessi percorsi (registro rifatto: stella, cavallo, farfalla, CIAO,
 cerchio identici). Se l'occhio lo chiede, il peso si può dare ad altre
 forme senza tratti (cerchio, stella), con un loro giudizio.
+
+## ADR-0108 — La CLI non salva più i ritagli dei grafi
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
+(TASK-136); supera ADR-0023 solo sul salvataggio dei ritagli
+
+**Contesto**: da ADR-0023 `OsmnxSource.load` salva col suo nome ogni
+ritaglio di una zona in cache, GraphML e pickle. L'API non lo fa
+(ADR-0030), ma la CLI e `seed_catalog` sì, una volta per partenza. Sul Mac,
+il 2026-10-01, `data/cache/` pesava 18,6 GB: 346 grafi su 355 (17,9 GB)
+stavano per intero dentro un grafo più grande della cache, con 19 GB
+liberi sul disco. E `covering_path` sceglie il grafo più piccolo che
+contiene l'area: con i ritagli salvati, lo stesso percorso può venire da un
+ritaglio di un ritaglio, a seconda delle richieste fatte prima su quel
+disco, e l'API tiene in memoria quei ritagli invece della zona.
+
+**Decisione**:
+- Un'area dentro una zona in cache si **ritaglia in memoria e non si
+  salva**, come nell'API. Il file esatto, se c'è, si legge ancora; una zona
+  nuova scaricata si salva come prima (ADR-0104).
+- `python -m route_engine.prune_crops` elenca i grafi contenuti in un altro
+  grafo della cache, raggruppati per zona; con `--delete` li cancella
+  (GraphML e pickle). Senza, non cancella nulla. Un grafo si cancella solo
+  se lo contiene un grafo che resta; zone, `names_*.json`, `walk_*` e
+  `http/` non si toccano.
+
+**Misure** (Mac, cache di prova con la sola zona, stesso percorso punto per
+punto prima e dopo):
+
+| Caso | Prima | Dopo |
+|---|---|---|
+| Trento, cuore 5 km, partenza nuova | 2,4 s, scrive 19,7 MB | 1,4 s, niente |
+| Milano, cuore 10 km, partenza nuova | 11,8 s, scrive 108 MB | 5,5 s, niente |
+| Trento, stessa richiesta rifatta | 0,9 s | 1,3 s |
+| Milano, stessa richiesta rifatta | 2,9 s | 5,5 s |
+
+Scrivere il GraphML del ritaglio era metà del tempo di una partenza nuova.
+
+**Alternative scartate**:
+- *Tenere i ritagli, con un limite di spazio o di numero*: la cache
+  cancellerebbe da sola file dell'utente, e il percorso dipenderebbe ancora
+  da quali ritagli ci sono.
+- *Salvare solo i ritagli dei casi di riferimento*: serve un elenco da
+  tenere allineato a `TESTING.md`, per guadagnare 0,4–2,6 s a richiesta.
+- *Tenere la zona in memoria fra una partenza e l'altra nella CLI e in
+  `seed_catalog`*, come `ZoneGraphs`: più veloce ancora, ma è un altro
+  cambiamento; annotato in `tasks/TASK-136.md`.
+
+**Conseguenza**: la cache cresce solo con le zone nuove. Rifare la stessa
+richiesta costa 0,4 s in più a Trento e 2,6 s a Milano, perché si rilegge
+la zona. I ritagli già salvati restano e si leggono come prima finché non
+li si cancella con `prune_crops --delete`: è una scelta dell'utente, perché
+i casi di riferimento letti dal loro ritaglio passerebbero a un ritaglio
+fatto dalla zona.
+
+## ADR-0109 — Anche cerchio e stella evitano i «baffi»
+**Stato**: Attiva · 2026-10-01 · chiesto dall'utente («fai lo stesso per
+cerchio e stella») e giudicato da lui; il peso deciso dall'agente su
+delega dell'utente (TASK-139). Segue ADR-0107.
+
+**Decisione**: `W_DOUBLED` vale 1,5 anche per `circle` e `star`, come per
+il cuore. Le forme con tratti ripassati apposta (gatto, pesce, lettere,
+immagini) restano senza.
+
+**Misure** (7 partenze: Caldonazzo 10 km, Levico 12, 5, 8 km, Trento 10,
+15 km, Milano 10 km): il cerchio non cambia in nessuna. La stella cambia in
+3: Levico 5 km, Levico 8 km, Trento 15 km.
+
+**Giudizio dell'utente**: Levico 8 km e Trento 15 km meglio la stella
+nuova; Levico 5 km nessuna preferenza. Peso doppio (3,0) scartato: a
+Levico 5 km la stella somiglia meno (0,81 → 0,73).
+
+**Conseguenza**: alcune stelle cambiano, con la somiglianza a volte un
+po' più bassa (Levico 8 km 0,93 → 0,86); i tempi no. Cavallo, farfalla,
+CIAO e il cerchio del registro danno gli stessi percorsi di prima.
+
+## ADR-0110 — «Explore»: città e luoghi mentre si scrive
+**Stato**: Attiva · 2026-10-01 · la funzione chiesta dall'utente («scrivo
+ver, devono uscirmi Verona centro, Arena di Verona»); il come deciso
+dall'agente su delega dell'utente (TASK-138). Allarga ADR-0105, che
+suggeriva solo città.
+
+**Contesto**: provata «Explore» sull'iPhone, il campo della città non
+suggeriva nulla: l'app pubblicata era di prima di TASK-134 e l'API del Mac
+era partita prima del suo merge (`/city-suggestions` → 404). Ma anche con
+TASK-134 i suggerimenti erano solo città (`type=city`).
+
+**Decisione**:
+- **Una sola chiamata**, l'autocompletamento di Geoapify senza `type`.
+  Provato su 10 città (Milano, Roma, Parigi, New York, Londra, Torino,
+  Trento, Levico, Tokyo, Barcellona): i risultati `city` hanno lo stesso
+  punto di `type=city` (Parigi 2 km più a est, all'Hôtel de Ville). Il
+  centro dell'area del comune che ADR-0105 temeva (Milano: Baggio) viene
+  dai risultati `county`, che si scartano con regioni, stati e CAP.
+- **L'ordine del servizio**, non prima le città: «casa di giu» mette
+  davanti la Casa di Giulietta, non una frazione col nome simile.
+- **`kind` nella risposta** (`city` | `place`): una città si nomina nelle
+  parole («Food in Verona», come prima); un luogo no, la richiesta è solo
+  «Food» col suo punto, come dalla partenza. Le parole «Food in Verona
+  Arena» farebbero cercare una città con quel nome (`themed.py`).
+- **Etichetta col nome del risultato**: «Parè, Colverde, Italy», non
+  «Colverde» per chi scrive «par». Niente luoghi senza nome (edifici con
+  il solo indirizzo); due luoghi a meno di 150 m sono un solo punto.
+- **Invio sceglie il primo suggerimento**: è quello che si vede.
+
+**Alternative scartate**: i luoghi famosi della prima città già da «ver»,
+come Google: la ricerca dei luoghi di Geoapify li dà per distanza (a Roma
+statue prima del Colosseo, provato) e l'autocompletamento non ha un
+ordine per fama; servirebbe un'altra fonte. Photon trova meglio i
+monumenti a metà parola («colos» → Colosseo) ma risponde in 3 s contro
+1 s (ADR-0095). Un endpoint nuovo accanto a `/city-suggestions`:
+lascerebbe codice morto.
+
+**Conseguenza**: «arena di ver» → Verona Arena, «duomo di mil» → Duomo,
+«colosseo» → Piazza del Colosseo; «ver» dà ancora solo città. Una
+categoria da un luogo parte dal suo punto (provato: Duomo di Milano →
+Food, cerchio di 9,8 km, 4 ristoranti). Etichette in inglese, come le
+città di TASK-134.
+
+## ADR-0111 — Il server a pagamento: quale, e la configurazione in `deploy/`
+**Stato**: Attiva · 2026-10-01 · TASK-144 · la configurazione decisa
+dall'agente su delega dell'utente; il server scelto dall'utente
+
+Chiesto dall'utente: le istruzioni per mettere l'app su un server, da
+usare con il computer spento e un giorno da pubblicare, e i server a
+pagamento migliori per qualità e prezzo.
+
+**Contesto**: la strada C di ADR-0076 aveva i prezzi del 2026-09-26, e
+Hetzner li ha alzati il 1° aprile e il 15 giugno 2026 (CX33 da 6,49 a
+8,49 €, CPX e CCX più che raddoppiati). Il solo `docker run` del
+pacchetto lascia fuori `catalog/` («Explore» vuoto), perde gli eventi di
+TASK-130 a ogni container nuovo e non ha HTTPS né l'AI.
+
+**Decisione**:
+- **Il server** (`DEPLOY.md`, F.1, prezzi del 2026-10-01): **Hetzner
+  CX33** (4 vCPU, 8 GB, 80 GB, 10,97 €/mese IVA compresa, a ore), scelto
+  dall'utente il 2026-10-01 al posto dell'Oracle di ADR-0114, che
+  rispondeva «Out of capacity», e già acceso: messo su a mano, con
+  `docker run` e Caddy da apt su un nome `sslip.io`. L'alternativa
+  annotata è OVHcloud VPS-3 (6 vCore, 12 GB, 100 GB, 12,69 €/mese con 12
+  mesi, backup incluso).
+- **`deploy/compose.yaml`**: l'API dal `Dockerfile`, senza cambiarlo.
+  Zone, eventi e registro in `data/` del checkout con bind mount (cartelle
+  normali: `rsync` dal Mac le riempie, e sopravvivono alle immagini
+  nuove); `catalog/` in sola lettura; un servizio `data-owner` (busybox)
+  che a ogni avvio crea le cartelle e le dà all'utente 10001 dell'API.
+  Porta 8000 solo su `127.0.0.1`: Docker aprirebbe `0.0.0.0` scavalcando
+  `ufw`. Log di Docker limitati a 3 × 10 MB per servizio.
+- **Profili** in `COMPOSE_PROFILES` di `deploy/.env`: `ai` (immagine
+  `ollama/ollama`, `--ai-url http://ollama:11434`; senza il profilo il nome
+  non si risolve e le parole fuori tabella danno `ai_unavailable`, come con
+  Ollama spento) e `public` (Caddy).
+- **Privato prima di pubblico**, nella guida: `tailscale serve` sul
+  server dà HTTPS con certificato vero solo alla tailnet, senza dominio né
+  porte aperte. Per il pubblico **Caddy**, che chiede e rinnova da solo il
+  certificato di `SHAPEROUTE_DOMAIN`: un dominio vostro, o per cominciare
+  un nome `sslip.io`, come il server di oggi. Non Tailscale Funnel: il
+  suo nome pubblico non è stato creato (tailscale/tailscale#21502).
+- **Il limite per telefono anche dietro il proxy**:
+  `FORWARDED_ALLOW_IPS="*"`, letto da uvicorn, fa vedere all'API
+  l'indirizzo di `X-Forwarded-For`. Si può fidare di tutti perché alla
+  porta arrivano solo Caddy e `tailscale serve`.
+- **Segreti in `deploy/.env`**, copia di `.env.example` (`.gitignore` lo
+  esclude già); variabili nuove `SHAPEROUTE_DOMAIN` e `COMPOSE_PROFILES`.
+- **CI**: il job `docker` avvia `deploy/compose.yaml` e controlla
+  `/health`, la chiave (401/200), il proprietario di `data/cache`, i
+  percorsi di «Explore» a Trento e il `Caddyfile` (`caddy validate`).
+
+**Alternative scartate**: DigitalOcean, Vultr, Linode, Lightsail (4–5
+volte il prezzo per la stessa RAM); Render, Railway, Fly.io (RAM e disco
+permanente a parte); netcup (14,50 € per 8 GB); vCPU dedicati Hetzner
+dopo i rincari; Contabo come prima scelta (processore e disco più lenti,
+impegno di 24 mesi); nginx con certbot (più passi e un rinnovo da
+controllare); Cloudflare Tunnel con dominio (il dominio deve stare su
+Cloudflare e il traffico passa da loro); volumi Docker con nome per le
+zone (da riempire servirebbe root); cambiare il `Dockerfile` per
+`catalog/` (il montaggio basta, e un catalogo nuovo non chiede
+un'immagine nuova).
+
+**Conseguenza**: dal server comprato all'app sull'iPhone a Mac spento sono
+i passi F.2–F.7 di `DEPLOY.md`. Il server di oggi non usa ancora questa
+configurazione: spostarlo (F.12, stessi dati e stesso indirizzo) si fa a
+parte, a fine coda dei merge. Misurato lì, a mano: cuore da 5 km a Trento
+in 18,7 s con la zona in cache, l'API in 0,56 GB; l'AI su CPU è da
+provare. TASK-122 aggiunge il database a `deploy/compose.yaml`.
+## ADR-0112 — Le ricerche imparano anche da cosa fa l'app
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
+(TASK-142), che ha chiesto di nuovo il sistema di auto-miglioramento
+
+**Contesto**: ADR-0101 impara da cosa l'API vede. Ma l'API non vede le
+scelte: da TASK-134/138 una città scelta fra i suggerimenti non passa da
+`/cities` (dal vivo: Vercelli, «Explore» vuoto 3 volte, nessuna proposta);
+non sa quale percorso si usa fra A, B e C, né se si prende «Try N km».
+Una ricerca sbagliata e corretta subito («levic» → Levič, Slovenia → 16 s
+dopo Levico) non insegnava nulla. Un cambio del motore o del catalogo non
+si misurava: `impact` confronta solo versioni del vocabolario.
+
+**Decisione**:
+- **`POST /signals`** (`signals.py`): tre corpi in lista bianca,
+  `city_chosen`, `route_chosen`, `hint_taken`; un campo in più è un 422.
+  Sempre `204`, mai un errore sul telefono. Oltre 60 al minuto, tutti i
+  client insieme, non si registrano. Il nome di una città è pubblico e si
+  tiene con le maiuscole; il punto diventa la cella di ~1 km; mai le lettere
+  digitate, mai la partenza. Nell'app un invio che non fallisce mai, da
+  `ExploreTools.tsx` (la città e come) e `RoutePanel.tsx` (il primo uso di
+  un percorso, «Try N km», una forma del catalogo), senza toccare `App.tsx`.
+- **Percorsi annullati** come eventi (`cancelled`, con lo stato a cui
+  erano), registrati da `DELETE`; il risultato buttato non conta.
+- **`city_name`**, una proposta applicabile: parole cercate come città e
+  lasciate entro 3 minuti per una città il cui nome comincia con quelle
+  parole o ne dista poche lettere, ≥ 2 volte, in ≥ 2 giorni, in metà delle
+  ricerche. Nel vocabolario (`city_names`), `/cities` cerca il nome
+  imparato. Senza un identificativo, ricerca e scelta si legano solo per
+  tempo: da qui le tre condizioni.
+- **Metriche di comportamento** (`cancel_rate`, `first_choice_rate`): si
+  leggono, ma non chiedono di tornare indietro col vocabolario, che non le
+  cambia. `city_left_rate` sì: è quella che un nome imparato abbassa.
+- **`compare --split GIORNO`** per ogni cambio, con lo stesso test di
+  `impact`; `trend` per settimana; `why` per sapere cosa manca a una
+  proposta.
+
+**Alternative scartate**: un identificativo di sessione nei segnali
+(legherebbe ricerca e scelta con certezza, ma è un dato di una persona:
+scelta dell'utente, con gli account di TASK-110); registrare le lettere di
+`/city-suggestions` (ADR-0101); imparare dalle scelte fra A, B e C (la
+classifica è codice del motore: `review_ranking`, per una persona);
+il tipo dei segnali in `shared-types/src/index.ts` (è di TASK-088, aperto:
+per ora `src/signals.ts`).
+
+**Conseguenza**: provato dal vivo su un'API di prova con Geoapify: il primo
+giorno ricostruito dall'evento vero di «levic», il secondo dal vivo →
+proposta `city_name` → `apply` → `GET /cities?q=levic` risponde Levico
+Terme (`"by":"learned"`). Vercelli scelta fra i suggerimenti → proposta per
+il catalogo. Trovato e corretto un errore di TASK-130: `Insights.record`
+riceveva `ms` due volte, e nessun percorso dell'API era mai stato
+registrato (c'erano solo quelli importati dallo storico).
+
+## ADR-0114 — La parte social: le scelte dell'utente
+**Stato**: Attiva · 2026-10-01 · **scelte dell'utente**, una domanda per
+volta (TASK-110). Chiude, con ADR-0115, ADR-0013.
+
+**Contesto**: la parte social (`ROADMAP.md`, TASK-110 … 122) aspettava le
+scelte su dove stanno i dati, come si entra, chi vede cosa e chi modera.
+Le proposte, con le alternative scartate, sono nel task file.
+
+**Decisione dell'utente**:
+1. **Punteggio**: la corsa contro il percorso pianificato (ADR-0090).
+2. **Hosting**: **Oracle Cloud Always Free**, VM ARM Ampere A1 (oggi 2
+   OCPU e 12 GB gratis), per API e database. Scartati Hetzner (circa
+   6–11 €/mese), un VPS con database e accessi gestiti (Supabase), un
+   Raspberry Pi a casa.
+3. **Accesso**: email e password. Apple e Google forse dopo, con una build
+   propria.
+4. **Corse salvate**: private finché l'iscritto non le pubblica;
+   pubblicate, le vedono gli iscritti (il feed non si legge senza account),
+   senza i primi e gli ultimi 200 m della traccia.
+5. **Percorsi consigliati** (ADR-0086): mostrati da un punto del giro a
+   più di 500 m dalla partenza vera, mai con il nome di chi li ha chiesti.
+6. **Età minima**: 16 anni, con la casella «I am at least 16».
+7. **Cancellare l'account** cancella tutto, anche i percorsi generati da
+   quell'iscritto nel catalogo dei consigliati. Un percorso generato senza
+   account non è di nessuno e resta.
+8. **Moderazione**: due admin, l'utente e il collega, avvisati per email a
+   ogni segnalazione; un contenuto si toglie entro 24 ore, a mano. Nessun
+   contenuto si nasconde da solo.
+9. **Pacchetti e servizi nuovi approvati**: psycopg e argon2-cffi
+   nell'API, expo-secure-store nell'app, PostgreSQL con PostGIS in Docker
+   sulla VM, Object Storage di Oracle per le copie, Brevo per le email.
+
+**Conseguenze sui task già scritti**: nel task file di TASK-110,
+«Esito».
+
+## ADR-0115 — Database, account e server: come
+**Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega
+dell'utente, dentro le scelte di ADR-0114 (TASK-110)
+
+**Decisione**:
+- **PostgreSQL 16 con PostGIS**, in Docker sulla stessa VM dell'API
+  (immagine `postgis/postgis`). Tracce e percorsi come geometrie PostGIS in
+  WGS84: le domande «vicino a me» (TASK-092, TASK-118) si fanno nel
+  database con un indice spaziale. Schema in `DATABASE.md`.
+- **Migrazioni**: file SQL numerati in `services/api/migrations/`,
+  applicati all'avvio dell'API in una transazione, con la tabella
+  `schema_migrations`. Niente Alembic: una dipendenza in meno, e lo schema
+  si legge in SQL.
+- **psycopg 3** senza ORM: le query sono poche e PostGIS si scrive meglio
+  in SQL.
+- **Password** con Argon2id (`argon2-cffi`), mai nei log. **Sessione**: un
+  token casuale di 32 byte dato all'app; nel database solo il suo hash
+  (SHA-256), con scadenza a 90 giorni dall'ultimo uso. Niente JWT: un token
+  si revoca cancellando la riga. Nell'app il token sta in
+  `expo-secure-store`.
+- **Foto del profilo**: un JPEG quadrato piccolo (256 px) nel database,
+  così le copie di sicurezza le prendono con il resto.
+- **Copie di sicurezza**: `pg_dump` ogni notte sulla VM, caricato
+  nell'Object Storage gratuito di Oracle (20 GB), 14 copie; un ripristino
+  provato in TASK-122. Le copie stanno fuori dalla VM perché Oracle può
+  reclamarla (ADR-0114).
+- **Admin**: una colonna `role` negli utenti; i due admin si nominano con
+  una riga SQL sulla VM, senza schermate.
+- **Email** con Brevo, dall'API soltanto: la chiave in `.env`, mai
+  nell'app.
+
+**Da decidere in TASK-122, con l'utente**: HTTPS (serve un nome di
+dominio, qualche euro all'anno, o un altro modo) e se passare l'account
+Oracle a «Pay As You Go», che resta gratis dentro i limiti e, secondo le
+regole di Oracle, non reclama le VM poco usate: la VM dell'API usa poca
+CPU e rischia proprio quello.
+
+**Scartate**: *Supabase* per database e accessi (scelta dell'utente:
+tutto sulla VM); *SQLite* (niente PostGIS, un solo processo che scrive);
+*le foto nell'Object Storage* (un servizio in più da chiamare per ogni
+profilo, per pochi KB).
+
+## ADR-0116 — «Explore»: due categorie, ed esempi disegnati subito per una città
+**Stato**: Attiva · 2026-10-01 · chiesto dall'utente dopo la prova di
+TASK-138 («solo due e poi altro con tre puntini»; «devono partire subito i
+cuori, le forme più semplici, e gli dai l'esempio»); forme, distanza e il
+come decisi dall'agente su delega dell'utente (TASK-143). Allarga ADR-0105.
+
+**Contesto**: 13 categorie occupavano lo schermo. Una città fuori dal
+catalogo (Vercelli) mostrava solo «No recommended routes near this start
+yet»: il catalogo ha percorsi per 6 città.
+
+**Decisione**:
+- **Due categorie e «More…»**: le prime due dell'ordine di ADR-0105 (Food,
+  Famous Places); «More…» apre le altre nella stessa griglia, a tre per
+  riga. Il componente sta in un file nuovo, `AskForRoute.tsx`: quello
+  vecchio in `ExploreTools.tsx` resta finché TASK-142, che ha quel file,
+  non è in `main`.
+- **Esempi solo dove il catalogo non ha niente**: cuore, cerchio e stella
+  da 5 km dal centro della città, le forme più semplici del catalogo e la
+  distanza più breve che si chiede di solito. Con `/route-jobs`, come
+  «Draw route»: nessun contratto nuovo.
+- **Uno alla volta, il cuore per primo**: ogni forma chiede un riquadro un
+  po' diverso, e due richieste insieme potevano scaricare due zone da
+  Overpass, che dopo pochi download rifiuta il Mac per ore. La prima
+  scarica, le altre la trovano in cache.
+- **Fuori dalla schermata**: gli esempi stanno in un modulo, non nello
+  stato di `ExploreScreen`; aprire un esempio sulla mappa non ferma quelli
+  in calcolo. Un'altra città sì: l'API ha 2 worker, la città nuova ha la
+  precedenza.
+- **Si aprono come un percorso consigliato** (`onOpen`, `useExplored`):
+  `explored.ts` trova il percorso intero già sul telefono e non lo chiede
+  al catalogo. `App.tsx` non cambia (lo tocca la PR #130).
+- **Restano sul telefono**: in memoria e in `city-examples.json` (ultime 8
+  città), come le città recenti. La seconda volta sono immediati, anche
+  dopo aver chiuso l'app.
+- **Mappa non scaricabile o API spenta**: un solo messaggio
+  (`problemText`) e «Try again»; le altre forme non si chiedono, finirebbero
+  uguali.
+
+**Alternative scartate**: salvare gli esempi nel catalogo dell'API per
+tutti (il catalogo è guardato a occhio, ADR-0097; i percorsi salvati per
+tutti aspettano il database, ADR-0086); un endpoint che disegni le tre
+forme in una volta (contratto nuovo per lo stesso effetto); chiedere gli
+esempi già mentre si scrive la città (scaricherebbe zone di città non
+scelte).
+
+**Conseguenza**: provato sull'API del Mac il 2026-10-01: Pergine Valsugana
+(zona in cache, niente catalogo) cuore 4,4 km 0,87, cerchio 4,6 km 0,77,
+stella 4,8 km 0,94, 2 s l'uno; New York uguale. Vercelli:
+`map_data_unavailable` dopo 63 s, finché Overpass rifiuta il Mac: lì
+servono le zone scaricate prima (TASK-137).
+
+## ADR-0117 — «Start» sui percorsi di «Explore»: le indicazioni dai punti
+**Stato**: Attiva · 2026-10-01 · chiesto dall'utente («dalla sezione di
+explore implementa la stessa funzione di start del percorso con le
+indicazioni»); il come deciso dall'agente su delega dell'utente
+(TASK-145). Toccare `App.tsx` (anche di TASK-132) e `app.py` (anche di
+TASK-142) approvato dall'utente.
+
+**Contesto**: un percorso aperto da «Explore» aveva solo «Export GPX»: il
+catalogo tiene i punti e basta (ADR-0097), il percorso a tema e gli
+esempi di una città arrivano all'app allo stesso modo. Le indicazioni di
+svolta (ADR-0045) vogliono i nodi del grafo, che l'app non ha.
+
+**Decisione**:
+- **Le indicazioni si ricavano dai punti, sull'API**: i punti del motore
+  sono i nodi e la geometria degli archi fra loro, quindi ogni nodo è uno
+  dei punti (entro 1 m, anche coi 6 decimali dei file). Un modulo nuovo
+  del motore, `route_nodes.py`, ritrova i nodi; l'API ci mette
+  `guidance` e gli `along` come per un percorso pianificato. Un solo
+  endpoint, `POST /route-directions` (`{points}` → `{directions}`), per
+  tutti i percorsi di «Explore», qualunque sia la loro origine.
+- **Una richiesta sola, non un job**: con la zona in cache bastano 0,1–
+  0,5 s; i percorsi di «Explore» stanno in zone già usate (il catalogo è
+  stato pianificato lì, a tema ed esempi sono appena stati disegnati). Una
+  zona da scaricare può metterci di più: la scheda lo dice se fallisce, e
+  «Start» riprova.
+- **Errori senza codici nuovi**: una linea fuori dalla mappa è
+  `invalid_request` (`RouteNotOnGraphError` è un `InvalidRequestError`),
+  una zona che non si scarica `map_data_unavailable`.
+- **Nell'app**: «Start» giallo nelle due schede di «Explore», sopra
+  «Export GPX» come per un percorso disegnato. Le indicazioni si chiedono
+  al tocco, non all'apertura: chi guarda e basta non chiede niente.
+  Restano in memoria per quella linea (stessa lista di punti), così un
+  secondo «Start» dopo «Stop» parte subito. La navigazione, la traccia e
+  il punteggio sono quelli di sempre (ADR-0052, ADR-0091, ADR-0093), sulla
+  linea di «Explore»; uscire da «Explore» lascia perdere l'attesa e la
+  corsa.
+- **Tipi nel modulo dell'app** (`routeDirections.ts`), come
+  `themedRoutes.ts`: `packages/shared-types/src/index.ts` è di TASK-088
+  (PR #112). Il contratto sta nelle fixture.
+
+**Alternative scartate**: salvare le indicazioni nel catalogo
+(`seed_catalog.py` è di TASK-128, e un percorso a tema o un esempio non
+passano dal catalogo); mandarle già con `GET /recommended-routes/{id}` e
+nel risultato a tema (due endpoint da cambiare, e indicazioni calcolate
+anche per chi non parte); calcolarle sul telefono dalla sola geometria
+(senza grafo niente nomi delle vie né incroci veri); ricalcolare il
+percorso dalla partenza (sarebbe un altro percorso).
+
+**Conseguenza**: provato sull'API del Mac il 2026-10-01: percorsi del
+catalogo a Trento (5 e 23 km), Bologna, Milano e Levico, tutta la linea
+ritrovata in 0,1–0,5 s; 4 percorsi appena pianificati (Trento e Bologna,
+con le alternative) danno indicazioni identiche a quelle del motore. Da
+provare sull'iPhone.
+
+## ADR-0084 — Zucca e albero di Natale nel catalogo; «albero» da solo resta fuori
+**Stato**: Attiva · 2026-09-30 · le forme scelte dall'utente; parole,
+tessere e domanda all'AI decise dall'agente su delega dell'utente (TASK-088)
+
+**Contesto**: TASK-078 (ADR-0073) ha disegnato zucca di Halloween e albero
+di Natale, giudicati a 15 km: zucca `sì` a Milano, `no` a Trento, `quasi`
+a Levico; albero `sì` a Milano, `quasi` a Trento, `no` a Levico. ADR-0061
+li aveva lasciati contorni da CLI. Nel motore c'è anche `tree.json`
+(TASK-034/037), un albero qualsiasi, mai entrato nel catalogo.
+
+**Decisione**:
+- **Entrano `pumpkin` e `christmas_tree`**, scelti dall'utente
+  (2026-09-30) sapendo il giudizio: fuori da una rete fitta possono non
+  riuscire, e l'app propone già un'altra distanza o le altre forme
+  (ADR-0041). Come le forme di ADR-0061: `SHAPES` del motore,
+  `shared-types`, `contract.json`, `shapeWords.ts`, `OUTLINES`. Sullo
+  schermo «pumpkin» e «christmas tree».
+- **Parole**: «zucca», «zucche», «zucca di halloween», «pumpkin»,
+  «halloween pumpkin», «jack-o'-lantern»; «albero di natale», «alberi di
+  natale», «alberello di natale», «christmas tree», «xmas tree».
+- **«albero» e «tree» da soli non cambiano significato**: non sono nella
+  tabella e per l'AI restano «nessuna forma» (due voci nella lista di
+  messa a punto lo controllano). La riga dell'AI dice «a decorated
+  Christmas tree with a star on top, not a plain tree»: senza le ultime
+  parole qwen3:4b sceglieva l'albero di Natale per «tree». «Natale»,
+  «Halloween», «abete addobbato» le legge l'AI, e portano alle due forme.
+- **Tessere** 🎃 e 🎄, **in una riga sola che scorre di lato** (chiesto
+  dall'utente, 2026-10-01: nella griglia di quattro per riga zucca e albero
+  non si trovavano). Tessere larghe 88 punti, poco meno di quattro per
+  schermo: quella tagliata sul bordo dice che la riga continua. Una forma
+  scritta nel campo («zucca») porta la sua tessera in vista.
+
+**Alternative scartate**: portare «albero» all'albero di Natale (chi
+scrive «albero» a luglio non vuole la stella in cima; è una scelta di
+prodotto, non delegata); mettere «halloween» e «natale» nella tabella
+(sono feste, non disegni: le legge l'AI, e si possono spostare se sbaglia).
+
+**Conseguenza**: il catalogo ha tredici forme. Chieste all'API a Milano a
+15 km danno, punto per punto, i campioni giudicati di TASK-078. Se un
+giorno `tree` entra nel catalogo, «albero» e «tree» sono liberi per lui.
+
+## ADR-0118 — I baffi delle altre forme: solo quelli oltre i tratti voluti
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («fai lo stesso per
+le altre forme») e giudicato da lui forma per forma; misura e peso decisi
+dall'agente su delega dell'utente (TASK-140). Segue ADR-0107 e ADR-0109.
+
+**Contesto**: senza tratti ripassati restano solo cavallo e luna. Gatto,
+pesce, farfalla, lumaca, testa di cane e di coniglio ripassano apposta
+occhi, antenne, spirale (TASK-037): contare tutto il percorso fatto due
+volte li avrebbe puniti per i loro tratti.
+
+**Decisione**:
+- `extra_doubled_share(percorso, forma)`: la quota fatta due volte del
+  percorso meno quella della forma piazzata; mai sotto zero. Sostituisce
+  `doubled_share` nel costo della ricerca e nello `score` delle partenze
+  vicine. Per una forma senza tratti è la stessa cosa: cuore, cerchio e
+  stella restano identici (77 percorsi confrontati con `main`).
+- `W_DOUBLED` = 1,5 per cuore, cerchio, stella, cavallo, luna, farfalla,
+  lumaca.
+
+**Giudizio dell'utente** sui 13 percorsi che cambiavano con il peso su
+tutte le forme: meglio i nuovi per luna (1 su 1), farfalla (1 su 1),
+lumaca (1 su 1); meglio quelli di prima per gatto (3 su 4), pesce (1 su 1),
+testa di cane (2 su 3), testa di coniglio (1 su 1, l'altro indifferente).
+Il cavallo non cambiava: entra come il cerchio, perché non ha tratti.
+
+**Alternative scartate**: il peso per tutte le forme (gatto, pesce e teste
+avrebbero perso forma, giudicati peggio); un peso diverso per forma (con
+7 prove ciascuna non c'è abbastanza per tararlo).
+
+**Conseguenza**: sulle prove cambiano solo i 3 percorsi giudicati meglio.
+Gatto, pesce e le teste possono tenere dei baffi: se l'occhio lo chiede,
+servono altre idee (ritoccare la forma, o la somiglianza delle teste).
+
+## ADR-0121 — Su Linux la memoria per le partenze vicine è MemAvailable
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-147), dopo che l'utente non vedeva più le alternative sul server.
+
+**Contesto**: le partenze vicine (ADR-0071) partono ciascuna in un
+processo solo se c'entra nella memoria, lasciando 1000 MB al piano della
+partenza dell'utente; le alternative (ADR-0087) sono i loro percorsi. Su
+Linux la memoria si leggeva da `SC_AVPHYS_PAGES`, cioè MemFree, che non
+conta la cache dei file. Sul server Hetzner la cache è piena delle zone
+lette dal disco: 534 MB liberi su 6,8 GB disponibili, quindi nessuna
+partenza vicina e nessuna alternativa, per forme, parole e immagini. Sul
+Mac `SC_AVPHYS_PAGES` non esiste (si provano sempre tutte), su Windows si
+legge già la memoria disponibile: per questo non si era visto.
+
+**Decisione**:
+- Su Linux si legge **MemAvailable** da `/proc/meminfo`: la stima del
+  kernel della memoria che un processo nuovo può prendere senza swap,
+  cache liberabile compresa.
+- Sotto un **limite cgroup v2** (container con `--memory`, servizio
+  systemd con `MemoryMax`) non più di quanto resta del limite, contando
+  come libera la cache inattiva (`inactive_file`), come fa `docker stats`.
+  Senza limite (`max`), solo MemAvailable.
+- Senza MemAvailable (kernel prima di 3.14) si torna a `SC_AVPHYS_PAGES`.
+- In un modulo nuovo, `route_engine/memory.py`; `free_memory_mb` lo usa su
+  Linux. Riserva, peso per processo e attese restano quelli di ADR-0071.
+
+**Conseguenza**: sul server, nel container dell'API, il cuore da 5 km a
+Trento torna con un'alternativa (10,8 s) e la stella con due (5,8 s),
+come sul Mac. Due richieste insieme contano la memoria ognuna quando
+parte, come prima.
+
+## ADR-0120 — Account nell'API: endpoint, errori, tentativi, test
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente,
+dentro ADR-0114 e ADR-0115 (TASK-114); Colima sul Mac scelto dall'utente
+
+**Contesto**: ADR-0115 decide database, libreria, hash della password e
+token. Restavano i nomi degli endpoint, gli errori che l'app deve
+distinguere, il limite ai tentativi, cosa fa l'API senza database e come
+girano i test con un database vero.
+
+**Decisione**:
+- **Endpoint**: `POST /accounts` (iscriversi, e si entra), `POST /session`
+  (entrare), `DELETE /session` (uscire da questo telefono), `GET /me`,
+  `DELETE /me`. Il token va in `Authorization: Bearer`, separato dalla
+  chiave dell'API in `X-API-Key` (ADR-0076). Gli altri endpoint restano
+  aperti; quelli che verranno usano la dipendenza `current_user`.
+- **Errori**: sei codici nuovi, in `schemas.py` e `shared-types`:
+  `email_taken` e `username_taken` (409), `wrong_credentials`,
+  `not_signed_in` e `session_expired` (401), `accounts_unavailable` (503).
+  Troppi tentativi riusano `too_many_requests` (429, `Retry-After`).
+- **Email sconosciuta e password sbagliata** danno la stessa risposta, nello
+  stesso tempo (la password si verifica contro un hash finto): la risposta
+  non dice chi è iscritto. L'iscrizione con un'email già usata invece lo
+  dice (`email_taken`): il task lo chiede, e senza l'app non saprebbe cosa
+  rispondere.
+- **Tentativi**: 5 password sbagliate per la stessa email in 15 minuti,
+  poi 429 finché la più vecchia esce dalla finestra, anche con la password
+  giusta. In memoria: un riavvio li azzera, accettato per un'API con un
+  solo processo. Il limite dei POST di ADR-0076 vale in più.
+- **Valori**: email in minuscolo, fino a 254 caratteri; password 8–128
+  (Argon2 legge tutto: il tetto evita un «password» da un megabyte); nome
+  3–20 fra lettere, cifre, `_` e `.`, unico senza badare alle maiuscole e
+  mostrato com'è scritto.
+- **Scadenza**: una sessione vale finché l'ultimo uso è entro 90 giorni, e
+  ogni uso la allunga. Quella scaduta si cancella al primo uso e risponde
+  `session_expired` una volta, poi `not_signed_in`.
+- **`DELETE /me`** basta il token, senza ripetere la password: la conferma
+  la chiede l'app (TASK-115, TASK-121).
+- **Senza database** (`SHAPEROUTE_DATABASE_URL` vuota) l'API parte come
+  prima e gli account rispondono `503 accounts_unavailable`. **Con
+  l'indirizzo ma il database irraggiungibile**, o una migrazione che
+  fallisce, l'API non parte e dice perché: meglio che account rotti una
+  richiesta alla volta.
+- **Migrazioni**: le applica `__main__` prima di aprire la porta, ognuna
+  nella sua transazione, sotto un advisory lock; una che fallisce non
+  lascia niente. L'estensione PostGIS la crea la prima migrazione con una
+  geometria.
+- **Connessioni**: una per richiesta, nessun pool (`psycopg_pool` sarebbe
+  un pacchetto in più); da rivedere se gli account diventano tanti.
+- **Test**: `conftest.py` avvia `postgis/postgis:16-3.4` con docker, una
+  volta per giro, e dà a ogni test un database vuoto. I runner della CI
+  hanno docker: `ci.yml` non cambia. Senza docker i test del database si
+  saltano sul PC e falliscono in CI. Sul Mac docker è Colima (scelta
+  dell'utente, 2026-10-02): niente Docker Desktop né licenze.
+
+**Scartate**: `/signup` e `/login` (verbi, mentre l'API nomina le cose);
+un servizio `postgres` nella CI (cambia `ci.yml`, e il conftest basta);
+un database finto o SQLite nei test (`DATABASE.md`: niente finti);
+un 401 diverso per l'email sconosciuta (direbbe chi è iscritto).
+
+**Conseguenze**: TASK-115 usa questi endpoint e i tipi di `shared-types`
+(`SignUpRequest`, `Session`, `User`). TASK-122 mette il database sul
+server, accanto all'API, con `SHAPEROUTE_DATABASE_URL`. La password
+dimenticata resta fuori: serve la posta (Brevo, ADR-0115).
+
+## ADR-0122 — Correre senza percorso: «Run» registra solo la traccia
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («la possibilità
+anche di iniziare una corsa senza disegnare nulla, magari la prima
+facciata scrivi Run»); il come deciso dall'agente su delega dell'utente
+(TASK-149). Toccare `App.tsx`, che è anche di TASK-132 (in corso), è
+segnalato nella PR: le righe cambiate sono altre.
+
+**Contesto**: fino a qui una corsa partiva solo da un percorso (disegnato
+o di «Explore») con le indicazioni, e la traccia registrata (ADR-0091)
+serviva al punteggio (ADR-0090). Chi vuole solo correre doveva disegnare
+qualcosa.
+
+**Decisione**:
+- **«Run» nella prima schermata**, un pulsante come «Explore», accanto a
+  lui: la corsa parte subito, dal GPS, senza scegliere partenza, forma o
+  distanza.
+- **Stessa traccia, stesso file**: `startRun` di TASK-112 con il percorso
+  vuoto (`FREE_ROUTE`). Valgono le regole di ADR-0091 (posizioni scartate,
+  salvataggio ogni 15 s, «una corsa per volta», ripresa entro 30 minuti),
+  e un percorso vuoto basta a riconoscere una corsa libera nel file
+  (`pendingFreeRun`). Nessuna modifica a `trackStore.ts`.
+- **Niente punteggio e niente API**: senza forma non c'è niente da
+  giudicare. La fine della corsa mostra km, tempo e passo medio; «Done» la
+  cancella subito dal telefono (una corsa con la forma resta finché non ha
+  il punteggio).
+- **Banner da corsa**: km con due decimali, tempo dalla prima posizione
+  (va avanti ogni secondo), passo medio dopo 100 m.
+- **La voce a ogni km** (chiesta dall'utente dopo la prima versione): km,
+  tempo e passo medio, come un orologio da corsa, con la voce della
+  navigazione (`play`, inglese). Una volta per km: se il GPS ne salta uno,
+  si dice l'ultimo; una corsa ripresa non ripete i km già detti. Senza
+  vibrazione: in navigazione la vibrazione è una svolta.
+- **Codice in file nuovi** (`freeRun.ts`, `useFreeRun.ts`,
+  `FreeRunScreen.tsx`); `App.tsx` collega le due schermate nuove (`run`,
+  `runFinish`) e `ChooseScreen.tsx` ha il pulsante.
+
+**Alternative scartate**: un file a parte per le corse libere (due corse
+in corso insieme, e la ripresa da riscrivere); usare `useNavigation` con
+un percorso vuoto (il navigatore vuole una linea e dice «You have
+arrived»); chiedere un punteggio di sola distanza all'API (non c'è niente
+da confrontare); salvare le corse finite (è la cronologia, TASK-117).
+
+**Conseguenza**: dopo uno «Stop» la mappa resta dove si è partiti a zoom
+15, non inquadra tutta la linea: inquadrarla vuole un messaggio nuovo
+della pagina della mappa (seguito possibile). Il messaggio di «Pocket»
+parla di indicazioni anche qui. Da provare sull'iPhone, anche la voce a
+schermo nero.
+
+## ADR-0126 — «Explore»: gli esempi di una città con le alternative A · B · C
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («seleziono New York
+e un cuore da 5,2 km: non ci sono le tre opzioni»); il come deciso
+dall'agente su delega dell'utente (TASK-151).
+
+**Contesto**: un esempio di città (ADR-0116) è un percorso chiesto
+all'API come uno disegnato, e l'API manda già fino a due alternative
+(ADR-0087; sul server da ADR-0121). L'app teneva solo il primo percorso,
+quindi la scheda di «Explore» non aveva le tessere. `App.tsx`, che passa
+alla scheda il percorso aperto, è di altri tre task in corso.
+
+**Decisione**:
+- **L'esempio tiene le alternative**, ognuna un percorso intero
+  (`ExampleDetail.alternatives`), in memoria e nel file sul telefono. Il
+  campo c'è sempre, anche vuoto.
+- **Un esempio salvato senza il campo si ridisegna**, una volta: è di
+  prima di questo task, e senza rifarlo le città già viste non avrebbero
+  mai le tessere. Con la zona in cache sono pochi secondi a forma.
+- **La scelta sta dentro il percorso aperto** (`useExplored`): `choices`,
+  `chosen`, `choose`, e `route`, `detail`, `request`, `result` sono quelli
+  del percorso scelto. `App.tsx` li legge già così, quindi mappa, «Start»
+  (ADR-0117) e GPX seguono la scelta senza toccarlo. Ogni percorso ha il
+  suo `result`, fatto una volta: è da quello che «Start» e l'export
+  riconoscono un percorso.
+- **Le tessere sono quelle di sempre** (`RouteTiles`), sopra «Start».
+  Mentre si aspettano le indicazioni un tocco non cambia percorso: la
+  risposta in arrivo è di quello scelto.
+
+**Scartate**: tenere la scelta in `App.tsx` come per i percorsi disegnati
+(il file è occupato; da rivedere insieme alle linee grigie); mostrare gli
+esempi vecchi senza tessere (l'utente non le vedrebbe mai sul cuore che
+ha già); un file nuovo sul telefono (lascerebbe il vecchio orfano).
+
+**Conseguenze**: gli altri percorsi non sono in grigio sulla mappa e la
+scelta non manda il segnale di ADR-0112: tutte e due le cose passano da
+`App.tsx`, seguiti scritti in `tasks/TASK-151.md`. I percorsi del catalogo
+e quelli a tema restano uno solo. Provato sull'API del Mac a New York:
+cuore, cerchio e stella da 5 km arrivano con due alternative ciascuno.

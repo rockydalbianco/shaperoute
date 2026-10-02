@@ -112,6 +112,13 @@ UNREADABLE: frozenset[tuple[str, str, int]] = frozenset(
         ("levico", "horse", 5000),
         ("levico", "star", 5000),
         ("levico", "moon", 5000),
+        # TASK-128, Firenze: the same fragile shapes, and a heart with a tail.
+        *(("firenze", s, 5000) for s in ("butterfly", "cat", "dog_head")),
+        *(("firenze", s, 5000) for s in ("horse", "rabbit_head", "snail")),
+        ("firenze", "dog_head", 10000),
+        ("firenze", "dog_head", 21000),
+        ("firenze", "snail", 10000),
+        ("firenze", "heart", 21000),
     }
 )
 
@@ -143,6 +150,16 @@ class Case:
 
 
 Planner = Callable[[Case, LatLon], RouteResult]
+Prepare = Callable[[str, list[Case]], None]
+"""Called once before a city's cases: loads the one zone that holds them
+all (TASK-128). Overpass stops answering after a few downloads in a row
+(MAPS.md); each shape and word asking its own zone made dozens."""
+
+# Around the zones of a city's cases, for the nearby starts and the start
+# the search may move (optimizer.START_OFFSET_M, the far search).
+PREPARE_MARGIN_DEG = 0.01
+# After a download, a pause before the next: gentle with Overpass.
+PREPARE_PAUSE_S = 60.0
 
 
 def cases(
@@ -236,19 +253,37 @@ def run_cases(
     log: Path,
     starts: dict[str, LatLon] = CITIES,
     say: Callable[[str], None] = print,
+    prepare: Prepare | None = None,
 ) -> int:
-    """Plans the cases of `todo` not yet in `log`, appending one line each.
-    Returns how many were planned."""
+    """Plans the cases of `todo` not yet in `log`, appending one line each;
+    before a city's first case, `prepare` with all of them; a city whose
+    zone does not load is skipped, for the next run. Returns how many were
+    planned."""
     done = _done(read_runs(log))
     left = [c for c in todo if c.key not in done]
     log.parent.mkdir(parents=True, exist_ok=True)
+    prepared: set[str] = set()
+    skipped: set[str] = set()
+    planned = 0
     for i, case in enumerate(left, 1):
+        if prepare is not None and case.city not in prepared:
+            prepared.add(case.city)
+            try:
+                prepare(case.city, [c for c in left if c.city == case.city])
+            except Exception as exc:
+                # Without its zone every case would ask Overpass again, which
+                # has just refused: the city waits for the next run.
+                skipped.add(case.city)
+                say(f"{case.city}: zone not loaded ({type(exc).__name__}), skipped")
+        if case.city in skipped:
+            continue
+        planned += 1
         run = plan_case(case, starts[case.city], planner)
         with log.open("a", encoding="utf-8") as f:
             f.write(json.dumps(run, separators=(",", ":")) + "\n")
         what = run.get("error_kind") or f"similarity {run['similarity']:.2f}"
         say(f"[{i}/{len(left)}] {case.key}: {what}, {run['seconds']:.0f} s")
-    return len(left)
+    return planned
 
 
 def select(
@@ -371,6 +406,42 @@ def engine_planner(cache_dir: Path) -> Planner:
     return plan
 
 
+def engine_prepare(
+    cache_dir: Path,
+    starts: dict[str, LatLon] = CITIES,
+    pause: Callable[[float], None] = time.sleep,
+) -> Prepare:
+    """Loads, once per city, the zone of all its cases with a margin: then
+    every case's zone is cut from the cache, without another download."""
+    from route_engine.optimizer import SHAPE_POINTS, planned_distance, required_area
+    from route_engine.shapes import get_shape
+    from route_engine.stops import union
+    from route_engine.words import compose
+
+    source = OsmnxSource(cache_dir)
+
+    def prepare(city: str, todo: list[Case]) -> None:
+        start = starts[city]
+        boxes = []
+        for case in todo:
+            if case.style is None:
+                outline, word = get_shape(case.shape)(SHAPE_POINTS), None
+            else:
+                word = compose(case.shape, style=case.style)  # type: ignore[arg-type]
+                outline = list(word.points)
+            planned = planned_distance(case.distance_m, False)
+            boxes.append(required_area(outline, start, planned, word=word))
+        south, west, north, east = union(boxes)
+        m = PREPARE_MARGIN_DEG
+        zone = (south - m, west - m, north + m, east + m)
+        if source.is_cached(zone):
+            return
+        source.load(zone)
+        pause(PREPARE_PAUSE_S)
+
+    return prepare
+
+
 def _names(value: str, known: Iterable[str], what: str) -> list[str]:
     names, known = value.split(","), set(known)
     unknown = [n for n in names if n not in known]
@@ -442,7 +513,13 @@ def main(argv: Sequence[str] | None = None, planner: Planner | None = None) -> i
             todo += cases(args.cities, args.shapes, args.distances)
         if args.kinds != "shapes":
             todo += word_cases(args.cities)
-        run_cases(todo, planner or engine_planner(args.cache_dir), args.log)
+        run_cases(
+            todo,
+            planner or engine_planner(args.cache_dir),
+            args.log,
+            # A planner given (the tests) needs no zone.
+            prepare=None if planner is not None else engine_prepare(args.cache_dir),
+        )
     runs = [r for r in read_runs(args.log) if r["city"] in args.cities]
     selected = select(runs, args.min_similarity)
     write_catalogue(catalogue_files(selected, args.min_similarity), args.out)

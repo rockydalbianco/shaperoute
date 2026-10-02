@@ -67,8 +67,9 @@ Quattro regole:
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
 
-1. **«What to draw»**, all'apertura. Dall'alto: il nome «Sgrava» con il
-   pulsante «My position»; una scheda che dice da dove partirà il percorso,
+1. **«What to draw»**, all'apertura. Dall'alto: il nome «Sgrava» con i
+   pulsanti «Run» (una corsa senza percorso, TASK-149, sotto) ed
+   «Explore»; una scheda che dice da dove partirà il percorso,
    con, quando servono, il rimando alle Impostazioni e la ricerca del
    luogo; l'errore della mappa; le forme del catalogo come tessere, con un
    simbolo e il nome (quella scelta ha il bordo chiaro); il campo per
@@ -89,8 +90,8 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    forma o parola e per distanza. Ogni riga ha la miniatura della linea
    (gialla, il percorso), forma e km, città e distanza dalla partenza, la
    somiglianza. Toccata, il percorso si apre sulla mappa con «Export GPX» e
-   «Back to the list»; «←» torna all'elenco. Niente «Start»: questi
-   percorsi non hanno le indicazioni di svolta.
+   «Back to the list»; «←» torna all'elenco. Da TASK-145 ha anche «Start»
+   (sotto).
 
    Sopra l'elenco (TASK-129): **«City»**, il campo «Search a city» per
    qualsiasi città del mondo (l'elenco e la richiesta partono dal suo
@@ -115,6 +116,47 @@ Due, senza librerie di navigazione (TASK-051, scelta dell'utente):
    Local Experience), ognuna con «in <città>» sotto: un tocco chiede
    «Food in New York». Il campo libero resta, con un esempio per la città.
    Ciò che si tocca si attenua (opacità), niente si sposta.
+
+   **Da TASK-138** il campo è «Type a city or a place»: a metà parola
+   suggerisce città e luoghi (monumenti, piazze, quartieri, vie), al più 6,
+   nell'ordine del servizio. Ogni voce ha due righe: il nome, e sotto
+   «City centre · Veneto, Italy» per una città o la sua città per un luogo
+   («Verona, Italy»). Invio sceglie il primo suggerimento. Scelto un luogo,
+   le categorie dicono «near Verona Arena» e chiedono il tema dal suo punto
+   (le parole sono solo «Food»); l'esempio del campo libero non nomina
+   città.
+
+   **Da TASK-143** «Ask for a route» mostra due categorie, Food e Famous
+   Places, e una terza tessera «More…» («11 more») che apre tutte le 13;
+   tre tessere per riga. Scelta una città senza percorsi consigliati entro
+   5 km, sotto «City» compare **«EXAMPLES IN VERCELLI»**: cuore, cerchio e
+   stella da 5 km dal centro, chiesti da soli, uno alla volta, il cuore per
+   primo. Ogni riga dice «Drawing…» o «Next», poi diventa come una riga di
+   «Best near you» (miniatura, km, somiglianza); un tocco apre il percorso
+   sulla mappa con «Export GPX» e «Back to Explore». Se la mappa della zona
+   non si scarica, un messaggio solo e «Try again». Gli esempi pronti
+   restano sul telefono (ultime 8 città): la volta dopo sono subito lì.
+   Una città con percorsi consigliati mostra quelli e non chiede esempi.
+
+   **Da TASK-145** ogni percorso di «Explore» aperto sulla mappa
+   (consigliato, esempio, a tema) ha «Start», giallo, sopra «Export GPX».
+   Questi percorsi arrivano senza indicazioni: al tocco l'app le chiede
+   all'API (`POST /route-directions`) e il pulsante dice «Getting
+   directions…»; poi la navigazione parte come per un percorso disegnato
+   (sotto, «La navigazione»), lungo la linea di «Explore». «Stop» e la fine
+   della corsa tornano alla sua scheda. Le indicazioni avute restano finché
+   la scheda è aperta: un secondo «Start» non aspetta. Se non arrivano, la
+   scheda dice perché in rosso e «Start» riprova; «Back to the list» o «←»
+   lasciano perdere l'attesa.
+
+   **Da TASK-151** un esempio di città aperto sulla mappa ha le tessere
+   «A · B · C» (sotto, «Il risultato»), sopra «Start», quando l'API ha
+   mandato delle alternative: A è il percorso del motore. Una tessera
+   toccata diventa il percorso: km e somiglianza della scheda, la linea
+   sulla mappa, «Start» e «Export GPX» sono i suoi. Mentre si aspettano le
+   indicazioni la scelta resta ferma. Gli altri percorsi non sono ancora
+   disegnati in grigio sulla mappa. Un percorso consigliato o a tema è uno
+   solo: niente tessere. Gli esempi salvati prima si ridisegnano una volta.
 
 Passare da una schermata all'altra:
 
@@ -192,10 +234,14 @@ non cancella quanto scritto o scelto negli altri.
 
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
 scrivendo nel campo. I simboli delle tessere sono caratteri (♥ ★ ◯ ☾ e le
-emoji di gatto, pesce, cavallo, farfalla, lumaca, cane e coniglio):
+emoji di gatto, pesce, cavallo, farfalla, lumaca, cane, coniglio, zucca
+e albero di Natale):
 disegnare i contorni veri vuole `react-native-svg`, una dipendenza non
 ancora chiesta.
-Le tessere sono quattro per riga.
+Le tessere stanno in una riga sola che scorre di lato col dito (TASK-088,
+ADR-0084, chiesto dall'utente): se ne vedono poco meno di quattro, e la
+tessera tagliata sul bordo dice che ce ne sono altre. Una forma scritta nel
+campo porta la sua tessera in vista.
 
 La **forma** è una parola, in inglese o in italiano (ADR-0036). Le forme
 sono quelle del catalogo, le sole che l'utente ha giudicato riconoscibili
@@ -214,6 +260,8 @@ sulle strade:
 | `snail` | snail · lumaca, lumachina, chiocciola |
 | `dog_head` | dog, dog head, doggy, puppy · cane, cagnolino, testa di cane |
 | `rabbit_head` | rabbit, rabbit head, bunny · coniglio, coniglietto, testa di coniglio |
+| `pumpkin` | pumpkin, halloween pumpkin, jack-o'-lantern · zucca, zucca di halloween |
+| `christmas_tree` | christmas tree, xmas tree · albero di natale, alberello di natale |
 
 - Anche al plurale («stelle», «hearts»), con l'articolo («una stella»,
   «l'amore»), con maiuscole e accenti qualsiasi. La tabella sta in
@@ -225,9 +273,12 @@ sulle strade:
   campo e nel nome del percorso (ADR-0061). «cane» e «dog» portano alla
   testa di cane, «coniglio» e «bunny» a quella di coniglio: gli animali
   interi non sono nel catalogo.
+- «albero» e «tree» da soli **non** sono l'albero di Natale (ADR-0084): un
+  albero qualsiasi non è nel catalogo, e resta «nessuna forma». Sullo
+  schermo `christmas_tree` si legge «christmas tree».
 - Il campo vuoto: «Unknown shape. Try: circle, heart, star, horse, moon,
-  cat, fish, butterfly, snail, dog head or rabbit head.» e «Draw route»
-  resta spento.
+  cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas
+  tree.» e «Draw route» resta spento.
 - Nel campo vuoto il suggerimento è «heart, star, horse…». Il campo
   accetta al massimo 60 caratteri.
 
@@ -476,7 +527,8 @@ l'avviso dice di quanto e in che direzione.
 ## La navigazione
 
 Sotto il risultato, «Start» giallo, quando il percorso ha le indicazioni di
-svolta (TASK-049, ADR-0052). Si resta sulla schermata della mappa: al posto
+svolta (TASK-049, ADR-0052). Anche sotto un percorso di «Explore», che le
+chiede all'API al tocco (TASK-145). Si resta sulla schermata della mappa: al posto
 di «←» un banner con la prossima svolta (freccia gialla, distanza dal GPS
 dal vivo, «Turn left onto Via Roma», e una seconda riga per le svolte a
 pochi metri da leggere insieme); sotto, i km rimasti e «Stop», che torna al
@@ -548,6 +600,38 @@ nell'attesa «Scoring your run…», con distanza e durata già lì.
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
 principale.
 
+## Correre senza percorso (TASK-149, ADR-0122)
+
+**«Run»**, in alto nella prima schermata accanto a «Explore», fa partire
+una corsa senza disegnare niente: niente forma, niente percorso, niente
+API. Si apre la mappa, che segue la posizione come in navigazione (zoom
+17) e disegna la linea corsa fin lì, sottile e chiara (`track`). Al posto
+di «←» un banner con i km in grande, due decimali («2.34 km»), e sotto il
+tempo e il passo medio («12:34 · 5:21 /km»). Il tempo parte dalla prima
+posizione del GPS e va avanti ogni secondo; il passo compare dopo 100 m.
+Prima della prima posizione, «Finding your position…»; senza permesso,
+«Location is off for ShapeRoute: allow it in Settings to record a run.».
+Sotto la mappa «Run without a route», «Pocket» (la stessa modalità tasca
+della navigazione) e «Stop». A ogni km la voce, in inglese come il resto,
+dice il tempo e il passo medio: «1 kilometre. Time: 5 minutes 42 seconds.
+Average pace: 5 minutes 42 seconds per kilometre.» (oltre l'ora, ore e
+minuti). Anche in modalità tasca; niente vibrazione, che in navigazione
+vuol dire una svolta. «Keep running» non ripete i km già detti.
+
+La traccia è quella della navigazione (ADR-0091), con le stesse regole,
+nello stesso file `current-run.json`, con il percorso vuoto: resta se
+l'app si chiude, e una corsa per volta (una nuova sostituisce quella nel
+file alla prima posizione).
+
+**«Stop»** apre la fine della corsa: in alto «Your run» e «White: what you
+ran.»; sotto i km in grande e «25:00 · 5:56 /km». Senza forma non c'è
+punteggio, e niente va all'API. **«Keep running»** torna alla corsa, con la
+stessa traccia; **«Done»** torna alla prima schermata e cancella la corsa
+dal telefono. Uno «Stop» prima della prima posizione torna subito alla
+prima schermata. Se l'app si chiude durante la corsa, alla riapertura si
+apre su questa schermata; «Keep running» c'è solo se l'ultima posizione è
+di meno di 30 minuti prima.
+
 ## Correre con Strava (TASK-135, ADR-0106)
 
 Sotto «Export GPX», in ogni scheda di un percorso (disegnato, di «Explore»,
@@ -588,7 +672,7 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 | Parola che non ci sta (TASK-057) | come per la forma, con «This word…»; senza distanza: This word does not fit the roads here. Try a shorter word, or another start. (niente forme da toccare) |
 | Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
 | Errore del motore (`engine_error`) | The route engine failed. Try again; if it happens again, look at the API log. |
-| L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head or rabbit head. |
+| L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas tree. |
 | `invalid_request`, `http_error`, risposta illeggibile | The app and the API do not agree (a bug): … |
 | API non raggiungibile | Cannot reach the API at http://…:8000. Start it on the PC with --lan, on the same Wi-Fi. |
 | Nessun risultato in 5 minuti | The API took more than 5 minutes. Try again later, or a shorter distance. |

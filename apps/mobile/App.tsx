@@ -31,14 +31,22 @@ import {
   saveRecentCities,
 } from "./src/explore/recentCities";
 import { ThemedCard, themedGpx } from "./src/explore/ThemedCard";
+import { startViewOf, useStartDirections } from "./src/explore/useStartDirections";
 import { useThemedRoute } from "./src/explore/useThemedRoute";
 import { MapView } from "./src/map/MapView";
+import {
+  canResume,
+  endFreeRun,
+  type FreeRun,
+  pendingFreeRun,
+} from "./src/navigation/freeRun";
 import {
   clearRun,
   endRun,
   pendingRun,
   type ScorableRun,
 } from "./src/navigation/trackStore";
+import { trackOf, useFreeRun } from "./src/navigation/useFreeRun";
 import { useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
 import { choicesOf, type Picked, pickedIndex } from "./src/route/choices";
@@ -59,6 +67,12 @@ import { useShapeReading } from "./src/route/useShapeReading";
 import { checkWord } from "./src/route/wordInput";
 import { ChooseScreen } from "./src/screens/ChooseScreen";
 import { FinishBanner, FinishCard } from "./src/screens/FinishScreen";
+import {
+  FreeFinishBanner,
+  FreeFinishCard,
+  FreeRunBanner,
+  FreeRunCard,
+} from "./src/screens/FreeRunScreen";
 import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
 import { color } from "./src/theme/tokens";
@@ -72,9 +86,11 @@ const NO_OTHERS: LatLon[][] = [];
 const API_URL = apiUrl();
 
 /** The screens (TASK-051): what to draw, the map with the route, the
- * turn-by-turn along it (TASK-049), the run with its score (TASK-113) and
- * the best routes near the start (TASK-126). */
-type Screen = "choose" | "map" | "navigate" | "finish" | "explore";
+ * turn-by-turn along it (TASK-049), the run with its score (TASK-113), the
+ * best routes near the start (TASK-126), and a run without a route with its
+ * end (TASK-149). */
+type Screen =
+  "choose" | "map" | "navigate" | "finish" | "explore" | "run" | "runFinish";
 
 /** A run that ended, shown on the finish screen. */
 type Finished = {
@@ -85,6 +101,9 @@ type Finished = {
   resumable: boolean;
 };
 
+/** A route of "Explore" run with the directions asked for it (TASK-145). */
+type ExploreRun = { points: LatLon[]; directions: Direction[]; similarity: number };
+
 function finishedRun(run: ScorableRun, resumable: boolean): Finished {
   return { run, line: run.track.fixes.map((fix) => fix.point), resumable };
 }
@@ -93,6 +112,25 @@ function finishedRun(run: ScorableRun, resumable: boolean): Finished {
 function leftRun(): Finished | null {
   const run = pendingRun();
   return run === null ? null : finishedRun(run, false);
+}
+
+/** A run without a route that ended (TASK-149). */
+type FreeFinished = {
+  run: FreeRun;
+  /** Its points, once: a new list would draw the line again. */
+  line: LatLon[];
+  /** «Run» again would go on with its track. */
+  resumable: boolean;
+};
+
+function freeFinishedRun(run: FreeRun, resumable: boolean): FreeFinished {
+  return { run, line: run.track.fixes.map((fix) => fix.point), resumable };
+}
+
+/** A run without a route left when the app was last open, if any. */
+function leftFreeRun(): FreeFinished | null {
+  const run = pendingFreeRun();
+  return run === null ? null : freeFinishedRun(run, canResume(run, Date.now()));
 }
 
 export default function App() {
@@ -108,8 +146,12 @@ export default function App() {
 function Sgrava() {
   // A run still waiting for its score comes first (TASK-113).
   const [finished, setFinished] = useState<Finished | null>(leftRun);
+  // Or a run without a route, closed with the app (TASK-149).
+  const [freeFinished, setFreeFinished] = useState<FreeFinished | null>(() =>
+    finished === null ? leftFreeRun() : null,
+  );
   const [screen, setScreen] = useState<Screen>(() =>
-    finished === null ? "choose" : "finish",
+    finished !== null ? "finish" : freeFinished !== null ? "runFinish" : "choose",
   );
   const { position, refresh } = useCurrentPosition();
   const [startMode, setStartMode] = useState<StartMode>("gps");
@@ -216,14 +258,28 @@ function Sgrava() {
       ? gpx.state
       : { status: "idle" };
 
-  const navigating = screen === "navigate" && chosen !== null;
+  // Start on a route of "Explore": its directions are asked for first,
+  // then it is the route followed, in place of the drawn one (TASK-145).
+  const startDirections = useStartDirections(API_URL);
+  const [exploreRun, setExploreRun] = useState<ExploreRun | null>(null);
+  const followed = exploreRun ?? chosen;
+  const navigating = screen === "navigate" && followed !== null;
   const navigation = useNavigation(
-    chosen?.points ?? null,
-    chosen?.directions ?? NO_DIRECTIONS,
+    followed?.points ?? null,
+    followed?.directions ?? NO_DIRECTIONS,
     navigating,
-    chosen?.similarity,
+    followed?.similarity,
   );
   const finishing = screen === "finish" && finished !== null;
+  // A run without a route (TASK-149): the map follows the runner and draws
+  // the line run so far.
+  const running = screen === "run";
+  const freeRun = useFreeRun(running);
+  const freeTrack = trackOf(freeRun);
+  const freeLine = useMemo(() => freeTrack.fixes.map((fix) => fix.point), [freeTrack]);
+  const freeStart =
+    freeTrack.fixes[0]?.point ?? (position.status === "ok" ? position.point : null);
+  const freeFinishing = screen === "runFinish" && freeFinished !== null;
   // A route of "Explore" on the map, in place of the drawn one (TASK-126).
   const theming =
     screen === "map" && explored === null && themed.state.status !== "idle";
@@ -246,21 +302,55 @@ function Sgrava() {
     setScreen("finish");
   }
 
+  /** Stop on a run without a route: its end, when there is a line to show. */
+  function onStopFreeRun() {
+    const run = endFreeRun();
+    if (run === null) {
+      setScreen("choose");
+      return;
+    }
+    setFreeFinished(freeFinishedRun(run, true));
+    setScreen("runFinish");
+  }
+
+  /** With no score to wait for, the run leaves the phone at once. */
+  function onFreeDone() {
+    clearRun();
+    setFreeFinished(null);
+    setScreen("choose");
+  }
+
   function onFinishDone(settled: boolean) {
     // Without its score the run stays in the file, for the next opening.
     if (settled) {
       clearRun();
     }
     setFinished(null);
-    setScreen(view.status === "done" ? "map" : "choose");
+    // A run of "Explore" goes back to its route's card.
+    setScreen(exploreRun !== null || view.status === "done" ? "map" : "choose");
+  }
+
+  /** "Explore" leaves the map: its route, its directions, its run. */
+  function closeExplore() {
+    closeExplored();
+    themed.close();
+    startDirections.reset();
+    setExploreRun(null);
+  }
+
+  /** Start on a route of "Explore": its directions first (TASK-145). */
+  function onStartExplore(route: { points: LatLon[]; similarity: number }) {
+    startDirections.start(route.points, (directions) => {
+      setExploreRun({ points: route.points, directions, similarity: route.similarity });
+      setScreen("navigate");
+    });
   }
 
   function onDraw() {
     // The decimal pad has no return key: drawing closes it.
     Keyboard.dismiss();
     // The drawn route takes the map back from "Explore".
-    closeExplored();
-    themed.close();
+    closeExplore();
     // The same route already drawn is shown again, not asked for again.
     if (request && view.status !== "done") {
       draw(request);
@@ -269,13 +359,8 @@ function Sgrava() {
   }
 
   function onBack() {
-    if (theming) {
-      themed.close();
-      setScreen("explore");
-      return;
-    }
-    if (exploring) {
-      closeExplored();
+    if (theming || exploring) {
+      closeExplore();
       setScreen("explore");
       return;
     }
@@ -294,12 +379,16 @@ function Sgrava() {
   return (
     <View style={styles.screen}>
       <MapScreen
-        active={screen === "map" || navigating || finishing}
+        active={screen === "map" || navigating || finishing || running || freeFinishing}
         onBack={onBack}
         mapError={mapError}
         banner={
           finishing ? (
             <FinishBanner />
+          ) : freeFinishing ? (
+            <FreeFinishBanner />
+          ) : running ? (
+            <FreeRunBanner state={freeRun} />
           ) : navigating ? (
             <NavigationBanner state={navigation} />
           ) : undefined
@@ -308,13 +397,17 @@ function Sgrava() {
           <MapView
             style={styles.map}
             start={
-              theming
-                ? themed.state.status === "done"
-                  ? themed.state.result.centre
-                  : null
-                : exploring
-                  ? explored.route.start
-                  : (start?.point ?? null)
+              running
+                ? freeStart
+                : freeFinishing
+                  ? (freeFinished.line[0] ?? null)
+                  : theming
+                    ? themed.state.status === "done"
+                      ? themed.state.result.centre
+                      : null
+                    : exploring
+                      ? explored.route.start
+                      : (exploreRun?.points[0] ?? start?.point ?? null)
             }
             stops={
               theming && themed.state.status === "done"
@@ -324,30 +417,57 @@ function Sgrava() {
             route={
               finishing
                 ? finished.run.route
-                : theming
-                  ? themed.state.status === "done"
-                    ? themed.state.result.points
-                    : null
-                  : exploring
-                    ? explored.status === "done"
-                      ? explored.detail.points
+                : running || freeFinishing
+                  ? null
+                  : theming
+                    ? themed.state.status === "done"
+                      ? themed.state.result.points
                       : null
-                    : (chosen?.points ?? null)
+                    : exploring
+                      ? explored.status === "done"
+                        ? explored.detail.points
+                        : null
+                      : (followed?.points ?? null)
             }
             // Only while choosing a drawn route: running, or on a route of
             // "Explore", one route is the route.
             others={screen === "map" && !exploring && !theming ? others : NO_OTHERS}
-            track={finishing ? finished.line : null}
+            track={
+              finishing
+                ? finished.line
+                : freeFinishing
+                  ? freeFinished.line
+                  : running
+                    ? freeLine
+                    : null
+            }
             following={
               navigating && navigation.status === "following"
                 ? navigation.position
-                : null
+                : running && freeRun.status === "running"
+                  ? freeRun.position
+                  : null
             }
             onError={setMapError}
           />
         }
       >
-        {theming ? (
+        {freeFinishing ? (
+          <FreeFinishCard
+            run={freeFinished.run}
+            onResume={
+              freeFinished.resumable
+                ? () => {
+                    setFreeFinished(null);
+                    setScreen("run");
+                  }
+                : undefined
+            }
+            onDone={onFreeDone}
+          />
+        ) : running ? (
+          <FreeRunCard running={freeRun.status === "running"} onStop={onStopFreeRun} />
+        ) : theming ? (
           <ThemedCard
             state={themed.state}
             exporting={themedExporting}
@@ -357,8 +477,17 @@ function Sgrava() {
               }
             }}
             onCancel={() => {
-              themed.close();
+              closeExplore();
               setScreen("explore");
+            }}
+            start={startViewOf(
+              startDirections.state,
+              themed.state.status === "done" ? themed.state.result.points : null,
+            )}
+            onStart={() => {
+              if (themed.state.status === "done") {
+                onStartExplore(themed.state.result);
+              }
             }}
           />
         ) : exploring ? (
@@ -371,8 +500,17 @@ function Sgrava() {
               }
             }}
             onList={() => {
-              closeExplored();
+              closeExplore();
               setScreen("explore");
+            }}
+            start={startViewOf(
+              startDirections.state,
+              explored.status === "done" ? explored.result.points : null,
+            )}
+            onStart={() => {
+              if (explored.status === "done") {
+                onStartExplore(explored.result);
+              }
             }}
           />
         ) : finishing ? (
@@ -381,7 +519,7 @@ function Sgrava() {
             run={finished.run}
             onDone={onFinishDone}
             onResume={
-              finished.resumable && view.status === "done"
+              finished.resumable && (exploreRun !== null || view.status === "done")
                 ? () => {
                     setFinished(null);
                     setScreen("navigate");
@@ -441,6 +579,10 @@ function Sgrava() {
           mapError={mapError}
           footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
           onExplore={() => setScreen("explore")}
+          onRun={() => {
+            Keyboard.dismiss();
+            setScreen("run");
+          }}
         >
           <ImageEditsContext.Provider value={imageEdits}>
             <RouteChoice
@@ -475,7 +617,7 @@ function Sgrava() {
           near={start?.point ?? null}
           onBack={() => setScreen("choose")}
           onOpen={(route) => {
-            themed.close();
+            closeExplore();
             openExplored(route);
             setScreen("map");
           }}
@@ -491,7 +633,7 @@ function Sgrava() {
           recent={recentCities}
           onAsk={(request) => {
             Keyboard.dismiss();
-            closeExplored();
+            closeExplore();
             themed.ask(request);
             setScreen("map");
           }}

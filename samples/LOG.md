@@ -331,6 +331,17 @@ chiude ADR-0010.
 | 2026-10-01 | TASK-131_heart_8km_levico_v1.gpx | levico | 0.78 | 8.1 / 8.0 km | meglio | TASK-131, con il peso dei baffi: 4% fatto due volte; preferito a v0 dall'utente |
 | 2026-10-01 | TASK-131_heart_15km_trento_v0.gpx | trento | 0.90 | 14.5 / 15.0 km | quasi | TASK-131, il cuore di oggi |
 | 2026-10-01 | TASK-131_heart_15km_trento_v1.gpx | trento | 0.90 | 15.5 / 15.0 km | meglio | TASK-131, con il peso dei baffi: disegnato altrove, preferito a v0 dall'utente |
+| 2026-10-01 | TASK-139_star_8km_levico_v0.gpx | levico | 0.93 | 7.4 / 8.0 km | — | TASK-139, la stella di oggi; 39% fatto due volte |
+| 2026-10-01 | TASK-139_star_8km_levico_v1.gpx | levico | 0.86 | 7.6 / 8.0 km | meglio | TASK-139, peso dei baffi (ADR-0109): 17%; preferita dall'utente |
+| 2026-10-01 | TASK-139_star_15km_trento_v0.gpx | trento | 0.99 | 15.2 / 15.0 km | — | TASK-139, la stella di oggi; 6% fatto due volte |
+| 2026-10-01 | TASK-139_star_15km_trento_v1.gpx | trento | 0.96 | 13.7 / 15.0 km | meglio | TASK-139, peso dei baffi: 2%; preferita dall'utente |
+| 2026-10-02 | TASK-140_moon_15km_trento_v0.gpx | trento | 0.95 | 15.8 / 15.0 km | — | TASK-140, la luna di prima; 14% fatto due volte |
+| 2026-10-02 | TASK-140_moon_15km_trento_v1.gpx | trento | 0.93 | 14.7 / 15.0 km | meglio | TASK-140, peso dei baffi (ADR-0118): 0%; preferita dall'utente |
+| 2026-10-02 | TASK-140_butterfly_8km_levico_v0.gpx | levico | 0.86 | 7.1 / 8.0 km | — | TASK-140, la farfalla di prima |
+| 2026-10-02 | TASK-140_butterfly_8km_levico_v1.gpx | levico | 0.84 | 7.5 / 8.0 km | meglio | TASK-140, peso dei baffi oltre i tratti; preferita dall'utente |
+| 2026-10-02 | TASK-140_snail_12km_levico_v0.gpx | levico | 0.94 | 14.0 / 12.0 km | — | TASK-140, la lumaca di prima; 75% fatto due volte (spirale compresa) |
+| 2026-10-02 | TASK-140_snail_12km_levico_v1.gpx | levico | 0.87 | 12.6 / 12.0 km | meglio | TASK-140, peso dei baffi oltre i tratti: 42%; preferita dall'utente |
+| 2026-10-02 | catalog/seed/firenze.json | firenze | 0.88–1.00 | 5, 10, 21 km | sì | TASK-128, giudizio a occhio: tenuti 22 su 32; fuori farfalla, gatto, testa di cane, cavallo, testa di coniglio e lumaca a 5 km, testa di cane a 10 e 21, lumaca a 10, cuore a 21 (una coda). I più belli: luna 10 e 21, pesce 21, gatto 21, stella 10, cuore 10, cavallo 21 |
 
 <!--
 Esempio di riga compilata:

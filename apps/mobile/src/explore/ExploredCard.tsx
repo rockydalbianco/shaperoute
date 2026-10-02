@@ -8,20 +8,33 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { RouteTiles } from "../route/RouteTiles";
 import type { ExportState } from "../route/useGpxExport";
 import { RunWithStrava } from "../strava/RunWithStrava";
 import type { Explored } from "./explored";
+import { ExploreStart } from "./ExploreStart";
 import { cityName, routeTitle } from "./recommendedRoutes";
+import type { StartView } from "./useStartDirections";
 
 type Props = {
   explored: Explored;
   exporting: ExportState;
   onExport: () => void;
   onList: () => void;
+  /** Turn-by-turn along it, the directions asked for first (TASK-145). */
+  start: StartView;
+  onStart: () => void;
 };
 
-/** Under the map: a route of "Explore", to look at and export (TASK-126). */
-export function ExploredCard({ explored, exporting, onExport, onList }: Props) {
+/** Under the map: a route of "Explore", to run, look at and export (TASK-126). */
+export function ExploredCard({
+  explored,
+  exporting,
+  onExport,
+  onList,
+  start,
+  onStart,
+}: Props) {
   const { route } = explored;
   const title = routeTitle(route);
   return (
@@ -38,6 +51,16 @@ export function ExploredCard({ explored, exporting, onExport, onList }: Props) {
       {explored.status === "failed" && (
         <Text style={styles.error}>The route could not load. Try again.</Text>
       )}
+      {/* A city's example with the API's alternatives: A · B · C (TASK-151). */}
+      {explored.status === "done" && (
+        <RouteTiles
+          choices={explored.choices}
+          chosen={explored.chosen}
+          // The directions being asked for are those of the route chosen.
+          onChoose={start.status === "loading" ? keepChoice : explored.choose}
+        />
+      )}
+      {explored.status === "done" && <ExploreStart start={start} onStart={onStart} />}
       {explored.status === "done" && (
         <Pressable
           style={styles.secondary}
@@ -63,6 +86,8 @@ export function ExploredCard({ explored, exporting, onExport, onList }: Props) {
     </View>
   );
 }
+
+function keepChoice(): void {}
 
 const styles = StyleSheet.create({
   panel: {

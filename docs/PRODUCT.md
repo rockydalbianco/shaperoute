@@ -59,6 +59,19 @@ se il risultato è buono: quello lo decide l'occhio. Vedi `ROUTE_ENGINE.md` §5.
 - **La distanza esatta è nemica della forma**: forzare i chilometri
   deforma il disegno. Priorità alla forma, entro la tolleranza sopra.
 
+## La parte social
+
+Scelte dell'utente, 2026-10-01 (ADR-0114). Chi corre un percorso ha un
+**punteggio da 0 a 100**: quanto il percorso somiglia alla forma, per
+quanto la corsa l'ha seguito (ADR-0090). Ci si iscrive con email e
+password, da 16 anni. Una corsa salvata è **privata finché non la si
+pubblica**; pubblicata, la vedono gli iscritti, senza i primi e gli ultimi
+200 m, dove spesso c'è casa. I percorsi generati si salvano tutti e i
+migliori si consigliano (ADR-0086), da un punto del giro lontano dalla
+partenza vera e senza il nome di chi li ha chiesti. Cancellare l'account
+cancella tutto. Like, commenti, segnalazioni e blocchi; due persone
+moderano e tolgono un contenuto entro 24 ore.
+
 ## Direzione dopo il MVP
 
 Walking e cycling; star, lettere e forme custom; linguaggio naturale più

@@ -1,6 +1,6 @@
 # TASK-129 — «Explore» per ogni città, e percorsi a tema con tappe vere
 
-**Stato**: In revisione
+**Stato**: Done, da provare sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-129-explore-themes`
 
 Chiesto dall'utente il 2026-10-01: cercare qualsiasi città in «Explore» e
@@ -90,3 +90,5 @@ Prove reali (API del branch, 2026-10-01):
 | «un giro nella natura a Caldonazzo» (fuori catalogo) | `no_places`: 1 solo luogo verificato, detto |
 | «percorso turistico a New York» (con TASK-127) | stella 9,8 km, 0,99; 7 di 15: One World Trade Center, One World Observatory, Soldiers' Monument…; 319 s, quasi tutti di download |
 | Parigi famosi, Tokyo gastronomico (con TASK-127) | città e luoghi trovati (Notre-Dame; ramen a Tokyo); il percorso no: dopo i download di New York Overpass ha smesso di accettare connessioni da entrambi gli indirizzi (il limite di MAPS.md). Da qui una sola zona per tutte le partenze (`prepare`), non una per partenza: da riprovare quando Overpass riapre |
+
+Mergiato con la PR #126.

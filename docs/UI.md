@@ -798,19 +798,6 @@ prima schermata. Se l'app si chiude durante la corsa, alla riapertura si
 apre su questa schermata; «Keep running» c'è solo se l'ultima posizione è
 di meno di 30 minuti prima.
 
-## Correre con Strava (TASK-135, ADR-0106)
-
-Sotto «Export GPX», in ogni scheda di un percorso (disegnato, di «Explore»,
-a tema), **«Run with Strava»** apre una scheda che spiega prima di fare
-qualunque cosa: Strava non permette ad altre app di aggiungere percorsi,
-e nulla va a Strava finché l'utente non carica il file. Tre passi:
-1. «Save GPX»: l'esportazione di sempre (foglio di condivisione).
-2. «Open Strava route builder»: `https://www.strava.com/maps/create`, dove
-   si accede, si carica il GPX e si salva il percorso.
-3. «Open Strava»: l'app se c'è (link universale), altrimenti il sito; lì
-   Record → Add Route → il percorso → Start.
-Se un link non si apre, la scheda lo dice con l'indirizzo da aprire a mano.
-
 ## Export del GPX
 
 «Export GPX» chiede il file all'API e apre il foglio di condivisione di

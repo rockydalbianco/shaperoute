@@ -10,7 +10,6 @@ import {
 } from "../theme/tokens";
 import { RouteTiles } from "../route/RouteTiles";
 import type { ExportState } from "../route/useGpxExport";
-import { RunWithStrava } from "../strava/RunWithStrava";
 import type { Explored } from "./explored";
 import { ExploreStart } from "./ExploreStart";
 import { cityName, routeTitle } from "./recommendedRoutes";
@@ -75,10 +74,6 @@ export function ExploredCard({
       )}
       {exporting.status === "failed" && (
         <Text style={styles.error}>The GPX could not be made. Try again.</Text>
-      )}
-      {/* Strava's official flow: a GPX imported there (TASK-135). */}
-      {explored.status === "done" && (
-        <RunWithStrava exporting={exporting} onExport={onExport} />
       )}
       <Pressable style={styles.secondary} onPress={onList} accessibilityRole="button">
         <Text style={styles.secondaryText}>Back to the list</Text>

@@ -1,6 +1,6 @@
 # TASK-166 — L'annuncio durante l'attesa, e l'ID vero dell'app AdMob
 
-**Stato**: Pronto, in coda per il merge (coordinatore)
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-166-ad-while-waiting`
 **Dipende da**: TASK-132 (AdMob nell'app), TASK-150 (account AdMob)
 
@@ -65,6 +65,10 @@ docs/tasks/TASK-166.md
   pubblica con il coordinatore.
 
 ## Esito
+
+**Done (2026-10-02)**: l'annuncio compare all'inizio della ricerca e copre
+il calcolo; l'ID vero dell'app AdMob per iOS è in `app.json`. Gli annunci
+veri del conto dell'utente arrivano con TASK-150, 152 e 153.
 
 Prova nel simulatore (2026-10-02, iPhone 18 Pro, iOS 27, build Release,
 API del Mac, Trento). Con gli ID di prova di Google: la prima ricerca

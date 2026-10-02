@@ -73,12 +73,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-166 — L'annuncio durante l'attesa, e l'ID vero dell'app AdMob**
-  (`feat/TASK-166-ad-while-waiting`, ADR-0102): l'annuncio compare
-  all'inizio della ricerca e copre il calcolo; tutto in `src/ads/`, senza
-  toccare `App.tsx`. Provato nel simulatore; in coda per il merge.
-Un task per riga, con branch e sessione: i suoi file sono suoi.
-
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia
   notturna dal 2026-10-02 (07:27Z, 18 s di API ferma); iscrizione,
@@ -101,6 +95,12 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
 
 ## Completato
 
+- **App** — TASK-166: l'annuncio AdMob compare all'inizio della ricerca
+  («Draw route», «Ask for a route») e copre il calcolo; alla X lo schermo
+  mostra il percorso, se è pronto, o l'attesa (ADR-0102, aggiornamento).
+  L'ID vero dell'app AdMob dell'utente per iOS è in `app.json`; l'unità
+  resta quella di prova finché non ci sono profilo pagamenti, app sullo
+  store e annunci veri (TASK-150, 152, 153). Provato nel simulatore.
 - **App** — TASK-167: in «Explore» i percorsi sono schede, due per riga,
   con il disegno grande in alto, scelto dall'utente fra le proposte
   grafiche (ADR-0135). I filtri stanno in una riga sola, «Shape» e

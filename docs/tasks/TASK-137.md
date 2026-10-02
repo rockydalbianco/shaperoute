@@ -1,6 +1,6 @@
 # TASK-137 — Le zone delle città in evidenza, scaricate prima
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-137-featured-zones`
 
 Ripreso il 2026-10-02, chiesto dall'utente: «scarica un po' di mappe almeno
@@ -91,18 +91,22 @@ ritagli: TASK-136).
 
 ## Criteri di accettazione
 
-- [ ] Il comando, rilanciato a lavoro finito, dice «già pronta» per tutte
-      e 10 le città.
-- [ ] Per ognuna delle 10 città, Food, Famous Places e Romantic dall'API
-      danno un percorso o un errore onesto (`no_places`,
-      `shape_not_drawable`), mai `map_data_unavailable`, con Overpass
-      irraggiungibile (tabella sotto).
-- [ ] Mai due download insieme; due errori di Overpass di fila fermano il
+Le città sono diventate le 52 italiane (`--preset italy`), chieste
+dall'utente il 2026-10-02; le 14 città in evidenza restano per il seguito
+(sotto, Esito).
+
+- [x] Il comando, rilanciato a lavoro finito, dice «ready» per tutte le 52
+      città italiane (sul server, 2026-10-02).
+- [x] In 7 di queste città, Food, Famous Places e Romantic dall'API in
+      servizio danno un percorso o un errore onesto (`shape_not_drawable`),
+      mai `map_data_unavailable`, con Overpass irraggiungibile dal server
+      (tabella sotto); nessuna zona scaricata.
+- [x] Mai due download insieme; due errori di Overpass di fila fermano il
       comando (prima: il primo errore, ADR-0119); sotto i 5 GB liberi non
       scarica (test).
-- [ ] Test dell'API verdi; `ruff`, `black` e tipi puliti; il motore non
+- [x] Test dell'API verdi (377); `ruff` e `black` puliti; il motore non
       importa niente dall'API.
-- [ ] Lo spazio aggiunto alla cache è annotato.
+- [x] Lo spazio aggiunto alla cache è annotato.
 
 ## File toccati
 
@@ -135,4 +139,34 @@ funzione del motore per il riquadro, va in un file nuovo.
 
 ## Esito
 
-*(a fine task)*
+Sul server Hetzner, l'API che l'app usa, 52 città italiane pronte con zona
+di circa 17 × 17 km e nomi delle strade: 5 da Overpass (Roma, Milano,
+Napoli, Torino, Palermo, poi Overpass ha bloccato il server) e tutte poi
+dall'estratto Geofabrik del 30 settembre (`--extract`, un processo per
+città, container separato con 4 GiB). Da 20 a 30 s (solo i nomi) a 228 s
+(Roma, 126 MB) per città; un'ora in tutto. Cache del server da circa 20 a
+23,6 GB (le zone a 14 km del primo giro restano, l'API preferisce la più
+piccola che copre); estratto 2,2 GB e strade 647 MB in
+`/srv/shaperoute/extracts`. Memoria del container: picco 3,7–4,0 GiB,
+quasi tutto osmium mentre ritaglia (una decina di secondi per città), mai
+OOM; l'API intorno ai 0,3–0,5 GB.
+
+Verifica dall'API in servizio, senza nessuna zona scaricata (log: 11 zone
+dal disco, 88 dalla memoria):
+
+| Città | Cuore 5 km | Food | Famous Places | Romantic |
+|---|---|---|---|---|
+| Genova | 4,9 km 0,97 | cerchio 9,6 km 0,91 | stella 9,7 km 1,00 | cuore 9,5 km 0,96 |
+| Verona | 4,8 km 0,91 | cerchio 9,6 km 0,94 | stella 10,5 km 0,96 | cuore 10,3 km 0,90 |
+| Lecce | 5,1 km 0,95 | cerchio 9,2 km 0,93 | stella 9,6 km 0,95 | cuore 10,1 km 0,96 |
+| Bolzano | 5,0 km 0,96 | cerchio 10,2 km 0,89 | stella 9,9 km 0,94 | cuore 9,2 km 0,92 |
+| Vercelli | 4,8 km 0,74 | `shape_not_drawable` | stella 9,6 km 0,95 | cuore 9,0 km 0,91 |
+| Padova | 4,7 km 0,94 | cerchio 9,5 km 0,98 | stella 9,0 km 1,00 | cuore 10,4 km 0,93 |
+| Monza | 4,8 km 1,00 | cerchio 9,7 km 0,90 | stella 9,6 km 0,99 | cuore 10,9 km 0,98 |
+
+Emerso: il primo riquadro (14 km, senza la ricerca lontana del motore)
+lasciava fuori Romantic a Verona e Bolzano (0,4–0,7 km a nord); allargato a
+17 km, rifatto tutto. L'estratto dà zone uguali a Overpass (Napoli e
+Palermo: stessi percorsi). Rimandato: le 14 città in evidenza (estere,
+fuori dall'estratto dell'Italia: servono i loro estratti o Overpass quando
+risponde) e le zone per percorsi oltre i 10 km o lontani dal centro.

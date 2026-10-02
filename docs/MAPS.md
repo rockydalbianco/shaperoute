@@ -118,11 +118,13 @@ ritagliare equivale a scaricare.
 `python -m shaperoute_api.prefetch_zones --preset italy` (o `featured`, o
 nomi di città) scarica prima che qualcuno le chieda le zone di «Explore»:
 per ogni città il centro dalla ricerca delle città (lo stesso che l'app
-riceve), poi un riquadro di circa **14 × 14 km** (196 km²) che contiene
+riceve), poi un riquadro di circa **17 × 17 km** (289 km²) che contiene
 ogni forma dei temi a 10 km da qualunque partenza entro 2,5 km
-(`search_radius_m`) e gli esempi di TASK-143 (cuore, cerchio e stella da
-5 km) da qualunque partenza entro 2 km (`FAR_OFFSET_M`); più i nomi delle
-strade (ADR-0057). Una città già coperta è «ready»; le altre si scaricano
+(`search_radius_m`), con la ricerca lontana del motore da lì
+(`zone_area(..., FAR_OFFSET_M)`: senza, Romantic a Verona chiedeva 0,7 km
+oltre un riquadro di 14 km), e gli esempi di TASK-143 (cuore, cerchio e
+stella da 5 km) da qualunque partenza entro 2 km (`FAR_OFFSET_M`); più i
+nomi delle strade (ADR-0057). Una città già coperta è «ready»; le altre si scaricano
 **una alla volta**, con una pausa (`--pause-s`, 60 s) e un tetto
 (`--max-downloads`). Prima di ogni città legge la pagina di stato di
 Overpass: con un posto libero scarica, con «Slot available after … in N

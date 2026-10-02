@@ -3855,10 +3855,15 @@ server Hetzner, che l'app usa dal 2026-10-01, risponde.
   stessa ricerca delle città di `GET /cities`, quindi lo stesso centro che
   l'app riceve al tocco.
 - **Il riquadro di «Explore»**: ogni forma dei temi (lette da `THEMES`) a
-  10 km da qualunque partenza entro `search_radius_m(10 km)` (2,5 km), e
-  gli esempi di TASK-143 a 5 km da qualunque partenza entro `FAR_OFFSET_M`
-  (2 km). Bastano le quattro partenze più lontane a nord, est, sud e ovest:
-  i riquadri sono allineati agli assi. Circa 14 × 14 km, 196 km².
+  10 km da qualunque partenza entro `search_radius_m(10 km)` (2,5 km), con
+  l'area della ricerca lontana del motore da quelle partenze
+  (`zone_area(..., FAR_OFFSET_M)`), e gli esempi di TASK-143 a 5 km da
+  qualunque partenza entro `FAR_OFFSET_M` (2 km). Bastano le quattro
+  partenze più lontane a nord, est, sud e ovest: i riquadri sono allineati
+  agli assi. Circa 17 × 17 km, 289 km². Il primo riquadro, senza la ricerca
+  lontana, era di 14 km: Romantic a Verona e Bolzano usciva di 0,4–0,7 km a
+  nord e chiedeva Overpass. Le zone a 14 km già fatte restano: l'API prende
+  la zona più piccola che copre la richiesta, quindi la più leggera.
 - **Con i nomi delle strade** (ADR-0057): l'API li legge solo dalla cache,
   e «Start» (TASK-145) li dice. Una città con la zona ma senza nomi scarica
   solo i nomi.

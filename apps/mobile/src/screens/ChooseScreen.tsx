@@ -53,6 +53,8 @@ type Props = {
   footer: ReactNode;
   /** Starts a run without a route, the track only (TASK-149). */
   onRun?: () => void;
+  /** Its button's words: «Bike» has its own (TASK-190). */
+  runLabel?: string;
 };
 
 /**
@@ -71,6 +73,7 @@ export function ChooseScreen({
   children,
   footer,
   onRun,
+  runLabel = "Run without a route",
 }: Props) {
   const insets = useSafeAreaInsets();
   return (
@@ -92,11 +95,11 @@ export function ChooseScreen({
                 style={styles.explore}
                 onPress={onRun}
                 accessibilityRole="button"
-                accessibilityLabel="Run without a route"
+                accessibilityLabel={runLabel}
               >
                 {/* The whole of it: "Run" alone read as running the route
                     drawn below (TASK-158). */}
-                <Text style={styles.exploreText}>Run without a route</Text>
+                <Text style={styles.exploreText}>{runLabel}</Text>
               </Pressable>
             )}
           </View>

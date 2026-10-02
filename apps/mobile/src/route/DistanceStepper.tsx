@@ -1,3 +1,4 @@
+import type { Activity } from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -15,20 +16,27 @@ type Props = {
   text: string;
   onText: (text: string) => void;
   editable: boolean;
+  /** Whose limits − and + keep to (TASK-190): a run's unless said. */
+  activity?: Activity;
 };
 
 /**
  * The distance: − and + by a km, and the number still typed with the decimal
  * pad for anything in between (ADR-0034).
  */
-export function DistanceStepper({ text, onText, editable }: Props) {
+export function DistanceStepper({
+  text,
+  onText,
+  editable,
+  activity = "running",
+}: Props) {
   return (
     <View style={[styles.row, !editable && styles.off]}>
       <Step
         label="−"
         name="Shorter"
         editable={editable}
-        onPress={() => onText(stepDistance(text, -1))}
+        onPress={() => onText(stepDistance(text, -1, activity))}
       />
       <View style={styles.value}>
         <TextInput
@@ -48,7 +56,7 @@ export function DistanceStepper({ text, onText, editable }: Props) {
         label="+"
         name="Longer"
         editable={editable}
-        onPress={() => onText(stepDistance(text, 1))}
+        onPress={() => onText(stepDistance(text, 1, activity))}
       />
     </View>
   );

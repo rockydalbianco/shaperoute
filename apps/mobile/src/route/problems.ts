@@ -1,11 +1,12 @@
 import {
+  type Activity,
   type EditReason,
   type ImageReason,
   IMAGE_REASONS,
   MAX_IMAGE_BYTES,
 } from "@shaperoute/shared-types";
 
-import { MAX_APP_DISTANCE_KM } from "./distance";
+import { APP_DISTANCE_LIMITS_KM } from "./distance";
 import { shapeList } from "./shapeWords";
 import type { EditProblem, ImageProblem } from "./useImageOutline";
 import type { RouteProblem } from "./useRouteRequest";
@@ -29,17 +30,21 @@ export type ProblemText = {
 const BUG = "The app and the API do not agree (a bug)";
 
 /** `kind`: what the route draws; a word that does not fit is not offered
- * the shapes, but a shorter word (TASK-057). */
+ * the shapes, but a shorter word (TASK-057). `activity`: the request's, whose
+ * distances «Draw» offers (TASK-190); a run's unless said. */
 export function problemText(
   problem: RouteProblem,
   kind: ChoiceKind = "shape",
+  activity: Activity = "running",
 ): ProblemText {
   switch (problem.kind) {
     case "api_error":
       switch (problem.code) {
         case "shape_not_drawable": {
           const fits = problem.suggested_distance_m;
-          if (fits != null && fits <= MAX_APP_DISTANCE_KM * 1000) {
+          // Offered only within the distances «Draw» offers for it.
+          const [lowest, highest] = APP_DISTANCE_LIMITS_KM[activity];
+          if (fits != null && fits >= lowest * 1000 && fits <= highest * 1000) {
             return {
               text: `This ${kind} does not fit the roads here at this distance. It fits at about ${fits / 1000} km.`,
               detail: problem.message,

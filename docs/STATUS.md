@@ -145,14 +145,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   da 10–30 km un `invalid_request` che dice i limiti, le foto in bici, la
   distanza suggerita nei limiti, e `prefetch_zones --activity cycling
   --extract` per zone della bici di 26 × 26 km (stima 0,15–0,6 GB in
-  memoria ciascuna). La corsa non cambia. **Non provata su una zona
-  vera**: la prova sul server (Trento) vuole l'ok dell'utente, comandi nel
-  task file. Da fare: quella prova, i campioni da far giudicare
-  all'utente, la parte C (app, assegnata il 2026-10-02 sera: «Bike» in
-  «Settings» e `cycling` da 10 a 30 km in «Draw»; le due domande del task
-  file restano dell'utente, e fino alla risposta «Explore», «Feed» e la
-  schermata della corsa restano come oggi). Da dove riprendere: il task
-  file, «Esito».
+  memoria ciascuna). La corsa non cambia. **Parte C, l'app** (assegnata il
+  2026-10-02 sera), PR #221 (il merge è del coordinatore): «Bike» si
+  sceglie in «Settings» e vale subito; con «Bike» «Draw» chiede `cycling`
+  fra 10 e 30 km (parole fino a 8 lettere, «Ride without a route»); con
+  «Run» le richieste sono quelle di prima, byte per byte. Due testi da
+  confermare con l'utente («Ride without a route», «At most 8 letters.»).
+  **Aspettano l'utente**: le due «Domande aperte» del task file (fino alla
+  risposta «Explore», «Feed» e la schermata della corsa restano come oggi
+  anche con «Bike»); l'ok per la prova sul server (Trento, comandi nel task
+  file) e poi per pubblicare l'app, in quest'ordine (un'API senza la parte
+  B rifiuta `cycling`); i campioni da giudicare. Da provare sull'iPhone. Da
+  dove riprendere: il task file, «Esito».
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»): **la parte API è fatta**, PR #210:

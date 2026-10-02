@@ -109,10 +109,13 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test("the switch is off until the user turns it on: no pen_up is sent", async () => {
+test("the switch is on until the user turns it off: then no pen_up is sent", async () => {
   apiAnswers({ ...penUpResult, walks: [] });
   await atTrento();
   await drawWord("io", "6");
+  // On by default, the user's choice (TASK-202).
+  expect(screen.getByRole("switch", { name: PEN_SWITCH, checked: true })).toBeTruthy();
+  await fireEvent.press(screen.getByRole("switch", { name: PEN_SWITCH }));
   expect(screen.getByRole("switch", { name: PEN_SWITCH, checked: false })).toBeTruthy();
   await draw();
   expect(lastRouteRequest()).toEqual({
@@ -128,7 +131,7 @@ test("on, the word is asked with the pen up and its walks are drawn apart", asyn
   apiAnswers(penUpResult);
   await atTrento();
   await drawWord("io", "6");
-  await fireEvent.press(screen.getByRole("switch", { name: PEN_SWITCH }));
+  // Nothing to press: the switch starts on (TASK-202).
   await draw();
   expect(lastRouteRequest()).toEqual({
     start: [46.0671, 11.1214],
@@ -163,7 +166,8 @@ test("a shape never carries the pen, even with the switch on", async () => {
   apiAnswers({ ...penUpResult, shape: "heart", word: null, walks: [] });
   await atTrento();
   await drawWord("io", "6");
-  await fireEvent.press(screen.getByRole("switch", { name: PEN_SWITCH }));
+  // On by default (TASK-202): left on while the shape is chosen.
+  expect(screen.getByRole("switch", { name: PEN_SWITCH, checked: true })).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Shape" }));
   await draw();
   expect(lastRouteRequest()).toEqual({

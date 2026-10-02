@@ -757,12 +757,14 @@ ADR-0157), «On» o «Off» come quelli della corsa. Acceso, la richiesta
 della parola ha `pen_up: true`: ogni lettera si disegna da sola e fra una e
 l'altra si cammina (`API.md`, «La penna alzata»); spento, o con una forma o
 un'immagine, il campo non c'è e la richiesta è quella di prima. La stessa
-parola con e senza la penna alzata sono due richieste diverse. **Spento
-all'avvio** finché l'utente non sceglie (correzione del coordinatore del
-2026-10-02: l'app pubblicata non cambia senza il suo sì, e un'API più
-vecchia di TASK-197 rifiuterebbe il campo con `invalid_request`); la
-proposta sul tavolo è acceso di default: **da confermare con l'utente**.
-Non si salva fra un avvio e l'altro.
+parola con e senza la penna alzata sono due richieste diverse. **Acceso
+all'avvio** (TASK-202), scelta dell'utente del 2026-10-02 («sì, acceso di
+default»); TASK-198 l'aveva costruito spento finché l'utente non
+sceglieva. Un'API più vecchia di TASK-197 rifiuta il campo con
+`invalid_request`: con l'interruttore acceso ogni parola chiesta a
+un'API così fallisce, quindi l'app va pubblicata solo dopo il server
+(`tasks/TASK-202.md`, «Note per il deploy»). Non si salva fra un avvio e
+l'altro.
 
 - Le lettere sono `LETTERS` di `shared-types`; il contratto ne ammette 8
   (`MAX_WORD_LETTERS`), ma a 3 km l'una (`LETTER_DISTANCE_M`) l'ottava

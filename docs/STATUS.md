@@ -262,6 +262,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sulla scheda di un preferito (da chiedere), un preferito in bici che
   non ricorda l'attività.
 
+- **App** — TASK-202: «Lift the pen between letters» è **acceso
+  all'avvio**, scelta dell'utente del 2026-10-02 («sì, acceso di
+  default»): una parola si chiede con la penna alzata, a meno di
+  spegnerlo. **Risolta la prima domanda di TASK-198** (sotto); restano i
+  due testi della voce e la riga dei km. Una forma e un'immagine non
+  mandano mai `pen_up`. **Va sul telefono solo dopo l'aggiornamento del
+  server**: un'API senza TASK-197 rifiuta ogni parola con la penna alzata
+  (`tasks/TASK-202.md`, «Note per il deploy»).
 - **App** — TASK-198: la penna alzata nella corsa, chiesta e confermata
   dall'utente («pausa automatica con avviso a voce»), PR #218, in `main`
   dal 2026-10-02 20:02Z. In «Draw», con

@@ -1,4 +1,4 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { LatLon, Walk } from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask } from "./accounts";
 
@@ -33,6 +33,12 @@ export type Favorite = {
 /** One favorite whole, to show on the map. */
 export type FavoriteDetail = Omit<Favorite, "start" | "preview"> & {
   points: LatLon[];
+  /**
+   * The walks of a word with the pen up (TASK-199): [from, to] indices into
+   * `points`. Empty for any other route; missing from an API older than
+   * TASK-199. Read through `walksOf`.
+   */
+  walks?: Walk[];
 };
 
 /** What PUT /me/favorites/{key} takes: the route as the app shows it. */
@@ -46,6 +52,11 @@ export type FavoriteRequest = {
   route_m: number;
   similarity: number;
   points: LatLon[];
+  /**
+   * The walks of a word with the pen up (TASK-199). Sent only then: an API
+   * older than TASK-199 refuses a field it does not know.
+   */
+  walks?: Walk[];
 };
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
@@ -78,21 +89,37 @@ export function fetchFavorite(
   );
 }
 
-/** PUT /me/favorites/{key}: kept once, however many times it is asked. */
-export function keepFavorite(
+/**
+ * PUT /me/favorites/{key}: kept once, however many times it is asked. A
+ * word with the pen up that the API refuses goes once more without its
+ * walks (TASK-199, ADR-0158): an API older than TASK-199 keeps it as one
+ * line.
+ */
+export async function keepFavorite(
   baseUrl: string,
   token: string,
   id: string,
   request: FavoriteRequest,
   options: Options = {},
 ): Promise<AccountOutcome<Favorite>> {
-  return ask(
-    baseUrl,
-    `/me/favorites/${id}`,
-    { method: "PUT", body: request, token },
-    isFavorite,
-    options,
-  );
+  const put = (body: FavoriteRequest) =>
+    ask(
+      baseUrl,
+      `/me/favorites/${id}`,
+      { method: "PUT", body, token },
+      isFavorite,
+      options,
+    );
+  const outcome = await put(request);
+  if (
+    outcome.kind !== "api_error" ||
+    outcome.code !== "invalid_request" ||
+    request.walks === undefined
+  ) {
+    return outcome;
+  }
+  const { walks: _walks, ...older } = request;
+  return put(older);
 }
 
 /** DELETE /me/favorites/{key}: gone, or never there. */

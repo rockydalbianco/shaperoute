@@ -1,4 +1,5 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { LatLon, Walk } from "@shaperoute/shared-types";
+import walkedRequest from "@shaperoute/shared-types/fixtures/activity-request-walks.json";
 import request from "@shaperoute/shared-types/fixtures/activity-request.json";
 
 import type { SavedRun } from "../navigation/trackStore";
@@ -101,6 +102,101 @@ test("texts longer than the API takes are cut, and a similarity kept in 0–1", 
   expect(recorded?.request.title).toHaveLength(60);
   expect(recorded?.request.style).toBe("block");
   expect(recorded?.request.similarity).toBe(1);
+});
+
+// --- A word with the pen up (TASK-199) ---
+
+/** The run along «II» of the API's example, the pen up between the letters. */
+const WALKED: SavedRun = {
+  version: 1,
+  route: walkedRequest.points as LatLon[],
+  similarity: walkedRequest.similarity,
+  walks: walkedRequest.walks as Walk[],
+  track: {
+    fixes: walkedRequest.track.map((fix) => ({
+      point: fix.point as LatLon,
+      timeMs: fix.time_ms,
+      accuracyM: fix.accuracy_m,
+    })),
+    distanceM: 4003,
+    pauses: [{ fromMs: 1790000600000, toMs: 1790000900000, pen: true }],
+  },
+  status: "arrived",
+};
+const WORD = { shape: null, word: "II", style: "block" as const, title: null };
+
+test("a run along any other route sends what it sent before, byte for byte", () => {
+  // The same text the app sent before TASK-199: an older API refuses any
+  // field it does not know.
+  const before = JSON.stringify(request);
+  expect(JSON.stringify(recordedRun(RUN, STAR)?.request)).toBe(before);
+  // No walks in the file, or none: the same.
+  expect(JSON.stringify(recordedRun({ ...RUN, walks: [] }, STAR)?.request)).toBe(
+    before,
+  );
+  // A pause of the pen without walks to go with it is the runner's.
+  const penned = {
+    ...RUN,
+    track: {
+      ...RUN.track,
+      pauses: [{ fromMs: 1790000300000, toMs: 1790000360000, pen: true as const }],
+    },
+  };
+  const sent = recordedRun(penned, STAR)?.request;
+  expect(sent?.pauses).toStrictEqual([
+    { from_ms: 1790000300000, to_ms: 1790000360000, auto: false },
+  ]);
+  expect(sent).not.toHaveProperty("walks");
+});
+
+test("a run along a word with the pen up sends its walks and the pen", () => {
+  const recorded = recordedRun(WALKED, WORD);
+  expect(recorded?.id).toBe(activityKey(WALKED.track.fixes[0]));
+  // The API's example, field for field and in its order.
+  expect(JSON.stringify(recorded?.request)).toBe(JSON.stringify(walkedRequest));
+});
+
+test("the pauses of the runner stay the runner's on a word with the pen up", () => {
+  const recorded = recordedRun(
+    {
+      ...WALKED,
+      track: {
+        ...WALKED.track,
+        pauses: [
+          { fromMs: 1790000600000, toMs: 1790000900000, pen: true },
+          { fromMs: 1790001300000, toMs: 1790001320000 },
+          { fromMs: 1790001400000, toMs: 1790001410000, auto: true },
+        ],
+      },
+    },
+    WORD,
+  );
+  expect(recorded?.request.pauses).toStrictEqual([
+    { from_ms: 1790000600000, to_ms: 1790000900000, auto: false, pen: true },
+    { from_ms: 1790001300000, to_ms: 1790001320000, auto: false },
+    { from_ms: 1790001400000, to_ms: 1790001410000, auto: true },
+  ]);
+});
+
+test("walks that do not fit the route are not sent, nor is the pen", () => {
+  for (const walks of [
+    [[2, 99]],
+    [[5, 2]],
+    [
+      [2, 5],
+      [3, 6],
+    ],
+  ] as Walk[][]) {
+    const sent = recordedRun({ ...WALKED, walks }, WORD)?.request;
+    expect(sent).not.toHaveProperty("walks");
+    expect(sent?.pauses).toStrictEqual([
+      { from_ms: 1790000600000, to_ms: 1790000900000, auto: false },
+    ]);
+  }
+  // Nor without the route they are stretches of.
+  const free = recordedRun({ ...WALKED, similarity: undefined }, WORD)?.request;
+  expect(free).not.toHaveProperty("walks");
+  expect(free?.points).toBeNull();
 });
 
 test("two lines are the same when their points are", () => {

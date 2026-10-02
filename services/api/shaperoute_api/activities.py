@@ -2,7 +2,8 @@
 docs/DATABASE.md).
 
 The app sends a run as it recorded it: the fixes, the pauses, and the route
-it followed when there was one. The API keeps where the runner was (the
+it followed when there was one, with the walks of a word with the pen up
+(TASK-199). The API keeps where the runner was (the
 engine's cleaning of the track, ADR-0090) and counts metres, seconds and
 score itself: the app's own numbers are never asked for. The app names the
 run with a key made from its track, so a run sent twice is kept once.
@@ -39,6 +40,7 @@ from psycopg.rows import DictRow
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from route_engine.geo import haversine_m
+from route_engine.pen_up import walks_problem
 from route_engine.track_score import (
     TrackNotScorableError,
     TrackPoint,
@@ -61,8 +63,10 @@ from shaperoute_api.recommended import preview
 from shaperoute_api.schemas import (
     MAX_ROUTE_POINTS,
     MAX_TRACK_FIXES,
+    MAX_WALKS,
     ErrorBody,
     TrackFixBody,
+    Walk,
 )
 
 # Years of a run a day, and one account cannot fill the database.
@@ -118,6 +122,10 @@ class PauseBody(BaseModel):
     """The app paused by itself because the runner stood still; false when
     the runner asked, and what lies between the two fixes around it is then
     not run."""
+    pen: bool = False
+    """The app paused by itself between two letters of a word with the pen
+    up (TASK-198, TASK-199): the runner walks to the next letter. Counted as
+    a pause the runner asked for; missing from an older app."""
 
     @model_validator(mode="after")
     def in_order(self) -> PauseBody:
@@ -144,6 +152,10 @@ class ActivityRequestBody(BaseModel):
     word: str | None = Field(default=None, max_length=40)
     style: Literal["round", "block"] | None = None
     title: str | None = Field(default=None, max_length=60)
+    walks: list[Walk] = Field(default_factory=list, max_length=MAX_WALKS)
+    """The planned route's, RouteResult.walks, for a word with the pen up
+    (TASK-199): the score is then of the letters alone. Only with `points`;
+    missing from an older app."""
 
     @field_validator("track")
     @classmethod
@@ -164,6 +176,12 @@ class ActivityRequestBody(BaseModel):
     def a_route_whole_or_none(self) -> ActivityRequestBody:
         if (self.points is None) != (self.similarity is None):
             raise ValueError("points and similarity come together, or neither")
+        if self.walks and self.points is None:
+            raise ValueError("walks are stretches of points: there are none")
+        # As POST /track-scores checks them (schemas.py).
+        problem = walks_problem(self.walks, len(self.points or []))
+        if problem is not None:
+            raise ValueError(problem)
         return self
 
 
@@ -216,6 +234,10 @@ class ActivityDetailBody(BaseModel):
     """The planned route's."""
     points: list[LatLon] | None
     track: list[LatLon]
+    walks: list[Walk]
+    """The planned route's, for a word with the pen up (TASK-199): [from,
+    to] indices into `points`; empty for any other run, and for the runs
+    saved before."""
 
 
 # --- The place a run starts from ---
@@ -293,6 +315,7 @@ class Pause:
     from_s: float
     to_s: float
     auto: bool
+    pen: bool = False
 
 
 @dataclass(frozen=True)
@@ -370,7 +393,7 @@ def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:
         start = max(pause.from_ms / 1000, first_s)
         end = min(pause.to_ms / 1000, last_s)
         if end > start:
-            pauses.append(Pause(start - first_s, end - first_s, pause.auto))
+            pauses.append(Pause(start - first_s, end - first_s, pause.auto, pause.pen))
     track = [
         TrackPoint(p.lat, p.lon, _seconds(p) - first_s, p.accuracy_m) for p in track
     ]
@@ -384,7 +407,9 @@ def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:
     score, fidelity = None, None
     if body.points is not None and body.similarity is not None:
         try:
-            scored = score_track(fixes, body.points, body.similarity)
+            # A word with the pen up is judged on its letters alone, as POST
+            # /track-scores judges it (TASK-199).
+            scored = score_track(fixes, body.points, body.similarity, body.walks)
         except TrackNotScorableError:
             # Too short to judge against its route: kept, without a score.
             pass
@@ -405,7 +430,7 @@ def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:
 
 COLUMNS = (
     "id, key, started_at, place, shape, word, style, title, distance_m,"
-    " duration_s, score, fidelity, route_similarity,"
+    " duration_s, score, fidelity, route_similarity, walks,"
     " ST_AsGeoJSON(route, 15) AS route,"
     " ST_AsGeoJSON(ST_Force2D(track), 15) AS track"
 )
@@ -464,7 +489,21 @@ def _whole(row: DictRow) -> ActivityDetailBody:
         similarity=None if similarity is None else round(similarity, 4),
         points=None if route is None else _line(route),
         track=_line(row["track"]),
+        walks=[(start, end) for start, end in row["walks"]],
     )
+
+
+def _pause(pause: Pause) -> dict[str, Any]:
+    """A pause as the `pauses` column keeps it: `pen` only when true, so the
+    other pauses are kept as before TASK-199."""
+    kept: dict[str, Any] = {
+        "from_s": round(pause.from_s, 3),
+        "to_s": round(pause.to_s, 3),
+        "auto": pause.auto,
+    }
+    if pause.pen:
+        kept["pen"] = True
+    return kept
 
 
 def _cursor(row: DictRow) -> str:
@@ -556,9 +595,9 @@ class Activities:
             row = conn.execute(
                 "INSERT INTO runs (user_id, key, route, route_similarity, shape,"
                 " word, style, title, track, pauses, started_at, distance_m,"
-                " duration_s, score, fidelity, place, created_at)"
+                " duration_s, score, fidelity, place, created_at, walks)"
                 " VALUES (%s, %s, ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s,"
-                " ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s, %s, %s, %s)"
+                " ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                 f" RETURNING {COLUMNS}",
                 (
                     user_id,
@@ -570,16 +609,7 @@ class Activities:
                     body.style,
                     body.title,
                     _track_wkt(run.track),
-                    Jsonb(
-                        [
-                            {
-                                "from_s": round(pause.from_s, 3),
-                                "to_s": round(pause.to_s, 3),
-                                "auto": pause.auto,
-                            }
-                            for pause in run.pauses
-                        ]
-                    ),
+                    Jsonb([_pause(pause) for pause in run.pauses]),
                     run.started_at,
                     run.distance_m,
                     run.duration_s,
@@ -587,6 +617,7 @@ class Activities:
                     run.fidelity,
                     place,
                     self.now(),
+                    Jsonb([list(walk) for walk in body.walks]),
                 ),
             ).fetchone()
             assert row is not None

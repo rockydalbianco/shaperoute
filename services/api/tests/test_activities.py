@@ -1,15 +1,18 @@
 """My activities in a real PostgreSQL (TASK-172, ADR-0140): a run saved,
 listed a page at a time, opened and deleted; the API counts metres, seconds
 and score itself; each account sees only its own; the bodies are the
-examples of packages/shared-types/fixtures."""
+examples of packages/shared-types/fixtures. A run along a word with the pen
+up keeps its walks and its pauses of the pen (TASK-199)."""
 
 from __future__ import annotations
 
 import json
+import shutil
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import psycopg
 import pytest
 from argon2 import PasswordHasher
 from fastapi.testclient import TestClient
@@ -28,7 +31,7 @@ from shaperoute_api.activities import (
     parse_place,
 )
 from shaperoute_api.app import create_app
-from shaperoute_api.db import Database, migrations
+from shaperoute_api.db import MIGRATIONS_DIR, Database, migrations
 from shaperoute_api.recommended import PREVIEW_POINTS
 from shaperoute_api.schemas import MAX_TRACK_FIXES
 
@@ -144,9 +147,11 @@ def ids(answer: Any) -> list[str]:
 
 
 def test_the_fixtures_are_the_contract() -> None:
+    # Written before TASK-199: the request of an older app, the answer of an
+    # older API, without the walks and the pen.
     body = _load("activity-request.json")
-    assert set(body) == set(ActivityRequestBody.model_fields)
-    assert set(body["pauses"][0]) == set(PauseBody.model_fields)
+    assert set(body) == set(ActivityRequestBody.model_fields) - {"walks"}
+    assert set(body["pauses"][0]) == set(PauseBody.model_fields) - {"pen"}
     ActivityRequestBody.model_validate(body)
     listed = _load("activities.json")
     assert set(listed) == set(ActivitiesBody.model_fields)
@@ -154,13 +159,28 @@ def test_the_fixtures_are_the_contract() -> None:
         assert set(activity) == set(ActivityBody.model_fields)
     ActivitiesBody.model_validate(listed)
     whole = _load("activity.json")
-    assert set(whole) == set(ActivityDetailBody.model_fields)
-    ActivityDetailBody.model_validate(whole)
+    assert set(whole) == set(ActivityDetailBody.model_fields) - {"walks"}
+    # A word with the pen up (TASK-199): every field.
+    walked = _load("activity-request-walks.json")
+    assert set(walked) == set(ActivityRequestBody.model_fields)
+    assert set(walked["pauses"][0]) == set(PauseBody.model_fields)
+    ActivityRequestBody.model_validate(walked)
+    whole_walked = _load("activity-walks.json")
+    assert set(whole_walked) == set(ActivityDetailBody.model_fields)
+    ActivityDetailBody.model_validate(whole_walked)
 
 
 def test_the_migration_comes_after_the_favorites() -> None:
     names = [path.name for path in migrations()]
     assert names.index("0003_runs.sql") > names.index("0002_favorites.sql")
+
+
+def test_the_walks_come_after_the_runs_and_the_favorites() -> None:
+    names = [path.name for path in migrations()]
+    walks = next(
+        i for i, name in enumerate(names) if name.endswith("_pen_up_walks.sql")
+    )
+    assert walks > names.index("0003_runs.sql") > names.index("0002_favorites.sql")
 
 
 @pytest.mark.parametrize(
@@ -199,7 +219,8 @@ def test_a_run_opens_whole_as_the_example(client: TestClient) -> None:
     client.put(f"/me/activities/{KEY}", json=request(), headers=me)
     whole = client.get(f"/me/activities/{KEY}", headers=me)
     assert whole.status_code == 200
-    assert whole.json() == _load("activity.json")
+    # The example of before TASK-199, and no walks.
+    assert whole.json() == {**_load("activity.json"), "walks": []}
 
 
 def test_a_run_without_a_route_has_no_score(client: TestClient) -> None:
@@ -376,6 +397,188 @@ def test_deleting_is_done_once_or_twice(client: TestClient) -> None:
     gone = client.get(f"/me/activities/{KEY}", headers=me)
     assert gone.status_code == 404
     assert code(gone) == "http_error"
+
+
+# --- A word with the pen up (TASK-199) ---
+
+
+def walked(**changes: Any) -> dict[str, Any]:
+    """A run along «II» with the pen up, paused by the pen between the two
+    letters."""
+    return {**_load("activity-request-walks.json"), **changes}
+
+
+def test_a_run_with_walks_has_the_score_of_its_letters(client: TestClient) -> None:
+    me = signed_up(client)
+    body = walked()
+    saved = client.put(f"/me/activities/{KEY}", json=body, headers=me)
+    assert saved.status_code == 201
+    scored = client.post(
+        "/track-scores",
+        json={key: body[key] for key in ("points", "similarity", "track", "walks")},
+    )
+    assert scored.status_code == 200
+    run = saved.json()
+    # The score seen at the end of the run: the same numbers.
+    assert (run["score"], run["fidelity"]) == (
+        scored.json()["score"],
+        scored.json()["fidelity"],
+    )
+    assert (run["score"], run["fidelity"]) == (88, 1.0)
+    # The walk run to the next letter is not of the run, as any pause.
+    assert (run["distance_m"], run["duration_s"]) == (4003, 1200)
+    whole = client.get(f"/me/activities/{KEY}", headers=me)
+    assert whole.status_code == 200
+    assert whole.json() == _load("activity-walks.json")
+
+
+def test_the_same_run_without_walks_is_scored_on_the_whole_route(
+    client: TestClient,
+) -> None:
+    me = signed_up(client)
+    body = walked()
+    del body["walks"]
+    run = client.put(f"/me/activities/{KEY}", json=body, headers=me).json()
+    # The walk from one letter to the next is judged as if drawn: lower.
+    assert (run["score"], run["fidelity"]) == (80, pytest.approx(0.9071, abs=1e-4))
+    whole = client.get(f"/me/activities/{KEY}", headers=me).json()
+    assert whole["walks"] == []
+
+
+def test_a_pause_of_the_pen_is_kept_as_one(
+    client: TestClient, database: Database
+) -> None:
+    me = signed_up(client)
+    pauses = [
+        {"from_ms": 1790000600000, "to_ms": 1790000900000, "pen": True},
+        # The runner's own, on the second letter: as before TASK-199.
+        {"from_ms": 1790001300000, "to_ms": 1790001320000, "auto": False},
+    ]
+    run = client.put(
+        f"/me/activities/{KEY}", json=walked(pauses=pauses), headers=me
+    ).json()
+    # A pause of the pen counts as the runner's: neither the walk nor its
+    # minutes are of the run.
+    assert run["duration_s"] == 1500 - 300 - 20
+    assert run["distance_m"] == 4003 - 1001
+    with database.connect() as conn:
+        row = conn.execute("SELECT pauses, walks FROM runs").fetchone()
+    assert row is not None
+    assert row["pauses"] == [
+        {"from_s": 600.0, "to_s": 900.0, "auto": False, "pen": True},
+        {"from_s": 1300.0, "to_s": 1320.0, "auto": False},
+    ]
+    assert row["walks"] == [[2, 5]]
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        # Beyond the 8 points of the route.
+        {"walks": [[2, 8]]},
+        {"walks": [[5, 2]]},
+        {"walks": [[-1, 2]]},
+        {"walks": [[2, 5], [3, 6]]},
+        {"walks": [[2, 5, 7]]},
+        {"walks": [[2, 5]] * 40},
+        # Walks without a route to be stretches of.
+        {"points": None, "similarity": None},
+        {"pauses": [{"from_ms": 1790000600000, "to_ms": 1790000900000, "pen": "or"}]},
+    ],
+)
+def test_walks_that_are_not_of_the_route_are_refused(
+    client: TestClient, changes: dict[str, Any]
+) -> None:
+    me = signed_up(client)
+    answer = client.put(f"/me/activities/{KEY}", json=walked(**changes), headers=me)
+    assert answer.status_code == 422
+    assert code(answer) == "invalid_request"
+    assert client.get("/me/activities", headers=me).json()["total"] == 0
+
+
+def test_runs_saved_before_the_walks_read_as_they_did(
+    database_url: str, tmp_path: Path, wall: WallClock, service: PlaceService
+) -> None:
+    database = Database(database_url)
+    # The schema of before TASK-199, with a run and a favorite in it.
+    before = [path for path in migrations() if not path.name.endswith("_walks.sql")]
+    assert len(before) == len(migrations()) - 1
+    for path in before:
+        shutil.copy(path, tmp_path / path.name)
+    database.migrate(tmp_path)
+    old = TestClient(
+        create_app(
+            FileSource(Path("unused.graphml")),
+            accounts=Accounts(database, now=wall, hasher=FAST_HASHER),
+            run_places=PlaceNames(PLACE_KEY, fetch=service),
+        )
+    )
+    me = signed_up(old)
+    with database.connect() as conn:
+        user = conn.execute("SELECT id FROM users").fetchone()
+        assert user is not None
+        # As the API of before wrote them.
+        conn.execute(
+            "INSERT INTO runs (user_id, key, route, route_similarity, shape,"
+            " track, pauses, started_at, distance_m, duration_s, score,"
+            " fidelity, place, created_at) VALUES (%s, %s,"
+            " ST_GeomFromText('LINESTRING(11.1214 46.0671,11.1344 46.0671)', 4326),"
+            " 0.91, 'star', ST_GeomFromText("
+            "'LINESTRING M (11.1214 46.0671 0,11.1344 46.0671 300)', 4326),"
+            ' \'[{"from_s": 1.0, "to_s": 2.0, "auto": true}]\','
+            " %s, 1001, 299, 91, 1.0, 'Trento', %s)",
+            (user["id"], KEY, wall.t, wall.t),
+        )
+        conn.execute(
+            "INSERT INTO favorites (user_id, key, city, shape, distance_m,"
+            " route_m, similarity, line, created_at) VALUES (%s, %s, 'trento',"
+            " 'star', 5000, 5120, 0.996,"
+            " ST_GeomFromText('LINESTRING(11.1215 46.067,11.123 46.07)', 4326), %s)",
+            (user["id"], "3f9a1c0e7b2d4a65", wall.t),
+        )
+    # The API of TASK-199 starts: the walks' migration, and nothing else.
+    assert database.migrate(MIGRATIONS_DIR) == [
+        path.stem for path in migrations() if path.name.endswith("_walks.sql")
+    ]
+    new = TestClient(
+        create_app(
+            FileSource(Path("unused.graphml")),
+            accounts=Accounts(database, now=wall, hasher=FAST_HASHER),
+            run_places=PlaceNames(PLACE_KEY, fetch=service),
+        )
+    )
+    whole = new.get(f"/me/activities/{KEY}", headers=me)
+    assert whole.status_code == 200
+    assert whole.json()["walks"] == []
+    assert whole.json()["score"] == 91
+    assert whole.json()["points"] == [[46.0671, 11.1214], [46.0671, 11.1344]]
+    assert new.get("/me/activities", headers=me).json()["total"] == 1
+    favorite = new.get("/me/favorites/3f9a1c0e7b2d4a65", headers=me)
+    assert favorite.status_code == 200
+    assert favorite.json()["walks"] == []
+    assert favorite.json()["points"] == [[46.067, 11.1215], [46.07, 11.123]]
+    with database.connect() as conn:
+        row = conn.execute("SELECT pauses FROM runs").fetchone()
+    assert row is not None
+    assert row["pauses"] == [{"from_s": 1.0, "to_s": 2.0, "auto": True}]
+
+
+def test_a_run_without_a_route_cannot_keep_walks(
+    client: TestClient, database: Database
+) -> None:
+    signed_up(client)
+    with database.connect() as conn:
+        user = conn.execute("SELECT id FROM users").fetchone()
+        assert user is not None
+    with pytest.raises(psycopg.errors.CheckViolation):
+        with database.connect() as conn:
+            conn.execute(
+                "INSERT INTO runs (user_id, key, track, started_at, distance_m,"
+                " duration_s, created_at, walks) VALUES (%s, %s, ST_GeomFromText("
+                "'LINESTRING M (11.1214 46.0671 0,11.1344 46.0671 300)', 4326),"
+                " now(), 1001, 300, now(), '[[0, 1]]')",
+                (user["id"], KEY),
+            )
 
 
 # --- The list, a page at a time ---

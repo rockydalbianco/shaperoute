@@ -1,3 +1,4 @@
+import walkedRequest from "@shaperoute/shared-types/fixtures/activity-request-walks.json";
 import request from "@shaperoute/shared-types/fixtures/activity-request.json";
 
 import type { ActivityRequest } from "../api/activities";
@@ -59,6 +60,21 @@ test("a run kept is there at the next opening, the oldest first", () => {
   expect(keepWaiting(run("second00"))).toBe(true);
   expect(loadOutbox()).toEqual([run("first000"), run("second00")]);
   expect(JSON.parse(files.get(URI) ?? "")).toHaveLength(2);
+});
+
+test("a run along a word with the pen up waits with its walks and its pen", () => {
+  // TASK-199: what goes to the API later is what was recorded, whole.
+  const walked: Waiting = {
+    id: "walked00",
+    owner: 1,
+    request: walkedRequest as ActivityRequest,
+  };
+  expect(keepWaiting(walked)).toBe(true);
+  expect(keepWaiting(run("first000"))).toBe(true);
+  const [first, second] = loadOutbox();
+  expect(JSON.stringify(first.request)).toBe(JSON.stringify(walkedRequest));
+  // Any other run waits as before, without a field more.
+  expect(JSON.stringify(second.request)).toBe(JSON.stringify(request));
 });
 
 test("the same run waits once for its account, and once for another's", () => {

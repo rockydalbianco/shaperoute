@@ -1,4 +1,4 @@
-import type { LatLon, TrackFix } from "@shaperoute/shared-types";
+import type { LatLon, TrackFix, Walk } from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask } from "./accounts";
 
@@ -41,6 +41,13 @@ export type ActivityDetail = Omit<Activity, "route_preview" | "track_preview"> &
   similarity: number | null;
   points: LatLon[] | null;
   track: LatLon[];
+  /**
+   * The planned route's walks, for a word with the pen up (TASK-199):
+   * [from, to] indices into `points`. Empty for any other run; missing from
+   * an API older than TASK-199. Read through `walksOf`, which trusts only
+   * walks that fit the points.
+   */
+  walks?: Walk[];
 };
 
 /** A page of the list, the latest run first. */
@@ -53,7 +60,14 @@ export type ActivitiesPage = {
 };
 
 /** A stretch of a run that is not of it, on the clock of its fixes. */
-export type ActivityPause = { from_ms: number; to_ms: number; auto: boolean };
+export type ActivityPause = {
+  from_ms: number;
+  to_ms: number;
+  auto: boolean;
+  /** Paused by the pen between two letters (TASK-198, TASK-199): sent only
+   * as true, and only on a run along a word with the pen up. */
+  pen?: boolean;
+};
 
 /** What PUT /me/activities/{key} takes: the run as the app recorded it. The
  * API counts metres, seconds and score itself. */
@@ -67,7 +81,28 @@ export type ActivityRequest = {
   word: string | null;
   style: "round" | "block" | null;
   title: string | null;
+  /**
+   * The planned route's walks, for a word with the pen up (TASK-199): the
+   * API scores the letters alone. Sent only then: an API older than
+   * TASK-199 refuses a field it does not know.
+   */
+  walks?: Walk[];
 };
+
+/**
+ * `request` as an app older than TASK-199 sends it: without the walks and
+ * without the pen on its pauses. The same object when it has neither.
+ */
+export function withoutPenUp(request: ActivityRequest): ActivityRequest {
+  if (request.walks === undefined && !request.pauses.some((p) => "pen" in p)) {
+    return request;
+  }
+  const { walks: _walks, ...older } = request;
+  return {
+    ...older,
+    pauses: request.pauses.map(({ pen: _pen, ...pause }) => pause),
+  };
+}
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
 
@@ -104,21 +139,34 @@ export function fetchActivity(
   );
 }
 
-/** PUT /me/activities/{key}: saved once, however many times it is sent. */
-export function saveActivity(
+/**
+ * PUT /me/activities/{key}: saved once, however many times it is sent. A
+ * run along a word with the pen up that the API refuses goes once more as
+ * an older app sends it (TASK-199, ADR-0158): an API older than TASK-199
+ * keeps it, scored on the whole route, rather than the run being lost.
+ */
+export async function saveActivity(
   baseUrl: string,
   token: string,
   id: string,
   request: ActivityRequest,
   options: Options = {},
 ): Promise<AccountOutcome<Activity>> {
-  return ask(
-    baseUrl,
-    `/me/activities/${id}`,
-    { method: "PUT", body: request, token },
-    isActivity,
-    options,
-  );
+  const put = (body: ActivityRequest) =>
+    ask(
+      baseUrl,
+      `/me/activities/${id}`,
+      { method: "PUT", body, token },
+      isActivity,
+      options,
+    );
+  const outcome = await put(request);
+  const older = withoutPenUp(request);
+  return outcome.kind === "api_error" &&
+    outcome.code === "invalid_request" &&
+    older !== request
+    ? put(older)
+    : outcome;
 }
 
 /** DELETE /me/activities/{key}: gone, or never there. */

@@ -6866,3 +6866,86 @@ tenuti si ridisegnano (anche se i percorsi senza `pen_up` restano gli
 stessi): server e `draw_examples` con l'ok dell'utente. Provato sulle
 strade vere solo dalle zone già in cache (Trento, Levico), non giudicato
 a occhio dall'utente.
+
+## ADR-0158 — La penna alzata nelle corse salvate e nei preferiti: una colonna `walks`, e una richiesta rifiutata si rimanda come prima
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-199). Il cosa (le corse e i preferiti tengono i tratti a piedi) è
+nei seguiti di TASK-198, assegnati dal coordinatore su delega
+dell'utente; il contratto dei `walks` è ADR-0157, le corse salvate
+ADR-0140, i preferiti ADR-0139.
+
+**Contesto**: `PUT /me/activities/{key}` e `PUT /me/favorites/{key}`
+rifiutano un campo che non conoscono (`extra="forbid"`): un'API precedente
+a TASK-199 risponde `422 invalid_request` a una corsa o a un preferito con
+`walks`. Una corsa nella coda del telefono che riceve `422` viene tolta
+(ADR-0140: rimandarla non cambierebbe niente), quindi si perderebbe.
+Server e app si aggiornano in momenti diversi, e tutti e due solo con
+l'ok dell'utente: un server con TASK-197 ma senza TASK-199 dà già i
+`walks` ai percorsi, e l'app li rimanderebbe.
+
+**Decisione**:
+
+1. **Una colonna `walks` (`jsonb`, default `[]`)** in `runs` e in
+   `favorites`, nella stessa migrazione: indici nei punti della linea, come
+   `RouteResult.walks`, non una geometria (la linea resta una, ADR-0157).
+   Le righe di prima prendono `[]`. In `runs`, `walks` vuoto quando non c'è
+   `route`. Il dettaglio (`GET /me/activities/{key}`, `GET
+   /me/favorites/{key}`) ha **sempre** `walks`, vuoto per ogni altra corsa
+   o percorso, come `RouteResult` (ADR-0157, punto 3); gli elenchi non
+   cambiano.
+2. **Nella richiesta `walks` è facoltativo**, controllato come in `POST
+   /track-scores` (`walks_problem`): fuori dai punti, all'indietro, che si
+   sovrappongono, o senza `points` per una corsa: `422 invalid_request`.
+   Con i `walks` il punteggio di una corsa è quello delle sole lettere, lo
+   stesso di `POST /track-scores` con gli stessi dati.
+3. **`pen` nella pausa**, facoltativo, falso se manca, nel `pauses` già
+   `jsonb` di `runs`: si scrive **solo quando è vero**, così le altre pause
+   restano byte per byte quelle di prima. Per km e tempo vale come una
+   pausa chiesta dal corridore (`auto` falso), come la manda l'app da
+   TASK-198. Il dettaglio non ha le pause (non le aveva, e la linea corsa
+   resta unita): `pen` sta nella riga, per chi la leggerà (TASK-117).
+4. **L'app manda `walks` e `pen` solo per una parola con la penna alzata**,
+   e solo i `walks` che stanno nei punti (`walksOf`): una corsa con
+   `walks` sbagliati verrebbe rifiutata e persa. Per ogni altra corsa o
+   percorso il corpo è quello di prima, campo per campo e nello stesso
+   ordine; i test lo confrontano come testo.
+5. **Un rifiuto si rimanda una volta come prima**: se l'API risponde `422
+   invalid_request` a una corsa con `walks` o `pen`, l'app la rimanda
+   subito senza (`withoutPenUp`); lo stesso per un preferito con `walks`.
+   Un'API precedente a TASK-199 salva la corsa con il punteggio su tutto il
+   percorso e le pause «penna» come pause del corridore, e tiene il
+   preferito come una linea sola: com'era prima di TASK-199, invece di
+   perdere la corsa o di mostrare «Extra inputs are not permitted» sotto il
+   cuore. Senza rete, o con un altro errore, niente si rimanda: resta la
+   regola di ADR-0140.
+6. **I tipi restano nell'app** (`src/api/activities.ts`,
+   `src/api/favorites.ts`), dove TASK-171 e TASK-172 li hanno messi:
+   `shared-types` prende le fixture nuove (`activity-request-walks.json`,
+   `activity-walks.json`, `favorite-request-walks.json`,
+   `favorite-walks.json`) e un controllo nel suo test; quelle di prima
+   restano com'erano, come richieste di un'app e risposte di un'API
+   precedenti.
+7. **Un preferito con i `walks`** si apre come una parola appena
+   disegnata con la penna alzata: il risultato ha i `walks`, la richiesta
+   `pen_up: true` (l'export GPX la rimanda all'API, che vuole `pen_up`
+   solo con una parola: senza parola i `walks` non si leggono).
+
+**Scartate**: una geometria per i tratti a piedi (una seconda linea da
+tenere allineata alla prima); scrivere sempre `pen` (cambierebbe le pause
+di ogni corsa, e i test di prima); le pause nel dettaglio della corsa
+(nessuno le legge: la linea corsa resta unita, scelta dell'utente fuori
+da qui); rimandare dopo ogni `422`, anche senza `walks` né `pen` (la
+richiesta sarebbe la stessa); chiedere prima all'API che versione è (una
+richiesta in più per ogni corsa, e la coda lavora anche quando la rete
+torna dopo); spostare i tipi in `shared-types` (file usati da altri task
+oggi, e nessun vantaggio per il contratto, che le fixture già tengono).
+
+**Conseguenze**: la migrazione `0006` e i campi nuovi arrivano al
+telefono solo dopo l'aggiornamento del server e la pubblicazione
+dell'app, tutti e due con l'ok dell'utente. Con un'API precedente a
+TASK-199 una corsa su una parola con la penna alzata si salva con un
+punteggio più basso di quello visto a fine corsa (la camminata fra le
+lettere conta), e un preferito si riapre come una linea sola: tenuto così,
+resta così anche dopo l'aggiornamento (la chiave è la stessa, e il
+secondo `PUT` non cambia niente). Un `422` di una corsa con i `walks`
+costa una richiesta in più.

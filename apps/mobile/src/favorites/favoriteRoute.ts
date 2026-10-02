@@ -3,6 +3,7 @@ import {
   type LatLon,
   type OutlinePoint,
   type RouteResult,
+  type Walk,
   MAX_OUTLINE_POINTS,
 } from "@shaperoute/shared-types";
 
@@ -15,6 +16,7 @@ import {
 } from "../explore/recommendedRoutes";
 import type { ThemedResult } from "../explore/themedRoutes";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
+import { walksOf } from "../route/walks";
 import { favoriteKey } from "./favoriteKey";
 
 /**
@@ -29,6 +31,20 @@ const MAX_CITY = 80;
 const MAX_TITLE = 60;
 /** The points of the preview of a favorite just kept, before the API's. */
 const PREVIEW_POINTS = 64;
+
+/**
+ * The walks of a word with the pen up, as a favorite keeps them (TASK-199):
+ * only those that fit the line, and only for a word. Nothing for any other
+ * route: its request is the one of before, field for field.
+ */
+function penUp(
+  word: string | null,
+  points: readonly LatLon[],
+  walks: readonly Walk[] | null | undefined,
+): { walks?: Walk[] } {
+  const fit = word === null ? [] : walksOf(points, walks);
+  return fit.length === 0 ? {} : { walks: fit.map(([from, to]): Walk => [from, to]) };
+}
 
 function keepable(fields: Omit<FavoriteRequest, "similarity">, similarity: number) {
   return {
@@ -60,6 +76,8 @@ export function drawnKeepable(
       distance_m: request.distance_m,
       route_m: Math.round(result.distance_m),
       points: result.points,
+      // A word with the pen up keeps its walks (TASK-199).
+      ...penUp(word, result.points, result.walks),
     },
     result.similarity,
   );
@@ -113,7 +131,8 @@ function spread<T>(points: T[], size: number): T[] {
 
 /** The favorite as the list shows it at once, before the API answers. */
 export function keptNow({ id, request }: Keepable, now: Date): Favorite {
-  const { points, ...fields } = request;
+  // The list has no walks: only a favorite opened whole has them.
+  const { points, walks: _walks, ...fields } = request;
   return {
     ...fields,
     id,
@@ -195,7 +214,10 @@ export type OpenedFavorite = Extract<Explored, { status: "done" }> & {
 /**
  * A favorite opened on the map, as a route of «Explore» is (explored.ts):
  * the same card shows it, starts it and exports it. Made once per opening:
- * Start and the export know a route by its result.
+ * Start and the export know a route by its result. A word with the pen up
+ * has its walks in the result, as a word just drawn has them (TASK-199):
+ * the map draws them dashed, Start pauses on them, the GPX and the score
+ * leave them out; its request asks for the pen up, as the export wants.
  */
 export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
   const detail: RecommendedRouteDetail = {
@@ -226,12 +248,25 @@ export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
     away_m: 0,
     preview: [],
   };
-  const result = toResult(detail);
+  const walked = penUp(favorite.word, favorite.points, favorite.walks);
+  const result: RouteResult = { ...toResult(detail), ...walked };
+  // A word with the pen up is asked for as «Draw» asks for it.
+  const request: AnyRouteRequest =
+    walked.walks !== undefined && favorite.word !== null
+      ? {
+          start: favorite.points[0],
+          distance_m: favorite.distance_m,
+          activity: "running",
+          word: favorite.word,
+          style: favorite.style === "block" ? "block" : "round",
+          pen_up: true,
+        }
+      : (toRequest(detail) ?? imageRequest(detail));
   return {
     status: "done",
     route,
     detail,
-    request: toRequest(detail) ?? imageRequest(detail),
+    request,
     result,
     choices: [result],
     chosen: 0,
@@ -254,6 +289,7 @@ export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
         route_m: favorite.route_m,
         similarity: favorite.similarity,
         points: favorite.points,
+        ...walked,
       },
     },
   };

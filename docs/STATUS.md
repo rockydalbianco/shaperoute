@@ -186,6 +186,27 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API e app** — TASK-199: la penna alzata in «My activities» e nei
+  preferiti, i seguiti di TASK-198 (ADR-0158, migrazione `0006`), PR #222
+  (il merge è del coordinatore). Una corsa su una parola con la penna
+  alzata si salva con i `walks` del percorso e `pen: true` sulle pause
+  «penna»: il punteggio in «My activities» è quello delle sole lettere,
+  come a fine corsa, e riaperta ha i tratti a piedi tratteggiati (la linea
+  corsa resta unita). Il cuore tiene i `walks`; un preferito riaperto si
+  mostra, si corre (pause e voce di TASK-198), si esporta e si giudica
+  come la parola appena disegnata. Migrazione `0006_pen_up_walks.sql`:
+  `walks` (`jsonb`, `[]` per le righe di prima) in `runs` e `favorites`.
+  Per ogni altra corsa o percorso l'app manda la richiesta di prima, byte
+  per byte (test); se un'API più vecchia rifiuta `walks` o `pen`, l'app
+  rimanda una volta senza, e la corsa non si perde. Come funziona:
+  `API.md`, «Favorites» e «My activities»; `UI.md`, stesse voci.
+  **Migrazione e campi nuovi arrivano al telefono solo dopo**
+  l'aggiornamento del server (con TASK-197 e la `0006`) e la pubblicazione
+  dell'app, tutti e due con l'ok dell'utente. Non provato su un telefono.
+  Seguiti in `tasks/TASK-199.md`, «Esito»: la riga dei km delle lettere
+  sulla scheda di un preferito (da chiedere), un preferito in bici che
+  non ricorda l'attività.
+
 - **App** — TASK-198: la penna alzata nella corsa, chiesta e confermata
   dall'utente («pausa automatica con avviso a voce»), PR #218, in `main`
   dal 2026-10-02 20:02Z. In «Draw», con

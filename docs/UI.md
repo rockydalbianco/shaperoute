@@ -479,6 +479,17 @@ dell'account.
 - **Sessione finita** a una richiesta dei preferiti: l'app esce, come dice
   «Profile», e il cuore torna a chiedere di entrare.
 - **Al massimo 200**: oltre, l'API dice di toglierne uno e l'app lo ripete.
+- **Una parola con la penna alzata** (TASK-199, ADR-0158): il cuore tiene
+  anche i tratti a piedi (`walks`). Riaperto, il preferito è come la
+  parola appena disegnata: sulla mappa le lettere gialle e i tratti a piedi
+  tratteggiati; «Start» mette in pausa da sola alla fine di ogni lettera,
+  con la voce, e riparte 20 m prima della successiva (TASK-198); «Export
+  GPX» ha «Pause» e «Resume»; il punteggio a fine corsa guarda solo le
+  lettere. Nessun testo nuovo. Un preferito tenuto prima di TASK-199, o
+  con `walks` che non stanno nella linea, è una linea sola, come prima. Se
+  l'API non conosce ancora i `walks` (più vecchia di TASK-199) e rifiuta,
+  l'app tiene il preferito senza, come una linea sola, invece di mostrare
+  l'errore; tenuto così, resta così.
 
 ## «My activities» (TASK-172, ADR-0140)
 
@@ -528,6 +539,19 @@ telefono dell'account: con un percorso o senza.
 - **Sessione finita** a una richiesta delle corse: l'app esce, come dice
   «Profile»; una corsa che aspettava resta sul telefono per quando si
   rientra con lo stesso account.
+- **Una corsa su una parola con la penna alzata** (TASK-199, ADR-0158),
+  da «Draw» o da un preferito: «Save» manda anche i tratti a piedi del
+  percorso (`walks`) e dice quali pause sono della penna (`pen`); per
+  ogni altra corsa la richiesta è quella di prima, campo per campo. Il
+  punteggio in «My activities» è quello delle sole lettere, lo stesso
+  della fine della corsa, e le pause «penna» tolgono km e tempo come le
+  altre. Riaperta, la mappa ha i tratti a piedi tratteggiati, come a fine
+  corsa; la linea corsa resta unita sulle pause (spezzarla è una scelta
+  dell'utente, non fatta). Le corse salvate prima di TASK-199 non hanno i
+  tratti a piedi: una linea sola. Se l'API non conosce ancora i `walks`
+  (più vecchia di TASK-199) e rifiuta la corsa, l'app la rimanda subito
+  come prima, senza `walks` né `pen`: si salva con il punteggio su tutto
+  il percorso, tratti a piedi compresi, invece di perdersi.
 
 ## La partenza
 
@@ -924,9 +948,10 @@ il percorso, tratti a piedi compresi (`distance_m`). Un risultato senza
 `walks` (un'API più vecchia di TASK-197) o con `walks` che non stanno nei
 `points` (l'app non si fida: `src/route/walks.ts`) si disegna come prima,
 una linea sola, con lo stesso messaggio alla mappa di prima. Il percorso
-con i `walks` non è chiuso: va dalla prima lettera all'ultima. Un
-preferito (TASK-171) tiene solo i `points`: riaperto è una linea sola, e si
-corre senza le pause «penna» (un seguito, se serve).
+con i `walks` non è chiuso: va dalla prima lettera all'ultima. Da
+TASK-199 un preferito tiene anche i `walks`, e riaperto si mostra e si
+corre come appena disegnato («Favorites»); uno tenuto prima è una linea
+sola.
 
 ## La navigazione
 
@@ -1120,14 +1145,12 @@ nell'attesa «Scoring your run…», con distanza e durata già lì.
 Con una parola a penna alzata (TASK-198) la mappa ha i tratti a piedi
 tratteggiati, e `POST /track-scores` riceve anche i `walks`: la corsa si
 giudica sulle sole lettere. Con «Save» le pause «penna» vanno in «My
-activities» con le altre, come pause di chi corre (`auto: false`). L'API di
-«My activities» non conosce i `walks` (TASK-172): il punteggio che calcola
-da sé confronta la corsa con tutto il percorso, tratti a piedi compresi, e
-la corsa riaperta da lì è una linea sola. Mandarle i `walks`, o dire che
-una pausa è «penna», è un campo in più nell'API, da concordare con il
-coordinatore: un seguito. Il GPX per Strava (TASK-187) apre un segmento
-nuovo a ogni pausa: Strava mostra le lettere unite da linee dritte sulla
-base.
+activities» con le altre, come pause di chi corre (`auto: false`), e da
+TASK-199 con `pen: true` e i `walks` del percorso: il punteggio che l'API
+di «My activities» calcola da sé è delle sole lettere, come qui, e la
+corsa riaperta da lì ha i tratti a piedi tratteggiati («My activities»).
+Il GPX per Strava (TASK-187) apre un segmento nuovo a ogni pausa: Strava
+mostra le lettere unite da linee dritte sulla base.
 
 - **Senza rete o senza API**: «The score will come later», la corsa resta
   nel file sul telefono, «Try again» la richiede. Anche con «Done» la

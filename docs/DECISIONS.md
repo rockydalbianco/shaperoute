@@ -5237,3 +5237,59 @@ di chi le ha disegnate; le vede solo il loro account e spariscono con lui
 con un account: una richiesta in più. Sul server la migrazione parte al
 primo avvio dell'API nuova (`DEPLOY.md` F.12). «My activities» (TASK-172,
 ADR-0140) userà la stessa pagina di «Profile» e la tabella `runs`.
+
+## ADR-0147 — L'animazione all'avvio: un componente sopra l'app, il cuore del video sul giallo
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («il
+logo e l'animazione che deve durare almeno due secondi quando apri
+l'applicazione: un cuore che si disegna su uno sfondo giallo, come il
+video»); il come deciso dall'agente su delega dell'utente (TASK-179).
+
+**Contesto**: la schermata di avvio di ADR-0134 è nativa, ferma, e si vede
+solo in una build propria. L'utente apre l'app in Expo Go: non vedeva né il
+logo né un'animazione. ADR-0134 aveva scartato un componente React perché
+prima che parta il JavaScript lo schermo resta vuoto e perché toccava
+`App.tsx`; per un'animazione il componente è l'unica strada, e le due cose
+stanno insieme: la schermata nativa copre l'attesa del JavaScript,
+l'animazione viene dopo.
+
+**Decisione**:
+- **Un componente sopra l'app**, `src/intro/LaunchIntro.tsx`, montato da
+  `src/intro/Root.tsx`, che `index.ts` registra al posto di `App`.
+  `App.tsx` non cambia. L'app parte subito sotto: posizione, mappa e prime
+  richieste si caricano mentre il cuore si disegna.
+- **Il cuore è quello del video**: il percorso a cuore di Milano da 10 km
+  del catalogo seme (`catalog/seed/milano.json`), semplificato a 8 m, 99
+  punti in `src/intro/heartLine.ts`. È un percorso vero del Route Engine,
+  con le sue strade: il segno che dice cosa fa l'app.
+- **I tempi**: 0,35 s il giallo `accent` riempie lo schermo dal centro,
+  1,6 s il cuore si disegna, 0,45 s resta, 0,3 s l'animazione sfuma
+  sull'app. Il giallo si vede 2,4 secondi: sopra i due chiesti, sotto i tre
+  che a ogni apertura peserebbero.
+- **Nero su giallo**: la linea, la penna e il logo sono `onAccent`; il logo
+  è `assets/splash-logo.png` (giallo) colorato con `tintColor`. Il punto di
+  partenza è chiaro con il bordo scuro, come sul logo e sulla mappa.
+- **Senza SVG e senza dipendenze**: la linea è fatta di tratti, View
+  sottili e girate come in `RouteThumb`; ognuno compare al suo momento da
+  un solo valore animato sul thread nativo. I tratti lunghi sono tagliati
+  (al più 1/110 della linea) perché la linea non salti.
+- **La durata la tiene un timer**, non la fine dell'animazione: con le
+  animazioni spente sul telefono il disegno finisce subito, e il cuore deve
+  restare comunque il suo tempo. È anche ciò che rende il test
+  deterministico (sotto jest le animazioni finiscono all'istante).
+- **Una volta per apertura**: non si salta con un tocco, e finché c'è
+  prende i tocchi.
+
+**Scartate**: una riga in `App.tsx` (è di TASK-172 e TASK-174, e non
+serve); `react-native-svg` o Lottie (dipendenze nuove per un disegno che
+l'app sa già fare); una pagina in una WebView (parte tardi e lampeggia); un
+cuore geometrico pulito (non è «come il video», e non dice che il disegno
+è fatto di strade); `preventAutoHide` di `expo-splash-screen` per tenere
+la schermata nativa (resta ferma, e in Expo Go non c'è).
+
+**Conseguenze**: ogni apertura costa 2,7 secondi prima di poter toccare
+l'app, che intanto si carica. In Expo Go prima dell'animazione resta la
+schermata di caricamento di Expo Go. In una build propria la schermata
+nativa è nera con il logo giallo e poi arriva il giallo: farla gialla è
+una riga di `app.json`, lasciata all'utente. La barra di stato resta
+chiara sul giallo: la decide `App.tsx`. Chi ha «Riduci movimento» vede la
+stessa animazione.

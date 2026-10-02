@@ -97,6 +97,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-179: l'animazione all'avvio, chiesta dall'utente
+  (ADR-0147). Aprendo l'app il giallo riempie lo schermo, una penna disegna
+  il cuore di Milano del video, sotto c'è il logo nero; 2,4 secondi, poi
+  l'app, che intanto si è caricata sotto. Si vede anche in Expo Go, dove la
+  schermata di avvio di TASK-165 non c'è. Nessuna dipendenza nuova,
+  `App.tsx` non toccato (monta da `index.ts`). Filmata in un simulatore.
+  **Da pubblicare su `preview`** con l'ok dell'utente, poi **da guardare
+  sull'iPhone**. Da chiedere all'utente: la schermata di avvio nativa
+  gialla invece che nera (una riga di `app.json`, si vede solo in una build
+  propria).
 - **App** — TASK-169: la corsa rifatta sul modello di Nike Run Club, chiesta
   dall'utente (ADR-0137), con un percorso e senza. Parte con «3 · 2 · 1»;
   due pagine da scorrere, «Map» (mappa, indicazioni, km, passo di adesso e

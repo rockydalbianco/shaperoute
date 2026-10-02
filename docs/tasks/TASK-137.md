@@ -189,3 +189,14 @@ London 515) e si legge in 8–11 s; con due zone in memoria (`MAX_ZONES`) il
 processo arriva a circa 1,6 GB, picco 2 GB. In queste città la prima
 richiesta legge una zona di 17 km dal disco invece di scaricarne una più
 piccola da Overpass.
+
+**Seguiti**:
+- Per TASK-122 (il server): una zona estera grande in memoria nell'API
+  occupa 0,5–0,76 GB (Paris +758 MB, Tokyo +584, London +515), e con
+  `MAX_ZONES = 2` il processo arriva a circa 1,6 GB, picco ~2 GB. Su un
+  server da 8 GB è da tenere nel conto della memoria.
+- Berlino resta a Overpass (decisione del Coordinatore, 2026-10-02): un
+  container da 6 GiB su un server da 8 GB, con l'API fino a 2 GB, lascia
+  troppo poco margine. Se serve, si costruisce sul Mac con osmium
+  (`SETUP.md` 10.4) e si copia la zona.
+- Rifare le zone quando l'estratto invecchia (questo è del 30 settembre).

@@ -97,8 +97,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dopo 5 città; le altre vengono dall'estratto Geofabrik dell'Italia, con
   osmium solo nell'immagine dei download. Anche 10 delle 11 città estere in
   evidenza, dai loro estratti; Berlino no (memoria: non sta in 4 GiB). Una
-  zona estera grande pesa 0,5–0,76 GB nella memoria dell'API. Da fare:
-  Berlino con un tetto più alto; rifare le zone quando l'estratto invecchia.
+  zona estera grande pesa 0,5–0,76 GB nella memoria dell'API (seguiti per
+  TASK-122 nel task file). Berlino resta a Overpass. Da fare: rifare le zone
+  quando l'estratto invecchia.
 - **Motore** — TASK-136 (miglioramento generale scelto dall'agente): la
   CLI e `seed_catalog` non salvano più i ritagli dei grafi, come già
   l'API (ADR-0108). Una partenza nuova è più veloce (Milano, cuore da

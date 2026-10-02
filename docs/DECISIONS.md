@@ -5231,7 +5231,8 @@ l'orologio; tutti e due solo in una build propria, non in Expo Go, dove
 l'utente prova oggi. Finché non c'è un sensore la casella non c'è, quindi
 qui non cambia niente da vedere. La musica (aprire Spotify o Apple Music,
 o i comandi nella schermata) aspetta la risposta dell'utente su quale app
-usa. Sono task a parte (`tasks/TASK-169.md`, «Fuori scope»).
+usa. Sono task a parte (`tasks/TASK-169.md`, «Fuori scope»). La risposta è
+arrivata lo stesso giorno, «uso Spotify»: ADR-0141 (TASK-173).
 
 **Alternative scartate**: tre pagine come Nike (la mappa finirebbe dietro
 un pulsante); un pager vero con la mappa dentro (vuole riscrivere
@@ -5316,3 +5317,186 @@ di chi le ha disegnate; le vede solo il loro account e spariscono con lui
 con un account: una richiesta in più. Sul server la migrazione parte al
 primo avvio dell'API nuova (`DEPLOY.md` F.12). «My activities» (TASK-172,
 ADR-0140) userà la stessa pagina di «Profile» e la tabella `runs`.
+
+## ADR-0141 — La musica nella corsa: «Music» apre Spotify, Sgrava non suona niente
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa (la
+musica nella corsa, chiesta con ADR-0137; «uso Spotify»); il come deciso
+dall'agente su delega dell'utente (TASK-173). Aggiorna ADR-0137 (la musica
+era rimasta fuori).
+
+**Contesto**: il riferimento dell'utente (Nike Run Club) ha «Connect
+Music». La corsa di TASK-169 non ha niente per la musica; l'utente prova in
+Expo Go, dove non entrano moduli nativi nuovi.
+
+**Decisione**:
+- **Un pulsante che apre l'app di musica, non un lettore.** «Music» apre
+  Spotify con il suo link (`spotify:`): l'app si apre dove era rimasta, e
+  si torna a Sgrava da soli. Sgrava non suona, non mette in pausa e non sa
+  cosa suona. Nessuna dipendenza: `Linking` di React Native.
+- **Si apre, non si chiede prima.** `canOpenURL` risponde no per ogni
+  schema che la build non dichiara (`LSApplicationQueriesSchemes`), ed
+  Expo Go non dichiara i nostri: direbbe «Spotify non c'è» anche quando
+  c'è. `openURL` invece non vuole dichiarazioni e fallisce da solo se
+  l'app manca (visto nel simulatore: «Unable to open URL: spotify:»).
+- **Senza Spotify, la sua pagina nello store** del telefono (App Store,
+  Google Play; altrove `open.spotify.com`). Se non si apre nemmeno quella,
+  niente: nessun avviso sopra una corsa.
+- **Di fronte a «Pocket»**, nel posto vuoto accanto a «Pause», quindi su
+  «Map» e su «Data» con un pezzo solo. Solo mentre si corre: in pausa la
+  scheda ha «Stop» e «Resume» ed è già alta, e prima della prima posizione
+  e all'arrivo c'è un pulsante solo.
+- **«Music» non mette in pausa la corsa.** Chi sceglie una playlist
+  correndo non vuole trovare la corsa ferma.
+- **Solo Spotify**, scritto in un file (`music.ts`): è l'app dell'utente.
+  Un'altra app di musica è un altro link nello stesso file.
+
+**Scartate**: brano, pausa e avanti dentro Sgrava adesso (vogliono un'app
+Spotify Developer dell'utente con Premium, l'accesso al conto Spotify con
+tre dipendenze nuove, e in sviluppo valgono per 5 persone aggiunte a mano:
+è la domanda aperta in `tasks/TASK-173.md`); `canOpenURL` e il pulsante
+nascosto senza Spotify (in Expo Go sarebbe sempre nascosto); un avviso
+«Spotify is not installed» (un testo in più da leggere correndo; lo store
+dice la stessa cosa); il link `https://open.spotify.com` per tutti (senza
+l'app apre il sito in Safari, non lo store); la scelta fra più app di
+musica (nessuno l'ha chiesta).
+
+**Conseguenze**: mentre Spotify è davanti, Sgrava non registra (registra
+solo in primo piano): i secondi passati a scegliere la musica sono un buco
+nella traccia, come ogni uscita dall'app. Come si mescolano la voce delle
+svolte e la musica lo decide iOS, perché l'app non imposta niente
+dell'audio: se la voce ferma la musica o non si sente, serve `expo-audio`
+(dipendenza nuova, task a parte). Tutte e due le cose si vedono solo
+sull'iPhone e sono fra le prove di `tasks/TASK-173.md`. Con una build
+propria si potrà dichiarare lo schema e mostrare «Music» solo a chi ha
+Spotify.
+
+## ADR-0143 — La mappa senza pulsanti di zoom: si ingrandisce solo con le dita
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («togli la
+possibilità di zumare in alto a destra […] si potrà zumare solamente con
+il touch»); il come deciso dall'agente su delega dell'utente (TASK-175).
+
+**Contesto**: la pagina della mappa aveva il `NavigationControl` di
+MapLibre, due pulsanti «+» e «−» in alto a destra. Su un telefono
+ripetono un gesto che si fa già con due dita, e occupavano l'angolo: il
+cuore dei preferiti (ADR-0139) stava sotto di loro, più in basso di «←».
+
+**Decisione**: la pagina non crea più il controllo. Lo zoom resta quello
+dei gesti di MapLibre, che la pagina non tocca: due dita, doppio tocco.
+Il cuore dei preferiti sale nell'angolo, alla stessa altezza di «←»
+(`insets.top` più lo stesso margine).
+
+**Alternative scartate**: nascondere i pulsanti con il CSS (il controllo
+resterebbe nella pagina, da mantenere); toglierli solo dall'anteprima di
+un percorso e tenerli in corsa (la pagina è una sola, e in corsa la mappa
+segue la posizione da sé); spegnere anche la rotazione con due dita (non
+chiesto).
+
+**Conseguenza**: chi non può fare il gesto con due dita ha il doppio
+tocco per avvicinare. I pulsanti mancano apposta: un test della pagina
+controlla che il controllo non torni e che il gesto non venga spento.
+
+## ADR-0142 — La mappa anche sotto le schede di «Explore», con un credito solo
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («nella
+sezione explore, quando ci sono i vari sample, mettimi sotto anche la
+mappa […] con scritto il nome del paese»); il come deciso dall'agente su
+delega dell'utente (TASK-174). Cambia un punto di ADR-0135, che aveva
+scartato la foto della mappa nelle schede.
+
+**Contesto**: da TASK-167 un percorso di «Explore» è una scheda larga mezzo
+telefono, la linea gialla su un fondo vuoto. In «Feed» sotto la linea c'è
+la foto della mappa (ADR-0131), e l'utente la vuole anche qui. ADR-0135
+l'aveva scartata per il numero: una foto per scheda, decine di percorsi a
+città.
+
+**Decisione**:
+- **Le stesse foto di «Feed»**: `RouteCard` con `map` chiede la foto a
+  `useFeedMap` e la mette sotto la linea. Le fa la pagina nascosta di
+  «Feed», che il `Pager` tiene montata accanto a «Explore»: nessuna pagina
+  MapLibre in più. Misurato sul simulatore: 27 foto in 1,6 s con le tile
+  della zona già scaricate, perché i percorsi di una città stanno sulle
+  stesse tile.
+- **La foto ha il nome di ciò che inquadra** (centro e zoom di
+  `lineCamera`), non l'`id` del percorso: un esempio ridisegnato tiene il
+  suo `id` e può cambiare linea, e due percorsi con lo stesso riquadro
+  hanno la stessa foto.
+- **`map` va chiesto**: lo passano le schede di «Explore» (esempi e «Best
+  near you»). «Favorites» usa lo stesso componente e resta com'è.
+- **Il credito una volta sola, accanto alle schede**, in una riga: «Maps:
+  OpenFreeMap © OpenMapTiles · Data from OpenStreetMap». Sopra le schede di
+  «Best near you», che sono molte e scorrono; sotto quelle degli esempi,
+  che sono tre. Scritto su ogni foto, come in «Feed», su una scheda di 170
+  punti andava a capo, perdeva «Data from OpenStreetMap» e copriva i nomi
+  dei paesi, che sono ciò che l'utente ha chiesto.
+- **Il nome del paese anche in parole** negli esempi: la scheda pronta lo
+  dice sotto forma e km, come le schede di «Best near you» dicono già la
+  città. Sulla mappa il nome c'è quando il centro del paese cade nel
+  riquadro, cioè quasi sempre, non sempre.
+
+**Scartate**: una pagina delle foto anche in «Explore» (due pagine
+farebbero la stessa foto due volte); il credito su ogni foto con un
+carattere più piccolo (sotto gli 11 punti non c'è un token, e resta sopra
+i nomi); un'etichetta con il nome del paese disegnata sopra la foto
+(doppia, quando la mappa lo scrive già).
+
+**Conseguenze**: aprire «Explore» chiede a OpenFreeMap le tile delle zone
+dei percorsi mostrati (`UI.md`, «Cosa esce dal telefono»). Le foto restano
+in memoria finché l'app è aperta, una per scheda vista; cambiata città, le
+foto già in coda per quella di prima si fanno lo stesso. Fuori dal `Pager`
+(«Explore» aperta con `onBack`) la pagina delle foto non c'è e le schede
+restano senza mappa.
+
+## ADR-0147 — L'animazione all'avvio: un componente sopra l'app, il cuore del video sul giallo
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa («il
+logo e l'animazione che deve durare almeno due secondi quando apri
+l'applicazione: un cuore che si disegna su uno sfondo giallo, come il
+video»); il come deciso dall'agente su delega dell'utente (TASK-179).
+
+**Contesto**: la schermata di avvio di ADR-0134 è nativa, ferma, e si vede
+solo in una build propria. L'utente apre l'app in Expo Go: non vedeva né il
+logo né un'animazione. ADR-0134 aveva scartato un componente React perché
+prima che parta il JavaScript lo schermo resta vuoto e perché toccava
+`App.tsx`; per un'animazione il componente è l'unica strada, e le due cose
+stanno insieme: la schermata nativa copre l'attesa del JavaScript,
+l'animazione viene dopo.
+
+**Decisione**:
+- **Un componente sopra l'app**, `src/intro/LaunchIntro.tsx`, montato da
+  `src/intro/Root.tsx`, che `index.ts` registra al posto di `App`.
+  `App.tsx` non cambia. L'app parte subito sotto: posizione, mappa e prime
+  richieste si caricano mentre il cuore si disegna.
+- **Il cuore è quello del video**: il percorso a cuore di Milano da 10 km
+  del catalogo seme (`catalog/seed/milano.json`), semplificato a 8 m, 99
+  punti in `src/intro/heartLine.ts`. È un percorso vero del Route Engine,
+  con le sue strade: il segno che dice cosa fa l'app.
+- **I tempi**: 0,35 s il giallo `accent` riempie lo schermo dal centro,
+  1,6 s il cuore si disegna, 0,45 s resta, 0,3 s l'animazione sfuma
+  sull'app. Il giallo si vede 2,4 secondi: sopra i due chiesti, sotto i tre
+  che a ogni apertura peserebbero.
+- **Nero su giallo**: la linea, la penna e il logo sono `onAccent`; il logo
+  è `assets/splash-logo.png` (giallo) colorato con `tintColor`. Il punto di
+  partenza è chiaro con il bordo scuro, come sul logo e sulla mappa.
+- **Senza SVG e senza dipendenze**: la linea è fatta di tratti, View
+  sottili e girate come in `RouteThumb`; ognuno compare al suo momento da
+  un solo valore animato sul thread nativo. I tratti lunghi sono tagliati
+  (al più 1/110 della linea) perché la linea non salti.
+- **La durata la tiene un timer**, non la fine dell'animazione: con le
+  animazioni spente sul telefono il disegno finisce subito, e il cuore deve
+  restare comunque il suo tempo. È anche ciò che rende il test
+  deterministico (sotto jest le animazioni finiscono all'istante).
+- **Una volta per apertura**: non si salta con un tocco, e finché c'è
+  prende i tocchi.
+
+**Scartate**: una riga in `App.tsx` (è di TASK-172 e TASK-174, e non
+serve); `react-native-svg` o Lottie (dipendenze nuove per un disegno che
+l'app sa già fare); una pagina in una WebView (parte tardi e lampeggia); un
+cuore geometrico pulito (non è «come il video», e non dice che il disegno
+è fatto di strade); `preventAutoHide` di `expo-splash-screen` per tenere
+la schermata nativa (resta ferma, e in Expo Go non c'è).
+
+**Conseguenze**: ogni apertura costa 2,7 secondi prima di poter toccare
+l'app, che intanto si carica. In Expo Go prima dell'animazione resta la
+schermata di caricamento di Expo Go. In una build propria la schermata
+nativa è nera con il logo giallo e poi arriva il giallo: farla gialla è
+una riga di `app.json`, lasciata all'utente. La barra di stato resta
+chiara sul giallo: la decide `App.tsx`. Chi ha «Riduci movimento» vede la
+stessa animazione.

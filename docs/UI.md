@@ -86,6 +86,16 @@ cerchio. La genera il plugin `expo-splash-screen` da `app.json`: nessun
 codice la tiene aperta, sparisce quando l'app è pronta. Come l'icona, si
 vede solo in una build propria.
 
+**L'animazione all'avvio** (TASK-179, ADR-0147): dopo la schermata di avvio,
+e in Expo Go al suo posto, il giallo `accent` riempie lo schermo dal centro
+e una penna disegna un cuore, nero `onAccent`: è il percorso a cuore di
+Milano da 10 km, quello del video. Sotto, il logo intero, nero. Tempi:
+0,35 s il giallo, 1,6 s il disegno, 0,45 s fermo, 0,3 s di dissolvenza
+sull'app; il giallo si vede 2,4 secondi. L'app parte sotto e si carica
+intanto; l'animazione prende i tocchi finché c'è, non si salta, e si vede
+una volta a ogni apertura. Sta in `src/intro/`, sopra `App`
+(`index.ts`). Al lettore di schermo dice «Sgrava».
+
 ## Le due schermate
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La
@@ -105,9 +115,10 @@ pagine»):
    scheda con l'attesa, il risultato o il problema. All'apertura la mappa
    mostra l'Italia intera, poi la partenza con un segnaposto, a zoom 15
    (qualche via attorno); con un percorso, la linea e la mappa inquadrata
-   su di lui. Si sposta e si ingrandisce con le dita o con i pulsanti + e
-   −. L'attribuzione dei dati è sempre visibile in basso, per intero; i
-   suoi link si aprono nel browser del telefono.
+   su di lui. Si sposta e si ingrandisce con le dita: i pulsanti + e − non
+   ci sono più (TASK-175, chiesto dall'utente). L'attribuzione dei dati è
+   sempre visibile in basso, per intero; i suoi link si aprono nel browser
+   del telefono.
 
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
@@ -116,7 +127,13 @@ pagine»):
    (TASK-167, ADR-0135, scelto dall'utente): in alto il disegno, largo
    quanto la scheda, giallo su fondo scuro, con la somiglianza in un angolo
    («97%»); sotto, forma e km («Star · 5.1 km») e città e distanza dalla
-   partenza («Trento · 450 m away»). **I filtri stanno in una riga sola**:
+   partenza («Trento · 450 m away»). **Sotto la linea c'è la mappa** della
+   zona, con i nomi dei paesi (TASK-174, ADR-0142, chiesto dall'utente): è
+   la foto di «Feed» (TASK-162), fatta dalla stessa pagina nascosta; finché
+   non arriva la scheda è la linea sul fondo scuro, e senza rete resta
+   così. Il credito della mappa non è su ogni foto, che è larga mezzo
+   telefono: sta una volta sola sopra le schede, «Maps: OpenFreeMap ©
+   OpenMapTiles · Data from OpenStreetMap». **I filtri stanno in una riga sola**:
    due pulsanti, «Shape: All ▾» e «Distance: All ▾», che dicono cosa
    tengono; toccato uno, sotto la riga si aprono le sue scelte («All»,
    «Star», «Circle»…, che scorrono di lato), e una scelta le richiude. Se ne
@@ -169,7 +186,10 @@ pagine»):
    stella da 5 km dal centro, chiesti da soli, uno alla volta, il cuore per
    primo. Sono schede come quelle di «Best near you», due per riga
    (TASK-167): una scheda dice «Drawing…» o «Next» con il posto del
-   disegno vuoto, poi ha il disegno, i km e la somiglianza; un tocco apre il
+   disegno vuoto, poi ha il disegno, i km e la somiglianza, il nome del
+   paese sotto («Vercelli») e la mappa sotto la linea come in «Best near
+   you» (TASK-174), con il credito della mappa una volta sotto le schede;
+   un tocco apre il
    percorso sulla mappa con «Export GPX» e «Back to Explore». Se la mappa
    della zona
    non si scarica, un messaggio solo e «Try again». Gli esempi pronti
@@ -318,8 +338,8 @@ Un percorso che piace si tiene, e si ritrova in «Profile» da ogni telefono
 dell'account.
 
 - **Il cuore sulla mappa**: quando sulla mappa c'è un percorso (disegnato in
-  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e sotto
-  i pulsanti dello zoom della mappa, c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
+  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e alla
+  sua altezza (dal TASK-175 la mappa non ha più i pulsanti dello zoom), c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
   («♥»): lo toglie. Cambia subito, senza aspettare l'API; se l'API rifiuta
   torna com'era e sotto il cuore c'è il motivo in una riga, che un tocco
   chiude. Non è giallo: il giallo è del percorso. Durante l'attesa, la
@@ -742,7 +762,7 @@ TASK-164, di cui tiene i numeri.
   kilometre will show here.»). Poi i due interruttori della corsa,
   «Auto-pause» e «Voice».
 - **«Pause»**, un pulsante tondo e chiaro in mezzo, su tutte e due le
-  pagine; accanto, «Pocket». In pausa il tempo si ferma, le posizioni non
+  pagine; da una parte «Pocket», dall'altra «Music». In pausa il tempo si ferma, le posizioni non
   entrano nella traccia e «Pace now» è «–»; la mappa continua a seguire, e
   con un percorso le svolte si dicono ancora. Su «Map» la scheda si alza
   e mostra i km e i sei riquadri, come su «Data»: la mappa sopra, i numeri
@@ -760,6 +780,13 @@ TASK-164, di cui tiene i numeri.
   il tempo conta anche le soste.
 - **«Voice»** (accesa): spenta, l'app non dice più niente, né svolte né
   km; la vibrazione delle svolte resta.
+- **«Music»** (TASK-173, ADR-0141): mentre si corre, di fronte a «Pocket»,
+  su tutte e due le pagine. Apre Spotify, dove lo si era lasciato; a Sgrava
+  si torna da soli (su iPhone, «◀» in alto a sinistra). Sgrava non suona
+  niente e non sa cosa suona. La corsa non va in pausa, ma finché Sgrava
+  sta dietro a Spotify non riceve posizioni. Su un telefono senza Spotify
+  si apre la sua pagina nello store. In pausa, prima della prima posizione
+  e all'arrivo il pulsante non c'è.
 - **Dopo «Resume»** la prima posizione non si unisce all'ultima di prima:
   i metri fatti in pausa non sono della corsa. Lo stesso dopo «Keep
   running»: il tempo fra «Stop» e la ripresa è una pausa.
@@ -958,6 +985,9 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   Da TASK-162 anche le zone dei disegni di «Feed», a ogni apertura
   dell'app: sono le città degli esempi, uguali per tutti, non la posizione
   di chi guarda.
+  Da TASK-174 anche le zone dei percorsi mostrati in «Explore», quando si
+  apre la pagina o si sceglie una città: sono attorno alla partenza o alla
+  città scelta, come la mappa grande quando si apre un percorso.
 - **La ricerca**: il testo cercato e la posizione (per mettere prima i
   luoghi vicini) vanno all'API, che li gira a Geoapify (TASK-123); senza
   API o senza chiave, a Photon (komoot). Il log dell'API scrive solo

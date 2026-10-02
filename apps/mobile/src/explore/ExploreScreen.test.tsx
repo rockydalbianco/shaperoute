@@ -2,10 +2,12 @@ import list from "@shaperoute/shared-types/fixtures/recommended-routes.json";
 import jobDone from "@shaperoute/shared-types/fixtures/route-job-done.json";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
+import { FeedMapShooter, forgetFeedMaps } from "../feed/FeedMaps";
 import type { Place } from "../places/photon";
 import { forgetExamples } from "./exampleRoutes";
 import { awayText, ExploreScreen, filtered, kmLabel } from "./ExploreScreen";
 import type { RecommendedRoute } from "./recommendedRoutes";
+import { CARD_MAPS_CREDIT } from "./RouteCard";
 import { POSTS_SHOWN } from "./WhileDrawing";
 
 jest.mock(
@@ -19,6 +21,7 @@ const routes = list.routes as RecommendedRoute[];
 beforeEach(() => {
   fetchMock.mockReset();
   forgetExamples();
+  forgetFeedMaps();
 });
 
 const vercelli: Place = {
@@ -260,6 +263,23 @@ test("the routes are cards, two side by side between the page's margins", async 
   });
 });
 
+test("the cards ask for the map under their lines (TASK-174)", async () => {
+  fetchMock.mockResolvedValue(Response.json(list));
+  await render(
+    <>
+      <FeedMapShooter width={718} height={445} />
+      <ExploreScreen apiUrl="http://api" near={[46.067, 11.1215]} onOpen={jest.fn()} />
+    </>,
+  );
+  await screen.findByText("Star · 5.1 km");
+  const page = screen.getByTestId("feed-map-page", { includeHiddenElements: true });
+  await fireEvent(page, "message", { nativeEvent: { data: '{"type":"ready"}' } });
+  // Until a picture comes each card stays the line on the dark.
+  expect(screen.queryByTestId("route-card-map")).toBeNull();
+  // Whose the maps are, once, above the cards.
+  expect(screen.getAllByText(CARD_MAPS_CREDIT)).toHaveLength(1);
+});
+
 test("without a start, nothing is asked", async () => {
   await render(
     <ExploreScreen
@@ -286,6 +306,8 @@ test("no routes near: says so", async () => {
   expect(
     await screen.findByText(/No recommended routes near this start yet/),
   ).toBeOnTheScreen();
+  // No cards, no maps, nobody to name.
+  expect(screen.queryByText(CARD_MAPS_CREDIT)).toBeNull();
 });
 
 test("a failed list says so", async () => {

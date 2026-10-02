@@ -1,7 +1,16 @@
 import type { LatLon } from "@shaperoute/shared-types";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
-import { cardDrawingHeight, cardWidth, RouteCard } from "./RouteCard";
+import { lineCamera } from "../feed/feedMapPage";
+import { FeedMapShooter, forgetFeedMaps } from "../feed/FeedMaps";
+import {
+  CARD_MAPS_CREDIT,
+  cardDrawingHeight,
+  CardMapsCredit,
+  cardWidth,
+  framingName,
+  RouteCard,
+} from "./RouteCard";
 
 // A square: four stretches to draw.
 const SQUARE: LatLon[] = [
@@ -11,6 +20,10 @@ const SQUARE: LatLon[] = [
   [46.07, 11.12],
   [46.06, 11.12],
 ];
+
+beforeEach(() => {
+  forgetFeedMaps();
+});
 
 test("two cards stand side by side in the width they are given", () => {
   // 390 wide less the page's margins, 12 between the two.
@@ -66,4 +79,86 @@ test("a route not drawn yet is a card to read, not to touch", async () => {
   const drawing = screen.getByTestId("route-card-drawing");
   expect(drawing).toHaveStyle({ width: 161, height: 106 });
   expect(drawing.children).toHaveLength(0);
+});
+
+test("a map is named by what it frames, not by its route", () => {
+  const camera = lineCamera(SQUARE, 173, 114, 12);
+  expect(camera).not.toBeNull();
+  expect(framingName(camera)).toMatch(/^card:46\.06500,11\.12500@\d+\.\d\d$/);
+  // The same line the other way round: the same streets, the same picture.
+  expect(framingName(lineCamera([...SQUARE].reverse(), 173, 114, 12))).toBe(
+    framingName(camera),
+  );
+  // A larger card frames more closely: another picture.
+  expect(framingName(lineCamera(SQUARE, 358, 236, 12))).not.toBe(framingName(camera));
+  expect(framingName(null)).toBe("card");
+});
+
+test("without `map` no picture is asked for", async () => {
+  await render(
+    <>
+      <FeedMapShooter width={358} height={222} />
+      <RouteCard width={173} line={SQUARE} title="Star · 5.1 km" />
+    </>,
+  );
+  expect(
+    screen.queryByTestId("feed-map-page", { includeHiddenElements: true }),
+  ).toBeNull();
+  expect(screen.queryByTestId("route-card-map")).toBeNull();
+});
+
+test("a card not drawn yet asks for no map", async () => {
+  await render(
+    <>
+      <FeedMapShooter width={358} height={222} />
+      <RouteCard width={173} line={null} title="Circle" detail="Drawing…" map />
+    </>,
+  );
+  expect(
+    screen.queryByTestId("feed-map-page", { includeHiddenElements: true }),
+  ).toBeNull();
+});
+
+test("with `map`, until its picture is taken the card is the line on the dark", async () => {
+  await render(<RouteCard width={173} line={SQUARE} title="Star · 5.1 km" map />);
+  expect(screen.queryByTestId("route-card-map")).toBeNull();
+  expect(screen.getByTestId("route-card-drawing").children).toHaveLength(4);
+});
+
+test("with `map`, lays the map under the line", async () => {
+  await render(
+    <>
+      <FeedMapShooter width={358} height={222} />
+      <RouteCard width={173} line={SQUARE} title="Star · 5.1 km" match={0.97} map />
+    </>,
+  );
+  const page = screen.getByTestId("feed-map-page", { includeHiddenElements: true });
+  await fireEvent(page, "message", { nativeEvent: { data: '{"type":"ready"}' } });
+  const picture = "data:image/jpeg;base64,AAAA";
+  await fireEvent(page, "message", {
+    nativeEvent: {
+      data: JSON.stringify({
+        type: "shot",
+        key: `${framingName(lineCamera(SQUARE, 173, 114, 12))}:173x114`,
+        image: picture,
+      }),
+    },
+  });
+
+  const drawing = screen.getByTestId("route-card-drawing");
+  // The map, the four stretches, the likeness: the map first, so that
+  // everything else is over it. Nothing written on it: its towns are read.
+  expect(drawing.children).toHaveLength(6);
+  const map = screen.getByTestId("route-card-map", { includeHiddenElements: true });
+  expect(drawing.children[0]).toBe(map);
+  expect(map).toHaveProp("source", { uri: picture });
+  expect(map).toHaveStyle({ position: "absolute", left: 0, top: 0 });
+});
+
+test("the makers of the maps are named as they ask, once for the cards", async () => {
+  expect(CARD_MAPS_CREDIT).toBe(
+    "Maps: OpenFreeMap © OpenMapTiles · Data from OpenStreetMap",
+  );
+  await render(<CardMapsCredit />);
+  expect(screen.getByText(CARD_MAPS_CREDIT)).toBeOnTheScreen();
 });

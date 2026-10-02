@@ -30,7 +30,7 @@ import { AskForRoute } from "./AskForRoute";
 import { cityKey, useCityExamples } from "./exampleRoutes";
 import { CityExamples } from "./CityExamples";
 import { CityPicker } from "./ExploreTools";
-import { cardWidth, RouteCard } from "./RouteCard";
+import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
 import { ALL, RouteFilters } from "./RouteFilters";
 import type { ThemedRequest } from "./themedRoutes";
 import { stillDrawing, useWaited, WhileDrawing } from "./WhileDrawing";
@@ -255,6 +255,8 @@ export function ExploreScreen({
             No route here is both: change one of the two filters.
           </Text>
         )}
+        {/* Above the cards: there it is read without scrolling to their end. */}
+        {shown.length > 0 && <CardMapsCredit />}
         {/* The drawing first: two cards side by side (TASK-167). */}
         {shown.length > 0 && (
           <View style={styles.grid}>
@@ -266,6 +268,7 @@ export function ExploreScreen({
                 title={`${capitalised(routeTitle(route))} · ${(route.route_m / 1000).toFixed(1)} km`}
                 detail={`${cityName(route.city)} · ${awayText(route.away_m)}`}
                 match={route.similarity}
+                map
                 onPress={() => onOpen(route)}
                 accessibilityLabel={`${routeTitle(route)}, ${kmLabel(route.route_m)}, ${awayText(route.away_m)}`}
               />

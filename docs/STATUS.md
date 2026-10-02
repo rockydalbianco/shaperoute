@@ -77,7 +77,11 @@ In coda, dopo o accanto:
   (seguiti di TASK-169, numeri dal coordinatore): il battito da un sensore
   Bluetooth (`react-native-ble-plx`, dipendenza nuova) e da Apple Watch
   (HealthKit e un'app per l'orologio, dopo TASK-152), tutti e due solo in
-  una build propria; la musica, dopo aver chiesto all'utente quale app usa.
+  una build propria; la musica: l'utente usa Spotify, «Music» lo apre
+  (TASK-173, fatto). **Aspetta la risposta dell'utente**: brano, pausa e
+  avanti dentro Sgrava (app Spotify Developer sua, Premium, dipendenze
+  nuove, 5 persone al massimo finché è in sviluppo); la proposta è di non
+  farlo adesso (`tasks/TASK-173.md`, «La seconda parte»).
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -97,6 +101,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-173: la musica nella corsa, chiesta dall'utente («uso
+  Spotify», ADR-0141). Mentre si corre, sulle pagine «Map» e «Data», «Music»
+  di fronte a «Pocket» apre Spotify; su un telefono senza Spotify, la sua
+  pagina nello store. Sgrava non suona niente e la corsa non va in pausa.
+  Nessuna dipendenza nuova. Visto nel simulatore, dove Spotify non c'è.
+  **Da pubblicare e da provare sull'iPhone**: «Music» con Spotify vero; la
+  voce delle svolte con la musica accesa (la abbassa, la ferma, ci parla
+  sopra?); la corsa mentre si è in Spotify. **Una domanda per l'utente**
+  nel task file: brano, pausa e avanti dentro Sgrava.
 - **App** — TASK-175: la mappa non ha più i pulsanti «+» e «−» in alto a
   destra, chiesto dall'utente (ADR-0143): si ingrandisce solo con le dita.
   Il cuore dei preferiti sale nell'angolo, alla stessa altezza di «←».
@@ -111,10 +124,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   le pause, nemmeno fra «Stop» e «Keep running»; la voce dice i km anche
   con un percorso, e «Voice» la spegne. Chiude i tre seguiti di TASK-164.
   Nessuna dipendenza nuova, niente API, `App.tsx` non toccato. Visto nel
-  simulatore con un GPS simulato. **Da pubblicare e da provare
-  sull'iPhone**: lo swipe col dito, «Stop» tenuto premuto, la pausa da sola.
+  simulatore con un GPS simulato. Pubblicato su `preview` il 2026-10-02
+  (update `38f9a17b`, da fa6462b). **Da provare sull'iPhone**: lo swipe col
+  dito, «Stop» tenuto premuto, la pausa da sola.
   Fuori, già chiesto dall'utente: il battito da sensore Bluetooth e da
-  Apple Watch (solo in una build propria). Da chiedere: quale app di musica.
+  Apple Watch (solo in una build propria). La musica: l'utente usa Spotify
+  (TASK-173).
 - **API e app** — TASK-171: «Favorites», chiesti dall'utente (ADR-0139).
   Sulla mappa, di fronte a «←», un cuore tiene fra i preferiti dell'account
   il percorso che si vede (disegnato, di «Explore», a tema); in «Profile»

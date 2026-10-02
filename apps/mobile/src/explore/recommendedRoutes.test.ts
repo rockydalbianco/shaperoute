@@ -68,4 +68,5 @@ test("titles and city names as the user reads them", () => {
   expect(routeTitle({ shape: null, word: "CIAO" })).toBe("CIAO");
   expect(cityName("milano")).toBe("Milano");
   expect(cityName("newyork")).toBe("New York");
+  expect(cityName("sanfrancisco")).toBe("San Francisco");
 });

@@ -4744,3 +4744,61 @@ le parole lunghe (percorsi che quasi nessuno corre).
 **Conseguenze**: meno parole nel catalogo (Bologna nessuna), ma tutte
 leggibili. Parole più lunghe torneranno con un motore che le scriva meglio,
 non allungando la lista.
+
+## ADR-0132 — «Explore»: i disegni del feed mentre una città si disegna, e le città in evidenza già nel catalogo
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («almeno un cuore, un
+cerchio e la stella devono essere già disegnate [in] tutte le città che
+consigliamo»; «mentre sta caricando fai vedere dei post […] quelli che
+abbiamo già tenuto in feed»); quanti, quali e fino a quando decisi
+dall'agente su delega dell'utente (TASK-163). Allarga ADR-0116.
+
+**Contesto**: una città cercata la prima volta scarica la mappa prima di
+disegnare cuore, cerchio e stella (Vercelli sul server: 94 s), e in
+quell'attesa la pagina aveva tre righe «Drawing…» / «Next» e nient'altro.
+Delle 14 città in evidenza (`FEATURED_CITIES`) solo Roma, Milano e Torino
+hanno le tre forme nel catalogo: le altre le disegnano al tocco.
+
+**Decisione, l'attesa (parte B)**:
+- **I disegni di «Feed» sotto gli esempi**, finché uno è «Next» o
+  «Drawing…»: 5, in colonna, resi dallo stesso `FeedPost` della pagina
+  «Feed», che non si tocca. Cinque bastano per un minuto, e ogni disegno
+  sono un centinaio di `View`: tutti e quindici insieme peserebbero su una
+  pagina che non è un elenco a finestra.
+- **In colonna, non in una fila da scorrere di lato**: le pagine si
+  cambiano con lo swipe orizzontale (ADR-0124), e una fila in più dentro
+  «Explore» gli ruba il gesto.
+- **Città diverse, disegni diversi per primi**: il primo è scelto dalla
+  chiave della città (`cityKey`), poi l'ordine del feed. Sempre lo stesso
+  per la stessa città: niente caso, i test restano deterministici.
+- **Restano finché non si cambia città**: se sparissero all'arrivo
+  dell'ultimo esempio, la pagina salterebbe sotto il dito di chi li sta
+  guardando. La riga sotto il titolo passa da «la mappa si scarica, fino a
+  un minuto» a «The shapes of this city are ready above.».
+- **Solo dove c'è un'attesa**: una città con percorsi consigliati, o con
+  gli esempi già sul telefono, non li mostra.
+- **Non si aprono al tocco**, come in «Feed» oggi: aprire un disegno del
+  feed è di TASK-118 e TASK-162.
+- **Un file nuovo** (`WhileDrawing.tsx`), e in `ExploreScreen.tsx` solo
+  l'aggancio.
+
+**Decisione, le città in evidenza (parte A)**: nel catalogo, con lo
+strumento del catalogo (ADR-0097) e le zone copiate dal server in sola
+lettura; parte dopo TASK-161, che ha quei file. Qui si scrive, a lavoro
+fatto, cosa si tiene quando una forma resta sotto 0,88.
+
+**Scartate**: disegnare le forme delle città in evidenza chiedendole
+all'API del server con uno script a parte (uno strumento parallelo a
+quello del catalogo, e la chiave dell'API fuori dal suo posto; paletto del
+coordinatore); metterle dentro l'app come file (un megabyte di punti nel
+bundle, e chi è vicino a quelle città senza toccare la tessera non le
+vedrebbe); una fila orizzontale di disegni; i post che si aprono sulla
+mappa da «Explore» prima che lo facciano in «Feed».
+
+**Conseguenze**: `WhileDrawing` dipende da `FeedPost`. Con la mappa di
+TASK-162 (ADR-0131) i disegni in «Explore» hanno anche loro la foto della
+mappa sotto la linea: la chiede la scheda, la fa la pagina nascosta di
+«Feed», che resta montata accanto a «Explore»; visto in un simulatore
+senza aver mai aperto «Feed». Il feed vero (TASK-118) deciderà se qui
+restano gli esempi o entrano i disegni degli iscritti. **In due PR**, per
+richiesta dell'utente (2026-10-02, «pubblica intanto la parte dei post
+sul telefono»): prima l'attesa, poi il catalogo.

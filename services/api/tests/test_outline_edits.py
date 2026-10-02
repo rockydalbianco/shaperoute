@@ -250,4 +250,4 @@ def test_the_gpx_of_a_route_with_details_is_named_image(
     }
     response = http.post("/gpx", json={"request": request, "result": result})
     assert response.status_code == 200, response.json()
-    assert "shaperoute-image-15km" in response.headers["content-disposition"]
+    assert "sgrava-image-15km" in response.headers["content-disposition"]

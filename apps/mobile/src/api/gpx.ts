@@ -4,7 +4,7 @@ import { apiKey, keyHeaders } from "./apiUrl";
 import { isApiError, type RouteOutcome } from "./routes";
 
 /** Used when the API gives no usable file name. */
-export const FALLBACK_FILE_NAME = "shaperoute.gpx";
+export const FALLBACK_FILE_NAME = "sgrava.gpx";
 
 export type GpxOutcome =
   | { kind: "gpx"; text: string; fileName: string }

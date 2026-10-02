@@ -4706,3 +4706,73 @@ scrive anche `android.package` in `app.json` e cambia due script di
 `package.json`: sono effetti della prova, non vanno committati. Tenere la
 schermata finché i dati sono pronti vorrebbe `preventAutoHide` in `App.tsx`:
 un task a parte, se servirà.
+
+## ADR-0133 — La schermata della corsa: gli stessi numeri con un percorso e senza, e una freccia di direzione dalla traccia
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente («mi devi dire la
+andatura media, chilometri fatti, tra quanti metri devo girare, ci deve
+essere la freccia di indicazione dove sto andando… così è troppo
+semplice»); il cosa scelto dall'utente su un mockup in chat («sì, fallo»),
+il come deciso dall'agente su delega dell'utente (TASK-164).
+
+**Contesto**: la corsa con un percorso mostrava la svolta e i km rimasti,
+ma né i km fatti né il passo; la corsa senza percorso (ADR-0122) mostrava
+km, tempo e passo medio, e nient'altro. Senza percorso le svolte non
+esistono: non c'è una linea da seguire. La mappa non sapeva disegnare un
+segnaposto orientato, e l'app non leggeva la direzione.
+
+**Decisione**:
+- **Un pannello solo per le due corse** (`RunPanel.tsx`), sotto la mappa:
+  km fatti in grande, «Avg pace», «Pace now», «Time». Con un percorso,
+  accanto ai km, «… to go» e «about … min», e la barra del percorso fatto;
+  senza, «Last km» con il passo dell'ultimo km intero.
+- **I km fatti sono quelli della traccia**, anche con un percorso: è
+  quello che si è corso davvero, lo stesso numero della fine della corsa
+  (ADR-0093). I km rimasti e la barra vengono invece dalla posizione lungo
+  il percorso (`alongM`).
+- **«Pace now» è il passo degli ultimi 200 m di traccia**, fino a adesso:
+  abbastanza lungo da non seguire gli errori del GPS, abbastanza corto da
+  mostrare un cambio di ritmo. Il tempo va avanti fra una posizione e
+  l'altra, quindi da fermi il passo rallenta, e oltre 20:00 /km sparisce:
+  è stare fermi, non correre. Come il passo medio, compare dopo 100 m.
+- **«about 17 min» è i km rimasti al passo medio fin lì**: una stima, e lo
+  dice. Il tempo conta anche le soste, come prima (ADR-0091).
+- **La direzione viene dalla traccia, non dalla bussola**: il verso dalla
+  posizione di 10 m prima all'ultima (`headingDeg`). Funziona uguale su
+  ogni telefono e nei test; la bussola del telefono sbaglia in tasca e
+  vicino al metallo, e `coords.heading` del GPS manca da fermi. Una sola
+  posizione di distanza (5 m) sta dentro l'errore del GPS e la freccia
+  tremerebbe. Da fermi la direzione resta l'ultima.
+- **La freccia sulla mappa**: `follow` porta `heading` (gradi interi, o
+  null), e la pagina mette al posto del segnaposto una freccia chiara,
+  `rotationAlignment: "map"`, con il bordo scuro per leggersi sul giallo.
+  `stopFollow`, mandato quando la corsa finisce, rimette il segnaposto.
+  La mappa resta col nord in alto.
+- **Senza percorso, la partenza al posto della svolta**: freccia, distanza
+  in linea d'aria e «Your start, in a straight line». È l'unica direzione
+  che una corsa senza percorso può dare senza inventare niente, e dice
+  quanto manca per tornare. La freccia è relativa a chi corre (in su =
+  davanti), come le frecce delle svolte; è azzurra, il colore della
+  partenza (ADR-0040), non gialla (ADR-0046). «In a straight line» è
+  scritto: non è la strada da fare.
+- **Il giallo della barra è quello del percorso** (ADR-0046): la barra è
+  il percorso, per quanto è stato corso. I km restano bianchi.
+- **`useNavigation` dà la traccia** nello stato, come `useFreeRun`: il
+  registratore parte prima del primo stato. Nessuna modifica a
+  `trackStore.ts`, `freeRun.ts`, `navigator.ts`.
+
+**Alternative scartate**: girare la mappa nel verso di marcia (la figura
+del percorso si legge col nord in alto, e i gesti della mappa vanno
+ripensati); la bussola del telefono (`expo-sensors`: dipendenza nuova, e
+inaffidabile in corsa); il passo istantaneo fra due posizioni (salta di
+minuti con un errore di pochi metri); il nome della via in cui si è, senza
+percorso (vuole l'API o i dati delle strade sul telefono); tenere due
+schermate diverse per le due corse.
+
+**Conseguenze**: il pannello è più alto della riga di prima, e la mappa
+più bassa di circa 90 punti. «Pause», lo «Stop» da tenere premuto e la
+voce a ogni km nella corsa con percorso restano fuori: task a parte, se
+l'utente li vuole. La freccia compare dopo i primi 10 m. Chi preme «Start»
+lontano dall'inizio del percorso («Start here») ha nei km e nel passo anche
+il tratto per arrivarci: la traccia parte con «Start» (ADR-0091), e i km
+rimasti no. Provato nel simulatore con un GPS simulato, nelle due corse;
+camminando con l'iPhone no.

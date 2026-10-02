@@ -1,6 +1,6 @@
 # TASK-164 — La schermata della corsa: numeri, svolta e freccia di direzione
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-164-run-screen`
 
 ## Obiettivo
@@ -42,18 +42,19 @@ e la distanza verso il punto di partenza. Chiesto dall'utente il 2026-10-02
 
 ## Criteri di accettazione
 
-- [ ] Con un percorso, il pannello mostra km fatti, passo medio, passo di
+- [x] Con un percorso, il pannello mostra km fatti, passo medio, passo di
       adesso, tempo, km rimasti, minuti stimati e la barra; il banner della
       svolta dice le stesse cose di prima.
-- [ ] Senza percorso, il banner mostra distanza e freccia verso la partenza
+- [x] Senza percorso, il banner mostra distanza e freccia verso la partenza
       e il verso di marcia; il pannello km, passi, tempo e ultimo km.
-- [ ] Il tempo va avanti ogni secondo; il passo compare dopo 100 m.
-- [ ] La mappa riceve la direzione con `follow` e disegna la freccia;
+- [x] Il tempo va avanti ogni secondo; il passo compare dopo 100 m.
+- [x] La mappa riceve la direzione con `follow` e disegna la freccia;
       a fine corsa torna il segnaposto.
-- [ ] «Pocket», «Stop» e «Finish» fanno quello che facevano.
-- [ ] Nessuna dipendenza nuova; test, lint, typecheck e format dell'app
+- [x] «Pocket», «Stop» e «Finish» fanno quello che facevano.
+- [x] Nessuna dipendenza nuova; test, lint, typecheck e format dell'app
       verdi.
-- [ ] Visto nel simulatore.
+- [x] Visto nel simulatore, con un GPS simulato: la corsa senza percorso e
+      quella con un percorso (un cuore a Trento, dall'API sul Mac).
 - [ ] Prova sull'iPhone camminando (dell'utente, dopo la pubblicazione).
 
 ## File toccati
@@ -96,4 +97,17 @@ docs/tasks/TASK-164.md
 
 ## Esito
 
-*(a fine task)*
+Fatto (2026-10-02): il pannello dei numeri è lo stesso per le due corse,
+la mappa disegna la freccia di direzione, e senza percorso il banner
+indica la partenza. 2 file di test nuovi, 802 test dell'app verdi; lint,
+typecheck e format puliti. Provato nel simulatore con il GPS simulato:
+senza percorso (300 m a nord, poi a est: la freccia gira, «Heading east»,
+la partenza a destra, passi attorno a 5:05) e con un percorso (svolta,
+«1% drawn», «N», km rimasti, barra). **Manca la prova sull'iPhone**
+camminando, dopo la ripubblicazione.
+
+Emerso: chi parte lontano dall'inizio del percorso («Start here») ha nei
+km e nel passo anche il tratto per arrivarci, perché la traccia parte con
+«Start» (ADR-0091); annotato in ADR-0133. Rimandati, da chiedere
+all'utente: «Pause», «Hold to stop», la voce a ogni km nella corsa con
+percorso (`STATUS.md`, ADR-0133).

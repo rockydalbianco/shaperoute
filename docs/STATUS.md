@@ -61,7 +61,8 @@ In coda, dopo o accanto:
   «Explore» (TASK-126, 134) e il suo «Start» (TASK-145), correre senza
   percorso (TASK-149), «A · B · C» negli esempi (TASK-151, 155), lo swipe
   col dito (TASK-154), il feed d'esempio e i ritocchi di TASK-156, 157,
-  158, la mappa sotto i disegni di «Feed» (TASK-162).
+  158, la mappa sotto i disegni di «Feed» (TASK-162), la schermata della
+  corsa con i numeri e la freccia di direzione (TASK-164).
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -83,6 +84,17 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
 
 ## Completato
 
+- **App** — TASK-164: la schermata della corsa rifatta, chiesta dall'utente
+  (ADR-0133). Sotto la mappa, con un percorso e senza: km fatti, passo
+  medio, passo di adesso (ultimi 200 m) e tempo; con un percorso anche i km
+  rimasti, i minuti stimati e la barra del disegno fatto («42% drawn»
+  sotto la svolta), senza percorso il passo dell'ultimo km. Sulla mappa il
+  segnaposto è una freccia girata dove si sta andando. Senza percorso le
+  svolte non esistono: al loro posto freccia e distanza verso la partenza.
+  Nessuna dipendenza nuova, niente API. Visto nel simulatore con un GPS
+  simulato. **Da provare sull'iPhone** camminando (ripubblicare l'app).
+  Fuori, da chiedere all'utente: «Pause», «Stop» da tenere premuto, la voce
+  a ogni km nella corsa con percorso.
 - **App** — TASK-162: in «Feed» ogni disegno ha sotto la mappa della sua
   zona, chiesta dall'utente (ADR-0131): strade, acqua, verde e nomi, con
   lo stile dell'app. È una foto: una pagina MapLibre nascosta sotto

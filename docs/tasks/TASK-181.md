@@ -1,6 +1,6 @@
 # TASK-181 — La schermata di avvio nativa gialla
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-181-yellow-splash`
 **Dipende da**: TASK-179 (in `main` dalla #190)
 
@@ -65,15 +65,15 @@ gialla, senza il nero in mezzo.
 
 ## Criteri di accettazione
 
-- [ ] `npx expo config` legge il plugin con fondo `#FFD02B` e le due
+- [x] `npx expo config` legge il plugin con fondo `#FFD02B` e le due
       immagini scure.
-- [ ] Il prebuild di iOS genera la schermata di avvio gialla con il logo
+- [x] Il prebuild di iOS genera la schermata di avvio gialla con il logo
       nero.
-- [ ] L'animazione non mostra più il nero: il primo fotogramma è giallo.
-- [ ] Il giallo si vede sempre almeno 2 secondi (2,4 s).
-- [ ] Nessun colore scritto a mano nell'app (`app.json` non può leggere i
+- [x] L'animazione non mostra più il nero: il primo fotogramma è giallo.
+- [x] Il giallo si vede sempre almeno 2 secondi (2,4 s).
+- [x] Nessun colore scritto a mano nell'app (`app.json` non può leggere i
       token: lì il giallo è scritto, come il nero di prima).
-- [ ] Test, lint, typecheck e prettier verdi.
+- [x] Test, lint, typecheck e prettier verdi.
 - [ ] Vista in una build propria (TASK-152).
 
 ## File toccati
@@ -103,6 +103,34 @@ docs/tasks/TASK-181.md
 - Pubblicare su `preview`: con l'ok dell'utente, da `main` pulito. Cambia
   solo l'inizio dell'animazione (niente più cerchio dal nero).
 
+## Cosa è stato verificato
+
+- **`npx expo config --type public`**: il plugin ha `backgroundColor`
+  `#FFD02B`, `splash-icon-dark.png` e, per iOS, `splash-logo-dark.png`.
+- **Prebuild di iOS** (`npx expo prebuild --platform ios --no-install`):
+  `SplashScreenBackground` è sRGB 255, 208, 43; `SplashScreen.storyboard`
+  mette `SplashScreenLogo` in un riquadro di 260 × 260 al centro; l'immagine
+  generata a 3x è 780 × 780, il logo nero. Composta su uno schermo di
+  390 × 844: logo nero centrato sul giallo. La cartella `ios/` è stata
+  cancellata e i due script che il prebuild cambia in `package.json`
+  annullati; `app.json` il prebuild di iOS non lo tocca.
+- **Animazione, in un simulatore** (iPhone 17, iOS 27, Expo Go, Metro dal
+  worktree): filmata. Il primo fotogramma è giallo con il punto di partenza
+  e il logo; il cuore si disegna tutto, resta fermo, poi compare «Draw».
+- **Il difetto trovato filmando**: alla prima ripresa, con il Mac molto
+  carico (load oltre 600), il cuore partiva più di un secondo in ritardo e
+  la dissolvenza lo tagliava a metà. Corretto (ADR-0147, aggiornamento) e
+  rifilmato: il cuore finisce sempre prima della dissolvenza.
+- Android: non provato il prebuild (in TASK-165 era stato controllato; qui
+  cambiano solo colore e immagine). Su un telefono: serve una build propria.
+
 ## Esito
 
-*(a fine task)*
+Fatto (2026-10-02). L'avvio è tutto giallo: schermata nativa gialla con il
+logo nero, animazione che parte già gialla. In più l'animazione non può più
+essere tagliata a metà su un telefono lento. 14 test dell'animazione, suite
+dell'app, lint, typecheck e prettier verdi. Le due immagini gialle non più
+usate sono cancellate. **Da pubblicare su `preview`** con l'ok dell'utente
+per la parte dell'animazione; la schermata nativa si vede in una build
+propria (TASK-152). Rimandato: il logo che scende dal centro con un
+movimento, se in una build propria il salto si nota.

@@ -97,11 +97,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-181 — La schermata di avvio nativa gialla**, chiesta dall'utente
-  il 2026-10-02 (seguito di TASK-179): fondo giallo e logo nero in
-  `app.json`, e l'animazione che parte già gialla. Il task file e le due
-  immagini scure sono nel branch `feat/TASK-181-yellow-splash`; da dove
-  riprendere: il task file. Sessione «Logo e animazione avvio app».
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia
   notturna dal 2026-10-02 (07:27Z, 18 s di API ferma); iscrizione,
@@ -113,6 +108,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-181: l'avvio tutto giallo, chiesto dall'utente (seguito di
+  TASK-179; aggiornamenti di ADR-0134 e ADR-0147). La schermata di avvio
+  nativa è gialla con il logo nero (`app.json`), e l'animazione parte già
+  gialla, senza il nero iniziale. Corretto anche un difetto visto filmando
+  con il Mac carico: il cuore poteva partire tardi ed essere tagliato dalla
+  dissolvenza; ora attesa e disegno sono una sola animazione e l'uscita
+  aspetta il cuore finito. Prebuild di iOS controllato, animazione filmata
+  in un simulatore. **Da pubblicare su `preview`** con l'ok dell'utente (in
+  Expo Go cambia l'inizio dell'animazione); la schermata nativa **si vede
+  solo in una build propria** (TASK-152).
 - **App** — TASK-179: l'animazione all'avvio, chiesta dall'utente
   (ADR-0147). Aprendo l'app il giallo riempie lo schermo, una penna disegna
   il cuore di Milano del video, sotto c'è il logo nero; 2,4 secondi, poi

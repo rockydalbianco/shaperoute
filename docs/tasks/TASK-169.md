@@ -31,6 +31,11 @@ stile».
    «Resume», pausa da sola dopo 10 secondi fermi, «Voice».
 3. I numeri nuovi (`runMetrics.ts`): i km uno per uno, il dislivello, le
    calorie stimate. Passi e ultimo km senza le pause (`runStats.ts`).
+   Le calorie sono una stima e si basano su due cose sole: i km corsi e
+   un peso di 70 kg uguale per tutti, a 1,036 kcal per kg e per km. Non
+   usano il peso di chi corre (il profilo non lo ha), né passo, dislivello
+   o battito: chi pesa 60 kg legge circa il 15% in più del vero, chi ne
+   pesa 85 circa il 18% in meno.
 4. I due registratori (`useFreeRun.ts`, `useNavigation.ts`) sotto i
    comandi; la quota; la voce a ogni km anche con un percorso.
 5. La scheda della corsa (`RunDashboard.tsx`): le pagine «Map» e «Data»

@@ -97,6 +97,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-175: la mappa non ha più i pulsanti «+» e «−» in alto a
+  destra, chiesto dall'utente (ADR-0143): si ingrandisce solo con le dita.
+  Il cuore dei preferiti sale nell'angolo, alla stessa altezza di «←».
+  Solo app, niente API. **Da pubblicare su `preview`**, con l'ok
+  dell'utente.
 - **App** — TASK-169: la corsa rifatta sul modello di Nike Run Club, chiesta
   dall'utente (ADR-0137), con un percorso e senza. Parte con «3 · 2 · 1»;
   due pagine da scorrere, «Map» (mappa, indicazioni, km, passo di adesso e

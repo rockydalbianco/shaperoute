@@ -5237,3 +5237,28 @@ di chi le ha disegnate; le vede solo il loro account e spariscono con lui
 con un account: una richiesta in più. Sul server la migrazione parte al
 primo avvio dell'API nuova (`DEPLOY.md` F.12). «My activities» (TASK-172,
 ADR-0140) userà la stessa pagina di «Profile» e la tabella `runs`.
+
+## ADR-0143 — La mappa senza pulsanti di zoom: si ingrandisce solo con le dita
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («togli la
+possibilità di zumare in alto a destra […] si potrà zumare solamente con
+il touch»); il come deciso dall'agente su delega dell'utente (TASK-175).
+
+**Contesto**: la pagina della mappa aveva il `NavigationControl` di
+MapLibre, due pulsanti «+» e «−» in alto a destra. Su un telefono
+ripetono un gesto che si fa già con due dita, e occupavano l'angolo: il
+cuore dei preferiti (ADR-0139) stava sotto di loro, più in basso di «←».
+
+**Decisione**: la pagina non crea più il controllo. Lo zoom resta quello
+dei gesti di MapLibre, che la pagina non tocca: due dita, doppio tocco.
+Il cuore dei preferiti sale nell'angolo, alla stessa altezza di «←»
+(`insets.top` più lo stesso margine).
+
+**Alternative scartate**: nascondere i pulsanti con il CSS (il controllo
+resterebbe nella pagina, da mantenere); toglierli solo dall'anteprima di
+un percorso e tenerli in corsa (la pagina è una sola, e in corsa la mappa
+segue la posizione da sé); spegnere anche la rotazione con due dita (non
+chiesto).
+
+**Conseguenza**: chi non può fare il gesto con due dita ha il doppio
+tocco per avvicinare. I pulsanti mancano apposta: un test della pagina
+controlla che il controllo non torni e che il gesto non venga spento.

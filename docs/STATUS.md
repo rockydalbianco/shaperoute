@@ -119,8 +119,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   le pause, nemmeno fra «Stop» e «Keep running»; la voce dice i km anche
   con un percorso, e «Voice» la spegne. Chiude i tre seguiti di TASK-164.
   Nessuna dipendenza nuova, niente API, `App.tsx` non toccato. Visto nel
-  simulatore con un GPS simulato. **Da pubblicare e da provare
-  sull'iPhone**: lo swipe col dito, «Stop» tenuto premuto, la pausa da sola.
+  simulatore con un GPS simulato. Pubblicato su `preview` il 2026-10-02
+  (update `38f9a17b`, da fa6462b). **Da provare sull'iPhone**: lo swipe col
+  dito, «Stop» tenuto premuto, la pausa da sola.
   Fuori, già chiesto dall'utente: il battito da sensore Bluetooth e da
   Apple Watch (solo in una build propria). La musica: l'utente usa Spotify
   (TASK-173).

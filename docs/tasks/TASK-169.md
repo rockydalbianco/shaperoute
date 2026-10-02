@@ -65,7 +65,8 @@ stile».
 - [x] `App.tsx` non è toccato; nessuna dipendenza nuova; test, lint,
       typecheck e format dell'app verdi.
 - [x] Visto nel simulatore con un GPS simulato, nelle due corse.
-- [ ] Prova sull'iPhone (dell'utente, dopo la pubblicazione): lo swipe col
+- [ ] Prova sull'iPhone (dell'utente; pubblicato su `preview` il
+      2026-10-02, update `38f9a17b`): lo swipe col
       dito, «Stop» tenuto premuto, la pausa da sola camminando.
 
 ## File toccati

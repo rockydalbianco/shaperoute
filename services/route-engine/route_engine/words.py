@@ -56,7 +56,7 @@ not meet a letter that reaches the top line in one point only (the I would
 read as a T). A letter entered or left at the top is the same closed line,
 started and cut elsewhere (`Letter.route`): it is drawn the same. Each gap
 runs along the base or along the top, never across, and `choose_joins`
-keeps the shortest word. Off by default (TOP_JOINS).
+keeps the shortest word. On by default (TOP_JOINS), the user's choice.
 """
 
 from __future__ import annotations
@@ -98,8 +98,9 @@ SHIFT_STEP = 1 / 16
 MAX_WORD_LETTERS = 8
 LETTER_DISTANCE_M = 3000
 # Whether the letters of each style may be joined along the top line too
-# (TASK-067, `choose_joins`), unless `compose` is told.
-TOP_JOINS: dict[str, bool] = {"round": False, "block": False}
+# (TASK-067, `choose_joins`), unless `compose` is told: the user's choice
+# for both styles (ADR-0063).
+TOP_JOINS: dict[str, bool] = {"round": True, "block": True}
 
 
 class InvalidWordError(ValueError):

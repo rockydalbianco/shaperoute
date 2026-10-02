@@ -1922,10 +1922,11 @@ aggiornano insieme, come oggi dallo stesso checkout. Le tessere sono undici:
 tre righe da quattro, l'ultima con tre.
 
 ## ADR-0063 — Lettere unite anche dalla cima: tre regole di lettura, la parola più corta
-**Stato**: In prova · 2026-10-02 · chiesto dall'utente nel giudizio di
+**Stato**: Attiva · 2026-10-02 · chiesto dall'utente nel giudizio di
 TASK-059 (2026-09-25: «anche connetterle dalla cima», se non confonde o
 aiuta); formato, regole e scelta decisi dall'agente su delega dell'utente
-(TASK-067); spente per difetto finché l'utente non giudica i campioni
+(TASK-067); accese per difetto in tutti e due gli stili per scelta
+dell'utente (2026-10-02)
 
 **Contesto**: ogni lettera entra ed esce sulla base, e le unioni si corrono
 due volte. U, V, W, Y e T toccano la base a metà: l'unione passa sotto
@@ -1963,10 +1964,16 @@ peggio (ADR-0067). Le misure sono in `docs/tasks/TASK-067.md`.
 - **La scelta** (`choose_joins`): ogni spazio tutto sulla base o tutto in
   cima; fra le combinazioni permesse, al più 128, la parola più corta; a
   pari lunghezza meno unioni in cima, poi la base per prima. Deterministica.
-- **Spente per difetto**, per stile (`words.TOP_JOINS`): `compose` e
-  `plan_route` hanno `top_joins`, `measure_words.py` ha `--top-joins`. Con
-  le unioni spente ogni parola è identica a prima, punto per punto (test).
-  API, `shared-types` e app non cambiano.
+- **Accese per difetto in tutti e due gli stili** (`words.TOP_JOINS`),
+  scelta dell'utente. Sui campioni l'utente ha preferito il percorso di
+  oggi in tutti e sette i casi giudicati (unioni in cima: 5 «no», 2
+  «quasi», nessun «sì») e ha detto che le tre regole vanno bene; nella
+  scelta finale ha chiesto di accenderle per tonde e squadrate, e
+  interpellato sulla differenza fra le due risposte ha confermato
+  «accendi in cima». `compose` e `plan_route` hanno `top_joins`,
+  `measure_words.py` ha `--no-top-joins`: con le unioni spente ogni parola
+  è identica a prima, punto per punto (test). API, `shared-types` e app
+  non cambiano.
 - **La scala per lettera non si fa**: era l'altra metà della richiesta del
   2026-09-25, che ADR-0056 rimanda qui. L'utente la lascia fuori
   (2026-10-02), perché lettere più piccole si leggono peggio (ADR-0067).
@@ -1985,9 +1992,13 @@ parole misurate cambia solo «UVA» (−7,4% tonda, −8,6% squadrata); «NUVOLA
 −5,2%, «LUNA» −2,6%. Le altre parole restano identiche. Sulle strade le
 lettere non vengono sempre più alte: su nove campioni a 15 km lo sono in
 cinque, e sempre per «UVA» squadrata (`docs/tasks/TASK-067.md`). La ricerca
-non dura di più. `nearby_starts.py` e la CLI compongono la parola con il
-predefinito dello stile: se l'utente accende le unioni, cambia
-`TOP_JOINS` e lo seguono senza altre modifiche.
+non dura di più. `nearby_starts.py`, la CLI e `seed_catalog.py`
+compongono la parola con il predefinito dello stile, quindi le seguono
+senza altre modifiche. L'app pubblicata le vede quando l'API sul server è
+aggiornata (`DEPLOY.md` F.12, con l'ok dell'utente). Le parole già nel
+catalogo restano com'erano finché non si ridisegnano: fra quelle di oggi
+cambierebbe solo «NYC» tonda. Per tornare indietro basta `TOP_JOINS` a
+`False`.
 
 ## ADR-0064 — La barra stima una parola dalle sue lettere
 **Stato**: Attiva · 2026-09-25 · deciso dall'agente su delega dell'utente

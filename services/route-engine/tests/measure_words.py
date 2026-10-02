@@ -10,9 +10,10 @@ compared on the same numbers.
         --out-dir ../../samples --tag TASK-077 --version v1
 
 A sample is named by word and style: TASK-077_ciao-block_15km_trento_v1.gpx.
-With `--top-joins` the letters may be joined along the top line too
-(TASK-067): the case says where («uva-round-top», joins `‾_`, one sign for
-each gap), and the row is to be read next to the one without.
+The letters may be joined along the top line too (TASK-067), as
+words.TOP_JOINS says for the style; `--top-joins` and `--no-top-joins` say
+it here. A case with them says so («uva-round-top», joins `‾_`, one sign
+for each gap), and its row is to be read next to the one without.
 
 Columns: distance on roads / target, similarity (letter by letter), letter
 height, rotation of the word and the directions of the streets around its
@@ -43,7 +44,7 @@ from route_engine.network import BBox, Graph, OsmnxSource, crop, read_graph, twi
 from route_engine.optimizer import ShapeNotDrawableError, plan_route, reach
 from route_engine.projection import initial_scale
 from route_engine.street_grid import StreetDirections
-from route_engine.words import STYLES, compose
+from route_engine.words import STYLES, TOP_JOINS, compose
 
 ZONES: dict[str, LatLon] = {
     "trento": (46.0671, 11.1214),
@@ -108,13 +109,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--distance", type=int, default=15000)
     parser.add_argument(
         "--top-joins",
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
+        default=None,
         help="join the letters along the top line too, where shorter (TASK-067)",
     )
     parser.add_argument("--out-dir", type=Path, help="also write GPX samples here")
     parser.add_argument("--tag", default="TASK-077", help="sample prefix")
     parser.add_argument("--version", default="v1", help="sample version, e.g. v1")
     args = parser.parse_args(argv)
+    if args.top_joins is None:
+        args.top_joins = TOP_JOINS[args.style]
 
     print(
         f"{'case':<30} {'km':>11} {'sim':>5} {'height':>6} {'rot':>4}"

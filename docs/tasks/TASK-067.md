@@ -1,6 +1,6 @@
 # TASK-067 — Lettere unite anche dalla cima
 
-**Stato**: In corso — in attesa del giudizio dell'utente sui campioni
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-067-top-joins`
 
 Chiesto dall'utente il 2026-09-25, nel giudizio di TASK-059: «Se serve, il
@@ -91,20 +91,20 @@ A pari chilometri una linea più corta dà lettere più grandi, e da TASK-071
 
 ## Criteri di accettazione
 
-- [ ] Le misure per coppia e per parola sono scritte nel task file.
-- [ ] Con le unioni in cima spente, ogni parola è identica a `main` punto
+- [x] Le misure per coppia e per parola sono scritte nel task file.
+- [x] Con le unioni in cima spente, ogni parola è identica a `main` punto
       per punto, nei due stili (test).
-- [ ] Ogni regola di lettura ha un test con una coppia che la viola.
-- [ ] Stessa parola, stesse unioni (test).
-- [ ] Sui campioni la ricerca non dura più del 10% in più di oggi: «BELLO»
+- [x] Ogni regola di lettura ha un test con una coppia che la viola.
+- [x] Stessa parola, stesse unioni (test).
+- [x] Sui campioni la ricerca non dura più del 10% in più di oggi: «BELLO»
       è già a 255–258 s, e l'app aspetta al più 5 minuti.
-- [ ] Il giudizio dell'utente è in `samples/LOG.md`, e il predefinito lo
+- [x] Il giudizio dell'utente è in `samples/LOG.md`, e il predefinito lo
       segue.
-- [ ] API, `shared-types` e app non cambiano: la richiesta resta quella
+- [x] API, `shared-types` e app non cambiano: la richiesta resta quella
       di oggi.
-- [ ] `ruff`, `black`, tipi e `pytest` del motore sono verdi; il motore
+- [x] `ruff`, `black`, tipi e `pytest` del motore sono verdi; il motore
       non importa niente da `services/api/` né da `services/ai/`.
-- [ ] `ROUTE_ENGINE.md` §2 e §5 sono aggiornati, e ADR-0063 è scritto.
+- [x] `ROUTE_ENGINE.md` §2 e §5 sono aggiornati, e ADR-0063 è scritto.
 
 ## File toccati
 
@@ -286,6 +286,50 @@ Pagina di giudizio (sì / quasi / no per ogni percorso, «quale preferisci»,
 le parole che le regole vietano, «Copia le risposte»):
 https://claude.ai/artifact/HHjCVwPgncphRNbiyrnpHj
 
+## Giudizio dell'utente (2026-10-02)
+
+Dalla pagina di giudizio, caso per caso (oggi · unioni in cima · preferito):
+
+| Caso | Oggi | Unioni in cima | Preferito |
+|---|---|---|---|
+| UVA tonda, Trento | quasi | no | oggi |
+| UVA tonda, Levico | quasi | no | oggi |
+| UVA tonda, Milano | sì | no | oggi |
+| UVA squadrata, Trento | quasi | no | oggi |
+| UVA squadrata, Levico | — | — | — |
+| UVA squadrata, Milano | sì | quasi | oggi |
+| HUB tonda, Trento | quasi | no | oggi |
+| HUB tonda, Levico | — | — | — |
+| HUB tonda, Milano | sì | quasi | oggi |
+
+Nei sette casi giudicati l'utente preferisce sempre il percorso di oggi, e
+le unioni in cima non hanno nessun «sì» (5 «no», 2 «quasi»). Le tre regole
+di lettura: «vanno bene».
+
+Nella scelta finale della stessa pagina: «sì, unisci in cima» per le
+tonde e per le squadrate. Le due risposte non vanno insieme, e l'agente
+l'ha chiesto all'utente proponendo di lasciare il motore com'è; l'utente
+ha scelto **«Accendi in cima»** per tutti e due gli stili.
+
 ## Esito
 
-*(si compila a fine task)*
+Fatto (2026-10-02, PR #191). Le lettere si uniscono anche lungo la cima
+dove la parola viene più corta, con tre regole di lettura (ADR-0063);
+accese per difetto in tutti e due gli stili per scelta dell'utente, che
+sui campioni aveva però preferito i percorsi di prima. Con le regole
+cambiano solo le parole con U, V, W o Y (P, U, V, Y nelle squadrate): delle
+sette misurate solo «UVA».
+
+Diverso dal task: `out` e `back` di una lettera entrata o lasciata in cima
+non sono scritti nell'alfabeto, li ricava `Letter.route` dalla linea che la
+lettera ha già; l'alfabeto dichiara solo i due angoli (`top`). Campioni
+anche per «HUB», che non è nella tabella, perché delle sette parole cambia
+solo «UVA».
+
+Seguiti:
+- l'API sul server va aggiornata perché l'app le veda (`DEPLOY.md` F.12,
+  con l'ok dell'utente);
+- le parole del catalogo già disegnate restano com'erano: ridisegnata,
+  cambierebbe solo «NYC» tonda;
+- se sul telefono le parole con U, V, W, Y si leggono peggio, come nei
+  campioni: `words.TOP_JOINS` a `False`, anche per un solo stile.

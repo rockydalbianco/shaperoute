@@ -418,11 +418,12 @@ def test_without_top_joins_a_word_is_the_one_of_before(style: Style, text: str) 
     assert not any(word.tops)
 
 
-def test_top_joins_are_off_unless_asked() -> None:
-    assert TOP_JOINS == {"round": False, "block": False}
+def test_top_joins_are_on_unless_told() -> None:
+    # The user's choice for both styles (ADR-0063).
+    assert TOP_JOINS == {"round": True, "block": True}
     for style in STYLES:
         assert compose("uva", style=style) == compose(  # type: ignore[arg-type]
-            "uva", style=style, top_joins=False  # type: ignore[arg-type]
+            "uva", style=style, top_joins=True  # type: ignore[arg-type]
         )
 
 
@@ -431,10 +432,12 @@ def test_a_join_along_the_top_makes_the_word_shorter() -> None:
     # From the right arm of the U to the left one of the V, instead of from
     # the middle of the one to the middle of the other: 0.3 less at each
     # end, out and back.
-    assert _length(compose("uva")) - _length(UVA) == pytest.approx(1.2)
+    before = compose("uva", top_joins=False)
+    assert _length(before) - _length(UVA) == pytest.approx(1.2)
     block = compose("uva", style="block", top_joins=True)
     assert block.tops == (True, False)
-    assert _length(compose("uva", style="block")) - _length(block) == pytest.approx(1.5)
+    before = compose("uva", style="block", top_joins=False)
+    assert _length(before) - _length(block) == pytest.approx(1.5)
 
 
 @pytest.mark.parametrize(
@@ -606,7 +609,7 @@ def test_the_route_may_start_half_way_along_a_gap_at_the_top() -> None:
             assert sides.max() <= SIDE_STEP * word.height + 1e-12
 
 
-def test_plan_route_joins_the_letters_along_the_top_when_asked(
+def test_plan_route_joins_the_letters_along_the_top_unless_told(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     composed: list[Word] = []
@@ -617,9 +620,9 @@ def test_plan_route_joins_the_letters_along_the_top_when_asked(
 
     monkeypatch.setattr(optimizer, "compose", spy)
     request = RouteRequest(start=TRENTO, distance_m=6000, word="uv")
-    result = plan_route(request, _Grid(), top_joins=True).result
+    result = plan_route(request, _Grid()).result
     assert result.word == "UV"
     assert haversine_m(result.points[0], result.points[-1]) < 1.0
     assert composed[-1].tops == (True,)
-    plan_route(request, _Grid(), optimize=False)
+    plan_route(request, _Grid(), optimize=False, top_joins=False)
     assert composed[-1].tops == (False,)

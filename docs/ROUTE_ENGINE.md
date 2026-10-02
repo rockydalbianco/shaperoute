@@ -279,9 +279,11 @@ X, Y; B e D solo da sinistra. Accorciano solo le coppie con U, V, W o Y
 «UVA» 7,4% (8,6% squadrata), «NUVOLA» 5,2% (8,5%), «LUNA» 2,6%. Le altre
 parole restano identiche. Misure e campioni: `docs/tasks/TASK-067.md`.
 
-**Spente per difetto** (`words.TOP_JOINS`, per stile); `compose` e
-`plan_route` hanno `top_joins` per accenderle, e `tests/measure_words.py`
-`--top-joins`. API e app non cambiano.
+**Accese per difetto** in tutti e due gli stili (`words.TOP_JOINS`), per
+scelta dell'utente (2026-10-02, ADR-0063). `compose` e `plan_route` hanno
+`top_joins`, e `tests/measure_words.py` `--no-top-joins`: con `False` la
+parola è quella di prima, punto per punto. La richiesta all'API resta la
+stessa: cambia il percorso delle parole con U, V, W o Y.
 
 ### Il contorno da un'immagine (TASK-072, TASK-084)
 

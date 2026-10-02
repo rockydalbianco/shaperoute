@@ -94,16 +94,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `offsite` è in `main` dalla PR #167): manca che l'utente lo crei
   (`DEPLOY.md` F.13). Sessione «Sistema di auto-miglioramento ricerca»; da
   dove riprendere: il task file.
-- **TASK-067 — Lettere unite anche dalla cima** (ADR-0063, «In prova»):
-  il motore sa unire due lettere lungo la cima dove la parola viene più
-  corta e si legge uguale (tre regole di lettura), spento per difetto. Con
-  le regole cambiano solo le parole con U, V, W, Y: delle sette misurate
-  solo «UVA» (−7,4%). Diciotto campioni a 15 km e la pagina di giudizio
-  sono pronti: **manca il giudizio dell'utente**, che decide se accenderle
-  (anche per stile) o togliere il codice. Da dove riprendere: il task file.
 
 ## Completato
 
+- **Motore** — TASK-067: due lettere di una parola si uniscono anche lungo
+  la cima, dove la parola viene più corta e si legge uguale, chiesto
+  dall'utente (ADR-0063). Tre regole di lettura: non si allunga un tratto
+  che finisce in cima (la T, il braccio della E), non si passa sopra la
+  lettera, non si tocca una lettera con un solo punto in cima (la I
+  sarebbe una T). Cambiano solo le parole con U, V, W o Y (P, U, V, Y nelle
+  squadrate): «UVA» −7,4%, «NUVOLA» −5,2%; le altre restano identiche.
+  Diciotto campioni a 15 km: l'utente ha preferito il percorso di prima
+  nei sette casi giudicati, e ha scelto lo stesso di accenderle per tonde
+  e squadrate (`words.TOP_JOINS`; `False` per tornare indietro). La ricerca
+  non dura di più. API e app non cambiano. **L'app pubblicata le vede dopo
+  aver aggiornato l'API sul server** (`DEPLOY.md` F.12), con l'ok
+  dell'utente. La scala per lettera non si fa, per scelta dell'utente.
 - **App** — TASK-169: la corsa rifatta sul modello di Nike Run Club, chiesta
   dall'utente (ADR-0137), con un percorso e senza. Parte con «3 · 2 · 1»;
   due pagine da scorrere, «Map» (mappa, indicazioni, km, passo di adesso e

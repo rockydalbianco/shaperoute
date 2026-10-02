@@ -1,4 +1,4 @@
-import type { Session } from "@shaperoute/shared-types";
+import type { EditProfileRequest, Session } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -9,6 +9,8 @@ import {
   signOut as signOutRequest,
   signUp as signUpRequest,
 } from "../api/accounts";
+import { editProfile as editRequest } from "../api/profiles";
+import { profileProblem } from "../profile/profileFields";
 import {
   type Checked,
   checkSignIn,
@@ -16,7 +18,7 @@ import {
   type SignInFields,
   type SignUpFields,
 } from "./fields";
-import { accountProblem, NO_API, sessionEnded } from "./messages";
+import { accountProblem, NO_API, SESSION_ENDED, sessionEnded } from "./messages";
 import { forgetSession, loadSession, saveSession } from "./sessionStore";
 
 /**
@@ -42,6 +44,12 @@ export type Account = {
   signIn: (fields: SignInFields) => void;
   signOut: () => void;
   deleteAccount: () => void;
+  /**
+   * PATCH /me (TASK-116): the new username and bio. Resolves to null once
+   * the API kept them and the account shows them, or to what went wrong,
+   * in words; the page that asked says it, not `problem`.
+   */
+  editProfile: (changes: EditProfileRequest) => Promise<string | null>;
   clearProblem: () => void;
   /**
    * A request sent with `token` elsewhere in the app (the favorites) was
@@ -210,6 +218,36 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
     }
   }, [baseUrl, ended, fetchFn, key, put]);
 
+  // The account as the API answers, kept like a sign-in: the next opening
+  // has it, and every page shows it at once.
+  const editProfile = useCallback(
+    async (changes: EditProfileRequest): Promise<string | null> => {
+      const now = current.current;
+      if (now.status !== "signedIn") {
+        return SESSION_ENDED;
+      }
+      if (baseUrl === null) {
+        return NO_API;
+      }
+      const { token } = now.session;
+      const outcome = await editRequest(baseUrl, token, changes, { fetchFn, key });
+      if (outcome.kind !== "ok") {
+        if (sessionEnded(outcome)) {
+          ended(token);
+        }
+        return profileProblem(outcome);
+      }
+      const latest = current.current;
+      if (latest.status === "signedIn" && latest.session.token === token) {
+        const session = { token, user: outcome.value };
+        await saveSession(session);
+        put({ status: "signedIn", session });
+      }
+      return null;
+    },
+    [baseUrl, ended, fetchFn, key, put],
+  );
+
   const clearProblem = useCallback(() => setProblem(null), []);
 
   return {
@@ -220,6 +258,7 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
     signIn,
     signOut,
     deleteAccount: () => void deleteAccount(),
+    editProfile,
     clearProblem,
     sessionEnded: ended,
   };

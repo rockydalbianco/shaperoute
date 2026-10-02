@@ -29,9 +29,7 @@ export function checkSignUp(fields: SignUpFields): Checked<SignUpRequest> {
   const username = fields.username.trim();
   const problem =
     emailProblem(email) ??
-    (USERNAME.test(username)
-      ? null
-      : "A username is 3 to 20 letters, digits, _ or . (no spaces).") ??
+    usernameProblem(username) ??
     passwordProblem(fields.password) ??
     (fields.atLeast16 ? null : "You must be at least 16 to sign up.");
   return problem === null
@@ -56,6 +54,13 @@ export function checkSignIn(fields: SignInFields): Checked<SignInRequest> {
     return { ok: false, problem: "Enter your password." };
   }
   return { ok: true, request: { email, password: fields.password } };
+}
+
+/** The rule of a username, at sign-up and in «Edit profile» (TASK-116). */
+export function usernameProblem(username: string): string | null {
+  return USERNAME.test(username)
+    ? null
+    : "A username is 3 to 20 letters, digits, _ or . (no spaces).";
 }
 
 function emailProblem(email: string): string | null {

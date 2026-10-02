@@ -17,6 +17,7 @@ import { ActivitiesList } from "../activities/ActivitiesList";
 import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { FavoritesList } from "../favorites/FavoritesList";
 import { useFavoritesDoor } from "../favorites/favoritesDoor";
+import { EditProfile } from "../profile/EditProfile";
 import { ProfileHome } from "../profile/ProfileHome";
 import { SettingsPage } from "../profile/SettingsPage";
 import {
@@ -39,15 +40,20 @@ const NOTICES: Record<SignedOutNotice, { text: string; tone: "warning" | "muted"
 };
 
 /** The pages of «Profile»: the account, the routes it keeps (TASK-171), the
- * runs it recorded (TASK-172) and its settings (TASK-177). */
-export type ProfilePage = "account" | "favorites" | "activities" | "settings";
+ * runs it recorded (TASK-172), its settings (TASK-177) and its username and
+ * bio (TASK-116). */
+export type ProfilePage = "account" | "favorites" | "activities" | "settings" | "edit";
 
 const TITLES: Record<ProfilePage, string> = {
   account: "Profile",
   favorites: "Favorites",
   activities: "My activities",
   settings: "Settings",
+  edit: "Edit profile",
 };
+
+/** Pages of the account itself: who signs in again does not land there. */
+const ACCOUNT_PAGES: ProfilePage[] = ["settings", "edit"];
 
 type Props = {
   account: Account;
@@ -73,9 +79,10 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
   // A page of the account is one step into «Profile»: back goes to it first.
   const inside = state.status === "signedIn" && page !== "account";
   const signedOut = state.status !== "signedIn";
-  // Out of the account from «Settings»: who comes back in finds «Profile».
+  // Out of the account from «Settings» or «Edit profile»: who comes back in
+  // finds «Profile».
   useEffect(() => {
-    if (signedOut && page === "settings") {
+    if (signedOut && ACCOUNT_PAGES.includes(page)) {
       onPage("account");
     }
   }, [signedOut, page, onPage]);
@@ -112,6 +119,12 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             <ActivitiesList />
           ) : page === "settings" ? (
             <SettingsPage user={state.session.user} account={account} />
+          ) : page === "edit" ? (
+            <EditProfile
+              user={state.session.user}
+              account={account}
+              onDone={() => onPage("account")}
+            />
           ) : (
             <FavoritesList margin={space.lg} />
           )
@@ -163,6 +176,7 @@ function SignedIn({
       favorites={favorites.status === "ready" ? favorites.list.length : null}
       activities={activities.total}
       onOpen={onPage}
+      onEdit={() => onPage("edit")}
     />
   );
 }

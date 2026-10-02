@@ -187,7 +187,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## Completato
 
 - **API e app** — TASK-199: la penna alzata in «My activities» e nei
-  preferiti, i seguiti di TASK-198 (ADR-0158, migrazione `0006`), PR #PR
+  preferiti, i seguiti di TASK-198 (ADR-0158, migrazione `0006`), PR #222
   (il merge è del coordinatore). Una corsa su una parola con la penna
   alzata si salva con i `walks` del percorso e `pen: true` sulle pause
   «penna»: il punteggio in «My activities» è quello delle sole lettere,

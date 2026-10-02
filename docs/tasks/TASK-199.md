@@ -225,7 +225,7 @@ richieste e dettagli come sono: cambiano i tipi, non loro).
 
 ## Esito
 
-**Fatto**, API e app, PR #PR dal branch `feat/TASK-199-pen-up-saved`
+**Fatto**, API e app, PR #222 dal branch `feat/TASK-199-pen-up-saved`
 (ADR-0158; il contratto dei `walks` resta ADR-0157). Come funziona:
 `API.md`, «Favorites» e «My activities»; `DATABASE.md`, migrazione `0006`;
 `UI.md`, «Favorites», «My activities», «Il risultato», «La fine della

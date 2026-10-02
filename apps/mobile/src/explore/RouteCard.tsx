@@ -14,6 +14,7 @@ import {
   space,
 } from "../theme/tokens";
 import { thumbSegments } from "./RouteThumb";
+import { useTapNotSwipe } from "./useTapNotSwipe";
 
 /** How tall the drawing is, for how wide: room for a figure taller than wide. */
 const DRAWING_RATIO = 0.66;
@@ -73,7 +74,10 @@ type Props = {
   match?: number;
   /** Lays the map of its streets under the line, as in «Feed» (TASK-174). */
   map?: boolean;
-  /** Opens the route; without it the card is not a button. */
+  /**
+   * Opens the route; without it the card is not a button. A tap opens it, a
+   * swipe that ends over the card does not (TASK-196).
+   */
   onPress?: () => void;
   /** What a screen reader says in place of the texts. */
   accessibilityLabel?: string;
@@ -86,7 +90,8 @@ type Props = {
  * With `map`, under the line is the map of where it runs, towns named, once
  * its picture is taken (TASK-174): the pictures are those of «Feed»
  * (TASK-162), taken by its page. Who shows cards with `map` shows
- * `CardMapsCredit` beside them.
+ * `CardMapsCredit` beside them. A finger that slides over a card has not
+ * touched it (TASK-196, `useTapNotSwipe`).
  */
 export function RouteCard({
   width,
@@ -109,6 +114,7 @@ export function RouteCard({
     () => (line === null ? [] : thumbSegments(line, width, height, DRAWING_PAD)),
     [line, width, height],
   );
+  const tap = useTapNotSwipe(onPress);
   const body = (
     <>
       <View style={[styles.drawing, { width, height }]} testID="route-card-drawing">
@@ -162,7 +168,8 @@ export function RouteCard({
   return (
     <Pressable
       style={({ pressed }) => [styles.card, { width }, pressed && styles.pressed]}
-      onPress={onPress}
+      onPressIn={tap.onPressIn}
+      onPress={tap.onPress}
       testID="route-card"
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}

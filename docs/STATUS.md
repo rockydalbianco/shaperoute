@@ -348,6 +348,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   rimandata a quando Overpass riapre: la sua zona non è sul server.
   Il catalogo è sul server dal 2026-10-02 10:38Z (aggiornamento a
   ec84042, con l'ok dell'utente): l'app pubblicata le vede.
+- **App** — TASK-196: uno swipe che finisce sopra una scheda di «Explore»
+  non la apre più (seguito di TASK-188, stessa soluzione di ADR-0151: la
+  scheda ricorda dove il dito è sceso e ignora un dito che si è mosso più
+  di 12 punti). La correzione è in `RouteCard`, quindi vale per i percorsi
+  di «Best near you», per gli esempi di una città e per i preferiti in
+  «Profile». Solo app, con un test; **da provare con il dito
+  sull'iPhone**, dopo la prossima pubblicazione su `preview`. Restano com'erano i
+  pulsanti piccoli della pagina (le città, «Ask for a route», «Try
+  again»): vedi il task file.
 - **App** — TASK-167: in «Explore» i percorsi sono schede, due per riga,
   con il disegno grande in alto, scelto dall'utente fra le proposte
   grafiche (ADR-0135). I filtri stanno in una riga sola, «Shape» e

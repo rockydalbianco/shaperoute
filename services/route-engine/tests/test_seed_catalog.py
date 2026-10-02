@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from route_engine import seed_catalog
 from route_engine.models import RouteResult
 from route_engine.network import LatLon
 from route_engine.optimizer import ShapeNotDrawableError
@@ -209,6 +210,60 @@ def test_word_distance_is_3750_m_a_letter_within_the_limits() -> None:
     assert word_distance("ILOVENY") == 21000
 
 
+def _word(key: str, similarity: float) -> dict:
+    city, written, distance = key.split("/")
+    word, style = written.split(":")
+    run = _run(f"{city}/{word}/{distance}", similarity, style=style)
+    run["word"] = run.pop("shape")
+    return run
+
+
+def test_select_leaves_out_a_word_judged_unreadable() -> None:
+    runs = [
+        _word("trento/CIAO:block/15000", 0.99),
+        _word("trento/CIAO:round/15000", 0.99),
+    ]
+    assert [r["style"] for r in select(runs, 0.5)] == ["round"]
+
+
+def test_select_leaves_out_a_word_no_longer_among_the_phrases() -> None:
+    runs = [
+        _word("torino/CEREA:round/19000", 0.99),
+        _word("torino/CIAO:round/15000", 0.95),
+    ]
+    assert [r["word"] for r in select(runs, 0.5)] == ["CIAO"]
+
+
+def test_phrases_are_short_words_only() -> None:
+    assert max(len(w) for words in PHRASES.values() for w in words) <= 5
+
+
+def test_prepare_downloads_nothing_when_every_zone_is_cached(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    loaded: list[tuple[float, ...]] = []
+
+    class Source:
+        def __init__(self, cache_dir: Path) -> None:
+            pass
+
+        def is_cached(self, box: tuple[float, ...]) -> bool:
+            return cached
+
+        def load(self, box: tuple[float, ...]) -> None:
+            loaded.append(box)
+
+    monkeypatch.setattr(seed_catalog, "OsmnxSource", Source)
+    prepare = seed_catalog.engine_prepare(tmp_path, pause=lambda s: None)
+    todo = cases(["bari"], ["heart", "star"], [5000])
+    cached = True
+    prepare("bari", todo)
+    assert loaded == []
+    cached = False
+    prepare("bari", todo)
+    assert len(loaded) == 1
+
+
 def test_every_city_has_phrases_the_engine_can_write() -> None:
     assert set(PHRASES) == set(CITIES)
     for words in PHRASES.values():
@@ -235,7 +290,7 @@ def test_a_word_is_logged_and_kept_as_a_word(tmp_path: Path) -> None:
             "--kinds",
             "words",
             "--cities",
-            "torino",
+            "bari",
             "--log",
             str(tmp_path / "runs.jsonl"),
             "--out",
@@ -245,12 +300,12 @@ def test_a_word_is_logged_and_kept_as_a_word(tmp_path: Path) -> None:
         ],
         planner=planner,
     )
-    torino = json.loads((out / "torino.json").read_text(encoding="utf-8"))
-    words = {r["word"] for r in torino["routes"]}
-    assert words == set(PHRASES["torino"])
-    assert all("shape" not in r for r in torino["routes"])
+    bari = json.loads((out / "bari.json").read_text(encoding="utf-8"))
+    words = {r["word"] for r in bari["routes"]}
+    assert words == set(PHRASES["bari"])
+    assert all("shape" not in r for r in bari["routes"])
     assert styles == {"round", "block"}
-    assert (tmp_path / "gpx" / "torino_CEREA-round_19km.gpx").exists()
+    assert (tmp_path / "gpx" / "bari_UE-round_8km.gpx").exists()
 
 
 def test_each_city_is_prepared_once_before_its_cases(tmp_path: Path) -> None:

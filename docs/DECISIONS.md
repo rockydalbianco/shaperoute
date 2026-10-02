@@ -3203,6 +3203,17 @@ si scrive a 3,75 km a lettera (come CIAO a 15 km), da 5 a 21 km, nei due
 stili, tonde e squadrate; nel catalogo ha `word` e `style` invece di
 `shape`.
 
+**Aggiornamento 2026-10-02** (deciso dall'agente su delega dell'utente,
+TASK-161): anche le parole si guardano a occhio, una per città e stile, e
+quelle che non si leggono restano fuori come le forme: `UNREADABLE_WORDS`,
+terne (città, parola, stile), accanto a `UNREADABLE`. Una parola tolta da
+`PHRASES` (ADR-0130) resta nel registro ma non entra più nel catalogo. Le
+forme illeggibili delle città nuove vanno in `UNREADABLE` come le altre.
+Prima di scaricare la zona di una città, se la zona di ogni suo caso è già
+in cache (per esempio costruita sul server dall'estratto Geofabrik,
+TASK-137) non si scarica niente: Genova, Bari, Palermo e New York sono
+entrate così, con Overpass che rifiutava il Mac.
+
 ## ADR-0098 — «Explore» dal catalogo, prima del database
 **Stato**: Attiva · 2026-10-01 · variante C scelta dall'utente (TASK-092);
 il come deciso dall'agente su delega dell'utente (TASK-126)
@@ -4706,6 +4717,33 @@ scrive anche `android.package` in `app.json` e cambia due script di
 `package.json`: sono effetti della prova, non vanno committati. Tenere la
 schermata finché i dati sono pronti vorrebbe `preventAutoHide` in `App.tsx`:
 un task a parte, se servirà.
+
+## ADR-0130 — Nel catalogo solo parole corte
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («Solo parole
+corte»); l'elenco preciso deciso dall'agente su delega dell'utente
+(TASK-161).
+
+**Contesto**: il giro del 2026-10-02 ha scritto le frasi di ADR-0097 in 14
+città. Guardate a occhio, al tetto dei 21 km si leggono solo le parole fino
+a 4 lettere (CIAO, AO, BONA, UE) e qualche TIAMO sulle griglie regolari;
+da 5–6 lettere in su (AMORE, BUONDI, GRAZIE, NOTTE, HELLO, CEREA, UAGLIO)
+le lettere sono più piccole degli isolati e non si leggono. Sotto 0,88 di
+somiglianza nessuna parola si legge.
+
+**Decisione**: `PHRASES` tiene solo parole corte. In Italia CIAO e TIAMO,
+più AO e AMOR a Roma, BONA a Firenze, UE a Bari, UELA a Milano; a New York
+LOVE, HEY e NYC. Escono GRAZIE, BUONDI, NOTTE, AMORE, HELLO, CEREA,
+UAGLIO, AMMORE, ROMEO, AMURI, ILOVENY, THANKS. Fra quelle rimaste, il
+catalogo tiene solo le combinazioni di città e stile che si leggono
+(ADR-0097, aggiornamento 2026-10-02).
+
+**Alternative scartate**: tenere tutte le frasi e lasciare decidere la
+soglia (parole illeggibili sopra 0,88); alzare il tetto oltre i 21 km per
+le parole lunghe (percorsi che quasi nessuno corre).
+
+**Conseguenze**: meno parole nel catalogo (Bologna nessuna), ma tutte
+leggibili. Parole più lunghe torneranno con un motore che le scriva meglio,
+non allungando la lista.
 
 ## ADR-0132 — «Explore»: i disegni del feed mentre una città si disegna, e le città in evidenza già nel catalogo
 **Stato**: Attiva · 2026-10-02 · chiesto dall'utente («almeno un cuore, un

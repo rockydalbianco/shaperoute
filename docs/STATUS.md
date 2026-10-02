@@ -62,8 +62,9 @@ In coda, dopo o accanto:
   «Explore» (TASK-126, 134) e il suo «Start» (TASK-145), correre senza
   percorso (TASK-149), «A · B · C» negli esempi (TASK-151, 155), lo swipe
   col dito (TASK-154), il feed d'esempio e i ritocchi di TASK-156, 157,
-  158, la mappa sotto i disegni di «Feed» (TASK-162), la schermata della
-  corsa con i numeri e la freccia di direzione (TASK-164).
+  158, la schermata della corsa con i numeri e la freccia di direzione
+  (TASK-164). Tutti pubblicati su `preview` il 2026-10-02 (ultimo update
+  `eba74321`, da 73095e7).
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -104,7 +105,8 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   segnaposto è una freccia girata dove si sta andando. Senza percorso le
   svolte non esistono: al loro posto freccia e distanza verso la partenza.
   Nessuna dipendenza nuova, niente API. Visto nel simulatore con un GPS
-  simulato. **Da provare sull'iPhone** camminando (ripubblicare l'app).
+  simulato. Pubblicata il 2026-10-02 (update `eba74321`). **Da provare
+  sull'iPhone** camminando.
   Fuori, da chiedere all'utente: «Pause», «Stop» da tenere premuto, la voce
   a ogni km nella corsa con percorso.
 - **Catalogo** — TASK-161: il catalogo seme in tutte le 14 città, 323
@@ -119,8 +121,8 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
   lo stile dell'app. È una foto: una pagina MapLibre nascosta sotto
   l'elenco ne fa una alla volta e la scheda la mette sotto la linea, con
   il credito della mappa. Senza rete le schede restano come prima. Nessuna
-  dipendenza nuova, niente API. Visto su un simulatore. **Da provare
-  sull'iPhone**, con l'app ripubblicata.
+  dipendenza nuova, niente API. Pubblicata il 2026-10-02 (update
+  `d186a9ef`) e provata dall'utente sull'iPhone: «la mappa nei feed c'è».
 - **App** — TASK-165: la schermata di avvio con il logo, chiesta
   dall'utente (ADR-0134): fondo nero, su iOS il logo intero, su Android il
   segno. Usa `expo-splash-screen`, dipendenza nuova approvata dall'utente;

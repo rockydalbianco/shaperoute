@@ -41,6 +41,22 @@ alphabet above. "block" is `letters_block.json`, in the same format: every
 stroke level, upright or at 45°, the letters 0.8–1 wide and BLOCK_GAP
 apart, like the GPS art of blocky words run on a street grid; the search
 turns it the way the streets run (`optimizer.search`).
+
+Two letters may also be joined along the top line, y = 1, where that makes
+the word shorter and reads as well (TASK-067): at equal kilometres a
+shorter line gives taller letters. A letter that may be joined there says
+where, at its upper corners:
+
+    "V": {"top": {"in": [0, 1], "out": [0.6, 1]}, "out": [...]}
+
+The rules of reading are checked on the alphabet (`parse_letters`): a join
+along the top does not lengthen a stroke that ends on the top line (the bar
+of the T, the upper arm of the E), does not run over the letter, and does
+not meet a letter that reaches the top line in one point only (the I would
+read as a T). A letter entered or left at the top is the same closed line,
+started and cut elsewhere (`Letter.route`): it is drawn the same. Each gap
+runs along the base or along the top, never across, and `choose_joins`
+keeps the shortest word. On by default (TOP_JOINS), the user's choice.
 """
 
 from __future__ import annotations
@@ -49,6 +65,7 @@ import json
 import math
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
+from itertools import product
 from pathlib import Path
 from typing import Literal
 
@@ -80,6 +97,10 @@ SHIFT_STEP = 1 / 16
 # some 75 waypoints to a search that takes 40–140 s for four.
 MAX_WORD_LETTERS = 8
 LETTER_DISTANCE_M = 3000
+# Whether the letters of each style may be joined along the top line too
+# (TASK-067, `choose_joins`), unless `compose` is told: the user's choice
+# for both styles (ADR-0063).
+TOP_JOINS: dict[str, bool] = {"round": True, "block": True}
 
 
 class InvalidWordError(ValueError):
@@ -89,10 +110,15 @@ class InvalidWordError(ValueError):
 @dataclass(frozen=True)
 class Letter:
     char: str
-    # From the entry to the exit, both on the base line.
+    # From the entry to the exit, both on the base line (`route` for a
+    # letter entered or left at the top).
     out: tuple[Point, ...]
     # From the exit back to the entry; empty when they are the same point.
     back: tuple[Point, ...] = ()
+    # Where a join along the top line, y = 1, enters and leaves the letter
+    # (TASK-067); None where the letter is joined along the base only.
+    top_in: Point | None = None
+    top_out: Point | None = None
 
     @property
     def left(self) -> float:
@@ -101,6 +127,30 @@ class Letter:
     @property
     def right(self) -> float:
         return max(x for x, _ in (*self.out, *self.back))
+
+    def route(
+        self, top_in: bool = False, top_out: bool = False
+    ) -> tuple[tuple[Point, ...], tuple[Point, ...]]:
+        """`out` and `back` for the letter entered (`top_in`) or left
+        (`top_out`) at the top instead of on the base line.
+
+        The same closed line, started at the entry and cut at the exit: the
+        letter is drawn the same, as long and as many times over. `out` is
+        cut as late as it can be.
+        """
+        if not (top_in or top_out):
+            return self.out, self.back
+        entry = self.top_in if top_in else self.out[0]
+        leave = self.top_out if top_out else self.out[-1]
+        if entry is None or leave is None:
+            raise InvalidWordError(f"{self.char} is not joined along the top")
+        ring = [*self.out, *self.back[1:]][:-1]
+        first = ring.index(entry)
+        turned = [*ring[first:], *ring[:first], entry]
+        if leave == entry:
+            return tuple(turned), ()
+        cut = len(turned) - 1 - turned[::-1].index(leave)
+        return tuple(turned[: cut + 1]), tuple(turned[cut:])
 
 
 @dataclass(frozen=True)
@@ -133,6 +183,8 @@ class Word:
     # search may enter the word at.
     phases: tuple[float, ...]
     style: Style = "round"
+    # For each gap, whether it runs along the top line (TASK-067).
+    tops: tuple[bool, ...] = ()
 
     def line(self, start: int) -> tuple[np.ndarray, np.ndarray]:
         """The word as the route draws it from `starts[start]`: its
@@ -227,8 +279,72 @@ def parse_letters(data: object) -> dict[str, Letter]:
             raise InvalidWordError(
                 f"{char}: 'back' must lead from the end of 'out' to its start"
             )
-        letters[char] = Letter(char, tuple(out), tuple(back))
+        top_in, top_out = _top(char, raw.get("top"), [*out, *back])
+        letters[char] = Letter(char, tuple(out), tuple(back), top_in, top_out)
     return letters
+
+
+def _top(
+    char: str, raw: object, line: list[Point]
+) -> tuple[Point | None, Point | None]:
+    """Where `char`, drawn by `line`, is joined along the top line: its
+    'in' and 'out', checked against the rules of reading (TASK-067)."""
+    if raw is None:
+        return None, None
+    if not isinstance(raw, dict) or not raw or set(raw) - {"in", "out"}:
+        raise InvalidWordError(f"{char}: 'top' must be an object with 'in', 'out'")
+    xs = [x for x, _ in line]
+    ends: list[Point | None] = []
+    for key, edge in (("in", min(xs)), ("out", max(xs))):
+        if key not in raw:
+            ends.append(None)
+            continue
+        if not _is_pair(raw[key]):
+            raise InvalidWordError(f"{char}: 'top' {key!r} must be an [x, y] point")
+        point = (float(raw[key][0]), float(raw[key][1]))
+        if point[1] != 1.0 or point not in line:
+            raise InvalidWordError(
+                f"{char}: 'top' {key!r} must be a point of the letter on the "
+                "top line, y = 1"
+            )
+        if len({p for p in line if p[1] == 1.0}) < 2:
+            raise InvalidWordError(
+                f"{char}: a letter that reaches the top line in one point only "
+                "is not joined there"
+            )
+        if point[0] != edge:
+            raise InvalidWordError(
+                f"{char}: a join along the top must not run over the letter: "
+                "'in' at its left edge, 'out' at its right"
+            )
+        if _ends_on_top(line, point):
+            raise InvalidWordError(
+                f"{char}: a join along the top must not lengthen a stroke "
+                "that ends on the top line"
+            )
+        ends.append(point)
+    return ends[0], ends[1]
+
+
+def _ends_on_top(line: list[Point], point: Point) -> bool:
+    """Whether `point` lies on a stroke along the top line that ends there:
+    one of its two ends has no other stroke leaving it (the bar of the T,
+    the upper arm of the E; not the top of a closed P)."""
+    sides = list(zip(line, line[1:], strict=False))
+    level = sorted(
+        (min(a[0], b[0]), max(a[0], b[0])) for a, b in sides if a[1] == b[1] == 1.0
+    )
+    left = {p for a, b in sides if not a[1] == b[1] == 1.0 for p in (a, b)}
+    strokes: list[tuple[float, float]] = []
+    for lo, hi in level:
+        if strokes and lo <= strokes[-1][1]:
+            strokes[-1] = (strokes[-1][0], max(strokes[-1][1], hi))
+        else:
+            strokes.append((lo, hi))
+    return any(
+        lo <= point[0] <= hi and not {(lo, 1.0), (hi, 1.0)} <= left
+        for lo, hi in strokes
+    )
 
 
 def _line(raw: object, what: str, empty: bool = False) -> list[Point]:
@@ -282,19 +398,55 @@ def spell_letters(chars: Iterable[str]) -> str:
     return ", ".join(parts)
 
 
+def choose_joins(letters: Sequence[Letter], gap: float) -> tuple[bool, ...]:
+    """For each gap of a word, whether its two letters are joined along the
+    top line rather than the base (TASK-067).
+
+    Of all the ways the letters allow, at most 2**7, the one that makes the
+    word shortest; among equals, the one with fewest joins along the top,
+    then the base first. Always the same for the same letters.
+    """
+    options = [
+        (False, True) if a.top_out is not None and b.top_in is not None else (False,)
+        for a, b in zip(letters, letters[1:], strict=False)
+    ]
+
+    def length(tops: tuple[bool, ...]) -> float:
+        total = 0.0
+        x = 0.0
+        leave: Point | None = None
+        for k, letter in enumerate(letters):
+            out, back = letter.route(k > 0 and tops[k - 1], k < len(tops) and tops[k])
+            dx = x - letter.left
+            if leave is not None:
+                total += 2 * math.dist(leave, (out[0][0] + dx, out[0][1]))
+            total += _length(out) + _length(back)
+            leave = (out[-1][0] + dx, out[-1][1])
+            x += letter.right - letter.left + gap
+        return total
+
+    return min(
+        product(*options), key=lambda tops: (round(length(tops), 9), sum(tops), tops)
+    )
+
+
 def compose(
     text: str,
     alphabet: dict[str, Letter] | None = None,
     gap: float | None = None,
     step: float = SIDE_STEP,
     style: Style = "round",
+    top_joins: bool | None = None,
 ) -> Word:
     """The closed line that writes `text` (any case) with `alphabet`, its
-    letters `gap` apart: by default the alphabet and gap of `style`."""
+    letters `gap` apart: by default the alphabet and gap of `style`. With
+    `top_joins` the letters may be joined along the top line too
+    (`choose_joins`); TOP_JOINS says whether, for the style, when None."""
     if style not in STYLES:
         raise InvalidWordError(f"no style {style!r}: {' or '.join(STYLES)}")
     alphabet = STYLES[style][0] if alphabet is None else alphabet
     gap = STYLES[style][1] if gap is None else gap
+    top_joins = TOP_JOINS[style] if top_joins is None else top_joins
     chars = text.strip().upper()
     if not chars:
         raise InvalidWordError("the word is empty")
@@ -305,13 +457,15 @@ def compose(
             f"a word can use only the letters {spell_letters(alphabet)}"
         )
     letters = tuple(alphabet[c] for c in chars)
+    tops = choose_joins(letters, gap) if top_joins else (False,) * (len(letters) - 1)
     outs: list[list[Point]] = []
     backs: list[list[Point]] = []
     x = 0.0
-    for letter in letters:
+    for k, letter in enumerate(letters):
+        out, back = letter.route(k > 0 and tops[k - 1], k < len(tops) and tops[k])
         dx = x - letter.left
-        outs.append([(px + dx, py) for px, py in letter.out])
-        backs.append([(px + dx, py) for px, py in letter.back])
+        outs.append([(px + dx, py) for px, py in out])
+        backs.append([(px + dx, py) for px, py in back])
         x += letter.right - letter.left + gap
 
     line: list[tuple[Point, Place]] = [(outs[0][0], Place(0))]
@@ -369,6 +523,7 @@ def compose(
         height=1.0 / half,
         phases=tuple(cumulative[i] / cumulative[-1] for i in starts),
         style=style,
+        tops=tops,
     )
 
 
@@ -381,3 +536,7 @@ def _cuts(length: float, step: float) -> list[float]:
 
 def _along(a: Point, b: Point, t: float) -> Point:
     return a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])
+
+
+def _length(line: Sequence[Point]) -> float:
+    return sum(math.dist(a, b) for a, b in zip(line, line[1:], strict=False))

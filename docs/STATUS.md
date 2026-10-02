@@ -83,6 +83,14 @@ Un task per riga, con branch e sessione: i suoi file sono suoi.
 
 ## Completato
 
+- **App** — TASK-159: l'icona dell'app è il nuovo logo scelto dall'utente
+  (ADR-0129): una S gialla su nero, fatta come un percorso che parte da un
+  punto. Sostituisce il segnaposto di Expo, anche su Android (icona
+  adattiva e a un colore); i vettoriali in `docs/brand/`. In Expo Go sulla
+  schermata di casa non si vede: **da guardare in una build propria**
+  (TASK-152). Sotto l'icona il nome è «Sgrava», non più «ShapeRoute»
+  (`name` in `app.json`). Restano la schermata di avvio, da decidere, e tre
+  testi dell'app che dicono ancora «Location is off for ShapeRoute…».
 - **Documentazione** — TASK-141: `STATUS.md` allineato ai task file e
   alle PR del 2026-10-02: prossimo passo, task in lavorazione, In una riga;
   TASK-126, 128, 129, 131 e 134 qui sotto.

@@ -139,8 +139,11 @@ def test_the_feed_of_the_seed_catalogue() -> None:
     assert len({post["id"] for post in posts}) == POSTS
     # Every city of the catalogue is there, with two figures or more when
     # the posts are enough for two each (TASK-161: 14 cities, 15 posts).
+    # With more cities than posts (TASK-163: 23), a post each for as many.
     cities = Counter(str(post["city"]) for post in posts)
-    assert set(cities) == {f.city for f in figures}
+    everyone = {f.city for f in figures}
+    assert set(cities) <= everyone
+    assert len(cities) == min(len(everyone), POSTS)
     assert min(cities.values()) >= min(2, POSTS // len(cities))
     assert max(Counter(str(post["shape"]) for post in posts).values()) <= PER_SHAPE
     for place, post in enumerate(posts):

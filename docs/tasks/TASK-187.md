@@ -1,6 +1,6 @@
 # TASK-187 — «Send to Strava»: la corsa fatta va sul profilo Strava
 
-**Stato**: Done per il codice — parte API (PR #210) e parte app (seconda PR); la prova dal vero (criterio 8) aspetta l'utente
+**Stato**: Done per il codice — parte API (PR #210) e parte app (PR #229); la prova dal vero (criterio 8) aspetta l'utente
 **Fase**: 4 · **Branch**: `feat/TASK-187-send-to-strava`
 **Dipende da**: TASK-172 in `main`, con la sua schermata «Save» /
 «Discard» a fine corsa (`src/activities/RunEnd.tsx`) e la tabella `runs`
@@ -295,7 +295,7 @@ pausa: da vedere se Strava lo legge come tempo fermo).
 ## Esito
 
 **Codice fatto, in due PR** (2026-10-02): la parte API (#210) e la parte
-app, con le quattro risposte dell'utente (sopra). Resta all'utente la
+app (#229), con le quattro risposte dell'utente (sopra). Resta all'utente la
 prova dal vero.
 
 - **App**: a fine corsa, sopra «Save» e «Discard», «Connect with Strava»

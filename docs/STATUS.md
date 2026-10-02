@@ -161,7 +161,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).
-  **Parte app** fatta il 2026-10-02 sera, seconda PR (il merge è del
+  **Parte app** fatta il 2026-10-02 sera, PR #229 (il merge è del
   coordinatore), con le quattro risposte dell'utente: il nome si scrive
   prima di «Save», la descrizione va su ogni corsa («Recorded with Sgrava»
   per una corsa libera), l'interruttore ricorda l'ultima scelta, «Connect

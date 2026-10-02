@@ -748,7 +748,8 @@ Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,
 | `DELETE /me` | cancellare l'account e tutto ciò che è suo, subito | `204` |
 
 - `Session` è `{ "token": "…", "user": User }`; `User` è `id`, `email`,
-  `username`, `role` (`user` o `admin`) e `created_at`. Il token è l'unica
+  `username`, `role` (`user` o `admin`) e `created_at`, più `bio` e
+  `public_id` da TASK-116 («Profile», sotto). Il token è l'unica
   cosa segreta che l'API dà, e solo qui: l'app lo tiene in
   `expo-secure-store` e lo rimanda come `Authorization: Bearer <token>` a
   `GET /me`, `DELETE /session`, `DELETE /me`, ai preferiti e alle corse
@@ -938,9 +939,56 @@ in `apps/mobile/src/api/profilePhoto.ts`; il codice in `profile_photos.py`.
 - Al più **10 `PUT` al minuto per account** (`429 too_many_requests` con
   `Retry-After`): ridurre una foto costa un momento di CPU. Il limite dei
   POST di `SHAPEROUTE_RATE_LIMIT` non conta i `PUT`. Leggere non ha limiti.
-- Ognuno legge, cambia e toglie solo la sua; nessuno vede quella degli
-  altri finché TASK-116 non fa il profilo pubblico. `DELETE /me` cancella
-  anche la foto.
+- Ognuno legge, cambia e toglie solo la sua; gli altri iscritti la vedono
+  nel profilo (`GET /users/{public_id}`, «Profile», sotto; TASK-116).
+  `DELETE /me` cancella anche la foto.
+
+### Profile (TASK-116, ADR-0128)
+
+Nome utente e bio di un account, e il suo profilo come lo vedono gli altri
+iscritti. Tutti e due gli endpoint vogliono il token: senza, `401
+not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
+`shared-types` (`User`, `EditProfileRequest`, `PublicProfile`,
+`BIO_MAX_LENGTH`), esempi in `fixtures/edit-profile-request.json` e
+`fixtures/public-profile.json`; il codice in `profiles.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PATCH /me` | cambiare nome utente e bio | `200` `User`, com'è adesso |
+| `GET /users/{public_id}` | il profilo di un iscritto | `200` `PublicProfile`, o `404 http_error` |
+
+- **`User`** (anche in `Session` e `GET /me`) ha in più `bio` (`""` senza)
+  e `public_id`, un UUID casuale dato a ogni account dalla migrazione
+  `0007`: è il `{public_id}` del profilo. L'`id` numerico resta dell'API:
+  in sequenza, direbbe quanti account ci sono e farebbe aprire tutti i
+  profili uno dopo l'altro. Un `public_id` non cambia con il nome.
+- **Il corpo del `PATCH`** ha solo quello che cambia: `username`, `bio`, o
+  tutti e due; un campo assente o `null` resta com'è, `{}` non cambia
+  niente. Il nome segue la regola dell'iscrizione (da 3 a 20 fra lettere,
+  cifre, `_` e `.`), unico senza badare alle maiuscole: il proprio con altre
+  maiuscole si può. La bio perde gli spazi in testa e in coda, gli a capo
+  diventano `\n`; `""` la toglie.
+- **Errori del `PATCH`**, con un messaggio in parole che l'app mostra così
+  com'è: nome fuori regola, `422 invalid_request` «A username is 3 to 20
+  letters, digits, _ or . (no spaces).»; bio oltre 160 caratteri (contati
+  come caratteri: un'emoji è uno), «A bio is at most 160 characters.»; bio
+  con caratteri di controllo (tranne l'a capo), «A bio is words and new
+  lines: it cannot hold control characters.»; nome di un altro account,
+  `409 username_taken`. Campi in più (`email`, `role`, `public_id`…) o di
+  un altro tipo: `422 invalid_request`. Con un errore non cambia niente.
+- **`PublicProfile`** è `public_id`, `username`, `bio`, `photo` (il JPEG
+  della foto in base64, come `GET /me/photo`, o `null`) e `drawings`, i
+  disegni **pubblicati**: 0 per tutti finché TASK-117 non fa pubblicare le
+  corse, che fino ad allora sono private (ADR-0114, punto 4). **Mai
+  l'email**, né `role`, `id` o la data d'iscrizione (un test lo prova).
+- Un `public_id` che non c'è, di un account cancellato, o che non è un
+  UUID (un `id` numerico, un nome): `404 http_error` «No profile with this
+  id.». Il proprio profilo si legge come gli altri.
+- **Un'API precedente** non ha `PATCH /me` (`405 http_error`) né `GET
+  /users/…` (`404 http_error`), e il suo `User` non ha `bio` né
+  `public_id`: l'app nuova lo legge lo stesso e dice «Editing the profile
+  is not available on this API yet.». L'app pubblicata ignora i campi in
+  più.
 
 ### Send to Strava (TASK-187, ADR-0156)
 
@@ -1079,6 +1127,9 @@ motore, in una parola.
 | Account: 5 password sbagliate in 15 minuti per la stessa email (`Retry-After` in secondi) | 429 | `too_many_requests` |
 | Account: iscrizione con un'email già usata | 409 | `email_taken` |
 | Account: iscrizione con un nome già usato, anche con altre maiuscole | 409 | `username_taken` |
+| Profilo: `PATCH /me` con il nome di un altro account, anche con altre maiuscole (TASK-116) | 409 | `username_taken` |
+| Profilo: `PATCH /me` con un nome fuori regola o una bio troppo lunga, in parole (TASK-116) | 422 | `invalid_request` |
+| Profilo: `GET /users/{public_id}` di un profilo che non c'è (TASK-116) | 404 | `http_error` |
 | Account: email o password sbagliate | 401 | `wrong_credentials` |
 | Account: nessun token, o uno di una sessione chiusa | 401 | `not_signed_in` |
 | Account: sessione non usata da 90 giorni | 401 | `session_expired` |

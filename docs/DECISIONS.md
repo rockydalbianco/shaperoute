@@ -6949,3 +6949,93 @@ lettere conta), e un preferito si riapre come una linea sola: tenuto così,
 resta così anche dopo l'aggiornamento (la chiave è la stessa, e il
 secondo `PUT` non cambia niente). Un `422` di una corsa con i `walks`
 costa una richiesta in più.
+
+## ADR-0128 — Il profilo: `PATCH /me` per nome e bio, `GET /users/{public_id}` con un id casuale, mai l'email
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-116), dentro le scelte di ADR-0114 (gli iscritti vedono ciò che è
+pubblicato, il feed non si legge senza account) e ADR-0115 (il database).
+Numero tenuto dal coordinatore per TASK-116. La foto è di ADR-0146.
+
+**Contesto**: ogni account ha un nome dall'iscrizione (ADR-0120) e, da
+TASK-178, una foto che vede solo lui. Il profilo aggiunge la bio, il modo
+di cambiare nome e bio, e una pagina che gli altri iscritti possono
+leggere. Restava da dire con che id si chiede un profilo, chi lo può
+leggere, cosa ci si legge e cosa vuol dire «numero di disegni» quando
+pubblicare una corsa ancora non si può (TASK-117).
+
+**Decisione**:
+1. **`PATCH /me`** con solo quello che cambia (`username`, `bio`; assente
+   o `null` resta com'è), risposta il `User` di adesso. Un endpoint solo
+   per i due campi, come `GET /me` legge l'account: niente `/me/profile`.
+   I valori rifiutati sono `422 invalid_request` con un messaggio scritto
+   per le persone (non quello di Pydantic), che l'app mostra così com'è;
+   il nome di un altro è `409 username_taken`, il codice dell'iscrizione.
+   Con un errore non cambia niente.
+2. **Il nome segue la regola dell'iscrizione** di ADR-0120: da 3 a 20 fra
+   lettere, cifre, `_` **e `.`**, unico senza badare alle maiuscole. Il
+   task file diceva «lettere, cifre e `_`», scritto prima di ADR-0120:
+   due regole per lo stesso campo farebbero rifiutare in «Edit profile» un
+   nome che l'iscrizione accetta, e un account con il punto non potrebbe
+   rimetterlo. Il proprio nome con altre maiuscole si può.
+3. **La bio**: al più 160 caratteri contati come li conta PostgreSQL (un
+   carattere, non un byte né un'unità UTF-16: un'emoji è uno; l'app conta
+   allo stesso modo), senza spazi in testa e in coda, a capo come `\n`,
+   nessun carattere di controllo (un NUL farebbe fallire PostgreSQL). `""`
+   la toglie. Una colonna di `users`, come diceva `DATABASE.md`: è corta e
+   la legge ogni `GET /me`.
+4. **`{id}` è `public_id`**, un UUID casuale (`gen_random_uuid()`) dato a
+   ogni account dalla migrazione `0007`, anche a quelli di prima. Non
+   `users.id`, che è in sequenza: direbbe quanti account ci sono e farebbe
+   leggere tutti i profili uno dopo l'altro. Non il nome: cambia con
+   `PATCH /me`, e un profilo aperto dal feed o da un commento salvato
+   (TASK-118, 120) deve restare lo stesso. `User` porta `public_id` al
+   proprietario, per i link che verranno; un id che non è un UUID è `404`,
+   come uno sconosciuto.
+5. **Il profilo lo legge solo un iscritto** (il token, come il feed,
+   ADR-0114 punto 4), anche il proprio. Ha `public_id`, `username`, `bio`,
+   `photo` (il JPEG in base64, come `GET /me/photo`: pochi KB, nessuna
+   richiesta in più) e `drawings`. **Mai** email, `role`, `id` o data
+   d'iscrizione: la risposta è un modello suo, non `User` con dei campi
+   tolti, e un test cerca l'email in tutto il testo della risposta.
+6. **«Numero di disegni» sono i disegni pubblicati**: le corse salvate sono
+   private (ADR-0114, punto 4), e anche il loro numero dice qualcosa di
+   chi corre. Pubblicare è di TASK-117: fino ad allora `drawings` è 0 per
+   tutti, e TASK-117 cambia una riga di `profiles.py`. Se l'utente vuole
+   contare anche le corse private, è una scelta sua (task file, «Esito»).
+7. **Chi non ha un nome** non c'è: il nome è obbligatorio all'iscrizione
+   dalla `0001` (`NOT NULL`), e `PATCH /me` non lo toglie. Chi non ha bio
+   mostra solo nome e foto (o l'iniziale); chi non ha foto, l'iniziale.
+8. **Nell'app** (`src/profile/`): «Edit profile» è un pulsante sotto il
+   nome in «Profile» e una pagina di «Profile» (`EditProfile.tsx`, «←»
+   torna senza salvare), non una riga di «Settings»: è la cosa che si
+   cambia guardando il proprio profilo. Nome e bio cambiati diventano la
+   sessione (`useAccount.editProfile`, che la tiene nel portachiavi come un
+   ingresso): «Profile», «Settings» e il pulsante in alto li mostrano
+   subito. La pagina del profilo di un altro (`UserProfilePage.tsx`) usa la
+   stessa testa (`ProfileHeader.tsx`) e **non ha ancora una strada per
+   arrivarci**: da dove si apre lo decide l'utente.
+9. **Con un server di prima**: `User` senza `bio` né `public_id` si legge
+   (campi facoltativi nei tipi dell'app), `PATCH /me` risponde `405
+   http_error` e la pagina dice «Editing the profile is not available on
+   this API yet.». L'app pubblicata, con il server nuovo, ignora i campi in
+   più di `User` (`isUser` non li guarda).
+
+**Scartate**: `users.id` come `{id}` (sopra); il nome come `{id}` (cambia,
+e i link si romperebbero); un id corto fatto in Python (servirebbe un
+generatore nella migrazione per gli account di prima, e `random()` di
+PostgreSQL non è fatto per questo); il profilo aperto senza account (il
+feed non lo è, ADR-0114); la foto a un indirizzo suo (`GET
+/users/{id}/photo`: una richiesta in più per una pagina sola; per il feed,
+con molti profili insieme, TASK-118 potrà aggiungerlo); contare le corse
+private (sopra); un codice d'errore nuovo per il profilo che non c'è
+(`404 http_error` è quello di un preferito o di una corsa che non c'è);
+un limite ai `PATCH` al minuto (un `UPDATE` di una riga costa quanto un
+`GET /me`, che non ha limiti); la regola del nome senza il punto (sopra).
+
+**Conseguenze**: la migrazione `0007` riscrive `users` una volta (il
+default casuale si calcola riga per riga): con gli account di oggi è un
+attimo. Il server la prende solo con il suo aggiornamento, e «Edit
+profile» si vede sul telefono solo dopo la pubblicazione dell'app, tutti e
+due con l'ok dell'utente; finché il server non è aggiornato, «Save» dice
+che l'API non ha i profili. TASK-117 conta i disegni pubblicati; TASK-118
+e seguenti aprono il profilo di un altro con `public_id`.

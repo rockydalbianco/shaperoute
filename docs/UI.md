@@ -355,7 +355,7 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   che la riga scorra lei e che lo swipe fra le pagine parta da fuori; su
   Android non è stato provato niente.
 
-## «Profile» (TASK-115, ADR-0125; TASK-154; TASK-177, ADR-0145; TASK-178, ADR-0146)
+## «Profile» (TASK-115, ADR-0125; TASK-154; TASK-177, ADR-0145; TASK-178, ADR-0146; TASK-116, ADR-0128)
 
 In alto a destra, accanto ai nomi delle pagine, un pulsante tondo apre
 **«Profile»**, l'account: mostra la foto di chi è entrato, o la sua
@@ -372,7 +372,8 @@ regole dell'API, e l'errore si dice in parole sotto il pulsante (sotto,
 finita, su «Log in».
 
 **«Profile» con l'account** (TASK-177, ADR-0145): in alto un cerchio con
-la foto o l'iniziale, il nome e l'email. Sotto, due riquadri affiancati: **«Favorites»**
+la foto o l'iniziale, il nome, l'email e, se c'è, la bio (TASK-116); poi
+il pulsante **«Edit profile»** (sotto). Sotto, due riquadri affiancati: **«Favorites»**
 con un cuore (❤️) e **«My activities»** con l'uomo che corre (🏃‍♂️), ognuno
 con il suo numero in grande (un trattino finché l'elenco non è arrivato);
 aprono le loro pagine (sotto, «Favorites» e «My activities»). Poi la riga
@@ -427,6 +428,36 @@ prima resta:
 | API irraggiungibile, sessione finita… | come l'account (sotto) |
 
 Chiuso il selettore senza scegliere non si dice niente.
+
+**«Edit profile»** (TASK-116, ADR-0128; testi **da confermare con
+l'utente**): una pagina di «Profile» («←» torna a «Profile» senza salvare)
+con due campi, **«USERNAME»** (segnaposto «3 to 20 letters, digits, _ or
+.») e **«BIO»** (segnaposto «A few words about you», su più righe, con il
+conto «12/160» sotto, rosso oltre 160), e il pulsante **«Save»** («Saving…»
+mentre va, e non si tocca). I campi partono dal nome e dalla bio di oggi;
+si manda solo quello che cambia, e se non cambia niente «Save» torna
+indietro senza chiedere. Salvato, si torna a «Profile», che li mostra
+subito, come «Settings» e il pulsante in alto (l'iniziale); riaperta l'app,
+ci sono ancora. La foto resta in «Settings». Gli errori si dicono sotto
+«Save», e i campi tengono quello che è stato scritto:
+
+| Quando | Cosa dice |
+|---|---|
+| nome fuori regola (prima di chiedere, e dall'API) | A username is 3 to 20 letters, digits, _ or . (no spaces). |
+| bio oltre 160 caratteri | A bio is at most 160 characters. |
+| nome di un altro account | This username is taken. Try another one. |
+| un'API senza profili (il server di oggi, non ancora aggiornato) | Editing the profile is not available on this API yet. |
+| API irraggiungibile, sessione finita… | come l'account (sotto) |
+
+**Il profilo di un altro iscritto**, in sola lettura (TASK-116; testi
+**da confermare**): la foto o l'iniziale, il nome, «0 drawings» (i disegni
+pubblicati: 0 per tutti finché non c'è TASK-117) e la bio; mai l'email,
+nessun pulsante. Mentre arriva dice «Loading the profile…»; un profilo che
+non c'è, o un'API senza profili, «This profile is not available.»; senza
+account «Log in to see the profiles of the others.». **Nell'app non ci si
+arriva ancora**: la pagina c'è (`UserProfilePage.tsx`) e i test la aprono a
+mano; da dove si apre (il feed, un like, un commento) lo decide l'utente
+(`tasks/TASK-116.md`, «Esito»).
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale

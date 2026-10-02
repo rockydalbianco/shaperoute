@@ -97,6 +97,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-181 — La schermata di avvio nativa gialla**, chiesta dall'utente
+  il 2026-10-02 (seguito di TASK-179): fondo giallo e logo nero in
+  `app.json`, e l'animazione che parte già gialla. Il task file e le due
+  immagini scure sono nel branch `feat/TASK-181-yellow-splash`; da dove
+  riprendere: il task file. Sessione «Logo e animazione avvio app».
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia
   notturna dal 2026-10-02 (07:27Z, 18 s di API ferma); iscrizione,
@@ -114,10 +119,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   l'app, che intanto si è caricata sotto. Si vede anche in Expo Go, dove la
   schermata di avvio di TASK-165 non c'è. Nessuna dipendenza nuova,
   `App.tsx` non toccato (monta da `index.ts`). Filmata in un simulatore.
-  **Da pubblicare su `preview`** con l'ok dell'utente, poi **da guardare
-  sull'iPhone**. Da chiedere all'utente: la schermata di avvio nativa
-  gialla invece che nera (una riga di `app.json`, si vede solo in una build
-  propria).
+  Pubblicata su `preview` il 2026-10-02 con l'ok dell'utente (update
+  `3ce1aaf2`, da 9b1968b, insieme a TASK-173, 174 e 175). **Da guardare
+  sull'iPhone.** La schermata di avvio nativa gialla, chiesta dall'utente,
+  è TASK-181.
 - **App** — TASK-174: le schede di «Explore» hanno la mappa sotto la linea,
   con i nomi dei paesi, chiesto dall'utente (ADR-0142): negli esempi di una
   città e in «Best near you». Sono le foto di «Feed» (TASK-162), fatte

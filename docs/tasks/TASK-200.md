@@ -135,6 +135,46 @@ docs/STATUS.md
 docs/tasks/TASK-200.md
 ```
 
+**Quelli della PR** (il diff con `main`):
+
+```
+services/api/migrations/0008_favorite_activity.sql
+services/api/shaperoute_api/activities.py
+services/api/shaperoute_api/favorites.py
+services/api/tests/test_activities.py
+services/api/tests/test_favorites.py
+packages/shared-types/fixtures/activity-pauses.json
+packages/shared-types/fixtures/favorite-cycling.json
+packages/shared-types/fixtures/favorite-request-cycling.json
+packages/shared-types/fixtures/favorites-cycling.json
+packages/shared-types/test/contract.test.ts
+apps/mobile/__tests__/AppFavoriteActivity.test.tsx
+apps/mobile/src/api/activities.ts
+apps/mobile/src/api/activities.test.ts
+apps/mobile/src/api/favorites.ts
+apps/mobile/src/api/favorites.test.ts
+apps/mobile/src/favorites/favoriteRoute.ts
+apps/mobile/src/favorites/favoriteRoute.test.ts
+docs/API.md
+docs/DATABASE.md
+docs/DECISIONS.md
+docs/UI.md
+docs/STATUS.md
+docs/tasks/TASK-200.md
+```
+
+Fuori dall'elenco previsto, e perché:
+
+- `docs/DECISIONS.md`: ADR-0160, il numero tenuto dal coordinatore (punto
+  8): il vincolo sulle attività nel database, il rimando una volta sola
+  senza `activity` né `walks`, l'attività sconosciuta letta come corsa, la
+  forma delle pause nel dettaglio.
+
+Previsto e non toccato: `apps/mobile/App.tsx` (la richiesta e il cuore di
+un preferito riaperto vengono già da `openedFavorite` in
+`favoriteRoute.ts`; il file resta com'è, come chiesto dal coordinatore
+mentre TASK-187 lavora all'app).
+
 ## Fuori scope
 
 - **«Start» su un percorso in bici** (oggi la navigazione della corsa),
@@ -221,7 +261,11 @@ con la penna alzata (un secondo `PUT` con la stessa chiave non cambia
 niente, ADR-0139). Lo stesso vale per l'attività: un preferito in bici
 tenuto con un'API precedente a TASK-200 resta una corsa.
 
-**Test** (deterministici, senza rete): API `test_favorites.py` (il
+**Test** (deterministici, senza rete; sul Mac, dopo l'ultimo `git merge
+origin/main`, che ha portato solo documenti): motore 1.138 verdi; API 761
+verdi (PostGIS in docker); `shared-types` 25; app 1.253 in 141 file;
+`ruff`, `black`, `lint`, `typecheck` (app e `shared-types`),
+`format:check` puliti. Nuovi o cambiati: API `test_favorites.py` (il
 preferito in bici nell'elenco e nel dettaglio come le fixture, uno di
 prima `running`, ogni attività dell'API tenuta, cinque attività
 rifiutate, il vincolo del database, **la migrazione su un database con lo

@@ -112,12 +112,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
-- **API** — TASK-195: `draw_examples` chiede a una città il cerchio per
-  primo, poi cuore e stella, come fa l'app da TASK-176: l'area del cerchio
-  da 5 km contiene le altre due, e in una città senza zona il cuore non ne
-  scarica una seconda. Solo l'ordine: il riquadro di `prefetch_zones` e gli
-  esempi già tenuti non cambiano. Vale sul server dal prossimo
-  aggiornamento dell'API (ok dell'utente); niente da rifare lì.
+- **App** — TASK-181: l'avvio tutto giallo, chiesto dall'utente (seguito di
+  TASK-179; aggiornamenti di ADR-0134 e ADR-0147). La schermata di avvio
+  nativa è gialla con il logo nero (`app.json`), e l'animazione parte già
+  gialla, senza il nero iniziale. Corretto anche un difetto visto filmando
+  con il Mac carico: il cuore poteva partire tardi ed essere tagliato dalla
+  dissolvenza; ora attesa e disegno sono una sola animazione e l'uscita
+  aspetta il cuore finito. Prebuild di iOS controllato, animazione filmata
+  in un simulatore. **Da pubblicare su `preview`** con l'ok dell'utente (in
+  Expo Go cambia l'inizio dell'animazione); la schermata nativa **si vede
+  solo in una build propria** (TASK-152).
 - **API e app** — TASK-172: «My activities», chiesto dall'utente
   (ADR-0140). Con un account, a fine corsa «Save» mette la corsa in «My
   activities» e «Discard» la butta, dopo una conferma (scelta nuova
@@ -230,6 +234,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (84 s, 35 MB). **Venezia non riesce**: `engine_error` sulle tre forme,
   il ritaglio attorno al centro storico è senza nodi (TASK-180). Il
   controllo ogni 0,5 s arriva con la prossima pubblicazione dell'app.
+- **API** — TASK-195: `draw_examples` chiede a una città il cerchio per
+  primo, poi cuore e stella, come fa l'app da TASK-176: l'area del cerchio
+  da 5 km contiene le altre due, e in una città senza zona il cuore non ne
+  scarica una seconda. Solo l'ordine: il riquadro di `prefetch_zones` e gli
+  esempi già tenuti non cambiano. Vale sul server dal prossimo
+  aggiornamento dell'API (ok dell'utente); niente da rifare lì.
 - **App** — TASK-170: «Run with Strava» tolto, chiesto dall'utente
   (ADR-0138, che supera ADR-0106). Nelle tre schede di un percorso
   (disegnato, di «Explore», a tema) restano «Start» ed «Export GPX»; il

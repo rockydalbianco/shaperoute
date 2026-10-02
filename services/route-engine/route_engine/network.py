@@ -16,11 +16,11 @@ import urllib.parse
 import urllib.request
 import uuid
 import weakref
-from collections.abc import Collection, Iterator, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, TypeVar
 
 import networkx as nx
 import numpy as np
@@ -681,10 +681,8 @@ def nearest_nodes(
 ) -> tuple[list[Any], list[float]]:
     """Nearest graph node for each point, and its distance in metres."""
     origin = points[0]
-    node_ids = list(graph.nodes)
-    local = latlon_to_local_array(
-        origin, np.array([(graph.nodes[n]["y"], graph.nodes[n]["x"]) for n in node_ids])
-    )
+    node_ids, latlon = _node_table(graph)
+    local = latlon_to_local_array(origin, latlon)
     nearest: list[Any] = []
     distances: list[float] = []
     for point in points:
@@ -914,10 +912,79 @@ def _corridor_costs(
     return dict(zip(steps, cheapest.tolist(), strict=True))
 
 
-# Edge samples per graph, kept while its edges stay the same (zone graphs
-# are traced up to 20 times). A weak mapping, so nothing outlives the graph
-# or ends up in a GraphML file.
-_samples_cache: weakref.WeakKeyDictionary[Graph, tuple[int, np.ndarray]] = (
+# What the engine works out once per graph and keeps while the graph stays
+# as it is (TASK-203, ADR-0162): a graph is traced up to 20 times a
+# search, and its edge samples, its u→v steps (TASK-063), its node ids and
+# their coordinates are the same every time. NetworkX empties a graph's
+# `__networkx_cache__` whenever it adds or removes a node or an edge, so a
+# mark kept there says the graph is still the one the data was worked out
+# for. Counting its edges to know it, as before, walked every node: 7-12 ms
+# on a zone, twice a trace. Weak mappings, so nothing outlives the graph or
+# ends up in a GraphML file. A change made to the attributes of an edge in
+# place is not seen, as it was not before.
+_MARK = "route_engine"
+
+_T = TypeVar("_T")
+
+
+def _mark(graph: Graph) -> object | None:
+    """The mark of `graph` as it is now: a new one after every change
+    NetworkX makes to it. None for a view of another graph, which changes
+    with it unseen: nothing is kept for a view."""
+    if hasattr(graph, "_graph"):  # a subgraph or reverse view
+        return None
+    cache: dict[str, Any] | None = getattr(graph, "__networkx_cache__", None)
+    if cache is None:  # a graph pickled by a NetworkX before 3.3
+        cache = {}
+        graph.__networkx_cache__ = cache
+    mark = cache.get(_MARK)
+    if mark is None:
+        mark = cache[_MARK] = object()
+    return mark
+
+
+def _kept(
+    store: weakref.WeakKeyDictionary[Graph, tuple[object, _T]],
+    graph: Graph,
+    work_out: Callable[[Graph], _T],
+) -> _T:
+    """`work_out(graph)`, kept in `store` while `graph` keeps its mark."""
+    mark = _mark(graph)
+    if mark is not None:
+        cached = store.get(graph)
+        if cached is not None and cached[0] is mark:
+            return cached[1]
+    value = work_out(graph)
+    if mark is not None:
+        store[graph] = (mark, value)
+    return value
+
+
+def _same_graph(graph: Graph, mark: object | None) -> None:
+    """Gives `graph` its `mark` back after a change undone, like the sink of
+    `_route_through_zones`: the graph is the one the kept data was worked
+    out for, node for node and edge for edge, in the same order."""
+    if mark is not None:
+        graph.__networkx_cache__[_MARK] = mark
+
+
+_nodes_kept: weakref.WeakKeyDictionary[
+    Graph, tuple[object, tuple[list[Any], np.ndarray]]
+] = weakref.WeakKeyDictionary()
+
+
+def _node_table(graph: Graph) -> tuple[list[Any], np.ndarray]:
+    """The node ids of `graph` in its order, and their (lat, lon) rows; not
+    to be changed by the caller."""
+    return _kept(_nodes_kept, graph, _work_out_nodes)
+
+
+def _work_out_nodes(graph: Graph) -> tuple[list[Any], np.ndarray]:
+    ids = list(graph.nodes)
+    return ids, np.array([_node_latlon(graph, n) for n in ids])
+
+
+_samples_kept: weakref.WeakKeyDictionary[Graph, tuple[object, np.ndarray]] = (
     weakref.WeakKeyDictionary()
 )
 
@@ -925,58 +992,56 @@ _samples_cache: weakref.WeakKeyDictionary[Graph, tuple[int, np.ndarray]] = (
 def _edge_samples(graph: Graph) -> np.ndarray:
     """(lat, lon) of both ends and the middle point of every edge, three rows
     per edge in `graph.edges()` order."""
-    cached = _samples_cache.get(graph)
-    if cached is not None and cached[0] == graph.number_of_edges():
-        return cached[1]
+    return _kept(_samples_kept, graph, _work_out_samples)
+
+
+def _work_out_samples(graph: Graph) -> np.ndarray:
     samples = []
     for u, v, data in graph.edges(data=True):
         coords = _edge_coords(graph, u, v, data)
         samples.extend((coords[0], coords[len(coords) // 2], coords[-1]))
-    array = np.array(samples).reshape(-1, 2)
-    _samples_cache[graph] = (graph.number_of_edges(), array)
-    return array
+    return np.array(samples).reshape(-1, 2)
 
 
-_distinct_cache: weakref.WeakKeyDictionary[
-    Graph, tuple[int, np.ndarray, np.ndarray]
+_distinct_kept: weakref.WeakKeyDictionary[
+    Graph, tuple[object, tuple[np.ndarray, np.ndarray]]
 ] = weakref.WeakKeyDictionary()
 
 
 def _distinct_samples(graph: Graph) -> tuple[np.ndarray, np.ndarray]:
     """The distinct points of `_edge_samples`, and for each sample its row
     among them."""
-    cached = _distinct_cache.get(graph)
-    if cached is not None and cached[0] == graph.number_of_edges():
-        return cached[1], cached[2]
+    return _kept(_distinct_kept, graph, _work_out_distinct)
+
+
+def _work_out_distinct(graph: Graph) -> tuple[np.ndarray, np.ndarray]:
     points, rows = np.unique(_edge_samples(graph), axis=0, return_inverse=True)
-    rows = rows.reshape(-1)
-    _distinct_cache[graph] = (graph.number_of_edges(), points, rows)
-    return points, rows
+    return points, rows.reshape(-1)
 
 
-# The u→v steps of each graph, kept like its edge samples (TASK-063): a zone
-# has 100 000 edges and more, and listing them in Python took most of the
-# time of the corridor, trace after trace.
-_steps_cache: weakref.WeakKeyDictionary[
-    Graph, tuple[int, list[tuple[Any, Any]], np.ndarray, np.ndarray]
+# The u→v steps of each graph (TASK-063): a zone has 100 000 edges and
+# more, and listing them in Python took most of the time of the corridor,
+# trace after trace.
+_steps_kept: weakref.WeakKeyDictionary[
+    Graph, tuple[object, tuple[list[tuple[Any, Any]], np.ndarray, np.ndarray]]
 ] = weakref.WeakKeyDictionary()
 
 
 def _edge_steps(graph: Graph) -> tuple[list[tuple[Any, Any]], np.ndarray, np.ndarray]:
     """The distinct u→v steps of `graph`, the step of each edge in
     `graph.edges()` order, and the length of each edge."""
-    cached = _steps_cache.get(graph)
-    if cached is not None and cached[0] == graph.number_of_edges():
-        return cached[1], cached[2], cached[3]
+    return _kept(_steps_kept, graph, _work_out_steps)
+
+
+def _work_out_steps(
+    graph: Graph,
+) -> tuple[list[tuple[Any, Any]], np.ndarray, np.ndarray]:
     index: dict[tuple[Any, Any], int] = {}
     which, lengths = [], []
     for u, v, length in graph.edges(data="length"):
         which.append(index.setdefault((u, v), len(index)))
         lengths.append(float(length))
-    steps = list(index)
-    entry = (graph.number_of_edges(), steps, np.array(which), np.array(lengths))
-    _steps_cache[graph] = entry
-    return steps, entry[2], entry[3]
+    return list(index), np.array(which), np.array(lengths)
 
 
 def _distance_to_outline(
@@ -1028,10 +1093,9 @@ def _route_through_zones(
     nodes reached for the anchors listed in `corners` (1-based, like the
     indices of the unreached ones).
     """
-    node_ids = list(graph.nodes)
-    xy = latlon_to_local_array(
-        origin, np.array([_node_latlon(graph, n) for n in node_ids])
-    )
+    node_ids, latlon = _node_table(graph)
+    xy = latlon_to_local_array(origin, latlon)
+    mark = _mark(graph)
     used: set[frozenset[Any]] = set()
     penalty = reuse_penalty
 
@@ -1068,6 +1132,7 @@ def _route_through_zones(
             graph.remove_node(_SINK)
             for i in zone:
                 costs.pop((node_ids[i], _SINK), None)
+            _same_graph(graph, mark)
         walk(path[:-1])
         if index in corners:
             corner_nodes.add(path[-2])

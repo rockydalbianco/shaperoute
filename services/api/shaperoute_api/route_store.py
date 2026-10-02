@@ -12,7 +12,9 @@ every route is the user's choice of ADR-0086, and belongs to TASK-092, in
 the database, with the rules on personal data still to write. Until then
 the API keeps no one's position (ADR-0085, ADR-0092), and a city's centre is
 no one's position. TASK-092 can take this over: RouteJobs calls `put` for
-every route that ends, and here the ones from elsewhere are dropped. The centres are those the API itself gave to GET /cities and GET
+every route that ends, and here the ones from elsewhere are dropped.
+
+The centres are those the API itself gave to GET /cities and GET
 /city-suggestions, and a start is one of them when it falls in the same
 square of about 10 m (4 decimals, as the app's `cityKey`). A route from
 anywhere else is never written, and an image's outline neither.

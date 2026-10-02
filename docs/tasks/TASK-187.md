@@ -116,10 +116,22 @@ il task la conferma o la cambia con un ADR.
 
 ## Da chiedere all'utente durante il task (una per volta, con la proposta)
 
-**Tutte e quattro in attesa dell'utente** (2026-10-02: era via, il lavoro è
-andato avanti in automatico). La parte API è costruita con la proposta
-dove le serviva; cambiarla è una riga (`activity_name` e `DESCRIPTION` in
-`strava.py`).
+**Risposte dell'utente, 2026-10-02 sera** (sessione della parte app, una
+domanda per volta):
+
+1. Il nome: **modificabile prima di «Save»** (non la proposta). Un campo
+   nella schermata di fine corsa e nella scheda di una corsa aperta; vuoto,
+   il nome di Sgrava. Nell'API un corpo facoltativo `{ "name": … }` a
+   `POST /me/activities/{key}/strava`; senza corpo tutto come prima.
+2. La descrizione: **su ogni corsa** (non la proposta): «Drawn with Sgrava»
+   con un percorso, «Recorded with Sgrava» per una corsa libera.
+3. L'interruttore **ricorda l'ultima scelta** (la proposta); la prima volta
+   è acceso.
+4. **L'arancione di Strava** per «Connect with Strava» (la proposta): un
+   token nuovo in `tokens.ts`.
+
+Le domande com'erano, con quello che la parte API aveva costruito prima
+delle risposte:
 
 - Il **nome dell'attività** su Strava. Proposta: cosa è stato disegnato e
   dove («Heart in Trento»), o «Morning run» senza percorso; modificabile

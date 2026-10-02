@@ -174,10 +174,13 @@ export function routeTitle(route: {
   return route.word ?? (route.shape ?? "").replace(/_/g, " ");
 }
 
+/** The cities of the catalogue whose name is two words: its files have one. */
+const TWO_WORDS: Record<string, string> = {
+  newyork: "New York",
+  sanfrancisco: "San Francisco",
+};
+
 /** The city as the user reads it: "milano" → "Milano", "newyork" → "New York". */
 export function cityName(city: string): string {
-  if (city === "newyork") {
-    return "New York";
-  }
-  return city.charAt(0).toUpperCase() + city.slice(1);
+  return TWO_WORDS[city] ?? city.charAt(0).toUpperCase() + city.slice(1);
 }

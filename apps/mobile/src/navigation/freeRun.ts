@@ -1,6 +1,6 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { durationMs, type Track } from "./trackRecorder";
+import { activeMs, durationMs, type Track } from "./trackRecorder";
 import { endRun, loadRun, RESUME_WITHIN_MS, type SavedRun } from "./trackStore";
 
 /**
@@ -43,15 +43,21 @@ export function canResume(run: FreeRun, nowMs: number): boolean {
   );
 }
 
-/** From the first fix to `nowMs`, in milliseconds: 0 before the first fix. */
+/** From the first fix to `nowMs`, in milliseconds, pauses left out: 0
+ * before the first fix. */
 export function elapsedMs(track: Track, nowMs: number): number {
-  const first = track.fixes[0];
-  return first === undefined ? 0 : Math.max(0, nowMs - first.timeMs);
+  return activeMs(track, nowMs);
 }
 
 /** "0.00 km", "12.34 km": the distance of a run, as runners read it. */
 export function kmLabel(metres: number): string {
   return `${(Math.max(0, metres) / 1000).toFixed(2)} km`;
+}
+
+/** "0.00", "12.34": the kilometres alone, for where the unit is written
+ * beside them. */
+export function kmNumber(metres: number): string {
+  return (Math.max(0, metres) / 1000).toFixed(2);
 }
 
 /** "0:07", "12:34", "1:02:03": a running clock. */

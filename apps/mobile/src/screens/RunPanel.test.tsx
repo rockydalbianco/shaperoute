@@ -1,24 +1,63 @@
 import type { LatLon } from "@shaperoute/shared-types";
 import { act, render, screen } from "@testing-library/react-native";
 
-import { addFix, emptyTrack, type Track } from "../navigation/trackRecorder";
-import { RunPanel, TICK_MS } from "./RunPanel";
+import {
+  addFix,
+  emptyTrack,
+  pauseTrack,
+  type Track,
+} from "../navigation/trackRecorder";
+import {
+  RouteBar,
+  type RouteProgress,
+  RunGrid,
+  RunStrip,
+  TICK_MS,
+  useRunNumbers,
+} from "./RunPanel";
 
 const START: LatLon = [46.0122, 11.2986];
 const METRE = 1 / 111_195;
 const NOW = Date.UTC(2026, 9, 2, 7, 0, 0);
 
-/** Straight north, a fix every 50 m at `secondsPerKm`, the last at `endMs`. */
-function north(metres: number, secondsPerKm: number, endMs: number): Track {
+/** Straight north, a fix every 50 m at `secondsPerKm`, the last at `endMs`;
+ * climbing `climbPerKm` metres each kilometre when given. */
+function north(
+  metres: number,
+  secondsPerKm: number,
+  endMs: number,
+  climbPerKm?: number,
+): Track {
   let track = emptyTrack();
   for (let m = 0; m <= metres; m += 50) {
     track = addFix(track, {
       point: [START[0] + m * METRE, START[1]],
       timeMs: endMs - ((metres - m) / 1000) * secondsPerKm * 1000,
       accuracyM: 5,
+      altitudeM: climbPerKm === undefined ? undefined : 200 + (m / 1000) * climbPerKm,
     });
   }
   return track;
+}
+
+/** Every number of the run, as the two panels show them. */
+function Numbers({
+  track,
+  live,
+  route,
+}: {
+  track: Track;
+  live: boolean;
+  route?: RouteProgress;
+}) {
+  const numbers = useRunNumbers(track, live, route);
+  return (
+    <>
+      <RunStrip numbers={numbers} />
+      <RunGrid numbers={numbers} />
+      {route && <RouteBar route={route} numbers={numbers} />}
+    </>
+  );
 }
 
 beforeEach(() => {
@@ -29,15 +68,27 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test("without a route: distance, both paces, the clock and the last kilometre", async () => {
+test("under the map: how far, the pace now and the clock", async () => {
   // 1.5 km at 6:00 /km: nine minutes.
-  await render(<RunPanel track={north(1500, 360, NOW)} ticking />);
-  expect(screen.getByText("1.50 km")).toBeOnTheScreen();
-  expect(screen.getByLabelText("Avg pace: 6:00 /km")).toBeOnTheScreen();
+  const Strip = () => <RunStrip numbers={useRunNumbers(north(1500, 360, NOW), true)} />;
+  await render(<Strip />);
+  expect(screen.getByLabelText("Distance: 1.50 km")).toBeOnTheScreen();
   expect(screen.getByLabelText("Pace now: 6:00 /km")).toBeOnTheScreen();
   expect(screen.getByLabelText("Time: 9:00")).toBeOnTheScreen();
-  expect(screen.getByText("Last km")).toBeOnTheScreen();
-  expect(screen.getByText("6:00 /km")).toBeOnTheScreen();
+  // Three numbers: the rest is on the page of the data.
+  expect(screen.queryByText("Avg pace")).toBeNull();
+  expect(screen.queryByText("Calories")).toBeNull();
+});
+
+test("all the numbers: paces, clock, last kilometre, climb and energy", async () => {
+  // 1.5 km at 6:00 /km, climbing 20 m each kilometre.
+  await render(<Numbers track={north(1500, 360, NOW, 20)} live />);
+  expect(screen.getAllByLabelText("Pace now: 6:00 /km")).toHaveLength(2);
+  expect(screen.getByLabelText("Avg pace: 6:00 /km")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Last km: 6:00 /km")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Elev. gain: 30 m")).toBeOnTheScreen();
+  // 1.5 km at 70 kg.
+  expect(screen.getByLabelText("Calories: 109 kcal")).toBeOnTheScreen();
   // No route: nothing to go, no bar.
   expect(screen.queryByText(/to go/)).toBeNull();
   expect(screen.queryByTestId("route-done")).toBeNull();
@@ -45,14 +96,14 @@ test("without a route: distance, both paces, the clock and the last kilometre", 
   await act(async () => {
     jest.advanceTimersByTime(TICK_MS);
   });
-  expect(screen.getByLabelText("Time: 9:01")).toBeOnTheScreen();
+  expect(screen.getAllByLabelText("Time: 9:01")).toHaveLength(2);
 });
 
 test("along a route: what is left, about how long, and the bar", async () => {
   await render(
-    <RunPanel
+    <Numbers
       track={north(1500, 360, NOW)}
-      ticking
+      live
       route={{ remainingM: 3200, done: 0.42 }}
     />,
   );
@@ -60,40 +111,56 @@ test("along a route: what is left, about how long, and the bar", async () => {
   // 3.2 km at 6:00 /km.
   expect(screen.getByText("about 19 min")).toBeOnTheScreen();
   expect(screen.getByTestId("route-done")).toHaveStyle({ width: "42%" });
-  // What is left takes the place of the last kilometre.
-  expect(screen.queryByText("Last km")).toBeNull();
 });
 
 test("before 100 metres there is no pace, and no time left to say", async () => {
   await render(
-    <RunPanel
+    <Numbers
       track={north(50, 360, NOW)}
-      ticking
+      live
       route={{ remainingM: 4950, done: 0.01 }}
     />,
   );
-  expect(screen.getByText("0.05 km")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Distance: 0.05 km")).toBeOnTheScreen();
   expect(screen.getByLabelText("Avg pace: – /km")).toBeOnTheScreen();
-  expect(screen.getByLabelText("Pace now: – /km")).toBeOnTheScreen();
-  expect(screen.getByLabelText("Time: 0:18")).toBeOnTheScreen();
+  expect(screen.getAllByLabelText("Pace now: – /km")).toHaveLength(2);
+  expect(screen.getByLabelText("Last km: – /km")).toBeOnTheScreen();
+  expect(screen.getAllByLabelText("Time: 0:18")).toHaveLength(2);
   expect(screen.getByText("5.0 km to go")).toBeOnTheScreen();
   expect(screen.queryByText(/^about/)).toBeNull();
 });
 
-test("before the first fix everything waits at zero", async () => {
-  await render(<RunPanel track={emptyTrack()} ticking={false} />);
-  expect(screen.getByText("0.00 km")).toBeOnTheScreen();
-  expect(screen.getByLabelText("Time: 0:00")).toBeOnTheScreen();
-  expect(screen.queryByText("Last km")).toBeNull();
+test("before the first fix everything waits at zero, and no height is no climb", async () => {
+  await render(<Numbers track={emptyTrack()} live />);
+  expect(screen.getByLabelText("Distance: 0.00 km")).toBeOnTheScreen();
+  expect(screen.getAllByLabelText("Time: 0:00")).toHaveLength(2);
+  expect(screen.getByLabelText("Elev. gain: – m")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Calories: 0 kcal")).toBeOnTheScreen();
+  await act(async () => {
+    jest.advanceTimersByTime(3 * TICK_MS);
+  });
+  expect(screen.getAllByLabelText("Time: 0:00")).toHaveLength(2);
 });
 
 test("a run that is over stops its clock at the last fix", async () => {
   // Ended a minute ago.
-  await render(<RunPanel track={north(1000, 300, NOW - 60_000)} ticking={false} />);
-  expect(screen.getByLabelText("Time: 5:00")).toBeOnTheScreen();
+  await render(<Numbers track={north(1000, 300, NOW - 60_000)} live={false} />);
+  expect(screen.getAllByLabelText("Time: 5:00")).toHaveLength(2);
   await act(async () => {
     jest.advanceTimersByTime(5 * TICK_MS);
   });
-  expect(screen.getByLabelText("Time: 5:00")).toBeOnTheScreen();
+  expect(screen.getAllByLabelText("Time: 5:00")).toHaveLength(2);
   expect(screen.getByLabelText("Avg pace: 5:00 /km")).toBeOnTheScreen();
+});
+
+test("paused, the clock stands where the pause began and there is no pace now", async () => {
+  // Paused twenty seconds ago, ten seconds after the last fix.
+  const paused = pauseTrack(north(1000, 300, NOW - 30_000), NOW - 20_000);
+  await render(<Numbers track={paused} live />);
+  expect(screen.getAllByLabelText("Time: 5:10")).toHaveLength(2);
+  expect(screen.getAllByLabelText("Pace now: – /km")).toHaveLength(2);
+  await act(async () => {
+    jest.advanceTimersByTime(5 * TICK_MS);
+  });
+  expect(screen.getAllByLabelText("Time: 5:10")).toHaveLength(2);
 });

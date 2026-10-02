@@ -4,6 +4,7 @@ import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 
 import { FREE_ROUTE } from "./freeRun";
+import { pauseRun, resumeRun, runControl, setVoice, skipCountdown } from "./runControl";
 import { clearRun, loadRun, saveRun } from "./trackStore";
 import { useFreeRun } from "./useFreeRun";
 
@@ -73,7 +74,10 @@ test("the fixes of a free run are its track, kept on the phone with no route", a
     track: { fixes: [], distanceM: 0 },
     position: null,
   });
+  // A new run begins with the countdown (TASK-169).
+  expect(runControl().phase).toBe("countdown");
   await act(async () => {
+    skipCountdown();
     onPosition(position(0, 0, 5));
     onPosition(position(10, 4, 5));
     onPosition(position(20, 8, 90));
@@ -127,6 +131,8 @@ async function runningHook() {
       return { remove: jest.fn() };
     });
   const hook = await renderHook(() => useFreeRun(true));
+  // The countdown is over: every fix is of the run.
+  await act(async () => skipCountdown());
   return { ...hook, at: (position: Location.LocationObject) => onPosition(position) };
 }
 
@@ -178,9 +184,98 @@ test("a run that goes on does not say again the kilometres it has said", async (
   });
   expect(Speech.speak).not.toHaveBeenCalled();
   await act(async () => {
-    at(position(2050, (now + 160_000) / 1000, 5));
+    // The first fix after the run was left is not joined to the line.
+    at(position(2110, (now + 160_000) / 1000, 5));
   });
   expect(Speech.speak).toHaveBeenCalledTimes(1);
   expect(jest.mocked(Speech.speak).mock.calls[0][0]).toMatch(/^2 kilometres\. /);
+  await unmount();
+});
+
+test("Pause and Resume reach the screen at once, between two fixes", async () => {
+  clearRun();
+  const { result, at, unmount } = await runningHook();
+  const now = Date.now();
+  await act(async () => {
+    at(position(0, (now - 30_000) / 1000, 5));
+    at(position(100, now / 1000, 5));
+  });
+  await act(async () => pauseRun());
+  const paused = result.current;
+  expect(paused.status === "running" && paused.track.pauses).toHaveLength(1);
+  await act(async () => {
+    at(position(160, (now + 20_000) / 1000, 5));
+  });
+  // Paused: the map still follows the runner, the line does not grow.
+  const still = result.current;
+  expect(still.status === "running" && still.track.fixes).toHaveLength(2);
+  expect(still.status === "running" && still.position).toEqual([
+    START[0] + 160 * METRE,
+    START[1],
+  ]);
+  await act(async () => resumeRun());
+  const resumed = result.current;
+  expect(resumed.status === "running" && resumed.track.pauses?.[0].toMs).not.toBeNull();
+  await unmount();
+  expect(runControl().phase).toBe("idle");
+});
+
+test("the height the phone gives is kept with each fix", async () => {
+  clearRun();
+  const { result, at, unmount } = await runningHook();
+  await act(async () => {
+    at({
+      coords: { latitude: START[0], longitude: START[1], accuracy: 5, altitude: 512.5 },
+      timestamp: 1000,
+    } as Location.LocationObject);
+  });
+  const state = result.current;
+  expect(state.status === "running" && state.track.fixes[0].altitudeM).toBe(512.5);
+  await unmount();
+});
+
+test("with the voice off, a kilometre is not said", async () => {
+  clearRun();
+  jest.mocked(Speech.speak).mockClear();
+  setVoice(false);
+  const { at, unmount } = await runningHook();
+  await act(async () => {
+    at(position(0, 0, 5));
+    at(position(1005, 300, 5));
+  });
+  expect(Speech.speak).not.toHaveBeenCalled();
+  setVoice(true);
+  await unmount();
+});
+
+test("during the countdown the map follows the runner and the track waits", async () => {
+  clearRun();
+  let onPosition: (position: Location.LocationObject) => void = () => {};
+  jest
+    .mocked(Location.requestForegroundPermissionsAsync)
+    .mockResolvedValue(permission(true));
+  jest
+    .mocked(Location.watchPositionAsync)
+    .mockImplementation(async (_options, callback) => {
+      onPosition = callback;
+      return { remove: jest.fn() };
+    });
+  const { result, unmount } = await renderHook(() => useFreeRun(true));
+  const before = Date.now();
+  await act(async () => {
+    onPosition(position(20, 1, 5));
+  });
+  expect(result.current).toMatchObject({
+    track: { fixes: [] },
+    position: [START[0] + 20 * METRE, START[1]],
+  });
+  // At its end the run starts there, then: the screen has its first fix.
+  await act(async () => skipCountdown());
+  const state = result.current;
+  expect(state.status === "running" && state.track.fixes).toHaveLength(1);
+  if (state.status === "running") {
+    expect(state.track.fixes[0].point).toEqual([START[0] + 20 * METRE, START[1]]);
+    expect(state.track.fixes[0].timeMs).toBeGreaterThanOrEqual(before);
+  }
   await unmount();
 });

@@ -132,7 +132,7 @@ test("Stop ends the run; Pocket only once the GPS is on", async () => {
   expect(onStop).toHaveBeenCalledTimes(1);
 });
 
-test("under the map, the numbers of the run: distance, paces, clock", async () => {
+test("under the map, a few numbers of the run: distance, pace now, clock", async () => {
   // 300 m in a minute and a half: 5:00 /km.
   const run = line([
     [0, 0, 90],
@@ -140,8 +140,7 @@ test("under the map, the numbers of the run: distance, paces, clock", async () =
     [300, 0, 0],
   ]);
   await render(<FreeRunCard running track={run} onStop={jest.fn()} />);
-  expect(screen.getByText("0.30 km")).toBeOnTheScreen();
-  expect(screen.getByLabelText("Avg pace: 5:00 /km")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Distance: 0.30 km")).toBeOnTheScreen();
   expect(screen.getByLabelText("Pace now: 5:00 /km")).toBeOnTheScreen();
   expect(screen.getByLabelText("Time: 1:30")).toBeOnTheScreen();
   // The clock goes on between fixes.
@@ -149,6 +148,26 @@ test("under the map, the numbers of the run: distance, paces, clock", async () =
     jest.advanceTimersByTime(TICK_MS);
   });
   expect(screen.getByLabelText("Time: 1:31")).toBeOnTheScreen();
+  // A run with a line is paused, not stopped by a touch (TASK-169).
+  expect(screen.getByLabelText("Pause")).toBeOnTheScreen();
+  expect(screen.queryByText("Stop")).toBeNull();
+});
+
+test("on the page of the data, the way to the start is there in place of the map", async () => {
+  const run = line([
+    [0, 0, 240],
+    [300, 0, 150],
+    [300, 380, 6],
+    [300, 400, 0],
+  ]);
+  await render(<FreeRunCard running track={run} onStop={jest.fn()} />);
+  expect(screen.queryByText("Your start, in a straight line")).toBeNull();
+  await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+  expect(screen.getByText("500 m")).toBeOnTheScreen();
+  expect(screen.getByText("Your start, in a straight line")).toBeOnTheScreen();
+  expect(screen.getByText("Heading east")).toBeOnTheScreen();
+  // 700 m of line in four minutes.
+  expect(screen.getByLabelText("Avg pace: 5:43 /km")).toBeOnTheScreen();
 });
 
 test("the end of a free run has its numbers, Keep running and Done", async () => {
@@ -162,7 +181,9 @@ test("the end of a free run has its numbers, Keep running and Done", async () =>
   const onDone = jest.fn();
   await render(<FreeFinishCard run={run} onResume={onResume} onDone={onDone} />);
   expect(screen.getByText("4.21 km")).toBeOnTheScreen();
-  expect(screen.getByText("25:00 · 5:56 /km")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Time: 25:00")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Avg pace: 5:56 /km")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Calories: 305 kcal")).toBeOnTheScreen();
   await fireEvent.press(screen.getByText("Keep running"));
   expect(onResume).toHaveBeenCalledTimes(1);
   await fireEvent.press(screen.getByText("Done"));
@@ -179,6 +200,7 @@ test("a run that can no longer go on has Done only", async () => {
   await render(<FreeFinishCard run={run} onDone={jest.fn()} />);
   expect(screen.getByText("0.05 km")).toBeOnTheScreen();
   // Too short for a pace.
-  expect(screen.getByText("0:30")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Time: 0:30")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Avg pace: – /km")).toBeOnTheScreen();
   expect(screen.queryByText("Keep running")).toBeNull();
 });

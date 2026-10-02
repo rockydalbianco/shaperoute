@@ -105,9 +105,10 @@ pagine»):
    scheda con l'attesa, il risultato o il problema. All'apertura la mappa
    mostra l'Italia intera, poi la partenza con un segnaposto, a zoom 15
    (qualche via attorno); con un percorso, la linea e la mappa inquadrata
-   su di lui. Si sposta e si ingrandisce con le dita o con i pulsanti + e
-   −. L'attribuzione dei dati è sempre visibile in basso, per intero; i
-   suoi link si aprono nel browser del telefono.
+   su di lui. Si sposta e si ingrandisce con le dita: i pulsanti + e − non
+   ci sono più (TASK-175, chiesto dall'utente). L'attribuzione dei dati è
+   sempre visibile in basso, per intero; i suoi link si aprono nel browser
+   del telefono.
 
 3. **«Explore»** (TASK-126, variante C di TASK-092), la pagina a destra
    di «Draw» (TASK-154): «Best near you», i percorsi
@@ -318,8 +319,8 @@ Un percorso che piace si tiene, e si ritrova in «Profile» da ogni telefono
 dell'account.
 
 - **Il cuore sulla mappa**: quando sulla mappa c'è un percorso (disegnato in
-  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e sotto
-  i pulsanti dello zoom della mappa, c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
+  «Draw», di «Explore», a tema), in alto a destra, di fronte a «←» e alla
+  sua altezza (dal TASK-175 la mappa non ha più i pulsanti dello zoom), c'è un cuore tondo come «←». Vuoto («♡»): il tocco tiene il percorso; pieno
   («♥»): lo toglie. Cambia subito, senza aspettare l'API; se l'API rifiuta
   torna com'era e sotto il cuore c'è il motivo in una riga, che un tocco
   chiude. Non è giallo: il giallo è del percorso. Durante l'attesa, la
@@ -709,22 +710,71 @@ svolta (TASK-049, ADR-0052). Anche sotto un percorso di «Explore», che le
 chiede all'API al tocco (TASK-145). Si resta sulla schermata della mappa: al posto
 di «←» un banner con la prossima svolta (freccia gialla, distanza dal GPS
 dal vivo, «Turn left onto Via Roma», e una seconda riga per le svolte a
-pochi metri da leggere insieme); sotto la mappa i numeri della corsa e
-«Stop», che torna al risultato. La mappa segue la posizione, vicina (zoom
-17), e dopo «Stop» inquadra di nuovo il percorso.
+pochi metri da leggere insieme); sotto la mappa la scheda della corsa, con
+pochi numeri e «Pause» (vedi «La corsa», qui sotto). La mappa segue la
+posizione, vicina (zoom 17), e a fine corsa inquadra di nuovo il percorso.
 
-**I numeri della corsa** (TASK-164, ADR-0133), chiesti dall'utente: uguali
-con un percorso e senza. Sotto la mappa i km fatti in grande, due decimali
-(«2.34 km»), e tre riquadri: «Avg pace» (il passo medio, «5:21», /km),
-«Pace now» (il passo degli ultimi 200 m) e «Time», che va avanti ogni
-secondo dalla prima posizione del GPS. I passi compaiono dopo 100 m, prima
-c'è «–»; «Pace now» torna «–» anche da fermi (più lenti di 20:00 /km).
-Con un percorso, accanto ai km, «3.2 km to go» e «about 17 min» (i km
-rimasti al passo medio), e sotto una barra gialla con la parte di percorso
-fatta; all'arrivo il tempo si ferma. Sotto il banner della svolta due
-etichette piccole: «42% drawn», quanta parte del disegno è fatta, e il
-punto cardinale verso cui si corre («NE»). Poi «Pocket» e «Stop», larghi
-uguali.
+**La corsa: due pagine, il conto alla rovescia, la pausa** (TASK-169,
+ADR-0137), chiesta dall'utente con una registrazione di Nike Run Club come
+riferimento. Uguale con un percorso e senza; sostituisce il pannello di
+TASK-164, di cui tiene i numeri.
+
+- **Il conto alla rovescia.** Una corsa nuova parte con «3», «2», «1» a
+  tutto schermo, gialli su nero, e «Get ready». In quei tre secondi il GPS
+  cerca la posizione e la mappa la segue, ma metri e tempo non contano
+  ancora: la corsa parte dal punto in cui si è quando il conto finisce, in
+  quell'istante, anche da fermi. Una corsa ripresa («Keep running»)
+  riparte subito, senza conto.
+- **Due pagine, una accanto all'altra**: «Map» a sinistra, «Data» a destra.
+  Si passa con uno swipe (verso sinistra per «Data», verso destra per
+  tornare a «Map») o toccando i due nomi in fondo; la corsa si apre su
+  «Map». Lo swipe parte dalla scheda, non dalla mappa: lì un dito sposta
+  la mappa.
+- **«Map»**: la mappa con sopra il banner (la svolta, o la partenza senza
+  percorso) e sotto tre numeri soli: «Distance» («2.34», km), «Pace now»
+  (il passo degli ultimi 200 m) e «Time». Con un percorso, sotto, la barra
+  gialla del percorso fatto, «3.2 km to go» e «about 17 min».
+- **«Data»**: nessuna mappa. In alto quello che dice il banner (la svolta
+  resta leggibile anche qui), poi i km in grande («2.34», «kilometres»),
+  la barra del percorso, e sei riquadri: «Pace now», «Avg pace», «Time»,
+  «Last km» (il passo dell'ultimo km intero), «Elev. gain» (i metri di
+  salita) e «Calories». Sotto, i km uno per uno («Km · Pace · Change»:
+  «2 · 5:14 · -0:06», l'ultimo in cima; prima del primo km «Your first
+  kilometre will show here.»). Poi i due interruttori della corsa,
+  «Auto-pause» e «Voice».
+- **«Pause»**, un pulsante tondo e chiaro in mezzo, su tutte e due le
+  pagine; accanto, «Pocket». In pausa il tempo si ferma, le posizioni non
+  entrano nella traccia e «Pace now» è «–»; la mappa continua a seguire, e
+  con un percorso le svolte si dicono ancora. Su «Map» la scheda si alza
+  e mostra i km e i sei riquadri, come su «Data»: la mappa sopra, i numeri
+  sotto. Al posto di «Pause» ci sono **«Stop»** e **«Resume»** (giallo:
+  è l'azione principale di una corsa ferma), con «Paused» sopra.
+- **«Stop» si tiene premuto** un secondo: il pulsante si riempie di
+  arancio e la corsa finisce. Un tocco non fa niente, e sotto compare «Hold
+  to stop». Finché la corsa non ha la prima posizione (o senza permesso)
+  c'è il vecchio «Stop» da toccare: non c'è niente da perdere. All'arrivo
+  di un percorso resta solo «Finish».
+- **La pausa da sola** («Auto-pause», accesa): dieci secondi senza una
+  posizione nuova (fermi a un semaforo) mettono la corsa in pausa, «Paused:
+  you stopped moving», e la voce dice «Paused.»; la prima posizione che si
+  sposta la fa ripartire, «Resumed.». «Resume» funziona anche qui. Spenta,
+  il tempo conta anche le soste.
+- **«Voice»** (accesa): spenta, l'app non dice più niente, né svolte né
+  km; la vibrazione delle svolte resta.
+- **Dopo «Resume»** la prima posizione non si unisce all'ultima di prima:
+  i metri fatti in pausa non sono della corsa. Lo stesso dopo «Keep
+  running»: il tempo fra «Stop» e la ripresa è una pausa.
+
+I passi compaiono dopo 100 m, prima c'è «–»; «Pace now» torna «–» anche da
+fermi (più lenti di 20:00 /km). «Elev. gain» è «–» se il telefono non dà
+la quota; conta le salite di almeno 3 m, perché la quota del GPS oscilla.
+«Calories» è una stima da 70 kg (il peso non è ancora nel profilo): circa
+una kilocaloria per kg e per km. Il battito non c'è: il telefono non lo
+misura, e un sensore si collega solo in una build propria (seguiti in
+`tasks/TASK-169.md`). Sotto il banner della svolta restano le due
+etichette piccole di TASK-164: «42% drawn» e il punto cardinale («NE»).
+Con un percorso la voce dice anche ogni km, come senza («1 kilometre.
+Time: … Average pace: …»), dopo la svolta se cadono insieme.
 
 **La freccia di direzione** (TASK-164). Mentre si corre il segnaposto sulla
 mappa è una freccia chiara, girata dove si sta andando; la mappa resta col
@@ -746,7 +796,7 @@ una via parallela sbagliata sì (ADR-0070). Dopo due posizioni di fila sul
 percorso, «Back on the route». Alla fine, «You have arrived». Funziona con lo schermo
 acceso e l'app aperta; la posizione non esce dal telefono.
 
-**Modalità tasca** (TASK-070, ADR-0066). Accanto a «Stop», «Pocket»: lo
+**Modalità tasca** (TASK-070, ADR-0066). Accanto a «Pause», «Pocket»: lo
 schermo diventa nero, la luminosità va al minimo e resta acceso, e i tocchi
 non fanno niente; voce, vibrazione e GPS vanno avanti come prima. Si esce
 tenendo premuto lo schermo 2 secondi: in basso, fioca, «Hold for 2 seconds
@@ -766,13 +816,17 @@ in un file nei documenti dell'app (`current-run.json`), insieme al percorso
 pianificato: si scrive alla prima posizione, poi al più ogni 15 secondi, a
 «Stop» e all'arrivo, e resta lì se l'app viene chiusa. Una corsa per volta:
 «Start» sullo stesso percorso entro 30 minuti continua la traccia, un altro
-percorso la sostituisce alla prima posizione. Sullo schermo non cambia
-niente, e la traccia non esce dal telefono: la usa la schermata di fine
-corsa (TASK-113).
+percorso la sostituisce alla prima posizione. La traccia non esce dal
+telefono: la usano i numeri della corsa e la schermata di fine corsa
+(TASK-113). Da TASK-169 nel file ci sono anche le pause (da quando a
+quando, e se sono venute da sole), scritte subito, la quota di ogni
+posizione quando il telefono la dà, e il segno sulla prima posizione dopo
+una pausa; la durata è il tempo senza le pause. Un file di prima si legge
+come sempre.
 
 ## La fine della corsa
 
-«Stop» durante la navigazione, o «Finish» all'arrivo (lo stesso pulsante),
+«Stop» tenuto premuto, dalla pausa (TASK-169), o «Finish» all'arrivo,
 chiude la corsa e apre la schermata di fine corsa (TASK-113, ADR-0093), se
 la traccia ha almeno due posizioni; se no si torna al risultato come
 prima. Sulla mappa il percorso giallo e, sopra, più sottile e chiara
@@ -812,10 +866,10 @@ north-east». La freccia è come la vede chi corre: in su vuol dire davanti,
 in giù alle spalle. A meno di 30 m dalla partenza, «You are at your start»
 senza freccia. Prima della prima posizione, «Finding your position…»; senza
 permesso, «Location is off for Sgrava: allow it in Settings to record a
-run.». Sotto la mappa i numeri della corsa, gli stessi della navigazione
-(km, «Avg pace», «Pace now», «Time»); accanto ai km, dal primo km in poi,
-«Last km» e il passo dell'ultimo km intero («5:14 /km»). Poi «Pocket» (la
-stessa modalità tasca della navigazione) e «Stop». A ogni km la voce, in
+run.». Sotto la mappa la scheda della corsa, la stessa della navigazione
+(«La corsa», sopra): il conto alla rovescia, le pagine «Map» e «Data»,
+«Pause», «Pocket», «Stop» da tenere premuto; su «Data», al posto della
+svolta, c'è la partenza. A ogni km la voce, in
 inglese come il resto,
 dice il tempo e il passo medio: «1 kilometre. Time: 5 minutes 42 seconds.
 Average pace: 5 minutes 42 seconds per kilometre.» (oltre l'ora, ore e
@@ -827,8 +881,10 @@ nello stesso file `current-run.json`, con il percorso vuoto: resta se
 l'app si chiude, e una corsa per volta (una nuova sostituisce quella nel
 file alla prima posizione).
 
-**«Stop»** apre la fine della corsa: in alto «Your run» e «White: what you
-ran.»; sotto i km in grande e «25:00 · 5:56 /km». Senza forma non c'è
+**«Stop»** (in pausa, tenuto premuto) apre la fine della corsa: in alto
+«Your run» e «White: what you ran.»; sotto i km in grande e i sei riquadri
+di «Data» (tempo senza le pause, passo medio, ultimo km, salita,
+calorie). Senza forma non c'è
 punteggio, e niente va all'API. **«Keep running»** torna alla corsa, con la
 stessa traccia; **«Done»** torna alla prima schermata e cancella la corsa
 dal telefono. Uno «Stop» prima della prima posizione torna subito alla

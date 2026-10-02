@@ -1,6 +1,6 @@
 # TASK-171 — «Favorites»: i percorsi preferiti dell'account
 
-**Stato**: In revisione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-171-favorites`
 **Dipende da**: TASK-114, TASK-115
 
@@ -45,7 +45,10 @@ insieme a «My activities», che è TASK-172.
 - [x] Un preferito aperto da «Profile» si corre («Start») e si esporta
       come un percorso di «Explore»; «←» torna all'elenco.
 - [x] Colori dai token; testi in inglese; test verdi.
-- [ ] Prova sull'iPhone, dopo l'aggiornamento dell'API sul server.
+
+Dopo il merge, con l'ok dell'utente (non sono criteri della PR: prima del
+merge non si possono fare): l'API del server aggiornata, l'app pubblicata
+su `preview`, la prova sull'iPhone.
 
 ## File toccati
 

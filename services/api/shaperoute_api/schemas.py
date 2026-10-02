@@ -7,9 +7,9 @@ activities) are checked once, by the engine's RouteRequest (models.py).
 from __future__ import annotations
 
 from dataclasses import asdict
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from route_engine.directions import GROUP_M, Turn
 from route_engine.image_outline import MAX_POINTS as MAX_OUTLINE_POINTS
 from route_engine.models import (
@@ -19,6 +19,7 @@ from route_engine.models import (
     RouteResult,
 )
 from route_engine.outline_edits import MAX_DETAIL_POINTS, MAX_DRAWN_POINTS
+from route_engine.pen_up import walks_problem
 from route_engine.shapes import SUPPORTED_SHAPES
 from route_engine.words import (
     ALPHABET,
@@ -32,6 +33,23 @@ from shaperoute_ai.reading import MAX_TEXT_LENGTH
 # (ADR-0069): a phone photo re-encoded as JPEG is 1-4 MB.
 MAX_IMAGE_BYTES = 10_000_000
 MAX_IMAGE_BASE64 = 4 * -(-MAX_IMAGE_BYTES // 3)
+# A walk between two letters of a word with the pen up (TASK-197): its first
+# and last point, indices into the route's points; one fewer than letters.
+Walk = tuple[int, int]
+MAX_WALKS = MAX_WORD_LETTERS - 1
+WALKS_DESCRIPTION = (
+    "A word with the pen up (TASK-197): [from, to] indices into points, both "
+    "included, of each stretch walked from one letter to the next without "
+    "drawing; in order, the next letter beginning where a walk ends. Empty "
+    "for a shape, an image and a word without; missing from an older API."
+)
+
+
+def _check_walks(walks: list[Walk], count: int) -> None:
+    """Pydantic's check of `walks` against a route of `count` points."""
+    problem = walks_problem(walks, count)
+    if problem is not None:
+        raise ValueError(problem)
 
 
 class RouteRequestBody(BaseModel):
@@ -73,6 +91,14 @@ class RouteRequestBody(BaseModel):
             "letters on the street grid (ADR-0072). Only round with a shape."
         ),
     )
+    pen_up: bool = Field(
+        default=False,
+        description=(
+            "Only with a word (TASK-197): each letter drawn on its own, and "
+            "the route walks from one to the next without drawing (walks in "
+            "the result). The distance is the letters'."
+        ),
+    )
 
 
 class DirectionBody(BaseModel):
@@ -106,7 +132,10 @@ class RouteResultBody(BaseModel):
     """What the app gets back: RouteResult in packages/shared-types."""
 
     points: list[tuple[float, float]] = Field(
-        description="The route as [lat, lon] points, closed."
+        description=(
+            "The route as [lat, lon] points, closed; a word with the pen up "
+            "goes from its first letter to its last."
+        )
     )
     distance_m: float = Field(description="Distance actually covered, in metres.")
     similarity: float = Field(description="How much the route looks like the shape.")
@@ -128,6 +157,15 @@ class RouteResultBody(BaseModel):
             "(TASK-093): whole results, with no alternatives of their own."
         ),
     )
+    # Missing from an older API, and in a GPX request from an older app.
+    walks: list[Walk] = Field(
+        default_factory=list, max_length=MAX_WALKS, description=WALKS_DESCRIPTION
+    )
+
+    @model_validator(mode="after")
+    def _walks_within_points(self) -> Self:
+        _check_walks(self.walks, len(self.points))
+        return self
 
     @classmethod
     def from_result(cls, result: RouteResult) -> RouteResultBody:
@@ -257,6 +295,19 @@ class TrackScoreRequestBody(BaseModel):
     track: list[TrackFixBody] = Field(
         max_length=MAX_TRACK_FIXES, description="The run, fix by fix, in order."
     )
+    walks: list[Walk] = Field(
+        default_factory=list,
+        max_length=MAX_WALKS,
+        description=(
+            "The planned route's: RouteResult.walks (TASK-197). The run is "
+            "then judged on the letters alone. Missing from an older app."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def _walks_within_points(self) -> Self:
+        _check_walks(self.walks, len(self.points))
+        return self
 
 
 class TrackScoreBody(BaseModel):
@@ -378,6 +429,10 @@ class ImageRouteRequestBody(BaseModel):
     )
     activity: str = Field(
         default="running", description=f"One of: {', '.join(SUPPORTED_ACTIVITIES)}."
+    )
+    pen_up: bool = Field(
+        default=False,
+        description="Only for a word (TASK-197): true is refused, invalid_request.",
     )
 
 

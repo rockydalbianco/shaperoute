@@ -19,10 +19,10 @@ The centres are those the API itself gave to GET /cities and GET
 square of about 10 m (4 decimals, as the app's `cityKey`). A route from
 anywhere else is never written, and an image's outline neither.
 
-The same request: the same shape or word, style, distance and activity, from
-the same centre, drawn by the same engine. A route is drawn again after
-KEEP_S, for the roads that changed, and at once when the engine's code is
-another: its fingerprint is part of the name of the file.
+The same request: the same shape or word, style, distance and activity, the
+pen up or not, from the same centre, drawn by the same engine. A route is
+drawn again after KEEP_S, for the roads that changed, and at once when the
+engine's code is another: its fingerprint is part of the name of the file.
 """
 
 from __future__ import annotations
@@ -93,6 +93,8 @@ def result_from(data: dict[str, Any]) -> RouteResult:
         ],
         word=data["word"],
         alternatives=[result_from(other) for other in data["alternatives"]],
+        # Kept before TASK-197: none.
+        walks=[(int(a), int(b)) for a, b in data.get("walks", [])],
     )
 
 
@@ -206,8 +208,9 @@ class RouteStore:
             return []
 
     def _same(self, request: RouteRequest) -> dict[str, Any]:
-        """What makes two requests the same one."""
-        return {
+        """What makes two requests the same one. The pen up only when asked
+        (TASK-197): the others keep the names they had."""
+        same: dict[str, Any] = {
             "shape": request.shape,
             "word": request.word,
             "style": request.style,
@@ -215,6 +218,9 @@ class RouteStore:
             "activity": request.activity,
             "start": cell(request.start),
         }
+        if request.pen_up:
+            same["pen_up"] = True
+        return same
 
     def _path(self, request: object) -> Path | None:
         if not isinstance(request, RouteRequest):

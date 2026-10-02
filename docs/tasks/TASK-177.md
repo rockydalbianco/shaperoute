@@ -1,6 +1,6 @@
 # TASK-177 — «Profile»: nuovo aspetto e «Settings»
 
-**Stato**: In lavorazione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-177-profile-look`
 **Dipende da**: TASK-171 (la pagina di «Profile», «Favorites»), TASK-172
 (la voce «My activities»: `ProfileScreen.tsx` si tocca solo dopo il suo
@@ -52,19 +52,19 @@ La foto del profilo, da mettere in «Settings», è TASK-178.
 
 ## Criteri di accettazione
 
-- [ ] «Favorites» ha un cuore, «My activities» l'uomo che corre; il
+- [x] «Favorites» ha un cuore, «My activities» l'uomo che corre; il
       numero di ognuno si legge senza aprire la pagina.
-- [ ] I due riquadri e «Settings» sono pulsanti con un nome che dice
+- [x] I due riquadri e «Settings» sono pulsanti con un nome che dice
       anche il numero («Favorites, 2»), e le emoji non si leggono due
       volte con il lettore di schermo.
-- [ ] «Log out» e «Delete account» funzionano come prima, da «Settings».
-- [ ] Le nove voci da sviluppare si vedono con «Soon», non sono pulsanti
+- [x] «Log out» e «Delete account» funzionano come prima, da «Settings».
+- [x] Le nove voci da sviluppare si vedono con «Soon», non sono pulsanti
       e il lettore di schermo le dice «…, coming soon».
-- [ ] «←» da «Settings» torna a «Profile»; dopo «Log out» o l'account
+- [x] «←» da «Settings» torna a «Profile»; dopo «Log out» o l'account
       cancellato si vede «Log in» o «Sign up», e chi rientra è su
       «Profile».
-- [ ] Nessun colore scritto a mano: solo token. Niente dipendenze nuove.
-- [ ] Test verdi.
+- [x] Nessun colore scritto a mano: solo token. Niente dipendenze nuove.
+- [x] Test verdi.
 
 ## File toccati
 
@@ -73,14 +73,17 @@ apps/mobile/src/profile/
 apps/mobile/src/screens/ProfileScreen.tsx
 apps/mobile/src/account/Profile.test.tsx
 apps/mobile/__tests__/AppFavorites.test.tsx
+apps/mobile/__tests__/AppActivities.test.tsx
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-177.md
 ```
 
-`ProfileScreen.tsx` è di TASK-172 finché non è in `main`: prima si
-scrivono solo i file nuovi di `src/profile/` e i loro test.
+`ProfileScreen.tsx` era di TASK-172 finché non è entrato in `main` (#194):
+prima si sono scritti solo i file nuovi di `src/profile/` e i loro test.
+In `AppFavorites.test.tsx` e `AppActivities.test.tsx` cambia una riga
+sola: l'attesa di «LOGGED IN AS», che non c'è più.
 
 ## Fuori scope
 
@@ -90,24 +93,24 @@ scrivono solo i file nuovi di `src/profile/` e i loro test.
   183, 184, 185.
 - Le pagine «Favorites» e «My activities»: restano come sono.
 
-## A che punto è (2026-10-02, 15:00)
-
-Fatti e pushati: `src/profile/` (`Avatar`, `ProfileHome`, `SettingsPage` con
-le nove voci «Soon») e i loro 9 test, ADR-0145. Mancano, tutti dopo
-TASK-172 (#194, verde e CLEAN alle 15:00, non ancora in `main`):
-
-1. aggiornare il branch da `origin/main`;
-2. `ProfileScreen.tsx`: pagina `"settings"`, `ProfileHome` al posto di
-   `SignedIn`, `SettingsPage`, ritorno a `"account"` quando si esce da
-   «Settings»; `Profile.test.tsx` («Log out», «Delete account» passano da
-   «Settings»), la riga «LOGGED IN AS» di `AppFavorites.test.tsx`;
-3. `UI.md` «Profile», `STATUS.md`, prova nel simulatore, PR, coda.
-
-Dell'utente, dati in questa sessione: l'ok ad aggiornare il server a `main`
-dopo TASK-172 (`DEPLOY.md` F.12, immagine `shaperoute-api:before-task172`,
-avvisando il coordinatore prima e dopo) e a pubblicare su `preview` quando
-TASK-177 è in `main`, a server pronto.
-
 ## Esito
 
-*(si compila a fine task)*
+Fatto il 2026-10-02. `src/profile/` ha `Avatar`, `ProfileHome` e
+`SettingsPage`; `ProfileScreen.tsx` li monta, con la pagina `"settings"` e
+il ritorno a `"account"` quando si esce dall'account da lì. `ProfileLayer.tsx`
+non è cambiato. 1018 test dell'app verdi (10 nuovi), `tsc`, `expo lint` e
+Prettier puliti.
+
+Visto nel simulatore (iPhone 17e, Expo Go, API locale con un account di
+prova, due preferiti e una corsa): le due pagine sono come descritte in
+`UI.md`. I tocchi non si sono potuti provare nel simulatore (serve il
+permesso dell'utente): li coprono i test. **Da provare sull'iPhone**
+dall'utente, dopo la pubblicazione su `preview`.
+
+Insieme a questo task, con l'ok dell'utente dato in questa sessione: il
+server aggiornato a `main` `781fb18` (migrazione `0003_runs`), perché
+«My activities» di TASK-172 risponda prima della pubblicazione.
+
+Lasciato ai task successivi: ogni voce «Soon» (TASK-178, 182, 183, 184,
+185); la foto nel cerchio e nel pulsante in alto (TASK-178); TASK-189
+aggiunge la sezione «Sport» a `SettingsPage.tsx`.

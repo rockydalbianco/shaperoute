@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
+import { shapeLabel } from "../feed/FeedPost";
 import type { Place } from "../places/photon";
 import {
   color,
@@ -9,7 +10,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { EXAMPLE_DISTANCE_M, type Example } from "./exampleRoutes";
+import { EXAMPLE_DISTANCE_M, type Example, shownExamples } from "./exampleRoutes";
 import { cityShort } from "./presets";
 import type { RecommendedRoute } from "./recommendedRoutes";
 import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
@@ -28,31 +29,31 @@ const STATUS: Record<"waiting" | "drawing", string> = {
   drawing: "Drawing…",
 };
 
-function capitalised(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
 /**
  * Examples for a city without recommended routes (TASK-143): one card per
- * shape, filled when its route arrives; a ready one opens on the map.
+ * shape, filled when its route arrives; a ready one opens on the map. After
+ * the first shapes come others, a card each from its turn on (TASK-176).
  */
 export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) {
   const window = useWindowDimensions();
   // Two cards side by side inside the section, as in «Best near you».
   const card = cardWidth((width ?? window.width - 2 * space.lg) - 2 * space.md);
-  const failed = examples.filter((e) => e.status === "failed");
+  const shown = shownExamples(examples);
+  const failed = shown.filter((e) => e.status === "failed");
   const messages = Array.from(new Set(failed.map((e) => e.message)));
+  // Something is still to draw, the other shapes too: the note says to wait.
+  const coming = examples.some((e) => e.status === "waiting" || e.status === "drawing");
   return (
     <View style={styles.section}>
       <Text
         style={styles.label}
       >{`EXAMPLES IN ${cityShort(city.label).toUpperCase()}`}</Text>
       <Text style={styles.note}>
-        {`No recommended routes here yet: three shapes of ${EXAMPLE_DISTANCE_M / 1000} km from the centre, drawn now.`}
+        {`No recommended routes here yet: shapes of ${EXAMPLE_DISTANCE_M / 1000} km from the centre, drawn now.${coming ? " Three first, more while you choose." : ""}`}
       </Text>
       <View style={styles.grid}>
-        {examples.map((example) => {
-          const name = capitalised(example.shape);
+        {shown.map((example) => {
+          const name = shapeLabel(example.shape);
           if (example.status === "ready") {
             const { route } = example;
             const km = (route.route_m / 1000).toFixed(1);

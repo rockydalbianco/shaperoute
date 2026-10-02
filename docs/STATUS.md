@@ -128,6 +128,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sul telefono; accendere uno sport è una riga di `src/settings/sport.ts`.
   Solo app, nessuna dipendenza nuova. **Da pubblicare su `preview`**, con
   l'ok dell'utente.
+- **App** — TASK-176: tre richieste dell'utente su «Explore»
+  (ADR-0144). **I filtri non ci sono più**: «Best near you» mostra tutti
+  i percorsi. **Scelta una città, dopo cuore, cerchio e stella l'app
+  disegna altre cinque forme** mentre si guardano le prime (luna, cavallo,
+  lumaca, testa di cane, testa di coniglio: quelle che a 5 km dal centro
+  vengono meglio, misurate su quattro città), una alla volta, ognuna una
+  scheda quando tocca a lei; anche nelle città con percorsi consigliati,
+  in coda alle loro schede. Il cerchio si chiede per primo: una città nuova
+  scarica una zona sola invece di due. **«My start» è diventato «Near
+  me»**, la prima voce della fila delle città, accesa finché non se ne
+  sceglie una. Nell'API cambia solo l'ordine in cui `draw_examples`
+  chiede le prime tre forme. Visto in un simulatore con un'API
+  locale: le otto forme a Padova, e Milano con tre forme nel catalogo che
+  ne riceve altre cinque. **Da pubblicare su `preview`** con l'ok
+  dell'utente, poi **da provare sull'iPhone**. Nelle 62 città con gli esempi già disegnati sul server
+  (TASK-168) le prime tre forme arrivano subito e le altre cinque le
+  disegna il primo telefono, 7–19 s l'una; poi restano sull'API per tutti.
 - **App** — TASK-177: «Profile» con un aspetto nuovo e «Settings», chiesti
   dall'utente (ADR-0145). Con l'account, in alto il cerchio con l'iniziale,
   il nome e l'email; due riquadri con ❤️ «Favorites» e 🏃‍♂️ «My activities»

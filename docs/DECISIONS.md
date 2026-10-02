@@ -5780,6 +5780,141 @@ foto, ADR-0146, che riusa `Avatar`), TASK-183 (email e telefono), TASK-182
 (unità), TASK-184 (help, termini, privacy, dopo TASK-152) e TASK-185
 (notifiche, per ultime).
 
+## ADR-0144 — «Explore»: niente filtri, altre forme dopo le prime tre, «Near me» al posto di «My start»
+**Stato**: Attiva · 2026-10-02 · **scelta dell'utente** per il cosa
+(«toglimi i filtri, non mi piacciono»; le prime tre figure «più velocemente
+possibile, ma poi allo stesso tempo cerca di farne altre mentre li
+selezionano»; «non mi piace il tasto My start … non è intuibile, devi
+rivederla»); il come deciso dall'agente su delega dell'utente
+(TASK-176). Supera la parte dei filtri di ADR-0135 e allarga ADR-0116.
+
+**Contesto**: «Best near you» aveva due filtri in una riga, «Shape» e
+«Distance» (ADR-0135). Una città scelta senza percorsi consigliati
+disegnava tre esempi, cuore, cerchio e stella da 5 km, e poi si fermava
+(ADR-0116); una con percorsi consigliati mostrava solo quelli. Per tornare
+dalla città ai percorsi vicini c'era un pulsante «My start» accanto al nome
+della città, sotto il campo di ricerca.
+
+**Decisione**:
+- **I filtri si tolgono**, non si nascondono: `RouteFilters.tsx` e i suoi
+  test si cancellano, con `filterOptions` e `filtered`. «Best near you»
+  mostra tutti i percorsi nell'ordine dell'API, i migliori per primi.
+- **Dopo le prime tre forme l'app ne disegna altre cinque**: luna, cavallo,
+  lumaca, testa di cane, testa di coniglio (`MORE_SHAPES` in
+  `exampleRoutes.ts`). Scelte misurando, il 2026-10-02 sul Mac, ogni forma
+  del catalogo a 5 km dal centro di quattro città, come la chiede l'app
+  (somiglianza del percorso scelto dal motore):
+
+  | Forma | Trento | Verona | Bologna | Padova | Media |
+  |---|---|---|---|---|---|
+  | cavallo | 0,98 | 0,97 | 0,99 | 0,94 | 0,97 |
+  | lumaca | 0,92 | 0,99 | 0,95 | 0,94 | 0,95 |
+  | stella | 0,92 | 0,97 | 0,96 | 0,94 | 0,95 |
+  | luna | 0,92 | 0,94 | 0,97 | 0,92 | 0,94 |
+  | testa di cane | 0,92 | 0,90 | 0,98 | 0,90 | 0,92 |
+  | testa di coniglio | 0,91 | 0,91 | 0,94 | 0,92 | 0,92 |
+  | cerchio | 0,91 | 0,92 | 0,92 | 0,91 | 0,92 |
+  | cuore | 0,81 | 0,91 | 0,95 | 0,94 | 0,90 |
+  | farfalla | 0,89 | 0,94 | 0,89 | 0,88 | 0,90 |
+  | gatto | 0,83 | 0,92 | 0,88 | 0,81 | 0,86 |
+  | pesce | 0,87 | 0,77 | 0,75 | 0,75 | 0,79 |
+
+  Le cinque scelte vengono come il cerchio e il cuore o meglio; farfalla,
+  gatto e pesce restano fuori, zucca e albero di Natale sono di stagione.
+- **Una alla volta, come le prime**: l'API lavora due richieste alla volta e
+  il motore usa già più processi (ADR-0136 ha scartato le richieste
+  insieme). Le altre forme partono solo quando le prime tre sono finite.
+- **Una scheda solo quando tocca a lei.** La forma in corso ha la scheda
+  «Drawing…», quelle dopo non si annunciano: nessuno le ha chieste, e una
+  fila di schede vuote spingerebbe sotto lo schermo i disegni del feed
+  (ADR-0132). Una forma che l'API non riesce a disegnare lì
+  (`shape_not_drawable`) non compare e non viene richiesta finché l'app
+  resta aperta: darebbe lo stesso esito al costo di una ricerca intera. Un
+  guaio che non è della forma (rete, troppe richieste al minuto) ferma le
+  altre in silenzio; si richiedono alla prossima scelta della città. Le
+  prime tre si comportano come prima: scheda, messaggio, «Try again».
+- **Le forme in più stanno dentro una parte del limite dell'API**
+  (`EXAMPLES_PER_MINUTE`, 18). L'API accetta 30 POST al minuto da un
+  telefono (ADR-0076), e una città che ha già disegnato risponde subito
+  alle sue otto richieste: tre città così in un minuto li userebbero
+  tutti, e verrebbero rifiutati «Start», «Export GPX» o le prime tre forme
+  della città dopo. Le prime tre non aspettano mai, e costano quanto
+  prima; una forma in più parte solo se nell'ultimo minuto sono partite
+  meno di 18 richieste di esempi, altrimenti aspetta, senza scheda.
+  Il tetto è preso sul 30 che l'API ha da sola, non su quello del server:
+  lì oggi `SHAPEROUTE_RATE_LIMIT` è 120 a telefono (`deploy/.env`, rimasto
+  da quando tutti i telefoni contavano come uno), e `DEPLOY.md` F.12 dice
+  che può tornare vuoto, cioè a 30. L'app non sa quale dei due vale, e
+  con 120 il tetto costa solo l'attesa delle forme in più della terza
+  città sfogliata in un minuto.
+- **Il cerchio si chiede per primo**, anche se la prima scheda resta il
+  cuore. La zona di una forma è un quadrato attorno al centro, largo quanto
+  la forma arriva lontano, e l'API ne scarica una solo se nessuna di quelle
+  sul disco la contiene (`covering_path`). Mezzo lato a 5 km, dal motore:
+  cerchio 2751 m, cuore 2718, luna 2579, stella 2471, cavallo 2426, lumaca
+  1971, testa di coniglio 1794, testa di cane 1681. Col cuore per primo una
+  città nuova per l'API scaricava la zona del cuore e subito dopo quella
+  del cerchio, 33 m più larga per lato: due download da Overpass invece di
+  uno (a Rovereto, prima che avesse la zona, i log di TASK-168 ne contano
+  uno per forma). Fra le altre forme la luna va per prima per lo stesso
+  motivo. **Lo stesso ordine nell'API**: `EXAMPLE_SHAPES` in
+  `prefetch_zones.py` diventa cerchio, cuore, stella, e da lì lo prende
+  `draw_examples`, così app e server chiedono le prime tre allo stesso
+  modo. Per le zone di `prefetch_zones` l'ordine non conta: sono
+  l'unione delle aree.
+- **Anche le città con percorsi consigliati**: fra le otto forme l'app
+  disegna quelle che la città non ha, e le aggiunge in coda alle sue
+  schede, uguali alle altre. Sono tutte «in più»: niente sezione degli
+  esempi, niente messaggi. Le città in evidenza, che dal catalogo hanno
+  solo cuore, cerchio e stella (ADR-0132), ricevono così le altre cinque.
+  Senza una città scelta non si disegna niente: una richiesta dalla
+  posizione di chi usa l'app non resta sull'API (ADR-0136), e si rifarebbe
+  a ogni apertura. Sulle schede aggiunte la città ha il nome che le danno
+  le sue schede del catalogo («Milano», dove la ricerca dice «Milan»): è
+  quello del percorso che parte più vicino al centro, entro un chilometro
+  (`ownCityName`); vale anche per la scheda sulla mappa.
+- **I disegni del feed sotto gli esempi** (ADR-0132) restano legati alle
+  prime tre forme: quando arrivano le altre c'è già qualcosa da scegliere.
+- **«Near me» è la prima voce della fila delle città**, con il segno della
+  posizione (un anello col suo centro, due `View`: nessuna icona nuova). È
+  accesa finché non si sceglie una città; da una città, un tocco riporta
+  ai percorsi vicini alla partenza. La riga col nome della città e «My
+  start» sparisce: la città scelta è la voce accesa, e il suo nome intero
+  è già sotto il titolo della pagina («Starting within 5 km of …»).
+
+**Scartate**: nascondere i filtri dietro un pulsante (l'utente non li
+vuole); disegnare le otto forme insieme, o a coppie (i due thread
+dell'API); annunciare subito tutte le schede (cinque schede vuote in più, e
+i disegni del feed fuori dallo schermo); una soglia di somiglianza per le
+altre forme (le prime tre non l'hanno, e la scheda dice già la
+percentuale); `maintainVisibleContentPosition` sulla pagina, per non
+spostare i disegni del feed quando si aggiunge una riga di schede (terrebbe
+fermo anche quello che sta sotto il campo della città quando compaiono i
+suggerimenti, spingendo il campo fuori dallo schermo); aggiungere le
+altre cinque forme a `EXAMPLE_SHAPES` dell'API perché `draw_examples` le
+disegni prima (oltre un'ora e mezza di calcolo in più sulle città già
+previste, e restano comunque sull'API dal primo telefono: si può fare
+dopo, rilanciando il comando); chiamare la voce col nome
+della partenza quando è un luogo cercato (servirebbe una riga in `App.tsx`,
+che è di altri task in lavorazione); un pulsante con una freccia, o «Back
+to my position» scritto per esteso (resta un pulsante in più, lontano
+dalla fila in cui si sceglie).
+
+**Conseguenze**: una città nuova chiede all'API otto percorsi invece di
+tre, sempre uno alla volta: sul server 7–19 s l'uno (TASK-168, dai log),
+ma solo al primo telefono, perché restano sull'API come le prime tre. Nelle
+62 città disegnate prima con `draw_examples` le prime tre arrivano subito,
+e il primo telefono disegna le altre cinque. Chi sfoglia più di due città
+già disegnate per intero in un minuto vede le forme in più della terza
+arrivare quando il minuto è passato. Il file degli esempi sul
+telefono tiene fino a otto percorsi per città invece di tre (ultime 8
+città). Quando si aggiunge una riga di schede i disegni del feed scendono
+di una riga, al più due volte. `draw_examples` disegna ancora solo le
+prime tre forme. Se la partenza è un
+luogo cercato e non la posizione, la voce dice comunque «Near me». Con la
+mappa sotto le schede (ADR-0142) ogni forma in più chiede anche la sua
+foto. Da provare con il dito sull'iPhone.
+
 ## ADR-0152 — «Sport» in «Settings»: un elenco nell'app, la scelta sul telefono, «Soon» finché il motore non c'è
 **Stato**: Attiva · 2026-10-02 · **scelta dell'utente** («Nelle
 impostazioni, fai scegliere anche il tipo di sport, perché poi

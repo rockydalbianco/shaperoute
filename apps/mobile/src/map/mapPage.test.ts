@@ -1,4 +1,4 @@
-import { color } from "../theme/tokens";
+import { color, walk } from "../theme/tokens";
 import {
   buildMapPage,
   FOLLOW_ZOOM,
@@ -19,6 +19,9 @@ import {
   START_HERE_COLOR,
   START_HERE_LABEL,
   TRACK_WIDTH,
+  WALK_COLOR,
+  WALK_DASH,
+  WALK_WIDTH,
 } from "./mapPage";
 
 const page = buildMapPage();
@@ -182,4 +185,25 @@ test("the other routes are thin and grey, under the route (TASK-093)", () => {
   expect(OTHER_ROUTE_COLOR).not.toBe(ROUTE_COLOR);
   const handler = page.slice(page.indexOf('message.type === "showOthers"'));
   expect(handler.slice(0, handler.indexOf("clearTrack"))).not.toContain("fitBounds");
+});
+
+test("the walks of a word with the pen up are dashed, under the route (TASK-198)", () => {
+  const page = buildMapPage();
+  expect(WALK_COLOR).toBe(walk.color);
+  expect(tokenColours.has(WALK_COLOR)).toBe(true);
+  // Not yellow: only the letters are the drawing.
+  expect(WALK_COLOR).not.toBe(ROUTE_COLOR);
+  expect(WALK_WIDTH).toBeLessThan(ROUTE_WIDTH);
+  expect(page).toContain('map.addSource("walks"');
+  expect(page).toContain(`"line-dasharray": ${JSON.stringify(WALK_DASH)}`);
+  expect(page.indexOf('id: "others"')).toBeLessThan(page.indexOf('id: "walks"'));
+  expect(page.indexOf('id: "walks"')).toBeLessThan(page.indexOf('id: "route"'));
+  // With walks the route is its letters; without, one line as before.
+  const handler = page.slice(page.indexOf('message.type === "showRoute"'));
+  const shown = handler.slice(0, handler.indexOf('message.type === "follow"'));
+  expect(shown).toContain('{ type: "MultiLineString", coordinates: message.letters }');
+  expect(shown).toContain('{ type: "LineString", coordinates: points }');
+  expect(shown).toContain("setWalks(");
+  const cleared = page.slice(page.indexOf('message.type === "clearRoute"'));
+  expect(cleared).toContain("setWalks(noRoute)");
 });

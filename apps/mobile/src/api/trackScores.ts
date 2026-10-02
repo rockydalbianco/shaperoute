@@ -16,7 +16,8 @@ export type ScoreOutcome =
   | { kind: "bad_answer"; status: number }
   | { kind: "cancelled" };
 
-/** The run as POST /track-scores wants it. */
+/** The run as POST /track-scores wants it. The walks of a word with the pen
+ * up go with it (TASK-198): the run is judged on the letters alone. */
 export function toScoreRequest(run: ScorableRun): TrackScoreRequest {
   return {
     points: run.route,
@@ -26,6 +27,8 @@ export function toScoreRequest(run: ScorableRun): TrackScoreRequest {
       time_ms: fix.timeMs,
       accuracy_m: fix.accuracyM,
     })),
+    // Only with walks: the request of any other run is as it was.
+    ...(run.walks !== undefined && run.walks.length > 0 ? { walks: run.walks } : {}),
   };
 }
 

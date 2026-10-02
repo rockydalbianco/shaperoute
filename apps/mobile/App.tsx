@@ -205,6 +205,8 @@ function Sgrava() {
         : {
             start: activity.track[0] ?? null,
             route: activity.points,
+            // «My activities» keeps no walks: its route is one line.
+            walks: null,
             others: NO_OTHERS,
             track: activity.track,
           },
@@ -229,6 +231,9 @@ function Sgrava() {
   const [wordText, setWordText] = useState("");
   const wordCheck = checkWord(wordText, distanceM);
   const [letterStyle, setLetterStyle] = useState<LetterStyle>("round");
+  // The pen lifted between the letters (TASK-198): off until the user
+  // chooses otherwise, so an API older than TASK-197 is never asked for it.
+  const [penUp, setPenUp] = useState(false);
   const image = useImageOutline(API_URL);
   // Past RouteChoice to the image panel (TASK-079).
   const { edits, add, undo } = image;
@@ -269,7 +274,7 @@ function Sgrava() {
   // with the details drawn on it (TASK-079).
   const drawn:
     | { shape: Shape }
-    | { word: string; style: LetterStyle }
+    | { word: string; style: LetterStyle; pen_up?: true }
     | { outline: OutlinePoint[]; strokes?: OutlinePoint[][] }
     | null =
     kind === "shape"
@@ -278,7 +283,12 @@ function Sgrava() {
         : null
       : kind === "word"
         ? wordCheck.ok
-          ? { word: wordCheck.word, style: letterStyle }
+          ? {
+              word: wordCheck.word,
+              style: letterStyle,
+              // Only when on: a request without it is the one of before.
+              ...(penUp ? { pen_up: true as const } : {}),
+            }
           : null
         : image.state.status === "traced"
           ? {
@@ -328,12 +338,19 @@ function Sgrava() {
   const startDirections = useStartDirections(API_URL);
   const [exploreRun, setExploreRun] = useState<ExploreRun | null>(null);
   const followed = exploreRun ?? chosen;
+  // The walks of a drawn word with the pen up (TASK-198); a route of
+  // "Explore" has none.
+  const followedWalks = exploreRun === null ? (chosen?.walks ?? null) : null;
   const navigating = screen === "navigate" && followed !== null;
   const navigation = useNavigation(
     followed?.points ?? null,
     followed?.directions ?? NO_DIRECTIONS,
     navigating,
     followed?.similarity,
+    {
+      walks: followedWalks ?? undefined,
+      word: exploreRun === null ? chosen?.word : null,
+    },
   );
   const finishing = screen === "finish" && finished !== null;
   // A run without a route (TASK-149): the map follows the runner and draws
@@ -601,6 +618,13 @@ function Sgrava() {
                         : null
                       : (followed?.points ?? null)
             }
+            walks={
+              finishing
+                ? finished.run.walks
+                : running || freeFinishing || theming || exploring
+                  ? null
+                  : followedWalks
+            }
             // Only while choosing, a drawn route or an example of "Explore"
             // (TASK-155): running, or on a themed route, one route is the route.
             others={
@@ -833,6 +857,8 @@ function Sgrava() {
                       wordCheck={wordCheck}
                       letterStyle={letterStyle}
                       onLetterStyle={setLetterStyle}
+                      penUp={penUp}
+                      onPenUp={setPenUp}
                       image={image.state}
                       onChooseImage={image.choose}
                       distanceText={distanceText}

@@ -53,6 +53,50 @@ test("showRoute marks where to go only when the route begins away", () => {
   expect(START_HERE_M).toBe(50);
 });
 
+test("a word with the pen up sends its letters and its walks apart (TASK-198)", () => {
+  const route: [number, number][] = [
+    [46.01, 11.3],
+    [46.02, 11.3],
+    [46.03, 11.3],
+    [46.03, 11.31],
+    [46.02, 11.31],
+  ];
+  expect(showRoute(route, null, [[1, 3]])).toEqual({
+    type: "showRoute",
+    // The whole line still frames the map.
+    coordinates: [
+      [11.3, 46.01],
+      [11.3, 46.02],
+      [11.3, 46.03],
+      [11.31, 46.03],
+      [11.31, 46.02],
+    ],
+    startHere: null,
+    letters: [
+      [
+        [11.3, 46.01],
+        [11.3, 46.02],
+      ],
+      [
+        [11.31, 46.03],
+        [11.31, 46.02],
+      ],
+    ],
+    walks: [
+      [
+        [11.3, 46.02],
+        [11.3, 46.03],
+        [11.31, 46.03],
+      ],
+    ],
+  });
+  // No walks, or walks that do not fit the route: the message of before.
+  const before = showRoute(route);
+  expect(showRoute(route, null, [])).toEqual(before);
+  expect(showRoute(route, null, [[3, 9]])).toEqual(before);
+  expect(before).not.toHaveProperty("walks");
+});
+
 test("pageScript hands the message to the page and returns true", () => {
   const script = pageScript(setPosition([46.0671, 11.1214]));
   expect(script).toBe(

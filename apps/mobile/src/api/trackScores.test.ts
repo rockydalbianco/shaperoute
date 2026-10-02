@@ -1,4 +1,5 @@
 import scoreRequest from "@shaperoute/shared-types/fixtures/track-score-request.json";
+import walkedRequest from "@shaperoute/shared-types/fixtures/track-score-request-walks.json";
 import scored from "@shaperoute/shared-types/fixtures/track-score.json";
 import type {
   LatLon,
@@ -98,4 +99,31 @@ test("the key goes with the request (TASK-081)", async () => {
   await requestTrackScore(URL, RUN, { fetchFn, key: "secret-key-for-tests" });
   const init = (fetchFn.mock.calls[0] as unknown[])[1] as RequestInit;
   expect(new Headers(init.headers).get("X-API-Key")).toBe("secret-key-for-tests");
+});
+
+test("a word run with the pen up sends its walks (TASK-198)", async () => {
+  const request = walkedRequest as TrackScoreRequest;
+  const run: ScorableRun = {
+    version: 1,
+    route: request.points,
+    similarity: request.similarity,
+    walks: request.walks,
+    status: "arrived",
+    track: {
+      distanceM: 3000,
+      fixes: request.track.map((fix) => ({
+        point: fix.point as LatLon,
+        timeMs: fix.time_ms,
+        accuracyM: fix.accuracy_m ?? null,
+      })),
+    },
+  };
+  // The same request as the contract's fixture with walks.
+  expect(toScoreRequest(run)).toEqual(walkedRequest);
+  const fetchFn = answering(200, scored);
+  await requestTrackScore(URL, run, { fetchFn });
+  const init = (fetchFn.mock.calls[0] as unknown[])[1] as RequestInit;
+  expect(JSON.parse(init.body as string).walks).toEqual([[2, 5]]);
+  // Empty walks are none: the request of any other run.
+  expect(toScoreRequest({ ...run, walks: [] })).not.toHaveProperty("walks");
 });

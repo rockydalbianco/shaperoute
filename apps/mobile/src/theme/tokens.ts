@@ -155,3 +155,14 @@ export const route = {
   width: 5,
   opacity: 0.95,
 } as const;
+
+/** The walks of a word with the pen up (TASK-198): the way from one letter
+ * to the next, followed but not drawn. Dashed and grey, under the route, so
+ * the letters alone are yellow and the word still reads. */
+export const walk = {
+  color: color.textMuted,
+  width: 3,
+  opacity: 0.9,
+  /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
+  dash: [2, 1.5],
+} as const;

@@ -83,6 +83,24 @@ export function thenText(then: Direction[]): string {
   return `Then ${then.map((d) => lower(instruction(d))).join(", then ")}`;
 }
 
+/**
+ * At the end of a letter of a word with the pen up (TASK-198): "Letter
+ * done. Walk to the A: the drawing is paused." `letter` is the next one, or
+ * null when the word does not say which.
+ */
+export function penUpCue(letter: string | null): string {
+  return `Letter done. Walk to ${letterWords(letter)}: the drawing is paused.`;
+}
+
+/** At the start of the next letter: "Pen down: draw the A." */
+export function penDownCue(letter: string | null): string {
+  return `Pen down: draw ${letterWords(letter)}.`;
+}
+
+function letterWords(letter: string | null): string {
+  return letter === null ? "the next letter" : `the ${letter}`;
+}
+
 /** Metres as a runner hears them: to 10 m, and never "0 metres". */
 export function roundMetres(metres: number): number {
   return Math.max(10, Math.round(metres / 10) * 10);

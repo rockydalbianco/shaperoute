@@ -1,4 +1,4 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { LatLon, Walk } from "@shaperoute/shared-types";
 import { File, Paths } from "expo-file-system";
 
 import {
@@ -6,6 +6,8 @@ import {
   continueTrack,
   emptyTrack,
   pauseTrack,
+  penDownTrack,
+  penUpTrack,
   resumeTrack,
   type Track,
   type TrackFix,
@@ -33,6 +35,9 @@ export type SavedRun = {
   /** How much that route looks like its shape (RouteResult.similarity):
    * the score needs it (ADR-0090). Absent in a file older than TASK-113. */
   similarity?: number;
+  /** The route's walks, for a word with the pen up (TASK-198): the score
+   * leaves them out. Absent for any other route, and before TASK-198. */
+  walks?: Walk[];
   track: Track;
   status: RunStatus;
 };
@@ -111,7 +116,16 @@ function isPause(value: unknown): boolean {
   return (
     typeof pause.fromMs === "number" &&
     (pause.toMs === null || typeof pause.toMs === "number") &&
-    (pause.auto === undefined || pause.auto === true)
+    (pause.auto === undefined || pause.auto === true) &&
+    (pause.pen === undefined || pause.pen === true)
+  );
+}
+
+function isWalk(value: unknown): value is Walk {
+  return (
+    Array.isArray(value) &&
+    value.length === 2 &&
+    value.every((index) => Number.isInteger(index))
   );
 }
 
@@ -126,6 +140,8 @@ function isSavedRun(value: unknown): value is SavedRun {
     Array.isArray(run.route) &&
     run.route.every(isLatLon) &&
     (run.similarity === undefined || typeof run.similarity === "number") &&
+    (run.walks === undefined ||
+      (Array.isArray(run.walks) && run.walks.every(isWalk))) &&
     (run.status === "running" ||
       run.status === "stopped" ||
       run.status === "arrived") &&
@@ -172,6 +188,12 @@ export type RunRecorder = {
   pause(nowMs: number, auto?: boolean): void;
   /** The run goes on from `nowMs`. */
   resume(nowMs: number): void;
+  /** The pen is lifted at the end of a letter (TASK-198): the run waits
+   * from `nowMs`, a pause of the pen's, unless the runner paused it. */
+  liftPen(nowMs: number): void;
+  /** The next letter starts: the pen's pause ends at `nowMs`; any other
+   * pause stays. */
+  lowerPen(nowMs: number): void;
   /** The run is left: what there is goes to the file. */
   stop(): void;
   track(): Track;
@@ -180,20 +202,26 @@ export type RunRecorder = {
 /**
  * Records the run along `route` and keeps the file up to date. Starting
  * again the route of a run stopped lately goes on with its track; anything
- * else in the file is replaced at the first fix kept.
+ * else in the file is replaced at the first fix kept. `walks` are the
+ * route's, for a word with the pen up (TASK-198): kept for the score.
  */
 export function startRun(
   route: LatLon[],
   nowMs: number,
   similarity?: number,
+  walks: readonly Walk[] = [],
 ): RunRecorder {
   let track = resumable(loadRun(), route, nowMs) ?? emptyTrack();
   let status: RunStatus = "running";
   let savedMs: number | null = null;
   let unsaved = false;
 
+  // Only with walks: the file of any other run is as it was.
+  const walked =
+    walks.length > 0 ? { walks: walks.map(([from, to]): Walk => [from, to]) } : {};
+
   function save(): void {
-    saveRun({ version: 1, route, similarity, track, status });
+    saveRun({ version: 1, route, similarity, ...walked, track, status });
     unsaved = false;
   }
 
@@ -227,6 +255,23 @@ export function startRun(
     },
     resume(nowMs) {
       const next = resumeTrack(track, nowMs);
+      if (status === "running" && next !== track) {
+        track = next;
+        unsaved = true;
+      }
+    },
+    liftPen(nowMs) {
+      const next = penUpTrack(track, nowMs);
+      // Written at once, as a pause is.
+      if (status === "running" && next !== track) {
+        track = next;
+        if (track.fixes.length > 0) {
+          save();
+        }
+      }
+    },
+    lowerPen(nowMs) {
+      const next = penDownTrack(track, nowMs);
       if (status === "running" && next !== track) {
         track = next;
         unsaved = true;

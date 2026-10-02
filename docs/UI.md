@@ -78,6 +78,14 @@ adattiva, il fondo è nero e l'icona a un colore è il segno bianco. In Expo
 Go sulla schermata di casa resta l'icona di Expo Go: la nostra si vede con
 una build propria. Dentro l'app il nome in cima a «Draw» resta un testo.
 
+**La schermata di avvio** (TASK-165, ADR-0134): fondo `background`, il logo
+giallo al centro. Su iOS il logo intero, largo 260 punti
+(`assets/splash-logo.png`); su Android il segno da solo
+(`assets/splash-icon.png`), perché il sistema ritaglia l'immagine in un
+cerchio. La genera il plugin `expo-splash-screen` da `app.json`: nessun
+codice la tiene aperta, sparisce quando l'app è pronta. Come l'icona, si
+vede solo in una build propria.
+
 ## Le due schermate
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La

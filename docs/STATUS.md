@@ -129,18 +129,25 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `main` (PR #214): la rete `bike` (ciclabili e strade fino alle
   `primary`, mai scale, `trunk` né vie vietate alle bici, sensi unici
   rispettati), la cache `bike_*` accanto ai `foot_*`, `cycling` di 10–30 km
-  nel motore e nella CLI. **Parte B, l'API**, PR #219 (il merge è del
-  coordinatore): `cycling` nel contratto (`shared-types`, anche
+  nel motore e nella CLI. **Parte B, l'API**, in `main` (PR #219):
+  `cycling` nel contratto (`shared-types`, anche
   `DISTANCE_LIMITS_M`), ogni richiesta sulle zone della rete della sua
   attività (una zona della bici in memoria, due a piedi come prima), fuori
   da 10–30 km un `invalid_request` che dice i limiti, le foto in bici, la
   distanza suggerita nei limiti, e `prefetch_zones --activity cycling
   --extract` per zone della bici di 26 × 26 km (stima 0,15–0,6 GB in
-  memoria ciascuna). La corsa non cambia. **Non provata su una zona
-  vera**: la prova sul server (Trento) vuole l'ok dell'utente, comandi nel
-  task file. Da fare: quella prova, i campioni da far giudicare
-  all'utente, la parte C (app, con le due domande del task file). Da dove
-  riprendere: il task file, «Esito».
+  memoria ciascuna). La corsa non cambia. **Parte C, l'app**, PR #PR_C (il
+  merge è del coordinatore): «Bike» si sceglie in «Settings» e vale subito;
+  con «Bike» «Draw» chiede `cycling` fra 10 e 30 km (parole fino a 8
+  lettere, «Ride without a route»); con «Run» le richieste sono quelle di
+  prima, byte per byte. Due testi da confermare con l'utente («Ride without
+  a route», «At most 8 letters.»). **Aspettano l'utente**: le due «Domande
+  aperte» del task file (cosa mostrano «Explore», «Feed» e la corsa con
+  «Bike»: per ora restano quelli della corsa); l'ok per la prova sul server
+  (Trento, comandi nel task file) e poi per pubblicare l'app, in
+  quest'ordine (un'API senza la parte B rifiuta `cycling`); i campioni da
+  giudicare. Da provare sull'iPhone. Da dove riprendere: il task file,
+  «Esito».
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»): **la parte API è fatta**, PR #210:

@@ -1,8 +1,9 @@
 # TASK-190 — Percorsi in bici
 
-**Stato**: In corso (parti A e B fatte; C da fare)
+**Stato**: In corso (parti A, B e C fatte nel codice; mancano i campioni
+giudicati dall'utente e la prova vera di una zona della bici sul server)
 **Fase**: 4 · **Branch**: `feat/TASK-190-bike-routes` (parte A),
-`feat/TASK-190-bike-api` (parte B)
+`feat/TASK-190-bike-api` (parte B), `feat/TASK-190-bike-app` (parte C)
 **Dipende da**: TASK-189 («Sport» in «Settings»: la riga «Bike» da
 accendere), TASK-177 (la pagina «Settings»)
 
@@ -99,11 +100,12 @@ preferisce, tre task: i numeri li dà lui).
       della bici è stata scaricata; nemmeno nella parte B: la prima zona
       vera si fa dall'estratto sul server, con l'ok dell'utente; vedi
       «Esito».)*
-- [ ] Nell'app, con «Bike» scelto, «Draw» chiede un percorso `cycling`
-      fra 10 e 30 km; con «Run» tutto è come prima.
-- [ ] Test deterministici per motore, API e app. *(Motore: parte A; API:
+- [x] Nell'app, con «Bike» scelto, «Draw» chiede un percorso `cycling`
+      fra 10 e 30 km; con «Run» tutto è come prima. *(Parte C, nei test;
+      da provare sull'iPhone.)*
+- [x] Test deterministici per motore, API e app. *(Motore: parte A; API:
       parte B, `tests/test_cycling.py` e gli altri dell'«Esito»; app:
-      parte C.)*
+      parte C, `__tests__/AppBike.test.tsx` e gli altri dell'«Esito».)*
 
 ## File toccati
 
@@ -173,15 +175,44 @@ un errore la sua distanza suggerita; `errors.py` ha `suggested_distance`
 rifà una richiesta in bici sulla rete della bici. `zone_extract.py` e
 `draw_examples.py` non sono cambiati («Esito», parte B).
 
-**Parte C** (app, previsto):
+**Parte C** (app, fatta, PR #PR_C):
 
 ```
 apps/mobile/src/settings/sport.ts
+apps/mobile/src/settings/sport.test.ts
+apps/mobile/src/settings/useSport.ts                  (nuovo)
+apps/mobile/src/settings/SportSetting.test.tsx
+apps/mobile/src/profile/SettingsPage.test.tsx
+apps/mobile/src/route/distance.ts
+apps/mobile/src/route/distance.test.ts
+apps/mobile/src/route/DistanceStepper.tsx
+apps/mobile/src/route/RoutePanel.tsx
+apps/mobile/src/route/RoutePanelBike.test.tsx         (nuovo)
+apps/mobile/src/route/problems.ts
+apps/mobile/src/route/problems.test.ts
+apps/mobile/src/route/wordInput.ts
+apps/mobile/src/route/wordInput.test.ts
+apps/mobile/src/screens/ChooseScreen.tsx
 apps/mobile/App.tsx
+apps/mobile/__tests__/AppBike.test.tsx                (nuovo)
 docs/UI.md
+docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-190.md
 ```
+
+Non nell'elenco previsto, e perché: `distance.ts` e i suoi test (i limiti
+di ogni sport, permessi dal coordinatore); `DistanceStepper.tsx` (− e +
+tenevano i limiti della corsa); `RoutePanel.tsx` (il messaggio «Enter a
+distance between …» e l'attività passata al campo e agli errori);
+`problems.ts` («Try N km» si offriva solo fino a 21 km: in bici fino a
+30); `wordInput.ts` (le lettere di una parola dipendono dalla distanza più
+lunga: 8 in bici); `ChooseScreen.tsx` (le parole del pulsante «Run without
+a route», il solo testo «run» della pagina «Draw»); `SportSetting.test.tsx`
+e `SettingsPage.test.tsx` (dicevano che «Bike» era «Soon»);
+`DECISIONS.md` (l'«Aggiornamento (parte C)» di ADR-0153, per le scelte
+dell'app che l'ADR non copriva). `useRouteRequest.ts` non è cambiato: la
+richiesta porta già `activity`, e `sameRequest` la confronta già.
 
 ## Fuori scope
 
@@ -196,7 +227,10 @@ docs/tasks/TASK-190.md
 
 ## Domande aperte per l'utente
 
-Una per volta, con una proposta, quando si arriva alla parte C:
+Una per volta, con una proposta, quando si arriva alla parte C. **Ancora
+aperte dopo la parte C** (2026-10-02, indicazione del coordinatore: non
+decise; con «Bike» scelto «Explore», «Feed» e la corsa restano quelli di
+oggi). Aspettano l'utente:
 
 1. Con «Bike» scelto, «Explore» e «Feed» mostrano solo percorsi da bici,
    o tutti con un segno dello sport? (Oggi il catalogo ha solo corse.)
@@ -414,6 +448,73 @@ percorso in bici scarica 23–26 km da Overpass: può superare i 5 minuti che
 l'app aspetta (`MAX_WAIT_MS`). Gli eventi delle ricerche (`insights`) non
 scrivono l'attività: un percorso in bici vi sembra una corsa (da decidere
 se serve). Le due «Domande aperte» restano dell'utente.
+
+**Parte C — l'app (2026-10-02)**, PR #PR_C, ADR-0153 («Aggiornamento
+(parte C)»). Minima e reversibile, come chiesto dal coordinatore. Fatto:
+
+- **«Bike» si sceglie** in «Settings» (`ready: true` in `sport.ts`), e la
+  scelta vale subito: `saveSport` la dice a chi ascolta
+  (`subscribeSport`), e `useSport` (nuovo) la porta ad `App.tsx` senza
+  riaprire l'app;
+- **la richiesta**: `activityOf` traduce «Bike» in `cycling`, il resto in
+  `running`; «Draw» la manda in `activity`. **Con «Run» la richiesta è
+  quella di prima, byte per byte** (`AppBike.test.tsx` confronta il corpo
+  mandato con la stringa di prima);
+- **le distanze**: `APP_DISTANCE_LIMITS_KM` in `distance.ts`, corsa 1–21 km
+  come prima, bici 10–30 da `DISTANCE_LIMITS_M.cycling` di `shared-types`;
+  li seguono il campo, il messaggio «Enter a distance between 10 and 30
+  km.», − e +. Uno sport scelto porta la distanza nei suoi limiti
+  (`fitDistance`, la regola di − e +): 5 km diventano 10 in bici, 25 in bici
+  21 a piedi, una distanza che sta nei due resta. In bici si parte quindi da
+  10 km (il minimo, non una scelta: se l'utente ne vuole un'altra è una
+  riga);
+- **le parole in bici** hanno le 8 lettere del contratto (a piedi 7, come
+  prima); oltre: «At most 8 letters.»;
+- **«Try N km»** di `shape_not_drawable` si offre nei limiti dell'attività
+  della richiesta: in bici fino a 30 km (prima solo fino a 21);
+- **il solo testo «run» di «Draw»**, il pulsante «Run without a route», con
+  «Bike» dice «Ride without a route»; la schermata che apre resta quella
+  della corsa;
+- **gli errori** sono i testi di sempre: un'API senza la parte B risponde
+  `invalid_request` e la scheda dice «The app and the API do not agree (a
+  bug): invalid_request.», col testo dell'API sotto; un percorso in bici
+  che passa i 5 minuti dice «The API took more than 5 minutes. Try again
+  later, or a shorter distance.». `MAX_WAIT_MS` non cambia;
+- **non toccati**: «Explore», «Feed», la schermata della corsa (le due
+  «Domande aperte», che restano dell'utente), `useRouteRequest.ts`.
+
+**Testi nuovi, da confermare con l'utente**: «Ride without a route» (il
+pulsante con «Bike») e «At most 8 letters.» (una parola troppo lunga in
+bici).
+
+**Verificato**: app 1.185 test verdi, 44 nuovi: `__tests__/AppBike.test.tsx`
+(8: la richiesta della corsa byte per byte, 1–21 km a piedi, «Bike» dal
+telefono a 10 km con `cycling`, 10–30 km, la scelta in «Settings» che
+cambia «Draw» subito e torna indietro, l'`invalid_request` di un'API
+vecchia, i 5 minuti, una parola di 8 lettere),
+`src/route/RoutePanelBike.test.tsx` (5), e in `distance.test.ts`,
+`wordInput.test.ts`, `problems.test.ts`, `sport.test.ts`,
+`SportSetting.test.tsx`; con `activity` di nuovo fisso a `running` quattro
+test di `AppBike` falliscono. `shared-types` 21 test; `typecheck`, `lint`,
+`format:check` puliti.
+
+**Non verificato, e perché**: **da provare sull'iPhone** (la scelta in
+«Settings» che cambia «Draw» subito, il pulsante, − e +, un percorso in
+bici vero). L'API sul server non ha la parte B: finché non si aggiorna (con
+l'ok dell'utente, «La prova sul server» qui sopra) a una richiesta
+`cycling` risponde `invalid_request`, e non ha zone della bici. **Ordine
+per la pubblicazione** (anche lei con l'ok dell'utente): prima il server
+con la parte B e almeno la zona di Trento, poi l'app; al contrario chi
+sceglie «Bike» legge «The app and the API do not agree».
+
+**Seguiti** (non fatti, da decidere): l'avviso dello sterrato del motore
+(«… m of the route on unpaved roads») arriva com'è, senza la frase semplice
+di `warnings.ts`; con la penna alzata in bici la scheda dice «km walking
+between them»; un percorso in bici tenuto fra i preferiti non ricorda
+l'attività (`src/favorites/favoriteRoute.ts` rifà le richieste come corse;
+cartella di TASK-199 mentre si scriveva); «Start» su un percorso in bici apre
+la navigazione della corsa (voce e ritmo: «Fuori scope» e domanda 2); gli
+`insights` senza l'attività (parte B).
 
 ## Note per il deploy
 

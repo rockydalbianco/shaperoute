@@ -108,7 +108,8 @@ prima ed «Explore» sono due delle tre pagine affiancate (sotto, «Le
 pagine»):
 
 1. **«What to draw»**, all'apertura: la pagina «Draw». Dall'alto: il nome
-   «Sgrava» con il pulsante «Run without a route» (TASK-149, sotto); una
+   «Sgrava» con il pulsante «Run without a route» (TASK-149, sotto; «Ride
+   without a route» con «Bike», TASK-190); una
    scheda che dice da dove partirà il percorso,
    con, quando servono, il rimando alle Impostazioni e la ricerca del
    luogo; l'errore della mappa; le forme del catalogo come tessere, con un
@@ -383,10 +384,15 @@ nessun pulsante dell'account è giallo.
 - **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,
   sotto); poi «Change email» e «Phone number», con la scritta «Soon».
 - **«Sport»** (TASK-189, ADR-0152): per cosa sono i percorsi. Tre righe:
-  «Run» (🏃‍♂️), scelto, con un «✓» bianco; «Bike» (🚴) e «Paddle» (🛶:
-  canoa, kayak, SUP) con «Soon», che non si toccano finché il motore non
-  disegna i loro percorsi (TASK-190, TASK-191). Uno sport pronto si
-  sceglie con un tocco; la scelta resta sul telefono, non nell'account.
+  «Run» (🏃‍♂️), scelto all'inizio, con un «✓» bianco; «Bike» (🚴), che
+  si sceglie dal TASK-190; «Paddle» (🛶: canoa, kayak, SUP) con «Soon», che
+  non si tocca finché il motore non disegna i suoi percorsi (TASK-191). Uno
+  sport pronto si sceglie con un tocco; la scelta resta sul telefono, non
+  nell'account, e vale subito, senza riaprire l'app. **Con «Bike»** cambia
+  solo «Draw» (sotto, «Forma e distanza»): percorsi su strade da bici, da
+  10 a 30 km. «Explore», «Feed» e la schermata della corsa restano quelli
+  della corsa: cosa mostrano con la bici è una scelta dell'utente ancora
+  aperta (`tasks/TASK-190.md`, «Domande aperte»).
 - **«Preferences»**: «Units», «Soon». **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».
@@ -664,6 +670,7 @@ forma»), e la manda come `word`, in maiuscole e senza `shape`:
 | Uno spazio in mezzo | One word only, without spaces. | spento |
 | Una lettera fuori da A–Z | No letter “À”: a word can use only the letters A to Z, without accents. | spento |
 | Più di 7 lettere | At most 7 letters: each needs 3 km, and the app goes up to 21 km. | spento |
+| Con «Bike», più di 8 lettere (TASK-190) | At most 8 letters. (**da confermare con l'utente**) | spento |
 | Meno di 3 km a lettera | “CIAO” needs at least 12 km: 3 km for each letter. e il tasto «Use 12 km» | spento |
 | La parola va | 4 letters: at least 12 km. A word takes a few minutes to draw. | acceso |
 
@@ -688,7 +695,8 @@ Non si salva fra un avvio e l'altro.
 
 - Le lettere sono `LETTERS` di `shared-types`; il contratto ne ammette 8
   (`MAX_WORD_LETTERS`), ma a 3 km l'una (`LETTER_DISTANCE_M`) l'ottava
-  vorrebbe 24 km, oltre i 21 dell'app: il limite dell'app è 7.
+  vorrebbe 24 km, oltre i 21 dell'app: il limite dell'app è 7. Con «Bike»,
+  fino a 30 km, le 8 del contratto (TASK-190).
 - Gli accenti non si tolgono di nascosto: «città» dice quale lettera manca,
   come l'API.
 - «Use 12 km» scrive la distanza minima nel campo dei km.
@@ -703,14 +711,23 @@ La **distanza** si scrive con il tastierino numerico (ADR-0034):
 - da 1 a **21 km**: il limite lo hanno deciso le misure (`API.md`, «Oltre
   15 km»), e sta in una costante dell'app (`MAX_APP_DISTANCE_KM`). Motore
   e contratto arrivano a 50 km;
+- **con «Bike»** (TASK-190): da **10 a 30 km**, i limiti della bici nel
+  contratto (`DISTANCE_LIMITS_M.cycling`, scelta dell'utente); messaggio,
+  − e + seguono quei limiti. I limiti di ogni sport stanno in
+  `APP_DISTANCE_LIMITS_KM` (`src/route/distance.ts`);
 - con un valore non valido, anche il campo vuoto, sotto compare «Enter a
   distance between 1 and 21 km.» e «Draw route» resta spento;
 - sopra i 15 km, prima della richiesta: «Long routes take longer: up to a
   few minutes.»
 
-Di partenza «heart» e 5 km. L'attività è sempre `running` e non si
-mostra. − e + cambiano la distanza di 1 km, fermi fra 1 e 21; un valore fuori
-dai limiti torna dentro, un testo che non è un numero riparte da 1. Il
+Di partenza «heart» e 5 km (10 con «Bike»). L'attività non si mostra:
+è `running`, o `cycling` con «Bike» scelto in «Settings» (TASK-190); con
+«Run» la richiesta è quella di prima, campo per campo. Uno sport scelto
+mentre l'app è aperta porta la distanza nei suoi limiti, come − e +: 5 km
+di corsa diventano 10 in bici, 25 in bici diventano 21 a piedi; una
+distanza che sta nei due resta com'è. − e + cambiano la distanza di 1 km,
+fermi fra 1 e 21 (fra 10 e 30 in bici); un valore fuori dai limiti torna
+dentro, un testo che non è un numero riparte dal minimo. Il
 tastierino numerico non ha il tasto invio: si chiude toccando «Draw
 route»; quello della forma si chiude con «Fine». Mentre una tastiera è
 aperta la schermata si accorcia perché non copra i campi.
@@ -843,6 +860,10 @@ Forma e distanza non si cambiano durante l'attesa.
   21 km (`API.md`, «Tempi»).
 - Dopo 5 minuti l'app smette di aspettare e dice all'API di lasciar
   perdere.
+- **In bici** (TASK-190) fuori dalle zone della bici scaricate prima il
+  server scarica 23–26 km di mappa da Overpass: può passare i 5 minuti, e
+  allora si legge il messaggio di sempre («The API took more than 5
+  minutes…»). I tempi veri in bici non sono ancora misurati (ADR-0153).
 - Due errori di rete di fila durante l'attesa si perdonano; al terzo l'app
   dice che l'API non si raggiunge.
 - Una parola chiede più tempo di una forma: 40–140 s per «CIAO» a 15 km,
@@ -1141,7 +1162,9 @@ principale.
 
 **«Run without a route»**, in alto nella pagina «Draw» accanto a «Sgrava»,
 fa partire una corsa senza disegnare niente: niente forma, niente percorso,
-niente API. La scritta è per intero (TASK-158, chiesto dall'utente): «Run» da
+niente API. Con «Bike» scelto in «Settings» il pulsante dice **«Ride without
+a route»** (TASK-190, **da confermare con l'utente**); la schermata che apre
+resta quella della corsa (domanda 2 di `tasks/TASK-190.md`). La scritta è per intero (TASK-158, chiesto dall'utente): «Run» da
 solo si leggeva come correre il percorso scelto sotto. Si apre la mappa, che segue la posizione come in navigazione (zoom
 17) e disegna la linea corsa fin lì, sottile e chiara (`track`), con la
 freccia di direzione della navigazione. Senza percorso non ci sono svolte
@@ -1206,13 +1229,13 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 | Caso | Messaggio |
 |---|---|
 | Forma che non ci sta, con una distanza che ci sta (`shape_not_drawable`, ADR-0041) | This shape does not fit the roads here at this distance. It fits at about 4 km. e un pulsante «Try 4 km» che scrive la distanza e ridisegna |
-| Forma che non ci sta, senza distanza (somiglianza bassa, o distanza oltre 21 km) | This shape does not fit the roads here. Try another shape, or another start: e le forme del catalogo come pulsanti |
+| Forma che non ci sta, senza distanza (somiglianza bassa, o distanza fuori da quelle di «Draw»: oltre 21 km, in bici fuori da 10–30) | This shape does not fit the roads here. Try another shape, or another start: e le forme del catalogo come pulsanti |
 | Contorno di un'immagine che non ci sta (TASK-073) | come per la forma, con «This image…»; senza distanza: This outline does not fit the roads here. Try another distance, another start, or a simpler picture. (niente forme da toccare) |
 | Parola che non ci sta (TASK-057) | come per la forma, con «This word…»; senza distanza: This word does not fit the roads here. Try a shorter word, or another start. (niente forme da toccare) |
 | Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
 | Errore del motore (`engine_error`) | The route engine failed. Try again; if it happens again, look at the API log. |
 | L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas tree. |
-| `invalid_request`, `http_error`, risposta illeggibile | The app and the API do not agree (a bug): … |
+| `invalid_request`, `http_error`, risposta illeggibile | The app and the API do not agree (a bug): … (anche un percorso in bici chiesto a un'API più vecchia di TASK-190, parte B, che conosce solo `running`: sotto, il testo dell'API) |
 | API non raggiungibile | Cannot reach the API at http://…:8000. Start it on the PC with --lan, on the same Wi-Fi. |
 | Nessun risultato in 5 minuti | The API took more than 5 minutes. Try again later, or a shorter distance. |
 | L'API non conosce più la richiesta (riavviata) | The API lost this request (was it restarted?). Try again. |
@@ -1300,7 +1323,9 @@ iOS chiude la pagina per liberare memoria, la WebView la ricarica da sola.
 - Forme nuove nel catalogo: si disegnano, si provano e si giudicano prima
   di entrare (ADR-0036).
 - Distanze oltre i 21 km: aspettano un download delle zone più veloce
-  (ADR-0009).
+  (ADR-0009). In bici arrivano a 30 km (TASK-190).
+- Con «Bike» scelto, cosa mostrano «Explore», «Feed» e la schermata della
+  corsa: due domande per l'utente in `tasks/TASK-190.md`.
 - Miglia al posto dei km.
 - Avvisi in parole semplici: oggi l'app riconosce i testi del motore
   (ADR-0048); la strada pulita sono i codici negli avvisi del contratto.

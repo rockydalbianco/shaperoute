@@ -17,12 +17,28 @@ import {
 
 import { apiKey as configuredKey, keyHeaders } from "./apiUrl";
 
-/** How often the app asks where a route job stands (ADR-0032). */
+/** How often the app asks where a route job stands (ADR-0032), at most. */
 export const POLL_MS = 2_000;
+/**
+ * The first asks come sooner (ADR-0136): a 5 km route is ready in a
+ * couple of seconds, and asked every 2 s it was seen up to 2 s late, three
+ * times over for a city's examples. Each pair: until so long after the
+ * request, ask this often. A long route is then asked as before.
+ */
+export const QUICK_POLLS: readonly (readonly [untilMs: number, everyMs: number])[] = [
+  [6_000, 500],
+  [20_000, 1_000],
+];
 /** When the app stops waiting: the worst case seen was about 165 s. */
 export const MAX_WAIT_MS = 5 * 60_000;
 /** Network errors in a row while waiting before the API counts as gone. */
 export const MAX_POLL_FAILURES = 3;
+
+/** How long to wait before asking again, `waitedMs` after the request. */
+export function pollDelay(waitedMs: number, pollMs: number = POLL_MS): number {
+  const quick = QUICK_POLLS.find(([untilMs]) => waitedMs < untilMs);
+  return quick === undefined ? pollMs : Math.min(quick[1], pollMs);
+}
 
 /** Every way a route request can end. */
 export type RouteOutcome =
@@ -67,8 +83,9 @@ export function isImageRequest(request: AnyRouteRequest): request is ImageRouteR
 
 /**
  * Asks the API for a route in two steps (ADR-0032): POST /route-jobs answers
- * at once with a job, then GET /route-jobs/{id} every `pollMs` until the job
- * is done or failed. An image's outline is posted to /image-route-jobs
+ * at once with a job, then GET /route-jobs/{id} until the job is done or
+ * failed: often at first, then every `pollMs` (`pollDelay`). A route the API
+ * kept is done in the first answer, and nothing is asked again. An image's outline is posted to /image-route-jobs
  * instead (ADR-0069), and read the same way. Never throws.
  */
 export async function requestRoute(
@@ -83,7 +100,8 @@ export async function requestRoute(
     maxWaitMs = MAX_WAIT_MS,
   }: Options = {},
 ): Promise<RouteOutcome> {
-  const deadline = Date.now() + maxWaitMs;
+  const asked = Date.now();
+  const deadline = asked + maxWaitMs;
   const auth = keyHeaders(apiKey);
   let answer: Answer;
   try {
@@ -122,7 +140,7 @@ export async function requestRoute(
       return { kind: "timeout" };
     }
     try {
-      await sleep(pollMs, signal);
+      await sleep(pollDelay(Date.now() - asked, pollMs), signal);
       answer = await call(fetchFn, jobUrl, { headers: auth, signal });
     } catch {
       if (signal?.aborted) {

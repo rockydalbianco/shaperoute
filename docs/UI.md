@@ -174,6 +174,9 @@ pagine»):
    della zona
    non si scarica, un messaggio solo e «Try again». Gli esempi pronti
    restano sul telefono (ultime 8 città): la volta dopo sono subito lì.
+   Restano anche sull'API (TASK-168, ADR-0136): in una città che qualcuno ha
+   già aperto, o disegnata prima con `draw_examples`, le tre schede hanno
+   il disegno appena scelta la città, senza «Drawing…».
    Una città con percorsi consigliati mostra quelli e non chiede esempi.
 
    **Da TASK-163**, chiesto dall'utente: finché un esempio è «Next» o
@@ -586,7 +589,8 @@ semplici, con sotto il testo del motore:
 
 «Draw route» è spento finché non c'è una partenza. Toccato, la richiesta va
 all'API in due tempi (ADR-0032): l'API la accetta subito, poi l'app chiede
-ogni 2 s a che punto è. La scheda dice cosa sta succedendo e offre «Cancel»;
+a che punto è: ogni mezzo secondo nei primi 6 s, ogni secondo fino a 20 s,
+poi ogni 2 s (ADR-0136). La scheda dice cosa sta succedendo e offre «Cancel»;
 sotto, una barra gialla che avanza (TASK-055, ADR-0050). L'API dice la fase,
 non una percentuale, quindi la barra è una stima: ogni fase ha il suo
 tratto (in coda fino all'8%, download della zona fino al 45%, calcolo fino

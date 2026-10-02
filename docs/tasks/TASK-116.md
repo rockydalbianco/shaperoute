@@ -107,7 +107,7 @@ docs/tasks/TASK-116.md
 
 ## Esito
 
-Fatto il 2026-10-02 (ADR-0128, migrazione `0007_profiles.sql`), PR
+Fatto il 2026-10-02 (ADR-0128, migrazione `0007_profiles.sql`), PR #224
 «TASK-116: username, bio and Edit profile» (il merge è del coordinatore).
 
 **Cosa funziona**

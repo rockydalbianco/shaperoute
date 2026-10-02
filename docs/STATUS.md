@@ -34,11 +34,12 @@ molti download rifiuta per qualche ora (`MAPS.md`).
 **TASK-122 — le copie fuori dal server**: il server è spostato, manca lo
 Storage Box Hetzner, che crea l'utente (`DEPLOY.md` F.13, punto 2); poi
 il servizio `offsite` sul server. Dopo, la parte social (`ROADMAP.md`,
-«La parte social») riprende da **TASK-116** (il profilo), **TASK-117**
+«La parte social») riprende da **TASK-116** (il profilo: fatto, PR #224,
+aspetta il merge, il server e l'app), **TASK-117**
 (pubblicare una corsa: salvarla è già di TASK-172, e il suo task file va
 aggiornato da chi lo prende) e **TASK-118** (il feed vero, al posto degli esempi
 di TASK-156), poi 119–121. **TASK-092 — Percorsi consigliati** (ADR-0086)
-ora ha il database e il server. Tutti Todo.
+ora ha il database e il server. Gli altri Todo.
 
 In coda, dopo o accanto:
 
@@ -185,6 +186,27 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (app). Da dove riprendere: `tasks/TASK-191.md`, «Esito».
 
 ## Completato
+
+- **API e app** — TASK-116: il profilo, nome utente, bio e «Edit profile»
+  (ADR-0128, migrazione `0007`), PR #224 (il merge è del coordinatore). In
+  «Profile» sotto il nome ci sono la bio e «Edit profile», che apre una
+  pagina con nome e bio: salvati, «Profile», «Settings» e il pulsante in
+  alto li mostrano subito, e il portachiavi li tiene. API: `PATCH /me`
+  (solo ciò che cambia; il nome con la regola dell'iscrizione, punto
+  compreso; la bio al più 160 caratteri; errori in parole, `409
+  username_taken`) e `GET /users/{public_id}`, solo con il token: nome,
+  bio, foto e disegni pubblicati (0 finché non c'è TASK-117), **mai
+  l'email** (test). `public_id` è un UUID casuale nuovo in `users`, non
+  l'id in sequenza. Migrazione `0007_profiles.sql`: `bio` e `public_id` in
+  `users`, provata su dati dello schema 0001–0006 (sessioni di prima
+  valide). La pagina in sola lettura del profilo di un altro c'è, ma
+  nessuna strada ci porta: da dove si apre lo decide l'utente. Testi nuovi
+  e domande da confermare con l'utente in `tasks/TASK-116.md`, «Esito».
+  **Migrazione e «Edit profile» arrivano al telefono solo dopo**
+  l'aggiornamento del server (con la `0007`) e la pubblicazione dell'app,
+  tutti e due con l'ok dell'utente: finché il server è quello di oggi,
+  «Save» dice «Editing the profile is not available on this API yet.».
+  Non provato su un telefono.
 
 - **API e app** — TASK-199: la penna alzata in «My activities» e nei
   preferiti, i seguiti di TASK-198 (ADR-0158, migrazione `0006`), PR #222

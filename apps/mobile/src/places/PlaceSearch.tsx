@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -131,7 +132,7 @@ export function PlaceSearch({ onSelect, near = null, find }: Props) {
       <View style={styles.row}>
         <TextInput
           style={styles.input}
-          placeholder="City or street"
+          placeholder={t("City or street")}
           placeholderTextColor={color.textFaint}
           keyboardAppearance="dark"
           value={query}
@@ -141,16 +142,18 @@ export function PlaceSearch({ onSelect, near = null, find }: Props) {
           autoCorrect={false}
         />
         <Pressable style={styles.button} onPress={submit} accessibilityRole="button">
-          <Text style={styles.buttonText}>Search</Text>
+          <Text style={styles.buttonText}>{t("Search")}</Text>
         </Pressable>
       </View>
-      {search.status === "searching" && <Text style={styles.note}>Searching…</Text>}
+      {search.status === "searching" && (
+        <Text style={styles.note}>{t("Searching…")}</Text>
+      )}
       {search.status === "none" && (
-        <Text style={styles.note}>No place found. Try adding the city.</Text>
+        <Text style={styles.note}>{t("No place found. Try adding the city.")}</Text>
       )}
       {search.status === "failed" && (
         <Text style={styles.note}>
-          The search failed. Check the connection and try again.
+          {t("The search failed. Check the connection and try again.")}
         </Text>
       )}
       {search.status === "found" && (
@@ -165,7 +168,7 @@ export function PlaceSearch({ onSelect, near = null, find }: Props) {
               <Text style={styles.placeText}>{place.label}</Text>
             </Pressable>
           ))}
-          <Text style={styles.credit}>© OpenStreetMap contributors</Text>
+          <Text style={styles.credit}>{t("© OpenStreetMap contributors")}</Text>
         </View>
       )}
     </View>

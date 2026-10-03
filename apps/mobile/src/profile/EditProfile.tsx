@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import type { Account } from "../account/useAccount";
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -72,10 +73,10 @@ export function EditProfile({ user, account, onDone }: Props) {
   return (
     <View style={styles.form}>
       <Field
-        label="USERNAME"
+        label={t("USERNAME")}
         value={username}
         onChangeText={setUsername}
-        placeholder="3 to 20 letters, digits, _ or ."
+        placeholder={t("3 to 20 letters, digits, _ or .")}
         autoComplete="username-new"
         textContentType="nickname"
         returnKeyType="next"
@@ -85,10 +86,10 @@ export function EditProfile({ user, account, onDone }: Props) {
       <View style={styles.field}>
         <Field
           ref={bioField}
-          label="BIO"
+          label={t("BIO")}
           value={bio}
           onChangeText={setBio}
-          placeholder="A few words about you"
+          placeholder={t("A few words about you")}
           multiline
           autoCapitalize="sentences"
           autoCorrect
@@ -96,7 +97,10 @@ export function EditProfile({ user, account, onDone }: Props) {
         />
         <Text
           style={[styles.count, over && styles.countOver]}
-          accessibilityLabel={`${length} of ${BIO_MAX_LENGTH} characters`}
+          accessibilityLabel={t("{length} of {max} characters", {
+            length,
+            max: BIO_MAX_LENGTH,
+          })}
         >
           {`${length}/${BIO_MAX_LENGTH}`}
         </Text>
@@ -108,7 +112,7 @@ export function EditProfile({ user, account, onDone }: Props) {
         accessibilityRole="button"
         accessibilityState={{ disabled: saving, busy: saving }}
       >
-        <Text style={styles.buttonText}>{saving ? "Saving…" : "Save"}</Text>
+        <Text style={styles.buttonText}>{t(saving ? "Saving…" : "Save")}</Text>
       </Pressable>
       {problem !== null && <Text style={styles.problem}>{problem}</Text>}
     </View>

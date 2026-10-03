@@ -2,6 +2,7 @@ import type { User } from "@shaperoute/shared-types";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -11,7 +12,7 @@ import {
   space,
 } from "../theme/tokens";
 import { DrawingsGrid } from "../social/DrawingsGrid";
-import { PHOTO_BUSY_TEXT, PhotoChoices } from "./PhotoChoices";
+import { photoBusyText, PhotoChoices } from "./PhotoChoices";
 import { ProfileHeader } from "./ProfileHeader";
 import { bioOf } from "./profileFields";
 import { useProfilePhoto } from "./useProfilePhoto";
@@ -47,7 +48,7 @@ type Props = {
 export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Props) {
   const photo = useProfilePhoto();
   const [photoOpen, setPhotoOpen] = useState(false);
-  const busyText = photo.busy === null ? null : PHOTO_BUSY_TEXT[photo.busy];
+  const busyText = photoBusyText(photo.busy);
   return (
     <View style={styles.home}>
       <View style={styles.top}>
@@ -78,19 +79,19 @@ export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Pro
           onPress={onEdit}
           accessibilityRole="button"
         >
-          <Text style={styles.editText}>Edit profile</Text>
+          <Text style={styles.editText}>{t("Edit profile")}</Text>
         </Pressable>
       </View>
       <View style={styles.tiles}>
         <Tile
           emoji={SECTION_EMOJI.favorites}
-          name="Favorites"
+          name={t("Favorites")}
           count={favorites}
           onPress={() => onOpen("favorites")}
         />
         <Tile
           emoji={SECTION_EMOJI.activities}
-          name="My activities"
+          name={t("My activities")}
           count={activities}
           onPress={() => onOpen("activities")}
         />
@@ -99,12 +100,12 @@ export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Pro
         style={({ pressed }) => [styles.row, pressed && styles.pressed]}
         onPress={() => onOpen("settings")}
         accessibilityRole="button"
-        accessibilityLabel="Settings"
+        accessibilityLabel={t("Settings")}
       >
         <View style={styles.badge}>
           <Text style={styles.emoji}>{SECTION_EMOJI.settings}</Text>
         </View>
-        <Text style={styles.rowText}>Settings</Text>
+        <Text style={styles.rowText}>{t("Settings")}</Text>
         <Text style={styles.rowArrow}>›</Text>
       </Pressable>
       <DrawingsGrid publicId={user.public_id ?? null} own />

@@ -7805,6 +7805,82 @@ nome (spezzano chi è).
 di TASK-178, sul telefono funziona solo con il server alla migrazione
 `0005` e l'app pubblicata.
 
+## ADR-0172 — La lingua dell'app: l'inglese resta la base e la chiave, la lingua del telefono alla partenza, nessuna dipendenza
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-210). La richiesta e le cinque lingue sono dell'utente; la lingua di
+partenza (quella del telefono) è una sua scelta del 2026-10-03; il modo,
+qui sotto, è dell'agente. TASK-210 e ADR-0172 dati dal coordinatore.
+
+**Contesto**: `CLAUDE.md` e ADR-0007 vogliono i testi dell'interfaccia in
+inglese, come il codice, e `UI.md` diceva «le traduzioni verranno dopo».
+L'utente chiede di scegliere in «Settings» fra inglese, tedesco, italiano,
+spagnolo e francese. I testi sono scritti a mano in un centinaio di file,
+e altri lavori li stanno toccando.
+
+**Decisione**:
+
+1. **L'inglese resta la lingua del codice e la base.** Ogni testo si
+   scrive in inglese nel file che lo mostra, come prima, dentro `t()`:
+   `t("Log out")`. La regola di `CLAUDE.md` vale ancora per chi scrive
+   codice: l'inglese è il testo di partenza, le altre lingue sono
+   traduzioni di quello.
+2. **Il testo inglese è la chiave** delle tabelle (`src/i18n/de.ts`,
+   `it.ts`, `es.ts`, `fr.ts`), non un nome inventato: il file resta
+   leggibile, i test in inglese non cambiano, un testo senza traduzione si
+   mostra **in inglese** invece di rompersi. Un test legge con TypeScript
+   tutte le chiamate dell'app e controlla che ogni lingua abbia ogni testo,
+   con gli stessi `{segni}`, e nessun testo che nessuno mostra più: chi
+   cambia una frase inglese lo vede subito.
+3. **Numeri e parole che cambiano**: un valore entra in un segno, mai
+   incollato a pezzi tradotti (`t("{count} km left", { count })`), perché
+   l'ordine delle parole cambia da lingua a lingua. I decimali si scrivono
+   con la virgola in de, it, es, fr (`decimal()`, e un numero passato a un
+   segno). I plurali con `tPlural(count, uno, altri)`, entrambi con
+   `{count}`: il francese usa la forma «uno» anche per lo zero.
+4. **La lingua di partenza è quella del telefono** se è una delle cinque,
+   la prima che lo è fra le lingue preferite di iOS (`Settings` di React
+   Native, `AppleLanguages`; `I18nManager` altrove); altrimenti
+   l'inglese. **Nessuna dipendenza nuova** (non `expo-localization` né
+   `i18next`): bastano due moduli di React Native e una funzione di
+   sessanta righe. Nei test il telefono non dice niente, quindi l'app è in
+   inglese su ogni macchina.
+5. **La scelta** sta in `language.json` nei documenti, come lo sport
+   (TASK-189); «Phone language» cancella il file. Vale subito: la radice
+   dell'app chiama `useLanguage()` e una lingua nuova ridisegna tutto
+   senza smontare niente (un percorso aperto resta aperto). Un testo
+   tenuto in uno stato (un errore già comparso) resta nella lingua di
+   quando è comparso.
+6. **`t()` si chiama mentre si disegna**, mai al caricamento di un file:
+   una lista fissa tiene il testo inglese dentro `tLater()` e lo traduce
+   dove lo mostra.
+7. **Un solo elenco di lingue**, `src/i18n/languages.ts`, con il nome di
+   ognuna nella sua lingua («Deutsch») e la lingua della voce («de-DE»):
+   la voce di TASK-209 lo legge e segue la lingua dell'app se in «Data»
+   non se ne sceglie un'altra.
+8. **Il tono**: il «tu» in tutte e quattro le lingue, come l'inglese
+   dell'app. Strava e OpenStreetMap con le parole che danno loro nelle
+   varie lingue («Mit Strava verbinden», «© contributori di
+   OpenStreetMap»). Un testo inglese usato in due posti ha una traduzione
+   sola che deve andare bene per entrambi («Keep it» → «Annulla»).
+
+**Perché così**: una chiave inventata («settings.logout») obbliga a
+leggere due file per capire una schermata e cambia ogni test; una libreria
+porta più di quanto serve a cinque lingue con plurali semplici. La lingua
+del telefono è quello che fanno le app sull'iPhone.
+
+**Scartato**: smontare l'app al cambio di lingua (`key` sulla radice: si
+perderebbe il percorso disegnato); l'inglese fisso fino a una scelta (la
+scelta dell'utente è stata l'altra); le bandiere accanto alle lingue
+(l'inglese e lo spagnolo non hanno un paese solo).
+
+**Conseguenze**: tradotta **a pezzi** (TASK-210 parte A e le successive),
+perché altri lavori tengono i file della corsa, di «Draw» e di
+«Explore»: fino all'ultima parte, in italiano alcune schermate restano in
+inglese. I testi che arrivano dall'API (titoli, nomi dei percorsi a tema,
+il nome su Strava) restano in inglese. Le traduzioni le ha riviste
+l'agente su delega dell'utente («controlla te, mi fido»); chi parla le
+altre lingue può migliorarle senza toccare il codice.
+
 ## ADR-0174 — Il logo dopo «Save»: il giallo e il logo dell'avvio, 1,65 s, sopra l'app, anche senza rete
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-212). La richiesta («Finita l'attività, quando la salvi deve uscire

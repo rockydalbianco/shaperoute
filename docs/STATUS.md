@@ -251,6 +251,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   l'aggiornamento del server con la `0009` prima di pubblicare l'app, la
   prova sull'iPhone. Da dove riprendere: `tasks/TASK-117.md`, «Esito».
 
+- **TASK-210 — La lingua dell'app** (ADR-0172; scelte dell'utente: inglese,
+  tedesco, italiano, spagnolo, francese; senza scelta la lingua del
+  telefono). **Parte A** (PR da `feat/TASK-210-app-language`): `src/i18n/`
+  (l'inglese come chiave, `t()`, i plurali, la virgola dei decimali, la
+  scelta in `language.json`, la lingua del telefono senza dipendenze), la
+  riga «Language» in «Settings» sotto «Preferences», le quattro tabelle e
+  `t()` in «Settings», «Profile», l'accesso, «My activities», i preferiti,
+  i disegni, il feed, Strava e la ricerca del luogo. Provata nel
+  simulatore con il telefono in italiano: «Settings» parte in italiano,
+  «Deutsch» la cambia subito e resta dopo un riavvio. **Le parti
+  successive** (i file di TASK-191 C, TASK-208, TASK-209: «Draw»,
+  «Explore», la corsa, la riga «Sport») dopo il loro merge. L'utente ha
+  delegato il controllo delle traduzioni e dato l'ok a pubblicare
+  (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
+  vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:
+  `tasks/TASK-210.md`.
+
 ## Completato
 
 - **API** — TASK-213: nessun commento negativo (ADR-0176, scelta

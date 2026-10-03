@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -10,7 +11,7 @@ import {
   space,
 } from "../theme/tokens";
 import { Avatar } from "./Avatar";
-import { PHOTO_BUSY_TEXT, PhotoChoices } from "./PhotoChoices";
+import { photoBusyText, PhotoChoices } from "./PhotoChoices";
 import { useProfilePhoto } from "./useProfilePhoto";
 
 const PHOTO_SIZE = MIN_TAP_SIZE - space.xs;
@@ -25,7 +26,7 @@ export function PhotoRow({ name }: { name: string }) {
   const photo = useProfilePhoto();
   const [open, setOpen] = useState(false);
   const busy = photo.busy !== null;
-  const busyText = photo.busy === null ? null : PHOTO_BUSY_TEXT[photo.busy];
+  const busyText = photoBusyText(photo.busy);
   return (
     <View style={styles.menu}>
       <Pressable
@@ -38,12 +39,14 @@ export function PhotoRow({ name }: { name: string }) {
         accessibilityRole="button"
         // One name for the row: the emoji and the picture are not read.
         accessibilityLabel={
-          busyText !== null ? `Profile picture, ${busyText}` : "Profile picture"
+          busyText !== null
+            ? `${t("Profile picture")}, ${busyText}`
+            : t("Profile picture")
         }
         accessibilityState={{ expanded: open, disabled: busy, busy }}
       >
         <Text style={styles.emoji}>📷</Text>
-        <Text style={styles.rowText}>Profile picture</Text>
+        <Text style={styles.rowText}>{t("Profile picture")}</Text>
         {busyText !== null && <Text style={styles.busyText}>{busyText}</Text>}
         <Avatar name={name} size={PHOTO_SIZE} photo={photo.uri} />
       </Pressable>

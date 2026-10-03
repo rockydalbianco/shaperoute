@@ -341,6 +341,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (TASK-152), poi gli amici dai contatti (numero nell'account, SMS di
   verifica, `expo-contacts`: da chiedere), Facebook per ultimo. Strava non
   si può: l'API non dà più amici né follower. `tasks/TASK-219.md`.
+- **App** — TASK-218: le immagini ufficiali di Strava (ADR-0181; chiesto
+  dall'utente il 2026-10-03). «Connect with Strava» è il pulsante del
+  pacchetto di Strava (237 × 48 pt, in inglese in ogni lingua) a fine
+  corsa, in «Settings» e sulla corsa aperta; l'interruttore «Send to
+  Strava» ha sotto le parole il logo bianco «Compatible with Strava».
+  Immagini mai ridisegnate, nessuna dipendenza né testo nuovo; i token
+  `strava` e `onStrava` restano senza uso finché `tokens.ts` è di
+  TASK-206. Visto nel simulatore. Sul telefono con la prossima
+  pubblicazione (ok dell'utente), e solo quando il server ha Strava.
+  Task file: `tasks/TASK-218.md`.
 - **Motore, API e app** — TASK-206: forme in bici più riconoscibili con
   brevi tratti con la bici a mano (ADR-0167; scelta dell'utente «Sì,
   poco»). Parte A, il motore, PR #249 (marciapiedi, sentieri, zone

@@ -52,7 +52,7 @@ ciano di «Start here».
 | `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
-| `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | solo «Connect with Strava» (TASK-187): l'arancione e il bianco che le regole del marchio Strava chiedono, scelti dall'utente |
+| `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | nessuno dal TASK-218: «Connect with Strava» (TASK-187) ora è l'immagine ufficiale di Strava, con i suoi colori dentro (ADR-0181); da togliere quando `tokens.ts` è libero |
 | `map.*` | dal `#0D0E10` al `#3A3D45` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
 
 Quattro regole:
@@ -483,7 +483,8 @@ com'è scritto, e il commento non entra mai nella WebView della mappa.
   della corsa: cosa mostrano con la bici è una scelta dell'utente ancora
   aperta (`tasks/TASK-190.md`, «Domande aperte»).
 - **«Strava»** (TASK-187), solo se l'API ha Strava: «Connect with
-  Strava» (arancione) con «Send the runs you save in Sgrava to your Strava
+  Strava» (il pulsante ufficiale di Strava, TASK-218, come a fine corsa)
+  con «Send the runs you save in Sgrava to your Strava
   profile.»; collegato, «Connected as Ada Lovelace» e «Disconnect Strava»,
   in rosso, che chiede prima: «Disconnect Strava? Runs already sent stay
   on Strava.», con «Keep it» e «Disconnect».
@@ -1519,13 +1520,18 @@ mostra le lettere unite da linee dritte sulla base.
 - **«Send to Strava»** (TASK-187, ADR-0156), sopra «Save» e «Discard», solo
   se l'API ha Strava (`GET /me/strava` dice `available`; un'API senza
   Strava, o più vecchia, e niente si vede). Atleta non collegato:
-  **«Connect with Strava»**, arancione con il testo bianco (l'unico
-  pulsante arancione dell'app), e sotto «Connect Strava, and Save sends
-  your runs there too.»; il tocco apre la pagina di Strava nel browser (o
-  nell'app Strava), e tornati in Sgrava la riga si aggiorna da sola.
+  **«Connect with Strava»**, il pulsante ufficiale di Strava così com'è
+  (TASK-218, ADR-0181: l'immagine arancione del suo pacchetto, 237 × 48
+  pt, scritta in inglese in ogni lingua; VoiceOver lo legge nella lingua
+  dell'app), e sotto «Connect Strava, and Save sends your runs there
+  too.»; il tocco apre la pagina di Strava nel browser (o nell'app
+  Strava), e tornati in Sgrava la riga si aggiorna da sola. Mentre si apre
+  il pulsante resta uguale e accanto gira una rotellina.
   Collegato: l'interruttore **«Send to Strava»**, acceso la prima volta e
   poi come lo si è lasciato (scelta dell'utente, sul telefono, in
-  `strava.json`); acceso, sotto, «To Ada Lovelace's Strava, with Save.».
+  `strava.json`), con sotto le parole il logo ufficiale **«Compatible
+  with Strava»**, bianco, alto 16 pt (TASK-218; VoiceOver legge solo
+  l'interruttore); acceso, sotto, «To Ada Lovelace's Strava, with Save.».
   Il nome su Strava è il **«Title»** sopra (TASK-117: prima era un campo
   «Name on Strava» suo): vuoto, l'API dà «Heart in Trento», o per una
   corsa libera il nome di Strava. Con l'interruttore acceso **«Save»**

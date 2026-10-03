@@ -1,4 +1,12 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { t } from "../i18n";
 import {
@@ -11,15 +19,27 @@ import {
 } from "../theme/tokens";
 
 /**
- * The pieces every Strava place of the app shares (TASK-187): the orange
- * button of Strava's brand rules, the name typed for Strava, a line of
- * trouble.
+ * The pieces every Strava place of the app shares (TASK-187): Strava's own
+ * button and logo (TASK-218), the name typed for Strava, a line of trouble.
  */
 
 /** As long as the API keeps a typed name (strava.py, MAX_NAME). */
 export const MAX_STRAVA_NAME = 100;
 
-/** «Connect with Strava»: Strava's orange, Strava's words. */
+/**
+ * Strava's images, from its brand package (developers.strava.com/guidelines,
+ * TASK-218), never redrawn: the button at the 48 pt its rules give, the
+ * white «Compatible with Strava» because the app is dark.
+ */
+const CONNECT_BUTTON = require("../../assets/strava/connect-with-strava.png");
+export const CONNECT_SIZE = { width: 237, height: 48 };
+const COMPATIBLE_LOGO = require("../../assets/strava/compatible-with-strava.png");
+export const COMPATIBLE_SIZE = { width: 189, height: 16 };
+
+/**
+ * «Connect with Strava»: Strava's button as it is. Busy it stays the same,
+ * as the rules ask, and a wheel turns beside it.
+ */
 export function ConnectWithStrava({
   busy,
   onPress,
@@ -28,21 +48,26 @@ export function ConnectWithStrava({
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      style={[styles.connect, busy && styles.busy]}
-      onPress={onPress}
-      disabled={busy}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: busy, busy }}
-    >
-      <Text style={styles.connectText}>
-        {t(busy ? "Opening Strava…" : "Connect with Strava")}
-      </Text>
-    </Pressable>
+    <View style={styles.connect}>
+      <Pressable
+        onPress={onPress}
+        disabled={busy}
+        accessibilityRole="button"
+        accessibilityLabel={t(busy ? "Opening Strava…" : "Connect with Strava")}
+        accessibilityState={{ disabled: busy, busy }}
+      >
+        <Image testID="strava-connect" source={CONNECT_BUTTON} style={CONNECT_SIZE} />
+      </Pressable>
+      {busy && <ActivityIndicator testID="strava-wheel" color={color.textMuted} />}
+    </View>
   );
 }
 
-/** On or off, as the other switches of the app are (RoutePanel's pen). */
+/**
+ * On or off, as the other switches of the app are (RoutePanel's pen), with
+ * «Compatible with Strava» under the words. VoiceOver reads the switch, not
+ * the logo.
+ */
 export function StravaSwitch({
   on,
   onChange,
@@ -58,7 +83,14 @@ export function StravaSwitch({
       accessibilityState={{ checked: on }}
       accessibilityLabel={t("Send to Strava")}
     >
-      <Text style={styles.switchText}>{t("Send to Strava")}</Text>
+      <View style={styles.switchWords}>
+        <Text style={styles.switchText}>{t("Send to Strava")}</Text>
+        <Image
+          testID="strava-compatible"
+          source={COMPATIBLE_LOGO}
+          style={COMPATIBLE_SIZE}
+        />
+      </View>
       <Text style={[styles.switchState, on && styles.switchStateOn]}>
         {t(on ? "On" : "Off")}
       </Text>
@@ -111,20 +143,9 @@ export function StravaLine({ text, alert }: { text: string; alert?: boolean }) {
 
 const styles = StyleSheet.create({
   connect: {
-    minHeight: MIN_TAP_SIZE,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: space.xl,
-    borderRadius: radius.pill,
-    backgroundColor: color.strava,
-  },
-  connectText: {
-    color: color.onStrava,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
-  },
-  busy: {
-    opacity: 0.6,
+    gap: space.md,
   },
   switch: {
     minHeight: MIN_TAP_SIZE,
@@ -133,6 +154,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: space.sm,
     paddingHorizontal: space.md,
+    paddingVertical: space.sm,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: color.border,
@@ -141,8 +163,11 @@ const styles = StyleSheet.create({
   switchOn: {
     borderColor: color.borderStrong,
   },
-  switchText: {
+  switchWords: {
     flex: 1,
+    gap: space.xs,
+  },
+  switchText: {
     color: color.text,
     fontSize: fontSize.body,
     fontWeight: fontWeight.semibold,

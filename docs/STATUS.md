@@ -103,7 +103,7 @@ In coda, dopo o accanto:
   Riccione). La bici: motore (PR #214) e API (PR #219) in `main`, l'app
   (parte C) assegnata il 2026-10-02 sera. La canoa: il motore dell'acqua
   (A1, PR #216) in `main`; **A2** (la canoa in una richiesta del motore)
-  in revisione, con le scelte dell'utente del 2026-10-03: **1–5 km**, al
+  in `main` (PR #235), con le scelte dell'utente del 2026-10-03: **1–5 km**, al
   mare la forma **oltre 200 m dalla riva**, sui laghi 50 m (ADR-0161);
   poi B (API) e C (app). Nel contratto si usa `activity`, che c'è già.
 - **La penna alzata nelle parole**, chiesta e confermata dall'utente il
@@ -195,7 +195,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riva, dove la forma ci sta, la partenza dalla riva dove si arriva a
   piedi; nove campioni a Riccione, Jesolo e Riva del Garda, giudicati
   dall'utente il 2026-10-03 «buoni, ma troppo vicini alla riva». **A2**
-  in revisione (branch `feat/TASK-191-paddle-a2`): `paddling` nel motore,
+  in `main` (PR #235, 2026-10-03): `paddling` nel motore,
   **1–5 km** (scelta dell'utente), al mare la forma **oltre 200 m dalla
   riva** e sui laghi a 50 m (scelta dell'utente), `python -m route_engine
   --activity paddling`, la validazione sull'acqua (errori, non warning),

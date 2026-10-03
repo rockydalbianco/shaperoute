@@ -7461,8 +7461,7 @@ guardare quando l'app avrà una build Android.
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-205). La richiesta è dell'utente («Nella prima schermata a fianco al
 profilo, metti la possibilità di cambiare sport»); il modo, qui sotto, è
-dell'agente. Numero preso come primo libero dopo ADR-0164 (`AGENTI.md`),
-con TASK-205 dato dal coordinatore.
+dell'agente. TASK-205 e ADR-0165 dati dal coordinatore.
 
 **Contesto**: lo sport si sceglieva solo in «Settings» (TASK-189,
 ADR-0152), tre tocchi lontano da «Draw», che con «Bike» chiede percorsi

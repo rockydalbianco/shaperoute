@@ -83,4 +83,4 @@ riga temporanea in una copia, perché il simulatore non prendeva tocchi
 senza il permesso dell'utente. **Da provare sull'iPhone**: il tocco, il
 menu, la scelta, con il prossimo aggiornamento pubblicato (ok
 dell'utente). I testi nuovi («Sport, Run» per VoiceOver, «Changes the
-sport», «Close») sono dell'agente.
+sport», «Close») sono dell'agente, **da confermare con l'utente**.

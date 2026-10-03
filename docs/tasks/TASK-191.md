@@ -1,7 +1,7 @@
 # TASK-191 — Percorsi in canoa e paddle
 
-**Stato**: In corso (A1, A2 e B fatte, PR #216, #235 e #241; C in
-lavorazione; il punto 5 di A2 da fare)
+**Stato**: In corso (A1, A2 e B fatte, PR #216, #235 e #241; C fatta,
+in revisione; il punto 5 di A2 da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-191-paddle-routes` (A1),
 `feat/TASK-191-paddle-a2` (A2), `feat/TASK-191-paddle-api` (B),
 `feat/TASK-191-paddle-app` (C)
@@ -158,9 +158,10 @@ In tre PR, in quest'ordine (se il coordinatore preferisce, tre task).
 - [ ] Una richiesta `running` si comporta come prima.
 - [ ] Campioni di Garda, Como, Jesolo e Riccione in `samples/`, giudicati
       dall'utente.
-- [ ] Nell'app, con «Paddle» scelto, «Draw» chiede un percorso
+- [x] Nell'app, con «Paddle» scelto, «Draw» chiede un percorso
       `paddling` e mostra l'avviso di sicurezza; con «Run» tutto è come
-      prima.
+      prima. *(Parte C: `__tests__/AppPaddle.test.tsx`; i test di prima
+      senza modifiche ai valori, tranne «Paddle» non più «Soon».)*
 - [ ] Test deterministici per motore, API e app; nessuna dipendenza nuova
       senza l'ok dell'utente.
 
@@ -273,7 +274,6 @@ apps/mobile/src/paddle/                                  (nuovi: l'avviso,
 apps/mobile/src/settings/sport.ts
 apps/mobile/src/settings/sport.test.ts
 apps/mobile/src/settings/SportSetting.test.tsx
-apps/mobile/src/settings/SportButton.test.tsx
 apps/mobile/src/profile/SettingsPage.test.tsx
 apps/mobile/src/route/distance.ts
 apps/mobile/src/route/distance.test.ts
@@ -285,6 +285,9 @@ apps/mobile/src/explore/exampleRoutes.ts
 apps/mobile/src/explore/exampleRoutes.test.ts
 apps/mobile/src/explore/explored.ts
 apps/mobile/src/explore/explored.test.ts
+apps/mobile/src/explore/recommendedRoutes.ts
+apps/mobile/src/favorites/favoriteRoute.ts
+apps/mobile/src/favorites/favoriteRoute.test.ts
 apps/mobile/src/theme/waterContrast.test.ts              (nuovo)
 apps/mobile/__tests__/AppPaddle.test.tsx                 (nuovo)
 apps/mobile/App.tsx
@@ -293,6 +296,14 @@ docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-191.md
 ```
+
+Rispetto al primo elenco della parte C: `recommendedRoutes.ts`,
+`favoriteRoute.ts` e il suo test in più, perché un esempio sull'acqua deve
+portare la sua attività fino alla richiesta, all'export e al preferito
+(senza, un preferito d'acqua si riapriva come corsa); `SportButton.test.tsx`
+in meno, perché prova il menu con un elenco suo e non è cambiato. Nessuno
+dei tre è di un task in lavorazione. Niente in `tokens.ts`: la linea si
+legge già (ADR-0169, punto 8).
 
 Tutto il task (B e C dichiarano i loro):
 
@@ -600,6 +611,74 @@ foto da spegnere con «Paddle»; l'avviso di sicurezza.
 Overpass per un'area di 8–10 km di lato. Le aree d'acqua dei quattro
 luoghi d'esempio, scaricate prima sul server, con l'ok dell'utente.
 
+### Parte C — 2026-10-03
+
+Branch `feat/TASK-191-paddle-app`. **Fatto** (ADR-0169; `UI.md`,
+«Sull'acqua: «Paddle»»), con le tre risposte dell'utente (sopra, «Scelte
+dell'utente, parte C»):
+
+- **«Paddle» si sceglie** in «Settings» e dal pulsante dello sport;
+  `activityOf` → `paddling`; «Paddle without a route».
+- **«Draw»**: solo forme del catalogo (niente «Shape | Word | Image»; una
+  parola o una foto scelte prima non si mandano e tornano con un altro
+  sport), 1–5 km anche col mezzo km, il campo parte da 2 km.
+- **Il risultato**: «heart · on the water · target 2 km», «Start» anche
+  senza indicazioni; mai `/route-directions` sull'acqua, nemmeno da
+  «Explore» o dai preferiti. La schermata della corsa è quella di sempre:
+  «Follow the route to the end.», i km, nessuna svolta.
+- **L'avviso di sicurezza** al primo «Start» sull'acqua su questo
+  telefono, a tutto schermo, «I understand» / «Not now»
+  (`paddle-notice.json`).
+- **I testi d'errore dell'acqua**: «There is no lake or sea near this
+  start…», «…does not fit on the water here at this distance. It fits at
+  about 2.5 km.» con «Try 2.5 km», e senza distanza le forme.
+- **«Explore» con «Paddle»**: «On the water», «Near me» e Lago di Garda,
+  Lago di Como, Jesolo, Riccione; cuore, cerchio e stella da 2 km in canoa
+  da un punto della riva scelto a mano (sotto); i percorsi di corsa non ci
+  sono. Un esempio sull'acqua si apre, si esporta, parte e si tiene nei
+  preferiti come canoa. Con «Run» e «Bike» «Explore» è quello di prima.
+- **Il contrasto** della linea sull'acqua: 11,5:1, più che su una strada
+  principale; nessun token nuovo (`waterContrast.test.ts`).
+- **Test**: app 1408 (jest, 158 file; nuovi `AppPaddle`,
+  `RoutePanelPaddle`, `PaddleExplore`, `safetyNotice`, `waterContrast`,
+  più i casi dell'acqua in `problems`, `distance`, `exampleRoutes`,
+  `explored`, `favoriteRoute`, `sport`), tsc, lint, prettier.
+
+**I punti di partenza** degli esempi (punto 9 della parte B, per l'app):
+
+| Luogo | Da | Punto |
+|---|---|---|
+| Lago di Garda | Riva del Garda, lo scivolo alla foce del rio (partenza dei campioni A1) | 45.88114, 10.84559 |
+| Lago di Como | Como, Lungo Lario Trento (Nominatim, 2026-10-03; nessun dato d'acqua scaricato) | 45.81320, 9.08029 |
+| Jesolo | la spiaggia fra due pennelli (partenza dei campioni A1) | 45.50137, 12.63925 |
+| Riccione | la spiaggia (partenza dei campioni A1, la prova dal vero di B) | 44.00355, 12.66338 |
+
+**Bloccato per la prova dal vero**: sul server la canoa funziona solo dove
+l'acqua è già in `data/cache/water/`, perché Overpass rifiuta l'IP del
+server, e da stamattina anche il Mac. La query dell'acqua non ha mai
+avuto risposta da Overpass (ADR-0154), quindi l'acqua dei quattro luoghi,
+per quanto si sa, non c'è (il server non è stato guardato): dove manca,
+ogni richiesta in canoa, da «Draw» o da «Explore», risponde `503
+map_data_unavailable` («Map data for this area could not be downloaded.
+Try again later.»). **Seguito proposto**, con l'ok dell'utente: scaricare
+prima l'acqua dei quattro luoghi (le aree di `water_fit.water_bbox` attorno
+ai punti qui sopra, a 2 km) e metterla sul server; poi la prova
+sull'iPhone. Il server non è toccato, l'app non è pubblicata.
+
+**Non fatto, fuori scope o da chiedere**:
+
+- **Strava**: l'API manda ogni attività come `"Run"`
+  (`strava_client.SPORT_TYPE`): un'uscita in canoa salvata e mandata a
+  Strava ci arriva come corsa (e un giro in bici come corsa). È in
+  `services/`: un task a parte.
+- «Feed», la schermata della corsa (passo al km, calorie), «My activities»
+  restano quelli della corsa; la voce e il punteggio pensati per l'acqua
+  sono fuori scope.
+- Sulla mappa scura acqua e terra sono a 1,15:1: la linea si legge, la
+  riva poco. Schiarire l'acqua cambierebbe la mappa di tutti gli sport: da
+  proporre all'utente, se serve.
+- Testi nuovi **da confermare con l'utente** (`UI.md`, «Sull'acqua»).
+
 ## Note per il deploy
 
 - A2 cambia l'impronta del motore (`engine_fingerprint()`): dopo
@@ -619,3 +698,9 @@ luoghi d'esempio, scaricate prima sul server, con l'ok dell'utente.
   volta. Cambia `models.py`: l'impronta del motore, come A2; un
   aggiornamento solo. L'app con «Paddle» (parte C) si pubblica dopo che il
   server ha la parte B, o «Paddle» riceve `invalid_request`.
+- **Parte C**: solo l'app, niente server. Il server ha la parte B dal
+  2026-10-03 10:00Z (`4b236f9`), ma non l'acqua (sopra, «Bloccato per la
+  prova dal vero»): pubblicare l'app prima dell'acqua sul server dà
+  «Paddle» che risponde sempre «Map data for this area could not be
+  downloaded.». Meglio l'acqua prima, poi la pubblicazione, tutte e due con
+  l'ok dell'utente.

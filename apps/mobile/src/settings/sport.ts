@@ -1,7 +1,8 @@
 import type { Activity } from "@shaperoute/shared-types";
 import { File, Paths } from "expo-file-system";
 
-/** What a route is for: a run, or a bike ride since TASK-190. */
+/** What a route is for: a run, a bike ride since TASK-190, or paddling on a
+ * lake or the sea since TASK-191 (a canoe, a kayak, a SUP). */
 export type Sport = "run" | "bike" | "paddle";
 
 export type SportOption = {
@@ -20,7 +21,7 @@ export type SportOption = {
 export const SPORTS: readonly SportOption[] = [
   { id: "run", emoji: "🏃‍♂️", name: "Run", ready: true },
   { id: "bike", emoji: "🚴", name: "Bike", ready: true },
-  { id: "paddle", emoji: "🛶", name: "Paddle", ready: false },
+  { id: "paddle", emoji: "🛶", name: "Paddle", ready: true },
 ];
 
 export const DEFAULT_SPORT: Sport = "run";
@@ -81,9 +82,29 @@ export function saveSport(sport: Sport): void {
 
 /**
  * What «Draw» asks the API for (TASK-190, ADR-0153): a route on the roads a
- * bike may ride for «Bike», a run for anything else. A sport not ready yet is
- * never the one chosen (loadSport), so it never asks for a run in its name.
+ * bike may ride for «Bike», a shape on the water for «Paddle» (TASK-191,
+ * ADR-0164), a run for «Run».
  */
 export function activityOf(sport: Sport): Activity {
-  return sport === "bike" ? "cycling" : "running";
+  switch (sport) {
+    case "bike":
+      return "cycling";
+    case "paddle":
+      return "paddling";
+    default:
+      return "running";
+  }
+}
+
+/** The way out of «Draw» with the track only (TASK-149), in the sport's
+ * words: «Ride» by bike (TASK-190), «Paddle» on the water (TASK-191). */
+export function withoutRouteLabel(sport: Sport): string {
+  switch (sport) {
+    case "bike":
+      return "Ride without a route";
+    case "paddle":
+      return "Paddle without a route";
+    default:
+      return "Run without a route";
+  }
 }

@@ -46,9 +46,9 @@ test("the settings to come are named, say «Soon» and take no tap", async () =>
   ]) {
     expect(screen.getByLabelText(`${name}, coming soon`)).toBeOnTheScreen();
   }
-  // Eight settings to come, and the sport to come («Sport», TASK-189; the
-  // bike is ready since TASK-190).
-  expect(screen.getAllByText("Soon")).toHaveLength(9);
+  // Eight settings to come; every sport is ready («Sport», TASK-189: the
+  // bike since TASK-190, paddling since TASK-191).
+  expect(screen.getAllByText("Soon")).toHaveLength(8);
   // Only the picture (TASK-178) and the ways out are buttons.
   expect(screen.getAllByRole("button")).toHaveLength(3);
   expect(screen.getByRole("button", { name: "Profile picture" })).toBeOnTheScreen();
@@ -56,12 +56,12 @@ test("the settings to come are named, say «Soon» and take no tap", async () =>
   expect(screen.getByRole("button", { name: "Delete account" })).toBeOnTheScreen();
 });
 
-test("«Sport» has «Run» chosen, «Bike» to choose, «Paddle» to come", async () => {
+test("«Sport» has «Run» chosen, «Bike» and «Paddle» to choose", async () => {
   await show();
   expect(screen.getByText("SPORT")).toBeOnTheScreen();
   expect(screen.getByRole("radio", { name: "Run" })).toBeChecked();
   expect(screen.getByRole("radio", { name: "Bike" })).not.toBeChecked();
-  expect(screen.getByLabelText("Paddle, coming soon")).toBeOnTheScreen();
+  expect(screen.getByRole("radio", { name: "Paddle" })).not.toBeChecked();
 });
 
 test("«Log out» logs out at once", async () => {

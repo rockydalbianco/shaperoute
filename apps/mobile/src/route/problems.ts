@@ -41,6 +41,9 @@ export function problemText(
     case "api_error":
       switch (problem.code) {
         case "shape_not_drawable": {
+          if (activity === "paddling") {
+            return waterProblemText(problem.message, problem.suggested_distance_m);
+          }
           const fits = problem.suggested_distance_m;
           // Offered only within the distances «Draw» offers for it.
           const [lowest, highest] = APP_DISTANCE_LIMITS_KM[activity];
@@ -135,6 +138,42 @@ export function problemText(
         text: "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.",
       };
   }
+}
+
+/** The engine's words for a start with no water near it
+ * (route_engine/water_fit.py, NoWaterError): the API passes them on. */
+const NO_WATER = "no lake or sea";
+
+/**
+ * A shape not drawn on the water (TASK-191, ADR-0169), said for the water
+ * and not the roads: no lake or sea near the start, or a shape that does not
+ * fit within 1 km of the shore. There only shapes of the catalogue are
+ * drawn. The distance the API offers is rounded down to the half km
+ * (ADR-0164), "It fits at about 2.5 km".
+ */
+function waterProblemText(
+  message: string,
+  fits: number | null | undefined,
+): ProblemText {
+  if (message.includes(NO_WATER)) {
+    return {
+      text: "There is no lake or sea near this start. Start from the shore, within 2 km of the water.",
+      detail: message,
+    };
+  }
+  const [lowest, highest] = APP_DISTANCE_LIMITS_KM.paddling;
+  if (fits != null && fits >= lowest * 1000 && fits <= highest * 1000) {
+    return {
+      text: `This shape does not fit on the water here at this distance. It fits at about ${fits / 1000} km.`,
+      detail: message,
+      tryDistanceM: fits,
+    };
+  }
+  return {
+    text: "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:",
+    detail: message,
+    pickShape: true,
+  };
 }
 
 /**

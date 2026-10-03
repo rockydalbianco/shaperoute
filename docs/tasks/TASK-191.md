@@ -644,6 +644,16 @@ dell'utente, parte C»):
   più i casi dell'acqua in `problems`, `distance`, `exampleRoutes`,
   `explored`, `favoriteRoute`, `sport`), tsc, lint, prettier.
 
+**Visto nel simulatore** (iOS 27, Expo Go, 2026-10-03, senza tocchi: lo
+sport, la pagina e l'avviso messi da righe temporanee in una copia):
+«Draw» con 🛶, «Paddle without a route», «On the water, a shape of the
+catalogue.» e 2 km; «Explore» con «On the water», i cinque chip e le tre
+schede di Riccione; l'avviso a tutto schermo con «I understand» giallo e
+«Not now». L'API del Mac (porta 8000) è più vecchia della bici e rifiuta
+`paddling` («unsupported activity 'paddling'; choose one of: running»):
+le schede dicono «The app and the API do not agree (a bug):
+invalid_request.», come per ogni API che non ha la canoa.
+
 **I punti di partenza** degli esempi (punto 9 della parte B, per l'app):
 
 | Luogo | Da | Punto |

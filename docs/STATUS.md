@@ -238,6 +238,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-207: la foto dal cerchio di «Profile» (chiesto
+  dall'utente il 2026-10-03, che ha scelto il «+»). Il cerchio grande di
+  «Profile» ha un tondo bianco con il «+» in basso a destra; toccato apre,
+  in un riquadro sopra «Edit profile», «Choose a picture», «Take a photo»
+  e, con una foto, «Remove picture», le stesse di «Settings» (TASK-178).
+  Solo app: nessuna API, nessuna migrazione. Visto nel simulatore con dati
+  finti (iPhone 17); **sul telefono funziona solo dopo** l'aggiornamento
+  del server con la `0005` e la pubblicazione dell'app, tutti e due con
+  l'ok dell'utente; fino ad allora dice «Profile pictures are not
+  available on this API yet.». Task file: `tasks/TASK-207.md`.
 - **App** — TASK-205: lo sport accanto al profilo (ADR-0165; chiesto
   dall'utente il 2026-10-03). Nell'intestazione di «Feed», «Draw» ed
   «Explore», a sinistra del profilo, un pulsante tondo con l'emoji dello

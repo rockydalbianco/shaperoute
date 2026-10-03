@@ -66,7 +66,10 @@ export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Pro
           }}
         />
         {photoOpen && (
-          <PhotoChoices photo={photo} onChosen={() => setPhotoOpen(false)} />
+          // In a box, as under the row of «Settings»: apart from «Edit profile».
+          <View style={styles.photoMenu}>
+            <PhotoChoices photo={photo} onChosen={() => setPhotoOpen(false)} />
+          </View>
         )}
         {busyText !== null && <Text style={styles.photoNote}>{busyText}</Text>}
         {photo.problem !== null && <Text style={styles.problem}>{photo.problem}</Text>}
@@ -148,6 +151,13 @@ const styles = StyleSheet.create({
   },
   top: {
     gap: space.md,
+  },
+  photoMenu: {
+    padding: space.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: color.surface,
   },
   photoNote: {
     color: color.textMuted,

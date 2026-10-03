@@ -337,4 +337,15 @@ Fatta come «Cosa fare» 7–9, più i preferiti (ADR-0167, «Aggiornamento
   è percorso, senza pause.
 - **Non toccato**: le frasi della voce (parte C), il server (vuole l'ok
   dell'utente: «Note per il deploy»; ora c'è anche la migrazione `0011`).
+- **I test**, sul Mac, senza rete: motore 1.223 verdi (`-m "not
+  network"`; 8 nuovi, 7 in `tests/test_bike_on_foot_result.py`: gli
+  indici su un grafo finto, con archi piegati; il cerchio in bici della
+  città dei test, ogni pezzo dentro un tratto è di un arco a piedi e ogni
+  pezzo fuori di uno in sella; `plan_nearby` con le alternative;
+  `with_approach` con l'avvicinamento e il ritorno a piedi; la corsa senza
+  tratti). API 837 verdi (14 nuovi: contratto, `route_store`, preferiti
+  con la migrazione e quelli di prima). `shared-types` 30 verdi, typecheck
+  e Prettier puliti, `ruff` e `black` puliti. Le impronte della corsa
+  (`test_kept_per_graph.py`) e della canoa non cambiano: `on_foot` non
+  tocca i punti.
 

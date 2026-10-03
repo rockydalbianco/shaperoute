@@ -1,4 +1,4 @@
-import type { LatLon, RouteResult, Shape } from "@shaperoute/shared-types";
+import type { Activity, LatLon, RouteResult, Shape } from "@shaperoute/shared-types";
 import { File, Paths } from "expo-file-system";
 import { useEffect, useSyncExternalStore } from "react";
 
@@ -36,7 +36,6 @@ export const MORE_SHAPES: readonly Shape[] = [
   "dog_head",
   "rabbit_head",
 ];
-const ALL_SHAPES: readonly Shape[] = [...EXAMPLE_SHAPES, ...MORE_SHAPES];
 /**
  * The order they are asked in: the circle before the heart, and the moon
  * first of the others. A shape's zone is a square around the centre, as
@@ -48,6 +47,46 @@ const ALL_SHAPES: readonly Shape[] = [...EXAMPLE_SHAPES, ...MORE_SHAPES];
 export const DRAW_ORDER: readonly Shape[] = ["circle", "heart", "star", ...MORE_SHAPES];
 /** Short: the quickest to plan, and the smallest zone to download. */
 export const EXAMPLE_DISTANCE_M = 5000;
+
+/**
+ * What a place's examples are drawn for (TASK-191): a run's from a city's
+ * centre, the first shapes and then the others; or paddling's from a point
+ * on the shore of a lake or the sea, 2 km, the first shapes only (circle,
+ * heart and star, as the samples judged by the user). Each set keeps its
+ * examples apart from the other's, the same point too: `prefix` comes
+ * before the place's key.
+ */
+export type ExampleSet = {
+  activity: Activity;
+  distance_m: number;
+  /** The shapes after the first ones. */
+  more: readonly Shape[];
+  prefix: string;
+};
+
+export const RUN_EXAMPLES: ExampleSet = {
+  activity: "running",
+  distance_m: EXAMPLE_DISTANCE_M,
+  more: MORE_SHAPES,
+  prefix: "",
+};
+
+export const PADDLE_EXAMPLES: ExampleSet = {
+  activity: "paddling",
+  distance_m: 2000,
+  more: [],
+  prefix: "paddling:",
+};
+
+/** A set's shapes, as its cards show them: the heart first. */
+function setShapes(set: ExampleSet): readonly Shape[] {
+  return [...EXAMPLE_SHAPES, ...set.more];
+}
+
+/** A set's shapes, in the order they are asked (DRAW_ORDER). */
+function drawOrderOf(set: ExampleSet): readonly Shape[] {
+  return DRAW_ORDER.filter((shape) => !isMore(shape) || set.more.includes(shape));
+}
 /**
  * The API takes 30 POSTs a minute from a phone (ADR-0076), and a city it
  * has already drawn answers its eight at once: three such cities in a
@@ -125,6 +164,11 @@ export function cityKey(point: LatLon): string {
   return `${point[0].toFixed(4)},${point[1].toFixed(4)}`;
 }
 
+/** The key of a place's examples in a set: a run's is the city's key. */
+export function examplesKey(point: LatLon, set: ExampleSet = RUN_EXAMPLES): string {
+  return `${set.prefix}${cityKey(point)}`;
+}
+
 /** Every `step`-th point and the last: the line's look, a few points. */
 export function thinned(points: LatLon[], most: number = PREVIEW_POINTS): LatLon[] {
   if (points.length <= most) {
@@ -134,13 +178,15 @@ export function thinned(points: LatLon[], most: number = PREVIEW_POINTS): LatLon
   return Array.from({ length: most }, (_, i) => points[Math.round(i * step)]);
 }
 
-/** A planned route as one of the list, and whole: it opens like one. */
+/** A planned route as one of the list, and whole: it opens like one. An
+ * example that is not a run says its activity (TASK-191). */
 export function asRecommended(
   city: Place,
   shape: Shape,
   result: RouteResult,
+  set: ExampleSet = RUN_EXAMPLES,
 ): { route: RecommendedRoute; detail: ExampleDetail } {
-  const id = `${ID_PREFIX}${shape}:${cityKey(city.point)}`;
+  const id = `${ID_PREFIX}${shape}:${examplesKey(city.point, set)}`;
   const name = cityShort(city.label);
   const whole = (of: RouteResult, routeId: string): RecommendedRouteDetail => ({
     id: routeId,
@@ -148,11 +194,12 @@ export function asRecommended(
     shape,
     word: null,
     style: null,
-    distance_m: EXAMPLE_DISTANCE_M,
+    distance_m: set.distance_m,
     route_m: of.distance_m,
     similarity: of.similarity,
     points: of.points,
     license: LICENSE,
+    ...(set.activity === "running" ? {} : { activity: set.activity }),
   });
   const { points, license, ...common } = whole(result, id);
   return {
@@ -174,12 +221,16 @@ export function asRecommended(
   };
 }
 
-/** What a card says when its route could not be drawn. */
-export function failureText(outcome: RouteOutcome): string {
+/** What a card says when its route could not be drawn: on the water in the
+ * water's words (TASK-191). */
+export function failureText(
+  outcome: RouteOutcome,
+  activity: Activity = "running",
+): string {
   if (outcome.kind === "route" || outcome.kind === "cancelled") {
     return "";
   }
-  return problemText(outcome).text;
+  return problemText(outcome, "shape", activity).text;
 }
 
 /** No other shape will do better: the zone or the API is the trouble. */
@@ -317,9 +368,14 @@ function keep(storage: Storage, key: string, list: Example[]): void {
  * The examples the file had for this city, as ready cards. One kept before
  * the alternatives (TASK-151) is drawn again, to have them.
  */
-function fromFile(storage: Storage, city: Place, key: string): Example[] {
+function fromFile(
+  storage: Storage,
+  city: Place,
+  key: string,
+  set: ExampleSet,
+): Example[] {
   const saved = storage.load()[key] ?? [];
-  return ALL_SHAPES.map((shape): Example => {
+  return setShapes(set).map((shape): Example => {
     const detail = saved.find((d) => d.shape === shape);
     if (detail === undefined || detail.alternatives === undefined) {
       return { shape, status: "waiting" };
@@ -354,6 +410,8 @@ type Options = {
    * are its examples, announced at once.
    */
   has?: readonly string[];
+  /** What the examples are for: a run's unless said (TASK-191). */
+  set?: ExampleSet;
 };
 
 /**
@@ -365,16 +423,21 @@ type Options = {
 export function drawExamples(
   apiUrl: string,
   city: Place,
-  { request = requestRoute, storage = fileStorage, has }: Options = {},
+  {
+    request = requestRoute,
+    storage = fileStorage,
+    has,
+    set = RUN_EXAMPLES,
+  }: Options = {},
 ): void {
-  const key = cityKey(city.point);
+  const key = examplesKey(city.point, set);
   if (running?.key === key) {
     return;
   }
   // Nobody waits for these: they fail without a card or a word.
   const quiet = (shape: Shape) => has !== undefined || isMore(shape);
-  const before = examples.get(key) ?? fromFile(storage, city, key);
-  const list = ALL_SHAPES.flatMap((shape): Example[] => {
+  const before = examples.get(key) ?? fromFile(storage, city, key, set);
+  const list = setShapes(set).flatMap((shape): Example[] => {
     const was = before.find((e) => e.shape === shape);
     if (was?.status === "ready") {
       return [was];
@@ -406,7 +469,7 @@ export function drawExamples(
   const controller = new AbortController();
   running = { key, controller };
   void (async () => {
-    for (const shape of DRAW_ORDER) {
+    for (const shape of drawOrderOf(set)) {
       const now = examples.get(key) ?? [];
       if (now.find((e) => e.shape === shape)?.status !== "waiting") {
         continue;
@@ -435,9 +498,9 @@ export function drawExamples(
         apiUrl,
         {
           shape,
-          distance_m: EXAMPLE_DISTANCE_M,
+          distance_m: set.distance_m,
           start: city.point,
-          activity: "running",
+          activity: set.activity,
         },
         { signal: controller.signal },
       );
@@ -445,13 +508,13 @@ export function drawExamples(
         return;
       }
       if (outcome.kind === "route") {
-        const { route, detail } = asRecommended(city, shape, outcome.result);
+        const { route, detail } = asRecommended(city, shape, outcome.result, set);
         details.set(detail.id, detail);
         put({ shape, status: "ready", route });
         keep(storage, key, examples.get(key) ?? []);
         continue;
       }
-      const message = failureText(outcome);
+      const message = failureText(outcome, set.activity);
       if (quiet(shape)) {
         if (cannotBeDrawn(outcome)) {
           leftOut.add(`${key} ${shape}`);
@@ -508,25 +571,25 @@ export function useCityExamples(
   city: Place | null,
   options: Options = {},
 ): { examples: Example[] | null; retry: () => void } {
-  const key = city === null ? null : cityKey(city.point);
+  const { request, storage, has, set } = options;
+  const key = city === null ? null : examplesKey(city.point, set);
   const list = useSyncExternalStore(subscribe, () =>
     key === null ? null : (examples.get(key) ?? null),
   );
-  const { request, storage, has } = options;
   // The same shapes in another array are the same city's routes.
   const hasKey = has?.join(",");
   useEffect(() => {
     if (apiUrl !== null && city !== null) {
-      drawExamples(apiUrl, city, { request, storage, has });
+      drawExamples(apiUrl, city, { request, storage, has, set });
     }
-    // The city's point is the key: a new label for it changes nothing.
+    // The city's point and the set are the key: a new label changes nothing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiUrl, key, request, storage, hasKey]);
   return {
     examples: list,
     retry: () => {
       if (apiUrl !== null && city !== null) {
-        drawExamples(apiUrl, city, { request, storage, has });
+        drawExamples(apiUrl, city, { request, storage, has, set });
       }
     },
   };

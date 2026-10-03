@@ -172,6 +172,40 @@ export const DE: Table = {
   Pumpkin: "Kürbis",
   "Christmas tree": "Weihnachtsbaum",
 
+  // src/paddle/PaddleExplore.tsx
+  Next: "Als Nächstes",
+  "Drawing…": "Wird gezeichnet…",
+  "Your start": "Dein Start",
+  "On the water": "Auf dem Wasser",
+  "Shapes to paddle, within 1 km of the shore":
+    "Formen zum Paddeln, höchstens 1 km vom Ufer",
+  "LAKES AND SEA": "SEEN UND MEER",
+  "Near me": "In meiner Nähe",
+  "Choose a lake or a beach: a circle, a heart and a star of 2 km are drawn on its water, from the shore.":
+    "Wähle einen See oder einen Strand: Auf seinem Wasser werden ein Kreis, ein Herz und ein Stern von 2 km gezeichnet, vom Ufer aus.",
+  "Choose a start in Draw first: the shapes start from the shore nearest to it.":
+    "Wähle zuerst einen Start in Draw: Die Formen beginnen am nächstgelegenen Ufer.",
+  "Near your start": "In der Nähe deines Starts",
+  "{shape}, {km} km, on the water": "{shape}, {km} km, auf dem Wasser",
+  "Not drawn": "Nicht gezeichnet",
+
+  // src/paddle/PaddleNotice.tsx
+  "Before you paddle": "Bevor du lospaddelst",
+  "Wear a life jacket.": "Trag eine Schwimmweste.",
+  "Check the weather and the wind before you go out.":
+    "Prüf Wetter und Wind, bevor du rausfährst.",
+  "Follow the local rules: swimming areas, boat lanes, harbours. Sgrava does not know them.":
+    "Halte dich an die Regeln vor Ort: Badezonen, Fahrrinnen, Häfen. Sgrava kennt sie nicht.",
+  "The route stays within 1 km of the shore. That does not make it safe or allowed.":
+    "Die Route bleibt höchstens 1 km vom Ufer entfernt. Das macht sie weder sicher noch erlaubt.",
+  "I understand": "Verstanden",
+  "Not now": "Nicht jetzt",
+
+  // src/paddle/waterPlaces.ts
+  "from Riva del Garda": "ab Riva del Garda",
+  "from Como": "ab Como",
+  "from the beach": "vom Strand",
+
   // src/places/PlaceSearch.tsx
   "City or street": "Stadt oder Straße",
   Search: "Suchen",
@@ -257,6 +291,18 @@ export const DE: Table = {
   // src/route/RoutePanel.tsx
   "{letters} km of letters + {between} km riding between them":
     "{letters} km Buchstaben + {between} km mit dem Rad dazwischen",
+  "On the water, a shape of the catalogue.":
+    "Auf dem Wasser eine Form aus dem Katalog.",
+  "{name} · on the water · target {km} km": "{name} · auf dem Wasser · Ziel {km} km",
+  "{name} · on roads · target {km} km": "{name} · auf Straßen · Ziel {km} km",
+
+  // src/route/problems.ts
+  "There is no lake or sea near this start. Start from the shore, within 2 km of the water.":
+    "In der Nähe dieses Starts gibt es keinen See und kein Meer. Starte am Ufer, höchstens 2 km vom Wasser entfernt.",
+  "This shape does not fit on the water here at this distance. It fits at about {km} km.":
+    "Diese Form passt hier bei dieser Distanz nicht aufs Wasser. Sie passt bei etwa {km} km.",
+  "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:":
+    "Diese Form passt hier nicht aufs Wasser. Versuch eine kürzere Distanz, eine andere Form oder einen anderen Start:",
 
   // src/route/warnings.ts
   "Includes {distance} walking the bike.":
@@ -298,6 +344,11 @@ export const DE: Table = {
   // src/settings/LanguageSetting.tsx
   Language: "Sprache",
   "Phone language": "Sprache des Handys",
+
+  // src/settings/sport.ts
+  "Ride without a route": "Ohne Route fahren",
+  "Paddle without a route": "Ohne Route paddeln",
+  "Run without a route": "Ohne Route laufen",
 
   // src/social/DrawingCard.tsx
   "Back to the profile": "Zurück zum Profil",

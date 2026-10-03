@@ -106,7 +106,8 @@ In coda, dopo o accanto:
   in `main` (PR #235), con le scelte dell'utente del 2026-10-03: **1–5 km**, al
   mare la forma **oltre 200 m dalla riva**, sui laghi 50 m (ADR-0161);
   **B** (l'API, `activity: "paddling"`) in `main` (PR #241, ADR-0164);
-  poi C (app), dopo la prova dal vero sul server.
+  **C** (l'app, ADR-0169) fatta il 2026-10-03, in revisione; la prova dal
+  vero aspetta l'acqua dei quattro luoghi sul server.
 - **La penna alzata nelle parole**, chiesta e confermata dall'utente il
   2026-10-02: fra una lettera e l'altra si cammina senza disegnare, e
   l'app mette in pausa la registrazione da sola, con un avviso a voce.
@@ -181,20 +182,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Mancano il cerchio da 20 km, Levico e Padova, quando Overpass riapre. Il
   miglioramento delle forme in bici è TASK-206, qui sotto. Da dove
   riprendere: il task file, «Esito», «I campioni».
-- **TASK-216 — La navigazione in bici** (ADR-0179; scelte dell'utente del
-  2026-10-03): fatto nel branch `feat/TASK-216-bike-navigation`, PR in
-  attesa del merge. «Start» su un percorso in bici (da «Draw», da un
-  preferito tenuto in bici) segue l'attività del percorso: km/h al posto
-  del passo («Speed now», «Avg speed», «Last km», la colonna «Speed»), la
-  voce dei km ogni 10 km con la velocità media, svolte e tratti a mano
-  detti 100 m prima (misurato su Trento), «riding» / «Ride to the U» con
-  la penna alzata. La corsa è identica. Frasi e nomi inglesi e italiani
-  approvati dall'utente; tedesco, spagnolo e francese da confermare. Non
-  pubblicato, da provare sull'iPhone. `tasks/TASK-216.md`. Con la stessa
-  PR (dal coordinatore): l'utente ha confermato il 2026-10-03 le frasi
-  della bici a mano di TASK-206 in tedesco, spagnolo e francese (la voce e
-  «Includes … walking the bike.») e i testi della penna alzata di
-  TASK-198; segnate confermate in `UI.md` e in `src/voice/`.
 - **TASK-217 — La voce confronta ogni km col precedente** (Todo; chiesto
   e scelto dall'utente il 2026-10-03): dopo la frase di ogni km, «Questo
   chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2
@@ -288,8 +275,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   i campioni rifatti con le regole nuove sull'area intera, e Como
   (Overpass dal Mac, o il server con l'ok dell'utente). Cambia l'impronta
   del motore: un aggiornamento del server con TASK-203, poi
-  `draw_examples`. Poi C (app). Da dove riprendere:
-  `tasks/TASK-191.md`, «Esito», parti A2 e B.
+  `draw_examples`. **C** (l'app, ADR-0169, in `main` dalla PR #255,
+  2026-10-03 sera, chiesta dall'utente), con le tre risposte dell'utente: «Paddle»
+  si sceglie; «Draw» solo forme, 1–5 km, da 2 km; «on the water» e
+  «Start» senza indicazioni (mai `/route-directions`); l'**avviso di
+  sicurezza al primo «Start»** sull'acqua (testo approvato); i testi
+  d'errore dell'acqua; **«Explore» con «Paddle»**: Lago di Garda, Lago di
+  Como, Jesolo, Riccione e «Near me», cuore, cerchio e stella da 2 km dalla
+  riva; i testi della canoa anche nelle quattro lingue di TASK-210.
+  **Bloccato per la prova dal vero**: il server disegna in canoa solo
+  dove ha l'acqua in `data/cache/water/`, e Overpass rifiuta server e Mac;
+  scaricare prima l'acqua dei quattro luoghi è un seguito, con l'ok
+  dell'utente, poi la pubblicazione. **Non pubblicare `main` con «Paddle»
+  pronto finché l'acqua dei quattro luoghi non è sul server**: dal merge
+  della #255 ogni pubblicazione di `main` porta «Paddle» pronto, e chi lo
+  sceglie avrebbe solo errori. Seguito in `services/`: Strava riceve
+  ogni attività come «Run». Da dove riprendere: `tasks/TASK-191.md`,
+  «Esito», parti A2, B e C (fatta).
 
 - **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:
   subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API
@@ -365,6 +367,28 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-220: «Run without a route» giallo (ADR-0183; chiesto
+  dall'utente il 2026-10-03). In cima a «Draw» il pulsante, anche come
+  «Ride without a route», ha il fondo giallo e il testo scuro: l'unica
+  eccezione alla regola «il giallo è del percorso». Sul telefono con la
+  prossima pubblicazione. `tasks/TASK-220.md`.
+- **App** — TASK-216: la navigazione in bici (ADR-0179; scelte
+  dell'utente del 2026-10-03; PR #278, merge `510f8a5`). «Start» su un
+  percorso in bici (da «Draw», da un preferito tenuto in bici) segue
+  l'attività del percorso: km/h al posto del passo («Speed now», «Avg
+  speed», «Last km», la colonna «Speed» di «Data»), la voce dei km ogni
+  10 km con tempo e velocità media, svolte e tratti a mano detti 100 m
+  prima (misurato su Trento: a 20 km/h la svolta arriva in mediana 16 s
+  dopo l'inizio della frase, come nella corsa), «riding» / «Ride to the
+  U» con la penna alzata. La corsa è identica. Frasi e nomi inglesi e
+  italiani approvati dall'utente; tedesco, spagnolo e francese da
+  confermare. Con la stessa PR, le conferme dell'utente del 2026-10-03
+  della bici a mano di TASK-206 in tedesco, spagnolo e francese e dei
+  testi della penna alzata di TASK-198. Solo app: esce con la prossima
+  pubblicazione, con l'ok dell'utente; da provare sull'iPhone pedalando.
+  Seguiti da chiedere all'utente: la fine della corsa in bici, le
+  calorie, l'incitamento dopo 5 km, la corsa senza percorso in bici. Dopo
+  viene TASK-217. Task file: `tasks/TASK-216.md`.
 - **App** — TASK-219: «Find friends» è solo una lente (ADR-0182; chiesto
   dall'utente il 2026-10-03). In cima a «Feed», a destra sotto il bottone
   di «Profile», un cerchio con la lente apre la ricerca di TASK-215;

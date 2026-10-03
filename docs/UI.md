@@ -18,8 +18,8 @@
   altrimenti l'inglese. Ogni testo passa da `t()` (`src/i18n/`); un testo
   senza traduzione si mostra in inglese. Tradotti a pezzi: con la parte A
   «Settings», «Profile», l'accesso, «My activities», i preferiti, i
-  disegni, il feed, Strava e la ricerca del luogo; «Draw», «Explore» e la
-  corsa con le parti successive. Le traduzioni le ha riviste l'agente su
+  disegni, il feed, Strava e la ricerca del luogo; i testi della canoa con
+  TASK-191 C; «Draw», «Explore» e la corsa con le parti successive. Le traduzioni le ha riviste l'agente su
   delega dell'utente («controlla te, mi fido», 2026-10-03); chi parla
   tedesco, spagnolo o francese può ancora migliorarle in `src/i18n/`.
 
@@ -32,7 +32,8 @@ corpi del testo, la linea del percorso (gialla, larga 5) e `MIN_TAP_SIZE`,
 mano fuori da lì**: lo stile della mappa e le schermate leggono gli stessi
 token, e un colore nuovo è un token nuovo. Applicato all'app con TASK-046:
 mappa scura, percorso giallo, pannelli scuri, tastiere scure, barra di
-stato chiara. «Draw route» è l'unico comando giallo, con il testo scuro; gli
+stato chiara. «Draw route» è il comando giallo, con il testo scuro (e
+«Run without a route», per scelta dell'utente: TASK-220); gli
 altri («My position», «Search», «Cancel», «Export GPX», le forme da
 toccare) sono neutri, su `surfaceRaised`, con il bordo `borderStrong`:
 schiariti con TASK-086 (ADR-0081) perché sul fondo nero non si vedevano. Il segnaposto della partenza è
@@ -59,7 +60,9 @@ Quattro regole:
 
 1. **Il giallo significa una cosa sola**: il percorso, il comando che lo
    produce e la barra che lo mostra mentre si disegna. Gli avvisi usano `warning`, arancio: un avviso giallo
-   renderebbe il colore muto.
+   renderebbe il colore muto. **Un'eccezione**, scelta dall'utente
+   (TASK-220, ADR-0183): «Run without a route» in cima a «Draw» è giallo,
+   con il testo scuro. Per tutto il resto la regola vale.
 2. **Sul giallo il testo è scuro** (`onAccent`, 13,5:1). Il bianco si ferma
    a 1,5:1, sotto il minimo, e in pieno sole, dove l'app si usa, non si
    legge.
@@ -407,8 +410,9 @@ durante la corsa il pulsante non c'è.
 
 **Lo sport** (TASK-205, ADR-0165, chiesto dall'utente): a sinistra del
 profilo un pulsante tondo uguale mostra l'emoji dello sport scelto (🏃‍♂️
-«Run», 🚴 «Bike»). Toccato apre sotto di sé un piccolo menu con gli sport
-di «Settings»: lo scelto con il «✓», «Paddle» con «Soon» che non si tocca.
+«Run», 🚴 «Bike», 🛶 «Paddle» dal TASK-191). Toccato apre sotto di sé un
+piccolo menu con gli sport di «Settings»: lo scelto con il «✓»; uno sport
+non ancora pronto avrebbe «Soon» e non si toccherebbe.
 Un tocco su uno sport lo sceglie e chiude il menu; un tocco fuori lo chiude
 senza cambiare niente. È la stessa scelta della sezione «Sport» di
 «Settings» (sotto): cambiata in un posto, cambia anche nell'altro, e
@@ -484,15 +488,17 @@ com'è scritto, e il commento non entra mai nella WebView della mappa.
   sotto); poi «Change email» e «Phone number», con la scritta «Soon».
 - **«Sport»** (TASK-189, ADR-0152): per cosa sono i percorsi. Tre righe:
   «Run» (🏃‍♂️), scelto all'inizio, con un «✓» bianco; «Bike» (🚴), che
-  si sceglie dal TASK-190; «Paddle» (🛶: canoa, kayak, SUP) con «Soon», che
-  non si tocca finché il motore non disegna i suoi percorsi (TASK-191). Uno
+  si sceglie dal TASK-190; «Paddle» (🛶: canoa, kayak, SUP, nome scelto
+  dall'utente), che si sceglie dal TASK-191 (sotto, «Sull'acqua»). Uno
   sport pronto si sceglie con un tocco, qui o dal pulsante accanto al
   profilo (TASK-205, sopra); la scelta resta sul telefono, non
   nell'account, e vale subito, senza riaprire l'app. **Con «Bike»** cambia
   solo «Draw» (sotto, «Forma e distanza»): percorsi su strade da bici, da
   10 a 30 km. «Explore», «Feed» e la schermata della corsa restano quelli
   della corsa: cosa mostrano con la bici è una scelta dell'utente ancora
-  aperta (`tasks/TASK-190.md`, «Domande aperte»).
+  aperta (`tasks/TASK-190.md`, «Domande aperte»). **Con «Paddle»** cambiano
+  «Draw», «Start» ed «Explore» (sotto, «Sull'acqua»); «Feed» e la schermata
+  della corsa restano quelli della corsa.
 - **«Strava»** (TASK-187), solo se l'API ha Strava: «Connect with
   Strava» (il pulsante ufficiale di Strava, TASK-218, come a fine corsa)
   con «Send the runs you save in Sgrava to your Strava
@@ -1604,10 +1610,88 @@ mostra le lettere unite da linee dritte sulla base.
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
 principale.
 
+## Sull'acqua: «Paddle» (TASK-191, ADR-0169)
+
+Con «Paddle» scelto (in «Settings» o dal pulsante dello sport) i percorsi
+sono forme disegnate **sull'acqua** di un lago o del mare, entro 1 km dalla
+riva, con partenza e arrivo sulla riva (il motore: ADR-0154, ADR-0161;
+l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
+
+- **«Draw»**: niente interruttore «Shape | Word | Image», solo le forme
+  del catalogo, con la riga «On the water, a shape of the catalogue.» al
+  suo posto: sull'acqua parole e foto non si disegnano. Una parola o una
+  foto scelte prima restano lì, e tornano con un altro sport. Distanze da
+  1 a 5 km (scelta dell'utente), anche col mezzo km («2,5»); il campo parte
+  da **2 km**, dove le forme ci stanno anche al mare, 200 m oltre la riva,
+  e torna a 2 km ogni volta che si sceglie «Paddle». La richiesta ha
+  `activity: "paddling"`. Il pulsante della corsa libera dice «Paddle
+  without a route».
+- **Il risultato**: «heart · on the water · target 2 km». Il percorso
+  parte dalla riva, dove si arriva a piedi: se è a più di 50 m dalla
+  partenza chiesta, il segnaposto ciano «Start here» la segna, come per una
+  forma spostata. Niente tessere «A · B · C» né avvisi del motore (l'API
+  non ne manda sull'acqua). La linea gialla sull'acqua (`color.map.water`)
+  ha contrasto 11,5:1, più che su una strada principale (7,4:1); il ciano
+  di «Start here» 9,6:1 (`src/theme/waterContrast.test.ts`): nessun token
+  nuovo. Si vede poco, invece, dove finisce l'acqua: acqua e terra della
+  mappa scura sono a 1,15:1.
+- **«Start»** c'è anche senza indicazioni di svolta: sull'acqua non ce ne
+  sono e l'app non le chiede (`/route-directions`), né per un percorso
+  disegnato né per uno di «Explore» o dei preferiti. Si segue la linea:
+  il banner dice «Follow the route to the end.», la barra e i km mancanti
+  sono quelli della corsa, la voce dice solo i km.
+- **L'avviso di sicurezza**, al **primo** «Start» sull'acqua su questo
+  telefono (scelta dell'utente), a tutto schermo prima del conto alla
+  rovescia: 🛶, «Before you paddle», quattro righe («Wear a life
+  jacket.», «Check the weather and the wind before you go out.», «Follow
+  the local rules: swimming areas, boat lanes, harbours. Sgrava does not
+  know them.», «The route stays within 1 km of the shore. That does not
+  make it safe or allowed.»), poi «I understand», giallo, che parte, e «Not
+  now», che torna al percorso e lo richiederà al prossimo «Start». Il
+  telefono lo ricorda in `paddle-notice.json`; uno che non può scrivere lo
+  ricorda finché l'app è aperta.
+- **Quando non va**, nelle parole dell'acqua: lontano dall'acqua «There is
+  no lake or sea near this start. Start from the shore, within 2 km of the
+  water.»; una forma troppo grande «This shape does not fit on the water
+  here at this distance. It fits at about 2.5 km.» con «Try 2.5 km» (la
+  distanza dell'API, per difetto al mezzo km); una che non ci sta fra 1 e
+  5 km «This shape does not fit on the water here. Try a shorter distance,
+  another shape, or another start:» con le forme. Senza i dati dell'acqua
+  (Overpass che rifiuta) il testo è quello della mappa, «Map data for this
+  area could not be downloaded. Try again later.».
+- **«Explore»** (scelta dell'utente): al posto di città, esempi di corsa e
+  percorsi consigliati, la pagina «On the water», «Shapes to paddle, within
+  1 km of the shore», con la sezione «LAKES AND SEA»: «Near me», «Lago di
+  Garda», «Lago di Como», «Jesolo», «Riccione». Finché non se ne sceglie uno
+  dice «Choose a lake or a beach: a circle, a heart and a star of 2 km are
+  drawn on its water, from the shore.» e non chiede niente. Un luogo scelto
+  ha cuore, cerchio e stella da 2 km in canoa (chiesti uno alla volta, il
+  cerchio per primo, come gli esempi delle città), sotto «LAGO DI GARDA ·
+  FROM RIVA DEL GARDA»: ogni scheda «Heart · 2.1 km», «On the water», si
+  apre sulla mappa come un percorso di «Explore», con «Start», «Export GPX»
+  e il cuore dei preferiti, che la tiene come canoa. I punti di partenza
+  sono sulla riva, scelti a mano (`src/paddle/waterPlaces.ts`): Riva del
+  Garda, il lungolago di Como, la spiaggia di Jesolo e quella di Riccione.
+  «Near me» disegna dalla partenza di «Draw» com'era al tocco (senza
+  partenza: «Choose a start in Draw first: the shapes start from the shore
+  nearest to it.»). Gli esempi restano sul telefono come quelli delle città,
+  a parte. La scelta resta quando si torna dalla mappa.
+- **Da sapere per la prova dal vero**: il server disegna sull'acqua solo
+  dove ha già l'acqua in `data/cache/water/`, perché Overpass rifiuta il suo
+  IP; fino ad allora ogni luogo dà «Map data for this area could not be
+  downloaded.» (`tasks/TASK-191.md`, parte C).
+- Testi nuovi **da confermare con l'utente**: «On the water, a shape of the
+  catalogue.», «on the water», «Paddle without a route», i testi d'errore
+  qui sopra e quelli di «Explore» («On the water», «Shapes to paddle,
+  within 1 km of the shore», «LAKES AND SEA», «Near me», i due avvisi). Il
+  testo dell'avviso di sicurezza è approvato. Tutti questi testi sono anche
+  in tedesco, italiano, spagnolo e francese (ADR-0169, «Aggiunta»).
+
 ## Correre senza percorso (TASK-149, ADR-0122)
 
 **«Run without a route»**, in alto nella pagina «Draw» accanto a «Sgrava»,
-fa partire una corsa senza disegnare niente: niente forma, niente percorso,
+giallo con il testo scuro (TASK-220, scelta dell'utente: l'eccezione alla
+regola 1 dei colori), fa partire una corsa senza disegnare niente: niente forma, niente percorso,
 niente API. Con «Bike» scelto in «Settings» il pulsante dice **«Ride without
 a route»** (TASK-190, **da confermare con l'utente**); la schermata che apre
 resta quella della corsa (domanda 2 di `tasks/TASK-190.md`). La scritta è per intero (TASK-158, chiesto dall'utente): «Run» da

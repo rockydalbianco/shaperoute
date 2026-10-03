@@ -86,7 +86,8 @@ type ChoiceProps = {
   distanceText: string;
   distanceM: number | null;
   onDistanceText: (text: string) => void;
-  /** Whose distances the field offers (TASK-190): a run's unless said. */
+  /** Whose distances the field offers (TASK-190): a run's unless said. On
+   * the water only shapes are drawn (TASK-191): no word, no picture. */
   activity?: Activity;
 };
 
@@ -119,16 +120,21 @@ export function RouteChoice({
   activity = "running",
 }: ChoiceProps) {
   const [lowest, highest] = APP_DISTANCE_LIMITS_KM[activity];
+  const shapesOnly = activity === "paddling";
   return (
     <View style={styles.panel}>
       <Text style={styles.label}>DRAW</Text>
-      <Segmented
-        options={DRAW_KINDS}
-        value={kind}
-        onChange={onKind}
-        style={styles.kinds}
-      />
-      {kind === "shape" ? (
+      {shapesOnly ? (
+        <Text style={styles.note}>{t("On the water, a shape of the catalogue.")}</Text>
+      ) : (
+        <Segmented
+          options={DRAW_KINDS}
+          value={kind}
+          onChange={onKind}
+          style={styles.kinds}
+        />
+      )}
+      {kind === "shape" || shapesOnly ? (
         <>
           <ShapeTiles chosen={shape} onPick={onShapeText} />
           <TextInput
@@ -327,17 +333,16 @@ export function RouteOutcome({
             <Text style={styles.result}>
               {`${(view.result.distance_m / 1000).toFixed(1)} km`}
             </Text>
-            <Text style={styles.target}>
-              {`${nameOf(view.request)} · on roads · target ${view.request.distance_m / 1000} km`}
-            </Text>
+            <Text style={styles.target}>{targetLine(view.request)}</Text>
             <PenSplit result={view.result} activity={view.request.activity} />
           </View>
           <RouteTiles choices={choices} chosen={chosen} onChoose={onChoose} />
           {toNotes(view.result.warnings).map((note) => (
             <NoteRow key={note.text} note={note} />
           ))}
-          {/* Only with directions: a route traced without them has no turns. */}
-          {view.result.directions.length > 0 && (
+          {/* Only with directions: a route traced without them has no turns.
+              On the water there are none to follow: the line is the way. */}
+          {(view.result.directions.length > 0 || onWater(view.request)) && (
             <Pressable
               style={styles.draw}
               onPress={() => use("start", onStart)}
@@ -533,6 +538,20 @@ function WordNote({
 /** What the route draws, for the line under its distance. */
 function nameOf(request: AnyRouteRequest): string {
   return isImageRequest(request) ? "Picture" : routeName(request);
+}
+
+/** A route on the water (TASK-191): it follows no road, and has no turns. */
+function onWater(request: AnyRouteRequest): boolean {
+  return request.activity === "paddling";
+}
+
+/** The line under the route's distance: what it is, what it runs on, and
+ * the distance asked for. */
+function targetLine(request: AnyRouteRequest): string {
+  const values = { name: nameOf(request), km: request.distance_m / 1000 };
+  return onWater(request)
+    ? t("{name} · on the water · target {km} km", values)
+    : t("{name} · on roads · target {km} km", values);
 }
 
 function kindOf(request: AnyRouteRequest): ChoiceKind {

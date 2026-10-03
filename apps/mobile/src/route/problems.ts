@@ -6,6 +6,7 @@ import {
   MAX_IMAGE_BYTES,
 } from "@shaperoute/shared-types";
 
+import { t } from "../i18n";
 import { APP_DISTANCE_LIMITS_KM } from "./distance";
 import { shapeList } from "./shapeWords";
 import type { EditProblem, ImageProblem } from "./useImageOutline";
@@ -157,20 +158,27 @@ function waterProblemText(
 ): ProblemText {
   if (message.includes(NO_WATER)) {
     return {
-      text: "There is no lake or sea near this start. Start from the shore, within 2 km of the water.",
+      text: t(
+        "There is no lake or sea near this start. Start from the shore, within 2 km of the water.",
+      ),
       detail: message,
     };
   }
   const [lowest, highest] = APP_DISTANCE_LIMITS_KM.paddling;
   if (fits != null && fits >= lowest * 1000 && fits <= highest * 1000) {
     return {
-      text: `This shape does not fit on the water here at this distance. It fits at about ${fits / 1000} km.`,
+      text: t(
+        "This shape does not fit on the water here at this distance. It fits at about {km} km.",
+        { km: fits / 1000 },
+      ),
       detail: message,
       tryDistanceM: fits,
     };
   }
   return {
-    text: "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:",
+    text: t(
+      "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:",
+    ),
     detail: message,
     pickShape: true,
   };

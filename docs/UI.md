@@ -18,8 +18,8 @@
   altrimenti l'inglese. Ogni testo passa da `t()` (`src/i18n/`); un testo
   senza traduzione si mostra in inglese. Tradotti a pezzi: con la parte A
   «Settings», «Profile», l'accesso, «My activities», i preferiti, i
-  disegni, il feed, Strava e la ricerca del luogo; «Draw», «Explore» e la
-  corsa con le parti successive. Le traduzioni le ha riviste l'agente su
+  disegni, il feed, Strava e la ricerca del luogo; i testi della canoa con
+  TASK-191 C; «Draw», «Explore» e la corsa con le parti successive. Le traduzioni le ha riviste l'agente su
   delega dell'utente («controlla te, mi fido», 2026-10-03); chi parla
   tedesco, spagnolo o francese può ancora migliorarle in `src/i18n/`.
 
@@ -1670,7 +1670,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   catalogue.», «on the water», «Paddle without a route», i testi d'errore
   qui sopra e quelli di «Explore» («On the water», «Shapes to paddle,
   within 1 km of the shore», «LAKES AND SEA», «Near me», i due avvisi). Il
-  testo dell'avviso di sicurezza è approvato.
+  testo dell'avviso di sicurezza è approvato. Tutti questi testi sono anche
+  in tedesco, italiano, spagnolo e francese (ADR-0169, «Aggiunta»).
 
 ## Correre senza percorso (TASK-149, ADR-0122)
 

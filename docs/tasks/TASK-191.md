@@ -1,7 +1,7 @@
 # TASK-191 — Percorsi in canoa e paddle
 
-**Stato**: In corso (A1, A2 e B fatte, PR #216, #235 e #241; C fatta,
-in revisione; il punto 5 di A2 da fare)
+**Stato**: In corso (A1, A2, B e C fatte, PR #216, #235, #241 e #255; il
+punto 5 di A2 e l'acqua sul server da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-191-paddle-routes` (A1),
 `feat/TASK-191-paddle-a2` (A2), `feat/TASK-191-paddle-api` (B),
 `feat/TASK-191-paddle-app` (C)
@@ -291,6 +291,10 @@ apps/mobile/src/favorites/favoriteRoute.test.ts
 apps/mobile/src/theme/waterContrast.test.ts              (nuovo)
 apps/mobile/__tests__/AppPaddle.test.tsx                 (nuovo)
 apps/mobile/App.tsx
+apps/mobile/src/i18n/de.ts
+apps/mobile/src/i18n/es.ts
+apps/mobile/src/i18n/fr.ts
+apps/mobile/src/i18n/it.ts
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
@@ -303,7 +307,10 @@ portare la sua attività fino alla richiesta, all'export e al preferito
 (senza, un preferito d'acqua si riapriva come corsa); `SportButton.test.tsx`
 in meno, perché prova il menu con un elenco suo e non è cambiato. Nessuno
 dei tre è di un task in lavorazione. Niente in `tokens.ts`: la linea si
-legge già (ADR-0169, punto 8).
+legge già (ADR-0169, punto 8). Le quattro tabelle di `src/i18n/` in più
+alla ripresa dopo la lingua dell'app (#254), come d'accordo col
+coordinatore: i testi della canoa vanno in `t()`, e senza le loro
+traduzioni `tables.test.ts` fallisce.
 
 Tutto il task (B e C dichiarano i loro):
 
@@ -644,26 +651,24 @@ dell'utente, parte C»):
   più i casi dell'acqua in `problems`, `distance`, `exampleRoutes`,
   `explored`, `favoriteRoute`, `sport`), tsc, lint, prettier.
 
-**Da dove riprendere** (PR #255 aperta, contesto pulito il 2026-10-03,
-d'accordo col coordinatore): la #255 entra **dopo** il merge della #254
-(TASK-210, la lingua dell'app) e la sua pubblicazione su «preview». Al
-«tocca a te» del coordinatore, nel worktree `.claude/worktrees/TASK-191C`:
-
-1. `git merge origin/main`; nei tre file toccati anche dalla #254
-   (`App.tsx`: `useLanguage`; `SettingsPage.test.tsx`: `AsInTheApp` e
-   «Language, English»; `favoriteRoute.ts`: `shapeName()`, `t("Route")`,
-   `decimal()`) tenere tutte e due le modifiche.
-2. I testi nuovi della canoa in `t()` con le tabelle de/it/es/fr (se
-   mancano, `src/i18n/tables.test.ts` fallisce): `src/paddle/*`, i testi
-   nuovi di `RoutePanel.tsx`, `problems.ts` (`waterProblemText`),
-   `sport.ts` (`withoutRouteLabel`); per le forme `shapeName()`
-   (`src/i18n/shapeNames.ts`), per i km `decimal()`, per i plurali
-   `tPlural()`. Il testo dell'avviso è approvato dall'utente in inglese.
-3. Test, tsc, lint, `npm run format:check`; push; a «Selezione lingua
-   app» l'elenco dei testi messi in `t()`; al coordinatore «#255 CI in
-   corso»; al suo «merge 255» la merge, poi branch cancellato, STATUS, e
-   questa parte «Done» (il task resta aperto per il punto 5 di A2 e
-   l'acqua sul server).
+**Ripresa dopo la lingua dell'app** (2026-10-03 sera, su richiesta
+dell'utente: «l'app per fare il padel», cioè la canoa in Sgrava): `main`
+unito nel branch (107 commit, con TASK-210 A, la bici a mano e la
+navigazione in bici). Conflitti in `App.tsx` (la partenza sull'acqua da
+«Explore» porta ora anche `activity: "paddling"`, come la bici di
+TASK-216), `SettingsPage.test.tsx` (8 «Soon», 4 pulsanti con «Language»)
+e `DECISIONS.md` (tenute tutte e due le parti). **I testi della canoa in
+`t()`**, con le quattro tabelle (ADR-0169, «Aggiunta»): l'avviso (titolo,
+quattro righe, «I understand», «Not now»); «Explore» con «Paddle» («On the
+water», «Shapes to paddle, within 1 km of the shore», «LAKES AND SEA»,
+«Near me», «Your start», «Near your start», le due note, «Next»,
+«Drawing…», «Not drawn», «{shape}, {km} km, on the water», i km con
+`decimal()`, le forme con `shapeName()`); «from Riva del Garda», «from
+Como», «from the beach»; in «Draw» «On the water, a shape of the
+catalogue.» e la riga «{name} · on the water / on roads · target {km}
+km»; i tre errori dell'acqua; «Run / Ride / Paddle without a route». Per
+TASK-210 restano in inglese il resto di «Draw», di «Explore» e della corsa,
+come prima. **Test**: app 1600 (jest, 188 file), tsc, lint, prettier.
 
 **Visto nel simulatore** (iOS 27, Expo Go, 2026-10-03, senza tocchi: lo
 sport, la pagina e l'avviso messi da righe temporanee in una copia):

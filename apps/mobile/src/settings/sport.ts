@@ -1,6 +1,8 @@
 import type { Activity } from "@shaperoute/shared-types";
 import { File, Paths } from "expo-file-system";
 
+import { t } from "../i18n";
+
 /** What a route is for: a run, a bike ride since TASK-190, or paddling on a
  * lake or the sea since TASK-191 (a canoe, a kayak, a SUP). */
 export type Sport = "run" | "bike" | "paddle";
@@ -101,10 +103,10 @@ export function activityOf(sport: Sport): Activity {
 export function withoutRouteLabel(sport: Sport): string {
   switch (sport) {
     case "bike":
-      return "Ride without a route";
+      return t("Ride without a route");
     case "paddle":
-      return "Paddle without a route";
+      return t("Paddle without a route");
     default:
-      return "Run without a route";
+      return t("Run without a route");
   }
 }

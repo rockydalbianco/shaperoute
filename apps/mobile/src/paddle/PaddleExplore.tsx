@@ -18,6 +18,7 @@ import {
 import type { RecommendedRoute } from "../explore/recommendedRoutes";
 import { CardMapsCredit, cardWidth, RouteCard } from "../explore/RouteCard";
 import { shapeLabel } from "../feed/FeedPost";
+import { decimal, t, tLater } from "../i18n";
 import type { Place } from "../places/photon";
 import {
   color,
@@ -45,8 +46,8 @@ export function forgetWaterChoice(): void {
 }
 
 const STATUS: Record<"waiting" | "drawing", string> = {
-  waiting: "Next",
-  drawing: "Drawing…",
+  waiting: tLater("Next"),
+  drawing: tLater("Drawing…"),
 };
 
 type Props = {
@@ -78,13 +79,15 @@ export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
         ? asPlace(chosen.place)
         : chosen.point === null
           ? null
-          : { label: "Your start", point: chosen.point };
+          : { label: t("Your start"), point: chosen.point };
   const { examples, retry } = useCityExamples(apiUrl, place, { set: PADDLE_EXAMPLES });
   return (
     <View style={[StyleSheet.absoluteFill, styles.screen]}>
       <View style={[styles.header, { paddingTop: insets.top + space.sm }]}>
-        <Text style={styles.title}>On the water</Text>
-        <Text style={styles.subtitle}>Shapes to paddle, within 1 km of the shore</Text>
+        <Text style={styles.title}>{t("On the water")}</Text>
+        <Text style={styles.subtitle}>
+          {t("Shapes to paddle, within 1 km of the shore")}
+        </Text>
       </View>
       <ScrollView
         contentContainerStyle={[
@@ -93,10 +96,10 @@ export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
         ]}
       >
         <View style={styles.section}>
-          <Text style={styles.label}>LAKES AND SEA</Text>
+          <Text style={styles.label}>{t("LAKES AND SEA")}</Text>
           <View style={styles.chips}>
             <PlaceChip
-              label="Near me"
+              label={t("Near me")}
               on={chosen?.kind === "near"}
               onPress={() => choose({ kind: "near", point: near })}
             />
@@ -112,21 +115,24 @@ export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
         </View>
         {chosen === null && (
           <Text style={styles.note}>
-            Choose a lake or a beach: a circle, a heart and a star of 2 km are drawn on
-            its water, from the shore.
+            {t(
+              "Choose a lake or a beach: a circle, a heart and a star of 2 km are drawn on its water, from the shore.",
+            )}
           </Text>
         )}
         {chosen?.kind === "near" && chosen.point === null && (
           <Text style={styles.note}>
-            Choose a start in Draw first: the shapes start from the shore nearest to it.
+            {t(
+              "Choose a start in Draw first: the shapes start from the shore nearest to it.",
+            )}
           </Text>
         )}
         {chosen !== null && place !== null && examples !== null && (
           <WaterExamples
             title={
               chosen.kind === "place"
-                ? `${chosen.place.name} · from ${chosen.place.from}`
-                : "Near your start"
+                ? `${chosen.place.name} · ${t(chosen.place.from)}`
+                : t("Near your start")
             }
             examples={examples}
             onOpen={onOpen}
@@ -165,17 +171,20 @@ function WaterExamples({
           const name = shapeLabel(example.shape);
           if (example.status === "ready") {
             const { route } = example;
-            const km = (route.route_m / 1000).toFixed(1);
+            const km = decimal(route.route_m / 1000);
             return (
               <RouteCard
                 key={example.shape}
                 width={card}
                 line={route.preview}
                 title={`${name} · ${km} km`}
-                detail="On the water"
+                detail={t("On the water")}
                 map
                 onPress={() => onOpen(route)}
-                accessibilityLabel={`${name}, ${km} km, on the water`}
+                accessibilityLabel={t("{shape}, {km} km, on the water", {
+                  shape: name,
+                  km,
+                })}
               />
             );
           }
@@ -186,7 +195,7 @@ function WaterExamples({
               line={null}
               title={name}
               detail={
-                example.status === "failed" ? "Not drawn" : STATUS[example.status]
+                example.status === "failed" ? t("Not drawn") : t(STATUS[example.status])
               }
             />
           );
@@ -204,7 +213,7 @@ function WaterExamples({
           onPress={onRetry}
           accessibilityRole="button"
         >
-          <Text style={styles.retryText}>Try again</Text>
+          <Text style={styles.retryText}>{t("Try again")}</Text>
         </Pressable>
       )}
     </View>

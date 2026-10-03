@@ -125,7 +125,7 @@ export function RouteChoice({
     <View style={styles.panel}>
       <Text style={styles.label}>DRAW</Text>
       {shapesOnly ? (
-        <Text style={styles.note}>On the water, a shape of the catalogue.</Text>
+        <Text style={styles.note}>{t("On the water, a shape of the catalogue.")}</Text>
       ) : (
         <Segmented
           options={DRAW_KINDS}
@@ -333,9 +333,7 @@ export function RouteOutcome({
             <Text style={styles.result}>
               {`${(view.result.distance_m / 1000).toFixed(1)} km`}
             </Text>
-            <Text style={styles.target}>
-              {`${nameOf(view.request)} · ${onWhat(view.request)} · target ${view.request.distance_m / 1000} km`}
-            </Text>
+            <Text style={styles.target}>{targetLine(view.request)}</Text>
             <PenSplit result={view.result} activity={view.request.activity} />
           </View>
           <RouteTiles choices={choices} chosen={chosen} onChoose={onChoose} />
@@ -547,9 +545,13 @@ function onWater(request: AnyRouteRequest): boolean {
   return request.activity === "paddling";
 }
 
-/** What the route runs on, for the line under its distance. */
-function onWhat(request: AnyRouteRequest): string {
-  return onWater(request) ? "on the water" : "on roads";
+/** The line under the route's distance: what it is, what it runs on, and
+ * the distance asked for. */
+function targetLine(request: AnyRouteRequest): string {
+  const values = { name: nameOf(request), km: request.distance_m / 1000 };
+  return onWater(request)
+    ? t("{name} · on the water · target {km} km", values)
+    : t("{name} · on roads · target {km} km", values);
 }
 
 function kindOf(request: AnyRouteRequest): ChoiceKind {

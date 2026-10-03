@@ -1,6 +1,8 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { t, tLater } from "../i18n";
+
 import {
   color,
   fontSize,
@@ -15,12 +17,16 @@ import {
  * approved: the engine knows the shore, not the water's rules nor its
  * weather, and promises nothing of either.
  */
-export const NOTICE_TITLE = "Before you paddle";
+export const NOTICE_TITLE = tLater("Before you paddle");
 export const NOTICE_LINES = [
-  "Wear a life jacket.",
-  "Check the weather and the wind before you go out.",
-  "Follow the local rules: swimming areas, boat lanes, harbours. Sgrava does not know them.",
-  "The route stays within 1 km of the shore. That does not make it safe or allowed.",
+  tLater("Wear a life jacket."),
+  tLater("Check the weather and the wind before you go out."),
+  tLater(
+    "Follow the local rules: swimming areas, boat lanes, harbours. Sgrava does not know them.",
+  ),
+  tLater(
+    "The route stays within 1 km of the shore. That does not make it safe or allowed.",
+  ),
 ] as const;
 
 /**
@@ -60,14 +66,14 @@ export function PaddleNotice({
             🛶
           </Text>
           <Text style={styles.title} accessibilityRole="header">
-            {NOTICE_TITLE}
+            {t(NOTICE_TITLE)}
           </Text>
           {NOTICE_LINES.map((line) => (
             <View key={line} style={styles.line}>
               <Text style={styles.bullet} accessibilityElementsHidden>
                 •
               </Text>
-              <Text style={styles.text}>{line}</Text>
+              <Text style={styles.text}>{t(line)}</Text>
             </View>
           ))}
         </View>
@@ -77,14 +83,14 @@ export function PaddleNotice({
             onPress={onAccept}
             accessibilityRole="button"
           >
-            <Text style={styles.acceptText}>I understand</Text>
+            <Text style={styles.acceptText}>{t("I understand")}</Text>
           </Pressable>
           <Pressable
             style={styles.dismiss}
             onPress={onDismiss}
             accessibilityRole="button"
           >
-            <Text style={styles.dismissText}>Not now</Text>
+            <Text style={styles.dismissText}>{t("Not now")}</Text>
           </Pressable>
         </View>
       </View>

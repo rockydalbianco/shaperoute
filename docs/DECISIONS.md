@@ -7958,6 +7958,16 @@ schermata della corsa (il passo al km, le calorie), Strava (che riceve una
 corsa) e «My activities» restano quelli della corsa: la voce e il
 punteggio pensati per l'acqua sono fuori scope (`tasks/TASK-191.md`).
 
+**Aggiunta** (2026-10-03, dopo la lingua dell'app, TASK-210, ADR-0172;
+deciso dall'agente su delega dell'utente): i testi nuovi della canoa
+passano da `t()` e sono nelle quattro tabelle. Dove una frase si compone,
+si traduce la frase intera: il «da dove» dei luoghi è un testo solo
+(«from the beach», «from Riva del Garda»: in italiano «dalla spiaggia»
+non si fa da «da» + «la spiaggia»), e la riga sotto la distanza è
+«{name} · on the water · target {km} km» con la sua gemella «on roads»,
+che così si traduce anche per la corsa e la bici. I nomi dei luoghi
+(Lago di Garda, Jesolo…) restano quelli italiani in ogni lingua.
+
 ## ADR-0171 — La voce della corsa in cinque lingue: le frasi dette in `src/voice/`, una tabella per lingua, la scelta in «Data»
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-209). Le cinque lingue, il posto («Data», accanto a «Voice») e la

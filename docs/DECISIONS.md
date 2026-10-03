@@ -8794,3 +8794,26 @@ precedenti, da 20 km. Restano come nella corsa, da chiedere all'utente:
 la fine della corsa (il passo nel riepilogo), le calorie (stimate per la
 corsa, circa il triplo di quelle in bici), l'incitamento dopo 5 km (in bici
 non c'è: i 5 km non si dicono), la corsa senza percorso in bici.
+
+## ADR-0183 — «Run without a route» è giallo
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** (TASK-220). Fa
+un'eccezione alla regola 1 dei colori di `UI.md` (ADR-0046 e seguenti: il
+giallo è del percorso e del comando che lo produce).
+
+**Contesto**: l'utente, il 2026-10-03: «il pulsante fallo giallo», del
+pulsante «Run without a route» in cima a «Draw». Fino a qui era neutro,
+su `surfaceRaised` con il bordo `borderStrong`, perché non produce un
+percorso.
+
+**Decisione dell'utente**: il pulsante è **giallo**, anche come «Ride
+without a route» con «Bike».
+
+**Decisione dell'agente**: fondo `accent` e testo `onAccent` (13,5:1),
+senza bordo, come «Draw route»; nessun token nuovo. L'eccezione vale **solo
+per questo pulsante**: gli altri comandi restano neutri.
+
+**Conseguenze**: nella pagina «Draw» ci sono due comandi gialli, in alto
+e in fondo; «Draw route» resta spento finché la richiesta non è completa,
+quindi all'apertura il giallo pieno è quello in alto. Il commento di
+`accent` in `src/theme/tokens.ts` dice ancora «una cosa sola»: da
+aggiornare con il prossimo task che tocca quel file.

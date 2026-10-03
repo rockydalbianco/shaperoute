@@ -207,6 +207,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   alzata in bici «riding» / «Ride to the U» al posto di «walking». Chiude
   le domande «Start» in bici e «km walking» di TASK-190. Il codice dopo
   TASK-206 C. `tasks/TASK-216.md`.
+- **TASK-217 — La voce confronta ogni km col precedente** (Todo; chiesto
+  e scelto dall'utente il 2026-10-03): dopo la frase di ogni km, «Questo
+  chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2
+  s «Stesso passo del chilometro precedente.»; al primo km niente. Con e
+  senza percorso; le miglia con TASK-182. Il codice dopo la #259 e TASK-206
+  C (stessi file della voce). `tasks/TASK-217.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,

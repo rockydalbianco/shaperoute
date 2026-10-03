@@ -314,6 +314,7 @@ docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-206.md
 docs/tasks/TASK-216.md                                   (nuovo)
+docs/tasks/TASK-217.md                                   (nuovo)
 ```
 
 La migrazione dei preferiti non era prevista: chiesta al coordinatore, che

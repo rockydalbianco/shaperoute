@@ -1,9 +1,9 @@
 # TASK-117 — Pubblicare una corsa salvata: i disegni
 
 **Stato**: In corso — parte A (API) in `main` (PR #232); parte B (app)
-da fare, può partire
-**Fase**: 4 · **Branch**: `feat/TASK-117-publish-runs` (parte A), un
-branch nuovo da `main` per la parte B
+in lavorazione (sessione «Nuova tasca», dal 2026-10-03)
+**Fase**: 4 · **Branch**: `feat/TASK-117-publish-runs` (parte A),
+`feat/TASK-117-publish-app` (parte B)
 **Dipende da**: TASK-113, TASK-116, TASK-172 · **ADR**: ADR-0159
 
 ## Obiettivo
@@ -58,6 +58,37 @@ una corsa senza percorso si pubblica anche lei, senza punteggio.
 Da chiedere all'utente prima della parte B: dove sta «Public» (a fine
 corsa, nella scheda, o tutti e due), e i testi.
 
+**Risposte dell'utente** (2026-10-03):
+
+1. **«Public» in tutti e due i posti**: a fine corsa sopra «Save», e
+   nella scheda di una corsa aperta da «My activities», per pubblicarla
+   dopo, cambiarle il titolo o toglierla. L'interruttore parte **spento a
+   ogni corsa** (non ricorda la volta prima).
+2. **I testi**, come proposti, con **un solo campo «Title» a fine
+   corsa**: dà il nome al disegno e, con «Send to Strava» acceso, anche
+   alla corsa su Strava (a fine corsa prende il posto di «Name on
+   Strava»; ok del coordinatore a toccare `StravaRunEnd.tsx`). Nella
+   scheda di una corsa aperta il campo di Strava resta com'è.
+   - Fine corsa, con account: «Public» (Off / On); acceso, «Others see it
+     in your profile, without the first and last 200 m.»; «Title», col
+     suggerimento «Give it a name»; senza rete, «Saved on the phone. It
+     goes public when you are back online.»
+   - Fine corsa, senza account: «Sign up or log in to keep your runs and
+     share them as drawings.»
+   - Scheda in «My activities»: «Public» (Off / On), «Title»; acceso,
+     «Public in your profile, without the first and last 200 m.»
+   - Elenco «My activities»: «Public» accanto a una corsa pubblica.
+   - Profilo, il proprio e quello di un altro: «Drawings»; vuoto, il
+     proprio «No public drawings yet. Make a run public in My
+     activities.», di un altro «No drawings yet.»; un disegno aperto ha
+     il titolo (senza titolo, la data), la data, i km, «82 out of 100».
+
+Dal coordinatore: la griglia nel profilo di un altro
+(`UserProfilePage.tsx`) non ha ancora un ingresso nell'app («da dove si
+apre» è una domanda aperta di TASK-116): non se ne aggiunge uno. Nessuna
+pubblicazione: l'app con «Public» va sul telefono dopo l'aggiornamento del
+server con la migrazione `0009`, con l'ok dell'utente.
+
 ## Criteri di accettazione
 
 - [x] Il punteggio di un disegno è quello calcolato dall'API, anche se
@@ -96,17 +127,31 @@ docs/STATUS.md
 docs/tasks/TASK-117.md
 ```
 
-Parte B, prevista:
+Parte B (ok del coordinatore per `StravaRunEnd.tsx` e per `App.tsx`,
+che tocca anche TASK-205 in un altro punto):
 
 ```
-apps/mobile/src/api/drawings.ts
-apps/mobile/src/api/drawings.test.ts
+apps/mobile/src/api/drawings.ts                (nuovo)
+apps/mobile/src/api/drawings.test.ts           (nuovo)
+apps/mobile/src/social/                        (nuovi: la coda senza rete,
+                                                la porta dei disegni, la riga
+                                                «Public», la griglia, la
+                                                scheda del disegno, i test)
+apps/mobile/__tests__/AppDrawings.test.tsx     (nuovo)
 apps/mobile/src/activities/RunEnd.tsx
 apps/mobile/src/activities/outbox.ts
-apps/mobile/src/activities/ (la scheda della corsa)
+apps/mobile/src/activities/activitiesDoor.ts
+apps/mobile/src/activities/ActivityCard.tsx
+apps/mobile/src/activities/ActivitiesList.tsx
+apps/mobile/src/strava/StravaRunEnd.tsx
+apps/mobile/src/profile/ProfileHome.tsx
 apps/mobile/src/profile/UserProfilePage.tsx
-apps/mobile/src/social/ (nuovi)
+apps/mobile/src/screens/ProfileLayer.tsx       (il provider)
+apps/mobile/App.tsx                            (il disegno aperto sulla mappa)
+apps/mobile/__tests__/AppStrava.test.tsx       (i testi cambiati)
+apps/mobile/__tests__/AppActivities.test.tsx   (i testi cambiati)
 docs/UI.md
+docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-117.md
 ```

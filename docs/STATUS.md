@@ -371,6 +371,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-222: il cuore su giallo in «Explore» (ADR-0184; chiesto
+  dall'utente il 2026-10-03). A destra di «Best near you», sotto il
+  cerchio del profilo e largo uguale (44 punti), il `HeartBadge` di
+  TASK-221: solo un'immagine, VoiceOver lo salta. Visto nel simulatore.
+  Sul telefono con la prossima pubblicazione. `tasks/TASK-222.md`.
+
 - **App** — TASK-221: il cuore su giallo accanto a «Sgrava» (ADR-0184;
   chiesto dall'utente il 2026-10-03). In cima a «Draw», a sinistra del
   nome, un quadrato giallo di 32 punti con il cuore nero dell'avvio, fermo.

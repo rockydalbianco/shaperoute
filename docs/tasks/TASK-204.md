@@ -82,8 +82,11 @@ nuovo aspetto, visto nel simulatore (corsa, pausa, «Data» con due km, il
 conto alla rovescia in video); 1294 test verdi, nuovi quelli della
 distanza, dei nomi sotto i pulsanti e delle barre dei km. Nessun testo
 cambiato; **una parola nuova sullo schermo**, «Pause» sotto il pulsante
-(prima solo l'etichetta d'accessibilità), da confermare con l'utente
-insieme all'aspetto. Non visto dal vivo: il banner della svolta con il
-disco (stesso codice di quello della partenza, visto). Da guardare con una
-build Android: il carattere «♪» di «Music». Non pubblicata: serve l'ok
-dell'utente.
+(prima solo l'etichetta d'accessibilità). Non visto dal vivo: il banner
+della svolta con il disco (stesso codice di quello della partenza, visto).
+Da guardare con una build Android: il carattere «♪» di «Music».
+
+Il 2026-10-03, con l'ok dell'utente, `main` (c16e9c1) è stato pubblicato
+su un ramo EAS a parte, `task-204-test`, aperto dall'utente con il link del
+gruppo; `preview` non è cambiato. L'utente: «mi piace, teniamo Pause».
+L'aspetto e la parola «Pause» sono confermati.

@@ -236,9 +236,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sotto, la distanza più grande sotto la mappa, «Pocket» e «Music» tondi
   con l'icona, «Paused» in una pillola, una barra per ogni km di «Data»,
   interruttori disegnati, la freccia dei banner in un disco, il conto alla
-  rovescia animato. Visto nel simulatore. **Da confermare dall'utente**:
-  l'aspetto e la parola «Pause», nuova sotto il pulsante. Non pubblicata:
-  con l'ok dell'utente, con il resto di `main`.
+  rovescia animato. Visto nel simulatore. L'aspetto e la parola «Pause»,
+  nuova sotto il pulsante, **confermati dall'utente** il 2026-10-03
+  («mi piace, teniamo Pause»), dopo un link di prova (ramo EAS
+  `task-204-test`). Non su `preview`: arriva con il resto di `main`.
 
 - **Motore** — TASK-203: dove va il tempo del piano dalla partenza, e le
   due correzioni che lasciano i percorsi identici (ADR-0162; la PR la apre

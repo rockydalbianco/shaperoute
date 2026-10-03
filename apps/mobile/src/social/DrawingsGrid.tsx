@@ -1,0 +1,261 @@
+import type { Drawing } from "@shaperoute/shared-types";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+
+import { accountProblem } from "../account/messages";
+import { dayLabel } from "../activities/activityText";
+import { RunDrawing } from "../activities/RunDrawing";
+import {
+  color,
+  fontSize,
+  fontWeight,
+  MIN_TAP_SIZE,
+  radius,
+  space,
+} from "../theme/tokens";
+import { useDrawingsDoor } from "./drawingsDoor";
+
+/** Three drawings a row, as a profile shows its pictures. */
+const COLUMNS = 3;
+/** The side of a drawing before the grid knows its width. */
+const FIRST_CELL = 96;
+
+/** What the grid has of the profile's drawings. */
+type Shown =
+  | { kind: "loading" }
+  | { kind: "ready"; drawings: Drawing[]; next: string | null }
+  | { kind: "failed"; problem: string };
+
+const LOADING: Shown = { kind: "loading" };
+
+/** The words a drawing is read with: its title, or the day it was run. */
+export function drawingName(drawing: {
+  title: string | null;
+  started_at: string;
+}): string {
+  return drawing.title ?? dayLabel(drawing.started_at);
+}
+
+type Props = {
+  /** The profile's `public_id`; null from an API older than profiles. */
+  publicId: string | null;
+  /** The account's own profile: its empty grid says how to fill it. */
+  own: boolean;
+};
+
+/**
+ * «Drawings» in a profile (TASK-117, ADR-0159): the runs it made public,
+ * the latest first, three a row, a page at a time. Each is the run as the
+ * others see it, small and without its first and last 200 m, with its
+ * score; a tap opens it on the map.
+ */
+export function DrawingsGrid({ publicId, own }: Props) {
+  const { pageOf, open, opening, openProblem } = useDrawingsDoor();
+  // The answer for one profile: another's is not this one's.
+  const [answer, setAnswer] = useState<{ asked: string; shown: Shown } | null>(null);
+  // «Try again» asks once more.
+  const [tries, setTries] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    if (publicId === null) {
+      return;
+    }
+    let live = true;
+    void pageOf(publicId, null).then((outcome) => {
+      if (!live || outcome === null) {
+        return;
+      }
+      setAnswer({
+        asked: publicId,
+        shown:
+          outcome.kind === "ok"
+            ? {
+                kind: "ready",
+                drawings: outcome.value.drawings,
+                next: outcome.value.next,
+              }
+            : { kind: "failed", problem: accountProblem(outcome) },
+      });
+    });
+    return () => {
+      live = false;
+    };
+  }, [pageOf, publicId, tries]);
+
+  if (publicId === null) {
+    return null;
+  }
+  const shown: Shown =
+    answer !== null && answer.asked === publicId ? answer.shown : LOADING;
+
+  function tryAgain() {
+    setAnswer(null);
+    setTries((n) => n + 1);
+  }
+
+  function loadMore() {
+    if (shown.kind !== "ready" || shown.next === null || publicId === null) {
+      return;
+    }
+    const asked = publicId;
+    setLoadingMore(true);
+    void pageOf(asked, shown.next).then((outcome) => {
+      setLoadingMore(false);
+      if (outcome === null || outcome.kind !== "ok") {
+        return;
+      }
+      setAnswer((was) => {
+        if (was === null || was.asked !== asked || was.shown.kind !== "ready") {
+          return was;
+        }
+        // A drawing already shown is not shown twice.
+        const seen = new Set(was.shown.drawings.map((d) => d.id));
+        return {
+          asked,
+          shown: {
+            kind: "ready",
+            drawings: [
+              ...was.shown.drawings,
+              ...outcome.value.drawings.filter((d) => !seen.has(d.id)),
+            ],
+            next: outcome.value.next,
+          },
+        };
+      });
+    });
+  }
+
+  const cell =
+    width > 0 ? Math.floor((width - space.sm * (COLUMNS - 1)) / COLUMNS) : FIRST_CELL;
+  return (
+    <View style={styles.section} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+      <Text style={styles.title} accessibilityRole="header">
+        Drawings
+      </Text>
+      {openProblem !== null && (
+        <Text style={styles.problem} accessibilityRole="alert">
+          {openProblem}
+        </Text>
+      )}
+      {shown.kind === "failed" ? (
+        <>
+          <Text style={styles.problem}>{shown.problem}</Text>
+          <Pressable
+            style={styles.button}
+            onPress={tryAgain}
+            accessibilityRole="button"
+          >
+            <Text style={styles.buttonText}>Try again</Text>
+          </Pressable>
+        </>
+      ) : shown.kind === "ready" && shown.drawings.length === 0 ? (
+        <Text style={styles.message}>
+          {own
+            ? "No public drawings yet. Make a run public in My activities."
+            : "No drawings yet."}
+        </Text>
+      ) : shown.kind === "ready" ? (
+        <>
+          <View style={styles.grid}>
+            {shown.drawings.map((drawing) => (
+              <Pressable
+                key={drawing.id}
+                style={({ pressed }) => [
+                  styles.cell,
+                  { width: cell },
+                  (pressed || opening === drawing.id) && styles.pressed,
+                ]}
+                onPress={() => open(drawing)}
+                disabled={opening !== null}
+                accessibilityRole="button"
+                accessibilityLabel={`${drawingName(drawing)}${
+                  drawing.score !== null ? `, score ${drawing.score} out of 100` : ""
+                }, open on the map`}
+                testID="drawing-cell"
+              >
+                <RunDrawing
+                  route={drawing.track_preview}
+                  track={NO_TRACK}
+                  width={cell}
+                  height={cell}
+                />
+                {drawing.score !== null && (
+                  <Text style={styles.score}>{`Score ${drawing.score}`}</Text>
+                )}
+              </Pressable>
+            ))}
+          </View>
+          {shown.next !== null && (
+            <Pressable
+              style={[styles.button, loadingMore && styles.busy]}
+              onPress={loadMore}
+              disabled={loadingMore}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: loadingMore, busy: loadingMore }}
+            >
+              <Text style={styles.buttonText}>
+                {loadingMore ? "Loading…" : "Show more"}
+              </Text>
+            </Pressable>
+          )}
+        </>
+      ) : null}
+    </View>
+  );
+}
+
+/** A drawing is one line: the run, drawn in the route's yellow as in «Feed». */
+const NO_TRACK: Drawing["track_preview"] = [];
+
+const styles = StyleSheet.create({
+  section: {
+    gap: space.md,
+  },
+  title: {
+    color: color.text,
+    fontSize: fontSize.input,
+    fontWeight: fontWeight.semibold,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: space.sm,
+  },
+  cell: {
+    gap: space.xs,
+  },
+  pressed: {
+    opacity: 0.6,
+  },
+  score: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
+  },
+  message: {
+    color: color.textMuted,
+    fontSize: fontSize.body,
+  },
+  problem: {
+    color: color.error,
+    fontSize: fontSize.body,
+  },
+  button: {
+    minHeight: MIN_TAP_SIZE,
+    borderRadius: radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: color.surfaceRaised,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+  },
+  buttonText: {
+    color: color.text,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
+  },
+  busy: {
+    opacity: 0.6,
+  },
+});

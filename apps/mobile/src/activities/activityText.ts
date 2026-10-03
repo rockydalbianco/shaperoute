@@ -26,6 +26,16 @@ function two(value: number): string {
   return String(value).padStart(2, "0");
 }
 
+/** "Fri 2 Oct 2026": the day the run began, on the phone's clock, without
+ * the time (a drawing others see, TASK-117); "" for a moment that is not one. */
+export function dayLabel(startedAt: string): string {
+  const when = new Date(startedAt);
+  if (Number.isNaN(when.getTime())) {
+    return "";
+  }
+  return `${DAYS[when.getDay()]} ${when.getDate()} ${MONTHS[when.getMonth()]} ${when.getFullYear()}`;
+}
+
 /** "Fri 2 Oct 2026 · 08:12": the day and the time the run began, on the
  * phone's clock; "" for a moment that is not one. */
 export function startedLabel(startedAt: string): string {
@@ -33,8 +43,7 @@ export function startedLabel(startedAt: string): string {
   if (Number.isNaN(when.getTime())) {
     return "";
   }
-  const day = `${DAYS[when.getDay()]} ${when.getDate()} ${MONTHS[when.getMonth()]} ${when.getFullYear()}`;
-  return `${day} · ${two(when.getHours())}:${two(when.getMinutes())}`;
+  return `${dayLabel(startedAt)} · ${two(when.getHours())}:${two(when.getMinutes())}`;
 }
 
 type Drawn = { shape: string | null; word: string | null; title: string | null };

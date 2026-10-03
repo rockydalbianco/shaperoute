@@ -6,6 +6,7 @@ import { accountProblem, NO_API, sessionEnded } from "../account/messages";
 import type { Account } from "../account/useAccount";
 import type { AccountOutcome } from "../api/accounts";
 import { fetchProfile, profilePhotoUri } from "../api/profiles";
+import { DrawingsGrid } from "../social/DrawingsGrid";
 import { color, fontSize, space } from "../theme/tokens";
 import { ProfileHeader } from "./ProfileHeader";
 
@@ -48,9 +49,10 @@ export function profileViewProblem(failed: Failed): string {
 
 /**
  * Another member's profile, read only (TASK-116, ADR-0128): the picture,
- * the name, the bio and how many drawings they published. Never the email:
- * the API does not send it. Nothing in the app opens it yet: where it opens
- * from (the feed, a like, a comment) is the user's choice.
+ * the name, the bio and how many drawings they published, and under them
+ * the drawings (TASK-117). Never the email: the API does not send it.
+ * Nothing in the app opens it yet: where it opens from (the feed, a like, a
+ * comment) is the user's choice.
  */
 export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: Props) {
   const { state, sessionEnded: onSessionEnded } = account;
@@ -108,6 +110,7 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
         photo={profilePhotoUri(profile)}
         detail={drawingsText(profile.drawings)}
       />
+      <DrawingsGrid publicId={profile.public_id} own={false} />
     </View>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityDetail } from "../api/activities";
+import { PublicRow } from "../social/PublicRow";
 import { StravaActivityRow } from "../strava/StravaActivityRow";
 import {
   color,
@@ -24,8 +25,9 @@ type Props = {
 /**
  * A run of «My activities» on the map (TASK-172), under it: when and where
  * it was, how far and how fast, its score when it has one. The map shows it
- * as the end of a run does: the route yellow, what was run light. With
- * Strava connected, «Send to Strava» or «View on Strava» (TASK-187).
+ * as the end of a run does: the route yellow, what was run light. «Public»
+ * and its title make it a drawing in the profile (TASK-117). With Strava
+ * connected, «Send to Strava» or «View on Strava» (TASK-187).
  */
 export function ActivityCard({ activity, onList, onDelete }: Props) {
   // «Delete» asks first, on the card itself.
@@ -53,6 +55,7 @@ export function ActivityCard({ activity, onList, onDelete }: Props) {
       <Text style={styles.message}>
         {withRoute ? "Yellow: the route. White: what you ran." : "White: what you ran."}
       </Text>
+      {!confirming && <PublicRow activityKey={activity.id} />}
       {!confirming && <StravaActivityRow activity={activity} />}
       {confirming ? (
         <>

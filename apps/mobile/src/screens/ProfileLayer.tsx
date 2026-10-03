@@ -5,6 +5,7 @@ import { useAccount } from "../account/useAccount";
 import { ActivitiesContext, useActivitiesOf } from "../activities/activitiesDoor";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import { ProfilePhotoContext, useProfilePhotoOf } from "../profile/useProfilePhoto";
+import { DrawingsContext, useDrawingsOf } from "../social/drawingsDoor";
 import { StravaContext, useStravaOf } from "../strava/useStrava";
 import {
   color,
@@ -92,6 +93,19 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // Strava of the account (TASK-187): the end of a run, a run of «My
   // activities» and «Settings» show it.
   const strava = useStravaOf(apiUrl, account);
+  // The drawings (TASK-117): one opened from a profile leaves «Profile» for
+  // the map, and comes back to it.
+  const drawingDoors = useMemo(
+    () => ({
+      onOpened: () => setPage(null),
+      onBack: () => {
+        setHint(null);
+        setPage("account");
+      },
+    }),
+    [],
+  );
+  const drawings = useDrawingsOf(apiUrl, account, drawingDoors);
   const photoUri = photo.uri;
   const attention = state.status === "signedOut" && state.notice === "ended";
   const initial =
@@ -116,29 +130,31 @@ export function ProfileLayer({ apiUrl, children }: Props) {
         <ActivitiesContext.Provider value={activities}>
           <ProfilePhotoContext.Provider value={photo}>
             <StravaContext.Provider value={strava}>
-              <View style={styles.layer}>
-                <View
-                  style={styles.app}
-                  // Under «Profile» the app is out of the screen reader's sight too.
-                  accessibilityElementsHidden={shown}
-                  importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
-                >
-                  {children}
+              <DrawingsContext.Provider value={drawings}>
+                <View style={styles.layer}>
+                  <View
+                    style={styles.app}
+                    // Under «Profile» the app is out of the screen reader's sight too.
+                    accessibilityElementsHidden={shown}
+                    importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
+                  >
+                    {children}
+                  </View>
+                  {page !== null && (
+                    <ProfileScreen
+                      account={account}
+                      page={page}
+                      onPage={setPage}
+                      hint={hint}
+                      onBack={() => {
+                        // Closed without an account: the heart's route waits no more.
+                        forgetWaiting();
+                        setPage(null);
+                      }}
+                    />
+                  )}
                 </View>
-                {page !== null && (
-                  <ProfileScreen
-                    account={account}
-                    page={page}
-                    onPage={setPage}
-                    hint={hint}
-                    onBack={() => {
-                      // Closed without an account: the heart's route waits no more.
-                      forgetWaiting();
-                      setPage(null);
-                    }}
-                  />
-                )}
-              </View>
+              </DrawingsContext.Provider>
             </StravaContext.Provider>
           </ProfilePhotoContext.Provider>
         </ActivitiesContext.Provider>

@@ -9,6 +9,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { DrawingsGrid } from "../social/DrawingsGrid";
 import { ProfileHeader } from "./ProfileHeader";
 import { bioOf } from "./profileFields";
 import { useProfilePhoto } from "./useProfilePhoto";
@@ -37,7 +38,8 @@ type Props = {
 /**
  * The first page of «Profile» with an account (TASK-177): who it is, with
  * the bio and «Edit profile» (TASK-116), what it keeps in two tiles with
- * their number, and the way to «Settings».
+ * their number, the way to «Settings», and the drawings it made public
+ * (TASK-117), as the others see them.
  */
 export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Props) {
   const photo = useProfilePhoto();
@@ -84,6 +86,7 @@ export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Pro
         <Text style={styles.rowText}>Settings</Text>
         <Text style={styles.rowArrow}>›</Text>
       </Pressable>
+      <DrawingsGrid publicId={user.public_id ?? null} own />
     </View>
   );
 }

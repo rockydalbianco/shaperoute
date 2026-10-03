@@ -561,8 +561,10 @@ def test_a_run_saved_before_the_drawings_can_be_published(
     database_url: str, wall: WallClock, tmp_path: Path
 ) -> None:
     database = Database(database_url)
+    # The schema of before: the migrations before the drawings' one, not those
+    # after it, which may need its table (the comments do, TASK-120).
     for path in migrations():
-        if path != DRAWINGS_MIGRATION:
+        if path.name < DRAWINGS_MIGRATION.name:
             shutil.copy(path, tmp_path / path.name)
     database.migrate(tmp_path)
     old = api(database, wall)

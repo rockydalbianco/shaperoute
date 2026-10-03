@@ -155,4 +155,19 @@ docs/STATUS.md
 
 ## Esito
 
-*(a fine task)*
+**Parte A** (2026-10-03): in `main` con la PR #254 (merge `18fe25c`),
+pubblicata su «preview» (gruppo `90bd8c06`, insieme a TASK-212; server
+invariato). In «Settings» si sceglie la lingua; senza scelta l'app segue
+il telefono. Tradotti «Settings», «Profile», l'accesso, «My activities», i
+preferiti, i disegni, il feed, Strava e la ricerca del luogo; provata nel
+simulatore con il telefono in italiano (italiano all'avvio, «Deutsch»
+subito, resta dopo un riavvio). Le traduzioni le ha riviste l'agente su
+delega dell'utente.
+
+**Da fare nelle parti successive**: i file di TASK-191 C (i suoi testi
+nuovi della canoa li mette in `t()` la #255 stessa; il resto di
+`sport.ts`, `RoutePanel`, `problems`, `distance`, `explore/` dopo il suo
+merge), di TASK-208 (`RunEnd.tsx`, `PublicParts.tsx`, `PublicRow.tsx`,
+`api/drawings.ts`) e di TASK-209 (il banner della svolta e i file della
+corsa); poi «Draw», «Explore», la corsa, `SportSetting`/`SportButton`, i
+titoli delle pagine in `App.tsx`, i nomi delle forme in «Draw».

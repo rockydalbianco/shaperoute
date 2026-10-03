@@ -39,6 +39,7 @@ import paddlingRequest from "../fixtures/route-request-paddling.json" with { typ
 import penUpRequest from "../fixtures/route-request-pen-up.json" with { type: "json" };
 import wordRequest from "../fixtures/route-request-word.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
+import cyclingResult from "../fixtures/route-result-cycling.json" with { type: "json" };
 import imageResult from "../fixtures/route-result-image.json" with { type: "json" };
 import penUpResult from "../fixtures/route-result-pen-up.json" with { type: "json" };
 import wordResult from "../fixtures/route-result-word.json" with { type: "json" };
@@ -83,6 +84,7 @@ import {
   type RouteResult,
   type ShapeReading,
   type ShapeReadingRequest,
+  type Stretch,
   type TrackScoreRequest,
   type Walk,
 } from "../src/index.ts";
@@ -91,14 +93,15 @@ import {
 // field added or renamed on one side only fails the typecheck.
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 // The fixtures written before TASK-197 are what an older app sends and an
-// older API answers: without the pen up and the walks, both optional.
+// older API answers: without the pen up and the walks, both optional; nor
+// the stretches with the bike on foot, optional too (TASK-206).
 // Member by member: a shape's request and a word's stay apart.
 type OlderRequest = RouteRequest extends infer R
   ? R extends RouteRequest
     ? Omit<R, "pen_up">
     : never
   : never;
-type OlderResult = Omit<RouteResult, "walks">;
+type OlderResult = Omit<RouteResult, "walks" | "on_foot">;
 const requestFields: Same<keyof typeof request, keyof OlderRequest> = true;
 const resultFields: Same<keyof typeof result, keyof OlderResult> = true;
 const wordFields: Same<keyof typeof wordRequest, keyof OlderRequest> &
@@ -108,7 +111,10 @@ const cyclingFields: Same<keyof typeof cyclingRequest, keyof OlderRequest> = tru
 // A paddling route (TASK-191): the same fields again.
 const paddlingFields: Same<keyof typeof paddlingRequest, keyof OlderRequest> = true;
 const penUpFields: Same<keyof typeof penUpRequest, keyof RouteRequest> &
-  Same<keyof typeof penUpResult, keyof RouteResult> = true;
+  Same<keyof typeof penUpResult, keyof Omit<RouteResult, "on_foot">> = true;
+// A bike route walked in part (TASK-206): every field, its alternative too.
+const cyclingResultFields: Same<keyof typeof cyclingResult, keyof RouteResult> &
+  Same<keyof (typeof cyclingResult.alternatives)[number], keyof RouteResult> = true;
 const trackFields: Same<
   keyof typeof trackScoreRequest,
   keyof Omit<TrackScoreRequest, "walks">
@@ -173,6 +179,7 @@ const typedPenUp: [RouteRequest, RouteResult, TrackScoreRequest] = [
   penUpResult as unknown as RouteResult,
   trackWalksRequest as unknown as TrackScoreRequest,
 ];
+const typedCycling = cyclingResult as unknown as RouteResult;
 
 const isShape = (value: string): boolean =>
   (SHAPES as readonly string[]).includes(value);
@@ -182,6 +189,7 @@ test("the fixtures have the fields of the types", () => {
   assert.ok(jobFields && jobResultFields && jobErrorFields && gpxFields);
   assert.ok(shapeReadingFields && directionFields && wordFields);
   assert.ok(penUpFields && trackFields && cyclingFields && paddlingFields);
+  assert.ok(cyclingResultFields);
 });
 
 /** Whether `walks` are stretches of a route of `count` points, in order. */
@@ -207,6 +215,20 @@ test("a word with the pen up walks once fewer than its letters", () => {
   assert.ok((track.walks ?? []).length > 0);
 });
 
+test("a bike route says where the bike is walked, its alternatives too", () => {
+  // TASK-206: stretches of the points like the walks, but not walks.
+  const alternatives = typedCycling.alternatives ?? [];
+  assert.ok(alternatives.length > 0);
+  for (const route of [typedCycling, ...alternatives]) {
+    const stretches: Stretch[] = route.on_foot ?? [];
+    assert.ok(stretches.length > 0);
+    assert.ok(walksFit(stretches, route.points.length));
+    assert.deepEqual(route.walks, []);
+    assert.deepEqual(route.points.at(0), route.points.at(-1));
+    assert.ok(route.warnings.some((w) => w.endsWith("with the bike on foot")));
+  }
+});
+
 test("a result without walks, from an older API, is still a result", () => {
   // tsc: an older API's result is a RouteResult, and so is its request.
   const older: OlderResult extends RouteResult ? true : false = true;
@@ -214,7 +236,9 @@ test("a result without walks, from an older API, is still a result", () => {
   assert.ok(older && asked);
   for (const fixture of [result, wordResult, imageResult, jobDone.result]) {
     assert.ok(!("walks" in fixture));
+    assert.ok(!("on_foot" in fixture));
   }
+  assert.ok(!("on_foot" in penUpResult));
   assert.ok(!("pen_up" in request) && !("pen_up" in wordRequest));
   assert.ok(!("walks" in trackScoreRequest));
 });

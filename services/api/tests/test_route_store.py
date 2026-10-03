@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import replace
 from pathlib import Path
@@ -133,6 +134,31 @@ def test_a_bike_route_is_kept_apart_from_the_run(tmp_path: Path) -> None:
     assert kept.get(run) == RESULT
     assert len(kept) == 2
     assert set(run_files) < set(tmp_path.glob("*.json"))
+
+
+def test_a_bike_route_keeps_where_it_is_walked(tmp_path: Path) -> None:
+    # TASK-206: the stretches with the bike on foot, in the alternatives too.
+    kept = store(tmp_path)
+    kept.learn([ROVERETO])
+    ride = replace(HEART, distance_m=10_000, activity="cycling")
+    other = replace(OTHER, on_foot=[(0, 1)])
+    bike = replace(RESULT, on_foot=[(1, 2)], alternatives=[other])
+    assert kept.put(ride, bike)
+    assert kept.get(ride) == bike
+    assert store(tmp_path).get(ride) == bike
+
+
+def test_a_route_kept_before_walks_nowhere(tmp_path: Path) -> None:
+    # Kept before TASK-206 part B: no `on_foot` in the file.
+    kept = store(tmp_path)
+    kept.learn([ROVERETO])
+    kept.put(HEART, RESULT)
+    (path,) = tmp_path.glob("*.json")
+    data = json.loads(path.read_text())
+    for result in (data["result"], *data["result"]["alternatives"]):
+        del result["on_foot"]
+    path.write_text(json.dumps(data))
+    assert kept.get(HEART) == RESULT
 
 
 def test_a_new_engine_draws_again(tmp_path: Path) -> None:

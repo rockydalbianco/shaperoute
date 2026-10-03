@@ -1,4 +1,5 @@
 import editRequest from "@shaperoute/shared-types/fixtures/edit-profile-request.json";
+import type { PublicProfile } from "@shaperoute/shared-types";
 import publicProfile from "@shaperoute/shared-types/fixtures/public-profile.json";
 import session from "@shaperoute/shared-types/fixtures/session.json";
 
@@ -15,6 +16,8 @@ const URL = "http://api";
 const TOKEN = "the-token";
 const AUTH = { Authorization: `Bearer ${TOKEN}` };
 const ID = publicProfile.public_id;
+// The JSON says `follow` is a string; the API sends one of FOLLOW_STATES.
+const SEEN: PublicProfile = { ...publicProfile, follow: "following" };
 
 test("the examples of the API are what the app reads", () => {
   expect(isPublicProfile(publicProfile)).toBe(true);
@@ -31,10 +34,8 @@ test("a user from an API without profiles still reads, without bio and id", () =
 });
 
 test("the picture of a profile shows as it came, or not at all", () => {
-  expect(profilePhotoUri(publicProfile)).toBe(
-    `data:image/jpeg;base64,${publicProfile.photo}`,
-  );
-  expect(profilePhotoUri({ ...publicProfile, photo: null })).toBeNull();
+  expect(profilePhotoUri(SEEN)).toBe(`data:image/jpeg;base64,${SEEN.photo}`);
+  expect(profilePhotoUri({ ...SEEN, photo: null })).toBeNull();
 });
 
 test("a change of profile sends only what changes, with the token", async () => {

@@ -7759,6 +7759,20 @@ nell'app con la parte C. Fino ad allora l'avviso dice i metri a piedi.
 Le gallerie stradali in bici (fino a 1 km nei campioni) restano: sono un
 seguito.
 
+**Aggiornamento (parte B, 2026-10-03)**, deciso dall'agente su delega
+dell'utente; la migrazione con l'ok del coordinatore: il `RouteResult` ha
+`on_foot`, coppie `[da, a]` di indici nei punti, compresi tutti e due, una
+per ogni fila di archi a piedi (`network.on_foot_stretches`, calcolata dai
+nodi del percorso come i punti), nelle alternative e, da una partenza
+vicina, con l'avvicinamento e il ritorno. Si aggiunge senza togliere
+niente: vuoto per la corsa e la canoa, facoltativo in `shared-types`,
+sempre nelle risposte dell'API; si controlla come i `walks` (lo stesso
+`walks_problem`). I preferiti lo tengono (migrazione `0012`, colonna
+`on_foot` come `walks`, al più 1000 coppie nel `PUT`), perché un preferito
+in bici riaperto abbia i tratti a mano sulla mappa e nella voce; le corse
+salvate no (il punteggio non cambia). Il GPX non cambia: nessuna pausa, la
+bici a mano è percorso. Le frasi della voce sono della parte C.
+
 ## ADR-0168 — La foto dal cerchio di «Profile»: un «+» bianco, le scelte di «Settings» in un riquadro sopra «Edit profile»
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-207). La richiesta e il «+» in basso a destra del cerchio sono
@@ -7974,6 +7988,96 @@ il nome su Strava) restano in inglese. Le traduzioni le ha riviste
 l'agente su delega dell'utente («controlla te, mi fido»); chi parla le
 altre lingue può migliorarle senza toccare il codice.
 
+## ADR-0173 — Seguire con richiesta, l'API: una tabella `follows` con due stati, la ricerca per nome, gli elenchi solo propri
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-211, parte A), dentro due **scelte dell'utente** del 2026-10-03:
+seguire vuole una richiesta che l'altro accetta o rifiuta; gli iscritti si
+cercano per nome. Le proposte per l'app (dove stanno «Requests», il tasto
+«Follow») sono nel task file e si confermano prima della parte B. Numero
+tenuto dal coordinatore.
+
+**Contesto**: TASK-208 vuole «Followers» fra le scelte di «Who can see it»
+e i tag delle persone, cercate per nome. Non c'era un modo di trovare un
+altro iscritto, né di arrivare al suo profilo (`UserProfilePage.tsx`,
+ADR-0128 punto 8: «da dove si apre lo decide l'utente», domanda aperta in
+TASK-116). Bloccare e segnalare sono di TASK-121, che non è ancora fatto.
+
+**Decisione**:
+1. **Una tabella `follows`**, una riga per coppia ordinata (chi chiede, chi
+   è seguito: la chiave), con `status` `pending` o `accepted`, `asked_at` e
+   `accepted_at` (presente solo da accettata). Un vincolo vieta di seguire
+   sé stessi; `ON DELETE CASCADE` su tutti e due gli account, così un
+   account cancellato sparisce da ogni elenco e da ogni numero senza
+   codice. Due righe a due versi per due persone che si seguono a vicenda:
+   ognuna accetta la sua.
+2. **Ogni azione porta allo stato voluto, e rifatta non cambia niente**:
+   chiedere di nuovo lascia la riga com'è (una sola, con la sua data);
+   ritirare, smettere, rifiutare e togliere cancellano la riga (`204` anche
+   quando non c'era); accettare una richiesta già accettata è `204`. Solo
+   accettare senza nessuna richiesta è `404`. Seguire sé stessi è `422`
+   con il motivo in parole; un profilo che non c'è, `404` come in
+   `GET /users/{public_id}`.
+3. **Rifiutare cancella la richiesta**: chi aveva chiesto vede di nuovo
+   `none`, come se non avesse mai chiesto, e può richiedere. Nessuno stato
+   «rifiutata» che l'API potrebbe lasciar trapelare (scelta proposta
+   nel task file: il tasto torna «Follow»).
+4. **Contano solo le richieste accettate**: nei numeri `followers` e
+   `following` del profilo, negli elenchi e nella funzione per TASK-208
+   (`follows_sql`, `Follows.follows`: «A segue B, accettato?»). Una
+   richiesta in attesa non dà niente in più a chi l'ha mandata.
+5. **`PublicProfile`** prende `followers`, `following` e `follow`, lo
+   stato di chi guarda verso quel profilo: `none`, `requested`,
+   `following`. Il proprio profilo dice `none`. Nell'app i tre campi sono
+   facoltativi: un server di prima non li manda.
+6. **La ricerca** (`GET /users?q=`): almeno 2 caratteri dopo aver tolto
+   gli spazi (meno: `422` in parole), al più 20 risultati, mai chi cerca.
+   Cerca il pezzo dentro il nome senza badare alle maiuscole (`_` e `%`
+   valgono come lettere, non come jolly); prima i nomi che cominciano così,
+   poi i più corti, poi in ordine alfabetico: lo stesso risultato ogni
+   volta. Ogni risultato è solo `public_id`, `username` e `photo`: niente
+   email, bio o numeri (un test cerca l'email nel testo).
+7. **La foto negli elenchi è piccola**: 128 px di lato invece dei 256 del
+   profilo, rifatta dall'API a ogni lettura (circa un quinto dei byte: 7 KB
+   invece di 36 per una foto piena di dettagli; venti risultati restano
+   leggeri mentre si scrive). Una colonna in più in
+   `profile_photos` non serve finché costa così poco.
+8. **Gli elenchi sono solo propri**: `GET /me/followers`, `/me/following`
+   e `/me/follow-requests`, a pagine come i disegni di un profilo (`limit`
+   da 1 a 50, `next`, `total`), dal più recente (l'accettazione per i
+   primi due, la richiesta per il terzo). Chi segue chi, per gli altri, si
+   legge solo nei due numeri del profilo.
+9. **Da dove si apre il profilo di un altro** (domanda aperta di TASK-116,
+   risposta del coordinatore su delega dell'utente): **dalla ricerca**, e
+   dagli elenchi di «Followers», «Following» e «Requests». Il feed
+   (TASK-118), i like e i commenti si aggiungeranno quando ci sono.
+
+**Il rapporto con TASK-121** (bloccare e segnalare): questa parte non
+blocca niente. Quando TASK-121 arriva, bloccare dovrà togliere le righe di
+`follows` nei due versi e rifiutare una richiesta nuova fra i due, e la
+ricerca e gli elenchi dovranno saltare chi è bloccato: tocca `follows.py`,
+che il suo task file non elenca ancora. Fino ad allora chi viene rifiutato
+può richiedere quante volte vuole (il limite dei POST di `access.py` vale
+lo stesso). Il cancello di `ROADMAP.md` resta: prima di invitare persone che
+non si conoscono, TASK-121 e TASK-122 fatti.
+
+**Scartate**: seguire libero, come Strava di base (non è la scelta
+dell'utente); uno stato `declined` nella riga (direbbe il rifiuto, o
+andrebbe nascosto a mano in ogni risposta); il `public_id` come chiave
+della tabella (le altre tabelle di un account usano `users.id`, che resta
+dentro l'API); gli elenchi di un altro (`GET /users/{id}/followers`: dice chi
+frequenta chi, non è chiesto); la foto a 256 px negli elenchi (sopra);
+`GET /users/{id}/photo` a parte (una richiesta per ogni riga, e l'immagine
+vorrebbe il token in un'intestazione: ADR-0128 lo lasciava al feed); un
+indice a trigrammi per la ricerca (`pg_trgm`: con pochi iscritti la
+lettura di tutta `users` costa meno di un millisecondo).
+
+**Conseguenze**: una migrazione nuova (`00NN_follows.sql`, il primo numero
+libero in `main` al merge) e un modulo nuovo (`follows.py`); `profiles.py`
+legge i tre campi in più. Sul telefono arriva solo con l'aggiornamento del
+server e la parte B, tutti e due con l'ok dell'utente. **Va detto
+all'utente**: la ricerca mostra il nome di ogni iscritto a chi ha un
+account (con due lettere alla volta si può fare l'elenco di tutti).
+
 ## ADR-0174 — Il logo dopo «Save»: il giallo e il logo dell'avvio, 1,65 s, sopra l'app, anche senza rete
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-212). La richiesta («Finita l'attività, quando la salvi deve uscire
@@ -8014,6 +8118,71 @@ più conteso); un «Saved» scritto sotto il logo (non chiesto).
 **Conseguenze**: TASK-208 B, che rifà la fine della corsa, tiene la
 chiamata a `showSavedLogo()` dopo un «Save» riuscito. Si vede sul telefono
 con la prossima pubblicazione dell'app, con l'ok dell'utente.
+
+## ADR-0175 — I commenti: legati al disegno, chi lo vede li legge, in un foglio dal basso aperto dal disegno
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** il posto (subito
+sotto le corse pubblicate vere, non sugli esempi di «Feed»); il resto
+deciso dall'agente su delega dell'utente (TASK-120).
+
+**Contesto**: l'utente ha chiesto di poter commentare sotto i post. TASK-120
+li voleva dopo il feed vero (TASK-118), che aspetta il «segui» (TASK-211)
+e la pubblicazione alla Strava (TASK-208); i post di «Feed» di oggi sono
+esempi (TASK-156) che non stanno sul server. Le corse pubblicate vere
+(TASK-117) ci sono, e si aprono sulla mappa da un profilo.
+
+**Decisione**:
+
+1. **Un commento è del disegno** (`comments.drawing_id`, non la corsa):
+   lo legge e lo scrive **chi vede il disegno**, cioè ogni iscritto
+   finché è pubblico e il proprietario sempre. Quando arriverà «Followers»
+   (TASK-208) la regola resta questa: chi vede, commenta. Un disegno
+   tornato privato tiene i commenti, visti solo dal proprietario.
+2. **Cancella chi l'ha scritto o il proprietario del disegno**, come
+   diceva il task. Chi l'ha scritto lo cancella anche sotto un disegno
+   tornato privato (sono suoi dati, ADR-0114). Chi vede il commento ma non
+   è nessuno dei due: `403`; chi non lo vede: `404`, come un id che non
+   c'è. Ogni commento dice a chi chiede se lo può cancellare
+   (`deletable`): l'app non lo ricava da sola.
+3. **Pagine dal più vecchio**, 20 per volta, con lo stesso cursore dei
+   disegni (inizio in microsecondi e id casuale) e `total`. Il numero sul
+   pulsante è il `total` della prima pagina: il disegno non ha un campo
+   nuovo e `drawings.py` non cambia (lo toccano anche TASK-208 e 211).
+4. **Al più 10 commenti al minuto per account**, con il `RateLimiter` delle
+   foto, prima di ogni altro controllo (anche un commento rifiutato
+   conta: non si prova il filtro a raffica).
+5. **Il filtro di TASK-213 decide nell'API** (ADR-0176): dopo i controlli
+   di lunghezza, `check_comment` sul testo pulito; rifiutato, `422
+   comment_rejected` con `reason` (`COMMENT_REASONS`, oggi solo
+   `"negative"`) e le parole dell'utente. Il codice e il motivo sono nel
+   contratto come gli altri.
+6. **Nell'app, un foglio dal basso** aperto da un pulsante nella scheda
+   del disegno, non l'elenco nella scheda: la scheda sta sotto la mappa e
+   un elenco la spingerebbe via. Un `Modal` trasparente a tutto schermo con
+   `KeyboardAvoidingView` (con `pageSheet` di iOS il calcolo della
+   tastiera sbaglia di quanto il foglio parte in basso). Il foglio è un
+   componente a sé (`DrawingComments`), pronto per le schede di TASK-118.
+7. **La foto di chi scrive** non viaggia nel commento (20 foto in base64
+   per pagina): l'app la chiede a `GET /users/{public_id}`, una volta per
+   profilo finché è aperta; senza, l'iniziale.
+
+**Perché così**: la scelta dell'utente dà commenti veri subito, e i file
+nuovi (`comments.py`, `src/social/…`) non si scontrano con i task che
+toccano disegni e profili.
+
+**Scartato**: commenti sui post d'esempio (non sono sul server; l'utente
+non l'ha scelto); il numero dei commenti dentro `DrawingDetail` (un campo
+in più in un file di altri task, per un numero che la prima pagina dà
+già); la foto nel commento; una colonna «nascosto» che nessuno usa ancora
+(la aggiunge TASK-121 se serve).
+
+**Conseguenze**: migrazione `0013` (il primo numero libero al merge). Sul
+telefono funziona solo con il server aggiornato e l'app pubblicata, con
+l'ok dell'utente; un'API senza commenti risponde `404` e il pulsante non
+c'è. I testi nuovi sono tradotti come vuole ADR-0172 (TASK-210 è entrato
+prima). **Segnalare un commento arriva con TASK-121** (scelta dell'utente,
+2026-10-03): per ora bastano il filtro e la cancellazione da parte del
+proprietario; TASK-121 resta il cancello prima di invitare chi non si
+conosce.
 
 ## ADR-0176 — Nessun commento negativo: un elenco di parole nell'API, rifiutato con un avviso
 **Stato**: Attiva · 2026-10-03 · **scelta dell'utente** la regola e
@@ -8077,3 +8246,48 @@ gentile (non è più quello che la persona ha scritto).
 
 **Conseguenze**: nessuna finché TASK-120 non chiama il filtro. Titolo e
 descrizione delle corse pubblicate (TASK-208) non sono filtrati.
+
+## ADR-0178 — «Find friends» in cima a «Feed»: la ricerca degli iscritti in una pagina sopra l'app
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** il posto; il resto
+deciso dall'agente su delega dell'utente (TASK-215). Cambia la proposta di
+`tasks/TASK-211.md` (la lente in «Profile»).
+
+**Contesto**: l'utente, il 2026-10-03: «In feed, metti il tasto ricerca per
+cercare gli amici». La ricerca degli iscritti per nome era nella parte B di
+TASK-211, con una lente in «Profile»; l'API (`GET /users?q=`, ADR-0173) è
+in `main` dalla #256. Il profilo di un altro (`UserProfilePage`, TASK-116)
+c'era, ma nell'app non lo apriva niente.
+
+**Decisione dell'utente**: il tasto per cercare gli amici sta in «Feed».
+
+**Decisione dell'agente**:
+1. **Un tasto largo in cima all'elenco di «Feed»**, a forma di campo: una
+   lente disegnata con due `View` (l'app non ha icone) e «Find friends» in
+   grigio. Scorre con i disegni. Non nell'intestazione delle pagine, che è
+   la stessa per «Feed», «Draw» ed «Explore» e sta in `App.tsx`.
+2. **Una pagina sopra l'app, come «Profile»** (`screens/PeopleScreen.tsx`),
+   aperta da `ProfileLayer`, che ha l'account: una porta
+   (`social/peopleDoor.ts`) come quelle di preferiti e disegni. Senza
+   account il tasto apre «Profile» con il motivo sopra «Sign up», come il
+   cuore dei preferiti.
+3. **Il campo e i nomi sono un componente a sé** (`social/PeopleSearch.tsx`),
+   che TASK-211 B e i tag di TASK-208 possono riusare. Cerca da 2 lettere,
+   300 ms dopo l'ultima (come la ricerca del luogo, ADR-0080), o subito con
+   il tasto della tastiera; mostra solo la risposta all'ultima richiesta.
+4. **Il profilo si apre nella stessa pagina**; «←» torna ai nomi, che
+   restano com'erano (la ricerca resta montata, nascosta). Un disegno
+   aperto da quel profilo lascia la pagina nascosta dietro la mappa, e il
+   suo «←» ci torna invece che a «Profile».
+5. Un server senza la ricerca (prima della migrazione `0011`) risponde
+   `404`: la pagina dice «This server cannot look for members yet.».
+
+**Scartato**: la lente nell'intestazione solo su «Feed» (tocca `App.tsx` e
+il `Pager`, e il posto a destra è di sport e profilo); il campo di ricerca
+direttamente in «Feed» (la tastiera e i risultati in mezzo ai disegni);
+aprire il profilo in «Profile» (il suo «←» porterebbe al proprio profilo,
+non ai nomi trovati).
+
+**Conseguenze**: TASK-211 B non fa più la ricerca: aggiunge «Follow» alla
+pagina del profilo e «Requests», «Followers» e «Following» in «Profile».
+I testi nuovi sono tradotti nelle quattro lingue (ADR-0172), da far
+confermare con gli altri.

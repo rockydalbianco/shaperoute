@@ -12,6 +12,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { DrawingComments } from "./DrawingComments";
 
 type Props = {
   drawing: DrawingDetail;
@@ -23,7 +24,7 @@ type Props = {
  * A drawing on the map (TASK-117), under it: its title (without one, the
  * day it was run), the day, the km and the score, which everybody sees
  * (the user's choice). Never the time of day: the others see the drawing,
- * not when somebody runs.
+ * not when somebody runs. Its comments open from a button (TASK-120).
  */
 export function DrawingCard({ drawing, onBack }: Props) {
   const day = dayLabel(drawing.started_at);
@@ -48,6 +49,7 @@ export function DrawingCard({ drawing, onBack }: Props) {
           </View>
         )}
       </View>
+      <DrawingComments drawingId={drawing.id} />
       <Pressable style={styles.button} onPress={onBack} accessibilityRole="button">
         <Text style={styles.buttonText}>{t("Back to the profile")}</Text>
       </Pressable>

@@ -2,7 +2,8 @@
 open and remove it; each account sees only its own; the bodies are the
 examples of packages/shared-types/fixtures. A word with the pen up keeps its
 walks (TASK-199); a route keeps the activity it was drawn for, and those
-kept before are runs (TASK-200)."""
+kept before are runs (TASK-200); a bike route keeps where it is walked with
+the bike on foot (TASK-206)."""
 
 from __future__ import annotations
 
@@ -42,6 +43,10 @@ BIKE_KEY = "b7d2e94a0c3f6158"
 # The migrations of a favorite's activity: the column (TASK-200), and the
 # check widened for paddling (TASK-191).
 ACTIVITY_MIGRATIONS = ("_favorite_activity.sql", "_favorite_paddling.sql")
+# Added by TASK-206 part B: the fixtures written before are what an older
+# app sends and an older API answers.
+ON_FOOT = {"on_foot"}
+ON_FOOT_KEY = "e5a90c3b1d7f2468"
 
 
 def _load(name: str) -> Any:
@@ -103,29 +108,53 @@ def test_the_fixtures_are_the_contract() -> None:
     # Written before TASK-199: the request of an older app, the answer of an
     # older API, without the walks and the activity.
     body = _load("favorite-request.json")
-    assert set(body) == set(FavoriteRequestBody.model_fields) - {"walks", "activity"}
+    assert (
+        set(body)
+        == set(FavoriteRequestBody.model_fields)
+        - {
+            "walks",
+            "activity",
+        }
+        - ON_FOOT
+    )
     FavoriteRequestBody.model_validate(body)
     listed = _load("favorites.json")
     assert set(listed["favorites"][0]) == set(FavoriteBody.model_fields) - {"activity"}
     whole = _load("favorite.json")
-    assert set(whole) == set(FavoriteDetailBody.model_fields) - {"walks", "activity"}
+    assert (
+        set(whole)
+        == set(FavoriteDetailBody.model_fields)
+        - {
+            "walks",
+            "activity",
+        }
+        - ON_FOOT
+    )
     # A word with the pen up (TASK-199), still without the activity: a run.
     walked = _load("favorite-request-walks.json")
-    assert set(walked) == set(FavoriteRequestBody.model_fields) - {"activity"}
+    assert set(walked) == set(FavoriteRequestBody.model_fields) - {"activity"} - ON_FOOT
     FavoriteRequestBody.model_validate(walked)
     whole_walked = _load("favorite-walks.json")
-    assert set(whole_walked) == set(FavoriteDetailBody.model_fields) - {"activity"}
+    assert set(whole_walked) == (
+        set(FavoriteDetailBody.model_fields) - {"activity"} - ON_FOOT
+    )
     # A bike route (TASK-200): a shape, so no walks in the request.
     cycling = _load("favorite-request-cycling.json")
-    assert set(cycling) == set(FavoriteRequestBody.model_fields) - {"walks"}
+    assert set(cycling) == set(FavoriteRequestBody.model_fields) - {"walks"} - ON_FOOT
     assert FavoriteRequestBody.model_validate(cycling).activity == "cycling"
     listed_now = _load("favorites-cycling.json")
     for favorite in listed_now["favorites"]:
         assert set(favorite) == set(FavoriteBody.model_fields)
     FavoritesBody.model_validate(listed_now)
     whole_cycling = _load("favorite-cycling.json")
-    assert set(whole_cycling) == set(FavoriteDetailBody.model_fields)
-    FavoriteDetailBody.model_validate(whole_cycling)
+    assert set(whole_cycling) == set(FavoriteDetailBody.model_fields) - ON_FOOT
+    # A bike route walked in part (TASK-206): every field.
+    on_foot = _load("favorite-request-on-foot.json")
+    assert set(on_foot) == set(FavoriteRequestBody.model_fields) - {"walks"}
+    assert FavoriteRequestBody.model_validate(on_foot).on_foot == [(2, 3)]
+    whole_on_foot = _load("favorite-on-foot.json")
+    assert set(whole_on_foot) == set(FavoriteDetailBody.model_fields)
+    FavoriteDetailBody.model_validate(whole_on_foot)
 
 
 def test_the_migration_comes_after_the_accounts() -> None:
@@ -170,6 +199,7 @@ def test_a_favorite_opens_whole_as_the_example(client: TestClient) -> None:
         **_load("favorite.json"),
         "walks": [],
         "activity": "running",
+        "on_foot": [],
     }
 
 
@@ -245,7 +275,11 @@ def test_a_favorite_keeps_its_walks(client: TestClient) -> None:
     assert "walks" not in listed[0]
     whole = client.get(f"/me/favorites/{KEY}", headers=me)
     assert whole.status_code == 200
-    assert whole.json() == {**_load("favorite-walks.json"), "activity": "running"}
+    assert whole.json() == {
+        **_load("favorite-walks.json"),
+        "activity": "running",
+        "on_foot": [],
+    }
 
 
 @pytest.mark.parametrize(
@@ -291,7 +325,7 @@ def test_a_bike_route_comes_back_a_bike_route(
     listed = client.get("/me/favorites", headers=me)
     assert listed.json() == expected
     whole = client.get(f"/me/favorites/{BIKE_KEY}", headers=me)
-    assert whole.json() == _load("favorite-cycling.json")
+    assert whole.json() == {**_load("favorite-cycling.json"), "on_foot": []}
     assert client.get(f"/me/favorites/{KEY}", headers=me).json()["activity"] == (
         "running"
     )
@@ -406,12 +440,111 @@ def test_favorites_kept_before_are_runs(
         **_load("favorite.json"),
         "walks": [],
         "activity": "running",
+        "on_foot": [],
     }
     whole_walked = new.get(f"/me/favorites/{walked_key}", headers=me).json()
     assert whole_walked == {
         **_load("favorite-walks.json"),
         "id": walked_key,
         "activity": "running",
+        "on_foot": [],
+    }
+
+
+# --- Where a bike route is walked with the bike on foot (TASK-206) ---
+
+
+def on_foot(**changes: Any) -> dict[str, Any]:
+    return {**_load("favorite-request-on-foot.json"), **changes}
+
+
+def test_a_bike_route_keeps_where_it_is_walked(
+    client: TestClient, wall: WallClock
+) -> None:
+    me = signed_up(client)
+    wall.t += timedelta(minutes=5)
+    kept = client.put(f"/me/favorites/{ON_FOOT_KEY}", json=on_foot(), headers=me)
+    assert kept.status_code == 201
+    # The list is as before: no stretches in it.
+    assert "on_foot" not in kept.json()
+    listed = client.get("/me/favorites", headers=me).json()["favorites"]
+    assert "on_foot" not in listed[0]
+    whole = client.get(f"/me/favorites/{ON_FOOT_KEY}", headers=me)
+    assert whole.status_code == 200
+    assert whole.json() == _load("favorite-on-foot.json")
+
+
+@pytest.mark.parametrize(
+    "stretches",
+    [
+        [[2, 9]],
+        [[3, 2]],
+        [[-1, 2]],
+        [[2, 5], [3, 6]],
+        [[2, 3, 4]],
+        [[2, 3]] * 1001,
+        "[2, 3]",
+    ],
+)
+def test_stretches_on_foot_that_are_not_of_the_route_are_refused(
+    client: TestClient, stretches: Any
+) -> None:
+    me = signed_up(client)
+    answer = client.put(
+        f"/me/favorites/{ON_FOOT_KEY}", json=on_foot(on_foot=stretches), headers=me
+    )
+    assert answer.status_code == 422
+    assert code(answer) == "invalid_request"
+    assert client.get("/me/favorites", headers=me).json() == {"favorites": []}
+
+
+def test_favorites_kept_before_walk_nowhere(
+    database_url: str, tmp_path: Path, wall: WallClock
+) -> None:
+    database = Database(database_url)
+    # The schema of before TASK-206 part B, with a bike favorite in it.
+    before = [p for p in migrations() if not p.name.endswith("_favorite_on_foot.sql")]
+    assert len(before) == len(migrations()) - 1
+    for path in before:
+        shutil.copy(path, tmp_path / path.name)
+    database.migrate(tmp_path)
+    accounts = Accounts(database, now=wall, hasher=FAST_HASHER)
+    app = create_app(FileSource(Path("unused.graphml")), accounts=accounts)
+    me = signed_up(TestClient(app))
+    body = _load("favorite-request-cycling.json")
+    with database.connect() as conn:
+        user = conn.execute("SELECT id FROM users").fetchone()
+        assert user is not None
+        line = ",".join(f"{lon!r} {lat!r}" for lat, lon in body["points"])
+        conn.execute(
+            "INSERT INTO favorites (user_id, key, city, shape, word, style,"
+            " title, distance_m, route_m, similarity, line, created_at, activity)"
+            " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
+            " ST_GeomFromText(%s, 4326), %s, %s)",
+            (
+                user["id"],
+                BIKE_KEY,
+                body["city"],
+                body["shape"],
+                body["word"],
+                body["style"],
+                body["title"],
+                body["distance_m"],
+                body["route_m"],
+                body["similarity"],
+                f"LINESTRING({line})",
+                wall.t + timedelta(minutes=5),
+                body["activity"],
+            ),
+        )
+    # The API of TASK-206 part B starts: its migration, nothing else.
+    assert database.migrate(MIGRATIONS_DIR) == [
+        p.stem for p in migrations() if p.name.endswith("_favorite_on_foot.sql")
+    ]
+    new = TestClient(create_app(FileSource(Path("unused.graphml")), accounts=accounts))
+    assert new.get(f"/me/favorites/{BIKE_KEY}", headers=me).json() == {
+        **_load("favorite-cycling.json"),
+        "on_foot": [],
     }
 
 

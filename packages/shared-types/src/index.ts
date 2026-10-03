@@ -125,6 +125,12 @@ export type RouteRequest =
  */
 export type Walk = [from: number, to: number];
 
+/**
+ * A stretch of a bike route walked with the bike on foot (TASK-206,
+ * ADR-0167): [from, to] indices into `RouteResult.points`, both included.
+ */
+export type Stretch = [from: number, to: number];
+
 export interface RouteResult {
   /**
    * The route, closed: the last point is the first. A word with the pen up
@@ -155,6 +161,13 @@ export interface RouteResult {
    * API, which draws one line.
    */
   walks?: Walk[];
+  /**
+   * By bike (TASK-206, ADR-0167): where the rider walks with the bike on
+   * foot, in order, also in the approach from a nearby start; the warnings
+   * say how many metres. Empty on foot and on the water; missing from an
+   * older API, which says nothing of it.
+   */
+  on_foot?: Stretch[];
 }
 
 /** Routes besides the one chosen by the engine: three to choose from. */
@@ -232,6 +245,8 @@ export const API_ERROR_CODES = [
   "session_expired",
   /** The API has no database: accounts are off on that server. */
   "accounts_unavailable",
+  /** A comment the API refuses, a negative one (TASK-120, ADR-0176). */
+  "comment_rejected",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
@@ -249,9 +264,10 @@ export interface ApiError {
     /**
      * Only with "image_not_usable", else null: why the engine found no
      * outline (TASK-073). Missing from an API older than TASK-073. With
-     * "outline_edit_rejected", why the drawing was refused (TASK-079).
+     * "outline_edit_rejected", why the drawing was refused (TASK-079); with
+     * "comment_rejected", why the comment was (TASK-120).
      */
-    reason?: ImageReason | EditReason | null;
+    reason?: ImageReason | EditReason | CommentReason | null;
   };
 }
 
@@ -527,6 +543,67 @@ export interface PublicProfile {
   photo: string | null;
   /** How many runs it made public as drawings (TASK-117). */
   drawings: number;
+  /**
+   * How many follow it, and how many it follows: only the requests accepted
+   * (TASK-211). Missing from an API older than TASK-211.
+   */
+  followers?: number;
+  following?: number;
+  /** Where the one who asks stands towards it. Missing from an older API. */
+  follow?: FollowState;
+}
+
+/**
+ * Where a member stands towards a profile (TASK-211): it asked and waits
+ * for the other to accept, or it follows. Its own profile: "none". A
+ * request declined is "none" again: nothing says it was declined.
+ */
+export const FOLLOW_STATES = ["none", "requested", "following"] as const;
+export type FollowState = (typeof FOLLOW_STATES)[number];
+
+/** POST /users/{public_id}/follow (TASK-211): where the one who asked stands now. */
+export interface Follow {
+  follow: Exclude<FollowState, "none">;
+}
+
+/** The fewest characters GET /users?q= looks for, spaces at the ends left out. */
+export const PEOPLE_QUERY_MIN_LENGTH = 2;
+/** The most members GET /users?q= gives. */
+export const PEOPLE_FOUND_MAX = 20;
+/** The side of a Person's picture, in pixels: half that of a PublicProfile. */
+export const PERSON_PHOTO_SIDE = 128;
+
+/**
+ * A member in a list (TASK-211): found by name, a follower, one followed,
+ * one who asks to follow. Never the email; the profile is GET
+ * /users/{public_id}.
+ */
+export interface Person {
+  public_id: string;
+  username: string;
+  /** A square JPEG of PERSON_PHOTO_SIDE px in base64; null without a picture. */
+  photo: string | null;
+}
+
+/**
+ * GET /users?q= (TASK-211): at most PEOPLE_FOUND_MAX members whose name
+ * holds the query, whatever the case, never the one who asks; first the
+ * names that begin with it, then the shortest.
+ */
+export interface PeopleFound {
+  people: Person[];
+}
+
+/**
+ * GET /me/followers, /me/following, /me/follow-requests (TASK-211): a
+ * page, the latest first; only the account's own.
+ */
+export interface PeoplePage {
+  people: Person[];
+  /** The `cursor` of the next page; null on the last one. */
+  next: string | null;
+  /** How many there are, on every page. */
+  total: number;
 }
 
 /** The limit of a drawing's title, checked by the API too (TASK-117). */
@@ -621,6 +698,46 @@ export interface DrawingDetail extends DrawingFields {
   public: boolean;
   /** Empty only for the owner's private run too short to publish. */
   track: LatLon[];
+}
+
+/** The limit of a comment, checked by the API too (TASK-120). */
+export const COMMENT_MAX_LENGTH = 500;
+
+/**
+ * Why the API refuses a comment with "comment_rejected" (ADR-0176): a
+ * negative one is never published, and the app says so in an alert.
+ */
+export const COMMENT_REASONS = ["negative"] as const;
+export type CommentReason = (typeof COMMENT_REASONS)[number];
+
+/**
+ * POST /drawings/{id}/comments (TASK-120): plain text, 1 to
+ * COMMENT_MAX_LENGTH characters once the spaces at either end are gone; new
+ * lines are kept. The answer is the Comment.
+ */
+export interface CommentRequest {
+  text: string;
+}
+
+/** One comment under a drawing, as who asks sees it. */
+export interface Comment {
+  id: string;
+  /** Who wrote it: never the email. */
+  author: DrawingAuthor;
+  /** Plain text: shown as text, never as a link or HTML. */
+  text: string;
+  created_at: string;
+  /** Who asks may delete it: it wrote it, or it owns the drawing. */
+  deletable: boolean;
+}
+
+/** GET /drawings/{id}/comments: a page, the oldest first. */
+export interface CommentsPage {
+  comments: Comment[];
+  /** The `cursor` of the next page; null on the last one. */
+  next: string | null;
+  /** How many comments the drawing has, on every page. */
+  total: number;
 }
 
 /**

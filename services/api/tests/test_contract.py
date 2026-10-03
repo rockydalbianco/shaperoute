@@ -13,8 +13,9 @@ from dataclasses import fields
 from pathlib import Path
 from typing import Any, get_args
 
+import pytest
 from fastapi.testclient import TestClient
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from route_engine import image_outline, outline_edits
 from route_engine.directions import Direction
 from route_engine.image_outline import MAX_POINTS
@@ -65,13 +66,16 @@ def _names(model: type[BaseModel]) -> set[str]:
 # are what an older app sends and an older API answers.
 PEN_UP = {"pen_up"}
 WALKS = {"walks"}
+# Added by TASK-206 part B (ADR-0167), optional too: the fixtures written
+# before are what an older API answers and an older app sends back.
+ON_FOOT = {"on_foot"}
 
 
 def _with_no_walks(result: dict[str, Any]) -> dict[str, Any]:
-    """An older API's result as this one answers it: `walks` empty, in the
-    alternatives too."""
+    """An older API's result as this one answers it: `walks` and `on_foot`
+    empty, in the alternatives too."""
     others = [_with_no_walks(other) for other in result.get("alternatives", [])]
-    return {**result, "alternatives": others, "walks": []}
+    return {**result, "alternatives": others, "walks": [], "on_foot": []}
 
 
 def test_bodies_have_the_fields_of_the_dataclasses() -> None:
@@ -90,10 +94,11 @@ def test_request_fixture_is_a_valid_body() -> None:
 
 def test_result_fixture_is_a_valid_body() -> None:
     data = _load("route-result.json")
-    assert set(data) == _names(RouteResultBody) - WALKS
+    assert set(data) == _names(RouteResultBody) - WALKS - ON_FOOT
     body = RouteResultBody.model_validate(data)
     assert body.points[0] == body.points[-1]
     assert body.walks == []  # an older API: one line, no walks
+    assert body.on_foot == []  # and nothing walked with the bike
 
 
 def test_pen_up_fixtures_are_valid_bodies() -> None:
@@ -102,7 +107,7 @@ def test_pen_up_fixtures_are_valid_bodies() -> None:
     assert set(request) == _names(RouteRequestBody)
     assert RouteRequestBody.model_validate(request).pen_up
     result = _load("route-result-pen-up.json")
-    assert set(result) == _names(RouteResultBody)
+    assert set(result) == _names(RouteResultBody) - ON_FOOT
     body = RouteResultBody.model_validate(result)
     assert body.word is not None and len(body.walks) == len(body.word) - 1
     assert body.points[0] != body.points[-1]
@@ -158,7 +163,7 @@ def test_gpx_request_fixture_is_a_valid_body() -> None:
     data = _load("gpx-request.json")
     assert set(data) == _names(GpxRequestBody)
     assert set(data["request"]) == _names(RouteRequestBody) - PEN_UP
-    assert set(data["result"]) == _names(RouteResultBody) - WALKS
+    assert set(data["result"]) == _names(RouteResultBody) - WALKS - ON_FOOT
     GpxRequestBody.model_validate(data)
 
 
@@ -182,7 +187,7 @@ def test_word_fixtures_are_valid_bodies() -> None:
     assert set(request) == _names(RouteRequestBody) - PEN_UP
     assert RouteRequestBody.model_validate(request).word == "ciao"
     result = _load("route-result-word.json")
-    assert set(result) == _names(RouteResultBody) - WALKS
+    assert set(result) == _names(RouteResultBody) - WALKS - ON_FOOT
     body = RouteResultBody.model_validate(result)
     assert body.shape is None
     assert body.word == "CIAO"
@@ -221,7 +226,7 @@ def test_the_api_passes_the_pen_up_on_and_answers_its_walks() -> None:
     app = create_app(FileSource(FIXTURES / "unused.graphml"), planner=planner)
     response = TestClient(app).post("/routes", json=_load("route-request-pen-up.json"))
     assert response.status_code == 200
-    assert response.json() == data
+    assert response.json() == {**data, "on_foot": []}
     assert asked[0].pen_up and asked[0].word == "io"
 
 
@@ -244,6 +249,56 @@ def test_the_api_passes_a_cycling_request_on_to_the_engine() -> None:
     response = TestClient(app).post("/routes", json=request)
     assert response.status_code == 200, response.json()
     assert asked[0].activity == "cycling" and asked[0].distance_m == 20_000
+
+
+def _engine_result(data: dict[str, Any]) -> RouteResult:
+    """A RouteResult from a fixture: JSON arrays are tuples again."""
+    return RouteResult(
+        **{
+            **data,
+            "points": [tuple(p) for p in data["points"]],
+            "walks": [tuple(w) for w in data.get("walks", [])],
+            "on_foot": [tuple(s) for s in data.get("on_foot", [])],
+            "alternatives": [],
+        }
+    )
+
+
+def test_the_bike_result_fixture_is_a_valid_body() -> None:
+    # TASK-206: where the bike is walked, in the alternatives too.
+    data = _load("route-result-cycling.json")
+    for fields_of in (data, *data["alternatives"]):
+        assert set(fields_of) == _names(RouteResultBody)
+    body = RouteResultBody.model_validate(data)
+    assert body.on_foot == [(2, 3)] and body.walks == []
+    assert [other.on_foot for other in body.alternatives] == [[(2, 3)]]
+
+
+def test_the_api_answers_where_a_bike_route_is_walked() -> None:
+    data = _load("route-result-cycling.json")
+    others = [Plan(_engine_result(other), None) for other in data["alternatives"]]
+
+    def planner(request: RouteRequest, source: GraphLoader) -> Plan:
+        return Plan(result=_engine_result(data), search=None, alternatives=others)
+
+    app = create_app(FileSource(FIXTURES / "unused.graphml"), planner=planner)
+    response = TestClient(app).post("/routes", json=_load("route-request-cycling.json"))
+    assert response.status_code == 200, response.json()
+    assert response.json() == data
+
+
+def test_a_gpx_request_takes_a_bike_route_back_with_its_stretches_on_foot() -> None:
+    # The app sends back the result it got: on_foot within its points.
+    result = _load("route-result-cycling.json")
+    request = _load("route-request-cycling.json")
+    body = GpxRequestBody.model_validate({"request": request, "result": result})
+    assert body.result.on_foot == [(2, 3)]
+    count = len(result["points"])
+    for wrong in ([[2, count]], [[3, 2]], [[2, 4], [3, 5]]):
+        with pytest.raises(ValidationError, match="stretch on foot"):
+            GpxRequestBody.model_validate(
+                {"request": request, "result": {**result, "on_foot": wrong}}
+            )
 
 
 def test_the_api_passes_a_paddling_request_on_to_the_engine() -> None:
@@ -290,7 +345,7 @@ def test_image_fixtures_are_valid_bodies() -> None:
         tuple(p) for p in outline["points"]
     ]
     result = _load("route-result-image.json")
-    assert set(result) == _names(RouteResultBody) - WALKS
+    assert set(result) == _names(RouteResultBody) - WALKS - ON_FOOT
     body = RouteResultBody.model_validate(result)
     assert body.shape is None and body.word is None
     error = _load("image-error.json")

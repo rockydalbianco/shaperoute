@@ -49,9 +49,11 @@ from shaperoute_api.activity_graphs import (
     source_for,
 )
 from shaperoute_api.cities import CitySearch, SuggestionsBody
+from shaperoute_api.comments import install_comments
 from shaperoute_api.drawings import install_drawings
 from shaperoute_api.errors import error_of
 from shaperoute_api.favorites import install_favorites
+from shaperoute_api.follows import install_follows
 from shaperoute_api.graphs import MapDataUnavailableError
 from shaperoute_api.images import (
     AnyRequest,
@@ -295,6 +297,11 @@ def create_app(
     # The runs an account publishes as drawings, cut for the others
     # (TASK-117); they need a token.
     install_drawings(app)
+    # Members found by name, and following with a request (TASK-211); they
+    # need a token.
+    install_follows(app)
+    # What the members write under a drawing (TASK-120); they need a token.
+    install_comments(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

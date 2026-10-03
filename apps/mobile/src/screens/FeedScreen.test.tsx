@@ -4,6 +4,7 @@ import { StyleSheet } from "react-native";
 
 import { forgetFeedMaps } from "../feed/FeedMaps";
 import { SAMPLE_FEED } from "../feed/sampleFeed";
+import { PeopleContext } from "../social/peopleDoor";
 import { FeedScreen } from "./FeedScreen";
 
 jest.mock(
@@ -28,14 +29,27 @@ test("a tap on a drawing opens its route (TASK-188)", async () => {
   const onOpen = jest.fn();
   await render(<FeedScreen onOpen={onOpen} />);
   const [first, second] = SAMPLE_FEED;
-  // Nothing else to touch: no likes, no comments (TASK-118).
-  const cards = screen.getAllByRole("button");
+  // Nothing else to touch but «Find friends» (TASK-215): no likes, no
+  // comments (TASK-118).
+  const [find, ...cards] = screen.getAllByRole("button");
+  expect(find).toHaveAccessibleName("Find friends");
   expect(cards).toHaveLength(screen.getAllByTestId("feed-post").length);
   await fireEvent.press(cards[1]);
   expect(onOpen).toHaveBeenCalledTimes(1);
   expect(onOpen).toHaveBeenCalledWith(second);
   await fireEvent.press(cards[0]);
   expect(onOpen).toHaveBeenLastCalledWith(first);
+});
+
+test("«Find friends» is above the drawings, and opens the search (TASK-215)", async () => {
+  const open = jest.fn();
+  await render(
+    <PeopleContext.Provider value={{ open }}>
+      <FeedScreen onOpen={noOpen} />
+    </PeopleContext.Provider>,
+  );
+  await fireEvent.press(screen.getByRole("button", { name: "Find friends" }));
+  expect(open).toHaveBeenCalledTimes(1);
 });
 
 test("takes a picture of the map of each drawing, and lays it under its line", async () => {

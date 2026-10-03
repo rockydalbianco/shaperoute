@@ -1,0 +1,26 @@
+{
+  "comments": [
+    {
+      "id": "b2e74c19-5f0a-4d8e-9c36-71a0d4f2e8b5",
+      "author": {
+        "public_id": "4d6b1e90-2c7f-4a35-8e1d-93f0b5a7c624",
+        "username": "other_runner"
+      },
+      "text": "What a heart! How long did the river part take?",
+      "created_at": "2026-10-03T08:15:00Z",
+      "deletable": true
+    },
+    {
+      "id": "e81f3a6d-0b94-4c27-a5e2-6d19c07b3f48",
+      "author": {
+        "public_id": "8c1f7a52-3d4e-4b9a-9f61-2a7c0e5d9b13",
+        "username": "Ada_runs"
+      },
+      "text": "About ten minutes.\nThe bridge was the hard bit.",
+      "created_at": "2026-10-03T08:42:30Z",
+      "deletable": false
+    }
+  ],
+  "next": "1791016950000000-e81f3a6d0b944c27a5e26d19c07b3f48",
+  "total": 3
+}

@@ -529,6 +529,36 @@ La richiesta è sincrona: la risposta arriva quando il percorso è pronto
   `/image-route-jobs`: forma, parola o foto. Il `RouteResult` è lo stesso
   di una corsa; fra gli avvisi c'è in più lo sterrato («… m of the route on
   unpaved roads»).
+- **La bici a mano** (TASK-206, ADR-0167): dove la bici non si guida il
+  percorso la porta a mano per brevi tratti (`ROUTE_ENGINE.md`, «La bici a
+  mano»), e il `RouteResult` dice dove con **`on_foot`**: una coppia `[da,
+  a]` di indici in `points` per ogni tratto, compresi tutti e due, in
+  ordine, come i `walks` della penna alzata (ma non si mette in pausa
+  niente: la corsa continua a registrare). Un tratto è una fila di archi a
+  piedi; dove ricomincia la sella finisce. Ogni alternativa ha i suoi, e
+  da una partenza vicina contano anche l'avvicinamento e il ritorno.
+  L'avviso dice i metri («… m of the route with the bike on foot»).
+  Esempio: `fixtures/route-result-cycling.json`.
+
+```json
+{
+  "points": [[46.0671, 11.1214], "…", [46.0671, 11.1214]],
+  "distance_m": 10068.1,
+  "shape": "circle",
+  "warnings": ["923 m of the route with the bike on foot"],
+  "walks": [],
+  "on_foot": [[2, 3]],
+  "…": "…"
+}
+```
+
+- **`on_foot` c'è sempre nelle risposte**, vuoto per la corsa, la canoa e
+  una zona della bici fatta prima di TASK-206 (senza archi a piedi). Un'API
+  precedente non lo manda: in `shared-types` è facoltativo, e le app
+  installate ignorano il campo. Nel `GpxRequest` si può rimandare com'è
+  arrivato o lasciare fuori; se c'è si controlla come i `walks` (fuori dai
+  punti, all'indietro o sovrapposti: `422 invalid_request`). Il GPX non
+  cambia: i tratti a mano sono pezzi della traccia come gli altri.
 - **Da 10 a 30 km** (`DISTANCE_LIMITS_M` in `shared-types`): fuori è `422
   invalid_request`, `distance must be between 10000 and 30000 metres for
   cycling, got 5000`. La corsa resta 1–50 km, con il messaggio di prima.
@@ -892,6 +922,15 @@ tipi dell'app in `apps/mobile/src/api/favorites.ts`.
   per byte quella di prima), e se il `PUT` torna `422 invalid_request` lo
   rimanda una volta come un'app precedente a TASK-199, senza `activity` né
   `walks`: il preferito si tiene come una corsa.
+- **La bici a mano** (TASK-206, ADR-0167, migrazione `0012`): il corpo del
+  `PUT` può avere `on_foot`, quello del `RouteResult` (coppie `[da, a]` di
+  indici in `points`, «In bici»), facoltativo, al più 1000 coppie; si
+  controlla come `walks`. Il preferito intero ha **sempre** `on_foot`,
+  vuoto per ogni altro percorso e per quelli tenuti prima; l'elenco non
+  cambia. Esempi: `favorite-request-on-foot.json`, `favorite-on-foot.json`.
+  Un'API precedente rifiuta il campo: l'app lo manda solo quando non è
+  vuoto, e se il `PUT` torna `422 invalid_request` lo rimanda senza (parte
+  C).
 
 ### My activities (TASK-172, ADR-0140)
 
@@ -1068,7 +1107,10 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
 - **`PublicProfile`** è `public_id`, `username`, `bio`, `photo` (il JPEG
   della foto in base64, come `GET /me/photo`, o `null`) e `drawings`, il
   numero dei disegni **pubblicati** (le corse private non contano,
-  ADR-0114 punto 4; i disegni sono in «Drawings», sotto). **Mai
+  ADR-0114 punto 4; i disegni sono in «Drawings», sotto). Da TASK-211
+  anche `followers` e `following`, contate solo le richieste accettate, e
+  `follow`, dove sta chi guarda verso quel profilo: `none`, `requested` o
+  `following` (il proprio profilo: `none`; «Follow», sotto). **Mai
   l'email**, né `role`, `id` o la data d'iscrizione (un test lo prova).
 - Un `public_id` che non c'è, di un account cancellato, o che non è un
   UUID (un `id` numerico, un nome): `404 http_error` «No profile with this
@@ -1150,6 +1192,122 @@ non si legge senza account, ADR-0114). Tipi in `shared-types`
   falso.
 - **Un'API precedente** non ha questi endpoint (`404 http_error`) e il suo
   `PublicProfile.drawings` è sempre 0.
+
+### Follow (TASK-211, ADR-0173)
+
+Un iscritto ne cerca un altro per nome e gli chiede di seguirlo; l'altro
+accetta o rifiuta. **Conta solo una richiesta accettata**: nei numeri del
+profilo, negli elenchi e per chi vedrà i disegni «Followers» (TASK-208).
+Tutti gli endpoint vogliono il token: senza, `401 not_signed_in`; senza
+database, `503 accounts_unavailable`. Tipi in `shared-types` (`Person`,
+`PeopleFound`, `PeoplePage`, `Follow`, `FollowState`,
+`PEOPLE_QUERY_MIN_LENGTH`, `PEOPLE_FOUND_MAX`, `PERSON_PHOTO_SIDE`), esempi
+in `fixtures/people.json`, `people-page.json`, `follow.json`; il codice in
+`follows.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /users?q=…` | gli iscritti con quel pezzo nel nome | `200` `{ "people": [Person, …] }` |
+| `POST /users/{public_id}/follow` | chiedere di seguire | `200` `{ "follow": "requested" \| "following" }` |
+| `DELETE /users/{public_id}/follow` | ritirare la richiesta, o smettere di seguire | `204` |
+| `GET /me/follow-requests` | chi chiede di seguirmi | `200` `PeoplePage` |
+| `POST /me/follow-requests/{public_id}/accept` | accettare | `204`, o `404 http_error` senza richiesta |
+| `POST /me/follow-requests/{public_id}/decline` | rifiutare | `204` |
+| `GET /me/followers` | chi mi segue | `200` `PeoplePage` |
+| `DELETE /me/followers/{public_id}` | togliere qualcuno da chi mi segue | `204` |
+| `GET /me/following` | chi seguo | `200` `PeoplePage` |
+
+- **`Person`** è solo `public_id`, `username` e `photo`: la foto del
+  profilo a **128 px** di lato (`PERSON_PHOTO_SIDE`, metà di quella di
+  `PublicProfile`), JPEG in base64, rifatta dall'API, o `null`. **Mai
+  l'email**, la bio o altro (un test lo prova). Il profilo intero si apre
+  con `GET /users/{public_id}`.
+- **La ricerca**: `q` senza gli spazi in testa e in coda, **almeno 2
+  caratteri** (meno, o senza `q`: `422 invalid_request` «Type at least 2
+  characters of a name.»), cercato **dentro** il nome senza badare alle
+  maiuscole; `_` e `%` sono caratteri come gli altri. **Al più 20**
+  risultati, **mai chi cerca**: prima i nomi che cominciano con `q`, poi i
+  più corti, poi in ordine alfabetico, sempre uguale. Un `q` più lungo di
+  un nome (20) non trova nessuno. Cerca solo il nome, mai l'email.
+- **Ogni azione porta a uno stato, e rifatta non cambia niente**: chiedere
+  di nuovo lascia una richiesta sola, con la sua data (la risposta dice
+  `requested`, o `following` se è già accettata); ritirare, smettere,
+  rifiutare e togliere rispondono `204` anche quando non c'era niente.
+  Accettare di nuovo è `204`; accettare senza nessuna richiesta di
+  quell'account è `404 http_error` «No follow request from this account.».
+- **Rifiutare cancella la richiesta**: chi aveva chiesto vede il profilo
+  come prima di chiedere (`follow` `none`), e può chiedere di nuovo.
+  Nessuna risposta dice che è stata rifiutata. Rifiutare chi segue già non
+  lo toglie: per quello c'è `DELETE /me/followers/{public_id}`, che toglie
+  anche una richiesta in attesa.
+- **Sé stessi** non si seguono: `422 invalid_request` «You cannot follow
+  yourself.». Un `public_id` che non c'è, di un account cancellato o che
+  non è un UUID: `404 http_error` «No profile with this id.», in tutti gli
+  endpoint con `{public_id}`.
+- **Gli elenchi sono solo propri** (degli altri si vedono i due numeri del
+  profilo): `?limit=20&cursor=…`, `limit` da 1 a 50, dal più recente
+  (l'accettazione per `followers` e `following`, la richiesta per
+  `follow-requests`); `next` è il `cursor` della pagina dopo, `null`
+  all'ultima; `total` quanti sono in tutto. Il cursore porta il momento e
+  il `public_id` dell'ultimo della pagina.
+- **Cancellare un account** (`DELETE /me`) lo toglie da ogni elenco e da
+  ogni numero, nei due versi.
+- **Un'API precedente** non ha questi endpoint (`404 http_error`; `GET
+  /users` senza id è `404` anche lui) e il suo `PublicProfile` non ha
+  `followers`, `following` né `follow`.
+
+### Comments (TASK-120, ADR-0175)
+
+Sotto un disegno gli iscritti scrivono commenti. Li legge e li scrive **chi
+vede il disegno** (sopra, «Chi vede cosa»): ogni iscritto finché è
+pubblico, il suo proprietario sempre. Tutti gli endpoint vogliono il token:
+senza, `401 not_signed_in`; senza database, `503 accounts_unavailable`.
+Tipi in `shared-types` (`CommentRequest`, `Comment`, `CommentsPage`,
+`COMMENT_MAX_LENGTH`), esempi in `fixtures/comment-request.json`,
+`comment.json`, `comments.json`; il codice in `comments.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /drawings/{id}/comments` | una pagina dei commenti, dal più vecchio | `200` `CommentsPage`, o `404 http_error` |
+| `POST /drawings/{id}/comments` | un commento nuovo | `201` `Comment`, o `404 http_error` |
+| `DELETE /comments/{id}` | cancella un commento | `204`, o `403` / `404 http_error` |
+
+- **Il corpo del `POST`** è `{ "text": "…" }`: testo semplice, che perde
+  gli spazi in testa e in coda; da 1 a 500 caratteri (`COMMENT_MAX_LENGTH`),
+  a capo compresi. Vuoto o solo spazi, «A comment needs some words.»;
+  oltre 500, «A comment is at most 500 characters.»; con caratteri di
+  controllo diversi dall'a capo, «A comment is words and new lines: it
+  cannot hold control characters.» (`422 invalid_request`, e non si tiene
+  niente). Campi in più: `422 invalid_request`. L'API tiene il testo com'è
+  scritto: niente HTML, niente link; l'app lo mostra come testo.
+- **Al più 10 commenti al minuto per account**: oltre, `429
+  too_many_requests` «Too many comments in a minute: wait a moment and try
+  again.» con `Retry-After` in secondi. Il limite è dell'account, non
+  dell'indirizzo, e vale per processo come quello delle foto.
+- **Un commento** ha `id` (UUID casuale), `author` (`public_id` e
+  `username`, come l'autore di un disegno: mai l'email; la foto si chiede
+  a `GET /users/{public_id}`), `text`, `created_at` e `deletable`: vero
+  quando chi chiede lo può cancellare.
+- **Le pagine**: `GET /drawings/{id}/comments?limit=20&cursor=…`, `limit`
+  da 1 a 50, **dal più vecchio**; `next` (il cursore della pagina dopo,
+  `null` sull'ultima) e `total` (quanti ne ha il disegno) come nelle
+  pagine di un profilo. Un commento scritto fra due pagine arriva in fondo,
+  mai due volte.
+- **Chi cancella**: chi l'ha scritto, o il proprietario del disegno, anche
+  i commenti degli altri sotto il suo. Chi vede il commento ma non è né
+  l'uno né l'altro: `403 http_error` «Only who wrote a comment, or the
+  owner of the drawing, deletes it.». Un commento che non c'è, o sotto un
+  disegno che chi chiede non vede: `404 http_error` «No comment with this
+  id.». Chi l'ha scritto lo cancella anche sotto un disegno tornato privato.
+- **Un disegno che non si vede** (privato e non proprio, o un id che non
+  c'è o che non è un UUID): `404 http_error` «No drawing with this id.»,
+  sia per leggere sia per scrivere. **Tornato privato**, i commenti restano
+  e li vede solo il proprietario; ripubblicato, tornano per tutti.
+- **Cancellare** la corsa (e quindi il disegno) o l'account del
+  proprietario cancella tutti i commenti del disegno; cancellare l'account
+  di chi ha scritto cancella i suoi commenti, ovunque.
+- **Un'API precedente** non ha questi endpoint: `404 http_error`, e l'app
+  non mostra i commenti.
 
 ### Send to Strava (TASK-187, ADR-0156)
 

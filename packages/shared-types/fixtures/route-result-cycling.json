@@ -1,0 +1,44 @@
+{
+  "points": [
+    [46.0671, 11.1214],
+    [46.0671, 11.1454],
+    [46.0754, 11.1538],
+    [46.0837, 11.1538],
+    [46.0921, 11.1454],
+    [46.0921, 11.1214],
+    [46.0837, 11.1131],
+    [46.0754, 11.1131],
+    [46.0671, 11.1214]
+  ],
+  "distance_m": 10068.1,
+  "similarity": 0.87,
+  "shape": "circle",
+  "warnings": ["923 m of the route with the bike on foot"],
+  "directions": [],
+  "word": null,
+  "alternatives": [
+    {
+      "points": [
+        [46.0671, 11.1214],
+        [46.0667, 11.1466],
+        [46.0762, 11.1549],
+        [46.0808, 11.1549],
+        [46.0928, 11.1466],
+        [46.0932, 11.1207],
+        [46.0762, 11.1114],
+        [46.0671, 11.1214]
+      ],
+      "distance_m": 10463.3,
+      "similarity": 0.84,
+      "shape": "circle",
+      "warnings": ["511 m of the route with the bike on foot"],
+      "directions": [],
+      "word": null,
+      "alternatives": [],
+      "walks": [],
+      "on_foot": [[2, 3]]
+    }
+  ],
+  "walks": [],
+  "on_foot": [[2, 3]]
+}

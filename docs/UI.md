@@ -89,7 +89,8 @@ Sotto l'icona il nome è «Sgrava» (`name` in `app.json`). L'icona dell'app
 senza trasparenza). Su Android il segno sta nel cerchio sicuro dell'icona
 adattiva, il fondo è nero e l'icona a un colore è il segno bianco. In Expo
 Go sulla schermata di casa resta l'icona di Expo Go: la nostra si vede con
-una build propria. Dentro l'app il nome in cima a «Draw» resta un testo.
+una build propria. Dentro l'app il nome in cima a «Draw» resta un testo,
+con a sinistra il cuore su giallo (sotto).
 
 **La schermata di avvio** (TASK-165, ADR-0134; gialla da TASK-181): fondo
 giallo `accent`, il logo nero al centro. Su iOS il logo intero, largo 260
@@ -114,6 +115,16 @@ c'è, non si salta, e si vede una volta a ogni apertura. Sta in
 `src/intro/`, sopra `App` (`index.ts`). Al lettore di schermo dice
 «Sgrava».
 
+**Il cuore su giallo** (TASK-221, ADR-0184): lo stesso cuore, fermo e
+piccolo, come un logo. Un quadrato giallo `accent` con gli angoli
+arrotondati (22% del lato), dentro il cuore nero `onAccent` largo il 68%
+del lato, con il punto di partenza; il tratto è 1/16 del lato, più spesso
+di quello dell'avvio, perché il cuore si legga alla misura di una parola.
+In cima a «Draw» sta a sinistra di «Sgrava», 32 punti, alto quanto il
+titolo. È solo un'immagine: il lettore di schermo legge il nome accanto.
+Un componente solo, `src/intro/HeartBadge.tsx` (`size`), per ogni posto
+dove il cuore su giallo compare.
+
 ## Le due schermate
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La
@@ -121,7 +132,8 @@ prima ed «Explore» sono due delle tre pagine affiancate (sotto, «Le
 pagine»):
 
 1. **«What to draw»**, all'apertura: la pagina «Draw». Dall'alto: il nome
-   «Sgrava» con il pulsante «Run without a route» (TASK-149, sotto; «Ride
+   «Sgrava», con a sinistra il cuore su giallo (TASK-221, sopra), e il
+   pulsante «Run without a route» (TASK-149, sotto; «Ride
    without a route» con «Bike», TASK-190); una
    scheda che dice da dove partirà il percorso,
    con, quando servono, il rimando alle Impostazioni e la ricerca del

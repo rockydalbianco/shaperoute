@@ -8817,3 +8817,52 @@ e in fondo; «Draw route» resta spento finché la richiesta non è completa,
 quindi all'apertura il giallo pieno è quello in alto. Il commento di
 `accent` in `src/theme/tokens.ts` dice ancora «una cosa sola»: da
 aggiornare con il prossimo task che tocca quel file.
+
+## ADR-0184 — Il cuore su giallo, segno di Sgrava: il cuore dell'avvio, fermo, in un quadrato giallo, un componente solo
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-221). La richiesta («Dentro l'app, metti il cuore giallo sullo
+sfondo giallo, a fianco al nome sgrava») è dell'utente, come quella dello
+stesso cuore in «Explore», sotto la foto del profilo (l'altra sessione);
+misure, posto e componente, qui sotto, sono dell'agente.
+
+**Contesto**: il cuore nero su giallo si vede solo all'avvio (TASK-179,
+ADR-0147), disegnato da una penna; dentro l'app il nome in cima a «Draw»
+era un testo solo. Due richieste dello stesso giorno lo vogliono in due
+posti dell'app: serve una regola sola, perché non nascano due cuori
+diversi.
+
+**Decisione**:
+
+1. **Lo stesso cuore dell'avvio** (`heartLine.ts`, il cuore di Milano da
+   10 km), fermo: un tratto dritto per ogni pezzo del percorso, senza i
+   tagli che servono all'animazione (98 View invece di circa 200).
+2. **Un quadrato giallo `accent`**, angoli al 22% del lato, come
+   un'icona e non come un pulsante; il cuore nero `onAccent` largo il 68%
+   del lato, centrato, con il punto di partenza dell'avvio (bianco `text`
+   con l'anello nero). Il tratto è 1/16 del lato, il punto 1/6: più
+   spessi che all'avvio, perché il cuore si legga alla misura di una
+   parola.
+3. **Un componente solo**, `src/intro/HeartBadge.tsx`, con la misura del
+   lato come unico parametro. Ogni altro posto dove il cuore su giallo
+   compare (il primo dopo questo: «Explore») lo importa, non lo ridisegna.
+4. **Dove si usa**: in «Draw», a sinistra di «Sgrava», 32 punti,
+   `space.sm` di distanza, il nome resta un testo (TASK-221); in
+   «Explore», sotto il cerchio del profilo, 44 punti (TASK-222).
+5. **Solo un'immagine**: nascosto al lettore di schermo, che legge il nome
+   accanto.
+
+**Perché così**: il logo si usa già «nero su giallo» (ADR-0129, `UI.md`
+«Il logo e l'icona»): il cuore su giallo è un segno della marca, non un
+comando, e non tocca la regola «il giallo significa una cosa sola», che
+parla dei comandi e della mappa. Nessuna dipendenza nuova: View girate,
+come all'avvio.
+
+**Scartato**: un'immagine PNG del cuore (un file in più, sfocata alle
+misure che non sono la sua); il segno «S» invece del cuore (non chiesto);
+il cuore senza quadrato, nero o giallo sul fondo scuro (il giallo dietro
+è la richiesta); il cuore a destra del nome (il logo viene prima del
+nome, come in ogni marchio).
+
+**Conseguenze**: TASK-222 («Explore») importa `HeartBadge` dopo il merge
+di TASK-221; un posto nuovo si aggiunge al punto 4. Si vede sul telefono
+con la prossima pubblicazione dell'app, con l'ok dell'utente.

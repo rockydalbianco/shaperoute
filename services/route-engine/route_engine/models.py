@@ -185,3 +185,7 @@ class RouteResult:
     # the next without drawing; in order, the next letter beginning where a
     # walk ends. Empty for a shape, an image and a word without.
     walks: list[tuple[int, int]] = field(default_factory=list)
+    # By bike (TASK-206, ADR-0167): [from, to] indices into `points`, both
+    # included, of each stretch walked with the bike on foot, in order
+    # (network.on_foot_stretches). Empty on foot and on the water.
+    on_foot: list[tuple[int, int]] = field(default_factory=list)

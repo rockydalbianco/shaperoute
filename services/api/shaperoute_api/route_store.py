@@ -95,6 +95,8 @@ def result_from(data: dict[str, Any]) -> RouteResult:
         alternatives=[result_from(other) for other in data["alternatives"]],
         # Kept before TASK-197: none.
         walks=[(int(a), int(b)) for a, b in data.get("walks", [])],
+        # Kept before TASK-206 part B: none.
+        on_foot=[(int(a), int(b)) for a, b in data.get("on_foot", [])],
     )
 
 

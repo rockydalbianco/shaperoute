@@ -1068,7 +1068,10 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
 - **`PublicProfile`** è `public_id`, `username`, `bio`, `photo` (il JPEG
   della foto in base64, come `GET /me/photo`, o `null`) e `drawings`, il
   numero dei disegni **pubblicati** (le corse private non contano,
-  ADR-0114 punto 4; i disegni sono in «Drawings», sotto). **Mai
+  ADR-0114 punto 4; i disegni sono in «Drawings», sotto). Da TASK-211
+  anche `followers` e `following`, contate solo le richieste accettate, e
+  `follow`, dove sta chi guarda verso quel profilo: `none`, `requested` o
+  `following` (il proprio profilo: `none`; «Follow», sotto). **Mai
   l'email**, né `role`, `id` o la data d'iscrizione (un test lo prova).
 - Un `public_id` che non c'è, di un account cancellato, o che non è un
   UUID (un `id` numerico, un nome): `404 http_error` «No profile with this
@@ -1150,6 +1153,69 @@ non si legge senza account, ADR-0114). Tipi in `shared-types`
   falso.
 - **Un'API precedente** non ha questi endpoint (`404 http_error`) e il suo
   `PublicProfile.drawings` è sempre 0.
+
+### Follow (TASK-211, ADR-0173)
+
+Un iscritto ne cerca un altro per nome e gli chiede di seguirlo; l'altro
+accetta o rifiuta. **Conta solo una richiesta accettata**: nei numeri del
+profilo, negli elenchi e per chi vedrà i disegni «Followers» (TASK-208).
+Tutti gli endpoint vogliono il token: senza, `401 not_signed_in`; senza
+database, `503 accounts_unavailable`. Tipi in `shared-types` (`Person`,
+`PeopleFound`, `PeoplePage`, `Follow`, `FollowState`,
+`PEOPLE_QUERY_MIN_LENGTH`, `PEOPLE_FOUND_MAX`, `PERSON_PHOTO_SIDE`), esempi
+in `fixtures/people.json`, `people-page.json`, `follow.json`; il codice in
+`follows.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /users?q=…` | gli iscritti con quel pezzo nel nome | `200` `{ "people": [Person, …] }` |
+| `POST /users/{public_id}/follow` | chiedere di seguire | `200` `{ "follow": "requested" \| "following" }` |
+| `DELETE /users/{public_id}/follow` | ritirare la richiesta, o smettere di seguire | `204` |
+| `GET /me/follow-requests` | chi chiede di seguirmi | `200` `PeoplePage` |
+| `POST /me/follow-requests/{public_id}/accept` | accettare | `204`, o `404 http_error` senza richiesta |
+| `POST /me/follow-requests/{public_id}/decline` | rifiutare | `204` |
+| `GET /me/followers` | chi mi segue | `200` `PeoplePage` |
+| `DELETE /me/followers/{public_id}` | togliere qualcuno da chi mi segue | `204` |
+| `GET /me/following` | chi seguo | `200` `PeoplePage` |
+
+- **`Person`** è solo `public_id`, `username` e `photo`: la foto del
+  profilo a **128 px** di lato (`PERSON_PHOTO_SIDE`, metà di quella di
+  `PublicProfile`), JPEG in base64, rifatta dall'API, o `null`. **Mai
+  l'email**, la bio o altro (un test lo prova). Il profilo intero si apre
+  con `GET /users/{public_id}`.
+- **La ricerca**: `q` senza gli spazi in testa e in coda, **almeno 2
+  caratteri** (meno, o senza `q`: `422 invalid_request` «Type at least 2
+  characters of a name.»), cercato **dentro** il nome senza badare alle
+  maiuscole; `_` e `%` sono caratteri come gli altri. **Al più 20**
+  risultati, **mai chi cerca**: prima i nomi che cominciano con `q`, poi i
+  più corti, poi in ordine alfabetico, sempre uguale. Un `q` più lungo di
+  un nome (20) non trova nessuno. Cerca solo il nome, mai l'email.
+- **Ogni azione porta a uno stato, e rifatta non cambia niente**: chiedere
+  di nuovo lascia una richiesta sola, con la sua data (la risposta dice
+  `requested`, o `following` se è già accettata); ritirare, smettere,
+  rifiutare e togliere rispondono `204` anche quando non c'era niente.
+  Accettare di nuovo è `204`; accettare senza nessuna richiesta di
+  quell'account è `404 http_error` «No follow request from this account.».
+- **Rifiutare cancella la richiesta**: chi aveva chiesto vede il profilo
+  come prima di chiedere (`follow` `none`), e può chiedere di nuovo.
+  Nessuna risposta dice che è stata rifiutata. Rifiutare chi segue già non
+  lo toglie: per quello c'è `DELETE /me/followers/{public_id}`, che toglie
+  anche una richiesta in attesa.
+- **Sé stessi** non si seguono: `422 invalid_request` «You cannot follow
+  yourself.». Un `public_id` che non c'è, di un account cancellato o che
+  non è un UUID: `404 http_error` «No profile with this id.», in tutti gli
+  endpoint con `{public_id}`.
+- **Gli elenchi sono solo propri** (degli altri si vedono i due numeri del
+  profilo): `?limit=20&cursor=…`, `limit` da 1 a 50, dal più recente
+  (l'accettazione per `followers` e `following`, la richiesta per
+  `follow-requests`); `next` è il `cursor` della pagina dopo, `null`
+  all'ultima; `total` quanti sono in tutto. Il cursore porta il momento e
+  il `public_id` dell'ultimo della pagina.
+- **Cancellare un account** (`DELETE /me`) lo toglie da ogni elenco e da
+  ogni numero, nei due versi.
+- **Un'API precedente** non ha questi endpoint (`404 http_error`; `GET
+  /users` senza id è `404` anche lui) e il suo `PublicProfile` non ha
+  `followers`, `following` né `follow`.
 
 ### Comments (TASK-120, ADR-0175)
 

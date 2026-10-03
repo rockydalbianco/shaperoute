@@ -530,6 +530,67 @@ export interface PublicProfile {
   photo: string | null;
   /** How many runs it made public as drawings (TASK-117). */
   drawings: number;
+  /**
+   * How many follow it, and how many it follows: only the requests accepted
+   * (TASK-211). Missing from an API older than TASK-211.
+   */
+  followers?: number;
+  following?: number;
+  /** Where the one who asks stands towards it. Missing from an older API. */
+  follow?: FollowState;
+}
+
+/**
+ * Where a member stands towards a profile (TASK-211): it asked and waits
+ * for the other to accept, or it follows. Its own profile: "none". A
+ * request declined is "none" again: nothing says it was declined.
+ */
+export const FOLLOW_STATES = ["none", "requested", "following"] as const;
+export type FollowState = (typeof FOLLOW_STATES)[number];
+
+/** POST /users/{public_id}/follow (TASK-211): where the one who asked stands now. */
+export interface Follow {
+  follow: Exclude<FollowState, "none">;
+}
+
+/** The fewest characters GET /users?q= looks for, spaces at the ends left out. */
+export const PEOPLE_QUERY_MIN_LENGTH = 2;
+/** The most members GET /users?q= gives. */
+export const PEOPLE_FOUND_MAX = 20;
+/** The side of a Person's picture, in pixels: half that of a PublicProfile. */
+export const PERSON_PHOTO_SIDE = 128;
+
+/**
+ * A member in a list (TASK-211): found by name, a follower, one followed,
+ * one who asks to follow. Never the email; the profile is GET
+ * /users/{public_id}.
+ */
+export interface Person {
+  public_id: string;
+  username: string;
+  /** A square JPEG of PERSON_PHOTO_SIDE px in base64; null without a picture. */
+  photo: string | null;
+}
+
+/**
+ * GET /users?q= (TASK-211): at most PEOPLE_FOUND_MAX members whose name
+ * holds the query, whatever the case, never the one who asks; first the
+ * names that begin with it, then the shortest.
+ */
+export interface PeopleFound {
+  people: Person[];
+}
+
+/**
+ * GET /me/followers, /me/following, /me/follow-requests (TASK-211): a
+ * page, the latest first; only the account's own.
+ */
+export interface PeoplePage {
+  people: Person[];
+  /** The `cursor` of the next page; null on the last one. */
+  next: string | null;
+  /** How many there are, on every page. */
+  total: number;
 }
 
 /** The limit of a drawing's title, checked by the API too (TASK-117). */

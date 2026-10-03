@@ -35,7 +35,10 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 | `profile_photos` | utente, JPEG quadrato 256 px | TASK-178 |
 | `generated_routes` | ogni percorso dell'API (ADR-0086): richiesta, tipo (forma, parola, immagine), distanza, somiglianza, linea, **punto di partenza mostrato** (a più di 500 m da quello vero), centro, data; utente se era entrato, se no nessuno | TASK-092 |
 | `favorites` | percorso tenuto fra i preferiti: utente, chiave fatta dall'app sulla linea (unica per utente), città, forma o parola e stile, titolo, distanza chiesta e sulle strade, somiglianza, **linea intera**, data; i tratti a piedi di una parola con la penna alzata (TASK-199); i tratti con la bici a mano (TASK-206) | TASK-171, TASK-199, TASK-206 |
-| `runs` | corsa salvata: utente, chiave fatta dall'app, percorso pianificato, cosa disegna, traccia (`LineStringM`, M = secondi dall'inizio), pause, inizio, distanza, durata, punteggio, fedeltà, luogo (TASK-172); i tratti a piedi del percorso di una parola con la penna alzata (TASK-199); **traccia tagliata** (senza 200 m all'inizio e alla fine), titolo dato dall'utente, pubblica sì/no (TASK-117) | TASK-172, TASK-199, TASK-117 |
+| `runs` | corsa salvata: utente, chiave fatta dall'app, percorso pianificato, cosa disegna, traccia (`LineStringM`, M = secondi dall'inizio), pause, inizio, distanza, durata, punteggio, fedeltà, luogo (TASK-172); i tratti a piedi del percorso di una parola con la penna alzata (TASK-199); l'attività, a piedi, in bici o in canoa (TASK-208) | TASK-172, TASK-199, TASK-208 |
+| `drawings` | il disegno di una corsa: **traccia tagliata** (senza 200 m all'inizio e alla fine), titolo dato dall'utente (TASK-117); chi lo vede (tutti, chi segue, solo io) e la descrizione (TASK-208) | TASK-117, TASK-208 |
+| `drawing_photos` | fino a 3 foto di un disegno oltre alla mappa: posto 1–3, JPEG al più 1080 px di lato, senza EXIF | TASK-208 |
+| `drawing_tags` | gli iscritti taggati in un disegno, in ordine, al più 10 | TASK-208 |
 | `likes` | utente, corsa (coppia unica) | TASK-119 |
 | `comments` | disegno, autore, testo (1–500), data | TASK-120 |
 | `reports` | chi segnala, cosa (corsa, commento, utente), motivo, data, gestita da e quando | TASK-121 |
@@ -167,7 +170,8 @@ Migrazione `0007_profiles.sql` (TASK-116, ADR-0128):
   tabella si riscrive una volta: pochi account, un attimo). Le sessioni di
   prima restano valide (test con dati sullo schema 0001–0006).
 - Il numero di disegni del profilo non è una colonna: si conta sulle
-  righe pubbliche di `drawings` (TASK-117).
+  righe pubbliche di `drawings` (TASK-117); da TASK-208, su quelle che chi
+  guarda può vedere.
 
 Migrazione `0008_favorite_activity.sql` (TASK-200, ADR-0160):
 
@@ -263,6 +267,49 @@ libero in `main` al merge):
 - Niente colonna «nascosto» (lo schema di partenza la prevedeva): la
   aggiunge TASK-121, se una segnalazione deve nascondere un commento senza
   cancellarlo.
+
+Migrazione `0014_drawing_details.sql` (TASK-208, ADR-0170):
+
+- `drawings.public` diventa **`visibility`** (`everyone`, `followers`,
+  `only_me`, default `only_me`): ogni riga pubblica di prima passa a
+  `everyone`, ogni privata a `only_me`, e chi la vedeva la vede ancora
+  (test con dati sullo schema 0001–0013). I due vincoli di `public` si
+  riscrivono su `visibility`: `published_at` c'è quando la vede qualcun
+  altro, e allora c'è anche `track`.
+- **`public` resta**, colonna generata (`visibility = 'everyone'`), per
+  l'SQL scritto prima: non si scrive mai. Chi può vedere un disegno si
+  chiede con `drawings.drawing_seen_sql(viewer)`, una condizione su
+  `drawings d JOIN runs r ON r.id = d.run_id`: il proprietario sempre;
+  gli altri se è `everyone`, o se è `followers` e lo seguono con la
+  richiesta accettata (`follows`). Foto e commenti (TASK-120) seguono la
+  stessa domanda. `shown_sql(viewer)` è quella del profilo: solo i
+  pubblicati, anche per il proprietario.
+- `drawings.description`: da 1 a 500 caratteri, a capo compresi, o
+  assente.
+- `runs.activity` (`running`, `cycling`, `paddling`, default `running`):
+  ogni corsa di prima era a piedi, e non si riscrive la tabella. Il
+  vincolo elenca le attività dell'API, come `favorites.activity`.
+- **`drawing_photos`**: `drawing_id` (`ON DELETE CASCADE` su `drawings`) e
+  `n` (da 1 a 3) insieme la chiave, `jpeg` (`bytea`, al più 2 MB: il
+  peggio misurato, puro rumore a 1080 px, è 0,8 MB), `width` e `height`
+  (al più 1080), `updated_at`. Un posto svuotato resta vuoto, gli altri
+  non si spostano. Il JPEG lo fa l'API (`drawing_photos.py`): il file del
+  telefono e il suo EXIF non si tengono, come per `profile_photos`. Ci
+  sono righe solo per i disegni che altri vedono (`everyone`,
+  `followers`): passato a `only_me`, il disegno perde le sue foto, che
+  restano sul telefono (scelta dell'utente, 2026-10-03).
+- **`drawing_tags`**: `drawing_id` (`ON DELETE CASCADE` su `drawings`),
+  `user_id` (`ON DELETE CASCADE` su `users`: cancellato l'account
+  taggato, il suo nome sparisce dal disegno), `position` (da 1 a 10). Una
+  riga per persona, una persona per posto; un indice su `user_id` per
+  cancellare un account.
+- Quanto pesano le foto: una foto vera a 1080 px è circa 0,1–0,3 MB; un
+  disegno con tre foto al più 1 MB, di solito meno. Con mille disegni
+  **visti da altri** con tre foto l'uno, circa 0,5–1 GB nel database, e
+  altrettanto in **ognuna** delle 13 copie di notte (TASK-122): un JPEG non
+  si comprime di più, e sul disco del server pesa circa 14 volte. Le foto
+  delle corse private non ci sono. Le note per il deploy sono in
+  `tasks/TASK-208.md`.
 
 ## Come si memorizza una traccia
 

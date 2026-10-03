@@ -7800,3 +7800,44 @@ nome (spezzano chi è).
 **Conseguenze**: la riga di «Settings» resta e fa lo stesso. Come la foto
 di TASK-178, sul telefono funziona solo con il server alla migrazione
 `0005` e l'app pubblicata.
+
+## ADR-0174 — Il logo dopo «Save»: il giallo e il logo dell'avvio, 1,65 s, sopra l'app, anche senza rete
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-212). La richiesta («Finita l'attività, quando la salvi deve uscire
+il logo di Sgrava») e il logo anche senza rete sono dell'utente; il resto,
+qui sotto, è dell'agente.
+
+**Contesto**: «Save» a fine corsa (TASK-172, ADR-0140) tiene la corsa e
+torna alla mappa, senza nessun segno che sia andata. Il logo con il giallo
+si vede già all'avvio (TASK-179, ADR-0147), in `src/intro/`, sopra `App`.
+
+**Decisione**:
+
+1. **Lo stesso giallo `accent` e lo stesso logo intero dell'avvio**
+   (`splash-logo-dark.png`), senza il cuore: il cuore è dell'apertura, e
+   qui il disegno è quello appena corso, già sulla scheda.
+2. **Tempi**: 0,25 s il giallo sale e il logo cresce dall'85% alla sua
+   misura, 1,1 s fermo, 0,3 s di dissolvenza; in tutto 1,65 s, meno
+   dell'avvio (2,7 s). Un tocco lo manda via subito. Il tempo lo tiene un
+   timer, non l'animazione, come all'avvio: con le animazioni del telefono
+   spente il logo resta lo stesso.
+3. **Sopra l'app, in `Root.tsx`**, sotto l'animazione d'avvio: `RunEnd`
+   chiama `showSavedLogo()` quando `onSave()` è vero, e uno strato in
+   `Root` lo mostra. `App.tsx` non cambia: `RunEnd` si smonta appena la
+   corsa è tenuta, e il logo deve restare.
+4. **Anche senza rete** (scelta dell'utente): «Save» vero vuol dire la
+   corsa tenuta, sul telefono o già sull'API. Niente logo se il telefono
+   non tiene la corsa, né a «Discard».
+5. Al lettore di schermo: «Saved to My activities», annunciato.
+
+**Perché così**: un'immagine sola, già nell'app, e nessuna dipendenza;
+uno strato in `Root` vede l'app intera, mentre la schermata della corsa se
+ne va nello stesso tocco.
+
+**Scartato**: il disegno della corsa tracciato sul giallo come il cuore
+dell'avvio (non chiesto, e più lungo); il logo dentro `App.tsx` (il file
+più conteso); un «Saved» scritto sotto il logo (non chiesto).
+
+**Conseguenze**: TASK-208 B, che rifà la fine della corsa, tiene la
+chiamata a `showSavedLogo()` dopo un «Save» riuscito. Si vede sul telefono
+con la prossima pubblicazione dell'app, con l'ok dell'utente.

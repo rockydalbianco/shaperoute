@@ -345,6 +345,7 @@ services/api/shaperoute_api/phone_zone_api.py      (nuovo, anche il comando)
 services/api/shaperoute_api/__main__.py            (tre righe, al posto di app.py)
 services/api/tests/test_on_phone.py, test_phone_zones.py,
   test_phone_zone_api.py                           (nuovi)
+services/api/tests/test_request_log.py             (il finto create_app dà un FastAPI)
 apps/mobile/src/engine/                            (nuova)
 apps/mobile/assets/pyodide/                        (nuova)
 apps/mobile/metro.config.js                        (.wasm e .zip come asset)

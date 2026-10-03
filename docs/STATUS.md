@@ -184,7 +184,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   detti 100 m prima (misurato su Trento), «riding» / «Ride to the U» con
   la penna alzata. La corsa è identica. Frasi e nomi inglesi e italiani
   approvati dall'utente; tedesco, spagnolo e francese da confermare. Non
-  pubblicato, da provare sull'iPhone. `tasks/TASK-216.md`.
+  pubblicato, da provare sull'iPhone. `tasks/TASK-216.md`. Con la stessa
+  PR (dal coordinatore): l'utente ha confermato il 2026-10-03 le frasi
+  della bici a mano di TASK-206 in tedesco, spagnolo e francese (la voce e
+  «Includes … walking the bike.») e i testi della penna alzata di
+  TASK-198; segnate confermate in `UI.md` e in `src/voice/`.
 - **TASK-217 — La voce confronta ogni km col precedente** (Todo; chiesto
   e scelto dall'utente il 2026-10-03): dopo la frase di ogni km, «Questo
   chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2

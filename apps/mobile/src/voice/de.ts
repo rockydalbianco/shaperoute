@@ -13,8 +13,9 @@ function units(count: number, one: string, many: string): string {
 
 /**
  * The voice in German (TASK-209): written by the agent, listened to and
- * confirmed by the user on 2026-10-03; the bike on foot (TASK-206) is still
- * to be confirmed (`docs/UI.md`, «La voce della corsa»). Directions
+ * confirmed by the user on 2026-10-03, the bike on foot (TASK-206) too; the
+ * bike's own phrases (TASK-216) are still to be confirmed (`docs/UI.md`,
+ * «La voce della corsa»). Directions
  * as German navigation says them, verb last ("Links abbiegen auf …"); a
  * letter is neuter: «das A», «zum A».
  */

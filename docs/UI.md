@@ -1126,7 +1126,7 @@ sottili: il token `walk` (`textMuted`, largo 3, opacità 0,9, trattini di 2
 larghezze e spazi di 1,5, estremi dritti). Grigi e non gialli perché il
 giallo è il disegno: così la parola si legge. Sotto il nome del percorso
 una riga in più, «15.4 km of letters + 4.2 km walking between them»
-(testo **da confermare con l'utente**): i km delle lettere sono quelli che
+(testo confermato dall'utente il 2026-10-03): i km delle lettere sono quelli che
 la corsa registra e quelli a cui va la distanza chiesta; a parità di km le
 lettere vengono 1,7 volte più alte e i tratti a piedi aggiungono il 20–30%.
 La distanza in grande e quella delle tessere «A · B · C» restano di tutto
@@ -1156,8 +1156,8 @@ Con una parola a penna alzata in bici, la parte di un tratto che cade fra
 una lettera e l'altra non si segna: lì la linea è già grigia. Nella scheda
 l'avviso del motore «923 m of the route with the bike on foot» diventa una
 riga grigia, da sapere: **«Includes 920 m walking the bike.»** (in
-italiano «Di cui 920 m con la bici a mano.», approvati dall'utente; in
-tedesco, spagnolo e francese **da confermare**), i metri arrotondati a 10,
+italiano «Di cui 920 m con la bici a mano.», approvati dall'utente, come
+il tedesco, lo spagnolo e il francese il 2026-10-03), i metri arrotondati a 10,
 da 1 km «1.1 km». Ogni tessera «A · B · C» ha i suoi. La distanza resta di
 tutto il percorso, tratti a mano compresi, e la corsa li registra senza
 pause. Un risultato senza `on_foot` (un'API più vecchia di TASK-206) o con
@@ -1249,8 +1249,8 @@ TASK-164, di cui tiene i numeri.
   voce, con una vibrazione, dice «Letter done. Walk to the U: the drawing is
   paused.» alla fine della lettera e «Pen down: draw the U.» all'inizio
   della successiva, una volta sola ciascuno e prima delle svolte della
-  stessa posizione (testi **da confermare con l'utente**; se la parola non
-  ha una lettera più dei tratti, «the next letter»). Sulla scheda è una
+  stessa posizione (testi confermati dall'utente il 2026-10-03; se la
+  parola non ha una lettera più dei tratti, «the next letter»). Sulla scheda è una
   pausa come le altre: «Paused», «Resume» e «Stop».
   - **Perché 20 m, e lungo il percorso**: una posizione che la corsa tiene
     sbaglia fino a 40 m (`POOR_FIX_M`), in città 10–20 m. Ripartendo 20 m
@@ -1433,8 +1433,7 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   partenza, le vie senza nome per tipo (mai un nome inventato; i nomi
   delle vie mai tradotti), «beside», fuori e di nuovo sul percorso,
   l'arrivo, la pausa da fermi e la ripresa, la penna alzata, ogni km con
-  tempo e passo, la bici a mano (TASK-206: tedesco, spagnolo e francese da
-  confermare), in bici i km ogni 10 con la velocità media e la penna alzata
+  tempo e passo, la bici a mano (TASK-206), in bici i km ogni 10 con la velocità media e la penna alzata
   pedalando (TASK-216: tedesco, spagnolo e francese da confermare). Il
   numero uno detto a parole dove si accorda («Un chilometro», «un'ora»,
   «eine Minute»). Le frasi sono in `src/voice/`, una tabella per lingua;
@@ -1446,9 +1445,11 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   en avant toute !».
 - **Testi**: le frasi italiane sono **confermate dall'utente** (2026-10-03),
   e lo sono anche le spagnole, francesi e tedesche: l'utente le ha
-  ascoltate e approvate lo stesso giorno. Restano da confermare quelle
-  della bici a mano (TASK-206) in tedesco, spagnolo e francese, e quelle
-  della penna alzata anche in inglese (TASK-198). Le parole del foglio («App
+  ascoltate e approvate lo stesso giorno. Lo stesso giorno ha confermato
+  anche quelle della bici a mano (TASK-206) in tedesco, spagnolo e francese,
+  con «Includes … walking the bike.», e i testi della penna alzata
+  (TASK-198). Restano da confermare le frasi nuove della bici (TASK-216) in
+  tedesco, spagnolo e francese. Le parole del foglio («App
   language», «Language», «Voice», «Default», «Listen», «Done») sono in
   inglese come il resto dello schermo: le traduce TASK-210.
 

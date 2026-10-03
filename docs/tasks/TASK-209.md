@@ -29,6 +29,23 @@ dell'app», in «Settings», le stesse cinque lingue).
   scelga un'altra solo per la voce. Finché TASK-210 non è in `main`, «la
   lingua dell'app» è l'inglese.
 
+## Numeri e incroci (dal coordinatore, 2026-10-03)
+
+- **ADR-0171**, se serve una decisione da registrare.
+- **TASK-191 C** (la canoa nell'app, sessione «Tasto aggiunta foto
+  profilo») toglie la voce di svolta sull'acqua e può toccare
+  `useNavigation.ts`, `navigator.ts`, `phrases.ts`.
+- **TASK-206** (la bici a mano, sessione «Task bici e padel»), parte C:
+  annuncia a voce i tratti a piedi, cioè frasi nuove da tradurre.
+- **TASK-210** (la lingua dell'app, sessione «Selezione lingua app»):
+  `src/i18n/`, la riga «Language» in «Settings».
+- Quindi: le traduzioni e la scelta della voce in **file nuovi** (per
+  esempio `src/voice/`, una tabella per lingua); nei file esistenti solo il
+  passaggio della lingua. **Prima di toccare `useNavigation.ts` e i file
+  delle frasi**, guardare le PR aperte e dirlo al coordinatore: entra prima
+  chi è pronto prima, l'altro si aggiorna. Nessuna dipendenza nuova senza
+  chiedere. La CI la guarda il coordinatore: «#NNN pronta».
+
 ## Contesto da leggere
 
 - `docs/UI.md`, «La navigazione» (le frasi dette, «Voice», la penna alzata)

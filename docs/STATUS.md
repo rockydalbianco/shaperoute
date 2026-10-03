@@ -184,8 +184,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   prima vanno rifatte per avere i tratti a mano (Mac da Overpass, server
   dall'estratto). Campioni di Trento giudicati dall'utente: i cerchi da
   «quasi» a «sì», cuori e stelle come prima, 100–660 m a mano. **Parte
-  B, l'API e il contratto** (2026-10-03, branch
-  `feat/TASK-206-bike-on-foot-api`): `on_foot` nel `RouteResult`, coppie
+  B, l'API e il contratto**, in `main` dalla PR #263 (2026-10-03):
+  `on_foot` nel `RouteResult`, coppie
   `[da, a]` di indici nei punti dove si va a mano, anche nelle alternative
   e nell'avvicinamento da una partenza vicina; solo un'aggiunta (vuoto per
   la corsa e la canoa, facoltativo in `shared-types`); i preferiti lo

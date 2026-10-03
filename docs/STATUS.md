@@ -115,17 +115,23 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app aggiornati il 2026-10-03** (ok dell'utente, «Server e
-  poi preview»): il server è su `main` `4b236f9` dalle 10:00Z, con le
-  migrazioni `0004`–`0010` (immagine di prima
-  `shaperoute-api:before-task205`, copia del database
-  `shaperoute-2026-10-03T1000Z.dump`); la prima zona bici, Trento (41 MB);
-  gli esempi ridisegnati per 66 città su 66. L'app è su `preview` da `main`
-  `d0e8692` (gruppo `d49fce25`, 10:39Z): foto e «+» del profilo, «Edit
-  profile», penna alzata accesa, bici, pubblicare una corsa, la grafica
-  della corsa, il pulsante dello sport. **Da provare sull'iPhone.** Strava
-  resta spento finché l'utente non crea la sua app Strava e scrive il
-  secret sul server; la canoa nell'app è ancora «Soon».
+- **Server e app aggiornati il 2026-10-03** (ok dell'utente). **Server**:
+  su `main` `7098cb9` dalle 12:39Z («va bene pubblica»), con le migrazioni
+  `0001`–`0013` (immagine di prima `shaperoute-api:before-task206`, copia
+  del database `shaperoute-2026-10-03T1239Z.dump`; prima ancora
+  `before-task205`, 10:00Z); la zona bici di Trento rifatta con la bici a
+  mano di TASK-206 (GraphML 72 MB); gli esempi ridisegnati per 66 città su
+  66. **App** su `preview` da `main` `b649a88` (gruppo `fcdb1a46`, uguale a
+  `0fa3f391` di pochi minuti prima): la voce in cinque lingue (TASK-209),
+  la bici a mano nell'app (TASK-206 C), la lente «Find friends» (TASK-215,
+  219), le immagini di Strava (TASK-218), seguire e i commenti (TASK-211 A,
+  120, 213), la lingua dell'app (TASK-210 A) e il logo dopo «Save»
+  (TASK-212). **Da provare sull'iPhone.** In `main` ma non sul server: la
+  migrazione `0014` (TASK-208 A) e `/phone-zones` (TASK-214 A), con le zone
+  nel formato del telefono da costruire (0,7–0,8 GB, 20–30 minuti):
+  servono quando ci saranno le loro parti app. Strava spento finché
+  l'utente non scrive il secret sul server; la canoa nell'app è «Soon»
+  (#255 in pausa) e non va pubblicata prima dell'acqua sul server.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),

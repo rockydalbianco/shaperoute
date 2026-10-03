@@ -51,8 +51,10 @@ export const ROUTE_OPACITY = route.opacity;
 
 /**
  * While running the route, the part left (TASK-224): dashed, under the part
- * run, blinking in steps. Each beat is one change of opacity with no
- * transition, so the map is drawn again twice a cycle, not at every frame.
+ * run, blinking in steps. A beat changes the line's feature state, not the
+ * style: a style change starts 300 ms of transitions on every property of
+ * the layer, and the map was drawn 29 times a second instead of 1.4
+ * (measured in the page, ADR-0186).
  */
 export const AHEAD_COLOR = routeAhead.color;
 export const AHEAD_WIDTH = routeAhead.width;
@@ -214,8 +216,8 @@ export function buildMapPage(): string {
         },
       });
       // While running the route, the part left: dashed, under the part run
-      // (TASK-224). Its beats change the opacity at once, with no fade.
-      map.addSource("route-ahead", { type: "geojson", data: ahead });
+      // (TASK-224). Its one line has id 0, and its beat is its "dim" state.
+      map.addSource("route-ahead", { type: "geojson", data: ahead, generateId: true });
       map.addLayer({
         id: "route-ahead",
         type: "line",
@@ -224,11 +226,16 @@ export function buildMapPage(): string {
         paint: {
           "line-color": ${toScript(AHEAD_COLOR)},
           "line-width": ${AHEAD_WIDTH},
-          "line-opacity": dim ? ${AHEAD_DIM_OPACITY} : ${AHEAD_OPACITY},
-          "line-opacity-transition": { duration: 0, delay: 0 },
+          "line-opacity": [
+            "case",
+            ["boolean", ["feature-state", "dim"], false],
+            ${AHEAD_DIM_OPACITY},
+            ${AHEAD_OPACITY},
+          ],
           "line-dasharray": ${toScript(AHEAD_DASH)},
         },
       });
+      setAheadOpacity();
       // A route that arrived before the style is drawn now.
       map.addSource("route", { type: "geojson", data: route });
       map.addLayer({
@@ -373,12 +380,8 @@ export function buildMapPage(): string {
       }
     }
     function setAheadOpacity() {
-      if (map.getLayer("route-ahead")) {
-        map.setPaintProperty(
-          "route-ahead",
-          "line-opacity",
-          dim ? ${AHEAD_DIM_OPACITY} : ${AHEAD_OPACITY},
-        );
+      if (map.getSource("route-ahead")) {
+        map.setFeatureState({ source: "route-ahead", id: 0 }, { dim: dim });
       }
     }
     // With "Reduce Motion" on the phone the dashes keep still.

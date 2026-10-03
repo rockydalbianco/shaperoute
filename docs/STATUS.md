@@ -372,14 +372,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## Completato
 
 - **App** — TASK-224: correndo un percorso, il fatto giallo pieno e il da
-  fare tratteggiato che lampeggia (ADR-TODO; chiesto dall'utente il
+  fare tratteggiato che lampeggia (ADR-0186; chiesto dall'utente il
   2026-10-03, stile approvato su un'anteprima). Il da fare è giallo,
   tratteggiato, 0,7 s acceso e 0,7 s a opacità 0,3, a scatti senza
   dissolvenza (due ridisegni ogni 1,4 s); fermo con «Pocket» e con «Riduci
   movimento». Il taglio è ai metri del navigatore, a passi di 5 m; dopo
   l'arrivo tutto pieno, a fine corsa il percorso torna intero. Con la penna
   alzata si tagliano solo le lettere; la bici a mano resta sopra. Provato
-  con la pagina vera di MapLibre nel browser (il lampeggio si vede); solo
+  e misurato con la pagina vera di MapLibre nel browser: il lampeggio
+  costa 1,43 ridisegni al secondo (una battuta cambia lo stato della linea,
+  non lo stile), 0 in «Pocket»; il GPS non cambia. Solo
   app: esce con la prossima pubblicazione, con l'ok dell'utente; da
   provare correndo sull'iPhone. Seguito da chiedere: fermarlo anche sulla
   pagina «Data», dove la mappa è coperta. Task file: `tasks/TASK-224.md`.

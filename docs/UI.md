@@ -1399,7 +1399,7 @@ nord in alto. La direzione viene dalla traccia, dagli ultimi 10 m: serve
 qualche passo perché compaia (prima c'è il segnaposto di sempre), e da
 fermi resta quella di prima. A fine corsa torna il segnaposto.
 
-**Il fatto e il da fare** (TASK-224, ADR-TODO; chiesto dall'utente il
+**Il fatto e il da fare** (TASK-224, ADR-0186; chiesto dall'utente il
 2026-10-03, stile approvato su un'anteprima). Mentre si corre un percorso,
 la parte già corsa resta la linea gialla piena di sempre; la parte ancora
 da fare è **gialla, tratteggiata e lampeggia**: 0,7 s accesa, 0,7 s

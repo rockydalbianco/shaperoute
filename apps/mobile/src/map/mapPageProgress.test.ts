@@ -28,18 +28,25 @@ type Layer = { id: string; paint: Record<string, unknown> };
 
 /** Just enough of MapLibre GL JS for the page's script. */
 function fakeMapLibre() {
-  const sources = new Map<string, { data: Data; setData: (data: Data) => void }>();
+  const sources = new Map<
+    string,
+    { data: Data; generateId?: boolean; setData: (data: Data) => void }
+  >();
   const layers: Layer[] = [];
   const once = new Map<string, () => void>();
+  const featureStates = new Map<string, Record<string, unknown>>();
+  /** Style changes after the style is loaded: none may come from a beat. */
+  const paintChanges: string[] = [];
   class Map_ {
     addControl() {}
     once(event: string, handler: () => void) {
       once.set(event, handler);
     }
     on() {}
-    addSource(id: string, source: { data: Data }) {
+    addSource(id: string, source: { data: Data; generateId?: boolean }) {
       const entry = {
         data: source.data,
+        generateId: source.generateId,
         setData(data: Data) {
           entry.data = data;
         },
@@ -56,7 +63,15 @@ function fakeMapLibre() {
       return layers.find((layer) => layer.id === id);
     }
     setPaintProperty(id: string, name: string, value: unknown) {
+      paintChanges.push(`${id} ${name}`);
       layers.find((layer) => layer.id === id)!.paint[name] = value;
+    }
+    setFeatureState(target: { source: string; id: number }, state: object) {
+      if (!sources.has(target.source)) {
+        throw new Error(`The source '${target.source}' does not exist.`);
+      }
+      const key = `${target.source}/${target.id}`;
+      featureStates.set(key, { ...featureStates.get(key), ...state });
     }
     fitBounds() {}
     flyTo() {}
@@ -72,7 +87,21 @@ function fakeMapLibre() {
     sources,
     layers,
     once,
+    featureStates,
+    paintChanges,
   };
+}
+
+/** The opacity of the part left, from its expression and its line's state. */
+function aheadOpacity(
+  layers: Layer[],
+  featureStates: Map<string, Record<string, unknown>>,
+): unknown {
+  const expression = layers.find((layer) => layer.id === "route-ahead")!.paint[
+    "line-opacity"
+  ] as [string, [string, [string, string], boolean], number, number];
+  const [, , dimmed, bright] = expression;
+  return featureStates.get("route-ahead/0")?.dim === true ? dimmed : bright;
 }
 
 /** The page's own scripts, the ones with no `src`, run in order. */
@@ -109,8 +138,7 @@ function runPage({ reduceMotion = false } = {}) {
     // Through JSON, as injectJavaScript delivers it.
     send: (message: ToPage) => page.receive(JSON.parse(JSON.stringify(message))),
     data: (id: string) => fake.sources.get(id)!.data,
-    opacity: () =>
-      fake.layers.find((layer) => layer.id === "route-ahead")!.paint["line-opacity"],
+    opacity: () => aheadOpacity(fake.layers, fake.featureStates),
   };
 }
 
@@ -125,7 +153,7 @@ const ROUTE: LatLon[] = Array.from({ length: 5 }, (_, i) => [46 + i * 0.001, 11]
 const ALONG = cumulative(ROUTE);
 const HALF_WAY = splitRoute(ROUTE, ALONG, ALONG[2]);
 
-test("the part left is its own layer, dashed under the part run, with no fade", () => {
+test("the part left is its own layer, dashed under the part run", () => {
   const page = runPage();
   page.styleLoads();
   const ids = page.layers.map((layer) => layer.id);
@@ -134,10 +162,30 @@ test("the part left is its own layer, dashed under the part run, with no fade", 
   const ahead = page.layers.find((layer) => layer.id === "route-ahead")!;
   expect(ahead.paint["line-dasharray"]).toEqual(routeAhead.dash);
   expect(ahead.paint["line-color"]).toBe(routeAhead.color);
-  // A beat changes the opacity at once: the map is drawn again once, not at
-  // every frame of a fade.
-  expect(ahead.paint["line-opacity-transition"]).toEqual({ duration: 0, delay: 0 });
+  // The opacity follows the line's "dim" state, and the line has an id.
+  expect(ahead.paint["line-opacity"]).toEqual([
+    "case",
+    ["boolean", ["feature-state", "dim"], false],
+    AHEAD_DIM_OPACITY,
+    AHEAD_OPACITY,
+  ]);
+  expect(page.sources.get("route-ahead")!.generateId).toBe(true);
   expect(page.opacity()).toBe(AHEAD_OPACITY);
+});
+
+test("a beat changes the line's state, never the style (ADR-0186)", () => {
+  // A style change starts 300 ms of transitions on the whole layer: the map
+  // was drawn 29 times a second while blinking, against 1.4 with the state.
+  const page = runPage();
+  page.styleLoads();
+  page.send(showRoute(ROUTE));
+  page.send(showProgress(HALF_WAY, true));
+  for (let i = 0; i < 4; i += 1) {
+    beat(page.timers);
+  }
+  page.send(showProgress(HALF_WAY, false));
+  page.send(clearProgress());
+  expect(page.paintChanges).toEqual([]);
 });
 
 test("running, the part run is the route and the part left blinks in beats", () => {

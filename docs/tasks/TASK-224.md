@@ -1,6 +1,6 @@
 # TASK-224 — Correndo: il fatto giallo, il da fare tratteggiato che lampeggia
 
-**Stato**: In corso
+**Stato**: In corso · ADR-0186
 **Fase**: 4 · **Branch**: `feat/TASK-224-route-done-ahead`
 
 ## Obiettivo
@@ -39,7 +39,8 @@ ancora farlo». Stile approvato dall'utente su un'anteprima («Sì, così»).
 
 - [x] Correndo un percorso la parte corsa è la linea gialla piena, quella
       da fare è gialla tratteggiata e lampeggia (0,7 s accesa, 0,7 s a
-      opacità 0,3), a scatti (`line-opacity-transition` a zero).
+      opacità 0,3), a scatti: una battuta cambia lo stato della linea
+      (`feature-state`), mai lo stile.
 - [x] Prima del primo passo tutto è da fare; dopo «You have arrived» tutto
       è fatto; a fine corsa il percorso torna intero e non lampeggia più.
 - [x] Con «Pocket» il tratteggio resta fermo e acceso, e riprende a
@@ -47,6 +48,8 @@ ancora farlo». Stile approvato dall'utente su un'anteprima («Sì, così»).
 - [x] Con la penna alzata si tagliano solo le lettere; i tratti a piedi
       restano come prima. Con la bici a mano i trattini scuri restano sopra.
 - [x] La mappa riceve il taglio a passi di 5 m, non a ogni posizione.
+- [x] Misurato il peso del lampeggio (chiesto dal coordinatore): 1,43
+      ridisegni al secondo, 0 in «Pocket»; numeri in ADR-0186.
 - [x] Fuori dalla corsa (scelta, «Explore», fine corsa) la mappa è come
       prima.
 - [x] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
@@ -82,4 +85,12 @@ docs/STATUS.md
 
 ## Esito
 
-*(a fine task)*
+Il fatto è la linea gialla piena, il da fare un tratteggio giallo che
+lampeggia a scatti, fermo in «Pocket» e con «Riduci movimento». La prima
+versione cambiava l'opacità con `setPaintProperty` e la mappa si
+ridisegnava 28,6 volte al secondo: misurato nella pagina vera, ora la
+battuta è uno stato della linea, 1,43 ridisegni al secondo. Con lo stesso
+task il commento di `accent` in `tokens.ts` nomina l'eccezione di
+ADR-0183, come chiedeva quell'ADR. Da provare correndo sull'iPhone; esce
+con la prossima pubblicazione. Seguito da chiedere: fermare il lampeggio
+anche sulla pagina «Data».

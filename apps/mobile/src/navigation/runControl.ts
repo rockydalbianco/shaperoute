@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 
+import { spokenWords } from "../voice/voiceChoice";
 import { openPause, type TrackFix } from "./trackRecorder";
 import type { RunRecorder } from "./trackStore";
 
@@ -157,7 +158,7 @@ function watchStanding(): void {
   }
   session.recorder.pause(now, true);
   set({ phase: "paused", auto: true });
-  session.say("Paused.");
+  session.say(spokenWords().paused);
   session.onChange();
 }
 
@@ -224,7 +225,7 @@ export function controlRun(
       // Moving again ended the pause that standing still began.
       if (state.phase === "paused" && state.auto && !openPause(recorder.track())) {
         set({ phase: "running", auto: false });
-        say("Resumed.");
+        say(spokenWords().resumed);
       }
     },
     liftPen(atMs) {

@@ -1,6 +1,6 @@
 # TASK-209 — La voce della corsa: lingua e voce a scelta
 
-**Stato**: Todo
+**Stato**: In lavorazione (sessione «Grafica registrazione corsa», 2026-10-03)
 **Fase**: 4 · **Branch**: `feat/TASK-209-run-voice-language`
 
 ## Obiettivo
@@ -125,8 +125,30 @@ dell'app», in «Settings», le stesse cinque lingue).
 ## File toccati
 
 ```
-(li fissa la sessione che prende il task, prima di cominciare)
+apps/mobile/src/voice/                      (nuova: frasi per lingua, scelta, pagina)
+apps/mobile/src/navigation/phrases.ts       (le frasi dette escono: restano le scritte)
+apps/mobile/src/navigation/phrases.test.ts
+apps/mobile/src/navigation/navigator.ts     (solo la lingua passata)
+apps/mobile/src/navigation/penUp.ts         (solo la lingua passata)
+apps/mobile/src/navigation/penUp.test.ts
+apps/mobile/src/navigation/freeRun.ts       (solo la lingua passata; spokenTime esce)
+apps/mobile/src/navigation/freeRun.test.ts
+apps/mobile/src/navigation/runControl.ts    («Paused.»/«Resumed.» nella lingua della voce)
+apps/mobile/src/navigation/useNavigation.ts (lingua e voce a Speech.speak)
+apps/mobile/src/navigation/useNavigation.test.ts
+apps/mobile/src/navigation/useFreeRun.ts    (solo la lingua passata)
+apps/mobile/src/navigation/useFreeRun.test.ts
+apps/mobile/src/screens/RunDashboard.tsx    (la riga della voce in «Data»)
+apps/mobile/src/screens/RunDashboard.test.tsx
+docs/UI.md
+docs/DECISIONS.md                           (ADR-0171)
+docs/STATUS.md
+docs/tasks/TASK-209.md
 ```
+
+`src/i18n/` è di TASK-210: qui si importa e basta (`languages.ts`,
+`language.ts`). Finché TASK-210 non è in `main`, il branch non compila da
+solo in CI: la PR si apre dopo il merge di TASK-210.
 
 ## Fuori scope
 

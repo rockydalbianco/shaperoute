@@ -3,6 +3,7 @@ import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useState } from "react";
 
+import { loadVoices, speaking } from "../voice/voiceChoice";
 import { FREE_ROUTE, kmAnnouncement, wholeKm } from "./freeRun";
 import { controlRun, type RunSession } from "./runControl";
 import { emptyTrack, type Track } from "./trackRecorder";
@@ -33,6 +34,8 @@ export function useFreeRun(active: boolean): FreeRunState {
     let subscription: Location.LocationSubscription | null = null;
     let run: RunSession | null = null;
     let stopRecording: (() => void) | null = null;
+    // The phone's voices, before the first kilometre (TASK-209).
+    void loadVoices();
     void (async () => {
       const permission = await Location.requestForegroundPermissionsAsync();
       if (stopped) {
@@ -83,7 +86,12 @@ export function useFreeRun(active: boolean): FreeRunState {
           const km = wholeKm(track);
           if (km > saidKm) {
             saidKm = km;
-            play([{ say: kmAnnouncement(km, track), vibrate: false }]);
+            play([
+              {
+                say: kmAnnouncement(km, track, speaking().language),
+                vibrate: false,
+              },
+            ]);
           }
           setState({ status: "running", track, position: fix });
         },

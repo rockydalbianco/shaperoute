@@ -1,9 +1,10 @@
 # TASK-211 — Seguire con richiesta
 
-**Stato**: Todo — task file scritto con le scelte dell'utente (2026-10-03)
+**Stato**: In lavorazione — parte A (l'API) fatta il 2026-10-03; parte B
+da fare, dopo la conferma delle proposte da parte dell'utente
 **Fase**: 4 · **Branch**: `feat/TASK-211-follow-api` (parte A),
 `feat/TASK-211-follow-app` (parte B)
-**Dipende da**: TASK-116 (fatto) · **ADR**: dal coordinatore
+**Dipende da**: TASK-116 (fatto) · **ADR**: ADR-0173
 
 ## Obiettivo
 
@@ -70,14 +71,15 @@ persone (TASK-208), e dà finalmente un ingresso al profilo di un altro.
 
 ## Criteri di accettazione
 
-- [ ] Una richiesta non accettata non conta come seguire (test).
-- [ ] Non si segue sé stessi; una seconda richiesta non crea una seconda
+- [x] Una richiesta non accettata non conta come seguire (test).
+- [x] Non si segue sé stessi; una seconda richiesta non crea una seconda
       riga (test).
-- [ ] Cancellato un account, sparisce da ogni elenco (test).
-- [ ] La ricerca non restituisce mai email né altro oltre a nome, foto e
+- [x] Cancellato un account, sparisce da ogni elenco (test).
+- [x] La ricerca non restituisce mai email né altro oltre a nome, foto e
       `public_id` (test).
-- [ ] Rifiutare non lascia traccia visibile a chi ha chiesto (test).
-- [ ] Test verdi dell'API e dell'app.
+- [x] Rifiutare non lascia traccia visibile a chi ha chiesto (test).
+- [ ] Test verdi dell'API e dell'app (l'API sì, parte A; l'app è la
+      parte B).
 - [ ] Prova sull'iPhone con due account, dopo l'aggiornamento del server,
       con l'ok dell'utente.
 
@@ -116,4 +118,55 @@ docs/UI.md, docs/DECISIONS.md, docs/STATUS.md
 
 ## Esito
 
-*(si compila a fine task)*
+### Parte A — l'API (2026-10-03, ADR-0173)
+
+**Cosa funziona** (`follows.py`, migrazione `0011_follows.sql`: il numero
+è il primo libero in `main` al merge, va riguardato prima):
+- **`follows`**: una riga per coppia in un verso, `pending` o `accepted`,
+  `asked_at`, `accepted_at`; un vincolo vieta sé stessi; `ON DELETE
+  CASCADE` sui due account.
+- **`GET /users?q=`**: almeno 2 caratteri (meno: `422` «Type at least 2
+  characters of a name.»), cercati dentro il nome senza badare alle
+  maiuscole (`_` e `%` valgono come lettere), al più 20, mai chi cerca;
+  prima i nomi che cominciano così, poi i più corti, poi l'alfabeto. Solo
+  `public_id`, `username`, `photo`.
+- **La foto negli elenchi** è a 128 px (metà di quella del profilo), fatta
+  dall'API a ogni lettura dal JPEG tenuto, senza EXIF.
+- **Le azioni**: `POST`/`DELETE /users/{public_id}/follow` (chiedere;
+  ritirare o smettere), `POST /me/follow-requests/{public_id}/accept` e
+  `/decline`, `DELETE /me/followers/{public_id}`. Rifatte non cambiano
+  niente (`204`, la richiesta resta una con la sua data); accettare senza
+  richiesta è `404` «No follow request from this account.»; sé stessi
+  `422` «You cannot follow yourself.»; un profilo che non c'è `404`.
+- **Rifiutare cancella la riga**: chi aveva chiesto rivede il profilo come
+  prima di chiedere (test: la risposta è identica) e può richiedere.
+- **Gli elenchi** `GET /me/follow-requests`, `/me/followers`,
+  `/me/following`: a pagine (`limit` 1–50, `cursor`, `next`, `total`), dal
+  più recente. Solo i propri.
+- **`PublicProfile`** ha `followers`, `following` (solo accettate) e
+  `follow` (`none`, `requested`, `following`; il proprio: `none`).
+- **Per TASK-208**: `follows_sql(follower, followed)`, una condizione SQL
+  da mettere nelle query dei disegni, e `Follows.follows(a, b)`.
+- **Contratto**: `shared-types` con `Person`, `PeopleFound`, `PeoplePage`,
+  `Follow`, `FollowState`/`FOLLOW_STATES` e le tre costanti; i campi nuovi
+  di `PublicProfile` facoltativi (un server di prima non li ha). Fixture
+  `people.json`, `people-page.json`, `follow.json`; `public-profile.json`
+  con i tre campi.
+
+**Risposte e scelte** (in ADR-0173): il profilo di un altro si apre
+**dalla ricerca** e dagli elenchi (la domanda aperta di TASK-116, risposta
+del coordinatore); gli elenchi di un altro non si leggono; bloccare
+(TASK-121) dovrà togliere le righe nei due versi, fermare le richieste e
+nascondere i bloccati da ricerca ed elenchi, e tocca `follows.py`.
+
+**Un file fuori dall'elenco**: `services/api/tests/test_profiles.py`, tre
+righe: il profilo atteso ha i tre campi nuovi (il test confronta la
+risposta intera).
+
+**Da dire all'utente**: la ricerca mostra il nome di ogni iscritto a chi ha
+un account; con due lettere alla volta se ne fa l'elenco. Il cancello di
+`ROADMAP.md` (TASK-121 e TASK-122 prima di invitare chi non si conosce)
+resta.
+
+**Non fatto**: niente sul server né sul telefono (servono la parte B,
+l'aggiornamento del server e l'ok dell'utente).

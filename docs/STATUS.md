@@ -186,6 +186,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «quasi» a «sì», cuori e stelle come prima, 100–660 m a mano. Poi **B**
   (`on_foot` nel risultato e nel contratto, la voce) e **C** (l'app). Da
   dove riprendere: `tasks/TASK-206.md`.
+- **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
+  2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
+  nome). **Parte A, l'API**, fatta il 2026-10-03 (migrazione `0011`, il
+  numero si riguarda al merge): `GET /users?q=` cerca per nome (almeno 2
+  caratteri, al più 20, mai sé stessi: nome, foto a 128 px, `public_id`,
+  mai l'email); chiedere, ritirare, smettere, accettare, rifiutare,
+  togliere; gli elenchi `/me/followers`, `/me/following`,
+  `/me/follow-requests` a pagine; `PublicProfile` con `followers`,
+  `following` e `follow`; `follows_sql` per i disegni «Followers» di
+  TASK-208. Rifiutare cancella la richiesta: chi l'ha mandata non lo sa.
+  **Il profilo di un altro si apre dalla ricerca** e dagli elenchi
+  (risposta alla domanda aperta di TASK-116). Bloccare (TASK-121) dovrà
+  toccare `follows.py`. **Da dire all'utente**: la ricerca mostra il nome
+  di ogni iscritto a chi ha un account. Non sul server. Poi **B** (l'app),
+  dopo che l'utente ha confermato le proposte del task file; e TASK-208 A.
+  Da dove riprendere: `tasks/TASK-211.md`.
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).

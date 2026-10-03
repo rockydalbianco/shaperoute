@@ -7850,8 +7850,9 @@ TASK-116). Bloccare e segnalare sono di TASK-121, che non è ancora fatto.
    volta. Ogni risultato è solo `public_id`, `username` e `photo`: niente
    email, bio o numeri (un test cerca l'email nel testo).
 7. **La foto negli elenchi è piccola**: 128 px di lato invece dei 256 del
-   profilo, rifatta dall'API a ogni lettura (circa 5 KB invece di 20: venti
-   risultati restano leggeri mentre si scrive). Una colonna in più in
+   profilo, rifatta dall'API a ogni lettura (circa un quinto dei byte: 7 KB
+   invece di 36 per una foto piena di dettagli; venti risultati restano
+   leggeri mentre si scrive). Una colonna in più in
    `profile_photos` non serve finché costa così poco.
 8. **Gli elenchi sono solo propri**: `GET /me/followers`, `/me/following`
    e `/me/follow-requests`, a pagine come i disegni di un profilo (`limit`
@@ -7875,8 +7876,8 @@ non si conoscono, TASK-121 e TASK-122 fatti.
 **Scartate**: seguire libero, come Strava di base (non è la scelta
 dell'utente); uno stato `declined` nella riga (direbbe il rifiuto, o
 andrebbe nascosto a mano in ogni risposta); il `public_id` come chiave
-della tabella (cambia mai, ma gli altri riferimenti all'account usano
-`users.id`); gli elenchi di un altro (`GET /users/{id}/followers`: dice chi
+della tabella (le altre tabelle di un account usano `users.id`, che resta
+dentro l'API); gli elenchi di un altro (`GET /users/{id}/followers`: dice chi
 frequenta chi, non è chiesto); la foto a 256 px negli elenchi (sopra);
 `GET /users/{id}/photo` a parte (una richiesta per ogni riga, e l'immagine
 vorrebbe il token in un'intestazione: ADR-0128 lo lasciava al feed); un

@@ -1,10 +1,9 @@
 # TASK-214 — Il motore dei percorsi sul telefono
 
-**Stato**: Todo: c'è solo il task file. Il codice parte dopo le sei scelte
-qui sotto.
-**Fase**: 4 · **Branch**: `docs/TASK-214-on-phone-engine` (questo file); il
-codice in `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177, da
-scrivere con la parte A
+**Stato**: In corso. Le sei scelte hanno la risposta dell'utente; la parte A
+(API) è in `feat/TASK-214-phone-engine-api`, poi B, C e D.
+**Fase**: 4 · **Branch**: il task file con la #258; il codice in
+`feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 
 ## Obiettivo
 
@@ -75,6 +74,9 @@ pacchetto npm `pyodide`, solo per lo sviluppo.
 `pyodide` npm diventa una dipendenza di sviluppo, solo per lo script di
 confronto (scelta 6).
 
+**Risposta dell'utente** (2026-10-03): «si ok». Pyodide entra, dentro l'app
+e a versione fissa.
+
 ### 2. App Store
 
 Cosa dicono le regole di Apple:
@@ -100,6 +102,8 @@ pacchetti, il motore) e si aggiorna con l'app. Si scaricano solo dati,
 cioè le zone. Per questo le zone non viaggiano come pickle: un pickle, letto,
 può eseguire codice (vedi la scelta 6).
 
+**Risposta dell'utente** (2026-10-03): «va bene».
+
 ### 3. Memoria e batteria
 
 Il calcolo usa 225–270 MB nel browser del Mac; sull'iPhone è da misurare.
@@ -112,6 +116,8 @@ il download delle zone.
 grandezza, da fissare con la misura sull'iPhone. Se la WebView muore, la
 stessa richiesta va al server, senza errore per chi usa l'app. La misura
 va fatta su un iPhone vero e, se ce n'è uno, anche su un iPhone vecchio.
+
+**Risposta dell'utente** (2026-10-03): «va bene grazie».
 
 ### 4. Dimensione dell'app e delle zone
 
@@ -130,6 +136,26 @@ va fatta su un iPhone vero e, se ce n'è uno, anche su un iPhone vecchio.
 - al massimo 200 MB in tutto: quando si supera, si cancella la zona usata
   meno di recente.
 
+**Risposta dell'utente** (2026-10-03):
+
+- **il limite è 2 GB**, non 200 MB: «tieni il limite più alto fai 2
+  gigabite»;
+- **le cose più usate si scaricano il prima possibile**, «mentre si scarica
+  l'app», perché l'app vada fluida. L'ordine:
+  1. appena si apre l'app, la zona intorno, per la corsa e per la bici, e
+     gli esempi di «Explore» della propria città (circa 20–30 MB);
+  2. poi, piano piano, le zone delle città vicine e di quelle più cercate,
+     fino a 2 GB;
+- **anche il punto 2 con i dati mobili**, non solo con il Wi-Fi: «va bene
+  anche con i giga». L'agente aveva consigliato il solo Wi-Fi: fino a 2 GB
+  possono finire il traffico di un mese.
+
+In Expo Go l'app non fa niente prima di essere aperta. Con una build
+propria sull'App Store (TASK-152) c'è Background Assets di Apple, che
+scarica durante l'installazione, quando l'app non sa ancora dove si trova:
+lì solo le zone delle città più cercate. Non è stato chiesto se rispettare
+la «Modalità dati ridotti» di iOS: da chiedere con la parte B.
+
 ### 5. Cosa resta al server
 
 - **Restano al server**:
@@ -146,6 +172,8 @@ va fatta su un iPhone vero e, se ce n'è uno, anche su un iPhone vecchio.
 **Proposta**: il telefono è una scelta in più, e il server resta sempre la
 riserva. Con la zona già salvata calcola prima il telefono. Senza zona, o
 se il telefono non riesce, calcola il server come oggi.
+
+**Risposta dell'utente** (2026-10-03): «ottimo grazie».
 
 ### 6. Lo stesso motore
 
@@ -174,6 +202,11 @@ se il telefono non riesce, calcola il server come oggi.
 - dove le impronte differiscono, si fissano le versioni sul server o si
   annota la differenza, come in TASK-203.
 
+**Risposta dell'utente** (2026-10-03): «va bene grazie», alla proposta
+precisata così: ogni percorso si salva com'è stato calcolato, uno script
+confronta e annota, e **le versioni sul server non si fissano**: farlo
+vorrebbe dire aggiornare il server e ridisegnare gli esempi.
+
 ## Le parti, dopo le scelte
 
 **A — API** (prima PR):
@@ -181,9 +214,9 @@ se il telefono non riesce, calcola il server come oggi.
 - il formato neutro delle zone e il suo test di andata e ritorno;
 - l'endpoint che dà la zona che copre un punto, per rete (`foot`, `bike`),
   con una versione per non riscaricarla. Sta in un file nuovo con
-  `install_…(app)`, come `install_drawings`, e in `app.py` cambia una riga
-  sola. `app.py` oggi è anche di TASK-206 B, 211 A e 120: si aspetta il
-  turno del coordinatore;
+  `install_phone_zones(app, cache_dir)`. Si installa in `__main__.py`, non
+  in `app.py`: lì c'è la cartella delle zone, che `create_app` non riceve
+  (detto al coordinatore);
 - ADR-0177.
 
 **B — App**:
@@ -229,8 +262,10 @@ docs/tasks/TASK-214.md, docs/DECISIONS.md (ADR-0177), docs/STATUS.md
 docs/ARCHITECTURE.md, docs/API.md, docs/UI.md
 services/api/shaperoute_api/on_phone.py            (nuovo)
 services/api/shaperoute_api/phone_zones.py         (nuovo)
-services/api/shaperoute_api/app.py                 (una riga)
-services/api/tests/test_on_phone.py, test_phone_zones.py   (nuovi)
+services/api/shaperoute_api/phone_zone_api.py      (nuovo)
+services/api/shaperoute_api/__main__.py            (tre righe, al posto di app.py)
+services/api/tests/test_on_phone.py, test_phone_zones.py,
+  test_phone_zone_api.py                           (nuovi)
 apps/mobile/src/engine/                            (nuova)
 apps/mobile/assets/pyodide/                        (nuova)
 apps/mobile/metro.config.js                        (.wasm e .zip come asset)
@@ -251,4 +286,34 @@ tools/phone_engine/                                (nuova: build e confronto)
 
 ## Esito
 
-*(a fine task)*
+**Parte A, l'API** (`feat/TASK-214-phone-engine-api`, ADR-0177):
+
+- **Il formato delle zone** è in `phone_zones.py`: JSON con gzip, nodi e
+  archi con tutti gli attributi, e i nomi delle strade. Le geometrie sono
+  liste di coordinate e `np.float64` torna `np.float64`. Gli archi sono
+  scritti in un ordine che ridà a ogni nodo i suoi successori e i suoi
+  predecessori nello stesso ordine (ordinamento topologico dei vincoli).
+- **La zona di Trento** (`foot`, 32 728 nodi, 85 988 archi) torna
+  identica: ordine, valori e tipi. Pesa 7,0 MB, contro i 7,9 del pickle
+  con gzip. In CPython si scrive in 2,7 s e si legge in 1,4.
+- **`GET /phone-zones/{network}?lat=&lon=`** (`phone_zone_api.py`) dà la
+  zona in cache che contiene 3 km intorno al punto. Il file si scrive la
+  prima volta accanto alla zona, e di nuovo quando la zona è più recente.
+  Ha un ETag, e con `If-None-Match` risponde `304`. Senza zona risponde
+  `404`; non scarica mai da Overpass.
+- **`on_phone.py`** fa sul telefono il job di `/route-jobs`: `RouteJobs`
+  con un esecutore che lavora subito, `plan_on_phone` (le partenze vicine
+  una dopo l'altra) e le zone del telefono (`PhoneZones` dentro
+  `ZoneGraphs`). Restituisce il JSON di `GET /route-jobs/{job_id}`.
+- **Test**:
+  - sulla zona di Levico, la stessa richiesta dà dal telefono e da
+    `/route-jobs` lo stesso `result`;
+  - senza zona la risposta è `map_data_unavailable`, in canoa
+    `invalid_request`;
+  - `to_request` è uguale a quello dell'API.
+
+  28 test nuovi.
+- **In Pyodide**, in Node sul Mac, il codice vero sulla zona di Trento
+  disegna il cuore da 5 km in 7,0 s la prima volta e in 5,3 s la seconda;
+  CPython ci mette 3,5 s. Il JSON è uguale a quello di CPython, salvo 18
+  angoli delle indicazioni che differiscono meno di 1e-9.

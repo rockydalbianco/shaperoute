@@ -1408,6 +1408,28 @@ posto con i suoi indirizzi).
   mandate restano su Strava.
 - Ognuno manda solo le sue corse: la chiave di un altro dà `404`.
 
+### Zone per il telefono (TASK-214, ADR-0177)
+
+La zona in cache intorno a un punto, perché il telefono disegni da sé. Il
+codice è in `phone_zone_api.py` e `phone_zones.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /phone-zones/{network}?lat=&lon=` | la zona della rete `foot` o `bike` che contiene 3 km intorno al punto | `200` `application/gzip`, il file della zona; `304` con `If-None-Match` uguale all'`ETag`; `404 http_error` senza zona o con un'altra rete; `422 invalid_request` con `lat` o `lon` fuori dai limiti |
+
+- **Il file** si chiama come la zona, `foot_<s>_<w>_<n>_<e>.zone.json.gz`
+  (`Content-Disposition`). È JSON con gzip: `format` `"sgrava-zone"`,
+  `version` `1`, `network`, `bbox`, gli attributi del grafo, i nodi, gli
+  archi e i nomi delle strade (`names`). Il telefono lo tiene così com'è
+  arriva.
+- **L'`ETag`** cambia quando la zona sul server cambia; il telefono lo
+  rimanda in `If-None-Match` e, se ce l'ha già, riceve `304` senza corpo.
+- **Nessun download**: senza una zona in cache intorno al punto la
+  risposta è `404`, e il percorso lo disegna il server, che scarica la
+  zona alla prima richiesta lì.
+- Come per gli altri endpoint vale la chiave `X-API-Key`, se il server ne
+  ha una (ADR-0076).
+
 ## Eventi delle ricerche (TASK-130, ADR-0101)
 
 Ogni ricerca e ogni segnale d'uso lascia un evento in `data/insights/`

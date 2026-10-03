@@ -191,16 +191,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   la corsa e la canoa, facoltativo in `shared-types`); i preferiti lo
   tengono (migrazione `0012`, approvata dal coordinatore). Il
   server non è toccato (con l'ok dell'utente: zona della bici di Trento
-  rifatta, `draw_examples`, la migrazione). **Parte C, l'app** (in corso,
-  branch `feat/TASK-206-bike-on-foot-app`; testi e stile scelti
-  dall'utente il 2026-10-03): fatti la mappa (linea gialla intera, trattini
+  rifatta, `draw_examples`, la migrazione). **Parte C, l'app** (fatta,
+  branch `feat/TASK-206-bike-on-foot-app`, in PR; testi e stile scelti
+  dall'utente il 2026-10-03): la mappa (linea gialla intera, trattini
   scuri sopra i tratti a mano, token `onFoot`), la riga della scheda
   («Includes 920 m walking the bike.» / «Di cui 920 m con la bici a
-  mano.») e i preferiti che tengono i tratti; **la voce** («In 50 metres,
-  get off and walk the bike for 200 metres.» / «Back on the bike.») dopo
-  la #259 (TASK-209, le tabelle della voce). L'app che manda `on_foot` nei
-  preferiti va pubblicata dopo il server con la parte B. Da dove
-  riprendere: `tasks/TASK-206.md`, «Piano della parte C».
+  mano.»), la voce («Tra 50 metri, scendi e porta la bici a mano per 200
+  metri.» / «Risali in bici.», nessuna pausa) e i preferiti che tengono i
+  tratti. Non provata sull'iPhone; l'app va pubblicata dopo il server con
+  la parte B (ok dell'utente). Da dove riprendere: `tasks/TASK-206.md`,
+  «Esito», «Parte C».
 - **TASK-216 — La navigazione in bici** (Todo, scelte dell'utente del
   2026-10-03 chieste da TASK-206 C): velocità in km/h sulla schermata e
   nella voce dei km, avvisi di svolta più in anticipo, e con la penna

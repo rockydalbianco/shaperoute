@@ -2,8 +2,8 @@
 
 **Stato**: In corso (parte A, il motore, in `main` dalla PR #249, con i
 campioni di Trento giudicati dall'utente; parte B, l'API e il contratto,
-in `main` dalla PR #263; parte C, l'app, in corso sul branch
-`feat/TASK-206-bike-on-foot-app`)
+in `main` dalla PR #263; parte C, l'app, fatta sul branch
+`feat/TASK-206-bike-on-foot-app`, in PR)
 **Fase**: 4 · **Branch**: `feat/TASK-206-bike-shapes` (parte A)
 **Dipende da**: TASK-190 (la bici: motore, API e app in `main`)
 
@@ -166,11 +166,8 @@ pausa e si aggiornerà lei); `src/route/warnings.ts` è libero (non è nel
 diff della #255); `useNavigation.ts` e `src/voice/` dopo il merge della
 #259 («#259 dentro»).
 
-**Avanzamento** (2026-10-03): fatti i punti 1, 2, 3 e 5 (la mappa, la
-scheda, i preferiti) e la logica della voce del punto 4
-(`onFootVoice.ts`, pura, con i suoi test, non ancora collegata); manca,
-dopo la #259, collegarla in `useNavigation.ts` e scrivere le frasi nelle
-cinque tabelle di `src/voice/`.
+**Avanzamento** (2026-10-03): fatti tutti i punti; la voce collegata
+dopo il merge della #259 («Esito», «Parte C»).
 
 ### Le domande della parte C
 
@@ -223,9 +220,10 @@ Una per volta, ognuna con una proposta; le risposte qui sotto.
 - [x] Campioni in bici a Trento rifatti con la parte A, giudicati
       dall'utente (2026-10-03): i cerchi da «quasi» a «sì», cuori e stelle
       come prima. *(Levico e Padova quando Overpass riapre.)*
-- [ ] Nell'app i tratti a mano si vedono e la voce li annuncia (parte C).
-- [ ] Test deterministici per motore, API e app. *(Motore e API: parte
-      B; l'app con la parte C.)*
+- [x] Nell'app i tratti a mano si vedono e la voce li annuncia (parte C,
+      nei test; sull'iPhone dopo il server).
+- [x] Test deterministici per motore, API e app. *(Motore e API: parte
+      B; l'app: parte C.)*
 - [x] `on_foot` nel risultato e nel contratto, solo come aggiunta: vuoto
       per la corsa e la canoa, un'app vecchia lo ignora (parte B).
 
@@ -282,8 +280,8 @@ docs/STATUS.md
 docs/tasks/TASK-206.md
 ```
 
-**Parte C** (previsti, dal piano; quelli di altri con l'ok del
-coordinatore, qui sopra nel piano):
+**Parte C** (quelli di altri con l'ok del coordinatore, qui sopra nel
+piano):
 
 ```
 apps/mobile/src/route/onFoot.ts                          (nuovo)
@@ -301,9 +299,10 @@ apps/mobile/App.tsx
 apps/mobile/__tests__/AppBikeOnFoot.test.tsx             (nuovo)
 apps/mobile/src/navigation/onFootVoice.ts                (nuovo)
 apps/mobile/src/navigation/onFootVoice.test.ts           (nuovo)
+apps/mobile/src/navigation/onFootRun.test.ts             (nuovo)
 apps/mobile/src/navigation/useNavigation.ts
-apps/mobile/src/navigation/useNavigation.test.ts
 apps/mobile/src/voice/{phrasebook,en,it,de,es,fr}.ts
+apps/mobile/src/voice/words.test.ts
 apps/mobile/src/i18n/{it,de,es,fr}.ts                    (solo aggiunte)
 apps/mobile/src/api/favorites.ts
 apps/mobile/src/api/favorites.test.ts
@@ -489,3 +488,39 @@ Fatta come «Cosa fare» 7–9, più i preferiti (ADR-0167, «Aggiornamento
   (`test_kept_per_graph.py`) e della canoa non cambiano: `on_foot` non
   tocca i punti.
 
+### Parte C — 2026-10-03
+
+Fatta come il «Piano della parte C», con i testi e lo stile scelti
+dall'utente (ADR-0167, «Aggiornamento (parte C)»), sul branch
+`feat/TASK-206-bike-on-foot-app`.
+
+- **La mappa**: la linea gialla intera, trattini scuri sopra i tratti a
+  mano (token `onFoot`, livello `on-foot` sopra `route`, sotto `stops` e
+  `track`), mentre si sceglie, durante la corsa e su un preferito aperto;
+  con la penna alzata in bici solo sulle lettere (`onFootLines`). Le
+  alternative grigie e la fine della corsa senza.
+- **La scheda**: l'avviso del motore detto «Includes 920 m walking the
+  bike.» / «Di cui 920 m con la bici a mano.» (regola in `warnings.ts`,
+  `t()`, tono `info`); `RoutePanel.tsx` non è toccato.
+- **La voce**: «In 50 metres, get off and walk the bike for 200 metres.» /
+  «Tra 50 metri, scendi e porta la bici a mano per 200 metri.» e «Back on
+  the bike.» / «Risali in bici.» (`walkTheBike`, `backOnTheBike` nel
+  `Phrasebook`; tedesco, spagnolo e francese da confermare), da
+  `onFootVoice.ts` chiamato in `useNavigation.ts` dopo le svolte; nessuna
+  pausa. Soglie in ADR-0167.
+- **I preferiti**: tengono e ridanno `on_foot`; con un'API che lo
+  rifiuta, di nuovo senza (ancora in bici), poi come prima di TASK-199.
+- **I test**, sul Mac: app 1.502 verdi (47 nuovi: `onFoot.test.ts`,
+  `onFootVoice.test.ts`, `onFootRun.test.ts` con una pedalata simulata,
+  `favoriteOnFoot.test.ts`, `AppBikeOnFoot.test.tsx` col percorso in bici
+  di `shared-types`, e aggiunte a mappa, avvisi, preferiti e voce);
+  `typecheck`, `lint`, `format:check` puliti.
+- **Non verificato**: sull'iPhone. Il server non ha la parte B (niente
+  `on_foot` nelle risposte, e la zona della bici di Trento senza tratti a
+  mano): finché non si aggiorna con l'ok dell'utente («Note per il
+  deploy») l'app si comporta come prima. L'app va pubblicata dopo il
+  server.
+- **Scelte dell'utente per altri task**: «Start» in bici e la penna
+  alzata in bici sono TASK-216 (`tasks/TASK-216.md`); il confronto di ogni
+  km col precedente, chiesto durante questo task, è TASK-217
+  (`tasks/TASK-217.md`), anche in bici ogni 10 km.

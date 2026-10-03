@@ -399,6 +399,7 @@ function Sgrava() {
     {
       walks: followedWalks ?? undefined,
       word: exploreRun === null ? chosen?.word : (exploreRun.word ?? null),
+      onFoot: followedOnFoot ?? undefined,
     },
   );
   const finishing = screen === "finish" && finished !== null;

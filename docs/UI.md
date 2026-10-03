@@ -1272,6 +1272,19 @@ TASK-164, di cui tiene i numeri.
     ogni lettera non si unisce all'ultima della lettera prima.
   - Solo nell'app: con il GPX sull'orologio la pausa si mette a mano, ai
     waypoint «Pause» e «Resume» (TASK-197, `GPX.md`).
+- **La bici a mano** (TASK-206, ADR-0167; frasi scelte dall'utente il
+  2026-10-03). Su un percorso in bici con tratti a mano (`on_foot`) la
+  voce, con una vibrazione, dice il tratto **50 m prima** (`ANNOUNCE_M`,
+  come una svolta): «In 50 metres, get off and walk the bike for 200
+  metres.» · «Tra 50 metri, scendi e porta la bici a mano per 200 metri.»,
+  con i metri che mancano e la lunghezza del tratto arrotondati a 10; e
+  alla sua fine «Back on the bike.» · «Risali in bici.», tranne quando il
+  tratto finisce all'arrivo. Se la prima posizione è già sul tratto, la
+  frase senza «Tra … metri», con i metri che restano. Due tratti a meno di
+  30 m si dicono come uno; sotto i 25 m un tratto non si dice (sulla mappa
+  c'è). Una volta sola ciascuna, dopo le svolte della stessa posizione. La
+  registrazione **non** va in pausa: il tratto a mano è disegno, e conta
+  nel tempo e nel punteggio. `src/navigation/onFootVoice.ts`.
 
 **L'aspetto della corsa** (TASK-204, ADR-0163; chiesto dall'utente il
 2026-10-03: «migliora la parte grafica», e confermato lo stesso giorno,
@@ -1374,7 +1387,8 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   partenza, le vie senza nome per tipo (mai un nome inventato; i nomi
   delle vie mai tradotti), «beside», fuori e di nuovo sul percorso,
   l'arrivo, la pausa da fermi e la ripresa, la penna alzata, ogni km con
-  tempo e passo. Il numero uno detto a parole dove si accorda
+  tempo e passo, la bici a mano (TASK-206: tedesco, spagnolo e francese da
+  confermare). Il numero uno detto a parole dove si accorda
   («Un chilometro», «un'ora», «eine Minute»). Le frasi sono in
   `src/voice/`, una tabella per lingua; quelle in inglese sono le stesse di
   prima, parola per parola.
@@ -1400,6 +1414,7 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
 | Penna alzata | «Lettera finita. Cammina fino alla A: il disegno è in pausa.» · «Giù la penna: disegna la A.» |
 | Km | «Un chilometro. Tempo: 5 minuti e 42 secondi. Passo medio: 5 minuti e 42 secondi al chilometro.» |
 | Dopo 5 km | «5 chilometri. Tempo: 25 minuti. Passo medio: 5 minuti al chilometro. Daje, avanti tutta!» |
+| Bici a mano (TASK-206) | «Tra 50 metri, scendi e porta la bici a mano per 200 metri.» · «Risali in bici.» |
 
 **Modalità tasca** (TASK-070, ADR-0066). Accanto a «Pause», «Pocket»: lo
 schermo diventa nero, la luminosità va al minimo e resta acceso, e i tocchi

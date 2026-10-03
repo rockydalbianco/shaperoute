@@ -1,13 +1,16 @@
-import type { Direction, LatLon, Walk } from "@shaperoute/shared-types";
+import type { Direction, LatLon, Stretch, Walk } from "@shaperoute/shared-types";
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useRef, useState } from "react";
 import { Vibration } from "react-native";
 
+import { onFootOf } from "../route/onFoot";
 import { walksOf } from "../route/walks";
 import { loadVoices, speaking } from "../voice/voiceChoice";
+import { wordsOf } from "../voice/words";
 import { kmAnnouncement, wholeKm } from "./freeRun";
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
+import { moveOnFoot, startOnFoot } from "./onFootVoice";
 import { movePen, startPen } from "./penUp";
 import { controlRun, runControl, type RunSession } from "./runControl";
 import { emptyTrack, type Track } from "./trackRecorder";
@@ -52,6 +55,8 @@ export function play(cues: Cue[]): void {
  * are runControl's, and each kilometre is said as in a run without a route
  * (TASK-169). Along a word with the pen up, the recording pauses on each
  * walk and goes on at the next letter, and the voice says so (TASK-198).
+ * Along a bike route the voice says each stretch with the bike on foot
+ * ahead, and its end, without pausing the recording (TASK-206).
  * Each fix is said in the voice's language of that moment (TASK-209), so a
  * change on «Data» is heard at once. The position never leaves the phone.
  */
@@ -61,9 +66,14 @@ export function useNavigation(
   active: boolean,
   /** The route's similarity to its shape, kept with the track for the score. */
   similarity?: number,
-  /** The route's walks and its word, for a word with the pen up (TASK-198):
-   * none for any other route, which is followed as before. */
-  { walks, word }: { walks?: Walk[]; word?: string | null } = {},
+  /** The route's walks and its word, for a word with the pen up (TASK-198),
+   * and its stretches with the bike on foot (TASK-206): none for any other
+   * route, which is followed as before. */
+  {
+    walks,
+    word,
+    onFoot,
+  }: { walks?: Walk[]; word?: string | null; onFoot?: Stretch[] } = {},
 ): NavigationState {
   const [state, setState] = useState<NavigationState>({ status: "starting" });
   const navigation = useRef<Navigation | null>(null);
@@ -92,6 +102,7 @@ export function useNavigation(
       navigation.current = started.navigation;
       const walked = walksOf(points, walks);
       let pen = startPen(started.navigation.along, walked, word);
+      let bike = startOnFoot(started.navigation.along, onFootOf(points, onFoot));
       // A route stopped lately goes on with its track (trackStore).
       const recorder = startRun(points, Date.now(), similarity, walked);
       stopRecording = recorder.stop;
@@ -173,6 +184,15 @@ export function useNavigation(
           // The pen first: what the runner does next depends on it.
           play(drawing.cues);
           play(next.cues);
+          // After the turn, which may be the way onto the stretch.
+          const walking = moveOnFoot(
+            bike,
+            next.navigation.alongM,
+            wordsOf(language),
+            coords.accuracy,
+          );
+          bike = walking.onFoot;
+          play(walking.cues);
           // After the turn, so a kilometre never delays one.
           const km = wholeKm(track);
           if (km > saidKm) {
@@ -193,7 +213,7 @@ export function useNavigation(
       void Speech.stop();
       setState({ status: "starting" });
     };
-  }, [active, points, directions, similarity, walks, word]);
+  }, [active, points, directions, similarity, walks, word, onFoot]);
 
   return state;
 }

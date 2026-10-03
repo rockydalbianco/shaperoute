@@ -59,6 +59,9 @@ function everything(words: VoiceWords): string[] {
     words.kilometre(CHEER_KM, 1_500_000, 300_000),
     words.time(1_000),
     words.time(3_600_000),
+    words.walkTheBike(47, 203),
+    words.walkTheBike(null, 96),
+    words.backOnTheBike,
   );
   return said;
 }
@@ -225,5 +228,26 @@ test("French drops the vowel of «de» before a name that starts with one", () =
   );
   expect(beside("Rue de Rivoli")).toBe(
     "Tournez à gauche sur le sentier à côté de Rue de Rivoli",
+  );
+});
+
+test("by bike, the stretch on foot ahead and its end, as the user chose them (TASK-206)", () => {
+  expect(wordsOf("en").walkTheBike(47, 203)).toBe(
+    "In 50 metres, get off and walk the bike for 200 metres.",
+  );
+  expect(wordsOf("en").walkTheBike(null, 96)).toBe(
+    "Get off and walk the bike for 100 metres.",
+  );
+  expect(wordsOf("en").backOnTheBike).toBe("Back on the bike.");
+  expect(wordsOf("it").walkTheBike(47, 203)).toBe(
+    "Tra 50 metri, scendi e porta la bici a mano per 200 metri.",
+  );
+  expect(wordsOf("it").walkTheBike(null, 96)).toBe(
+    "Scendi e porta la bici a mano per 100 metri.",
+  );
+  expect(wordsOf("it").backOnTheBike).toBe("Risali in bici.");
+  // German says the verb last, as for a turn.
+  expect(wordsOf("de").walkTheBike(47, 203)).toBe(
+    "In 50 Metern absteigen und das Rad 200 Meter schieben.",
   );
 });

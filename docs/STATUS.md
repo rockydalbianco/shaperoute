@@ -287,6 +287,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-215: «Find friends» in cima a «Feed» (ADR-0178; chiesto
+  dall'utente il 2026-10-03). Il tasto con la lente apre sopra l'app la
+  ricerca degli iscritti per nome (da 2 lettere, al più 20, foto e nome,
+  `GET /users?q=` di TASK-211 A); un nome apre il suo profilo in sola
+  lettura, con i disegni; «←» torna ai nomi, poi a «Feed». Senza account
+  apre «Profile» dicendo perché. È la ricerca che TASK-211 B proponeva in
+  «Profile»: B fa ora solo «Follow», «Requests», «Followers» e
+  «Following», e riusa `social/PeopleSearch.tsx` (come i tag di TASK-208).
+  **Non sul server né pubblicata**: serve l'aggiornamento con la
+  migrazione `0011`, poi la prova sull'iPhone, con l'ok dell'utente.
+  Testi tradotti dall'agente, da confermare. `tasks/TASK-215.md`.
 - **API** — TASK-213: nessun commento negativo (ADR-0176, scelta
   dell'utente del 2026-10-03). `comment_filter.check_comment` rifiuta
   insulti, parolacce e parole negative in italiano e in inglese, anche

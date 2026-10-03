@@ -99,7 +99,12 @@ export function PeopleSearch({ apiUrl, account, onPick, fetchFn, apiKey }: Props
     if (!searchable(typed) || peopleQuery(typed) === askedQuery.current) {
       return;
     }
-    const timer = setTimeout(() => search(typed), SEARCH_DELAY_MS);
+    const timer = setTimeout(() => {
+      // The return key may have asked it in the meantime.
+      if (peopleQuery(typed) !== askedQuery.current) {
+        search(typed);
+      }
+    }, SEARCH_DELAY_MS);
     return () => clearTimeout(timer);
   }, [search, typed]);
 

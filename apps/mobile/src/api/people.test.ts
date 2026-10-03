@@ -44,7 +44,10 @@ test("a search sends the name typed, trimmed and escaped, with the token", async
 });
 
 test("an API without the search says so as an http_error", async () => {
-  const fetchFn = answers({ status: 404, body: apiError("http_error", "Not Found") });
+  const fetchFn: jest.Mock = answers({
+    status: 404,
+    body: apiError("http_error", "Not Found"),
+  });
   const outcome = await findPeople(URL, TOKEN, "ada", { fetchFn, key: null });
   expect(outcome).toMatchObject({ kind: "api_error", code: "http_error" });
 });

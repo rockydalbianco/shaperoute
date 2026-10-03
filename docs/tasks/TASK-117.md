@@ -1,7 +1,7 @@
 # TASK-117 — Pubblicare una corsa salvata: i disegni
 
-**Stato**: In corso — parte A (API) in revisione; parte B (app) dopo
-TASK-187 (app) e TASK-200
+**Stato**: In corso — parte A (API) in `main` (PR #232); parte B (app)
+da fare, può partire
 **Fase**: 4 · **Branch**: `feat/TASK-117-publish-runs` (parte A), un
 branch nuovo da `main` per la parte B
 **Dipende da**: TASK-113, TASK-116, TASK-172 · **ADR**: ADR-0159
@@ -32,7 +32,7 @@ una corsa senza percorso si pubblica anche lei, senza punteggio.
 - `docs/DATABASE.md` `runs`, `drawings`
 - `docs/UI.md` «My activities», profilo (TASK-116)
 
-## Parte A — l'API (fatta, PR #232 in revisione)
+## Parte A — l'API (fatta, in `main` con la PR #232)
 
 1. `GET` e `PUT /me/activities/{key}/drawing` (titolo al più 60
    caratteri, «Public»), `GET /me/drawings`, `GET

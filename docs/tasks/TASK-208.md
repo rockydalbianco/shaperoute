@@ -67,7 +67,8 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
   «Photos of a run only you can see stay on this phone. Delete the app or
   change phone and they are gone.». Quando una corsa con foto passa da
   «Everyone» o «Followers» a «Only me»: «Its photos leave Sgrava and stay
-  only on this phone.». Da confermare con l'utente, e da dirgli il motivo.
+  only on this phone.». **Confermati dall'utente** il 2026-10-03 («ok va
+  bene»), dopo che gli è stato detto il motivo.
 - I testi nuovi: «How did it go?», «Tag people», «Activity» («Run»,
   «Bike», «Paddle»), «Who can see it» («Everyone», «Followers», «Only
   me»), «Add photo». Da far confermare, e da passare a TASK-210 (la
@@ -196,8 +197,9 @@ docs/UI.md, docs/DECISIONS.md, docs/STATUS.md
 
 ### Parte A — l'API (2026-10-03, ADR-0170)
 
-Branch `feat/TASK-208-publish-api`, migrazione `0014_drawing_details.sql`
-(`0012` e `0013` sono di #263 e #260, entrate prima).
+In `main` dal 2026-10-03 con la PR #268 (merge `ebb4f38`), migrazione
+`0014_drawing_details.sql` (`0012` e `0013` sono di #263 e #260, entrate
+prima); CI 5/5 verde. Non sul server.
 
 **La scelta dell'utente presa durante il task** (2026-10-03, domanda del
 coordinatore): la descrizione **non passa dal filtro dei commenti
@@ -281,7 +283,8 @@ difetto: chi segue vedeva il disegno e non i suoi commenti. Ora chiede
 - **Da dire all'utente** prima della parte B: con «Only me» le foto
   esistono solo sul telefono, quindi cancellando l'app o cambiando
   telefono si perdono, e una corsa che torna «Only me» perde le foto sul
-  server. L'avviso proposto è in «Proposte dell'agente», da confermare;
+  server. Detto all'utente il 2026-10-03; l'avviso è in «Proposte
+  dell'agente», con i due testi confermati;
 - per i tag si riusa la ricerca degli iscritti di TASK-215,
   `src/social/PeopleSearch.tsx` (#264, ADR-0178), non più un componente
   di TASK-211 B;

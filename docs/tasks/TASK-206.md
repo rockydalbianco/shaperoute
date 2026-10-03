@@ -161,7 +161,7 @@ services/route-engine/tests/test_contract.py
 services/api/shaperoute_api/schemas.py
 services/api/shaperoute_api/route_store.py
 services/api/shaperoute_api/favorites.py
-services/api/migrations/0011_favorite_on_foot.sql             (nuovo)
+services/api/migrations/0012_favorite_on_foot.sql             (nuovo)
 services/api/tests/test_contract.py
 services/api/tests/test_route_store.py
 services/api/tests/test_favorites.py
@@ -180,7 +180,7 @@ docs/tasks/TASK-206.md
 
 La migrazione dei preferiti non era prevista: chiesta al coordinatore, che
 l'ha approvata il 2026-10-03 (il numero è il primo libero in `main` al
-merge: `0011` se entra prima di TASK-211 A, che ha la sua). `pen_up.py`
+merge: la `0011` l'ha presa TASK-211 A, entrata prima). `pen_up.py`
 per `walks_problem`, che controlla anche i tratti a mano.
 
 Rispetto all'elenco mandato al coordinatore: `models.py` e `optimizer.py`
@@ -223,12 +223,12 @@ marciapiede né contromano.
   anche se gli esempi di corsa vengono identici. Un aggiornamento solo dopo
   la parte B, con un nuovo ok dell'utente: server a `main`, zona della bici
   di Trento rifatta, `draw_examples`. Il server non si tocca prima.
-- **La parte B porta una migrazione** (`0011_favorite_on_foot.sql`, ok del
+- **La parte B porta una migrazione** (`0012_favorite_on_foot.sql`, ok del
   coordinatore): `favorites` prende `on_foot`, additiva, default `[]`,
   senza riscrivere la tabella. La applica l'API da sola all'avvio, come le
-  altre. **Il numero**: anche TASK-211 A ha una migrazione; chi entra per
-  primo in `main` prende `0011`, l'altro rinomina la sua al primo libero
-  (`AGENTI.md` regola 10). L'app che manda `on_foot` nei preferiti (parte
+  altre. **Il numero**: TASK-211 A è entrata prima con la `0011`
+  (`0011_follows.sql`), questa è la `0012` (`AGENTI.md` regola 10); se
+  un'altra entra prima, si rinomina al primo libero. L'app che manda `on_foot` nei preferiti (parte
   C) va pubblicata dopo l'aggiornamento del server: un'API precedente
   rifiuta il campo.
 
@@ -330,13 +330,13 @@ Fatta come «Cosa fare» 7–9, più i preferiti (ADR-0167, «Aggiornamento
   un'API vecchia; `route-result-cycling.json` è un cerchio in bici da 10 km
   con 923 m a mano, e un'alternativa con i suoi.
 - **I percorsi tenuti**: `route_store` legge `on_foot` (quelli tenuti
-  prima: vuoto); i preferiti lo tengono con la migrazione `0011`
+  prima: vuoto); i preferiti lo tengono con la migrazione `0012`
   (`favorite-request-on-foot.json`, `favorite-on-foot.json`), quelli di
   prima vuoto. Le corse salvate no.
 - **Il GPX non cambia**: il task file non lo chiedeva, e la bici a mano
   è percorso, senza pause.
 - **Non toccato**: le frasi della voce (parte C), il server (vuole l'ok
-  dell'utente: «Note per il deploy»; ora c'è anche la migrazione `0011`).
+  dell'utente: «Note per il deploy»; ora c'è anche la migrazione `0012`).
 - **I test**, sul Mac, senza rete: motore 1.223 verdi (`-m "not
   network"`; 8 nuovi, 7 in `tests/test_bike_on_foot_result.py`: gli
   indici su un grafo finto, con archi piegati; il cerchio in bici della

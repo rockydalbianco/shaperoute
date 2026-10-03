@@ -4,6 +4,7 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAccount } from "../account/useAccount";
 import { ActivitiesContext, useActivitiesOf } from "../activities/activitiesDoor";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
+import { t } from "../i18n";
 import { ProfilePhotoContext, useProfilePhotoOf } from "../profile/useProfilePhoto";
 import { DrawingsContext, useDrawingsOf } from "../social/drawingsDoor";
 import { StravaContext, useStravaOf } from "../strava/useStrava";
@@ -175,7 +176,7 @@ export function ProfileButton() {
       style={styles.button}
       onPress={open}
       accessibilityRole="button"
-      accessibilityLabel={attention ? "Profile, log in again" : "Profile"}
+      accessibilityLabel={t(attention ? "Profile, log in again" : "Profile")}
     >
       {initial !== null && photo !== null ? (
         <Image

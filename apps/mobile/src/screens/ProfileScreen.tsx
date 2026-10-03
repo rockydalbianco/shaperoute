@@ -17,6 +17,7 @@ import { ActivitiesList } from "../activities/ActivitiesList";
 import { useActivitiesDoor } from "../activities/activitiesDoor";
 import { FavoritesList } from "../favorites/FavoritesList";
 import { useFavoritesDoor } from "../favorites/favoritesDoor";
+import { t, tLater } from "../i18n";
 import { EditProfile } from "../profile/EditProfile";
 import { ProfileHome } from "../profile/ProfileHome";
 import { SettingsPage } from "../profile/SettingsPage";
@@ -30,26 +31,35 @@ import {
 } from "../theme/tokens";
 import { SignInScreen } from "./SignInScreen";
 
-const NOTICES: Record<SignedOutNotice, { text: string; tone: "warning" | "muted" }> = {
+type Notice = { text: string; tone: "warning" | "muted" };
+
+/** In English: `noticeOf` says them in the app's language (TASK-210). */
+const NOTICES: Record<SignedOutNotice, Notice> = {
   ended: { text: SESSION_ENDED, tone: "warning" },
   deleted: {
-    text: "Your account and everything that was yours have been deleted.",
+    text: tLater("Your account and everything that was yours have been deleted."),
     tone: "muted",
   },
-  loggedOut: { text: "You are logged out on this phone.", tone: "muted" },
+  loggedOut: { text: tLater("You are logged out on this phone."), tone: "muted" },
 };
+
+function noticeOf(notice: SignedOutNotice): Notice {
+  const { text, tone } = NOTICES[notice];
+  return { text: t(text), tone };
+}
 
 /** The pages of «Profile»: the account, the routes it keeps (TASK-171), the
  * runs it recorded (TASK-172), its settings (TASK-177) and its username and
  * bio (TASK-116). */
 export type ProfilePage = "account" | "favorites" | "activities" | "settings" | "edit";
 
+/** In English: shown with `t()` (TASK-210). */
 const TITLES: Record<ProfilePage, string> = {
-  account: "Profile",
-  favorites: "Favorites",
-  activities: "My activities",
-  settings: "Settings",
-  edit: "Edit profile",
+  account: tLater("Profile"),
+  favorites: tLater("Favorites"),
+  activities: tLater("My activities"),
+  settings: tLater("Settings"),
+  edit: tLater("Edit profile"),
 };
 
 /** Pages of the account itself: who signs in again does not land there. */
@@ -106,12 +116,12 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             style={styles.back}
             onPress={inside ? () => onPage("account") : onBack}
             accessibilityRole="button"
-            accessibilityLabel="Back"
+            accessibilityLabel={t("Back")}
           >
             <Text style={styles.backText}>←</Text>
           </Pressable>
           <Text style={styles.title} accessibilityRole="header">
-            {TITLES[inside ? page : "account"]}
+            {t(TITLES[inside ? page : "account"])}
           </Text>
         </View>
         {inside ? (
@@ -145,7 +155,7 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             problem={account.problem}
             notice={
               state.notice !== null
-                ? NOTICES[state.notice]
+                ? noticeOf(state.notice)
                 : hint !== null
                   ? { text: hint, tone: "muted" }
                   : null

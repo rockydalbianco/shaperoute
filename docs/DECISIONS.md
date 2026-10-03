@@ -3969,6 +3969,10 @@ Le proposte, con le alternative scartate, sono nel task file.
 **Conseguenze sui task già scritti**: nel task file di TASK-110,
 «Esito».
 
+**Aggiornamento (TASK-213, 2026-10-03)**: il punto 8 è superato in parte
+da ADR-0176. I commenti negativi non si pubblicano: li rifiuta l'API, e chi
+li scrive vede un avviso. Per tutto il resto il punto 8 resta valido.
+
 ## ADR-0115 — Database, account e server: come
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega
 dell'utente, dentro le scelte di ADR-0114 (TASK-110)
@@ -7763,7 +7767,7 @@ nodi del percorso come i punti), nelle alternative e, da una partenza
 vicina, con l'avvicinamento e il ritorno. Si aggiunge senza togliere
 niente: vuoto per la corsa e la canoa, facoltativo in `shared-types`,
 sempre nelle risposte dell'API; si controlla come i `walks` (lo stesso
-`walks_problem`). I preferiti lo tengono (migrazione `0011`, colonna
+`walks_problem`). I preferiti lo tengono (migrazione `0012`, colonna
 `on_foot` come `walks`, al più 1000 coppie nel `PUT`), perché un preferito
 in bici riaperto abbia i tratti a mano sulla mappa e nella voce; le corse
 salvate no (il punteggio non cambia). Il GPX non cambia: nessuna pausa, la
@@ -7814,3 +7818,273 @@ nome (spezzano chi è).
 **Conseguenze**: la riga di «Settings» resta e fa lo stesso. Come la foto
 di TASK-178, sul telefono funziona solo con il server alla migrazione
 `0005` e l'app pubblicata.
+
+## ADR-0172 — La lingua dell'app: l'inglese resta la base e la chiave, la lingua del telefono alla partenza, nessuna dipendenza
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-210). La richiesta e le cinque lingue sono dell'utente; la lingua di
+partenza (quella del telefono) è una sua scelta del 2026-10-03; il modo,
+qui sotto, è dell'agente. TASK-210 e ADR-0172 dati dal coordinatore.
+
+**Contesto**: `CLAUDE.md` e ADR-0007 vogliono i testi dell'interfaccia in
+inglese, come il codice, e `UI.md` diceva «le traduzioni verranno dopo».
+L'utente chiede di scegliere in «Settings» fra inglese, tedesco, italiano,
+spagnolo e francese. I testi sono scritti a mano in un centinaio di file,
+e altri lavori li stanno toccando.
+
+**Decisione**:
+
+1. **L'inglese resta la lingua del codice e la base.** Ogni testo si
+   scrive in inglese nel file che lo mostra, come prima, dentro `t()`:
+   `t("Log out")`. La regola di `CLAUDE.md` vale ancora per chi scrive
+   codice: l'inglese è il testo di partenza, le altre lingue sono
+   traduzioni di quello.
+2. **Il testo inglese è la chiave** delle tabelle (`src/i18n/de.ts`,
+   `it.ts`, `es.ts`, `fr.ts`), non un nome inventato: il file resta
+   leggibile, i test in inglese non cambiano, un testo senza traduzione si
+   mostra **in inglese** invece di rompersi. Un test legge con TypeScript
+   tutte le chiamate dell'app e controlla che ogni lingua abbia ogni testo,
+   con gli stessi `{segni}`, e nessun testo che nessuno mostra più: chi
+   cambia una frase inglese lo vede subito.
+3. **Numeri e parole che cambiano**: un valore entra in un segno, mai
+   incollato a pezzi tradotti (`t("{count} km left", { count })`), perché
+   l'ordine delle parole cambia da lingua a lingua. I decimali si scrivono
+   con la virgola in de, it, es, fr (`decimal()`, e un numero passato a un
+   segno). I plurali con `tPlural(count, uno, altri)`, entrambi con
+   `{count}`: il francese usa la forma «uno» anche per lo zero.
+4. **La lingua di partenza è quella del telefono** se è una delle cinque,
+   la prima che lo è fra le lingue preferite di iOS (`Settings` di React
+   Native, `AppleLanguages`; `I18nManager` altrove); altrimenti
+   l'inglese. **Nessuna dipendenza nuova** (non `expo-localization` né
+   `i18next`): bastano due moduli di React Native e una funzione di
+   sessanta righe. Nei test il telefono non dice niente, quindi l'app è in
+   inglese su ogni macchina.
+5. **La scelta** sta in `language.json` nei documenti, come lo sport
+   (TASK-189); «Phone language» cancella il file. Vale subito: la radice
+   dell'app chiama `useLanguage()` e una lingua nuova ridisegna tutto
+   senza smontare niente (un percorso aperto resta aperto). Un testo
+   tenuto in uno stato (un errore già comparso) resta nella lingua di
+   quando è comparso.
+6. **`t()` si chiama mentre si disegna**, mai al caricamento di un file:
+   una lista fissa tiene il testo inglese dentro `tLater()` e lo traduce
+   dove lo mostra.
+7. **Un solo elenco di lingue**, `src/i18n/languages.ts`, con il nome di
+   ognuna nella sua lingua («Deutsch») e la lingua della voce («de-DE»):
+   la voce di TASK-209 lo legge e segue la lingua dell'app se in «Data»
+   non se ne sceglie un'altra.
+8. **Il tono**: il «tu» in tutte e quattro le lingue, come l'inglese
+   dell'app. Strava e OpenStreetMap con le parole che danno loro nelle
+   varie lingue («Mit Strava verbinden», «© contributori di
+   OpenStreetMap»). Un testo inglese usato in due posti ha una traduzione
+   sola che deve andare bene per entrambi («Keep it» → «Annulla»).
+
+**Perché così**: una chiave inventata («settings.logout») obbliga a
+leggere due file per capire una schermata e cambia ogni test; una libreria
+porta più di quanto serve a cinque lingue con plurali semplici. La lingua
+del telefono è quello che fanno le app sull'iPhone.
+
+**Scartato**: smontare l'app al cambio di lingua (`key` sulla radice: si
+perderebbe il percorso disegnato); l'inglese fisso fino a una scelta (la
+scelta dell'utente è stata l'altra); le bandiere accanto alle lingue
+(l'inglese e lo spagnolo non hanno un paese solo).
+
+**Conseguenze**: tradotta **a pezzi** (TASK-210 parte A e le successive),
+perché altri lavori tengono i file della corsa, di «Draw» e di
+«Explore»: fino all'ultima parte, in italiano alcune schermate restano in
+inglese. I testi che arrivano dall'API (titoli, nomi dei percorsi a tema,
+il nome su Strava) restano in inglese. Le traduzioni le ha riviste
+l'agente su delega dell'utente («controlla te, mi fido»); chi parla le
+altre lingue può migliorarle senza toccare il codice.
+
+## ADR-0173 — Seguire con richiesta, l'API: una tabella `follows` con due stati, la ricerca per nome, gli elenchi solo propri
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-211, parte A), dentro due **scelte dell'utente** del 2026-10-03:
+seguire vuole una richiesta che l'altro accetta o rifiuta; gli iscritti si
+cercano per nome. Le proposte per l'app (dove stanno «Requests», il tasto
+«Follow») sono nel task file e si confermano prima della parte B. Numero
+tenuto dal coordinatore.
+
+**Contesto**: TASK-208 vuole «Followers» fra le scelte di «Who can see it»
+e i tag delle persone, cercate per nome. Non c'era un modo di trovare un
+altro iscritto, né di arrivare al suo profilo (`UserProfilePage.tsx`,
+ADR-0128 punto 8: «da dove si apre lo decide l'utente», domanda aperta in
+TASK-116). Bloccare e segnalare sono di TASK-121, che non è ancora fatto.
+
+**Decisione**:
+1. **Una tabella `follows`**, una riga per coppia ordinata (chi chiede, chi
+   è seguito: la chiave), con `status` `pending` o `accepted`, `asked_at` e
+   `accepted_at` (presente solo da accettata). Un vincolo vieta di seguire
+   sé stessi; `ON DELETE CASCADE` su tutti e due gli account, così un
+   account cancellato sparisce da ogni elenco e da ogni numero senza
+   codice. Due righe a due versi per due persone che si seguono a vicenda:
+   ognuna accetta la sua.
+2. **Ogni azione porta allo stato voluto, e rifatta non cambia niente**:
+   chiedere di nuovo lascia la riga com'è (una sola, con la sua data);
+   ritirare, smettere, rifiutare e togliere cancellano la riga (`204` anche
+   quando non c'era); accettare una richiesta già accettata è `204`. Solo
+   accettare senza nessuna richiesta è `404`. Seguire sé stessi è `422`
+   con il motivo in parole; un profilo che non c'è, `404` come in
+   `GET /users/{public_id}`.
+3. **Rifiutare cancella la richiesta**: chi aveva chiesto vede di nuovo
+   `none`, come se non avesse mai chiesto, e può richiedere. Nessuno stato
+   «rifiutata» che l'API potrebbe lasciar trapelare (scelta proposta
+   nel task file: il tasto torna «Follow»).
+4. **Contano solo le richieste accettate**: nei numeri `followers` e
+   `following` del profilo, negli elenchi e nella funzione per TASK-208
+   (`follows_sql`, `Follows.follows`: «A segue B, accettato?»). Una
+   richiesta in attesa non dà niente in più a chi l'ha mandata.
+5. **`PublicProfile`** prende `followers`, `following` e `follow`, lo
+   stato di chi guarda verso quel profilo: `none`, `requested`,
+   `following`. Il proprio profilo dice `none`. Nell'app i tre campi sono
+   facoltativi: un server di prima non li manda.
+6. **La ricerca** (`GET /users?q=`): almeno 2 caratteri dopo aver tolto
+   gli spazi (meno: `422` in parole), al più 20 risultati, mai chi cerca.
+   Cerca il pezzo dentro il nome senza badare alle maiuscole (`_` e `%`
+   valgono come lettere, non come jolly); prima i nomi che cominciano così,
+   poi i più corti, poi in ordine alfabetico: lo stesso risultato ogni
+   volta. Ogni risultato è solo `public_id`, `username` e `photo`: niente
+   email, bio o numeri (un test cerca l'email nel testo).
+7. **La foto negli elenchi è piccola**: 128 px di lato invece dei 256 del
+   profilo, rifatta dall'API a ogni lettura (circa un quinto dei byte: 7 KB
+   invece di 36 per una foto piena di dettagli; venti risultati restano
+   leggeri mentre si scrive). Una colonna in più in
+   `profile_photos` non serve finché costa così poco.
+8. **Gli elenchi sono solo propri**: `GET /me/followers`, `/me/following`
+   e `/me/follow-requests`, a pagine come i disegni di un profilo (`limit`
+   da 1 a 50, `next`, `total`), dal più recente (l'accettazione per i
+   primi due, la richiesta per il terzo). Chi segue chi, per gli altri, si
+   legge solo nei due numeri del profilo.
+9. **Da dove si apre il profilo di un altro** (domanda aperta di TASK-116,
+   risposta del coordinatore su delega dell'utente): **dalla ricerca**, e
+   dagli elenchi di «Followers», «Following» e «Requests». Il feed
+   (TASK-118), i like e i commenti si aggiungeranno quando ci sono.
+
+**Il rapporto con TASK-121** (bloccare e segnalare): questa parte non
+blocca niente. Quando TASK-121 arriva, bloccare dovrà togliere le righe di
+`follows` nei due versi e rifiutare una richiesta nuova fra i due, e la
+ricerca e gli elenchi dovranno saltare chi è bloccato: tocca `follows.py`,
+che il suo task file non elenca ancora. Fino ad allora chi viene rifiutato
+può richiedere quante volte vuole (il limite dei POST di `access.py` vale
+lo stesso). Il cancello di `ROADMAP.md` resta: prima di invitare persone che
+non si conoscono, TASK-121 e TASK-122 fatti.
+
+**Scartate**: seguire libero, come Strava di base (non è la scelta
+dell'utente); uno stato `declined` nella riga (direbbe il rifiuto, o
+andrebbe nascosto a mano in ogni risposta); il `public_id` come chiave
+della tabella (le altre tabelle di un account usano `users.id`, che resta
+dentro l'API); gli elenchi di un altro (`GET /users/{id}/followers`: dice chi
+frequenta chi, non è chiesto); la foto a 256 px negli elenchi (sopra);
+`GET /users/{id}/photo` a parte (una richiesta per ogni riga, e l'immagine
+vorrebbe il token in un'intestazione: ADR-0128 lo lasciava al feed); un
+indice a trigrammi per la ricerca (`pg_trgm`: con pochi iscritti la
+lettura di tutta `users` costa meno di un millisecondo).
+
+**Conseguenze**: una migrazione nuova (`00NN_follows.sql`, il primo numero
+libero in `main` al merge) e un modulo nuovo (`follows.py`); `profiles.py`
+legge i tre campi in più. Sul telefono arriva solo con l'aggiornamento del
+server e la parte B, tutti e due con l'ok dell'utente. **Va detto
+all'utente**: la ricerca mostra il nome di ogni iscritto a chi ha un
+account (con due lettere alla volta si può fare l'elenco di tutti).
+
+## ADR-0174 — Il logo dopo «Save»: il giallo e il logo dell'avvio, 1,65 s, sopra l'app, anche senza rete
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-212). La richiesta («Finita l'attività, quando la salvi deve uscire
+il logo di Sgrava») e il logo anche senza rete sono dell'utente; il resto,
+qui sotto, è dell'agente.
+
+**Contesto**: «Save» a fine corsa (TASK-172, ADR-0140) tiene la corsa e
+torna alla mappa, senza nessun segno che sia andata. Il logo con il giallo
+si vede già all'avvio (TASK-179, ADR-0147), in `src/intro/`, sopra `App`.
+
+**Decisione**:
+
+1. **Lo stesso giallo `accent` e lo stesso logo intero dell'avvio**
+   (`splash-logo-dark.png`), senza il cuore: il cuore è dell'apertura, e
+   qui il disegno è quello appena corso, già sulla scheda.
+2. **Tempi**: 0,25 s il giallo sale e il logo cresce dall'85% alla sua
+   misura, 1,1 s fermo, 0,3 s di dissolvenza; in tutto 1,65 s, meno
+   dell'avvio (2,7 s). Un tocco lo manda via subito. Il tempo lo tiene un
+   timer, non l'animazione, come all'avvio: con le animazioni del telefono
+   spente il logo resta lo stesso.
+3. **Sopra l'app, in `Root.tsx`**, sotto l'animazione d'avvio: `RunEnd`
+   chiama `showSavedLogo()` quando `onSave()` è vero, e uno strato in
+   `Root` lo mostra. `App.tsx` non cambia: `RunEnd` si smonta appena la
+   corsa è tenuta, e il logo deve restare.
+4. **Anche senza rete** (scelta dell'utente): «Save» vero vuol dire la
+   corsa tenuta, sul telefono o già sull'API. Niente logo se il telefono
+   non tiene la corsa, né a «Discard».
+5. Al lettore di schermo: «Saved to My activities», annunciato.
+
+**Perché così**: un'immagine sola, già nell'app, e nessuna dipendenza;
+uno strato in `Root` vede l'app intera, mentre la schermata della corsa se
+ne va nello stesso tocco.
+
+**Scartato**: il disegno della corsa tracciato sul giallo come il cuore
+dell'avvio (non chiesto, e più lungo); il logo dentro `App.tsx` (il file
+più conteso); un «Saved» scritto sotto il logo (non chiesto).
+
+**Conseguenze**: TASK-208 B, che rifà la fine della corsa, tiene la
+chiamata a `showSavedLogo()` dopo un «Save» riuscito. Si vede sul telefono
+con la prossima pubblicazione dell'app, con l'ok dell'utente.
+
+## ADR-0176 — Nessun commento negativo: un elenco di parole nell'API, rifiutato con un avviso
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** la regola e
+l'avviso; il modo di riconoscerli è deciso dall'agente su delega
+dell'utente (TASK-213). Supera in parte ADR-0114, punto 8.
+
+**Contesto**: con i commenti (TASK-120) gli iscritti scrivono sotto le
+corse degli altri. L'utente, il 2026-10-03: «non si possono fare commenti
+negativi, se uno scrive qualcosa di negativo o brutto il messaggio viene
+bloccato». E sull'avviso: «Fai uscire un alert, dicendo: in questa app non
+puoi scrivere commenti negativi, cambia app». ADR-0114 diceva «nessun
+contenuto si nasconde da solo».
+
+**Decisione dell'utente**:
+1. Un commento negativo o brutto **non si pubblica**. È la prima eccezione
+   al punto 8 di ADR-0114. Per tutto il resto restano le segnalazioni e la
+   rimozione a mano entro 24 ore (TASK-121).
+2. Chi lo scrive vede un **alert**: «You can't write negative comments in
+   this app. Try another app.». In inglese come tutti i testi dell'app;
+   l'utente l'ha detto in italiano, «In questa app non puoi scrivere
+   commenti negativi, cambia app».
+
+**Decisione dell'agente**:
+1. **Decide l'API**, non l'app: un controllo solo nell'app si aggira.
+   `comment_filter.check_comment(text)` restituisce `None` o il motivo,
+   `"negative"`. TASK-120 lo chiama prima di salvare, risponde `422` con
+   `comment_rejected` e il motivo, e l'app mostra l'alert. Il testo resta nel
+   campo, così si corregge.
+2. **Un elenco di parole**, in italiano e in inglese, senza AI. Gli
+   **insulti** (parolacce, insulti, bestemmie, insulti contro gruppi di
+   persone) sono negativi sempre. Le **parole negative** («brutto»,
+   «pessimo», «ugly», «worst») lo sono a meno che una negazione stia nelle
+   tre parole prima («non è affatto brutto», «not bad»). Poi alcune frasi
+   («che palle», «go to hell») e le emoji 🖕 👎 💩 🤮 🤢 😡 🤬 😠.
+3. **Parole intere, non pezzi**: così Cazzago, Schifanoia, Scunthorpe e la
+   puttanesca passano. Le parole si confrontano in minuscolo e senza
+   accenti, con le cifre lette come lettere («str0nz0»), le lettere tenute
+   lunghe ridotte («schifoooo») e le lettere scritte una alla volta riunite
+   («m e r d a»).
+4. **Le parole che sono anche posti** (Troia, Bastardo, Bad Ischl, Crap
+   Sogn Gion, Boring, Noia) passano quando sono scritte con la maiuscola in
+   mezzo alla frase. In minuscolo, tutte maiuscole o a inizio frase restano
+   rifiutate.
+
+**Perché così**: nessuna dipendenza, nessuna rete, la stessa risposta a
+ogni prova, e la regola si legge e si corregge in un file solo. Sul server
+non c'è un modello (manca Ollama), e un servizio esterno vorrebbe dire
+mandare fuori i commenti, una scelta dell'utente.
+
+**Limiti**: una critica gentile («un po' noioso», «dull») passa se la
+parola non è nell'elenco. «Sei un Bastardo», con la maiuscola, passa come
+il paese, e passa anche una lettera raddoppiata una volta sola («troiaa»).
+Un commento affettuoso con una parola dell'elenco viene rifiutato: «Brutta
+caduta, rimettiti presto». Per questi casi restano le segnalazioni.
+
+**Scartato**: un modello che legga il tono (più memoria sul server, o un
+servizio esterno: si può aggiungere dopo, con il sì dell'utente); pezzi di
+parola («cazz…» blocca Cazzago); nascondere il commento in silenzio a tutti
+tranne chi lo scrive (l'utente ha scelto l'avviso); riscriverlo in modo
+gentile (non è più quello che la persona ha scritto).
+
+**Conseguenze**: nessuna finché TASK-120 non chiama il filtro. Titolo e
+descrizione delle corse pubblicate (TASK-208) non sono filtrati.

@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -35,7 +36,7 @@ export function ConnectWithStrava({
       accessibilityState={{ disabled: busy, busy }}
     >
       <Text style={styles.connectText}>
-        {busy ? "Opening Strava…" : "Connect with Strava"}
+        {t(busy ? "Opening Strava…" : "Connect with Strava")}
       </Text>
     </Pressable>
   );
@@ -55,11 +56,11 @@ export function StravaSwitch({
       onPress={() => onChange(!on)}
       accessibilityRole="switch"
       accessibilityState={{ checked: on }}
-      accessibilityLabel="Send to Strava"
+      accessibilityLabel={t("Send to Strava")}
     >
-      <Text style={styles.switchText}>Send to Strava</Text>
+      <Text style={styles.switchText}>{t("Send to Strava")}</Text>
       <Text style={[styles.switchState, on && styles.switchStateOn]}>
-        {on ? "On" : "Off"}
+        {t(on ? "On" : "Off")}
       </Text>
     </Pressable>
   );
@@ -81,16 +82,16 @@ export function StravaName({
 }) {
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>Name on Strava</Text>
+      <Text style={styles.label}>{t("Name on Strava")}</Text>
       <TextInput
         style={styles.input}
         value={value}
         onChangeText={onChange}
-        placeholder={automatic ?? "Leave empty for an automatic name"}
+        placeholder={automatic ?? t("Leave empty for an automatic name")}
         placeholderTextColor={color.textFaint}
         maxLength={MAX_STRAVA_NAME}
         returnKeyType="done"
-        accessibilityLabel="Name on Strava"
+        accessibilityLabel={t("Name on Strava")}
       />
     </View>
   );

@@ -1,0 +1,325 @@
+import type { Table } from "./translate";
+
+/**
+ * The app's texts in German, by their English text (ADR-0172), in the
+ * order of the files that show them. To confirm with someone who speaks it
+ * (docs/UI.md).
+ */
+export const DE: Table = {
+  // src/account/fields.ts
+  "You must be at least 16 to sign up.":
+    "Du musst mindestens 16 sein, um dich zu registrieren.",
+  "Enter the email of your account.": "Gib die E-Mail-Adresse deines Kontos ein.",
+  "Enter your password.": "Gib dein Passwort ein.",
+  "A username is 3 to 20 letters, digits, _ or . (no spaces).":
+    "Ein Benutzername hat 3 bis 20 Buchstaben, Ziffern, _ oder . (keine Leerzeichen).",
+  "Enter an email address, like name@example.com.":
+    "Gib eine E-Mail-Adresse ein, z. B. name@example.com.",
+  "A password is at least {min} characters.":
+    "Ein Passwort hat mindestens {min} Zeichen.",
+  "A password is at most {max} characters.":
+    "Ein Passwort hat höchstens {max} Zeichen.",
+
+  // src/account/messages.ts
+  "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.":
+    "Die App weiß nicht, wo die API ist: Öffne sie über den QR-Code von npm run mobile auf dem PC.",
+  "Your session has ended. Log in again.":
+    "Deine Sitzung ist abgelaufen. Melde dich erneut an.",
+  "Cannot reach the API at {url}. Check the connection and try again.":
+    "Die API unter {url} ist nicht erreichbar. Prüfe die Verbindung und versuche es noch einmal.",
+  "The app and the API do not agree (a bug): HTTP {status}.":
+    "App und API passen nicht zusammen (ein Fehler): HTTP {status}.",
+  "This email already has an account. Log in instead.":
+    "Diese E-Mail-Adresse hat schon ein Konto. Melde dich stattdessen an.",
+  "This username is taken. Try another one.":
+    "Dieser Benutzername ist vergeben. Versuche einen anderen.",
+  "Wrong email or password.": "Falsche E-Mail-Adresse oder falsches Passwort.",
+  "Accounts are not available on this API: it has no database.":
+    "Konten sind auf dieser API nicht verfügbar: Sie hat keine Datenbank.",
+  "The API refused the app's key (EXPO_PUBLIC_API_KEY in apps/mobile/.env).":
+    "Die API hat den Schlüssel der App abgelehnt (EXPO_PUBLIC_API_KEY in apps/mobile/.env).",
+  "The app and the API do not agree (a bug): {message}":
+    "App und API passen nicht zusammen (ein Fehler): {message}",
+  "Too many tries. Wait a minute and try again.":
+    "Zu viele Versuche. Warte eine Minute und versuche es noch einmal.",
+  "Too many tries. Wait {minutes} minutes and try again.":
+    "Zu viele Versuche. Warte {minutes} Minuten und versuche es noch einmal.",
+
+  // src/activities/ActivitiesList.tsx
+  "{count} run is on this phone, waiting for a connection.":
+    "{count} Lauf ist auf diesem Handy und wartet auf eine Verbindung.",
+  "{count} runs are on this phone, waiting for a connection.":
+    "{count} Läufe sind auf diesem Handy und warten auf eine Verbindung.",
+  "Loading…": "Lädt…",
+  "Show more": "Mehr anzeigen",
+  "Loading your activities…": "Deine Aktivitäten werden geladen…",
+  "Your activities could not load.": "Deine Aktivitäten konnten nicht geladen werden.",
+  "Try again": "Erneut versuchen",
+  "No activities yet. Save a run when you finish it, and it is kept here.":
+    "Noch keine Aktivitäten. Speichere einen Lauf, wenn du fertig bist, dann findest du ihn hier.",
+  "{when}, {where}, {facts}, public, open on the map":
+    "{when}, {where}, {facts}, öffentlich, auf der Karte öffnen",
+  "{when}, {where}, {facts}, open on the map":
+    "{when}, {where}, {facts}, auf der Karte öffnen",
+  "Opening…": "Wird geöffnet…",
+  "Score: {score} out of 100": "Punktzahl: {score} von 100",
+  "Score {score}": "Punktzahl {score}",
+  Public: "Öffentlich",
+  "Delete this run? It cannot be undone.":
+    "Diesen Lauf löschen? Das kann nicht rückgängig gemacht werden.",
+  // «Keep it» answers two questions (a run, Strava): a word that fits both.
+  "Keep it": "Abbrechen",
+  "Delete run": "Lauf löschen",
+  "Delete the run of {when}": "Lauf vom {when} löschen",
+  Delete: "Löschen",
+
+  // src/activities/ActivityCard.tsx
+  "out of 100": "von 100",
+  "Yellow: the route. White: what you ran.":
+    "Gelb: die Route. Weiß: was du gelaufen bist.",
+  "White: what you ran.": "Weiß: was du gelaufen bist.",
+  "Back to the list": "Zurück zur Liste",
+
+  // src/activities/activitiesDoor.ts
+  "Sign up or log in to keep your runs and share them as drawings.":
+    "Registriere dich oder melde dich an, um deine Läufe zu behalten und als Zeichnungen zu teilen.",
+  "This run is no longer in your activities.":
+    "Dieser Lauf ist nicht mehr in deinen Aktivitäten.",
+
+  // src/activities/activityText.ts
+  Sun: "So",
+  Mon: "Mo",
+  Tue: "Di",
+  Wed: "Mi",
+  Thu: "Do",
+  Fri: "Fr",
+  Sat: "Sa",
+  Jan: "Jan",
+  Feb: "Feb",
+  Mar: "März",
+  Apr: "Apr",
+  May: "Mai",
+  Jun: "Juni",
+  Jul: "Juli",
+  Aug: "Aug",
+  Sep: "Sept",
+  Oct: "Okt",
+  Nov: "Nov",
+  Dec: "Dez",
+  "{weekday} {day} {month} {year}": "{weekday}, {day}. {month} {year}",
+  Run: "Lauf",
+
+  // src/api/strava.ts
+  "No connection. Try again when you are online.":
+    "Keine Verbindung. Versuche es noch einmal, wenn du online bist.",
+  "Strava is taking no more runs for now. Try again later.":
+    "Strava nimmt gerade keine Läufe mehr an. Versuche es später noch einmal.",
+  "Strava could not read this run.": "Strava konnte diesen Lauf nicht lesen.",
+  "Strava is not connected. Connect it and try again.":
+    "Strava ist nicht verbunden. Verbinde es und versuche es noch einmal.",
+  "Strava is not available on this API.": "Strava ist auf dieser API nicht verfügbar.",
+  "Strava did not answer. Try again in a while.":
+    "Strava hat nicht geantwortet. Versuche es in einer Weile noch einmal.",
+
+  // src/favorites/FavoriteHeart.tsx
+  "Remove from favorites": "Aus Favoriten entfernen",
+  "Add to favorites": "Zu Favoriten hinzufügen",
+
+  // src/favorites/FavoritesList.tsx
+  "Kept {day} {month} {year}": "Gespeichert am {day}. {month} {year}",
+  "{title}, open on the map": "{title}, auf der Karte öffnen",
+  "Remove {title} from favorites": "{title} aus Favoriten entfernen",
+  "Loading your favorites…": "Deine Favoriten werden geladen…",
+  "Your favorites could not load.": "Deine Favoriten konnten nicht geladen werden.",
+  "No favorites yet. Tap {heart} on a route on the map to keep it here.":
+    "Noch keine Favoriten. Tippe auf {heart} bei einer Route auf der Karte, um sie hier zu behalten.",
+
+  // src/favorites/favoriteRoute.ts
+  Route: "Route",
+
+  // src/favorites/favoritesDoor.ts
+  "Sign up or log in to keep your favorite routes.":
+    "Registriere dich oder melde dich an, um deine Lieblingsrouten zu behalten.",
+
+  // src/feed/FeedPost.tsx
+  "OpenFreeMap © OpenMapTiles\nData from OpenStreetMap":
+    "OpenFreeMap © OpenMapTiles\nDaten von OpenStreetMap",
+  "{user} in {city}: {title}. {facts}. Score {score} out of 100.":
+    "{user} in {city}: {title}. {facts}. Punktzahl {score} von 100.",
+  "Opens the route on the map": "Öffnet die Route auf der Karte",
+
+  // src/i18n/shapeNames.ts
+  Circle: "Kreis",
+  Heart: "Herz",
+  Star: "Stern",
+  Horse: "Pferd",
+  Moon: "Mond",
+  Cat: "Katze",
+  Fish: "Fisch",
+  Butterfly: "Schmetterling",
+  Snail: "Schnecke",
+  "Dog head": "Hundekopf",
+  "Rabbit head": "Hasenkopf",
+  Pumpkin: "Kürbis",
+  "Christmas tree": "Weihnachtsbaum",
+
+  // src/places/PlaceSearch.tsx
+  "City or street": "Stadt oder Straße",
+  Search: "Suchen",
+  "Searching…": "Suche…",
+  "No place found. Try adding the city.":
+    "Kein Ort gefunden. Füge die Stadt hinzu und versuche es noch einmal.",
+  "The search failed. Check the connection and try again.":
+    "Die Suche ist fehlgeschlagen. Prüfe die Verbindung und versuche es noch einmal.",
+  "© OpenStreetMap contributors": "© OpenStreetMap-Mitwirkende",
+
+  // src/profile/EditProfile.tsx
+  USERNAME: "BENUTZERNAME",
+  "3 to 20 letters, digits, _ or .": "3 bis 20 Buchstaben, Ziffern, _ oder .",
+  BIO: "BIO",
+  "A few words about you": "Ein paar Worte über dich",
+  "{length} of {max} characters": "{length} von {max} Zeichen",
+  "Saving…": "Wird gespeichert…",
+  Save: "Speichern",
+
+  // src/profile/PhotoChoices.tsx
+  "Removing…": "Wird entfernt…",
+  "Choose a picture": "Bild auswählen",
+  "Take a photo": "Foto aufnehmen",
+  "Remove picture": "Bild entfernen",
+
+  // src/profile/PhotoRow.tsx
+  "Profile picture": "Profilbild",
+
+  // src/profile/ProfileHome.tsx
+  "Edit profile": "Profil bearbeiten",
+  Favorites: "Favoriten",
+  "My activities": "Meine Aktivitäten",
+  Settings: "Einstellungen",
+
+  // src/profile/SettingsPage.tsx
+  "Change email": "E-Mail ändern",
+  "Phone number": "Telefonnummer",
+  Units: "Einheiten",
+  NOTIFICATIONS: "BENACHRICHTIGUNGEN",
+  "Email notifications": "E-Mail-Benachrichtigungen",
+  "Push notifications": "Push-Benachrichtigungen",
+  ABOUT: "INFO",
+  Help: "Hilfe",
+  Terms: "Nutzungsbedingungen",
+  Privacy: "Datenschutz",
+  "{name}, coming soon": "{name}, bald verfügbar",
+  Soon: "Bald",
+  ACCOUNT: "KONTO",
+  PREFERENCES: "PRÄFERENZEN",
+  "Log out": "Abmelden",
+  "Delete your account? Everything that is yours goes with it, at once. It cannot be undone.":
+    "Dein Konto löschen? Alles, was dir gehört, wird sofort mitgelöscht. Das kann nicht rückgängig gemacht werden.",
+  "Deleting…": "Wird gelöscht…",
+  "Delete my account": "Mein Konto löschen",
+  "Keep my account": "Mein Konto behalten",
+  "Delete account": "Konto löschen",
+
+  // src/profile/UserProfilePage.tsx
+  "Log in to see the profiles of the others.":
+    "Melde dich an, um die Profile der anderen zu sehen.",
+  "This profile is not available.": "Dieses Profil ist nicht verfügbar.",
+  "{count} drawing": "{count} Zeichnung",
+  "{count} drawings": "{count} Zeichnungen",
+  "Loading the profile…": "Profil wird geladen…",
+
+  // src/profile/profileFields.ts
+  "Editing the profile is not available on this API yet.":
+    "Das Profil kann auf dieser API noch nicht bearbeitet werden.",
+  "A bio is at most {max} characters.": "Eine Bio hat höchstens {max} Zeichen.",
+
+  // src/profile/useProfilePhoto.ts
+  "The camera is off for this app. Allow it in Settings, or choose a picture instead.":
+    "Diese App hat keinen Zugriff auf die Kamera. Erlaube ihn in den Einstellungen oder wähle stattdessen ein Bild.",
+  "This picture is too large. Choose a smaller one.":
+    "Dieses Bild ist zu groß. Wähle ein kleineres.",
+  "Could not open the picture. Try again.":
+    "Das Bild konnte nicht geöffnet werden. Versuche es noch einmal.",
+  "This picture cannot be used. Choose another one.":
+    "Dieses Bild kann nicht verwendet werden. Wähle ein anderes.",
+  "Profile pictures are not available on this API yet.":
+    "Profilbilder sind auf dieser API noch nicht verfügbar.",
+
+  // src/screens/ProfileLayer.tsx
+  "Profile, log in again": "Profil, erneut anmelden",
+  Profile: "Profil",
+
+  // src/screens/ProfileScreen.tsx
+  "Your account and everything that was yours have been deleted.":
+    "Dein Konto und alles, was dir gehörte, wurden gelöscht.",
+  "You are logged out on this phone.": "Du bist auf diesem Handy abgemeldet.",
+  Back: "Zurück",
+
+  // src/screens/SignInScreen.tsx
+  "Sign up": "Registrieren",
+  "Log in": "Anmelden",
+  EMAIL: "E-MAIL",
+  "name@example.com": "name@example.com",
+  PASSWORD: "PASSWORT",
+  "At least 8 characters": "Mindestens 8 Zeichen",
+  "I am at least 16": "Ich bin mindestens 16",
+  "Signing up…": "Registrierung…",
+  "Logging in…": "Anmeldung…",
+
+  // src/settings/LanguageSetting.tsx
+  Language: "Sprache",
+  "Phone language": "Sprache des Handys",
+
+  // src/social/DrawingCard.tsx
+  "Back to the profile": "Zurück zum Profil",
+
+  // src/social/DrawingsGrid.tsx
+  Drawings: "Zeichnungen",
+  "No public drawings yet. Make a run public in My activities.":
+    "Noch keine öffentlichen Zeichnungen. Mach einen Lauf in Meine Aktivitäten öffentlich.",
+  "No drawings yet.": "Noch keine Zeichnungen.",
+  "{title}, score {score} out of 100, open on the map":
+    "{title}, Punktzahl {score} von 100, auf der Karte öffnen",
+
+  // src/social/drawingsDoor.ts
+  "This drawing is no longer public.": "Diese Zeichnung ist nicht mehr öffentlich.",
+
+  // src/strava/StravaActivityRow.tsx
+  "Sending to Strava…": "Wird an Strava gesendet…",
+  "View on Strava": "Auf Strava ansehen",
+  "This run is on Strava.": "Dieser Lauf ist auf Strava.",
+  "Strava is still reading this run.": "Strava liest diesen Lauf noch.",
+  "Check again": "Erneut prüfen",
+  "Send to Strava": "An Strava senden",
+
+  // src/strava/StravaParts.tsx
+  "Opening Strava…": "Strava wird geöffnet…",
+  "Connect with Strava": "Mit Strava verbinden",
+  On: "An",
+  Off: "Aus",
+  "Name on Strava": "Name auf Strava",
+  "Leave empty for an automatic name": "Leer lassen für einen automatischen Namen",
+
+  // src/strava/StravaRunEnd.tsx
+  "Connect Strava, and Save sends your runs there too.":
+    "Verbinde Strava, dann sendet Speichern deine Läufe auch dorthin.",
+  "To {athlete}'s Strava, with Save.":
+    "Mit Speichern geht der Lauf auch an das Strava-Konto von {athlete}.",
+
+  // src/strava/StravaSetting.tsx
+  "Strava, connected": "Strava, verbunden",
+  "Strava, connected as {athlete}": "Strava, verbunden als {athlete}",
+  Connected: "Verbunden",
+  "Connected as {athlete}": "Verbunden als {athlete}",
+  "Disconnect Strava? Runs already sent stay on Strava.":
+    "Strava trennen? Bereits gesendete Läufe bleiben auf Strava.",
+  Disconnect: "Trennen",
+  "Disconnecting…": "Wird getrennt…",
+  "Disconnect Strava": "Strava trennen",
+  "Send the runs you save in Sgrava to your Strava profile.":
+    "Sende die Läufe, die du in Sgrava speicherst, an dein Strava-Profil.",
+
+  // src/strava/useStrava.ts
+  "Could not open Strava. Try again.":
+    "Strava konnte nicht geöffnet werden. Versuche es noch einmal.",
+};

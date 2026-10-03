@@ -214,9 +214,27 @@ Migrazione `0010_favorite_paddling.sql` (TASK-191, parte B, ADR-0164):
 - Dipende dalla `0008` (la colonna): il test dei preferiti di prima di
   TASK-200 applica lo schema senza tutte e due, poi tutte e due.
 
-Migrazione `0011_favorite_on_foot.sql` (TASK-206, parte B, ADR-0167; il
+Migrazione `0011_follows.sql` (TASK-211, ADR-0173):
+
+- `follows`: `follower_id` e `followed_id` (tutti e due `ON DELETE
+  CASCADE` su `users`, insieme la chiave: una riga per coppia, in un
+  verso), `status` (`pending` o `accepted`), `asked_at`, `accepted_at`
+  (presente solo da accettata). Un vincolo vieta di seguire sé stessi. Un
+  indice su `(followed_id, status)` per chi segue un account e le sue
+  richieste; la chiave serve l'altro verso.
+- Due persone che si seguono a vicenda hanno due righe, ognuna accettata
+  dal suo. Rifiutare, ritirare, smettere e togliere **cancellano** la
+  riga: nessuno stato «rifiutata» resta a dire di no a chi aveva chiesto.
+- Contano solo le righe `accepted`: i numeri del profilo e gli elenchi si
+  contano sulla tabella, senza colonne in `users`. Cancellato un account,
+  le sue righe nei due versi spariscono con lui.
+- Le righe non hanno niente di pubblico: chi segue chi lo legge solo il
+  proprio account (`API.md`, «Follow»). Gli account di prima non seguono
+  nessuno (test con dati sullo schema 0001–0010).
+
+Migrazione `0012_favorite_on_foot.sql` (TASK-206, parte B, ADR-0167; il
 numero è il primo libero in `main` quando la PR entra, `AGENTI.md` regola
-10):
+10: la `0011` è di TASK-211):
 
 - `favorites` prende `on_foot` (`jsonb`, `NOT NULL`, default `[]`, sempre
   una lista): dove un percorso in bici si fa con la bici a mano, come

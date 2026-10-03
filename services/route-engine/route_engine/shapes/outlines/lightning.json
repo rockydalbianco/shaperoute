@@ -1,0 +1,39 @@
+{
+ "name": "lightning",
+ "source": "lightning bolt, one closed zigzag (TASK-223, candidate)",
+ "license": "drawn for ShapeRoute, no third-party rights",
+ "points": [
+  [
+   0.05,
+   1.0
+  ],
+  [
+   0.55,
+   1.0
+  ],
+  [
+   0.22,
+   0.22
+  ],
+  [
+   0.6,
+   0.22
+  ],
+  [
+   -0.38,
+   -1.0
+  ],
+  [
+   -0.06,
+   -0.12
+  ],
+  [
+   -0.45,
+   -0.12
+  ],
+  [
+   0.05,
+   1.0
+  ]
+ ]
+}

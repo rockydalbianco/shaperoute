@@ -199,6 +199,15 @@ class Word:
     tops: tuple[bool, ...] = ()
     # Each letter drawn on its own, the gaps walked (TASK-197).
     pen_up: bool = False
+    # What the letters are: those of a word, or the outline and the pieces
+    # of a shape drawn with the pen up (pieces.py, TASK-223).
+    kind: Literal["letter", "piece"] = "letter"
+
+    def label(self, k: int) -> str:
+        """Letter `k` in messages: «letter 2 (I)», or «piece 2» of a shape."""
+        if self.kind == "piece":
+            return f"piece {k + 1}"
+        return f"letter {k + 1} ({self.letters[k].char})"
 
     def line(self, start: int) -> tuple[np.ndarray, np.ndarray]:
         """The word as the route draws it from `starts[start]`: its

@@ -8,8 +8,8 @@ This module finds, around a start,
   built from `natural=coastline` (land on the left of the way, as
   OpenStreetMap draws it);
 - the band a paddler may use: water within 1 km of the shore (the user's
-  choice), kept off the shore, piers, breakwaters, groynes, reefs and
-  marinas by a margin;
+  choice), kept off the shore (200 m at sea, 50 m on a lake), piers,
+  breakwaters, groynes, reefs and marinas by a margin;
 - the points of the shore that can be reached on foot: by a beach, a
   slipway, a pier, a path or a road beside the water.
 
@@ -19,8 +19,9 @@ elements in the Overpass `out tags geom` format, cached apart from the
 roads (`<cache>/water/`). Nothing here imports from the API or the AI, and
 nothing needs the network except `OverpassWaterSource` on a cache miss.
 
-`python -m route_engine.water` draws a shape on the water, for samples;
-`python -m route_engine --activity paddling` is part A2 of TASK-191.
+`python -m route_engine.water` draws a shape on the water, for samples, also
+from answers of the OSM API; `python -m route_engine --activity paddling`
+draws one as a request does (paddling.py).
 """
 
 from __future__ import annotations
@@ -69,6 +70,10 @@ SHORE_BAND_M = 1_000.0
 # imagery, and on a beach the water's edge moves by tens of metres; Jesolo's
 # wooden groynes reach 14-63 m past it (OSM API, 2026-10-02).
 SHORE_MARGIN_M = 50.0
+# At sea the shape keeps farther off the shore: past the bathers' band of
+# many beach ordinances, the user's choice (TASK-191 A2, ADR-0161). Only the
+# legs from the shore cross it. On a lake SHORE_MARGIN_M is the margin.
+SEA_SHORE_MARGIN_M = 200.0
 # Off piers, breakwaters, groynes, reefs, marinas and water that is not a
 # lake or the sea (rivers, canals, lagoons, harbour basins).
 OBSTACLE_MARGIN_M = 30.0
@@ -672,6 +677,8 @@ def build_area(elements: Sequence[Element], origin: LatLon, bbox: BBox) -> Water
     if not band.is_empty:
         band = band.intersection(shore.buffer(SHORE_BAND_M))
         band = band.difference(dry.buffer(SHORE_MARGIN_M))
+        if not sea.is_empty and not shore.is_empty:
+            band = band.difference(shore.buffer(SEA_SHORE_MARGIN_M).intersection(sea))
         if not obstacles.is_empty:
             band = band.difference(obstacles.buffer(OBSTACLE_MARGIN_M))
     points, kinds = _access_points(mainland, area, navigable, access)
@@ -814,9 +821,9 @@ def _bbox(text: str) -> BBox:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """`python -m route_engine.water`: a shape on the water, for samples.
-    The wiring into `python -m route_engine --activity paddling` is part
-    A2 of TASK-191."""
+    """`python -m route_engine.water`: a shape on the water, for samples,
+    from a water file or answers of the OSM API. A request is drawn by
+    `python -m route_engine --activity paddling` (paddling.py)."""
     from route_engine.export_gpx import route_name, to_gpx
     from route_engine.shapes import FREE_ROTATION, get_shape
     from route_engine.water_fit import plan_on_water

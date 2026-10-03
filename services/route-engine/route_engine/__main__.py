@@ -7,7 +7,9 @@
 `--nearby N` also plans from N road nodes near the start and keeps the best
 (TASK-076). `--activity cycling` draws a bike route, 10-30 km, on the bike
 network (TASK-190). `--pen-up` with `--word` draws each letter on its own and
-walks from one to the next (TASK-197).
+walks from one to the next (TASK-197). `--activity paddling` draws a shape of
+the catalogue, 1-5 km, on the water of a lake or the sea, from a start on the
+shore; the water is cached in `<cache-dir>/water/` (TASK-191).
 """
 
 from __future__ import annotations
@@ -27,10 +29,12 @@ from route_engine.models import (
     ACTIVITIES,
     DISTANCE_LIMITS_M,
     PEN_UP_WITHOUT_WORD,
+    WATER_ACTIVITIES,
     InvalidRequestError,
     RouteRequest,
     check_activity,
     check_distance,
+    check_drawn_on_land,
     check_start,
 )
 from route_engine.nearby_starts import (
@@ -56,6 +60,7 @@ from route_engine.optimizer import (
     required_area,
     tilt_limit,
 )
+from route_engine.paddling import plan_paddling, water_area
 from route_engine.pen_up import Walk, drawn_m
 from route_engine.shapes import get_shape
 from route_engine.shapes.outline import (
@@ -70,6 +75,7 @@ from route_engine.track_score import (
     read_gpx_track,
     score_track,
 )
+from route_engine.water import OverpassWaterSource
 from route_engine.words import LETTERS, InvalidWordError, Word, compose
 
 
@@ -207,14 +213,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--activity",
         default="running",
         help=f"one of: {', '.join(ACTIVITIES)}; cycling routes are "
-        f"{_km(DISTANCE_LIMITS_M['cycling'])} km, on the bike network "
-        "(default: running)",
+        f"{_km(DISTANCE_LIMITS_M['cycling'])} km, on the bike network; "
+        f"paddling routes {_km(DISTANCE_LIMITS_M['paddling'])} km, a shape on "
+        "the water within 1 km of the shore (default: running)",
     )
     parser.add_argument(
         "--cache-dir",
         type=Path,
         default=Path("data/cache"),
-        help="where road graphs are cached (default: data/cache)",
+        help="where road graphs, and the water in water/, are cached "
+        "(default: data/cache)",
     )
     parser.add_argument(
         "--no-optimize",
@@ -259,6 +267,17 @@ def parse_args(
         parser.error("--nearby needs the search: drop --no-optimize")
     if args.pen_up and args.word is None:
         parser.error(f"--pen-up: {PEN_UP_WITHOUT_WORD}")
+    if args.activity in WATER_ACTIVITIES:
+        if args.nearby:
+            parser.error(
+                "--nearby is for roads: on the water the start is looked for "
+                "along the shore"
+            )
+        if args.no_optimize:
+            parser.error(
+                "--no-optimize is for roads: on the water the shape is placed "
+                "where it fits"
+            )
     if args.save_outline is not None:
         if args.image is None:
             parser.error("--save-outline needs --image")
@@ -274,6 +293,13 @@ def parse_args(
     args.traced = None
     request: Request
     try:
+        # Refused on the water before an image is traced (ADR-0161).
+        if args.word is not None:
+            check_drawn_on_land(args.activity, "a word")
+        elif args.image is not None:
+            check_drawn_on_land(args.activity, "an image")
+        elif args.outline is not None:
+            check_drawn_on_land(args.activity, "an outline")
         if args.word is not None:
             request = WordRequest(
                 start=args.start,
@@ -350,6 +376,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Wrote {args.save_outline}: the traced outline")
     if args.out is None and args.track is None:
         return 0
+    if request.activity in WATER_ACTIVITIES:
+        assert isinstance(request, RouteRequest)  # words, outlines refused
+        return _main_on_water(request, args)
 
     optimize = not args.no_optimize
     source = _source(args.cache_dir, request.activity)
@@ -445,6 +474,49 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _print_track_score(
             args.track, route.points, route.similarity, route.walks
         )
+    return 0
+
+
+def _main_on_water(request: RouteRequest, args: argparse.Namespace) -> int:
+    """A route on the water (TASK-191): the shape where it fits, from a
+    start on the shore, as `python -m route_engine.water` prints it."""
+    source = OverpassWaterSource(args.cache_dir)
+    if source.is_cached(water_area(request)):
+        print("Water: from the cache")
+    else:
+        print("Water: downloading from OpenStreetMap...")
+    try:
+        plan = plan_paddling(request, source)
+    except ShapeNotDrawableError as exc:
+        print(f"No route: {exc}", file=sys.stderr)
+        return 1
+    route, on_water = plan.result, plan.route
+    when = datetime.now(UTC)
+    if args.out is not None:
+        name = route_name(request.name, request.distance_m, when)
+        args.out.write_text(to_gpx(route.points, name, when), encoding="utf-8")
+        print(f"Wrote {args.out}: {len(route.points)} points")
+    shore_lat, shore_lon = on_water.shore_start
+    print(
+        f"  placement:  rotation {on_water.rotation_deg:.0f} deg, "
+        f"scale {on_water.scale:.0%} of full size"
+    )
+    print(
+        f"  shore:      {shore_lat:.5f}, {shore_lon:.5f} "
+        f"({on_water.shore_access}), {on_water.move_m:.0f} m from the start"
+    )
+    print(f"  leg:        {on_water.approach_m:.0f} m each way, shore to shape")
+    print(f"  similarity: {route.similarity:.2f} (the shape itself)")
+    print(f"  on water:   {route.distance_m:.0f} m (target {request.distance_m} m)")
+    print(
+        f"  checks:     the shape {on_water.nearest_land_m:.0f} m from land "
+        f"at the nearest, the route {on_water.farthest_shore_m:.0f} m from "
+        "the shore at the farthest"
+    )
+    for warning in route.warnings:
+        print(f"  warning: {warning}")
+    if args.track is not None:
+        return _print_track_score(args.track, route.points, route.similarity)
     return 0
 
 

@@ -30,6 +30,7 @@ from route_engine.models import (
     MAX_DISTANCE_M,
     MIN_DISTANCE_M,
     SUPPORTED_ACTIVITIES,
+    WATER_ACTIVITIES,
     InvalidRequestError,
     RouteRequest,
     check_distance,
@@ -421,7 +422,10 @@ def test_the_foot_source_and_its_files_are_those_of_before() -> None:
 
 
 def test_each_activity_has_a_network_and_distance_limits() -> None:
-    assert set(NETWORKS) == set(DISTANCE_LIMITS_M) == set(ACTIVITIES)
+    # Each activity is drawn on a network, or on the water (TASK-191).
+    assert set(DISTANCE_LIMITS_M) == set(ACTIVITIES)
+    assert set(NETWORKS) | WATER_ACTIVITIES == set(ACTIVITIES)
+    assert not set(NETWORKS) & WATER_ACTIVITIES
     assert NETWORKS == {"running": "foot", "cycling": "bike"}
     # The contract offers cycling since the API's part (TASK-190, ADR-0153).
     assert SUPPORTED_ACTIVITIES == ("running", "cycling")

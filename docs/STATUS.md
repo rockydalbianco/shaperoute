@@ -169,8 +169,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   risposta «Explore», «Feed» e la schermata della corsa restano come oggi
   anche con «Bike»); l'ok per la prova sul server (Trento, comandi nel task
   file) e poi per pubblicare l'app, in quest'ordine (un'API senza la parte
-  B rifiuta `cycling`); i campioni da giudicare. Da provare sull'iPhone. Da
-  dove riprendere: il task file, «Esito».
+  B rifiuta `cycling`). Da provare sull'iPhone. **I campioni** (2026-10-03,
+  dal Mac: Overpass ha risposto per quattro download, poi ha rifiutato di
+  nuovo): cinque a Trento, cuore, cerchio e stella a 10 e 20 km, giudicati
+  dall'utente: tre «quasi» e le due stelle «no», «va bene ma migliora».
+  Mancano il cerchio da 20 km, Levico e Padova, quando Overpass riapre. Il
+  miglioramento delle forme in bici è un task nuovo (numero dal
+  coordinatore). Da dove riprendere: il task file, «Esito», «I campioni».
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).

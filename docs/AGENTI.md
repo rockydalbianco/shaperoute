@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-03, 11:55 · `main` = `44ff069`
+**Ultimo aggiornamento**: 2026-10-03, 12:45 · `main` = `d0e8692`
 
 ## Come si usa
 
@@ -55,27 +55,24 @@ mergia da sola al 5/5 verde e CLEAN, ricontrollato subito prima.
 
 ```
 Task bici e padel (aperta dall'utente)
-  └─ Adesso  TASK-190 campioni  I campioni della bici da far giudicare
-                                (5 di Trento fatti; Levico, Padova e il
-                                cerchio da 20 km aspettano Overpass, che
-                                rifiuta il Mac dalle 09:15Z); poi le due
-                                domande della parte C all'utente
+  └─ Adesso  TASK-206 A  Forme in bici più riconoscibili: tratti brevi
+                         con la bici a mano (scelta dell'utente «Sì,
+                         poco», circa 1 km su 10); poi B (API) e C (app)
+                                                               ADR-0167
 
 Inizio task e Lava · Nuova tasca · Cambio sport nella schermata profilo ·
-Coordinamento automatico · Attività iniziata in corso · Attività
-rimanenti · Grafica registrazione corsa · Logo e post Instagram
-  └─ Libere (TASK-191 A2 e B, 117 A e B, 205, 200, 202, 203, 187 app,
-     204 fatte)
+Tasto aggiunta foto profilo · Coordinamento automatico · Attività
+iniziata in corso · Attività rimanenti · Grafica registrazione corsa ·
+Logo e post Instagram
+  └─ Libere (TASK-191 A2 e B, 117 A e B, 205, 207, 200, 202, 203, 187
+     app, 204 fatte; il server e la pubblicazione del 2026-10-03 fatti)
 
 Sistema pubblicitario non invasivo
   └─ Aspetta il «fatto» dell'utente su TASK-150 (pagamenti AdMob)
 
 Aspettano l'utente
-  ├─ Server e app: un solo aggiornamento del server a `main` (migrazioni
-  │  0004–0010, il motore di TASK-190, 191, 197 e 203), poi
-  │  `draw_examples`, la zona bici di Trento, e la pubblicazione dell'app
-  │  su `preview` (oggi c'è anche il ramo di prova `task-204-test`,
-  │  gruppo 37bde818, pubblicato con l'ok dell'utente)
+  ├─ La prova sull'iPhone di quanto pubblicato il 2026-10-03 (gruppo
+  │  `d49fce25`): foto, profilo, penna alzata, bici, pubblicare, la corsa
   ├─ I testi della voce e la riga dei km (TASK-198)
   ├─ TASK-116: da dove si apre il profilo di un altro; «drawings» conta
   │  anche le corse private; i testi nuovi del profilo
@@ -91,6 +88,8 @@ Aspettano l'utente
   │  profile», «Score 87»
   ├─ TASK-205: i testi di VoiceOver «Sport, Run», «Changes the sport»,
   │  «Close»
+  ├─ TASK-190: i campioni giudicati il 2026-10-03 (cuore e cerchio
+  │  «quasi», stella «no»): migliora TASK-206
   ├─ TASK-198/199: «Paused» nella pausa «penna», la riga dei km su un
   │  preferito riaperto; gli `insights` senza l'attività
   ├─ TASK-203: più veloce con percorsi diversi (ricerca lontana,
@@ -115,7 +114,7 @@ Da assegnare
 
 | File | Di chi |
 |---|---|
-| `samples/TASK-190_*.gpx`, righe in fondo a `samples/LOG.md`, `docs/tasks/TASK-190.md` | TASK-190 campioni |
+| `route_engine/network.py`, `models.py`, `optimizer.py`, `validation.py`, `__main__.py`, i test della bici, `samples/TASK-206_*`, `ROUTE_ENGINE.md`, `MAPS.md` | TASK-206 A |
 | `deploy/`, `docs/DEPLOY.md` | TASK-122 (in attesa dello Storage Box) |
 | `docs/PUBBLICITA.md` | TASK-150 |
 | `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md` | tutti, ognuno solo le sue righe |
@@ -123,9 +122,9 @@ Da assegnare
 
 ## Numeri
 
-- Task: presi fino a **TASK-205**. Il prossimo libero è **TASK-206**.
-- ADR: presi fino a **ADR-0166** (0164 di TASK-191 B, 0165 di TASK-205,
-  0166 di TASK-117 B). Il prossimo libero è **ADR-0167**.
+- Task: presi fino a **TASK-207**. Il prossimo libero è **TASK-208**.
+- ADR: presi fino a **ADR-0168** (0167 di TASK-206, 0168 di TASK-207).
+  Il prossimo libero è **ADR-0169**.
 - Migrazioni in `main`: 0001 account, 0002 preferiti, 0003 corse, 0004
   Strava, 0005 foto, 0006 penna alzata, 0007 profili, 0008 attività nei
   preferiti, 0009 corse pubblicate, 0010 canoa nei preferiti. La
@@ -134,20 +133,16 @@ Da assegnare
 ## Il server e l'app
 
 - **Server**: Hetzner CX33, `https://188-245-9-220.sslip.io`, da
-  `deploy/compose.yaml` con PostgreSQL. A `main` `fa6ee9e` dal 2026-10-02
-  18:09Z (migrazioni 0001–0003; immagine di prima
-  `shaperoute-api:before-task176`). Esempi disegnati per 64 città, Venezia
-  e Berlino comprese. Mancano 0004–0010 e il motore di TASK-190, 191 A1
-  e A2, 197 e 203: aggiornare a `main` vuol dire rilanciare `draw_examples` (regola
-  11) e, per la bici, costruire almeno la zona bici di Trento. Con l'ok
-  dell'utente.
-- **App**: ultima pubblicazione su `preview` da `fa6ee9e` (update
-  `85fbf31e`, 2026-10-02 18:07Z). Il 2026-10-03, con l'ok dell'utente, `main`
-  c16e9c1 è su un ramo EAS di prova, `task-204-test` (gruppo 37bde818), per
-  la grafica della corsa: contro il server vecchio le parole con la penna
-  alzata, la foto, «Edit profile», la bici, Strava e la pubblicazione delle
-  corse non vanno. In `main` ma non su `preview`: tutto questo, che vuole il
-  server aggiornato prima.
+  `deploy/compose.yaml` con PostgreSQL. A `main` `4b236f9` dal 2026-10-03
+  10:00Z (migrazioni 0001–0010; immagine di prima
+  `shaperoute-api:before-task205`, copia del database
+  `shaperoute-2026-10-03T1000Z.dump`). Esempi disegnati per 66 città su
+  66; zona bici di Trento. Strava spento (mancano le chiavi dell'utente).
+  Il prossimo aggiornamento del motore (TASK-206) vuole zone bici rifatte e
+  `draw_examples`, con l'ok dell'utente.
+- **App**: su `preview` da `main` `d0e8692` dal 2026-10-03 10:39Z (gruppo
+  `d49fce25`). Il ramo di prova `task-204-test` (gruppo 37bde818) non
+  serve più.
 
 ## Fatto in questa tornata (2026-10-01/02)
 

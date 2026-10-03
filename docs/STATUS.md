@@ -115,18 +115,17 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app da aggiornare, con l'ok dell'utente**: in `main` ma non
-  sul server (fermo a `0003`) ci sono le migrazioni `0004` (Strava,
-  TASK-187), `0005` (foto, TASK-178), `0006` (penna alzata, TASK-199),
-  `0007` (profili, TASK-116), `0008` (attività nei preferiti, TASK-200)
-  e `0010` (la canoa nei preferiti, TASK-191 B), e il motore di TASK-190,
-  191 A1, A2 e B, 197 e 203, che cambia l'impronta: dopo
-  l'aggiornamento va rilanciato `draw_examples` (circa 35 minuti,
-  `AGENTI.md` regola 11) e, per la bici, costruita almeno la zona bici di
-  Trento. Conviene un solo aggiornamento dopo TASK-191 A2 (anche lei
-  cambia il motore). Poi la pubblicazione dell'app (foto, «Edit profile»,
-  penna alzata accesa, bici, «Send to Strava»). Ordine: server, esempi,
-  app.
+- **Server e app aggiornati il 2026-10-03** (ok dell'utente, «Server e
+  poi preview»): il server è su `main` `4b236f9` dalle 10:00Z, con le
+  migrazioni `0004`–`0010` (immagine di prima
+  `shaperoute-api:before-task205`, copia del database
+  `shaperoute-2026-10-03T1000Z.dump`); la prima zona bici, Trento (41 MB);
+  gli esempi ridisegnati per 66 città su 66. L'app è su `preview` da `main`
+  `d0e8692` (gruppo `d49fce25`, 10:39Z): foto e «+» del profilo, «Edit
+  profile», penna alzata accesa, bici, pubblicare una corsa, la grafica
+  della corsa, il pulsante dello sport. **Da provare sull'iPhone.** Strava
+  resta spento finché l'utente non crea la sua app Strava e scrive il
+  secret sul server; la canoa nell'app è ancora «Soon».
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),

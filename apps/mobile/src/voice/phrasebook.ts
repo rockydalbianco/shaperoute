@@ -61,6 +61,9 @@ export type Phrasebook = {
    * (TASK-198); `letter` is null when the word does not say which. */
   penUp(letter: string | null): string;
   penDown(letter: string | null): string;
+  /** The end of a letter with the pen up on a bike (TASK-216): "Letter
+   * done. Ride to the U: the drawing is paused." */
+  rideTo(letter: string | null): string;
   /** A part of a time, with its unit: "1 hour", "5 minutes", "42 seconds". */
   hours(count: number): string;
   minutes(count: number): string;
@@ -72,6 +75,9 @@ export type Phrasebook = {
   kilometre(km: number, time: string, pace: string): string;
   /** Said after the kilometre CHEER_KM: «Daje, avanti tutta!». */
   cheer: string;
+  /** Every RIDE_KM_EVERY kilometres on a bike (TASK-216), with the time so
+   * far, already said as a time, and the average speed in whole km/h. */
+  rideKilometres(km: number, time: string, speed: number): string;
   /** A stretch of a bike route with the bike on foot (TASK-206): "get off
    * and walk the bike for 200 metres", in lower case, said after
    * `inMetres` or alone; `metres` is rounded. */
@@ -104,6 +110,11 @@ export type VoiceWords = {
   resumed: string;
   penUp(letter: string | null): string;
   penDown(letter: string | null): string;
+  /** The end of a letter with the pen up, on a bike (TASK-216). */
+  rideTo(letter: string | null): string;
+  /** "10 kilometres. Time: … Average speed: 24 kilometres per hour.", on a
+   * bike (TASK-216): `speed` in km/h, already whole. */
+  rideKilometres(km: number, ms: number, speed: number): string;
   /** "In 50 metres, get off and walk the bike for 200 metres."; with `inM`
    * null, from here: "Get off and walk the bike for 200 metres." (TASK-206). */
   walkTheBike(inM: number | null, metres: number): string;
@@ -185,6 +196,10 @@ export function voiceWords(book: Phrasebook): VoiceWords {
     resumed: book.resumed,
     penUp: book.penUp,
     penDown: book.penDown,
+    rideTo: book.rideTo,
+    rideKilometres(km, ms, speed) {
+      return book.rideKilometres(km, time(ms), speed);
+    },
     walkTheBike(inM, metres) {
       const words = book.walkTheBike(roundMetres(metres));
       return inM === null

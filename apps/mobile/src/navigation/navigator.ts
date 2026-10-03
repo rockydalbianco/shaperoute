@@ -57,6 +57,9 @@ export type Navigation = {
   /** Fixes on the route in a row while off it. */
   backFixes: number;
   arrived: boolean;
+  /** How far ahead a turn is said: ANNOUNCE_M when absent, further on a
+   * bike (TASK-216, `ride.ts`). */
+  announceM?: number;
 };
 
 /** What to do after a fix: words to say, and whether to vibrate. */
@@ -66,6 +69,7 @@ export function startNavigation(
   points: LatLon[],
   directions: Direction[],
   language: Language = BASE_LANGUAGE,
+  announceM: number = ANNOUNCE_M,
 ): { navigation: Navigation; cues: Cue[] } {
   const departure = directions[0]?.turn === "depart" ? directions[0] : null;
   const navigation: Navigation = {
@@ -79,6 +83,7 @@ export function startNavigation(
     offStreak: null,
     backFixes: 0,
     arrived: false,
+    announceM,
   };
   return {
     navigation,
@@ -170,7 +175,11 @@ export function onFix(
     };
   }
   const aheadM = next < directions.length ? directions[next].distance_m - alongM : null;
-  if (aheadM !== null && next > saidUpTo && aheadM <= ANNOUNCE_M) {
+  if (
+    aheadM !== null &&
+    next > saidUpTo &&
+    aheadM <= (navigation.announceM ?? ANNOUNCE_M)
+  ) {
     const chain = chainFrom(directions, next);
     cues.push({ say: words.announcement(chain, aheadM), vibrate: true });
     saidUpTo = next + chain.length - 1;

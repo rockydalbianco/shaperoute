@@ -1130,7 +1130,11 @@ una riga in più, «15.4 km of letters + 4.2 km walking between them»
 la corsa registra e quelli a cui va la distanza chiesta; a parità di km le
 lettere vengono 1,7 volte più alte e i tratti a piedi aggiungono il 20–30%.
 La distanza in grande e quella delle tessere «A · B · C» restano di tutto
-il percorso, tratti a piedi compresi (`distance_m`). Un risultato senza
+il percorso, tratti a piedi compresi (`distance_m`). **In bici**
+(TASK-216, testo scelto dall'utente) fra le lettere si pedala: «15.4 km of
+letters + 4.2 km riding between them» · «15,4 km di lettere + 4,2 km in
+bici fra una lettera e l'altra» (attraverso `t()`; tedesco, spagnolo e
+francese da confermare). Un risultato senza
 `walks` (un'API più vecchia di TASK-197) o con `walks` che non stanno nei
 `points` (l'app non si fida: `src/route/walks.ts`) si disegna come prima,
 una linea sola, con lo stesso messaggio alla mappa di prima. Il percorso
@@ -1278,9 +1282,10 @@ TASK-164, di cui tiene i numeri.
     waypoint «Pause» e «Resume» (TASK-197, `GPX.md`).
 - **La bici a mano** (TASK-206, ADR-0167; frasi scelte dall'utente il
   2026-10-03). Su un percorso in bici con tratti a mano (`on_foot`) la
-  voce, con una vibrazione, dice il tratto **50 m prima** (`ANNOUNCE_M`,
-  come una svolta): «In 50 metres, get off and walk the bike for 200
-  metres.» · «Tra 50 metri, scendi e porta la bici a mano per 200 metri.»,
+  voce, con una vibrazione, dice il tratto **100 m prima**
+  (`ON_FOOT_AHEAD_M`, come una svolta in bici: TASK-216, ADR-0179; prima
+  50 m): «In 100 metres, get off and walk the bike for 200 metres.» · «Tra
+  100 metri, scendi e porta la bici a mano per 200 metri.»,
   con i metri che mancano e la lunghezza del tratto arrotondati a 10; e
   alla sua fine «Back on the bike.» · «Risali in bici.», tranne quando il
   tratto finisce all'arrivo. Se la prima posizione è già sul tratto, la
@@ -1289,6 +1294,42 @@ TASK-164, di cui tiene i numeri.
   c'è). Una volta sola ciascuna, dopo le svolte della stessa posizione. La
   registrazione **non** va in pausa: il tratto a mano è disegno, e conta
   nel tempo e nel punteggio. `src/navigation/onFootVoice.ts`.
+
+**In bici** (TASK-216, ADR-0179; scelte dell'utente del 2026-10-03).
+«Start» su un percorso in bici apre una navigazione da bici. L'attività è
+quella del percorso, non quella di «Settings»: da «Draw» quella con cui è
+stato chiesto, da un preferito quella con cui è stato tenuto, da «Explore»
+quella dell'esempio (oggi sempre la corsa). Solo `cycling` cambia: la
+corsa, e un percorso senza attività, restano come prima, parola per parola.
+
+- **La velocità al posto del passo**: su «Map» «Speed now» (km/h, sugli
+  ultimi 200 m, come «Pace now»); su «Data» e in pausa «Speed now», «Avg
+  speed», «Last km» (la velocità dell'ultimo km intero), «Elev. gain»,
+  «Calories»; i km uno per uno sono «Km · Speed · Change», con la velocità
+  a un decimale («24.0») e la differenza col km prima in km/h («-4.0» più
+  lento, «+1.5» più veloce). In italiano «Vel. ora», «Vel. media», «Ultimo
+  km», «Velocità» (approvati dall'utente; tedesco, spagnolo e francese da
+  confermare); i numeri col punto, come gli altri della schermata.
+- **La voce dei km ogni 10 km**, a 10, 20 e 30: «10 kilometres. Time: 25
+  minutes 10 seconds. Average speed: 24 kilometres per hour.» · «10
+  chilometri. Tempo: 25 minuti e 10 secondi. Velocità media: 24 chilometri
+  orari.», la velocità a numero intero, detta a parole (la voce del telefono
+  può leggere male «km/h»). Le pause non contano, e una pedalata che
+  riprende non ridice i 10 km già detti. L'incitamento dopo i primi 5 km
+  in bici non c'è.
+- **Le svolte 100 m prima** (`RIDE_ANNOUNCE_M`), con la distanza detta
+  («In 100 metres, turn left onto Via Roma»), e così i tratti con la bici a
+  mano. Perché 100 m: a 20 km/h la svolta arriva in mediana 16 s dopo
+  l'inizio della frase, come a 5:30 /km con 50 m; oltre non si guadagna,
+  perché in bici le svolte distano in mediana 99 m (ADR-0179, misurato su
+  Trento).
+- **La penna alzata in bici**: alla fine di una lettera «Letter done. Ride
+  to the U: the drawing is paused.» · «Lettera finita. Pedala fino alla U:
+  il disegno è in pausa.» («the next letter» · «la lettera successiva»
+  quando la parola non dice quale); «Pen down: draw the U.» come a piedi.
+  La pausa «penna» è la stessa.
+- **Come nella corsa**, per ora: la fine della corsa (il riepilogo col
+  passo), le calorie (stimate per la corsa), la corsa senza percorso.
 
 **L'aspetto della corsa** (TASK-204, ADR-0163; chiesto dall'utente il
 2026-10-03: «migliora la parte grafica», e confermato lo stesso giorno,
@@ -1341,7 +1382,8 @@ qualche passo perché compaia (prima c'è il segnaposto di sempre), e da
 fermi resta quella di prima. A fine corsa torna il segnaposto.
 
 Ogni svolta si dice a voce 50 m prima («In 50 metres, turn left onto Via
-Roma, then turn right onto the footpath»), con una vibrazione, nella lingua
+Roma, then turn right onto the footpath»; in bici 100 m, «In bici» qui
+sopra), con una vibrazione, nella lingua
 della voce: in inglese finché non se ne sceglie un'altra («La voce della
 corsa», sotto). Una via senza nome è «the footpath», «the
 path», «the road»: mai un nome inventato. Se accanto corre una via con nome
@@ -1392,10 +1434,11 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   delle vie mai tradotti), «beside», fuori e di nuovo sul percorso,
   l'arrivo, la pausa da fermi e la ripresa, la penna alzata, ogni km con
   tempo e passo, la bici a mano (TASK-206: tedesco, spagnolo e francese da
-  confermare). Il numero uno detto a parole dove si accorda
-  («Un chilometro», «un'ora», «eine Minute»). Le frasi sono in
-  `src/voice/`, una tabella per lingua; quelle in inglese sono le stesse di
-  prima, parola per parola.
+  confermare), in bici i km ogni 10 con la velocità media e la penna alzata
+  pedalando (TASK-216: tedesco, spagnolo e francese da confermare). Il
+  numero uno detto a parole dove si accorda («Un chilometro», «un'ora»,
+  «eine Minute»). Le frasi sono in `src/voice/`, una tabella per lingua;
+  quelle in inglese sono le stesse di prima, parola per parola.
 - **Dopo i primi 5 km**, una volta sola e subito dopo l'annuncio del
   quinto km, la voce incita: **«Daje, avanti tutta!»** (chiesto
   dall'utente il 2026-10-03). Nelle altre lingue: «Come on, full speed
@@ -1419,7 +1462,9 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
 | Penna alzata | «Lettera finita. Cammina fino alla A: il disegno è in pausa.» · «Giù la penna: disegna la A.» |
 | Km | «Un chilometro. Tempo: 5 minuti e 42 secondi. Passo medio: 5 minuti e 42 secondi al chilometro.» |
 | Dopo 5 km | «5 chilometri. Tempo: 25 minuti. Passo medio: 5 minuti al chilometro. Daje, avanti tutta!» |
-| Bici a mano (TASK-206) | «Tra 50 metri, scendi e porta la bici a mano per 200 metri.» · «Risali in bici.» |
+| Bici a mano (TASK-206) | «Tra 100 metri, scendi e porta la bici a mano per 200 metri.» · «Risali in bici.» |
+| Penna alzata in bici (TASK-216) | «Lettera finita. Pedala fino alla U: il disegno è in pausa.» |
+| Km in bici, ogni 10 (TASK-216) | «10 chilometri. Tempo: 25 minuti e 10 secondi. Velocità media: 24 chilometri orari.» |
 
 **Modalità tasca** (TASK-070, ADR-0066). Accanto a «Pause», «Pocket»: lo
 schermo diventa nero, la luminosità va al minimo e resta acceso, e i tocchi

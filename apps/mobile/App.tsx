@@ -1,4 +1,5 @@
 import type {
+  Activity,
   Direction,
   LatLon,
   LetterStyle,
@@ -139,6 +140,8 @@ type ExploreRun = {
   word?: string | null;
   /** A bike route (TASK-206): its stretches with the bike on foot. */
   on_foot?: Stretch[];
+  /** What it is for (TASK-216): a favorite kept by bike is followed by bike. */
+  activity?: Activity;
 };
 
 function finishedRun(run: ScorableRun, resumable: boolean): Finished {
@@ -390,6 +393,13 @@ function Sgrava() {
   // The stretches with the bike on foot of a bike route (TASK-206).
   const followedOnFoot =
     exploreRun === null ? (chosen?.on_foot ?? null) : (exploreRun.on_foot ?? null);
+  // What the route followed is for: a bike route is followed by bike (TASK-216).
+  const followedActivity =
+    exploreRun === null
+      ? view.status === "done"
+        ? view.request.activity
+        : undefined
+      : exploreRun.activity;
   const navigating = screen === "navigate" && followed !== null;
   const navigation = useNavigation(
     followed?.points ?? null,
@@ -400,6 +410,7 @@ function Sgrava() {
       walks: followedWalks ?? undefined,
       word: exploreRun === null ? chosen?.word : (exploreRun.word ?? null),
       onFoot: followedOnFoot ?? undefined,
+      activity: followedActivity,
     },
   );
   const finishing = screen === "finish" && finished !== null;
@@ -557,14 +568,18 @@ function Sgrava() {
 
   /** Start on a route of "Explore": its directions first (TASK-145). A
    * favorite of a word with the pen up brings its walks (TASK-199), a bike
-   * route its stretches with the bike on foot (TASK-206). */
-  function onStartExplore(route: {
-    points: LatLon[];
-    similarity: number;
-    walks?: Walk[];
-    word?: string | null;
-    on_foot?: Stretch[];
-  }) {
+   * route its stretches with the bike on foot (TASK-206), and is followed
+   * by bike (TASK-216). */
+  function onStartExplore(
+    route: {
+      points: LatLon[];
+      similarity: number;
+      walks?: Walk[];
+      word?: string | null;
+      on_foot?: Stretch[];
+    },
+    activity?: Activity,
+  ) {
     startDirections.start(route.points, (directions) => {
       setExploreRun({
         points: route.points,
@@ -576,6 +591,7 @@ function Sgrava() {
         ...(route.on_foot !== undefined && route.on_foot.length > 0
           ? { on_foot: route.on_foot }
           : {}),
+        ...(activity !== undefined ? { activity } : {}),
       });
       setScreen("navigate");
     });
@@ -819,7 +835,7 @@ function Sgrava() {
             )}
             onStart={() => {
               if (explored.status === "done") {
-                onStartExplore(explored.result);
+                onStartExplore(explored.result, explored.request.activity);
               }
             }}
           />
@@ -844,6 +860,7 @@ function Sgrava() {
             }
             track={trackOfNavigation(navigation)}
             onStop={onEndRun}
+            activity={followedActivity}
           />
         ) : (
           <RouteOutcome

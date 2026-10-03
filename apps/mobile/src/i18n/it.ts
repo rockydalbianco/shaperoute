@@ -251,6 +251,10 @@ export const IT: Table = {
   "Profile pictures are not available on this API yet.":
     "Su questa API le foto del profilo non ci sono ancora.",
 
+  // src/route/RoutePanel.tsx
+  "{letters} km of letters + {between} km riding between them":
+    "{letters} km di lettere + {between} km in bici fra una lettera e l'altra",
+
   // src/route/warnings.ts
   "Includes {distance} walking the bike.": "Di cui {distance} con la bici a mano.",
 
@@ -266,6 +270,15 @@ export const IT: Table = {
     "Il tuo account e tutto quello che era tuo sono stati eliminati.",
   "You are logged out on this phone.": "Hai chiuso la sessione su questo telefono.",
   Back: "Indietro",
+
+  // src/screens/RunDashboard.tsx
+  Speed: "Velocità",
+  "Kilometre {km}: {speed} km/h": "Chilometro {km}: {speed} km/h",
+
+  // src/screens/RunPanel.tsx
+  "Speed now": "Vel. ora",
+  "Avg speed": "Vel. media",
+  "Last km": "Ultimo km",
 
   // src/screens/SignInScreen.tsx
   "Sign up": "Iscriviti",

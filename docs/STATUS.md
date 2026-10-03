@@ -175,12 +175,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Mancano il cerchio da 20 km, Levico e Padova, quando Overpass riapre. Il
   miglioramento delle forme in bici è TASK-206, qui sotto. Da dove
   riprendere: il task file, «Esito», «I campioni».
-- **TASK-216 — La navigazione in bici** (Todo, scelte dell'utente del
-  2026-10-03 chieste da TASK-206 C): velocità in km/h sulla schermata e
-  nella voce dei km, avvisi di svolta più in anticipo, e con la penna
-  alzata in bici «riding» / «Ride to the U» al posto di «walking». Chiude
-  le domande «Start» in bici e «km walking» di TASK-190. Il codice dopo
-  TASK-206 C. `tasks/TASK-216.md`.
+- **TASK-216 — La navigazione in bici** (ADR-0179; scelte dell'utente del
+  2026-10-03): fatto nel branch `feat/TASK-216-bike-navigation`, PR in
+  attesa del merge. «Start» su un percorso in bici (da «Draw», da un
+  preferito tenuto in bici) segue l'attività del percorso: km/h al posto
+  del passo («Speed now», «Avg speed», «Last km», la colonna «Speed»), la
+  voce dei km ogni 10 km con la velocità media, svolte e tratti a mano
+  detti 100 m prima (misurato su Trento), «riding» / «Ride to the U» con
+  la penna alzata. La corsa è identica. Frasi e nomi inglesi e italiani
+  approvati dall'utente; tedesco, spagnolo e francese da confermare. Non
+  pubblicato, da provare sull'iPhone. `tasks/TASK-216.md`.
 - **TASK-217 — La voce confronta ogni km col precedente** (Todo; chiesto
   e scelto dall'utente il 2026-10-03): dopo la frase di ogni km, «Questo
   chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2

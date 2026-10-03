@@ -1,8 +1,9 @@
-import type { Walk } from "@shaperoute/shared-types";
+import type { Activity, Walk } from "@shaperoute/shared-types";
 
 import { BASE_LANGUAGE, type Language } from "../i18n/languages";
 import { wordsOf } from "../voice/words";
 import { type Cue, POOR_FIX_M } from "./navigator";
+import { isRide } from "./ride";
 
 /**
  * The pen of a word with the pen up, along the run (TASK-198): pure
@@ -34,6 +35,8 @@ export type Pen = {
   next: number;
   /** The pen is up: the runner is on walks[next]. */
   up: boolean;
+  /** Between the letters by bike (TASK-216): "Ride to the U". */
+  ride: boolean;
 };
 
 /** What the pen did at a fix: up at the end of a letter, down at the start
@@ -44,12 +47,14 @@ export type PenStep = { pen: Pen; move: "up" | "down" | null; cues: Cue[] };
  * The pen at the start of a route whose metres from its start are `along`,
  * with the walks it has (already checked: walksOf). `word` names the letters:
  * the walk at `i` leads to its letter `i + 1`, when it has one more letter
- * than walks; otherwise the voice says "the next letter".
+ * than walks; otherwise the voice says "the next letter". On a route of
+ * `activity` "cycling" the way between the letters is ridden (TASK-216).
  */
 export function startPen(
   along: readonly number[],
   walks: readonly Walk[],
   word: string | null | undefined,
+  activity?: Activity,
 ): Pen {
   const letters = word ? Array.from(word.toUpperCase()) : [];
   const named = letters.length === walks.length + 1;
@@ -61,6 +66,7 @@ export function startPen(
     })),
     next: 0,
     up: false,
+    ride: isRide(activity),
   };
 }
 
@@ -87,7 +93,7 @@ export function movePen(
       : {
           pen: { ...pen, up: true },
           move: "up",
-          cues: [{ say: wordsOf(language).penUp(walk.letter), vibrate: true }],
+          cues: [{ say: endOfLetter(pen, walk.letter, language), vibrate: true }],
         };
   }
   return alongM < walk.toM - PEN_DOWN_M
@@ -97,4 +103,10 @@ export function movePen(
         move: "down",
         cues: [{ say: wordsOf(language).penDown(walk.letter), vibrate: true }],
       };
+}
+
+/** What the voice says at the end of a letter: walk, or ride, to the next. */
+function endOfLetter(pen: Pen, letter: string | null, language: Language): string {
+  const words = wordsOf(language);
+  return pen.ride ? words.rideTo(letter) : words.penUp(letter);
 }

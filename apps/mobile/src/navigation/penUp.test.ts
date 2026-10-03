@@ -119,6 +119,34 @@ describe("the pen along the route", () => {
     expect(movePen(pen, 1000)).toEqual({ pen, move: null, cues: [] });
   });
 
+  test("by bike the way to the next letter is ridden (TASK-216)", () => {
+    let pen: Pen = startPen(ALONG, WALKS, "sun", "cycling");
+    const said: string[] = [];
+    for (let m = 0; m <= 1000; m += 10) {
+      const step = movePen(pen, m);
+      pen = step.pen;
+      said.push(...step.cues.map((cue) => cue.say));
+    }
+    expect(said).toEqual([
+      "Letter done. Ride to the U: the drawing is paused.",
+      "Pen down: draw the U.",
+      "Letter done. Ride to the N: the drawing is paused.",
+      "Pen down: draw the N.",
+    ]);
+    expect(
+      movePen(startPen(ALONG, WALKS, null, "cycling"), 300, null, "it").cues,
+    ).toEqual([
+      {
+        say: "Lettera finita. Pedala fino alla lettera successiva: il disegno è in pausa.",
+        vibrate: true,
+      },
+    ]);
+    // On foot for a run, and for any other activity.
+    expect(movePen(startPen(ALONG, WALKS, "sun", "running"), 300).cues[0].say).toBe(
+      "Letter done. Walk to the U: the drawing is paused.",
+    );
+  });
+
   test("a word that does not fit its walks says the next letter", () => {
     const step = movePen(startPen(ALONG, WALKS, null), 300);
     expect(step.cues).toEqual([

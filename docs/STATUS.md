@@ -362,6 +362,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   della pagina sull'iPhone (`out/on-phone-engine/`, Safari, «Start the
   test»). Niente server né pubblicazione. Da dove riprendere:
   `tasks/TASK-214.md`, «Esito».
+- **TASK-222 — Il cuore su giallo in «Explore»** (ADR-0184; chiesto
+  dall'utente il 2026-10-03): il `HeartBadge` di TASK-221 a destra di
+  «Best near you», sotto il cerchio del profilo e largo uguale, solo
+  un'immagine. Fatto nel branch `feat/TASK-222-explore-heart` e visto nel
+  simulatore; la PR parte dopo il merge di TASK-221, che crea il
+  componente. Niente pubblicazione. Da dove riprendere: il task file.
 
 ## Completato
 

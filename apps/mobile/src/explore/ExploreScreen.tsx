@@ -25,6 +25,7 @@ import {
   type RecommendedRoute,
   routeTitle,
 } from "./recommendedRoutes";
+import { HeartBadge } from "../intro/HeartBadge";
 import type { Place } from "../places/photon";
 import { AskForRoute } from "./AskForRoute";
 import {
@@ -233,6 +234,9 @@ export function ExploreScreen({
             {`Starting within ${NEAR_RADIUS_M / 1000} km of ${city?.label ?? "your start"}`}
           </Text>
         </View>
+        {/* The sign of Sgrava, under the button of «Profile» and as wide
+            (TASK-222, ADR-0184): a picture, not a button. */}
+        <HeartBadge size={MIN_TAP_SIZE} />
       </View>
       <ScrollView
         ref={page}

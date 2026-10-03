@@ -388,8 +388,10 @@ tondo bianco con il **«+»** scuro, con o senza foto (TASK-207, scelto
 dall'utente): un tocco sul cerchio apre sotto la bio, sopra «Edit
 profile» e in un riquadro che le separa da lui, le stesse scelte di
 «Profile picture» in «Settings» (sotto), e un altro tocco le richiude; lì si leggono anche «Saving…», «Removing…» e
-gli errori, e mentre la foto va all'API il cerchio non si tocca. Il
-profilo di un altro non ha il «+». Sotto, due riquadri affiancati: **«Favorites»**
+gli errori, e mentre la foto va all'API il cerchio non si tocca. Per
+VoiceOver il cerchio si chiama «Profile picture», come la riga: nessun
+testo nuovo (ADR-0168, che riusa ADR-0146). Il profilo di un altro non ha
+il «+». Sotto, due riquadri affiancati: **«Favorites»**
 con un cuore (❤️) e **«My activities»** con l'uomo che corre (🏃‍♂️), ognuno
 con il suo numero in grande (un trattino finché l'elenco non è arrivato);
 aprono le loro pagine (sotto, «Favorites» e «My activities»). Poi la riga

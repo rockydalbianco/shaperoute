@@ -343,9 +343,12 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   again.» e non mostra un altro percorso al suo posto. Un dito che scorre
   sopra una scheda non la apre. Like, commenti e il profilo di chi ha corso
   arrivano con TASK-118.
-  **In cima, sopra i disegni, «Find friends»** (TASK-215, ADR-0178,
-  chiesto dall'utente): un tasto largo come le schede, a forma di campo,
-  con una lente disegnata e il testo grigio; scorre con l'elenco. Apre
+  **In cima, sopra i disegni, a destra, la lente** (TASK-215, ADR-0178;
+  TASK-219, ADR-0182: solo la lente, scelta dell'utente): un cerchio come
+  quello di «Profile», con una lente disegnata e nessun testo, sotto il
+  bottone di «Profile»; VoiceOver lo legge «Find friends». Non sta
+  nell'intestazione delle pagine: lì, accanto a sport e profilo, su un
+  iPhone da 390 pt non c'è posto. Scorre con l'elenco. Apre
   sopra l'app, come «Profile», la pagina **«Find friends»**: «←», un campo
   «Name» con la tastiera già aperta e, sotto, gli iscritti trovati, al più
   20, ognuno con la foto (o l'iniziale) e il nome; mai l'email. La ricerca
@@ -553,7 +556,7 @@ come in «Profile» (sopra), vuota «No drawings yet.»; un disegno toccato si
 apre sulla mappa. Mentre arriva dice «Loading the profile…»; un profilo che
 non c'è, o un'API senza profili, «This profile is not available.»; senza
 account «Log in to see the profiles of the others.». **Ci si arriva da
-«Find friends»** in cima a «Feed» (TASK-215, ADR-0178, sotto); altri
+«Find friends»**, la lente in cima a «Feed» (TASK-215, ADR-0178, sopra); altri
 ingressi (un like, un commento) li decide l'utente
 (`tasks/TASK-116.md`, «Esito»).
 

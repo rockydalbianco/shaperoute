@@ -333,6 +333,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-219: «Find friends» è solo una lente (ADR-0182; chiesto
+  dall'utente il 2026-10-03). In cima a «Feed», a destra sotto il bottone
+  di «Profile», un cerchio con la lente apre la ricerca di TASK-215;
+  VoiceOver la legge «Find friends». Seguiti scelti dall'utente «a
+  tappe», senza numero per ora: «Invite friends» dopo l'App Store
+  (TASK-152), poi gli amici dai contatti (numero nell'account, SMS di
+  verifica, `expo-contacts`: da chiedere), Facebook per ultimo. Strava non
+  si può: l'API non dà più amici né follower. `tasks/TASK-219.md`.
 - **Motore, API e app** — TASK-206: forme in bici più riconoscibili con
   brevi tratti con la bici a mano (ADR-0167; scelta dell'utente «Sì,
   poco»). Parte A, il motore, PR #249 (marciapiedi, sentieri, zone

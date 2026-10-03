@@ -84,12 +84,14 @@ function StartPointer({
       }
     >
       <View style={styles.row}>
-        <Text
-          testID="start-arrow"
-          style={[styles.arrow, { transform: [{ rotate: `${turn}deg` }] }]}
-        >
-          ↑
-        </Text>
+        <View style={styles.badge}>
+          <Text
+            testID="start-arrow"
+            style={[styles.arrow, { transform: [{ rotate: `${turn}deg` }] }]}
+          >
+            ↑
+          </Text>
+        </View>
         <View style={styles.words}>
           <Text style={styles.distance}>{distanceLabel(start.distanceM)}</Text>
           <Text style={styles.title}>Your start, in a straight line</Text>
@@ -175,6 +177,9 @@ export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
   );
 }
 
+/** The disc of the arrow: a thumb wide, as the round buttons of the run. */
+const BADGE = MIN_TAP_SIZE + space.md;
+
 const box = {
   gap: space.xs,
   padding: space.md,
@@ -197,11 +202,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: space.md,
   },
+  // A dark disc under the arrow, so it reads as a sign (TASK-204).
+  badge: {
+    width: BADGE,
+    height: BADGE,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.pill,
+    backgroundColor: color.background,
+  },
   // The colour of the start (ADR-0040), not the yellow: that is the route's
   // and the main action's (ADR-0046).
   arrow: {
     color: color.startHere,
-    fontSize: fontSize.display,
+    fontSize: fontSize.title + space.sm,
     fontWeight: fontWeight.bold,
   },
   words: {

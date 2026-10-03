@@ -1,9 +1,15 @@
 import { render, screen } from "@testing-library/react-native";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Text } from "react-native";
 
+import { ChooseScreen } from "../screens/ChooseScreen";
 import { color } from "../theme/tokens";
 import { HeartBadge, heartSegments } from "./HeartBadge";
 import { HEART_BOX, HEART_POINTS, heartHeight } from "./heartLine";
+
+jest.mock(
+  "react-native-safe-area-context",
+  () => jest.requireActual("react-native-safe-area-context/jest/mock").default,
+);
 
 describe("heartSegments", () => {
   const width = 20;
@@ -60,7 +66,9 @@ const HIDDEN = { includeHiddenElements: true } as const;
 describe("HeartBadge", () => {
   it("is a yellow square with the heart in black, as at the launch", async () => {
     await render(<HeartBadge size={32} />);
-    const square = StyleSheet.flatten(screen.getByTestId("heart-badge", HIDDEN).props.style);
+    const square = StyleSheet.flatten(
+      screen.getByTestId("heart-badge", HIDDEN).props.style,
+    );
     expect(square.backgroundColor).toBe(color.accent);
     expect(square.width).toBe(32);
     expect(square.height).toBe(32);
@@ -90,6 +98,64 @@ describe("HeartBadge", () => {
     await render(<HeartBadge size={32} />);
     expect(screen.queryAllByRole("image", HIDDEN)).toHaveLength(0);
     expect(screen.getByTestId("heart-badge", HIDDEN)).toBeTruthy();
+    expect(screen.queryByTestId("heart-badge")).toBeNull();
+  });
+});
+
+describe("the heart at the top of «Draw»", () => {
+  async function choose() {
+    await render(
+      <ChooseScreen
+        status="From your position"
+        denied={false}
+        mode="gps"
+        onMode={jest.fn()}
+        searching={false}
+        onPlace={jest.fn()}
+        near={null}
+        mapError={null}
+        footer={<Text>Draw route</Text>}
+        onRun={jest.fn()}
+      >
+        <Text>Shapes</Text>
+      </ChooseScreen>,
+    );
+  }
+
+  it("stands just before the name «Sgrava»", async () => {
+    await choose();
+    // The rendered tree: the heart's next sibling is the name.
+    type Node = {
+      type: string;
+      props: Record<string, unknown>;
+      children: Child[] | null;
+    };
+    type Child = Node | string;
+    function besideHeart(node: Child): Child | undefined {
+      if (typeof node === "string" || node.children === null) {
+        return undefined;
+      }
+      const at = node.children.findIndex(
+        (child) => typeof child !== "string" && child.props.testID === "heart-badge",
+      );
+      if (at >= 0) {
+        return node.children[at + 1];
+      }
+      for (const child of node.children) {
+        const found = besideHeart(child);
+        if (found !== undefined) {
+          return found;
+        }
+      }
+      return undefined;
+    }
+    const next = besideHeart(screen.toJSON() as Node);
+    expect(next).toMatchObject({ type: "Text", children: ["Sgrava"] });
+  });
+
+  it("leaves the name the only thing a screen reader hears there", async () => {
+    await choose();
+    expect(screen.getAllByText("Sgrava")).toHaveLength(1);
     expect(screen.queryByTestId("heart-badge")).toBeNull();
   });
 });

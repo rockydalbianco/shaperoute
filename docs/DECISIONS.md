@@ -8722,8 +8722,9 @@ diversi.
 3. **Un componente solo**, `src/intro/HeartBadge.tsx`, con la misura del
    lato come unico parametro. Ogni altro posto dove il cuore su giallo
    compare (il primo dopo questo: «Explore») lo importa, non lo ridisegna.
-4. **In «Draw»**: a sinistra di «Sgrava», 32 punti, `space.sm` di
-   distanza; il nome resta un testo.
+4. **Dove si usa**: in «Draw», a sinistra di «Sgrava», 32 punti,
+   `space.sm` di distanza, il nome resta un testo (TASK-221); in
+   «Explore», sotto il cerchio del profilo, 44 punti (TASK-222).
 5. **Solo un'immagine**: nascosto al lettore di schermo, che legge il nome
    accanto.
 
@@ -8739,6 +8740,6 @@ il cuore senza quadrato, nero o giallo sul fondo scuro (il giallo dietro
 è la richiesta); il cuore a destra del nome (il logo viene prima del
 nome, come in ogni marchio).
 
-**Conseguenze**: la sessione di «Explore» usa `HeartBadge` dopo il merge di
-TASK-221. Si vede sul telefono con la prossima pubblicazione dell'app, con
+**Conseguenze**: TASK-222 («Explore») importa `HeartBadge` dopo il merge
+di TASK-221; un posto nuovo si aggiunge al punto 4. Si vede sul telefono con la prossima pubblicazione dell'app, con
 l'ok dell'utente.

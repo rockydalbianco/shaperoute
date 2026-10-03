@@ -187,7 +187,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-117 — Pubblicare una corsa salvata** (ADR-0159; scelte
   dell'utente: due PR, il punteggio visibile agli altri, anche le corse
-  senza percorso). **Parte A, l'API**, in revisione: titolo e «Public» su
+  senza percorso). **Parte A, l'API**, PR #232 in revisione: titolo e «Public» su
   una corsa di «My activities» (`PUT /me/activities/{key}/drawing`), i
   disegni di un profilo e un disegno dal suo id, la traccia senza i primi
   e gli ultimi 200 m e senza il percorso pianificato, il numero di disegni

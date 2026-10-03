@@ -32,7 +32,7 @@ una corsa senza percorso si pubblica anche lei, senza punteggio.
 - `docs/DATABASE.md` `runs`, `drawings`
 - `docs/UI.md` «My activities», profilo (TASK-116)
 
-## Parte A — l'API (fatta, PR in revisione)
+## Parte A — l'API (fatta, PR #232 in revisione)
 
 1. `GET` e `PUT /me/activities/{key}/drawing` (titolo al più 60
    caratteri, «Public»), `GET /me/drawings`, `GET

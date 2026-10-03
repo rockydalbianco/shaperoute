@@ -242,6 +242,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-212: il logo di Sgrava dopo «Save» (ADR-0174; chiesto
+  dall'utente il 2026-10-03). Tenuta la corsa, sopra l'app sale il giallo
+  dell'avvio con il logo, per 1,65 s (un tocco lo chiude prima), poi la
+  mappa come prima; anche senza rete (scelta dell'utente), mai se il
+  telefono non tiene la corsa né a «Discard». Solo app, `App.tsx` non
+  cambia. Sul telefono con la prossima pubblicazione, con l'ok
+  dell'utente. Task file: `tasks/TASK-212.md`.
 - **App** — TASK-207: la foto dal cerchio di «Profile» (chiesto
   dall'utente il 2026-10-03, che ha scelto il «+»). Il cerchio grande di
   «Profile» ha un tondo bianco con il «+» in basso a destra; toccato apre,

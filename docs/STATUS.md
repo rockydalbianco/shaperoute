@@ -102,9 +102,10 @@ In coda, dopo o accanto:
   scelta dell'utente; esempi a Lago di Garda, Lago di Como, Jesolo,
   Riccione). La bici: motore (PR #214) e API (PR #219) in `main`, l'app
   (parte C) assegnata il 2026-10-02 sera. La canoa: il motore dell'acqua
-  (A1, PR #216) in `main`; **A2 aspetta l'utente**: il giudizio sui nove
-  campioni e le distanze in mare (con 1 km dalla riva le forme stanno
-  fino a circa 3–4 km). Nel contratto si usa `activity`, che c'è già.
+  (A1, PR #216) in `main`; **A2** (la canoa in una richiesta del motore)
+  in revisione, con le scelte dell'utente del 2026-10-03: **1–5 km**, al
+  mare la forma **oltre 200 m dalla riva**, sui laghi 50 m (ADR-0161);
+  poi B (API) e C (app). Nel contratto si usa `activity`, che c'è già.
 - **La penna alzata nelle parole**, chiesta e confermata dall'utente il
   2026-10-02: fra una lettera e l'altra si cammina senza disegnare, e
   l'app mette in pausa la registrazione da sola, con un avviso a voce.
@@ -189,16 +190,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   pubblicare l'app, la prova dal vero (data, ora, durata, le pause). Finché
   il server non ha Strava l'app non mostra niente di Strava. Da dove
   riprendere: `tasks/TASK-187.md`, «Esito».
-- **TASK-191 — Percorsi in canoa e paddle, parte A1** (ADR-0154): nel
-  motore, solo file nuovi (`water.py`, `water_fit.py`), l'acqua di laghi e
-  mare, la fascia entro 1 km dalla riva, dove la forma ci sta e la
-  partenza dalla riva dove si arriva a piedi; provato sui dati veri
-  dell'API di OSM a Riccione, Jesolo e Riva del Garda (nove campioni da
-  giudicare), Overpass non provato (rifiutava il Mac), Como no. Al mare,
-  con 1 km, le forme stanno fino a circa 3 km: le distanze vanno chieste
-  all'utente. **A2** (`activity: "paddling"`, limiti, CLI, validazione)
-  può partire ora che la bici è in `main` (PR #214); poi B (API) e C
-  (app). Da dove riprendere: `tasks/TASK-191.md`, «Esito».
+- **TASK-191 — Percorsi in canoa e paddle** (ADR-0154, ADR-0161). **A1**
+  in `main` (PR #216): l'acqua di laghi e mare, la fascia entro 1 km dalla
+  riva, dove la forma ci sta, la partenza dalla riva dove si arriva a
+  piedi; nove campioni a Riccione, Jesolo e Riva del Garda, giudicati
+  dall'utente il 2026-10-03 «buoni, ma troppo vicini alla riva». **A2**
+  in revisione (branch `feat/TASK-191-paddle-a2`): `paddling` nel motore,
+  **1–5 km** (scelta dell'utente), al mare la forma **oltre 200 m dalla
+  riva** e sui laghi a 50 m (scelta dell'utente), `python -m route_engine
+  --activity paddling`, la validazione sull'acqua (errori, non warning),
+  parole e immagini rifiutate sull'acqua, `paddling.plan_paddling` per la
+  parte B; i centri scelti da dove si arriva alla riva. L'API la rifiuta
+  ancora (`SUPPORTED_ACTIVITIES` è della parte B). **Manca il punto 5**:
+  i campioni rifatti con le regole nuove sull'area intera, e Como
+  (Overpass dal Mac, o il server con l'ok dell'utente). Cambia l'impronta
+  del motore: un aggiornamento del server con TASK-203, poi
+  `draw_examples`. Poi B (API) e C (app). Da dove riprendere:
+  `tasks/TASK-191.md`, «Esito», parte A2.
 
 ## Completato
 

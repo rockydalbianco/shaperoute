@@ -42,8 +42,8 @@ ACTIVITIES: tuple[str, ...] = tuple(DISTANCE_LIMITS_M)
 # shape fits on the water it is the route (water_fit.py, ADR-0154).
 WATER_ACTIVITIES: frozenset[str] = frozenset({"paddling"})
 # Why a word or an image on the water is refused (TASK-191, ADR-0161): only
-# a shape of the catalogue is drawn there for now. The API says it for an
-# image too.
+# a shape of the catalogue is drawn there for now. The API is to say it for
+# an image too, with TASK-191 part B.
 ON_WATER_SHAPES_ONLY = "on the water only a shape of the catalogue is drawn"
 
 

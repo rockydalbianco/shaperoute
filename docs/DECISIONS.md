@@ -6810,6 +6810,11 @@ La corsa non cambia: nessun file del motore che già c'era è toccato; ma
 prossimo aggiornamento del server gli esempi tenuti (ADR-0136) si
 ridisegnano alla prima richiesta, uguali a prima.
 
+**Aggiornamento** (2026-10-03, ADR-0161): al mare la forma sta oltre
+**200 m** dalla riva, sui laghi resta a 50 m; le distanze sono 1–5 km;
+fra i centri buoni si tengono quelli da cui si arriva alla riva col costo
+minore, non i più vicini alla partenza chiesta.
+
 ## ADR-0157 — La penna alzata: indici dei tratti a piedi in `points`, non pezzi separati
 **Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
 (TASK-197, motore e API). Il cosa è **scelta dell'utente** («per le
@@ -7204,3 +7209,127 @@ pochi byte, che nel processo nuovo non corrisponde a niente: lì i dati si
 calcolano da capo, come prima. Cambia l'impronta del motore
 (`engine_fingerprint`): i percorsi tenuti si buttano e dopo l'aggiornamento
 del server va rilanciato `draw_examples` (`AGENTI.md`, regola 11).
+
+## ADR-0161 — La canoa nel motore: 1–5 km, 200 m dalla riva al mare, solo forme del catalogo, la validazione sull'acqua
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** per le distanze
+(1–5 km) e per quanto stare lontani dalla riva (200 m al mare, 50 m sui
+laghi); il resto deciso dall'agente su delega dell'utente (TASK-191,
+parte A2). Aggiorna ADR-0154.
+
+**Contesto**: A1 (ADR-0154) ha messo nel motore l'acqua, la fascia entro
+1 km dalla riva e la ricerca di dove la forma ci sta, ma solo da `python
+-m route_engine.water`. A2 collega la canoa a una richiesta: l'attività,
+le distanze, la CLI, la validazione. L'utente ha guardato i nove campioni
+di A1 (Riccione, Jesolo, Riva del Garda): «buoni, ma troppo vicini alla
+riva» (la forma passava a 60–80 m dalla spiaggia).
+
+**Decisione**:
+
+1. **Le distanze** (scelta dell'utente): `DISTANCE_LIMITS_M["paddling"] =
+   (1000, 5000)`, un limite solo come per corsa e bici. Al mare una forma
+   sta fino a circa 3 km: oltre, `WaterFitError` dice a quanti km ci sta
+   (`best_distance_m`, come TASK-031), e l'app lo può proporre.
+2. **Dalla riva** (scelta dell'utente): al mare la forma sta oltre
+   **200 m** dalla riva, fuori dalla fascia dei bagnanti di molte
+   ordinanze (`water.SEA_SHORE_MARGIN_M`): dalla fascia si toglie il mare
+   entro 200 m dalla terraferma e dalle isole di almeno 1 ha. Sui laghi, e
+   attorno a scogli e frangiflutti, restano 50 m e 30 m. Solo i tratti
+   dalla riva attraversano i 200 m.
+3. **Fra i centri buoni, quelli da cui si arriva alla riva**
+   (`water_fit._join_costs`, `_promising`): A1 teneva, per ogni scala e
+   angolo, i tre centri il cui contorno passava più vicino alla partenza
+   chiesta. Con tratti di almeno 200 m questo non regge: dietro il
+   frangiflutti della fixture i tre centri più vicini erano a più di 300 m
+   da ogni riva raggiungibile, e un cuore da 2 km «ci stava a 2,2 km»
+   mentre accanto, davanti alla spiaggia, ci stava a 2 km. Ora ogni cella
+   della fascia ha il costo di unirla alla riva (i due tratti fino al
+   punto della riva raggiungibile più vicino, entro 2 km dalla partenza,
+   più lo spostamento fino a lì, con i pesi del costo), e si tengono i tre
+   centri il cui contorno passa dove costa meno; a parità, i più vicini
+   alla partenza.
+4. **Le scale, con i loro tratti**: nessun tratto è più corto della via
+   dal punto della riva raggiungibile più vicino alla fascia (al mare
+   circa 200 m). Le scale per cui forma e tratti sono già oltre il +10%
+   si saltano, e la ricerca si ferma quando |scala + tratti − 1| + 2 ·
+   tratti (il costo minimo di qualunque forma più piccola) non batte il
+   migliore trovato. Senza, al mare la ricerca scendeva 15 scale invece di
+   5: un cuore da 2 km sulla costa della fixture 5,7 s, ora 0,4 s; i test
+   dell'acqua girano in 5,2 s come in `main`.
+5. **`paddling` è un'attività del motore, non ancora del contratto**:
+   entra in `ACTIVITIES` con `DISTANCE_LIMITS_M`, ed è in
+   `WATER_ACTIVITIES` (`models.py`), le attività senza rete: non è in
+   `network.NETWORKS` e non ci deve essere. `SUPPORTED_ACTIVITIES` e
+   `shared-types` la prendono con la parte B, come per la bici
+   (ADR-0153): fino ad allora l'API la rifiuta come prima.
+6. **Sull'acqua solo forme del catalogo**: una parola, un'immagine o un
+   contorno da file sono `InvalidRequestError` («on the water only a
+   shape of the catalogue is drawn, not a word»), da
+   `models.check_drawn_on_land`: nella `RouteRequest` per una parola
+   (prima della distanza per lettera, che direbbe altro), nella CLI per
+   immagine e contorno prima di tracciare l'immagine; l'API la usa per le
+   immagini nella parte B (`ON_WATER_SHAPES_ONLY`). Una parola vuole 3 km
+   a lettera (`LETTER_DISTANCE_M`): in 5 km ci sta una lettera. Il
+   contorno di un'immagine ci starebbe (`water_fit` prende qualunque linea
+   chiusa), ma è una cosa che l'utente vede: si apre dopo, se la chiede.
+7. **La validazione sull'acqua** (`validation.check_on_water`, da
+   `water_fit.measure`): chiuso; nessun metro sulla terra oltre mezzo
+   metro dentro (`ON_LAND_M`: il tratto parte dal bordo dell'acqua);
+   nessun punto oltre 1000 m dalla riva; la distanza entro ±10%. Non sono
+   warning: un percorso che non li rispetta è un errore del motore
+   (`InvalidRouteError`), come un percorso aperto sulle strade. Niente
+   scale, strade principali, sterrati e ripercorrenza.
+8. **Il piano di una richiesta** (`route_engine/paddling.py`, nuovo):
+   `plan_paddling(request, source)` disegna la forma con 128 punti (il
+   contorno è il percorso: il doppio di una forma sulle strade, come i
+   campioni), la piazza con `plan_on_water`, la controlla e dà
+   `WaterPlan`: il `RouteResult` (somiglianza 1, nessun warning, nessuna
+   indicazione di svolta: le dà l'API dal grafo, che sull'acqua non c'è,
+   parte B), il `WaterRoute` e l'acqua. La usano la CLI e, nella parte B,
+   l'API.
+9. **La CLI**: con `--activity paddling` il piano è `plan_paddling` con
+   `OverpassWaterSource(<cache-dir>)`, deciso prima di qualunque grafo
+   delle strade; stampa scala, rotazione, partenza sulla riva e il suo
+   tipo, tratto, distanza, quanto la forma sta lontana dalla terra e il
+   punto più lontano dalla riva. `--score-track` vale (servono solo i
+   punti); `--nearby` e `--no-optimize` sono delle strade e si rifiutano;
+   `--reuse-penalty` sull'acqua non conta.
+10. **Le fixture**: la coastline della costa prosegue dritta fino a ±9 km,
+    così taglia anche l'area di una richiesta (circa 8 km di lato per un
+    cuore da 2 km); `build_area` la taglia al riquadro chiesto, e i test
+    di A1 vedono la stessa costa. I test della CLI mettono l'acqua delle
+    fixture in una cartella di cache, col nome dell'area della richiesta,
+    come la lascerebbe un download; un download nei test è un errore.
+
+**Misurato sulle fixture** (dati veri non scaricabili oggi: la cartella
+di A1 con le risposte dell'API di OSM non c'è più): sulla costa la forma
+sta a 208–223 m dalla terra, con tratti di 209–223 m per lato; a 1 km la
+forma è il 58% del giro, a 2 km il 79%, a 3 km l'85%; il cuore ci sta fino
+a 3,0 km, il cerchio a 2,8, la stella a 3,4. Sul lago, come in A1: tratti
+di 59–96 m, 1–5 km tutti disegnati, scala 0,88–0,97. Ogni piano al più un
+secondo.
+
+**Alternative scartate**: un limite per il mare e uno per i laghi (1–3 e
+1–5 km: il limite dipenderebbe dall'acqua, che si conosce solo dopo
+averla letta, e l'app non saprebbe cosa proporre prima); 1–3 km ovunque
+(offerte all'utente, che ha scelto 1–5); 200 m anche sui laghi, o 100 m
+ovunque (offerte all'utente); 200 m anche dagli scogli (non c'è una
+spiaggia di bagnanti attorno a uno scoglio); tratti più lunghi (300 →
+450 m) invece di scegliere i centri dalla riva (accanto al frangiflutti
+avrebbe preso tratti di 380 m invece di 215); parole e immagini
+sull'acqua adesso; una rete della canoa in `NETWORKS`; i controlli
+sull'acqua come warning.
+
+**Conseguenze**: la richiesta `running` non cambia (nessun modulo delle
+strade è toccato; `models.py` aggiunge la canoa e rifiuta solo le parole
+sull'acqua). I campioni v1 del mare (Riccione, Jesolo) non sono più quello
+che il motore disegna, e quelli di Garda vengono da una scelta dei centri
+diversa: si rifanno tutti, con Como, quando Overpass risponde o dal
+server con l'ok dell'utente (punto 5 di A2). `engine_fingerprint` cambia:
+dopo il prossimo aggiornamento del server gli esempi tenuti si
+ridisegnano (`draw_examples`). Per la parte B: `SUPPORTED_ACTIVITIES`,
+`shared-types`, l'API che chiama `plan_paddling` con la cache dell'acqua
+del server e manda `NoWaterError` e `WaterFitError` come
+`shape_not_drawable` con la distanza suggerita, e le immagini rifiutate
+con `check_drawn_on_land`. Le regole del posto restano fuori: i 200 m
+non dicono che un percorso è permesso, e i tratti attraversano la fascia
+dei bagnanti (l'avviso di sicurezza della parte C).

@@ -8342,6 +8342,72 @@ pagina del profilo e «Requests», «Followers» e «Following» in «Profile».
 I testi nuovi sono tradotti nelle quattro lingue (ADR-0172), da far
 confermare con gli altri.
 
+## ADR-0177 — Il motore sul telefono: Pyodide nella WebView, le zone come dati, il server come riserva
+**Stato**: Attiva · 2026-10-03 · **scelte dell'utente** le sei di
+`tasks/TASK-214.md`; il resto deciso dall'agente su delega dell'utente
+(TASK-214, parte A).
+
+**Contesto**: l'utente, il 2026-10-03, vuole che l'app usi «la potenza del
+suo telefono, utilizzando anche la sua memoria, scaricando le mappe». La
+prova di TASK-214: `route_engine` gira senza modifiche in Pyodide (Python
+in WebAssembly) e dà lo stesso percorso del Python del Mac.
+
+**Decisioni dell'utente** (risposte nel task file):
+1. Pyodide entra, dentro l'app, a versione fissa.
+2. Tutto il codice sta nell'app (Pyodide, i pacchetti, il motore) e si
+   aggiorna con l'app; il telefono scarica solo dati, le zone, non in
+   pickle (regole 2.5.2 e 4.7 di Apple).
+3. Il telefono calcola solo zone sotto un limite di grandezza, da fissare
+   con la misura sull'iPhone; se iOS chiude la WebView, la stessa richiesta
+   va al server senza errori.
+4. Fino a **2 GB** di zone: subito la zona intorno, poi le città vicine e
+   le più cercate, con qualunque rete, anche i dati mobili.
+5. Sul telefono le forme e le parole su strada, di corsa e in bici; al
+   server l'AI, le zone, gli esempi, i luoghi, gli account, la canoa e le
+   foto. Il telefono calcola prima se ha la zona; il server è sempre la
+   riserva.
+6. `route_engine` non cambia; le versioni delle librerie possono restare
+   diverse da quelle del server, e uno script le confronta.
+
+**Decisione dell'agente** (parte A):
+1. **Le zone in un formato neutro** (`phone_zones.py`): JSON con gzip,
+   nodi e archi con tutti i loro attributi, le geometrie come liste di
+   coordinate, i nomi delle strade della zona. Si rilegge lo stesso grafo
+   nello **stesso ordine**: i nodi, i successori e i predecessori di ogni
+   nodo, le chiavi degli archi paralleli. Il motore scioglie i pareggi con
+   quell'ordine (ADR-0162). Gli archi si scrivono in un ordine
+   topologico dei vincoli «u prima di v fra i successori, e fra i
+   predecessori», che ricostruisce entrambi con il solo `add_edge`.
+2. **Il server scrive il file accanto alla zona** alla prima richiesta
+   (`<zona>.zone.json.gz`), e di nuovo quando GraphML o pickle sono più
+   recenti; `GET /phone-zones/{network}?lat=&lon=` dà la zona più piccola
+   che contiene 3 km intorno al punto, con un ETag (`304` se il telefono
+   ce l'ha). Nessun download da Overpass per il telefono.
+3. **L'adattatore** (`on_phone.py`) riusa `RouteJobs`, `with_choices` e
+   `RouteResultBody`: il telefono restituisce il JSON di
+   `GET /route-jobs/{id}`. Niente FastAPI, thread né processi: il job
+   corre dentro `submit`, le partenze vicine una dopo l'altra (tutte: il
+   server lascia cadere quelle oltre la sua scadenza, ADR-0071).
+   `to_request` è copiato da `app.py`, che importa FastAPI, e un test lo
+   confronta.
+4. **L'endpoint si installa in `__main__.py`**, dove c'è la cartella delle
+   zone, non in `app.py`. Il server parte da lì, con `python -m
+   shaperoute_api` (`Dockerfile`, `compose.yaml`); un test lo controlla.
+5. **`python -m shaperoute_api.phone_zone_api`** scrive in anticipo i file
+   di tutte le zone in cache: 0,7–0,8 GB e 20–30 minuti stimati sul server,
+   un passo da fare con l'ok dell'utente, come `draw_examples`.
+
+**Scartato**: il pickle del server (lega le versioni di NetworkX fra
+server e telefono, ADR-0104, e può eseguire codice quando si legge); il
+GraphML (sul telefono servirebbe OSMnx, e leggerlo richiede fino a un
+minuto); ricostruire `_succ` e `_pred` direttamente (interni di NetworkX);
+scaricare Pyodide o il motore dopo l'installazione (regole di Apple).
+
+**Conseguenze**: la zona di Trento pesa 7,0 MB (7,9 il pickle con gzip).
+Il server scrive un file in più per ogni zona chiesta da un telefono.
+L'app (parte B) mette Pyodide fra i suoi asset, con `metro.config.js` e
+`package.json` da concordare con il coordinatore.
+
 ## ADR-0170 — Pubblicare come su Strava, l'API: chi lo vede in tre valori, una domanda sola per saperlo, foto in posti fissi, campi nuovi che un'app di prima non cancella
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-208, parte A), dentro le **scelte dell'utente** del 2026-10-03:

@@ -331,6 +331,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:
   `tasks/TASK-210.md`.
 
+- **TASK-214 — Il motore dei percorsi sul telefono** (ADR-0177; chiesto
+  dall'utente il 2026-10-03). Il telefono disegna da sé forme e parole su
+  strada, con Pyodide in una WebView e le zone nella sua memoria (fino a 2
+  GB, scaricate anche con i dati mobili); il server resta la riserva. Le
+  sei scelte hanno la risposta dell'utente (task file). **Parte A, l'API**
+  (`feat/TASK-214-phone-engine-api`): il formato neutro delle zone,
+  `GET /phone-zones/{network}` e l'adattatore `on_phone.py`, che dà lo
+  stesso `result` di `/route-jobs` (test su Levico; su Trento in Pyodide
+  5–7 s, uguale a CPython). **Dopo**: B, l'app (Pyodide negli asset,
+  `package.json` e `metro.config.js` con l'ok del coordinatore); C, la riga
+  in «Settings»; D, la prova sull'iPhone. **Aspetta l'utente**: la prova
+  della pagina sull'iPhone (`out/on-phone-engine/`, Safari, «Start the
+  test»). Niente server né pubblicazione. Da dove riprendere:
+  `tasks/TASK-214.md`, «Esito».
+
 ## Completato
 
 - **App** — TASK-219: «Find friends» è solo una lente (ADR-0182; chiesto

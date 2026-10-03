@@ -515,11 +515,10 @@ dall'utente (ADR-0167, «Aggiornamento (parte C)»), sul branch
   `favoriteOnFoot.test.ts`, `AppBikeOnFoot.test.tsx` col percorso in bici
   di `shared-types`, e aggiunte a mappa, avvisi, preferiti e voce);
   `typecheck`, `lint`, `format:check` puliti.
-- **Non verificato**: sull'iPhone. Il server non ha la parte B (niente
-  `on_foot` nelle risposte, e la zona della bici di Trento senza tratti a
-  mano): finché non si aggiorna con l'ok dell'utente («Note per il
-  deploy») l'app si comporta come prima. L'app va pubblicata dopo il
-  server.
+- **Non verificato**: sull'iPhone. Il server ha già la parte B (su
+  `7098cb9` dalle 12:39Z del 2026-10-03, con la zona della bici di Trento
+  rifatta, dice il coordinatore): l'app può uscire con la prossima
+  pubblicazione, con l'ok dell'utente.
 - **Scelte dell'utente per altri task**: «Start» in bici e la penna
   alzata in bici sono TASK-216 (`tasks/TASK-216.md`); il confronto di ogni
   km col precedente, chiesto durante questo task, è TASK-217

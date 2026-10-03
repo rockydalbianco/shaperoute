@@ -198,8 +198,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   («Includes 920 m walking the bike.» / «Di cui 920 m con la bici a
   mano.»), la voce («Tra 50 metri, scendi e porta la bici a mano per 200
   metri.» / «Risali in bici.», nessuna pausa) e i preferiti che tengono i
-  tratti. Non provata sull'iPhone; l'app va pubblicata dopo il server con
-  la parte B (ok dell'utente). Da dove riprendere: `tasks/TASK-206.md`,
+  tratti. Non provata sull'iPhone; il server ha già la parte B (dalle
+  12:39Z, zona della bici di Trento rifatta): esce con la prossima
+  pubblicazione, con l'ok dell'utente. Da dove riprendere: `tasks/TASK-206.md`,
   «Esito», «Parte C».
 - **TASK-216 — La navigazione in bici** (Todo, scelte dell'utente del
   2026-10-03 chieste da TASK-206 C): velocità in km/h sulla schermata e

@@ -467,6 +467,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"{checks['steps']:.0f} m on steps, {checks['busy']:.0f} m on main roads, "
         f"{checks['tunnel']:.0f} m in tunnels"
         + (f", {checks['unpaved']:.0f} m unpaved" if "unpaved" in checks else "")
+        + (
+            f", {checks['on_foot']:.0f} m with the bike on foot"
+            if "on_foot" in checks
+            else ""
+        )
     )
     for warning in route.warnings:
         print(f"  warning: {warning}")

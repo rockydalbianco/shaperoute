@@ -7204,3 +7204,64 @@ pochi byte, che nel processo nuovo non corrisponde a niente: lì i dati si
 calcolano da capo, come prima. Cambia l'impronta del motore
 (`engine_fingerprint`): i percorsi tenuti si buttano e dopo l'aggiornamento
 del server va rilanciato `draw_examples` (`AGENTI.md`, regola 11).
+
+## ADR-0163 — La grafica della corsa in corso: il numero prima del nome, pulsanti tondi con icone disegnate, barre grigie per i km
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-204). La richiesta è dell'utente («Migliora la parte grafica di
+quando registri una corsa»); il modo, qui sotto, è dell'agente. Numero
+preso come primo libero dopo ADR-0162, con TASK-204 dato dal coordinatore.
+
+**Contesto**: la schermata di TASK-169 (ADR-0137) aveva tutto quello che
+serve, ma sotto la mappa tre riquadri uguali, con il nome sopra il numero:
+la distanza, il numero che si cerca, pesava quanto il tempo. «Pocket» e
+«Music» erano pillole di testo accanto a un «Pause» tondo; «Paused» una
+riga grigia; gli interruttori due scatole con «On» e «Off»; i km di «Data»
+una tabella senza niente da vedere. L'app non ha librerie di icone né di
+grafica (niente SVG), e una dipendenza nuova va chiesta.
+
+**Decisione**:
+
+1. **Il numero prima del nome**: valore grande, unità piccola accanto, nome
+   sotto in maiuscolo spaziato (lo stile delle etichette di sezione
+   dell'app, `fontSize.label`). Su «Map» niente riquadri: la distanza più
+   grande (`fontSize.display`) e con più larghezza, poi passo e tempo
+   (`fontSize.title`), separati da righe sottili.
+2. **Tutti i pulsanti della corsa tondi, con il nome sotto**: «Pocket» e
+   «Music» di 56 punti (`MIN_TAP_SIZE + space.md`, come «Map» e «Data»),
+   centrati sull'altezza di «Pause» (72) così cerchi e nomi stanno in riga.
+   Le icone sono `View` (un telefono) e il carattere «♪»: come già la
+   pausa, il «play» e lo «stop».
+3. **Le barre dei km** vanno dal più lento (0,35 della larghezza) al più
+   veloce (intera), non in proporzione al passo: fra un km a 5:00 e uno a
+   5:20 la proporzione darebbe barre quasi uguali. Grigie (`borderStrong`)
+   e la più veloce chiara (`text`): **non gialle**, il giallo è del percorso
+   (ADR-0046).
+4. **Gli interruttori disegnati**: la pista chiara col pallino a destra
+   acceso, scura col pallino grigio a sinistra spento; la riga resta tutta
+   da toccare, come prima.
+5. **Il conto alla rovescia** si anima con `Animated` di React Native
+   (driver nativo): il numero entra rimpicciolendo, un anello giallo si
+   allarga e svanisce. Il giallo resta quello dell'azione che il conto
+   annuncia (ADR-0137).
+6. Nessun colore nuovo, nessun token nuovo: tutto da `tokens.ts`.
+
+**Perché così**: è il modo delle app di corsa che l'utente ha preso a
+riferimento (Nike Run Club, TASK-169): il numero si legge per primo,
+correndo, e il nome serve una volta sola. Pulsanti tutti tondi e con il
+nome sono un solo linguaggio fra corsa e pausa. Nessuna dipendenza: le
+forme da disegnare sono poche e semplici.
+
+**Scartato**: una libreria di icone (`@expo/vector-icons`, dipendenza
+nuova per due icone); `Switch` di React Native (nativo, colori e forma
+diversi fra iOS e Android, fuori dai token); colorare i km più veloci o
+più lenti di verde e rosso (colori nuovi con un significato nuovo);
+abbassare «Map» e «Data», che l'utente ha voluto alti (TASK-186);
+cambiare la linea della corsa sulla mappa o l'attribuzione (sono della
+mappa, comune a ogni schermata).
+
+**Conseguenze**: anche il riquadro di fine corsa senza percorso
+(`FreeFinishCard`, che usa `RunGrid`) prende il nome sotto il numero. I
+test che cercano i numeri per etichetta d'accessibilità non cambiano:
+«Distance: 2.30 km» è lo stesso. Il carattere «♪» viene dal font del
+telefono: su un Android senza quel segno si vedrebbe un quadratino, da
+guardare quando l'app avrà una build Android.

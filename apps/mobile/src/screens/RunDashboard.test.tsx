@@ -15,10 +15,10 @@ import {
 } from "../navigation/runControl";
 import { emptyTrack, type Track, type TrackFix } from "../navigation/trackRecorder";
 import { clearRun, startRun } from "../navigation/trackStore";
-import { MIN_TAP_SIZE } from "../theme/tokens";
+import { color, fontSize, MIN_TAP_SIZE } from "../theme/tokens";
 import { countdownNumber } from "./Countdown";
 import { HOLD_STOP_MS } from "./HoldButton";
-import { PAGE_TAB_HEIGHT, RunCard, swipedTo } from "./RunDashboard";
+import { PAGE_TAB_HEIGHT, RunCard, splitShare, swipedTo } from "./RunDashboard";
 
 jest.mock("expo-brightness", () => ({
   getBrightnessAsync: jest.fn(() => Promise.resolve(0.6)),
@@ -73,6 +73,18 @@ function north(metres: number): TrackFix[] {
   const fixes: TrackFix[] = [];
   for (let m = 0; m <= metres; m += 50) {
     fixes.push(fix(m, ((metres - m) / 1000) * 300));
+  }
+  return fixes;
+}
+
+/** 2.3 km north, the first kilometre at 5:00 /km and the rest at 6:00, the
+ * last fix now. */
+function slowingDown(): TrackFix[] {
+  const secondsAt = (m: number) => (m <= 1000 ? m * 0.3 : 300 + (m - 1000) * 0.36);
+  const total = secondsAt(2300);
+  const fixes: TrackFix[] = [];
+  for (let m = 0; m <= 2300; m += 50) {
+    fixes.push(fix(m, total - secondsAt(m)));
   }
   return fixes;
 }
@@ -143,6 +155,12 @@ test("running: three numbers, Pause and Pocket, and no Stop to touch by mistake"
   // The map page is the one on screen.
   expect(screen.getByRole("tab", { name: "Map" })).toBeSelected();
   expect(screen.queryByText("Next turn")).toBeNull();
+  // The distance first and largest; each round button has its name under it.
+  expect(screen.getByText("0.30")).toHaveStyle({ fontSize: fontSize.display });
+  expect(screen.getByText("1:30")).toHaveStyle({ fontSize: fontSize.title });
+  for (const name of ["Pocket", "Pause", "Music"]) {
+    expect(screen.getByText(name)).toBeOnTheScreen();
+  }
 });
 
 test("Pause stops the clock and shows every number; Resume goes on", async () => {
@@ -253,6 +271,29 @@ test("Data is the page with every number, the turn and the kilometres one by one
     jest.advanceTimersByTime(1000);
   });
   await waitFor(() => expect(screen.queryByText("Next turn")).toBeNull());
+});
+
+test("each kilometre has a bar, longer the faster it was, the fastest light", async () => {
+  await render(<LiveRun fixes={slowingDown()} />);
+  await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+  expect(screen.getByLabelText("Kilometre 1: 5:00")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Kilometre 2: 6:00, +1:00")).toBeOnTheScreen();
+  expect(screen.getByTestId("split-bar-1")).toHaveStyle({
+    width: "100%",
+    backgroundColor: color.text,
+  });
+  expect(screen.getByTestId("split-bar-2")).toHaveStyle({
+    width: "35%",
+    backgroundColor: color.borderStrong,
+  });
+});
+
+test("a bar's length: whole for the fastest, still there for the slowest", () => {
+  expect(splitShare(300, 300, 360)).toBe(1);
+  expect(splitShare(360, 300, 360)).toBeCloseTo(0.35);
+  expect(splitShare(330, 300, 360)).toBeCloseTo(0.675);
+  // One kilometre, or all as fast: every bar whole.
+  expect(splitShare(300, 300, 300)).toBe(1);
 });
 
 test("before the first kilometre, the page says where the kilometres will be", async () => {

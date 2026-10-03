@@ -1,7 +1,7 @@
 # TASK-214 — Il motore dei percorsi sul telefono
 
 **Stato**: In corso. Le sei scelte hanno la risposta dell'utente; la parte A
-(API) è in `feat/TASK-214-phone-engine-api`, poi B, C e D.
+(API) è in `main` dalla #275; poi B, C e D.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 
@@ -366,7 +366,8 @@ tools/phone_engine/                                (nuova: build e confronto)
 
 ## Esito
 
-**Parte A, l'API** (`feat/TASK-214-phone-engine-api`, ADR-0177):
+**Parte A, l'API** (#275, in `main` come `f2d1e90` il 2026-10-03, non
+ancora sul server; ADR-0177):
 
 - **Il formato delle zone** è in `phone_zones.py`: JSON con gzip, nodi e
   archi con tutti gli attributi, e i nomi delle strade. Le geometrie sono

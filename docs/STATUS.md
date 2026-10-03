@@ -335,11 +335,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dall'utente il 2026-10-03). Il telefono disegna da sé forme e parole su
   strada, con Pyodide in una WebView e le zone nella sua memoria (fino a 2
   GB, scaricate anche con i dati mobili); il server resta la riserva. Le
-  sei scelte hanno la risposta dell'utente (task file). **Parte A, l'API**
-  (`feat/TASK-214-phone-engine-api`): il formato neutro delle zone,
-  `GET /phone-zones/{network}` e l'adattatore `on_phone.py`, che dà lo
-  stesso `result` di `/route-jobs` (test su Levico; su Trento in Pyodide
-  5–7 s, uguale a CPython). **Dopo**: B, l'app (Pyodide negli asset,
+  sei scelte hanno la risposta dell'utente (task file). **Parte A, l'API**,
+  in `main` dalla #275 (`f2d1e90`, 2026-10-03), non ancora sul server: il
+  formato neutro delle zone, `GET /phone-zones/{network}`, il comando
+  `python -m shaperoute_api.phone_zone_api` e l'adattatore `on_phone.py`,
+  che dà lo stesso `result` di `/route-jobs` (test su Levico; su Trento in
+  Pyodide 5–7 s, uguale a CPython). L'aggiornamento del server e le zone
+  scritte in anticipo (0,7–0,8 GB, 20–30 min) li chiede il coordinatore
+  all'utente. **Dopo**: B, l'app (Pyodide negli asset,
   `package.json` e `metro.config.js` con l'ok del coordinatore); C, la riga
   in «Settings»; D, la prova sull'iPhone. **Aspetta l'utente**: la prova
   della pagina sull'iPhone (`out/on-phone-engine/`, Safari, «Start the

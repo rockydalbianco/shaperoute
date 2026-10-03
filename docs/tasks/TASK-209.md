@@ -164,7 +164,9 @@ es, fr, con la voce del telefono scelta in «Data» e «Listen»; l'inglese è
 quello di prima, parola per parola. Le frasi italiane le ha **confermate
 l'utente** il 2026-10-03, e ha aggiunto **«Daje, avanti tutta!» dopo i
 primi 5 km** (in tutte e cinque le lingue, ognuna con la sua frase:
-ADR-0171, punto 5). Spagnolo, francese e tedesco restano «da confermare».
+ADR-0171, punto 5). Spagnolo, francese e tedesco: l'utente le ha
+ascoltate e confermate lo stesso giorno, dopo il merge (PR di soli
+documenti `docs/TASK-209-voices-confirmed`).
 La PR la unisce l'utente: alla sessione il permesso di unirla è stato
 negato dal controllo dei permessi («Merge Without Review»).
 

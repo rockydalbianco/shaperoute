@@ -19,7 +19,8 @@ type Props = {
  * page says they are examples: the user's choice. Under each line is the map
  * of its streets (TASK-162): a picture, taken by a map page that the list
  * covers. A tap on a drawing opens its route on the map (TASK-188). Above
- * the drawings, the way to find friends by name (TASK-215).
+ * the drawings, at the right, the lens that finds friends by name (TASK-215,
+ * TASK-219).
  */
 export function FeedScreen({ onOpen }: Props) {
   const insets = useSafeAreaInsets();
@@ -38,6 +39,7 @@ export function FeedScreen({ onOpen }: Props) {
           },
         ]}
         ListHeaderComponent={<FindFriendsButton />}
+        ListHeaderComponentStyle={styles.header}
         data={SAMPLE_FEED}
         keyExtractor={(post) => post.id}
         renderItem={({ item }) => (
@@ -56,6 +58,10 @@ export function FeedScreen({ onOpen }: Props) {
 const styles = StyleSheet.create({
   screen: {
     backgroundColor: color.background,
+  },
+  // The lens at the right, under the button of «Profile».
+  header: {
+    alignItems: "flex-end",
   },
   content: {
     gap: space.md,

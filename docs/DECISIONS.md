@@ -7143,6 +7143,11 @@ scelto due PR, l'API adesso e l'app dopo.
    guarda dal proprio account. Il cursore porta l'id casuale del disegno,
    non quello della riga.
 
+**Aggiornamento (TASK-208, 2026-10-03)**: `public` è diventato
+`visibility`, con «Followers» in mezzo (ADR-0170). I punti 3, 7 e 8
+restano, con «pubblico» letto come «che qualcun altro vede»: il profilo
+conta ed elenca quelli che chi guarda può vedere.
+
 ## ADR-0160 — L'attività nei preferiti e le pause nel dettaglio di una corsa: una colonna con le attività dell'API, un rimando solo come prima
 **Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
 (TASK-200). Il cosa (un preferito ricorda l'attività, il dettaglio di una
@@ -7952,8 +7957,9 @@ voci scaricate da internet (fuori scope).
 **Conseguenze**: le frasi nuove della voce (TASK-206 C, i tratti a piedi)
 vanno in tutte e cinque le tabelle: `Phrasebook` lo impone al compilatore e
 `words.test.ts` lo controlla. Le frasi italiane sono confermate
-dall'utente (2026-10-03); le altre tre restano da confermare da qualcuno
-che le parli (`UI.md`, «La voce della corsa»). Il branch importa `src/i18n/` (TASK-210), che entra in `main`
+dall'utente (2026-10-03), e lo sono anche quelle spagnole, francesi e
+tedesche, che l'utente ha ascoltato lo stesso giorno (`UI.md`, «La voce
+della corsa»). Il branch importa `src/i18n/` (TASK-210), che entra in `main`
 prima.
 
 ## ADR-0172 — La lingua dell'app: l'inglese resta la base e la chiave, la lingua del telefono alla partenza, nessuna dipendenza
@@ -8401,3 +8407,164 @@ scaricare Pyodide o il motore dopo l'installazione (regole di Apple).
 Il server scrive un file in più per ogni zona chiesta da un telefono.
 L'app (parte B) mette Pyodide fra i suoi asset, con `metro.config.js` e
 `package.json` da concordare con il coordinatore.
+
+## ADR-0170 — Pubblicare come su Strava, l'API: chi lo vede in tre valori, una domanda sola per saperlo, foto in posti fissi, campi nuovi che un'app di prima non cancella
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-208, parte A), dentro le **scelte dell'utente** del 2026-10-03:
+descrizione con «How did it go?»; iscritti taggati cercati per nome; fino a
+tre foto oltre alla mappa; «Who can see it» con «Everyone», «Followers» e
+«Only me», dove «Followers» è chi segue con la richiesta accettata
+(ADR-0173). Tre altre **scelte dell'utente**, chieste durante il task: la
+descrizione **non passa dal filtro dei commenti negativi** (ADR-0176); la
+canoa va su Strava come `StandUpPaddling`; **le foto restano sul telefono
+finché la corsa è «Only me»** (usare la memoria dei telefoni più di quella
+del server). Numero tenuto dal coordinatore.
+
+**Contesto**: fino a TASK-117 un disegno aveva solo `title` e `public`
+(ADR-0159); l'app del 2026-10-03 (ADR-0166) manda `{title, public}` e deve
+continuare a funzionare con l'API nuova. I commenti (TASK-120, PR #260)
+chiedono chi vede un disegno con `d.public OR r.user_id = …`, e possono
+entrare in `main` prima o dopo questa parte.
+
+**Decisione**:
+1. **`visibility`** (`everyone`, `followers`, `only_me`) al posto di
+   `public`: la migrazione porta `true` a `everyone` e `false` a `only_me`.
+   **`public` resta** come colonna generata (`visibility = 'everyone'`),
+   mai scritta, così l'SQL scritto prima funziona in qualsiasi ordine di
+   merge: sbaglia per difetto, non lascia uscire niente. `comments.py` di
+   #260, entrato prima, passa in questa parte alla domanda nuova (punto 2).
+2. **Una domanda sola** per «chi può vedere questo disegno»:
+   `drawings.drawing_seen_sql(viewer)`, una condizione SQL su `drawings d
+   JOIN runs r ON r.id = d.run_id`: il proprietario sempre; gli altri se
+   `everyone`, o se `followers` e `follows_sql` (ADR-0173) dice che lo
+   seguono, accettati. `viewer` si legge una volta sola (un `%s`, un
+   valore), così chi la usa non conta i segnaposti. Disegno, foto e
+   commenti la seguono; il profilo ne ha una sua, `shown_sql`, perché lì
+   anche il proprietario vede solo i pubblicati (ADR-0159, punto 8).
+3. **Il numero sul profilo è quello che chi guarda vede**: `PublicProfile.
+   drawings` e `total` della griglia contano gli stessi disegni. Un numero
+   solo per tutti direbbe a chi non segue quanti disegni ha per i suoi
+   follower, e non tornerebbe con la griglia.
+4. **Il `PUT` del disegno resta la scelta intera per l'app nuova**, ma
+   `description`, `activity` e `tags` **assenti restano come sono**: un'app
+   di prima manda solo `title` e `public`, e non deve cancellare quello
+   che un'app nuova ha scelto sullo stesso account. Il titolo assente si
+   toglie, come prima. `visibility` e `public` insieme sono `422`:
+   una regola sola per chi vede, mai due che si contraddicono.
+5. **`published_at`** è da quando gli altri lo vedono: passare fra
+   `everyone` e `followers` non lo ripubblica, tornare da `only_me` sì.
+6. **Le foto in posti fissi**, da 1 a 3: `PUT` e `DELETE
+   /me/activities/{key}/drawing/photos/{n}`. Svuotare un posto non sposta
+   le altre: un `DELETE` rimandato da una coda senza rete non cancella mai
+   un'altra foto, e un `PUT` rifatto non ne aggiunge una quarta. La
+   quarta è un posto che non c'è (`422`).
+7. **Le foto come la foto del profilo** (ADR-0146): base64 dentro JSON,
+   raddrizzate con l'EXIF, ridotte dall'API e salvate come JPEG nuovo,
+   senza EXIF, nel database (ADR-0115). **1080 px sul lato lungo**, mai
+   ingrandite, qualità 82: la larghezza di un telefono; una foto vera pesa
+   0,1–0,3 MB, il peggio misurato (rumore puro) 0,8 MB, e il vincolo del
+   database tiene fino a 2 MB. 20 `PUT` al minuto per account.
+   **Sul server solo mentre altri vedono il disegno** (scelta dell'utente):
+   con `everyone` o `followers`. Su una corsa senza disegno, o `only_me`,
+   il `PUT` è `409 http_error` («Photos stay on the phone while only you
+   see this run: choose Everyone or Followers first.»); rimettere
+   `only_me` cancella le foto dal server, nella stessa transazione del
+   disegno. Le tiene il telefono, e le rimanda quando il disegno si apre
+   di nuovo agli altri (parte B). Il `PUT` della foto e quello del disegno
+   bloccano la stessa corsa: una foto non arriva mai su un disegno appena
+   tornato `only_me`. Così il server tiene solo quello che serve agli
+   altri, e le foto delle corse private non pesano su di lui né sulle sue
+   copie.
+8. **Le foto si leggono da un indirizzo**, `GET /drawings/{id}/photos/{n}`,
+   come JPEG, con il token: nel disegno ci sono solo `n`, `url`, `width` e
+   `height`. Il base64 dentro ogni disegno farebbe una griglia di 20
+   disegni pesante 10 MB o più. `url` porta `?v=` con l'ora della foto,
+   così una foto cambiata ha un indirizzo nuovo e la cache del telefono
+   (`private`, un giorno) non mostra quella di prima.
+9. **I tag**: una tabella `drawing_tags` con l'account (`ON DELETE
+   CASCADE`: cancellato l'account taggato, il nome sparisce) e la
+   posizione. Un id che non è un iscritto, sé stessi, due volte lo stesso:
+   `422`, con il motivo. Si tagga ogni iscritto, come cerca la ricerca di
+   TASK-211; chi è taggato **non vede di più**: vale la visibilità del
+   disegno (il task file, punto 3). Nessuna notifica (TASK-185).
+10. **L'attività è della corsa**, `runs.activity`: il `PUT` della corsa la
+    prende al primo invio (per difetto `running`, ogni corsa di prima), il
+    disegno la cambia. Va a Strava come `sport_type`: `Run`, `Ride`, e
+    `StandUpPaddling` per la canoa (**scelta dell'utente**, fra `Canoeing`,
+    la proposta, `Kayaking` e `StandUpPaddling`). Prima bici e canoa
+    arrivavano su Strava come «Run». Non cambia il punteggio.
+11. **Strava prende anche la descrizione**: il corpo di `POST
+    /me/activities/{key}/strava` ha `description`, come `name`, perché
+    l'app manda Strava prima del disegno (ADR-0166); senza, quella del
+    disegno. Sopra la riga di Sgrava («Drawn with Sgrava»), dopo una riga
+    vuota. Le foto no.
+12. **La descrizione non è filtrata** (scelta dell'utente): è il racconto
+    della propria corsa, e «gambe pessime oggi» verrebbe rifiutata; una
+    descrizione rifiutata dentro la coda senza rete si scoprirebbe quando
+    l'avviso non serve più. Al più 500 caratteri, gli a capo restano.
+
+**Scartate**: togliere `public` dalla tabella (romperebbe #260 se entra
+dopo, o questa parte se entra prima); `drawing_seen_sql` con il
+segnaposto ripetuto (chi la usa dovrebbe passare lo stesso valore tre
+volte); le foto in ordine che si compatta (un `DELETE` rimandato
+cancellerebbe la foto dopo); le foto in base64 dentro il disegno (sopra);
+la foto a 256 px come quella del profilo (troppo piccola a tutto
+schermo); un `PATCH` per i campi nuovi (l'app di prima usa già il `PUT`);
+dare a chi è taggato il diritto di vedere un disegno `followers` o
+`only_me` (non è nel task file: da chiedere all'utente se serve); tenere
+sul server anche le foto delle corse private (la proposta di prima:
+l'utente ha scelto il telefono); le corse private solo sul telefono (pesano
+circa 50 KB l'una, servono a punteggio, Strava e a un secondo telefono:
+scartato dall'utente); foto a 720 px (la qualità a tutto schermo).
+
+**Conseguenze**: una migrazione nuova (`00NN_drawing_details.sql`, il
+primo numero libero in `main` al merge), un modulo nuovo
+(`drawing_photos.py`); `profiles.py` conta i disegni per chi guarda;
+`strava_client.upload` prende `sport_type`; `comments.py` (TASK-120) passa
+a `drawing_seen_sql`, così chi segue legge anche i commenti di un disegno
+«Followers». Con «Only me» le foto esistono solo sul telefono: cancellando
+l'app o cambiando telefono si perdono. La parte B propone un avviso, con il
+testo da confermare con l'utente (`tasks/TASK-208.md`). Le foto pesano sul
+server: nel database e in ognuna delle 13 copie di notte (TASK-122), stima
+in `tasks/TASK-208.md`, «Note per il
+deploy». Niente sul server né sul telefono senza la parte B e l'ok
+dell'utente.
+
+## ADR-0182 — «Find friends» è solo una lente; inviti, contatti e Facebook a tappe, Strava no
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** la lente sola e
+l'ordine delle tappe; il posto della lente deciso dall'agente su delega
+dell'utente (TASK-219). Supera il punto 1 di ADR-0178.
+
+**Contesto**: provato «Find friends» (TASK-215), l'utente, il 2026-10-03:
+«deve esserci solo un emoji del trova», e sotto la ricerca «la possibilità
+di collegare Facebook, invitare gli amici, numero di telefono e trovare gli
+amici così», poi «anche il loro profilo Strava».
+
+**Decisione dell'utente**:
+1. Il tasto è **solo la lente**, senza testo.
+2. **A tappe**: prima la lente; poi gli amici dai contatti; Facebook per
+   ultimo, quando Sgrava è sull'App Store (TASK-152).
+3. **«Invite friends» aspetta l'App Store**: finché non c'è un link che
+   funzioni per tutti, nessun invito (scartati il link di Expo Go e un
+   messaggio senza link).
+
+**Decisione dell'agente**:
+1. La lente è un **cerchio come quello di «Profile»**, in cima all'elenco di
+   «Feed», **a destra**, sotto il bottone di «Profile». Non
+   nell'intestazione delle pagine: i nomi «Feed · Draw · Explore» più tre
+   cerchi da 44 pt non ci stanno su un iPhone da 390 pt.
+2. VoiceOver la legge «Find friends»: il testo resta, solo per lui.
+
+**Cosa serve alle tappe dopo** (da scegliere con l'utente quando partono):
+- **Contatti**: il numero di telefono nell'account (TASK-183, «a cosa serve
+  il numero»: a farsi trovare dagli amici), la sua verifica con un SMS (un
+  servizio a pagamento; senza, chiunque può scrivere il numero di un altro),
+  la dipendenza `expo-contacts` (va in Expo Go) e una riga della privacy:
+  i numeri della rubrica arrivano al server, da mandare come impronta e mai
+  tenere.
+- **Facebook**: l'SDK di Facebook non va in Expo Go, solo in una build
+  propria; un'app sviluppatore su Meta e la revisione di Meta per
+  `user_friends`, che dà solo gli amici che hanno collegato anche Sgrava.
+- **Strava: non si può.** L'API di Strava non ha più gli elenchi di amici e
+  follower (`/athlete/friends` risponde 401), e dal 1° settembre 2026 ha
+  tolto anche i membri dei club.

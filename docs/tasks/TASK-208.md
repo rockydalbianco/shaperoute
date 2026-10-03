@@ -1,11 +1,11 @@
 # TASK-208 — Pubblicare una corsa in stile Strava
 
-**Stato**: Todo — task file scritto con le scelte dell'utente (2026-10-03);
-la parte A aspetta la parte A di TASK-211
+**Stato**: In lavorazione — parte A (l'API) fatta il 2026-10-03; parte B
+da fare, dopo la conferma delle proposte da parte dell'utente
 **Fase**: 4 · **Branch**: `feat/TASK-208-publish-api` (parte A),
 `feat/TASK-208-publish-app` (parte B)
 **Dipende da**: TASK-117 (fatto), TASK-211 (parte A per la nostra A, parte
-B per la nostra B) · **ADR**: dal coordinatore
+B per la nostra B) · **ADR**: ADR-0170
 
 ## Obiettivo
 
@@ -36,6 +36,13 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
 5. **Le persone da taggare** sono iscritti a Sgrava, cercati per nome
    (la ricerca è di TASK-211). I nomi taggati compaiono sul disegno e
    aprono il loro profilo. Nessuna notifica finché non c'è TASK-185.
+6. **Le foto restano sul telefono finché la corsa è «Only me»** (scelta
+   del 2026-10-03, durante la parte A: «usare più la memoria dei telefoni
+   che la nostra»). Vanno sul server solo con «Everyone» o «Followers»;
+   rimessa «Only me», il server le cancella. Le corse restano sul server
+   come oggi (circa 50 KB l'una: servono a punteggio, Strava e a un
+   secondo telefono). Persi il telefono o l'app, si perdono le foto delle
+   corse private.
 
 ## Proposte dell'agente (da confermare con l'utente prima della parte B)
 
@@ -49,6 +56,19 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
 - **La scheda di una corsa in «My activities»** ha lo stesso modulo, per
   cambiare dopo (oggi lì ci sono «Public» e «Title»).
 - Al più **10 persone** taggate; descrizione al più **500 caratteri**.
+- **La canoa su Strava** è `StandUpPaddling`: **scelta dell'utente** del
+  2026-10-03, fra `Canoeing` (la proposta), `Kayaking` e `StandUpPaddling`.
+  Prima bici e canoa arrivavano su Strava come «Run»; da TASK-208 A la
+  bici è `Ride`.
+- **Un avviso sulle foto delle corse «Only me»** (scelta 6): le foto
+  esistono solo sul telefono. Chi cancella l'app o cambia telefono le
+  perde, e una corsa che torna «Only me» perde le foto sul server. Testo
+  proposto, sotto «Who can see it» quando è «Only me» e la corsa ha foto:
+  «Photos of a run only you can see stay on this phone. Delete the app or
+  change phone and they are gone.». Quando una corsa con foto passa da
+  «Everyone» o «Followers» a «Only me»: «Its photos leave Sgrava and stay
+  only on this phone.». **Confermati dall'utente** il 2026-10-03 («ok va
+  bene»), dopo che gli è stato detto il motivo.
 - I testi nuovi: «How did it go?», «Tag people», «Activity» («Run»,
   «Bike», «Paddle»), «Who can see it» («Everyone», «Followers», «Only
   me»), «Add photo». Da far confermare, e da passare a TASK-210 (la
@@ -98,28 +118,32 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
 2. Lo stesso modulo sulla scheda di una corsa in «My activities»
    (`PublicRow.tsx`).
 3. Senza rete la scelta e le foto aspettano sul telefono, come oggi
-   `drawings-outbox.json` (le foto già ridotte, in un file).
+   `drawings-outbox.json` (le foto già ridotte, in un file). Le foto
+   restano sul telefono anche dopo, per le corse «Only me», e vanno al
+   server solo quando la corsa si apre agli altri (scelta 6, «Esito»,
+   «Per la parte B»).
 4. Il disegno aperto (`DrawingCard.tsx`): mappa e foto da scorrere,
    descrizione, attività, i nomi taggati che aprono il profilo.
 5. Test, `UI.md`, i testi nuovi.
 
 ## Criteri di accettazione
 
-- [ ] Un disegno `followers` lo vede chi segue con la richiesta
+- [x] Un disegno `followers` lo vede chi segue con la richiesta
       accettata; chi ha solo chiesto, o non segue, ha «non trovato»
       (test).
-- [ ] Un disegno `only_me` dà «non trovato» a chiunque altro (test).
-- [ ] La migrazione porta ogni `public` di prima nella visibilità
+- [x] Un disegno `only_me` dà «non trovato» a chiunque altro (test).
+- [x] La migrazione porta ogni `public` di prima nella visibilità
       giusta (test).
-- [ ] Una quarta foto, o un undicesimo tag, sono rifiutati (`422`, test).
-- [ ] Le foto non hanno EXIF (test, come per la foto del profilo).
-- [ ] Taggare un account che non esiste dà `422`; cancellato un account
+- [x] Una quarta foto, o un undicesimo tag, sono rifiutati (`422`, test).
+- [x] Le foto non hanno EXIF (test, come per la foto del profilo).
+- [x] Taggare un account che non esiste dà `422`; cancellato un account
       taggato, il suo nome sparisce dal disegno (test).
 - [ ] Senza rete titolo, descrizione, tag, visibilità e foto non si
       perdono (parte B, test).
-- [ ] Con «Send to Strava» descrizione e tipo arrivano nell'invio (test
+- [x] Con «Send to Strava» descrizione e tipo arrivano nell'invio (test
       con Strava finto).
-- [ ] Test verdi dell'API e dell'app.
+- [ ] Test verdi dell'API e dell'app (l'API sì, parte A; l'app è la
+      parte B).
 - [ ] Prova sull'iPhone, dopo l'aggiornamento del server, con l'ok
       dell'utente.
 
@@ -138,6 +162,11 @@ services/api/tests/test_drawings.py
 services/api/tests/test_drawing_photos.py          (nuovo)
 packages/shared-types/                              (contratto e fixture)
 docs/API.md, docs/DATABASE.md, docs/DECISIONS.md, docs/STATUS.md
+services/api/shaperoute_api/strava_client.py       (ok del coordinatore: `upload` prende `sport_type`)
+services/api/tests/test_strava.py                  (ok del coordinatore: il test con Strava finto)
+services/api/tests/test_activities.py              (ok del coordinatore: due righe, il modello ha `activity`)
+services/api/shaperoute_api/profiles.py            (ok del coordinatore: il numero dei disegni per chi guarda)
+services/api/shaperoute_api/comments.py            (ok del coordinatore: i commenti seguono `drawing_seen_sql`)
 ```
 
 Parte B:
@@ -166,4 +195,126 @@ docs/UI.md, docs/DECISIONS.md, docs/STATUS.md
 
 ## Esito
 
-*(si compila a fine task)*
+### Parte A — l'API (2026-10-03, ADR-0170)
+
+In `main` dal 2026-10-03 con la PR #268 (merge `ebb4f38`), migrazione
+`0014_drawing_details.sql` (`0012` e `0013` sono di #263 e #260, entrate
+prima); CI 5/5 verde. Non sul server.
+
+**La scelta dell'utente presa durante il task** (2026-10-03, domanda del
+coordinatore): la descrizione **non passa dal filtro dei commenti
+negativi** di ADR-0176. Il titolo neppure.
+
+**Cosa funziona**:
+- **`visibility`** (`everyone`, `followers`, `only_me`) al posto di
+  `public`. La migrazione porta ogni pubblico a `everyone` e ogni privato
+  a `only_me` (test con dati sullo schema 0001–0013). `public` resta, come
+  colonna generata e nelle risposte (vero quando `visibility` è
+  `everyone`), per l'app di oggi e per l'SQL scritto prima.
+- **Chi vede cosa** sta in una funzione sola, `drawing_seen_sql(viewer)`:
+  vale per il disegno, per le sue foto e, quando TASK-120 la userà, per i
+  suoi commenti. Il profilo conta ed elenca quello che chi guarda vede: a
+  chi non segue i `everyone`, a chi segue anche i `followers`, al
+  proprietario i suoi pubblicati.
+- **Il `PUT` del disegno** prende:
+  - `visibility`, oppure `public` dall'app di prima, mai tutti e due;
+  - `description`, al più 500 caratteri, con gli a capo;
+  - `activity`;
+  - `tags`, al più 10 `public_id` in ordine: né sé stessi, né lo stesso
+    due volte, né chi non è iscritto.
+
+  Se `description`, `activity` e `tags` mancano, restano come sono: così
+  l'app di oggi non li cancella.
+- **Le foto**: `PUT` e `DELETE /me/activities/{key}/drawing/photos/{n}`,
+  in posti da 1 a 3 che non si spostano. L'API le raddrizza, le riduce a
+  1080 px sul lato lungo e le rifà JPEG senza EXIF; al più 20 `PUT` al
+  minuto. Chi vede il disegno le legge da `GET /drawings/{id}/photos/{n}`:
+  JPEG, con il token, e un `?v=` che cambia con la foto.
+- **Le foto solo per i disegni che altri vedono** (scelta 6): su una corsa
+  senza disegno o `only_me` il `PUT` di una foto è `409 http_error`
+  («Photos stay on the phone while only you see this run: choose Everyone
+  or Followers first.»); il `PUT` del disegno con `only_me` cancella le
+  sue foto dal server.
+- **`runs.activity`**: il `PUT` della corsa prende `activity`, per
+  difetto `running`; il disegno la cambia e la mostra.
+- **Strava**: il `sport_type` viene dall'attività (`Run`, `Ride`,
+  `StandUpPaddling`). La descrizione è «How did it go?» seguita dalla riga di
+  Sgrava. Viene dal corpo dell'invio (`description`, accanto a `name`) o,
+  se manca, dal disegno.
+- **Contratto** (`shared-types`):
+  - tipi nuovi: `Visibility`/`VISIBILITIES`, `DrawingTag`,
+    `DrawingPhoto`, `DrawingPhotoRequest` e i limiti;
+  - i campi nuovi sono facoltativi (un'API di prima non li ha), e
+    `DrawingRequest.public` diventa facoltativo;
+  - fixture nuove: `drawing-request-details.json`,
+    `my-drawing-details.json`, `drawing-details.json`,
+    `drawings-details.json`, `drawing-photo-request.json`,
+    `activity-request-cycling.json`, `strava-send-description.json`;
+  - le fixture di prima non cambiano, perché l'app le importa con i loro
+    tipi.
+
+**File oltre all'elenco** (ok del coordinatore il 2026-10-03, scritti in
+«File toccati»):
+- `strava_client.py`: `upload` prende `sport_type`;
+- `test_strava.py`: il test con Strava finto;
+- `test_activities.py`: due righe, perché il modello ha `activity`;
+- `profiles.py`: il numero dei disegni per chi guarda;
+- `comments.py`: due righe, vedi sotto.
+
+**Il seguito di TASK-120 è chiuso qui** (i commenti di un disegno
+«Followers»). `comments.py` (#260, già in `main`) chiedeva `d.public OR
+r.user_id = %s`, che con la colonna generata funzionava ancora, ma per
+difetto: chi segue vedeva il disegno e non i suoi commenti. Ora chiede
+`drawing_seen_sql('%s')`, con lo stesso valore una volta sola; il test è in
+`test_drawings.py`.
+
+**Scelta dell'utente** (2026-10-03): la canoa va su Strava come
+`StandUpPaddling` (proposta era `Canoeing`).
+
+**Per la parte B**:
+- **Le foto sono del telefono** (scelta 6): l'app le tiene (già ridotte,
+  in un file per foto, accanto a `drawings-outbox.json`) per ogni corsa
+  che ne ha. Manda prima il `PUT` del disegno, poi le foto, solo con
+  «Everyone» o «Followers»; con «Only me» non ne manda, e quando il
+  disegno si riapre agli altri le rimanda. Un `409` vuol dire che il
+  disegno è ancora `only_me` per l'API: la foto resta in coda. Cancellata
+  la corsa, l'app cancella le sue foto. Le foto di una corsa privata non
+  passano da un telefono all'altro;
+- **Da dire all'utente** prima della parte B: con «Only me» le foto
+  esistono solo sul telefono, quindi cancellando l'app o cambiando
+  telefono si perdono, e una corsa che torna «Only me» perde le foto sul
+  server. Detto all'utente il 2026-10-03; l'avviso è in «Proposte
+  dell'agente», con i due testi confermati;
+- per i tag si riusa la ricerca degli iscritti di TASK-215,
+  `src/social/PeopleSearch.tsx` (#264, ADR-0178), non più un componente
+  di TASK-211 B;
+- le foto si mostrano dal loro indirizzo, con il token nelle intestazioni
+  dell'immagine.
+
+**Note per il deploy**:
+- La migrazione è veloce: aggiunge colonne con un default costante e due
+  tabelle vuote. `drawings` si riscrive una volta, per la colonna
+  generata, con le poche righe di oggi.
+- **Lo spazio delle foto**: contano solo i disegni che altri vedono (scelta
+  6), le foto delle corse private restano sui telefoni. Una foto vera a
+  1080 px pesa circa 0,1–0,3 MB
+  (misurate: 0,1 MB una foto liscia, 0,25 MB una piena di dettagli,
+  0,8 MB il rumore puro, il caso peggiore). Con tre foto un disegno pesa
+  di solito 0,3–0,9 MB. **Ogni copia di notte le ripete**, e un JPEG non
+  si comprime: con le 13 copie tenute (TASK-122) il disco ne porta circa
+  14 volte tanto. Stime, a 0,2 MB a foto:
+
+  | Disegni visti da altri, con tre foto | Nel database | Con le copie |
+  |---|---|---|
+  | 100 | circa 60 MB | circa 0,8 GB |
+  | 1 000 | circa 0,6 GB | circa 8 GB |
+  | 10 000 | circa 6 GB | circa 80 GB, tutto il disco del CX33 |
+
+  Prima di migliaia di iscritti le foto vanno tolte dal database (un
+  volume o un object storage, scelta dell'utente), oppure servono meno
+  copie che le tengano.
+- `docker system df` e `df -h` sul server prima e dopo il primo mese, per
+  vedere la crescita vera.
+
+**Non fatto**: niente sul server né sul telefono. Servono la parte B,
+l'aggiornamento del server e l'ok dell'utente.

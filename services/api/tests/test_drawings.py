@@ -1,7 +1,8 @@
-"""Drawings in a real PostgreSQL (TASK-117): a saved run titled and made
-public by its owner, seen by the other members without its first and last
-200 m, never when private; its score the one the API counted; gone with its
-run. The bodies are the examples of packages/shared-types/fixtures."""
+"""Drawings in a real PostgreSQL (TASK-117, TASK-208): a saved run titled
+and published by its owner, seen by the other members without its first and
+last 200 m, by its followers only or by nobody else when its owner says so;
+its score the one the API counted; its description, activity and tags; gone
+with its run. The bodies are the examples of packages/shared-types/fixtures."""
 
 from __future__ import annotations
 
@@ -25,21 +26,36 @@ from route_engine.geo import (
 from route_engine.network import FileSource
 
 from shaperoute_api.accounts import AccountError, Accounts
-from shaperoute_api.activities import UNKNOWN_ACTIVITY, PlaceNames
+from shaperoute_api.activities import (
+    UNKNOWN_ACTIVITY,
+    ActivityRequestBody,
+    PlaceNames,
+)
 from shaperoute_api.app import create_app
 from shaperoute_api.db import Database, migrations
 from shaperoute_api.drawings import (
     CUT_M,
+    DESCRIPTION_NOT_TEXT,
+    DESCRIPTION_TOO_LONG,
+    MAX_DESCRIPTION_LENGTH,
+    MAX_TAGS,
     MAX_TITLE_LENGTH,
     NO_DRAWING,
     NO_PROFILE,
+    NO_VISIBILITY,
+    TAG_TWICE,
+    TAG_UNKNOWN,
+    TAG_YOURSELF,
     TITLE_NOT_TEXT,
     TITLE_TOO_LONG,
     TOO_SHORT,
+    VISIBILITY_TWICE,
+    DrawingBody,
     DrawingDetailBody,
     DrawingRequestBody,
     DrawingsBody,
     MyDrawingBody,
+    checked_description,
     checked_title,
     cut_track,
 )
@@ -51,12 +67,19 @@ FIXTURES = REPO / "packages" / "shared-types" / "fixtures"
 FAST_HASHER = PasswordHasher(time_cost=1, memory_cost=1024, parallelism=1)
 KEY = "7c2e91a4b05d3f68"
 OTHER_KEY = "e5d0a83f19c7b246"
-# The migration of the drawings, whatever its number when merged.
+# The migrations of the drawings and of their details, whatever their
+# numbers when merged.
 (DRAWINGS_MIGRATION,) = [p for p in migrations() if p.name.endswith("_drawings.sql")]
+(DETAILS_MIGRATION,) = [
+    p for p in migrations() if p.name.endswith("_drawing_details.sql")
+]
 OTHER_EMAIL = "other@example.com"
 DAY_MS = 86_400_000
 # Seven digits of a degree are about a centimetre; the preview keeps five.
 NEAR_M = 0.01
+# What TASK-208 added to the bodies.
+NEW_FIELDS = {"visibility", "description", "activity", "tags", "photos"}
+THIRD_EMAIL = "third@example.com"
 
 
 def _load(name: str) -> Any:
@@ -153,6 +176,42 @@ def published(
     return dict(answer.json())
 
 
+def drawn(
+    client: TestClient,
+    headers: dict[str, str],
+    key: str = KEY,
+    status: int = 200,
+    **fields: Any,
+) -> dict[str, Any]:
+    """The drawing as the app of TASK-208 sends it: `visibility`, and
+    whatever else is given."""
+    body = {"title": "Sunday star", "visibility": "everyone", **fields}
+    answer = client.put(f"/me/activities/{key}/drawing", json=body, headers=headers)
+    assert answer.status_code == status, answer.text
+    return dict(answer.json())
+
+
+def third(client: TestClient) -> dict[str, str]:
+    return signed_up(client, email=THIRD_EMAIL, username="third_runner")
+
+
+def follows(
+    client: TestClient,
+    follower: dict[str, str],
+    followed: dict[str, str],
+    accepted: bool = True,
+) -> None:
+    """`follower` asks to follow `followed`, which accepts unless told not
+    to (TASK-211)."""
+    wanted = public_id(client, followed)
+    asked = client.post(f"/users/{wanted}/follow", headers=follower)
+    assert asked.status_code == 200, asked.text
+    if accepted:
+        who = public_id(client, follower)
+        answer = client.post(f"/me/follow-requests/{who}/accept", headers=followed)
+        assert answer.status_code == 204, answer.text
+
+
 def code(answer: Any) -> str:
     return str(answer.json()["error"]["code"])
 
@@ -236,16 +295,17 @@ def test_the_title_rule() -> None:
 
 
 def test_the_examples_are_the_bodies() -> None:
-    request = _load("drawing-request.json")
-    assert set(request) == set(DrawingRequestBody.model_fields)
+    request = _load("drawing-request-details.json")
+    # Who can see it is said once: `public` is an older app's.
+    assert set(request) == set(DrawingRequestBody.model_fields) - {"public"}
     DrawingRequestBody.model_validate(request)
-    mine = _load("my-drawing.json")
+    mine = _load("my-drawing-details.json")
     assert set(mine) == set(MyDrawingBody.model_fields)
     MyDrawingBody.model_validate(mine)
-    page = _load("drawings.json")
+    page = _load("drawings-details.json")
     assert set(page) == set(DrawingsBody.model_fields)
     DrawingsBody.model_validate(page)
-    one = _load("drawing.json")
+    one = _load("drawing-details.json")
     assert set(one) == set(DrawingDetailBody.model_fields)
     seen = DrawingDetailBody.model_validate(one)
     # The list item is the detail without author, public and track, with a
@@ -254,6 +314,30 @@ def test_the_examples_are_the_bodies() -> None:
         set(one) - {"author", "public", "track"} | {"track_preview"}
     )
     assert str(seen.author.public_id) == _load("public-profile.json")["public_id"]
+    # The member tagged is one the search finds.
+    tagged = _load("people.json")["people"][1]
+    assert seen.tags[0].model_dump(mode="json") == {
+        "public_id": tagged["public_id"],
+        "username": tagged["username"],
+    }
+    assert request["tags"] == [tagged["public_id"]]
+    assert mine["tags"] == one["tags"] and mine["photos"] == one["photos"]
+    ActivityRequestBody.model_validate(_load("activity-request-cycling.json"))
+
+
+def test_the_examples_before_task_208_are_still_bodies() -> None:
+    """What an app before TASK-208 sends, and the fields an API before it
+    answered: the app of TASK-117 keeps working."""
+    request = _load("drawing-request.json")
+    assert set(request) == {"title", "public"}
+    DrawingRequestBody.model_validate(request)
+    for name, model in (
+        ("my-drawing.json", MyDrawingBody),
+        ("drawing.json", DrawingDetailBody),
+    ):
+        assert set(_load(name)) == set(model.model_fields) - NEW_FIELDS, name
+    (item,) = _load("drawings.json")["drawings"]
+    assert set(item) == set(DrawingBody.model_fields) - NEW_FIELDS
 
 
 # --- In the database ---
@@ -270,6 +354,11 @@ def test_a_run_is_private_until_published(client: TestClient) -> None:
         "title": None,
         "public": False,
         "published_at": None,
+        "visibility": "only_me",
+        "description": None,
+        "activity": "running",
+        "tags": [],
+        "photos": [],
     }
     assert client.get("/me/drawings", headers=me).json() == {"drawings": []}
     mine = public_id(client, me)
@@ -557,19 +646,51 @@ def test_without_a_database_the_drawings_are_unavailable() -> None:
     assert code(answer) == "accounts_unavailable"
 
 
+def migrated_before(database: Database, migration: Path, tmp_path: Path) -> None:
+    """The database as it was before `migration` entered main: the
+    migrations before it, not those after it, which may need its tables
+    (the comments do, TASK-120)."""
+    for path in migrations():
+        if path.name < migration.name:
+            shutil.copy(path, tmp_path / path.name)
+    database.migrate(tmp_path)
+
+
+def old_run(database: Database, key: str = KEY) -> int:
+    """The example run, kept as the API of TASK-172 kept it: the code of
+    today writes columns a database before them does not have."""
+    fixes = run()["track"]
+    first_ms = fixes[0]["time_ms"]
+    points = [
+        f"{lon!r} {lat!r} {(fix['time_ms'] - first_ms) / 1000!r}"
+        for fix in fixes
+        for lat, lon in [fix["point"]]
+    ]
+    track = "LINESTRING M (" + ",".join(points) + ")"
+    with database.connect() as conn:
+        row = conn.execute(
+            "INSERT INTO runs (user_id, key, track, started_at, distance_m,"
+            " duration_s, created_at) SELECT id, %s, ST_GeomFromText(%s, 4326),"
+            " %s, 4004, 1140, %s FROM users LIMIT 1 RETURNING id",
+            (
+                key,
+                track,
+                datetime(1970, 1, 1, tzinfo=UTC) + timedelta(milliseconds=first_ms),
+                datetime(2026, 10, 2, tzinfo=UTC),
+            ),
+        ).fetchone()
+    assert row is not None
+    return int(row["id"])
+
+
 def test_a_run_saved_before_the_drawings_can_be_published(
     database_url: str, wall: WallClock, tmp_path: Path
 ) -> None:
     database = Database(database_url)
-    # The schema of before: the migrations before the drawings' one, not those
-    # after it, which may need its table (the comments do, TASK-120).
-    for path in migrations():
-        if path.name < DRAWINGS_MIGRATION.name:
-            shutil.copy(path, tmp_path / path.name)
-    database.migrate(tmp_path)
+    migrated_before(database, DRAWINGS_MIGRATION, tmp_path)
     old = api(database, wall)
     me = signed_up(old)
-    saved(old, me)
+    old_run(database)
     database.migrate()
     client = api(database, wall)
     assert client.get(f"/me/activities/{KEY}", headers=me).status_code == 200
@@ -591,3 +712,383 @@ def test_a_run_without_a_route_is_published_without_a_score(
     assert seen["fidelity"] is None
     assert seen["shape"] is None
     assert len(seen["track"]) >= 2
+
+
+# --- Who can see it (TASK-208) ---
+
+
+def test_followers_see_it_once_their_request_is_accepted(client: TestClient) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    kept = drawn(client, me, visibility="followers")
+    assert kept["visibility"] == "followers"
+    assert kept["public"] is False
+    assert kept["published_at"] == "2026-10-02T21:40:00Z"
+    mine = public_id(client, me)
+    asking, stranger = other(client), third(client)
+    # Asked and not accepted yet: no more than a stranger.
+    follows(client, asking, me, accepted=False)
+    unknown = client.get(f"/drawings/{uuid4()}", headers=stranger)
+    for headers in (asking, stranger):
+        hidden = client.get(f"/drawings/{kept['id']}", headers=headers)
+        assert hidden.status_code == 404
+        assert hidden.json() == unknown.json()
+        page = client.get(f"/users/{mine}/drawings", headers=headers).json()
+        assert page == {"drawings": [], "next": None, "total": 0}
+        assert client.get(f"/users/{mine}", headers=headers).json()["drawings"] == 0
+    accepted = client.post(
+        f"/me/follow-requests/{public_id(client, asking)}/accept", headers=me
+    )
+    assert accepted.status_code == 204
+    seen = client.get(f"/drawings/{kept['id']}", headers=asking)
+    assert seen.status_code == 200
+    assert seen.json()["visibility"] == "followers"
+    assert seen.json()["public"] is False
+    page = client.get(f"/users/{mine}/drawings", headers=asking).json()
+    assert [d["id"] for d in page["drawings"]] == [kept["id"]]
+    assert page["total"] == 1
+    assert client.get(f"/users/{mine}", headers=asking).json()["drawings"] == 1
+    # The stranger still sees nothing, and the owner its own.
+    assert client.get(f"/drawings/{kept['id']}", headers=stranger).status_code == 404
+    assert client.get(f"/users/{mine}/drawings", headers=me).json()["total"] == 1
+    assert client.get(f"/users/{mine}", headers=me).json()["drawings"] == 1
+    # No longer following, no longer seeing.
+    stopped = client.delete(f"/users/{mine}/follow", headers=asking)
+    assert stopped.status_code == 204
+    assert client.get(f"/drawings/{kept['id']}", headers=asking).status_code == 404
+
+
+def test_only_me_is_not_found_by_anyone_else(client: TestClient) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    follower = other(client)
+    follows(client, follower, me)
+    kept = drawn(client, me, visibility="only_me")
+    assert kept["public"] is False
+    assert kept["published_at"] is None
+    unknown = client.get(f"/drawings/{uuid4()}", headers=follower)
+    for headers in (follower, third(client)):
+        hidden = client.get(f"/drawings/{kept['id']}", headers=headers)
+        assert hidden.status_code == 404
+        assert hidden.json() == unknown.json()
+    own = client.get(f"/drawings/{kept['id']}", headers=me)
+    assert own.status_code == 200
+    assert own.json()["visibility"] == "only_me"
+    # Not on the profile, not even to its owner (ADR-0159, point 8).
+    mine = public_id(client, me)
+    for headers in (me, follower):
+        assert client.get(f"/users/{mine}/drawings", headers=headers).json() == {
+            "drawings": [],
+            "next": None,
+            "total": 0,
+        }
+
+
+def test_the_profile_counts_what_the_viewer_may_see(client: TestClient) -> None:
+    me = signed_up(client)
+    keys = [f"{n:016x}" for n in range(0xB0, 0xB3)]
+    for days, (key, visibility) in enumerate(
+        zip(keys, ("everyone", "followers", "only_me"), strict=True)
+    ):
+        saved(client, me, key=key, days_later=days)
+        drawn(client, me, key=key, visibility=visibility, title=visibility)
+    follower, stranger = other(client), third(client)
+    follows(client, follower, me)
+    mine = public_id(client, me)
+    for headers, titles in (
+        (stranger, ["everyone"]),
+        (follower, ["followers", "everyone"]),
+        (me, ["followers", "everyone"]),
+    ):
+        page = client.get(f"/users/{mine}/drawings", headers=headers).json()
+        assert [d["title"] for d in page["drawings"]] == titles
+        assert page["total"] == len(titles)
+        profile = client.get(f"/users/{mine}", headers=headers).json()
+        assert profile["drawings"] == len(titles)
+    # A page at a time, the same for a follower.
+    first = client.get(f"/users/{mine}/drawings?limit=1", headers=follower).json()
+    assert [d["title"] for d in first["drawings"]] == ["followers"]
+    second = client.get(
+        f"/users/{mine}/drawings?limit=1&cursor={first['next']}", headers=follower
+    ).json()
+    assert [d["title"] for d in second["drawings"]] == ["everyone"]
+    assert second["next"] is None
+
+
+def test_who_can_see_it_is_said_once(client: TestClient) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    path = f"/me/activities/{KEY}/drawing"
+    for body, why in (
+        ({"title": "Both", "visibility": "everyone", "public": True}, VISIBILITY_TWICE),
+        ({"title": "Neither"}, NO_VISIBILITY),
+    ):
+        answer = client.put(path, json=body, headers=me)
+        assert answer.status_code == 422
+        assert code(answer) == "invalid_request"
+        assert message(answer) == why
+    answer = client.put(path, json={"visibility": "friends"}, headers=me)
+    assert answer.status_code == 422
+    assert code(answer) == "invalid_request"
+    # An app before TASK-208 says it with `public`.
+    assert published(client, me, public=True)["visibility"] == "everyone"
+    assert published(client, me, public=False)["visibility"] == "only_me"
+
+
+def test_who_among_the_others_sees_it_does_not_publish_it_again(
+    client: TestClient, wall: WallClock
+) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    first = drawn(client, me, visibility="everyone")
+    wall.t += timedelta(hours=1)
+    assert drawn(client, me, visibility="followers")["published_at"] == (
+        first["published_at"]
+    )
+    assert drawn(client, me, visibility="only_me")["published_at"] is None
+    wall.t += timedelta(hours=1)
+    again = drawn(client, me, visibility="followers")
+    assert again["published_at"] == "2026-10-02T23:40:00Z"
+    assert again["id"] == first["id"]
+
+
+# --- What a drawing says (TASK-208) ---
+
+
+def test_the_description_rule() -> None:
+    assert checked_description(None) is None
+    assert checked_description(" \n ") is None
+    assert checked_description("  Heavy legs.\r\nRound heart. \r") == (
+        "Heavy legs.\nRound heart."
+    )
+    full = "é" * MAX_DESCRIPTION_LENGTH
+    assert checked_description(full) == full
+    with pytest.raises(AccountError) as too_long:
+        checked_description(full + "é")
+    assert too_long.value.message == DESCRIPTION_TOO_LONG
+    with pytest.raises(AccountError) as tab:
+        checked_description("Heavy\tlegs")
+    assert tab.value.message == DESCRIPTION_NOT_TEXT
+
+
+def test_the_description(client: TestClient) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    kept = drawn(client, me, description="  Heavy legs.\r\nRound heart all the same. ")
+    assert kept["description"] == "Heavy legs.\nRound heart all the same."
+    seen = client.get(f"/drawings/{kept['id']}", headers=other(client)).json()
+    assert seen["description"] == kept["description"]
+    page = client.get(f"/users/{public_id(client, me)}/drawings", headers=me).json()
+    assert page["drawings"][0]["description"] == kept["description"]
+    # An app before TASK-208 sends no description: it stays.
+    assert published(client, me, title="Renamed")["description"] == (
+        kept["description"]
+    )
+    # Not filtered for negative words: the owner's own account of its own
+    # run (the user's choice, ADR-0170).
+    sad = "Pessima corsa, gambe distrutte. Worst run ever."
+    assert drawn(client, me, description=sad)["description"] == sad
+    for description, why in (
+        ("a" * (MAX_DESCRIPTION_LENGTH + 1), DESCRIPTION_TOO_LONG),
+        ("Heavy\tlegs", DESCRIPTION_NOT_TEXT),
+    ):
+        answer = client.put(
+            f"/me/activities/{KEY}/drawing",
+            json={"visibility": "everyone", "description": description},
+            headers=me,
+        )
+        assert answer.status_code == 422
+        assert message(answer) == why
+    assert client.get(f"/me/activities/{KEY}/drawing", headers=me).json()[
+        "description"
+    ] == (sad)
+    assert drawn(client, me, description="")["description"] is None
+    drawn(client, me, description=sad)
+    assert drawn(client, me, description=None)["description"] is None
+
+
+def test_the_activity(client: TestClient) -> None:
+    me = signed_up(client)
+    body = _load("activity-request-cycling.json")
+    assert client.put(f"/me/activities/{KEY}", json=body, headers=me).status_code == 201
+    # The run says what it was before it has a drawing.
+    mine = client.get(f"/me/activities/{KEY}/drawing", headers=me).json()
+    assert mine["activity"] == "cycling"
+    assert mine["id"] is None
+    kept = drawn(client, me, activity="paddling")
+    assert kept["activity"] == "paddling"
+    seen = client.get(f"/drawings/{kept['id']}", headers=other(client)).json()
+    assert seen["activity"] == "paddling"
+    # Missing, as from an app before TASK-208: as it was.
+    assert published(client, me)["activity"] == "paddling"
+    answer = client.put(
+        f"/me/activities/{KEY}/drawing",
+        json={"visibility": "everyone", "activity": "swimming"},
+        headers=me,
+    )
+    assert answer.status_code == 422
+    assert code(answer) == "invalid_request"
+    refused = client.put(
+        f"/me/activities/{OTHER_KEY}",
+        json={**run(), "activity": "swimming"},
+        headers=me,
+    )
+    assert refused.status_code == 422
+
+
+def test_the_people_tagged(client: TestClient, database: Database) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    ada, bea = other(client), third(client)
+    ada_id, bea_id = public_id(client, ada), public_id(client, bea)
+    kept = drawn(client, me, tags=[bea_id, ada_id])
+    assert kept["tags"] == [
+        {"public_id": bea_id, "username": "third_runner"},
+        {"public_id": ada_id, "username": "other_runner"},
+    ]
+    seen = client.get(f"/drawings/{kept['id']}", headers=ada).json()
+    assert seen["tags"] == kept["tags"]
+    assert "email" not in json.dumps(seen)
+    # Missing, as from an app before TASK-208: as they were.
+    assert published(client, me)["tags"] == kept["tags"]
+    assert drawn(client, me, tags=[])["tags"] == []
+    drawn(client, me, tags=[ada_id, bea_id])
+    for tags, why in (
+        ([str(uuid4())], TAG_UNKNOWN),
+        ([public_id(client, me)], TAG_YOURSELF),
+        ([ada_id, ada_id], TAG_TWICE),
+    ):
+        answer = client.put(
+            f"/me/activities/{KEY}/drawing",
+            json={"visibility": "everyone", "tags": tags},
+            headers=me,
+        )
+        assert answer.status_code == 422
+        assert code(answer) == "invalid_request"
+        assert message(answer) == why
+    for tags in ([str(uuid4()) for _ in range(MAX_TAGS + 1)], ["Ada_runs"]):
+        answer = client.put(
+            f"/me/activities/{KEY}/drawing",
+            json={"visibility": "everyone", "tags": tags},
+            headers=me,
+        )
+        assert answer.status_code == 422
+        assert code(answer) == "invalid_request"
+    mine = client.get(f"/me/activities/{KEY}/drawing", headers=me).json()
+    assert [tag["public_id"] for tag in mine["tags"]] == [ada_id, bea_id]
+    # A member who deletes its account leaves the drawing.
+    assert client.delete("/me", headers=ada).status_code == 204
+    seen = client.get(f"/drawings/{kept['id']}", headers=bea).json()
+    assert [tag["public_id"] for tag in seen["tags"]] == [bea_id]
+    with database.connect() as conn:
+        left = conn.execute("SELECT count(*) AS n FROM drawing_tags").fetchone()
+    assert left is not None and left["n"] == 1
+
+
+def test_ten_people_are_tagged_at_most(client: TestClient) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    members = [
+        public_id(
+            client, signed_up(client, email=f"m{n}@example.com", username=f"member{n}")
+        )
+        for n in range(MAX_TAGS)
+    ]
+    assert len(drawn(client, me, tags=members)["tags"]) == MAX_TAGS
+
+
+def test_a_deleted_run_leaves_no_tag(client: TestClient, database: Database) -> None:
+    me = signed_up(client)
+    saved(client, me)
+    drawn(client, me, tags=[public_id(client, other(client))])
+    assert client.delete(f"/me/activities/{KEY}", headers=me).status_code == 204
+    with database.connect() as conn:
+        left = conn.execute("SELECT count(*) AS n FROM drawing_tags").fetchone()
+    assert left is not None and left["n"] == 0
+
+
+def test_the_migration_keeps_who_saw_each_drawing(
+    database_url: str, wall: WallClock, tmp_path: Path
+) -> None:
+    database = Database(database_url)
+    migrated_before(database, DETAILS_MIGRATION, tmp_path)
+    old = api(database, wall)
+    me = signed_up(old)
+    cut = cut_track([tuple(fix["point"]) for fix in run()["track"]])
+    line = "LINESTRING(" + ",".join(f"{lon!r} {lat!r}" for lat, lon in cut) + ")"
+    published_at = datetime(2026, 10, 2, 21, 40, tzinfo=UTC)
+    with database.connect() as conn:
+        for key, public in ((KEY, True), (OTHER_KEY, False)):
+            conn.execute(
+                "INSERT INTO drawings (run_id, title, public, track, published_at,"
+                " updated_at) VALUES (%s, %s, %s, ST_GeomFromText(%s, 4326), %s, %s)",
+                (
+                    old_run(database, key),
+                    key,
+                    public,
+                    line,
+                    published_at if public else None,
+                    published_at,
+                ),
+            )
+    database.migrate()
+    client = api(database, wall)
+    mine = {
+        d["key"]: d for d in client.get("/me/drawings", headers=me).json()["drawings"]
+    }
+    assert mine[KEY]["visibility"] == "everyone"
+    assert mine[KEY]["public"] is True
+    assert mine[KEY]["published_at"] == "2026-10-02T21:40:00Z"
+    assert mine[OTHER_KEY]["visibility"] == "only_me"
+    assert mine[OTHER_KEY]["public"] is False
+    assert mine[OTHER_KEY]["published_at"] is None
+    for drawing in mine.values():
+        # Every run before TASK-208 was on foot.
+        assert drawing["activity"] == "running"
+        assert drawing["description"] is None
+        assert drawing["tags"] == [] and drawing["photos"] == []
+    them = other(client)
+    assert client.get(f"/drawings/{mine[KEY]['id']}", headers=them).status_code == 200
+    hidden = client.get(f"/drawings/{mine[OTHER_KEY]['id']}", headers=them)
+    assert hidden.status_code == 404
+    # The column kept for the SQL written before says the same.
+    with database.connect() as conn:
+        rows = conn.execute("SELECT title, public FROM drawings").fetchall()
+    assert {row["title"]: row["public"] for row in rows} == {
+        KEY: True,
+        OTHER_KEY: False,
+    }
+
+
+def test_the_comments_follow_who_can_see_the_drawing(client: TestClient) -> None:
+    """The follow-up of TASK-120 (comments.py): a follower reads and writes
+    under a drawing for the followers, as it sees the drawing."""
+    me = signed_up(client)
+    saved(client, me)
+    follower, stranger = other(client), third(client)
+    follows(client, follower, me)
+    drawing_id = drawn(client, me, visibility="followers")["id"]
+    path = f"/drawings/{drawing_id}/comments"
+    written = client.post(path, json=_load("comment-request.json"), headers=me)
+    assert written.status_code == 201, written.text
+    comment_id = written.json()["id"]
+    page = client.get(path, headers=follower)
+    assert page.status_code == 200
+    assert [c["id"] for c in page.json()["comments"]] == [comment_id]
+    assert client.post(
+        path, json={"text": "Lovely."}, headers=follower
+    ).status_code == (201)
+    # Seen, not its own: refused; unseen: not there at all.
+    assert client.delete(f"/comments/{comment_id}", headers=follower).status_code == (
+        403
+    )
+    for answer in (
+        client.get(path, headers=stranger),
+        client.post(path, json={"text": "Lovely."}, headers=stranger),
+        client.delete(f"/comments/{comment_id}", headers=stranger),
+    ):
+        assert answer.status_code == 404
+    # Only its owner's again: the follower no longer reads them.
+    drawn(client, me, visibility="only_me")
+    assert client.get(path, headers=follower).status_code == 404
+    assert client.get(path, headers=me).status_code == 200

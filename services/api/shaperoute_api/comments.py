@@ -1,11 +1,12 @@
 """Comments: what the members write under a drawing (TASK-120, docs/API.md,
 «Comments»).
 
-Whoever can see a drawing (drawings.py) reads its comments and writes one:
-every member while it is public, its owner always. A drawing made private
-again keeps them, unseen, until it is public again. A comment is deleted by
-who wrote it, or by the owner of the drawing; deleting the drawing (with its
-run), or the account that wrote it, deletes it too (ON DELETE CASCADE).
+Whoever can see a drawing (drawings.drawing_seen_sql) reads its comments
+and writes one: its owner always, the others as its visibility says
+(TASK-208). A drawing seen by fewer keeps them, unseen by the others, until
+they see it again. A comment is deleted by who wrote it, or by the owner of
+the drawing; deleting the drawing (with its run), or the account that wrote
+it, deletes it too (ON DELETE CASCADE).
 
 A comment is plain text: the API keeps it as written, the app shows it as
 text, never as a link or as HTML (docs/UI.md). A negative one is never kept:
@@ -55,6 +56,7 @@ from shaperoute_api.drawings import (
     NO_DRAWING,
     PAGE_SIZE,
     AuthorBody,
+    drawing_seen_sql,
 )
 from shaperoute_api.schemas import ErrorBody, ErrorDetail
 
@@ -148,8 +150,8 @@ class CommentsBody(BaseModel):
 
 # --- The comments in the database ---
 
-# A drawing `viewer` may see: public, or its own (drawings.py, Drawings.seen).
-SEEN_BY = "d.id = %s AND (d.public OR r.user_id = %s)"
+# A drawing `viewer` may see, as drawings.py asks it (TASK-208).
+SEEN_BY = f"d.id = %s AND {drawing_seen_sql('%s')}"
 
 
 def _cursor(row: DictRow) -> str:
@@ -273,10 +275,11 @@ class Comments:
             return None
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT c.user_id AS author, r.user_id AS owner, d.public"
+                "SELECT c.user_id AS author, r.user_id AS owner,"
+                f" {drawing_seen_sql('%s')} AS seen"
                 " FROM comments c JOIN drawings d ON d.id = c.drawing_id"
                 " JOIN runs r ON r.id = d.run_id WHERE c.id = %s",
-                (wanted,),
+                (viewer_id, wanted),
             ).fetchone()
             if row is None:
                 return None
@@ -284,7 +287,7 @@ class Comments:
             if viewer_id in (row["author"], row["owner"]):
                 conn.execute("DELETE FROM comments WHERE id = %s", (wanted,))
                 return "deleted"
-        return "not_yours" if row["public"] else None
+        return "not_yours" if row["seen"] else None
 
 
 def comments_of(accounts: Annotated[Accounts, Depends(accounts_of)]) -> Comments:

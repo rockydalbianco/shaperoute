@@ -175,33 +175,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Mancano il cerchio da 20 km, Levico e Padova, quando Overpass riapre. Il
   miglioramento delle forme in bici è TASK-206, qui sotto. Da dove
   riprendere: il task file, «Esito», «I campioni».
-- **TASK-206 — Forme in bici più riconoscibili** (ADR-0167; scelta
-  dell'utente: «Sì, poco», brevi tratti con la bici a mano, circa 1 km su
-  10). **Parte A, il motore**, in `main` dalla PR #249 (2026-10-03): la rete della bici
-  tiene marciapiedi, sentieri e zone pedonali e l'altro senso dei sensi
-  unici, a piedi, a sei volte il costo; i controlli e l'avviso dicono i
-  metri a piedi. La corsa e la canoa non cambiano. Le zone `bike_*` di
-  prima vanno rifatte per avere i tratti a mano (Mac da Overpass, server
-  dall'estratto). Campioni di Trento giudicati dall'utente: i cerchi da
-  «quasi» a «sì», cuori e stelle come prima, 100–660 m a mano. **Parte
-  B, l'API e il contratto**, in `main` dalla PR #263 (2026-10-03):
-  `on_foot` nel `RouteResult`, coppie
-  `[da, a]` di indici nei punti dove si va a mano, anche nelle alternative
-  e nell'avvicinamento da una partenza vicina; solo un'aggiunta (vuoto per
-  la corsa e la canoa, facoltativo in `shared-types`); i preferiti lo
-  tengono (migrazione `0012`, approvata dal coordinatore). Il
-  server non è toccato (con l'ok dell'utente: zona della bici di Trento
-  rifatta, `draw_examples`, la migrazione). **Parte C, l'app** (fatta,
-  branch `feat/TASK-206-bike-on-foot-app`, in PR; testi e stile scelti
-  dall'utente il 2026-10-03): la mappa (linea gialla intera, trattini
-  scuri sopra i tratti a mano, token `onFoot`), la riga della scheda
-  («Includes 920 m walking the bike.» / «Di cui 920 m con la bici a
-  mano.»), la voce («Tra 50 metri, scendi e porta la bici a mano per 200
-  metri.» / «Risali in bici.», nessuna pausa) e i preferiti che tengono i
-  tratti. Non provata sull'iPhone; il server ha già la parte B (dalle
-  12:39Z, zona della bici di Trento rifatta): esce con la prossima
-  pubblicazione, con l'ok dell'utente. Da dove riprendere: `tasks/TASK-206.md`,
-  «Esito», «Parte C».
 - **TASK-216 — La navigazione in bici** (Todo, scelte dell'utente del
   2026-10-03 chieste da TASK-206 C): velocità in km/h sulla schermata e
   nella voce dei km, avvisi di svolta più in anticipo, e con la penna
@@ -233,6 +206,31 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `0011` e l'ok dell'utente). Poi **B** (l'app),
   dopo che l'utente ha confermato le proposte del task file; e TASK-208 A.
   Da dove riprendere: `tasks/TASK-211.md`.
+- **TASK-208 — Pubblicare una corsa in stile Strava** (ADR-0170; scelte
+  dell'utente del 2026-10-03: «How did it go?», tag degli iscritti per
+  nome, fino a 3 foto, «Everyone», «Followers», «Only me»; e, durante la
+  parte A, la descrizione **non filtrata** per le parole negative).
+  **Parte A, l'API**, in `main` dal 2026-10-03 (PR #268, merge
+  `ebb4f38`, migrazione `0014_drawing_details.sql`):
+  `visibility` al posto di `public`
+  (le pubbliche di prima `everyone`, le private `only_me`; `public` resta
+  colonna generata per l'SQL di prima);
+  `description`, `runs.activity` (anche nel `PUT` della corsa), i tag
+  (al più 10, cancellato l'account il nome sparisce), le foto in posti
+  1–3 a 1080 px senza EXIF, lette con il token da
+  `/drawings/{id}/photos/{n}` e tenute sul server **solo mentre altri
+  vedono il disegno** (scelta dell'utente: le foto delle corse «Only me»
+  restano sul telefono); chi vede cosa con una domanda sola,
+  `drawing_seen_sql`; il numero sul profilo è quello che chi guarda vede;
+  a Strava descrizione e tipo (`Run`, `Ride`, e `StandUpPaddling` per la
+  canoa, scelta dell'utente); i commenti seguono `drawing_seen_sql`, e
+  questo chiude il seguito di TASK-120 (i commenti di un disegno
+  «Followers»). L'app di oggi
+  (`public` sì/no) continua a funzionare: i campi nuovi assenti restano
+  come sono. Non sul server: vuole la migrazione, l'ok dell'utente e la
+  stima dello spazio delle foto (`tasks/TASK-208.md`, «Note per il
+  deploy»). Poi **B** (l'app), dopo la conferma delle proposte del task
+  file. Da dove riprendere: `tasks/TASK-208.md`.
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).
@@ -350,6 +348,28 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-219: «Find friends» è solo una lente (ADR-0182; chiesto
+  dall'utente il 2026-10-03). In cima a «Feed», a destra sotto il bottone
+  di «Profile», un cerchio con la lente apre la ricerca di TASK-215;
+  VoiceOver la legge «Find friends». Seguiti scelti dall'utente «a
+  tappe», senza numero per ora: «Invite friends» dopo l'App Store
+  (TASK-152), poi gli amici dai contatti (numero nell'account, SMS di
+  verifica, `expo-contacts`: da chiedere), Facebook per ultimo. Strava non
+  si può: l'API non dà più amici né follower. `tasks/TASK-219.md`.
+- **Motore, API e app** — TASK-206: forme in bici più riconoscibili con
+  brevi tratti con la bici a mano (ADR-0167; scelta dell'utente «Sì,
+  poco»). Parte A, il motore, PR #249 (marciapiedi, sentieri, zone
+  pedonali e l'altro senso dei sensi unici a piedi, a sei volte il costo;
+  i cerchi di Trento da «quasi» a «sì»); parte B, `on_foot` nel risultato,
+  nel contratto e nei preferiti, PR #263 (migrazione `0012`); parte C,
+  l'app, PR #269 (2026-10-03, testi e stile scelti dall'utente): la linea
+  gialla intera con trattini scuri sopra i tratti a mano, «Di cui 920 m con
+  la bici a mano.» nella scheda, la voce «Tra 50 metri, scendi e porta la
+  bici a mano per 200 metri.» / «Risali in bici.» senza pause, i preferiti
+  che tengono i tratti. La corsa e la canoa non cambiano. Il server ha A e
+  B dalle 12:39Z (`7098cb9`, zona della bici di Trento rifatta); l'app esce
+  con la prossima pubblicazione, con l'ok dell'utente, e va provata
+  sull'iPhone. Seguiti: TASK-216 e TASK-217. Task file: `tasks/TASK-206.md`.
 - **App** — TASK-209: la voce della corsa in cinque lingue (ADR-0171;
   chiesto dall'utente il 2026-10-03; PR #259). In «Data», sotto «Voice»,
   la lingua della voce («App language» o English, Deutsch, Italiano,
@@ -358,8 +378,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   tabella per lingua; senza scelta la voce segue la lingua dell'app, in
   inglese le frasi di prima parola per parola; il banner resta della lingua
   dell'app. Dopo i primi 5 km «Daje, avanti tutta!» (scelta dell'utente).
-  Frasi italiane **confermate dall'utente**; spagnolo, francese e tedesco
-  da confermare. Provato nel simulatore (Expo Go): una corsa che parla
+  Frasi **confermate dall'utente** in italiano e, dopo averle ascoltate,
+  in spagnolo, francese e tedesco (2026-10-03). Provato nel simulatore (Expo Go): una corsa che parla
   italiano. Da provare sull'iPhone con la prossima pubblicazione, con l'ok
   dell'utente. Task file: `tasks/TASK-209.md`.
 - **App** — TASK-215: «Find friends» in cima a «Feed» (ADR-0178; chiesto

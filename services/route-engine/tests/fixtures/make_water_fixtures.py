@@ -8,7 +8,10 @@ and written in (lat, lon). Run from services/route-engine:
 
 The coast (water_coast.json), around 44.0 N 12.65 E:
 - the coastline runs west to east near y = 0, land to the north (on its
-  left, as OpenStreetMap draws it), sea to the south;
+  left, as OpenStreetMap draws it), sea to the south; it goes on straight
+  far past the box, to x = -9000 and 9000, so that it also cuts the larger
+  area of a request through the command line (TASK-191 A2), which
+  build_area cuts to the box asked;
 - a beach from x = -900 to 900, the only shore reachable on foot besides
   a pier at x = 500 (a footway) and a slipway at x = -2500;
 - a promenade 120 m inland (too far to reach the water from) and a
@@ -93,6 +96,7 @@ def coastline_y(x: float) -> float:
 
 
 COAST_KNOTS: list[XY] = [
+    (-9000.0, 50.0),
     (-3600.0, 50.0),
     (-2000.0, 0.0),
     (-1000.0, 20.0),
@@ -100,6 +104,7 @@ COAST_KNOTS: list[XY] = [
     (1000.0, -30.0),
     (2000.0, 0.0),
     (3600.0, 40.0),
+    (9000.0, 40.0),
 ]
 
 

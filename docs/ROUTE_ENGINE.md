@@ -1015,6 +1015,9 @@ python -m route_engine --shape heart --distance 20000 \
     --start 46.0671,11.1214 --activity cycling --out heart_bici_trento.gpx
 ```
 
+Con `--activity paddling` una forma del catalogo sull'acqua di un lago o
+del mare, 1–5 km, dalla riva (§8).
+
 Il GPX si apre in un visualizzatore (gpx.studio, geojson.io) e si guarda.
 Questo è il ciclo di lavoro di tutta la fase 1: **generare, guardare,
 correggere**. Finché non produce un cuore riconoscibile, non si costruisce
@@ -1023,26 +1026,39 @@ nulla sopra.
 ## 8. Sull'acqua (TASK-191)
 
 Per la canoa e il paddle non c'è una rete: la forma piazzata (§3) **è** il
-percorso, se sta tutta sull'acqua (ADR-0154). Dove ci sta lo decide il
-motore, mai l'AI. Due moduli, senza rete né chiavi una volta che l'acqua
-è in cache:
+percorso, se sta tutta sull'acqua (ADR-0154, ADR-0161). Dove ci sta lo
+decide il motore, mai l'AI. Tre moduli, senza rete né chiavi una volta che
+l'acqua è in cache:
 
 - `water.py` — **l'acqua attorno alla partenza**, in metri sul piano
   tangente: i laghi (`natural=water`, almeno 10 ha), il mare come il
   riquadro meno la terra della `natural=coastline` (terra a sinistra del
   suo verso), gli ostacoli (moli, frangiflutti, pennelli, scogliere,
   marine, porti, fiumi, lagune) e **la fascia**: acqua entro 1000 m dalla
-  riva, meno 50 m dalla riva e 30 m dagli ostacoli. Poi i punti della riva
-  dove si arriva a piedi: entro 40 m da una spiaggia, uno scivolo, un molo
-  o una via pedonabile.
+  riva, meno **200 m dalla riva al mare** (oltre la fascia dei bagnanti,
+  scelta dell'utente) e **50 m sui laghi** e dagli scogli, e 30 m dagli
+  ostacoli. Poi i punti della riva dove si arriva a piedi: entro 40 m da
+  una spiaggia, uno scivolo, un molo o una via pedonabile.
 - `water_fit.py` — **dove la forma ci sta**: grandezza intera, poi più
   piccola del 3% alla volta fino al 40%, dritta entro ±15° (il cerchio
   una volta sola); per ogni scala e angolo, i centri della griglia della
   fascia in cui tutto il contorno cade nella fascia, dal più vicino alla
-  partenza; i tre migliori si controllano esattamente con shapely. Poi la
+  partenza; i tre il cui contorno passa dove unirlo alla riva costa meno
+  (i tratti fino al punto della riva raggiungibile più vicino, e lo
+  spostamento fino a lì) si controllano esattamente con shapely. Poi la
   partenza sulla riva di costo minore, entro 300 m dalla forma e 2 km
   dalla partenza chiesta, con un tratto dritto sull'acqua fino alla forma;
-  il percorso è riva → forma → riva per lo stesso tratto.
+  il percorso è riva → forma → riva per lo stesso tratto. Nessun tratto è
+  più corto della via dal punto della riva raggiungibile più vicino alla
+  fascia (al mare circa 200 m): le scale troppo lunghe con i loro tratti
+  si saltano, e la ricerca si ferma quando nessuna forma più piccola può
+  costare meno.
+- `paddling.py` — **la richiesta**: `plan_paddling` prende una
+  `RouteRequest` con `activity="paddling"`, disegna la forma del catalogo
+  con 128 punti (il contorno è il percorso), la piazza con `water_fit`, la
+  controlla con `validation.check_on_water` e dà un `RouteResult`
+  (somiglianza 1, nessun warning). La usano la CLI e, con la parte B,
+  l'API.
 
 ```
 costo = |distanza − chiesta| / chiesta + 2 · tratti / chiesta + 0,1 · km spostati
@@ -1057,13 +1073,42 @@ sull'acqua: metri sulla terra (oltre mezzo metro dentro), la distanza
 massima dalla riva, la distanza, se è chiuso.
 
 Con la fascia di 1 km una costa dritta tiene forme fino a circa 3 km (la
-stella 4), un lago stretto 5–6 km (tabella in ADR-0154). Il motore non
-conosce le regole del posto: bagnanti, corridoi, traffico di barche.
+stella 4), un lago stretto 5–6 km (tabella in ADR-0154). Con i 200 m al
+mare il percorso massimo resta circa 3 km, ma una parte sono i tratti: a
+2 km la forma è il 79% del giro, a 1 km il 58% (ADR-0161). Il motore non
+conosce le regole del posto: i bagnanti, i corridoi di lancio, il traffico
+di barche. I 200 m tengono la forma fuori dalla fascia dei bagnanti, i
+tratti dalla riva la attraversano.
 
-Per ora si prova da `python -m route_engine.water` (campioni, fixture,
-risposte dell'API di OSM); `--activity paddling` nella CLI di §7, i
-limiti di distanza e la validazione di §6 sull'acqua sono la parte A2 di
-TASK-191:
+**L'attività** `paddling` è del motore (`DISTANCE_LIMITS_M`, **1–5 km**,
+scelta dell'utente; `WATER_ACTIVITIES`), non ancora del contratto
+dell'API (`SUPPORTED_ACTIVITIES`, parte B). Sull'acqua si disegna solo una
+forma del catalogo: una parola, un'immagine o un contorno da file sono
+`InvalidRequestError` («on the water only a shape of the catalogue is
+drawn, not a word»).
+
+**La validazione sull'acqua** (`validation.check_on_water`, da
+`water_fit.measure`): il percorso è chiuso, nessun metro sulla terra (oltre
+mezzo metro dentro: il tratto parte dal bordo dell'acqua), nessun punto
+oltre 1000 m dalla riva, la distanza entro ±10%. Non sono warning: un
+percorso che non li rispetta è un errore del motore (`InvalidRouteError`).
+Niente scale, strade principali e ripercorrenza: sull'acqua non hanno
+senso.
+
+**Dalla CLI** di §7, l'acqua in `<cache-dir>/water/` (una richiesta a
+Overpass se manca):
+
+```
+python -m route_engine --shape heart --distance 2000 \
+    --start 44.0036,12.6634 --activity paddling --out heart_riccione.gpx
+```
+
+Stampa la scala e la rotazione, la partenza sulla riva e il suo tipo, il
+tratto, la distanza, quanto la forma sta lontana dalla terra e quanto il
+percorso si allontana dalla riva. `--score-track` vale anche sull'acqua;
+`--nearby` e `--no-optimize` sono delle strade e si rifiutano.
+`python -m route_engine.water` resta per i campioni, dalle fixture o dalle
+risposte dell'API di OSM:
 
 ```
 python -m route_engine.water --shape heart --distance 2000 \

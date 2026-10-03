@@ -4,6 +4,11 @@ Each check measures one thing and becomes an `Issue` only above its limit;
 the issues end up as warnings in `RouteResult`, with measure and limit.
 A route that is not closed, or starts too far from the requested point,
 is not a warning but a bug: `check_closed` raises.
+
+On the water (TASK-191, ROUTE_ENGINE.md §8) there are no steps, roads or
+retracing to warn about: a route there is closed, never on land, never
+beyond the band from the shore and as long as asked, or it is a bug, and
+`check_on_water` raises.
 """
 
 from __future__ import annotations
@@ -16,6 +21,8 @@ import numpy as np
 
 from route_engine.geo import LatLon, haversine_m, latlon_to_local_array
 from route_engine.network import Graph, distance_to_segments, one_way_streets
+from route_engine.water import SHORE_BAND_M
+from route_engine.water_fit import DISTANCE_TOLERANCE, WaterMeasures
 
 # Sides of a shape, as (start, end), that the shape draws twice on purpose:
 # its strokes, out and back (TASK-037).
@@ -301,3 +308,27 @@ def validate(measures: dict[str, float]) -> list[Issue]:
                 )
             )
     return issues
+
+
+def check_on_water(measures: WaterMeasures, distance_m: float) -> None:
+    """Raise unless a route on the water (water_fit.measure) ends where it
+    begins, is nowhere on land (but for the half metre where a leg leaves
+    the shore, water_fit.ON_LAND_M), is nowhere farther than SHORE_BAND_M
+    from the shore, and is within DISTANCE_TOLERANCE of `distance_m`, as
+    on roads."""
+    if not measures.closed:
+        raise InvalidRouteError("the route does not end where it begins")
+    if measures.on_land_m > 0.0:
+        raise InvalidRouteError(
+            f"{measures.on_land_m:.1f} m of the route on the water is on land"
+        )
+    if measures.farthest_shore_m > SHORE_BAND_M:
+        raise InvalidRouteError(
+            f"the route goes {measures.farthest_shore_m:.0f} m from the shore "
+            f"(at most {SHORE_BAND_M:.0f} m)"
+        )
+    if abs(measures.distance_m - distance_m) > DISTANCE_TOLERANCE * distance_m:
+        raise InvalidRouteError(
+            f"the route on the water is {measures.distance_m:.0f} m long, "
+            f"not within {DISTANCE_TOLERANCE:.0%} of {distance_m:.0f} m"
+        )

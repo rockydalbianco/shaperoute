@@ -26,13 +26,25 @@ MIN_DISTANCE_M = 1_000
 MAX_DISTANCE_M = 50_000
 
 # Every activity the engine draws, each on its own network
-# (network.NETWORKS), and its target distances in metres: a bike route is
-# 10-30 km, the user's choice for a first step (TASK-190, ADR-0153).
+# (network.NETWORKS) or on the water (WATER_ACTIVITIES), and its target
+# distances in metres: a bike route is 10-30 km, the user's choice for a
+# first step (TASK-190, ADR-0153); a paddling route 1-5 km, the user's choice
+# too (TASK-191, ADR-0161): within 1 km of the shore a shape fits up to about
+# 3 km at sea and 5-6 on a lake, and beyond that the error says what fits.
 DISTANCE_LIMITS_M: dict[str, tuple[int, int]] = {
     "running": (MIN_DISTANCE_M, MAX_DISTANCE_M),
     "cycling": (10_000, 30_000),
+    "paddling": (1_000, 5_000),
 }
 ACTIVITIES: tuple[str, ...] = tuple(DISTANCE_LIMITS_M)
+
+# The activities drawn on a lake or the sea, with no road network: where the
+# shape fits on the water it is the route (water_fit.py, ADR-0154).
+WATER_ACTIVITIES: frozenset[str] = frozenset({"paddling"})
+# Why a word or an image on the water is refused (TASK-191, ADR-0161): only
+# a shape of the catalogue is drawn there for now. The API says it for an
+# image too.
+ON_WATER_SHAPES_ONLY = "on the water only a shape of the catalogue is drawn"
 
 
 # Why a request with the pen up and no word is refused (TASK-197): the API
@@ -65,6 +77,7 @@ class RouteRequest:
         if (self.shape is None) == (self.word is None):
             raise InvalidRequestError("give either a shape or a word, one of the two")
         if self.word is not None:
+            check_drawn_on_land(self.activity, "a word")
             check_word(self.word, self.distance_m)
         elif self.shape not in SUPPORTED_SHAPES:
             raise InvalidRequestError(
@@ -142,6 +155,13 @@ def check_activity(activity: str) -> None:
             f"unsupported activity {activity!r}; "
             f"choose one of: {', '.join(ACTIVITIES)}"
         )
+
+
+def check_drawn_on_land(activity: str, what: str) -> None:
+    """Refuse `what` (a word, an image, an outline) for an activity on the
+    water (WATER_ACTIVITIES): only a shape of the catalogue is drawn there."""
+    if activity in WATER_ACTIVITIES:
+        raise InvalidRequestError(f"{ON_WATER_SHAPES_ONLY}, not {what}")
 
 
 @dataclass(frozen=True)

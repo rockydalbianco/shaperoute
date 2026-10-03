@@ -7742,10 +7742,11 @@ li tiene a 0,7–1,1 km su 10 a Trento; i controlli li dicono); un nome
 nuovo per la rete (`bike2`), che avrebbe obbligato a rifare subito le
 zone e a cambiare l'API.
 
-**Conseguenze**: una zona della bici pesa di più (i marciapiedi e i
-sentieri: a Trento nella zona di prova la rete passava da 16.569 a 17.599
-nodi con i soli sentieri `bicycle=yes`; con tutti i marciapiedi di più, da
-misurare quando si rifà). Le zone `bike_*` del Mac e quella di Trento sul
+**Conseguenze**: una zona della bici pesa circa il doppio (i marciapiedi
+e i sentieri: la zona di prova di Trento, rifatta senza rete dalle risposte
+in cache, da 16.569 a 29.383 nodi e da 36.872 a 77.584 archi, 29.215 a
+piedi); memoria dell'API e picco della costruzione da misurare sul server
+quando si rifà la zona di Trento. Le zone `bike_*` del Mac e quella di Trento sul
 server vanno rifatte per avere i tratti a piedi. I tratti a piedi come
 dato del risultato (`on_foot`: da dove a dove, per la mappa e la voce)
 entrano nella parte B con il contratto dell'API (`RouteResult` e

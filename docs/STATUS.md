@@ -183,9 +183,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   unici, a piedi, a sei volte il costo; i controlli e l'avviso dicono i
   metri a piedi. La corsa e la canoa non cambiano. Le zone `bike_*` di
   prima vanno rifatte per avere i tratti a mano (Mac da Overpass, server
-  dall'estratto). Poi **B** (`on_foot` nel risultato e nel contratto, la
-  voce) e **C** (l'app). Campioni veri quando Overpass riapre o dal
-  server. Da dove riprendere: `tasks/TASK-206.md`.
+  dall'estratto). Campioni di Trento giudicati dall'utente: i cerchi da
+  «quasi» a «sì», cuori e stelle come prima, 100–660 m a mano. Poi **B**
+  (`on_foot` nel risultato e nel contratto, la voce) e **C** (l'app). Da
+  dove riprendere: `tasks/TASK-206.md`.
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).

@@ -609,8 +609,11 @@ def _flip(data: Mapping[str, Any]) -> Any:
 def walkable_beside(tags: Mapping[str, Any]) -> bool:
     """Whether the other way of a one-way street a bike rides may be walked
     with the bike on foot: on its sidewalk, unless the street is closed to
-    people on foot."""
-    return tags.get("foot") not in NO_ENTRY
+    people on foot. A simplified edge joins ways, and OSMnx keeps a list of
+    their values: closed on one of them is closed."""
+    foot = tags.get("foot")
+    values = set(foot) if isinstance(foot, list) else {foot}
+    return not values & NO_ENTRY
 
 
 def area_around(points: Sequence[LatLon], margin_m: float = AREA_MARGIN_M) -> BBox:

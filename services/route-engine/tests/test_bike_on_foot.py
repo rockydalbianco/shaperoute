@@ -44,6 +44,7 @@ from route_engine.network import (
     on_foot_edge,
     step_cost,
     walkable,
+    walkable_beside,
 )
 from route_engine.optimizer import plan_route
 from route_engine.validation import usability, validate
@@ -93,6 +94,21 @@ def test_a_rider_walks_footways_and_pedestrian_streets_never_steps(
     tags: dict[str, str], walks: bool
 ) -> None:
     assert walkable(tags) is walks
+
+
+@pytest.mark.parametrize(
+    ("tags", "walks"),
+    [
+        ({"highway": "residential", "oneway": True}, True),
+        ({"highway": "residential", "foot": "no"}, False),
+        ({"highway": ["residential", "tertiary"], "foot": ["yes", "no"]}, False),
+        ({"highway": ["residential", "tertiary"], "foot": ["yes", "designated"]}, True),
+    ],
+)
+def test_the_other_way_of_a_one_way_street_is_walked_unless_closed_on_foot(
+    tags: dict[str, Any], walks: bool
+) -> None:
+    assert walkable_beside(tags) is walks
 
 
 @pytest.mark.parametrize(
@@ -209,3 +225,40 @@ def test_on_foot_nothing_changes(
 
 def _with_shares(metres: dict[str, float]) -> dict[str, float]:
     return {"reuse": 0.0, "retrace": 0.0, **metres}
+
+
+# The canoe's routes on the water fixtures, point for point, computed on
+# `main` at d0e8692 before TASK-206 (sha-256 of the points to 1e-7 degrees,
+# as request_log.fingerprint): the bike walked by hand changes nothing on
+# the water. The running routes are held by test_kept_per_graph.py.
+PADDLING_BEFORE = {
+    ("coast", "heart", 2000): "6f7628cc8ed91f7e",
+    ("coast", "circle", 2000): "692bedbb0dc0e5ce",
+    ("coast", "star", 3000): "d601df8505be23a0",
+    ("lake", "heart", 2000): "1aff621a6cf076da",
+    ("lake", "circle", 2000): "239047fc75b4f66b",
+    ("lake", "star", 3000): "6c4fa0766c572559",
+}
+
+
+@pytest.mark.parametrize(("case", "before"), sorted(PADDLING_BEFORE.items()))
+def test_paddling_routes_are_those_of_before(
+    case: tuple[str, str, int], before: str
+) -> None:
+    import hashlib
+
+    import test_paddling as paddling
+
+    from route_engine.paddling import plan_paddling
+    from route_engine.water import FileWaterSource
+
+    where, shape, distance = case
+    start, fixture = {
+        "coast": (paddling.COAST_START, paddling.COAST),
+        "lake": (paddling.LAKE_START, paddling.LAKE),
+    }[where]
+    plan = plan_paddling(
+        paddling._request(start, distance, shape), FileWaterSource(fixture)
+    )
+    text = ";".join(f"{lat:.7f},{lon:.7f}" for lat, lon in plan.result.points)
+    assert hashlib.sha256(text.encode("ascii")).hexdigest()[:16] == before

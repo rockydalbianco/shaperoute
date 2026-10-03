@@ -1,7 +1,7 @@
 # TASK-206 — Forme in bici più riconoscibili
 
-**Stato**: In corso (parte A, il motore, fatta: PR da aprire; B e C da
-fare; i campioni veri aspettano Overpass o il server)
+**Stato**: In corso (parte A, il motore, fatta, con i campioni di Trento
+giudicati dall'utente; B e C da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-206-bike-shapes` (parte A)
 **Dipende da**: TASK-190 (la bici: motore, API e app in `main`)
 
@@ -101,9 +101,9 @@ In tre PR, come TASK-190.
       dicono quanti metri a piedi.
 - [x] La corsa e la canoa non cambiano: la suite del motore e dell'API
       verde con i valori di prima.
-- [ ] Campioni in bici a Trento (e Levico, Padova) rifatti con la parte A,
-      giudicati dall'utente: quando Overpass riapre per il Mac, o dal
-      server dopo l'aggiornamento.
+- [x] Campioni in bici a Trento rifatti con la parte A, giudicati
+      dall'utente (2026-10-03): i cerchi da «quasi» a «sì», cuori e stelle
+      come prima. *(Levico e Padova quando Overpass riapre.)*
 - [ ] Nell'app i tratti a mano si vedono e la voce li annuncia (parte C).
 - [ ] Test deterministici per motore, API e app.
 
@@ -126,6 +126,8 @@ docs/MAPS.md
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-206.md                                        (nuovo)
+samples/TASK-206_{heart,circle,star}_{10,20}km_trento_v1.gpx (nuovi)
+samples/LOG.md
 ```
 
 Rispetto all'elenco mandato al coordinatore: `models.py` e `optimizer.py`
@@ -134,6 +136,25 @@ non servono in A (`on_foot` nel risultato è della parte B, perché
 `nearby_starts.py` e `pen_up.py` sì (`step_cost` nel ritorno e fra le
 lettere); i due test dell'API dicevano che la bici non passa mai dal
 marciapiede né contromano.
+
+## Note per il deploy
+
+- **La rete della bici si chiama ancora `bike`** (ADR-0167, punto 6): il
+  coordinatore aveva chiesto di scrivere il nome nuovo, ma un nome nuovo
+  non c'è. I file `bike_*` fatti prima di TASK-206 restano sul disco e
+  **funzionano come prima, senza tratti a mano**; un grafo fatto dopo porta
+  `on_foot=True`. Per avere la bici a mano una zona va **rifatta**:
+  cancellare il `bike_*.graphml` col suo `.pickle` e rifarlo (sul server
+  `prefetch_zones --activity cycling --extract …`, `MAPS.md`, «Le zone
+  della bici»; sul Mac da Overpass).
+- **Una zona della bici pesa circa il doppio** (Trento, zona di prova:
+  archi da 36.872 a 77.584): da misurare sul server la memoria dell'API e
+  il picco della costruzione quando si rifà quella di Trento.
+- **Cambia l'impronta del motore**: dopo l'aggiornamento del server va
+  rilanciato `draw_examples` (circa 35 minuti, `AGENTI.md` regola 11),
+  anche se gli esempi di corsa vengono identici. Un aggiornamento solo dopo
+  la parte B, con un nuovo ok dell'utente: server a `main`, zona della bici
+  di Trento rifatta, `draw_examples`. Il server non si tocca prima.
 
 ## Fuori scope
 
@@ -153,7 +174,61 @@ dicevano «mai». Nella città dei test il cerchio in bici da 10 km porta la
 bici a mano per un isolato, 300 m. API: i due test della bici che
 vietavano marciapiede e contromano ora li ammettono a piedi, con l'avviso.
 
-**Non verificato**: una zona vera fatta con la parte A. Overpass rifiuta
-il Mac dalle 09:15Z (dopo i download dei campioni di TASK-190) e la zona
-di Trento sul server è di prima; i numeri della tabella sopra vengono dalla
-stima con la zona a piedi.
+**La corsa e la canoa non cambiano** (condizione del coordinatore).
+Impronte (`request_log.fingerprint`, i punti al centimetro) dei cinque casi
+di Trento di TASK-203, come li fa l'API (`plan_nearby` con tre partenze
+vicine, `processes=False`), sulle zone a piedi della cache del Mac lette e
+mai scritte; prima: `main` a `d0e8692`; dopo: questo branch. Uguali anche
+a quelle di TASK-203:
+
+| Caso | Scelto, prima e dopo | Alternative, prima e dopo |
+|---|---|---|
+| cuore 10 km | `0c9cb198491a0906` (0,883; 8 652 m) | `71f46a1810bc0532` · `ecc51e4b109a0737` |
+| cerchio 15 km | `78255caddef6e01e` (0,970; 14 594 m) | `596b462eddebd6d4` · `15ed4e9c6ec49d30` |
+| «CIAO» 12 km | `c6a22a5b3aeb0103` (0,835; 11 384 m) | `1212305a33f45982` · `50b0954c4ddc45e7` |
+| stella 5 km | `7b54a0cf04b185ae` (0,992; 4 938 m) | `5f113df32363c56d` · `8f800c711720425f` |
+| «CIAO» penna alzata 12 km | `d3d24e68de65fbeb` (0,974; 14 777 m) | `5a603e81d9134dfd` · `e1db67986d16843c` |
+
+La canoa, sulle fixture dell'acqua (`plan_paddling`), prima e dopo:
+costa cuore 2 km `6f7628cc8ed91f7e`, cerchio 2 km `692bedbb0dc0e5ce`,
+stella 3 km `d601df8505be23a0`; lago cuore `1aff621a6cf076da`, cerchio
+`239047fc75b4f66b`, stella `6c4fa0766c572559`.
+
+**I test che le tengono**: per la corsa `tests/test_kept_per_graph.py`
+(TASK-203: sette richieste senza rete con le impronte di prima, verde
+senza modifiche); per la canoa
+`test_bike_on_foot.py::test_paddling_routes_are_those_of_before` (le sei
+qui sopra, calcolate su `main`); più `test_on_foot_nothing_changes` (sulla
+rete a piedi nessun arco `walk`, costi uguali alle lunghezze).
+
+**La zona di Trento con la parte A**, fatta senza rete: le risposte di
+Overpass delle strade della bici rimaste nella cache di OSMnx (quelle dei
+campioni di TASK-190), più la risposta del secondo filtro nuovo ricostruita
+dalla risposta a piedi della stessa area (con tutti i tag) unita a quella
+vecchia dei sentieri con `bicycle`. Mancano solo le vie chiuse ai pedoni
+senza tag `bicycle`, che `walkable` scarta comunque. La zona vicina passa da
+16.569 a 29.383 nodi e da 36.872 a 77.584 archi, di cui 29.215 a piedi;
+quella lontana 34.531 nodi e 90.922 archi. Cartella:
+`out/task206-cache/` (ignorata). Con le stesse risposte anche la zona più
+larga che chiede la ricerca lontana del cerchio da 20 km (35.061 nodi),
+e la stessa col codice di prima per il confronto
+(`out/task206-cache-old/`).
+
+**I campioni** (2026-10-03), come li fa l'API (`plan_nearby`, tre
+partenze vicine) da Piazza Duomo, prima e dopo sulla stessa zona; pagina
+`out/task206-bike-samples.html`, a mano in blu. Giudizio proposto
+dall'agente, **confermato dall'utente**, in `samples/LOG.md`:
+
+| Forma | Oggi | Con la bici a mano | A mano | Giudizio |
+|---|---|---|---|---|
+| cuore 10 km | 0,80 · 9,0 km | 0,80 · 8,7 km | 101 m | quasi (come prima) |
+| cerchio 10 km | 0,77 · 10,8 km | **0,87** · 9,9 km | 502 m | **sì** (era quasi) |
+| stella 10 km | 0,95 · 9,1 km | 0,95 · 10,5 km | 96 m | no (come prima) |
+| cuore 20 km | 0,85 · 19,2 km | 0,85 · 20,7 km | 636 m | quasi (come prima) |
+| cerchio 20 km | 0,82 · 19,2 km | **0,93** · 18,2 km | 659 m | **sì** (era quasi) |
+| stella 20 km | 0,93 · 18,0 km | 0,98 · 18,6 km | 301 m | no (come prima) |
+
+A mano 100–660 m su 10–20 km, meno della stima (0,7–1,1 km su 10): con le
+partenze vicine la bici di oggi era già meglio di quella senza (cuore 10
+km 0,80 contro 0,70). Le stelle non si leggono né in bici né di corsa a
+Trento: non è la rete della bici.

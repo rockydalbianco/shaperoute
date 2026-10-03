@@ -138,8 +138,8 @@ def test_the_activity_comes_after_the_walks() -> None:
     walks = next(
         i for i, name in enumerate(names) if name.endswith("_pen_up_walks.sql")
     )
-    # The last one: a database of before has every other.
-    assert activity == len(names) - 1 > walks > names.index("0002_favorites.sql")
+    # After the walks, not necessarily the last: TASK-117's drawings follow.
+    assert activity > walks > names.index("0002_favorites.sql")
 
 
 # --- Keeping, listing, opening, removing ---

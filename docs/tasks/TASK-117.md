@@ -82,6 +82,7 @@ services/api/shaperoute_api/drawings.py
 services/api/shaperoute_api/app.py
 services/api/shaperoute_api/profiles.py
 services/api/tests/test_drawings.py
+services/api/tests/test_favorites.py   (una riga: la 0008 non è più l'ultima; ok dell'utente)
 packages/shared-types/src/index.ts
 packages/shared-types/fixtures/drawing-request.json
 packages/shared-types/fixtures/my-drawing.json
@@ -125,8 +126,10 @@ ADR-0159. Il taglio è lungo la traccia, come dice ADR-0114;
 uno in linea d'aria è annotato nell'ADR come proposta per l'utente. Un
 disegno privato lo vede il suo autore, tagliato come lo vedrebbero gli
 altri. Test: 26 in `test_drawings.py`, tutta la suite dell'API verde
-(773 prima dell'ultimo test aggiunto); `shared-types` verde. Entra in
-`main` dopo TASK-200 (coordinatore: `app.py`, `shared-types`, migrazioni).
+dopo il merge di `main` con TASK-200 (792); `shared-types` verde. Entra in
+`main` dopo TASK-200 (coordinatore: `app.py`, `shared-types`, migrazioni):
+TASK-200 è entrato prima, con la `0008`. Il suo `test_favorites.py` voleva
+la `0008` ultima: una riga cambiata, con l'ok dell'utente.
 
 Seguiti:
 

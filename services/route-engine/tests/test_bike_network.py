@@ -3,7 +3,10 @@
 No network: the Overpass answer is a small town made here, a grid of
 streets with one-way rows, steps, a footway, a trunk road, a street closed
 to bikes and a cycle path, which OSMnx turns into graphs as it does a real
-answer. The foot network is the one of every other test.
+answer. The foot network is the one of every other test. Since TASK-206
+the bike network also holds the footway and the other way of the one-way
+rows, walked with the bike on foot (tests/test_bike_on_foot.py): what a
+bike rides is its other edges.
 """
 
 from __future__ import annotations
@@ -53,9 +56,11 @@ from route_engine.network import (
     crop,
     largest_piece,
     nearest_nodes,
+    on_foot_edge,
     one_way_streets,
     read_graph,
     rideable,
+    walkable,
 )
 from route_engine.optimizer import (
     SHAPE_POINTS,
@@ -262,30 +267,49 @@ def test_a_one_way_street_binds_bikes_unless_its_tags_open_it(
     assert bike_direction(tags) == way
 
 
-def test_the_bike_graph_has_no_steps_footways_trunk_or_closed_streets(
+def _ridden(graph: Graph) -> list[tuple[Any, Any, dict[str, Any]]]:
+    """The edges a bike rides: all but those walked with the bike on foot."""
+    return [(u, v, d) for u, v, d in graph.edges(data=True) if not on_foot_edge(d)]
+
+
+def test_the_bike_rides_no_steps_footways_trunk_or_closed_streets(
     bike_town: Graph, downloads: list[tuple[str, Any]]
 ) -> None:
     assert downloads == [("bike", BIKE_FILTER)]
     assert bike_town.graph["network"] == BIKE_NETWORK_NAME
     assert one_way_streets(bike_town)
-    for _, _, data in bike_town.edges(data=True):
+    for _, _, data in _ridden(bike_town):
         assert not _ways(data, "highway") & NOT_FOR_BIKES
         assert "no" not in _ways(data, "bicycle")
-    for column in (TRUNK_COL, FOOT_COL, STEPS_COL, NO_BIKES_COL):
+    for column in (TRUNK_COL, STEPS_COL, NO_BIKES_COL):
         assert _edges_of(bike_town, _column_way(column)) == []
+    footway = _edges_of(bike_town, _column_way(FOOT_COL))
+    assert footway  # walked, with the bike on foot (TASK-206)
+    assert all(on_foot_edge(d) for u, v in footway for d in bike_town[u][v].values())
     assert _edges_of(bike_town, _column_way(PATH_COL))  # the cycle path
 
 
 def test_one_way_streets_go_one_way_by_bike_unless_open_to_bikes(
     bike_town: Graph,
 ) -> None:
-    east = _edges_of(bike_town, _row_way(EAST_ROW))
-    west = _edges_of(bike_town, _row_way(WEST_ROW))
-    assert east and all(_east(bike_town, u, v) for u, v in east)
-    assert west and not any(_east(bike_town, u, v) for u, v in west)
+    ridden = nx.MultiDiGraph()
+    ridden.add_nodes_from(bike_town.nodes(data=True))
+    ridden.add_edges_from(_ridden(bike_town))
+    east = _edges_of(ridden, _row_way(EAST_ROW))
+    west = _edges_of(ridden, _row_way(WEST_ROW))
+    assert east and all(_east(ridden, u, v) for u, v in east)
+    assert west and not any(_east(ridden, u, v) for u, v in west)
     for row in (CONTRA_ROW, OPPOSITE_ROW, EAST_ROW - 1):
-        both = [_east(bike_town, u, v) for u, v in _edges_of(bike_town, _row_way(row))]
+        both = [_east(ridden, u, v) for u, v in _edges_of(ridden, _row_way(row))]
         assert True in both and False in both
+    # The other way of a one-way street is there, on foot (TASK-206).
+    against = [
+        (u, v)
+        for u, v in _edges_of(bike_town, _row_way(EAST_ROW))
+        if not _east(bike_town, u, v)
+    ]
+    assert against
+    assert all(on_foot_edge(d) for u, v in against for d in bike_town[u][v].values())
 
 
 def test_on_foot_the_same_town_is_two_way_with_its_steps(
@@ -327,11 +351,15 @@ def test_a_cycling_route_is_closed_and_rides_only_where_bikes_may(
     assert route.nodes[0] == route.nodes[-1]
     zone = read_graph(next(tmp_path.glob(f"{BIKE_NETWORK_NAME}_*.graphml")))
     steps = _legal(zone, route.nodes)
-    assert any(d["oneway"] for d in steps)  # one-way streets, the right way
-    for data in steps:
+    ridden = [d for d in steps if not on_foot_edge(d)]
+    assert any(d["oneway"] for d in ridden)  # one-way streets, the right way
+    for data in ridden:
         assert not _ways(data, "highway") & NOT_FOR_BIKES
+    for data in steps:  # walked, a footway or the other way of a street
+        assert not _ways(data, "highway") & {"trunk", "steps"}
     assert plan.checks["steps"] == 0.0
     assert "unpaved" in plan.checks
+    assert "on_foot" in plan.checks
     assert list(tmp_path.glob(f"{FOOT_NETWORK_NAME}_*")) == []
 
 
@@ -457,7 +485,7 @@ def _keeps(overpass: str) -> Callable[[dict[str, str]], bool]:
     return keep
 
 
-def test_overpass_downloads_every_way_a_bike_may_ride() -> None:
+def test_overpass_downloads_every_way_a_bike_may_ride_or_be_walked() -> None:
     keeps = [_keeps(f) for f in BIKE_FILTER]
     values = [None, "yes", "designated", "permissive", "no", "private"]
     for highway in sorted(BIKE_ROADS | BIKE_PATHS | {"pedestrian", "steps"}):
@@ -468,9 +496,10 @@ def test_overpass_downloads_every_way_a_bike_may_ride() -> None:
                     tags["bicycle"] = bicycle
                 if access is not None:
                     tags["access"] = access
-                if rideable(tags) and access != "private":
+                if (rideable(tags) or walkable(tags)) and access != "private":
                     assert any(keep(tags) for keep in keeps), tags
-    assert not any(keep({"highway": "footway"}) for keep in keeps)
+    # Footways are walked with the bike on foot since TASK-206.
+    assert any(keep({"highway": "footway"}) for keep in keeps)
     assert not any(keep({"highway": "steps"}) for keep in keeps)
     assert not any(keep({"highway": "trunk"}) for keep in keeps)
 
@@ -517,13 +546,13 @@ def test_the_way_back_from_a_nearby_start_follows_the_one_way_streets(
     graph = Town().load(job.area(TOWN))
     [home], _ = nearest_nodes(graph, [TOWN])
     # The start is on a westbound street: one block west along it, the
-    # way back cannot be the same street.
+    # way back cannot ride the same street, only walk it (TASK-206).
     there = next(
         v
         for v in graph.successors(home)
         if all(d["oneway"] for d in graph[home][v].values())
     )
-    assert not graph.has_edge(there, home)
+    assert all(on_foot_edge(d) for d in graph[there][home].values())
     plan = job.here((graph.nodes[there]["y"], graph.nodes[there]["x"]), Town())
     assert plan.search is not None
     assert plan.search.best.route.nodes[0] == there
@@ -532,6 +561,8 @@ def test_the_way_back_from_a_nearby_start_follows_the_one_way_streets(
     nodes = reached.search.best.route.nodes
     assert nodes[0] == nodes[-1] == home
     _legal(graph, nodes)
+    # Back around the block by bike, not 300 m walked back (`step_cost`).
+    assert not all(on_foot_edge(d) for d in graph[nodes[-2]][home].values())
     points = reached.result.points
     assert points[0] == points[-1]
     assert reached.result.distance_m > plan.result.distance_m

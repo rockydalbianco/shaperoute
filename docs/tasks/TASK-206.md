@@ -510,7 +510,7 @@ dall'utente (ADR-0167, «Aggiornamento (parte C)»), sul branch
   pausa. Soglie in ADR-0167.
 - **I preferiti**: tengono e ridanno `on_foot`; con un'API che lo
   rifiuta, di nuovo senza (ancora in bici), poi come prima di TASK-199.
-- **I test**, sul Mac: app 1.502 verdi (47 nuovi: `onFoot.test.ts`,
+- **I test**, sul Mac: app 1.502 verdi (27 nuovi: `onFoot.test.ts`,
   `onFootVoice.test.ts`, `onFootRun.test.ts` con una pedalata simulata,
   `favoriteOnFoot.test.ts`, `AppBikeOnFoot.test.tsx` col percorso in bici
   di `shared-types`, e aggiunte a mappa, avvisi, preferiti e voce);

@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react-native";
-import type { ReactTestRendererJSON } from "react-test-renderer";
 import { StyleSheet } from "react-native";
 
 import { MIN_TAP_SIZE } from "../theme/tokens";
@@ -14,10 +13,11 @@ jest.mock(
   () => jest.requireActual("react-native-safe-area-context/jest/mock").default,
 );
 
+/** A part of the rendered page, as `screen.toJSON()` gives it. */
+type Rendered = string | { props: { testID?: unknown }; children: Rendered[] | null };
+
 /** The texts and the heart, in the order they are laid out, top to bottom. */
-function inOrder(
-  node: ReactTestRendererJSON | ReactTestRendererJSON[] | string | null,
-) {
+function inOrder(node: Rendered | Rendered[] | null) {
   const found: string[] = [];
   const walk = (each: typeof node) => {
     if (each === null) {

@@ -52,8 +52,8 @@ docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-222.md
 
 - Il disegno del cuore, le misure, i colori: sono di TASK-221 e ADR-0184.
 - Il cuore in «Feed» o in altre pagine: non chiesto.
-- `docs/UI.md`: lo tocca TASK-191 C (PR #255, in pausa); la regola di dove
-  sta il cuore è in ADR-0184.
+- `docs/UI.md`: lo toccano TASK-220 e TASK-221; dove sta il cuore lo dice
+  ADR-0184.
 - Pubblicare l'app: solo con l'ok dell'utente.
 
 ## Esito

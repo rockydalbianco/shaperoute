@@ -18,8 +18,8 @@
   altrimenti l'inglese. Ogni testo passa da `t()` (`src/i18n/`); un testo
   senza traduzione si mostra in inglese. Tradotti a pezzi: con la parte A
   «Settings», «Profile», l'accesso, «My activities», i preferiti, i
-  disegni, il feed, Strava e la ricerca del luogo; «Draw», «Explore» e la
-  corsa con le parti successive. Le traduzioni le ha riviste l'agente su
+  disegni, il feed, Strava e la ricerca del luogo; i testi della canoa con
+  TASK-191 C; «Draw», «Explore» e la corsa con le parti successive. Le traduzioni le ha riviste l'agente su
   delega dell'utente («controlla te, mi fido», 2026-10-03); chi parla
   tedesco, spagnolo o francese può ancora migliorarle in `src/i18n/`.
 
@@ -32,7 +32,8 @@ corpi del testo, la linea del percorso (gialla, larga 5) e `MIN_TAP_SIZE`,
 mano fuori da lì**: lo stile della mappa e le schermate leggono gli stessi
 token, e un colore nuovo è un token nuovo. Applicato all'app con TASK-046:
 mappa scura, percorso giallo, pannelli scuri, tastiere scure, barra di
-stato chiara. «Draw route» è l'unico comando giallo, con il testo scuro; gli
+stato chiara. «Draw route» è il comando giallo, con il testo scuro (e
+«Run without a route», per scelta dell'utente: TASK-220); gli
 altri («My position», «Search», «Cancel», «Export GPX», le forme da
 toccare) sono neutri, su `surfaceRaised`, con il bordo `borderStrong`:
 schiariti con TASK-086 (ADR-0081) perché sul fondo nero non si vedevano. Il segnaposto della partenza è
@@ -59,7 +60,9 @@ Quattro regole:
 
 1. **Il giallo significa una cosa sola**: il percorso, il comando che lo
    produce e la barra che lo mostra mentre si disegna. Gli avvisi usano `warning`, arancio: un avviso giallo
-   renderebbe il colore muto.
+   renderebbe il colore muto. **Un'eccezione**, scelta dall'utente
+   (TASK-220, ADR-0183): «Run without a route» in cima a «Draw» è giallo,
+   con il testo scuro. Per tutto il resto la regola vale.
 2. **Sul giallo il testo è scuro** (`onAccent`, 13,5:1). Il bianco si ferma
    a 1,5:1, sotto il minimo, e in pieno sole, dove l'app si usa, non si
    legge.
@@ -396,8 +399,9 @@ durante la corsa il pulsante non c'è.
 
 **Lo sport** (TASK-205, ADR-0165, chiesto dall'utente): a sinistra del
 profilo un pulsante tondo uguale mostra l'emoji dello sport scelto (🏃‍♂️
-«Run», 🚴 «Bike»). Toccato apre sotto di sé un piccolo menu con gli sport
-di «Settings»: lo scelto con il «✓», «Paddle» con «Soon» che non si tocca.
+«Run», 🚴 «Bike», 🛶 «Paddle» dal TASK-191). Toccato apre sotto di sé un
+piccolo menu con gli sport di «Settings»: lo scelto con il «✓»; uno sport
+non ancora pronto avrebbe «Soon» e non si toccherebbe.
 Un tocco su uno sport lo sceglie e chiude il menu; un tocco fuori lo chiude
 senza cambiare niente. È la stessa scelta della sezione «Sport» di
 «Settings» (sotto): cambiata in un posto, cambia anche nell'altro, e
@@ -473,15 +477,17 @@ com'è scritto, e il commento non entra mai nella WebView della mappa.
   sotto); poi «Change email» e «Phone number», con la scritta «Soon».
 - **«Sport»** (TASK-189, ADR-0152): per cosa sono i percorsi. Tre righe:
   «Run» (🏃‍♂️), scelto all'inizio, con un «✓» bianco; «Bike» (🚴), che
-  si sceglie dal TASK-190; «Paddle» (🛶: canoa, kayak, SUP) con «Soon», che
-  non si tocca finché il motore non disegna i suoi percorsi (TASK-191). Uno
+  si sceglie dal TASK-190; «Paddle» (🛶: canoa, kayak, SUP, nome scelto
+  dall'utente), che si sceglie dal TASK-191 (sotto, «Sull'acqua»). Uno
   sport pronto si sceglie con un tocco, qui o dal pulsante accanto al
   profilo (TASK-205, sopra); la scelta resta sul telefono, non
   nell'account, e vale subito, senza riaprire l'app. **Con «Bike»** cambia
   solo «Draw» (sotto, «Forma e distanza»): percorsi su strade da bici, da
   10 a 30 km. «Explore», «Feed» e la schermata della corsa restano quelli
   della corsa: cosa mostrano con la bici è una scelta dell'utente ancora
-  aperta (`tasks/TASK-190.md`, «Domande aperte»).
+  aperta (`tasks/TASK-190.md`, «Domande aperte»). **Con «Paddle»** cambiano
+  «Draw», «Start» ed «Explore» (sotto, «Sull'acqua»); «Feed» e la schermata
+  della corsa restano quelli della corsa.
 - **«Strava»** (TASK-187), solo se l'API ha Strava: «Connect with
   Strava» (il pulsante ufficiale di Strava, TASK-218, come a fine corsa)
   con «Send the runs you save in Sgrava to your Strava
@@ -1126,11 +1132,15 @@ sottili: il token `walk` (`textMuted`, largo 3, opacità 0,9, trattini di 2
 larghezze e spazi di 1,5, estremi dritti). Grigi e non gialli perché il
 giallo è il disegno: così la parola si legge. Sotto il nome del percorso
 una riga in più, «15.4 km of letters + 4.2 km walking between them»
-(testo **da confermare con l'utente**): i km delle lettere sono quelli che
+(testo confermato dall'utente il 2026-10-03): i km delle lettere sono quelli che
 la corsa registra e quelli a cui va la distanza chiesta; a parità di km le
 lettere vengono 1,7 volte più alte e i tratti a piedi aggiungono il 20–30%.
 La distanza in grande e quella delle tessere «A · B · C» restano di tutto
-il percorso, tratti a piedi compresi (`distance_m`). Un risultato senza
+il percorso, tratti a piedi compresi (`distance_m`). **In bici**
+(TASK-216, testo scelto dall'utente) fra le lettere si pedala: «15.4 km of
+letters + 4.2 km riding between them» · «15,4 km di lettere + 4,2 km in
+bici fra una lettera e l'altra» (attraverso `t()`; tedesco, spagnolo e
+francese da confermare). Un risultato senza
 `walks` (un'API più vecchia di TASK-197) o con `walks` che non stanno nei
 `points` (l'app non si fida: `src/route/walks.ts`) si disegna come prima,
 una linea sola, con lo stesso messaggio alla mappa di prima. Il percorso
@@ -1152,8 +1162,8 @@ Con una parola a penna alzata in bici, la parte di un tratto che cade fra
 una lettera e l'altra non si segna: lì la linea è già grigia. Nella scheda
 l'avviso del motore «923 m of the route with the bike on foot» diventa una
 riga grigia, da sapere: **«Includes 920 m walking the bike.»** (in
-italiano «Di cui 920 m con la bici a mano.», approvati dall'utente; in
-tedesco, spagnolo e francese **da confermare**), i metri arrotondati a 10,
+italiano «Di cui 920 m con la bici a mano.», approvati dall'utente, come
+il tedesco, lo spagnolo e il francese il 2026-10-03), i metri arrotondati a 10,
 da 1 km «1.1 km». Ogni tessera «A · B · C» ha i suoi. La distanza resta di
 tutto il percorso, tratti a mano compresi, e la corsa li registra senza
 pause. Un risultato senza `on_foot` (un'API più vecchia di TASK-206) o con
@@ -1245,8 +1255,8 @@ TASK-164, di cui tiene i numeri.
   voce, con una vibrazione, dice «Letter done. Walk to the U: the drawing is
   paused.» alla fine della lettera e «Pen down: draw the U.» all'inizio
   della successiva, una volta sola ciascuno e prima delle svolte della
-  stessa posizione (testi **da confermare con l'utente**; se la parola non
-  ha una lettera più dei tratti, «the next letter»). Sulla scheda è una
+  stessa posizione (testi confermati dall'utente il 2026-10-03; se la
+  parola non ha una lettera più dei tratti, «the next letter»). Sulla scheda è una
   pausa come le altre: «Paused», «Resume» e «Stop».
   - **Perché 20 m, e lungo il percorso**: una posizione che la corsa tiene
     sbaglia fino a 40 m (`POOR_FIX_M`), in città 10–20 m. Ripartendo 20 m
@@ -1278,9 +1288,10 @@ TASK-164, di cui tiene i numeri.
     waypoint «Pause» e «Resume» (TASK-197, `GPX.md`).
 - **La bici a mano** (TASK-206, ADR-0167; frasi scelte dall'utente il
   2026-10-03). Su un percorso in bici con tratti a mano (`on_foot`) la
-  voce, con una vibrazione, dice il tratto **50 m prima** (`ANNOUNCE_M`,
-  come una svolta): «In 50 metres, get off and walk the bike for 200
-  metres.» · «Tra 50 metri, scendi e porta la bici a mano per 200 metri.»,
+  voce, con una vibrazione, dice il tratto **100 m prima**
+  (`ON_FOOT_AHEAD_M`, come una svolta in bici: TASK-216, ADR-0179; prima
+  50 m): «In 100 metres, get off and walk the bike for 200 metres.» · «Tra
+  100 metri, scendi e porta la bici a mano per 200 metri.»,
   con i metri che mancano e la lunghezza del tratto arrotondati a 10; e
   alla sua fine «Back on the bike.» · «Risali in bici.», tranne quando il
   tratto finisce all'arrivo. Se la prima posizione è già sul tratto, la
@@ -1289,6 +1300,42 @@ TASK-164, di cui tiene i numeri.
   c'è). Una volta sola ciascuna, dopo le svolte della stessa posizione. La
   registrazione **non** va in pausa: il tratto a mano è disegno, e conta
   nel tempo e nel punteggio. `src/navigation/onFootVoice.ts`.
+
+**In bici** (TASK-216, ADR-0179; scelte dell'utente del 2026-10-03).
+«Start» su un percorso in bici apre una navigazione da bici. L'attività è
+quella del percorso, non quella di «Settings»: da «Draw» quella con cui è
+stato chiesto, da un preferito quella con cui è stato tenuto, da «Explore»
+quella dell'esempio (oggi sempre la corsa). Solo `cycling` cambia: la
+corsa, e un percorso senza attività, restano come prima, parola per parola.
+
+- **La velocità al posto del passo**: su «Map» «Speed now» (km/h, sugli
+  ultimi 200 m, come «Pace now»); su «Data» e in pausa «Speed now», «Avg
+  speed», «Last km» (la velocità dell'ultimo km intero), «Elev. gain»,
+  «Calories»; i km uno per uno sono «Km · Speed · Change», con la velocità
+  a un decimale («24.0») e la differenza col km prima in km/h («-4.0» più
+  lento, «+1.5» più veloce). In italiano «Vel. ora», «Vel. media», «Ultimo
+  km», «Velocità» (approvati dall'utente; tedesco, spagnolo e francese da
+  confermare); i numeri col punto, come gli altri della schermata.
+- **La voce dei km ogni 10 km**, a 10, 20 e 30: «10 kilometres. Time: 25
+  minutes 10 seconds. Average speed: 24 kilometres per hour.» · «10
+  chilometri. Tempo: 25 minuti e 10 secondi. Velocità media: 24 chilometri
+  orari.», la velocità a numero intero, detta a parole (la voce del telefono
+  può leggere male «km/h»). Le pause non contano, e una pedalata che
+  riprende non ridice i 10 km già detti. L'incitamento dopo i primi 5 km
+  in bici non c'è.
+- **Le svolte 100 m prima** (`RIDE_ANNOUNCE_M`), con la distanza detta
+  («In 100 metres, turn left onto Via Roma»), e così i tratti con la bici a
+  mano. Perché 100 m: a 20 km/h la svolta arriva in mediana 16 s dopo
+  l'inizio della frase, come a 5:30 /km con 50 m; oltre non si guadagna,
+  perché in bici le svolte distano in mediana 99 m (ADR-0179, misurato su
+  Trento).
+- **La penna alzata in bici**: alla fine di una lettera «Letter done. Ride
+  to the U: the drawing is paused.» · «Lettera finita. Pedala fino alla U:
+  il disegno è in pausa.» («the next letter» · «la lettera successiva»
+  quando la parola non dice quale); «Pen down: draw the U.» come a piedi.
+  La pausa «penna» è la stessa.
+- **Come nella corsa**, per ora: la fine della corsa (il riepilogo col
+  passo), le calorie (stimate per la corsa), la corsa senza percorso.
 
 **L'aspetto della corsa** (TASK-204, ADR-0163; chiesto dall'utente il
 2026-10-03: «migliora la parte grafica», e confermato lo stesso giorno,
@@ -1341,7 +1388,8 @@ qualche passo perché compaia (prima c'è il segnaposto di sempre), e da
 fermi resta quella di prima. A fine corsa torna il segnaposto.
 
 Ogni svolta si dice a voce 50 m prima («In 50 metres, turn left onto Via
-Roma, then turn right onto the footpath»), con una vibrazione, nella lingua
+Roma, then turn right onto the footpath»; in bici 100 m, «In bici» qui
+sopra), con una vibrazione, nella lingua
 della voce: in inglese finché non se ne sceglie un'altra («La voce della
 corsa», sotto). Una via senza nome è «the footpath», «the
 path», «the road»: mai un nome inventato. Se accanto corre una via con nome
@@ -1391,11 +1439,11 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   partenza, le vie senza nome per tipo (mai un nome inventato; i nomi
   delle vie mai tradotti), «beside», fuori e di nuovo sul percorso,
   l'arrivo, la pausa da fermi e la ripresa, la penna alzata, ogni km con
-  tempo e passo, la bici a mano (TASK-206: tedesco, spagnolo e francese da
-  confermare). Il numero uno detto a parole dove si accorda
-  («Un chilometro», «un'ora», «eine Minute»). Le frasi sono in
-  `src/voice/`, una tabella per lingua; quelle in inglese sono le stesse di
-  prima, parola per parola.
+  tempo e passo, la bici a mano (TASK-206), in bici i km ogni 10 con la velocità media e la penna alzata
+  pedalando (TASK-216: tedesco, spagnolo e francese da confermare). Il
+  numero uno detto a parole dove si accorda («Un chilometro», «un'ora»,
+  «eine Minute»). Le frasi sono in `src/voice/`, una tabella per lingua;
+  quelle in inglese sono le stesse di prima, parola per parola.
 - **Dopo i primi 5 km**, una volta sola e subito dopo l'annuncio del
   quinto km, la voce incita: **«Daje, avanti tutta!»** (chiesto
   dall'utente il 2026-10-03). Nelle altre lingue: «Come on, full speed
@@ -1403,9 +1451,11 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   en avant toute !».
 - **Testi**: le frasi italiane sono **confermate dall'utente** (2026-10-03),
   e lo sono anche le spagnole, francesi e tedesche: l'utente le ha
-  ascoltate e approvate lo stesso giorno. Restano da confermare quelle
-  della bici a mano (TASK-206) in tedesco, spagnolo e francese, e quelle
-  della penna alzata anche in inglese (TASK-198). Le parole del foglio («App
+  ascoltate e approvate lo stesso giorno. Lo stesso giorno ha confermato
+  anche quelle della bici a mano (TASK-206) in tedesco, spagnolo e francese,
+  con «Includes … walking the bike.», e i testi della penna alzata
+  (TASK-198). Restano da confermare le frasi nuove della bici (TASK-216) in
+  tedesco, spagnolo e francese. Le parole del foglio («App
   language», «Language», «Voice», «Default», «Listen», «Done») sono in
   inglese come il resto dello schermo: le traduce TASK-210.
 
@@ -1419,7 +1469,9 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
 | Penna alzata | «Lettera finita. Cammina fino alla A: il disegno è in pausa.» · «Giù la penna: disegna la A.» |
 | Km | «Un chilometro. Tempo: 5 minuti e 42 secondi. Passo medio: 5 minuti e 42 secondi al chilometro.» |
 | Dopo 5 km | «5 chilometri. Tempo: 25 minuti. Passo medio: 5 minuti al chilometro. Daje, avanti tutta!» |
-| Bici a mano (TASK-206) | «Tra 50 metri, scendi e porta la bici a mano per 200 metri.» · «Risali in bici.» |
+| Bici a mano (TASK-206) | «Tra 100 metri, scendi e porta la bici a mano per 200 metri.» · «Risali in bici.» |
+| Penna alzata in bici (TASK-216) | «Lettera finita. Pedala fino alla U: il disegno è in pausa.» |
+| Km in bici, ogni 10 (TASK-216) | «10 chilometri. Tempo: 25 minuti e 10 secondi. Velocità media: 24 chilometri orari.» |
 
 **Modalità tasca** (TASK-070, ADR-0066). Accanto a «Pause», «Pocket»: lo
 schermo diventa nero, la luminosità va al minimo e resta acceso, e i tocchi
@@ -1547,10 +1599,88 @@ mostra le lettere unite da linee dritte sulla base.
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
 principale.
 
+## Sull'acqua: «Paddle» (TASK-191, ADR-0169)
+
+Con «Paddle» scelto (in «Settings» o dal pulsante dello sport) i percorsi
+sono forme disegnate **sull'acqua** di un lago o del mare, entro 1 km dalla
+riva, con partenza e arrivo sulla riva (il motore: ADR-0154, ADR-0161;
+l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
+
+- **«Draw»**: niente interruttore «Shape | Word | Image», solo le forme
+  del catalogo, con la riga «On the water, a shape of the catalogue.» al
+  suo posto: sull'acqua parole e foto non si disegnano. Una parola o una
+  foto scelte prima restano lì, e tornano con un altro sport. Distanze da
+  1 a 5 km (scelta dell'utente), anche col mezzo km («2,5»); il campo parte
+  da **2 km**, dove le forme ci stanno anche al mare, 200 m oltre la riva,
+  e torna a 2 km ogni volta che si sceglie «Paddle». La richiesta ha
+  `activity: "paddling"`. Il pulsante della corsa libera dice «Paddle
+  without a route».
+- **Il risultato**: «heart · on the water · target 2 km». Il percorso
+  parte dalla riva, dove si arriva a piedi: se è a più di 50 m dalla
+  partenza chiesta, il segnaposto ciano «Start here» la segna, come per una
+  forma spostata. Niente tessere «A · B · C» né avvisi del motore (l'API
+  non ne manda sull'acqua). La linea gialla sull'acqua (`color.map.water`)
+  ha contrasto 11,5:1, più che su una strada principale (7,4:1); il ciano
+  di «Start here» 9,6:1 (`src/theme/waterContrast.test.ts`): nessun token
+  nuovo. Si vede poco, invece, dove finisce l'acqua: acqua e terra della
+  mappa scura sono a 1,15:1.
+- **«Start»** c'è anche senza indicazioni di svolta: sull'acqua non ce ne
+  sono e l'app non le chiede (`/route-directions`), né per un percorso
+  disegnato né per uno di «Explore» o dei preferiti. Si segue la linea:
+  il banner dice «Follow the route to the end.», la barra e i km mancanti
+  sono quelli della corsa, la voce dice solo i km.
+- **L'avviso di sicurezza**, al **primo** «Start» sull'acqua su questo
+  telefono (scelta dell'utente), a tutto schermo prima del conto alla
+  rovescia: 🛶, «Before you paddle», quattro righe («Wear a life
+  jacket.», «Check the weather and the wind before you go out.», «Follow
+  the local rules: swimming areas, boat lanes, harbours. Sgrava does not
+  know them.», «The route stays within 1 km of the shore. That does not
+  make it safe or allowed.»), poi «I understand», giallo, che parte, e «Not
+  now», che torna al percorso e lo richiederà al prossimo «Start». Il
+  telefono lo ricorda in `paddle-notice.json`; uno che non può scrivere lo
+  ricorda finché l'app è aperta.
+- **Quando non va**, nelle parole dell'acqua: lontano dall'acqua «There is
+  no lake or sea near this start. Start from the shore, within 2 km of the
+  water.»; una forma troppo grande «This shape does not fit on the water
+  here at this distance. It fits at about 2.5 km.» con «Try 2.5 km» (la
+  distanza dell'API, per difetto al mezzo km); una che non ci sta fra 1 e
+  5 km «This shape does not fit on the water here. Try a shorter distance,
+  another shape, or another start:» con le forme. Senza i dati dell'acqua
+  (Overpass che rifiuta) il testo è quello della mappa, «Map data for this
+  area could not be downloaded. Try again later.».
+- **«Explore»** (scelta dell'utente): al posto di città, esempi di corsa e
+  percorsi consigliati, la pagina «On the water», «Shapes to paddle, within
+  1 km of the shore», con la sezione «LAKES AND SEA»: «Near me», «Lago di
+  Garda», «Lago di Como», «Jesolo», «Riccione». Finché non se ne sceglie uno
+  dice «Choose a lake or a beach: a circle, a heart and a star of 2 km are
+  drawn on its water, from the shore.» e non chiede niente. Un luogo scelto
+  ha cuore, cerchio e stella da 2 km in canoa (chiesti uno alla volta, il
+  cerchio per primo, come gli esempi delle città), sotto «LAGO DI GARDA ·
+  FROM RIVA DEL GARDA»: ogni scheda «Heart · 2.1 km», «On the water», si
+  apre sulla mappa come un percorso di «Explore», con «Start», «Export GPX»
+  e il cuore dei preferiti, che la tiene come canoa. I punti di partenza
+  sono sulla riva, scelti a mano (`src/paddle/waterPlaces.ts`): Riva del
+  Garda, il lungolago di Como, la spiaggia di Jesolo e quella di Riccione.
+  «Near me» disegna dalla partenza di «Draw» com'era al tocco (senza
+  partenza: «Choose a start in Draw first: the shapes start from the shore
+  nearest to it.»). Gli esempi restano sul telefono come quelli delle città,
+  a parte. La scelta resta quando si torna dalla mappa.
+- **Da sapere per la prova dal vero**: il server disegna sull'acqua solo
+  dove ha già l'acqua in `data/cache/water/`, perché Overpass rifiuta il suo
+  IP; fino ad allora ogni luogo dà «Map data for this area could not be
+  downloaded.» (`tasks/TASK-191.md`, parte C).
+- Testi nuovi **da confermare con l'utente**: «On the water, a shape of the
+  catalogue.», «on the water», «Paddle without a route», i testi d'errore
+  qui sopra e quelli di «Explore» («On the water», «Shapes to paddle,
+  within 1 km of the shore», «LAKES AND SEA», «Near me», i due avvisi). Il
+  testo dell'avviso di sicurezza è approvato. Tutti questi testi sono anche
+  in tedesco, italiano, spagnolo e francese (ADR-0169, «Aggiunta»).
+
 ## Correre senza percorso (TASK-149, ADR-0122)
 
 **«Run without a route»**, in alto nella pagina «Draw» accanto a «Sgrava»,
-fa partire una corsa senza disegnare niente: niente forma, niente percorso,
+giallo con il testo scuro (TASK-220, scelta dell'utente: l'eccezione alla
+regola 1 dei colori), fa partire una corsa senza disegnare niente: niente forma, niente percorso,
 niente API. Con «Bike» scelto in «Settings» il pulsante dice **«Ride without
 a route»** (TASK-190, **da confermare con l'utente**); la schermata che apre
 resta quella della corsa (domanda 2 di `tasks/TASK-190.md`). La scritta è per intero (TASK-158, chiesto dall'utente): «Run» da

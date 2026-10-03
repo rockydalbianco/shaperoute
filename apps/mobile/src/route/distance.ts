@@ -19,7 +19,7 @@ export const MIN_DISTANCE_KM = MIN_DISTANCE_M / 1000;
  * limits, 10–30 km (TASK-190, the user's choice). Outside the bike zones
  * downloaded ahead a bike route downloads 23–26 km of map, and may take
  * longer than the 5 minutes the app waits (ADR-0153). Paddling its contract
- * limits too, 1–5 km (TASK-191): «Paddle» is not offered yet.
+ * limits too, 1–5 km (TASK-191, the user's choice).
  */
 export const APP_DISTANCE_LIMITS_KM: Readonly<
   Record<Activity, readonly [lowest: number, highest: number]>
@@ -99,4 +99,23 @@ export function stepDistance(
  */
 export function fitDistance(text: string, activity: Activity): string {
   return toDistanceM(text, activity) !== null ? text : stepDistance(text, 0, activity);
+}
+
+/**
+ * Where the distance field starts for paddling (TASK-191, ADR-0169): 2 km,
+ * which the shapes fit on the sea too, 200 m off the shore (ADR-0161: the
+ * heart up to 3 km); the examples of «Explore» are 2 km as well. A run's
+ * 5 km fits the paddling limits, but at sea most shapes do not fit at it.
+ */
+export const PADDLING_START_KM = 2;
+
+/**
+ * The distance field for a sport, at the opening or just chosen: paddling
+ * starts from PADDLING_START_KM; a run and a bike route keep the distance
+ * typed, brought within their limits (fitDistance).
+ */
+export function distanceForSport(text: string, activity: Activity): string {
+  return activity === "paddling"
+    ? String(PADDLING_START_KM)
+    : fitDistance(text, activity);
 }

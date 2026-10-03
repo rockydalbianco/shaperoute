@@ -1,8 +1,9 @@
 /**
  * A bike route with the bike on foot, ridden (TASK-206): positions
  * simulated along it, through the navigation as the run screen uses it. The
- * voice says the stretch 50 m ahead and its end, once each; the recording
- * goes on, the stretch is part of the drawing.
+ * voice says the stretch 100 m ahead, as far as a turn on a bike (TASK-216),
+ * and its end, once each; the recording goes on, the stretch is part of the
+ * drawing.
  */
 import type { Direction, LatLon, Stretch } from "@shaperoute/shared-types";
 import { act, renderHook } from "@testing-library/react-native";
@@ -112,7 +113,7 @@ afterEach(() => {
 /** Navigation along ROUTE with `onFoot`, past its countdown. */
 async function startRiding(onFoot?: Stretch[]) {
   const hook = await renderHook(() =>
-    useNavigation(ROUTE, NO_DIRECTIONS, true, 0.9, { onFoot }),
+    useNavigation(ROUTE, NO_DIRECTIONS, true, 0.9, { onFoot, activity: "cycling" }),
   );
   // The permission and the GPS are asked for first.
   await act(async () => {});
@@ -123,20 +124,18 @@ async function startRiding(onFoot?: Stretch[]) {
   return hook;
 }
 
-test("the stretch on foot is said 50 m ahead and at its end, once each", async () => {
+test("the stretch on foot is said 100 m ahead and at its end, once each", async () => {
   const { result, unmount } = await startRiding(ON_FOOT);
   await act(async () => {
-    rideTo(0, 240);
+    rideTo(0, 190);
   });
-  expect(said()).not.toContain(
-    "In 50 metres, get off and walk the bike for 200 metres.",
-  );
+  expect(said().filter((words) => /bike/.test(words))).toEqual([]);
   await act(async () => {
-    rideTo(250, 1300);
+    rideTo(200, 1300);
   });
   const bike = said().filter((words) => /bike/.test(words));
   expect(bike).toEqual([
-    "In 50 metres, get off and walk the bike for 200 metres.",
+    "In 100 metres, get off and walk the bike for 200 metres.",
     "Back on the bike.",
   ]);
   // No pause: the stretch is ridden, walked, and recorded.

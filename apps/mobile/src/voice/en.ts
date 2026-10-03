@@ -52,6 +52,9 @@ export const EN: Phrasebook = {
   penUp: (letter) =>
     `Letter done. Walk to ${letterWords(letter)}: the drawing is paused.`,
   penDown: (letter) => `Pen down: draw ${letterWords(letter)}.`,
+  // On a bike (TASK-216).
+  rideTo: (letter) =>
+    `Letter done. Ride to ${letterWords(letter)}: the drawing is paused.`,
   hours: (count) => units(count, "hour"),
   minutes: (count) => units(count, "minute"),
   seconds: (count) => units(count, "second"),
@@ -59,6 +62,8 @@ export const EN: Phrasebook = {
   kilometre: (km, time, pace) =>
     `${units(km, "kilometre")}. Time: ${time}. Average pace: ${pace} per kilometre.`,
   cheer: "Come on, full speed ahead!",
+  rideKilometres: (km, time, speed) =>
+    `${units(km, "kilometre")}. Time: ${time}. Average speed: ${units(speed, "kilometre")} per hour.`,
   // The bike on foot (TASK-206).
   walkTheBike: (metres) => `get off and walk the bike for ${metres} metres`,
   backOnTheBike: "Back on the bike.",

@@ -1,7 +1,7 @@
 # TASK-216 — La navigazione in bici
 
-**Stato**: Todo (scelte dell'utente del 2026-10-03; il codice dopo
-TASK-206 C)
+**Stato**: Done (2026-10-03) — PR #278, merge `510f8a5`. Solo app: esce
+con la prossima pubblicazione, con l'ok dell'utente.
 **Fase**: 4 · **Branch**: `feat/TASK-216-bike-navigation`
 **Dipende da**: TASK-190 (la bici), TASK-206 C (la voce dei tratti a
 mano), TASK-209 (la voce in cinque lingue, `src/voice/`)
@@ -70,33 +70,50 @@ della parte C», 4 e 5), con la proposta:
 
 ## Criteri di accettazione
 
-- [ ] Con un percorso in bici la schermata della corsa mostra km/h e la
+- [x] Con un percorso in bici la schermata della corsa mostra km/h e la
       voce, ogni 10 km, dice tempo e velocità media; con la corsa tutto
       come prima.
-- [ ] In bici gli avvisi di svolta (e dei tratti a mano) arrivano prima che
+- [x] In bici gli avvisi di svolta (e dei tratti a mano) arrivano prima che
       nella corsa, alla distanza scritta in `DECISIONS.md`.
-- [ ] Con una parola a penna alzata in bici la scheda e la voce dicono
+- [x] Con una parola a penna alzata in bici la scheda e la voce dicono
       «riding» / «Ride to» (e in italiano «in bici» / «Pedala fino»).
-- [ ] Test deterministici dell'app verdi; `typecheck`, `lint`,
+- [x] Test deterministici dell'app verdi; `typecheck`, `lint`,
       `format:check` puliti.
 
 ## File toccati
 
 Previsti (da confermare col coordinatore quando si parte: `RoutePanel.tsx`
-è anche della #255, in pausa):
+è anche della #255, in pausa), poi quelli toccati davvero. In più dei
+previsti, chiesti al coordinatore il 2026-10-03: `NavigateScreen.tsx` e
+`RunDashboard.tsx` (l'attività fino ai numeri, la colonna dei km di
+«Data»), `onFootVoice.ts` (punto 3), le tabelle di `src/i18n/` (solo
+aggiunte, i testi nuovi con `t()`) e i file nuovi. `runStats.ts` e
+`RunPanel.test.tsx` non sono serviti: i numeri della bici sono in
+`ride.ts`, i loro test in file nuovi.
 
 ```
 apps/mobile/App.tsx
+apps/mobile/__tests__/AppBikeNavigation.test.tsx    (nuovo)
 apps/mobile/src/navigation/useNavigation.ts
 apps/mobile/src/navigation/navigator.ts
+apps/mobile/src/navigation/navigator.test.ts
+apps/mobile/src/navigation/onFootVoice.ts
+apps/mobile/src/navigation/onFootVoice.test.ts
+apps/mobile/src/navigation/onFootRun.test.ts
 apps/mobile/src/navigation/penUp.ts
-apps/mobile/src/navigation/runStats.ts
-apps/mobile/src/navigation/*.test.ts
+apps/mobile/src/navigation/penUp.test.ts
+apps/mobile/src/navigation/ride.ts                   (nuovo)
+apps/mobile/src/navigation/ride.test.ts              (nuovo)
+apps/mobile/src/navigation/rideRun.test.ts           (nuovo)
+apps/mobile/src/screens/NavigateScreen.tsx
+apps/mobile/src/screens/RunDashboard.tsx
 apps/mobile/src/screens/RunPanel.tsx
-apps/mobile/src/screens/RunPanel.test.tsx
+apps/mobile/src/screens/RunBike.test.tsx             (nuovo)
 apps/mobile/src/route/RoutePanel.tsx
 apps/mobile/src/route/RoutePanelBike.test.tsx
 apps/mobile/src/voice/{phrasebook,en,it,de,es,fr}.ts
+apps/mobile/src/voice/rideWords.test.ts              (nuovo)
+apps/mobile/src/i18n/{it,de,es,fr}.ts
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
@@ -113,4 +130,49 @@ docs/tasks/TASK-216.md
 
 ## Esito
 
-*(da compilare)*
+### 2026-10-03
+
+Fatto come «Cosa fare», con le scelte dell'utente e l'ADR-0179.
+
+- **L'attività** del percorso seguito arriva a `useNavigation` e alla
+  scheda della corsa: da «Draw» quella della richiesta, da un preferito
+  quella con cui è stato tenuto (anche con «Run» in «Settings»), da
+  «Explore» quella dell'esempio, oggi sempre la corsa. Solo `cycling` è
+  una bici (`src/navigation/ride.ts`).
+- **La velocità**: in bici «Speed now», «Avg speed», «Last km» in km/h a un
+  decimale, e su «Data» la colonna «Speed» con la differenza in km/h
+  («-4.0»); in italiano «Vel. ora», «Vel. media», «Ultimo km»,
+  «Velocità». La voce ogni 10 km: «10 kilometres. Time: 25 minutes 10
+  seconds. Average speed: 24 kilometres per hour.» · «10 chilometri.
+  Tempo: 25 minuti e 10 secondi. Velocità media: 24 chilometri orari.»
+  (`rideKilometres` nel `Phrasebook`). Testi e frasi inglesi e italiani
+  **approvati dall'utente** il 2026-10-03 (con la velocità detta a parole
+  e i secondi, come nella corsa); tedesco, spagnolo e francese **da
+  confermare**.
+- **Gli avvisi**: in bici svolte e tratti a mano **100 m prima**
+  (`RIDE_ANNOUNCE_M`, `ON_FOOT_AHEAD_M`), misurato su 21 percorsi in bici e
+  40 di corsa a Trento (ADR-0179): a 20 km/h la svolta arriva in mediana
+  16,1 s dopo l'inizio della frase, come nella corsa a 5:30 /km con 50 m
+  (16,5 s); oltre 100 m la mediana non cresce.
+- **La penna alzata in bici**: la scheda «… km riding between them» · «… km
+  in bici fra una lettera e l'altra» (con `t()`), la voce «Letter done.
+  Ride to the U: the drawing is paused.» · «Lettera finita. Pedala fino
+  alla U: il disegno è in pausa.» (`rideTo`).
+- **La corsa identica**: stesse frasi e stessi testi; un test segue una
+  corsa simulata, senza attività e con `running`, e ne confronta ogni
+  frase detta (`rideRun.test.ts`); i test della corsa di prima non sono
+  cambiati, tranne quelli dei tratti a mano (solo in bici: 100 m).
+- **Test**, sul Mac: app 1.541 verdi, ribasato su `b649a88` (nuovi `ride.test.ts`,
+  `rideRun.test.ts`, `rideWords.test.ts`, `RunBike.test.tsx`,
+  `AppBikeNavigation.test.tsx`, e aggiunte a navigatore, penna, tratti a
+  mano e scheda); `typecheck`, `lint`, `format:check` puliti.
+- **Non verificato**: sull'iPhone, pedalando. Non pubblicato.
+- **In `main`** dalla PR #278 (CI 5/5 verde, merge `510f8a5`), con le
+  conferme dell'utente della bici a mano di TASK-206 in tedesco, spagnolo
+  e francese e dei testi della penna alzata di TASK-198 (dal
+  coordinatore).
+- **Seguiti, da chiedere all'utente**: la fine della corsa in bici (il
+  riepilogo mostra il passo), le calorie (stimate per la corsa: in bici
+  circa un terzo), l'incitamento dopo 5 km (in bici non c'è), la corsa
+  senza percorso in bici («Ride without a route», fuori scope). Il
+  confronto ogni 10 km è TASK-217.

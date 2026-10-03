@@ -92,14 +92,14 @@ export function ChooseScreen({
           <View style={styles.titleButtons}>
             {onRun && (
               <Pressable
-                style={styles.explore}
+                style={styles.run}
                 onPress={onRun}
                 accessibilityRole="button"
                 accessibilityLabel={runLabel}
               >
                 {/* The whole of it: "Run" alone read as running the route
                     drawn below (TASK-158). */}
-                <Text style={styles.exploreText}>{runLabel}</Text>
+                <Text style={styles.runText}>{runLabel}</Text>
               </Pressable>
             )}
           </View>
@@ -161,17 +161,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: space.sm,
   },
-  explore: {
+  // Yellow, the user's choice (TASK-220, ADR-0183): the one control yellow
+  // without being the route's. Dark text on it, as on every yellow.
+  run: {
     minHeight: MIN_TAP_SIZE,
     paddingHorizontal: space.md,
     borderRadius: radius.pill,
     justifyContent: "center",
-    backgroundColor: color.surfaceRaised,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
+    backgroundColor: color.accent,
   },
-  exploreText: {
-    color: color.text,
+  runText: {
+    color: color.onAccent,
     fontSize: fontSize.body,
     fontWeight: fontWeight.semibold,
   },

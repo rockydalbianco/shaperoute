@@ -171,6 +171,40 @@ export const FR: Table = {
   Pumpkin: "Citrouille",
   "Christmas tree": "Sapin de Noël",
 
+  // src/paddle/PaddleExplore.tsx
+  Next: "À suivre",
+  "Drawing…": "Dessin en cours…",
+  "Your start": "Ton départ",
+  "On the water": "Sur l'eau",
+  "Shapes to paddle, within 1 km of the shore":
+    "Des formes à pagayer, à moins de 1 km du rivage",
+  "LAKES AND SEA": "LACS ET MER",
+  "Near me": "Près de moi",
+  "Choose a lake or a beach: a circle, a heart and a star of 2 km are drawn on its water, from the shore.":
+    "Choisis un lac ou une plage : un cercle, un cœur et une étoile de 2 km sont dessinés sur son eau, depuis le rivage.",
+  "Choose a start in Draw first: the shapes start from the shore nearest to it.":
+    "Choisis d'abord un départ dans Draw : les formes partent du rivage le plus proche.",
+  "Near your start": "Près de ton départ",
+  "{shape}, {km} km, on the water": "{shape}, {km} km, sur l'eau",
+  "Not drawn": "Non dessiné",
+
+  // src/paddle/PaddleNotice.tsx
+  "Before you paddle": "Avant de pagayer",
+  "Wear a life jacket.": "Porte un gilet de sauvetage.",
+  "Check the weather and the wind before you go out.":
+    "Vérifie la météo et le vent avant de partir.",
+  "Follow the local rules: swimming areas, boat lanes, harbours. Sgrava does not know them.":
+    "Respecte les règles locales : zones de baignade, chenaux, ports. Sgrava ne les connaît pas.",
+  "The route stays within 1 km of the shore. That does not make it safe or allowed.":
+    "Le parcours reste à moins de 1 km du rivage. Cela ne le rend ni sûr ni autorisé.",
+  "I understand": "J'ai compris",
+  "Not now": "Pas maintenant",
+
+  // src/paddle/waterPlaces.ts
+  "from Riva del Garda": "depuis Riva del Garda",
+  "from Como": "depuis Côme",
+  "from the beach": "depuis la plage",
+
   // src/places/PlaceSearch.tsx
   "City or street": "Ville ou rue",
   Search: "Rechercher",
@@ -252,6 +286,21 @@ export const FR: Table = {
   "Profile pictures are not available on this API yet.":
     "Les photos de profil ne sont pas encore disponibles sur cette API.",
 
+  // src/route/RoutePanel.tsx
+  "{letters} km of letters + {between} km riding between them":
+    "{letters} km de lettres + {between} km à vélo entre elles",
+  "On the water, a shape of the catalogue.": "Sur l'eau, une forme du catalogue.",
+  "{name} · on the water · target {km} km": "{name} · sur l'eau · objectif {km} km",
+  "{name} · on roads · target {km} km": "{name} · sur route · objectif {km} km",
+
+  // src/route/problems.ts
+  "There is no lake or sea near this start. Start from the shore, within 2 km of the water.":
+    "Il n'y a ni lac ni mer près de ce départ. Pars du rivage, à moins de 2 km de l'eau.",
+  "This shape does not fit on the water here at this distance. It fits at about {km} km.":
+    "Cette forme ne tient pas sur l'eau ici à cette distance. Elle tient à environ {km} km.",
+  "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:":
+    "Cette forme ne tient pas sur l'eau ici. Essaie une distance plus courte, une autre forme ou un autre départ :",
+
   // src/route/warnings.ts
   "Includes {distance} walking the bike.": "Dont {distance} à pied, vélo à la main.",
 
@@ -268,6 +317,15 @@ export const FR: Table = {
   "You are logged out on this phone.": "Ce téléphone n'est plus connecté à ton compte.",
   Back: "Retour",
 
+  // src/screens/RunDashboard.tsx
+  Speed: "Vitesse",
+  "Kilometre {km}: {speed} km/h": "Kilomètre {km} : {speed} km/h",
+
+  // src/screens/RunPanel.tsx
+  "Speed now": "Vitesse",
+  "Avg speed": "Vit. moy.",
+  "Last km": "Dernier km",
+
   // src/screens/SignInScreen.tsx
   "Sign up": "S'inscrire",
   "Log in": "Se connecter",
@@ -282,6 +340,11 @@ export const FR: Table = {
   // src/settings/LanguageSetting.tsx
   Language: "Langue",
   "Phone language": "Langue du téléphone",
+
+  // src/settings/sport.ts
+  "Ride without a route": "Rouler sans parcours",
+  "Paddle without a route": "Pagayer sans parcours",
+  "Run without a route": "Courir sans parcours",
 
   // src/social/DrawingCard.tsx
   "Back to the profile": "Retour au profil",

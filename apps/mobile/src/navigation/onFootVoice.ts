@@ -1,6 +1,7 @@
 import type { Stretch } from "@shaperoute/shared-types";
 
-import { ANNOUNCE_M, ARRIVE_M, type Cue, POOR_FIX_M } from "./navigator";
+import { ARRIVE_M, type Cue, POOR_FIX_M } from "./navigator";
+import { RIDE_ANNOUNCE_M } from "./ride";
 
 /**
  * The bike on foot along a ride (TASK-206, ADR-0167): pure functions from
@@ -13,8 +14,9 @@ import { ANNOUNCE_M, ARRIVE_M, type Cue, POOR_FIX_M } from "./navigator";
  * fix alone, as the pen is.
  */
 
-/** The stretch is said this far before it: as far as a turn is. */
-export const ON_FOOT_AHEAD_M = ANNOUNCE_M;
+/** The stretch is said this far before it: as far as a turn is on a bike
+ * (TASK-216), the only way a route has stretches with the bike on foot. */
+export const ON_FOOT_AHEAD_M = RIDE_ANNOUNCE_M;
 
 /**
  * Two stretches closer than this are said as one: getting back on the bike

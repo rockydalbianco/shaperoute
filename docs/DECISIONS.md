@@ -7868,6 +7868,106 @@ nome (spezzano chi è).
 di TASK-178, sul telefono funziona solo con il server alla migrazione
 `0005` e l'app pubblicata.
 
+## ADR-0169 — La canoa nell'app: solo forme, da 2 km, «Start» senza indicazioni dietro l'avviso della prima volta, «Explore» con i luoghi d'acqua
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-191, parte C). Sono **scelte dell'utente**: il nome «Paddle», il
+testo dell'avviso di sicurezza e il suo mostrarsi **solo la prima volta**,
+i quattro luoghi d'acqua al posto delle città in «Explore» quando lo sport
+è «Paddle»; le distanze 1–5 km (ADR-0161). Il resto, qui sotto,
+dell'agente.
+
+**Contesto**: il motore (ADR-0154, ADR-0161) e l'API (ADR-0164) disegnano
+sull'acqua con `activity: "paddling"`: solo forme del catalogo, nessuna
+indicazione di svolta né alternativa, la partenza sulla riva, la distanza
+suggerita per difetto al mezzo km. Nell'app «Paddle» era «Soon»
+(ADR-0152), «Start» c'era solo con le indicazioni, «Start» da «Explore»
+le chiedeva a `/route-directions` (che sull'acqua risponde `422`), e gli
+esempi di «Explore» erano corse da 5 km dal centro di una città.
+
+**Decisione**:
+
+1. **«Paddle» pronto** in `sport.ts`; `activityOf` dà `paddling`;
+   `withoutRouteLabel` dice il pulsante della corsa libera per ogni sport
+   («Run», «Ride», «Paddle without a route»).
+2. **Solo forme**: con «Paddle» il pannello non ha l'interruttore «Shape |
+   Word | Image» e l'app manda la forma anche se prima era scelta una
+   parola o una foto (`drawKind`); quella scelta resta, e torna con un
+   altro sport. Così l'app non manda mai ciò che l'API rifiuterebbe
+   (`invalid_request`).
+3. **La distanza parte da 2 km** (`distanceForSport`), all'apertura e ogni
+   volta che si sceglie «Paddle», non dai 5 km della corsa: 5 km stanno nei
+   limiti, ma al mare il cuore ci sta fino a 3 km (ADR-0161) e la prima
+   richiesta fallirebbe. Corsa e bici tengono la regola di prima
+   (`fitDistance`). Il passo di − e + resta 1 km; il mezzo km arriva da
+   «Try 2.5 km» o scritto.
+4. **I testi d'errore dell'acqua** (`problems.ts`): con `paddling`,
+   `shape_not_drawable` si legge nelle parole dell'acqua; «lontano
+   dall'acqua» si riconosce dal messaggio del motore, «no lake or sea»
+   (`NoWaterError`), perché l'API non ha un codice suo (ADR-0164); la
+   distanza suggerita è offerta fra 1 e 5 km, altrimenti le forme.
+5. **«Start» senza indicazioni**: un percorso `paddling` ha «Start» anche
+   con `directions` vuoto; da «Explore» e dai preferiti, con `paddling`,
+   l'app non chiede `/route-directions` e parte con la lista vuota. Il
+   navigatore regge già un percorso senza svolte (arriva alla fine della
+   linea; il banner «Follow the route to the end.»): la schermata della
+   corsa non cambia.
+6. **L'avviso**: un `Modal` a tutto schermo, come il conto alla rovescia
+   che segue, davanti al primo «Start» sull'acqua (`usePaddleNotice`).
+   «I understand» lo ricorda in `paddle-notice.json` e parte; «Not now» non
+   parte e lo richiede al prossimo «Start». Un telefono che non scrive lo
+   ricorda finché l'app è aperta. Il modulo si chiama `safetyNotice.ts`:
+   `paddleNotice.ts` accanto a `PaddleNotice.tsx` è lo stesso file per il
+   disco del Mac, che non distingue le maiuscole, e Jest importava l'uno
+   per l'altro.
+7. **«Explore» con «Paddle»** è una pagina sua, `PaddleExplore`, al posto di
+   `ExploreScreen` (che non cambia): «Near me» e i quattro luoghi, ognuno
+   con un punto della riva scelto a mano (`waterPlaces.ts`: le partenze dei
+   campioni di A1 per Riva del Garda, Jesolo e Riccione; per Como il
+   lungolago, Lungo Lario Trento, da Nominatim). Gli esempi sono quelli
+   delle città con un `ExampleSet` diverso (`PADDLE_EXAMPLES`: paddling,
+   2 km, cuore, cerchio e stella, nessuna forma dopo), tenuti a parte con
+   la chiave `paddling:<punto>`; un esempio sull'acqua porta `activity`
+   nel suo dettaglio, così `toRequest`, l'export, «Start» e i preferiti
+   (`exploredKeepable`) lo trattano da canoa. Gli esempi di corsa restano
+   identici, chiavi e file compresi. «Near me» prende la partenza di «Draw»
+   al tocco, non quella che si muove col GPS: ogni punto nuovo
+   ridisegnerebbe tre forme sull'acqua. La scelta del luogo vive fuori
+   dalla pagina, che si smonta quando la mappa prende lo schermo.
+8. **Il contrasto**: la linea gialla sull'acqua scura è a 11,5:1, più che
+   su una strada principale (7,4:1); nessun token nuovo. Un test lo fissa
+   dai token (`waterContrast.test.ts`).
+
+**Alternative scartate**: l'avviso a ogni «Start» o anche come riga sotto
+il percorso (proposte all'utente, che ha scelto la prima volta); l'avviso
+come scheda sotto la mappa al posto del risultato (va davanti al conto
+alla rovescia, che è un `Modal`); un campo `activity` in
+`/route-directions` (ADR-0164, punto 7); `ExploreScreen` con un ramo per
+l'acqua (cento righe di città e catalogo da spegnere una per una); una
+cache degli esempi d'acqua tutta nuova (la stessa coda, gli stessi limiti
+al minuto e lo stesso file di `exampleRoutes.ts` servono uguali); il passo
+di mezzo km per − e + (un comportamento nuovo del campo non chiesto);
+5 km di partenza come la corsa (sopra, punto 3).
+
+**Conseguenze**: con «Paddle» l'app manda `paddling`, che un'API senza la
+parte B rifiuta: si pubblica solo dopo il server. Sul server la canoa
+funziona solo dove l'acqua è già in `data/cache/water/`: Overpass rifiuta
+l'IP del server e da stamattina anche il Mac, quindi gli esempi dei
+quattro luoghi danno «Map data for this area could not be downloaded.»
+finché l'acqua non è scaricata (seguito, con l'ok dell'utente). «Feed», la
+schermata della corsa (il passo al km, le calorie), Strava (che riceve una
+corsa) e «My activities» restano quelli della corsa: la voce e il
+punteggio pensati per l'acqua sono fuori scope (`tasks/TASK-191.md`).
+
+**Aggiunta** (2026-10-03, dopo la lingua dell'app, TASK-210, ADR-0172;
+deciso dall'agente su delega dell'utente): i testi nuovi della canoa
+passano da `t()` e sono nelle quattro tabelle. Dove una frase si compone,
+si traduce la frase intera: il «da dove» dei luoghi è un testo solo
+(«from the beach», «from Riva del Garda»: in italiano «dalla spiaggia»
+non si fa da «da» + «la spiaggia»), e la riga sotto la distanza è
+«{name} · on the water · target {km} km» con la sua gemella «on roads»,
+che così si traduce anche per la corsa e la bici. I nomi dei luoghi
+(Lago di Garda, Jesolo…) restano quelli italiani in ogni lingua.
+
 ## ADR-0171 — La voce della corsa in cinque lingue: le frasi dette in `src/voice/`, una tabella per lingua, la scelta in «Data»
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-209). Le cinque lingue, il posto («Data», accanto a «Voice») e la
@@ -8681,3 +8781,90 @@ amici così», poi «anche il loro profilo Strava».
 - **Strava: non si può.** L'API di Strava non ha più gli elenchi di amici e
   follower (`/athlete/friends` risponde 401), e dal 1° settembre 2026 ha
   tolto anche i membri dei club.
+
+## ADR-0179 — La navigazione in bici: km/h, la voce ogni 10 km, svolte e tratti a mano detti 100 m prima
+**Stato**: Attiva · 2026-10-03 · **scelte dell'utente** km/h al posto del
+passo, la voce ogni 10 km, le frasi e i nomi dei numeri; la distanza degli
+avvisi **decisa dall'agente su delega dell'utente**, misurando (TASK-216).
+
+**Contesto**: fino a TASK-216 «Start» su un percorso in bici apriva la
+navigazione della corsa: il passo al km, la voce a ogni km, le svolte dette
+50 m prima (`ANNOUNCE_M`, circa 15 s di corsa; a 20 km/h sono 9 s), e fra le
+lettere di una parola a penna alzata «Walk to the U». L'app non sapeva
+l'attività del percorso seguito.
+
+**Decisione dell'utente** (2026-10-03, `tasks/TASK-216.md`):
+1. In bici la schermata mostra la **velocità in km/h** dove la corsa mostra
+   il passo: «Speed now», «Avg speed», «Last km», la colonna «Speed» dei km
+   di «Data» (IT «Vel. ora», «Vel. media», «Ultimo km», «Velocità»).
+2. La voce dice i km **ogni 10 km**, con tempo e velocità media a numero
+   intero, detta a parole: «10 kilometres. Time: 25 minutes 10 seconds.
+   Average speed: 24 kilometres per hour.» · «10 chilometri. Tempo: 25
+   minuti e 10 secondi. Velocità media: 24 chilometri orari.» (scartati il
+   tempo senza secondi e «km/h» scritto, che la voce del telefono può
+   leggere male).
+3. Fra le lettere si pedala: «… km riding between them» · «… km in bici fra
+   una lettera e l'altra», «Letter done. Ride to the U: the drawing is
+   paused.» · «Lettera finita. Pedala fino alla U: il disegno è in pausa.»
+
+**Decisione dell'agente**:
+1. **Le svolte in bici si dicono 100 m prima** (`RIDE_ANNOUNCE_M` in
+   `src/navigation/ride.ts`), e alla stessa distanza **i tratti con la bici
+   a mano** (`ON_FOOT_AHEAD_M`, che esistono solo in bici). Misurato il
+   2026-10-03 sul Mac, senza rete, sulle zone di Trento in cache: 21
+   percorsi in bici da 10 km e 40 di corsa da 5 e 10 km (cuore, cerchio,
+   stella, luna, gatto, pesce, farfalla da Piazza Duomo, Le Albere e Povo),
+   le indicazioni come le calcola l'API (`guidance`), 1.664 e 3.202 svolte
+   dette. In bici le svolte distano in mediana **99 m** (7,8 al km), nella
+   corsa 68 m (11,4 al km). Il tempo fra l'inizio della frase e la svolta,
+   in mediana: corsa a 5:30 /km con 50 m **16,5 s**; bici a 20 km/h con 50 m
+   9,0 s, con 80 m 14,4 s, con **100 m 16,1 s**, con 120 o 150 m ancora
+   16,1 s. Oltre 100 m la mediana non cresce, perché metà delle svolte è
+   più vicina della precedente: si allunga solo la strada in cui si
+   incrociano vie laterali prima di quella giusta, e cala la parte di
+   svolte dette alla distanza piena (45% a 100 m, 24% a 150 m). La frase
+   dura 3,0–3,3 s, 5,4–5,7 s con un «poi» (voci Samantha e Alice di macOS):
+   a 20 km/h con 100 m restano 13 s per la svolta, come nella corsa. A
+   25 km/h la mediana è 12,9 s. Script e numeri in
+   `out/task216-bike-announce/` (fuori dal repository).
+2. **L'attività arriva alla navigazione dal percorso, non da «Settings»**:
+   da «Draw» quella della richiesta, da un preferito quella con cui è stato
+   tenuto (ADR-0160, TASK-200), da «Explore» quella
+   dell'esempio (oggi sempre la corsa). Una bici è solo `cycling`: la corsa,
+   la canoa (TASK-191 C) e un percorso senza attività si seguono come prima.
+3. **La corsa resta identica**: stesse frasi, stessi numeri, stessi testi
+   (in inglese anche con l'app in un'altra lingua, finché TASK-210 non
+   traduce la schermata). I testi nuovi della bici passano da `t()`, i
+   numeri restano col punto come gli altri della schermata.
+4. **I km di «Data» in bici**: la velocità di ogni km a un decimale e la
+   differenza col km prima in km/h («-4.0» più lento, «+1.5» più veloce);
+   le barre come nella corsa.
+
+**Conseguenze**: TASK-217 aggiunge alla frase dei 10 km il confronto coi 10
+precedenti, da 20 km. Restano come nella corsa, da chiedere all'utente:
+la fine della corsa (il passo nel riepilogo), le calorie (stimate per la
+corsa, circa il triplo di quelle in bici), l'incitamento dopo 5 km (in bici
+non c'è: i 5 km non si dicono), la corsa senza percorso in bici.
+
+## ADR-0183 — «Run without a route» è giallo
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** (TASK-220). Fa
+un'eccezione alla regola 1 dei colori di `UI.md` (ADR-0046 e seguenti: il
+giallo è del percorso e del comando che lo produce).
+
+**Contesto**: l'utente, il 2026-10-03: «il pulsante fallo giallo», del
+pulsante «Run without a route» in cima a «Draw». Fino a qui era neutro,
+su `surfaceRaised` con il bordo `borderStrong`, perché non produce un
+percorso.
+
+**Decisione dell'utente**: il pulsante è **giallo**, anche come «Ride
+without a route» con «Bike».
+
+**Decisione dell'agente**: fondo `accent` e testo `onAccent` (13,5:1),
+senza bordo, come «Draw route»; nessun token nuovo. L'eccezione vale **solo
+per questo pulsante**: gli altri comandi restano neutri.
+
+**Conseguenze**: nella pagina «Draw» ci sono due comandi gialli, in alto
+e in fondo; «Draw route» resta spento finché la richiesta non è completa,
+quindi all'apertura il giallo pieno è quello in alto. Il commento di
+`accent` in `src/theme/tokens.ts` dice ancora «una cosa sola»: da
+aggiornare con il prossimo task che tocca quel file.

@@ -13,8 +13,9 @@ function units(count: number, one: string, many: string): string {
 
 /**
  * The voice in German (TASK-209): written by the agent, listened to and
- * confirmed by the user on 2026-10-03; the bike on foot (TASK-206) is still
- * to be confirmed (`docs/UI.md`, «La voce della corsa»). Directions
+ * confirmed by the user on 2026-10-03, the bike on foot (TASK-206) too; the
+ * bike's own phrases (TASK-216) are still to be confirmed (`docs/UI.md`,
+ * «La voce della corsa»). Directions
  * as German navigation says them, verb last ("Links abbiegen auf …"); a
  * letter is neuter: «das A», «zum A».
  */
@@ -53,6 +54,9 @@ export const DE: Phrasebook = {
     `Buchstabe fertig. ${letter === null ? "Zum nächsten Buchstaben" : `Zum ${letter}`} gehen: die Zeichnung ist pausiert.`,
   penDown: (letter) =>
     `Stift aufsetzen: ${letter === null ? "den nächsten Buchstaben" : `das ${letter}`} zeichnen.`,
+  // On a bike (TASK-216).
+  rideTo: (letter) =>
+    `Buchstabe fertig. ${letter === null ? "Zum nächsten Buchstaben" : `Zum ${letter}`} fahren: die Zeichnung ist pausiert.`,
   hours: (count) => units(count, "eine Stunde", "Stunden"),
   minutes: (count) => units(count, "eine Minute", "Minuten"),
   seconds: (count) => units(count, "eine Sekunde", "Sekunden"),
@@ -60,6 +64,8 @@ export const DE: Phrasebook = {
   kilometre: (km, time, pace) =>
     `${units(km, "Ein Kilometer", "Kilometer")}. Zeit: ${time}. Durchschnittstempo: ${pace} pro Kilometer.`,
   cheer: "Los, volle Kraft voraus!",
+  rideKilometres: (km, time, speed) =>
+    `${units(km, "Ein Kilometer", "Kilometer")}. Zeit: ${time}. Durchschnittsgeschwindigkeit: ${speed} Kilometer pro Stunde.`,
   // The bike on foot (TASK-206).
   walkTheBike: (metres) => `absteigen und das Rad ${metres} Meter schieben`,
   backOnTheBike: "Wieder aufsteigen.",

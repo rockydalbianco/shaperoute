@@ -7669,3 +7669,49 @@ dove si apre un profilo. Testi nuovi oltre a quelli scelti dall'utente:
 «Saved on the phone. It is sent when you are back online.», «This drawing
 is no longer public.», «Back to the profile», «Score 87» sotto un disegno
 della griglia.
+
+## ADR-0168 — La foto dal cerchio di «Profile»: un «+» bianco, le scelte di «Settings» in un riquadro sopra «Edit profile»
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-207). La richiesta e il «+» in basso a destra del cerchio sono
+dell'utente, che l'ha scelto fra tre proposte (il «+» sul cerchio, «Change
+picture» in «Edit profile», lasciarla in «Settings»); il resto, qui sotto,
+è dell'agente.
+
+**Contesto**: la foto del profilo si cambiava solo da «Settings», con la
+riga «Profile picture» (TASK-178, ADR-0146), due tocchi lontano dal cerchio
+che la mostra. `ProfileHeader` disegna lo stesso cerchio sul proprio
+profilo e su quello di un altro (TASK-116).
+
+**Decisione**:
+
+1. **Tutto il cerchio è il pulsante**, «Profile picture» per VoiceOver,
+   come la riga di «Settings»; il «+» è un tondo di 28 punti in basso a
+   destra, **bianco (`text`) con il «+» scuro** e un anello del colore
+   della pagina che lo stacca dal cerchio. Non giallo: nessun pulsante
+   dell'account lo è. Il «+» c'è anche con una foto: toccato, si può
+   cambiarla o toglierla. `ProfileHeader` ha il pulsante solo se gli si
+   passa `photoButton`: il profilo di un altro resta com'era.
+2. **Le scelte si aprono sotto nome e bio, sopra «Edit profile»**, in un
+   riquadro (`surface`, bordo `border`, come i gruppi di «Settings»):
+   senza, le tre pillole e «Edit profile» sembravano quattro pulsanti
+   dello stesso gruppo (visto nel simulatore). Un altro tocco sul cerchio
+   le richiude; una scelta le chiude e parte.
+3. **Le scelte sono un file solo**, `PhotoChoices.tsx`, usato dalla riga
+   di «Settings» e da «Profile»: stessi testi, stesso stato
+   (`useProfilePhoto`). «Saving…», «Removing…» e gli errori si leggono
+   sotto il riquadro, con le parole di ADR-0146, e il cerchio non prende
+   il tocco mentre la foto va all'API.
+
+**Perché così**: il cerchio intero è un bersaglio di 88 punti, il «+» da
+solo sarebbe sotto i 44 che vogliamo. Aprire le scelte sul posto, come in
+«Settings», evita un foglio o un `Modal` nuovi e una seconda maniera di
+fare la stessa cosa.
+
+**Scartato**: un foglio dal basso (un componente nuovo, e in «Settings» le
+scelte si aprono sul posto); il «+» solo senza foto (con una foto non
+resterebbe un modo di cambiarla da «Profile»); le scelte fra cerchio e
+nome (spezzano chi è).
+
+**Conseguenze**: la riga di «Settings» resta e fa lo stesso. Come la foto
+di TASK-178, sul telefono funziona solo con il server alla migrazione
+`0005` e l'app pubblicata.

@@ -45,7 +45,7 @@ test("a session carries the token and the user, nothing else", () => {
 
 // The same JSON is validated by the API's test_profiles.py (TASK-116).
 const edited: EditProfileRequest = editProfile;
-const seen: PublicProfile = publicProfile;
+const seen: PublicProfile = { ...publicProfile, follow: "following" };
 
 test("the profile change keeps the API's limits", () => {
   assert.match(edited.username ?? "", /^[A-Za-z0-9_.]{3,20}$/);
@@ -56,6 +56,9 @@ test("a profile seen by the others has no email, role or internal id", () => {
   assert.deepEqual(Object.keys(seen).sort(), [
     "bio",
     "drawings",
+    "follow",
+    "followers",
+    "following",
     "photo",
     "public_id",
     "username",

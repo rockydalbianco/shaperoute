@@ -413,6 +413,30 @@ giorno), il giorno, i km, il punteggio («87», «out of 100»), mai l'ora;
 **«Back to the profile»** e «←» tornano a «Profile». Se nel frattempo è
 tornato privato: «This drawing is no longer public.» sopra la griglia.
 
+**I commenti di un disegno** (TASK-120, ADR-XXXX, scelta dell'utente del
+2026-10-03: subito sotto le corse vere, non sugli esempi di «Feed»): nella
+scheda di un disegno aperto, fra i numeri e «Back to the profile», un
+pulsante neutro dice quanti sono: «Write a comment», «1 comment», «4
+comments» («Comments» finché il numero non arriva). Senza account, o con
+un'API senza commenti, il pulsante non c'è. Il tocco apre un **foglio dal
+basso** sopra la mappa (circa tre quarti dello schermo; un tocco sopra il
+foglio o «Close» lo chiude): «Comments», l'elenco **dal più vecchio**
+(la foto o l'iniziale di chi ha scritto, il nome, quanto tempo fa, «just
+now», «5 min ago», «3 h ago», «2 d ago», poi il giorno; e il testo), venti
+per volta con «Show more comments» in fondo; vuoto «No comments yet. Be
+the first.»; mentre arriva «Loading the comments…»; non arrivato il motivo
+e «Try again». In fondo, **sopra la tastiera**, il campo «Add a comment…»
+(anche su più righe) e **«Post»**, spento finché il campo è vuoto o
+supera i 500 caratteri; da 450 compare il conto, «460/500», rosso oltre.
+Mandato, il campo si svuota e il commento compare in fondo. Rifiutato, il
+campo resta com'è e sopra c'è il motivo dell'API (troppi in un minuto,
+vuoto, troppo lungo); senza rete «No connection. Try again when you are
+online.». **Tenere premuto** un commento che si può cancellare (il proprio,
+o qualsiasi sotto il proprio disegno) chiede «Delete this comment?» con
+«Cancel» e «Delete»; per VoiceOver è l'azione «Delete» della riga. **Il
+testo è sempre solo testo**: un link non si tocca, un tag HTML si legge
+com'è scritto, e il commento non entra mai nella WebView della mappa.
+
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 
 - **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,

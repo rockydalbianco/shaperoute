@@ -37,7 +37,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 | `favorites` | percorso tenuto fra i preferiti: utente, chiave fatta dall'app sulla linea (unica per utente), città, forma o parola e stile, titolo, distanza chiesta e sulle strade, somiglianza, **linea intera**, data; i tratti a piedi di una parola con la penna alzata (TASK-199) | TASK-171, TASK-199 |
 | `runs` | corsa salvata: utente, chiave fatta dall'app, percorso pianificato, cosa disegna, traccia (`LineStringM`, M = secondi dall'inizio), pause, inizio, distanza, durata, punteggio, fedeltà, luogo (TASK-172); i tratti a piedi del percorso di una parola con la penna alzata (TASK-199); **traccia tagliata** (senza 200 m all'inizio e alla fine), titolo dato dall'utente, pubblica sì/no (TASK-117) | TASK-172, TASK-199, TASK-117 |
 | `likes` | utente, corsa (coppia unica) | TASK-119 |
-| `comments` | corsa, autore, testo (1–500), data, nascosto sì/no | TASK-120 |
+| `comments` | disegno, autore, testo (1–500), data | TASK-120 |
 | `reports` | chi segnala, cosa (corsa, commento, utente), motivo, data, gestita da e quando | TASK-121 |
 | `blocks` | chi blocca, chi è bloccato | TASK-121 |
 
@@ -213,6 +213,22 @@ Migrazione `0010_favorite_paddling.sql` (TASK-191, parte B, ADR-0164):
   (`favorites_activity_check`), tolto e rimesso; nessuna riga cambia.
 - Dipende dalla `0008` (la colonna): il test dei preferiti di prima di
   TASK-200 applica lo schema senza tutte e due, poi tutte e due.
+
+Migrazione `0011_comments.sql` (TASK-120, ADR-XXXX; il numero è il primo
+libero in `main` al merge):
+
+- `comments`: `id` (`uuid` casuale, chiave: con questo si cancella),
+  `drawing_id` (`ON DELETE CASCADE` su `drawings`), `user_id` (chi l'ha
+  scritto, `ON DELETE CASCADE` su `users`), `text` (da 1 a 500 caratteri,
+  senza spazi in testa e in coda), `created_at`. Un indice per le pagine
+  di un disegno (`drawing_id`, `created_at`, `id`), dal più vecchio, e uno
+  su `user_id` per cancellare quelli di un account.
+- Legati al **disegno**, non alla corsa: chi li legge è chi vede il
+  disegno, e un disegno tornato privato li tiene. Cancellare la corsa
+  cancella il disegno, e con lui i commenti.
+- Niente colonna «nascosto» (lo schema di partenza la prevedeva): la
+  aggiunge TASK-121, se una segnalazione deve nascondere un commento senza
+  cancellarlo.
 
 ## Come si memorizza una traccia
 

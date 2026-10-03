@@ -1,7 +1,7 @@
 # TASK-191 — Percorsi in canoa e paddle
 
-**Stato**: In corso (A1 e A2 fatte, PR #216 e #235; B fatta, in
-revisione; il punto 5 di A2 e C da fare)
+**Stato**: In corso (A1, A2 e B fatte, PR #216, #235 e #241; il punto 5
+di A2 e C da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-191-paddle-routes` (A1),
 `feat/TASK-191-paddle-a2` (A2), `feat/TASK-191-paddle-api` (B)
 **Dipende da**: TASK-189 («Sport» in «Settings»: la riga «Paddle» da
@@ -465,7 +465,8 @@ A · B · C non ci sono (un piano solo).
 
 ### Parte B — 2026-10-03
 
-Branch `feat/TASK-191-paddle-api`, PR #241. **Fatto** (ADR-0164; `API.md`,
+Branch `feat/TASK-191-paddle-api`, in `main` dalla PR #241 (2026-10-03,
+CI 5/5 verde). **Fatto** (ADR-0164; `API.md`,
 «Sull'acqua»; `DATABASE.md`, migrazione `0010`):
 
 - **Il contratto**, solo aggiunte: `paddling` in `SUPPORTED_ACTIVITIES`, in

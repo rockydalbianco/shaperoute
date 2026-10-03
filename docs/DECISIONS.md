@@ -7868,7 +7868,11 @@ schermo.
    nel simulatore iOS 27 l'elenco è arrivato solo dopo minuti; scaduta
    l'attesa si va avanti senza voci, e la risposta tardiva si tiene per la
    volta dopo (riaprendo il foglio le voci compaiono).
-5. **In «Data»** una riga sotto gli interruttori, «English · Default», e
+5. **Dopo i primi 5 km** (`CHEER_KM`) l'annuncio del km finisce con un
+   incitamento, una volta per corsa: «Daje, avanti tutta!» in italiano,
+   chiesto dall'utente il 2026-10-03; ogni lingua ha il suo (`cheer`). È
+   dentro `kilometre()`: i file della corsa non cambiano.
+6. **In «Data»** una riga sotto gli interruttori, «English · Default», e
    «Listen»; la riga apre un foglio dal basso con «Language» e «Voice»
    (`VoiceSetting.tsx`, un `Modal` dentro quello di «Data», come la
    modalità tasca). Con «Voice» spenta la scelta resta, «Listen» no.
@@ -7889,9 +7893,9 @@ voci scaricate da internet (fuori scope).
 
 **Conseguenze**: le frasi nuove della voce (TASK-206 C, i tratti a piedi)
 vanno in tutte e cinque le tabelle: `Phrasebook` lo impone al compilatore e
-`words.test.ts` lo controlla. Le frasi italiane sono da confermare
-dall'utente, le altre tre da qualcuno che le parli (`UI.md`, «La voce della
-corsa»). Il branch importa `src/i18n/` (TASK-210), che entra in `main`
+`words.test.ts` lo controlla. Le frasi italiane sono confermate
+dall'utente (2026-10-03); le altre tre restano da confermare da qualcuno
+che le parli (`UI.md`, «La voce della corsa»). Il branch importa `src/i18n/` (TASK-210), che entra in `main`
 prima.
 
 ## ADR-0172 — La lingua dell'app: l'inglese resta la base e la chiave, la lingua del telefono alla partenza, nessuna dipendenza

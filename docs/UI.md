@@ -1307,14 +1307,19 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   («Un chilometro», «un'ora», «eine Minute»). Le frasi sono in
   `src/voice/`, una tabella per lingua; quelle in inglese sono le stesse di
   prima, parola per parola.
-- **Testi da confermare**: le frasi italiane le conferma l'utente;
+- **Dopo i primi 5 km**, una volta sola e subito dopo l'annuncio del
+  quinto km, la voce incita: **«Daje, avanti tutta!»** (chiesto
+  dall'utente il 2026-10-03). Nelle altre lingue: «Come on, full speed
+  ahead!», «Los, volle Kraft voraus!», «¡Vamos, a toda máquina!», «Allez,
+  en avant toute !».
+- **Testi**: le frasi italiane sono **confermate dall'utente** (2026-10-03);
   spagnole, francesi e tedesche restano **da confermare** finché qualcuno
   che parla quelle lingue non le ascolta. Quelle della penna alzata sono da
   confermare anche in inglese (TASK-198). Le parole del foglio («App
   language», «Language», «Voice», «Default», «Listen», «Done») sono in
   inglese come il resto dello schermo: le traduce TASK-210.
 
-| | Italiano (da confermare dall'utente) |
+| | Italiano (confermato dall'utente il 2026-10-03) |
 |---|---|
 | Svolta | «Tra 50 metri, svolta a sinistra su Via Roma, poi svolta a destra sul sentiero» |
 | Partenza | «Parti lungo Via Roma» |
@@ -1323,6 +1328,7 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
 | Pausa, ripresa | «In pausa.» · «Si riparte.» |
 | Penna alzata | «Lettera finita. Cammina fino alla A: il disegno è in pausa.» · «Giù la penna: disegna la A.» |
 | Km | «Un chilometro. Tempo: 5 minuti e 42 secondi. Passo medio: 5 minuti e 42 secondi al chilometro.» |
+| Dopo 5 km | «5 chilometri. Tempo: 25 minuti. Passo medio: 5 minuti al chilometro. Daje, avanti tutta!» |
 
 **Modalità tasca** (TASK-070, ADR-0066). Accanto a «Pause», «Pocket»: lo
 schermo diventa nero, la luminosità va al minimo e resta acceso, e i tocchi

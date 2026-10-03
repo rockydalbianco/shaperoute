@@ -26,6 +26,10 @@ export const KINDS = [
 
 export type Kind = (typeof KINDS)[number];
 
+/** The kilometre after which the voice cheers the runner on (the user's
+ * choice, 2026-10-03): «Daje, avanti tutta!» after the first 5 km. */
+export const CHEER_KM = 5;
+
 /** Where a direction goes, as said after a turn ("onto the footpath") and
  * at the start ("on the footpath"): some languages change the words. */
 export type Place = { onto: string; on: string };
@@ -66,6 +70,8 @@ export type Phrasebook = {
   /** Each kilometre, with the time so far and the average pace, both
    * already said as times. */
   kilometre(km: number, time: string, pace: string): string;
+  /** Said after the kilometre CHEER_KM: «Daje, avanti tutta!». */
+  cheer: string;
 };
 
 /** The voice's phrases in one language, ready to say. */
@@ -82,7 +88,8 @@ export type VoiceWords = {
   announcement(chain: readonly Direction[], inM: number | null): string;
   /** "25 minutes 10 seconds", "1 hour 2 minutes": a time as said. */
   time(ms: number): string;
-  /** "1 kilometre. Time: … Average pace: … per kilometre." */
+  /** "1 kilometre. Time: … Average pace: … per kilometre."; the kilometre
+   * CHEER_KM ends with the cheer. */
   kilometre(km: number, ms: number, paceMs: number): string;
   offRoute: string;
   backOnRoute: string;
@@ -157,7 +164,10 @@ export function voiceWords(book: Phrasebook): VoiceWords {
       ].join(", ");
     },
     time,
-    kilometre: (km, ms, paceMs) => book.kilometre(km, time(ms), time(paceMs)),
+    kilometre(km, ms, paceMs) {
+      const said = book.kilometre(km, time(ms), time(paceMs));
+      return km === CHEER_KM ? `${said} ${book.cheer}` : said;
+    },
     offRoute: book.offRoute,
     backOnRoute: book.backOnRoute,
     arrived: book.arrived,

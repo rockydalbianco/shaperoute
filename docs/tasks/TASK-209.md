@@ -1,6 +1,6 @@
 # TASK-209 — La voce della corsa: lingua e voce a scelta
 
-**Stato**: In lavorazione (sessione «Grafica registrazione corsa», 2026-10-03)
+**Stato**: Done (2026-10-03, PR #259)
 **Fase**: 4 · **Branch**: `feat/TASK-209-run-voice-language`
 
 ## Obiettivo
@@ -119,7 +119,7 @@ dell'app», in «Settings», le stesse cinque lingue).
 - [x] Una voce sparita dal telefono non rompe niente (test).
 - [x] Provato nel simulatore: la scelta, l'ascolto, una corsa che parla
       italiano.
-- [ ] Le frasi italiane confermate dall'utente; le altre tre segnate «da
+- [x] Le frasi italiane confermate dall'utente; le altre tre segnate «da
       confermare» in `UI.md`.
 
 ## File toccati
@@ -159,7 +159,16 @@ solo in CI: la PR si apre dopo il merge di TASK-210.
 
 ## Esito
 
-**2026-10-03, a che punto è** (sessione «Grafica registrazione corsa»).
+**Fatto** (2026-10-03, PR #259): la voce della corsa parla in en, de, it,
+es, fr, con la voce del telefono scelta in «Data» e «Listen»; l'inglese è
+quello di prima, parola per parola. Le frasi italiane le ha **confermate
+l'utente** il 2026-10-03, e ha aggiunto **«Daje, avanti tutta!» dopo i
+primi 5 km** (in tutte e cinque le lingue, ognuna con la sua frase:
+ADR-0171, punto 5). Spagnolo, francese e tedesco restano «da confermare».
+La PR la unisce l'utente: alla sessione il permesso di unirla è stato
+negato dal controllo dei permessi («Merge Without Review»).
+
+**2026-10-03, a che punto era prima del merge** (sessione «Grafica registrazione corsa»).
 Fatto e provato sul branch, PR non ancora aperta:
 
 - `src/voice/`: `phrasebook.ts` (il formato e come si mettono insieme le

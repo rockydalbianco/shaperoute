@@ -3,7 +3,7 @@ import result from "@shaperoute/shared-types/fixtures/route-result.json";
 
 import { LANGUAGES } from "../i18n/languages";
 import { instruction } from "../navigation/phrases";
-import { KINDS, type VoiceWords } from "./phrasebook";
+import { CHEER_KM, KINDS, type VoiceWords } from "./phrasebook";
 import { PHRASEBOOKS, wordsOf } from "./words";
 
 const directions = result.directions as Direction[];
@@ -56,6 +56,7 @@ function everything(words: VoiceWords): string[] {
     words.penDown(null),
     words.kilometre(1, 342_000, 342_000),
     words.kilometre(2, 3_725_000, 61_000),
+    words.kilometre(CHEER_KM, 1_500_000, 300_000),
     words.time(1_000),
     words.time(3_600_000),
   );
@@ -190,6 +191,21 @@ describe("the voice in Italian", () => {
     );
     expect(it_.penDown(null)).toBe("Giù la penna: disegna la lettera successiva.");
   });
+});
+
+test("after the first 5 km the voice cheers, once, in every language (the user's)", () => {
+  expect(CHEER_KM).toBe(5);
+  expect(wordsOf("it").kilometre(5, 1_500_000, 300_000)).toBe(
+    "5 chilometri. Tempo: 25 minuti. Passo medio: 5 minuti al chilometro. " +
+      "Daje, avanti tutta!",
+  );
+  for (const option of LANGUAGES) {
+    const words = wordsOf(option.id);
+    const cheer = PHRASEBOOKS[option.id].cheer;
+    expect(words.kilometre(5, 1_500_000, 300_000).endsWith(` ${cheer}`)).toBe(true);
+    expect(words.kilometre(4, 1_200_000, 300_000)).not.toContain(cheer);
+    expect(words.kilometre(6, 1_800_000, 300_000)).not.toContain(cheer);
+  }
 });
 
 test("German says the turn ahead verb last, with no comma", () => {

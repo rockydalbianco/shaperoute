@@ -61,4 +61,5 @@ export const FR: Phrasebook = {
   and: " ",
   kilometre: (km, time, pace) =>
     `${capital(units(km, "un kilomètre", "kilomètres"))}. Temps : ${time}. Allure moyenne : ${pace} au kilomètre.`,
+  cheer: "Allez, en avant toute !",
 };

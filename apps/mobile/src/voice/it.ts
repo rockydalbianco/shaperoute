@@ -11,9 +11,9 @@ function units(count: number, one: string, many: string): string {
 }
 
 /**
- * The voice in Italian (TASK-209): written by the agent, to be confirmed
- * by the user (`docs/UI.md`, «La voce della corsa»). A letter is feminine:
- * «la A».
+ * The voice in Italian (TASK-209): written by the agent and confirmed by
+ * the user on 2026-10-03, who added «Daje, avanti tutta!» after the first
+ * 5 km (`docs/UI.md`, «La voce della corsa»). A letter is feminine: «la A».
  */
 export const IT: Phrasebook = {
   turns: {
@@ -56,4 +56,5 @@ export const IT: Phrasebook = {
   and: " e ",
   kilometre: (km, time, pace) =>
     `${capital(units(km, "un chilometro", "chilometri"))}. Tempo: ${time}. Passo medio: ${pace} al chilometro.`,
+  cheer: "Daje, avanti tutta!",
 };

@@ -225,6 +225,8 @@ ErrorCode = Literal[
     "not_signed_in",
     "session_expired",
     "accounts_unavailable",
+    # A comment the filter refuses (TASK-120, ADR-0176): `reason` says why.
+    "comment_rejected",
 ]
 
 # Why an image gives no outline: InvalidImageError.reason in
@@ -248,6 +250,10 @@ EditReason = Literal[
     "too_many_corners",
 ]
 
+# Why a comment was refused: check_comment in comment_filter.py (TASK-213,
+# ADR-0176).
+CommentReason = Literal["negative"]
+
 
 class ErrorDetail(BaseModel):
     code: ErrorCode
@@ -256,8 +262,9 @@ class ErrorDetail(BaseModel):
     # (TASK-031).
     suggested_distance_m: int | None = None
     # Only with image_not_usable: why the engine found no outline (TASK-073);
-    # with outline_edit_rejected, why the drawing was refused (TASK-079).
-    reason: ImageReason | EditReason | None = None
+    # with outline_edit_rejected, why the drawing was refused (TASK-079);
+    # with comment_rejected, why the comment was (TASK-120).
+    reason: ImageReason | EditReason | CommentReason | None = None
 
 
 class ErrorBody(BaseModel):

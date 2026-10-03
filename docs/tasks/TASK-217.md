@@ -59,16 +59,20 @@ secondo» / «1 second» (le forme di `seconds` del `Phrasebook`).
    «Same pace as the last mile.»). Se TASK-217 entra prima di TASK-182,
    le forme con le miglia le aggiunge TASK-182 insieme al resto della voce
    in miglia: scriverlo nell'esito.
-6. **In bici** (scelta dell'utente del 2026-10-03): il confronto è in
-   velocità, come la voce dei km in bici di TASK-216, e **senza numeri**:
-   IT «Più veloce del chilometro precedente.» / «Più lento del chilometro
-   precedente.»; EN «Faster than the last kilometre.» / «Slower than the
-   last kilometre.» (scartati «1,5 km/h più veloce» e «km/h meglio»). Il
-   caso «stessa velocità» non l'ha scelto l'utente: proposta dell'agente,
-   **da confermare**, IT «Stessa velocità del chilometro precedente.» / EN
-   «Same speed as the last kilometre.» entro 0,5 km/h. Serve che la
-   navigazione sappia l'attività (TASK-216, punto 1): se TASK-217 entra
-   prima, le frasi della bici le collega TASK-216.
+6. **In bici** (scelte dell'utente del 2026-10-03, corrette subito
+   dopo: prima «a ogni km, in velocità, senza numeri», poi «ogni 10
+   km»): il confronto arriva **ogni 10 km**, gli ultimi 10 km contro i 10
+   prima, quindi a 20 e 30 km (a 10 km non c'è niente prima); in
+   velocità e **senza numeri**: IT «Ultimi 10 km più veloci dei 10
+   precedenti.» / «Ultimi 10 km più lenti dei 10 precedenti.»; EN «The
+   last 10 km were faster than the 10 before.» / «… slower …». Anche la
+   frase dei km in bici passa a ogni 10 km (TASK-216). Il caso «stessa
+   velocità» l'utente non l'ha chiesto: proposta dell'agente, **da
+   confermare**, entro 0,5 km/h, IT «Ultimi 10 km alla stessa velocità dei
+   10 precedenti.» / EN «The last 10 km were at the same speed as the 10
+   before.» Serve che la navigazione sappia l'attività (TASK-216, punto
+   1): se TASK-217 entra prima, la parte della bici la collega TASK-216.
+   In miglia (TASK-182) l'intervallo della bici è da decidere lì.
 7. Test deterministici: le tre frasi nelle cinque lingue, il primo km
    senza confronto, il limite dei 2 s, una pausa che non conta, la corsa
    che riprende.
@@ -82,7 +86,8 @@ secondo» / «1 second» (le forme di `seconds` del `Phrasebook`).
 - [ ] Le frasi italiane e inglesi sono quelle approvate; le altre tre
       lingue ci sono, segnate «da confermare».
 - [ ] Vale con un percorso e senza.
-- [ ] In bici il confronto è in velocità e senza numeri (con TASK-216).
+- [ ] In bici il confronto arriva ogni 10 km (a 20 e 30 km), in velocità
+      e senza numeri (con TASK-216).
 - [ ] Le pause non contano nel tempo di un km.
 - [ ] Test deterministici verdi; `typecheck`, `lint`, `format:check`
       puliti.

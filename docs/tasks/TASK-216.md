@@ -29,13 +29,13 @@ della parte C», 4 e 5), con la proposta:
   pausa.» (con «the next letter» / «la lettera successiva» quando la
   lettera non ha nome, come oggi).
 
-- **Il confronto di ogni km col precedente in bici** (TASK-217, scelta
-  dell'utente del 2026-10-03): in velocità e **senza numeri**, IT «Più
-  veloce del chilometro precedente.» / «Più lento del chilometro
-  precedente.», EN «Faster than the last kilometre.» / «Slower than the
-  last kilometre.»; «stessa velocità» entro 0,5 km/h è una proposta
-  dell'agente, da confermare. Se TASK-217 entra prima di questo task, le
-  frasi della bici si collegano qui.
+- **La voce dei km in bici ogni 10 km** (scelta dell'utente del
+  2026-10-03, con TASK-217): a 10, 20 e 30 km, IT «Dieci chilometri.
+  Tempo: 25 minuti. Velocità media: 24 km/h.», non a ogni km (in bici un
+  km dura 2–3 minuti). Da 20 km, subito dopo, il confronto di TASK-217:
+  «Ultimi 10 km più veloci dei 10 precedenti.» / «… più lenti …», senza
+  numeri. L'inglese della frase dei km e le altre tre lingue da scrivere e
+  far approvare (inglese) o segnare «da confermare».
 
 ## Contesto da leggere
 
@@ -52,9 +52,10 @@ della parte C», 4 e 5), con la proposta:
    `useNavigation` non la conosce): da «Draw» con «Bike», da un preferito
    in bici, da un esempio di «Explore» in bici.
 2. **La velocità**: in bici la schermata della corsa mostra km/h dove oggi
-   mostra il ritmo al km; la voce di ogni km dice la velocità media
-   (`Phrasebook`, nelle cinque tabelle: inglese e italiano da far
-   approvare all'utente, le altre «da confermare»). La corsa non cambia.
+   mostra il ritmo al km; la voce, **ogni 10 km** (scelta dell'utente),
+   dice tempo e velocità media (`Phrasebook`, nelle cinque tabelle:
+   inglese e italiano da far approvare all'utente, le altre «da
+   confermare»). La corsa non cambia.
 3. **Gli avvisi di svolta**: in bici più lontano di `ANNOUNCE_M` (50 m); di
    quanto lo decide l'agente misurando (a 20 km/h 50 m sono 9 s), in
    `DECISIONS.md`. Anche l'avviso dei tratti a mano di TASK-206 C, che oggi
@@ -70,7 +71,8 @@ della parte C», 4 e 5), con la proposta:
 ## Criteri di accettazione
 
 - [ ] Con un percorso in bici la schermata della corsa mostra km/h e la
-      voce dei km dice la velocità media; con la corsa tutto come prima.
+      voce, ogni 10 km, dice tempo e velocità media; con la corsa tutto
+      come prima.
 - [ ] In bici gli avvisi di svolta (e dei tratti a mano) arrivano prima che
       nella corsa, alla distanza scritta in `DECISIONS.md`.
 - [ ] Con una parola a penna alzata in bici la scheda e la voce dicono

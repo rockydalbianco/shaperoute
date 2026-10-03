@@ -211,7 +211,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   e scelto dall'utente il 2026-10-03): dopo la frase di ogni km, «Questo
   chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2
   s «Stesso passo del chilometro precedente.»; al primo km niente. Con e
-  senza percorso; le miglia con TASK-182. Il codice dopo la #259 e TASK-206
+  senza percorso; le miglia con TASK-182. In bici ogni 10 km e senza
+  numeri («Ultimi 10 km più veloci dei 10 precedenti.»), con la voce dei
+  km in bici anch'essa ogni 10 km (TASK-216). Il codice dopo la #259 e TASK-206
   C (stessi file della voce). `tasks/TASK-217.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per

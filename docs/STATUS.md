@@ -175,33 +175,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Mancano il cerchio da 20 km, Levico e Padova, quando Overpass riapre. Il
   miglioramento delle forme in bici è TASK-206, qui sotto. Da dove
   riprendere: il task file, «Esito», «I campioni».
-- **TASK-206 — Forme in bici più riconoscibili** (ADR-0167; scelta
-  dell'utente: «Sì, poco», brevi tratti con la bici a mano, circa 1 km su
-  10). **Parte A, il motore**, in `main` dalla PR #249 (2026-10-03): la rete della bici
-  tiene marciapiedi, sentieri e zone pedonali e l'altro senso dei sensi
-  unici, a piedi, a sei volte il costo; i controlli e l'avviso dicono i
-  metri a piedi. La corsa e la canoa non cambiano. Le zone `bike_*` di
-  prima vanno rifatte per avere i tratti a mano (Mac da Overpass, server
-  dall'estratto). Campioni di Trento giudicati dall'utente: i cerchi da
-  «quasi» a «sì», cuori e stelle come prima, 100–660 m a mano. **Parte
-  B, l'API e il contratto**, in `main` dalla PR #263 (2026-10-03):
-  `on_foot` nel `RouteResult`, coppie
-  `[da, a]` di indici nei punti dove si va a mano, anche nelle alternative
-  e nell'avvicinamento da una partenza vicina; solo un'aggiunta (vuoto per
-  la corsa e la canoa, facoltativo in `shared-types`); i preferiti lo
-  tengono (migrazione `0012`, approvata dal coordinatore). Il
-  server non è toccato (con l'ok dell'utente: zona della bici di Trento
-  rifatta, `draw_examples`, la migrazione). **Parte C, l'app** (fatta,
-  branch `feat/TASK-206-bike-on-foot-app`, in PR; testi e stile scelti
-  dall'utente il 2026-10-03): la mappa (linea gialla intera, trattini
-  scuri sopra i tratti a mano, token `onFoot`), la riga della scheda
-  («Includes 920 m walking the bike.» / «Di cui 920 m con la bici a
-  mano.»), la voce («Tra 50 metri, scendi e porta la bici a mano per 200
-  metri.» / «Risali in bici.», nessuna pausa) e i preferiti che tengono i
-  tratti. Non provata sull'iPhone; il server ha già la parte B (dalle
-  12:39Z, zona della bici di Trento rifatta): esce con la prossima
-  pubblicazione, con l'ok dell'utente. Da dove riprendere: `tasks/TASK-206.md`,
-  «Esito», «Parte C».
 - **TASK-216 — La navigazione in bici** (Todo, scelte dell'utente del
   2026-10-03 chieste da TASK-206 C): velocità in km/h sulla schermata e
   nella voce dei km, avvisi di svolta più in anticipo, e con la penna
@@ -335,6 +308,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore, API e app** — TASK-206: forme in bici più riconoscibili con
+  brevi tratti con la bici a mano (ADR-0167; scelta dell'utente «Sì,
+  poco»). Parte A, il motore, PR #249 (marciapiedi, sentieri, zone
+  pedonali e l'altro senso dei sensi unici a piedi, a sei volte il costo;
+  i cerchi di Trento da «quasi» a «sì»); parte B, `on_foot` nel risultato,
+  nel contratto e nei preferiti, PR #263 (migrazione `0012`); parte C,
+  l'app, PR #269 (2026-10-03, testi e stile scelti dall'utente): la linea
+  gialla intera con trattini scuri sopra i tratti a mano, «Di cui 920 m con
+  la bici a mano.» nella scheda, la voce «Tra 50 metri, scendi e porta la
+  bici a mano per 200 metri.» / «Risali in bici.» senza pause, i preferiti
+  che tengono i tratti. La corsa e la canoa non cambiano. Il server ha A e
+  B dalle 12:39Z (`7098cb9`, zona della bici di Trento rifatta); l'app esce
+  con la prossima pubblicazione, con l'ok dell'utente, e va provata
+  sull'iPhone. Seguiti: TASK-216 e TASK-217. Task file: `tasks/TASK-206.md`.
 - **App** — TASK-209: la voce della corsa in cinque lingue (ADR-0171;
   chiesto dall'utente il 2026-10-03; PR #259). In «Data», sotto «Voice»,
   la lingua della voce («App language» o English, Deutsch, Italiano,

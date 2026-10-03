@@ -18,6 +18,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { commentOf, commentTextProblem } from "../api/comments";
+import { t } from "../i18n";
 import { Avatar } from "../profile/Avatar";
 import {
   color,
@@ -28,7 +29,7 @@ import {
   space,
 } from "../theme/tokens";
 import { useCommentsDoor } from "./commentsDoor";
-import { agoLabel, commentsLabel, NEGATIVE_COMMENT } from "./commentText";
+import { agoLabel, commentsLabel, negativeComment } from "./commentText";
 import {
   type DrawingComments as Shown,
   useDrawingComments,
@@ -61,10 +62,10 @@ export function DrawingComments({ drawingId }: Props) {
         style={styles.button}
         onPress={() => setOpen(true)}
         accessibilityRole="button"
-        accessibilityHint="Opens the comments of this drawing."
+        accessibilityHint={t("Opens the comments of this drawing.")}
       >
         <Text style={styles.buttonText}>
-          {comments.status === "ready" ? commentsLabel(comments.total) : "Comments"}
+          {comments.status === "ready" ? commentsLabel(comments.total) : t("Comments")}
         </Text>
       </Pressable>
       <CommentsSheet
@@ -102,7 +103,7 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
       setText("");
       list.current?.scrollToEnd({ animated: true });
     } else if (sent === "rejected") {
-      Alert.alert(NEGATIVE_COMMENT);
+      Alert.alert(negativeComment());
     }
   }
 
@@ -110,10 +111,10 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
     if (!comment.deletable) {
       return;
     }
-    Alert.alert("Delete this comment?", undefined, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("Delete this comment?"), undefined, [
+      { text: t("Cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("Delete"),
         style: "destructive",
         onPress: () => comments.remove(comment.id),
       },
@@ -137,7 +138,7 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
           style={[styles.backdrop, { minHeight: insets.top + space.xl }]}
           onPress={onClose}
           accessibilityRole="button"
-          accessibilityLabel="Close the comments"
+          accessibilityLabel={t("Close the comments")}
         />
         <View
           style={[
@@ -150,14 +151,14 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
         >
           <View style={styles.header}>
             <Text style={styles.title} accessibilityRole="header">
-              Comments
+              {t("Comments")}
             </Text>
             <Pressable
               style={styles.close}
               onPress={onClose}
               accessibilityRole="button"
             >
-              <Text style={styles.closeText}>Close</Text>
+              <Text style={styles.closeText}>{t("Close")}</Text>
             </Pressable>
           </View>
           <CommentsList comments={comments} list={list} onHold={onHold} />
@@ -171,9 +172,9 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
               style={styles.field}
               value={text}
               onChangeText={setText}
-              placeholder="Add a comment…"
+              placeholder={t("Add a comment…")}
               placeholderTextColor={color.textFaint}
-              accessibilityLabel="Comment"
+              accessibilityLabel={t("Comment")}
               multiline
               keyboardAppearance="dark"
               editable={!comments.sending}
@@ -185,13 +186,16 @@ export function CommentsSheet({ visible, comments, onClose }: SheetProps) {
               accessibilityRole="button"
               accessibilityState={{ disabled: !canSend, busy: comments.sending }}
             >
-              <Text style={styles.sendText}>Post</Text>
+              <Text style={styles.sendText}>{t("Post")}</Text>
             </Pressable>
           </View>
           {length >= COUNT_FROM && (
             <Text
               style={[styles.count, tooLong && styles.countOver]}
-              accessibilityLabel={`${length} of ${COMMENT_MAX_LENGTH} characters`}
+              accessibilityLabel={t("{count} of {max} characters", {
+                count: length,
+                max: COMMENT_MAX_LENGTH,
+              })}
             >
               {length}/{COMMENT_MAX_LENGTH}
             </Text>
@@ -213,7 +217,7 @@ function CommentsList({ comments, list, onHold }: ListProps) {
     return (
       <View style={styles.middle}>
         <ActivityIndicator color={color.textMuted} />
-        <Text style={styles.muted}>Loading the comments…</Text>
+        <Text style={styles.muted}>{t("Loading the comments…")}</Text>
       </View>
     );
   }
@@ -226,7 +230,7 @@ function CommentsList({ comments, list, onHold }: ListProps) {
           onPress={comments.reload}
           accessibilityRole="button"
         >
-          <Text style={styles.closeText}>Try again</Text>
+          <Text style={styles.closeText}>{t("Try again")}</Text>
         </Pressable>
       </View>
     );
@@ -241,7 +245,9 @@ function CommentsList({ comments, list, onHold }: ListProps) {
       renderItem={({ item }) => <CommentRow comment={item} onHold={onHold} />}
       keyboardShouldPersistTaps="handled"
       ListEmptyComponent={
-        <Text style={[styles.muted, styles.empty]}>No comments yet. Be the first.</Text>
+        <Text style={[styles.muted, styles.empty]}>
+          {t("No comments yet. Be the first.")}
+        </Text>
       }
       ListFooterComponent={
         comments.more ? (
@@ -250,7 +256,7 @@ function CommentsList({ comments, list, onHold }: ListProps) {
             onPress={comments.showMore}
             accessibilityRole="button"
           >
-            <Text style={styles.closeText}>Show more comments</Text>
+            <Text style={styles.closeText}>{t("Show more comments")}</Text>
           </Pressable>
         ) : null
       }
@@ -285,11 +291,15 @@ function CommentRow({ comment, onHold }: RowProps) {
       style={styles.row}
       onLongPress={() => onHold(comment)}
       accessible
-      accessibilityLabel={`${comment.author.username}, ${ago}: ${comment.text}`}
-      accessibilityHint={comment.deletable ? "Touch and hold to delete." : undefined}
+      accessibilityLabel={t("{name}, {ago}: {text}", {
+        name: comment.author.username,
+        ago,
+        text: comment.text,
+      })}
+      accessibilityHint={comment.deletable ? t("Touch and hold to delete.") : undefined}
       // VoiceOver has no long press: the same choice as an action.
       accessibilityActions={
-        comment.deletable ? [{ name: "delete", label: "Delete" }] : []
+        comment.deletable ? [{ name: "delete", label: t("Delete") }] : []
       }
       onAccessibilityAction={(event) => {
         if (event.nativeEvent.actionName === "delete") {

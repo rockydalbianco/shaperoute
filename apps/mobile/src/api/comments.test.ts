@@ -95,7 +95,13 @@ test("what did not go is said in words", async () => {
       body: apiError("too_many_requests", "Too many comments in a minute."),
       headers: { "Retry-After": "40" },
     }),
-  ).toBe("Too many comments in a minute.");
+  ).toBe("Too many comments in a minute. Wait a moment and try again.");
+  expect(
+    await say({
+      status: 422,
+      body: { error: { ...apiError("comment_rejected").error, reason: "negative" } },
+    }),
+  ).toBe("You can't write negative comments in this app. Try another app.");
   expect(
     await say({
       status: 422,

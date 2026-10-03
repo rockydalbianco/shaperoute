@@ -73,6 +73,7 @@ apps/mobile/src/social/DrawingComments.tsx          (nuovo, e il test)
 apps/mobile/src/social/commentText.ts               (nuovo, e il test)
 apps/mobile/src/social/DrawingCard.tsx
 apps/mobile/src/screens/ProfileLayer.tsx
+apps/mobile/src/i18n/it.ts, de.ts, es.ts, fr.ts      (i testi nuovi)
 docs/API.md
 docs/DATABASE.md
 docs/UI.md
@@ -115,19 +116,23 @@ della prima pagina: nessun campo nuovo nel disegno, `drawings.py` non
 cambia. La foto di chi scrive viene da `GET /users/{public_id}`, una volta
 per profilo finché l'app è aperta. Testi nuovi in `UI.md`.
 
+I testi nuovi sono in `t()` e tradotti in italiano, tedesco, spagnolo e
+francese (ADR-0172, TASK-210 entrato prima del merge); l'avviso in
+italiano è con le parole dell'utente. Il troppi-al-minuto lo dice l'app
+con il suo testo, gli altri rifiuti di `invalid_request` con le parole
+dell'API, come i disegni.
+
 Test: 18 in `test_comments.py`, il contratto e il filtro verdi dopo il
 merge di `main` con TASK-213; app: `api/comments`, `commentText`,
 `commentsDoor`, `DrawingComments` (10 casi del foglio); `shared-types`
 verde.
 
 **Da chiedere all'utente**: i testi nuovi dell'app (`UI.md`, «I commenti
-di un disegno»); l'ok per aggiornare il server (migrazioni fino alla
+di un disegno») e le loro traduzioni; l'ok per aggiornare il server (migrazioni fino alla
 `0011`) e pubblicare l'app; la prova sull'iPhone con due account.
 
 Seguiti:
 
-- **TASK-210** (lingua dell'app): i testi nuovi vanno tradotti quando
-  entra, come quelli degli altri task.
 - **TASK-118**: le schede del feed vero portano il numero dei commenti e
   aprono lo stesso foglio (`DrawingComments`).
 - **TASK-121**: segnalare un commento; una colonna «nascosto» se serve

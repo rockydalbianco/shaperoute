@@ -136,7 +136,7 @@ test("a comment the API refuses says why, and the words stay", async () => {
   await fireEvent.press(screen.getByRole("button", { name: "Post" }));
   expect(
     await screen.findByText(
-      "Too many comments in a minute: wait a moment and try again.",
+      "Too many comments in a minute. Wait a moment and try again.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByLabelText("Comment").props.value).toBe("One more");

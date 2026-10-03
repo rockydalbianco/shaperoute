@@ -1,12 +1,14 @@
 import { dayLabel } from "../activities/activityText";
+import { t, tPlural } from "../i18n";
 
 /**
  * The alert over a negative comment, which the API refuses (ADR-0176): the
  * user's words, «In questa app non puoi scrivere commenti negativi, cambia
  * app».
  */
-export const NEGATIVE_COMMENT =
-  "You can't write negative comments in this app. Try another app.";
+export function negativeComment(): string {
+  return t("You can't write negative comments in this app. Try another app.");
+}
 
 const MINUTE_MS = 60_000;
 const HOUR_MS = 60 * MINUTE_MS;
@@ -25,16 +27,16 @@ export function agoLabel(createdAt: string, now: number = Date.now()): string {
   }
   const ago = now - when;
   if (ago < MINUTE_MS) {
-    return "just now";
+    return t("just now");
   }
   if (ago < HOUR_MS) {
-    return `${Math.floor(ago / MINUTE_MS)} min ago`;
+    return t("{count} min ago", { count: Math.floor(ago / MINUTE_MS) });
   }
   if (ago < DAY_MS) {
-    return `${Math.floor(ago / HOUR_MS)} h ago`;
+    return t("{count} h ago", { count: Math.floor(ago / HOUR_MS) });
   }
   if (ago < WEEK_MS) {
-    return `${Math.floor(ago / DAY_MS)} d ago`;
+    return t("{count} d ago", { count: Math.floor(ago / DAY_MS) });
   }
   return dayLabel(createdAt);
 }
@@ -42,7 +44,7 @@ export function agoLabel(createdAt: string, now: number = Date.now()): string {
 /** What the button under a drawing says: "Write a comment", "1 comment", "4 comments". */
 export function commentsLabel(total: number): string {
   if (total === 0) {
-    return "Write a comment";
+    return t("Write a comment");
   }
-  return total === 1 ? "1 comment" : `${total} comments`;
+  return tPlural(total, "{count} comment", "{count} comments");
 }

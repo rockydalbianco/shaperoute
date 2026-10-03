@@ -6,6 +6,8 @@ import {
 } from "@shaperoute/shared-types";
 
 import { accountProblem, SESSION_ENDED } from "../account/messages";
+import { t } from "../i18n";
+import { negativeComment } from "../social/commentText";
 import { type AccountOutcome, ask } from "./accounts";
 
 /**
@@ -26,11 +28,11 @@ export function commentOf(text: string): string {
 export function commentTextProblem(text: string): string | null {
   const kept = commentOf(text);
   if (kept === "") {
-    return "A comment needs some words.";
+    return t("A comment needs some words.");
   }
   // Characters as the API counts them: an emoji is one, not two.
   if ([...kept].length > COMMENT_MAX_LENGTH) {
-    return `A comment is at most ${COMMENT_MAX_LENGTH} characters.`;
+    return t("A comment is at most {max} characters.", { max: COMMENT_MAX_LENGTH });
   }
   return null;
 }
@@ -97,22 +99,24 @@ export function commentProblem(outcome: AccountOutcome<unknown>): string | null 
     return null;
   }
   if (outcome.kind === "unreachable") {
-    return "No connection. Try again when you are online.";
+    return t("No connection. Try again when you are online.");
   }
   if (outcome.kind === "api_error") {
     switch (outcome.code) {
       case "session_expired":
       case "not_signed_in":
-        return SESSION_ENDED;
-      // The API's own words: empty, too long, too many in a minute; and a
-      // negative one, which the sheet says in an alert.
+        return t(SESSION_ENDED);
+      // The API's own words: a comment it refuses as written.
       case "invalid_request":
-      case "too_many_requests":
-      case "comment_rejected":
         return outcome.message;
+      case "too_many_requests":
+        return t("Too many comments in a minute. Wait a moment and try again.");
+      // A negative one, which the sheet says in an alert (ADR-0176).
+      case "comment_rejected":
+        return negativeComment();
       // Made private, or deleted, since it opened; or an API without comments.
       case "http_error":
-        return "The comments of this drawing are not available.";
+        return t("The comments of this drawing are not available.");
     }
   }
   return accountProblem(outcome);

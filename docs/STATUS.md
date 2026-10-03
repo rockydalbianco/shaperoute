@@ -240,7 +240,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nell'app). Nell'app, sotto un disegno aperto da un profilo, «Write a
   comment» / «N comments» apre un foglio dal basso con l'elenco e il campo
   sopra la tastiera; tieni premuto per cancellare il proprio, o qualsiasi
-  sotto il proprio disegno. **Aspettano l'utente**: i testi nuovi (`UI.md`),
+  sotto il proprio disegno; i testi anche nelle quattro lingue di TASK-210.
+  **Aspettano l'utente**: i testi nuovi (`UI.md`),
   l'aggiornamento del server con la `0011` e la pubblicazione, la prova
   sull'iPhone con due account. Da dove riprendere: `tasks/TASK-120.md`,
   «Esito».

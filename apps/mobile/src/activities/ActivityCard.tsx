@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityDetail } from "../api/activities";
+import { StravaActivityRow } from "../strava/StravaActivityRow";
 import {
   color,
   fontSize,
@@ -23,7 +24,8 @@ type Props = {
 /**
  * A run of «My activities» on the map (TASK-172), under it: when and where
  * it was, how far and how fast, its score when it has one. The map shows it
- * as the end of a run does: the route yellow, what was run light.
+ * as the end of a run does: the route yellow, what was run light. With
+ * Strava connected, «Send to Strava» or «View on Strava» (TASK-187).
  */
 export function ActivityCard({ activity, onList, onDelete }: Props) {
   // «Delete» asks first, on the card itself.
@@ -51,6 +53,7 @@ export function ActivityCard({ activity, onList, onDelete }: Props) {
       <Text style={styles.message}>
         {withRoute ? "Yellow: the route. White: what you ran." : "White: what you ran."}
       </Text>
+      {!confirming && <StravaActivityRow activity={activity} />}
       {confirming ? (
         <>
           <Text style={styles.confirmText}>Delete this run? It cannot be undone.</Text>

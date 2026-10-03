@@ -10,7 +10,8 @@ run with a key made from its track, so a run sent twice is kept once.
 
 Every endpoint needs the token of an account (accounts.py): a run is seen,
 opened and deleted only by its owner. Deleting the account deletes its runs
-(ON DELETE CASCADE).
+(ON DELETE CASCADE). A run opened whole has its pauses as they are kept
+(TASK-200).
 """
 
 from __future__ import annotations
@@ -24,7 +25,7 @@ from collections import OrderedDict
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, NotRequired
 
 from fastapi import (
     APIRouter,
@@ -47,6 +48,10 @@ from route_engine.track_score import (
     clean_track,
     score_track,
 )
+
+# Pydantic reads a TypedDict of `typing` only from Python 3.12; pydantic
+# itself depends on typing_extensions.
+from typing_extensions import TypedDict
 
 from shaperoute_api.accounts import (
     ACCOUNT_ERRORS,
@@ -215,9 +220,21 @@ class ActivitiesBody(BaseModel):
     """How many runs the account has, on every page."""
 
 
+class RunPauseBody(TypedDict):
+    """A pause of a run kept, as the `pauses` column has it: in seconds since
+    the first point of `track`, only what lies inside the run."""
+
+    from_s: float
+    to_s: float
+    auto: bool
+    pen: NotRequired[bool]
+    """Only when true: a pause of the pen between two letters (TASK-199)."""
+
+
 class ActivityDetailBody(BaseModel):
     """GET /me/activities/{key}: the run whole, to show on the map:
-    packages/shared-types/fixtures/activity.json."""
+    packages/shared-types/fixtures/activity.json, and activity-pauses.json
+    since TASK-200."""
 
     id: str
     started_at: datetime
@@ -238,6 +255,9 @@ class ActivityDetailBody(BaseModel):
     """The planned route's, for a word with the pen up (TASK-199): [from,
     to] indices into `points`; empty for any other run, and for the runs
     saved before."""
+    pauses: list[RunPauseBody]
+    """In the order they were sent, on the clock of `track` (TASK-200);
+    empty for a run without."""
 
 
 # --- The place a run starts from ---
@@ -434,6 +454,8 @@ COLUMNS = (
     " ST_AsGeoJSON(route, 15) AS route,"
     " ST_AsGeoJSON(ST_Force2D(track), 15) AS track"
 )
+# A run opened whole: its pauses too, which the list does not read.
+DETAIL_COLUMNS = COLUMNS + ", pauses"
 
 
 def _route_wkt(points: Sequence[LatLon]) -> str:
@@ -490,6 +512,7 @@ def _whole(row: DictRow) -> ActivityDetailBody:
         points=None if route is None else _line(route),
         track=_line(row["track"]),
         walks=[(start, end) for start, end in row["walks"]],
+        pauses=[_kept_pause(pause) for pause in row["pauses"]],
     )
 
 
@@ -504,6 +527,15 @@ def _pause(pause: Pause) -> dict[str, Any]:
     if pause.pen:
         kept["pen"] = True
     return kept
+
+
+def _kept_pause(kept: dict[str, Any]) -> RunPauseBody:
+    """A pause of the column as the detail answers it: `pen` only when
+    true, as _pause writes it."""
+    pause = RunPauseBody(from_s=kept["from_s"], to_s=kept["to_s"], auto=kept["auto"])
+    if kept.get("pen") is True:
+        pause["pen"] = True
+    return pause
 
 
 def _cursor(row: DictRow) -> str:
@@ -552,15 +584,15 @@ class Activities:
             total=count["n"],
         )
 
-    def _row(self, user_id: int, key: str) -> DictRow | None:
+    def _row(self, user_id: int, key: str, columns: str = COLUMNS) -> DictRow | None:
         with self.database.connect() as conn:
             return conn.execute(
-                f"SELECT {COLUMNS} FROM runs WHERE user_id = %s AND key = %s",
+                f"SELECT {columns} FROM runs WHERE user_id = %s AND key = %s",
                 (user_id, key),
             ).fetchone()
 
     def get(self, user_id: int, key: str) -> ActivityDetailBody | None:
-        row = self._row(user_id, key)
+        row = self._row(user_id, key, DETAIL_COLUMNS)
         return None if row is None else _whole(row)
 
     def save(

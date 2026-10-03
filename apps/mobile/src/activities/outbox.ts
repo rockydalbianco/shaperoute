@@ -13,9 +13,15 @@ export const OUTBOX_FILE = "activities-outbox.json";
 /** A phone a long time without a network keeps the latest runs. */
 export const MAX_WAITING = 20;
 
+/** «Send to Strava» on at «Save» (TASK-187), with the name typed; null:
+ * the API's own name. */
+export type ToStrava = { name: string | null };
+
 export type Waiting = RecordedRun & {
   /** The id of the account the run belongs to (User.id). */
   owner: number;
+  /** Once the API has the run, it goes on to Strava (strava/stravaOutbox.ts). */
+  strava?: ToStrava;
 };
 
 function outboxFile(): File {
@@ -36,6 +42,16 @@ function isWaiting(value: unknown): value is Waiting {
     Array.isArray(request.track) &&
     Array.isArray(request.pauses)
   );
+}
+
+/** Where a waiting run goes after the API: Strava, or nowhere. */
+export function toStravaOf(run: Waiting): ToStrava | null {
+  const strava: unknown = run.strava;
+  if (typeof strava !== "object" || strava === null || !("name" in strava)) {
+    return null;
+  }
+  const { name } = strava;
+  return { name: typeof name === "string" && name !== "" ? name : null };
 }
 
 /** The runs in the file, the oldest first; none when it cannot be read. */

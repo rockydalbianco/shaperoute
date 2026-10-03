@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import activityPauses from "../fixtures/activity-pauses.json" with { type: "json" };
 import activityRequestWalks from "../fixtures/activity-request-walks.json" with { type: "json" };
 import activityRequest from "../fixtures/activity-request.json" with { type: "json" };
 import activityWalks from "../fixtures/activity-walks.json" with { type: "json" };
@@ -10,10 +11,14 @@ import apiError from "../fixtures/api-error.json" with { type: "json" };
 import contract from "../fixtures/contract.json" with { type: "json" };
 import directions from "../fixtures/directions.json" with { type: "json" };
 import editReasons from "../fixtures/edit-reasons.json" with { type: "json" };
+import favoriteCycling from "../fixtures/favorite-cycling.json" with { type: "json" };
+import favoriteRequestCycling from "../fixtures/favorite-request-cycling.json" with { type: "json" };
 import favoriteRequestWalks from "../fixtures/favorite-request-walks.json" with { type: "json" };
 import favoriteRequest from "../fixtures/favorite-request.json" with { type: "json" };
 import favoriteWalks from "../fixtures/favorite-walks.json" with { type: "json" };
 import favorite from "../fixtures/favorite.json" with { type: "json" };
+import favoritesCycling from "../fixtures/favorites-cycling.json" with { type: "json" };
+import favorites from "../fixtures/favorites.json" with { type: "json" };
 import gpxRequest from "../fixtures/gpx-request.json" with { type: "json" };
 import imageError from "../fixtures/image-error.json" with { type: "json" };
 import imageLimits from "../fixtures/image-limits.json" with { type: "json" };
@@ -236,6 +241,57 @@ test("saved runs and favorites keep the walks of a word with the pen up", () => 
     assert.ok(!("walks" in fixture));
   }
   assert.ok(activityRequest.pauses.every((pause) => !("pen" in pause)));
+});
+
+test("a favorite keeps its activity, and a saved run opens with its pauses", () => {
+  // TASK-200: the bodies are typed in the app (src/api/favorites.ts,
+  // activities.ts). A bike route kept, listed and opened says `cycling`.
+  const offered = ACTIVITIES as readonly string[];
+  assert.equal(favoriteRequestCycling.activity, "cycling");
+  assert.equal(favoriteCycling.activity, favoriteRequestCycling.activity);
+  assert.deepEqual(favoriteCycling.points, favoriteRequestCycling.points);
+  const [lowest, highest] = DISTANCE_LIMITS_M.cycling;
+  const asked = favoriteRequestCycling.distance_m;
+  assert.ok(lowest <= asked && asked <= highest);
+  const [bike, kept] = favoritesCycling.favorites;
+  assert.equal(bike.id, favoriteCycling.id);
+  assert.equal(bike.activity, "cycling");
+  assert.ok(favoritesCycling.favorites.every((one) => offered.includes(one.activity)));
+  // The star kept before is a run: the same favorite, now with its activity.
+  assert.deepEqual(
+    { ...kept, activity: undefined },
+    {
+      ...favorites.favorites[0],
+      activity: undefined,
+    },
+  );
+  assert.equal(kept.activity, "running");
+  // Written before: an older app's requests, an older API's answers.
+  for (const fixture of [
+    favoriteRequest,
+    favoriteRequestWalks,
+    favorite,
+    favoriteWalks,
+  ]) {
+    assert.ok(!("activity" in fixture));
+  }
+  assert.ok(favorites.favorites.every((one) => !("activity" in one)));
+  // A run's pauses: on the clock of its track, `pen` only when true.
+  assert.deepEqual({ ...activityPauses, pauses: [] }, { ...activityWalks, pauses: [] });
+  assert.ok(activityPauses.pauses.length > 0);
+  for (const pause of activityPauses.pauses) {
+    assert.ok(0 <= pause.from_s && pause.from_s <= pause.to_s);
+    assert.ok(!("pen" in pause) || pause.pen === true);
+  }
+  const [pen] = activityPauses.pauses;
+  const [sent] = activityRequestWalks.pauses;
+  const began = activityRequestWalks.track[0].time_ms;
+  assert.equal(pen.from_s, (sent.from_ms - began) / 1000);
+  assert.equal(pen.to_s, (sent.to_ms - began) / 1000);
+  assert.equal(pen.pen, true);
+  for (const fixture of [activity, activityWalks]) {
+    assert.ok(!("pauses" in fixture));
+  }
 });
 
 test("a shape reading names a shape of the catalogue, or none", () => {

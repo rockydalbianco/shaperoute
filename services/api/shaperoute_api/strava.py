@@ -66,7 +66,13 @@ from shaperoute_api.strava_client import (
 
 log = logging.getLogger(__name__)
 
-DESCRIPTION = "Drawn with Sgrava"
+# The line under the name: what Sgrava did with the run (the user's choice,
+# 2026-10-02): a route it drew, or only the recording.
+DRAWN = "Drawn with Sgrava"
+RECORDED = "Recorded with Sgrava"
+# A name typed in the app longer than this is cut, not refused: the run
+# still goes.
+MAX_NAME = 100
 
 STATE_BYTES = 32
 STATE_LIFE = timedelta(minutes=10)
@@ -106,6 +112,13 @@ class StravaConnectBody(BaseModel):
 
     url: str
     """Strava's page to open in the browser; good for ten minutes."""
+
+
+class StravaSendBody(BaseModel):
+    """POST /me/activities/{key}/strava, optional: fixtures/strava-send.json."""
+
+    name: str | None = None
+    """The name typed before «Save»; empty or null: Sgrava's own."""
 
 
 class StravaActivityBody(BaseModel):
@@ -185,6 +198,15 @@ def activity_name(run: Mapping[str, Any]) -> str | None:
     else:
         return None
     return f"{what} in {run['place']}" if run["place"] else what
+
+
+def typed_name(name: str | None) -> str | None:
+    """The name typed in the app on one line, at most MAX_NAME characters;
+    None when nothing is left of it."""
+    if name is None:
+        return None
+    line = " ".join(name.split())[:MAX_NAME].strip()
+    return line or None
 
 
 def _activity(status: str | None, activity_id: int | None) -> StravaActivityBody:
@@ -436,10 +458,13 @@ class StravaRuns:
             raise HTTPException(404, UNKNOWN_ACTIVITY)
         return _activity(run["strava_status"], run["strava_activity_id"])
 
-    def send(self, user_id: int, key: str) -> StravaActivityBody:
+    def send(
+        self, user_id: int, key: str, name: str | None = None
+    ) -> StravaActivityBody:
         """The run on Strava: uploaded if it never was, then followed until
         Strava has read it, for a few seconds. `processing` after that: the
-        same call again goes on following, and uploads nothing twice."""
+        same call again goes on following, and uploads nothing twice.
+        `name` is the one typed in the app; it counts only for the upload."""
         with self._answering():
             first: Upload | None = None
             with self.database.connect() as conn:
@@ -456,7 +481,7 @@ class StravaRuns:
                     return _activity("sent", run["strava_activity_id"])
                 upload_id: int | None = run["strava_upload_id"]
                 if upload_id is None:
-                    first = self._upload(user_id, key, run)
+                    first = self._upload(user_id, key, run, name)
                     upload_id = first.id
                     if upload_id is not None:
                         conn.execute(
@@ -466,16 +491,18 @@ class StravaRuns:
                         )
             return self._follow(user_id, run["id"], upload_id, first)
 
-    def _upload(self, user_id: int, key: str, run: DictRow) -> Upload:
-        name = activity_name(run)
+    def _upload(
+        self, user_id: int, key: str, run: DictRow, typed: str | None
+    ) -> Upload:
+        name = typed_name(typed) or activity_name(run)
         gpx = run_gpx(
             [(lat, lon, at_s) for lat, lon, at_s in run["fixes"]],
             [(pause["from_s"], pause["to_s"]) for pause in run["pauses"]],
             run["started_at"],
             name,
         )
-        # A run that followed no route drew nothing.
-        description = DESCRIPTION if run["drawn"] else None
+        # A run that followed no route drew nothing: it was only recorded.
+        description = DRAWN if run["drawn"] else RECORDED
         return self._authorized(
             user_id,
             lambda token: self.strava.upload(token, gpx, key, name, description),
@@ -625,8 +652,10 @@ def strava_routes() -> APIRouter:
         response: Response,
         runs: Annotated[StravaRuns, Depends(strava_of)],
         user: Annotated[UserBody, Depends(current_user)],
+        # No body, as before the name could be typed: Sgrava's own name.
+        body: StravaSendBody | None = None,
     ) -> StravaActivityBody:
-        activity = runs.send(user.id, key)
+        activity = runs.send(user.id, key, None if body is None else body.name)
         if activity.status == "processing":
             response.status_code = 202
         return activity

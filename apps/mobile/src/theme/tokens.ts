@@ -53,6 +53,15 @@ export const color = {
   /** Where a moved route begins (ADR-0040). Cyan, so it never reads as route. */
   startHere: "#4DD2FF",
 
+  /**
+   * Strava's orange, for «Connect with Strava» only (TASK-187): Strava's
+   * brand rules ask for it, and the user chose it. Nothing else of the app
+   * is orange-filled.
+   */
+  strava: "#FC5200",
+  /** Text on `strava`: white, as Strava's own button; semibold, 3:1. */
+  onStrava: "#FFFFFF",
+
   map: {
     background: "#0D0E10",
     water: "#101F29",

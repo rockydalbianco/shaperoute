@@ -254,9 +254,9 @@ function Sgrava() {
   const [wordText, setWordText] = useState("");
   const wordCheck = checkWord(wordText, distanceM, sportActivity);
   const [letterStyle, setLetterStyle] = useState<LetterStyle>("round");
-  // The pen lifted between the letters (TASK-198): off until the user
-  // chooses otherwise, so an API older than TASK-197 is never asked for it.
-  const [penUp, setPenUp] = useState(false);
+  // The pen lifted between the letters (TASK-198), on until switched off:
+  // the user's choice (TASK-202). An API older than TASK-197 refuses it.
+  const [penUp, setPenUp] = useState(true);
   const image = useImageOutline(API_URL);
   // Past RouteChoice to the image panel (TASK-079).
   const { edits, add, undo } = image;

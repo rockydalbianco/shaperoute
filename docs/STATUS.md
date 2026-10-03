@@ -114,11 +114,21 @@ In coda, dopo o accanto:
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
 - **Server e app da aggiornare, con l'ok dell'utente**: in `main` ma non
-  sul server ci sono le migrazioni `0004` (Strava, TASK-187) e `0005`
-  (foto, TASK-178) e il motore di TASK-190, 191 A1 e 197, che cambia
-  l'impronta: dopo l'aggiornamento va rilanciato `draw_examples` (circa 35
-  minuti, `AGENTI.md` regola 11). Poi la pubblicazione dell'app (la foto
-  del profilo, la penna alzata). Ordine: server, esempi, app.
+  sul server (fermo a `0003`) ci sono le migrazioni `0004` (Strava,
+  TASK-187), `0005` (foto, TASK-178), `0006` (penna alzata, TASK-199),
+  `0007` (profili, TASK-116) e `0008` (attività nei preferiti, TASK-200),
+  e il motore di TASK-190, 191 A1, 197 e 203, che cambia l'impronta: dopo
+  l'aggiornamento va rilanciato `draw_examples` (circa 35 minuti,
+  `AGENTI.md` regola 11) e, per la bici, costruita almeno la zona bici di
+  Trento. Conviene un solo aggiornamento dopo TASK-191 A2 (anche lei
+  cambia il motore). Poi la pubblicazione dell'app (foto, «Edit profile»,
+  penna alzata accesa, bici, «Send to Strava»). Ordine: server, esempi,
+  app.
+- **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
+  dall'utente con campioni da più città): saltare la ricerca lontana
+  quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
+  2–3,7 s in meno nei casi lunghi; `NEARBY_GOOD_GRACE_S` 3→1, 1,5 s in
+  meno con meno alternative (`tasks/TASK-203.md`).
 - **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
   TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
@@ -147,7 +157,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   distanza suggerita nei limiti, e `prefetch_zones --activity cycling
   --extract` per zone della bici di 26 × 26 km (stima 0,15–0,6 GB in
   memoria ciascuna). La corsa non cambia. **Parte C, l'app** (assegnata il
-  2026-10-02 sera), PR #221 (il merge è del coordinatore): «Bike» si
+  2026-10-02 sera), PR #221, in `main` dal 2026-10-02 20:36Z: «Bike» si
   sceglie in «Settings» e vale subito; con «Bike» «Draw» chiede `cycling`
   fra 10 e 30 km (parole fino a 8 lettere, «Ride without a route»); con
   «Run» le richieste sono quelle di prima, byte per byte. Due testi da
@@ -160,20 +170,25 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dove riprendere: il task file, «Esito».
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
-  dell'utente: «Sì, fallo vero»): **la parte API è fatta**, PR #210:
-  collegare l'atleta dal browser (`POST /me/strava/connect`, `GET
-  /strava/callback`), `GET` e `DELETE /me/strava`, mandare una corsa
-  salvata (`POST /me/activities/{key}/strava`) con il GPX dei suoi orari,
-  una volta sola; token rinnovati dall'API, mai in una risposta o nei log;
-  provata contro uno Strava finto, senza rete. Spenta finché il server non
-  ha `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`. **Manca la parte app**
-  (seconda PR: `RunEnd`, «My activities», «Settings», la coda senza rete,
-  `UI.md`). **Aspettano l'utente**: creare la sua app Strava e scrivere il
-  secret sul server (`DEPLOY.md`, «Strava»), l'ok per aggiornare il server
-  (migrazione `0004`), le quattro domande del task file, la prova dal
-  vero. File della parte app: `apps/mobile/src/strava/`,
-  `src/api/strava.ts`, `src/activities/RunEnd.tsx`, `outbox.ts`,
-  `src/theme/tokens.ts`. Da dove riprendere: `tasks/TASK-187.md`.
+  dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).
+  **Parte app** fatta il 2026-10-02 sera, PR #229, in `main` dal
+  2026-10-02 22:14Z, con le quattro risposte dell'utente: il nome si scrive
+  prima di «Save», la descrizione va su ogni corsa («Recorded with Sgrava»
+  per una corsa libera), l'interruttore ricorda l'ultima scelta, «Connect
+  with Strava» è arancione. A fine corsa, sopra «Save» e «Discard», «Connect
+  with Strava» o l'interruttore «Send to Strava» con «Name on Strava»; su
+  una corsa aperta di «My activities» «Send to Strava» o «View on Strava»;
+  in «Settings» la sezione «Strava» con «Disconnect». Senza rete la corsa
+  va all'API e poi a Strava alla prossima apertura, una volta. Nell'API il
+  corpo facoltativo `{ "name" }` di `POST /me/activities/{key}/strava`.
+  Nessuna dipendenza, nessuna migrazione nuova. Come funziona: `UI.md` («La
+  fine della corsa», «My activities», «Settings», «Cosa esce dal
+  telefono»), `API.md` («Send to Strava»). **Aspettano l'utente**: creare
+  la sua app Strava e scrivere il secret sul server (`DEPLOY.md`,
+  «Strava»), l'ok per aggiornare il server (migrazioni `0004`–`0007`) e
+  pubblicare l'app, la prova dal vero (data, ora, durata, le pause). Finché
+  il server non ha Strava l'app non mostra niente di Strava. Da dove
+  riprendere: `tasks/TASK-187.md`, «Esito».
 - **TASK-191 — Percorsi in canoa e paddle, parte A1** (ADR-0154): nel
   motore, solo file nuovi (`water.py`, `water_fit.py`), l'acqua di laghi e
   mare, la fascia entro 1 km dalla riva, dove la forma ci sta e la
@@ -186,6 +201,44 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (app). Da dove riprendere: `tasks/TASK-191.md`, «Esito».
 
 ## Completato
+
+- **Motore** — TASK-203: dove va il tempo del piano dalla partenza, e le
+  due correzioni che lasciano i percorsi identici (ADR-0162; la PR la apre
+  questo task: PR #230, in `main` dal 2026-10-02 22:30Z). Misurato sul Mac, Trento in
+  memoria, cinque richieste: metà del piano dei casi lunghi è la ricerca
+  lontana (ADR-0040), il resto quasi tutto lavoro rifatto a ogni
+  tracciamento. Nel motore (`network.py`): ciò che si tiene per grafo
+  vale finché NetworkX non cambia il grafo, senza contarne gli archi a
+  ogni tracciamento, e le coordinate dei nodi una volta per grafo. Stessi
+  percorsi, alternative e punteggi (impronte prima e dopo nel task file,
+  un test che li fissa, le richieste del registro rifatte); richieste
+  lunghe 14–36% più veloci sul Mac, CPU di una richiesta −15…−43%; il
+  server non è misurato. **Da decidere dall'utente, con campioni**:
+  niente ricerca lontana quando vicino c'è già un percorso disegnabile
+  (o `FAR_TRACES` 20 → 10), e `NEARBY_GOOD_GRACE_S` 3 → 1 s. Le altre
+  proposte che non cambiano i percorsi sono seguiti (`tasks/TASK-203.md`,
+  «Proposte»). **Deploy**: cambia l'impronta del motore; meglio un solo
+  aggiornamento del server con TASK-191 A2, poi `draw_examples`.
+
+- **API e app** — TASK-200: l'attività nei preferiti e le pause nel
+  dettaglio di una corsa, i seguiti 1, 5 e 6 di TASK-190 C e TASK-199
+  (ADR-0160, migrazione `0008`; PR #227, in `main` dal 2026-10-02
+  22:05Z). Un percorso in bici tenuto col cuore si riapre in bici,
+  qualunque sport dica «Settings»: «Export GPX» lo chiede con `cycling`;
+  quelli di «Explore» e a tema sono a piedi. `GET /me/activities/{key}` ha
+  le `pauses` (`pen` solo sulle pause «penna»); l'app le legge e non mostra
+  niente di nuovo. Migrazione `0008_favorite_activity.sql`: `activity` in
+  `favorites` (`running` per i preferiti di prima, vincolo sulle attività
+  dell'API), provata su dati dello schema 0001–0007. Per una corsa l'app
+  manda la richiesta di prima, byte per byte (test); un'API più vecchia che
+  rifiuta `activity` riceve il preferito una volta come prima, e lo tiene
+  come corsa. **Migrazione e campi nuovi arrivano al telefono solo dopo**
+  l'aggiornamento del server (con la `0008`) e la pubblicazione dell'app,
+  tutti e due con l'ok dell'utente. Non provato su un telefono. **Da
+  decidere** (`tasks/TASK-200.md`, «Esito»): le indicazioni di «Start» per
+  un preferito in bici restano a piedi, perché `POST /route-directions`
+  non ha l'attività; i preferiti tenuti prima di TASK-199 restano senza
+  `walks` (si tolgono e si rimettono).
 
 - **Motore** — TASK-201: le partenze vicine senza processi nuovi a ogni
   richiesta, **misurato, non conviene** (decisione del coordinatore),
@@ -201,7 +254,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   l'ok dell'utente.
 
 - **API e app** — TASK-116: il profilo, nome utente, bio e «Edit profile»
-  (ADR-0128, migrazione `0007`), PR #224 (il merge è del coordinatore). In
+  (ADR-0128, migrazione `0007`), PR #224, in `main` dal 2026-10-02 21:21Z. In
   «Profile» sotto il nome ci sono la bio e «Edit profile», che apre una
   pagina con nome e bio: salvati, «Profile», «Settings» e il pulsante in
   alto li mostrano subito, e il portachiavi li tiene. API: `PATCH /me`
@@ -222,8 +275,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Non provato su un telefono.
 
 - **API e app** — TASK-199: la penna alzata in «My activities» e nei
-  preferiti, i seguiti di TASK-198 (ADR-0158, migrazione `0006`), PR #222
-  (il merge è del coordinatore). Una corsa su una parola con la penna
+  preferiti, i seguiti di TASK-198 (ADR-0158, migrazione `0006`), PR #222,
+  in `main` dal 2026-10-02 20:46Z. Una corsa su una parola con la penna
   alzata si salva con i `walks` del percorso e `pen: true` sulle pause
   «penna»: il punteggio in «My activities» è quello delle sole lettere,
   come a fine corsa, e riaperta ha i tratti a piedi tratteggiati (la linea
@@ -242,6 +295,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sulla scheda di un preferito (da chiedere), un preferito in bici che
   non ricorda l'attività.
 
+- **App** — TASK-202: «Lift the pen between letters» è **acceso
+  all'avvio**, scelta dell'utente del 2026-10-02 («sì, acceso di
+  default»): una parola si chiede con la penna alzata, a meno di
+  spegnerlo. **Risolta la prima domanda di TASK-198** (sotto); restano i
+  due testi della voce e la riga dei km. Una forma e un'immagine non
+  mandano mai `pen_up`. **Va sul telefono solo dopo l'aggiornamento del
+  server**: un'API senza TASK-197 rifiuta ogni parola con la penna alzata
+  (`tasks/TASK-202.md`, «Note per il deploy»).
 - **App** — TASK-198: la penna alzata nella corsa, chiesta e confermata
   dall'utente («pausa automatica con avviso a voce»), PR #218, in `main`
   dal 2026-10-02 20:02Z. In «Draw», con

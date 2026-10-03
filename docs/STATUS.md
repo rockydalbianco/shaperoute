@@ -201,7 +201,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   --activity paddling`, la validazione sull'acqua (errori, non warning),
   parole e immagini rifiutate sull'acqua, `paddling.plan_paddling` per la
   parte B; i centri scelti da dove si arriva alla riva. **B** (l'API,
-  ADR-0164, 2026-10-03, PR in revisione): `paddling` nel contratto
+  ADR-0164, 2026-10-03, PR #241): `paddling` nel contratto
   (`shared-types` 1–5 km), l'API disegna sull'acqua della sua cache
   (`data/cache/water/`, scaricata da Overpass a ogni area nuova), senza
   indicazioni né alternative; lontano dall'acqua o forma troppo grande

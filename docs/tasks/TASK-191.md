@@ -465,7 +465,7 @@ A · B · C non ci sono (un piano solo).
 
 ### Parte B — 2026-10-03
 
-Branch `feat/TASK-191-paddle-api`. **Fatto** (ADR-0164; `API.md`,
+Branch `feat/TASK-191-paddle-api`, PR #241. **Fatto** (ADR-0164; `API.md`,
 «Sull'acqua»; `DATABASE.md`, migrazione `0010`):
 
 - **Il contratto**, solo aggiunte: `paddling` in `SUPPORTED_ACTIVITIES`, in

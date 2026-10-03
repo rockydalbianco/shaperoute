@@ -253,7 +253,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-210 — La lingua dell'app** (ADR-0172; scelte dell'utente: inglese,
   tedesco, italiano, spagnolo, francese; senza scelta la lingua del
-  telefono). **Parte A** (PR da `feat/TASK-210-app-language`): `src/i18n/`
+  telefono). **Parte A** in `main` (PR #254, merge `18fe25c`) e pubblicata su
+  «preview» il 2026-10-03 (gruppo `90bd8c06`, con TASK-212): `src/i18n/`
   (l'inglese come chiave, `t()`, i plurali, la virgola dei decimali, la
   scelta in `language.json`, la lingua del telefono senza dipendenze), la
   riga «Language» in «Settings» sotto «Preferences», le quattro tabelle e

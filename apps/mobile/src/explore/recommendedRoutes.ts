@@ -1,4 +1,4 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { Activity, LatLon } from "@shaperoute/shared-types";
 
 import { apiKey, keyHeaders } from "../api/apiUrl";
 
@@ -42,6 +42,11 @@ export type RecommendedRouteDetail = {
   similarity: number;
   points: LatLon[];
   license: string;
+  /**
+   * What it was drawn for, when not a run: an example drawn on the phone on
+   * the water (TASK-191). The API's routes are runs and do not say.
+   */
+  activity?: Activity;
 };
 
 /** "Near you" (TASK-092, variant C): a start a short run away. */

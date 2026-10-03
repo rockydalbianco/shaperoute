@@ -133,6 +133,82 @@ test("by bike the distance offered is within 10–30 km (TASK-190)", () => {
   }
 });
 
+describe("on the water (TASK-191)", () => {
+  // The API's messages, from the engine (route_engine/water_fit.py).
+  const NO_WATER = "there is no lake or sea to paddle on within 2 km of here";
+  const TOO_BIG =
+    "the heart does not fit at 5 km on the water within 1 km of the shore here: it fits at 3.1 km";
+  const TOO_SMALL =
+    "the heart does not fit on the water within 1 km of the shore here, even at 0.6 km";
+
+  test("no water near the start says so, with no distance nor shapes", () => {
+    expect(
+      problemText(
+        { kind: "api_error", code: "shape_not_drawable", message: NO_WATER },
+        "shape",
+        "paddling",
+      ),
+    ).toEqual({
+      text: "There is no lake or sea near this start. Start from the shore, within 2 km of the water.",
+      detail: NO_WATER,
+    });
+  });
+
+  test("a shape too big offers the half km it fits at, said for the water", () => {
+    expect(
+      problemText(
+        {
+          kind: "api_error",
+          code: "shape_not_drawable",
+          message: TOO_BIG,
+          suggested_distance_m: 2500,
+        },
+        "shape",
+        "paddling",
+      ),
+    ).toEqual({
+      text: "This shape does not fit on the water here at this distance. It fits at about 2.5 km.",
+      detail: TOO_BIG,
+      tryDistanceM: 2500,
+    });
+  });
+
+  test("a shape that fits nowhere within 1–5 km offers the shapes", () => {
+    for (const fits of [null, 500, 6000]) {
+      expect(
+        problemText(
+          {
+            kind: "api_error",
+            code: "shape_not_drawable",
+            message: TOO_SMALL,
+            suggested_distance_m: fits,
+          },
+          "shape",
+          "paddling",
+        ),
+      ).toEqual({
+        text: "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:",
+        detail: TOO_SMALL,
+        pickShape: true,
+      });
+    }
+  });
+
+  test("the roads' words stay for a run and a bike route", () => {
+    for (const activity of ["running", "cycling"] as const) {
+      expect(
+        problemText(
+          { kind: "api_error", code: "shape_not_drawable", message: NO_WATER },
+          "shape",
+          activity,
+        ).text,
+      ).toBe(
+        "This shape does not fit the roads here. Try another shape, or another start:",
+      );
+    }
+  });
+});
+
 test("a word that fits at another distance offers it, as a word", () => {
   expect(
     problemText(

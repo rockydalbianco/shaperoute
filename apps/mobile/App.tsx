@@ -67,7 +67,7 @@ import { trackOf, useFreeRun } from "./src/navigation/useFreeRun";
 import { trackOfNavigation, useNavigation } from "./src/navigation/useNavigation";
 import type { Place } from "./src/places/photon";
 import { choicesOf, type Picked, pickedIndex } from "./src/route/choices";
-import { fitDistance, toDistanceM } from "./src/route/distance";
+import { distanceForSport, toDistanceM } from "./src/route/distance";
 import { ImageEditsContext } from "./src/route/imageEdits";
 import type { ChoiceKind } from "./src/route/problems";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
@@ -95,7 +95,10 @@ import { MapScreen } from "./src/screens/MapScreen";
 import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
 import { Pager } from "./src/screens/Pager";
 import { ProfileButton, ProfileLayer } from "./src/screens/ProfileLayer";
-import { activityOf } from "./src/settings/sport";
+import { PaddleExplore } from "./src/paddle/PaddleExplore";
+import { PaddleNotice } from "./src/paddle/PaddleNotice";
+import { usePaddleNotice } from "./src/paddle/safetyNotice";
+import { activityOf, withoutRouteLabel } from "./src/settings/sport";
 import { SportButton } from "./src/settings/SportButton";
 import { useSport } from "./src/settings/useSport";
 import { DrawingCard } from "./src/social/DrawingCard";
@@ -264,16 +267,18 @@ function Sgrava() {
   const shape = tableShape ?? (reading?.status === "read" ? reading.shape : null);
   // The sport of «Settings» (TASK-190): «Bike» asks for routes a bike may
   // ride, at its own distances; «Explore», «Feed» and the run stay a run's.
+  // «Paddle» asks for a shape on the water, and has its own «Explore»
+  // (TASK-191).
   const sport = useSport();
   const sportActivity = activityOf(sport);
   const [distanceText, setDistanceText] = useState(() =>
-    fitDistance("5", sportActivity),
+    distanceForSport("5", sportActivity),
   );
   // A sport just chosen brings the distance within its limits.
   const [distanceActivity, setDistanceActivity] = useState(sportActivity);
   if (distanceActivity !== sportActivity) {
     setDistanceActivity(sportActivity);
-    setDistanceText(fitDistance(distanceText, sportActivity));
+    setDistanceText(distanceForSport(distanceText, sportActivity));
   }
   const distanceM = toDistanceM(distanceText, sportActivity);
   const [wordText, setWordText] = useState("");
@@ -320,16 +325,19 @@ function Sgrava() {
   // One of them (ADR-0051): the kinds not chosen are not sent. An image
   // sends the outline the engine traced and the user has seen (ADR-0069),
   // with the details drawn on it (TASK-079).
+  // On the water only a shape of the catalogue is drawn (TASK-191): a word or
+  // a picture chosen before «Paddle» waits for another sport.
+  const drawKind: ChoiceKind = sportActivity === "paddling" ? "shape" : kind;
   const drawn:
     | { shape: Shape }
     | { word: string; style: LetterStyle; pen_up?: true }
     | { outline: OutlinePoint[]; strokes?: OutlinePoint[][] }
     | null =
-    kind === "shape"
+    drawKind === "shape"
       ? shape !== null
         ? { shape }
         : null
-      : kind === "word"
+      : drawKind === "word"
         ? wordCheck.ok
           ? {
               word: wordCheck.word,
@@ -384,6 +392,8 @@ function Sgrava() {
   // Start on a route of "Explore": its directions are asked for first,
   // then it is the route followed, in place of the drawn one (TASK-145).
   const startDirections = useStartDirections(API_URL);
+  // Start on the water: the safety notice first, the first time (TASK-191).
+  const paddleNotice = usePaddleNotice();
   const [exploreRun, setExploreRun] = useState<ExploreRun | null>(null);
   const followed = exploreRun ?? chosen;
   // The walks of a drawn word with the pen up (TASK-198), or of a favorite
@@ -569,7 +579,8 @@ function Sgrava() {
   /** Start on a route of "Explore": its directions first (TASK-145). A
    * favorite of a word with the pen up brings its walks (TASK-199), a bike
    * route its stretches with the bike on foot (TASK-206), and is followed
-   * by bike (TASK-216). */
+   * by bike (TASK-216). On the water there are none to ask for (TASK-191):
+   * the notice, then the run. */
   function onStartExplore(
     route: {
       points: LatLon[];
@@ -580,6 +591,19 @@ function Sgrava() {
     },
     activity?: Activity,
   ) {
+    if (activity === "paddling") {
+      paddleNotice.ask(() => {
+        startDirections.reset();
+        setExploreRun({
+          points: route.points,
+          directions: NO_DIRECTIONS,
+          similarity: route.similarity,
+          activity,
+        });
+        setScreen("navigate");
+      });
+      return;
+    }
     startDirections.start(route.points, (directions) => {
       setExploreRun({
         points: route.points,
@@ -882,7 +906,13 @@ function Sgrava() {
               }
             }}
             onPickShape={onPickShape}
-            onStart={() => setScreen("navigate")}
+            onStart={() => {
+              if (view.status === "done" && view.request.activity === "paddling") {
+                paddleNotice.ask(() => setScreen("navigate"));
+              } else {
+                setScreen("navigate");
+              }
+            }}
             choices={choices}
             chosen={chosenIndex}
             onChoose={(index) => answer && setPicked({ of: answer, index })}
@@ -950,11 +980,11 @@ function Sgrava() {
                     Keyboard.dismiss();
                     setScreen("run");
                   }}
-                  runLabel={sport === "bike" ? "Ride without a route" : undefined}
+                  runLabel={withoutRouteLabel(sport)}
                 >
                   <ImageEditsContext.Provider value={imageEdits}>
                     <RouteChoice
-                      kind={kind}
+                      kind={drawKind}
                       onKind={setKind}
                       shapeText={shapeText}
                       shape={shape}
@@ -987,39 +1017,58 @@ function Sgrava() {
               title: "Explore",
               // It asks the API for its routes as it opens: not before.
               lazy: true,
-              render: () => (
-                <ExploreScreen
-                  apiUrl={API_URL}
-                  near={start?.point ?? null}
-                  onOpen={(route) => {
-                    closeExplore();
-                    openExplored(route);
-                    setRouteList("explore");
-                    setScreen("map");
-                  }}
-                  city={exploreCity}
-                  onCity={(city) => {
-                    setExploreCity(city);
-                    if (city !== null) {
-                      const recent = remember(recentCities, city);
-                      setRecentCities(recent);
-                      saveRecentCities(recent);
-                    }
-                  }}
-                  recent={recentCities}
-                  onAsk={(request) => {
-                    Keyboard.dismiss();
-                    closeExplore();
-                    themed.ask(request);
-                    setRouteList("explore");
-                    setScreen("map");
-                  }}
-                />
-              ),
+              render: () =>
+                // On the water, the lakes and the beaches (TASK-191).
+                sport === "paddle" ? (
+                  <PaddleExplore
+                    apiUrl={API_URL}
+                    near={start?.point ?? null}
+                    onOpen={(route) => {
+                      closeExplore();
+                      openExplored(route);
+                      setRouteList("explore");
+                      setScreen("map");
+                    }}
+                  />
+                ) : (
+                  <ExploreScreen
+                    apiUrl={API_URL}
+                    near={start?.point ?? null}
+                    onOpen={(route) => {
+                      closeExplore();
+                      openExplored(route);
+                      setRouteList("explore");
+                      setScreen("map");
+                    }}
+                    city={exploreCity}
+                    onCity={(city) => {
+                      setExploreCity(city);
+                      if (city !== null) {
+                        const recent = remember(recentCities, city);
+                        setRecentCities(recent);
+                        saveRecentCities(recent);
+                      }
+                    }}
+                    recent={recentCities}
+                    onAsk={(request) => {
+                      Keyboard.dismiss();
+                      closeExplore();
+                      themed.ask(request);
+                      setRouteList("explore");
+                      setScreen("map");
+                    }}
+                  />
+                ),
             },
           ]}
         />
       )}
+      {/* Before the first «Start» on the water (TASK-191). */}
+      <PaddleNotice
+        visible={paddleNotice.asking}
+        onAccept={paddleNotice.accept}
+        onDismiss={paddleNotice.dismiss}
+      />
     </View>
   );
 }

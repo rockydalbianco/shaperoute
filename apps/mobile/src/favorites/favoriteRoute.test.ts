@@ -123,6 +123,20 @@ test("a route of «Explore» is kept as its card has it", () => {
   });
 });
 
+test("an example of «Explore» on the water keeps its activity (TASK-191)", () => {
+  const route = list.routes[0] as RecommendedRoute;
+  const kept = exploredKeepable(route, {
+    ...(detail as RecommendedRouteDetail),
+    distance_m: 2000,
+    activity: "paddling",
+  });
+  expect(kept.request).toMatchObject({
+    shape: "star",
+    distance_m: 2000,
+    activity: "paddling",
+  });
+});
+
 test("a themed route is kept under its theme; what the API would refuse is cut", () => {
   const themed: ThemedResult = {
     points: detail.points as LatLon[],

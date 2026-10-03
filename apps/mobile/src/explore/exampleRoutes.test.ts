@@ -13,6 +13,7 @@ import {
   EXAMPLE_SHAPES,
   EXAMPLES_PER_MINUTE,
   exampleDetail,
+  examplesKey,
   type Example,
   firstExamples,
   forgetExamples,
@@ -20,6 +21,7 @@ import {
   MAX_KEPT_CITIES,
   MORE_SHAPES,
   moreWaitMs,
+  PADDLE_EXAMPLES,
   readKept,
   shownExamples,
   type Storage,
@@ -552,4 +554,87 @@ test("another city chosen while a shape waits for its allowance: it stops waitin
   } finally {
     jest.useRealTimers();
   }
+});
+
+describe("on the water (TASK-191)", () => {
+  const garda: Place = { label: "Lago di Garda", point: [45.88114, 10.84559] };
+  const set = PADDLE_EXAMPLES;
+
+  test("three shapes of 2 km from the shore, in paddling, and no others", async () => {
+    const { request, asked } = api();
+    const storage = memory();
+    const { result: hook } = await renderHook(() =>
+      useCityExamples("http://api", garda, { request, storage, set }),
+    );
+    const read = () => hook.current.examples;
+    expect(request.mock.calls[0][1]).toEqual({
+      shape: "circle",
+      distance_m: 2000,
+      start: garda.point,
+      activity: "paddling",
+    });
+    await act(async () => asked[0].answer({ kind: "route", result }));
+    await act(async () => asked[1].answer({ kind: "route", result }));
+    await act(async () => asked[2].answer({ kind: "route", result }));
+    expect(asked.map((a) => a.shape)).toEqual(["circle", "heart", "star"]);
+    expect(read()?.map((e) => `${e.shape}:${e.status}`)).toEqual([
+      "heart:ready",
+      "circle:ready",
+      "star:ready",
+    ]);
+
+    // Opened whole, it says it is on the water, and so does the file.
+    const heart = read()?.[0];
+    const detail =
+      heart?.status === "ready" ? exampleDetail(heart.route.id) : undefined;
+    expect(detail).toMatchObject({
+      shape: "heart",
+      city: "Lago di Garda",
+      distance_m: 2000,
+      activity: "paddling",
+    });
+    const key = examplesKey(garda.point, set);
+    expect(key).toBe("paddling:45.8811,10.8456");
+    expect(storage.kept[key].map((d) => d.activity)).toEqual([
+      "paddling",
+      "paddling",
+      "paddling",
+    ]);
+    // A run's examples of the same point are another set.
+    expect(storage.kept[cityKey(garda.point)]).toBeUndefined();
+  });
+
+  test("a run's examples of the same point stay apart, and say no activity", async () => {
+    const run = api();
+    const storage = memory();
+    drawExamples("http://api", garda, { request: run.request, storage });
+    await act(async () => run.asked[0].answer({ kind: "route", result }));
+    const water = api();
+    drawExamples("http://api", garda, { request: water.request, storage, set });
+    expect(water.request.mock.calls[0][1]).toMatchObject({ activity: "paddling" });
+    const kept = storage.kept[cityKey(garda.point)];
+    expect(kept.map((d) => d.shape)).toEqual(["circle"]);
+    expect(kept[0]).not.toHaveProperty("activity");
+    expect(asRecommended(garda, "heart", result).detail).not.toHaveProperty("activity");
+  });
+
+  test("a shape that does not fit the water says it in the water's words", async () => {
+    const { request, asked } = api();
+    const { result: hook } = await renderHook(() =>
+      useCityExamples("http://api", garda, { request, storage: memory(), set }),
+    );
+    await act(async () =>
+      asked[0].answer({
+        kind: "api_error",
+        code: "shape_not_drawable",
+        message: "there is no lake or sea to paddle on within 2 km of here",
+      }),
+    );
+    expect(hook.current.examples?.[1]).toEqual({
+      shape: "circle",
+      status: "failed",
+      message:
+        "There is no lake or sea near this start. Start from the shore, within 2 km of the water.",
+    });
+  });
 });

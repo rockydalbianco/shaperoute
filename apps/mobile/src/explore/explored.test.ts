@@ -33,6 +33,15 @@ test("a word keeps its style", () => {
   expect(toResult(word).shape).toBeNull();
 });
 
+test("an example on the water asks for paddling (TASK-191)", () => {
+  expect(toRequest({ ...star, distance_m: 2000, activity: "paddling" })).toEqual({
+    start: star.points[0],
+    shape: "star",
+    distance_m: 2000,
+    activity: "paddling",
+  });
+});
+
 test("a shape the app does not know has no request", () => {
   expect(toRequest({ ...star, shape: "unicorn" })).toBeNull();
 });

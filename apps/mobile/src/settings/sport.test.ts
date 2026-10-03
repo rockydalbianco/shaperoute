@@ -8,6 +8,7 @@ import {
   SPORTS,
   type SportOption,
   subscribeSport,
+  withoutRouteLabel,
 } from "./sport";
 
 // The phone's documents folder, in memory: what is written stays there for
@@ -55,23 +56,29 @@ beforeEach(() => {
   disk.state.failing = false;
 });
 
-test("run, bike and paddle; run and bike can be chosen (TASK-190)", () => {
+test("run, bike and paddle, all three can be chosen (TASK-190, TASK-191)", () => {
   expect(SPORTS.map((option) => option.name)).toEqual(["Run", "Bike", "Paddle"]);
   expect(SPORTS.filter((option) => option.ready).map((option) => option.id)).toEqual([
     "run",
     "bike",
+    "paddle",
   ]);
   expect(canChoose("run")).toBe(true);
   expect(canChoose("bike")).toBe(true);
-  expect(canChoose("paddle")).toBe(false);
+  expect(canChoose("paddle")).toBe(true);
   expect(canChoose("golf")).toBe(false);
 });
 
-test("«Draw» asks for a bike route with «Bike», a run otherwise", () => {
+test("«Draw» asks for a bike route with «Bike», the water with «Paddle»", () => {
   expect(activityOf("run")).toBe("running");
   expect(activityOf("bike")).toBe("cycling");
-  // Not ready, so never the one chosen: it would not ask in its own name.
-  expect(activityOf("paddle")).toBe("running");
+  expect(activityOf("paddle")).toBe("paddling");
+});
+
+test("the way out with the track only says the sport", () => {
+  expect(withoutRouteLabel("run")).toBe("Run without a route");
+  expect(withoutRouteLabel("bike")).toBe("Ride without a route");
+  expect(withoutRouteLabel("paddle")).toBe("Paddle without a route");
 });
 
 test("with nothing chosen, the sport is run", () => {
@@ -86,8 +93,11 @@ test("a sport that is ready is kept for the next opening", () => {
 });
 
 test("a saved sport that is not ready reads as run", () => {
+  // «Paddle» kept since TASK-191, read by an app that has it and by one
+  // without it.
   saveSport("paddle");
-  expect(loadSport()).toBe("run");
+  expect(loadSport()).toBe("paddle");
+  expect(loadSport(RUN_ONLY)).toBe("run");
   // As a phone that kept «Bike» reads in an app without it.
   saveSport("bike");
   expect(loadSport(RUN_ONLY)).toBe("run");

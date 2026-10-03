@@ -94,7 +94,7 @@ function keepable(fields: Omit<FavoriteRequest, "similarity">, similarity: numbe
 /**
  * A route drawn in «Draw»; `place` is the place searched for, if any. It
  * keeps the activity it was asked for (TASK-200). The routes of «Explore»
- * and the themed ones are runs: they say nothing.
+ * and the themed ones are runs, but an example on the water (TASK-191).
  */
 export function drawnKeepable(
   request: AnyRouteRequest,
@@ -123,7 +123,8 @@ export function drawnKeepable(
   );
 }
 
-/** A route of «Explore», as its card on the map has it. */
+/** A route of «Explore», as its card on the map has it: a run, or an
+ * example on the water, which keeps its activity (TASK-191). */
 export function exploredKeepable(
   route: RecommendedRoute,
   detail: RecommendedRouteDetail,
@@ -138,6 +139,7 @@ export function exploredKeepable(
       distance_m: detail.distance_m,
       route_m: Math.round(detail.route_m),
       points: detail.points,
+      ...drawnFor(detail.activity ?? "running"),
     },
     detail.similarity,
   );

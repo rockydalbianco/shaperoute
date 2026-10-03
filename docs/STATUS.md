@@ -312,6 +312,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-209: la voce della corsa in cinque lingue (ADR-0171;
+  chiesto dall'utente il 2026-10-03; PR #259). In «Data», sotto «Voice»,
+  la lingua della voce («App language» o English, Deutsch, Italiano,
+  Español, Français) e una voce del telefono per lingua, con «Listen»;
+  ricordate in `voice.json`. Tutte le frasi dette in `src/voice/`, una
+  tabella per lingua; senza scelta la voce segue la lingua dell'app, in
+  inglese le frasi di prima parola per parola; il banner resta della lingua
+  dell'app. Dopo i primi 5 km «Daje, avanti tutta!» (scelta dell'utente).
+  Frasi italiane **confermate dall'utente**; spagnolo, francese e tedesco
+  da confermare. Provato nel simulatore (Expo Go): una corsa che parla
+  italiano. Da provare sull'iPhone con la prossima pubblicazione, con l'ok
+  dell'utente. Task file: `tasks/TASK-209.md`.
 - **App** — TASK-215: «Find friends» in cima a «Feed» (ADR-0178; chiesto
   dall'utente il 2026-10-03). Il tasto con la lente apre sopra l'app la
   ricerca degli iscritti per nome (da 2 lettere, al più 20, foto e nome,

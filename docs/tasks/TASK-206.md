@@ -2,7 +2,8 @@
 
 **Stato**: In corso (parte A, il motore, in `main` dalla PR #249, con i
 campioni di Trento giudicati dall'utente; parte B, l'API e il contratto,
-in `main` dalla PR #263; C da fare)
+in `main` dalla PR #263; parte C, l'app, in corso sul branch
+`feat/TASK-206-bike-on-foot-app`)
 **Fase**: 4 · **Branch**: `feat/TASK-206-bike-shapes` (parte A)
 **Dipende da**: TASK-190 (la bici: motore, API e app in `main`)
 
@@ -159,10 +160,11 @@ quando il coordinatore scrive «#259 dentro».
 preferiti va pubblicata dopo l'aggiornamento del server: «Note per il
 deploy»).
 
-**File di altri** che servono (da chiedere al coordinatore prima del
-codice): `App.tsx` e `favoriteRoute.ts` (li tocca anche la #255);
-`useNavigation.ts` e `src/voice/` (della #259, liberi al suo merge);
-`src/route/warnings.ts` (nella cartella della #255, non nel suo diff).
+**File di altri** (risposta del coordinatore, 2026-10-03): `App.tsx` e
+`favoriteRoute.ts` si toccano subito, solo aggiunte piccole (la #255 è in
+pausa e si aggiornerà lei); `src/route/warnings.ts` è libero (non è nel
+diff della #255); `useNavigation.ts` e `src/voice/` dopo il merge della
+#259 («#259 dentro»).
 
 ### Le domande della parte C
 
@@ -194,9 +196,10 @@ Una per volta, ognuna con una proposta; le risposte qui sotto.
    confronto (spezza la forma) e il giallo tratteggiato.
 4. **«Start» in bici**: **un task a parte**, «la navigazione in bici»
    (velocità in km/h sulla schermata e nella voce dei km, avvisi di svolta
-   più in anticipo); numero dal coordinatore. La parte C aggiunge solo la
+   più in anticipo): **TASK-216** (numero del coordinatore,
+   `tasks/TASK-216.md`). La parte C aggiunge solo la
    voce dei tratti a mano alla navigazione di oggi.
-5. **La penna alzata in bici**: **nello stesso task nuovo**, con la scheda
+5. **La penna alzata in bici**: **in TASK-216**, con la scheda
    «… km riding between them» · «… km in bici fra una lettera e l'altra»
    e la voce «Letter done. Ride to the U: the drawing is paused.» ·
    «Lettera finita. Pedala fino alla U: il disegno è in pausa.» La parte C
@@ -273,8 +276,8 @@ docs/STATUS.md
 docs/tasks/TASK-206.md
 ```
 
-**Parte C** (previsti, dal piano; quelli di altri vanno chiesti al
-coordinatore prima del codice):
+**Parte C** (previsti, dal piano; quelli di altri con l'ok del
+coordinatore, qui sopra nel piano):
 
 ```
 apps/mobile/src/route/onFoot.ts                          (nuovo)
@@ -304,6 +307,7 @@ docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-206.md
+docs/tasks/TASK-216.md                                   (nuovo)
 ```
 
 La migrazione dei preferiti non era prevista: chiesta al coordinatore, che

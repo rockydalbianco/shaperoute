@@ -1,6 +1,6 @@
 # TASK-222 — Il cuore su giallo in «Explore»
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-222-explore-heart`
 **Dipende da**: TASK-221 (il componente `HeartBadge`) · **ADR**: ADR-0184
 
@@ -45,8 +45,11 @@ metti il cuore sullo sfondo giallo di sgrava il logo».
 ```
 apps/mobile/src/explore/ExploreScreen.tsx
 apps/mobile/src/explore/ExploreHeart.test.tsx
-docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-222.md
+docs/STATUS.md, docs/tasks/TASK-222.md
 ```
+
+`DECISIONS.md` non serve: ADR-0184 di TASK-221 nomina già «Explore», sotto
+il cerchio del profilo, 44 punti.
 
 ## Fuori scope
 
@@ -58,4 +61,7 @@ docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-222.md
 
 ## Esito
 
-*(a fine task)*
+Fatto il 2026-10-03: in «Explore», a destra di «Best near you» e sotto il
+cerchio del profilo, c'è il cuore su giallo di TASK-221, largo come il
+cerchio; solo un'immagine. Visto nel simulatore (iPhone 17). Sul telefono
+con la prossima pubblicazione, che chiede l'ok dell'utente.

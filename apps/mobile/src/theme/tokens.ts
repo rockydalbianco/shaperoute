@@ -12,7 +12,8 @@ export const color = {
   /**
    * The brand yellow. In the app it means one thing only: the route, and the
    * control that produces it. Anything else that needs attention uses
-   * `warning` — a second meaning would make the colour say nothing.
+   * `warning` — a second meaning would make the colour say nothing. One
+   * exception, the user's choice: «Run without a route» (ADR-0183).
    */
   accent: "#FFD02B",
   /**
@@ -163,6 +164,23 @@ export const route = {
   color: color.accent,
   width: 5,
   opacity: 0.95,
+} as const;
+
+/** The route still to run while running it (TASK-224): the route's yellow
+ * and width, dashed, blinking in steps between bright and dim. Never off,
+ * so the way ahead reads in the dim beat too; the part run stays `route`.
+ * Yellow and blinking, unlike the grey walks between letters (`walk`) and
+ * the dark on-foot dashes (`onFoot`), which keep still. */
+export const routeAhead = {
+  color: route.color,
+  width: route.width,
+  opacity: route.opacity,
+  /** The opacity of the dim beat. */
+  dimOpacity: 0.3,
+  /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
+  dash: [2, 1.5],
+  /** How long each beat lasts, bright or dim, in milliseconds. */
+  beatMs: 700,
 } as const;
 
 /** The walks of a word with the pen up (TASK-198): the way from one letter

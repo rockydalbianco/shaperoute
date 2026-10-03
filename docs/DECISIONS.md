@@ -8917,3 +8917,44 @@ nome, come in ogni marchio).
 **Conseguenze**: TASK-222 («Explore») importa `HeartBadge` dopo il merge
 di TASK-221; un posto nuovo si aggiunge al punto 4. Si vede sul telefono
 con la prossima pubblicazione dell'app, con l'ok dell'utente.
+
+## ADR-TODO — Correndo un percorso: il fatto giallo pieno, il da fare tratteggiato che lampeggia
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** il giallo pieno
+del fatto, il tratteggio lampeggiante del da fare e lo stile proposto
+(anteprima approvata); il resto deciso dall'agente su delega dell'utente
+(TASK-224).
+
+**Contesto**: correndo, la mappa disegnava tutto il percorso giallo pieno,
+uguale prima e dopo il passaggio. L'utente, il 2026-10-03: «voglio che il
+segno del percorso fatto sia giallo mentre quello da fare sia tratteggiato
+che lampeggia come se dovessi ancora farlo». Il coordinatore ha chiesto che
+il nuovo tratteggio si distingua dagli altri due della mappa, che il
+lampeggio costi poca batteria e si fermi con «Pocket», e che penna alzata e
+bici a mano restino giuste.
+
+**Decisione dell'utente**: fra tre proposte, «Sì, così»: il da fare giallo
+tratteggiato, a scatti, 0,7 s acceso e 0,7 s attenuato, mai spento; fermo
+in «Pocket». Scartati il lampeggio morbido (più batteria) e il da fare in
+grigio (il giallo non indicherebbe più tutta la strada).
+
+**Decisione dell'agente**:
+1. **Il taglio si fa nell'app, non nella pagina della mappa**
+   (`src/map/routeSplit.ts`, puro e provato con jest): dal percorso e dai
+   metri del navigatore (`alongM`) escono le linee fatte e quelle da fare,
+   mandate alla pagina con `showProgress`. Il percorso di `showRoute`
+   resta nella pagina e torna intero con `clearProgress`.
+2. **A passi di 5 m**: la mappa non riceve il percorso a ogni metro; un
+   passo ogni due secondi circa di corsa. Dopo «You have arrived» il fatto
+   è tutto il percorso, anche se l'arrivo scatta 25 m prima della fine.
+3. **Uno strato nuovo, `route-ahead`**, sotto la linea piena: giallo,
+   largo come il percorso, trattini 2 × 1,5 larghezze. Le battute cambiano
+   l'opacità con `line-opacity-transition` a zero: due ridisegni ogni 1,4 s,
+   invece di una dissolvenza che ridisegna a ogni fotogramma.
+4. **«Pocket» arriva alla mappa da un segnale piccolo**
+   (`src/navigation/pocketOn.ts`), scritto da `usePocketMode`: la scheda
+   della corsa e la mappa sono in due rami diversi di `App.tsx`, e passare
+   lo stato fra loro avrebbe toccato più file. Con «Riduci movimento» del
+   telefono la pagina non lampeggia (`prefers-reduced-motion`).
+5. **Penna alzata e bici a mano**: si tagliano solo le linee disegnate (le
+   lettere); i tratti a piedi fra le lettere restano grigi e fermi, i
+   trattini scuri della bici a mano restano sopra il fatto e il da fare.

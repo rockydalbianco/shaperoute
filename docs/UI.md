@@ -1399,6 +1399,22 @@ nord in alto. La direzione viene dalla traccia, dagli ultimi 10 m: serve
 qualche passo perché compaia (prima c'è il segnaposto di sempre), e da
 fermi resta quella di prima. A fine corsa torna il segnaposto.
 
+**Il fatto e il da fare** (TASK-224, ADR-TODO; chiesto dall'utente il
+2026-10-03, stile approvato su un'anteprima). Mentre si corre un percorso,
+la parte già corsa resta la linea gialla piena di sempre; la parte ancora
+da fare è **gialla, tratteggiata e lampeggia**: 0,7 s accesa, 0,7 s
+attenuata (opacità 0,3, mai spenta, così la strada si legge sempre), a
+scatti e senza dissolvenza, così la mappa si ridisegna due volte ogni
+1,4 s e non a ogni fotogramma (`routeAhead` nei token). Il taglio è dove il
+navigatore mette chi corre (`alongM`), a passi di 5 m; dopo «You have
+arrived» tutto il percorso è pieno, e a fine corsa torna intero.
+- **Fermo**, sempre acceso: con «Pocket» (lo schermo nero, dove nessuno
+  lo vede) e con «Riduci movimento» del telefono.
+- **Con la penna alzata** si tagliano solo le lettere: i tratti a piedi fra
+  una lettera e l'altra restano grigi, tratteggiati e fermi.
+- **Con la bici a mano** i trattini scuri restano sopra, sia sul fatto sia
+  sul da fare.
+
 Ogni svolta si dice a voce 50 m prima («In 50 metres, turn left onto Via
 Roma, then turn right onto the footpath»; in bici 100 m, «In bici» qui
 sopra), con una vibrazione, nella lingua

@@ -5,6 +5,7 @@ import { useAccount } from "../account/useAccount";
 import { ActivitiesContext, useActivitiesOf } from "../activities/activitiesDoor";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import { ProfilePhotoContext, useProfilePhotoOf } from "../profile/useProfilePhoto";
+import { CommentsContext, useCommentsOf } from "../social/commentsDoor";
 import { DrawingsContext, useDrawingsOf } from "../social/drawingsDoor";
 import { StravaContext, useStravaOf } from "../strava/useStrava";
 import {
@@ -106,6 +107,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     [],
   );
   const drawings = useDrawingsOf(apiUrl, account, drawingDoors);
+  // What the members write under a drawing (TASK-120).
+  const comments = useCommentsOf(apiUrl, account);
   const photoUri = photo.uri;
   const attention = state.status === "signedOut" && state.notice === "ended";
   const initial =
@@ -131,29 +134,31 @@ export function ProfileLayer({ apiUrl, children }: Props) {
           <ProfilePhotoContext.Provider value={photo}>
             <StravaContext.Provider value={strava}>
               <DrawingsContext.Provider value={drawings}>
-                <View style={styles.layer}>
-                  <View
-                    style={styles.app}
-                    // Under «Profile» the app is out of the screen reader's sight too.
-                    accessibilityElementsHidden={shown}
-                    importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
-                  >
-                    {children}
+                <CommentsContext.Provider value={comments}>
+                  <View style={styles.layer}>
+                    <View
+                      style={styles.app}
+                      // Under «Profile» the app is out of the screen reader's sight too.
+                      accessibilityElementsHidden={shown}
+                      importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
+                    >
+                      {children}
+                    </View>
+                    {page !== null && (
+                      <ProfileScreen
+                        account={account}
+                        page={page}
+                        onPage={setPage}
+                        hint={hint}
+                        onBack={() => {
+                          // Closed without an account: the heart's route waits no more.
+                          forgetWaiting();
+                          setPage(null);
+                        }}
+                      />
+                    )}
                   </View>
-                  {page !== null && (
-                    <ProfileScreen
-                      account={account}
-                      page={page}
-                      onPage={setPage}
-                      hint={hint}
-                      onBack={() => {
-                        // Closed without an account: the heart's route waits no more.
-                        forgetWaiting();
-                        setPage(null);
-                      }}
-                    />
-                  )}
-                </View>
+                </CommentsContext.Provider>
               </DrawingsContext.Provider>
             </StravaContext.Provider>
           </ProfilePhotoContext.Provider>

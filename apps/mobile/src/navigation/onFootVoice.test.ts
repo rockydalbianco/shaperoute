@@ -8,6 +8,7 @@ import {
   type OnFoot,
   startOnFoot,
 } from "./onFootVoice";
+import { RIDE_ANNOUNCE_M } from "./ride";
 
 /** Words that show what was asked of them. */
 const WORDS: BikeWords = {
@@ -31,12 +32,14 @@ function ride(onFoot: OnFoot, metres: number[]): string[] {
   return said;
 }
 
-test("said 50 m before the stretch, with its length, and at its end", () => {
+test("said 100 m before the stretch, with its length, and at its end", () => {
   const onFoot = startOnFoot(ALONG, [[3, 5]]);
   expect(onFoot.spans).toEqual([{ fromM: 300, toM: 500 }]);
-  expect(ON_FOOT_AHEAD_M).toBe(50);
-  expect(ride(onFoot, [100, 240, 250, 260, 300, 400, 499, 500, 600])).toEqual([
-    "walk 200 in 50",
+  // As far as a turn on a bike (TASK-216).
+  expect(ON_FOOT_AHEAD_M).toBe(RIDE_ANNOUNCE_M);
+  expect(ON_FOOT_AHEAD_M).toBe(100);
+  expect(ride(onFoot, [100, 190, 200, 210, 300, 400, 499, 500, 600])).toEqual([
+    "walk 200 in 100",
     "back",
   ]);
 });
@@ -104,8 +107,8 @@ test("close stretches are said as one; short ones are not said", () => {
 
 test("a stretch that ends where the route ends has no «back on the bike»", () => {
   // The arrival is said by the navigator.
-  expect(ride(startOnFoot(ALONG, [[8, 10]]), [700, 760, 900, 1000])).toEqual([
-    "walk 200 in 40",
+  expect(ride(startOnFoot(ALONG, [[8, 10]]), [600, 720, 900, 1000])).toEqual([
+    "walk 200 in 80",
   ]);
   expect(startOnFoot(ALONG, []).spans).toEqual([]);
   expect(ride(startOnFoot(ALONG, []), [0, 500, 1000])).toEqual([]);

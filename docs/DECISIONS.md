@@ -8630,3 +8630,67 @@ amici così», poi «anche il loro profilo Strava».
 - **Strava: non si può.** L'API di Strava non ha più gli elenchi di amici e
   follower (`/athlete/friends` risponde 401), e dal 1° settembre 2026 ha
   tolto anche i membri dei club.
+
+## ADR-0179 — La navigazione in bici: km/h, la voce ogni 10 km, svolte e tratti a mano detti 100 m prima
+**Stato**: Attiva · 2026-10-03 · **scelte dell'utente** km/h al posto del
+passo, la voce ogni 10 km, le frasi e i nomi dei numeri; la distanza degli
+avvisi **decisa dall'agente su delega dell'utente**, misurando (TASK-216).
+
+**Contesto**: fino a TASK-216 «Start» su un percorso in bici apriva la
+navigazione della corsa: il passo al km, la voce a ogni km, le svolte dette
+50 m prima (`ANNOUNCE_M`, circa 15 s di corsa; a 20 km/h sono 9 s), e fra le
+lettere di una parola a penna alzata «Walk to the U». L'app non sapeva
+l'attività del percorso seguito.
+
+**Decisione dell'utente** (2026-10-03, `tasks/TASK-216.md`):
+1. In bici la schermata mostra la **velocità in km/h** dove la corsa mostra
+   il passo: «Speed now», «Avg speed», «Last km», la colonna «Speed» dei km
+   di «Data» (IT «Vel. ora», «Vel. media», «Ultimo km», «Velocità»).
+2. La voce dice i km **ogni 10 km**, con tempo e velocità media a numero
+   intero, detta a parole: «10 kilometres. Time: 25 minutes 10 seconds.
+   Average speed: 24 kilometres per hour.» · «10 chilometri. Tempo: 25
+   minuti e 10 secondi. Velocità media: 24 chilometri orari.» (scartati il
+   tempo senza secondi e «km/h» scritto, che la voce del telefono può
+   leggere male).
+3. Fra le lettere si pedala: «… km riding between them» · «… km in bici fra
+   una lettera e l'altra», «Letter done. Ride to the U: the drawing is
+   paused.» · «Lettera finita. Pedala fino alla U: il disegno è in pausa.»
+
+**Decisione dell'agente**:
+1. **Le svolte in bici si dicono 100 m prima** (`RIDE_ANNOUNCE_M` in
+   `src/navigation/ride.ts`), e alla stessa distanza **i tratti con la bici
+   a mano** (`ON_FOOT_AHEAD_M`, che esistono solo in bici). Misurato il
+   2026-10-03 sul Mac, senza rete, sulle zone di Trento in cache: 21
+   percorsi in bici da 10 km e 40 di corsa da 5 e 10 km (cuore, cerchio,
+   stella, luna, gatto, pesce, farfalla da Piazza Duomo, Le Albere e Povo),
+   le indicazioni come le calcola l'API (`guidance`), 1.664 e 3.202 svolte
+   dette. In bici le svolte distano in mediana **99 m** (7,8 al km), nella
+   corsa 68 m (11,4 al km). Il tempo fra l'inizio della frase e la svolta,
+   in mediana: corsa a 5:30 /km con 50 m **16,5 s**; bici a 20 km/h con 50 m
+   9,0 s, con 80 m 14,4 s, con **100 m 16,1 s**, con 120 o 150 m ancora
+   16,1 s. Oltre 100 m la mediana non cresce, perché metà delle svolte è
+   più vicina della precedente: si allunga solo la strada in cui si
+   incrociano vie laterali prima di quella giusta, e cala la parte di
+   svolte dette alla distanza piena (45% a 100 m, 24% a 150 m). La frase
+   dura 3,0–3,3 s, 5,4–5,7 s con un «poi» (voci Samantha e Alice di macOS):
+   a 20 km/h con 100 m restano 13 s per la svolta, come nella corsa. A
+   25 km/h la mediana è 12,9 s. Script e numeri in
+   `out/task216-bike-announce/` (fuori dal repository).
+2. **L'attività arriva alla navigazione dal percorso, non da «Settings»**:
+   da «Draw» quella della richiesta, da un preferito quella con cui è stato
+   tenuto (ADR-0160, TASK-200), da «Explore» quella
+   dell'esempio (oggi sempre la corsa). Una bici è solo `cycling`: la corsa,
+   la canoa (TASK-191 C) e un percorso senza attività si seguono come prima.
+3. **La corsa resta identica**: stesse frasi, stessi numeri, stessi testi
+   (in inglese anche con l'app in un'altra lingua, finché TASK-210 non
+   traduce la schermata). I testi nuovi della bici passano da `t()`, i
+   numeri restano col punto come gli altri della schermata.
+4. **I km di «Data» in bici**: la velocità di ogni km a un decimale e la
+   differenza col km prima in km/h («-4.0» più lento, «+1.5» più veloce);
+   le barre come nella corsa.
+
+**Conseguenze**: TASK-217 aggiunge alla frase dei 10 km il confronto coi 10
+precedenti, da 20 km. Restano come nella corsa, da chiedere all'utente:
+la fine della corsa (il passo nel riepilogo), le calorie (stimate per la
+corsa, circa il triplo di quelle in bici), l'incitamento dopo 5 km (in bici
+non c'è: i 5 km non si dicono), la corsa senza percorso in bici.

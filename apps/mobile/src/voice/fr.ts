@@ -17,8 +17,9 @@ function of(name: string): string {
 
 /**
  * The voice in French (TASK-209): written by the agent, listened to and
- * confirmed by the user on 2026-10-03; the bike on foot (TASK-206) is still
- * to be confirmed (`docs/UI.md`, «La voce della corsa»). A letter is
+ * confirmed by the user on 2026-10-03, the bike on foot (TASK-206) too; the
+ * bike's own phrases (TASK-216) are still to be confirmed (`docs/UI.md`,
+ * «La voce della corsa»). A letter is
  * masculine: «le A», «jusqu'au A».
  */
 export const FR: Phrasebook = {
@@ -56,6 +57,9 @@ export const FR: Phrasebook = {
     `Lettre terminée. Marchez jusqu'${letter === null ? "à la lettre suivante" : `au ${letter}`} : le dessin est en pause.`,
   penDown: (letter) =>
     `Stylo baissé : dessinez ${letter === null ? "la lettre suivante" : `le ${letter}`}.`,
+  // On a bike (TASK-216).
+  rideTo: (letter) =>
+    `Lettre terminée. Roulez jusqu'${letter === null ? "à la lettre suivante" : `au ${letter}`} : le dessin est en pause.`,
   hours: (count) => units(count, "une heure", "heures"),
   minutes: (count) => units(count, "une minute", "minutes"),
   seconds: (count) => units(count, "une seconde", "secondes"),
@@ -63,6 +67,8 @@ export const FR: Phrasebook = {
   kilometre: (km, time, pace) =>
     `${capital(units(km, "un kilomètre", "kilomètres"))}. Temps : ${time}. Allure moyenne : ${pace} au kilomètre.`,
   cheer: "Allez, en avant toute !",
+  rideKilometres: (km, time, speed) =>
+    `${capital(units(km, "un kilomètre", "kilomètres"))}. Temps : ${time}. Vitesse moyenne : ${speed} kilomètres par heure.`,
   // The bike on foot (TASK-206).
   walkTheBike: (metres) => `descendez et poussez le vélo sur ${metres} mètres`,
   backOnTheBike: "Remontez sur le vélo.",

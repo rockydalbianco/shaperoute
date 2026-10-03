@@ -14,6 +14,7 @@ import {
   upcoming,
 } from "./navigator";
 import { cumulative, locate, OFF_ROUTE_M } from "./progress";
+import { RIDE_ANNOUNCE_M } from "./ride";
 
 // A route due east along a parallel, then back west on the same street:
 // 1 km out, 1 km back. 0.001° of longitude here is about 77 m.
@@ -91,6 +92,33 @@ test("a turn is said once, within ANNOUNCE_M, with the ones joined to it", () =>
   // Past both, the next one is the U-turn, not the joined right.
   const past = onFix(again.navigation, east(430));
   expect(upcoming(past.navigation)?.direction.turn).toBe("u-turn");
+});
+
+test("on a bike a turn is said RIDE_ANNOUNCE_M ahead (TASK-216); a run as before", () => {
+  const ride = startNavigation(POINTS, DIRECTIONS, "en", RIDE_ANNOUNCE_M).navigation;
+  // 110 m before the turn: too far for a bike too.
+  expect(onFix(ride, east(290)).cues).toEqual([]);
+  const near = onFix(onFix(ride, east(290)).navigation, east(300));
+  expect(near.cues).toEqual([
+    {
+      say: "In 100 metres, turn left onto Via Verdi, then turn right onto Via Bianchi",
+      vibrate: true,
+    },
+  ]);
+  expect(onFix(near.navigation, east(360)).cues).toEqual([]);
+  // A run at the same fixes waits for ANNOUNCE_M, as before.
+  const run = startNavigation(POINTS, DIRECTIONS).navigation;
+  expect(onFix(run, east(300)).cues).toEqual([]);
+  expect(onFix(run, east(350)).cues).toEqual([
+    {
+      say: "In 50 metres, turn left onto Via Verdi, then turn right onto Via Bianchi",
+      vibrate: true,
+    },
+  ]);
+  // A navigation made without the distance, as before TASK-216.
+  const { announceM: _announceM, ...before } = run;
+  expect(onFix(before, east(300)).cues).toEqual([]);
+  expect(onFix(before, east(350)).cues).toHaveLength(1);
 });
 
 const OFF_CUE: Cue = { say: "You are off the route. Head back to it.", vibrate: true };

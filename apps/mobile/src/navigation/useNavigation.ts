@@ -1,4 +1,10 @@
-import type { Direction, LatLon, Stretch, Walk } from "@shaperoute/shared-types";
+import type {
+  Activity,
+  Direction,
+  LatLon,
+  Stretch,
+  Walk,
+} from "@shaperoute/shared-types";
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useRef, useState } from "react";
@@ -8,10 +14,11 @@ import { onFootOf } from "../route/onFoot";
 import { walksOf } from "../route/walks";
 import { loadVoices, speaking } from "../voice/voiceChoice";
 import { wordsOf } from "../voice/words";
-import { kmAnnouncement, wholeKm } from "./freeRun";
+import { kmAnnouncement } from "./freeRun";
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
 import { moveOnFoot, startOnFoot } from "./onFootVoice";
 import { movePen, startPen } from "./penUp";
+import { announceMOf, isRide, rideAnnouncement, saidKmOf } from "./ride";
 import { controlRun, runControl, type RunSession } from "./runControl";
 import { emptyTrack, type Track } from "./trackRecorder";
 import { startRun } from "./trackStore";
@@ -56,7 +63,10 @@ export function play(cues: Cue[]): void {
  * (TASK-169). Along a word with the pen up, the recording pauses on each
  * walk and goes on at the next letter, and the voice says so (TASK-198).
  * Along a bike route the voice says each stretch with the bike on foot
- * ahead, and its end, without pausing the recording (TASK-206).
+ * ahead, and its end, without pausing the recording (TASK-206). A route of
+ * `activity` "cycling" is followed by bike (TASK-216): turns said further
+ * ahead, the kilometres every RIDE_KM_EVERY with the average speed, and the
+ * way between the letters ridden.
  * Each fix is said in the voice's language of that moment (TASK-209), so a
  * change on «Data» is heard at once. The position never leaves the phone.
  */
@@ -67,13 +77,19 @@ export function useNavigation(
   /** The route's similarity to its shape, kept with the track for the score. */
   similarity?: number,
   /** The route's walks and its word, for a word with the pen up (TASK-198),
-   * and its stretches with the bike on foot (TASK-206): none for any other
-   * route, which is followed as before. */
+   * its stretches with the bike on foot (TASK-206) and its activity
+   * (TASK-216): none for any other route, which is followed as a run. */
   {
     walks,
     word,
     onFoot,
-  }: { walks?: Walk[]; word?: string | null; onFoot?: Stretch[] } = {},
+    activity,
+  }: {
+    walks?: Walk[];
+    word?: string | null;
+    onFoot?: Stretch[];
+    activity?: Activity;
+  } = {},
 ): NavigationState {
   const [state, setState] = useState<NavigationState>({ status: "starting" });
   const navigation = useRef<Navigation | null>(null);
@@ -98,16 +114,21 @@ export function useNavigation(
         setState({ status: "denied" });
         return;
       }
-      const started = startNavigation(points, directions, speaking().language);
+      const started = startNavigation(
+        points,
+        directions,
+        speaking().language,
+        announceMOf(activity),
+      );
       navigation.current = started.navigation;
       const walked = walksOf(points, walks);
-      let pen = startPen(started.navigation.along, walked, word);
+      let pen = startPen(started.navigation.along, walked, word, activity);
       let bike = startOnFoot(started.navigation.along, onFootOf(points, onFoot));
       // A route stopped lately goes on with its track (trackStore).
       const recorder = startRun(points, Date.now(), similarity, walked);
       stopRecording = recorder.stop;
       // A run that goes on does not say again the kilometres it has said.
-      let saidKm = wholeKm(recorder.track());
+      let saidKm = saidKmOf(recorder.track(), activity);
       let position: LatLon | null = null;
       const session = controlRun(recorder, {
         // «Pause» and «Resume» change the track between two fixes.
@@ -194,10 +215,13 @@ export function useNavigation(
           bike = walking.onFoot;
           play(walking.cues);
           // After the turn, so a kilometre never delays one.
-          const km = wholeKm(track);
+          const km = saidKmOf(track, activity);
           if (km > saidKm) {
             saidKm = km;
-            play([{ say: kmAnnouncement(km, track, language), vibrate: false }]);
+            const said = isRide(activity)
+              ? rideAnnouncement(km, track, language)
+              : kmAnnouncement(km, track, language);
+            play([{ say: said, vibrate: false }]);
           }
         },
       );
@@ -213,7 +237,7 @@ export function useNavigation(
       void Speech.stop();
       setState({ status: "starting" });
     };
-  }, [active, points, directions, similarity, walks, word, onFoot]);
+  }, [active, points, directions, similarity, walks, word, onFoot, activity]);
 
   return state;
 }

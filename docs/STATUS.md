@@ -240,6 +240,24 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   l'aggiornamento del server con la `0009` prima di pubblicare l'app, la
   prova sull'iPhone. Da dove riprendere: `tasks/TASK-117.md`, «Esito».
 
+- **TASK-209 — La voce della corsa: lingua e voce a scelta** (ADR-0171;
+  chiesto dall'utente il 2026-10-03). Fatto sul branch
+  `feat/TASK-209-run-voice-language`, **PR non ancora aperta**: importa
+  `src/i18n/` di TASK-210, che entra in `main` prima; poi il branch si
+  allinea e la PR si apre. In «Data», sotto «Voice», una riga con la lingua
+  e la voce («English · Default») e «Listen»; la riga apre un foglio con
+  «App language» e le cinque lingue, e le voci del telefono per quella
+  lingua. Ricordate in `voice.json`. Tutte le frasi dette in en, it, es,
+  fr, de in `src/voice/`, una tabella per lingua; l'inglese è quello di
+  prima, parola per parola, e senza scelta la voce parla come prima
+  (`en-US`); il banner resta della lingua dell'app. Provato nel simulatore
+  (Expo Go): il foglio, l'ascolto e una corsa che dice «In pausa.», «Si
+  riparte.» e «Un chilometro. Tempo: …» in `it-IT`; lì l'elenco delle voci
+  arriva dopo minuti, quindi si aspetta al massimo 3 s. **Aspettano
+  l'utente**: la conferma delle frasi italiane (tabella in `UI.md`, «La
+  voce della corsa»); spagnolo, francese e tedesco restano da confermare.
+  Da dove riprendere: `tasks/TASK-209.md`, «Esito».
+
 ## Completato
 
 - **App** — TASK-207: la foto dal cerchio di «Profile» (chiesto

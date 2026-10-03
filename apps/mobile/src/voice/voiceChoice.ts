@@ -104,9 +104,17 @@ let phoneVoices: readonly Speech.Voice[] | null = null;
 let reading: Promise<readonly Speech.Voice[]> | null = null;
 
 /**
- * The voices installed on the phone (`expo-speech`), read once per opening
- * of the app. A phone that does not say gives none, and then nothing is
- * known of them: the voice speaks as before.
+ * How long a screen or a run waits for the phone to list its voices. The
+ * iOS 27 simulator answered only minutes later (TASK-209): without a limit
+ * the list would not show, and a chosen voice would not be asked for.
+ */
+export const VOICES_WAIT_MS = 3000;
+
+/**
+ * The voices installed on the phone (`expo-speech`), asked once per opening
+ * of the app. A phone that fails, or does not answer within
+ * VOICES_WAIT_MS, gives none for now: nothing is known of them and the
+ * voice speaks as before. A late answer is kept for the next call.
  */
 export function loadVoices(): Promise<readonly Speech.Voice[]> {
   reading ??= (async () => {
@@ -118,7 +126,14 @@ export function loadVoices(): Promise<readonly Speech.Voice[]> {
     }
     return phoneVoices;
   })();
-  return reading;
+  const asked = reading;
+  return new Promise((resolve) => {
+    const late = setTimeout(() => resolve(phoneVoices ?? []), VOICES_WAIT_MS);
+    void asked.then((voices) => {
+      clearTimeout(late);
+      resolve(voices);
+    });
+  });
 }
 
 /** The voices read so far: null until `loadVoices` has an answer. */

@@ -7715,3 +7715,92 @@ nome (spezzano chi è).
 **Conseguenze**: la riga di «Settings» resta e fa lo stesso. Come la foto
 di TASK-178, sul telefono funziona solo con il server alla migrazione
 `0005` e l'app pubblicata.
+
+## ADR-0171 — La voce della corsa in cinque lingue: le frasi dette in `src/voice/`, una tabella per lingua, la scelta in «Data»
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-209). Le cinque lingue, il posto («Data», accanto a «Voice») e la
+voce fra quelle del telefono con un ascolto di prova sono dell'utente; che
+la voce segua la lingua dell'app (TASK-210) salvo una scelta solo sua è
+del coordinatore con l'utente; un solo elenco di lingue in `src/i18n/`
+(di TASK-210) è l'accordo fra i due task. Il resto è dell'agente.
+
+**Contesto**: la voce diceva tutto in inglese (`en-US`), con le frasi
+scritte dentro la logica della corsa: `phrases.ts` (le svolte, la penna
+alzata), `navigator.ts` (fuori percorso, arrivo), `freeRun.ts` (ogni km),
+`runControl.ts` (pausa e ripresa). `instruction()` serviva sia al banner
+sia alla voce. Altri task toccano la voce (TASK-191 C toglie le svolte
+sull'acqua, TASK-206 C annuncia i tratti a piedi) e TASK-210 traduce lo
+schermo.
+
+**Decisione**:
+
+1. **Il detto separato dallo scritto.** Ogni frase detta, l'inglese
+   compreso, sta in `src/voice/`: un `Phrasebook` per lingua (`en.ts`,
+   `it.ts`, `es.ts`, `fr.ts`, `de.ts`) con le parole (i verbi delle
+   svolte, le vie senza nome per tipo, «beside», «In 50 metres», «then», le
+   frasi fisse, le unità di tempo), e `voiceWords()` che le mette insieme
+   allo stesso modo per tutte: partenza, svolta, catena di svolte, tempo
+   detto («5 minuti e 42 secondi»), km. Il banner resta in `phrases.ts`
+   (`instruction`, `thenText`), in inglese: lo traduce TASK-210. Da
+   `phrases.ts` escono `announcement`, `penUpCue` e `penDownCue`, da
+   `freeRun.ts` `spokenTime`.
+2. **I file della corsa passano solo la lingua.** `startNavigation`,
+   `onFix`, `movePen` e `kmAnnouncement` prendono `language` in coda, per
+   difetto l'inglese: chi non la passa ha le frasi di prima. I due hook
+   leggono la lingua **a ogni posizione**, così un cambio in «Data» vale
+   dalla frase dopo; `runControl` dice pausa e ripresa con `spokenWords()`.
+   `play()` chiede a `Speech.speak` la lingua e la voce di adesso.
+3. **Una tabella per lingua invece di frasi intere tradotte**: i nomi
+   delle vie entrano nelle frasi così come sono (mai tradotti, ADR-0057), e
+   ogni lingua ha bisogno di forme sue: il tedesco cambia l'articolo fra
+   «auf den Fußweg» (dopo una svolta) e «auf dem Fußweg» (alla partenza), e
+   mette il verbo in fondo («In 50 Metern links abbiegen auf …», senza
+   virgola); l'italiano dice «sul sentiero» ma «lungo il sentiero»; il
+   francese «à côté d'Avenue Foch». Per questo ogni via senza nome ha due
+   forme (`Place`: `onto`, `on`). **L'uno detto a parole** dove si accorda
+   con l'unità («Un chilometro», «un'ora», «une heure», «eine Minute»):
+   la voce del telefono leggerebbe «1» al maschile.
+4. **La scelta** (`voiceChoice.ts`, `voice.json` nei documenti, come lo
+   sport): `language` è una delle cinque o `"app"` (per difetto), e
+   `voices` tiene **una voce per lingua**, per identificatore, così
+   tornando a una lingua torna la sua voce. `speaking()` decide:
+   - la lingua scelta, o quella dell'app;
+   - **inglese se il telefono non ha nessuna voce per quella lingua**
+     (parole italiane dette da una voce inglese non si capiscono), detto
+     anche nel foglio;
+   - la voce scelta **solo se il telefono ce l'ha**: iOS (`expo-speech`)
+     per un identificatore che non trova lancia un errore e non dice
+     niente. Una voce sparita lascia la voce di sistema della lingua.
+     Prima che il telefono abbia detto le sue voci (`loadVoices`, all'inizio
+     di ogni corsa, all'apertura di «Data» e del foglio), nessuna voce per
+     nome.
+   Un telefono che non dà voci (errore, o nessuna) non sa niente: la lingua
+   resta quella voluta. **Si aspetta al massimo 3 s** (`VOICES_WAIT_MS`):
+   nel simulatore iOS 27 l'elenco è arrivato solo dopo minuti; scaduta
+   l'attesa si va avanti senza voci, e la risposta tardiva si tiene per la
+   volta dopo (riaprendo il foglio le voci compaiono).
+5. **In «Data»** una riga sotto gli interruttori, «English · Default», e
+   «Listen»; la riga apre un foglio dal basso con «Language» e «Voice»
+   (`VoiceSetting.tsx`, un `Modal` dentro quello di «Data», come la
+   modalità tasca). Con «Voice» spenta la scelta resta, «Listen» no.
+
+**Perché così**: tradurre stringhe intere con dei segnaposto («Turn left
+onto {street}») non regge la grammatica delle cinque lingue (articoli,
+preposizioni articolate, il verbo tedesco in fondo), e metterebbe in ogni
+tabella le stesse frasi ripetute per ogni svolta e ogni tipo di via. Le
+frasi in file nuovi lasciano i file della corsa ad altri task con un solo
+parametro in più. Leggere la lingua a ogni posizione costa una lettura di
+memoria e fa sentire subito il cambio.
+
+**Scartato**: le frasi come chiavi strutturate nei `Cue` e tradotte solo in
+`play()` (cambiava il tipo `Cue` e tutti i test che leggono `cue.say`);
+il banner nella lingua della voce (è dello schermo, TASK-210); la scelta
+in «Settings» (l'utente l'ha voluta in «Data»; si può aggiungere dopo);
+voci scaricate da internet (fuori scope).
+
+**Conseguenze**: le frasi nuove della voce (TASK-206 C, i tratti a piedi)
+vanno in tutte e cinque le tabelle: `Phrasebook` lo impone al compilatore e
+`words.test.ts` lo controlla. Le frasi italiane sono da confermare
+dall'utente, le altre tre da qualcuno che le parli (`UI.md`, «La voce della
+corsa»). Il branch importa `src/i18n/` (TASK-210), che entra in `main`
+prima.

@@ -108,16 +108,16 @@ dell'app», in «Settings», le stesse cinque lingue).
 
 ## Criteri di accettazione
 
-- [ ] Ogni frase detta oggi esiste in en, it, es, fr, de (test che le
+- [x] Ogni frase detta oggi esiste in en, it, es, fr, de (test che le
       elencano tutte e controllano che nessuna manchi).
-- [ ] Senza scelta, la voce dice esattamente le frasi di oggi, in
+- [x] Senza scelta, la voce dice esattamente le frasi di oggi, in
       `en-US` (test).
-- [ ] La lingua della voce non cambia lo schermo: il banner segue la
+- [x] La lingua della voce non cambia lo schermo: il banner segue la
       lingua dell'app, non quella della voce (test).
-- [ ] Lingua e voce si scelgono in «Data», si ascoltano, e restano dopo
+- [x] Lingua e voce si scelgono in «Data», si ascoltano, e restano dopo
       un riavvio dell'app (test).
-- [ ] Una voce sparita dal telefono non rompe niente (test).
-- [ ] Provato nel simulatore: la scelta, l'ascolto, una corsa che parla
+- [x] Una voce sparita dal telefono non rompe niente (test).
+- [x] Provato nel simulatore: la scelta, l'ascolto, una corsa che parla
       italiano.
 - [ ] Le frasi italiane confermate dall'utente; le altre tre segnate «da
       confermare» in `UI.md`.
@@ -159,4 +159,38 @@ solo in CI: la PR si apre dopo il merge di TASK-210.
 
 ## Esito
 
-*(a fine task)*
+**2026-10-03, a che punto è** (sessione «Grafica registrazione corsa»).
+Fatto e provato sul branch, PR non ancora aperta:
+
+- `src/voice/`: `phrasebook.ts` (il formato e come si mettono insieme le
+  parole), `en.ts` `it.ts` `es.ts` `fr.ts` `de.ts`, `words.ts`
+  (`wordsOf`), `voiceChoice.ts` (scelta, `voice.json`, voci del telefono,
+  `speaking()`), `VoiceSetting.tsx` (la riga in «Data» e il foglio).
+- I file della corsa passano solo la lingua (ADR-0171, punto 2); da
+  `phrases.ts` escono `announcement`, `penUpCue`, `penDownCue`, da
+  `freeRun.ts` `spokenTime`.
+- Test: `words.test.ts` (l'inglese uguale al banner e alle frasi di prima,
+  ogni frase in ogni lingua, niente inglese nelle altre),
+  `voiceChoice.test.ts`, `VoiceSetting.test.tsx`, uno in
+  `useNavigation.test.ts` (la voce in italiano, il banner in inglese, un
+  cambio a metà corsa) e uno in `RunDashboard.test.tsx`. Tutta la suite
+  dell'app verde (156 file, 1385 test), lint e Prettier puliti.
+- Simulatore (Expo Go, un iPhone 17 Pro creato e poi cancellato, solo
+  `simctl`: lo strumento del simulatore aspettava un permesso
+  dell'utente): il foglio con le lingue e «Alice, it-IT», «Listen» in
+  `it-IT`, una corsa senza percorso con «In pausa.», «Si riparte.», «Un
+  chilometro. Tempo: un minuto e 17 secondi. …» in `it-IT` (letti dal log,
+  l'audio del simulatore non si sente da qui). Lì
+  `getAvailableVoicesAsync` ha risposto dopo minuti: da qui l'attesa
+  massima di 3 s (`VOICES_WAIT_MS`).
+
+**Prossimi passi**:
+
+1. Quando TASK-210 è in `main`: cancellare la copia locale non tracciata
+   di `apps/mobile/src/i18n/` (serviva a compilare), aggiornare il branch
+   da `origin/main`, rifare test, lint, Prettier.
+2. Aprire la PR e scrivere al coordinatore «#NNN pronta».
+3. L'utente conferma le frasi italiane (`UI.md`, «La voce della corsa»);
+   correggere se serve. Per spagnolo, francese e tedesco: «da confermare».
+4. Per TASK-206 C: le frasi nuove dei tratti a piedi vanno in tutte e
+   cinque le tabelle (`Phrasebook` lo impone).

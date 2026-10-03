@@ -10,6 +10,7 @@ import {
   spokenWords,
   VOICE_FILE,
   voiceChoice,
+  VOICES_WAIT_MS,
   voicesOf,
 } from "./voiceChoice";
 
@@ -171,4 +172,26 @@ test("the phone's voices are read once, and a phone that fails gives none", asyn
   expect(Speech.getAvailableVoicesAsync).toHaveBeenCalledTimes(1);
   // Knowing nothing, the voice speaks as before.
   expect(speaking().options).toEqual({ language: "en-US" });
+});
+
+test("a phone slow to list its voices gives none for now, and its late answer is kept", async () => {
+  jest.useFakeTimers();
+  let answer: (voices: Speech.Voice[]) => void = () => {};
+  jest
+    .mocked(Speech.getAvailableVoicesAsync)
+    .mockImplementationOnce(() => new Promise((resolve) => (answer = resolve)));
+  // A new opening of the app: nothing asked yet.
+  let fresh: typeof import("./voiceChoice") | undefined;
+  jest.isolateModules(() => {
+    fresh = jest.requireActual<typeof import("./voiceChoice")>("./voiceChoice");
+  });
+  const asked = fresh!.loadVoices();
+  jest.advanceTimersByTime(VOICES_WAIT_MS);
+  await expect(asked).resolves.toEqual([]);
+  expect(fresh!.knownVoices()).toBeNull();
+
+  answer(PHONE);
+  await expect(fresh!.loadVoices()).resolves.toEqual(PHONE);
+  expect(fresh!.knownVoices()).toEqual(PHONE);
+  jest.useRealTimers();
 });

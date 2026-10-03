@@ -1130,7 +1130,8 @@ TASK-164, di cui tiene i numeri.
   sposta la fa ripartire, «Resumed.». «Resume» funziona anche qui. Spenta,
   il tempo conta anche le soste.
 - **«Voice»** (accesa): spenta, l'app non dice più niente, né svolte né
-  km; la vibrazione delle svolte resta.
+  km; la vibrazione delle svolte resta. Sotto, la lingua e la voce con cui
+  parla, e «Listen» (TASK-209: «La voce della corsa», più giù).
 - **«Music»** (TASK-173, ADR-0141): mentre si corre, di fronte a «Pocket»,
   su tutte e due le pagine. Apre Spotify, dove lo si era lasciato; a Sgrava
   si torna da soli (su iPhone, «◀» in alto a sinistra). Sgrava non suona
@@ -1235,9 +1236,10 @@ nord in alto. La direzione viene dalla traccia, dagli ultimi 10 m: serve
 qualche passo perché compaia (prima c'è il segnaposto di sempre), e da
 fermi resta quella di prima. A fine corsa torna il segnaposto.
 
-Ogni svolta si dice a voce 50 m prima, in inglese come il resto dell'app
-(«In 50 metres, turn left onto Via Roma, then turn right onto the
-footpath»), con una vibrazione. Una via senza nome è «the footpath», «the
+Ogni svolta si dice a voce 50 m prima («In 50 metres, turn left onto Via
+Roma, then turn right onto the footpath»), con una vibrazione, nella lingua
+della voce: in inglese finché non se ne sceglie un'altra («La voce della
+corsa», sotto). Una via senza nome è «the footpath», «the
 path», «the road»: mai un nome inventato. Se accanto corre una via con nome
 (dedotta dall'API, ADR-0057), la si dice con «beside»: «Turn left onto the
 footpath beside Via Roma», sul banner e a voce (ADR-0058). Oltre 40 m dal percorso per almeno
@@ -1248,6 +1250,63 @@ non bastano, e una posizione con un errore dichiarato oltre 40 m non conta;
 una via parallela sbagliata sì (ADR-0070). Dopo due posizioni di fila sul
 percorso, «Back on the route». Alla fine, «You have arrived». Funziona con lo schermo
 acceso e l'app aperta; la posizione non esce dal telefono.
+
+**La voce della corsa** (TASK-209, ADR-0171; chiesto dall'utente il
+2026-10-03: «scegliere la voce e la lingua della voce»). In «Data», sotto
+«Auto-pause» e «Voice», una riga dice chi parla e in che lingua («English ·
+Default», «Italiano · Alice»), con «›»; accanto, un tondo con il segno del
+play, **«Listen»**, che dice una svolta d'esempio («In 50 metres, turn left
+onto Via Roma», nella lingua scelta). Toccata la riga, dal basso sale un
+foglio con due elenchi: **«Language»**, prima «App language» (con sotto la
+lingua dell'app di adesso) e poi le cinque lingue, ognuna nel suo nome
+(English, Deutsch, Italiano, Español, Français, l'ordine dell'utente); e
+**«Voice»**, prima «Default» (la voce del telefono per quella lingua) e poi
+le voci installate sul telefono per quella lingua, di ogni paese («Daniel»,
+«en-GB · Enhanced»), per nome. Un tocco sceglie e resta; «Done» o un tocco
+fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
+«Listen» è spento e non parla nessuno.
+
+- **Prima di ogni scelta** la voce segue la lingua dell'app (TASK-210),
+  con la voce di sistema: oggi, in inglese, esattamente le frasi di prima
+  (`en-US`). Scelta una lingua solo per la voce, lo schermo non cambia: il
+  banner segue la lingua dell'app.
+- **Ricordata sul telefono** (`voice.json` nei documenti, come lo sport):
+  la lingua (o «App language») e una voce per ogni lingua, così tornando a
+  una lingua torna la sua voce. Vale dalla frase successiva, anche a metà
+  corsa.
+- **Una voce sparita** dal telefono: parla la voce di sistema della stessa
+  lingua, senza errore. **Una lingua senza nessuna voce** sul telefono: la
+  voce parla inglese, e il foglio lo dice («This phone has no Français
+  voice: the voice speaks English.»). Finché il telefono non ha detto
+  quali voci ha, nessuna voce si chiede per nome (iOS, per una voce che
+  non trova, non dice niente); lo si aspetta al massimo 3 secondi, e se
+  non risponde il foglio ha solo «Default», con «This phone did not list
+  its voices: its own voice speaks.» (nel simulatore iOS 27 l'elenco è
+  arrivato dopo minuti: riaprendo il foglio le voci compaiono).
+- **Cosa dice**, in ogni lingua: le svolte con la distanza e il «poi», la
+  partenza, le vie senza nome per tipo (mai un nome inventato; i nomi
+  delle vie mai tradotti), «beside», fuori e di nuovo sul percorso,
+  l'arrivo, la pausa da fermi e la ripresa, la penna alzata, ogni km con
+  tempo e passo. Il numero uno detto a parole dove si accorda
+  («Un chilometro», «un'ora», «eine Minute»). Le frasi sono in
+  `src/voice/`, una tabella per lingua; quelle in inglese sono le stesse di
+  prima, parola per parola.
+- **Testi da confermare**: le frasi italiane le conferma l'utente;
+  spagnole, francesi e tedesche restano **da confermare** finché qualcuno
+  che parla quelle lingue non le ascolta. Quelle della penna alzata sono da
+  confermare anche in inglese (TASK-198). Le parole del foglio («App
+  language», «Language», «Voice», «Default», «Listen», «Done») sono in
+  inglese come il resto dello schermo: le traduce TASK-210.
+
+| | Italiano (da confermare dall'utente) |
+|---|---|
+| Svolta | «Tra 50 metri, svolta a sinistra su Via Roma, poi svolta a destra sul sentiero» |
+| Partenza | «Parti lungo Via Roma» |
+| Accanto | «Svolta a sinistra sul percorso pedonale accanto a Via Rosmini» |
+| Fuori, di nuovo, arrivo | «Sei fuori percorso. Torna sul percorso.» · «Di nuovo sul percorso.» · «Hai raggiunto l'arrivo.» |
+| Pausa, ripresa | «In pausa.» · «Si riparte.» |
+| Penna alzata | «Lettera finita. Cammina fino alla A: il disegno è in pausa.» · «Giù la penna: disegna la A.» |
+| Km | «Un chilometro. Tempo: 5 minuti e 42 secondi. Passo medio: 5 minuti e 42 secondi al chilometro.» |
 
 **Modalità tasca** (TASK-070, ADR-0066). Accanto a «Pause», «Pocket»: lo
 schermo diventa nero, la luminosità va al minimo e resta acceso, e i tocchi

@@ -94,7 +94,11 @@ export function VoiceSetting() {
     <View style={styles.row}>
       <Pressable
         style={styles.choice}
-        onPress={() => setOpen(true)}
+        onPress={() => {
+          setOpen(true);
+          // A phone that was slow to list its voices may have them now.
+          void loadVoices().then(setVoices);
+        }}
         accessibilityRole="button"
         accessibilityLabel={`Voice language and voice: ${nameOf(now.language)}, ${voiceName}`}
         accessibilityHint="Changes the language and the voice"
@@ -208,6 +212,7 @@ function VoiceSheet({ open, onClose, choice, app, voices, on, onListen }: SheetP
             {LANGUAGES.map((option) => (
               <Option
                 key={option.id}
+                divided
                 label={option.name}
                 checked={choice.language === option.id}
                 onPress={() => chooseLanguage(option.id)}
@@ -215,6 +220,11 @@ function VoiceSheet({ open, onClose, choice, app, voices, on, onListen }: SheetP
             ))}
           </View>
           <Text style={styles.heading}>Voice</Text>
+          {voices !== null && voices.length === 0 && (
+            <Text style={styles.note}>
+              This phone did not list its voices: its own voice speaks.
+            </Text>
+          )}
           {now.language !== wanted && (
             <Text style={styles.note}>
               {`This phone has no ${nameOf(wanted)} voice: the voice speaks English.`}
@@ -233,6 +243,7 @@ function VoiceSheet({ open, onClose, choice, app, voices, on, onListen }: SheetP
             {theirs.map((voice) => (
               <Option
                 key={voice.identifier}
+                divided
                 label={voice.name}
                 detail={
                   voice.quality === Speech.VoiceQuality.Enhanced
@@ -265,20 +276,24 @@ function VoiceSheet({ open, onClose, choice, app, voices, on, onListen }: SheetP
   );
 }
 
+/** A row of a list; `divided` draws the line that parts it from the row
+ * above. */
 function Option({
   label,
   detail,
   checked,
+  divided = false,
   onPress,
 }: {
   label: string;
   detail?: string;
   checked: boolean;
+  divided?: boolean;
   onPress: () => void;
 }) {
   return (
     <Pressable
-      style={styles.option}
+      style={[styles.option, divided && styles.divided]}
       onPress={onPress}
       accessibilityRole="radio"
       accessibilityLabel={detail === undefined ? label : `${label}, ${detail}`}
@@ -394,8 +409,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: space.md,
     paddingHorizontal: space.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: color.border,
+  },
+  divided: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: color.border,
   },
   optionWords: {
     flex: 1,

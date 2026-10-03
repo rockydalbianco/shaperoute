@@ -7457,6 +7457,150 @@ test che cercano i numeri per etichetta d'accessibilità non cambiano:
 telefono: su un Android senza quel segno si vedrebbe un quadratino, da
 guardare quando l'app avrà una build Android.
 
+## ADR-0164 — La canoa nell'API: l'acqua nella cache del server, nessuna indicazione né alternativa, la distanza suggerita per difetto al mezzo km
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-191, parte B: l'API). Le distanze, 1–5 km, e «l'errore dice a
+quanti km la forma ci sta» sono **scelte dell'utente** (ADR-0161).
+
+**Contesto**: A2 (ADR-0161) ha messo la canoa nel motore
+(`paddling.plan_paddling`), ma non nel contratto: l'API la rifiutava come
+un'attività qualunque. La bici, nella sua parte B (ADR-0153), ha dato a
+ogni attività le zone della sua rete (`activity_graphs.py`); la canoa non
+ha una rete, ha l'acqua (`water.OverpassWaterSource`), e il suo piano non
+passa dal grafo: niente partenze vicine, niente alternative, niente
+indicazioni.
+
+**Decisione**:
+
+1. **Il contratto, solo aggiunte**: `SUPPORTED_ACTIVITIES = ("running",
+   "cycling", "paddling")` nel motore, `ACTIVITIES` e
+   `DISTANCE_LIMITS_M.paddling = [1000, 5000]` in `shared-types`,
+   `contract.json`, la fixture `route-request-paddling.json` letta dai
+   test dei due lati. L'app ha un `Record<Activity, …>` dei suoi limiti
+   (`distance.ts`) che vuole la riga della canoa per compilare, e due test
+   che usavano `"paddling"` come esempio di attività sconosciuta (ora
+   `"swimming"`): tre righe, col permesso del coordinatore; l'app non
+   cambia comportamento, perché «Paddle» resta «Soon» (parte C).
+2. **L'acqua dell'API**: `ActivityGraphs` tiene, accanto alle zone delle
+   attività sulle strade (`ROAD_ACTIVITIES`), l'acqua
+   (`paddling.ServerWater`: `OverpassWaterSource` su `<cache>/water/`,
+   cioè `--cache-dir` come le zone, sul server `data/cache/water/`).
+   `ground_for` dà a una richiesta le zone della sua rete o l'acqua; il
+   planner dell'API (`plan_request`) sceglie dall'attività e chiama
+   `plan_paddling`. Così `/routes`, `/route-jobs` e il replay dicono la
+   stessa cosa, e i test che sostituiscono il planner restano come sono.
+3. **Il download dell'acqua** è uno alla volta (un lucchetto, e la cache
+   ricontrollata dopo), e uno non riuscito è `503 map_data_unavailable`,
+   come una zona. Il job lo mostra come `downloading_map`, e uno annullato
+   nel frattempo si ferma prima di piazzare la forma (`_ReportingWater`,
+   come `_Reporting` per i grafi). Nessuna zona da preparare:
+   `prefetch_zones --activity` è solo per corsa e bici.
+4. **Il risultato** è il `RouteResult` del motore: somiglianza 1,
+   `directions` vuoto (si leggono sul grafo, e sull'acqua non c'è),
+   `alternatives` vuoto (il motore piazza la forma una volta), nessun
+   avviso. Il GPX è quello di ogni percorso.
+5. **La distanza suggerita, per difetto al mezzo km**
+   (`errors.WATER_STEP_M`): `WaterFitError` porta la distanza a cui la
+   forma ci sta (`best_distance_m`), e `suggested_distance_m` è quella
+   arrotondata **per difetto** al mezzo km, fra 1 e 5 km, `null` se ci sta
+   solo sotto 1 km. Sull'acqua una forma ci sta fino a una certa grandezza
+   e non oltre: al km più vicino «ci sta a 2,6 km» diventerebbe 3 km, la
+   cui tolleranza (±10%, 2,7–3,3 km) non arriva a 2,6, e la distanza
+   suggerita, chiesta, fallirebbe di nuovo. Il mezzo km perché la canoa va
+   da 1 a 5 km e il campo dell'app prende un decimale. Corsa e bici restano
+   al km più vicino (ADR-0041, ADR-0153). Sulle fixture: cuore da 5 km al
+   mare, «ci sta a 3,1 km» → 3000, chiesto → disegnato; cerchio da 4 km,
+   «2,8» → 2500, chiesto → disegnato (test).
+6. **Parole e immagini** (ADR-0161): la parola la rifiuta già
+   `RouteRequest`; l'immagine `ImageRequest`, prima della distanza («on the
+   water only a shape of the catalogue is drawn, not an image»), da
+   `/image-route-jobs` e da `/gpx`.
+7. **`/route-directions` resta senza attività**: la richiesta ha solo i
+   punti, e un campo in più l'API di prima lo rifiuterebbe (`extra:
+   forbid`). Con i punti di un percorso sull'acqua l'API carica la zona a
+   piedi attorno alla linea e risponde `422 invalid_request` («The route
+   does not follow the roads of this map.», test). L'app non le deve
+   chiedere: il percorso di un job sull'acqua ha già `directions` vuoto.
+8. **I preferiti**: la migrazione `0010_favorite_paddling.sql` allarga il
+   vincolo della `0008`, come diceva il suo commento.
+9. **Esempi**: gli esempi tenuti (`route_store`) hanno già l'attività
+   nella chiave. `draw_examples` non disegna la canoa: dove stanno laghi e
+   mare in «Explore» è una scelta di prodotto (domanda 3 del task file).
+
+**Alternative scartate**: una «rete» finta della canoa in
+`ActivityGraphs`, un `GraphLoader` che dà l'acqua (il motore la
+rifiuterebbe giustamente, e il tipo mentirebbe); il piano sull'acqua
+chiamato fuori dal planner, nei tre posti che lo usano (tre copie della
+stessa scelta); la distanza suggerita al km più vicino come per le strade
+(sopra); scaricare un'area più larga di quella della richiesta, perché le
+partenze vicine trovino lo stesso file (l'acqua letta dal motore non
+sarebbe più quella della CLI per la stessa richiesta: è un seguito, con
+le aree d'acqua preparate prima); un campo `activity` in
+`/route-directions`; un messaggio dell'API che sostituisce quello del
+motore.
+
+**Conseguenze**: una richiesta `paddling` all'API ora disegna sull'acqua;
+la corsa e la bici non cambiano (test di prima, tranne l'esempio di
+attività rifiutata). **Ogni partenza nuova sull'acqua è una richiesta
+Overpass** per un'area di 8–10 km di lato: Overpass rifiuta dopo molti
+download, e dal Mac oggi non risponde; la richiesta d'acqua non è mai
+stata provata dal vero (ADR-0154). Seguiti: le aree d'acqua dei quattro
+luoghi d'esempio scaricate prima sul server, con l'ok dell'utente. Cambia
+`models.py`, quindi `engine_fingerprint`, già cambiato da A2: un solo
+aggiornamento del server, poi `draw_examples`. Per la parte C: «Paddle»
+pronto, l'avviso di sicurezza, i testi «does not fit the roads» da dire
+per l'acqua, e niente `/route-directions` sull'acqua.
+
+## ADR-0165 — Lo sport accanto al profilo: un pulsante tondo con l'emoji, un menu sotto di sé, la stessa scelta di «Settings»
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-205). La richiesta è dell'utente («Nella prima schermata a fianco al
+profilo, metti la possibilità di cambiare sport»); il modo, qui sotto, è
+dell'agente. TASK-205 e ADR-0165 dati dal coordinatore.
+
+**Contesto**: lo sport si sceglieva solo in «Settings» (TASK-189,
+ADR-0152), tre tocchi lontano da «Draw», che con «Bike» chiede percorsi
+diversi (TASK-190, ADR-0153). L'intestazione delle pagine ha i tre nomi a
+sinistra e il pulsante tondo del profilo a destra (TASK-154, ADR-0124).
+
+**Decisione**:
+
+1. **Un pulsante tondo come quello del profilo** (44 punti, bordo
+   `borderStrong`, fondo `surfaceRaised`), a sinistra del profilo, a
+   `space.sm` da lui, con l'emoji dello sport scelto (🏃‍♂️, 🚴). Sta nella
+   stessa `action` del `Pager`: dove c'è il profilo c'è lo sport, e sulla
+   mappa e durante la corsa nessuno dei due.
+2. **Toccato apre un menu sotto di sé**, non cambia sport a ogni tocco:
+   le righe sono quelle della sezione «Sport» di «Settings» (emoji, nome,
+   «✓» bianco sullo scelto, «Soon» su uno non pronto, che non prende il
+   tocco). Un tocco su uno sport pronto lo sceglie e chiude il menu; un
+   tocco fuori, o il tasto indietro di Android, chiude senza cambiare. Il
+   menu è un `Modal` trasparente di React Native, appeso sotto il pulsante
+   dove `measureInWindow` dice che è (fino alla misura, dove l'intestazione
+   lo mette).
+3. **Una sola scelta**: `saveSport` e `useSport` di `src/settings/`, lo
+   stesso `sport.json`. Il pulsante segue anche una scelta fatta in
+   «Settings», e «Draw» segue il pulsante come segue «Settings». La
+   sezione «Sport» di «Settings» resta.
+
+**Perché così**: un pulsante gemello di quello del profilo non aggiunge
+un linguaggio nuovo all'intestazione e ci sta anche sull'iPhone più
+stretto (375 punti, provato sul 13 mini). Un menu dice quali sport ci
+sono, quale è scelto e quale arriva («Soon»), come «Settings»; un tocco
+che passa allo sport dopo cambierebbe i percorsi di «Draw» senza dirlo, e
+con «Paddle» pronto diventerebbe un giro di tre. Il `Modal` prende i tocchi
+fuori dal menu su iOS e Android senza toccare `Pager.tsx`.
+
+**Scartato**: un tocco che alterna «Run» e «Bike»; una riga di pillole
+sotto i nomi delle pagine (ruba altezza a ogni pagina); spostare il menu
+dentro `ProfileLayer.tsx` o `Pager.tsx` (file di altri, e lo sport non è
+dell'account né delle pagine); togliere «Sport» da «Settings».
+
+**Conseguenze**: quando TASK-191 C accende `ready` di «Paddle» in
+`sport.ts`, il menu lo mostra da solo e l'emoji del pulsante diventa 🛶. Un
+quarto sport allunga il menu, non l'intestazione. I nomi delle pagine e i
+due pulsanti stanno in 375 punti con circa 11 punti di margine: un nome di
+pagina più lungo, o un terzo pulsante, non ci starebbe.
+
 ## ADR-0166 — Pubblicare una corsa, l'app: la scelta dopo la corsa, una coda sua senza rete, il disegno sulla mappa come una corsa
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-117, parte B), dentro le **scelte dell'utente** dello stesso giorno:

@@ -22,8 +22,10 @@ from route_engine.models import RouteRequest, RouteResult
 from route_engine.network import FileSource
 from route_engine.optimizer import GraphLoader, Plan
 from route_engine.outline_edits import MAX_DETAIL_POINTS, MAX_DRAWN_POINTS
+from route_engine.water import FileWaterSource
 from shaperoute_ai.reading import MAX_TEXT_LENGTH
 
+from shaperoute_api.activity_graphs import ActivityGraphs
 from shaperoute_api.app import create_app
 from shaperoute_api.schemas import (
     MAX_IMAGE_BYTES,
@@ -48,6 +50,7 @@ from shaperoute_api.schemas import (
 
 REPO = Path(__file__).resolve().parents[3]
 FIXTURES = REPO / "packages" / "shared-types" / "fixtures"
+WATER_FIXTURE = REPO / "services/route-engine/tests/fixtures/water_coast.json"
 
 
 def _load(name: str) -> Any:
@@ -241,6 +244,33 @@ def test_the_api_passes_a_cycling_request_on_to_the_engine() -> None:
     response = TestClient(app).post("/routes", json=request)
     assert response.status_code == 200, response.json()
     assert asked[0].activity == "cycling" and asked[0].distance_m == 20_000
+
+
+def test_the_api_passes_a_paddling_request_on_to_the_engine() -> None:
+    # TASK-191: the same fields again, "paddling" for the activity, planned
+    # on the water the API has, not on a graph (test_paddling.py).
+    request = _load("route-request-paddling.json")
+    assert set(request) == _names(RouteRequestBody) - PEN_UP
+    assert RouteRequestBody.model_validate(request).activity == "paddling"
+    data = _load("route-result.json")
+    result = RouteResult(
+        **{**data, "points": [tuple(p) for p in data["points"]], "alternatives": []}
+    )
+    asked: list[tuple[RouteRequest, object]] = []
+
+    def planner(request: RouteRequest, source: object) -> Plan:
+        asked.append((request, source))
+        return Plan(result=result, search=None)
+
+    water = FileWaterSource(WATER_FIXTURE)
+    graphs = ActivityGraphs({}, water=water)
+    response = TestClient(create_app(graphs, planner=planner)).post(
+        "/routes", json=request
+    )
+    assert response.status_code == 200, response.json()
+    (request_asked, source), *_ = asked
+    assert request_asked.activity == "paddling" and request_asked.shape == "heart"
+    assert source is water
 
 
 def test_image_fixtures_are_valid_bodies() -> None:

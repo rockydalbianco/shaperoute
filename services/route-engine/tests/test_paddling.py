@@ -158,8 +158,8 @@ def test_paddling_is_an_engine_activity_on_the_water() -> None:
     assert WATER_ACTIVITIES == {"paddling"}
     # No road network: the water is its own source (water.py).
     assert not WATER_ACTIVITIES & set(NETWORKS)
-    # The API offers it with TASK-191 part B, with shared-types.
-    assert "paddling" not in SUPPORTED_ACTIVITIES
+    # The API offers it since TASK-191 part B, with shared-types.
+    assert "paddling" in SUPPORTED_ACTIVITIES
     request = _request(COAST_START)
     assert request.activity == "paddling" and request.shape == "heart"
 

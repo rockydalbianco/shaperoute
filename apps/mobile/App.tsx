@@ -93,10 +93,11 @@ import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
 import { Pager } from "./src/screens/Pager";
 import { ProfileButton, ProfileLayer } from "./src/screens/ProfileLayer";
 import { activityOf } from "./src/settings/sport";
+import { SportButton } from "./src/settings/SportButton";
 import { useSport } from "./src/settings/useSport";
 import { DrawingCard } from "./src/social/DrawingCard";
 import { useDrawingsDoor } from "./src/social/drawingsDoor";
-import { color } from "./src/theme/tokens";
+import { color, space } from "./src/theme/tokens";
 
 /** A route without directions: one list, so navigation does not restart. */
 const NO_DIRECTIONS: Direction[] = [];
@@ -861,7 +862,13 @@ function Sgrava() {
             Keyboard.dismiss();
             setScreen(PAGES[index]);
           }}
-          action={<ProfileButton />}
+          action={
+            // The sport at the left of the way to «Profile» (TASK-205).
+            <View style={styles.actions}>
+              <SportButton />
+              <ProfileButton />
+            </View>
+          }
           pages={[
             {
               title: "Feed",
@@ -1008,5 +1015,10 @@ const styles = StyleSheet.create({
     flex: 1,
     // Under the page while the WebView starts, so it never flashes white.
     backgroundColor: color.map.background,
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
   },
 });

@@ -39,6 +39,9 @@ FAST_HASHER = PasswordHasher(time_cost=1, memory_cost=1024, parallelism=1)
 KEY = "3f9a1c0e7b2d4a65"
 OTHER_KEY = "a41b77c2d09e5f13"
 BIKE_KEY = "b7d2e94a0c3f6158"
+# The migrations of a favorite's activity: the column (TASK-200), and the
+# check widened for paddling (TASK-191).
+ACTIVITY_MIGRATIONS = ("_favorite_activity.sql", "_favorite_paddling.sql")
 
 
 def _load(name: str) -> Any:
@@ -308,7 +311,7 @@ def test_every_activity_offered_is_kept(client: TestClient, activity: str) -> No
     assert whole["activity"] == activity
 
 
-@pytest.mark.parametrize("activity", ["paddling", "Cycling", "", None, 1])
+@pytest.mark.parametrize("activity", ["swimming", "Cycling", "", None, 1])
 def test_an_activity_the_api_does_not_offer_is_refused(
     client: TestClient, activity: Any
 ) -> None:
@@ -321,7 +324,8 @@ def test_an_activity_the_api_does_not_offer_is_refused(
     if isinstance(activity, str):
         # The words of POST /routes.
         assert (
-            f"unsupported activity {activity!r}; choose one of: running, cycling"
+            f"unsupported activity {activity!r}; "
+            "choose one of: running, cycling, paddling"
             in answer.json()["error"]["message"]
         )
     assert client.get("/me/favorites", headers=me).json() == {"favorites": []}
@@ -341,7 +345,7 @@ def test_the_database_keeps_only_the_activities_offered(
                 " similarity, line, created_at, activity) VALUES (%s, %s, '',"
                 " 5000, 5120, 0.9, ST_GeomFromText("
                 "'LINESTRING(11.1215 46.067,11.123 46.07)', 4326), now(),"
-                " 'paddling')",
+                " 'swimming')",
                 (user["id"], KEY),
             )
 
@@ -350,13 +354,13 @@ def test_favorites_kept_before_are_runs(
     database_url: str, tmp_path: Path, wall: WallClock
 ) -> None:
     database = Database(database_url)
-    # The schema of before TASK-200, 0001 to 0007, with two favorites in it.
+    # The schema of before TASK-200, 0001 to 0007, with two favorites in it:
+    # without the activity, nor the migration that widens its check
+    # (TASK-191), which needs the column.
     before = [
-        path
-        for path in migrations()
-        if not path.name.endswith("_favorite_activity.sql")
+        path for path in migrations() if not path.name.endswith(ACTIVITY_MIGRATIONS)
     ]
-    assert len(before) == len(migrations()) - 1
+    assert len(before) == len(migrations()) - 2
     for path in before:
         shutil.copy(path, tmp_path / path.name)
     database.migrate(tmp_path)
@@ -391,11 +395,9 @@ def test_favorites_kept_before_are_runs(
                     json.dumps(body.get("walks", [])),
                 ),
             )
-    # The API of TASK-200 starts: the activity's migration, and nothing else.
+    # The API of TASK-200 starts: the activity's migrations, nothing else.
     assert database.migrate(MIGRATIONS_DIR) == [
-        path.stem
-        for path in migrations()
-        if path.name.endswith("_favorite_activity.sql")
+        path.stem for path in migrations() if path.name.endswith(ACTIVITY_MIGRATIONS)
     ]
     new = TestClient(create_app(FileSource(Path("unused.graphml")), accounts=accounts))
     listed = new.get("/me/favorites", headers=me).json()["favorites"]

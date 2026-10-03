@@ -35,6 +35,7 @@ import jobRunning from "../fixtures/route-job-running.json" with { type: "json" 
 import jobStatuses from "../fixtures/route-job-statuses.json" with { type: "json" };
 import alternativeLimits from "../fixtures/route-alternatives.json" with { type: "json" };
 import cyclingRequest from "../fixtures/route-request-cycling.json" with { type: "json" };
+import paddlingRequest from "../fixtures/route-request-paddling.json" with { type: "json" };
 import penUpRequest from "../fixtures/route-request-pen-up.json" with { type: "json" };
 import wordRequest from "../fixtures/route-request-word.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
@@ -104,6 +105,8 @@ const wordFields: Same<keyof typeof wordRequest, keyof OlderRequest> &
   Same<keyof typeof wordResult, keyof OlderResult> = true;
 // A bike route (TASK-190): the same fields, another activity.
 const cyclingFields: Same<keyof typeof cyclingRequest, keyof OlderRequest> = true;
+// A paddling route (TASK-191): the same fields again.
+const paddlingFields: Same<keyof typeof paddlingRequest, keyof OlderRequest> = true;
 const penUpFields: Same<keyof typeof penUpRequest, keyof RouteRequest> &
   Same<keyof typeof penUpResult, keyof RouteResult> = true;
 const trackFields: Same<
@@ -178,7 +181,7 @@ test("the fixtures have the fields of the types", () => {
   assert.ok(requestFields && resultFields && errorFields && errorDetailFields);
   assert.ok(jobFields && jobResultFields && jobErrorFields && gpxFields);
   assert.ok(shapeReadingFields && directionFields && wordFields);
-  assert.ok(penUpFields && trackFields && cyclingFields);
+  assert.ok(penUpFields && trackFields && cyclingFields && paddlingFields);
 });
 
 /** Whether `walks` are stretches of a route of `count` points, in order. */
@@ -357,6 +360,20 @@ test("a cycling request is a request with the bike's distances", () => {
   );
   assert.ok(isShape(cyclingRequest.shape));
   assert.deepEqual(DISTANCE_LIMITS_M.running, [MIN_DISTANCE_M, MAX_DISTANCE_M]);
+});
+
+test("a paddling request is a request with a shape and the water's distances", () => {
+  // TASK-191: the activity is the only difference; on the water a shape of
+  // the catalogue, never a word or an image (ADR-0161).
+  assert.ok((ACTIVITIES as readonly string[]).includes(paddlingRequest.activity));
+  assert.equal(paddlingRequest.activity, "paddling");
+  assert.deepEqual(DISTANCE_LIMITS_M.paddling, [1_000, 5_000]);
+  const [lowest, highest] = DISTANCE_LIMITS_M.paddling;
+  assert.ok(
+    lowest <= paddlingRequest.distance_m && paddlingRequest.distance_m <= highest,
+  );
+  assert.ok(isShape(paddlingRequest.shape));
+  assert.equal(paddlingRequest.word, null);
 });
 
 test("a result names its shape or its word", () => {

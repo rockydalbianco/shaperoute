@@ -180,8 +180,8 @@ test("a bike favorite, and those of an older API, are read with their activity",
     expect(favoriteActivity(older)).toBe("running");
   }
   // An activity this app does not know is read as a run, as before.
-  expect(isFavorite({ ...favorites.favorites[0], activity: "paddling" })).toBe(true);
-  expect(favoriteActivity({ activity: "paddling" })).toBe("running");
+  expect(isFavorite({ ...favorites.favorites[0], activity: "swimming" })).toBe(true);
+  expect(favoriteActivity({ activity: "swimming" })).toBe("running");
   expect(isFavorite({ ...favorites.favorites[0], activity: 3 })).toBe(false);
   expect(isFavoriteDetail({ ...favorite, activity: null })).toBe(false);
   // The request: the fields of before, and the activity last.

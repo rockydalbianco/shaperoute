@@ -18,13 +18,18 @@ export const MIN_DISTANCE_KM = MIN_DISTANCE_M / 1000;
  * km: a run from 1 to MAX_APP_DISTANCE_KM; a bike route all of its contract
  * limits, 10–30 km (TASK-190, the user's choice). Outside the bike zones
  * downloaded ahead a bike route downloads 23–26 km of map, and may take
- * longer than the 5 minutes the app waits (ADR-0153).
+ * longer than the 5 minutes the app waits (ADR-0153). Paddling its contract
+ * limits too, 1–5 km (TASK-191): «Paddle» is not offered yet.
  */
 export const APP_DISTANCE_LIMITS_KM: Readonly<
   Record<Activity, readonly [lowest: number, highest: number]>
 > = {
   running: [MIN_DISTANCE_KM, MAX_APP_DISTANCE_KM],
   cycling: [DISTANCE_LIMITS_M.cycling[0] / 1000, DISTANCE_LIMITS_M.cycling[1] / 1000],
+  paddling: [
+    DISTANCE_LIMITS_M.paddling[0] / 1000,
+    DISTANCE_LIMITS_M.paddling[1] / 1000,
+  ],
 };
 
 /** Above this the panel warns that the route takes longer (ADR-0034). */

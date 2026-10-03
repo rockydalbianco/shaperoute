@@ -93,3 +93,86 @@ test("«Edit profile» opens its page (TASK-116)", async () => {
   expect(opened.onEdit).toHaveBeenCalledTimes(1);
   expect(opened).not.toHaveBeenCalled();
 });
+
+async function showWithPhoto(over: Partial<ProfilePhotoState> = {}) {
+  const photo: ProfilePhotoState = {
+    uri: null,
+    busy: null,
+    problem: null,
+    choose: jest.fn(),
+    remove: jest.fn(),
+    clearProblem: jest.fn(),
+    ...over,
+  };
+  await render(
+    <ProfilePhotoContext.Provider value={photo}>
+      <ProfileHome
+        user={user}
+        favorites={2}
+        activities={5}
+        onOpen={jest.fn()}
+        onEdit={jest.fn()}
+      />
+    </ProfilePhotoContext.Provider>,
+  );
+  return photo;
+}
+
+test("the circle has a «+» and opens the ways to add a picture (TASK-207)", async () => {
+  const photo = await showWithPhoto();
+  expect(screen.getByTestId("photo-plus")).toBeOnTheScreen();
+  const circle = screen.getByRole("button", { name: "Profile picture" });
+  expect(screen.queryByRole("button", { name: "Choose a picture" })).toBeNull();
+
+  await fireEvent.press(circle);
+  expect(photo.clearProblem).toHaveBeenCalledTimes(1);
+  expect(circle).toBeExpanded();
+  expect(screen.getByRole("button", { name: "Take a photo" })).toBeOnTheScreen();
+  // Nothing to remove.
+  expect(screen.queryByRole("button", { name: "Remove picture" })).toBeNull();
+
+  await fireEvent.press(screen.getByRole("button", { name: "Choose a picture" }));
+  expect(photo.choose).toHaveBeenCalledWith("library");
+  // Chosen: the ways close.
+  expect(screen.queryByRole("button", { name: "Take a photo" })).toBeNull();
+
+  await fireEvent.press(circle);
+  await fireEvent.press(screen.getByRole("button", { name: "Take a photo" }));
+  expect(photo.choose).toHaveBeenLastCalledWith("camera");
+});
+
+test("with a picture the circle keeps its «+», and the picture can be removed", async () => {
+  const photo = await showWithPhoto({ uri: "data:image/jpeg;base64,aGVsbG8=" });
+  expect(screen.getByTestId("photo-plus")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Profile picture" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Remove picture" }));
+  expect(photo.remove).toHaveBeenCalledTimes(1);
+  expect(photo.choose).not.toHaveBeenCalled();
+});
+
+test("tapped again, the circle closes the ways without choosing", async () => {
+  const photo = await showWithPhoto();
+  const circle = screen.getByRole("button", { name: "Profile picture" });
+  await fireEvent.press(circle);
+  await fireEvent.press(circle);
+  expect(screen.queryByRole("button", { name: "Choose a picture" })).toBeNull();
+  expect(photo.choose).not.toHaveBeenCalled();
+});
+
+test("while the picture is saved «Profile» says so and the circle takes no tap", async () => {
+  await showWithPhoto({ busy: "saving" });
+  expect(screen.getByText("Saving…")).toBeOnTheScreen();
+  const circle = screen.getByRole("button", { name: "Profile picture" });
+  expect(circle).toBeDisabled();
+  await fireEvent.press(circle);
+  expect(screen.queryByRole("button", { name: "Choose a picture" })).toBeNull();
+});
+
+test("a change that failed is said in «Profile»", async () => {
+  await showWithPhoto({
+    problem: "Profile pictures are not available on this API yet.",
+  });
+  expect(
+    screen.getByText("Profile pictures are not available on this API yet."),
+  ).toBeOnTheScreen();
+});

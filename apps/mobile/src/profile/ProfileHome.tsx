@@ -1,4 +1,5 @@
 import type { User } from "@shaperoute/shared-types";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -10,6 +11,7 @@ import {
   space,
 } from "../theme/tokens";
 import { DrawingsGrid } from "../social/DrawingsGrid";
+import { PHOTO_BUSY_TEXT, PhotoChoices } from "./PhotoChoices";
 import { ProfileHeader } from "./ProfileHeader";
 import { bioOf } from "./profileFields";
 import { useProfilePhoto } from "./useProfilePhoto";
@@ -39,10 +41,13 @@ type Props = {
  * The first page of «Profile» with an account (TASK-177): who it is, with
  * the bio and «Edit profile» (TASK-116), what it keeps in two tiles with
  * their number, the way to «Settings», and the drawings it made public
- * (TASK-117), as the others see them.
+ * (TASK-117), as the others see them. A tap on the circle opens the ways
+ * to change the picture under it, as the row of «Settings» (TASK-207).
  */
 export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Props) {
   const photo = useProfilePhoto();
+  const [photoOpen, setPhotoOpen] = useState(false);
+  const busyText = photo.busy === null ? null : PHOTO_BUSY_TEXT[photo.busy];
   return (
     <View style={styles.home}>
       <View style={styles.top}>
@@ -51,7 +56,20 @@ export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Pro
           bio={bioOf(user)}
           photo={photo.uri}
           detail={user.email}
+          photoButton={{
+            open: photoOpen,
+            busy: photo.busy !== null,
+            onPress: () => {
+              photo.clearProblem();
+              setPhotoOpen(!photoOpen);
+            },
+          }}
         />
+        {photoOpen && (
+          <PhotoChoices photo={photo} onChosen={() => setPhotoOpen(false)} />
+        )}
+        {busyText !== null && <Text style={styles.photoNote}>{busyText}</Text>}
+        {photo.problem !== null && <Text style={styles.problem}>{photo.problem}</Text>}
         <Pressable
           style={({ pressed }) => [styles.edit, pressed && styles.pressed]}
           onPress={onEdit}
@@ -130,6 +148,16 @@ const styles = StyleSheet.create({
   },
   top: {
     gap: space.md,
+  },
+  photoNote: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
+    textAlign: "center",
+  },
+  problem: {
+    color: color.error,
+    fontSize: fontSize.body,
+    textAlign: "center",
   },
   // Neutral, as «Log out»: the yellow belongs to the route.
   edit: {

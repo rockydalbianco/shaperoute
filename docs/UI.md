@@ -1397,10 +1397,11 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   dall'utente il 2026-10-03). Nelle altre lingue: «Come on, full speed
   ahead!», «Los, volle Kraft voraus!», «¡Vamos, a toda máquina!», «Allez,
   en avant toute !».
-- **Testi**: le frasi italiane sono **confermate dall'utente** (2026-10-03);
-  spagnole, francesi e tedesche restano **da confermare** finché qualcuno
-  che parla quelle lingue non le ascolta. Quelle della penna alzata sono da
-  confermare anche in inglese (TASK-198). Le parole del foglio («App
+- **Testi**: le frasi italiane sono **confermate dall'utente** (2026-10-03),
+  e lo sono anche le spagnole, francesi e tedesche: l'utente le ha
+  ascoltate e approvate lo stesso giorno. Restano da confermare quelle
+  della bici a mano (TASK-206) in tedesco, spagnolo e francese, e quelle
+  della penna alzata anche in inglese (TASK-198). Le parole del foglio («App
   language», «Language», «Voice», «Default», «Listen», «Done») sono in
   inglese come il resto dello schermo: le traduce TASK-210.
 

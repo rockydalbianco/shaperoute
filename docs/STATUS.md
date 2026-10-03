@@ -330,8 +330,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   tabella per lingua; senza scelta la voce segue la lingua dell'app, in
   inglese le frasi di prima parola per parola; il banner resta della lingua
   dell'app. Dopo i primi 5 km «Daje, avanti tutta!» (scelta dell'utente).
-  Frasi italiane **confermate dall'utente**; spagnolo, francese e tedesco
-  da confermare. Provato nel simulatore (Expo Go): una corsa che parla
+  Frasi **confermate dall'utente** in italiano e, dopo averle ascoltate,
+  in spagnolo, francese e tedesco (2026-10-03). Provato nel simulatore (Expo Go): una corsa che parla
   italiano. Da provare sull'iPhone con la prossima pubblicazione, con l'ok
   dell'utente. Task file: `tasks/TASK-209.md`.
 - **App** — TASK-215: «Find friends» in cima a «Feed» (ADR-0178; chiesto

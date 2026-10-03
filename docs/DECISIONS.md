@@ -7952,8 +7952,9 @@ voci scaricate da internet (fuori scope).
 **Conseguenze**: le frasi nuove della voce (TASK-206 C, i tratti a piedi)
 vanno in tutte e cinque le tabelle: `Phrasebook` lo impone al compilatore e
 `words.test.ts` lo controlla. Le frasi italiane sono confermate
-dall'utente (2026-10-03); le altre tre restano da confermare da qualcuno
-che le parli (`UI.md`, «La voce della corsa»). Il branch importa `src/i18n/` (TASK-210), che entra in `main`
+dall'utente (2026-10-03), e lo sono anche quelle spagnole, francesi e
+tedesche, che l'utente ha ascoltato lo stesso giorno (`UI.md`, «La voce
+della corsa»). Il branch importa `src/i18n/` (TASK-210), che entra in `main`
 prima.
 
 ## ADR-0172 — La lingua dell'app: l'inglese resta la base e la chiave, la lingua del telefono alla partenza, nessuna dipendenza

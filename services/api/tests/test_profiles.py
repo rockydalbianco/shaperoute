@@ -352,6 +352,10 @@ def test_another_member_sees_the_profile_and_never_the_email(
         "bio": "Hearts on Sunday mornings.\nTrento, 10 km at a time.",
         "photo": None,
         "drawings": 0,
+        # Nobody follows nor is followed yet (TASK-211).
+        "followers": 0,
+        "following": 0,
+        "follow": "none",
     }
     # Not the email, nor anything of the account behind the profile.
     assert EMAIL not in answer.text

@@ -32,7 +32,8 @@ corpi del testo, la linea del percorso (gialla, larga 5) e `MIN_TAP_SIZE`,
 mano fuori da lì**: lo stile della mappa e le schermate leggono gli stessi
 token, e un colore nuovo è un token nuovo. Applicato all'app con TASK-046:
 mappa scura, percorso giallo, pannelli scuri, tastiere scure, barra di
-stato chiara. «Draw route» è l'unico comando giallo, con il testo scuro; gli
+stato chiara. «Draw route» è il comando giallo, con il testo scuro (e
+«Run without a route», per scelta dell'utente: TASK-220); gli
 altri («My position», «Search», «Cancel», «Export GPX», le forme da
 toccare) sono neutri, su `surfaceRaised`, con il bordo `borderStrong`:
 schiariti con TASK-086 (ADR-0081) perché sul fondo nero non si vedevano. Il segnaposto della partenza è
@@ -59,7 +60,9 @@ Quattro regole:
 
 1. **Il giallo significa una cosa sola**: il percorso, il comando che lo
    produce e la barra che lo mostra mentre si disegna. Gli avvisi usano `warning`, arancio: un avviso giallo
-   renderebbe il colore muto.
+   renderebbe il colore muto. **Un'eccezione**, scelta dall'utente
+   (TASK-220, ADR-0183): «Run without a route» in cima a «Draw» è giallo,
+   con il testo scuro. Per tutto il resto la regola vale.
 2. **Sul giallo il testo è scuro** (`onAccent`, 13,5:1). Il bianco si ferma
    a 1,5:1, sotto il minimo, e in pieno sole, dove l'app si usa, non si
    legge.
@@ -1596,7 +1599,8 @@ principale.
 ## Correre senza percorso (TASK-149, ADR-0122)
 
 **«Run without a route»**, in alto nella pagina «Draw» accanto a «Sgrava»,
-fa partire una corsa senza disegnare niente: niente forma, niente percorso,
+giallo con il testo scuro (TASK-220, scelta dell'utente: l'eccezione alla
+regola 1 dei colori), fa partire una corsa senza disegnare niente: niente forma, niente percorso,
 niente API. Con «Bike» scelto in «Settings» il pulsante dice **«Ride without
 a route»** (TASK-190, **da confermare con l'utente**); la schermata che apre
 resta quella della corsa (domanda 2 di `tasks/TASK-190.md`). La scritta è per intero (TASK-158, chiesto dall'utente): «Run» da

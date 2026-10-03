@@ -365,6 +365,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-220: «Run without a route» giallo (ADR-0183; chiesto
+  dall'utente il 2026-10-03). In cima a «Draw» il pulsante, anche come
+  «Ride without a route», ha il fondo giallo e il testo scuro: l'unica
+  eccezione alla regola «il giallo è del percorso». Sul telefono con la
+  prossima pubblicazione. `tasks/TASK-220.md`.
 - **App** — TASK-219: «Find friends» è solo una lente (ADR-0182; chiesto
   dall'utente il 2026-10-03). In cima a «Feed», a destra sotto il bottone
   di «Profile», un cerchio con la lente apre la ricerca di TASK-215;

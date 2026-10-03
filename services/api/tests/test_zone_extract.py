@@ -13,6 +13,7 @@ from route_engine.network import (
     FOOT_FILTER,
     OsmnxSource,
     network_of,
+    on_foot_edge,
     read_graph,
     read_named_roads,
 )
@@ -178,7 +179,8 @@ def test_the_bike_filters_read_as_overpass_does() -> None:
     assert not roads({"highway": "service", "access": "private"})
     assert paths({"highway": "path", "bicycle": "designated"})
     assert paths({"highway": "pedestrian", "bicycle": "yes"})
-    assert not paths({"highway": "footway"})
+    assert paths({"highway": "footway"})  # walked, the bike on foot (TASK-206)
+    assert not paths({"highway": "steps"})
     assert not paths({"highway": "path", "bicycle": "designated", "area": "yes"})
 
 
@@ -239,11 +241,23 @@ def test_a_bike_zone_is_built_from_the_extract_with_the_bike_filters(
         osmids = data["osmid"] if isinstance(data["osmid"], list) else [data["osmid"]]
         for osmid in osmids:
             ways.setdefault(int(osmid), []).append((u, v))
-    # No footway, steps or motorway; the cycle path and the streets stay.
-    assert set(ways) == {10, 12, 20, 21, 22}
-    # The one-way street eastward only, the two-way street both ways.
-    east = [zone.nodes[v]["x"] > zone.nodes[u]["x"] for u, v in ways[10]]
+    # No steps or motorway; the cycle path and the streets stay, and the
+    # footway, walked with the bike on foot (TASK-206, ADR-0167).
+    assert set(ways) == {10, 11, 12, 20, 21, 22}
+    assert all(on_foot_edge(zone[u][v][0]) for u, v in ways[11])
+    # The one-way street ridden eastward only, walked the other way; the
+    # two-way street both ways.
+    east = [
+        zone.nodes[v]["x"] > zone.nodes[u]["x"]
+        for u, v in ways[10]
+        if not on_foot_edge(zone[u][v][0])
+    ]
     assert east and all(east)
+    assert all(
+        on_foot_edge(zone[u][v][0])
+        for u, v in ways[10]
+        if zone.nodes[v]["x"] < zone.nodes[u]["x"]
+    )
     both = [zone.nodes[v]["x"] > zone.nodes[u]["x"] for u, v in ways[12]]
     assert True in both and False in both
     assert list((tmp_path / "cache").glob("foot_*")) == []

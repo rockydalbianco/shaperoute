@@ -20,7 +20,12 @@ from typing import Any
 import numpy as np
 
 from route_engine.geo import LatLon, haversine_m, latlon_to_local_array
-from route_engine.network import Graph, distance_to_segments, one_way_streets
+from route_engine.network import (
+    Graph,
+    distance_to_segments,
+    on_foot_edge,
+    one_way_streets,
+)
 from route_engine.water import SHORE_BAND_M
 from route_engine.water_fit import DISTANCE_TOLERANCE, WaterMeasures
 
@@ -191,11 +196,13 @@ def visual_retrace(
 
 def usability(graph: Graph, nodes: Sequence[Any]) -> dict[str, float]:
     """Metres of the route on steps, on busy roads and in tunnels; on the
-    bike network also unpaved (`unpaved`)."""
+    bike network also unpaved (`unpaved`) and with the bike on foot
+    (`on_foot`, TASK-206)."""
     metres = {"steps": 0.0, "busy": 0.0, "tunnel": 0.0}
     bike = one_way_streets(graph)
     if bike:
         metres["unpaved"] = 0.0
+        metres["on_foot"] = 0.0
     for u, v in zip(nodes, nodes[1:], strict=False):
         data = _edge_data(graph, u, v)
         length = float(data["length"])
@@ -208,6 +215,8 @@ def usability(graph: Graph, nodes: Sequence[Any]) -> dict[str, float]:
             metres["tunnel"] += length
         if bike and unpaved(data):
             metres["unpaved"] += length
+        if bike and on_foot_edge(data):
+            metres["on_foot"] += length
     return metres
 
 
@@ -296,6 +305,7 @@ def validate(measures: dict[str, float]) -> list[Issue]:
         "busy": "on main roads",
         "tunnel": "in tunnels",
         "unpaved": "on unpaved roads",
+        "on_foot": "with the bike on foot",
     }
     for code, label in labels.items():
         if measures.get(code, 0.0) > 0:

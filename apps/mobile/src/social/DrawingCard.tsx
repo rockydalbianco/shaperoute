@@ -2,6 +2,7 @@ import type { DrawingDetail } from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { dayLabel } from "../activities/activityText";
+import { t } from "../i18n";
 import { kmLabel } from "../navigation/freeRun";
 import {
   color,
@@ -38,15 +39,17 @@ export function DrawingCard({ drawing, onBack }: Props) {
           <View
             style={styles.scoreBox}
             accessible
-            accessibilityLabel={`Score: ${drawing.score} out of 100`}
+            accessibilityLabel={t("Score: {score} out of 100", {
+              score: drawing.score,
+            })}
           >
             <Text style={styles.score}>{drawing.score}</Text>
-            <Text style={styles.message}>out of 100</Text>
+            <Text style={styles.message}>{t("out of 100")}</Text>
           </View>
         )}
       </View>
       <Pressable style={styles.button} onPress={onBack} accessibilityRole="button">
-        <Text style={styles.buttonText}>Back to the profile</Text>
+        <Text style={styles.buttonText}>{t("Back to the profile")}</Text>
       </Pressable>
     </View>
   );

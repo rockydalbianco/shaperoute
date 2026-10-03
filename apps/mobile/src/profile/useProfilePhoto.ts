@@ -12,6 +12,7 @@ import { accountProblem, NO_API, sessionEnded } from "../account/messages";
 import type { Account } from "../account/useAccount";
 import type { AccountOutcome } from "../api/accounts";
 import { fetchPhoto, photoUri, removePhoto, savePhoto } from "../api/profilePhoto";
+import { t } from "../i18n";
 import type { ImageSource } from "../route/pickImage";
 import { type PickedPhoto, pickPhoto } from "./pickPhoto";
 
@@ -54,24 +55,31 @@ export function useProfilePhoto(): ProfilePhotoState {
 type Failed = Exclude<AccountOutcome<unknown>, { kind: "ok" }>;
 
 /** A picture that could not be picked, in words; cancelled says nothing. */
-const PICK_PROBLEMS: Record<Exclude<PickedPhoto["kind"], "picked">, string | null> = {
-  cancelled: null,
-  denied:
-    "The camera is off for this app. Allow it in Settings, or choose a picture instead.",
-  too_large: "This picture is too large. Choose a smaller one.",
-  pick_failed: "Could not open the picture. Try again.",
-};
+function pickProblem(kind: Exclude<PickedPhoto["kind"], "picked">): string | null {
+  switch (kind) {
+    case "cancelled":
+      return null;
+    case "denied":
+      return t(
+        "The camera is off for this app. Allow it in Settings, or choose a picture instead.",
+      );
+    case "too_large":
+      return t("This picture is too large. Choose a smaller one.");
+    case "pick_failed":
+      return t("Could not open the picture. Try again.");
+  }
+}
 
 /** A change of the picture that failed, in words (docs/UI.md, «Settings»). */
 export function photoProblem(failed: Failed): string {
   if (failed.kind === "api_error") {
     // The API's own words are for a programmer: «image: cannot read…».
     if (failed.code === "invalid_request") {
-      return "This picture cannot be used. Choose another one.";
+      return t("This picture cannot be used. Choose another one.");
     }
     // An API from before the pictures has no such endpoint.
     if (failed.code === "http_error") {
-      return "Profile pictures are not available on this API yet.";
+      return t("Profile pictures are not available on this API yet.");
     }
   }
   return accountProblem(failed);
@@ -163,14 +171,14 @@ export function useProfilePhotoOf(
         return;
       }
       if (baseUrl === null) {
-        change(token, () => ({ problem: NO_API }));
+        change(token, () => ({ problem: t(NO_API) }));
         return;
       }
       // From the tap: while the picker is open a second tap opens no other.
       change(token, () => ({ busy: "picking", problem: null }));
       const picked = await pick(source);
       if (picked.kind !== "picked") {
-        change(token, () => ({ busy: null, problem: PICK_PROBLEMS[picked.kind] }));
+        change(token, () => ({ busy: null, problem: pickProblem(picked.kind) }));
         return;
       }
       change(token, () => ({ busy: "saving" }));
@@ -193,7 +201,7 @@ export function useProfilePhotoOf(
       return;
     }
     if (baseUrl === null) {
-      change(token, () => ({ problem: NO_API }));
+      change(token, () => ({ problem: t(NO_API) }));
       return;
     }
     change(token, () => ({ busy: "removing", problem: null }));

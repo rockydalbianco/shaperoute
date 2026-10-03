@@ -12,7 +12,16 @@
   OpenFreeMap (ADR-0029). Non MapLibre React Native: in Expo Go non gira.
 - I percorsi li chiede all'API sul PC (ADR-0030, ADR-0031); mappa e
   ricerca del luogo chiamano direttamente due servizi esterni (ADR-0029).
-- Testi in inglese, come il codice; le traduzioni verranno dopo.
+- Testi scritti in inglese, come il codice, e mostrati nella lingua scelta
+  in «Settings» (TASK-210, ADR-0172): inglese, tedesco, italiano, spagnolo,
+  francese; senza scelta, quella del telefono se è una delle cinque,
+  altrimenti l'inglese. Ogni testo passa da `t()` (`src/i18n/`); un testo
+  senza traduzione si mostra in inglese. Tradotti a pezzi: con la parte A
+  «Settings», «Profile», l'accesso, «My activities», i preferiti, i
+  disegni, il feed, Strava e la ricerca del luogo; «Draw», «Explore» e la
+  corsa con le parti successive. Le traduzioni le ha riviste l'agente su
+  delega dell'utente («controlla te, mi fido», 2026-10-03); chi parla
+  tedesco, spagnolo o francese può ancora migliorarle in `src/i18n/`.
 
 ## Il tema
 
@@ -433,7 +442,14 @@ tornato privato: «This drawing is no longer public.» sopra la griglia.
   profile.»; collegato, «Connected as Ada Lovelace» e «Disconnect Strava»,
   in rosso, che chiede prima: «Disconnect Strava? Runs already sent stay
   on Strava.», con «Keep it» e «Disconnect».
-- **«Preferences»**: «Units», «Soon». **«Notifications»**: «Email
+- **«Preferences»**: **«Language»** (🌐, TASK-210, ADR-0172), con in
+  fondo la lingua in cui è l'app; un tocco apre sotto la riga «Phone
+  language» (con accanto la lingua del telefono) e «English», «Deutsch»,
+  «Italiano», «Español», «Français», ognuna nel suo nome e letta da
+  VoiceOver nella sua lingua, con il «✓» bianco sulla scelta. La scelta
+  chiude la lista, vale subito per tutta l'app senza chiudere niente e
+  resta sul telefono, come lo sport; «Phone language» torna a seguire il
+  telefono. Poi «Units», «Soon». **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
@@ -1384,6 +1400,14 @@ mostra le lettere unite da linee dritte sulla base.
   resta nella scheda. Se il telefono non riesce a scrivere la corsa: «This
   run could not be kept on the phone. Try again.», e si resta lì. Nessuno
   dei due è giallo.
+- **Il logo dopo «Save»** (TASK-212, ADR-0174; chiesto dall'utente il
+  2026-10-03): tenuta la corsa, sopra l'app sale il giallo `accent`
+  dell'avvio con il logo intero, che cresce un poco; resta 1,1 s e si
+  dissolve sulla schermata dove «Save» porta (in tutto 1,65 s). Un tocco
+  lo chiude prima. Anche senza rete, con la corsa che aspetta sul telefono
+  (scelta dell'utente); mai se il telefono non tiene la corsa, né a
+  «Discard». Al lettore di schermo: «Saved to My activities». Sta in
+  `src/intro/SavedLogo.tsx`, in `Root` sotto l'animazione d'avvio.
 - **«Public» e «Title»** (TASK-117, ADR-0159, ADR-0166), in cima, sopra
   Strava, solo con un account: l'interruttore **«Public»**, **spento a ogni
   corsa** (scelta dell'utente: non ricorda la volta prima); acceso, sotto,

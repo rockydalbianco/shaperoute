@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import type { SignInFields, SignUpFields } from "../account/fields";
+import { t, tLater } from "../i18n";
 import {
   color,
   fontSize,
@@ -21,9 +22,10 @@ import { Segmented } from "./Segmented";
 
 export type SignInMode = "signUp" | "logIn";
 
+/** In English: shown with `t()` (TASK-210). */
 const MODES = [
-  { value: "signUp", label: "Sign up" },
-  { value: "logIn", label: "Log in" },
+  { value: "signUp", label: tLater("Sign up") },
+  { value: "logIn", label: tLater("Log in") },
 ] as const;
 
 type Props = {
@@ -83,7 +85,7 @@ export function SignInScreen({
         </Text>
       )}
       <Segmented
-        options={MODES}
+        options={MODES.map((each) => ({ value: each.value, label: t(each.label) }))}
         value={mode}
         onChange={(next) => {
           if (next !== mode) {
@@ -94,10 +96,10 @@ export function SignInScreen({
         style={styles.modes}
       />
       <Field
-        label="EMAIL"
+        label={t("EMAIL")}
         value={email}
         onChangeText={setEmail}
-        placeholder="name@example.com"
+        placeholder={t("name@example.com")}
         keyboardType="email-address"
         autoComplete="email"
         textContentType={signingUp ? "emailAddress" : "username"}
@@ -110,10 +112,10 @@ export function SignInScreen({
       {signingUp && (
         <Field
           ref={usernameField}
-          label="USERNAME"
+          label={t("USERNAME")}
           value={username}
           onChangeText={setUsername}
-          placeholder="3 to 20 letters, digits, _ or ."
+          placeholder={t("3 to 20 letters, digits, _ or .")}
           autoComplete="username-new"
           textContentType="nickname"
           returnKeyType="next"
@@ -123,10 +125,10 @@ export function SignInScreen({
       )}
       <Field
         ref={passwordField}
-        label="PASSWORD"
+        label={t("PASSWORD")}
         value={password}
         onChangeText={setPassword}
-        placeholder={signingUp ? "At least 8 characters" : undefined}
+        placeholder={signingUp ? t("At least 8 characters") : undefined}
         secureTextEntry
         autoComplete={signingUp ? "new-password" : "current-password"}
         textContentType={signingUp ? "newPassword" : "password"}
@@ -140,12 +142,12 @@ export function SignInScreen({
           accessibilityRole="checkbox"
           accessibilityState={{ checked: atLeast16 }}
           // The tick is drawn, not read: the label says what it is.
-          accessibilityLabel="I am at least 16"
+          accessibilityLabel={t("I am at least 16")}
         >
           <View style={[styles.box, atLeast16 && styles.boxChecked]}>
             {atLeast16 && <Text style={styles.tick}>✓</Text>}
           </View>
-          <Text style={styles.checkText}>I am at least 16</Text>
+          <Text style={styles.checkText}>{t("I am at least 16")}</Text>
         </Pressable>
       )}
       <Pressable
@@ -158,12 +160,8 @@ export function SignInScreen({
       >
         <Text style={styles.buttonText}>
           {signingUp
-            ? busy
-              ? "Signing up…"
-              : "Sign up"
-            : busy
-              ? "Logging in…"
-              : "Log in"}
+            ? t(busy ? "Signing up…" : "Sign up")
+            : t(busy ? "Logging in…" : "Log in")}
         </Text>
       </Pressable>
       {problem && <Text style={styles.problem}>{problem}</Text>}

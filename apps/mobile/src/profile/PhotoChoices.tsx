@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -8,14 +9,19 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import type { ProfilePhotoState } from "./useProfilePhoto";
+import type { PhotoBusy, ProfilePhotoState } from "./useProfilePhoto";
 
 /** What a change of the picture says while it is on its way. */
-export const PHOTO_BUSY_TEXT = {
-  picking: null,
-  saving: "Saving…",
-  removing: "Removing…",
-};
+export function photoBusyText(busy: PhotoBusy): string | null {
+  switch (busy) {
+    case "saving":
+      return t("Saving…");
+    case "removing":
+      return t("Removing…");
+    default:
+      return null;
+  }
+}
 
 type Props = {
   photo: ProfilePhotoState;
@@ -35,10 +41,13 @@ export function PhotoChoices({ photo, onChosen }: Props) {
   };
   return (
     <View style={styles.choices}>
-      <Choice text="Choose a picture" onPress={then(() => photo.choose("library"))} />
-      <Choice text="Take a photo" onPress={then(() => photo.choose("camera"))} />
+      <Choice
+        text={t("Choose a picture")}
+        onPress={then(() => photo.choose("library"))}
+      />
+      <Choice text={t("Take a photo")} onPress={then(() => photo.choose("camera"))} />
       {photo.uri !== null && (
-        <Choice text="Remove picture" onPress={then(photo.remove)} />
+        <Choice text={t("Remove picture")} onPress={then(photo.remove)} />
       )}
     </View>
   );

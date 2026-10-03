@@ -106,7 +106,8 @@ In coda, dopo o accanto:
   in `main` (PR #235), con le scelte dell'utente del 2026-10-03: **1–5 km**, al
   mare la forma **oltre 200 m dalla riva**, sui laghi 50 m (ADR-0161);
   **B** (l'API, `activity: "paddling"`) in `main` (PR #241, ADR-0164);
-  poi C (app), dopo la prova dal vero sul server.
+  **C** (l'app, ADR-0169) fatta il 2026-10-03, in revisione; la prova dal
+  vero aspetta l'acqua dei quattro luoghi sul server.
 - **La penna alzata nelle parole**, chiesta e confermata dall'utente il
   2026-10-02: fra una lettera e l'altra si cammina senza disegnare, e
   l'app mette in pausa la registrazione da sola, con un avviso a voce.
@@ -285,8 +286,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   i campioni rifatti con le regole nuove sull'area intera, e Como
   (Overpass dal Mac, o il server con l'ok dell'utente). Cambia l'impronta
   del motore: un aggiornamento del server con TASK-203, poi
-  `draw_examples`. Poi C (app). Da dove riprendere:
-  `tasks/TASK-191.md`, «Esito», parti A2 e B.
+  `draw_examples`. **C** (l'app, ADR-0169, in `main` dalla PR #255,
+  2026-10-03 sera, chiesta dall'utente), con le tre risposte dell'utente: «Paddle»
+  si sceglie; «Draw» solo forme, 1–5 km, da 2 km; «on the water» e
+  «Start» senza indicazioni (mai `/route-directions`); l'**avviso di
+  sicurezza al primo «Start»** sull'acqua (testo approvato); i testi
+  d'errore dell'acqua; **«Explore» con «Paddle»**: Lago di Garda, Lago di
+  Como, Jesolo, Riccione e «Near me», cuore, cerchio e stella da 2 km dalla
+  riva; i testi della canoa anche nelle quattro lingue di TASK-210.
+  **Bloccato per la prova dal vero**: il server disegna in canoa solo
+  dove ha l'acqua in `data/cache/water/`, e Overpass rifiuta server e Mac;
+  scaricare prima l'acqua dei quattro luoghi è un seguito, con l'ok
+  dell'utente, poi la pubblicazione. **Non pubblicare `main` con «Paddle»
+  pronto finché l'acqua dei quattro luoghi non è sul server**: dal merge
+  della #255 ogni pubblicazione di `main` porta «Paddle» pronto, e chi lo
+  sceglie avrebbe solo errori. Seguito in `services/`: Strava riceve
+  ogni attività come «Run». Da dove riprendere: `tasks/TASK-191.md`,
+  «Esito», parti A2, B e C (fatta).
 
 - **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:
   subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API
@@ -362,6 +378,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-220: «Run without a route» giallo (ADR-0183; chiesto
+  dall'utente il 2026-10-03). In cima a «Draw» il pulsante, anche come
+  «Ride without a route», ha il fondo giallo e il testo scuro: l'unica
+  eccezione alla regola «il giallo è del percorso». PR #280, merge
+  `0655511`. Esce con la prossima pubblicazione, che l'utente ha
+  approvato il 2026-10-03 («aspetta e poi pubblica») solo dopo che
+  l'acqua di TASK-225 è sul server: `main` ha già «Paddle» (#255).
+  `tasks/TASK-220.md`.
 - **App** — TASK-216: la navigazione in bici (ADR-0179; scelte
   dell'utente del 2026-10-03; PR #278, merge `510f8a5`). «Start» su un
   percorso in bici (da «Draw», da un preferito tenuto in bici) segue

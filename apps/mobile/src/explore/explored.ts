@@ -80,12 +80,13 @@ function isShape(value: string | null): value is Shape {
   return value !== null && (SHAPES as readonly string[]).includes(value);
 }
 
-/** The request a drawn route would have had: what the GPX export sends. */
+/** The request a drawn route would have had: what the GPX export sends,
+ * and Start reads (on the water there are no directions to ask, TASK-191). */
 export function toRequest(detail: RecommendedRouteDetail): AnyRouteRequest | null {
   const base = {
     start: detail.points[0],
     distance_m: detail.distance_m,
-    activity: "running" as const,
+    activity: detail.activity ?? "running",
   };
   if (detail.word !== null) {
     const style: LetterStyle = detail.style === "block" ? "block" : "round";

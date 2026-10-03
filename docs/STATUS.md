@@ -177,7 +177,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: il task file, «Esito», «I campioni».
 - **TASK-206 — Forme in bici più riconoscibili** (ADR-0167; scelta
   dell'utente: «Sì, poco», brevi tratti con la bici a mano, circa 1 km su
-  10). **Parte A, il motore**, fatta il 2026-10-03: la rete della bici
+  10). **Parte A, il motore**, in `main` dalla PR #249 (2026-10-03): la rete della bici
   tiene marciapiedi, sentieri e zone pedonali e l'altro senso dei sensi
   unici, a piedi, a sei volte il costo; i controlli e l'avviso dicono i
   metri a piedi. La corsa e la canoa non cambiano. Le zone `bike_*` di

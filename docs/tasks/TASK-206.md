@@ -1,7 +1,7 @@
 # TASK-206 — Forme in bici più riconoscibili
 
-**Stato**: In corso (parte A, il motore, fatta, con i campioni di Trento
-giudicati dall'utente; B e C da fare)
+**Stato**: In corso (parte A, il motore, in `main` dalla PR #249, con i
+campioni di Trento giudicati dall'utente; B e C da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-206-bike-shapes` (parte A)
 **Dipende da**: TASK-190 (la bici: motore, API e app in `main`)
 
@@ -182,7 +182,8 @@ marciapiede né contromano.
 
 ### Parte A — 2026-10-03
 
-Fatta come «Cosa fare» 1–6 (ADR-0167). Motore 1.205 test verdi (`-m "not
+In `main` dalla PR #249 (CI 5/5 verde). Fatta come «Cosa fare» 1–6
+(ADR-0167). Motore 1.205 test verdi (`-m "not
 network"`, 27 nuovi in `tests/test_bike_on_foot.py`); in
 `tests/test_bike_network.py` quattro test dicono ora «in sella» dove
 dicevano «mai». Nella città dei test il cerchio in bici da 10 km porta la

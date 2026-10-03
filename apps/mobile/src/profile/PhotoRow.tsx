@@ -10,11 +10,10 @@ import {
   space,
 } from "../theme/tokens";
 import { Avatar } from "./Avatar";
+import { PHOTO_BUSY_TEXT, PhotoChoices } from "./PhotoChoices";
 import { useProfilePhoto } from "./useProfilePhoto";
 
 const PHOTO_SIZE = MIN_TAP_SIZE - space.xs;
-
-const BUSY_TEXT = { picking: null, saving: "Saving…", removing: "Removing…" };
 
 /**
  * «Profile picture» in «Settings» (TASK-178, ADR-0146): the picture, or the
@@ -26,11 +25,7 @@ export function PhotoRow({ name }: { name: string }) {
   const photo = useProfilePhoto();
   const [open, setOpen] = useState(false);
   const busy = photo.busy !== null;
-  const busyText = photo.busy === null ? null : BUSY_TEXT[photo.busy];
-  const close = (then: () => void) => () => {
-    setOpen(false);
-    then();
-  };
+  const busyText = photo.busy === null ? null : PHOTO_BUSY_TEXT[photo.busy];
   return (
     <View style={styles.menu}>
       <Pressable
@@ -54,26 +49,11 @@ export function PhotoRow({ name }: { name: string }) {
       </Pressable>
       {open && (
         <View style={styles.choices}>
-          <Choice
-            text="Choose a picture"
-            onPress={close(() => photo.choose("library"))}
-          />
-          <Choice text="Take a photo" onPress={close(() => photo.choose("camera"))} />
-          {photo.uri !== null && (
-            <Choice text="Remove picture" onPress={close(photo.remove)} />
-          )}
+          <PhotoChoices photo={photo} onChosen={() => setOpen(false)} />
         </View>
       )}
       {photo.problem !== null && <Text style={styles.problem}>{photo.problem}</Text>}
     </View>
-  );
-}
-
-function Choice({ text, onPress }: { text: string; onPress: () => void }) {
-  return (
-    <Pressable style={styles.button} onPress={onPress} accessibilityRole="button">
-      <Text style={styles.buttonText}>{text}</Text>
-    </Pressable>
   );
 }
 
@@ -110,24 +90,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.small,
   },
   choices: {
-    gap: space.sm,
     paddingHorizontal: space.md,
     paddingBottom: space.md,
-  },
-  // Neutral: the yellow belongs to the route (docs/UI.md, «Il tema»).
-  button: {
-    minHeight: MIN_TAP_SIZE,
-    borderRadius: radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: color.surfaceRaised,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
-  },
-  buttonText: {
-    color: color.text,
-    fontSize: fontSize.body,
-    fontWeight: fontWeight.semibold,
   },
   problem: {
     color: color.error,

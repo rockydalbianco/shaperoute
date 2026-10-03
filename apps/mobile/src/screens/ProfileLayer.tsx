@@ -1,4 +1,12 @@
-import { createContext, type ReactNode, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useAccount } from "../account/useAccount";
@@ -6,7 +14,10 @@ import { ActivitiesContext, useActivitiesOf } from "../activities/activitiesDoor
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import { t } from "../i18n";
 import { ProfilePhotoContext, useProfilePhotoOf } from "../profile/useProfilePhoto";
+import { CommentsContext, useCommentsOf } from "../social/commentsDoor";
 import { DrawingsContext, useDrawingsOf } from "../social/drawingsDoor";
+import { PeopleContext } from "../social/peopleDoor";
+import { LOG_IN_TO_FIND } from "../social/PeopleSearch";
 import { StravaContext, useStravaOf } from "../strava/useStrava";
 import {
   color,
@@ -16,7 +27,11 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { PeopleScreen } from "./PeopleScreen";
 import { type ProfilePage, ProfileScreen } from "./ProfileScreen";
+
+/** «Find friends» (TASK-215): on screen, or behind a drawing opened from it. */
+type PeopleAt = "shown" | "behind" | null;
 
 /** What the button in the header needs to know of the account. */
 type Door = {
@@ -54,7 +69,17 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   const [page, setPage] = useState<ProfilePage | null>(null);
   // Why «Profile» opened on its own, in a line over «Sign up» (the heart).
   const [hint, setHint] = useState<string | null>(null);
-  const shown = page !== null;
+  // «Find friends», opened from «Feed» (TASK-215); a ref too, for the doors
+  // of the drawings, made once.
+  const [people, setPeopleState] = useState<PeopleAt>(null);
+  const peopleAt = useRef<PeopleAt>(null);
+  const setPeople = useCallback((next: PeopleAt) => {
+    peopleAt.current = next;
+    setPeopleState(next);
+  }, []);
+  // Where the drawing on the map was opened: back goes there.
+  const drawingFrom = useRef<"profile" | "people">("profile");
+  const shown = page !== null || people === "shown";
   const account = useAccount(apiUrl);
   const { state } = account;
   // The favorites of the account (TASK-171): the heart on the map opens
@@ -95,24 +120,57 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // activities» and «Settings» show it.
   const strava = useStravaOf(apiUrl, account);
   // The drawings (TASK-117): one opened from a profile leaves «Profile» for
-  // the map, and comes back to it.
+  // the map, and comes back to it; one opened from a member found by
+  // «Find friends» comes back there (TASK-215).
   const drawingDoors = useMemo(
     () => ({
-      onOpened: () => setPage(null),
+      onOpened: () => {
+        setPage(null);
+        if (peopleAt.current === "shown") {
+          drawingFrom.current = "people";
+          setPeople("behind");
+        } else {
+          drawingFrom.current = "profile";
+          setPeople(null);
+        }
+      },
       onBack: () => {
         setHint(null);
-        setPage("account");
+        if (drawingFrom.current === "people" && peopleAt.current !== null) {
+          setPeople("shown");
+        } else {
+          setPage("account");
+        }
       },
     }),
-    [],
+    [setPeople],
   );
   const drawings = useDrawingsOf(apiUrl, account, drawingDoors);
+  // What the members write under a drawing (TASK-120): the drawing's card
+  // is in the app, on the map.
+  const comments = useCommentsOf(apiUrl, account);
   const photoUri = photo.uri;
   const attention = state.status === "signedOut" && state.notice === "ended";
   const initial =
     state.status === "signedIn"
       ? state.session.user.username.charAt(0).toUpperCase()
       : null;
+  // «Find friends» asks the API with the account: without one, «Profile»
+  // first, saying why.
+  const signedIn = state.status === "signedIn";
+  const peopleDoor = useMemo(
+    () => ({
+      open: () => {
+        if (signedIn) {
+          setPeople("shown");
+          return;
+        }
+        setHint(t(LOG_IN_TO_FIND));
+        setPage("account");
+      },
+    }),
+    [setPeople, signedIn],
+  );
   const door = useMemo(
     () => ({
       open: () => {
@@ -132,29 +190,41 @@ export function ProfileLayer({ apiUrl, children }: Props) {
           <ProfilePhotoContext.Provider value={photo}>
             <StravaContext.Provider value={strava}>
               <DrawingsContext.Provider value={drawings}>
-                <View style={styles.layer}>
-                  <View
-                    style={styles.app}
-                    // Under «Profile» the app is out of the screen reader's sight too.
-                    accessibilityElementsHidden={shown}
-                    importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
-                  >
-                    {children}
+                <PeopleContext.Provider value={peopleDoor}>
+                  <View style={styles.layer}>
+                    <View
+                      style={styles.app}
+                      // Under «Profile» the app is out of the screen reader's sight too.
+                      accessibilityElementsHidden={shown}
+                      importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
+                    >
+                      <CommentsContext.Provider value={comments}>
+                        {children}
+                      </CommentsContext.Provider>
+                    </View>
+                    {people !== null && (
+                      <PeopleScreen
+                        apiUrl={apiUrl}
+                        account={account}
+                        hidden={people === "behind"}
+                        onBack={() => setPeople(null)}
+                      />
+                    )}
+                    {page !== null && (
+                      <ProfileScreen
+                        account={account}
+                        page={page}
+                        onPage={setPage}
+                        hint={hint}
+                        onBack={() => {
+                          // Closed without an account: the heart's route waits no more.
+                          forgetWaiting();
+                          setPage(null);
+                        }}
+                      />
+                    )}
                   </View>
-                  {page !== null && (
-                    <ProfileScreen
-                      account={account}
-                      page={page}
-                      onPage={setPage}
-                      hint={hint}
-                      onBack={() => {
-                        // Closed without an account: the heart's route waits no more.
-                        forgetWaiting();
-                        setPage(null);
-                      }}
-                    />
-                  )}
-                </View>
+                </PeopleContext.Provider>
               </DrawingsContext.Provider>
             </StravaContext.Provider>
           </ProfilePhotoContext.Provider>

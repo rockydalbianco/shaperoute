@@ -109,6 +109,15 @@ export const ES: Table = {
   "{weekday} {day} {month} {year}": "{weekday} {day} {month} {year}",
   Run: "Carrera",
 
+  // src/api/comments.ts
+  "A comment needs some words.": "Un comentario necesita algunas palabras.",
+  "A comment is at most {max} characters.":
+    "Un comentario tiene como máximo {max} caracteres.",
+  "Too many comments in a minute. Wait a moment and try again.":
+    "Demasiados comentarios en un minuto. Espera un momento e inténtalo de nuevo.",
+  "The comments of this drawing are not available.":
+    "Los comentarios de este dibujo no están disponibles.",
+
   // src/api/strava.ts
   "No connection. Try again when you are online.":
     "Sin conexión. Inténtalo de nuevo cuando estés en línea.",
@@ -245,6 +254,9 @@ export const ES: Table = {
   "Profile pictures are not available on this API yet.":
     "Las fotos de perfil aún no están disponibles en esta API.",
 
+  // src/screens/PeopleScreen.tsx
+  "Find friends": "Buscar amigos",
+
   // src/screens/ProfileLayer.tsx
   "Profile, log in again": "Perfil, inicia sesión de nuevo",
   Profile: "Perfil",
@@ -273,6 +285,23 @@ export const ES: Table = {
   // src/social/DrawingCard.tsx
   "Back to the profile": "Volver al perfil",
 
+  // src/social/DrawingComments.tsx
+  "Opens the comments of this drawing.": "Abre los comentarios de este dibujo.",
+  Comments: "Comentarios",
+  "Delete this comment?": "¿Eliminar este comentario?",
+  Cancel: "Cancelar",
+  "Close the comments": "Cerrar los comentarios",
+  Close: "Cerrar",
+  "Add a comment…": "Añade un comentario…",
+  Comment: "Comentario",
+  Post: "Publicar",
+  "{count} of {max} characters": "{count} de {max} caracteres",
+  "Loading the comments…": "Cargando los comentarios…",
+  "No comments yet. Be the first.": "Aún no hay comentarios. Escribe el primero.",
+  "Show more comments": "Mostrar más comentarios",
+  "{name}, {ago}: {text}": "{name}, {ago}: {text}",
+  "Touch and hold to delete.": "Mantén pulsado para eliminar.",
+
   // src/social/DrawingsGrid.tsx
   Drawings: "Dibujos",
   "No public drawings yet. Make a run public in My activities.":
@@ -281,8 +310,27 @@ export const ES: Table = {
   "{title}, score {score} out of 100, open on the map":
     "{title}, puntuación {score} de 100, abrir en el mapa",
 
+  // src/social/commentText.ts
+  "You can't write negative comments in this app. Try another app.":
+    "En esta app no puedes escribir comentarios negativos. Usa otra app.",
+  "just now": "ahora mismo",
+  "{count} min ago": "hace {count} min",
+  "{count} h ago": "hace {count} h",
+  "{count} d ago": "hace {count} d",
+  "Write a comment": "Escribe un comentario",
+  "{count} comment": "{count} comentario",
+  "{count} comments": "{count} comentarios",
+
   // src/social/drawingsDoor.ts
   "This drawing is no longer public.": "Este dibujo ya no es público.",
+
+  // src/social/PeopleSearch.tsx
+  "Log in to find your friends.": "Inicia sesión para encontrar a tus amigos.",
+  "This server cannot look for members yet.":
+    "Este servidor todavía no puede buscar miembros.",
+  Name: "Nombre",
+  "Type at least 2 letters of a name.": "Escribe al menos 2 letras de un nombre.",
+  "Nobody has a name like that.": "Nadie tiene un nombre así.",
 
   // src/strava/StravaActivityRow.tsx
   "Sending to Strava…": "Enviando a Strava…",

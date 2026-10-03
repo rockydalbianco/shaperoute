@@ -49,6 +49,7 @@ from shaperoute_api.activity_graphs import (
     source_for,
 )
 from shaperoute_api.cities import CitySearch, SuggestionsBody
+from shaperoute_api.comments import install_comments
 from shaperoute_api.drawing_photos import install_drawing_photos
 from shaperoute_api.drawings import install_drawings
 from shaperoute_api.errors import error_of
@@ -303,6 +304,8 @@ def create_app(
     # Members found by name, and following with a request (TASK-211); they
     # need a token.
     install_follows(app)
+    # What the members write under a drawing (TASK-120); they need a token.
+    install_comments(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

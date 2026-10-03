@@ -647,7 +647,9 @@ def test_without_a_database_the_drawings_are_unavailable() -> None:
 
 
 def migrated_before(database: Database, migration: Path, tmp_path: Path) -> None:
-    """The database as it was before `migration` entered main."""
+    """The database as it was before `migration` entered main: the
+    migrations before it, not those after it, which may need its tables
+    (the comments do, TASK-120)."""
     for path in migrations():
         if path.name < migration.name:
             shutil.copy(path, tmp_path / path.name)
@@ -1056,3 +1058,37 @@ def test_the_migration_keeps_who_saw_each_drawing(
         KEY: True,
         OTHER_KEY: False,
     }
+
+
+def test_the_comments_follow_who_can_see_the_drawing(client: TestClient) -> None:
+    """The follow-up of TASK-120 (comments.py): a follower reads and writes
+    under a drawing for the followers, as it sees the drawing."""
+    me = signed_up(client)
+    saved(client, me)
+    follower, stranger = other(client), third(client)
+    follows(client, follower, me)
+    drawing_id = drawn(client, me, visibility="followers")["id"]
+    path = f"/drawings/{drawing_id}/comments"
+    written = client.post(path, json=_load("comment-request.json"), headers=me)
+    assert written.status_code == 201, written.text
+    comment_id = written.json()["id"]
+    page = client.get(path, headers=follower)
+    assert page.status_code == 200
+    assert [c["id"] for c in page.json()["comments"]] == [comment_id]
+    assert client.post(
+        path, json={"text": "Lovely."}, headers=follower
+    ).status_code == (201)
+    # Seen, not its own: refused; unseen: not there at all.
+    assert client.delete(f"/comments/{comment_id}", headers=follower).status_code == (
+        403
+    )
+    for answer in (
+        client.get(path, headers=stranger),
+        client.post(path, json={"text": "Lovely."}, headers=stranger),
+        client.delete(f"/comments/{comment_id}", headers=stranger),
+    ):
+        assert answer.status_code == 404
+    # Only its owner's again: the follower no longer reads them.
+    drawn(client, me, visibility="only_me")
+    assert client.get(path, headers=follower).status_code == 404
+    assert client.get(path, headers=me).status_code == 200

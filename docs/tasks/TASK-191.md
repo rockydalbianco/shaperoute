@@ -1,6 +1,7 @@
 # TASK-191 — Percorsi in canoa e paddle
 
-**Stato**: In corso (A1 fatta; A2 in revisione; B e C da fare)
+**Stato**: In corso (A1 e A2 fatte, PR #216 e #235; il punto 5 di A2, B e
+C da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-191-paddle-routes` (A1),
 `feat/TASK-191-paddle-a2` (A2)
 **Dipende da**: TASK-189 («Sport» in «Settings»: la riga «Paddle» da
@@ -351,7 +352,7 @@ fascia e forme ancora più piccole.
 
 ### Parte A2 — 2026-10-03
 
-**Fatto** (ADR-0161, `ROUTE_ENGINE.md` §7 e §8), i punti 1–4 di «Cosa deve
+In `main` dalla PR #235 (CI 5/5 verde). **Fatto** (ADR-0161, `ROUTE_ENGINE.md` §7 e §8), i punti 1–4 di «Cosa deve
 fare A2»; il punto 5 (i campioni rifatti e Como) no, sotto.
 
 - **Le scelte dell'utente** (sopra): `DISTANCE_LIMITS_M["paddling"] =

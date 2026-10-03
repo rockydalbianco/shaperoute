@@ -122,6 +122,9 @@ docs/UI.md, docs/DECISIONS.md, docs/STATUS.md
 
 ### Parte A — l'API (2026-10-03, ADR-0173)
 
+In `main` dal 2026-10-03 con la PR #256 (merge `455e7bd`), migrazione
+`0011_follows.sql`; CI 5/5 verde. Non sul server.
+
 **Cosa funziona** (`follows.py`, migrazione `0011_follows.sql`: il numero
 è il primo libero in `main` al merge, va riguardato prima):
 - **`follows`**: una riga per coppia in un verso, `pending` o `accepted`,

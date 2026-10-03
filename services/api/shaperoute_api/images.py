@@ -15,14 +15,17 @@ import binascii
 import io
 import math
 from dataclasses import dataclass, replace
+from typing import cast
 
 from PIL import Image
 from route_engine.image_outline import ANALYSIS_SIDE, MAX_POINTS, outline_data
 from route_engine.models import (
+    WATER_ACTIVITIES,
     InvalidRequestError,
     RouteRequest,
     check_activity,
     check_distance,
+    check_drawn_on_land,
     check_start,
 )
 from route_engine.nearby_starts import ShapeJob, plan_nearby
@@ -34,7 +37,9 @@ from route_engine.optimizer import (
 )
 from route_engine.outline_edits import MAX_DETAIL_POINTS, travelled_points
 from route_engine.shapes.outline import InvalidOutlineError, Outline, parse_outline
+from route_engine.water import WaterSource
 
+from shaperoute_api.paddling import plan_water
 from shaperoute_api.schemas import MAX_IMAGE_BYTES, ImageOutlineBody
 
 # What an image route is called in names and messages, like "heart".
@@ -60,6 +65,9 @@ class ImageRequest:
 
     def __post_init__(self) -> None:
         check_start(self.start)
+        # Only a shape of the catalogue on the water (ADR-0161), whatever
+        # the distance: "... not an image".
+        check_drawn_on_land(self.activity, "an image")
         # The limits of its activity: 10-30 km by bike (TASK-190).
         check_distance(self.distance_m, self.activity)
         check_activity(self.activity)
@@ -183,16 +191,22 @@ def image_job(request: ImageRequest) -> ShapeJob:
     )
 
 
-def plan_request(request: AnyRequest, source: GraphLoader) -> Plan:
+def plan_request(request: AnyRequest, source: GraphLoader | WaterSource) -> Plan:
     """The API's planner: a shape, a word or an image, also from a few road
     nodes near the start, keeping the best (TASK-076, ADR-0071) and the
-    others worth choosing (TASK-093, ADR-0087)."""
+    others worth choosing (TASK-093, ADR-0087). A shape on the water is
+    placed on the water `source` gives (TASK-191): there are no roads."""
+    if request.activity in WATER_ACTIVITIES:
+        # ImageRequest and the words of RouteRequest refuse the water.
+        assert isinstance(request, RouteRequest)
+        return plan_water(request, cast(WaterSource, source))
+    roads = cast(GraphLoader, source)
     if isinstance(request, ImageRequest):
-        plan = plan_nearby(image_job(request), request.start, source).plan
+        plan = plan_nearby(image_job(request), request.start, roads).plan
         return replace(
             _unnamed(plan), alternatives=[_unnamed(p) for p in plan.alternatives]
         )
-    return plan_nearby(ShapeJob.of_request(request), request.start, source).plan
+    return plan_nearby(ShapeJob.of_request(request), request.start, roads).plan
 
 
 def _unnamed(plan: Plan) -> Plan:

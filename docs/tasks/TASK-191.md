@@ -1,9 +1,9 @@
 # TASK-191 — Percorsi in canoa e paddle
 
-**Stato**: In corso (A1 e A2 fatte, PR #216 e #235; il punto 5 di A2, B e
-C da fare)
+**Stato**: In corso (A1 e A2 fatte, PR #216 e #235; B fatta, in
+revisione; il punto 5 di A2 e C da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-191-paddle-routes` (A1),
-`feat/TASK-191-paddle-a2` (A2)
+`feat/TASK-191-paddle-a2` (A2), `feat/TASK-191-paddle-api` (B)
 **Dipende da**: TASK-189 («Sport» in «Settings»: la riga «Paddle» da
 accendere), TASK-177 (la pagina «Settings»). Meglio dopo la parte A e B
 di TASK-190, che aprono `activity` a un secondo valore.
@@ -186,6 +186,54 @@ arriva alla riva (con i 200 m, dietro un frangiflutti la forma non ci
 stava più), `paddling.py` per il piano di una richiesta che la parte B
 chiamerà uguale, `test_bike_network.py` (di TASK-190, con l'ok del
 coordinatore) perché diceva che ogni attività ha una rete in `NETWORKS`.
+
+**Parte B** (2026-10-03, ADR-0164; fuori da `services/api/` e
+`shared-types`, col permesso del coordinatore: una riga del motore e i
+due test che la fissano, tre righe dell'app):
+
+```
+services/api/shaperoute_api/paddling.py                        (nuovo)
+services/api/shaperoute_api/activity_graphs.py
+services/api/shaperoute_api/app.py
+services/api/shaperoute_api/errors.py
+services/api/shaperoute_api/images.py
+services/api/shaperoute_api/jobs.py
+services/api/shaperoute_api/prefetch_zones.py
+services/api/shaperoute_api/replay.py
+services/api/shaperoute_api/schemas.py
+services/api/migrations/0010_favorite_paddling.sql             (nuovo)
+services/api/tests/test_paddling.py                            (nuovo)
+services/api/tests/test_contract.py
+services/api/tests/test_cycling.py
+services/api/tests/test_favorites.py
+services/route-engine/route_engine/models.py
+services/route-engine/tests/test_paddling.py
+services/route-engine/tests/test_bike_network.py
+packages/shared-types/src/index.ts
+packages/shared-types/fixtures/contract.json
+packages/shared-types/fixtures/route-request-paddling.json     (nuovo)
+packages/shared-types/test/contract.test.ts
+apps/mobile/src/route/distance.ts
+apps/mobile/src/api/favorites.test.ts
+apps/mobile/src/favorites/favoriteRoute.test.ts
+docs/API.md
+docs/DATABASE.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-191.md
+```
+
+Perché fuori dall'elenco previsto: `SUPPORTED_ACTIVITIES` sta in
+`models.py` del motore, e `test_paddling.py` (A2) e `test_bike_network.py`
+(TASK-190) lo fissano; la `0008` vuole una migrazione che allarghi il suo
+vincolo; con `paddling` in `ACTIVITIES` l'app non compila senza la sua
+riga in `APP_DISTANCE_LIMITS_KM` (`Record<Activity, …>`), e due suoi test
+usavano `"paddling"` come attività sconosciuta; `test_cycling.py` e
+`test_favorites.py` (TASK-190, TASK-200) idem. Il coordinatore ha dato
+l'ok a ognuno il 2026-10-03 (TASK-190 e TASK-200 sono chiuse nel codice,
+nessun task in corso ha `distance.ts`). `errors.py` non era
+nell'elenco previsto e c'è; `draw_examples.py` era nell'elenco e non c'è
+(sotto, «Esito», parte B).
 
 Tutto il task (B e C dichiarano i loro):
 
@@ -415,6 +463,82 @@ rifiutate con `check_drawn_on_land` (`ON_WATER_SHAPES_ONLY`); niente
 indicazioni di svolta sull'acqua (non c'è un grafo); le tre alternative
 A · B · C non ci sono (un piano solo).
 
+### Parte B — 2026-10-03
+
+Branch `feat/TASK-191-paddle-api`, PR #241. **Fatto** (ADR-0164; `API.md`,
+«Sull'acqua»; `DATABASE.md`, migrazione `0010`):
+
+- **Il contratto**, solo aggiunte: `paddling` in `SUPPORTED_ACTIVITIES`, in
+  `ACTIVITIES` e `DISTANCE_LIMITS_M` di `shared-types` (1–5 km),
+  `contract.json`, la fixture `route-request-paddling.json` letta dai test
+  dei due lati.
+- **L'API sull'acqua**: `shaperoute_api/paddling.py` (nuovo), con
+  `ServerWater` (l'acqua di `<cache>/water/`, la stessa `--cache-dir`
+  delle zone; un download alla volta; uno non riuscito è `503
+  map_data_unavailable`) e `plan_water`, che chiama `plan_paddling`.
+  `ActivityGraphs` tiene l'acqua accanto alle zone; `ground_for` sceglie
+  fra zone e acqua per `/routes`, `/route-jobs` e il replay. Il job mostra
+  `downloading_map` mentre scarica l'acqua e, se annullato intanto, non
+  piazza la forma.
+- **Cosa risponde**: il `RouteResult` del motore, chiuso dalla riva,
+  somiglianza 1, `directions`, `alternatives`, `warnings` e `walks`
+  vuoti; il GPX come ogni percorso. Lontano dall'acqua `422
+  shape_not_drawable` senza distanza. La forma che non ci sta `422
+  shape_not_drawable` con `suggested_distance_m` **per difetto al mezzo
+  km** in cui ci sta (ADR-0164, punto 5: al km più vicino la distanza
+  suggerita poteva non starci), che chiesta dà il percorso (test: cuore da
+  5 km → 3000, cerchio da 4 km → 2500). Parole e immagini `422
+  invalid_request` («on the water only a shape of the catalogue is drawn,
+  not a word / not an image»), fuori da 1–5 km pure.
+- **Le indicazioni** (`/route-directions`) con i punti di un percorso
+  sull'acqua: `422 invalid_request`, «The route does not follow the roads
+  of this map.», dopo aver caricato (o scaricato) la zona a piedi
+  attorno alla linea: la richiesta non ha l'attività. L'app non le deve
+  chiedere. **Le alternative A · B · C** non ci sono: `alternatives` è
+  vuoto.
+- **I preferiti** tengono `paddling`: `0010_favorite_paddling.sql`
+  allarga il vincolo della `0008`, e un preferito in canoa si tiene e si
+  rilegge invece di dare 500 (`test_every_activity_offered_is_kept`).
+  `prefetch_zones --activity` resta per corsa e bici.
+- **L'app non cambia**: «Paddle» resta «Soon» (ADR-0152) e l'app non manda
+  mai `paddling` fino alla parte C. Ha solo la riga dei limiti della canoa
+  in `APP_DISTANCE_LIMITS_KM`, che le serve per compilare. **Un
+  comportamento nuovo**: un preferito `paddling` (che oggi solo un altro
+  client può tenere) si riapre come `paddling`, non più come corsa
+  (`favoriteActivity`, perché `paddling` è ora in `ACTIVITIES`).
+- **Test**: `services/api/tests/test_paddling.py` (29, sulle fixture
+  dell'acqua del motore in una cartella di cache, nessun download che un
+  test non risponda), i test del contratto dei due lati, e in
+  `test_cycling.py`, `test_favorites.py` e nei due test dell'app
+  l'attività sconosciuta d'esempio è `"swimming"`. Motore 1178 verdi;
+  API tutti verdi; app 1294 (jest), tsc, lint, prettier; `shared-types`
+  29.
+
+**Non fatto**:
+
+- **Il punto 9**, gli esempi dei quattro luoghi in `draw_examples.py`: non
+  era nel messaggio di partenza, e dipende dalla domanda 3 (dove stanno
+  laghi e mare in «Explore», una scelta di prodotto) e dai dati veri.
+- **La prova dal vero**: dal Mac alle 09:05Z e alle 09:09Z (Riccione,
+  cuore da 2 km, col planner dell'API su una cache temporanea): «No route
+  to host» a livello di rete, anche con `curl`, mentre la sessione dei
+  campioni della bici aveva raggiunto Overpass alle 08:59Z (con lo
+  User-Agent di OSMnx, che `water.overpass` usa). La query dell'acqua resta **mai
+  eseguita** (ADR-0154); niente altri tentativi, per non pesare su
+  Overpass.
+
+**Per la parte C** (l'app): «Paddle» `ready` e `activityOf` →
+`paddling`; i limiti 1–5 km ci sono già in `APP_DISTANCE_LIMITS_KM`;
+`suggested_distance_m` può essere di mezzo km («Try 2.5 km»); i testi
+«does not fit the roads here» vanno detti per l'acqua; niente
+`/route-directions` né «Start» con le indicazioni a voce (sono vuote); la
+partenza è il primo punto, sulla riva, non la posizione chiesta; parole e
+foto da spegnere con «Paddle»; l'avviso di sicurezza.
+
+**Seguito proposto**: ogni partenza nuova sull'acqua è una richiesta
+Overpass per un'area di 8–10 km di lato. Le aree d'acqua dei quattro
+luoghi d'esempio, scaricate prima sul server, con l'ok dell'utente.
+
 ## Note per il deploy
 
 - A2 cambia l'impronta del motore (`engine_fingerprint()`): dopo
@@ -424,3 +548,13 @@ A · B · C non ci sono (un piano solo).
   con TASK-203, che cambia anche lei l'impronta.
 - Niente da migrare, nessuna variabile nuova. La cartella
   `data/cache/water/` serve solo quando l'API chiede la canoa (parte B).
+- **Parte B**: la migrazione `0010_favorite_paddling.sql` (dopo la `0009`
+  di TASK-117 A), nessuna variabile nuova. `data/cache/water/` la crea
+  l'API alla prima richiesta in canoa, dentro `../data/cache` del
+  container (lo stesso volume delle zone, `deploy/compose.yaml`): niente
+  da preparare. Dopo l'aggiornamento, con l'ok dell'utente, una prova dal
+  vero: una richiesta `paddling` a Riccione (cuore da 2 km dalla
+  spiaggia, 44.00355, 12.66338), che scarica l'acqua da Overpass la prima
+  volta. Cambia `models.py`: l'impronta del motore, come A2; un
+  aggiornamento solo. L'app con «Paddle» (parte C) si pubblica dopo che il
+  server ha la parte B, o «Paddle» riceve `invalid_request`.

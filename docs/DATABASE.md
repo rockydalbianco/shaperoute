@@ -205,6 +205,15 @@ Migrazione `0009_drawings.sql` (TASK-117, ADR-0159):
 - Le corse salvate prima non hanno righe: sono private, come erano, e si
   pubblicano come le altre (test con dati sullo schema 0001–0008).
 
+Migrazione `0010_favorite_paddling.sql` (TASK-191, parte B, ADR-0164):
+
+- Il vincolo di `favorites.activity` della `0008` prende anche
+  `'paddling'`: la canoa è un'attività dell'API, e un percorso
+  sull'acqua tenuto col cuore si riapre in canoa. Lo stesso nome
+  (`favorites_activity_check`), tolto e rimesso; nessuna riga cambia.
+- Dipende dalla `0008` (la colonna): il test dei preferiti di prima di
+  TASK-200 applica lo schema senza tutte e due, poi tutte e due.
+
 ## Come si memorizza una traccia
 
 In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno

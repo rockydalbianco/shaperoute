@@ -448,8 +448,8 @@ Il grafo è quello della zona, come per i percorsi: in memoria, dalla
 cache, o scaricato; si ritaglia 250 m attorno alla linea. I nodi della
 linea li ritrova `route_nodes.py` del motore (`ROUTE_ENGINE.md` §4). Una
 linea che non segue le strade della mappa risponde `422 invalid_request`
-(«The route does not follow the roads of this map.»), una zona che non si
-scarica `503 map_data_unavailable`. Niente si salva. Misurato il
+(«The route does not follow the roads of this map.»: anche una sull'acqua,
+TASK-191), una zona che non si scarica `503 map_data_unavailable`. Niente si salva. Misurato il
 2026-10-01 sul Mac, zone in cache: 0,1–0,5 s per percorsi di 5–23 km.
 
 ### `POST /shape-readings`
@@ -484,8 +484,8 @@ Riceve un `RouteRequest`:
 ```
 
 `start` è `[lat, lon]`; `activity` si può omettere (`running`), oppure è
-`cycling`, un percorso in bici (sotto). Un campo in più o scritto male è
-un errore, non si ignora.
+`cycling`, un percorso in bici, o `paddling`, in canoa sull'acqua (sotto).
+Un campo in più o scritto male è un errore, non si ignora.
 
 Risponde `200` con un `RouteResult`:
 
@@ -533,9 +533,10 @@ La richiesta è sincrona: la risposta arriva quando il percorso è pronto
   invalid_request`, `distance must be between 10000 and 30000 metres for
   cycling, got 5000`. La corsa resta 1–50 km, con il messaggio di prima.
   La distanza suggerita di `shape_not_drawable` resta in quei limiti.
-- **Solo le attività del contratto**, `running` e `cycling`
-  (`SUPPORTED_ACTIVITIES`): un'altra è `422 invalid_request`, `unsupported
-  activity 'paddling'; choose one of: running, cycling`.
+- **Solo le attività del contratto**, `running`, `cycling` e, dalla parte
+  B di TASK-191, `paddling` (`SUPPORTED_ACTIVITIES`): un'altra è `422
+  invalid_request`, `unsupported activity 'swimming'; choose one of:
+  running, cycling, paddling`.
 - **Le zone**: l'API ha le zone della bici accanto a quelle a piedi,
   `bike_*` in `data/cache/` (`MAPS.md`, «Cache»), e ne tiene in memoria una
   sola (sotto, «Grafi»). Le città con la zona della bici già fatta
@@ -554,6 +555,66 @@ La richiesta è sincrona: la risposta arriva quando il percorso è pronto
   a piedi.
 - **Tempi**: non ancora misurati su una zona vera della bici (task file
   di TASK-190).
+
+### Sull'acqua: `"activity": "paddling"` (TASK-191, ADR-0161, ADR-0164)
+
+```json
+{ "start": [44.0007, 12.6513], "shape": "heart", "distance_m": 2000, "activity": "paddling" }
+```
+
+(`fixtures/route-request-paddling.json`, sulla costa delle fixture del
+motore.)
+
+- **La forma è il percorso**: il motore la mette su un lago o sul mare,
+  entro 1 km dalla riva, al mare oltre 200 m dalla riva e sui laghi oltre
+  50 m, e la unisce a una partenza sulla riva dove si arriva a piedi, con
+  un tratto dritto all'andata e lo stesso al ritorno (`ROUTE_ENGINE.md`
+  §8, ADR-0154). Vale per `/routes` e `/route-jobs`.
+- **Il `RouteResult`** è quello di sempre: `points` chiuso, che parte e
+  arriva sulla riva (il primo punto **non** è `start`), tratti compresi
+  in `distance_m`; `similarity` 1 (la forma è sé stessa: quanto si è
+  rimpicciolita lo dice la distanza); `warnings`, `directions`,
+  `alternatives` e `walks` vuoti. **Niente indicazioni di svolta**: si
+  leggono sul grafo delle strade, e sull'acqua non c'è. **Niente
+  alternative A · B · C**: il motore piazza la forma una volta. Il GPX
+  (`POST /gpx`) è quello di ogni percorso, tratti dalla riva compresi.
+- **Da 1 a 5 km** (`DISTANCE_LIMITS_M.paddling`, scelta dell'utente):
+  fuori è `422 invalid_request`, `distance must be between 1000 and 5000
+  metres for paddling, got 5001`.
+- **Solo una forma del catalogo**: una parola è `422 invalid_request`, `on
+  the water only a shape of the catalogue is drawn, not a word` (dal
+  motore); un'immagine (`/image-route-jobs`, anche dentro `/gpx`) `… not an
+  image`, prima di guardare la distanza.
+- **Lontano dall'acqua**: `422 shape_not_drawable`, `there is no lake or
+  sea to paddle on within 2 km of here`, `suggested_distance_m` `null`.
+- **La forma non ci sta** (al mare oltre circa 3 km): `422
+  shape_not_drawable`, `the heart does not fit at 5 km on the water within
+  1 km of the shore here: it fits at 3.1 km`, e `suggested_distance_m` è
+  quella distanza **per difetto al mezzo km** (3000), mai sotto 1 km
+  (allora `null`) né sopra 5: chiesta, il percorso c'è (ADR-0164; corsa e
+  bici restano al km più vicino). Se la forma ci sta ma nessuna riva a
+  300 m si raggiunge a piedi, lo dice il messaggio, senza distanza.
+- **L'acqua** sta in `data/cache/water/` (`--cache-dir`, accanto alle
+  zone; `MAPS.md`, «Cache»): un file che contiene l'area della richiesta
+  (la partenza ± 4–5 km) la serve; altrimenti **una** richiesta Overpass,
+  che il job mostra come `downloading_map` e che si salva per la prossima.
+  Un download alla volta; uno che non riesce è `503
+  map_data_unavailable`. Un job annullato durante il download non piazza
+  la forma. Nessuna zona da scaricare prima: `prefetch_zones --activity`
+  è solo per `running` e `cycling`.
+- **`/route-directions`** con i punti di un percorso sull'acqua: la
+  richiesta non dice l'attività, quindi l'API carica la zona a piedi
+  attorno alla linea (la scarica, se manca) e risponde `422
+  invalid_request`, `The route does not follow the roads of this map.`.
+  L'app non le deve chiedere: il percorso sull'acqua ha già `directions`
+  vuoto.
+- **I preferiti** tengono `paddling` (migrazione `0010`, «Favorites»); gli
+  **esempi tenuti** distinguono l'attività, come la bici. `draw_examples`
+  non disegna la canoa: dove stanno laghi e mare in «Explore» lo decide
+  l'utente (TASK-191, parte C).
+- **Tempi** sulle fixture del motore: 0,1–1 s un piano, l'acqua letta
+  dalla cache in un attimo; un download Overpass non è mai stato misurato
+  (task file).
 
 ### Una parola invece di una forma (TASK-056)
 
@@ -817,10 +878,11 @@ tipi dell'app in `apps/mobile/src/api/favorites.ts`.
   penna alzata, e se il `PUT` torna `422 invalid_request` lo rimanda una
   volta senza `walks`.
 - **L'attività** (TASK-200, ADR-0160): il corpo del `PUT` può avere
-  `activity`, quella di `RouteRequest` (`running` o `cycling`, «In bici»),
-  facoltativa: senza, `running`. Un'attività che l'API non offre è `422
-  invalid_request`, con le parole di `POST /routes` (`unsupported activity
-  'paddling'; choose one of: running, cycling`). L'elenco e il preferito
+  `activity`, quella di `RouteRequest` (`running`, `cycling`, «In bici», o
+  `paddling`, «Sull'acqua», dalla migrazione `0010`), facoltativa: senza,
+  `running`. Un'attività che l'API non offre è `422 invalid_request`, con
+  le parole di `POST /routes` (`unsupported activity 'swimming'; choose
+  one of: running, cycling, paddling`). L'elenco e il preferito
   intero hanno **sempre** `activity`: `running` per quelli tenuti prima. La
   chiave resta quella della linea: la stessa linea tenuta come corsa e poi
   in bici è un preferito solo, com'era la prima volta. Esempi:
@@ -1209,7 +1271,9 @@ del motore:
 `suggested_distance_m` c'è in ogni errore ed è `null` tranne con
 `shape_not_drawable`, quando il percorso migliore seguiva la forma ma
 mancava la distanza: è la sua lunghezza, al km intero, fra 1 e 50 km
-(ADR-0041); in bici fra 10 e 30 km (TASK-190). Se il motivo è la somiglianza bassa resta `null`.
+(ADR-0041); in bici fra 10 e 30 km (TASK-190); sull'acqua per difetto al
+mezzo km, fra 1 e 5 km, o `null` se ci sta solo sotto 1 km (TASK-191,
+ADR-0164). Se il motivo è la somiglianza bassa resta `null`.
 `reason` c'è in ogni errore dal TASK-073 ed è `null` tranne con
 `image_not_usable` e `outline_edit_rejected` (TASK-079): il motivo del
 motore, in una parola.
@@ -1217,11 +1281,11 @@ motore, in una parola.
 | Caso | HTTP | `code` |
 |---|---|---|
 | JSON malformato, campo mancante, in più o fuori limite | 422 | `invalid_request` |
-| `activity` che il contratto non offre (`running`, `cycling`); in bici una distanza fuori da 10–30 km (TASK-190) | 422 | `invalid_request` |
+| `activity` che il contratto non offre (`running`, `cycling`, `paddling`); in bici una distanza fuori da 10–30 km (TASK-190); in canoa fuori da 1–5 km, una parola o un'immagine (TASK-191) | 422 | `invalid_request` |
 | `shape` e `word` insieme o nessuno; una lettera che l'alfabeto non ha; più di 8 lettere; meno di 3 km a lettera; `style` sconosciuto o `"block"` con una forma | 422 | `invalid_request` |
 | `/track-scores`: corsa troppo corta per un punteggio, `similarity` fuori da 0–1, troppe posizioni | 422 | `invalid_request` |
-| Forma non disponibile in quella zona (ADR-0025); nessuna strada attorno alla partenza (ADR-0148: prima era `engine_error`) | 422 | `shape_not_drawable` |
-| Zona non in cache e dati OSM non scaricabili | 503 | `map_data_unavailable` |
+| Forma non disponibile in quella zona (ADR-0025); nessuna strada attorno alla partenza (ADR-0148: prima era `engine_error`); in canoa, nessun'acqua vicino o la forma che non ci sta (TASK-191) | 422 | `shape_not_drawable` |
+| Zona, o acqua della canoa, non in cache e dati OSM non scaricabili | 503 | `map_data_unavailable` |
 | Il modello che legge le parole della forma non risponde (`AI.md`) | 503 | `ai_unavailable` |
 | Un'immagine senza un contorno chiaro (TASK-073) | 422 | `image_not_usable` |
 | Una linea disegnata che non dà un contorno solo (TASK-079) | 422 | `outline_edit_rejected` |
@@ -1265,7 +1329,8 @@ richiesta. **La bici ha le sue zone** (TASK-190, ADR-0153): un'altra cache
 (`bike_*`) e un altro insieme in memoria, di **una** zona sola, perché una
 zona della bici di 26 km pesa 0,15–0,6 GB (stima nel task file); una
 richiesta in bici in un'altra città la rilegge dal disco. Ogni richiesta
-va sulle zone della sua attività (`activity_graphs.py`). Una zona non in cache si scarica e si salva come con la CLI,
+va sulle zone della sua attività (`activity_graphs.py`); una in canoa
+non ha zone, va sull'acqua di `data/cache/water/` (TASK-191, sopra «Sull'acqua»). Una zona non in cache si scarica e si salva come con la CLI,
 anche se la richiesta viene annullata durante il download: una zona pesa
 circa 40 MB fra GraphML e pickle, e OSMnx tiene le risposte di Overpass
 in `data/cache/http/` (244 MB il 2026-09-23).

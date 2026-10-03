@@ -18,12 +18,13 @@ from dataclasses import dataclass, replace
 from typing import Any, Protocol, runtime_checkable
 
 from route_engine.directions import guidance
-from route_engine.models import RouteResult
+from route_engine.models import WATER_ACTIVITIES, RouteResult
 from route_engine.network import BBox, Graph
 from route_engine.optimizer import GraphLoader, Plan
 from route_engine.sidewalks import NamedRoad
+from route_engine.water import Element, WaterSource
 
-from shaperoute_api.activity_graphs import Graphs, source_for
+from shaperoute_api.activity_graphs import Graphs, Ground, source_for, water_for
 from shaperoute_api.alongs import NamedRoads, with_alongs
 from shaperoute_api.errors import error_of
 from shaperoute_api.images import AnyRequest
@@ -31,8 +32,9 @@ from shaperoute_api.schemas import ErrorDetail, JobStatus
 
 log = logging.getLogger(__name__)
 
-# A shape, a word, or an image's outline (TASK-073).
-Planner = Callable[[AnyRequest, GraphLoader], Plan]
+# A shape, a word, or an image's outline (TASK-073), on the roads or on the
+# water (TASK-191).
+Planner = Callable[[AnyRequest, Ground], Plan]
 
 # Two, not one: a cancelled 15 km keeps its thread until the engine ends,
 # and the next request must not wait behind it.
@@ -43,7 +45,8 @@ KEEP_S = 600.0
 
 @runtime_checkable
 class KnowsDownloads(Protocol):
-    """A graph source that can tell a download in advance (ZoneGraphs)."""
+    """A graph or water source that can tell a download in advance
+    (ZoneGraphs, paddling.ServerWater)."""
 
     def needs_download(self, bbox: BBox) -> bool: ...
 
@@ -150,19 +153,29 @@ class RouteJobs:
             return
         started = self._clock()
         activity = job.request.activity
+
+        def report(status: JobStatus) -> bool:
+            return self._set(job, status)
+
+        def wanted() -> bool:
+            return self._wanted(job)
+
         try:
-            # The zones of the network of the request's activity (TASK-190).
-            graphs = source_for(self._source, activity)
-            source = _Reporting(
-                graphs,
-                lambda status: self._set(job, status),
-                lambda: self._wanted(job),
-            )
-            plan = self._planner(job.request, source)
-            names = graphs if isinstance(graphs, KnowsNames) else None
-            result = with_choices(
-                plan, source.graphs, None if names is None else names.named_roads
-            )
+            if activity in WATER_ACTIVITIES:
+                # On the water (TASK-191): no graph, so no directions.
+                water = _ReportingWater(
+                    water_for(self._source, activity), report, wanted
+                )
+                result = with_choices(self._planner(job.request, water), [])
+            else:
+                # The zones of the network of the request's activity (TASK-190).
+                graphs = source_for(self._source, activity)
+                source = _Reporting(graphs, report, wanted)
+                plan = self._planner(job.request, source)
+                names = graphs if isinstance(graphs, KnowsNames) else None
+                result = with_choices(
+                    plan, source.graphs, None if names is None else names.named_roads
+                )
         except _Dropped:
             log.info("job %s: dropped before computing", job.job_id)
             self._tell(job, None, None, self._clock() - started)
@@ -270,6 +283,35 @@ class _Reporting:
             self._report("computing")
         self.graphs.append(graph)
         return graph
+
+
+class _ReportingWater:
+    """The job's water (TASK-191), as _Reporting for the graphs: says when a
+    download starts and ends, and stops the job if it was cancelled
+    meanwhile. The engine reads the water once, before placing the shape."""
+
+    def __init__(
+        self,
+        source: WaterSource,
+        report: Callable[[JobStatus], object],
+        wanted: Callable[[], bool],
+    ):
+        self._source = source
+        self._report = report
+        self._wanted = wanted
+
+    def elements(self, bbox: BBox) -> list[Element]:
+        downloading = isinstance(self._source, KnowsDownloads) and (
+            self._source.needs_download(bbox)
+        )
+        if downloading:
+            self._report("downloading_map")
+        elements = self._source.elements(bbox)
+        if not self._wanted():
+            raise _Dropped
+        if downloading:
+            self._report("computing")
+        return elements
 
 
 def with_choices(

@@ -45,7 +45,9 @@ DISTANCE_DESCRIPTION = "Target distance in metres, " + ", ".join(
 )
 ACTIVITY_DESCRIPTION = (
     f"One of: {', '.join(SUPPORTED_ACTIVITIES)}; cycling is drawn on the "
-    f"roads a bike may ride, one-way streets kept (TASK-190)."
+    f"roads a bike may ride, one-way streets kept (TASK-190); paddling on a "
+    f"lake or the sea within 1 km of the shore, from a start on the shore, "
+    f"a shape of the catalogue only (TASK-191)."
 )
 WALKS_DESCRIPTION = (
     "A word with the pen up (TASK-197): [from, to] indices into points, both "
@@ -149,7 +151,10 @@ class RouteResultBody(BaseModel):
     # Missing in a GPX request from an older app: nothing to check there.
     directions: list[DirectionBody] = Field(
         default_factory=list,
-        description="Turn by turn, the start first; empty without a search.",
+        description=(
+            "Turn by turn, the start first; empty without a search, and on "
+            "the water, which has no roads (TASK-191)."
+        ),
     )
     word: str | None = Field(
         default=None, description="The word in capitals; null for a shape or an image."
@@ -159,7 +164,8 @@ class RouteResultBody(BaseModel):
         default_factory=list,
         description=(
             "Other routes for the same request, best first, to choose from "
-            "(TASK-093): whole results, with no alternatives of their own."
+            "(TASK-093): whole results, with no alternatives of their own. "
+            "None on the water (TASK-191)."
         ),
     )
     # Missing from an older API, and in a GPX request from an older app.

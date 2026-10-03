@@ -7456,3 +7456,54 @@ test che cercano i numeri per etichetta d'accessibilità non cambiano:
 «Distance: 2.30 km» è lo stesso. Il carattere «♪» viene dal font del
 telefono: su un Android senza quel segno si vedrebbe un quadratino, da
 guardare quando l'app avrà una build Android.
+
+## ADR-0165 — Lo sport accanto al profilo: un pulsante tondo con l'emoji, un menu sotto di sé, la stessa scelta di «Settings»
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-205). La richiesta è dell'utente («Nella prima schermata a fianco al
+profilo, metti la possibilità di cambiare sport»); il modo, qui sotto, è
+dell'agente. Numero preso come primo libero dopo ADR-0164 (`AGENTI.md`),
+con TASK-205 dato dal coordinatore.
+
+**Contesto**: lo sport si sceglieva solo in «Settings» (TASK-189,
+ADR-0152), tre tocchi lontano da «Draw», che con «Bike» chiede percorsi
+diversi (TASK-190, ADR-0153). L'intestazione delle pagine ha i tre nomi a
+sinistra e il pulsante tondo del profilo a destra (TASK-154, ADR-0124).
+
+**Decisione**:
+
+1. **Un pulsante tondo come quello del profilo** (44 punti, bordo
+   `borderStrong`, fondo `surfaceRaised`), a sinistra del profilo, a
+   `space.sm` da lui, con l'emoji dello sport scelto (🏃‍♂️, 🚴). Sta nella
+   stessa `action` del `Pager`: dove c'è il profilo c'è lo sport, e sulla
+   mappa e durante la corsa nessuno dei due.
+2. **Toccato apre un menu sotto di sé**, non cambia sport a ogni tocco:
+   le righe sono quelle della sezione «Sport» di «Settings» (emoji, nome,
+   «✓» bianco sullo scelto, «Soon» su uno non pronto, che non prende il
+   tocco). Un tocco su uno sport pronto lo sceglie e chiude il menu; un
+   tocco fuori, o il tasto indietro di Android, chiude senza cambiare. Il
+   menu è un `Modal` trasparente di React Native, appeso sotto il pulsante
+   dove `measureInWindow` dice che è (fino alla misura, dove l'intestazione
+   lo mette).
+3. **Una sola scelta**: `saveSport` e `useSport` di `src/settings/`, lo
+   stesso `sport.json`. Il pulsante segue anche una scelta fatta in
+   «Settings», e «Draw» segue il pulsante come segue «Settings». La
+   sezione «Sport» di «Settings» resta.
+
+**Perché così**: un pulsante gemello di quello del profilo non aggiunge
+un linguaggio nuovo all'intestazione e ci sta anche sull'iPhone più
+stretto (375 punti, provato sul 13 mini). Un menu dice quali sport ci
+sono, quale è scelto e quale arriva («Soon»), come «Settings»; un tocco
+che passa allo sport dopo cambierebbe i percorsi di «Draw» senza dirlo, e
+con «Paddle» pronto diventerebbe un giro di tre. Il `Modal` prende i tocchi
+fuori dal menu su iOS e Android senza toccare `Pager.tsx`.
+
+**Scartato**: un tocco che alterna «Run» e «Bike»; una riga di pillole
+sotto i nomi delle pagine (ruba altezza a ogni pagina); spostare il menu
+dentro `ProfileLayer.tsx` o `Pager.tsx` (file di altri, e lo sport non è
+dell'account né delle pagine); togliere «Sport» da «Settings».
+
+**Conseguenze**: quando TASK-191 C accende `ready` di «Paddle» in
+`sport.ts`, il menu lo mostra da solo e l'emoji del pulsante diventa 🛶. Un
+quarto sport allunga il menu, non l'intestazione. I nomi delle pagine e i
+due pulsanti stanno in 375 punti con circa 11 punti di margine: un nome di
+pagina più lungo, o un terzo pulsante, non ci starebbe.

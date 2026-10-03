@@ -1,6 +1,6 @@
 # TASK-205 — Lo sport accanto al profilo
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-205-sport-button`
 
 ## Obiettivo
@@ -32,25 +32,26 @@ profilo, metti la possibilità di cambiare sport».
 
 ## Criteri di accettazione
 
-- [ ] Nell'intestazione di «Feed», «Draw» ed «Explore», a sinistra del
+- [x] Nell'intestazione di «Feed», «Draw» ed «Explore», a sinistra del
       pulsante del profilo, c'è il pulsante dello sport con l'emoji dello
       sport scelto (🏃‍♂️ «Run», 🚴 «Bike»).
-- [ ] Toccato, mostra «Run», «Bike» e «Paddle» con «Soon»; lo sport scelto
+- [x] Toccato, mostra «Run», «Bike» e «Paddle» con «Soon»; lo sport scelto
       ha il «✓».
-- [ ] Scegliere «Bike» lo salva come «Settings» (`saveSport("bike")`),
+- [x] Scegliere «Bike» lo salva come «Settings» (`saveSport("bike")`),
       chiude il menu e il pulsante mostra 🚴; «Draw» chiede `cycling`.
-- [ ] «Paddle» non si sceglie; un tocco fuori chiude il menu senza
+- [x] «Paddle» non si sceglie; un tocco fuori chiude il menu senza
       cambiare sport.
-- [ ] Una scelta fatta in «Settings» si vede subito sul pulsante.
-- [ ] Sulla mappa e durante la corsa il pulsante non c'è, come quello del
+- [x] Una scelta fatta in «Settings» si vede subito sul pulsante.
+- [x] Sulla mappa e durante la corsa il pulsante non c'è, come quello del
       profilo.
-- [ ] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
+- [x] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
 
 ## File toccati
 
 ```
 apps/mobile/src/settings/SportButton.tsx (nuovo)
 apps/mobile/src/settings/SportButton.test.tsx (nuovo)
+apps/mobile/__tests__/AppSportButton.test.tsx (nuovo)
 apps/mobile/App.tsx (l'action del Pager)
 docs/UI.md
 docs/DECISIONS.md
@@ -69,4 +70,17 @@ docs/tasks/TASK-205.md
 
 ## Esito
 
-*(a fine task)*
+Il pulsante dello sport sta a sinistra del profilo su «Feed», «Draw» ed
+«Explore»: emoji dello sport scelto, un menu sotto di sé con «Run», «Bike»
+e «Paddle» «Soon», la stessa scelta di «Settings» (ADR-0165). Test: 6 del
+pulsante (`SportButton.test.tsx`) e 2 dell'app (`AppSportButton.test.tsx`:
+«Bike» scelto dall'intestazione porta «Draw» a 10 km e a «Ride without a
+route»); suite dell'app verde (148 file, 1302 test), lint, typecheck e
+Prettier verdi. Visto nel simulatore su un iPhone 13 mini (375 punti, il
+più stretto): ci sta, con circa 11 punti fra «Explore» e il pulsante;
+immagini in `out/task-205/` (fuori da git). Il menu è stato aperto con una
+riga temporanea in una copia, perché il simulatore non prendeva tocchi
+senza il permesso dell'utente. **Da provare sull'iPhone**: il tocco, il
+menu, la scelta, con il prossimo aggiornamento pubblicato (ok
+dell'utente). I testi nuovi («Sport, Run» per VoiceOver, «Changes the
+sport», «Close») sono dell'agente.

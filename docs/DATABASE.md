@@ -214,7 +214,7 @@ Migrazione `0010_favorite_paddling.sql` (TASK-191, parte B, ADR-0164):
 - Dipende dalla `0008` (la colonna): il test dei preferiti di prima di
   TASK-200 applica lo schema senza tutte e due, poi tutte e due.
 
-Migrazione `0011_comments.sql` (TASK-120, ADR-XXXX; il numero è il primo
+Migrazione `0011_comments.sql` (TASK-120, ADR-0175; il numero è il primo
 libero in `main` al merge):
 
 - `comments`: `id` (`uuid` casuale, chiave: con questo si cancella),

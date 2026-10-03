@@ -1151,7 +1151,7 @@ non si legge senza account, ADR-0114). Tipi in `shared-types`
 - **Un'API precedente** non ha questi endpoint (`404 http_error`) e il suo
   `PublicProfile.drawings` è sempre 0.
 
-### Comments (TASK-120, ADR-XXXX)
+### Comments (TASK-120, ADR-0175)
 
 Sotto un disegno gli iscritti scrivono commenti. Li legge e li scrive **chi
 vede il disegno** (sopra, «Chi vede cosa»): ogni iscritto finché è

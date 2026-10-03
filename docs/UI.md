@@ -413,7 +413,7 @@ giorno), il giorno, i km, il punteggio («87», «out of 100»), mai l'ora;
 **«Back to the profile»** e «←» tornano a «Profile». Se nel frattempo è
 tornato privato: «This drawing is no longer public.» sopra la griglia.
 
-**I commenti di un disegno** (TASK-120, ADR-XXXX, scelta dell'utente del
+**I commenti di un disegno** (TASK-120, ADR-0175, scelta dell'utente del
 2026-10-03: subito sotto le corse vere, non sugli esempi di «Feed»): nella
 scheda di un disegno aperto, fra i numeri e «Back to the profile», un
 pulsante neutro dice quanti sono: «Write a comment», «1 comment», «4

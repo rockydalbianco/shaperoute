@@ -229,7 +229,9 @@ Perché fuori dall'elenco previsto: `SUPPORTED_ACTIVITIES` sta in
 vincolo; con `paddling` in `ACTIVITIES` l'app non compila senza la sua
 riga in `APP_DISTANCE_LIMITS_KM` (`Record<Activity, …>`), e due suoi test
 usavano `"paddling"` come attività sconosciuta; `test_cycling.py` e
-`test_favorites.py` (TASK-190, TASK-200) idem. `errors.py` non era
+`test_favorites.py` (TASK-190, TASK-200) idem. Il coordinatore ha dato
+l'ok a ognuno il 2026-10-03 (TASK-190 e TASK-200 sono chiuse nel codice,
+nessun task in corso ha `distance.ts`). `errors.py` non era
 nell'elenco previsto e c'è; `draw_examples.py` era nell'elenco e non c'è
 (sotto, «Esito», parte B).
 
@@ -495,8 +497,15 @@ Branch `feat/TASK-191-paddle-api`. **Fatto** (ADR-0164; `API.md`,
   chiedere. **Le alternative A · B · C** non ci sono: `alternatives` è
   vuoto.
 - **I preferiti** tengono `paddling`: `0010_favorite_paddling.sql`
-  allarga il vincolo della `0008`. `prefetch_zones --activity` resta per
-  corsa e bici.
+  allarga il vincolo della `0008`, e un preferito in canoa si tiene e si
+  rilegge invece di dare 500 (`test_every_activity_offered_is_kept`).
+  `prefetch_zones --activity` resta per corsa e bici.
+- **L'app non cambia**: «Paddle» resta «Soon» (ADR-0152) e l'app non manda
+  mai `paddling` fino alla parte C. Ha solo la riga dei limiti della canoa
+  in `APP_DISTANCE_LIMITS_KM`, che le serve per compilare. **Un
+  comportamento nuovo**: un preferito `paddling` (che oggi solo un altro
+  client può tenere) si riapre come `paddling`, non più come corsa
+  (`favoriteActivity`, perché `paddling` è ora in `ACTIVITIES`).
 - **Test**: `services/api/tests/test_paddling.py` (29, sulle fixture
   dell'acqua del motore in una cartella di cache, nessun download che un
   test non risponda), i test del contratto dei due lati, e in
@@ -510,10 +519,11 @@ Branch `feat/TASK-191-paddle-api`. **Fatto** (ADR-0164; `API.md`,
 - **Il punto 9**, gli esempi dei quattro luoghi in `draw_examples.py`: non
   era nel messaggio di partenza, e dipende dalla domanda 3 (dove stanno
   laghi e mare in «Explore», una scelta di prodotto) e dai dati veri.
-- **La prova dal vero**: una richiesta dal Mac alle 09:05Z (Riccione,
+- **La prova dal vero**: dal Mac alle 09:05Z e alle 09:09Z (Riccione,
   cuore da 2 km, col planner dell'API su una cache temporanea): «No route
-  to host», anche con `curl`, mentre la sessione dei campioni della bici
-  aveva raggiunto Overpass alle 08:59Z. La query dell'acqua resta **mai
+  to host» a livello di rete, anche con `curl`, mentre la sessione dei
+  campioni della bici aveva raggiunto Overpass alle 08:59Z (con lo
+  User-Agent di OSMnx, che `water.overpass` usa). La query dell'acqua resta **mai
   eseguita** (ADR-0154); niente altri tentativi, per non pesare su
   Overpass.
 
@@ -523,8 +533,7 @@ Branch `feat/TASK-191-paddle-api`. **Fatto** (ADR-0164; `API.md`,
 «does not fit the roads here» vanno detti per l'acqua; niente
 `/route-directions` né «Start» con le indicazioni a voce (sono vuote); la
 partenza è il primo punto, sulla riva, non la posizione chiesta; parole e
-foto da spegnere con «Paddle»; l'avviso di sicurezza. Da TASK-200 in poi un
-preferito `paddling` si riapre in canoa (`favoriteActivity`).
+foto da spegnere con «Paddle»; l'avviso di sicurezza.
 
 **Seguito proposto**: ogni partenza nuova sull'acqua è una richiesta
 Overpass per un'area di 8–10 km di lato. Le aree d'acqua dei quattro

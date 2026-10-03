@@ -7800,3 +7800,92 @@ nome (spezzano chi è).
 **Conseguenze**: la riga di «Settings» resta e fa lo stesso. Come la foto
 di TASK-178, sul telefono funziona solo con il server alla migrazione
 `0005` e l'app pubblicata.
+
+## ADR-0173 — Seguire con richiesta, l'API: una tabella `follows` con due stati, la ricerca per nome, gli elenchi solo propri
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-211, parte A), dentro due **scelte dell'utente** del 2026-10-03:
+seguire vuole una richiesta che l'altro accetta o rifiuta; gli iscritti si
+cercano per nome. Le proposte per l'app (dove stanno «Requests», il tasto
+«Follow») sono nel task file e si confermano prima della parte B. Numero
+tenuto dal coordinatore.
+
+**Contesto**: TASK-208 vuole «Followers» fra le scelte di «Who can see it»
+e i tag delle persone, cercate per nome. Non c'era un modo di trovare un
+altro iscritto, né di arrivare al suo profilo (`UserProfilePage.tsx`,
+ADR-0128 punto 8: «da dove si apre lo decide l'utente», domanda aperta in
+TASK-116). Bloccare e segnalare sono di TASK-121, che non è ancora fatto.
+
+**Decisione**:
+1. **Una tabella `follows`**, una riga per coppia ordinata (chi chiede, chi
+   è seguito: la chiave), con `status` `pending` o `accepted`, `asked_at` e
+   `accepted_at` (presente solo da accettata). Un vincolo vieta di seguire
+   sé stessi; `ON DELETE CASCADE` su tutti e due gli account, così un
+   account cancellato sparisce da ogni elenco e da ogni numero senza
+   codice. Due righe a due versi per due persone che si seguono a vicenda:
+   ognuna accetta la sua.
+2. **Ogni azione porta allo stato voluto, e rifatta non cambia niente**:
+   chiedere di nuovo lascia la riga com'è (una sola, con la sua data);
+   ritirare, smettere, rifiutare e togliere cancellano la riga (`204` anche
+   quando non c'era); accettare una richiesta già accettata è `204`. Solo
+   accettare senza nessuna richiesta è `404`. Seguire sé stessi è `422`
+   con il motivo in parole; un profilo che non c'è, `404` come in
+   `GET /users/{public_id}`.
+3. **Rifiutare cancella la richiesta**: chi aveva chiesto vede di nuovo
+   `none`, come se non avesse mai chiesto, e può richiedere. Nessuno stato
+   «rifiutata» che l'API potrebbe lasciar trapelare (scelta proposta
+   nel task file: il tasto torna «Follow»).
+4. **Contano solo le richieste accettate**: nei numeri `followers` e
+   `following` del profilo, negli elenchi e nella funzione per TASK-208
+   (`follows_sql`, `Follows.follows`: «A segue B, accettato?»). Una
+   richiesta in attesa non dà niente in più a chi l'ha mandata.
+5. **`PublicProfile`** prende `followers`, `following` e `follow`, lo
+   stato di chi guarda verso quel profilo: `none`, `requested`,
+   `following`. Il proprio profilo dice `none`. Nell'app i tre campi sono
+   facoltativi: un server di prima non li manda.
+6. **La ricerca** (`GET /users?q=`): almeno 2 caratteri dopo aver tolto
+   gli spazi (meno: `422` in parole), al più 20 risultati, mai chi cerca.
+   Cerca il pezzo dentro il nome senza badare alle maiuscole (`_` e `%`
+   valgono come lettere, non come jolly); prima i nomi che cominciano così,
+   poi i più corti, poi in ordine alfabetico: lo stesso risultato ogni
+   volta. Ogni risultato è solo `public_id`, `username` e `photo`: niente
+   email, bio o numeri (un test cerca l'email nel testo).
+7. **La foto negli elenchi è piccola**: 128 px di lato invece dei 256 del
+   profilo, rifatta dall'API a ogni lettura (circa 5 KB invece di 20: venti
+   risultati restano leggeri mentre si scrive). Una colonna in più in
+   `profile_photos` non serve finché costa così poco.
+8. **Gli elenchi sono solo propri**: `GET /me/followers`, `/me/following`
+   e `/me/follow-requests`, a pagine come i disegni di un profilo (`limit`
+   da 1 a 50, `next`, `total`), dal più recente (l'accettazione per i
+   primi due, la richiesta per il terzo). Chi segue chi, per gli altri, si
+   legge solo nei due numeri del profilo.
+9. **Da dove si apre il profilo di un altro** (domanda aperta di TASK-116,
+   risposta del coordinatore su delega dell'utente): **dalla ricerca**, e
+   dagli elenchi di «Followers», «Following» e «Requests». Il feed
+   (TASK-118), i like e i commenti si aggiungeranno quando ci sono.
+
+**Il rapporto con TASK-121** (bloccare e segnalare): questa parte non
+blocca niente. Quando TASK-121 arriva, bloccare dovrà togliere le righe di
+`follows` nei due versi e rifiutare una richiesta nuova fra i due, e la
+ricerca e gli elenchi dovranno saltare chi è bloccato: tocca `follows.py`,
+che il suo task file non elenca ancora. Fino ad allora chi viene rifiutato
+può richiedere quante volte vuole (il limite dei POST di `access.py` vale
+lo stesso). Il cancello di `ROADMAP.md` resta: prima di invitare persone che
+non si conoscono, TASK-121 e TASK-122 fatti.
+
+**Scartate**: seguire libero, come Strava di base (non è la scelta
+dell'utente); uno stato `declined` nella riga (direbbe il rifiuto, o
+andrebbe nascosto a mano in ogni risposta); il `public_id` come chiave
+della tabella (cambia mai, ma gli altri riferimenti all'account usano
+`users.id`); gli elenchi di un altro (`GET /users/{id}/followers`: dice chi
+frequenta chi, non è chiesto); la foto a 256 px negli elenchi (sopra);
+`GET /users/{id}/photo` a parte (una richiesta per ogni riga, e l'immagine
+vorrebbe il token in un'intestazione: ADR-0128 lo lasciava al feed); un
+indice a trigrammi per la ricerca (`pg_trgm`: con pochi iscritti la
+lettura di tutta `users` costa meno di un millisecondo).
+
+**Conseguenze**: una migrazione nuova (`00NN_follows.sql`, il primo numero
+libero in `main` al merge) e un modulo nuovo (`follows.py`); `profiles.py`
+legge i tre campi in più. Sul telefono arriva solo con l'aggiornamento del
+server e la parte B, tutti e due con l'ok dell'utente. **Va detto
+all'utente**: la ricerca mostra il nome di ogni iscritto a chi ha un
+account (con due lettere alla volta si può fare l'elenco di tutti).

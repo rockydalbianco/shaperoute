@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { titleOf } from "../api/drawings";
+import { showSavedLogo } from "../intro/SavedLogo";
 import {
   DrawingTitle,
   PUBLIC_AT_END,
@@ -57,7 +58,12 @@ export function RunEnd({ onSave, onDiscard }: Props) {
     const sending = strava.status.available && strava.status.connected && send;
     toStrava(sending ? { name: typed } : null);
     toDrawing(publicOn || typed !== null ? { title: typed, public: publicOn } : null);
-    setFailed(!onSave());
+    const kept = onSave();
+    setFailed(!kept);
+    if (kept) {
+      // The Sgrava logo, over the app, says the run is kept (TASK-212).
+      showSavedLogo();
+    }
   }
 
   if (!signedIn) {

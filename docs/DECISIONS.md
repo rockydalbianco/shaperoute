@@ -3969,6 +3969,10 @@ Le proposte, con le alternative scartate, sono nel task file.
 **Conseguenze sui task già scritti**: nel task file di TASK-110,
 «Esito».
 
+**Aggiornamento (TASK-213, 2026-10-03)**: il punto 8 è superato in parte
+da ADR-0176. I commenti negativi non si pubblicano: li rifiuta l'API, e chi
+li scrive vede un avviso. Per tutto il resto il punto 8 resta valido.
+
 ## ADR-0115 — Database, account e server: come
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega
 dell'utente, dentro le scelte di ADR-0114 (TASK-110)
@@ -7800,3 +7804,107 @@ nome (spezzano chi è).
 **Conseguenze**: la riga di «Settings» resta e fa lo stesso. Come la foto
 di TASK-178, sul telefono funziona solo con il server alla migrazione
 `0005` e l'app pubblicata.
+
+## ADR-0174 — Il logo dopo «Save»: il giallo e il logo dell'avvio, 1,65 s, sopra l'app, anche senza rete
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-212). La richiesta («Finita l'attività, quando la salvi deve uscire
+il logo di Sgrava») e il logo anche senza rete sono dell'utente; il resto,
+qui sotto, è dell'agente.
+
+**Contesto**: «Save» a fine corsa (TASK-172, ADR-0140) tiene la corsa e
+torna alla mappa, senza nessun segno che sia andata. Il logo con il giallo
+si vede già all'avvio (TASK-179, ADR-0147), in `src/intro/`, sopra `App`.
+
+**Decisione**:
+
+1. **Lo stesso giallo `accent` e lo stesso logo intero dell'avvio**
+   (`splash-logo-dark.png`), senza il cuore: il cuore è dell'apertura, e
+   qui il disegno è quello appena corso, già sulla scheda.
+2. **Tempi**: 0,25 s il giallo sale e il logo cresce dall'85% alla sua
+   misura, 1,1 s fermo, 0,3 s di dissolvenza; in tutto 1,65 s, meno
+   dell'avvio (2,7 s). Un tocco lo manda via subito. Il tempo lo tiene un
+   timer, non l'animazione, come all'avvio: con le animazioni del telefono
+   spente il logo resta lo stesso.
+3. **Sopra l'app, in `Root.tsx`**, sotto l'animazione d'avvio: `RunEnd`
+   chiama `showSavedLogo()` quando `onSave()` è vero, e uno strato in
+   `Root` lo mostra. `App.tsx` non cambia: `RunEnd` si smonta appena la
+   corsa è tenuta, e il logo deve restare.
+4. **Anche senza rete** (scelta dell'utente): «Save» vero vuol dire la
+   corsa tenuta, sul telefono o già sull'API. Niente logo se il telefono
+   non tiene la corsa, né a «Discard».
+5. Al lettore di schermo: «Saved to My activities», annunciato.
+
+**Perché così**: un'immagine sola, già nell'app, e nessuna dipendenza;
+uno strato in `Root` vede l'app intera, mentre la schermata della corsa se
+ne va nello stesso tocco.
+
+**Scartato**: il disegno della corsa tracciato sul giallo come il cuore
+dell'avvio (non chiesto, e più lungo); il logo dentro `App.tsx` (il file
+più conteso); un «Saved» scritto sotto il logo (non chiesto).
+
+**Conseguenze**: TASK-208 B, che rifà la fine della corsa, tiene la
+chiamata a `showSavedLogo()` dopo un «Save» riuscito. Si vede sul telefono
+con la prossima pubblicazione dell'app, con l'ok dell'utente.
+
+## ADR-0176 — Nessun commento negativo: un elenco di parole nell'API, rifiutato con un avviso
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** la regola e
+l'avviso; il modo di riconoscerli è deciso dall'agente su delega
+dell'utente (TASK-213). Supera in parte ADR-0114, punto 8.
+
+**Contesto**: con i commenti (TASK-120) gli iscritti scrivono sotto le
+corse degli altri. L'utente, il 2026-10-03: «non si possono fare commenti
+negativi, se uno scrive qualcosa di negativo o brutto il messaggio viene
+bloccato». E sull'avviso: «Fai uscire un alert, dicendo: in questa app non
+puoi scrivere commenti negativi, cambia app». ADR-0114 diceva «nessun
+contenuto si nasconde da solo».
+
+**Decisione dell'utente**:
+1. Un commento negativo o brutto **non si pubblica**. È la prima eccezione
+   al punto 8 di ADR-0114. Per tutto il resto restano le segnalazioni e la
+   rimozione a mano entro 24 ore (TASK-121).
+2. Chi lo scrive vede un **alert**: «You can't write negative comments in
+   this app. Try another app.». In inglese come tutti i testi dell'app;
+   l'utente l'ha detto in italiano, «In questa app non puoi scrivere
+   commenti negativi, cambia app».
+
+**Decisione dell'agente**:
+1. **Decide l'API**, non l'app: un controllo solo nell'app si aggira.
+   `comment_filter.check_comment(text)` restituisce `None` o il motivo,
+   `"negative"`. TASK-120 lo chiama prima di salvare, risponde `422` con
+   `comment_rejected` e il motivo, e l'app mostra l'alert. Il testo resta nel
+   campo, così si corregge.
+2. **Un elenco di parole**, in italiano e in inglese, senza AI. Gli
+   **insulti** (parolacce, insulti, bestemmie, insulti contro gruppi di
+   persone) sono negativi sempre. Le **parole negative** («brutto»,
+   «pessimo», «ugly», «worst») lo sono a meno che una negazione stia nelle
+   tre parole prima («non è affatto brutto», «not bad»). Poi alcune frasi
+   («che palle», «go to hell») e le emoji 🖕 👎 💩 🤮 🤢 😡 🤬 😠.
+3. **Parole intere, non pezzi**: così Cazzago, Schifanoia, Scunthorpe e la
+   puttanesca passano. Le parole si confrontano in minuscolo e senza
+   accenti, con le cifre lette come lettere («str0nz0»), le lettere tenute
+   lunghe ridotte («schifoooo») e le lettere scritte una alla volta riunite
+   («m e r d a»).
+4. **Le parole che sono anche posti** (Troia, Bastardo, Bad Ischl, Crap
+   Sogn Gion, Boring, Noia) passano quando sono scritte con la maiuscola in
+   mezzo alla frase. In minuscolo, tutte maiuscole o a inizio frase restano
+   rifiutate.
+
+**Perché così**: nessuna dipendenza, nessuna rete, la stessa risposta a
+ogni prova, e la regola si legge e si corregge in un file solo. Sul server
+non c'è un modello (manca Ollama), e un servizio esterno vorrebbe dire
+mandare fuori i commenti, una scelta dell'utente.
+
+**Limiti**: una critica gentile («un po' noioso», «dull») passa se la
+parola non è nell'elenco. «Sei un Bastardo», con la maiuscola, passa come
+il paese, e passa anche una lettera raddoppiata una volta sola («troiaa»).
+Un commento affettuoso con una parola dell'elenco viene rifiutato: «Brutta
+caduta, rimettiti presto». Per questi casi restano le segnalazioni.
+
+**Scartato**: un modello che legga il tono (più memoria sul server, o un
+servizio esterno: si può aggiungere dopo, con il sì dell'utente); pezzi di
+parola («cazz…» blocca Cazzago); nascondere il commento in silenzio a tutti
+tranne chi lo scrive (l'utente ha scelto l'avviso); riscriverlo in modo
+gentile (non è più quello che la persona ha scritto).
+
+**Conseguenze**: nessuna finché TASK-120 non chiama il filtro. Titolo e
+descrizione delle corse pubblicate (TASK-208) non sono filtrati.

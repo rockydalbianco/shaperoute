@@ -210,8 +210,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'utente del 2026-10-03: «How did it go?», tag degli iscritti per
   nome, fino a 3 foto, «Everyone», «Followers», «Only me»; e, durante la
   parte A, la descrizione **non filtrata** per le parole negative).
-  **Parte A, l'API**, fatta il 2026-10-03 (branch
-  `feat/TASK-208-publish-api`, migrazione `0014_drawing_details.sql`):
+  **Parte A, l'API**, in `main` dal 2026-10-03 (PR #268, merge
+  `ebb4f38`, migrazione `0014_drawing_details.sql`):
   `visibility` al posto di `public`
   (le pubbliche di prima `everyone`, le private `only_me`; `public` resta
   colonna generata per l'SQL di prima);

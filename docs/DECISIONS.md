@@ -8074,3 +8074,48 @@ gentile (non è più quello che la persona ha scritto).
 
 **Conseguenze**: nessuna finché TASK-120 non chiama il filtro. Titolo e
 descrizione delle corse pubblicate (TASK-208) non sono filtrati.
+
+## ADR-0178 — «Find friends» in cima a «Feed»: la ricerca degli iscritti in una pagina sopra l'app
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** il posto; il resto
+deciso dall'agente su delega dell'utente (TASK-215). Cambia la proposta di
+`tasks/TASK-211.md` (la lente in «Profile»).
+
+**Contesto**: l'utente, il 2026-10-03: «In feed, metti il tasto ricerca per
+cercare gli amici». La ricerca degli iscritti per nome era nella parte B di
+TASK-211, con una lente in «Profile»; l'API (`GET /users?q=`, ADR-0173) è
+in `main` dalla #256. Il profilo di un altro (`UserProfilePage`, TASK-116)
+c'era, ma nell'app non lo apriva niente.
+
+**Decisione dell'utente**: il tasto per cercare gli amici sta in «Feed».
+
+**Decisione dell'agente**:
+1. **Un tasto largo in cima all'elenco di «Feed»**, a forma di campo: una
+   lente disegnata con due `View` (l'app non ha icone) e «Find friends» in
+   grigio. Scorre con i disegni. Non nell'intestazione delle pagine, che è
+   la stessa per «Feed», «Draw» ed «Explore» e sta in `App.tsx`.
+2. **Una pagina sopra l'app, come «Profile»** (`screens/PeopleScreen.tsx`),
+   aperta da `ProfileLayer`, che ha l'account: una porta
+   (`social/peopleDoor.ts`) come quelle di preferiti e disegni. Senza
+   account il tasto apre «Profile» con il motivo sopra «Sign up», come il
+   cuore dei preferiti.
+3. **Il campo e i nomi sono un componente a sé** (`social/PeopleSearch.tsx`),
+   che TASK-211 B e i tag di TASK-208 possono riusare. Cerca da 2 lettere,
+   300 ms dopo l'ultima (come la ricerca del luogo, ADR-0080), o subito con
+   il tasto della tastiera; mostra solo la risposta all'ultima richiesta.
+4. **Il profilo si apre nella stessa pagina**; «←» torna ai nomi, che
+   restano com'erano (la ricerca resta montata, nascosta). Un disegno
+   aperto da quel profilo lascia la pagina nascosta dietro la mappa, e il
+   suo «←» ci torna invece che a «Profile».
+5. Un server senza la ricerca (prima della migrazione `0011`) risponde
+   `404`: la pagina dice «This server cannot look for members yet.».
+
+**Scartato**: la lente nell'intestazione solo su «Feed» (tocca `App.tsx` e
+il `Pager`, e il posto a destra è di sport e profilo); il campo di ricerca
+direttamente in «Feed» (la tastiera e i risultati in mezzo ai disegni);
+aprire il profilo in «Profile» (il suo «←» porterebbe al proprio profilo,
+non ai nomi trovati).
+
+**Conseguenze**: TASK-211 B non fa più la ricerca: aggiunge «Follow» alla
+pagina del profilo e «Requests», «Followers» e «Following» in «Profile».
+I testi nuovi sono tradotti nelle quattro lingue (ADR-0172), da far
+confermare con gli altri.

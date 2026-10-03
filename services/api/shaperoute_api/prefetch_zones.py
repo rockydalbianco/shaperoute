@@ -42,13 +42,14 @@ from pathlib import Path
 from typing import Literal, Protocol
 
 from route_engine.geo import LatLon, local_to_latlon
-from route_engine.models import DISTANCE_LIMITS_M, SUPPORTED_ACTIVITIES
+from route_engine.models import DISTANCE_LIMITS_M
 from route_engine.network import OsmnxSource
 from route_engine.optimizer import FAR_OFFSET_M, SHAPE_POINTS, required_area, zone_area
 from route_engine.overpass_address import reachable
 from route_engine.shapes import SUPPORTED_SHAPES, get_shape
 from route_engine.stops import union
 
+from shaperoute_api.activity_graphs import ROAD_ACTIVITIES
 from shaperoute_api.cities import CitySearch
 from shaperoute_api.places import KEY_VARIABLE, PlaceSearch
 from shaperoute_api.themed import search_radius_m
@@ -426,7 +427,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument(
         "--activity",
-        choices=SUPPORTED_ACTIVITIES,
+        # Paddling has no zones: it is drawn on the water (TASK-191).
+        choices=ROAD_ACTIVITIES,
         default="running",
         help="the network of the zones: running, those of Explore (default), "
         "or cycling, for bike routes up to 30 km from the centre (--extract)",

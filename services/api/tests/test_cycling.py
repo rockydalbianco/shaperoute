@@ -202,12 +202,15 @@ def test_the_api_keeps_the_zones_of_each_network_apart(tmp_path: Path) -> None:
 def test_only_the_activities_of_the_contract_are_offered() -> None:
     check_supported("running")
     check_supported("cycling")
-    for other in ("paddling", "swimming", ""):
-        with pytest.raises(ValueError, match="choose one of: running, cycling"):
+    check_supported("paddling")  # on the water (TASK-191, test_paddling.py)
+    for other in ("swimming", "Cycling", ""):
+        with pytest.raises(
+            ValueError, match="choose one of: running, cycling, paddling"
+        ):
             check_supported(other)
     graphs, foot, _ = two_networks()
-    with pytest.raises(ValueError, match="unsupported activity 'paddling'"):
-        graphs.for_activity("paddling")
+    with pytest.raises(ValueError, match="unsupported activity 'swimming'"):
+        graphs.for_activity("swimming")
     # One loader for everything, as the tests give: every route has it.
     assert source_for(foot, "cycling") is foot
 
@@ -305,7 +308,7 @@ def test_a_run_keeps_its_limits_and_its_message() -> None:
     )
 
 
-@pytest.mark.parametrize("activity", ["paddling", "swimming"])
+@pytest.mark.parametrize("activity", ["swimming", "skating"])
 def test_an_activity_the_contract_does_not_offer_is_an_invalid_request(
     activity: str,
 ) -> None:
@@ -315,7 +318,8 @@ def test_an_activity_the_contract_does_not_offer_is_an_invalid_request(
         response = client.post(path, json={**BIKE_CIRCLE, "activity": activity})
         assert response.status_code == 422
         assert response.json()["error"]["message"] == (
-            f"unsupported activity {activity!r}; choose one of: running, cycling"
+            f"unsupported activity {activity!r}; "
+            "choose one of: running, cycling, paddling"
         )
     assert foot.asked == bike.asked == []
 

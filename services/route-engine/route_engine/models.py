@@ -17,9 +17,10 @@ from route_engine.words import (
 
 # The activities of the contract, what the API and the app offer:
 # packages/shared-types mirrors them (ADR-0028). "cycling" joined them with
-# the API's part of TASK-190 (ADR-0153); an activity the engine draws joins
-# them only when the API gives it its network.
-SUPPORTED_ACTIVITIES: tuple[str, ...] = ("running", "cycling")
+# the API's part of TASK-190 (ADR-0153), "paddling" with that of TASK-191
+# (ADR-0164); an activity the engine draws joins them only when the API
+# gives it its network, or its water.
+SUPPORTED_ACTIVITIES: tuple[str, ...] = ("running", "cycling", "paddling")
 
 # Plausible target distances for running, in metres.
 MIN_DISTANCE_M = 1_000
@@ -42,8 +43,8 @@ ACTIVITIES: tuple[str, ...] = tuple(DISTANCE_LIMITS_M)
 # shape fits on the water it is the route (water_fit.py, ADR-0154).
 WATER_ACTIVITIES: frozenset[str] = frozenset({"paddling"})
 # Why a word or an image on the water is refused (TASK-191, ADR-0161): only
-# a shape of the catalogue is drawn there for now. The API is to say it for
-# an image too, with TASK-191 part B.
+# a shape of the catalogue is drawn there for now. The API says it for an
+# image too (TASK-191 part B).
 ON_WATER_SHAPES_ONLY = "on the water only a shape of the catalogue is drawn"
 
 

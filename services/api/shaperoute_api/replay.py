@@ -19,7 +19,7 @@ from typing import Any
 from route_engine.export_gpx import route_name, to_gpx
 from route_engine.models import RouteResult
 
-from shaperoute_api.activity_graphs import ActivityGraphs, Graphs, source_for
+from shaperoute_api.activity_graphs import ActivityGraphs, Graphs, ground_for
 from shaperoute_api.app import now_utc, to_request
 from shaperoute_api.errors import error_of
 from shaperoute_api.images import AnyRequest, plan_request
@@ -46,8 +46,8 @@ def replay(
     entry: Entry, source: Graphs, planner: Planner = plan_request
 ) -> RouteResult:
     request = request_of(entry)
-    # On the network of its activity, as the API drew it (TASK-190).
-    plan = planner(request, source_for(source, request.activity))
+    # On the network of its activity, or the water, as the API drew it.
+    plan = planner(request, ground_for(source, request.activity))
     return replace(plan.result, alternatives=[o.result for o in plan.alternatives])
 
 

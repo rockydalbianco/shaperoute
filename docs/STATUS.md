@@ -200,13 +200,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riva** e sui laghi a 50 m (scelta dell'utente), `python -m route_engine
   --activity paddling`, la validazione sull'acqua (errori, non warning),
   parole e immagini rifiutate sull'acqua, `paddling.plan_paddling` per la
-  parte B; i centri scelti da dove si arriva alla riva. L'API la rifiuta
-  ancora (`SUPPORTED_ACTIVITIES` è della parte B). **Manca il punto 5**:
+  parte B; i centri scelti da dove si arriva alla riva. **B** (l'API,
+  ADR-0164, 2026-10-03, PR in revisione): `paddling` nel contratto
+  (`shared-types` 1–5 km), l'API disegna sull'acqua della sua cache
+  (`data/cache/water/`, scaricata da Overpass a ogni area nuova), senza
+  indicazioni né alternative; lontano dall'acqua o forma troppo grande
+  `shape_not_drawable`, con la distanza per difetto al mezzo km in cui ci
+  sta; parole e immagini rifiutate; migrazione `0010` per i preferiti in
+  canoa. Non provata dal vero: Overpass non risponde da quella sessione.
+  **Manca il punto 5**:
   i campioni rifatti con le regole nuove sull'area intera, e Como
   (Overpass dal Mac, o il server con l'ok dell'utente). Cambia l'impronta
   del motore: un aggiornamento del server con TASK-203, poi
-  `draw_examples`. Poi B (API) e C (app). Da dove riprendere:
-  `tasks/TASK-191.md`, «Esito», parte A2.
+  `draw_examples`. Poi C (app). Da dove riprendere:
+  `tasks/TASK-191.md`, «Esito», parti A2 e B.
 - **TASK-204 — La grafica della corsa in corso** (ADR-0163, chiesto
   dall'utente il 2026-10-03): stessi numeri, comandi e testi di TASK-169;
   il numero grande col nome sotto, la distanza più grande sotto la mappa,

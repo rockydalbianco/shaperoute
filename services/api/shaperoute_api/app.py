@@ -42,7 +42,12 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from shaperoute_api.access import protect
 from shaperoute_api.accounts import Accounts, install_accounts
 from shaperoute_api.activities import PlaceNames, install_activities
-from shaperoute_api.activity_graphs import Graphs, check_supported, source_for
+from shaperoute_api.activity_graphs import (
+    Graphs,
+    check_supported,
+    ground_for,
+    source_for,
+)
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.drawings import install_drawings
 from shaperoute_api.errors import error_of
@@ -565,8 +570,8 @@ def create_app(
         what = f"{request.name} {request.distance_m} m"
         started = time.perf_counter()
         try:
-            # On the network of its activity (TASK-190).
-            plan = planner(request, source_for(source, request.activity))
+            # On the network of its activity (TASK-190), or on the water.
+            plan = planner(request, ground_for(source, request.activity))
             others = [other.result for other in plan.alternatives]
             result = replace(plan.result, alternatives=others)
         except Exception as exc:

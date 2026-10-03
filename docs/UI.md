@@ -1167,7 +1167,8 @@ TASK-164, di cui tiene i numeri.
     waypoint «Pause» e «Resume» (TASK-197, `GPX.md`).
 
 **L'aspetto della corsa** (TASK-204, ADR-0163; chiesto dall'utente il
-2026-10-03: «migliora la parte grafica»). Stessi numeri, comandi e testi;
+2026-10-03: «migliora la parte grafica», e confermato lo stesso giorno,
+«Pause» sotto il pulsante compreso). Stessi numeri, comandi e testi;
 cambia come si leggono:
 
 - **I numeri**: il valore grande con l'unità accanto, piccola («5:11 /km»),

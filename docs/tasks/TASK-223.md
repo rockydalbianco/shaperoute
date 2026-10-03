@@ -1,0 +1,104 @@
+# TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle forme
+
+**Stato**: In lavorazione (parte A fatta, aspetta il giudizio dell'utente)
+**Fase**: 4 · **Branch**: `feat/TASK-223-simple-emoji`
+**ADR**: ADR-0185 (le forme a pezzi)
+**Dipende da**: TASK-197 (la penna alzata nelle parole, `pen_up.py`)
+**Dopo**: la parte B, con le forme scelte dall'utente; TASK-226 (gli occhi
+staccati sull'acqua) usa gli stessi `pieces`.
+
+## Obiettivo
+
+Chiesto dall'utente il 2026-10-03: «Trova da fare emoji molto più semplici
+da aggiungere al catalogo, metti anche la possibilità di fermare il
+tratteggio».
+
+Letto così: forme nuove per il catalogo, più semplici di gatto, cavallo e
+farfalla, che sulle strade si riconoscano meglio; e per quelle fatte di
+parti staccate (gli occhi di una faccina) la **penna alzata** delle parole
+(TASK-197): si disegna un pezzo, si cammina senza registrare fino al
+prossimo, si riprende. Sulla mappa quei tratti a piedi sono tratteggiati.
+
+## Parte A — il motore e i candidati (questo branch)
+
+1. **I pezzi nei contorni** (`shapes/outline.py`): `pieces` nel JSON, linee
+   staccate da tutto; anelli o linee aperte. Lo stesso file si disegna
+   con la penna alzata (`pen_up_lines`) o con la penna giù (`joined`: ogni
+   pezzo attaccato col collegamento più corto, andata e ritorno).
+2. **La forma a pezzi come parola a penna alzata** (`pieces.py`, nuovo):
+   una «lettera» per il contorno e una per ogni pezzo; la ricerca, il
+   tracciamento e la somiglianza sono quelli di TASK-197. In `pen_up.py` i
+   pezzi hanno zone e corridoio fini come i tratti e un anello si traccia
+   chiuso; i messaggi dicono «piece 2» (`Word.kind`, `Word.label`).
+3. **La CLI**: `--pen-up` anche con `--outline`/`--shape` a pezzi.
+4. **Dieci candidati** in `shapes/outlines/`, solo dalla CLI, **non** nel
+   catalogo: `smiley` 🙂, `ghost` 👻, `donut` 🍩, `sun` ☀️ (a pezzi);
+   `lightning` ⚡, `drop` 💧, `balloon` 🎈, `ice_cream` 🍦, `cloud` ☁️,
+   `apple` 🍎 (contorno, a volte con tratti).
+5. **Campioni** a 10 km a Trento, Levico e Milano, in `samples/`
+   (`TASK-223_*_v1.gpx`, righe in `samples/LOG.md`), le forme a pezzi con
+   la penna alzata e con la penna giù.
+
+### Criteri di accettazione (parte A)
+
+- [x] Un contorno senza `pieces` si legge e si disegna come prima (tutti i
+      test del motore verdi, i file di `outlines/` senza pezzi uguali).
+- [x] Un pezzo che tocca il contorno, un tratto o un altro pezzo, o che si
+      incrocia, si rifiuta con il motivo; così un collegamento che
+      taglierebbe un'altra linea.
+- [x] Con la penna alzata: n pezzi, n tratti a piedi; la distanza chiesta è
+      quella disegnata; la partenza resta sul contorno.
+- [x] Con la penna giù: una linea chiusa sola, ogni pezzo andata e ritorno.
+- [x] La CLI disegna una forma a pezzi con e senza `--pen-up`, e rifiuta
+      `--pen-up` per una forma senza pezzi.
+- [x] Nessun file dell'API, dell'app o dell'AI toccato; il catalogo non
+      cambia.
+
+### File toccati (parte A)
+
+- `services/route-engine/route_engine/shapes/outline.py`
+- `services/route-engine/route_engine/pieces.py` (nuovo)
+- `services/route-engine/route_engine/pen_up.py`
+- `services/route-engine/route_engine/words.py` (`Word.kind`, `label`)
+- `services/route-engine/route_engine/__main__.py`
+- `services/route-engine/route_engine/shapes/outlines/` (10 file nuovi)
+- `services/route-engine/tests/test_pieces.py` (nuovo),
+  `tests/test_outline.py` (un test salta i contorni a pezzi)
+- `samples/TASK-223_*.gpx` (nuovi), `samples/LOG.md` (righe nuove)
+- `docs/ROUTE_ENGINE.md` (§2 «Pezzi staccati dal contorno», §5, §7)
+- `docs/tasks/TASK-223.md`, `docs/DECISIONS.md` (ADR-0185),
+  `docs/STATUS.md` (le mie righe)
+
+## Parte B — nel catalogo (dopo il giudizio)
+
+Parte solo con le forme che l'utente ha giudicato riconoscibili sui
+campioni (ADR-0036), e dopo che `RoutePanel.tsx` e `src/route/` sono
+liberi. Per ogni forma scelta:
+
+- il motore: una riga in `shapes/__init__.py` (`SHAPES`); per una forma a
+  pezzi `RouteRequest` accetta `pen_up` (oggi solo con una parola:
+  `PEN_UP_WITHOUT_WORD`) e `plan_route` la scrive con `pieces.compose`;
+- l'API: `pen_up` anche con una forma a pezzi (`schemas.py`, `app.py`) e
+  il contratto in `packages/shared-types`;
+- l'AI: le parole in `services/ai` (`prompt.py`, le frasi dei test);
+- l'app: la tessera con l'emoji (`ShapeTiles.tsx`), le parole
+  (`shapeWords.ts`), i nomi nelle cinque lingue (`shapeNames.ts`),
+  l'interruttore della penna alzata anche per le forme a pezzi, la voce
+  fra un pezzo e l'altro;
+- `UI.md` (la tabella delle forme), `API.md`, `AI.md`.
+
+## Domande per l'utente
+
+1. **Quali forme entrano?** Pagina di confronto con i campioni; la mia
+   proposta è nel riepilogo della sessione.
+2. **La penna alzata per le forme a pezzi**: accesa di partenza, come per le
+   parole (TASK-202), o spenta? Proposta: accesa per faccina,
+   fantasmino e ciambella; il sole solo con la penna giù (a penna alzata
+   cammina quasi quanto disegna).
+3. **La voce fra un pezzo e l'altro**: «Walk to the eye» come «Walk to the
+   U» delle parole, o una frase sola per tutti i pezzi («Walk to the next
+   part»)? Proposta: una frase sola, perché i pezzi non hanno nome nel file.
+
+## Esito
+
+(da scrivere)

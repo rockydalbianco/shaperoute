@@ -8694,3 +8694,47 @@ precedenti, da 20 km. Restano come nella corsa, da chiedere all'utente:
 la fine della corsa (il passo nel riepilogo), le calorie (stimate per la
 corsa, circa il triplo di quelle in bici), l'incitamento dopo 5 km (in bici
 non c'è: i 5 km non si dicono), la corsa senza percorso in bici.
+
+## ADR-0185 — Le forme a pezzi: un file solo, con la penna alzata o giù
+**Stato**: Attiva · 2026-10-03 · **deciso dall'agente su delega
+dell'utente** (TASK-223, parte A). Quali forme entrano nel catalogo, e se
+la penna alzata è accesa di partenza, restano dell'utente (ADR-0036).
+
+**Contesto**: l'utente, il 2026-10-03: «Trova da fare emoji molto più
+semplici da aggiungere al catalogo, metti anche la possibilità di fermare
+il tratteggio». Le emoji semplici hanno spesso parti staccate (gli occhi di
+una faccina, il buco di una ciambella). Fino a oggi un dettaglio interno era
+un tratto (`strokes`, ADR-0039) che parte dal contorno: gli occhi di gatto
+e cane sono attaccati alla testa da una linea percorsa due volte. Le parole
+hanno già la penna alzata (TASK-197, ADR-0157).
+
+**Decisione**:
+1. **`pieces` nel JSON di un contorno**: linee staccate da tutto, anelli o
+   linee aperte. Lo stesso file serve ai due modi; non due file per forma.
+2. **Penna alzata**: la forma è una parola a penna alzata, una «lettera»
+   per il contorno e una per ogni pezzo (`pieces.compose`). Ricerca,
+   tracciamento, tratti a piedi, somiglianza, GPX con «Pause»/«Resume»
+   sono quelli di TASK-197: niente di nuovo da spiegare all'app, che già
+   tratteggia i `walks` e mette in pausa.
+3. **Penna giù**: ogni pezzo si attacca da solo con il collegamento più
+   corto e diventa un tratto. Chi disegna una forma scrive solo i pezzi,
+   senza inventare dove attaccarli.
+4. **I pezzi sono dettagli**: con la penna alzata zone e corridoio dimezzati
+   come per i tratti, e un anello tracciato chiuso. Le parole non cambiano.
+5. **Un'«altezza di lettera» di una forma a pezzi è un quarto del suo
+   lato** (`PIECE_HEIGHT`): così la tolleranza della somiglianza è circa
+   quella delle forme (1% del perimetro di un cerchio), e un pezzo si sposta
+   al massimo di 1/16 del lato.
+6. **Il catalogo non cambia** in questo passo: i candidati si provano dalla
+   CLI finché l'utente non li giudica.
+
+**Alternative scartate**: pezzi attaccati a mano nel file (più lavoro per
+ogni forma, e due versioni da tenere allineate); un tracciamento nuovo per
+le forme a pezzi (TASK-197 lo fa già per le lettere); zone e corridoio del
+disegno intero come per le lettere (gli occhi venivano a «P», la faccia non
+si chiudeva).
+
+**Conseguenze**: TASK-226 (gli occhi staccati sull'acqua) scrive gli occhi
+di pesce, gatto e teste come `pieces`. Per chiedere una forma a pezzi con la
+penna alzata all'API servono il contratto (`pen_up` oggi è solo per le
+parole) e l'app: la parte B di TASK-223.

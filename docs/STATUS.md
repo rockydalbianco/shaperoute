@@ -145,6 +145,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
+  forme** (ADR-0185; chiesto dall'utente il 2026-10-03): **parte A, il
+  motore**, nel branch `feat/TASK-223-simple-emoji`. Le forme possono avere
+  `pieces`, pezzi staccati dal contorno: con la penna alzata si disegnano
+  uno per volta, a piedi fra l'uno e l'altro come le lettere; con la penna
+  giù si attaccano da soli. Dieci candidati, solo dalla CLI (faccina,
+  fantasmino, ciambella, sole, fulmine, goccia, palloncino, cono gelato,
+  nuvola, mela) e i campioni a 10 km a Trento, Levico e Milano. **Aspetta
+  l'utente**: quali forme entrano, la penna alzata accesa o spenta di
+  partenza, la frase della voce. Poi la parte B (catalogo, API, AI, app).
+  `tasks/TASK-223.md`.
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia
   notturna dal 2026-10-02 (07:27Z, 18 s di API ferma); iscrizione,

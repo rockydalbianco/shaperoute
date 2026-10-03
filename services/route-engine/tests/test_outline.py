@@ -193,7 +193,7 @@ def test_without_strokes_an_outline_is_resampled_as_before() -> None:
     assert plain(N) == resample_by_arc_length(plain.points, N)
     for path in OUTLINES.glob("*.json"):
         outline = read_outline(path)
-        if not outline.strokes and not outline.line:
+        if not outline.strokes and not outline.line and not outline.pieces:
             assert outline(N) == resample_by_arc_length(outline.points, N)
 
 

@@ -74,23 +74,37 @@ In tre PR, come TASK-190.
 6. Le zone di prima restano valide, senza tratti a piedi; quelle nuove
    portano `on_foot=True`.
 
-**B. API e contratto**
+**B. API e contratto** (via del coordinatore il 2026-10-03; branch
+`feat/TASK-206-bike-on-foot-api` da `origin/main` aggiornato, in un
+contesto pulito)
 
 7. `on_foot` nel risultato (`RouteResult` del motore, `RouteResultBody`,
-   `shared-types`, `contract.json`): `[da, a]` indici nei punti, come i
-   `walks` della penna alzata, calcolati dai nodi del percorso; anche nelle
-   alternative, nelle partenze vicine e nei percorsi tenuti. `API.md`.
-8. Le indicazioni a voce: un passo «Walk your bike» all'inizio di un
-   tratto e «Ride on» alla fine (`directions.py`), testi da far approvare
-   all'utente.
-9. Sul server: rifare la zona della bici di Trento dall'estratto e
-   `draw_examples`, in un aggiornamento solo, con l'ok dell'utente.
+   `shared-types`, `contract.json`): `[da, a]` indici nei punti, entrambi
+   compresi, come i `walks` della penna alzata, calcolati dai nodi del
+   percorso (i punti sono il primo nodo più i punti di ogni arco tranne il
+   primo, `_edge_points`: lo stesso in `snap_to_network`, `pen_up`,
+   `with_approach`, `first_leg`); un arco è a piedi se `on_foot_edge`.
+   Anche nelle alternative, nelle partenze vicine (l'avvicinamento può
+   essere a piedi) e nei percorsi tenuti (`route_store`, preferiti).
+   `API.md`. **Si aggiunge senza togliere niente**: vuoto per la corsa e
+   la canoa, un'app vecchia lo ignora (test del contratto);
+   `test_contract.py` vuole gli stessi campi in `RouteResult` e
+   `RouteResultBody`, quindi entrano insieme.
+8. **Incrocio** (coordinatore): TASK-211 A (seguire e la ricerca degli
+   iscritti nell'API) può toccare `app.py`, `schemas.py` e `shared-types`;
+   lì solo aggiunte, entra prima chi è pronto prima, l'altro si aggiorna.
+9. Le frasi della voce per i tratti a mano **non sono di B ma di C**
+   (indicazione del coordinatore): B dà solo i dati.
+10. Sul server, dopo B: rifare la zona della bici di Trento dall'estratto
+    e `draw_examples`, in un aggiornamento solo, **con un nuovo ok
+    dell'utente** («Note per il deploy»).
 
 **C. App**
 
-10. I tratti a mano sulla mappa, in un altro stile (`src/theme/tokens.ts`),
-    e i metri a mano nella scheda del percorso; la voce che li annuncia;
-    testi da far approvare all'utente.
+11. I tratti a mano sulla mappa, in un altro stile (`src/theme/tokens.ts`),
+    e i metri a mano nella scheda del percorso; la voce che li annuncia
+    all'inizio e alla fine di un tratto; testi da far approvare
+    all'utente.
 
 ## Criteri di accettazione
 

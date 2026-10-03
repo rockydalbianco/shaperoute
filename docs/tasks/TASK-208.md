@@ -36,6 +36,13 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
 5. **Le persone da taggare** sono iscritti a Sgrava, cercati per nome
    (la ricerca è di TASK-211). I nomi taggati compaiono sul disegno e
    aprono il loro profilo. Nessuna notifica finché non c'è TASK-185.
+6. **Le foto restano sul telefono finché la corsa è «Only me»** (scelta
+   del 2026-10-03, durante la parte A: «usare più la memoria dei telefoni
+   che la nostra»). Vanno sul server solo con «Everyone» o «Followers»;
+   rimessa «Only me», il server le cancella. Le corse restano sul server
+   come oggi (circa 50 KB l'una: servono a punteggio, Strava e a un
+   secondo telefono). Persi il telefono o l'app, si perdono le foto delle
+   corse private.
 
 ## Proposte dell'agente (da confermare con l'utente prima della parte B)
 
@@ -102,7 +109,10 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
 2. Lo stesso modulo sulla scheda di una corsa in «My activities»
    (`PublicRow.tsx`).
 3. Senza rete la scelta e le foto aspettano sul telefono, come oggi
-   `drawings-outbox.json` (le foto già ridotte, in un file).
+   `drawings-outbox.json` (le foto già ridotte, in un file). Le foto
+   restano sul telefono anche dopo, per le corse «Only me», e vanno al
+   server solo quando la corsa si apre agli altri (scelta 6, «Esito»,
+   «Per la parte B»).
 4. Il disegno aperto (`DrawingCard.tsx`): mappa e foto da scorrere,
    descrizione, attività, i nomi taggati che aprono il profilo.
 5. Test, `UI.md`, i testi nuovi.
@@ -210,6 +220,11 @@ negativi** di ADR-0176. Il titolo neppure.
   1080 px sul lato lungo e le rifà JPEG senza EXIF; al più 20 `PUT` al
   minuto. Chi vede il disegno le legge da `GET /drawings/{id}/photos/{n}`:
   JPEG, con il token, e un `?v=` che cambia con la foto.
+- **Le foto solo per i disegni che altri vedono** (scelta 6): su una corsa
+  senza disegno o `only_me` il `PUT` di una foto è `409 http_error`
+  («Photos stay on the phone while only you see this run: choose Everyone
+  or Followers first.»); il `PUT` del disegno con `only_me` cancella le
+  sue foto dal server.
 - **`runs.activity`**: il `PUT` della corsa prende `activity`, per
   difetto `running`; il disegno la cambia e la mostra.
 - **Strava**: il `sport_type` viene dall'attività (`Run`, `Ride`,
@@ -247,6 +262,14 @@ difetto: chi segue vedeva il disegno e non i suoi commenti. Ora chiede
 `StandUpPaddling` (proposta era `Canoeing`).
 
 **Per la parte B**:
+- **Le foto sono del telefono** (scelta 6): l'app le tiene (già ridotte,
+  in un file per foto, accanto a `drawings-outbox.json`) per ogni corsa
+  che ne ha. Manda prima il `PUT` del disegno, poi le foto, solo con
+  «Everyone» o «Followers»; con «Only me» non ne manda, e quando il
+  disegno si riapre agli altri le rimanda. Un `409` vuol dire che il
+  disegno è ancora `only_me` per l'API: la foto resta in coda. Cancellata
+  la corsa, l'app cancella le sue foto. Le foto di una corsa privata non
+  passano da un telefono all'altro: da dire nei testi, se l'utente vuole;
 - per i tag si riusa la ricerca degli iscritti di TASK-215,
   `src/social/PeopleSearch.tsx` (#264, ADR-0178), non più un componente
   di TASK-211 B;
@@ -257,14 +280,16 @@ difetto: chi segue vedeva il disegno e non i suoi commenti. Ora chiede
 - La migrazione è veloce: aggiunge colonne con un default costante e due
   tabelle vuote. `drawings` si riscrive una volta, per la colonna
   generata, con le poche righe di oggi.
-- **Lo spazio delle foto**. Una foto vera a 1080 px pesa circa 0,1–0,3 MB
+- **Lo spazio delle foto**: contano solo i disegni che altri vedono (scelta
+  6), le foto delle corse private restano sui telefoni. Una foto vera a
+  1080 px pesa circa 0,1–0,3 MB
   (misurate: 0,1 MB una foto liscia, 0,25 MB una piena di dettagli,
   0,8 MB il rumore puro, il caso peggiore). Con tre foto un disegno pesa
   di solito 0,3–0,9 MB. **Ogni copia di notte le ripete**, e un JPEG non
   si comprime: con le 13 copie tenute (TASK-122) il disco ne porta circa
   14 volte tanto. Stime, a 0,2 MB a foto:
 
-  | Disegni con tre foto | Nel database | Con le copie |
+  | Disegni visti da altri, con tre foto | Nel database | Con le copie |
   |---|---|---|
   | 100 | circa 60 MB | circa 0,8 GB |
   | 1 000 | circa 0,6 GB | circa 8 GB |

@@ -222,7 +222,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `description`, `runs.activity` (anche nel `PUT` della corsa), i tag
   (al più 10, cancellato l'account il nome sparisce), le foto in posti
   1–3 a 1080 px senza EXIF, lette con il token da
-  `/drawings/{id}/photos/{n}`; chi vede cosa con una domanda sola,
+  `/drawings/{id}/photos/{n}` e tenute sul server **solo mentre altri
+  vedono il disegno** (scelta dell'utente: le foto delle corse «Only me»
+  restano sul telefono); chi vede cosa con una domanda sola,
   `drawing_seen_sql`; il numero sul profilo è quello che chi guarda vede;
   a Strava descrizione e tipo (`Run`, `Ride`, e `StandUpPaddling` per la
   canoa, scelta dell'utente); i commenti seguono `drawing_seen_sql`, e

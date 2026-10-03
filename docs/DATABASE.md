@@ -294,17 +294,21 @@ Migrazione `0014_drawing_details.sql` (TASK-208, ADR-0170):
   peggio misurato, puro rumore a 1080 px, è 0,8 MB), `width` e `height`
   (al più 1080), `updated_at`. Un posto svuotato resta vuoto, gli altri
   non si spostano. Il JPEG lo fa l'API (`drawing_photos.py`): il file del
-  telefono e il suo EXIF non si tengono, come per `profile_photos`.
+  telefono e il suo EXIF non si tengono, come per `profile_photos`. Ci
+  sono righe solo per i disegni che altri vedono (`everyone`,
+  `followers`): passato a `only_me`, il disegno perde le sue foto, che
+  restano sul telefono (scelta dell'utente, 2026-10-03).
 - **`drawing_tags`**: `drawing_id` (`ON DELETE CASCADE` su `drawings`),
   `user_id` (`ON DELETE CASCADE` su `users`: cancellato l'account
   taggato, il suo nome sparisce dal disegno), `position` (da 1 a 10). Una
   riga per persona, una persona per posto; un indice su `user_id` per
   cancellare un account.
 - Quanto pesano le foto: una foto vera a 1080 px è circa 0,1–0,3 MB; un
-  disegno con tre foto al più 1 MB, di solito meno. Con mille disegni con
-  tre foto l'uno, circa 0,5–1 GB nel database, e altrettanto in **ognuna**
-  delle 13 copie di notte (TASK-122): un JPEG non si comprime di più, e
-  sul disco del server pesa circa 14 volte. Le note per il deploy sono in
+  disegno con tre foto al più 1 MB, di solito meno. Con mille disegni
+  **visti da altri** con tre foto l'uno, circa 0,5–1 GB nel database, e
+  altrettanto in **ognuna** delle 13 copie di notte (TASK-122): un JPEG non
+  si comprime di più, e sul disco del server pesa circa 14 volte. Le foto
+  delle corse private non ci sono. Le note per il deploy sono in
   `tasks/TASK-208.md`.
 
 ## Come si memorizza una traccia

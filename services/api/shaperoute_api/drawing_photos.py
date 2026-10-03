@@ -6,6 +6,11 @@ a place replaces the one there, deleting it leaves the place empty and the
 others where they are, so a request sent again by a phone without network
 changes nothing the second time.
 
+They are kept here only while others can see the drawing, everyone or the
+followers: while only its owner does, they stay on the phone, which sends
+them when the drawing opens to others, and making it its owner's only
+deletes them here (the user's choice, 2026-10-03, ADR-0170).
+
 The app sends a photo once, in base64 inside JSON, as the profile picture
 (profile_photos.py, ADR-0146). The API keeps only what it makes of it:
 upright, at most PHOTO_SIDE pixels on its longer side and saved again as
@@ -50,8 +55,8 @@ from shaperoute_api.drawings import (
     Drawings,
     MyDrawingBody,
     drawing_seen_sql,
-    run_drawing,
     run_of,
+    shared_drawing,
 )
 from shaperoute_api.images import decode_image
 from shaperoute_api.profile_photos import BACKGROUND, FORMATS, MAX_PIXELS
@@ -153,15 +158,14 @@ class DrawingPhotos:
     now: Callable[[], datetime]
 
     def put(self, user_id: int, key: str, n: int, image: bytes) -> bool:
-        """The photo in place `n` of the run's drawing, made for its owner
-        only if the run had none; False: no such run."""
+        """The photo in place `n` of the run's drawing; False: no such run.
+        409 while only its owner sees the drawing (shared_drawing)."""
         photo = fitted_jpeg(image)
         now = self.now()
         with self.database.connect() as conn:
-            drawn = run_drawing(conn, user_id, key, now)
-            if drawn is None:
+            drawing_id = shared_drawing(conn, user_id, key)
+            if drawing_id is None:
                 return False
-            _, drawing_id = drawn
             conn.execute(
                 "INSERT INTO drawing_photos (drawing_id, n, jpeg, width, height,"
                 " updated_at) VALUES (%s, %s, %s, %s, %s, %s)"
@@ -226,7 +230,7 @@ def drawing_photo_routes() -> APIRouter:
     # A plain def: reducing a photo takes a moment, in a thread of its own.
     @router.put(
         "/me/activities/{key}/drawing/photos/{n}",
-        responses={404: {"model": ErrorBody}},
+        responses={404: {"model": ErrorBody}, 409: {"model": ErrorBody}},
     )
     def put_photo(
         key: Key,

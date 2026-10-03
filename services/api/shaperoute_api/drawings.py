@@ -5,8 +5,12 @@ A run saved in My activities (activities.py) is private. Its owner may give
 it a title, a description, the members it tags, up to three photos
 (drawing_photos.py), and say who can see it (ADR-0170): every member, the
 members who follow it with the request accepted (follows.py), or only
-itself. What the others see is cut: the track without its first and its
-last CUT_M metres along it, without times, without the planned route, which
+itself. The photos are kept here only while others can see the drawing:
+while only its owner does, they stay on the phone (the user's choice,
+2026-10-03).
+
+What the others see is cut: the track without its first and its last
+CUT_M metres along it, without times, without the planned route, which
 begins at the runner's door (ADR-0114, point 4). The owner keeps the whole
 run in My activities.
 
@@ -101,6 +105,10 @@ TOO_SHORT = (
     " never shown, and nothing would be left."
 )
 NO_DRAWING = "No drawing with this id."
+PHOTOS_ON_THE_PHONE = (
+    "Photos stay on the phone while only you see this run: choose Everyone or"
+    " Followers first."
+)
 NO_PROFILE = "No profile with this id."
 
 LatLon = tuple[float, float]
@@ -537,26 +545,23 @@ def _tagged(conn: Connection, user_id: int, wanted: Sequence[UUID]) -> list[int]
     return [found[public_id] for public_id in wanted]
 
 
-def run_drawing(
-    conn: Connection, user_id: int, key: str, now: datetime
-) -> tuple[int, UUID] | None:
-    """The run with this key and the id of its drawing, made untitled and
-    for its owner only when it had none; None: no such run. The run is
-    locked until `conn` commits (drawing_photos.py)."""
+def shared_drawing(conn: Connection, user_id: int, key: str) -> UUID | None:
+    """The id of the drawing of the run with this key, when others can see
+    it; None: no such run. 409 while only its owner sees it, or it has no
+    drawing: its photos stay on the phone (the user's choice, ADR-0170).
+    The run is locked until `conn` commits, so the drawing cannot become
+    its owner's only meanwhile (drawing_photos.py)."""
     run = conn.execute(RUN_TO_DRAW, (user_id, key)).fetchone()
     if run is None:
         return None
-    cut = cut_track(_line(run["track"]))
-    conn.execute(
-        "INSERT INTO drawings (run_id, track, updated_at)"
-        " VALUES (%s, ST_GeomFromText(%s, 4326), %s) ON CONFLICT (run_id) DO NOTHING",
-        (run["id"], _line_wkt(cut) if cut else None, now),
-    )
-    row = conn.execute(
-        "SELECT id FROM drawings WHERE run_id = %s", (run["id"],)
+    drawing = conn.execute(
+        "SELECT id FROM drawings WHERE run_id = %s AND visibility <> 'only_me'",
+        (run["id"],),
     ).fetchone()
-    assert row is not None
-    return run["id"], row["id"]
+    if drawing is None:
+        raise AccountError(409, "http_error", PHOTOS_ON_THE_PHONE)
+    drawing_id: UUID = drawing["id"]
+    return drawing_id
 
 
 def run_of(conn: Connection, user_id: int, key: str) -> int | None:
@@ -648,6 +653,12 @@ class Drawings:
                     ),
                 ).fetchone()
                 assert drawing is not None
+                if visibility == "only_me":
+                    # Seen by its owner only, its photos are the phone's.
+                    conn.execute(
+                        "DELETE FROM drawing_photos WHERE drawing_id = %s",
+                        (drawing["id"],),
+                    )
                 if body.activity is not None:
                     conn.execute(
                         "UPDATE runs SET activity = %s WHERE id = %s",

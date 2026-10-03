@@ -8303,9 +8303,11 @@ confermare con gli altri.
 descrizione con «How did it go?»; iscritti taggati cercati per nome; fino a
 tre foto oltre alla mappa; «Who can see it» con «Everyone», «Followers» e
 «Only me», dove «Followers» è chi segue con la richiesta accettata
-(ADR-0173). Due altre **scelte dell'utente**, chieste durante il task: la
+(ADR-0173). Tre altre **scelte dell'utente**, chieste durante il task: la
 descrizione **non passa dal filtro dei commenti negativi** (ADR-0176); la
-canoa va su Strava come `StandUpPaddling`. Numero tenuto dal coordinatore.
+canoa va su Strava come `StandUpPaddling`; **le foto restano sul telefono
+finché la corsa è «Only me»** (usare la memoria dei telefoni più di quella
+del server). Numero tenuto dal coordinatore.
 
 **Contesto**: fino a TASK-117 un disegno aveva solo `title` e `public`
 (ADR-0159); l'app del 2026-10-03 (ADR-0166) manda `{title, public}` e deve
@@ -8350,9 +8352,18 @@ entrare in `main` prima o dopo questa parte.
    senza EXIF, nel database (ADR-0115). **1080 px sul lato lungo**, mai
    ingrandite, qualità 82: la larghezza di un telefono; una foto vera pesa
    0,1–0,3 MB, il peggio misurato (rumore puro) 0,8 MB, e il vincolo del
-   database tiene fino a 2 MB. 20 `PUT` al minuto per account. Una foto su
-   una corsa senza disegno crea il disegno `only_me`: la foto non si
-   perde, e nessuno la vede prima che il proprietario lo dica.
+   database tiene fino a 2 MB. 20 `PUT` al minuto per account.
+   **Sul server solo mentre altri vedono il disegno** (scelta dell'utente):
+   con `everyone` o `followers`. Su una corsa senza disegno, o `only_me`,
+   il `PUT` è `409 http_error` («Photos stay on the phone while only you
+   see this run: choose Everyone or Followers first.»); rimettere
+   `only_me` cancella le foto dal server, nella stessa transazione del
+   disegno. Le tiene il telefono, e le rimanda quando il disegno si apre
+   di nuovo agli altri (parte B). Il `PUT` della foto e quello del disegno
+   bloccano la stessa corsa: una foto non arriva mai su un disegno appena
+   tornato `only_me`. Così il server tiene solo quello che serve agli
+   altri, e le foto delle corse private non pesano su di lui né sulle sue
+   copie.
 8. **Le foto si leggono da un indirizzo**, `GET /drawings/{id}/photos/{n}`,
    come JPEG, con il token: nel disegno ci sono solo `n`, `url`, `width` e
    `height`. Il base64 dentro ogni disegno farebbe una griglia di 20
@@ -8389,7 +8400,11 @@ cancellerebbe la foto dopo); le foto in base64 dentro il disegno (sopra);
 la foto a 256 px come quella del profilo (troppo piccola a tutto
 schermo); un `PATCH` per i campi nuovi (l'app di prima usa già il `PUT`);
 dare a chi è taggato il diritto di vedere un disegno `followers` o
-`only_me` (non è nel task file: da chiedere all'utente se serve).
+`only_me` (non è nel task file: da chiedere all'utente se serve); tenere
+sul server anche le foto delle corse private (la proposta di prima:
+l'utente ha scelto il telefono); le corse private solo sul telefono (pesano
+circa 50 KB l'una, servono a punteggio, Strava e a un secondo telefono:
+scartato dall'utente); foto a 720 px (la qualità a tutto schermo).
 
 **Conseguenze**: una migrazione nuova (`00NN_drawing_details.sql`, il
 primo numero libero in `main` al merge), un modulo nuovo

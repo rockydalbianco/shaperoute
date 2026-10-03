@@ -1224,8 +1224,15 @@ nuovi. Il codice in `drawings.py` e `drawing_photos.py`.
   telefono non si tiene, e con lui l'EXIF (dove è stata scattata). Un file
   che non è una foto, o un GIF: `422 invalid_request` con il motivo, e la
   foto di prima resta. Al più 20 `PUT` di foto al minuto per account
-  (`429 too_many_requests` con `Retry-After`). Una foto su una corsa senza
-  disegno crea il disegno, `only_me` e senza titolo.
+  (`429 too_many_requests` con `Retry-After`).
+- **Le foto stanno sul server solo mentre altri vedono il disegno**
+  (`everyone` o `followers`; scelta dell'utente, 2026-10-03): mentre lo
+  vede solo il proprietario restano sul telefono. Su una corsa senza
+  disegno, o `only_me`, il `PUT` di una foto è `409 http_error`, «Photos
+  stay on the phone while only you see this run: choose Everyone or
+  Followers first.»; il `PUT` del disegno con `only_me` cancella le sue
+  foto dal server (`photos` vuoto nella risposta). L'app manda prima il
+  disegno, poi le foto, e le rimanda quando lo riapre agli altri.
 - **Ogni foto del disegno** è `{ "n", "url", "width", "height" }`, in
   ordine di posto; `url` è `/drawings/{id}/photos/{n}?v=…`, sull'API, da
   leggere con il token come ogni altra chiamata: risponde il JPEG

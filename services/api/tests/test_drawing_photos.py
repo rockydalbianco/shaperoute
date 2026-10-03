@@ -1,7 +1,8 @@
 """The photos of a drawing in a real PostgreSQL (TASK-208, ADR-0170): up to
 three besides the map, each in its place; kept upright, at most 1080 px a
-side, without the EXIF of the phone; read by whoever may see the drawing and
-by nobody else; gone with the run and with the account."""
+side, without the EXIF of the phone; kept only while others can see the
+drawing, on the phone otherwise; read by whoever may see the drawing and by
+nobody else; gone with the run and with the account."""
 
 from __future__ import annotations
 
@@ -32,7 +33,7 @@ from shaperoute_api.drawing_photos import (
     DrawingPhotoRequestBody,
     fitted_jpeg,
 )
-from shaperoute_api.drawings import MAX_PHOTOS, NO_DRAWING
+from shaperoute_api.drawings import MAX_PHOTOS, NO_DRAWING, PHOTOS_ON_THE_PHONE
 
 REPO = Path(__file__).resolve().parents[3]
 FIXTURES = REPO / "packages" / "shared-types" / "fixtures"
@@ -144,10 +145,10 @@ def saved(client: TestClient, headers: dict[str, str], key: str = KEY) -> None:
 
 
 def seen_by(
-    client: TestClient, headers: dict[str, str], visibility: str
+    client: TestClient, headers: dict[str, str], visibility: str, key: str = KEY
 ) -> dict[str, Any]:
     answer = client.put(
-        f"/me/activities/{KEY}/drawing",
+        f"/me/activities/{key}/drawing",
         json={"title": "Sunday star", "visibility": visibility},
         headers=headers,
     )
@@ -301,25 +302,55 @@ def test_a_fourth_photo_is_refused(
     assert photo_rows(database) == 0
 
 
-def test_a_photo_on_a_run_with_no_drawing_keeps_it_to_its_owner(
-    client: TestClient,
+def test_the_photos_of_a_run_only_its_owner_sees_stay_on_the_phone(
+    client: TestClient, database: Database
+) -> None:
+    """The user's choice (2026-10-03): the server keeps a photo only while
+    others can see the drawing."""
+    me = signed_up(client)
+    saved(client, me)
+    # No drawing yet, then one for its owner only.
+    for _ in range(2):
+        answer = client.put(photo_path(1), json=sent(PHOTO), headers=me)
+        assert answer.status_code == 409
+        assert code(answer) == "http_error"
+        assert message(answer) == PHOTOS_ON_THE_PHONE
+        seen_by(client, me, "only_me")
+    assert photo_rows(database) == 0
+    mine = client.get(f"/me/activities/{KEY}/drawing", headers=me).json()
+    assert mine["photos"] == []
+
+
+def test_made_its_owners_only_the_server_forgets_its_photos(
+    client: TestClient, database: Database
 ) -> None:
     me = signed_up(client)
     saved(client, me)
-    mine = put_photo(client, me, 1)
-    assert mine["id"] is not None
-    assert mine["visibility"] == "only_me"
-    assert mine["title"] is None
-    url = mine["photos"][0]["url"]
-    assert client.get(url, headers=me).status_code == 200
-    hidden = client.get(url, headers=other(client))
-    assert hidden.status_code == 404
-    assert message(hidden) == NO_DRAWING
+    seen_by(client, me, "followers")
+    url = put_photo(client, me, 1)["photos"][0]["url"]
+    put_photo(client, me, 3)
+    hidden = seen_by(client, me, "only_me")
+    assert hidden["photos"] == []
+    assert photo_rows(database) == 0
+    gone = client.get(url, headers=me)
+    assert gone.status_code == 404
+    assert message(gone) == NO_PHOTO
+    # Seen by others again, it has none until the phone sends them.
+    assert seen_by(client, me, "everyone")["photos"] == []
+    # A title changed while others see it keeps them.
+    put_photo(client, me, 2)
+    answer = client.put(
+        f"/me/activities/{KEY}/drawing",
+        json={"title": "Renamed", "public": True},
+        headers=me,
+    )
+    assert [photo["n"] for photo in answer.json()["photos"]] == [2]
 
 
 def test_the_photos_follow_who_can_see_the_drawing(client: TestClient) -> None:
     me = signed_up(client)
     saved(client, me)
+    seen_by(client, me, "everyone")
     url = put_photo(client, me, 1)["photos"][0]["url"]
     follower, stranger = other(client), third(client)
     asked = client.post(f"/users/{public_id(client, me)}/follow", headers=follower)
@@ -331,12 +362,16 @@ def test_the_photos_follow_who_can_see_the_drawing(client: TestClient) -> None:
     for visibility, follower_sees, stranger_sees in (
         ("everyone", 200, 200),
         ("followers", 200, 404),
-        ("only_me", 404, 404),
     ):
         seen_by(client, me, visibility)
         assert client.get(url, headers=follower).status_code == follower_sees
         assert client.get(url, headers=stranger).status_code == stranger_sees
         assert client.get(url, headers=me).status_code == 200
+    seen_by(client, me, "only_me")
+    for headers in (follower, stranger):
+        hidden = client.get(url, headers=headers)
+        assert hidden.status_code == 404
+        assert message(hidden) == NO_DRAWING
     for drawing_id in (str(uuid4()), "42"):
         answer = client.get(f"/drawings/{drawing_id}/photos/1", headers=me)
         assert answer.status_code == 404
@@ -362,6 +397,7 @@ def test_a_picture_the_api_cannot_use_is_refused_and_the_old_one_stays(
 ) -> None:
     me = signed_up(client)
     saved(client, me)
+    seen_by(client, me, "everyone")
     kept = put_photo(client, me, 1)
     for body in (
         sent(b"not a picture"),
@@ -381,6 +417,8 @@ def test_deleting_the_run_or_the_account_deletes_the_photos(
     me = signed_up(client)
     saved(client, me)
     saved(client, me, OTHER_KEY)
+    seen_by(client, me, "everyone")
+    seen_by(client, me, "followers", key=OTHER_KEY)
     put_photo(client, me, 1)
     put_photo(client, me, 1, key=OTHER_KEY)
     assert photo_rows(database) == 2
@@ -393,6 +431,7 @@ def test_deleting_the_run_or_the_account_deletes_the_photos(
 def test_every_photo_needs_a_token(client: TestClient) -> None:
     me = signed_up(client)
     saved(client, me)
+    seen_by(client, me, "everyone")
     url = put_photo(client, me, 1)["photos"][0]["url"]
     for method, path, body in (
         ("PUT", photo_path(1), sent(PHOTO)),
@@ -407,6 +446,7 @@ def test_every_photo_needs_a_token(client: TestClient) -> None:
 def test_too_many_photos_in_a_minute_wait(client: TestClient) -> None:
     me = signed_up(client)
     saved(client, me)
+    seen_by(client, me, "everyone")
     small = file_of(Image.new("RGB", (8, 8), GREEN))
     for _ in range(MAX_UPLOADS_PER_MINUTE):
         put_photo(client, me, 1, small)

@@ -185,6 +185,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   può partire ora che la bici è in `main` (PR #214); poi B (API) e C
   (app). Da dove riprendere: `tasks/TASK-191.md`, «Esito».
 
+- **TASK-117 — Pubblicare una corsa salvata** (ADR-0159; scelte
+  dell'utente: due PR, il punteggio visibile agli altri, anche le corse
+  senza percorso). **Parte A, l'API**, in revisione: titolo e «Public» su
+  una corsa di «My activities» (`PUT /me/activities/{key}/drawing`), i
+  disegni di un profilo e un disegno dal suo id, la traccia senza i primi
+  e gli ultimi 200 m e senza il percorso pianificato, il numero di disegni
+  pubblici nel profilo; tabella `drawings`, migrazione nuova. Entra dopo
+  TASK-200. **Parte B, l'app**, dopo TASK-187 (app) e TASK-200. Da dove
+  riprendere: `tasks/TASK-117.md`.
+
 ## Completato
 
 - **API e app** — TASK-116: il profilo, nome utente, bio e «Edit profile»

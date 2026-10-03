@@ -7039,3 +7039,65 @@ profile» si vede sul telefono solo dopo la pubblicazione dell'app, tutti e
 due con l'ok dell'utente; finché il server non è aggiornato, «Save» dice
 che l'API non ha i profili. TASK-117 conta i disegni pubblicati; TASK-118
 e seguenti aprono il profilo di un altro con `public_id`.
+
+## ADR-0159 — Pubblicare una corsa salvata: una tabella `drawings`, 200 m tagliati lungo la traccia, mai il percorso pianificato agli altri
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-117, parte A), dentro le scelte di ADR-0114 (corse private finché
+non pubblicate; pubblicate le vedono gli iscritti, senza i primi e gli
+ultimi 200 m). Due **scelte dell'utente** del 2026-10-03: il punteggio lo
+vedono tutti; una corsa senza percorso si pubblica anche lei, senza
+punteggio. Numero tenuto dal coordinatore.
+
+**Contesto**: il task file di TASK-117 era scritto prima di TASK-172:
+voleva `POST /drawings` per salvare un disegno a fine corsa. Salvare una
+corsa c'è già («My activities», ADR-0140), con km, tempo e punteggio
+contati dall'API. Restava pubblicarla: un titolo, «Public», cosa ne vedono
+gli altri, come la si apre. L'app della fine corsa (`RunEnd.tsx`) e la
+scheda della corsa sono di TASK-187 e TASK-200, in lavorazione: l'utente ha
+scelto due PR, l'API adesso e l'app dopo.
+
+**Decisione**:
+1. **Una tabella `drawings`**, una riga per corsa titolata o pubblicata,
+   con `run_id` unico e `ON DELETE CASCADE`: cancellare la corsa o
+   l'account cancella il disegno, senza codice. Non colonne nuove in
+   `runs`: `activities.py` resta com'è (è di TASK-200), e una corsa mai
+   toccata non ha niente da dire agli altri.
+2. **Un id suo, casuale** (`uuid`), con cui gli altri aprono il disegno
+   (`GET /drawings/{id}`): la chiave della corsa è del telefono, unica solo
+   dentro un account, e un numero in sequenza direbbe quante sono. L'id non
+   cambia togliendo e rimettendo «Public»: un link resta buono.
+3. **`PUT /me/activities/{key}/drawing` con la scelta intera** (`title` e
+   `public`), non un `PATCH`: rimandato dopo un telefono senza rete non
+   cambia niente la seconda volta, come il `PUT` della corsa. Accanto,
+   `GET` dello stesso indirizzo e `GET /me/drawings` per sapere quali
+   corse sono pubbliche, come `GET /me/activities/{key}/strava` di
+   ADR-0156: gli endpoint di «My activities» non cambiano.
+4. **Il taglio**: 200 m lungo la traccia pulita, da ognuna delle due
+   estremità, con il punto del taglio interpolato in metri sul piano del
+   segmento (`route_engine.geo`). Lungo la traccia, non in linea d'aria,
+   perché così l'ha scelto l'utente (ADR-0114: «i primi e gli ultimi
+   200 m»). Un cerchio di 200 m attorno a partenza e arrivo toglierebbe
+   di più a chi gira attorno all'isolato prima di partire, ma bucherebbe a
+   metà le forme che ripassano vicino alla partenza: da riproporre
+   all'utente se serve. La linea tagliata si calcola nell'API a ogni `PUT`
+   e si tiene in `drawings.track`, senza orari: la stessa corsa dà la
+   stessa linea, e chi legge non ricalcola niente. Con meno di un metro
+   rimasto la corsa non si pubblica (`422`, con il motivo in parole).
+5. **Agli altri mai il percorso pianificato**, né orari, pause, `walks` o
+   la chiave: il percorso parte dalla porta di chi corre, e tagliato
+   direbbe lo stesso dove comincia il giro. Arrivano la traccia tagliata,
+   il paese (già arrotondato, ADR-0140), forma o parola, km, tempo,
+   punteggio, la data. Rifare la stessa forma partendo da un disegno di
+   un altro è un'altra cosa (TASK-118 o dopo).
+6. **Il punteggio è quello della corsa**, contato dall'API al salvataggio:
+   il disegno non accetta numeri dall'app (`422` per un campo in più). Lo
+   vedono tutti (scelta dell'utente). Una corsa senza percorso si pubblica
+   con `score` `null` (scelta dell'utente): un disegno a mano libera.
+7. **Il proprietario vede il suo disegno come lo vedono gli altri** da
+   `GET /drawings/{id}`, anche privato (`public` falso); la corsa intera
+   resta in `GET /me/activities/{key}`. Uno privato, per chiunque altro, è
+   `404` come un id che non c'è.
+8. **Il profilo conta i disegni pubblici** (`PublicProfile.drawings`) ed
+   elenca solo quelli, a pagine, dalla corsa più recente, anche a chi lo
+   guarda dal proprio account. Il cursore porta l'id casuale del disegno,
+   non quello della riga.

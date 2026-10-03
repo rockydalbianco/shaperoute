@@ -44,6 +44,7 @@ from shaperoute_api.accounts import Accounts, install_accounts
 from shaperoute_api.activities import PlaceNames, install_activities
 from shaperoute_api.activity_graphs import Graphs, check_supported, source_for
 from shaperoute_api.cities import CitySearch, SuggestionsBody
+from shaperoute_api.drawings import install_drawings
 from shaperoute_api.errors import error_of
 from shaperoute_api.favorites import install_favorites
 from shaperoute_api.graphs import MapDataUnavailableError
@@ -286,6 +287,9 @@ def create_app(
     # Username and bio, and the profile the others see (TASK-116); both need
     # a token.
     install_profiles(app)
+    # The runs an account publishes as drawings, cut for the others
+    # (TASK-117); they need a token.
+    install_drawings(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

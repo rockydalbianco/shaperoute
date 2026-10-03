@@ -521,8 +521,102 @@ export interface PublicProfile {
   bio: string;
   /** The square JPEG of the picture in base64, as /me/photo; null without. */
   photo: string | null;
-  /** The drawings it published: 0 for all until TASK-117 publishes runs. */
+  /** How many runs it made public as drawings (TASK-117). */
   drawings: number;
+}
+
+/** The limit of a drawing's title, checked by the API too (TASK-117). */
+export const DRAWING_TITLE_MAX_LENGTH = 60;
+
+/**
+ * What the other members never see of a public run, from either end of its
+ * track, in metres along it (ADR-0114, point 4): the API cuts it.
+ */
+export const DRAWING_CUT_M = 200;
+
+/**
+ * PUT /me/activities/{key}/drawing (TASK-117): a saved run's drawing as it
+ * should be now, both fields every time. The answer is a MyDrawing.
+ */
+export interface DrawingRequest {
+  /** At most DRAWING_TITLE_MAX_LENGTH characters; null or "": none. */
+  title?: string | null;
+  public: boolean;
+}
+
+/**
+ * What the owner chose for one of its runs: GET and PUT
+ * /me/activities/{key}/drawing, and each item of GET /me/drawings.
+ */
+export interface MyDrawing {
+  /** The run's key, as in My activities. */
+  key: string;
+  /** What the others open it with; null for a run never titled nor published. */
+  id: string | null;
+  title: string | null;
+  public: boolean;
+  /** When it was last made public; null while private. */
+  published_at: string | null;
+}
+
+/** GET /me/drawings: the runs with a title or made public, latest first. */
+export interface MyDrawings {
+  drawings: MyDrawing[];
+}
+
+/** Who published a drawing: never the email. */
+export interface DrawingAuthor {
+  public_id: string;
+  username: string;
+}
+
+/** What every member sees of a drawing: the run's numbers, counted by the API. */
+interface DrawingFields {
+  id: string;
+  /** The owner's title; null: none. */
+  title: string | null;
+  started_at: string;
+  /** Null only for its owner, on a private one. */
+  published_at: string | null;
+  /** The town the run starts from ("Trento"), or null. */
+  place: string | null;
+  shape: string | null;
+  word: string | null;
+  style: LetterStyle | null;
+  /** What the planned route draws when neither shape nor word says it. */
+  route_title: string | null;
+  distance_m: number;
+  duration_s: number;
+  /** 0–100, against the planned route; null without one or too short. */
+  score: number | null;
+  fidelity: number | null;
+}
+
+/** One drawing of GET /users/{public_id}/drawings. */
+export interface Drawing extends DrawingFields {
+  /** At most 64 points of the cut track. */
+  track_preview: LatLon[];
+}
+
+/** GET /users/{public_id}/drawings: a page, the latest run first. */
+export interface DrawingsPage {
+  drawings: Drawing[];
+  /** The `cursor` of the next page; null on the last one. */
+  next: string | null;
+  /** How many drawings the profile has published. */
+  total: number;
+}
+
+/**
+ * GET /drawings/{id}: one drawing whole. The track is cut: never its first
+ * and last DRAWING_CUT_M metres, never its times or the planned route.
+ */
+export interface DrawingDetail extends DrawingFields {
+  author: DrawingAuthor;
+  /** Always true for the others; false only for its owner. */
+  public: boolean;
+  /** Empty only for the owner's private run too short to publish. */
+  track: LatLon[];
 }
 
 /**

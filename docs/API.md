@@ -884,8 +884,8 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
 - **Al massimo 2 000 per account**: oltre, `422 invalid_request` con un
   messaggio che dice di cancellarne una.
 - Ognuno vede, apre e cancella solo le sue: la chiave di un altro dà `404`.
-  `DELETE /me` cancella anche le corse. Niente di una corsa è pubblico:
-  titolo, «Public» e traccia tagliata arrivano con TASK-117.
+  `DELETE /me` cancella anche le corse. Una corsa è privata finché il suo
+  iscritto non la pubblica come disegno («Drawings», sotto; TASK-117).
 - **Una corsa su una parola con la penna alzata** (TASK-199, ADR-0158):
   - il corpo del `PUT` può avere `walks`, quelli del percorso seguito
     (`RouteResult.walks`), facoltativo e solo con `points`: `walks` senza
@@ -977,9 +977,9 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
   `409 username_taken`. Campi in più (`email`, `role`, `public_id`…) o di
   un altro tipo: `422 invalid_request`. Con un errore non cambia niente.
 - **`PublicProfile`** è `public_id`, `username`, `bio`, `photo` (il JPEG
-  della foto in base64, come `GET /me/photo`, o `null`) e `drawings`, i
-  disegni **pubblicati**: 0 per tutti finché TASK-117 non fa pubblicare le
-  corse, che fino ad allora sono private (ADR-0114, punto 4). **Mai
+  della foto in base64, come `GET /me/photo`, o `null`) e `drawings`, il
+  numero dei disegni **pubblicati** (le corse private non contano,
+  ADR-0114 punto 4; i disegni sono in «Drawings», sotto). **Mai
   l'email**, né `role`, `id` o la data d'iscrizione (un test lo prova).
 - Un `public_id` che non c'è, di un account cancellato, o che non è un
   UUID (un `id` numerico, un nome): `404 http_error` «No profile with this
@@ -989,6 +989,78 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
   `public_id`: l'app nuova lo legge lo stesso e dice «Editing the profile
   is not available on this API yet.». L'app pubblicata ignora i campi in
   più.
+
+### Drawings (TASK-117, ADR-0159)
+
+Una corsa salvata in «My activities» è privata. Chi l'ha corsa le può dare
+un titolo e pubblicarla: allora ogni iscritto la vede come **disegno**, nel
+suo profilo e dal suo id. Tutti gli endpoint vogliono il token: senza,
+`401 not_signed_in`; senza database, `503 accounts_unavailable` (il feed
+non si legge senza account, ADR-0114). Tipi in `shared-types`
+(`DrawingRequest`, `MyDrawing`, `MyDrawings`, `Drawing`, `DrawingsPage`,
+`DrawingDetail`, `DRAWING_TITLE_MAX_LENGTH`, `DRAWING_CUT_M`), esempi in
+`fixtures/drawing-request.json`, `my-drawing.json`, `drawings.json`,
+`drawing.json`; il codice in `drawings.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /me/activities/{key}/drawing` | cosa ha scelto il proprietario per una sua corsa | `200` `MyDrawing`, o `404 http_error` |
+| `PUT /me/activities/{key}/drawing` | titolo e «Public», tutti e due ogni volta | `200` `MyDrawing`, o `404 http_error` |
+| `GET /me/drawings` | le proprie corse con un titolo o pubbliche, dalla più recente | `200` `{ "drawings": [MyDrawing, …] }` |
+| `GET /users/{public_id}/drawings` | una pagina dei disegni pubblici di un profilo | `200` `DrawingsPage`, o `404 http_error` |
+| `GET /drawings/{id}` | un disegno intero | `200` `DrawingDetail`, o `404 http_error` |
+
+- **Il corpo del `PUT`** è `{ "title": …, "public": true | false }`: la
+  scelta intera, non solo quello che cambia, così l'app la può rimandare
+  dopo un telefono senza rete e la seconda volta non cambia niente. Il
+  titolo perde gli spazi in testa e in coda; `null` o `""` lo tolgono; al
+  più 60 caratteri, «A title is at most 60 characters.»; una riga sola,
+  senza caratteri di controllo, «A title is one line of words: it cannot
+  hold control characters.» (`422 invalid_request`, e non cambia niente).
+  Campi in più (`score`, `track`…): `422 invalid_request`.
+- **`MyDrawing`** è `key` (la chiave della corsa), `id` (con cui gli altri
+  la aprono: un UUID casuale, come `public_id`; `null` per una corsa mai
+  titolata né pubblicata), `title`, `public` e `published_at` (quando è
+  diventata pubblica l'ultima volta, `null` se è privata). Cambiare il
+  titolo di un disegno pubblico non lo ripubblica; tolto e rimesso,
+  `published_at` è il momento nuovo. L'`id` non cambia mai.
+- **Cosa vedono gli altri** (ADR-0114, punto 4): la traccia pulita della
+  corsa **senza i primi e gli ultimi 200 m lungo la traccia**
+  (`DRAWING_CUT_M`), tagliata dall'API e tenuta così nel database; senza
+  orari, senza pause, senza `walks` e **senza il percorso pianificato**,
+  che parte dalla porta di chi corre. Con meno di un metro rimasto la
+  corsa non si pubblica: `422 invalid_request`, «This run is too short to
+  publish: its first and last 200 m are never shown, and nothing would be
+  left.»; titolata e privata si tiene lo stesso.
+- **Un disegno** ha `id`, `title`, `started_at`, `published_at`, `place`,
+  `shape`, `word`, `style`, `route_title` (cosa disegna il percorso quando
+  forma e parola non lo dicono: il `title` della corsa in «My
+  activities»), `distance_m`, `duration_s`, `score`, `fidelity`: i numeri
+  sono quelli della corsa, contati dall'API al salvataggio e mai presi
+  dall'app. **Il punteggio lo vedono tutti** (scelta dell'utente); una
+  corsa senza percorso si pubblica anche lei, con `score` e `fidelity`
+  `null` (scelta dell'utente). Nell'elenco c'è `track_preview`, al più 64
+  punti della traccia tagliata; intero (`GET /drawings/{id}`) ha `track`,
+  tutta la traccia tagliata, `author` (`public_id` e `username`, mai
+  l'email) e `public`.
+- **Chi vede cosa**: un disegno pubblico lo vede ogni iscritto, anche il
+  suo autore, tagliato. Uno privato lo vede solo il suo autore (tagliato,
+  `public` falso, `published_at` `null`, e `track` vuota se la corsa è
+  troppo corta); a chiunque altro `404 http_error` «No drawing with this
+  id.», come un id che non c'è o che non è un UUID. La corsa intera il
+  proprietario la ha sempre in `GET /me/activities/{key}`.
+- **Le pagine di un profilo**: `GET /users/{public_id}/drawings?limit=20&cursor=…`,
+  `limit` da 1 a 50, dalla corsa più recente (l'inizio della corsa, non
+  la pubblicazione); `next`, `total` e il cursore come in «My activities»,
+  ma il cursore porta l'id casuale del disegno, non quello della riga. Un
+  profilo che non c'è: `404 http_error` «No profile with this id.». Solo i
+  pubblici, anche per il proprio profilo.
+- **Cancellare** la corsa (`DELETE /me/activities/{key}`) o l'account
+  (`DELETE /me`) cancella il disegno: non compare più in nessun elenco né
+  dal suo id. Per toglierlo agli altri tenendo la corsa basta `public`
+  falso.
+- **Un'API precedente** non ha questi endpoint (`404 http_error`) e il suo
+  `PublicProfile.drawings` è sempre 0.
 
 ### Send to Strava (TASK-187, ADR-0156)
 

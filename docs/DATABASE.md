@@ -100,8 +100,8 @@ Migrazione `0003_runs.sql` (TASK-172, ADR-0140):
   salvataggio (`API.md`, «My activities») e non si ricalcolano: se il
   motore cambia il modo di giudicare, le corse già salvate tengono il loro
   punteggio.
-- Solo il proprietario legge una riga. Le colonne per gli altri (traccia
-  tagliata, «pubblica», titolo) le aggiunge TASK-117 con la sua migrazione.
+- Solo il proprietario legge una riga. Quello che vedono gli altri di una
+  corsa pubblicata sta in `drawings` (migrazione `0008`, TASK-117).
 
 Migrazione `0004_strava.sql` (TASK-187, ADR-0156):
 
@@ -165,18 +165,38 @@ Migrazione `0007_profiles.sql` (TASK-116, ADR-0128):
   quando la colonna si aggiunge (il default si calcola riga per riga, e la
   tabella si riscrive una volta: pochi account, un attimo). Le sessioni di
   prima restano valide (test con dati sullo schema 0001–0006).
-- Il numero di disegni del profilo non è una colonna: si conterà sulle
-  corse pubblicate, che arrivano con TASK-117; fino ad allora è 0, perché
-  le corse salvate sono private.
+- Il numero di disegni del profilo non è una colonna: si conta sulle
+  righe pubbliche di `drawings` (TASK-117).
+
+Migrazione `0008_drawings.sql` (TASK-117, ADR-0159):
+
+- `drawings`: `id` (`uuid` casuale, chiave: con questo gli altri iscritti
+  aprono un disegno, e contarli non dice niente), `run_id` (unico,
+  `ON DELETE CASCADE` su `runs`), `title` (da 1 a 60 caratteri, o assente),
+  `public`, `track` (`geometry(LineString, 4326)`), `published_at`
+  (presente solo quando `public` è vero), `updated_at`. Una riga per una
+  corsa che il suo iscritto ha titolato o pubblicato; una corsa mai
+  toccata non ne ha, ed è privata.
+- `track` è quello che vedono gli altri: la traccia della corsa senza i
+  primi e gli ultimi 200 m lungo di lei, senza M (niente orari), tagliata
+  dall'API da `runs.track` a ogni `PUT` del disegno: la stessa corsa dà
+  la stessa linea. Assente quando non resta niente (meno di un metro):
+  allora la riga non può essere pubblica (un vincolo).
+- Una tabella sua, non colonne in `runs`: la riga si legge con chi ne è
+  l'autore (`runs.user_id`) e cade con la corsa e con l'account. L'id del
+  disegno è un altro dalla chiave della corsa, che è del telefono e unica
+  solo dentro un account.
+- Le corse salvate prima non hanno righe: sono private, come erano, e si
+  pubblicano come le altre (test con dati sullo schema 0001–0007).
 
 ## Come si memorizza una traccia
 
-In PostGIS, non come GPX su un disco: le domande «vicino a me» e il taglio
-dei 200 m si fanno nel database. Una corsa salvata avrà due linee: quella
-intera, che vede solo il proprietario (c'è da TASK-172), e quella
-tagliata, calcolata al salvataggio, che vedranno gli altri (TASK-117). Gli
-orari stanno nella coordinata M della traccia intera. Il GPX si scrive al
-volo quando serve.
+In PostGIS, non come GPX su un disco: le domande «vicino a me» si fanno
+nel database; il taglio dei 200 m nell'API, in metri. Una corsa salvata
+ha due linee: quella intera in `runs`, che vede solo il proprietario
+(TASK-172), e quella tagliata in `drawings`, calcolata quando la titola o
+la pubblica, che vedono gli altri (TASK-117). Gli orari stanno nella
+coordinata M della traccia intera. Il GPX si scrive al volo quando serve.
 
 ## Copie di sicurezza
 
@@ -194,7 +214,8 @@ ADR-0111).
 
 ## Privacy dei dati di posizione
 
-- Agli altri iscritti una corsa arriva solo pubblicata e tagliata; un
+- Agli altri iscritti una corsa arriva solo pubblicata e tagliata, senza
+  orari, pause né il percorso pianificato (TASK-117); un
   percorso consigliato parte dal punto mostrato, mai da quello vero, e non
   dice chi l'ha chiesto (ADR-0114).
 - Senza account non si legge niente degli iscritti.

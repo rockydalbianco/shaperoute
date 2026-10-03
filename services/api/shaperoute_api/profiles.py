@@ -6,11 +6,12 @@ most MAX_BIO_LENGTH characters. A value refused is told in words, for the
 app to show as it is.
 
 GET /users/{public_id} is the profile as every member sees it: username,
-bio, picture (profile_photos.py) and number of drawings. Never the email,
-the role, the internal id or when the account was made. It needs the token
-of an account: what members share is for members, as the feed (ADR-0114,
-point 4). The id is the random `public_id` of the account, not `id`: a
-sequence would let anyone walk every profile and count the accounts.
+bio, picture (profile_photos.py) and number of drawings published
+(drawings.py). Never the email, the role, the internal id or when the
+account was made. It needs the token of an account: what members share is
+for members, as the feed (ADR-0114, point 4). The id is the random
+`public_id` of the account, not `id`: a sequence would let anyone walk every
+profile and count the accounts.
 """
 
 from __future__ import annotations
@@ -39,6 +40,7 @@ from shaperoute_api.accounts import (
     current_user,
 )
 from shaperoute_api.db import Database
+from shaperoute_api.drawings import published_count_sql
 from shaperoute_api.schemas import ErrorBody
 
 MAX_BIO_LENGTH = 160
@@ -47,11 +49,6 @@ USERNAME_RULE = "A username is 3 to 20 letters, digits, _ or . (no spaces)."
 BIO_TOO_LONG = f"A bio is at most {MAX_BIO_LENGTH} characters."
 BIO_NOT_TEXT = "A bio is words and new lines: it cannot hold control characters."
 NO_PROFILE = "No profile with this id."
-
-# Runs are private until their owner publishes them (ADR-0114, point 4), and
-# publishing is TASK-117: until then no account has a drawing the others may
-# count. TASK-117 counts the published runs instead.
-PUBLISHED_DRAWINGS = 0
 
 
 class EditProfileRequestBody(BaseModel):
@@ -135,7 +132,9 @@ class Profiles:
             return None
         with self.database.connect() as conn:
             row = conn.execute(
-                "SELECT u.public_id, u.username, u.bio, p.jpeg"
+                "SELECT u.public_id, u.username, u.bio, p.jpeg,"
+                # Only the runs made public (TASK-117, ADR-0114 point 4).
+                f" {published_count_sql('u.id')} AS drawings"
                 " FROM users u LEFT JOIN profile_photos p ON p.user_id = u.id"
                 " WHERE u.public_id = %s",
                 (wanted,),
@@ -148,7 +147,7 @@ class Profiles:
             username=row["username"],
             bio=row["bio"],
             photo=None if jpeg is None else base64.b64encode(jpeg).decode("ascii"),
-            drawings=PUBLISHED_DRAWINGS,
+            drawings=row["drawings"],
         )
 
 

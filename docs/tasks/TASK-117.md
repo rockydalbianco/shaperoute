@@ -1,77 +1,138 @@
-# TASK-117 — Salvare un disegno, e i miei disegni
+# TASK-117 — Pubblicare una corsa salvata: i disegni
 
-**Stato**: Todo
-**Fase**: 4 · **Branch**: `feat/TASK-117-save-drawing`
-**Dipende da**: TASK-113, TASK-116
+**Stato**: In corso — parte A (API) in revisione; parte B (app) dopo
+TASK-187 (app) e TASK-200
+**Fase**: 4 · **Branch**: `feat/TASK-117-publish-runs` (parte A), un
+branch nuovo da `main` per la parte B
+**Dipende da**: TASK-113, TASK-116, TASK-172 · **ADR**: ADR-0159
 
 ## Obiettivo
 
-A fine corsa chi ha un account salva il disegno con il suo punteggio, lo
-ritrova nel profilo e sceglie se pubblicarlo.
+Chi ha un account dà un titolo a una corsa salvata e sceglie se
+pubblicarla. Pubblicata, gli altri iscritti la vedono come disegno nel suo
+profilo e dal suo id, tagliata: senza i primi e gli ultimi 200 m.
+
+## Com'è cambiato (2026-10-03)
+
+Il task era scritto prima di TASK-172: voleva `POST /drawings` per salvare
+un disegno a fine corsa. Salvare c'è già («My activities», ADR-0140), con
+km, tempo e punteggio contati dall'API, e «Save» a fine corsa. Resta
+pubblicare. L'app della fine corsa (`RunEnd.tsx`, `outbox.ts`) e la scheda
+della corsa sono di TASK-187 (app); `App.tsx` e `src/api/activities.ts`
+di TASK-200. **Scelta dell'utente**: due PR, l'API adesso e l'app dopo che
+TASK-187 (app) e TASK-200 sono in `main`.
+
+Due **scelte dell'utente** del 2026-10-03: gli altri vedono il punteggio;
+una corsa senza percorso si pubblica anche lei, senza punteggio.
 
 ## Contesto da leggere
 
-- `docs/DATABASE.md` (disegni), `docs/PRODUCT.md` (parte social)
-- `docs/API.md` `/track-scores`
-- `docs/UI.md` «Finish» (TASK-113), profilo (TASK-116)
+- `docs/DECISIONS.md` ADR-0114 (punto 4), ADR-0140, ADR-0159
+- `docs/API.md` «My activities», «Profile», «Drawings»
+- `docs/DATABASE.md` `runs`, `drawings`
+- `docs/UI.md` «My activities», profilo (TASK-116)
 
-## Cosa fare
+## Parte A — l'API (fatta, PR in revisione)
 
-1. API: `POST /drawings` — traccia, percorso pianificato, forma o parola,
-   distanza, durata, data, titolo facoltativo (al più 60 caratteri).
-   **Il punteggio lo ricalcola l'API** con `track_score`: quello mandato
-   dall'app non si usa.
-2. `GET /me/drawings`, `GET /drawings/{id}`, `PATCH /drawings/{id}`
-   (titolo, pubblico sì/no), `DELETE /drawings/{id}`. Solo il proprietario
-   modifica e cancella; un disegno privato lo vede solo lui.
-3. La traccia mostrata agli altri è senza i primi e gli ultimi 200 m (o la
-   misura scelta in TASK-110): si taglia nell'API, non nell'app. Il
-   proprietario la vede intera.
-4. App: «Save drawing» nella schermata «Finish», con titolo e
-   l'interruttore «Public»; senza account, l'invito a iscriversi e la
-   traccia resta sul telefono. Nel profilo la griglia dei propri disegni
-   (miniatura della traccia, punteggio); toccando, il disegno sulla mappa.
-5. Test di API e app; `API.md`, `DATABASE.md`, `UI.md`, ADR.
+1. `GET` e `PUT /me/activities/{key}/drawing` (titolo al più 60
+   caratteri, «Public»), `GET /me/drawings`, `GET
+   /users/{public_id}/drawings` (a pagine), `GET /drawings/{id}`.
+2. La traccia per gli altri senza i primi e gli ultimi 200 m lungo di lei,
+   tagliata nell'API; mai il percorso pianificato, gli orari, le pause.
+3. `PublicProfile.drawings` conta i disegni pubblici.
+4. Migrazione nuova, test, `API.md`, `DATABASE.md`, ADR-0159.
+
+## Parte B — l'app (da fare)
+
+1. «Public» e il titolo: a fine corsa accanto a «Save» (`RunEnd.tsx`) e
+   nella scheda di una corsa in «My activities»; senza account l'invito a
+   iscriversi, e la corsa resta sul telefono come oggi.
+2. Pubblicare senza rete: la scelta si rimanda (il `PUT` è la scelta
+   intera), come la corsa nella coda di `outbox.ts`.
+3. Nel profilo di un altro (`UserProfilePage.tsx`) e nel proprio la
+   griglia dei disegni pubblici (miniatura della traccia tagliata,
+   punteggio); toccando, il disegno sulla mappa.
+4. In «My activities» un segno sulle corse pubbliche (`GET /me/drawings`).
+5. Test, `UI.md`, i testi nuovi da far vedere all'utente.
+
+Da chiedere all'utente prima della parte B: dove sta «Public» (a fine
+corsa, nella scheda, o tutti e due), e i testi.
 
 ## Criteri di accettazione
 
-- [ ] Il punteggio salvato è quello calcolato dall'API, anche se l'app ne
-      manda un altro.
-- [ ] Un disegno privato dà «non trovato» a chiunque altro.
-- [ ] La traccia di un disegno pubblico, chiesta da un altro utente, non ha
-      punti entro 200 m di percorso dalla partenza e dall'arrivo.
-- [ ] Cancellato un disegno, non compare più in nessun elenco.
-- [ ] Salvataggio fallito senza rete: l'app lo riprova, la traccia non si perde.
-- [ ] Test verdi; prova sull'iPhone.
+- [x] Il punteggio di un disegno è quello calcolato dall'API, anche se
+      l'app ne manda un altro (`422` per un campo in più; test).
+- [x] Un disegno privato dà «non trovato» a chiunque altro (test).
+- [x] La traccia di un disegno pubblico, chiesta da un altro utente, non ha
+      punti entro 200 m di percorso dalla partenza e dall'arrivo (test).
+- [x] Cancellata la corsa, il disegno non compare più in nessun elenco
+      (test, anche con l'account cancellato).
+- [ ] Salvataggio fallito senza rete: l'app lo riprova, la scelta non si
+      perde (parte B).
+- [x] Test verdi dell'API (parte A).
+- [ ] Test dell'app; prova sull'iPhone (parte B).
 
 ## File toccati
 
+Parte A:
+
 ```
+services/api/migrations/0008_drawings.sql   (il numero libero al merge)
 services/api/shaperoute_api/drawings.py
 services/api/shaperoute_api/app.py
-services/api/shaperoute_api/schemas.py
-services/api/migrations/
+services/api/shaperoute_api/profiles.py
 services/api/tests/test_drawings.py
 packages/shared-types/src/index.ts
-apps/mobile/src/api/drawings.ts
-apps/mobile/src/api/drawings.test.ts
-apps/mobile/src/screens/FinishScreen.tsx
-apps/mobile/src/screens/ProfileScreen.tsx
-apps/mobile/src/screens/DrawingScreen.tsx
-apps/mobile/src/screens/DrawingScreen.test.tsx
-apps/mobile/src/social/TrackThumbnail.tsx
+packages/shared-types/fixtures/drawing-request.json
+packages/shared-types/fixtures/my-drawing.json
+packages/shared-types/fixtures/drawings.json
+packages/shared-types/fixtures/drawing.json
+packages/shared-types/test/drawings.test.ts
 docs/API.md
 docs/DATABASE.md
-docs/UI.md
 docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-117.md
+```
+
+Parte B, prevista:
+
+```
+apps/mobile/src/api/drawings.ts
+apps/mobile/src/api/drawings.test.ts
+apps/mobile/src/activities/RunEnd.tsx
+apps/mobile/src/activities/outbox.ts
+apps/mobile/src/activities/ (la scheda della corsa)
+apps/mobile/src/profile/UserProfilePage.tsx
+apps/mobile/src/social/ (nuovi)
+docs/UI.md
 docs/STATUS.md
 docs/tasks/TASK-117.md
 ```
 
 ## Fuori scope
 
-- Vedere i disegni degli altri (TASK-118).
-- Caricare un GPX da Strava o Garmin.
-- Foto della corsa.
+- Vedere i disegni degli altri in un feed (TASK-118).
+- Rifare la forma di un disegno di un altro («Start» da un disegno).
+- Caricare un GPX da Strava o Garmin; foto della corsa.
+- Like, commenti, segnalare (TASK-119–121).
 
 ## Esito
+
+**Parte A** (2026-10-03): API dei disegni in `drawings.py`, tabella
+`drawings` (migrazione `0008`, il numero da rifare se TASK-200 entra prima
+con la sua), ADR-0159. Il taglio è lungo la traccia, come dice ADR-0114;
+uno in linea d'aria è annotato nell'ADR come proposta per l'utente. Un
+disegno privato lo vede il suo autore, tagliato come lo vedrebbero gli
+altri. Test: 26 in `test_drawings.py`, tutta la suite dell'API verde
+(773 prima dell'ultimo test aggiunto); `shared-types` verde. Entra in
+`main` dopo TASK-200 (coordinatore: `app.py`, `shared-types`, migrazioni).
+
+Seguiti:
+
+- **Parte B, l'app**, con le due domande sopra.
+- **TASK-116**: il profilo conta solo i disegni pubblici (ADR-0128 punto
+  6, ADR-0159 punto 8); contare anche le corse private resta una scelta
+  dell'utente aperta in TASK-116.
+- **Il server**: la migrazione e gli endpoint arrivano con il prossimo
+  aggiornamento, con l'ok dell'utente.

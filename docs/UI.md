@@ -381,6 +381,20 @@ aprono le loro pagine (sotto, «Favorites» e «My activities»). Poi la riga
 **«Settings»** (⚙️). Le emoji sono l'unico colore che non viene dai token;
 nessun pulsante dell'account è giallo.
 
+**«Drawings»** (TASK-117, ADR-0159, ADR-0165), in fondo a «Profile»: le
+corse che l'account ha reso pubbliche, come le vedono gli altri, dalla
+più recente, tre per riga. Ognuna è la traccia senza i primi e gli ultimi
+200 m, piccola e gialla come i disegni di «Feed», con sotto «Score 87»
+(niente per una corsa senza percorso); venti per volta, poi «Show more».
+Vuota: «No public drawings yet. Make a run public in My activities.».
+Non arrivata: il motivo e «Try again». **Un disegno toccato si apre sulla
+mappa**, come una corsa di «My activities»: «Profile» si toglie, la mappa
+si inquadra sulla linea gialla (nessun segnaposto di partenza, nessuna
+linea bianca) e sotto c'è la sua scheda: il titolo (senza titolo, il
+giorno), il giorno, i km, il punteggio («87», «out of 100»), mai l'ora;
+**«Back to the profile»** e «←» tornano a «Profile». Se nel frattempo è
+tornato privato: «This drawing is no longer public.» sopra la griglia.
+
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 
 - **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,
@@ -456,9 +470,10 @@ ci sono ancora. La foto resta in «Settings». Gli errori si dicono sotto
 | API irraggiungibile, sessione finita… | come l'account (sotto) |
 
 **Il profilo di un altro iscritto**, in sola lettura (TASK-116; testi
-**da confermare**): la foto o l'iniziale, il nome, «0 drawings» (i disegni
-pubblicati: 0 per tutti finché non c'è TASK-117) e la bio; mai l'email,
-nessun pulsante. Mentre arriva dice «Loading the profile…»; un profilo che
+**da confermare**): la foto o l'iniziale, il nome, «12 drawings» (i
+disegni pubblicati, TASK-117) e la bio; mai l'email. Sotto, **«Drawings»**
+come in «Profile» (sopra), vuota «No drawings yet.»; un disegno toccato si
+apre sulla mappa. Mentre arriva dice «Loading the profile…»; un profilo che
 non c'è, o un'API senza profili, «This profile is not available.»; senza
 account «Log in to see the profiles of the others.». **Nell'app non ci si
 arriva ancora**: la pagina c'è (`UserProfilePage.tsx`) e i test la aprono a
@@ -558,8 +573,9 @@ telefono dell'account: con un percorso o senza.
   stesso telefono non la manda. In cima alla pagina, finché aspetta:
   «1 run is on this phone, waiting for a connection.».
 - **Senza account** non si salva niente, com'era: sotto la scheda di fine
-  corsa la riga «Sign up or log in to keep your runs in My activities.»
-  apre «Profile» con la stessa frase sopra il modulo. Chi entra da lì e
+  corsa la riga «Sign up or log in to keep your runs and share them as
+  drawings.» (TASK-117) apre «Profile» con la stessa frase sopra il
+  modulo. Chi entra da lì e
   torna alla scheda trova «Save» e «Discard» al posto di «Done».
 - **La pagina «My activities»**, da «Profile»: una scheda per corsa, dalla
   più recente. A sinistra il disegno, come a fine corsa: il percorso
@@ -586,6 +602,24 @@ telefono dell'account: con un percorso o senza.
   rossa sotto («Strava could not read this run.», «No connection. Try
   again when you are online.»). Un atleta che ha tolto l'accesso da Strava
   torna a «Connect with Strava».
+- **«Public» sulla corsa aperta** (TASK-117, ADR-0159, ADR-0165), sopra
+  Strava: l'interruttore **«Public»** («Off» / «On») e il campo
+  **«Title»** («Give it a name», al più 60 caratteri), come l'API li ha;
+  niente finché l'API non risponde, niente del tutto da un'API senza
+  disegni. L'interruttore manda subito la scelta intera (titolo e
+  «Public»); il titolo si manda chiusa la tastiera, se è cambiato. Acceso,
+  sotto: «Public in your profile, without the first and last 200 m.».
+  Rifiutata, il motivo dell'API in rosso («This run is too short to
+  publish: …»). **Senza rete** la scelta resta sul telefono
+  (`drawings-outbox.json`) e parte con la prossima apertura con la rete:
+  «Saved on the phone. It goes public when you are back online.» (o, per
+  un titolo o un «Off», «Saved on the phone. It is sent when you are back
+  online.»).
+- **Una corsa pubblica** ha nell'elenco il segno **«Public»** sotto i suoi
+  numeri (`GET /me/drawings`, chiesto a ogni elenco che arriva). Una corsa
+  che aspetta sul telefono e andrà pubblica aggiunge, sotto «1 run is on
+  this phone…», «Saved on the phone. It goes public when you are back
+  online.».
 - **«Delete»**, in rosso, sulla scheda dell'elenco e sotto la mappa, chiede
   prima sulla scheda stessa: «Delete this run? It cannot be undone.», con
   «Keep it» e «Delete run». La corsa sparisce subito; se l'API rifiuta
@@ -1271,6 +1305,18 @@ mostra le lettere unite da linee dritte sulla base.
   resta nella scheda. Se il telefono non riesce a scrivere la corsa: «This
   run could not be kept on the phone. Try again.», e si resta lì. Nessuno
   dei due è giallo.
+- **«Public» e «Title»** (TASK-117, ADR-0159, ADR-0165), in cima, sopra
+  Strava, solo con un account: l'interruttore **«Public»**, **spento a ogni
+  corsa** (scelta dell'utente: non ricorda la volta prima); acceso, sotto,
+  «Others see it in your profile, without the first and last 200 m.».
+  Poi il campo **«Title»** («Give it a name», al più 60 caratteri): **un
+  solo campo** (scelta dell'utente) che dà il nome al disegno e, con «Send
+  to Strava» acceso, alla corsa su Strava. Con **«Save»** la corsa va
+  all'API e, appena l'API l'ha, il titolo e «Public» (`PUT
+  /me/activities/{key}/drawing`); senza titolo e spento non va niente in
+  più. Senza rete aspettano con la corsa e partono dopo di lei; un'API che
+  rifiuta di pubblicare una corsa troppo corta tiene il titolo, privata.
+  Cambiare idea dopo si fa dalla corsa in «My activities».
 - **«Send to Strava»** (TASK-187, ADR-0156), sopra «Save» e «Discard», solo
   se l'API ha Strava (`GET /me/strava` dice `available`; un'API senza
   Strava, o più vecchia, e niente si vede). Atleta non collegato:
@@ -1280,17 +1326,18 @@ mostra le lettere unite da linee dritte sulla base.
   nell'app Strava), e tornati in Sgrava la riga si aggiorna da sola.
   Collegato: l'interruttore **«Send to Strava»**, acceso la prima volta e
   poi come lo si è lasciato (scelta dell'utente, sul telefono, in
-  `strava.json`); acceso, sotto, il campo **«Name on Strava»** («Leave
-  empty for an automatic name»: vuoto, l'API dà «Heart in Trento», o per
-  una corsa libera il nome di Strava) e «To Ada Lovelace's Strava, with
-  Save.». Con l'interruttore acceso **«Save»** salva la corsa e poi la manda
-  a Strava, con il nome scritto (scelta dell'utente: modificabile prima di
-  «Save»); spento, o con «Discard», a Strava non va niente. Senza rete la
+  `strava.json`); acceso, sotto, «To Ada Lovelace's Strava, with Save.».
+  Il nome su Strava è il **«Title»** sopra (TASK-117: prima era un campo
+  «Name on Strava» suo): vuoto, l'API dà «Heart in Trento», o per una
+  corsa libera il nome di Strava. Con l'interruttore acceso **«Save»**
+  salva la corsa e poi la manda a Strava, con il titolo scritto (scelta
+  dell'utente: modificabile prima di «Save»); spento, o con «Discard», a
+  Strava non va niente. Senza rete la
   corsa aspetta sul telefono con la sua scelta, va all'API e poi a Strava
   alla prossima apertura con la rete, una volta sola (sotto, «Cosa esce dal
   telefono»).
 - **Senza account**, sotto la scheda, la riga «Sign up or log in to keep
-  your runs in My activities.», che apre «Profile».
+  your runs and share them as drawings.» (TASK-117), che apre «Profile».
 
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
 principale.
@@ -1453,6 +1500,13 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   quelle di Sgrava. Il telefono non vede mai un token di Strava; il
   collegamento passa dal browser. Senza rete la corsa aspetta in
   `strava-outbox.json` (chiave e nome, al più 20), poi parte una volta.
+- **Un disegno pubblico** (TASK-117): una corsa diventa visibile agli altri
+  iscritti **solo con «Public» acceso** dall'utente, a fine corsa o su una
+  corsa aperta; acceso a ogni corsa da spento. Il telefono manda all'API la
+  chiave della corsa, il titolo e «Public»; la traccia la taglia l'API
+  (mai i primi e gli ultimi 200 m, mai il percorso pianificato né gli
+  orari, ADR-0159). Senza rete la scelta aspetta in `drawings-outbox.json`
+  (chiave, titolo e «Public», l'ultima per corsa, al più 20).
 
 ## Quando la mappa non si carica
 

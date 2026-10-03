@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 
 import { space } from "../theme/tokens";
-import { ConnectWithStrava, StravaLine, StravaName, StravaSwitch } from "./StravaParts";
+import { ConnectWithStrava, StravaLine, StravaSwitch } from "./StravaParts";
 import type { StravaState } from "./useStrava";
 
 type Props = {
@@ -9,17 +9,15 @@ type Props = {
   /** The switch: the run goes to Strava with «Save». */
   send: boolean;
   onSend: (on: boolean) => void;
-  name: string;
-  onName: (text: string) => void;
 };
 
 /**
  * «Send to Strava» at the end of a run (TASK-187), over «Save» and
  * «Discard»: nothing when the API has no Strava; «Connect with Strava»
- * before the athlete is connected; then the switch, and with it on the
- * name the activity takes on Strava.
+ * before the athlete is connected; then the switch. The name the activity
+ * takes on Strava is the run's «Title», above it (TASK-117).
  */
-export function StravaRunEnd({ strava, send, onSend, name, onName }: Props) {
+export function StravaRunEnd({ strava, send, onSend }: Props) {
   const { status, busy, problem } = strava;
   if (!status.available) {
     return null;
@@ -38,13 +36,8 @@ export function StravaRunEnd({ strava, send, onSend, name, onName }: Props) {
   return (
     <View style={styles.block}>
       <StravaSwitch on={send} onChange={onSend} />
-      {send && (
-        <>
-          <StravaName value={name} onChange={onName} automatic={null} />
-          {status.athlete !== null && (
-            <StravaLine text={`To ${status.athlete}'s Strava, with Save.`} />
-          )}
-        </>
+      {send && status.athlete !== null && (
+        <StravaLine text={`To ${status.athlete}'s Strava, with Save.`} />
       )}
     </View>
   );

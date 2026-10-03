@@ -169,6 +169,7 @@ const FREE_ENDED: SavedRun = { ...ENDED, route: [], similarity: undefined };
 const KEY = activityKey(ENDED.track.fixes[0]);
 const SAVED = { ...STAR, id: KEY };
 const STRAVA_PATH = `/me/activities/${KEY}/strava`;
+const DRAWING_PATH = `/me/activities/${KEY}/drawing`;
 
 async function openOnRun(run: SavedRun) {
   saveRun(run);
@@ -229,12 +230,19 @@ test("an API without Strava shows nothing of it, and saves as before", async () 
   expect(loadStravaOutbox()).toEqual([]);
 });
 
-test("connected, «Save» sends the run to Strava with the name typed", async () => {
+test("connected, «Save» sends the run to Strava with the title typed", async () => {
   signedIn();
   api({
     ...CONNECTED,
     [`PUT /me/activities/${KEY}`]: () => Response.json(SAVED, { status: 201 }),
     [`POST ${STRAVA_PATH}`]: () => Response.json(stravaActivity),
+    [`PUT ${DRAWING_PATH}`]: (init) =>
+      Response.json({
+        key: KEY,
+        id: "3f9d2c71-8a4b-4e06-b5d1-c27e9a40f815",
+        published_at: null,
+        ...JSON.parse(String(init?.body)),
+      }),
   });
   await openOnRun(ENDED);
   // On the first time, with the athlete it goes to.
@@ -244,10 +252,8 @@ test("connected, «Save» sends the run to Strava with the name typed", async ()
   expect(screen.getByText("To Ada Lovelace's Strava, with Save.")).toBeOnTheScreen();
   // The orange button is for connecting only.
   expect(screen.queryByText("Connect with Strava")).toBeNull();
-  await fireEvent.changeText(
-    screen.getByLabelText("Name on Strava"),
-    "  Sunday heart  ",
-  );
+  // One field names the run: the drawing, and Strava (TASK-117).
+  await fireEvent.changeText(screen.getByLabelText("Title"), "  Sunday heart  ");
 
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
   // To the API first, then to Strava, once.
@@ -261,6 +267,13 @@ test("connected, «Save» sends the run to Strava with the name typed", async ()
   const [, init] = calls("POST", STRAVA_PATH)[0];
   expect(init?.headers).toMatchObject({ Authorization: `Bearer ${session.token}` });
   expect(JSON.parse(String(init?.body))).toEqual({ name: "Sunday heart" });
+  // The same title for the run's drawing, which stays private.
+  await waitFor(() => expect(calls("PUT", DRAWING_PATH)).toHaveLength(1));
+  const [, drawn] = calls("PUT", DRAWING_PATH)[0];
+  expect(JSON.parse(String(drawn?.body))).toEqual({
+    title: "Sunday heart",
+    public: false,
+  });
   // Nothing left waiting, for the API nor for Strava.
   await waitFor(() => expect(loadStravaOutbox()).toEqual([]));
   expect(loadOutbox()).toEqual([]);
@@ -275,12 +288,12 @@ test("with nothing typed the run goes without a name, the API's own", async () =
   });
   await openOnRun(FREE_ENDED);
   await screen.findByRole("switch", { name: "Send to Strava" });
-  expect(screen.getByLabelText("Name on Strava").props.placeholder).toBe(
-    "Leave empty for an automatic name",
-  );
+  expect(screen.getByLabelText("Title").props.placeholder).toBe("Give it a name");
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
   await waitFor(() => expect(calls("POST", STRAVA_PATH)).toHaveLength(1));
   expect(calls("POST", STRAVA_PATH)[0][1]?.body).toBeUndefined();
+  // No title, not public: nothing for a drawing.
+  expect(calls("PUT", DRAWING_PATH)).toHaveLength(0);
 });
 
 test("the switch off saves only, and stays off for the next run", async () => {
@@ -294,7 +307,7 @@ test("the switch off saves only, and stays off for the next run", async () => {
   expect(
     screen.getByRole("switch", { name: "Send to Strava", checked: false }),
   ).toBeOnTheScreen();
-  // Off: no name to type.
+  // Strava has no name field of its own: the run's «Title» is it (TASK-117).
   expect(screen.queryByLabelText("Name on Strava")).toBeNull();
   expect(loadSendToStrava()).toBe(false);
 

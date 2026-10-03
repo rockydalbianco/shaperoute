@@ -1,5 +1,6 @@
 import { File, Paths } from "expo-file-system";
 
+import type { DrawingChoice } from "../api/drawings";
 import type { RecordedRun } from "./recordedRun";
 
 /**
@@ -22,6 +23,9 @@ export type Waiting = RecordedRun & {
   owner: number;
   /** Once the API has the run, it goes on to Strava (strava/stravaOutbox.ts). */
   strava?: ToStrava;
+  /** Once the API has the run, its title and «Public» go too
+   * (social/drawingOutbox.ts, TASK-117). */
+  drawing?: DrawingChoice;
 };
 
 function outboxFile(): File {
@@ -52,6 +56,22 @@ export function toStravaOf(run: Waiting): ToStrava | null {
   }
   const { name } = strava;
   return { name: typeof name === "string" && name !== "" ? name : null };
+}
+
+/** The title and «Public» chosen before «Save»; null when nothing was. */
+export function toDrawingOf(run: Waiting): DrawingChoice | null {
+  const drawing: unknown = run.drawing;
+  if (typeof drawing !== "object" || drawing === null) {
+    return null;
+  }
+  const { title, public: on } = drawing as Record<string, unknown>;
+  if (typeof on !== "boolean") {
+    return null;
+  }
+  return {
+    title: typeof title === "string" && title !== "" ? title : null,
+    public: on,
+  };
 }
 
 /** The runs in the file, the oldest first; none when it cannot be read. */

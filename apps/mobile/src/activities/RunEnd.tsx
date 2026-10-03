@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { titleOf } from "../api/drawings";
+import {
+  DrawingTitle,
+  PUBLIC_AT_END,
+  PublicLine,
+  PublicSwitch,
+} from "../social/PublicParts";
 import { loadSendToStrava, saveSendToStrava } from "../strava/stravaChoice";
 import { StravaRunEnd } from "../strava/StravaRunEnd";
 import { useStrava } from "../strava/useStrava";
@@ -28,21 +35,28 @@ type Props = {
  * away, after asking. Nothing is saved without «Save». Without an account
  * the card keeps its «Done», and a line here says how to keep the next
  * runs. With Strava connected, «Send to Strava» over them sends the run
- * there too, with «Save» (TASK-187).
+ * there too, with «Save» (TASK-187). Over all of them «Public» and the
+ * run's «Title» (TASK-117): with «Save» the run becomes a drawing in the
+ * profile, and the title names it, on Strava too.
  */
 export function RunEnd({ onSave, onDiscard }: Props) {
-  const { signedIn, signIn, toStrava } = useActivitiesDoor();
+  const { signedIn, signIn, toStrava, toDrawing } = useActivitiesDoor();
   const strava = useStrava();
   // «Discard» asks first, here: a run thrown away does not come back.
   const [confirming, setConfirming] = useState(false);
   const [failed, setFailed] = useState(false);
   // As it was left at the end of the last run (the user's choice).
   const [send, setSend] = useState(loadSendToStrava);
-  const [name, setName] = useState("");
+  // Off at every run, whatever the last one chose (the user's choice):
+  // publishing by mistake costs more than forgetting to.
+  const [publicOn, setPublicOn] = useState(false);
+  const [title, setTitle] = useState("");
 
   function save() {
+    const typed = titleOf(title);
     const sending = strava.status.available && strava.status.connected && send;
-    toStrava(sending ? { name: name.trim() === "" ? null : name.trim() } : null);
+    toStrava(sending ? { name: typed } : null);
+    toDrawing(publicOn || typed !== null ? { title: typed, public: publicOn } : null);
     setFailed(!onSave());
   }
 
@@ -78,6 +92,9 @@ export function RunEnd({ onSave, onDiscard }: Props) {
   }
   return (
     <View style={styles.end}>
+      <PublicSwitch on={publicOn} onChange={setPublicOn} />
+      {publicOn && <PublicLine text={PUBLIC_AT_END} />}
+      <DrawingTitle value={title} onChange={setTitle} />
       <StravaRunEnd
         strava={strava}
         send={send}
@@ -85,8 +102,6 @@ export function RunEnd({ onSave, onDiscard }: Props) {
           setSend(on);
           saveSendToStrava(on);
         }}
-        name={name}
-        onName={setName}
       />
       {failed && (
         <Text style={styles.problem} accessibilityRole="alert">

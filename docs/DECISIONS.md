@@ -7456,3 +7456,66 @@ test che cercano i numeri per etichetta d'accessibilità non cambiano:
 «Distance: 2.30 km» è lo stesso. Il carattere «♪» viene dal font del
 telefono: su un Android senza quel segno si vedrebbe un quadratino, da
 guardare quando l'app avrà una build Android.
+
+## ADR-0165 — Pubblicare una corsa, l'app: la scelta dopo la corsa, una coda sua senza rete, il disegno sulla mappa come una corsa
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-117, parte B), dentro le **scelte dell'utente** dello stesso giorno:
+«Public» a fine corsa e su una corsa di «My activities», spento a ogni
+corsa; un solo campo «Title» a fine corsa, per il disegno e per Strava; i
+testi del task file. Numero tenuto dal coordinatore.
+
+**Contesto**: l'API dei disegni (ADR-0159) vuole la corsa salvata prima
+del suo disegno (`PUT /me/activities/{key}/drawing` dà `404` a una corsa
+che non ha), e la corsa a fine corsa può restare sul telefono senza rete
+(ADR-0140). Strava ha lo stesso problema e l'ha risolto con una coda sua
+dopo quella delle corse (ADR-0156).
+
+**Decisione**:
+1. **La scelta di fine corsa viaggia con la corsa**: `activities-outbox.json`
+   tiene, accanto a `strava`, un campo `drawing` (`title`, `public`); solo
+   quando l'API ha la corsa la scelta passa a una coda sua,
+   `drawings-outbox.json`, e parte dopo la corsa e dopo Strava, nello
+   stesso giro. Senza titolo e con «Public» spento non si manda niente.
+2. **Nella coda dei disegni c'è solo l'ultima scelta per corsa**: il
+   `PUT` è la scelta intera, e una scelta più vecchia mandata dopo una più
+   nuova la disferebbe. Esce dalla coda quando l'API l'ha, o la rifiuta
+   (`404` corsa cancellata, `422`); con un `422` su «Public» e un titolo,
+   si rimanda una volta privata, così il titolo resta (ADR-0159 punto 4).
+   Senza rete, `429` o `5xx`, aspetta.
+3. **La scelta su una corsa aperta si legge dall'API ogni volta**
+   (`GET /me/activities/{key}/drawing`), o dalla coda se il telefono ne
+   ha una che aspetta. Senza rete e senza coda non si mostra un «Off» che
+   potrebbe essere falso: solo il problema. Un'API senza disegni (`404`)
+   non mostra niente. Le scelte di una scheda partono una alla volta,
+   nell'ordine fatto.
+4. **Il disegno aperto va sulla mappa grande**, come una corsa di «My
+   activities» (`App.tsx`, lo stesso ramo di `reviewing`): la traccia
+   tagliata come linea del percorso, gialla come i disegni di «Feed», così
+   la mappa si inquadra su di lei; nessun segnaposto di partenza (la
+   partenza è tagliata apposta) e nessuna linea bianca. La scheda sotto
+   non dice mai l'ora: agli altri arriva il giorno.
+5. **Una «porta» dei disegni** (`social/drawingsDoor.ts`), come quelle dei
+   preferiti, delle corse e di Strava, data da `ProfileLayer.tsx`: le corse
+   pubbliche dell'account (per il segno in «My activities»), la scelta di
+   una corsa, le pagine di un profilo, il disegno aperto.
+
+**Perché così**: la coda separata è quella di Strava, già provata; tenere
+la scelta dentro la corsa che aspetta evita un `PUT` destinato al `404`.
+Leggere la scelta dall'API a ogni scheda costa una chiamata, ma non
+mostra mai lo stato di un altro telefono dell'account come se fosse
+questo. La mappa grande è quella che l'utente conosce dalle corse.
+
+**Scartato**: mandare la scelta insieme alla corsa nello stesso `PUT`
+(l'API delle corse è di TASK-172 e non la conosce); ricordare «Public»
+fra una corsa e l'altra (scelta dell'utente: no); una mappa piccola dentro
+«Profile» per il disegno aperto (un'altra mappa da caricare, e i disegni
+di «Feed» si aprono già sulla mappa grande); la linea bianca della corsa
+per il disegno (la mappa non si inquadra su una traccia sola).
+
+**Conseguenze**: a fine corsa il campo «Name on Strava» non c'è più
+(«Title» lo sostituisce); su una corsa aperta resta. La griglia nel
+profilo di un altro c'è, ma nessuno la apre finché TASK-116 non sceglie da
+dove si apre un profilo. Testi nuovi oltre a quelli scelti dall'utente:
+«Saved on the phone. It is sent when you are back online.», «This drawing
+is no longer public.», «Back to the profile», «Score 87» sotto un disegno
+della griglia.

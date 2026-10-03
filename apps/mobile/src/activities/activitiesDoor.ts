@@ -16,12 +16,15 @@ import {
   fetchActivity,
   saveActivity,
 } from "../api/activities";
+import type { DrawingChoice } from "../api/drawings";
 import type { SavedRun } from "../navigation/trackStore";
+import { keepForDrawing, sendWaitingDrawings } from "../social/drawingOutbox";
 import { keepForStrava, sendWaitingToStrava } from "../strava/stravaOutbox";
 import {
   keepWaiting,
   loadOutbox,
   stopWaiting,
+  toDrawingOf,
   type ToStrava,
   toStravaOf,
 } from "./outbox";
@@ -49,8 +52,16 @@ export type ActivitiesDoor = ActivitiesState & {
    * by the end of the run just before «Save», and forgotten by `record`.
    */
   toStrava: (choice: ToStrava | null) => void;
+  /**
+   * The title and «Public» of the next `record` (TASK-117): they go to the
+   * API once it has the run; null: nothing chosen. Told by the end of the
+   * run just before «Save», and forgotten by `record`.
+   */
+  toDrawing: (choice: DrawingChoice | null) => void;
   /** The runs of this account still on the phone, waiting for the API. */
   waiting: number;
+  /** How many of them go public once the API has them (TASK-117). */
+  waitingPublic: number;
   /** Opens «Profile» to sign up or log in, saying it keeps the runs. */
   signIn: () => void;
   /** The run of the list being fetched whole, by id; null when none. */
@@ -79,7 +90,9 @@ const NOTHING: ActivitiesDoor = {
   signedIn: false,
   record: () => false,
   toStrava: () => {},
+  toDrawing: () => {},
   waiting: 0,
+  waitingPublic: 0,
   signIn: () => {},
   opening: null,
   open: () => {},
@@ -97,7 +110,7 @@ export function useActivitiesDoor(): ActivitiesDoor {
 
 /** What «Profile» says to who ends a run without an account. */
 export const SIGN_IN_TO_KEEP_RUNS =
-  "Sign up or log in to keep your runs in My activities.";
+  "Sign up or log in to keep your runs and share them as drawings.";
 
 type Doors = {
   /** Opens «Profile» on the list of the runs. */
@@ -110,8 +123,15 @@ type Doors = {
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
 
-function waitingOf(owner: number | null): number {
-  return owner === null ? 0 : loadOutbox().filter((run) => run.owner === owner).length;
+type Counted = { owner: number | null; count: number; publicCount: number };
+
+function waitingOf(owner: number | null): Counted {
+  const runs = owner === null ? [] : loadOutbox().filter((run) => run.owner === owner);
+  return {
+    owner,
+    count: runs.length,
+    publicCount: runs.filter((run) => toDrawingOf(run)?.public === true).length,
+  };
 }
 
 /** The runs of the account, for «Profile» to hand to the app. */
@@ -133,15 +153,13 @@ export function useActivitiesOf(
   // first; a run that ends meanwhile goes in a round of its own.
   // Counted from the file, again each time a run joins or leaves it, and
   // for another account as soon as it is the one signed in.
-  const [counted, setCounted] = useState(() => ({ owner, count: waitingOf(owner) }));
+  const [counted, setCounted] = useState(() => waitingOf(owner));
   if (counted.owner !== owner) {
-    setCounted({ owner, count: waitingOf(owner) });
+    setCounted(waitingOf(owner));
   }
   const waiting = counted.owner === owner ? counted.count : 0;
-  const recount = useCallback(
-    () => setCounted({ owner, count: waitingOf(owner) }),
-    [owner],
-  );
+  const waitingPublic = counted.owner === owner ? counted.publicCount : 0;
+  const recount = useCallback(() => setCounted(waitingOf(owner)), [owner]);
   const sending = useRef(false);
   const again = useRef(false);
   const send = useCallback(async () => {
@@ -170,6 +188,11 @@ export function useActivitiesOf(
             const strava = toStravaOf(run);
             if (strava !== null) {
               keepForStrava({ owner, key: run.id, name: strava.name });
+            }
+            // And its title and «Public» (TASK-117), the same way.
+            const drawing = toDrawingOf(run);
+            if (drawing !== null) {
+              keepForDrawing({ owner, key: run.id, ...drawing });
             }
             stopWaiting(owner, run.id);
             saved = true;
@@ -201,6 +224,15 @@ export function useActivitiesOf(
           ended = true;
           endSession(token);
         }
+        // And the titles and «Public» chosen for them (TASK-117).
+        if (
+          !ended &&
+          (await sendWaitingDrawings(baseUrl, token, owner, { fetchFn, key })) ===
+            "session_ended"
+        ) {
+          ended = true;
+          endSession(token);
+        }
       } while (again.current && !ended);
     } finally {
       sending.current = false;
@@ -226,17 +258,30 @@ export function useActivitiesOf(
     nextStrava.current = choice;
   }, []);
 
+  // The same for the title and «Public» (TASK-117).
+  const nextDrawing = useRef<DrawingChoice | null>(null);
+  const toDrawing = useCallback((choice: DrawingChoice | null) => {
+    nextDrawing.current = choice;
+  }, []);
+
   const record = useCallback(
     (run: SavedRun, drawn: Drawn | null) => {
       const strava = nextStrava.current;
       nextStrava.current = null;
+      const drawing = nextDrawing.current;
+      nextDrawing.current = null;
       const recorded = owner === null ? null : recordedRun(run, drawn);
       if (owner === null || recorded === null) {
         return false;
       }
       // On the phone first: the run is not lost if the app closes now.
       if (
-        !keepWaiting({ ...recorded, owner, ...(strava === null ? {} : { strava }) })
+        !keepWaiting({
+          ...recorded,
+          owner,
+          ...(strava === null ? {} : { strava }),
+          ...(drawing === null ? {} : { drawing }),
+        })
       ) {
         return false;
       }
@@ -315,7 +360,9 @@ export function useActivitiesOf(
       signedIn: owner !== null,
       record,
       toStrava,
+      toDrawing,
       waiting,
+      waitingPublic,
       signIn,
       opening,
       open,
@@ -332,7 +379,9 @@ export function useActivitiesOf(
       owner,
       record,
       toStrava,
+      toDrawing,
       waiting,
+      waitingPublic,
       signIn,
       opening,
       open,

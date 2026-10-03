@@ -94,6 +94,8 @@ import { Pager } from "./src/screens/Pager";
 import { ProfileButton, ProfileLayer } from "./src/screens/ProfileLayer";
 import { activityOf } from "./src/settings/sport";
 import { useSport } from "./src/settings/useSport";
+import { DrawingCard } from "./src/social/DrawingCard";
+import { useDrawingsDoor } from "./src/social/drawingsDoor";
 import { color } from "./src/theme/tokens";
 
 /** A route without directions: one list, so navigation does not restart. */
@@ -202,17 +204,21 @@ function Sgrava() {
     record: recordRun,
     signedIn,
   } = useActivitiesDoor();
+  // And so does a drawing opened from a profile (TASK-117).
+  const { opened: drawing, back: backFromDrawing } = useDrawingsDoor();
   const onPage = PAGES.includes(screenNow);
   const screen: Screen =
-    (favorite !== null || activity !== null) && onPage ? "map" : screenNow;
+    (favorite !== null || activity !== null || drawing !== null) && onPage
+      ? "map"
+      : screenNow;
   // A run of «My activities» on the map, as the end of a run shows one: its
-  // route, and over it what was run.
-  const reviewing = screen === "map" && activity !== null;
+  // route, and over it what was run. Or a drawing: the run cut as the
+  // others see it, in the route's yellow as in «Feed», the map framed on it.
+  const reviewing = screen === "map" && (activity !== null || drawing !== null);
   const reviewed = useMemo(
     () =>
-      activity === null
-        ? null
-        : {
+      activity !== null
+        ? {
             start: activity.track[0] ?? null,
             route: activity.points,
             // A word with the pen up, dashed as at the end of the run
@@ -220,8 +226,17 @@ function Sgrava() {
             walks: activity.walks ?? null,
             others: NO_OTHERS,
             track: activity.track,
-          },
-    [activity],
+          }
+        : drawing !== null
+          ? {
+              start: null,
+              route: drawing.track.length > 1 ? drawing.track : null,
+              walks: null,
+              others: NO_OTHERS,
+              track: null,
+            }
+          : null,
+    [activity, drawing],
   );
   const { position, refresh } = useCurrentPosition();
   const [startMode, setStartMode] = useState<StartMode>("gps");
@@ -570,7 +585,11 @@ function Sgrava() {
 
   function onBack() {
     if (reviewing) {
-      onActivityList();
+      if (activity !== null) {
+        onActivityList();
+      } else {
+        backFromDrawing();
+      }
       return;
     }
     if (favorite !== null) {
@@ -701,7 +720,7 @@ function Sgrava() {
           />
         }
       >
-        {reviewing ? (
+        {reviewing && activity !== null ? (
           <ActivityCard
             // A new card for each run: «Delete» asks again.
             key={activity.id}
@@ -712,6 +731,8 @@ function Sgrava() {
               onActivityList();
             }}
           />
+        ) : reviewing && drawing !== null ? (
+          <DrawingCard drawing={drawing} onBack={backFromDrawing} />
         ) : freeFinishing ? (
           <FreeFinishCard
             run={freeFinished.run}

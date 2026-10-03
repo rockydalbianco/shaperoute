@@ -216,9 +216,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   suo id, la traccia senza i primi e gli ultimi 200 m e senza il percorso
   pianificato, il numero di disegni pubblici nel profilo; tabella
   `drawings`, migrazione `0009`. Non ancora sul server: arriva con il
-  prossimo aggiornamento, con l'ok dell'utente. **Parte B, l'app**, può
-  partire (TASK-187 app e TASK-200 sono in `main`): prima le domande
-  all'utente del task file. Da dove riprendere: `tasks/TASK-117.md`.
+  prossimo aggiornamento, con l'ok dell'utente. **Parte B, l'app**
+  (ADR-0165), fatta il 2026-10-03, in PR dal branch
+  `feat/TASK-117-publish-app`, con le scelte dell'utente: «Public» spento
+  a ogni corsa e un solo «Title» a fine corsa (anche il nome su Strava);
+  «Public» e «Title» su una corsa aperta; il segno «Public» nell'elenco;
+  «Drawings» in «Profile» e nel profilo di un altro, un disegno aperto
+  sulla mappa; senza rete la scelta aspetta in `drawings-outbox.json`.
+  **Aspettano l'utente**: quattro testi nuovi (task file, «Esito»),
+  l'aggiornamento del server con la `0009` prima di pubblicare l'app, la
+  prova sull'iPhone. Da dove riprendere: `tasks/TASK-117.md`, «Esito».
 
 ## Completato
 

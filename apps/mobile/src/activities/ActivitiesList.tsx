@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Activity } from "../api/activities";
+import { useDrawingsDoor } from "../social/drawingsDoor";
+import { waitingText } from "../social/PublicParts";
 import {
   color,
   fontSize,
@@ -20,18 +22,23 @@ const DRAWING = 88;
 /**
  * «My activities» in «Profile» (TASK-172): the runs the account recorded,
  * the latest first, a page at a time. A row opens its run on the map;
- * «Delete» asks first.
+ * «Delete» asks first. A public run says so (TASK-117).
  */
 export function ActivitiesList() {
   const activities = useActivitiesDoor();
+  const { publicKeys, refreshMine } = useDrawingsDoor();
   // The run whose «Delete» was tapped, waiting for a yes.
   const [confirming, setConfirming] = useState<string | null>(null);
-  const { refresh, clearProblem } = activities;
+  const { refresh, clearProblem, list } = activities;
   // As it is on the API now: a run may have been saved or deleted since.
   useEffect(() => {
     clearProblem();
     refresh();
   }, [clearProblem, refresh]);
+  // Which runs are public, again with each list that comes.
+  useEffect(() => {
+    refreshMine();
+  }, [list, refreshMine]);
 
   return (
     <View style={styles.list}>
@@ -47,12 +54,16 @@ export function ActivitiesList() {
             : `${activities.waiting} runs are on this phone, waiting for a connection.`}
         </Text>
       )}
+      {activities.waitingPublic > 0 && (
+        <Text style={styles.message}>{waitingText(true)}</Text>
+      )}
       {activities.list.length > 0 ? (
         <>
           {activities.list.map((activity) => (
             <ActivityRow
               key={activity.id}
               activity={activity}
+              isPublic={publicKeys.has(activity.id)}
               opening={activities.opening === activity.id}
               confirming={confirming === activity.id}
               onOpen={() => activities.open(activity)}
@@ -101,6 +112,8 @@ export function ActivitiesList() {
 
 type RowProps = {
   activity: Activity;
+  /** Made public: a drawing in the profile (TASK-117). */
+  isPublic: boolean;
   /** Its run is being fetched whole, for the map. */
   opening: boolean;
   /** «Delete» was tapped: the row asks before the run goes. */
@@ -113,6 +126,7 @@ type RowProps = {
 
 function ActivityRow({
   activity,
+  isPublic,
   opening,
   confirming,
   onOpen,
@@ -129,7 +143,7 @@ function ActivityRow({
         style={({ pressed }) => [styles.open, pressed && styles.pressed]}
         onPress={onOpen}
         accessibilityRole="button"
-        accessibilityLabel={`${when}, ${where}, ${facts}, open on the map`}
+        accessibilityLabel={`${when}, ${where}, ${facts}${isPublic ? ", public" : ""}, open on the map`}
       >
         <RunDrawing
           route={activity.route_preview}
@@ -153,6 +167,11 @@ function ActivityRow({
               accessibilityLabel={`Score: ${activity.score} out of 100`}
             >
               {`Score ${activity.score}`}
+            </Text>
+          )}
+          {isPublic && (
+            <Text style={styles.mark} testID="activity-public">
+              Public
             </Text>
           )}
         </View>
@@ -224,6 +243,18 @@ const styles = StyleSheet.create({
   detail: {
     color: color.textMuted,
     fontSize: fontSize.small,
+  },
+  // Neutral, as every mark that is not the route's.
+  mark: {
+    alignSelf: "flex-start",
+    marginTop: 2,
+    paddingHorizontal: space.sm,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    color: color.text,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.semibold,
   },
   // Not yellow: that is the route's (docs/UI.md, «Il tema»).
   facts: {

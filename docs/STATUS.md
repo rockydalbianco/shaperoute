@@ -173,8 +173,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nuovo): cinque a Trento, cuore, cerchio e stella a 10 e 20 km, giudicati
   dall'utente: tre «quasi» e le due stelle «no», «va bene ma migliora».
   Mancano il cerchio da 20 km, Levico e Padova, quando Overpass riapre. Il
-  miglioramento delle forme in bici è un task nuovo (numero dal
-  coordinatore). Da dove riprendere: il task file, «Esito», «I campioni».
+  miglioramento delle forme in bici è TASK-206, qui sotto. Da dove
+  riprendere: il task file, «Esito», «I campioni».
+- **TASK-206 — Forme in bici più riconoscibili** (ADR-0167; scelta
+  dell'utente: «Sì, poco», brevi tratti con la bici a mano, circa 1 km su
+  10). **Parte A, il motore**, in `main` dalla PR #249 (2026-10-03): la rete della bici
+  tiene marciapiedi, sentieri e zone pedonali e l'altro senso dei sensi
+  unici, a piedi, a sei volte il costo; i controlli e l'avviso dicono i
+  metri a piedi. La corsa e la canoa non cambiano. Le zone `bike_*` di
+  prima vanno rifatte per avere i tratti a mano (Mac da Overpass, server
+  dall'estratto). Campioni di Trento giudicati dall'utente: i cerchi da
+  «quasi» a «sì», cuori e stelle come prima, 100–660 m a mano. Poi **B**
+  (`on_foot` nel risultato e nel contratto, la voce) e **C** (l'app). Da
+  dove riprendere: `tasks/TASK-206.md`.
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).
@@ -259,6 +270,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-212: il logo di Sgrava dopo «Save» (ADR-0174; chiesto
+  dall'utente il 2026-10-03). Tenuta la corsa, sopra l'app sale il giallo
+  dell'avvio con il logo, per 1,65 s (un tocco lo chiude prima), poi la
+  mappa come prima; anche senza rete (scelta dell'utente), mai se il
+  telefono non tiene la corsa né a «Discard». Solo app, `App.tsx` non
+  cambia. Sul telefono con la prossima pubblicazione, con l'ok
+  dell'utente. Task file: `tasks/TASK-212.md`.
 - **App** — TASK-207: la foto dal cerchio di «Profile» (chiesto
   dall'utente il 2026-10-03, che ha scelto il «+»). Il cerchio grande di
   «Profile» ha un tondo bianco con il «+» in basso a destra; toccato apre,

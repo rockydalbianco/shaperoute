@@ -7670,6 +7670,91 @@ dove si apre un profilo. Testi nuovi oltre a quelli scelti dall'utente:
 is no longer public.», «Back to the profile», «Score 87» sotto un disegno
 della griglia.
 
+## ADR-0167 — La bici a mano: brevi tratti a piedi nella rete della bici, a sei volte il costo
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-206, parte A), dentro la **scelta dell'utente** dello stesso giorno:
+«Sì, poco», circa 1 km a mano su 10, che si vede sulla mappa e la voce
+annuncia. Numero tenuto dal coordinatore.
+
+**Contesto**: i primi campioni in bici a Trento (TASK-190, `samples/LOG.md`)
+sono «quasi» per cuore e cerchio e «no» per le stelle; l'utente ha chiesto
+«migliora». Misurato sul Mac, senza rete, sulla zona di Trento: i parametri
+del tracciamento (zone attorno ai punti della forma più larghe, corridoio,
+penalità delle strade già fatte), il verso opposto della forma, i sentieri
+con `bicycle=yes`, le zone pedonali e altre partenze in città non cambiano
+niente o peggiorano. La rete della bici ha due terzi dei km di quella a
+piedi (mancano marciapiedi, sentieri e zone pedonali) e un quinto è a
+senso unico: per toccare in ordine i punti della forma il percorso gira
+attorno agli isolati e fa punte. Con i tratti a piedi aggiunti, a sei volte
+il costo, il cuore da 10 km passa da 0,70 a 0,79 di somiglianza, il cerchio
+da 0,77 a 0,90, la stella resta (0,95 → 0,92, più grande); a piedi
+0,7–1,1 km su 10. A tre volte il costo le forme migliorano ancora (cuore
+0,90) ma a piedi sono 1,2–2,6 km; senza costo 6 km su 9.
+
+**Decisione**:
+1. **La rete `bike` tiene anche le vie dove la bici si porta a mano**
+   (`walkable`): `footway`, `path`, `bridleway` e zone pedonali non aperte
+   alle bici, e ogni via con `bicycle=dismount`; mai scale, mai una via
+   chiusa ai pedoni (`foot=no`, o `access` chiuso senza un `foot` che la
+   apra). Sono archi nei due sensi, segnati `walk`.
+2. **L'altro senso di un senso unico si fa a piedi**, sul marciapiede:
+   accanto a ogni arco a senso unico che la bici percorre c'è l'arco
+   opposto segnato `walk` (`walkable_beside`), salvo `foot=no`. Si
+   aggiunge dopo la semplificazione di OSMnx, che con un arco a piedi e uno
+   in sella attorno a ogni nodo spezzerebbe ogni senso unico in pezzi da un
+   isolato.
+3. **Un metro a piedi costa `WALK_COST` = 6 metri in sella** nel costo del
+   tracciamento (`_corridor_costs`) e nelle vie più brevi che non
+   disegnano la forma (il ritorno da una partenza vicina, i tratti fra le
+   lettere con la penna alzata: `step_cost`). Dove fra gli stessi due nodi,
+   nello stesso verso, c'è un arco in sella, quello a piedi non c'è.
+   OSMnx semplifica tenendo separati i tratti a piedi da quelli in sella
+   (`edge_attrs_differ=["walk"]`).
+4. **I controlli contano i metri a piedi** (`usability`, `on_foot`) e il
+   risultato li dice fra gli avvisi: «650 m of the route with the bike on
+   foot», come lo sterrato. La CLI li stampa fra i controlli.
+5. **Un solo filtro Overpass più largo**: il secondo filtro della bici
+   scarica tutti i `footway`, `path`, `bridleway` e le zone pedonali, non
+   più solo quelli con un tag `bicycle`; sempre due richieste per zona.
+   `rideable` e `walkable` decidono sui tag tenuti (`BIKE_TAGS` ha anche
+   `foot`).
+6. **Le zone fatte prima restano valide, senza tratti a piedi**: la rete
+   si chiama ancora `bike`, i file `bike_*` sono gli stessi; un grafo fatto
+   da TASK-206 in poi porta `on_foot=True`. Per avere i tratti a piedi una
+   zona va rifatta (dall'estratto sul server, da Overpass sul Mac).
+7. **La corsa e la canoa non cambiano**: sulla rete a piedi non ci sono
+   archi `walk`, il costo è la lunghezza come prima.
+
+**Perché così**: è l'unica leva misurata che migliora le forme, e la
+scelta dell'utente («poco») è il costo che ne tiene i tratti brevi. Tenere
+le vie a piedi nella stessa rete, con il loro costo, lascia al
+tracciamento di sempre la scelta di dove servono; un grafo separato a
+piedi da unire a ogni richiesta costerebbe memoria e tempo sul server.
+Tenere il nome `bike` evita di toccare l'API e i suoi test in questa
+parte, e lascia funzionare le zone di oggi finché non si rifanno.
+
+**Scartato**: zone più larghe attorno ai punti della forma (le stelle non
+si disegnano più); più ricerca o partenze più lontane (la ricerca lontana
+a 1–2 km c'è già, e a Trento non trova di meglio); le zone pedonali in
+sella (in Italia la legge le apre alle bici, ma non ovunque nel mondo, e a
+Trento non cambiano le forme); un tetto rigido ai metri a piedi (il costo
+li tiene a 0,7–1,1 km su 10 a Trento; i controlli li dicono); un nome
+nuovo per la rete (`bike2`), che avrebbe obbligato a rifare subito le
+zone e a cambiare l'API.
+
+**Conseguenze**: una zona della bici pesa circa il doppio (i marciapiedi
+e i sentieri: la zona di prova di Trento, rifatta senza rete dalle risposte
+in cache, da 16.569 a 29.383 nodi e da 36.872 a 77.584 archi, 29.215 a
+piedi); memoria dell'API e picco della costruzione da misurare sul server
+quando si rifà la zona di Trento. Le zone `bike_*` del Mac e quella di Trento sul
+server vanno rifatte per avere i tratti a piedi. I tratti a piedi come
+dato del risultato (`on_foot`: da dove a dove, per la mappa e la voce)
+entrano nella parte B con il contratto dell'API (`RouteResult` e
+`RouteResultBody` devono avere gli stessi campi, `test_contract.py`), e
+nell'app con la parte C. Fino ad allora l'avviso dice i metri a piedi.
+Le gallerie stradali in bici (fino a 1 km nei campioni) restano: sono un
+seguito.
+
 ## ADR-0168 — La foto dal cerchio di «Profile»: un «+» bianco, le scelte di «Settings» in un riquadro sopra «Edit profile»
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-207). La richiesta e il «+» in basso a destra del cerchio sono
@@ -7790,3 +7875,44 @@ perché altri lavori tengono i file della corsa, di «Draw» e di
 inglese. I testi che arrivano dall'API (titoli, nomi dei percorsi a tema,
 il nome su Strava) restano in inglese. Le traduzioni sono **da
 confermare**: l'italiano dall'utente, le altre da chi le parla.
+
+## ADR-0174 — Il logo dopo «Save»: il giallo e il logo dell'avvio, 1,65 s, sopra l'app, anche senza rete
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-212). La richiesta («Finita l'attività, quando la salvi deve uscire
+il logo di Sgrava») e il logo anche senza rete sono dell'utente; il resto,
+qui sotto, è dell'agente.
+
+**Contesto**: «Save» a fine corsa (TASK-172, ADR-0140) tiene la corsa e
+torna alla mappa, senza nessun segno che sia andata. Il logo con il giallo
+si vede già all'avvio (TASK-179, ADR-0147), in `src/intro/`, sopra `App`.
+
+**Decisione**:
+
+1. **Lo stesso giallo `accent` e lo stesso logo intero dell'avvio**
+   (`splash-logo-dark.png`), senza il cuore: il cuore è dell'apertura, e
+   qui il disegno è quello appena corso, già sulla scheda.
+2. **Tempi**: 0,25 s il giallo sale e il logo cresce dall'85% alla sua
+   misura, 1,1 s fermo, 0,3 s di dissolvenza; in tutto 1,65 s, meno
+   dell'avvio (2,7 s). Un tocco lo manda via subito. Il tempo lo tiene un
+   timer, non l'animazione, come all'avvio: con le animazioni del telefono
+   spente il logo resta lo stesso.
+3. **Sopra l'app, in `Root.tsx`**, sotto l'animazione d'avvio: `RunEnd`
+   chiama `showSavedLogo()` quando `onSave()` è vero, e uno strato in
+   `Root` lo mostra. `App.tsx` non cambia: `RunEnd` si smonta appena la
+   corsa è tenuta, e il logo deve restare.
+4. **Anche senza rete** (scelta dell'utente): «Save» vero vuol dire la
+   corsa tenuta, sul telefono o già sull'API. Niente logo se il telefono
+   non tiene la corsa, né a «Discard».
+5. Al lettore di schermo: «Saved to My activities», annunciato.
+
+**Perché così**: un'immagine sola, già nell'app, e nessuna dipendenza;
+uno strato in `Root` vede l'app intera, mentre la schermata della corsa se
+ne va nello stesso tocco.
+
+**Scartato**: il disegno della corsa tracciato sul giallo come il cuore
+dell'avvio (non chiesto, e più lungo); il logo dentro `App.tsx` (il file
+più conteso); un «Saved» scritto sotto il logo (non chiesto).
+
+**Conseguenze**: TASK-208 B, che rifà la fine della corsa, tiene la
+chiamata a `showSavedLogo()` dopo un «Save» riuscito. Si vede sul telefono
+con la prossima pubblicazione dell'app, con l'ok dell'utente.

@@ -44,6 +44,7 @@ from route_engine.network import (
     first_leg,
     nearest_nodes,
     one_way_streets,
+    step_cost,
     twice_drawn,
 )
 from route_engine.optimizer import (
@@ -379,7 +380,8 @@ def with_approach(graph: Graph, plan: Plan, approach: list[Any]) -> Plan:
     """`plan` reached along `approach` (nodes from the start's node to where
     the route begins) and, when the route closes, back along it; with
     one-way streets (the bike network) back along the shortest way allowed,
-    which may be another (NetworkXNoPath if there is none). The walks of a
+    which may be another (NetworkXNoPath if there is none), riding rather
+    than on foot (`step_cost`, TASK-206). The walks of a
     word with the pen up (TASK-197) move along with the points: the
     approach is run, not walked."""
     if len(approach) < 2 or plan.search is None:
@@ -391,7 +393,7 @@ def with_approach(graph: Graph, plan: Plan, approach: list[Any]) -> Plan:
     if route.nodes[-1] != route.nodes[0]:
         back = [approach[-1]]
     elif one_way_streets(graph):
-        back = nx.shortest_path(graph, approach[-1], approach[0], weight="length")
+        back = nx.shortest_path(graph, approach[-1], approach[0], weight=step_cost)
     else:
         back = approach[::-1]
     nodes = approach[:-1] + list(route.nodes) + back[1:]

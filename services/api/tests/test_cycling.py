@@ -382,20 +382,27 @@ def test_a_bike_route_on_the_town_rides_only_where_bikes_may(town: Path) -> None
     assert points[0] == points[-1]
     assert 8_000 < result["distance_m"] < 12_000
     assert result["directions"]
-    # Never along the steps, the footway or the trunk road: a stretch
-    # between two of their nodes would be one.
-    for column in (STEPS_COL, FOOT_COL, TRUNK_COL):
+    # Never along the steps or the trunk road: a stretch between two of
+    # their nodes would be one.
+    for column in (STEPS_COL, TRUNK_COL):
         on_it = {_point(row, column) for row in range(LINES)}
         for a, b in zip(points, points[1:], strict=False):
             assert not (_near(a, on_it) and _near(b, on_it) and a != b), column
-    # A one-way row is ridden its way only: eastward, as the row's nodes go.
+    # Along the footway, or a one-way row westward, only with the bike on
+    # foot (TASK-206, ADR-0167): then the warnings say how far.
+    walked = False
+    footway = {_point(row, FOOT_COL) for row in range(LINES)}
+    for a, b in zip(points, points[1:], strict=False):
+        walked |= _near(a, footway) and _near(b, footway) and a != b
     for row in ONE_WAY_ROWS:
         on_it = {_point(row, column): column for column in range(LINES)}
         for a, b in zip(points, points[1:], strict=False):
             if (ca := _column(a, on_it)) is not None and (
                 cb := _column(b, on_it)
             ) is not None:
-                assert cb >= ca, row
+                walked |= cb < ca
+    on_foot = [w for w in result["warnings"] if w.endswith("with the bike on foot")]
+    assert on_foot or not walked
     zones = sorted(p.name.split("_")[0] for p in town.glob("*.graphml"))
     assert zones == ["bike", "foot"]  # read from the cache, nothing new
 

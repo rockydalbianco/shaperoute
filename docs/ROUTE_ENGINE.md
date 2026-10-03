@@ -537,7 +537,8 @@ Una richiesta `activity: "cycling"` (10–30 km, `DISTANCE_LIMITS_M` in
   a tutti i veicoli (`access`, `vehicle`), salvo un `bicycle=yes` esplicito
   (`rideable`).
 - **Sensi unici**: valgono. Il grafo è orientato e il percorso segue gli
-  archi: **un tratto contromano non esiste**, non è un warning. Un senso
+  archi: **un tratto contromano in sella non esiste**, non è un warning
+  (a piedi sì, dal TASK-206: «La bici a mano» qui sotto). Un senso
   unico è percorribile nei due sensi in bici solo dove OSM lo dice
   (`oneway:bicycle=no`, `cycleway=opposite*`, una corsia ciclabile
   dall'altro lato con `cycleway:<lato>:oneway=-1`); una strada a doppio
@@ -554,6 +555,19 @@ Una richiesta `activity: "cycling"` (10–30 km, `DISTANCE_LIMITS_M` in
   e `ShapeJob` rifiutano un grafo di un'altra rete con
   `WrongNetworkError` (`check_network`): un percorso in bici sulla rete a
   piedi passerebbe per scale e contromano.
+- **La bici a mano** (TASK-206, ADR-0167; scelta dell'utente: «poco»):
+  dove la bici non si guida ma si può portare a piedi (`walkable`:
+  `footway`, `path`, `bridleway` e zone pedonali chiuse alle bici, ogni
+  via con `bicycle=dismount`; mai scale, mai vie chiuse ai pedoni) la rete
+  ha archi nei due sensi segnati `walk`; e accanto a ogni senso unico c'è
+  l'altro senso, a piedi sul marciapiede (`walkable_beside`). Un metro a
+  piedi costa **`WALK_COST` = 6** metri in sella, nel corridoio del
+  tracciamento e nelle vie più brevi fuori dalla forma (`step_cost`): il
+  percorso porta la bici a mano solo dove la forma ne guadagna molto. A
+  Trento, 10 km: 0,7–1,1 km a piedi, cuore da 0,70 a 0,79, cerchio da 0,77
+  a 0,90. I controlli contano i metri a piedi (`on_foot`) e l'avviso li
+  dice («… m of the route with the bike on foot»). Una zona `bike_*` fatta
+  prima di TASK-206 non ha archi `walk` e si disegna come prima.
 
 La rete a piedi non cambia: stesso filtro, stessi file, stessi percorsi.
 

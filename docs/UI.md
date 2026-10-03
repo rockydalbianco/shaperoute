@@ -1340,6 +1340,14 @@ mostra le lettere unite da linee dritte sulla base.
   resta nella scheda. Se il telefono non riesce a scrivere la corsa: «This
   run could not be kept on the phone. Try again.», e si resta lì. Nessuno
   dei due è giallo.
+- **Il logo dopo «Save»** (TASK-212, ADR-0174; chiesto dall'utente il
+  2026-10-03): tenuta la corsa, sopra l'app sale il giallo `accent`
+  dell'avvio con il logo intero, che cresce un poco; resta 1,1 s e si
+  dissolve sulla schermata dove «Save» porta (in tutto 1,65 s). Un tocco
+  lo chiude prima. Anche senza rete, con la corsa che aspetta sul telefono
+  (scelta dell'utente); mai se il telefono non tiene la corsa, né a
+  «Discard». Al lettore di schermo: «Saved to My activities». Sta in
+  `src/intro/SavedLogo.tsx`, in `Root` sotto l'animazione d'avvio.
 - **«Public» e «Title»** (TASK-117, ADR-0159, ADR-0166), in cima, sopra
   Strava, solo con un account: l'interruttore **«Public»**, **spento a ogni
   corsa** (scelta dell'utente: non ricorda la volta prima); acceso, sotto,

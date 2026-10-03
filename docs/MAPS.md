@@ -28,10 +28,13 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   le bici strada per strada, con i tag che OSMnx di solito non tiene
   (`BIKE_TAGS`: `bicycle`, `oneway:bicycle`, `cycleway*`, `surface`…), poi
   semplifica come OSMnx. Due filtri Overpass (`BIKE_FILTER`), quindi **due
-  richieste per zona**: le strade, e solo i sentieri e le zone pedonali
-  con un tag `bicycle` che le apre (pochi km per zona, invece di tutti i
-  marciapiedi). Tutti e due fatti di condizioni semplici, come
-  `FOOT_FILTER`: l'estratto (`prefetch_zones --extract`) li sa leggere.
+  richieste per zona**: le strade, e i sentieri, i marciapiedi e le zone
+  pedonali. Fino a TASK-206 il secondo filtro prendeva solo quelli con un
+  tag `bicycle` che li apre; da TASK-206 (ADR-0167) li prende tutti:
+  dove la bici non si guida si porta a mano (archi `walk`, a sei volte il
+  costo), e anche l'altro senso di un senso unico si fa a piedi.
+  Tutti e due fatti di condizioni semplici, come `FOOT_FILTER`:
+  l'estratto (`prefetch_zones --extract`) li sa leggere.
 
 ## Overpass: come si scarica
 
@@ -98,7 +101,11 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   (`check_network`). Le risposte grezze stanno nella stessa `http/`: la
   query è un'altra, quindi un'altra chiave. Le vie con nome (`names_*`)
   servono alla rete a piedi; quella della bici ha già le strade col
-  marciapiede a parte.
+  marciapiede a parte. **Le zone `bike_*` fatte prima di TASK-206** non
+  hanno i tratti a mano (ADR-0167): funzionano come prima, e per averli
+  vanno rifatte (cancellare il `bike_*` col suo pickle e rifarlo: dal Mac
+  da Overpass, sul server dall'estratto). Un grafo fatto da TASK-206 in
+  poi porta `on_foot=True`.
 - Dimensioni tipiche: 1–20 MB per grafo. I 12 grafi `walk` di TASK-014
   occupano 78 MB.
 - I dati OSM cambiano: un campione è riproducibile solo con lo stesso

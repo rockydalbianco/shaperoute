@@ -105,7 +105,8 @@ In coda, dopo o accanto:
   (A1, PR #216) in `main`; **A2** (la canoa in una richiesta del motore)
   in `main` (PR #235), con le scelte dell'utente del 2026-10-03: **1–5 km**, al
   mare la forma **oltre 200 m dalla riva**, sui laghi 50 m (ADR-0161);
-  poi B (API) e C (app). Nel contratto si usa `activity`, che c'è già.
+  **B** (l'API, `activity: "paddling"`) in `main` (PR #241, ADR-0164);
+  poi C (app), dopo la prova dal vero sul server.
 - **La penna alzata nelle parole**, chiesta e confermata dall'utente il
   2026-10-02: fra una lettera e l'altra si cammina senza disegnare, e
   l'app mette in pausa la registrazione da sola, con un avviso a voce.
@@ -117,8 +118,9 @@ In coda, dopo o accanto:
 - **Server e app da aggiornare, con l'ok dell'utente**: in `main` ma non
   sul server (fermo a `0003`) ci sono le migrazioni `0004` (Strava,
   TASK-187), `0005` (foto, TASK-178), `0006` (penna alzata, TASK-199),
-  `0007` (profili, TASK-116) e `0008` (attività nei preferiti, TASK-200),
-  e il motore di TASK-190, 191 A1, 197 e 203, che cambia l'impronta: dopo
+  `0007` (profili, TASK-116), `0008` (attività nei preferiti, TASK-200)
+  e `0010` (la canoa nei preferiti, TASK-191 B), e il motore di TASK-190,
+  191 A1, A2 e B, 197 e 203, che cambia l'impronta: dopo
   l'aggiornamento va rilanciato `draw_examples` (circa 35 minuti,
   `AGENTI.md` regola 11) e, per la bici, costruita almeno la zona bici di
   Trento. Conviene un solo aggiornamento dopo TASK-191 A2 (anche lei
@@ -201,7 +203,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   --activity paddling`, la validazione sull'acqua (errori, non warning),
   parole e immagini rifiutate sull'acqua, `paddling.plan_paddling` per la
   parte B; i centri scelti da dove si arriva alla riva. **B** (l'API,
-  ADR-0164, 2026-10-03, PR #241): `paddling` nel contratto
+  ADR-0164, in `main` dalla PR #241, 2026-10-03): `paddling` nel contratto
   (`shared-types` 1–5 km), l'API disegna sull'acqua della sua cache
   (`data/cache/water/`, scaricata da Overpass a ogni area nuova), senza
   indicazioni né alternative; lontano dall'acqua o forma troppo grande

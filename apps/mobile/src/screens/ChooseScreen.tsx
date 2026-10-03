@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { HeartBadge } from "../intro/HeartBadge";
 import { PlaceSearch } from "../places/PlaceSearch";
 import type { LatLon } from "@shaperoute/shared-types";
 
@@ -32,6 +33,9 @@ const START_MODES = [
   { value: "gps", label: "My position" },
   { value: "place", label: "Another place" },
 ] as const;
+
+/** The heart beside the name: as tall as the title's letters and a little more. */
+const BADGE_SIZE = 32;
 
 type Props = {
   /** Where the route will start, in words (UI.md, «La partenza»). */
@@ -88,18 +92,22 @@ export function ChooseScreen({
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Sgrava</Text>
+          <View style={styles.brand}>
+            {/* The heart of the launch on its yellow, as a logo (TASK-221). */}
+            <HeartBadge size={BADGE_SIZE} />
+            <Text style={styles.title}>Sgrava</Text>
+          </View>
           <View style={styles.titleButtons}>
             {onRun && (
               <Pressable
-                style={styles.explore}
+                style={styles.run}
                 onPress={onRun}
                 accessibilityRole="button"
                 accessibilityLabel={runLabel}
               >
                 {/* The whole of it: "Run" alone read as running the route
                     drawn below (TASK-158). */}
-                <Text style={styles.exploreText}>{runLabel}</Text>
+                <Text style={styles.runText}>{runLabel}</Text>
               </Pressable>
             )}
           </View>
@@ -152,6 +160,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  brand: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+  },
   title: {
     color: color.text,
     fontSize: fontSize.title,
@@ -161,17 +174,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: space.sm,
   },
-  explore: {
+  // Yellow, the user's choice (TASK-220, ADR-0183): the one control yellow
+  // without being the route's. Dark text on it, as on every yellow.
+  run: {
     minHeight: MIN_TAP_SIZE,
     paddingHorizontal: space.md,
     borderRadius: radius.pill,
     justifyContent: "center",
-    backgroundColor: color.surfaceRaised,
-    borderWidth: 1,
-    borderColor: color.borderStrong,
+    backgroundColor: color.accent,
   },
-  exploreText: {
-    color: color.text,
+  runText: {
+    color: color.onAccent,
     fontSize: fontSize.body,
     fontWeight: fontWeight.semibold,
   },

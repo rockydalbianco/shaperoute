@@ -32,7 +32,8 @@ corpi del testo, la linea del percorso (gialla, larga 5) e `MIN_TAP_SIZE`,
 mano fuori da lì**: lo stile della mappa e le schermate leggono gli stessi
 token, e un colore nuovo è un token nuovo. Applicato all'app con TASK-046:
 mappa scura, percorso giallo, pannelli scuri, tastiere scure, barra di
-stato chiara. «Draw route» è l'unico comando giallo, con il testo scuro; gli
+stato chiara. «Draw route» è il comando giallo, con il testo scuro (e
+«Run without a route», per scelta dell'utente: TASK-220); gli
 altri («My position», «Search», «Cancel», «Export GPX», le forme da
 toccare) sono neutri, su `surfaceRaised`, con il bordo `borderStrong`:
 schiariti con TASK-086 (ADR-0081) perché sul fondo nero non si vedevano. Il segnaposto della partenza è
@@ -59,7 +60,9 @@ Quattro regole:
 
 1. **Il giallo significa una cosa sola**: il percorso, il comando che lo
    produce e la barra che lo mostra mentre si disegna. Gli avvisi usano `warning`, arancio: un avviso giallo
-   renderebbe il colore muto.
+   renderebbe il colore muto. **Un'eccezione**, scelta dall'utente
+   (TASK-220, ADR-0183): «Run without a route» in cima a «Draw» è giallo,
+   con il testo scuro. Per tutto il resto la regola vale.
 2. **Sul giallo il testo è scuro** (`onAccent`, 13,5:1). Il bianco si ferma
    a 1,5:1, sotto il minimo, e in pieno sole, dove l'app si usa, non si
    legge.
@@ -86,7 +89,8 @@ Sotto l'icona il nome è «Sgrava» (`name` in `app.json`). L'icona dell'app
 senza trasparenza). Su Android il segno sta nel cerchio sicuro dell'icona
 adattiva, il fondo è nero e l'icona a un colore è il segno bianco. In Expo
 Go sulla schermata di casa resta l'icona di Expo Go: la nostra si vede con
-una build propria. Dentro l'app il nome in cima a «Draw» resta un testo.
+una build propria. Dentro l'app il nome in cima a «Draw» resta un testo,
+con a sinistra il cuore su giallo (sotto).
 
 **La schermata di avvio** (TASK-165, ADR-0134; gialla da TASK-181): fondo
 giallo `accent`, il logo nero al centro. Su iOS il logo intero, largo 260
@@ -111,6 +115,16 @@ c'è, non si salta, e si vede una volta a ogni apertura. Sta in
 `src/intro/`, sopra `App` (`index.ts`). Al lettore di schermo dice
 «Sgrava».
 
+**Il cuore su giallo** (TASK-221, ADR-0184): lo stesso cuore, fermo e
+piccolo, come un logo. Un quadrato giallo `accent` con gli angoli
+arrotondati (22% del lato), dentro il cuore nero `onAccent` largo il 68%
+del lato, con il punto di partenza; il tratto è 1/16 del lato, più spesso
+di quello dell'avvio, perché il cuore si legga alla misura di una parola.
+In cima a «Draw» sta a sinistra di «Sgrava», 32 punti, alto quanto il
+titolo. È solo un'immagine: il lettore di schermo legge il nome accanto.
+Un componente solo, `src/intro/HeartBadge.tsx` (`size`), per ogni posto
+dove il cuore su giallo compare.
+
 ## Le due schermate
 
 Due, senza librerie di navigazione (TASK-051, scelta dell'utente). La
@@ -118,7 +132,8 @@ prima ed «Explore» sono due delle tre pagine affiancate (sotto, «Le
 pagine»):
 
 1. **«What to draw»**, all'apertura: la pagina «Draw». Dall'alto: il nome
-   «Sgrava» con il pulsante «Run without a route» (TASK-149, sotto; «Ride
+   «Sgrava», con a sinistra il cuore su giallo (TASK-221, sopra), e il
+   pulsante «Run without a route» (TASK-149, sotto; «Ride
    without a route» con «Bike», TASK-190); una
    scheda che dice da dove partirà il percorso,
    con, quando servono, il rimando alle Impostazioni e la ricerca del
@@ -1676,7 +1691,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
 ## Correre senza percorso (TASK-149, ADR-0122)
 
 **«Run without a route»**, in alto nella pagina «Draw» accanto a «Sgrava»,
-fa partire una corsa senza disegnare niente: niente forma, niente percorso,
+giallo con il testo scuro (TASK-220, scelta dell'utente: l'eccezione alla
+regola 1 dei colori), fa partire una corsa senza disegnare niente: niente forma, niente percorso,
 niente API. Con «Bike» scelto in «Settings» il pulsante dice **«Ride without
 a route»** (TASK-190, **da confermare con l'utente**); la schermata che apre
 resta quella della corsa (domanda 2 di `tasks/TASK-190.md`). La scritta è per intero (TASK-158, chiesto dall'utente): «Run» da

@@ -373,6 +373,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-221: il cuore su giallo accanto a «Sgrava» (ADR-0184;
+  chiesto dall'utente il 2026-10-03). In cima a «Draw», a sinistra del
+  nome, un quadrato giallo di 32 punti con il cuore nero dell'avvio, fermo.
+  Un componente solo, `src/intro/HeartBadge.tsx`, che TASK-222 riusa in
+  «Explore». Sul telefono con la prossima pubblicazione.
+  `tasks/TASK-221.md`.
+- **App** — TASK-220: «Run without a route» giallo (ADR-0183; chiesto
+  dall'utente il 2026-10-03). In cima a «Draw» il pulsante, anche come
+  «Ride without a route», ha il fondo giallo e il testo scuro: l'unica
+  eccezione alla regola «il giallo è del percorso». PR #280, merge
+  `0655511`. Esce con la prossima pubblicazione, che l'utente ha
+  approvato il 2026-10-03 («aspetta e poi pubblica») solo dopo che
+  l'acqua di TASK-225 è sul server: `main` ha già «Paddle» (#255).
+  `tasks/TASK-220.md`.
 - **App** — TASK-216: la navigazione in bici (ADR-0179; scelte
   dell'utente del 2026-10-03; PR #278, merge `510f8a5`). «Start» su un
   percorso in bici (da «Draw», da un preferito tenuto in bici) segue

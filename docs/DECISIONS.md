@@ -7868,6 +7868,106 @@ nome (spezzano chi è).
 di TASK-178, sul telefono funziona solo con il server alla migrazione
 `0005` e l'app pubblicata.
 
+## ADR-0169 — La canoa nell'app: solo forme, da 2 km, «Start» senza indicazioni dietro l'avviso della prima volta, «Explore» con i luoghi d'acqua
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-191, parte C). Sono **scelte dell'utente**: il nome «Paddle», il
+testo dell'avviso di sicurezza e il suo mostrarsi **solo la prima volta**,
+i quattro luoghi d'acqua al posto delle città in «Explore» quando lo sport
+è «Paddle»; le distanze 1–5 km (ADR-0161). Il resto, qui sotto,
+dell'agente.
+
+**Contesto**: il motore (ADR-0154, ADR-0161) e l'API (ADR-0164) disegnano
+sull'acqua con `activity: "paddling"`: solo forme del catalogo, nessuna
+indicazione di svolta né alternativa, la partenza sulla riva, la distanza
+suggerita per difetto al mezzo km. Nell'app «Paddle» era «Soon»
+(ADR-0152), «Start» c'era solo con le indicazioni, «Start» da «Explore»
+le chiedeva a `/route-directions` (che sull'acqua risponde `422`), e gli
+esempi di «Explore» erano corse da 5 km dal centro di una città.
+
+**Decisione**:
+
+1. **«Paddle» pronto** in `sport.ts`; `activityOf` dà `paddling`;
+   `withoutRouteLabel` dice il pulsante della corsa libera per ogni sport
+   («Run», «Ride», «Paddle without a route»).
+2. **Solo forme**: con «Paddle» il pannello non ha l'interruttore «Shape |
+   Word | Image» e l'app manda la forma anche se prima era scelta una
+   parola o una foto (`drawKind`); quella scelta resta, e torna con un
+   altro sport. Così l'app non manda mai ciò che l'API rifiuterebbe
+   (`invalid_request`).
+3. **La distanza parte da 2 km** (`distanceForSport`), all'apertura e ogni
+   volta che si sceglie «Paddle», non dai 5 km della corsa: 5 km stanno nei
+   limiti, ma al mare il cuore ci sta fino a 3 km (ADR-0161) e la prima
+   richiesta fallirebbe. Corsa e bici tengono la regola di prima
+   (`fitDistance`). Il passo di − e + resta 1 km; il mezzo km arriva da
+   «Try 2.5 km» o scritto.
+4. **I testi d'errore dell'acqua** (`problems.ts`): con `paddling`,
+   `shape_not_drawable` si legge nelle parole dell'acqua; «lontano
+   dall'acqua» si riconosce dal messaggio del motore, «no lake or sea»
+   (`NoWaterError`), perché l'API non ha un codice suo (ADR-0164); la
+   distanza suggerita è offerta fra 1 e 5 km, altrimenti le forme.
+5. **«Start» senza indicazioni**: un percorso `paddling` ha «Start» anche
+   con `directions` vuoto; da «Explore» e dai preferiti, con `paddling`,
+   l'app non chiede `/route-directions` e parte con la lista vuota. Il
+   navigatore regge già un percorso senza svolte (arriva alla fine della
+   linea; il banner «Follow the route to the end.»): la schermata della
+   corsa non cambia.
+6. **L'avviso**: un `Modal` a tutto schermo, come il conto alla rovescia
+   che segue, davanti al primo «Start» sull'acqua (`usePaddleNotice`).
+   «I understand» lo ricorda in `paddle-notice.json` e parte; «Not now» non
+   parte e lo richiede al prossimo «Start». Un telefono che non scrive lo
+   ricorda finché l'app è aperta. Il modulo si chiama `safetyNotice.ts`:
+   `paddleNotice.ts` accanto a `PaddleNotice.tsx` è lo stesso file per il
+   disco del Mac, che non distingue le maiuscole, e Jest importava l'uno
+   per l'altro.
+7. **«Explore» con «Paddle»** è una pagina sua, `PaddleExplore`, al posto di
+   `ExploreScreen` (che non cambia): «Near me» e i quattro luoghi, ognuno
+   con un punto della riva scelto a mano (`waterPlaces.ts`: le partenze dei
+   campioni di A1 per Riva del Garda, Jesolo e Riccione; per Como il
+   lungolago, Lungo Lario Trento, da Nominatim). Gli esempi sono quelli
+   delle città con un `ExampleSet` diverso (`PADDLE_EXAMPLES`: paddling,
+   2 km, cuore, cerchio e stella, nessuna forma dopo), tenuti a parte con
+   la chiave `paddling:<punto>`; un esempio sull'acqua porta `activity`
+   nel suo dettaglio, così `toRequest`, l'export, «Start» e i preferiti
+   (`exploredKeepable`) lo trattano da canoa. Gli esempi di corsa restano
+   identici, chiavi e file compresi. «Near me» prende la partenza di «Draw»
+   al tocco, non quella che si muove col GPS: ogni punto nuovo
+   ridisegnerebbe tre forme sull'acqua. La scelta del luogo vive fuori
+   dalla pagina, che si smonta quando la mappa prende lo schermo.
+8. **Il contrasto**: la linea gialla sull'acqua scura è a 11,5:1, più che
+   su una strada principale (7,4:1); nessun token nuovo. Un test lo fissa
+   dai token (`waterContrast.test.ts`).
+
+**Alternative scartate**: l'avviso a ogni «Start» o anche come riga sotto
+il percorso (proposte all'utente, che ha scelto la prima volta); l'avviso
+come scheda sotto la mappa al posto del risultato (va davanti al conto
+alla rovescia, che è un `Modal`); un campo `activity` in
+`/route-directions` (ADR-0164, punto 7); `ExploreScreen` con un ramo per
+l'acqua (cento righe di città e catalogo da spegnere una per una); una
+cache degli esempi d'acqua tutta nuova (la stessa coda, gli stessi limiti
+al minuto e lo stesso file di `exampleRoutes.ts` servono uguali); il passo
+di mezzo km per − e + (un comportamento nuovo del campo non chiesto);
+5 km di partenza come la corsa (sopra, punto 3).
+
+**Conseguenze**: con «Paddle» l'app manda `paddling`, che un'API senza la
+parte B rifiuta: si pubblica solo dopo il server. Sul server la canoa
+funziona solo dove l'acqua è già in `data/cache/water/`: Overpass rifiuta
+l'IP del server e da stamattina anche il Mac, quindi gli esempi dei
+quattro luoghi danno «Map data for this area could not be downloaded.»
+finché l'acqua non è scaricata (seguito, con l'ok dell'utente). «Feed», la
+schermata della corsa (il passo al km, le calorie), Strava (che riceve una
+corsa) e «My activities» restano quelli della corsa: la voce e il
+punteggio pensati per l'acqua sono fuori scope (`tasks/TASK-191.md`).
+
+**Aggiunta** (2026-10-03, dopo la lingua dell'app, TASK-210, ADR-0172;
+deciso dall'agente su delega dell'utente): i testi nuovi della canoa
+passano da `t()` e sono nelle quattro tabelle. Dove una frase si compone,
+si traduce la frase intera: il «da dove» dei luoghi è un testo solo
+(«from the beach», «from Riva del Garda»: in italiano «dalla spiaggia»
+non si fa da «da» + «la spiaggia»), e la riga sotto la distanza è
+«{name} · on the water · target {km} km» con la sua gemella «on roads»,
+che così si traduce anche per la corsa e la bici. I nomi dei luoghi
+(Lago di Garda, Jesolo…) restano quelli italiani in ogni lingua.
+
 ## ADR-0171 — La voce della corsa in cinque lingue: le frasi dette in `src/voice/`, una tabella per lingua, la scelta in «Data»
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-209). Le cinque lingue, il posto («Data», accanto a «Voice») e la

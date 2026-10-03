@@ -2,6 +2,7 @@ import { DISTANCE_LIMITS_M } from "@shaperoute/shared-types";
 
 import {
   APP_DISTANCE_LIMITS_KM,
+  distanceForSport,
   fitDistance,
   MAX_APP_DISTANCE_KM,
   stepDistance,
@@ -105,4 +106,49 @@ test.each([
   ["abc", "cycling", "10"],
 ] as const)("%j fits a %s as %j", (text, activity, expected) => {
   expect(fitDistance(text, activity)).toBe(expected);
+});
+
+test("paddling goes from 1 to 5 km, as its contract (TASK-191)", () => {
+  expect(APP_DISTANCE_LIMITS_KM.paddling).toEqual([1, 5]);
+  expect(APP_DISTANCE_LIMITS_KM.paddling.map((km) => km * 1000)).toEqual(
+    DISTANCE_LIMITS_M.paddling,
+  );
+});
+
+test.each([
+  ["1", 1000],
+  ["2,5", 2500],
+  ["3.5", 3500],
+  ["5", 5000],
+])("paddling %j km is %i m", (text, metres) => {
+  expect(toDistanceM(text, "paddling")).toBe(metres);
+});
+
+test.each([
+  ["0,9", "just under the least"],
+  ["5,1", "just over the most"],
+  ["10", "a bike's distance"],
+])("paddling %j is not a distance: %s", (text) => {
+  expect(toDistanceM(text, "paddling")).toBeNull();
+});
+
+test.each([
+  ["2,5", 1, "3,5"],
+  ["5", 1, "5"],
+  ["1", -1, "1"],
+  ["12", -1, "5"],
+])("paddling %j stepped by %i is %j", (text, steps, expected) => {
+  expect(stepDistance(text, steps, "paddling")).toBe(expected);
+});
+
+test.each([
+  ["5", "running", "5"],
+  ["25", "running", "21"],
+  ["5", "cycling", "10"],
+  ["12,5", "cycling", "12,5"],
+  ["5", "paddling", "2"],
+  ["3", "paddling", "2"],
+  ["abc", "paddling", "2"],
+] as const)("%j for a %s is %j", (text, activity, expected) => {
+  expect(distanceForSport(text, activity)).toBe(expected);
 });

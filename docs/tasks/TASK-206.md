@@ -177,6 +177,31 @@ Una per volta, ognuna con una proposta; le risposte qui sotto.
 5. Con la penna alzata in bici la scheda dice «km walking between them» e
    la voce «Walk to the U»: cosa farne (TASK-190, «Seguiti»).
 
+**Le risposte dell'utente (2026-10-03)**, tutte sulla proposta:
+
+1. **La scheda**: EN «Includes 920 m walking the bike.» · IT «Di cui 920 m
+   con la bici a mano.» Una nota `info`; sotto 1 km i metri arrotondati a
+   10, da 1 km «1.1 km» («1,1 km» in italiano).
+2. **La voce**: un avviso **50 m prima** del tratto, EN «In 50 metres, get
+   off and walk the bike for 200 metres.» · IT «Tra 50 metri scendi e porta
+   la bici a mano per 200 metri.»; alla **fine** del tratto EN «Back on the
+   bike.» · IT «Risali in bici.» I metri del tratto arrotondati come nella
+   scheda. Tedesco, spagnolo e francese scritti dall'agente, «da
+   confermare».
+3. **La mappa**: la linea del percorso resta **gialla e intera**; sopra il
+   tratto a mano corrono **trattini scuri** (token nuovo in `tokens.ts`,
+   dal colore del testo sul giallo). Scartati il blu delle pagine di
+   confronto (spezza la forma) e il giallo tratteggiato.
+4. **«Start» in bici**: **un task a parte**, «la navigazione in bici»
+   (velocità in km/h sulla schermata e nella voce dei km, avvisi di svolta
+   più in anticipo); numero dal coordinatore. La parte C aggiunge solo la
+   voce dei tratti a mano alla navigazione di oggi.
+5. **La penna alzata in bici**: **nello stesso task nuovo**, con la scheda
+   «… km riding between them» · «… km in bici fra una lettera e l'altra»
+   e la voce «Letter done. Ride to the U: the drawing is paused.» ·
+   «Lettera finita. Pedala fino alla U: il disegno è in pausa.» La parte C
+   non tocca `RoutePanel.tsx` (della #255).
+
 ## Criteri di accettazione
 
 - [x] Dalla CLI e nei test, senza rete: un percorso `cycling` può portare
@@ -243,6 +268,39 @@ packages/shared-types/fixtures/favorite-on-foot.json          (nuovo)
 docs/API.md
 docs/DATABASE.md
 docs/ROUTE_ENGINE.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-206.md
+```
+
+**Parte C** (previsti, dal piano; quelli di altri vanno chiesti al
+coordinatore prima del codice):
+
+```
+apps/mobile/src/route/onFoot.ts                          (nuovo)
+apps/mobile/src/route/onFoot.test.ts                     (nuovo)
+apps/mobile/src/route/warnings.ts
+apps/mobile/src/route/warnings.test.ts
+apps/mobile/src/map/messages.ts
+apps/mobile/src/map/messages.test.ts
+apps/mobile/src/map/mapPage.ts
+apps/mobile/src/map/mapPage.test.ts
+apps/mobile/src/map/MapView.tsx
+apps/mobile/src/map/MapView.test.tsx
+apps/mobile/src/theme/tokens.ts                          (solo aggiunta)
+apps/mobile/App.tsx
+apps/mobile/__tests__/AppBikeOnFoot.test.tsx             (nuovo)
+apps/mobile/src/navigation/onFootVoice.ts                (nuovo)
+apps/mobile/src/navigation/onFootVoice.test.ts           (nuovo)
+apps/mobile/src/navigation/useNavigation.ts
+apps/mobile/src/navigation/useNavigation.test.ts
+apps/mobile/src/voice/{phrasebook,en,it,de,es,fr}.ts
+apps/mobile/src/i18n/{it,de,es,fr}.ts                    (solo aggiunte)
+apps/mobile/src/api/favorites.ts
+apps/mobile/src/api/favorites.test.ts
+apps/mobile/src/favorites/favoriteRoute.ts
+apps/mobile/src/favorites/favoriteRoute.test.ts
+docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-206.md

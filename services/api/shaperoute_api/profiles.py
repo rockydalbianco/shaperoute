@@ -6,12 +6,13 @@ most MAX_BIO_LENGTH characters. A value refused is told in words, for the
 app to show as it is.
 
 GET /users/{public_id} is the profile as every member sees it: username,
-bio, picture (profile_photos.py) and number of drawings published
-(drawings.py). Never the email, the role, the internal id or when the
-account was made. It needs the token of an account: what members share is
-for members, as the feed (ADR-0114, point 4). The id is the random
-`public_id` of the account, not `id`: a sequence would let anyone walk every
-profile and count the accounts.
+bio, picture (profile_photos.py), number of drawings published
+(drawings.py), how many it follows and how many follow it, and where the one
+who asks stands towards it (follows.py). Never the email, the role, the
+internal id or when the account was made. It needs the token of an account:
+what members share is for members, as the feed (ADR-0114, point 4). The id
+is the random `public_id` of the account, not `id`: a sequence would let
+anyone walk every profile and count the accounts.
 """
 
 from __future__ import annotations
@@ -41,6 +42,12 @@ from shaperoute_api.accounts import (
 )
 from shaperoute_api.db import Database
 from shaperoute_api.drawings import published_count_sql
+from shaperoute_api.follows import (
+    FollowState,
+    follow_state_sql,
+    followers_count_sql,
+    following_count_sql,
+)
 from shaperoute_api.schemas import ErrorBody
 
 MAX_BIO_LENGTH = 160
@@ -77,6 +84,12 @@ class PublicProfileBody(BaseModel):
         description="The square JPEG of the picture in base64; null without one."
     )
     drawings: int = Field(description="The drawings it published.")
+    # Only the requests accepted count (TASK-211, ADR-0173).
+    followers: int = Field(description="How many follow it.")
+    following: int = Field(description="How many it follows.")
+    follow: FollowState = Field(
+        description="Where the one who asks stands towards it; none on its own."
+    )
 
 
 def checked_username(value: str) -> str:
@@ -124,8 +137,9 @@ class Profiles:
             raise AccountError(401, "not_signed_in", NOT_SIGNED_IN)
         return UserBody.model_validate(row)
 
-    def public(self, public_id: str) -> PublicProfileBody | None:
-        """The profile with this id, or None: unknown, or not an id at all."""
+    def public(self, viewer_id: int, public_id: str) -> PublicProfileBody | None:
+        """The profile with this id as `viewer_id` sees it, or None: unknown,
+        or not an id at all."""
         try:
             wanted = UUID(public_id)
         except ValueError:
@@ -133,11 +147,15 @@ class Profiles:
         with self.database.connect() as conn:
             row = conn.execute(
                 "SELECT u.public_id, u.username, u.bio, p.jpeg,"
-                # Only the runs made public (TASK-117, ADR-0114 point 4).
-                f" {published_count_sql('u.id')} AS drawings"
+                # Only the runs published, and those the viewer may see
+                # (TASK-117, TASK-208, ADR-0114 point 4).
+                f" {published_count_sql('u.id', '%s')} AS drawings,"
+                f" {followers_count_sql('u.id')} AS followers,"
+                f" {following_count_sql('u.id')} AS following,"
+                f" {follow_state_sql('%s', 'u.id')} AS follow"
                 " FROM users u LEFT JOIN profile_photos p ON p.user_id = u.id"
                 " WHERE u.public_id = %s",
-                (wanted,),
+                (viewer_id, viewer_id, wanted),
             ).fetchone()
         if row is None:
             return None
@@ -148,6 +166,9 @@ class Profiles:
             bio=row["bio"],
             photo=None if jpeg is None else base64.b64encode(jpeg).decode("ascii"),
             drawings=row["drawings"],
+            followers=row["followers"],
+            following=row["following"],
+            follow=row["follow"],
         )
 
 
@@ -171,9 +192,9 @@ def profile_routes() -> APIRouter:
     def profile(
         public_id: str,
         profiles: Annotated[Profiles, Depends(profiles_of)],
-        _: Annotated[UserBody, Depends(current_user)],
+        user: Annotated[UserBody, Depends(current_user)],
     ) -> PublicProfileBody:
-        found = profiles.public(public_id)
+        found = profiles.public(user.id, public_id)
         if found is None:
             raise HTTPException(404, NO_PROFILE)
         return found

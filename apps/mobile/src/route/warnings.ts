@@ -12,6 +12,8 @@
  * Codes in the contract would make this file unnecessary.
  */
 
+import { decimal, t } from "../i18n";
+
 /** How a note should look: something to watch for, or just to know. */
 export type NoteTone = "caution" | "info";
 
@@ -30,6 +32,16 @@ type Rule = {
 function metres(value: string): string {
   const m = Number(value);
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
+}
+
+/**
+ * A stretch with the bike on foot as the card says it (TASK-206): "920 m",
+ * to 10 m and at least 10, or "1.1 km" ("1,1 km" in Italian) from a
+ * thousand metres up.
+ */
+export function roughMetres(m: number): string {
+  const tens = Math.max(10, Math.round(m / 10) * 10);
+  return tens < 1000 ? `${tens} m` : `${decimal(m / 1000)} km`;
 }
 
 const RULES: Rule[] = [
@@ -51,6 +63,14 @@ const RULES: Rule[] = [
     pattern: /^(\d+(?:\.\d+)?) m of the route on main roads$/,
     tone: "caution",
     say: ([, m]) => `${capitalise(metres(m))} runs along main roads, with traffic.`,
+  },
+  {
+    // validation.py, a bike route walked in part (TASK-206, ADR-0167): the
+    // stretches are part of the route and of its distance.
+    pattern: /^(\d+(?:\.\d+)?) m of the route with the bike on foot$/,
+    tone: "info",
+    say: ([, m]) =>
+      t("Includes {distance} walking the bike.", { distance: roughMetres(Number(m)) }),
   },
   {
     pattern: /^(\d+(?:\.\d+)?) m of the route in tunnels$/,

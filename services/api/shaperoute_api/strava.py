@@ -45,6 +45,7 @@ from shaperoute_api.accounts import (
 )
 from shaperoute_api.activities import UNKNOWN_ACTIVITY, Key
 from shaperoute_api.db import Database
+from shaperoute_api.drawings import MAX_DESCRIPTION_LENGTH
 from shaperoute_api.run_gpx import run_gpx
 from shaperoute_api.schemas import ErrorBody
 from shaperoute_api.strava_client import (
@@ -73,6 +74,9 @@ RECORDED = "Recorded with Sgrava"
 # A name typed in the app longer than this is cut, not refused: the run
 # still goes.
 MAX_NAME = 100
+# What Strava calls each activity of a run (TASK-208); paddling as stand-up
+# paddling, the user's choice (2026-10-03).
+SPORT_TYPES = {"running": "Run", "cycling": "Ride", "paddling": "StandUpPaddling"}
 
 STATE_BYTES = 32
 STATE_LIFE = timedelta(minutes=10)
@@ -119,6 +123,9 @@ class StravaSendBody(BaseModel):
 
     name: str | None = None
     """The name typed before «Save»; empty or null: Sgrava's own."""
+    description: str | None = None
+    """«How did it go?», typed before «Save» (TASK-208); empty or null: the
+    drawing's, if the run has one. Above Sgrava's own line."""
 
 
 class StravaActivityBody(BaseModel):
@@ -209,6 +216,23 @@ def typed_name(name: str | None) -> str | None:
     return line or None
 
 
+def typed_description(text: str | None) -> str | None:
+    """A description typed in the app, its lines kept, at most
+    MAX_DESCRIPTION_LENGTH characters: cut, not refused, as a name; None
+    when nothing is left of it."""
+    if text is None:
+        return None
+    lines = "\n".join(line.strip() for line in text.splitlines())
+    return lines.strip()[:MAX_DESCRIPTION_LENGTH].strip() or None
+
+
+def strava_description(described: str | None, drawn: bool) -> str:
+    """What Strava shows under the name: the runner's words, then a line on
+    what Sgrava did with the run, a route it drew or only the recording."""
+    sgrava = DRAWN if drawn else RECORDED
+    return sgrava if described is None else f"{described}\n\n{sgrava}"
+
+
 def _activity(status: str | None, activity_id: int | None) -> StravaActivityBody:
     if status is None:
         return StravaActivityBody(status="not_sent", url=None)
@@ -242,8 +266,11 @@ def disconnect(database: Database, strava: Strava | None, user_id: int) -> None:
 RUN_STATE = "id, strava_status, strava_upload_id, strava_activity_id"
 # The track as (lat, lon, seconds since the first point), in order.
 RUN_TO_SEND = (
-    f"{RUN_STATE}, started_at, place, shape, word, title, pauses,"
+    f"{RUN_STATE}, started_at, place, shape, word, title, pauses, activity,"
     " route IS NOT NULL AS drawn,"
+    # «How did it go?», when the drawing came first (TASK-208).
+    " (SELECT d.description FROM drawings d WHERE d.run_id = runs.id)"
+    " AS described,"
     " (SELECT array_agg(ARRAY[ST_Y(p.geom), ST_X(p.geom), ST_M(p.geom)]"
     " ORDER BY p.path[1]) FROM ST_DumpPoints(track) AS p) AS fixes"
 )
@@ -459,12 +486,17 @@ class StravaRuns:
         return _activity(run["strava_status"], run["strava_activity_id"])
 
     def send(
-        self, user_id: int, key: str, name: str | None = None
+        self,
+        user_id: int,
+        key: str,
+        name: str | None = None,
+        description: str | None = None,
     ) -> StravaActivityBody:
         """The run on Strava: uploaded if it never was, then followed until
         Strava has read it, for a few seconds. `processing` after that: the
         same call again goes on following, and uploads nothing twice.
-        `name` is the one typed in the app; it counts only for the upload."""
+        `name` and `description` are the ones typed in the app; they count
+        only for the upload."""
         with self._answering():
             first: Upload | None = None
             with self.database.connect() as conn:
@@ -481,7 +513,7 @@ class StravaRuns:
                     return _activity("sent", run["strava_activity_id"])
                 upload_id: int | None = run["strava_upload_id"]
                 if upload_id is None:
-                    first = self._upload(user_id, key, run, name)
+                    first = self._upload(user_id, key, run, name, description)
                     upload_id = first.id
                     if upload_id is not None:
                         conn.execute(
@@ -492,7 +524,12 @@ class StravaRuns:
             return self._follow(user_id, run["id"], upload_id, first)
 
     def _upload(
-        self, user_id: int, key: str, run: DictRow, typed: str | None
+        self,
+        user_id: int,
+        key: str,
+        run: DictRow,
+        typed: str | None,
+        typed_words: str | None,
     ) -> Upload:
         name = typed_name(typed) or activity_name(run)
         gpx = run_gpx(
@@ -502,10 +539,15 @@ class StravaRuns:
             name,
         )
         # A run that followed no route drew nothing: it was only recorded.
-        description = DRAWN if run["drawn"] else RECORDED
+        description = strava_description(
+            typed_description(typed_words) or run["described"], run["drawn"]
+        )
+        sport_type = SPORT_TYPES[run["activity"]]
         return self._authorized(
             user_id,
-            lambda token: self.strava.upload(token, gpx, key, name, description),
+            lambda token: self.strava.upload(
+                token, gpx, key, name, description, sport_type
+            ),
         )
 
     def _look(self, user_id: int, upload_id: int) -> Upload | None:
@@ -655,7 +697,11 @@ def strava_routes() -> APIRouter:
         # No body, as before the name could be typed: Sgrava's own name.
         body: StravaSendBody | None = None,
     ) -> StravaActivityBody:
-        activity = runs.send(user.id, key, None if body is None else body.name)
+        activity = (
+            runs.send(user.id, key)
+            if body is None
+            else runs.send(user.id, key, body.name, body.description)
+        )
         if activity.status == "processing":
             response.status_code = 202
         return activity

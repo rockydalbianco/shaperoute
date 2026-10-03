@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-03, 12:45 · `main` = `d0e8692`
+**Ultimo aggiornamento**: 2026-10-03, 17:50 · `main` = `b649a88`
 
 ## Come si usa
 
@@ -38,6 +38,10 @@
 9. **Pubblicare l'app** (`eas update`) e **toccare il server** si fanno
    solo con l'ok dell'utente, da `origin/main` pulito (memoria
    «publish-from-clean-main», `DEPLOY.md` F.12).
+   **Una pubblicazione alla volta**: prima di `eas update` o di toccare il
+   server chiedi al coordinatore e **aspetta la sua risposta** (arriva a
+   fine turno). Il 2026-10-03 due sessioni hanno pubblicato lo stesso
+   commit a pochi minuti l'una dall'altra.
 10. **Migrazioni del database**: il numero è **il primo libero in `main`
    quando la PR entra** (non uno tenuto prima), così l'ordine è lo stesso
    su ogni database. Prima del merge guarda `services/api/migrations/`.
@@ -48,34 +52,60 @@
 
 ## La coda dei merge
 
-Vuota alle 11:55 del 2026-10-03 (dalla #226 alla #244 tutte entrate). Entra prima chi è pronto prima; la sessione proprietaria
-mergia da sola al 5/5 verde e CLEAN, ricontrollato subito prima.
+Alle 17:50 del 2026-10-03: aperta solo la **#255** (TASK-191 C, la canoa
+nell'app), in pausa per scelta dell'utente, e da non pubblicare finché
+l'acqua dei quattro luoghi non è sul server. Entra prima chi è pronto
+prima; la sessione proprietaria mergia da sola al 5/5 verde e CLEAN,
+ricontrollato subito prima, dopo il «merge NNN» del coordinatore.
 
 ## L'albero
 
 ```
-Task bici e padel (aperta dall'utente)
-  └─ Adesso  TASK-206 A  Forme in bici più riconoscibili: tratti brevi
-                         con la bici a mano (scelta dell'utente «Sì,
-                         poco», circa 1 km su 10); poi B (API) e C (app)
-                                                               ADR-0167
+Attività rimanenti
+  └─ Adesso  TASK-216  La navigazione in bici (km/h, avvisi prima, la
+                       penna alzata in bici); registra anche le conferme
+                       dell'utente delle frasi di TASK-206 e 198 ADR-0179
+     Dopo:   TASK-217  Il confronto dei km nella voce          ADR-0180
 
-Inizio task e Lava · Nuova tasca · Cambio sport nella schermata profilo ·
-Tasto aggiunta foto profilo · Coordinamento automatico · Attività
-iniziata in corso · Attività rimanenti · Grafica registrazione corsa ·
-Logo e post Instagram
-  └─ Libere (TASK-191 A2 e B, 117 A e B, 205, 207, 200, 202, 203, 187
-     app, 204 fatte; il server e la pubblicazione del 2026-10-03 fatti)
+Revisione sezione pubblicazione attività
+  └─ Adesso  TASK-211 B e TASK-208 B  «Follow», «Requests», la fine corsa
+                       stile Strava: prima le conferme dell'utente
+                                                    ADR-0173, ADR-0170
+
+Ricerca mappe offline sul telefono
+  └─ Adesso  TASK-214 B  Il motore sul telefono, l'app (Pyodide);
+                         `package.json` e `metro.config.js` con l'ok
+                                                               ADR-0177
+
+Selezione lingua app
+  └─ TASK-182 (km o miglia, ADR-0149): riparte quando lo dice l'utente;
+     poi le parti successive di TASK-210
+
+Logo sgrava al salvataggio
+  └─ Strava sul server: istruzioni all'utente per il secret, poi con il
+     suo ok il riavvio dell'API
+
+Tasto aggiunta foto profilo
+  └─ #255 TASK-191 C in pausa (scelta dell'utente)           ADR-0169
+
+Grafica registrazione corsa · Pulsante ricerca amici in feed · Blocco
+messaggi negativi · Logo e post Instagram
+  └─ Libere
 
 Sistema pubblicitario non invasivo
   └─ Aspetta il «fatto» dell'utente su TASK-150 (pagamenti AdMob)
 
 Aspettano l'utente
-  ├─ La prova sull'iPhone di quanto pubblicato il 2026-10-03 (gruppo
-  │  `d49fce25`): foto, profilo, penna alzata, bici, pubblicare, la corsa
-  ├─ I testi della voce e la riga dei km (TASK-198)
-  ├─ TASK-116: da dove si apre il profilo di un altro; «drawings» conta
-  │  anche le corse private; i testi nuovi del profilo
+  ├─ Server: la 0014 (TASK-208 A) e le zone del telefono (TASK-214 A),
+  │  quando arrivano le loro parti app; Strava: il secret sul server
+  ├─ La prova sull'iPhone di `fcdb1a46` (voce, bici a mano, commenti,
+  │  seguire, Find friends, Strava)
+  ├─ TASK-211 B / TASK-208 B: dove sta «Requests», i testi, «Only me» di
+  │  partenza; il filtro dei negativi anche sulla descrizione; il tipo
+  │  Strava della canoa; la ricerca mostra il nome di ogni iscritto
+  ├─ TASK-214: Pyodide (dipendenza nuova), App Store, memoria, dimensione
+  ├─ TASK-116: «drawings» conta le corse private?; i testi del profilo
+  │  (il profilo di un altro si apre dalla ricerca: TASK-211, 215)
   ├─ TASK-190: le due domande della parte C, «Start» in bici (le
   │  indicazioni sono solo a piedi, TASK-200), l'avviso dello sterrato,
   │  «km walking» in bici, i testi, la zona bici di Trento
@@ -88,8 +118,6 @@ Aspettano l'utente
   │  profile», «Score 87»
   ├─ TASK-205: i testi di VoiceOver «Sport, Run», «Changes the sport»,
   │  «Close»
-  ├─ TASK-190: i campioni giudicati il 2026-10-03 (cuore e cerchio
-  │  «quasi», stella «no»): migliora TASK-206
   ├─ TASK-198/199: «Paused» nella pausa «penna», la riga dei km su un
   │  preferito riaperto; gli `insights` senza l'attività
   ├─ TASK-203: più veloce con percorsi diversi (ricerca lontana,
@@ -101,8 +129,10 @@ Aspettano l'utente
      e a cosa serve il telefono (TASK-183)
 
 Da assegnare
-  ├─ TASK-191 C (l'app della canoa), dopo le risposte dell'utente
-  ├─ La parte social 118–121 (il feed vero dopo TASK-117); TASK-092;
+  ├─ L'acqua dei quattro luoghi della canoa sul server (prima di
+  │  pubblicare «Paddle»), con l'ok dell'utente
+  ├─ La parte social: 118 (il feed vero), 119 (like), 121 (segnalare,
+  │  bloccare); TASK-092;
   │  TASK-152 App Store; TASK-153 AdMob vero
   ├─ Le altre idee (A) di TASK-203 non provate (`tasks/TASK-203.md`)
   └─ Seguiti: il passo `draw_examples` in `DEPLOY.md` F.12 (TASK-122);
@@ -114,7 +144,10 @@ Da assegnare
 
 | File | Di chi |
 |---|---|
-| `route_engine/network.py`, `models.py`, `optimizer.py`, `validation.py`, `__main__.py`, i test della bici, `samples/TASK-206_*`, `ROUTE_ENGINE.md`, `MAPS.md` | TASK-206 A |
+| la navigazione e la voce della bici (`navigator.ts`, `onFootVoice.ts`, `NavigateScreen.tsx`, `RunDashboard.tsx`, `RunPanel.tsx`, `src/voice/`, `ride.ts`), `RoutePanel.tsx` (solo `PenSplit`) | TASK-216 |
+| `src/social/`, `RunEnd.tsx`, `src/profile/` | TASK-211 B / TASK-208 B |
+| l'app del motore sul telefono (`src/engine/` nuovo, `src/api/routes.ts`, `SettingsPage.tsx`), poi `package.json` e `metro.config.js` | TASK-214 B |
+| `src/route/`, `src/explore/`, `favoriteRoute.ts`, `SettingsPage.test.tsx` | #255 TASK-191 C (in pausa) |
 | `deploy/`, `docs/DEPLOY.md` | TASK-122 (in attesa dello Storage Box) |
 | `docs/PUBBLICITA.md` | TASK-150 |
 | `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md` | tutti, ognuno solo le sue righe |
@@ -122,27 +155,28 @@ Da assegnare
 
 ## Numeri
 
-- Task: presi fino a **TASK-207**. Il prossimo libero è **TASK-208**.
-- ADR: presi fino a **ADR-0168** (0167 di TASK-206, 0168 di TASK-207).
-  Il prossimo libero è **ADR-0169**.
+- Task: presi fino a **TASK-219**. Il prossimo libero è **TASK-220**.
+- ADR: presi fino a **ADR-0182** (… 0178 TASK-215, 0179 TASK-216, 0180
+  TASK-217, 0181 TASK-218, 0182 TASK-219; 0149 di TASK-182). Il prossimo
+  libero è **ADR-0183**.
 - Migrazioni in `main`: 0001 account, 0002 preferiti, 0003 corse, 0004
   Strava, 0005 foto, 0006 penna alzata, 0007 profili, 0008 attività nei
-  preferiti, 0009 corse pubblicate, 0010 canoa nei preferiti. La
-  prossima: il primo libero al merge.
+  preferiti, 0009 corse pubblicate, 0010 canoa nei preferiti, 0011
+  seguire, 0012 bici a mano nei preferiti, 0013 commenti, 0014 dettagli
+  dei disegni. La prossima: il primo libero al merge.
 
 ## Il server e l'app
 
 - **Server**: Hetzner CX33, `https://188-245-9-220.sslip.io`, da
-  `deploy/compose.yaml` con PostgreSQL. A `main` `4b236f9` dal 2026-10-03
-  10:00Z (migrazioni 0001–0010; immagine di prima
-  `shaperoute-api:before-task205`, copia del database
-  `shaperoute-2026-10-03T1000Z.dump`). Esempi disegnati per 66 città su
-  66; zona bici di Trento. Strava spento (mancano le chiavi dell'utente).
-  Il prossimo aggiornamento del motore (TASK-206) vuole zone bici rifatte e
-  `draw_examples`, con l'ok dell'utente.
-- **App**: su `preview` da `main` `d0e8692` dal 2026-10-03 10:39Z (gruppo
-  `d49fce25`). Il ramo di prova `task-204-test` (gruppo 37bde818) non
-  serve più.
+  `deploy/compose.yaml` con PostgreSQL. A `main` `7098cb9` dal 2026-10-03
+  12:39Z (migrazioni 0001–0013; immagine di prima
+  `shaperoute-api:before-task206`, copia del database
+  `shaperoute-2026-10-03T1239Z.dump`). Zona bici di Trento con la bici a
+  mano; esempi per 66 città su 66. Mancano la 0014 e `/phone-zones` (con
+  le zone del telefono da costruire). Strava spento.
+- **App**: su `preview` da `main` `b649a88` (gruppo `fcdb1a46`, 2026-10-03
+  pomeriggio). «Paddle» è «Soon»: la #255 non va pubblicata prima
+  dell'acqua sul server.
 
 ## Fatto in questa tornata (2026-10-01/02)
 
@@ -153,7 +187,8 @@ In `main`: #137 (TASK-136), #112 (088), #148 (140), #142 (142), #149 (147),
 #150 (137), #166 (158), #165 (157), #164 (156), #167 (122, copie), #140
 (141), #169 (141), #170 (AGENTI), #168 (159), #171 (160), #172 (165), #173
 (162), #174 (163, prima PR), #175 (161), #176 (164), e poi fino alla #214:
-#177–#244, fra cui 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
+#177–#276, fra cui 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
 177, 178, 179, 180, 181, 186, 187 (API), 188, 189, 190 A, 192, 193, 194,
 195, 196, 067, 190 (A, B, C), 191 A1 e A2, 197, 198, 199, 116, 201 (misurato, non conviene), 200,
-202, 203, 187 (app), 204, 117 (A e B), 191 B e 205.
+202, 203, 187 (app), 204, 117 (A e B), 191 B, 205, 206 (A e B), 207,
+210 A, 211 A, 212, 213, 215, 120, 208 A, 209, 214 A, 218 e 219.

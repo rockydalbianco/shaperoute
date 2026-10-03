@@ -2,6 +2,7 @@ import {
   ACTIVITIES,
   type Activity,
   type LatLon,
+  type Stretch,
   type Walk,
 } from "@shaperoute/shared-types";
 
@@ -51,6 +52,12 @@ export type FavoriteDetail = Omit<Favorite, "start" | "preview"> & {
    * TASK-199. Read through `walksOf`.
    */
   walks?: Walk[];
+  /**
+   * A bike route's stretches with the bike on foot (TASK-206): [from, to]
+   * indices into `points`. Empty for any other route; missing from an API
+   * older than TASK-206. Read through `onFootOf`.
+   */
+  on_foot?: Stretch[];
 };
 
 /** What PUT /me/favorites/{key} takes: the route as the app shows it. */
@@ -75,6 +82,11 @@ export type FavoriteRequest = {
    * takes.
    */
   activity?: Activity;
+  /**
+   * A bike route's stretches with the bike on foot (TASK-206). Sent only
+   * when it has some: an API older than TASK-206 refuses the field.
+   */
+  on_foot?: Stretch[];
 };
 
 /**
@@ -88,14 +100,31 @@ export function favoriteActivity(favorite: { activity?: string }): Activity {
 
 /**
  * `request` as an app older than TASK-199 sends it, without the fields added
- * since (TASK-199 `walks`, TASK-200 `activity`), which an older API refuses.
- * The same object when it has neither.
+ * since (TASK-199 `walks`, TASK-200 `activity`, TASK-206 `on_foot`), which
+ * an older API refuses. The same object when it has none.
  */
 export function asBefore(request: FavoriteRequest): FavoriteRequest {
-  if (request.walks === undefined && request.activity === undefined) {
+  if (
+    request.walks === undefined &&
+    request.activity === undefined &&
+    request.on_foot === undefined
+  ) {
     return request;
   }
-  const { walks: _walks, activity: _activity, ...older } = request;
+  const { walks: _walks, activity: _activity, on_foot: _onFoot, ...older } = request;
+  return older;
+}
+
+/**
+ * `request` as an app older than TASK-206 sends it, without the stretches
+ * with the bike on foot: an API with the activity but not the stretches
+ * keeps the route as a bike route. The same object when it has none.
+ */
+export function beforeOnFoot(request: FavoriteRequest): FavoriteRequest {
+  if (request.on_foot === undefined) {
+    return request;
+  }
+  const { on_foot: _onFoot, ...older } = request;
   return older;
 }
 
@@ -133,7 +162,9 @@ export function fetchFavorite(
  * PUT /me/favorites/{key}: kept once, however many times it is asked. A
  * word with the pen up, or a route not drawn for a run, that the API refuses
  * goes once more as an older app sends it (TASK-199, TASK-200, ADR-0158,
- * ADR-0160): an older API keeps it as one line, and as a run.
+ * ADR-0160): an older API keeps it as one line, and as a run. A bike route
+ * with the bike on foot is first sent again without its stretches (TASK-206,
+ * ADR-0167), then, if refused again, as an older app sends it.
  */
 export async function keepFavorite(
   baseUrl: string,
@@ -150,13 +181,18 @@ export async function keepFavorite(
       isFavorite,
       options,
     );
-  const outcome = await put(request);
-  const older = asBefore(request);
-  return outcome.kind === "api_error" &&
-    outcome.code === "invalid_request" &&
-    older !== request
-    ? put(older)
-    : outcome;
+  const refused = (outcome: AccountOutcome<Favorite>) =>
+    outcome.kind === "api_error" && outcome.code === "invalid_request";
+  let sent = request;
+  let outcome = await put(sent);
+  for (const older of [beforeOnFoot, asBefore]) {
+    const next = older(sent);
+    if (refused(outcome) && next !== sent) {
+      sent = next;
+      outcome = await put(sent);
+    }
+  }
+  return outcome;
 }
 
 /** DELETE /me/favorites/{key}: gone, or never there. */

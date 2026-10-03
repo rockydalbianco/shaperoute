@@ -1,3 +1,4 @@
+import type { Activity } from "@shaperoute/shared-types";
 import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -119,11 +120,14 @@ export function NavigationCard({
   navigation,
   track = NO_TRACK,
   onStop,
+  activity,
 }: {
   navigation: Navigation | null;
   /** The line run so far, for the numbers (TASK-164). */
   track?: Track;
   onStop: () => void;
+  /** The route's: on a bike the numbers are speeds (TASK-216). */
+  activity?: Activity;
 }) {
   const arrived = navigation?.arrived ?? false;
   return (
@@ -148,6 +152,7 @@ export function NavigationCard({
         )
       }
       onStop={onStop}
+      activity={activity}
     />
   );
 }

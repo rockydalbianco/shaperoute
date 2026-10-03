@@ -20,6 +20,7 @@ import {
 } from "../theme/tokens";
 import { isImageRequest } from "../api/routes";
 import { drawnOf, sendSignal } from "../api/signals";
+import { decimal, t } from "../i18n";
 import { Segmented } from "../screens/Segmented";
 import { APP_DISTANCE_LIMITS_KM, LONG_DISTANCE_KM } from "./distance";
 import { DistanceStepper } from "./DistanceStepper";
@@ -335,7 +336,7 @@ export function RouteOutcome({
             <Text style={styles.target}>
               {`${nameOf(view.request)} · ${onWhat(view.request)} · target ${view.request.distance_m / 1000} km`}
             </Text>
-            <PenSplit result={view.result} />
+            <PenSplit result={view.result} activity={view.request.activity} />
           </View>
           <RouteTiles choices={choices} chosen={chosen} onChoose={onChoose} />
           {toNotes(view.result.warnings).map((note) => (
@@ -425,17 +426,23 @@ function PenSwitch({
 
 /**
  * A word with the pen up (TASK-198): the km of its letters, what the run
- * records, apart from the km walked between them. Nothing for any other
- * route, nor from an API that sends no walks.
+ * records, apart from the km walked between them; on a bike, ridden
+ * (TASK-216). Nothing for any other route, nor from an API that sends no
+ * walks.
  */
-function PenSplit({ result }: { result: RouteResult }) {
+function PenSplit({ result, activity }: { result: RouteResult; activity: Activity }) {
   const split = penSplit(result);
   if (split === null) {
     return null;
   }
   return (
     <Text style={styles.target}>
-      {`${km(split.lettersM)} km of letters + ${km(split.walksM)} km walking between them`}
+      {activity === "cycling"
+        ? t("{letters} km of letters + {between} km riding between them", {
+            letters: decimal(split.lettersM / 1000),
+            between: decimal(split.walksM / 1000),
+          })
+        : `${km(split.lettersM)} km of letters + ${km(split.walksM)} km walking between them`}
     </Text>
   );
 }

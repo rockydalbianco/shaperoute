@@ -2,6 +2,7 @@ import type { DrawingDetail } from "@shaperoute/shared-types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { dayLabel } from "../activities/activityText";
+import { t } from "../i18n";
 import { kmLabel } from "../navigation/freeRun";
 import {
   color,
@@ -11,6 +12,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { DrawingComments } from "./DrawingComments";
 
 type Props = {
   drawing: DrawingDetail;
@@ -22,7 +24,7 @@ type Props = {
  * A drawing on the map (TASK-117), under it: its title (without one, the
  * day it was run), the day, the km and the score, which everybody sees
  * (the user's choice). Never the time of day: the others see the drawing,
- * not when somebody runs.
+ * not when somebody runs. Its comments open from a button (TASK-120).
  */
 export function DrawingCard({ drawing, onBack }: Props) {
   const day = dayLabel(drawing.started_at);
@@ -38,15 +40,18 @@ export function DrawingCard({ drawing, onBack }: Props) {
           <View
             style={styles.scoreBox}
             accessible
-            accessibilityLabel={`Score: ${drawing.score} out of 100`}
+            accessibilityLabel={t("Score: {score} out of 100", {
+              score: drawing.score,
+            })}
           >
             <Text style={styles.score}>{drawing.score}</Text>
-            <Text style={styles.message}>out of 100</Text>
+            <Text style={styles.message}>{t("out of 100")}</Text>
           </View>
         )}
       </View>
+      <DrawingComments drawingId={drawing.id} />
       <Pressable style={styles.button} onPress={onBack} accessibilityRole="button">
-        <Text style={styles.buttonText}>Back to the profile</Text>
+        <Text style={styles.buttonText}>{t("Back to the profile")}</Text>
       </Pressable>
     </View>
   );

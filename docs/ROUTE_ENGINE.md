@@ -567,7 +567,12 @@ Una richiesta `activity: "cycling"` (10–30 km, `DISTANCE_LIMITS_M` in
   Trento, 10 km: 0,7–1,1 km a piedi, cuore da 0,70 a 0,79, cerchio da 0,77
   a 0,90. I controlli contano i metri a piedi (`on_foot`) e l'avviso li
   dice («… m of the route with the bike on foot»). Una zona `bike_*` fatta
-  prima di TASK-206 non ha archi `walk` e si disegna come prima.
+  prima di TASK-206 non ha archi `walk` e si disegna come prima. Il
+  risultato dice dove (`RouteResult.on_foot`, parte B): coppie `[da, a]` di
+  indici nei punti, calcolate dai nodi del percorso
+  (`network.on_foot_stretches`: i punti sono il primo nodo più quelli di
+  ogni arco tranne il primo), nelle alternative e, da una partenza vicina,
+  con l'avvicinamento e il ritorno (`with_approach`).
 
 La rete a piedi non cambia: stesso filtro, stessi file, stessi percorsi.
 

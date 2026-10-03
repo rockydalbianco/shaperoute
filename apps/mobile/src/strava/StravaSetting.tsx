@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -35,19 +36,21 @@ export function StravaSetting() {
             accessible
             accessibilityLabel={
               status.athlete === null
-                ? "Strava, connected"
-                : `Strava, connected as ${status.athlete}`
+                ? t("Strava, connected")
+                : t("Strava, connected as {athlete}", { athlete: status.athlete })
             }
           >
             <Text style={styles.rowText}>
-              {status.athlete === null ? "Connected" : `Connected as ${status.athlete}`}
+              {status.athlete === null
+                ? t("Connected")
+                : t("Connected as {athlete}", { athlete: status.athlete })}
             </Text>
           </View>
           <View style={styles.divider} />
           {confirming ? (
             <View style={styles.confirm}>
               <Text style={styles.confirmText}>
-                Disconnect Strava? Runs already sent stay on Strava.
+                {t("Disconnect Strava? Runs already sent stay on Strava.")}
               </Text>
               <View style={styles.buttons}>
                 <Pressable
@@ -56,7 +59,7 @@ export function StravaSetting() {
                   disabled={disconnecting}
                   accessibilityRole="button"
                 >
-                  <Text style={styles.buttonText}>Keep it</Text>
+                  <Text style={styles.buttonText}>{t("Keep it")}</Text>
                 </Pressable>
                 <Pressable
                   style={[styles.button, styles.danger, disconnecting && styles.busy]}
@@ -67,7 +70,9 @@ export function StravaSetting() {
                   disabled={disconnecting}
                   accessibilityRole="button"
                 >
-                  <Text style={[styles.buttonText, styles.dangerText]}>Disconnect</Text>
+                  <Text style={[styles.buttonText, styles.dangerText]}>
+                    {t("Disconnect")}
+                  </Text>
                 </Pressable>
               </View>
             </View>
@@ -80,7 +85,7 @@ export function StravaSetting() {
               accessibilityState={{ disabled: disconnecting, busy: disconnecting }}
             >
               <Text style={[styles.rowText, styles.dangerText]}>
-                {disconnecting ? "Disconnecting…" : "Disconnect Strava"}
+                {t(disconnecting ? "Disconnecting…" : "Disconnect Strava")}
               </Text>
             </Pressable>
           )}
@@ -88,7 +93,9 @@ export function StravaSetting() {
       ) : (
         <View style={styles.connect}>
           <ConnectWithStrava busy={busy === "connecting"} onPress={strava.connect} />
-          <StravaLine text="Send the runs you save in Sgrava to your Strava profile." />
+          <StravaLine
+            text={t("Send the runs you save in Sgrava to your Strava profile.")}
+          />
         </View>
       )}
       {problem !== null && <StravaLine text={problem} alert />}

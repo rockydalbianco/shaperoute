@@ -1,8 +1,12 @@
+import type { Activity } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
+
 import { clockLabel, kmNumber } from "../navigation/freeRun";
 import { distanceLabel } from "../navigation/phrases";
+import { isRide, speedNumber } from "../navigation/ride";
 import { useRunControl } from "../navigation/runControl";
 import { climbM, kcal } from "../navigation/runMetrics";
 import {
@@ -21,7 +25,8 @@ import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
  * route and without one. Few of them under the map (`RunStrip`): how far,
  * the pace now and the time. All of them on the page of the data and while
  * the run is paused (`RunGrid`): also the average pace, the last kilometre,
- * the metres climbed and the energy.
+ * the metres climbed and the energy. On a bike the speed in km/h takes the
+ * place of every pace (TASK-216).
  */
 
 /** The clock ticks once a second. */
@@ -29,6 +34,9 @@ export const TICK_MS = 1000;
 
 /** No number yet: the pace before it means anything. */
 export const NO_NUMBER = "–";
+
+/** The unit of a speed: the same in every language. */
+export const KMH = "km/h";
 
 /** Now, again every `everyMs` while `on`. */
 export function useNow(on: boolean, everyMs: number): number {
@@ -50,7 +58,10 @@ export type RouteProgress = { remainingM: number; done: number };
 export type RunNumbers = {
   /** "2.34": the kilometres, without their unit. */
   km: string;
-  /** "5:21", or NO_NUMBER before the pace means anything. */
+  /** On a bike (TASK-216): `average`, `recent` and `lastKm` are speeds. */
+  ride: boolean;
+  /** "5:21", or NO_NUMBER before the pace means anything; on a bike
+   * "24.3", in km/h. */
   average: string;
   recent: string;
   lastKm: string;
@@ -68,12 +79,14 @@ export type RunNumbers = {
 /**
  * The numbers of `track`, again every second while `live`: the GPS is on
  * and the run is not over. The clock waits during the countdown and during
- * a pause, and a run that is over stops it at its last fix.
+ * a pause, and a run that is over stops it at its last fix. Along a route
+ * of `activity` "cycling" the paces are speeds (TASK-216).
  */
 export function useRunNumbers(
   track: Track,
   live: boolean,
   route?: RouteProgress,
+  activity?: Activity,
 ): RunNumbers {
   const { phase } = useRunControl();
   const pause = openPause(track);
@@ -89,17 +102,27 @@ export function useRunNumbers(
   const lastKm = useMemo(() => lastKmS(track), [track]);
   const climbed = useMemo(() => climbM(track), [track]);
   const eta = route ? etaMs(route.remainingM, track, ms) : null;
+  const ride = isRide(activity);
+  // The seconds of a kilometre, as a pace or as a speed.
+  const said = (seconds: number | null) =>
+    seconds === null ? NO_NUMBER : ride ? speedNumber(seconds) : paceClock(seconds);
   return {
     km: kmNumber(track.distanceM),
-    average: average === null ? NO_NUMBER : paceClock(average),
-    recent: recent === null ? NO_NUMBER : paceClock(recent),
-    lastKm: lastKm === null ? NO_NUMBER : paceClock(lastKm),
+    ride,
+    average: said(average),
+    recent: said(recent),
+    lastKm: said(lastKm),
     time: clockLabel(ms),
     climb: climbed === null ? NO_NUMBER : String(Math.round(climbed)),
     energy: String(kcal(track.distanceM)),
     toGo: route ? `${distanceLabel(route.remainingM)} to go` : null,
     eta: eta === null ? null : aboutMinutes(eta),
   };
+}
+
+/** The unit of a pace, or on a bike of a speed. */
+function unitOf(numbers: RunNumbers): string {
+  return numbers.ride ? KMH : "/km";
 }
 
 /** Under the map, where the map is what is looked at: three numbers, the
@@ -109,7 +132,11 @@ export function RunStrip({ numbers }: { numbers: RunNumbers }) {
     <View style={styles.strip}>
       <Metric label="Distance" value={numbers.km} unit="km" lead />
       <View style={styles.divider} />
-      <Metric label="Pace now" value={numbers.recent} unit="/km" />
+      <Metric
+        label={numbers.ride ? t("Speed now") : "Pace now"}
+        value={numbers.recent}
+        unit={unitOf(numbers)}
+      />
       <View style={styles.divider} />
       <Metric label="Time" value={numbers.time} />
     </View>
@@ -174,12 +201,24 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
   return (
     <View style={styles.grid}>
       <View style={styles.tiles}>
-        <Tile label="Pace now" value={numbers.recent} unit="/km" />
-        <Tile label="Avg pace" value={numbers.average} unit="/km" />
+        <Tile
+          label={numbers.ride ? t("Speed now") : "Pace now"}
+          value={numbers.recent}
+          unit={unitOf(numbers)}
+        />
+        <Tile
+          label={numbers.ride ? t("Avg speed") : "Avg pace"}
+          value={numbers.average}
+          unit={unitOf(numbers)}
+        />
         <Tile label="Time" value={numbers.time} />
       </View>
       <View style={styles.tiles}>
-        <Tile label="Last km" value={numbers.lastKm} unit="/km" />
+        <Tile
+          label={numbers.ride ? t("Last km") : "Last km"}
+          value={numbers.lastKm}
+          unit={unitOf(numbers)}
+        />
         <Tile label="Elev. gain" value={numbers.climb} unit="m" />
         <Tile label="Calories" value={numbers.energy} unit="kcal" />
       </View>

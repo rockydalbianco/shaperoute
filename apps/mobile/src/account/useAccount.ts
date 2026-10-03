@@ -10,6 +10,7 @@ import {
   signUp as signUpRequest,
 } from "../api/accounts";
 import { editProfile as editRequest } from "../api/profiles";
+import { t } from "../i18n";
 import { profileProblem } from "../profile/profileFields";
 import {
   type Checked,
@@ -139,7 +140,7 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
         return;
       }
       if (baseUrl === null) {
-        setProblem(NO_API);
+        setProblem(t(NO_API));
         return;
       }
       busyNow.current = kind;
@@ -198,7 +199,7 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
       return;
     }
     if (baseUrl === null) {
-      setProblem(NO_API);
+      setProblem(t(NO_API));
       return;
     }
     const { token } = now.session;
@@ -224,10 +225,10 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
     async (changes: EditProfileRequest): Promise<string | null> => {
       const now = current.current;
       if (now.status !== "signedIn") {
-        return SESSION_ENDED;
+        return t(SESSION_ENDED);
       }
       if (baseUrl === null) {
-        return NO_API;
+        return t(NO_API);
       }
       const { token } = now.session;
       const outcome = await editRequest(baseUrl, token, changes, { fetchFn, key });

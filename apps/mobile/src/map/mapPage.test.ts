@@ -1,4 +1,4 @@
-import { color, walk } from "../theme/tokens";
+import { color, onFoot, walk } from "../theme/tokens";
 import {
   buildMapPage,
   FOLLOW_ZOOM,
@@ -11,6 +11,9 @@ import {
   MAPLIBRE_JS_SRI,
   MAPLIBRE_JS_URL,
   MAPLIBRE_VERSION,
+  ON_FOOT_COLOR,
+  ON_FOOT_DASH,
+  ON_FOOT_WIDTH,
   POSITION_COLOR,
   OTHER_ROUTE_COLOR,
   OTHER_ROUTE_WIDTH,
@@ -206,4 +209,26 @@ test("the walks of a word with the pen up are dashed, under the route (TASK-198)
   expect(shown).toContain("setWalks(");
   const cleared = page.slice(page.indexOf('message.type === "clearRoute"'));
   expect(cleared).toContain("setWalks(noRoute)");
+});
+
+test("the stretches with the bike on foot are dashed over the route (TASK-206)", () => {
+  const page = buildMapPage();
+  expect(ON_FOOT_COLOR).toBe(onFoot.color);
+  expect(tokenColours.has(ON_FOOT_COLOR)).toBe(true);
+  // Not yellow, which stays under them whole, nor the grey of the walks.
+  expect(ON_FOOT_COLOR).not.toBe(ROUTE_COLOR);
+  expect(ON_FOOT_COLOR).not.toBe(WALK_COLOR);
+  expect(ON_FOOT_WIDTH).toBeLessThan(ROUTE_WIDTH);
+  expect(page).toContain('map.addSource("on-foot"');
+  expect(page).toContain(`"line-dasharray": ${JSON.stringify(ON_FOOT_DASH)}`);
+  // Over the route, under the places of a themed route and the run.
+  expect(page.indexOf('id: "route"')).toBeLessThan(page.indexOf('id: "on-foot"'));
+  expect(page.indexOf('id: "on-foot"')).toBeLessThan(page.indexOf('id: "stops"'));
+  expect(page.indexOf('id: "on-foot"')).toBeLessThan(page.indexOf('id: "track"'));
+  const handler = page.slice(page.indexOf('message.type === "showRoute"'));
+  const shown = handler.slice(0, handler.indexOf('message.type === "follow"'));
+  expect(shown).toContain("setOnFoot(");
+  expect(shown).toContain('{ type: "MultiLineString", coordinates: message.onFoot }');
+  const cleared = page.slice(page.indexOf('message.type === "clearRoute"'));
+  expect(cleared).toContain("setOnFoot(noRoute)");
 });

@@ -10,6 +10,8 @@ import {
 
 import { cityName } from "../explore/recommendedRoutes";
 import { thumbSegments } from "../explore/RouteThumb";
+import { decimal, t, tLater } from "../i18n";
+import { shapeName } from "../i18n/shapeNames";
 import { durationLabel } from "../screens/FinishScreen";
 import {
   color,
@@ -40,8 +42,9 @@ export function drawingHeight(width: number): number {
 /**
  * Whose the map is, as its makers ask to be named (`ATTRIBUTION` in
  * `map/mapStyle`), on every picture of it. In two lines: beside the score.
+ * In English: shown with `t(MAP_CREDIT)` (TASK-210).
  */
-export const MAP_CREDIT = "OpenFreeMap © OpenMapTiles\nData from OpenStreetMap";
+export const MAP_CREDIT = tLater("OpenFreeMap © OpenMapTiles\nData from OpenStreetMap");
 
 type Props = {
   post: SamplePost;
@@ -51,15 +54,14 @@ type Props = {
   onOpen?: () => void;
 };
 
-/** "dog_head" → "Dog head". */
+/** "dog_head" → "Dog head", in the app's language. */
 export function shapeLabel(shape: string): string {
-  const words = shape.replace(/_/g, " ");
-  return words.charAt(0).toUpperCase() + words.slice(1);
+  return shapeName(shape);
 }
 
 /** "Moon · 4.9 km · 27 min": what was drawn, how far, how long. */
 export function postFacts(post: SamplePost): string {
-  return `${shapeLabel(post.shape)} · ${(post.route_m / 1000).toFixed(1)} km · ${durationLabel(post.minutes * 60_000)}`;
+  return `${shapeLabel(post.shape)} · ${decimal(post.route_m / 1000, 1)} km · ${durationLabel(post.minutes * 60_000)}`;
 }
 
 /**
@@ -95,7 +97,13 @@ export function FeedPost({ post, width, onOpen }: Props) {
       onOpen?.();
     }
   }
-  const label = `${post.user} in ${city}: ${post.title}. ${postFacts(post)}. Score ${post.score} out of 100.`;
+  const label = t("{user} in {city}: {title}. {facts}. Score {score} out of 100.", {
+    user: post.user,
+    city,
+    title: post.title,
+    facts: postFacts(post),
+    score: post.score,
+  });
   const body = (
     <>
       <View style={styles.who}>
@@ -132,9 +140,9 @@ export function FeedPost({ post, width, onOpen }: Props) {
         ))}
         <View style={styles.score}>
           <Text style={styles.scoreNumber}>{post.score}</Text>
-          <Text style={styles.outOf}>out of 100</Text>
+          <Text style={styles.outOf}>{t("out of 100")}</Text>
         </View>
-        {map !== null && <Text style={styles.credit}>{MAP_CREDIT}</Text>}
+        {map !== null && <Text style={styles.credit}>{t(MAP_CREDIT)}</Text>}
       </View>
       <View style={styles.words}>
         <Text style={styles.title}>{post.title}</Text>
@@ -162,7 +170,7 @@ export function FeedPost({ post, width, onOpen }: Props) {
       testID="feed-post"
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityHint="Opens the route on the map"
+      accessibilityHint={t("Opens the route on the map")}
     >
       {body}
     </Pressable>

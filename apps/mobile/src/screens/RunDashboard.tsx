@@ -1,3 +1,4 @@
+import type { Activity } from "@shaperoute/shared-types";
 import {
   type ReactNode,
   useCallback,
@@ -19,6 +20,7 @@ import {
 } from "react-native";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 
+import { t } from "../i18n";
 import { openMusic } from "../navigation/music";
 import {
   pauseRun,
@@ -27,7 +29,8 @@ import {
   setVoice,
   useRunControl,
 } from "../navigation/runControl";
-import { changeLabel, splits } from "../navigation/runMetrics";
+import { speedChange, speedNumber } from "../navigation/ride";
+import { changeLabel, type Split, splits } from "../navigation/runMetrics";
 import { paceClock } from "../navigation/runStats";
 import { openPause, type Track } from "../navigation/trackRecorder";
 import { usePocketMode } from "../navigation/usePocketMode";
@@ -39,6 +42,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { VoiceSetting } from "../voice/VoiceSetting";
 import { Countdown } from "./Countdown";
 import { HoldButton, ROUND_BUTTON } from "./HoldButton";
 import { confirmPocketMode, PocketScreen } from "./PocketScreen";
@@ -96,6 +100,8 @@ type Props = {
   heading?: ReactNode;
   /** The run ends: «Stop» held, or «Finish». */
   onStop: () => void;
+  /** The route's: on a bike the numbers are speeds (TASK-216). */
+  activity?: Activity;
 };
 
 export function RunCard({
@@ -105,8 +111,9 @@ export function RunCard({
   arrived = false,
   heading,
   onStop,
+  activity,
 }: Props) {
-  const numbers = useRunNumbers(track, live && !arrived, route);
+  const numbers = useRunNumbers(track, live && !arrived, route, activity);
   const control = useRunControl();
   const pocket = usePocketMode(live && !arrived);
   const [page, setPage] = useState<RunPage>("map");
@@ -409,7 +416,8 @@ type DataProps = {
 /**
  * «Data»: the page with every number and no map. It lies to the right of
  * the map and slides over it; a swipe to the right, or «Map», slides it
- * back. The run's switches live here: they are set once, not while running.
+ * back. The run's switches live here: they are set once, not while running;
+ * under «Voice», the language and the voice it speaks with (TASK-209).
  */
 function DataPage({
   open,
@@ -490,11 +498,12 @@ function DataPage({
         <Kilometres numbers={numbers} hero />
         {route && <RouteBar route={route} numbers={numbers} />}
         <RunGrid numbers={numbers} />
-        <Splits track={track} />
+        <Splits track={track} ride={numbers.ride} />
         <View style={styles.switches}>
           <Switch label="Auto-pause" on={control.autoPause} onChange={setAutoPause} />
           <Switch label="Voice" on={control.voice} onChange={setVoice} />
         </View>
+        <VoiceSetting />
         {buttons}
         <PageTabs page="data" onPage={(page) => page === "map" && toMap.close()} />
         {dark}
@@ -519,9 +528,26 @@ export function splitShare(seconds: number, fastest: number, slowest: number): n
 /** The bar of the slowest kilometre, as a share of the fastest one's. */
 const MIN_SPLIT_SHARE = 0.35;
 
+/** A kilometre's pace, or on a bike its speed in km/h (TASK-216). */
+function splitSpeed(row: Split, ride: boolean): string {
+  return ride ? speedNumber(row.seconds) : paceClock(row.seconds);
+}
+
+/** How a kilometre went against the one before: seconds more or fewer, or
+ * on a bike km/h more or less. Nothing for the first. */
+function splitChange(row: Split, ride: boolean): string {
+  if (row.change === null) {
+    return "";
+  }
+  return ride
+    ? speedChange(row.seconds, row.seconds - row.change)
+    : changeLabel(row.change);
+}
+
 /** Each whole kilometre, its pace, and how it went against the one before;
- * a bar beside each, longer the faster it was (TASK-204). */
-function Splits({ track }: { track: Track }) {
+ * a bar beside each, longer the faster it was (TASK-204). On a bike, the
+ * speed (TASK-216). */
+function Splits({ track, ride }: { track: Track; ride: boolean }) {
   const rows = useMemo(() => splits(track), [track]);
   const fastest = Math.min(...rows.map((row) => row.seconds));
   const slowest = Math.max(...rows.map((row) => row.seconds));
@@ -530,7 +556,9 @@ function Splits({ track }: { track: Track }) {
       <View style={styles.splitRow}>
         <Text style={[styles.splitHead, styles.splitKm]}>Km</Text>
         <View style={styles.splitBarCell} />
-        <Text style={[styles.splitHead, styles.splitCell]}>Pace</Text>
+        <Text style={[styles.splitHead, styles.splitCell]}>
+          {ride ? t("Speed") : "Pace"}
+        </Text>
         <Text style={[styles.splitHead, styles.splitCell]}>Change</Text>
       </View>
       {rows.length === 0 ? (
@@ -544,8 +572,13 @@ function Splits({ track }: { track: Track }) {
               style={styles.splitRow}
               accessible
               accessibilityLabel={
-                `Kilometre ${row.km}: ${paceClock(row.seconds)}` +
-                (row.change === null ? "" : `, ${changeLabel(row.change)}`)
+                (ride
+                  ? t("Kilometre {km}: {speed} km/h", {
+                      km: row.km,
+                      speed: splitSpeed(row, ride),
+                    })
+                  : `Kilometre ${row.km}: ${paceClock(row.seconds)}`) +
+                (row.change === null ? "" : `, ${splitChange(row, ride)}`)
               }
             >
               <Text style={[styles.splitText, styles.splitKm]}>{row.km}</Text>
@@ -562,10 +595,10 @@ function Splits({ track }: { track: Track }) {
                 />
               </View>
               <Text style={[styles.splitText, styles.splitCell]}>
-                {paceClock(row.seconds)}
+                {splitSpeed(row, ride)}
               </Text>
               <Text style={[styles.splitChange, styles.splitCell]}>
-                {row.change === null ? "" : changeLabel(row.change)}
+                {splitChange(row, ride)}
               </Text>
             </View>
           ))}

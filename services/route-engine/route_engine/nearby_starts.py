@@ -43,6 +43,7 @@ from route_engine.network import (
     corner_indices,
     first_leg,
     nearest_nodes,
+    on_foot_stretches,
     one_way_streets,
     step_cost,
     twice_drawn,
@@ -267,6 +268,7 @@ class ShapeJob:
             shape=self.name,
             warnings=warnings,
             walks=list(route.walks),
+            on_foot=on_foot_stretches(graph, route.nodes),
         )
         if route is not best.route:
             found = replace(found, best=replace(best, route=route))
@@ -383,7 +385,8 @@ def with_approach(graph: Graph, plan: Plan, approach: list[Any]) -> Plan:
     which may be another (NetworkXNoPath if there is none), riding rather
     than on foot (`step_cost`, TASK-206). The walks of a
     word with the pen up (TASK-197) move along with the points: the
-    approach is run, not walked."""
+    approach is run, not walked. The stretches with the bike on foot are
+    those of the whole line, approach and way back included."""
     if len(approach) < 2 or plan.search is None:
         return plan
     best = plan.search.best
@@ -411,7 +414,15 @@ def with_approach(graph: Graph, plan: Plan, approach: list[Any]) -> Plan:
     )
     search = replace(plan.search, best=replace(best, route=reached))
     far = search if plan.far is plan.search else plan.far
-    result = replace(plan.result, points=points, distance_m=distance_m, walks=walks)
+    # The approach and the way back may be walked too (TASK-206).
+    on_foot = on_foot_stretches(graph, nodes)
+    result = replace(
+        plan.result,
+        points=points,
+        distance_m=distance_m,
+        walks=walks,
+        on_foot=on_foot,
+    )
     return replace(plan, result=result, search=search, far=far)
 
 

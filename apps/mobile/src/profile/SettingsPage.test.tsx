@@ -1,11 +1,24 @@
 import session from "@shaperoute/shared-types/fixtures/session.json";
 import type { Session } from "@shaperoute/shared-types";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import type { ComponentProps } from "react";
 
 import type { Account } from "../account/useAccount";
+import { saveLanguageChoice } from "../i18n/language";
+import { useLanguage } from "../i18n/useLanguage";
 import { SettingsPage } from "./SettingsPage";
 
 const signedIn = session as Session;
+
+/** The page under a root that follows the language, as in the app (TASK-210). */
+function AsInTheApp(props: ComponentProps<typeof SettingsPage>) {
+  useLanguage();
+  return <SettingsPage {...props} />;
+}
+
+afterEach(async () => {
+  await act(async () => saveLanguageChoice("phone"));
+});
 
 async function show(over: Partial<Account> = {}) {
   const account: Account = {
@@ -21,7 +34,7 @@ async function show(over: Partial<Account> = {}) {
     sessionEnded: jest.fn(),
     ...over,
   };
-  await render(<SettingsPage user={signedIn.user} account={account} />);
+  await render(<AsInTheApp user={signedIn.user} account={account} />);
   return account;
 }
 
@@ -49,9 +62,11 @@ test("the settings to come are named, say «Soon» and take no tap", async () =>
   // Eight settings to come; every sport is ready («Sport», TASK-189: the
   // bike since TASK-190, paddling since TASK-191).
   expect(screen.getAllByText("Soon")).toHaveLength(8);
-  // Only the picture (TASK-178) and the ways out are buttons.
-  expect(screen.getAllByRole("button")).toHaveLength(3);
+  // Only the picture (TASK-178), the language (TASK-210) and the ways out
+  // are buttons.
+  expect(screen.getAllByRole("button")).toHaveLength(4);
   expect(screen.getByRole("button", { name: "Profile picture" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Language, English" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Log out" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Delete account" })).toBeOnTheScreen();
 });
@@ -88,4 +103,18 @@ test("while deleting, nothing else can be pressed, and a failure is said", async
   await show({ busy: "delete", problem: "The API did not answer." });
   expect(screen.getByRole("button", { name: "Log out" })).toBeDisabled();
   expect(screen.getByText("The API did not answer.")).toBeOnTheScreen();
+});
+
+test("«Language» is among the preferences and turns the whole page at once (TASK-210)", async () => {
+  await show();
+  expect(screen.getByText("PREFERENCES")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Language, English" }));
+  await fireEvent.press(screen.getByRole("radio", { name: "Deutsch" }));
+  expect(screen.getByText("PRÄFERENZEN")).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Sprache, Deutsch" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Abmelden" })).toBeOnTheScreen();
+  expect(screen.getByLabelText("Einheiten, bald verfügbar")).toBeOnTheScreen();
+  expect(screen.queryByText("Log out")).toBeNull();
+  // The account's own words are not translated.
+  expect(screen.getByText("Runner_42")).toBeOnTheScreen();
 });

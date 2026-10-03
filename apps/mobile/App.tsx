@@ -5,6 +5,7 @@ import type {
   LetterStyle,
   OutlinePoint,
   Shape,
+  Stretch,
   Walk,
 } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
@@ -47,6 +48,7 @@ import {
 } from "./src/favorites/favoriteRoute";
 import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
 import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
+import { useLanguage } from "./src/i18n/useLanguage";
 import { MapView } from "./src/map/MapView";
 import {
   canResume,
@@ -139,6 +141,10 @@ type ExploreRun = {
   /** A favorite of a word with the pen up (TASK-199): its walks and word. */
   walks?: Walk[];
   word?: string | null;
+  /** A bike route (TASK-206): its stretches with the bike on foot. */
+  on_foot?: Stretch[];
+  /** What it is for (TASK-216): a favorite kept by bike is followed by bike. */
+  activity?: Activity;
 };
 
 function finishedRun(run: ScorableRun, resumable: boolean): Finished {
@@ -171,6 +177,8 @@ function leftFreeRun(): FreeFinished | null {
 }
 
 export default function App() {
+  // A new language from «Settings» renders the whole app again in it (TASK-210).
+  useLanguage();
   return (
     <SafeAreaProvider>
       {/* The account, and «Profile» over the app (TASK-115, TASK-154). */}
@@ -392,6 +400,16 @@ function Sgrava() {
   // (TASK-199); a route of "Explore" has none.
   const followedWalks =
     exploreRun === null ? (chosen?.walks ?? null) : (exploreRun.walks ?? null);
+  // The stretches with the bike on foot of a bike route (TASK-206).
+  const followedOnFoot =
+    exploreRun === null ? (chosen?.on_foot ?? null) : (exploreRun.on_foot ?? null);
+  // What the route followed is for: a bike route is followed by bike (TASK-216).
+  const followedActivity =
+    exploreRun === null
+      ? view.status === "done"
+        ? view.request.activity
+        : undefined
+      : exploreRun.activity;
   const navigating = screen === "navigate" && followed !== null;
   const navigation = useNavigation(
     followed?.points ?? null,
@@ -401,6 +419,8 @@ function Sgrava() {
     {
       walks: followedWalks ?? undefined,
       word: exploreRun === null ? chosen?.word : (exploreRun.word ?? null),
+      onFoot: followedOnFoot ?? undefined,
+      activity: followedActivity,
     },
   );
   const finishing = screen === "finish" && finished !== null;
@@ -557,16 +577,19 @@ function Sgrava() {
   }
 
   /** Start on a route of "Explore": its directions first (TASK-145). A
-   * favorite of a word with the pen up brings its walks (TASK-199). On the
-   * water there are none to ask for (TASK-191): the notice, then the run. */
+   * favorite of a word with the pen up brings its walks (TASK-199), a bike
+   * route its stretches with the bike on foot (TASK-206), and is followed
+   * by bike (TASK-216). On the water there are none to ask for (TASK-191):
+   * the notice, then the run. */
   function onStartExplore(
     route: {
       points: LatLon[];
       similarity: number;
       walks?: Walk[];
       word?: string | null;
+      on_foot?: Stretch[];
     },
-    activity: Activity = "running",
+    activity?: Activity,
   ) {
     if (activity === "paddling") {
       paddleNotice.ask(() => {
@@ -575,6 +598,7 @@ function Sgrava() {
           points: route.points,
           directions: NO_DIRECTIONS,
           similarity: route.similarity,
+          activity,
         });
         setScreen("navigate");
       });
@@ -588,6 +612,10 @@ function Sgrava() {
         ...(route.walks !== undefined && route.walks.length > 0
           ? { walks: route.walks, word: route.word ?? null }
           : {}),
+        ...(route.on_foot !== undefined && route.on_foot.length > 0
+          ? { on_foot: route.on_foot }
+          : {}),
+        ...(activity !== undefined ? { activity } : {}),
       });
       setScreen("navigate");
     });
@@ -713,6 +741,16 @@ function Sgrava() {
                       ? (explored.result.walks ?? null)
                       : null
                     : followedWalks
+            }
+            onFoot={
+              finishing || running || freeFinishing || theming
+                ? null
+                : exploring
+                  ? // A favorite of a bike route (TASK-206).
+                    explored.status === "done"
+                    ? (explored.result.on_foot ?? null)
+                    : null
+                  : followedOnFoot
             }
             // Only while choosing, a drawn route or an example of "Explore"
             // (TASK-155): running, or on a themed route, one route is the route.
@@ -846,6 +884,7 @@ function Sgrava() {
             }
             track={trackOfNavigation(navigation)}
             onStop={onEndRun}
+            activity={followedActivity}
           />
         ) : (
           <RouteOutcome

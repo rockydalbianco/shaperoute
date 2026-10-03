@@ -24,6 +24,7 @@ import {
   type StravaStatus,
   stravaProblem,
 } from "../api/strava";
+import { t } from "../i18n";
 
 /** What is on its way: Strava's page asked for, or the access taken back. */
 export type StravaBusy = "connecting" | "disconnecting" | null;
@@ -186,7 +187,7 @@ export function useStravaOf(
         away.current = false;
         change(token, {
           busy: null,
-          problem: "Could not open Strava. Try again.",
+          problem: t("Could not open Strava. Try again."),
         });
       }
     });

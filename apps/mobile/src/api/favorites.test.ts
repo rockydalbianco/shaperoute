@@ -5,11 +5,14 @@ import request from "@shaperoute/shared-types/fixtures/favorite-request.json";
 import walkedFavorite from "@shaperoute/shared-types/fixtures/favorite-walks.json";
 import favorite from "@shaperoute/shared-types/fixtures/favorite.json";
 import cyclingFavorites from "@shaperoute/shared-types/fixtures/favorites-cycling.json";
+import onFootFavorite from "@shaperoute/shared-types/fixtures/favorite-on-foot.json";
+import onFootRequest from "@shaperoute/shared-types/fixtures/favorite-request-on-foot.json";
 import favorites from "@shaperoute/shared-types/fixtures/favorites.json";
 
 import { answers, apiError } from "../account/testing";
 import {
   asBefore,
+  beforeOnFoot,
   type Favorite,
   favoriteActivity,
   type FavoriteDetail,
@@ -232,4 +235,60 @@ test("a bike route an older API refuses is kept as an older app keeps it", async
   expect(again).toHaveBeenCalledTimes(2);
   const { walks: _walks, ...unwalked } = walkedRequest;
   expect(String(again.mock.calls[1][1]?.body)).toBe(JSON.stringify(unwalked));
+});
+
+// --- The stretches of a bike route with the bike on foot (TASK-206) ---
+
+test("a bike favorite with stretches on foot, and those of an older API, are read", () => {
+  expect(isFavoriteDetail(onFootFavorite)).toBe(true);
+  expect(onFootFavorite.on_foot).toEqual([[2, 3]]);
+  expect(favoriteActivity(onFootFavorite)).toBe("cycling");
+  expect("on_foot" in cyclingFavorite).toBe(false);
+  // The request: the fields of a bike route, and the stretches last.
+  const typed: FavoriteRequest = onFootRequest as FavoriteRequest;
+  expect(Object.keys(typed)).toEqual([...Object.keys(cyclingRequest), "on_foot"]);
+  // Without stretches, the same object: nothing to send again.
+  expect(beforeOnFoot(cyclingRequest as FavoriteRequest)).toBe(cyclingRequest);
+  const { on_foot: _onFoot, activity: _activity, ...older } = onFootRequest;
+  expect(asBefore(typed)).toEqual(older);
+});
+
+test("stretches an API before TASK-206 refuses: kept without them, still by bike", async () => {
+  const [kept] = cyclingFavorites.favorites;
+  const refused = {
+    status: 422,
+    body: apiError("invalid_request", "on_foot: Extra inputs are not permitted"),
+  };
+  const fetchFn: jest.Mock = answers(refused, { status: 201, body: kept });
+  const bike = onFootRequest as FavoriteRequest;
+  expect(await keepFavorite(URL, TOKEN, ID, bike, { fetchFn, key: null })).toEqual({
+    kind: "ok",
+    value: kept,
+  });
+  expect(String(fetchFn.mock.calls[0][1]?.body)).toBe(JSON.stringify(onFootRequest));
+  const { on_foot: _onFoot, ...byBike } = onFootRequest;
+  expect(String(fetchFn.mock.calls[1][1]?.body)).toBe(JSON.stringify(byBike));
+  expect(byBike.activity).toBe("cycling");
+});
+
+test("an API before TASK-200 refuses both: then as an older app, and no more", async () => {
+  const [kept] = favorites.favorites;
+  const refused = {
+    status: 422,
+    body: apiError("invalid_request", "Extra inputs are not permitted"),
+  };
+  const bike = onFootRequest as FavoriteRequest;
+  const fetchFn: jest.Mock = answers(refused, refused, { status: 201, body: kept });
+  expect(await keepFavorite(URL, TOKEN, ID, bike, { fetchFn, key: null })).toEqual({
+    kind: "ok",
+    value: kept,
+  });
+  const { on_foot: _onFoot, activity: _activity, ...older } = onFootRequest;
+  expect(String(fetchFn.mock.calls[2][1]?.body)).toBe(JSON.stringify(older));
+  // Refused three times: three requests, the last answer.
+  const again: jest.Mock = answers(refused, refused, refused);
+  expect(
+    await keepFavorite(URL, TOKEN, ID, bike, { fetchFn: again, key: null }),
+  ).toMatchObject({ kind: "api_error", code: "invalid_request" });
+  expect(again).toHaveBeenCalledTimes(3);
 });

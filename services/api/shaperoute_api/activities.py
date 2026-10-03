@@ -11,7 +11,8 @@ run with a key made from its track, so a run sent twice is kept once.
 Every endpoint needs the token of an account (accounts.py): a run is seen,
 opened and deleted only by its owner. Deleting the account deletes its runs
 (ON DELETE CASCADE). A run opened whole has its pauses as they are kept
-(TASK-200).
+(TASK-200). A run says what it was, on foot, by bike or paddling (TASK-208):
+its drawing shows it, and Strava takes it (drawings.py, strava.py).
 """
 
 from __future__ import annotations
@@ -107,6 +108,8 @@ BAD_CLOCK = "This run cannot be saved: its times are not those of a clock."
 
 LatLon = tuple[float, float]
 Key = Annotated[str, Path(pattern=KEY_PATTERN)]
+# What a run was (TASK-208): the activities of the API, SUPPORTED_ACTIVITIES.
+RunActivity = Literal["running", "cycling", "paddling"]
 
 
 def _on_earth(points: Sequence[LatLon]) -> None:
@@ -161,6 +164,9 @@ class ActivityRequestBody(BaseModel):
     """The planned route's, RouteResult.walks, for a word with the pen up
     (TASK-199): the score is then of the letters alone. Only with `points`;
     missing from an older app."""
+    activity: RunActivity = "running"
+    """What the run was (TASK-208); missing from an older app, which only
+    ran. Its drawing may change it later."""
 
     @field_validator("track")
     @classmethod
@@ -627,9 +633,9 @@ class Activities:
             row = conn.execute(
                 "INSERT INTO runs (user_id, key, route, route_similarity, shape,"
                 " word, style, title, track, pauses, started_at, distance_m,"
-                " duration_s, score, fidelity, place, created_at, walks)"
+                " duration_s, score, fidelity, place, created_at, walks, activity)"
                 " VALUES (%s, %s, ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s,"
-                " ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                " ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                 f" RETURNING {COLUMNS}",
                 (
                     user_id,
@@ -650,6 +656,7 @@ class Activities:
                     place,
                     self.now(),
                     Jsonb([list(walk) for walk in body.walks]),
+                    body.activity,
                 ),
             ).fetchone()
             assert row is not None

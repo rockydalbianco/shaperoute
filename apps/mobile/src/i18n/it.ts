@@ -1,0 +1,384 @@
+import type { Table } from "./translate";
+
+/**
+ * The app's texts in Italian, by their English text (ADR-0172), in the
+ * order of the files that show them. To confirm with someone who speaks it
+ * (docs/UI.md).
+ */
+export const IT: Table = {
+  // src/account/fields.ts
+  "You must be at least 16 to sign up.": "Per iscriverti devi avere almeno 16 anni.",
+  "Enter the email of your account.": "Scrivi l'email del tuo account.",
+  "Enter your password.": "Scrivi la password.",
+  "A username is 3 to 20 letters, digits, _ or . (no spaces).":
+    "Un nome utente ha da 3 a 20 fra lettere, cifre, _ o . (niente spazi).",
+  "Enter an email address, like name@example.com.":
+    "Scrivi un indirizzo email, come nome@example.com.",
+  "A password is at least {min} characters.":
+    "La password deve avere almeno {min} caratteri.",
+  "A password is at most {max} characters.":
+    "La password può avere al massimo {max} caratteri.",
+
+  // src/account/messages.ts
+  "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.":
+    "L'app non sa dov'è l'API: aprila dal codice QR di npm run mobile sul PC.",
+  "Your session has ended. Log in again.": "La sessione è scaduta. Accedi di nuovo.",
+  "Cannot reach the API at {url}. Check the connection and try again.":
+    "Impossibile raggiungere l'API su {url}. Controlla la connessione e riprova.",
+  "The app and the API do not agree (a bug): HTTP {status}.":
+    "L'app e l'API non si capiscono (un bug): HTTP {status}.",
+  "This email already has an account. Log in instead.":
+    "Questa email ha già un account. Accedi.",
+  "This username is taken. Try another one.":
+    "Questo nome utente è già preso. Provane un altro.",
+  "Wrong email or password.": "Email o password sbagliate.",
+  "Accounts are not available on this API: it has no database.":
+    "Gli account non sono disponibili su questa API: non ha un database.",
+  "The API refused the app's key (EXPO_PUBLIC_API_KEY in apps/mobile/.env).":
+    "L'API ha rifiutato la chiave dell'app (EXPO_PUBLIC_API_KEY in apps/mobile/.env).",
+  "The app and the API do not agree (a bug): {message}":
+    "L'app e l'API non si capiscono (un bug): {message}",
+  "Too many tries. Wait a minute and try again.":
+    "Troppi tentativi. Aspetta un minuto e riprova.",
+  "Too many tries. Wait {minutes} minutes and try again.":
+    "Troppi tentativi. Aspetta {minutes} minuti e riprova.",
+
+  // src/activities/ActivitiesList.tsx
+  "{count} run is on this phone, waiting for a connection.":
+    "{count} corsa è su questo telefono, in attesa di connessione.",
+  "{count} runs are on this phone, waiting for a connection.":
+    "{count} corse sono su questo telefono, in attesa di connessione.",
+  "Loading…": "Caricamento…",
+  "Show more": "Mostra altro",
+  "Loading your activities…": "Carico le tue attività…",
+  "Your activities could not load.": "Non è stato possibile caricare le tue attività.",
+  "Try again": "Riprova",
+  "No activities yet. Save a run when you finish it, and it is kept here.":
+    "Ancora nessuna attività. Salva una corsa quando la finisci e la ritrovi qui.",
+  "{when}, {where}, {facts}, public, open on the map":
+    "{when}, {where}, {facts}, pubblica, apri sulla mappa",
+  "{when}, {where}, {facts}, open on the map":
+    "{when}, {where}, {facts}, apri sulla mappa",
+  "Opening…": "Apertura…",
+  "Score: {score} out of 100": "Punteggio: {score} su 100",
+  "Score {score}": "Punteggio {score}",
+  Public: "Pubblica",
+  "Delete this run? It cannot be undone.":
+    "Eliminare questa corsa? Non si può annullare.",
+  // «Keep it» answers two questions (a run, Strava): a word that fits both.
+  "Keep it": "Annulla",
+  "Delete run": "Elimina corsa",
+  "Delete the run of {when}": "Elimina la corsa di {when}",
+  Delete: "Elimina",
+
+  // src/activities/ActivityCard.tsx
+  "out of 100": "su 100",
+  "Yellow: the route. White: what you ran.":
+    "Giallo: il percorso. Bianco: quello che hai corso.",
+  "White: what you ran.": "Bianco: quello che hai corso.",
+  "Back to the list": "Torna all'elenco",
+
+  // src/activities/activitiesDoor.ts
+  "Sign up or log in to keep your runs and share them as drawings.":
+    "Iscriviti o accedi per tenere le tue corse e condividerle come disegni.",
+  "This run is no longer in your activities.":
+    "Questa corsa non è più fra le tue attività.",
+
+  // src/activities/activityText.ts
+  Sun: "Dom",
+  Mon: "Lun",
+  Tue: "Mar",
+  Wed: "Mer",
+  Thu: "Gio",
+  Fri: "Ven",
+  Sat: "Sab",
+  Jan: "gen",
+  Feb: "feb",
+  Mar: "mar",
+  Apr: "apr",
+  May: "mag",
+  Jun: "giu",
+  Jul: "lug",
+  Aug: "ago",
+  Sep: "set",
+  Oct: "ott",
+  Nov: "nov",
+  Dec: "dic",
+  "{weekday} {day} {month} {year}": "{weekday} {day} {month} {year}",
+  Run: "Corsa",
+
+  // src/api/comments.ts
+  "A comment needs some words.": "Un commento ha bisogno di qualche parola.",
+  "A comment is at most {max} characters.":
+    "Un commento può avere al massimo {max} caratteri.",
+  "Too many comments in a minute. Wait a moment and try again.":
+    "Troppi commenti in un minuto. Aspetta un momento e riprova.",
+  "The comments of this drawing are not available.":
+    "I commenti di questo disegno non sono disponibili.",
+
+  // src/api/strava.ts
+  "No connection. Try again when you are online.":
+    "Nessuna connessione. Riprova quando sei online.",
+  "Strava is taking no more runs for now. Try again later.":
+    "Per ora Strava non accetta altre corse. Riprova più tardi.",
+  "Strava could not read this run.": "Strava non è riuscito a leggere questa corsa.",
+  "Strava is not connected. Connect it and try again.":
+    "Strava non è collegato. Collegalo e riprova.",
+  "Strava is not available on this API.": "Strava non è disponibile su questa API.",
+  "Strava did not answer. Try again in a while.":
+    "Strava non ha risposto. Riprova fra un po'.",
+
+  // src/favorites/FavoriteHeart.tsx
+  "Remove from favorites": "Togli dai preferiti",
+  "Add to favorites": "Aggiungi ai preferiti",
+
+  // src/favorites/FavoritesList.tsx
+  "Kept {day} {month} {year}": "Salvato il {day} {month} {year}",
+  "{title}, open on the map": "{title}, apri sulla mappa",
+  "Remove {title} from favorites": "Togli {title} dai preferiti",
+  "Loading your favorites…": "Carico i tuoi preferiti…",
+  "Your favorites could not load.": "Non è stato possibile caricare i tuoi preferiti.",
+  "No favorites yet. Tap {heart} on a route on the map to keep it here.":
+    "Ancora nessun preferito. Tocca {heart} su un percorso sulla mappa per tenerlo qui.",
+
+  // src/favorites/favoriteRoute.ts
+  Route: "Percorso",
+
+  // src/favorites/favoritesDoor.ts
+  "Sign up or log in to keep your favorite routes.":
+    "Iscriviti o accedi per tenere i tuoi percorsi preferiti.",
+
+  // src/feed/FeedPost.tsx
+  "OpenFreeMap © OpenMapTiles\nData from OpenStreetMap":
+    "OpenFreeMap © OpenMapTiles\nDati da OpenStreetMap",
+  "{user} in {city}: {title}. {facts}. Score {score} out of 100.":
+    "{user} a {city}: {title}. {facts}. Punteggio {score} su 100.",
+  "Opens the route on the map": "Apre il percorso sulla mappa",
+
+  // src/i18n/shapeNames.ts
+  Circle: "Cerchio",
+  Heart: "Cuore",
+  Star: "Stella",
+  Horse: "Cavallo",
+  Moon: "Luna",
+  Cat: "Gatto",
+  Fish: "Pesce",
+  Butterfly: "Farfalla",
+  Snail: "Lumaca",
+  "Dog head": "Testa di cane",
+  "Rabbit head": "Testa di coniglio",
+  Pumpkin: "Zucca",
+  "Christmas tree": "Albero di Natale",
+
+  // src/places/PlaceSearch.tsx
+  "City or street": "Città o via",
+  Search: "Cerca",
+  "Searching…": "Cerco…",
+  "No place found. Try adding the city.":
+    "Nessun luogo trovato. Prova ad aggiungere la città.",
+  "The search failed. Check the connection and try again.":
+    "La ricerca non è riuscita. Controlla la connessione e riprova.",
+  "© OpenStreetMap contributors": "© contributori di OpenStreetMap",
+
+  // src/profile/EditProfile.tsx
+  USERNAME: "NOME UTENTE",
+  "3 to 20 letters, digits, _ or .": "Da 3 a 20 fra lettere, cifre, _ o .",
+  BIO: "BIO",
+  "A few words about you": "Qualche parola su di te",
+  "{length} of {max} characters": "{length} di {max} caratteri",
+  "Saving…": "Salvataggio…",
+  Save: "Salva",
+
+  // src/profile/PhotoChoices.tsx
+  "Removing…": "Rimozione…",
+  "Choose a picture": "Scegli una foto",
+  "Take a photo": "Scatta una foto",
+  "Remove picture": "Togli la foto",
+
+  // src/profile/PhotoRow.tsx
+  "Profile picture": "Foto del profilo",
+
+  // src/profile/ProfileHome.tsx
+  "Edit profile": "Modifica profilo",
+  Favorites: "Preferiti",
+  "My activities": "Le mie attività",
+  Settings: "Impostazioni",
+
+  // src/profile/SettingsPage.tsx
+  "Change email": "Cambia email",
+  "Phone number": "Numero di telefono",
+  Units: "Unità di misura",
+  NOTIFICATIONS: "NOTIFICHE",
+  "Email notifications": "Notifiche email",
+  "Push notifications": "Notifiche push",
+  ABOUT: "INFORMAZIONI",
+  Help: "Aiuto",
+  Terms: "Termini",
+  Privacy: "Privacy",
+  "{name}, coming soon": "{name}, in arrivo",
+  Soon: "Presto",
+  ACCOUNT: "ACCOUNT",
+  PREFERENCES: "PREFERENZE",
+  "Log out": "Esci",
+  "Delete your account? Everything that is yours goes with it, at once. It cannot be undone.":
+    "Eliminare il tuo account? Tutto quello che è tuo viene eliminato con lui, subito. Non si può annullare.",
+  "Deleting…": "Eliminazione…",
+  "Delete my account": "Elimina il mio account",
+  "Keep my account": "Tieni il mio account",
+  "Delete account": "Elimina account",
+
+  // src/profile/UserProfilePage.tsx
+  "Log in to see the profiles of the others.":
+    "Accedi per vedere i profili degli altri.",
+  "This profile is not available.": "Questo profilo non è disponibile.",
+  "{count} drawing": "{count} disegno",
+  "{count} drawings": "{count} disegni",
+  "Loading the profile…": "Carico il profilo…",
+
+  // src/profile/profileFields.ts
+  "Editing the profile is not available on this API yet.":
+    "Su questa API non si può ancora modificare il profilo.",
+  "A bio is at most {max} characters.": "La bio può avere al massimo {max} caratteri.",
+
+  // src/profile/useProfilePhoto.ts
+  "The camera is off for this app. Allow it in Settings, or choose a picture instead.":
+    "Questa app non ha accesso alla fotocamera. Consentilo nelle Impostazioni, oppure scegli una foto.",
+  "This picture is too large. Choose a smaller one.":
+    "Questa foto è troppo grande. Scegline una più piccola.",
+  "Could not open the picture. Try again.": "Impossibile aprire la foto. Riprova.",
+  "This picture cannot be used. Choose another one.":
+    "Questa foto non si può usare. Scegline un'altra.",
+  "Profile pictures are not available on this API yet.":
+    "Su questa API le foto del profilo non ci sono ancora.",
+
+  // src/route/RoutePanel.tsx
+  "{letters} km of letters + {between} km riding between them":
+    "{letters} km di lettere + {between} km in bici fra una lettera e l'altra",
+
+  // src/route/warnings.ts
+  "Includes {distance} walking the bike.": "Di cui {distance} con la bici a mano.",
+
+  // src/screens/PeopleScreen.tsx
+  "Find friends": "Trova amici",
+
+  // src/screens/ProfileLayer.tsx
+  "Profile, log in again": "Profilo, accedi di nuovo",
+  Profile: "Profilo",
+
+  // src/screens/ProfileScreen.tsx
+  "Your account and everything that was yours have been deleted.":
+    "Il tuo account e tutto quello che era tuo sono stati eliminati.",
+  "You are logged out on this phone.": "Hai chiuso la sessione su questo telefono.",
+  Back: "Indietro",
+
+  // src/screens/RunDashboard.tsx
+  Speed: "Velocità",
+  "Kilometre {km}: {speed} km/h": "Chilometro {km}: {speed} km/h",
+
+  // src/screens/RunPanel.tsx
+  "Speed now": "Vel. ora",
+  "Avg speed": "Vel. media",
+  "Last km": "Ultimo km",
+
+  // src/screens/SignInScreen.tsx
+  "Sign up": "Iscriviti",
+  "Log in": "Accedi",
+  EMAIL: "EMAIL",
+  "name@example.com": "nome@example.com",
+  PASSWORD: "PASSWORD",
+  "At least 8 characters": "Almeno 8 caratteri",
+  "I am at least 16": "Ho almeno 16 anni",
+  "Signing up…": "Iscrizione…",
+  "Logging in…": "Accesso…",
+
+  // src/settings/LanguageSetting.tsx
+  Language: "Lingua",
+  "Phone language": "Lingua del telefono",
+
+  // src/social/DrawingCard.tsx
+  "Back to the profile": "Torna al profilo",
+
+  // src/social/DrawingComments.tsx
+  "Opens the comments of this drawing.": "Apre i commenti di questo disegno.",
+  Comments: "Commenti",
+  "Delete this comment?": "Eliminare questo commento?",
+  Cancel: "Annulla",
+  "Close the comments": "Chiudi i commenti",
+  Close: "Chiudi",
+  "Add a comment…": "Aggiungi un commento…",
+  Comment: "Commento",
+  Post: "Pubblica",
+  "{count} of {max} characters": "{count} di {max} caratteri",
+  "Loading the comments…": "Carico i commenti…",
+  "No comments yet. Be the first.": "Ancora nessun commento. Scrivi il primo.",
+  "Show more comments": "Mostra altri commenti",
+  "{name}, {ago}: {text}": "{name}, {ago}: {text}",
+  "Touch and hold to delete.": "Tieni premuto per eliminare.",
+
+  // src/social/DrawingsGrid.tsx
+  Drawings: "Disegni",
+  "No public drawings yet. Make a run public in My activities.":
+    "Ancora nessun disegno pubblico. Rendi pubblica una corsa in Le mie attività.",
+  "No drawings yet.": "Ancora nessun disegno.",
+  "{title}, score {score} out of 100, open on the map":
+    "{title}, punteggio {score} su 100, apri sulla mappa",
+
+  // src/social/commentText.ts
+  "You can't write negative comments in this app. Try another app.":
+    "In questa app non puoi scrivere commenti negativi, cambia app.",
+  "just now": "adesso",
+  "{count} min ago": "{count} min fa",
+  "{count} h ago": "{count} h fa",
+  "{count} d ago": "{count} g fa",
+  "Write a comment": "Scrivi un commento",
+  "{count} comment": "{count} commento",
+  "{count} comments": "{count} commenti",
+
+  // src/social/drawingsDoor.ts
+  "This drawing is no longer public.": "Questo disegno non è più pubblico.",
+
+  // src/social/PeopleSearch.tsx
+  "Log in to find your friends.": "Accedi per trovare i tuoi amici.",
+  "This server cannot look for members yet.":
+    "Questo server non sa ancora cercare gli iscritti.",
+  Name: "Nome",
+  "Type at least 2 letters of a name.": "Scrivi almeno 2 lettere di un nome.",
+  "Nobody has a name like that.": "Nessuno ha un nome così.",
+
+  // src/strava/StravaActivityRow.tsx
+  "Sending to Strava…": "Invio a Strava…",
+  "View on Strava": "Visualizza su Strava",
+  "This run is on Strava.": "Questa corsa è su Strava.",
+  "Strava is still reading this run.": "Strava sta ancora leggendo questa corsa.",
+  "Check again": "Controlla di nuovo",
+  "Send to Strava": "Invia a Strava",
+
+  // src/strava/StravaParts.tsx
+  "Opening Strava…": "Apro Strava…",
+  "Connect with Strava": "Connetti con Strava",
+  On: "Sì",
+  Off: "No",
+  "Name on Strava": "Nome su Strava",
+  "Leave empty for an automatic name": "Lascia vuoto per un nome automatico",
+
+  // src/strava/StravaRunEnd.tsx
+  "Connect Strava, and Save sends your runs there too.":
+    "Collega Strava: con Salva le tue corse andranno anche lì.",
+  "To {athlete}'s Strava, with Save.": "Con Salva va anche sullo Strava di {athlete}.",
+
+  // src/strava/StravaSetting.tsx
+  "Strava, connected": "Strava, collegato",
+  "Strava, connected as {athlete}": "Strava, collegato come {athlete}",
+  Connected: "Collegato",
+  "Connected as {athlete}": "Collegato come {athlete}",
+  "Disconnect Strava? Runs already sent stay on Strava.":
+    "Scollegare Strava? Le corse già inviate restano su Strava.",
+  Disconnect: "Scollega",
+  "Disconnecting…": "Scollegamento…",
+  "Disconnect Strava": "Scollega Strava",
+  "Send the runs you save in Sgrava to your Strava profile.":
+    "Invia al tuo profilo Strava le corse che salvi in Sgrava.",
+
+  // src/strava/useStrava.ts
+  "Could not open Strava. Try again.": "Impossibile aprire Strava. Riprova.",
+};

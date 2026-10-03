@@ -149,9 +149,10 @@ def ids(answer: Any) -> list[str]:
 
 def test_the_fixtures_are_the_contract() -> None:
     # Written before TASK-199: the request of an older app, the answer of an
-    # older API, without the walks and the pen.
+    # older API, without the walks and the pen; and without the activity of
+    # TASK-208, in activity-request-cycling.json (test_drawings.py).
     body = _load("activity-request.json")
-    assert set(body) == set(ActivityRequestBody.model_fields) - {"walks"}
+    assert set(body) == set(ActivityRequestBody.model_fields) - {"walks", "activity"}
     assert set(body["pauses"][0]) == set(PauseBody.model_fields) - {"pen"}
     ActivityRequestBody.model_validate(body)
     listed = _load("activities.json")
@@ -161,9 +162,9 @@ def test_the_fixtures_are_the_contract() -> None:
     ActivitiesBody.model_validate(listed)
     whole = _load("activity.json")
     assert set(whole) == set(ActivityDetailBody.model_fields) - {"walks", "pauses"}
-    # A word with the pen up (TASK-199): every field.
+    # A word with the pen up (TASK-199): every field but the activity.
     walked = _load("activity-request-walks.json")
-    assert set(walked) == set(ActivityRequestBody.model_fields)
+    assert set(walked) == set(ActivityRequestBody.model_fields) - {"activity"}
     assert set(walked["pauses"][0]) == set(PauseBody.model_fields)
     ActivityRequestBody.model_validate(walked)
     whole_walked = _load("activity-walks.json")

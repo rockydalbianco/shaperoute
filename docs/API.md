@@ -529,6 +529,36 @@ La richiesta è sincrona: la risposta arriva quando il percorso è pronto
   `/image-route-jobs`: forma, parola o foto. Il `RouteResult` è lo stesso
   di una corsa; fra gli avvisi c'è in più lo sterrato («… m of the route on
   unpaved roads»).
+- **La bici a mano** (TASK-206, ADR-0167): dove la bici non si guida il
+  percorso la porta a mano per brevi tratti (`ROUTE_ENGINE.md`, «La bici a
+  mano»), e il `RouteResult` dice dove con **`on_foot`**: una coppia `[da,
+  a]` di indici in `points` per ogni tratto, compresi tutti e due, in
+  ordine, come i `walks` della penna alzata (ma non si mette in pausa
+  niente: la corsa continua a registrare). Un tratto è una fila di archi a
+  piedi; dove ricomincia la sella finisce. Ogni alternativa ha i suoi, e
+  da una partenza vicina contano anche l'avvicinamento e il ritorno.
+  L'avviso dice i metri («… m of the route with the bike on foot»).
+  Esempio: `fixtures/route-result-cycling.json`.
+
+```json
+{
+  "points": [[46.0671, 11.1214], "…", [46.0671, 11.1214]],
+  "distance_m": 10068.1,
+  "shape": "circle",
+  "warnings": ["923 m of the route with the bike on foot"],
+  "walks": [],
+  "on_foot": [[2, 3]],
+  "…": "…"
+}
+```
+
+- **`on_foot` c'è sempre nelle risposte**, vuoto per la corsa, la canoa e
+  una zona della bici fatta prima di TASK-206 (senza archi a piedi). Un'API
+  precedente non lo manda: in `shared-types` è facoltativo, e le app
+  installate ignorano il campo. Nel `GpxRequest` si può rimandare com'è
+  arrivato o lasciare fuori; se c'è si controlla come i `walks` (fuori dai
+  punti, all'indietro o sovrapposti: `422 invalid_request`). Il GPX non
+  cambia: i tratti a mano sono pezzi della traccia come gli altri.
 - **Da 10 a 30 km** (`DISTANCE_LIMITS_M` in `shared-types`): fuori è `422
   invalid_request`, `distance must be between 10000 and 30000 metres for
   cycling, got 5000`. La corsa resta 1–50 km, con il messaggio di prima.
@@ -892,6 +922,15 @@ tipi dell'app in `apps/mobile/src/api/favorites.ts`.
   per byte quella di prima), e se il `PUT` torna `422 invalid_request` lo
   rimanda una volta come un'app precedente a TASK-199, senza `activity` né
   `walks`: il preferito si tiene come una corsa.
+- **La bici a mano** (TASK-206, ADR-0167, migrazione `0012`): il corpo del
+  `PUT` può avere `on_foot`, quello del `RouteResult` (coppie `[da, a]` di
+  indici in `points`, «In bici»), facoltativo, al più 1000 coppie; si
+  controlla come `walks`. Il preferito intero ha **sempre** `on_foot`,
+  vuoto per ogni altro percorso e per quelli tenuti prima; l'elenco non
+  cambia. Esempi: `favorite-request-on-foot.json`, `favorite-on-foot.json`.
+  Un'API precedente rifiuta il campo: l'app lo manda solo quando non è
+  vuoto, e se il `PUT` torna `422 invalid_request` lo rimanda senza (parte
+  C).
 
 ### My activities (TASK-172, ADR-0140)
 
@@ -922,7 +961,13 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   se l'ha chiesto lui), al più 1 000, anche nessuna; `points` e
   `similarity`, il percorso seguito e la sua somiglianza (`RouteResult`),
   tutti e due o tutti e due `null` per una corsa senza percorso; `shape`,
-  `word`, `style`, `title`: cosa disegna il percorso, come nei preferiti.
+  `word`, `style`, `title`: cosa disegna il percorso, come nei preferiti;
+  `activity` (TASK-208), `running`, `cycling` o `paddling`, cosa era la
+  corsa, per difetto `running` (un'app di prima non lo manda: ogni sua
+  corsa era a piedi). Esempio: `activity-request-cycling.json`. Come il
+  resto, conta solo al primo `PUT`; dopo si cambia dal disegno
+  («Drawings», sotto), e lì si legge (`MyDrawing.activity`): l'elenco e la
+  corsa intera di questa sezione non lo hanno.
 - **Km, tempo e punteggio li conta l'API**, e l'app non li può mandare
   (`distance_m`, `duration_s`, `score` nel corpo sono `422`):
   - la traccia tenuta è quella **pulita dal motore** (`clean_track`,
@@ -1068,7 +1113,12 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
 - **`PublicProfile`** è `public_id`, `username`, `bio`, `photo` (il JPEG
   della foto in base64, come `GET /me/photo`, o `null`) e `drawings`, il
   numero dei disegni **pubblicati** (le corse private non contano,
-  ADR-0114 punto 4; i disegni sono in «Drawings», sotto). **Mai
+  ADR-0114 punto 4; i disegni sono in «Drawings», sotto); da TASK-208
+  quelli che chi guarda può vedere, così il numero è quello della griglia
+  (un disegno «followers» conta per chi segue e per il proprietario). Da TASK-211
+  anche `followers` e `following`, contate solo le richieste accettate, e
+  `follow`, dove sta chi guarda verso quel profilo: `none`, `requested` o
+  `following` (il proprio profilo: `none`; «Follow», sotto). **Mai
   l'email**, né `role`, `id` o la data d'iscrizione (un test lo prova).
 - Un `public_id` che non c'è, di un account cancellato, o che non è un
   UUID (un `id` numerico, un nome): `404 http_error` «No profile with this
@@ -1079,48 +1129,126 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
   is not available on this API yet.». L'app pubblicata ignora i campi in
   più.
 
-### Drawings (TASK-117, ADR-0159)
+### Drawings (TASK-117, ADR-0159; TASK-208, ADR-0170)
 
 Una corsa salvata in «My activities» è privata. Chi l'ha corsa le può dare
-un titolo e pubblicarla: allora ogni iscritto la vede come **disegno**, nel
-suo profilo e dal suo id. Tutti gli endpoint vogliono il token: senza,
-`401 not_signed_in`; senza database, `503 accounts_unavailable` (il feed
-non si legge senza account, ADR-0114). Tipi in `shared-types`
-(`DrawingRequest`, `MyDrawing`, `MyDrawings`, `Drawing`, `DrawingsPage`,
-`DrawingDetail`, `DRAWING_TITLE_MAX_LENGTH`, `DRAWING_CUT_M`), esempi in
-`fixtures/drawing-request.json`, `my-drawing.json`, `drawings.json`,
-`drawing.json`; il codice in `drawings.py`.
+un titolo, una descrizione, gli iscritti taggati, fino a tre foto e dire
+chi la vede: allora diventa un **disegno**, nel suo profilo e dal suo id.
+Tutti gli endpoint vogliono il token: senza, `401 not_signed_in`; senza
+database, `503 accounts_unavailable` (il feed non si legge senza account,
+ADR-0114). Tipi in `shared-types` (`DrawingRequest`, `DrawingPhotoRequest`,
+`MyDrawing`, `MyDrawings`, `Drawing`, `DrawingsPage`, `DrawingDetail`,
+`DrawingTag`, `DrawingPhoto`, `Visibility`/`VISIBILITIES`,
+`DRAWING_TITLE_MAX_LENGTH`, `DRAWING_DESCRIPTION_MAX_LENGTH`,
+`DRAWING_MAX_TAGS`, `DRAWING_MAX_PHOTOS`, `DRAWING_CUT_M`), esempi in
+`fixtures/drawing-request-details.json`, `my-drawing-details.json`,
+`drawings-details.json`, `drawing-details.json`, `drawing-photo-request.json`;
+quelli di prima di TASK-208 (`drawing-request.json`, `my-drawing.json`,
+`drawings.json`, `drawing.json`) sono ancora corpi buoni, senza i campi
+nuovi. Il codice in `drawings.py` e `drawing_photos.py`.
 
 | Endpoint | Cosa | Risposta |
 |---|---|---|
 | `GET /me/activities/{key}/drawing` | cosa ha scelto il proprietario per una sua corsa | `200` `MyDrawing`, o `404 http_error` |
-| `PUT /me/activities/{key}/drawing` | titolo e «Public», tutti e due ogni volta | `200` `MyDrawing`, o `404 http_error` |
-| `GET /me/drawings` | le proprie corse con un titolo o pubbliche, dalla più recente | `200` `{ "drawings": [MyDrawing, …] }` |
-| `GET /users/{public_id}/drawings` | una pagina dei disegni pubblici di un profilo | `200` `DrawingsPage`, o `404 http_error` |
+| `PUT /me/activities/{key}/drawing` | titolo, chi lo vede, descrizione, attività, tag | `200` `MyDrawing`, o `404 http_error` |
+| `PUT /me/activities/{key}/drawing/photos/{n}` | la foto nel posto `n` (1–3) | `200` `MyDrawing`, o `404 http_error` |
+| `DELETE /me/activities/{key}/drawing/photos/{n}` | svuotare il posto `n` | `204`, anche se era vuoto; `404` senza la corsa |
+| `GET /me/drawings` | le proprie corse con un disegno, dalla più recente | `200` `{ "drawings": [MyDrawing, …] }` |
+| `GET /users/{public_id}/drawings` | una pagina dei disegni di un profilo che chi chiede può vedere | `200` `DrawingsPage`, o `404 http_error` |
 | `GET /drawings/{id}` | un disegno intero | `200` `DrawingDetail`, o `404 http_error` |
+| `GET /drawings/{id}/photos/{n}` | una foto del disegno | `200` `image/jpeg`, o `404 http_error` |
 
-- **Il corpo del `PUT`** è `{ "title": …, "public": true | false }`: la
-  scelta intera, non solo quello che cambia, così l'app la può rimandare
-  dopo un telefono senza rete e la seconda volta non cambia niente. Il
-  titolo perde gli spazi in testa e in coda; `null` o `""` lo tolgono; al
-  più 60 caratteri, «A title is at most 60 characters.»; una riga sola,
-  senza caratteri di controllo, «A title is one line of words: it cannot
-  hold control characters.» (`422 invalid_request`, e non cambia niente).
-  Campi in più (`score`, `track`…): `422 invalid_request`.
+- **Chi lo vede** (`visibility`, ADR-0170, scelta dell'utente):
+  - `everyone`: ogni iscritto;
+  - `followers`: chi segue il proprietario **con la richiesta accettata**
+    («Follow», sotto); una richiesta in attesa non basta;
+  - `only_me`: nessun altro.
+
+  Il proprietario lo vede sempre. A chi non lo può vedere, `404
+  http_error` «No drawing with this id.», identico a un id che non c'è o
+  che non è un UUID. Smettere di seguire, o essere tolti dai follower,
+  toglie subito i disegni `followers`. Chi è taggato non ha diritti in
+  più: vede il disegno se la visibilità glielo dà. Nel codice la domanda
+  è una sola, `drawings.drawing_seen_sql(viewer)` (`DATABASE.md`,
+  migrazione `0014`): foto e commenti (TASK-120) la seguono.
+- **Il corpo del `PUT`** è `{ "title", "visibility", "description",
+  "activity", "tags" }`:
+  - `title` perde gli spazi in testa e in coda; `null`, `""` o assente lo
+    tolgono; al più 60 caratteri, «A title is at most 60 characters.»;
+    una riga sola, senza caratteri di controllo, «A title is one line of
+    words: it cannot hold control characters.»;
+  - `visibility` è obbligatoria, oppure **`public`** di un'app prima di
+    TASK-208 (`true` è `everyone`, `false` `only_me`): mai tutti e due,
+    «Say who can see it once: visibility, or public, not both.»; nessuno
+    dei due, «Say who can see it: visibility.»;
+  - `description` («How did it go?»): gli a capo restano (`\r\n` diventa
+    `\n`), gli spazi in testa e in coda no; al più 500 caratteri, «A
+    description is at most 500 characters.»; nessun altro carattere di
+    controllo, «A description is lines of words: it cannot hold other
+    control characters.»; `null` o `""` la tolgono. **Non passa dal filtro
+    dei commenti negativi** (ADR-0176): è il racconto della propria corsa
+    (scelta dell'utente, 2026-10-03);
+  - `activity`: `running`, `cycling` o `paddling`, l'attività della corsa
+    (`runs.activity`); cambia anche il tipo su Strava, non il punteggio;
+  - `tags`: i `public_id` degli iscritti taggati, in ordine, al più 10
+    (un undicesimo è `422`); `[]` li toglie. Un id che non è un iscritto,
+    «Only Sgrava members can be tagged: one of these is not.»; sé stessi,
+    «You cannot tag yourself.»; due volte lo stesso, «Each person is
+    tagged once.».
+
+  Tutti gli errori sono `422 invalid_request`, e non cambiano niente.
+  Campi in più (`score`, `track`, `photos`…): `422 invalid_request`.
+  **`description`, `activity` e `tags` assenti restano come sono**: un'app
+  prima di TASK-208 manda solo `title` e `public`, e non cancella quello
+  che un'app nuova ha scelto. L'app nuova manda tutto ogni volta, così il
+  `PUT` rimandato dopo un telefono senza rete non cambia niente la seconda
+  volta.
 - **`MyDrawing`** è `key` (la chiave della corsa), `id` (con cui gli altri
-  la aprono: un UUID casuale, come `public_id`; `null` per una corsa mai
-  titolata né pubblicata), `title`, `public` e `published_at` (quando è
-  diventata pubblica l'ultima volta, `null` se è privata). Cambiare il
-  titolo di un disegno pubblico non lo ripubblica; tolto e rimesso,
-  `published_at` è il momento nuovo. L'`id` non cambia mai.
+  la aprono: un UUID casuale, come `public_id`; `null` per una corsa senza
+  disegno: mai titolata, pubblicata o con una foto), `title`,
+  `visibility`, `public` (`visibility` è `everyone`: per l'app di prima),
+  `published_at` (da quando gli altri lo vedono, cioè dall'ultima volta
+  che era `only_me`; `null` se lo è), `description`, `activity`, `tags` e
+  `photos`. Passare da `everyone` a `followers` o indietro, o cambiare il
+  titolo, non lo ripubblica; tornato `only_me` e riaperto, `published_at`
+  è il momento nuovo. L'`id` non cambia mai. Una corsa senza disegno ha
+  `visibility` `only_me`, `tags` e `photos` vuoti, e l'`activity` della
+  corsa.
+- **Le foto**, fino a tre oltre alla mappa, ognuna nel suo **posto** `n`
+  (da 1 a 3; `0` o `4` sono `422`): il `PUT` mette la foto nel posto (`{
+  "image": … }`, un JPEG o PNG in base64 fino a 10 MB, come la foto del
+  profilo) e prende il posto di quella che c'era; il `DELETE` svuota il
+  posto, e le altre restano dove sono. Così rifatti non cambiano niente.
+  L'API **raddrizza** la foto con l'EXIF, la riduce a **1080 px sul lato
+  lungo** (mai ingrandita) e la salva come JPEG nuovo: il file del
+  telefono non si tiene, e con lui l'EXIF (dove è stata scattata). Un file
+  che non è una foto, o un GIF: `422 invalid_request` con il motivo, e la
+  foto di prima resta. Al più 20 `PUT` di foto al minuto per account
+  (`429 too_many_requests` con `Retry-After`).
+- **Le foto stanno sul server solo mentre altri vedono il disegno**
+  (`everyone` o `followers`; scelta dell'utente, 2026-10-03): mentre lo
+  vede solo il proprietario restano sul telefono. Su una corsa senza
+  disegno, o `only_me`, il `PUT` di una foto è `409 http_error`, «Photos
+  stay on the phone while only you see this run: choose Everyone or
+  Followers first.»; il `PUT` del disegno con `only_me` cancella le sue
+  foto dal server (`photos` vuoto nella risposta). L'app manda prima il
+  disegno, poi le foto, e le rimanda quando lo riapre agli altri.
+- **Ogni foto del disegno** è `{ "n", "url", "width", "height" }`, in
+  ordine di posto; `url` è `/drawings/{id}/photos/{n}?v=…`, sull'API, da
+  leggere con il token come ogni altra chiamata: risponde il JPEG
+  (`image/jpeg`, `Cache-Control: private, max-age=86400`). Il `v` cambia
+  con la foto, così un telefono non mostra quella di prima dalla sua
+  cache. A chi non vede il disegno, `404` «No drawing with this id.»; a
+  chi lo vede, un posto vuoto è `404` «This drawing has no photo here.».
 - **Cosa vedono gli altri** (ADR-0114, punto 4): la traccia pulita della
   corsa **senza i primi e gli ultimi 200 m lungo la traccia**
   (`DRAWING_CUT_M`), tagliata dall'API e tenuta così nel database; senza
   orari, senza pause, senza `walks` e **senza il percorso pianificato**,
   che parte dalla porta di chi corre. Con meno di un metro rimasto la
-  corsa non si pubblica: `422 invalid_request`, «This run is too short to
-  publish: its first and last 200 m are never shown, and nothing would be
-  left.»; titolata e privata si tiene lo stesso.
+  corsa non si mostra agli altri (`everyone` o `followers`): `422
+  invalid_request`, «This run is too short to publish: its first and last
+  200 m are never shown, and nothing would be left.»; `only_me` si tiene
+  lo stesso.
 - **Un disegno** ha `id`, `title`, `started_at`, `published_at`, `place`,
   `shape`, `word`, `style`, `route_title` (cosa disegna il percorso quando
   forma e parola non lo dicono: il `title` della corsa in «My
@@ -1128,28 +1256,148 @@ non si legge senza account, ADR-0114). Tipi in `shared-types`
   sono quelli della corsa, contati dall'API al salvataggio e mai presi
   dall'app. **Il punteggio lo vedono tutti** (scelta dell'utente); una
   corsa senza percorso si pubblica anche lei, con `score` e `fidelity`
-  `null` (scelta dell'utente). Nell'elenco c'è `track_preview`, al più 64
-  punti della traccia tagliata; intero (`GET /drawings/{id}`) ha `track`,
-  tutta la traccia tagliata, `author` (`public_id` e `username`, mai
-  l'email) e `public`.
-- **Chi vede cosa**: un disegno pubblico lo vede ogni iscritto, anche il
-  suo autore, tagliato. Uno privato lo vede solo il suo autore (tagliato,
-  `public` falso, `published_at` `null`, e `track` vuota se la corsa è
-  troppo corta); a chiunque altro `404 http_error` «No drawing with this
-  id.», come un id che non c'è o che non è un UUID. La corsa intera il
-  proprietario la ha sempre in `GET /me/activities/{key}`.
+  `null` (scelta dell'utente). Da TASK-208 anche `visibility`,
+  `description`, `activity`, `tags` (`public_id` e `username` di ognuno,
+  mai l'email; cancellato l'account taggato, il suo nome sparisce) e
+  `photos` (gli indirizzi, mai i byte). Nell'elenco c'è `track_preview`,
+  al più 64 punti della traccia tagliata; intero (`GET /drawings/{id}`) ha
+  `track`, tutta la traccia tagliata, `author` (`public_id` e `username`,
+  mai l'email) e `public`.
 - **Le pagine di un profilo**: `GET /users/{public_id}/drawings?limit=20&cursor=…`,
   `limit` da 1 a 50, dalla corsa più recente (l'inizio della corsa, non
   la pubblicazione); `next`, `total` e il cursore come in «My activities»,
   ma il cursore porta l'id casuale del disegno, non quello della riga. Un
-  profilo che non c'è: `404 http_error` «No profile with this id.». Solo i
-  pubblici, anche per il proprio profilo.
+  profilo che non c'è: `404 http_error` «No profile with this id.». Solo
+  quelli pubblicati che chi chiede può vedere: `everyone`, e `followers`
+  per chi segue; il proprietario vede i suoi `everyone` e `followers`, mai
+  gli `only_me` (ADR-0159, punto 8). `total` e `PublicProfile.drawings`
+  contano gli stessi.
 - **Cancellare** la corsa (`DELETE /me/activities/{key}`) o l'account
-  (`DELETE /me`) cancella il disegno: non compare più in nessun elenco né
-  dal suo id. Per toglierlo agli altri tenendo la corsa basta `public`
-  falso.
+  (`DELETE /me`) cancella il disegno, le sue foto e i suoi tag: non
+  compare più in nessun elenco né dal suo id. Per toglierlo agli altri
+  tenendo la corsa basta `only_me`.
 - **Un'API precedente** non ha questi endpoint (`404 http_error`) e il suo
-  `PublicProfile.drawings` è sempre 0.
+  `PublicProfile.drawings` è sempre 0. Un'API prima di TASK-208 rifiuta
+  `visibility`, `description`, `activity` e `tags` (`422`, campi in più)
+  e non ha le foto (`404`): l'app di prima continua con `public`.
+
+### Follow (TASK-211, ADR-0173)
+
+Un iscritto ne cerca un altro per nome e gli chiede di seguirlo; l'altro
+accetta o rifiuta. **Conta solo una richiesta accettata**: nei numeri del
+profilo, negli elenchi e per chi vedrà i disegni «Followers» (TASK-208).
+Tutti gli endpoint vogliono il token: senza, `401 not_signed_in`; senza
+database, `503 accounts_unavailable`. Tipi in `shared-types` (`Person`,
+`PeopleFound`, `PeoplePage`, `Follow`, `FollowState`,
+`PEOPLE_QUERY_MIN_LENGTH`, `PEOPLE_FOUND_MAX`, `PERSON_PHOTO_SIDE`), esempi
+in `fixtures/people.json`, `people-page.json`, `follow.json`; il codice in
+`follows.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /users?q=…` | gli iscritti con quel pezzo nel nome | `200` `{ "people": [Person, …] }` |
+| `POST /users/{public_id}/follow` | chiedere di seguire | `200` `{ "follow": "requested" \| "following" }` |
+| `DELETE /users/{public_id}/follow` | ritirare la richiesta, o smettere di seguire | `204` |
+| `GET /me/follow-requests` | chi chiede di seguirmi | `200` `PeoplePage` |
+| `POST /me/follow-requests/{public_id}/accept` | accettare | `204`, o `404 http_error` senza richiesta |
+| `POST /me/follow-requests/{public_id}/decline` | rifiutare | `204` |
+| `GET /me/followers` | chi mi segue | `200` `PeoplePage` |
+| `DELETE /me/followers/{public_id}` | togliere qualcuno da chi mi segue | `204` |
+| `GET /me/following` | chi seguo | `200` `PeoplePage` |
+
+- **`Person`** è solo `public_id`, `username` e `photo`: la foto del
+  profilo a **128 px** di lato (`PERSON_PHOTO_SIDE`, metà di quella di
+  `PublicProfile`), JPEG in base64, rifatta dall'API, o `null`. **Mai
+  l'email**, la bio o altro (un test lo prova). Il profilo intero si apre
+  con `GET /users/{public_id}`.
+- **La ricerca**: `q` senza gli spazi in testa e in coda, **almeno 2
+  caratteri** (meno, o senza `q`: `422 invalid_request` «Type at least 2
+  characters of a name.»), cercato **dentro** il nome senza badare alle
+  maiuscole; `_` e `%` sono caratteri come gli altri. **Al più 20**
+  risultati, **mai chi cerca**: prima i nomi che cominciano con `q`, poi i
+  più corti, poi in ordine alfabetico, sempre uguale. Un `q` più lungo di
+  un nome (20) non trova nessuno. Cerca solo il nome, mai l'email.
+- **Ogni azione porta a uno stato, e rifatta non cambia niente**: chiedere
+  di nuovo lascia una richiesta sola, con la sua data (la risposta dice
+  `requested`, o `following` se è già accettata); ritirare, smettere,
+  rifiutare e togliere rispondono `204` anche quando non c'era niente.
+  Accettare di nuovo è `204`; accettare senza nessuna richiesta di
+  quell'account è `404 http_error` «No follow request from this account.».
+- **Rifiutare cancella la richiesta**: chi aveva chiesto vede il profilo
+  come prima di chiedere (`follow` `none`), e può chiedere di nuovo.
+  Nessuna risposta dice che è stata rifiutata. Rifiutare chi segue già non
+  lo toglie: per quello c'è `DELETE /me/followers/{public_id}`, che toglie
+  anche una richiesta in attesa.
+- **Sé stessi** non si seguono: `422 invalid_request` «You cannot follow
+  yourself.». Un `public_id` che non c'è, di un account cancellato o che
+  non è un UUID: `404 http_error` «No profile with this id.», in tutti gli
+  endpoint con `{public_id}`.
+- **Gli elenchi sono solo propri** (degli altri si vedono i due numeri del
+  profilo): `?limit=20&cursor=…`, `limit` da 1 a 50, dal più recente
+  (l'accettazione per `followers` e `following`, la richiesta per
+  `follow-requests`); `next` è il `cursor` della pagina dopo, `null`
+  all'ultima; `total` quanti sono in tutto. Il cursore porta il momento e
+  il `public_id` dell'ultimo della pagina.
+- **Cancellare un account** (`DELETE /me`) lo toglie da ogni elenco e da
+  ogni numero, nei due versi.
+- **Un'API precedente** non ha questi endpoint (`404 http_error`; `GET
+  /users` senza id è `404` anche lui) e il suo `PublicProfile` non ha
+  `followers`, `following` né `follow`.
+
+### Comments (TASK-120, ADR-0175)
+
+Sotto un disegno gli iscritti scrivono commenti. Li legge e li scrive **chi
+vede il disegno** («Drawings», sopra, «Chi lo vede»): il suo proprietario
+sempre, gli altri come dice `visibility`, `everyone` o `followers` per chi
+segue (TASK-208, `drawing_seen_sql`). Tutti gli endpoint vogliono il token:
+senza, `401 not_signed_in`; senza database, `503 accounts_unavailable`.
+Tipi in `shared-types` (`CommentRequest`, `Comment`, `CommentsPage`,
+`COMMENT_MAX_LENGTH`), esempi in `fixtures/comment-request.json`,
+`comment.json`, `comments.json`; il codice in `comments.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /drawings/{id}/comments` | una pagina dei commenti, dal più vecchio | `200` `CommentsPage`, o `404 http_error` |
+| `POST /drawings/{id}/comments` | un commento nuovo | `201` `Comment`, o `404 http_error` |
+| `DELETE /comments/{id}` | cancella un commento | `204`, o `403` / `404 http_error` |
+
+- **Il corpo del `POST`** è `{ "text": "…" }`: testo semplice, che perde
+  gli spazi in testa e in coda; da 1 a 500 caratteri (`COMMENT_MAX_LENGTH`),
+  a capo compresi. Vuoto o solo spazi, «A comment needs some words.»;
+  oltre 500, «A comment is at most 500 characters.»; con caratteri di
+  controllo diversi dall'a capo, «A comment is words and new lines: it
+  cannot hold control characters.» (`422 invalid_request`, e non si tiene
+  niente). Campi in più: `422 invalid_request`. L'API tiene il testo com'è
+  scritto: niente HTML, niente link; l'app lo mostra come testo.
+- **Al più 10 commenti al minuto per account**: oltre, `429
+  too_many_requests` «Too many comments in a minute: wait a moment and try
+  again.» con `Retry-After` in secondi. Il limite è dell'account, non
+  dell'indirizzo, e vale per processo come quello delle foto.
+- **Un commento** ha `id` (UUID casuale), `author` (`public_id` e
+  `username`, come l'autore di un disegno: mai l'email; la foto si chiede
+  a `GET /users/{public_id}`), `text`, `created_at` e `deletable`: vero
+  quando chi chiede lo può cancellare.
+- **Le pagine**: `GET /drawings/{id}/comments?limit=20&cursor=…`, `limit`
+  da 1 a 50, **dal più vecchio**; `next` (il cursore della pagina dopo,
+  `null` sull'ultima) e `total` (quanti ne ha il disegno) come nelle
+  pagine di un profilo. Un commento scritto fra due pagine arriva in fondo,
+  mai due volte.
+- **Chi cancella**: chi l'ha scritto, o il proprietario del disegno, anche
+  i commenti degli altri sotto il suo. Chi vede il commento ma non è né
+  l'uno né l'altro: `403 http_error` «Only who wrote a comment, or the
+  owner of the drawing, deletes it.». Un commento che non c'è, o sotto un
+  disegno che chi chiede non vede: `404 http_error` «No comment with this
+  id.». Chi l'ha scritto lo cancella anche sotto un disegno tornato privato.
+- **Un disegno che non si vede** (non proprio e non per chi chiede, o un
+  id che non c'è o che non è un UUID): `404 http_error` «No drawing with
+  this id.», sia per leggere sia per scrivere. **Visto da meno persone**
+  (`only_me`, o `followers` per chi non segue più), i commenti restano e
+  li vede solo chi vede ancora il disegno; riaperto, tornano.
+- **Cancellare** la corsa (e quindi il disegno) o l'account del
+  proprietario cancella tutti i commenti del disegno; cancellare l'account
+  di chi ha scritto cancella i suoi commenti, ovunque.
+- **Un'API precedente** non ha questi endpoint: `404 http_error`, e l'app
+  non mostra i commenti.
 
 ### Send to Strava (TASK-187, ADR-0156)
 
@@ -1168,7 +1416,7 @@ posto con i suoi indirizzi).
 | `GET /strava/callback` | dove Strava rimanda il browser; senza chiave e senza token | una pagina HTML |
 | `DELETE /me/strava` | scollegare | `204`, anche se non era collegato |
 | `GET /me/activities/{key}/strava` | cosa ha Strava di una corsa | `200` `{ "status", "url" }`, o `404 http_error` |
-| `POST /me/activities/{key}/strava` | mandare la corsa; corpo facoltativo `{ "name": … }` | `200` è un'attività; `202` Strava la sta ancora leggendo |
+| `POST /me/activities/{key}/strava` | mandare la corsa; corpo facoltativo `{ "name": …, "description": … }` | `200` è un'attività; `202` Strava la sta ancora leggendo |
 
 - **Spento o acceso**: senza `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`
   nell'ambiente dell'API, `GET /me/strava` risponde `available: false`
@@ -1209,7 +1457,9 @@ posto con i suoi indirizzi).
   first.»: l'app torna a «Connect with Strava».
 - **L'invio** (`POST /me/activities/{key}/strava`): l'API scrive il GPX
   della corsa salvata, con l'orario di ogni punto (`GPX.md`, «La corsa
-  fatta»), e lo dà a `POST /uploads` di Strava con `sport_type=Run`,
+  fatta»), e lo dà a `POST /uploads` di Strava con `sport_type` dalla sua
+  attività (TASK-208: `Run` a piedi, `Ride` in bici, `StandUpPaddling`
+  in canoa, scelta dell'utente),
   `external_id` = la chiave della corsa, il nome e la descrizione. Poi
   guarda l'upload ogni secondo, al più 5 volte: `200` con `status: "sent"`
   e `url` (la pagina dell'attività) appena Strava l'ha letto; se ci mette
@@ -1227,7 +1477,12 @@ posto con i suoi indirizzi).
   resta com'è. Lo stesso nome va nel `<name>` del GPX.
 - **La descrizione** è «Drawn with Sgrava» per una corsa che ha seguito un
   percorso, «Recorded with Sgrava» per una corsa libera (scelta
-  dell'utente: su ogni corsa).
+  dell'utente: su ogni corsa). Da TASK-208 sopra quella riga, dopo una riga
+  vuota, va «How did it go?»: il `description` del corpo, scritto prima di
+  «Save» (`fixtures/strava-send-description.json`), con gli a capo,
+  tagliato a 500 caratteri e non rifiutato; vuoto o assente, la
+  descrizione del disegno, se la corsa ne ha uno. Come il nome, conta solo
+  per il primo invio. Le foto non vanno a Strava.
 - **Una corsa mandata due volte è un'attività sola**: la corsa tiene cosa
   ne è stato (`status`: `not_sent`, `processing`, `sent`), e una già
   mandata risponde `200` com'era, senza chiedere a Strava. Due invii
@@ -1249,6 +1504,31 @@ posto con i suoi indirizzi).
   `DELETE /me` fa lo stesso prima di cancellare l'account. Le corse già
   mandate restano su Strava.
 - Ognuno manda solo le sue corse: la chiave di un altro dà `404`.
+
+### Zone per il telefono (TASK-214, ADR-0177)
+
+La zona in cache intorno a un punto, perché il telefono disegni da sé. Il
+codice è in `phone_zone_api.py` e `phone_zones.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /phone-zones/{network}?lat=&lon=` | la zona della rete `foot` o `bike` che contiene 3 km intorno al punto | `200` `application/gzip`, il file della zona; `304` con `If-None-Match` uguale all'`ETag`; `404 http_error` senza zona o con un'altra rete; `422 invalid_request` con `lat` o `lon` fuori dai limiti |
+
+- **Il file** si chiama come la zona, `foot_<s>_<w>_<n>_<e>.zone.json.gz`
+  (`Content-Disposition`). È JSON con gzip: `format` `"sgrava-zone"`,
+  `version` `1`, `network`, `bbox`, gli attributi del grafo, i nodi, gli
+  archi e i nomi delle strade (`names`). Il telefono lo tiene così com'è
+  arriva.
+- **L'`ETag`** cambia quando la zona sul server cambia; il telefono lo
+  rimanda in `If-None-Match` e, se ce l'ha già, riceve `304` senza corpo.
+- **Nessun download**: senza una zona in cache intorno al punto la
+  risposta è `404`, e il percorso lo disegna il server, che scarica la
+  zona alla prima richiesta lì.
+- Come per gli altri endpoint vale la chiave `X-API-Key`, se il server ne
+  ha una (ADR-0076).
+- **Prima dei telefoni**: `python -m shaperoute_api.phone_zone_api` scrive
+  il file di ogni zona in cache, così nessun telefono aspetta che si scriva
+  (stime di spazio e tempo in `tasks/TASK-214.md`).
 
 ## Eventi delle ricerche (TASK-130, ADR-0101)
 

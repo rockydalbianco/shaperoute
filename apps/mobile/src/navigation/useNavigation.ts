@@ -1,13 +1,24 @@
-import type { Direction, LatLon, Walk } from "@shaperoute/shared-types";
+import type {
+  Activity,
+  Direction,
+  LatLon,
+  Stretch,
+  Walk,
+} from "@shaperoute/shared-types";
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useRef, useState } from "react";
 import { Vibration } from "react-native";
 
+import { onFootOf } from "../route/onFoot";
 import { walksOf } from "../route/walks";
-import { kmAnnouncement, wholeKm } from "./freeRun";
+import { loadVoices, speaking } from "../voice/voiceChoice";
+import { wordsOf } from "../voice/words";
+import { kmAnnouncement } from "./freeRun";
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
+import { moveOnFoot, startOnFoot } from "./onFootVoice";
 import { movePen, startPen } from "./penUp";
+import { announceMOf, isRide, rideAnnouncement, saidKmOf } from "./ride";
 import { controlRun, runControl, type RunSession } from "./runControl";
 import { emptyTrack, type Track } from "./trackRecorder";
 import { startRun } from "./trackStore";
@@ -28,16 +39,18 @@ export type NavigationState =
     }
   | { status: "denied" };
 
-/** Says and vibrates what the navigator decided. With the voice off
- * (TASK-169) a turn still vibrates. */
+/** Says and vibrates what the navigator decided, in the language and the
+ * voice chosen for it (TASK-209). With the voice off (TASK-169) a turn
+ * still vibrates. */
 export function play(cues: Cue[]): void {
+  const { options } = speaking();
   for (const cue of cues) {
     if (cue.vibrate) {
       Vibration.vibrate(VIBRATE_MS);
     }
     if (runControl().voice) {
       // Each cue after the last one: a turn is never cut by the next.
-      Speech.speak(cue.say, { language: "en-US" });
+      Speech.speak(cue.say, options);
     }
   }
 }
@@ -49,7 +62,13 @@ export function play(cues: Cue[]): void {
  * are runControl's, and each kilometre is said as in a run without a route
  * (TASK-169). Along a word with the pen up, the recording pauses on each
  * walk and goes on at the next letter, and the voice says so (TASK-198).
- * The position never leaves the phone.
+ * Along a bike route the voice says each stretch with the bike on foot
+ * ahead, and its end, without pausing the recording (TASK-206). A route of
+ * `activity` "cycling" is followed by bike (TASK-216): turns said further
+ * ahead, the kilometres every RIDE_KM_EVERY with the average speed, and the
+ * way between the letters ridden.
+ * Each fix is said in the voice's language of that moment (TASK-209), so a
+ * change on «Data» is heard at once. The position never leaves the phone.
  */
 export function useNavigation(
   points: LatLon[] | null,
@@ -57,9 +76,20 @@ export function useNavigation(
   active: boolean,
   /** The route's similarity to its shape, kept with the track for the score. */
   similarity?: number,
-  /** The route's walks and its word, for a word with the pen up (TASK-198):
-   * none for any other route, which is followed as before. */
-  { walks, word }: { walks?: Walk[]; word?: string | null } = {},
+  /** The route's walks and its word, for a word with the pen up (TASK-198),
+   * its stretches with the bike on foot (TASK-206) and its activity
+   * (TASK-216): none for any other route, which is followed as a run. */
+  {
+    walks,
+    word,
+    onFoot,
+    activity,
+  }: {
+    walks?: Walk[];
+    word?: string | null;
+    onFoot?: Stretch[];
+    activity?: Activity;
+  } = {},
 ): NavigationState {
   const [state, setState] = useState<NavigationState>({ status: "starting" });
   const navigation = useRef<Navigation | null>(null);
@@ -72,6 +102,9 @@ export function useNavigation(
     let subscription: Location.LocationSubscription | null = null;
     let run: RunSession | null = null;
     let stopRecording: (() => void) | null = null;
+    // The phone's voices, before the first words: a chosen one is used only
+    // once it is known to be there.
+    void loadVoices();
     void (async () => {
       const permission = await Location.requestForegroundPermissionsAsync();
       if (stopped) {
@@ -81,15 +114,21 @@ export function useNavigation(
         setState({ status: "denied" });
         return;
       }
-      const started = startNavigation(points, directions);
+      const started = startNavigation(
+        points,
+        directions,
+        speaking().language,
+        announceMOf(activity),
+      );
       navigation.current = started.navigation;
       const walked = walksOf(points, walks);
-      let pen = startPen(started.navigation.along, walked, word);
+      let pen = startPen(started.navigation.along, walked, word, activity);
+      let bike = startOnFoot(started.navigation.along, onFootOf(points, onFoot));
       // A route stopped lately goes on with its track (trackStore).
       const recorder = startRun(points, Date.now(), similarity, walked);
       stopRecording = recorder.stop;
       // A run that goes on does not say again the kilometres it has said.
-      let saidKm = wholeKm(recorder.track());
+      let saidKm = saidKmOf(recorder.track(), activity);
       let position: LatLon | null = null;
       const session = controlRun(recorder, {
         // «Pause» and «Resume» change the track between two fixes.
@@ -124,12 +163,20 @@ export function useNavigation(
           }
           const fix: LatLon = [coords.latitude, coords.longitude];
           position = fix;
-          const next = onFix(navigation.current, fix, {
-            accuracyM: coords.accuracy,
-            timeMs: timestamp,
-          });
+          const { language } = speaking();
+          const next = onFix(
+            navigation.current,
+            fix,
+            { accuracyM: coords.accuracy, timeMs: timestamp },
+            language,
+          );
           navigation.current = next.navigation;
-          const drawing = movePen(pen, next.navigation.alongM, coords.accuracy);
+          const drawing = movePen(
+            pen,
+            next.navigation.alongM,
+            coords.accuracy,
+            language,
+          );
           pen = drawing.pen;
           // The fix that reaches a letter is its first; the one that ends a
           // letter is its last.
@@ -158,11 +205,23 @@ export function useNavigation(
           // The pen first: what the runner does next depends on it.
           play(drawing.cues);
           play(next.cues);
+          // After the turn, which may be the way onto the stretch.
+          const walking = moveOnFoot(
+            bike,
+            next.navigation.alongM,
+            wordsOf(language),
+            coords.accuracy,
+          );
+          bike = walking.onFoot;
+          play(walking.cues);
           // After the turn, so a kilometre never delays one.
-          const km = wholeKm(track);
+          const km = saidKmOf(track, activity);
           if (km > saidKm) {
             saidKm = km;
-            play([{ say: kmAnnouncement(km, track), vibrate: false }]);
+            const said = isRide(activity)
+              ? rideAnnouncement(km, track, language)
+              : kmAnnouncement(km, track, language);
+            play([{ say: said, vibrate: false }]);
           }
         },
       );
@@ -178,7 +237,7 @@ export function useNavigation(
       void Speech.stop();
       setState({ status: "starting" });
     };
-  }, [active, points, directions, similarity, walks, word]);
+  }, [active, points, directions, similarity, walks, word, onFoot, activity]);
 
   return state;
 }

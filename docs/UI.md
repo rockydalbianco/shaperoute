@@ -12,7 +12,16 @@
   OpenFreeMap (ADR-0029). Non MapLibre React Native: in Expo Go non gira.
 - I percorsi li chiede all'API sul PC (ADR-0030, ADR-0031); mappa e
   ricerca del luogo chiamano direttamente due servizi esterni (ADR-0029).
-- Testi in inglese, come il codice; le traduzioni verranno dopo.
+- Testi scritti in inglese, come il codice, e mostrati nella lingua scelta
+  in «Settings» (TASK-210, ADR-0172): inglese, tedesco, italiano, spagnolo,
+  francese; senza scelta, quella del telefono se è una delle cinque,
+  altrimenti l'inglese. Ogni testo passa da `t()` (`src/i18n/`); un testo
+  senza traduzione si mostra in inglese. Tradotti a pezzi: con la parte A
+  «Settings», «Profile», l'accesso, «My activities», i preferiti, i
+  disegni, il feed, Strava e la ricerca del luogo; «Draw», «Explore» e la
+  corsa con le parti successive. Le traduzioni le ha riviste l'agente su
+  delega dell'utente («controlla te, mi fido», 2026-10-03); chi parla
+  tedesco, spagnolo o francese può ancora migliorarle in `src/i18n/`.
 
 ## Il tema
 
@@ -43,7 +52,7 @@ ciano di «Start here».
 | `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
-| `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | solo «Connect with Strava» (TASK-187): l'arancione e il bianco che le regole del marchio Strava chiedono, scelti dall'utente |
+| `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | nessuno dal TASK-218: «Connect with Strava» (TASK-187) ora è l'immagine ufficiale di Strava, con i suoi colori dentro (ADR-0181); da togliere quando `tokens.ts` è libero |
 | `map.*` | dal `#0D0E10` al `#3A3D45` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
 
 Quattro regole:
@@ -334,6 +343,27 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   again.» e non mostra un altro percorso al suo posto. Un dito che scorre
   sopra una scheda non la apre. Like, commenti e il profilo di chi ha corso
   arrivano con TASK-118.
+  **In cima, sopra i disegni, a destra, la lente** (TASK-215, ADR-0178;
+  TASK-219, ADR-0182: solo la lente, scelta dell'utente): un cerchio come
+  quello di «Profile», con una lente disegnata e nessun testo, sotto il
+  bottone di «Profile»; VoiceOver lo legge «Find friends». Non sta
+  nell'intestazione delle pagine: lì, accanto a sport e profilo, su un
+  iPhone da 390 pt non c'è posto. Scorre con l'elenco. Apre
+  sopra l'app, come «Profile», la pagina **«Find friends»**: «←», un campo
+  «Name» con la tastiera già aperta e, sotto, gli iscritti trovati, al più
+  20, ognuno con la foto (o l'iniziale) e il nome; mai l'email. La ricerca
+  parte con 2 lettere, 300 ms dopo l'ultima, o subito con il tasto «cerca»
+  della tastiera; sotto le 2 lettere la pagina dice «Type at least 2
+  letters of a name.», mentre cerca «Searching…», senza nessuno «Nobody has
+  a name like that.». Si cerca fra tutti gli iscritti: la lista dei nomi è
+  visibile a chiunque ha un account (TASK-211). Un nome toccato apre il suo
+  profilo (sotto, «Il profilo di un altro iscritto») con il titolo
+  «Profile»; «←» torna ai nomi trovati, con il campo com'era, e un altro «←»
+  a «Feed». Un disegno aperto da quel profilo, chiuso, torna al profilo.
+  **Senza account** il tasto apre «Profile» con «Log in to find your
+  friends.» sopra «Sign up». Un server senza la ricerca (prima della
+  migrazione `0011`) fa dire «This server cannot look for members yet.».
+  Il tasto «Follow» sul profilo è di TASK-211, parte B.
   **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
   chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
   stile dell'app. È una foto, non una mappa da muovere: la fa una pagina
@@ -414,6 +444,30 @@ giorno), il giorno, i km, il punteggio («87», «out of 100»), mai l'ora;
 **«Back to the profile»** e «←» tornano a «Profile». Se nel frattempo è
 tornato privato: «This drawing is no longer public.» sopra la griglia.
 
+**I commenti di un disegno** (TASK-120, ADR-0175, scelta dell'utente del
+2026-10-03: subito sotto le corse vere, non sugli esempi di «Feed»): nella
+scheda di un disegno aperto, fra i numeri e «Back to the profile», un
+pulsante neutro dice quanti sono: «Write a comment», «1 comment», «4
+comments» («Comments» finché il numero non arriva). Senza account, o con
+un'API senza commenti, il pulsante non c'è. Il tocco apre un **foglio dal
+basso** sopra la mappa (circa tre quarti dello schermo; un tocco sopra il
+foglio o «Close» lo chiude): «Comments», l'elenco **dal più vecchio**
+(la foto o l'iniziale di chi ha scritto, il nome, quanto tempo fa, «just
+now», «5 min ago», «3 h ago», «2 d ago», poi il giorno; e il testo), venti
+per volta con «Show more comments» in fondo; vuoto «No comments yet. Be
+the first.»; mentre arriva «Loading the comments…»; non arrivato il motivo
+e «Try again». In fondo, **sopra la tastiera**, il campo «Add a comment…»
+(anche su più righe) e **«Post»**, spento finché il campo è vuoto o
+supera i 500 caratteri; da 450 compare il conto, «460/500», rosso oltre.
+Mandato, il campo si svuota e il commento compare in fondo. Rifiutato, il
+campo resta com'è e sopra c'è il motivo dell'API (troppi in un minuto,
+vuoto, troppo lungo); senza rete «No connection. Try again when you are
+online.». **Tenere premuto** un commento che si può cancellare (il proprio,
+o qualsiasi sotto il proprio disegno) chiede «Delete this comment?» con
+«Cancel» e «Delete»; per VoiceOver è l'azione «Delete» della riga. **Il
+testo è sempre solo testo**: un link non si tocca, un tag HTML si legge
+com'è scritto, e il commento non entra mai nella WebView della mappa.
+
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 
 - **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,
@@ -432,11 +486,19 @@ tornato privato: «This drawing is no longer public.» sopra la griglia.
   «Draw», «Start» ed «Explore» (sotto, «Sull'acqua»); «Feed» e la schermata
   della corsa restano quelli della corsa.
 - **«Strava»** (TASK-187), solo se l'API ha Strava: «Connect with
-  Strava» (arancione) con «Send the runs you save in Sgrava to your Strava
+  Strava» (il pulsante ufficiale di Strava, TASK-218, come a fine corsa)
+  con «Send the runs you save in Sgrava to your Strava
   profile.»; collegato, «Connected as Ada Lovelace» e «Disconnect Strava»,
   in rosso, che chiede prima: «Disconnect Strava? Runs already sent stay
   on Strava.», con «Keep it» e «Disconnect».
-- **«Preferences»**: «Units», «Soon». **«Notifications»**: «Email
+- **«Preferences»**: **«Language»** (🌐, TASK-210, ADR-0172), con in
+  fondo la lingua in cui è l'app; un tocco apre sotto la riga «Phone
+  language» (con accanto la lingua del telefono) e «English», «Deutsch»,
+  «Italiano», «Español», «Français», ognuna nel suo nome e letta da
+  VoiceOver nella sua lingua, con il «✓» bianco sulla scelta. La scelta
+  chiude la lista, vale subito per tutta l'app senza chiudere niente e
+  resta sul telefono, come lo sport; «Phone language» torna a seguire il
+  telefono. Poi «Units», «Soon». **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
@@ -497,9 +559,9 @@ disegni pubblicati, TASK-117) e la bio; mai l'email. Sotto, **«Drawings»**
 come in «Profile» (sopra), vuota «No drawings yet.»; un disegno toccato si
 apre sulla mappa. Mentre arriva dice «Loading the profile…»; un profilo che
 non c'è, o un'API senza profili, «This profile is not available.»; senza
-account «Log in to see the profiles of the others.». **Nell'app non ci si
-arriva ancora**: la pagina c'è (`UserProfilePage.tsx`) e i test la aprono a
-mano; da dove si apre (il feed, un like, un commento) lo decide l'utente
+account «Log in to see the profiles of the others.». **Ci si arriva da
+«Find friends»**, la lente in cima a «Feed» (TASK-215, ADR-0178, sopra); altri
+ingressi (un like, un commento) li decide l'utente
 (`tasks/TASK-116.md`, «Esito»).
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
@@ -576,6 +638,13 @@ dell'account.
   corsa. Se l'API non conosce ancora l'attività (più vecchia di TASK-200) e
   rifiuta, l'app lo tiene come una corsa, senza mostrare l'errore; tenuto
   così, resta così.
+- **La bici a mano** (TASK-206, ADR-0167): il cuore tiene anche i tratti
+  con la bici a mano (`on_foot`), solo quando ce ne sono e stanno nella
+  linea; riaperto, il preferito li segna sulla mappa come appena disegnato
+  («Il risultato»), e tenuto di nuovo li tiene. Se l'API non li conosce
+  ancora (più vecchia di TASK-206, parte B) e rifiuta, l'app lo manda di
+  nuovo senza i tratti, ancora in bici; se rifiuta ancora, come un'app più
+  vecchia di TASK-199. Un preferito tenuto prima non ha tratti.
 
 ## «My activities» (TASK-172, ADR-0140)
 
@@ -1060,11 +1129,15 @@ sottili: il token `walk` (`textMuted`, largo 3, opacità 0,9, trattini di 2
 larghezze e spazi di 1,5, estremi dritti). Grigi e non gialli perché il
 giallo è il disegno: così la parola si legge. Sotto il nome del percorso
 una riga in più, «15.4 km of letters + 4.2 km walking between them»
-(testo **da confermare con l'utente**): i km delle lettere sono quelli che
+(testo confermato dall'utente il 2026-10-03): i km delle lettere sono quelli che
 la corsa registra e quelli a cui va la distanza chiesta; a parità di km le
 lettere vengono 1,7 volte più alte e i tratti a piedi aggiungono il 20–30%.
 La distanza in grande e quella delle tessere «A · B · C» restano di tutto
-il percorso, tratti a piedi compresi (`distance_m`). Un risultato senza
+il percorso, tratti a piedi compresi (`distance_m`). **In bici**
+(TASK-216, testo scelto dall'utente) fra le lettere si pedala: «15.4 km of
+letters + 4.2 km riding between them» · «15,4 km di lettere + 4,2 km in
+bici fra una lettera e l'altra» (attraverso `t()`; tedesco, spagnolo e
+francese da confermare). Un risultato senza
 `walks` (un'API più vecchia di TASK-197) o con `walks` che non stanno nei
 `points` (l'app non si fida: `src/route/walks.ts`) si disegna come prima,
 una linea sola, con lo stesso messaggio alla mappa di prima. Il percorso
@@ -1072,6 +1145,28 @@ con i `walks` non è chiuso: va dalla prima lettera all'ultima. Da
 TASK-199 un preferito tiene anche i `walks`, e riaperto si mostra e si
 corre come appena disegnato («Favorites»); uno tenuto prima è una linea
 sola.
+
+**La bici a mano** (TASK-206, ADR-0167). Un percorso in bici può avere
+brevi tratti con la bici portata a mano (marciapiedi, sentieri, l'altro
+senso di un senso unico): l'API li manda in `on_foot`. Sulla mappa, qui e
+durante la corsa, la linea gialla resta **intera**, perché i tratti sono
+parte del disegno, e sopra di loro corrono **trattini scuri**: il token
+`onFoot` (`onAccent`, largo 2, opacità 0,9, trattini e spazi di 1,5
+larghezze, estremi dritti), sopra il percorso e sotto i luoghi di un
+percorso a tema e la corsa. Scelta dell'utente del 2026-10-03; scartati il
+blu delle pagine di confronto (spezza la forma) e il giallo tratteggiato.
+Con una parola a penna alzata in bici, la parte di un tratto che cade fra
+una lettera e l'altra non si segna: lì la linea è già grigia. Nella scheda
+l'avviso del motore «923 m of the route with the bike on foot» diventa una
+riga grigia, da sapere: **«Includes 920 m walking the bike.»** (in
+italiano «Di cui 920 m con la bici a mano.», approvati dall'utente, come
+il tedesco, lo spagnolo e il francese il 2026-10-03), i metri arrotondati a 10,
+da 1 km «1.1 km». Ogni tessera «A · B · C» ha i suoi. La distanza resta di
+tutto il percorso, tratti a mano compresi, e la corsa li registra senza
+pause. Un risultato senza `on_foot` (un'API più vecchia di TASK-206) o con
+tratti che non stanno nei `points` (`src/route/onFoot.ts`, gli stessi
+controlli dei `walks`) si disegna come prima, con lo stesso messaggio alla
+mappa di prima.
 
 ## La navigazione
 
@@ -1133,7 +1228,8 @@ TASK-164, di cui tiene i numeri.
   sposta la fa ripartire, «Resumed.». «Resume» funziona anche qui. Spenta,
   il tempo conta anche le soste.
 - **«Voice»** (accesa): spenta, l'app non dice più niente, né svolte né
-  km; la vibrazione delle svolte resta.
+  km; la vibrazione delle svolte resta. Sotto, la lingua e la voce con cui
+  parla, e «Listen» (TASK-209: «La voce della corsa», più giù).
 - **«Music»** (TASK-173, ADR-0141): mentre si corre, di fronte a «Pocket»,
   su tutte e due le pagine. Apre Spotify, dove lo si era lasciato; a Sgrava
   si torna da soli (su iPhone, «◀» in alto a sinistra). Sgrava non suona
@@ -1156,8 +1252,8 @@ TASK-164, di cui tiene i numeri.
   voce, con una vibrazione, dice «Letter done. Walk to the U: the drawing is
   paused.» alla fine della lettera e «Pen down: draw the U.» all'inizio
   della successiva, una volta sola ciascuno e prima delle svolte della
-  stessa posizione (testi **da confermare con l'utente**; se la parola non
-  ha una lettera più dei tratti, «the next letter»). Sulla scheda è una
+  stessa posizione (testi confermati dall'utente il 2026-10-03; se la
+  parola non ha una lettera più dei tratti, «the next letter»). Sulla scheda è una
   pausa come le altre: «Paused», «Resume» e «Stop».
   - **Perché 20 m, e lungo il percorso**: una posizione che la corsa tiene
     sbaglia fino a 40 m (`POOR_FIX_M`), in città 10–20 m. Ripartendo 20 m
@@ -1187,6 +1283,56 @@ TASK-164, di cui tiene i numeri.
     ogni lettera non si unisce all'ultima della lettera prima.
   - Solo nell'app: con il GPX sull'orologio la pausa si mette a mano, ai
     waypoint «Pause» e «Resume» (TASK-197, `GPX.md`).
+- **La bici a mano** (TASK-206, ADR-0167; frasi scelte dall'utente il
+  2026-10-03). Su un percorso in bici con tratti a mano (`on_foot`) la
+  voce, con una vibrazione, dice il tratto **100 m prima**
+  (`ON_FOOT_AHEAD_M`, come una svolta in bici: TASK-216, ADR-0179; prima
+  50 m): «In 100 metres, get off and walk the bike for 200 metres.» · «Tra
+  100 metri, scendi e porta la bici a mano per 200 metri.»,
+  con i metri che mancano e la lunghezza del tratto arrotondati a 10; e
+  alla sua fine «Back on the bike.» · «Risali in bici.», tranne quando il
+  tratto finisce all'arrivo. Se la prima posizione è già sul tratto, la
+  frase senza «Tra … metri», con i metri che restano. Due tratti a meno di
+  30 m si dicono come uno; sotto i 25 m un tratto non si dice (sulla mappa
+  c'è). Una volta sola ciascuna, dopo le svolte della stessa posizione. La
+  registrazione **non** va in pausa: il tratto a mano è disegno, e conta
+  nel tempo e nel punteggio. `src/navigation/onFootVoice.ts`.
+
+**In bici** (TASK-216, ADR-0179; scelte dell'utente del 2026-10-03).
+«Start» su un percorso in bici apre una navigazione da bici. L'attività è
+quella del percorso, non quella di «Settings»: da «Draw» quella con cui è
+stato chiesto, da un preferito quella con cui è stato tenuto, da «Explore»
+quella dell'esempio (oggi sempre la corsa). Solo `cycling` cambia: la
+corsa, e un percorso senza attività, restano come prima, parola per parola.
+
+- **La velocità al posto del passo**: su «Map» «Speed now» (km/h, sugli
+  ultimi 200 m, come «Pace now»); su «Data» e in pausa «Speed now», «Avg
+  speed», «Last km» (la velocità dell'ultimo km intero), «Elev. gain»,
+  «Calories»; i km uno per uno sono «Km · Speed · Change», con la velocità
+  a un decimale («24.0») e la differenza col km prima in km/h («-4.0» più
+  lento, «+1.5» più veloce). In italiano «Vel. ora», «Vel. media», «Ultimo
+  km», «Velocità» (approvati dall'utente; tedesco, spagnolo e francese da
+  confermare); i numeri col punto, come gli altri della schermata.
+- **La voce dei km ogni 10 km**, a 10, 20 e 30: «10 kilometres. Time: 25
+  minutes 10 seconds. Average speed: 24 kilometres per hour.» · «10
+  chilometri. Tempo: 25 minuti e 10 secondi. Velocità media: 24 chilometri
+  orari.», la velocità a numero intero, detta a parole (la voce del telefono
+  può leggere male «km/h»). Le pause non contano, e una pedalata che
+  riprende non ridice i 10 km già detti. L'incitamento dopo i primi 5 km
+  in bici non c'è.
+- **Le svolte 100 m prima** (`RIDE_ANNOUNCE_M`), con la distanza detta
+  («In 100 metres, turn left onto Via Roma»), e così i tratti con la bici a
+  mano. Perché 100 m: a 20 km/h la svolta arriva in mediana 16 s dopo
+  l'inizio della frase, come a 5:30 /km con 50 m; oltre non si guadagna,
+  perché in bici le svolte distano in mediana 99 m (ADR-0179, misurato su
+  Trento).
+- **La penna alzata in bici**: alla fine di una lettera «Letter done. Ride
+  to the U: the drawing is paused.» · «Lettera finita. Pedala fino alla U:
+  il disegno è in pausa.» («the next letter» · «la lettera successiva»
+  quando la parola non dice quale); «Pen down: draw the U.» come a piedi.
+  La pausa «penna» è la stessa.
+- **Come nella corsa**, per ora: la fine della corsa (il riepilogo col
+  passo), le calorie (stimate per la corsa), la corsa senza percorso.
 
 **L'aspetto della corsa** (TASK-204, ADR-0163; chiesto dall'utente il
 2026-10-03: «migliora la parte grafica», e confermato lo stesso giorno,
@@ -1238,9 +1384,11 @@ nord in alto. La direzione viene dalla traccia, dagli ultimi 10 m: serve
 qualche passo perché compaia (prima c'è il segnaposto di sempre), e da
 fermi resta quella di prima. A fine corsa torna il segnaposto.
 
-Ogni svolta si dice a voce 50 m prima, in inglese come il resto dell'app
-(«In 50 metres, turn left onto Via Roma, then turn right onto the
-footpath»), con una vibrazione. Una via senza nome è «the footpath», «the
+Ogni svolta si dice a voce 50 m prima («In 50 metres, turn left onto Via
+Roma, then turn right onto the footpath»; in bici 100 m, «In bici» qui
+sopra), con una vibrazione, nella lingua
+della voce: in inglese finché non se ne sceglie un'altra («La voce della
+corsa», sotto). Una via senza nome è «the footpath», «the
 path», «the road»: mai un nome inventato. Se accanto corre una via con nome
 (dedotta dall'API, ADR-0057), la si dice con «beside»: «Turn left onto the
 footpath beside Via Roma», sul banner e a voce (ADR-0058). Oltre 40 m dal percorso per almeno
@@ -1251,6 +1399,76 @@ non bastano, e una posizione con un errore dichiarato oltre 40 m non conta;
 una via parallela sbagliata sì (ADR-0070). Dopo due posizioni di fila sul
 percorso, «Back on the route». Alla fine, «You have arrived». Funziona con lo schermo
 acceso e l'app aperta; la posizione non esce dal telefono.
+
+**La voce della corsa** (TASK-209, ADR-0171; chiesto dall'utente il
+2026-10-03: «scegliere la voce e la lingua della voce»). In «Data», sotto
+«Auto-pause» e «Voice», una riga dice chi parla e in che lingua («English ·
+Default», «Italiano · Alice»), con «›»; accanto, un tondo con il segno del
+play, **«Listen»**, che dice una svolta d'esempio («In 50 metres, turn left
+onto Via Roma», nella lingua scelta). Toccata la riga, dal basso sale un
+foglio con due elenchi: **«Language»**, prima «App language» (con sotto la
+lingua dell'app di adesso) e poi le cinque lingue, ognuna nel suo nome
+(English, Deutsch, Italiano, Español, Français, l'ordine dell'utente); e
+**«Voice»**, prima «Default» (la voce del telefono per quella lingua) e poi
+le voci installate sul telefono per quella lingua, di ogni paese («Daniel»,
+«en-GB · Enhanced»), per nome. Un tocco sceglie e resta; «Done» o un tocco
+fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
+«Listen» è spento e non parla nessuno.
+
+- **Prima di ogni scelta** la voce segue la lingua dell'app (TASK-210),
+  con la voce di sistema: oggi, in inglese, esattamente le frasi di prima
+  (`en-US`). Scelta una lingua solo per la voce, lo schermo non cambia: il
+  banner segue la lingua dell'app.
+- **Ricordata sul telefono** (`voice.json` nei documenti, come lo sport):
+  la lingua (o «App language») e una voce per ogni lingua, così tornando a
+  una lingua torna la sua voce. Vale dalla frase successiva, anche a metà
+  corsa.
+- **Una voce sparita** dal telefono: parla la voce di sistema della stessa
+  lingua, senza errore. **Una lingua senza nessuna voce** sul telefono: la
+  voce parla inglese, e il foglio lo dice («This phone has no Français
+  voice: the voice speaks English.»). Finché il telefono non ha detto
+  quali voci ha, nessuna voce si chiede per nome (iOS, per una voce che
+  non trova, non dice niente); lo si aspetta al massimo 3 secondi, e se
+  non risponde il foglio ha solo «Default», con «This phone did not list
+  its voices: its own voice speaks.» (nel simulatore iOS 27 l'elenco è
+  arrivato dopo minuti: riaprendo il foglio le voci compaiono).
+- **Cosa dice**, in ogni lingua: le svolte con la distanza e il «poi», la
+  partenza, le vie senza nome per tipo (mai un nome inventato; i nomi
+  delle vie mai tradotti), «beside», fuori e di nuovo sul percorso,
+  l'arrivo, la pausa da fermi e la ripresa, la penna alzata, ogni km con
+  tempo e passo, la bici a mano (TASK-206), in bici i km ogni 10 con la velocità media e la penna alzata
+  pedalando (TASK-216: tedesco, spagnolo e francese da confermare). Il
+  numero uno detto a parole dove si accorda («Un chilometro», «un'ora»,
+  «eine Minute»). Le frasi sono in `src/voice/`, una tabella per lingua;
+  quelle in inglese sono le stesse di prima, parola per parola.
+- **Dopo i primi 5 km**, una volta sola e subito dopo l'annuncio del
+  quinto km, la voce incita: **«Daje, avanti tutta!»** (chiesto
+  dall'utente il 2026-10-03). Nelle altre lingue: «Come on, full speed
+  ahead!», «Los, volle Kraft voraus!», «¡Vamos, a toda máquina!», «Allez,
+  en avant toute !».
+- **Testi**: le frasi italiane sono **confermate dall'utente** (2026-10-03),
+  e lo sono anche le spagnole, francesi e tedesche: l'utente le ha
+  ascoltate e approvate lo stesso giorno. Lo stesso giorno ha confermato
+  anche quelle della bici a mano (TASK-206) in tedesco, spagnolo e francese,
+  con «Includes … walking the bike.», e i testi della penna alzata
+  (TASK-198). Restano da confermare le frasi nuove della bici (TASK-216) in
+  tedesco, spagnolo e francese. Le parole del foglio («App
+  language», «Language», «Voice», «Default», «Listen», «Done») sono in
+  inglese come il resto dello schermo: le traduce TASK-210.
+
+| | Italiano (confermato dall'utente il 2026-10-03) |
+|---|---|
+| Svolta | «Tra 50 metri, svolta a sinistra su Via Roma, poi svolta a destra sul sentiero» |
+| Partenza | «Parti lungo Via Roma» |
+| Accanto | «Svolta a sinistra sul percorso pedonale accanto a Via Rosmini» |
+| Fuori, di nuovo, arrivo | «Sei fuori percorso. Torna sul percorso.» · «Di nuovo sul percorso.» · «Hai raggiunto l'arrivo.» |
+| Pausa, ripresa | «In pausa.» · «Si riparte.» |
+| Penna alzata | «Lettera finita. Cammina fino alla A: il disegno è in pausa.» · «Giù la penna: disegna la A.» |
+| Km | «Un chilometro. Tempo: 5 minuti e 42 secondi. Passo medio: 5 minuti e 42 secondi al chilometro.» |
+| Dopo 5 km | «5 chilometri. Tempo: 25 minuti. Passo medio: 5 minuti al chilometro. Daje, avanti tutta!» |
+| Bici a mano (TASK-206) | «Tra 100 metri, scendi e porta la bici a mano per 200 metri.» · «Risali in bici.» |
+| Penna alzata in bici (TASK-216) | «Lettera finita. Pedala fino alla U: il disegno è in pausa.» |
+| Km in bici, ogni 10 (TASK-216) | «10 chilometri. Tempo: 25 minuti e 10 secondi. Velocità media: 24 chilometri orari.» |
 
 **Modalità tasca** (TASK-070, ADR-0066). Accanto a «Pause», «Pocket»: lo
 schermo diventa nero, la luminosità va al minimo e resta acceso, e i tocchi
@@ -1351,13 +1569,18 @@ mostra le lettere unite da linee dritte sulla base.
 - **«Send to Strava»** (TASK-187, ADR-0156), sopra «Save» e «Discard», solo
   se l'API ha Strava (`GET /me/strava` dice `available`; un'API senza
   Strava, o più vecchia, e niente si vede). Atleta non collegato:
-  **«Connect with Strava»**, arancione con il testo bianco (l'unico
-  pulsante arancione dell'app), e sotto «Connect Strava, and Save sends
-  your runs there too.»; il tocco apre la pagina di Strava nel browser (o
-  nell'app Strava), e tornati in Sgrava la riga si aggiorna da sola.
+  **«Connect with Strava»**, il pulsante ufficiale di Strava così com'è
+  (TASK-218, ADR-0181: l'immagine arancione del suo pacchetto, 237 × 48
+  pt, scritta in inglese in ogni lingua; VoiceOver lo legge nella lingua
+  dell'app), e sotto «Connect Strava, and Save sends your runs there
+  too.»; il tocco apre la pagina di Strava nel browser (o nell'app
+  Strava), e tornati in Sgrava la riga si aggiorna da sola. Mentre si apre
+  il pulsante resta uguale e accanto gira una rotellina.
   Collegato: l'interruttore **«Send to Strava»**, acceso la prima volta e
   poi come lo si è lasciato (scelta dell'utente, sul telefono, in
-  `strava.json`); acceso, sotto, «To Ada Lovelace's Strava, with Save.».
+  `strava.json`), con sotto le parole il logo ufficiale **«Compatible
+  with Strava»**, bianco, alto 16 pt (TASK-218; VoiceOver legge solo
+  l'interruttore); acceso, sotto, «To Ada Lovelace's Strava, with Save.».
   Il nome su Strava è il **«Title»** sopra (TASK-117: prima era un campo
   «Name on Strava» suo): vuoto, l'API dà «Heart in Trento», o per una
   corsa libera il nome di Strava. Con l'interruttore acceso **«Save»**

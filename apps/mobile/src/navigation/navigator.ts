@@ -1,12 +1,15 @@
 import type { Direction, LatLon } from "@shaperoute/shared-types";
 
-import { announcement, instruction } from "./phrases";
+import { BASE_LANGUAGE, type Language } from "../i18n/languages";
+import { wordsOf } from "../voice/words";
 import { cumulative, locate, OFF_ROUTE_M } from "./progress";
 
 /**
  * Turn-by-turn along a route that is already drawn (TASK-049, ADR-0052):
  * pure functions from a GPS fix to what the screen shows, what is said and
  * when the phone vibrates. No recalculation: off the route, it says so.
+ * What is said is in the voice's `language` (TASK-209), English unless
+ * another is given.
  */
 
 /** A turn is said this far ahead: about 15 s at a running pace. */
@@ -54,6 +57,9 @@ export type Navigation = {
   /** Fixes on the route in a row while off it. */
   backFixes: number;
   arrived: boolean;
+  /** How far ahead a turn is said: ANNOUNCE_M when absent, further on a
+   * bike (TASK-216, `ride.ts`). */
+  announceM?: number;
 };
 
 /** What to do after a fix: words to say, and whether to vibrate. */
@@ -62,6 +68,8 @@ export type Cue = { say: string; vibrate: boolean };
 export function startNavigation(
   points: LatLon[],
   directions: Direction[],
+  language: Language = BASE_LANGUAGE,
+  announceM: number = ANNOUNCE_M,
 ): { navigation: Navigation; cues: Cue[] } {
   const departure = directions[0]?.turn === "depart" ? directions[0] : null;
   const navigation: Navigation = {
@@ -75,10 +83,13 @@ export function startNavigation(
     offStreak: null,
     backFixes: 0,
     arrived: false,
+    announceM,
   };
   return {
     navigation,
-    cues: departure ? [{ say: instruction(departure), vibrate: false }] : [],
+    cues: departure
+      ? [{ say: wordsOf(language).direction(departure), vibrate: false }]
+      : [],
   };
 }
 
@@ -86,7 +97,9 @@ export function onFix(
   navigation: Navigation,
   fix: LatLon,
   reading: Reading = {},
+  language: Language = BASE_LANGUAGE,
 ): { navigation: Navigation; cues: Cue[] } {
+  const words = wordsOf(language);
   if (navigation.arrived) {
     return { navigation, cues: [] };
   }
@@ -121,7 +134,7 @@ export function onFix(
     }
     return {
       navigation: { ...navigation, offRoute: true, offStreak: null, backFixes: 0 },
-      cues: [{ say: "You are off the route. Head back to it.", vibrate: true }],
+      cues: [{ say: words.offRoute, vibrate: true }],
     };
   }
   if (navigation.offRoute) {
@@ -134,7 +147,7 @@ export function onFix(
     }
   }
   const cues: Cue[] = navigation.offRoute
-    ? [{ say: "Back on the route.", vibrate: false }]
+    ? [{ say: words.backOnRoute, vibrate: false }]
     : [];
   // A poor fix on the route neither ends nor extends a streak off it.
   const offStreak = poor ? navigation.offStreak : null;
@@ -146,7 +159,7 @@ export function onFix(
   let saidUpTo = Math.max(navigation.saidUpTo, next - 1);
   const total = navigation.along[navigation.along.length - 1] ?? 0;
   if (next >= directions.length && total - alongM <= ARRIVE_M) {
-    cues.push({ say: "You have arrived.", vibrate: true });
+    cues.push({ say: words.arrived, vibrate: true });
     return {
       navigation: {
         ...navigation,
@@ -162,9 +175,13 @@ export function onFix(
     };
   }
   const aheadM = next < directions.length ? directions[next].distance_m - alongM : null;
-  if (aheadM !== null && next > saidUpTo && aheadM <= ANNOUNCE_M) {
+  if (
+    aheadM !== null &&
+    next > saidUpTo &&
+    aheadM <= (navigation.announceM ?? ANNOUNCE_M)
+  ) {
     const chain = chainFrom(directions, next);
-    cues.push({ say: announcement(chain, aheadM), vibrate: true });
+    cues.push({ say: words.announcement(chain, aheadM), vibrate: true });
     saidUpTo = next + chain.length - 1;
   }
   return {

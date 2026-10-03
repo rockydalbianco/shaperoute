@@ -4,6 +4,7 @@ import {
   type LatLon,
   type OutlinePoint,
   type RouteResult,
+  type Stretch,
   type Walk,
   MAX_OUTLINE_POINTS,
 } from "@shaperoute/shared-types";
@@ -23,6 +24,7 @@ import {
 import type { ThemedResult } from "../explore/themedRoutes";
 import { decimal, t } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
+import { onFootOf } from "../route/onFoot";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
 import { walksOf } from "../route/walks";
 import { favoriteKey } from "./favoriteKey";
@@ -52,6 +54,21 @@ function penUp(
 ): { walks?: Walk[] } {
   const fit = word === null ? [] : walksOf(points, walks);
   return fit.length === 0 ? {} : { walks: fit.map(([from, to]): Walk => [from, to]) };
+}
+
+/**
+ * The stretches of a bike route with the bike on foot, as a favorite keeps
+ * them (TASK-206): only those that fit the line. Nothing for any other
+ * route: its request is the one of before, field for field.
+ */
+function onFoot(
+  points: readonly LatLon[],
+  stretches: readonly Stretch[] | null | undefined,
+): { on_foot?: Stretch[] } {
+  const fit = onFootOf(points, stretches);
+  return fit.length === 0
+    ? {}
+    : { on_foot: fit.map(([from, to]): Stretch => [from, to]) };
 }
 
 /**
@@ -98,6 +115,8 @@ export function drawnKeepable(
       points: result.points,
       // A word with the pen up keeps its walks (TASK-199).
       ...penUp(word, result.points, result.walks),
+      // A bike route keeps its stretches with the bike on foot (TASK-206).
+      ...onFoot(result.points, result.on_foot),
       ...drawnFor(request.activity),
     },
     result.similarity,
@@ -152,8 +171,9 @@ function spread<T>(points: T[], size: number): T[] {
 
 /** The favorite as the list shows it at once, before the API answers. */
 export function keptNow({ id, request }: Keepable, now: Date): Favorite {
-  // The list has no walks: only a favorite opened whole has them.
-  const { points, walks: _walks, ...fields } = request;
+  // The list has no walks, nor stretches on foot: only a favorite opened
+  // whole has them.
+  const { points, walks: _walks, on_foot: _onFoot, ...fields } = request;
   return {
     ...fields,
     id,
@@ -239,7 +259,8 @@ export type OpenedFavorite = Extract<Explored, { status: "done" }> & {
  * the map draws them dashed, Start pauses on them, the GPX and the score
  * leave them out; its request asks for the pen up, as the export wants.
  * Its request has the activity it was kept with (TASK-200), whatever sport
- * «Settings» has: a bike route is exported as one.
+ * «Settings» has: a bike route is exported as one, and has its stretches
+ * with the bike on foot in the result (TASK-206), marked on the map.
  */
 export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
   const detail: RecommendedRouteDetail = {
@@ -272,7 +293,8 @@ export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
     preview: [],
   };
   const walked = penUp(favorite.word, favorite.points, favorite.walks);
-  const result: RouteResult = { ...toResult(detail), ...walked };
+  const stretches = onFoot(favorite.points, favorite.on_foot);
+  const result: RouteResult = { ...toResult(detail), ...walked, ...stretches };
   const activity = favoriteActivity(favorite);
   // A word with the pen up is asked for as «Draw» asks for it.
   const request: AnyRouteRequest =
@@ -315,6 +337,7 @@ export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
         similarity: favorite.similarity,
         points: favorite.points,
         ...walked,
+        ...stretches,
         ...drawnFor(activity),
       },
     },

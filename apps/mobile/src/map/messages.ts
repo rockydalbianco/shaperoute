@@ -1,5 +1,6 @@
-import type { LatLon, Walk } from "@shaperoute/shared-types";
+import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
 
+import { onFootLines } from "../route/onFoot";
 import { piecesOf, walksOf } from "../route/walks";
 import { type LngLat, metresBetween, toLngLat } from "./coordinates";
 
@@ -21,6 +22,9 @@ export type ToPage =
        * route, and the walks between them, dashed. Absent otherwise. */
       letters?: LngLat[][];
       walks?: LngLat[][];
+      /** A bike route (TASK-206): the stretches with the bike on foot,
+       * marked over the route. Absent otherwise. */
+      onFoot?: LngLat[][];
     }
   | { type: "clearRoute" }
   | { type: "showOthers"; lines: LngLat[][] }
@@ -49,19 +53,24 @@ export function setPosition(point: LatLon): ToPage {
  * Draws the route and frames the map on it. When it begins away from
  * `requested`, the start the user asked for, it marks where to go. With the
  * walks of a word with the pen up (TASK-198) the letters are the route and
- * the walks are dashed; without, the message is the one of before.
+ * the walks are dashed; without, the message is the one of before. With the
+ * stretches of a bike route walked with the bike on foot (TASK-206) they
+ * are marked over the route.
  */
 export function showRoute(
   points: LatLon[],
   requested: LatLon | null = null,
   walks: readonly Walk[] | null = null,
+  onFoot: readonly Stretch[] | null = null,
 ): ToPage {
   const moved =
     requested !== null && metresBetween(requested, points[0]) > START_HERE_M;
+  const lines = onFootLines(points, onFoot, walks);
   const shown = {
     type: "showRoute" as const,
     coordinates: points.map(toLngLat),
     startHere: moved ? toLngLat(points[0]) : null,
+    ...(lines.length > 0 ? { onFoot: lines.map((line) => line.map(toLngLat)) } : {}),
   };
   const walked = walksOf(points, walks);
   if (walked.length === 0) {

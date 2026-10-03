@@ -631,6 +631,13 @@ dell'account.
   corsa. Se l'API non conosce ancora l'attività (più vecchia di TASK-200) e
   rifiuta, l'app lo tiene come una corsa, senza mostrare l'errore; tenuto
   così, resta così.
+- **La bici a mano** (TASK-206, ADR-0167): il cuore tiene anche i tratti
+  con la bici a mano (`on_foot`), solo quando ce ne sono e stanno nella
+  linea; riaperto, il preferito li segna sulla mappa come appena disegnato
+  («Il risultato»), e tenuto di nuovo li tiene. Se l'API non li conosce
+  ancora (più vecchia di TASK-206, parte B) e rifiuta, l'app lo manda di
+  nuovo senza i tratti, ancora in bici; se rifiuta ancora, come un'app più
+  vecchia di TASK-199. Un preferito tenuto prima non ha tratti.
 
 ## «My activities» (TASK-172, ADR-0140)
 
@@ -1128,6 +1135,28 @@ TASK-199 un preferito tiene anche i `walks`, e riaperto si mostra e si
 corre come appena disegnato («Favorites»); uno tenuto prima è una linea
 sola.
 
+**La bici a mano** (TASK-206, ADR-0167). Un percorso in bici può avere
+brevi tratti con la bici portata a mano (marciapiedi, sentieri, l'altro
+senso di un senso unico): l'API li manda in `on_foot`. Sulla mappa, qui e
+durante la corsa, la linea gialla resta **intera**, perché i tratti sono
+parte del disegno, e sopra di loro corrono **trattini scuri**: il token
+`onFoot` (`onAccent`, largo 2, opacità 0,9, trattini e spazi di 1,5
+larghezze, estremi dritti), sopra il percorso e sotto i luoghi di un
+percorso a tema e la corsa. Scelta dell'utente del 2026-10-03; scartati il
+blu delle pagine di confronto (spezza la forma) e il giallo tratteggiato.
+Con una parola a penna alzata in bici, la parte di un tratto che cade fra
+una lettera e l'altra non si segna: lì la linea è già grigia. Nella scheda
+l'avviso del motore «923 m of the route with the bike on foot» diventa una
+riga grigia, da sapere: **«Includes 920 m walking the bike.»** (in
+italiano «Di cui 920 m con la bici a mano.», approvati dall'utente; in
+tedesco, spagnolo e francese **da confermare**), i metri arrotondati a 10,
+da 1 km «1.1 km». Ogni tessera «A · B · C» ha i suoi. La distanza resta di
+tutto il percorso, tratti a mano compresi, e la corsa li registra senza
+pause. Un risultato senza `on_foot` (un'API più vecchia di TASK-206) o con
+tratti che non stanno nei `points` (`src/route/onFoot.ts`, gli stessi
+controlli dei `walks`) si disegna come prima, con lo stesso messaggio alla
+mappa di prima.
+
 ## La navigazione
 
 Sotto il risultato, «Start» giallo, quando il percorso ha le indicazioni di
@@ -1243,6 +1272,19 @@ TASK-164, di cui tiene i numeri.
     ogni lettera non si unisce all'ultima della lettera prima.
   - Solo nell'app: con il GPX sull'orologio la pausa si mette a mano, ai
     waypoint «Pause» e «Resume» (TASK-197, `GPX.md`).
+- **La bici a mano** (TASK-206, ADR-0167; frasi scelte dall'utente il
+  2026-10-03). Su un percorso in bici con tratti a mano (`on_foot`) la
+  voce, con una vibrazione, dice il tratto **50 m prima** (`ANNOUNCE_M`,
+  come una svolta): «In 50 metres, get off and walk the bike for 200
+  metres.» · «Tra 50 metri, scendi e porta la bici a mano per 200 metri.»,
+  con i metri che mancano e la lunghezza del tratto arrotondati a 10; e
+  alla sua fine «Back on the bike.» · «Risali in bici.», tranne quando il
+  tratto finisce all'arrivo. Se la prima posizione è già sul tratto, la
+  frase senza «Tra … metri», con i metri che restano. Due tratti a meno di
+  30 m si dicono come uno; sotto i 25 m un tratto non si dice (sulla mappa
+  c'è). Una volta sola ciascuna, dopo le svolte della stessa posizione. La
+  registrazione **non** va in pausa: il tratto a mano è disegno, e conta
+  nel tempo e nel punteggio. `src/navigation/onFootVoice.ts`.
 
 **L'aspetto della corsa** (TASK-204, ADR-0163; chiesto dall'utente il
 2026-10-03: «migliora la parte grafica», e confermato lo stesso giorno,
@@ -1345,7 +1387,8 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   partenza, le vie senza nome per tipo (mai un nome inventato; i nomi
   delle vie mai tradotti), «beside», fuori e di nuovo sul percorso,
   l'arrivo, la pausa da fermi e la ripresa, la penna alzata, ogni km con
-  tempo e passo. Il numero uno detto a parole dove si accorda
+  tempo e passo, la bici a mano (TASK-206: tedesco, spagnolo e francese da
+  confermare). Il numero uno detto a parole dove si accorda
   («Un chilometro», «un'ora», «eine Minute»). Le frasi sono in
   `src/voice/`, una tabella per lingua; quelle in inglese sono le stesse di
   prima, parola per parola.
@@ -1371,6 +1414,7 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
 | Penna alzata | «Lettera finita. Cammina fino alla A: il disegno è in pausa.» · «Giù la penna: disegna la A.» |
 | Km | «Un chilometro. Tempo: 5 minuti e 42 secondi. Passo medio: 5 minuti e 42 secondi al chilometro.» |
 | Dopo 5 km | «5 chilometri. Tempo: 25 minuti. Passo medio: 5 minuti al chilometro. Daje, avanti tutta!» |
+| Bici a mano (TASK-206) | «Tra 50 metri, scendi e porta la bici a mano per 200 metri.» · «Risali in bici.» |
 
 **Modalità tasca** (TASK-070, ADR-0066). Accanto a «Pause», «Pocket»: lo
 schermo diventa nero, la luminosità va al minimo e resta acceso, e i tocchi

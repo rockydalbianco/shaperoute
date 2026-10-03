@@ -226,3 +226,29 @@ test("draws the walks of a word with the pen up apart, and again after a run (TA
   );
   expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain('"walks":[[[11.2986');
 });
+
+test("marks a bike route's stretches with the bike on foot, and again after a run (TASK-206)", async () => {
+  const route: LatLon[] = [TRENTO, LEVICO, TRENTO, LEVICO];
+  const onError = jest.fn();
+  const { rerender } = await render(
+    <MapView start={TRENTO} route={route} onFoot={[[1, 2]]} onError={onError} />,
+  );
+  await pagePosts('{"type":"ready"}');
+  expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain(
+    '"onFoot":[[[11.2986,46.0122],[11.1214,46.0671]]]',
+  );
+  await rerender(
+    <MapView
+      start={TRENTO}
+      route={route}
+      onFoot={[[1, 2]]}
+      following={LEVICO}
+      onError={onError}
+    />,
+  );
+  injectJavaScript.mockClear();
+  await rerender(
+    <MapView start={TRENTO} route={route} onFoot={[[1, 2]]} onError={onError} />,
+  );
+  expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain('"onFoot":[[[11.2986');
+});

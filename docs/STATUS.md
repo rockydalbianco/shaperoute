@@ -191,8 +191,31 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   la corsa e la canoa, facoltativo in `shared-types`); i preferiti lo
   tengono (migrazione `0012`, approvata dal coordinatore). Il
   server non è toccato (con l'ok dell'utente: zona della bici di Trento
-  rifatta, `draw_examples`, la migrazione). Poi **C** (l'app: i tratti a
-  mano sulla mappa e la voce). Da dove riprendere: `tasks/TASK-206.md`.
+  rifatta, `draw_examples`, la migrazione). **Parte C, l'app** (fatta,
+  branch `feat/TASK-206-bike-on-foot-app`, in PR; testi e stile scelti
+  dall'utente il 2026-10-03): la mappa (linea gialla intera, trattini
+  scuri sopra i tratti a mano, token `onFoot`), la riga della scheda
+  («Includes 920 m walking the bike.» / «Di cui 920 m con la bici a
+  mano.»), la voce («Tra 50 metri, scendi e porta la bici a mano per 200
+  metri.» / «Risali in bici.», nessuna pausa) e i preferiti che tengono i
+  tratti. Non provata sull'iPhone; il server ha già la parte B (dalle
+  12:39Z, zona della bici di Trento rifatta): esce con la prossima
+  pubblicazione, con l'ok dell'utente. Da dove riprendere: `tasks/TASK-206.md`,
+  «Esito», «Parte C».
+- **TASK-216 — La navigazione in bici** (Todo, scelte dell'utente del
+  2026-10-03 chieste da TASK-206 C): velocità in km/h sulla schermata e
+  nella voce dei km, avvisi di svolta più in anticipo, e con la penna
+  alzata in bici «riding» / «Ride to the U» al posto di «walking». Chiude
+  le domande «Start» in bici e «km walking» di TASK-190. Il codice dopo
+  TASK-206 C. `tasks/TASK-216.md`.
+- **TASK-217 — La voce confronta ogni km col precedente** (Todo; chiesto
+  e scelto dall'utente il 2026-10-03): dopo la frase di ogni km, «Questo
+  chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2
+  s «Stesso passo del chilometro precedente.»; al primo km niente. Con e
+  senza percorso; le miglia con TASK-182. In bici ogni 10 km e senza
+  numeri («Ultimi 10 km più veloci dei 10 precedenti.»), con la voce dei
+  km in bici anch'essa ogni 10 km (TASK-216). Il codice dopo la #259 e TASK-206
+  C (stessi file della voce). `tasks/TASK-217.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,

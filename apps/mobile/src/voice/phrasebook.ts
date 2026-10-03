@@ -72,6 +72,12 @@ export type Phrasebook = {
   kilometre(km: number, time: string, pace: string): string;
   /** Said after the kilometre CHEER_KM: «Daje, avanti tutta!». */
   cheer: string;
+  /** A stretch of a bike route with the bike on foot (TASK-206): "get off
+   * and walk the bike for 200 metres", in lower case, said after
+   * `inMetres` or alone; `metres` is rounded. */
+  walkTheBike(metres: number): string;
+  /** Its end: "Back on the bike." */
+  backOnTheBike: string;
 };
 
 /** The voice's phrases in one language, ready to say. */
@@ -98,6 +104,10 @@ export type VoiceWords = {
   resumed: string;
   penUp(letter: string | null): string;
   penDown(letter: string | null): string;
+  /** "In 50 metres, get off and walk the bike for 200 metres."; with `inM`
+   * null, from here: "Get off and walk the bike for 200 metres." (TASK-206). */
+  walkTheBike(inM: number | null, metres: number): string;
+  backOnTheBike: string;
 };
 
 function isKind(kind: string): kind is Kind {
@@ -175,6 +185,13 @@ export function voiceWords(book: Phrasebook): VoiceWords {
     resumed: book.resumed,
     penUp: book.penUp,
     penDown: book.penDown,
+    walkTheBike(inM, metres) {
+      const words = book.walkTheBike(roundMetres(metres));
+      return inM === null
+        ? `${capital(words)}.`
+        : `${book.inMetres(roundMetres(inM), words)}.`;
+    },
+    backOnTheBike: book.backOnTheBike,
   };
 }
 

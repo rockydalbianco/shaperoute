@@ -1,6 +1,6 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { color, otherRoute, route, stop, track, walk } from "../theme/tokens";
+import { color, onFoot, otherRoute, route, stop, track, walk } from "../theme/tokens";
 import { toLngLat } from "./coordinates";
 import { LABEL_FONT, sgravaDarkStyle } from "./mapStyle";
 
@@ -50,6 +50,13 @@ export const WALK_COLOR = walk.color;
 export const WALK_WIDTH = walk.width;
 export const WALK_OPACITY = walk.opacity;
 export const WALK_DASH = walk.dash;
+
+/** The stretches of a bike route with the bike on foot, dashed over the
+ * route, which stays whole (TASK-206). */
+export const ON_FOOT_COLOR = onFoot.color;
+export const ON_FOOT_WIDTH = onFoot.width;
+export const ON_FOOT_OPACITY = onFoot.opacity;
+export const ON_FOOT_DASH = onFoot.dash;
 
 /** The run over its route (TASK-113). */
 export const TRACK_COLOR = track.color;
@@ -135,6 +142,7 @@ export function buildMapPage(): string {
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
     var walks = noRoute;
+    var onFoot = noRoute;
     var track = noRoute;
     var stops = noRoute;
     var others = noRoute;
@@ -188,6 +196,21 @@ export function buildMapPage(): string {
           "line-color": ${toScript(ROUTE_COLOR)},
           "line-width": ${ROUTE_WIDTH},
           "line-opacity": ${ROUTE_OPACITY},
+        },
+      });
+      // The stretches of a bike route with the bike on foot, dashed over
+      // the route (TASK-206).
+      map.addSource("on-foot", { type: "geojson", data: onFoot });
+      map.addLayer({
+        id: "on-foot",
+        type: "line",
+        source: "on-foot",
+        layout: { "line-join": "round", "line-cap": "butt" },
+        paint: {
+          "line-color": ${toScript(ON_FOOT_COLOR)},
+          "line-width": ${ON_FOOT_WIDTH},
+          "line-opacity": ${ON_FOOT_OPACITY},
+          "line-dasharray": ${toScript(ON_FOOT_DASH)},
         },
       });
       // The places of a themed route, over the route (TASK-129).
@@ -305,6 +328,13 @@ export function buildMapPage(): string {
         source.setData(walks);
       }
     }
+    function setOnFoot(data) {
+      onFoot = data;
+      var source = map.getSource("on-foot");
+      if (source) {
+        source.setData(onFoot);
+      }
+    }
     function setStops(data) {
       stops = data;
       var source = map.getSource("stops");
@@ -363,6 +393,16 @@ export function buildMapPage(): string {
                 }
               : noRoute,
           );
+          // A bike route: the stretches with the bike on foot, over it.
+          setOnFoot(
+            message.onFoot
+              ? {
+                  type: "Feature",
+                  properties: {},
+                  geometry: { type: "MultiLineString", coordinates: message.onFoot },
+                }
+              : noRoute,
+          );
           var bounds = points.reduce(function (box, point) {
             return box.extend(point);
           }, new maplibregl.LngLatBounds(points[0], points[0]));
@@ -415,6 +455,7 @@ export function buildMapPage(): string {
         } else if (message.type === "clearRoute") {
           setRoute(noRoute);
           setWalks(noRoute);
+          setOnFoot(noRoute);
           setStartHere(null);
         }
       },

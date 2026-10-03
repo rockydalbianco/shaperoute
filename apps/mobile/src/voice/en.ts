@@ -59,4 +59,7 @@ export const EN: Phrasebook = {
   kilometre: (km, time, pace) =>
     `${units(km, "kilometre")}. Time: ${time}. Average pace: ${pace} per kilometre.`,
   cheer: "Come on, full speed ahead!",
+  // The bike on foot (TASK-206).
+  walkTheBike: (metres) => `get off and walk the bike for ${metres} metres`,
+  backOnTheBike: "Back on the bike.",
 };

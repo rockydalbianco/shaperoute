@@ -8463,3 +8463,42 @@ server: nel database e in ognuna delle 13 copie di notte (TASK-122), stima
 in `tasks/TASK-208.md`, «Note per il
 deploy». Niente sul server né sul telefono senza la parte B e l'ok
 dell'utente.
+
+## ADR-0182 — «Find friends» è solo una lente; inviti, contatti e Facebook a tappe, Strava no
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** la lente sola e
+l'ordine delle tappe; il posto della lente deciso dall'agente su delega
+dell'utente (TASK-219). Supera il punto 1 di ADR-0178.
+
+**Contesto**: provato «Find friends» (TASK-215), l'utente, il 2026-10-03:
+«deve esserci solo un emoji del trova», e sotto la ricerca «la possibilità
+di collegare Facebook, invitare gli amici, numero di telefono e trovare gli
+amici così», poi «anche il loro profilo Strava».
+
+**Decisione dell'utente**:
+1. Il tasto è **solo la lente**, senza testo.
+2. **A tappe**: prima la lente; poi gli amici dai contatti; Facebook per
+   ultimo, quando Sgrava è sull'App Store (TASK-152).
+3. **«Invite friends» aspetta l'App Store**: finché non c'è un link che
+   funzioni per tutti, nessun invito (scartati il link di Expo Go e un
+   messaggio senza link).
+
+**Decisione dell'agente**:
+1. La lente è un **cerchio come quello di «Profile»**, in cima all'elenco di
+   «Feed», **a destra**, sotto il bottone di «Profile». Non
+   nell'intestazione delle pagine: i nomi «Feed · Draw · Explore» più tre
+   cerchi da 44 pt non ci stanno su un iPhone da 390 pt.
+2. VoiceOver la legge «Find friends»: il testo resta, solo per lui.
+
+**Cosa serve alle tappe dopo** (da scegliere con l'utente quando partono):
+- **Contatti**: il numero di telefono nell'account (TASK-183, «a cosa serve
+  il numero»: a farsi trovare dagli amici), la sua verifica con un SMS (un
+  servizio a pagamento; senza, chiunque può scrivere il numero di un altro),
+  la dipendenza `expo-contacts` (va in Expo Go) e una riga della privacy:
+  i numeri della rubrica arrivano al server, da mandare come impronta e mai
+  tenere.
+- **Facebook**: l'SDK di Facebook non va in Expo Go, solo in una build
+  propria; un'app sviluppatore su Meta e la revisione di Meta per
+  `user_friends`, che dà solo gli amici che hanno collegato anche Sgrava.
+- **Strava: non si può.** L'API di Strava non ha più gli elenchi di amici e
+  follower (`/athlete/friends` risponde 401), e dal 1° settembre 2026 ha
+  tolto anche i membri dei club.

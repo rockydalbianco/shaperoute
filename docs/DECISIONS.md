@@ -3969,6 +3969,10 @@ Le proposte, con le alternative scartate, sono nel task file.
 **Conseguenze sui task già scritti**: nel task file di TASK-110,
 «Esito».
 
+**Aggiornamento (TASK-213, 2026-10-03)**: il punto 8 è superato in parte
+da ADR-0176. I commenti negativi non si pubblicano: li rifiuta l'API, e chi
+li scrive vede un avviso. Per tutto il resto il punto 8 resta valido.
+
 ## ADR-0115 — Database, account e server: come
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega
 dell'utente, dentro le scelte di ADR-0114 (TASK-110)
@@ -7845,7 +7849,7 @@ con la prossima pubblicazione dell'app, con l'ok dell'utente.
 ## ADR-0176 — Nessun commento negativo: un elenco di parole nell'API, rifiutato con un avviso
 **Stato**: Attiva · 2026-10-03 · **scelta dell'utente** la regola e
 l'avviso; il modo di riconoscerli è deciso dall'agente su delega
-dell'utente (TASK-213). Cambia ADR-0114, punto 8.
+dell'utente (TASK-213). Supera in parte ADR-0114, punto 8.
 
 **Contesto**: con i commenti (TASK-120) gli iscritti scrivono sotto le
 corse degli altri. L'utente, il 2026-10-03: «non si possono fare commenti

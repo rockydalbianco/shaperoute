@@ -240,7 +240,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riva. **Bloccato per la prova dal vero**: il server disegna in canoa solo
   dove ha l'acqua in `data/cache/water/`, e Overpass rifiuta server e Mac;
   scaricare prima l'acqua dei quattro luoghi è un seguito, con l'ok
-  dell'utente, poi la pubblicazione. Seguito in `services/`: Strava riceve
+  dell'utente, poi la pubblicazione. **Non pubblicare `main` con «Paddle»
+  pronto finché l'acqua dei quattro luoghi non è sul server**: la PR #255
+  entra dopo la pubblicazione della lingua dell'app (#254), d'accordo col
+  coordinatore. Seguito in `services/`: Strava riceve
   ogni attività come «Run». Da dove riprendere: `tasks/TASK-191.md`,
   «Esito», parti A2, B e C.
 

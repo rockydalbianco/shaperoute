@@ -663,6 +663,11 @@ invalid_request.», come per ogni API che non ha la canoa.
 | Jesolo | la spiaggia fra due pennelli (partenza dei campioni A1) | 45.50137, 12.63925 |
 | Riccione | la spiaggia (partenza dei campioni A1, la prova dal vero di B) | 44.00355, 12.66338 |
 
+> **Non pubblicare `main` con «Paddle» pronto finché l'acqua dei quattro
+> luoghi non è sul server** (seguito, con l'ok dell'utente): chi sceglie
+> «Paddle» avrebbe solo errori. Dopo il merge di questa parte ogni
+> pubblicazione di `main` porta «Paddle» pronto.
+
 **Bloccato per la prova dal vero**: sul server la canoa funziona solo dove
 l'acqua è già in `data/cache/water/`, perché Overpass rifiuta l'IP del
 server, e da stamattina anche il Mac. La query dell'acqua non ha mai

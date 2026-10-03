@@ -1,7 +1,8 @@
 import type { Walk } from "@shaperoute/shared-types";
 
+import { BASE_LANGUAGE, type Language } from "../i18n/languages";
+import { wordsOf } from "../voice/words";
 import { type Cue, POOR_FIX_M } from "./navigator";
-import { penDownCue, penUpCue } from "./phrases";
 
 /**
  * The pen of a word with the pen up, along the run (TASK-198): pure
@@ -67,12 +68,13 @@ export function startPen(
  * The pen after a fix that the navigator placed `alongM` along the route.
  * A fix less accurate than POOR_FIX_M moves nothing: it may place the
  * runner where they are not. One move at most per fix, so each walk is one
- * pause and each cue is said once.
+ * pause and each cue is said once, in the voice's `language` (TASK-209).
  */
 export function movePen(
   pen: Pen,
   alongM: number,
   accuracyM: number | null = null,
+  language: Language = BASE_LANGUAGE,
 ): PenStep {
   const walk = pen.walks[pen.next];
   const still: PenStep = { pen, move: null, cues: [] };
@@ -85,7 +87,7 @@ export function movePen(
       : {
           pen: { ...pen, up: true },
           move: "up",
-          cues: [{ say: penUpCue(walk.letter), vibrate: true }],
+          cues: [{ say: wordsOf(language).penUp(walk.letter), vibrate: true }],
         };
   }
   return alongM < walk.toM - PEN_DOWN_M
@@ -93,6 +95,6 @@ export function movePen(
     : {
         pen: { ...pen, next: pen.next + 1, up: false },
         move: "down",
-        cues: [{ say: penDownCue(walk.letter), vibrate: true }],
+        cues: [{ say: wordsOf(language).penDown(walk.letter), vibrate: true }],
       };
 }

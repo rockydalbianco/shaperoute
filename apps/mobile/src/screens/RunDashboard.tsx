@@ -39,6 +39,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { VoiceSetting } from "../voice/VoiceSetting";
 import { Countdown } from "./Countdown";
 import { HoldButton, ROUND_BUTTON } from "./HoldButton";
 import { confirmPocketMode, PocketScreen } from "./PocketScreen";
@@ -409,7 +410,8 @@ type DataProps = {
 /**
  * «Data»: the page with every number and no map. It lies to the right of
  * the map and slides over it; a swipe to the right, or «Map», slides it
- * back. The run's switches live here: they are set once, not while running.
+ * back. The run's switches live here: they are set once, not while running;
+ * under «Voice», the language and the voice it speaks with (TASK-209).
  */
 function DataPage({
   open,
@@ -495,6 +497,7 @@ function DataPage({
           <Switch label="Auto-pause" on={control.autoPause} onChange={setAutoPause} />
           <Switch label="Voice" on={control.voice} onChange={setVoice} />
         </View>
+        <VoiceSetting />
         {buttons}
         <PageTabs page="data" onPage={(page) => page === "map" && toMap.close()} />
         {dark}

@@ -20,6 +20,11 @@ import { countdownNumber } from "./Countdown";
 import { HOLD_STOP_MS } from "./HoldButton";
 import { PAGE_TAB_HEIGHT, RunCard, splitShare, swipedTo } from "./RunDashboard";
 
+jest.mock("expo-speech", () => ({
+  speak: jest.fn(),
+  stop: jest.fn(),
+  getAvailableVoicesAsync: jest.fn(async () => []),
+}));
 jest.mock("expo-brightness", () => ({
   getBrightnessAsync: jest.fn(() => Promise.resolve(0.6)),
   setBrightnessAsync: jest.fn(() => Promise.resolve()),
@@ -318,6 +323,18 @@ test("the switches of the run: the pause by itself and the voice", async () => {
     jest.advanceTimersByTime(AUTO_PAUSE_AFTER_MS * 2);
   });
   expect(runControl().phase).toBe("running");
+});
+
+test("under the switches, the voice's language and voice, and Listen (TASK-209)", async () => {
+  await render(<LiveRun fixes={north(300)} />);
+  await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+  expect(
+    screen.getByRole("button", { name: "Voice language and voice: English, Default" }),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Listen" })).toBeEnabled();
+  // With the voice off the choice stays, and Listen says nothing.
+  await fireEvent.press(screen.getByRole("switch", { name: "Voice" }));
+  expect(screen.getByRole("button", { name: "Listen" })).toBeDisabled();
 });
 
 test("the countdown covers the screen until the run starts", async () => {

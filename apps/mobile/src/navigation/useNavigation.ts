@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Vibration } from "react-native";
 
 import { walksOf } from "../route/walks";
+import { loadVoices, speaking } from "../voice/voiceChoice";
 import { kmAnnouncement, wholeKm } from "./freeRun";
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
 import { movePen, startPen } from "./penUp";
@@ -28,16 +29,18 @@ export type NavigationState =
     }
   | { status: "denied" };
 
-/** Says and vibrates what the navigator decided. With the voice off
- * (TASK-169) a turn still vibrates. */
+/** Says and vibrates what the navigator decided, in the language and the
+ * voice chosen for it (TASK-209). With the voice off (TASK-169) a turn
+ * still vibrates. */
 export function play(cues: Cue[]): void {
+  const { options } = speaking();
   for (const cue of cues) {
     if (cue.vibrate) {
       Vibration.vibrate(VIBRATE_MS);
     }
     if (runControl().voice) {
       // Each cue after the last one: a turn is never cut by the next.
-      Speech.speak(cue.say, { language: "en-US" });
+      Speech.speak(cue.say, options);
     }
   }
 }
@@ -49,7 +52,8 @@ export function play(cues: Cue[]): void {
  * are runControl's, and each kilometre is said as in a run without a route
  * (TASK-169). Along a word with the pen up, the recording pauses on each
  * walk and goes on at the next letter, and the voice says so (TASK-198).
- * The position never leaves the phone.
+ * Each fix is said in the voice's language of that moment (TASK-209), so a
+ * change on «Data» is heard at once. The position never leaves the phone.
  */
 export function useNavigation(
   points: LatLon[] | null,
@@ -72,6 +76,9 @@ export function useNavigation(
     let subscription: Location.LocationSubscription | null = null;
     let run: RunSession | null = null;
     let stopRecording: (() => void) | null = null;
+    // The phone's voices, before the first words: a chosen one is used only
+    // once it is known to be there.
+    void loadVoices();
     void (async () => {
       const permission = await Location.requestForegroundPermissionsAsync();
       if (stopped) {
@@ -81,7 +88,7 @@ export function useNavigation(
         setState({ status: "denied" });
         return;
       }
-      const started = startNavigation(points, directions);
+      const started = startNavigation(points, directions, speaking().language);
       navigation.current = started.navigation;
       const walked = walksOf(points, walks);
       let pen = startPen(started.navigation.along, walked, word);
@@ -124,12 +131,20 @@ export function useNavigation(
           }
           const fix: LatLon = [coords.latitude, coords.longitude];
           position = fix;
-          const next = onFix(navigation.current, fix, {
-            accuracyM: coords.accuracy,
-            timeMs: timestamp,
-          });
+          const { language } = speaking();
+          const next = onFix(
+            navigation.current,
+            fix,
+            { accuracyM: coords.accuracy, timeMs: timestamp },
+            language,
+          );
           navigation.current = next.navigation;
-          const drawing = movePen(pen, next.navigation.alongM, coords.accuracy);
+          const drawing = movePen(
+            pen,
+            next.navigation.alongM,
+            coords.accuracy,
+            language,
+          );
           pen = drawing.pen;
           // The fix that reaches a letter is its first; the one that ends a
           // letter is its last.
@@ -162,7 +177,7 @@ export function useNavigation(
           const km = wholeKm(track);
           if (km > saidKm) {
             saidKm = km;
-            play([{ say: kmAnnouncement(km, track), vibrate: false }]);
+            play([{ say: kmAnnouncement(km, track, language), vibrate: false }]);
           }
         },
       );

@@ -8464,6 +8464,68 @@ in `tasks/TASK-208.md`, «Note per il
 deploy». Niente sul server né sul telefono senza la parte B e l'ok
 dell'utente.
 
+## ADR-0181 — Le immagini ufficiali di Strava: il pulsante «Connect with Strava» e «Compatible with Strava» dal pacchetto di Strava, mai ridisegnate
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-218). Usare le immagini ufficiali di Strava al posto del pulsante di
+solo testo, e il logo di Strava accanto a «Send to Strava», è scelta
+dell'utente («ok perfetto», 2026-10-03); il resto, qui sotto, è
+dell'agente.
+
+**Contesto**: «Connect with Strava» (TASK-187, ADR-0156) era un pulsante
+disegnato dall'app, arancione `strava` con il testo bianco tradotto; a
+fine corsa e in «Settings» non c'era nessun logo di Strava. Le regole del
+marchio (developers.strava.com/guidelines, riviste il 2025-09-29) dicono:
+il pulsante «Connect with Strava», se un'app lo usa, è quello del loro
+pacchetto (arancione o bianco, 48 px a 1x) e porta all'`oauth/authorize`;
+per dire che un'app lavora con Strava si usa «Powered by Strava» o
+«Compatible with Strava»; i loghi non si modificano né si animano, non
+fanno da icona dell'app, stanno separati dal nome e dal logo dell'app e
+non più in vista di loro.
+
+**Decisione**:
+
+1. **Il pulsante è l'immagine di Strava** `btn_strava_connect_with_orange`
+   (pacchetto `1.1-Connect-with-Strava-Buttons.zip`), 237 × 48 pt, in
+   `assets/strava/connect-with-strava.png` con `@2x` e `@3x`. 1x e 2x
+   sono i PNG del pacchetto; il 3x è lo stesso SVG del pacchetto
+   rasterizzato a 3x, senza ritocchi, perché il pacchetto non ha un 3x e
+   l'iPhone è a 3x. È lo stesso componente nei tre posti che lo usano (fine
+   corsa, «Settings», la corsa aperta in «My activities»).
+2. **Mentre si apre Strava il pulsante resta com'è** (niente opacità,
+   che lo altererebbe) e accanto gira una rotellina; il tocco è spento.
+3. **Accanto a «Send to Strava» il logo «Compatible with Strava»**
+   (pacchetto `1.2-Strava-API-Logos.zip`): è quello per le app che mandano
+   attività a Strava; «Powered by Strava» è per chi mostra dati di Strava, e
+   un logo di Strava da solo nel pacchetto non c'è. Versione **bianca**
+   orizzontale, perché l'app è scura: quella arancione ha «COMPATIBLE WITH»
+   in nero, illeggibile sul fondo. Alto 16 pt (189 × 16), sotto le parole
+   dentro l'interruttore; 1x, 2x e 3x rasterizzati dall'SVG del pacchetto.
+4. **VoiceOver**: il pulsante si chiama `t("Connect with Strava")` (o
+   `t("Opening Strava…")` mentre si apre), già tradotti; il logo dentro
+   l'interruttore non si legge da solo, perché l'interruttore ha già il suo
+   nome («Send to Strava»). Nessun testo nuovo nelle tabelle.
+5. **Nessun colore nuovo**: i colori di Strava stanno dentro le sue
+   immagini. I token `strava` e `onStrava` restano in `tokens.ts` senza
+   uso: `tokens.ts` è nei file di TASK-206, si tolgono quando è libero.
+
+**Perché così**: le regole di Strava vogliono le sue immagini com'è, e
+un'immagine non si può tradurre né ridisegnare; nessuna dipendenza nuova
+(`react-native-svg` non c'è, quindi PNG a tre scale). Un test legge
+l'intestazione di ogni PNG e controlla che 1x, 2x e 3x abbiano la misura
+mostrata: un'immagine sostituita male si vede subito.
+
+**Scartato**: tradurre il pulsante (le regole non lo permettono, e il
+pacchetto è solo in inglese); la versione bianca del pulsante (l'utente
+aveva scelto l'arancione in TASK-187); «Compatible with Strava»
+accanto alle parole, sulla stessa riga (in tedesco non ci sta); un logo
+in `docs/brand/` (quella cartella è di Sgrava).
+
+**Conseguenze**: il pulsante dice «CONNECT WITH STRAVA» in ogni lingua
+dell'app. TASK-208 B, che rifà la fine della corsa, tiene
+`StravaSwitch` e `ConnectWithStrava` di `StravaParts.tsx`. Si vede sul
+telefono con la prossima pubblicazione dell'app (ok dell'utente) e solo
+quando il server ha Strava.
+
 ## ADR-0182 — «Find friends» è solo una lente; inviti, contatti e Facebook a tappe, Strava no
 **Stato**: Attiva · 2026-10-03 · **scelta dell'utente** la lente sola e
 l'ordine delle tappe; il posto della lente deciso dall'agente su delega

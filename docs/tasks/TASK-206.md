@@ -1,7 +1,8 @@
 # TASK-206 — Forme in bici più riconoscibili
 
 **Stato**: In corso (parte A, il motore, in `main` dalla PR #249, con i
-campioni di Trento giudicati dall'utente; B e C da fare)
+campioni di Trento giudicati dall'utente; parte B, l'API e il contratto,
+fatta sul branch `feat/TASK-206-bike-on-foot-api`; C da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-206-bike-shapes` (parte A)
 **Dipende da**: TASK-190 (la bici: motore, API e app in `main`)
 
@@ -119,7 +120,10 @@ contesto pulito)
       dall'utente (2026-10-03): i cerchi da «quasi» a «sì», cuori e stelle
       come prima. *(Levico e Padova quando Overpass riapre.)*
 - [ ] Nell'app i tratti a mano si vedono e la voce li annuncia (parte C).
-- [ ] Test deterministici per motore, API e app.
+- [ ] Test deterministici per motore, API e app. *(Motore e API: parte
+      B; l'app con la parte C.)*
+- [x] `on_foot` nel risultato e nel contratto, solo come aggiunta: vuoto
+      per la corsa e la canoa, un'app vecchia lo ignora (parte B).
 
 ## File toccati
 
@@ -143,6 +147,41 @@ docs/tasks/TASK-206.md                                        (nuovo)
 samples/TASK-206_{heart,circle,star}_{10,20}km_trento_v1.gpx (nuovi)
 samples/LOG.md
 ```
+
+**Parte B**:
+
+```
+services/route-engine/route_engine/models.py
+services/route-engine/route_engine/network.py
+services/route-engine/route_engine/optimizer.py
+services/route-engine/route_engine/nearby_starts.py
+services/route-engine/route_engine/pen_up.py
+services/route-engine/tests/test_bike_on_foot_result.py       (nuovo)
+services/route-engine/tests/test_contract.py
+services/api/shaperoute_api/schemas.py
+services/api/shaperoute_api/route_store.py
+services/api/shaperoute_api/favorites.py
+services/api/migrations/0011_favorite_on_foot.sql             (nuovo)
+services/api/tests/test_contract.py
+services/api/tests/test_route_store.py
+services/api/tests/test_favorites.py
+packages/shared-types/src/index.ts
+packages/shared-types/test/contract.test.ts
+packages/shared-types/fixtures/route-result-cycling.json      (nuovo)
+packages/shared-types/fixtures/favorite-request-on-foot.json  (nuovo)
+packages/shared-types/fixtures/favorite-on-foot.json          (nuovo)
+docs/API.md
+docs/DATABASE.md
+docs/ROUTE_ENGINE.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-206.md
+```
+
+La migrazione dei preferiti non era prevista: chiesta al coordinatore, che
+l'ha approvata il 2026-10-03 (il numero è il primo libero in `main` al
+merge: `0011` se entra prima di TASK-211 A, che ha la sua). `pen_up.py`
+per `walks_problem`, che controlla anche i tratti a mano.
 
 Rispetto all'elenco mandato al coordinatore: `models.py` e `optimizer.py`
 non servono in A (`on_foot` nel risultato è della parte B, perché
@@ -262,3 +301,32 @@ A mano 100–660 m su 10–20 km, meno della stima (0,7–1,1 km su 10): con le
 partenze vicine la bici di oggi era già meglio di quella senza (cuore 10
 km 0,80 contro 0,70). Le stelle non si leggono né in bici né di corsa a
 Trento: non è la rete della bici.
+
+### Parte B — 2026-10-03
+
+Fatta come «Cosa fare» 7–9, più i preferiti (ADR-0167, «Aggiornamento
+(parte B)»), sul branch `feat/TASK-206-bike-on-foot-api`.
+
+- **Il motore**: `RouteResult.on_foot`, coppie `[da, a]` di indici nei
+  punti, compresi tutti e due, una per ogni fila di archi a piedi
+  (`network.on_foot_stretches`, dai nodi del percorso: il primo nodo più i
+  punti di ogni arco tranne il primo, lo stesso arco che sceglie
+  `_edge_points`). In `plan_shape`, nel piano di una partenza vicina e in
+  `with_approach`, dove contano anche l'avvicinamento e il ritorno; le
+  alternative sono piani come gli altri. Vuoto sulla rete a piedi, su una
+  zona della bici di prima e sull'acqua (`paddling.py` non cambia).
+- **Il contratto**: `on_foot` facoltativo in `shared-types` (tipo
+  `Stretch`), sempre nelle risposte dell'API, controllato come i `walks`
+  (lo stesso `walks_problem`, con il nome «stretch on foot») anche quando
+  l'app lo rimanda nel `GpxRequest`. Le fixture di prima restano quelle di
+  un'API vecchia; `route-result-cycling.json` è un cerchio in bici da 10 km
+  con 923 m a mano, e un'alternativa con i suoi.
+- **I percorsi tenuti**: `route_store` legge `on_foot` (quelli tenuti
+  prima: vuoto); i preferiti lo tengono con la migrazione `0011`
+  (`favorite-request-on-foot.json`, `favorite-on-foot.json`), quelli di
+  prima vuoto. Le corse salvate no.
+- **Il GPX non cambia**: il task file non lo chiedeva, e la bici a mano
+  è percorso, senza pause.
+- **Non toccato**: le frasi della voce (parte C), il server (vuole l'ok
+  dell'utente: «Note per il deploy»; ora c'è anche la migrazione `0011`).
+

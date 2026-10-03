@@ -979,10 +979,35 @@ def _edge_coords(graph: Graph, u: Any, v: Any, data: dict[str, Any]) -> list[Lat
     return coords
 
 
+def _shortest_edge(graph: Graph, u: Any, v: Any) -> dict[str, Any]:
+    """The data of the shortest u→v edge: the one a route's points follow."""
+    data: dict[str, Any] = min(graph[u][v].values(), key=lambda d: float(d["length"]))
+    return data
+
+
 def _edge_points(graph: Graph, u: Any, v: Any) -> list[LatLon]:
     """Points of the shortest u→v edge, from u to v, excluding u itself."""
-    data = min(graph[u][v].values(), key=lambda d: float(d["length"]))
-    return _edge_coords(graph, u, v, data)[1:]
+    return _edge_coords(graph, u, v, _shortest_edge(graph, u, v))[1:]
+
+
+def on_foot_stretches(graph: Graph, nodes: Sequence[Any]) -> list[tuple[int, int]]:
+    """Where a route walks with the bike on foot (TASK-206, ADR-0167):
+    [from, to] indices into its points, both included, one for each run of
+    edges in a row that `on_foot_edge`, in order. The points are those of
+    `nodes` as every route makes them: the first node, then `_edge_points`
+    of each edge. Empty on foot, and on a bike graph made before TASK-206."""
+    stretches: list[tuple[int, int]] = []
+    index = 0
+    for u, v in zip(nodes, nodes[1:], strict=False):
+        data = _shortest_edge(graph, u, v)
+        end = index + len(_edge_coords(graph, u, v, data)) - 1
+        if on_foot_edge(data):
+            if stretches and stretches[-1][1] == index:
+                stretches[-1] = (stretches[-1][0], end)
+            else:
+                stretches.append((index, end))
+        index = end
+    return stretches
 
 
 def _corridor_costs(

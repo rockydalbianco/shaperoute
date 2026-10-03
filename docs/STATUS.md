@@ -183,9 +183,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   metri a piedi. La corsa e la canoa non cambiano. Le zone `bike_*` di
   prima vanno rifatte per avere i tratti a mano (Mac da Overpass, server
   dall'estratto). Campioni di Trento giudicati dall'utente: i cerchi da
-  «quasi» a «sì», cuori e stelle come prima, 100–660 m a mano. Poi **B**
-  (`on_foot` nel risultato e nel contratto, la voce) e **C** (l'app). Da
-  dove riprendere: `tasks/TASK-206.md`.
+  «quasi» a «sì», cuori e stelle come prima, 100–660 m a mano. **Parte
+  B, l'API e il contratto** (2026-10-03, branch
+  `feat/TASK-206-bike-on-foot-api`): `on_foot` nel `RouteResult`, coppie
+  `[da, a]` di indici nei punti dove si va a mano, anche nelle alternative
+  e nell'avvicinamento da una partenza vicina; solo un'aggiunta (vuoto per
+  la corsa e la canoa, facoltativo in `shared-types`); i preferiti lo
+  tengono (migrazione `0011` al merge, approvata dal coordinatore). Il
+  server non è toccato (con l'ok dell'utente: zona della bici di Trento
+  rifatta, `draw_examples`, la migrazione). Poi **C** (l'app: i tratti a
+  mano sulla mappa e la voce). Da dove riprendere: `tasks/TASK-206.md`.
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).

@@ -10,7 +10,8 @@ seen, kept and removed only by its owner. Deleting the account deletes its
 favorites (ON DELETE CASCADE).
 
 A favorite remembers the activity it was drawn for (TASK-200): a bike route
-reopens as one. Those kept before are runs.
+reopens as one. Those kept before are runs. A bike route also keeps where it
+is walked with the bike on foot (TASK-206).
 """
 
 from __future__ import annotations
@@ -40,7 +41,14 @@ from shaperoute_api.accounts import (
 from shaperoute_api.activity_graphs import check_supported
 from shaperoute_api.db import Database
 from shaperoute_api.recommended import preview
-from shaperoute_api.schemas import ACTIVITY_DESCRIPTION, MAX_WALKS, ErrorBody, Walk
+from shaperoute_api.schemas import (
+    ACTIVITY_DESCRIPTION,
+    MAX_ON_FOOT,
+    MAX_WALKS,
+    ErrorBody,
+    Stretch,
+    Walk,
+)
 
 # A phone's list stays light, and one account cannot fill the database.
 MAX_FAVORITES = 200
@@ -73,6 +81,9 @@ class FavoriteRequestBody(BaseModel):
     walks: list[Walk] = Field(default_factory=list, max_length=MAX_WALKS)
     """RouteResult.walks, for a word with the pen up (TASK-199); missing
     from an older app."""
+    on_foot: list[Stretch] = Field(default_factory=list, max_length=MAX_ON_FOOT)
+    """RouteResult.on_foot, for a bike route walked in part (TASK-206);
+    missing from an older app."""
     activity: str = Field(default="running", description=ACTIVITY_DESCRIPTION)
     """RouteRequest.activity of the route (TASK-200); the app sends it only
     when it is not running, so an older API never sees it for a run."""
@@ -98,7 +109,9 @@ class FavoriteRequestBody(BaseModel):
     @model_validator(mode="after")
     def walks_within_points(self) -> FavoriteRequestBody:
         # As POST /track-scores checks them (schemas.py).
-        problem = walks_problem(self.walks, len(self.points))
+        problem = walks_problem(self.walks, len(self.points)) or walks_problem(
+            self.on_foot, len(self.points), "stretch on foot"
+        )
         if problem is not None:
             raise ValueError(problem)
         return self
@@ -148,6 +161,10 @@ class FavoriteDetailBody(BaseModel):
     """For a word with the pen up (TASK-199): [from, to] indices into
     `points`; empty for any other route, and for the favorites kept
     before."""
+    on_foot: list[Stretch]
+    """For a bike route (TASK-206): [from, to] indices into `points` of the
+    stretches walked with the bike on foot; empty for any other route, and
+    for the favorites kept before."""
     activity: str
     """What the route was drawn for (TASK-200): `running` for those kept
     before."""
@@ -155,7 +172,7 @@ class FavoriteDetailBody(BaseModel):
 
 COLUMNS = (
     "key, city, shape, word, style, title, distance_m, route_m, similarity,"
-    " created_at, walks, activity, ST_AsGeoJSON(line, 15) AS line"
+    " created_at, walks, activity, on_foot, ST_AsGeoJSON(line, 15) AS line"
 )
 
 
@@ -220,6 +237,7 @@ class Favorites:
             **_fields(row),
             points=_points(row),
             walks=[(start, end) for start, end in row["walks"]],
+            on_foot=[(start, end) for start, end in row["on_foot"]],
         )
 
     def keep(
@@ -248,8 +266,8 @@ class Favorites:
             row = conn.execute(
                 "INSERT INTO favorites (user_id, key, city, shape, word, style,"
                 " title, distance_m, route_m, similarity, line, created_at, walks,"
-                " activity) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
-                " ST_GeomFromText(%s, 4326), %s, %s, %s)"
+                " activity, on_foot) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,"
+                " %s, ST_GeomFromText(%s, 4326), %s, %s, %s, %s)"
                 f" RETURNING {COLUMNS}",
                 (
                     user_id,
@@ -266,6 +284,7 @@ class Favorites:
                     self.now(),
                     Jsonb([list(walk) for walk in body.walks]),
                     body.activity,
+                    Jsonb([list(stretch) for stretch in body.on_foot]),
                 ),
             ).fetchone()
             assert row is not None

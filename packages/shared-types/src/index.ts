@@ -125,6 +125,12 @@ export type RouteRequest =
  */
 export type Walk = [from: number, to: number];
 
+/**
+ * A stretch of a bike route walked with the bike on foot (TASK-206,
+ * ADR-0167): [from, to] indices into `RouteResult.points`, both included.
+ */
+export type Stretch = [from: number, to: number];
+
 export interface RouteResult {
   /**
    * The route, closed: the last point is the first. A word with the pen up
@@ -155,6 +161,13 @@ export interface RouteResult {
    * API, which draws one line.
    */
   walks?: Walk[];
+  /**
+   * By bike (TASK-206, ADR-0167): where the rider walks with the bike on
+   * foot, in order, also in the approach from a nearby start; the warnings
+   * say how many metres. Empty on foot and on the water; missing from an
+   * older API, which says nothing of it.
+   */
+  on_foot?: Stretch[];
 }
 
 /** Routes besides the one chosen by the engine: three to choose from. */

@@ -7755,6 +7755,20 @@ nell'app con la parte C. Fino ad allora l'avviso dice i metri a piedi.
 Le gallerie stradali in bici (fino a 1 km nei campioni) restano: sono un
 seguito.
 
+**Aggiornamento (parte B, 2026-10-03)**, deciso dall'agente su delega
+dell'utente; la migrazione con l'ok del coordinatore: il `RouteResult` ha
+`on_foot`, coppie `[da, a]` di indici nei punti, compresi tutti e due, una
+per ogni fila di archi a piedi (`network.on_foot_stretches`, calcolata dai
+nodi del percorso come i punti), nelle alternative e, da una partenza
+vicina, con l'avvicinamento e il ritorno. Si aggiunge senza togliere
+niente: vuoto per la corsa e la canoa, facoltativo in `shared-types`,
+sempre nelle risposte dell'API; si controlla come i `walks` (lo stesso
+`walks_problem`). I preferiti lo tengono (migrazione `0011`, colonna
+`on_foot` come `walks`, al più 1000 coppie nel `PUT`), perché un preferito
+in bici riaperto abbia i tratti a mano sulla mappa e nella voce; le corse
+salvate no (il punteggio non cambia). Il GPX non cambia: nessuna pausa, la
+bici a mano è percorso. Le frasi della voce sono della parte C.
+
 ## ADR-0168 — La foto dal cerchio di «Profile»: un «+» bianco, le scelte di «Settings» in un riquadro sopra «Edit profile»
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-207). La richiesta e il «+» in basso a destra del cerchio sono

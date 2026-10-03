@@ -529,6 +529,36 @@ La richiesta è sincrona: la risposta arriva quando il percorso è pronto
   `/image-route-jobs`: forma, parola o foto. Il `RouteResult` è lo stesso
   di una corsa; fra gli avvisi c'è in più lo sterrato («… m of the route on
   unpaved roads»).
+- **La bici a mano** (TASK-206, ADR-0167): dove la bici non si guida il
+  percorso la porta a mano per brevi tratti (`ROUTE_ENGINE.md`, «La bici a
+  mano»), e il `RouteResult` dice dove con **`on_foot`**: una coppia `[da,
+  a]` di indici in `points` per ogni tratto, compresi tutti e due, in
+  ordine, come i `walks` della penna alzata (ma non si mette in pausa
+  niente: la corsa continua a registrare). Un tratto è una fila di archi a
+  piedi; dove ricomincia la sella finisce. Ogni alternativa ha i suoi, e
+  da una partenza vicina contano anche l'avvicinamento e il ritorno.
+  L'avviso dice i metri («… m of the route with the bike on foot»).
+  Esempio: `fixtures/route-result-cycling.json`.
+
+```json
+{
+  "points": [[46.0671, 11.1214], "…", [46.0671, 11.1214]],
+  "distance_m": 10068.1,
+  "shape": "circle",
+  "warnings": ["923 m of the route with the bike on foot"],
+  "walks": [],
+  "on_foot": [[2, 3]],
+  "…": "…"
+}
+```
+
+- **`on_foot` c'è sempre nelle risposte**, vuoto per la corsa, la canoa e
+  una zona della bici fatta prima di TASK-206 (senza archi a piedi). Un'API
+  precedente non lo manda: in `shared-types` è facoltativo, e le app
+  installate ignorano il campo. Nel `GpxRequest` si può rimandare com'è
+  arrivato o lasciare fuori; se c'è si controlla come i `walks` (fuori dai
+  punti, all'indietro o sovrapposti: `422 invalid_request`). Il GPX non
+  cambia: i tratti a mano sono pezzi della traccia come gli altri.
 - **Da 10 a 30 km** (`DISTANCE_LIMITS_M` in `shared-types`): fuori è `422
   invalid_request`, `distance must be between 10000 and 30000 metres for
   cycling, got 5000`. La corsa resta 1–50 km, con il messaggio di prima.
@@ -892,6 +922,15 @@ tipi dell'app in `apps/mobile/src/api/favorites.ts`.
   per byte quella di prima), e se il `PUT` torna `422 invalid_request` lo
   rimanda una volta come un'app precedente a TASK-199, senza `activity` né
   `walks`: il preferito si tiene come una corsa.
+- **La bici a mano** (TASK-206, ADR-0167, migrazione `0011`): il corpo del
+  `PUT` può avere `on_foot`, quello del `RouteResult` (coppie `[da, a]` di
+  indici in `points`, «In bici»), facoltativo, al più 1000 coppie; si
+  controlla come `walks`. Il preferito intero ha **sempre** `on_foot`,
+  vuoto per ogni altro percorso e per quelli tenuti prima; l'elenco non
+  cambia. Esempi: `favorite-request-on-foot.json`, `favorite-on-foot.json`.
+  Un'API precedente rifiuta il campo: l'app lo manda solo quando non è
+  vuoto, e se il `PUT` torna `422 invalid_request` lo rimanda senza (parte
+  C).
 
 ### My activities (TASK-172, ADR-0140)
 

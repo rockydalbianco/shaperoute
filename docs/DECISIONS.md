@@ -7773,6 +7773,36 @@ in bici riaperto abbia i tratti a mano sulla mappa e nella voce; le corse
 salvate no (il punteggio non cambia). Il GPX non cambia: nessuna pausa, la
 bici a mano è percorso. Le frasi della voce sono della parte C.
 
+**Aggiornamento (parte C, l'app, 2026-10-03)**. Testi e stile **scelti
+dall'utente** (`tasks/TASK-206.md`, «Le risposte dell'utente»); il resto
+deciso dall'agente su delega dell'utente:
+
+- **La mappa** (scelta dell'utente): la linea gialla resta intera e un
+  livello `on-foot` sopra di lei la segna a trattini scuri (token `onFoot`,
+  `onAccent`), sotto i luoghi e la corsa. Sopra e non al posto della
+  linea, al contrario dei `walks` della penna alzata, perché il tratto a
+  mano è disegno. Con una parola a penna alzata in bici si segna solo la
+  parte dei tratti che cade sulle lettere (`onFootLines`).
+- **La scheda** (testo dell'utente): non una riga nuova in `RoutePanel`, ma
+  una regola in `warnings.ts` per l'avviso che il motore manda già («… m of
+  the route with the bike on foot»): stessi metri del motore, stessa
+  riga per ogni tessera, nessun file della #255 da toccare. Tono `info`:
+  è da sapere, non un pericolo. Arrotondati a 10 m, almeno 10; da 1 km in
+  km con un decimale.
+- **I tratti si controllano come i `walks`** (`onFootOf` usa `walksOf`):
+  indici interi, in ordine, dentro i punti; altrimenti nessuno e il
+  percorso di prima. Un'API vecchia non li manda: niente cambia.
+- **I preferiti**: `on_foot` nella richiesta solo se ce ne sono. A un
+  `invalid_request` l'app riprova prima **senza i tratti** (un'API con
+  l'attività di TASK-200 ma senza la parte B tiene il percorso in bici),
+  poi come un'app più vecchia di TASK-199 (`asBefore`, che ora toglie
+  anche `on_foot`): al più tre `PUT`, solo davanti a un rifiuto.
+- **Non nella parte C**: la fine della corsa non segna i tratti (la corsa
+  salvata non ha `on_foot`); un'anteprima di «Favorites» nemmeno.
+- **«Start» in bici e la penna alzata in bici** (domande aperte di
+  TASK-190): per scelta dell'utente sono **TASK-216**, «la navigazione in
+  bici».
+
 ## ADR-0168 — La foto dal cerchio di «Profile»: un «+» bianco, le scelte di «Settings» in un riquadro sopra «Edit profile»
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-207). La richiesta e il «+» in basso a destra del cerchio sono

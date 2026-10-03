@@ -302,7 +302,7 @@ apps/mobile/src/i18n/{it,de,es,fr}.ts                    (solo aggiunte)
 apps/mobile/src/api/favorites.ts
 apps/mobile/src/api/favorites.test.ts
 apps/mobile/src/favorites/favoriteRoute.ts
-apps/mobile/src/favorites/favoriteRoute.test.ts
+apps/mobile/src/favorites/favoriteOnFoot.test.ts         (nuovo)
 docs/UI.md
 docs/DECISIONS.md
 docs/STATUS.md

@@ -631,6 +631,13 @@ dell'account.
   corsa. Se l'API non conosce ancora l'attività (più vecchia di TASK-200) e
   rifiuta, l'app lo tiene come una corsa, senza mostrare l'errore; tenuto
   così, resta così.
+- **La bici a mano** (TASK-206, ADR-0167): il cuore tiene anche i tratti
+  con la bici a mano (`on_foot`), solo quando ce ne sono e stanno nella
+  linea; riaperto, il preferito li segna sulla mappa come appena disegnato
+  («Il risultato»), e tenuto di nuovo li tiene. Se l'API non li conosce
+  ancora (più vecchia di TASK-206, parte B) e rifiuta, l'app lo manda di
+  nuovo senza i tratti, ancora in bici; se rifiuta ancora, come un'app più
+  vecchia di TASK-199. Un preferito tenuto prima non ha tratti.
 
 ## «My activities» (TASK-172, ADR-0140)
 
@@ -1127,6 +1134,28 @@ con i `walks` non è chiuso: va dalla prima lettera all'ultima. Da
 TASK-199 un preferito tiene anche i `walks`, e riaperto si mostra e si
 corre come appena disegnato («Favorites»); uno tenuto prima è una linea
 sola.
+
+**La bici a mano** (TASK-206, ADR-0167). Un percorso in bici può avere
+brevi tratti con la bici portata a mano (marciapiedi, sentieri, l'altro
+senso di un senso unico): l'API li manda in `on_foot`. Sulla mappa, qui e
+durante la corsa, la linea gialla resta **intera**, perché i tratti sono
+parte del disegno, e sopra di loro corrono **trattini scuri**: il token
+`onFoot` (`onAccent`, largo 2, opacità 0,9, trattini e spazi di 1,5
+larghezze, estremi dritti), sopra il percorso e sotto i luoghi di un
+percorso a tema e la corsa. Scelta dell'utente del 2026-10-03; scartati il
+blu delle pagine di confronto (spezza la forma) e il giallo tratteggiato.
+Con una parola a penna alzata in bici, la parte di un tratto che cade fra
+una lettera e l'altra non si segna: lì la linea è già grigia. Nella scheda
+l'avviso del motore «923 m of the route with the bike on foot» diventa una
+riga grigia, da sapere: **«Includes 920 m walking the bike.»** (in
+italiano «Di cui 920 m con la bici a mano.», approvati dall'utente; in
+tedesco, spagnolo e francese **da confermare**), i metri arrotondati a 10,
+da 1 km «1.1 km». Ogni tessera «A · B · C» ha i suoi. La distanza resta di
+tutto il percorso, tratti a mano compresi, e la corsa li registra senza
+pause. Un risultato senza `on_foot` (un'API più vecchia di TASK-206) o con
+tratti che non stanno nei `points` (`src/route/onFoot.ts`, gli stessi
+controlli dei `walks`) si disegna come prima, con lo stesso messaggio alla
+mappa di prima.
 
 ## La navigazione
 

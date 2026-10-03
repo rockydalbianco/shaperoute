@@ -8864,5 +8864,5 @@ il cuore senza quadrato, nero o giallo sul fondo scuro (il giallo dietro
 nome, come in ogni marchio).
 
 **Conseguenze**: TASK-222 («Explore») importa `HeartBadge` dopo il merge
-di TASK-221; un posto nuovo si aggiunge al punto 4. Si vede sul telefono con la prossima pubblicazione dell'app, con
-l'ok dell'utente.
+di TASK-221; un posto nuovo si aggiunge al punto 4. Si vede sul telefono
+con la prossima pubblicazione dell'app, con l'ok dell'utente.

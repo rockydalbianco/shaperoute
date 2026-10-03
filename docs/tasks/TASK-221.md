@@ -1,10 +1,10 @@
 # TASK-221 — Il cuore su giallo accanto al nome «Sgrava»
 
-**Stato**: In corso
+**Stato**: Done (2026-10-03)
 **Fase**: 4 · **Branch**: `feat/TASK-221-heart-badge`
 **Dipende da**: TASK-179 (il cuore dell'avvio, `heartLine.ts`), in `main`;
-TASK-220 (il pulsante giallo «Run without a route»), che tocca la stessa
-schermata: `ChooseScreen.tsx` si cambia solo dopo il suo merge
+TASK-220 (il pulsante giallo «Run without a route», #280), che tocca la
+stessa schermata: `ChooseScreen.tsx` cambiato dopo il suo merge
 
 ## Obiettivo
 
@@ -35,13 +35,13 @@ fianco al nome sgrava».
 
 ## Criteri di accettazione
 
-- [ ] In «Draw», a sinistra di «Sgrava», un quadrato giallo con il cuore
+- [x] In «Draw», a sinistra di «Sgrava», un quadrato giallo con il cuore
       nero dell'avvio e il suo punto di partenza.
-- [ ] Il cuore si riconosce alla misura del titolo (visto nel simulatore).
-- [ ] Il lettore di schermo dice «Sgrava» una volta sola, non il disegno.
-- [ ] Nessun colore scritto a mano: `accent`, `onAccent`, `text` dai token.
-- [ ] I test della prima schermata passano senza cambiare.
-- [ ] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
+- [x] Il cuore si riconosce alla misura del titolo (visto nel simulatore).
+- [x] Il lettore di schermo dice «Sgrava» una volta sola, non il disegno.
+- [x] Nessun colore scritto a mano: `accent`, `onAccent`, `text` dai token.
+- [x] I test della prima schermata passano senza cambiare.
+- [x] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
 
 ## File toccati
 
@@ -67,4 +67,12 @@ riga del titolo e la sezione «Il logo e l'icona».
 
 ## Esito
 
-*(a fine task)*
+Fatto: in cima a «Draw», a sinistra di «Sgrava», il cuore dell'avvio
+fermo, nero su un quadrato giallo di 32 punti (ADR-0184). Un componente
+solo, `HeartBadge.tsx`, che importa il disegno di `heartLine.ts` senza
+copiarlo: 98 tratti, uno per pezzo del percorso. 8 test nuovi in
+`HeartBadge.test.tsx` (il disegno chiuso, i colori, il lettore di schermo,
+il posto accanto al nome); i test di `ChooseScreen.test.tsx` passano senza
+cambiare. Visto nel simulatore (iPhone 17, Expo Go): il cuore si
+riconosce alla misura del titolo. **Resta**: TASK-222 lo mette in
+«Explore»; pubblicare l'app (ok dell'utente) e guardarlo sull'iPhone.

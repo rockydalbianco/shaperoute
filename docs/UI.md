@@ -132,7 +132,8 @@ prima ed «Explore» sono due delle tre pagine affiancate (sotto, «Le
 pagine»):
 
 1. **«What to draw»**, all'apertura: la pagina «Draw». Dall'alto: il nome
-   «Sgrava» con il pulsante «Run without a route» (TASK-149, sotto; «Ride
+   «Sgrava», con a sinistra il cuore su giallo (TASK-221, sopra), e il
+   pulsante «Run without a route» (TASK-149, sotto; «Ride
    without a route» con «Bike», TASK-190); una
    scheda che dice da dove partirà il percorso,
    con, quando servono, il rimando alle Impostazioni e la ricerca del

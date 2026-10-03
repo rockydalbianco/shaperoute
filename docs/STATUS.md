@@ -367,6 +367,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-221: il cuore su giallo accanto a «Sgrava» (ADR-0184;
+  chiesto dall'utente il 2026-10-03). In cima a «Draw», a sinistra del
+  nome, un quadrato giallo di 32 punti con il cuore nero dell'avvio, fermo.
+  Un componente solo, `src/intro/HeartBadge.tsx`, che TASK-222 riusa in
+  «Explore». Sul telefono con la prossima pubblicazione.
+  `tasks/TASK-221.md`.
 - **App** — TASK-220: «Run without a route» giallo (ADR-0183; chiesto
   dall'utente il 2026-10-03). In cima a «Draw» il pulsante, anche come
   «Ride without a route», ha il fondo giallo e il testo scuro: l'unica

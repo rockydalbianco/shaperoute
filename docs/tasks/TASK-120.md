@@ -61,6 +61,7 @@ services/api/shaperoute_api/comments.py             (nuovo)
 services/api/shaperoute_api/app.py
 services/api/shaperoute_api/schemas.py
 services/api/tests/test_comments.py                 (nuovo)
+services/api/tests/test_drawings.py
 packages/shared-types/src/index.ts
 packages/shared-types/fixtures/api-error-codes.json
 packages/shared-types/fixtures/comment*.json        (nuovi)
@@ -84,12 +85,17 @@ docs/tasks/TASK-120.md
 
 `routes.ts`: il tipo dell'errore di un percorso prende `reason` da
 `ApiError`, che ora ha anche il motivo di un commento (una riga).
-`ProfileLayer.tsx`: il provider dei commenti accanto a quello dei disegni.
+`ProfileLayer.tsx`: il provider dei commenti attorno all'app, dove sta la
+scheda del disegno. `test_drawings.py`: lo schema «di prima dei disegni»
+prende le migrazioni prima della loro, non tutte le altre (la `0011` dei
+commenti vuole la tabella `drawings`; una riga).
 
 ## Fuori scope
 
 - Risposte a un commento, menzioni, like ai commenti, modifica.
-- Notifiche (TASK-185). Segnalare e bloccare (TASK-121).
+- Notifiche (TASK-185). Segnalare e bloccare (TASK-121): **segnalare un
+  commento arriva con TASK-121**, scelta dell'utente del 2026-10-03; per
+  ora bastano il filtro e la cancellazione da parte del proprietario.
 - I commenti sui post d'esempio del «Feed» e nelle schede del feed vero
   (TASK-118).
 
@@ -100,7 +106,10 @@ docs/tasks/TASK-120.md
 `ON DELETE CASCADE` su disegno e account). Li legge e li scrive chi vede
 il disegno; un disegno tornato privato li tiene, visti solo dal
 proprietario. Cancella chi l'ha scritto (anche sotto un disegno tornato
-privato) o il proprietario del disegno; gli altri `403`. Al più 10 al
+privato) o il proprietario del disegno; gli altri `403`. La regola
+«chi vede il disegno, commenta» vale anche quando TASK-208 porterà
+«Followers»: i commenti seguono la visibilità del disegno, senza regole
+loro. Al più 10 al
 minuto per account (`429` con `Retry-After`). Il filtro di TASK-213
 prima di salvare: `422 comment_rejected`, `reason` `"negative"`, il
 messaggio dell'utente; il codice e il motivo sono nel contratto

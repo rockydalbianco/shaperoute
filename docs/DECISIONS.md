@@ -7981,8 +7981,11 @@ già); la foto nel commento; una colonna «nascosto» che nessuno usa ancora
 **Conseguenze**: migrazione `0011` (il primo numero libero al merge). Sul
 telefono funziona solo con il server aggiornato e l'app pubblicata, con
 l'ok dell'utente; un'API senza commenti risponde `404` e il pulsante non
-c'è. I testi nuovi vanno tradotti con TASK-210. TASK-121 (segnalare) resta
-il cancello prima di invitare chi non si conosce.
+c'è. I testi nuovi sono tradotti come vuole ADR-0172 (TASK-210 è entrato
+prima). **Segnalare un commento arriva con TASK-121** (scelta dell'utente,
+2026-10-03): per ora bastano il filtro e la cancellazione da parte del
+proprietario; TASK-121 resta il cancello prima di invitare chi non si
+conosce.
 
 ## ADR-0176 — Nessun commento negativo: un elenco di parole nell'API, rifiutato con un avviso
 **Stato**: Attiva · 2026-10-03 · **scelta dell'utente** la regola e

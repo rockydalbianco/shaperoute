@@ -258,17 +258,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:
   subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API
-  e app in una PR: `GET`/`POST /drawings/{id}/comments` e `DELETE
+  e app in `main` dalla PR #260 (`8a938fd`, 2026-10-03):
+  `GET`/`POST /drawings/{id}/comments` e `DELETE
   /comments/{id}`, tabella `comments` (migrazione `0013`), al più 10 al
   minuto, il filtro di TASK-213 (`422 comment_rejected`, l'avviso
   nell'app). Nell'app, sotto un disegno aperto da un profilo, «Write a
   comment» / «N comments» apre un foglio dal basso con l'elenco e il campo
   sopra la tastiera; tieni premuto per cancellare il proprio, o qualsiasi
   sotto il proprio disegno; i testi anche nelle quattro lingue di TASK-210.
+  Segnalare un commento arriva con TASK-121 (scelta dell'utente).
   **Aspettano l'utente**: i testi nuovi (`UI.md`),
   l'aggiornamento del server con la `0013` e la pubblicazione, la prova
-  sull'iPhone con due account. Da dove riprendere: `tasks/TASK-120.md`,
-  «Esito».
+  sull'iPhone con due account. Con TASK-208 A i commenti seguiranno
+  «Followers» (seguito nel task file). Da dove riprendere:
+  `tasks/TASK-120.md`, «Esito».
 
 - **TASK-117 — Pubblicare una corsa salvata** (ADR-0159; scelte
   dell'utente: due PR, il punteggio visibile agli altri, anche le corse

@@ -1,8 +1,8 @@
 # TASK-120 — Commenti
 
-**Stato**: In corso — codice fatto (API e app, una PR); mancano
-l'aggiornamento del server con la migrazione `0013`, la pubblicazione e la
-prova sull'iPhone con due account, con l'ok dell'utente
+**Stato**: In corso — codice in `main` (PR #260, `8a938fd`, 2026-10-03);
+mancano l'aggiornamento del server con la migrazione `0013`, la
+pubblicazione e la prova sull'iPhone con due account, con l'ok dell'utente
 **Fase**: 4 · **Branch**: `feat/TASK-120-comments`
 **Dipende da**: TASK-117 (i disegni pubblicati) · TASK-213 (il filtro dei
 commenti negativi, in `main`) · **Prima di aprirli a tutti**: TASK-121
@@ -146,3 +146,9 @@ Seguiti:
   aprono lo stesso foglio (`DrawingComments`).
 - **TASK-121**: segnalare un commento; una colonna «nascosto» se serve
   nasconderlo senza cancellarlo.
+- **TASK-208 A** (la visibilità a tre valori, con «Followers»): quando
+  entra, chi vede e scrive i commenti passa a `drawing_seen_sql(viewer)` di
+  `drawings.py` al posto di `SEEN_BY` in `comments.py`, così i commenti
+  seguono la stessa regola del disegno. Fino ad allora i commenti di un
+  disegno «Followers» li vede solo il proprietario: sbaglia per difetto,
+  mai mostrando a chi non deve (indicazione del coordinatore).

@@ -216,6 +216,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   aperta, da pubblicare con l'ok dell'utente. Da dove riprendere:
   `tasks/TASK-204.md`.
 
+- **TASK-117 — Pubblicare una corsa salvata** (ADR-0159; scelte
+  dell'utente: due PR, il punteggio visibile agli altri, anche le corse
+  senza percorso). **Parte A, l'API**, PR #232 in revisione: titolo e «Public» su
+  una corsa di «My activities» (`PUT /me/activities/{key}/drawing`), i
+  disegni di un profilo e un disegno dal suo id, la traccia senza i primi
+  e gli ultimi 200 m e senza il percorso pianificato, il numero di disegni
+  pubblici nel profilo; tabella `drawings`, migrazione nuova. Entra dopo
+  TASK-200. **Parte B, l'app**, dopo TASK-187 (app) e TASK-200. Da dove
+  riprendere: `tasks/TASK-117.md`.
+
 ## Completato
 
 - **Motore** — TASK-203: dove va il tempo del piano dalla partenza, e le

@@ -93,7 +93,9 @@ services/api/shaperoute_api/follows.py              (nuovo)
 services/api/shaperoute_api/profiles.py
 services/api/shaperoute_api/app.py
 services/api/tests/test_follows.py                  (nuovo)
+services/api/tests/test_profiles.py                 (il profilo atteso, ok del coordinatore)
 packages/shared-types/                              (contratto e fixture)
+apps/mobile/src/api/profiles.test.ts                (il tipo della fixture, ok del coordinatore)
 docs/API.md, docs/DATABASE.md, docs/DECISIONS.md, docs/STATUS.md
 ```
 
@@ -159,9 +161,11 @@ del coordinatore); gli elenchi di un altro non si leggono; bloccare
 (TASK-121) dovrà togliere le righe nei due versi, fermare le richieste e
 nascondere i bloccati da ricerca ed elenchi, e tocca `follows.py`.
 
-**Un file fuori dall'elenco**: `services/api/tests/test_profiles.py`, tre
-righe: il profilo atteso ha i tre campi nuovi (il test confronta la
-risposta intera).
+**Due file aggiunti all'elenco** (ok del coordinatore):
+`services/api/tests/test_profiles.py`, quattro righe, perché il profilo
+atteso ha i tre campi nuovi (il test confronta la risposta intera);
+`apps/mobile/src/api/profiles.test.ts`, perché la fixture letta come JSON
+ha `follow` stringa, e il test le dà il tipo `PublicProfile` esplicito.
 
 **Da dire all'utente**: la ricerca mostra il nome di ogni iscritto a chi ha
 un account; con due lettere alla volta se ne fa l'elenco. Il cancello di

@@ -2,7 +2,6 @@ import type { LatLon, Walk } from "@shaperoute/shared-types";
 
 import { POOR_FIX_M } from "./navigator";
 import { movePen, PEN_DOWN_M, type Pen, startPen } from "./penUp";
-import { penDownCue, penUpCue } from "./phrases";
 import {
   AUTO_PAUSE_AFTER_MS,
   controlRun,
@@ -128,8 +127,6 @@ describe("the pen along the route", () => {
         vibrate: true,
       },
     ]);
-    expect(penDownCue(null)).toBe("Pen down: draw the next letter.");
-    expect(penUpCue("A")).toBe("Letter done. Walk to the A: the drawing is paused.");
   });
 });
 

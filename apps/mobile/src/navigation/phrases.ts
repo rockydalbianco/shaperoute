@@ -1,11 +1,12 @@
 import type { Direction, Turn } from "@shaperoute/shared-types";
 
 /**
- * What the app shows and says for a direction (TASK-049), in English like
- * the rest of the interface. The street is the one OpenStreetMap names; a
- * road without a name is called by its kind, never given one (ADR-0045);
- * the street it runs beside, when the API deduced one, is said as "beside",
- * never as the road's own name (ADR-0058).
+ * What the app writes for a direction (TASK-049), in English like the rest
+ * of the interface. The street is the one OpenStreetMap names; a road
+ * without a name is called by its kind, never given one (ADR-0045); the
+ * street it runs beside, when the API deduced one, is written as "beside",
+ * never as the road's own name (ADR-0058). What the voice says is in
+ * `src/voice/`, in the language it speaks (TASK-209, ADR-0171).
  */
 
 const VERBS: Record<Turn, string> = {
@@ -66,39 +67,9 @@ export function instruction(direction: Direction): string {
   return `${VERBS[direction.turn]}${onto(direction)}`;
 }
 
-/**
- * The words said before a junction: "In 50 metres, turn left onto Via Roma,
- * then turn right onto the footpath". `chain` is the direction and those
- * joined to it (a street crossed in a few metres), said together.
- */
-export function announcement(chain: Direction[], inM: number | null): string {
-  const said = chain.map(instruction);
-  const first =
-    inM === null ? said[0] : `In ${roundMetres(inM)} metres, ${lower(said[0])}`;
-  return [first, ...said.slice(1).map((words) => `then ${lower(words)}`)].join(", ");
-}
-
 /** The banner's second line: "Then turn right onto Via Verdi". */
 export function thenText(then: Direction[]): string {
   return `Then ${then.map((d) => lower(instruction(d))).join(", then ")}`;
-}
-
-/**
- * At the end of a letter of a word with the pen up (TASK-198): "Letter
- * done. Walk to the A: the drawing is paused." `letter` is the next one, or
- * null when the word does not say which.
- */
-export function penUpCue(letter: string | null): string {
-  return `Letter done. Walk to ${letterWords(letter)}: the drawing is paused.`;
-}
-
-/** At the start of the next letter: "Pen down: draw the A." */
-export function penDownCue(letter: string | null): string {
-  return `Pen down: draw ${letterWords(letter)}.`;
-}
-
-function letterWords(letter: string | null): string {
-  return letter === null ? "the next letter" : `the ${letter}`;
 }
 
 /** Metres as a runner hears them: to 10 m, and never "0 metres". */

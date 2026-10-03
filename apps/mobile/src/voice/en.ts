@@ -1,0 +1,62 @@
+import type { Phrasebook, Place } from "./phrasebook";
+
+/** "onto the footpath" after a turn, "on the footpath" at the start. */
+function onto(words: string): Place {
+  return { onto: `onto ${words}`, on: `on ${words}` };
+}
+
+/** "1 hour", "5 minutes": a number with its unit. */
+function units(count: number, unit: string): string {
+  return `${count} ${unit}${count === 1 ? "" : "s"}`;
+}
+
+function letterWords(letter: string | null): string {
+  return letter === null ? "the next letter" : `the ${letter}`;
+}
+
+/**
+ * The voice in English: the words it has said since TASK-049, unchanged,
+ * and the language it speaks when nothing else is chosen (ADR-0171).
+ */
+export const EN: Phrasebook = {
+  turns: {
+    depart: "Head out",
+    left: "Turn left",
+    right: "Turn right",
+    "sharp-left": "Turn sharp left",
+    "sharp-right": "Turn sharp right",
+    straight: "Continue straight",
+    "u-turn": "Make a U-turn",
+  },
+  kinds: {
+    footway: onto("the footpath"),
+    pedestrian: onto("the pedestrian street"),
+    path: onto("the path"),
+    cycleway: onto("the cycle path"),
+    track: onto("the track"),
+    steps: onto("the steps"),
+    service: onto("the service road"),
+    living_street: onto("the street"),
+    residential: onto("the street"),
+  },
+  road: onto("the road"),
+  street: onto,
+  beside: (name) => `beside ${name}`,
+  inMetres: (metres, words) => `In ${metres} metres, ${words}`,
+  then: "then",
+  offRoute: "You are off the route. Head back to it.",
+  backOnRoute: "Back on the route.",
+  arrived: "You have arrived.",
+  paused: "Paused.",
+  resumed: "Resumed.",
+  penUp: (letter) =>
+    `Letter done. Walk to ${letterWords(letter)}: the drawing is paused.`,
+  penDown: (letter) => `Pen down: draw ${letterWords(letter)}.`,
+  hours: (count) => units(count, "hour"),
+  minutes: (count) => units(count, "minute"),
+  seconds: (count) => units(count, "second"),
+  and: " ",
+  kilometre: (km, time, pace) =>
+    `${units(km, "kilometre")}. Time: ${time}. Average pace: ${pace} per kilometre.`,
+  cheer: "Come on, full speed ahead!",
+};

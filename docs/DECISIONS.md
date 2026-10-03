@@ -6527,9 +6527,41 @@ collega un atleta solo; 200 richieste ogni quarto d'ora e 2 000 al giorno.
 - **Il dominio della callback** è `SHAPEROUTE_DOMAIN`, che il server ha
   già per Caddy; vuota, l'indirizzo a cui è arrivata la richiesta. Nessuna
   variabile in più oltre a `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`.
-- **Proposte del task file, costruite e in attesa dell'utente**: il nome
-  dell'attività («Heart in Trento»; senza percorso quello di Strava) e la
-  riga «Drawn with Sgrava», solo per una corsa che ha seguito un percorso.
+- **Il nome e la descrizione**, proposti dal task file e poi **scelti
+  dall'utente** il 2026-10-02 sera: il nome si scrive nell'app prima di
+  «Save» (`{ "name": … }`, facoltativo; vuoto, «Heart in Trento» o quello
+  di Strava); la descrizione su ogni corsa, «Drawn with Sgrava» con un
+  percorso, «Recorded with Sgrava» senza.
+
+**Parte app** (2026-10-02 sera; l'arancione di Strava e l'interruttore
+che ricorda sono **scelte dell'utente**, il resto deciso dall'agente su
+delega dell'utente):
+
+- **Strava si chiede all'API solo quando una schermata lo mostra** (fine
+  della corsa, una corsa aperta, «Settings»), una volta per account, e di
+  nuovo quando l'app torna in primo piano dopo aver aperto la pagina di
+  Strava. Un'API senza Strava, o più vecchia di TASK-187 (`404`), è
+  «Strava spento»: niente si vede. Il resto dell'app non fa richieste in
+  più all'apertura.
+- **La scelta passa da `RunEnd` a «Save» con `toStrava`** della porta
+  delle corse (`activitiesDoor.ts`), detta subito prima di `onSave`:
+  `App.tsx` non cambia (era di TASK-200).
+- **Le corse che aspettano Strava hanno un file loro**
+  (`strava-outbox.json`: account, chiave e nome), non restano in
+  `activities-outbox.json`: quello tiene la corsa intera e conta «runs
+  waiting for a connection»; una corsa che l'API ha già non aspetta più la
+  connessione per «My activities». Una corsa con l'interruttore acceso
+  porta `strava: { name }` nel primo file finché l'API non l'ha; poi passa
+  al secondo, scritto prima di togliere la corsa dal primo. Si riprova a
+  ogni apertura: `202`, `502`, `429` e senza rete restano; `409`, `422`,
+  `404` e `503` escono (rimandare non cambierebbe niente).
+- **Lo stato HTTP resta nella risposta** (`http` in `StravaOutcome`):
+  l'API dice `http_error` per `404`, `409`, `502` e `503`, e l'app fa una
+  cosa diversa per ognuno. `accounts.ts` non cambia.
+- **Nessun ritorno automatico nell'app** dopo il browser (uno schema
+  `sgrava://` nella callback): Expo Go non ha schemi nostri (come
+  `music.ts`), e la pagina della callback dice già «Go back to Sgrava.».
+- **Nessuna dipendenza nuova**: `Linking` e `AppState` di React Native.
 
 **Scartate**: OAuth nell'app con `expo-auth-session` (una dipendenza, e il
 secret dovrebbe comunque stare sul server per lo scambio del codice); lo
@@ -7101,3 +7133,136 @@ scelto due PR, l'API adesso e l'app dopo.
    elenca solo quelli, a pagine, dalla corsa più recente, anche a chi lo
    guarda dal proprio account. Il cursore porta l'id casuale del disegno,
    non quello della riga.
+
+## ADR-0160 — L'attività nei preferiti e le pause nel dettaglio di una corsa: una colonna con le attività dell'API, un rimando solo come prima
+**Stato**: Attiva · 2026-10-02 · deciso dall'agente su delega dell'utente
+(TASK-200). Il cosa (un preferito ricorda l'attività, il dettaglio di una
+corsa ha le pause) è nei seguiti di TASK-190 parte C e TASK-199, assegnati
+dal coordinatore su delega dell'utente; le aggiunte al contratto seguono
+ADR-0157 e ADR-0158, i preferiti ADR-0139, le corse ADR-0140, la bici
+ADR-0153. Numero tenuto dal coordinatore per TASK-200.
+
+**Contesto**: `favorites` non sapeva l'attività: un percorso in bici,
+riaperto, si esportava come una corsa. Il dettaglio di una corsa non aveva
+le pause, che la riga tiene, `pen` compreso, da TASK-199 (ADR-0158 le
+lasciava fuori perché nessuno le leggeva). `PUT /me/favorites/{key}`
+rifiuta un campo che non conosce, e server e app si aggiornano in momenti
+diversi.
+
+**Decisione**:
+
+1. **Una colonna `activity`** in `favorites` (migrazione `0008`), `text
+   NOT NULL DEFAULT 'running'`, con il vincolo `activity IN ('running',
+   'cycling')`: le attività dell'API (`SUPPORTED_ACTIVITIES`), come
+   `style` elenca i suoi valori. Un'attività nuova vuole una migrazione che
+   allarghi il vincolo; un test tiene un preferito per ogni attività
+   dell'API, così l'API non può offrirne una che il database rifiuta
+   (sarebbe un 500). I preferiti di prima diventano `running`.
+2. **Nella richiesta è facoltativa** (`running` se manca), controllata con
+   `check_supported`, le parole di `POST /routes`; l'elenco e il dettaglio
+   la hanno **sempre**. La chiave resta quella della linea (ADR-0139): la
+   stessa linea è un preferito solo, con l'attività della prima volta.
+3. **L'app la manda solo quando non è `running`**, ultima dopo `walks`: la
+   richiesta di una corsa resta quella di prima, campo per campo. La
+   prende dalla richiesta del percorso disegnato; quelli di «Explore» e a
+   tema non la mandano. Un preferito riaperto la mette nella sua richiesta
+   (quella che «Export GPX» manda), qualunque sport dica «Settings».
+4. **Un rifiuto si rimanda una volta sola, come un'app precedente a
+   TASK-199**: se `PUT` torna `422 invalid_request` a un preferito con
+   `walks` o `activity`, l'app lo rimanda subito senza tutti e due
+   (`asBefore`), la richiesta che ogni API da TASK-171 accetta. Un'API con
+   TASK-199 e senza TASK-200 perde così i `walks` di una parola con la
+   penna alzata tenuta in bici: un caso che non c'è (il server prenderà
+   TASK-199 e TASK-200 insieme), contro un secondo rimando in più.
+5. **L'app legge un'attività che manca, o che non conosce, come `running`**
+   (`favoriteActivity`): l'elenco accetta qualunque stringa, come fa con
+   `style`, perché un preferito di un'attività arrivata dopo (la canoa)
+   non deve far sparire l'elenco a un'app più vecchia; quel preferito si
+   esporta come una corsa, come prima di TASK-200.
+6. **`pauses` nel dettaglio di una corsa**, sempre (`[]` se non ce ne
+   sono), così come la colonna le tiene: `from_s`, `to_s`, `auto`, e
+   `pen` solo quando è vero; in secondi dal primo punto di `track`, solo
+   quello che di ogni pausa sta dentro la corsa, nell'ordine mandato, le
+   sovrapposte come sono. L'elenco non le legge (una colonna in meno per
+   20 righe). Nella risposta sono un `TypedDict` con `pen` non
+   obbligatorio: così `pen: false` non compare, su ogni Pydantic 2 e su
+   Python 3.11 (da `typing_extensions`, che Pydantic ha già). L'app le
+   accetta solo ben fatte, e non le mostra: spezzare la linea corsa sulle
+   pause è una scelta dell'utente. Questo toglie una delle «Scartate» di
+   ADR-0158, che le lasciava fuori perché nessuno le leggeva.
+
+**Scartate**: un'attività senza vincolo nel database (un errore di
+battitura dell'API resterebbe scritto); un formato (`^[a-z]+$`) invece
+dell'elenco (non dice quali sono); rimandare due volte, prima senza
+`activity` e poi senza `walks` (due richieste per un caso che non c'è);
+leggere dagli errori di Pydantic quale campo l'API non conosce (testi che
+cambiano con le versioni); un'attività sconosciuta come risposta sbagliata
+(tutto l'elenco non si aprirebbe); `exclude_if` di Pydantic per `pen`
+(una funzione recente, mentre FastAPI chiede soltanto Pydantic 2.9); un `model_serializer` (lo
+schema OpenAPI della pausa resterebbe vuoto).
+
+**Conseguenze**: la migrazione `0008` e i campi nuovi arrivano al telefono
+solo dopo l'aggiornamento del server e la pubblicazione dell'app, tutti e
+due con l'ok dell'utente. Un preferito in bici tenuto con un'API
+precedente a TASK-200 è una corsa, e resta tale (si toglie e si rimette).
+Le indicazioni di «Start» e il punteggio non hanno l'attività: `POST
+/route-directions` prende solo i punti e cerca sulla rete a piedi, `POST
+/track-scores` confronta due linee; dare l'attività a `/route-directions`
+è un'aggiunta al suo contratto, da decidere con cosa fa «Start» in bici
+(TASK-190, parte C, seguito 2).
+
+## ADR-0162 — Ciò che il motore tiene per grafo vale finché NetworkX non cambia il grafo
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-203; proposte A1 e A2 approvate dal coordinatore)
+
+Il piano della partenza costa 4,5–7,5 s sulle richieste lunghe di Trento
+(TASK-203). Fra l'11 e il 30% era il controllo delle cache del corridoio:
+ADR-0059 le rifaceva «se cambia il numero di archi», e `number_of_edges()`
+di NetworkX su un `MultiDiGraph` conta gli archi nodo per nodo (7–12 ms),
+due volte per tracciamento, fino a 40 tracciamenti per richiesta e
+altrettanti in ogni partenza vicina. In più `nearest_nodes` e
+`_route_through_zones` rifacevano a ogni chiamata la lista delle coordinate
+di tutti i nodi (quasi un milione di letture per un cuore da 10 km).
+
+**Decisione**:
+- I dati tenuti per grafo (campioni degli archi, punti distinti, passi
+  u→v, e ora id e coordinate dei nodi, `_node_table`) valgono finché il
+  grafo ha lo stesso **segno** in `graph.__networkx_cache__`. NetworkX
+  (dalla 3.3, che `ZoneCrop` già richiede) svuota quel dizionario a ogni
+  nodo o arco aggiunto o tolto: un segno sparito vuol dire grafo cambiato.
+  Niente più conteggio degli archi. Sostituisce il «rifatta se cambia il
+  numero di archi» di ADR-0059; il resto di ADR-0059 resta.
+- Il nodo pozzo di `_route_through_zones` entra e esce a ogni zona: tolto,
+  il grafo è quello di prima nodo per nodo e arco per arco, nello stesso
+  ordine, e il segno gli si ridà (`_same_graph`).
+- Una vista di un altro grafo (`subgraph`) cambia con lui senza che
+  NetworkX lo dica: per una vista non si tiene niente.
+- `nearest_nodes` e `_route_through_zones` prendono id e coordinate dei
+  nodi dalla tabella del grafo: gli stessi numeri, nello stesso ordine.
+
+**Perché così**: gli stessi percorsi punto per punto, e lo dicono tre
+prove: 7 casi fissati in `test_kept_per_graph.py` sul codice di prima
+(griglia, una città finta con parchi e un fiume, la fixture di Levico; con
+partenze vicine, alternative e ricerca lontana), i 5 casi di Trento di
+TASK-203 e le richieste del registro rifatte prima e dopo. Sul Mac tolgono
+1,1–1,6 s alle richieste lunghe di Trento (14–36%) e il 15–43% della CPU di
+una richiesta, contando le partenze vicine. Il
+segno vede anche ciò che il conteggio non vedeva: un arco tolto e uno
+aggiunto lasciano lo stesso numero di archi.
+
+**Scartato**: passare i dati dalla ricerca ai tracciamenti (cambia la firma
+di `snap_to_network` e tocca `pen_up.py`, i cui tracciamenti delle lettere
+sono quelli che guadagnano di più); tenere i dati per grafo senza nessun
+controllo (un grafo cambiato, in un test o in una richiesta futura, li
+troverebbe vecchi); controllare solo il numero dei nodi (non vede gli
+archi).
+
+**Conseguenze**: una modifica fatta sul posto agli attributi di un arco non
+si vede, come prima. Con una NetworkX che non svuota `__networkx_cache__`
+(prima della 3.3) i dati resterebbero vecchi: lo dice
+`test_a_change_to_the_graph_is_seen`, e `ZoneCrop` già non funzionerebbe.
+Il grafo mandato alle partenze vicine (`OneGraph`) porta con sé il segno,
+pochi byte, che nel processo nuovo non corrisponde a niente: lì i dati si
+calcolano da capo, come prima. Cambia l'impronta del motore
+(`engine_fingerprint`): i percorsi tenuti si buttano e dopo l'aggiornamento
+del server va rilanciato `draw_examples` (`AGENTI.md`, regola 11).

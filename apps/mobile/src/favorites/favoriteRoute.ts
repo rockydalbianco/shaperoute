@@ -1,4 +1,5 @@
 import {
+  type Activity,
   type ImageRouteRequest,
   type LatLon,
   type OutlinePoint,
@@ -7,7 +8,12 @@ import {
   MAX_OUTLINE_POINTS,
 } from "@shaperoute/shared-types";
 
-import type { Favorite, FavoriteDetail, FavoriteRequest } from "../api/favorites";
+import {
+  type Favorite,
+  favoriteActivity,
+  type FavoriteDetail,
+  type FavoriteRequest,
+} from "../api/favorites";
 import { type Explored, toRequest, toResult } from "../explore/explored";
 import {
   cityName,
@@ -46,6 +52,14 @@ function penUp(
   return fit.length === 0 ? {} : { walks: fit.map(([from, to]): Walk => [from, to]) };
 }
 
+/**
+ * The activity a favorite keeps (TASK-200): only when it is not a run, so a
+ * run's request is the one of before, field for field.
+ */
+function drawnFor(activity: Activity): { activity?: Activity } {
+  return activity === "running" ? {} : { activity };
+}
+
 function keepable(fields: Omit<FavoriteRequest, "similarity">, similarity: number) {
   return {
     id: favoriteKey(fields.points),
@@ -58,7 +72,11 @@ function keepable(fields: Omit<FavoriteRequest, "similarity">, similarity: numbe
   };
 }
 
-/** A route drawn in «Draw»; `place` is the place searched for, if any. */
+/**
+ * A route drawn in «Draw»; `place` is the place searched for, if any. It
+ * keeps the activity it was asked for (TASK-200). The routes of «Explore»
+ * and the themed ones are runs: they say nothing.
+ */
 export function drawnKeepable(
   request: AnyRouteRequest,
   result: RouteResult,
@@ -78,6 +96,7 @@ export function drawnKeepable(
       points: result.points,
       // A word with the pen up keeps its walks (TASK-199).
       ...penUp(word, result.points, result.walks),
+      ...drawnFor(request.activity),
     },
     result.similarity,
   );
@@ -195,12 +214,15 @@ export function outlineOf(points: LatLon[]): OutlinePoint[] {
   return first[0] === last[0] && first[1] === last[1] ? outline : [...outline, first];
 }
 
-function imageRequest(detail: RecommendedRouteDetail): ImageRouteRequest {
+function imageRequest(
+  detail: RecommendedRouteDetail,
+  activity: Activity,
+): ImageRouteRequest {
   return {
     start: detail.points[0],
     outline: outlineOf(detail.points),
     distance_m: detail.distance_m,
-    activity: "running",
+    activity,
   };
 }
 
@@ -218,6 +240,8 @@ export type OpenedFavorite = Extract<Explored, { status: "done" }> & {
  * has its walks in the result, as a word just drawn has them (TASK-199):
  * the map draws them dashed, Start pauses on them, the GPX and the score
  * leave them out; its request asks for the pen up, as the export wants.
+ * Its request has the activity it was kept with (TASK-200), whatever sport
+ * «Settings» has: a bike route is exported as one.
  */
 export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
   const detail: RecommendedRouteDetail = {
@@ -250,18 +274,20 @@ export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
   };
   const walked = penUp(favorite.word, favorite.points, favorite.walks);
   const result: RouteResult = { ...toResult(detail), ...walked };
+  const activity = favoriteActivity(favorite);
   // A word with the pen up is asked for as «Draw» asks for it.
   const request: AnyRouteRequest =
     walked.walks !== undefined && favorite.word !== null
       ? {
           start: favorite.points[0],
           distance_m: favorite.distance_m,
-          activity: "running",
+          activity,
           word: favorite.word,
           style: favorite.style === "block" ? "block" : "round",
           pen_up: true,
         }
-      : (toRequest(detail) ?? imageRequest(detail));
+      : // In the place of `running`: a run's request is the one of before.
+        { ...(toRequest(detail) ?? imageRequest(detail, activity)), activity };
   return {
     status: "done",
     route,
@@ -290,6 +316,7 @@ export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
         similarity: favorite.similarity,
         points: favorite.points,
         ...walked,
+        ...drawnFor(activity),
       },
     },
   };

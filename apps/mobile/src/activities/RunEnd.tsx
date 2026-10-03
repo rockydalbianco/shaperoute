@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { loadSendToStrava, saveSendToStrava } from "../strava/stravaChoice";
+import { StravaRunEnd } from "../strava/StravaRunEnd";
+import { useStrava } from "../strava/useStrava";
 import {
   color,
   fontSize,
@@ -24,13 +27,25 @@ type Props = {
  * account, «Save» keeps it in «My activities» and «Discard» throws it
  * away, after asking. Nothing is saved without «Save». Without an account
  * the card keeps its «Done», and a line here says how to keep the next
- * runs.
+ * runs. With Strava connected, «Send to Strava» over them sends the run
+ * there too, with «Save» (TASK-187).
  */
 export function RunEnd({ onSave, onDiscard }: Props) {
-  const { signedIn, signIn } = useActivitiesDoor();
+  const { signedIn, signIn, toStrava } = useActivitiesDoor();
+  const strava = useStrava();
   // «Discard» asks first, here: a run thrown away does not come back.
   const [confirming, setConfirming] = useState(false);
   const [failed, setFailed] = useState(false);
+  // As it was left at the end of the last run (the user's choice).
+  const [send, setSend] = useState(loadSendToStrava);
+  const [name, setName] = useState("");
+
+  function save() {
+    const sending = strava.status.available && strava.status.connected && send;
+    toStrava(sending ? { name: name.trim() === "" ? null : name.trim() } : null);
+    setFailed(!onSave());
+  }
+
   if (!signedIn) {
     return (
       <Pressable style={styles.tap} onPress={signIn} accessibilityRole="button">
@@ -63,6 +78,16 @@ export function RunEnd({ onSave, onDiscard }: Props) {
   }
   return (
     <View style={styles.end}>
+      <StravaRunEnd
+        strava={strava}
+        send={send}
+        onSend={(on) => {
+          setSend(on);
+          saveSendToStrava(on);
+        }}
+        name={name}
+        onName={setName}
+      />
       {failed && (
         <Text style={styles.problem} accessibilityRole="alert">
           This run could not be kept on the phone. Try again.
@@ -78,7 +103,7 @@ export function RunEnd({ onSave, onDiscard }: Props) {
         </Pressable>
         <Pressable
           style={styles.button}
-          onPress={() => setFailed(!onSave())}
+          onPress={save}
           accessibilityRole="button"
           accessibilityLabel="Save to My activities"
         >

@@ -43,6 +43,7 @@ ciano di «Start here».
 | `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
 | `error` | `#FF6B6B` | una richiesta fallita |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
+| `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | solo «Connect with Strava» (TASK-187): l'arancione e il bianco che le regole del marchio Strava chiedono, scelti dall'utente |
 | `map.*` | dal `#0D0E10` al `#3A3D45` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
 
 Quattro regole:
@@ -394,6 +395,11 @@ nessun pulsante dell'account è giallo.
   10 a 30 km. «Explore», «Feed» e la schermata della corsa restano quelli
   della corsa: cosa mostrano con la bici è una scelta dell'utente ancora
   aperta (`tasks/TASK-190.md`, «Domande aperte»).
+- **«Strava»** (TASK-187), solo se l'API ha Strava: «Connect with
+  Strava» (arancione) con «Send the runs you save in Sgrava to your Strava
+  profile.»; collegato, «Connected as Ada Lovelace» e «Disconnect Strava»,
+  in rosso, che chiede prima: «Disconnect Strava? Runs already sent stay
+  on Strava.», con «Keep it» e «Disconnect».
 - **«Preferences»**: «Units», «Soon». **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».
@@ -521,6 +527,18 @@ dell'account.
   l'API non conosce ancora i `walks` (più vecchia di TASK-199) e rifiuta,
   l'app tiene il preferito senza, come una linea sola, invece di mostrare
   l'errore; tenuto così, resta così.
+- **Un percorso in bici** (TASK-200, ADR-0160): il cuore tiene anche
+  l'attività con cui il percorso è stato chiesto in «Draw» («Bike» in
+  «Settings», `cycling`); i percorsi di «Explore» e quelli a tema sono a
+  piedi. Riaperto, il preferito resta in bici qualunque sport sia scelto in
+  «Settings»: «Export GPX» lo chiede come percorso in bici. Cosa si vede
+  non cambia (stessa scheda, stessi testi), e «Start» fa quello di oggi: la
+  navigazione della corsa, con le indicazioni chieste per i soli punti,
+  che l'API trova sulla rete a piedi (cosa debba fare «Start» in bici lo
+  decide l'utente, TASK-190). Un preferito tenuto prima di TASK-200 è una
+  corsa. Se l'API non conosce ancora l'attività (più vecchia di TASK-200) e
+  rifiuta, l'app lo tiene come una corsa, senza mostrare l'errore; tenuto
+  così, resta così.
 
 ## «My activities» (TASK-172, ADR-0140)
 
@@ -559,6 +577,15 @@ telefono dell'account: con un percorso o senza.
   punteggio («91», «out of 100»), km, tempo e passo, la legenda («Yellow:
   the route. White: what you ran.»). «←» e «Back to the list» tornano
   all'elenco. Niente cuore e niente «Start»: è una corsa, non un percorso.
+- **Strava sulla corsa aperta** (TASK-187), sopra «Delete», solo se l'API
+  ha Strava: **«View on Strava»** se la corsa c'è già (apre la sua pagina);
+  se no il campo «Name on Strava», con il nome che l'API darebbe come
+  suggerimento («Star in Trento»), e **«Send to Strava»**, che manda subito
+  («Sending to Strava…»). Strava che sta ancora leggendo la corsa: «Strava
+  is still reading this run.» e «Check again». Gli errori in una riga
+  rossa sotto («Strava could not read this run.», «No connection. Try
+  again when you are online.»). Un atleta che ha tolto l'accesso da Strava
+  torna a «Connect with Strava».
 - **«Delete»**, in rosso, sulla scheda dell'elenco e sotto la mappa, chiede
   prima sulla scheda stessa: «Delete this run? It cannot be undone.», con
   «Keep it» e «Delete run». La corsa sparisce subito; se l'API rifiuta
@@ -583,6 +610,10 @@ telefono dell'account: con un percorso o senza.
   (più vecchia di TASK-199) e rifiuta la corsa, l'app la rimanda subito
   come prima, senza `walks` né `pen`: si salva con il punteggio su tutto
   il percorso, tratti a piedi compresi, invece di perdersi.
+- **Le pause di una corsa riaperta** (TASK-200): l'API ora le manda con la
+  corsa intera, quelle della penna segnate; l'app le legge e **non mostra
+  niente di nuovo**: la linea corsa resta unita (spezzarla sulle pause è
+  una scelta dell'utente).
 
 ## La partenza
 
@@ -741,12 +772,14 @@ ADR-0157), «On» o «Off» come quelli della corsa. Acceso, la richiesta
 della parola ha `pen_up: true`: ogni lettera si disegna da sola e fra una e
 l'altra si cammina (`API.md`, «La penna alzata»); spento, o con una forma o
 un'immagine, il campo non c'è e la richiesta è quella di prima. La stessa
-parola con e senza la penna alzata sono due richieste diverse. **Spento
-all'avvio** finché l'utente non sceglie (correzione del coordinatore del
-2026-10-02: l'app pubblicata non cambia senza il suo sì, e un'API più
-vecchia di TASK-197 rifiuterebbe il campo con `invalid_request`); la
-proposta sul tavolo è acceso di default: **da confermare con l'utente**.
-Non si salva fra un avvio e l'altro.
+parola con e senza la penna alzata sono due richieste diverse. **Acceso
+all'avvio** (TASK-202), scelta dell'utente del 2026-10-02 («sì, acceso di
+default»); TASK-198 l'aveva costruito spento finché l'utente non
+sceglieva. Un'API più vecchia di TASK-197 rifiuta il campo con
+`invalid_request`: con l'interruttore acceso ogni parola chiesta a
+un'API così fallisce, quindi l'app va pubblicata solo dopo il server
+(`tasks/TASK-202.md`, «Note per il deploy»). Non si salva fra un avvio e
+l'altro.
 
 - Le lettere sono `LETTERS` di `shared-types`; il contratto ne ammette 8
   (`MAX_WORD_LETTERS`), ma a 3 km l'una (`LETTER_DISTANCE_M`) l'ottava
@@ -1205,7 +1238,25 @@ mostra le lettere unite da linee dritte sulla base.
   Finché non si tocca né l'uno né l'altro niente è salvato; «Keep running»
   resta nella scheda. Se il telefono non riesce a scrivere la corsa: «This
   run could not be kept on the phone. Try again.», e si resta lì. Nessuno
-  dei due è giallo. «Send to Strava» non c'è: è un task a parte.
+  dei due è giallo.
+- **«Send to Strava»** (TASK-187, ADR-0156), sopra «Save» e «Discard», solo
+  se l'API ha Strava (`GET /me/strava` dice `available`; un'API senza
+  Strava, o più vecchia, e niente si vede). Atleta non collegato:
+  **«Connect with Strava»**, arancione con il testo bianco (l'unico
+  pulsante arancione dell'app), e sotto «Connect Strava, and Save sends
+  your runs there too.»; il tocco apre la pagina di Strava nel browser (o
+  nell'app Strava), e tornati in Sgrava la riga si aggiorna da sola.
+  Collegato: l'interruttore **«Send to Strava»**, acceso la prima volta e
+  poi come lo si è lasciato (scelta dell'utente, sul telefono, in
+  `strava.json`); acceso, sotto, il campo **«Name on Strava»** («Leave
+  empty for an automatic name»: vuoto, l'API dà «Heart in Trento», o per
+  una corsa libera il nome di Strava) e «To Ada Lovelace's Strava, with
+  Save.». Con l'interruttore acceso **«Save»** salva la corsa e poi la manda
+  a Strava, con il nome scritto (scelta dell'utente: modificabile prima di
+  «Save»); spento, o con «Discard», a Strava non va niente. Senza rete la
+  corsa aspetta sul telefono con la sua scelta, va all'API e poi a Strava
+  alla prossima apertura con la rete, una volta sola (sotto, «Cosa esce dal
+  telefono»).
 - **Senza account**, sotto la scheda, la riga «Sign up or log in to keep
   your runs in My activities.», che apre «Profile».
 
@@ -1360,6 +1411,16 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   posizioni (ADR-0092). Senza rete la corsa aspetta in un file del
   telefono, che non esce da lì finché non parte per l'API. Senza account,
   o con «Discard», non va niente.
+- **Strava** (TASK-187): una corsa va a Strava **solo quando l'utente lo
+  chiede**, con l'interruttore acceso a «Save» o con «Send to Strava» su
+  una corsa aperta, e solo dopo aver collegato il suo atleta. Il telefono
+  manda all'API la chiave della corsa e, se scritto, il nome; l'API manda a
+  Strava la traccia con gli orari, il nome e una riga di descrizione
+  («Drawn with Sgrava», o «Recorded with Sgrava» per una corsa libera).
+  Su Strava l'attività segue le impostazioni di privacy dell'atleta, non
+  quelle di Sgrava. Il telefono non vede mai un token di Strava; il
+  collegamento passa dal browser. Senza rete la corsa aspetta in
+  `strava-outbox.json` (chiave e nome, al più 20), poi parte una volta.
 
 ## Quando la mappa non si carica
 

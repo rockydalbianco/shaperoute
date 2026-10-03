@@ -77,7 +77,7 @@ corsa, nella scheda, o tutti e due), e i testi.
 Parte A:
 
 ```
-services/api/migrations/0008_drawings.sql   (il numero libero al merge)
+services/api/migrations/0009_drawings.sql
 services/api/shaperoute_api/drawings.py
 services/api/shaperoute_api/app.py
 services/api/shaperoute_api/profiles.py
@@ -120,8 +120,8 @@ docs/tasks/TASK-117.md
 ## Esito
 
 **Parte A** (2026-10-03): API dei disegni in `drawings.py`, tabella
-`drawings` (migrazione `0008`, il numero da rifare se TASK-200 entra prima
-con la sua), ADR-0159. Il taglio è lungo la traccia, come dice ADR-0114;
+`drawings` (migrazione `0009`: la `0008` è di TASK-200, entrata prima),
+ADR-0159. Il taglio è lungo la traccia, come dice ADR-0114;
 uno in linea d'aria è annotato nell'ADR come proposta per l'utente. Un
 disegno privato lo vede il suo autore, tagliato come lo vedrebbero gli
 altri. Test: 26 in `test_drawings.py`, tutta la suite dell'API verde

@@ -1,4 +1,9 @@
-import type { LatLon, Walk } from "@shaperoute/shared-types";
+import {
+  ACTIVITIES,
+  type Activity,
+  type LatLon,
+  type Walk,
+} from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask } from "./accounts";
 
@@ -6,7 +11,9 @@ import { type AccountOutcome, ask } from "./accounts";
  * The routes an account keeps (TASK-171): GET, PUT and DELETE
  * /me/favorites, all with the session token (docs/API.md, «Favorites»). The
  * bodies are packages/shared-types/fixtures/favorites.json, favorite.json
- * and favorite-request.json; the types live here, like `RecommendedRoute`.
+ * and favorite-request.json, and since TASK-200 favorites-cycling.json,
+ * favorite-cycling.json and favorite-request-cycling.json; the types live
+ * here, like `RecommendedRoute`.
  */
 
 /** One favorite of the list, with a light preview of its line. */
@@ -28,6 +35,11 @@ export type Favorite = {
   start: LatLon;
   preview: LatLon[];
   created_at: string;
+  /**
+   * What the route was drawn for (TASK-200). Missing from an API older than
+   * TASK-200, whose favorites are all runs. Read through `favoriteActivity`.
+   */
+  activity?: string;
 };
 
 /** One favorite whole, to show on the map. */
@@ -57,7 +69,35 @@ export type FavoriteRequest = {
    * older than TASK-199 refuses a field it does not know.
    */
   walks?: Walk[];
+  /**
+   * What the route was drawn for (TASK-200). Sent only when it is not a run:
+   * a run's request is the one of before, which an API older than TASK-200
+   * takes.
+   */
+  activity?: Activity;
 };
+
+/**
+ * What a favorite was drawn for: a run when the API does not say, as every
+ * favorite was before TASK-200, or says an activity this app does not know.
+ */
+export function favoriteActivity(favorite: { activity?: string }): Activity {
+  const said = favorite.activity;
+  return ACTIVITIES.find((activity) => activity === said) ?? "running";
+}
+
+/**
+ * `request` as an app older than TASK-199 sends it, without the fields added
+ * since (TASK-199 `walks`, TASK-200 `activity`), which an older API refuses.
+ * The same object when it has neither.
+ */
+export function asBefore(request: FavoriteRequest): FavoriteRequest {
+  if (request.walks === undefined && request.activity === undefined) {
+    return request;
+  }
+  const { walks: _walks, activity: _activity, ...older } = request;
+  return older;
+}
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
 
@@ -91,9 +131,9 @@ export function fetchFavorite(
 
 /**
  * PUT /me/favorites/{key}: kept once, however many times it is asked. A
- * word with the pen up that the API refuses goes once more without its
- * walks (TASK-199, ADR-0158): an API older than TASK-199 keeps it as one
- * line.
+ * word with the pen up, or a route not drawn for a run, that the API refuses
+ * goes once more as an older app sends it (TASK-199, TASK-200, ADR-0158,
+ * ADR-0160): an older API keeps it as one line, and as a run.
  */
 export async function keepFavorite(
   baseUrl: string,
@@ -111,15 +151,12 @@ export async function keepFavorite(
       options,
     );
   const outcome = await put(request);
-  if (
-    outcome.kind !== "api_error" ||
-    outcome.code !== "invalid_request" ||
-    request.walks === undefined
-  ) {
-    return outcome;
-  }
-  const { walks: _walks, ...older } = request;
-  return put(older);
+  const older = asBefore(request);
+  return outcome.kind === "api_error" &&
+    outcome.code === "invalid_request" &&
+    older !== request
+    ? put(older)
+    : outcome;
 }
 
 /** DELETE /me/favorites/{key}: gone, or never there. */
@@ -170,7 +207,8 @@ function hasFields(body: Record<string, unknown>): boolean {
     typeof body.distance_m === "number" &&
     typeof body.route_m === "number" &&
     typeof body.similarity === "number" &&
-    typeof body.created_at === "string"
+    typeof body.created_at === "string" &&
+    (body.activity === undefined || typeof body.activity === "string")
   );
 }
 

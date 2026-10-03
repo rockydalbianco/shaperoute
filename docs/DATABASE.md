@@ -94,14 +94,15 @@ Migrazione `0003_runs.sql` (TASK-172, ADR-0140):
   telefono: le posizioni scartate non tornano. M sono i secondi dalla
   prima posizione, con l'orologio che corre anche nelle pause; `pauses` le
   dice, come `[{"from_s", "to_s", "auto"}]` sullo stesso orologio (più
-  `"pen": true` per le pause della penna, da TASK-199).
+  `"pen": true` per le pause della penna, da TASK-199); il dettaglio di una
+  corsa le restituisce così, da TASK-200.
   `started_at` più M dà l'orario di ogni punto. L'altitudine non c'è.
 - `distance_m`, `duration_s`, `score` e `fidelity` sono contati dall'API al
   salvataggio (`API.md`, «My activities») e non si ricalcolano: se il
   motore cambia il modo di giudicare, le corse già salvate tengono il loro
   punteggio.
 - Solo il proprietario legge una riga. Quello che vedono gli altri di una
-  corsa pubblicata sta in `drawings` (migrazione `0008`, TASK-117).
+  corsa pubblicata sta in `drawings` (migrazione `0009`, TASK-117).
 
 Migrazione `0004_strava.sql` (TASK-187, ADR-0156):
 
@@ -168,7 +169,22 @@ Migrazione `0007_profiles.sql` (TASK-116, ADR-0128):
 - Il numero di disegni del profilo non è una colonna: si conta sulle
   righe pubbliche di `drawings` (TASK-117).
 
-Migrazione `0008_drawings.sql` (TASK-117, ADR-0159):
+Migrazione `0008_favorite_activity.sql` (TASK-200, ADR-0160):
+
+- `favorites` prende `activity` (`text`, `NOT NULL`, default `'running'`,
+  vincolo `activity IN ('running', 'cycling')`): l'attività per cui il
+  percorso è stato disegnato, come `RouteRequest.activity`. Un percorso in
+  bici, riaperto, si riapre in bici.
+- I preferiti di prima prendono `'running'` dal default, senza riscrivere
+  la tabella: erano tutti corse (test con dati sullo schema 0001–0007).
+- Il vincolo elenca le attività dell'API (`SUPPORTED_ACTIVITIES`):
+  un'attività nuova (la canoa, TASK-191) vuole una migrazione che lo
+  allarghi. Un test di `test_favorites.py` tiene un preferito per ogni
+  attività dell'API, e fallisce finché la migrazione manca.
+- `runs` non cambia: `GET /me/activities/{key}` ora legge anche `pauses`,
+  così come la colonna le tiene (`API.md`, «My activities»).
+
+Migrazione `0009_drawings.sql` (TASK-117, ADR-0159):
 
 - `drawings`: `id` (`uuid` casuale, chiave: con questo gli altri iscritti
   aprono un disegno, e contarli non dice niente), `run_id` (unico,
@@ -187,7 +203,7 @@ Migrazione `0008_drawings.sql` (TASK-117, ADR-0159):
   disegno è un altro dalla chiave della corsa, che è del telefono e unica
   solo dentro un account.
 - Le corse salvate prima non hanno righe: sono private, come erano, e si
-  pubblicano come le altre (test con dati sullo schema 0001–0007).
+  pubblicano come le altre (test con dati sullo schema 0001–0008).
 
 ## Come si memorizza una traccia
 

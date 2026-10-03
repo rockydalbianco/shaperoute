@@ -8,6 +8,9 @@ favorite however it was reached, and keeping it twice changes nothing.
 Every endpoint needs the token of an account (accounts.py): a favorite is
 seen, kept and removed only by its owner. Deleting the account deletes its
 favorites (ON DELETE CASCADE).
+
+A favorite remembers the activity it was drawn for (TASK-200): a bike route
+reopens as one. Those kept before are runs.
 """
 
 from __future__ import annotations
@@ -22,6 +25,7 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path, Response
 from psycopg.rows import DictRow
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from route_engine.models import InvalidRequestError
 from route_engine.pen_up import walks_problem
 
 from shaperoute_api.accounts import (
@@ -33,9 +37,10 @@ from shaperoute_api.accounts import (
     current_user,
     now_utc,
 )
+from shaperoute_api.activity_graphs import check_supported
 from shaperoute_api.db import Database
 from shaperoute_api.recommended import preview
-from shaperoute_api.schemas import MAX_WALKS, ErrorBody, Walk
+from shaperoute_api.schemas import ACTIVITY_DESCRIPTION, MAX_WALKS, ErrorBody, Walk
 
 # A phone's list stays light, and one account cannot fill the database.
 MAX_FAVORITES = 200
@@ -68,6 +73,19 @@ class FavoriteRequestBody(BaseModel):
     walks: list[Walk] = Field(default_factory=list, max_length=MAX_WALKS)
     """RouteResult.walks, for a word with the pen up (TASK-199); missing
     from an older app."""
+    activity: str = Field(default="running", description=ACTIVITY_DESCRIPTION)
+    """RouteRequest.activity of the route (TASK-200); the app sends it only
+    when it is not running, so an older API never sees it for a run."""
+
+    @field_validator("activity")
+    @classmethod
+    def offered(cls, activity: str) -> str:
+        # The words of POST /routes for an activity the API does not offer.
+        try:
+            check_supported(activity)
+        except InvalidRequestError as exc:
+            raise ValueError(str(exc)) from None
+        return activity
 
     @field_validator("points")
     @classmethod
@@ -103,6 +121,9 @@ class FavoriteBody(BaseModel):
     start: LatLon
     preview: list[LatLon]
     created_at: datetime
+    activity: str
+    """What the route was drawn for (TASK-200): `running` for those kept
+    before."""
 
 
 class FavoritesBody(BaseModel):
@@ -127,11 +148,14 @@ class FavoriteDetailBody(BaseModel):
     """For a word with the pen up (TASK-199): [from, to] indices into
     `points`; empty for any other route, and for the favorites kept
     before."""
+    activity: str
+    """What the route was drawn for (TASK-200): `running` for those kept
+    before."""
 
 
 COLUMNS = (
     "key, city, shape, word, style, title, distance_m, route_m, similarity,"
-    " created_at, walks, ST_AsGeoJSON(line, 15) AS line"
+    " created_at, walks, activity, ST_AsGeoJSON(line, 15) AS line"
 )
 
 
@@ -158,6 +182,7 @@ def _fields(row: DictRow) -> dict[str, Any]:
         # A `real` column: without rounding 0.83 comes back as 0.8299999833.
         "similarity": round(row["similarity"], 4),
         "created_at": row["created_at"],
+        "activity": row["activity"],
     }
 
 
@@ -222,9 +247,9 @@ class Favorites:
                 raise AccountError(422, "invalid_request", FAVORITES_FULL)
             row = conn.execute(
                 "INSERT INTO favorites (user_id, key, city, shape, word, style,"
-                " title, distance_m, route_m, similarity, line, created_at, walks)"
-                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
-                " ST_GeomFromText(%s, 4326), %s, %s)"
+                " title, distance_m, route_m, similarity, line, created_at, walks,"
+                " activity) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
+                " ST_GeomFromText(%s, 4326), %s, %s, %s)"
                 f" RETURNING {COLUMNS}",
                 (
                     user_id,
@@ -240,6 +265,7 @@ class Favorites:
                     _wkt(body.points),
                     self.now(),
                     Jsonb([list(walk) for walk in body.walks]),
+                    body.activity,
                 ),
             ).fetchone()
             assert row is not None

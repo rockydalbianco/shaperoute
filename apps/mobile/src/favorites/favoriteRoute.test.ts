@@ -1,3 +1,5 @@
+import cyclingFavorite from "@shaperoute/shared-types/fixtures/favorite-cycling.json";
+import cyclingRequest from "@shaperoute/shared-types/fixtures/favorite-request-cycling.json";
 import walkedRequest from "@shaperoute/shared-types/fixtures/favorite-request-walks.json";
 import walkedFavorite from "@shaperoute/shared-types/fixtures/favorite-walks.json";
 import favorite from "@shaperoute/shared-types/fixtures/favorite.json";
@@ -403,4 +405,97 @@ test("a favorite with the pen up opens as a word just drawn with it", () => {
   // An API older than TASK-199 sends no walks: one line, as before.
   const { walks: _walks, ...older } = walkedFavorite;
   expect(openedFavorite(older as FavoriteDetail).result).not.toHaveProperty("walks");
+});
+
+// --- The activity a route was drawn for (TASK-200) ---
+
+/** A heart drawn by bike: JSON's empty `walks` is not a tuple to tsc. */
+const BIKE = cyclingFavorite as unknown as FavoriteDetail;
+
+test("a route drawn by bike is kept with its activity; a run says nothing", () => {
+  const drawn = { ...(result as unknown as RouteResult), shape: "heart" as const };
+  const asked = { start: START, shape: "heart" as const, distance_m: 20000 };
+  const bike = drawnKeepable({ ...asked, activity: "cycling" }, drawn, null);
+  expect(bike.request.activity).toBe("cycling");
+  // The fields of the contract's example, no more and no fewer.
+  expect(Object.keys(bike.request).sort()).toEqual(Object.keys(cyclingRequest).sort());
+  // The same line is the same favorite, whatever it was drawn for.
+  const run = drawnKeepable({ ...asked, activity: "running" }, drawn, null);
+  expect(run.id).toBe(bike.id);
+  expect(run.request).not.toHaveProperty("activity");
+  const { activity: _activity, ...asRun } = bike.request;
+  expect(JSON.stringify(run.request)).toBe(JSON.stringify(asRun));
+  // The list shows it with its activity before the API answers.
+  expect(keptNow(bike, new Date("2026-10-02T09:00:00Z")).activity).toBe("cycling");
+});
+
+test("the routes of «Explore» and the themed ones are runs: they say nothing", () => {
+  const route = list.routes[0] as RecommendedRoute;
+  expect(
+    exploredKeepable(route, detail as RecommendedRouteDetail).request,
+  ).not.toHaveProperty("activity");
+  const themed: ThemedResult = {
+    points: detail.points as LatLon[],
+    distance_m: 5120,
+    similarity: 0.9,
+    shape: "star",
+    theme: "fountain",
+    theme_label: "Fountains",
+    target_m: 5000,
+    city: "trento",
+    centre: START,
+    stops: [],
+    license: "",
+  };
+  expect(themedKeepable(themed).request).not.toHaveProperty("activity");
+});
+
+test("a bike favorite opens as a bike route, and is kept again as one", () => {
+  const opened = openedFavorite(BIKE);
+  // What «Export GPX» sends: the activity it was kept with.
+  expect(opened.request).toEqual({
+    start: cyclingFavorite.points[0],
+    distance_m: cyclingFavorite.distance_m,
+    activity: "cycling",
+    shape: "heart",
+  });
+  expect(opened.keepable.id).toBe(cyclingFavorite.id);
+  expect(opened.keepable.request).toEqual(cyclingRequest);
+  // An image, and a word with the pen up, by bike too.
+  const image = openedFavorite({
+    ...BIKE,
+    shape: null,
+    title: "Image",
+  });
+  expect(image.request).toMatchObject({
+    activity: "cycling",
+    outline: outlineOf(cyclingFavorite.points as LatLon[]),
+  });
+  const word = openedFavorite({
+    ...(walkedFavorite as FavoriteDetail),
+    activity: "cycling",
+  });
+  expect(word.request).toMatchObject({ activity: "cycling", word: "II", pen_up: true });
+  expect(word.keepable.request).toMatchObject({ activity: "cycling", walks: [[2, 5]] });
+});
+
+test("a favorite of before, or of an activity unknown here, opens as a run", () => {
+  for (const kept of [
+    favorite as FavoriteDetail,
+    { ...BIKE, activity: "running" },
+    { ...BIKE, activity: "paddling" },
+  ]) {
+    const opened = openedFavorite(kept);
+    expect(opened.request.activity).toBe("running");
+    expect(opened.keepable.request).not.toHaveProperty("activity");
+  }
+  // The export of a run: the request of before, byte for byte.
+  expect(JSON.stringify(openedFavorite(favorite as FavoriteDetail).request)).toBe(
+    JSON.stringify({
+      start: favorite.points[0],
+      distance_m: favorite.distance_m,
+      activity: "running",
+      shape: "star",
+    }),
+  );
 });

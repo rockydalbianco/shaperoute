@@ -235,7 +235,7 @@ export const ES: Table = {
 
   // src/profile/useProfilePhoto.ts
   "The camera is off for this app. Allow it in Settings, or choose a picture instead.":
-    "La cámara está desactivada para esta app. Actívala en Ajustes o elige una foto.",
+    "Esta app no tiene acceso a la cámara. Permítelo en Ajustes o elige una foto.",
   "This picture is too large. Choose a smaller one.":
     "Esta foto es demasiado grande. Elige una más pequeña.",
   "Could not open the picture. Try again.":
@@ -303,7 +303,7 @@ export const ES: Table = {
   // src/strava/StravaRunEnd.tsx
   "Connect Strava, and Save sends your runs there too.":
     "Conecta Strava y Guardar enviará también allí tus carreras.",
-  "To {athlete}'s Strava, with Save.": "Al Strava de {athlete}, con Guardar.",
+  "To {athlete}'s Strava, with Save.": "Con Guardar va también al Strava de {athlete}.",
 
   // src/strava/StravaSetting.tsx
   "Strava, connected": "Strava, conectado",

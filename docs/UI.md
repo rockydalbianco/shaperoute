@@ -19,8 +19,9 @@
   senza traduzione si mostra in inglese. Tradotti a pezzi: con la parte A
   «Settings», «Profile», l'accesso, «My activities», i preferiti, i
   disegni, il feed, Strava e la ricerca del luogo; «Draw», «Explore» e la
-  corsa con le parti successive. **Le traduzioni sono da confermare**:
-  l'italiano dall'utente, tedesco, spagnolo e francese da chi le parla.
+  corsa con le parti successive. Le traduzioni le ha riviste l'agente su
+  delega dell'utente («controlla te, mi fido», 2026-10-03); chi parla
+  tedesco, spagnolo o francese può ancora migliorarle in `src/i18n/`.
 
 ## Il tema
 

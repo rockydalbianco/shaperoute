@@ -88,8 +88,9 @@ Parte A:
       pulsanti, perché «Language» è un pulsante nuovo.
 - [x] Nessuna dipendenza nuova.
 - [x] Provato nel simulatore: «Settings» in italiano e in tedesco.
-- [ ] Le traduzioni sono **testi da confermare**: l'italiano dall'utente,
-      le altre tre da chi le parla (`UI.md`).
+- [x] Le traduzioni riviste: l'utente ha delegato il controllo
+      all'agente («controlla te, mi fido», 2026-10-03), che le ha rilette
+      e corrette nelle quattro lingue.
 
 ## File toccati
 

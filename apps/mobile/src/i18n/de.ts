@@ -168,7 +168,7 @@ export const DE: Table = {
   Search: "Suchen",
   "Searching…": "Suche…",
   "No place found. Try adding the city.":
-    "Kein Ort gefunden. Versuche es mit der Stadt dazu.",
+    "Kein Ort gefunden. Füge die Stadt hinzu und versuche es noch einmal.",
   "The search failed. Check the connection and try again.":
     "Die Suche ist fehlgeschlagen. Prüfe die Verbindung und versuche es noch einmal.",
   "© OpenStreetMap contributors": "© OpenStreetMap-Mitwirkende",
@@ -235,7 +235,7 @@ export const DE: Table = {
 
   // src/profile/useProfilePhoto.ts
   "The camera is off for this app. Allow it in Settings, or choose a picture instead.":
-    "Die Kamera ist für diese App ausgeschaltet. Erlaube sie in den Einstellungen oder wähle stattdessen ein Bild.",
+    "Diese App hat keinen Zugriff auf die Kamera. Erlaube ihn in den Einstellungen oder wähle stattdessen ein Bild.",
   "This picture is too large. Choose a smaller one.":
     "Dieses Bild ist zu groß. Wähle ein kleineres.",
   "Could not open the picture. Try again.":
@@ -303,7 +303,8 @@ export const DE: Table = {
   // src/strava/StravaRunEnd.tsx
   "Connect Strava, and Save sends your runs there too.":
     "Verbinde Strava, dann sendet Speichern deine Läufe auch dorthin.",
-  "To {athlete}'s Strava, with Save.": "Zum Strava von {athlete}, mit Speichern.",
+  "To {athlete}'s Strava, with Save.":
+    "Mit Speichern geht der Lauf auch an das Strava-Konto von {athlete}.",
 
   // src/strava/StravaSetting.tsx
   "Strava, connected": "Strava, verbunden",

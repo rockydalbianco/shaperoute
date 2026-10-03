@@ -7873,8 +7873,9 @@ scelta dell'utente è stata l'altra); le bandiere accanto alle lingue
 perché altri lavori tengono i file della corsa, di «Draw» e di
 «Explore»: fino all'ultima parte, in italiano alcune schermate restano in
 inglese. I testi che arrivano dall'API (titoli, nomi dei percorsi a tema,
-il nome su Strava) restano in inglese. Le traduzioni sono **da
-confermare**: l'italiano dall'utente, le altre da chi le parla.
+il nome su Strava) restano in inglese. Le traduzioni le ha riviste
+l'agente su delega dell'utente («controlla te, mi fido»); chi parla le
+altre lingue può migliorarle senza toccare il codice.
 
 ## ADR-0174 — Il logo dopo «Save»: il giallo e il logo dell'avvio, 1,65 s, sopra l'app, anche senza rete
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente

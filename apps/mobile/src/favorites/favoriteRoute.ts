@@ -21,6 +21,8 @@ import {
   type RecommendedRouteDetail,
 } from "../explore/recommendedRoutes";
 import type { ThemedResult } from "../explore/themedRoutes";
+import { decimal, t } from "../i18n";
+import { shapeName } from "../i18n/shapeNames";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
 import { walksOf } from "../route/walks";
 import { favoriteKey } from "./favoriteKey";
@@ -161,10 +163,6 @@ export function keptNow({ id, request }: Keepable, now: Date): Favorite {
   };
 }
 
-function capital(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
 /** What a favorite draws, in a word or two: "CIAO", "Fountains", "Star". */
 export function favoriteTitle(favorite: {
   shape: string | null;
@@ -174,13 +172,13 @@ export function favoriteTitle(favorite: {
   return (
     favorite.word ??
     favorite.title ??
-    capital((favorite.shape ?? "route").replace(/_/g, " "))
+    (favorite.shape === null ? t("Route") : shapeName(favorite.shape))
   );
 }
 
 /** "Star · 5.1 km": the first line of a favorite's card. */
 export function favoriteHeading(favorite: Favorite): string {
-  return `${favoriteTitle(favorite)} · ${(favorite.route_m / 1000).toFixed(1)} km`;
+  return `${favoriteTitle(favorite)} · ${decimal(favorite.route_m / 1000, 1)} km`;
 }
 
 /** Where a favorite is, as its card says it; null when nobody knows. */
@@ -260,6 +258,7 @@ export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
     id: favorite.id,
     // The card reads "Star · Trento · looks 97% like it": with no city, what
     // the route is to its owner.
+    // Data, not a text: kept in English, as a heart on this card keeps it.
     city: favorite.city === "" ? "favorite" : favorite.city,
     // The card's title: the word comes first there too.
     shape: favoriteTitle(favorite).toLowerCase(),

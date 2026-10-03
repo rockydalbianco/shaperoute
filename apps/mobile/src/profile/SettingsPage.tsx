@@ -3,6 +3,8 @@ import { type ReactNode, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Account } from "../account/useAccount";
+import { t, tLater } from "../i18n";
+import { LanguageSetting } from "../settings/LanguageSetting";
 import { SportSetting } from "../settings/SportSetting";
 import { StravaSetting } from "../strava/StravaSetting";
 import {
@@ -20,7 +22,10 @@ type Props = {
   account: Account;
 };
 
-/** A setting with its name on the page and nothing behind it yet. */
+/**
+ * A setting with its name on the page and nothing behind it yet; the name
+ * in English, shown in the app's language (TASK-210).
+ */
 type Coming = { emoji: string; name: string };
 
 /**
@@ -28,24 +33,24 @@ type Coming = { emoji: string; name: string };
  * turned on by its own task and leaves this list then.
  */
 const ACCOUNT_COMING: Coming[] = [
-  { emoji: "✉️", name: "Change email" },
-  { emoji: "📱", name: "Phone number" },
+  { emoji: "✉️", name: tLater("Change email") },
+  { emoji: "📱", name: tLater("Phone number") },
 ];
+const PREFERENCES_COMING: Coming[] = [{ emoji: "📏", name: tLater("Units") }];
 const COMING: { label: string; rows: Coming[] }[] = [
-  { label: "PREFERENCES", rows: [{ emoji: "📏", name: "Units" }] },
   {
-    label: "NOTIFICATIONS",
+    label: tLater("NOTIFICATIONS"),
     rows: [
-      { emoji: "📧", name: "Email notifications" },
-      { emoji: "🔔", name: "Push notifications" },
+      { emoji: "📧", name: tLater("Email notifications") },
+      { emoji: "🔔", name: tLater("Push notifications") },
     ],
   },
   {
-    label: "ABOUT",
+    label: tLater("ABOUT"),
     rows: [
-      { emoji: "❓", name: "Help" },
-      { emoji: "📄", name: "Terms" },
-      { emoji: "🔒", name: "Privacy" },
+      { emoji: "❓", name: tLater("Help") },
+      { emoji: "📄", name: tLater("Terms") },
+      { emoji: "🔒", name: tLater("Privacy") },
     ],
   },
 ];
@@ -71,11 +76,11 @@ function ComingRows({ rows }: { rows: Coming[] }) {
             style={styles.row}
             accessible
             // One name for the row: the emoji is not read on its own.
-            accessibilityLabel={`${row.name}, coming soon`}
+            accessibilityLabel={t("{name}, coming soon", { name: t(row.name) })}
           >
             <Text style={styles.emoji}>{row.emoji}</Text>
-            <Text style={styles.rowText}>{row.name}</Text>
-            <Text style={styles.soon}>Soon</Text>
+            <Text style={styles.rowText}>{t(row.name)}</Text>
+            <Text style={styles.soon}>{t("Soon")}</Text>
           </View>
         </View>
       ))}
@@ -85,8 +90,9 @@ function ComingRows({ rows }: { rows: Coming[] }) {
 
 /**
  * «Settings» in «Profile» (TASK-177), in sections: the account with the
- * ways out of it, the sport (TASK-189), Strava (TASK-187), and the settings
- * to come, named and marked «Soon».
+ * ways out of it, the sport (TASK-189), Strava (TASK-187), the language
+ * (TASK-210) among the preferences, and the settings to come, named and
+ * marked «Soon».
  * «Delete account» asks first, on the screen (ADR-0120: the API does not).
  */
 export function SettingsPage({ user, account }: Props) {
@@ -94,7 +100,7 @@ export function SettingsPage({ user, account }: Props) {
   const deleting = account.busy === "delete";
   return (
     <View style={styles.page}>
-      <Section label="ACCOUNT">
+      <Section label={t("ACCOUNT")}>
         <View style={styles.card}>
           <Text style={styles.username}>{user.username}</Text>
           <Text style={styles.email}>{user.email}</Text>
@@ -104,8 +110,12 @@ export function SettingsPage({ user, account }: Props) {
       </Section>
       <SportSetting />
       <StravaSetting />
+      <Section label={t("PREFERENCES")}>
+        <LanguageSetting />
+        <ComingRows rows={PREFERENCES_COMING} />
+      </Section>
       {COMING.map((section) => (
-        <Section key={section.label} label={section.label}>
+        <Section key={section.label} label={t(section.label)}>
           <ComingRows rows={section.rows} />
         </Section>
       ))}
@@ -117,13 +127,14 @@ export function SettingsPage({ user, account }: Props) {
           disabled={deleting}
           accessibilityRole="button"
         >
-          <Text style={styles.buttonText}>Log out</Text>
+          <Text style={styles.buttonText}>{t("Log out")}</Text>
         </Pressable>
         {confirming ? (
           <View style={styles.confirm}>
             <Text style={styles.confirmText}>
-              Delete your account? Everything that is yours goes with it, at once. It
-              cannot be undone.
+              {t(
+                "Delete your account? Everything that is yours goes with it, at once. It cannot be undone.",
+              )}
             </Text>
             <Pressable
               style={[styles.button, styles.danger, deleting && styles.busy]}
@@ -133,7 +144,7 @@ export function SettingsPage({ user, account }: Props) {
               accessibilityState={{ disabled: deleting, busy: deleting }}
             >
               <Text style={[styles.buttonText, styles.dangerText]}>
-                {deleting ? "Deleting…" : "Delete my account"}
+                {t(deleting ? "Deleting…" : "Delete my account")}
               </Text>
             </Pressable>
             <Pressable
@@ -145,7 +156,7 @@ export function SettingsPage({ user, account }: Props) {
               disabled={deleting}
               accessibilityRole="button"
             >
-              <Text style={styles.buttonText}>Keep my account</Text>
+              <Text style={styles.buttonText}>{t("Keep my account")}</Text>
             </Pressable>
           </View>
         ) : (
@@ -154,7 +165,7 @@ export function SettingsPage({ user, account }: Props) {
             onPress={() => setConfirming(true)}
             accessibilityRole="button"
           >
-            <Text style={styles.dangerText}>Delete account</Text>
+            <Text style={styles.dangerText}>{t("Delete account")}</Text>
           </Pressable>
         )}
         {account.problem && <Text style={styles.problem}>{account.problem}</Text>}

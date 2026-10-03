@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -54,7 +55,7 @@ export function ProfileHeader({ username, bio, photo, detail, photoButton }: Pro
           disabled={photoButton.busy}
           accessibilityRole="button"
           // One name for the circle: the letter and the «+» are not read.
-          accessibilityLabel="Profile picture"
+          accessibilityLabel={t("Profile picture")}
           accessibilityState={{
             expanded: photoButton.open,
             disabled: photoButton.busy,

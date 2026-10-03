@@ -3,6 +3,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityDetail } from "../api/activities";
 import { type StravaActivity, type StravaOutcome, stravaProblem } from "../api/strava";
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -94,7 +95,7 @@ export function StravaActivityRow({ activity }: { activity: ActivityDetail }) {
     case "sending":
       return (
         <View style={styles.block}>
-          <Button text="Sending to Strava…" disabled />
+          <Button text={t("Sending to Strava…")} disabled />
         </View>
       );
     case "known":
@@ -104,11 +105,11 @@ export function StravaActivityRow({ activity }: { activity: ActivityDetail }) {
           <View style={styles.block}>
             {url !== null ? (
               <Button
-                text="View on Strava"
+                text={t("View on Strava")}
                 onPress={() => void Linking.openURL(url).catch(() => {})}
               />
             ) : (
-              <StravaLine text="This run is on Strava." />
+              <StravaLine text={t("This run is on Strava.")} />
             )}
           </View>
         );
@@ -116,8 +117,8 @@ export function StravaActivityRow({ activity }: { activity: ActivityDetail }) {
       if (known.activity.status === "processing") {
         return (
           <View style={styles.block}>
-            <StravaLine text="Strava is still reading this run." />
-            <Button text="Check again" onPress={sendNow} />
+            <StravaLine text={t("Strava is still reading this run.")} />
+            <Button text={t("Check again")} onPress={sendNow} />
           </View>
         );
       }
@@ -128,7 +129,7 @@ export function StravaActivityRow({ activity }: { activity: ActivityDetail }) {
             onChange={setName}
             automatic={automaticName(activity)}
           />
-          <Button text="Send to Strava" onPress={sendNow} />
+          <Button text={t("Send to Strava")} onPress={sendNow} />
           {problem !== null && <StravaLine text={problem} alert />}
         </View>
       );

@@ -203,6 +203,29 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `0011` e l'ok dell'utente). Poi **B** (l'app),
   dopo che l'utente ha confermato le proposte del task file; e TASK-208 A.
   Da dove riprendere: `tasks/TASK-211.md`.
+- **TASK-208 — Pubblicare una corsa in stile Strava** (ADR-0170; scelte
+  dell'utente del 2026-10-03: «How did it go?», tag degli iscritti per
+  nome, fino a 3 foto, «Everyone», «Followers», «Only me»; e, durante la
+  parte A, la descrizione **non filtrata** per le parole negative).
+  **Parte A, l'API**, fatta il 2026-10-03 (branch
+  `feat/TASK-208-publish-api`, migrazione `0014_drawing_details.sql`):
+  `visibility` al posto di `public`
+  (le pubbliche di prima `everyone`, le private `only_me`; `public` resta
+  colonna generata per l'SQL di prima);
+  `description`, `runs.activity` (anche nel `PUT` della corsa), i tag
+  (al più 10, cancellato l'account il nome sparisce), le foto in posti
+  1–3 a 1080 px senza EXIF, lette con il token da
+  `/drawings/{id}/photos/{n}`; chi vede cosa con una domanda sola,
+  `drawing_seen_sql`; il numero sul profilo è quello che chi guarda vede;
+  a Strava descrizione e tipo (`Run`, `Ride`, `Canoeing`: la canoa da
+  confermare con l'utente); i commenti seguono `drawing_seen_sql`, e
+  questo chiude il seguito di TASK-120 (i commenti di un disegno
+  «Followers»). L'app di oggi
+  (`public` sì/no) continua a funzionare: i campi nuovi assenti restano
+  come sono. Non sul server: vuole la migrazione, l'ok dell'utente e la
+  stima dello spazio delle foto (`tasks/TASK-208.md`, «Note per il
+  deploy»). Poi **B** (l'app), dopo la conferma delle proposte del task
+  file. Da dove riprendere: `tasks/TASK-208.md`.
 
 - **TASK-187 — «Send to Strava»** (ADR-0156, migrazione `0004`; scelta
   dell'utente: «Sì, fallo vero»). **Parte API** in `main` (PR #210).

@@ -23,6 +23,7 @@ import pytest
 from argon2 import PasswordHasher
 from fastapi.testclient import TestClient
 from psycopg.rows import dict_row
+from route_engine.models import SUPPORTED_ACTIVITIES
 from route_engine.network import FileSource
 
 from shaperoute_api.access import OPEN_PATHS
@@ -30,14 +31,18 @@ from shaperoute_api.accounts import Accounts
 from shaperoute_api.activities import PlaceNames
 from shaperoute_api.app import create_app
 from shaperoute_api.db import Database, migrations
+from shaperoute_api.drawings import MAX_DESCRIPTION_LENGTH
 from shaperoute_api.strava import (
     MAX_NAME,
     POLLS,
+    SPORT_TYPES,
     StravaActivityBody,
     StravaConnectBody,
     StravaSendBody,
     StravaStatusBody,
     activity_name,
+    strava_description,
+    typed_description,
     typed_name,
 )
 from shaperoute_api.strava_client import (
@@ -429,11 +434,15 @@ def test_the_examples_are_the_bodies() -> None:
         ("strava-status.json", StravaStatusBody),
         ("strava-connect.json", StravaConnectBody),
         ("strava-activity.json", StravaActivityBody),
-        ("strava-send.json", StravaSendBody),
+        ("strava-send-description.json", StravaSendBody),
     ):
         example = _load(name)
         assert set(example) == set(model.model_fields)
         assert model.model_validate(example).model_dump() == example
+    # The body of an app before TASK-208: the name alone.
+    before = _load("strava-send.json")
+    assert set(before) == set(StravaSendBody.model_fields) - {"description"}
+    StravaSendBody.model_validate(before)
     url = _load("strava-connect.json")["url"]
     assert url.startswith(AUTHORIZE_URL + "?")
 
@@ -880,6 +889,65 @@ def test_the_name_counts_only_for_the_first_upload(
     assert second.json() == first.json()
     [form] = fake.files
     assert form["name"] == "First"
+
+
+def test_the_description_and_the_activity_go_to_strava(
+    client: TestClient, fake: FakeStrava
+) -> None:
+    headers = signed_up(client)
+    connected(client, fake, headers)
+    saved(client, headers, activity="cycling")
+    body = _load("strava-send-description.json")
+    client.post(f"/me/activities/{KEY}/strava", json=body, headers=headers)
+
+    [form] = fake.files
+    assert form["sport_type"] == "Ride"
+    assert form["name"] == body["name"]
+    # The runner's words, then Sgrava's line.
+    assert form["description"] == body["description"] + "\n\nDrawn with Sgrava"
+
+
+def test_without_a_typed_description_strava_gets_the_drawings(
+    client: TestClient, fake: FakeStrava
+) -> None:
+    headers = signed_up(client)
+    connected(client, fake, headers)
+    saved(client, headers, key=KEY, points=None, similarity=None, shape=None)
+    saved(client, headers, key=OTHER_KEY, activity="paddling")
+    kept = client.put(
+        f"/me/activities/{KEY}/drawing",
+        json={
+            "visibility": "only_me",
+            "description": "Legs heavy.",
+            "activity": "paddling",
+        },
+        headers=headers,
+    )
+    assert kept.status_code == 200
+    client.post(f"/me/activities/{KEY}/strava", json={"name": ""}, headers=headers)
+    client.post(f"/me/activities/{OTHER_KEY}/strava", headers=headers)
+
+    freehand, drawn = fake.files
+    assert freehand["description"] == "Legs heavy.\n\nRecorded with Sgrava"
+    assert freehand["sport_type"] == drawn["sport_type"] == "Canoeing"
+    # No words anywhere: Sgrava's line alone, as before TASK-208.
+    assert drawn["description"] == "Drawn with Sgrava"
+
+
+def test_every_activity_has_a_strava_sport() -> None:
+    assert set(SPORT_TYPES) == set(SUPPORTED_ACTIVITIES)
+
+
+def test_a_typed_description_keeps_its_lines_and_is_cut_not_refused() -> None:
+    assert typed_description(None) is None
+    assert typed_description(" \n\t ") is None
+    assert typed_description("  Legs heavy. \r\n Round heart.\n") == (
+        "Legs heavy.\nRound heart."
+    )
+    long = typed_description("x" * (MAX_DESCRIPTION_LENGTH + 20))
+    assert long == "x" * MAX_DESCRIPTION_LENGTH
+    assert strava_description(None, drawn=False) == "Recorded with Sgrava"
+    assert strava_description("Fun.", drawn=True) == "Fun.\n\nDrawn with Sgrava"
 
 
 def test_a_typed_name_is_one_line_and_not_too_long() -> None:

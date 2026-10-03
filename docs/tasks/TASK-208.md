@@ -1,11 +1,11 @@
 # TASK-208 — Pubblicare una corsa in stile Strava
 
-**Stato**: Todo — task file scritto con le scelte dell'utente (2026-10-03);
-la parte A aspetta la parte A di TASK-211
+**Stato**: In lavorazione — parte A (l'API) fatta il 2026-10-03; parte B
+da fare, dopo la conferma delle proposte da parte dell'utente
 **Fase**: 4 · **Branch**: `feat/TASK-208-publish-api` (parte A),
 `feat/TASK-208-publish-app` (parte B)
 **Dipende da**: TASK-117 (fatto), TASK-211 (parte A per la nostra A, parte
-B per la nostra B) · **ADR**: dal coordinatore
+B per la nostra B) · **ADR**: ADR-0170
 
 ## Obiettivo
 
@@ -49,6 +49,10 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
 - **La scheda di una corsa in «My activities»** ha lo stesso modulo, per
   cambiare dopo (oggi lì ci sono «Public» e «Title»).
 - Al più **10 persone** taggate; descrizione al più **500 caratteri**.
+- **La canoa su Strava** è `Canoeing` (🛶 nell'app); le altre scelte di
+  Strava sono `Kayaking` e `StandUpPaddling`. Proposta della parte A, da
+  confermare (oggi bici e canoa arrivano su Strava come «Run»; da TASK-208
+  A la bici è `Ride`).
 - I testi nuovi: «How did it go?», «Tag people», «Activity» («Run»,
   «Bike», «Paddle»), «Who can see it» («Everyone», «Followers», «Only
   me»), «Add photo». Da far confermare, e da passare a TASK-210 (la
@@ -105,21 +109,22 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
 
 ## Criteri di accettazione
 
-- [ ] Un disegno `followers` lo vede chi segue con la richiesta
+- [x] Un disegno `followers` lo vede chi segue con la richiesta
       accettata; chi ha solo chiesto, o non segue, ha «non trovato»
       (test).
-- [ ] Un disegno `only_me` dà «non trovato» a chiunque altro (test).
-- [ ] La migrazione porta ogni `public` di prima nella visibilità
+- [x] Un disegno `only_me` dà «non trovato» a chiunque altro (test).
+- [x] La migrazione porta ogni `public` di prima nella visibilità
       giusta (test).
-- [ ] Una quarta foto, o un undicesimo tag, sono rifiutati (`422`, test).
-- [ ] Le foto non hanno EXIF (test, come per la foto del profilo).
-- [ ] Taggare un account che non esiste dà `422`; cancellato un account
+- [x] Una quarta foto, o un undicesimo tag, sono rifiutati (`422`, test).
+- [x] Le foto non hanno EXIF (test, come per la foto del profilo).
+- [x] Taggare un account che non esiste dà `422`; cancellato un account
       taggato, il suo nome sparisce dal disegno (test).
 - [ ] Senza rete titolo, descrizione, tag, visibilità e foto non si
       perdono (parte B, test).
-- [ ] Con «Send to Strava» descrizione e tipo arrivano nell'invio (test
+- [x] Con «Send to Strava» descrizione e tipo arrivano nell'invio (test
       con Strava finto).
-- [ ] Test verdi dell'API e dell'app.
+- [ ] Test verdi dell'API e dell'app (l'API sì, parte A; l'app è la
+      parte B).
 - [ ] Prova sull'iPhone, dopo l'aggiornamento del server, con l'ok
       dell'utente.
 
@@ -138,6 +143,11 @@ services/api/tests/test_drawings.py
 services/api/tests/test_drawing_photos.py          (nuovo)
 packages/shared-types/                              (contratto e fixture)
 docs/API.md, docs/DATABASE.md, docs/DECISIONS.md, docs/STATUS.md
+services/api/shaperoute_api/strava_client.py       (ok del coordinatore: `upload` prende `sport_type`)
+services/api/tests/test_strava.py                  (ok del coordinatore: il test con Strava finto)
+services/api/tests/test_activities.py              (ok del coordinatore: due righe, il modello ha `activity`)
+services/api/shaperoute_api/profiles.py            (ok del coordinatore: il numero dei disegni per chi guarda)
+services/api/shaperoute_api/comments.py            (ok del coordinatore: i commenti seguono `drawing_seen_sql`)
 ```
 
 Parte B:
@@ -166,4 +176,105 @@ docs/UI.md, docs/DECISIONS.md, docs/STATUS.md
 
 ## Esito
 
-*(si compila a fine task)*
+### Parte A — l'API (2026-10-03, ADR-0170)
+
+Branch `feat/TASK-208-publish-api`, migrazione `0014_drawing_details.sql`
+(`0012` e `0013` sono di #263 e #260, entrate prima).
+
+**La scelta dell'utente presa durante il task** (2026-10-03, domanda del
+coordinatore): la descrizione **non passa dal filtro dei commenti
+negativi** di ADR-0176. Il titolo neppure.
+
+**Cosa funziona**:
+- **`visibility`** (`everyone`, `followers`, `only_me`) al posto di
+  `public`. La migrazione porta ogni pubblico a `everyone` e ogni privato
+  a `only_me` (test con dati sullo schema 0001–0013). `public` resta, come
+  colonna generata e nelle risposte (vero quando `visibility` è
+  `everyone`), per l'app di oggi e per l'SQL scritto prima.
+- **Chi vede cosa** sta in una funzione sola, `drawing_seen_sql(viewer)`:
+  vale per il disegno, per le sue foto e, quando TASK-120 la userà, per i
+  suoi commenti. Il profilo conta ed elenca quello che chi guarda vede: a
+  chi non segue i `everyone`, a chi segue anche i `followers`, al
+  proprietario i suoi pubblicati.
+- **Il `PUT` del disegno** prende:
+  - `visibility`, oppure `public` dall'app di prima, mai tutti e due;
+  - `description`, al più 500 caratteri, con gli a capo;
+  - `activity`;
+  - `tags`, al più 10 `public_id` in ordine: né sé stessi, né lo stesso
+    due volte, né chi non è iscritto.
+
+  Se `description`, `activity` e `tags` mancano, restano come sono: così
+  l'app di oggi non li cancella.
+- **Le foto**: `PUT` e `DELETE /me/activities/{key}/drawing/photos/{n}`,
+  in posti da 1 a 3 che non si spostano. L'API le raddrizza, le riduce a
+  1080 px sul lato lungo e le rifà JPEG senza EXIF; al più 20 `PUT` al
+  minuto. Chi vede il disegno le legge da `GET /drawings/{id}/photos/{n}`:
+  JPEG, con il token, e un `?v=` che cambia con la foto.
+- **`runs.activity`**: il `PUT` della corsa prende `activity`, per
+  difetto `running`; il disegno la cambia e la mostra.
+- **Strava**: il `sport_type` viene dall'attività (`Run`, `Ride`,
+  `Canoeing`). La descrizione è «How did it go?» seguita dalla riga di
+  Sgrava. Viene dal corpo dell'invio (`description`, accanto a `name`) o,
+  se manca, dal disegno.
+- **Contratto** (`shared-types`):
+  - tipi nuovi: `Visibility`/`VISIBILITIES`, `DrawingTag`,
+    `DrawingPhoto`, `DrawingPhotoRequest` e i limiti;
+  - i campi nuovi sono facoltativi (un'API di prima non li ha), e
+    `DrawingRequest.public` diventa facoltativo;
+  - fixture nuove: `drawing-request-details.json`,
+    `my-drawing-details.json`, `drawing-details.json`,
+    `drawings-details.json`, `drawing-photo-request.json`,
+    `activity-request-cycling.json`, `strava-send-description.json`;
+  - le fixture di prima non cambiano, perché l'app le importa con i loro
+    tipi.
+
+**File oltre all'elenco** (ok del coordinatore il 2026-10-03, scritti in
+«File toccati»):
+- `strava_client.py`: `upload` prende `sport_type`;
+- `test_strava.py`: il test con Strava finto;
+- `test_activities.py`: due righe, perché il modello ha `activity`;
+- `profiles.py`: il numero dei disegni per chi guarda;
+- `comments.py`: due righe, vedi sotto.
+
+**Il seguito di TASK-120 è chiuso qui** (i commenti di un disegno
+«Followers»). `comments.py` (#260, già in `main`) chiedeva `d.public OR
+r.user_id = %s`, che con la colonna generata funzionava ancora, ma per
+difetto: chi segue vedeva il disegno e non i suoi commenti. Ora chiede
+`drawing_seen_sql('%s')`, con lo stesso valore una volta sola; il test è in
+`test_drawings.py`.
+
+**Da confermare con l'utente**: la canoa su Strava come `Canoeing`
+(«Proposte dell'agente», sopra).
+
+**Per la parte B**:
+- per i tag si riusa la ricerca degli iscritti di TASK-215,
+  `src/social/PeopleSearch.tsx` (#264, ADR-0178), non più un componente
+  di TASK-211 B;
+- le foto si mostrano dal loro indirizzo, con il token nelle intestazioni
+  dell'immagine.
+
+**Note per il deploy**:
+- La migrazione è veloce: aggiunge colonne con un default costante e due
+  tabelle vuote. `drawings` si riscrive una volta, per la colonna
+  generata, con le poche righe di oggi.
+- **Lo spazio delle foto**. Una foto vera a 1080 px pesa circa 0,1–0,3 MB
+  (misurate: 0,1 MB una foto liscia, 0,25 MB una piena di dettagli,
+  0,8 MB il rumore puro, il caso peggiore). Con tre foto un disegno pesa
+  di solito 0,3–0,9 MB. **Ogni copia di notte le ripete**, e un JPEG non
+  si comprime: con le 13 copie tenute (TASK-122) il disco ne porta circa
+  14 volte tanto. Stime, a 0,2 MB a foto:
+
+  | Disegni con tre foto | Nel database | Con le copie |
+  |---|---|---|
+  | 100 | circa 60 MB | circa 0,8 GB |
+  | 1 000 | circa 0,6 GB | circa 8 GB |
+  | 10 000 | circa 6 GB | circa 80 GB, tutto il disco del CX33 |
+
+  Prima di migliaia di iscritti le foto vanno tolte dal database (un
+  volume o un object storage, scelta dell'utente), oppure servono meno
+  copie che le tengano.
+- `docker system df` e `df -h` sul server prima e dopo il primo mese, per
+  vedere la crescita vera.
+
+**Non fatto**: niente sul server né sul telefono. Servono la parte B,
+l'aggiornamento del server e l'ok dell'utente.

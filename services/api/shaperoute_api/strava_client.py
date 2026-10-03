@@ -384,12 +384,14 @@ class Strava:
         external_id: str,
         name: str | None,
         description: str | None,
+        sport_type: str = SPORT_TYPE,
     ) -> Upload:
         """Hand a run to Strava. `external_id` names it there: the same run
-        handed twice is refused as a duplicate, not made twice."""
+        handed twice is refused as a duplicate, not made twice. `sport_type`
+        is Strava's name of the activity: "Run", "Ride" (TASK-208)."""
         fields = {
             "data_type": "gpx",
-            "sport_type": SPORT_TYPE,
+            "sport_type": sport_type,
             "external_id": external_id,
         }
         # Without a name Strava gives its own: "Morning Run".

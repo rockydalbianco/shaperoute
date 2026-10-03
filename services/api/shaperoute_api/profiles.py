@@ -147,14 +147,15 @@ class Profiles:
         with self.database.connect() as conn:
             row = conn.execute(
                 "SELECT u.public_id, u.username, u.bio, p.jpeg,"
-                # Only the runs made public (TASK-117, ADR-0114 point 4).
-                f" {published_count_sql('u.id')} AS drawings,"
+                # Only the runs published, and those the viewer may see
+                # (TASK-117, TASK-208, ADR-0114 point 4).
+                f" {published_count_sql('u.id', '%s')} AS drawings,"
                 f" {followers_count_sql('u.id')} AS followers,"
                 f" {following_count_sql('u.id')} AS following,"
                 f" {follow_state_sql('%s', 'u.id')} AS follow"
                 " FROM users u LEFT JOIN profile_photos p ON p.user_id = u.id"
                 " WHERE u.public_id = %s",
-                (viewer_id, wanted),
+                (viewer_id, viewer_id, wanted),
             ).fetchone()
         if row is None:
             return None

@@ -600,13 +600,62 @@ export const DRAWING_TITLE_MAX_LENGTH = 60;
 export const DRAWING_CUT_M = 200;
 
 /**
- * PUT /me/activities/{key}/drawing (TASK-117): a saved run's drawing as it
- * should be now, both fields every time. The answer is a MyDrawing.
+ * Who can see a drawing (TASK-208, ADR-0170): every member, the members who
+ * follow its owner with the request accepted, or only its owner.
+ */
+export const VISIBILITIES = ["everyone", "followers", "only_me"] as const;
+export type Visibility = (typeof VISIBILITIES)[number];
+
+/** The limits of a drawing, checked by the API too (TASK-208). */
+export const DRAWING_DESCRIPTION_MAX_LENGTH = 500;
+export const DRAWING_MAX_TAGS = 10;
+/** Besides the map, the first picture of a drawing. */
+export const DRAWING_MAX_PHOTOS = 3;
+
+/**
+ * PUT /me/activities/{key}/drawing (TASK-117, TASK-208): a saved run's
+ * drawing as it should be now. The answer is a MyDrawing.
  */
 export interface DrawingRequest {
   /** At most DRAWING_TITLE_MAX_LENGTH characters; null or "": none. */
   title?: string | null;
-  public: boolean;
+  /** Who can see it; or `public`, never both (TASK-208). */
+  visibility?: Visibility;
+  /** An app before TASK-208: true is "everyone", false "only_me". */
+  public?: boolean;
+  /**
+   * «How did it go?»: at most DRAWING_DESCRIPTION_MAX_LENGTH characters,
+   * lines and all; null or "": none; missing: as it was.
+   */
+  description?: string | null;
+  /** What the run was; missing: as it was. */
+  activity?: Activity;
+  /** The public_id of the members tagged, in order; []: none; missing: as they were. */
+  tags?: string[];
+}
+
+/**
+ * PUT /me/activities/{key}/drawing/photos/{n} (TASK-208): a JPEG or PNG in
+ * base64; the API keeps it upright, at most 1080 px a side, without EXIF.
+ */
+export interface DrawingPhotoRequest {
+  image: string;
+}
+
+/** A member tagged in a drawing: never the email. */
+export interface DrawingTag {
+  public_id: string;
+  username: string;
+}
+
+/** A photo of a drawing, besides its map (TASK-208). */
+export interface DrawingPhoto {
+  /** Its place, 1 to DRAWING_MAX_PHOTOS: a place emptied stays empty. */
+  n: number;
+  /** A JPEG on the API, read with the token; it changes with the photo. */
+  url: string;
+  width: number;
+  height: number;
 }
 
 /**
@@ -619,9 +668,16 @@ export interface MyDrawing {
   /** What the others open it with; null for a run never titled nor published. */
   id: string | null;
   title: string | null;
+  /** Every member sees it: `visibility` is "everyone". */
   public: boolean;
-  /** When it was last made public; null while private. */
+  /** When the others could first see it since it was last "only_me"; null while it is. */
   published_at: string | null;
+  /** The fields of TASK-208: an API before has none. */
+  visibility?: Visibility;
+  description?: string | null;
+  activity?: Activity;
+  tags?: DrawingTag[];
+  photos?: DrawingPhoto[];
 }
 
 /** GET /me/drawings: the runs with a title or made public, latest first. */
@@ -655,6 +711,12 @@ interface DrawingFields {
   /** 0–100, against the planned route; null without one or too short. */
   score: number | null;
   fidelity: number | null;
+  /** The fields of TASK-208: an API before has none. */
+  visibility?: Visibility;
+  description?: string | null;
+  activity?: Activity;
+  tags?: DrawingTag[];
+  photos?: DrawingPhoto[];
 }
 
 /** One drawing of GET /users/{public_id}/drawings. */
@@ -668,7 +730,7 @@ export interface DrawingsPage {
   drawings: Drawing[];
   /** The `cursor` of the next page; null on the last one. */
   next: string | null;
-  /** How many drawings the profile has published. */
+  /** How many drawings of the profile the one who asks sees. */
   total: number;
 }
 
@@ -678,7 +740,7 @@ export interface DrawingsPage {
  */
 export interface DrawingDetail extends DrawingFields {
   author: DrawingAuthor;
-  /** Always true for the others; false only for its owner. */
+  /** Every member sees it: `visibility` is "everyone". */
   public: boolean;
   /** Empty only for the owner's private run too short to publish. */
   track: LatLon[];

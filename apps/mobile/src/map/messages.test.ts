@@ -1,4 +1,5 @@
 import {
+  clearProgress,
   clearRoute,
   clearStops,
   clearTrack,
@@ -7,6 +8,7 @@ import {
   parsePageMessage,
   setPosition,
   showOthers,
+  showProgress,
   showRoute,
   showStops,
   showTrack,
@@ -237,4 +239,40 @@ test("showOthers sends each route in MapLibre order, and none to clear", () => {
     ],
   });
   expect(showOthers([])).toEqual({ type: "showOthers", lines: [] });
+});
+
+test("showProgress sends the part run and the part left in MapLibre order (TASK-224)", () => {
+  const split = {
+    done: [
+      [
+        [46.0, 11.0],
+        [46.001, 11.0],
+      ],
+    ] as [number, number][][],
+    ahead: [
+      [
+        [46.001, 11.0],
+        [46.002, 11.0],
+      ],
+    ] as [number, number][][],
+  };
+  expect(showProgress(split, true)).toEqual({
+    type: "showProgress",
+    done: [
+      [
+        [11.0, 46.0],
+        [11.0, 46.001],
+      ],
+    ],
+    ahead: [
+      [
+        [11.0, 46.001],
+        [11.0, 46.002],
+      ],
+    ],
+    blink: true,
+  });
+  // In pocket mode the dashes keep still.
+  expect(showProgress(split, false)).toMatchObject({ blink: false });
+  expect(clearProgress()).toEqual({ type: "clearProgress" });
 });

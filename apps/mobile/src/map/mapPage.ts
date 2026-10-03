@@ -1,6 +1,15 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { color, onFoot, otherRoute, route, stop, track, walk } from "../theme/tokens";
+import {
+  color,
+  onFoot,
+  otherRoute,
+  route,
+  routeAhead,
+  stop,
+  track,
+  walk,
+} from "../theme/tokens";
 import { toLngLat } from "./coordinates";
 import { LABEL_FONT, sgravaDarkStyle } from "./mapStyle";
 
@@ -39,6 +48,20 @@ export const FOLLOW_ZOOM = 17;
 export const ROUTE_COLOR = route.color;
 export const ROUTE_WIDTH = route.width;
 export const ROUTE_OPACITY = route.opacity;
+
+/**
+ * While running the route, the part left (TASK-224): dashed, under the part
+ * run, blinking in steps. A beat changes the line's feature state, not the
+ * style: a style change starts 300 ms of transitions on every property of
+ * the layer, and the map was drawn 29 times a second instead of 1.4
+ * (measured in the page, ADR-0186).
+ */
+export const AHEAD_COLOR = routeAhead.color;
+export const AHEAD_WIDTH = routeAhead.width;
+export const AHEAD_OPACITY = routeAhead.opacity;
+export const AHEAD_DIM_OPACITY = routeAhead.dimOpacity;
+export const AHEAD_DASH = routeAhead.dash;
+export const AHEAD_BEAT_MS = routeAhead.beatMs;
 
 /** The other routes to choose from, under the route (TASK-093). */
 export const OTHER_ROUTE_COLOR = otherRoute.color;
@@ -141,6 +164,13 @@ export function buildMapPage(): string {
     var startHere = null;
     var noRoute = { type: "FeatureCollection", features: [] };
     var route = noRoute;
+    // The route as showRoute sent it: drawn whole when no run is on it.
+    var fullRoute = noRoute;
+    // While running it (TASK-224): the part left, and whether it blinks.
+    var ahead = noRoute;
+    var progressing = false;
+    var blinking = null;
+    var dim = false;
     var walks = noRoute;
     var onFoot = noRoute;
     var track = noRoute;
@@ -185,6 +215,27 @@ export function buildMapPage(): string {
           "line-dasharray": ${toScript(WALK_DASH)},
         },
       });
+      // While running the route, the part left: dashed, under the part run
+      // (TASK-224). Its one line has id 0, and its beat is its "dim" state.
+      map.addSource("route-ahead", { type: "geojson", data: ahead, generateId: true });
+      map.addLayer({
+        id: "route-ahead",
+        type: "line",
+        source: "route-ahead",
+        layout: { "line-join": "round", "line-cap": "butt" },
+        paint: {
+          "line-color": ${toScript(AHEAD_COLOR)},
+          "line-width": ${AHEAD_WIDTH},
+          "line-opacity": [
+            "case",
+            ["boolean", ["feature-state", "dim"], false],
+            ${AHEAD_DIM_OPACITY},
+            ${AHEAD_OPACITY},
+          ],
+          "line-dasharray": ${toScript(AHEAD_DASH)},
+        },
+      });
+      setAheadOpacity();
       // A route that arrived before the style is drawn now.
       map.addSource("route", { type: "geojson", data: route });
       map.addLayer({
@@ -321,6 +372,63 @@ export function buildMapPage(): string {
         source.setData(route);
       }
     }
+    function setAhead(data) {
+      ahead = data;
+      var source = map.getSource("route-ahead");
+      if (source) {
+        source.setData(ahead);
+      }
+    }
+    function setAheadOpacity() {
+      if (map.getSource("route-ahead")) {
+        map.setFeatureState({ source: "route-ahead", id: 0 }, { dim: dim });
+      }
+    }
+    // With "Reduce Motion" on the phone the dashes keep still.
+    function stillWanted() {
+      return Boolean(
+        window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      );
+    }
+    function setBlink(on) {
+      if (on && !stillWanted()) {
+        if (!blinking) {
+          blinking = setInterval(function () {
+            dim = !dim;
+            setAheadOpacity();
+          }, ${AHEAD_BEAT_MS});
+        }
+        return;
+      }
+      if (blinking) {
+        clearInterval(blinking);
+        blinking = null;
+      }
+      dim = false;
+      setAheadOpacity();
+    }
+    function lines(coordinates) {
+      return coordinates.length > 0
+        ? {
+            type: "Feature",
+            properties: {},
+            geometry: { type: "MultiLineString", coordinates: coordinates },
+          }
+        : noRoute;
+    }
+    // The part run takes the route's layer; the part left, the dashed one.
+    function showProgress(message) {
+      progressing = true;
+      setRoute(lines(message.done));
+      setAhead(lines(message.ahead));
+      setBlink(message.blink);
+    }
+    function clearProgress() {
+      progressing = false;
+      setRoute(fullRoute);
+      setAhead(noRoute);
+      setBlink(false);
+    }
     function setWalks(data) {
       walks = data;
       var source = map.getSource("walks");
@@ -377,13 +485,17 @@ export function buildMapPage(): string {
         } else if (message.type === "showRoute") {
           var points = message.coordinates;
           // A word with the pen up: its letters are the route, its walks dashed.
-          setRoute({
+          fullRoute = {
             type: "Feature",
             properties: {},
             geometry: message.walks
               ? { type: "MultiLineString", coordinates: message.letters }
               : { type: "LineString", coordinates: points },
-          });
+          };
+          // Running it, the route stays cut where the runner is.
+          if (!progressing) {
+            setRoute(fullRoute);
+          }
           setWalks(
             message.walks
               ? {
@@ -452,8 +564,13 @@ export function buildMapPage(): string {
           });
         } else if (message.type === "clearTrack") {
           setTrack(noRoute);
+        } else if (message.type === "showProgress") {
+          showProgress(message);
+        } else if (message.type === "clearProgress") {
+          clearProgress();
         } else if (message.type === "clearRoute") {
-          setRoute(noRoute);
+          fullRoute = noRoute;
+          clearProgress();
           setWalks(noRoute);
           setOnFoot(noRoute);
           setStartHere(null);

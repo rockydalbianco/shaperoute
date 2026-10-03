@@ -785,6 +785,13 @@ function Sgrava() {
                   : null
             }
             heading={heading}
+            // Running the route: the part run solid, the part left dashed
+            // and blinking (TASK-224).
+            progress={
+              navigating && navigation.status === "following"
+                ? navigation.navigation
+                : null
+            }
             onError={setMapError}
             // A run of «My activities» takes the map from whatever was on it.
             {...(reviewing ? reviewed : null)}

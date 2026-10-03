@@ -39,6 +39,11 @@ dell'app», in «Settings», le stesse cinque lingue).
   annuncia a voce i tratti a piedi, cioè frasi nuove da tradurre.
 - **TASK-210** (la lingua dell'app, sessione «Selezione lingua app»):
   `src/i18n/`, la riga «Language» in «Settings».
+- **Accordo con TASK-210** (coordinatore): **un solo elenco di lingue e un
+  solo posto per la lingua scelta, `src/i18n/`** (di TASK-210); la voce
+  segue la lingua dell'app se in «Data» non se ne sceglie un'altra. Le
+  frasi della voce sono di TASK-209, i testi dell'interfaccia di TASK-210,
+  che non tocca i file delle frasi finché TASK-209 non è in `main`.
 - Quindi: le traduzioni e la scelta della voce in **file nuovi** (per
   esempio `src/voice/`, una tabella per lingua); nei file esistenti solo il
   passaggio della lingua. **Prima di toccare `useNavigation.ts` e i file

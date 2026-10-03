@@ -1,7 +1,7 @@
 # TASK-216 — La navigazione in bici
 
-**Stato**: In lavorazione (2026-10-03): codice, test e documenti fatti nel
-branch, PR in attesa del merge
+**Stato**: Done (2026-10-03) — PR #278, merge `510f8a5`. Solo app: esce
+con la prossima pubblicazione, con l'ok dell'utente.
 **Fase**: 4 · **Branch**: `feat/TASK-216-bike-navigation`
 **Dipende da**: TASK-190 (la bici), TASK-206 C (la voce dei tratti a
 mano), TASK-209 (la voce in cinque lingue, `src/voice/`)
@@ -167,6 +167,10 @@ Fatto come «Cosa fare», con le scelte dell'utente e l'ADR-0179.
   `AppBikeNavigation.test.tsx`, e aggiunte a navigatore, penna, tratti a
   mano e scheda); `typecheck`, `lint`, `format:check` puliti.
 - **Non verificato**: sull'iPhone, pedalando. Non pubblicato.
+- **In `main`** dalla PR #278 (CI 5/5 verde, merge `510f8a5`), con le
+  conferme dell'utente della bici a mano di TASK-206 in tedesco, spagnolo
+  e francese e dei testi della penna alzata di TASK-198 (dal
+  coordinatore).
 - **Seguiti, da chiedere all'utente**: la fine della corsa in bici (il
   riepilogo mostra il passo), le calorie (stimate per la corsa: in bici
   circa un terzo), l'incitamento dopo 5 km (in bici non c'è), la corsa

@@ -7800,3 +7800,66 @@ nome (spezzano chi è).
 **Conseguenze**: la riga di «Settings» resta e fa lo stesso. Come la foto
 di TASK-178, sul telefono funziona solo con il server alla migrazione
 `0005` e l'app pubblicata.
+
+## ADR-0176 — Nessun commento negativo: un elenco di parole nell'API, rifiutato con un avviso
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** la regola e
+l'avviso; il modo di riconoscerli è deciso dall'agente su delega
+dell'utente (TASK-213). Cambia ADR-0114, punto 8.
+
+**Contesto**: con i commenti (TASK-120) gli iscritti scrivono sotto le
+corse degli altri. L'utente, il 2026-10-03: «non si possono fare commenti
+negativi, se uno scrive qualcosa di negativo o brutto il messaggio viene
+bloccato». E sull'avviso: «Fai uscire un alert, dicendo: in questa app non
+puoi scrivere commenti negativi, cambia app». ADR-0114 diceva «nessun
+contenuto si nasconde da solo».
+
+**Decisione dell'utente**:
+1. Un commento negativo o brutto **non si pubblica**. È la prima eccezione
+   al punto 8 di ADR-0114. Per tutto il resto restano le segnalazioni e la
+   rimozione a mano entro 24 ore (TASK-121).
+2. Chi lo scrive vede un **alert**: «You can't write negative comments in
+   this app. Try another app.». In inglese come tutti i testi dell'app;
+   l'utente l'ha detto in italiano, «In questa app non puoi scrivere
+   commenti negativi, cambia app».
+
+**Decisione dell'agente**:
+1. **Decide l'API**, non l'app: un controllo solo nell'app si aggira.
+   `comment_filter.check_comment(text)` restituisce `None` o il motivo,
+   `"negative"`. TASK-120 lo chiama prima di salvare, risponde `422` con
+   `comment_rejected` e il motivo, e l'app mostra l'alert. Il testo resta nel
+   campo, così si corregge.
+2. **Un elenco di parole**, in italiano e in inglese, senza AI. Gli
+   **insulti** (parolacce, insulti, bestemmie, insulti contro gruppi di
+   persone) sono negativi sempre. Le **parole negative** («brutto»,
+   «pessimo», «ugly», «worst») lo sono a meno che una negazione stia nelle
+   tre parole prima («non è affatto brutto», «not bad»). Poi alcune frasi
+   («che palle», «go to hell») e le emoji 🖕 👎 💩 🤮 🤢 😡 🤬 😠.
+3. **Parole intere, non pezzi**: così Cazzago, Schifanoia, Scunthorpe e la
+   puttanesca passano. Le parole si confrontano in minuscolo e senza
+   accenti, con le cifre lette come lettere («str0nz0»), le lettere tenute
+   lunghe ridotte («schifoooo») e le lettere scritte una alla volta riunite
+   («m e r d a»).
+4. **Le parole che sono anche posti** (Troia, Bastardo, Bad Ischl, Crap
+   Sogn Gion, Boring, Noia) passano quando sono scritte con la maiuscola in
+   mezzo alla frase. In minuscolo, tutte maiuscole o a inizio frase restano
+   rifiutate.
+
+**Perché così**: nessuna dipendenza, nessuna rete, la stessa risposta a
+ogni prova, e la regola si legge e si corregge in un file solo. Sul server
+non c'è un modello (manca Ollama), e un servizio esterno vorrebbe dire
+mandare fuori i commenti, una scelta dell'utente.
+
+**Limiti**: una critica gentile («un po' noioso», «dull») passa se la
+parola non è nell'elenco. «Sei un Bastardo», con la maiuscola, passa come
+il paese, e passa anche una lettera raddoppiata una volta sola («troiaa»).
+Un commento affettuoso con una parola dell'elenco viene rifiutato: «Brutta
+caduta, rimettiti presto». Per questi casi restano le segnalazioni.
+
+**Scartato**: un modello che legga il tono (più memoria sul server, o un
+servizio esterno: si può aggiungere dopo, con il sì dell'utente); pezzi di
+parola («cazz…» blocca Cazzago); nascondere il commento in silenzio a tutti
+tranne chi lo scrive (l'utente ha scelto l'avviso); riscriverlo in modo
+gentile (non è più quello che la persona ha scritto).
+
+**Conseguenze**: nessuna finché TASK-120 non chiama il filtro. Titolo e
+descrizione delle corse pubblicate (TASK-208) non sono filtrati.

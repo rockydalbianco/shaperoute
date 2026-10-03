@@ -253,6 +253,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API** — TASK-213: nessun commento negativo (ADR-0176, scelta
+  dell'utente del 2026-10-03). `comment_filter.check_comment` rifiuta
+  insulti, parolacce e parole negative in italiano e in inglese, anche
+  camuffati («str0nz0», «m e r d a»), e lascia passare i nomi di posti
+  (Troia, Bad Ischl, Cazzago). Entra in funzione quando TASK-120 lo chiama
+  prima di salvare un commento: `422 comment_rejected` e, nell'app, l'alert
+  «You can't write negative comments in this app. Try another app.». Una
+  critica gentile non la riconosce: per quella servirebbe un'AI, da
+  chiedere all'utente. Limiti e dettagli: `tasks/TASK-213.md`.
+
 - **App** — TASK-207: la foto dal cerchio di «Profile» (chiesto
   dall'utente il 2026-10-03, che ha scelto il «+»). Il cerchio grande di
   «Profile» ha un tondo bianco con il «+» in basso a destra; toccato apre,

@@ -186,6 +186,12 @@ Fatto e provato sul branch, PR non ancora aperta:
 
 **Prossimi passi**:
 
+0. **Aspettare il «tocca a te» del coordinatore** (2026-10-03): prima
+   entra #254 (TASK-210), poi «Selezione lingua app» pubblica `main` su
+   «preview», e solo dopo questo branch si allinea. Anche #255 (TASK-191 C,
+   la canoa nell'app) tocca i file della voce: entra chi è verde prima,
+   l'altro si aggiorna. Le frasi italiane le porta all'utente il
+   coordinatore.
 1. Quando TASK-210 è in `main`: cancellare la copia locale non tracciata
    di `apps/mobile/src/i18n/` (serviva a compilare), aggiornare il branch
    da `origin/main`, rifare test, lint, Prettier.

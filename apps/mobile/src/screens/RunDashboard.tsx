@@ -246,9 +246,15 @@ function RunButtons({
   if (paused) {
     return (
       <View style={styles.pausedBox}>
-        <Text style={styles.pausedText} accessibilityLiveRegion="polite">
-          {auto ? "Paused: you stopped moving" : "Paused"}
-        </Text>
+        <View style={styles.pausedChip}>
+          <View style={styles.chipBars} accessibilityElementsHidden>
+            <View style={styles.chipBar} />
+            <View style={styles.chipBar} />
+          </View>
+          <Text style={styles.pausedText} accessibilityLiveRegion="polite">
+            {auto ? "Paused: you stopped moving" : "Paused"}
+          </Text>
+        </View>
         <View style={styles.rounds}>
           <HoldButton onHeld={onStop} />
           <View style={styles.round}>
@@ -268,29 +274,80 @@ function RunButtons({
   }
   return (
     <View style={styles.running}>
-      <View style={styles.side}>{pocket}</View>
-      <Pressable
-        style={[styles.circle, styles.pause]}
-        onPress={pauseRun}
-        accessibilityRole="button"
-        accessibilityLabel="Pause"
-      >
-        <View style={styles.bars}>
-          <View style={styles.bar} />
-          <View style={styles.bar} />
-        </View>
-      </Pressable>
-      <View style={[styles.side, styles.sideEnd]}>
+      <View style={styles.side}>
+        <SideButton label="Pocket" a11yLabel="Pocket mode" onPress={onPocket}>
+          <PhoneIcon />
+        </SideButton>
+      </View>
+      <View style={styles.round}>
         <Pressable
-          style={styles.small}
-          onPress={() => void openMusic()}
+          style={[styles.circle, styles.pause]}
+          onPress={pauseRun}
           accessibilityRole="button"
-          accessibilityLabel="Music"
-          accessibilityHint="Opens Spotify"
+          accessibilityLabel="Pause"
         >
-          <Text style={styles.pillText}>Music</Text>
+          <View style={styles.bars}>
+            <View style={styles.bar} />
+            <View style={styles.bar} />
+          </View>
+        </Pressable>
+        <Text style={styles.roundLabel}>Pause</Text>
+      </View>
+      <View style={[styles.side, styles.sideEnd]}>
+        <SideButton
+          label="Music"
+          a11yHint="Opens Spotify"
+          onPress={() => void openMusic()}
+        >
+          <Text style={styles.note}>♪</Text>
+        </SideButton>
+      </View>
+    </View>
+  );
+}
+
+/** The size of «Pocket» and «Music»: smaller than «Pause», which is the
+ * button of the run, and still more than the smallest tap. */
+export const SIDE_BUTTON = MIN_TAP_SIZE + space.md;
+
+/** A round button beside «Pause», with its name under it, as «Stop» and
+ * «Resume» have (TASK-204). */
+function SideButton({
+  label,
+  a11yLabel = label,
+  a11yHint,
+  onPress,
+  children,
+}: {
+  label: string;
+  a11yLabel?: string;
+  a11yHint?: string;
+  onPress: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <View style={styles.round}>
+      <View style={styles.sideBox}>
+        <Pressable
+          style={styles.sideCircle}
+          onPress={onPress}
+          accessibilityRole="button"
+          accessibilityLabel={a11yLabel}
+          accessibilityHint={a11yHint}
+        >
+          {children}
         </Pressable>
       </View>
+      <Text style={styles.roundLabel}>{label}</Text>
+    </View>
+  );
+}
+
+/** A phone, drawn: the screen that goes dark in pocket mode. */
+function PhoneIcon() {
+  return (
+    <View style={styles.phone}>
+      <View style={styles.phoneBar} />
     </View>
   );
 }
@@ -446,13 +503,33 @@ function DataPage({
   );
 }
 
-/** Each whole kilometre, its pace, and how it went against the one before. */
+/** How long the bar of a kilometre of `seconds` is, 0 to 1, among
+ * kilometres run in `fastest` to `slowest` seconds: the fastest is whole,
+ * the slowest still shows. */
+export function splitShare(seconds: number, fastest: number, slowest: number): number {
+  if (slowest <= fastest) {
+    return 1;
+  }
+  return (
+    MIN_SPLIT_SHARE +
+    (1 - MIN_SPLIT_SHARE) * ((slowest - seconds) / (slowest - fastest))
+  );
+}
+
+/** The bar of the slowest kilometre, as a share of the fastest one's. */
+const MIN_SPLIT_SHARE = 0.35;
+
+/** Each whole kilometre, its pace, and how it went against the one before;
+ * a bar beside each, longer the faster it was (TASK-204). */
 function Splits({ track }: { track: Track }) {
   const rows = useMemo(() => splits(track), [track]);
+  const fastest = Math.min(...rows.map((row) => row.seconds));
+  const slowest = Math.max(...rows.map((row) => row.seconds));
   return (
     <View style={styles.splits}>
       <View style={styles.splitRow}>
         <Text style={[styles.splitHead, styles.splitKm]}>Km</Text>
+        <View style={styles.splitBarCell} />
         <Text style={[styles.splitHead, styles.splitCell]}>Pace</Text>
         <Text style={[styles.splitHead, styles.splitCell]}>Change</Text>
       </View>
@@ -472,6 +549,18 @@ function Splits({ track }: { track: Track }) {
               }
             >
               <Text style={[styles.splitText, styles.splitKm]}>{row.km}</Text>
+              <View style={styles.splitBarCell}>
+                <View
+                  testID={`split-bar-${row.km}`}
+                  style={[
+                    styles.splitBar,
+                    rows.length > 1 && row.seconds === fastest && styles.splitBarBest,
+                    {
+                      width: `${Math.round(splitShare(row.seconds, fastest, slowest) * 100)}%`,
+                    },
+                  ]}
+                />
+              </View>
               <Text style={[styles.splitText, styles.splitCell]}>
                 {paceClock(row.seconds)}
               </Text>
@@ -504,9 +593,9 @@ function Switch({
       accessibilityLabel={label}
     >
       <Text style={styles.switchText}>{label}</Text>
-      <Text style={[styles.switchState, on && styles.switchStateOn]}>
-        {on ? "On" : "Off"}
-      </Text>
+      <View style={[styles.track, on && styles.trackOn]}>
+        <View style={[styles.knob, on && styles.knobOn]} />
+      </View>
     </Pressable>
   );
 }
@@ -539,7 +628,10 @@ const styles = StyleSheet.create({
   },
   kmUnit: {
     color: color.textMuted,
-    fontSize: fontSize.small,
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
   },
   waiting: {
     flexDirection: "row",
@@ -563,7 +655,7 @@ const styles = StyleSheet.create({
   },
   running: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: space.md,
   },
   // As wide as each other, so «Pause» stays in the middle.
@@ -624,9 +716,69 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: space.sm,
   },
+  // The state of the run, said where the eye already is: over its buttons.
+  pausedChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    paddingVertical: space.xs + 2,
+    paddingHorizontal: space.md,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  chipBars: {
+    flexDirection: "row",
+    gap: 3,
+  },
+  chipBar: {
+    width: 3,
+    height: space.md,
+    borderRadius: 1,
+    backgroundColor: color.text,
+  },
   pausedText: {
-    color: color.textMuted,
+    color: color.text,
     fontSize: fontSize.small,
+    fontWeight: fontWeight.semibold,
+  },
+  // As tall as «Pause»: the circles and the names under them line up.
+  sideBox: {
+    height: ROUND_BUTTON,
+    justifyContent: "center",
+  },
+  sideCircle: {
+    width: SIDE_BUTTON,
+    height: SIDE_BUTTON,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  phone: {
+    width: 16,
+    height: 26,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    paddingBottom: 3,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: color.text,
+  },
+  phoneBar: {
+    width: 6,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: color.text,
+  },
+  note: {
+    color: color.text,
+    fontSize: fontSize.title,
+    fontWeight: fontWeight.bold,
+    lineHeight: fontSize.title + space.xs,
   },
   rounds: {
     flexDirection: "row",
@@ -678,16 +830,30 @@ const styles = StyleSheet.create({
   },
   splitRow: {
     flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
     paddingVertical: space.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: color.border,
   },
   splitKm: {
-    flex: 1,
+    width: space.xl,
   },
   splitCell: {
-    flex: 1,
+    width: space.xxl * 2,
     textAlign: "right",
+  },
+  splitBarCell: {
+    flex: 1,
+  },
+  // Grey, and the fastest kilometre light: not yellow, which is the route's.
+  splitBar: {
+    height: space.sm,
+    borderRadius: radius.pill,
+    backgroundColor: color.borderStrong,
+  },
+  splitBarBest: {
+    backgroundColor: color.text,
   },
   splitHead: {
     color: color.textMuted,
@@ -733,12 +899,26 @@ const styles = StyleSheet.create({
     fontSize: fontSize.small,
     fontWeight: fontWeight.semibold,
   },
-  switchState: {
-    color: color.textFaint,
-    fontSize: fontSize.small,
-    fontWeight: fontWeight.semibold,
+  // A switch as phones draw one: the knob on the right when it is on.
+  track: {
+    width: 40,
+    height: 24,
+    justifyContent: "center",
+    paddingHorizontal: 3,
+    borderRadius: radius.pill,
+    backgroundColor: color.surfaceRaised,
   },
-  switchStateOn: {
-    color: color.text,
+  trackOn: {
+    backgroundColor: color.text,
+  },
+  knob: {
+    width: 18,
+    height: 18,
+    borderRadius: radius.pill,
+    backgroundColor: color.textMuted,
+  },
+  knobOn: {
+    alignSelf: "flex-end",
+    backgroundColor: color.background,
   },
 });

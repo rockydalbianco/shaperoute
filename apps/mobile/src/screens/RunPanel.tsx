@@ -102,13 +102,68 @@ export function useRunNumbers(
   };
 }
 
-/** Under the map, where the map is what is looked at: three numbers. */
+/** Under the map, where the map is what is looked at: three numbers, the
+ * distance first and largest (TASK-204), with no box around them. */
 export function RunStrip({ numbers }: { numbers: RunNumbers }) {
   return (
-    <View style={styles.tiles}>
-      <Tile label="Distance" value={numbers.km} unit="km" />
-      <Tile label="Pace now" value={numbers.recent} unit="/km" />
-      <Tile label="Time" value={numbers.time} />
+    <View style={styles.strip}>
+      <Metric label="Distance" value={numbers.km} unit="km" lead />
+      <View style={styles.divider} />
+      <Metric label="Pace now" value={numbers.recent} unit="/km" />
+      <View style={styles.divider} />
+      <Metric label="Time" value={numbers.time} />
+    </View>
+  );
+}
+
+/** A number of the strip: the value with its unit, its name under it. */
+function Metric({
+  label,
+  value,
+  unit,
+  lead = false,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  /** The number looked for first: larger, and given more of the width. */
+  lead?: boolean;
+}) {
+  return (
+    <View
+      style={[styles.metric, lead && styles.metricLead]}
+      accessible
+      accessibilityLabel={`${label}: ${value}${unit ? ` ${unit}` : ""}`}
+    >
+      <Value value={value} unit={unit} size={lead ? "lead" : "metric"} />
+      <Text style={styles.label} numberOfLines={1}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+/** A value and, smaller beside it, its unit. */
+function Value({
+  value,
+  unit,
+  size,
+}: {
+  value: string;
+  unit?: string;
+  size: "lead" | "metric" | "tile";
+}) {
+  return (
+    <View style={styles.valueRow}>
+      {/* An hour and more is seven characters: smaller, never cut. */}
+      <Text
+        style={[styles.value, size === "lead" && styles.valueLead]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+      >
+        {value}
+      </Text>
+      {unit && <Text style={styles.unit}>{unit}</Text>}
     </View>
   );
 }
@@ -173,19 +228,33 @@ export function Tile({
       accessible
       accessibilityLabel={`${label}: ${value}${unit ? ` ${unit}` : ""}`}
     >
-      <View style={styles.labels}>
-        <Text style={styles.label}>{label}</Text>
-        {unit && <Text style={styles.label}>{unit}</Text>}
-      </View>
-      {/* An hour and more is seven characters: smaller, never cut. */}
-      <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>
-        {value}
+      <Value value={value} unit={unit} size="tile" />
+      <Text style={styles.label} numberOfLines={1}>
+        {label}
       </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  strip: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: space.md,
+  },
+  metric: {
+    flex: 1,
+    gap: space.xs,
+  },
+  metricLead: {
+    flex: 1.4,
+  },
+  // A thin line between two numbers, as tall as they are.
+  divider: {
+    alignSelf: "stretch",
+    width: StyleSheet.hairlineWidth,
+    backgroundColor: color.border,
+  },
   grid: {
     gap: space.sm,
   },
@@ -196,39 +265,52 @@ const styles = StyleSheet.create({
   tile: {
     flex: 1,
     gap: space.xs,
-    paddingVertical: space.sm,
+    paddingVertical: space.md,
     paddingHorizontal: space.md,
     borderRadius: radius.md,
     backgroundColor: color.background,
   },
-  labels: {
+  valueRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    alignItems: "baseline",
     gap: space.xs,
-  },
-  label: {
-    color: color.textMuted,
-    fontSize: fontSize.detail,
   },
   // Not the yellow: that is the route's and the main action's (ADR-0046).
   value: {
+    flexShrink: 1,
     color: color.text,
     fontSize: fontSize.title,
     fontWeight: fontWeight.bold,
     fontVariant: ["tabular-nums"],
   },
+  valueLead: {
+    fontSize: fontSize.display,
+  },
+  unit: {
+    color: color.textMuted,
+    fontSize: fontSize.small,
+    fontWeight: fontWeight.semibold,
+  },
+  // Under the number, small and spaced: read after it, not before.
+  label: {
+    color: color.textMuted,
+    fontSize: fontSize.label,
+    fontWeight: fontWeight.semibold,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
   route: {
-    gap: space.xs,
+    gap: space.sm,
   },
   bar: {
-    height: space.xs,
+    height: space.sm,
     borderRadius: radius.pill,
     backgroundColor: color.surfaceRaised,
     overflow: "hidden",
   },
   // The route, as far as it is run: the yellow is the route's.
   done: {
-    height: space.xs,
+    height: space.sm,
     borderRadius: radius.pill,
     backgroundColor: color.accent,
   },
@@ -240,5 +322,6 @@ const styles = StyleSheet.create({
   leftText: {
     color: color.textMuted,
     fontSize: fontSize.small,
+    fontWeight: fontWeight.semibold,
   },
 });

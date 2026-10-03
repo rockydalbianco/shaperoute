@@ -1132,6 +1132,38 @@ TASK-164, di cui tiene i numeri.
   - Solo nell'app: con il GPX sull'orologio la pausa si mette a mano, ai
     waypoint «Pause» e «Resume» (TASK-197, `GPX.md`).
 
+**L'aspetto della corsa** (TASK-204, ADR-0163; chiesto dall'utente il
+2026-10-03: «migliora la parte grafica»). Stessi numeri, comandi e testi;
+cambia come si leggono:
+
+- **I numeri**: il valore grande con l'unità accanto, piccola («5:11 /km»),
+  e il nome sotto, piccolo, maiuscolo e spaziato («PACE NOW»). Su «Map» i
+  tre numeri non hanno riquadri: la distanza per prima e più grande
+  (40 punti contro 25), separati da una riga sottile. I sei riquadri di
+  «Data» e della pausa restano, nello stesso ordine.
+- **I pulsanti tondi**: «Pocket» (un telefono disegnato) e «Music» (una
+  nota) sono tondi, di 56 punti, accanto a «Pause» di 72, alla stessa
+  altezza; ognuno ha il nome sotto, anche «Pause», come «Stop» e «Resume».
+- **«Paused»** sta in una pillola chiara con il segno della pausa, sopra
+  «Stop» e «Resume».
+- **I km di «Data»**: accanto a ogni km una barra, lunga quanto il km è
+  stato veloce fra quelli corsi (il più veloce intero, il più lento a
+  0,35); la più veloce è chiara, le altre grigie, mai gialle. Con un km
+  solo, o tutti uguali, le barre sono intere e grigie.
+- **Gli interruttori** «Auto-pause» e «Voice» sono disegnati: acceso, la
+  pista chiara e il pallino scuro a destra; spento, la pista scura e il
+  pallino grigio a sinistra.
+- **I banner**: la freccia della svolta (gialla) o della partenza (ciano)
+  sta in un disco scuro di 56 punti. La barra del percorso fatto è alta
+  8 punti.
+- **Il conto alla rovescia**: ogni numero entra rimpicciolendo, mentre un
+  anello giallo si allarga e svanisce in poco meno di mezzo secondo;
+  «GET READY» sotto, maiuscolo.
+
+Le icone sono disegnate con le `View`, come la pausa e il «play»: nessuna
+libreria di icone. Il riquadro di fine corsa senza percorso usa gli stessi
+sei riquadri e ne prende l'aspetto.
+
 I passi compaiono dopo 100 m, prima c'è «–»; «Pace now» torna «–» anche da
 fermi (più lenti di 20:00 /km). «Elev. gain» è «–» se il telefono non dà
 la quota; conta le salite di almeno 3 m, perché la quota del GPS oscilla.

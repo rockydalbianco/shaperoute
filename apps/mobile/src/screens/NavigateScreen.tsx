@@ -6,7 +6,14 @@ import { ARROWS, distanceLabel, instruction, thenText } from "../navigation/phra
 import { compassPoint, headingDeg, share } from "../navigation/runStats";
 import { emptyTrack, type Track } from "../navigation/trackRecorder";
 import type { NavigationState } from "../navigation/useNavigation";
-import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
+import {
+  color,
+  fontSize,
+  fontWeight,
+  MIN_TAP_SIZE,
+  radius,
+  space,
+} from "../theme/tokens";
 import { RunCard } from "./RunDashboard";
 
 /**
@@ -88,9 +95,11 @@ function NextTurn({ navigation }: { navigation: Navigation }) {
   return (
     <View style={styles.box} accessibilityLiveRegion="polite">
       <View style={styles.row}>
-        <Text style={styles.arrow} accessibilityElementsHidden>
-          {ARROWS[next.direction.turn]}
-        </Text>
+        <View style={styles.badge}>
+          <Text style={styles.arrow} accessibilityElementsHidden>
+            {ARROWS[next.direction.turn]}
+          </Text>
+        </View>
         <View style={styles.words}>
           <Text style={styles.distance}>{distanceLabel(next.inM)}</Text>
           <Text style={styles.instruction}>{instruction(next.direction)}</Text>
@@ -143,6 +152,9 @@ export function NavigationCard({
   );
 }
 
+/** The disc of the arrow: a thumb wide, as the round buttons of the run. */
+const BADGE = MIN_TAP_SIZE + space.md;
+
 const box = {
   gap: space.xs,
   padding: space.md,
@@ -188,9 +200,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: space.md,
   },
+  // A dark disc under the arrow, so it reads as a sign (TASK-204).
+  badge: {
+    width: BADGE,
+    height: BADGE,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.pill,
+    backgroundColor: color.background,
+  },
   arrow: {
     color: color.accent,
-    fontSize: fontSize.display,
+    fontSize: fontSize.title + space.sm,
     fontWeight: fontWeight.bold,
   },
   words: {

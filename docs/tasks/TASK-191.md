@@ -1,9 +1,10 @@
 # TASK-191 — Percorsi in canoa e paddle
 
-**Stato**: In corso (A1, A2 e B fatte, PR #216, #235 e #241; il punto 5
-di A2 e C da fare)
+**Stato**: In corso (A1, A2 e B fatte, PR #216, #235 e #241; C in
+lavorazione; il punto 5 di A2 da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-191-paddle-routes` (A1),
-`feat/TASK-191-paddle-a2` (A2), `feat/TASK-191-paddle-api` (B)
+`feat/TASK-191-paddle-a2` (A2), `feat/TASK-191-paddle-api` (B),
+`feat/TASK-191-paddle-app` (C)
 **Dipende da**: TASK-189 («Sport» in «Settings»: la riga «Paddle» da
 accendere), TASK-177 (la pagina «Settings»). Meglio dopo la parte A e B
 di TASK-190, che aprono `activity` a un secondo valore.
@@ -32,6 +33,33 @@ esempio Lago di Garda, Lago di Como, Jesolo, Riccione».
   laghi, o 1–3 km ovunque).
 - **Al mare la forma sta oltre 200 m dalla riva, sui laghi a 50 m**
   (proposte anche 200 m ovunque, 100 m ovunque, o 50 m come in A1).
+
+## Scelte dell'utente (2026-10-03, parte C)
+
+Le tre domande della parte C, una per volta, ognuna con una proposta:
+
+- **L'avviso di sicurezza**: il testo proposto, ma **solo la prima volta**
+  (proposte anche: a ogni «Start»; a ogni «Start» più una riga fissa sotto
+  il percorso). Compare al primo «Start» in canoa su questo telefono:
+
+  > **Before you paddle**
+  > - Wear a life jacket.
+  > - Check the weather and the wind before you go out.
+  > - Follow the local rules: swimming areas, boat lanes, harbours. Sgrava
+  >   does not know them.
+  > - The route stays within 1 km of the shore. That does not make it safe
+  >   or allowed.
+  >
+  > «I understand» · «Not now»
+
+- **Laghi e mare in «Explore»**: con «Paddle» scelto i chip delle città
+  sono i quattro luoghi d'acqua (Lago di Garda, Lago di Como, Jesolo,
+  Riccione) e i loro esempi, cerchio, cuore e stella da 2 km, sono in
+  canoa, da un punto della riva scelto a mano; i percorsi di corsa non ci
+  sono finché resta «Paddle». Con «Run» e «Bike» «Explore» resta com'è
+  (proposte anche: una categoria a parte; «Explore» com'è per ora).
+- **Il nome**: «Paddle» 🛶 (canoa, kayak, SUP), non «Canoe»; il pulsante
+  della corsa libera diventa «Paddle without a route».
 
 ## Contesto da leggere
 
@@ -235,6 +263,37 @@ nessun task in corso ha `distance.ts`). `errors.py` non era
 nell'elenco previsto e c'è; `draw_examples.py` era nell'elenco e non c'è
 (sotto, «Esito», parte B).
 
+**Parte C** (2026-10-03, ADR-0169; l'app, niente in `services/` né in
+`route_engine`):
+
+```
+apps/mobile/src/paddle/                                  (nuovi: l'avviso,
+                                                          i luoghi d'acqua,
+                                                          «Explore» con «Paddle»)
+apps/mobile/src/settings/sport.ts
+apps/mobile/src/settings/sport.test.ts
+apps/mobile/src/settings/SportSetting.test.tsx
+apps/mobile/src/settings/SportButton.test.tsx
+apps/mobile/src/profile/SettingsPage.test.tsx
+apps/mobile/src/route/distance.ts
+apps/mobile/src/route/distance.test.ts
+apps/mobile/src/route/problems.ts
+apps/mobile/src/route/problems.test.ts
+apps/mobile/src/route/RoutePanel.tsx
+apps/mobile/src/route/RoutePanelPaddle.test.tsx          (nuovo)
+apps/mobile/src/explore/exampleRoutes.ts
+apps/mobile/src/explore/exampleRoutes.test.ts
+apps/mobile/src/explore/explored.ts
+apps/mobile/src/explore/explored.test.ts
+apps/mobile/src/theme/waterContrast.test.ts              (nuovo)
+apps/mobile/__tests__/AppPaddle.test.tsx                 (nuovo)
+apps/mobile/App.tsx
+docs/UI.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-191.md
+```
+
 Tutto il task (B e C dichiarano i loro):
 
 ```
@@ -275,13 +334,14 @@ docs/tasks/TASK-191.md
 
 Una per volta, con una proposta:
 
-1. Il testo dell'avviso di sicurezza (proposta da scrivere nella parte
-   C: giubbotto, meteo, regole del posto, distanza dalla riva).
+1. ~~Il testo dell'avviso di sicurezza~~ Risposta del 2026-10-03: il
+   testo proposto, solo la prima volta (sopra, «Scelte dell'utente, parte
+   C»).
 2. ~~Le distanze: 1–10 km va bene, dopo aver visto i campioni?~~
    Risposta del 2026-10-03: 1–5 km (sopra, «Scelte dell'utente»).
-3. Gli esempi di laghi e mare in «Explore»: una categoria a parte, o i
-   luoghi fra le città quando lo sport scelto è «Paddle»?
-4. Il nome nell'app: «Paddle» (canoa, kayak, SUP) o «Canoe»?
+3. ~~Gli esempi di laghi e mare in «Explore»~~ Risposta del 2026-10-03: i
+   luoghi d'acqua al posto delle città quando lo sport è «Paddle».
+4. ~~Il nome nell'app~~ Risposta del 2026-10-03: «Paddle».
 
 ## Esito
 

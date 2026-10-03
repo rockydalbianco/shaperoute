@@ -107,6 +107,76 @@ contesto pulito)
     all'inizio e alla fine di un tratto; testi da far approvare
     all'utente.
 
+### Piano della parte C (2026-10-03)
+
+Branch `feat/TASK-206-bike-on-foot-app` da `main`. Prima i testi e lo
+stile, chiesti all'utente una domanda alla volta (qui sotto, «Le domande
+della parte C»); **il codice parte dopo la #259** (TASK-209, la voce in
+cinque lingue: le frasi nuove vanno nelle sue tabelle di `src/voice/`),
+quando il coordinatore scrive «#259 dentro».
+
+1. **I tratti** — `src/route/onFoot.ts` (nuovo): `onFootOf(points,
+   on_foot)` li controlla come `walksOf` controlla i `walks` (stessa forma:
+   indici interi, in ordine, dentro i punti); da un'API vecchia, o se non
+   tornano, nessun tratto e il percorso di prima. I metri di un tratto
+   lungo i punti, come `walkedMetres`.
+2. **La mappa** — `messages.ts`: `showRoute` manda anche i tratti a mano
+   (`onFoot`, linee); `mapPage.ts`: un livello `on-foot` **sopra** la linea
+   del percorso (la bici a mano è parte del disegno, al contrario dei
+   `walks` della penna alzata, che stanno sotto), nello stile scelto
+   dall'utente, con un token nuovo in `tokens.ts` (solo aggiunta);
+   `MapView.tsx`: la prop `onFoot`; `App.tsx`: `on_foot` del percorso
+   scelto, di quello seguito e di un preferito aperto, accanto ai `walks`.
+   Le alternative grigie restano senza tratti.
+3. **La scheda del percorso** — il motore manda già l'avviso «923 m of the
+   route with the bike on foot», che oggi la scheda mostra così com'è, in
+   inglese. Una regola in `warnings.ts` lo dice col testo approvato,
+   attraverso `t()` (tabelle di `src/i18n/`, solo aggiunte): `RoutePanel.tsx`
+   non cambia. Sotto 1 km i metri arrotondati a 10, da 1 km «1,1 km».
+4. **La voce** — `src/navigation/onFootVoice.ts` (nuovo), funzioni pure
+   come `penUp.ts`: dai metri lungo il percorso del navigatore (ADR-0052)
+   la frase d'inizio prima di un tratto e quella di fine alla sua fine, una
+   volta ciascuna; un fix peggiore di `POOR_FIX_M` non muove niente. La
+   registrazione **non** va in pausa: il tratto a mano è disegno e
+   punteggio (ADR-0167). Le frasi nel `Phrasebook` delle cinque tabelle di
+   `src/voice/` (inglese e italiano approvati dall'utente, tedesco,
+   spagnolo e francese «da confermare»); `useNavigation.ts` le chiama
+   accanto a `movePen`. Tratti troppo corti o troppo vicini: soglie decise
+   dall'agente sui campioni di Trento, in `DECISIONS.md`.
+5. **I preferiti** — `api/favorites.ts`: `on_foot` nella richiesta solo se
+   non vuoto, e `asBefore` lo toglie (il secondo tentativo con un'API
+   precedente, come `walks` e `activity`); `favoriteRoute.ts`: lo tiene
+   salvando e lo ridà aprendo un preferito.
+6. **Test** deterministici: `onFoot.test.ts`, la mappa (`messages`,
+   `mapPage`), `warnings.test.ts`, `onFootVoice.test.ts`, `useNavigation`,
+   i preferiti, e un test dell'app con un percorso in bici
+   (`route-result-cycling.json` di `shared-types`).
+7. **Documenti**: `UI.md` (la mappa, la scheda, la voce), ADR-0167
+   «Aggiornamento (parte C)», `STATUS.md`, questo file.
+
+**Non nella parte C**: il GPX (non cambia), le corse salvate (senza
+`on_foot`), il server e la pubblicazione (l'app che manda `on_foot` nei
+preferiti va pubblicata dopo l'aggiornamento del server: «Note per il
+deploy»).
+
+**File di altri** che servono (da chiedere al coordinatore prima del
+codice): `App.tsx` e `favoriteRoute.ts` (li tocca anche la #255);
+`useNavigation.ts` e `src/voice/` (della #259, liberi al suo merge);
+`src/route/warnings.ts` (nella cartella della #255, non nel suo diff).
+
+### Le domande della parte C
+
+Una per volta, ognuna con una proposta; le risposte qui sotto.
+
+1. La riga dei metri a mano nella scheda del percorso.
+2. Le frasi della voce all'inizio e alla fine di un tratto (inglese e
+   italiano).
+3. Lo stile del tratto sulla mappa.
+4. «Start» su un percorso in bici apre la navigazione della corsa (ritmo
+   al km, voce della corsa): cosa farne (TASK-190, «Seguiti» e domanda 2).
+5. Con la penna alzata in bici la scheda dice «km walking between them» e
+   la voce «Walk to the U»: cosa farne (TASK-190, «Seguiti»).
+
 ## Criteri di accettazione
 
 - [x] Dalla CLI e nei test, senza rete: un percorso `cycling` può portare

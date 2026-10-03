@@ -1,4 +1,7 @@
-import { toNote, toNotes } from "./warnings";
+import { saveLanguageChoice } from "../i18n/language";
+import { roughMetres, toNote, toNotes } from "./warnings";
+
+afterEach(() => saveLanguageChoice("phone"));
 
 // The texts as the route engine writes them today (validation.py,
 // optimizer.py, network.py): when the engine changes one, change it here too,
@@ -107,4 +110,32 @@ test("things to watch for come first, and a sentence is said once", () => {
     "There are 120 m of steps along the way.",
     "The route is 12% longer than asked.",
   ]);
+});
+
+// --- The bike on foot (TASK-206) ---
+
+test("a bike route says the metres with the bike on foot, part of its distance", () => {
+  expect(toNote("923 m of the route with the bike on foot")).toEqual({
+    tone: "info",
+    text: "Includes 920 m walking the bike.",
+  });
+  expect(toNote("1062 m of the route with the bike on foot").text).toBe(
+    "Includes 1.1 km walking the bike.",
+  );
+  saveLanguageChoice("it");
+  expect(toNote("923 m of the route with the bike on foot").text).toBe(
+    "Di cui 920 m con la bici a mano.",
+  );
+  expect(toNote("1062 m of the route with the bike on foot").text).toBe(
+    "Di cui 1,1 km con la bici a mano.",
+  );
+});
+
+test("the metres on foot to 10, at least 10, and in km from a thousand", () => {
+  expect(roughMetres(3)).toBe("10 m");
+  expect(roughMetres(96)).toBe("100 m");
+  expect(roughMetres(504)).toBe("500 m");
+  expect(roughMetres(994)).toBe("990 m");
+  expect(roughMetres(996)).toBe("1.0 km");
+  expect(roughMetres(2449)).toBe("2.4 km");
 });

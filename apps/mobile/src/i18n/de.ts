@@ -254,6 +254,10 @@ export const DE: Table = {
   "Profile pictures are not available on this API yet.":
     "Profilbilder sind auf dieser API noch nicht verfügbar.",
 
+  // src/route/warnings.ts
+  "Includes {distance} walking the bike.":
+    "Davon {distance}, auf denen du das Rad schiebst.",
+
   // src/screens/PeopleScreen.tsx
   "Find friends": "Freunde finden",
 

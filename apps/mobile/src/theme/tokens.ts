@@ -175,3 +175,15 @@ export const walk = {
   /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
   dash: [2, 1.5],
 } as const;
+
+/** The stretches of a bike route walked with the bike on foot (TASK-206,
+ * ADR-0167): dark dashes over the yellow route, which stays whole, since
+ * they are part of the drawing. Dark as text on yellow (`onAccent`), and
+ * not grey, the colour of the walks between letters. */
+export const onFoot = {
+  color: color.onAccent,
+  width: 2,
+  opacity: 0.9,
+  /** Dash and gap, in line widths (MapLibre's `line-dasharray`). */
+  dash: [1.5, 1.5],
+} as const;

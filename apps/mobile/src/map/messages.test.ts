@@ -97,6 +97,50 @@ test("a word with the pen up sends its letters and its walks apart (TASK-198)", 
   expect(before).not.toHaveProperty("walks");
 });
 
+test("a bike route marks its stretches with the bike on foot over it (TASK-206)", () => {
+  const route: [number, number][] = [
+    [46.01, 11.3],
+    [46.02, 11.3],
+    [46.03, 11.3],
+    [46.03, 11.31],
+  ];
+  expect(showRoute(route, null, null, [[1, 2]])).toEqual({
+    type: "showRoute",
+    // The route is one line, as without: the stretches are part of it.
+    coordinates: [
+      [11.3, 46.01],
+      [11.3, 46.02],
+      [11.3, 46.03],
+      [11.31, 46.03],
+    ],
+    startHere: null,
+    onFoot: [
+      [
+        [11.3, 46.02],
+        [11.3, 46.03],
+      ],
+    ],
+  });
+  // With the walks of a word with the pen up, only on its letters.
+  expect(showRoute(route, null, [[1, 2]], [[0, 3]])).toMatchObject({
+    onFoot: [
+      [
+        [11.3, 46.01],
+        [11.3, 46.02],
+      ],
+      [
+        [11.3, 46.03],
+        [11.31, 46.03],
+      ],
+    ],
+  });
+  // None, or none that fit: the message of before.
+  const before = showRoute(route);
+  expect(showRoute(route, null, null, [])).toEqual(before);
+  expect(showRoute(route, null, null, [[2, 7]])).toEqual(before);
+  expect(before).not.toHaveProperty("onFoot");
+});
+
 test("pageScript hands the message to the page and returns true", () => {
   const script = pageScript(setPosition([46.0671, 11.1214]));
   expect(script).toBe(

@@ -4,6 +4,7 @@ import type {
   LetterStyle,
   OutlinePoint,
   Shape,
+  Stretch,
   Walk,
 } from "@shaperoute/shared-types";
 import { StatusBar } from "expo-status-bar";
@@ -136,6 +137,8 @@ type ExploreRun = {
   /** A favorite of a word with the pen up (TASK-199): its walks and word. */
   walks?: Walk[];
   word?: string | null;
+  /** A bike route (TASK-206): its stretches with the bike on foot. */
+  on_foot?: Stretch[];
 };
 
 function finishedRun(run: ScorableRun, resumable: boolean): Finished {
@@ -384,6 +387,9 @@ function Sgrava() {
   // (TASK-199); a route of "Explore" has none.
   const followedWalks =
     exploreRun === null ? (chosen?.walks ?? null) : (exploreRun.walks ?? null);
+  // The stretches with the bike on foot of a bike route (TASK-206).
+  const followedOnFoot =
+    exploreRun === null ? (chosen?.on_foot ?? null) : (exploreRun.on_foot ?? null);
   const navigating = screen === "navigate" && followed !== null;
   const navigation = useNavigation(
     followed?.points ?? null,
@@ -549,12 +555,14 @@ function Sgrava() {
   }
 
   /** Start on a route of "Explore": its directions first (TASK-145). A
-   * favorite of a word with the pen up brings its walks (TASK-199). */
+   * favorite of a word with the pen up brings its walks (TASK-199), a bike
+   * route its stretches with the bike on foot (TASK-206). */
   function onStartExplore(route: {
     points: LatLon[];
     similarity: number;
     walks?: Walk[];
     word?: string | null;
+    on_foot?: Stretch[];
   }) {
     startDirections.start(route.points, (directions) => {
       setExploreRun({
@@ -563,6 +571,9 @@ function Sgrava() {
         similarity: route.similarity,
         ...(route.walks !== undefined && route.walks.length > 0
           ? { walks: route.walks, word: route.word ?? null }
+          : {}),
+        ...(route.on_foot !== undefined && route.on_foot.length > 0
+          ? { on_foot: route.on_foot }
           : {}),
       });
       setScreen("navigate");
@@ -689,6 +700,16 @@ function Sgrava() {
                       ? (explored.result.walks ?? null)
                       : null
                     : followedWalks
+            }
+            onFoot={
+              finishing || running || freeFinishing || theming
+                ? null
+                : exploring
+                  ? // A favorite of a bike route (TASK-206).
+                    explored.status === "done"
+                    ? (explored.result.on_foot ?? null)
+                    : null
+                  : followedOnFoot
             }
             // Only while choosing, a drawn route or an example of "Explore"
             // (TASK-155): running, or on a themed route, one route is the route.

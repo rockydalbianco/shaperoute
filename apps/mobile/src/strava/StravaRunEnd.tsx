@@ -1,5 +1,6 @@
 import { StyleSheet, View } from "react-native";
 
+import { t } from "../i18n";
 import { space } from "../theme/tokens";
 import { ConnectWithStrava, StravaLine, StravaSwitch } from "./StravaParts";
 import type { StravaState } from "./useStrava";
@@ -27,7 +28,7 @@ export function StravaRunEnd({ strava, send, onSend }: Props) {
       <View style={styles.block}>
         <ConnectWithStrava busy={busy === "connecting"} onPress={strava.connect} />
         <StravaLine
-          text={problem ?? "Connect Strava, and Save sends your runs there too."}
+          text={problem ?? t("Connect Strava, and Save sends your runs there too.")}
           alert={problem !== null}
         />
       </View>
@@ -37,7 +38,9 @@ export function StravaRunEnd({ strava, send, onSend }: Props) {
     <View style={styles.block}>
       <StravaSwitch on={send} onChange={onSend} />
       {send && status.athlete !== null && (
-        <StravaLine text={`To ${status.athlete}'s Strava, with Save.`} />
+        <StravaLine
+          text={t("To {athlete}'s Strava, with Save.", { athlete: status.athlete })}
+        />
       )}
     </View>
   );

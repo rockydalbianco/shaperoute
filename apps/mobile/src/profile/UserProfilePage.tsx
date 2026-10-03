@@ -6,6 +6,7 @@ import { accountProblem, NO_API, sessionEnded } from "../account/messages";
 import type { Account } from "../account/useAccount";
 import type { AccountOutcome } from "../api/accounts";
 import { fetchProfile, profilePhotoUri } from "../api/profiles";
+import { t, tLater, tPlural } from "../i18n";
 import { DrawingsGrid } from "../social/DrawingsGrid";
 import { color, fontSize, space } from "../theme/tokens";
 import { ProfileHeader } from "./ProfileHeader";
@@ -30,19 +31,20 @@ type Shown =
 /** The answer for one profile, asked with one token. */
 type Answer = { asked: string; shown: Shown };
 
-export const SIGN_IN_TO_SEE = "Log in to see the profiles of the others.";
-export const NO_SUCH_PROFILE = "This profile is not available.";
+/** In English: shown with `t()` (TASK-210). */
+export const SIGN_IN_TO_SEE = tLater("Log in to see the profiles of the others.");
+export const NO_SUCH_PROFILE = tLater("This profile is not available.");
 
 /** «12 drawings», «1 drawing». */
 export function drawingsText(drawings: number): string {
-  return `${drawings} ${drawings === 1 ? "drawing" : "drawings"}`;
+  return tPlural(drawings, "{count} drawing", "{count} drawings");
 }
 
 /** A profile that could not be shown, in words. */
 export function profileViewProblem(failed: Failed): string {
   // Unknown, deleted, or an API older than TASK-116 that has no profiles.
   if (failed.kind === "api_error" && failed.code === "http_error") {
-    return NO_SUCH_PROFILE;
+    return t(NO_SUCH_PROFILE);
   }
   return accountProblem(failed);
 }
@@ -89,14 +91,14 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
   }, [apiKey, apiUrl, asked, fetchFn, onSessionEnded, publicId, token]);
 
   if (token === null) {
-    return <Text style={styles.message}>{SIGN_IN_TO_SEE}</Text>;
+    return <Text style={styles.message}>{t(SIGN_IN_TO_SEE)}</Text>;
   }
   if (apiUrl === null) {
-    return <Text style={styles.message}>{NO_API}</Text>;
+    return <Text style={styles.message}>{t(NO_API)}</Text>;
   }
   const shown = answer !== null && answer.asked === asked ? answer.shown : null;
   if (shown === null) {
-    return <Text style={styles.message}>Loading the profile…</Text>;
+    return <Text style={styles.message}>{t("Loading the profile…")}</Text>;
   }
   if (shown.kind === "failed") {
     return <Text style={[styles.message, styles.problem]}>{shown.problem}</Text>;

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Activity } from "../api/activities";
+import { t, tPlural } from "../i18n";
 import { useDrawingsDoor } from "../social/drawingsDoor";
 import { waitingText } from "../social/PublicParts";
 import {
@@ -49,9 +50,11 @@ export function ActivitiesList() {
       )}
       {activities.waiting > 0 && (
         <Text style={styles.message}>
-          {activities.waiting === 1
-            ? "1 run is on this phone, waiting for a connection."
-            : `${activities.waiting} runs are on this phone, waiting for a connection.`}
+          {tPlural(
+            activities.waiting,
+            "{count} run is on this phone, waiting for a connection.",
+            "{count} runs are on this phone, waiting for a connection.",
+          )}
         </Text>
       )}
       {activities.waitingPublic > 0 && (
@@ -87,23 +90,23 @@ export function ActivitiesList() {
               }}
             >
               <Text style={styles.buttonText}>
-                {activities.loadingMore ? "Loading…" : "Show more"}
+                {t(activities.loadingMore ? "Loading…" : "Show more")}
               </Text>
             </Pressable>
           )}
         </>
       ) : activities.status === "loading" ? (
-        <Text style={styles.message}>Loading your activities…</Text>
+        <Text style={styles.message}>{t("Loading your activities…")}</Text>
       ) : activities.status === "failed" ? (
         <>
-          <Text style={styles.message}>Your activities could not load.</Text>
+          <Text style={styles.message}>{t("Your activities could not load.")}</Text>
           <Pressable style={styles.button} onPress={refresh} accessibilityRole="button">
-            <Text style={styles.buttonText}>Try again</Text>
+            <Text style={styles.buttonText}>{t("Try again")}</Text>
           </Pressable>
         </>
       ) : (
         <Text style={styles.message}>
-          No activities yet. Save a run when you finish it, and it is kept here.
+          {t("No activities yet. Save a run when you finish it, and it is kept here.")}
         </Text>
       )}
     </View>
@@ -143,7 +146,12 @@ function ActivityRow({
         style={({ pressed }) => [styles.open, pressed && styles.pressed]}
         onPress={onOpen}
         accessibilityRole="button"
-        accessibilityLabel={`${when}, ${where}, ${facts}${isPublic ? ", public" : ""}, open on the map`}
+        accessibilityLabel={t(
+          isPublic
+            ? "{when}, {where}, {facts}, public, open on the map"
+            : "{when}, {where}, {facts}, open on the map",
+          { when, where, facts },
+        )}
       >
         <RunDrawing
           route={activity.route_preview}
@@ -159,40 +167,46 @@ function ActivityRow({
             {where}
           </Text>
           <Text style={styles.facts} numberOfLines={1}>
-            {opening ? "Opening…" : facts}
+            {opening ? t("Opening…") : facts}
           </Text>
           {activity.score !== null && (
             <Text
               style={styles.detail}
-              accessibilityLabel={`Score: ${activity.score} out of 100`}
+              accessibilityLabel={t("Score: {score} out of 100", {
+                score: activity.score,
+              })}
             >
-              {`Score ${activity.score}`}
+              {t("Score {score}", { score: activity.score })}
             </Text>
           )}
           {isPublic && (
             <Text style={styles.mark} testID="activity-public">
-              Public
+              {t("Public")}
             </Text>
           )}
         </View>
       </Pressable>
       {confirming ? (
         <View style={styles.confirm}>
-          <Text style={styles.confirmText}>Delete this run? It cannot be undone.</Text>
+          <Text style={styles.confirmText}>
+            {t("Delete this run? It cannot be undone.")}
+          </Text>
           <View style={styles.confirmButtons}>
             <Pressable
               style={[styles.button, styles.half]}
               onPress={onKeep}
               accessibilityRole="button"
             >
-              <Text style={styles.buttonText}>Keep it</Text>
+              <Text style={styles.buttonText}>{t("Keep it")}</Text>
             </Pressable>
             <Pressable
               style={[styles.button, styles.half, styles.danger]}
               onPress={onDelete}
               accessibilityRole="button"
             >
-              <Text style={[styles.buttonText, styles.dangerText]}>Delete run</Text>
+              <Text style={[styles.buttonText, styles.dangerText]}>
+                {t("Delete run")}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -201,10 +215,10 @@ function ActivityRow({
           style={styles.quiet}
           onPress={onAsk}
           accessibilityRole="button"
-          accessibilityLabel={`Delete the run of ${when}`}
+          accessibilityLabel={t("Delete the run of {when}", { when })}
           hitSlop={space.sm}
         >
-          <Text style={styles.dangerText}>Delete</Text>
+          <Text style={styles.dangerText}>{t("Delete")}</Text>
         </Pressable>
       )}
     </View>

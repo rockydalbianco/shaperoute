@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityDetail } from "../api/activities";
+import { t } from "../i18n";
 import { PublicRow } from "../social/PublicRow";
 import { StravaActivityRow } from "../strava/StravaActivityRow";
 import {
@@ -44,36 +45,46 @@ export function ActivityCard({ activity, onList, onDelete }: Props) {
           <View
             style={styles.scoreBox}
             accessible
-            accessibilityLabel={`Score: ${activity.score} out of 100`}
+            accessibilityLabel={t("Score: {score} out of 100", {
+              score: activity.score,
+            })}
           >
             <Text style={styles.score}>{activity.score}</Text>
-            <Text style={styles.message}>out of 100</Text>
+            <Text style={styles.message}>{t("out of 100")}</Text>
           </View>
         )}
       </View>
       <Text style={styles.facts}>{runFacts(activity)}</Text>
       <Text style={styles.message}>
-        {withRoute ? "Yellow: the route. White: what you ran." : "White: what you ran."}
+        {t(
+          withRoute
+            ? "Yellow: the route. White: what you ran."
+            : "White: what you ran.",
+        )}
       </Text>
       {!confirming && <PublicRow activityKey={activity.id} />}
       {!confirming && <StravaActivityRow activity={activity} />}
       {confirming ? (
         <>
-          <Text style={styles.confirmText}>Delete this run? It cannot be undone.</Text>
+          <Text style={styles.confirmText}>
+            {t("Delete this run? It cannot be undone.")}
+          </Text>
           <View style={styles.buttons}>
             <Pressable
               style={styles.button}
               onPress={() => setConfirming(false)}
               accessibilityRole="button"
             >
-              <Text style={styles.buttonText}>Keep it</Text>
+              <Text style={styles.buttonText}>{t("Keep it")}</Text>
             </Pressable>
             <Pressable
               style={[styles.button, styles.danger]}
               onPress={onDelete}
               accessibilityRole="button"
             >
-              <Text style={[styles.buttonText, styles.dangerText]}>Delete run</Text>
+              <Text style={[styles.buttonText, styles.dangerText]}>
+                {t("Delete run")}
+              </Text>
             </Pressable>
           </View>
         </>
@@ -84,10 +95,10 @@ export function ActivityCard({ activity, onList, onDelete }: Props) {
             onPress={() => setConfirming(true)}
             accessibilityRole="button"
           >
-            <Text style={[styles.buttonText, styles.dangerText]}>Delete</Text>
+            <Text style={[styles.buttonText, styles.dangerText]}>{t("Delete")}</Text>
           </Pressable>
           <Pressable style={styles.button} onPress={onList} accessibilityRole="button">
-            <Text style={styles.buttonText}>Back to the list</Text>
+            <Text style={styles.buttonText}>{t("Back to the list")}</Text>
           </Pressable>
         </View>
       )}

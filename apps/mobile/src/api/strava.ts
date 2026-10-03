@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import { type AccountOutcome, ask } from "./accounts";
 
 /**
@@ -191,29 +192,29 @@ export function stravaProblem(outcome: StravaOutcome<unknown>): string | null {
     return null;
   }
   if (outcome.kind === "unreachable") {
-    return "No connection. Try again when you are online.";
+    return t("No connection. Try again when you are online.");
   }
   if (outcome.kind === "api_error") {
     if (outcome.code === "session_expired" || outcome.code === "not_signed_in") {
-      return "Your session has ended. Log in again.";
+      return t("Your session has ended. Log in again.");
     }
     if (outcome.code === "too_many_requests") {
-      return "Strava is taking no more runs for now. Try again later.";
+      return t("Strava is taking no more runs for now. Try again later.");
     }
     if (outcome.code === "invalid_request") {
-      return "Strava could not read this run.";
+      return t("Strava could not read this run.");
     }
     if (outcome.http === 409) {
-      return "Strava is not connected. Connect it and try again.";
+      return t("Strava is not connected. Connect it and try again.");
     }
     if (outcome.http === 404) {
-      return "This run is no longer in your activities.";
+      return t("This run is no longer in your activities.");
     }
     if (outcome.http === 503) {
-      return "Strava is not available on this API.";
+      return t("Strava is not available on this API.");
     }
   }
-  return "Strava did not answer. Try again in a while.";
+  return t("Strava did not answer. Try again in a while.");
 }
 
 function isEmpty(body: unknown, status: number): body is null {

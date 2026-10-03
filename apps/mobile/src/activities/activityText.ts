@@ -1,4 +1,5 @@
 import { favoriteTitle } from "../favorites/favoriteRoute";
+import { t, tLater } from "../i18n";
 import { clockLabel, kmLabel, paceLabel } from "../navigation/freeRun";
 
 /**
@@ -6,20 +7,29 @@ import { clockLabel, kmLabel, paceLabel } from "../navigation/freeRun";
  * it drew, how far and how fast. The moment is read on the phone's clock.
  */
 
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+// In English; shown with t() in the app's language (TASK-210).
+const DAYS = [
+  tLater("Sun"),
+  tLater("Mon"),
+  tLater("Tue"),
+  tLater("Wed"),
+  tLater("Thu"),
+  tLater("Fri"),
+  tLater("Sat"),
+];
 const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  tLater("Jan"),
+  tLater("Feb"),
+  tLater("Mar"),
+  tLater("Apr"),
+  tLater("May"),
+  tLater("Jun"),
+  tLater("Jul"),
+  tLater("Aug"),
+  tLater("Sep"),
+  tLater("Oct"),
+  tLater("Nov"),
+  tLater("Dec"),
 ];
 
 function two(value: number): string {
@@ -33,7 +43,13 @@ export function dayLabel(startedAt: string): string {
   if (Number.isNaN(when.getTime())) {
     return "";
   }
-  return `${DAYS[when.getDay()]} ${when.getDate()} ${MONTHS[when.getMonth()]} ${when.getFullYear()}`;
+  // One text, so a language can put the day and the month in its own order.
+  return t("{weekday} {day} {month} {year}", {
+    weekday: t(DAYS[when.getDay()]),
+    day: String(when.getDate()),
+    month: t(MONTHS[when.getMonth()]),
+    year: String(when.getFullYear()),
+  });
 }
 
 /** "Fri 2 Oct 2026 · 08:12": the day and the time the run began, on the
@@ -58,7 +74,7 @@ export function whereAndWhat(
   const parts = [run.place, withRoute ? favoriteTitle(run) : null].filter(
     (part): part is string => part !== null && part !== "",
   );
-  return parts.length > 0 ? parts.join(" · ") : "Run";
+  return parts.length > 0 ? parts.join(" · ") : t("Run");
 }
 
 /** "4.01 km · 19:00 · 4:44 /km": distance, time and average pace; no pace

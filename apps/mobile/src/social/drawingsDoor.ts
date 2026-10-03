@@ -26,6 +26,7 @@ import {
   saveDrawing,
   worthAgain,
 } from "../api/drawings";
+import { t } from "../i18n";
 import { keepForDrawing, waitingDrawing } from "./drawingOutbox";
 
 /** What the owner chose for a run, as a run of «My activities» shows it. */
@@ -267,7 +268,7 @@ export function useDrawingsOf(
           setOpenProblem(
             // Made private, or deleted, since the page came.
             outcome.kind === "api_error" && outcome.code === "http_error"
-              ? "This drawing is no longer public."
+              ? t("This drawing is no longer public.")
               : (drawingProblem(outcome) ?? ""),
           );
         },

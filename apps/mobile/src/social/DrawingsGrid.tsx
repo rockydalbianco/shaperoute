@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { accountProblem } from "../account/messages";
 import { dayLabel } from "../activities/activityText";
 import { RunDrawing } from "../activities/RunDrawing";
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -132,7 +133,7 @@ export function DrawingsGrid({ publicId, own }: Props) {
   return (
     <View style={styles.section} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
       <Text style={styles.title} accessibilityRole="header">
-        Drawings
+        {t("Drawings")}
       </Text>
       {openProblem !== null && (
         <Text style={styles.problem} accessibilityRole="alert">
@@ -147,14 +148,16 @@ export function DrawingsGrid({ publicId, own }: Props) {
             onPress={tryAgain}
             accessibilityRole="button"
           >
-            <Text style={styles.buttonText}>Try again</Text>
+            <Text style={styles.buttonText}>{t("Try again")}</Text>
           </Pressable>
         </>
       ) : shown.kind === "ready" && shown.drawings.length === 0 ? (
         <Text style={styles.message}>
-          {own
-            ? "No public drawings yet. Make a run public in My activities."
-            : "No drawings yet."}
+          {t(
+            own
+              ? "No public drawings yet. Make a run public in My activities."
+              : "No drawings yet.",
+          )}
         </Text>
       ) : shown.kind === "ready" ? (
         <>
@@ -170,9 +173,14 @@ export function DrawingsGrid({ publicId, own }: Props) {
                 onPress={() => open(drawing)}
                 disabled={opening !== null}
                 accessibilityRole="button"
-                accessibilityLabel={`${drawingName(drawing)}${
-                  drawing.score !== null ? `, score ${drawing.score} out of 100` : ""
-                }, open on the map`}
+                accessibilityLabel={
+                  drawing.score !== null
+                    ? t("{title}, score {score} out of 100, open on the map", {
+                        title: drawingName(drawing),
+                        score: drawing.score,
+                      })
+                    : t("{title}, open on the map", { title: drawingName(drawing) })
+                }
                 testID="drawing-cell"
               >
                 <RunDrawing
@@ -182,7 +190,9 @@ export function DrawingsGrid({ publicId, own }: Props) {
                   height={cell}
                 />
                 {drawing.score !== null && (
-                  <Text style={styles.score}>{`Score ${drawing.score}`}</Text>
+                  <Text style={styles.score}>
+                    {t("Score {score}", { score: drawing.score })}
+                  </Text>
                 )}
               </Pressable>
             ))}
@@ -196,7 +206,7 @@ export function DrawingsGrid({ publicId, own }: Props) {
               accessibilityState={{ disabled: loadingMore, busy: loadingMore }}
             >
               <Text style={styles.buttonText}>
-                {loadingMore ? "Loading…" : "Show more"}
+                {t(loadingMore ? "Loading…" : "Show more")}
               </Text>
             </Pressable>
           )}

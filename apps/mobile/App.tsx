@@ -46,6 +46,7 @@ import {
 } from "./src/favorites/favoriteRoute";
 import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
 import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
+import { useLanguage } from "./src/i18n/useLanguage";
 import { MapView } from "./src/map/MapView";
 import {
   canResume,
@@ -167,6 +168,8 @@ function leftFreeRun(): FreeFinished | null {
 }
 
 export default function App() {
+  // A new language from «Settings» renders the whole app again in it (TASK-210).
+  useLanguage();
   return (
     <SafeAreaProvider>
       {/* The account, and «Profile» over the app (TASK-115, TASK-154). */}

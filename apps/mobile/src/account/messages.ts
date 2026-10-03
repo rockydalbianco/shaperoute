@@ -1,42 +1,54 @@
 import type { AccountOutcome } from "../api/accounts";
+import { t, tLater } from "../i18n";
 
 /** A request that did not go as asked, in plain words (docs/UI.md). */
 type Failed = Exclude<AccountOutcome<unknown>, { kind: "ok" }>;
 
-const BUG = "The app and the API do not agree (a bug)";
+/** In English: where it is shown, `t(NO_API)` (TASK-210). */
+export const NO_API = tLater(
+  "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.",
+);
 
-export const NO_API =
-  "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.";
-
-/** The session is over (`session_expired`, `not_signed_in`): log in again. */
-export const SESSION_ENDED = "Your session has ended. Log in again.";
+/**
+ * The session is over (`session_expired`, `not_signed_in`): log in again.
+ * In English: where it is shown, `t(SESSION_ENDED)` (TASK-210).
+ */
+export const SESSION_ENDED = tLater("Your session has ended. Log in again.");
 
 /** An account request that failed, in words. */
 export function accountProblem(failed: Failed): string {
   switch (failed.kind) {
     case "unreachable":
-      return `Cannot reach the API at ${failed.url}. Check the connection and try again.`;
+      return t("Cannot reach the API at {url}. Check the connection and try again.", {
+        url: failed.url,
+      });
     case "bad_answer":
-      return `${BUG}: HTTP ${failed.status}.`;
+      return t("The app and the API do not agree (a bug): HTTP {status}.", {
+        status: failed.status,
+      });
     case "api_error":
       switch (failed.code) {
         case "email_taken":
-          return "This email already has an account. Log in instead.";
+          return t("This email already has an account. Log in instead.");
         case "username_taken":
-          return "This username is taken. Try another one.";
+          return t("This username is taken. Try another one.");
         case "wrong_credentials":
-          return "Wrong email or password.";
+          return t("Wrong email or password.");
         case "too_many_requests":
-          return `Too many tries. ${waitText(failed.retryAfterS)}`;
+          return tooManyTries(failed.retryAfterS);
         case "session_expired":
         case "not_signed_in":
-          return SESSION_ENDED;
+          return t(SESSION_ENDED);
         case "accounts_unavailable":
-          return "Accounts are not available on this API: it has no database.";
+          return t("Accounts are not available on this API: it has no database.");
         case "unauthorized":
-          return "The API refused the app's key (EXPO_PUBLIC_API_KEY in apps/mobile/.env).";
+          return t(
+            "The API refused the app's key (EXPO_PUBLIC_API_KEY in apps/mobile/.env).",
+          );
         default:
-          return `${BUG}: ${failed.message}`;
+          return t("The app and the API do not agree (a bug): {message}", {
+            message: failed.message,
+          });
       }
   }
 }
@@ -49,9 +61,12 @@ export function sessionEnded(outcome: AccountOutcome<unknown>): boolean {
   );
 }
 
-function waitText(seconds: number | null): string {
+function tooManyTries(seconds: number | null): string {
   if (seconds === null || seconds <= 60) {
-    return "Wait a minute and try again.";
+    return t("Too many tries. Wait a minute and try again.");
   }
-  return `Wait ${Math.ceil(seconds / 60)} minutes and try again.`;
+  // Always 2 or more: «minutes» in each language.
+  return t("Too many tries. Wait {minutes} minutes and try again.", {
+    minutes: Math.ceil(seconds / 60),
+  });
 }

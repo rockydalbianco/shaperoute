@@ -17,6 +17,7 @@ import {
   saveActivity,
 } from "../api/activities";
 import type { DrawingChoice } from "../api/drawings";
+import { t, tLater } from "../i18n";
 import type { SavedRun } from "../navigation/trackStore";
 import { keepForDrawing, sendWaitingDrawings } from "../social/drawingOutbox";
 import { keepForStrava, sendWaitingToStrava } from "../strava/stravaOutbox";
@@ -108,9 +109,11 @@ export function useActivitiesDoor(): ActivitiesDoor {
   return useContext(ActivitiesContext);
 }
 
-/** What «Profile» says to who ends a run without an account. */
-export const SIGN_IN_TO_KEEP_RUNS =
-  "Sign up or log in to keep your runs and share them as drawings.";
+/** What «Profile» says to who ends a run without an account; shown with
+ * `t(SIGN_IN_TO_KEEP_RUNS)` (TASK-210). */
+export const SIGN_IN_TO_KEEP_RUNS = tLater(
+  "Sign up or log in to keep your runs and share them as drawings.",
+);
 
 type Doors = {
   /** Opens «Profile» on the list of the runs. */
@@ -298,7 +301,7 @@ export function useActivitiesOf(
     void send();
   }, [refreshList, send]);
 
-  const signIn = useCallback(() => onAccount(SIGN_IN_TO_KEEP_RUNS), [onAccount]);
+  const signIn = useCallback(() => onAccount(t(SIGN_IN_TO_KEEP_RUNS)), [onAccount]);
 
   const [opening, setOpening] = useState<string | null>(null);
   const [opened, setOpened] = useState<ActivityDetail | null>(null);
@@ -331,7 +334,7 @@ export function useActivitiesOf(
           setOpenProblem(
             // Deleted from another phone of the account since the list came.
             outcome.kind === "api_error" && outcome.code === "http_error"
-              ? "This run is no longer in your activities."
+              ? t("This run is no longer in your activities.")
               : activityProblem(outcome),
           );
         },

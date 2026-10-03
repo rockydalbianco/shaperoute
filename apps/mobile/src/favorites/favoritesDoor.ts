@@ -11,6 +11,7 @@ import {
 import type { Account } from "../account/useAccount";
 import { sessionEnded } from "../account/messages";
 import { type Favorite, fetchFavorite } from "../api/favorites";
+import { t, tLater } from "../i18n";
 import { type Keepable, type OpenedFavorite, openedFavorite } from "./favoriteRoute";
 import { favoriteProblem, type FavoritesState, useFavorites } from "./useFavorites";
 
@@ -62,8 +63,11 @@ export function useFavoritesDoor(): FavoritesDoor {
   return useContext(FavoritesContext);
 }
 
-/** What «Profile» says to who taps the heart without an account. */
-export const SIGN_IN_TO_KEEP = "Sign up or log in to keep your favorite routes.";
+/** What «Profile» says to who taps the heart without an account; shown
+ * with `t(SIGN_IN_TO_KEEP)` (TASK-210). */
+export const SIGN_IN_TO_KEEP = tLater(
+  "Sign up or log in to keep your favorite routes.",
+);
 
 type Doors = {
   /** Opens «Profile»: on the list, or on the account with a line that says why. */
@@ -93,7 +97,7 @@ export function useFavoritesOf(
     (route: Keepable) => {
       if (token === null) {
         waiting.current = route;
-        onProfile("account", SIGN_IN_TO_KEEP);
+        onProfile("account", t(SIGN_IN_TO_KEEP));
         return;
       }
       toggle(route);

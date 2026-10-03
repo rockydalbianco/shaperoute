@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { t } from "../i18n";
 import { color, fontSize, MIN_TAP_SIZE, radius, space } from "../theme/tokens";
 import type { Keepable } from "./favoriteRoute";
 import { useFavoritesDoor } from "./favoritesDoor";
@@ -35,7 +36,7 @@ export function FavoriteHeart({ route }: Props) {
         style={styles.button}
         onPress={() => favorites.press(route)}
         accessibilityRole="button"
-        accessibilityLabel={kept ? "Remove from favorites" : "Add to favorites"}
+        accessibilityLabel={t(kept ? "Remove from favorites" : "Add to favorites")}
         accessibilityState={{ selected: kept }}
       >
         <Text style={styles.heart}>{kept ? HEART_KEPT : HEART_EMPTY}</Text>

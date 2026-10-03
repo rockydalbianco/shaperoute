@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-na
 
 import type { Favorite } from "../api/favorites";
 import { cardWidth, RouteCard } from "../explore/RouteCard";
+import { t, tLater } from "../i18n";
 import {
   color,
   fontSize,
@@ -15,19 +16,20 @@ import { HEART_EMPTY, HEART_KEPT } from "./FavoriteHeart";
 import { favoriteHeading, favoritePlace, favoriteTitle } from "./favoriteRoute";
 import { useFavoritesDoor } from "./favoritesDoor";
 
+// In English; shown with t() in the app's language (TASK-210).
 const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  tLater("Jan"),
+  tLater("Feb"),
+  tLater("Mar"),
+  tLater("Apr"),
+  tLater("May"),
+  tLater("Jun"),
+  tLater("Jul"),
+  tLater("Aug"),
+  tLater("Sep"),
+  tLater("Oct"),
+  tLater("Nov"),
+  tLater("Dec"),
 ];
 
 /** "Kept 2 Oct 2026", on the phone's clock; "" for a date that is not one. */
@@ -36,12 +38,16 @@ export function keptOn(createdAt: string): string {
   if (Number.isNaN(when.getTime())) {
     return "";
   }
-  return `Kept ${when.getDate()} ${MONTHS[when.getMonth()]} ${when.getFullYear()}`;
+  return t("Kept {day} {month} {year}", {
+    day: String(when.getDate()),
+    month: t(MONTHS[when.getMonth()]),
+    year: String(when.getFullYear()),
+  });
 }
 
 function detailOf(favorite: Favorite, opening: boolean): string {
   if (opening) {
-    return "Opening…";
+    return t("Opening…");
   }
   return favoritePlace(favorite) ?? keptOn(favorite.created_at);
 }
@@ -85,13 +91,17 @@ export function FavoritesList({ margin }: Props) {
                 detail={detailOf(favorite, favorites.opening === favorite.id)}
                 match={favorite.similarity}
                 onPress={() => favorites.open(favorite)}
-                accessibilityLabel={`${favoriteHeading(favorite)}, open on the map`}
+                accessibilityLabel={t("{title}, open on the map", {
+                  title: favoriteHeading(favorite),
+                })}
               />
               <Pressable
                 style={styles.remove}
                 onPress={() => favorites.remove(favorite.id)}
                 accessibilityRole="button"
-                accessibilityLabel={`Remove ${favoriteTitle(favorite)} from favorites`}
+                accessibilityLabel={t("Remove {title} from favorites", {
+                  title: favoriteTitle(favorite),
+                })}
                 hitSlop={space.sm}
               >
                 <Text style={styles.heart}>{HEART_KEPT}</Text>
@@ -100,17 +110,19 @@ export function FavoritesList({ margin }: Props) {
           ))}
         </View>
       ) : favorites.status === "loading" ? (
-        <Text style={styles.message}>Loading your favorites…</Text>
+        <Text style={styles.message}>{t("Loading your favorites…")}</Text>
       ) : favorites.status === "failed" ? (
         <>
-          <Text style={styles.message}>Your favorites could not load.</Text>
+          <Text style={styles.message}>{t("Your favorites could not load.")}</Text>
           <Pressable style={styles.button} onPress={refresh} accessibilityRole="button">
-            <Text style={styles.buttonText}>Try again</Text>
+            <Text style={styles.buttonText}>{t("Try again")}</Text>
           </Pressable>
         </>
       ) : (
         <Text style={styles.message}>
-          {`No favorites yet. Tap ${HEART_EMPTY} on a route on the map to keep it here.`}
+          {t("No favorites yet. Tap {heart} on a route on the map to keep it here.", {
+            heart: HEART_EMPTY,
+          })}
         </Text>
       )}
     </View>

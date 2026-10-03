@@ -108,6 +108,15 @@ export const FR: Table = {
   "{weekday} {day} {month} {year}": "{weekday} {day} {month} {year}",
   Run: "Course",
 
+  // src/api/comments.ts
+  "A comment needs some words.": "Un commentaire a besoin de quelques mots.",
+  "A comment is at most {max} characters.":
+    "Un commentaire fait au plus {max} caractères.",
+  "Too many comments in a minute. Wait a moment and try again.":
+    "Trop de commentaires en une minute. Attends un instant et réessaie.",
+  "The comments of this drawing are not available.":
+    "Les commentaires de ce dessin ne sont pas disponibles.",
+
   // src/api/strava.ts
   "No connection. Try again when you are online.":
     "Pas de connexion. Réessaie quand tu es en ligne.",
@@ -274,6 +283,23 @@ export const FR: Table = {
   // src/social/DrawingCard.tsx
   "Back to the profile": "Retour au profil",
 
+  // src/social/DrawingComments.tsx
+  "Opens the comments of this drawing.": "Ouvre les commentaires de ce dessin.",
+  Comments: "Commentaires",
+  "Delete this comment?": "Supprimer ce commentaire ?",
+  Cancel: "Annuler",
+  "Close the comments": "Fermer les commentaires",
+  Close: "Fermer",
+  "Add a comment…": "Ajouter un commentaire…",
+  Comment: "Commentaire",
+  Post: "Publier",
+  "{count} of {max} characters": "{count} sur {max} caractères",
+  "Loading the comments…": "Chargement des commentaires…",
+  "No comments yet. Be the first.": "Pas encore de commentaires. Écris le premier.",
+  "Show more comments": "Afficher plus de commentaires",
+  "{name}, {ago}: {text}": "{name}, {ago} : {text}",
+  "Touch and hold to delete.": "Maintiens appuyé pour supprimer.",
+
   // src/social/DrawingsGrid.tsx
   Drawings: "Dessins",
   "No public drawings yet. Make a run public in My activities.":
@@ -281,6 +307,17 @@ export const FR: Table = {
   "No drawings yet.": "Pas encore de dessins.",
   "{title}, score {score} out of 100, open on the map":
     "{title}, score {score} sur 100, ouvrir sur la carte",
+
+  // src/social/commentText.ts
+  "You can't write negative comments in this app. Try another app.":
+    "Dans cette app, tu ne peux pas écrire de commentaires négatifs. Change d'app.",
+  "just now": "à l'instant",
+  "{count} min ago": "il y a {count} min",
+  "{count} h ago": "il y a {count} h",
+  "{count} d ago": "il y a {count} j",
+  "Write a comment": "Écrire un commentaire",
+  "{count} comment": "{count} commentaire",
+  "{count} comments": "{count} commentaires",
 
   // src/social/drawingsDoor.ts
   "This drawing is no longer public.": "Ce dessin n'est plus public.",

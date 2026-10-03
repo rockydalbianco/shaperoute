@@ -107,6 +107,15 @@ export const IT: Table = {
   "{weekday} {day} {month} {year}": "{weekday} {day} {month} {year}",
   Run: "Corsa",
 
+  // src/api/comments.ts
+  "A comment needs some words.": "Un commento ha bisogno di qualche parola.",
+  "A comment is at most {max} characters.":
+    "Un commento può avere al massimo {max} caratteri.",
+  "Too many comments in a minute. Wait a moment and try again.":
+    "Troppi commenti in un minuto. Aspetta un momento e riprova.",
+  "The comments of this drawing are not available.":
+    "I commenti di questo disegno non sono disponibili.",
+
   // src/api/strava.ts
   "No connection. Try again when you are online.":
     "Nessuna connessione. Riprova quando sei online.",
@@ -273,6 +282,23 @@ export const IT: Table = {
   // src/social/DrawingCard.tsx
   "Back to the profile": "Torna al profilo",
 
+  // src/social/DrawingComments.tsx
+  "Opens the comments of this drawing.": "Apre i commenti di questo disegno.",
+  Comments: "Commenti",
+  "Delete this comment?": "Eliminare questo commento?",
+  Cancel: "Annulla",
+  "Close the comments": "Chiudi i commenti",
+  Close: "Chiudi",
+  "Add a comment…": "Aggiungi un commento…",
+  Comment: "Commento",
+  Post: "Pubblica",
+  "{count} of {max} characters": "{count} di {max} caratteri",
+  "Loading the comments…": "Carico i commenti…",
+  "No comments yet. Be the first.": "Ancora nessun commento. Scrivi il primo.",
+  "Show more comments": "Mostra altri commenti",
+  "{name}, {ago}: {text}": "{name}, {ago}: {text}",
+  "Touch and hold to delete.": "Tieni premuto per eliminare.",
+
   // src/social/DrawingsGrid.tsx
   Drawings: "Disegni",
   "No public drawings yet. Make a run public in My activities.":
@@ -280,6 +306,17 @@ export const IT: Table = {
   "No drawings yet.": "Ancora nessun disegno.",
   "{title}, score {score} out of 100, open on the map":
     "{title}, punteggio {score} su 100, apri sulla mappa",
+
+  // src/social/commentText.ts
+  "You can't write negative comments in this app. Try another app.":
+    "In questa app non puoi scrivere commenti negativi, cambia app.",
+  "just now": "adesso",
+  "{count} min ago": "{count} min fa",
+  "{count} h ago": "{count} h fa",
+  "{count} d ago": "{count} g fa",
+  "Write a comment": "Scrivi un commento",
+  "{count} comment": "{count} commento",
+  "{count} comments": "{count} commenti",
 
   // src/social/drawingsDoor.ts
   "This drawing is no longer public.": "Questo disegno non è più pubblico.",

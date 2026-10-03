@@ -14,6 +14,7 @@ import { ActivitiesContext, useActivitiesOf } from "../activities/activitiesDoor
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
 import { t } from "../i18n";
 import { ProfilePhotoContext, useProfilePhotoOf } from "../profile/useProfilePhoto";
+import { CommentsContext, useCommentsOf } from "../social/commentsDoor";
 import { DrawingsContext, useDrawingsOf } from "../social/drawingsDoor";
 import { PeopleContext } from "../social/peopleDoor";
 import { LOG_IN_TO_FIND } from "../social/PeopleSearch";
@@ -145,6 +146,9 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     [setPeople],
   );
   const drawings = useDrawingsOf(apiUrl, account, drawingDoors);
+  // What the members write under a drawing (TASK-120): the drawing's card
+  // is in the app, on the map.
+  const comments = useCommentsOf(apiUrl, account);
   const photoUri = photo.uri;
   const attention = state.status === "signedOut" && state.notice === "ended";
   const initial =
@@ -194,7 +198,9 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                       accessibilityElementsHidden={shown}
                       importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
                     >
-                      {children}
+                      <CommentsContext.Provider value={comments}>
+                        {children}
+                      </CommentsContext.Provider>
                     </View>
                     {people !== null && (
                       <PeopleScreen

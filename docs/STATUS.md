@@ -184,8 +184,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   prima vanno rifatte per avere i tratti a mano (Mac da Overpass, server
   dall'estratto). Campioni di Trento giudicati dall'utente: i cerchi da
   «quasi» a «sì», cuori e stelle come prima, 100–660 m a mano. **Parte
-  B, l'API e il contratto** (2026-10-03, branch
-  `feat/TASK-206-bike-on-foot-api`): `on_foot` nel `RouteResult`, coppie
+  B, l'API e il contratto**, in `main` dalla PR #263 (2026-10-03):
+  `on_foot` nel `RouteResult`, coppie
   `[da, a]` di indici nei punti dove si va a mano, anche nelle alternative
   e nell'avvicinamento da una partenza vicina; solo un'aggiunta (vuoto per
   la corsa e la canoa, facoltativo in `shared-types`); i preferiti lo
@@ -255,6 +255,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   del motore: un aggiornamento del server con TASK-203, poi
   `draw_examples`. Poi C (app). Da dove riprendere:
   `tasks/TASK-191.md`, «Esito», parti A2 e B.
+
+- **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:
+  subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API
+  e app in `main` dalla PR #260 (`8a938fd`, 2026-10-03):
+  `GET`/`POST /drawings/{id}/comments` e `DELETE
+  /comments/{id}`, tabella `comments` (migrazione `0013`), al più 10 al
+  minuto, il filtro di TASK-213 (`422 comment_rejected`, l'avviso
+  nell'app). Nell'app, sotto un disegno aperto da un profilo, «Write a
+  comment» / «N comments» apre un foglio dal basso con l'elenco e il campo
+  sopra la tastiera; tieni premuto per cancellare il proprio, o qualsiasi
+  sotto il proprio disegno; i testi anche nelle quattro lingue di TASK-210.
+  Segnalare un commento arriva con TASK-121 (scelta dell'utente).
+  **Aspettano l'utente**: i testi nuovi (`UI.md`),
+  l'aggiornamento del server con la `0013` e la pubblicazione, la prova
+  sull'iPhone con due account. Con TASK-208 A i commenti seguiranno
+  «Followers» (seguito nel task file). Da dove riprendere:
+  `tasks/TASK-120.md`, «Esito».
 
 - **TASK-117 — Pubblicare una corsa salvata** (ADR-0159; scelte
   dell'utente: due PR, il punteggio visibile agli altri, anche le corse

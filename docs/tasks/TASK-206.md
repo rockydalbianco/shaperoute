@@ -2,7 +2,7 @@
 
 **Stato**: In corso (parte A, il motore, in `main` dalla PR #249, con i
 campioni di Trento giudicati dall'utente; parte B, l'API e il contratto,
-fatta sul branch `feat/TASK-206-bike-on-foot-api`; C da fare)
+in `main` dalla PR #263; C da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-206-bike-shapes` (parte A)
 **Dipende da**: TASK-190 (la bici: motore, API e app in `main`)
 
@@ -441,7 +441,8 @@ Trento: non è la rete della bici.
 ### Parte B — 2026-10-03
 
 Fatta come «Cosa fare» 7–9, più i preferiti (ADR-0167, «Aggiornamento
-(parte B)»), sul branch `feat/TASK-206-bike-on-foot-api`.
+(parte B)»). In `main` dalla PR #263 (CI 5/5 verde), migrazione `0012`
+(la `0011` è di TASK-211 A). Non sul server.
 
 - **Il motore**: `RouteResult.on_foot`, coppie `[da, a]` di indici nei
   punti, compresi tutti e due, una per ogni fila di archi a piedi

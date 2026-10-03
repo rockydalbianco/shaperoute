@@ -20,22 +20,33 @@ l'app mostra e dice le distanze e il passo in quella unità, subito.
   distanze in mi, il passo in min/mi, la voce a ogni miglio invece che a
   ogni km, le distanze brevi (le svolte, «In 50 metres») in piedi.
 
-## Numeri e incroci
+## Numeri e incroci (dal coordinatore, 2026-10-03)
 
-- **TASK-182 e ADR-0149** sono quelli tenuti in `STATUS.md`
-  («Prossimo passo», le voci di «Settings»); il coordinatore li conferma
-  prima che il task parta.
-- **A pezzi, come TASK-210**: tocca file tenuti da altri lavori in corso
-  al 2026-10-03: TASK-191 C (#255: `src/route/`, la distanza di «Draw»,
-  `explore/`, `sport.ts`), TASK-208 (`RunEnd.tsx`, `PublicParts.tsx`,
-  `PublicRow.tsx`), TASK-209 (la voce, i file delle frasi, la pagina
-  «Data» della corsa). La **parte A** prende solo il modulo nuovo e i file
-  liberi; le parti successive gli altri, dopo i loro merge. L'elenco dei
-  file liberi lo dà il coordinatore al via.
-- **Con TASK-210**: i testi nuovi passano da `t()` con le quattro tabelle
+- **TASK-182 e ADR-0149** confermati (tenuti da tempo in `STATUS.md`).
+  Prossimi liberi dopo: TASK-215, ADR-0178.
+- **A pezzi, come TASK-210.** **Liberi per la parte A**: `src/units/`
+  (nuovo), la riga in `src/profile/SettingsPage.tsx`, `src/activities/`
+  tranne `RunEnd.tsx` e `ActivityCard.tsx`, `src/favorites/` tranne
+  `favoriteRoute.ts`, `src/feed/`, `src/explore/` tranne i file di #255.
+- **Tenuti da altri**, per le parti dopo:
+  - **#255**, TASK-191 C (in pausa per scelta dell'utente): `src/route/`
+    (la distanza di «Draw»), `src/explore/recommendedRoutes.ts`,
+    `explored.ts`, `exampleRoutes.ts`, `src/favorites/favoriteRoute.ts`,
+    `src/profile/SettingsPage.test.tsx`;
+  - **#259**, TASK-209 (la voce): `phrases.ts`, `navigator.ts`,
+    `penUp.ts`, `freeRun.ts`, `runControl.ts`, forse `runStats.ts` (vedi il
+    suo «File toccati»), `useNavigation.ts`, `useFreeRun.ts`,
+    `RunDashboard.tsx`, `src/voice/`;
+  - **TASK-208 B**: `RunEnd.tsx`, `ActivityCard.tsx`,
+    `src/social/PublicParts.tsx`, `PublicRow.tsx`;
+  - **TASK-120** (i commenti): la parte app in `src/social/`;
+  - **TASK-214** (il motore sul telefono): più avanti anche
+    `SettingsPage.tsx`; se arriva prima, ci si accorda su righe diverse.
+- **Con TASK-210**: i testi nuovi passano da `t()` con le traduzioni
   (`src/i18n/`, `tables.test.ts`); i numeri con `decimal()`.
 - **Con TASK-209**: la voce dice le distanze nell'unità scelta; le frasi
   dette sono di TASK-209, l'unità la legge da `src/units/`.
+- «#NNN pronta» al coordinatore, che guarda la CI.
 
 ## Contesto da leggere
 
@@ -63,8 +74,10 @@ l'app mostra e dice le distanze e il passo in quella unità, subito.
 2. La riga «Units» in «Settings», sotto «Preferences» dopo «Language»,
    al posto di quella con «Soon»: stesso aspetto e stesso comportamento
    della lingua.
-3. Le unità nei file liberi: «My activities», i preferiti, il feed, i
-   disegni, il profilo; testi nuovi in `t()`.
+3. Le unità nei file liberi (elenco sopra): «My activities» senza la
+   scheda aperta, l'elenco dei preferiti, il feed, le schede di
+   «Explore» libere; testi nuovi in `t()`. Se `SettingsPage.test.tsx` è
+   ancora di #255, il test della riga va in `UnitsSetting.test.tsx`.
 4. Il motore e l'API restano in metri: l'app converte solo per mostrare e
    per leggere quello che si scrive.
 5. ADR-0149, `UI.md`, `STATUS.md`.

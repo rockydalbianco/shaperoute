@@ -37,6 +37,12 @@ MAX_IMAGE_BASE64 = 4 * -(-MAX_IMAGE_BYTES // 3)
 # and last point, indices into the route's points; one fewer than letters.
 Walk = tuple[int, int]
 MAX_WALKS = MAX_WORD_LETTERS - 1
+# A stretch walked with the bike on foot (TASK-206, ADR-0167): its first and
+# last point, indices into the route's points, as a walk.
+Stretch = tuple[int, int]
+# The most a route kept may have (a favorite): far above any drawn, which
+# walk a few blocks on 10-20 km (Trento, TASK-206).
+MAX_ON_FOOT = 1000
 # Each activity has its own distances (TASK-190): "1000–50000 for running,
 # 10000–30000 for cycling".
 DISTANCE_DESCRIPTION = "Target distance in metres, " + ", ".join(
@@ -55,11 +61,18 @@ WALKS_DESCRIPTION = (
     "drawing; in order, the next letter beginning where a walk ends. Empty "
     "for a shape, an image and a word without; missing from an older API."
 )
+ON_FOOT_DESCRIPTION = (
+    "By bike (TASK-206): [from, to] indices into points, both included, of "
+    "each stretch walked with the bike on foot, in order; also in the "
+    "approach from a nearby start. Empty on foot and on the water; missing "
+    "from an older API."
+)
 
 
-def _check_walks(walks: list[Walk], count: int) -> None:
-    """Pydantic's check of `walks` against a route of `count` points."""
-    problem = walks_problem(walks, count)
+def _check_walks(walks: list[Walk], count: int, what: str = "walk") -> None:
+    """Pydantic's check of `walks` against a route of `count` points; also
+    of the stretches with the bike on foot, named by `what`."""
+    problem = walks_problem(walks, count, what)
     if problem is not None:
         raise ValueError(problem)
 
@@ -172,10 +185,15 @@ class RouteResultBody(BaseModel):
     walks: list[Walk] = Field(
         default_factory=list, max_length=MAX_WALKS, description=WALKS_DESCRIPTION
     )
+    # Missing from an older API, and in a GPX request from an older app.
+    on_foot: list[Stretch] = Field(
+        default_factory=list, description=ON_FOOT_DESCRIPTION
+    )
 
     @model_validator(mode="after")
     def _walks_within_points(self) -> Self:
         _check_walks(self.walks, len(self.points))
+        _check_walks(self.on_foot, len(self.points), "stretch on foot")
         return self
 
     @classmethod

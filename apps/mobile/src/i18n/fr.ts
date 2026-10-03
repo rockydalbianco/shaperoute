@@ -252,6 +252,9 @@ export const FR: Table = {
   "Profile pictures are not available on this API yet.":
     "Les photos de profil ne sont pas encore disponibles sur cette API.",
 
+  // src/screens/PeopleScreen.tsx
+  "Find friends": "Trouver des amis",
+
   // src/screens/ProfileLayer.tsx
   "Profile, log in again": "Profil, reconnecte-toi",
   Profile: "Profil",
@@ -318,6 +321,14 @@ export const FR: Table = {
 
   // src/social/drawingsDoor.ts
   "This drawing is no longer public.": "Ce dessin n'est plus public.",
+
+  // src/social/PeopleSearch.tsx
+  "Log in to find your friends.": "Connecte-toi pour trouver tes amis.",
+  "This server cannot look for members yet.":
+    "Ce serveur ne peut pas encore chercher des membres.",
+  Name: "Nom",
+  "Type at least 2 letters of a name.": "Tape au moins 2 lettres d'un nom.",
+  "Nobody has a name like that.": "Personne n'a un nom comme ça.",
 
   // src/strava/StravaActivityRow.tsx
   "Sending to Strava…": "Envoi vers Strava…",

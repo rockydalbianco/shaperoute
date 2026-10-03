@@ -216,19 +216,23 @@ def drawn_m(
     return distance_m - sum(path_length_m(points[a : b + 1]) for a, b in walks)
 
 
-def walks_problem(walks: Sequence[Walk], count: int) -> str | None:
+def walks_problem(walks: Sequence[Walk], count: int, what: str = "walk") -> str | None:
     """Why `walks` cannot belong to a route of `count` points, or None: each
     [from, to] within the points, from ≤ to, in order and not overlapping
-    (one may start where the one before ended)."""
+    (one may start where the one before ended). `what` names them in the
+    message: also the stretches with the bike on foot (TASK-206)."""
     end = 0
     for k, (start, stop) in enumerate(walks):
         if not 0 <= start <= stop < count:
             return (
-                f"walk {k} [{start}, {stop}] is not a stretch of the {count} points "
-                "of the route"
+                f"{what} {k} [{start}, {stop}] is not a stretch of the {count} "
+                "points of the route"
             )
         if start < end:
-            return f"walk {k} [{start}, {stop}] starts before the walk before it ends"
+            return (
+                f"{what} {k} [{start}, {stop}] starts before the {what} before "
+                "it ends"
+            )
         end = stop
     return None
 

@@ -343,6 +343,24 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   again.» e non mostra un altro percorso al suo posto. Un dito che scorre
   sopra una scheda non la apre. Like, commenti e il profilo di chi ha corso
   arrivano con TASK-118.
+  **In cima, sopra i disegni, «Find friends»** (TASK-215, ADR-0178,
+  chiesto dall'utente): un tasto largo come le schede, a forma di campo,
+  con una lente disegnata e il testo grigio; scorre con l'elenco. Apre
+  sopra l'app, come «Profile», la pagina **«Find friends»**: «←», un campo
+  «Name» con la tastiera già aperta e, sotto, gli iscritti trovati, al più
+  20, ognuno con la foto (o l'iniziale) e il nome; mai l'email. La ricerca
+  parte con 2 lettere, 300 ms dopo l'ultima, o subito con il tasto «cerca»
+  della tastiera; sotto le 2 lettere la pagina dice «Type at least 2
+  letters of a name.», mentre cerca «Searching…», senza nessuno «Nobody has
+  a name like that.». Si cerca fra tutti gli iscritti: la lista dei nomi è
+  visibile a chiunque ha un account (TASK-211). Un nome toccato apre il suo
+  profilo (sotto, «Il profilo di un altro iscritto») con il titolo
+  «Profile»; «←» torna ai nomi trovati, con il campo com'era, e un altro «←»
+  a «Feed». Un disegno aperto da quel profilo, chiuso, torna al profilo.
+  **Senza account** il tasto apre «Profile» con «Log in to find your
+  friends.» sopra «Sign up». Un server senza la ricerca (prima della
+  migrazione `0011`) fa dire «This server cannot look for members yet.».
+  Il tasto «Follow» sul profilo è di TASK-211, parte B.
   **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
   chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
   stile dell'app. È una foto, non una mappa da muovere: la fa una pagina
@@ -534,9 +552,9 @@ disegni pubblicati, TASK-117) e la bio; mai l'email. Sotto, **«Drawings»**
 come in «Profile» (sopra), vuota «No drawings yet.»; un disegno toccato si
 apre sulla mappa. Mentre arriva dice «Loading the profile…»; un profilo che
 non c'è, o un'API senza profili, «This profile is not available.»; senza
-account «Log in to see the profiles of the others.». **Nell'app non ci si
-arriva ancora**: la pagina c'è (`UserProfilePage.tsx`) e i test la aprono a
-mano; da dove si apre (il feed, un like, un commento) lo decide l'utente
+account «Log in to see the profiles of the others.». **Ci si arriva da
+«Find friends»** in cima a «Feed» (TASK-215, ADR-0178, sotto); altri
+ingressi (un like, un commento) li decide l'utente
 (`tasks/TASK-116.md`, «Esito»).
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel

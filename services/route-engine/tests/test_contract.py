@@ -35,6 +35,9 @@ def _names(model: type) -> set[str]:
 # are what an older app sends and an older API answers.
 PEN_UP = {"pen_up"}
 WALKS = {"walks"}
+# Added by TASK-206 part B (ADR-0167), optional too: the fixtures written
+# before are what an older API answers.
+ON_FOOT = {"on_foot"}
 
 
 def test_request_fixtures_are_valid_requests() -> None:
@@ -54,12 +57,13 @@ def test_request_fixtures_are_valid_requests() -> None:
 def test_result_fixtures_have_the_result_fields() -> None:
     for name in ("route-result.json", "route-result-word.json"):
         data = _load(name)
-        assert set(data) == _names(RouteResult) - WALKS
+        assert set(data) == _names(RouteResult) - WALKS - ON_FOOT
         points = [tuple(p) for p in data["points"]]
         result = RouteResult(**{**data, "points": points})
         assert result.points[0] == result.points[-1]
         assert (result.shape is None) != (result.word is None)
         assert result.walks == []  # an older API: no walks, one line
+        assert result.on_foot == []  # and nothing walked with the bike
 
 
 def test_a_word_with_the_pen_up_and_its_walks_are_in_the_contract() -> None:
@@ -68,7 +72,7 @@ def test_a_word_with_the_pen_up_and_its_walks_are_in_the_contract() -> None:
     request = RouteRequest(**{**data, "start": tuple(data["start"])})
     assert request.pen_up and request.name == "IO"
     data = _load("route-result-pen-up.json")
-    assert set(data) == _names(RouteResult)
+    assert set(data) == _names(RouteResult) - ON_FOOT
     points = [tuple(p) for p in data["points"]]
     walks = [tuple(w) for w in data["walks"]]
     result = RouteResult(**{**data, "points": points, "walks": walks})
@@ -112,5 +116,31 @@ def test_a_cycling_request_is_a_request_with_the_bike_limits() -> None:
 def test_alternatives_have_the_engine_limit_and_the_result_fields() -> None:
     assert _load("route-alternatives.json") == {"max_alternatives": MAX_ALTERNATIVES}
     for other in _load("route-result.json")["alternatives"]:
-        assert set(other) == _names(RouteResult) - WALKS
+        assert set(other) == _names(RouteResult) - WALKS - ON_FOOT
         assert other["alternatives"] == []
+
+
+def _result(data: dict[str, Any]) -> RouteResult:
+    return RouteResult(
+        **{
+            **data,
+            "points": [tuple(p) for p in data["points"]],
+            "walks": [tuple(w) for w in data["walks"]],
+            "on_foot": [tuple(s) for s in data["on_foot"]],
+            "alternatives": [_result(other) for other in data["alternatives"]],
+        }
+    )
+
+
+def test_a_bike_route_and_where_it_is_walked_are_in_the_contract() -> None:
+    # TASK-206: the stretches with the bike on foot, as indices into the
+    # points like the walks, in the alternatives too.
+    data = _load("route-result-cycling.json")
+    for fields_of in (data, *data["alternatives"]):
+        assert set(fields_of) == _names(RouteResult)
+    result = _result(data)
+    for each in (result, *result.alternatives):
+        assert each.on_foot and each.walks == []
+        assert walks_problem(each.on_foot, len(each.points)) is None
+        assert each.points[0] == each.points[-1]
+        assert any("with the bike on foot" in w for w in each.warnings)

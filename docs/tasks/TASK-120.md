@@ -1,7 +1,7 @@
 # TASK-120 — Commenti
 
 **Stato**: In corso — codice fatto (API e app, una PR); mancano
-l'aggiornamento del server con la migrazione `0012`, la pubblicazione e la
+l'aggiornamento del server con la migrazione `0013`, la pubblicazione e la
 prova sull'iPhone con due account, con l'ok dell'utente
 **Fase**: 4 · **Branch**: `feat/TASK-120-comments`
 **Dipende da**: TASK-117 (i disegni pubblicati) · TASK-213 (il filtro dei
@@ -56,7 +56,7 @@ Sotto un disegno pubblico gli iscritti leggono e scrivono commenti.
 ## File toccati
 
 ```
-services/api/migrations/0012_comments.sql           (nuovo)
+services/api/migrations/0013_comments.sql           (nuovo)
 services/api/shaperoute_api/comments.py             (nuovo)
 services/api/shaperoute_api/app.py
 services/api/shaperoute_api/schemas.py
@@ -87,7 +87,7 @@ docs/tasks/TASK-120.md
 `ApiError`, che ora ha anche il motivo di un commento (una riga).
 `ProfileLayer.tsx`: il provider dei commenti attorno all'app, dove sta la
 scheda del disegno. `test_drawings.py`: lo schema «di prima dei disegni»
-prende le migrazioni prima della loro, non tutte le altre (la `0012` dei
+prende le migrazioni prima della loro, non tutte le altre (la `0013` dei
 commenti vuole la tabella `drawings`; una riga).
 
 ## Fuori scope
@@ -102,7 +102,7 @@ commenti vuole la tabella `drawings`; una riga).
 ## Esito
 
 **2026-10-03, ADR-0175.** API in `comments.py`, tabella `comments`
-(migrazione `0012`: il primo numero libero al merge; legata al disegno,
+(migrazione `0013`: il primo numero libero al merge; legata al disegno,
 `ON DELETE CASCADE` su disegno e account). Li legge e li scrive chi vede
 il disegno; un disegno tornato privato li tiene, visti solo dal
 proprietario. Cancella chi l'ha scritto (anche sotto un disegno tornato
@@ -138,7 +138,7 @@ verde.
 
 **Da chiedere all'utente**: i testi nuovi dell'app (`UI.md`, «I commenti
 di un disegno») e le loro traduzioni; l'ok per aggiornare il server (migrazioni fino alla
-`0012`) e pubblicare l'app; la prova sull'iPhone con due account.
+`0013`) e pubblicare l'app; la prova sull'iPhone con due account.
 
 Seguiti:
 

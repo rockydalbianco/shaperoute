@@ -47,6 +47,7 @@ from route_engine.network import (
     detail_scale,
     first_leg,
     nearest_nodes,
+    on_foot_stretches,
     snap_to_network,
     twice_drawn,
 )
@@ -1150,6 +1151,7 @@ def plan_shape(
         shape=name,
         warnings=warnings,
         walks=list(route.walks),
+        on_foot=on_foot_stretches(graph, route.nodes),
     )
     return Plan(result, found, measures, far)
 

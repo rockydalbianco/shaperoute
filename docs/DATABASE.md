@@ -34,7 +34,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 | `sessions` | hash del token (SHA-256), utente, ultimo uso, scadenza a 90 giorni | TASK-114 |
 | `profile_photos` | utente, JPEG quadrato 256 px | TASK-178 |
 | `generated_routes` | ogni percorso dell'API (ADR-0086): richiesta, tipo (forma, parola, immagine), distanza, somiglianza, linea, **punto di partenza mostrato** (a più di 500 m da quello vero), centro, data; utente se era entrato, se no nessuno | TASK-092 |
-| `favorites` | percorso tenuto fra i preferiti: utente, chiave fatta dall'app sulla linea (unica per utente), città, forma o parola e stile, titolo, distanza chiesta e sulle strade, somiglianza, **linea intera**, data; i tratti a piedi di una parola con la penna alzata (TASK-199) | TASK-171, TASK-199 |
+| `favorites` | percorso tenuto fra i preferiti: utente, chiave fatta dall'app sulla linea (unica per utente), città, forma o parola e stile, titolo, distanza chiesta e sulle strade, somiglianza, **linea intera**, data; i tratti a piedi di una parola con la penna alzata (TASK-199); i tratti con la bici a mano (TASK-206) | TASK-171, TASK-199, TASK-206 |
 | `runs` | corsa salvata: utente, chiave fatta dall'app, percorso pianificato, cosa disegna, traccia (`LineStringM`, M = secondi dall'inizio), pause, inizio, distanza, durata, punteggio, fedeltà, luogo (TASK-172); i tratti a piedi del percorso di una parola con la penna alzata (TASK-199); **traccia tagliata** (senza 200 m all'inizio e alla fine), titolo dato dall'utente, pubblica sì/no (TASK-117) | TASK-172, TASK-199, TASK-117 |
 | `likes` | utente, corsa (coppia unica) | TASK-119 |
 | `comments` | disegno, autore, testo (1–500), data | TASK-120 |
@@ -232,7 +232,23 @@ Migrazione `0011_follows.sql` (TASK-211, ADR-0173):
   proprio account (`API.md`, «Follow»). Gli account di prima non seguono
   nessuno (test con dati sullo schema 0001–0010).
 
-Migrazione `0012_comments.sql` (TASK-120, ADR-0175; il numero è il primo
+Migrazione `0012_favorite_on_foot.sql` (TASK-206, parte B, ADR-0167; il
+numero è il primo libero in `main` quando la PR entra, `AGENTI.md` regola
+10: la `0011` è di TASK-211):
+
+- `favorites` prende `on_foot` (`jsonb`, `NOT NULL`, default `[]`, sempre
+  una lista): dove un percorso in bici si fa con la bici a mano, come
+  `[[da, a], …]`, indici nei punti di `line`, compresi tutti e due, come
+  `RouteResult.on_foot`. Come `walks`: indici e non geometria, la linea
+  resta una sola. Un preferito in bici riaperto ha i suoi tratti a mano
+  sulla mappa e nella voce (TASK-206, parte C).
+- Le righe di prima prendono `[]` dal default, senza riscrivere la
+  tabella: si leggono come prima, senza tratti a mano (test con dati sullo
+  schema senza la migrazione).
+- `runs` non cambia: i tratti a mano non contano per il punteggio, e una
+  corsa salvata non li mostra.
+
+Migrazione `0013_comments.sql` (TASK-120, ADR-0175; il numero è il primo
 libero in `main` al merge):
 
 - `comments`: `id` (`uuid` casuale, chiave: con questo si cancella),

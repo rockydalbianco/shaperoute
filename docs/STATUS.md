@@ -358,12 +358,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   che dà lo stesso `result` di `/route-jobs` (test su Levico; su Trento in
   Pyodide 5–7 s, uguale a CPython). L'aggiornamento del server e le zone
   scritte in anticipo (0,7–0,8 GB, 20–30 min) li chiede il coordinatore
-  all'utente. **Dopo**: B, l'app (Pyodide negli asset,
-  `package.json` e `metro.config.js` con l'ok del coordinatore); C, la riga
-  in «Settings»; D, la prova sull'iPhone. **Aspetta l'utente**: la prova
-  della pagina sull'iPhone (`out/on-phone-engine/`, Safari, «Start the
-  test»). Niente server né pubblicazione. Da dove riprendere:
-  `tasks/TASK-214.md`, «Esito».
+  all'utente. **Parte B, l'app**, nella sua PR: Pyodide 314.0.7 e il
+  motore in due zip fra gli asset (`tools/phone_engine/phone_engine.py`;
+  chi cambia `route_engine` rifà `engine.zip`, la CI lo controlla), una
+  WebView nascosta, le zone scaricate a ogni apertura, il telefono prima
+  fino a 8 km a piedi e 30 in bici, il server come riserva. In Expo Go,
+  nel simulatore, con l'API spenta disegna il cuore da 5 km di Trento.
+  **Dopo**: C, la riga in «Settings»; D, la prova sull'iPhone. **Aspetta
+  l'utente**: i testi dei dati mobili, il tetto del traffico, la
+  «Modalità dati ridotti». Niente server né pubblicazione. Da dove
+  riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
 

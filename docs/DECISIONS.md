@@ -8411,7 +8411,10 @@ primo numero libero in `main` al merge), un modulo nuovo
 (`drawing_photos.py`); `profiles.py` conta i disegni per chi guarda;
 `strava_client.upload` prende `sport_type`; `comments.py` (TASK-120) passa
 a `drawing_seen_sql`, così chi segue legge anche i commenti di un disegno
-«Followers». Le foto pesano sul server: nel database e in ognuna delle 13
-copie di notte (TASK-122), stima in `tasks/TASK-208.md`, «Note per il
+«Followers». Con «Only me» le foto esistono solo sul telefono: cancellando
+l'app o cambiando telefono si perdono. La parte B propone un avviso, con il
+testo da confermare con l'utente (`tasks/TASK-208.md`). Le foto pesano sul
+server: nel database e in ognuna delle 13 copie di notte (TASK-122), stima
+in `tasks/TASK-208.md`, «Note per il
 deploy». Niente sul server né sul telefono senza la parte B e l'ok
 dell'utente.

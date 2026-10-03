@@ -60,6 +60,14 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
   2026-10-03, fra `Canoeing` (la proposta), `Kayaking` e `StandUpPaddling`.
   Prima bici e canoa arrivavano su Strava come «Run»; da TASK-208 A la
   bici è `Ride`.
+- **Un avviso sulle foto delle corse «Only me»** (scelta 6): le foto
+  esistono solo sul telefono. Chi cancella l'app o cambia telefono le
+  perde, e una corsa che torna «Only me» perde le foto sul server. Testo
+  proposto, sotto «Who can see it» quando è «Only me» e la corsa ha foto:
+  «Photos of a run only you can see stay on this phone. Delete the app or
+  change phone and they are gone.». Quando una corsa con foto passa da
+  «Everyone» o «Followers» a «Only me»: «Its photos leave Sgrava and stay
+  only on this phone.». Da confermare con l'utente, e da dirgli il motivo.
 - I testi nuovi: «How did it go?», «Tag people», «Activity» («Run»,
   «Bike», «Paddle»), «Who can see it» («Everyone», «Followers», «Only
   me»), «Add photo». Da far confermare, e da passare a TASK-210 (la
@@ -269,7 +277,11 @@ difetto: chi segue vedeva il disegno e non i suoi commenti. Ora chiede
   disegno si riapre agli altri le rimanda. Un `409` vuol dire che il
   disegno è ancora `only_me` per l'API: la foto resta in coda. Cancellata
   la corsa, l'app cancella le sue foto. Le foto di una corsa privata non
-  passano da un telefono all'altro: da dire nei testi, se l'utente vuole;
+  passano da un telefono all'altro;
+- **Da dire all'utente** prima della parte B: con «Only me» le foto
+  esistono solo sul telefono, quindi cancellando l'app o cambiando
+  telefono si perdono, e una corsa che torna «Only me» perde le foto sul
+  server. L'avviso proposto è in «Proposte dell'agente», da confermare;
 - per i tag si riusa la ricerca degli iscritti di TASK-215,
   `src/social/PeopleSearch.tsx` (#264, ADR-0178), non più un componente
   di TASK-211 B;

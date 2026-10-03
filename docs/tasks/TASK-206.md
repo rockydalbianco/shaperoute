@@ -147,9 +147,24 @@ marciapiede né contromano.
   cancellare il `bike_*.graphml` col suo `.pickle` e rifarlo (sul server
   `prefetch_zones --activity cycling --extract …`, `MAPS.md`, «Le zone
   della bici»; sul Mac da Overpass).
-- **Una zona della bici pesa circa il doppio** (Trento, zona di prova:
-  archi da 36.872 a 77.584): da misurare sul server la memoria dell'API e
-  il picco della costruzione quando si rifà quella di Trento.
+- **Una zona della bici pesa quasi il doppio.** Misurato sul Mac sulla
+  zona lontana di Trento (19 × 19 km), letta dal pickle in un processo
+  nuovo: prima 20.972 nodi e 45.933 archi, 89 MB in memoria, pickle 12 MB,
+  GraphML 26 MB; con la parte A 35.824 nodi e 92.699 archi, **156 MB** in
+  memoria (×1,75), pickle 21 MB, GraphML 49 MB; letta in 0,3 s. **Stima
+  per il server**, dove la zona della bici è di 26 × 26 km (`bike_zone_box`,
+  circa 1,9 volte l'area): la zona di Trento di oggi (41 MB) passa a circa
+  75–80 MB su disco e a **circa 0,3 GB in memoria**; la forbice per una
+  zona della bici di ADR-0153 (0,15–0,6 GB) diventa **0,3–1,1 GB**. L'API
+  tiene in memoria una sola zona della bici (`API.md`, «Grafi»): sul CX33
+  da 8 GB resta posto, ma va guardato `docker stats` dopo la prima
+  richiesta in bici.
+- **Rifare Trento dall'estratto**: oggi 120 s, con un picco di osmium di
+  3,6 GB (TASK-205, il taglio dell'estratto, che non cambia). La parte di
+  OSMnx lavora circa il doppio degli archi: stima **3–4 minuti**, picco di
+  osmium uguale, quello di Python più alto. Con `draw_examples` (circa 35
+  minuti) l'aggiornamento costa circa 40 minuti di server occupato, l'API
+  ferma solo i 15–20 s del riavvio.
 - **Cambia l'impronta del motore**: dopo l'aggiornamento del server va
   rilanciato `draw_examples` (circa 35 minuti, `AGENTI.md` regola 11),
   anche se gli esempi di corsa vengono identici. Un aggiornamento solo dopo

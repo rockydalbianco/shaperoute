@@ -226,8 +226,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   pianificato, il numero di disegni pubblici nel profilo; tabella
   `drawings`, migrazione `0009`. Non ancora sul server: arriva con il
   prossimo aggiornamento, con l'ok dell'utente. **Parte B, l'app**
-  (ADR-0166), fatta il 2026-10-03, in PR dal branch
-  `feat/TASK-117-publish-app`, con le scelte dell'utente: «Public» spento
+  (ADR-0166), in `main` dalla PR #242 (2026-10-03, `18f6d5c`), con le
+  scelte dell'utente: «Public» spento
   a ogni corsa e un solo «Title» a fine corsa (anche il nome su Strava);
   «Public» e «Title» su una corsa aperta; il segno «Public» nell'elenco;
   «Drawings» in «Profile» e nel profilo di un altro, un disegno aperto

@@ -1,8 +1,8 @@
 # TASK-117 — Pubblicare una corsa salvata: i disegni
 
 **Stato**: In corso — parte A (API) in `main` (PR #232); parte B (app)
-fatta, in PR (sessione «Nuova tasca», 2026-10-03); manca la prova
-sull'iPhone
+in `main` (PR #242, 2026-10-03); mancano l'aggiornamento del server, la
+pubblicazione e la prova sull'iPhone, con l'ok dell'utente
 **Fase**: 4 · **Branch**: `feat/TASK-117-publish-runs` (parte A),
 `feat/TASK-117-publish-app` (parte B)
 **Dipende da**: TASK-113, TASK-116, TASK-172 · **ADR**: ADR-0159
@@ -189,7 +189,7 @@ Seguiti:
 - **Il server**: la migrazione e gli endpoint arrivano con il prossimo
   aggiornamento, con l'ok dell'utente.
 
-**Parte B** (2026-10-03, branch `feat/TASK-117-publish-app`, ADR-0166),
+**Parte B** (2026-10-03, PR #242, in `main` come `18f6d5c`, ADR-0166),
 con le risposte dell'utente sopra:
 
 - **Fine corsa**: «Public» (spento a ogni corsa) e «Title» sopra Strava;

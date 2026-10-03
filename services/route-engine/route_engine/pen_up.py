@@ -47,6 +47,7 @@ from route_engine.network import (
     distance_to_segments,
     nearest_nodes,
     snap_to_network,
+    step_cost,
 )
 from route_engine.projection import Point, transform
 from route_engine.validation import InvalidRouteError
@@ -97,7 +98,8 @@ def trace(
     retrace: float,
 ) -> NetworkRoute:
     """The route of `word` written with the pen up, placed as `line`: each
-    letter traced on its own, then the shortest way on foot to the next.
+    letter traced on its own, then the shortest way on foot to the next
+    (by bike, riding rather than with the bike on foot: `step_cost`).
 
     The zones and the corridor are those of the letters together, as if they
     were one shape: a share of their length (`snap_to_network`), finer when
@@ -122,7 +124,7 @@ def trace(
     walks: list[Walk] = []
     for k, piece in enumerate(pieces[1:], start=1):
         try:
-            way = nx.shortest_path(graph, nodes[-1], piece.nodes[0], weight="length")
+            way = nx.shortest_path(graph, nodes[-1], piece.nodes[0], weight=step_cost)
         except nx.NetworkXNoPath:
             raise ShapeNotDrawableError(
                 f"no road leads from the {word.letters[k - 1].char} "

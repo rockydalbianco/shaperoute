@@ -364,6 +364,15 @@ iniziale se non ne ha messa una, o una figura quando non c'è nessuno. «Profile
 con «←»: sotto, forma, distanza e mappa restano come erano. Sulla mappa e
 durante la corsa il pulsante non c'è.
 
+**Lo sport** (TASK-205, ADR-0165, chiesto dall'utente): a sinistra del
+profilo un pulsante tondo uguale mostra l'emoji dello sport scelto (🏃‍♂️
+«Run», 🚴 «Bike»). Toccato apre sotto di sé un piccolo menu con gli sport
+di «Settings»: lo scelto con il «✓», «Paddle» con «Soon» che non si tocca.
+Un tocco su uno sport lo sceglie e chiude il menu; un tocco fuori lo chiude
+senza cambiare niente. È la stessa scelta della sezione «Sport» di
+«Settings» (sotto): cambiata in un posto, cambia anche nell'altro, e
+«Draw» la segue subito. Dove non c'è il profilo non c'è nemmeno lo sport.
+
 **«Profile» senza account**: «Sign up» e «Log in», due pulsanti affiancati.
 «Sign up» chiede email, nome (da 3 a 20 fra lettere, cifre, `_` e `.`),
 password (almeno 8 caratteri) e la casella «I am at least 16» (ADR-0114);
@@ -389,7 +398,8 @@ nessun pulsante dell'account è giallo.
   «Run» (🏃‍♂️), scelto all'inizio, con un «✓» bianco; «Bike» (🚴), che
   si sceglie dal TASK-190; «Paddle» (🛶: canoa, kayak, SUP) con «Soon», che
   non si tocca finché il motore non disegna i suoi percorsi (TASK-191). Uno
-  sport pronto si sceglie con un tocco; la scelta resta sul telefono, non
+  sport pronto si sceglie con un tocco, qui o dal pulsante accanto al
+  profilo (TASK-205, sopra); la scelta resta sul telefono, non
   nell'account, e vale subito, senza riaprire l'app. **Con «Bike»** cambia
   solo «Draw» (sotto, «Forma e distanza»): percorsi su strade da bici, da
   10 a 30 km. «Explore», «Feed» e la schermata della corsa restano quelli

@@ -7797,6 +7797,20 @@ deciso dall'agente su delega dell'utente:
   l'attività di TASK-200 ma senza la parte B tiene il percorso in bici),
   poi come un'app più vecchia di TASK-199 (`asBefore`, che ora toglie
   anche `on_foot`): al più tre `PUT`, solo davanti a un rifiuto.
+- **La voce** (frasi dell'utente; quando e quanto deciso dall'agente,
+  `src/navigation/onFootVoice.ts`): dai metri lungo il percorso del
+  navigatore, come la penna alzata. L'avviso a `ANNOUNCE_M` (50 m) prima
+  del tratto, come una svolta, con i metri che mancano davvero e la
+  lunghezza del tratto; se il primo fix è già sul tratto (un percorso che
+  parte a piedi, un fix in ritardo), la frase senza «Tra … metri», con i
+  metri che restano. «Back on the bike» alla fine, non quando il tratto
+  finisce all'arrivo (lo dice già il navigatore). Due tratti a meno di
+  **30 m** l'uno dall'altro si dicono come uno, e un tratto (anche unito)
+  sotto i **25 m** non si dice, ma sulla mappa c'è: pochi metri contromano
+  non valgono due frasi in pochi secondi. Un fix peggiore di `POOR_FIX_M`
+  non muove niente; un tratto saltato tutto da un fix che salta passa in
+  silenzio. La registrazione non va in pausa. Le parole arrivano dalle
+  tabelle di `src/voice/` (TASK-209).
 - **Non nella parte C**: la fine della corsa non segna i tratti (la corsa
   salvata non ha `on_foot`); un'anteprima di «Favorites» nemmeno.
 - **«Start» in bici e la penna alzata in bici** (domande aperte di

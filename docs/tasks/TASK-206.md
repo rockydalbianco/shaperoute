@@ -166,6 +166,12 @@ pausa e si aggiornerà lei); `src/route/warnings.ts` è libero (non è nel
 diff della #255); `useNavigation.ts` e `src/voice/` dopo il merge della
 #259 («#259 dentro»).
 
+**Avanzamento** (2026-10-03): fatti i punti 1, 2, 3 e 5 (la mappa, la
+scheda, i preferiti) e la logica della voce del punto 4
+(`onFootVoice.ts`, pura, con i suoi test, non ancora collegata); manca,
+dopo la #259, collegarla in `useNavigation.ts` e scrivere le frasi nelle
+cinque tabelle di `src/voice/`.
+
 ### Le domande della parte C
 
 Una per volta, ognuna con una proposta; le risposte qui sotto.

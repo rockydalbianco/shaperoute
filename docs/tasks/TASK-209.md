@@ -44,6 +44,18 @@ dell'app», in «Settings», le stesse cinque lingue).
   segue la lingua dell'app se in «Data» non se ne sceglie un'altra. Le
   frasi della voce sono di TASK-209, i testi dell'interfaccia di TASK-210,
   che non tocca i file delle frasi finché TASK-209 non è in `main`.
+- **Cosa espone `src/i18n/`** (da TASK-210, 2026-10-03, accettato così):
+  `languages.ts`: `type Language = "en" | "de" | "it" | "es" | "fr"`,
+  `LANGUAGES: readonly { id; name /* nel suo nome */; speech /* "en-US",
+  "de-DE", "it-IT", "es-ES", "fr-FR" */ }[]` in ordine English, Deutsch,
+  Italiano, Español, Français, `BASE_LANGUAGE = "en"`, `isLanguage()`;
+  `language.ts`: `appLanguage()`, `subscribeLanguage(listener)` (come
+  `subscribeSport`); `useLanguage.ts`: `useLanguage()`. Sotto jest la lingua
+  è sempre `"en"`: per provarne un'altra, `jest.mock` di `src/i18n/language`.
+  TASK-210 entra in `main` **prima**; questo branch si allinea dopo.
+  `instruction()` (il banner) resta a TASK-209 in questa fase; dopo il
+  merge i testi scritti dei file delle frasi e di `RunDashboard.tsx` li
+  traduce TASK-210.
 - Quindi: le traduzioni e la scelta della voce in **file nuovi** (per
   esempio `src/voice/`, una tabella per lingua); nei file esistenti solo il
   passaggio della lingua. **Prima di toccare `useNavigation.ts` e i file

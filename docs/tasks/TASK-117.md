@@ -189,7 +189,7 @@ Seguiti:
 - **Il server**: la migrazione e gli endpoint arrivano con il prossimo
   aggiornamento, con l'ok dell'utente.
 
-**Parte B** (2026-10-03, branch `feat/TASK-117-publish-app`, ADR-0165),
+**Parte B** (2026-10-03, branch `feat/TASK-117-publish-app`, ADR-0166),
 con le risposte dell'utente sopra:
 
 - **Fine corsa**: «Public» (spento a ogni corsa) e «Title» sopra Strava;

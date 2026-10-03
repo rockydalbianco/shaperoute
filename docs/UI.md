@@ -381,8 +381,9 @@ aprono le loro pagine (sotto, «Favorites» e «My activities»). Poi la riga
 **«Settings»** (⚙️). Le emoji sono l'unico colore che non viene dai token;
 nessun pulsante dell'account è giallo.
 
-**«Drawings»** (TASK-117, ADR-0159, ADR-0165), in fondo a «Profile»: le
-corse che l'account ha reso pubbliche, come le vedono gli altri, dalla
+**«Drawings»** (TASK-117, ADR-0159, ADR-0166; il codice dei disegni sta
+nella cartella nuova `src/social/`), in fondo a «Profile»: le corse che
+l'account ha reso pubbliche, come le vedono gli altri, dalla
 più recente, tre per riga. Ognuna è la traccia senza i primi e gli ultimi
 200 m, piccola e gialla come i disegni di «Feed», con sotto «Score 87»
 (niente per una corsa senza percorso); venti per volta, poi «Show more».
@@ -602,7 +603,7 @@ telefono dell'account: con un percorso o senza.
   rossa sotto («Strava could not read this run.», «No connection. Try
   again when you are online.»). Un atleta che ha tolto l'accesso da Strava
   torna a «Connect with Strava».
-- **«Public» sulla corsa aperta** (TASK-117, ADR-0159, ADR-0165), sopra
+- **«Public» sulla corsa aperta** (TASK-117, ADR-0159, ADR-0166), sopra
   Strava: l'interruttore **«Public»** («Off» / «On») e il campo
   **«Title»** («Give it a name», al più 60 caratteri), come l'API li ha;
   niente finché l'API non risponde, niente del tutto da un'API senza
@@ -1306,7 +1307,7 @@ mostra le lettere unite da linee dritte sulla base.
   resta nella scheda. Se il telefono non riesce a scrivere la corsa: «This
   run could not be kept on the phone. Try again.», e si resta lì. Nessuno
   dei due è giallo.
-- **«Public» e «Title»** (TASK-117, ADR-0159, ADR-0165), in cima, sopra
+- **«Public» e «Title»** (TASK-117, ADR-0159, ADR-0166), in cima, sopra
   Strava, solo con un account: l'interruttore **«Public»**, **spento a ogni
   corsa** (scelta dell'utente: non ricorda la volta prima); acceso, sotto,
   «Others see it in your profile, without the first and last 200 m.».

@@ -7457,7 +7457,7 @@ test che cercano i numeri per etichetta d'accessibilità non cambiano:
 telefono: su un Android senza quel segno si vedrebbe un quadratino, da
 guardare quando l'app avrà una build Android.
 
-## ADR-0165 — Pubblicare una corsa, l'app: la scelta dopo la corsa, una coda sua senza rete, il disegno sulla mappa come una corsa
+## ADR-0166 — Pubblicare una corsa, l'app: la scelta dopo la corsa, una coda sua senza rete, il disegno sulla mappa come una corsa
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-117, parte B), dentro le **scelte dell'utente** dello stesso giorno:
 «Public» a fine corsa e su una corsa di «My activities», spento a ogni
@@ -7513,7 +7513,13 @@ di «Feed» si aprono già sulla mappa grande); la linea bianca della corsa
 per il disegno (la mappa non si inquadra su una traccia sola).
 
 **Conseguenze**: a fine corsa il campo «Name on Strava» non c'è più
-(«Title» lo sostituisce); su una corsa aperta resta. La griglia nel
+(«Title» lo sostituisce); su una corsa aperta resta. **Aggiorna ADR-0156**,
+«Parte app» (il nome si scrive nell'app prima di «Save», scelta
+dell'utente del 2026-10-02): il nome si scrive ancora prima di «Save», ma
+nel campo «Title», che vale per il disegno e per Strava (scelta
+dell'utente del 2026-10-03); vuoto, l'API dà il suo nome come prima. La
+coda di Strava (`stravaOutbox.ts`) non cambia: riceve il titolo come
+nome, anche per una corsa partita senza rete (`AppDrawings.test.tsx`). La griglia nel
 profilo di un altro c'è, ma nessuno la apre finché TASK-116 non sceglie da
 dove si apre un profilo. Testi nuovi oltre a quelli scelti dall'utente:
 «Saved on the phone. It is sent when you are back online.», «This drawing

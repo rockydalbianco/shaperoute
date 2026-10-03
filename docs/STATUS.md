@@ -214,26 +214,31 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   del motore: un aggiornamento del server con TASK-203, poi
   `draw_examples`. Poi C (app). Da dove riprendere:
   `tasks/TASK-191.md`, «Esito», parti A2 e B.
-- **TASK-204 — La grafica della corsa in corso** (ADR-0163, chiesto
-  dall'utente il 2026-10-03): stessi numeri, comandi e testi di TASK-169;
-  il numero grande col nome sotto, la distanza più grande sotto la mappa,
-  «Pocket» e «Music» tondi con l'icona, «Paused» in una pillola, una barra
-  per ogni km di «Data», interruttori disegnati, la freccia dei banner in
-  un disco, il conto alla rovescia animato. Visto nel simulatore; PR
-  aperta, da pubblicare con l'ok dell'utente. Da dove riprendere:
-  `tasks/TASK-204.md`.
 
 - **TASK-117 — Pubblicare una corsa salvata** (ADR-0159; scelte
   dell'utente: due PR, il punteggio visibile agli altri, anche le corse
-  senza percorso). **Parte A, l'API**, PR #232 in revisione: titolo e «Public» su
-  una corsa di «My activities» (`PUT /me/activities/{key}/drawing`), i
-  disegni di un profilo e un disegno dal suo id, la traccia senza i primi
-  e gli ultimi 200 m e senza il percorso pianificato, il numero di disegni
-  pubblici nel profilo; tabella `drawings`, migrazione nuova. Entra dopo
-  TASK-200. **Parte B, l'app**, dopo TASK-187 (app) e TASK-200. Da dove
-  riprendere: `tasks/TASK-117.md`.
+  senza percorso). **Parte A, l'API**, in `main` (PR #232, 2026-10-03):
+  titolo e «Public» su una corsa di «My activities» (`PUT
+  /me/activities/{key}/drawing`), i disegni di un profilo e un disegno dal
+  suo id, la traccia senza i primi e gli ultimi 200 m e senza il percorso
+  pianificato, il numero di disegni pubblici nel profilo; tabella
+  `drawings`, migrazione `0009`. Non ancora sul server: arriva con il
+  prossimo aggiornamento, con l'ok dell'utente. **Parte B, l'app**, può
+  partire (TASK-187 app e TASK-200 sono in `main`): prima le domande
+  all'utente del task file. Da dove riprendere: `tasks/TASK-117.md`.
 
 ## Completato
+
+- **App** — TASK-204: la grafica della corsa in corso (ADR-0163; chiesto
+  dall'utente il 2026-10-03; PR #233, in `main` dal 2026-10-03). Stessi
+  numeri, comandi e comportamento di TASK-169: il numero grande con il nome
+  sotto, la distanza più grande sotto la mappa, «Pocket» e «Music» tondi
+  con l'icona, «Paused» in una pillola, una barra per ogni km di «Data»,
+  interruttori disegnati, la freccia dei banner in un disco, il conto alla
+  rovescia animato. Visto nel simulatore. L'aspetto e la parola «Pause»,
+  nuova sotto il pulsante, **confermati dall'utente** il 2026-10-03
+  («mi piace, teniamo Pause»), dopo un link di prova (ramo EAS
+  `task-204-test`). Non su `preview`: arriva con il resto di `main`.
 
 - **Motore** — TASK-203: dove va il tempo del piano dalla partenza, e le
   due correzioni che lasciano i percorsi identici (ADR-0162; la PR la apre

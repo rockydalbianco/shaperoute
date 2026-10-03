@@ -207,14 +207,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   del motore: un aggiornamento del server con TASK-203, poi
   `draw_examples`. Poi B (API) e C (app). Da dove riprendere:
   `tasks/TASK-191.md`, «Esito», parte A2.
-- **TASK-204 — La grafica della corsa in corso** (ADR-0163, chiesto
-  dall'utente il 2026-10-03): stessi numeri, comandi e testi di TASK-169;
-  il numero grande col nome sotto, la distanza più grande sotto la mappa,
-  «Pocket» e «Music» tondi con l'icona, «Paused» in una pillola, una barra
-  per ogni km di «Data», interruttori disegnati, la freccia dei banner in
-  un disco, il conto alla rovescia animato. Visto nel simulatore; PR
-  aperta, da pubblicare con l'ok dell'utente. Da dove riprendere:
-  `tasks/TASK-204.md`.
 
 - **TASK-117 — Pubblicare una corsa salvata** (ADR-0159; scelte
   dell'utente: due PR, il punteggio visibile agli altri, anche le corse
@@ -227,6 +219,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-117.md`.
 
 ## Completato
+
+- **App** — TASK-204: la grafica della corsa in corso (ADR-0163; chiesto
+  dall'utente il 2026-10-03; PR #233, in `main` dal 2026-10-03). Stessi
+  numeri, comandi e comportamento di TASK-169: il numero grande con il nome
+  sotto, la distanza più grande sotto la mappa, «Pocket» e «Music» tondi
+  con l'icona, «Paused» in una pillola, una barra per ogni km di «Data»,
+  interruttori disegnati, la freccia dei banner in un disco, il conto alla
+  rovescia animato. Visto nel simulatore. **Da confermare dall'utente**:
+  l'aspetto e la parola «Pause», nuova sotto il pulsante. Non pubblicata:
+  con l'ok dell'utente, con il resto di `main`.
 
 - **Motore** — TASK-203: dove va il tempo del piano dalla partenza, e le
   due correzioni che lasciano i percorsi identici (ADR-0162; la PR la apre

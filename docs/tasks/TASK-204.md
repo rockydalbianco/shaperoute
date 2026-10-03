@@ -1,6 +1,6 @@
 # TASK-204 — La grafica della corsa in corso
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-204-run-screen-look`
 
 ## Obiettivo
@@ -37,14 +37,14 @@ gli stessi comandi e lo stesso comportamento di TASK-169.
 
 ## Criteri di accettazione
 
-- [ ] Nessun testo, numero, comando o comportamento cambiato: i test di
+- [x] Nessun testo, numero, comando o comportamento cambiato: i test di
       TASK-164, 169, 173, 186 passano come sono.
-- [ ] La distanza sotto la mappa è più grande del passo e del tempo (test).
-- [ ] Ogni km di «Data» ha la sua barra, lunga 1 per il più veloce e 0,35
+- [x] La distanza sotto la mappa è più grande del passo e del tempo (test).
+- [x] Ogni km di «Data» ha la sua barra, lunga 1 per il più veloce e 0,35
       per il più lento (test).
-- [ ] Nessun colore scritto a mano: tutto da `src/theme/tokens.ts`; il
+- [x] Nessun colore scritto a mano: tutto da `src/theme/tokens.ts`; il
       giallo solo per il percorso, «Resume» e il conto alla rovescia.
-- [ ] Viste nel simulatore: la corsa, la pausa, «Data» con i km, il conto
+- [x] Viste nel simulatore: la corsa, la pausa, «Data» con i km, il conto
       alla rovescia.
 
 ## File toccati
@@ -77,4 +77,13 @@ docs/STATUS.md                                 (le righe di TASK-204)
 
 ## Esito
 
-*(a fine task)*
+Fatto (PR #233, in `main` dal 2026-10-03): la corsa in corso con il
+nuovo aspetto, visto nel simulatore (corsa, pausa, «Data» con due km, il
+conto alla rovescia in video); 1294 test verdi, nuovi quelli della
+distanza, dei nomi sotto i pulsanti e delle barre dei km. Nessun testo
+cambiato; **una parola nuova sullo schermo**, «Pause» sotto il pulsante
+(prima solo l'etichetta d'accessibilità), da confermare con l'utente
+insieme all'aspetto. Non visto dal vivo: il banner della svolta con il
+disco (stesso codice di quello della partenza, visto). Da guardare con una
+build Android: il carattere «♪» di «Music». Non pubblicata: serve l'ok
+dell'utente.

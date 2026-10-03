@@ -1,7 +1,8 @@
 # TASK-190 — Percorsi in bici
 
-**Stato**: In corso (parti A, B e C fatte nel codice; mancano i campioni
-giudicati dall'utente e la prova vera di una zona della bici sul server)
+**Stato**: In corso (parti A, B e C fatte nel codice; cinque campioni di
+Trento giudicati dall'utente il 2026-10-03; mancano Levico, Padova e il
+cerchio da 20 km, e la prova vera di una zona della bici sul server)
 **Fase**: 4 · **Branch**: `feat/TASK-190-bike-routes` (parte A),
 `feat/TASK-190-bike-api` (parte B), `feat/TASK-190-bike-app` (parte C)
 **Dipende da**: TASK-189 («Sport» in «Settings»: la riga «Bike» da
@@ -95,7 +96,8 @@ preferisce, tre task: i numeri li dà lui).
       restano verdi senza modifiche ai valori attesi). *(Parte A, nel
       motore e quindi nell'API, che usa `RouteRequest`.)*
 - [x] La cache a piedi di una zona non viene usata per la bici.
-- [ ] Campioni in `samples/` giudicati dall'utente. *(Non fatti nella
+- [ ] Campioni in `samples/` giudicati dall'utente. *(2026-10-03: cinque
+      a Trento giudicati, sotto «I campioni»; Levico e Padova mancano. Non fatti nella
       parte A: Overpass rifiuta le connessioni dal Mac, e nessuna zona
       della bici è stata scaricata; nemmeno nella parte B: la prima zona
       vera si fa dall'estratto sul server, con l'ok dell'utente; vedi
@@ -515,6 +517,31 @@ l'attività (`src/favorites/favoriteRoute.ts` rifà le richieste come corse;
 cartella di TASK-199 mentre si scriveva); «Start» su un percorso in bici apre
 la navigazione della corsa (voce e ritmo: «Fuori scope» e domanda 2); gli
 `insights` senza l'attività (parte B).
+
+**I campioni (2026-10-03)**, branch `chore/TASK-190-bike-samples`. Overpass
+ha risposto dal Mac con lo User-Agent di OSMnx (con quello di `curl` o di
+`python-requests` risponde 406: forse era questo, ieri, insieme ai blocchi).
+Una zona della bici per luogo, scaricata una volta per tutti i campioni
+(`bike_45.99510_11.01760_46.13910_11.22520`, 16.569 nodi, 26 s, 21 MB in
+`data/cache` del Mac), poi la CLI come l'API (`--activity cycling --nearby
+3`). Il cuore da 20 km non trova il piano buono e fa la ricerca lontana
+(`FAR_OFFSET_M`, 2 km in più per lato): ha scaricato una seconda zona
+(`bike_45.98280_10.99990_46.15140_11.24290`); al cerchio da 20 km la sua
+zona lontana è più larga ancora di 150 m, e Overpass a quel punto
+rifiutava (dopo quattro richieste grandi, «Connection refused» sulla 443
+anche per Levico e Padova). Per la prossima volta: il riquadro da scaricare
+è quello della ricerca lontana, `zone_area(..., FAR_OFFSET_M)`.
+
+Cinque campioni a Trento (Piazza Duomo), in `samples/LOG.md`, giudicati
+dall'utente (ha confermato la proposta dell'agente, «va bene ma
+migliora»): cuore 10 km «quasi» (0,80, 9,0 km), cerchio 10 km «quasi»
+(0,77, 10,8 km), stella 10 km «no» (0,95, 9,1 km), cuore 20 km «quasi»
+(0,85, 19,2 km), stella 20 km «no» (0,93, 18,0 km); 2–34 s ciascuno. Cosa
+si vede: la forma è rimpicciolita al 53–64% della scala iniziale (la via
+in bici è molto più lunga del contorno), le stelle non si leggono anche
+con un punteggio alto, e i 20 km passano per circa 1 km di gallerie e fino
+a 1,8 km di sterrato. Il miglioramento è un task nuovo. Mancano il cerchio
+da 20 km, Levico e Padova: quando Overpass riapre, una zona per luogo.
 
 ## Note per il deploy
 

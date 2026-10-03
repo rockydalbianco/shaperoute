@@ -1429,6 +1429,9 @@ codice è in `phone_zone_api.py` e `phone_zones.py`.
   zona alla prima richiesta lì.
 - Come per gli altri endpoint vale la chiave `X-API-Key`, se il server ne
   ha una (ADR-0076).
+- **Prima dei telefoni**: `python -m shaperoute_api.phone_zone_api` scrive
+  il file di ogni zona in cache, così nessun telefono aspetta che si scriva
+  (stime di spazio e tempo in `tasks/TASK-214.md`).
 
 ## Eventi delle ricerche (TASK-130, ADR-0101)
 

@@ -14,7 +14,7 @@ from route_engine.network import FileSource
 
 from shaperoute_api import __main__ as entry
 from shaperoute_api.app import create_app
-from shaperoute_api.phone_zone_api import install_phone_zones
+from shaperoute_api.phone_zone_api import install_phone_zones, main, write_all
 from shaperoute_api.phone_zones import SUFFIX, read_zone, zone_name
 
 REPO = Path(__file__).resolve().parents[3]
@@ -110,3 +110,25 @@ def test_the_api_started_from_the_command_line_has_it(
     entry.main(["--cache-dir", str(cache)])
     client = TestClient(served["app"])
     assert client.get("/phone-zones/foot", params=LEVICO).status_code == 200
+
+
+def test_the_server_starts_the_api_from_the_command_line() -> None:
+    """The server runs `python -m shaperoute_api` (Dockerfile, compose.yaml):
+    main() installs /phone-zones; create_app alone would not."""
+    dockerfile = (REPO / "Dockerfile").read_text(encoding="utf-8")
+    assert 'CMD ["python", "-m", "shaperoute_api", ' in dockerfile
+    compose = (REPO / "deploy/compose.yaml").read_text(encoding="utf-8")
+    assert "- python\n      - -m\n      - shaperoute_api\n" in compose
+
+
+def test_every_cached_zone_written_ahead(
+    cache: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (cache / "bike_x.graphml").touch()  # not a zone name: left alone
+    main(["--cache-dir", str(cache)])
+    phone = cache / f"{zone_name('foot', BBOX)}{SUFFIX}"
+    assert phone.exists()
+    assert f"{phone.name}: " in capsys.readouterr().out
+    written = phone.stat().st_mtime_ns
+    assert write_all(cache) == [phone]
+    assert phone.stat().st_mtime_ns == written  # up to date: not written again

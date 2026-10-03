@@ -8385,7 +8385,11 @@ in WebAssembly) e dà lo stesso percorso del Python del Mac.
    `to_request` è copiato da `app.py`, che importa FastAPI, e un test lo
    confronta.
 4. **L'endpoint si installa in `__main__.py`**, dove c'è la cartella delle
-   zone, non in `app.py`.
+   zone, non in `app.py`. Il server parte da lì, con `python -m
+   shaperoute_api` (`Dockerfile`, `compose.yaml`); un test lo controlla.
+5. **`python -m shaperoute_api.phone_zone_api`** scrive in anticipo i file
+   di tutte le zone in cache: 0,7–0,8 GB e 20–30 minuti stimati sul server,
+   un passo da fare con l'ok dell'utente, come `draw_examples`.
 
 **Scartato**: il pickle del server (lega le versioni di NetworkX fra
 server e telefono, ADR-0104, e può eseguire codice quando si legge); il

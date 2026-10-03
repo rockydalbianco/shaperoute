@@ -5,12 +5,17 @@ The file is written once beside the zone (phone_zones.py) and again when the
 zone is newer; its ETag lets the phone ask again and get 304. A point with no
 cached zone around it is a 404: the server draws routes there until a route
 asked of it downloads the zone. Nothing here downloads from Overpass.
+
+`python -m shaperoute_api.phone_zone_api` writes the file of every cached
+zone ahead, so no phone waits for it (with the user's OK, as draw_examples).
 """
 
 from __future__ import annotations
 
+import argparse
 import logging
 import time
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Annotated
 
@@ -104,3 +109,40 @@ def _zone_files(zone: Path) -> list[Path]:
     """The GraphML of the zone and its pickle, when there is one."""
     fast = zone.with_suffix(".pickle")
     return [zone, fast] if fast.exists() else [zone]
+
+
+def write_all(cache_dir: Path) -> list[Path]:
+    """The phone's file of every cached zone, foot and bike; those already
+    up to date are left as they are."""
+    written: list[Path] = []
+    for network, custom_filter in FILTERS.items():
+        source = OsmnxSource(cache_dir, network, custom_filter)
+        for zone in sorted(cache_dir.glob(f"{network}_*.graphml")):
+            if zone_bbox(zone.with_name(f"{zone.stem}{SUFFIX}")) is not None:
+                written.append(phone_file(source, zone))
+    return written
+
+
+def main(argv: Sequence[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        prog="python -m shaperoute_api.phone_zone_api",
+        description="Write the phone's file of every cached zone (TASK-214).",
+    )
+    parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        default=Path("data/cache"),
+        help="the API's cache of zones (default: data/cache)",
+    )
+    args = parser.parse_args(argv)
+    total = 0
+    for path in write_all(args.cache_dir):
+        size = path.stat().st_size
+        total += size
+        print(f"{path.name}: {size / 1e6:.1f} MB")
+    print(f"{total / 1e6:.0f} MB for the phones")
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    main()

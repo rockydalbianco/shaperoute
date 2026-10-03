@@ -234,6 +234,85 @@ inglese li sceglie l'utente; le traduzioni passano da `t()` di TASK-210.
 **D — Prova sull'iPhone**: tempi, memoria, e le stesse impronte del server
 su dieci richieste.
 
+## Il server: avvio, zone, traffico
+
+Note chieste dal coordinatore il 2026-10-03.
+
+**Come parte l'API sul server.** Nel `Dockerfile` è `CMD ["python", "-m",
+"shaperoute_api", "--lan"]`, e in `deploy/compose.yaml` il `command` è
+`python -m shaperoute_api --lan --ai-url …`. Tutti e due passano da
+`main()`, che installa `/phone-zones`; con il solo `create_app`
+l'endpoint non ci sarebbe. Ci sono due test:
+- `test_the_server_starts_the_api_from_the_command_line` legge i due file;
+- `test_the_api_started_from_the_command_line_has_it` avvia `main()` e
+  chiede una zona.
+
+La cartella è `data/cache`, il volume `/app/data/cache`: il file per il
+telefono si scrive lì, accanto alla zona.
+
+**Le zone già sul server, nel formato neutro.**
+
+| | Prima di comprimere | Formato neutro con gzip | Scritta sul Mac in |
+|---|---|---|---|
+| Trento | 19 MB | 7,0 MB | 2,7 s |
+| Milano | 72 MB | 24,9 MB | 12,0 s |
+| Tokyo | 83 MB | 27,9 MB | 14,8 s |
+
+La misura è sui pickle: il file neutro pesa il 34–37% del pickle. Sul Mac
+le 30 zone `foot` in cache fanno 894 MB di pickle, con una mediana di 27 MB.
+
+- **Per le 66 città e la zona bici di Trento**, la stima è **0,7–0,8 GB**
+  sul disco del server, e **20–30 minuti** di calcolo: circa 6 sul Mac, e
+  il server è 3–5 volte più lento (TASK-168).
+- **Il comando** è `python -m shaperoute_api.phone_zone_api`, dentro il
+  container dell'API. Scrive i file di tutte le zone in cache e salta
+  quelli già aggiornati.
+- **Senza questo passo** il file si scrive alla prima richiesta di un
+  telefono, che aspetta: circa 50 s per Milano sul server.
+- **È un passo da fare con l'ok dell'utente**, come `draw_examples`, dopo
+  l'aggiornamento del server con la parte A. Va aggiunto a `DEPLOY.md`
+  F.12 da chi tiene quel file (TASK-122).
+
+**Il traffico del server.**
+
+Quanto scarica un telefono:
+- **al primo avvio** la zona intorno a sé, `foot` e `bike`, più gli esempi:
+  circa 20–40 MB;
+- **le zone in più**, città vicine e più cercate, non arrivano a 2 GB: oggi
+  il server ha in tutto 0,7–0,8 GB di zone. Il limite di 2 GB è lo spazio
+  sul telefono, non quanto si scarica.
+
+Quanto regge il server:
+- **Hetzner** include 20 TB al mese di traffico in uscita (sedi UE, da
+  verificare sul pannello). Nel caso peggiore, con ogni telefono che
+  scarica tutte le zone, cioè 0,8 GB, bastano per circa 25 000 telefoni
+  nuovi al mese.
+- **La banda** è il rischio vero: 1000 telefoni nuovi in un giorno sono
+  circa 0,8 TB, in media 70 Mbit/s, e tolgono rete e disco ai percorsi.
+- **Le zone non cambiano fra i telefoni**: una CDN o uno Storage Box
+  davanti ai file toglierebbe questo traffico al server. È un seguito.
+
+Proposta di tetto, da far confermare all'utente con la parte B:
+- **la propria zona** si scarica sempre;
+- **le zone in più** vanno al massimo a 300 MB al giorno per telefono;
+- **in tutto il server** dà al massimo 300 GB al giorno di zone in più,
+  circa 9 TB al mese. Oltre il tetto risponde `429` con `Retry-After`, e
+  il telefono riprova il giorno dopo.
+
+Il tetto chiede che l'app dica quali richieste sono «in più», per esempio
+con `?prefetch=1`. Si fa nella parte B o in una A2, con un numero di
+migrazione solo se si contano i byte nel database (proposta: in memoria,
+per giorno).
+
+**Gli avvisi con i dati mobili** (parte B; testi da confermare con
+l'utente, in inglese, poi tradotti con `t()`). Proposta:
+- **la prima volta**, una riga sotto la mappa mentre scarica: «Downloading
+  the maps of your area (35 MB) so routes work without signal.»;
+- **in «Settings»**, «Offline maps: 1.2 GB» con «Delete», e sotto «Maps
+  download on Wi-Fi and mobile data.»;
+- **nessun avviso a ogni download**: l'utente ha scelto il download da
+  solo, anche con i dati mobili.
+
 ## Criteri di accettazione
 
 - [ ] Le sei scelte hanno la risposta dell'utente, scritta qui.
@@ -262,7 +341,7 @@ docs/tasks/TASK-214.md, docs/DECISIONS.md (ADR-0177), docs/STATUS.md
 docs/ARCHITECTURE.md, docs/API.md, docs/UI.md
 services/api/shaperoute_api/on_phone.py            (nuovo)
 services/api/shaperoute_api/phone_zones.py         (nuovo)
-services/api/shaperoute_api/phone_zone_api.py      (nuovo)
+services/api/shaperoute_api/phone_zone_api.py      (nuovo, anche il comando)
 services/api/shaperoute_api/__main__.py            (tre righe, al posto di app.py)
 services/api/tests/test_on_phone.py, test_phone_zones.py,
   test_phone_zone_api.py                           (nuovi)
@@ -301,6 +380,8 @@ tools/phone_engine/                                (nuova: build e confronto)
   prima volta accanto alla zona, e di nuovo quando la zona è più recente.
   Ha un ETag, e con `If-None-Match` risponde `304`. Senza zona risponde
   `404`; non scarica mai da Overpass.
+- **Il comando** `python -m shaperoute_api.phone_zone_api` scrive in
+  anticipo i file di tutte le zone in cache (sopra, «Il server»).
 - **`on_phone.py`** fa sul telefono il job di `/route-jobs`: `RouteJobs`
   con un esecutore che lavora subito, `plan_on_phone` (le partenze vicine
   una dopo l'altra) e le zone del telefono (`PhoneZones` dentro

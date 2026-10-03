@@ -644,6 +644,27 @@ dell'utente, parte C»):
   più i casi dell'acqua in `problems`, `distance`, `exampleRoutes`,
   `explored`, `favoriteRoute`, `sport`), tsc, lint, prettier.
 
+**Da dove riprendere** (PR #255 aperta, contesto pulito il 2026-10-03,
+d'accordo col coordinatore): la #255 entra **dopo** il merge della #254
+(TASK-210, la lingua dell'app) e la sua pubblicazione su «preview». Al
+«tocca a te» del coordinatore, nel worktree `.claude/worktrees/TASK-191C`:
+
+1. `git merge origin/main`; nei tre file toccati anche dalla #254
+   (`App.tsx`: `useLanguage`; `SettingsPage.test.tsx`: `AsInTheApp` e
+   «Language, English»; `favoriteRoute.ts`: `shapeName()`, `t("Route")`,
+   `decimal()`) tenere tutte e due le modifiche.
+2. I testi nuovi della canoa in `t()` con le tabelle de/it/es/fr (se
+   mancano, `src/i18n/tables.test.ts` fallisce): `src/paddle/*`, i testi
+   nuovi di `RoutePanel.tsx`, `problems.ts` (`waterProblemText`),
+   `sport.ts` (`withoutRouteLabel`); per le forme `shapeName()`
+   (`src/i18n/shapeNames.ts`), per i km `decimal()`, per i plurali
+   `tPlural()`. Il testo dell'avviso è approvato dall'utente in inglese.
+3. Test, tsc, lint, `npm run format:check`; push; a «Selezione lingua
+   app» l'elenco dei testi messi in `t()`; al coordinatore «#255 CI in
+   corso»; al suo «merge 255» la merge, poi branch cancellato, STATUS, e
+   questa parte «Done» (il task resta aperto per il punto 5 di A2 e
+   l'acqua sul server).
+
 **Visto nel simulatore** (iOS 27, Expo Go, 2026-10-03, senza tocchi: lo
 sport, la pagina e l'avviso messi da righe temporanee in una copia):
 «Draw» con 🛶, «Paddle without a route», «On the water, a shape of the

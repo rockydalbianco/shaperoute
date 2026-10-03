@@ -223,6 +223,14 @@ marciapiede né contromano.
   anche se gli esempi di corsa vengono identici. Un aggiornamento solo dopo
   la parte B, con un nuovo ok dell'utente: server a `main`, zona della bici
   di Trento rifatta, `draw_examples`. Il server non si tocca prima.
+- **La parte B porta una migrazione** (`0011_favorite_on_foot.sql`, ok del
+  coordinatore): `favorites` prende `on_foot`, additiva, default `[]`,
+  senza riscrivere la tabella. La applica l'API da sola all'avvio, come le
+  altre. **Il numero**: anche TASK-211 A ha una migrazione; chi entra per
+  primo in `main` prende `0011`, l'altro rinomina la sua al primo libero
+  (`AGENTI.md` regola 10). L'app che manda `on_foot` nei preferiti (parte
+  C) va pubblicata dopo l'aggiornamento del server: un'API precedente
+  rifiuta il campo.
 
 ## Fuori scope
 

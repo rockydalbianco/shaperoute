@@ -87,7 +87,7 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
    `public_id`) e gli indirizzi delle foto; `GET
    /drawings/{id}/photos/{n}`.
 5. Strava: descrizione e tipo di attività nell'invio (`strava.py`).
-6. Test, `API.md`, `DATABASE.md`, ADR.
+6. Test, `API.md`, `DATABASE.md`, ADR-0170.
 
 ## Parte B — l'app
 

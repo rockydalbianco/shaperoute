@@ -8345,7 +8345,7 @@ confermare con gli altri.
 ## ADR-0177 — Il motore sul telefono: Pyodide nella WebView, le zone come dati, il server come riserva
 **Stato**: Attiva · 2026-10-03 · **scelte dell'utente** le sei di
 `tasks/TASK-214.md`; il resto deciso dall'agente su delega dell'utente
-(TASK-214, parte A).
+(TASK-214, parti A e B).
 
 **Contesto**: l'utente, il 2026-10-03, vuole che l'app usi «la potenza del
 suo telefono, utilizzando anche la sua memoria, scaricando le mappe». La
@@ -8405,8 +8405,59 @@ scaricare Pyodide o il motore dopo l'installazione (regole di Apple).
 
 **Conseguenze**: la zona di Trento pesa 7,0 MB (7,9 il pickle con gzip).
 Il server scrive un file in più per ogni zona chiesta da un telefono.
-L'app (parte B) mette Pyodide fra i suoi asset, con `metro.config.js` e
-`package.json` da concordare con il coordinatore.
+
+**Decisione dell'agente** (parte B, l'app; numeri in `tasks/TASK-214.md`,
+«Esito»):
+1. **Pyodide 314.0.7** (Python 3.14), non 0.28.3. In 0.28.3 Shapely 2.0.7
+   fa fallire il `buffer` della stella da 5 km a Trento, e in Pyodide
+   l'eccezione di GEOS è fatale per Python. In 314.0.7, con Shapely 2.1.2,
+   la stella è identica al Mac, e numpy, networkx e Shapely sono più
+   vicini al server. Resta GEOS 3.12.1: dopo un errore fatale la pagina
+   riparte, e la richiesta va al server.
+2. **Due zip non compressi fra gli asset dell'app**: `pyodide.zip` (21,2
+   MB, nove pacchetti, il lock ridotto, gli SHA-256 scritti nello script)
+   e `engine.zip` (0,6 MB, `route_engine` intero e i moduli che
+   `on_phone` importa). Li scrive `tools/phone_engine/phone_engine.py`.
+   `zip` è già un asset di Metro, quindi niente `metro.config.js`.
+   **Stanno nel repository**, perché `eas update` pubblica il checkout
+   pulito di `origin/main`. Il git cresce di 21 MB una volta, e di 0,6 MB
+   (0,16 compressi) a ogni cambio del motore.
+3. **Un test nella CI** (`tools/phone_engine/test_phone_engine.py`)
+   confronta `engine.zip` con il codice. **Chi cambia `route_engine`, o un
+   modulo dell'API che il telefono importa, rifà lo zip** con `python
+   tools/phone_engine/phone_engine.py engine`: il telefono e il server
+   hanno sempre lo stesso motore.
+4. **`expo-asset` dichiarato** in `apps/mobile/package.json` (~57.0.18):
+   porta gli zip sul disco del telefono. È già nell'albero come modulo
+   dell'SDK, alla stessa versione: non scarica niente di nuovo (ok del
+   coordinatore).
+5. **La pagina legge da file**: XMLHttpRequest sugli zip (in WebKit
+   `fetch` non legge `file:`), le richieste di Pyodide servite dalla
+   memoria, ogni altro indirizzo rifiutato. La WebView legge solo la
+   cartella comune a pagina, zone e zip. Funziona in **Expo Go**, senza
+   build propria.
+6. **Le zone sul telefono**: con il nome dell'API, un indice con ETag,
+   peso e ultimo uso, `If-None-Match`; oltre 2 GB va via la meno usata. A
+   ogni apertura le zone a piedi e in bici intorno alla posizione, con
+   qualunque rete. Le scarica `downloadAsync` di `expo-file-system/legacy`:
+   l'API nuova dei file non dà stato e intestazioni.
+7. **Chi calcola**: il telefono prima, fino a 8 km a piedi e 30 km in
+   bici; il server se il telefono non dà né un percorso né un verdetto del
+   motore. Un verdetto (`shape_not_drawable`, `invalid_request`) si mostra
+   subito, perché il server direbbe lo stesso. Oltre i limiti prima il
+   server, e il telefono solo quando il server non risponde. Il telefono
+   calcola le partenze vicine una dopo l'altra, senza la scadenza del
+   server: un cuore da 10 km impiega 25–117 s sul Mac. I limiti si fissano
+   con l'iPhone (parte D).
+8. **La WebView si arrende in fretta**: una richiesta alla volta. Se iOS la
+   chiude due volte durante un percorso, il telefono smette fino alla
+   prossima apertura; chiusa mentre è ferma non conta.
+
+**Scartato**: Pyodide 0.28.3 e 0.29.5 (Shapely 2.0.7); un `metro.config.js`
+con `wasm`, `whl` e `mjs` fra gli asset (una configurazione per tutta
+l'app, per niente); passare i file alla WebView con `postMessage` (base64,
+tre volte la memoria); gli zip fuori dal repository, costruiti prima di
+pubblicare; `File.downloadFileAsync` (né stato né ETag).
 
 ## ADR-0170 — Pubblicare come su Strava, l'API: chi lo vede in tre valori, una domanda sola per saperlo, foto in posti fissi, campi nuovi che un'app di prima non cancella
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente

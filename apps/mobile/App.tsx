@@ -47,6 +47,8 @@ import {
 } from "./src/favorites/favoriteRoute";
 import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
 import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
+import { PhoneEngineView } from "./src/engine/PhoneEngineView";
+import { usePhoneZones } from "./src/engine/usePhoneZones";
 import { useLanguage } from "./src/i18n/useLanguage";
 import { MapView } from "./src/map/MapView";
 import {
@@ -181,6 +183,8 @@ export default function App() {
       </ProfileLayer>
       {/* The app is dark: light status bar text on any phone setting. */}
       <StatusBar style="light" />
+      {/* Routes drawn on the phone, out of sight (TASK-214). */}
+      <PhoneEngineView />
     </SafeAreaProvider>
   );
 }
@@ -246,6 +250,7 @@ function Sgrava() {
     [activity, drawing],
   );
   const { position, refresh } = useCurrentPosition();
+  usePhoneZones(position, API_URL);
   const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);

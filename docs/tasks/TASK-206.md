@@ -1,9 +1,8 @@
 # TASK-206 — Forme in bici più riconoscibili
 
-**Stato**: In corso (parte A, il motore, in `main` dalla PR #249, con i
-campioni di Trento giudicati dall'utente; parte B, l'API e il contratto,
-in `main` dalla PR #263; parte C, l'app, fatta sul branch
-`feat/TASK-206-bike-on-foot-app`, in PR)
+**Stato**: Done (2026-10-03) — parte A, il motore, PR #249; parte B,
+l'API e il contratto, PR #263; parte C, l'app, PR #269. Sul server A e B
+dalle 12:39Z; l'app con la prossima pubblicazione, con l'ok dell'utente.
 **Fase**: 4 · **Branch**: `feat/TASK-206-bike-shapes` (parte A)
 **Dipende da**: TASK-190 (la bici: motore, API e app in `main`)
 
@@ -491,8 +490,8 @@ Fatta come «Cosa fare» 7–9, più i preferiti (ADR-0167, «Aggiornamento
 ### Parte C — 2026-10-03
 
 Fatta come il «Piano della parte C», con i testi e lo stile scelti
-dall'utente (ADR-0167, «Aggiornamento (parte C)»), sul branch
-`feat/TASK-206-bike-on-foot-app`.
+dall'utente (ADR-0167, «Aggiornamento (parte C)»). In `main` dalla PR
+#269 (CI 5/5 verde, merge `24edb6d`).
 
 - **La mappa**: la linea gialla intera, trattini scuri sopra i tratti a
   mano (token `onFoot`, livello `on-foot` sopra `route`, sotto `stops` e

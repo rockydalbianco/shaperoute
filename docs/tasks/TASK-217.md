@@ -59,9 +59,16 @@ secondo» / «1 second» (le forme di `seconds` del `Phrasebook`).
    «Same pace as the last mile.»). Se TASK-217 entra prima di TASK-182,
    le forme con le miglia le aggiunge TASK-182 insieme al resto della voce
    in miglia: scriverlo nell'esito.
-6. **In bici** (TASK-216): la differenza resta in secondi per km. Se
-   TASK-216 porta la velocità in km/h nella voce dei km, decide lì se il
-   confronto resta in secondi o passa a km/h (da chiedere all'utente).
+6. **In bici** (scelta dell'utente del 2026-10-03): il confronto è in
+   velocità, come la voce dei km in bici di TASK-216, e **senza numeri**:
+   IT «Più veloce del chilometro precedente.» / «Più lento del chilometro
+   precedente.»; EN «Faster than the last kilometre.» / «Slower than the
+   last kilometre.» (scartati «1,5 km/h più veloce» e «km/h meglio»). Il
+   caso «stessa velocità» non l'ha scelto l'utente: proposta dell'agente,
+   **da confermare**, IT «Stessa velocità del chilometro precedente.» / EN
+   «Same speed as the last kilometre.» entro 0,5 km/h. Serve che la
+   navigazione sappia l'attività (TASK-216, punto 1): se TASK-217 entra
+   prima, le frasi della bici le collega TASK-216.
 7. Test deterministici: le tre frasi nelle cinque lingue, il primo km
    senza confronto, il limite dei 2 s, una pausa che non conta, la corsa
    che riprende.
@@ -75,6 +82,7 @@ secondo» / «1 second» (le forme di `seconds` del `Phrasebook`).
 - [ ] Le frasi italiane e inglesi sono quelle approvate; le altre tre
       lingue ci sono, segnate «da confermare».
 - [ ] Vale con un percorso e senza.
+- [ ] In bici il confronto è in velocità e senza numeri (con TASK-216).
 - [ ] Le pause non contano nel tempo di un km.
 - [ ] Test deterministici verdi; `typecheck`, `lint`, `format:check`
       puliti.

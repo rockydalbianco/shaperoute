@@ -29,6 +29,14 @@ della parte C», 4 e 5), con la proposta:
   pausa.» (con «the next letter» / «la lettera successiva» quando la
   lettera non ha nome, come oggi).
 
+- **Il confronto di ogni km col precedente in bici** (TASK-217, scelta
+  dell'utente del 2026-10-03): in velocità e **senza numeri**, IT «Più
+  veloce del chilometro precedente.» / «Più lento del chilometro
+  precedente.», EN «Faster than the last kilometre.» / «Slower than the
+  last kilometre.»; «stessa velocità» entro 0,5 km/h è una proposta
+  dell'agente, da confermare. Se TASK-217 entra prima di questo task, le
+  frasi della bici si collegano qui.
+
 ## Contesto da leggere
 
 - `docs/UI.md`, «La navigazione» e «Il risultato»

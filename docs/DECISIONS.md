@@ -8695,7 +8695,7 @@ la fine della corsa (il passo nel riepilogo), le calorie (stimate per la
 corsa, circa il triplo di quelle in bici), l'incitamento dopo 5 km (in bici
 non c'è: i 5 km non si dicono), la corsa senza percorso in bici.
 
-## ADR-0184 — Il cuore su giallo: il cuore dell'avvio, fermo, in un quadrato giallo, un componente solo
+## ADR-0184 — Il cuore su giallo, segno di Sgrava: il cuore dell'avvio, fermo, in un quadrato giallo, un componente solo
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-221). La richiesta («Dentro l'app, metti il cuore giallo sullo
 sfondo giallo, a fianco al nome sgrava») è dell'utente, come quella dello

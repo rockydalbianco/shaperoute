@@ -222,6 +222,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-205: lo sport accanto al profilo (ADR-0165; chiesto
+  dall'utente il 2026-10-03). Nell'intestazione di «Feed», «Draw» ed
+  «Explore», a sinistra del profilo, un pulsante tondo con l'emoji dello
+  sport scelto; toccato apre un menu con «Run», «Bike» e «Paddle» «Soon».
+  È la stessa scelta di «Settings» (`sport.json`), e «Draw» la segue
+  subito. Visto nel simulatore (iPhone 13 mini); da provare sull'iPhone
+  con la prossima pubblicazione, con l'ok dell'utente. Task file:
+  `tasks/TASK-205.md`.
 - **App** — TASK-204: la grafica della corsa in corso (ADR-0163; chiesto
   dall'utente il 2026-10-03; PR #233, in `main` dal 2026-10-03). Stessi
   numeri, comandi e comportamento di TASK-169: il numero grande con il nome

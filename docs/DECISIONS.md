@@ -8210,9 +8210,9 @@ confermare con gli altri.
 descrizione con «How did it go?»; iscritti taggati cercati per nome; fino a
 tre foto oltre alla mappa; «Who can see it» con «Everyone», «Followers» e
 «Only me», dove «Followers» è chi segue con la richiesta accettata
-(ADR-0173). Un'altra **scelta dell'utente**, chiesta durante il task: la
-descrizione **non passa dal filtro dei commenti negativi** (ADR-0176).
-Numero tenuto dal coordinatore.
+(ADR-0173). Due altre **scelte dell'utente**, chieste durante il task: la
+descrizione **non passa dal filtro dei commenti negativi** (ADR-0176); la
+canoa va su Strava come `StandUpPaddling`. Numero tenuto dal coordinatore.
 
 **Contesto**: fino a TASK-117 un disegno aveva solo `title` e `public`
 (ADR-0159); l'app del 2026-10-03 (ADR-0166) manda `{title, public}` e deve
@@ -8275,9 +8275,9 @@ entrare in `main` prima o dopo questa parte.
 10. **L'attività è della corsa**, `runs.activity`: il `PUT` della corsa la
     prende al primo invio (per difetto `running`, ogni corsa di prima), il
     disegno la cambia. Va a Strava come `sport_type`: `Run`, `Ride`, e
-    `Canoeing` per la canoa (🛶 nell'app; **proposta da confermare con
-    l'utente**, le altre sono `Kayaking` e `StandUpPaddling`). Prima bici
-    e canoa arrivavano su Strava come «Run». Non cambia il punteggio.
+    `StandUpPaddling` per la canoa (**scelta dell'utente**, fra `Canoeing`,
+    la proposta, `Kayaking` e `StandUpPaddling`). Prima bici e canoa
+    arrivavano su Strava come «Run». Non cambia il punteggio.
 11. **Strava prende anche la descrizione**: il corpo di `POST
     /me/activities/{key}/strava` ha `description`, come `name`, perché
     l'app manda Strava prima del disegno (ADR-0166); senza, quella del

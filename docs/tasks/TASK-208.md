@@ -49,10 +49,10 @@ stanno sulla scheda di una corsa in «My activities» (`PublicRow.tsx`).
 - **La scheda di una corsa in «My activities»** ha lo stesso modulo, per
   cambiare dopo (oggi lì ci sono «Public» e «Title»).
 - Al più **10 persone** taggate; descrizione al più **500 caratteri**.
-- **La canoa su Strava** è `Canoeing` (🛶 nell'app); le altre scelte di
-  Strava sono `Kayaking` e `StandUpPaddling`. Proposta della parte A, da
-  confermare (oggi bici e canoa arrivano su Strava come «Run»; da TASK-208
-  A la bici è `Ride`).
+- **La canoa su Strava** è `StandUpPaddling`: **scelta dell'utente** del
+  2026-10-03, fra `Canoeing` (la proposta), `Kayaking` e `StandUpPaddling`.
+  Prima bici e canoa arrivavano su Strava come «Run»; da TASK-208 A la
+  bici è `Ride`.
 - I testi nuovi: «How did it go?», «Tag people», «Activity» («Run»,
   «Bike», «Paddle»), «Who can see it» («Everyone», «Followers», «Only
   me»), «Add photo». Da far confermare, e da passare a TASK-210 (la
@@ -213,7 +213,7 @@ negativi** di ADR-0176. Il titolo neppure.
 - **`runs.activity`**: il `PUT` della corsa prende `activity`, per
   difetto `running`; il disegno la cambia e la mostra.
 - **Strava**: il `sport_type` viene dall'attività (`Run`, `Ride`,
-  `Canoeing`). La descrizione è «How did it go?» seguita dalla riga di
+  `StandUpPaddling`). La descrizione è «How did it go?» seguita dalla riga di
   Sgrava. Viene dal corpo dell'invio (`description`, accanto a `name`) o,
   se manca, dal disegno.
 - **Contratto** (`shared-types`):
@@ -243,8 +243,8 @@ difetto: chi segue vedeva il disegno e non i suoi commenti. Ora chiede
 `drawing_seen_sql('%s')`, con lo stesso valore una volta sola; il test è in
 `test_drawings.py`.
 
-**Da confermare con l'utente**: la canoa su Strava come `Canoeing`
-(«Proposte dell'agente», sopra).
+**Scelta dell'utente** (2026-10-03): la canoa va su Strava come
+`StandUpPaddling` (proposta era `Canoeing`).
 
 **Per la parte B**:
 - per i tag si riusa la ricerca degli iscritti di TASK-215,

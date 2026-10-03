@@ -74,9 +74,9 @@ RECORDED = "Recorded with Sgrava"
 # A name typed in the app longer than this is cut, not refused: the run
 # still goes.
 MAX_NAME = 100
-# What Strava calls each activity of a run (TASK-208): paddling is 🛶 in the
-# app, a canoe.
-SPORT_TYPES = {"running": "Run", "cycling": "Ride", "paddling": "Canoeing"}
+# What Strava calls each activity of a run (TASK-208); paddling as stand-up
+# paddling, the user's choice (2026-10-03).
+SPORT_TYPES = {"running": "Run", "cycling": "Ride", "paddling": "StandUpPaddling"}
 
 STATE_BYTES = 32
 STATE_LIFE = timedelta(minutes=10)

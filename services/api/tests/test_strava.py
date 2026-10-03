@@ -929,7 +929,7 @@ def test_without_a_typed_description_strava_gets_the_drawings(
 
     freehand, drawn = fake.files
     assert freehand["description"] == "Legs heavy.\n\nRecorded with Sgrava"
-    assert freehand["sport_type"] == drawn["sport_type"] == "Canoeing"
+    assert freehand["sport_type"] == drawn["sport_type"] == "StandUpPaddling"
     # No words anywhere: Sgrava's line alone, as before TASK-208.
     assert drawn["description"] == "Drawn with Sgrava"
 

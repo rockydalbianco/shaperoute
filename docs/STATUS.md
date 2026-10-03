@@ -224,8 +224,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   1–3 a 1080 px senza EXIF, lette con il token da
   `/drawings/{id}/photos/{n}`; chi vede cosa con una domanda sola,
   `drawing_seen_sql`; il numero sul profilo è quello che chi guarda vede;
-  a Strava descrizione e tipo (`Run`, `Ride`, `Canoeing`: la canoa da
-  confermare con l'utente); i commenti seguono `drawing_seen_sql`, e
+  a Strava descrizione e tipo (`Run`, `Ride`, e `StandUpPaddling` per la
+  canoa, scelta dell'utente); i commenti seguono `drawing_seen_sql`, e
   questo chiude il seguito di TASK-120 (i commenti di un disegno
   «Followers»). L'app di oggi
   (`public` sì/no) continua a funzionare: i campi nuovi assenti restano

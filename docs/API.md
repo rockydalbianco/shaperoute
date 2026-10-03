@@ -1451,8 +1451,8 @@ posto con i suoi indirizzi).
 - **L'invio** (`POST /me/activities/{key}/strava`): l'API scrive il GPX
   della corsa salvata, con l'orario di ogni punto (`GPX.md`, «La corsa
   fatta»), e lo dà a `POST /uploads` di Strava con `sport_type` dalla sua
-  attività (TASK-208: `Run` a piedi, `Ride` in bici, `Canoeing` in canoa,
-  quest'ultimo da confermare con l'utente),
+  attività (TASK-208: `Run` a piedi, `Ride` in bici, `StandUpPaddling`
+  in canoa, scelta dell'utente),
   `external_id` = la chiave della corsa, il nome e la descrizione. Poi
   guarda l'upload ogni secondo, al più 5 volte: `200` con `status: "sent"`
   e `url` (la pagina dell'attività) appena Strava l'ha letto; se ci mette

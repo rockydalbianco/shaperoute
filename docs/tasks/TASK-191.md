@@ -1,7 +1,8 @@
 # TASK-191 — Percorsi in canoa e paddle
 
-**Stato**: In corso (parte A1 in revisione; A2, B e C da fare)
-**Fase**: 4 · **Branch**: `feat/TASK-191-paddle-routes`
+**Stato**: In corso (A1 fatta; A2 in revisione; B e C da fare)
+**Fase**: 4 · **Branch**: `feat/TASK-191-paddle-routes` (A1),
+`feat/TASK-191-paddle-a2` (A2)
 **Dipende da**: TASK-189 («Sport» in «Settings»: la riga «Paddle» da
 accendere), TASK-177 (la pagina «Settings»). Meglio dopo la parte A e B
 di TASK-190, che aprono `activity` a un secondo valore.
@@ -21,6 +22,15 @@ esempio Lago di Garda, Lago di Como, Jesolo, Riccione».
 - Luoghi d'esempio: **Lago di Garda, Lago di Como, Jesolo, Riccione**.
 - In «Settings» la riga «Paddle» resta «Soon» finché questo task non è
   finito (ADR-0152).
+
+## Scelte dell'utente (2026-10-03, dopo i campioni di A1)
+
+- I nove campioni: «buoni, ma troppo vicini alla riva».
+- **Le distanze: 1–5 km ovunque**; al mare, oltre circa 3 km, l'errore
+  dice a quanti km la forma ci sta (proposte anche 1–3 km al mare e 5 sui
+  laghi, o 1–3 km ovunque).
+- **Al mare la forma sta oltre 200 m dalla riva, sui laghi a 50 m**
+  (proposte anche 200 m ovunque, 100 m ovunque, o 50 m come in A1).
 
 ## Contesto da leggere
 
@@ -148,7 +158,35 @@ docs/STATUS.md
 docs/tasks/TASK-191.md
 ```
 
-Tutto il task (A2, B e C dichiarano i loro):
+**Parte A2** (2026-10-03, ADR-0161):
+
+```
+services/route-engine/route_engine/models.py
+services/route-engine/route_engine/__main__.py
+services/route-engine/route_engine/validation.py
+services/route-engine/route_engine/water.py
+services/route-engine/route_engine/water_fit.py
+services/route-engine/route_engine/paddling.py                 (nuovo)
+services/route-engine/tests/test_paddling.py                   (nuovo)
+services/route-engine/tests/test_water.py
+services/route-engine/tests/test_bike_network.py
+services/route-engine/tests/fixtures/make_water_fixtures.py
+services/route-engine/tests/fixtures/water_coast.json
+samples/LOG.md
+docs/ROUTE_ENGINE.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-191.md
+```
+
+Non nell'elenco previsto di A2, e perché: `water.py` per i 200 m al mare
+(scelta dell'utente), `water_fit.py` per scegliere i centri da cui si
+arriva alla riva (con i 200 m, dietro un frangiflutti la forma non ci
+stava più), `paddling.py` per il piano di una richiesta che la parte B
+chiamerà uguale, `test_bike_network.py` (di TASK-190, con l'ok del
+coordinatore) perché diceva che ogni attività ha una rete in `NETWORKS`.
+
+Tutto il task (B e C dichiarano i loro):
 
 ```
 services/route-engine/route_engine/water.py        (nuovo)
@@ -190,7 +228,8 @@ Una per volta, con una proposta:
 
 1. Il testo dell'avviso di sicurezza (proposta da scrivere nella parte
    C: giubbotto, meteo, regole del posto, distanza dalla riva).
-2. Le distanze: 1–10 km va bene, dopo aver visto i campioni?
+2. ~~Le distanze: 1–10 km va bene, dopo aver visto i campioni?~~
+   Risposta del 2026-10-03: 1–5 km (sopra, «Scelte dell'utente»).
 3. Gli esempi di laghi e mare in «Explore»: una categoria a parte, o i
    luoghi fra le città quando lo sport scelto è «Paddle»?
 4. Il nome nell'app: «Paddle» (canoa, kayak, SUP) o «Canoe»?
@@ -309,3 +348,78 @@ per volta): le distanze della canoa alla luce della tabella di ADR-0154
 l'errore «ci sta a X km»); se stare oltre la fascia dei bagnanti
 (200 m dalla riva al mare in molte ordinanze), che lascerebbe 800 m di
 fascia e forme ancora più piccole.
+
+### Parte A2 — 2026-10-03
+
+**Fatto** (ADR-0161, `ROUTE_ENGINE.md` §7 e §8), i punti 1–4 di «Cosa deve
+fare A2»; il punto 5 (i campioni rifatti e Como) no, sotto.
+
+- **Le scelte dell'utente** (sopra): `DISTANCE_LIMITS_M["paddling"] =
+  (1000, 5000)`; al mare la forma oltre **200 m** dalla riva
+  (`water.SEA_SHORE_MARGIN_M`), sui laghi e dagli scogli 50 m come prima.
+  Il giudizio dei nove campioni è in `samples/LOG.md`.
+- `models.py`: `paddling` in `ACTIVITIES`, `WATER_ACTIVITIES` (le attività
+  senza rete), `check_drawn_on_land`: sull'acqua una parola, un'immagine o
+  un contorno sono `InvalidRequestError`. Non in `SUPPORTED_ACTIVITIES`:
+  l'API la rifiuta come prima finché non arriva la parte B.
+- `paddling.py` (nuovo): `plan_paddling(request, source)` → `WaterPlan`
+  (il `RouteResult` con somiglianza 1, il `WaterRoute`, l'acqua), con la
+  forma a 128 punti e la validazione. La CLI la usa; la parte B la
+  chiamerà uguale.
+- `validation.check_on_water`: chiuso, niente terra, entro 1000 m dalla
+  riva, distanza ±10%; sono errori (`InvalidRouteError`), non warning.
+- `__main__.py`: `--activity paddling` disegna sull'acqua, con l'acqua in
+  `<cache-dir>/water/`; `--score-track` vale, `--nearby` e
+  `--no-optimize` si rifiutano.
+- `water_fit.py`: i tre centri buoni per scala e angolo sono quelli da cui
+  si arriva alla riva col costo minore, non i più vicini alla partenza
+  chiesta (con i 200 m, accanto al frangiflutti della fixture un cuore da
+  2 km «ci stava a 2,2 km»); le scale si saltano e la ricerca si ferma
+  tenendo conto del tratto più corto possibile (al mare 200 m): senza, un
+  piano al mare passava da 0,4 a 5,7 s.
+- Test: `tests/test_paddling.py` (26, la CLI sulle fixture messe in una
+  cartella di cache, nessun download; i limiti; parole e immagini
+  rifiutate; la validazione), `test_water.py` stretto ai 200 m al mare
+  (e 50 m dagli scogli). La coastline della fixture della costa prosegue
+  dritta fino a ±9 km, così taglia l'area intera di una richiesta.
+  Motore: 1178 test verdi (`-m "not network"`, con `main` del 2026-10-03);
+  API: invariata.
+
+**Misurato sulle fixture** (tabella in ADR-0161): al mare la forma sta a
+208–223 m dalla terra, il tratto è di 209–223 m per lato; a 2 km la forma
+è il 79% del giro, a 1 km il 58%; il cuore ci sta fino a 3,0 km, la
+stella a 3,4. Sul lago 1–5 km come in A1.
+
+**Non fatto, il punto 5**: i campioni sull'area intera di una richiesta e
+Como. Le risposte dell'API di OSM scaricate da A1 non ci sono più (erano
+in una cartella temporanea), Overpass dal Mac non è stato provato in A2, e
+il server vuole l'ok dell'utente. I campioni v1 del mare non sono più
+quello che il motore disegna (i 200 m), quelli di Garda vengono da una
+scelta dei centri diversa: da rifare tutti, `v2`, poi il giudizio
+dell'utente in `samples/LOG.md`.
+
+**Criteri di accettazione dopo A2**: dalla CLI, senza rete e senza chiavi,
+sulle fixture, un percorso `paddling` chiuso, dalla riva, mai sulla terra,
+entro 1 km dalla riva: **fatto**. Lontano dall'acqua e forma che non ci
+sta: errori che lo dicono, **fatto** (anche dalla CLI). `running` come
+prima: **fatto**. Campioni dei quattro luoghi giudicati: tre giudicati
+(v1), da rifare con le regole nuove, Como manca. App e API: parti B e C.
+
+**Per la parte B**: `SUPPORTED_ACTIVITIES` e `shared-types` con
+`paddling`; l'API che chiama `paddling.plan_paddling` con un
+`OverpassWaterSource` sulla cache del server (`data/cache/water/`);
+`NoWaterError` e `WaterFitError` sono già `shape_not_drawable`, con
+`best_distance_m` per la distanza suggerita; le immagini con `paddling`
+rifiutate con `check_drawn_on_land` (`ON_WATER_SHAPES_ONLY`); niente
+indicazioni di svolta sull'acqua (non c'è un grafo); le tre alternative
+A · B · C non ci sono (un piano solo).
+
+## Note per il deploy
+
+- A2 cambia l'impronta del motore (`engine_fingerprint()`): dopo
+  l'aggiornamento del server gli esempi tenuti si buttano e va rilanciato
+  `draw_examples` (circa 35 minuti, `AGENTI.md` regola 11), anche se i
+  percorsi di corsa e bici sono identici. Meglio **un aggiornamento solo**
+  con TASK-203, che cambia anche lei l'impronta.
+- Niente da migrare, nessuna variabile nuova. La cartella
+  `data/cache/water/` serve solo quando l'API chiede la canoa (parte B).

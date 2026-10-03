@@ -156,10 +156,12 @@ def test_a_route_on_the_sea_starts_and_ends_on_the_shore(
     away = shapely.distance(shapely.points(dense), coastline)
     assert away.max() <= water.SHORE_BAND_M  # never beyond 1 km
     assert route.farthest_shore_m <= water.SHORE_BAND_M
-    # The shape itself keeps off the shore; only the legs cross the margin.
+    # The shape itself keeps 200 m off the shore at sea (ADR-0161); only the
+    # legs cross the margin.
     ring = _dense(xy[1:-1])
-    assert coastline.distance(LineString(ring)) >= water.SHORE_MARGIN_M - 0.5
-    assert route.nearest_land_m >= water.SHORE_MARGIN_M - 0.5
+    assert coastline.distance(LineString(ring)) >= water.SEA_SHORE_MARGIN_M - 0.5
+    assert route.nearest_land_m >= water.SEA_SHORE_MARGIN_M - 0.5
+    assert route.approach_m >= water.SEA_SHORE_MARGIN_M - 0.5
 
 
 def test_a_route_on_the_lake_keeps_off_its_island(lake: water.WaterArea) -> None:
@@ -317,10 +319,14 @@ def test_the_band_is_within_1_km_of_the_shore_and_off_it(
     points = shapely.points(xs.ravel()[inside], ys.ravel()[inside])
     away = shapely.distance(points, coastline)
     assert inside.sum() > 1000
-    assert away.min() >= water.SHORE_MARGIN_M - 0.5
+    # At sea the band begins 200 m off the shore (ADR-0161).
+    assert away.min() >= water.SEA_SHORE_MARGIN_M - 0.5
     assert away.max() <= water.SHORE_BAND_M
-    # The rock is too small to be a shore: no band 1 km around it out at sea.
+    # The rock is too small to be a shore: no band 1 km around it out at sea,
+    # and it is kept clear of by 50 m, not 200 (radius 25 m).
     assert not band.contains(Point(1500.0, -1700.0))
+    assert band.contains(Point(1500.0, -700.0 - 25.0 - 65.0))
+    assert not band.contains(Point(1500.0, -700.0 - 25.0 - 40.0))
 
 
 def test_the_lake_is_one_polygon_with_its_island(lake: water.WaterArea) -> None:

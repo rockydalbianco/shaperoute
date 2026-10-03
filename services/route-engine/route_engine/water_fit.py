@@ -6,9 +6,10 @@ as all of it lies in the band of `water.WaterArea` (within 1 km of the
 shore, off the shore and the obstacles). The search tries the shape at full
 size and smaller, upright within ±15° (ADR-0038), at every place of a grid
 within reach of the start; keeps, for each scale and angle, the few places
-whose outline passes nearest the start; checks those exactly on the band;
-and joins each to the shore start of lowest cost by a straight leg out and
-back. The cost says how much the shape had to shrink and move.
+whose outline passes where joining it to a shore reachable on foot costs
+least (ADR-0161); checks those exactly on the band; and joins each to the
+shore start of lowest cost by a straight leg out and back. The cost says
+how much the shape had to shrink and move.
 
 Metres on the plane tangent at the requested start, (lat, lon) in and out.
 """
@@ -263,28 +264,54 @@ def _filtered(
     return rows, cols
 
 
+def _join_costs(grid: _Grid, access: np.ndarray, distance_m: float) -> np.ndarray:
+    """For each band cell of `grid`, about what it costs to join a shape
+    that passes there to the shore: the legs out and back to the nearest
+    shore point reachable on foot within MOVE_MAX_M of the start, and the
+    move to that point (LEG_WEIGHT, MOVE_WEIGHT). inf off the band, and
+    everywhere when no such point is (ADR-0161)."""
+    costs = np.full(grid.mask.shape, np.inf)
+    near = access[np.hypot(access[:, 0], access[:, 1]) <= MOVE_MAX_M]
+    if not len(near):
+        return costs
+    tree = shapely.STRtree(shapely.points(near))
+    cells = shapely.points(grid.centre(grid.rows, grid.cols))
+    (found, nearest), legs = tree.query_nearest(cells, return_distance=True)
+    moves = np.hypot(near[nearest, 0], near[nearest, 1])
+    costs[grid.rows[found], grid.cols[found]] = (
+        LEG_WEIGHT * 2 * legs / distance_m + MOVE_WEIGHT * moves / 1000.0
+    )
+    return costs
+
+
 def _promising(
-    centres: np.ndarray, outline: np.ndarray, keep: int, apart_m: float
+    grid: _Grid,
+    join: np.ndarray,
+    centres: np.ndarray,
+    outline: np.ndarray,
+    keep: int,
+    apart_m: float,
 ) -> list[tuple[float, np.ndarray]]:
-    """Up to `keep` centres whose outline passes nearest to the start, at
-    least `apart_m` from each other: (metres to the start, centre). Only a
-    few are checked exactly: the others would cost more for the move."""
+    """Up to `keep` centres, at least `apart_m` from each other, whose
+    outline passes where joining it to the shore costs least (`join`, of
+    _join_costs), the nearest the start among equals: (that cost, centre).
+    Only a few are checked exactly: the others would cost more for the legs
+    or the move."""
     if not len(centres):
         return []
-    radius = float(np.hypot(*outline.T).max())
-    rough = np.hypot(centres[:, 0], centres[:, 1])
-    close = centres[rough <= rough.min() + 2 * radius + apart_m]
-    if len(close) > 4000:
-        close = close[np.argsort(np.hypot(close[:, 0], close[:, 1]))[:4000]]
     sample = outline[:: max(1, len(outline) // 48)]
-    gaps = np.hypot(
-        close[:, None, 0] + sample[None, :, 0], close[:, None, 1] + sample[None, :, 1]
-    ).min(axis=1)
+    xs = centres[:, None, 0] + sample[None, :, 0]
+    ys = centres[:, None, 1] + sample[None, :, 1]
+    rows_n, cols_n = join.shape
+    cols = np.clip(np.floor((xs - grid.x0) / grid.cell).astype(int), 0, cols_n - 1)
+    rows = np.clip(np.floor((ys - grid.y0) / grid.cell).astype(int), 0, rows_n - 1)
+    costs = join[rows, cols].min(axis=1)
+    away = np.hypot(centres[:, 0], centres[:, 1])
     picked: list[tuple[float, np.ndarray]] = []
-    for i in np.argsort(gaps, kind="stable"):
-        centre = close[i]
+    for i in np.lexsort((away, costs)):
+        centre = centres[i]
         if all(math.dist(centre, other) >= apart_m for _, other in picked):
-            picked.append((float(gaps[i]), centre))
+            picked.append((float(costs[i]), centre))
             if len(picked) >= keep:
                 break
     return picked
@@ -393,6 +420,10 @@ def fit_shape(
     grid = _grid(area.band, reach + 2 * radius + cell, cell)
     if grid is None:
         raise WaterFitError(_too_small(name, distance_m))
+    join = _join_costs(grid, area.access, distance_m)
+    # Both legs, as a share of the distance, are at least this long wherever
+    # the shape is: at sea 200 m each (ADR-0161).
+    legs = 2 * _shortest_leg(area) / distance_m
     best: _Found | None = None  # within DISTANCE_TOLERANCE
     best_any: _Found | None = None
     fitted_somewhere = False
@@ -400,8 +431,14 @@ def fit_shape(
     lowest_ok = 1.0 - DISTANCE_TOLERANCE - 2 * APPROACH_MAX_M / distance_m
     levels = np.arange(1.0, MIN_SCALE - 1e-9, -SCALE_STEP)
     for level in levels:
-        if best is not None and 1.0 - level >= best.cost:
-            break  # cost >= 1 - scale: nothing smaller can win
+        if level + legs > 1.0 + DISTANCE_TOLERANCE:
+            continue  # too long with its legs, wherever it is placed
+        # The cost of any placement at this scale is at least this much.
+        lowest = abs(level + legs - 1.0) + LEG_WEIGHT * legs
+        if best is not None and lowest >= best.cost:
+            if level <= 1.0 - legs:
+                break  # smaller shapes only cost more
+            continue
         if best is None and best_any is not None and level < lowest_ok:
             break  # what fits is known, and nothing smaller is within tolerance
         for angle in rotations(free_rotation):
@@ -409,7 +446,7 @@ def fit_shape(
             dense = _densified(outline, cell)
             centres = _fitting_centres(grid, dense, reach + radius * level)
             for _, centre in _promising(
-                centres, outline, PLACEMENTS_PER_TRY, max(5 * cell, 50.0)
+                grid, join, centres, outline, PLACEMENTS_PER_TRY, max(5 * cell, 50.0)
             ):
                 placement = _Placement(level, angle, centre, outline + centre)
                 line = LineString(placement.outline)
@@ -442,6 +479,17 @@ def fit_shape(
             f"{APPROACH_MAX_M:g} m of it can be reached on foot"
         )
     raise WaterFitError(_too_small(name, distance_m))
+
+
+def _shortest_leg(area: WaterArea) -> float:
+    """The shortest leg any placement can have: from the nearest shore
+    point reachable on foot within MOVE_MAX_M of the start to the band, in
+    which the shape lies. 0 when there is no such point."""
+    access = area.access
+    near = access[np.hypot(access[:, 0], access[:, 1]) <= MOVE_MAX_M]
+    if not len(near):
+        return 0.0
+    return float(shapely.distance(shapely.points(near), area.band).min())
 
 
 def _too_small(name: str, distance_m: float) -> str:

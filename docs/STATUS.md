@@ -292,20 +292,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sceglie avrebbe solo errori. Seguito in `services/`: Strava riceve
   ogni attività come «Run». Da dove riprendere: `tasks/TASK-191.md`,
   «Esito», parti A2, B e C (fatta).
-- **TASK-225 — L'acqua dei quattro luoghi della canoa sul server**
-  (ADR-0187; «SI FALLO» dell'utente). `covering_path` serviva già una
-  richiesta da un file d'acqua più grande: `route_engine` non cambia, e
-  l'impronta resta quella. Nuovo `shaperoute_api/water_extract.py`: da un
-  ritaglio osmium di un estratto Geofabrik scrive il file d'acqua che
-  Overpass darebbe per quel riquadro, con 10 test (PR #285). **L'acqua è
-  sul server dal 2026-10-04**, dall'estratto dell'Italia: sei riquadri,
-  22 MB in `data/cache/water/` (Riccione, Jesolo, Garda nord e intero,
-  Como città e intero). Il cuore da 2 km a Riccione è fatto in 3,1 s,
-  1997 m, e i dodici esempi di «Explore» in 1–5 s. La pubblicazione la
-  coordina il coordinatore. Trovato: Overpass ora risponde al server, ma
-  `WATER_QUERY` (`out tags geom`) perde i membri delle relazioni, quindi i
-  laghi multipoligono fuori dai riquadri mancano: è un task a parte.
-  Da dove riprendere: `tasks/TASK-225.md`, «Esito».
 
 - **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:
   subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API
@@ -391,6 +377,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   la riga chiude la lavagna e tiene le modifiche; tolto «Done» in alto a
   destra, che in Expo Go stava sotto il pulsante di Expo. Sul telefono con
   la prossima pubblicazione. `tasks/TASK-229.md`.
+- **Server** — TASK-225: l'acqua dei quattro luoghi della canoa sul server
+  (ADR-0187; «SI FALLO» dell'utente, e «Sì, scrivi e prova» per il
+  server; PR #285, merge `87115ba`). `route_engine` non cambia:
+  `covering_path` serviva già una richiesta da un file d'acqua più grande.
+  Nuovo `shaperoute_api/water_extract.py`, che scrive l'acqua di un
+  riquadro da un estratto osmium, uguale a una risposta di Overpass. Sul
+  server dal 2026-10-04 ci sono sei riquadri dall'estratto dell'Italia,
+  22 MB in `data/cache/water/`: Riccione, Jesolo, Garda nord e intero,
+  Como città e intero. Il cuore da 2 km a Riccione è fatto in 3,1 s e i
+  dodici esempi di «Explore» in 1–5 s. Il giudizio dei campioni v2 è
+  dell'utente (`out/task225-paddle-samples-v2.html`). Seguito:
+  **TASK-230**, `WATER_QUERY` di Overpass perde i membri delle relazioni
+  (i laghi multipoligono). `tasks/TASK-225.md`.
+
 - **App** — TASK-224: correndo un percorso, il fatto giallo pieno e il da
   fare tratteggiato che lampeggia (ADR-0186; chiesto dall'utente il
   2026-10-03, stile approvato su un'anteprima; PR #287, merge

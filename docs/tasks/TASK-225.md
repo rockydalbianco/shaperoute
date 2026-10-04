@@ -1,7 +1,8 @@
 # TASK-225 — L'acqua dei quattro luoghi della canoa sul server
 
-**Stato**: In corso: l'acqua è sul server dal 2026-10-04, la PR #285 del
-codice aspetta la CI
+**Stato**: Done (2026-10-04) — PR #285, merge `87115ba`; l'acqua dei
+quattro luoghi è sul server dal 2026-10-04, e il cuore da 2 km a Riccione
+è fatto in 3,1 s. Seguito: TASK-230 (Overpass e i membri delle relazioni).
 **Fase**: 4 · **Branch**: `feat/TASK-225-paddle-water`
 **Dipende da**: TASK-191 (A2 #235, B #241 e C #255 in `main`)
 

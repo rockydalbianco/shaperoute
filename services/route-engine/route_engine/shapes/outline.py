@@ -22,6 +22,25 @@ own earlier points closes a loop there, like a window hung on a line, and
 only the line before the loop is travelled back. Strokes cross neither the
 outline, nor each other, nor themselves.
 
+`pieces` is optional too: lines apart from the outline, such as the eyes and
+the mouth of a smiling face (TASK-223). A piece is closed when its last point
+repeats its first, like an eye, and open otherwise, like a mouth. It touches
+neither the outline, nor a stroke, nor another piece, nor itself. With the
+pen up the route draws the outline, then each piece on its own, in the
+order of the file, and walks from one to the next without drawing
+(`pen_up_lines`, pieces.py). With the pen down each piece is joined to what
+comes before it by the shortest link, from one of its vertices (an end of an
+open piece) to the nearest line, and drawn out and back along it like a
+stroke (`joined`): the same file gives both.
+
+`lift` is optional as well: the numbers of strokes that close a loop, like
+the eyes of the cat, hung from the outline by a link (TASK-223). With the pen
+down nothing changes; with the pen up each of those loops is a piece of its
+own, with whatever hangs from it, and its link is not drawn. So a shape of
+the catalogue gets its eyes apart by one line in its file:
+
+    {"name": "cat", ..., "strokes": [[...], [...]], "lift": [1, 2]}
+
 `path` replaces `points` and `strokes` for a shape with no outline around
 it, such as a word written in a single stroke (TASK-040):
 
@@ -78,6 +97,16 @@ class Outline:
     # True when the path was open: `points` is it out and back, and the
     # route keeps the way out (TASK-041).
     one_way: bool = False
+    # Lines apart from the outline, in the same frame, each drawn on its own
+    # with the pen up (TASK-223); a closed one repeats its first point.
+    pieces: tuple[tuple[Point, ...], ...] = ()
+    # Each piece as the stroke that draws it with the pen down: from the
+    # nearest point of the lines before it, then the piece (TASK-223).
+    joined: tuple[tuple[Point, ...], ...] = ()
+    # Strokes that close a loop, like the eyes of the cat, whose loop is a
+    # piece of its own with the pen up, its link left out (TASK-223): their
+    # indices in `strokes`, from 0.
+    lift: tuple[int, ...] = ()
 
     def __call__(self, n_points: int) -> list[Point]:
         """`n_points` vertices equally spaced by arc length, like any shape.
@@ -86,21 +115,60 @@ class Outline:
         stroke comes back exactly the way it went out, and the other points
         are spread along it by length.
         """
-        if not self.strokes and not self.line:
+        if not self.strokes and not self.line and not self.pieces:
             return resample_by_arc_length(self.points, n_points)
         return resample_keeping_vertices(self.path(), n_points)
 
     def path(self) -> list[Point]:
         """One closed line: the outline, with each stroke drawn out and back
         where it starts; the first point is repeated at the end. A `path` is
-        that line already."""
+        that line already. The pieces, if any, are drawn with the pen down:
+        each joined to the drawing as a stroke (`joined`)."""
         if self.line:
             return list(self.points)
+        return self._drawn((*self.strokes, *self.joined))
+
+    @property
+    def in_pieces(self) -> bool:
+        """Whether the shape has pieces to draw with the pen up: `pieces`,
+        or strokes lifted off (`lift`)."""
+        return bool(self.pieces or self.lift)
+
+    def pen_up_lines(self) -> list[list[Point]]:
+        """The lines drawn with the pen up (TASK-223): first the outline with
+        its strokes, closed, from its first point; then the loop of each
+        stroke in `lift`, with what hangs from it, and each piece, once, in
+        the order of the file. A closed line starts and ends at its point
+        nearest to where the line before ends, and an open one at its end
+        nearest to it: the walks between them are short."""
+        drawn = self._lines(self.strokes, frozenset(k + 1 for k in self.lift))
+        lines = [drawn[0]]
+        for line in [*drawn[1:], *(list(piece) for piece in self.pieces)]:
+            end = lines[-1][-1]
+            if line[-1] == line[0]:
+                first = min(range(len(line) - 1), key=lambda i: math.dist(line[i], end))
+                lines.append([*line[first:-1], *line[:first], line[first]])
+            elif math.dist(line[-1], end) < math.dist(line[0], end):
+                lines.append(list(reversed(line)))
+            else:
+                lines.append(list(line))
+        return lines
+
+    def _drawn(self, strokes: Sequence[Sequence[Point]]) -> list[Point]:
+        """The outline with `strokes` drawn out and back where they start."""
+        return self._lines(strokes)[0]
+
+    def _lines(
+        self, strokes: Sequence[Sequence[Point]], lifted: frozenset[int] = frozenset()
+    ) -> list[list[Point]]:
+        """The outline with `strokes` drawn out and back where they start,
+        but those numbered in `lifted` (1 for the first); then the loop of
+        each of those, closed, with what hangs from it (TASK-223)."""
         ring = list(self.points[:-1])
         lines: list[tuple[list[Point], bool]] = [(ring, True)]
         tolerance = _tolerance(ring)
         starts: dict[tuple[int, int], list[tuple[float, int]]] = {}
-        for key, stroke in enumerate(self.strokes, start=1):
+        for key, stroke in enumerate(strokes, start=1):
             found = _attach(stroke[0], lines, tolerance)
             if found is None:
                 raise InvalidOutlineError(f"stroke {key} starts on no line")
@@ -108,23 +176,28 @@ class Outline:
             starts.setdefault((host, side), []).append((t, key))
             lines.append((list(stroke), False))
 
-        def draw(key: int) -> list[Point]:
+        def draw(key: int, begin: int = 0) -> list[Point]:
             line, closed = lines[key]
             out: list[Point] = []
-            for j, vertex in enumerate(line):
+            for j, vertex in enumerate(line[begin:], start=begin):
                 out.append(vertex)
                 for _, child in sorted(starts.get((key, j), [])):
+                    if child in lifted:
+                        continue
                     drawn = draw(child)
                     if drawn[0] != out[-1]:
                         out.append(drawn[0])
                     out.extend(drawn[1:])
             if closed:
                 out.append(line[0])
-            else:  # back the way it came, up to its loop if it has one
+            elif not begin:  # back the way it came, up to its loop if it has one
                 out.extend(reversed(line[: _loop_start(line)]))
             return out
 
-        return draw(0)
+        return [
+            draw(0),
+            *(draw(key, _loop_start(lines[key][0])) for key in sorted(lifted)),
+        ]
 
 
 def read_outline(path: Path) -> Outline:
@@ -172,19 +245,37 @@ def parse_outline(data: object, allow_crossings: bool = False) -> Outline:
         )
     ring = _ring(data.get("points"))
     strokes = _strokes(data.get("strokes"), ring, allow_crossings)
-    # Outline and strokes share one frame: centred and scaled together.
-    flat = normalize([*ring, ring[0], *(p for stroke in strokes for p in stroke)])
+    pieces = _pieces(data.get("pieces"), ring, strokes, allow_crossings)
+    # Outline, strokes and pieces share one frame: centred and scaled
+    # together.
+    flat = normalize(
+        [*ring, ring[0], *(p for line in (*strokes, *pieces) for p in line)]
+    )
     points, rest = flat[: len(ring) + 1], flat[len(ring) + 1 :]
     normalized: list[tuple[Point, ...]] = []
-    for stroke in strokes:
-        normalized.append(tuple(rest[: len(stroke)]))
-        rest = rest[len(stroke) :]
+    for line in (*strokes, *pieces):
+        normalized.append(tuple(rest[: len(line)]))
+        rest = rest[len(line) :]
+    kept, apart = normalized[: len(strokes)], normalized[len(strokes) :]
+    joined = _join(list(points[:-1]), kept, apart)
+    if joined and not allow_crossings:
+        try:
+            _check_strokes(points[:-1], [*kept, *joined])
+        except InvalidOutlineError as exc:
+            # Only a link can cross: the lines themselves were checked.
+            raise InvalidOutlineError(
+                f"with the pen down, a piece cannot be joined: {exc} "
+                "(the pieces count as strokes after the strokes of the file)"
+            ) from None
     return Outline(
         name=texts["name"],
         source=texts["source"],
         license=texts["license"],
         points=tuple(points),
-        strokes=tuple(normalized),
+        strokes=tuple(kept),
+        pieces=tuple(apart),
+        joined=tuple(joined),
+        lift=_lift(data.get("lift"), ring, strokes),
     )
 
 
@@ -271,6 +362,153 @@ def _strokes(
     if not allow_crossings:
         _check_strokes(ring, strokes)
     return strokes
+
+
+def _pieces(
+    raw: object,
+    ring: list[Point],
+    strokes: list[list[Point]],
+    allow_crossings: bool = False,
+) -> list[list[Point]]:
+    """The pieces of a file (TASK-223): lines of at least 2 distinct points,
+    3 for a closed one, that touch no other line and do not cross or fold
+    back onto themselves."""
+    if raw is None:
+        return []
+    if not isinstance(raw, list) or not all(
+        isinstance(line, list) and all(_is_pair(p) for p in line) for line in raw
+    ):
+        raise InvalidOutlineError(
+            "'pieces' must be a list of lines, each a list of [x, y] numbers"
+        )
+    n = len(ring)
+    others = [[(ring[i], ring[(i + 1) % n]) for i in range(n)]]
+    others.extend(list(zip(s, s[1:], strict=False)) for s in strokes)
+    pieces: list[list[Point]] = []
+    for i, line in enumerate(raw, start=1):
+        points: list[Point] = []
+        for x, y in line:
+            if not points or (x, y) != points[-1]:
+                points.append((float(x), float(y)))
+        closed = len(points) > 1 and points[-1] == points[0]
+        distinct = len(set(points))
+        if distinct < (3 if closed else 2):
+            raise InvalidOutlineError(
+                f"piece {i} needs at least {3 if closed else 2} distinct points"
+            )
+        if closed and _first_crossing(points[:-1]) is not None:
+            raise InvalidOutlineError(f"piece {i} crosses itself")
+        if not closed and distinct < len(points):
+            raise InvalidOutlineError(
+                f"piece {i} comes back to a point of its own: close it where "
+                "it starts, or leave it open"
+            )
+        sides = list(zip(points, points[1:], strict=False))
+        if not allow_crossings:
+            if not closed:
+                for k in range(len(points) - 2):
+                    if _folds_back(*points[k : k + 3]):
+                        raise InvalidOutlineError(f"piece {i} folds back onto itself")
+                for k, side in enumerate(sides):
+                    if any(_meet(*side, *other) for other in sides[k + 2 :]):
+                        raise InvalidOutlineError(f"piece {i} crosses itself")
+            for j, other in enumerate(others):
+                if any(_meet(*s, *o) for s in sides for o in other):
+                    what = (
+                        "the outline"
+                        if j == 0
+                        else (
+                            f"stroke {j}"
+                            if j <= len(strokes)
+                            else f"piece {j - len(strokes)}"
+                        )
+                    )
+                    raise InvalidOutlineError(f"piece {i} touches {what}")
+        pieces.append(points)
+        others.append(sides)
+    return pieces
+
+
+def _lift(
+    raw: object, ring: list[Point], strokes: list[list[Point]]
+) -> tuple[int, ...]:
+    """The strokes of a file lifted off with the pen up (TASK-223): their
+    numbers, from 1, each once; each closes a loop, and nothing hangs from
+    the link that leads to it, which the pen up leaves out."""
+    if raw is None:
+        return ()
+    if (
+        not isinstance(raw, list)
+        or not all(isinstance(k, int) and not isinstance(k, bool) for k in raw)
+        or len(set(raw)) < len(raw)
+    ):
+        raise InvalidOutlineError("'lift' must be a list of stroke numbers, each once")
+    lines: list[tuple[Sequence[Point], bool]] = [(ring, True)]
+    tolerance = _tolerance(ring)
+    hosts: list[tuple[int, int]] = []
+    for stroke in strokes:
+        found = _attach(stroke[0], lines, tolerance)
+        assert found is not None  # _strokes attached it
+        hosts.append((found[0], found[1]))
+        lines.append((stroke, False))
+    for k in raw:
+        if not 1 <= k <= len(strokes):
+            raise InvalidOutlineError(
+                f"'lift': there is no stroke {k}, the file has {len(strokes)}"
+            )
+        loop = _loop_start(strokes[k - 1])
+        if loop == len(strokes[k - 1]) - 1:
+            raise InvalidOutlineError(
+                f"'lift': stroke {k} closes no loop, it has nothing to lift"
+            )
+        for m, (host, side) in enumerate(hosts, start=1):
+            if host == k and side < loop:
+                raise InvalidOutlineError(
+                    f"'lift': stroke {m} hangs from the link of stroke {k}, "
+                    "which the pen up leaves out"
+                )
+    return tuple(k - 1 for k in raw)
+
+
+def _join(
+    ring: list[Point],
+    strokes: Sequence[Sequence[Point]],
+    pieces: Sequence[Sequence[Point]],
+) -> list[tuple[Point, ...]]:
+    """Each piece as the stroke that draws it with the pen down (TASK-223):
+    from the point of the lines before it nearest to the piece (the outline,
+    the strokes, the pieces joined before, their links too) to the nearest
+    vertex of a closed piece, around it and back to that vertex, or to the
+    nearest end of an open one, and along it. A closed piece hangs from its
+    link like the window of TASK-037."""
+    lines: list[tuple[Sequence[Point], bool]] = [(ring, True)]
+    lines.extend((stroke, False) for stroke in strokes)
+    tolerance = _tolerance(ring)
+    joined: list[tuple[Point, ...]] = []
+    for piece in pieces:
+        closed = piece[-1] == piece[0]
+        entries = range(len(piece) - 1) if closed else (0, len(piece) - 1)
+        best: tuple[float, int, Point] | None = None
+        for i in entries:
+            for line, is_closed in lines:
+                for j in range(len(line) if is_closed else len(line) - 1):
+                    a, b = line[j], line[(j + 1) % len(line)]
+                    near = _along(a, b, _share(piece[i], a, b))
+                    d = math.dist(piece[i], near)
+                    if best is None or d < best[0]:
+                        best = (d, i, near)
+        assert best is not None  # a piece has points, the outline sides
+        _, i, near = best
+        found = _attach(near, lines, tolerance)
+        anchor = near if found is None else found[3]
+        if closed:
+            ring_piece = list(piece[:-1])
+            line = [anchor, *ring_piece[i:], *ring_piece[:i], ring_piece[i]]
+        else:
+            line = [anchor, *(piece if i == 0 else reversed(piece))]
+        joined.append(tuple(line))
+        lines.append((line, False))
+    return joined
 
 
 def _tolerance(ring: Sequence[Point]) -> float:

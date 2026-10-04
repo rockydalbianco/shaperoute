@@ -308,6 +308,61 @@ lettere sole: «CIAO» è lungo 9,5 altezze invece delle 16,2 della linea
 chiusa (andata, ritorno e base), 1,7 volte meno. A Trento, a 15 km, lettere
 di 1.121 m invece di 659.
 
+### Pezzi staccati dal contorno (TASK-223)
+
+Un contorno può avere anche dei **pezzi** (`pieces`, facoltativi, ADR-0185):
+linee staccate da tutto il resto, come gli occhi e il sorriso di una
+faccina, i raggi di un sole, il buco di una ciambella. Lo stesso file si
+disegna in due modi:
+
+```json
+"pieces": [
+  [[-0.36, 0.11], [-0.29, 0.13], ..., [-0.36, 0.11]],
+  [[-0.57, -0.14], [-0.48, -0.25], ..., [0.57, -0.14]]
+]
+```
+
+- Un pezzo **chiuso** (l'ultimo punto ripete il primo, almeno 3 punti
+  distinti) è un anello, come un occhio; uno **aperto** è una linea, come
+  una bocca. Non tocca il contorno, i tratti, gli altri pezzi, né se
+  stesso; contorno, tratti e pezzi stanno nello stesso riquadro.
+- **Con la penna alzata** (`Outline.pen_up_lines`, `pieces.py`): prima il
+  contorno con i suoi tratti, dal suo primo punto; poi ogni pezzo una
+  volta, nell'ordine del file, a piedi dall'uno all'altro come fra le
+  lettere di una parola (§5, «La penna alzata»). Un anello parte e finisce
+  dal suo vertice più vicino a dove finisce la linea prima; una linea
+  aperta dalla sua punta più vicina.
+- **Con la penna giù** (`Outline.joined`): ogni pezzo si attacca al disegno
+  con il collegamento più corto, dal punto più vicino delle linee prima di
+  lui (il contorno, i tratti, i pezzi già attaccati e i loro collegamenti)
+  al suo vertice più vicino, o alla punta più vicina di una linea aperta.
+  Da lì è un tratto (sopra): andata e ritorno sul collegamento, l'anello
+  una volta, la linea aperta fino in fondo e indietro. Un collegamento che
+  taglierebbe un'altra linea si rifiuta, con il motivo: basta cambiare
+  l'ordine dei pezzi.
+- Senza pezzi un contorno si legge e si disegna come prima.
+
+Le forme che hanno già gli occhi come tratti (gatto, pesce, teste di cane e
+coniglio, zucca) li **staccano** con la penna alzata senza cambiare il
+disegno con la penna giù: `"lift": [1, 2]` nel file dice quali tratti, da 1.
+Di un tratto staccato la penna alzata disegna solo l'anello, chiuso, con ciò
+che ci è appeso, dopo il contorno e prima dei pezzi; il collegamento che lo
+appende no. Si staccano solo tratti che chiudono un anello, e niente può
+pendere dal loro collegamento (la bocca della testa di cane pende da quello
+del naso: il naso non si stacca).
+
+I pezzi sono dettagli, come i tratti: con la penna alzata zone e corridoio
+sono sempre quelli dimezzati (ADR-0039), e un anello si traccia chiuso,
+così finisce dove è cominciato. Senza queste due cose, su una griglia di
+vie da 100 m una faccina quadrata disegnava gli occhi a «P» e non si
+chiudeva (0,48 contro 0,97, `tests/test_pieces.py`).
+
+Le forme a pezzi si provano dalla CLI, `--outline FILE --pen-up`; nel
+catalogo entrano solo dopo il giudizio dell'utente (ADR-0036). I candidati
+del TASK-223 sono in `shapes/outlines/`: `smiley`, `ghost`, `donut` e `sun`
+a pezzi, `lightning`, `drop`, `balloon`, `ice_cream`, `cloud` e `apple` a
+contorno solo (campioni in `samples/`, `TASK-223_*`).
+
 ### Il contorno da un'immagine (TASK-072, TASK-084)
 
 `route_engine/image_outline.py` ricava un contorno dal soggetto di
@@ -834,6 +889,31 @@ I tratti a piedi aggiungono il 20–30% ai km delle lettere: lo spazio fra
 le lettere cresce con la loro altezza, e per strada è più lungo che in
 linea d'aria.
 
+**Una forma a pezzi** (TASK-223, §2) con la penna alzata è la stessa cosa:
+`pieces.compose` la scrive come una parola a penna alzata, una «lettera»
+per il contorno e una per ogni pezzo (`Word.kind == "piece"`, i messaggi
+dicono «piece 2»). Il contorno tiene la partenza e non si sposta; i pezzi
+si spostano come le lettere. Un'«altezza di lettera» è `PIECE_HEIGHT`, un
+quarto del lato del disegno: i pezzi si spostano al massimo di 1/16 del
+lato, e la somiglianza tiene entro 1/32 del lato, circa l'1% del perimetro
+che la misura delle forme concede a un cerchio. I punti tracciati sono
+`PIECE_POINTS` = 128 in tutto, ogni vertice tenuto.
+
+Misure del 2026-10-03 sul Mac, 10 km, zone in cache; somiglianza dei pezzi
+con la penna alzata, delle forme con la penna giù (non si confrontano):
+
+| Forma | Trento | Levico | Milano |
+|---|---|---|---|
+| `smiley` penna alzata | 0,78; 10,6 km + 1,4 a piedi | non disponibile (0,51) | 0,86; 9,6 + 1,9 |
+| `smiley` penna giù | 0,93 | 0,82 | 0,92 |
+| `ghost` penna alzata | 0,82; 10,4 + 0,8 | 0,64 | 0,92; 10,4 + 1,2 |
+| `donut` penna alzata | 0,77; 9,7 + 0,7 | non disponibile (0,57) | 0,81; 9,4 + 0,7 |
+| `sun` penna alzata | 0,85; 10,3 + 7,6 | 0,65 | 0,95; 10,6 + 8,0 |
+
+Il sole a penna alzata cammina quasi quanto disegna: otto raggi, sette
+tratti a piedi da più di 1 km. Con la penna giù i raggi sono tratti
+ripassati, e i km a piedi non ci sono.
+
 ### Funzione obiettivo
 
 ```
@@ -1015,7 +1095,7 @@ python -m route_engine --shape heart --distance 10000 \
     --start 45.9934,11.2580 --score-track corsa.gpx
 ```
 
-Con `--pen-up`, solo insieme a `--word`, la parola con la penna alzata
+Con `--pen-up`, insieme a `--word`, la parola con la penna alzata
 (§5, «La penna alzata»); la CLI stampa i metri delle lettere contro il
 target, la lunghezza di ogni tratto a piedi e il totale, e il GPX ha i
 waypoint «Pause» e «Resume» (`GPX.md`):
@@ -1023,6 +1103,17 @@ waypoint «Pause» e «Resume» (`GPX.md`):
 ```
 python -m route_engine --word CIAO --distance 15000 --pen-up \
     --start 46.0671,11.1214 --nearby 3 --out ciao_penna_trento.gpx
+```
+
+Con `--pen-up` e una forma a pezzi, `--outline` o `--shape` (§2, «Pezzi
+staccati dal contorno»), il contorno e poi ogni pezzo da solo, con le
+stesse righe dei pezzi al posto delle lettere; senza `--pen-up` la stessa
+forma con i pezzi attaccati. Una forma senza pezzi, o un'immagine, con
+`--pen-up` si rifiuta:
+
+```
+python -m route_engine --outline route_engine/shapes/outlines/smiley.json \
+    --distance 10000 --pen-up --start 45.4642,9.19 --out smiley_milano.gpx
 ```
 
 Con `--activity cycling` un percorso in bici, 10–30 km, sulla rete `bike`

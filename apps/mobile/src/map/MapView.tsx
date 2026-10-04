@@ -1,5 +1,5 @@
 import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Linking,
   type StyleProp,
@@ -9,10 +9,13 @@ import {
 } from "react-native";
 import { WebView } from "react-native-webview";
 
+import { usePocketOn } from "../navigation/pocketOn";
+import { cumulative } from "../navigation/progress";
 import { MapLoadingBar } from "../route/LoadingBar";
 import { color, space } from "../theme/tokens";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
+  clearProgress,
   clearRoute,
   clearStops,
   clearTrack,
@@ -21,11 +24,13 @@ import {
   parsePageMessage,
   setPosition,
   showOthers,
+  showProgress,
   showRoute,
   showStops,
   showTrack,
   stopFollow,
 } from "./messages";
+import { doneMetres, splitRoute } from "./routeSplit";
 
 const MAP_PAGE = buildMapPage();
 /** One empty list, so the map is not told again and again of no routes. */
@@ -51,6 +56,10 @@ type Props = {
   /** Where the runner is heading, in degrees clockwise from north: the
    * marker followed is an arrow turned that way (TASK-164). */
   heading?: number | null;
+  /** While running the route, how far along it the runner is (TASK-224):
+   * the part run stays solid yellow, the part left is dashed and blinks.
+   * None draws the route whole, as before. */
+  progress?: { alongM: number; arrived: boolean } | null;
   /** The places of a themed route (TASK-129), or null for none. */
   stops?: { name: string; point: LatLon; passed: boolean }[] | null;
   /** Called when the map cannot be shown, with a reason for the log. */
@@ -67,6 +76,7 @@ export function MapView({
   track = null,
   following = null,
   heading = null,
+  progress = null,
   stops = null,
   onError,
   style,
@@ -81,6 +91,12 @@ export function MapView({
   const trackShown = useRef(false);
   const stopsShown = useRef(false);
   const othersShown = useRef(false);
+  const progressShown = useRef(false);
+  const along = useMemo(() => (route ? cumulative(route) : null), [route]);
+  // In steps, so the map is not told of every metre.
+  const doneM = progress ? doneMetres(progress) : null;
+  // Under the black screen of pocket mode nobody sees the blinking.
+  const pocket = usePocketOn();
 
   // A new start, even at the same place, centres the map on it again.
   useEffect(() => {
@@ -164,6 +180,22 @@ export function MapView({
     // route effect above draws the route.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, following]);
+
+  // Running the route: cut where the runner is. After, the route whole again.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (route && along && doneM !== null) {
+      webView.current?.injectJavaScript(
+        pageScript(showProgress(splitRoute(route, along, doneM, walks), !pocket)),
+      );
+      progressShown.current = true;
+    } else if (progressShown.current) {
+      webView.current?.injectJavaScript(pageScript(clearProgress()));
+      progressShown.current = false;
+    }
+  }, [ready, route, along, walks, doneM, pocket]);
 
   return (
     <View style={style}>

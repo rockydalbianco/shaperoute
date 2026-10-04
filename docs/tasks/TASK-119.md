@@ -157,7 +157,7 @@ packages/shared-types/fixtures/reaction-request.json
 packages/shared-types/fixtures/super-like-request.json
 packages/shared-types/fixtures/reactions.json
 packages/shared-types/fixtures/reaction-result.json
-packages/shared-types/tests/
+packages/shared-types/test/reactions.test.ts
 docs/API.md
 docs/DATABASE.md
 docs/STATUS.md

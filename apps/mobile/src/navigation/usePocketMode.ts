@@ -3,6 +3,8 @@ import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";
 
+import { setPocketOn } from "./pocketOn";
+
 /** The keep-awake tag of pocket mode, so it never clears someone else's. */
 export const KEEP_AWAKE_TAG = "pocket-mode";
 /** The brightness in pocket mode: the lowest the screen goes. */
@@ -74,6 +76,7 @@ export function usePocketMode(active: boolean): PocketMode {
     }
     entered.current = false;
     setOn(false);
+    setPocketOn(false);
     undim();
     deactivateKeepAwake(KEEP_AWAKE_TAG).catch(() => {});
   }, [undim]);
@@ -84,6 +87,7 @@ export function usePocketMode(active: boolean): PocketMode {
     }
     entered.current = true;
     setOn(true);
+    setPocketOn(true);
     activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch(() => {});
     dim();
   }, [active, dim]);

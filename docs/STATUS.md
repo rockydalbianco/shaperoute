@@ -373,8 +373,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **App** — TASK-224: correndo un percorso, il fatto giallo pieno e il da
   fare tratteggiato che lampeggia (ADR-0186; chiesto dall'utente il
-  2026-10-03, stile approvato su un'anteprima). Il da fare è giallo,
-  tratteggiato, 0,7 s acceso e 0,7 s a opacità 0,3, a scatti senza
+  2026-10-03, stile approvato su un'anteprima; PR #287, merge
+  `ec6b748`). Il da fare è giallo, tratteggiato, 0,7 s acceso e 0,7 s a opacità 0,3, a scatti senza
   dissolvenza (due ridisegni ogni 1,4 s); fermo con «Pocket» e con «Riduci
   movimento». Il taglio è ai metri del navigatore, a passi di 5 m; dopo
   l'arrivo tutto pieno, a fine corsa il percorso torna intero. Con la penna

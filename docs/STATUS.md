@@ -153,8 +153,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   pesce, teste e zucca staccano gli occhi con la penna alzata (`lift`).
   Giudizio dell'utente sui campioni: «sì» faccina, fantasmino e ciambella
   con la penna alzata, sole con la penna giù. **Parte B, il catalogo**,
-  nel branch `feat/TASK-223-b-shapes-in-catalog` (2026-10-04, dopo il
-  «continua e pubblica» dell'utente): le quattro forme nel motore, nel
+  in `main` con la #296 (09c2c3c, 2026-10-04, dopo il «continua e
+  pubblica» dell'utente), non ancora sul server né pubblicata: le quattro forme nel motore, nel
   contratto, nell'AI e nell'app (tessere 🙂 👻 🍩 ☀️); `pen_up` anche con
   una forma a pezzi (`PEN_UP_SHAPES`), solo su strada; nell'app
   «Lift the pen between parts», acceso di partenza, per le prime tre; la

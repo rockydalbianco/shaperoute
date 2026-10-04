@@ -8869,6 +8869,63 @@ quindi all'apertura il giallo pieno è quello in alto. Il commento di
 `accent` in `src/theme/tokens.ts` dice ancora «una cosa sola»: da
 aggiornare con il prossimo task che tocca quel file.
 
+## ADR-0185 — Le forme a pezzi: un file solo, con la penna alzata o giù
+**Stato**: Attiva · 2026-10-03 · **deciso dall'agente su delega
+dell'utente** (TASK-223, parte A). Quali forme entrano nel catalogo, e se
+la penna alzata è accesa di partenza, restano dell'utente (ADR-0036).
+
+**Contesto**: l'utente, il 2026-10-03: «Trova da fare emoji molto più
+semplici da aggiungere al catalogo, metti anche la possibilità di fermare
+il tratteggio». Le emoji semplici hanno spesso parti staccate (gli occhi di
+una faccina, il buco di una ciambella). Fino a oggi un dettaglio interno era
+un tratto (`strokes`, ADR-0039) che parte dal contorno: gli occhi di gatto
+e cane sono attaccati alla testa da una linea percorsa due volte. Le parole
+hanno già la penna alzata (TASK-197, ADR-0157).
+
+**Decisione**:
+1. **`pieces` nel JSON di un contorno**: linee staccate da tutto, anelli o
+   linee aperte. Lo stesso file serve ai due modi; non due file per forma.
+2. **Penna alzata**: la forma è una parola a penna alzata, una «lettera»
+   per il contorno e una per ogni pezzo (`pieces.compose`). Ricerca,
+   tracciamento, tratti a piedi, somiglianza, GPX con «Pause»/«Resume»
+   sono quelli di TASK-197: niente di nuovo da spiegare all'app, che già
+   tratteggia i `walks` e mette in pausa.
+3. **Penna giù**: ogni pezzo si attacca da solo con il collegamento più
+   corto e diventa un tratto. Chi disegna una forma scrive solo i pezzi,
+   senza inventare dove attaccarli.
+4. **Le forme di oggi con gli occhi** (chiesto dall'utente al coordinatore:
+   «gli occhi interni senza linee di collegamento»): i loro occhi restano
+   tratti appesi al contorno, così con la penna giù il percorso è lo stesso
+   punto per punto. Una riga nel file dice quali tratti con la penna alzata
+   si **staccano**: `"lift": [1, 2]`, i numeri dei tratti, da 1. Di un
+   tratto staccato si disegna solo l'anello, con ciò che ci è appeso, e il
+   collegamento no. Si staccano solo tratti che chiudono un anello, e niente
+   può essere appeso al collegamento. Gatto `[1, 2]`, pesce `[1]`, teste di
+   cane e coniglio `[1, 2]` (gli occhi: naso e bocca restano attaccati, la
+   bocca pende dal collegamento del naso), zucca `[1, 2, 3]`.
+5. **I pezzi sono dettagli**: con la penna alzata zone e corridoio dimezzati
+   come per i tratti, e un anello tracciato chiuso. Le parole non cambiano.
+6. **Un'«altezza di lettera» di una forma a pezzi è un quarto del suo
+   lato** (`PIECE_HEIGHT`): così la tolleranza della somiglianza è circa
+   quella delle forme (1% del perimetro di un cerchio), e un pezzo si sposta
+   al massimo di 1/16 del lato.
+7. **Il catalogo non cambia** in questo passo: i candidati si provano dalla
+   CLI finché l'utente non li giudica, e le forme con gli occhi staccati
+   con la penna alzata solo dalla CLI (`--shape cat --pen-up`).
+
+**Alternative scartate**: pezzi attaccati a mano nel file (più lavoro per
+ogni forma, e due versioni da tenere allineate); un tracciamento nuovo per
+le forme a pezzi (TASK-197 lo fa già per le lettere); zone e corridoio del
+disegno intero come per le lettere (gli occhi venivano a «P», la faccia non
+si chiudeva).
+
+**Conseguenze**: TASK-226 (gli occhi staccati sull'acqua) trova gli occhi
+di gatto, pesce, teste e zucca già staccabili (`lift`), e una forma nuova li
+scrive come `pieces`. Le forme e le parole di oggi danno lo stesso percorso
+di `main` a b87d8cc, punto per punto (`tests/test_pieces_before.py`). Per chiedere una forma a pezzi con la
+penna alzata all'API servono il contratto (`pen_up` oggi è solo per le
+parole) e l'app: la parte B di TASK-223.
+
 ## ADR-0184 — Il cuore su giallo, segno di Sgrava: il cuore dell'avvio, fermo, in un quadrato giallo, un componente solo
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-221). La richiesta («Dentro l'app, metti il cuore giallo sullo

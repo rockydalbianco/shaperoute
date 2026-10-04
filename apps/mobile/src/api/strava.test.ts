@@ -116,6 +116,32 @@ test("a run goes with the name typed, or with no body at all", async () => {
   });
 });
 
+test("a post's text goes as the description, with or without a name", async () => {
+  const fetchFn = answers(
+    { status: 200, body: activity },
+    { status: 200, body: activity },
+    { status: 200, body: activity },
+  );
+  await sendToStrava(URL, TOKEN, KEY, null, {
+    ...options(fetchFn),
+    description: " 🔥 5.20 km · Score 87 ",
+  });
+  await sendToStrava(URL, TOKEN, KEY, "Heart", {
+    ...options(fetchFn),
+    description: "🔥",
+  });
+  await sendToStrava(URL, TOKEN, KEY, null, { ...options(fetchFn), description: "  " });
+
+  expect(JSON.parse(String(fetchFn.mock.calls[0][1]?.body))).toEqual({
+    description: "🔥 5.20 km · Score 87",
+  });
+  expect(JSON.parse(String(fetchFn.mock.calls[1][1]?.body))).toEqual({
+    name: "Heart",
+    description: "🔥",
+  });
+  expect(fetchFn.mock.calls[2][1]?.body).toBeUndefined();
+});
+
 function failed(http: number, code: string): StravaOutcome<StravaActivity> {
   return {
     kind: "api_error",

@@ -12,6 +12,8 @@ import {
 } from "../navigation/runStats";
 import { emptyTrack, type Track } from "../navigation/trackRecorder";
 import type { FreeRunState } from "../navigation/useFreeRun";
+import { postOfTrack } from "../share/postRun";
+import { SharePostButton } from "../share/SharePost";
 import {
   color,
   fontSize,
@@ -158,6 +160,8 @@ export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
       </Text>
       <RunGrid numbers={numbers} />
       <View style={styles.finishButtons}>
+        {/* The post of the run (TASK-231). */}
+        <SharePostButton makeRun={() => postOfTrack(track, null)} />
         {onResume && (
           <Pressable
             style={styles.button}

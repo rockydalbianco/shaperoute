@@ -1,0 +1,160 @@
+import type { LatLon } from "@shaperoute/shared-types";
+
+import { whereAndWhat } from "../activities/activityText";
+import type { ActivityDetail } from "../api/activities";
+import { t } from "../i18n";
+import { metresBetween } from "../map/coordinates";
+import { clockLabel, kmLabel, paceLabel } from "../navigation/freeRun";
+import { durationMs, type Track } from "../navigation/trackRecorder";
+
+/**
+ * A run as its post shows it (TASK-231, ADR-0194): the picture to share on
+ * Instagram and the text that goes with it to Strava. Made from the end of
+ * a run or from a run of «My activities».
+ */
+export type PostRun = {
+  /** The saved run's key, for Strava; null before «Save». */
+  key: string | null;
+  /** The title over the drawing; null shows none. */
+  title: string | null;
+  /** What was run, whole: the post leaves out its ends (POST_CUT_M). */
+  track: LatLon[];
+  distanceM: number;
+  /** The time of the run, its pauses left out. */
+  durationMs: number;
+  /** From 0 to 100; null for a run without one. */
+  score: number | null;
+};
+
+/** A run of «My activities» as its post shows it: its title, or where it
+ * was and what it drew. */
+export function postOfActivity(activity: ActivityDetail): PostRun {
+  return {
+    key: activity.id,
+    title: activity.title ?? whereAndWhat(activity, activity.points !== null),
+    track: activity.track,
+    distanceM: activity.distance_m,
+    durationMs: activity.duration_s * 1000,
+    score: activity.score,
+  };
+}
+
+/** A run that just ended, before «Save»: no title yet, and its score once
+ * the API has given it. */
+export function postOfTrack(track: Track, score: number | null): PostRun {
+  return {
+    key: null,
+    title: null,
+    track: track.fixes.map((fix) => fix.point),
+    distanceM: track.distanceM,
+    durationMs: durationMs(track),
+    score,
+  };
+}
+
+/**
+ * The first and the last metres of the track the post never shows: where a
+ * run starts and ends is often a door. The same as a drawing others see
+ * (ADR-0114, the API's DRAWING_CUT_M).
+ */
+export const POST_CUT_M = 200;
+
+/** A number of the run the post can show, each one on or off. */
+export type PostResult = "distance" | "time" | "pace" | "score";
+
+/** In the order the post shows them. */
+export const POST_RESULTS: readonly PostResult[] = [
+  "distance",
+  "time",
+  "pace",
+  "score",
+];
+
+/** The name of a result, as the post writes it over its number. */
+export function resultName(result: PostResult): string {
+  switch (result) {
+    case "distance":
+      return t("Distance");
+    case "time":
+      return t("Time");
+    case "pace":
+      return t("Pace");
+    case "score":
+      return t("Score");
+  }
+}
+
+/** The number of `result` for `run`, as runners read it; null when the run
+ * has none (no score, too short for a pace). */
+export function resultValue(run: PostRun, result: PostResult): string | null {
+  switch (result) {
+    case "distance":
+      return kmLabel(run.distanceM);
+    case "time":
+      return clockLabel(run.durationMs);
+    case "pace":
+      return paceLabel(run.distanceM, run.durationMs);
+    case "score":
+      return run.score === null ? null : String(run.score);
+  }
+}
+
+/** The results `run` has, of all the post can show. */
+export function resultsOf(run: PostRun): PostResult[] {
+  return POST_RESULTS.filter((result) => resultValue(run, result) !== null);
+}
+
+/**
+ * The text that goes with the post to Strava: the emoji, then the results
+ * shown, as in «🔥❤️ 5.20 km · 28:10 · 5:25 /km · Score 87». The API puts
+ * «Drawn with Sgrava» under it. Null when there is nothing to say.
+ */
+export function postCaption(
+  run: PostRun,
+  shown: readonly PostResult[],
+  emoji: readonly string[],
+): string | null {
+  const numbers = POST_RESULTS.filter((result) => shown.includes(result))
+    .map((result) => {
+      const value = resultValue(run, result);
+      if (value === null) {
+        return null;
+      }
+      return result === "score" ? t("Score {score}", { score: value }) : value;
+    })
+    .filter((part): part is string => part !== null)
+    .join(" · ");
+  const caption = [emoji.join(""), numbers].filter((part) => part !== "").join(" ");
+  return caption === "" ? null : caption;
+}
+
+/** The point `share` of the way from `a` to `b`. */
+function between(a: LatLon, b: LatLon, share: number): LatLon {
+  return [a[0] + (b[0] - a[0]) * share, a[1] + (b[1] - a[1]) * share];
+}
+
+/** The line from `cut` metres along it to its end; empty when it is not
+ * that long. */
+function fromMetres(line: LatLon[], cut: number): LatLon[] {
+  let walked = 0;
+  for (let i = 1; i < line.length; i += 1) {
+    const step = metresBetween(line[i - 1], line[i]);
+    if (walked + step > cut) {
+      const start = between(line[i - 1], line[i], (cut - walked) / step);
+      return [start, ...line.slice(i)];
+    }
+    walked += step;
+  }
+  return [];
+}
+
+/**
+ * The track without its first and last `cut` metres along it, the cuts
+ * falling between two fixes where they must. Empty for a run shorter than
+ * both ends together: the post then shows its numbers alone.
+ */
+export function withoutEnds(track: LatLon[], cut: number = POST_CUT_M): LatLon[] {
+  const ahead = fromMetres(track, cut);
+  const kept = fromMetres([...ahead].reverse(), cut).reverse();
+  return kept.length > 1 ? kept : [];
+}

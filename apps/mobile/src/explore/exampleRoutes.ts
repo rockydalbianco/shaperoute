@@ -4,6 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 
 import { requestRoute, type RouteOutcome } from "../api/routes";
 import { metresBetween } from "../map/coordinates";
+import paddleExamples from "../paddle/paddleExamples.json";
 import type { Place } from "../places/photon";
 import { problemText } from "../route/problems";
 import { cityShort } from "./presets";
@@ -50,11 +51,10 @@ export const EXAMPLE_DISTANCE_M = 5000;
 
 /**
  * What a place's examples are drawn for (TASK-191): a run's from a city's
- * centre, the first shapes and then the others; or paddling's from a point
- * on the shore of a lake or the sea, 2 km, the first shapes only (circle,
- * heart and star, as the samples judged by the user). Each set keeps its
- * examples apart from the other's, the same point too: `prefix` comes
- * before the place's key.
+ * centre, or paddling's from a point on the shore of a lake or the sea,
+ * 2 km; the first shapes and then the others, for both (TASK-227, the
+ * user's choice). Each set keeps its examples apart from the other's, the
+ * same point too: `prefix` comes before the place's key.
  */
 export type ExampleSet = {
   activity: Activity;
@@ -62,6 +62,12 @@ export type ExampleSet = {
   /** The shapes after the first ones. */
   more: readonly Shape[];
   prefix: string;
+  /**
+   * Examples that come with the app, drawn before it was built, by key
+   * (TASK-227): ready at once, without the network, and never asked again.
+   * Read before the file of the phone.
+   */
+  bundled?: Readonly<Record<string, ExampleDetail[]>>;
 };
 
 export const RUN_EXAMPLES: ExampleSet = {
@@ -71,16 +77,29 @@ export const RUN_EXAMPLES: ExampleSet = {
   prefix: "",
 };
 
+/**
+ * On the water, the shapes of the run (TASK-227, the user's choice: the
+ * samples judged fit on the four places). The places of «Explore» come with
+ * the app (paddleExamples.json, written by `python -m
+ * shaperoute_api.paddle_examples`); «Near me» is drawn as a run's examples.
+ */
 export const PADDLE_EXAMPLES: ExampleSet = {
   activity: "paddling",
   distance_m: 2000,
-  more: [],
+  more: MORE_SHAPES,
   prefix: "paddling:",
+  bundled: readKept(paddleExamples),
 };
 
 /** A set's shapes, as its cards show them: the heart first. */
 function setShapes(set: ExampleSet): readonly Shape[] {
   return [...EXAMPLE_SHAPES, ...set.more];
+}
+
+/** Every shape of `set` at `key` came with the app: nothing to ask. */
+function comesWithTheApp(set: ExampleSet, key: string): boolean {
+  const bundled = set.bundled?.[key] ?? [];
+  return setShapes(set).every((shape) => bundled.some((d) => d.shape === shape));
 }
 
 /** A set's shapes, in the order they are asked (DRAW_ORDER). */
@@ -374,7 +393,8 @@ function fromFile(
   key: string,
   set: ExampleSet,
 ): Example[] {
-  const saved = storage.load()[key] ?? [];
+  // What came with the app first: the phone's file is for the rest.
+  const saved = [...(set.bundled?.[key] ?? []), ...(storage.load()[key] ?? [])];
   return setShapes(set).map((shape): Example => {
     const detail = saved.find((d) => d.shape === shape);
     if (detail === undefined || detail.alternatives === undefined) {
@@ -579,8 +599,14 @@ export function useCityExamples(
   // The same shapes in another array are the same city's routes.
   const hasKey = has?.join(",");
   useEffect(() => {
-    if (apiUrl !== null && city !== null) {
+    if (city === null) {
+      return;
+    }
+    if (apiUrl !== null) {
       drawExamples(apiUrl, city, { request, storage, has, set });
+    } else if (key !== null && set !== undefined && comesWithTheApp(set, key)) {
+      // Nothing to ask: they show without an API.
+      drawExamples("", city, { request, storage, has, set });
     }
     // The city's point and the set are the key: a new label changes nothing.
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -181,8 +181,8 @@ export const ES: Table = {
     "Formas para remar, a menos de 1 km de la orilla",
   "LAKES AND SEA": "LAGOS Y MAR",
   "Near me": "Cerca de mí",
-  "Choose a lake or a beach: a circle, a heart and a star of 2 km are drawn on its water, from the shore.":
-    "Elige un lago o una playa: en su agua se dibujan un círculo, un corazón y una estrella de 2 km, desde la orilla.",
+  "Choose a lake or a beach: eight shapes of 2 km on its water, from the shore.":
+    "Elige un lago o una playa: ocho formas de 2 km en su agua, desde la orilla.",
   "Choose a start in Draw first: the shapes start from the shore nearest to it.":
     "Elige primero una salida en Draw: las formas empiezan en la orilla más cercana.",
   "Near your start": "Cerca de tu salida",

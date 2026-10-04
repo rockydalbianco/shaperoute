@@ -67,7 +67,7 @@ test("the user's places, «Near me» first; nothing is asked until one is chosen
   expect(WATER_PLACES.map((place) => place.name)).toEqual(names.slice(1));
   expect(
     screen.getByText(
-      "Choose a lake or a beach: a circle, a heart and a star of 2 km are drawn on its water, from the shore.",
+      "Choose a lake or a beach: eight shapes of 2 km on its water, from the shore.",
     ),
   ).toBeOnTheScreen();
   // No city, no run of the catalogue.
@@ -75,23 +75,30 @@ test("the user's places, «Near me» first; nothing is asked until one is chosen
   expect(fetchSpy).not.toHaveBeenCalled();
 });
 
-test("a place chosen has circle, heart and star of 2 km in paddling, from its shore", async () => {
+test("a place chosen has the eight shapes of the run, come with the app", async () => {
   apiDraws();
   const onOpen = jest.fn();
   await render(<PaddleExplore apiUrl={API} near={TRENTO} onOpen={onOpen} />);
   await fireEvent.press(screen.getByRole("button", { name: "Lago di Garda" }));
   expect(screen.getByRole("button", { name: "Lago di Garda" })).toBeSelected();
   expect(screen.getByText("LAGO DI GARDA · FROM RIVA DEL GARDA")).toBeOnTheScreen();
+  // Ready at once: nothing is asked of the API (TASK-227).
+  const names = [
+    "Heart",
+    "Circle",
+    "Star",
+    "Moon",
+    "Horse",
+    "Snail",
+    "Dog head",
+    "Rabbit head",
+  ];
+  for (const name of names) {
+    expect(screen.getByLabelText(`${name}, 2.0 km, on the water`)).toBeOnTheScreen();
+  }
   await settle();
-  expect(asked()).toEqual(
-    ["circle", "heart", "star"].map((shape) => ({
-      shape,
-      distance_m: 2000,
-      start: [45.88114, 10.84559],
-      activity: "paddling",
-    })),
-  );
-  await fireEvent.press(screen.getByLabelText("Heart, 4.0 km, on the water"));
+  expect(asked()).toEqual([]);
+  await fireEvent.press(screen.getByLabelText("Heart, 2.0 km, on the water"));
   expect(onOpen).toHaveBeenCalledWith(
     expect.objectContaining({
       shape: "heart",
@@ -114,7 +121,8 @@ test("«Near me» draws from the start of «Draw», as it was when tapped", asyn
     <PaddleExplore apiUrl={API} near={[46.0672, 11.1215]} onOpen={jest.fn()} />,
   );
   await settle();
-  expect(asked()).toHaveLength(3);
+  // The eight of the run, one after the other.
+  expect(asked()).toHaveLength(8);
   expect(asked()[0]).toMatchObject({ start: TRENTO, activity: "paddling" });
 });
 
@@ -143,13 +151,15 @@ test("water the API cannot download says so, with Try again", async () => {
     ),
   );
   await render(<PaddleExplore apiUrl={API} near={TRENTO} onOpen={jest.fn()} />);
-  await fireEvent.press(screen.getByRole("button", { name: "Riccione" }));
+  // A place of «Explore» comes with the app: «Near me» asks the API.
+  await fireEvent.press(screen.getByRole("button", { name: "Near me" }));
   await settle();
   expect(
     screen.getByText(
       "Map data for this area could not be downloaded. Try again later.",
     ),
   ).toBeOnTheScreen();
+  // The first three say so; the others are left out, as in a city.
   expect(screen.getAllByText("Not drawn")).toHaveLength(3);
   expect(screen.getByRole("button", { name: "Try again" })).toBeOnTheScreen();
 });
@@ -164,5 +174,5 @@ test("the place chosen is still chosen when the page comes back", async () => {
   await first.unmount();
   await render(<PaddleExplore apiUrl={API} near={TRENTO} onOpen={jest.fn()} />);
   expect(screen.getByRole("button", { name: "Jesolo" })).toBeSelected();
-  expect(screen.getByLabelText("Heart, 4.0 km, on the water")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Heart, 2.0 km, on the water")).toBeOnTheScreen();
 });

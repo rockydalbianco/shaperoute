@@ -146,6 +146,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-227 — «Explore» con «Paddle» come la corsa** (ADR-0189; scelte
+  dell'utente del 2026-10-04): con «Paddle», ogni luogo d'acqua ha **le
+  otto forme della corsa** da 2 km, e i quattro luoghi le hanno **dentro
+  l'app**, pronte subito anche senza rete («già scaricati al momento del
+  download dell'app»). I campioni veri sull'acqua del server: 52 su 52 ci
+  stanno. `paddleExamples.json` lo scrive `python -m
+  shaperoute_api.paddle_examples`; «Near me» resta disegnato al momento. Il
+  motore non cambia; niente server. Da dove riprendere: `tasks/TASK-227.md`.
+
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03): **parte A in
   `main`** (#284, 2026-10-04). Le forme possono avere pezzi staccati

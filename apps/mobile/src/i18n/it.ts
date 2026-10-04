@@ -179,8 +179,8 @@ export const IT: Table = {
     "Forme da pagaiare, entro 1 km dalla riva",
   "LAKES AND SEA": "LAGHI E MARE",
   "Near me": "Vicino a me",
-  "Choose a lake or a beach: a circle, a heart and a star of 2 km are drawn on its water, from the shore.":
-    "Scegli un lago o una spiaggia: sulla sua acqua si disegnano un cerchio, un cuore e una stella da 2 km, partendo dalla riva.",
+  "Choose a lake or a beach: eight shapes of 2 km on its water, from the shore.":
+    "Scegli un lago o una spiaggia: otto forme da 2 km sulla sua acqua, partendo dalla riva.",
   "Choose a start in Draw first: the shapes start from the shore nearest to it.":
     "Prima scegli una partenza in Draw: le forme partono dalla riva più vicina.",
   "Near your start": "Vicino alla tua partenza",

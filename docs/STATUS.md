@@ -297,11 +297,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   richiesta da un file d'acqua più grande: `route_engine` non cambia, e
   l'impronta resta quella. Nuovo `shaperoute_api/water_extract.py`: da un
   ritaglio osmium di un estratto Geofabrik scrive il file d'acqua che
-  Overpass darebbe per quel riquadro, con 10 test. Overpass rifiuta il
-  Mac, e osmium sul Mac va in OOM nella VM docker. Il taglio dei sei
-  riquadri (Riccione, Jesolo, Garda nord e intero, Como città e intero)
-  si fa sul server, se il coordinatore dà l'ok; poi la richiesta vera
-  (cuore da 2 km a Riccione) e i campioni. **`main` non si pubblica prima.**
+  Overpass darebbe per quel riquadro, con 10 test (PR #285). **L'acqua è
+  sul server dal 2026-10-04**, dall'estratto dell'Italia: sei riquadri,
+  22 MB in `data/cache/water/` (Riccione, Jesolo, Garda nord e intero,
+  Como città e intero). Il cuore da 2 km a Riccione è fatto in 3,1 s,
+  1997 m, e i dodici esempi di «Explore» in 1–5 s. La pubblicazione la
+  coordina il coordinatore. Trovato: Overpass ora risponde al server, ma
+  `WATER_QUERY` (`out tags geom`) perde i membri delle relazioni, quindi i
+  laghi multipoligono fuori dai riquadri mancano: è un task a parte.
   Da dove riprendere: `tasks/TASK-225.md`, «Esito».
 
 - **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:

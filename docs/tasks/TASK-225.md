@@ -1,7 +1,7 @@
 # TASK-225 — L'acqua dei quattro luoghi della canoa sul server
 
-**Stato**: In corso (codice in PR; l'acqua sul server aspetta l'ok del
-coordinatore, regola 9)
+**Stato**: In corso: l'acqua è sul server dal 2026-10-04, la PR #285 del
+codice aspetta la CI
 **Fase**: 4 · **Branch**: `feat/TASK-225-paddle-water`
 **Dipende da**: TASK-191 (A2 #235, B #241 e C #255 in `main`)
 
@@ -56,11 +56,11 @@ di «Explore» con «Paddle», e la prova con una richiesta vera.
       suo riquadro (test).
 - [x] Corsa, bici e forme identiche: `route_engine` non cambia, e
       l'impronta del motore resta quella.
-- [ ] L'acqua dei quattro luoghi è in `data/cache/water/` sul server.
-- [ ] Una richiesta `paddling` vera sul server dà un percorso: il cuore da
+- [x] L'acqua dei quattro luoghi è in `data/cache/water/` sul server.
+- [x] Una richiesta `paddling` vera sul server dà un percorso: il cuore da
       2 km a Riccione.
-- [ ] I campioni v2 (Riccione, Jesolo, Garda) e Como, per il giudizio
-      dell'utente.
+- [x] I campioni v2 (Riccione, Jesolo, Garda) e Como, per il giudizio
+      dell'utente (il giudizio è dell'utente).
 
 ## File toccati
 
@@ -146,10 +146,69 @@ nord-ovest (Lombardia: Como e la riva ovest del Garda) sono in
 `out/task225-water/`, fuori dal repository. osmium-tool va in OOM nella
 VM docker da 2 GB, e pyosmium non ha finito in 30 minuti. Sul Mac un'app
 nel simulatore iOS gira all'860% di CPU da 36 ore, con un load average di
-117. Proposto al coordinatore: tagliare e scrivere sul server, che ha
-osmium nell'immagine `shaperoute-prefetch`, 8 GB e la rete verso
-Geofabrik, in un container usa-e-getta e senza fermare l'API. Si aspetta
-la sua risposta (regola 9).
+117. Si è allora tagliato sul server, con il via libera del coordinatore e
+l'ok dell'utente dato in questa sessione («Sì, scrivi e prova»): ha
+osmium nell'immagine `shaperoute-prefetch` e 8 GB di memoria.
+
+### L'acqua sul server — 2026-10-03/04
+
+Tutto in container usa-e-getta (`--memory 4g`), con `water_extract.py`
+montato in sola lettura dal branch. L'API non si è fermata e il codice sul
+server resta `7098cb9`. Prima c'erano 38 GB liberi, dopo 37.
+
+- **L'estratto**: in `/srv/shaperoute/extracts` c'era già l'Italia intera
+  (`italy-260930.osm.pbf`, 2,2 GB), quindi niente download.
+  `osmium tags-filter` (MAPS.md) ha scritto `italy-260930-water.osm.pbf`,
+  674 MB, in 2 minuti. Resta lì per i luoghi nuovi.
+- **I sei file** in `/root/shaperoute/data/cache/water/`, 22 MB in tutto,
+  di proprietà dell'utente 10001 come il resto della cache:
+
+  | File | Elementi | MB | Tempo |
+  |---|---|---|---|
+  | Riccione | 2081 | 1,1 | 34 s |
+  | Jesolo | 4820 | 6,6 | 34 s |
+  | Garda nord | 4796 | 3,0 | 35 s |
+  | Garda | 12220 | 7,1 | 54 s |
+  | Como città | 795 | 0,7 | 32 s |
+  | Como | 5525 | 3,4 | 50 s |
+
+- **La prova** (2026-10-04, 07:00Z): richieste `paddling` vere a
+  `/route-jobs` dall'interno del container dell'API, con la sua chiave.
+  **Cuore da 2 km a Riccione** (44.00355, 12.66338): fatto in **3,1 s**,
+  1997 m, chiuso, 131 punti. Partenza dalla spiaggia accanto al punto
+  chiesto, scala 0,79, tratti dalla riva di 209 m. L'acqua è letta dal
+  disco: 2081 elementi in 0,1 s, nessun download.
+- **I campioni v2**: cuore, cerchio e stella da 2 km dai punti di
+  «Explore» (TASK-191, parte C). Tutti e dodici fatti in 1–5 s, a
+  1996–2015 m:
+
+  | Luogo | File letto | Partenza | Scala | Tratti | Tempo |
+  |---|---|---|---|---|---|
+  | Riccione | Riccione, 2081 elementi | spiaggia | 0,79 | 209–217 m | 2–3 s |
+  | Jesolo | Jesolo, 4820 | spiaggia | 0,79 | 211–218 m | 3–5 s |
+  | Riva del Garda | Garda nord, 4796 | scivolo | 0,94 | 59–66 m | 2–4 s |
+  | Como | Como città, 795 | spiaggia, molo | 0,94 | 58–65 m | 1–2 s |
+
+  Poi un cuore a Sirmione (Garda intero, 12220 elementi, letti in 0,3 s,
+  6,1 s in tutto) e uno a Lecco (Como intero, 5525, 4,1 s): ogni
+  richiesta legge il file più piccolo che la contiene. Pagina dei 14
+  campioni per il giudizio dell'utente: `out/task225-paddle-samples-v2.html`
+  (fuori dal repository), con le risposte in `out/task225-water/`.
+- **Overpass ha risposto al server** (2026-10-04, ~07:30Z), alla prima
+  partenza fuori dai riquadri: un cuore a Milano. È la **prima risposta
+  vera alla query dell'acqua**: 184 s, 1932 elementi, e «there is no lake
+  or sea to paddle on within 2 km of here». Confrontata con
+  `water_extract` sullo stesso riquadro: 1931 elementi, 1921 identici.
+  Uno solo è in più in Overpass (una via `residential` più nuova
+  dell'estratto). Le altre 10 differenze sono tutte relazioni:
+  **Overpass le dà senza membri**, perché `out tags geom` non scrive i
+  membri delle relazioni. Così da Overpass ogni lago disegnato come
+  multipoligono manca: il Garda, il Lago di Como, a Milano l'Idroscalo. È
+  un difetto di `route_engine.water.WATER_QUERY`, segnalato al
+  coordinatore per un task a parte, perché cambia `route_engine` e quindi
+  l'impronta. Qui non si tocca: i sei riquadri vengono dall'estratto e i
+  membri li hanno. Il file di Milano scritto dall'API è stato sostituito
+  con quello dell'estratto, che ha i membri. `/tmp/task225` è stato tolto.
 
 ## Note per il deploy
 

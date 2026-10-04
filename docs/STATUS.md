@@ -380,7 +380,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   simulatore, con l'API spenta disegna il cuore da 5 km di Trento. Senza
   `/phone-zones` sul server l'app chiede tutto al server, come prima.
   L'utente ha scelto i testi delle mappe offline e il tetto del traffico
-  (task file). **Parte C** nella PR #PRC: in «Settings», sotto
+  (task file). **Parte C** nella PR #295: in «Settings», sotto
   «Preferences», «Offline maps: 10 MB» con «Delete» e «Maps download on
   Wi-Fi and mobile data.»; sopra «Draw route», solo al primo download,
   «Downloading the maps of your area (10 MB) so routes work without

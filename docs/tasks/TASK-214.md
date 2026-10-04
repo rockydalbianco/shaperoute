@@ -522,7 +522,7 @@ La «Modalità dati ridotti» di iOS non si chiede ora: in Expo Go non si
 legge (`expo-network` non la dà). È un seguito della build propria
 (TASK-152).
 
-**Parte C, «Settings» e l'avviso** (PR #PRC, 2026-10-04; ADR-0177,
+**Parte C, «Settings» e l'avviso** (PR #295, 2026-10-04; ADR-0177,
 «Decisione dell'agente, parte C»):
 
 - **Dove sta l'avviso**: sopra «Draw route», in fondo a «Draw», la pagina

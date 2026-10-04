@@ -100,7 +100,32 @@ danno le stesse impronte (sha256 dei punti, della distanza, della
 somiglianza e degli avvisi, come `tests/test_pen_up.py`). Anche i punti
 ricampionati di ogni file di `outlines/` senza pezzi sono gli stessi.
 
-IMPRONTE
+Percorsi: le forme a 6 km, le parole a 3 km a lettera (6 almeno), con la
+penna giù (`word`) e su (`penup`); gatto, pesce, teste e zucca hanno ora
+`lift` e sono chieste senza penna alzata, come l'app chiede ogni forma.
+
+| Caso | Impronta | Punti | Tratti a piedi |
+|---|---|---|---|
+| `penup:ciao` | `e54d4d83296c6a06` | 157 | 3 |
+| `penup:io` | `7bddc7e90a0e2be7` | 71 | 1 |
+| `shape:butterfly` | `2b51efb8988b2518` | 63 | 0 |
+| `shape:cat` | `c4bd50e6d09184c5` | 63 | 0 |
+| `shape:christmas_tree` | `9d2f78b6f94c4bf6` | 61 | 0 |
+| `shape:circle` | `12030ff9c3393bf1` | 61 | 0 |
+| `shape:dog_head` | `adba835fb7c2517e` | 65 | 0 |
+| `shape:fish` | `87a8ea6eae6c2d7d` | 59 | 0 |
+| `shape:heart` | `f993c0fa81965b16` | 65 | 0 |
+| `shape:horse` | `65a8d1add8e40d24` | 59 | 0 |
+| `shape:moon` | `3eb1313916fb0d3b` | 63 | 0 |
+| `shape:pumpkin` | `cd11d4e34298c90b` | 63 | 0 |
+| `shape:rabbit_head` | `f41b0c982b0fe852` | 61 | 0 |
+| `shape:snail` | `0d55cc15e30f2399` | 63 | 0 |
+| `shape:star` | `3962f2514e3ef8ca` | 63 | 0 |
+| `word:ciao` | `b7bc6d4dc84e9492` | 125 | 0 |
+| `word:io` | `752db4f68f1a45d8` | 65 | 0 |
+
+I punti ricampionati dei 19 file di `outlines/` di `main` e delle 13 forme
+del catalogo: le stesse 32 impronte (`POINTS` nel test).
 
 ### Note per il deploy
 

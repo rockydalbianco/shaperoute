@@ -151,7 +151,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   motore**, nel branch `feat/TASK-223-simple-emoji`. Le forme possono avere
   `pieces`, pezzi staccati dal contorno: con la penna alzata si disegnano
   uno per volta, a piedi fra l'uno e l'altro come le lettere; con la penna
-  giù si attaccano da soli. Dieci candidati, solo dalla CLI (faccina,
+  giù si attaccano da soli. Gatto, pesce, teste di cane e coniglio e zucca
+  staccano gli occhi con la penna alzata (`lift`), con la penna giù lo stesso
+  percorso di prima (impronte in `tests/test_pieces_before.py`). La copia
+  del motore nell'app (`engine.zip`) è rifatta. Dieci candidati, solo dalla CLI (faccina,
   fantasmino, ciambella, sole, fulmine, goccia, palloncino, cono gelato,
   nuvola, mela) e i campioni a 10 km a Trento, Levico e Milano. **Aspetta
   l'utente**: quali forme entrano, la penna alzata accesa o spenta di

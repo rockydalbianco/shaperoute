@@ -262,7 +262,15 @@ def test_the_catalogue_gains_no_shape_only_eyes_apart() -> None:
 
 # A loop hung from the left side by a link, like the eye of the cat: the
 # link from (100, 114) to (104, 114), the loop round to (104, 114) again.
-EYE = [[100, 114], [104, 114], [104, 116], [107, 116], [107, 112], [104, 112], [104, 114]]
+EYE = [
+    [100, 114],
+    [104, 114],
+    [104, 116],
+    [107, 116],
+    [107, 112],
+    [104, 112],
+    [104, 114],
+]
 LASH = [[107, 116], [107, 118]]  # hangs from the loop
 CHEEK = [[102, 114], [102, 110]]  # hangs from the link
 

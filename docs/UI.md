@@ -140,7 +140,10 @@ pagine»):
    luogo; l'errore della mappa; le forme del catalogo come tessere, con un
    simbolo e il nome (quella scelta ha il bordo chiaro); il campo per
    un'altra parola; la distanza, grande, fra − e +. In fondo, fermo mentre
-   il resto scorre, «Draw route».
+   il resto scorre, «Draw route». Sopra, solo mentre il telefono scarica
+   le sue prime mappe (TASK-214, parte C), una riga piccola e grigia:
+   «Downloading the maps of your area (10 MB) so routes work without
+   signal.», con il peso vero; finito il download, sparisce.
 2. **La mappa**, che si apre con «Draw route» e chiede il percorso. La
    mappa va da bordo a bordo, con «←» in alto a sinistra; sotto, una
    scheda con l'attesa, il risultato o il problema. All'apertura la mappa
@@ -513,7 +516,12 @@ com'è scritto, e il commento non entra mai nella WebView della mappa.
   VoiceOver nella sua lingua, con il «✓» bianco sulla scelta. La scelta
   chiude la lista, vale subito per tutta l'app senza chiudere niente e
   resta sul telefono, come lo sport; «Phone language» torna a seguire il
-  telefono. Poi «Units», «Soon». **«Notifications»**: «Email
+  telefono. Poi **«Offline maps»** (🗺️, TASK-214, ADR-0177): «Offline
+  maps: 1.2 GB», lo spazio delle mappe che il telefono tiene per disegnare
+  da sé, con «Delete» in fondo alla riga quando ce ne sono; sotto, piccolo
+  e grigio, «Maps download on Wi-Fi and mobile data.». «Delete» cancella
+  subito, senza chiedere: le mappe tornano alla prossima apertura, con la
+  riga sopra «Draw route». Poi «Units», «Soon». **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima

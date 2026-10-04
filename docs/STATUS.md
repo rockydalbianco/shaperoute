@@ -149,14 +149,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
-  dipendenza `react-native-view-shot`). **Parte A, l'app**, in PR: «Share»
+  dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal
+  2026-10-04 (PR #303, merge `cf973d1`), non pubblicata: «Share»
   a fine corsa e in «My activities» apre il post (9:16, giallo, disegno
   senza i primi e gli ultimi 200 m, risultati accendibili, fino a 5 emoji
   trascinabili); «Instagram» ne fa un PNG e apre il foglio di iOS; «Send
   to Strava» dal post manda emoji e risultati come descrizione. Provato
-  nel simulatore (immagine e foglio). Dopo il merge: `npm install` nel
-  checkout principale; poi la pubblicazione e la prova sull'iPhone con
-  l'ok dell'utente. **Parte B, l'API**: cambiare la descrizione di una
+  nel simulatore (immagine e foglio). `npm install` nel checkout
+  principale lo fa il coordinatore; poi la pubblicazione e la prova
+  sull'iPhone con l'ok dell'utente. Il testo per Strava («🔥❤️ 5.20 km ·
+  28:10 · 5:25 /km · Punteggio 87», poi «Drawn with Sgrava») è stato
+  mostrato all'utente: va bene se non chiede di cambiarlo. **Parte B, l'API**: cambiare la descrizione di una
   corsa già su Strava (`tasks/TASK-231.md`).
 
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle

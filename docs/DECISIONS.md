@@ -9267,11 +9267,23 @@ scaricati al momento del download dell'app».
   comunque chiesto la rete.
 - Le sole forme senza occhi, in attesa di TASK-226: scartato dall'utente.
 
+5. **Il JSON dice con quale motore è stato disegnato**: `engine` è
+   l'impronta dei file del motore che disegnano sull'acqua, cioè
+   `route_engine.paddling` e ciò che importa, seguendo le righe `import`,
+   più le sagome delle otto forme. Un test dell'API fallisce quando
+   l'impronta cambia, come quello dello zip del telefono (ADR-0177), e dice
+   come rifarlo.
+
 **Conseguenze**:
 
-- L'app cresce di circa 150 KB.
-- Gli esempi non seguono da soli il motore: quando cambiano luoghi, forme
-  o il modo di disegnare sull'acqua (TASK-226), si rifà il JSON con il
-  comando, e il test dell'app lo segnala se manca qualcosa.
+- L'app cresce di 101 KB di codice JavaScript; nel repository il file pesa
+  156 KB dopo Prettier.
+- Rifarlo vuole l'acqua del server, copiata in sola lettura con `scp`,
+  e il comando: dopo un cambio del motore sull'acqua (TASK-226 ne è uno),
+  dei luoghi, delle forme o dell'acqua stessa. Un cambio del motore che
+  non tocca l'acqua (la ricerca su strada, la penna alzata) non lo chiede.
 - Un esempio dentro l'app si apre, parte e si tiene nei preferiti come
   quelli disegnati dall'API.
+- **Limite**: «Near me» resta legato al server, che fuori dai quattro
+  luoghi scarica l'acqua da Overpass. Finché il server non ha TASK-230
+  (ADR-0192) i laghi multipoligono scaricati così mancano.

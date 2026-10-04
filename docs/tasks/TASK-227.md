@@ -98,9 +98,12 @@ repository. L'utente ha scelto tutte e otto.
     quindi sono pronti subito e non si chiedono più;
   - senza API un luogo che ha tutto già disegnato si mostra lo stesso;
   - `PADDLE_EXAMPLES` prende `MORE_SHAPES`, come la corsa.
-- `paddleExamples.json` (nuovo, 147 KB dopo Prettier): i 32 esempi dei
-  quattro luoghi, nel formato in cui l'app tiene i suoi
-  (`asRecommended(...).detail`), con le coordinate a 6 decimali.
+- `paddleExamples.json` (nuovo): i 32 esempi dei quattro luoghi, nel
+  formato in cui l'app tiene i suoi (`asRecommended(...).detail`), con le
+  coordinate a 6 decimali e **l'impronta del motore** che li ha disegnati
+  (`engine`). **Quanto pesa**: 156 KB nel repository dopo Prettier,
+  101 KB senza spazi, che è quanto aggiunge al codice JavaScript dell'app
+  (Metro mette il JSON nel bundle).
 - `PaddleExplore.tsx`: le schede con `shownExamples` come `CityExamples`
   (le forme dopo le prime tre compaiono quando arrivano, e una che non ci
   sta non si annuncia). La frase prima della scelta ora parla delle otto
@@ -111,6 +114,14 @@ repository. L'utente ha scelto tutte e otto.
   32 esempi con il motore, come li disegna l'API (`plan_water`), senza
   scaricare niente, e scrive il JSON. I luoghi li legge da `waterPlaces.ts`.
   Il comando ci mette 22 s.
+- **L'impronta del motore sull'acqua** (`engine_fingerprint`): i file del
+  motore con cui si disegna in canoa. Sono `route_engine.paddling` e ciò
+  che importa, seguendo le righe `import` come fa lo zip del telefono, più
+  le sagome delle otto forme: 25 file. Non ci sono `optimizer.py`,
+  `pen_up.py` né le altre sagome. Se uno di questi file cambia, il test
+  dell'API `test_the_app_s_examples_were_drawn_by_this_engine` fallisce e
+  dice di rifare il JSON. Provato: una riga in più in `water_fit.py` lo fa
+  fallire, una in `optimizer.py` no.
 - Test:
   - `paddleExamples.test.ts` (nuovo): ogni luogo ha le sue otto forme e
     niente altro; ogni esempio è quello che `asRecommended` farebbe dal suo
@@ -124,10 +135,18 @@ repository. L'utente ha scelto tutte e otto.
     nessuna richiesta;
   - API: `test_paddle_examples.py` (5) sulle fixture dell'acqua del motore.
 
-**Rifare il JSON** quando cambiano i luoghi, le forme o il motore, per
-esempio con gli occhi staccati di TASK-226: il comando qui sopra, con l'acqua
-del server (`scp` di `data/cache/water/`), poi `npx prettier --write` sul
-file. Il test dell'app dice se un luogo o una forma mancano.
+**Rifare il JSON**:
+
+- **quando**: dopo un cambio del motore che disegna sull'acqua (lo dice il
+  test dell'impronta, nella CI dell'API), dei luoghi o delle forme (lo dice
+  il test dell'app), o dell'acqua sul server (un riquadro rifatto
+  dall'estratto). Gli occhi staccati di TASK-226 cambiano il motore, quindi
+  serviranno.
+- **come**: copiare l'acqua del server, `scp
+  'root@188.245.9.220:/root/shaperoute/data/cache/water/*.json'
+  <cache>/water/`, solo lettura; poi `python -m
+  shaperoute_api.paddle_examples --cache-dir <cache>` dalla cartella
+  dell'API, e `npx prettier --write apps/mobile/src/paddle/paddleExamples.json`.
 
 **Testi da confermare con l'utente**: la frase nuova, nelle cinque lingue.
 
@@ -135,5 +154,10 @@ file. Il test dell'app dice se un luogo o una forma mancano.
 
 - Solo l'app: esce con la prossima pubblicazione, che fa il coordinatore.
   Niente server: gli esempi dei quattro luoghi non chiedono niente all'API.
-- «Near me» chiede come prima `paddling` all'API. Il server ha l'acqua
-  solo dei quattro luoghi; altrove la scarica da Overpass, se risponde.
+- **Limite di «Near me»**: chiede come prima `paddling` all'API, ora per
+  otto forme. Il server ha l'acqua solo dei quattro luoghi; altrove la
+  scarica da Overpass, se risponde, e la prima volta ci mette minuti (184 s
+  a Milano). Fino al prossimo aggiornamento del server, quello di
+  Overpass è ancora il codice di prima di TASK-230: i laghi disegnati come
+  multipoligono mancano, e una partenza vicino a uno di loro risponde «no
+  lake or sea». L'aggiornamento chiede l'ok dell'utente e `draw_examples`.

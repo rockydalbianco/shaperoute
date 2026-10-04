@@ -1741,7 +1741,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
 - **«Near me» sul server**: il server ha l'acqua solo dei quattro luoghi
   (`data/cache/water/`, TASK-225); altrove la scarica da Overpass, se
   risponde, e la prima volta ci mette minuti, altrimenti «Map data for this
-  area could not be downloaded.».
+  area could not be downloaded.». Finché il server non ha TASK-230, i laghi
+  disegnati come multipoligono scaricati da Overpass mancano.
 - Testi nuovi **da confermare con l'utente**: «On the water, a shape of the
   catalogue.», «on the water», «Paddle without a route», i testi d'errore
   qui sopra e quelli di «Explore» («On the water», «Shapes to paddle,

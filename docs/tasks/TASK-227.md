@@ -1,6 +1,7 @@
 # TASK-227 — «Explore» con «Paddle» come la corsa
 
-**Stato**: In corso (PR aperta, aspetta la CI)
+**Stato**: Done (2026-10-04) — PR #297, merge `e761044`. Solo app: esce con
+la prossima pubblicazione.
 **Fase**: 4 · **Branch**: `feat/TASK-227-explore-paddle`
 **Dipende da**: TASK-191 C («Explore» con «Paddle», #255), TASK-225
 (l'acqua dei quattro luoghi sul server), TASK-176 (le forme in più)

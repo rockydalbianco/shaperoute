@@ -372,15 +372,47 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   che dà lo stesso `result` di `/route-jobs` (test su Levico; su Trento in
   Pyodide 5–7 s, uguale a CPython). L'aggiornamento del server e le zone
   scritte in anticipo (0,7–0,8 GB, 20–30 min) li chiede il coordinatore
-  all'utente. **Dopo**: B, l'app (Pyodide negli asset,
-  `package.json` e `metro.config.js` con l'ok del coordinatore); C, la riga
-  in «Settings»; D, la prova sull'iPhone. **Aspetta l'utente**: la prova
-  della pagina sull'iPhone (`out/on-phone-engine/`, Safari, «Start the
-  test»). Niente server né pubblicazione. Da dove riprendere:
-  `tasks/TASK-214.md`, «Esito».
+  all'utente. **Parte B, l'app**, nella sua PR: Pyodide 314.0.7 e il
+  motore in due zip fra gli asset (`tools/phone_engine/phone_engine.py`;
+  chi cambia `route_engine` rifà `engine.zip`, la CI lo controlla), una
+  WebView nascosta, le zone scaricate a ogni apertura, il telefono prima
+  fino a 8 km a piedi e 30 in bici, il server come riserva. In Expo Go,
+  nel simulatore, con l'API spenta disegna il cuore da 5 km di Trento.
+  **Dopo**: C, la riga in «Settings»; D, la prova sull'iPhone. **Aspetta
+  l'utente**: i testi dei dati mobili, il tetto del traffico, la
+  «Modalità dati ridotti». Niente server né pubblicazione. Da dove
+  riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
 
+- **App** — TASK-224: correndo un percorso, il fatto giallo pieno e il da
+  fare tratteggiato che lampeggia (ADR-0186; chiesto dall'utente il
+  2026-10-03, stile approvato su un'anteprima; PR #287, merge
+  `ec6b748`). Il da fare è giallo, tratteggiato, 0,7 s acceso e 0,7 s a opacità 0,3, a scatti senza
+  dissolvenza (due ridisegni ogni 1,4 s); fermo con «Pocket» e con «Riduci
+  movimento». Il taglio è ai metri del navigatore, a passi di 5 m; dopo
+  l'arrivo tutto pieno, a fine corsa il percorso torna intero. Con la penna
+  alzata si tagliano solo le lettere; la bici a mano resta sopra. Provato
+  e misurato con la pagina vera di MapLibre nel browser: il lampeggio
+  costa 1,43 ridisegni al secondo (una battuta cambia lo stato della linea,
+  non lo stile), 0 in «Pocket»; il GPS non cambia. Solo
+  app: esce con la prossima pubblicazione, con l'ok dell'utente; da
+  provare correndo sull'iPhone. Seguito da chiedere: fermarlo anche sulla
+  pagina «Data», dove la mappa è coperta. Task file: `tasks/TASK-224.md`.
+- **App** — TASK-221: il cuore su giallo accanto a «Sgrava» (ADR-0184;
+  chiesto dall'utente il 2026-10-03). In cima a «Draw», a sinistra del
+  nome, un quadrato giallo di 32 punti con il cuore nero dell'avvio, fermo.
+  Un componente solo, `src/intro/HeartBadge.tsx`, che TASK-222 riusa in
+  «Explore». Sul telefono con la prossima pubblicazione.
+  `tasks/TASK-221.md`.
+- **App** — TASK-220: «Run without a route» giallo (ADR-0183; chiesto
+  dall'utente il 2026-10-03). In cima a «Draw» il pulsante, anche come
+  «Ride without a route», ha il fondo giallo e il testo scuro: l'unica
+  eccezione alla regola «il giallo è del percorso». PR #280, merge
+  `0655511`. Esce con la prossima pubblicazione, che l'utente ha
+  approvato il 2026-10-03 («aspetta e poi pubblica») solo dopo che
+  l'acqua di TASK-225 è sul server: `main` ha già «Paddle» (#255).
+  `tasks/TASK-220.md`.
 - **App** — TASK-216: la navigazione in bici (ADR-0179; scelte
   dell'utente del 2026-10-03; PR #278, merge `510f8a5`). «Start» su un
   percorso in bici (da «Draw», da un preferito tenuto in bici) segue

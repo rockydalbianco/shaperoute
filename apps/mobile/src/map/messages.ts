@@ -3,6 +3,7 @@ import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
 import { onFootLines } from "../route/onFoot";
 import { piecesOf, walksOf } from "../route/walks";
 import { type LngLat, metresBetween, toLngLat } from "./coordinates";
+import type { RouteSplit } from "./routeSplit";
 
 /**
  * A route that begins farther than this from the requested start gets a
@@ -27,6 +28,15 @@ export type ToPage =
       onFoot?: LngLat[][];
     }
   | { type: "clearRoute" }
+  | {
+      /** While running the route (TASK-224): the part run, solid, and the
+       * part left, dashed; with `blink`, the dashes blink. */
+      type: "showProgress";
+      done: LngLat[][];
+      ahead: LngLat[][];
+      blink: boolean;
+    }
+  | { type: "clearProgress" }
   | { type: "showOthers"; lines: LngLat[][] }
   | { type: "showTrack"; coordinates: LngLat[] }
   | { type: "clearTrack" }
@@ -131,6 +141,26 @@ export function clearStops(): ToPage {
 
 export function clearRoute(): ToPage {
   return { type: "clearRoute" };
+}
+
+/**
+ * Draws the route as the runner has got along it (TASK-224): the part run
+ * solid yellow, the part left dashed, blinking unless `blink` is false
+ * (pocket mode). The route of `showRoute` is kept, and comes back whole
+ * with `clearProgress`.
+ */
+export function showProgress(split: RouteSplit, blink: boolean): ToPage {
+  return {
+    type: "showProgress",
+    done: split.done.map((line) => line.map(toLngLat)),
+    ahead: split.ahead.map((line) => line.map(toLngLat)),
+    blink,
+  };
+}
+
+/** The run is over: the route is drawn whole again, and nothing blinks. */
+export function clearProgress(): ToPage {
+  return { type: "clearProgress" };
 }
 
 /** Draws the other routes to choose from under the route, without moving

@@ -8445,7 +8445,7 @@ confermare con gli altri.
 ## ADR-0177 — Il motore sul telefono: Pyodide nella WebView, le zone come dati, il server come riserva
 **Stato**: Attiva · 2026-10-03 · **scelte dell'utente** le sei di
 `tasks/TASK-214.md`; il resto deciso dall'agente su delega dell'utente
-(TASK-214, parte A).
+(TASK-214, parti A e B).
 
 **Contesto**: l'utente, il 2026-10-03, vuole che l'app usi «la potenza del
 suo telefono, utilizzando anche la sua memoria, scaricando le mappe». La
@@ -8505,8 +8505,59 @@ scaricare Pyodide o il motore dopo l'installazione (regole di Apple).
 
 **Conseguenze**: la zona di Trento pesa 7,0 MB (7,9 il pickle con gzip).
 Il server scrive un file in più per ogni zona chiesta da un telefono.
-L'app (parte B) mette Pyodide fra i suoi asset, con `metro.config.js` e
-`package.json` da concordare con il coordinatore.
+
+**Decisione dell'agente** (parte B, l'app; numeri in `tasks/TASK-214.md`,
+«Esito»):
+1. **Pyodide 314.0.7** (Python 3.14), non 0.28.3. In 0.28.3 Shapely 2.0.7
+   fa fallire il `buffer` della stella da 5 km a Trento, e in Pyodide
+   l'eccezione di GEOS è fatale per Python. In 314.0.7, con Shapely 2.1.2,
+   la stella è identica al Mac, e numpy, networkx e Shapely sono più
+   vicini al server. Resta GEOS 3.12.1: dopo un errore fatale la pagina
+   riparte, e la richiesta va al server.
+2. **Due zip non compressi fra gli asset dell'app**: `pyodide.zip` (21,2
+   MB, nove pacchetti, il lock ridotto, gli SHA-256 scritti nello script)
+   e `engine.zip` (0,6 MB, `route_engine` intero e i moduli che
+   `on_phone` importa). Li scrive `tools/phone_engine/phone_engine.py`.
+   `zip` è già un asset di Metro, quindi niente `metro.config.js`.
+   **Stanno nel repository**, perché `eas update` pubblica il checkout
+   pulito di `origin/main`. Il git cresce di 21 MB una volta, e di 0,6 MB
+   (0,16 compressi) a ogni cambio del motore.
+3. **Un test nella CI** (`tools/phone_engine/test_phone_engine.py`)
+   confronta `engine.zip` con il codice. **Chi cambia `route_engine`, o un
+   modulo dell'API che il telefono importa, rifà lo zip** con `python
+   tools/phone_engine/phone_engine.py engine`: il telefono e il server
+   hanno sempre lo stesso motore.
+4. **`expo-asset` dichiarato** in `apps/mobile/package.json` (~57.0.18):
+   porta gli zip sul disco del telefono. È già nell'albero come modulo
+   dell'SDK, alla stessa versione: non scarica niente di nuovo (ok del
+   coordinatore).
+5. **La pagina legge da file**: XMLHttpRequest sugli zip (in WebKit
+   `fetch` non legge `file:`), le richieste di Pyodide servite dalla
+   memoria, ogni altro indirizzo rifiutato. La WebView legge solo la
+   cartella comune a pagina, zone e zip. Funziona in **Expo Go**, senza
+   build propria.
+6. **Le zone sul telefono**: con il nome dell'API, un indice con ETag,
+   peso e ultimo uso, `If-None-Match`; oltre 2 GB va via la meno usata. A
+   ogni apertura le zone a piedi e in bici intorno alla posizione, con
+   qualunque rete. Le scarica `downloadAsync` di `expo-file-system/legacy`:
+   l'API nuova dei file non dà stato e intestazioni.
+7. **Chi calcola**: il telefono prima, fino a 8 km a piedi e 30 km in
+   bici; il server se il telefono non dà né un percorso né un verdetto del
+   motore. Un verdetto (`shape_not_drawable`, `invalid_request`) si mostra
+   subito, perché il server direbbe lo stesso. Oltre i limiti prima il
+   server, e il telefono solo quando il server non risponde. Il telefono
+   calcola le partenze vicine una dopo l'altra, senza la scadenza del
+   server: un cuore da 10 km impiega 25–117 s sul Mac. I limiti si fissano
+   con l'iPhone (parte D).
+8. **La WebView si arrende in fretta**: una richiesta alla volta. Se iOS la
+   chiude due volte durante un percorso, il telefono smette fino alla
+   prossima apertura; chiusa mentre è ferma non conta.
+
+**Scartato**: Pyodide 0.28.3 e 0.29.5 (Shapely 2.0.7); un `metro.config.js`
+con `wasm`, `whl` e `mjs` fra gli asset (una configurazione per tutta
+l'app, per niente); passare i file alla WebView con `postMessage` (base64,
+tre volte la memoria); gli zip fuori dal repository, costruiti prima di
+pubblicare; `File.downloadFileAsync` (né stato né ETag).
 
 ## ADR-0170 — Pubblicare come su Strava, l'API: chi lo vede in tre valori, una domanda sola per saperlo, foto in posti fissi, campi nuovi che un'app di prima non cancella
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
@@ -8794,6 +8845,154 @@ precedenti, da 20 km. Restano come nella corsa, da chiedere all'utente:
 la fine della corsa (il passo nel riepilogo), le calorie (stimate per la
 corsa, circa il triplo di quelle in bici), l'incitamento dopo 5 km (in bici
 non c'è: i 5 km non si dicono), la corsa senza percorso in bici.
+
+## ADR-0183 — «Run without a route» è giallo
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** (TASK-220). Fa
+un'eccezione alla regola 1 dei colori di `UI.md` (ADR-0046 e seguenti: il
+giallo è del percorso e del comando che lo produce).
+
+**Contesto**: l'utente, il 2026-10-03: «il pulsante fallo giallo», del
+pulsante «Run without a route» in cima a «Draw». Fino a qui era neutro,
+su `surfaceRaised` con il bordo `borderStrong`, perché non produce un
+percorso.
+
+**Decisione dell'utente**: il pulsante è **giallo**, anche come «Ride
+without a route» con «Bike».
+
+**Decisione dell'agente**: fondo `accent` e testo `onAccent` (13,5:1),
+senza bordo, come «Draw route»; nessun token nuovo. L'eccezione vale **solo
+per questo pulsante**: gli altri comandi restano neutri.
+
+**Conseguenze**: nella pagina «Draw» ci sono due comandi gialli, in alto
+e in fondo; «Draw route» resta spento finché la richiesta non è completa,
+quindi all'apertura il giallo pieno è quello in alto. Il commento di
+`accent` in `src/theme/tokens.ts` dice ancora «una cosa sola»: da
+aggiornare con il prossimo task che tocca quel file.
+
+## ADR-0184 — Il cuore su giallo, segno di Sgrava: il cuore dell'avvio, fermo, in un quadrato giallo, un componente solo
+**Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
+(TASK-221). La richiesta («Dentro l'app, metti il cuore giallo sullo
+sfondo giallo, a fianco al nome sgrava») è dell'utente, come quella dello
+stesso cuore in «Explore», sotto la foto del profilo (l'altra sessione);
+misure, posto e componente, qui sotto, sono dell'agente.
+
+**Contesto**: il cuore nero su giallo si vede solo all'avvio (TASK-179,
+ADR-0147), disegnato da una penna; dentro l'app il nome in cima a «Draw»
+era un testo solo. Due richieste dello stesso giorno lo vogliono in due
+posti dell'app: serve una regola sola, perché non nascano due cuori
+diversi.
+
+**Decisione**:
+
+1. **Lo stesso cuore dell'avvio** (`heartLine.ts`, il cuore di Milano da
+   10 km), fermo: un tratto dritto per ogni pezzo del percorso, senza i
+   tagli che servono all'animazione (98 View invece di circa 200).
+2. **Un quadrato giallo `accent`**, angoli al 22% del lato, come
+   un'icona e non come un pulsante; il cuore nero `onAccent` largo il 68%
+   del lato, centrato, con il punto di partenza dell'avvio (bianco `text`
+   con l'anello nero). Il tratto è 1/16 del lato, il punto 1/6: più
+   spessi che all'avvio, perché il cuore si legga alla misura di una
+   parola.
+3. **Un componente solo**, `src/intro/HeartBadge.tsx`, con la misura del
+   lato come unico parametro. Ogni altro posto dove il cuore su giallo
+   compare (il primo dopo questo: «Explore») lo importa, non lo ridisegna.
+4. **Dove si usa**: in «Draw», a sinistra di «Sgrava», 32 punti,
+   `space.sm` di distanza, il nome resta un testo (TASK-221); in
+   «Explore», sotto il cerchio del profilo, 44 punti (TASK-222).
+5. **Solo un'immagine**: nascosto al lettore di schermo, che legge il nome
+   accanto.
+
+**Perché così**: il logo si usa già «nero su giallo» (ADR-0129, `UI.md`
+«Il logo e l'icona»): il cuore su giallo è un segno della marca, non un
+comando, e non tocca la regola «il giallo significa una cosa sola», che
+parla dei comandi e della mappa. Nessuna dipendenza nuova: View girate,
+come all'avvio.
+
+**Scartato**: un'immagine PNG del cuore (un file in più, sfocata alle
+misure che non sono la sua); il segno «S» invece del cuore (non chiesto);
+il cuore senza quadrato, nero o giallo sul fondo scuro (il giallo dietro
+è la richiesta); il cuore a destra del nome (il logo viene prima del
+nome, come in ogni marchio).
+
+**Conseguenze**: TASK-222 («Explore») importa `HeartBadge` dopo il merge
+di TASK-221; un posto nuovo si aggiunge al punto 4. Si vede sul telefono
+con la prossima pubblicazione dell'app, con l'ok dell'utente.
+
+## ADR-0186 — Correndo un percorso: il fatto giallo pieno, il da fare tratteggiato che lampeggia
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** il giallo pieno
+del fatto, il tratteggio lampeggiante del da fare e lo stile proposto
+(anteprima approvata); il resto deciso dall'agente su delega dell'utente
+(TASK-224).
+
+**Contesto**: correndo, la mappa disegnava tutto il percorso giallo pieno,
+uguale prima e dopo il passaggio. L'utente, il 2026-10-03: «voglio che il
+segno del percorso fatto sia giallo mentre quello da fare sia tratteggiato
+che lampeggia come se dovessi ancora farlo». Il coordinatore ha chiesto che
+il nuovo tratteggio si distingua dagli altri due della mappa, che il
+lampeggio costi poca batteria e si fermi con «Pocket», e che penna alzata e
+bici a mano restino giuste.
+
+**Decisione dell'utente**: fra tre proposte, «Sì, così»: il da fare giallo
+tratteggiato, a scatti, 0,7 s acceso e 0,7 s attenuato, mai spento; fermo
+in «Pocket». Scartati il lampeggio morbido (più batteria) e il da fare in
+grigio (il giallo non indicherebbe più tutta la strada).
+
+**Decisione dell'agente**:
+1. **Il taglio si fa nell'app, non nella pagina della mappa**
+   (`src/map/routeSplit.ts`, puro e provato con jest): dal percorso e dai
+   metri del navigatore (`alongM`) escono le linee fatte e quelle da fare,
+   mandate alla pagina con `showProgress`. Il percorso di `showRoute`
+   resta nella pagina e torna intero con `clearProgress`.
+2. **A passi di 5 m**: la mappa non riceve il percorso a ogni metro; un
+   passo ogni due secondi circa di corsa. Dopo «You have arrived» il fatto
+   è tutto il percorso, anche se l'arrivo scatta 25 m prima della fine.
+3. **Uno strato nuovo, `route-ahead`**, sotto la linea piena: giallo,
+   largo come il percorso, trattini 2 × 1,5 larghezze. **Una battuta cambia
+   lo stato della linea** (`feature-state` «dim», la sola linea dello
+   strato ha id 0 con `generateId`), **mai lo stile**: un `setPaintProperty`,
+   anche con la transizione dell'opacità a zero, fa ripartire per 300 ms le
+   transizioni di tutte le proprietà dello strato, e la mappa si ridisegna
+   per tutto quel tempo.
+4. **«Pocket» arriva alla mappa da un segnale piccolo**
+   (`src/navigation/pocketOn.ts`), scritto da `usePocketMode`: la scheda
+   della corsa e la mappa sono in due rami diversi di `App.tsx`, e passare
+   lo stato fra loro avrebbe toccato più file. Con «Riduci movimento» del
+   telefono la pagina non lampeggia (`prefers-reduced-motion`).
+5. **Penna alzata e bici a mano**: si tagliano solo le linee disegnate (le
+   lettere); i tratti a piedi fra le lettere restano grigi e fermi, i
+   trattini scuri della bici a mano restano sopra il fatto e il da fare.
+
+**Come si distingue dagli altri due tratteggi**:
+
+| | colore | larghezza | dove | si muove |
+|---|---|---|---|---|
+| da fare (`routeAhead`) | giallo `accent` | 5, come il percorso | sotto la linea piena | lampeggia |
+| tratti a piedi fra le lettere (`walk`) | grigio `textMuted` | 3 | sotto il percorso | fermo |
+| bici a mano (`onFoot`) | scuro `onAccent`, dentro il giallo | 2 | sopra il percorso | fermo |
+
+Il grigio dice «non è disegno», lo scuro dentro il giallo «disegno, ma a
+piedi», il giallo tratteggiato «disegno, ancora da fare».
+
+**Misure** (la pagina vera della mappa, MapLibre 5.24, nel browser
+dell'app sul Mac, il cane da 15 km di Levico, 665 punti, alla vicinanza
+della corsa; ridisegni contati sulle chiamate di disegno WebGL):
+
+| | ridisegni al secondo |
+|---|---|
+| fermo, nessun taglio | 0 |
+| taglio, lampeggio spento («Pocket») | 0 |
+| lampeggio con `setPaintProperty` (la prima versione) | 28,6 |
+| lampeggio con `feature-state` | 1,43 (due ogni 1,4 s) |
+| la mappa che segue chi corre, una posizione al secondo | 20,6 |
+| la stessa, più il taglio ogni 2 s e il lampeggio | 25,2 |
+
+Un messaggio di taglio costa alla pagina 0,05 ms e pesa 17 KB per 15 km;
+arriva ogni 5 m, circa ogni 2 s di corsa. Seguire chi corre (`easeTo` a
+ogni posizione) resta la spesa grande; il taglio e il lampeggio aggiungono
+circa un quinto, e in «Pocket» niente. **Il GPS non cambia**: la
+registrazione e le sue richieste di posizione non sono toccate; la mappa
+legge i metri che il navigatore calcola già. Da confermare correndo
+sull'iPhone (una WebView di iOS, non il browser del Mac).
 
 ## ADR-0187 — L'acqua della canoa da un estratto Geofabrik: un riquadro grande per luogo, `route_engine` invariato
 

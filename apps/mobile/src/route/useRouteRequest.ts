@@ -1,12 +1,8 @@
 import type { JobStatus, RouteResult } from "@shaperoute/shared-types";
 import { useCallback, useRef, useState } from "react";
 
-import {
-  type AnyRouteRequest,
-  isImageRequest,
-  requestRoute,
-  type RouteOutcome,
-} from "../api/routes";
+import { type AnyRouteRequest, isImageRequest, type RouteOutcome } from "../api/routes";
+import { requestRouteOnPhoneFirst } from "../engine/onPhone";
 
 export type { AnyRouteRequest };
 
@@ -54,7 +50,7 @@ export function useRouteRequest(baseUrl: string | null): {
         }
       };
       const outcome: Promise<RouteOutcome | { kind: "no_api_url" }> = baseUrl
-        ? requestRoute(baseUrl, request, { signal: mine.signal, onStatus })
+        ? requestRouteOnPhoneFirst(baseUrl, request, { signal: mine.signal, onStatus })
         : Promise.resolve({ kind: "no_api_url" });
       void outcome.then((answer) => {
         if (current.current !== mine) {

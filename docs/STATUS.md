@@ -371,6 +371,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-222: il cuore su giallo in «Explore» (ADR-0184; chiesto
+  dall'utente il 2026-10-03). A destra di «Best near you», sotto il
+  cerchio del profilo e largo uguale (44 punti), il `HeartBadge` di
+  TASK-221: solo un'immagine, VoiceOver lo salta. Visto nel simulatore.
+  Sul telefono con la prossima pubblicazione. `tasks/TASK-222.md`.
 - **App** — TASK-229: «Save» per uscire dalla lavagna del contorno
   (ADR-0191; chiesto dall'utente il 2026-10-03: dalla foto modificata non si
   usciva). In fondo a «Edit the outline» un pulsante «Save» largo quanto

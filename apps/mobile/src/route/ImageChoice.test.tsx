@@ -40,7 +40,7 @@ test("the preview only shows the outline; editing opens the full-screen board", 
   await fireEvent.press(screen.getByText("Edit the outline"));
   expect(screen.getByTestId("outline-board")).toBeTruthy();
   expect(screen.getByText("Add a part")).toBeTruthy();
-  await fireEvent.press(screen.getByText("Done"));
+  await fireEvent.press(screen.getByText("Save"));
   expect(screen.queryByTestId("outline-board")).toBeNull();
 });
 

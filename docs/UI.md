@@ -994,7 +994,11 @@ senza SVG (`react-native-svg` non è una dipendenza dell'app).
 **Modificare il contorno** (TASK-079, ADR-0074). Sotto l'anteprima,
 **«Edit the outline»** apre una **lavagna a tutto schermo**: la foto
 attenuata con il contorno, e sotto **«Add a part»**, **«Add a detail»**,
-**«Undo»**; in alto «Done» per tornare e «Fit» quando la foto è ingrandita.
+**«Undo»**, e in fondo, largo quanto la riga, **«Save»**: tiene le
+modifiche e chiude la lavagna (le modifiche sono già nel contorno, quindi
+salvare è chiudere). In alto solo «Fit» quando la foto è ingrandita. Fino
+a TASK-229 (ADR-0191) in alto a destra c'era «Done», ma in Expo Go quell'angolo è
+coperto dal pulsante di Expo e l'utente non riusciva a uscire.
 La lavagna sta fuori dalla pagina che scorre: mentre si disegna lo schermo
 resta fermo (nella prima prova sull'iPhone l'anteprima, dentro la pagina,
 scorreva col dito). L'anteprima nella pagina mostra soltanto.

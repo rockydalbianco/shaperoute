@@ -8993,3 +8993,34 @@ circa un quinto, e in «Pocket» niente. **Il GPS non cambia**: la
 registrazione e le sue richieste di posizione non sono toccate; la mappa
 legge i metri che il navigatore calcola già. Da confermare correndo
 sull'iPhone (una WebView di iOS, non il browser del Mac).
+
+## ADR-0191 — Dalla lavagna del contorno si esce con «Save», in fondo
+**Stato**: Attiva · 2026-10-04 · deciso dall'agente su delega dell'utente
+(TASK-229). Cambia l'uscita della lavagna di ADR-0074.
+
+**Contesto**: l'utente, il 2026-10-03: «Non si riesce ad uscire quando
+carichi una foto e modifichi la sagoma, da aggiungere qualcosa per
+salvare le modifiche e uscire». L'unica uscita era «Done», un testo in
+alto a destra; in Expo Go quell'angolo è coperto dal pulsante di Expo, e
+la lavagna a tutto schermo di iOS non si chiude trascinando in giù.
+
+**Decisione**:
+
+1. **«Save» in fondo alla lavagna**, sotto «Add a part», «Add a detail» e
+   «Undo», largo quanto la riga, neutro come gli altri pulsanti (il
+   giallo è del percorso).
+2. **Salvare è chiudere**: ogni tratto entra nel contorno appena l'API
+   risponde (ADR-0074), quindi «Save» chiude e basta. Il tasto «indietro»
+   di Android chiude tenendo le modifiche, come prima.
+3. **Tolto «Done»**: due pulsanti per la stessa cosa confondono.
+4. **Nessun «Cancel»**: non chiesto; «Undo» torna fino al contorno
+   ricavato.
+
+**Scartato**: lasciare «Done» e spostarlo a sinistra (resta un testo
+piccolo e non dice che le modifiche restano); «Save» giallo (il giallo è
+del percorso, `UI.md` «Il tema»); «Cancel» che butta le modifiche della
+visita (una scelta di prodotto non chiesta: un task nuovo se serve).
+
+**Conseguenze**: «Fit», quando la foto è ingrandita, resta in alto a
+destra, in Expo Go sotto il pulsante di Expo: due dita fanno lo stesso.
+Si vede sul telefono con la prossima pubblicazione dell'app.

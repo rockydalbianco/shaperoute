@@ -43,7 +43,9 @@ volta dentro non si usciva.
 - [x] «Done» non c'è più.
 - [x] Test Jest: `OutlineBoard.test.tsx` (Save chiude, Done assente),
       `ImageChoice.test.tsx` (la lavagna si apre e si chiude con «Save»).
-- [x] `npm run typecheck`, `npm run lint`, `npm run format:check`; la CI.
+- [x] In locale Prettier sui file toccati e Jest dei due file (10 su 10,
+      in sequenza: il Mac a carico 100 non finiva typecheck e lint);
+      typecheck, lint, formato e tutta la suite nella CI della PR #289.
 - [ ] Prova sull'iPhone: dell'utente, con la prossima pubblicazione.
 
 ## File toccati
@@ -66,5 +68,5 @@ docs/tasks/TASK-229.md                       (nuovo)
 ## Esito
 
 «Save» in fondo alla lavagna del contorno: chiude e tiene le modifiche;
-tolto «Done», che in Expo Go stava sotto il pulsante di Expo. Solo app:
-esce con la prossima pubblicazione, con l'ok dell'utente.
+tolto «Done», che in Expo Go stava sotto il pulsante di Expo. PR #289.
+Solo app: esce con la prossima pubblicazione, con l'ok dell'utente.

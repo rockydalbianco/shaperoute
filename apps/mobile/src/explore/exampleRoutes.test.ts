@@ -557,31 +557,73 @@ test("another city chosen while a shape waits for its allowance: it stops waitin
 });
 
 describe("on the water (TASK-191)", () => {
+  // A place of «Explore» (its examples come with the app) and a start that
+  // is not one, as «Near me» gives (TASK-227).
   const garda: Place = { label: "Lago di Garda", point: [45.88114, 10.84559] };
+  const malcesine: Place = { label: "Your start", point: [45.7636, 10.8098] };
   const set = PADDLE_EXAMPLES;
+  const eight: Shape[] = [...EXAMPLE_SHAPES, ...MORE_SHAPES];
 
-  test("three shapes of 2 km from the shore, in paddling, and no others", async () => {
-    const { request, asked } = api();
+  test("a place of «Explore» comes with the app: eight ready, nothing asked", async () => {
+    const { request } = api();
     const storage = memory();
     const { result: hook } = await renderHook(() =>
       useCityExamples("http://api", garda, { request, storage, set }),
+    );
+    const list = hook.current.examples ?? [];
+    expect(list.map((e) => `${e.shape}:${e.status}`)).toEqual(
+      eight.map((shape) => `${shape}:ready`),
+    );
+    expect(request).not.toHaveBeenCalled();
+    // Nothing is written to the phone: the app has them.
+    expect(storage.kept).toEqual({});
+    const heart = list[0];
+    const detail = heart.status === "ready" ? exampleDetail(heart.route.id) : undefined;
+    expect(detail).toMatchObject({
+      id: "example:heart:paddling:45.8811,10.8456",
+      shape: "heart",
+      city: "Lago di Garda",
+      distance_m: 2000,
+      activity: "paddling",
+      alternatives: [],
+    });
+    expect(detail?.points.length).toBeGreaterThan(100);
+  });
+
+  test("without an API the places of «Explore» show all the same", async () => {
+    const { request } = api();
+    const storage = memory();
+    const { result: hook } = await renderHook(() =>
+      useCityExamples(null, garda, { request, storage, set }),
+    );
+    expect(hook.current.examples?.every((e) => e.status === "ready")).toBe(true);
+    expect(request).not.toHaveBeenCalled();
+    const { result: near } = await renderHook(() =>
+      useCityExamples(null, malcesine, { request, storage, set }),
+    );
+    expect(near.current.examples).toBeNull();
+  });
+
+  test("elsewhere the eight of 2 km are asked, in paddling, as a city's", async () => {
+    const { request, asked } = api();
+    const storage = memory();
+    const { result: hook } = await renderHook(() =>
+      useCityExamples("http://api", malcesine, { request, storage, set }),
     );
     const read = () => hook.current.examples;
     expect(request.mock.calls[0][1]).toEqual({
       shape: "circle",
       distance_m: 2000,
-      start: garda.point,
+      start: malcesine.point,
       activity: "paddling",
     });
-    await act(async () => asked[0].answer({ kind: "route", result }));
-    await act(async () => asked[1].answer({ kind: "route", result }));
-    await act(async () => asked[2].answer({ kind: "route", result }));
-    expect(asked.map((a) => a.shape)).toEqual(["circle", "heart", "star"]);
-    expect(read()?.map((e) => `${e.shape}:${e.status}`)).toEqual([
-      "heart:ready",
-      "circle:ready",
-      "star:ready",
-    ]);
+    for (let i = 0; i < eight.length; i += 1) {
+      await act(async () => asked[i].answer({ kind: "route", result }));
+    }
+    expect(asked.map((a) => a.shape)).toEqual(DRAW_ORDER);
+    expect(read()?.map((e) => `${e.shape}:${e.status}`)).toEqual(
+      eight.map((shape) => `${shape}:ready`),
+    );
 
     // Opened whole, it says it is on the water, and so does the file.
     const heart = read()?.[0];
@@ -589,39 +631,39 @@ describe("on the water (TASK-191)", () => {
       heart?.status === "ready" ? exampleDetail(heart.route.id) : undefined;
     expect(detail).toMatchObject({
       shape: "heart",
-      city: "Lago di Garda",
+      city: "Your start",
       distance_m: 2000,
       activity: "paddling",
     });
-    const key = examplesKey(garda.point, set);
-    expect(key).toBe("paddling:45.8811,10.8456");
-    expect(storage.kept[key].map((d) => d.activity)).toEqual([
-      "paddling",
-      "paddling",
-      "paddling",
-    ]);
+    const key = examplesKey(malcesine.point, set);
+    expect(key).toBe("paddling:45.7636,10.8098");
+    expect(storage.kept[key].map((d) => d.activity)).toEqual(
+      eight.map(() => "paddling"),
+    );
     // A run's examples of the same point are another set.
-    expect(storage.kept[cityKey(garda.point)]).toBeUndefined();
+    expect(storage.kept[cityKey(malcesine.point)]).toBeUndefined();
   });
 
   test("a run's examples of the same point stay apart, and say no activity", async () => {
     const run = api();
     const storage = memory();
-    drawExamples("http://api", garda, { request: run.request, storage });
+    drawExamples("http://api", malcesine, { request: run.request, storage });
     await act(async () => run.asked[0].answer({ kind: "route", result }));
     const water = api();
-    drawExamples("http://api", garda, { request: water.request, storage, set });
+    drawExamples("http://api", malcesine, { request: water.request, storage, set });
     expect(water.request.mock.calls[0][1]).toMatchObject({ activity: "paddling" });
-    const kept = storage.kept[cityKey(garda.point)];
+    const kept = storage.kept[cityKey(malcesine.point)];
     expect(kept.map((d) => d.shape)).toEqual(["circle"]);
     expect(kept[0]).not.toHaveProperty("activity");
-    expect(asRecommended(garda, "heart", result).detail).not.toHaveProperty("activity");
+    expect(asRecommended(malcesine, "heart", result).detail).not.toHaveProperty(
+      "activity",
+    );
   });
 
   test("a shape that does not fit the water says it in the water's words", async () => {
     const { request, asked } = api();
     const { result: hook } = await renderHook(() =>
-      useCityExamples("http://api", garda, { request, storage: memory(), set }),
+      useCityExamples("http://api", malcesine, { request, storage: memory(), set }),
     );
     await act(async () =>
       asked[0].answer({

@@ -198,8 +198,8 @@ export const DE: Table = {
     "Formen zum Paddeln, höchstens 1 km vom Ufer",
   "LAKES AND SEA": "SEEN UND MEER",
   "Near me": "In meiner Nähe",
-  "Choose a lake or a beach: a circle, a heart and a star of 2 km are drawn on its water, from the shore.":
-    "Wähle einen See oder einen Strand: Auf seinem Wasser werden ein Kreis, ein Herz und ein Stern von 2 km gezeichnet, vom Ufer aus.",
+  "Choose a lake or a beach: eight shapes of 2 km on its water, from the shore.":
+    "Wähle einen See oder einen Strand: acht Formen von 2 km auf seinem Wasser, vom Ufer aus.",
   "Choose a start in Draw first: the shapes start from the shore nearest to it.":
     "Wähle zuerst einen Start in Draw: Die Formen beginnen am nächstgelegenen Ufer.",
   "Near your start": "In der Nähe deines Starts",

@@ -9227,3 +9227,116 @@ così forma, e una partenza lì rispondeva «no lake or sea».
 - L'impronta del motore cambia: dopo l'aggiornamento del server serve
   `draw_examples`, e lo zip del motore dell'app è rifatto. Corsa, bici e
   forme non leggono la query: identiche.
+
+## ADR-0189 — «Explore» con «Paddle»: le otto forme della corsa, e gli esempi dei quattro luoghi dentro l'app
+
+**Data**: 2026-10-04 · **Stato**: Accettato · **Task**: TASK-227 · le
+forme e «dentro l'app» sono scelte dell'utente; il resto è deciso
+dall'agente su delega dell'utente
+
+**Contesto**: con «Paddle», «Explore» (ADR-0169) disegnava per ogni luogo
+d'acqua cerchio, cuore e stella da 2 km, chiesti all'API alla prima
+apertura. L'utente ha chiesto gli stessi esempi della corsa, comprese le
+cinque forme di ADR-0144. Sui campioni veri, sull'acqua del server
+(TASK-225), le 13 forme del catalogo ci stanno tutte nei quattro luoghi.
+Alla domanda «sul server o alla prima apertura» ha risposto «già
+scaricati al momento del download dell'app».
+
+**Decisione**:
+
+1. **Le otto forme della corsa**, nello stesso ordine: `PADDLE_EXAMPLES`
+   prende `MORE_SHAPES`.
+2. **I quattro luoghi vengono con l'app**: `src/paddle/paddleExamples.json`,
+   nel formato in cui l'app tiene i suoi esempi. Un `ExampleSet` porta
+   `bundled`; `fromFile` lo legge prima del file del telefono. Così sono
+   pronti subito, anche senza rete né API, e non si chiedono più. Non si
+   scrivono nel file del telefono.
+3. **Il JSON lo scrive il motore**: `python -m
+   shaperoute_api.paddle_examples`, con `plan_water` come l'API, sull'acqua
+   del server copiata (TASK-225), senza scaricare niente. Un test dell'app
+   rifà ogni esempio da `asRecommended`, così il file resta quello che
+   l'app avrebbe disegnato.
+4. **«Near me» resta disegnato al momento**, come gli esempi di una città:
+   le prime tre forme, poi le altre quando arrivano (`shownExamples`).
+
+**Alternative scartate**:
+
+- Disegnarli in anticipo sul server con `draw_examples`: oggi l'API tiene
+  solo gli esempi dei centri città (ADR-0136), quindi sarebbero serviti
+  una modifica all'API e un passo sul server, e il primo accesso avrebbe
+  comunque chiesto la rete.
+- Le sole forme senza occhi, in attesa di TASK-226: scartato dall'utente.
+
+5. **Il JSON dice con quale motore è stato disegnato**: `engine` è
+   l'impronta dei file del motore che disegnano sull'acqua, cioè
+   `route_engine.paddling` e ciò che importa, seguendo le righe `import`,
+   più le sagome delle otto forme. Un test dell'API fallisce quando
+   l'impronta cambia, come quello dello zip del telefono (ADR-0177), e dice
+   come rifarlo.
+
+**Conseguenze**:
+
+- L'app cresce di 101 KB di codice JavaScript; nel repository il file pesa
+  156 KB dopo Prettier.
+- Rifarlo vuole l'acqua del server, copiata in sola lettura con `scp`,
+  e il comando: dopo un cambio del motore sull'acqua (TASK-226 ne è uno),
+  dei luoghi, delle forme o dell'acqua stessa. Un cambio del motore che
+  non tocca l'acqua (la ricerca su strada, la penna alzata) non lo chiede.
+- Un esempio dentro l'app si apre, parte e si tiene nei preferiti come
+  quelli disegnati dall'API.
+- **Limite**: «Near me» resta legato al server, che fuori dai quattro
+  luoghi scarica l'acqua da Overpass. Finché il server non ha TASK-230
+  (ADR-0192) i laghi multipoligono scaricati così mancano.
+
+## ADR-0193 — Le reazioni ai disegni pubblicati, e il super like di Sgrava con un commento
+**Stato**: Attiva · 2026-10-04 · scelte dell'utente (1–5), il resto
+deciso dall'agente su delega dell'utente (TASK-119). Prende il posto del
+«Like» con un cuore solo che TASK-119 prevedeva prima.
+
+**Contesto**: l'utente, il 2026-10-04: «puoi reagire con varie emoji e
+metti anche l'emoji del cuore di sgrava»; «il cuore sgrava è super like e
+si fa premendo due volte sul post»; «quando metto il super like, sei
+obbligato a mettere un commento di minimo due caratteri». I disegni
+pubblicati si aprono da un profilo (TASK-117) e hanno già i commenti
+(TASK-120); il feed vero (TASK-118) non c'è ancora.
+
+**Decisione**:
+
+1. **Sei reazioni** (utente): il cuore di Sgrava (`HeartBadge`), 🔥 👏 💪
+   😂 😮. **Una a testa** per disegno: un'altra la cambia, la stessa la
+   toglie. Sotto il disegno le tre più usate e il totale.
+2. **Il cuore di Sgrava è il super like** (utente), con un **doppio tocco
+   sul disegno aperto** (utente, fra due proposte: nella griglia il tocco
+   singolo continua ad aprire subito).
+3. **Il super like vuole un commento di almeno 2 caratteri** (utente).
+4. **Super like e commento in una sola richiesta e una sola
+   transazione**: o tutti e due o niente. Il commento passa dagli stessi
+   controlli degli altri e dal filtro di ADR-0176; negativo, `422
+   comment_rejected` e niente super like.
+5. **Dopo sono separati**: togliere o cambiare il super like lascia il
+   commento; cancellare il commento lascia il super like.
+6. **Codici fissi** nel database e nel contratto (`super_like`, `fire`,
+   `clap`, `strong`, `laugh`, `wow`), mai i caratteri delle emoji: l'app
+   li disegna, e un'emoji nuova è una migrazione e una riga nel contratto.
+7. **Un endpoint loro** (`GET /drawings/{id}/reactions`, `PUT` e `DELETE
+   /drawings/{id}/reaction`), come il numero dei commenti: `DrawingDetail`
+   non cambia.
+8. **Il pulsante delle reazioni apre la barra delle sei**, cuore
+   compreso: chi usa VoiceOver mette il super like da lì. Il doppio tocco
+   su un super like già messo mostra il cuore e basta.
+9. **Sul disegno aperto il doppio tocco non fa lo zoom** della mappa; le
+   due dita sì. Altrove la mappa non cambia.
+
+**Scartato**: un cuore solo (era TASK-119, superato dall'utente); più
+reazioni a testa come Telegram (proposta, non scelta); il doppio tocco
+anche nella griglia (il tocco singolo avrebbe dovuto aspettare); il
+super like ottimista (il commento può essere rifiutato: l'app aspetta
+l'API); i caratteri delle emoji nel database (un cambio di Unicode o di
+glifo diventerebbe un dato da migrare); `likes` e `reactions` dentro
+`DrawingDetail` (toccava `drawings.py` e il contratto di TASK-117/208 per
+una cosa che si legge a parte).
+
+**Conseguenze**: migrazione nuova (il primo numero libero al merge) e
+quindi l'ok dell'utente per il server. I post di esempio del «Feed»
+restano senza reazioni; il feed vero (TASK-118) userà gli stessi
+endpoint. Bloccare (TASK-121) dovrà tenere conto anche delle reazioni.

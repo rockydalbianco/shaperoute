@@ -284,12 +284,10 @@ test("«Explore» has the lakes and the beaches; their routes start without dire
   expect(screen.getByText("On the water")).toBeOnTheScreen();
   expect(screen.queryByText("Best near you")).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Riccione" }));
-  for (let i = 0; i < 6; i += 1) {
-    await act(() => jest.advanceTimersByTimeAsync(500));
-  }
-  expect(routeBodies()).toHaveLength(3);
-  expect(routeBodies()[0]).toMatchObject({ distance_m: 2000, activity: "paddling" });
-  await fireEvent.press(screen.getByLabelText("Heart, 4.0 km, on the water"));
+  // Its eight come with the app (TASK-227): nothing is asked.
+  expect(routeBodies()).toHaveLength(0);
+  expect(screen.getByLabelText("Rabbit head, 2.0 km, on the water")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByLabelText("Heart, 2.0 km, on the water"));
   await fireEvent.press(screen.getByRole("button", { name: "Start" }));
   await fireEvent.press(screen.getByRole("button", { name: "I understand" }));
   await act(() => jest.advanceTimersByTimeAsync(0));

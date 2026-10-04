@@ -310,6 +310,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   ogni attività come «Run». Da dove riprendere: `tasks/TASK-191.md`,
   «Esito», parti A2, B e C (fatta).
 
+- **TASK-119 — Reazioni ai disegni pubblicati** (ADR-0193; scelte
+  dell'utente del 2026-10-04): era «Like», diventa sei reazioni sotto un
+  disegno pubblicato aperto, una a testa: il cuore di Sgrava, 🔥 👏 💪 😂
+  😮. Il cuore di Sgrava è il **super like**: doppio tocco sul disegno
+  aperto, e **vuole un commento di almeno 2 caratteri**, salvato insieme.
+  Task file riscritto (Todo). Prossimo passo: **parte A, l'API**
+  (migrazione nuova, quindi l'ok dell'utente per il server); poi la parte
+  B, l'app (`DrawingCard.tsx` ok dal coordinatore; `MapView.tsx`,
+  `mapPage.ts`, `App.tsx` da chiedere). Da dove riprendere: `tasks/TASK-119.md`.
+
 - **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:
   subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API
   e app in `main` dalla PR #260 (`8a938fd`, 2026-10-03):
@@ -398,6 +408,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **App** — TASK-227: «Explore» con «Paddle» come la corsa (ADR-0189;
+  scelte dell'utente del 2026-10-04; PR #297, merge `e761044`). Con
+  «Paddle» ogni luogo d'acqua ha le otto forme della corsa da 2 km, e i
+  quattro luoghi le hanno **dentro l'app** (`src/paddle/paddleExamples.json`,
+  circa 100 KB), pronte subito anche senza rete. Nei campioni veri
+  sull'acqua del server ci stanno 52 forme su 52. Il JSON lo scrive `python
+  -m shaperoute_api.paddle_examples` e porta l'impronta del motore
+  sull'acqua: un test dell'API dice quando rifarlo. «Near me» resta
+  disegnato al momento, e fuori dai quattro luoghi dipende da Overpass (i
+  laghi multipoligono solo dopo che il server ha TASK-230). Esce con la
+  prossima pubblicazione. `tasks/TASK-227.md`.
 
 - **Motore** — TASK-230: l'acqua da Overpass con i laghi multipoligono
   (ADR-0192; trovato da TASK-225; PR #292, merge `28e1ae0`).

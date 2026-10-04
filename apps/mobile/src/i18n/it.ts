@@ -128,6 +128,19 @@ export const IT: Table = {
   "Strava did not answer. Try again in a while.":
     "Strava non ha risposto. Riprova fra un po'.",
 
+  // src/engine/OfflineMapsSetting.tsx
+  "Offline maps: {size}": "Mappe offline: {size}",
+  "Maps download on Wi-Fi and mobile data.":
+    "Le mappe si scaricano con il Wi-Fi e con i dati mobili.",
+
+  // src/engine/ZoneNotice.tsx
+  "Downloading the maps of your area ({size}) so routes work without signal.":
+    "Sto scaricando le mappe della tua zona ({size}) perché i percorsi funzionino anche senza segnale.",
+
+  // src/engine/sizeText.ts
+  "{size} MB": "{size} MB",
+  "{size} GB": "{size} GB",
+
   // src/favorites/FavoriteHeart.tsx
   "Remove from favorites": "Togli dai preferiti",
   "Add to favorites": "Aggiungi ai preferiti",
@@ -169,6 +182,10 @@ export const IT: Table = {
   "Rabbit head": "Testa di coniglio",
   Pumpkin: "Zucca",
   "Christmas tree": "Albero di Natale",
+  Smiley: "Faccina",
+  Ghost: "Fantasmino",
+  Donut: "Ciambella",
+  "The sun": "Sole",
 
   // src/paddle/PaddleExplore.tsx
   Next: "A seguire",
@@ -288,6 +305,10 @@ export const IT: Table = {
   // src/route/RoutePanel.tsx
   "{letters} km of letters + {between} km riding between them":
     "{letters} km di lettere + {between} km in bici fra una lettera e l'altra",
+  "{drawn} km of drawing + {between} km walking between the parts":
+    "{drawn} km di disegno + {between} km a piedi fra una parte e l'altra",
+  "{drawn} km of drawing + {between} km riding between the parts":
+    "{drawn} km di disegno + {between} km in bici fra una parte e l'altra",
   "On the water, a shape of the catalogue.": "Sull'acqua, una forma del catalogo.",
   "{name} · on the water · target {km} km": "{name} · sull'acqua · obiettivo {km} km",
   "{name} · on roads · target {km} km": "{name} · su strada · obiettivo {km} km",

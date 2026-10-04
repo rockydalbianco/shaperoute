@@ -22,7 +22,7 @@ from typing import Any, Protocol
 
 import numpy as np
 
-from route_engine import pen_up
+from route_engine import pen_up, pieces
 from route_engine.errors import NoRoadsError, ShapeNotDrawableError
 from route_engine.geo import LatLon, latlon_to_local_array, local_to_latlon
 from route_engine.metrics import (
@@ -942,7 +942,8 @@ def plan_route(
     of `shape` (TASK-056). `top_joins` says whether its letters may be
     joined along the top line too (TASK-067), words.TOP_JOINS when None.
     With the request's `pen_up` each letter is drawn on its own, and the
-    result says where the route walks between them (TASK-197).
+    result says where the route walks between them (TASK-197); so each
+    piece of a shape in pieces (TASK-223), and the result keeps the shape.
     """
     if request.word is not None:
         word = compose(
@@ -966,6 +967,20 @@ def plan_route(
         result = replace(plan.result, shape=None, word=word.text)
         return replace(plan, result=result)
     assert request.shape is not None  # RouteRequest has one of the two
+    if request.pen_up:  # a shape in pieces, RouteRequest checks it
+        drawn = pieces.compose_shape(request.shape)
+        return plan_shape(
+            list(drawn.points),
+            request.shape,
+            request.start,
+            request.distance_m,
+            source,
+            optimize,
+            reuse_penalty,
+            tilt_limit(request.shape),
+            word=drawn,
+            activity=request.activity,
+        )
     return plan_shape(
         get_shape(request.shape)(SHAPE_POINTS),
         request.shape,

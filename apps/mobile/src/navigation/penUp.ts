@@ -37,6 +37,8 @@ export type Pen = {
   up: boolean;
   /** Between the letters by bike (TASK-216): "Ride to the U". */
   ride: boolean;
+  /** The pieces of a shape, not letters (TASK-223): "the next part". */
+  parts: boolean;
 };
 
 /** What the pen did at a fix: up at the end of a letter, down at the start
@@ -47,8 +49,10 @@ export type PenStep = { pen: Pen; move: "up" | "down" | null; cues: Cue[] };
  * The pen at the start of a route whose metres from its start are `along`,
  * with the walks it has (already checked: walksOf). `word` names the letters:
  * the walk at `i` leads to its letter `i + 1`, when it has one more letter
- * than walks; otherwise the voice says "the next letter". On a route of
- * `activity` "cycling" the way between the letters is ridden (TASK-216).
+ * than walks; otherwise the voice says "the next letter". A route with walks
+ * and no word is a shape in pieces (TASK-223): the voice says "the next
+ * part". On a route of `activity` "cycling" the way between the letters is
+ * ridden (TASK-216).
  */
 export function startPen(
   along: readonly number[],
@@ -67,6 +71,7 @@ export function startPen(
     next: 0,
     up: false,
     ride: isRide(activity),
+    parts: !word,
   };
 }
 
@@ -101,12 +106,22 @@ export function movePen(
     : {
         pen: { ...pen, next: pen.next + 1, up: false },
         move: "down",
-        cues: [{ say: wordsOf(language).penDown(walk.letter), vibrate: true }],
+        cues: [{ say: startOfLetter(pen, walk.letter, language), vibrate: true }],
       };
 }
 
-/** What the voice says at the end of a letter: walk, or ride, to the next. */
+/** What the voice says at the end of a letter: walk, or ride, to the next;
+ * or to the next part of a shape. */
 function endOfLetter(pen: Pen, letter: string | null, language: Language): string {
   const words = wordsOf(language);
+  if (pen.parts) {
+    return pen.ride ? words.rideToPart : words.partUp;
+  }
   return pen.ride ? words.rideTo(letter) : words.penUp(letter);
+}
+
+/** What the voice says at the start of the next letter, or part. */
+function startOfLetter(pen: Pen, letter: string | null, language: Language): string {
+  const words = wordsOf(language);
+  return pen.parts ? words.partDown : words.penDown(letter);
 }

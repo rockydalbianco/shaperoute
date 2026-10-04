@@ -51,6 +51,14 @@ test.each([
   ["l'albero di natale", "christmas_tree"],
   ["a Christmas tree", "christmas_tree"],
   ["christmas_tree", "christmas_tree"],
+  ["una faccina", "smiley"],
+  ["a smiley face", "smiley"],
+  ["il fantasma", "ghost"],
+  ["Ghosts", "ghost"],
+  ["la ciambella", "donut"],
+  ["a doughnut", "donut"],
+  ["il sole", "sun"],
+  ["the sun", "sun"],
 ])("%j is a %s", (text, shape) => {
   expect(toShape(text)).toBe(shape);
 });
@@ -92,7 +100,7 @@ test("every word names its own shape, and no word is used twice", () => {
 
 test("the suggestion lists every shape, as the runner reads it", () => {
   expect(shapeList()).toBe(
-    "circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas tree",
+    "circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun",
   );
 });
 

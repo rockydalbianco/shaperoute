@@ -53,6 +53,10 @@ export const IT: Phrasebook = {
   // On a bike (TASK-216).
   rideTo: (letter) =>
     `Lettera finita. Pedala fino ${letter === null ? "alla lettera successiva" : `alla ${letter}`}: il disegno è in pausa.`,
+  // Between the pieces of a shape (TASK-223).
+  partUp: "Parte finita. Cammina fino alla parte successiva: il disegno è in pausa.",
+  partDown: "Giù la penna: disegna la parte successiva.",
+  rideToPart: "Parte finita. Pedala fino alla parte successiva: il disegno è in pausa.",
   hours: (count) => units(count, "un'ora", "ore"),
   minutes: (count) => units(count, "un minuto", "minuti"),
   seconds: (count) => units(count, "un secondo", "secondi"),

@@ -20,7 +20,8 @@ from route_engine.models import (
 )
 from route_engine.outline_edits import MAX_DETAIL_POINTS, MAX_DRAWN_POINTS
 from route_engine.pen_up import walks_problem
-from route_engine.shapes import SUPPORTED_SHAPES
+from route_engine.pieces import compose_shape
+from route_engine.shapes import SUPPORTED_SHAPES, in_pieces
 from route_engine.words import (
     ALPHABET,
     LETTER_DISTANCE_M,
@@ -33,10 +34,16 @@ from shaperoute_ai.reading import MAX_TEXT_LENGTH
 # (ADR-0069): a phone photo re-encoded as JPEG is 1-4 MB.
 MAX_IMAGE_BYTES = 10_000_000
 MAX_IMAGE_BASE64 = 4 * -(-MAX_IMAGE_BYTES // 3)
-# A walk between two letters of a word with the pen up (TASK-197): its first
-# and last point, indices into the route's points; one fewer than letters.
+# The shapes of the catalogue that may be drawn with the pen up (TASK-223).
+PEN_UP_SHAPES = tuple(name for name in SUPPORTED_SHAPES if in_pieces(name))
+# A walk between two letters of a word with the pen up (TASK-197), or two
+# pieces of a shape (TASK-223): its first and last point, indices into the
+# route's points; one fewer than letters or pieces, 8 for the sun.
 Walk = tuple[int, int]
-MAX_WALKS = MAX_WORD_LETTERS - 1
+MAX_WALKS = max(
+    MAX_WORD_LETTERS - 1,
+    *(len(compose_shape(name).letters) - 1 for name in PEN_UP_SHAPES),
+)
 # A stretch walked with the bike on foot (TASK-206, ADR-0167): its first and
 # last point, indices into the route's points, as a walk.
 Stretch = tuple[int, int]
@@ -56,10 +63,11 @@ ACTIVITY_DESCRIPTION = (
     f"a shape of the catalogue only (TASK-191)."
 )
 WALKS_DESCRIPTION = (
-    "A word with the pen up (TASK-197): [from, to] indices into points, both "
-    "included, of each stretch walked from one letter to the next without "
-    "drawing; in order, the next letter beginning where a walk ends. Empty "
-    "for a shape, an image and a word without; missing from an older API."
+    "A word with the pen up (TASK-197), or a shape in pieces (TASK-223): "
+    "[from, to] indices into points, both included, of each stretch walked "
+    "from one letter or piece to the next without drawing; in order, the "
+    "next beginning where a walk ends. Empty for a shape with the pen down, "
+    "an image and a word without; missing from an older API."
 )
 ON_FOOT_DESCRIPTION = (
     "By bike (TASK-206): [from, to] indices into points, both included, of "
@@ -114,9 +122,11 @@ class RouteRequestBody(BaseModel):
     pen_up: bool = Field(
         default=False,
         description=(
-            "Only with a word (TASK-197): each letter drawn on its own, and "
-            "the route walks from one to the next without drawing (walks in "
-            "the result). The distance is the letters'."
+            "With a word (TASK-197): each letter drawn on its own, and the "
+            "route walks from one to the next without drawing (walks in the "
+            "result). The distance is the letters'. So with a shape in "
+            f"pieces, one of {', '.join(PEN_UP_SHAPES)}, piece by piece "
+            "(TASK-223), on the roads only."
         ),
     )
 
@@ -154,7 +164,8 @@ class RouteResultBody(BaseModel):
     points: list[tuple[float, float]] = Field(
         description=(
             "The route as [lat, lon] points, closed; a word with the pen up "
-            "goes from its first letter to its last."
+            "goes from its first letter to its last, a shape in pieces from "
+            "its outline to its last piece."
         )
     )
     distance_m: float = Field(description="Distance actually covered, in metres.")

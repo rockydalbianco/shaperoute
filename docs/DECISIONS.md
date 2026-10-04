@@ -8559,6 +8559,31 @@ l'app, per niente); passare i file alla WebView con `postMessage` (base64,
 tre volte la memoria); gli zip fuori dal repository, costruiti prima di
 pubblicare; `File.downloadFileAsync` (né stato né ETag).
 
+**Decisione dell'agente** (parte C, «Settings» e l'avviso del primo
+download; testi e posto dell'avviso scelti dall'utente, `tasks/TASK-214.md`):
+1. **Il peso vero** viene dal `Content-Length` della zona, letto al primo
+   avanzamento di `createDownloadResumable` di `expo-file-system/legacy`:
+   `downloadAsync` non lo dà, e una richiesta in più prima del download
+   costerebbe tempo. Una risposta sotto 100 kB è un errore del server, non
+   una mappa: non si annuncia.
+2. **«La prima volta»** è un telefono senza zone all'apertura: dopo
+   l'installazione o dopo «Delete». Non si salva niente in più. Le zone a
+   piedi e in bici sono un numero solo, che cresce quando parte la
+   seconda.
+3. **I pesi in unità decimali**, come il limite di 2 GB: MB interi, mai
+   «0 MB» per qualcosa che c'è, GB con un decimale da 1000 MB. «MB» e «GB»
+   passano da `t()`, perché il francese scrive «Mo» e «Go».
+4. **«Delete» non chiede conferma**: le zone si riscaricano da sole alla
+   prossima apertura. Senza zone il pulsante non c'è. Il numero segue
+   l'indice delle zone (`watchZones`) anche con la pagina aperta.
+5. **I pezzi nuovi stanno in `src/engine/`**: in `SettingsPage.tsx` e in
+   `App.tsx` entra una riga ciascuno, perché quei file li toccano anche
+   altri task.
+
+**Scartato**: l'avviso sotto la mappa (all'apertura non si vede); un
+avviso a ogni download (l'utente ha detto di no); chiedere il peso con una
+richiesta `HEAD` prima del download; una conferma su «Delete».
+
 ## ADR-0170 — Pubblicare come su Strava, l'API: chi lo vede in tre valori, una domanda sola per saperlo, foto in posti fissi, campi nuovi che un'app di prima non cancella
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-208, parte A), dentro le **scelte dell'utente** del 2026-10-03:
@@ -8925,6 +8950,37 @@ scrive come `pieces`. Le forme e le parole di oggi danno lo stesso percorso
 di `main` a b87d8cc, punto per punto (`tests/test_pieces_before.py`). Per chiedere una forma a pezzi con la
 penna alzata all'API servono il contratto (`pen_up` oggi è solo per le
 parole) e l'app: la parte B di TASK-223.
+
+**Parte B, il catalogo** (2026-10-04, TASK-223 B, **deciso dall'agente su
+delega dell'utente**). Le quattro forme sono il «sì» dell'utente sui
+campioni; la penna alzata accesa di partenza e la frase della voce sono le
+proposte del task file, applicate sul «continua e pubblica» dell'utente e
+da confermare sul telefono.
+
+8. **Nel catalogo** faccina (`smiley`), fantasmino (`ghost`), ciambella
+   (`donut`) e sole (`sun`), in coda a `SHAPES` e al contratto.
+9. **`pen_up` anche con una forma**, se ha pezzi (`shapes.in_pieces`:
+   `pieces` o `lift`), e solo su strada: altrimenti `invalid_request` con
+   il motivo (`… or the pieces of a shape; heart has none`, `on the water a
+   shape is drawn with the pen down`, finché TASK-226 non mette i pezzi
+   sull'acqua). Il contratto le elenca in `PEN_UP_SHAPES`: le quattro e le
+   cinque con gli occhi staccabili, che l'app per ora non offre. Il
+   risultato tiene `shape`, con i `walks` come una parola.
+10. **Fino a 8 tratti a piedi** in un risultato, un preferito o una corsa
+   (`MAX_WALKS`): i raggi del sole. Prima erano 7, le lettere meno una.
+11. **L'app offre la penna alzata per faccina, fantasmino e ciambella**,
+   con l'interruttore delle parole («Lift the pen between parts»), lo
+   stesso stato acceso di partenza (TASK-202); il sole solo con la penna
+   giù; sull'acqua mai.
+12. **La voce**: un percorso con tratti a piedi e senza parola è una forma
+   a pezzi, e i pezzi non hanno nome: «Part done. Walk to the next part:
+   the drawing is paused.», «Pen down: draw the next part.», in bici
+   «Ride to», nelle cinque lingue. Nessun campo nuovo fra la mappa e la
+   navigazione.
+13. **«The sun»** è il nome inglese del sole nelle tabelle delle lingue:
+   le chiavi sono il testo inglese (ADR-0172) e «Sun» è già la domenica.
+14. **I preferiti** tengono i tratti a piedi anche di una forma di
+   `PEN_UP_SHAPES`, e la riaprono chiesta con la penna alzata.
 
 ## ADR-0184 — Il cuore su giallo, segno di Sgrava: il cuore dell'avvio, fermo, in un quadrato giallo, un componente solo
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente

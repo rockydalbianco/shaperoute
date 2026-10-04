@@ -421,6 +421,39 @@ test("a favorite with the pen up opens as a word just drawn with it", () => {
   expect(openedFavorite(older as FavoriteDetail).result).not.toHaveProperty("walks");
 });
 
+test("a shape in pieces drawn with the pen up is kept and opens with its walks", () => {
+  // TASK-223: the walks of a word's example, on a smiley.
+  const drawn = { ...(penUpResult as unknown as RouteResult), word: null };
+  const smiley = { ...drawn, shape: "smiley" as const };
+  const kept = drawnKeepable(
+    {
+      start: START,
+      shape: "smiley",
+      distance_m: 6000,
+      activity: "running",
+      pen_up: true,
+    },
+    smiley,
+    null,
+  );
+  expect(kept.request).toMatchObject({ shape: "smiley", word: null, walks: [[2, 5]] });
+  const favorite = {
+    ...(walkedFavorite as FavoriteDetail),
+    shape: "smiley",
+    word: null,
+    style: null,
+  };
+  const opened = openedFavorite(favorite);
+  expect(opened.result).toMatchObject({ shape: "smiley", word: null, walks: [[2, 5]] });
+  expect(opened.request).toEqual({
+    start: favorite.points[0],
+    distance_m: favorite.distance_m,
+    activity: "running",
+    shape: "smiley",
+    pen_up: true,
+  });
+});
+
 // --- The activity a route was drawn for (TASK-200) ---
 
 /** A heart drawn by bike: JSON's empty `walks` is not a tuple to tsc. */

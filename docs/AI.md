@@ -151,9 +151,9 @@ Due liste di parole e frasi, in italiano e in inglese, con le risposte
 accettate: due per quelle ambigue («stella marina»: stella o pesce), `null`
 per quelle che non devono dare una forma.
 
-- **Messa a punto**, `services/ai/tests/phrases.json`: 72 voci, 12 senza
+- **Messa a punto**, `services/ai/tests/phrases.json`: 83 voci, 12 senza
   forma. Su questa si è corretta la domanda al modello.
-- **Controllo**, `phrases-holdout.json`: 47 voci nuove, 10 senza forma,
+- **Controllo**, `phrases-holdout.json`: 54 voci nuove, 10 senza forma,
   scritte dopo e misurate una volta per modello. Non serve mai a cambiare
   la domanda: è il numero onesto.
 
@@ -183,6 +183,19 @@ coniglio (ma nemmeno un gatto), «Turbo» e «bersaglio» sbagliano. Su questo
 Mac «Scooby-Doo» dà una risposta troncata a 64 token, già su `main`: l'API
 risponde `ai_unavailable` e `measure_phrases.py` si ferma lì (annotato in
 `tasks/TASK-088.md`, fuori scope).
+
+Con faccina, fantasmino, ciambella e sole (TASK-223, ADR-0185) una riga
+per forma nella domanda, 11 voci nella messa a punto e 7 nel controllo,
+scritte prima di misurarle; «ciambella», che valeva il cerchio, ora accetta
+la ciambella o il cerchio. Misura del 2026-10-04 con qwen3:4b sul Mac:
+
+- **Messa a punto**: le 11 voci nuove tutte giuste. La misura si ferma a
+  «Scooby-Doo», la risposta troncata già nota: 49 giuste sulle 55 misurate
+  prima, gli stessi sbagli di prima.
+- **Controllo**: 48/54 (89%). Delle 7 nuove sbaglia «bombolone» (nessuna
+  forma: un bombolone non ha il buco, la voce andava scritta con anche
+  `null`). Delle vecchie cambia «gufo», che ora dà il fantasmino: una forma
+  al posto di nessuna, la sola legata alle forme nuove.
 
 Un test dell'API controlla che le due liste usino il catalogo e non abbiano
 voci in comune. Risultati del 2026-09-24, con la domanda finale e le

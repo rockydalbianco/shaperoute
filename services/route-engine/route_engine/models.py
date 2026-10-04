@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from route_engine.directions import Direction
-from route_engine.shapes import SUPPORTED_SHAPES
+from route_engine.shapes import SUPPORTED_SHAPES, in_pieces
 from route_engine.words import (
     LETTER_DISTANCE_M,
     MAX_WORD_LETTERS,
@@ -51,6 +51,10 @@ ON_WATER_SHAPES_ONLY = "on the water only a shape of the catalogue is drawn"
 # Why a request with the pen up and no word is refused (TASK-197): the API
 # says it for an image too.
 PEN_UP_WITHOUT_WORD = "pen_up is for the letters of a word"
+# A shape is drawn with the pen up only if it has pieces (TASK-223), and
+# only on roads: on the water its pieces are not placed yet (TASK-226).
+PEN_UP_WITHOUT_PIECES = f"{PEN_UP_WITHOUT_WORD}, or the pieces of a shape"
+PEN_UP_ON_WATER = "on the water a shape is drawn with the pen down"
 
 
 class InvalidRequestError(ValueError):
@@ -69,7 +73,8 @@ class RouteRequest:
     # The letters of a word (TASK-080, ADR-0075): "block" only for a word.
     style: Style = "round"
     # Each letter drawn on its own, walking from one to the next without
-    # drawing (TASK-197, ADR-0157): only for a word.
+    # drawing (TASK-197, ADR-0157): for a word, or a shape in pieces, each
+    # piece on its own (TASK-223, ADR-0185).
     pen_up: bool = False
 
     def __post_init__(self) -> None:
@@ -94,8 +99,13 @@ class RouteRequest:
             raise InvalidRequestError(
                 "a style is for the letters of a word, not a shape"
             )
-        if self.pen_up and self.word is None:
-            raise InvalidRequestError(PEN_UP_WITHOUT_WORD)
+        if self.pen_up and self.shape is not None:
+            if not in_pieces(self.shape):
+                raise InvalidRequestError(
+                    f"{PEN_UP_WITHOUT_PIECES}; {self.shape} has none"
+                )
+            if self.activity in WATER_ACTIVITIES:
+                raise InvalidRequestError(PEN_UP_ON_WATER)
 
     @property
     def name(self) -> str:

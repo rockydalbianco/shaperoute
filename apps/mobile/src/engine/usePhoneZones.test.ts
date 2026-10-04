@@ -2,13 +2,19 @@ import { act, renderHook } from "@testing-library/react-native";
 
 import type { PositionState } from "../location/useCurrentPosition";
 import { PhoneEngine } from "./phoneEngine";
+import { files } from "./memoryFiles";
 import { networksInOrder, usePhoneZones } from "./usePhoneZones";
-import type { ZoneDownload } from "./zones";
+import { type downloadZone, type ZoneDownload, zoneUri } from "./zones";
 
 jest.mock("expo-file-system", () => jest.requireActual("./memoryFiles"));
-jest.mock("expo-file-system/legacy", () => ({ downloadAsync: jest.fn() }));
+jest.mock("expo-file-system/legacy", () => ({ createDownloadResumable: jest.fn() }));
+
+beforeEach(() => {
+  files.clear();
+});
 
 const HERE: PositionState = { status: "ok", point: [46.0679, 11.1211] };
+const TRENTO = "foot_45.98370_11.00140_46.15030_11.24160.zone.json.gz";
 const SAVED: ZoneDownload = {
   kind: "saved",
   zone: {
@@ -63,4 +69,45 @@ test("without an API address nothing is downloaded", async () => {
   const download = jest.fn(async (): Promise<ZoneDownload> => SAVED);
   await renderHook(() => usePhoneZones(HERE, null, { download }));
   expect(download).not.toHaveBeenCalled();
+});
+
+test("the first maps of the phone are told while they download, then not", async () => {
+  const engine = new PhoneEngine();
+  jest.spyOn(engine, "warmUp").mockImplementation(() => undefined);
+  let finish: () => void = () => undefined;
+  const download = jest.fn(
+    (...[, network, , options]: Parameters<typeof downloadZone>) =>
+      new Promise<ZoneDownload>((resolve) => {
+        // An error the server sends is not a map.
+        options?.onSize?.(network === "foot" ? 120 : 12_000_000);
+        options?.onSize?.(network === "foot" ? 7_000_000 : 0);
+        finish = () => resolve(SAVED);
+      }),
+  );
+  const { result } = await renderHook(() =>
+    usePhoneZones(HERE, "https://api", { engine, download }),
+  );
+  expect(result.current).toBe(7_000_000);
+  await act(async () => finish());
+  // Both networks, as one size.
+  expect(result.current).toBe(19_000_000);
+  await act(async () => finish());
+  expect(result.current).toBeNull();
+});
+
+test("with maps on the phone already, nothing is told", async () => {
+  const zone = { name: TRENTO, etag: null, bytes: 7_000_000, usedAt: 0 };
+  files.set("file:///documents/engine/zones.json", JSON.stringify({ zones: [zone] }));
+  files.set(zoneUri(zone), "zone");
+  const engine = new PhoneEngine();
+  jest.spyOn(engine, "warmUp").mockImplementation(() => undefined);
+  const download = jest.fn(
+    async (..._args: Parameters<typeof downloadZone>): Promise<ZoneDownload> => SAVED,
+  );
+  const { result } = await renderHook(() =>
+    usePhoneZones(HERE, "https://api", { engine, download }),
+  );
+  await act(async () => undefined);
+  expect(download.mock.calls.map((call) => call[3])).toEqual([{}, {}]);
+  expect(result.current).toBeNull();
 });

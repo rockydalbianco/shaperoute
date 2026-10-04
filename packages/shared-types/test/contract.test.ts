@@ -36,6 +36,7 @@ import jobStatuses from "../fixtures/route-job-statuses.json" with { type: "json
 import alternativeLimits from "../fixtures/route-alternatives.json" with { type: "json" };
 import cyclingRequest from "../fixtures/route-request-cycling.json" with { type: "json" };
 import paddlingRequest from "../fixtures/route-request-paddling.json" with { type: "json" };
+import penUpShapeRequest from "../fixtures/route-request-pen-up-shape.json" with { type: "json" };
 import penUpRequest from "../fixtures/route-request-pen-up.json" with { type: "json" };
 import wordRequest from "../fixtures/route-request-word.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
@@ -70,6 +71,7 @@ import {
   MAX_SHAPE_TEXT_LENGTH,
   MAX_WORD_LETTERS,
   MIN_DISTANCE_M,
+  PEN_UP_SHAPES,
   SHAPES,
   TURNS,
   type ApiError,
@@ -111,6 +113,7 @@ const cyclingFields: Same<keyof typeof cyclingRequest, keyof OlderRequest> = tru
 // A paddling route (TASK-191): the same fields again.
 const paddlingFields: Same<keyof typeof paddlingRequest, keyof OlderRequest> = true;
 const penUpFields: Same<keyof typeof penUpRequest, keyof RouteRequest> &
+  Same<keyof typeof penUpShapeRequest, keyof RouteRequest> &
   Same<keyof typeof penUpResult, keyof Omit<RouteResult, "on_foot">> = true;
 // A bike route walked in part (TASK-206): every field, its alternative too.
 const cyclingResultFields: Same<keyof typeof cyclingResult, keyof RouteResult> &
@@ -213,6 +216,23 @@ test("a word with the pen up walks once fewer than its letters", () => {
   assert.notDeepEqual(result.points.at(0), result.points.at(-1));
   assert.ok(walksFit(track.walks ?? [], track.points.length));
   assert.ok((track.walks ?? []).length > 0);
+});
+
+test("a shape in pieces may be asked with the pen up, the others not", () => {
+  // TASK-223: tsc refuses the pen up with a shape that has no pieces.
+  const asked: RouteRequest = penUpShapeRequest as RouteRequest;
+  assert.equal(asked.pen_up, true);
+  assert.ok((PEN_UP_SHAPES as readonly string[]).includes(asked.shape ?? ""));
+  const heart = {
+    start: [46.0671, 11.1214],
+    shape: "heart",
+    distance_m: 5000,
+    activity: "running",
+    pen_up: true,
+  } as const;
+  // @ts-expect-error the heart has no pieces
+  const refused: RouteRequest = heart;
+  assert.ok(refused);
 });
 
 test("a bike route says where the bike is walked, its alternatives too", () => {
@@ -354,6 +374,7 @@ test("the error fixture uses a known code, and the codes match the API", () => {
 
 test("shapes, activities and distance limits match the route engine", () => {
   assert.deepEqual([...SHAPES], contract.shapes);
+  assert.deepEqual([...PEN_UP_SHAPES], contract.pen_up_shapes);
   assert.deepEqual([...ACTIVITIES], contract.activities);
   assert.equal(MIN_DISTANCE_M, contract.min_distance_m);
   assert.equal(MAX_DISTANCE_M, contract.max_distance_m);

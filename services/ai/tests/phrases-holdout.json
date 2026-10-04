@@ -13,9 +13,21 @@
     "dog_head",
     "rabbit_head",
     "pumpkin",
-    "christmas_tree"
+    "christmas_tree",
+    "smiley",
+    "ghost",
+    "donut",
+    "sun"
   ],
   "phrases": [
+    { "text": "faccia felice", "accept": ["smiley"] },
+    { "text": "spettro", "accept": ["ghost"] },
+    { "text": "lenzuolo di Halloween", "accept": ["ghost", null] },
+    { "text": "bombolone", "accept": ["donut", "circle"] },
+    { "text": "doughnut", "accept": ["donut"] },
+    { "text": "raggi di sole", "accept": ["sun"] },
+    { "text": "solleone", "accept": ["sun", null] },
+
     { "text": "cavallo a dondolo", "accept": ["horse"] },
     { "text": "stallone nero", "accept": ["horse"] },
     { "text": "logo Ford Mustang", "accept": ["horse"] },

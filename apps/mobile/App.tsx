@@ -4,6 +4,7 @@ import type {
   LatLon,
   LetterStyle,
   OutlinePoint,
+  PenUpShape,
   Shape,
   Stretch,
   Walk,
@@ -50,6 +51,7 @@ import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
 import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
 import { PhoneEngineView } from "./src/engine/PhoneEngineView";
 import { usePhoneZones } from "./src/engine/usePhoneZones";
+import { ZoneNotice } from "./src/engine/ZoneNotice";
 import { useLanguage } from "./src/i18n/useLanguage";
 import { MapView } from "./src/map/MapView";
 import {
@@ -72,6 +74,7 @@ import { choicesOf, type Picked, pickedIndex } from "./src/route/choices";
 import { distanceForSport, toDistanceM } from "./src/route/distance";
 import { ImageEditsContext } from "./src/route/imageEdits";
 import type { ChoiceKind } from "./src/route/problems";
+import { shapeAsked } from "./src/route/penUpShapes";
 import { DrawButton, RouteChoice, RouteOutcome } from "./src/route/RoutePanel";
 import { shapeName, toShape } from "./src/route/shapeWords";
 import { type ExportState, useGpxExport } from "./src/route/useGpxExport";
@@ -256,7 +259,8 @@ function Sgrava() {
     [activity, drawing],
   );
   const { position, refresh } = useCurrentPosition();
-  usePhoneZones(position, API_URL);
+  // The size of the first maps of the phone while they download (TASK-214).
+  const firstMaps = usePhoneZones(position, API_URL);
   const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -291,6 +295,7 @@ function Sgrava() {
   const [letterStyle, setLetterStyle] = useState<LetterStyle>("round");
   // The pen lifted between the letters (TASK-198), on until switched off:
   // the user's choice (TASK-202). An API older than TASK-197 refuses it.
+  // The same switch for the pieces of a shape that has them (TASK-223).
   const [penUp, setPenUp] = useState(true);
   const image = useImageOutline(API_URL);
   // Past RouteChoice to the image panel (TASK-079).
@@ -335,12 +340,14 @@ function Sgrava() {
   const drawKind: ChoiceKind = sportActivity === "paddling" ? "shape" : kind;
   const drawn:
     | { shape: Shape }
+    | { shape: PenUpShape; pen_up: true }
     | { word: string; style: LetterStyle; pen_up?: true }
     | { outline: OutlinePoint[]; strokes?: OutlinePoint[][] }
     | null =
     drawKind === "shape"
       ? shape !== null
-        ? { shape }
+        ? // A shape in pieces with the pen up, on the roads (TASK-223).
+          shapeAsked(shape, penUp, sportActivity)
         : null
       : drawKind === "word"
         ? wordCheck.ok
@@ -987,7 +994,12 @@ function Sgrava() {
                     position.status === "ok" ? position.point : (place?.point ?? null)
                   }
                   mapError={mapError}
-                  footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
+                  footer={
+                    <>
+                      <ZoneNotice bytes={firstMaps} />
+                      <DrawButton enabled={request !== null} onDraw={onDraw} />
+                    </>
+                  }
                   onRun={() => {
                     Keyboard.dismiss();
                     setScreen("run");

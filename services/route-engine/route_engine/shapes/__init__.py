@@ -12,7 +12,7 @@ from pathlib import Path
 
 from route_engine.shapes.circle import circle
 from route_engine.shapes.heart import heart
-from route_engine.shapes.outline import read_outline
+from route_engine.shapes.outline import Outline, read_outline
 from route_engine.shapes.resample import Point
 
 ShapeFn = Callable[[int], list[Point]]
@@ -40,6 +40,12 @@ SHAPES: dict[str, ShapeFn] = {
     # The seasonal shapes the user approved (TASK-088), with strokes too.
     "pumpkin": read_outline(OUTLINES / "pumpkin.json"),  # carved eyes and grin
     "christmas_tree": read_outline(OUTLINES / "christmas_tree.json"),  # its star
+    # The simple shapes the user approved (TASK-223), with pieces apart: the
+    # app draws the first three with the pen up, the sun with the pen down.
+    "smiley": read_outline(OUTLINES / "smiley.json"),  # eyes and smile
+    "ghost": read_outline(OUTLINES / "ghost.json"),  # its eyes
+    "donut": read_outline(OUTLINES / "donut.json"),  # its hole
+    "sun": read_outline(OUTLINES / "sun.json"),  # eight rays
 }
 
 SUPPORTED_SHAPES: tuple[str, ...] = tuple(SHAPES)
@@ -56,3 +62,10 @@ def get_shape(name: str) -> ShapeFn:
         raise ValueError(
             f"unknown shape {name!r}; choose one of: {', '.join(SHAPES)}"
         ) from None
+
+
+def in_pieces(name: str) -> bool:
+    """Whether the shape called `name` can be drawn with the pen up
+    (TASK-223): an outline with pieces, or with strokes lifted off."""
+    shape = get_shape(name)
+    return isinstance(shape, Outline) and shape.in_pieces

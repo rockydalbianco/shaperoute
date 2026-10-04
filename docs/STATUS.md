@@ -17,7 +17,8 @@ serve per lavorare. L'app ha tre pagine da scorrere, «Feed» (per ora
 disegni d'esempio), «Draw» ed «Explore», e «Profile» per iscriversi ed
 entrare, con i preferiti e le corse salvate («My activities»). In «Draw» si sceglie una forma del catalogo (cerchio, cuore,
 stella, cavallo, luna, gatto, pesce, farfalla, lumaca, testa di cane,
-testa di coniglio, zucca, albero di Natale), una parola dalla A alla Z,
+testa di coniglio, zucca, albero di Natale, faccina, fantasmino,
+ciambella, sole), una parola dalla A alla Z,
 tonda o squadrata, o una foto, e una distanza fino a 21 km: fino a tre
 percorsi fra cui scegliere, il GPX, la navigazione a voce, il punteggio a
 fine corsa; si corre anche senza percorso.
@@ -156,16 +157,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   motore non cambia; niente server. Da dove riprendere: `tasks/TASK-227.md`.
 
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
-  forme** (ADR-0185; chiesto dall'utente il 2026-10-03): **parte A in
-  `main`** (#284, 2026-10-04). Le forme possono avere pezzi staccati
-  (`pieces`) e staccare gli occhi che hanno già (`lift`): con la penna
-  alzata ogni pezzo si corre da solo, a piedi fra l'uno e l'altro; con la
-  penna giù il percorso di sempre (impronte in `tests/test_pieces_before.py`).
-  **Giudizio dell'utente**: sì faccina, fantasmino e ciambella con la penna
-  alzata, sole con la penna giù; quasi palloncino, cono, fulmine, nuvola; no
-  goccia e mela. Gli occhi staccati di gatto, pesce, teste e zucca aspettano
-  il giudizio. **Prossimo**: la parte B (catalogo, `pen_up` per le forme
-  nell'API, AI, app), dal coordinatore, in un contesto pulito.
+  forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
+  motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,
+  pesce, teste e zucca staccano gli occhi con la penna alzata (`lift`).
+  Giudizio dell'utente sui campioni: «sì» faccina, fantasmino e ciambella
+  con la penna alzata, sole con la penna giù. **Parte B, il catalogo**,
+  nel branch `feat/TASK-223-b-shapes-in-catalog` (2026-10-04, dopo il
+  «continua e pubblica» dell'utente): le quattro forme nel motore, nel
+  contratto, nell'AI e nell'app (tessere 🙂 👻 🍩 ☀️); `pen_up` anche con
+  una forma a pezzi (`PEN_UP_SHAPES`), solo su strada; nell'app
+  «Lift the pen between parts», acceso di partenza, per le prime tre; la
+  voce «Part done. Walk to the next part…» nelle cinque lingue; fino a 8
+  tratti a piedi. **Aspettano l'utente**: il giudizio degli occhi
+  staccati (campioni a 15 km), la conferma della frase della voce e della
+  penna alzata accesa; poi server (`draw_examples`) e pubblicazione.
   `tasks/TASK-223.md`.
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia
@@ -389,9 +394,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   simulatore, con l'API spenta disegna il cuore da 5 km di Trento. Senza
   `/phone-zones` sul server l'app chiede tutto al server, come prima.
   L'utente ha scelto i testi delle mappe offline e il tetto del traffico
-  (task file). **Dopo**, in quest'ordine: C, la riga in «Settings»; A2, il
-  tetto sul server; B2, le città vicine fino a 2 GB; D, la prova
-  sull'iPhone, dopo l'aggiornamento del server con le zone del telefono.
+  (task file). **Parte C** nella PR #295: in «Settings», sotto
+  «Preferences», «Offline maps: 10 MB» con «Delete» e «Maps download on
+  Wi-Fi and mobile data.»; sopra «Draw route», solo al primo download,
+  «Downloading the maps of your area (10 MB) so routes work without
+  signal.» con il peso vero (il posto l'ha scelto l'utente il
+  2026-10-04); nelle cinque lingue. Provata nel simulatore. **Dopo**, in
+  quest'ordine: A2, il tetto sul server; B2, le città vicine fino a 2 GB;
+  D, la prova sull'iPhone, dopo l'aggiornamento del server con le zone del
+  telefono.
   Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 

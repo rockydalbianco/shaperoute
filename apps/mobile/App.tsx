@@ -51,6 +51,7 @@ import { useFavoritesDoor } from "./src/favorites/favoritesDoor";
 import { fetchPostRoute, postRoute } from "./src/feed/feedRoute";
 import { PhoneEngineView } from "./src/engine/PhoneEngineView";
 import { usePhoneZones } from "./src/engine/usePhoneZones";
+import { ZoneNotice } from "./src/engine/ZoneNotice";
 import { useLanguage } from "./src/i18n/useLanguage";
 import { MapView } from "./src/map/MapView";
 import {
@@ -258,7 +259,8 @@ function Sgrava() {
     [activity, drawing],
   );
   const { position, refresh } = useCurrentPosition();
-  usePhoneZones(position, API_URL);
+  // The size of the first maps of the phone while they download (TASK-214).
+  const firstMaps = usePhoneZones(position, API_URL);
   const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -992,7 +994,12 @@ function Sgrava() {
                     position.status === "ok" ? position.point : (place?.point ?? null)
                   }
                   mapError={mapError}
-                  footer={<DrawButton enabled={request !== null} onDraw={onDraw} />}
+                  footer={
+                    <>
+                      <ZoneNotice bytes={firstMaps} />
+                      <DrawButton enabled={request !== null} onDraw={onDraw} />
+                    </>
+                  }
                   onRun={() => {
                     Keyboard.dismiss();
                     setScreen("run");

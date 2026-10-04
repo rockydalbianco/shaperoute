@@ -1,8 +1,8 @@
 # TASK-214 — Il motore dei percorsi sul telefono
 
 **Stato**: In corso. Le sei scelte hanno la risposta dell'utente; la parte A
-(API) è in `main` dalla #275, la parte B (l'app) dalla #282; poi C, A2, B2
-e D, in quest'ordine.
+(API) è in `main` dalla #275, la parte B (l'app) dalla #282, la parte C
+(«Settings» e l'avviso) nella sua PR; poi A2, B2 e D, in quest'ordine.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 
@@ -329,7 +329,10 @@ l'utente, in inglese, poi tradotti con `t()`). Proposta:
 - [x] Senza zona, o con la WebView chiusa da iOS, la richiesta va al
       server, e chi usa l'app non vede errori (test della parte B).
 - [ ] Tempi e memoria misurati sull'iPhone, scritti qui.
-- [x] `git diff` su `services/route-engine/route_engine/` vuoto (A e B).
+- [x] In «Settings» lo spazio delle mappe del telefono, con «Delete», e
+      sopra «Draw route» l'avviso del primo download, nelle cinque lingue
+      (test e simulatore, parte C).
+- [x] `git diff` su `services/route-engine/route_engine/` vuoto (A, B e C).
 
 ## File toccati
 
@@ -519,11 +522,46 @@ La «Modalità dati ridotti» di iOS non si chiede ora: in Expo Go non si
 legge (`expo-network` non la dà). È un seguito della build propria
 (TASK-152).
 
+**Parte C, «Settings» e l'avviso** (PR #295, 2026-10-04; ADR-0177,
+«Decisione dell'agente, parte C»):
+
+- **Dove sta l'avviso**: sopra «Draw route», in fondo a «Draw», la pagina
+  con cui si apre l'app. Scelta dell'utente del 2026-10-04: la proposta
+  diceva «sotto la mappa», ma la mappa si vede solo dopo «Draw route».
+- **L'avviso**: «Downloading the maps of your area (10 MB) so routes work
+  without signal.», piccolo e grigio. Compare solo se all'apertura il
+  telefono non ha nessuna zona, cioè dopo l'installazione o dopo «Delete»;
+  agli aggiornamenti delle zone niente. Il peso è quello vero, il
+  `Content-Length` del server: lo dà il primo avanzamento di
+  `createDownloadResumable` (`downloadAsync` non lo dà). Le due zone si
+  sommano man mano che partono: a Trento «7 MB» con quella a piedi, poi
+  «10 MB» con la bici. Sotto 100 kB la risposta è un errore del server,
+  non una mappa, e non si dice. Finiti i download, la riga sparisce.
+- **In «Settings»**, sotto «Preferences», dopo «Language»: 🗺️ «Offline
+  maps: 10 MB», con «Delete» quando ci sono zone; sotto, «Maps download
+  on Wi-Fi and mobile data.». Il peso è in MB interi, da 1000 MB in GB con
+  un decimale: «1.2 GB», «1,2 GB» in italiano, «Mo» e «Go» in francese.
+  «Delete» cancella subito tutte le zone, senza chiedere: si riscaricano
+  alla prossima apertura, con l'avviso. Il numero segue le zone anche con
+  la pagina aperta.
+- **I testi** in inglese e nelle quattro tabelle (`src/i18n/`); «Delete»
+  c'era già.
+- **I file**: nuovi `src/engine/OfflineMapsSetting.tsx`, `ZoneNotice.tsx`
+  e `sizeText.ts`. In `SettingsPage.tsx` una riga; in `App.tsx` l'avviso
+  nel `footer` di «Draw»; in `zones.ts` il peso, `savedBytes` e
+  `watchZones`; `usePhoneZones` dà i byte del primo download.
+- **Nel simulatore** (iPhone 17e, Expo Go, 2026-10-04), con l'API del
+  branch e le zone di Trento dietro un proxy lento, a 400 kB/s:
+  - «Settings» dice «Offline maps: 10 MB»; «Delete» porta a «0 MB» e
+    sparisce;
+  - riaperta l'app, sopra «Draw route» compare «… (7 MB) …», poi
+    «… (10 MB) …», poi la riga sparisce.
+- **Test**: 16 nuovi; tutta la suite dell'app passa.
+
 **Le parti dopo** (d'accordo con il coordinatore, ognuna in un contesto
 pulito, tutte sotto TASK-214 e ADR-0177):
-1. **C**, la riga in «Settings» e l'avviso del primo download, con i testi
-   qui sopra. «Settings» lo tocca anche TASK-182 (km o miglia): chi entra
-   secondo si aggiorna.
+1. **C**, la riga in «Settings» e l'avviso del primo download: fatta,
+   sopra.
 2. **A2**, il tetto sul server: le richieste «in più» con `?prefetch=1`, i
    byte contati per giorno, in memoria, senza migrazione. Dopo un riavvio
    del server il conteggio riparte da zero: va scritto nell'ADR.

@@ -128,6 +128,19 @@ export const IT: Table = {
   "Strava did not answer. Try again in a while.":
     "Strava non ha risposto. Riprova fra un po'.",
 
+  // src/engine/OfflineMapsSetting.tsx
+  "Offline maps: {size}": "Mappe offline: {size}",
+  "Maps download on Wi-Fi and mobile data.":
+    "Le mappe si scaricano con il Wi-Fi e con i dati mobili.",
+
+  // src/engine/ZoneNotice.tsx
+  "Downloading the maps of your area ({size}) so routes work without signal.":
+    "Sto scaricando le mappe della tua zona ({size}) perché i percorsi funzionino anche senza segnale.",
+
+  // src/engine/sizeText.ts
+  "{size} MB": "{size} MB",
+  "{size} GB": "{size} GB",
+
   // src/favorites/FavoriteHeart.tsx
   "Remove from favorites": "Togli dai preferiti",
   "Add to favorites": "Aggiungi ai preferiti",

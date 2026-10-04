@@ -147,16 +147,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-230 — L'acqua da Overpass con i laghi multipoligono** (ADR-0192;
-  trovato da TASK-225). `WATER_QUERY` chiedeva `out tags geom`, e
-  Overpass dava le relazioni senza membri, quindi i laghi multipoligono
-  (Garda, Como) mancavano da ogni download. Ora chiede `out body geom`:
-  4 test nuovi con un Overpass finto, e corsa, bici e forme identiche
-  (impronte fissate invariate). Lo zip del motore dell'app è rifatto.
-  L'impronta del motore cambia, quindi dopo l'aggiornamento del server
-  serve `draw_examples`. I file d'acqua sul server restano buoni. Da dove
-  riprendere: `tasks/TASK-230.md`.
-
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,
@@ -395,13 +385,30 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   simulatore, con l'API spenta disegna il cuore da 5 km di Trento. Senza
   `/phone-zones` sul server l'app chiede tutto al server, come prima.
   L'utente ha scelto i testi delle mappe offline e il tetto del traffico
-  (task file). **Dopo**, in quest'ordine: C, la riga in «Settings»; A2, il
-  tetto sul server; B2, le città vicine fino a 2 GB; D, la prova
-  sull'iPhone, dopo l'aggiornamento del server con le zone del telefono.
+  (task file). **Parte C** nella PR #295: in «Settings», sotto
+  «Preferences», «Offline maps: 10 MB» con «Delete» e «Maps download on
+  Wi-Fi and mobile data.»; sopra «Draw route», solo al primo download,
+  «Downloading the maps of your area (10 MB) so routes work without
+  signal.» con il peso vero (il posto l'ha scelto l'utente il
+  2026-10-04); nelle cinque lingue. Provata nel simulatore. **Dopo**, in
+  quest'ordine: A2, il tetto sul server; B2, le città vicine fino a 2 GB;
+  D, la prova sull'iPhone, dopo l'aggiornamento del server con le zone del
+  telefono.
   Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **Motore** — TASK-230: l'acqua da Overpass con i laghi multipoligono
+  (ADR-0192; trovato da TASK-225; PR #292, merge `28e1ae0`).
+  `WATER_QUERY` chiede `out body geom` invece di `out tags geom`, così
+  Overpass dà anche i membri delle relazioni, e i laghi multipoligono
+  (Garda, Como, l'Idroscalo) arrivano interi. 4 test con un Overpass finto;
+  corsa, bici e forme identiche (impronte fissate invariate). Lo zip del
+  motore dell'app è rifatto dopo la #284. L'impronta del motore cambia, da
+  `a89d46072607` a `a068054ef006`: dopo l'aggiornamento del server serve
+  `draw_examples`, con l'ok dell'utente. I file d'acqua sul server restano
+  buoni. `tasks/TASK-230.md`.
 
 - **App** — TASK-222: il cuore su giallo in «Explore» (ADR-0184; chiesto
   dall'utente il 2026-10-03). A destra di «Best near you», sotto il

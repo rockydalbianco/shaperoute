@@ -3,6 +3,7 @@ import { type ReactNode, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Account } from "../account/useAccount";
+import { OfflineMapsSetting } from "../engine/OfflineMapsSetting";
 import { t, tLater } from "../i18n";
 import { LanguageSetting } from "../settings/LanguageSetting";
 import { SportSetting } from "../settings/SportSetting";
@@ -91,8 +92,8 @@ function ComingRows({ rows }: { rows: Coming[] }) {
 /**
  * «Settings» in «Profile» (TASK-177), in sections: the account with the
  * ways out of it, the sport (TASK-189), Strava (TASK-187), the language
- * (TASK-210) among the preferences, and the settings to come, named and
- * marked «Soon».
+ * (TASK-210) and the offline maps (TASK-214) among the preferences, and the
+ * settings to come, named and marked «Soon».
  * «Delete account» asks first, on the screen (ADR-0120: the API does not).
  */
 export function SettingsPage({ user, account }: Props) {
@@ -112,6 +113,7 @@ export function SettingsPage({ user, account }: Props) {
       <StravaSetting />
       <Section label={t("PREFERENCES")}>
         <LanguageSetting />
+        <OfflineMapsSetting />
         <ComingRows rows={PREFERENCES_COMING} />
       </Section>
       {COMING.map((section) => (

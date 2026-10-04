@@ -8559,6 +8559,31 @@ l'app, per niente); passare i file alla WebView con `postMessage` (base64,
 tre volte la memoria); gli zip fuori dal repository, costruiti prima di
 pubblicare; `File.downloadFileAsync` (né stato né ETag).
 
+**Decisione dell'agente** (parte C, «Settings» e l'avviso del primo
+download; testi e posto dell'avviso scelti dall'utente, `tasks/TASK-214.md`):
+1. **Il peso vero** viene dal `Content-Length` della zona, letto al primo
+   avanzamento di `createDownloadResumable` di `expo-file-system/legacy`:
+   `downloadAsync` non lo dà, e una richiesta in più prima del download
+   costerebbe tempo. Una risposta sotto 100 kB è un errore del server, non
+   una mappa: non si annuncia.
+2. **«La prima volta»** è un telefono senza zone all'apertura: dopo
+   l'installazione o dopo «Delete». Non si salva niente in più. Le zone a
+   piedi e in bici sono un numero solo, che cresce quando parte la
+   seconda.
+3. **I pesi in unità decimali**, come il limite di 2 GB: MB interi, mai
+   «0 MB» per qualcosa che c'è, GB con un decimale da 1000 MB. «MB» e «GB»
+   passano da `t()`, perché il francese scrive «Mo» e «Go».
+4. **«Delete» non chiede conferma**: le zone si riscaricano da sole alla
+   prossima apertura. Senza zone il pulsante non c'è. Il numero segue
+   l'indice delle zone (`watchZones`) anche con la pagina aperta.
+5. **I pezzi nuovi stanno in `src/engine/`**: in `SettingsPage.tsx` e in
+   `App.tsx` entra una riga ciascuno, perché quei file li toccano anche
+   altri task.
+
+**Scartato**: l'avviso sotto la mappa (all'apertura non si vede); un
+avviso a ogni download (l'utente ha detto di no); chiedere il peso con una
+richiesta `HEAD` prima del download; una conferma su «Delete».
+
 ## ADR-0170 — Pubblicare come su Strava, l'API: chi lo vede in tre valori, una domanda sola per saperlo, foto in posti fissi, campi nuovi che un'app di prima non cancella
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-208, parte A), dentro le **scelte dell'utente** del 2026-10-03:

@@ -1,6 +1,7 @@
 # TASK-230 — L'acqua da Overpass con i laghi multipoligono
 
-**Stato**: In corso (PR aperta, aspetta la CI)
+**Stato**: Done (2026-10-04) — PR #292, merge `28e1ae0`. L'impronta del
+motore cambia: `draw_examples` dopo il prossimo aggiornamento del server.
 **Fase**: 4 · **Branch**: `fix/TASK-230-water-relations`
 **Dipende da**: TASK-191 (l'acqua nel motore), TASK-225 (dove è stato
 trovato), TASK-214 B (lo zip del motore nell'app, #282)

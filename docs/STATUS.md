@@ -358,15 +358,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   che dà lo stesso `result` di `/route-jobs` (test su Levico; su Trento in
   Pyodide 5–7 s, uguale a CPython). L'aggiornamento del server e le zone
   scritte in anticipo (0,7–0,8 GB, 20–30 min) li chiede il coordinatore
-  all'utente. **Parte B, l'app**, nella sua PR: Pyodide 314.0.7 e il
-  motore in due zip fra gli asset (`tools/phone_engine/phone_engine.py`;
-  chi cambia `route_engine` rifà `engine.zip`, la CI lo controlla), una
-  WebView nascosta, le zone scaricate a ogni apertura, il telefono prima
-  fino a 8 km a piedi e 30 in bici, il server come riserva. In Expo Go,
-  nel simulatore, con l'API spenta disegna il cuore da 5 km di Trento.
-  **Dopo**: C, la riga in «Settings»; D, la prova sull'iPhone. **Aspetta
-  l'utente**: i testi dei dati mobili, il tetto del traffico, la
-  «Modalità dati ridotti». Niente server né pubblicazione. Da dove
+  all'utente. **Parte B, l'app**, in `main` dalla #282 (`b87d8cc`,
+  2026-10-03), non pubblicata: Pyodide 314.0.7 e il motore in due zip fra
+  gli asset (`tools/phone_engine/phone_engine.py`; chi cambia
+  `route_engine` rifà `engine.zip`, la CI lo controlla), una WebView
+  nascosta, le zone scaricate a ogni apertura, il telefono prima fino a 8
+  km a piedi e 30 in bici, il server come riserva. In Expo Go, nel
+  simulatore, con l'API spenta disegna il cuore da 5 km di Trento. Senza
+  `/phone-zones` sul server l'app chiede tutto al server, come prima.
+  L'utente ha scelto i testi delle mappe offline e il tetto del traffico
+  (task file). **Dopo**, in quest'ordine: C, la riga in «Settings»; A2, il
+  tetto sul server; B2, le città vicine fino a 2 GB; D, la prova
+  sull'iPhone, dopo l'aggiornamento del server con le zone del telefono.
+  Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato

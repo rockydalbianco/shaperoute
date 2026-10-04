@@ -1,7 +1,8 @@
 # TASK-214 — Il motore dei percorsi sul telefono
 
 **Stato**: In corso. Le sei scelte hanno la risposta dell'utente; la parte A
-(API) è in `main` dalla #275; la parte B (l'app) nella sua PR; poi C e D.
+(API) è in `main` dalla #275, la parte B (l'app) dalla #282; poi C, A2, B2
+e D, in quest'ordine.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 
@@ -402,7 +403,8 @@ ancora sul server; ADR-0177):
   CPython ci mette 3,5 s. Il JSON è uguale a quello di CPython, salvo 18
   angoli delle indicazioni che differiscono meno di 1e-9.
 
-**Parte B, l'app** (PR della parte B, 2026-10-03; ADR-0177):
+**Parte B, l'app** (#282, in `main` come `b87d8cc` il 2026-10-03, non
+pubblicata; ADR-0177):
 
 - **Pyodide 314.0.7, non 0.28.3** (deciso dall'agente). In 0.28.3 la
   stella da 5 km a Trento fa fallire il `buffer` di Shapely 2.0.7 (GEOS
@@ -496,18 +498,40 @@ ancora sul server; ADR-0177):
 - **Test**: 38 nell'app (`src/engine/`) e 9 per lo script; tutta la suite
   dell'app passa.
 
-**Da chiedere all'utente**, prima della parte C:
-- i testi in inglese della riga in «Settings» e dell'avviso del primo
-  download (proposta sopra, «Gli avvisi con i dati mobili»);
-- il tetto del traffico: 300 MB al giorno per telefono, 300 GB al giorno
-  per il server;
-- se rispettare la «Modalità dati ridotti» di iOS.
+**Risposte dell'utente** (2026-10-03 sera), tutte e due «Va bene così»
+alla proposta:
+- **i testi**, in inglese e tradotti con `t()` nelle cinque lingue:
+  - la prima volta, una riga sotto la mappa mentre scarica: «Downloading
+    the maps of your area (10 MB) so routes work without signal.», con il
+    peso vero;
+  - in «Settings», «Offline maps: 1.2 GB» con «Delete», e sotto «Maps
+    download on Wi-Fi and mobile data.»;
+  - nessun avviso agli altri download;
+- **il tetto del traffico**:
+  - la zona intorno a sé si scarica sempre;
+  - le zone in più al massimo 300 MB al giorno per telefono;
+  - il server ne dà al massimo 300 GB al giorno in tutto; oltre risponde
+    `429` con `Retry-After`, e il telefono riprova il giorno dopo.
 
-**Seguiti**:
-- le zone in più, cioè le città vicine e le più cercate fino a 2 GB
-  (scelta 4, punto 2): dopo il tetto del traffico, con `?prefetch=1` sul
-  server (una A2);
-- una scadenza per le partenze vicine anche senza processi, in
-  `route_engine`, in un task suo: il telefono disegnerebbe percorsi più
-  lunghi in meno tempo;
-- la parte D, sull'iPhone, fissa i limiti di distanza.
+La «Modalità dati ridotti» di iOS non si chiede ora: in Expo Go non si
+legge (`expo-network` non la dà). È un seguito della build propria
+(TASK-152).
+
+**Le parti dopo** (d'accordo con il coordinatore, ognuna in un contesto
+pulito, tutte sotto TASK-214 e ADR-0177):
+1. **C**, la riga in «Settings» e l'avviso del primo download, con i testi
+   qui sopra. «Settings» lo tocca anche TASK-182 (km o miglia): chi entra
+   secondo si aggiorna.
+2. **A2**, il tetto sul server: le richieste «in più» con `?prefetch=1`, i
+   byte contati per giorno, in memoria, senza migrazione. Dopo un riavvio
+   del server il conteggio riparte da zero: va scritto nell'ADR.
+3. **B2**, le zone in più, cioè le città vicine e le più cercate fino a 2
+   GB (scelta 4, punto 2).
+4. **D**, la prova sull'iPhone: fissa i limiti di distanza. Vuole il server
+   con `/phone-zones` e le zone del telefono scritte (0,7–0,8 GB): un
+   aggiornamento del server da chiedere all'utente, che coordina il
+   coordinatore.
+
+**Seguito fuori dal task**: una scadenza per le partenze vicine anche senza
+processi, in `route_engine`, in un task suo. Il telefono disegnerebbe
+percorsi più lunghi in meno tempo.

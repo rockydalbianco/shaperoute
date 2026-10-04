@@ -152,7 +152,7 @@ test("while a line is on its way, a finger only moves the picture", async () => 
   expect(value.add).not.toHaveBeenCalled();
 });
 
-test("a refused line says why; Undo and Done do what they say", async () => {
+test("a refused line says why; Undo and Save do what they say", async () => {
   const value = edits(
     {
       status: "refused",
@@ -171,8 +171,10 @@ test("a refused line says why; Undo and Done do what they say", async () => {
   expect(screen.getByText(EDIT_REASON_TEXT.short)).toBeTruthy();
   await fireEvent.press(screen.getByText("Undo"));
   expect(value.undo).toHaveBeenCalled();
-  await fireEvent.press(screen.getByText("Done"));
+  await fireEvent.press(screen.getByText("Save"));
   expect(onClose).toHaveBeenCalled();
+  // One way out, at the foot: nothing left in the top right corner.
+  expect(screen.queryByText("Done")).toBeNull();
 });
 
 test("Undo is off until something was added", async () => {

@@ -1,20 +1,26 @@
+import { createDownloadResumable } from "expo-file-system/legacy";
+
 import { files } from "./memoryFiles";
 import {
   coveringZone,
   deleteZones,
+  type Download,
+  downloadTelling,
   downloadZone,
   fileNameOf,
   overLimit,
+  savedBytes,
   savedZones,
   SPACE_LIMIT_BYTES,
   touchZone,
+  watchZones,
   zoneArea,
   type ZoneEntry,
   zoneUri,
 } from "./zones";
 
 jest.mock("expo-file-system", () => jest.requireActual("./memoryFiles"));
-jest.mock("expo-file-system/legacy", () => ({ downloadAsync: jest.fn() }));
+jest.mock("expo-file-system/legacy", () => ({ createDownloadResumable: jest.fn() }));
 
 const TRENTO = "foot_45.98370_11.00140_46.15030_11.24160.zone.json.gz";
 const TRENTO_BIKE = "bike_45.98280_10.99990_46.15140_11.24290.zone.json.gz";
@@ -105,6 +111,7 @@ test("a downloaded zone is saved under the API's name, with its ETag", async () 
     `${URL_BASE}/phone-zones/foot?lat=46.0679&lon=11.1211`,
     expect.stringContaining(".foot.download"),
     { headers: { "X-API-Key": "key" } },
+    undefined,
   );
   expect(answer).toEqual({
     kind: "saved",
@@ -194,4 +201,77 @@ test("an index that does not read, or names a missing file, gives no zone", () =
     JSON.stringify({ zones: [entry(TRENTO)] }),
   );
   expect(savedZones()).toEqual([]);
+});
+
+test("the size the server sends is told once, as the first bytes arrive", async () => {
+  const result = { uri: "file:///x", status: 200, headers: {}, mimeType: null };
+  jest.mocked(createDownloadResumable).mockImplementation(
+    (_url, _fileUri, _options, callback) =>
+      ({
+        downloadAsync: async () => {
+          for (const written of [100, 5_000, 7_000_000]) {
+            callback?.({
+              totalBytesWritten: written,
+              totalBytesExpectedToWrite: 7_000_000,
+            });
+          }
+          return result;
+        },
+      }) as unknown as ReturnType<typeof createDownloadResumable>,
+  );
+  const onSize = jest.fn();
+  expect(await downloadTelling("https://api/x", "file:///x", {}, onSize)).toBe(result);
+  expect(onSize.mock.calls).toEqual([[7_000_000]]);
+});
+
+test("without Content-Length, no size is told", async () => {
+  jest.mocked(createDownloadResumable).mockImplementation(
+    (_url, _fileUri, _options, callback) =>
+      ({
+        downloadAsync: async () => {
+          callback?.({ totalBytesWritten: 100, totalBytesExpectedToWrite: -1 });
+          return undefined;
+        },
+      }) as unknown as ReturnType<typeof createDownloadResumable>,
+  );
+  const onSize = jest.fn();
+  expect(
+    await downloadTelling("https://api/x", "file:///x", {}, onSize),
+  ).toBeUndefined();
+  expect(onSize).not.toHaveBeenCalled();
+});
+
+test("the size goes to the download, and a download cut short saves nothing", async () => {
+  const onSize = jest.fn();
+  const download = jest.fn(async (..._args: Parameters<Download>) => undefined);
+  const answer = await downloadZone(URL_BASE, "foot", HERE, {
+    apiKey: null,
+    download,
+    onSize,
+  });
+  expect(download.mock.calls[0][3]).toBe(onSize);
+  expect(answer).toEqual({ kind: "failed", why: "the download stopped" });
+  expect(savedZones()).toEqual([]);
+});
+
+test("a watcher hears each change of the zones, until it stops", async () => {
+  const watcher = jest.fn();
+  const stop = watchZones(watcher);
+  await downloadZone(URL_BASE, "foot", HERE, {
+    apiKey: null,
+    download: answering(200, zipHeaders(TRENTO), "0123456789"),
+  });
+  expect(watcher).toHaveBeenCalledTimes(1);
+  expect(savedBytes()).toBe(10);
+  deleteZones();
+  expect(watcher).toHaveBeenCalledTimes(2);
+  expect(savedBytes()).toBe(0);
+  stop();
+  touchZone(TRENTO);
+  expect(watcher).toHaveBeenCalledTimes(2);
+});
+
+test("the space of the zones is the sum of their sizes", () => {
+  expect(savedBytes([entry(TRENTO, 7), entry(TRENTO_BIKE, 12)])).toBe(19);
+  expect(savedBytes([])).toBe(0);
 });

@@ -1,6 +1,10 @@
 import type { Activity, LatLon } from "@shaperoute/shared-types";
 import { Directory, File, Paths } from "expo-file-system";
-import { downloadAsync } from "expo-file-system/legacy";
+import {
+  createDownloadResumable,
+  type DownloadOptions,
+  type FileSystemDownloadResult,
+} from "expo-file-system/legacy";
 
 import { apiKey as configuredKey, keyHeaders } from "../api/apiUrl";
 
@@ -154,10 +158,30 @@ export function savedZones(): ZoneEntry[] {
   }
 }
 
+/** What «Settings» shows of the zones: told each time the index changes. */
+const watchers = new Set<() => void>();
+
+/** Calls `watcher` each time the saved zones change, until the call it
+ * returns. */
+export function watchZones(watcher: () => void): () => void {
+  watchers.add(watcher);
+  return () => {
+    watchers.delete(watcher);
+  };
+}
+
 function saveIndex(zones: readonly ZoneEntry[]): void {
   const file = indexFile();
   file.create({ overwrite: true, intermediates: true });
   file.write(JSON.stringify({ zones }));
+  for (const watcher of watchers) {
+    watcher();
+  }
+}
+
+/** The space the saved zones take on the phone, in bytes. */
+export function savedBytes(zones: readonly ZoneEntry[] = savedZones()): number {
+  return zones.reduce((sum, zone) => sum + zone.bytes, 0);
 }
 
 /** The file of a saved zone, for the page. */
@@ -178,7 +202,7 @@ export function touchZone(name: string, now: number = Date.now()): void {
   }
 }
 
-/** Deletes every saved zone (the «Settings» row of part C). */
+/** Deletes every saved zone («Offline maps» in «Settings», part C). */
 export function deleteZones(): void {
   try {
     const folder = zonesDirectory();
@@ -209,11 +233,34 @@ export function fileNameOf(disposition: string | null): string | null {
   return match !== null && zoneArea(match[1]) !== null ? match[1] : null;
 }
 
+/** Downloads `url` into `fileUri`; `onSize` hears the size of the body
+ * once, as the first bytes arrive, when the server sends it. */
+export type Download = (
+  url: string,
+  fileUri: string,
+  options: DownloadOptions,
+  onSize?: (bytes: number) => void,
+) => Promise<FileSystemDownloadResult | undefined>;
+
+/** The phone's download, with the size for the notice of the first maps
+ * (part C): downloadAsync does not tell it. */
+export const downloadTelling: Download = (url, fileUri, options, onSize) => {
+  let told = false;
+  return createDownloadResumable(url, fileUri, options, (progress) => {
+    // -1 when the server sends no Content-Length.
+    if (!told && progress.totalBytesExpectedToWrite > 0) {
+      told = true;
+      onSize?.(progress.totalBytesExpectedToWrite);
+    }
+  }).downloadAsync();
+};
+
 /**
  * Saves the zone of `network` the server has around `point`, unless the
  * phone has it already (If-None-Match, 304). The file lands beside the
  * others only whole, under the name the API gives it; then the zones used
- * longest ago go, beyond the limit. Never throws.
+ * longest ago go, beyond the limit. `onSize` hears the size of what the
+ * server sends, also a short error. Never throws.
  */
 export async function downloadZone(
   baseUrl: string,
@@ -222,11 +269,13 @@ export async function downloadZone(
   {
     apiKey = configuredKey(),
     now = Date.now,
-    download = downloadAsync,
+    download = downloadTelling,
+    onSize,
   }: {
     apiKey?: string | null;
     now?: () => number;
-    download?: typeof downloadAsync;
+    download?: Download;
+    onSize?: (bytes: number) => void;
   } = {},
 ): Promise<ZoneDownload> {
   try {
@@ -244,7 +293,12 @@ export async function downloadZone(
           ...(have?.etag ? { "If-None-Match": have.etag } : {}),
         },
       },
+      onSize,
     );
+    if (answer === undefined) {
+      deleteQuietly(partial);
+      return { kind: "failed", why: "the download stopped" };
+    }
     if (answer.status === 304 && have !== null) {
       touchZone(have.name, now());
       deleteQuietly(partial);

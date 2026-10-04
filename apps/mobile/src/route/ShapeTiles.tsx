@@ -30,6 +30,10 @@ export const SHAPE_SIGNS: Record<Shape, string> = {
   rabbit_head: "🐰",
   pumpkin: "🎃",
   christmas_tree: "🎄",
+  smiley: "🙂",
+  ghost: "👻",
+  donut: "🍩",
+  sun: "☀️",
 };
 
 type Props = {

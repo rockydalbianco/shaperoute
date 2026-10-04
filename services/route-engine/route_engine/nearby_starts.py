@@ -72,6 +72,7 @@ from route_engine.optimizer import (
     tilt_limit,
 )
 from route_engine.pen_up import check_begins, drawn_m
+from route_engine.pieces import compose_shape
 from route_engine.projection import Point, start_at_phase
 from route_engine.retracing import extra_doubled_share
 from route_engine.shapes import get_shape
@@ -168,6 +169,16 @@ class ShapeJob:
                 activity=request.activity,
             )
         assert request.shape is not None  # RouteRequest has one of the two
+        if request.pen_up:  # a shape in pieces (TASK-223)
+            pieces = compose_shape(request.shape)
+            return cls(
+                tuple(pieces.points),
+                request.shape,
+                request.distance_m,
+                max_tilt_deg=tilt_limit(request.shape),
+                word=pieces,
+                activity=request.activity,
+            )
         return cls(
             tuple(get_shape(request.shape)(SHAPE_POINTS)),
             request.shape,

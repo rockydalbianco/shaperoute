@@ -8951,6 +8951,37 @@ di `main` a b87d8cc, punto per punto (`tests/test_pieces_before.py`). Per chiede
 penna alzata all'API servono il contratto (`pen_up` oggi è solo per le
 parole) e l'app: la parte B di TASK-223.
 
+**Parte B, il catalogo** (2026-10-04, TASK-223 B, **deciso dall'agente su
+delega dell'utente**). Le quattro forme sono il «sì» dell'utente sui
+campioni; la penna alzata accesa di partenza e la frase della voce sono le
+proposte del task file, applicate sul «continua e pubblica» dell'utente e
+da confermare sul telefono.
+
+8. **Nel catalogo** faccina (`smiley`), fantasmino (`ghost`), ciambella
+   (`donut`) e sole (`sun`), in coda a `SHAPES` e al contratto.
+9. **`pen_up` anche con una forma**, se ha pezzi (`shapes.in_pieces`:
+   `pieces` o `lift`), e solo su strada: altrimenti `invalid_request` con
+   il motivo (`… or the pieces of a shape; heart has none`, `on the water a
+   shape is drawn with the pen down`, finché TASK-226 non mette i pezzi
+   sull'acqua). Il contratto le elenca in `PEN_UP_SHAPES`: le quattro e le
+   cinque con gli occhi staccabili, che l'app per ora non offre. Il
+   risultato tiene `shape`, con i `walks` come una parola.
+10. **Fino a 8 tratti a piedi** in un risultato, un preferito o una corsa
+   (`MAX_WALKS`): i raggi del sole. Prima erano 7, le lettere meno una.
+11. **L'app offre la penna alzata per faccina, fantasmino e ciambella**,
+   con l'interruttore delle parole («Lift the pen between parts»), lo
+   stesso stato acceso di partenza (TASK-202); il sole solo con la penna
+   giù; sull'acqua mai.
+12. **La voce**: un percorso con tratti a piedi e senza parola è una forma
+   a pezzi, e i pezzi non hanno nome: «Part done. Walk to the next part:
+   the drawing is paused.», «Pen down: draw the next part.», in bici
+   «Ride to», nelle cinque lingue. Nessun campo nuovo fra la mappa e la
+   navigazione.
+13. **«The sun»** è il nome inglese del sole nelle tabelle delle lingue:
+   le chiavi sono il testo inglese (ADR-0172) e «Sun» è già la domenica.
+14. **I preferiti** tengono i tratti a piedi anche di una forma di
+   `PEN_UP_SHAPES`, e la riaprono chiesta con la penna alzata.
+
 ## ADR-0184 — Il cuore su giallo, segno di Sgrava: il cuore dell'avvio, fermo, in un quadrato giallo, un componente solo
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-221). La richiesta («Dentro l'app, metti il cuore giallo sullo

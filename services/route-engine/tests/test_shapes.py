@@ -19,8 +19,10 @@ def _segments(points: list[Point]) -> list[float]:
 
 
 def _has_strokes(name: str) -> bool:
+    """Strokes, or pieces: with the pen down each piece is joined to the
+    drawing as a stroke (TASK-223)."""
     shape = get_shape(name)
-    return isinstance(shape, Outline) and bool(shape.strokes)
+    return isinstance(shape, Outline) and bool(shape.strokes or shape.pieces)
 
 
 @pytest.mark.parametrize("name", SUPPORTED_SHAPES)
@@ -69,7 +71,7 @@ def _arc_positions(points: list[Point], outline: Sequence[Point]) -> list[float]
 def test_spacing_is_uniform_within_5_percent(name: str, n_points: int) -> None:
     shape = get_shape(name)
     points = shape(n_points)
-    if isinstance(shape, Outline) and shape.strokes:
+    if _has_strokes(name):
         # Every vertex of the drawn path stays, so the way back follows the
         # way out; the other points cut its sides into equal parts (TASK-037).
         path = shape.path()

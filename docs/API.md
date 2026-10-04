@@ -687,9 +687,10 @@ disegna da sola, e fra una e l'altra si cammina senza disegnare
 ```
 
 - **Facoltativo**, `false` se manca: le app già installate non lo mandano
-  e ricevono il percorso di sempre. Solo con `word`: con `shape`, o in una
-  richiesta d'immagine, è `invalid_request` (`pen_up is for the letters of
-  a word`).
+  e ricevono il percorso di sempre. Con `word`, o con una **forma a pezzi**
+  (TASK-223, sotto). Con un'altra forma è `invalid_request` (`pen_up is for
+  the letters of a word, or the pieces of a shape; heart has none`), in una
+  richiesta d'immagine anche (`pen_up is for the letters of a word`).
 - La distanza chiesta vale per le **lettere**, la parte che la corsa
   registra; `distance_m` del risultato resta la lunghezza di tutti i
   `points`, tratti a piedi compresi (a Trento, «CIAO» da 15 km: 15,4 km di
@@ -715,8 +716,17 @@ disegna da sola, e fra una e l'altra si cammina senza disegnare
 
   Qui i punti da 2 a 5 si camminano: la I finisce al punto 2, la O
   comincia al 5.
-- **`walks` c'è sempre nelle risposte**, vuoto per una forma, un'immagine e
-  una parola senza `pen_up`. Un'API precedente non lo manda: in
+- **Una forma a pezzi** (TASK-223, ADR-0185, `ROUTE_ENGINE.md` §2, «Pezzi
+  staccati dal contorno»): con `"shape": "smiley", "pen_up": true` si
+  disegna prima il contorno, poi ogni pezzo da solo, a piedi fra l'uno e
+  l'altro come fra le lettere. Le forme che lo accettano sono
+  `PEN_UP_SHAPES` in `shared-types`: `smiley`, `ghost`, `donut`, `sun`, e
+  `cat`, `fish`, `dog_head`, `rabbit_head`, `pumpkin`, che staccano gli
+  occhi. Il risultato ha `shape` e `word: null`, con i `walks` (fino a 8,
+  i raggi del sole). Solo su strada: con `paddling` è `invalid_request`
+  (`on the water a shape is drawn with the pen down`).
+- **`walks` c'è sempre nelle risposte**, vuoto per una forma senza
+  `pen_up`, un'immagine e una parola senza. Un'API precedente non lo manda: in
   `shared-types` è facoltativo, e un'app nuova legge anche un'API vecchia
   come una linea sola. Le app installate ignorano il campo.
 - Nel `GpxRequest` e nel `TrackScoreRequest` i `walks` si rimandano come
@@ -897,8 +907,8 @@ tipi dell'app in `apps/mobile/src/api/favorites.ts`.
   messaggio che l'app mostra così com'è.
 - Ognuno vede solo i suoi: la chiave di un altro dà `404`. `DELETE /me`
   cancella anche i preferiti.
-- **Una parola con la penna alzata** (TASK-199, ADR-0158): il corpo del
-  `PUT` può avere `walks`, quelli del `RouteResult` (coppie `[da, a]` di
+- **Una parola con la penna alzata** (TASK-199, ADR-0158), o una forma a
+  pezzi (TASK-223, al più 8 tratti): il corpo del `PUT` può avere `walks`, quelli del `RouteResult` (coppie `[da, a]` di
   indici in `points`, «La penna alzata»), facoltativo. Si controllano come
   in `POST /track-scores`: fuori dai punti, all'indietro o sovrapposti,
   `422 invalid_request`. Il preferito intero ha **sempre** `walks`, vuoto
@@ -1020,7 +1030,8 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
 - Ognuno vede, apre e cancella solo le sue: la chiave di un altro dà `404`.
   `DELETE /me` cancella anche le corse. Una corsa è privata finché il suo
   iscritto non la pubblica come disegno («Drawings», sotto; TASK-117).
-- **Una corsa su una parola con la penna alzata** (TASK-199, ADR-0158):
+- **Una corsa su una parola con la penna alzata** (TASK-199, ADR-0158), o
+  su una forma a pezzi (TASK-223):
   - il corpo del `PUT` può avere `walks`, quelli del percorso seguito
     (`RouteResult.walks`), facoltativo e solo con `points`: `walks` senza
     `points`, o che non stanno nei `points` (fuori, all'indietro,

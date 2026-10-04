@@ -12,7 +12,22 @@
     "dog_head",
     "rabbit_head",
     "pumpkin",
-    "christmas_tree"
+    "christmas_tree",
+    "smiley",
+    "ghost",
+    "donut",
+    "sun"
+  ],
+  "pen_up_shapes": [
+    "cat",
+    "fish",
+    "dog_head",
+    "rabbit_head",
+    "pumpkin",
+    "smiley",
+    "ghost",
+    "donut",
+    "sun"
   ],
   "activities": ["running", "cycling", "paddling"],
   "min_distance_m": 1000,

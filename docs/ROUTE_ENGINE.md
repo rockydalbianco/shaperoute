@@ -65,7 +65,8 @@ Una forma può anche arrivare da un **contorno** in JSON (ADR-0035): dalla
 CLI con `--outline FILE`, oppure registrata in `SHAPES` come le altre. Le
 forme registrate sono il **catalogo** e sono contratto (ADR-0036): `circle`,
 `heart`, `star`, `horse`, `moon`, `cat`, `fish`, `butterfly`, `snail`,
-`dog_head`, `rabbit_head`, `pumpkin`, `christmas_tree`. `tree`
+`dog_head`, `rabbit_head`, `pumpkin`, `christmas_tree` e, a pezzi (sotto),
+`smiley`, `ghost`, `donut`, `sun` (TASK-223). `tree`
 (TASK-034) è un altro contorno, e non è nel catalogo. Un contorno entra nel catalogo solo dopo il
 giudizio a occhio dell'utente sulle strade.
 
@@ -358,10 +359,21 @@ vie da 100 m una faccina quadrata disegnava gli occhi a «P» e non si
 chiudeva (0,48 contro 0,97, `tests/test_pieces.py`).
 
 Le forme a pezzi si provano dalla CLI, `--outline FILE --pen-up`; nel
-catalogo entrano solo dopo il giudizio dell'utente (ADR-0036). I candidati
-del TASK-223 sono in `shapes/outlines/`: `smiley`, `ghost`, `donut` e `sun`
-a pezzi, `lightning`, `drop`, `balloon`, `ice_cream`, `cloud` e `apple` a
-contorno solo (campioni in `samples/`, `TASK-223_*`).
+catalogo entrano solo dopo il giudizio dell'utente (ADR-0036). Dei candidati
+del TASK-223 (`shapes/outlines/`, campioni in `samples/`, `TASK-223_*`)
+sono entrati `smiley`, `ghost`, `donut` e `sun`, a pezzi; `lightning`,
+`drop`, `balloon`, `ice_cream`, `cloud` e `apple`, a contorno solo, restano
+alla CLI.
+
+**Una richiesta con la penna alzata** (`RouteRequest.pen_up`, TASK-223 B)
+vale per una parola e per una forma del catalogo che ha pezzi o tratti
+staccabili (`shapes.in_pieces`): le quattro sopra e gatto, pesce, teste di
+cane e coniglio, zucca. `plan_route` e `ShapeJob.of_request` la scrivono con
+`pieces.compose_shape`, il risultato tiene `shape` e ha i `walks`. Una forma
+senza pezzi si rifiuta (`… or the pieces of a shape; heart has none`), e
+così sull'acqua (`on the water a shape is drawn with the pen down`): lì i
+pezzi non si piazzano ancora (TASK-226). Con la penna giù una forma a pezzi
+è una linea chiusa come le altre.
 
 ### Il contorno da un'immagine (TASK-072, TASK-084)
 

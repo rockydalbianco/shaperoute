@@ -503,7 +503,7 @@ test("an unknown word turns Draw route off until the AI has read it", async () =
   await fireEvent.changeText(screen.getByLabelText("Shape"), "");
   expect(
     screen.getByText(
-      "Unknown shape. Try: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas tree.",
+      "Unknown shape. Try: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();
@@ -583,7 +583,7 @@ test("when the AI is off the app says so, and asks again next time", async () =>
   await fireEvent(field, "endEditing");
   expect(
     await screen.findByText(
-      "The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas tree.",
+      "The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun.",
     ),
   ).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Draw route" })).toBeDisabled();

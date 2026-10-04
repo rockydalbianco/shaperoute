@@ -825,8 +825,9 @@ non cancella quanto scritto o scelto negli altri.
 
 La forma si sceglie toccando una tessera, che scrive il nome nel campo, o
 scrivendo nel campo. I simboli delle tessere sono caratteri (♥ ★ ◯ ☾ e le
-emoji di gatto, pesce, cavallo, farfalla, lumaca, cane, coniglio, zucca
-e albero di Natale):
+emoji di gatto, pesce, cavallo, farfalla, lumaca, cane, coniglio, zucca,
+albero di Natale, e 🙂 👻 🍩 ☀️ per faccina, fantasmino, ciambella e sole,
+TASK-223):
 disegnare i contorni veri vuole `react-native-svg`, una dipendenza non
 ancora chiesta.
 Le tessere stanno in una riga sola che scorre di lato col dito (TASK-088,
@@ -853,6 +854,10 @@ sulle strade:
 | `rabbit_head` | rabbit, rabbit head, bunny · coniglio, coniglietto, testa di coniglio |
 | `pumpkin` | pumpkin, halloween pumpkin, jack-o'-lantern · zucca, zucca di halloween |
 | `christmas_tree` | christmas tree, xmas tree · albero di natale, alberello di natale |
+| `smiley` | smiley, smiley face, smiling face, happy face, smile · faccina, faccina sorridente, sorriso, sorrisino |
+| `ghost` | ghost, spook · fantasma, fantasmino, spettro |
+| `donut` | donut, doughnut · ciambella, ciambellina |
+| `sun` | sun, sunshine · sole, solicello, sole splendente |
 
 - Anche al plurale («stelle», «hearts»), con l'articolo («una stella»,
   «l'amore»), con maiuscole e accenti qualsiasi. La tabella sta in
@@ -868,8 +873,24 @@ sulle strade:
   albero qualsiasi non è nel catalogo, e resta «nessuna forma». Sullo
   schermo `christmas_tree` si legge «christmas tree».
 - Il campo vuoto: «Unknown shape. Try: circle, heart, star, horse, moon,
-  cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas
-  tree.» e «Draw route» resta spento.
+  cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas
+  tree, smiley, ghost, donut or sun.» e «Draw route» resta spento.
+- «ring», «round», «anello» e «tondo» restano del cerchio: «ciambella» e
+  «donut» sono la ciambella (TASK-223). Nelle cinque lingue i nomi sono
+  «Smiley», «Ghost», «Donut», «The sun» (`shapeNames.ts`; «Sun» è già la
+  domenica) · «Faccina», «Fantasmino», «Ciambella», «Sole» (**da
+  confermare con l'utente**; tedesco, spagnolo e francese da confermare).
+- **Faccina, fantasmino e ciambella** (TASK-223, ADR-0185) hanno sotto il
+  campo l'interruttore **«Lift the pen between parts»**, lo stesso stato di
+  quello delle parole, acceso all'avvio: acceso, la richiesta ha `pen_up:
+  true` e la forma si disegna un pezzo alla volta, a piedi fra l'uno e
+  l'altro (`API.md`, «La penna alzata»). Il sole si disegna con la penna
+  giù, scelta sui campioni, e non ha l'interruttore; sull'acqua nessuna
+  forma lo ha. Il percorso mostra «6.0 km of drawing + 0.4 km walking
+  between the parts» · «6,0 km di disegno + 0,4 km a piedi fra una parte e
+  l'altra» («riding» · «in bici» in bici), attraverso `t()`. Testi nuovi:
+  «Lift the pen between parts» e le due righe dei km **da confermare con
+  l'utente**; le righe in tedesco, spagnolo e francese da confermare.
 - Nel campo vuoto il suggerimento è «heart, star, horse…». Il campo
   accetta al massimo 60 caratteri.
 
@@ -1281,7 +1302,14 @@ TASK-164, di cui tiene i numeri.
   della successiva, una volta sola ciascuno e prima delle svolte della
   stessa posizione (testi confermati dall'utente il 2026-10-03; se la
   parola non ha una lettera più dei tratti, «the next letter»). Sulla scheda è una
-  pausa come le altre: «Paused», «Resume» e «Stop».
+  pausa come le altre: «Paused», «Resume» e «Stop». **Una forma a pezzi**
+  (TASK-223), un percorso con i tratti a piedi e senza parola: «Part done.
+  Walk to the next part: the drawing is paused.» e «Pen down: draw the next
+  part.» · «Parte finita. Cammina fino alla parte successiva: il disegno è
+  in pausa.» e «Giù la penna: disegna la parte successiva.»; in bici «Ride
+  to the next part» · «Pedala fino alla parte successiva». Inglese e
+  italiano **da confermare con l'utente**; tedesco, spagnolo e francese da
+  confermare (`src/voice/`).
   - **Perché 20 m, e lungo il percorso**: una posizione che la corsa tiene
     sbaglia fino a 40 m (`POOR_FIX_M`), in città 10–20 m. Ripartendo 20 m
     prima della lettera, anche una posizione in ritardo fa partire la
@@ -1495,7 +1523,8 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   anche quelle della bici a mano (TASK-206) in tedesco, spagnolo e francese,
   con «Includes … walking the bike.», e i testi della penna alzata
   (TASK-198). Restano da confermare le frasi nuove della bici (TASK-216) in
-  tedesco, spagnolo e francese. Le parole del foglio («App
+  tedesco, spagnolo e francese, e quelle dei pezzi di una forma (TASK-223)
+  in tutte e cinque le lingue. Le parole del foglio («App
   language», «Language», «Voice», «Default», «Listen», «Done») sono in
   inglese come il resto dello schermo: le traduce TASK-210.
 

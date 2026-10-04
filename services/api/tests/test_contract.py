@@ -106,6 +106,10 @@ def test_pen_up_fixtures_are_valid_bodies() -> None:
     request = _load("route-request-pen-up.json")
     assert set(request) == _names(RouteRequestBody)
     assert RouteRequestBody.model_validate(request).pen_up
+    # TASK-223: a shape in pieces with the pen up.
+    request = _load("route-request-pen-up-shape.json")
+    assert set(request) == _names(RouteRequestBody)
+    assert RouteRequestBody.model_validate(request).pen_up
     result = _load("route-result-pen-up.json")
     assert set(result) == _names(RouteResultBody) - ON_FOOT
     body = RouteResultBody.model_validate(result)

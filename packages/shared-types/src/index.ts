@@ -25,8 +25,28 @@ export const SHAPES = [
   "rabbit_head",
   "pumpkin",
   "christmas_tree",
+  "smiley",
+  "ghost",
+  "donut",
+  "sun",
 ] as const;
 export type Shape = (typeof SHAPES)[number];
+
+/** The shapes that may be drawn with the pen up (TASK-223, ADR-0185): the
+ * outline, then each piece on its own, walking from one to the next. The
+ * first five lift off their eyes; the others have pieces apart. */
+export const PEN_UP_SHAPES = [
+  "cat",
+  "fish",
+  "dog_head",
+  "rabbit_head",
+  "pumpkin",
+  "smiley",
+  "ghost",
+  "donut",
+  "sun",
+] as const satisfies readonly Shape[];
+export type PenUpShape = (typeof PEN_UP_SHAPES)[number];
 
 /** What a route is for: on foot, by bike on the roads a bike may ride,
  * one-way streets kept (TASK-190, ADR-0153), or paddling on a lake or the
@@ -100,16 +120,24 @@ interface RouteRequestFields {
 }
 
 /** A shape of the catalogue, or a word written one letter at a time: one
- * of the two, the other absent or null (TASK-056). `pen_up` only with a
- * word (TASK-197, ADR-0157): each letter drawn on its own, and the route
- * walks from one to the next without drawing (`RouteResult.walks`); the
- * distance is the letters'. Absent means false, as an older app sends it. */
+ * of the two, the other absent or null (TASK-056). `pen_up` with a word
+ * (TASK-197, ADR-0157): each letter drawn on its own, and the route walks
+ * from one to the next without drawing (`RouteResult.walks`); the distance
+ * is the letters'. So with a shape of PEN_UP_SHAPES, piece by piece
+ * (TASK-223), on the roads only. Absent means false, as an older app sends
+ * it. */
 export type RouteRequest =
   | (RouteRequestFields & {
       shape: Shape;
       word?: null;
       style?: "round";
       pen_up?: false;
+    })
+  | (RouteRequestFields & {
+      shape: PenUpShape;
+      word?: null;
+      style?: "round";
+      pen_up: true;
     })
   | (RouteRequestFields & {
       shape?: null;

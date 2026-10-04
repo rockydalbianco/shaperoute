@@ -65,6 +65,23 @@ export const SHAPE_WORDS: Record<
     en: ["christmas tree", "christmas trees", "xmas tree"],
     it: ["albero di natale", "alberi di natale", "alberello di natale"],
   },
+  // The simple shapes of TASK-223. The ring and the round are the circle's.
+  smiley: {
+    en: ["smiley", "smileys", "smiley face", "smiling face", "happy face", "smile"],
+    it: ["faccina", "faccine", "faccina sorridente", "sorriso", "sorrisino"],
+  },
+  ghost: {
+    en: ["ghost", "ghosts", "spook"],
+    it: ["fantasma", "fantasmi", "fantasmino", "spettro"],
+  },
+  donut: {
+    en: ["donut", "donuts", "doughnut", "doughnuts"],
+    it: ["ciambella", "ciambelle", "ciambellina"],
+  },
+  sun: {
+    en: ["sun", "suns", "sunshine"],
+    it: ["sole", "solicello", "sole splendente"],
+  },
 };
 
 const WORD_TO_SHAPE = new Map<string, Shape>(

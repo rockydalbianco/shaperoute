@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   PADDLE_EXAMPLES,
   type Example,
+  shownExamples,
   useCityExamples,
 } from "../explore/exampleRoutes";
 import type { RecommendedRoute } from "../explore/recommendedRoutes";
@@ -60,9 +61,11 @@ type Props = {
 /**
  * «Explore» with «Paddle» (TASK-191, the user's choice): in place of the
  * cities, the lakes and the beaches of WATER_PLACES, and «Near me». A place
- * chosen has its circle, heart and star of 2 km drawn on the water, from its
- * shore; a ready one opens on the map as a route of «Explore». The routes of
- * the runs are not here while «Paddle» is the sport.
+ * chosen has the eight shapes of the run, 2 km on the water from its shore
+ * (TASK-227): they come with the app, ready at once; «Near me» draws them
+ * as a city's examples. A ready one opens on the map as a route of
+ * «Explore». The routes of the runs are not here while «Paddle» is the
+ * sport.
  */
 export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
   const insets = useSafeAreaInsets();
@@ -116,7 +119,7 @@ export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
         {chosen === null && (
           <Text style={styles.note}>
             {t(
-              "Choose a lake or a beach: a circle, a heart and a star of 2 km are drawn on its water, from the shore.",
+              "Choose a lake or a beach: eight shapes of 2 km on its water, from the shore.",
             )}
           </Text>
         )}
@@ -161,13 +164,15 @@ function WaterExamples({
 }) {
   // Two cards side by side inside the section.
   const card = cardWidth(width - 2 * space.md);
-  const failed = examples.filter((e) => e.status === "failed");
+  // The shapes after the first ones only once they come (as CityExamples).
+  const shown = shownExamples(examples);
+  const failed = shown.filter((e) => e.status === "failed");
   const messages = Array.from(new Set(failed.map((e) => e.message)));
   return (
     <View style={styles.section}>
       <Text style={styles.label}>{title.toUpperCase()}</Text>
       <View style={styles.grid}>
-        {examples.map((example) => {
+        {shown.map((example) => {
           const name = shapeLabel(example.shape);
           if (example.status === "ready") {
             const { route } = example;
@@ -201,7 +206,7 @@ function WaterExamples({
           );
         })}
       </View>
-      {examples.some((e) => e.status === "ready") && <CardMapsCredit />}
+      {shown.some((e) => e.status === "ready") && <CardMapsCredit />}
       {messages.map((message) => (
         <Text key={message} style={styles.error}>
           {message}

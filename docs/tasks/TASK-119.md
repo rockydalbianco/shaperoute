@@ -1,6 +1,6 @@
 # TASK-119 — Reazioni ai disegni pubblicati, e il super like di Sgrava
 
-**Stato**: In corso — parte A (API) in revisione; poi la parte B (app)
+**Stato**: In corso — parte A (API) in `main` (PR #301, `3c94690`, 2026-10-04), non sul server; poi la parte B (app)
 **Fase**: 4 · **Branch**: `feat/TASK-119-a-reactions-api` (parte A),
 `feat/TASK-119-b-reactions-app` (parte B)
 **Dipende da**: TASK-117 (i disegni pubblicati) · TASK-120 (i commenti) ·
@@ -202,7 +202,7 @@ parte B. Il nome della migrazione segue il primo numero libero al merge.
 
 ## Esito
 
-**Parte A, l'API** (2026-10-04, branch `feat/TASK-119-a-reactions-api`):
+**Parte A, l'API** (2026-10-04, PR #301, merge `3c94690`):
 migrazione `0015_reactions.sql` (tabella `reactions`, chiave disegno +
 account, i sei codici nel vincolo), `reactions.py` con `GET
 /drawings/{id}/reactions`, `PUT` e `DELETE /drawings/{id}/reaction`;

@@ -1,6 +1,6 @@
 # TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle forme
 
-**Stato**: In lavorazione: parte A Done (merge #284, 224a708, 2026-10-04); parte B nel branch `feat/TASK-223-b-shapes-in-catalog` (2026-10-04)
+**Stato**: In lavorazione: parte A Done (merge #284, 224a708), parte B Done (merge #296, 09c2c3c), 2026-10-04; restano le conferme dell'utente, il server e la pubblicazione
 **Fase**: 4 · **Branch**: `feat/TASK-223-simple-emoji` (A), `feat/TASK-223-b-shapes-in-catalog` (B)
 **ADR**: ADR-0185 (le forme a pezzi)
 **Dipende da**: TASK-197 (la penna alzata nelle parole, `pen_up.py`)
@@ -277,7 +277,17 @@ sulla stessa pagina; aspettano il giudizio. Parere dell'agente: gatto, pesce
 e coniglio sì a Milano; testa di cane e zucca no (muso e sorriso staccati si
 confondono).
 
-**Da dove riparte la parte B**: dalle quattro forme del «sì» (faccina,
+**Parte B** (2026-10-04): in `main` con la #296 (09c2c3c). Faccina,
+fantasmino, ciambella e sole nel catalogo; `pen_up` con le forme a pezzi su
+strada; nell'app l'interruttore per le prime tre, acceso di partenza, e la
+voce fra i pezzi. Non ancora sul server né sul telefono: il server prima
+(un'API vecchia rifiuta le quattro forme), poi `draw_examples`, poi la
+pubblicazione, tutto dal coordinatore con l'ok dell'utente. **Aspettano
+l'utente**: i testi nuovi (`UI.md`, «da confermare»), la penna alzata
+accesa di partenza, il giudizio degli occhi staccati; poi la prova sul
+telefono (una faccina a penna alzata, la voce fra i pezzi).
+
+**Da dove ripartiva la parte B**: dalle quattro forme del «sì» (faccina,
 fantasmino, ciambella con la penna alzata, sole con la penna giù), più gli
 occhi staccati che l'utente approverà. Domande ancora aperte, una alla
 volta: la penna alzata accesa di partenza per le forme a pezzi (proposta:

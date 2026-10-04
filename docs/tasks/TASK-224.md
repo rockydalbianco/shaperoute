@@ -1,6 +1,6 @@
 # TASK-224 — Correndo: il fatto giallo, il da fare tratteggiato che lampeggia
 
-**Stato**: In corso · ADR-0186
+**Stato**: Done (2026-10-04) · ADR-0186 · PR #287, merge `ec6b748`
 **Fase**: 4 · **Branch**: `feat/TASK-224-route-done-ahead`
 
 ## Obiettivo
@@ -85,6 +85,7 @@ docs/STATUS.md
 
 ## Esito
 
+Merge come #287 (`ec6b748`) il 2026-10-04, con la CI 5/5 verde.
 Il fatto è la linea gialla piena, il da fare un tratteggio giallo che
 lampeggia a scatti, fermo in «Pocket» e con «Riduci movimento». La prima
 versione cambiava l'opacità con `setPaintProperty` e la mappa si

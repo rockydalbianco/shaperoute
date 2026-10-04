@@ -369,6 +369,42 @@ export const ES: Table = {
   "Paddle without a route": "Remar sin ruta",
   "Run without a route": "Correr sin ruta",
 
+  // src/share/PostImage.tsx
+  "Drag it to move it. Tap it to take it off.":
+    "Arrástralo para moverlo. Tócalo para quitarlo.",
+
+  // src/share/SharePost.tsx
+  "Share your run": "Comparte tu carrera",
+  "Drag the emoji to move them. Tap one to take it off.":
+    "Arrastra los emojis para moverlos. Toca uno para quitarlo.",
+  Results: "Resultados",
+  "Add emoji": "Añadir emoji",
+  "Add {emoji}": "Añadir {emoji}",
+  "Up to {count} emoji: tap one on the post to take it off.":
+    "Hasta {count} emojis: toca uno en la publicación para quitarlo.",
+  "Making the picture…": "Creando la imagen…",
+  "Pick Instagram in the list: Story, Feed or Messages.":
+    "Elige Instagram en la lista: Historia, Feed o Mensajes.",
+  Share: "Compartir",
+
+  // src/share/StravaPostRow.tsx
+  "To send this post to Strava, save the run, then share it from «My activities».":
+    "Para enviar esta publicación a Strava, guarda la carrera y luego compártela desde «Mis actividades».",
+  "This run is already on Strava. To add the picture there, keep it in Photos with «Save Image».":
+    "Esta carrera ya está en Strava. Para añadir allí la imagen, guárdala en Fotos con «Guardar imagen».",
+
+  // src/share/postRun.ts
+  Distance: "Distancia",
+  Time: "Tiempo",
+  Pace: "Ritmo",
+  Score: "Puntuación",
+
+  // src/share/sharePicture.ts
+  "This phone cannot open the share sheet.":
+    "Este teléfono no puede abrir el menú de compartir.",
+  "The picture could not be made. Try again.":
+    "No se pudo crear la imagen. Inténtalo de nuevo.",
+
   // src/social/DrawingCard.tsx
   "Back to the profile": "Volver al perfil",
 

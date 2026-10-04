@@ -9340,3 +9340,60 @@ una cosa che si legge a parte).
 quindi l'ok dell'utente per il server. I post di esempio del «Feed»
 restano senza reazioni; il feed vero (TASK-118) userà gli stessi
 endpoint. Bloccare (TASK-121) dovrà tenere conto anche delle reazioni.
+
+## ADR-0194 — Il post di una corsa: un'immagine fatta dall'app, Instagram dal foglio di condivisione, Strava come testo
+
+**Data**: 2026-10-04 · **Stato**: Accettato · **Task**: TASK-231 · il
+post, le emoji, i risultati, i due posti di «Share», Instagram dal foglio
+e Strava come testo sono scelte dell'utente, con la dipendenza nuova; il
+resto è deciso dall'agente su delega dell'utente
+
+**Contesto**: l'utente vuole condividere il «post» di Sgrava su Instagram
+e Strava, dopo averlo cambiato con emoji e risultati della corsa.
+Instagram non ha un'API per pubblicare da un'altra app senza un account
+business; Strava non accetta foto dalla sua API (ADR-0170). L'app non ha
+SVG: le linee sono `View` ruotate.
+
+**Decisione**:
+
+1. **Il post è una `View` dell'app** (`PostImage`), 9:16, fatta con le
+   stesse linee di «My activities» (`fitLines`); ogni misura è una parte
+   della larghezza, così l'immagine è uguale su ogni telefono. Giallo e
+   nero sono quelli del logo (ADR-0129), in ogni tema.
+2. **L'immagine la fa `react-native-view-shot` 5.1.0** (`captureRef`, PNG
+   ai pixel del telefono, nella cache): MIT, dentro Expo Go 57, nessun
+   plugin. Poi `expo-sharing` apre il foglio di iOS: Instagram (Storia,
+   Feed, Messaggi), «Save Image», Messaggi, AirDrop.
+3. **Le emoji** stanno sul post come parti di larghezza e altezza
+   (`stickers.ts`): al più 5, dodici fra cui scegliere, trascinate con il
+   responder di React Native (nessuna libreria di gesti), tolte con un
+   tocco (meno di 6 punti di movimento) o con l'azione di VoiceOver.
+4. **Il disegno del post perde i primi e gli ultimi 200 m** lungo la
+   traccia (`withoutEnds`, `POST_CUT_M`), come un disegno che vedono gli
+   altri: l'immagine esce dall'app.
+5. **Strava riceve il testo del post** come descrizione, quando la corsa
+   parte dal post: emoji, poi i risultati accesi («🔥❤️ 5.20 km · 28:10 ·
+   5:25 /km · Score 87»), nella lingua dell'app; l'API ci mette sotto
+   «Drawn with Sgrava». `sendToStrava` prende `description` fra le
+   opzioni, così chi lo chiamava prima non cambia.
+6. **«Share» non vuole un account** a fine corsa: il post è fatto sul
+   telefono. Strava, invece, solo per una corsa salvata.
+
+**Alternative scartate**:
+
+- `instagram-stories://share` con il post come adesivo: vuole un App ID
+  di Meta, le chiavi del pasteboard di Instagram e una build propria.
+- Disegnare il PNG a mano o con `@shopify/react-native-skia`: più codice,
+  e il post non sarebbe la stessa `View` che si vede e si cambia.
+- Catturare a 1080×1920 fissi: da una `View` di 250 punti l'immagine
+  verrebbe ingrandita, non più nitida; Instagram ingrandisce lo stesso.
+- Mandare a Strava l'immagine: l'API di Strava non la accetta.
+
+**Conseguenze**:
+
+- Una dipendenza in più (`react-native-view-shot`, con `html2canvas` solo
+  per il web). Dopo il merge, `npm install` nel checkout principale.
+- Una corsa già su Strava tiene il testo con cui è partita: «View on
+  Strava», e la foto si aggiunge a mano. Cambiare la descrizione là è la
+  parte B di TASK-231 (API).
+- I testi nuovi sono nelle cinque lingue (ADR-0172), da far confermare.

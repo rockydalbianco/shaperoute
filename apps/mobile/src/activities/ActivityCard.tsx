@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ActivityDetail } from "../api/activities";
 import { t } from "../i18n";
+import { postOfActivity } from "../share/postRun";
+import { SharePostButton } from "../share/SharePost";
 import { PublicRow } from "../social/PublicRow";
 import { StravaActivityRow } from "../strava/StravaActivityRow";
 import {
@@ -28,7 +30,8 @@ type Props = {
  * it was, how far and how fast, its score when it has one. The map shows it
  * as the end of a run does: the route yellow, what was run light. «Public»
  * and its title make it a drawing in the profile (TASK-117). With Strava
- * connected, «Send to Strava» or «View on Strava» (TASK-187).
+ * connected, «Send to Strava» or «View on Strava» (TASK-187). «Share» makes
+ * its post, for Instagram and Strava (TASK-231).
  */
 export function ActivityCard({ activity, onList, onDelete }: Props) {
   // «Delete» asks first, on the card itself.
@@ -62,6 +65,7 @@ export function ActivityCard({ activity, onList, onDelete }: Props) {
             : "White: what you ran.",
         )}
       </Text>
+      {!confirming && <SharePostButton makeRun={() => postOfActivity(activity)} />}
       {!confirming && <PublicRow activityKey={activity.id} />}
       {!confirming && <StravaActivityRow activity={activity} />}
       {confirming ? (

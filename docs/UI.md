@@ -1668,6 +1668,39 @@ mostra le lettere unite da linee dritte sulla base.
 Il punteggio non è giallo: il giallo resta del percorso e dell'azione
 principale.
 
+## Il post da condividere (TASK-231, ADR-0194)
+
+«Share» sta sulla scheda di fine corsa (con un percorso e senza) e sulla
+scheda di una corsa in «My activities». Apre a tutto schermo «Share your
+run», con «Close» in alto a sinistra:
+
+- **Il post**, in alto: 9:16, sul giallo di Sgrava. Il cuore del logo e
+  «Sgrava», il titolo (quello della corsa, o luogo e forma; nessuno a
+  fine corsa), il disegno della corsa in nero **senza i primi e gli ultimi
+  200 m**, e in basso i risultati accesi, due per riga: «Distance»,
+  «Time», «Pace», «Score» (il passo manca sotto i 100 m, il punteggio a
+  una corsa che non ce l'ha).
+- **«Results»**: una pastiglia per risultato, accesa all'inizio; spenta,
+  il risultato sparisce dal post e dal testo per Strava.
+- **«Add emoji»**: 🔥 ❤️ 💪 🏃 🎉 😅 🥵 😎 ⚡ 🏆 ☀️ 🌧️. Un tocco mette l'emoji
+  sul post, in un posto libero attorno al disegno; si trascina dove si
+  vuole e un tocco la toglie («Drag the emoji to move them. Tap one to take
+  it off.»). Al più cinque: «Up to 5 emoji: tap one on the post to take it
+  off.». Con VoiceOver l'emoji è un pulsante con il suo nome, e il doppio
+  tocco la toglie.
+- **«Instagram»**, giallo: fa l'immagine del post («Making the
+  picture…») e apre il foglio di condivisione di iOS. Sotto: «Pick
+  Instagram in the list: Story, Feed or Messages.». Errori: «This phone
+  cannot open the share sheet.», «The picture could not be made. Try
+  again.».
+- **Strava**, sotto, solo se l'API ha Strava: «Connect with Strava» se
+  l'atleta non è collegato; a fine corsa, prima di «Save»: «To send this
+  post to Strava, save the run, then share it from «My activities».». Su
+  una corsa salvata: «Send to Strava» manda la corsa con il testo del post
+  come descrizione (emoji e risultati accesi); poi «View on Strava». Una
+  corsa già su Strava: «View on Strava» e «This run is already on Strava.
+  To add the picture there, keep it in Photos with «Save Image».».
+
 ## Sull'acqua: «Paddle» (TASK-191, ADR-0169)
 
 Con «Paddle» scelto (in «Settings» o dal pulsante dello sport) i percorsi
@@ -1911,6 +1944,11 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   quelle di Sgrava. Il telefono non vede mai un token di Strava; il
   collegamento passa dal browser. Senza rete la corsa aspetta in
   `strava-outbox.json` (chiave e nome, al più 20), poi parte una volta.
+- **Il post** (TASK-231): l'immagine si fa sul telefono ed esce solo
+  dal foglio di condivisione, dove la manda l'utente (Instagram, Foto,
+  Messaggi…). Non mostra i primi e gli ultimi 200 m della corsa, né la
+  mappa sotto. A Strava, con «Send to Strava» dal post, va in più il testo
+  del post (emoji e risultati scelti).
 - **Un disegno pubblico** (TASK-117): una corsa diventa visibile agli altri
   iscritti **solo con «Public» acceso** dall'utente, a fine corsa o su una
   corsa aperta; acceso a ogni corsa da spento. Il telefono manda all'API la

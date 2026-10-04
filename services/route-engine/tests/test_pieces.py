@@ -244,18 +244,22 @@ def test_a_shape_without_pieces_cannot_be_drawn_with_the_pen_up() -> None:
         compose(outline, "face")
 
 
-def test_the_catalogue_gains_no_shape_only_eyes_apart() -> None:
-    # The candidates of TASK-223 are tried from the CLI until the user has
-    # judged them by eye on real roads (ADR-0036); the shapes with eyes may
-    # lift them off with the pen up.
+def test_the_catalogue_gains_only_the_shapes_the_user_approved() -> None:
+    # The candidates of TASK-223 entered once the user had judged them by eye
+    # on real roads (ADR-0036): four «sì», the others stay in the CLI. The
+    # shapes with eyes may lift them off with the pen up.
     in_pieces = {
         name
         for name, shape in SHAPES.items()
         if isinstance(shape, Outline) and shape.in_pieces
     }
-    assert in_pieces == {"cat", "fish", "dog_head", "rabbit_head", "pumpkin"}
-    assert not any(s.pieces for s in SHAPES.values() if isinstance(s, Outline))
-    assert not {"smiley", "ghost", "donut", "sun", "drop"} & set(SHAPES)
+    approved = {"smiley", "ghost", "donut", "sun"}
+    assert in_pieces == {"cat", "fish", "dog_head", "rabbit_head", "pumpkin"} | approved
+    assert {n for n, s in SHAPES.items() if isinstance(s, Outline) and s.pieces} == (
+        approved
+    )
+    almost = {"balloon", "ice_cream", "lightning", "cloud", "drop", "apple"}
+    assert not almost & set(SHAPES)
 
 
 # --- Strokes lifted off with the pen up: the eyes of the shapes of today ---

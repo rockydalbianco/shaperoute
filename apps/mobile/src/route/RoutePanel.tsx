@@ -26,6 +26,7 @@ import { APP_DISTANCE_LIMITS_KM, LONG_DISTANCE_KM } from "./distance";
 import { DistanceStepper } from "./DistanceStepper";
 import { ImageChoice } from "./ImageChoice";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
+import { offersPenUp } from "./penUpShapes";
 import type { ImageSource } from "./pickImage";
 import { type ChoiceKind, problemText } from "./problems";
 import { RouteTiles } from "./RouteTiles";
@@ -75,8 +76,9 @@ type ChoiceProps = {
   /** Round or square letters for the word (TASK-080). */
   letterStyle: LetterStyle;
   onLetterStyle: (style: LetterStyle) => void;
-  /** The pen lifted between the letters of the word (TASK-198): the switch
-   * shows only with a way to change it. */
+  /** The pen lifted between the letters of the word (TASK-198), and between
+   * the pieces of a shape that has them (TASK-223): the switch shows only
+   * with a way to change it. */
   penUp?: boolean;
   onPenUp?: (on: boolean) => void;
   /** The picture chosen and its outline (TASK-073), and how to choose one. */
@@ -153,6 +155,13 @@ export function RouteChoice({
             accessibilityLabel="Shape"
           />
           <ShapeNote text={shapeText} shape={shape} reading={reading} />
+          {onPenUp && !shapesOnly && offersPenUp(shape) && (
+            <PenSwitch
+              label="Lift the pen between parts"
+              on={penUp}
+              onChange={onPenUp}
+            />
+          )}
         </>
       ) : kind === "image" ? (
         <ImageChoice state={image} onChoose={onChooseImage} />
@@ -425,20 +434,37 @@ function PenSwitch({
 /**
  * A word with the pen up (TASK-198): the km of its letters, what the run
  * records, apart from the km walked between them; on a bike, ridden
- * (TASK-216). Nothing for any other route, nor from an API that sends no
- * walks.
+ * (TASK-216). So a shape in pieces, between its parts (TASK-223). Nothing
+ * for any other route, nor from an API that sends no walks.
  */
 function PenSplit({ result, activity }: { result: RouteResult; activity: Activity }) {
   const split = penSplit(result);
   if (split === null) {
     return null;
   }
+  const drawn = decimal(split.lettersM / 1000);
+  const between = decimal(split.walksM / 1000);
+  if (result.word === null) {
+    return (
+      <Text style={styles.target}>
+        {activity === "cycling"
+          ? t("{drawn} km of drawing + {between} km riding between the parts", {
+              drawn,
+              between,
+            })
+          : t("{drawn} km of drawing + {between} km walking between the parts", {
+              drawn,
+              between,
+            })}
+      </Text>
+    );
+  }
   return (
     <Text style={styles.target}>
       {activity === "cycling"
         ? t("{letters} km of letters + {between} km riding between them", {
-            letters: decimal(split.lettersM / 1000),
-            between: decimal(split.walksM / 1000),
+            letters: drawn,
+            between,
           })
         : `${km(split.lettersM)} km of letters + ${km(split.walksM)} km walking between them`}
     </Text>

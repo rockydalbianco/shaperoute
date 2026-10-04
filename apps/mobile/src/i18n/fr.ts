@@ -170,6 +170,10 @@ export const FR: Table = {
   "Rabbit head": "Tête de lapin",
   Pumpkin: "Citrouille",
   "Christmas tree": "Sapin de Noël",
+  Smiley: "Smiley",
+  Ghost: "Fantôme",
+  Donut: "Donut",
+  "The sun": "Soleil",
 
   // src/paddle/PaddleExplore.tsx
   Next: "À suivre",
@@ -289,6 +293,10 @@ export const FR: Table = {
   // src/route/RoutePanel.tsx
   "{letters} km of letters + {between} km riding between them":
     "{letters} km de lettres + {between} km à vélo entre elles",
+  "{drawn} km of drawing + {between} km walking between the parts":
+    "{drawn} km de dessin + {between} km à pied entre les parties",
+  "{drawn} km of drawing + {between} km riding between the parts":
+    "{drawn} km de dessin + {between} km à vélo entre les parties",
   "On the water, a shape of the catalogue.": "Sur l'eau, une forme du catalogue.",
   "{name} · on the water · target {km} km": "{name} · sur l'eau · objectif {km} km",
   "{name} · on roads · target {km} km": "{name} · sur route · objectif {km} km",

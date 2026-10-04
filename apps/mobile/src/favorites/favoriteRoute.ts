@@ -25,6 +25,7 @@ import type { ThemedResult } from "../explore/themedRoutes";
 import { decimal, t } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
 import { onFootOf } from "../route/onFoot";
+import { isPenUpShape } from "../route/penUpShapes";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
 import { walksOf } from "../route/walks";
 import { favoriteKey } from "./favoriteKey";
@@ -44,15 +45,17 @@ const PREVIEW_POINTS = 64;
 
 /**
  * The walks of a word with the pen up, as a favorite keeps them (TASK-199):
- * only those that fit the line, and only for a word. Nothing for any other
- * route: its request is the one of before, field for field.
+ * only those that fit the line, and only for a word or a shape in pieces
+ * (TASK-223). Nothing for any other route: its request is the one of
+ * before, field for field.
  */
 function penUp(
-  word: string | null,
+  drawn: { word: string | null; shape: string | null },
   points: readonly LatLon[],
   walks: readonly Walk[] | null | undefined,
 ): { walks?: Walk[] } {
-  const fit = word === null ? [] : walksOf(points, walks);
+  const lifts = drawn.word !== null || isPenUpShape(drawn.shape);
+  const fit = lifts ? walksOf(points, walks) : [];
   return fit.length === 0 ? {} : { walks: fit.map(([from, to]): Walk => [from, to]) };
 }
 
@@ -113,8 +116,9 @@ export function drawnKeepable(
       distance_m: request.distance_m,
       route_m: Math.round(result.distance_m),
       points: result.points,
-      // A word with the pen up keeps its walks (TASK-199).
-      ...penUp(word, result.points, result.walks),
+      // A word with the pen up keeps its walks (TASK-199), so a shape in
+      // pieces (TASK-223).
+      ...penUp({ word, shape: result.shape }, result.points, result.walks),
       // A bike route keeps its stretches with the bike on foot (TASK-206).
       ...onFoot(result.points, result.on_foot),
       ...drawnFor(request.activity),
@@ -294,23 +298,29 @@ export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
     away_m: 0,
     preview: [],
   };
-  const walked = penUp(favorite.word, favorite.points, favorite.walks);
+  const walked = penUp(favorite, favorite.points, favorite.walks);
   const stretches = onFoot(favorite.points, favorite.on_foot);
   const result: RouteResult = { ...toResult(detail), ...walked, ...stretches };
   const activity = favoriteActivity(favorite);
-  // A word with the pen up is asked for as «Draw» asks for it.
+  // A word with the pen up is asked for as «Draw» asks for it, and so a
+  // shape in pieces (TASK-223).
+  const asked = {
+    start: favorite.points[0],
+    distance_m: favorite.distance_m,
+    activity,
+  };
   const request: AnyRouteRequest =
     walked.walks !== undefined && favorite.word !== null
       ? {
-          start: favorite.points[0],
-          distance_m: favorite.distance_m,
-          activity,
+          ...asked,
           word: favorite.word,
           style: favorite.style === "block" ? "block" : "round",
           pen_up: true,
         }
-      : // In the place of `running`: a run's request is the one of before.
-        { ...(toRequest(detail) ?? imageRequest(detail, activity)), activity };
+      : walked.walks !== undefined && isPenUpShape(favorite.shape)
+        ? { ...asked, shape: favorite.shape, pen_up: true }
+        : // In the place of `running`: a run's request is the one of before.
+          { ...(toRequest(detail) ?? imageRequest(detail, activity)), activity };
   return {
     status: "done",
     route,

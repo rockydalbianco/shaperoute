@@ -13,9 +13,25 @@
     "dog_head",
     "rabbit_head",
     "pumpkin",
-    "christmas_tree"
+    "christmas_tree",
+    "smiley",
+    "ghost",
+    "donut",
+    "sun"
   ],
   "phrases": [
+    { "text": "faccina sorridente", "accept": ["smiley"] },
+    { "text": "emoji felice", "accept": ["smiley"] },
+    { "text": "smile", "accept": ["smiley"] },
+    { "text": "fantasma", "accept": ["ghost"] },
+    { "text": "Casper", "accept": ["ghost"] },
+    { "text": "boo", "accept": ["ghost", null] },
+    { "text": "donut", "accept": ["donut"] },
+    { "text": "la ciambella di Homer", "accept": ["donut"] },
+    { "text": "sole", "accept": ["sun"] },
+    { "text": "sole che splende", "accept": ["sun"] },
+    { "text": "estate", "accept": ["sun", null] },
+
     { "text": "stemma della Ferrari", "accept": ["horse"] },
     { "text": "cavallino rampante", "accept": ["horse"] },
     { "text": "logo Ferrari", "accept": ["horse"] },
@@ -85,7 +101,7 @@
     { "text": "spicchio di luna", "accept": ["moon"] },
     { "text": "half moon", "accept": ["moon"] },
 
-    { "text": "ciambella", "accept": ["circle"] },
+    { "text": "ciambella", "accept": ["donut", "circle"] },
     { "text": "anello di fidanzamento", "accept": ["circle"] },
     { "text": "ruota", "accept": ["circle"] },
     { "text": "rotonda", "accept": ["circle"] },

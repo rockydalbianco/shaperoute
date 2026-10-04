@@ -15,6 +15,11 @@ const SHAPE_NAMES: Readonly<Record<string, string>> = {
   rabbit_head: tLater("Rabbit head"),
   pumpkin: tLater("Pumpkin"),
   christmas_tree: tLater("Christmas tree"),
+  smiley: tLater("Smiley"),
+  ghost: tLater("Ghost"),
+  donut: tLater("Donut"),
+  // Not "Sun": that is Sunday's, in the list of the days (activityText.ts).
+  sun: tLater("The sun"),
 };
 
 /**

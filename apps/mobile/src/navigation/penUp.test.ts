@@ -134,7 +134,7 @@ describe("the pen along the route", () => {
       "Pen down: draw the N.",
     ]);
     expect(
-      movePen(startPen(ALONG, WALKS, null, "cycling"), 300, null, "it").cues,
+      movePen(startPen(ALONG, WALKS, "SUNNY", "cycling"), 300, null, "it").cues,
     ).toEqual([
       {
         say: "Lettera finita. Pedala fino alla lettera successiva: il disegno è in pausa.",
@@ -148,10 +148,34 @@ describe("the pen along the route", () => {
   });
 
   test("a word that does not fit its walks says the next letter", () => {
-    const step = movePen(startPen(ALONG, WALKS, null), 300);
+    const step = movePen(startPen(ALONG, WALKS, "SUNNY"), 300);
     expect(step.cues).toEqual([
       {
         say: "Letter done. Walk to the next letter: the drawing is paused.",
+        vibrate: true,
+      },
+    ]);
+  });
+
+  test("a shape in pieces, walks and no word, says the next part (TASK-223)", () => {
+    let pen: Pen = startPen(ALONG, WALKS, null);
+    const said: string[] = [];
+    for (let m = 0; m <= 1000; m += 10) {
+      const step = movePen(pen, m);
+      pen = step.pen;
+      said.push(...step.cues.map((cue) => cue.say));
+    }
+    expect(said).toEqual([
+      "Part done. Walk to the next part: the drawing is paused.",
+      "Pen down: draw the next part.",
+      "Part done. Walk to the next part: the drawing is paused.",
+      "Pen down: draw the next part.",
+    ]);
+    expect(
+      movePen(startPen(ALONG, WALKS, null, "cycling"), 300, null, "it").cues,
+    ).toEqual([
+      {
+        say: "Parte finita. Pedala fino alla parte successiva: il disegno è in pausa.",
         vibrate: true,
       },
     ]);

@@ -16,7 +16,7 @@ from route_engine.models import (
     RouteResult,
 )
 from route_engine.pen_up import drawn_pieces, walks_problem
-from route_engine.shapes import SUPPORTED_SHAPES
+from route_engine.shapes import SUPPORTED_SHAPES, in_pieces
 from route_engine.words import ALPHABET, LETTER_DISTANCE_M, MAX_WORD_LETTERS, STYLES
 
 REPO = Path(__file__).resolve().parents[3]
@@ -71,6 +71,11 @@ def test_a_word_with_the_pen_up_and_its_walks_are_in_the_contract() -> None:
     assert set(data) == _names(RouteRequest)
     request = RouteRequest(**{**data, "start": tuple(data["start"])})
     assert request.pen_up and request.name == "IO"
+    # A shape in pieces with the pen up too (TASK-223).
+    data = _load("route-request-pen-up-shape.json")
+    assert set(data) == _names(RouteRequest)
+    request = RouteRequest(**{**data, "start": tuple(data["start"])})
+    assert request.pen_up and request.shape == "smiley"
     data = _load("route-result-pen-up.json")
     assert set(data) == _names(RouteResult) - ON_FOOT
     points = [tuple(p) for p in data["points"]]
@@ -88,6 +93,8 @@ def test_shapes_activities_and_limits_match() -> None:
     contract = _load("contract.json")
     assert contract == {
         "shapes": list(SUPPORTED_SHAPES),
+        # The shapes that may be asked with the pen up (TASK-223).
+        "pen_up_shapes": [name for name in SUPPORTED_SHAPES if in_pieces(name)],
         "activities": list(SUPPORTED_ACTIVITIES),
         "min_distance_m": MIN_DISTANCE_M,
         "max_distance_m": MAX_DISTANCE_M,

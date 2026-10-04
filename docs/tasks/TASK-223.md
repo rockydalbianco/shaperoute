@@ -1,7 +1,7 @@
 # TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle forme
 
-**Stato**: In lavorazione: parte A Done (merge #284, 224a708, 2026-10-04); la parte B parte dopo, in un contesto pulito
-**Fase**: 4 · **Branch**: `feat/TASK-223-simple-emoji`
+**Stato**: In lavorazione: parte A Done (merge #284, 224a708, 2026-10-04); parte B nel branch `feat/TASK-223-b-shapes-in-catalog` (2026-10-04)
+**Fase**: 4 · **Branch**: `feat/TASK-223-simple-emoji` (A), `feat/TASK-223-b-shapes-in-catalog` (B)
 **ADR**: ADR-0185 (le forme a pezzi)
 **Dipende da**: TASK-197 (la penna alzata nelle parole, `pen_up.py`)
 **Dopo**: la parte B, con le forme scelte dall'utente; TASK-226 (gli occhi
@@ -155,6 +155,88 @@ liberi. Per ogni forma scelta:
   l'interruttore della penna alzata anche per le forme a pezzi, la voce
   fra un pezzo e l'altro;
 - `UI.md` (la tabella delle forme), `API.md`, `AI.md`.
+
+### Fatto (parte B, 2026-10-04)
+
+L'utente ha scritto «continua e pubblica»: le due domande ancora aperte
+sono prese con le proposte di sotto (penna alzata accesa di partenza, una
+frase sola per la voce), da confermare sul telefono; gli occhi staccati non
+giudicati restano fuori dall'app. ADR-0185, punti 8–14.
+
+- **Il motore**: faccina, fantasmino, ciambella e sole in `SHAPES`, in
+  coda. `RouteRequest.pen_up` vale anche per una forma con pezzi o tratti
+  staccabili (`shapes.in_pieces`), solo su strada; `plan_route` e
+  `ShapeJob.of_request` la scrivono con `pieces.compose_shape`. Rifiuti:
+  `PEN_UP_WITHOUT_PIECES` («… heart has none»), `PEN_UP_ON_WATER`.
+- **L'API**: la descrizione di `pen_up`, `PEN_UP_SHAPES`, e `MAX_WALKS` a
+  8 (i raggi del sole; prima 7) per risultati, preferiti e corse.
+- **Il contratto**: `SHAPES` con le quattro, `PEN_UP_SHAPES` e
+  `PenUpShape`; `RouteRequest` ha un ramo `shape: PenUpShape; pen_up:
+  true`, e tsc rifiuta il cuore con la penna alzata. `contract.json` ha
+  `pen_up_shapes`, la fixture `route-request-pen-up-shape.json`.
+- **L'AI**: una riga per forma in `prompt.py`; 11 voci nuove nella messa a
+  punto («ciambella» ora accetta ciambella o cerchio) e 7 nel controllo.
+- **L'app**: le tessere 🙂 👻 🍩 ☀️, le parole (`shapeWords.ts`), i nomi
+  nelle cinque lingue (`shapeNames.ts` e le tabelle; il sole è «The sun»
+  perché «Sun» è la domenica); «Lift the pen between parts» per faccina,
+  fantasmino e ciambella, mai sull'acqua (`penUpShapes.ts`); la riga «km of
+  drawing + km walking between the parts»; la voce «Part done. Walk to the
+  next part…» nelle cinque lingue; i preferiti tengono i tratti a piedi di
+  una forma a pezzi e la riaprono con la penna alzata.
+- `engine.zip` rifatto (`phone_engine.py engine`, il suo test verde).
+
+### Criteri di accettazione (parte B)
+
+- [x] Le quattro forme si chiedono all'API per nome, con la penna giù, e
+      le tre del «sì» a pezzi anche con la penna alzata (test del motore,
+      dell'API e del contratto).
+- [x] Una forma senza pezzi con `pen_up`, o una forma a pezzi sull'acqua
+      con `pen_up`, è `invalid_request` con il motivo.
+- [x] Con la penna alzata il risultato ha `shape`, `word: null` e un
+      tratto a piedi in meno delle linee (faccina: 3).
+- [x] Le richieste di prima sono le stesse: le forme di oggi non mandano
+      `pen_up`, le impronte di `test_pieces_before.py` non cambiano.
+- [x] Nell'app la tessera, le parole, il nome nelle cinque lingue,
+      l'interruttore solo per le tre forme, la voce fra i pezzi.
+- [x] Test verdi: motore 1405, AI 35, contratto 44, app 1695; API
+      senza database in locale (i test col database li fa la CI).
+
+### File toccati (parte B)
+
+- `services/route-engine/route_engine/shapes/__init__.py`, `models.py`,
+  `optimizer.py`, `nearby_starts.py`, `pieces.py`
+- `services/route-engine/tests/test_pieces_in_catalog.py` (nuovo),
+  `test_pieces.py`, `test_contract.py`, `test_shapes.py`
+- `services/api/shaperoute_api/schemas.py`,
+  `services/api/tests/test_pen_up_shapes.py` (nuovo), `test_contract.py`
+- `services/ai/shaperoute_ai/prompt.py`, `services/ai/tests/phrases.json`,
+  `phrases-holdout.json`
+- `packages/shared-types/src/index.ts`, `fixtures/contract.json`,
+  `fixtures/route-request-pen-up-shape.json` (nuovo),
+  `test/contract.test.ts`
+- `apps/mobile/App.tsx`, `apps/mobile/__tests__/App.test.tsx` (l'elenco
+  delle forme in due attese)
+- `apps/mobile/src/route/ShapeTiles.tsx`, `shapeWords.ts`,
+  `shapeWords.test.ts`, `RoutePanel.tsx`, `penUpShapes.ts` e
+  `penUpShapes.test.ts` (nuovi), `RoutePanelPieces.test.tsx` (nuovo)
+- `apps/mobile/src/favorites/favoriteRoute.ts`, `favoriteRoute.test.ts`
+- `apps/mobile/src/navigation/penUp.ts`, `penUp.test.ts`
+- `apps/mobile/src/voice/phrasebook.ts`, `en.ts`, `it.ts`, `de.ts`,
+  `es.ts`, `fr.ts`, `words.test.ts`
+- `apps/mobile/src/i18n/shapeNames.ts`, `it.ts`, `de.ts`, `es.ts`, `fr.ts`
+  (righe aggiunte: incrocio con TASK-214 C, chiesto al coordinatore)
+- `apps/mobile/assets/engine/engine.zip`
+- `docs/ROUTE_ENGINE.md`, `docs/API.md`, `docs/AI.md`, `docs/UI.md`,
+  `docs/DECISIONS.md` (ADR-0185, parte B), `docs/STATUS.md`,
+  `docs/tasks/TASK-223.md`
+
+### Note per il deploy (parte B)
+
+- **Prima il server, poi l'app**: un'API senza la parte B rifiuta le
+  quattro forme (`unknown shape`) e la penna alzata con una forma; il
+  telefono con il motore suo (TASK-214) le disegna da sé solo nelle zone
+  scaricate. Il motore cambia: dopo l'aggiornamento `draw_examples`.
+- Nessuna migrazione.
 
 ## Domande per l'utente
 

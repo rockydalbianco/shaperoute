@@ -21,6 +21,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 
+from route_engine.shapes import get_shape
 from route_engine.shapes.outline import Outline
 from route_engine.shapes.resample import Point
 from route_engine.words import Letter, Place, Word
@@ -84,6 +85,16 @@ def compose(outline: Outline, name: str, points: int = PIECE_POINTS) -> Word:
         pen_up=True,
         kind="piece",
     )
+
+
+def compose_shape(name: str, points: int = PIECE_POINTS) -> Word:
+    """`compose` for the catalogue shape called `name`, as a request with
+    the pen up asks for it (TASK-223 part B): NoPiecesError if it has no
+    pieces (shapes.in_pieces)."""
+    shape = get_shape(name)
+    if not isinstance(shape, Outline):
+        raise NoPiecesError(f"{name} has no pieces to draw with the pen up")
+    return compose(shape, name, points)
 
 
 def _cuts(length: float, step: float) -> list[float]:

@@ -171,6 +171,10 @@ export const ES: Table = {
   "Rabbit head": "Cabeza de conejo",
   Pumpkin: "Calabaza",
   "Christmas tree": "Árbol de Navidad",
+  Smiley: "Carita sonriente",
+  Ghost: "Fantasma",
+  Donut: "Dónut",
+  "The sun": "Sol",
 
   // src/paddle/PaddleExplore.tsx
   Next: "A continuación",
@@ -291,6 +295,10 @@ export const ES: Table = {
   // src/route/RoutePanel.tsx
   "{letters} km of letters + {between} km riding between them":
     "{letters} km de letras + {between} km en bici entre una y otra",
+  "{drawn} km of drawing + {between} km walking between the parts":
+    "{drawn} km de dibujo + {between} km a pie entre las partes",
+  "{drawn} km of drawing + {between} km riding between the parts":
+    "{drawn} km de dibujo + {between} km en bici entre las partes",
   "On the water, a shape of the catalogue.": "En el agua, una forma del catálogo.",
   "{name} · on the water · target {km} km": "{name} · en el agua · objetivo {km} km",
   "{name} · on roads · target {km} km": "{name} · por carretera · objetivo {km} km",

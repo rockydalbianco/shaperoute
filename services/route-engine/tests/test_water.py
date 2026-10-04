@@ -485,7 +485,7 @@ def test_the_overpass_query_asks_for_the_water_and_the_ways_to_it() -> None:
     assert '"natural"="coastline"' in query
     assert 'relation["natural"="water"](44.00000,12.60000,44.10000,12.70000)' in query
     assert "(around.s:40)" in query
-    assert query.endswith("out tags geom;")
+    assert query.endswith("out body geom;")
 
 
 def test_water_bbox_covers_the_reach_of_a_shape() -> None:

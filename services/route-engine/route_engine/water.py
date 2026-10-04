@@ -15,7 +15,7 @@ This module finds, around a start,
 
 Everything is in metres on the plane tangent at the requested start
 (geo.py); coordinates in and out are (lat, lon). The data are OpenStreetMap
-elements in the Overpass `out tags geom` format, cached apart from the
+elements in the Overpass `out body geom` format, cached apart from the
 roads (`<cache>/water/`). Nothing here imports from the API or the AI, and
 nothing needs the network except `OverpassWaterSource` on a cache miss.
 
@@ -136,7 +136,10 @@ WATER_QUERY = (
     'node["leisure"="slipway"]({b});'
     'way["landuse"="harbour"]({b});relation["landuse"="harbour"]({b});'
     'way["highway"](around.s:{near})({b});'
-    ");out tags geom;"
+    # `body`, not `tags`: with `out tags` Overpass leaves out the members
+    # of a relation, and a lake drawn as a multipolygon (Garda, Como) has
+    # no shape without them (TASK-230).
+    ");out body geom;"
 )
 WATER_TIMEOUT_S = 180
 

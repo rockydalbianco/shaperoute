@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { t } from "../i18n";
 import {
   color,
   fontSize,
@@ -77,6 +78,8 @@ function touchesOf(event: GestureResponderEvent): Point[] {
  * With «Add a part» or «Add a detail» on, one finger draws, and the line
  * goes to the API when it lifts; otherwise one finger moves the picture.
  * Two fingers zoom and move it, and the lines keep their width.
+ * «Save», at the foot, keeps the edits and closes the board (TASK-229, ADR-0191):
+ * the edits are already in the outline, so saving is closing.
  */
 export function OutlineBoard({
   visible,
@@ -176,13 +179,6 @@ export function OutlineBoard({
               <Text style={styles.link}>Fit</Text>
             </Pressable>
           )}
-          <Pressable
-            style={styles.headerButton}
-            onPress={onClose}
-            accessibilityRole="button"
-          >
-            <Text style={styles.done}>Done</Text>
-          </Pressable>
         </View>
         <View
           style={styles.board}
@@ -288,6 +284,11 @@ export function OutlineBoard({
               <Text style={styles.buttonText}>Undo</Text>
             </Pressable>
           </View>
+          {/* At the foot, under the thumb: in Expo Go its own button
+              covers the top right corner. */}
+          <Pressable style={styles.button} onPress={onClose} accessibilityRole="button">
+            <Text style={styles.buttonText}>{t("Save")}</Text>
+          </Pressable>
         </View>
       </View>
     </Modal>
@@ -319,10 +320,6 @@ const styles = StyleSheet.create({
     color: color.text,
     fontWeight: fontWeight.bold,
     textDecorationLine: "underline",
-  },
-  done: {
-    color: color.accent,
-    fontWeight: fontWeight.bold,
   },
   board: {
     flex: 1,

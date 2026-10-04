@@ -371,6 +371,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-229: «Save» per uscire dalla lavagna del contorno
+  (ADR-0191; chiesto dall'utente il 2026-10-03: dalla foto modificata non si
+  usciva). In fondo a «Edit the outline» un pulsante «Save» largo quanto
+  la riga chiude la lavagna e tiene le modifiche; tolto «Done» in alto a
+  destra, che in Expo Go stava sotto il pulsante di Expo. Sul telefono con
+  la prossima pubblicazione. `tasks/TASK-229.md`.
 - **Server** — TASK-225: l'acqua dei quattro luoghi della canoa sul server
   (ADR-0187; «SI FALLO» dell'utente, e «Sì, scrivi e prova» per il
   server; PR #285, merge `87115ba`). `route_engine` non cambia:

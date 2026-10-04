@@ -315,10 +315,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   disegno pubblicato aperto, una a testa: il cuore di Sgrava, 🔥 👏 💪 😂
   😮. Il cuore di Sgrava è il **super like**: doppio tocco sul disegno
   aperto, e **vuole un commento di almeno 2 caratteri**, salvato insieme.
-  Task file riscritto (Todo). Prossimo passo: **parte A, l'API**
-  (migrazione nuova, quindi l'ok dell'utente per il server); poi la parte
-  B, l'app (`DrawingCard.tsx` ok dal coordinatore; `MapView.tsx`,
-  `mapPage.ts`, `App.tsx` da chiedere). Da dove riprendere: `tasks/TASK-119.md`.
+  **Parte A, l'API**, in revisione (`feat/TASK-119-a-reactions-api`):
+  migrazione `0015_reactions.sql`, `GET /drawings/{id}/reactions`, `PUT`
+  e `DELETE /drawings/{id}/reaction`; il super like scrive il suo
+  commento nella stessa transazione, dal filtro di TASK-213. Non sul
+  server: migrazione, quindi l'ok dell'utente. Poi la **parte B**, l'app
+  (`DrawingCard.tsx` ok dal coordinatore; `MapView.tsx`, `mapPage.ts`,
+  `App.tsx` da chiedere; TASK-231 può toccare `DrawingCard.tsx`). Da dove
+  riprendere: `tasks/TASK-119.md`, «Esito».
 
 - **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:
   subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API

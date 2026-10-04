@@ -831,6 +831,61 @@ export interface CommentsPage {
 }
 
 /**
+ * The reactions under a drawing (TASK-119, ADR-0193), in the order the app
+ * shows them: the Sgrava heart, the super like, then 🔥 👏 💪 😂 😮. Codes,
+ * never the emoji: the app draws them.
+ */
+export const REACTION_KINDS = [
+  "super_like",
+  "fire",
+  "clap",
+  "strong",
+  "laugh",
+  "wow",
+] as const;
+export type ReactionKind = (typeof REACTION_KINDS)[number];
+
+/**
+ * A super like needs a comment of at least this many characters, once the
+ * spaces at either end are gone (ADR-0193); checked by the API too.
+ */
+export const SUPER_LIKE_MIN_COMMENT = 2;
+
+/**
+ * PUT /drawings/{id}/reaction (TASK-119): one reaction each, in place of
+ * one's own; the same kind again changes nothing. `comment` only with
+ * "super_like", and then needed: SUPER_LIKE_MIN_COMMENT to
+ * COMMENT_MAX_LENGTH characters, refused as a comment is
+ * ("comment_rejected"). The answer is the ReactionResult.
+ */
+export interface ReactionRequest {
+  kind: ReactionKind;
+  comment?: string | null;
+}
+
+/**
+ * GET /drawings/{id}/reactions, and the answer of DELETE
+ * /drawings/{id}/reaction: how many, never who.
+ */
+export interface ReactionsSummary {
+  /** How many of each kind, all six, zero included. */
+  counts: Record<ReactionKind, number>;
+  total: number;
+  /** The reaction of who asks; null when it left none. */
+  mine: ReactionKind | null;
+}
+
+/** The answer of PUT /drawings/{id}/reaction. */
+export interface ReactionResult {
+  reactions: ReactionsSummary;
+  /**
+   * The comment kept with a super like just left, to add to the comments;
+   * null otherwise, also when the super like was there already.
+   */
+  comment: Comment | null;
+}
+
+/**
  * The answer of POST /accounts and POST /session, the only one with the
  * token: the app keeps it in expo-secure-store and sends it back as
  * "Authorization: Bearer <token>". It ends 90 days after its last use, or

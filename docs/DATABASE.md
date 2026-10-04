@@ -39,7 +39,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 | `drawings` | il disegno di una corsa: **traccia tagliata** (senza 200 m all'inizio e alla fine), titolo dato dall'utente (TASK-117); chi lo vede (tutti, chi segue, solo io) e la descrizione (TASK-208) | TASK-117, TASK-208 |
 | `drawing_photos` | fino a 3 foto di un disegno oltre alla mappa: posto 1–3, JPEG al più 1080 px di lato, senza EXIF | TASK-208 |
 | `drawing_tags` | gli iscritti taggati in un disegno, in ordine, al più 10 | TASK-208 |
-| `likes` | utente, corsa (coppia unica) | TASK-119 |
+| `reactions` | disegno, chi reagisce (coppia unica: una a testa), quale delle sei, data | TASK-119 |
 | `comments` | disegno, autore, testo (1–500), data | TASK-120 |
 | `reports` | chi segnala, cosa (corsa, commento, utente), motivo, data, gestita da e quando | TASK-121 |
 | `blocks` | chi blocca, chi è bloccato | TASK-121 |
@@ -310,6 +310,23 @@ Migrazione `0014_drawing_details.sql` (TASK-208, ADR-0170):
   si comprime di più, e sul disco del server pesa circa 14 volte. Le foto
   delle corse private non ci sono. Le note per il deploy sono in
   `tasks/TASK-208.md`.
+
+Migrazione `0015_reactions.sql` (TASK-119, ADR-0193; il numero è il primo
+libero in `main` al merge):
+
+- `reactions`: `drawing_id` (`ON DELETE CASCADE` su `drawings`) e
+  `user_id` (chi reagisce, `ON DELETE CASCADE` su `users`) insieme la
+  chiave: **una reazione a testa** per disegno, garantita dal database;
+  un'altra prende il suo posto (`ON CONFLICT … DO UPDATE`). `kind` è un
+  codice, mai l'emoji: `super_like` (il cuore di Sgrava), `fire`, `clap`,
+  `strong`, `laugh`, `wow`, con un vincolo che li elenca come il contratto.
+  `created_at` è quando è stata lasciata o cambiata l'ultima volta. Un
+  indice su `user_id` per cancellare quelle di un account.
+- Il **commento del super like** è una riga di `comments` come le altre,
+  scritta nella stessa transazione della reazione: nessuna colonna lega
+  le due righe, perché dopo vivono separate (ADR-0193).
+- Legate al **disegno**, come i commenti: le vede chi vede il disegno, e
+  un disegno tornato privato le tiene.
 
 ## Come si memorizza una traccia
 

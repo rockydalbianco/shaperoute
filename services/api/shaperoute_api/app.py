@@ -81,6 +81,7 @@ from shaperoute_api.places import (
 )
 from shaperoute_api.profile_photos import install_profile_photos
 from shaperoute_api.profiles import install_profiles
+from shaperoute_api.reactions import install_reactions
 from shaperoute_api.recommended import (
     DEFAULT_RADIUS_M,
     MAX_RADIUS_M,
@@ -306,6 +307,9 @@ def create_app(
     install_follows(app)
     # What the members write under a drawing (TASK-120); they need a token.
     install_comments(app)
+    # What the members leave under a drawing with one tap, the super like
+    # with a comment (TASK-119); they need a token.
+    install_reactions(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:

@@ -99,6 +99,14 @@ controlla la risposta prima di usarla.
   Riceve i nomi delle forme dall'API, come dati.
 - `api` è l'unico che conosce entrambi e li mette in fila.
 - `mobile` parla solo con `api`, mai direttamente con gli altri servizi.
+  **Eccezione dal TASK-214** (ADR-0177): l'app porta con sé una copia del
+  job dell'API (`shaperoute_api.on_phone` e i moduli che importa) e di
+  `route_engine`. Li impacchetta `tools/phone_engine/phone_engine.py` in
+  `apps/mobile/assets/engine/`, e l'app li esegue con Pyodide in una
+  WebView nascosta (`apps/mobile/src/engine/`). Il TypeScript non importa
+  nulla da `services/`: dà al job il corpo di `POST /route-jobs` e ne
+  riceve quello di `GET /route-jobs/{id}`, come dall'API. Il server resta
+  la riserva.
 - `packages/` non importa da `services/`: è il livello più basso.
 
 Una dipendenza che viola queste regole è un errore di progetto, non un

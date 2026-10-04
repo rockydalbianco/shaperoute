@@ -8445,7 +8445,7 @@ confermare con gli altri.
 ## ADR-0177 — Il motore sul telefono: Pyodide nella WebView, le zone come dati, il server come riserva
 **Stato**: Attiva · 2026-10-03 · **scelte dell'utente** le sei di
 `tasks/TASK-214.md`; il resto deciso dall'agente su delega dell'utente
-(TASK-214, parte A).
+(TASK-214, parti A e B).
 
 **Contesto**: l'utente, il 2026-10-03, vuole che l'app usi «la potenza del
 suo telefono, utilizzando anche la sua memoria, scaricando le mappe». La
@@ -8505,8 +8505,59 @@ scaricare Pyodide o il motore dopo l'installazione (regole di Apple).
 
 **Conseguenze**: la zona di Trento pesa 7,0 MB (7,9 il pickle con gzip).
 Il server scrive un file in più per ogni zona chiesta da un telefono.
-L'app (parte B) mette Pyodide fra i suoi asset, con `metro.config.js` e
-`package.json` da concordare con il coordinatore.
+
+**Decisione dell'agente** (parte B, l'app; numeri in `tasks/TASK-214.md`,
+«Esito»):
+1. **Pyodide 314.0.7** (Python 3.14), non 0.28.3. In 0.28.3 Shapely 2.0.7
+   fa fallire il `buffer` della stella da 5 km a Trento, e in Pyodide
+   l'eccezione di GEOS è fatale per Python. In 314.0.7, con Shapely 2.1.2,
+   la stella è identica al Mac, e numpy, networkx e Shapely sono più
+   vicini al server. Resta GEOS 3.12.1: dopo un errore fatale la pagina
+   riparte, e la richiesta va al server.
+2. **Due zip non compressi fra gli asset dell'app**: `pyodide.zip` (21,2
+   MB, nove pacchetti, il lock ridotto, gli SHA-256 scritti nello script)
+   e `engine.zip` (0,6 MB, `route_engine` intero e i moduli che
+   `on_phone` importa). Li scrive `tools/phone_engine/phone_engine.py`.
+   `zip` è già un asset di Metro, quindi niente `metro.config.js`.
+   **Stanno nel repository**, perché `eas update` pubblica il checkout
+   pulito di `origin/main`. Il git cresce di 21 MB una volta, e di 0,6 MB
+   (0,16 compressi) a ogni cambio del motore.
+3. **Un test nella CI** (`tools/phone_engine/test_phone_engine.py`)
+   confronta `engine.zip` con il codice. **Chi cambia `route_engine`, o un
+   modulo dell'API che il telefono importa, rifà lo zip** con `python
+   tools/phone_engine/phone_engine.py engine`: il telefono e il server
+   hanno sempre lo stesso motore.
+4. **`expo-asset` dichiarato** in `apps/mobile/package.json` (~57.0.18):
+   porta gli zip sul disco del telefono. È già nell'albero come modulo
+   dell'SDK, alla stessa versione: non scarica niente di nuovo (ok del
+   coordinatore).
+5. **La pagina legge da file**: XMLHttpRequest sugli zip (in WebKit
+   `fetch` non legge `file:`), le richieste di Pyodide servite dalla
+   memoria, ogni altro indirizzo rifiutato. La WebView legge solo la
+   cartella comune a pagina, zone e zip. Funziona in **Expo Go**, senza
+   build propria.
+6. **Le zone sul telefono**: con il nome dell'API, un indice con ETag,
+   peso e ultimo uso, `If-None-Match`; oltre 2 GB va via la meno usata. A
+   ogni apertura le zone a piedi e in bici intorno alla posizione, con
+   qualunque rete. Le scarica `downloadAsync` di `expo-file-system/legacy`:
+   l'API nuova dei file non dà stato e intestazioni.
+7. **Chi calcola**: il telefono prima, fino a 8 km a piedi e 30 km in
+   bici; il server se il telefono non dà né un percorso né un verdetto del
+   motore. Un verdetto (`shape_not_drawable`, `invalid_request`) si mostra
+   subito, perché il server direbbe lo stesso. Oltre i limiti prima il
+   server, e il telefono solo quando il server non risponde. Il telefono
+   calcola le partenze vicine una dopo l'altra, senza la scadenza del
+   server: un cuore da 10 km impiega 25–117 s sul Mac. I limiti si fissano
+   con l'iPhone (parte D).
+8. **La WebView si arrende in fretta**: una richiesta alla volta. Se iOS la
+   chiude due volte durante un percorso, il telefono smette fino alla
+   prossima apertura; chiusa mentre è ferma non conta.
+
+**Scartato**: Pyodide 0.28.3 e 0.29.5 (Shapely 2.0.7); un `metro.config.js`
+con `wasm`, `whl` e `mjs` fra gli asset (una configurazione per tutta
+l'app, per niente); passare i file alla WebView con `postMessage` (base64,
+tre volte la memoria); gli zip fuori dal repository, costruiti prima di
+pubblicare; `File.downloadFileAsync` (né stato né ETag).
 
 ## ADR-0170 — Pubblicare come su Strava, l'API: chi lo vede in tre valori, una domanda sola per saperlo, foto in posti fissi, campi nuovi che un'app di prima non cancella
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
@@ -8866,3 +8917,165 @@ nome, come in ogni marchio).
 **Conseguenze**: TASK-222 («Explore») importa `HeartBadge` dopo il merge
 di TASK-221; un posto nuovo si aggiunge al punto 4. Si vede sul telefono
 con la prossima pubblicazione dell'app, con l'ok dell'utente.
+
+## ADR-0186 — Correndo un percorso: il fatto giallo pieno, il da fare tratteggiato che lampeggia
+**Stato**: Attiva · 2026-10-03 · **scelta dell'utente** il giallo pieno
+del fatto, il tratteggio lampeggiante del da fare e lo stile proposto
+(anteprima approvata); il resto deciso dall'agente su delega dell'utente
+(TASK-224).
+
+**Contesto**: correndo, la mappa disegnava tutto il percorso giallo pieno,
+uguale prima e dopo il passaggio. L'utente, il 2026-10-03: «voglio che il
+segno del percorso fatto sia giallo mentre quello da fare sia tratteggiato
+che lampeggia come se dovessi ancora farlo». Il coordinatore ha chiesto che
+il nuovo tratteggio si distingua dagli altri due della mappa, che il
+lampeggio costi poca batteria e si fermi con «Pocket», e che penna alzata e
+bici a mano restino giuste.
+
+**Decisione dell'utente**: fra tre proposte, «Sì, così»: il da fare giallo
+tratteggiato, a scatti, 0,7 s acceso e 0,7 s attenuato, mai spento; fermo
+in «Pocket». Scartati il lampeggio morbido (più batteria) e il da fare in
+grigio (il giallo non indicherebbe più tutta la strada).
+
+**Decisione dell'agente**:
+1. **Il taglio si fa nell'app, non nella pagina della mappa**
+   (`src/map/routeSplit.ts`, puro e provato con jest): dal percorso e dai
+   metri del navigatore (`alongM`) escono le linee fatte e quelle da fare,
+   mandate alla pagina con `showProgress`. Il percorso di `showRoute`
+   resta nella pagina e torna intero con `clearProgress`.
+2. **A passi di 5 m**: la mappa non riceve il percorso a ogni metro; un
+   passo ogni due secondi circa di corsa. Dopo «You have arrived» il fatto
+   è tutto il percorso, anche se l'arrivo scatta 25 m prima della fine.
+3. **Uno strato nuovo, `route-ahead`**, sotto la linea piena: giallo,
+   largo come il percorso, trattini 2 × 1,5 larghezze. **Una battuta cambia
+   lo stato della linea** (`feature-state` «dim», la sola linea dello
+   strato ha id 0 con `generateId`), **mai lo stile**: un `setPaintProperty`,
+   anche con la transizione dell'opacità a zero, fa ripartire per 300 ms le
+   transizioni di tutte le proprietà dello strato, e la mappa si ridisegna
+   per tutto quel tempo.
+4. **«Pocket» arriva alla mappa da un segnale piccolo**
+   (`src/navigation/pocketOn.ts`), scritto da `usePocketMode`: la scheda
+   della corsa e la mappa sono in due rami diversi di `App.tsx`, e passare
+   lo stato fra loro avrebbe toccato più file. Con «Riduci movimento» del
+   telefono la pagina non lampeggia (`prefers-reduced-motion`).
+5. **Penna alzata e bici a mano**: si tagliano solo le linee disegnate (le
+   lettere); i tratti a piedi fra le lettere restano grigi e fermi, i
+   trattini scuri della bici a mano restano sopra il fatto e il da fare.
+
+**Come si distingue dagli altri due tratteggi**:
+
+| | colore | larghezza | dove | si muove |
+|---|---|---|---|---|
+| da fare (`routeAhead`) | giallo `accent` | 5, come il percorso | sotto la linea piena | lampeggia |
+| tratti a piedi fra le lettere (`walk`) | grigio `textMuted` | 3 | sotto il percorso | fermo |
+| bici a mano (`onFoot`) | scuro `onAccent`, dentro il giallo | 2 | sopra il percorso | fermo |
+
+Il grigio dice «non è disegno», lo scuro dentro il giallo «disegno, ma a
+piedi», il giallo tratteggiato «disegno, ancora da fare».
+
+**Misure** (la pagina vera della mappa, MapLibre 5.24, nel browser
+dell'app sul Mac, il cane da 15 km di Levico, 665 punti, alla vicinanza
+della corsa; ridisegni contati sulle chiamate di disegno WebGL):
+
+| | ridisegni al secondo |
+|---|---|
+| fermo, nessun taglio | 0 |
+| taglio, lampeggio spento («Pocket») | 0 |
+| lampeggio con `setPaintProperty` (la prima versione) | 28,6 |
+| lampeggio con `feature-state` | 1,43 (due ogni 1,4 s) |
+| la mappa che segue chi corre, una posizione al secondo | 20,6 |
+| la stessa, più il taglio ogni 2 s e il lampeggio | 25,2 |
+
+Un messaggio di taglio costa alla pagina 0,05 ms e pesa 17 KB per 15 km;
+arriva ogni 5 m, circa ogni 2 s di corsa. Seguire chi corre (`easeTo` a
+ogni posizione) resta la spesa grande; il taglio e il lampeggio aggiungono
+circa un quinto, e in «Pocket» niente. **Il GPS non cambia**: la
+registrazione e le sue richieste di posizione non sono toccate; la mappa
+legge i metri che il navigatore calcola già. Da confermare correndo
+sull'iPhone (una WebView di iOS, non il browser del Mac).
+
+## ADR-0187 — L'acqua della canoa da un estratto Geofabrik: un riquadro grande per luogo, `route_engine` invariato
+
+**Data**: 2026-10-03 · **Stato**: Accettato · **Task**: TASK-225 ·
+deciso dall'agente su delega dell'utente («SI FALLO», «SI GRAZIE»)
+
+**Contesto**: il server disegna in canoa solo con l'acqua in
+`data/cache/water/` (ADR-0164). Overpass rifiuta l'indirizzo del server e,
+dal 2026-10-03, anche quello del Mac: la query dell'acqua non ha mai avuto
+risposta (ADR-0154). Il coordinatore chiedeva di controllare se la cache
+serve solo lo stesso riquadro. `OverpassWaterSource.covering_path` sceglie
+invece già il file più piccolo il cui riquadro contiene quello chiesto, e
+`build_area` ritaglia tutto al riquadro della richiesta.
+
+**Decisione**:
+
+1. **Nessuna modifica a `route_engine`.** Un file d'acqua più grande
+   serve già ogni richiesta che ci sta dentro, con la stessa area di un
+   download del suo riquadro: Overpass dà un sovrainsieme, e il ritaglio
+   lo riporta allo stesso. Corsa, bici e forme restano identiche per
+   costruzione. L'impronta del motore non cambia: niente `draw_examples`,
+   niente copia del motore da rifare per TASK-214 B.
+2. **L'acqua da un estratto, come le zone (ADR-0119).**
+   `shaperoute_api/water_extract.py` legge un ritaglio OSM XML di osmium e
+   sceglie gli elementi che Overpass risponderebbe a
+   `water.water_query(bbox)`:
+   - nel riquadro: un nodo dentro; una via con un nodo dentro o un tratto
+     che lo attraversa; una relazione con un membro così;
+   - attorno all'acqua: le vie entro 40 m (`ACCESS_NEAR_M`) dalle vie
+     d'acqua o dalle vie membro delle loro relazioni, misurate in metri
+     sul piano tangente al centro del riquadro.
+
+   Li scrive con `compact` nel formato e col nome di un download. Il
+   ritaglio usa `osmium extract --strategy smart`, così un lago che
+   attraversa il bordo arriva intero, come da Overpass. Nell'API, non nel
+   motore: è preparazione dei dati, come `zone_extract.py`, e così
+   l'impronta non cambia.
+3. **Un riquadro grande per luogo**, allargato di 5,2 km attorno a dove si
+   parte: la richiesta più grande, 5 km, chiede ±5,04 km. Sono Riccione
+   (da Rimini a Cattolica), Jesolo (da Cavallino a Eraclea), il Garda
+   intero e il Lago di Como intero. Accanto ci sono i riquadri piccoli di
+   Riva e di Como città, che servono gli esempi di «Explore» leggendo meno
+   dati, perché l'API sceglie il file più piccolo che copre la richiesta.
+
+**Alternative scartate**: unire più file vicini per una richiesta che sta a
+cavallo (cambia `water.py`, quindi l'impronta, per un caso che i riquadri
+larghi evitano); aspettare Overpass (rifiuta da ore il server e il Mac);
+l'API di OSM a pezzi piccoli (limite di 50.000 nodi, troppe chiamate per
+aree di 20–50 km).
+
+**Conseguenze**: una partenza in canoa fuori dai riquadri chiede ancora
+Overpass, e dal server ha `503`. Un luogo nuovo è un riquadro nuovo
+scritto da un estratto. I dati sono quelli dell'estratto (Geofabrik del
+2026-10-02), non aggiornati da soli. Il Lago di Lugano, in parte svizzero,
+negli estratti italiani può non essere intero.
+
+## ADR-0191 — Dalla lavagna del contorno si esce con «Save», in fondo
+**Stato**: Attiva · 2026-10-04 · deciso dall'agente su delega dell'utente
+(TASK-229). Cambia l'uscita della lavagna di ADR-0074.
+
+**Contesto**: l'utente, il 2026-10-03: «Non si riesce ad uscire quando
+carichi una foto e modifichi la sagoma, da aggiungere qualcosa per
+salvare le modifiche e uscire». L'unica uscita era «Done», un testo in
+alto a destra; in Expo Go quell'angolo è coperto dal pulsante di Expo, e
+la lavagna a tutto schermo di iOS non si chiude trascinando in giù.
+
+**Decisione**:
+
+1. **«Save» in fondo alla lavagna**, sotto «Add a part», «Add a detail» e
+   «Undo», largo quanto la riga, neutro come gli altri pulsanti (il
+   giallo è del percorso).
+2. **Salvare è chiudere**: ogni tratto entra nel contorno appena l'API
+   risponde (ADR-0074), quindi «Save» chiude e basta. Il tasto «indietro»
+   di Android chiude tenendo le modifiche, come prima.
+3. **Tolto «Done»**: due pulsanti per la stessa cosa confondono.
+4. **Nessun «Cancel»**: non chiesto; «Undo» torna fino al contorno
+   ricavato.
+
+**Scartato**: lasciare «Done» e spostarlo a sinistra (resta un testo
+piccolo e non dice che le modifiche restano); «Save» giallo (il giallo è
+del percorso, `UI.md` «Il tema»); «Cancel» che butta le modifiche della
+visita (una scelta di prodotto non chiesta: un task nuovo se serve).
+
+**Conseguenze**: «Fit», quando la foto è ingrandita, resta in alto a
+destra, in Expo Go sotto il pulsante di Expo: due dita fanno lo stesso.
+Si vede sul telefono con la prossima pubblicazione dell'app.

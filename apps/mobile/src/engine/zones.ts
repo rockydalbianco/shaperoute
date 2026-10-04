@@ -1,0 +1,295 @@
+import type { Activity, LatLon } from "@shaperoute/shared-types";
+import { Directory, File, Paths } from "expo-file-system";
+import { downloadAsync } from "expo-file-system/legacy";
+
+import { apiKey as configuredKey, keyHeaders } from "../api/apiUrl";
+
+/**
+ * The zones saved on the phone for the engine on the phone (TASK-214,
+ * ADR-0177): the road network of an area, as GET /phone-zones/{network}
+ * gives it, in `Documents/engine/zones/`, under the name the API gives it
+ * (the network and the area). An index beside them keeps each zone's ETag,
+ * size and last use. Beyond SPACE_LIMIT_BYTES, the zones used longest ago
+ * are deleted.
+ */
+
+/** The user's choice of 2026-10-03: up to 2 GB of zones on the phone. */
+export const SPACE_LIMIT_BYTES = 2_000_000_000;
+export const ZONE_SUFFIX = ".zone.json.gz";
+
+export type Network = "foot" | "bike";
+
+/** The network of each activity the phone draws: paddling is the
+ * server's, it needs the water (TASK-214, choice 5). */
+export const NETWORKS: Readonly<Partial<Record<Activity, Network>>> = {
+  running: "foot",
+  cycling: "bike",
+};
+
+export type ZoneEntry = {
+  name: string;
+  /** The ETag the API sent with it, to ask again with If-None-Match. */
+  etag: string | null;
+  bytes: number;
+  /** When a route last used it, or it was saved, in ms since 1970. */
+  usedAt: number;
+};
+
+export type ZoneArea = {
+  network: Network;
+  south: number;
+  west: number;
+  north: number;
+  east: number;
+};
+
+const ENGINE_DIRECTORY = "engine";
+const INDEX_FILE = "zones.json";
+const NUMBER = String.raw`-?\d{1,3}\.\d{5}`;
+// As phone_zones.zone_name writes it; nothing else is ever saved.
+const ZONE_NAME = new RegExp(
+  `^(foot|bike)_(${NUMBER})_(${NUMBER})_(${NUMBER})_(${NUMBER})\\.zone\\.json\\.gz$`,
+);
+
+export function zonesDirectory(): Directory {
+  return new Directory(Paths.document, ENGINE_DIRECTORY, "zones");
+}
+
+/** The network and area of a zone file, null when `name` is not one. */
+export function zoneArea(name: string): ZoneArea | null {
+  const match = ZONE_NAME.exec(name);
+  if (match === null) {
+    return null;
+  }
+  const [south, west, north, east] = match.slice(2).map(Number);
+  return { network: match[1] as Network, south, west, north, east };
+}
+
+/** The smallest saved zone of `network` that holds `point`, as the server
+ * picks its zones; null when none does. A route too long for it fails on
+ * the phone with map_data_unavailable, and the server draws it. */
+export function coveringZone(
+  zones: readonly ZoneEntry[],
+  network: Network,
+  [lat, lon]: LatLon,
+): ZoneEntry | null {
+  let best: { size: number; zone: ZoneEntry } | null = null;
+  for (const zone of zones) {
+    const area = zoneArea(zone.name);
+    if (
+      area !== null &&
+      area.network === network &&
+      area.south <= lat &&
+      lat <= area.north &&
+      area.west <= lon &&
+      lon <= area.east
+    ) {
+      const size = (area.north - area.south) * (area.east - area.west);
+      if (best === null || size < best.size) {
+        best = { size, zone };
+      }
+    }
+  }
+  return best?.zone ?? null;
+}
+
+/** The zones to delete so the rest fits in `limit`: those used longest ago
+ * first, never `keep`. */
+export function overLimit(
+  zones: readonly ZoneEntry[],
+  limit: number = SPACE_LIMIT_BYTES,
+  keep: string | null = null,
+): ZoneEntry[] {
+  let total = zones.reduce((sum, zone) => sum + zone.bytes, 0);
+  const out: ZoneEntry[] = [];
+  for (const zone of [...zones].sort((a, b) => a.usedAt - b.usedAt)) {
+    if (total <= limit) {
+      break;
+    }
+    if (zone.name !== keep) {
+      out.push(zone);
+      total -= zone.bytes;
+    }
+  }
+  return out;
+}
+
+function indexFile(): File {
+  return new File(Paths.document, ENGINE_DIRECTORY, INDEX_FILE);
+}
+
+function isEntry(value: unknown): value is ZoneEntry {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const entry = value as Record<string, unknown>;
+  return (
+    typeof entry.name === "string" &&
+    zoneArea(entry.name) !== null &&
+    (entry.etag === null || typeof entry.etag === "string") &&
+    typeof entry.bytes === "number" &&
+    typeof entry.usedAt === "number"
+  );
+}
+
+/** The zones saved on the phone; none when the index does not read. Only
+ * the zones whose file is there. */
+export function savedZones(): ZoneEntry[] {
+  try {
+    const file = indexFile();
+    if (!file.exists) {
+      return [];
+    }
+    const data: unknown = JSON.parse(file.textSync());
+    const zones =
+      typeof data === "object" &&
+      data !== null &&
+      "zones" in data &&
+      Array.isArray(data.zones)
+        ? data.zones.filter(isEntry)
+        : [];
+    return zones.filter((zone) => new File(zonesDirectory(), zone.name).exists);
+  } catch {
+    return [];
+  }
+}
+
+function saveIndex(zones: readonly ZoneEntry[]): void {
+  const file = indexFile();
+  file.create({ overwrite: true, intermediates: true });
+  file.write(JSON.stringify({ zones }));
+}
+
+/** The file of a saved zone, for the page. */
+export function zoneUri(zone: ZoneEntry): string {
+  return new File(zonesDirectory(), zone.name).uri;
+}
+
+/** Marks `name` as used now: it is the last to go beyond the limit. */
+export function touchZone(name: string, now: number = Date.now()): void {
+  try {
+    saveIndex(
+      savedZones().map((zone) =>
+        zone.name === name ? { ...zone, usedAt: now } : zone,
+      ),
+    );
+  } catch {
+    // The order of deletion is a little off; nothing else changes.
+  }
+}
+
+/** Deletes every saved zone (the «Settings» row of part C). */
+export function deleteZones(): void {
+  try {
+    const folder = zonesDirectory();
+    if (folder.exists) {
+      folder.delete();
+    }
+    saveIndex([]);
+  } catch {
+    // What is left is deleted next time, or replaced.
+  }
+}
+
+export type ZoneDownload =
+  | { kind: "saved"; zone: ZoneEntry }
+  | { kind: "unchanged"; zone: ZoneEntry }
+  /** The server has no zone around the point: it draws routes there. */
+  | { kind: "none" }
+  | { kind: "failed"; why: string };
+
+function header(headers: Record<string, string>, name: string): string | null {
+  const key = Object.keys(headers).find((each) => each.toLowerCase() === name);
+  return key === undefined ? null : headers[key];
+}
+
+/** The file name in a Content-Disposition header, when it is a zone's. */
+export function fileNameOf(disposition: string | null): string | null {
+  const match = disposition === null ? null : /filename="?([^";]+)"?/.exec(disposition);
+  return match !== null && zoneArea(match[1]) !== null ? match[1] : null;
+}
+
+/**
+ * Saves the zone of `network` the server has around `point`, unless the
+ * phone has it already (If-None-Match, 304). The file lands beside the
+ * others only whole, under the name the API gives it; then the zones used
+ * longest ago go, beyond the limit. Never throws.
+ */
+export async function downloadZone(
+  baseUrl: string,
+  network: Network,
+  [lat, lon]: LatLon,
+  {
+    apiKey = configuredKey(),
+    now = Date.now,
+    download = downloadAsync,
+  }: {
+    apiKey?: string | null;
+    now?: () => number;
+    download?: typeof downloadAsync;
+  } = {},
+): Promise<ZoneDownload> {
+  try {
+    const folder = zonesDirectory();
+    folder.create({ idempotent: true, intermediates: true });
+    const zones = savedZones();
+    const have = coveringZone(zones, network, [lat, lon]);
+    const partial = new File(folder, `.${network}.download`);
+    const answer = await download(
+      `${baseUrl}/phone-zones/${network}?lat=${lat}&lon=${lon}`,
+      partial.uri,
+      {
+        headers: {
+          ...keyHeaders(apiKey),
+          ...(have?.etag ? { "If-None-Match": have.etag } : {}),
+        },
+      },
+    );
+    if (answer.status === 304 && have !== null) {
+      touchZone(have.name, now());
+      deleteQuietly(partial);
+      return { kind: "unchanged", zone: have };
+    }
+    if (answer.status !== 200) {
+      deleteQuietly(partial);
+      return answer.status === 404
+        ? { kind: "none" }
+        : { kind: "failed", why: `the server answered ${answer.status}` };
+    }
+    const name = fileNameOf(header(answer.headers, "content-disposition"));
+    if (name === null || zoneArea(name)?.network !== network) {
+      deleteQuietly(partial);
+      return { kind: "failed", why: "the server sent a file that is not a zone" };
+    }
+    const target = new File(folder, name);
+    if (target.exists) {
+      target.delete();
+    }
+    partial.moveSync(target);
+    const zone: ZoneEntry = {
+      name,
+      etag: header(answer.headers, "etag"),
+      bytes: new File(folder, name).size,
+      usedAt: now(),
+    };
+    const kept = [...savedZones().filter((each) => each.name !== name), zone];
+    const gone = overLimit(kept, SPACE_LIMIT_BYTES, name);
+    for (const old of gone) {
+      deleteQuietly(new File(folder, old.name));
+    }
+    saveIndex(kept.filter((each) => !gone.includes(each)));
+    return { kind: "saved", zone };
+  } catch (error) {
+    return { kind: "failed", why: String(error) };
+  }
+}
+
+function deleteQuietly(file: File): void {
+  try {
+    if (file.exists) {
+      file.delete();
+    }
+  } catch {
+    // A file left behind is replaced by the next download.
+  }
+}

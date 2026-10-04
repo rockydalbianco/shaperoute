@@ -358,12 +358,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   che dà lo stesso `result` di `/route-jobs` (test su Levico; su Trento in
   Pyodide 5–7 s, uguale a CPython). L'aggiornamento del server e le zone
   scritte in anticipo (0,7–0,8 GB, 20–30 min) li chiede il coordinatore
-  all'utente. **Dopo**: B, l'app (Pyodide negli asset,
-  `package.json` e `metro.config.js` con l'ok del coordinatore); C, la riga
-  in «Settings»; D, la prova sull'iPhone. **Aspetta l'utente**: la prova
-  della pagina sull'iPhone (`out/on-phone-engine/`, Safari, «Start the
-  test»). Niente server né pubblicazione. Da dove riprendere:
-  `tasks/TASK-214.md`, «Esito».
+  all'utente. **Parte B, l'app**, nella sua PR: Pyodide 314.0.7 e il
+  motore in due zip fra gli asset (`tools/phone_engine/phone_engine.py`;
+  chi cambia `route_engine` rifà `engine.zip`, la CI lo controlla), una
+  WebView nascosta, le zone scaricate a ogni apertura, il telefono prima
+  fino a 8 km a piedi e 30 in bici, il server come riserva. In Expo Go,
+  nel simulatore, con l'API spenta disegna il cuore da 5 km di Trento.
+  **Dopo**: C, la riga in «Settings»; D, la prova sull'iPhone. **Aspetta
+  l'utente**: i testi dei dati mobili, il tetto del traffico, la
+  «Modalità dati ridotti». Niente server né pubblicazione. Da dove
+  riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
 
@@ -372,7 +376,40 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   cerchio del profilo e largo uguale (44 punti), il `HeartBadge` di
   TASK-221: solo un'immagine, VoiceOver lo salta. Visto nel simulatore.
   Sul telefono con la prossima pubblicazione. `tasks/TASK-222.md`.
+- **App** — TASK-229: «Save» per uscire dalla lavagna del contorno
+  (ADR-0191; chiesto dall'utente il 2026-10-03: dalla foto modificata non si
+  usciva). In fondo a «Edit the outline» un pulsante «Save» largo quanto
+  la riga chiude la lavagna e tiene le modifiche; tolto «Done» in alto a
+  destra, che in Expo Go stava sotto il pulsante di Expo. Sul telefono con
+  la prossima pubblicazione. `tasks/TASK-229.md`.
+- **Server** — TASK-225: l'acqua dei quattro luoghi della canoa sul server
+  (ADR-0187; «SI FALLO» dell'utente, e «Sì, scrivi e prova» per il
+  server; PR #285, merge `87115ba`). `route_engine` non cambia:
+  `covering_path` serviva già una richiesta da un file d'acqua più grande.
+  Nuovo `shaperoute_api/water_extract.py`, che scrive l'acqua di un
+  riquadro da un estratto osmium, uguale a una risposta di Overpass. Sul
+  server dal 2026-10-04 ci sono sei riquadri dall'estratto dell'Italia,
+  22 MB in `data/cache/water/`: Riccione, Jesolo, Garda nord e intero,
+  Como città e intero. Il cuore da 2 km a Riccione è fatto in 3,1 s e i
+  dodici esempi di «Explore» in 1–5 s. Il giudizio dei campioni v2 è
+  dell'utente (`out/task225-paddle-samples-v2.html`). Seguito:
+  **TASK-230**, `WATER_QUERY` di Overpass perde i membri delle relazioni
+  (i laghi multipoligono). `tasks/TASK-225.md`.
 
+- **App** — TASK-224: correndo un percorso, il fatto giallo pieno e il da
+  fare tratteggiato che lampeggia (ADR-0186; chiesto dall'utente il
+  2026-10-03, stile approvato su un'anteprima; PR #287, merge
+  `ec6b748`). Il da fare è giallo, tratteggiato, 0,7 s acceso e 0,7 s a opacità 0,3, a scatti senza
+  dissolvenza (due ridisegni ogni 1,4 s); fermo con «Pocket» e con «Riduci
+  movimento». Il taglio è ai metri del navigatore, a passi di 5 m; dopo
+  l'arrivo tutto pieno, a fine corsa il percorso torna intero. Con la penna
+  alzata si tagliano solo le lettere; la bici a mano resta sopra. Provato
+  e misurato con la pagina vera di MapLibre nel browser: il lampeggio
+  costa 1,43 ridisegni al secondo (una battuta cambia lo stato della linea,
+  non lo stile), 0 in «Pocket»; il GPS non cambia. Solo
+  app: esce con la prossima pubblicazione, con l'ok dell'utente; da
+  provare correndo sull'iPhone. Seguito da chiedere: fermarlo anche sulla
+  pagina «Data», dove la mappa è coperta. Task file: `tasks/TASK-224.md`.
 - **App** — TASK-221: il cuore su giallo accanto a «Sgrava» (ADR-0184;
   chiesto dall'utente il 2026-10-03). In cima a «Draw», a sinistra del
   nome, un quadrato giallo di 32 punti con il cuore nero dell'avvio, fermo.

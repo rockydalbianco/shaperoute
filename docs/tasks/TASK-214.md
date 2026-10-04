@@ -1,7 +1,7 @@
 # TASK-214 — Il motore dei percorsi sul telefono
 
 **Stato**: In corso. Le sei scelte hanno la risposta dell'utente; la parte A
-(API) è in `main` dalla #275; poi B, C e D.
+(API) è in `main` dalla #275; la parte B (l'app) nella sua PR; poi C e D.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 
@@ -315,26 +315,27 @@ l'utente, in inglese, poi tradotti con `t()`). Proposta:
 
 ## Criteri di accettazione
 
-- [ ] Le sei scelte hanno la risposta dell'utente, scritta qui.
-- [ ] La stessa richiesta dà lo stesso `RouteResultBody` dall'adattatore e
-      da `/route-jobs` (test in CPython, nella CI).
-- [ ] Una zona passata nel formato neutro e riletta è lo stesso grafo
-      (test).
+- [x] Le sei scelte hanno la risposta dell'utente, scritta qui.
+- [x] La stessa richiesta dà lo stesso `RouteResultBody` dall'adattatore e
+      da `/route-jobs` (test in CPython, nella CI, parte A).
+- [x] Una zona passata nel formato neutro e riletta è lo stesso grafo
+      (test, parte A).
 - [ ] Le impronte di telefono, Mac e server sulle stesse richieste sono
       confrontate, e le differenze annotate qui.
 - [ ] Senza rete, con la zona salvata, l'app disegna un cuore da 5 km sul
-      telefono.
-- [ ] Senza zona, o con la WebView chiusa da iOS, la richiesta va al
-      server, e chi usa l'app non vede errori.
+      telefono. Fatto nel simulatore con l'API spenta (parte B); manca
+      l'iPhone (parte D).
+- [x] Senza zona, o con la WebView chiusa da iOS, la richiesta va al
+      server, e chi usa l'app non vede errori (test della parte B).
 - [ ] Tempi e memoria misurati sull'iPhone, scritti qui.
-- [ ] `git diff` su `services/route-engine/route_engine/` vuoto.
+- [x] `git diff` su `services/route-engine/route_engine/` vuoto (A e B).
 
 ## File toccati
 
-Questa PR: solo `docs/tasks/TASK-214.md`.
-
-Previsti per il codice, da confermare con il coordinatore prima di
-partire:
+Il task file entrò da solo con la #258. Per il codice, confermati con il
+coordinatore prima di partire (parte A il 2026-10-03; parte B il
+2026-10-03 sera, con `App.tsx`, `useRouteRequest.ts` e `expo-asset` in
+`package.json` e nel lock; `metro.config.js` non serve più):
 
 ```
 docs/tasks/TASK-214.md, docs/DECISIONS.md (ADR-0177), docs/STATUS.md
@@ -347,11 +348,11 @@ services/api/tests/test_on_phone.py, test_phone_zones.py,
   test_phone_zone_api.py                           (nuovi)
 services/api/tests/test_request_log.py             (il finto create_app dà un FastAPI)
 apps/mobile/src/engine/                            (nuova)
-apps/mobile/assets/pyodide/                        (nuova)
-apps/mobile/metro.config.js                        (.wasm e .zip come asset)
-apps/mobile/package.json                           (pyodide, solo sviluppo)
-apps/mobile/src/api/routes.ts                      (il passaggio al server)
-apps/mobile/src/profile/SettingsPage.tsx, src/i18n/*.ts
+apps/mobile/assets/engine/                         (nuova: i due zip)
+apps/mobile/package.json, package-lock.json        (expo-asset, una riga)
+apps/mobile/App.tsx                                (la WebView e le zone)
+apps/mobile/src/route/useRouteRequest.ts           (il telefono, poi il server)
+apps/mobile/src/profile/SettingsPage.tsx, src/i18n/*.ts   (parte C)
 tools/phone_engine/                                (nuova: build e confronto)
 ```
 
@@ -400,3 +401,113 @@ ancora sul server; ADR-0177):
   disegna il cuore da 5 km in 7,0 s la prima volta e in 5,3 s la seconda;
   CPython ci mette 3,5 s. Il JSON è uguale a quello di CPython, salvo 18
   angoli delle indicazioni che differiscono meno di 1e-9.
+
+**Parte B, l'app** (PR della parte B, 2026-10-03; ADR-0177):
+
+- **Pyodide 314.0.7, non 0.28.3** (deciso dall'agente). In 0.28.3 la
+  stella da 5 km a Trento fa fallire il `buffer` di Shapely 2.0.7 (GEOS
+  3.12.1) con una TopologyException. In Pyodide è un errore fatale: Python
+  si ferma per sempre in quella pagina. La 0.29.5 ha lo stesso Shapely.
+  La 314.0.7 (Python 3.14.2, numpy 2.4.6, networkx 3.6.1, Shapely 2.1.2,
+  pydantic 2.12.5) disegna la stella identica a CPython del Mac, e ha
+  versioni più vicine al server (numpy 2.5.3, networkx 3.7, Shapely 2.1.2
+  con GEOS 3.13.1). GEOS resta 3.12.1: dopo un errore fatale la pagina
+  riparte, e la richiesta va al server (limite noto).
+- **Due zip fra gli asset** (`apps/mobile/assets/engine/`), costruiti da
+  `tools/phone_engine/phone_engine.py`:
+  - `pyodide.zip`, 21,2 MB: Pyodide e nove pacchetti (c'è anche
+    typing-inspection, per pydantic 2.12), con gli SHA-256 controllati, il
+    lock ridotto a quei nove e `THIRD_PARTY.txt` con le licenze;
+  - `engine.zip`, 0,6 MB: tutto `route_engine`, più i 13 moduli dell'API
+    e dell'AI che `on_phone` importa, trovati dalle righe `import`.
+
+  Non sono compressi: la pagina li legge con poche righe di JavaScript, e
+  gli stessi file danno lo stesso zip. `zip` è già fra gli asset di Metro:
+  `metro.config.js` non serve.
+- **Nel repository**. `pyodide.zip` cambia solo con la versione di
+  Pyodide, `engine.zip` con il motore. Il test
+  `tools/phone_engine/test_phone_engine.py` (CI, job del route-engine)
+  fallisce quando `engine.zip` è più vecchio del codice. Il messaggio dice
+  di lanciare `python tools/phone_engine/phone_engine.py engine`. Gli zip
+  stanno nel repository perché `eas update` pubblica quello che Metro
+  trova nel checkout pulito di `origin/main`: un passo di build prima di
+  ogni pubblicazione si dimenticherebbe.
+- **Il download per il telefono**. Gli asset di `eas update` si
+  riconoscono dal contenuto: un telefono scarica `pyodide.zip` una volta
+  sola, 14,0 MB con gzip (13,1 con brotli, 21,2 senza compressione).
+  `engine.zip`, 0,12–0,16 MB compresso, lo riscarica quando cambia il
+  motore.
+- **Expo Go basta**, senza una build propria: nel simulatore (iPhone 17e,
+  Expo Go 57) la WebView carica WebAssembly da file locali.
+- **Come gira** (`apps/mobile/src/engine/`):
+  - `page.ts`, la pagina della WebView. Legge gli zip con
+    XMLHttpRequest, perché in WebKit `fetch` non legge `file:`. Risponde
+    da memoria alle richieste di Pyodide e rifiuta ogni altro indirizzo.
+    `pyodide.asm.mjs` entra da un blob, con `createPyodideModule`;
+  - `PhoneEngineView.tsx`, la WebView nascosta: 1×1 e fuori dal layout,
+    anche il suo contenitore, che con `flex: 1` toglieva metà schermo
+    all'app. La pagina sta in `Documents/engine/index.html`; la WebView
+    legge solo la cartella comune a pagina, zone e zip;
+  - `phoneEngine.ts`, una richiesta alla volta. Python parte alla prima
+    richiesta, o all'apertura dell'app quando c'è una zona. Se iOS chiude
+    la WebView durante un percorso, quel percorso va al server; dopo due
+    volte il telefono smette fino alla prossima apertura. Chiusa mentre è
+    ferma, non conta. Dopo un errore fatale di Python, una pagina nuova;
+  - `zones.ts`, le zone in `Documents/engine/zones/` con il nome che dà
+    l'API, e un indice con ETag, peso e ultimo uso. Chiede con
+    `If-None-Match` e tiene la zona al `304`. Oltre 2 GB cancella la zona
+    usata meno di recente. Scarica con `downloadAsync` di
+    `expo-file-system/legacy`, l'unico che dà stato e intestazioni;
+  - `usePhoneZones.ts`, a ogni apertura, con la posizione: le zone a piedi
+    e in bici, prima quella dello sport di «Settings», con qualunque rete;
+  - `onPhone.ts`, il telefono prima, fino a 8 km a piedi e 30 km in bici.
+    I verdetti del motore (`shape_not_drawable`, `invalid_request`) si
+    mostrano subito; tutto il resto va al server. Oltre quei limiti prima
+    il server, e il telefono solo quando il server non risponde, con 5
+    minuti di tempo.
+- **Perché i limiti di distanza**. Il telefono calcola la partenza e le tre
+  partenze vicine una dopo l'altra; il server le calcola insieme, con una
+  scadenza (ADR-0071). Tempi di Pyodide 314 in Node sul Mac, sulla zona di
+  Trento. Sono rumorosi: il Mac lavorava anche per altre sessioni.
+
+  | Richiesta | Pyodide |
+  |---|---|
+  | cuore 3 km | 8,5 s |
+  | cuore 5 km (simulatore) | 6,8 s |
+  | cavallo 8 km | 45,1 s |
+  | stella 10 km | 25,1 s |
+  | cuore 10 km | 117,3 s |
+  | cuore 15 km | 98,4 s |
+  | «CIAO» 12 km | 164,7 s |
+  | «SGRAVA» 18 km (simulatore) | 93,2 s |
+  | bici, cuore 15 km (simulatore) | 15,7 s |
+  | bici, stella 20 km | 15,3 s |
+
+  Un iPhone sarà più lento del Mac: i limiti li fissa la parte D.
+- **Stesso percorso**: nelle 9 richieste in Node e nella parola del
+  simulatore, Pyodide e CPython danno la stessa distanza e la stessa
+  somiglianza. Il cuore in bici da 30 km è `map_data_unavailable` in tutti
+  e due: la zona di Trento non basta.
+- **Nel simulatore, l'app vera**: all'apertura chiede le due zone, `304`
+  quando le ha già. Con l'API spenta, «Draw route» disegna sul telefono il
+  cuore da 5 km a Trento: 5,2 km, le scelte A e B, gli avvisi e le
+  indicazioni. Memoria di WebAssembly: 314 MB dopo il primo cuore, 412 MB
+  dopo la parola da 18 km.
+- **Test**: 38 nell'app (`src/engine/`) e 9 per lo script; tutta la suite
+  dell'app passa.
+
+**Da chiedere all'utente**, prima della parte C:
+- i testi in inglese della riga in «Settings» e dell'avviso del primo
+  download (proposta sopra, «Gli avvisi con i dati mobili»);
+- il tetto del traffico: 300 MB al giorno per telefono, 300 GB al giorno
+  per il server;
+- se rispettare la «Modalità dati ridotti» di iOS.
+
+**Seguiti**:
+- le zone in più, cioè le città vicine e le più cercate fino a 2 GB
+  (scelta 4, punto 2): dopo il tetto del traffico, con `?prefetch=1` sul
+  server (una A2);
+- una scadenza per le partenze vicine anche senza processi, in
+  `route_engine`, in un task suo: il telefono disegnerebbe percorsi più
+  lunghi in meno tempo;
+- la parte D, sull'iPhone, fissa i limiti di distanza.

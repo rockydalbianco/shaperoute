@@ -1,7 +1,9 @@
 import type { LatLon } from "@shaperoute/shared-types";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { Linking } from "react-native";
 
+import { setPocketOn } from "../navigation/pocketOn";
+import { cumulative } from "../navigation/progress";
 import { MapView } from "./MapView";
 
 jest.mock("react-native-webview");
@@ -251,4 +253,143 @@ test("marks a bike route's stretches with the bike on foot, and again after a ru
     <MapView start={TRENTO} route={route} onFoot={[[1, 2]]} onError={onError} />,
   );
   expect(injectJavaScript.mock.calls.at(-1)?.[0]).toContain('"onFoot":[[[11.2986');
+});
+
+describe("running the route (TASK-224)", () => {
+  // Five points 111 m apart along a meridian.
+  const route: LatLon[] = Array.from({ length: 5 }, (_, i) => [46 + i * 0.001, 11]);
+  const along = cumulative(route);
+  const onError = jest.fn();
+
+  function progressed(): { done: number[][][]; ahead: number[][][]; blink: boolean }[] {
+    return injectJavaScript.mock.calls
+      .map(([script]) => script as string)
+      .filter((script) => script.includes('"type":"showProgress"'))
+      .map((script) =>
+        JSON.parse(script.slice(script.indexOf("{"), script.lastIndexOf("}") + 1)),
+      );
+  }
+
+  afterEach(async () => {
+    await act(async () => setPocketOn(false));
+  });
+
+  test("cuts the route where the runner is, after drawing it", async () => {
+    await render(
+      <MapView
+        start={route[0]}
+        route={route}
+        // A step past the third point.
+        progress={{ alongM: along[2] + 6, arrived: false }}
+        onError={onError}
+      />,
+    );
+    await pagePosts('{"type":"ready"}');
+    const scripts = injectJavaScript.mock.calls.map(([script]) => script as string);
+    const drawn = scripts.findIndex((script) => script.includes('"type":"showRoute"'));
+    const cut = scripts.findIndex((script) => script.includes('"type":"showProgress"'));
+    expect(drawn).toBeGreaterThanOrEqual(0);
+    expect(cut).toBeGreaterThan(drawn);
+    const [message] = progressed();
+    expect(message.blink).toBe(true);
+    expect(message.done).toHaveLength(1);
+    expect(message.ahead).toHaveLength(1);
+    expect(message.done[0].slice(0, 3)).toEqual(
+      route.slice(0, 3).map(([lat, lon]) => [lon, lat]),
+    );
+    expect(message.ahead[0].at(-1)).toEqual([11, 46.004]);
+  });
+
+  test("tells the map in steps of 5 m, not at every metre", async () => {
+    const { rerender } = await render(
+      <MapView
+        start={route[0]}
+        route={route}
+        progress={{ alongM: 11, arrived: false }}
+        onError={onError}
+      />,
+    );
+    await pagePosts('{"type":"ready"}');
+    expect(progressed()).toHaveLength(1);
+    await rerender(
+      <MapView
+        start={route[0]}
+        route={route}
+        progress={{ alongM: 14.9, arrived: false }}
+        onError={onError}
+      />,
+    );
+    expect(progressed()).toHaveLength(1);
+    await rerender(
+      <MapView
+        start={route[0]}
+        route={route}
+        progress={{ alongM: 15, arrived: false }}
+        onError={onError}
+      />,
+    );
+    expect(progressed()).toHaveLength(2);
+  });
+
+  test("arrived, the whole route is done", async () => {
+    await render(
+      <MapView
+        start={route[0]}
+        route={route}
+        progress={{ alongM: along[4] - 20, arrived: true }}
+        onError={onError}
+      />,
+    );
+    await pagePosts('{"type":"ready"}');
+    const [message] = progressed();
+    expect(message.ahead).toEqual([]);
+    expect(message.done).toEqual([route.map(([lat, lon]) => [lon, lat])]);
+  });
+
+  test("in pocket mode the dashes stop blinking, and blink again after", async () => {
+    await render(
+      <MapView
+        start={route[0]}
+        route={route}
+        progress={{ alongM: 100, arrived: false }}
+        onError={onError}
+      />,
+    );
+    await pagePosts('{"type":"ready"}');
+    expect(progressed().at(-1)?.blink).toBe(true);
+    await act(async () => setPocketOn(true));
+    expect(progressed().at(-1)?.blink).toBe(false);
+    await act(async () => setPocketOn(false));
+    expect(progressed().at(-1)?.blink).toBe(true);
+  });
+
+  test("after the run the route is whole again, once", async () => {
+    const { rerender } = await render(
+      <MapView
+        start={route[0]}
+        route={route}
+        progress={{ alongM: 100, arrived: false }}
+        onError={onError}
+      />,
+    );
+    await pagePosts('{"type":"ready"}');
+    injectJavaScript.mockClear();
+    await rerender(<MapView start={route[0]} route={route} onError={onError} />);
+    expect(injectJavaScript.mock.calls.map(([script]) => script)).toEqual([
+      expect.stringContaining('{"type":"clearProgress"}'),
+    ]);
+    await rerender(<MapView start={route[0]} route={route} onError={onError} />);
+    expect(injectJavaScript).toHaveBeenCalledTimes(1);
+  });
+
+  test("without a run nothing is cut", async () => {
+    await render(<MapView start={route[0]} route={route} onError={onError} />);
+    await pagePosts('{"type":"ready"}');
+    expect(progressed()).toEqual([]);
+    expect(
+      injectJavaScript.mock.calls.some(([script]) =>
+        (script as string).includes("Progress"),
+      ),
+    ).toBe(false);
+  });
 });

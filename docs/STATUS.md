@@ -310,6 +310,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   ogni attività come «Run». Da dove riprendere: `tasks/TASK-191.md`,
   «Esito», parti A2, B e C (fatta).
 
+- **TASK-119 — Reazioni ai disegni pubblicati** (ADR-0193; scelte
+  dell'utente del 2026-10-04): era «Like», diventa sei reazioni sotto un
+  disegno pubblicato aperto, una a testa: il cuore di Sgrava, 🔥 👏 💪 😂
+  😮. Il cuore di Sgrava è il **super like**: doppio tocco sul disegno
+  aperto, e **vuole un commento di almeno 2 caratteri**, salvato insieme.
+  Task file riscritto (Todo). Prossimo passo: **parte A, l'API**
+  (migrazione nuova, quindi l'ok dell'utente per il server); poi la parte
+  B, l'app (`DrawingCard.tsx` ok dal coordinatore; `MapView.tsx`,
+  `mapPage.ts`, `App.tsx` da chiedere). Da dove riprendere: `tasks/TASK-119.md`.
+
 - **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:
   subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API
   e app in `main` dalla PR #260 (`8a938fd`, 2026-10-03):

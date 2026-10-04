@@ -131,6 +131,28 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   stata provata: Overpass rifiutava il Mac. I file fatti dalle risposte
   dell'API di OSM per i campioni (`python -m route_engine.water --osm-api
   … --save-water …`) hanno lo stesso formato.
+  **L'acqua da un estratto** (TASK-225, ADR-0187): come le zone di
+  TASK-137, un file d'acqua si scrive anche da un estratto Geofabrik,
+  senza Overpass. Prima si tengono i tag della query e tutte le vie:
+  `osmium tags-filter <estratto>.osm.pbf
+  nwr/natural=coastline,water,beach,reef
+  nwr/man_made=pier,breakwater,groyne
+  nwr/leisure=marina,slipway,beach_resort nwr/landuse=harbour w/highway
+  -o acqua.osm.pbf`. Poi `python -m shaperoute_api.water_extract
+  --extract acqua.osm.pbf --bbox S,W,N,E --cache-dir data/cache` taglia il
+  riquadro con `osmium extract --strategy smart` (500 m di margine, i
+  laghi interi) e scrive gli elementi che Overpass avrebbe risposto, con
+  il nome di un download di quel riquadro (`--osm` se il ritaglio XML c'è
+  già). Un riquadro grande serve ogni richiesta che ci sta dentro, uguale
+  a un download del suo; la più grande, 5 km, chiede ±5,04 km attorno
+  alla partenza. osmium vuole più di 2 GB di memoria per un estratto
+  regionale: la VM docker del Mac non basta. Sul server, il 2026-10-04,
+  `italy-260930-water.osm.pbf` (674 MB, in `/srv/shaperoute/extracts`)
+  e i sei riquadri dei quattro luoghi della canoa (TASK-225).
+  **Overpass e i laghi**: la prima risposta vera alla query (dal server,
+  2026-10-04, 184 s) dà le relazioni senza membri, perché `out tags geom`
+  non li scrive. Così da Overpass un lago disegnato come multipoligono
+  manca; dall'estratto no.
 - **Ritagli salvati prima di TASK-136** (ADR-0108): `python -m
   route_engine.prune_crops` elenca, zona per zona, i grafi che un altro
   grafo della cache contiene; con `--delete` li cancella, GraphML e

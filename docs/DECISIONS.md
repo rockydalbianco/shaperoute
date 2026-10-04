@@ -8993,3 +8993,58 @@ circa un quinto, e in «Pocket» niente. **Il GPS non cambia**: la
 registrazione e le sue richieste di posizione non sono toccate; la mappa
 legge i metri che il navigatore calcola già. Da confermare correndo
 sull'iPhone (una WebView di iOS, non il browser del Mac).
+
+## ADR-0187 — L'acqua della canoa da un estratto Geofabrik: un riquadro grande per luogo, `route_engine` invariato
+
+**Data**: 2026-10-03 · **Stato**: Accettato · **Task**: TASK-225 ·
+deciso dall'agente su delega dell'utente («SI FALLO», «SI GRAZIE»)
+
+**Contesto**: il server disegna in canoa solo con l'acqua in
+`data/cache/water/` (ADR-0164). Overpass rifiuta l'indirizzo del server e,
+dal 2026-10-03, anche quello del Mac: la query dell'acqua non ha mai avuto
+risposta (ADR-0154). Il coordinatore chiedeva di controllare se la cache
+serve solo lo stesso riquadro. `OverpassWaterSource.covering_path` sceglie
+invece già il file più piccolo il cui riquadro contiene quello chiesto, e
+`build_area` ritaglia tutto al riquadro della richiesta.
+
+**Decisione**:
+
+1. **Nessuna modifica a `route_engine`.** Un file d'acqua più grande
+   serve già ogni richiesta che ci sta dentro, con la stessa area di un
+   download del suo riquadro: Overpass dà un sovrainsieme, e il ritaglio
+   lo riporta allo stesso. Corsa, bici e forme restano identiche per
+   costruzione. L'impronta del motore non cambia: niente `draw_examples`,
+   niente copia del motore da rifare per TASK-214 B.
+2. **L'acqua da un estratto, come le zone (ADR-0119).**
+   `shaperoute_api/water_extract.py` legge un ritaglio OSM XML di osmium e
+   sceglie gli elementi che Overpass risponderebbe a
+   `water.water_query(bbox)`:
+   - nel riquadro: un nodo dentro; una via con un nodo dentro o un tratto
+     che lo attraversa; una relazione con un membro così;
+   - attorno all'acqua: le vie entro 40 m (`ACCESS_NEAR_M`) dalle vie
+     d'acqua o dalle vie membro delle loro relazioni, misurate in metri
+     sul piano tangente al centro del riquadro.
+
+   Li scrive con `compact` nel formato e col nome di un download. Il
+   ritaglio usa `osmium extract --strategy smart`, così un lago che
+   attraversa il bordo arriva intero, come da Overpass. Nell'API, non nel
+   motore: è preparazione dei dati, come `zone_extract.py`, e così
+   l'impronta non cambia.
+3. **Un riquadro grande per luogo**, allargato di 5,2 km attorno a dove si
+   parte: la richiesta più grande, 5 km, chiede ±5,04 km. Sono Riccione
+   (da Rimini a Cattolica), Jesolo (da Cavallino a Eraclea), il Garda
+   intero e il Lago di Como intero. Accanto ci sono i riquadri piccoli di
+   Riva e di Como città, che servono gli esempi di «Explore» leggendo meno
+   dati, perché l'API sceglie il file più piccolo che copre la richiesta.
+
+**Alternative scartate**: unire più file vicini per una richiesta che sta a
+cavallo (cambia `water.py`, quindi l'impronta, per un caso che i riquadri
+larghi evitano); aspettare Overpass (rifiuta da ore il server e il Mac);
+l'API di OSM a pezzi piccoli (limite di 50.000 nodi, troppe chiamate per
+aree di 20–50 km).
+
+**Conseguenze**: una partenza in canoa fuori dai riquadri chiede ancora
+Overpass, e dal server ha `503`. Un luogo nuovo è un riquadro nuovo
+scritto da un estratto. I dati sono quelli dell'estratto (Geofabrik del
+2026-10-02), non aggiornati da soli. Il Lago di Lugano, in parte svizzero,
+negli estratti italiani può non essere intero.

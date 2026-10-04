@@ -147,15 +147,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-227 — «Explore» con «Paddle» come la corsa** (ADR-0189; scelte
-  dell'utente del 2026-10-04): con «Paddle», ogni luogo d'acqua ha **le
-  otto forme della corsa** da 2 km, e i quattro luoghi le hanno **dentro
-  l'app**, pronte subito anche senza rete («già scaricati al momento del
-  download dell'app»). I campioni veri sull'acqua del server: 52 su 52 ci
-  stanno. `paddleExamples.json` lo scrive `python -m
-  shaperoute_api.paddle_examples`; «Near me» resta disegnato al momento. Il
-  motore non cambia; niente server. Da dove riprendere: `tasks/TASK-227.md`.
-
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,
@@ -407,6 +398,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **App** — TASK-227: «Explore» con «Paddle» come la corsa (ADR-0189;
+  scelte dell'utente del 2026-10-04; PR #297, merge `e761044`). Con
+  «Paddle» ogni luogo d'acqua ha le otto forme della corsa da 2 km, e i
+  quattro luoghi le hanno **dentro l'app** (`src/paddle/paddleExamples.json`,
+  circa 100 KB), pronte subito anche senza rete. Nei campioni veri
+  sull'acqua del server ci stanno 52 forme su 52. Il JSON lo scrive `python
+  -m shaperoute_api.paddle_examples` e porta l'impronta del motore
+  sull'acqua: un test dell'API dice quando rifarlo. «Near me» resta
+  disegnato al momento, e fuori dai quattro luoghi dipende da Overpass (i
+  laghi multipoligono solo dopo che il server ha TASK-230). Esce con la
+  prossima pubblicazione. `tasks/TASK-227.md`.
 
 - **Motore** — TASK-230: l'acqua da Overpass con i laghi multipoligono
   (ADR-0192; trovato da TASK-225; PR #292, merge `28e1ae0`).

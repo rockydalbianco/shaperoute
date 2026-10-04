@@ -359,7 +359,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Pyodide 5–7 s, uguale a CPython). L'aggiornamento del server e le zone
   scritte in anticipo (0,7–0,8 GB, 20–30 min) li chiede il coordinatore
   all'utente. **Parte B, l'app**, in `main` dalla #282 (`b87d8cc`,
-  2026-10-03), non pubblicata: Pyodide 314.0.7 e il motore in due zip fra
+  2026-10-03) e su «preview» dal 2026-10-04 (gruppo `1da074a6`, pubblicato
+  dal coordinatore): Pyodide 314.0.7 e il motore in due zip fra
   gli asset (`tools/phone_engine/phone_engine.py`; chi cambia
   `route_engine` rifà `engine.zip`, la CI lo controlla), una WebView
   nascosta, le zone scaricate a ogni apertura, il telefono prima fino a 8

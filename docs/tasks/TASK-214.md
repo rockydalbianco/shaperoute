@@ -403,8 +403,10 @@ ancora sul server; ADR-0177):
   CPython ci mette 3,5 s. Il JSON è uguale a quello di CPython, salvo 18
   angoli delle indicazioni che differiscono meno di 1e-9.
 
-**Parte B, l'app** (#282, in `main` come `b87d8cc` il 2026-10-03, non
-pubblicata; ADR-0177):
+**Parte B, l'app** (#282, in `main` come `b87d8cc` il 2026-10-03; su
+«preview» dal 2026-10-04, gruppo `1da074a6`; ADR-0177). Finché il server
+non ha `/phone-zones` con le zone, l'app chiede tutto al server, come
+prima:
 
 - **Pyodide 314.0.7, non 0.28.3** (deciso dall'agente). In 0.28.3 la
   stella da 5 km a Trento fa fallire il `buffer` di Shapely 2.0.7 (GEOS

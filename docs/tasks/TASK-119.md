@@ -1,6 +1,6 @@
 # TASK-119 — Reazioni ai disegni pubblicati, e il super like di Sgrava
 
-**Stato**: Todo
+**Stato**: In corso — parte A (API) in revisione; poi la parte B (app)
 **Fase**: 4 · **Branch**: `feat/TASK-119-a-reactions-api` (parte A),
 `feat/TASK-119-b-reactions-app` (parte B)
 **Dipende da**: TASK-117 (i disegni pubblicati) · TASK-120 (i commenti) ·
@@ -126,16 +126,16 @@ Dell'agente, su delega (nell'ADR):
 
 ## Criteri di accettazione
 
-- [ ] Due `PUT` di fila dello stesso utente contano una reazione; un
+- [x] Due `PUT` di fila dello stesso utente contano una reazione; un
       `PUT` con un'altra la cambia; `DELETE` la toglie.
-- [ ] `super_like` senza commento, o con meno di 2 caratteri: `422`, e non
+- [x] `super_like` senza commento, o con meno di 2 caratteri: `422`, e non
       si salva niente.
-- [ ] `super_like` con un commento negativo: `422 comment_rejected`, e
+- [x] `super_like` con un commento negativo: `422 comment_rejected`, e
       non si salvano né il super like né il commento.
-- [ ] `super_like` con un commento buono: il super like conta e il
+- [x] `super_like` con un commento buono: il super like conta e il
       commento compare in `GET /drawings/{id}/comments`.
-- [ ] Reazione a un disegno che chi chiede non vede: `404`.
-- [ ] Cancellato un disegno o un account, le sue reazioni spariscono.
+- [x] Reazione a un disegno che chi chiede non vede: `404`.
+- [x] Cancellato un disegno o un account, le sue reazioni spariscono.
 - [ ] App: il doppio tocco sul disegno aperto mostra il cuore e apre il
       campo del commento; «Cancel» non lascia niente; lì il doppio tocco
       non fa zoom, le due dita sì.
@@ -201,4 +201,24 @@ parte B. Il nome della migrazione segue il primo numero libero al merge.
 - Un limite di super like al giorno.
 
 ## Esito
+
+**Parte A, l'API** (2026-10-04, branch `feat/TASK-119-a-reactions-api`):
+migrazione `0015_reactions.sql` (tabella `reactions`, chiave disegno +
+account, i sei codici nel vincolo), `reactions.py` con `GET
+/drawings/{id}/reactions`, `PUT` e `DELETE /drawings/{id}/reaction`;
+`install_reactions` in `app.py`; il contratto in `shared-types`
+(`REACTION_KINDS`, `SUPER_LIKE_MIN_COMMENT`, `ReactionRequest`,
+`ReactionsSummary`, `ReactionResult`) con quattro fixture; `API.md`
+«Reactions», `DATABASE.md`. Il super like e il suo commento si scrivono
+in una transazione: la reazione per prima, con `ON CONFLICT … WHERE kind
+<> EXCLUDED.kind RETURNING`, e il commento solo se la reazione è
+cambiata, così un nuovo tentativo non scrive due commenti. Il disegno si
+legge `FOR SHARE`: cancellato a metà, aspetta. Limiti: 30 cambi al minuto,
+e un super like conta anche nei 10 commenti al minuto. Test:
+`test_reactions.py` (16), `reactions.test.ts` (5). Non sul server: vuole
+la migrazione e l'ok dell'utente (lo coordina il coordinatore).
+
+**Per la parte B**: chiedere al coordinatore `MapView.tsx`, `mapPage.ts`
+e `App.tsx`; **TASK-231** («Condivisione post e modifica con emoji») può
+toccare anche `DrawingCard.tsx`: accordarsi con la sua sessione.
 

@@ -124,7 +124,7 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   `data/cache/water/water_<sud>_<ovest>_<nord>_<est>.json`, gli elementi
   di OpenStreetMap che servono all'acqua (coastline, `natural=water`,
   moli, frangiflutti, pennelli, scogliere, marine, spiagge, scivoli e le
-  vie entro 40 m dall'acqua) nel formato `out tags geom` di Overpass,
+  vie entro 40 m dall'acqua) nel formato `out body geom` di Overpass,
   coordinate a 7 decimali. Un file che contiene l'area chiesta la serve;
   altrimenti **una** richiesta Overpass (`water.WATER_QUERY`), scritta
   intera o niente come gli altri file. Il 2026-10-02 la richiesta non è
@@ -150,9 +150,10 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   `italy-260930-water.osm.pbf` (674 MB, in `/srv/shaperoute/extracts`)
   e i sei riquadri dei quattro luoghi della canoa (TASK-225).
   **Overpass e i laghi**: la prima risposta vera alla query (dal server,
-  2026-10-04, 184 s) dà le relazioni senza membri, perché `out tags geom`
-  non li scrive. Così da Overpass un lago disegnato come multipoligono
-  manca; dall'estratto no.
+  2026-10-04, 184 s) dava le relazioni senza membri, perché `out tags
+  geom` non li scrive: un lago disegnato come multipoligono mancava.
+  Da TASK-230 (ADR-0192) la query chiede `out body geom`, che scrive i
+  membri con la loro geometria.
 - **Ritagli salvati prima di TASK-136** (ADR-0108): `python -m
   route_engine.prune_crops` elenca, zona per zona, i grafi che un altro
   grafo della cache contiene; con `--delete` li cancella, GraphML e

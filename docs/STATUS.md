@@ -146,6 +146,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-230 — L'acqua da Overpass con i laghi multipoligono** (ADR-0192;
+  trovato da TASK-225). `WATER_QUERY` chiedeva `out tags geom`, e
+  Overpass dava le relazioni senza membri, quindi i laghi multipoligono
+  (Garda, Como) mancavano da ogni download. Ora chiede `out body geom`:
+  4 test nuovi con un Overpass finto, e corsa, bici e forme identiche
+  (impronte fissate invariate). Lo zip del motore dell'app è rifatto.
+  L'impronta del motore cambia, quindi dopo l'aggiornamento del server
+  serve `draw_examples`. I file d'acqua sul server restano buoni. Da dove
+  riprendere: `tasks/TASK-230.md`.
+
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03): **parte A, il
   motore**, nel branch `feat/TASK-223-simple-emoji`. Le forme possono avere

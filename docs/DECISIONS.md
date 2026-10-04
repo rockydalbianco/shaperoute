@@ -9136,3 +9136,38 @@ visita (una scelta di prodotto non chiesta: un task nuovo se serve).
 **Conseguenze**: «Fit», quando la foto è ingrandita, resta in alto a
 destra, in Expo Go sotto il pulsante di Expo: due dita fanno lo stesso.
 Si vede sul telefono con la prossima pubblicazione dell'app.
+
+## ADR-0192 — L'acqua da Overpass con `out body geom`: i membri delle relazioni, quindi i laghi multipoligono
+
+**Data**: 2026-10-04 · **Stato**: Accettato · **Task**: TASK-230 ·
+deciso dall'agente su delega dell'utente
+
+**Contesto**: `WATER_QUERY` (ADR-0154) finiva con `out tags geom`. A
+quel livello Overpass scrive di una via i tag e la geometria, ma di una
+relazione solo l'id e i tag, senza membri. Il 2026-10-04 Overpass ha
+risposto al server per la prima volta (TASK-225, Milano). Le 10 relazioni
+`natural=water` del riquadro sono arrivate con `members` vuoti, mentre
+l'estratto le aveva intere (ADR-0187). Un lago disegnato come
+multipoligono, come il Garda, il Lago di Como o l'Idroscalo, non aveva
+così forma, e una partenza lì rispondeva «no lake or sea».
+
+**Decisione**: la query finisce con `out body geom;`.
+
+- Di ogni relazione Overpass scrive allora i membri, con ruolo e
+  geometria; di ogni via anche gli id dei nodi.
+- `compact` tiene solo tipo, id, tag e geometria: i file della cache
+  restano nel formato di prima, e `water_extract` (ADR-0187) scrive già
+  gli stessi elementi.
+- Non `out meta geom`: versioni e autori non servono.
+
+**Conseguenze**:
+
+- La risposta di Overpass pesa di più per i laghi grandi, perché ogni
+  membro arriva con tutta la sua geometria. È quello che serve per
+  costruirli.
+- Un file d'acqua scritto prima da Overpass non ha i membri, e resta così
+  finché non lo si cancella. Sul server non ce n'è nessuno: quello di
+  Milano è stato sostituito dall'estratto.
+- L'impronta del motore cambia: dopo l'aggiornamento del server serve
+  `draw_examples`, e lo zip del motore dell'app è rifatto. Corsa, bici e
+  forme non leggono la query: identiche.

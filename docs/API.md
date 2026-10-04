@@ -1410,6 +1410,64 @@ Tipi in `shared-types` (`CommentRequest`, `Comment`, `CommentsPage`,
 - **Un'API precedente** non ha questi endpoint: `404 http_error`, e l'app
   non mostra i commenti.
 
+### Reactions (TASK-119, ADR-0193)
+
+Sotto un disegno gli iscritti lasciano una reazione fra sei, **una a
+testa**: il cuore di Sgrava, che è il **super like**, e 🔥 👏 💪 😂 😮.
+Reagisce, e legge quante ce ne sono, **chi vede il disegno**, come per i
+commenti («Comments», sopra; `drawing_seen_sql`): mai chi le ha lasciate.
+Tutti gli endpoint vogliono il token: senza, `401 not_signed_in`; senza
+database, `503 accounts_unavailable`. Tipi in `shared-types`
+(`REACTION_KINDS`, `ReactionKind`, `SUPER_LIKE_MIN_COMMENT`,
+`ReactionRequest`, `ReactionsSummary`, `ReactionResult`), esempi in
+`fixtures/reaction-request.json`, `super-like-request.json`,
+`reactions.json`, `reaction-result.json`; il codice in `reactions.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `GET /drawings/{id}/reactions` | quante di ogni tipo, e la propria | `200` `ReactionsSummary`, o `404 http_error` |
+| `PUT /drawings/{id}/reaction` | lascia o cambia la propria | `200` `ReactionResult`, o `404 http_error` |
+| `DELETE /drawings/{id}/reaction` | toglie la propria | `200` `ReactionsSummary`, o `404 http_error` |
+
+- **I tipi** sono codici, nell'ordine in cui l'app li mostra:
+  `super_like` (il cuore di Sgrava), `fire`, `clap`, `strong`, `laugh`,
+  `wow`. Un altro valore: `422 invalid_request`.
+- **`ReactionsSummary`**: `counts` con tutti e sei i tipi, anche a zero;
+  `total`; `mine`, il tipo di chi chiede o `null`.
+- **Il corpo del `PUT`** è `{ "kind": "fire" }`. Lo stesso tipo di nuovo
+  non cambia niente (idempotente); un altro prende il posto del proprio.
+  Campi in più: `422 invalid_request`.
+- **Il super like** vuole anche il commento: `{ "kind": "super_like",
+  "comment": "…" }`, da **2** (`SUPER_LIKE_MIN_COMMENT`) a 500 caratteri
+  senza gli spazi in testa e in coda. Senza, o più corto: `422
+  invalid_request` «A super like needs a comment of at least 2
+  characters.»; il resto come un commento (troppo lungo, caratteri di
+  controllo: gli stessi messaggi), e uno negativo `422 comment_rejected`
+  con `reason`, l'avviso di ADR-0176. Un commento con un altro tipo: `422
+  invalid_request` «Only a super like comes with a comment.». In ogni
+  rifiuto non si tiene niente, e la reazione di prima resta.
+- **Super like e commento si tengono insieme**, nella stessa transazione:
+  la risposta porta in `comment` il `Comment` nuovo, che compare anche in
+  `GET /drawings/{id}/comments`. Un super like chiesto quando c'è già (un
+  nuovo tentativo dopo una risposta persa) non cambia niente: `comment`
+  è `null`, e il commento resta uno. **Dopo sono separati**: cambiare o
+  togliere il super like lascia il commento; cancellare il commento
+  (`DELETE /comments/{id}`) lascia il super like.
+- **Il `DELETE`** toglie la propria reazione; senza, non cambia niente.
+- **Limiti per account**: al più 30 cambi al minuto (`PUT` e `DELETE`),
+  oltre `429 too_many_requests` «Too many reactions in a minute: wait a
+  moment and try again.»; un super like conta anche nei 10 commenti al
+  minuto («Too many comments in a minute: …»). Con `Retry-After` in
+  secondi, per processo come gli altri limiti.
+- **Un disegno che non si vede** (non proprio e non per chi chiede, o un
+  id che non c'è o che non è un UUID): `404 http_error` «No drawing with
+  this id.», per leggere, lasciare e togliere. Visto da meno persone, le
+  reazioni restano e le vede solo chi vede ancora il disegno.
+- **Cancellare** la corsa (e quindi il disegno) cancella le sue reazioni;
+  cancellare un account cancella quelle che ha lasciato, ovunque.
+- **Un'API precedente** non ha questi endpoint: `404 http_error`, e l'app
+  non mostra le reazioni.
+
 ### Send to Strava (TASK-187, ADR-0156)
 
 Una corsa salvata va sul profilo Strava di chi ha collegato il suo atleta,

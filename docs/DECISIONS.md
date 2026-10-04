@@ -9288,6 +9288,59 @@ scaricati al momento del download dell'app».
   luoghi scarica l'acqua da Overpass. Finché il server non ha TASK-230
   (ADR-0192) i laghi multipoligono scaricati così mancano.
 
+## ADR-0193 — Le reazioni ai disegni pubblicati, e il super like di Sgrava con un commento
+**Stato**: Attiva · 2026-10-04 · scelte dell'utente (1–5), il resto
+deciso dall'agente su delega dell'utente (TASK-119). Prende il posto del
+«Like» con un cuore solo che TASK-119 prevedeva prima.
+
+**Contesto**: l'utente, il 2026-10-04: «puoi reagire con varie emoji e
+metti anche l'emoji del cuore di sgrava»; «il cuore sgrava è super like e
+si fa premendo due volte sul post»; «quando metto il super like, sei
+obbligato a mettere un commento di minimo due caratteri». I disegni
+pubblicati si aprono da un profilo (TASK-117) e hanno già i commenti
+(TASK-120); il feed vero (TASK-118) non c'è ancora.
+
+**Decisione**:
+
+1. **Sei reazioni** (utente): il cuore di Sgrava (`HeartBadge`), 🔥 👏 💪
+   😂 😮. **Una a testa** per disegno: un'altra la cambia, la stessa la
+   toglie. Sotto il disegno le tre più usate e il totale.
+2. **Il cuore di Sgrava è il super like** (utente), con un **doppio tocco
+   sul disegno aperto** (utente, fra due proposte: nella griglia il tocco
+   singolo continua ad aprire subito).
+3. **Il super like vuole un commento di almeno 2 caratteri** (utente).
+4. **Super like e commento in una sola richiesta e una sola
+   transazione**: o tutti e due o niente. Il commento passa dagli stessi
+   controlli degli altri e dal filtro di ADR-0176; negativo, `422
+   comment_rejected` e niente super like.
+5. **Dopo sono separati**: togliere o cambiare il super like lascia il
+   commento; cancellare il commento lascia il super like.
+6. **Codici fissi** nel database e nel contratto (`super_like`, `fire`,
+   `clap`, `strong`, `laugh`, `wow`), mai i caratteri delle emoji: l'app
+   li disegna, e un'emoji nuova è una migrazione e una riga nel contratto.
+7. **Un endpoint loro** (`GET /drawings/{id}/reactions`, `PUT` e `DELETE
+   /drawings/{id}/reaction`), come il numero dei commenti: `DrawingDetail`
+   non cambia.
+8. **Il pulsante delle reazioni apre la barra delle sei**, cuore
+   compreso: chi usa VoiceOver mette il super like da lì. Il doppio tocco
+   su un super like già messo mostra il cuore e basta.
+9. **Sul disegno aperto il doppio tocco non fa lo zoom** della mappa; le
+   due dita sì. Altrove la mappa non cambia.
+
+**Scartato**: un cuore solo (era TASK-119, superato dall'utente); più
+reazioni a testa come Telegram (proposta, non scelta); il doppio tocco
+anche nella griglia (il tocco singolo avrebbe dovuto aspettare); il
+super like ottimista (il commento può essere rifiutato: l'app aspetta
+l'API); i caratteri delle emoji nel database (un cambio di Unicode o di
+glifo diventerebbe un dato da migrare); `likes` e `reactions` dentro
+`DrawingDetail` (toccava `drawings.py` e il contratto di TASK-117/208 per
+una cosa che si legge a parte).
+
+**Conseguenze**: migrazione nuova (il primo numero libero al merge) e
+quindi l'ok dell'utente per il server. I post di esempio del «Feed»
+restano senza reazioni; il feed vero (TASK-118) userà gli stessi
+endpoint. Bloccare (TASK-121) dovrà tenere conto anche delle reazioni.
+
 ## ADR-0194 — Il post di una corsa: un'immagine fatta dall'app, Instagram dal foglio di condivisione, Strava come testo
 
 **Data**: 2026-10-04 · **Stato**: Accettato · **Task**: TASK-231 · il

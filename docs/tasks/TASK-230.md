@@ -97,6 +97,9 @@ dall'estratto (TASK-225, ADR-0187).
     richiesta risponde `NoWaterError`.
 - `test_water.py`: la query finisce con `out body geom;`.
 - Lo zip del motore dell'app rifatto: 0,6 MB, il test dello zip è verde.
+- Test: motore 1227 verdi (`-m "not network"`); API `test_paddling.py` e
+  `test_water_extract.py` 39 verdi; `tools/phone_engine` 9 verdi; `ruff`
+  e `black` puliti.
 
 **Corsa, bici e forme identiche.** `WATER_QUERY` la usa solo
 `OverpassWaterSource` quando manca un file d'acqua, cioè solo la canoa.

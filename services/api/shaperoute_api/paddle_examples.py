@@ -15,11 +15,21 @@ looks it up by, its eight shapes whole.
 Nothing is downloaded: a place whose water is not in the folder stops the
 command. The file changes with the places, the shapes and the engine; run
 the app's Prettier on it after (`npx prettier --write <file>`).
+
+The file says which engine drew it (`engine`): the fingerprint of the
+engine's files a paddling route is drawn with (`route_engine.paddling` and
+what it imports, followed through the `import` lines, and the outlines of
+the eight shapes). When one of them changes, `tests/test_paddle_examples.py`
+fails and says to run this command again, as the phone's engine zip does
+(tools/phone_engine). The water comes from the server: `scp
+'root@<server>:/root/shaperoute/data/cache/water/*.json' <cache>/water/`.
 """
 
 from __future__ import annotations
 
 import argparse
+import ast
+import hashlib
 import json
 import re
 import sys
@@ -28,6 +38,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import route_engine
 from route_engine.errors import ShapeNotDrawableError
 from route_engine.geo import LatLon
 from route_engine.models import RouteRequest
@@ -62,6 +73,9 @@ LICENSE = (
 )
 # About 10 cm: what the phone's GPS cannot tell apart, a lighter app.
 DECIMALS = 6
+ENGINE = Path(route_engine.__file__).parent
+# What draws a route on the water: its imports are followed from here.
+ENTRY = "route_engine.paddling"
 
 _PLACE = re.compile(
     r'name:\s*"(?P<name>[^"]+)"[^{}]*?point:\s*\[\s*(?P<lat>-?[\d.]+)\s*,'
@@ -86,6 +100,63 @@ def read_places(path: Path = WATER_PLACES) -> list[WaterPlace]:
     if not places:
         raise ValueError(f"no water places in {path}")
     return places
+
+
+def _module_file(name: str) -> Path | None:
+    parts = name.split(".")
+    if parts[0] != "route_engine":
+        return None
+    base = ENGINE.joinpath(*parts[1:])
+    for candidate in (base.with_suffix(".py"), base / "__init__.py"):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _imported(path: Path) -> set[str]:
+    """The modules of the engine `path` imports, anywhere in it."""
+    found: set[str] = set()
+    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+        if isinstance(node, ast.Import):
+            found.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
+            found.add(node.module)
+            found.update(f"{node.module}.{alias.name}" for alias in node.names)
+    return {name for name in found if name.split(".")[0] == "route_engine"}
+
+
+def engine_files(shapes: Sequence[str] = SHAPES) -> list[Path]:
+    """The engine's files a paddling example is drawn with: `ENTRY`, every
+    module of the engine it imports in turn, with their packages, and the
+    outlines of `shapes` that are files."""
+    seen: set[str] = set()
+    todo = [ENTRY]
+    files: set[Path] = set()
+    while todo:
+        name = todo.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        path = _module_file(name)
+        if path is None:
+            continue
+        files.add(path)
+        parts = name.split(".")
+        todo.extend(".".join(parts[:n]) for n in range(1, len(parts)))
+        todo.extend(_imported(path))
+    outlines = ENGINE / "shapes" / "outlines"
+    files.update(p for p in (outlines / f"{s}.json" for s in shapes) if p.is_file())
+    return sorted(files)
+
+
+def engine_fingerprint(shapes: Sequence[str] = SHAPES) -> str:
+    """`engine_files` as a few letters, from their content (as
+    route_store.engine_fingerprint does for the whole engine)."""
+    digest = hashlib.sha256()
+    for path in engine_files(shapes):
+        digest.update(path.relative_to(ENGINE).as_posix().encode())
+        digest.update(path.read_bytes())
+    return digest.hexdigest()[:12]
 
 
 def place_key(point: LatLon) -> str:
@@ -152,7 +223,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     except ShapeNotDrawableError as exc:
         print(f"A shape does not fit: {exc}", file=sys.stderr)
         return 1
-    text = json.dumps(found, ensure_ascii=False, indent=2)
+    text = json.dumps(
+        {"engine": engine_fingerprint(), "examples": found},
+        ensure_ascii=False,
+        indent=2,
+    )
     args.out.write_text(text + "\n", encoding="utf-8")
     count = sum(len(routes) for routes in found.values())
     print(f"Wrote {args.out}: {count} examples in {len(found)} places")

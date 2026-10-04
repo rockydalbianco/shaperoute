@@ -81,14 +81,15 @@ export const RUN_EXAMPLES: ExampleSet = {
  * On the water, the shapes of the run (TASK-227, the user's choice: the
  * samples judged fit on the four places). The places of «Explore» come with
  * the app (paddleExamples.json, written by `python -m
- * shaperoute_api.paddle_examples`); «Near me» is drawn as a run's examples.
+ * shaperoute_api.paddle_examples`, which says the engine it was drawn by);
+ * «Near me» is drawn as a run's examples.
  */
 export const PADDLE_EXAMPLES: ExampleSet = {
   activity: "paddling",
   distance_m: 2000,
   more: MORE_SHAPES,
   prefix: "paddling:",
-  bundled: readKept(paddleExamples),
+  bundled: readKept(paddleExamples.examples),
 };
 
 /** A set's shapes, as its cards show them: the heart first. */

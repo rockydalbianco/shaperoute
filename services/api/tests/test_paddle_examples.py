@@ -19,9 +19,13 @@ from route_engine.geo import local_to_latlon
 from route_engine.water import FileWaterSource, OverpassWaterSource
 
 from shaperoute_api.paddle_examples import (
+    ENGINE,
     LICENSE,
+    OUT,
     SHAPES,
     WaterPlace,
+    engine_files,
+    engine_fingerprint,
     examples,
     main,
     place_key,
@@ -98,7 +102,10 @@ def test_the_command_writes_every_place_from_the_cache(
 
     assert code == 0
     written = json.loads(out.read_text(encoding="utf-8"))
-    assert [d["shape"] for d in written[place_key(LAKE_START)]] == list(SHAPES)
+    assert written["engine"] == engine_fingerprint()
+    assert [d["shape"] for d in written["examples"][place_key(LAKE_START)]] == list(
+        SHAPES
+    )
     assert "8 examples in 1 places" in capsys.readouterr().out
 
 
@@ -110,3 +117,23 @@ def test_without_the_water_nothing_is_downloaded_nor_written(
     assert code == 1
     assert not out.exists()
     assert "No water for a place" in capsys.readouterr().err
+
+
+def test_the_engine_is_what_draws_on_the_water_and_no_more() -> None:
+    files = {path.relative_to(ENGINE).as_posix() for path in engine_files()}
+    assert {"paddling.py", "water.py", "water_fit.py", "validation.py"} <= files
+    assert {"shapes/outlines/star.json", "shapes/outlines/rabbit_head.json"} <= files
+    # The run's search and the pen up do not draw on the water.
+    assert not files & {"optimizer.py", "pen_up.py", "shapes/outlines/cat.json"}
+
+
+def test_the_app_s_examples_were_drawn_by_this_engine() -> None:
+    """As the phone's engine zip (tools/phone_engine): an engine that draws
+    on the water otherwise leaves the app's examples behind."""
+    drawn = json.loads(OUT.read_text(encoding="utf-8"))["engine"]
+    assert drawn == engine_fingerprint(), (
+        "the engine that draws on the water changed: write the app's examples "
+        "again with `python -m shaperoute_api.paddle_examples --cache-dir "
+        "<cache with the server's water/>` (TASK-227), then Prettier on "
+        f"{OUT.relative_to(REPO)}"
+    )

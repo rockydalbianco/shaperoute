@@ -117,7 +117,7 @@ def read_osm_xml(path: Path) -> OsmData:
 
 
 def water_answer(data: OsmData, bbox: BBox) -> list[Element]:
-    """What Overpass answers to water.water_query(bbox) with `out tags geom`,
+    """What Overpass answers to water.water_query(bbox) with `out body geom`,
     from `data`: nodes, ways and relations, each in order of id.
 
     In the box, as Overpass: a node inside it; a way with a node inside it

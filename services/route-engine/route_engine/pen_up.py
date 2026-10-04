@@ -38,6 +38,7 @@ from route_engine.geo import (
 from route_engine.metrics import _dense
 from route_engine.network import (
     CORRIDOR_BAND,
+    STROKE_DETAIL,
     ZONE_RADIUS,
     Graph,
     NetworkRoute,
@@ -105,15 +106,27 @@ def trace(
     were one shape: a share of their length (`snap_to_network`), finer when
     a letter has strokes drawn twice (ADR-0039). Each letter's warnings are
     named by its letter, but for where the route begins.
+
+    The pieces of a shape (pieces.py, TASK-223) are its details, as strokes
+    are: the zones and the corridor are always the finer ones. A closed
+    piece, like an eye, is traced closed: it ends where it began.
     """
     letters = letter_lines(word, line)
     xys = [latlon_to_local_array(letter[0], np.array(letter)) for letter in letters]
     lengths = [_length(xy) for xy in xys]
     fine = min(detail_scale(xy) for xy in xys)
+    if word.kind == "piece":
+        fine = min(fine, STROKE_DETAIL)
     drawing_m = fine * sum(lengths)
     pieces = [
         _trace_letter(
-            graph, letter, detail_scale(xy) * own, drawing_m, reuse_penalty, retrace
+            graph,
+            letter,
+            detail_scale(xy) * own,
+            drawing_m,
+            reuse_penalty,
+            retrace,
+            closed=word.kind == "piece" and letter[0] == letter[-1],
         )
         for letter, xy, own in zip(letters, xys, lengths, strict=True)
     ]
@@ -127,7 +140,9 @@ def trace(
             way = nx.shortest_path(graph, nodes[-1], piece.nodes[0], weight=step_cost)
         except nx.NetworkXNoPath:
             raise ShapeNotDrawableError(
-                f"no road leads from the {word.letters[k - 1].char} "
+                f"no road leads from {word.label(k - 1)} to {word.label(k)}"
+                if word.kind == "piece"
+                else f"no road leads from the {word.letters[k - 1].char} "
                 f"to the {word.letters[k].char}"
             ) from None
         begin = len(points) - 1
@@ -156,10 +171,12 @@ def _trace_letter(
     drawing_m: float,
     reuse_penalty: float,
     retrace: float,
+    closed: bool = False,
 ) -> NetworkRoute:
-    """One letter as an open route. `own_m` is the perimeter snap_to_network
-    measures for it, `drawing_m` the one its zones and corridor are a share
-    of. A letter that falls on a single node is that node."""
+    """One letter as an open route, or a closed one when told (a closed
+    piece of a shape). `own_m` is the perimeter snap_to_network measures for
+    it, `drawing_m` the one its zones and corridor are a share of. A letter
+    that falls on a single node is that node."""
     scale = drawing_m / own_m if own_m > 0 else 1.0
     try:
         return snap_to_network(
@@ -169,7 +186,7 @@ def _trace_letter(
             zone_radius=ZONE_RADIUS * scale,
             band=CORRIDOR_BAND * scale,
             retrace=retrace,
-            closed=False,
+            closed=closed,
         )
     except ShapeNotDrawableError:
         raise
@@ -191,7 +208,7 @@ def _named(word: Word, k: int, warnings: Sequence[str]) -> list[str]:
             if k == 0:
                 named.append(warning)
             continue
-        named.append(f"letter {k + 1} ({word.letters[k].char}): {warning}")
+        named.append(f"{word.label(k)}: {warning}")
     return named
 
 

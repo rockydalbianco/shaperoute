@@ -146,6 +146,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
+  forme** (ADR-0185; chiesto dall'utente il 2026-10-03): **parte A in
+  `main`** (#284, 2026-10-04). Le forme possono avere pezzi staccati
+  (`pieces`) e staccare gli occhi che hanno già (`lift`): con la penna
+  alzata ogni pezzo si corre da solo, a piedi fra l'uno e l'altro; con la
+  penna giù il percorso di sempre (impronte in `tests/test_pieces_before.py`).
+  **Giudizio dell'utente**: sì faccina, fantasmino e ciambella con la penna
+  alzata, sole con la penna giù; quasi palloncino, cono, fulmine, nuvola; no
+  goccia e mela. Gli occhi staccati di gatto, pesce, teste e zucca aspettano
+  il giudizio. **Prossimo**: la parte B (catalogo, `pen_up` per le forme
+  nell'API, AI, app), dal coordinatore, in un contesto pulito.
+  `tasks/TASK-223.md`.
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia
   notturna dal 2026-10-02 (07:27Z, 18 s di API ferma); iscrizione,
@@ -358,18 +370,34 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   che dà lo stesso `result` di `/route-jobs` (test su Levico; su Trento in
   Pyodide 5–7 s, uguale a CPython). L'aggiornamento del server e le zone
   scritte in anticipo (0,7–0,8 GB, 20–30 min) li chiede il coordinatore
-  all'utente. **Parte B, l'app**, nella sua PR: Pyodide 314.0.7 e il
-  motore in due zip fra gli asset (`tools/phone_engine/phone_engine.py`;
-  chi cambia `route_engine` rifà `engine.zip`, la CI lo controlla), una
-  WebView nascosta, le zone scaricate a ogni apertura, il telefono prima
-  fino a 8 km a piedi e 30 in bici, il server come riserva. In Expo Go,
-  nel simulatore, con l'API spenta disegna il cuore da 5 km di Trento.
-  **Dopo**: C, la riga in «Settings»; D, la prova sull'iPhone. **Aspetta
-  l'utente**: i testi dei dati mobili, il tetto del traffico, la
-  «Modalità dati ridotti». Niente server né pubblicazione. Da dove
+  all'utente. **Parte B, l'app**, in `main` dalla #282 (`b87d8cc`,
+  2026-10-03) e su «preview» dal 2026-10-04 (gruppo `1da074a6`, pubblicato
+  dal coordinatore): Pyodide 314.0.7 e il motore in due zip fra
+  gli asset (`tools/phone_engine/phone_engine.py`; chi cambia
+  `route_engine` rifà `engine.zip`, la CI lo controlla), una WebView
+  nascosta, le zone scaricate a ogni apertura, il telefono prima fino a 8
+  km a piedi e 30 in bici, il server come riserva. In Expo Go, nel
+  simulatore, con l'API spenta disegna il cuore da 5 km di Trento. Senza
+  `/phone-zones` sul server l'app chiede tutto al server, come prima.
+  L'utente ha scelto i testi delle mappe offline e il tetto del traffico
+  (task file). **Dopo**, in quest'ordine: C, la riga in «Settings»; A2, il
+  tetto sul server; B2, le città vicine fino a 2 GB; D, la prova
+  sull'iPhone, dopo l'aggiornamento del server con le zone del telefono.
+  Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **Motore** — TASK-230: l'acqua da Overpass con i laghi multipoligono
+  (ADR-0192; trovato da TASK-225; PR #292, merge `28e1ae0`).
+  `WATER_QUERY` chiede `out body geom` invece di `out tags geom`, così
+  Overpass dà anche i membri delle relazioni, e i laghi multipoligono
+  (Garda, Como, l'Idroscalo) arrivano interi. 4 test con un Overpass finto;
+  corsa, bici e forme identiche (impronte fissate invariate). Lo zip del
+  motore dell'app è rifatto dopo la #284. L'impronta del motore cambia, da
+  `a89d46072607` a `a068054ef006`: dopo l'aggiornamento del server serve
+  `draw_examples`, con l'ok dell'utente. I file d'acqua sul server restano
+  buoni. `tasks/TASK-230.md`.
 
 - **App** — TASK-222: il cuore su giallo in «Explore» (ADR-0184; chiesto
   dall'utente il 2026-10-03). A destra di «Best near you», sotto il

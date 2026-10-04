@@ -97,7 +97,8 @@ dall'estratto (TASK-225, ADR-0187).
     richiesta risponde `NoWaterError`.
 - `test_water.py`: la query finisce con `out body geom;`.
 - Lo zip del motore dell'app rifatto: 0,6 MB, il test dello zip è verde.
-- Test: motore 1227 verdi (`-m "not network"`); API `test_paddling.py` e
+- Test: motore 1329 verdi (`-m "not network"`, dopo il merge di `main` con
+  la #284); API `test_paddling.py` e
   `test_water_extract.py` 39 verdi; `tools/phone_engine` 9 verdi; `ruff`
   e `black` puliti.
 
@@ -120,8 +121,8 @@ fra i moduli del motore importano `water.py` solo `paddling.py`,
 `water_fit.py`, `validation.py` (i controlli sull'acqua) e la riga di
 comando.
 
-**L'impronta del motore cambia**: da `eedd1acfe61b` (`main` a `e54cb1e`) a
-`255b41f9fd7a`.
+**L'impronta del motore cambia**: da `a89d46072607` (`main` a `72db296`,
+con la #284 di TASK-223 A) a `a068054ef006`.
 
 ## Note per il deploy
 
@@ -134,5 +135,5 @@ comando.
   e hanno già i membri: restano buoni. Un file scritto da Overpass con la
   query di prima perderebbe i laghi multipoligono, ma sul server non ce
   n'è nessuno: quello di Milano è già stato sostituito.
-- Lo zip del motore va con la prossima pubblicazione dell'app. Se la #284
-  (TASK-223 A) entra dopo, rifà lei lo zip.
+- Lo zip del motore va con la prossima pubblicazione dell'app. È rifatto
+  dopo il merge della #284 (TASK-223 A), quindi ha tutti e due i cambi.

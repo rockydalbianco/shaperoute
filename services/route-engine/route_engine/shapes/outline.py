@@ -33,6 +33,14 @@ comes before it by the shortest link, from one of its vertices (an end of an
 open piece) to the nearest line, and drawn out and back along it like a
 stroke (`joined`): the same file gives both.
 
+`lift` is optional as well: the numbers of strokes that close a loop, like
+the eyes of the cat, hung from the outline by a link (TASK-223). With the pen
+down nothing changes; with the pen up each of those loops is a piece of its
+own, with whatever hangs from it, and its link is not drawn. So a shape of
+the catalogue gets its eyes apart by one line in its file:
+
+    {"name": "cat", ..., "strokes": [[...], [...]], "lift": [1, 2]}
+
 `path` replaces `points` and `strokes` for a shape with no outline around
 it, such as a word written in a single stroke (TASK-040):
 
@@ -95,6 +103,10 @@ class Outline:
     # Each piece as the stroke that draws it with the pen down: from the
     # nearest point of the lines before it, then the piece (TASK-223).
     joined: tuple[tuple[Point, ...], ...] = ()
+    # Strokes that close a loop, like the eyes of the cat, whose loop is a
+    # piece of its own with the pen up, its link left out (TASK-223): their
+    # indices in `strokes`, from 0.
+    lift: tuple[int, ...] = ()
 
     def __call__(self, n_points: int) -> list[Point]:
         """`n_points` vertices equally spaced by arc length, like any shape.
@@ -116,27 +128,42 @@ class Outline:
             return list(self.points)
         return self._drawn((*self.strokes, *self.joined))
 
+    @property
+    def in_pieces(self) -> bool:
+        """Whether the shape has pieces to draw with the pen up: `pieces`,
+        or strokes lifted off (`lift`)."""
+        return bool(self.pieces or self.lift)
+
     def pen_up_lines(self) -> list[list[Point]]:
         """The lines drawn with the pen up (TASK-223): first the outline with
-        its strokes, closed, from its first point; then each piece once, in
-        the order of the file. A closed piece starts and ends at its vertex
+        its strokes, closed, from its first point; then the loop of each
+        stroke in `lift`, with what hangs from it, and each piece, once, in
+        the order of the file. A closed line starts and ends at its point
         nearest to where the line before ends, and an open one at its end
         nearest to it: the walks between them are short."""
-        lines = [self._drawn(self.strokes)]
-        for piece in self.pieces:
+        drawn = self._lines(self.strokes, frozenset(k + 1 for k in self.lift))
+        lines = [drawn[0]]
+        for line in [*drawn[1:], *(list(piece) for piece in self.pieces)]:
             end = lines[-1][-1]
-            if piece[-1] == piece[0]:
-                ring = list(piece[:-1])
-                first = min(range(len(ring)), key=lambda i: math.dist(ring[i], end))
-                lines.append([*ring[first:], *ring[:first], ring[first]])
-            elif math.dist(piece[-1], end) < math.dist(piece[0], end):
-                lines.append(list(reversed(piece)))
+            if line[-1] == line[0]:
+                first = min(range(len(line) - 1), key=lambda i: math.dist(line[i], end))
+                lines.append([*line[first:-1], *line[:first], line[first]])
+            elif math.dist(line[-1], end) < math.dist(line[0], end):
+                lines.append(list(reversed(line)))
             else:
-                lines.append(list(piece))
+                lines.append(list(line))
         return lines
 
     def _drawn(self, strokes: Sequence[Sequence[Point]]) -> list[Point]:
         """The outline with `strokes` drawn out and back where they start."""
+        return self._lines(strokes)[0]
+
+    def _lines(
+        self, strokes: Sequence[Sequence[Point]], lifted: frozenset[int] = frozenset()
+    ) -> list[list[Point]]:
+        """The outline with `strokes` drawn out and back where they start,
+        but those numbered in `lifted` (1 for the first); then the loop of
+        each of those, closed, with what hangs from it (TASK-223)."""
         ring = list(self.points[:-1])
         lines: list[tuple[list[Point], bool]] = [(ring, True)]
         tolerance = _tolerance(ring)
@@ -149,23 +176,28 @@ class Outline:
             starts.setdefault((host, side), []).append((t, key))
             lines.append((list(stroke), False))
 
-        def draw(key: int) -> list[Point]:
+        def draw(key: int, begin: int = 0) -> list[Point]:
             line, closed = lines[key]
             out: list[Point] = []
-            for j, vertex in enumerate(line):
+            for j, vertex in enumerate(line[begin:], start=begin):
                 out.append(vertex)
                 for _, child in sorted(starts.get((key, j), [])):
+                    if child in lifted:
+                        continue
                     drawn = draw(child)
                     if drawn[0] != out[-1]:
                         out.append(drawn[0])
                     out.extend(drawn[1:])
             if closed:
                 out.append(line[0])
-            else:  # back the way it came, up to its loop if it has one
+            elif not begin:  # back the way it came, up to its loop if it has one
                 out.extend(reversed(line[: _loop_start(line)]))
             return out
 
-        return draw(0)
+        return [
+            draw(0),
+            *(draw(key, _loop_start(lines[key][0])) for key in sorted(lifted)),
+        ]
 
 
 def read_outline(path: Path) -> Outline:
@@ -243,6 +275,7 @@ def parse_outline(data: object, allow_crossings: bool = False) -> Outline:
         strokes=tuple(kept),
         pieces=tuple(apart),
         joined=tuple(joined),
+        lift=_lift(data.get("lift"), ring, strokes),
     )
 
 
@@ -394,6 +427,47 @@ def _pieces(
         pieces.append(points)
         others.append(sides)
     return pieces
+
+
+def _lift(
+    raw: object, ring: list[Point], strokes: list[list[Point]]
+) -> tuple[int, ...]:
+    """The strokes of a file lifted off with the pen up (TASK-223): their
+    numbers, from 1, each once; each closes a loop, and nothing hangs from
+    the link that leads to it, which the pen up leaves out."""
+    if raw is None:
+        return ()
+    if (
+        not isinstance(raw, list)
+        or not all(isinstance(k, int) and not isinstance(k, bool) for k in raw)
+        or len(set(raw)) < len(raw)
+    ):
+        raise InvalidOutlineError("'lift' must be a list of stroke numbers, each once")
+    lines: list[tuple[Sequence[Point], bool]] = [(ring, True)]
+    tolerance = _tolerance(ring)
+    hosts: list[tuple[int, int]] = []
+    for stroke in strokes:
+        found = _attach(stroke[0], lines, tolerance)
+        assert found is not None  # _strokes attached it
+        hosts.append((found[0], found[1]))
+        lines.append((stroke, False))
+    for k in raw:
+        if not 1 <= k <= len(strokes):
+            raise InvalidOutlineError(
+                f"'lift': there is no stroke {k}, the file has {len(strokes)}"
+            )
+        loop = _loop_start(strokes[k - 1])
+        if loop == len(strokes[k - 1]) - 1:
+            raise InvalidOutlineError(
+                f"'lift': stroke {k} closes no loop, it has nothing to lift"
+            )
+        for m, (host, side) in enumerate(hosts, start=1):
+            if host == k and side < loop:
+                raise InvalidOutlineError(
+                    f"'lift': stroke {m} hangs from the link of stroke {k}, "
+                    "which the pen up leaves out"
+                )
+    return tuple(k - 1 for k in raw)
 
 
 def _join(

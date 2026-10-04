@@ -352,7 +352,7 @@ def parse_args(
             if isinstance(request, OutlineRequest)
             else get_shape(request.shape)
         )
-        if not isinstance(outline, Outline) or not outline.pieces:
+        if not isinstance(outline, Outline) or not outline.in_pieces:
             parser.error(
                 f"--pen-up: {PEN_UP_WITHOUT_WORD}, or the pieces of a shape; "
                 f"{request.shape} has none"

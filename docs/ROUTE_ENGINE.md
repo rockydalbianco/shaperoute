@@ -342,6 +342,15 @@ disegna in due modi:
   l'ordine dei pezzi.
 - Senza pezzi un contorno si legge e si disegna come prima.
 
+Le forme che hanno già gli occhi come tratti (gatto, pesce, teste di cane e
+coniglio, zucca) li **staccano** con la penna alzata senza cambiare il
+disegno con la penna giù: `"lift": [1, 2]` nel file dice quali tratti, da 1.
+Di un tratto staccato la penna alzata disegna solo l'anello, chiuso, con ciò
+che ci è appeso, dopo il contorno e prima dei pezzi; il collegamento che lo
+appende no. Si staccano solo tratti che chiudono un anello, e niente può
+pendere dal loro collegamento (la bocca della testa di cane pende da quello
+del naso: il naso non si stacca).
+
 I pezzi sono dettagli, come i tratti: con la penna alzata zone e corridoio
 sono sempre quelli dimezzati (ADR-0039), e un anello si traccia chiuso,
 così finisce dove è cominciato. Senza queste due cose, su una griglia di

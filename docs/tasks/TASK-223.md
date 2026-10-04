@@ -19,6 +19,16 @@ parti staccate (gli occhi di una faccina) la **penna alzata** delle parole
 (TASK-197): si disegna un pezzo, si cammina senza registrare fino al
 prossimo, si riprende. Sulla mappa quei tratti a piedi sono tratteggiati.
 
+**Da confermare con l'utente sui campioni**: «fermare il tratteggio» l'ho
+capito come la penna alzata fra i pezzi di una forma. Se voleva dire
+un'altra cosa (per esempio spegnere il tratteggio sulla mappa), la parte A
+resta utile ma la parte B cambia.
+
+Poi, dal coordinatore, sempre su richiesta dell'utente: anche le forme che
+ci sono già con **gli occhi interni senza linee di collegamento** (pesce,
+gatto, teste di cane e coniglio…), con il tracking sospeso da solo fra un
+pezzo e l'altro. Sull'acqua è TASK-226, che riusa questo formato.
+
 ## Parte A — il motore e i candidati (questo branch)
 
 1. **I pezzi nei contorni** (`shapes/outline.py`): `pieces` nel JSON, linee
@@ -30,12 +40,17 @@ prossimo, si riprende. Sulla mappa quei tratti a piedi sono tratteggiati.
    tracciamento e la somiglianza sono quelli di TASK-197. In `pen_up.py` i
    pezzi hanno zone e corridoio fini come i tratti e un anello si traccia
    chiuso; i messaggi dicono «piece 2» (`Word.kind`, `Word.label`).
-3. **La CLI**: `--pen-up` anche con `--outline`/`--shape` a pezzi.
-4. **Dieci candidati** in `shapes/outlines/`, solo dalla CLI, **non** nel
+3. **Gli occhi delle forme di oggi**: `"lift": [1, 2]` nel file stacca
+   con la penna alzata i tratti che chiudono un anello; con la penna giù
+   nulla cambia. Messo a gatto `[1, 2]`, pesce `[1]`, teste di cane e
+   coniglio `[1, 2]` (la bocca pende dal collegamento del naso: il naso
+   resta attaccato), zucca `[1, 2, 3]`.
+4. **La CLI**: `--pen-up` anche con `--outline`/`--shape` a pezzi.
+5. **Dieci candidati** in `shapes/outlines/`, solo dalla CLI, **non** nel
    catalogo: `smiley` 🙂, `ghost` 👻, `donut` 🍩, `sun` ☀️ (a pezzi);
    `lightning` ⚡, `drop` 💧, `balloon` 🎈, `ice_cream` 🍦, `cloud` ☁️,
    `apple` 🍎 (contorno, a volte con tratti).
-5. **Campioni** a 10 km a Trento, Levico e Milano, in `samples/`
+6. **Campioni** a 10 km a Trento, Levico e Milano, in `samples/`
    (`TASK-223_*_v1.gpx`, righe in `samples/LOG.md`), le forme a pezzi con
    la penna alzata e con la penna giù.
 
@@ -51,8 +66,11 @@ prossimo, si riprende. Sulla mappa quei tratti a piedi sono tratteggiati.
 - [x] Con la penna giù: una linea chiusa sola, ogni pezzo andata e ritorno.
 - [x] La CLI disegna una forma a pezzi con e senza `--pen-up`, e rifiuta
       `--pen-up` per una forma senza pezzi.
+- [x] Le forme e le parole di oggi danno lo stesso percorso di `main`,
+      punto per punto, senza penna alzata, e le parole anche con (sotto,
+      «Impronte»; `tests/test_pieces_before.py`).
 - [x] Nessun file dell'API, dell'app o dell'AI toccato; il catalogo non
-      cambia.
+      cambia (solo la riga `lift` nei file di cinque forme).
 
 ### File toccati (parte A)
 
@@ -61,13 +79,39 @@ prossimo, si riprende. Sulla mappa quei tratti a piedi sono tratteggiati.
 - `services/route-engine/route_engine/pen_up.py`
 - `services/route-engine/route_engine/words.py` (`Word.kind`, `label`)
 - `services/route-engine/route_engine/__main__.py`
-- `services/route-engine/route_engine/shapes/outlines/` (10 file nuovi)
-- `services/route-engine/tests/test_pieces.py` (nuovo),
-  `tests/test_outline.py` (un test salta i contorni a pezzi)
+- `services/route-engine/route_engine/shapes/outlines/` (10 file nuovi;
+  `cat`, `fish`, `dog_head`, `rabbit_head`, `pumpkin`: la riga `lift`)
+- `services/route-engine/tests/test_pieces.py`,
+  `tests/test_pieces_before.py` (nuovi), `tests/test_outline.py` (un test
+  salta i contorni a pezzi)
+- `apps/mobile/assets/engine/engine.zip`: la copia del motore per il
+  telefono (TASK-214 B), rifatta con
+  `python tools/phone_engine/phone_engine.py engine`
 - `samples/TASK-223_*.gpx` (nuovi), `samples/LOG.md` (righe nuove)
 - `docs/ROUTE_ENGINE.md` (§2 «Pezzi staccati dal contorno», §5, §7)
 - `docs/tasks/TASK-223.md`, `docs/DECISIONS.md` (ADR-0185),
   `docs/STATUS.md` (le mie righe)
+
+### Impronte
+
+Le forme e le parole di oggi, su una griglia di vie da 100 m attorno a
+Trento (`tests/test_pieces_before.py`): `main` a b87d8cc e questo branch
+danno le stesse impronte (sha256 dei punti, della distanza, della
+somiglianza e degli avvisi, come `tests/test_pen_up.py`). Anche i punti
+ricampionati di ogni file di `outlines/` senza pezzi sono gli stessi.
+
+IMPRONTE
+
+### Note per il deploy
+
+- Il motore cambia: dopo l'aggiornamento del server, con l'ok dell'utente,
+  `draw_examples` (gli esempi tenuti hanno l'impronta del motore). Le forme
+  di oggi danno lo stesso percorso, ma l'impronta guarda il codice.
+- La copia del motore nell'app (`apps/mobile/assets/engine/engine.zip`,
+  TASK-214 B) è rifatta in questo branch: telefono e server devono avere lo
+  stesso motore, quindi l'app con questo zip si pubblica dopo che il server
+  ha questo motore.
+- Nessuna migrazione, nessun cambio dell'API.
 
 ## Parte B — nel catalogo (dopo il giudizio)
 

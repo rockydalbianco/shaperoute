@@ -244,11 +244,94 @@ def test_a_shape_without_pieces_cannot_be_drawn_with_the_pen_up() -> None:
         compose(outline, "face")
 
 
-def test_the_catalogue_has_no_shape_in_pieces_yet() -> None:
+def test_the_catalogue_gains_no_shape_only_eyes_apart() -> None:
     # The candidates of TASK-223 are tried from the CLI until the user has
-    # judged them by eye on real roads (ADR-0036).
-    assert not any(
-        isinstance(shape, Outline) and shape.pieces for shape in SHAPES.values()
+    # judged them by eye on real roads (ADR-0036); the shapes with eyes may
+    # lift them off with the pen up.
+    in_pieces = {
+        name
+        for name, shape in SHAPES.items()
+        if isinstance(shape, Outline) and shape.in_pieces
+    }
+    assert in_pieces == {"cat", "fish", "dog_head", "rabbit_head", "pumpkin"}
+    assert not any(s.pieces for s in SHAPES.values() if isinstance(s, Outline))
+    assert not {"smiley", "ghost", "donut", "sun", "drop"} & set(SHAPES)
+
+
+# --- Strokes lifted off with the pen up: the eyes of the shapes of today ---
+
+# A loop hung from the left side by a link, like the eye of the cat: the
+# link from (100, 114) to (104, 114), the loop round to (104, 114) again.
+EYE = [[100, 114], [104, 114], [104, 116], [107, 116], [107, 112], [104, 112], [104, 114]]
+LASH = [[107, 116], [107, 118]]  # hangs from the loop
+CHEEK = [[102, 114], [102, 110]]  # hangs from the link
+
+
+def test_a_lifted_stroke_changes_nothing_with_the_pen_down() -> None:
+    plain = parse_outline(_data(pieces=None, strokes=[EYE, LASH]))
+    lifted = parse_outline(_data(pieces=None, strokes=[EYE, LASH], lift=[1]))
+    assert lifted.lift == (0,) and lifted.in_pieces and not plain.in_pieces
+    assert lifted.path() == plain.path()
+    assert lifted(SHAPE_POINTS) == plain(SHAPE_POINTS)
+
+
+def test_with_the_pen_up_a_lifted_loop_is_a_piece_without_its_link() -> None:
+    outline = parse_outline(_data(pieces=None, strokes=[EYE, LASH], lift=[1]))
+    first, eye = outline.pen_up_lines()
+    # The outline alone: neither the link nor the eye.
+    assert first == list(outline.points)
+    # The loop, closed, with the lash out and back from it; it starts at
+    # its point nearest to where the outline ends, its lower left corner.
+    assert eye[0] == eye[-1] == pytest.approx(_frame([104, 112]))
+    assert not any(math.dist(p, _frame([100, 114])) < 1e-9 for p in eye)
+    assert sum(math.dist(p, _frame([107, 118])) < 1e-9 for p in eye) == 1
+    loop = _length([_frame(p) for p in EYE[1:]])
+    lash = _length([_frame(p) for p in LASH])
+    assert _length(eye) == pytest.approx(loop + 2 * lash)
+
+
+def test_lifted_strokes_come_before_the_pieces() -> None:
+    outline = parse_outline(_data(strokes=[EYE], lift=[1], pieces=[RIGHT_EYE]))
+    lines = outline.pen_up_lines()
+    assert len(lines) == 3
+    assert sorted(lines[1][:-1]) == pytest.approx(sorted(_frame(p) for p in EYE[1:-1]))
+    assert sorted(lines[2][:-1]) == pytest.approx(
+        sorted(_frame(p) for p in RIGHT_EYE[:-1])
+    )
+
+
+@pytest.mark.parametrize(
+    ("strokes", "lift", "message"),
+    [
+        ([EYE], "1", "'lift' must be a list of stroke numbers"),
+        ([EYE], [1, 1], "'lift' must be a list of stroke numbers, each once"),
+        ([EYE], [True], "'lift' must be a list of stroke numbers"),
+        ([EYE], [2], "there is no stroke 2, the file has 1"),
+        ([EYE, LASH], [2], "stroke 2 closes no loop"),
+        ([EYE, CHEEK], [1], "stroke 2 hangs from the link of stroke 1"),
+    ],
+)
+def test_a_wrong_lift_is_named(strokes: object, lift: object, message: str) -> None:
+    with pytest.raises(InvalidOutlineError, match=message):
+        parse_outline(_data(pieces=None, strokes=strokes, lift=lift))
+
+
+@pytest.mark.parametrize(
+    ("name", "eyes"),
+    [("cat", 2), ("fish", 1), ("dog_head", 2), ("rabbit_head", 2), ("pumpkin", 3)],
+)
+def test_the_shapes_with_eyes_draw_them_apart_with_the_pen_up(
+    name: str, eyes: int
+) -> None:
+    shape = SHAPES[name]
+    assert isinstance(shape, Outline)
+    word = compose(shape, name)
+    assert len(word.letters) == 1 + eyes
+    # The outline line of the pen up draws no link: it is the path of the
+    # pen down without the lifted strokes.
+    lines = shape.pen_up_lines()
+    assert _length(lines[0]) + sum(_length(line) for line in lines[1:]) < _length(
+        shape.path()
     )
 
 

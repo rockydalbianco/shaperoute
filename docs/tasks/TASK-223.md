@@ -1,6 +1,6 @@
 # TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle forme
 
-**Stato**: In lavorazione (parte A fatta, aspetta il giudizio dell'utente)
+**Stato**: In lavorazione: parte A Done (merge #284, 224a708, 2026-10-04); la parte B parte dopo, in un contesto pulito
 **Fase**: 4 · **Branch**: `feat/TASK-223-simple-emoji`
 **ADR**: ADR-0185 (le forme a pezzi)
 **Dipende da**: TASK-197 (la penna alzata nelle parole, `pen_up.py`)
@@ -170,4 +170,37 @@ liberi. Per ogni forma scelta:
 
 ## Esito
 
-(da scrivere)
+**Parte A** (2026-10-04): in `main` con la #284 (224a708). Le forme e le parole
+di oggi danno lo stesso percorso di prima (impronte sopra).
+
+**Il giudizio dell'utente** (2026-10-04, sulla pagina di confronto, una
+forma alla volta con le sue tre mappe):
+
+| Forma | Modo | Giudizio |
+|---|---|---|
+| 🙂 `smiley` | penna alzata | sì |
+| 👻 `ghost` | penna alzata | sì |
+| 🍩 `donut` | penna alzata | sì |
+| ☀️ `sun` | penna giù | sì |
+| 🎈 `balloon`, 🍦 `ice_cream`, ⚡ `lightning`, ☁️ `cloud` | — | quasi |
+| 💧 `drop`, 🍎 `apple` | — | no |
+
+«Fermare il tratteggio» come penna alzata è confermato dal giudizio: le tre
+forme a pezzi sono «sì» con la penna alzata. Le «quasi» restano fuori dal
+catalogo finché l'utente non le rivede.
+
+**Gli occhi staccati** di gatto, pesce, teste di cane e coniglio e zucca:
+campioni a 15 km con la penna alzata (`samples/TASK-223_*-pen-up_15km_*`),
+sulla stessa pagina; aspettano il giudizio. Parere dell'agente: gatto, pesce
+e coniglio sì a Milano; testa di cane e zucca no (muso e sorriso staccati si
+confondono).
+
+**Da dove riparte la parte B**: dalle quattro forme del «sì» (faccina,
+fantasmino, ciambella con la penna alzata, sole con la penna giù), più gli
+occhi staccati che l'utente approverà. Domande ancora aperte, una alla
+volta: la penna alzata accesa di partenza per le forme a pezzi (proposta:
+sì, come per le parole); la frase della voce fra un pezzo e l'altro
+(proposta: una sola, «Walk to the next part», tradotta nelle cinque
+lingue). Script e pagina di confronto: https://claude.ai/artifact/1pJSvHAX8zhod9wsTm26eu
+(gli script dei campioni erano nella scratchpad della sessione: il CLI basta,
+`python -m route_engine --shape cat --pen-up ...`).

@@ -147,18 +147,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## In lavorazione
 
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
-  forme** (ADR-0185; chiesto dall'utente il 2026-10-03): **parte A, il
-  motore**, nel branch `feat/TASK-223-simple-emoji`. Le forme possono avere
-  `pieces`, pezzi staccati dal contorno: con la penna alzata si disegnano
-  uno per volta, a piedi fra l'uno e l'altro come le lettere; con la penna
-  giù si attaccano da soli. Gatto, pesce, teste di cane e coniglio e zucca
-  staccano gli occhi con la penna alzata (`lift`), con la penna giù lo stesso
-  percorso di prima (impronte in `tests/test_pieces_before.py`). La copia
-  del motore nell'app (`engine.zip`) è rifatta. Dieci candidati, solo dalla CLI (faccina,
-  fantasmino, ciambella, sole, fulmine, goccia, palloncino, cono gelato,
-  nuvola, mela) e i campioni a 10 km a Trento, Levico e Milano. **Aspetta
-  l'utente**: quali forme entrano, la penna alzata accesa o spenta di
-  partenza, la frase della voce. Poi la parte B (catalogo, API, AI, app).
+  forme** (ADR-0185; chiesto dall'utente il 2026-10-03): **parte A in
+  `main`** (#284, 2026-10-04). Le forme possono avere pezzi staccati
+  (`pieces`) e staccare gli occhi che hanno già (`lift`): con la penna
+  alzata ogni pezzo si corre da solo, a piedi fra l'uno e l'altro; con la
+  penna giù il percorso di sempre (impronte in `tests/test_pieces_before.py`).
+  **Giudizio dell'utente**: sì faccina, fantasmino e ciambella con la penna
+  alzata, sole con la penna giù; quasi palloncino, cono, fulmine, nuvola; no
+  goccia e mela. Gli occhi staccati di gatto, pesce, teste e zucca aspettano
+  il giudizio. **Prossimo**: la parte B (catalogo, `pen_up` per le forme
+  nell'API, AI, app), dal coordinatore, in un contesto pulito.
   `tasks/TASK-223.md`.
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia

@@ -250,7 +250,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dall'utente: una freccia del nord che rimette il nord in alto, e
   durante la corsa la mappa resta girata come il disegno, con le linee
   del percorso fatto e da fare (TASK-224) che girano con lei.
-  **Parte A** (motore e API) nella PR #NNN: prima la ricerca di sempre
+  **Parte A** (motore e API) nella PR #356: prima la ricerca di sempre
   entro ±15°, poi, solo se non dà un percorso buono, inclinata fino a 45°
   con 10 tracciamenti in più; anche in canoa. Su 129 percorsi 110
   identici (i 12 di riferimento tutti), 19 inclinati di 20–45°, i buoni da

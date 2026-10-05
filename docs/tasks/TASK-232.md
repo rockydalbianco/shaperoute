@@ -1,6 +1,6 @@
 # TASK-232 — Forme inclinate fino a 45°, con la mappa girata
 
-**Stato**: In lavorazione — parte A (motore e API) nella PR #NNN, aspetta
+**Stato**: In lavorazione — parte A (motore e API) nella PR #356, aspetta
 il giudizio dell'utente sui campioni; parti B e C da fare
 **Fase**: 4 · **Branch**: `feat/TASK-232-a-tilt-45` (A),
 `feat/TASK-232-b-turned-map` (B), `feat/TASK-232-c-saved-turn` (C)
@@ -205,7 +205,7 @@ migrazione nuova, `apps/mobile/src/activities/fitLines.ts`,
 
 ## Esito
 
-**Parte A, motore e API** (2026-10-05, PR #NNN, ADR-0195 «Parte A»):
+**Parte A, motore e API** (2026-10-05, PR #356, ADR-0195 «Parte A»):
 
 - **Prima dritta, poi inclinata**: la ricerca di sempre entro ±15°; solo
   se non dà un percorso buono, le rotazioni oltre 15° fino a 45° con 10

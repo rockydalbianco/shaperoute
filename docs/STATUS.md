@@ -328,16 +328,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   e `DELETE /drawings/{id}/reaction`; il super like scrive il suo
   commento nella stessa transazione, dal filtro di TASK-213. Non sul
   server: migrazione, quindi l'ok dell'utente. **Parte B, l'app**, fatta
-  il 2026-10-05 (branch `feat/TASK-119-b-reactions-app`): sotto un
+  e in `main` dal 2026-10-05 (PR #309, merge `0e5ff55`): sotto un
   disegno aperto, accanto al pulsante dei commenti, la propria reazione,
   le tre più usate e il totale; il tocco apre la barra delle sei; le
   emoji si vedono subito e tornano com'erano se l'API non le tiene; il
   doppio tocco sulla mappa del disegno (che lì non fa più lo zoom) o il
   cuore nella barra aprono il foglio «Super like» con il cuore grande e
   il commento obbligatorio. Provata nel simulatore con un'API locale, non
-  con le dita. **Aspettano l'utente**: la conferma dei testi (task file,
-  «Esito»), l'aggiornamento del server con la `0015` e la pubblicazione,
-  la prova sull'iPhone con due account. Finché il server non ha le
+  con le dita; testi confermati dall'utente. **Aspettano l'utente**:
+  l'aggiornamento del server con la `0015` e la pubblicazione, poi la
+  prova sull'iPhone con due account. Finché il server non ha le
   reazioni l'app pubblicata non le mostra. Da dove riprendere:
   `tasks/TASK-119.md`, «Esito».
 

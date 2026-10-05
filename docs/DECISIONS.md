@@ -3575,6 +3575,14 @@ passa com'è e guarda solo l'inizio dell'attesa. L'ID dell'app AdMob vero
 dell'utente sostituisce quello di prova in `app.json`; l'unità resta quella
 di prova di Google fino a TASK-153.
 
+**Aggiornamento 2026-10-05 (TASK-235, ADR-0198)**: l'annuncio a schermo
+intero all'inizio di ogni ricerca non c'è più, scelta dell'utente: la
+pubblicità sta fra i post del «Feed», un annuncio nativo ogni 5 post
+(ADR-0198). `useAdBeforeRoute` e `routeAds` sono tolti. Restano AdMob, il
+consenso di Google (ora alla prima apertura del Feed, mai all'avvio),
+niente richiesta ATT, niente annunci in Expo Go. Le variabili
+`EXPO_PUBLIC_ADMOB_INTERSTITIAL_*` diventano `EXPO_PUBLIC_ADMOB_NATIVE_*`.
+
 ## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
 (TASK-133, miglioramento generale)
@@ -9853,3 +9861,73 @@ dell'Italia intera, 211 laghi e 758 punti, e l'acqua di ognuno è sul
 server (210 file, 50 MB). Il calcolo è stato fatto sul Mac dall'estratto
 del server copiato in sola lettura, e sul server sono stati solo copiati i
 file: niente CPU dell'API, niente riavvio.
+
+## ADR-0198 — La pubblicità fra i post del «Feed»: un annuncio nativo ogni 5 post, niente più annuncio alla ricerca
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-235 ·
+**Supera in parte ADR-0102**: l'annuncio a schermo intero all'inizio di
+ogni ricerca non c'è più; restano AdMob, il consenso di Google, niente
+ATT, niente annunci in Expo Go · il posto (fra i post del Feed, al posto
+dell'annuncio della ricerca), l'annuncio nativo con «Sponsored» e uno ogni
+5 post sono scelte dell'utente; il resto è deciso dall'agente su delega
+dell'utente
+
+**Contesto**: il 2026-10-05 l'utente ha scritto «La pubblicità le mettiamo
+tra i post dei feed». Alla domanda se si aggiunge all'annuncio all'inizio
+di ogni ricerca o lo sostituisce ha scelto **sostituisce**, con la
+proposta che la accompagnava: un annuncio nativo con l'aspetto di un post,
+la scritta «Sponsored», uno ogni 5 post. Il Feed oggi ha 19 post d'esempio
+(ADR-0127, quattro in canoa da ADR-0190); il feed vero è TASK-118.
+
+**Decisione**:
+
+1. **Annunci nativi di AdMob** (`NativeAd`, `NativeAdView`, `NativeAsset`,
+   `NativeMediaView` di `react-native-google-mobile-ads` 17.2, già
+   nell'app): nessun pacchetto e nessuna configurazione nuovi. L'unità da
+   `EXPO_PUBLIC_ADMOB_NATIVE_IOS` / `_ANDROID`; vuote, l'annuncio nativo
+   di prova di Google. Si chiede il media orizzontale
+   (`NativeMediaAspectRatio.LANDSCAPE`).
+2. **Dove** (`feedWithAds`): dopo il 5°, il 10°, … post, solo se sotto c'è
+   un altro post. Nessuno con 5 post o meno, uno con 6–10, tre con i 19
+   d'esempio. Mai in cima, mai in fondo, mai due di fila. Un posto senza
+   annuncio non lascia buchi.
+3. **Quando** (`useFeedAds`): uno alla volta. Il primo si chiede quando il
+   Feed è la pagina sullo schermo, il successivo quando l'utente arriva al
+   posto del precedente (`AD_LOAD_AHEAD`, 5 post). Un posto il cui annuncio
+   non arriva resta vuoto e non si richiede. Un annuncio che arriva quando
+   il post sotto il suo posto è già stato sullo schermo va al primo posto
+   ancora davanti, così i post che l'utente guarda non si spostano; se non
+   ce n'è, si distrugge. Quando il Feed si smonta, i suoi annunci si
+   distruggono.
+4. **Consenso**: lo stesso modulo di Google (UMP, `gatherConsent`), una
+   volta, alla prima richiesta di annuncio: la prima volta che l'utente
+   apre il Feed. Il Feed si costruisce dietro «Draw» all'avvio, ma non
+   chiede niente finché non è la pagina sullo schermo (`active`): niente
+   all'apertura dell'app, come in ADR-0102. Senza `canRequestAds`, niente
+   annunci.
+5. **L'aspetto** (`FeedAd`): largo e arrotondato come un post. In alto,
+   prima di tutto, «Sponsored» grande come il nome di un corridore
+   (`fontSize.body`, colore dei testi), con l'icona quadrata (il corridore
+   ha il cerchio) e il nome dell'inserzionista; poi il media, mai più alto
+   che largo; poi titolo, testo e un pulsante grigio (il giallo è del
+   percorso). Niente iniziale, punteggio, tempi; un tocco apre quello che
+   dice l'annuncio, non la mappa. AdChoices lo mette l'SDK in alto a
+   destra, dove la riga lascia spazio. «Sponsored» nelle cinque lingue.
+6. **Via l'annuncio della ricerca**: `useAdBeforeRoute` e `routeAds` sono
+   tolti; «Draw route» e «Ask for a route» non mostrano più annunci.
+
+**Alternative scartate**: aggiungere gli annunci del Feed a quello della
+ricerca (l'utente ha scelto di sostituirlo); un banner fra i post (si
+vede come la pubblicità di un'altra app; l'utente ha chiesto l'aspetto di
+un post); caricare tutti gli annunci all'apertura del Feed (traffico per
+annunci che nessuno vede); mettere un annuncio arrivato tardi nel suo
+posto anche se è sullo schermo (sposta i post sotto il dito); chiedere il
+consenso all'avvio dell'app (ADR-0102: niente all'apertura).
+
+**Conseguenze**: con i 19 post d'esempio al più tre annunci per visita
+del Feed, meno impressioni di un annuncio a ogni ricerca. In Expo Go
+nessun annuncio, come prima. Per gli annunci veri serve un'unità
+**nativa** in AdMob: TASK-153 parla ancora di un'unità interstitial, e
+`docs/PUBBLICITA.md` (branch di TASK-150) dice ancora «a ogni ricerca»;
+li aggiornano i loro task. Il feed vero (TASK-118) usa la stessa
+`feedWithAds`.

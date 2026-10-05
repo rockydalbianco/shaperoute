@@ -227,6 +227,24 @@ test("a word chosen before «Paddle» is not sent: the shape is, at 2 km", async
   ]);
 });
 
+test("a shape in pieces is asked piece by piece on the water, by itself", async () => {
+  apiAnswers(waterDone);
+  await atRiccione();
+  await fireEvent.changeText(screen.getByLabelText("Shape"), "cat");
+  // The pen goes up by itself on the water (TASK-226): nothing to switch.
+  expect(screen.queryByRole("switch")).toBeNull();
+  await draw();
+  expect(routeBodies()).toEqual([
+    {
+      start: RICCIONE,
+      shape: "cat",
+      pen_up: true,
+      distance_m: 2000,
+      activity: "paddling",
+    },
+  ]);
+});
+
 test("no water near the start says so, in the water's words", async () => {
   apiAnswers({
     job_id: "4f2c9e1a",

@@ -7,6 +7,8 @@ import {
   PADDLE_EXAMPLES,
 } from "../explore/exampleRoutes";
 import { metresBetween } from "../map/coordinates";
+import { apartOnWater } from "../route/penUpShapes";
+import { walksOf } from "../route/walks";
 import { asPlace, WATER_PLACES } from "./waterPlaces";
 
 /**
@@ -45,6 +47,7 @@ test.each(WATER_PLACES.map((place) => [place.name, place] as const))(
         distance_m: detail.route_m,
         similarity: detail.similarity,
         alternatives: [],
+        ...(detail.walks !== undefined ? { walks: detail.walks } : {}),
       } as unknown as RouteResult;
       expect(
         asRecommended(asPlace(place), shape, drawn, PADDLE_EXAMPLES).detail,
@@ -63,6 +66,31 @@ test.each(WATER_PLACES.map((place) => [place.name, place] as const))(
       // The engine starts within 2 km of the point asked (water_fit).
       expect(metresBetween(place.point, points[0])).toBeLessThan(2000);
       expect(detail.similarity).toBe(1);
+    }
+  },
+);
+
+test.each(WATER_PLACES.map((place) => [place.name, place] as const))(
+  "%s: the shapes in pieces are drawn piece by piece, the others in one line",
+  (_, place) => {
+    for (const detail of bundled[examplesKey(place.point, PADDLE_EXAMPLES)]) {
+      const shape = detail.shape as (typeof shapes)[number];
+      // As «Draw» asks for the shape on the water (TASK-226): the heads
+      // have their eyes apart, and the stretches with the pen up say so.
+      expect(detail.walks !== undefined).toBe(apartOnWater(shape));
+      if (detail.walks === undefined) {
+        continue;
+      }
+      // To each eye and back to the outline, each a straight stretch.
+      expect(detail.walks).toHaveLength(3);
+      expect(walksOf(detail.points, detail.walks)).toEqual(detail.walks);
+      expect(detail.walks.every(([from, to]) => to === from + 1)).toBe(true);
+      const up = detail.walks.reduce(
+        (sum, [from, to]) =>
+          sum + metresBetween(detail.points[from], detail.points[to]),
+        0,
+      );
+      expect(up).toBeLessThan(0.07 * detail.route_m);
     }
   },
 );

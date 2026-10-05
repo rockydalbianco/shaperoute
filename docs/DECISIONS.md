@@ -8955,7 +8955,8 @@ parole) e l'app: la parte B di TASK-223.
 delega dell'utente**). Le quattro forme sono il «sì» dell'utente sui
 campioni; la penna alzata accesa di partenza e la frase della voce sono le
 proposte del task file, applicate sul «continua e pubblica» dell'utente e
-da confermare sul telefono.
+da confermare sul telefono. **Confermate dall'utente** il 2026-10-05
+(«confermo le frasi della voce e la penna accesa»).
 
 8. **Nel catalogo** faccina (`smiley`), fantasmino (`ghost`), ciambella
    (`donut`) e sole (`sun`), in coda a `SHAPES` e al contratto.
@@ -8981,6 +8982,11 @@ da confermare sul telefono.
    le chiavi sono il testo inglese (ADR-0172) e «Sun» è già la domenica.
 14. **I preferiti** tengono i tratti a piedi anche di una forma di
    `PEN_UP_SHAPES`, e la riaprono chiesta con la penna alzata.
+
+**Aggiornamento** (2026-10-05, ADR-0188, TASK-226): la penna alzata delle
+forme a pezzi vale anche sull'acqua, e lì i tratti sono uno in più (il
+ritorno al contorno): al più 9, non 8. I punti 9–11 qui sopra dicono
+com'era prima.
 
 ## ADR-0184 — Il cuore su giallo, segno di Sgrava: il cuore dell'avvio, fermo, in un quadrato giallo, un componente solo
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
@@ -9470,13 +9476,14 @@ peggio del precedente, e fra tre proposte ha scelto quella con i secondi.
 4. **In bici**, ogni `RIDE_KM_EVERY` km da 20 km: gli ultimi 10 km contro
    i 10 prima, in km/h, senza numeri. «Stessa velocità» entro 0,5 km/h
    (`SAME_SPEED_KMH`): su 10 km a 24 km/h sono circa 30 secondi, sotto non
-   è una differenza che si sente pedalando. L'utente non l'ha chiesto: da
-   confermare, frase e soglia.
+   è una differenza che si sente pedalando. L'utente non l'aveva chiesto:
+   frase e soglia **confermate dall'utente** il 2026-10-05.
 5. **«km» detto per intero** nelle frasi della bici («Ultimi 10 chilometri
    più veloci dei 10 precedenti.»): l'utente le ha scritte con «km», ma la
    voce del telefono può leggere male le sigle (ADR-0179, «km/h») e la
    frase dei km dice già «chilometri». All'orecchio è la stessa frase.
-6. **Tedesco, spagnolo e francese** scritti dall'agente, da confermare.
+6. **Tedesco, spagnolo e francese** scritti dall'agente, **confermati
+   dall'utente** il 2026-10-05.
    Spagnolo e francese dicono «più veloce / più lento» («más rápido», «plus
    rapide»): «mejor / mieux» con i secondi suona tradotto.
 
@@ -9498,6 +9505,64 @@ peggio del precedente, e fra tre proposte ha scelto quella con i secondi.
 - `rideRun.test.ts` (TASK-216) ha la riga nuova a 20 km e, per la corsa,
   «Same pace as the last kilometre.» al secondo km.
 - Solo app: esce con la prossima pubblicazione, con l'ok dell'utente.
+
+## ADR-0188 — Gli occhi staccati sull'acqua: i pezzi piazzati col contorno, lasciato dove sono più vicini, e la distanza di tutto il percorso
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-226 · le forme
+(tutte quelle a pezzi tranne il sole) e la penna alzata automatica sono
+scelte dell'utente; il resto è deciso dall'agente su delega dell'utente
+
+**Contesto**: sull'acqua una forma a pezzi (ADR-0185) si disegnava in una
+linea sola, con gli occhi attaccati al contorno da un collegamento
+percorso due volte, e `pen_up` con `paddling` era rifiutato. L'utente ha
+chiesto gli occhi senza linee di collegamento, con il disegno in pausa da
+solo fra un pezzo e l'altro. Sull'acqua non c'è una rete: i pezzi non si
+spostano «dove ci sono le strade», come fanno su strada (`pieces.compose`).
+
+**Decisione**:
+
+1. **Contorno e pezzi si piazzano insieme, rigidi.** Stessa scala, stessa
+   rotazione, stesso centro; tutti nella fascia (ADR-0154), compresi i
+   tratti a penna alzata. Un pezzo su un'isola o troppo vicino a un
+   ostacolo scarta il piazzamento.
+2. **Il contorno si lascia dove i pezzi sono più vicini**: al vertice da
+   cui la penna resta alzata di meno, calcolato una volta sulla forma. Lì
+   il percorso va al pezzo più vicino, poi al successivo, e dopo l'ultimo
+   torna allo stesso vertice; poi il contorno prosegue. I `walks` sono
+   quei tratti, dritti: uno per pezzo più il ritorno.
+3. **La distanza chiesta è quella di tutto il percorso**, tratti a penna
+   alzata compresi, come lo sono già i tratti dalla riva. Alla grandezza
+   intera contorno, pezzi e tratti a penna alzata sono lunghi insieme
+   quanto la distanza: la ricerca di ADR-0161 resta la stessa.
+4. **`pen_up` vale con `paddling`** per le forme a pezzi; senza, il
+   percorso è quello di prima, punto per punto. Quali forme l'app chiede
+   così è una scelta dell'utente, nell'app (parte B): tutte tranne il
+   sole.
+5. **`MAX_WALKS` dell'API sale a 9**: sull'acqua c'è anche il ritorno al
+   contorno.
+
+**Alternative scartate**:
+
+- **Andare ai pezzi da dove la riva tocca il contorno**, come su strada si
+  parte dalla fine del contorno. Provato: al mare il punto della riva è
+  spesso dal lato opposto agli occhi, e il pesce aveva 534 m a penna
+  alzata su 2 km, con la forma al 55%. La lunghezza dei tratti dipendeva
+  anche dal punto della riva, e i limiti della ricerca non valevano più.
+- **La distanza del solo disegno**, come su strada: sull'acqua i limiti di
+  1–5 km sono di sicurezza, e i tratti a penna alzata si pagaiano.
+- **Un tratto di andata e ritorno per ogni pezzo**, dal punto del contorno
+  più vicino a ciascuno: più pause, per pochi metri in meno.
+
+**Conseguenze**:
+
+- La penna alzata sull'acqua costa 64–112 m su 2 km per pesce e teste,
+  185–354 m per zucca, ciambella, fantasmino, gatto e faccina; il sole
+  726–876 m in 9 tratti, e per questo l'utente lo tiene a penna giù.
+- L'impronta del motore cambia: `draw_examples` dopo l'aggiornamento del
+  server, lo zip del telefono e l'impronta degli esempi della canoa
+  nell'app (ADR-0189) rifatti.
+- Un server senza questa parte rifiuta `pen_up` con `paddling`: l'app che
+  lo chiede (parte B) si pubblica dopo l'aggiornamento del server.
 
 ## ADR-0196 — «Explore» della canoa come la corsa: l'elenco dei laghi dentro l'app, il più vicino per primo, forme più corte sui laghi piccoli
 

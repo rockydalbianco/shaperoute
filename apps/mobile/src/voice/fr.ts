@@ -66,6 +66,8 @@ export const FR: Phrasebook = {
   partDown: "Stylo baissé : dessinez la partie suivante.",
   rideToPart:
     "Partie terminée. Roulez jusqu'à la partie suivante : le dessin est en pause.",
+  paddleToPart:
+    "Partie terminée. Pagayez jusqu'à la partie suivante : le dessin est en pause.",
   hours: (count) => units(count, "une heure", "heures"),
   minutes: (count) => units(count, "une minute", "minutes"),
   seconds: (count) => units(count, "une seconde", "secondes"),

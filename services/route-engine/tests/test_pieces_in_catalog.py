@@ -6,7 +6,6 @@ import pytest
 from test_pieces import TRENTO, _Source
 
 from route_engine.models import (
-    PEN_UP_ON_WATER,
     PEN_UP_WITHOUT_PIECES,
     InvalidRequestError,
     RouteRequest,
@@ -40,12 +39,13 @@ def test_a_shape_without_pieces_is_refused_with_the_pen_up(shape: str) -> None:
         compose_shape(shape)
 
 
-def test_on_the_water_a_shape_in_pieces_is_drawn_with_the_pen_down() -> None:
-    # Its pieces are not placed on the water yet (TASK-226).
+def test_on_the_water_a_shape_in_pieces_may_have_the_pen_up_too() -> None:
+    # Its pieces are placed on the water as well (TASK-226, test_water_pieces).
     on_water = {"start": TRENTO, "shape": "donut", "distance_m": 3000}
-    with pytest.raises(InvalidRequestError, match=PEN_UP_ON_WATER):
-        RouteRequest(**on_water, activity="paddling", pen_up=True)  # type: ignore[arg-type]
-    assert RouteRequest(**on_water, activity="paddling")  # type: ignore[arg-type]
+    assert RouteRequest(**on_water, activity="paddling", pen_up=True).pen_up  # type: ignore[arg-type]
+    assert not RouteRequest(**on_water, activity="paddling").pen_up  # type: ignore[arg-type]
+    with pytest.raises(InvalidRequestError, match=PEN_UP_WITHOUT_PIECES):
+        RouteRequest(**{**on_water, "shape": "heart"}, activity="paddling", pen_up=True)  # type: ignore[arg-type]
 
 
 def test_the_shapes_in_pieces_have_their_pieces() -> None:

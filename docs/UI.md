@@ -914,19 +914,24 @@ sulle strade:
 - «ring», «round», «anello» e «tondo» restano del cerchio: «ciambella» e
   «donut» sono la ciambella (TASK-223). Nelle cinque lingue i nomi sono
   «Smiley», «Ghost», «Donut», «The sun» (`shapeNames.ts`; «Sun» è già la
-  domenica) · «Faccina», «Fantasmino», «Ciambella», «Sole» (**da
-  confermare con l'utente**; tedesco, spagnolo e francese da confermare).
-- **Faccina, fantasmino e ciambella** (TASK-223, ADR-0185) hanno sotto il
-  campo l'interruttore **«Lift the pen between parts»**, lo stesso stato di
-  quello delle parole, acceso all'avvio: acceso, la richiesta ha `pen_up:
-  true` e la forma si disegna un pezzo alla volta, a piedi fra l'uno e
-  l'altro (`API.md`, «La penna alzata»). Il sole si disegna con la penna
-  giù, scelta sui campioni, e non ha l'interruttore; sull'acqua nessuna
-  forma lo ha. Il percorso mostra «6.0 km of drawing + 0.4 km walking
+  domenica) · «Faccina», «Fantasmino», «Ciambella», «Sole» (**confermati
+  dall'utente** il 2026-10-05; tedesco, spagnolo e francese da confermare).
+- **Faccina, fantasmino e ciambella** (TASK-223, ADR-0185), e **gatto,
+  pesce, testa di cane, testa di coniglio e zucca** con gli occhi staccati
+  (scelta dell'utente sui campioni, 2026-10-05; nell'app con TASK-226),
+  hanno sotto il campo l'interruttore **«Lift the pen between parts»**, lo
+  stesso stato di quello delle parole, acceso all'avvio (confermato
+  dall'utente il 2026-10-05): acceso, la richiesta ha `pen_up: true` e la
+  forma si disegna un pezzo alla volta, a piedi fra l'uno e l'altro
+  (`API.md`, «La penna alzata»). Il sole si disegna con la penna giù,
+  scelta sui campioni, e non ha l'interruttore. **Sull'acqua
+  l'interruttore non c'è**: lì la penna si alza da sola («Sull'acqua:
+  «Paddle»», sotto). Il percorso mostra «6.0 km of drawing + 0.4 km walking
   between the parts» · «6,0 km di disegno + 0,4 km a piedi fra una parte e
   l'altra» («riding» · «in bici» in bici), attraverso `t()`. Testi nuovi:
-  «Lift the pen between parts» e le due righe dei km **da confermare con
-  l'utente**; le righe in tedesco, spagnolo e francese da confermare.
+  «Lift the pen between parts» e le due righe dei km **confermati
+  dall'utente** il 2026-10-05; le righe in tedesco, spagnolo e francese da
+  confermare.
 - Nel campo vuoto il suggerimento è «heart, star, horse…». Il campo
   accetta al massimo 60 caratteri.
 
@@ -1344,8 +1349,15 @@ TASK-164, di cui tiene i numeri.
   part.» · «Parte finita. Cammina fino alla parte successiva: il disegno è
   in pausa.» e «Giù la penna: disegna la parte successiva.»; in bici «Ride
   to the next part» · «Pedala fino alla parte successiva». Inglese e
-  italiano **da confermare con l'utente**; tedesco, spagnolo e francese da
-  confermare (`src/voice/`).
+  italiano **confermati dall'utente** il 2026-10-05; tedesco, spagnolo e
+  francese da confermare (`src/voice/`). **In canoa** (TASK-226) «Part
+  done. Paddle to the next part: the drawing is paused.» · «Parte finita.
+  Pagaia fino alla parte successiva: il disegno è in pausa.», e la penna
+  scende 5 m prima della parte invece di 20 (`PEN_DOWN_ON_WATER_M`):
+  sull'acqua i tratti a penna alzata sono di poche decine di metri, e
+  quello che si registra prima della parte è proprio il collegamento da
+  non disegnare. La frase della canoa è **da confermare con l'utente**, in
+  tutte e cinque le lingue.
   - **Perché 20 m, e lungo il percorso**: una posizione che la corsa tiene
     sbaglia fino a 40 m (`POOR_FIX_M`), in città 10–20 m. Ripartendo 20 m
     prima della lettera, anche una posizione in ritardo fa partire la
@@ -1419,7 +1431,7 @@ corsa, e un percorso senza attività, restano come prima, parola per parola.
   precedenti.» / «… più lenti …». Entro 0,5 km/h (compresi): «The last 10
   kilometres were at the same speed as the 10 before.» · «Ultimi 10
   chilometri alla stessa velocità dei 10 precedenti.» (proposta
-  dell'agente, **da confermare**: l'utente non l'ha chiesto). «km» è detto
+  dell'agente, frase e soglia **confermate dall'utente** il 2026-10-05). «km» è detto
   per intero, come nella frase dei km. Le pause non contano.
 - **Le svolte 100 m prima** (`RIDE_ANNOUNCE_M`), con la distanza detta
   («In 100 metres, turn left onto Via Roma»), e così i tratti con la bici a
@@ -1571,10 +1583,11 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   anche quelle della bici a mano (TASK-206) in tedesco, spagnolo e francese,
   con «Includes … walking the bike.», e i testi della penna alzata
   (TASK-198). Restano da confermare le frasi nuove della bici (TASK-216) in
-  tedesco, spagnolo e francese, quelle dei pezzi di una forma (TASK-223)
-  in tutte e cinque le lingue, e quelle del confronto dei km (TASK-217) in
-  tedesco, spagnolo e francese, con «stessa velocità» in bici in tutte e
-  cinque. Le parole del foglio («App
+  tedesco, spagnolo e francese, e quelle dei pezzi di una forma (TASK-223)
+  in tedesco, spagnolo e francese (inglese e italiano confermati il
+  2026-10-05). Quelle del confronto dei km (TASK-217), con «stessa
+  velocità» in bici, sono **confermate dall'utente** il 2026-10-05 in tutte
+  e cinque le lingue. Le parole del foglio («App
   language», «Language», «Voice», «Default», «Listen», «Done») sono in
   inglese come il resto dello schermo: le traduce TASK-210.
 
@@ -1845,6 +1858,26 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     mappa come un percorso di «Explore», con «Start», «Export GPX» e il
     cuore dei preferiti, che la tiene come canoa. La scelta resta quando si
     torna dalla mappa.
+- **I pezzi staccati sull'acqua** (TASK-226, ADR-0188; scelta dell'utente
+  sui campioni): con «Paddle» gatto, pesce, testa di cane, testa di
+  coniglio, zucca, faccina, fantasmino e ciambella si chiedono **sempre**
+  con `pen_up: true`, senza interruttore; il sole e le forme in una linea
+  come prima.
+  - **Il percorso**: lascia il contorno vicino ai pezzi, li disegna uno
+    per volta e torna. Sulla mappa i tratti a penna alzata sono
+    tratteggiati, come fra le lettere. Sotto il percorso: «1.9 km of
+    drawing + 0.1 km paddling between the parts» · «1,9 km di disegno +
+    0,1 km pagaiando fra una parte e l'altra».
+  - **Correndo**: a ogni tratto il disegno va in pausa da solo e riprende
+    alla parte successiva, con la voce («La navigazione», «La penna
+    alzata»).
+  - **In «Explore»**: le teste di cane e di coniglio hanno gli occhi
+    staccati, anche nei quattro luoghi dentro l'app, e la scheda non
+    disegna i tratti a penna alzata. Un esempio di «Near me» tenuto prima,
+    in una linea sola, si ridisegna.
+  - Testi nuovi **da confermare con l'utente**: la frase della voce e la
+    riga dei km, in inglese e in italiano; tedesco, spagnolo e francese da
+    confermare.
 - **I laghi sul server**: il server ha l'acqua solo dei quattro luoghi
   (`data/cache/water/`, TASK-225); altrove la scarica da Overpass, se
   risponde, e la prima volta ci mette minuti, altrimenti «Map data for this
@@ -1905,7 +1938,7 @@ e della fine corsa (`splits`), interi e con le pause escluse; da un minuto
 in su detti come un tempo («1 minute 15 seconds faster…»). Una corsa che
 riprende non ridice i confronti già detti. Al quinto km viene dopo
 l'incitamento, che chiude la frase del km. Tedesco, spagnolo e francese
-scritti dall'agente, **da confermare**: «12 Sekunden schneller als der
+scritti dall'agente e **confermati dall'utente** il 2026-10-05: «12 Sekunden schneller als der
 letzte Kilometer.» / «… langsamer …» / «Gleiches Tempo wie der letzte
 Kilometer.»; «Este kilómetro: 12 segundos más rápido que el anterior.» /
 «… más lento …» / «Mismo ritmo que el kilómetro anterior.»; «Ce

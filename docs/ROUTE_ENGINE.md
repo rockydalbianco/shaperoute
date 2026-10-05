@@ -370,10 +370,10 @@ vale per una parola e per una forma del catalogo che ha pezzi o tratti
 staccabili (`shapes.in_pieces`): le quattro sopra e gatto, pesce, teste di
 cane e coniglio, zucca. `plan_route` e `ShapeJob.of_request` la scrivono con
 `pieces.compose_shape`, il risultato tiene `shape` e ha i `walks`. Una forma
-senza pezzi si rifiuta (`… or the pieces of a shape; heart has none`), e
-così sull'acqua (`on the water a shape is drawn with the pen down`): lì i
-pezzi non si piazzano ancora (TASK-226). Con la penna giù una forma a pezzi
-è una linea chiusa come le altre.
+senza pezzi si rifiuta (`… or the pieces of a shape; heart has none`).
+Sull'acqua la penna alzata vale da TASK-226 (§8, «Una forma a pezzi
+sull'acqua»): i pezzi si piazzano col contorno, senza `pieces.compose`. Con
+la penna giù una forma a pezzi è una linea chiusa come le altre.
 
 ### Il contorno da un'immagine (TASK-072, TASK-084)
 
@@ -1209,6 +1209,29 @@ forma del catalogo: una parola, un'immagine o un contorno da file sono
 `InvalidRequestError` («on the water only a shape of the catalogue is
 drawn, not a word»).
 
+**Una forma a pezzi sull'acqua** (TASK-226, ADR-0188): con la penna alzata
+(`pen_up` nella richiesta, §2 «Pezzi staccati dal contorno») il contorno e
+i pezzi, per esempio gli occhi di un gatto, si piazzano insieme, tutti
+nella fascia, e ogni pezzo si disegna da solo.
+
+- **Dove si lascia il contorno**: al vertice da cui la penna resta alzata
+  di meno (`water_fit._branch`), cioè vicino ai pezzi, non dove la riva
+  tocca il contorno. Per il pesce sono 64–76 m su 2 km; partendo dal punto
+  della riva erano 534 m.
+- **Il giro dei pezzi** (`_tour`): da quel vertice al pezzo più vicino,
+  entrando dal suo punto più vicino; poi al successivo più vicino; dopo
+  l'ultimo si torna al vertice, e il contorno prosegue.
+- **I tratti a penna alzata** sono dritti, stanno nella fascia come i
+  pezzi, e sono i `walks` del risultato: uno per pezzo più il ritorno.
+- **La distanza chiesta è quella di tutto il percorso**: contorno, pezzi,
+  tratti a penna alzata e tratti dalla riva. Su strada la distanza di una
+  forma a pezzi è quella del disegno; sull'acqua si pagaia quello che si è
+  chiesto. Alla grandezza intera contorno, pezzi e tratti a penna alzata
+  sono lunghi insieme quanto la distanza, quindi la scala è quella di una
+  forma in una linea sola (0,79 al mare e 0,94 sui laghi a 2 km).
+- **Con la penna giù niente cambia**: le forme a pezzi restano una linea
+  sola, punto per punto come prima (`tests/test_water_pieces.py`).
+
 **La validazione sull'acqua** (`validation.check_on_water`, da
 `water_fit.measure`): il percorso è chiuso, nessun metro sulla terra (oltre
 mezzo metro dentro: il tratto parte dal bordo dell'acqua), nessun punto
@@ -1228,7 +1251,15 @@ python -m route_engine --shape heart --distance 2000 \
 Stampa la scala e la rotazione, la partenza sulla riva e il suo tipo, il
 tratto, la distanza, quanto la forma sta lontana dalla terra e quanto il
 percorso si allontana dalla riva. `--score-track` vale anche sull'acqua;
-`--nearby` e `--no-optimize` sono delle strade e si rifiutano.
+`--nearby` e `--no-optimize` sono delle strade e si rifiutano. Con
+`--pen-up` e una forma a pezzi stampa anche i tratti a penna alzata, e il
+GPX li segna con `Pause` e `Resume`:
+
+```
+python -m route_engine --shape cat --distance 2000 --pen-up \
+    --start 45.8132,9.0803 --activity paddling --out cat_como.gpx
+```
+
 `python -m route_engine.water` resta per i campioni, dalle fixture o dalle
 risposte dell'API di OSM:
 

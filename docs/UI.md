@@ -1242,6 +1242,20 @@ distanza, avvisi, «Start» e «Export GPX» sono i suoi. Durante la corsa le
 linee grigie spariscono. Un nuovo risultato riparte da A. Con un percorso
 solo, niente tessere, come prima.
 
+**Dove la forma viene meglio** (TASK-234, ADR-0197, scelta dell'utente):
+quando l'API manda `better_distance_m`, sotto le tessere c'è una riga
+grigia come un avviso da sapere, «This shape comes out better at about 8
+km.» («This word…» per una parola, «This outline…» per un'immagine), con
+il pulsante «Try 8 km», che scrive la distanza e ridisegna come quello di
+ADR-0041. La riga è della richiesta: resta con qualunque tessera
+selezionata. Non c'è sull'acqua, né per una distanza fuori da quelle di
+«Draw» (oltre 21 km a piedi, fuori da 10–30 in bici) o uguale a quella
+chiesta; e dopo un «Try» non propone di tornare alla distanza appena
+lasciata, per lo stesso disegno dalla stessa partenza. «This shape» e non
+«This heart»: il nome della forma cambierebbe genere nelle altre lingue
+(«Questa forma viene meglio a circa 8 km.»). Testi nelle cinque lingue
+(`src/route/betterDistance.ts`).
+
 Gli avvisi sono **in parole semplici** (TASK-054, ADR-0048): l'app
 riconosce i testi che il motore scrive e li riscrive brevi, con una
 striscia arancio (`warning`) per quelli a cui fare attenzione (scale,

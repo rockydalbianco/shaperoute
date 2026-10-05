@@ -332,6 +332,15 @@ export const ES: Table = {
   "{name} · on the water · target {km} km": "{name} · en el agua · objetivo {km} km",
   "{name} · on roads · target {km} km": "{name} · por carretera · objetivo {km} km",
 
+  // src/route/betterDistance.ts
+  "This shape comes out better at about {km} km.":
+    "Esta forma sale mejor a unos {km} km.",
+  "This word comes out better at about {km} km.":
+    "Esta palabra sale mejor a unos {km} km.",
+  "This outline comes out better at about {km} km.":
+    "Este contorno sale mejor a unos {km} km.",
+  "Try {km} km": "Probar {km} km",
+
   // src/route/problems.ts
   "There is no lake or sea near this start. Start from the shore, within 2 km of the water.":
     "No hay ningún lago ni mar cerca de esta salida. Sal desde la orilla, a menos de 2 km del agua.",

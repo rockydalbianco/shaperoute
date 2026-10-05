@@ -9346,6 +9346,32 @@ quindi l'ok dell'utente per il server. I post di esempio del «Feed»
 restano senza reazioni; il feed vero (TASK-118) userà gli stessi
 endpoint. Bloccare (TASK-121) dovrà tenere conto anche delle reazioni.
 
+**Parte B, l'app** (2026-10-05, deciso dall'agente su delega dell'utente,
+TASK-119):
+
+10. **Il doppio tocco lo riconosce la pagina della mappa** dai tocchi di
+    un dito (`touchstart`/`touchend` sul contenitore di MapLibre, ascolto
+    passivo): due tocchi sotto i 300 ms, entro 350 ms e 40 px. Solo quando
+    l'app lo chiede (`setDoubleTap`), e allora `doubleClickZoom` di
+    MapLibre è spento; gli ascolti si mettono alla prima richiesta, così
+    altrove la pagina è byte per byte quella di prima. Non l'evento
+    `dblclick`: su iOS con le dita non arriva in modo affidabile.
+11. **La mappa non sa delle reazioni**: `MapView` ha solo `onDoubleTap`, e
+    `App.tsx` lo collega a `drawingDoubleTapped()` di `DrawingReactions`
+    (una lista di ascoltatori nel modulo, come `showSavedLogo` di
+    ADR-0174), senza stato nuovo in `App.tsx`.
+12. **Le emoji sono ottimiste, una per volta**; a un rifiuto torna
+    l'ultima risposta dell'API. Se le reazioni non si leggono (qualsiasi
+    motivo) la riga non c'è: non valgono un «Try again» nella scheda.
+13. **Dopo un super like i commenti si richiedono** (il pulsante si
+    rimonta), invece di uno stato condiviso fra reazioni e commenti.
+14. **Il cuore grande sta nei `Modal`** (nel foglio, sopra; da solo per
+    0,9 s): niente da posare sulla mappa in `App.tsx`. L'animazione del
+    cuore è in JS: con `useNativeDriver` dentro il `Modal` restava
+    invisibile (visto nel simulatore, iOS 27, nuova architettura).
+15. **Per VoiceOver il totale si dice «7 reactions»**: un testo in più
+    rispetto alla proposta del task file.
+
 ## ADR-0194 — Il post di una corsa: un'immagine fatta dall'app, Instagram dal foglio di condivisione, Strava come testo
 
 **Data**: 2026-10-04 · **Stato**: Accettato · **Task**: TASK-231 · il
@@ -9420,6 +9446,63 @@ dall'agente su delega dell'utente):
    permesso in più per leggere.
 9. **Nell'app** «Update on Strava» compare su una corsa già là solo se il
    post ha un testo.
+
+## ADR-0180 — Il confronto dei km nella voce: i secondi della fine corsa, una frase a parte, in bici ogni 10 km senza numeri
+**Stato**: Attiva · 2026-10-05 · **scelte dell'utente** (2026-10-03) la
+frase a ogni km con i secondi, «stesso passo» entro 2 s, niente al primo
+km, in bici ogni 10 km e senza numeri; il resto **deciso dall'agente su
+delega dell'utente** (TASK-217).
+
+**Contesto**: a ogni km la voce diceva il tempo e il passo medio della
+corsa. L'utente ha chiesto di sentire anche se il km è andato meglio o
+peggio del precedente, e fra tre proposte ha scelto quella con i secondi.
+
+**Decisione**:
+
+1. **Gli stessi secondi della fine corsa.** La differenza viene da
+   `splits` (`runMetrics.ts`), il calcolo della colonna «Change» di «Data»
+   e del riepilogo: il tempo di ogni km dalla traccia, pause escluse,
+   arrotondato al secondo come `changeLabel`. La voce e lo schermo non
+   possono dire due numeri diversi. Il limite dei 2 s (compresi) si guarda
+   sul numero arrotondato, quello che si sentirebbe.
+2. **Una frase a parte, dopo quella del km** (`kmCompare.ts`, un file
+   nuovo: `freeRun.ts`, `runMetrics.ts` e `ride.ts` restano com'erano). La
+   frase del km non cambia di una parola; al quinto km il confronto viene
+   dopo «Daje, avanti tutta!», che è la coda della frase del km (TASK-209).
+3. **Da un minuto in su la differenza è detta come un tempo** («1 minute
+   15 seconds faster…»), con `time` del `Phrasebook`: «75 secondi» non lo
+   dice nessuno. Sotto il minuto è la frase scelta dall'utente.
+4. **In bici**, ogni `RIDE_KM_EVERY` km da 20 km: gli ultimi 10 km contro
+   i 10 prima, in km/h, senza numeri. «Stessa velocità» entro 0,5 km/h
+   (`SAME_SPEED_KMH`): su 10 km a 24 km/h sono circa 30 secondi, sotto non
+   è una differenza che si sente pedalando. L'utente non l'ha chiesto: da
+   confermare, frase e soglia.
+5. **«km» detto per intero** nelle frasi della bici («Ultimi 10 chilometri
+   più veloci dei 10 precedenti.»): l'utente le ha scritte con «km», ma la
+   voce del telefono può leggere male le sigle (ADR-0179, «km/h») e la
+   frase dei km dice già «chilometri». All'orecchio è la stessa frase.
+6. **Tedesco, spagnolo e francese** scritti dall'agente, da confermare.
+   Spagnolo e francese dicono «più veloce / più lento» («más rápido», «plus
+   rapide»): «mejor / mieux» con i secondi suona tradotto.
+
+**Alternative scartate**:
+
+- Allungare la frase del km con il confronto: cambiava una frase
+  approvata (TASK-209) e i test che la fissano parola per parola.
+- Calcolare la differenza dai tempi detti a voce (il tempo totale a ogni
+  km): contiene le pause automatiche solo in parte e non è il numero di
+  «Data».
+- Il confronto in bici con i km/h («2 km/h più veloci»): l'utente ha
+  scelto senza numeri.
+
+**Conseguenze**:
+
+- Le forme con le miglia («Questo miglio: …», «… than the last mile.») le
+  aggiunge TASK-182 con il resto della voce in miglia; lì si decide anche
+  l'intervallo della bici in miglia.
+- `rideRun.test.ts` (TASK-216) ha la riga nuova a 20 km e, per la corsa,
+  «Same pace as the last kilometre.» al secondo km.
+- Solo app: esce con la prossima pubblicazione, con l'ok dell'utente.
 
 ## ADR-0188 — Gli occhi staccati sull'acqua: i pezzi piazzati col contorno, lasciato dove sono più vicini, e la distanza di tutto il percorso
 

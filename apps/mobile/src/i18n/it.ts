@@ -116,6 +116,11 @@ export const IT: Table = {
   "The comments of this drawing are not available.":
     "I commenti di questo disegno non sono disponibili.",
 
+  // src/api/reactions.ts
+  "At least 2 characters": "Almeno 2 caratteri",
+  "Your reaction wasn't saved. Check the connection.":
+    "La tua reazione non è stata salvata. Controlla la connessione.",
+
   // src/api/strava.ts
   "No connection. Try again when you are online.":
     "Nessuna connessione. Riprova quando sei online.",
@@ -427,6 +432,12 @@ export const IT: Table = {
   "{name}, {ago}: {text}": "{name}, {ago}: {text}",
   "Touch and hold to delete.": "Tieni premuto per eliminare.",
 
+  // src/social/DrawingReactions.tsx
+  React: "Reagisci",
+  "Your reaction: {name}": "La tua reazione: {name}",
+  "{count} reaction": "{count} reazione",
+  "{count} reactions": "{count} reazioni",
+
   // src/social/DrawingsGrid.tsx
   Drawings: "Disegni",
   "No public drawings yet. Make a run public in My activities.":
@@ -434,6 +445,20 @@ export const IT: Table = {
   "No drawings yet.": "Ancora nessun disegno.",
   "{title}, score {score} out of 100, open on the map":
     "{title}, punteggio {score} su 100, apri sulla mappa",
+
+  // src/social/SuperLikeSheet.tsx
+  "Super like": "Super like",
+  "Write a comment to send your super like":
+    "Scrivi un commento per inviare il tuo super like",
+  Send: "Invia",
+
+  // src/social/reactionKinds.ts
+  "Sgrava heart, super like": "Cuore di Sgrava, super like",
+  Fire: "Fuoco",
+  Clap: "Applauso",
+  Strong: "Forza",
+  Laugh: "Risata",
+  Wow: "Wow",
 
   // src/social/commentText.ts
   "You can't write negative comments in this app. Try another app.":

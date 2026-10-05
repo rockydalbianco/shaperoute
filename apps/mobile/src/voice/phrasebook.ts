@@ -81,6 +81,17 @@ export type Phrasebook = {
   kilometre(km: number, time: string, pace: string): string;
   /** Said after the kilometre CHEER_KM: «Daje, avanti tutta!». */
   cheer: string;
+  /** After each kilometre from the second (TASK-217): the kilometre against
+   * the one before, `by` a time already said ("12 seconds"), or at the same
+   * pace. */
+  kmFaster(by: string): string;
+  kmSlower(by: string): string;
+  kmSamePace: string;
+  /** The same on a bike, the last `km` kilometres against the `km` before,
+   * in speed and with no numbers (TASK-217). */
+  rideFaster(km: number): string;
+  rideSlower(km: number): string;
+  rideSameSpeed(km: number): string;
   /** Every RIDE_KM_EVERY kilometres on a bike (TASK-216), with the time so
    * far, already said as a time, and the average speed in whole km/h. */
   rideKilometres(km: number, time: string, speed: number): string;
@@ -109,6 +120,17 @@ export type VoiceWords = {
   /** "1 kilometre. Time: … Average pace: … per kilometre."; the kilometre
    * CHEER_KM ends with the cheer. */
   kilometre(km: number, ms: number, paceMs: number): string;
+  /** "12 seconds faster than the last kilometre.", "8 seconds slower…",
+   * "Same pace as the last kilometre." (TASK-217): `seconds` whole, said
+   * as a time once they are a minute. */
+  kmFaster(seconds: number): string;
+  kmSlower(seconds: number): string;
+  kmSamePace: string;
+  /** "The last 10 kilometres were faster than the 10 before.", on a bike
+   * (TASK-217). */
+  rideFaster(km: number): string;
+  rideSlower(km: number): string;
+  rideSameSpeed(km: number): string;
   offRoute: string;
   backOnRoute: string;
   arrived: string;
@@ -199,6 +221,12 @@ export function voiceWords(book: Phrasebook): VoiceWords {
       const said = book.kilometre(km, time(ms), time(paceMs));
       return km === CHEER_KM ? `${said} ${book.cheer}` : said;
     },
+    kmFaster: (seconds) => book.kmFaster(time(seconds * 1000)),
+    kmSlower: (seconds) => book.kmSlower(time(seconds * 1000)),
+    kmSamePace: book.kmSamePace,
+    rideFaster: book.rideFaster,
+    rideSlower: book.rideSlower,
+    rideSameSpeed: book.rideSameSpeed,
     offRoute: book.offRoute,
     backOnRoute: book.backOnRoute,
     arrived: book.arrived,

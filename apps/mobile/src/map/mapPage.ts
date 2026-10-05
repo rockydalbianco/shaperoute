@@ -81,6 +81,15 @@ export const ON_FOOT_WIDTH = onFoot.width;
 export const ON_FOOT_OPACITY = onFoot.opacity;
 export const ON_FOOT_DASH = onFoot.dash;
 
+/**
+ * A double tap, as the page tells it to the app (TASK-119): two taps of one
+ * finger, each shorter than `TAP_MS`, within `DOUBLE_TAP_MS` and
+ * `DOUBLE_TAP_PX` of each other.
+ */
+export const TAP_MS = 300;
+export const DOUBLE_TAP_MS = 350;
+export const DOUBLE_TAP_PX = 40;
+
 /** The run over its route (TASK-113). */
 export const TRACK_COLOR = track.color;
 export const TRACK_WIDTH = track.width;
@@ -477,6 +486,69 @@ export function buildMapPage(): string {
         fail((event.error && event.error.message) || "The map style did not load");
       }
     });
+    // On a drawing a double tap is its super like (TASK-119): told to the
+    // app in place of the zoom, only while the app asks. Two fingers zoom
+    // as ever. The fingers are listened to from the first time it asks.
+    var doubleTapAsked = false;
+    var tapListening = false;
+    var tapStart = null;
+    var lastTap = null;
+    function near(a, b) {
+      return Math.abs(a.x - b.x) <= ${DOUBLE_TAP_PX} && Math.abs(a.y - b.y) <= ${DOUBLE_TAP_PX};
+    }
+    function listenToTaps() {
+      var surface = map.getCanvasContainer();
+      var passive = { passive: true };
+      surface.addEventListener("touchstart", function (event) {
+        // A second finger is a zoom, never a tap.
+        if (event.touches.length !== 1) {
+          tapStart = null;
+          lastTap = null;
+          return;
+        }
+        var touch = event.touches[0];
+        tapStart = { x: touch.clientX, y: touch.clientY, time: event.timeStamp };
+      }, passive);
+      surface.addEventListener("touchmove", function (event) {
+        var touch = event.touches[0];
+        if (tapStart && touch && !near(tapStart, { x: touch.clientX, y: touch.clientY })) {
+          tapStart = null;
+        }
+      }, passive);
+      surface.addEventListener("touchcancel", function () {
+        tapStart = null;
+        lastTap = null;
+      }, passive);
+      surface.addEventListener("touchend", function (event) {
+        var tap = tapStart;
+        tapStart = null;
+        if (!tap || event.touches.length !== 0 || event.timeStamp - tap.time > ${TAP_MS}) {
+          lastTap = null;
+          return;
+        }
+        if (lastTap && event.timeStamp - lastTap.time <= ${DOUBLE_TAP_MS} && near(lastTap, tap)) {
+          lastTap = null;
+          if (doubleTapAsked) {
+            post({ type: "doubleTap" });
+          }
+          return;
+        }
+        lastTap = { x: tap.x, y: tap.y, time: event.timeStamp };
+      }, passive);
+    }
+    function setDoubleTap(on) {
+      doubleTapAsked = on;
+      lastTap = null;
+      if (on) {
+        map.doubleClickZoom.disable();
+        if (!tapListening) {
+          tapListening = true;
+          listenToTaps();
+        }
+      } else {
+        map.doubleClickZoom.enable();
+      }
+    }
     window.shaperoute = {
       receive: function (message) {
         if (message.type === "setPosition") {
@@ -568,6 +640,8 @@ export function buildMapPage(): string {
           showProgress(message);
         } else if (message.type === "clearProgress") {
           clearProgress();
+        } else if (message.type === "setDoubleTap") {
+          setDoubleTap(message.on);
         } else if (message.type === "clearRoute") {
           fullRoute = noRoute;
           clearProgress();

@@ -197,6 +197,10 @@ lungo di alcuni tratti sull'acqua: va accorciato per `paddling`.
 - La parte A cambia `route_engine`: l'impronta del motore cambia, quindi
   dopo l'aggiornamento del server serve `draw_examples`, con l'ok
   dell'utente (`AGENTI.md`, regola 11). Niente da migrare.
+- **Il server è a `main` `3b6e821`** dalla notte del 2026-10-05 (motore di
+  TASK-223 e TASK-230, `draw_examples` rilanciato): non ha la parte A. Dopo
+  il merge serve **un altro aggiornamento, con `draw_examples` e un nuovo ok
+  dell'utente**; solo dopo si pubblica la parte B.
 - Un server senza la parte A rifiuta `pen_up` con `paddling`
   (`invalid_request`): la parte B dell'app si pubblica **dopo** che il
   server ha la A, o «Paddle» con le forme a pezzi darebbe un errore.

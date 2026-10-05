@@ -1,6 +1,6 @@
 # TASK-235 — Gli annunci fra i post del «Feed»
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-235-feed-ads`
 **Dipende da**: TASK-132 e TASK-166 (in `main`). Per gli annunci veri:
 TASK-150, TASK-152, TASK-153. **ADR**: ADR-0198, che supera in parte
@@ -96,19 +96,19 @@ intero.
 
 ## Criteri di accettazione
 
-- [ ] «Draw route» e «Ask for a route» non mostrano nessun annuncio, con o
+- [x] «Draw route» e «Ask for a route» non mostrano nessun annuncio, con o
       senza SDK (test).
-- [ ] Con annunci caricati, il Feed ne mostra uno dopo ogni 5 post, solo
+- [x] Con annunci caricati, il Feed ne mostra uno dopo ogni 5 post, solo
       fra due post: nessuno con 5 post, uno con 6, due con i 15 d'esempio
       (test della funzione pura e di `FeedScreen` con un finto SDK).
-- [ ] Senza annuncio (Expo Go, consenso negato, errore, niente rete) il
+- [x] Senza annuncio (Expo Go, consenso negato, errore, niente rete) il
       Feed è quello di oggi, senza buchi (test).
-- [ ] La scheda dell'annuncio mostra «Sponsored» in alto, nelle cinque
+- [x] La scheda dell'annuncio mostra «Sponsored» in alto, nelle cinque
       lingue (test), e non ha corridore, punteggio né reazioni.
-- [ ] In Expo Go il pacchetto AdMob non si carica e l'app funziona come
+- [x] In Expo Go il pacchetto AdMob non si carica e l'app funziona come
       prima (`admob.test.ts` resta verde).
-- [ ] `npm run lint`, `typecheck`, `test` e `format:check` verdi.
-- [ ] Prova nel simulatore: screenshot del Feed con l'annuncio di prova
+- [x] `npm run lint`, `typecheck`, `test` e `format:check` verdi.
+- [x] Prova nel simulatore: screenshot del Feed con l'annuncio di prova
       («Test Ad») dopo il 5° post.
 
 ## File toccati
@@ -147,4 +147,28 @@ docs/tasks/TASK-235.md
 
 ## Esito
 
-*(si compila a fine task)*
+Il 2026-10-05, branch `feat/TASK-235-feed-ads`. La pubblicità sta solo
+nel «Feed»: `src/ads/feedAds.ts` (rete dietro un'interfaccia, consenso una
+volta), `useFeedAds` (un posto alla volta, il primo quando il Feed è la
+pagina sullo schermo, gli annunci tardi al primo posto ancora davanti),
+`feedWithAds` (i posti: dopo il 5°, 10°, … post, solo fra due post),
+`FeedAd` (la scheda con «Sponsored»). Via `useAdBeforeRoute` e
+`routeAds`; un test (`onlyInFeed.test.ts`) controlla che solo `FeedScreen`
+prenda codice da `src/ads/`. Variabili `EXPO_PUBLIC_ADMOB_NATIVE_*` al
+posto delle `INTERSTITIAL`. Nessun pacchetto e nessuna configurazione
+nuovi. App jest 1854 test verdi, lint, Prettier e typecheck verdi.
+
+Prova in una build Release nel simulatore (iOS 27, ID di prova dell'app di
+Google nell'`Info.plist` generato): nessun annuncio né consenso all'avvio;
+il modulo di consenso di Google alla prima apertura del Feed; dopo «Do not
+consent» l'annuncio nativo di prova arriva lo stesso, dopo il 5° e il 10°
+post, nessuno dopo il 15°; il validatore di AdMob dice «No implementation
+issues found». Il «Test mode» ha un'immagine verticale: la scheda la tiene
+quadrata. Due volte il gesto «swipe» dello strumento del simulatore ha
+aperto la pagina dell'inserzionista; trascinamenti e spinte veloci veri
+(anche partendo sull'immagine) hanno solo fatto scorrere. Da riguardare su
+un iPhone vero con la prima build TestFlight (TASK-152/153).
+
+Emerso, per i loro task: TASK-153 parla ancora di un'unità interstitial
+(serve un'unità nativa); `docs/PUBBLICITA.md` sul branch di TASK-150 dice
+ancora «a ogni ricerca».

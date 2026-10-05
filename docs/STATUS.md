@@ -540,7 +540,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scelte dell'utente: l'invio vero (che cosa si notifica, il servizio di
   posta, `expo-notifications`, una build propria). `tasks/TASK-185.md`.
 
-
 ## Completato
 
 - **App** — TASK-184: «Help», «Terms», «Privacy» (ADR-0205; chiesto

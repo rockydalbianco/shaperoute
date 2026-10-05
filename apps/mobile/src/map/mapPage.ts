@@ -90,6 +90,13 @@ export const TAP_MS = 300;
 export const DOUBLE_TAP_MS = 350;
 export const DOUBLE_TAP_PX = 40;
 
+/**
+ * Moving the shape of a route on the water (TASK-238): a finger that
+ * travels less than this many pixels has not moved it, and the app is told
+ * nothing.
+ */
+export const MOVE_MIN_PX = 8;
+
 /** The run over its route (TASK-113). */
 export const TRACK_COLOR = track.color;
 export const TRACK_WIDTH = track.width;
@@ -549,6 +556,127 @@ export function buildMapPage(): string {
         map.doubleClickZoom.enable();
       }
     }
+    // The shape of a route on the water moved by the user (TASK-238): while
+    // the app asks, one finger drags the route, its walks too, and no longer
+    // the map; two fingers zoom as ever. Lifted, the app is told by how many
+    // degrees, and the route stays where it was left until the app sends
+    // the one the engine placed there. The fingers are listened to from the
+    // first time the app asks.
+    var moving = false;
+    var moveListening = false;
+    var moveFrom = null;
+    var movedBy = null;
+    var moveTold = false;
+    function shifted(data, by) {
+      if (!data.geometry) {
+        return data;
+      }
+      function move(point) {
+        return [point[0] + by[0], point[1] + by[1]];
+      }
+      var many = data.geometry.type === "MultiLineString";
+      return {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: data.geometry.type,
+          coordinates: many
+            ? data.geometry.coordinates.map(function (line) {
+                return line.map(move);
+              })
+            : data.geometry.coordinates.map(move),
+        },
+      };
+    }
+    function drawMoved(by) {
+      [["route", route], ["walks", walks], ["on-foot", onFoot]].forEach(function (drawn) {
+        var source = map.getSource(drawn[0]);
+        if (source) {
+          source.setData(by ? shifted(drawn[1], by) : drawn[1]);
+        }
+      });
+    }
+    function dropMove() {
+      moveFrom = null;
+      movedBy = null;
+    }
+    function listenToMoves() {
+      var surface = map.getCanvasContainer();
+      var passive = { passive: true };
+      surface.addEventListener("touchstart", function (event) {
+        if (!moving) {
+          return;
+        }
+        // A second finger is a zoom: the route goes back where it was.
+        if (event.touches.length !== 1) {
+          if (moveFrom && !moveTold) {
+            drawMoved(null);
+          }
+          dropMove();
+          return;
+        }
+        var touch = event.touches[0];
+        moveFrom = { x: touch.clientX, y: touch.clientY };
+        movedBy = null;
+      }, passive);
+      surface.addEventListener("touchmove", function (event) {
+        var touch = event.touches[0];
+        if (!moving || !moveFrom || event.touches.length !== 1 || !touch) {
+          return;
+        }
+        var far =
+          Math.abs(touch.clientX - moveFrom.x) >= ${MOVE_MIN_PX} ||
+          Math.abs(touch.clientY - moveFrom.y) >= ${MOVE_MIN_PX};
+        if (!movedBy && !far) {
+          return;
+        }
+        var from = map.unproject([moveFrom.x, moveFrom.y]);
+        var to = map.unproject([touch.clientX, touch.clientY]);
+        movedBy = [to.lng - from.lng, to.lat - from.lat];
+        moveTold = false;
+        drawMoved(movedBy);
+      }, passive);
+      surface.addEventListener("touchcancel", function () {
+        if (moving && moveFrom && !moveTold) {
+          drawMoved(null);
+        }
+        dropMove();
+      }, passive);
+      surface.addEventListener("touchend", function (event) {
+        if (!moving || !moveFrom || event.touches.length !== 0) {
+          return;
+        }
+        var by = movedBy;
+        dropMove();
+        if (by) {
+          moveTold = true;
+          post({ type: "moved", by: by });
+        }
+      }, passive);
+    }
+    function setMove(on) {
+      moving = on;
+      dropMove();
+      var surface = map.getCanvasContainer();
+      if (on) {
+        moveTold = false;
+        map.dragPan.disable();
+        // The page must not take the finger for a scroll of its own.
+        surface.style.touchAction = "none";
+        if (!moveListening) {
+          moveListening = true;
+          listenToMoves();
+        }
+      } else {
+        map.dragPan.enable();
+        surface.style.touchAction = "";
+        // Left nowhere: the route is back where it was. Left somewhere, it
+        // stays there until the app sends the route placed there.
+        if (!moveTold) {
+          drawMoved(null);
+        }
+      }
+    }
     window.shaperoute = {
       receive: function (message) {
         if (message.type === "setPosition") {
@@ -564,6 +692,8 @@ export function buildMapPage(): string {
               ? { type: "MultiLineString", coordinates: message.letters }
               : { type: "LineString", coordinates: points },
           };
+          // The route the engine placed where the shape was left (TASK-238).
+          moveTold = false;
           // Running it, the route stays cut where the runner is.
           if (!progressing) {
             setRoute(fullRoute);
@@ -642,7 +772,10 @@ export function buildMapPage(): string {
           clearProgress();
         } else if (message.type === "setDoubleTap") {
           setDoubleTap(message.on);
+        } else if (message.type === "setMove") {
+          setMove(message.on);
         } else if (message.type === "clearRoute") {
+          moveTold = false;
           fullRoute = noRoute;
           clearProgress();
           setWalks(noRoute);

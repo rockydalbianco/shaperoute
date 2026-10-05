@@ -51,8 +51,8 @@ In coda, dopo o accanto:
 - **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
   sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
   (TASK-178, sotto), email e numero di telefono anche (TASK-183, «In
-  lavorazione»); restano **TASK-182** le unità di
-  misura, km o miglia (ADR-0149, solo app, tocca molti file), **TASK-184**
+  lavorazione»), le unità di misura hanno la parte A (TASK-182, «In
+  lavorazione»); restano **TASK-184**
   «Help», «Terms», «Privacy» (dopo TASK-152: testi e contatti), **TASK-185**
   le notifiche email e push (per ultime: serve qualcosa da notificare, un
   servizio di posta, `expo-notifications`, una build propria). Tutti Todo,
@@ -148,22 +148,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-238 — Spostare la figura sull'acqua** (ADR-0202; chiesto
-  dall'utente il 2026-10-05: «spostare la figura un po' più a destra, a
-  sinistra, più vicini alla riva»). L'utente ha scelto di **trascinarla
-  col dito**. **Parte A fatta** (branch
-  `feat/TASK-238-paddle-move-shape`): la richiesta in canoa può avere
-  `near`, dove si vuole il centro della forma, e il risultato ha `centre`;
-  il motore mette la forma nel posto più vicino in cui ci sta, nella
-  fascia e con la riva a piedi entro 300 m (`water_fit.fit_shape(...,
-  near=)`, `--near` dalla CLI). Senza `near` niente cambia: i 32 esempi
-  dell'app sono identici. **Non è sul server**; dopo l'aggiornamento va
-  rilanciato `draw_examples`. **Parte B da fare**: il trascinamento sulla
-  mappa e «Move» in «Draw» con «Paddle», con i testi da confermare; gli
-  esempi di «Explore» non hanno `centre` (task file, punto 9).
-  File toccati: quelli della parte A in `tasks/TASK-238.md`; per la B
-  `apps/mobile/src/map/{messages,mapPage}.ts`, `MapView.tsx`, `App.tsx`,
-  `src/paddle/`, `src/i18n/`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -501,25 +485,81 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
-- **TASK-183 — Cambiare email e numero di telefono** (ADR-0150; chiesto
-  dall'utente il 2026-10-02 e di nuovo il 2026-10-05, con due scelte: il
-  numero serve a farsi trovare dagli amici che lo hanno già, e l'email
-  cambia subito con la password, senza mail di conferma finché non c'è un
-  servizio di posta). In revisione. **API**: `PUT /me/email` (`email`,
-  `password`; password sbagliata `403`, contata con quelle dell'accesso),
-  `PUT /me/phone` (il numero con il prefisso del paese, tenuto in E.164,
-  `null` lo toglie; non provato e quindi non unico; lo legge solo il
-  proprietario), `User.phone`, migrazione `0016_contact.sql`. **App**: in
-  «Settings» le righe «Change email» e «Phone number» si aprono sotto,
-  nelle cinque lingue. **Aspettano l'utente**: l'aggiornamento del server
-  (migrazione) e poi la pubblicazione, in quest'ordine; i testi nuovi
-  (`tasks/TASK-183.md`, «Esito»). Visto nel simulatore, non su un telefono. Seguiti: la
-  ricerca dalla rubrica (prima va deciso come si prova un numero), la
-  mail di conferma. Poi, nella stessa sessione «Impostazioni», un task
-  per contesto: **TASK-182** (unità), **TASK-184** («Help», «Terms»,
-  «Privacy»), **TASK-185** (gli interruttori delle notifiche).
+- **TASK-182 — Le unità di misura: km o miglia** (ADR-0149; chiesto
+  dall'utente il 2026-10-02 e il 2026-10-03, con due scelte: si parte
+  dall'unità del telefono, e con le miglia si fa come Strava). **Parte A**
+  in `main` dal 2026-10-05 (PR #351, merge `7a9506a`; solo app, nessuna
+  dipendenza): `src/units/` (la scelta in `units.json`, l'unità del
+  telefono, `useUnits()`, i formattatori), la riga **«Units»** in
+  «Settings» al posto di quella con «Soon» («Kilometres», «Miles»;
+  «Phone units» dalla parte B), e le miglia in «My activities», nei preferiti e nelle schede
+  di «Explore». Con «Kilometres» l'app scrive quello che scriveva prima.
+  **Scelta dell'utente del 2026-10-05**: la parte A si pubblica subito,
+  ma **l'app parte in km su ogni telefono** finché non c'è la parte B
+  (`FOLLOWS_PHONE` spento): solo chi sceglie «Miles» vede l'app mista.
+  **Aspettano l'utente**: i testi nuovi («Kilometres», «Miles», «{mi} mi
+  away»; «Phone units» si vedrà con la parte B); la prova su un iPhone
+  con le miglia (l'unità del telefono non è stata vista su un telefono
+  vero, né nel simulatore). **Parte B** (file di
+  altri task): «Draw» (la distanza chiesta, passi e limiti in miglia: una
+  scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
+  svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
+  «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito».
 
 ## Completato
+
+- **API e app** — TASK-183: cambiare email e numero di telefono da
+  «Settings» (ADR-0150; chiesto dall'utente il 2026-10-02 e di nuovo il
+  2026-10-05; PR #346, merge `a89f086`). Scelte dell'utente: il numero
+  serve a farsi trovare dagli amici che lo hanno già (la ricerca dalla
+  rubrica è un task a parte: prima va deciso come si prova un numero), e
+  l'email cambia subito con la password, senza mail di conferma finché
+  non c'è un servizio di posta. `PUT /me/email` (password sbagliata
+  `403`, contata con quelle dell'accesso), `PUT /me/phone` (prefisso del
+  paese, tenuto in E.164, `null` lo toglie; non provato, quindi non
+  unico; lo legge solo il proprietario), `User.phone`, migrazione
+  `0016_contact.sql`. In «Settings» le righe «Change email» e «Phone
+  number» si aprono sotto, nelle cinque lingue; testi confermati
+  dall'utente. **Sul server** dal 2026-10-05, 10:58Z (ok dell'utente «ok
+  aggiorna il server e pubblica», sessione «Impostazioni»): `main`
+  `ae320d3`, circa 10 secondi di fermo, copia
+  `shaperoute-2026-10-05T1058Z.dump`, immagine di prima
+  `shaperoute-api:before-task183`, `draw_examples` rilanciato alle 10:59Z
+  per il motore di #347 e #349 (`data/draw-examples-2026-10-05-task238.log`).
+  La pubblicazione dell'app è del coordinatore. Visto nel simulatore;
+  **da provare sull'iPhone** (un cambio vero di email e di numero).
+  `tasks/TASK-183.md`.
+
+- **Motore, API, app** — TASK-238: spostare la figura sull'acqua col dito
+  (ADR-0202; chiesto dall'utente il 2026-10-05, che ha scelto il
+  trascinamento). **Parte A** (PR #347, merge `797c4bb`): la richiesta in
+  canoa può avere `near`, dove si vuole il centro della forma, e il
+  risultato ha `centre`; il motore mette la forma nel posto più vicino in
+  cui ci sta, nella fascia e con la riva a piedi entro 300 m; senza `near`
+  niente cambia. **Parte B** (PR #350): «Move the shape» sotto «Start» in
+  «Draw» con «Paddle», un dito trascina la figura a mappa ferma, al
+  rilascio l'app richiede il percorso con `near`, e una riga dice se la
+  figura non ci stava. I sei testi sono **confermati dall'utente**
+  (2026-10-05). **Aspettano**: il server con la parte A e poi
+  `draw_examples` (ok dell'utente, dal coordinatore: fino ad allora il
+  pulsante non compare), la pubblicazione dell'app dopo il server, la
+  prova con un dito vero sull'iPhone. Gli esempi di «Explore» e i
+  preferiti non si spostano: seguito da chiedere. `tasks/TASK-238.md`.
+
+- **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
+  (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della
+  faccina a Trento, campioni prima/dopo giudicati «sì, va bene»; PR
+  #349). Con la penna alzata, un pezzo di una forma (bocca, occhio, buco)
+  che le strade portano più di 3/8 di altezza di pezzo lontano dalla sua
+  linea si disegna in parti, e la deviazione è un tratto a piedi
+  (`detours.py`, `pen_up.trace`): a Trento la bocca non scende più 250 m
+  fino al sottopasso della ferrovia. I `walks` possono essere più dei
+  pezzi meno uno, mai più di 9. Il contorno, le parole e l'acqua non
+  cambiano; su 42 richieste di prova 30 danno lo stesso percorso, 10
+  migliorano, nessuna peggiora (`ROUTE_ENGINE.md` §5). **Non sul server
+  né pubblicato**: server e `draw_examples` li fa il coordinatore con
+  l'ok dell'utente; `engine.zip` è rifatto, il telefono lo riceve con la
+  prossima pubblicazione. Seguiti in `tasks/TASK-242.md`.
 
 - **App** — TASK-241: niente punteggio sulle foto dei post del «Feed»
   (ADR-0207; chiesto dall'utente il 2026-10-05). Il riquadro «98 · out of

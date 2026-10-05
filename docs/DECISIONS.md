@@ -11297,3 +11297,70 @@ TASK-209/216/217, che devono passare come sono).
 - `kmLabel` e `paceLabel` di `navigation/freeRun.ts` restano in km per chi
   li usa ancora (`share/postRun.ts`, `social/DrawingCard.tsx`: parte B).
 - Solo app: nessuna dipendenza, niente server.
+
+## ADR-0211 — Le figure «Paddle» dei tre posti più vicini si disegnano prima, in un file loro sul telefono
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-246), dentro la **scelta dell'utente** del 2026-10-05: i tre posti
+più vicini, con qualunque sport di «Settings», anche con i dati mobili.
+Numero assegnato dal coordinatore.
+
+**Contesto**: l'utente ha chiesto che all'installazione il telefono abbia
+già «un po' di mappe vicino a me e un po' di figure per il padel». Le
+mappe della zona si scaricano già al primo avvio (ADR-0177). Le figure in
+canoa erano dentro l'app solo per i quattro luoghi scelti a mano
+(ADR-0189); per ogni altro lago le disegnava il server all'apertura di
+«Explore» con «Paddle», una alla volta.
+
+**Decisione**:
+
+1. **Le disegna il server, in anticipo, e il telefono le tiene.** La canoa
+   resta al server (ADR-0177, scelta 5): il telefono chiede le stesse
+   richieste che farebbe la pagina, prima che la pagina si apra. Nessun
+   endpoint nuovo, nessun cambiamento all'API.
+2. **I tre posti più vicini entro 30 km**, un posto per nome, come li
+   offre «Explore» (`byName`, `NEAR_ME_M`); il più vicino è quello di
+   «Near me». Le otto forme di ognuno, nell'ordine della pagina, alla
+   distanza del posto.
+3. **A ogni apertura, dopo le mappe della zona**, e solo se il server ha
+   risposto alla richiesta delle mappe (con una zona o senza): un telefono
+   senza rete non prova. Si chiede solo quello che manca: un'apertura dopo
+   costa zero richieste.
+4. **Una richiesta ogni 6 secondi al massimo.** L'API accetta 30 POST al
+   minuto da un telefono (ADR-0076) e gli esempi della pagina ne usano
+   fino a 18: dieci al minuto qui lasciano posto a «Start».
+   Con l'app in secondo piano non si chiede niente: il giro aspetta che
+   torni davanti (paletto del coordinatore: il server è piccolo). Un
+   telefono nuovo fa al massimo 24 richieste, in circa due minuti e mezzo.
+5. **Un file suo, `Documents/paddle-ahead.json`**, non quello della
+   pagina (`city-examples.json`), che tiene gli ultimi otto luoghi scelti
+   e li butterebbe fuori. Tiene gli ultimi sei posti disegnati. La pagina
+   lo legge in `fromFile`, dopo gli esempi venuti con l'app e prima del
+   suo file, solo per la canoa.
+6. **Una forma che lì non si disegna** (`shape_not_drawable`) si segna nel
+   file e non si richiede per una settimana: sarebbe una ricerca intera
+   del motore a ogni apertura. Un posto senza acqua sul server
+   (`map_data_unavailable`) si salta. Ogni altro guasto ferma il giro, che
+   riprende all'apertura dopo.
+7. **Senza avvisi e senza una riga in «Settings»**: sono circa 150 kB
+   per tre posti (47 kB misurati per uno), e l'utente ha già scelto così
+   per le mappe scaricate in anticipo.
+
+**Alternative scartate**:
+
+- *Mettere tutte le figure dentro l'app*, come i quattro luoghi: 211 laghi
+  per otto forme sono decine di MB in ogni aggiornamento, e vanno
+  ridisegnate a mano a ogni cambio del motore.
+- *Scriverle nel file della pagina*: usciva dopo otto città guardate.
+- *Farle disegnare al telefono*: la canoa ha bisogno dell'acqua, che il
+  telefono non ha (ADR-0177).
+
+**Conseguenze**:
+
+- Ogni telefono nuovo fa disegnare al server fino a 24 figure. Il server
+  non le tiene (`route_store.py` tiene solo i centri delle città). Sul Mac
+  una figura esce in mezzo secondo: sul server è circa un minuto di motore
+  per telefono nuovo. Tenerle sul server è il seguito scritto in
+  `tasks/TASK-246.md`, per una pubblicazione larga.
+- `requestOf` e `drawOrderOf` di `exampleRoutes.ts` sono esportate.
+- `usePhoneZones` ha un'opzione in più, `shapes`: i test che lo montano la
+  passano finta.

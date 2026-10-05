@@ -644,6 +644,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   pubblicazione dell'app (del coordinatore) e la prova con un dito vero
   sull'iPhone. `tasks/TASK-244.md`.
 
+- **App** — TASK-246: le figure «Paddle» dei tre posti più vicini già
+  sul telefono (ADR-0211; chiesto dall'utente il 2026-10-05, che ha
+  scelto: tre posti, con qualunque sport, anche con i dati mobili). In
+  revisione, PR #369. A ogni apertura, dopo le mappe della zona, il telefono fa
+  disegnare al server le otto forme dei tre posti più vicini entro 30 km
+  che non ha ancora, una ogni 6 secondi al massimo, e le tiene in
+  `Documents/paddle-ahead.json`: «Explore» con «Paddle» le mostra subito.
+  Solo app: **niente motore, API, server**; nessun testo nuovo.
+  Provato dal vero sul Mac contro un'API locale (le otto forme del Lago di
+  Levico, mezzo secondo l'una), non visto sullo schermo. **Aspettano**: la
+  pubblicazione dell'app (del coordinatore) e la prova sull'iPhone.
+  **Seguito**: il server non tiene le figure dei laghi, ogni telefono
+  nuovo gliene fa disegnare fino a 24 (circa un minuto di motore).
+  `tasks/TASK-246.md`.
+
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della
   faccina a Trento, campioni prima/dopo giudicati «sì, va bene»; PR

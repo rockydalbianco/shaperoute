@@ -3,7 +3,7 @@
 **Stato**: In corso. Le sei scelte hanno la risposta dell'utente; la parte A
 (API) è in `main` dalla #275, la parte B (l'app) dalla #282, la parte C
 («Settings» e l'avviso) dalla #295, la parte A2 (il tetto del traffico)
-dalla #330; poi B2 e D, in quest'ordine.
+dalla #330; la parte B2 (le zone in più) è in PR; poi D.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 
@@ -599,6 +599,61 @@ migrazione.
   Nessuno la chiama ancora: le zone in più sono la parte B2.
 - **Test**: 19 per il tetto e 6 per l'endpoint nell'API; 9 nell'app.
 
+**Parte B2, le zone in più** (in PR, 2026-10-05; ADR-0177, «Decisione
+dell'agente, parte B2»). Partita senza la #323 per scelta dell'utente
+(«parti subito con la b», 2026-10-05): le città vicine si aggiungono
+quando `GET /nearby-cities` è in `main`.
+
+- **Quando**: a ogni apertura, finite le zone intorno al telefono, e solo
+  se il server ne ha appena data una (salvata o `304`): un server senza
+  zone per il telefono, o nessuna rete, non riceve richieste inutili. Una
+  zona alla volta, senza avvisi, con qualunque rete (scelte dell'utente).
+- **Quali città, in ordine** (`src/engine/aheadZones.ts`):
+  1. quelle scelte per ultime in «Explore» (fino a cinque, la memoria
+     dell'app), cioè le più cercate da chi usa il telefono;
+  2. le 14 città in evidenza di «Explore», **dalla più vicina**. Il centro
+     lo dà `GET /cities` come al tocco del chip, una volta sola: poi resta
+     in `Documents/engine/ahead.json`.
+
+  Una città che una zona salvata contiene già non si chiede: la sua zona
+  si aggiorna il giorno che il telefono si apre lì, come zona intorno.
+- **Solo la rete dello sport** di «Settings» (a piedi con la canoa):
+  le zone bici sul server sono poche, e scaricarle tutte e due
+  raddoppierebbe il traffico.
+- **Il tetto** è quello della parte A2: ogni zona va con `prefetch=1`;
+  al `429` il giro si ferma fino a `Retry-After`.
+- **Un giro intero al giorno al massimo.** Un giro interrotto (rete
+  caduta, app chiusa, tetto, un centro che non arriva) riprende alla
+  prossima apertura.
+- **I 2 GB**: il giro si ferma a 100 MB dal limite, lasciando posto alla
+  zona intorno al telefono. Una zona scaricata in anticipo entra come
+  «mai usata» (`usedAt` 0): oltre il limite se ne va prima di quelle in
+  cui il telefono è stato. Diventa «usata» quando un percorso la usa o il
+  telefono si apre lì.
+- **«Delete»** in «Settings» lascia `ahead.json`: la zona intorno torna
+  alla prossima apertura, le altre col giro dopo. Se il giro del giorno era
+  finito, il giorno dopo.
+- **Prima di pubblicare**: il server deve avere la parte A2. Senza il
+  tetto, un telefono scaricherebbe in un giorno tutte le zone in più
+  (oggi circa 0,3 GB per le città in evidenza), e il server
+  scriverebbe al volo il file di ogni zona che non ha ancora (circa 50 s
+  per Milano, parte D).
+- **Test**: 9 nuovi in `aheadZones.test.ts`, uno in `zones.test.ts`, uno
+  in `usePhoneZones.test.ts`; tutta la suite dell'app passa (1926).
+- **Nel simulatore** (iPhone 17e, Expo Go, 2026-10-05), con l'API del
+  branch e la cache delle zone del Mac, il telefono a Trento con le sue
+  due zone:
+  - all'apertura, due `304` per le zone intorno; poi le 14 città con
+    `/cities`, e una zona alla volta con `prefetch=1`: Milano, Torino,
+    Roma, Parigi, Berlino (`404`: il Mac non ce l'ha), Amsterdam,
+    Barcellona, Londra, Lisbona, Dubai, New York, Tokyo, San Francisco,
+    Sydney. 13 zone, 211 MB, in circa 2 minuti, tutte con `usedAt` 0;
+    sotto i 300 MB del giorno, nessun `429`;
+  - riaperta l'app, solo i due `304`: niente `/cities`, niente zone in
+    più;
+  - con il giro di 25 ore prima, i due `304` e una richiesta sola, Berlino.
+  - Nessun avviso sopra «Draw route».
+
 **Le parti dopo** (d'accordo con il coordinatore, ognuna in un contesto
 pulito, tutte sotto TASK-214 e ADR-0177):
 1. **C**, la riga in «Settings» e l'avviso del primo download: fatta,
@@ -606,7 +661,8 @@ pulito, tutte sotto TASK-214 e ADR-0177):
 2. **A2**, il tetto sul server: le richieste «in più» con `?prefetch=1`, i
    byte contati per giorno, in memoria, senza migrazione: fatta, sopra.
 3. **B2**, le zone in più, cioè le città vicine e le più cercate fino a 2
-   GB (scelta 4, punto 2).
+   GB (scelta 4, punto 2): fatta, sopra, senza le città vicine, che
+   entrano con un'aggiunta piccola dopo la #323 (TASK-236).
 4. **D**, la prova sull'iPhone: fissa i limiti di distanza. Vuole il server
    con `/phone-zones` e le zone del telefono scritte (0,7–0,8 GB): un
    aggiornamento del server da chiedere all'utente, che coordina il

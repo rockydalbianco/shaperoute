@@ -481,9 +481,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   MB al giorno per telefono e 300 GB in tutto; oltre, `429` con
   `Retry-After` fino alla mezzanotte UTC, e l'app non ne chiede altre fino
   ad allora. Conteggio in memoria: un riavvio lo rimette a zero. Non sul
-  server. **Dopo**, in quest'ordine: B2, le città vicine fino a 2 GB;
-  D, la prova sull'iPhone, dopo l'aggiornamento del server con le zone del
-  telefono.
+  server. **Parte B2**, le zone in più, in PR (2026-10-05): finite le
+  zone intorno al telefono, una alla volta, quelle delle città scelte per
+  ultime in «Explore» e delle 14 in evidenza, dalla più vicina, con
+  `prefetch=1`, fino a 2 GB; un giro intero al giorno. Le città vicine
+  (TASK-236) si aggiungono dopo la #323. **Si pubblica solo dopo il server
+  con A2**, se no niente tetto. **Dopo**: D, la prova sull'iPhone, dopo
+  l'aggiornamento del server con le zone del telefono.
   Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 

@@ -572,7 +572,9 @@ mappa è quella di prima.
   da sé, con «Delete» in fondo alla riga quando ce ne sono; sotto, piccolo
   e grigio, «Maps download on Wi-Fi and mobile data.». «Delete» cancella
   subito, senza chiedere: le mappe tornano alla prossima apertura, con la
-  riga sopra «Draw route». Poi «Units», «Soon». **«Notifications»**: «Email
+  riga sopra «Draw route». Il numero cresce anche da solo: dopo la zona
+  intorno, il telefono scarica piano piano quelle delle città di
+  «Explore», senza avvisi (TASK-214, parte B2). Poi «Units», «Soon». **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima

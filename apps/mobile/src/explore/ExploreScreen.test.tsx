@@ -174,7 +174,8 @@ function texts(): string[] {
 }
 
 test("«Ask for a route» waits closed under the routes, and a touch opens it", async () => {
-  fetchMock.mockResolvedValue(Response.json(list));
+  // An answer for each request: the towns near the start are asked too.
+  fetchMock.mockImplementation(() => Promise.resolve(Response.json(list)));
   const onAsk = jest.fn();
   await render(
     <ExploreScreen
@@ -330,4 +331,43 @@ test("labels", () => {
   expect(kmLabel(21000)).toBe("21 km");
   expect(awayText(640)).toBe("640 m away");
   expect(awayText(1440)).toBe("1.4 km away");
+});
+
+test("under «Near me», the towns around the start; a chosen city has none", async () => {
+  const town = {
+    label: "Pergine Valsugana, Trentino – Alto Adige/Südtirol, Italy",
+    point: [46.0605291, 11.2406747],
+    away_m: 9300,
+  };
+  fetchMock.mockImplementation((input) => {
+    const url = String(input);
+    return url.includes("/nearby-cities")
+      ? Promise.resolve(Response.json({ places: [town] }))
+      : url.includes("/recommended-routes")
+        ? Promise.resolve(Response.json(list))
+        : new Promise<Response>(() => {});
+  });
+  const onCity = jest.fn();
+  const page = (city: Place | null) => (
+    <ExploreScreen
+      apiUrl="http://api"
+      near={[46.067, 11.1215]}
+      onOpen={jest.fn()}
+      city={city}
+      onCity={onCity}
+    />
+  );
+  const view = await render(page(null));
+  expect(await screen.findByText("NEARBY TOWNS")).toBeOnTheScreen();
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://api/nearby-cities?lat=46.067&lon=11.1215",
+    expect.anything(),
+  );
+  // The page has routes: one credit for the maps, the page's.
+  await screen.findByText("Star · 5.1 km");
+  expect(screen.getAllByText(CARD_MAPS_CREDIT)).toHaveLength(1);
+  await fireEvent.press(screen.getByLabelText("Pergine Valsugana, 9.3 km away"));
+  expect(onCity).toHaveBeenCalledWith({ label: town.label, point: town.point });
+  await view.rerender(page(vercelli));
+  expect(screen.queryByText("NEARBY TOWNS")).toBeNull();
 });

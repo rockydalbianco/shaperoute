@@ -37,6 +37,7 @@ import {
 } from "./exampleRoutes";
 import { CityExamples } from "./CityExamples";
 import { CityPicker } from "./ExploreTools";
+import { NearbyTowns } from "./NearbyTowns";
 import { byPlace, OWN_RADIUS_M } from "./ownRoutes";
 import { cityShort } from "./presets";
 import { CardMapsCredit, cardWidth, RouteCard } from "./RouteCard";
@@ -255,6 +256,17 @@ export function ExploreScreen({
       >
         {onCity && (
           <CityPicker apiUrl={apiUrl} city={city} onCity={onCity} recent={recent} />
+        )}
+        {/* Under «Near me», the towns around the start (TASK-236); the page
+            has the maps' credit when it has routes. */}
+        {onCity && city === null && (
+          <NearbyTowns
+            apiUrl={apiUrl}
+            near={start}
+            width={contentWidth}
+            onCity={onCity}
+            credit={routes.length === 0}
+          />
         )}
         {examplesCity !== null && examples !== null && (
           <CityExamples

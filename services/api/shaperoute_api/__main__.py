@@ -36,6 +36,7 @@ from shaperoute_api.insights.events import EventLog
 from shaperoute_api.insights.events import wanted as insights_wanted
 from shaperoute_api.insights.vocabulary import DEFAULT_PATH as VOCABULARY
 from shaperoute_api.insights.vocabulary import Vocabulary
+from shaperoute_api.nearby_cities import NearbyCities, install_nearby_cities
 from shaperoute_api.phone_zone_api import install_phone_zones
 from shaperoute_api.places import KEY_VARIABLE as PLACES_KEY
 from shaperoute_api.places import PlaceSearch
@@ -196,6 +197,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         accounts=accounts,
         route_store=route_store,
     )
+    # The towns near the user, under "Near me" in "Explore" (TASK-236).
+    install_nearby_cities(app, NearbyCities(places.key), route_store)
     # The cached zones, for the phone that draws on them (TASK-214).
     install_phone_zones(app, args.cache_dir)
     host = "0.0.0.0" if args.lan else "127.0.0.1"

@@ -278,6 +278,26 @@ pagine»):
    ne sono, i vicini sotto la stessa etichetta. Con «Near me» resta una
    lista sola, senza etichetta.
 
+   **Da TASK-236** (ADR-0200, chiesto dall'utente: «favorisci la sezione
+   Near me con una sottocategoria con le città vicine a me … massimo
+   quattro»): con «Near me», sotto la fila delle città c'è **«NEARBY
+   TOWNS»**, una fila di schede da scorrere, fino a sei posti intorno
+   alla partenza, dal più vicino: quattro paesi (i più grandi entro 20 km,
+   o fino a 50 dove sono pochi) e i due posti più vicini di tutti, anche
+   piccoli (da Caldonazzo: Tenna, Calceranica, Levico, Pergine, Trento,
+   Borgo). Una scheda è larga il 42% della pagina: due intere e l'orlo
+   della terza. Dice il nome e la distanza («Levico Terme», «2.9 km
+   away»; da 10 km in su senza decimali) e mostra un campione disegnato
+   nel paese, sulla sua mappa: il cuore, o il cerchio finché il cuore non
+   c'è; prima, «2.9 km away · Drawing…» e il riquadro vuoto. Un tocco apre
+   il paese come città scelta, e va fra le città recenti. Mentre la
+   sezione è sulla pagina l'app fa disegnare al server cerchio, cuore e
+   stella di ogni paese, uno alla volta: il paese si apre con le prime tre
+   schede pronte. Il credito delle mappe resta uno: quello della pagina
+   quando ha percorsi, altrimenti sotto la fila. Senza paesi intorno, o se
+   l'API non risponde, la sezione non c'è. I testi, nelle cinque lingue:
+   «NEARBY TOWNS», «{km} km away», «{town}, {km} km away» (VoiceOver).
+
    **Da TASK-163**, chiesto dall'utente: finché uno dei primi tre esempi è
    «Next» o «Drawing…», sotto «EXAMPLES IN …» c'è **«MEANWHILE, FROM THE FEED»**,
    con una riga che dice perché si aspetta (la prima volta in una città la

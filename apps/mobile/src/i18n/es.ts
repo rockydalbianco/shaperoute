@@ -197,6 +197,10 @@ export const ES: Table = {
   Donut: "Dónut",
   "The sun": "Sol",
 
+  // src/explore/NearbyTowns.tsx
+  "NEARBY TOWNS": "LOCALIDADES CERCANAS",
+  "{town}, {km} km away": "{town}, a {km} km",
+
   // src/paddle/PaddleExplore.tsx
   Next: "A continuación",
   "Drawing…": "Dibujando…",

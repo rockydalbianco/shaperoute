@@ -10602,3 +10602,96 @@ pezzo e l'altro, mai dentro un pezzo.
 
 **Giudicato dall'utente** (2026-10-05, sulle immagini prima/dopo della
 faccina e della ciambella a Trento): «sì, va bene, fai il merge».
+
+## ADR-0209 — Con la penna alzata, sul contorno si camminano solo i baffi
+**Stato**: Attiva · 2026-10-05 · **deciso dall'agente su delega
+dell'utente** (TASK-243): la regola, le soglie e il tetto. Che la penna si
+alzi anche sul contorno è una richiesta dell'utente.
+
+**Contesto**: l'utente, il 2026-10-05, subito dopo il «sì» ai campioni di
+TASK-242: «alza la penna anche sulle deviazioni del contorno». In
+ADR-0208 (punto 5) il contorno era rimasto fuori apposta: «un buco nel
+contorno toglie alla forma più di un tratto storto». Il contorno ha molte
+più deviazioni di un pezzo: nella faccina da 15 km a Trento, da una
+partenza sola, 16 tratti fra due nodi sulla linea se ne allontanano più
+della tolleranza, uno più di `LIFT_FAR`.
+
+**Decisione**:
+
+1. **Una deviazione del contorno è la stessa dei pezzi** (ADR-0208, punto
+   1): fra due nodi sulla linea, più lontana di `LIFT_FAR` = 3/8 di
+   altezza di pezzo.
+2. **Si cammina solo se è un baffo**: i due capi distano in linea d'aria
+   al più `OUTLINE_GAP` = 1/2 altezza di pezzo (un ottavo del lato del
+   disegno), che è il buco lasciato nel contorno, e la strada della
+   deviazione è lunga almeno `OUTLINE_SPIKE` = 2 volte quel buco. Esce e
+   rientra vicino a dove è uscita: toglierla lascia un buco piccolo.
+3. **Le altre deviazioni restano disegnate**: dove le strade non seguono
+   il bordo per centinaia di metri, quel giro è il contorno.
+4. **Al più `OUTLINE_WALKS` = 2 baffi camminati**, i più profondi, e mai
+   più di `MAX_WALKS` = 9 tratti a piedi fra contorno e pezzi (le
+   deviazioni più profonde per prime).
+5. **Un baffo che torna allo stesso nodo si taglia** senza tratti a
+   piedi, come nei pezzi. Sui percorsi veri è raro: `snap_to_network` li
+   toglie già quasi tutti (nelle nove richieste guardate ce n'è uno solo,
+   profondo 38 m, sotto la soglia).
+6. **La partenza resta il primo punto**: il contorno comincia dal suo
+   primo nodo, e una deviazione che parte da lì resta disegnata.
+7. **I metri dei baffi contano ancora nella distanza inseguita**, come in
+   ADR-0208 (punto 7).
+8. **Solo le forme a pezzi chieste con `pen_up`**: senza `pen_up`, per le
+   parole e sull'acqua niente cambia.
+
+**Alternative scartate**, provate sulle stesse richieste (immagini in
+`out/task-243/`, fuori dal repository):
+
+- **La regola dei pezzi anche sul contorno** (ogni deviazione oltre
+  `LIFT_FAR`): la faccina da 15 km a Trento passa a 0,83 di somiglianza
+  ma con 8 tratti a piedi, 6,4 km a piedi e 11,1 disegnati; la ricerca
+  sceglie un altro disegno, con quattro buchi nel bordo e i tratti a
+  piedi che tagliano dentro la faccia. La somiglianza premia i buchi.
+- **Lo stesso con un tetto di due**: i buchi arrivano a 450–500 m su un
+  contorno di 6 km.
+- **Solo il buco piccolo, senza chiedere che sia un baffo**: sulla
+  faccina dello screenshot apriva il bordo in alto a sinistra per un giro
+  di 346 m che lo segue da vicino (la strada è meno del doppio del buco),
+  senza togliere nulla di storto.
+- **Una soglia più bassa per il contorno** (2/8 di altezza): 23 richieste
+  su 42 cambiano invece di 18, spesso con due tratti a piedi in più per
+  rientranze di 120–180 m che all'occhio dell'agente si leggono come
+  bordo.
+- **Misurare il baffo sul tratto a piedi** (strada lunga almeno il
+  doppio della via più breve fra i due capi): cambia una richiesta su 42.
+  I baffi lunghi sono quasi sempre l'unica strada (un sottopasso), come
+  la bocca di ADR-0208: a piedi sono lunghi uguale, ma non si disegnano.
+- **Solo i baffi che tornano allo stesso nodo**: nelle nove richieste
+  guardate nessuno supera la soglia, e non cambia niente.
+
+**Misure** (2026-10-05, Mac, zone in cache; `ROUTE_ENGINE.md` §5 ha la
+tabella): su 42 richieste da una partenza sola 22 danno lo stesso
+percorso, 18 cambiano, una diventa disponibile e una resta non
+disponibile. In 12 delle 18 il disegno è lo stesso con un baffo o due
+camminati, e la somiglianza sale (da 0,008 a 0,044); in 6 la ricerca
+sceglie un altro disegno (somiglianza su in 3, uguale in 2, giù in una).
+In media 1,0 km disegnati in meno e 0,8 km a piedi in più. Otto richieste
+senza pezzi, con la penna giù o di parole danno lo stesso percorso di
+`main`, punto per punto. La faccina dello screenshot (CLI, `--nearby 3`):
+0,79 → 0,80, stesso disegno, 12,9 → 12,3 km disegnati, 4 → 5 tratti a
+piedi (quello nuovo è di 47 m), 15,8 → 15,3 km in tutto.
+
+**Conseguenze**:
+
+- Più tratti a piedi: uno o due in più dove il contorno ha baffi, e la
+  voce «Part done. Walk to the next part» anche a metà del contorno.
+- I km «di disegno» scendono ancora sotto la distanza chiesta (la
+  ciambella da 10 km a Milano: 7,9 km disegnati e 1,0 a piedi).
+- La ricerca può scegliere un altro disegno, e non sempre è meglio
+  all'occhio: la faccina da 15 km a Milano perde il contorno intero per
+  uno più piccolo con due aperture, a somiglianza uguale (0,90).
+- Una forma può diventare disponibile grazie ai baffi tolti (la ciambella
+  da 10 km a Levico, 0,62), con un disegno appena sopra la soglia.
+- `engine.zip` è rifatto; gli esempi tenuti sul server cambiano (da
+  rifare con `draw_examples`, del coordinatore).
+
+**Giudizio dell'utente**: in attesa, sulle immagini prima/dopo dei
+campioni (`samples/`, `TASK-243_*`).

@@ -1,6 +1,6 @@
 # TASK-243 — La penna si alza anche sulle deviazioni del contorno
 
-**Stato**: Todo
+**Stato**: In revisione (in attesa del giudizio dell'utente sui campioni)
 **Fase**: 2 · **Branch**: `feat/TASK-243-outline-detours`
 
 ## Obiettivo
@@ -97,14 +97,15 @@ buono.
 
 ## Criteri di accettazione
 
-- [ ] Un contorno con una lunga deviazione si disegna senza, con un tratto
-      a piedi; la partenza resta il primo punto del percorso.
-- [ ] Un baffo del contorno che torna al suo nodo si taglia senza tratti a
+- [x] Un contorno con una lunga deviazione si disegna senza, con un tratto
+      a piedi; la partenza resta il primo punto del percorso. *(Solo se la
+      deviazione è un baffo: ADR-0209. Le altre restano disegnate.)*
+- [x] Un baffo del contorno che torna al suo nodo si taglia senza tratti a
       piedi; un baffo verso un angolo della forma resta.
-- [ ] Mai più di `MAX_WALKS` tratti a piedi, contorno e pezzi insieme.
-- [ ] Forme senza pezzi, parole, acqua e ogni richiesta senza `pen_up`:
+- [x] Mai più di `MAX_WALKS` tratti a piedi, contorno e pezzi insieme.
+- [x] Forme senza pezzi, parole, acqua e ogni richiesta senza `pen_up`:
       stesso percorso di `main`, punto per punto.
-- [ ] Un confronto su più forme e città scritto in `ROUTE_ENGINE.md`:
+- [x] Un confronto su più forme e città scritto in `ROUTE_ENGINE.md`:
       quante richieste cambiano, in meglio o in peggio.
 - [ ] Test del motore e dell'API verdi; `engine.zip` rifatto.
 - [ ] Il giudizio dell'utente sui campioni.
@@ -134,6 +135,41 @@ docs/tasks/TASK-243.md
 - Il server, `draw_examples` e la pubblicazione: del coordinatore, con
   l'ok dell'utente.
 
+## A che punto è (2026-10-05)
+
+Codice, test, `engine.zip`, campioni e documenti sono nel branch, in PR.
+**Manca il giudizio dell'utente** sulle immagini prima/dopo: sono in
+`out/task-243/cli/` del checkout principale (fuori dal repository), una
+per campione di `samples/LOG.md`, rifatte da `gpx_pair.py` nella stessa
+cartella. Dopo il «sì»: scrivere il giudizio in `samples/LOG.md`, in
+ADR-0209 e qui sotto, spuntare l'ultimo criterio, stato `Done`, e
+«#NNN pronta» al coordinatore. Con un «no»: le alternative provate sono
+in ADR-0209, gli strumenti in `out/task-243/` (`explore.py` con
+`POLICY=before|all`, `run3.sh` per le 42 richieste, `summary.py`,
+`pairs.py`).
+
 ## Esito
 
-*(a fine task)*
+La regola scelta (ADR-0209): sul contorno si camminano solo i **baffi**,
+le deviazioni che rientrano vicino a dove escono; le altre restano
+disegnate. Applicare al contorno la regola dei pezzi, com'era scritto in
+«Da dove si parte», lo riempiva di buchi e spostava la ricerca su disegni
+peggiori.
+
+Emerso:
+
+- quasi nessun baffo torna allo stesso nodo (`snap_to_network` li toglie
+  già): il guadagno vero sono i baffi che rientrano a pochi metri, e
+  vogliono un tratto a piedi;
+- la somiglianza premia ogni buco nel contorno: non basta per scegliere
+  la regola, vanno guardate le immagini;
+- cambiando ciò che la ricerca misura, in 6 richieste su 42 sceglie un
+  altro disegno: quasi sempre migliore o pari, a Milano (faccina, 15 km)
+  peggiore all'occhio dell'agente.
+
+Rimandato:
+
+- **`schemas.py` e `models.py`** descrivono ancora i `walks` come «uno in
+  meno dei pezzi» (come dopo TASK-242).
+- **Server e `draw_examples`**: del coordinatore, con l'ok dell'utente.
+- **La prova sull'iPhone** di un tratto a piedi a metà del contorno.

@@ -22,12 +22,13 @@ import {
   type RecommendedRouteDetail,
 } from "../explore/recommendedRoutes";
 import type { ThemedResult } from "../explore/themedRoutes";
-import { decimal, t } from "../i18n";
+import { t } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
 import { onFootOf } from "../route/onFoot";
 import { isPenUpShape } from "../route/penUpShapes";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
 import { walksOf } from "../route/walks";
+import { distanceLabel } from "../units/format";
 import { favoriteKey } from "./favoriteKey";
 
 /**
@@ -202,9 +203,10 @@ export function favoriteTitle(favorite: {
   );
 }
 
-/** "Star · 5.1 km": the first line of a favorite's card. */
+/** "Star · 5.1 km": the first line of a favorite's card, in the app's
+ * units (TASK-182: "Star · 3.2 mi"). */
 export function favoriteHeading(favorite: Favorite): string {
-  return `${favoriteTitle(favorite)} · ${decimal(favorite.route_m / 1000, 1)} km`;
+  return `${favoriteTitle(favorite)} · ${distanceLabel(favorite.route_m)}`;
 }
 
 /** Where a favorite is, as its card says it; null when nobody knows. */

@@ -1,6 +1,6 @@
 # TASK-238 — Spostare la figura sull'acqua
 
-**Stato**: In corso (parte A fatta, PR #347; parte B da fare)
+**Stato**: Done (parte A PR #347, `797c4bb`; parte B PR #350). Aperti dopo il merge: il server, la pubblicazione, la prova con un dito vero
 **Fase**: 4 · **Branch**: `feat/TASK-238-paddle-move-shape` (A),
 `feat/TASK-238-paddle-move-app` (B)
 **Dipende da**: TASK-191 (la canoa), TASK-226 (le forme a pezzi sull'acqua)
@@ -66,9 +66,9 @@ controllato da test di contratto in tutti e tre)
    una riga lo dice.
 8. I testi, in cinque lingue, **da far confermare all'utente**.
 9. Gli esempi di «Explore» con «Paddle» non hanno `centre` (sono dentro
-   l'app, disegnati prima): se e come si spostano è da decidere in B
-   (ridisegnarli con `centre`, o chiedere il percorso al server al primo
-   «Move»).
+   l'app, disegnati prima): **non si spostano**, come i preferiti. Per
+   farlo servirebbe ridisegnarli con `centre`, o chiedere il percorso al
+   server al primo «Move the shape»: un seguito, da chiedere all'utente.
 
 ## Criteri di accettazione
 
@@ -95,12 +95,25 @@ Parte A:
 
 Parte B:
 
-- [ ] Con un percorso in canoa in «Draw», «Move» fa trascinare la figura;
-      al rilascio il percorso si ridisegna vicino a dove è stata lasciata.
-- [ ] Mentre si trascina la mappa non si sposta; fuori dal modo «sposta»
-      la mappa è com'era.
-- [ ] Con un'API senza `centre` «Move» non compare.
-- [ ] I testi sono confermati dall'utente.
+- [x] Con un percorso in canoa in «Draw», «Move the shape» fa trascinare
+      la figura; al rilascio l'app richiede lo stesso percorso con `near`
+      (`__tests__/AppPaddleMove.test.tsx`).
+- [x] Mentre si trascina la mappa non si sposta; fuori dal modo «sposta»
+      la mappa è com'era (`src/map/mapPageMove.test.ts`, e provato con
+      MapLibre vero nel browser: la mappa ferma, la figura sotto il dito,
+      `moved` all'app, poi la mappa che torna a muoversi).
+- [x] Con un'API senza `centre` «Move the shape» non compare.
+- [x] Se la figura non ci sta dov'è stata lasciata, una riga lo dice.
+- [x] I testi sono confermati dall'utente (2026-10-05: «vanno bene i
+      testi, fai il merge»).
+- [x] Visto nel simulatore (iPhone 17, Expo Go, l'API del worktree con
+      l'acqua vera di Riccione), con un dito finto dentro la pagina della
+      mappa: «Move the shape», la figura che segue il dito a mappa ferma,
+      la figura che resta dov'è stata lasciata durante l'attesa, il
+      percorso nuovo con «Start here» e la riga «The shape does not fit
+      there…». La prova ha trovato un difetto, corretto: con `on_foot: []`
+      nella risposta vera la figura tornava al posto di prima durante
+      l'attesa.
 
 ## File toccati
 
@@ -141,12 +154,33 @@ Parte B (previsti):
 apps/mobile/src/map/messages.ts
 apps/mobile/src/map/mapPage.ts
 apps/mobile/src/map/MapView.tsx
-apps/mobile/src/paddle/MoveShape.tsx                  (nuovo)
-apps/mobile/src/paddle/moveShape.ts                   (nuovo)
+apps/mobile/src/map/mapPageMove.test.ts               (nuovo)
+apps/mobile/src/map/MapViewMove.test.tsx              (nuovo)
+apps/mobile/src/paddle/MoveShape.tsx                  (nuovo, con il test)
+apps/mobile/src/paddle/shapeMove.ts                   (nuovo, con il test)
+apps/mobile/src/paddle/useMoveShape.ts                (nuovo, con il test)
+apps/mobile/src/route/RoutePanel.tsx
 apps/mobile/App.tsx
+apps/mobile/__tests__/AppPaddleMove.test.tsx          (nuovo)
 apps/mobile/src/i18n/{de,es,fr,it}.ts
 docs/UI.md
+docs/DECISIONS.md                                     (ADR-0202, punti 8 e 9)
+docs/STATUS.md
+docs/tasks/TASK-238.md
 ```
+
+## I testi della parte B, confermati dall'utente il 2026-10-05
+
+| Dove | Inglese | Italiano |
+|---|---|---|
+| Pulsante sotto «Start» | Move the shape | Sposta la forma |
+| Pannello, titolo | Move the shape | Sposta la forma |
+| Pannello, cosa fare | Drag the shape where you want it, then let go. | Trascina la forma dove la vuoi, poi lasciala. |
+| Pannello, nota | It stays on the water, off the shore, where it fits. | Resta sull'acqua, lontana dalla riva, dove ci sta. |
+| Pannello, uscita | Cancel | Annulla |
+| Se non ci sta | The shape does not fit there: this is the nearest place. | Lì la forma non ci sta: questo è il posto più vicino. |
+
+Tedesco, spagnolo e francese sono in `src/i18n/`.
 
 ## Fuori scope
 
@@ -169,9 +203,24 @@ docs/UI.md
   rilanciato `draw_examples`. L'app della parte B si può pubblicare anche
   prima: senza `centre` nella risposta «Move» non compare.
 
+## Aperto dopo il merge
+
+- **Il server**: va aggiornato con la parte A e poi va rilanciato
+  `draw_examples` (ok dell'utente, dal coordinatore). Fino ad allora la
+  risposta non ha `centre` e «Move the shape» non compare.
+- **La pubblicazione dell'app**, dopo il server.
+- **La prova con un dito vero** sull'iPhone (il simulatore, senza
+  l'accesso dell'utente, non si tocca): che il dito non faccia scorrere la
+  pagina e che le due dita ingrandiscano.
+- **Gli esempi di «Explore» e i preferiti** non si spostano (punto 9): se
+  li si vuole spostabili è un task nuovo, da chiedere all'utente.
+
 ## Esito
 
-*(parte A)* Il motore mette la figura vicino a un punto chiesto, l'API lo
-passa e risponde il centro, il contratto li ha tutti e due. Sull'acqua
-vera uno spostamento costa 1–6 s. La parte visibile, il trascinamento, è
-la parte B.
+Sull'acqua la figura si sposta col dito: «Move the shape», un
+trascinamento a mappa ferma, e il motore la mette nel posto più vicino in
+cui ci sta (1–6 s sull'acqua vera); se non ci stava, l'app lo dice. Senza
+spostamento niente è cambiato: i 32 esempi dell'app sono identici. La
+prova nel simulatore ha trovato un difetto, corretto (la figura tornava
+al posto di prima durante l'attesa). Restano il server, la pubblicazione e
+la prova con un dito vero, scritti sopra e in `STATUS.md`.

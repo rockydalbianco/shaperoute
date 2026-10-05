@@ -10298,6 +10298,21 @@ motore, mai l'app.
 7. **I campi sono facoltativi** nel contratto. Un'app di prima non manda
    `near`; un'API di prima lo rifiuta, e l'app offre lo spostamento solo
    se il risultato ha `centre`.
+8. **Il trascinamento è un modo, non un gesto in più** (parte B). Fuori
+   da «Move the shape» la mappa è quella di sempre: un dito la sposta, due
+   la ingrandiscono. Dentro, **un dito sposta la forma, ovunque tocchi**
+   (non serve prendere la linea, che su un telefono è larga pochi pixel),
+   e la mappa non si sposta (`dragPan` spento, `touch-action: none` sulla
+   mappa); **due dita fanno ancora lo zoom**, e se arrivano a metà
+   trascinamento rimettono la forma dov'era, senza dire niente all'app. Un
+   dito che si muove meno di 8 px non ha spostato niente. Dal modo si esce
+   lasciando la forma o con «Cancel». Così i due gesti non si possono
+   confondere: lo dice il pannello sotto la mappa, non la distanza del
+   dito dalla linea.
+9. **La forma resta dove il dito l'ha lasciata** finché il motore non
+   risponde: la pagina tiene il percorso di prima traslato, l'app non lo
+   ridisegna (gli stessi array), poi arriva quello vero. Se il motore l'ha
+   messo a più di 80 m da lì, una riga lo dice.
 
 **Alternative scartate**: mandare uno spostamento in metri rispetto al
 posto automatico (il motore dovrebbe piazzare due volte, e dopo il primo
@@ -10308,7 +10323,10 @@ rispettare il punto a ogni costo (porta la forma sulla terra o fuori
 dalla fascia: la sicurezza dei margini è una scelta dell'utente del
 2026-10-03); far scegliere all'app anche scala e rotazione (è TASK-232, e
 resta del motore); tenere fissi scala e rotazione di prima (in una baia
-stretta la forma non ci starebbe più, e la richiesta dovrebbe portarli).
+stretta la forma non ci starebbe più, e la richiesta dovrebbe portarli);
+prendere la forma toccando la linea, senza un modo (la linea è larga
+4 px, e un dito accanto sposterebbe la mappa: lo stesso gesto farebbe due
+cose); tenere premuto per prenderla (un gesto che nessuno scopre da solo).
 
 **Conseguenze**:
 
@@ -10584,3 +10602,114 @@ pezzo e l'altro, mai dentro un pezzo.
 
 **Giudicato dall'utente** (2026-10-05, sulle immagini prima/dopo della
 faccina e della ciambella a Trento): «sì, va bene, fai il merge».
+
+## ADR-0149 — Le unità di misura: km o miglia scelti in «Settings», l'unità del telefono alla partenza, la conversione solo dove si mostra
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente (TASK-182)
+(parte A). Le **scelte dell'utente** (2026-10-03): si parte dall'unità del
+telefono, e con le miglia si fa come Strava (distanze in mi, passo in
+min/mi, voce a ogni miglio, distanze brevi in piedi). Il modo, qui sotto,
+è dell'agente. Numero tenuto dal coordinatore dal 2026-10-02.
+
+**Contesto**: «Units» era in «Settings» con «Soon» (ADR-0145). L'app
+scrive le distanze a mano in decine di file, quasi tutti di altri lavori
+in corso; il motore, l'API e il GPX lavorano in metri (`CLAUDE.md`). La
+lingua (ADR-0172) ha già lo schema: la scelta in un file, la partenza dal
+telefono, un cambio che vale subito.
+
+**Decisione**:
+
+1. **`src/units/`, sullo schema della lingua.** `Units = "km" | "mi"`; la
+   scelta sta in `units.json` nei documenti (`{"units":"mi"}`), «Phone
+   units» cancella il file; un file che non si legge vale «telefono». La
+   scelta vale subito: `saveUnitsChoice()` avvisa chi ascolta.
+2. **Si converte solo dove si mostra.** Il motore, l'API, il GPX, i file
+   sul telefono e il database restano in metri. I formattatori
+   (`src/units/format.ts`) prendono metri e scrivono nell'unità dell'app
+   (o in quella passata): `distanceLabel` («5.2 km» / «3.2 mi», con la
+   virgola di `decimal()` nelle lingue che la usano), `wholeDistanceLabel`
+   («21 km» / «13 mi»), `awayNumber` («2.9», da dieci unità in su «13»),
+   `runDistanceLabel` («4.01 km» / «2.49 mi»), `paceLabel` («4:44 /km» /
+   «7:37 /mi»), `shortDistanceLabel` («50 m» / «150 ft»),
+   `nearDistanceLabel` (breve o no). 1 mi = 1609,344 m, 1 ft = 0,3048 m.
+3. **Con «Kilometres» l'app scrive quello che scriveva prima**, alla
+   lettera e in ogni lingua: un test confronta `runDistanceLabel` e
+   `paceLabel` con `kmLabel` e `paceLabel` di `navigation/freeRun.ts`.
+   Per questo i formattatori scrivono la virgola con `decimal()` (i
+   preferiti e i paesi vicini la scrivevano già), ma:
+   - la **distanza di una corsa** (due decimali) resta **con il punto in
+     ogni lingua**, come sulla schermata della corsa: la virgola lì
+     arriva, se arriva, insieme a quella schermata (parte B), non a metà;
+   - le schede di **«Explore»**, i cui testi sono ancora in inglese
+     (ADR-0172, parti successive), passano `withPoint` e restano con il
+     punto, anche in miglia: prendono la virgola quando vengono tradotte,
+     togliendo quel parametro.
+4. **Le distanze brevi**: i metri alla decina, i piedi ai cinquanta («50
+   m» → «150 ft», «100 m» → «350 ft»): sono i numeri che si dicono, e la
+   voce della parte B li userà così. «Quanto dista» passa dai piedi alle
+   miglia a 1000 piedi (dai metri ai km a 1000 m, come prima): mai «0.0
+   mi».
+5. **L'unità del telefono, senza dipendenze nuove**
+   (`src/units/phoneUnits.ts`), come la lingua legge `AppleLanguages`:
+   - su iOS, `Settings` di React Native legge `AppleMetricUnits` e
+     `AppleMeasurementUnits`, che ci sono quando il «Sistema di misura» è
+     stato scelto a mano (su un Mac con la regione e nient'altro mancano:
+     per questo serve la regione); si leggono come li legge iOS (non metrico = Stati
+     Uniti; metrico con «Inches» = Regno Unito: tutti e due in miglia);
+   - altrimenti la **regione** del telefono, da `AppleLocale` e da
+     `I18nManager.localeIdentifier` (anche su Android): miglia per Stati
+     Uniti, Regno Unito, Liberia e Myanmar, cioè i paesi che iOS mette nei
+     sistemi «US» e «UK»; una regione o un sistema scritti nel locale
+     (`@rg=uszzzz`, `@measure=metric`, `-u-ms-…`) vengono prima;
+   - se il telefono non dice niente (nei test, sempre): **km**.
+6. **Nessun `useUnits()` alla radice.** La lingua ridisegna tutto da
+   `App.tsx`, che oggi è di altri task. `useUnits()` (con
+   `useSyncExternalStore`) lo chiama **ogni componente che scrive una
+   distanza**: si ridisegna da solo quando «Settings» cambia. I
+   formattatori leggono l'unità dell'app (`appUnits()`), come `decimal()`
+   legge la lingua: chi li usa senza `useUnits()` è giusto alla prossima
+   volta che si disegna.
+7. **La riga «Units»** (`src/settings/UnitsSetting.tsx`) è la copia di
+   «Language»: stessa riga, stesse scelte sotto, stesso «✓». In fondo alla
+   riga il nome dell'unità («Kilometres», «Miles»), non la sigla. Sta
+   sotto «Offline maps», dov'era la riga con «Soon».
+8. **I testi con l'unità dentro** hanno una riga per unità nelle tabelle
+   («{km} km away» e, nuova, «{mi} mi away»): le righe degli altri non si
+   riscrivono, e in km le traduzioni restano quelle. Le sigle «km», «mi»,
+   «m», «ft» non si traducono.
+9. **A pezzi**, come la lingua. Parte A: il modulo, la riga, «My
+   activities», i preferiti, le schede di «Explore». `runFacts` e
+   `favoriteHeading` cambiano dove sono definiti, quindi anche la scheda
+   della corsa aperta (`ActivityCard.tsx`, non toccata) scrive in miglia.
+
+**Alternative scartate**: `expo-localization` (una dipendenza per leggere
+una regione); `Intl.NumberFormat` con `unit` (scrive il numero, ma non
+dice l'unità del telefono, e cambierebbe i testi in km); convertire nell'API (un contratto in più
+per una cosa che è solo di chi guarda); `useUnits()` in `App.tsx` (file di
+altri task: si può aggiungere dopo senza cambiare niente); un testo solo
+«{distance} away» con dentro numero e sigla (lascerebbe senza uso le righe
+di TASK-236 nelle tabelle, che il test delle tabelle rifiuta); le yarde
+(fuori scope); i piedi alla decina («160 ft» non lo dice nessuno).
+
+**Conseguenze**:
+
+- Finché la parte B non c'è, con «Miles» l'app è **mista**: liste e
+  schede in miglia, «Draw», la corsa, la voce, il «Feed», i disegni
+  pubblici, «Explore» con «Paddle» e le frasi di «Explore» in km. Con
+  «Kilometres», e su ogni telefono che non misura in miglia, niente cambia.
+  **Scelta dell'utente del 2026-10-05**: la parte A si pubblica subito,
+  ma finché non c'è la parte B l'app **parte in km su ogni telefono** e
+  «Settings» non offre «Phone units» (`FOLLOWS_PHONE` in
+  `src/units/followsPhone.ts`, oggi `false`); solo chi sceglie «Miles» a
+  mano vede l'app mista. La parte B accende l'interruttore, e da allora
+  vale il punto 5: un telefono degli Stati Uniti o del Regno Unito parte
+  in miglia.
+- **Non provato su un iPhone**: che `Settings` di React Native dia
+  `AppleLocale`, `AppleMetricUnits` e `AppleMeasurementUnits` in Expo Go è
+  dedotto da come dà `AppleLanguages` (ADR-0172), non visto. Se non li dà,
+  l'app resta in km e la scelta a mano funziona lo stesso.
+- Cinque testi nuovi in inglese e nelle quattro lingue: «Phone units»,
+  «Kilometres», «Miles», «{mi} mi away», «{town}, {mi} mi away».
+- Solo app: nessuna dipendenza, niente server.
+- Parte B: chi scrive una distanza usa `src/units/format.ts` e chiama
+  `useUnits()`; la distanza di «Draw» in miglia (passi e limiti dentro
+  `DISTANCE_LIMITS_M`) è una scelta ancora da fare lì.

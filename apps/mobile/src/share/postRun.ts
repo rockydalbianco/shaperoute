@@ -22,8 +22,6 @@ export type PostRun = {
   distanceM: number;
   /** The time of the run, its pauses left out. */
   durationMs: number;
-  /** From 0 to 100; null for a run without one. */
-  score: number | null;
 };
 
 /** A run of «My activities» as its post shows it: its title, or where it
@@ -35,20 +33,17 @@ export function postOfActivity(activity: ActivityDetail): PostRun {
     track: activity.track,
     distanceM: activity.distance_m,
     durationMs: activity.duration_s * 1000,
-    score: activity.score,
   };
 }
 
-/** A run that just ended, before «Save»: no title yet, and its score once
- * the API has given it. */
-export function postOfTrack(track: Track, score: number | null): PostRun {
+/** A run that just ended, before «Save»: no title yet. */
+export function postOfTrack(track: Track): PostRun {
   return {
     key: null,
     title: null,
     track: track.fixes.map((fix) => fix.point),
     distanceM: track.distanceM,
     durationMs: durationMs(track),
-    score,
   };
 }
 
@@ -59,16 +54,12 @@ export function postOfTrack(track: Track, score: number | null): PostRun {
  */
 export const POST_CUT_M = 200;
 
-/** A number of the run the post can show, each one on or off. */
-export type PostResult = "distance" | "time" | "pace" | "score";
+/** A number of the run the post can show, each one on or off. Never its
+ * score: the post has none (TASK-241, the user's choice). */
+export type PostResult = "distance" | "time" | "pace";
 
 /** In the order the post shows them. */
-export const POST_RESULTS: readonly PostResult[] = [
-  "distance",
-  "time",
-  "pace",
-  "score",
-];
+export const POST_RESULTS: readonly PostResult[] = ["distance", "time", "pace"];
 
 /** The name of a result, as the post writes it over its number. */
 export function resultName(result: PostResult): string {
@@ -79,13 +70,11 @@ export function resultName(result: PostResult): string {
       return t("Time");
     case "pace":
       return t("Pace");
-    case "score":
-      return t("Score");
   }
 }
 
 /** The number of `result` for `run`, as runners read it; null when the run
- * has none (no score, too short for a pace). */
+ * has none (too short for a pace). */
 export function resultValue(run: PostRun, result: PostResult): string | null {
   switch (result) {
     case "distance":
@@ -94,8 +83,6 @@ export function resultValue(run: PostRun, result: PostResult): string | null {
       return clockLabel(run.durationMs);
     case "pace":
       return paceLabel(run.distanceM, run.durationMs);
-    case "score":
-      return run.score === null ? null : String(run.score);
   }
 }
 
@@ -106,7 +93,7 @@ export function resultsOf(run: PostRun): PostResult[] {
 
 /**
  * The text that goes with the post to Strava: the emoji, then the results
- * shown, as in «🔥❤️ 5.20 km · 28:10 · 5:25 /km · Score 87». The API puts
+ * shown, as in «🔥❤️ 5.20 km · 28:10 · 5:25 /km». The API puts
  * «Drawn with Sgrava» under it. Null when there is nothing to say.
  */
 export function postCaption(
@@ -115,13 +102,7 @@ export function postCaption(
   emoji: readonly string[],
 ): string | null {
   const numbers = POST_RESULTS.filter((result) => shown.includes(result))
-    .map((result) => {
-      const value = resultValue(run, result);
-      if (value === null) {
-        return null;
-      }
-      return result === "score" ? t("Score {score}", { score: value }) : value;
-    })
+    .map((result) => resultValue(run, result))
     .filter((part): part is string => part !== null)
     .join(" · ");
   const caption = [emoji.join(""), numbers].filter((part) => part !== "").join(" ");

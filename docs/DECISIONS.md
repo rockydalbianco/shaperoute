@@ -9543,6 +9543,10 @@ dall'agente su delega dell'utente):
 9. **Nell'app** «Update on Strava» compare su una corsa già là solo se il
    post ha un testo.
 
+**Aggiornamento** (2026-10-05, TASK-241 parte C, scelta dell'utente): il
+punteggio non è più fra i risultati del post né nel testo per Strava
+(punto 5: «🔥❤️ 5.20 km · 28:10 · 5:25 /km»). Vedi ADR-0207.
+
 ## ADR-0180 — Il confronto dei km nella voce: i secondi della fine corsa, una frase a parte, in bici ogni 10 km senza numeri
 **Stato**: Attiva · 2026-10-05 · **scelte dell'utente** (2026-10-03) la
 frase a ogni km con i secondi, «stesso passo» entro 2 s, niente al primo
@@ -10382,6 +10386,18 @@ dell'utente: «sì toglilo anche da VoiceOver»): il punto 3 non vale più.
 L'etichetta del post è «{user} in {city}: {title}. {facts}.», senza
 punteggio, in inglese e nelle quattro tabelle (`de`, `es`, `fr`, `it`).
 Chi ascolta sente quello che gli altri vedono.
+
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte C; scelta
+dell'utente: «togli il punteggio anche dal post da condividere»): del
+punto 4 non vale più «nel post da condividere». Nel post di «Share»
+(ADR-0194) i risultati sono tre, «Distance», «Time», «Pace»: «Score» non
+si può accendere, non è sull'immagine e, poiché il testo per Strava è
+fatto dei risultati accesi, non va nemmeno là (deciso dall'agente su
+delega: un punteggio nel testo e non nel post direbbe due cose diverse).
+`PostRun` non porta più il punteggio e `postOfTrack` non lo riceve; la
+chiave «Score» esce dalle quattro tabelle, «Score {score}» resta per «My
+activities» e i disegni del «Profile». A fine corsa, in «My activities» e
+sotto un disegno aperto dal «Profile» il punteggio si vede come prima.
 
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente

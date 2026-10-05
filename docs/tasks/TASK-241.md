@@ -79,10 +79,46 @@ docs/DECISIONS.md
 docs/tasks/TASK-241.md
 ```
 
+## Parte C — Niente punteggio nel post da condividere
+
+Chiesto dall'utente il 2026-10-05: «togli il punteggio anche dal post da
+condividere». Branch `feat/TASK-241-c-share-no-score`.
+
+Nel post di «Share» (TASK-231) «Score» esce dai risultati: niente
+pastiglia in «Results», niente numero sull'immagine, niente «Score 87»
+nel testo per Strava. `PostRun` non porta più il punteggio.
+
+- [x] «Results» offre solo «Distance», «Time», «Pace».
+- [x] L'immagine del post non mostra il punteggio.
+- [x] Il testo per Strava non contiene il punteggio.
+- [x] Lint, typecheck, Prettier e test dell'app verdi.
+
+```
+apps/mobile/src/share/postRun.ts
+apps/mobile/src/share/postRun.test.ts
+apps/mobile/src/share/PostImage.tsx
+apps/mobile/src/share/SharePost.test.tsx
+apps/mobile/src/screens/FinishScreen.tsx
+apps/mobile/src/screens/FreeRunScreen.tsx
+apps/mobile/src/i18n/de.ts
+apps/mobile/src/i18n/es.ts
+apps/mobile/src/i18n/fr.ts
+apps/mobile/src/i18n/it.ts
+docs/UI.md
+docs/STATUS.md
+docs/DECISIONS.md
+docs/tasks/TASK-241.md
+```
+
+Fuori scope: il punteggio a fine corsa, in «My activities» e sotto un
+disegno aperto dal «Profile».
+
 ## Esito
 
 Fatto il 2026-10-05. Parte A (PR #345, merge `ad80385`): il riquadro non
 c'è più, nel «Feed» e nei post che «Explore» mostra mentre disegna una
-città (stesso componente). Parte B: nemmeno VoiceOver legge più il
-punteggio. Non pubblicato: esce con la prossima pubblicazione, con l'ok
-dell'utente.
+città (stesso componente). Parte B (PR #348, merge `69af6c6`): nemmeno
+VoiceOver legge più il punteggio. Parte C: il post da condividere non ha
+più il punteggio, nemmeno nel testo per Strava. Le pubblicazioni le fa il
+coordinatore, con l'ok dell'utente: la C esce con la prima che parte da
+un `main` che la contiene.

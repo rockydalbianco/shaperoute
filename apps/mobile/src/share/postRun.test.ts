@@ -1,11 +1,11 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
 import type { ActivityDetail } from "../api/activities";
-import { saveLanguageChoice } from "../i18n/language";
 import { metresBetween } from "../map/coordinates";
 import type { Track } from "../navigation/trackRecorder";
 import {
   POST_CUT_M,
+  POST_RESULTS,
   postCaption,
   postOfActivity,
   postOfTrack,
@@ -16,8 +16,6 @@ import {
 } from "./postRun";
 
 jest.mock("expo-file-system");
-
-afterEach(() => saveLanguageChoice("phone"));
 
 /** A straight line north from Trento, a point every `step` metres. */
 function north(metres: number, step = 50): LatLon[] {
@@ -40,44 +38,34 @@ const RUN: PostRun = {
   track: north(5200),
   distanceM: 5200,
   durationMs: (28 * 60 + 10) * 1000,
-  score: 87,
 };
 
 describe("the results of a post", () => {
-  it("are distance, time, pace and score, as runners read them", () => {
-    expect(resultsOf(RUN)).toEqual(["distance", "time", "pace", "score"]);
+  it("are distance, time and pace, as runners read them, and never the score", () => {
+    expect(resultsOf(RUN)).toEqual(["distance", "time", "pace"]);
+    expect(POST_RESULTS).not.toContain("score");
     expect(resultValue(RUN, "distance")).toBe("5.20 km");
     expect(resultValue(RUN, "time")).toBe("28:10");
     expect(resultValue(RUN, "pace")).toBe("5:25 /km");
-    expect(resultValue(RUN, "score")).toBe("87");
   });
 
-  it("leave out a score the run does not have, and a pace too short to read", () => {
-    expect(resultsOf({ ...RUN, score: null })).toEqual(["distance", "time", "pace"]);
-    expect(resultsOf({ ...RUN, score: null, distanceM: 60 })).toEqual([
-      "distance",
-      "time",
-    ]);
+  it("leave out a pace too short to read", () => {
+    expect(resultsOf({ ...RUN, distanceM: 60 })).toEqual(["distance", "time"]);
   });
 });
 
 describe("the text that goes to Strava", () => {
   it("has the emoji, then the results shown, in the post's order", () => {
-    expect(postCaption(RUN, ["score", "distance", "time", "pace"], ["🔥", "❤️"])).toBe(
-      "🔥❤️ 5.20 km · 28:10 · 5:25 /km · Score 87",
+    expect(postCaption(RUN, ["pace", "distance", "time"], ["🔥", "❤️"])).toBe(
+      "🔥❤️ 5.20 km · 28:10 · 5:25 /km",
     );
-    expect(postCaption(RUN, ["score"], [])).toBe("Score 87");
+    expect(postCaption(RUN, ["time"], [])).toBe("28:10");
     expect(postCaption(RUN, [], ["🎉"])).toBe("🎉");
   });
 
   it("is nothing when the post says nothing", () => {
     expect(postCaption(RUN, [], [])).toBeNull();
-    expect(postCaption({ ...RUN, score: null }, ["score"], [])).toBeNull();
-  });
-
-  it("is in the app's language", () => {
-    saveLanguageChoice("it");
-    expect(postCaption(RUN, ["distance", "score"], [])).toBe("5.20 km · Punteggio 87");
+    expect(postCaption({ ...RUN, distanceM: 60 }, ["pace"], [])).toBeNull();
   });
 });
 
@@ -128,8 +116,8 @@ describe("a post made of", () => {
       key: "abc",
       distanceM: 5200,
       durationMs: 1_690_000,
-      score: 87,
     });
+    expect(post).not.toHaveProperty("score");
     expect(post.title).toBe("Trento · Heart");
     expect(postOfActivity({ ...activity, title: "Morning" }).title).toBe("Morning");
   });
@@ -141,14 +129,13 @@ describe("a post made of", () => {
       distanceM: 400,
       pauses: [{ fromMs: 30_000, toMs: 60_000 }],
     };
-    const post = postOfTrack(track, null);
+    const post = postOfTrack(track);
     expect(post).toEqual({
       key: null,
       title: null,
       track: points,
       distanceM: 400,
       durationMs: 90_000,
-      score: null,
     });
   });
 });

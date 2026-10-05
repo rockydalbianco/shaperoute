@@ -148,28 +148,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-238 — Spostare la figura sull'acqua** (ADR-0202; chiesto
-  dall'utente il 2026-10-05: «spostare la figura un po' più a destra, a
-  sinistra, più vicini alla riva»). L'utente ha scelto di **trascinarla
-  col dito**. **Parte A in `main`** (PR #347, merge `797c4bb`,
-  2026-10-05): la richiesta in canoa può avere
-  `near`, dove si vuole il centro della forma, e il risultato ha `centre`;
-  il motore mette la forma nel posto più vicino in cui ci sta, nella
-  fascia e con la riva a piedi entro 300 m (`water_fit.fit_shape(...,
-  near=)`, `--near` dalla CLI). Senza `near` niente cambia: i 32 esempi
-  dell'app sono identici. **Non è sul server**; dopo l'aggiornamento va
-  rilanciato `draw_examples`. **Parte B fatta** (branch
-  `feat/TASK-238-paddle-move-app`): «Move the shape» sotto «Start» in
-  «Draw» con «Paddle», un dito trascina la figura sulla mappa, al rilascio
-  l'app richiede il percorso con `near`; se la figura non ci sta lì una
-  riga lo dice. Senza `centre` nella risposta (il server di oggi) il
-  pulsante non compare. **Da confermare con l'utente** i sei testi (task
-  file); **da provare col dito sull'iPhone**, dopo l'aggiornamento del
-  server. Gli esempi di «Explore» e i preferiti non si spostano (seguito,
-  task file punto 9).
-  File toccati: quelli della parte A in `tasks/TASK-238.md`; per la B
-  `apps/mobile/src/map/{messages,mapPage}.ts`, `MapView.tsx`, `App.tsx`,
-  `src/paddle/`, `src/i18n/`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -526,6 +504,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Privacy»), **TASK-185** (gli interruttori delle notifiche).
 
 ## Completato
+
+- **Motore, API, app** — TASK-238: spostare la figura sull'acqua col dito
+  (ADR-0202; chiesto dall'utente il 2026-10-05, che ha scelto il
+  trascinamento). **Parte A** (PR #347, merge `797c4bb`): la richiesta in
+  canoa può avere `near`, dove si vuole il centro della forma, e il
+  risultato ha `centre`; il motore mette la forma nel posto più vicino in
+  cui ci sta, nella fascia e con la riva a piedi entro 300 m; senza `near`
+  niente cambia. **Parte B** (PR #350): «Move the shape» sotto «Start» in
+  «Draw» con «Paddle», un dito trascina la figura a mappa ferma, al
+  rilascio l'app richiede il percorso con `near`, e una riga dice se la
+  figura non ci stava. I sei testi sono **confermati dall'utente**
+  (2026-10-05). **Aspettano**: il server con la parte A e poi
+  `draw_examples` (ok dell'utente, dal coordinatore: fino ad allora il
+  pulsante non compare), la pubblicazione dell'app dopo il server, la
+  prova con un dito vero sull'iPhone. Gli esempi di «Explore» e i
+  preferiti non si spostano: seguito da chiedere. `tasks/TASK-238.md`.
 
 - **App** — TASK-241: niente punteggio sulle foto dei post del «Feed»
   (ADR-0207; chiesto dall'utente il 2026-10-05). Il riquadro «98 · out of

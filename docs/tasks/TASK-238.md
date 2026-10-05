@@ -1,6 +1,6 @@
 # TASK-238 — Spostare la figura sull'acqua
 
-**Stato**: In corso (parte A in `main`, PR #347, `797c4bb`; parte B fatta, in PR; il server e la prova col dito da fare)
+**Stato**: Done (parte A PR #347, `797c4bb`; parte B PR #350). Aperti dopo il merge: il server, la pubblicazione, la prova con un dito vero
 **Fase**: 4 · **Branch**: `feat/TASK-238-paddle-move-shape` (A),
 `feat/TASK-238-paddle-move-app` (B)
 **Dipende da**: TASK-191 (la canoa), TASK-226 (le forme a pezzi sull'acqua)
@@ -104,7 +104,8 @@ Parte B:
       `moved` all'app, poi la mappa che torna a muoversi).
 - [x] Con un'API senza `centre` «Move the shape» non compare.
 - [x] Se la figura non ci sta dov'è stata lasciata, una riga lo dice.
-- [ ] I testi sono confermati dall'utente.
+- [x] I testi sono confermati dall'utente (2026-10-05: «vanno bene i
+      testi, fai il merge»).
 - [x] Visto nel simulatore (iPhone 17, Expo Go, l'API del worktree con
       l'acqua vera di Riccione), con un dito finto dentro la pagina della
       mappa: «Move the shape», la figura che segue il dito a mappa ferma,
@@ -113,9 +114,6 @@ Parte B:
       there…». La prova ha trovato un difetto, corretto: con `on_foot: []`
       nella risposta vera la figura tornava al posto di prima durante
       l'attesa.
-- [ ] Provato con un dito vero (il simulatore senza l'accesso dell'utente
-      non si tocca; sull'iPhone dopo l'aggiornamento del server): che il
-      dito non faccia scorrere la pagina e che le due dita ingrandiscano.
 
 ## File toccati
 
@@ -171,7 +169,7 @@ docs/STATUS.md
 docs/tasks/TASK-238.md
 ```
 
-## I testi della parte B, da confermare con l'utente
+## I testi della parte B, confermati dall'utente il 2026-10-05
 
 | Dove | Inglese | Italiano |
 |---|---|---|
@@ -205,9 +203,24 @@ Tedesco, spagnolo e francese sono in `src/i18n/`.
   rilanciato `draw_examples`. L'app della parte B si può pubblicare anche
   prima: senza `centre` nella risposta «Move» non compare.
 
+## Aperto dopo il merge
+
+- **Il server**: va aggiornato con la parte A e poi va rilanciato
+  `draw_examples` (ok dell'utente, dal coordinatore). Fino ad allora la
+  risposta non ha `centre` e «Move the shape» non compare.
+- **La pubblicazione dell'app**, dopo il server.
+- **La prova con un dito vero** sull'iPhone (il simulatore, senza
+  l'accesso dell'utente, non si tocca): che il dito non faccia scorrere la
+  pagina e che le due dita ingrandiscano.
+- **Gli esempi di «Explore» e i preferiti** non si spostano (punto 9): se
+  li si vuole spostabili è un task nuovo, da chiedere all'utente.
+
 ## Esito
 
-*(parte A)* Il motore mette la figura vicino a un punto chiesto, l'API lo
-passa e risponde il centro, il contratto li ha tutti e due. Sull'acqua
-vera uno spostamento costa 1–6 s. La parte visibile, il trascinamento, è
-la parte B.
+Sull'acqua la figura si sposta col dito: «Move the shape», un
+trascinamento a mappa ferma, e il motore la mette nel posto più vicino in
+cui ci sta (1–6 s sull'acqua vera); se non ci stava, l'app lo dice. Senza
+spostamento niente è cambiato: i 32 esempi dell'app sono identici. La
+prova nel simulatore ha trovato un difetto, corretto (la figura tornava
+al posto di prima durante l'attesa). Restano il server, la pubblicazione e
+la prova con un dito vero, scritti sopra e in `STATUS.md`.

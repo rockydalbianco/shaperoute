@@ -117,21 +117,20 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `7098cb9` dal
-  2026-10-03 12:39Z, con le migrazioni `0001`–`0013`, la zona bici di
-  Trento con la bici a mano, gli esempi di 66 città e, dal 2026-10-04,
-  l'acqua dei quattro luoghi della canoa (TASK-225). **App** su `preview`
-  da `main` `7e9e27a` (gruppo `b6399e76`, 2026-10-04): canoa, navigazione
-  in bici, percorso fatto e da fare, cuore su giallo, pulsante giallo,
-  «Save» nel contorno, il motore sul telefono (che usa ancora il server).
-  **Da fare, con il server per primo**: aggiornarlo a `main` (motore di
-  TASK-223 e TASK-230, migrazioni `0014` e `0015`, `/phone-zones`), poi
-  `draw_examples`, poi pubblicare l'app. Fino ad allora `main` **non si
-  pubblica**: l'API di oggi rifiuta le quattro forme nuove di TASK-223 B.
-  L'utente ha chiesto di finire (2026-10-05); il deploy dalla sessione del
-  coordinatore è stato negato dal controllo dei permessi e aspetta una
-  regola di permesso o l'utente. Strava spento finché l'utente non scrive
-  il secret sul server.
+- **Server e app, al 2026-10-05**. **Server**: su `main` `3b6e821` dalle
+  02:42Z (ok dell'utente «Sì, aggiorna e pubblica», sessione di TASK-231),
+  con le migrazioni `0001`–`0015`, il motore di TASK-223 e TASK-230,
+  `/phone-zones` (le zone del telefono non sono ancora costruite), gli
+  esempi ridisegnati per 66 città su 66; immagine di prima
+  `shaperoute-api:before-task223`, copia del database
+  `shaperoute-2026-10-05T0241Z.dump`. **App** su `preview` da `main`
+  `e7bc8c1` (gruppo `f8951439`): le quattro forme nuove, la canoa in
+  «Explore» con otto forme, «Offline maps», «Share», le reazioni, il
+  confronto dei km nella voce. **Da provare sull'iPhone.** In `main` dopo:
+  TASK-226 A (#310, il motore dei pezzi sull'acqua): il server vuole un
+  altro aggiornamento con `draw_examples`, con l'ok dell'utente, **prima**
+  di pubblicare la parte B di TASK-226 (l'app). Strava spento finché
+  l'utente non scrive il secret sul server.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),

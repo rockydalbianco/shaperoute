@@ -477,13 +477,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   simulatore, con l'API spenta disegna il cuore da 5 km di Trento. Senza
   `/phone-zones` sul server l'app chiede tutto al server, come prima.
   L'utente ha scelto i testi delle mappe offline e il tetto del traffico
-  (task file). **Parte C** nella PR #295: in «Settings», sotto
+  (task file). **Parte C** in `main` dalla #295 (`17a9e6c`, 2026-10-04,
+  non pubblicata): in «Settings», sotto
   «Preferences», «Offline maps: 10 MB» con «Delete» e «Maps download on
   Wi-Fi and mobile data.»; sopra «Draw route», solo al primo download,
   «Downloading the maps of your area (10 MB) so routes work without
   signal.» con il peso vero (il posto l'ha scelto l'utente il
-  2026-10-04); nelle cinque lingue. Provata nel simulatore. **Dopo**, in
-  quest'ordine: A2, il tetto sul server; B2, le città vicine fino a 2 GB;
+  2026-10-04); nelle cinque lingue. Provata nel simulatore. **Parte A2**,
+  il tetto del traffico, nella sua PR (2026-10-05): le zone in più
+  arrivano con `?prefetch=1` e l'id anonimo del telefono, al massimo 300
+  MB al giorno per telefono e 300 GB in tutto; oltre, `429` con
+  `Retry-After` fino alla mezzanotte UTC, e l'app non ne chiede altre fino
+  ad allora. Conteggio in memoria: un riavvio lo rimette a zero. Non sul
+  server. **Dopo**, in quest'ordine: B2, le città vicine fino a 2 GB;
   D, la prova sull'iPhone, dopo l'aggiornamento del server con le zone del
   telefono.
   Niente server né pubblicazione senza l'ok dell'utente. Da dove

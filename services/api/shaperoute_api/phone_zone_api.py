@@ -6,6 +6,10 @@ zone is newer; its ETag lets the phone ask again and get 304. A point with no
 cached zone around it is a 404: the server draws routes there until a route
 asked of it downloads the zone. Nothing here downloads from Overpass.
 
+A zone the phone downloads ahead, not the one around it, comes with
+`?prefetch=1` and counts against the day's cap (phone_zone_cap.py, part A2):
+beyond it, 429 with Retry-After.
+
 `python -m shaperoute_api.phone_zone_api` writes the file of every cached
 zone ahead, so no phone waits for it (with the user's OK, as draw_examples).
 """
@@ -19,7 +23,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, FastAPI, Header, HTTPException, Query, Response
+from fastapi import APIRouter, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse
 from route_engine.network import (
     FILTERS,
@@ -28,6 +32,8 @@ from route_engine.network import (
     read_graph,
 )
 
+from shaperoute_api.access import refuse
+from shaperoute_api.phone_zone_cap import TrafficCap, phone_of
 from shaperoute_api.phone_zones import SUFFIX, write_zone, zone_bbox
 from shaperoute_api.schemas import ErrorBody
 
@@ -38,14 +44,20 @@ log = logging.getLogger(__name__)
 ZONE_MARGIN_M = 3000.0
 NO_ZONE = "No zone around this point on the server yet."
 UNKNOWN_NETWORK = f"Unknown network; one of: {', '.join(FILTERS)}."
+ENOUGH_TODAY = "Enough maps downloaded ahead today: try again tomorrow."
 
 
-def install_phone_zones(app: FastAPI, cache_dir: Path) -> None:
-    """The zones of `cache_dir` for the phone."""
-    app.include_router(phone_zone_routes(cache_dir))
+def install_phone_zones(
+    app: FastAPI, cache_dir: Path, cap: TrafficCap | None = None
+) -> None:
+    """The zones of `cache_dir` for the phone; `cap` defaults to the user's
+    300 MB a phone and 300 GB in all, a day."""
+    app.include_router(
+        phone_zone_routes(cache_dir, cap if cap is not None else TrafficCap())
+    )
 
 
-def phone_zone_routes(cache_dir: Path) -> APIRouter:
+def phone_zone_routes(cache_dir: Path, cap: TrafficCap) -> APIRouter:
     router = APIRouter()
 
     @router.get(
@@ -55,12 +67,15 @@ def phone_zone_routes(cache_dir: Path) -> APIRouter:
             200: {"content": {"application/gzip": {}}},
             304: {"description": "The phone already has this zone."},
             404: {"model": ErrorBody},
+            429: {"model": ErrorBody, "description": ENOUGH_TODAY},
         },
     )
     def phone_zone(
+        request: Request,
         network: str,
         lat: Annotated[float, Query(ge=-90, le=90)],
         lon: Annotated[float, Query(ge=-180, le=180)],
+        prefetch: Annotated[bool, Query()] = False,
         if_none_match: Annotated[str | None, Header()] = None,
     ) -> Response:
         if network not in FILTERS:
@@ -74,6 +89,16 @@ def phone_zone_routes(cache_dir: Path) -> APIRouter:
         tag = f'"{stat.st_mtime_ns:x}-{stat.st_size:x}"'
         if if_none_match == tag:
             return Response(status_code=304, headers={"ETag": tag})
+        if prefetch:
+            wait = cap.take(phone_of(request), stat.st_size)
+            if wait > 0:
+                log.info(
+                    "phone zone ahead refused: %.0f MB given today",
+                    cap.given_today() / 1e6,
+                )
+                return refuse(
+                    429, "too_many_requests", ENOUGH_TODAY, **{"Retry-After": str(wait)}
+                )
         return FileResponse(
             path,
             media_type="application/gzip",

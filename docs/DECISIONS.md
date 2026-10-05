@@ -8596,6 +8596,45 @@ download; testi e posto dell'avviso scelti dall'utente, `tasks/TASK-214.md`):
 avviso a ogni download (l'utente ha detto di no); chiedere il peso con una
 richiesta `HEAD` prima del download; una conferma su «Delete».
 
+**Decisione dell'agente** (parte A2, il tetto del traffico, 2026-10-05; i
+numeri sono dell'utente, `tasks/TASK-214.md`), deciso dall'agente su
+delega dell'utente:
+1. **Le zone in più si dichiarano** con `?prefetch=1` su
+   `/phone-zones/{network}`; senza, la zona si dà sempre e non si conta.
+   Il codice sta in un file nuovo, `phone_zone_cap.py`; `__main__.py` non
+   cambia: `install_phone_zones` prende il tetto dell'utente da solo.
+2. **Il conteggio è in memoria, per giorno UTC**: niente database, niente
+   migrazione. **Un riavvio dell'API riparte da zero**, e un giorno con un
+   riavvio può dare un po' di più del tetto. Con un solo processo uvicorn,
+   com'è oggi sul server, il conteggio è uno; con più processi ognuno
+   avrebbe il suo.
+3. **Si contano i byte del file**, prima di mandarlo: una zona che farebbe
+   passare il tetto si rifiuta intera, così il tetto non si supera mai. Un
+   download interrotto resta contato. Un `304` non costa niente e passa
+   anche oltre il tetto.
+4. **`Retry-After` dice i secondi fino alla mezzanotte UTC**, quando il
+   conteggio riparte: «il telefono riprova il giorno dopo». L'app aspetta
+   quei secondi, mai più di un giorno, e un giorno se l'header manca.
+5. **Il telefono è un id anonimo** in `X-Phone-Id`: 32 cifre esadecimali a
+   caso, fatte dall'app la prima volta e tenute in
+   `Documents/engine/prefetch.json` (fuori dalle zone: «Delete» non lo
+   cambia). Non è un segreto né un'identità: `Math.random` basta, senza
+   dipendenze nuove. Il server lo tiene solo in memoria, per il giorno,
+   e non lo scrive. Chi cambia id a ogni richiesta trova comunque il tetto
+   di tutto il server.
+6. **Senza un id valido conta l'indirizzo**. Dietro Caddy l'indirizzo è
+   quello di Caddy per tutti, quindi le richieste senza id dividono un
+   solo tetto da 300 MB: va bene, perché solo l'app nuova manda
+   `prefetch=1`, e la manda sempre con l'id.
+
+**Scartato**: contare per indirizzo (dietro Caddy è uno solo, e con i
+dati mobili molti telefoni escono dallo stesso indirizzo); leggere
+`X-Forwarded-For` (si può falsificare senza un proxy davanti, come in
+casa); contare nel database (una migrazione per un numero che vale un
+giorno); un tetto solo sul telefono (un'app difettosa non lo rispetta);
+rifiutare solo quando il tetto è già passato (lo si supererebbe di una
+zona).
+
 ## ADR-0170 — Pubblicare come su Strava, l'API: chi lo vede in tre valori, una domanda sola per saperlo, foto in posti fissi, campi nuovi che un'app di prima non cancella
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-208, parte A), dentro le **scelte dell'utente** del 2026-10-03:

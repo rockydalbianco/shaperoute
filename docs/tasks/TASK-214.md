@@ -2,7 +2,8 @@
 
 **Stato**: In corso. Le sei scelte hanno la risposta dell'utente; la parte A
 (API) è in `main` dalla #275, la parte B (l'app) dalla #282, la parte C
-(«Settings» e l'avviso) nella sua PR; poi A2, B2 e D, in quest'ordine.
+(«Settings» e l'avviso) dalla #295; la parte A2 (il tetto del traffico)
+nella sua PR; poi B2 e D, in quest'ordine.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 
@@ -347,9 +348,10 @@ docs/ARCHITECTURE.md, docs/API.md, docs/UI.md
 services/api/shaperoute_api/on_phone.py            (nuovo)
 services/api/shaperoute_api/phone_zones.py         (nuovo)
 services/api/shaperoute_api/phone_zone_api.py      (nuovo, anche il comando)
+services/api/shaperoute_api/phone_zone_cap.py      (nuovo, parte A2)
 services/api/shaperoute_api/__main__.py            (tre righe, al posto di app.py)
 services/api/tests/test_on_phone.py, test_phone_zones.py,
-  test_phone_zone_api.py                           (nuovi)
+  test_phone_zone_api.py, test_phone_zone_cap.py   (nuovi)
 services/api/tests/test_request_log.py             (il finto create_app dà un FastAPI)
 apps/mobile/src/engine/                            (nuova)
 apps/mobile/assets/engine/                         (nuova: i due zip)
@@ -522,7 +524,8 @@ La «Modalità dati ridotti» di iOS non si chiede ora: in Expo Go non si
 legge (`expo-network` non la dà). È un seguito della build propria
 (TASK-152).
 
-**Parte C, «Settings» e l'avviso** (PR #295, 2026-10-04; ADR-0177,
+**Parte C, «Settings» e l'avviso** (#295, in `main` come `17a9e6c` il
+2026-10-04, non pubblicata; ADR-0177,
 «Decisione dell'agente, parte C»):
 
 - **Dove sta l'avviso**: sopra «Draw route», in fondo a «Draw», la pagina
@@ -558,13 +561,48 @@ legge (`expo-network` non la dà). È un seguito della build propria
     «… (10 MB) …», poi la riga sparisce.
 - **Test**: 16 nuovi; tutta la suite dell'app passa.
 
+**Parte A2, il tetto del traffico** (PR del 2026-10-05; ADR-0177,
+«Decisione dell'agente, parte A2»). Solo codice: niente server, niente
+migrazione.
+
+- **Le richieste «in più»** sono `GET /phone-zones/{network}?…&prefetch=1`
+  (`phone_zone_cap.py`, collegato in `phone_zone_api.py`). Senza
+  `prefetch=1` la zona si dà sempre e non si conta: è quella intorno al
+  telefono.
+- **Il tetto** è quello scelto dall'utente: 300 MB al giorno per telefono,
+  300 GB al giorno in tutto il server, in unità decimali come i 2 GB del
+  telefono. Si contano i byte del file mandato. Una zona che farebbe
+  passare uno dei due tetti si rifiuta intera, con `429
+  too_many_requests`, «Enough maps downloaded ahead today: try again
+  tomorrow.», e `Retry-After` con i secondi fino alla mezzanotte UTC;
+  una più piccola può ancora entrare. Un rifiuto non si conta.
+- **Il giorno** è quello UTC: in Italia ricomincia all'una di notte, alle
+  due d'estate.
+- **Un `304`** (la zona che il telefono ha già) non costa niente e passa
+  anche oltre il tetto; una zona che il server non ha resta `404`.
+- **Il telefono** è un id anonimo, 32 cifre esadecimali a caso fatte dal
+  telefono la prima volta, nell'header `X-Phone-Id`. Il server lo tiene
+  solo in memoria, per il giorno, e non lo scrive nei log. Senza un id
+  valido conta l'indirizzo: dietro Caddy, sul server, è lo stesso per
+  tutti, quindi le richieste senza id dividono un solo tetto. L'app nuova
+  manda sempre l'id con `prefetch=1`; quelle di prima non mandano
+  `prefetch=1`.
+- **In memoria**: un riavvio dell'API riparte da zero, e un giorno con un
+  riavvio può dare un po' di più.
+- **Nell'app**, `downloadZone(…, { prefetch: true })` (`src/engine/zones.ts`)
+  manda `prefetch=1` e l'id (`src/engine/prefetch.ts`, in
+  `Documents/engine/prefetch.json`, che «Delete» non tocca). Dopo un `429`
+  non chiede zone in più fino a `Retry-After` (mai più di un giorno; un
+  giorno senza l'header); la zona intorno al telefono si chiede sempre.
+  Nessuno la chiama ancora: le zone in più sono la parte B2.
+- **Test**: 19 per il tetto e 6 per l'endpoint nell'API; 9 nell'app.
+
 **Le parti dopo** (d'accordo con il coordinatore, ognuna in un contesto
 pulito, tutte sotto TASK-214 e ADR-0177):
 1. **C**, la riga in «Settings» e l'avviso del primo download: fatta,
    sopra.
 2. **A2**, il tetto sul server: le richieste «in più» con `?prefetch=1`, i
-   byte contati per giorno, in memoria, senza migrazione. Dopo un riavvio
-   del server il conteggio riparte da zero: va scritto nell'ADR.
+   byte contati per giorno, in memoria, senza migrazione: fatta, sopra.
 3. **B2**, le zone in più, cioè le città vicine e le più cercate fino a 2
    GB (scelta 4, punto 2).
 4. **D**, la prova sull'iPhone: fissa i limiti di distanza. Vuole il server

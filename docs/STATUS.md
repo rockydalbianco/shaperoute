@@ -159,9 +159,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   fascia e con la riva a piedi entro 300 m (`water_fit.fit_shape(...,
   near=)`, `--near` dalla CLI). Senza `near` niente cambia: i 32 esempi
   dell'app sono identici. **Non è sul server**; dopo l'aggiornamento va
-  rilanciato `draw_examples`. **Parte B da fare**: il trascinamento sulla
-  mappa e «Move» in «Draw» con «Paddle», con i testi da confermare; gli
-  esempi di «Explore» non hanno `centre` (task file, punto 9).
+  rilanciato `draw_examples`. **Parte B fatta** (branch
+  `feat/TASK-238-paddle-move-app`): «Move the shape» sotto «Start» in
+  «Draw» con «Paddle», un dito trascina la figura sulla mappa, al rilascio
+  l'app richiede il percorso con `near`; se la figura non ci sta lì una
+  riga lo dice. Senza `centre` nella risposta (il server di oggi) il
+  pulsante non compare. **Da confermare con l'utente** i sei testi (task
+  file); **da provare col dito sull'iPhone**, dopo l'aggiornamento del
+  server. Gli esempi di «Explore» e i preferiti non si spostano (seguito,
+  task file punto 9).
   File toccati: quelli della parte A in `tasks/TASK-238.md`; per la B
   `apps/mobile/src/map/{messages,mapPage}.ts`, `MapView.tsx`, `App.tsx`,
   `src/paddle/`, `src/i18n/`.

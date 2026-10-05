@@ -1,6 +1,6 @@
 # TASK-238 — Spostare la figura sull'acqua
 
-**Stato**: In corso (parte A fatta, PR #347; parte B da fare)
+**Stato**: In corso (parte A PR #347; parte B fatta, PR da aprire dopo la A)
 **Fase**: 4 · **Branch**: `feat/TASK-238-paddle-move-shape` (A),
 `feat/TASK-238-paddle-move-app` (B)
 **Dipende da**: TASK-191 (la canoa), TASK-226 (le forme a pezzi sull'acqua)
@@ -66,9 +66,9 @@ controllato da test di contratto in tutti e tre)
    una riga lo dice.
 8. I testi, in cinque lingue, **da far confermare all'utente**.
 9. Gli esempi di «Explore» con «Paddle» non hanno `centre` (sono dentro
-   l'app, disegnati prima): se e come si spostano è da decidere in B
-   (ridisegnarli con `centre`, o chiedere il percorso al server al primo
-   «Move»).
+   l'app, disegnati prima): **non si spostano**, come i preferiti. Per
+   farlo servirebbe ridisegnarli con `centre`, o chiedere il percorso al
+   server al primo «Move the shape»: un seguito, da chiedere all'utente.
 
 ## Criteri di accettazione
 
@@ -95,12 +95,18 @@ Parte A:
 
 Parte B:
 
-- [ ] Con un percorso in canoa in «Draw», «Move» fa trascinare la figura;
-      al rilascio il percorso si ridisegna vicino a dove è stata lasciata.
-- [ ] Mentre si trascina la mappa non si sposta; fuori dal modo «sposta»
-      la mappa è com'era.
-- [ ] Con un'API senza `centre` «Move» non compare.
+- [x] Con un percorso in canoa in «Draw», «Move the shape» fa trascinare
+      la figura; al rilascio l'app richiede lo stesso percorso con `near`
+      (`__tests__/AppPaddleMove.test.tsx`).
+- [x] Mentre si trascina la mappa non si sposta; fuori dal modo «sposta»
+      la mappa è com'era (`src/map/mapPageMove.test.ts`, e provato con
+      MapLibre vero nel browser: la mappa ferma, la figura sotto il dito,
+      `moved` all'app, poi la mappa che torna a muoversi).
+- [x] Con un'API senza `centre` «Move the shape» non compare.
+- [x] Se la figura non ci sta dov'è stata lasciata, una riga lo dice.
 - [ ] I testi sono confermati dall'utente.
+- [ ] Provato col dito sull'iPhone (il simulatore non l'ha visto: sul
+      server la parte A non c'è ancora).
 
 ## File toccati
 
@@ -141,12 +147,32 @@ Parte B (previsti):
 apps/mobile/src/map/messages.ts
 apps/mobile/src/map/mapPage.ts
 apps/mobile/src/map/MapView.tsx
-apps/mobile/src/paddle/MoveShape.tsx                  (nuovo)
-apps/mobile/src/paddle/moveShape.ts                   (nuovo)
+apps/mobile/src/map/mapPageMove.test.ts               (nuovo)
+apps/mobile/src/map/MapViewMove.test.tsx              (nuovo)
+apps/mobile/src/paddle/MoveShape.tsx                  (nuovo, con il test)
+apps/mobile/src/paddle/shapeMove.ts                   (nuovo, con il test)
+apps/mobile/src/paddle/useMoveShape.ts                (nuovo, con il test)
+apps/mobile/src/route/RoutePanel.tsx
 apps/mobile/App.tsx
+apps/mobile/__tests__/AppPaddleMove.test.tsx          (nuovo)
 apps/mobile/src/i18n/{de,es,fr,it}.ts
 docs/UI.md
+docs/STATUS.md
+docs/tasks/TASK-238.md
 ```
+
+## I testi della parte B, da confermare con l'utente
+
+| Dove | Inglese | Italiano |
+|---|---|---|
+| Pulsante sotto «Start» | Move the shape | Sposta la forma |
+| Pannello, titolo | Move the shape | Sposta la forma |
+| Pannello, cosa fare | Drag the shape where you want it, then let go. | Trascina la forma dove la vuoi, poi lasciala. |
+| Pannello, nota | It stays on the water, off the shore, where it fits. | Resta sull'acqua, lontana dalla riva, dove ci sta. |
+| Pannello, uscita | Cancel | Annulla |
+| Se non ci sta | The shape does not fit there: this is the nearest place. | Lì la forma non ci sta: questo è il posto più vicino. |
+
+Tedesco, spagnolo e francese sono in `src/i18n/`.
 
 ## Fuori scope
 

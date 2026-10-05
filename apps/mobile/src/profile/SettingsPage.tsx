@@ -2,6 +2,8 @@ import type { User } from "@shaperoute/shared-types";
 import { type ReactNode, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { AboutRows } from "../about/AboutRows";
+import type { AboutId } from "../about/documents";
 import type { Account } from "../account/useAccount";
 import { OfflineMapsSetting } from "../engine/OfflineMapsSetting";
 import { t, tLater } from "../i18n";
@@ -23,6 +25,8 @@ import { PhotoRow } from "./PhotoRow";
 type Props = {
   user: User;
   account: Account;
+  /** Opens «Help», «Terms» or «Privacy» as a page of «Profile» (TASK-184). */
+  onAbout: (id: AboutId) => void;
 };
 
 /**
@@ -42,14 +46,6 @@ const COMING: { label: string; rows: Coming[] }[] = [
     rows: [
       { emoji: "📧", name: tLater("Email notifications") },
       { emoji: "🔔", name: tLater("Push notifications") },
-    ],
-  },
-  {
-    label: tLater("ABOUT"),
-    rows: [
-      { emoji: "❓", name: tLater("Help") },
-      { emoji: "📄", name: tLater("Terms") },
-      { emoji: "🔒", name: tLater("Privacy") },
     ],
   },
 ];
@@ -95,7 +91,7 @@ function ComingRows({ rows }: { rows: Coming[] }) {
  * settings to come, named and marked «Soon».
  * «Delete account» asks first, on the screen (ADR-0120: the API does not).
  */
-export function SettingsPage({ user, account }: Props) {
+export function SettingsPage({ user, account, onAbout }: Props) {
   const [confirming, setConfirming] = useState(false);
   const deleting = account.busy === "delete";
   return (
@@ -121,6 +117,10 @@ export function SettingsPage({ user, account }: Props) {
           <ComingRows rows={section.rows} />
         </Section>
       ))}
+      {/* The guide and the two legal texts, each on its own page (TASK-184). */}
+      <Section label={t("ABOUT")}>
+        <AboutRows onOpen={onAbout} />
+      </Section>
       {/* The ways out of the account, last. */}
       <View style={styles.section}>
         <Pressable

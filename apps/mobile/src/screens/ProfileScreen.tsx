@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AboutScreen } from "../about/AboutScreen";
+import { ABOUT_IDS, type AboutId, isAboutId } from "../about/documents";
 import { SESSION_ENDED } from "../account/messages";
 import type { Account, SignedOutNotice } from "../account/useAccount";
 import { ActivitiesList } from "../activities/ActivitiesList";
@@ -49,12 +51,14 @@ function noticeOf(notice: SignedOutNotice): Notice {
 }
 
 /** The pages of «Profile»: the account, the routes it keeps (TASK-171), the
- * runs it recorded (TASK-172), its settings (TASK-177) and its username and
- * bio (TASK-116). */
-export type ProfilePage = "account" | "favorites" | "activities" | "settings" | "edit";
+ * runs it recorded (TASK-172), its settings (TASK-177), its username and
+ * bio (TASK-116), and the texts of «ABOUT», over «Settings» (TASK-184). */
+export type ProfilePage =
+  "account" | "favorites" | "activities" | "settings" | "edit" | AboutId;
 
-/** In English: shown with `t()` (TASK-210). */
-const TITLES: Record<ProfilePage, string> = {
+/** In English: shown with `t()` (TASK-210). A text of «ABOUT» has its own
+ * title, on its own screen. */
+const TITLES: Record<Exclude<ProfilePage, AboutId>, string> = {
   account: tLater("Profile"),
   favorites: tLater("Favorites"),
   activities: tLater("My activities"),
@@ -63,7 +67,7 @@ const TITLES: Record<ProfilePage, string> = {
 };
 
 /** Pages of the account itself: who signs in again does not land there. */
-const ACCOUNT_PAGES: ProfilePage[] = ["settings", "edit"];
+const ACCOUNT_PAGES: ProfilePage[] = ["settings", "edit", ...ABOUT_IDS];
 
 type Props = {
   account: Account;
@@ -89,6 +93,9 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
   // A page of the account is one step into «Profile»: back goes to it first.
   const inside = state.status === "signedIn" && page !== "account";
   const signedOut = state.status !== "signedIn";
+  // A text of «ABOUT» opens over «Settings», which stays under it as it was.
+  const about = inside && isAboutId(page) ? page : null;
+  const under = isAboutId(page) ? "settings" : page;
   // Out of the account from «Settings» or «Edit profile»: who comes back in
   // finds «Profile».
   useEffect(() => {
@@ -102,6 +109,7 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
+        style={about !== null && styles.hidden}
         contentContainerStyle={[
           styles.content,
           {
@@ -121,15 +129,19 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
             <Text style={styles.backText}>←</Text>
           </Pressable>
           <Text style={styles.title} accessibilityRole="header">
-            {t(TITLES[inside ? page : "account"])}
+            {t(TITLES[inside ? under : "account"])}
           </Text>
         </View>
         {inside ? (
-          page === "activities" ? (
+          under === "activities" ? (
             <ActivitiesList />
-          ) : page === "settings" ? (
-            <SettingsPage user={state.session.user} account={account} />
-          ) : page === "edit" ? (
+          ) : under === "settings" ? (
+            <SettingsPage
+              user={state.session.user}
+              account={account}
+              onAbout={onPage}
+            />
+          ) : under === "edit" ? (
             <EditProfile
               user={state.session.user}
               account={account}
@@ -166,6 +178,7 @@ export function ProfileScreen({ account, page, onPage, hint, onBack }: Props) {
           />
         )}
       </ScrollView>
+      {about !== null && <AboutScreen id={about} onBack={() => onPage("settings")} />}
     </KeyboardAvoidingView>
   );
 }
@@ -194,6 +207,10 @@ function SignedIn({
 const styles = StyleSheet.create({
   screen: {
     backgroundColor: color.background,
+  },
+  // Under a text of «ABOUT»: there, but not seen nor read.
+  hidden: {
+    display: "none",
   },
   content: {
     paddingHorizontal: space.lg,

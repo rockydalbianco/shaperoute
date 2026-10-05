@@ -497,7 +497,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Settings» le righe «Change email» e «Phone number» si aprono sotto,
   nelle cinque lingue. **Aspettano l'utente**: l'aggiornamento del server
   (migrazione) e poi la pubblicazione, in quest'ordine; i testi nuovi
-  (`tasks/TASK-183.md`, «Esito»). Non visto su un telefono. Seguiti: la
+  (`tasks/TASK-183.md`, «Esito»). Visto nel simulatore, non su un telefono. Seguiti: la
   ricerca dalla rubrica (prima va deciso come si prova un numero), la
   mail di conferma. Poi, nella stessa sessione «Impostazioni», un task
   per contesto: **TASK-182** (unità), **TASK-184** («Help», «Terms»,

@@ -131,9 +131,11 @@ Fatto il 2026-10-05, in revisione.
   database vero.
 - **App**: in «Settings», sotto «Profile picture», «Change email» e «Phone
   number» si aprono sotto la riga. Test di ogni pezzo.
-- **Non visto su un telefono né nel simulatore**: l'aspetto delle due
-  righe aperte è da guardare (stessi stili delle altre righe di
-  «Settings»).
+- **Visto nel simulatore** (iPhone 17, Expo Go, API locale con un
+  database usa e getta, senza tocchi): le due righe aperte, e dopo un
+  cambio fatto sull'API il nuovo indirizzo nel riquadro in cima, il numero
+  in fondo alla riga e «Remove number». Schermate in `out/task183/`. Non
+  provato con le dita né su un telefono.
 - **Per vederlo sul telefono** servono l'aggiornamento del server
   (migrazione `0016`) e la pubblicazione dell'app, con l'ok dell'utente,
   in quest'ordine. L'app nuova con il server di oggi mostra le due righe

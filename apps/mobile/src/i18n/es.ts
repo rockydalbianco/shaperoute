@@ -469,7 +469,6 @@ export const ES: Table = {
   Distance: "Distancia",
   Time: "Tiempo",
   Pace: "Ritmo",
-  Score: "Puntuación",
 
   // src/share/sharePicture.ts
   "This phone cannot open the share sheet.":

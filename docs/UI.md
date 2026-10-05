@@ -1930,8 +1930,9 @@ run», con «Close» in alto a sinistra:
   «Sgrava», il titolo (quello della corsa, o luogo e forma; nessuno a
   fine corsa), il disegno della corsa in nero **senza i primi e gli ultimi
   200 m**, e in basso i risultati accesi, due per riga: «Distance»,
-  «Time», «Pace», «Score» (il passo manca sotto i 100 m, il punteggio a
-  una corsa che non ce l'ha).
+  «Time», «Pace» (il passo manca sotto i 100 m). **Il punteggio non è fra i risultati**
+  (TASK-241 parte C, chiesto dall'utente): non si può accendere, non è
+  sul post e non va nel testo per Strava.
 - **«Results»**: una pastiglia per risultato, accesa all'inizio; spenta,
   il risultato sparisce dal post e dal testo per Strava.
 - **«Add emoji»**: 🔥 ❤️ 💪 🏃 🎉 😅 🥵 😎 ⚡ 🏆 ☀️ 🌧️. Un tocco mette l'emoji

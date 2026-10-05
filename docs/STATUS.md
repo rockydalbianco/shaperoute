@@ -583,9 +583,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   100» sopra il disegno non c'è più, nemmeno nei post che «Explore» mostra
   mentre disegna una città (PR #345, merge `ad80385`). **Parte B**
   (stesso giorno, «sì toglilo anche da VoiceOver»): nemmeno VoiceOver lo
-  legge più, nelle cinque lingue. Altrove (fine corsa, «My activities»,
-  disegno aperto dal «Profile», post da condividere) il punteggio resta.
-  Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
+  legge più, nelle cinque lingue (PR #348, merge `69af6c6`). **Parte C**
+  (stesso giorno, «togli il punteggio anche dal post da condividere»):
+  «Score» non è più fra i risultati del post di «Share»: né pastiglia, né
+  numero sull'immagine, né nel testo per Strava. Altrove (fine corsa, «My
+  activities», disegno aperto dal «Profile») il punteggio resta. Esce con
+  la prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

@@ -1,7 +1,7 @@
 # TASK-232 — Forme inclinate fino a 45°, con la mappa girata
 
-**Stato**: Todo — task file scritto il 2026-10-05; il motore (parte A)
-dopo TASK-226, la mappa (parti B e C) dopo TASK-119 B: stessi file
+**Stato**: In lavorazione — parte A (motore e API) nella PR #NNN, aspetta
+il giudizio dell'utente sui campioni; parti B e C da fare
 **Fase**: 4 · **Branch**: `feat/TASK-232-a-tilt-45` (A),
 `feat/TASK-232-b-turned-map` (B), `feat/TASK-232-c-saved-turn` (C)
 **ADR**: ADR-0195 (supera in parte ADR-0038: il limite di 15°)
@@ -119,21 +119,21 @@ chiusa nel codice (il coordinatore, 2026-10-05).
 
 ## Criteri di accettazione
 
-- [ ] Test del motore: una forma con un alto e un basso prova fino a
+- [x] Test del motore: una forma con un alto e un basso prova fino a
       ±45°, mai oltre; il cerchio gira libero e ha `rotation_deg` 0; a
       parità di strade vince la forma dritta; `rotation_deg` è la
       rotazione del percorso scelto, anche nelle alternative e in acqua.
-- [ ] Sui 14 casi disegnabili (`MAPS.md`) la somiglianza non peggiora in
+- [x] Sui 14 casi disegnabili (`MAPS.md`) la somiglianza non peggiora in
       nessun caso, e il tempo medio sale al più del 25%. Misure in
       `MAPS.md`.
 - [ ] L'utente ha giudicato i campioni prima e dopo, con la mappa
       girata: nessun `sì` diventa `no`.
-- [ ] L'API restituisce `rotation_deg`; un'app senza il campo funziona
+- [x] L'API restituisce `rotation_deg`; un'app senza il campo funziona
       come prima.
 - [ ] L'app gira la mappa di `−rotation_deg` in «Draw», «Explore», nella
       corsa, in «My activities», nel «Feed» e nel post; un percorso senza
       il campo resta col nord in alto.
-- [ ] Il GPX non cambia.
+- [x] Il GPX non cambia.
 - [ ] Test deterministici per ogni parte (`docs/TESTING.md`).
 
 ## File toccati
@@ -145,10 +145,20 @@ services/route-engine/route_engine/optimizer.py
 services/route-engine/route_engine/water_fit.py
 services/route-engine/route_engine/models.py
 services/route-engine/route_engine/__main__.py
+services/route-engine/route_engine/nearby_starts.py         (una riga; ok del coordinatore)
+services/route-engine/route_engine/paddling.py              (una riga, dopo TASK-238 A; ok del coordinatore)
 services/route-engine/tests/test_tilt.py                    (nuovo)
+services/route-engine/tests/measure_tilt.py                 (nuovo)
+services/route-engine/tests/test_street_grid.py             (le parole squadrate fino a 45°)
+services/route-engine/tests/test_contract.py, test_better_distance.py   (il campo nuovo, sole aggiunte)
 services/api/shaperoute_api/schemas.py
+services/api/shaperoute_api/route_store.py                  (rotation_deg e better_distance_m; ok del coordinatore)
 services/api/tests/test_rotation.py                         (nuovo)
+services/api/tests/test_contract.py, test_better_distance.py            (il campo nuovo, sole aggiunte)
 packages/shared-types/src/index.ts
+packages/shared-types/test/contract.test.ts                 (il campo nuovo)
+packages/shared-types/fixtures/route-result-tilted.json      (nuovo)
+tools/preview_turned.py, tools/test_preview_turned.py       (nuovi: i campioni con la mappa girata)
 services/route-engine/tests/                                (le impronte fissate che cambiano, elencate nella PR)
 apps/mobile/assets/engine/engine.zip
 apps/mobile/src/paddle/paddleExamples.json                  (se cambiano le forme sull'acqua)
@@ -195,4 +205,39 @@ migrazione nuova, `apps/mobile/src/activities/fitLines.ts`,
 
 ## Esito
 
-—
+**Parte A, motore e API** (2026-10-05, PR #NNN, ADR-0195 «Parte A»):
+
+- **Prima dritta, poi inclinata**: la ricerca di sempre entro ±15°; solo
+  se non dà un percorso buono, le rotazioni oltre 15° fino a 45° con 10
+  tracciamenti in più. La ricerca lontana resta dritta, e vicino o lontano
+  si decide sulla ricerca dritta. Il costo dell'inclinazione conta i gradi
+  oltre 15° (5% a 45°). Provare tutte le rotazioni insieme, come diceva il
+  punto 1 della parte A, è stato misurato e scartato (`MAPS.md`, «Forme
+  inclinate»).
+- **Le misure** (129 percorsi, `tests/measure_tilt.py`): 110 identici, i
+  12 di riferimento tutti; 19 cambiano, tutti inclinati di 20–45°, 14 con
+  la somiglianza più alta; i buoni da 65 a 67; tempo medio +10%, sui 12 di
+  riferimento +6%. Criteri: la somiglianza dei 14 disegnabili non
+  peggiora (i 12 in cache identici; la Valsugana non è in cache), il
+  tempo sale meno del 25%.
+- **Sull'acqua** lo stesso schema (`water_fit.py`): i 32 esempi della
+  canoa identici, `paddleExamples.json` cambia solo l'impronta del motore.
+- **`rotation_deg`** nel risultato, nelle alternative, dalle partenze
+  vicine e in canoa; nell'API e in `shared-types`, facoltativo. Il GPX non
+  cambia.
+- **Seguito di TASK-234**, assegnato dal coordinatore: `route_store.result_from`
+  rilegge anche `better_distance_m`, che si perdeva (e con lui «Try N km»
+  a ogni richiesta ripetuta), con il suo test in `test_rotation.py`.
+- **Le impronte fissate** che cambiano: in `test_kept_per_graph.py` il
+  cuore di Levico da 2 km (le sue alternative ora inclinate), il «CIAO»
+  della città finta (anche a penna alzata), le alternative di cuore e
+  stella; in `test_pen_up.py` «IO» e «LO» di Levico (l'IO inclinato di
+  −30°; l'LO resta a +10° ma la ricerca prova di più, e l'avviso conta i
+  tentativi). Tutti casi dove la forma non era buona.
+- **I campioni**: `samples/TASK-232_*` (19 casi, v1 prima col nord in
+  alto, v2 dopo con la mappa girata), `samples/TASK-232_rotations.json`,
+  la pagina con `python tools/preview_turned.py "samples/TASK-232_*.gpx"`.
+  **Manca il giudizio dell'utente** (`samples/LOG.md`, «da giudicare»):
+  nessun `sì` deve diventare `no`.
+- Dopo il merge: il server e `draw_examples` (il coordinatore, con l'ok
+  dell'utente); poi le parti B e C.

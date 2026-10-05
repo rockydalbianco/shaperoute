@@ -715,7 +715,8 @@ qui sotto).
 6. **Le inclinazioni oltre 15°** (TASK-232): se fin qui nessun percorso
    è buono, gli stessi passi 1–5 ripartono con le sole rotazioni oltre
    ±15° (±30°, ±45°; la rifinitura ogni 5° fra 15° e 45°) e **10
-   tracciamenti in più** (`TILTED_TRACES`). Sotto, «Forme inclinate».
+   tracciamenti in più** (`TILTED_TRACES`); non nella ricerca lontana.
+   Sotto, «Forme inclinate».
 
 Ci si ferma appena distanza (±10%) e somiglianza (≥ 0,90) vanno bene. Se il
 budget finisce prima, si restituisce il tentativo di costo minore, dritto
@@ -737,16 +738,20 @@ catalogo, emoji, contorni da foto, parole.
    buono, è lui: stesso percorso e stesso tempo di prima.
 2. **Poi inclinata**, solo se il primo tempo non trova un percorso buono:
    la stessa ricerca sulle sole rotazioni oltre ±15°, con 10 tracciamenti
-   in più (`TILTED_TRACES`). Il risultato è il migliore dei due tempi; la
-   ricerca lontana (ADR-0040) e le partenze vicine fanno lo stesso.
+   in più (`TILTED_TRACES`). Il risultato è il migliore dei due tempi. Le
+   partenze vicine fanno lo stesso; la ricerca lontana (ADR-0040) no:
+   resta dritta, e parte, come prima, se nessun percorso vicino è buono.
+   Fra vicino e lontano si decide sul primo tempo, quello dritto
+   (`Search.upright`): un percorso inclinato vicino che non è buono non
+   tiene fuori quello lontano.
 3. **Inclinarla costa**: oltre 15°, il 5% di copertura a 45° in
    proporzione all'angolo (`TILT_FIT_PENALTY`, come spostare la partenza
    di 500 m), sia nel conteggio delle strade sia nel costo di un
    tracciato (`W_TILT`). Entro 15° non costa, come prima. A parità vince
    la forma più dritta.
 4. **Il risultato** dice la rotazione del percorso scelto (`shown_rotation`),
-   anche per ogni partenza vicina e alternativa; 0 senza ricerca e per le
-   forme che girano libere.
+   anche per ogni partenza vicina e alternativa, e in canoa; 0 senza
+   ricerca e per le forme che girano libere.
 
 Provare tutte le rotazioni insieme, con la penalità in proporzione
 dall'angolo 0 o da 15°, è stato misurato e scartato: il conteggio delle
@@ -1303,7 +1308,9 @@ l'acqua è in cache:
   una spiaggia, uno scivolo, un molo o una via pedonabile.
 - `water_fit.py` — **dove la forma ci sta**: grandezza intera, poi più
   piccola del 3% alla volta fino al 40%, dritta entro ±15° (il cerchio
-  una volta sola); per ogni scala e angolo, i centri della griglia della
+  una volta sola) e, solo se così non ci sta nella tolleranza della
+  distanza, inclinata da 20° a 45° ogni 5°, al costo del 5% della distanza
+  a 45° (TASK-232, `TILT_WEIGHT`); per ogni scala e angolo, i centri della griglia della
   fascia in cui tutto il contorno cade nella fascia, dal più vicino alla
   partenza; i tre il cui contorno passa dove unirlo alla riva costa meno
   (i tratti fino al punto della riva raggiungibile più vicino, e lo

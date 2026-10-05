@@ -157,9 +157,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Bike», «Paddle»); «Best drawings» mostra dieci disegni dai dati
   dell'app, con un filtro; «Get the app» dice «Download — coming soon»
   finché `site/config.js` non ha il link. **Il merch è messo da parte**: i
-  file restano, la pagina non lo mostra. **Niente è pubblicato.** **Da
-  confermare con l'utente**: i testi, i dieci disegni, che «trasporta»
-  fosse «sport». **Aspettano l'utente**: il link dell'App Store
+  file restano, la pagina non lo mostra. **Niente è pubblicato.** Lo
+  sport da scegliere e i dieci disegni sono **confermati dall'utente**
+  (2026-10-05); **da confermare** restano i testi. **Aspettano l'utente**: il link dell'App Store
   (TASK-152), dominio e pubblicazione, e per il merch il servizio di
   stampa, magliette e prezzi. Come si cambia e come si guarda:
   `SITO.md`. Da dove riprendere: `tasks/TASK-237.md`, «Esito».

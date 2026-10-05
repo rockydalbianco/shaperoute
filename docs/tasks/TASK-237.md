@@ -33,13 +33,14 @@ l'app, e poi inseriremo anche il link per poterla scaricare; fallo un po'
 futuristico; poter selezionare un po' di cose, per selezionare [lo sport];
 metti i post migliori, tipo una decina.»
 
-Letta così (da confermare con l'utente dove dice «letto dall'agente»):
+Letta così; l'utente ha poi confermato lo sport e i disegni (2026-10-05:
+«sì intendevo sport, i disegni vanno bene così»):
 
 1. **Per ora niente merch**: la pagina spiega solo come si usa l'app.
 2. **Il link per scaricare** arriva dopo: adesso un segnaposto.
 3. **Più futuristico**.
-4. **Cose da selezionare**: lo sport («trasporta» nel messaggio dettato,
-   letto dall'agente come «sport»), e una forma e una distanza da provare.
+4. **Cose da selezionare**: lo sport («trasporta» nel messaggio dettato:
+   era «sport», confermato), e una forma e una distanza da provare.
 5. **I dieci post migliori**: dieci disegni presi da quelli dell'app.
 
 ## Contesto da leggere
@@ -148,9 +149,10 @@ Il pannello Browser dell'app non si è potuto usare: `launch.json` è nel
 checkout principale e la modifica è stata bloccata dai permessi. Nei
 «Best drawings» non ci sono i nomi degli utenti d'esempio né minuti e
 punteggi, che nell'app sono inventati: solo titolo, luogo e km. Nessun
-disegno in bici: i dati dell'app non ne hanno. **Da confermare con
-l'utente**: che «trasporta» fosse «sport»; i testi nuovi (`content.js`,
-i titoli delle sezioni); se i dieci disegni vanno bene così.
+disegno in bici: i dati dell'app non ne hanno. **Confermati dall'utente** il 2026-10-05 («sì
+intendevo sport, i disegni vanno bene così»): la scelta dello sport e i
+dieci disegni come sono, senza nomi, minuti e punteggi. **Da confermare
+con l'utente**: i testi nuovi (`content.js`, i titoli delle sezioni).
 
 **Aspettano l'utente** (parte B, il merch, messo da parte): il servizio di stampa e l'account; magliette,
 nomi, colori e prezzi; i testi della pagina («Runs that draw a shape on

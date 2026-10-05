@@ -597,15 +597,33 @@ mappa è quella di prima.
   subito, senza chiedere: le mappe tornano alla prossima apertura, con la
   riga sopra «Draw route». Il numero cresce anche da solo: dopo la zona
   intorno, il telefono scarica piano piano quelle dei paesi vicini e
-  delle città di «Explore», senza avvisi (TASK-214, parte B2). Poi «Units», «Soon». **«Notifications»**: «Email
+  delle città di «Explore», senza avvisi (TASK-214, parte B2). Poi
+  **«Units»** (📏, TASK-182, ADR-0149), con in fondo l'unità in cui è
+  l'app («Kilometres» o «Miles»); un tocco apre sotto la riga «Phone
+  units» (con accanto l'unità del telefono), «Kilometres» e «Miles», con
+  il «✓» bianco sulla scelta, come «Language». La scelta chiude la lista,
+  vale subito e resta sul telefono; «Phone units» torna a seguire il
+  telefono: miglia dove il telefono misura le strade in miglia (Stati
+  Uniti, Regno Unito, o il sistema di misura scelto a mano in iOS), km
+  altrove e quando il telefono non lo dice. **Con le miglia**, per ora
+  (parte A): «My activities» («2.49 mi · 19:00 · 7:38 /mi», anche nella
+  scheda della corsa aperta), i preferiti («Star · 3.2 mi») e le schede di
+  «Explore» («Star · 3.2 mi», «0.4 mi away», sotto i 1000 piedi «650 ft
+  away»; i paesi vicini «1.8 mi away»; il percorso aperto sulla mappa
+  «3.2 mi»). Il resto dell'app è ancora in km e arriva con la parte B: la
+  distanza che si chiede in «Draw» e il suo risultato, la corsa e la sua
+  fine, la voce, i post del «Feed», i disegni pubblici, «Explore» con
+  «Paddle», le frasi di «Explore» («Starting within 5 km of…»). Con
+  «Kilometres» niente cambia. Il GPX, l'API e il motore restano in metri.
+  **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
   sulla schermata stessa: «Delete my account» o «Keep my account».
 
 Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
-interruttori, perché dietro non c'è ancora niente (le accendono TASK-182,
-184, 185). Usciti dall'account da «Settings», chi rientra trova
+interruttori, perché dietro non c'è ancora niente (le accendono TASK-184
+e 185). Usciti dall'account da «Settings», chi rientra trova
 «Profile».
 
 **«Change email»** (✉️, TASK-183, ADR-0150): un tocco apre sotto la riga

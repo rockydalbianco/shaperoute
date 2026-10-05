@@ -25,10 +25,24 @@ export function inUnits(metres: number, units: Units = appUnits()): number {
   return metres / metresPer(units);
 }
 
+/** How a number with decimals is written. */
+export type Written = (value: number, digits: number) => string;
+
+/**
+ * With a point in every language: how the pages still shown in English
+ * write a distance («Explore», until its texts are translated), so they
+ * read as before.
+ */
+export const withPoint: Written = (value, digits) => value.toFixed(digits);
+
 /** "5.2 km", "3.2 mi": the distance of a route, with the comma where the
  * app's language writes one. */
-export function distanceLabel(metres: number, units: Units = appUnits()): string {
-  return `${decimal(inUnits(metres, units), 1)} ${units}`;
+export function distanceLabel(
+  metres: number,
+  units: Units = appUnits(),
+  written: Written = decimal,
+): string {
+  return `${written(inUnits(metres, units), 1)} ${units}`;
 }
 
 /** "5 km", "3 mi": a distance said in whole units. */
@@ -83,8 +97,12 @@ export function shortBelowM(units: Units = appUnits()): number {
 }
 
 /** "120 m", "2.3 km"; "400 ft", "1.4 mi": how far something is, short or not. */
-export function nearDistanceLabel(metres: number, units: Units = appUnits()): string {
+export function nearDistanceLabel(
+  metres: number,
+  units: Units = appUnits(),
+  written: Written = decimal,
+): string {
   return metres < shortBelowM(units)
     ? shortDistanceLabel(metres, units)
-    : distanceLabel(metres, units);
+    : distanceLabel(metres, units, written);
 }

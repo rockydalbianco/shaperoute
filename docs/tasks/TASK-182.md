@@ -1,6 +1,6 @@
 # TASK-182 — Le unità di misura: km o miglia
 
-**Stato**: Todo
+**Stato**: In revisione (parte A)
 **Fase**: 4 · **Branch**: `feat/TASK-182-units` (parte A)
 
 ## Obiettivo
@@ -93,23 +93,58 @@ in metri.
 
 Parte A:
 
-- [ ] In «Settings» si sceglie fra «Phone units», «Kilometres» e
-      «Miles»; la scelta vale subito e resta dopo un riavvio (test).
-- [ ] Senza scelta, un telefono con le miglia mostra miglia, gli altri
-      km; nei test sempre km (test).
-- [ ] I formattatori danno distanza, passo e distanza breve giusti in km e
-      in miglia, con la virgola nelle lingue che la usano (test).
-- [ ] Con «Kilometres» l'app è byte per byte quella di prima: i test
-      esistenti passano.
-- [ ] I testi nuovi sono in `t()` con le quattro tabelle.
-- [ ] Nessuna dipendenza nuova.
-- [ ] Provato nel simulatore con il telefono in miglia.
+- [x] In «Settings» si sceglie fra «Phone units», «Kilometres» e
+      «Miles»; la scelta vale subito e resta dopo un riavvio (test:
+      `UnitsSetting.test.tsx`, `units.test.ts`).
+- [x] Senza scelta, un telefono con le miglia mostra miglia, gli altri
+      km; nei test sempre km (test: `phoneUnits.test.ts`, sulle risposte
+      che un telefono può dare; **non visto su un telefono**, vedi
+      «Esito»).
+- [x] I formattatori danno distanza, passo e distanza breve giusti in km e
+      in miglia, con la virgola nelle lingue che la usano (test:
+      `format.test.ts`).
+- [x] Con «Kilometres» l'app è byte per byte quella di prima: i test
+      esistenti passano (cambiati solo quelli della riga «Soon» in
+      `SettingsPage.test.tsx`).
+- [x] I testi nuovi sono in `t()` con le quattro tabelle.
+- [x] Nessuna dipendenza nuova.
+- [ ] Provato nel simulatore con il telefono in miglia. **Non fatto**: la
+      sessione che ha scritto la parte A non usa il simulatore.
 
 ## File toccati
 
+Parte A (2026-10-05):
+
 ```
-(li fissa la sessione che prende il task, con l'elenco dei file liberi
-dal coordinatore)
+apps/mobile/src/units/units.ts                    (nuovo)
+apps/mobile/src/units/phoneUnits.ts               (nuovo)
+apps/mobile/src/units/useUnits.ts                 (nuovo)
+apps/mobile/src/units/format.ts                   (nuovo)
+apps/mobile/src/units/units.test.ts               (nuovo)
+apps/mobile/src/units/phoneUnits.test.ts          (nuovo)
+apps/mobile/src/units/format.test.ts              (nuovo)
+apps/mobile/src/units/shownInMiles.test.tsx       (nuovo)
+apps/mobile/src/settings/UnitsSetting.tsx         (nuovo)
+apps/mobile/src/settings/UnitsSetting.test.tsx    (nuovo)
+apps/mobile/src/profile/SettingsPage.tsx
+apps/mobile/src/profile/SettingsPage.test.tsx
+apps/mobile/src/activities/activityText.ts
+apps/mobile/src/activities/ActivitiesList.tsx
+apps/mobile/src/favorites/favoriteRoute.ts
+apps/mobile/src/favorites/FavoritesList.tsx
+apps/mobile/src/explore/ExploreScreen.tsx
+apps/mobile/src/explore/CityExamples.tsx
+apps/mobile/src/explore/ExploredCard.tsx
+apps/mobile/src/explore/ThemedCard.tsx
+apps/mobile/src/explore/NearbyTowns.tsx
+apps/mobile/src/i18n/de.ts
+apps/mobile/src/i18n/es.ts
+apps/mobile/src/i18n/fr.ts
+apps/mobile/src/i18n/it.ts
+docs/DECISIONS.md
+docs/UI.md
+docs/STATUS.md
+docs/tasks/TASK-182.md
 ```
 
 ## Fuori scope
@@ -120,4 +155,55 @@ dal coordinatore)
 
 ## Esito
 
-*(a fine task)*
+**Parte A** (2026-10-05, branch `feat/TASK-182-units`, ADR-0149), in
+revisione:
+
+- `src/units/`: la scelta in `units.json` nei documenti, l'unità del
+  telefono senza dipendenze, `useUnits()`, i formattatori
+  (`src/units/format.ts`). La riga «Units» in «Settings», sotto «Offline
+  maps», al posto di quella con «Soon».
+- In miglia: «My activities» (anche la scheda della corsa aperta, che
+  legge `runFacts` senza essere stata toccata), i preferiti, le schede di
+  «Explore» (lista, esempi, paesi vicini, il percorso aperto sulla mappa,
+  il percorso a tema).
+- Con «Kilometres» ogni testo è quello di prima, in tutte le lingue: la
+  distanza di una corsa resta con il punto, le schede di «Explore» anche
+  (`withPoint`), finché i loro testi sono in inglese.
+- **Testi nuovi, da confermare con l'utente**: «Phone units»,
+  «Kilometres», «Miles», «{mi} mi away», «{town}, {mi} mi away» (e le
+  quattro traduzioni).
+- **Non visto su un telefono né nel simulatore.** L'unità del telefono si
+  legge da `Settings` di React Native (`AppleMetricUnits`,
+  `AppleMeasurementUnits`, `AppleLocale`) e da
+  `I18nManager.localeIdentifier`: la logica è provata sulle risposte
+  possibili, ma che Expo Go dia davvero quelle chiavi è da vedere su un
+  iPhone con la regione «Stati Uniti». Se non le dà, l'app resta in km e
+  la scelta a mano funziona.
+- **Da decidere prima di pubblicare**: con «Miles» (e su ogni telefono
+  degli Stati Uniti o del Regno Unito, senza scelta) l'app è mista finché
+  non c'è la parte B.
+
+**Per la parte B** (file che il 2026-10-05 erano di altri task):
+
+- `src/feed/FeedPost.tsx` (TASK-241 B, nel frattempo in `main` con la
+  #348): «Horse · 19.2 km · 1 h 41 min» → `distanceLabel`.
+- `src/route/` e `src/api/routes.ts` (TASK-238 C): la distanza chiesta in
+  «Draw» in miglia (passi e limiti dentro `DISTANCE_LIMITS_M`: la scelta
+  va fatta lì e scritta nell'ADR), il risultato, «target 5 km».
+- `src/navigation/`, `src/voice/`, `src/screens/` (la corsa, «Run without
+  a route», la voce a ogni miglio, le svolte in piedi con
+  `shortDistanceLabel`), `src/activities/RunEnd.tsx`,
+  `src/share/postRun.ts`. `freeRun.ts` potrà chiamare i formattatori di
+  `src/units/format.ts`, che in km danno le sue stesse scritte (test).
+- `src/social/` (`DrawingCard.tsx`, `PublicParts.tsx`, `PublicRow.tsx`:
+  TASK-208 B), `src/paddle/PaddleExplore.tsx` («{km} km away», «{shape},
+  {km} km, on the water»), `src/places/` (TASK-240).
+- Le frasi di «Explore» con una distanza fissa («Starting within 5 km
+  of…», «shapes of 5 km from the centre»), con la traduzione di «Explore».
+- Chi scrive una distanza chiama `useUnits()` nel suo componente: alla
+  radice (`App.tsx`) non c'è, per non toccare un file di altri; si può
+  aggiungere lì quando è libero.
+- Per i testi con l'unità dentro la parte A ha aggiunto una riga per
+  unità («{mi} mi away»); se nella parte B diventano tante, conviene un
+  testo solo con la distanza già scritta («{distance} away»), togliendo
+  le righe vecchie insieme a chi le possiede.

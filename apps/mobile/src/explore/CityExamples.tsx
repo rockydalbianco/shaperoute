@@ -10,7 +10,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
-import { distanceLabel } from "../units/format";
+import { distanceLabel, withPoint } from "../units/format";
 import { useUnits } from "../units/useUnits";
 import { EXAMPLE_DISTANCE_M, type Example, shownExamples } from "./exampleRoutes";
 import { cityShort } from "./presets";
@@ -39,7 +39,7 @@ const STATUS: Record<"waiting" | "drawing", string> = {
 export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) {
   const window = useWindowDimensions();
   // The cards are written again when «Settings» changes the units (TASK-182).
-  useUnits();
+  const units = useUnits();
   // Two cards side by side inside the section, as in «Best near you».
   const card = cardWidth((width ?? window.width - 2 * space.lg) - 2 * space.md);
   const shown = shownExamples(examples);
@@ -60,7 +60,8 @@ export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) 
           const name = shapeLabel(example.shape);
           if (example.status === "ready") {
             const { route } = example;
-            const distance = distanceLabel(route.route_m);
+            // With a point: the texts here are still in English.
+            const distance = distanceLabel(route.route_m, units, withPoint);
             return (
               <RouteCard
                 key={example.shape}

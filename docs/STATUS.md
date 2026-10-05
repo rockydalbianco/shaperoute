@@ -51,8 +51,8 @@ In coda, dopo o accanto:
 - **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
   sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
   (TASK-178, sotto), email e numero di telefono anche (TASK-183, «In
-  lavorazione»); restano **TASK-182** le unità di
-  misura, km o miglia (ADR-0149, solo app, tocca molti file), **TASK-184**
+  lavorazione»), le unità di misura hanno la parte A (TASK-182, «In
+  lavorazione»); restano **TASK-184**
   «Help», «Terms», «Privacy» (dopo TASK-152: testi e contatti), **TASK-185**
   le notifiche email e push (per ultime: serve qualcosa da notificare, un
   servizio di posta, `expo-notifications`, una build propria). Tutti Todo,
@@ -502,6 +502,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   mail di conferma. Poi, nella stessa sessione «Impostazioni», un task
   per contesto: **TASK-182** (unità), **TASK-184** («Help», «Terms»,
   «Privacy»), **TASK-185** (gli interruttori delle notifiche).
+- **TASK-182 — Le unità di misura: km o miglia** (ADR-0149; chiesto
+  dall'utente il 2026-10-02 e il 2026-10-03, con due scelte: si parte
+  dall'unità del telefono, e con le miglia si fa come Strava). **Parte A**
+  in revisione (branch `feat/TASK-182-units`, solo app, nessuna
+  dipendenza): `src/units/` (la scelta in `units.json`, l'unità del
+  telefono, `useUnits()`, i formattatori), la riga **«Units»** in
+  «Settings» al posto di quella con «Soon» («Phone units», «Kilometres»,
+  «Miles»), e le miglia in «My activities», nei preferiti e nelle schede
+  di «Explore». Con «Kilometres» l'app scrive quello che scriveva prima.
+  **Aspettano l'utente**: i cinque testi nuovi; la prova su un iPhone con
+  le miglia (l'unità del telefono non è stata vista su un telefono vero,
+  né nel simulatore); se pubblicare la parte A da sola, perché con
+  «Miles» l'app è mista finché non c'è la parte B. **Parte B** (file di
+  altri task): «Draw» (la distanza chiesta, passi e limiti in miglia: una
+  scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
+  svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
+  «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito».
 
 ## Completato
 

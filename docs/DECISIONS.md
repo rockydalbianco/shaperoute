@@ -9737,8 +9737,8 @@ dell'utente dopo le misure (`MAPS.md`, «Forme inclinate»):
   esempi di «Explore») lo conservano, e da qui anche `better_distance_m`
   (TASK-234), che rileggendoli si perdeva.
 - **I campioni**: i 19 percorsi che cambiano, prima col nord in alto e
-  dopo con la mappa girata (`tools/preview_turned.py`), si giudicano prima
-  del merge.
+  dopo con la mappa girata (`tools/preview_turned.py`). Giudizio
+  dell'utente sui percorsi nuovi: 17 `sì`, 2 `quasi`, nessun `no`.
 
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce

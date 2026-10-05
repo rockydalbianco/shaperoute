@@ -1427,7 +1427,7 @@ corsa, e un percorso senza attività, restano come prima, parola per parola.
   precedenti.» / «… più lenti …». Entro 0,5 km/h (compresi): «The last 10
   kilometres were at the same speed as the 10 before.» · «Ultimi 10
   chilometri alla stessa velocità dei 10 precedenti.» (proposta
-  dell'agente, **da confermare**: l'utente non l'ha chiesto). «km» è detto
+  dell'agente, frase e soglia **confermate dall'utente** il 2026-10-05). «km» è detto
   per intero, come nella frase dei km. Le pause non contano.
 - **Le svolte 100 m prima** (`RIDE_ANNOUNCE_M`), con la distanza detta
   («In 100 metres, turn left onto Via Roma»), e così i tratti con la bici a
@@ -1579,10 +1579,10 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   anche quelle della bici a mano (TASK-206) in tedesco, spagnolo e francese,
   con «Includes … walking the bike.», e i testi della penna alzata
   (TASK-198). Restano da confermare le frasi nuove della bici (TASK-216) in
-  tedesco, spagnolo e francese, quelle dei pezzi di una forma (TASK-223)
-  in tutte e cinque le lingue, e quelle del confronto dei km (TASK-217) in
-  tedesco, spagnolo e francese, con «stessa velocità» in bici in tutte e
-  cinque. Le parole del foglio («App
+  tedesco, spagnolo e francese, e quelle dei pezzi di una forma (TASK-223)
+  in tutte e cinque le lingue. Quelle del confronto dei km (TASK-217), con
+  «stessa velocità» in bici, sono **confermate dall'utente** il 2026-10-05
+  in tutte e cinque le lingue. Le parole del foglio («App
   language», «Language», «Voice», «Default», «Listen», «Done») sono in
   inglese come il resto dello schermo: le traduce TASK-210.
 
@@ -1912,7 +1912,7 @@ e della fine corsa (`splits`), interi e con le pause escluse; da un minuto
 in su detti come un tempo («1 minute 15 seconds faster…»). Una corsa che
 riprende non ridice i confronti già detti. Al quinto km viene dopo
 l'incitamento, che chiude la frase del km. Tedesco, spagnolo e francese
-scritti dall'agente, **da confermare**: «12 Sekunden schneller als der
+scritti dall'agente e **confermati dall'utente** il 2026-10-05: «12 Sekunden schneller als der
 letzte Kilometer.» / «… langsamer …» / «Gleiches Tempo wie der letzte
 Kilometer.»; «Este kilómetro: 12 segundos más rápido que el anterior.» /
 «… más lento …» / «Mismo ritmo que el kilómetro anterior.»; «Ce

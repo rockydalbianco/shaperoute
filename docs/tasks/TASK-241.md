@@ -207,6 +207,13 @@ contiene.
 - I post d'esempio del «Feed» tengono `score` nei dati: `feedRoute` lo usa
   come somiglianza del percorso che si apre dal post.
 
-**Da decidere con l'utente**: le due frasi della bozza di «Privacy» che
-nominano il punteggio («…distance, duration, score…», ancora vera; «a run
-scored» fra gli eventi, non più vera).
+**Parte F — la bozza di «Privacy»** (2026-10-05; alla proposta «lascio
+la prima frase, tolgo "a run scored" dalla seconda» l'utente ha risposto
+«ok continua»). In `src/about/content/en.ts` e `it.ts` l'elenco degli
+eventi tenuti è «(a route chosen, a GPX file exported)»: l'app non manda
+più la richiesta che faceva registrare `run_scored`. La frase sui dati
+della corsa salvata («…distance, duration, score and the name of the
+place») resta: il server il punteggio lo tiene. Branch
+`feat/TASK-241-f-privacy-run-scored`; file: i due di `about/content`,
+STATUS, questo task file. Se un giorno il server registra di nuovo
+l'evento al salvataggio, la frase va rimessa.

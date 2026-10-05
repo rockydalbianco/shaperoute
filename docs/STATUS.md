@@ -118,26 +118,24 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `ae320d3` dalle
-  10:58Z (ok dell'utente «ok aggiorna il server e pubblica», eseguito
-  dalla sessione «Impostazioni» al via del coordinatore), con le
-  migrazioni `0001`–`0016` (`0016_contact`: email e telefono), il motore
-  di TASK-238 A e TASK-242, `GET /nearby-cities`, il tetto del traffico;
-  fermo circa 10 secondi; immagine di prima
-  `shaperoute-api:before-task183`, copia del database
-  `shaperoute-2026-10-05T1058Z.dump`; `draw_examples` rilanciato alle
-  10:59Z (`data/draw-examples-2026-10-05-task238.log`). **Le zone del
-  telefono sono scritte** (ok dell'utente «ok zone e pubblica»): 521 file,
-  2,6 GB, 82 minuti; Trento a piedi 2,5 MB, in bici 11,5 MB, in meno di
-  0,1 s. Acqua dei laghi d'Italia: 219 file, 71 MB. Da fare: la zona di
-  Borgo Valsugana. **App** su `preview` da `main` `7a9506a` (gruppo
-  `1b49d248`): tutto `main`: le zone scaricate in anticipo (TASK-214
-  B2/B2b), il numero rosso delle richieste (TASK-239), niente punteggio
-  sui post (TASK-241), email e telefono (TASK-183), «Move the shape»
-  (TASK-238), «Units» (TASK-182 A), «Try N km», i paesi vicini, i laghi,
-  il «Feed» sull'acqua, «Follow». **Da provare sull'iPhone**: da adesso
-  il telefono scarica la sua zona e disegna i percorsi da sé (comincia la
-  parte D di TASK-214). Strava spento per scelta dell'utente.
+- **Server e app, al 2026-10-05**. **Server**: su `main` `c2bb428` dalle
+  12:02Z (ok dell'utente per la migrazione 0017 nella sessione
+  «Impostazioni» e «ok server per le forme inclinate» in quella di
+  TASK-232; eseguito da «Impostazioni» al via del coordinatore), con le
+  migrazioni `0001`–`0017`, `PUT /me/notifications`, il motore di TASK-232
+  A (un cuore da 5 km a Trento: `rotation_deg: -30`, somiglianza 0,94),
+  di TASK-238 A e TASK-242; fermo circa 10 secondi; immagine di prima
+  `shaperoute-api:before-task185`, copia del database
+  `shaperoute-2026-10-05T1202Z.dump`; `draw_examples` rilanciato alle
+  12:03Z (`data/draw-examples-2026-10-05-task232.log`). Zone del telefono:
+  526 file (le 521 della mattina più Borgo Valsugana, Tenna, Calceranica,
+  Caldonazzo, Pergine, chieste dall'utente). Acqua della canoa: 247 file,
+  93 MB (i laghi d'Italia e i 27 tratti di costa di TASK-245). **App** su
+  `preview` da `main` `20c021b` (gruppo `71e4f577`): tutto `main`, fino a
+  «Move the shape» sugli esempi di «Explore» (TASK-244) e agli
+  interruttori delle notifiche (TASK-185). Dal 2026-10-05 le cose di sola
+  app le pubblica il coordinatore appena sono in `main` (ok dell'utente).
+  **Da provare sull'iPhone.** Strava spento per scelta dell'utente.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),

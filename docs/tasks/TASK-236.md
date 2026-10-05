@@ -125,10 +125,10 @@ sei andava persa; ora si rifà una volta.
 
 Rimandato:
 
-- **Il server** (l'endpoint; niente migrazioni, motore invariato) e la
-  **pubblicazione** dell'app: li chiede il coordinatore all'utente. La
-  prova sull'iPhone, anche delle sei schede (nel simulatore se ne sono
-  viste quattro).
+- **La prova sull'iPhone**, anche delle sei schede (nel simulatore se ne
+  sono viste quattro). Il server ha l'endpoint dal 2026-10-05 09:32Z
+  (`f3fdbce`) e l'app è su `preview` da `8c3a6ff` (gruppo `8f6849ca`):
+  fatti dal coordinatore.
 - **La zona di Borgo Valsugana** non è stata scaricata sul Mac: Overpass
   rifiutava la connessione il 2026-10-05 e sul Mac manca `osmium` per
   `prefetch_zones --extract`. Sul server le zone dei paesi si possono

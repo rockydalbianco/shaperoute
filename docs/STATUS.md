@@ -498,9 +498,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   toccato si apre con le prime tre schede pronte. Corsa e bici (stessi
   esempi della corsa); la canoa ha i laghi vicini (TASK-233). Provato nel
   simulatore con l'API del branch, prima dei due posti più vicini.
-  **Mancano**: l'endpoint sul server (senza, la sezione non compare:
-  l'app si può pubblicare prima) e la pubblicazione, con l'ok dell'utente;
-  la prova sull'iPhone. Seguiti in `tasks/TASK-236.md`.
+  **Sul server** dal 2026-10-05 09:32Z (`f3fdbce`) e **su `preview`** da
+  `8c3a6ff` (gruppo `8f6849ca`), fatti dal coordinatore. Da provare
+  sull'iPhone: le sei schede. Seguiti in `tasks/TASK-236.md`.
 - **Motore, API e app** — TASK-234: «Viene meglio a N km» (ADR-0197;
   chiesto dall'utente il 2026-10-05, il «passo 1»; PR #327, merge
   `784cc03`, e #336, merge `db2c30e`). Quando un percorso riesce ma la

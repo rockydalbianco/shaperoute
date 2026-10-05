@@ -171,9 +171,13 @@ revisione:
 - Con «Kilometres» ogni testo è quello di prima, in tutte le lingue: la
   distanza di una corsa resta con il punto, le schede di «Explore» anche
   (`withPoint`), finché i loro testi sono in inglese.
-- **Testi nuovi, da confermare con l'utente**: «Phone units»,
-  «Kilometres», «Miles», «{mi} mi away», «{town}, {mi} mi away» (e le
-  quattro traduzioni).
+- **Testi nuovi**: «Kilometres», «Miles», «{mi} mi away», «{town}, {mi}
+  mi away» (e le quattro traduzioni) **confermati dall'utente** il
+  2026-10-05 («ok, i testi delle unità vanno bene»); «Phone units» non si
+  vede ancora (parte B) ed è da confermare allora.
+- **Su `preview`** dal 2026-10-05 (gruppo `1b49d248`). La riga «Units» è
+  stata vista nel simulatore con l'app in italiano («Unità di misura —
+  Chilometri», `out/task184/settings-units-and-about.png`).
 - **Non visto su un telefono né nel simulatore.** L'unità del telefono si
   legge da `Settings` di React Native (`AppleMetricUnits`,
   `AppleMeasurementUnits`, `AppleLocale`) e da

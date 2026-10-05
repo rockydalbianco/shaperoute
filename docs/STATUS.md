@@ -497,10 +497,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Scelta dell'utente del 2026-10-05**: la parte A si pubblica subito,
   ma **l'app parte in km su ogni telefono** finché non c'è la parte B
   (`FOLLOWS_PHONE` spento): solo chi sceglie «Miles» vede l'app mista.
-  **Aspettano l'utente**: i testi nuovi («Kilometres», «Miles», «{mi} mi
-  away»; «Phone units» si vedrà con la parte B); la prova su un iPhone
-  con le miglia (l'unità del telefono non è stata vista su un telefono
-  vero, né nel simulatore). **Parte B** (file di
+  Su `preview` dal 2026-10-05 (gruppo `1b49d248`, pubblicata dal
+  coordinatore). Testi «Kilometres», «Miles» e «{mi} mi away» **confermati
+  dall'utente** il 2026-10-05; «Phone units» si vedrà con la parte B. La
+  riga «Units» è stata vista nel simulatore in italiano. **Da fare con la
+  parte B**: la prova su un iPhone con le miglia (l'unità del telefono non
+  è stata vista su un telefono vero). **Parte B** (file di
   altri task): «Draw» (la distanza chiesta, passi e limiti in miglia: una
   scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con

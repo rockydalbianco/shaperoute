@@ -130,6 +130,7 @@ def test_a_shape_is_recorded_with_its_request_and_its_outcome(
         "activity": "running",
         "style": "round",
         "pen_up": False,  # TASK-197
+        "near": None,  # TASK-238
     }
     outcome = line["outcome"]
     assert outcome.pop("elapsed_s") >= 0

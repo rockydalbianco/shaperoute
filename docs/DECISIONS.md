@@ -9617,9 +9617,9 @@ alto.
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-233 · «tutti
 i laghi» e «come la corsa» sono richieste dell'utente; le forme più corte
-sui laghi piccoli (sui campioni) e «Near me» acceso da subito sono sue
-scelte del 2026-10-05; il resto è deciso dall'agente su delega dell'utente,
-da confermare
+sui laghi piccoli (sui campioni), «Near me» acceso da subito e i bacini
+artificiali nell'elenco sono sue scelte del 2026-10-05; il resto è deciso
+dall'agente su delega dell'utente, e i testi sono da confermare
 
 **Contesto**: con «Paddle», «Explore» aveva quattro luoghi scelti a mano
 (ADR-0169, ADR-0189) e «Near me», che disegnava dalla partenza e funzionava

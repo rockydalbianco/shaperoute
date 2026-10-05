@@ -518,12 +518,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
   «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito». **Parte C**
-  (2026-10-05, branch `feat/TASK-182-c-run-and-voice`, in revisione): con
+  (in `main` dal 2026-10-05, PR #366, merge `ad3e443`): con
   «Miles» le schermate della corsa, la navigazione, la fine della corsa e
   la voce sono in miglia (parziali per miglio calcolati sul telefono, la
   voce a ogni miglio e in bici ogni 5, le svolte in piedi, mph in bici),
-  e aspettano l'utente i testi e le frasi nuove e tre numeri scelti
-  dall'agente (`tasks/TASK-182.md`, «Parte C»; ADR-0149, aggiornamento).
+  con i testi, le frasi e i tre numeri scelti dall'agente confermati
+  dall'utente come letti: la voce in miglia è da ascoltare sull'iPhone
+  (`tasks/TASK-182.md`, «Parte C»; ADR-0149, aggiornamento).
+  **Parte B, «Draw» e le schede** (2026-10-05, branch
+  `feat/TASK-182-b-draw-and-cards`, in revisione): con «Miles» la distanza
+  di «Draw» si scrive in miglia (− e + di 1 mi; corsa 1–13, bici 7–18,
+  canoa 1–3; all'API metri interi), e sono in miglia il risultato, «Try»,
+  il «Feed», i disegni pubblici ed «Explore» con «Paddle»; i testi nuovi
+  sono confermati dall'utente (`tasks/TASK-182.md`, «Parte B»);
+  `FOLLOWS_PHONE` resta spento fino all'ultimo passo, con «Phone units»
+  e il testo di «Share» in miglia.
 - **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
   dall'utente il 2026-10-05: una mini guida, e le prime bozze di
   condizioni e privacy). In revisione (branch

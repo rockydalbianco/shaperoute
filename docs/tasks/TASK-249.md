@@ -50,8 +50,11 @@ Non sono solo villaggi: Caldonazzo si spostava di 1127 m, Riva del Garda
    Senza un luogo con quell'etichetta resta il punto della geocodifica.
 2. La regola dell'etichetta di un luogo del Places in un posto solo
    (`place_label`), usata da `/cities` e da `/nearby-cities`.
-3. Se il Places non risponde, la ricerca fallisce (503) e niente è
-   tenuto: mai un altro punto per lo stesso luogo.
+3. Se il Places non risponde, la ricerca risponde lo stesso col punto
+   della geocodifica (quello di prima), **senza tenere la risposta**: la
+   ricerca dopo richiede. Dopo il primo che non risponde non si chiedono
+   gli altri: un'attesa sola. (Chiesto dal coordinatore; la prima
+   stesura falliva con 503.)
 4. Test senza rete, con risposte tagliate da quelle vere.
 
 ## Criteri di accettazione
@@ -66,8 +69,10 @@ Non sono solo villaggi: Caldonazzo si spostava di 1127 m, Riva del Garda
       dov'è; un'area senza un luogo con la sua etichetta (Milano, che nel
       Places è «Milano» e nella geocodifica «Milan») tiene il punto di
       prima.
-- [x] Se il Places non risponde: 503, niente in cache, la chiave mai nel
-      messaggio; la ricerca dopo richiede tutto.
+- [x] Se il Places non risponde la ricerca non fallisce: tornano i punti
+      di prima, niente in cache, la chiave mai nel log; un'attesa sola
+      anche con più aree; la ricerca dopo richiede e trova il paese. Se è
+      la geocodifica a non rispondere, 503 come prima.
 - [x] `/nearby-cities` non fa nessuna chiamata in più e non cambia punti.
 - [x] `ruff`, `black` e tutti i test dell'API verdi.
 - [x] Provato col servizio vero dal Mac: i sei posti di `/nearby-cities` da
@@ -128,8 +133,11 @@ Col servizio vero, dal Mac, il 2026-10-06:
   uno dei quattro grandi. La regola resta per ogni area.
 - Il costo: una ricerca nuova fa una richiesta in più al Places per ogni
   area fra i suoi risultati, una dopo l'altra, circa 0,35 s l'una:
-  «Tenna» 0,6 s invece di 0,3, «Roma» (quattro aree) 1,8 s. Poi la
-  risposta è tenuta un giorno.
+  «Tenna» 0,6 s invece di 0,3, «Trento» 1,5 s, «Roma» (quattro aree)
+  1,8 s. Poi la risposta è tenuta un giorno. Se il Places resta appeso,
+  la ricerca aspetta una volta sola il suo tempo massimo (8 s,
+  `places.TIMEOUT_S`, lo stesso che ha già la geocodifica) e risponde coi
+  punti di prima.
 
 ## Dopo il merge (del coordinatore, con l'ok dell'utente)
 

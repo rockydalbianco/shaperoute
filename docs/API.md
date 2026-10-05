@@ -330,9 +330,10 @@ dell'area, a 650 m dal paese per Tenna. Per ogni risultato così l'API
 chiede al Places i luoghi con quel nome dentro il `bbox` e prende il punto
 di quello con la stessa etichetta: lo stesso punto di `/city-suggestions` e
 di `/nearby-cities`. Senza un luogo con quell'etichetta resta il punto
-della geocodifica; se il Places non risponde, 503 e niente in cache. Una
-ricerca nuova costa così una richiesta in più per ogni area fra i
-risultati.
+della geocodifica. Se il Places non risponde la ricerca risponde lo
+stesso, coi punti della geocodifica, e quella risposta non è tenuta: la
+ricerca dopo richiede. Una ricerca nuova costa così una richiesta in più
+per ogni area fra i risultati (meno di 2 s in tutto, misurato).
 
 ### `GET /nearby-cities` (TASK-236, ADR-0200)
 

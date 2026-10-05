@@ -11,7 +11,9 @@ A place has one point, OpenStreetMap's own for it: its `place` node
 instead, an area whose point is the middle of it, 650 m from the church in
 Tenna. For each such area the Places API is asked for the place with the
 same label inside it, and that point is the city's: the one GET
-/city-suggestions and GET /nearby-cities give for the same place.
+/city-suggestions and GET /nearby-cities give for the same place. When the
+Places API does not answer, the search still does, with the geocoding's
+points, and that answer is not kept: the next search asks again.
 
 GET /city-suggestions (TASK-134, TASK-138, ADR-0110) suggests cities and
 places in them while typing: "arena di ver" gives the Arena di Verona.
@@ -19,6 +21,7 @@ places in them while typing: "arena di ver" gives the Arena di Verona.
 
 from __future__ import annotations
 
+import logging
 import threading
 import time
 import urllib.parse
@@ -36,6 +39,8 @@ from shaperoute_api.places import (
     PlacesUnavailableError,
     fetch_json,
 )
+
+log = logging.getLogger(__name__)
 
 GEOCODE_URL = "https://api.geoapify.com/v1/geocode/search"
 # While typing (TASK-138): the autocomplete, any kind of result. Its city
@@ -271,25 +276,40 @@ class CitySearch:
                 return kept[1]
         try:
             body = self._fetch(cities_url(self.key, query))
-            # No answer rather than another point for the same place: an
-            # area whose places cannot be asked fails the search.
-            cities = [self._at_its_node(city, result) for city, result in _cities(body)]
         except Exception:
             # The URL carries the key: no message, no chain.
             raise PlacesUnavailableError(SERVICE_FAILED) from None
+        cities, at_their_nodes = self._at_their_nodes(body)
+        if not at_their_nodes:
+            return cities  # not kept: the next search asks the places again
         with self._lock:
             self._cache[text] = (now, cities)
             while len(self._cache) > CACHE_SIZE:
                 self._cache.popitem(last=False)
         return cities
 
-    def _at_its_node(self, city: PlaceBody, result: dict[str, Any]) -> PlaceBody:
-        """`city` at its place's own point when the geocoding gave an area
-        (TASK-249): one more request for each, kept with the answer."""
+    def _at_their_nodes(self, body: Any) -> tuple[list[PlaceBody], bool]:
+        """The geocoding's cities, each at its place's own point when the
+        geocoding gave an area (TASK-249): one more request for each. False
+        when the Places API did not answer for one: that city and the areas
+        after it are at the geocoding's points, without another wait."""
         assert self.key is not None
-        url = node_url(self.key, result)
-        point = None if url is None else node_point(city.label, self._fetch(url))
-        return city if point is None else PlaceBody(label=city.label, point=point)
+        cities: list[PlaceBody] = []
+        answered = True
+        for city, result in _cities(body):
+            url = node_url(self.key, result) if answered else None
+            if url is not None:
+                try:
+                    point = node_point(city.label, self._fetch(url))
+                except Exception as exc:
+                    # The URL carries the key: the kind of failure only.
+                    log.warning("a city's place not asked: %s", type(exc).__name__)
+                    answered = False
+                    point = None
+                if point is not None:
+                    city = PlaceBody(label=city.label, point=point)
+            cities.append(city)
+        return cities, answered
 
     def suggest(self, query: str) -> list[SuggestionBody]:
         """Cities and places whose name begins with what is typed: "Par"

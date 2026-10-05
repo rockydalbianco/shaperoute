@@ -229,18 +229,43 @@ def test_an_area_without_a_place_of_its_label_keeps_the_geocoding_point() -> Non
     assert service.calls == ["cities Milano", "places Milan"]
 
 
-def test_places_that_do_not_answer_fail_the_search_and_nothing_is_kept() -> None:
+def test_places_that_do_not_answer_leave_the_geocoding_points_for_once(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     service = tenna()
     service.places_down = True
     search = CitySearch("SECRET", service)
-    with pytest.raises(PlacesUnavailableError) as failed:
-        search.search("Tenna")
-    # Never the middle of the area for want of an answer; never the key.
-    assert "SECRET" not in str(failed.value)
-    assert failed.value.__cause__ is None
+    # The search answers as before TASK-249, and says nothing of the key.
+    assert [city.point for city in search.search("Tenna")] == [
+        TENNA_AREA,
+        (46.7469787, 9.3390283),
+    ]
+    assert "SECRET" not in caplog.text and "OSError" in caplog.text
+    # Not kept: the next search asks again, and finds the village.
     service.places_down = False
     assert search.search("Tenna")[0].point == TENNA_VILLAGE
     assert service.calls == ["cities Tenna", "places Tenna"] * 2
+    # That one is kept.
+    search.search("Tenna")
+    assert len(service.calls) == 4
+
+
+def test_places_that_do_not_answer_are_waited_for_once() -> None:
+    service = Service({"Trentino": [TENNA, LEVICO]})
+    service.places_down = True
+    found = CitySearch("K", service).search("Trentino")
+    assert [city.point for city in found] == [TENNA_AREA, LEVICO_POINT]
+    assert service.calls == ["cities Trentino", "places Tenna"]
+
+
+def test_a_geocoding_that_does_not_answer_fails_the_search() -> None:
+    def down(url: str) -> Any:
+        raise OSError(url)
+
+    with pytest.raises(PlacesUnavailableError) as failed:
+        CitySearch("SECRET", down).search("Tenna")
+    assert "SECRET" not in str(failed.value)
+    assert failed.value.__cause__ is None
 
 
 def test_a_label_twice_asks_its_places_once() -> None:

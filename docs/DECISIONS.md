@@ -11686,7 +11686,9 @@ quel nome dentro il `bbox` dell'area, dal più vicino al suo punto, e
 prende il punto del primo con **la stessa etichetta** (nome, regione,
 stato: `place_label`, la stessa regola di `/nearby-cities`). Se nessuno ha
 quell'etichetta resta il punto della geocodifica. Se il Places non
-risponde la ricerca fallisce con 503 e niente è tenuto.
+risponde, la ricerca risponde lo stesso coi punti della geocodifica, ma
+quella risposta **non è tenuta** e gli altri luoghi non si chiedono
+(un'attesa sola): la ricerca dopo richiede e trova il nodo.
 
 **Alternative scartate**:
 
@@ -11703,15 +11705,21 @@ risponde la ricerca fallisce con 503 e niente è tenuto.
 - **La regola solo per i villaggi** (`place=village`): Riva del Garda è
   `place=town` e ha i due punti a 519 m; e non risparmierebbe niente al
   catalogo, che non si sposta comunque (0 città su 66, misurato).
-- **Servire il punto dell'area se il Places non risponde**: per un giorno
-  lo stesso luogo avrebbe di nuovo due punti, e `route_store` imparerebbe
-  quello sbagliato.
+- **Fallire la ricerca (503) se il Places non risponde**, la prima
+  stesura: mai due punti, ma la ricerca delle città smetterebbe di
+  funzionare per un servizio che le serve solo a spostare qualche paese
+  di qualche centinaio di metri. Scartata su richiesta del coordinatore.
+- **Tenere un giorno la risposta coi punti dell'area**: lo stesso luogo
+  avrebbe di nuovo due punti per un giorno. Non tenuta, dura una ricerca.
 
 **Conseguenze**:
 
 - Una ricerca nuova costa una richiesta al Places per ogni area fra i suoi
-  risultati (al più 5, una dopo l'altra, circa 0,35 s l'una), poi è
-  tenuta un giorno. Nessuna chiamata in più per posizione.
+  risultati (al più 5, una dopo l'altra, circa 0,35 s l'una: «Roma»
+  1,8 s), poi è tenuta un giorno. Nessuna chiamata in più per posizione.
+- Mentre il Places non risponde, un luogo cercato per nome può avere il
+  punto dell'area: `route_store` lo impara come centro, e i suoi esempi
+  restano finché scadono.
 - Delle 66 città con gli esempi disegnati prima nessuna cambia punto.
   Cambiano Tenna, Calceranica al Lago, Caldonazzo, Riva del Garda, Jesolo
   fra quelle provate: i loro esempi disegnati dal punto vecchio di

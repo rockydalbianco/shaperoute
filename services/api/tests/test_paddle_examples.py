@@ -80,6 +80,11 @@ def test_each_example_is_the_app_s_detail_of_a_paddling_route() -> None:
     assert points[0] == points[-1]
     assert abs(heart["route_m"] - 2000) <= 200
     assert all(len(f"{v}".split(".")[1]) <= 6 for p in points for v in p)
+    # Where the shape is, for «Move the shape» (TASK-244): inside its line.
+    lat, lon = heart["centre"]
+    assert min(p[0] for p in points) < lat < max(p[0] for p in points)
+    assert min(p[1] for p in points) < lon < max(p[1] for p in points)
+    assert all(len(f"{v}".split(".")[1]) <= 6 for v in heart["centre"])
 
 
 def test_a_shape_in_pieces_is_drawn_piece_by_piece_but_the_sun() -> None:

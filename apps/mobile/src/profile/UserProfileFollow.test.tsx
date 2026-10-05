@@ -105,6 +105,10 @@ test("no button on one's own profile, nor with an API older than following", asy
     ...(session as Session),
     user: { ...(session as Session).user, public_id: ID },
   };
+  const ownFetch: jest.Mock = answers({
+    status: 200,
+    body: { ...profile, follow: "none" },
+  });
   const own = await render(
     <UserProfilePage
       apiUrl={URL}
@@ -113,7 +117,7 @@ test("no button on one's own profile, nor with an API older than following", asy
         sessionEnded: jest.fn(),
       }}
       publicId={ID}
-      fetchFn={answers({ status: 200, body: { ...profile, follow: "none" } })}
+      fetchFn={ownFetch}
       apiKey={null}
     />,
   );

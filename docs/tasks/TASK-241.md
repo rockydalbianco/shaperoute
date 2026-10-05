@@ -222,3 +222,36 @@ place») resta: il server il punteggio lo tiene. Branch
 `feat/TASK-241-f-privacy-run-scored`; file: i due di `about/content`,
 STATUS, questo task file. Se un giorno il server registra di nuovo
 l'evento al salvataggio, la frase va rimessa.
+
+**Parte H — `run_scored` al salvataggio** (2026-10-06; alla domanda «vuoi
+che il server torni a registrare l'evento "run scored" quando una corsa
+viene salvata?» l'utente ha risposto «si»). Branch
+`feat/TASK-241-h-run-scored-at-save`. **API**, e due righe di testo
+nell'app.
+
+- [x] Il primo `PUT /me/activities/{key}` di una corsa con punteggio
+      registra `run_scored` con la sola `quality`.
+- [x] La stessa corsa rimandata non registra un secondo evento.
+- [x] Una corsa senza percorso non registra niente.
+- [x] Senza registro degli eventi la corsa si salva lo stesso.
+- [x] «Privacy» nomina di nuovo «a run scored» fra gli eventi tenuti.
+- [x] ruff, black e test dell'API verdi; test di `about` dell'app verdi.
+
+```
+services/api/shaperoute_api/activities.py
+services/api/shaperoute_api/app.py
+services/api/tests/test_activities_insights.py
+apps/mobile/src/about/content/en.ts
+apps/mobile/src/about/content/it.ts
+docs/INSIGHTS.md
+docs/API.md
+docs/DECISIONS.md
+docs/STATUS.md
+docs/tasks/TASK-241.md
+```
+
+Nessuna migrazione, nessun contratto cambiato, il motore non è toccato
+(niente `draw_examples`). **Serve l'aggiornamento del server** perché
+l'evento torni: con l'ok dell'utente, lo guida il coordinatore. Fuori
+scope: `POST /track-scores`, che resta com'è (un'app vecchia conta due
+volte la stessa corsa finché non si aggiorna).

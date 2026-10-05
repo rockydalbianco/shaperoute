@@ -710,8 +710,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scored» fra gli eventi tenuti; resta «…distance, duration, score…»,
   ancora vera (PR #372). **Parte G**: tolto dall'app
   `src/api/trackScores.ts`, che nessuno chiamava più; niente cambia per
-  chi usa l'app. Esce con la prossima pubblicazione.
-  `tasks/TASK-241.md`.
+  chi usa l'app (PR #375). **Parte H** (2026-10-06, «si» dell'utente):
+  **l'API** registra di nuovo `run_scored` negli `insights`, al primo
+  salvataggio di una corsa con punteggio, con la sola `quality`; nella
+  bozza di «Privacy» torna «a run scored». **Vuole l'aggiornamento del
+  server** (nessuna migrazione, il motore non cambia: niente
+  `draw_examples`), con l'ok dell'utente. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

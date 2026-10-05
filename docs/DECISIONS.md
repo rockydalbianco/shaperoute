@@ -10580,6 +10580,34 @@ solo km e tempo; avrebbe tenuto la richiesta all'API, l'attesa e i
 messaggi senza rete); togliere `score` dall'API (altro contratto, usato
 dai dati già salvati; non chiesto).
 
+**Aggiornamento** (2026-10-06, TASK-241 parte H; scelta dell'utente:
+«si» alla domanda «vuoi che il server torni a registrare l'evento "run
+scored" quando una corsa viene salvata?»). Il punto 4 cambia: **l'API
+registra `run_scored` al salvataggio**. Il resto è deciso dall'agente su
+delega dell'utente:
+
+1. **Quando**: al primo `PUT /me/activities/{key}` di una corsa (`201`)
+   che ha un punteggio. Non a una ripetizione della stessa chiave (`200`:
+   l'outbox dell'app rimanda), non per una corsa senza percorso o troppo
+   corta per un punteggio.
+2. **Cosa**: solo `quality` (punteggio / 100, tre decimali), come faceva
+   `POST /track-scores`. Niente account, luogo, forma o titolo: gli
+   `insights` restano senza niente che dica chi è (ADR-0101).
+3. **`POST /track-scores` non cambia** e registra ancora l'evento: l'app
+   da TASK-241 non lo chiama. Un'app più vecchia conta la stessa corsa
+   due volte finché non si aggiorna; non vale un cambio dell'endpoint.
+4. **Cosa si conta adesso**: le corse lungo un percorso **salvate da chi
+   ha un account**. Prima erano tutte le corse finite con un punteggio,
+   anche senza account e anche se poi scartate.
+5. **«Privacy»**: torna «a run scored» fra gli eventi tenuti (tolto con la
+   parte F), in inglese e in italiano.
+
+**Alternative scartate**: spostare l'evento togliendolo da `POST
+/track-scores` (cambia un endpoint che le app vecchie usano ancora);
+registrarlo dall'app con `POST /signals` (il telefono non ha più il
+punteggio); contare anche le corse senza account (non arrivano al
+server).
+
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
 (TASK-239), dentro la **richiesta dell'utente** dello stesso giorno: «deve

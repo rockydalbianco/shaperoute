@@ -963,6 +963,66 @@ Il sole a penna alzata cammina quasi quanto disegna: otto raggi, sette
 tratti a piedi da più di 1 km. Con la penna giù i raggi sono tratti
 ripassati, e i km a piedi non ci sono.
 
+**Le deviazioni di un pezzo** (TASK-242, ADR-0208, `detours.py`). Le
+strade non sempre seguono un pezzo: a Trento la bocca di una faccina da
+15 km attraversa la ferrovia, e il primo sottopasso è 250–370 m sotto la
+sua linea. Disegnata, quella andata e ritorno appende la bocca al bordo
+della faccia. Con la penna alzata si cammina:
+
+1. un nodo del percorso di un pezzo è **sulla linea** entro `LIFT_NEAR` =
+   1/8 di altezza di pezzo (la tolleranza della somiglianza);
+2. un tratto fra due nodi sulla linea è una **deviazione** se un suo punto
+   è più lontano di `LIFT_FAR` = 3/8 di altezza (circa un decimo del lato
+   del disegno). Ciò che si allontana meno resta disegnato;
+3. il pezzo si disegna **in parti**, e da una parte all'altra c'è un
+   tratto a piedi per la strada più breve, come fra due pezzi: `walks`
+   può avere più tratti dei pezzi meno uno, mai più di `MAX_WALKS` = 9
+   (quelli che tiene un risultato dell'API); oltre, si camminano le
+   deviazioni più profonde;
+4. una deviazione all'inizio o alla fine del pezzo si lascia fuori (il
+   pezzo comincia e finisce sulla sua linea; per un anello le due sono
+   una sola), e una che torna al nodo da cui parte si taglia: in nessuno
+   dei due casi c'è un tratto a piedi in più;
+5. **il contorno non si tocca**, e nemmeno le parole e l'acqua;
+6. la distanza che la ricerca insegue conta ancora i metri delle
+   deviazioni (`pen_up.sized_m`, `optimizer.drawn_distance`): la
+   forma resta grande com'era. I km disegnati del risultato
+   (`distance_m` meno i `walks`) sono quelli veri, e possono stare più
+   sotto la distanza chiesta.
+
+Un pezzo che resta vicino alla sua linea dà lo stesso percorso di prima,
+punto per punto (`tests/test_detours.py`).
+
+Misure del 2026-10-05 sul Mac, zone in cache, penna alzata, prima → dopo
+(`plan_route`, una partenza sola; a 15 km da due punti di Trento e da
+Milano per `smiley`, `ghost`, `donut`, `sun`, `cat`, `fish`, `dog_head`,
+`rabbit_head`, `pumpkin`; a 10 km da Trento, Levico e Milano per le prime
+cinque). Su 42 richieste **30 danno lo stesso percorso** di prima (tutte
+quelle di Milano), 2 restano non disponibili (`smiley` e `donut` a 10 km
+a Levico) e 10 cambiano, tutte in meglio:
+
+| Richiesta | Somiglianza | Disegnati | A piedi | Tratti |
+|---|---|---|---|---|
+| `smiley` 15 km, Trento | 0,71 → 0,73 | 15,1 → 14,2 km | 2,6 → 3,4 km | 3 → 4 |
+| `smiley` 15 km, Trento (altro punto) | 0,71 → 0,73 | 13,3 → 12,5 km | 2,0 → 2,8 km | 3 → 4 |
+| `ghost` 15 km, Trento | 0,72 → 0,75 | 14,2 → 14,6 km | 1,2 → 1,6 km | 2 → 3 |
+| `donut` 15 km, Trento | 0,74 → 0,76 | 15,9 → 14,9 km | 0,8 → 1,6 km | 1 → 2 |
+| `fish` 15 km, Trento (altro punto) | 0,64 → 0,67 | 15,1 → 14,1 km | 0,4 → 0,5 km | 1 → 2 |
+| `pumpkin` 15 km, Trento (altro punto) | 0,83 → 0,83 | 13,9 → 12,8 km | 1,9 → 3,0 km | 3 → 5 |
+| `sun` 15 km, Trento | 0,83 → 0,85 | 13,4 → 12,0 km | 8,7 → 8,8 km | 8 → 8 |
+| `sun` 15 km, Trento (altro punto) | 0,81 → 0,84 | 14,3 → 13,5 km | 10,6 → 11,4 km | 8 → 9 |
+| `sun` 10 km, Trento | 0,88 → 0,89 | 9,6 → 8,8 km | 7,5 → 6,7 km | 8 → 8 |
+| `sun` 10 km, Levico | 0,65 → 0,66 | 10,0 → 9,2 km | 5,0 → 5,7 km | 8 → 9 |
+
+A Trento è la ferrovia, che taglia il centro, a fare quasi tutte le
+deviazioni. Dove i tratti non crescono la deviazione era all'inizio o
+alla fine di un pezzo, o tornava al suo nodo. La faccina dello
+screenshot (dalla CLI con `--nearby 3`, come l'API: la variante A) passa
+da 0,77 a 0,79 con lo stesso percorso di 15,8 km: 12,9 km disegnati
+invece di 13,6, 2,9 km a piedi invece di 2,3 (`samples/`, `TASK-242_*`).
+La faccina e la ciambella a Trento, prima e dopo, **giudicate dall'utente
+il 2026-10-05: «sì, va bene»**; le altre righe della tabella no.
+
 ### Funzione obiettivo
 
 ```

@@ -11548,3 +11548,61 @@ d'Iseo».
 **Conseguenze**: solo `placeSpots.ts`; `searchSpots` di «Explore» non
 cambia, e nemmeno il motore o l'API. Chi scrive «lago» prima del nome di
 una spiaggia la trova lo stesso, perché nessun nome trovato ha «lago».
+
+
+## ADR-0213 — Un luogo ha un punto solo: il suo nodo `place` di OpenStreetMap
+
+**Data**: 2026-10-06 · **Stato**: Accettato · **Task**: TASK-249 ·
+deciso dall'agente su delega dell'utente
+
+**Contesto**: per alcuni luoghi `GET /cities` e `GET /nearby-cities`
+(ADR-0200) davano punti diversi: Tenna a 650 m, Calceranica al Lago a
+700 m, Caldonazzo a 1,1 km, Riva del Garda a 500 m. La geocodifica
+`type=city` di Geoapify dà per loro il confine del comune
+(`category: administrative`) col punto al centro dell'area; il Places e
+l'autocompletamento di `/city-suggestions` danno il nodo `place`, il
+centro del paese. Gli esempi tenuti vanno per punto (ADR-0136): lo stesso
+paese aveva due serie di esempi, e chi lo toccava in «NEARBY TOWNS» e chi
+lo cercava per nome vedeva percorsi diversi.
+
+**Decisione**: il punto di un luogo è **quello del suo nodo `place`**
+(`place=city`, `town`, `village`), come lo dà il Places di Geoapify.
+`/nearby-cities` e `/city-suggestions` lo danno già e non cambiano.
+`/cities`, per ogni risultato che è un'area, chiede al Places i luoghi con
+quel nome dentro il `bbox` dell'area, dal più vicino al suo punto, e
+prende il punto del primo con **la stessa etichetta** (nome, regione,
+stato: `place_label`, la stessa regola di `/nearby-cities`). Se nessuno ha
+quell'etichetta resta il punto della geocodifica. Se il Places non
+risponde la ricerca fallisce con 503 e niente è tenuto.
+
+**Alternative scartate**:
+
+- **Il punto della geocodifica come verità**, con `/nearby-cities` che
+  cerca per nome ogni posto: chiamate in più per ogni posizione, e il
+  centro dell'area di un comune è un punto peggiore (per Caldonazzo è nei
+  campi, per Calceranica sul monte).
+- **Un registro di punti imparati** da `/nearby-cities`, che `/cities`
+  rilegge: nessuna chiamata in più, ma il punto di un paese cambierebbe
+  il giorno in cui qualcuno gli passa vicino.
+- **Una sola chiamata all'autocompletamento** per ricerca: dà il nodo,
+  ma solo per i primi nomi che iniziano così; i risultati che non ci sono
+  resterebbero col punto dell'area.
+- **Servire il punto dell'area se il Places non risponde**: per un giorno
+  lo stesso luogo avrebbe di nuovo due punti, e `route_store` imparerebbe
+  quello sbagliato.
+
+**Conseguenze**:
+
+- Una ricerca nuova costa una richiesta al Places per ogni area fra i suoi
+  risultati (al più 5, una dopo l'altra, circa 0,35 s l'una), poi è
+  tenuta un giorno. Nessuna chiamata in più per posizione.
+- Delle 66 città con gli esempi disegnati prima nessuna cambia punto.
+  Cambiano Tenna, Calceranica al Lago, Caldonazzo, Riva del Garda, Jesolo
+  fra quelle provate: i loro esempi disegnati dal punto vecchio di
+  `/cities` non vengono più chiesti e scadono da soli.
+- Anche `themed.py` e `prefetch_zones.py`, che usano la stessa ricerca,
+  partono dal nodo.
+- Chi ha già scelto uno di quei paesi lo tiene sul telefono col punto di
+  prima finché non lo sceglie di nuovo.
+- Le etichette possono ancora differire fra i due endpoint (una frazione,
+  un nome tradotto): il punto no. `tasks/TASK-249.md`, «Emerso».

@@ -909,14 +909,16 @@ telefono dell'account: con un percorso o senza.
   con l'orologio del telefono («Fri 2 Oct 2026 · 08:12»); il luogo e cosa
   disegnava («Trento · Star»; il luogo è il paese da cui si parte, trovato
   dall'API, e manca se non lo trova; senza luogo né percorso, «Run»); «4.01
-  km · 19:00 · 4:45 /km», cioè km, tempo senza le pause e passo medio;
-  «Score 91» quando c'è. Niente è giallo, tranne il percorso nel disegno.
+  km · 19:00 · 4:45 /km», cioè km, tempo senza le pause e passo medio.
+  **Il punteggio non c'è** (TASK-241 parte D, chiesto dall'utente), né
+  nell'elenco né sulla corsa aperta. Niente è giallo, tranne il percorso
+  nel disegno.
 - **Venti per volta**: in fondo «Show more» porta le venti successive. Il
   numero in «Profile» le conta tutte.
 - **Una scheda apre la corsa sulla mappa**: il percorso giallo e la linea
-  corsa, come a fine corsa; sotto, giorno e ora, luogo e disegno, il
-  punteggio («91», «out of 100»), km, tempo e passo, la legenda («Yellow:
-  the route. White: what you ran.»). «←» e «Back to the list» tornano
+  corsa, come a fine corsa; sotto, giorno e ora, luogo e disegno, km,
+  tempo e passo, la legenda («Yellow: the route. White: what you
+  ran.»). «←» e «Back to the list» tornano
   all'elenco. Niente cuore e niente «Start»: è una corsa, non un percorso.
 - **Strava sulla corsa aperta** (TASK-187), sopra «Delete», solo se l'API
   ha Strava: **«View on Strava»** se la corsa c'è già (apre la sua pagina);
@@ -960,7 +962,8 @@ telefono dell'account: con un percorso o senza.
   da «Draw» o da un preferito: «Save» manda anche i tratti a piedi del
   percorso (`walks`) e dice quali pause sono della penna (`pen`); per
   ogni altra corsa la richiesta è quella di prima, campo per campo. Il
-  punteggio in «My activities» è quello delle sole lettere, lo stesso
+  punteggio che l'API tiene per la corsa (da TASK-241 «My activities» non
+  lo mostra) è quello delle sole lettere, lo stesso
   della fine della corsa, e le pause «penna» tolgono km e tempo come le
   altre. Riaperta, la mappa ha i tratti a piedi tratteggiati, come a fine
   corsa; la linea corsa resta unita sulle pause (spezzarla è una scelta

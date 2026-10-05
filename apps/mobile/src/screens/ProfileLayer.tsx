@@ -18,6 +18,7 @@ import { CommentsContext, useCommentsOf } from "../social/commentsDoor";
 import { DrawingsContext, useDrawingsOf } from "../social/drawingsDoor";
 import { PeopleContext } from "../social/peopleDoor";
 import { LOG_IN_TO_FIND } from "../social/PeopleSearch";
+import { ReactionsContext, useReactionsOf } from "../social/reactionsDoor";
 import { StravaContext, useStravaOf } from "../strava/useStrava";
 import {
   color,
@@ -149,6 +150,8 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   // What the members write under a drawing (TASK-120): the drawing's card
   // is in the app, on the map.
   const comments = useCommentsOf(apiUrl, account);
+  // And the reactions they leave there (TASK-119).
+  const reactions = useReactionsOf(apiUrl, account);
   const photoUri = photo.uri;
   const attention = state.status === "signedOut" && state.notice === "ended";
   const initial =
@@ -199,7 +202,9 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                       importantForAccessibility={shown ? "no-hide-descendants" : "auto"}
                     >
                       <CommentsContext.Provider value={comments}>
-                        {children}
+                        <ReactionsContext.Provider value={reactions}>
+                          {children}
+                        </ReactionsContext.Provider>
                       </CommentsContext.Provider>
                     </View>
                     {people !== null && (

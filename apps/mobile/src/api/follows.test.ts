@@ -5,6 +5,7 @@ import { answers, apiError } from "../account/testing";
 import {
   answerFollowRequest,
   askToFollow,
+  countFollowRequests,
   fetchFollowList,
   isFollow,
   isPeoplePage,
@@ -99,4 +100,20 @@ test("an API without following says so as an http_error", async () => {
   });
   const outcome = await askToFollow(URL, TOKEN, ID, { fetchFn, key: null });
   expect(outcome).toMatchObject({ kind: "api_error", code: "http_error" });
+});
+
+test("how many ask to follow is the total of a page of one", async () => {
+  const fetchFn = answers({ status: 200, body: { ...peoplePage, total: 7 } });
+  const options = { fetchFn, key: null };
+  expect(await countFollowRequests(URL, TOKEN, options)).toEqual({
+    kind: "ok",
+    value: 7,
+  });
+  expect(fetchFn.mock.calls[0][0]).toBe(`${URL}/me/follow-requests?limit=1`);
+  expect(fetchFn.mock.calls[0][1]).toMatchObject({ method: "GET", ...WITH_TOKEN });
+
+  const failed = answers({ status: 401, body: apiError("session_expired") });
+  expect(
+    await countFollowRequests(URL, TOKEN, { fetchFn: failed, key: null }),
+  ).toMatchObject({ kind: "api_error", code: "session_expired" });
 });

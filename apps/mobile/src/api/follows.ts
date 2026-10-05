@@ -87,6 +87,26 @@ export function fetchFollowList(
 }
 
 /**
+ * GET /me/follow-requests?limit=1: how many ask to follow the account and
+ * wait for its answer (TASK-239). The number is `total`, on every page:
+ * one member is asked for, the fewest the API gives.
+ */
+export async function countFollowRequests(
+  baseUrl: string,
+  token: string,
+  options: Options = {},
+): Promise<AccountOutcome<number>> {
+  const outcome = await ask(
+    baseUrl,
+    `${LIST_PATHS.requests}?limit=1`,
+    { method: "GET", token },
+    isPeoplePage,
+    options,
+  );
+  return outcome.kind === "ok" ? { kind: "ok", value: outcome.value.total } : outcome;
+}
+
+/**
  * POST /me/follow-requests/{public_id}/accept or /decline. A request
  * declined is deleted: who asked is never told.
  */

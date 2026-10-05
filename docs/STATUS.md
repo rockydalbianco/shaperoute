@@ -156,6 +156,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-239 — Il numero rosso delle richieste di follow, e «Follow
+  back»** (ADR-0203; chiesto dall'utente il 2026-10-05). Solo app, nessuna
+  modifica all'API. Sul pulsante di «Profile», in alto a destra, un tondo
+  rosso con quante richieste di follow aspettano (chiesto all'apertura,
+  ogni minuto e al ritorno dell'app); «Profile» si apre con «Requests»
+  già aperto; una richiesta accettata resta nella riga con «Follow back».
+  PR aperta dal branch `feat/TASK-239-follow-request-badge`. **Non visto
+  su un telefono**: solo i test. **Da confermare con l'utente**: i quattro
+  testi e quando il numero sparisce (oggi: quando ogni richiesta ha una
+  risposta). Le notifiche ad app chiusa restano TASK-185. Da dove
+  riprendere: `tasks/TASK-239.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

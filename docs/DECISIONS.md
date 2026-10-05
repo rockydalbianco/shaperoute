@@ -9960,3 +9960,62 @@ nessun annuncio, come prima. Per gli annunci veri serve un'unità
 `docs/PUBBLICITA.md` (branch di TASK-150) dice ancora «a ogni ricerca»;
 li aggiornano i loro task. Il feed vero (TASK-118) usa la stessa
 `feedWithAds`.
+
+## ADR-0201 — Il sito web: una pagina statica in `site/`, e il merch venduto da un servizio di stampa su ordinazione
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-237), dentro la **scelta dell'utente**: le magliette si vendono con
+la **stampa su ordinazione** (2026-10-05, fra quattro vie proposte: stampa
+su ordinazione, magliette proprie con Stripe, negozio Shopify, sola
+vetrina). Numero preso come primo libero, detto al coordinatore.
+
+**Contesto**: l'utente ha chiesto il sito web con una sezione di
+merchandising per vendere le magliette. Nel repository non c'era nessun
+sito, e Sgrava non ha ancora un dominio.
+
+**Decisione**:
+
+1. **Una pagina statica in una cartella nuova, `site/`**: HTML, CSS e
+   JavaScript scritti a mano, senza dipendenze e senza build. Sta fuori dai
+   workspace npm (`apps/*`, `packages/*`) e da `prettier`, così non tocca
+   `package.json`, `package-lock.json` né la CI dell'app. Si pubblica
+   copiando la cartella su un qualsiasi servizio di pagine statiche.
+2. **Il sito non vende niente da solo.** «Buy» apre la pagina della
+   maglietta sul servizio di stampa (`buyUrl`), in una scheda nuova:
+   pagamento, spedizione, resi e dati dei clienti restano al servizio. Il
+   sito non ha carrello, non riceve carte né indirizzi, non mette cookie e
+   non carica niente da altri siti.
+3. **Le magliette stanno in un file solo**, `site/products.js`. Una
+   maglietta è in vendita solo con un `buyUrl` `https`; altrimenti la
+   scheda dice «Coming soon», e senza nessuna in vendita il negozio dice
+   «The shop opens soon.». Il prezzo si mostra solo se c'è, e i test
+   rifiutano una maglietta in vendita senza prezzo o senza il nome del
+   servizio (`fulfilledBy`).
+4. **Il sito non dipende da un servizio preciso**: gli serve solo un
+   indirizzo per maglietta. Quale servizio usare lo sceglie l'utente, che
+   ne apre l'account.
+5. **Le stampe sono percorsi veri** di `catalog/seed/`, disegnati da
+   `site/tools/make_prints.py` (solo libreria standard, proiezione in
+   metri): il sito, come l'app, non inventa geometrie. Il credito
+   «© OpenStreetMap contributors» sta in fondo alla pagina.
+6. **I colori** sono dichiarati una volta in cima a `styles.css` e
+   ricalcano `tokens.ts`: senza build il sito non può importarli.
+7. **Il cuore in cima** è un SVG dentro la pagina, animato dal foglio di
+   stile: la riga è intera se l'animazione non parte, e ferma con
+   «riduci movimento».
+8. **Test** con `node --test`, senza installare niente, in un workflow
+   suo (`site.yml`) che gira solo quando cambia `site/`.
+9. **Testi in inglese**, come l'interfaccia dell'app.
+
+**Alternative scartate**: un negozio Shopify incorporato (canone mensile,
+scartato dall'utente); un framework (Astro, Next) o la versione web
+dell'app Expo (dipendenze nuove e una build per una pagina sola); le
+magliette scritte dentro `index.html` (prezzo e indirizzo in più punti).
+
+**Non deciso, dell'utente**: il servizio di stampa; magliette, nomi,
+colori e prezzi (le quattro di adesso sono una proposta); i testi della
+pagina; il dominio e dove pubblicare. Niente è pubblicato.
+
+**Conseguenze**: chi vuole aggiungere o mettere in vendita una maglietta
+tocca solo `products.js` (`docs/SITO.md`). Un cambio di colore in
+`tokens.ts` va ripetuto in `styles.css`. Se un giorno servono un carrello
+o più pagine, questa decisione va rivista.

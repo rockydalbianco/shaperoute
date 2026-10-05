@@ -268,7 +268,7 @@ modifiche):
   accanto a «Pace now» ancora in inglese, finché TASK-210 non traduce la
   schermata.
 
-**Testi nuovi sullo schermo, da confermare con l'utente** (inglese →
+**Testi nuovi sullo schermo, confermati dall'utente il 2026-10-05** («ok, i testi delle miglia vanno bene»; inglese →
 italiano; tedesco, spagnolo e francese in `src/i18n/`):
 
 | Inglese | Italiano | Dove |
@@ -282,7 +282,7 @@ italiano; tedesco, spagnolo e francese in `src/i18n/`):
 
 Le sigle «mi», «ft», «/mi», «mph» non si traducono (ADR-0149, punto 8).
 
-**Frasi nuove della voce, da confermare con l'utente** (scritte
+**Frasi nuove della voce, confermate dall'utente il 2026-10-05 come lette, non ascoltate: la voce in miglia è da ascoltare sull'iPhone** (scritte
 dall'agente; le altre tre lingue in `src/voice/{de,es,fr}.ts`):
 
 | Caso | Inglese | Italiano |

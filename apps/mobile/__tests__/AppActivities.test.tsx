@@ -523,7 +523,7 @@ test("«Save» keeps the run: the fixes and the route, never the app's numbers",
   expect(screen.queryByText("Done")).toBeNull();
   expect(screen.getByRole("button", { name: "Discard" })).toBeOnTheScreen();
   // Nothing is saved by itself: only «Save» sends the run.
-  await screen.findByText("91");
+  await screen.findByText("Your run");
   expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(0);
   expect(loadOutbox()).toEqual([]);
 
@@ -591,21 +591,21 @@ test("«Discard» asks first, and then the run is gone and nothing is saved", as
   expect(fetchSpy.mock.calls.filter(([, init]) => init?.method === "PUT")).toEqual([]);
 });
 
-test("a run without its score is saved all the same, and does not come back", async () => {
+test("the end of a run asks for no score, and the saved run does not come back", async () => {
   signedIn();
   api({
     ...ACCOUNT,
     "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
-    "POST /track-scores": () =>
-      Response.json(apiError("engine_error", "…"), { status: 500 }),
     [`PUT /me/activities/${KEY}`]: () => Response.json(SAVED, { status: 201 }),
   });
   await openOnRun(ENDED);
-  expect(await screen.findByText("The score did not arrive")).toBeOnTheScreen();
+  expect(await screen.findByText("Your run")).toBeOnTheScreen();
+  expect(screen.queryByText(/score/i)).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
   await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
-  // The API scores it by itself: the phone has no reason to keep the run
-  // for the next opening.
+  // The API scores it by itself, unseen: the phone never asks, and has no
+  // reason to keep the run for the next opening.
+  expect(calls("POST", "/track-scores")).toHaveLength(0);
   expect(loadRun()).toBeNull();
 });
 

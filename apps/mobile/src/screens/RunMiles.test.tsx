@@ -444,15 +444,7 @@ test("the end of a run along a route says how far in miles", async () => {
       })),
     },
   };
-  const never = jest.fn(() => new Promise<Response>(() => {}));
-  await render(
-    <FinishCard
-      apiUrl="http://api.test"
-      run={run}
-      onDone={jest.fn()}
-      fetchFn={never}
-    />,
-  );
+  await render(<FinishCard run={run} onDone={jest.fn()} />);
   expect(screen.getByText("2.5 mi · 20 min")).toBeOnTheScreen();
   await act(async () => {
     saveUnitsChoice("km");

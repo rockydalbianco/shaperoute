@@ -563,12 +563,10 @@ function Sgrava() {
     setScreen(exploreRun !== null || view.status === "done" ? "map" : "choose");
   }
 
-  /** «Done», with nobody signed in. */
-  function onFinishDone(settled: boolean) {
-    // Without its score the run stays in the file, for the next opening.
-    if (settled) {
-      clearRun();
-    }
+  /** «Done», with nobody signed in: with no score to wait for (TASK-241),
+   * the run leaves the phone at once. */
+  function onFinishDone() {
+    clearRun();
     leaveFinish();
   }
 
@@ -914,7 +912,6 @@ function Sgrava() {
           />
         ) : finishing ? (
           <FinishCard
-            apiUrl={API_URL}
             run={finished.run}
             onDone={signedIn ? undefined : onFinishDone}
             onResume={

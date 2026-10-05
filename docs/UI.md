@@ -488,14 +488,14 @@ nessun pulsante dell'account è giallo.
 nella cartella nuova `src/social/`), in fondo a «Profile»: le corse che
 l'account ha reso pubbliche, come le vedono gli altri, dalla
 più recente, tre per riga. Ognuna è la traccia senza i primi e gli ultimi
-200 m, piccola e gialla come i disegni di «Feed», con sotto «Score 87»
-(niente per una corsa senza percorso); venti per volta, poi «Show more».
+200 m, piccola e gialla come i disegni di «Feed», **senza punteggio**
+(TASK-241 parte E, chiesto dall'utente); venti per volta, poi «Show more».
 Vuota: «No public drawings yet. Make a run public in My activities.».
 Non arrivata: il motivo e «Try again». **Un disegno toccato si apre sulla
 mappa**, come una corsa di «My activities»: «Profile» si toglie, la mappa
 si inquadra sulla linea gialla (nessun segnaposto di partenza, nessuna
 linea bianca) e sotto c'è la sua scheda: il titolo (senza titolo, il
-giorno), il giorno, i km, il punteggio («87», «out of 100»), mai l'ora;
+giorno), il giorno, i km, mai il punteggio né l'ora;
 **«Back to the profile»** e «←» tornano a «Profile». Se nel frattempo è
 tornato privato: «This drawing is no longer public.» sopra la griglia.
 
@@ -880,8 +880,8 @@ dell'account.
   parola appena disegnata: sulla mappa le lettere gialle e i tratti a piedi
   tratteggiati; «Start» mette in pausa da sola alla fine di ogni lettera,
   con la voce, e riparte 20 m prima della successiva (TASK-198); «Export
-  GPX» ha «Pause» e «Resume»; il punteggio a fine corsa guarda solo le
-  lettere. Nessun testo nuovo. Un preferito tenuto prima di TASK-199, o
+  GPX» ha «Pause» e «Resume»; il punteggio che l'API calcola per la corsa
+  salvata (l'app non lo mostra, TASK-241) guarda solo le lettere. Nessun testo nuovo. Un preferito tenuto prima di TASK-199, o
   con `walks` che non stanno nella linea, è una linea sola, come prima. Se
   l'API non conosce ancora i `walks` (più vecchia di TASK-199) e rifiuta,
   l'app tiene il preferito senza, come una linea sola, invece di mostrare
@@ -1919,18 +1919,19 @@ chiude la corsa e apre la schermata di fine corsa (TASK-113, ADR-0093), se
 la traccia ha almeno due posizioni; se no si torna al risultato come
 prima. Sulla mappa il percorso giallo e, sopra, più sottile e chiara
 (`track` nei token), la linea di quello che si è corso. In alto «Your run»
-con la legenda «Yellow: the route. White: what you ran.». Sotto, il
-punteggio in grande («91», «out of 100») e una riga «4.0 km · 32 min · 97%
-of the route»: distanza e durata della corsa, e quanta parte del percorso
-è stata coperta. Il punteggio lo calcola l'API (`POST /track-scores`);
-nell'attesa «Scoring your run…», con distanza e durata già lì.
+con la legenda «Yellow: the route. White: what you ran.». Sotto, una
+riga sola: «4.0 km · 32 min», distanza e durata della corsa. **Niente
+punteggio** (TASK-241 parte E, ADR-0207, scelta dell'utente: «solo km e
+tempo»): l'app non lo mostra e a fine corsa **non chiede più `POST
+/track-scores`**, quindi non ci sono né un'attesa né «Try again». Il
+punteggio lo calcola ancora l'API da sé per le corse salvate, e non si
+vede da nessuna parte.
 Con le miglia (TASK-182 parte C) la riga dice la distanza in miglia: «2.5
-mi · 32 min · 97% of the route» (sotto i 1000 piedi, in piedi); quello che
-va a `POST /track-scores` e quello che «Save» tiene resta in metri.
+mi · 32 min» (sotto i 1000 piedi, in piedi); quello che «Save» tiene resta
+in metri.
 
 Con una parola a penna alzata (TASK-198) la mappa ha i tratti a piedi
-tratteggiati, e `POST /track-scores` riceve anche i `walks`: la corsa si
-giudica sulle sole lettere. Con «Save» le pause «penna» vanno in «My
+tratteggiati. Con «Save» le pause «penna» vanno in «My
 activities» con le altre, come pause di chi corre (`auto: false`), e da
 TASK-199 con `pen: true` e i `walks` del percorso: il punteggio che l'API
 di «My activities» calcola da sé è delle sole lettere, come qui, e la
@@ -1938,23 +1939,18 @@ corsa riaperta da lì ha i tratti a piedi tratteggiati («My activities»).
 Il GPX per Strava (TASK-187) apre un segmento nuovo a ogni pausa: Strava
 mostra le lettere unite da linee dritte sulla base.
 
-- **Senza rete o senza API**: «The score will come later», la corsa resta
-  nel file sul telefono, «Try again» la richiede. Anche con «Done» la
-  corsa resta: alla prossima apertura l'app si apre su questa schermata e
-  chiede di nuovo il punteggio.
-- **Corsa troppo corta**: «Too short for a score».
+- **Senza rete o senza API** la schermata è la stessa: non chiede niente
+  a nessuno.
 - **«Keep running»**, dopo uno «Stop» e con il percorso ancora sullo
   schermo: torna alla navigazione, e la traccia continua (ADR-0091).
 - **«Done»**: torna al risultato, o alla prima schermata se il percorso
-  non c'è più. Con il punteggio arrivato, o la corsa troppo corta, la
-  traccia si cancella dal file della corsa. «Done» c'è solo senza
-  account.
+  non c'è più, e la traccia si cancella dal file della corsa. «Done» c'è
+  solo senza account.
 - **Con un account, «Save» e «Discard»** al posto di «Done», sotto la
   scheda, larghi mezza riga l'uno (TASK-172, chiesto dall'utente il
   2026-10-02: prima di salvare, una schermata che lo chiede). **«Save»**
   mette la corsa in «My activities» (sopra) e torna dove tornava «Done»;
-  la corsa lascia il file anche senza punteggio, perché l'API la giudica
-  da sé. **«Discard»**, in rosso, chiede prima sulla scheda stessa:
+  la corsa lascia il file, e l'API la giudica da sé. **«Discard»**, in rosso, chiede prima sulla scheda stessa:
   «Discard this run? It will not be saved.», con «Keep it» e «Discard
   run»; poi la corsa sparisce dal telefono e non va da nessuna parte.
   Finché non si tocca né l'uno né l'altro niente è salvato; «Keep running»
@@ -2008,7 +2004,7 @@ mostra le lettere unite da linee dritte sulla base.
 - **Senza account**, sotto la scheda, la riga «Sign up or log in to keep
   your runs and share them as drawings.» (TASK-117), che apre «Profile».
 
-Il punteggio non è giallo: il giallo resta del percorso e dell'azione
+Niente nella scheda è giallo: il giallo resta del percorso e dell'azione
 principale.
 
 ## Il post da condividere (TASK-231, ADR-0194)

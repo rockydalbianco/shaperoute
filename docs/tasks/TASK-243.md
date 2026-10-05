@@ -162,10 +162,16 @@ Emerso:
   già): il guadagno vero sono i baffi che rientrano a pochi metri, e
   vogliono un tratto a piedi;
 - la somiglianza premia ogni buco nel contorno: non basta per scegliere
-  la regola, vanno guardate le immagini;
-- cambiando ciò che la ricerca misura, in 6 richieste su 42 sceglie un
-  altro disegno: quasi sempre migliore o pari, a Milano (faccina, 15 km)
-  peggiore all'occhio dell'agente.
+  la regola, vanno guardate le immagini e i tentativi della ricerca
+  (`out/task-243/attempts.py`);
+- il buco di un baffo va misurato **lungo la linea** del contorno, non in
+  linea d'aria: la prima versione prendeva per baffi tratti di contorno
+  di chilometri (ADR-0209, alternative scartate);
+- a metà task è entrato in `main` TASK-232 (forme inclinate): misure e
+  campioni sono rifatti su quella base (c2bb428);
+- cambiando ciò che la ricerca misura, in 4 richieste su 42 sceglie un
+  altro disegno, e in 2 la somiglianza scende (il costo conta anche
+  distanza e inclinazione).
 
 Rimandato:
 

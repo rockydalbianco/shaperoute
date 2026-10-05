@@ -1077,12 +1077,15 @@ deviazioni che escono e rientrano vicino a dove sono uscite:
 
 1. una deviazione del contorno è la stessa dei pezzi (fra due nodi sulla
    linea, più lontana di `LIFT_FAR` = 3/8 di altezza di pezzo);
-2. è un **baffo** se i suoi due capi distano in linea d'aria al più
-   `OUTLINE_GAP` = 1/2 altezza di pezzo (un ottavo del lato del disegno:
-   245 m per una faccina da 15 km), che è il buco che lascia nel
-   contorno, e la sua strada è lunga almeno `OUTLINE_SPIKE` = 2 volte
-   quel buco. Si cammina, come la deviazione di un pezzo: il contorno si
-   disegna in parti;
+2. è un **baffo** se salta al più `OUTLINE_GAP` = 1/2 altezza di pezzo
+   della linea del contorno (un ottavo del lato del disegno: 245 m per
+   una faccina da 15 km), che è il buco che lascia, e la sua strada è
+   lunga almeno `OUTLINE_SPIKE` = 2 volte la distanza in linea d'aria fra
+   i suoi due capi. Il buco si misura **lungo la linea** (`Detour.hole_m`),
+   da dove il percorso la lascia a dove la riprende, non in linea d'aria:
+   due punti del contorno possono essere vicini e avere fra loro un
+   orecchio, una coda, o tutto il giro. Un baffo si cammina, come la
+   deviazione di un pezzo: il contorno si disegna in parti;
 3. una deviazione che non è un baffo **resta disegnata**: è il contorno
    stesso sulle strade che ci sono (dove nessuna strada segue il bordo
    per centinaia di metri), e camminarla aprirebbe la forma;
@@ -1108,51 +1111,52 @@ Vale solo per le forme a pezzi chieste con la penna alzata
 penna alzata) e sull'acqua il percorso è quello di prima, punto per
 punto: provato su otto richieste a Trento, Levico e Milano (cuore,
 cerchio, faccina, gatto e sole con la penna giù, «CIAO» e «IO» con la
-penna alzata, «IO» senza) contro il motore di `main` a 490d01c, e
+penna alzata, «IO» senza) contro il motore di `main` a c2bb428, e
 l'impronta del motore sull'acqua non cambia (`paddleExamples.json`).
 
 Misure del 2026-10-05 sul Mac, zone in cache, penna alzata, prima → dopo,
-le stesse 42 richieste di TASK-242 (`plan_route`, una partenza sola).
-**22 danno lo stesso percorso** di prima, una resta non disponibile
-(`smiley` a 10 km a Levico), una lo diventa (`donut` a 10 km a Levico:
-0,62, 8,8 km disegnati e 2,4 a piedi) e **18 cambiano**. In 12 il
-disegno è lo stesso e un baffo, o due, diventano tratti a piedi: la
-somiglianza sale in tutte, da 0,008 a 0,044. In 6 la ricerca sceglie un
-altro disegno («altro» nell'ultima colonna): la somiglianza sale in 3,
-resta uguale alla seconda cifra in 2 e scende in una.
+le stesse 42 richieste di TASK-242 (`plan_route`, una partenza sola), sul
+motore di `main` a c2bb428, con le forme inclinate di TASK-232. **26 danno
+lo stesso percorso** di prima, una resta non disponibile (`smiley` a
+10 km a Levico), una lo diventa (`donut` a 10 km a Levico: 0,62, 8,8 km
+disegnati e 2,4 a piedi) e **14 cambiano**. In 10 il disegno è lo stesso
+e un baffo, o due, diventano tratti a piedi: la somiglianza sale in
+tutte, da 0,008 a 0,061. In 4 la ricerca sceglie un altro disegno
+(«altro» nell'ultima colonna): la somiglianza resta uguale alla seconda
+cifra in 2 e **scende in 2**.
 
 | Richiesta | Somiglianza | Disegnati | A piedi | Tratti | Disegno |
 |---|---|---|---|---|---|
-| `smiley` 15 km, Milano | 0,90 → 0,90 | 15,4 → 14,1 km | 3,0 → 3,9 km | 3 → 5 | altro |
-| `ghost` 15 km, Trento | 0,75 → 0,76 | 14,6 → 14,2 km | 1,6 → 2,0 km | 3 → 4 | lo stesso |
-| `ghost` 15 km, Trento (altro punto) | 0,75 → 0,82 | 15,1 → 11,6 km | 1,3 → 2,7 km | 2 → 5 | altro |
+| `ghost` 15 km, Trento (altro punto) | 0,82 → 0,78 | 14,3 → 13,7 km | 1,4 → 2,8 km | 2 → 4 | altro |
 | `donut` 15 km, Trento | 0,76 → 0,78 | 14,9 → 14,1 km | 1,6 → 2,4 km | 2 → 3 | lo stesso |
 | `cat` 15 km, Trento | 0,86 → 0,88 | 13,8 → 13,2 km | 1,8 → 2,3 km | 2 → 3 | lo stesso |
 | `cat` 15 km, Trento (altro punto) | 0,82 → 0,83 | 14,1 → 13,6 km | 1,6 → 2,2 km | 2 → 3 | lo stesso |
-| `fish` 15 km, Trento | 0,66 → 0,71 | 14,4 → 12,5 km | 0,3 → 1,6 km | 1 → 3 | lo stesso |
-| `fish` 15 km, Trento (altro punto) | 0,67 → 0,70 | 14,1 → 12,6 km | 0,5 → 1,9 km | 2 → 4 | lo stesso |
+| `fish` 15 km, Trento | 0,75 → 0,81 | 14,1 → 12,2 km | 0,5 → 0,5 km | 1 → 1 | lo stesso |
+| `fish` 15 km, Trento (altro punto) | 0,75 → 0,70 | 16,6 → 12,6 km | 0,9 → 1,9 km | 1 → 4 | altro |
 | `dog_head` 15 km, Trento | 0,82 → 0,82 | 14,7 → 14,0 km | 0,9 → 1,6 km | 2 → 3 | altro |
-| `rabbit_head` 15 km, Trento | 0,81 → 0,81 | 15,1 → 14,6 km | 0,9 → 1,3 km | 2 → 3 | lo stesso |
 | `pumpkin` 15 km, Trento | 0,80 → 0,82 | 14,4 → 13,5 km | 1,7 → 2,5 km | 3 → 4 | lo stesso |
-| `smiley` 10 km, Trento | 0,73 → 0,72 | 8,8 → 9,4 km | 1,4 → 2,4 km | 3 → 4 | altro |
-| `ghost` 10 km, Trento | 0,79 → 0,83 | 8,7 → 7,9 km | 0,7 → 1,8 km | 2 → 4 | altro |
+| `smiley` 10 km, Trento | 0,72 → 0,72 | 10,0 → 9,4 km | 1,9 → 2,4 km | 3 → 4 | altro |
+| `ghost` 10 km, Trento | 0,81 → 0,83 | 9,8 → 9,2 km | 0,8 → 1,5 km | 2 → 3 | lo stesso |
 | `ghost` 10 km, Levico | 0,64 → 0,65 | 9,7 → 8,6 km | 0,6 → 1,5 km | 2 → 3 | lo stesso |
 | `donut` 10 km, Trento | 0,72 → 0,74 | 9,4 → 8,9 km | 0,7 → 1,2 km | 1 → 2 | lo stesso |
-| `donut` 10 km, Milano | 0,81 → 0,86 | 9,4 → 7,9 km | 0,7 → 1,0 km | 1 → 3 | altro |
 | `cat` 10 km, Trento | 0,77 → 0,80 | 10,7 → 9,6 km | 1,3 → 2,0 km | 2 → 3 | lo stesso |
 | `cat` 10 km, Milano | 0,89 → 0,91 | 10,3 → 10,0 km | 1,7 → 2,1 km | 2 → 3 | lo stesso |
 
-Nelle 18 che cambiano i km disegnati scendono in media di 1,0 km e
-quelli a piedi salgono di 0,8 km. **Due cose da sapere**:
+Nelle 14 che cambiano i km disegnati scendono in media di 1,0 km e
+quelli a piedi salgono di 0,7 km. **Due cose da sapere**:
 
-- i km «di disegno» stanno più sotto la distanza chiesta di prima (la
-  ciambella a 10 km a Milano: 7,9 km disegnati e 1,0 a piedi), perché i
-  metri dei baffi contano ancora nella distanza inseguita (punto 7);
-- dove la ricerca sceglie un altro disegno non sempre è meglio
-  all'occhio: la faccina a 15 km a Milano passa da un contorno intero a
-  uno più piccolo con due aperture e 0,9 km a piedi in più, con la
-  stessa somiglianza (0,90). All'occhio dell'agente è l'unica delle 18
-  che peggiora.
+- i km «di disegno» stanno più sotto la distanza chiesta di prima (il
+  fantasmino da 10 km a Levico: 8,6 km disegnati e 1,5 a piedi), perché
+  i metri dei baffi contano ancora nella distanza inseguita (punto 7);
+- dove la ricerca sceglie un altro disegno la somiglianza può scendere.
+  Il costo che la ricerca minimizza conta anche la distanza e
+  l'inclinazione (TASK-232): con i baffi camminati un disegno dritto e
+  della misura giusta batte uno inclinato e più lungo che somiglia di
+  più. Il pesce da 15 km dal secondo punto di Trento passa da 0,75
+  (inclinato di 35°, 16,6 km disegnati) a 0,70 (inclinato di 15°,
+  12,6 km), e all'occhio dell'agente si legge meglio; il fantasmino dallo
+  stesso punto passa da 0,82 a 0,78, e all'occhio dell'agente è l'unica
+  delle 14 che peggiora.
 
 Dalla CLI con `--nearby 3`, come l'API, la faccina dello screenshot a
 Trento tiene il suo disegno: un baffo del contorno (631 m di strada, che
@@ -1160,8 +1164,9 @@ rientra a 47 m da dove esce) diventa un tratto a piedi di 47 m, la
 somiglianza passa da 0,79 a 0,80, il percorso da 15,8 a 15,3 km (12,3 km
 disegnati, 3,0 a piedi in 5 tratti). I campioni prima/dopo sono in
 `samples/` (`TASK-243_*`): faccina, ciambella e gatto a Trento,
-fantasmino a Levico, gatto e faccina a Milano, e un fantasmino a Milano
-che resta identico.
+fantasmino a Levico, gatto a Milano; il pesce e il fantasmino dal secondo
+punto di Trento, dove la ricerca sceglie un altro disegno (dalla CLI
+0,75 → 0,70 e 0,84 → 0,81); e la faccina a Milano, che resta identica.
 
 ### Funzione obiettivo
 

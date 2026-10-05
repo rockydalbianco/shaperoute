@@ -558,15 +558,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   chiesto dall'utente il 2026-10-05, dopo il «sì» a TASK-242). Con la
   penna alzata, il contorno di una forma a pezzi non disegna più i suoi
   **baffi**: una deviazione oltre 3/8 di altezza di pezzo che rientra
-  vicino a dove esce (capi a non più di 1/8 del lato del disegno, strada
-  lunga almeno il doppio) diventa un tratto a piedi, al più due per
+  vicino a dove esce (salta al più 1/8 del lato del disegno di contorno,
+  misurato lungo la linea, e la sua strada è lunga almeno il doppio della
+  distanza fra i capi) diventa un tratto a piedi, al più due per
   contorno; le deviazioni lunghe restano disegnate, perché camminarle
   aprirebbe la forma; la partenza resta il primo punto (`pen_up._lifted`,
   `detours.py`). Senza `pen_up`, per le parole e sull'acqua niente
-  cambia. Su 42 richieste di prova 22 identiche, 18 cambiano (12 con lo
-  stesso disegno e un baffo camminato; in 6 la ricerca sceglie un altro
-  disegno, e la faccina da 15 km a Milano all'occhio dell'agente
-  peggiora), una diventa disponibile (`ROUTE_ENGINE.md` §5). In PR,
+  cambia. Su 42 richieste di prova (motore con TASK-232) 26 identiche, 14
+  cambiano (10 con lo stesso disegno e un baffo camminato; in 4 la
+  ricerca sceglie un altro disegno, e in 2 di queste la somiglianza
+  scende), una diventa disponibile (`ROUTE_ENGINE.md` §5). In PR #362,
   **in attesa del giudizio dell'utente sui campioni prima/dopo**
   (`samples/TASK-243_*`): senza quello non si mergia. Poi server e
   `draw_examples` dal coordinatore, con l'ok dell'utente; `engine.zip` è

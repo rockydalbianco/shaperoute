@@ -147,7 +147,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-237 — Il sito web, con «Merch» per le magliette** (ADR-0201;
   chiesto dall'utente il 2026-10-05, che ha scelto la **stampa su
-  ordinazione**). **Parte A** in PR: una pagina statica in `site/`
+  ordinazione**). **Parte A** in `main` dal 2026-10-05 (PR #325, merge
+  `f8e68b6`): una pagina statica in `site/`
   (nuova, senza dipendenze), con il cuore di Milano che si disegna, «How
   it works» e «Merch»: quattro magliette proposte, con le stampe dai
   percorsi veri del catalogo. Il sito non vende da solo: «Buy» aprirà la

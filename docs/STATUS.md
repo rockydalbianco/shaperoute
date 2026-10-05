@@ -608,6 +608,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   prova con un dito vero sull'iPhone. Gli esempi di «Explore» e i
   preferiti non si spostano: seguito da chiedere. `tasks/TASK-238.md`.
 
+- **App** — TASK-244: «Move the shape» anche sugli esempi di «Explore»
+  con «Paddle» (aggiunta ad ADR-0202; chiesto dall'utente il 2026-10-05,
+  che ha scelto: il percorso spostato **resta di «Explore»**). In
+  revisione, PR #360. Gli esempi dicono dov'è la loro forma (`centre`:
+  nei 32 dentro l'app, ridisegnati sull'acqua del server e per il resto
+  identici, e in quelli dei laghi chiesti al server da ora); la scheda di
+  «Explore» ha «Move the shape» sotto «Start», e al rilascio l'app
+  richiede l'esempio dalla partenza del suo luogo con `near`. La lista
+  tiene l'esempio com'era. Solo app più lo script degli esempi: **niente
+  motore, API, server, `draw_examples`, `engine.zip`**; nessun testo
+  nuovo. Non si spostano: un esempio tenuto sul telefono da prima (finché
+  non è ridisegnato), i preferiti, i disegni del «Feed». **Aspettano**: la
+  pubblicazione dell'app (del coordinatore) e la prova con un dito vero
+  sull'iPhone. `tasks/TASK-244.md`.
+
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della
   faccina a Trento, campioni prima/dopo giudicati «sì, va bene»; PR

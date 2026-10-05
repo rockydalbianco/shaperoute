@@ -2069,11 +2069,31 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   troppo al largo, troppo vicina alla riva) una riga lo dice: «The shape
   does not fit there: this is the nearest place.». Si può spostare ancora,
   ogni volta da dov'è. Un dito che si muove meno di 8 px non sposta niente;
-  «Cancel» lascia tutto com'era. Vale per il percorso di «Draw»; quelli di
-  «Explore» e dei preferiti non si spostano (non hanno `centre`). Nella
+  «Cancel» lascia tutto com'era. Vale per il percorso di «Draw» e per gli
+  esempi di «Explore» (qui sotto); i preferiti non si spostano (non hanno
+  `centre`). Nella
   pagina della mappa sono i messaggi `setMove` e `moved`
   (`src/map/messages.ts`, `mapPage.ts`); la logica è in
   `src/paddle/shapeMove.ts` e `useMoveShape.ts`. Testi in cinque lingue.
+- **«Move the shape» su un esempio di «Explore»** (TASK-244; che il
+  percorso spostato resti di «Explore» è una scelta dell'utente del
+  2026-10-05): nella scheda di un esempio sull'acqua aperto da «Explore»,
+  sotto «Start», quando l'esempio dice dov'è la sua forma (i 32 che
+  vengono con l'app, e quelli dei laghi chiesti al server da questo task
+  in poi; uno tenuto sul telefono da prima no, finché non è ridisegnato).
+  Stesso pannello, stesso dito sulla mappa, stessa riga se la forma non ci
+  sta. Al rilascio l'app richiede **l'esempio com'era stato chiesto**
+  (forma, distanza, la partenza del luogo) con `near`; mentre il motore
+  lavora la forma resta dove il dito l'ha lasciata e la scheda dice
+  «Drawing a 2 km heart…», senza «Start» né «Export GPX», con «Back to the
+  list» che lascia perdere. Poi la scheda è **ancora quella di «Explore»**,
+  con i km del percorso nuovo, «Start», «Move the shape» per spostarlo
+  ancora, il GPX e il cuore dei preferiti. Se la richiesta fallisce torna
+  il percorso di prima, con il perché in rosso. La lista tiene l'esempio
+  com'era: riaperto, è al suo posto. Lo stesso esempio aperto dal «Feed»,
+  un preferito e gli esempi della corsa non si spostano. La logica è in
+  `src/paddle/useMoveExample.ts`; `exampleRoutes.ts` tiene `centre` e la
+  richiesta di ogni esempio. Nessun testo nuovo.
 - **L'avviso di sicurezza**, al **primo** «Start» sull'acqua su questo
   telefono (scelta dell'utente), a tutto schermo prima del conto alla
   rovescia: 🛶, «Before you paddle», quattro righe («Wear a life

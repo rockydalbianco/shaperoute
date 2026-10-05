@@ -116,7 +116,7 @@ test("a run goes with the name typed, or with no body at all", async () => {
   });
 });
 
-test("a post's text goes as the description, with or without a name", async () => {
+test("a post's text goes as `post`, with or without a name", async () => {
   const fetchFn = answers(
     { status: 200, body: activity },
     { status: 200, body: activity },
@@ -124,20 +124,17 @@ test("a post's text goes as the description, with or without a name", async () =
   );
   await sendToStrava(URL, TOKEN, KEY, null, {
     ...options(fetchFn),
-    description: " 🔥 5.20 km · Score 87 ",
+    post: " 🔥 5.20 km · Score 87 ",
   });
-  await sendToStrava(URL, TOKEN, KEY, "Heart", {
-    ...options(fetchFn),
-    description: "🔥",
-  });
-  await sendToStrava(URL, TOKEN, KEY, null, { ...options(fetchFn), description: "  " });
+  await sendToStrava(URL, TOKEN, KEY, "Heart", { ...options(fetchFn), post: "🔥" });
+  await sendToStrava(URL, TOKEN, KEY, null, { ...options(fetchFn), post: "  " });
 
   expect(JSON.parse(String(fetchFn.mock.calls[0][1]?.body))).toEqual({
-    description: "🔥 5.20 km · Score 87",
+    post: "🔥 5.20 km · Score 87",
   });
   expect(JSON.parse(String(fetchFn.mock.calls[1][1]?.body))).toEqual({
     name: "Heart",
-    description: "🔥",
+    post: "🔥",
   });
   expect(fetchFn.mock.calls[2][1]?.body).toBeUndefined();
 });

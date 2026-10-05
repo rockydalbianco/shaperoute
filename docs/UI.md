@@ -1711,9 +1711,14 @@ run», con «Close» in alto a sinistra:
   l'atleta non è collegato; a fine corsa, prima di «Save»: «To send this
   post to Strava, save the run, then share it from «My activities».». Su
   una corsa salvata: «Send to Strava» manda la corsa con il testo del post
-  come descrizione (emoji e risultati accesi); poi «View on Strava». Una
-  corsa già su Strava: «View on Strava» e «This run is already on Strava.
-  To add the picture there, keep it in Photos with «Save Image».».
+  (emoji e risultati accesi) in cima alla descrizione; poi «View on
+  Strava». Una corsa già su Strava: «Update on Strava» (solo se il post ha
+  qualcosa da dire) mette il testo del post in cima a quello che c'è là,
+  poi «The activity on Strava has this post's text now.»; se Strava non lo
+  lascia fare, «Strava did not let Sgrava change this activity. Change its
+  text on Strava.»; e «View on Strava». Sotto, sempre: «Strava takes no
+  pictures from other apps: keep this one in Photos with «Save Image» and
+  add it there.» (TASK-231 B).
 
 ## Sull'acqua: «Paddle» (TASK-191, ADR-0169)
 
@@ -1986,8 +1991,9 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 - **Il post** (TASK-231): l'immagine si fa sul telefono ed esce solo
   dal foglio di condivisione, dove la manda l'utente (Instagram, Foto,
   Messaggi…). Non mostra i primi e gli ultimi 200 m della corsa, né la
-  mappa sotto. A Strava, con «Send to Strava» dal post, va in più il testo
-  del post (emoji e risultati scelti).
+  mappa sotto. A Strava, con «Send to Strava» o «Update on Strava» dal
+  post, va in più il testo del post (emoji e risultati scelti), che
+  sull'attività già là sostituisce il testo di prima.
 - **Un disegno pubblico** (TASK-117): una corsa diventa visibile agli altri
   iscritti **solo con «Public» acceso** dall'utente, a fine corsa o su una
   corsa aperta; acceso a ogni corsa da spento. Il telefono manda all'API la

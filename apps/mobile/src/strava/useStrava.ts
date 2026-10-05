@@ -50,11 +50,12 @@ export type StravaState = {
   /** What Strava has of the saved run `key`; null with nobody signed in. */
   activityOf: (key: string) => Promise<StravaOutcome<StravaActivity> | null>;
   /** Sends the saved run `key` now, with the name typed (null: the API's)
-   * and a post's text under it (TASK-231; absent: the API's line alone). */
+   * and its post's text (TASK-231): over the text on Strava, also for a run
+   * already there. */
   send: (
     key: string,
     name: string | null,
-    description?: string | null,
+    post?: string | null,
   ) => Promise<StravaOutcome<StravaActivity> | null>;
 };
 
@@ -246,14 +247,14 @@ export function useStravaOf(
   );
 
   const send = useCallback(
-    async (runKey: string, name: string | null, description?: string | null) => {
+    async (runKey: string, name: string | null, post?: string | null) => {
       if (token === null || baseUrl === null) {
         return null;
       }
       const outcome = await sendToStrava(baseUrl, token, runKey, name, {
         fetchFn,
         key,
-        description,
+        post,
       });
       return heard(token, outcome);
     },

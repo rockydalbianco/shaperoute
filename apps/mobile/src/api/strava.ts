@@ -43,8 +43,8 @@ export const STRAVA_OFF: StravaStatus = {
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
 
-/** A send's options: also the text under the name on Strava (TASK-231). */
-type SendOptions = Options & { description?: string | null };
+/** A send's options: also the text of the run's post (TASK-231). */
+type SendOptions = Options & { post?: string | null };
 
 /** `ask`, keeping the status of the answer. */
 async function askStrava<T>(
@@ -142,23 +142,24 @@ export function fetchStravaActivity(
  * POST /me/activities/{key}/strava: the saved run to Strava, `sent` or
  * still `processing` (202: the same call later goes on). `name` is the one
  * typed before «Save»; without one no body goes, and the API gives its own
- * name, as before names could be typed. `description`, a post's text
- * (TASK-231), goes over the API's «Drawn with Sgrava». Both count only for
- * the first send. Sending again is always safe: the API never makes two
- * activities of a run.
+ * name, as before names could be typed; it counts only for the first
+ * send. `post`, the text of the run's post (TASK-231), goes over the API's
+ * «Drawn with Sgrava», and on a run already on Strava replaces the text
+ * there. Sending again is always safe: the API never makes two activities
+ * of a run.
  */
 export function sendToStrava(
   baseUrl: string,
   token: string,
   key: string,
   name: string | null,
-  { description = null, ...options }: SendOptions = {},
+  { post = null, ...options }: SendOptions = {},
 ): Promise<StravaOutcome<StravaActivity>> {
   const typed = name?.trim() ?? "";
-  const described = description?.trim() ?? "";
+  const posted = post?.trim() ?? "";
   const body = {
     ...(typed === "" ? {} : { name: typed }),
-    ...(described === "" ? {} : { description: described }),
+    ...(posted === "" ? {} : { post: posted }),
   };
   return askStrava(
     baseUrl,

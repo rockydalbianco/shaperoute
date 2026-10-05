@@ -1485,7 +1485,7 @@ posto con i suoi indirizzi).
 | `GET /strava/callback` | dove Strava rimanda il browser; senza chiave e senza token | una pagina HTML |
 | `DELETE /me/strava` | scollegare | `204`, anche se non era collegato |
 | `GET /me/activities/{key}/strava` | cosa ha Strava di una corsa | `200` `{ "status", "url" }`, o `404 http_error` |
-| `POST /me/activities/{key}/strava` | mandare la corsa; corpo facoltativo `{ "name": …, "description": … }` | `200` è un'attività; `202` Strava la sta ancora leggendo |
+| `POST /me/activities/{key}/strava` | mandare la corsa; corpo facoltativo `{ "name": …, "description": …, "post": … }`; con `post`, su una corsa già mandata, cambiare il testo su Strava | `200` è un'attività; `202` Strava la sta ancora leggendo |
 
 - **Spento o acceso**: senza `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`
   nell'ambiente dell'API, `GET /me/strava` risponde `available: false`
@@ -1552,6 +1552,19 @@ posto con i suoi indirizzi).
   tagliato a 500 caratteri e non rifiutato; vuoto o assente, la
   descrizione del disegno, se la corsa ne ha uno. Come il nome, conta solo
   per il primo invio. Le foto non vanno a Strava.
+- **Il testo del post** (TASK-231, ADR-0194): `post` nel corpo
+  (`fixtures/strava-send-post.json`), le emoji e i risultati scelti sul
+  post, tagliato a 500 caratteri come la descrizione. Va **in cima**,
+  sopra le parole di chi corre e la riga di Sgrava, separato da una riga
+  vuota: «🔥❤️ 5.20 km · Score 87», «Legs heavy.», «Drawn with Sgrava».
+  Su una corsa **già mandata** l'API rifà quel testo e lo mette
+  sull'attività con `PUT /api/v3/activities/{id}` di Strava (il permesso
+  `activity:write` basta); il nome non cambia, e risponde `200` com'era.
+  Se Strava non lo lascia fare (l'attività è stata cancellata là, o la
+  vede solo l'atleta, che vorrebbe anche `activity:read_all`): `422
+  invalid_request`, «Strava did not let Sgrava change this activity:
+  change its text on Strava.», e la corsa resta mandata. Senza `post`,
+  una corsa già mandata risponde com'era, senza chiedere a Strava.
 - **Una corsa mandata due volte è un'attività sola**: la corsa tiene cosa
   ne è stato (`status`: `not_sent`, `processing`, `sent`), e una già
   mandata risponde `200` com'era, senza chiedere a Strava. Due invii

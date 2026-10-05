@@ -9612,3 +9612,84 @@ partenza e fase), con lo stesso numero di tracciati: il tempo va misurato.
 Cambiano i percorsi di oggi dove una forma inclinata segue meglio: i
 campioni si rigiudicano. Le corse salvate prima restano col nord in
 alto.
+
+## ADR-0200 — I paesi vicini sotto «Near me»: quattro al più, dal Places di Geoapify, con i campioni chiesti dal telefono
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-236 ·
+la sezione, i 20–50 km, il massimo di quattro e i campioni sono scelte
+dell'utente; il resto è deciso dall'agente su delega dell'utente
+
+**Contesto**: l'utente: «favorisci la sezione Near me con una
+sottocategoria con le città vicine a me, fai 20, 50 km in base alla città,
+suggeriscine massimo quattro, e poi inizia a scaricare tutte le mappe di
+quei quattro paesi, qualcosina per qualche campione». Oggi «Near me»
+mostra i percorsi entro 5 km dalla partenza; un paese accanto si trova
+solo scrivendone il nome.
+
+**Decisione**:
+
+1. **Da dove vengono i paesi**: `place=city` e `place=town` di
+   OpenStreetMap, dal Places di Geoapify (`populated_place.city`,
+   `populated_place.town`) con la chiave che l'API ha già. Punto ed
+   etichetta sono quelli che `GET /cities` dà per lo stesso nome (lo
+   stesso nodo di OpenStreetMap: provato su Levico, Pergine, Borgo,
+   Trento, Rovereto): un paese toccato qui e lo stesso paese scritto sono
+   una città sola, con gli stessi esempi tenuti (ADR-0136).
+2. **Quali quattro**: quelli entro 20 km, i più grandi per abitanti; se
+   sono meno di quattro, il cerchio si allarga fino a 50 km e la lista si
+   riempie con i più vicini oltre i 20. Mostrati dal più vicino. Il paese in cui si è (centro entro
+   1,5 km, come `OWN_RADIUS_M`) resta fuori: è già «Near me». I villaggi
+   (`place=village`) no: intorno a una città sarebbero decine. Da
+   Caldonazzo: Levico, Pergine, Trento, Borgo. Dal centro di Trento:
+   Pergine, Levico, poi Rovereto (21 km) e Arco (25 km). Da Livigno:
+   Bormio, St. Moritz, Glorenza, Tirano. Da Milano, i quattro più grandi
+   entro 20 km (Monza, Sesto San Giovanni, Cinisello, Cologno). Provati
+   sul servizio vero il 2026-10-05.
+3. **La posizione**: al servizio va il centro di un quadrato di circa
+   1 km (2 decimali), non la posizione; la risposta è tenuta un giorno in
+   memoria. Negli eventi non si scrive niente.
+4. **Le mappe e i campioni li chiede il telefono**, non il server da
+   solo: mentre la sezione è sulla pagina l'app chiede per ogni paese, uno
+   alla volta, cerchio, cuore e stella da 5 km dal centro, con la stessa
+   richiesta degli esempi di una città (ADR-0144: il cerchio per primo, la
+   sua zona tiene le altre). Il server scarica la zona alla prima e tiene
+   ogni percorso: i centri dei paesi vicini sono centri di città per
+   `route_store`. Al più una richiesta ogni 5 s (12 al minuto: con le 18
+   degli esempi di una città restano nei 30 POST al minuto di un
+   telefono, ADR-0076). Si fermano quando la sezione lascia la pagina, e
+   al primo guaio che non è di una forma (zona non scaricata, rete, troppe
+   richieste).
+5. **Nell'app**: una fila di schede da scorrere sotto la fila delle
+   città, solo con «Near me»: il nome, la distanza, e un campione
+   disegnato sulla sua mappa (il cuore, o quello che c'è prima). Un tocco
+   apre il paese come città scelta. Corsa e bici; la canoa ha i laghi
+   vicini (TASK-233).
+
+**Alternative scartate**:
+
+- **Un elenco di città dentro l'API** (GeoNames): un file di dati da
+  tenere aggiornato, con punti ed etichette diversi da quelli di
+  `/cities`, quindi esempi doppi.
+- **Overpass** per i `place=*`: rifiuta dopo pochi download (`MAPS.md`), e
+  serve già alle zone.
+- **Il server che scarica e disegna da solo** a ogni `GET /nearby-cities`:
+  lavoro che nessuno guarda quando l'app si chiude, e download da Overpass
+  senza un telefono che li aspetti.
+- **I più vicini invece dei più grandi, entro 20 km**: intorno a Milano
+  sarebbero Corsico, Cesano Boscone, Buccinasco, Bresso.
+- **I più grandi anche oltre i 20 km**: da Trento usciva Schio, a 44 km
+  oltre le montagne, prima di Arco e Riva.
+- **Riusare `drawExamples`** per i campioni: disegna una città alla volta,
+  e i paesi vicini fermerebbero gli esempi della città scelta.
+
+**Conseguenze**:
+
+- Una posizione nuova costa al più 13 crediti di Geoapify (3 richieste) e,
+  la prima volta, fino a 4 zone scaricate da Overpass e 12 percorsi sul
+  server (7–19 s l'uno, TASK-168), uno alla volta.
+- Un server senza `GET /nearby-cities` risponde 404: la sezione non
+  compare, il resto di «Explore» è com'era. L'app si può pubblicare prima
+  del server.
+- I campioni restano in memoria per un'apertura dell'app; riaperti, il
+  server risponde subito da quelli tenuti.
+- TASK-214 B2 può chiedere i paesi vicini allo stesso endpoint.

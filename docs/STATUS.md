@@ -44,6 +44,15 @@ ora ha il database e il server. Gli altri Todo.
 
 In coda, dopo o accanto:
 
+- **TASK-236 — I paesi vicini sotto «Near me»** (ADR-0200, chiesto
+  dall'utente il 2026-10-05): in «Explore», con «Near me», la sezione
+  «NEARBY TOWNS» con fino a quattro paesi intorno alla partenza (entro
+  20 km, o fino a 50 dove sono pochi), da `GET /nearby-cities`; mentre è
+  sulla pagina l'app fa disegnare al server i primi tre esempi di ognuno,
+  e la scheda ne mostra uno. Corsa e bici; la canoa ha i laghi vicini
+  (TASK-233). In revisione; **mancano** il server (l'endpoint: senza, la
+  sezione non compare) e la pubblicazione, con l'ok dell'utente, e la sua
+  conferma dei testi e della regola dei quattro (`tasks/TASK-236.md`).
 - **TASK-235 — Gli annunci fra i post del «Feed»** (ADR-0198, chiesto
   dall'utente il 2026-10-05): un annuncio nativo AdMob con «Sponsored»
   ogni 5 post, al posto dell'annuncio a schermo intero all'inizio di ogni

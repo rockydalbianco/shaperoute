@@ -324,6 +324,24 @@ centro dell'area del comune (Milano: Baggio, 6 km dal Duomo). Corpo come
 imparate dal vocabolario (`city_names`, TASK-142) cercano il nome imparato:
 «levic» cerca «Levico Terme», non Levič.
 
+### `GET /nearby-cities` (TASK-236, ADR-0200)
+
+I paesi intorno a un punto, `?lat=…&lon=…`, al più 4, dal più vicino:
+`place=city` e `place=town` di OpenStreetMap dal Places di Geoapify, con la
+chiave di `/places`. Quelli entro 20 km, i più grandi per abitanti; se sono
+meno di quattro, i più vicini oltre i 20, fino a 50 km; mai quello col centro entro
+1,5 km dal punto. Etichetta e punto come `/cities`. Al servizio va il centro
+di un quadrato di circa 1 km, e la risposta è tenuta un giorno. I centri
+sono centri di città per gli esempi tenuti (ADR-0136). 503 senza chiave o
+se il servizio non risponde; 422 per un punto fuori dalla Terra.
+
+```json
+{"places": [
+  {"label": "Levico Terme, Trentino – Alto Adige/Südtirol, Italy",
+   "point": [46.0091259, 11.3017774], "away_m": 2929}
+]}
+```
+
 ### `GET /city-suggestions` (TASK-134, TASK-138, ADR-0110)
 
 Città e luoghi mentre si scrive, `?q=Par` → Paris, Parma; `?q=arena di

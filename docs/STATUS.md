@@ -168,12 +168,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riesce ma un tentativo già tracciato a un'altra distanza segue la forma
   chiaramente meglio, l'API manda `better_distance_m` e l'app scrive la
   riga con «Try N km». Il percorso scelto non cambia. **Parte A, motore e
-  API**, in PR (2026-10-05): il campo nel risultato, anche da una
-  partenza vicina, `null` nelle alternative; `engine.zip` ed esempi della
-  canoa rifatti. **Misura**: scatta in 8 percorsi su 129, nessuno dei 12
-  di riferimento in cache (`MAPS.md`); da dire all'utente prima della
-  **parte B** (l'app, testi nelle cinque lingue). Dopo il merge di A,
-  `draw_examples` sul server con l'ok dell'utente. `tasks/TASK-234.md`.
+  API**, in `main` dalla #327 (784cc03, 2026-10-05): il campo nel
+  risultato, anche da una partenza vicina, `null` nelle alternative;
+  `engine.zip` ed esempi della canoa rifatti. **Misura**: scatta in 8
+  percorsi su 129, nessuno dei 12 di riferimento in cache (`MAPS.md`);
+  l'utente: «sì, fai la parte B come previsto». **Parte B, l'app**, in PR:
+  la riga sotto le tessere con «Try N km», testi nelle cinque lingue da
+  confermare con l'utente; provata nel simulatore. Da fare: sul server
+  l'aggiornamento e `draw_examples` (ok dell'utente, il coordinatore),
+  prima di pubblicare la B. `tasks/TASK-234.md`.
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal

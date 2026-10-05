@@ -9733,6 +9733,25 @@ Il percorso scelto è identico: le impronte fissate dei test non cambiano.
 Gli esempi della canoa e `engine.zip` sono rifatti solo perché `models.py`
 è cambiato (in `paddleExamples.json` cambia solo `"engine"`).
 
+**Parte B, l'app (2026-10-05)**: l'utente, viste le misure, ha detto «sì,
+fai la parte B come previsto». Deciso dall'agente su delega dell'utente:
+
+- **«This shape», non «This heart»**: con il nome della forma l'italiano,
+  lo spagnolo, il francese e il tedesco dovrebbero accordare l'articolo al
+  genere di ogni forma; le tabelle hanno una frase per testo
+  (ADR-0172). Tre frasi: forma, parola («This word…»), contorno di
+  un'immagine («This outline…»), come i messaggi di ADR-0041.
+- **Sotto le tessere, grigia** come gli avvisi da sapere, con il pulsante
+  secondario: il giallo resta del percorso e di «Start».
+- **Della richiesta**: si legge dalla scelta del motore (la prima
+  tessera), quindi resta anche con B o C selezionata.
+- **Niente avanti e indietro**: dopo un «Try» la riga non propone la
+  distanza appena lasciata, se il disegno, la partenza e l'attività sono
+  gli stessi (`sameRequest`).
+- **Nessun segnale nuovo** per il «Try» della riga: `hint_taken` resta
+  quello degli errori; un `hint` nuovo toccherebbe `shared-types` e
+  l'API, ed è un seguito.
+
 ## ADR-0199 — Seguire nell'app: il tasto sul profilo di un altro, tre numeri in «Profile» con i loro elenchi
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
 (TASK-211, parte B), dentro le **scelte dell'utente**: seguire vuole una

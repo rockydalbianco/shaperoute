@@ -2,6 +2,7 @@ import type {
   ImageOutline,
   ImageRouteRequest,
   RouteRequest,
+  RouteResult,
 } from "@shaperoute/shared-types";
 import imageOutline from "@shaperoute/shared-types/fixtures/image-outline.json";
 import imageRequest from "@shaperoute/shared-types/fixtures/image-route-request.json";
@@ -366,6 +367,86 @@ test("Try N km and a shape of the catalogue are told as hints taken", async () =
     },
     { kind: "hint_taken", shape: "star", hint: "catalog_shape", distance_m: 5000 },
   ]);
+});
+
+// --- where the shape comes out better (TASK-234) ---------------------------
+
+const fifteen: RouteRequest = { ...heartRequest, distance_m: 15000 };
+
+function advising(advised: number | null): RouteResult {
+  return { ...heartResult, distance_m: 15200, better_distance_m: advised };
+}
+
+function done(
+  request: RouteRequest,
+  result: RouteResult,
+  onTryDistance = jest.fn(),
+  choices: RouteResult[] = [],
+  chosen = 0,
+) {
+  return (
+    <RouteOutcome
+      view={{ status: "done", request, result }}
+      onCancel={jest.fn()}
+      exporting={{ status: "idle" }}
+      onExport={jest.fn()}
+      onTryDistance={onTryDistance}
+      onPickShape={jest.fn()}
+      onStart={jest.fn()}
+      choices={choices}
+      chosen={chosen}
+      onSignal={jest.fn()}
+    />
+  );
+}
+
+const BETTER_12 = "This shape comes out better at about 12 km.";
+
+test("a line under the route offers the distance where the shape comes out better", async () => {
+  const onTryDistance = jest.fn();
+  await render(done(fifteen, advising(12000), onTryDistance));
+  expect(screen.getByText(BETTER_12)).toBeOnTheScreen();
+  await fireEvent.press(screen.getByText("Try 12 km"));
+  expect(onTryDistance).toHaveBeenCalledWith(12000);
+});
+
+test("no line without the advice, nor beyond the distances «Draw» offers", async () => {
+  const { rerender } = await render(done(fifteen, advising(null)));
+  expect(screen.queryByText(/comes out better/)).not.toBeOnTheScreen();
+  await rerender(done(fifteen, advising(25000)));
+  expect(screen.queryByText(/comes out better/)).not.toBeOnTheScreen();
+});
+
+test("the advice is the request's, whichever route is on screen", async () => {
+  const answer = advising(12000);
+  const other = { ...advising(null), similarity: 0.8 };
+  await render(done(fifteen, other, jest.fn(), [answer, other], 1));
+  expect(screen.getByText(BETTER_12)).toBeOnTheScreen();
+});
+
+test("after a Try, no line sends the runner back to the distance left", async () => {
+  const onTryDistance = jest.fn();
+  const twelve = { ...fifteen, distance_m: 12000 };
+  const { rerender } = await render(done(fifteen, advising(12000), onTryDistance));
+  await fireEvent.press(screen.getByText("Try 12 km"));
+  await rerender(done(twelve, advising(15000), onTryDistance));
+  expect(screen.queryByText(/comes out better/)).not.toBeOnTheScreen();
+  // Another distance is still offered.
+  await rerender(done(twelve, advising(10000), onTryDistance));
+  expect(screen.getByText("Try 10 km")).toBeOnTheScreen();
+});
+
+test("a word is told as a word", async () => {
+  const word: RouteRequest = {
+    start: heartRequest.start,
+    word: "ciao",
+    distance_m: 15000,
+    activity: "running",
+  };
+  await render(done(word, { ...advising(12000), shape: null, word: "CIAO" }));
+  expect(
+    screen.getByText("This word comes out better at about 12 km."),
+  ).toBeOnTheScreen();
 });
 
 // --- the pen up between the letters (TASK-198) ------------------------------

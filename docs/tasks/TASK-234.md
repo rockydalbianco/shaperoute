@@ -1,8 +1,9 @@
 # TASK-234 — «Viene meglio a 12 km»: la distanza dove la forma riesce meglio
 
-**Stato**: In corso — parte A (motore e API) in PR il 2026-10-05; la
-parte B (app) dopo, con i testi visti dall'utente
-**Fase**: 4 · **Branch**: `feat/TASK-234-better-distance`
+**Stato**: In corso — parte A (motore e API) in `main` dalla #327
+(784cc03, 2026-10-05); parte B (app) in PR, i testi da confermare
+**Fase**: 4 · **Branch**: `feat/TASK-234-better-distance` (A),
+`feat/TASK-234-better-distance-app` (B)
 **ADR**: ADR-0197 (estende ADR-0041)
 
 ## Obiettivo
@@ -113,12 +114,12 @@ coordinatore, 2026-10-05).
 - [x] L'API restituisce `better_distance_m`; senza consiglio è `null`; i
       client di oggi non si rompono.
 - [x] Le misure del punto 7 sono in `MAPS.md`.
-- [ ] L'app mostra la riga e «Try N km» solo col campo e dentro le
+- [x] L'app mostra la riga e «Try N km» solo col campo e dentro le
       distanze di «Draw»; «Try» ridisegna a quella distanza; niente riga
       che rimanda alla distanza di prima.
 - [ ] I testi nelle cinque lingue; l'utente li ha visti.
-- [ ] Test deterministici per motore, API e app (`docs/TESTING.md`):
-      motore e API fatti nella parte A.
+- [x] Test deterministici per motore, API e app (`docs/TESTING.md`):
+      motore e API nella parte A, app nella B.
 
 ## File toccati
 
@@ -165,7 +166,8 @@ docs/tasks/TASK-234.md
 
 ## Esito
 
-**Parte A, motore e API** (2026-10-05, PR da `feat/TASK-234-better-distance`):
+**Parte A, motore e API**: in `main` dalla #327 (merge `784cc03`,
+2026-10-05):
 
 - `optimizer.better_distance` e `shape_cost`; `RouteResult.better_distance_m`
   da `plan_shape` e da `ShapeJob.here` (`nearby_starts.py`, ok del
@@ -184,6 +186,30 @@ docs/tasks/TASK-234.md
   129, nessuno dei 12 di riferimento in cache; la soglia resta 5 punti
   (ADR-0197). Da dire all'utente prima della parte B: scatta poco, forse
   serve il passo 2.
-- Da fare: parte B (l'app), dopo la risposta dell'utente sulle misure e
-  sui testi; `draw_examples` sul server dopo il merge di A, con l'ok
-  dell'utente (il coordinatore).
+- `draw_examples` sul server dopo il merge di A, con l'ok dell'utente:
+  lo chiede il coordinatore.
+
+**Le misure all'utente** (2026-10-05): «sì, fai la parte B come
+previsto», sapendo che la riga compare in circa il 6% dei percorsi; il
+passo 2 resta da valutare dopo.
+
+**Parte B, l'app** (2026-10-05, PR da `feat/TASK-234-better-distance-app`):
+
+- `src/route/betterDistance.ts`: quando offrire la distanza (il campo
+  della risposta, dentro le distanze di «Draw», mai sull'acqua né uguale
+  a quella chiesta, mai indietro alla distanza che un «Try» ha appena
+  lasciato per lo stesso disegno) e i testi con `t()`.
+- `RoutePanel.tsx`: la riga sotto le tessere, grigia come un avviso da
+  sapere, con «Try N km» (lo stesso `onTryDistance` di ADR-0041); la
+  legge dalla scelta del motore, quindi resta con qualunque tessera.
+  `App.tsx` non è servito.
+- **Testi**, da confermare con l'utente: «This shape / word / outline
+  comes out better at about {km} km.» e «Try {km} km», nelle cinque
+  lingue. «This shape» e non «This heart»: il nome della forma
+  cambierebbe genere in italiano, spagnolo, francese e tedesco.
+- Provato nel simulatore con l'API del worktree: cavallo 10 km a Trento,
+  la riga «This shape comes out better at about 8 km.» con «Try 8 km», e
+  in italiano «Questa forma viene meglio a circa 7 km.» con «Prova 7 km».
+- Seguito, non fatto: un segnale per sapere quante volte si tocca il
+  «Try» della riga (oggi `hint_taken` dice solo i «Try» degli errori;
+  un `hint` nuovo tocca `shared-types` e l'API).

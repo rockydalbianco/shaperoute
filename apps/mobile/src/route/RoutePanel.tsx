@@ -7,7 +7,7 @@ import {
   SHAPES,
 } from "@shaperoute/shared-types";
 import type { Signal } from "@shaperoute/shared-types/src/signals";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -22,6 +22,12 @@ import { isImageRequest } from "../api/routes";
 import { drawnOf, sendSignal } from "../api/signals";
 import { decimal, t } from "../i18n";
 import { Segmented } from "../screens/Segmented";
+import {
+  betterDistanceM,
+  betterDistanceText,
+  type Left,
+  tryText,
+} from "./betterDistance";
 import { APP_DISTANCE_LIMITS_KM, LONG_DISTANCE_KM } from "./distance";
 import { DistanceStepper } from "./DistanceStepper";
 import { ImageChoice } from "./ImageChoice";
@@ -292,6 +298,15 @@ export function RouteOutcome({
     of: null,
     routes: new Set(),
   });
+  // The request a «Try» under the route left (TASK-234): no line offers to
+  // go back to it.
+  const [left, setLeft] = useState<Left | null>(null);
+  // Where the shape comes out better: the request's, from the engine's
+  // choice, whichever route is on screen.
+  const better =
+    view.status === "done"
+      ? betterDistanceM(choices[0] ?? view.result, view.request, left)
+      : null;
 
   /** Start or export the route on screen, and say which one it was. */
   function use(via: "start" | "gpx", then: () => void) {
@@ -346,6 +361,16 @@ export function RouteOutcome({
             <PenSplit result={view.result} activity={view.request.activity} />
           </View>
           <RouteTiles choices={choices} chosen={chosen} onChoose={onChoose} />
+          {better !== null && (
+            <BetterDistance
+              text={betterDistanceText(kindOf(view.request), better)}
+              distanceM={better}
+              onTry={() => {
+                setLeft({ from: view.request, to: better });
+                onTryDistance(better);
+              }}
+            />
+          )}
           {toNotes(view.result.warnings).map((note) => (
             <NoteRow key={note.text} note={note} />
           ))}
@@ -659,6 +684,31 @@ function ShapeChoices({ onPick }: { onPick: (shape: Shape) => void }) {
           <Text style={styles.secondaryText}>{shapeName(shape)}</Text>
         </Pressable>
       ))}
+    </View>
+  );
+}
+
+/** Under the route, the distance where the shape comes out better, and a
+ * button that draws it there (TASK-234, ADR-0197). */
+function BetterDistance({
+  text,
+  distanceM,
+  onTry,
+}: {
+  text: string;
+  distanceM: number;
+  onTry: () => void;
+}) {
+  return (
+    <View style={[styles.noteRow, styles.info, styles.problemBox]}>
+      <Text style={styles.noteText}>{text}</Text>
+      <Pressable
+        style={[styles.secondary, styles.choice]}
+        onPress={onTry}
+        accessibilityRole="button"
+      >
+        <Text style={styles.secondaryText}>{tryText(distanceM)}</Text>
+      </Pressable>
     </View>
   );
 }

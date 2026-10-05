@@ -116,25 +116,26 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `f3fdbce` dalle
-  09:32Z (secondo ok dell'utente «sì pubblica, ok server», sessione del
-  coordinatore), con le migrazioni `0001`–`0015`, `GET /nearby-cities`
-  (TASK-236: da Caldonazzo risponde in 0,8 s con Calceranica, Levico,
-  Pergine, Trento, Borgo), il motore di TASK-234 A (in `fd14cd3` dalle
-  08:54Z, esempi ridisegnati per 66 città su 66) e il tetto del traffico
-  di TASK-214 A2; fermo circa 14 secondi; immagine di prima
-  `shaperoute-api:before-task236`, copia del database
-  `shaperoute-2026-10-05T0931Z.dump`. Ha l'acqua dei laghi d'Italia
-  (TASK-233: 219 file, 71 MB). **Le zone del telefono non sono scritte**:
-  in cache ci sono 521 grafi e 3 file per il telefono; scriverli tutti
-  sarebbe circa 2,9 GB e 2–3,5 ore, da chiarire con TASK-214 prima
-  dell'ok dell'utente. **App** su `preview` da `main` `8c3a6ff` (gruppo
-  `8f6849ca`): «Follow», il «Feed» sull'acqua, i laghi in «Explore», la
-  pubblicità nel «Feed» (non si vede in Expo Go), «Try N km» (#336), i
-  paesi vicini sotto «Near me» (#323). **Non pubblicata**: la parte B2 di
-  TASK-214 (#337, le zone scaricate in anticipo), in `main` da `f3fdbce`.
-  **Da provare sull'iPhone.** Strava spento per scelta dell'utente
-  (2026-10-05: «teniamo solo Instagram per ora»).
+- **Server e app, al 2026-10-05**. **Server**: su `main` `ae320d3` dalle
+  10:58Z (ok dell'utente «ok aggiorna il server e pubblica», eseguito
+  dalla sessione «Impostazioni» al via del coordinatore), con le
+  migrazioni `0001`–`0016` (`0016_contact`: email e telefono), il motore
+  di TASK-238 A e TASK-242, `GET /nearby-cities`, il tetto del traffico;
+  fermo circa 10 secondi; immagine di prima
+  `shaperoute-api:before-task183`, copia del database
+  `shaperoute-2026-10-05T1058Z.dump`; `draw_examples` rilanciato alle
+  10:59Z (`data/draw-examples-2026-10-05-task238.log`). **Le zone del
+  telefono sono scritte** (ok dell'utente «ok zone e pubblica»): 521 file,
+  2,6 GB, 82 minuti; Trento a piedi 2,5 MB, in bici 11,5 MB, in meno di
+  0,1 s. Acqua dei laghi d'Italia: 219 file, 71 MB. Da fare: la zona di
+  Borgo Valsugana. **App** su `preview` da `main` `7a9506a` (gruppo
+  `1b49d248`): tutto `main`: le zone scaricate in anticipo (TASK-214
+  B2/B2b), il numero rosso delle richieste (TASK-239), niente punteggio
+  sui post (TASK-241), email e telefono (TASK-183), «Move the shape»
+  (TASK-238), «Units» (TASK-182 A), «Try N km», i paesi vicini, i laghi,
+  il «Feed» sull'acqua, «Follow». **Da provare sull'iPhone**: da adesso
+  il telefono scarica la sua zona e disegna i percorsi da sé (comincia la
+  parte D di TASK-214). Strava spento per scelta dell'utente.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),

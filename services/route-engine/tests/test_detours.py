@@ -202,6 +202,27 @@ def test_the_hole_of_a_detour_is_between_its_two_ends() -> None:
     nodes = [*_row(5, 4, 9), *under[1:], *_row(5, 11, 16)]
     [detour] = _strays(nodes).detours
     assert detours.gap_m(graph, nodes, detour) == pytest.approx(100.0, abs=0.5)
+    assert detours.road_m(graph, nodes, detour) == pytest.approx(1100.0, abs=0.5)
+    # What the route skips of its line: from street 9 to street 10.
+    assert detour.hole_m == pytest.approx(100.0, abs=0.5)
+
+
+def test_the_hole_is_measured_along_the_line() -> None:
+    # Down from street 6 to the crossing 500 m below, six streets across
+    # and up again: the two ends are 600 m of line apart.
+    under = [*_column(6, 5, 0), *_row(0, 7, 12), *_column(12, 1, 5)]
+    nodes = [*_row(5, 4, 5), *under, *_row(5, 13, 16)]
+    [detour] = _strays(nodes).detours
+    assert detour.hole_m == pytest.approx(600.0, abs=0.5)
+
+
+def test_a_short_step_back_along_the_line_is_no_hole() -> None:
+    # Down from street 9, and up again one street back, on street 8.
+    back = [*_column(9, 5, 2), *_column(8, 2, 5)]
+    nodes = [*_row(5, 4, 8), *back, *_row(5, 9, 16)]
+    [detour] = _strays(nodes).detours
+    assert (nodes[detour.first], nodes[detour.last]) == ((9, 5), (8, 5))
+    assert detour.hole_m == 0.0
 
 
 # --- What stays drawn ---
@@ -474,6 +495,33 @@ def test_a_spike_that_leaves_a_wide_hole_stays_on_the_outline() -> None:
     wide = [*_column(10, 0, -2), (9, -2), (8, -2), *_column(7, -2, 0)]
     nodes = _square(lower=[*_row(0, 20, 11), *wide, *_row(0, 6, 0)])
     assert _lifted_outline(nodes) == [nodes]
+
+
+def test_a_detour_that_skips_most_of_the_outline_is_no_spike() -> None:
+    # It leaves the first side one street after the start, and comes back
+    # on the last side one street before it: its two ends are 141 m apart
+    # and its streets 600 m long, but between them is the whole outline.
+    inside = [(1, 1), (2, 1), (2, 2), (1, 2), (1, 1)]
+    nodes = [(0, 0), (0, 1), *inside, (1, 0), (0, 0)]
+    graph = _town(railway=False)
+    found = detours.strays(
+        graph, nodes, pen_up.letter_lines(*_face(MOUTH))[0], 62.5, 187.5, held=True
+    )
+    [detour] = found.detours
+    assert detours.gap_m(graph, nodes, detour) == pytest.approx(141.4, abs=0.5)
+    assert detours.road_m(graph, nodes, detour) == pytest.approx(600.0, abs=0.5)
+    assert detour.hole_m == pytest.approx(7800.0, abs=0.5)
+    assert _lifted_outline(nodes) == [nodes]
+
+
+def test_a_spike_that_comes_back_a_street_behind_is_walked() -> None:
+    # Down street 9 and up street 10, which the side had passed already.
+    behind = [*_column(9, 0, -2), *_column(10, -2, 0)]
+    nodes = _square(lower=[*_row(0, 20, 10), *behind, *_row(0, 9, 0)])
+    assert _lifted_outline(nodes) == [
+        _square(lower=_row(0, 20, 9)),
+        _row(0, 10, 0),
+    ]
 
 
 def test_the_outline_walks_its_deepest_spikes_only(

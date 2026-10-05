@@ -264,13 +264,11 @@ def _spike(
     graph: Graph, nodes: Sequence[Any], detour: detours.Detour, height_m: float
 ) -> bool:
     """Whether `detour` is a spike of the outline, with pieces `height_m`
-    high: its two ends are close, and its road is much longer than the hole
-    it leaves between them."""
-    gap_m = detours.gap_m(graph, nodes, detour)
-    return (
-        gap_m <= detours.OUTLINE_GAP * height_m
-        and detours.road_m(graph, nodes, detour) >= detours.OUTLINE_SPIKE * gap_m
-    )
+    high: it skips little of the outline, and its road is much longer than
+    its two ends are apart."""
+    return detour.hole_m <= detours.OUTLINE_GAP * height_m and detours.road_m(
+        graph, nodes, detour
+    ) >= detours.OUTLINE_SPIKE * detours.gap_m(graph, nodes, detour)
 
 
 def _trace_letter(

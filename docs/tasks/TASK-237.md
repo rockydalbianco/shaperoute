@@ -2,7 +2,8 @@
 
 **Stato**: In corso — parte A (la pagina e la vetrina) in `main` (PR
 #325, `f8e68b6`, 2026-10-05); parte A2 (la pagina diventa la guida
-dell'app, il merch messo da parte) in PR dal 2026-10-05; il link per
+dell'app, il merch messo da parte) in `main` (PR #335, `8f23ff4`,
+2026-10-05); il link per
 scaricare, la pubblicazione e il merch aspettano l'utente
 **Fase**: 4 · **Branch**: `feat/TASK-237-website-merch`
 **ADR**: ADR-0201
@@ -32,13 +33,14 @@ l'app, e poi inseriremo anche il link per poterla scaricare; fallo un po'
 futuristico; poter selezionare un po' di cose, per selezionare [lo sport];
 metti i post migliori, tipo una decina.»
 
-Letta così (da confermare con l'utente dove dice «letto dall'agente»):
+Letta così; l'utente ha poi confermato lo sport e i disegni (2026-10-05:
+«sì intendevo sport, i disegni vanno bene così»):
 
 1. **Per ora niente merch**: la pagina spiega solo come si usa l'app.
 2. **Il link per scaricare** arriva dopo: adesso un segnaposto.
 3. **Più futuristico**.
-4. **Cose da selezionare**: lo sport («trasporta» nel messaggio dettato,
-   letto dall'agente come «sport»), e una forma e una distanza da provare.
+4. **Cose da selezionare**: lo sport («trasporta» nel messaggio dettato:
+   era «sport», confermato), e una forma e una distanza da provare.
 5. **I dieci post migliori**: dieci disegni presi da quelli dell'app.
 
 ## Contesto da leggere
@@ -56,7 +58,7 @@ Letta così (da confermare con l'utente dove dice «letto dall'agente»):
 3. Test in Node e un workflow suo.
 4. `docs/SITO.md`, ADR-0201, le righe in `STATUS.md` e `INDEX.md`.
 
-**Parte A2 — la guida dell'app** (seconda PR):
+**Parte A2 — la guida dell'app** (PR #335, fatta):
 
 1. Il merch esce da `index.html`; i suoi file restano, con i loro test.
 2. In cima il pannello «Try it»: forma e distanza scelte, il percorso
@@ -139,7 +141,7 @@ Il cuore in cima sta nella pagina e non in un'immagine: disegnato dentro
 un `<img>` l'animazione non partiva nel controllo, e la riga restava
 nascosta.
 
-**Parte A2** (2026-10-05): la pagina è la guida dell'app. Provata in
+**Parte A2** (2026-10-05, PR #335, merge `8f23ff4`): la pagina è la guida dell'app. Provata in
 Chrome senza finestra guidato dal protocollo DevTools, a 1280 e 390 px:
 i tasti di sport, forma, distanza e filtro cambiano quello che devono,
 nessun errore in console, nessuno scorrimento orizzontale; 25 test verdi.
@@ -147,9 +149,10 @@ Il pannello Browser dell'app non si è potuto usare: `launch.json` è nel
 checkout principale e la modifica è stata bloccata dai permessi. Nei
 «Best drawings» non ci sono i nomi degli utenti d'esempio né minuti e
 punteggi, che nell'app sono inventati: solo titolo, luogo e km. Nessun
-disegno in bici: i dati dell'app non ne hanno. **Da confermare con
-l'utente**: che «trasporta» fosse «sport»; i testi nuovi (`content.js`,
-i titoli delle sezioni); se i dieci disegni vanno bene così.
+disegno in bici: i dati dell'app non ne hanno. **Confermati dall'utente** il 2026-10-05 («sì
+intendevo sport, i disegni vanno bene così»): la scelta dello sport e i
+dieci disegni come sono, senza nomi, minuti e punteggi. **Da confermare
+con l'utente**: i testi nuovi (`content.js`, i titoli delle sezioni).
 
 **Aspettano l'utente** (parte B, il merch, messo da parte): il servizio di stampa e l'account; magliette,
 nomi, colori e prezzi; i testi della pagina («Runs that draw a shape on

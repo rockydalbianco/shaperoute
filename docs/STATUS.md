@@ -148,7 +148,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
-  in PR (2026-10-05), dopo la seconda richiesta dell'utente («per intanto
+  in `main` (PR #335, merge `8f23ff4`, 2026-10-05), dopo la seconda
+  richiesta dell'utente («per intanto
   solo il sito che spiega come usare l'app… futuristico… selezionare lo
   sport… i post migliori, una decina»): la pagina è la **guida dell'app**.
   «Try it» disegna il percorso vero di Milano per la forma e la distanza
@@ -156,9 +157,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Bike», «Paddle»); «Best drawings» mostra dieci disegni dai dati
   dell'app, con un filtro; «Get the app» dice «Download — coming soon»
   finché `site/config.js` non ha il link. **Il merch è messo da parte**: i
-  file restano, la pagina non lo mostra. **Niente è pubblicato.** **Da
-  confermare con l'utente**: i testi, i dieci disegni, che «trasporta»
-  fosse «sport». **Aspettano l'utente**: il link dell'App Store
+  file restano, la pagina non lo mostra. **Niente è pubblicato.** Lo
+  sport da scegliere e i dieci disegni sono **confermati dall'utente**
+  (2026-10-05); **da confermare** restano i testi. **Aspettano l'utente**: il link dell'App Store
   (TASK-152), dominio e pubblicazione, e per il merch il servizio di
   stampa, magliette e prezzi. Come si cambia e come si guarda:
   `SITO.md`. Da dove riprendere: `tasks/TASK-237.md`, «Esito».

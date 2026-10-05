@@ -117,6 +117,6 @@ vendita quando ha `buyUrl` (`https`) e `priceEur` in `products.js`, e
 
 ## Non ancora deciso (dell'utente)
 
-I testi della pagina; quali dieci disegni; il dominio e dove pubblicare il
-sito; quando rimettere il merch, con quale servizio, quali magliette e
+I testi della pagina (i dieci disegni e la scelta dello sport sono
+confermati, 2026-10-05); il dominio e dove pubblicare il sito; quando rimettere il merch, con quale servizio, quali magliette e
 quali prezzi. Finché non è pubblicato, il sito esiste solo nel repository.

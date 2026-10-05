@@ -1,6 +1,6 @@
 # TASK-182 — Le unità di misura: km o miglia
 
-**Stato**: In corso (parte A in `main`, PR #351, merge `7a9506a`, 2026-10-05; parte B da fare)
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-182-units` (parte A)
 
 ## Obiettivo
@@ -108,8 +108,9 @@ Parte A:
       `SettingsPage.test.tsx`).
 - [x] I testi nuovi sono in `t()` con le quattro tabelle.
 - [x] Nessuna dipendenza nuova.
-- [ ] (passa alla parte B, con `FOLLOWS_PHONE`: fino ad allora l'app non segue il telefono) Provato nel simulatore con il telefono in miglia. **Non fatto**: la
-      sessione che ha scritto la parte A non usa il simulatore.
+- [x] Provato nel simulatore con il telefono in miglia (ultimo passo,
+      2026-10-05): un iPhone 17 con la regione «Stati Uniti» apre
+      «Units» su «Phone units — Miles» (`out/task182/settings-phone-units-us.png`).
 
 ## File toccati
 
@@ -204,13 +205,10 @@ revisione:
 - Con «Kilometres» ogni testo è quello di prima, in tutte le lingue: la
   distanza di una corsa resta con il punto, le schede di «Explore» anche
   (`withPoint`), finché i loro testi sono in inglese.
-- **Testi nuovi**: «Kilometres», «Miles», «{mi} mi away», «{town}, {mi}
-  mi away» (e le quattro traduzioni) **confermati dall'utente** il
-  2026-10-05 («ok, i testi delle unità vanno bene»); «Phone units» non si
-  vede ancora (parte B) ed è da confermare allora.
-- **Su `preview`** dal 2026-10-05 (gruppo `1b49d248`). La riga «Units» è
-  stata vista nel simulatore con l'app in italiano («Unità di misura —
-  Chilometri», `out/task184/settings-units-and-about.png`).
+- **Testi nuovi, confermati dall'utente il 2026-10-05**: «Kilometres»,
+  «Miles», «{mi} mi away», «{town}, {mi} mi away» («ok, i testi delle
+  unità vanno bene») e, con l'ultimo passo, «Phone units» (e le quattro
+  traduzioni).
 - **Non visto su un telefono né nel simulatore.** L'unità del telefono si
   legge da `Settings` di React Native (`AppleMetricUnits`,
   `AppleMeasurementUnits`, `AppleLocale`) e da
@@ -501,6 +499,49 @@ docs/tasks/TASK-182.md
   della parte B (passano a `src/units/format.ts`).
 - «Elev. gain» resta in metri e «Calories» in kcal (le altezze sono fuori
   scope, sopra).
-- In `docs/UI.md`, «Settings», il paragrafo della parte A dice ancora che
-  la corsa, la sua fine e la voce sono in km: va aggiornato da chi mergia
-  per ultimo fra B e C, insieme a `FOLLOWS_PHONE`.
+- Il paragrafo di «Settings» in `docs/UI.md` è aggiornato con l'ultimo
+  passo, sotto.
+
+### Ultimo passo — seguire il telefono, e «Share» in miglia (2026-10-05)
+
+Branch `feat/TASK-182-d-phone-units`, dopo le parti B (#368) e C (#366).
+
+- **L'app segue l'unità del telefono** finché non se ne sceglie una:
+  `unitsOf("phone")` torna a chiedere `phoneUnits()`, «Phone units» è di
+  nuovo la prima scelta di «Units», e l'interruttore `FOLLOWS_PHONE`
+  (`src/units/followsPhone.ts`) con il suo test `kmUntilPartB.test.tsx`
+  non ci sono più: la scelta dell'utente «km di partenza» valeva fino alla
+  seconda parte.
+- **Provato nel simulatore** (iPhone 17, Expo Go, regione «Stati Uniti»
+  scritta con `defaults write "Apple Global Domain" AppleLocale en_US`):
+  l'app legge `AppleLocale` da `Settings` di React Native e apre «Units»
+  su «Phone units — Miles» con il «✓». `AppleMetricUnits` e
+  `AppleMeasurementUnits` non ci sono finché nessuno sceglie a mano il
+  sistema di misura, e `I18nManager.localeIdentifier` in Expo Go non c'è:
+  la regione basta. Su un iPhone vero non è stato visto.
+- **Il post di «Share»** (`share/postRun.ts`) scrive distanza e passo
+  nell'unità dell'app («3.23 mi · 28:10 · 8:43 /mi»), anche nel testo che
+  va a Strava; in km è quello di prima (test).
+- **«Help»** (inglese e italiano): la riga delle unità dice «quelle del
+  telefono, chilometri o miglia» e che con le miglia cambia anche la voce.
+- File: `src/units/units.ts`, `src/units/followsPhone.ts` (tolto),
+  `src/units/kmUntilPartB.test.tsx` (tolto), `src/units/units.test.ts`,
+  `src/settings/UnitsSetting.tsx`, `UnitsSetting.test.tsx`,
+  `src/share/postRun.ts`, `src/share/postRunMiles.test.ts` (nuovo),
+  `src/about/content/en.ts`, `it.ts`, `docs/UI.md`, `docs/STATUS.md`,
+  questo file.
+- **Testo nuovo che ora si vede**: «Phone units» (già nelle tabelle dalla
+  parte A), da confermare con l'utente; le due righe nuove di «Help».
+- **Resta**: la voce in miglia da ascoltare sull'iPhone; la distanza di
+  «Draw» in metri dentro `App.tsx` quando è libero; «within 1 km of the
+  shore» e l'avviso sull'acqua restano in km per scelta (limiti del
+  motore).
+
+### Chiusura (2026-10-05)
+
+Tutto in `main`: parte A #351 (`7a9506a`), parte C #366 (`ad3e443`),
+parte B #368 (`0703d25`), ultimo passo #374 (`3ad0c22`). Il testo «Phone
+units» è confermato dall'utente («continua va bene»). Parti A, B e C su
+`preview`; l'ultimo passo esce con la prossima pubblicazione, del
+coordinatore. Restano, fuori dal task: ascoltare la voce in miglia
+sull'iPhone; la distanza di «Draw» in metri dentro `App.tsx`.

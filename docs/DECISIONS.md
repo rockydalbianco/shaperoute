@@ -11458,3 +11458,31 @@ proporre sempre il decimo di miglio (l'utente ha scelto il miglio intero);
 - Quando `App.tsx` è libero: la distanza in metri nello stato e
   `useUnits()` alla radice.
 - Solo app: nessuna dipendenza, niente server.
+
+## ADR-0149 — aggiornamento (ultimo passo): l'app segue l'unità del telefono, e «Share» è nell'unità scelta
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-182), dentro la **scelta dell'utente** del 2026-10-05: «subito, ma km
+di partenza» finché non c'era la seconda parte; con le parti B e C in
+`main` torna la partenza dal telefono, scelta il 2026-10-03.
+
+**Decisione**:
+
+1. `unitsOf("phone")` chiede di nuovo `phoneUnits()`, e «Phone units» è
+   la prima scelta di «Units». L'interruttore `FOLLOWS_PHONE` e il suo
+   file sono tolti: era una porta per una pubblicazione a metà, e tenerlo
+   spento per sempre sarebbe codice morto.
+2. Il post di «Share» (`share/postRun.ts`) scrive distanza e passo con i
+   formattatori di `src/units/format.ts`, quindi nell'unità dell'app, anche
+   nel testo che va a Strava: è il testo dell'utente, nella sua unità.
+3. Restano in km due frasi che dicono un limite del motore («within 1 km
+   of the shore», l'avviso sull'acqua): tradotte in miglia direbbero un
+   numero che il motore non usa.
+
+**Conseguenze**:
+
+- Un iPhone degli Stati Uniti o del Regno Unito apre l'app in miglia.
+  Provato nel simulatore con la regione «Stati Uniti» (l'app legge
+  `AppleLocale`); su un iPhone vero non è stato visto, e la voce in
+  miglia non è stata ascoltata.
+- Chi aveva scelto «Kilometres» o «Miles» a mano tiene la sua scelta.
+

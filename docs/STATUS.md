@@ -238,6 +238,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Mancano il cerchio da 20 km, Levico e Padova, quando Overpass riapre. Il
   miglioramento delle forme in bici è TASK-206, qui sotto. Da dove
   riprendere: il task file, «Esito», «I campioni».
+- **TASK-232 — Forme inclinate fino a 45°, con la mappa girata**
+  (ADR-0195; Todo, chiesto dall'utente il 2026-10-05): il motore inclina
+  ogni forma fino a ±45° quando segue meglio le strade (oggi ±15°,
+  ADR-0038), il risultato dice di quanto (`rotation_deg`), e l'app gira
+  la mappa perché il disegno si veda dritto. Parte A (motore e API) dopo
+  TASK-226, parti B e C (app, corse salvate) dopo TASK-119 B. Scelto
+  dall'utente: una freccia del nord che rimette il nord in alto, e
+  durante la corsa la mappa resta girata come il disegno, con le linee
+  del percorso fatto e da fare (TASK-224) che girano con lei.
+  `tasks/TASK-232.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,

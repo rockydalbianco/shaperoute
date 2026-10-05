@@ -181,7 +181,8 @@ conflitti).
 - **Serve l'aggiornamento del server** (migrazione `0017`) prima di
   pubblicare l'app: con l'API di prima l'app legge «tutti e due spenti» e
   al tocco dice «Notifications are not available on this API yet.».
-- **Testi nuovi, da confermare con l'utente** (le quattro traduzioni sono
+- **Testi nuovi** — i due dello schermo confermati dall'utente il
+  2026-10-05; le righe di «Help» e «Privacy» si leggono con le bozze (le quattro traduzioni sono
   dell'agente): «Notifications are not available on this API yet.»; la
   nota «Sgrava does not send notifications yet. Your choice is kept for
   when it does.» è quella concordata. In «Help» (inglese e italiano):

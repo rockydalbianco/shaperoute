@@ -2,6 +2,7 @@ import type {
   ChangeEmailRequest,
   ChangePhoneRequest,
   EditProfileRequest,
+  NotificationsRequest,
   Session,
   User,
 } from "@shaperoute/shared-types";
@@ -19,10 +20,12 @@ import {
   changeEmail as emailRequest,
   changePhone as phoneRequest,
 } from "../api/contact";
+import { changeNotifications as notificationsRequest } from "../api/notifications";
 import { editProfile as editRequest } from "../api/profiles";
 import { t } from "../i18n";
 import { profileProblem } from "../profile/profileFields";
 import { contactProblem } from "../settings/contactFields";
+import { notificationsProblem } from "../settings/notificationFields";
 import {
   type Checked,
   checkSignIn,
@@ -72,6 +75,12 @@ export type Account = {
    * as `editProfile` does.
    */
   changePhone: (request: ChangePhoneRequest) => Promise<string | null>;
+  /**
+   * PUT /me/notifications (TASK-185): the notification switches that
+   * change. Nothing is sent yet: the choice is kept. Resolves as
+   * `editProfile` does.
+   */
+  changeNotifications: (request: NotificationsRequest) => Promise<string | null>;
   clearProblem: () => void;
   /**
    * A request sent with `token` elsewhere in the app (the favorites) was
@@ -303,6 +312,15 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
     [change, fetchFn, key],
   );
 
+  const changeNotifications = useCallback(
+    (request: NotificationsRequest) =>
+      change(
+        (url, token) => notificationsRequest(url, token, request, { fetchFn, key }),
+        notificationsProblem,
+      ),
+    [change, fetchFn, key],
+  );
+
   const clearProblem = useCallback(() => setProblem(null), []);
 
   return {
@@ -316,6 +334,7 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
     editProfile,
     changeEmail,
     changePhone,
+    changeNotifications,
     clearProblem,
     sessionEnded: ended,
   };

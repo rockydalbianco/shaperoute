@@ -302,6 +302,12 @@ export const IT: Table = {
   "Wrong password.": "Password sbagliata.",
   "Another account has this email.": "Un altro account ha questa email.",
 
+  // src/settings/NotificationsSetting.tsx, notificationFields.ts
+  "Sgrava does not send notifications yet. Your choice is kept for when it does.":
+    "Sgrava non manda ancora notifiche. La tua scelta resta salvata per quando lo farà.",
+  "Notifications are not available on this API yet.":
+    "Su questa API le notifiche non ci sono ancora.",
+
   // src/profile/SettingsPage.tsx
   "Change email": "Cambia email",
   "Phone number": "Numero di telefono",
@@ -313,8 +319,6 @@ export const IT: Table = {
   Help: "Aiuto",
   Terms: "Termini",
   Privacy: "Privacy",
-  "{name}, coming soon": "{name}, in arrivo",
-  Soon: "Presto",
   ACCOUNT: "ACCOUNT",
   PREFERENCES: "PREFERENZE",
   "Log out": "Esci",

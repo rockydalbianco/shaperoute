@@ -30,6 +30,8 @@ async function show(over: Partial<Account> = {}) {
     signOut: jest.fn(),
     deleteAccount: jest.fn(),
     editProfile: jest.fn(),
+    changeEmail: jest.fn(),
+    changePhone: jest.fn(),
     clearProblem: jest.fn(),
     sessionEnded: jest.fn(),
     ...over,
@@ -48,8 +50,6 @@ test("the account, by name and email", async () => {
 test("the settings to come are named, say «Soon» and take no tap", async () => {
   await show();
   for (const name of [
-    "Change email",
-    "Phone number",
     "Units",
     "Email notifications",
     "Push notifications",
@@ -59,16 +59,37 @@ test("the settings to come are named, say «Soon» and take no tap", async () =>
   ]) {
     expect(screen.getByLabelText(`${name}, coming soon`)).toBeOnTheScreen();
   }
-  // Eight settings to come; every sport is ready («Sport», TASK-189: the
+  // Six settings to come; every sport is ready («Sport», TASK-189: the
   // bike since TASK-190, paddling since TASK-191).
-  expect(screen.getAllByText("Soon")).toHaveLength(8);
-  // Only the picture (TASK-178), the language (TASK-210) and the ways out
-  // are buttons.
-  expect(screen.getAllByRole("button")).toHaveLength(4);
+  expect(screen.getAllByText("Soon")).toHaveLength(6);
+  // Only the picture (TASK-178), the email and the phone number (TASK-183),
+  // the language (TASK-210) and the ways out are buttons.
+  expect(screen.getAllByRole("button")).toHaveLength(6);
   expect(screen.getByRole("button", { name: "Profile picture" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Change email" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Phone number, Add" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Language, English" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Log out" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Delete account" })).toBeOnTheScreen();
+});
+
+test("«Change email» and «Phone number» ask the account (TASK-183)", async () => {
+  const account = await show({
+    changeEmail: jest.fn(async () => null),
+    changePhone: jest.fn(async () => null),
+  });
+  await fireEvent.press(screen.getByRole("button", { name: "Change email" }));
+  await fireEvent.changeText(screen.getByLabelText("new email"), "new@example.com");
+  await fireEvent.changeText(screen.getByLabelText("password"), "the password");
+  await fireEvent.press(screen.getByRole("button", { name: "Save" }));
+  expect(account.changeEmail).toHaveBeenCalledWith({
+    email: "new@example.com",
+    password: "the password",
+  });
+  await fireEvent.press(screen.getByRole("button", { name: "Phone number, Add" }));
+  await fireEvent.changeText(screen.getByLabelText("phone number"), "+39 333 123 4567");
+  await fireEvent.press(screen.getByRole("button", { name: "Save" }));
+  expect(account.changePhone).toHaveBeenCalledWith({ phone: "+393331234567" });
 });
 
 test("«Sport» has «Run» chosen, «Bike» and «Paddle» to choose", async () => {

@@ -562,6 +562,30 @@ export interface User {
    * random UUID, never `id`. Missing from an API older than TASK-116.
    */
   public_id?: string;
+  /**
+   * The phone number (TASK-183), in E.164 ("+393331234567"), or null
+   * without one: told to its owner only. Missing from an API older than
+   * TASK-183.
+   */
+  phone?: string | null;
+}
+
+/**
+ * PUT /me/email (TASK-183): the new address, and the password of the
+ * account. It holds at once; the answer is the User.
+ */
+export interface ChangeEmailRequest {
+  email: string;
+  password: string;
+}
+
+/**
+ * PUT /me/phone (TASK-183): the number with its country code, however it
+ * is spaced ("+39 333 123 4567"); null takes it away. The answer is the
+ * User, with the number in E.164.
+ */
+export interface ChangePhoneRequest {
+  phone: string | null;
 }
 
 /** The limit of a bio, checked by the API too (TASK-116). */

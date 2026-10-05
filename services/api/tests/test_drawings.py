@@ -25,7 +25,7 @@ from route_engine.geo import (
 )
 from route_engine.network import FileSource
 
-from shaperoute_api.accounts import AccountError, Accounts
+from shaperoute_api.accounts import AccountError, Accounts, token_hash
 from shaperoute_api.activities import (
     UNKNOWN_ACTIVITY,
     ActivityRequestBody,
@@ -656,6 +656,34 @@ def migrated_before(database: Database, migration: Path, tmp_path: Path) -> None
     database.migrate(tmp_path)
 
 
+def old_account(database: Database, wall: WallClock) -> dict[str, str]:
+    """The example account and a phone's session, kept as the API of
+    TASK-114 kept them: the code of today reads columns a database before
+    them does not have (the phone number, TASK-183). The header that phone
+    sends."""
+    body = _load("sign-up-request.json")
+    token = "token-of-before"
+    with database.connect() as conn:
+        conn.execute(
+            "WITH made AS (INSERT INTO users"
+            " (email, password_hash, username, confirmed_16_at, created_at)"
+            " VALUES (%s, %s, %s, %s, %s) RETURNING id)"
+            " INSERT INTO sessions (token_hash, user_id, created_at, last_used_at)"
+            " SELECT %s, id, %s, %s FROM made",
+            (
+                body["email"],
+                FAST_HASHER.hash(body["password"]),
+                body["username"],
+                wall.t,
+                wall.t,
+                token_hash(token),
+                wall.t,
+                wall.t,
+            ),
+        )
+    return {"Authorization": f"Bearer {token}"}
+
+
 def old_run(database: Database, key: str = KEY) -> int:
     """The example run, kept as the API of TASK-172 kept it: the code of
     today writes columns a database before them does not have."""
@@ -688,8 +716,7 @@ def test_a_run_saved_before_the_drawings_can_be_published(
 ) -> None:
     database = Database(database_url)
     migrated_before(database, DRAWINGS_MIGRATION, tmp_path)
-    old = api(database, wall)
-    me = signed_up(old)
+    me = old_account(database, wall)
     old_run(database)
     database.migrate()
     client = api(database, wall)
@@ -1012,8 +1039,7 @@ def test_the_migration_keeps_who_saw_each_drawing(
 ) -> None:
     database = Database(database_url)
     migrated_before(database, DETAILS_MIGRATION, tmp_path)
-    old = api(database, wall)
-    me = signed_up(old)
+    me = old_account(database, wall)
     cut = cut_track([tuple(fix["point"]) for fix in run()["track"]])
     line = "LINESTRING(" + ",".join(f"{lon!r} {lat!r}" for lat, lon in cut) + ")"
     published_at = datetime(2026, 10, 2, 21, 40, tzinfo=UTC)

@@ -27,6 +27,8 @@ function account(token: string | null): Account {
     signOut: jest.fn(),
     deleteAccount: jest.fn(),
     editProfile: jest.fn(),
+    changeEmail: jest.fn(),
+    changePhone: jest.fn(),
     clearProblem: jest.fn(),
     sessionEnded: ended,
   };

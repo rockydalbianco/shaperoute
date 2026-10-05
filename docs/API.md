@@ -892,7 +892,8 @@ Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,
 
 - `Session` è `{ "token": "…", "user": User }`; `User` è `id`, `email`,
   `username`, `role` (`user` o `admin`) e `created_at`, più `bio` e
-  `public_id` da TASK-116 («Profile», sotto). Il token è l'unica
+  `public_id` da TASK-116 («Profile», sotto) e `phone` da TASK-183
+  («Email and phone number», sotto). Il token è l'unica
   cosa segreta che l'API dà, e solo qui: l'app lo tiene in
   `expo-secure-store` e lo rimanda come `Authorization: Bearer <token>` a
   `GET /me`, `DELETE /session`, `DELETE /me`, ai preferiti e alle corse
@@ -1178,6 +1179,56 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
   `public_id`: l'app nuova lo legge lo stesso e dice «Editing the profile
   is not available on this API yet.». L'app pubblicata ignora i campi in
   più.
+
+### Email and phone number (TASK-183, ADR-0150)
+
+L'email e il numero di telefono di un account, cambiati dal proprietario.
+Tutti e due vogliono il token: senza, `401 not_signed_in`; senza database,
+`503 accounts_unavailable`. Tipi in `shared-types` (`ChangeEmailRequest`,
+`ChangePhoneRequest`, `User.phone`), esempi in
+`fixtures/change-email-request.json` e `fixtures/change-phone-request.json`;
+il codice in `contact.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/email` | cambiare email: `email`, `password` | `200` `User`, com'è adesso |
+| `PUT /me/phone` | tenere un numero di telefono, o toglierlo: `phone` | `200` `User`, com'è adesso |
+
+- **`User`** (anche in `Session` e `GET /me`) ha in più `phone`: il numero
+  in E.164 (`"+393331234567"`) o `null`. Solo il proprietario lo legge:
+  non è in `PublicProfile`, nella ricerca né negli elenchi (un test lo
+  prova).
+- **`PUT /me/email`**: il nuovo indirizzo (stessa regola dell'iscrizione,
+  salvato in minuscolo) e la **password dell'account**. Vale subito: l'API
+  non manda mail di conferma (ADR-0150). Il telefono resta dentro, le
+  altre sessioni anche; da lì in poi si entra con il nuovo indirizzo. La
+  propria email di adesso è accettata e non cambia niente.
+- **Errori di `PUT /me/email`**: password sbagliata, `403
+  wrong_credentials` «Wrong password.» (non `401`: la sessione vale
+  ancora); le password sbagliate contano con quelle di `POST /session`
+  per l'email di adesso, e dopo 5 in 15 minuti è `429 too_many_requests`
+  con `Retry-After`, qui e all'accesso; l'email di un altro account, `409
+  email_taken` «Another account has this email.»; un indirizzo fuori
+  regola, un campo mancante o in più, `422 invalid_request`. Con un errore
+  non cambia niente. La password non torna mai in una risposta né nei log.
+- **`PUT /me/phone`**: `phone` è il numero **con il prefisso del paese**,
+  comunque sia spaziato (`"+39 333 123 4567"`, `"0039 333-123-4567"`,
+  `"+39 (333) 123.4567"`): spazi, trattini, punti, barre e parentesi si
+  tolgono, «00» davanti vale «+», e resta «+» con 8–15 cifre, la prima non
+  zero. `null`, o un testo vuoto, toglie il numero. `phone` è
+  obbligatorio: `{}` è `422`.
+- **Errori di `PUT /me/phone`**: un numero fuori regola (senza prefisso,
+  con lettere, troppo corto o lungo), `422 invalid_request` «Write the
+  number with its country code, like +39 333 123 4567.», che l'app mostra
+  così com'è; un testo oltre 40 caratteri, un tipo diverso o campi in più,
+  `422 invalid_request`.
+- Il numero **non è provato** (nessun SMS) e quindi **non è unico**: due
+  account possono avere lo stesso, e l'API non dice se un numero è già di
+  qualcuno.
+- **Un'API precedente** non ha i due `PUT` (`404 http_error`) e il suo
+  `User` non ha `phone`: l'app nuova lo legge lo stesso e dice «Changing
+  the email is not available on this API yet.» / «The phone number is not
+  available on this API yet.». L'app pubblicata ignora il campo in più.
 
 ### Drawings (TASK-117, ADR-0159; TASK-208, ADR-0170)
 

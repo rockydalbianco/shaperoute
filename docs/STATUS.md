@@ -50,9 +50,8 @@ In coda, dopo o accanto:
   TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
 - **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
   sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
-  (TASK-178, sotto); restano **TASK-183**
-  cambiare email e numero di telefono (ADR-0150, migrazione: il primo numero libero in main al merge; a cosa
-  serve il numero va chiesto all'utente prima), **TASK-182** le unità di
+  (TASK-178, sotto), email e numero di telefono anche (TASK-183, «In
+  lavorazione»); restano **TASK-182** le unità di
   misura, km o miglia (ADR-0149, solo app, tocca molti file), **TASK-184**
   «Help», «Terms», «Privacy» (dopo TASK-152: testi e contatti), **TASK-185**
   le notifiche email e push (per ultime: serve qualcosa da notificare, un
@@ -486,16 +485,34 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
+- **TASK-183 — Cambiare email e numero di telefono** (ADR-0150; chiesto
+  dall'utente il 2026-10-02 e di nuovo il 2026-10-05, con due scelte: il
+  numero serve a farsi trovare dagli amici che lo hanno già, e l'email
+  cambia subito con la password, senza mail di conferma finché non c'è un
+  servizio di posta). In revisione. **API**: `PUT /me/email` (`email`,
+  `password`; password sbagliata `403`, contata con quelle dell'accesso),
+  `PUT /me/phone` (il numero con il prefisso del paese, tenuto in E.164,
+  `null` lo toglie; non provato e quindi non unico; lo legge solo il
+  proprietario), `User.phone`, migrazione `0016_contact.sql`. **App**: in
+  «Settings» le righe «Change email» e «Phone number» si aprono sotto,
+  nelle cinque lingue. **Aspettano l'utente**: l'aggiornamento del server
+  (migrazione) e poi la pubblicazione, in quest'ordine; i testi nuovi
+  (`tasks/TASK-183.md`, «Esito»). Visto nel simulatore, non su un telefono. Seguiti: la
+  ricerca dalla rubrica (prima va deciso come si prova un numero), la
+  mail di conferma. Poi, nella stessa sessione «Impostazioni», un task
+  per contesto: **TASK-182** (unità), **TASK-184** («Help», «Terms»,
+  «Privacy»), **TASK-185** (gli interruttori delle notifiche).
+
 ## Completato
 
 - **App** — TASK-241: niente punteggio sulle foto dei post del «Feed»
   (ADR-0207; chiesto dall'utente il 2026-10-05). Il riquadro «98 · out of
   100» sopra il disegno non c'è più, nemmeno nei post che «Explore» mostra
-  mentre disegna una città. VoiceOver lo legge ancora: cambiarlo vuole i
-  file delle lingue, che erano di TASK-239. Altrove (fine corsa, «My
-  activities», disegno aperto dal «Profile», post da condividere) il
-  punteggio resta. Esce con la prossima pubblicazione.
-  `tasks/TASK-241.md`.
+  mentre disegna una città (PR #345, merge `ad80385`). **Parte B**
+  (stesso giorno, «sì toglilo anche da VoiceOver»): nemmeno VoiceOver lo
+  legge più, nelle cinque lingue. Altrove (fine corsa, «My activities»,
+  disegno aperto dal «Profile», post da condividere) il punteggio resta.
+  Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

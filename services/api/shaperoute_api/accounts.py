@@ -111,7 +111,7 @@ class SignInRequestBody(BaseModel):
 
 
 # What the API reads of an account for its owner, in the order of UserBody.
-USER_COLUMNS = "id, email, username, role, created_at, bio, public_id"
+USER_COLUMNS = "id, email, username, role, created_at, bio, public_id, phone"
 
 
 class UserBody(BaseModel):
@@ -127,6 +127,9 @@ class UserBody(BaseModel):
     # others open the profile with (GET /users/{public_id}).
     bio: str
     public_id: UUID
+    # The phone number (TASK-183), in E.164, or None without one: told to its
+    # owner only, never part of a profile (contact.py).
+    phone: str | None
 
 
 class SessionBody(BaseModel):

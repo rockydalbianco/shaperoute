@@ -1,9 +1,11 @@
 # TASK-232 — Forme inclinate fino a 45°, con la mappa girata
 
 **Stato**: In lavorazione — parte A (motore e API) in `main` dalla #356
-(`799071a`), non ancora sul server; parti B e C da fare
+(`799071a`) e sul server; parte B (la mappa girata in «Draw» e in corsa,
+la freccia del nord) in Pull Request; B2 («Explore») e C da fare
 **Fase**: 4 · **Branch**: `feat/TASK-232-a-tilt-45` (A),
-`feat/TASK-232-b-turned-map` (B), `feat/TASK-232-c-saved-turn` (C)
+`feat/TASK-232-b-turned-map` (B), `feat/TASK-232-b2-explore-turn` (B2),
+`feat/TASK-232-c-saved-turn` (C)
 **ADR**: ADR-0195 (supera in parte ADR-0038: il limite di 15°)
 
 ## Obiettivo
@@ -107,6 +109,16 @@ chiusa nel codice (il coordinatore, 2026-10-05).
    2026-10-05 («sì va bene»).
 5. I testi nuovi (la bussola per VoiceOver) nelle cinque lingue.
 
+**In due passi** (deciso all'inizio della parte B, 2026-10-05): la parte B
+fa i punti 1, 2, 4 e 5; il punto 3 è la **parte B2**. Un esempio di
+«Explore» non porta `rotation_deg` fino alla mappa
+(`RecommendedRouteDetail` non ce l'ha: va aggiunto in `exampleRoutes.ts`,
+`recommendedRoutes.ts`, `explored.ts`, anche negli esempi tenuti sul
+telefono), e le sue schede disegnano la linea sopra le foto-mappa del
+«Feed» (`feedMapPage.ts`, `FeedMaps.tsx`), che vanno girate allo stesso
+modo: sono file e prove diversi da quelli della mappa, e le foto girate
+servono anche alla parte C.
+
 ## Parte C — i disegni salvati
 
 1. Le corse salvate e i preferiti tengono la rotazione del percorso
@@ -181,11 +193,28 @@ apps/mobile/src/map/mapPage.ts
 apps/mobile/src/map/messages.ts
 apps/mobile/src/map/turnedMap.ts                            (nuovo)
 apps/mobile/src/map/turnedMap.test.ts                       (nuovo)
-apps/mobile/src/explore/RouteCard.tsx
-apps/mobile/src/i18n/                                       (le chiavi nuove)
+apps/mobile/src/map/NorthArrow.tsx, NorthArrow.test.tsx     (nuovi: la freccia del nord)
+apps/mobile/src/map/mapPageTurn.test.ts, MapViewTurn.test.tsx   (nuovi)
+apps/mobile/__tests__/AppTurnedMap.test.tsx                 (nuovo)
+apps/mobile/src/screens/MapScreen.tsx                       (il posto della freccia; libero, detto al coordinatore)
+apps/mobile/src/paddle/useMoveShape.ts                      (la forma lasciata tiene la sua inclinazione; libero)
+apps/mobile/src/i18n/de.ts, es.ts, fr.ts, it.ts             (le chiavi nuove)
 docs/UI.md
+docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-232.md
+```
+
+Parte B2 (da confermare col coordinatore alla partenza):
+
+```
+apps/mobile/App.tsx                                         (la rotazione di un esempio aperto e della sua corsa)
+apps/mobile/src/explore/recommendedRoutes.ts, exampleRoutes.ts, explored.ts
+apps/mobile/src/explore/RouteCard.tsx                       (la linea e la foto-mappa girate)
+apps/mobile/src/explore/CityExamples.tsx, NearbyTowns.tsx, ExploreScreen.tsx   (passano la rotazione alla scheda)
+apps/mobile/src/paddle/PaddleExplore.tsx                    (lo stesso, se un esempio sull'acqua è inclinato)
+apps/mobile/src/feed/feedMapPage.ts, FeedMaps.tsx           (la foto-mappa con un `bearing`)
+docs/UI.md, docs/STATUS.md, docs/tasks/TASK-232.md
 ```
 
 Parte C: da completare all'inizio della parte C, dopo B. Almeno
@@ -245,3 +274,31 @@ migrazione nuova, `apps/mobile/src/activities/fitLines.ts`,
   inclinate»); poi le parti B e C, in un contesto pulito, dopo aver
   sentito il coordinatore (`src/map/*` e la navigazione li tocca anche
   TASK-182 B).
+
+**Parte B, la mappa girata in «Draw» e in corsa** (2026-10-05, ADR-0195
+«Parte B»):
+
+- **La mappa**: `showRoute` porta il `bearing` (`−rotation_deg`,
+  `turnedMap.bearingOf`) e la pagina inquadra il percorso girato; lo tiene
+  mentre segue il corridore e lo ripete a ogni sua mossa. Un percorso
+  senza il campo, o con 0, manda il messaggio di prima.
+- **La freccia del nord** (`NorthArrow.tsx`): un tondo a destra sotto la
+  riga del «←» (in corsa sotto il riquadro della svolta), con una punta e
+  una «N» girate dov'è il nord. Un tocco: nord in alto; un secondo: come il
+  disegno. La pagina dice all'app di quanto è girata la mappa (`turned`),
+  anche con due dita: la freccia compare per ogni mappa girata.
+- **Dove gira**: il percorso disegnato in «Draw» (ogni tessera la sua
+  inclinazione), la sua corsa e la sua fine; la forma lasciata altrove con
+  «Move the shape» resta girata durante l'attesa.
+- **«Move the shape» a mappa girata**: lo spostamento è già quello del
+  dito sullo schermo (`map.unproject`); un test lo copre con la mappa a
+  90°, e la pagina vera lo conferma (100 px a destra a 90° = solo sud).
+- **Testi nuovi**, nelle cinque lingue, per VoiceOver: «North arrow»,
+  «Turns the map north up», «Turns the map like the drawing».
+- **Visto**: la pagina vera con MapLibre nel browser (cuore inclinato di
+  30° dritto, i due tocchi, la corsa girata, lo spostamento), e l'app nel
+  simulatore con l'API del worktree (pesce da 5 km a Trento, inclinato:
+  `out/task-232b/`, tre schermate). Non provato con un dito vero né con
+  una corsa vera.
+- **Non fatto qui**: «Explore» (parte B2) e i disegni salvati (parte C).
+  In corsa la freccia sta sotto la riga «2% drawn», non accanto.

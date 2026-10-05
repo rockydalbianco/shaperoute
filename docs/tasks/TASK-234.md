@@ -1,7 +1,7 @@
 # TASK-234 — «Viene meglio a 12 km»: la distanza dove la forma riesce meglio
 
-**Stato**: In corso — parte A (motore e API) in `main` dalla #327
-(784cc03, 2026-10-05); parte B (app) in PR, i testi da confermare
+**Stato**: In revisione — parte A (motore e API) in `main` dalla #327
+(784cc03, 2026-10-05); parte B (app) in PR, testi confermati dall'utente
 **Fase**: 4 · **Branch**: `feat/TASK-234-better-distance` (A),
 `feat/TASK-234-better-distance-app` (B)
 **ADR**: ADR-0197 (estende ADR-0041)
@@ -117,7 +117,8 @@ coordinatore, 2026-10-05).
 - [x] L'app mostra la riga e «Try N km» solo col campo e dentro le
       distanze di «Draw»; «Try» ridisegna a quella distanza; niente riga
       che rimanda alla distanza di prima.
-- [ ] I testi nelle cinque lingue; l'utente li ha visti.
+- [x] I testi nelle cinque lingue; l'utente li ha visti («sì, i testi
+      vanno bene», 2026-10-05).
 - [x] Test deterministici per motore, API e app (`docs/TESTING.md`):
       motore e API nella parte A, app nella B.
 
@@ -204,9 +205,9 @@ passo 2 resta da valutare dopo.
   sapere, con «Try N km» (lo stesso `onTryDistance` di ADR-0041); la
   legge dalla scelta del motore, quindi resta con qualunque tessera.
   `App.tsx` non è servito.
-- **Testi**, da confermare con l'utente: «This shape / word / outline
-  comes out better at about {km} km.» e «Try {km} km», nelle cinque
-  lingue. «This shape» e non «This heart»: il nome della forma
+- **Testi**, confermati dall'utente nelle cinque lingue («sì, i testi
+  vanno bene», 2026-10-05): «This shape / word / outline comes out better
+  at about {km} km.» e «Try {km} km». «This shape» e non «This heart»: il nome della forma
   cambierebbe genere in italiano, spagnolo, francese e tedesco.
 - Provato nel simulatore con l'API del worktree: cavallo 10 km a Trento,
   la riga «This shape comes out better at about 8 km.» con «Try 8 km», e

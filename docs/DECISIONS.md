@@ -9734,7 +9734,8 @@ Gli esempi della canoa e `engine.zip` sono rifatti solo perché `models.py`
 è cambiato (in `paddleExamples.json` cambia solo `"engine"`).
 
 **Parte B, l'app (2026-10-05)**: l'utente, viste le misure, ha detto «sì,
-fai la parte B come previsto». Deciso dall'agente su delega dell'utente:
+fai la parte B come previsto», e ha confermato i testi nelle cinque
+lingue. Deciso dall'agente su delega dell'utente:
 
 - **«This shape», non «This heart»**: con il nome della forma l'italiano,
   lo spagnolo, il francese e il tedesco dovrebbero accordare l'articolo al

@@ -173,8 +173,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `engine.zip` ed esempi della canoa rifatti. **Misura**: scatta in 8
   percorsi su 129, nessuno dei 12 di riferimento in cache (`MAPS.md`);
   l'utente: «sì, fai la parte B come previsto». **Parte B, l'app**, in PR:
-  la riga sotto le tessere con «Try N km», testi nelle cinque lingue da
-  confermare con l'utente; provata nel simulatore. Il server ha la parte
+  la riga sotto le tessere con «Try N km», testi nelle cinque lingue
+  confermati dall'utente; provata nel simulatore. Il server ha la parte
   A da `main` `fd14cd3` (2026-10-05 08:54Z, ok dell'utente, il
   coordinatore), con `draw_examples` rilanciato: la B si pubblica appena
   è in `main`. `tasks/TASK-234.md`.

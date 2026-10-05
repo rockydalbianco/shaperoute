@@ -9616,9 +9616,10 @@ alto.
 ## ADR-0196 — «Explore» della canoa come la corsa: l'elenco dei laghi dentro l'app, il più vicino per primo, forme più corte sui laghi piccoli
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-233 · «tutti
-i laghi» e «come la corsa» sono richieste dell'utente, e le forme più
-corte sui laghi piccoli una sua scelta sui campioni (2026-10-05); il resto
-è deciso dall'agente su delega dell'utente, da confermare
+i laghi» e «come la corsa» sono richieste dell'utente; le forme più corte
+sui laghi piccoli (sui campioni) e «Near me» acceso da subito sono sue
+scelte del 2026-10-05; il resto è deciso dall'agente su delega dell'utente,
+da confermare
 
 **Contesto**: con «Paddle», «Explore» aveva quattro luoghi scelti a mano
 (ADR-0169, ADR-0189) e «Near me», che disegnava dalla partenza e funzionava

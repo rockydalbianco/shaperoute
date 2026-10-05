@@ -21,6 +21,9 @@ Una domanda per volta, ognuna con una proposta:
 1. **2026-10-05 — le forme più corte sui laghi piccoli**: «sì, vanno bene
    le forme più corte». Un lago che non tiene le forme da 2 km le ha da
    1,5 o da 1 km, viste sui campioni di Toblino, Serraia e Tovel.
+2. **2026-10-05 — «Near me» acceso da subito**: «sì, acceso da subito come
+   nella corsa». Aprendo «Explore» con «Paddle» e una partenza, la pagina
+   mostra il lago più vicino e chiede subito le sue otto forme.
 
 ## Contesto da leggere
 
@@ -151,8 +154,8 @@ con `water_extract --extract`, come quelli di TASK-225.
 **Da dove riprendere** (parte B):
 
 1. Le risposte dell'utente alle scelte fatte su delega (ADR-0196) ancora
-   aperte: «Near me» acceso da subito, i bacini artificiali nell'elenco, la
-   frase cambiata e i tre testi nuovi. Le forme più corte sono confermate
+   aperte: i bacini artificiali nell'elenco, la frase cambiata e i tre
+   testi nuovi. Le forme più corte e «Near me» acceso sono confermati
    («Scelte dell'utente»).
 2. Con l'ok dell'utente, dal coordinatore: sul server, `osmium export`
    delle acque dall'estratto dell'Italia, `lake_catalog --boxes`, poi

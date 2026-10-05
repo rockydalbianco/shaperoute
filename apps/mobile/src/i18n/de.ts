@@ -199,7 +199,6 @@ export const DE: Table = {
 
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "ORTE IN DER NÄHE",
-  "{km} km away": "{km} km entfernt",
   "{town}, {km} km away": "{town}, {km} km entfernt",
 
   // src/paddle/PaddleExplore.tsx

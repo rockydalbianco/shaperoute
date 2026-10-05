@@ -12,8 +12,9 @@ They are OpenStreetMap's `place=city`, `place=town` and `place=village`,
 through Geoapify's Places API with the key of the place search (places.py):
 for a city or a town, the same points and the same labels GET /cities gives
 for those names, so a town tapped here and the same town typed are one
-city, with the same examples kept (route_store.py). The service is asked from the middle of a square of about
-1 km, not from the user's own position, and the answer is kept a day.
+city, with the same examples kept (route_store.py). The service is asked
+from the middle of a square of about 1 km, not from the user's own
+position, and the answer is kept a day.
 """
 
 from __future__ import annotations

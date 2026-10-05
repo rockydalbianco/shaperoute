@@ -197,7 +197,6 @@ export const IT: Table = {
 
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "PAESI VICINI",
-  "{km} km away": "a {km} km",
   "{town}, {km} km away": "{town}, a {km} km",
 
   // src/paddle/PaddleExplore.tsx

@@ -103,7 +103,8 @@ chiusa nel codice (il coordinatore, 2026-10-05).
    rotation_deg`. Il percorso fatto (giallo pieno) e quello da fare
    (tratteggiato che lampeggia, TASK-224) sono linee della mappa:
    girano con lei e restano come oggi. La freccia del nord c'è anche
-   qui, con gli stessi due tocchi.
+   qui, con gli stessi due tocchi. Confermato dall'utente il
+   2026-10-05 («sì va bene»).
 5. I testi nuovi (la bussola per VoiceOver) nelle cinque lingue.
 
 ## Parte C — i disegni salvati

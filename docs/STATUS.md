@@ -215,14 +215,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Mancano il cerchio da 20 km, Levico e Padova, quando Overpass riapre. Il
   miglioramento delle forme in bici è TASK-206, qui sotto. Da dove
   riprendere: il task file, «Esito», «I campioni».
-- **TASK-217 — La voce confronta ogni km col precedente** (Todo; chiesto
-  e scelto dall'utente il 2026-10-03): dopo la frase di ogni km, «Questo
+- **TASK-217 — La voce confronta ogni km col precedente** (ADR-0180;
+  chiesto e scelto dall'utente il 2026-10-03; codice scritto il
+  2026-10-05, PR #308): dopo la frase di ogni km, dal secondo, «Questo
   chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2
   s «Stesso passo del chilometro precedente.»; al primo km niente. Con e
-  senza percorso; le miglia con TASK-182. In bici ogni 10 km e senza
-  numeri («Ultimi 10 km più veloci dei 10 precedenti.»), con la voce dei
-  km in bici anch'essa ogni 10 km (TASK-216). Il codice dopo la #259 e TASK-206
-  C (stessi file della voce). `tasks/TASK-217.md`.
+  senza percorso, con i secondi della fine corsa (`splits`), pause
+  escluse. In bici ogni 10 km da 20 km e senza numeri («Ultimi 10
+  chilometri più veloci dei 10 precedenti.»). Tutto in
+  `src/navigation/kmCompare.ts`. **Da confermare dall'utente**: le frasi
+  in tedesco, spagnolo e francese, e in bici «stessa velocità» entro 0,5
+  km/h (frase e soglia, proposta dell'agente). Le forme con le miglia le
+  aggiunge TASK-182. Solo app: esce con la prossima pubblicazione, con
+  l'ok dell'utente; da provare correndo. `tasks/TASK-217.md`.
 - **TASK-232 — Forme inclinate fino a 45°, con la mappa girata**
   (ADR-0195; Todo, chiesto dall'utente il 2026-10-05): il motore inclina
   ogni forma fino a ±45° quando segue meglio le strade (oggi ±15°,
@@ -230,7 +235,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   la mappa perché il disegno si veda dritto. Parte A (motore e API) dopo
   TASK-226, parti B e C (app, corse salvate) dopo TASK-119 B. Scelto
   dall'utente: una freccia del nord che rimette il nord in alto, e
-  durante la corsa la mappa resta girata come il disegno.
+  durante la corsa la mappa resta girata come il disegno, con le linee
+  del percorso fatto e da fare (TASK-224) che girano con lei.
   `tasks/TASK-232.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
@@ -344,10 +350,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   migrazione `0015_reactions.sql`, `GET /drawings/{id}/reactions`, `PUT`
   e `DELETE /drawings/{id}/reaction`; il super like scrive il suo
   commento nella stessa transazione, dal filtro di TASK-213. Non sul
-  server: migrazione, quindi l'ok dell'utente. Poi la **parte B**, l'app
-  (`DrawingCard.tsx` ok dal coordinatore; `MapView.tsx`, `mapPage.ts`,
-  `App.tsx` da chiedere; TASK-231 può toccare `DrawingCard.tsx`). Da dove
-  riprendere: `tasks/TASK-119.md`, «Esito».
+  server: migrazione, quindi l'ok dell'utente. **Parte B, l'app**, fatta
+  il 2026-10-05 (branch `feat/TASK-119-b-reactions-app`): sotto un
+  disegno aperto, accanto al pulsante dei commenti, la propria reazione,
+  le tre più usate e il totale; il tocco apre la barra delle sei; le
+  emoji si vedono subito e tornano com'erano se l'API non le tiene; il
+  doppio tocco sulla mappa del disegno (che lì non fa più lo zoom) o il
+  cuore nella barra aprono il foglio «Super like» con il cuore grande e
+  il commento obbligatorio. Provata nel simulatore con un'API locale, non
+  con le dita. **Aspettano l'utente**: la conferma dei testi (task file,
+  «Esito»), l'aggiornamento del server con la `0015` e la pubblicazione,
+  la prova sull'iPhone con due account. Finché il server non ha le
+  reazioni l'app pubblicata non le mostra. Da dove riprendere:
+  `tasks/TASK-119.md`, «Esito».
 
 - **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:
   subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API

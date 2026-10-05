@@ -43,7 +43,10 @@ export type ToPage =
   | { type: "follow"; lngLat: LngLat; heading: number | null }
   | { type: "stopFollow" }
   | { type: "showStops"; stops: StopFeature[] }
-  | { type: "clearStops" };
+  | { type: "clearStops" }
+  /** With `on`, a double tap is told to the app and no longer zooms the
+   * map (TASK-119); two fingers still do. */
+  | { type: "setDoubleTap"; on: boolean };
 
 /** A place of a themed route on the map (TASK-129). */
 export type StopFeature = { name: string; lngLat: LngLat; passed: boolean };
@@ -53,6 +56,8 @@ export type FromPage =
   | { type: "ready" }
   /** The first tiles are drawn: the map has finished loading (TASK-058). */
   | { type: "loaded" }
+  /** A double tap on the map, while the app asked for them (TASK-119). */
+  | { type: "doubleTap" }
   | { type: "error"; message: string };
 
 export function setPosition(point: LatLon): ToPage {
@@ -169,6 +174,15 @@ export function showOthers(routes: LatLon[][]): ToPage {
   return { type: "showOthers", lines: routes.map((points) => points.map(toLngLat)) };
 }
 
+/**
+ * Asks the map for its double taps, in place of its zoom on a double tap
+ * (TASK-119): on a drawing they are the super like. `false` gives the zoom
+ * back.
+ */
+export function setDoubleTap(on: boolean): ToPage {
+  return { type: "setDoubleTap", on };
+}
+
 /** JavaScript that hands a message to the page (see `mapPage.ts`). */
 export function pageScript(message: ToPage): string {
   // The trailing `true` is what injectJavaScript expects as a result.
@@ -186,7 +200,11 @@ export function parsePageMessage(data: string): FromPage | null {
   if (typeof message !== "object" || message === null || !("type" in message)) {
     return null;
   }
-  if (message.type === "ready" || message.type === "loaded") {
+  if (
+    message.type === "ready" ||
+    message.type === "loaded" ||
+    message.type === "doubleTap"
+  ) {
     return { type: message.type };
   }
   if (

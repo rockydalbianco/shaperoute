@@ -1,4 +1,4 @@
-import type { Phrasebook, Place } from "./phrasebook";
+import { capital, type Phrasebook, type Place } from "./phrasebook";
 
 /** "auf den Fußweg" after a turn, "auf dem Fußweg" at the start: German
  * changes the article. */
@@ -68,6 +68,16 @@ export const DE: Phrasebook = {
   kilometre: (km, time, pace) =>
     `${units(km, "Ein Kilometer", "Kilometer")}. Zeit: ${time}. Durchschnittstempo: ${pace} pro Kilometer.`,
   cheer: "Los, volle Kraft voraus!",
+  // Each kilometre against the one before (TASK-217).
+  kmFaster: (by) => `${capital(by)} schneller als der letzte Kilometer.`,
+  kmSlower: (by) => `${capital(by)} langsamer als der letzte Kilometer.`,
+  kmSamePace: "Gleiches Tempo wie der letzte Kilometer.",
+  rideFaster: (km) =>
+    `Die letzten ${km} Kilometer waren schneller als die ${km} davor.`,
+  rideSlower: (km) =>
+    `Die letzten ${km} Kilometer waren langsamer als die ${km} davor.`,
+  rideSameSpeed: (km) =>
+    `Die letzten ${km} Kilometer waren so schnell wie die ${km} davor.`,
   rideKilometres: (km, time, speed) =>
     `${units(km, "Ein Kilometer", "Kilometer")}. Zeit: ${time}. Durchschnittsgeschwindigkeit: ${speed} Kilometer pro Stunde.`,
   // The bike on foot (TASK-206).

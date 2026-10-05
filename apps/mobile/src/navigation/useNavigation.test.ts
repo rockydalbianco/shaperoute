@@ -163,6 +163,54 @@ test("along a route too, the voice says each kilometre (TASK-169)", async () => 
   await unmount();
 });
 
+test("along a route too, each kilometre is compared with the one before (TASK-217)", async () => {
+  clearRun();
+  jest.mocked(Speech.speak).mockClear();
+  const start: LatLon = [46.0122, 11.2986];
+  const metre = 1 / 111_195;
+  const route: LatLon[] = [start, [start[0] + 4000 * metre, start[1]]];
+  const NO_DIRECTIONS: Direction[] = [];
+  let onPosition: (position: Location.LocationObject) => void = () => {};
+  jest
+    .mocked(Location.requestForegroundPermissionsAsync)
+    .mockResolvedValue({ granted: true } as Location.LocationPermissionResponse);
+  jest
+    .mocked(Location.watchPositionAsync)
+    .mockImplementation(async (_options, callback) => {
+      onPosition = callback;
+      return { remove: jest.fn() };
+    });
+  const position = (northM: number, seconds: number) =>
+    ({
+      coords: { latitude: start[0] + northM * metre, longitude: start[1], accuracy: 5 },
+      timestamp: seconds * 1000,
+    }) as Location.LocationObject;
+
+  const { unmount } = await renderHook(() => useNavigation(route, NO_DIRECTIONS, true));
+  // 5:00, then 5:08, then 5:07: slower, then the same pace.
+  await act(async () => {
+    skipCountdown();
+    for (let m = 0; m <= 1000; m += 50) {
+      onPosition(position(m, m * 0.3));
+    }
+    for (let m = 1050; m <= 2000; m += 50) {
+      onPosition(position(m, 300 + (m - 1000) * 0.308));
+    }
+    for (let m = 2050; m <= 3050; m += 50) {
+      onPosition(position(m, 608 + (m - 2000) * 0.307));
+    }
+  });
+  const said = jest.mocked(Speech.speak).mock.calls.map(([text]) => text);
+  expect(said.filter((text) => /kilometre/.test(text))).toEqual([
+    expect.stringMatching(/^1 kilometre\. /),
+    expect.stringMatching(/^2 kilometres\. /),
+    "8 seconds slower than the last kilometre.",
+    expect.stringMatching(/^3 kilometres\. /),
+    "Same pace as the last kilometre.",
+  ]);
+  await unmount();
+});
+
 test("the voice speaks the language chosen for it; the banner stays the app's (TASK-209)", async () => {
   clearRun();
   saveVoiceChoice({ language: "it", voices: {} });

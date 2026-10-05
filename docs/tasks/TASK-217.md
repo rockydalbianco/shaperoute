@@ -1,7 +1,7 @@
 # TASK-217 — La voce confronta ogni km col precedente
 
-**Stato**: Todo (chiesto e scelto dall'utente il 2026-10-03; il codice
-dopo la #259 e dopo TASK-206 C)
+**Stato**: In review (2026-10-05) — codice e documenti scritti, PR #308.
+Solo app: esce con la prossima pubblicazione, con l'ok dell'utente.
 **Fase**: 4 · **Branch**: `feat/TASK-217-km-compare-voice`
 **Dipende da**: TASK-209 (la voce in cinque lingue, `src/voice/`, PR
 #259), TASK-206 C (tocca gli stessi file della voce)
@@ -80,16 +80,16 @@ secondo» / «1 second» (le forme di `seconds` del `Phrasebook`).
 
 ## Criteri di accettazione
 
-- [ ] Dal secondo km in poi, dopo la frase del km, la voce dice di quanti
+- [x] Dal secondo km in poi, dopo la frase del km, la voce dice di quanti
       secondi il km è stato meglio o peggio del precedente, o «stesso
       passo» entro 2 s; al primo km niente.
-- [ ] Le frasi italiane e inglesi sono quelle approvate; le altre tre
+- [x] Le frasi italiane e inglesi sono quelle approvate; le altre tre
       lingue ci sono, segnate «da confermare».
-- [ ] Vale con un percorso e senza.
-- [ ] In bici il confronto arriva ogni 10 km (a 20 e 30 km), in velocità
+- [x] Vale con un percorso e senza.
+- [x] In bici il confronto arriva ogni 10 km (a 20 e 30 km), in velocità
       e senza numeri (con TASK-216).
-- [ ] Le pause non contano nel tempo di un km.
-- [ ] Test deterministici verdi; `typecheck`, `lint`, `format:check`
+- [x] Le pause non contano nel tempo di un km.
+- [x] Test deterministici verdi; `typecheck`, `lint`, `format:check`
       puliti.
 
 ## File toccati
@@ -112,6 +112,27 @@ docs/STATUS.md
 docs/tasks/TASK-217.md
 ```
 
+Toccati davvero (2026-10-05, con l'ok del coordinatore per quelli non
+previsti):
+
+```
+apps/mobile/src/navigation/kmCompare.ts          (nuovo: tutto il confronto)
+apps/mobile/src/navigation/kmCompare.test.ts     (nuovo)
+apps/mobile/src/voice/kmWords.test.ts            (nuovo: le frasi nelle cinque lingue)
+apps/mobile/src/voice/{phrasebook,en,it,de,es,fr}.ts
+apps/mobile/src/navigation/useNavigation.ts
+apps/mobile/src/navigation/useNavigation.test.ts
+apps/mobile/src/navigation/useFreeRun.ts
+apps/mobile/src/navigation/useFreeRun.test.ts
+apps/mobile/src/navigation/rideRun.test.ts       (TASK-216, chiusa: la riga nuova a 20 km
+                                                  e «Same pace…» al secondo km della corsa)
+docs/UI.md, docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-217.md
+```
+
+Non toccati, benché previsti: `freeRun.ts`, `freeRun.test.ts`,
+`runMetrics.ts` (il confronto usa `splits` così com'è) e `words.test.ts`
+(le frasi nuove hanno il loro file di test, come `rideWords.test.ts`).
+
 ## Fuori scope
 
 - Dire il tempo del singolo km (scartato dall'utente).
@@ -120,4 +141,44 @@ docs/tasks/TASK-217.md
 
 ## Esito
 
-*(da compilare)*
+### 2026-10-05
+
+Fatto come «Cosa fare», con l'ADR-0180.
+
+- **Il calcolo** è in `src/navigation/kmCompare.ts`, un file nuovo:
+  `kmChangeS` prende la differenza da `splits` (`runMetrics.ts`), la
+  stessa della colonna «Change» di «Data» e della fine corsa, arrotondata
+  al secondo; `kmComparison` sceglie la frase («stesso passo» entro
+  `SAME_PACE_S` = 2 s, compresi, sul numero arrotondato). Al primo km
+  niente.
+- **Le frasi** nel `Phrasebook` e nelle cinque tabelle: `kmFaster`,
+  `kmSlower`, `kmSamePace`, e per la bici `rideFaster`, `rideSlower`,
+  `rideSameSpeed`. Inglese e italiano come approvati; tedesco, spagnolo e
+  francese scritti dall'agente, **da confermare** (in `UI.md`, «Correre
+  senza percorso»). Da un minuto in su la differenza è detta come un
+  tempo («1 minute 15 seconds faster…»).
+- **Dette subito dopo la frase del km**, come frase a parte, con un
+  percorso (`useNavigation.ts`) e senza (`useFreeRun.ts`), nella lingua
+  della voce di quel momento. La frase del km non cambia; al quinto km il
+  confronto viene dopo l'incitamento. Una corsa che riprende non ridice
+  niente.
+- **In bici** (`rideComparison`): ogni 10 km da 20 km, gli ultimi 10
+  contro i 10 prima, in velocità e senza numeri; «stessa velocità» entro
+  0,5 km/h (`SAME_SPEED_KMH`), frase e soglia **da confermare**. «km» è
+  detto per intero («Ultimi 10 chilometri più veloci dei 10
+  precedenti.»): la voce del telefono può leggere male le sigle.
+- **Le miglia**: TASK-182 non è ancora in `main`, quindi le forme con
+  «miglio» / «mile» le aggiunge TASK-182 insieme al resto della voce in
+  miglia, e lì si decide l'intervallo della bici.
+- **Test**: le frasi nelle cinque lingue (`kmWords.test.ts`); il primo km
+  senza confronto, più veloce, più lento, il limite dei 2 s (2 s «stesso
+  passo», 3 s no, e l'arrotondamento), la pausa che non conta, gli stessi
+  secondi di `changeLabel`, la bici a 10, 20 e 30 km e il limite di 0,5
+  km/h (`kmCompare.test.ts`); le due corse dal vero, la lingua della
+  voce e la corsa che riprende (`useFreeRun.test.ts`,
+  `useNavigation.test.ts`, `rideRun.test.ts`). 210 file di test, 1778
+  test verdi; `typecheck`, `lint`, `format:check` puliti.
+
+**Da confermare dall'utente**: le frasi in tedesco, spagnolo e francese;
+in bici «stessa velocità» (frase e 0,5 km/h). **Da provare** correndo
+con l'iPhone, dopo la prossima pubblicazione.

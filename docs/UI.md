@@ -2174,8 +2174,9 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     confermare.
 - **I laghi sul server**: il server ha l'acqua dei quattro luoghi
   (TASK-225) e, dal 2026-10-05, di ogni lago dell'elenco (TASK-233: 210
-  file in `data/cache/water/`). Le spiagge di TASK-245 vogliono altri 27
-  file (22,6 MB), uno a paese: tengono ogni partenza entro 3 km dal paese.
+  file in `data/cache/water/`). Le spiagge di TASK-245 hanno altri 27
+  file (22,6 MB, sul server dal 2026-10-05), uno a paese: tengono ogni
+  partenza entro 3 km dal paese.
   Altrove, per esempio al mare lontano dai posti dell'elenco,
   la scarica da Overpass, se risponde, e la prima volta
   ci mette minuti, altrimenti «Map data for this area could not be

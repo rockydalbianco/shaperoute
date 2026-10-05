@@ -1,7 +1,8 @@
 # TASK-245 — Altre spiagge per «Paddle», oltre Jesolo e Riccione
 
 **Stato**: In corso (2026-10-05) — PR #363; comando, elenco e prove fatti
-sul Mac (29 posti su 29); manca l'acqua sul server, prima del merge
+sul Mac (29 posti su 29); l'acqua è sul server (27 file), non ancora
+provata dentro l'API
 **Fase**: 4 · **Branch**: `feat/TASK-245-more-beaches`
 **Dipende da**: TASK-225 (l'acqua da un estratto), TASK-233 (l'elenco dei
 laghi, `waterSpots.ts`), TASK-240 (laghi e spiagge in «Another place»)
@@ -203,15 +204,32 @@ propongono niente, «via» da sola propone «Viareggio», «lago di lev» e
 Test nuovi con le spiagge di più parole («forte dei marmi», «san vito»,
 «sestri lev»). `searchSpots` di «Explore» non cambia.
 
+### 2026-10-05, l'acqua sul server
+
+Ok dell'utente nella sessione del task («ok, copia l'acqua sul server») e
+«via» del coordinatore, dopo l'aggiornamento del server delle 12:02Z e
+mentre girava `draw_examples`, che non è stato fermato.
+
+- **27 file, 22,6 MB**, copiati in una cartella d'appoggio
+  (`data/water-incoming-task245/`, poi tolta, vuota) e spostati uno per
+  uno con `mv -n` in `/root/shaperoute/data/cache/water/`: 27 spostati,
+  nessuno già presente, nessuno sovrascritto. La cartella aveva 220 file
+  (71 MB), ora ne ha **247 (93 MB)**, tutti di 10001:10001 con permessi
+  644. Nessun riavvio.
+- **Le impronte coincidono**: lo SHA-256 dei 27 file sul server è quello
+  dei file del Mac su cui il motore ha provato i 29 posti.
+- **La prova dentro il container dell'API non è stata fatta**: il cuore da
+  2 km da due spiagge nuove, chiesto all'API dal container, è stato negato
+  dai permessi della sessione (lettura in produzione con la chiave). Resta
+  da fare, da chi ha il permesso o dall'utente sul telefono dopo la
+  pubblicazione: una spiaggia nuova scelta in «Explore» con «Paddle».
+
 **Da dove riprendere** (2026-10-05):
 
 1. La PR è la **#363** (jest 2204 verdi, `typecheck`, `lint`,
    `format:check`, ruff e black in locale).
-2. **L'ok dell'utente per il server** (27 file, 22,6 MB) e il «via» del
-   coordinatore. Poi: copiare `out/task245-beaches/new/water/*.json` in
-   una cartella d'appoggio del server (tar su ssh), spostarli uno per uno
-   in `/root/shaperoute/data/cache/water/` con `mv -n`, proprietario e
-   permessi come gli altri, nessun riavvio; provare dentro il container
-   dell'API un cuore da 2 km da un punto dell'elenco.
-3. «#NNN pronta» al coordinatore, dicendo se l'acqua è già sul server;
-   niente merge senza il suo «merge NNN».
+2. L'acqua è sul server; manca solo la prova dentro l'API (sopra): la
+   decide l'utente.
+3. «#363 pronta» al coordinatore; niente merge senza il suo «merge 363».
+   Dopo il merge: task `Done`, STATUS in «Completato», branch e worktree
+   tolti.

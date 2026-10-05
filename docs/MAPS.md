@@ -186,7 +186,8 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   1 km. Un paese senza un punto così resta fuori, e il comando dice
   perché. Dopo, Prettier sul file. Il 2026-10-05
   (`italy-260930-water.osm.pbf`): 29 paesi su 29 a 2 km, tutti con le otto
-  forme di «Explore»; 27 file d'acqua nuovi per 22,6 MB (Rimini e
+  forme di «Explore»; 27 file d'acqua nuovi per 22,6 MB, sul server dallo
+  stesso giorno (Rimini e
   Cavallino stanno nei file di Riccione e di Jesolo, TASK-225); 4 minuti
   per scrivere l'acqua e 1 per le prove, sul Mac.
   **Overpass e i laghi**: la prima risposta vera alla query (dal server,

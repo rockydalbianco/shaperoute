@@ -160,11 +160,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Another place», dove ora solo l'ultima parola scritta vale come inizio
   di un nome («via Roma» non propone «Viareggio»). **29 posti su 29**
   tengono le forme a 2 km, con tutte e otto le forme di «Explore»; nessuno
-  scartato. **Il server vuole 27
-  file d'acqua nuovi, 22,6 MB**, pronti sul Mac in
-  `out/task245-beaches/new/water/`: si copiano con l'ok dell'utente e il
-  via del coordinatore. **L'app non si pubblica prima che l'acqua sia sul
-  server.** Da dove riprendere: `tasks/TASK-245.md`, «Esito».
+  scartato. **L'acqua è sul server dal 2026-10-05**: 27 file nuovi,
+  22,6 MB, in `data/cache/water/` (247 file, 93 MB), senza riavvio, con
+  le impronte uguali a quelle provate sul Mac; la prova di una spiaggia
+  nuova dentro l'API non è stata fatta (negata dai permessi della
+  sessione). Da dove riprendere: `tasks/TASK-245.md`, «Esito».
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

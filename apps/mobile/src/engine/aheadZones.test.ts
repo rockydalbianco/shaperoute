@@ -112,14 +112,43 @@ function cities(failing: string[] = []) {
   });
 }
 
+/** A server before TASK-236: no towns near. */
+const noNearby = async (): Promise<Place[] | null> => null;
+// Within 20 km of Trento, without a zone on the server.
+const LEVICO: Place = { label: "Levico Terme", point: [46.0117, 11.302] };
+
 const at = (time: number) => () => time;
 const point = ([lat, lon]: LatLon, ahead = " ahead") => `${lat},${lon}${ahead}`;
 
-test("the cities chosen last come first, then the featured, nearest first", () => {
+test("the towns near come first, then the cities chosen last, then the featured, nearest first", () => {
   expect(
-    aheadPoints(HERE, [VERONA], [CENTRES.Paris, CENTRES.Rome, CENTRES.Milan]),
-  ).toEqual([VERONA.point, CENTRES.Milan, CENTRES.Rome, CENTRES.Paris]);
-  expect(aheadPoints(HERE, [], [])).toEqual([]);
+    aheadPoints(HERE, [LEVICO], [VERONA], [CENTRES.Paris, CENTRES.Rome, CENTRES.Milan]),
+  ).toEqual([LEVICO.point, VERONA.point, CENTRES.Milan, CENTRES.Rome, CENTRES.Paris]);
+  expect(aheadPoints(HERE, [], [], [])).toEqual([]);
+});
+
+test("the towns near the phone are asked before any other city", async () => {
+  aroundThePhone();
+  const { asked, download } = server([TRENTO, MILAN, ROME]);
+  const nearby = jest.fn(async (): Promise<Place[] | null> => [LEVICO, DUOMO]);
+  expect(
+    await downloadAhead(API, HERE, "foot", {
+      now: at(1_000),
+      download,
+      search: cities(),
+      nearby,
+      recent: () => [VERONA],
+    }),
+  ).toBe("done");
+  expect(nearby).toHaveBeenCalledWith(API, HERE);
+  // The Duomo is in Trento's zone: not asked.
+  expect(asked).toEqual([
+    point(LEVICO.point),
+    point(VERONA.point),
+    point(CENTRES.Milan),
+    point(CENTRES.Rome),
+    point(CENTRES.Paris),
+  ]);
 });
 
 test("a round asks each city once, as a zone ahead, and keeps what it learnt", async () => {
@@ -131,6 +160,7 @@ test("a round asks each city once, as a zone ahead, and keeps what it learnt", a
       now: at(1_000),
       download,
       search,
+      nearby: noNearby,
       recent: () => [DUOMO, VERONA],
     }),
   ).toBe("done");
@@ -159,6 +189,7 @@ test("after a whole round, the next waits a day, and asks only what is missing",
       now: at(time),
       download,
       search,
+      nearby: noNearby,
       recent: () => [VERONA],
     });
   expect(await round(1_000)).toBe("done");
@@ -183,6 +214,7 @@ test("past the server's cap, nothing more until Retry-After, then on", async () 
       now: at(time),
       download,
       search,
+      nearby: noNearby,
       recent: () => [],
     });
   expect(await round(1_000)).toBe("later");
@@ -202,6 +234,7 @@ test("past the server's cap, nothing more until Retry-After, then on", async () 
       now: at(3_601_000),
       download: after.download,
       search,
+      nearby: noNearby,
       recent: () => [],
     }),
   ).toBe("done");
@@ -219,6 +252,7 @@ test("a download cut short stops the round; the next opening goes on", async () 
       now: at(1_000),
       download: offline,
       search: cities(),
+      nearby: noNearby,
       recent: () => [],
     }),
   ).toBe("stopped");
@@ -231,6 +265,7 @@ test("a download cut short stops the round; the next opening goes on", async () 
       now: at(2_000),
       download,
       search: cities(),
+      nearby: noNearby,
       recent: () => [],
     }),
   ).toBe("done");
@@ -245,6 +280,7 @@ test("a centre that did not come is asked again next opening", async () => {
       now: at(1_000),
       download,
       search,
+      nearby: noNearby,
       recent: () => [],
     });
   expect(await round(cities(["Milan"]))).toBe("stopped");
@@ -266,6 +302,7 @@ test("close to 2 GB, nothing is downloaded ahead", async () => {
       now: at(1_000),
       download,
       search: cities(),
+      nearby: noNearby,
       recent: () => [VERONA],
     }),
   ).toBe("full");
@@ -285,6 +322,7 @@ test("one round at a time", async () => {
     now: at(1_000),
     download: slow,
     search: cities(),
+    nearby: noNearby,
     recent: () => [VERONA],
   };
   const first = downloadAhead(API, HERE, "foot", options);

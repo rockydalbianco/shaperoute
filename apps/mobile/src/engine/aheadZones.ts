@@ -2,6 +2,7 @@ import type { LatLon } from "@shaperoute/shared-types";
 import { File, Paths } from "expo-file-system";
 
 import { searchCities } from "../explore/cities";
+import { fetchNearbyCities } from "../explore/nearbyCities";
 import { FEATURED_CITIES } from "../explore/presets";
 import { loadRecentCities } from "../explore/recentCities";
 import { metresBetween } from "../map/coordinates";
@@ -20,7 +21,8 @@ import {
  * The zones downloaded ahead (TASK-214 part B2, ADR-0177; the user's choice
  * 4, point 2): after the zones around the phone, slowly, one at a time, the
  * zones of the cities the user may draw in next, up to 2 GB. First the
- * cities chosen last in «Explore», then its featured cities, nearest first.
+ * towns near the phone (GET /nearby-cities, TASK-236), then the cities
+ * chosen last in «Explore», then its featured cities, nearest first.
  * Only the network of the sport of «Settings». Without a notice, on any
  * network (the user's choices of 2026-10-03).
  *
@@ -105,17 +107,23 @@ function saveAhead(state: AheadState): void {
   }
 }
 
-/** Where to download ahead, in order: the cities chosen last, as «Explore»
- * keeps them, then the featured ones, nearest to `here` first. */
+/** Where to download ahead, in order: the towns near `here`, nearest first
+ * as the API gives them, the cities chosen last, as «Explore» keeps them,
+ * then the featured ones, nearest to `here` first. */
 export function aheadPoints(
   here: LatLon,
+  nearby: readonly Place[],
   recent: readonly Place[],
   featured: readonly LatLon[],
 ): LatLon[] {
   const byDistance = [...featured].sort(
     (a, b) => metresBetween(here, a) - metresBetween(here, b),
   );
-  return [...recent.map((place) => place.point), ...byDistance];
+  return [
+    ...nearby.map((place) => place.point),
+    ...recent.map((place) => place.point),
+    ...byDistance,
+  ];
 }
 
 let running = false;
@@ -123,7 +131,9 @@ let running = false;
 /**
  * One round of zones ahead of `network`, from `here`; never throws. The
  * centres of the featured cities come from GET /cities the first time, as
- * a tap on their chip in «Explore», then from the phone.
+ * a tap on their chip in «Explore», then from the phone. Without an answer
+ * from GET /nearby-cities (a server before TASK-236, no Geoapify) the round
+ * goes on without the towns near: they come with tomorrow's round.
  */
 export async function downloadAhead(
   baseUrl: string,
@@ -134,11 +144,13 @@ export async function downloadAhead(
     download = downloadZone,
     search = searchCities,
     recent = loadRecentCities,
+    nearby = fetchNearbyCities,
   }: {
     now?: () => number;
     download?: typeof downloadZone;
     search?: typeof searchCities;
     recent?: () => Place[];
+    nearby?: (baseUrl: string, near: LatLon) => Promise<Place[] | null>;
   } = {},
 ): Promise<AheadOutcome> {
   if (running) {
@@ -154,6 +166,7 @@ export async function downloadAhead(
     if (now() < prefetchPausedUntil()) {
       return "later";
     }
+    const near = (await nearby(baseUrl, here)) ?? [];
     let whole = true;
     for (const name of FEATURED_CITIES) {
       if (state.centres[name] === undefined) {
@@ -170,7 +183,7 @@ export async function downloadAhead(
       const centre = state.centres[name];
       return centre === undefined ? [] : [centre];
     });
-    for (const point of aheadPoints(here, recent(), featured)) {
+    for (const point of aheadPoints(here, near, recent(), featured)) {
       if (coveringZone(savedZones(), network, point) !== null) {
         continue;
       }

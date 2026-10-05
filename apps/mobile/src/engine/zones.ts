@@ -7,6 +7,13 @@ import {
 } from "expo-file-system/legacy";
 
 import { apiKey as configuredKey, keyHeaders } from "../api/apiUrl";
+import {
+  PHONE_HEADER,
+  pausePrefetch,
+  phoneId,
+  prefetchPausedUntil,
+  retryAt,
+} from "./prefetch";
 
 /**
  * The zones saved on the phone for the engine on the phone (TASK-214,
@@ -220,6 +227,9 @@ export type ZoneDownload =
   | { kind: "unchanged"; zone: ZoneEntry }
   /** The server has no zone around the point: it draws routes there. */
   | { kind: "none" }
+  /** A zone ahead past the day's cap (part A2): none before `retryAt`,
+   * in ms since 1970. */
+  | { kind: "later"; retryAt: number }
   | { kind: "failed"; why: string };
 
 function header(headers: Record<string, string>, name: string): string | null {
@@ -261,6 +271,10 @@ export const downloadTelling: Download = (url, fileUri, options, onSize) => {
  * others only whole, under the name the API gives it; then the zones used
  * longest ago go, beyond the limit. `onSize` hears the size of what the
  * server sends, also a short error. Never throws.
+ *
+ * `prefetch`: a zone downloaded ahead, not the one around the phone. It says
+ * so to the server with the phone's id, which counts it against the day's
+ * cap; after a 429 the phone asks for none until Retry-After (part A2).
  */
 export async function downloadZone(
   baseUrl: string,
@@ -271,26 +285,35 @@ export async function downloadZone(
     now = Date.now,
     download = downloadTelling,
     onSize,
+    prefetch = false,
   }: {
     apiKey?: string | null;
     now?: () => number;
     download?: Download;
     onSize?: (bytes: number) => void;
+    prefetch?: boolean;
   } = {},
 ): Promise<ZoneDownload> {
   try {
+    if (prefetch) {
+      const paused = prefetchPausedUntil();
+      if (now() < paused) {
+        return { kind: "later", retryAt: paused };
+      }
+    }
     const folder = zonesDirectory();
     folder.create({ idempotent: true, intermediates: true });
     const zones = savedZones();
     const have = coveringZone(zones, network, [lat, lon]);
     const partial = new File(folder, `.${network}.download`);
     const answer = await download(
-      `${baseUrl}/phone-zones/${network}?lat=${lat}&lon=${lon}`,
+      `${baseUrl}/phone-zones/${network}?lat=${lat}&lon=${lon}${prefetch ? "&prefetch=1" : ""}`,
       partial.uri,
       {
         headers: {
           ...keyHeaders(apiKey),
           ...(have?.etag ? { "If-None-Match": have.etag } : {}),
+          ...(prefetch ? { [PHONE_HEADER]: phoneId() } : {}),
         },
       },
       onSize,
@@ -303,6 +326,12 @@ export async function downloadZone(
       touchZone(have.name, now());
       deleteQuietly(partial);
       return { kind: "unchanged", zone: have };
+    }
+    if (answer.status === 429 && prefetch) {
+      deleteQuietly(partial);
+      const until = retryAt(header(answer.headers, "retry-after"), now());
+      pausePrefetch(until);
+      return { kind: "later", retryAt: until };
     }
     if (answer.status !== 200) {
       deleteQuietly(partial);

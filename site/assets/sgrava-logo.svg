@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-7 16 487 87" role="img" aria-label="Sgrava">
+  <title>Sgrava logo</title>
+  <path d="M40 24H12Q0 24 0 36V48Q0 60 12 60H48Q60 60 60 72V84Q60 96 48 96H0" fill="none" stroke="#FFD02B" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="62" cy="24" r="8" fill="#FFD02B"/>
+  <path d="M60 38L60 31Q60 24 53 24L12 24Q0 24 0 36L0 84Q0 96 12 96L48 96Q60 96 60 84L60 74Q60 62 48 62L34 62M96 96L96 36Q96 24 108 24L144 24Q156 24 156 36L156 50Q156 62 144 62L96 62M132 62L156 96M190 96L220 24L250 96M252.5 24L282.5 96L312.5 24M315 96L345 24L375 96" transform="translate(98 0)" fill="none" stroke="#FFD02B" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

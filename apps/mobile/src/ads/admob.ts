@@ -1,12 +1,12 @@
 import { Platform, TurboModuleRegistry } from "react-native";
 
-import { type AdSdk, createRouteAds, NO_ADS, type RouteAds } from "./routeAds";
+import { type AdSdk, createFeedAds, type FeedAds, NO_FEED_ADS } from "./feedAds";
 
 type GoogleMobileAds = typeof import("react-native-google-mobile-ads");
 
 /**
- * Google AdMob (ADR-0102). Only in a build of the app: Expo Go has no
- * AdMob native code, so there the module is not even loaded.
+ * Google AdMob (ADR-0102, ADR-0198). Only in a build of the app: Expo Go
+ * has no AdMob native code, so there the module is not even loaded.
  */
 function admobSdk(): AdSdk | null {
   if (
@@ -22,13 +22,22 @@ function admobSdk(): AdSdk | null {
   } catch {
     return null;
   }
-  const { AdEventType, AdsConsent, InterstitialAd, TestIds } = ads;
-  // Google's test ad until the AdMob account gives the real one.
+  const {
+    AdsConsent,
+    NativeAd,
+    NativeAdView,
+    NativeAsset,
+    NativeAssetType,
+    NativeMediaAspectRatio,
+    NativeMediaView,
+    TestIds,
+  } = ads;
+  // Google's test ad until the AdMob account gives the real one (TASK-153).
   const unitId =
     Platform.select({
-      ios: process.env.EXPO_PUBLIC_ADMOB_INTERSTITIAL_IOS,
-      android: process.env.EXPO_PUBLIC_ADMOB_INTERSTITIAL_ANDROID,
-    }) || TestIds.INTERSTITIAL;
+      ios: process.env.EXPO_PUBLIC_ADMOB_NATIVE_IOS,
+      android: process.env.EXPO_PUBLIC_ADMOB_NATIVE_ANDROID,
+    }) || TestIds.NATIVE;
 
   return {
     async start() {
@@ -40,29 +49,22 @@ function admobSdk(): AdSdk | null {
       await ads.default().initialize();
       return true;
     },
-    interstitial() {
-      const ad = InterstitialAd.createForAdRequest(unitId);
-      return {
-        load: () => ad.load(),
-        show: () => ad.show(),
-        onLoaded: (listener) =>
-          void ad.addAdEventListener(AdEventType.LOADED, listener),
-        onClosed: (listener) =>
-          void ad.addAdEventListener(AdEventType.CLOSED, listener),
-        onError: (listener) => void ad.addAdEventListener(AdEventType.ERROR, listener),
-        destroy: () => ad.destroy(),
-      };
-    },
+    // As wide as a drawing of «Feed», and as tall, more or less.
+    nativeAd: () =>
+      NativeAd.createForAdRequest(unitId, {
+        aspectRatio: NativeMediaAspectRatio.LANDSCAPE,
+      }),
+    views: { NativeAdView, NativeAsset, NativeAssetType, NativeMediaView },
   };
 }
 
-let shared: RouteAds | null = null;
+let shared: FeedAds | null = null;
 
 /** The app's ads, made the first time they are needed. */
-export function routeAds(): RouteAds {
+export function feedAds(): FeedAds {
   if (shared === null) {
     const sdk = admobSdk();
-    shared = sdk ? createRouteAds(sdk) : NO_ADS;
+    shared = sdk ? createFeedAds(sdk) : NO_FEED_ADS;
   }
   return shared;
 }

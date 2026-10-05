@@ -3575,6 +3575,14 @@ passa com'è e guarda solo l'inizio dell'attesa. L'ID dell'app AdMob vero
 dell'utente sostituisce quello di prova in `app.json`; l'unità resta quella
 di prova di Google fino a TASK-153.
 
+**Aggiornamento 2026-10-05 (TASK-235, ADR-0198)**: l'annuncio a schermo
+intero all'inizio di ogni ricerca non c'è più, scelta dell'utente: la
+pubblicità sta fra i post del «Feed», un annuncio nativo ogni 5 post
+(ADR-0198). `useAdBeforeRoute` e `routeAds` sono tolti. Restano AdMob, il
+consenso di Google (ora alla prima apertura del Feed, mai all'avvio),
+niente richiesta ATT, niente annunci in Expo Go. Le variabili
+`EXPO_PUBLIC_ADMOB_INTERSTITIAL_*` diventano `EXPO_PUBLIC_ADMOB_NATIVE_*`.
+
 ## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
 (TASK-133, miglioramento generale)
@@ -8588,6 +8596,45 @@ download; testi e posto dell'avviso scelti dall'utente, `tasks/TASK-214.md`):
 avviso a ogni download (l'utente ha detto di no); chiedere il peso con una
 richiesta `HEAD` prima del download; una conferma su «Delete».
 
+**Decisione dell'agente** (parte A2, il tetto del traffico, 2026-10-05; i
+numeri sono dell'utente, `tasks/TASK-214.md`), deciso dall'agente su
+delega dell'utente:
+1. **Le zone in più si dichiarano** con `?prefetch=1` su
+   `/phone-zones/{network}`; senza, la zona si dà sempre e non si conta.
+   Il codice sta in un file nuovo, `phone_zone_cap.py`; `__main__.py` non
+   cambia: `install_phone_zones` prende il tetto dell'utente da solo.
+2. **Il conteggio è in memoria, per giorno UTC**: niente database, niente
+   migrazione. **Un riavvio dell'API riparte da zero**, e un giorno con un
+   riavvio può dare un po' di più del tetto. Con un solo processo uvicorn,
+   com'è oggi sul server, il conteggio è uno; con più processi ognuno
+   avrebbe il suo.
+3. **Si contano i byte del file**, prima di mandarlo: una zona che farebbe
+   passare il tetto si rifiuta intera, così il tetto non si supera mai. Un
+   download interrotto resta contato. Un `304` non costa niente e passa
+   anche oltre il tetto.
+4. **`Retry-After` dice i secondi fino alla mezzanotte UTC**, quando il
+   conteggio riparte: «il telefono riprova il giorno dopo». L'app aspetta
+   quei secondi, mai più di un giorno, e un giorno se l'header manca.
+5. **Il telefono è un id anonimo** in `X-Phone-Id`: 32 cifre esadecimali a
+   caso, fatte dall'app la prima volta e tenute in
+   `Documents/engine/prefetch.json` (fuori dalle zone: «Delete» non lo
+   cambia). Non è un segreto né un'identità: `Math.random` basta, senza
+   dipendenze nuove. Il server lo tiene solo in memoria, per il giorno,
+   e non lo scrive. Chi cambia id a ogni richiesta trova comunque il tetto
+   di tutto il server.
+6. **Senza un id valido conta l'indirizzo** della richiesta, come il
+   limite dei POST (ADR-0076): sul server è quello del telefono, che Caddy
+   passa in `X-Forwarded-For` (`FORWARDED_ALLOW_IPS` in `compose.yaml`).
+   Con i dati mobili molti telefoni escono dallo stesso indirizzo e
+   dividerebbero un tetto: non succede, perché solo l'app nuova manda
+   `prefetch=1`, e la manda sempre con l'id.
+
+**Scartato**: contare solo per indirizzo (con i dati mobili molti
+telefoni escono dallo stesso indirizzo); contare nel database (una migrazione per un numero che vale un
+giorno); un tetto solo sul telefono (un'app difettosa non lo rispetta);
+rifiutare solo quando il tetto è già passato (lo si supererebbe di una
+zona).
+
 ## ADR-0170 — Pubblicare come su Strava, l'API: chi lo vede in tre valori, una domanda sola per saperlo, foto in posti fissi, campi nuovi che un'app di prima non cancella
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-208, parte A), dentro le **scelte dell'utente** del 2026-10-03:
@@ -9615,7 +9662,8 @@ alto.
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 
-**Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-234 ·
+**Data**: 2026-10-05 · **Stato**: Accettato; motore e API fatti (parte A),
+l'app da fare · **Task**: TASK-234 ·
 il consiglio da tentativi già fatti (il «passo 1») e la riga con «Prova»
 sono scelte dell'utente; soglie, campo e casi sono decisi dall'agente su
 delega dell'utente · estende ADR-0041
@@ -9656,6 +9704,34 @@ provato, cioè intorno a quella chiesta (scale fra 0,4 e 1,1 di quella
 iniziale): quanto spesso scatta va misurato prima di fare l'app. Come per
 ADR-0041, la distanza consigliata non è garantita: un nuovo disegno rifà
 la ricerca.
+
+**Parte A, motore e API (2026-10-05)**, deciso dall'agente su delega
+dell'utente:
+
+- **La soglia resta 5 punti** (`BETTER_MARGIN` = `W_SHAPE × 0,05`) con
+  somiglianza ≥ 0,90: misurata su 129 percorsi (i 12 di riferimento in
+  cache, le 17 forme a Trento e Levico, tre parole), scatta in 8, a 4
+  punti negli stessi 8, a 3 in 11, con guadagni di 3–4 punti
+  (`MAPS.md`, «Viene meglio a N km»). Nessuno dei 12 di riferimento.
+- **Fuori dai limiti niente consiglio**, invece di riportarlo dentro come
+  `suggested_distance_m`: una distanza riportata al limite non è quella
+  dove la forma è venuta meglio. Per una parola il limite basso è anche
+  3 km a lettera (`check_word`), per una forma a pezzi no.
+- **Fra più distanze** si confronta il costo senza la parte della
+  distanza, il migliore per ogni km; a parità vince il km più vicino.
+- **Il calcolo sta nel motore** (`optimizer.better_distance`), già al km:
+  la CLI e il telefono (TASK-214) lo hanno uguale all'API. Lo fanno
+  `plan_shape` e `ShapeJob.here` (`nearby_starts.py`, ok del coordinatore),
+  così resta anche quando vince una partenza vicina; `plan_nearby` lo
+  toglie alle alternative.
+- **Il campo è nuovo e facoltativo** (`shared-types`, `RouteResultBody`):
+  `null` senza consiglio; le fixture di prima restano quelle di un'API
+  precedente, e una nuova (`route-result-better-distance.json`) ha tutti i
+  campi.
+
+Il percorso scelto è identico: le impronte fissate dei test non cambiano.
+Gli esempi della canoa e `engine.zip` sono rifatti solo perché `models.py`
+è cambiato (in `paddleExamples.json` cambia solo `"engine"`).
 
 ## ADR-0199 — Seguire nell'app: il tasto sul profilo di un altro, tre numeri in «Profile» con i loro elenchi
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
@@ -9714,6 +9790,274 @@ tasto prima della risposta dell'API (su una rete lenta direbbe
 TASK-208 ha qualcuno da mostrare. Le richieste si scoprono solo aprendo
 «Profile», fino alle notifiche (TASK-185). I testi nuovi, in cinque
 lingue, sono da confermare con l'utente. Bloccare resta TASK-121.
+
+## ADR-0190 — Il «Feed» sull'acqua: quattro post che leggono gli esempi dentro l'app
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-228 · quando
+si vedono, quanti, dove e i nomi sono scelte dell'utente; il resto è deciso
+dall'agente su delega dell'utente
+
+**Contesto**: «Feed» mostra quindici disegni d'esempio della corsa
+(ADR-0127), scritti in `sampleFeed.json` da `tools/sample_feed.py` a
+partire dal catalogo. L'utente ha chiesto anche personaggi inventati con
+percorsi fatti in canoa. Sull'acqua il catalogo non c'è: ci sono gli esempi
+dei quattro luoghi dentro l'app (`paddleExamples.json`, ADR-0189),
+disegnati dal motore sull'acqua del server. La condizione è che i percorsi
+dei post vengano dal motore, mai disegnati a mano.
+
+**Decisione**:
+
+1. **Sempre, mescolati** (utente): i post sull'acqua stanno fra quelli
+   della corsa con qualunque sport, il primo dopo due della corsa e poi
+   uno ogni quattro.
+2. **Quattro, uno per luogo** (utente): Lago di Garda, Lago di Como,
+   Jesolo, Riccione, con cuore, stella, luna e testa di cane, da 2 km.
+3. **I nomi** (utente): `greta_kayak`, `leo.sup`, `irene_onwater`,
+   `ale.paddle`.
+4. **I post non hanno coordinate loro**: `src/feed/paddlePosts.ts` tiene
+   solo il luogo, la forma e ciò che è inventato (nome, titolo, minuti,
+   punteggio), e legge il percorso da `PADDLE_EXAMPLES.bundled`. L'`id`
+   del post è quello dell'esempio.
+5. **Il tocco apre l'esempio**: `fetchPostRoute` di un post sull'acqua
+   restituisce il percorso dentro l'app, senza chiedere all'API. Lo sport
+   viene dal percorso (`activity: "paddling"`), come per un preferito o un
+   esempio di «Explore»: lo sport scelto dall'utente non cambia.
+6. **«Paddle» sulla scheda** è il nome dello sport come lo scrive il suo
+   bottone (`SPORTS`), uguale in ogni lingua, in testa alla riga dei
+   fatti: nessun testo nuovo da tradurre.
+7. `SAMPLE_FEED` resta il nome di ciò che «Feed» mostra; i quindici della
+   corsa sono `RUN_POSTS`.
+
+**Alternative scartate**:
+
+- Un `paddleFeed.json` scritto da un comando, come per la corsa: sarebbe
+  una seconda copia delle stesse coordinate, da rifare a ogni cambio del
+  motore sull'acqua insieme a `paddleExamples.json`.
+- Percorsi di altre lunghezze disegnati apposta (scartata dall'utente):
+  «Explore» non li avrebbe, e andrebbero tenuti dentro il feed.
+- Cambiare lo sport scelto quando si apre un post sull'acqua: un tocco su
+  un disegno non deve cambiare un'impostazione.
+- Una targhetta «Paddle» sopra il disegno: vuole uno stile nuovo; la riga
+  dei fatti c'è già e VoiceOver la legge.
+- Mettere i post in `FeedScreen.tsx` o aprirli da `App.tsx`: sono i file
+  di TASK-235, e non serve.
+
+**Conseguenze**: nessun file di dati nuovo e nessun comando nuovo; il peso
+dell'app non cambia. Rifare `paddleExamples.json` aggiorna anche i post;
+se un luogo o una forma dei quattro manca, il post sparisce e
+`paddlePosts.test.ts` lo dice. «Meanwhile, from the feed» in «Explore»
+(TASK-163) mostra gli stessi 19 disegni, quindi a volte uno sull'acqua.
+Senza API configurata un post toccato non si apre, come uno della corsa.
+Il feed vero (TASK-118) dovrà dire lo sport di ogni disegno: il campo
+`activity` di `SamplePost` è già quello.
+
+## ADR-0196 — «Explore» della canoa come la corsa: l'elenco dei laghi dentro l'app, il più vicino per primo, forme più corte sui laghi piccoli
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-233 · «tutti
+i laghi» e «come la corsa» sono richieste dell'utente; le forme più corte
+sui laghi piccoli (sui campioni), «Near me» acceso da subito e i bacini
+artificiali nell'elenco sono sue scelte del 2026-10-05, e i testi li ha
+confermati lo stesso giorno; il resto è deciso dall'agente su delega
+dell'utente
+
+**Contesto**: con «Paddle», «Explore» aveva quattro luoghi scelti a mano
+(ADR-0169, ADR-0189) e «Near me», che disegnava dalla partenza e funzionava
+solo se la partenza era già sulla riva. L'utente, che sta a un chilometro
+dal lago di Levico, non vedeva il suo lago. Ha chiesto tutti i laghi e una
+pagina come quella della corsa.
+
+**Decisione**:
+
+- **L'elenco dei laghi viene con l'app** (`lakes.json`): nome, punto della
+  riva, distanza delle forme. La ricerca per nome e «il più vicino» si
+  fanno nel telefono, senza API. Gli esempi no: 25 KB a lago sarebbero
+  megabyte, quindi li disegna il server quando il lago è scelto, come per
+  una città.
+- **Che cos'è un lago**: un'acqua su cui il motore pagaia (`water.is_lake`:
+  `natural=water` con `water=lake`, `reservoir` o senza `water`), con un
+  nome, e `water=lake`/`reservoir` oppure un nome che dice lago («Lago»,
+  «Laghi», «Laghetto», «Lac», «…see»). Senza la regola del nome entravano
+  valli da pesca, casse di laminazione e cave. I bacini artificiali ci
+  sono (confermato dall'utente): OpenStreetMap non dice dove pagaiare è
+  vietato, e l'avviso di sicurezza della canoa c'è già. Restano fuori le
+  acque segnate come lago ma chiamate per quello che sono: «Centrale …»,
+  «Cassa di …», «Vasca …», «Zona umida …» (trovate nell'estratto
+  dell'Italia: il bacino di una centrale, una cassa di espansione, una
+  zona umida).
+- **Le forme sono da 2 km dove ci stanno, altrimenti da 1,5 o da 1 km**: la
+  distanza più grande a cui cuore, cerchio e stella ci stanno tutti e tre,
+  provata con il motore punto per punto. Sotto 1 km il motore non disegna,
+  e il lago resta fuori. «Tutti i laghi» con le sole forme da 2 km erano 16
+  su 41 nel nord-est.
+- **Un punto ogni 4 km di riva** sui laghi lunghi: una richiesta parte entro
+  2 km dal punto chiesto (`MOVE_MAX_M`), quindi così ogni tratto di riva ha
+  le sue forme. L'app mostra un nome una volta, con il punto più vicino.
+- **«Near me» è acceso da subito**, come nella corsa, e mostra il luogo
+  dell'elenco più vicino entro 30 km. Più lontano resta com'era: le forme
+  dalla partenza. I luoghi da toccare sono gli otto più vicini.
+- **I quattro luoghi scelti a mano restano**, con i loro esempi dentro
+  l'app: un punto dell'elenco con lo stesso nome entro 3 km è quel luogo.
+- **Il comando legge `osmium export`** (un GeoJSON a riga), non il PBF:
+  nessuna dipendenza nuova, e i multipoligoni li ricompone osmium.
+
+**Alternative scartate**:
+
+- Chiedere i laghi all'API (`GET /lakes`): un contratto nuovo e la rete
+  per una ricerca che nel telefono pesa 7 KB.
+- «Near me» che cerca l'acqua attorno alla partenza sul server: dipende da
+  Overpass, che rifiuta (ADR-0187).
+- Solo forme da 2 km: lascia fuori 25 laghi su 41.
+- Gli esempi di ogni lago dentro l'app: 1 MB per il solo nord-est.
+
+**Conseguenze**:
+
+- **Il server deve avere l'acqua di ogni lago dell'elenco prima che l'app
+  sia pubblicata** (parte B, con l'ok dell'utente): 41 file e 12 MB per il
+  nord-est. Senza, un lago scelto dice «Map data for this area could not be
+  downloaded.».
+- L'elenco di questa PR è il nord-est: l'estratto dell'Italia è sul server.
+- Con una partenza, aprire «Explore» con «Paddle» chiede subito all'API le
+  otto forme del lago più vicino (prima non chiedeva niente fino al tocco).
+- La frase d'attesa perde «of 2 km» nelle cinque lingue; tre testi nuovi,
+  confermati dall'utente in inglese e in italiano.
+- Il Lago di Ledro manca: in OpenStreetMap è `water=pond`. Seguito.
+- Gli esempi a 1,5 e 1 km stanno sul telefono sotto chiavi loro
+  (`paddling:1500:…`), a parte da quelli a 2 km.
+
+**Aggiunta (2026-10-05, parte B)**: con l'ok dell'utente l'elenco è
+dell'Italia intera, 211 laghi e 758 punti, e l'acqua di ognuno è sul
+server (210 file, 50 MB). Il calcolo è stato fatto sul Mac dall'estratto
+del server copiato in sola lettura, e sul server sono stati solo copiati i
+file: niente CPU dell'API, niente riavvio.
+
+## ADR-0198 — La pubblicità fra i post del «Feed»: un annuncio nativo ogni 5 post, niente più annuncio alla ricerca
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-235 ·
+**Supera in parte ADR-0102**: l'annuncio a schermo intero all'inizio di
+ogni ricerca non c'è più; restano AdMob, il consenso di Google, niente
+ATT, niente annunci in Expo Go · il posto (fra i post del Feed, al posto
+dell'annuncio della ricerca), l'annuncio nativo con «Sponsored» e uno ogni
+5 post sono scelte dell'utente; il resto è deciso dall'agente su delega
+dell'utente
+
+**Contesto**: il 2026-10-05 l'utente ha scritto «La pubblicità le mettiamo
+tra i post dei feed». Alla domanda se si aggiunge all'annuncio all'inizio
+di ogni ricerca o lo sostituisce ha scelto **sostituisce**, con la
+proposta che la accompagnava: un annuncio nativo con l'aspetto di un post,
+la scritta «Sponsored», uno ogni 5 post. Il Feed oggi ha 19 post d'esempio
+(ADR-0127, quattro in canoa da ADR-0190); il feed vero è TASK-118.
+
+**Decisione**:
+
+1. **Annunci nativi di AdMob** (`NativeAd`, `NativeAdView`, `NativeAsset`,
+   `NativeMediaView` di `react-native-google-mobile-ads` 17.2, già
+   nell'app): nessun pacchetto e nessuna configurazione nuovi. L'unità da
+   `EXPO_PUBLIC_ADMOB_NATIVE_IOS` / `_ANDROID`; vuote, l'annuncio nativo
+   di prova di Google. Si chiede il media orizzontale
+   (`NativeMediaAspectRatio.LANDSCAPE`).
+2. **Dove** (`feedWithAds`): dopo il 5°, il 10°, … post, solo se sotto c'è
+   un altro post. Nessuno con 5 post o meno, uno con 6–10, tre con i 19
+   d'esempio. Mai in cima, mai in fondo, mai due di fila. Un posto senza
+   annuncio non lascia buchi.
+3. **Quando** (`useFeedAds`): uno alla volta. Il primo si chiede quando il
+   Feed è la pagina sullo schermo, il successivo quando l'utente arriva al
+   posto del precedente (`AD_LOAD_AHEAD`, 5 post). Un posto il cui annuncio
+   non arriva resta vuoto e non si richiede. Un annuncio che arriva quando
+   il post sotto il suo posto è già stato sullo schermo va al primo posto
+   ancora davanti, così i post che l'utente guarda non si spostano; se non
+   ce n'è, si distrugge. Quando il Feed si smonta, i suoi annunci si
+   distruggono.
+4. **Consenso**: lo stesso modulo di Google (UMP, `gatherConsent`), una
+   volta, alla prima richiesta di annuncio: la prima volta che l'utente
+   apre il Feed. Il Feed si costruisce dietro «Draw» all'avvio, ma non
+   chiede niente finché non è la pagina sullo schermo (`active`): niente
+   all'apertura dell'app, come in ADR-0102. Senza `canRequestAds`, niente
+   annunci.
+5. **L'aspetto** (`FeedAd`): largo e arrotondato come un post. In alto,
+   prima di tutto, «Sponsored» grande come il nome di un corridore
+   (`fontSize.body`, colore dei testi), con l'icona quadrata (il corridore
+   ha il cerchio) e il nome dell'inserzionista; poi il media, mai più alto
+   che largo; poi titolo, testo e un pulsante grigio (il giallo è del
+   percorso). Niente iniziale, punteggio, tempi; un tocco apre quello che
+   dice l'annuncio, non la mappa. AdChoices lo mette l'SDK in alto a
+   destra, dove la riga lascia spazio. «Sponsored» nelle cinque lingue.
+6. **Via l'annuncio della ricerca**: `useAdBeforeRoute` e `routeAds` sono
+   tolti; «Draw route» e «Ask for a route» non mostrano più annunci.
+
+**Alternative scartate**: aggiungere gli annunci del Feed a quello della
+ricerca (l'utente ha scelto di sostituirlo); un banner fra i post (si
+vede come la pubblicità di un'altra app; l'utente ha chiesto l'aspetto di
+un post); caricare tutti gli annunci all'apertura del Feed (traffico per
+annunci che nessuno vede); mettere un annuncio arrivato tardi nel suo
+posto anche se è sullo schermo (sposta i post sotto il dito); chiedere il
+consenso all'avvio dell'app (ADR-0102: niente all'apertura).
+
+**Conseguenze**: con i 19 post d'esempio al più tre annunci per visita
+del Feed, meno impressioni di un annuncio a ogni ricerca. In Expo Go
+nessun annuncio, come prima. Per gli annunci veri serve un'unità
+**nativa** in AdMob: TASK-153 parla ancora di un'unità interstitial, e
+`docs/PUBBLICITA.md` (branch di TASK-150) dice ancora «a ogni ricerca»;
+li aggiornano i loro task. Il feed vero (TASK-118) usa la stessa
+`feedWithAds`.
+
+## ADR-0201 — Il sito web: una pagina statica in `site/`, e il merch venduto da un servizio di stampa su ordinazione
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-237), dentro la **scelta dell'utente**: le magliette si vendono con
+la **stampa su ordinazione** (2026-10-05, fra quattro vie proposte: stampa
+su ordinazione, magliette proprie con Stripe, negozio Shopify, sola
+vetrina). Numero preso come primo libero, detto al coordinatore.
+
+**Contesto**: l'utente ha chiesto il sito web con una sezione di
+merchandising per vendere le magliette. Nel repository non c'era nessun
+sito, e Sgrava non ha ancora un dominio.
+
+**Decisione**:
+
+1. **Una pagina statica in una cartella nuova, `site/`**: HTML, CSS e
+   JavaScript scritti a mano, senza dipendenze e senza build. Sta fuori dai
+   workspace npm (`apps/*`, `packages/*`) e da `prettier`, così non tocca
+   `package.json`, `package-lock.json` né la CI dell'app. Si pubblica
+   copiando la cartella su un qualsiasi servizio di pagine statiche.
+2. **Il sito non vende niente da solo.** «Buy» apre la pagina della
+   maglietta sul servizio di stampa (`buyUrl`), in una scheda nuova:
+   pagamento, spedizione, resi e dati dei clienti restano al servizio. Il
+   sito non ha carrello, non riceve carte né indirizzi, non mette cookie e
+   non carica niente da altri siti.
+3. **Le magliette stanno in un file solo**, `site/products.js`. Una
+   maglietta è in vendita solo con un `buyUrl` `https`; altrimenti la
+   scheda dice «Coming soon», e senza nessuna in vendita il negozio dice
+   «The shop opens soon.». Il prezzo si mostra solo se c'è, e i test
+   rifiutano una maglietta in vendita senza prezzo o senza il nome del
+   servizio (`fulfilledBy`).
+4. **Il sito non dipende da un servizio preciso**: gli serve solo un
+   indirizzo per maglietta. Quale servizio usare lo sceglie l'utente, che
+   ne apre l'account.
+5. **Le stampe sono percorsi veri** di `catalog/seed/`, disegnati da
+   `site/tools/make_prints.py` (solo libreria standard, proiezione in
+   metri): il sito, come l'app, non inventa geometrie. Il credito
+   «© OpenStreetMap contributors» sta in fondo alla pagina.
+6. **I colori** sono dichiarati una volta in cima a `styles.css` e
+   ricalcano `tokens.ts`: senza build il sito non può importarli.
+7. **Il cuore in cima** è un SVG dentro la pagina, animato dal foglio di
+   stile: la riga è intera se l'animazione non parte, e ferma con
+   «riduci movimento».
+8. **Test** con `node --test`, senza installare niente, in un workflow
+   suo (`site.yml`) che gira solo quando cambia `site/`.
+9. **Testi in inglese**, come l'interfaccia dell'app.
+
+**Alternative scartate**: un negozio Shopify incorporato (canone mensile,
+scartato dall'utente); un framework (Astro, Next) o la versione web
+dell'app Expo (dipendenze nuove e una build per una pagina sola); le
+magliette scritte dentro `index.html` (prezzo e indirizzo in più punti).
+
+**Non deciso, dell'utente**: il servizio di stampa; magliette, nomi,
+colori e prezzi (le quattro di adesso sono una proposta); i testi della
+pagina; il dominio e dove pubblicare. Niente è pubblicato.
+
+**Conseguenze**: chi vuole aggiungere o mettere in vendita una maglietta
+tocca solo `products.js` (`docs/SITO.md`). Un cambio di colore in
+`tokens.ts` va ripetuto in `styles.css`. Se un giorno servono un carrello
+o più pagine, questa decisione va rivista.
 
 ## ADR-0200 — I paesi vicini sotto «Near me»: quattro paesi e i due posti più vicini, dal Places di Geoapify, con i campioni chiesti dal telefono
 

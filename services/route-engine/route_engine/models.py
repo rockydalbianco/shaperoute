@@ -194,3 +194,7 @@ class RouteResult:
     # included, of each stretch walked with the bike on foot, in order
     # (network.on_foot_stretches). Empty on foot and on the water.
     on_foot: list[tuple[int, int]] = field(default_factory=list)
+    # A distance, in whole km, where the search found the shape clearly
+    # better drawn (optimizer.better_distance, TASK-234, ADR-0197): for the
+    # request, not its alternatives. None without one, and on the water.
+    better_distance_m: int | None = None

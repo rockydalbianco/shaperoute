@@ -54,11 +54,6 @@ In coda, dopo o accanto:
   (TASK-233). In revisione; **mancano** il server (l'endpoint: senza, la
   sezione non compare) e la pubblicazione, con l'ok dell'utente, e la sua
   conferma dei testi e dei tre campioni per paese (`tasks/TASK-236.md`).
-- **TASK-235 — Gli annunci fra i post del «Feed»** (ADR-0198, chiesto
-  dall'utente il 2026-10-05): un annuncio nativo AdMob con «Sponsored»
-  ogni 5 post, al posto dell'annuncio a schermo intero all'inizio di ogni
-  ricerca (scelta dell'utente: sostituisce). Todo, task file in
-  `tasks/TASK-235.md`; solo unità di prova finché mancano TASK-150/152/153.
 - **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
   posizioni non si salva; il GPX di una corsa salvata; il cuore dei
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
@@ -138,15 +133,20 @@ In coda, dopo o accanto:
   (le forme a pezzi sull'acqua: una faccina da 2 km a Riccione in 12 s,
   quattro tratti a penna alzata); fermo circa 14 secondi; immagine di
   prima `shaperoute-api:before-task226`, copia del database
-  `shaperoute-2026-10-05T0327Z.dump`; `draw_examples` rilanciato alle
-  03:29Z (`data/draw-examples-2026-10-05-task226.log`). `/phone-zones` c'è,
-  le zone del telefono non sono ancora costruite. **App** su `preview` da
-  `main` `ef7ad90` (gruppo `1fc82a12`): in più rispetto a `f8951439`, le
-  forme a pezzi sull'acqua e l'interruttore degli occhi staccati su strada
-  (TASK-226 B). **Da provare sull'iPhone.** Il prossimo passo sul server è
-  l'acqua dei laghi di TASK-233: **prima** di quella `main` con la #319
-  non si pubblica. Strava spento finché l'utente non scrive il secret sul
-  server.
+  `shaperoute-2026-10-05T0327Z.dump`; esempi ridisegnati per 66 città su
+  66 (`data/draw-examples-2026-10-05-task226.log`). Dalle 04:22Z ha anche
+  l'acqua dei laghi d'Italia (TASK-233: 210 file nuovi, 50 MB, senza
+  riavvio). `/phone-zones` c'è, le zone del telefono non sono ancora
+  costruite. **App** su `preview` da `main` `ef7ad90` (gruppo
+  `1fc82a12`): in più rispetto a `f8951439`, le forme a pezzi sull'acqua e
+  l'interruttore degli occhi staccati su strada (TASK-226 B). **Da provare
+  sull'iPhone.** In `main` dopo, **non ancora pubblicati** (si può, manca
+  l'ok dell'utente): «Follow» (#320), il «Feed» sull'acqua (#322), i
+  laghi in «Explore» (#319, #328), la pubblicità nel «Feed» (#324). In
+  `main` anche il motore di TASK-234 A (#327): il server vuole un altro
+  aggiornamento con `draw_examples`, con l'ok dell'utente, **prima** di
+  pubblicare la parte B di TASK-234. Strava spento per scelta dell'utente
+  (2026-10-05: «teniamo solo Instagram per ora»).
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -160,13 +160,30 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; Todo, chiesto
+- **TASK-237 — Il sito web, con «Merch» per le magliette** (ADR-0201;
+  chiesto dall'utente il 2026-10-05, che ha scelto la **stampa su
+  ordinazione**). **Parte A** in `main` dal 2026-10-05 (PR #325, merge
+  `f8e68b6`): una pagina statica in `site/`
+  (nuova, senza dipendenze), con il cuore di Milano che si disegna, «How
+  it works» e «Merch»: quattro magliette proposte, con le stampe dai
+  percorsi veri del catalogo. Il sito non vende da solo: «Buy» aprirà la
+  pagina della maglietta sul servizio di stampa; finché manca
+  l'indirizzo, «Coming soon». **Niente è pubblicato.** **Aspettano
+  l'utente**: il servizio di stampa e il suo account, magliette e prezzi,
+  i testi, dominio e pubblicazione. Come si aggiunge una maglietta e come
+  si guarda in locale: `SITO.md`. Da dove riprendere:
+  `tasks/TASK-237.md`, «Esito».
+- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; chiesto
   dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
   riesce ma un tentativo già tracciato a un'altra distanza segue la forma
   chiaramente meglio, l'API manda `better_distance_m` e l'app scrive la
-  riga con «Try N km». Il percorso scelto non cambia. Prima si misura
-  quanto spesso scatta. Il codice dopo la #310 (TASK-226), stessi file
-  del motore. `tasks/TASK-234.md`.
+  riga con «Try N km». Il percorso scelto non cambia. **Parte A, motore e
+  API**, in PR (2026-10-05): il campo nel risultato, anche da una
+  partenza vicina, `null` nelle alternative; `engine.zip` ed esempi della
+  canoa rifatti. **Misura**: scatta in 8 percorsi su 129, nessuno dei 12
+  di riferimento in cache (`MAPS.md`); da dire all'utente prima della
+  **parte B** (l'app, testi nelle cinque lingue). Dopo il merge di A,
+  `draw_examples` sul server con l'ok dell'utente. `tasks/TASK-234.md`.
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal
@@ -462,19 +479,58 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   simulatore, con l'API spenta disegna il cuore da 5 km di Trento. Senza
   `/phone-zones` sul server l'app chiede tutto al server, come prima.
   L'utente ha scelto i testi delle mappe offline e il tetto del traffico
-  (task file). **Parte C** nella PR #295: in «Settings», sotto
+  (task file). **Parte C** in `main` dalla #295 (`17a9e6c`, 2026-10-04,
+  non pubblicata): in «Settings», sotto
   «Preferences», «Offline maps: 10 MB» con «Delete» e «Maps download on
   Wi-Fi and mobile data.»; sopra «Draw route», solo al primo download,
   «Downloading the maps of your area (10 MB) so routes work without
   signal.» con il peso vero (il posto l'ha scelto l'utente il
-  2026-10-04); nelle cinque lingue. Provata nel simulatore. **Dopo**, in
-  quest'ordine: A2, il tetto sul server; B2, le città vicine fino a 2 GB;
+  2026-10-04); nelle cinque lingue. Provata nel simulatore. **Parte A2**,
+  il tetto del traffico, in `main` dalla #330 (`6f14656`, 2026-10-05): le zone in più
+  arrivano con `?prefetch=1` e l'id anonimo del telefono, al massimo 300
+  MB al giorno per telefono e 300 GB in tutto; oltre, `429` con
+  `Retry-After` fino alla mezzanotte UTC, e l'app non ne chiede altre fino
+  ad allora. Conteggio in memoria: un riavvio lo rimette a zero. Non sul
+  server. **Dopo**, in quest'ordine: B2, le città vicine fino a 2 GB;
   D, la prova sull'iPhone, dopo l'aggiornamento del server con le zone del
   telefono.
   Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **App, API e server** — TASK-233: «Explore» della canoa come la corsa, e
+  tutti i laghi (ADR-0196; chiesto dall'utente il 2026-10-05, scelte
+  confermate una per una; PR #319, merge `1dc4bb9`, e la parte B). Con
+  «Paddle», «Near me» è acceso da subito e mostra il lago più vicino
+  («LAGO DI LEVICO · 1.2 KM AWAY»), poi gli otto luoghi più vicini da
+  toccare e «Type a lake or a beach». L'elenco è dentro l'app
+  (`src/paddle/lakes.json`, da `python -m shaperoute_api.lake_catalog`):
+  **211 laghi d'Italia, 758 punti della riva**, ognuno provato dal motore;
+  le forme sono da 2 km (128 laghi), da 1,5 km (48) o da 1 km (35). **Sul
+  server** dal 2026-10-05 04:22Z l'acqua di ogni lago: 210 file, 50 MB in
+  `data/cache/water/`, senza riavvio; provata dentro l'API sul lago di
+  Levico. Esce con la prossima pubblicazione; da provare sull'iPhone.
+  `tasks/TASK-233.md`.
+
+- **App** — TASK-235: la pubblicità fra i post del «Feed» (ADR-0198,
+  supera in parte ADR-0102; chiesto dall'utente il 2026-10-05, con la
+  scelta che **sostituisce** l'annuncio a schermo intero all'inizio di ogni
+  ricerca; PR #324, merge `7452ec6`). Un annuncio nativo AdMob dopo ogni 5 post, solo fra due post
+  (tre nei 19 d'esempio), con «Sponsored» in alto grande come il nome di
+  un corridore, nelle cinque lingue. Uno alla volta: il primo quando si
+  apre il Feed, il successivo quando l'utente arriva al posto del
+  precedente; un annuncio arrivato tardi non sposta i post sullo schermo.
+  Il consenso di Google compare alla prima apertura del Feed, non
+  all'avvio. «Draw route» e «Ask for a route» non mostrano più annunci
+  (`useAdBeforeRoute` tolto). Provato in una build Release nel simulatore
+  con l'annuncio nativo di prova (allora 15 post): due annunci dopo il 5°
+  e il 10° post, nessuno in fondo, il validatore di AdMob «No implementation issues
+  found». In Expo Go nessun annuncio, come prima. Da riguardare su un
+  iPhone vero: che scorrere sopra un annuncio non lo apra (nel simulatore
+  lo apriva solo il gesto finto dello strumento). Per gli annunci veri
+  serve un'unità **nativa** in AdMob: TASK-153 parla ancora di
+  interstitial. `tasks/TASK-235.md`.
 
 - **Motore, API e app** — TASK-226: gli occhi staccati sull'acqua
   (ADR-0188; chiesto dall'utente il 2026-10-03, forme scelte il
@@ -517,6 +573,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   disegnato al momento, e fuori dai quattro luoghi dipende da Overpass (i
   laghi multipoligono solo dopo che il server ha TASK-230). Esce con la
   prossima pubblicazione. `tasks/TASK-227.md`.
+- **App** — TASK-228: il «Feed» sull'acqua (ADR-0190; chiesto dall'utente
+  il 2026-10-03, scelte del 2026-10-05; PR #322, merge `de9512b`). Fra i
+  quindici disegni d'esempio di «Feed» ce ne sono quattro fatti sull'acqua,
+  sempre, con ogni sport, al 3º, 8º, 13º e 18º posto di 19: `greta_kayak`
+  (cuore, Lago di Garda), `leo.sup` (stella, Lago di Como),
+  `irene_onwater` (luna, Jesolo), `ale.paddle` (testa di cane a pezzi,
+  Riccione), da 2 km, con «Paddle» in testa alla riga dei fatti. I
+  percorsi sono gli esempi dentro l'app (`paddleExamples.json`):
+  `src/feed/paddlePosts.ts` li legge, senza una copia sua, quindi rifare
+  quel JSON aggiorna anche i post. Un tocco apre il percorso sull'acqua
+  senza chiedere all'API; lo sport scelto non cambia. Nessun testo nuovo
+  da tradurre. Visto nel simulatore. Solo app: esce con la prossima
+  pubblicazione. **Da confermare con l'utente** i quattro titoli e se
+  «Meanwhile, from the feed» in «Explore» può mostrare anche un post
+  sull'acqua; da provare sull'iPhone. `tasks/TASK-228.md`.
 
 - **Motore** — TASK-230: l'acqua da Overpass con i laghi multipoligono
   (ADR-0192; trovato da TASK-225; PR #292, merge `28e1ae0`).

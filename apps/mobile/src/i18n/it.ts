@@ -166,6 +166,9 @@ export const IT: Table = {
   "Sign up or log in to keep your favorite routes.":
     "Iscriviti o accedi per tenere i tuoi percorsi preferiti.",
 
+  // src/feed/FeedAd.tsx
+  Sponsored: "Sponsorizzato",
+
   // src/feed/FeedPost.tsx
   "OpenFreeMap © OpenMapTiles\nData from OpenStreetMap":
     "OpenFreeMap © OpenMapTiles\nDati da OpenStreetMap",
@@ -206,11 +209,15 @@ export const IT: Table = {
     "Forme da pagaiare, entro 1 km dalla riva",
   "LAKES AND SEA": "LAGHI E MARE",
   "Near me": "Vicino a me",
-  "Choose a lake or a beach: eight shapes of 2 km on its water, from the shore.":
-    "Scegli un lago o una spiaggia: otto forme da 2 km sulla sua acqua, partendo dalla riva.",
+  "Choose a lake or a beach: eight shapes on its water, from the shore.":
+    "Scegli un lago o una spiaggia: otto forme sulla sua acqua, partendo dalla riva.",
   "Choose a start in Draw first: the shapes start from the shore nearest to it.":
     "Prima scegli una partenza in Draw: le forme partono dalla riva più vicina.",
   "Near your start": "Vicino alla tua partenza",
+  "{km} km away": "a {km} km",
+  "Type a lake or a beach": "Scrivi un lago o una spiaggia",
+  "No lake or beach matches “{typed}”.":
+    "Nessun lago o spiaggia corrisponde a «{typed}».",
   "{shape}, {km} km, on the water": "{shape}, {km} km, sull'acqua",
   "Not drawn": "Non disegnato",
 

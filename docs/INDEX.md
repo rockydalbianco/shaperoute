@@ -28,6 +28,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | Scelta di libreria, provider, formato | `DECISIONS.md` |
 | Struttura cartelle, confini tra moduli | `ARCHITECTURE.md` |
 | Test, fixture, criteri di accettazione | `TESTING.md` |
+| Il sito web, il merch, le magliette | `SITO.md` |
 | Branch, PR, review, rilasci | `TEAM_WORKFLOW.md` |
 | Cosa fare dopo | `ROADMAP.md`, `STATUS.md` |
 
@@ -52,6 +53,7 @@ Trova la riga che descrive il tuo task, leggi solo quei documenti.
 | `UI.md` | pieno per mappa e posizione | il resto con TASK-023 |
 | `AI.md` | pieno | — |
 | `DATABASE.md` | pieno | — |
+| `SITO.md` | pieno | — |
 
 Uno stub si riempie **quando arriva il suo task**, non prima: scrivere oggi
 un `DATABASE.md` dettagliato significa documentare decisioni non ancora prese.

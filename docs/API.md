@@ -533,6 +533,19 @@ da solo. Quali entrano: `ROUTE_ENGINE.md`, «Altri percorsi fra cui
 scegliere». Il registro delle richieste scrive anche le loro impronte
 (`outcome.alternatives`), e il replay le confronta.
 
+**`better_distance_m`** (TASK-234, ADR-0197): una distanza, in metri al
+km intero, dove la ricerca ha visto la forma venire chiaramente meglio,
+per «This heart comes out better at about 12 km» con «Try 12 km»
+nell'app. Viene dai tentativi che la ricerca ha già tracciato (nessun
+calcolo in più, `ROUTE_ENGINE.md`, «Dove la forma viene meglio»); il
+percorso scelto è quello di sempre. È `null` senza un consiglio, nelle
+alternative e sull'acqua; mai la distanza chiesta, né una fuori dai limiti
+dell'attività (bici 10–30 km) o sotto i 3 km a lettera di una parola. Come
+`suggested_distance_m` di un errore, non è garantita: un nuovo disegno
+rifà la ricerca. Un'API precedente non lo manda (in `shared-types` è
+facoltativo), le app installate lo ignorano, e il `GpxRequest` lo accetta
+con o senza. Esempio: `fixtures/route-result-better-distance.json`.
+
 La richiesta è sincrona: la risposta arriva quando il percorso è pronto
 (tempi sotto). Resta per `/docs`, `curl` e le misure; l'app usa
 `/route-jobs`.
@@ -1620,7 +1633,7 @@ codice è in `phone_zone_api.py` e `phone_zones.py`.
 
 | Endpoint | Cosa | Risposta |
 |---|---|---|
-| `GET /phone-zones/{network}?lat=&lon=` | la zona della rete `foot` o `bike` che contiene 3 km intorno al punto | `200` `application/gzip`, il file della zona; `304` con `If-None-Match` uguale all'`ETag`; `404 http_error` senza zona o con un'altra rete; `422 invalid_request` con `lat` o `lon` fuori dai limiti |
+| `GET /phone-zones/{network}?lat=&lon=` | la zona della rete `foot` o `bike` che contiene 3 km intorno al punto; con `&prefetch=1` è una zona scaricata in anticipo, contata nel tetto del giorno | `200` `application/gzip`, il file della zona; `304` con `If-None-Match` uguale all'`ETag`; `404 http_error` senza zona o con un'altra rete; `422 invalid_request` con `lat` o `lon` fuori dai limiti; `429 too_many_requests` con `Retry-After`, solo con `prefetch=1`, oltre il tetto |
 
 - **Il file** si chiama come la zona, `foot_<s>_<w>_<n>_<e>.zone.json.gz`
   (`Content-Disposition`). È JSON con gzip: `format` `"sgrava-zone"`,
@@ -1634,6 +1647,16 @@ codice è in `phone_zone_api.py` e `phone_zones.py`.
   zona alla prima richiesta lì.
 - Come per gli altri endpoint vale la chiave `X-API-Key`, se il server ne
   ha una (ADR-0076).
+- **Il tetto del traffico** (parte A2, `phone_zone_cap.py`): la zona
+  intorno al telefono si dà sempre. Le zone in più, cioè città vicine e
+  più cercate, arrivano con `prefetch=1` e con l'id anonimo del telefono
+  in `X-Phone-Id` (32 cifre esadecimali; senza un id valido conta
+  l'indirizzo). Ne vanno al massimo 300 MB al giorno per telefono e 300
+  GB al giorno in tutto il server (scelta dell'utente). Una zona che
+  passerebbe uno dei due tetti dà `429 too_many_requests`, «Enough maps
+  downloaded ahead today: try again tomorrow.», con `Retry-After` in
+  secondi fino alla mezzanotte UTC. Un `304` non si conta. Il conteggio
+  sta in memoria: un riavvio dell'API lo rimette a zero.
 - **Prima dei telefoni**: `python -m shaperoute_api.phone_zone_api` scrive
   il file di ogni zona in cache, così nessun telefono aspetta che si scriva
   (stime di spazio e tempo in `tasks/TASK-214.md`).

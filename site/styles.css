@@ -1,0 +1,469 @@
+/*
+ * The Sgrava site. Every colour is declared once, here, and mirrors the app's
+ * `apps/mobile/src/theme/tokens.ts`: change a colour there, change it here.
+ */
+:root {
+  --accent: #ffd02b;
+  --on-accent: #0a0a0b;
+  --background: #0a0a0b;
+  --surface: #141416;
+  --surface-raised: #2b2b31;
+  --border: #3d3d44;
+  --border-strong: #74747e;
+  --text: #f5f5f4;
+  --text-muted: #9b9b9f;
+  --tee-white: #f5f5f4;
+  --tee-edge: rgb(245 245 244 / 14%);
+
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --page: 1120px;
+  --gutter: clamp(16px, 4vw, 32px);
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+h3 {
+  font-size: 1.15rem;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.skip {
+  position: absolute;
+  left: var(--gutter);
+  top: -100px;
+  z-index: 10;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+  border-radius: var(--radius-md);
+}
+
+.skip:focus {
+  top: 12px;
+}
+
+/* Top bar */
+
+.top,
+main > section,
+.foot {
+  width: min(100%, var(--page));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 20px;
+}
+
+.top__logo img {
+  height: 24px;
+  width: auto;
+}
+
+.top__nav {
+  display: flex;
+  gap: clamp(16px, 3vw, 28px);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.top__nav a {
+  text-decoration: none;
+  color: var(--text-muted);
+  padding-block: 10px;
+}
+
+.top__nav a:hover {
+  color: var(--text);
+}
+
+/* Buttons */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.button--buy {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.button--buy:hover {
+  filter: brightness(1.08);
+}
+
+.button--quiet {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.button--quiet:hover {
+  border-color: var(--text);
+}
+
+.button--soon {
+  border-color: var(--border);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Hero */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 64px);
+  padding-block: clamp(32px, 7vw, 88px);
+}
+
+.hero__lead {
+  margin-top: 20px;
+  max-width: 34em;
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  color: var(--text-muted);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.hero__route {
+  margin: 0;
+  padding: clamp(12px, 3vw, 28px);
+  background: radial-gradient(circle at 50% 45%, var(--surface-raised), var(--surface) 70%);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+}
+
+.hero__drawing {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* The line is whole unless the animation runs: it only starts hidden. */
+.hero__line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 13;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  animation: draw-route 3.2s ease-in-out 0.3s backwards;
+}
+
+.hero__start {
+  fill: var(--accent);
+}
+
+@keyframes draw-route {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__line {
+    animation: none;
+  }
+}
+
+.hero__route figcaption {
+  margin-top: 4px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* How it works */
+
+.how,
+.merch {
+  padding-block: clamp(40px, 7vw, 88px);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.step__number {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 800;
+}
+
+.step p {
+  margin-top: 8px;
+  color: var(--text-muted);
+}
+
+.how__status {
+  margin-top: 24px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* Merch */
+
+.merch__lead {
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.products__fallback {
+  color: var(--text-muted);
+}
+
+.product {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.product__text {
+  flex: 1;
+  padding: 18px 18px 0;
+}
+
+.product__description {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.product__buy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 18px;
+}
+
+.product__price {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.product__buy .button {
+  margin-left: auto;
+  min-height: 44px;
+}
+
+.merch__note {
+  margin-top: 24px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* The drawn shirt */
+
+.tee {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--surface-raised);
+}
+
+.tee__shape {
+  position: absolute;
+  inset: 7%;
+  width: 86%;
+  height: 86%;
+}
+
+.tee__body {
+  stroke: var(--tee-edge);
+  stroke-width: 2;
+}
+
+.tee__collar {
+  fill: rgb(0 0 0 / 22%);
+}
+
+.tee--black .tee__body {
+  fill: var(--background);
+}
+
+.tee--white .tee__body {
+  fill: var(--tee-white);
+}
+
+.tee--yellow .tee__body {
+  fill: var(--accent);
+}
+
+.tee--black .tee__collar {
+  fill: rgb(245 245 244 / 9%);
+}
+
+.tee__print {
+  position: absolute;
+  left: 31%;
+  top: 29%;
+  width: 38%;
+  height: 44%;
+  object-fit: contain;
+  object-position: center top;
+}
+
+/* Footer */
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  padding-block: 32px 48px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.foot img {
+  height: 24px;
+  width: auto;
+}
+
+/* Narrow screens */
+
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero__route {
+    max-width: 420px;
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

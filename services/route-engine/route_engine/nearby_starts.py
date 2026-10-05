@@ -63,6 +63,7 @@ from route_engine.optimizer import (
     GraphLoader,
     Plan,
     ShapeNotDrawableError,
+    better_distance,
     doubled_weight,
     drawn_distance,
     plan_shape,
@@ -280,6 +281,10 @@ class ShapeJob:
             warnings=warnings,
             walks=list(route.walks),
             on_foot=on_foot_stretches(graph, route.nodes),
+            # As plan_shape's (TASK-234).
+            better_distance_m=better_distance(
+                found, self.distance_m, self.activity, self.word
+            ),
         )
         if route is not best.route:
             found = replace(found, best=replace(best, route=route))
@@ -687,7 +692,10 @@ def plan_nearby(
         key=lambda other: other[:3],
         reverse=True,
     )
-    plan = replace(plan, alternatives=alternatives(plan, [o[3] for o in others]))
+    kept = alternatives(plan, [o[3] for o in others])
+    # The better distance is the request's, not its alternatives' (TASK-234).
+    kept = [replace(p, result=replace(p.result, better_distance_m=None)) for p in kept]
+    plan = replace(plan, alternatives=kept)
     return NearbyPlan(plan, chosen, tried, None if chosen == 0 else graph, skipped)
 
 

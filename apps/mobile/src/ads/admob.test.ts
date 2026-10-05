@@ -1,8 +1,8 @@
-import type { RouteAds } from "./routeAds";
+import type { FeedAds } from "./feedAds";
 
 /**
  * Expo Go has no AdMob native code (ADR-0102): there the package must not
- * even be loaded, and the route shows as before.
+ * even be loaded, and «Feed» has its posts only.
  */
 function load({
   nativeModule,
@@ -12,8 +12,8 @@ function load({
   packageThrows?: boolean;
 }) {
   const packageLoaded = jest.fn();
-  let ads: RouteAds | undefined;
-  let noAds: RouteAds | undefined;
+  let ads: FeedAds | undefined;
+  let noAds: FeedAds | undefined;
   jest.isolateModules(() => {
     jest.doMock("react-native-google-mobile-ads", () => {
       packageLoaded();
@@ -23,10 +23,10 @@ function load({
       return {
         __esModule: true,
         default: () => ({ initialize: () => Promise.resolve([]) }),
-        AdEventType: { LOADED: "loaded", CLOSED: "closed", ERROR: "error" },
         AdsConsent: { gatherConsent: () => Promise.resolve({ canRequestAds: true }) },
-        InterstitialAd: { createForAdRequest: jest.fn() },
-        TestIds: { INTERSTITIAL: "test-interstitial" },
+        NativeAd: { createForAdRequest: jest.fn() },
+        NativeMediaAspectRatio: { LANDSCAPE: 2 },
+        TestIds: { NATIVE: "test-native" },
       };
     });
     const { TurboModuleRegistry } =
@@ -36,16 +36,16 @@ function load({
       .mockImplementation((name: string) =>
         nativeModule && name === "RNGoogleMobileAdsModule" ? ({} as never) : null,
       );
-    // Fresh modules for each case: routeAds() keeps the first answer.
+    // Fresh modules for each case: feedAds() keeps the first answer.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    ads = (require("./admob") as typeof import("./admob")).routeAds();
+    ads = (require("./admob") as typeof import("./admob")).feedAds();
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    noAds = (require("./routeAds") as typeof import("./routeAds")).NO_ADS;
+    noAds = (require("./feedAds") as typeof import("./feedAds")).NO_FEED_ADS;
   });
   return { ads: ads!, noAds: noAds!, packageLoaded };
 }
 
-describe("routeAds in Expo Go and in a build", () => {
+describe("feedAds in Expo Go and in a build", () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -54,9 +54,9 @@ describe("routeAds in Expo Go and in a build", () => {
     const { ads, noAds, packageLoaded } = load({ nativeModule: false });
     expect(ads).toBe(noAds);
     expect(packageLoaded).not.toHaveBeenCalled();
-    // The route screens then show the route at once.
-    expect(ads.ready()).toBe(false);
-    return expect(ads.show()).resolves.toBeUndefined();
+    // «Feed» then shows its posts only.
+    expect(ads.views).toBeNull();
+    return expect(ads.load()).resolves.toBeNull();
   });
 
   it("has no ads when the package fails to load", () => {

@@ -317,6 +317,8 @@ export const IT: Table = {
     "{drawn} km di disegno + {between} km a piedi fra una parte e l'altra",
   "{drawn} km of drawing + {between} km riding between the parts":
     "{drawn} km di disegno + {between} km in bici fra una parte e l'altra",
+  "{drawn} km of drawing + {between} km paddling between the parts":
+    "{drawn} km di disegno + {between} km pagaiando fra una parte e l'altra",
   "On the water, a shape of the catalogue.": "Sull'acqua, una forma del catalogo.",
   "{name} · on the water · target {km} km": "{name} · sull'acqua · obiettivo {km} km",
   "{name} · on roads · target {km} km": "{name} · su strada · obiettivo {km} km",

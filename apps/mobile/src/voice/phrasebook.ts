@@ -66,10 +66,12 @@ export type Phrasebook = {
   rideTo(letter: string | null): string;
   /** The same between the pieces of a shape (TASK-223), which have no
    * name: "Part done. Walk to the next part: the drawing is paused.",
-   * "Pen down: draw the next part.", and on a bike "Ride to". */
+   * "Pen down: draw the next part.", on a bike "Ride to", and on the water
+   * "Paddle to" (TASK-226). */
   partUp: string;
   partDown: string;
   rideToPart: string;
+  paddleToPart: string;
   /** A part of a time, with its unit: "1 hour", "5 minutes", "42 seconds". */
   hours(count: number): string;
   minutes(count: number): string;
@@ -140,10 +142,12 @@ export type VoiceWords = {
   penDown(letter: string | null): string;
   /** The end of a letter with the pen up, on a bike (TASK-216). */
   rideTo(letter: string | null): string;
-  /** The same between the pieces of a shape (TASK-223). */
+  /** The same between the pieces of a shape (TASK-223), on the water too
+   * (TASK-226). */
   partUp: string;
   partDown: string;
   rideToPart: string;
+  paddleToPart: string;
   /** "10 kilometres. Time: … Average speed: 24 kilometres per hour.", on a
    * bike (TASK-216): `speed` in km/h, already whole. */
   rideKilometres(km: number, ms: number, speed: number): string;
@@ -238,6 +242,7 @@ export function voiceWords(book: Phrasebook): VoiceWords {
     partUp: book.partUp,
     partDown: book.partDown,
     rideToPart: book.rideToPart,
+    paddleToPart: book.paddleToPart,
     rideKilometres(km, ms, speed) {
       return book.rideKilometres(km, time(ms), speed);
     },

@@ -1,7 +1,7 @@
 import type { LatLon, Walk } from "@shaperoute/shared-types";
 
 import { POOR_FIX_M } from "./navigator";
-import { movePen, PEN_DOWN_M, type Pen, startPen } from "./penUp";
+import { movePen, PEN_DOWN_M, PEN_DOWN_ON_WATER_M, type Pen, startPen } from "./penUp";
 import {
   AUTO_PAUSE_AFTER_MS,
   controlRun,
@@ -179,6 +179,54 @@ describe("the pen along the route", () => {
         vibrate: true,
       },
     ]);
+  });
+
+  test("on the water the way to the next part is paddled (TASK-226)", () => {
+    let pen: Pen = startPen(ALONG, WALKS, null, "paddling");
+    const said: string[] = [];
+    for (let m = 0; m <= 1000; m += 10) {
+      const step = movePen(pen, m);
+      pen = step.pen;
+      said.push(...step.cues.map((cue) => cue.say));
+    }
+    expect(said).toEqual([
+      "Part done. Paddle to the next part: the drawing is paused.",
+      "Pen down: draw the next part.",
+      "Part done. Paddle to the next part: the drawing is paused.",
+      "Pen down: draw the next part.",
+    ]);
+    const first = (language: "it" | "de" | "es" | "fr") =>
+      movePen(startPen(ALONG, WALKS, null, "paddling"), 300, null, language).cues[0]
+        .say;
+    expect(first("it")).toBe(
+      "Parte finita. Pagaia fino alla parte successiva: il disegno è in pausa.",
+    );
+    expect(first("de")).toBe(
+      "Teil fertig. Zum nächsten Teil paddeln: die Zeichnung ist pausiert.",
+    );
+    expect(first("es")).toBe(
+      "Parte terminada. Rema hasta la siguiente parte: el dibujo está en pausa.",
+    );
+    expect(first("fr")).toBe(
+      "Partie terminée. Pagayez jusqu'à la partie suivante : le dessin est en pause.",
+    );
+  });
+
+  test("on the water the pen comes down nearer the next part", () => {
+    // A stretch of 30 m with the pen up, as an eye's from the outline: on
+    // the roads the pen would come down 20 m before its end, most of it.
+    const along = [0, 500, 530, 600];
+    const walks: Walk[] = [[1, 2]];
+    expect(PEN_DOWN_ON_WATER_M).toBeLessThan(PEN_DOWN_M);
+    const up = (activity: "running" | "paddling") =>
+      movePen(startPen(along, walks, null, activity), 500).pen;
+    const below = 530 - PEN_DOWN_ON_WATER_M - 1;
+    // On the water: still up 1 m before, down from PEN_DOWN_ON_WATER_M.
+    expect(movePen(up("paddling"), below).move).toBeNull();
+    expect(movePen(up("paddling"), 530 - PEN_DOWN_ON_WATER_M).move).toBe("down");
+    // On the roads, as before: down PEN_DOWN_M before the end.
+    expect(movePen(up("running"), 530 - PEN_DOWN_M - 1).move).toBeNull();
+    expect(movePen(up("running"), 530 - PEN_DOWN_M).move).toBe("down");
   });
 });
 

@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-05, 04:30 · `main` = `7e85452`
+**Ultimo aggiornamento**: 2026-10-05, 05:30 · `main` = `03b2ef2`
 
 ## Come si usa
 
@@ -52,35 +52,38 @@
 
 ## La coda dei merge
 
-Vuota alle 04:30 del 2026-10-05 (dalla #277 alla #304 tutte entrate).
-Entra prima chi è pronto prima; la sessione proprietaria mergia da sola al
-5/5 verde e CLEAN, ricontrollato subito prima, dopo il «merge NNN» del
-coordinatore. Le PR di soli documenti le mergia il coordinatore.
+Alle 05:30 del 2026-10-05: aperte la **#307** e la **#314** (task file di
+TASK-232 e TASK-234, solo documenti, le mergia la loro sessione); in
+arrivo la parte B di TASK-226. Entra prima chi è pronto prima; la sessione
+proprietaria mergia da sola al 5/5 verde e CLEAN, ricontrollato subito
+prima, dopo il «merge NNN» del coordinatore. Le PR di soli documenti di
+una sessione chiusa le mergia il coordinatore.
 
 ## L'albero
 
 ```
-Reazioni emoji nei post
-  └─ Dopo    TASK-119 B  Le reazioni nell'app (doppio tocco sul disegno
-                         aperto, barra di sei); la parte A è in `main`
-                                                               ADR-0193
-
 App per il padel
-  └─ Adesso  TASK-226  Gli occhi staccati sull'acqua: prima i campioni
-                       all'utente                              ADR-0188
+  └─ Adesso  TASK-226 B  Gli occhi staccati sull'acqua nell'app, e
+                         l'interruttore su strada per le cinque forme
+                         (seguito di TASK-223)                 ADR-0188
      Dopo:   TASK-228  Il «Feed» sull'acqua                    ADR-0190
 
-Mappe offline: parte B pubblicata
-  └─ Dopo    TASK-214 A2  Il tetto del traffico e `?prefetch=1` nell'API;
-                          poi B2 (città vicine) e D (prova sull'iPhone)
-                                                               ADR-0177
+Sezione Explore padel e laghi
+  └─ Adesso  TASK-233  «Explore» della canoa come la corsa, e i laghi
+                       (l'acqua dei laghi nuovi sul server: con l'ok
+                       dell'utente)                            ADR-0196
 
-Condivisione post e modifica con emoji
-  └─ TASK-231 B (cambiare su Strava il testo di una corsa già mandata):
-     aspetta la risposta dell'utente                           ADR-0194
+Mappe offline: parte B pubblicata
+  └─ Adesso  TASK-214 A2  Il tetto del traffico e `?prefetch=1`; poi B2
+                          (città vicine) e D (prova sull'iPhone) ADR-0177
+
+Forme inclinate e distanza ottimale
+  ├─ Dopo    TASK-234  «Viene meglio a X km» (`better_distance_m`), ora
+  │                    che la #310 è in `main`                 ADR-0197
+  └─ Dopo    TASK-232  Forme inclinate fino a ±45° e mappa girata: A
+                       (motore) dopo TASK-226, B e C dopo     ADR-0195
 
 Da assegnare (task file in `main`)
-  ├─ TASK-217  Il confronto dei km nella voce                 ADR-0180
   ├─ TASK-211 B e TASK-208 B  «Follow», «Requests», la fine corsa stile
   │            Strava, dopo le conferme dell'utente  ADR-0173, ADR-0170
   └─ TASK-182  km o miglia (ADR-0149), quando lo dice l'utente; poi le
@@ -90,18 +93,19 @@ Sistema pubblicitario non invasivo
   └─ Aspetta il «fatto» dell'utente su TASK-150 (pagamenti AdMob)
 
 Aspettano l'utente
-  ├─ **Il server**: è su `7098cb9`; `main` ha il motore nuovo (pezzi,
-  │  emoji, laghi), le migrazioni 0014 e 0015 e `/phone-zones`. Finché
-  │  non è aggiornato (e `draw_examples` rifatto) **`main` non si
-  │  pubblica**: l'API di oggi rifiuta le quattro forme nuove. L'utente ha
-  │  detto di finire (2026-10-05), ma il controllo dei permessi della
-  │  sessione del coordinatore ha negato il deploy: serve una regola di
-  │  permesso o che lo lanci l'utente
+  ├─ **Il server, di nuovo**: è su `3b6e821` (0001–0015); `main` ha anche
+  │  il motore di TASK-226 A. Prima di pubblicare la parte B di TASK-226
+  │  serve l'aggiornamento con `draw_examples` (ok dell'utente). Il deploy
+  │  dalla sessione del coordinatore è negato dal controllo dei permessi:
+  │  lo fa una sessione a cui l'utente lo chiede, avvisando prima il
+  │  coordinatore (regola 9)
+  ├─ Le zone del telefono sul server (TASK-214, ~0,8 GB) e l'acqua dei
+  │  laghi nuovi (TASK-233)
   ├─ Strava: il secret sul server lo scrive l'utente
-  ├─ TASK-223: il giudizio sugli occhi staccati; i testi nuovi delle forme
-  │  a pezzi; le «quasi» (palloncino, cono, fulmine, nuvola)
-  ├─ La prova sull'iPhone di `b6399e76` (canoa, bici, percorso fatto e da
-  │  fare, cuore, «Save» nel contorno)
+  ├─ La prova sull'iPhone di `f8951439` (forme nuove, canoa in «Explore»,
+  │  reazioni con due account, «Share», confronto dei km, «Offline maps»)
+  ├─ TASK-223: le traduzioni de/es/fr dei testi nuovi; le «quasi»
+  │  (palloncino, cono, fulmine, nuvola)
   ├─ TASK-211 B / TASK-208 B: dove sta «Requests», i testi, «Only me» di
   │  partenza; il filtro dei negativi anche sulla descrizione; il tipo
   │  Strava della canoa; la ricerca mostra il nome di ogni iscritto
@@ -146,9 +150,10 @@ Da assegnare
 
 | File | Di chi |
 |---|---|
-| `water_fit.py` e il motore sull'acqua, `src/voice/` (le frasi della canoa), `src/paddle/` | TASK-226 |
-| `src/social/`, `DrawingCard.tsx`, poi `MapView.tsx`, `mapPage.ts`, `App.tsx` (da chiedere) | TASK-119 B |
+| `src/paddle/` (pausa e voce sull'acqua, esempi), `penUp.ts`, `penUpShapes.ts`, `RoutePanel.tsx`, `src/voice/`, `App.tsx` (una riga) | TASK-226 B |
+| `src/paddle/PaddleExplore.tsx`, `waterPlaces.ts`, l'elenco dei laghi; un comando nuovo nell'API | TASK-233 (si accorda con TASK-226 B) |
 | `phone_zone_api.py` e i suoi test | TASK-214 A2 |
+| `optimizer.py`, `models.py`, `schemas.py`, `shared-types`, poi `RoutePanel.tsx` | TASK-234, quando parte |
 | `deploy/`, `docs/DEPLOY.md` | TASK-122 (in attesa dello Storage Box) |
 | `docs/PUBBLICITA.md` | TASK-150 |
 | `docs/STATUS.md`, `docs/DECISIONS.md`, `docs/UI.md` | tutti, ognuno solo le sue righe |
@@ -156,11 +161,12 @@ Da assegnare
 
 ## Numeri
 
-- Task: presi fino a **TASK-231**. Il prossimo libero è **TASK-232**.
+- Task: presi fino a **TASK-234**. Il prossimo libero è **TASK-235**.
 - ADR: presi fino a **ADR-0194** (0183 TASK-220, 0184 TASK-221, 0185
   TASK-223, 0186 TASK-224, 0187 TASK-225, 0188 TASK-226, 0189 TASK-227,
   0190 TASK-228, 0191 TASK-229, 0192 TASK-230, 0193 TASK-119, 0194
-  TASK-231). Il prossimo libero è **ADR-0195**.
+  TASK-231, 0195 TASK-232, 0196 TASK-233, 0197 TASK-234). Il prossimo
+  libero è **ADR-0198**.
 - Migrazioni in `main`: 0001 account, 0002 preferiti, 0003 corse, 0004
   Strava, 0005 foto, 0006 penna alzata, 0007 profili, 0008 attività nei
   preferiti, 0009 corse pubblicate, 0010 canoa nei preferiti, 0011
@@ -170,18 +176,15 @@ Da assegnare
 ## Il server e l'app
 
 - **Server**: Hetzner CX33, `https://188-245-9-220.sslip.io`, da
-  `deploy/compose.yaml` con PostgreSQL. A `main` `7098cb9` dal 2026-10-03
-  12:39Z (migrazioni 0001–0013; immagine di prima
-  `shaperoute-api:before-task206`). Zona bici di Trento con la bici a
-  mano; esempi per 66 città su 66; dal 2026-10-04 l'acqua dei quattro
-  luoghi della canoa in `data/cache/water/` (TASK-225). Mancano il motore
-  nuovo, la 0014, la 0015 e `/phone-zones` con le zone del telefono.
-  Strava spento.
-- **App**: su `preview` da `main` `7e9e27a` (gruppo `b6399e76`,
-  2026-10-04), con «Paddle» pronto. In `main` ma non pubblicati, perché
-  vogliono il server: le quattro forme nuove (TASK-223 B), la canoa in
-  «Explore» con otto forme (TASK-227), «Offline maps» (TASK-214 C),
-  «Share» (TASK-231 A).
+  `deploy/compose.yaml` con PostgreSQL. A `main` `3b6e821` dal 2026-10-05
+  02:42Z (migrazioni 0001–0015; immagine di prima
+  `shaperoute-api:before-task223`, copia del database
+  `shaperoute-2026-10-05T0241Z.dump`). Esempi per 66 città su 66; zona bici
+  di Trento; l'acqua dei quattro luoghi della canoa. Mancano il motore di
+  TASK-226 A e le zone del telefono. Strava spento.
+- **App**: su `preview` da `main` `e7bc8c1` (gruppo `f8951439`,
+  2026-10-05). Dopo il merge della parte B di TASK-226 `main` **non si
+  pubblica** finché il server non ha la parte A.
 - **Chi cambia il motore** rifà `apps/mobile/assets/engine/engine.zip`
   (`python tools/phone_engine/phone_engine.py engine`) e, se tocca i file
   dell'acqua o le sagome, `src/paddle/paddleExamples.json`
@@ -197,9 +200,10 @@ In `main`: #137 (TASK-136), #112 (088), #148 (140), #142 (142), #149 (147),
 #150 (137), #166 (158), #165 (157), #164 (156), #167 (122, copie), #140
 (141), #169 (141), #170 (AGENTI), #168 (159), #171 (160), #172 (165), #173
 (162), #174 (163, prima PR), #175 (161), #176 (164), e poi fino alla #214:
-#177–#304, fra cui 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
+#177–#313, fra cui 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
 177, 178, 179, 180, 181, 186, 187 (API), 188, 189, 190 A, 192, 193, 194,
 195, 196, 067, 190 (A, B, C), 191 A1 e A2, 197, 198, 199, 116, 201 (misurato, non conviene), 200,
 202, 203, 187 (app), 204, 117 (A e B), 191 B, 205, 206 (A e B), 207,
 210 A, 211 A, 212, 213, 215, 120, 208 A, 209, 214 (A, B, C), 216, 218,
-219, 220, 221, 222, 223, 224, 225, 227, 229, 230, 231 A, 119 A e 191 C.
+219, 220, 221, 222, 223, 224, 225, 226 A, 227, 229, 230, 231 (A, B),
+119 (A, B), 217 e 191 C.

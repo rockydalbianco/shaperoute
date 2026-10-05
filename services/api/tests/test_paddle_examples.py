@@ -24,6 +24,7 @@ from shaperoute_api.paddle_examples import (
     OUT,
     SHAPES,
     WaterPlace,
+    apart_on_water,
     engine_files,
     engine_fingerprint,
     examples,
@@ -79,6 +80,23 @@ def test_each_example_is_the_app_s_detail_of_a_paddling_route() -> None:
     assert points[0] == points[-1]
     assert abs(heart["route_m"] - 2000) <= 200
     assert all(len(f"{v}".split(".")[1]) <= 6 for p in points for v in p)
+
+
+def test_a_shape_in_pieces_is_drawn_piece_by_piece_but_the_sun() -> None:
+    """As the app asks for it on the water (TASK-226, its apartOnWater)."""
+    apart = [shape for shape in SHAPES if apart_on_water(shape)]
+    assert apart == ["dog_head", "rabbit_head"]
+    assert apart_on_water("cat") and apart_on_water("donut")
+    assert not apart_on_water("sun") and not apart_on_water("heart")
+    place = WaterPlace("Lago di prova", LAKE_START)
+    found = examples([place], FileWaterSource(LAKE), shapes=("heart", "dog_head"))
+    heart, dog = found[place_key(LAKE_START)]
+    assert "walks" not in heart
+    # To each eye and back to the outline, each stretch two points.
+    assert len(dog["walks"]) == 3
+    assert all(b == a + 1 for a, b in dog["walks"])
+    assert dog["points"][0] == dog["points"][-1]
+    assert abs(dog["route_m"] - 2000) <= 200
 
 
 def test_the_command_writes_every_place_from_the_cache(

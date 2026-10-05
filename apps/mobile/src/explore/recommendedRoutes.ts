@@ -1,4 +1,4 @@
-import type { Activity, LatLon } from "@shaperoute/shared-types";
+import type { Activity, LatLon, Walk } from "@shaperoute/shared-types";
 
 import { apiKey, keyHeaders } from "../api/apiUrl";
 
@@ -28,6 +28,12 @@ export type RecommendedRoute = {
   /** From the point asked about to the start, in a straight line. */
   away_m: number;
   preview: LatLon[];
+  /**
+   * The points of `preview` the route comes to without drawing: a card
+   * draws no segment that ends at one (an example drawn in pieces on the
+   * water, TASK-226). Absent for a route in one line.
+   */
+  gaps?: number[];
 };
 
 /** One route whole, to show on the map and export. */
@@ -47,6 +53,11 @@ export type RecommendedRouteDetail = {
    * the water (TASK-191). The API's routes are runs and do not say.
    */
   activity?: Activity;
+  /**
+   * The stretches with the pen up of a shape drawn in pieces on the water
+   * (TASK-226), as RouteResult.walks: an example's only, when it has some.
+   */
+  walks?: Walk[];
 };
 
 /** "Near you" (TASK-092, variant C): a start a short run away. */

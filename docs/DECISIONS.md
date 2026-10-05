@@ -1048,6 +1048,10 @@ entrare nel catalogo (ADR-0036). Le forme ancora a `no` si riconoscono da
 un occhio, una finestra, una rientranza: servono i tratti interni ripassati
 (TASK-037).
 
+**Aggiornamento 2026-10-05 (TASK-232)**: il limite di 15° è superato da
+ADR-0195, scelta dell'utente: le forme si inclinano fino a 45° e l'app
+gira la mappa perché si vedano dritte. Il cerchio resta libero.
+
 ## ADR-0039 — Tratti ripassati: linee e anelli dentro la forma
 **Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente;
 il giudizio dell'utente sui campioni lo sostiene a Trento e Milano, non a
@@ -9563,3 +9567,48 @@ spostano «dove ci sono le strade», come fanno su strada (`pieces.compose`).
   nell'app (ADR-0189) rifatti.
 - Un server senza questa parte rifiuta `pen_up` con `paddling`: l'app che
   lo chiede (parte B) si pubblica dopo l'aggiornamento del server.
+
+## ADR-0195 — Le forme si inclinano fino a 45°, e la mappa gira perché si vedano dritte
+
+**Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-232 ·
+45°, la mappa girata, la freccia del nord e la mappa della corsa sono
+scelte dell'utente; il resto è deciso
+dall'agente su delega dell'utente · supera in parte ADR-0038 (il limite
+di 15°)
+
+**Contesto**: ADR-0038 tiene ogni forma con un alto e un basso entro
+±15°, perché su una mappa col nord in alto l'occhio non riconosceva le
+forme inclinate (TASK-035). In un posto dove le strade reggono la forma
+solo inclinata, il percorso esce dritto ma la segue peggio. L'utente:
+«pur di farlo venire perfetto puoi scegliere tu l'orientamento e girare
+la mappa anche fino a 45 gradi».
+
+**Decisione**:
+
+1. Ogni forma con un alto e un basso si inclina fino a ±45°: catalogo,
+   emoji, contorni da foto, parole (anche quelle a blocchi lungo le
+   strade), canoa. Il cerchio resta libero.
+2. A parità vince la forma dritta: inclinarla costa il 5% di copertura a
+   45°, in proporzione all'angolo, come spostare la partenza di 500 m
+   (`OFFSET_FIT_PENALTY`). Il valore si tara sui campioni.
+3. Il risultato porta `rotation_deg` (antiorario, ADR-0018, fra −180 e
+   180), 0 per le forme che girano libere.
+4. L'app gira la mappa di `−rotation_deg` dove mostra il disegno di un
+   percorso, così la forma si vede dritta. Senza il campo, nord in alto.
+5. Con la mappa girata c'è una piccola freccia del nord in alto a
+   destra: un tocco rimette il nord in alto, un secondo rigira la mappa
+   come il disegno.
+6. Durante la corsa la mappa resta girata come il disegno, e la freccia
+   del corridore gira di conseguenza.
+7. Il GPX non cambia.
+
+**Alternative scartate**: tenere 15° (la richiesta è di provare di più);
+girare libero ogni forma (oltre 45° la mappa capovolta disorienta, e
+lettere e animali si leggono male); inclinare la forma senza girare la
+mappa (è ciò che ADR-0038 ha mostrato non riconoscibile).
+
+**Conseguenze**: la ricerca prova più rotazioni (7 invece di 3 per
+partenza e fase), con lo stesso numero di tracciati: il tempo va misurato.
+Cambiano i percorsi di oggi dove una forma inclinata segue meglio: i
+campioni si rigiudicano. Le corse salvate prima restano col nord in
+alto.

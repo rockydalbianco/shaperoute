@@ -182,6 +182,7 @@ function WaterExamples({
                 key={example.shape}
                 width={card}
                 line={route.preview}
+                gaps={route.gaps}
                 title={`${name} · ${km} km`}
                 detail={t("On the water")}
                 map

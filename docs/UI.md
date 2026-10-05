@@ -600,30 +600,23 @@ mappa è quella di prima.
   intorno, il telefono scarica piano piano quelle dei paesi vicini e
   delle città di «Explore», senza avvisi (TASK-214, parte B2). Poi
   **«Units»** (📏, TASK-182, ADR-0149), con in fondo l'unità in cui è
-  l'app («Kilometres» o «Miles»); un tocco apre sotto la riga
-  «Kilometres» e «Miles», con il «✓» bianco sulla scelta, come
-  «Language». La scelta chiude la lista, vale subito e resta sul
-  telefono. **Fino alla parte B l'app parte in km su ogni telefono**
-  (scelta dell'utente del 2026-10-05), e «Phone units» non è fra le
-  scelte; dalla parte B (`FOLLOWS_PHONE` in `src/units/followsPhone.ts`)
-  la lista si apre con «Phone units» (con accanto l'unità del telefono),
-  che è la partenza: miglia dove il telefono misura le strade in miglia
-  (Stati Uniti, Regno Unito, o il sistema di misura scelto a mano in
-  iOS), km altrove e quando il telefono non lo dice. **Con le miglia**, per ora
-  (parte A): «My activities» («2.49 mi · 19:00 · 7:38 /mi», anche nella
-  scheda della corsa aperta), i preferiti («Star · 3.2 mi») e le schede di
-  «Explore» («Star · 3.2 mi», «0.4 mi away», sotto i 1000 piedi «650 ft
-  away»; i paesi vicini «1.8 mi away»; il percorso aperto sulla mappa
-  «3.2 mi»). Il resto dell'app è ancora in km e arriva con la parte B: la
-  distanza che si chiede in «Draw» e il suo risultato, la corsa e la sua
-  fine, la voce, i post del «Feed», i disegni pubblici, «Explore» con
-  «Paddle», le frasi di «Explore» («Starting within 5 km of…»). Con
-  «Kilometres» niente cambia. Il GPX, l'API e il motore restano in metri.
-  **Dalla parte B** (2026-10-05) sono in miglia anche «Draw» e il suo
-  risultato (sotto, «Forma e distanza» e «Il risultato»), i post del
-  «Feed», i disegni pubblici, «Explore» con «Paddle» e le due frasi di
-  «Explore» («Starting within 3.1 mi of…», «shapes of 3.1 mi from the
-  centre»); restano la corsa, la sua fine e la voce.
+  l'app («Kilometres» o «Miles»); un tocco apre sotto la riga «Phone
+  units» (con accanto l'unità del telefono), «Kilometres» e «Miles», con
+  il «✓» bianco sulla scelta, come «Language». La scelta chiude la lista,
+  vale subito e resta sul telefono; «Phone units», la partenza di chi non
+  ha mai scelto, segue il telefono: miglia dove il telefono misura le
+  strade in miglia (Stati Uniti, Regno Unito, o il sistema di misura
+  scelto a mano in iOS), km altrove e quando il telefono non lo dice.
+  **Con le miglia** tutta l'app scrive e dice miglia: «My activities»
+  («2.49 mi · 19:00 · 7:38 /mi»), i preferiti («Star · 3.2 mi»), le
+  schede di «Explore» («0.4 mi away», sotto i 1000 piedi «650 ft away»),
+  «Draw» e il suo risultato (sotto, «Forma e distanza» e «Il risultato»),
+  i post del «Feed», i disegni pubblici, «Explore» con «Paddle», la corsa
+  e la sua fine, la voce (sotto, «La navigazione»), il post di «Share»
+  («3.23 mi · 28:10 · 8:43 /mi»). Restano in km, perché sono limiti del
+  motore detti così: «Shapes to paddle, within 1 km of the shore» e
+  l'avviso di sicurezza sull'acqua. Con «Kilometres» niente cambia. Il
+  GPX, l'API e il motore restano in metri.
   **«Notifications»**: «Email
   notifications» e «Push notifications», due interruttori salvati
   nell'account (TASK-185, ADR-0206, sotto). **«About»**: «Help»,

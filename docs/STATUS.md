@@ -525,14 +525,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   con i testi, le frasi e i tre numeri scelti dall'agente confermati
   dall'utente come letti: la voce in miglia è da ascoltare sull'iPhone
   (`tasks/TASK-182.md`, «Parte C»; ADR-0149, aggiornamento).
-  **Parte B, «Draw» e le schede** (2026-10-05, branch
-  `feat/TASK-182-b-draw-and-cards`, in revisione): con «Miles» la distanza
+  **Parte B, «Draw» e le schede** (in `main` dal 2026-10-05, PR #368,
+  merge `0703d25`): con «Miles» la distanza
   di «Draw» si scrive in miglia (− e + di 1 mi; corsa 1–13, bici 7–18,
   canoa 1–3; all'API metri interi), e sono in miglia il risultato, «Try»,
   il «Feed», i disegni pubblici ed «Explore» con «Paddle»; i testi nuovi
   sono confermati dall'utente (`tasks/TASK-182.md`, «Parte B»);
-  `FOLLOWS_PHONE` resta spento fino all'ultimo passo, con «Phone units»
-  e il testo di «Share» in miglia.
+  **ultimo passo** (2026-10-05, branch `feat/TASK-182-d-phone-units`, in
+  revisione): l'app segue l'unità del telefono finché non se ne sceglie
+  una («Phone units» torna fra le scelte; l'interruttore `FOLLOWS_PHONE`
+  non c'è più), e il post di «Share» è in miglia. Provato nel simulatore
+  con il telefono sugli Stati Uniti: «Phone units — Miles»
+  (`out/task182/`). Da ascoltare sull'iPhone la voce in miglia.
 - **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
   dall'utente il 2026-10-05: una mini guida, e le prime bozze di
   condizioni e privacy). In revisione (branch

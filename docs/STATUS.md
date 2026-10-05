@@ -512,7 +512,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **API** — TASK-249: un paese toccato in «NEARBY TOWNS» e lo stesso
   paese cercato per nome sono la stessa città (ADR-0213; seguito di
-  TASK-236, scelto dall'utente il 2026-10-06). **In revisione**: PR aperta,
+  TASK-236, scelto dall'utente il 2026-10-06). **In revisione**: PR #381,
   aspetta la coda. Per Tenna, Calceranica al Lago, Caldonazzo, Riva del
   Garda e altri comuni `GET /cities` dava il centro dell'area del comune,
   a 500–1200 m dal paese, e `GET /nearby-cities` il centro del paese: due

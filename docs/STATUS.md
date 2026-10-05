@@ -151,8 +151,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **TASK-238 — Spostare la figura sull'acqua** (ADR-0202; chiesto
   dall'utente il 2026-10-05: «spostare la figura un po' più a destra, a
   sinistra, più vicini alla riva»). L'utente ha scelto di **trascinarla
-  col dito**. **Parte A fatta** (branch
-  `feat/TASK-238-paddle-move-shape`): la richiesta in canoa può avere
+  col dito**. **Parte A in `main`** (PR #347, merge `797c4bb`,
+  2026-10-05): la richiesta in canoa può avere
   `near`, dove si vuole il centro della forma, e il risultato ha `centre`;
   il motore mette la forma nel posto più vicino in cui ci sta, nella
   fascia e con la riva a piedi entro 300 m (`water_fit.fit_shape(...,

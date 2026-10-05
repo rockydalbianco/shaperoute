@@ -1,6 +1,6 @@
 # TASK-238 — Spostare la figura sull'acqua
 
-**Stato**: In corso (parte A PR #347; parte B fatta, PR da aprire dopo la A)
+**Stato**: In corso (parte A in `main`, PR #347, `797c4bb`; parte B fatta, in PR; il server e la prova col dito da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-238-paddle-move-shape` (A),
 `feat/TASK-238-paddle-move-app` (B)
 **Dipende da**: TASK-191 (la canoa), TASK-226 (le forme a pezzi sull'acqua)

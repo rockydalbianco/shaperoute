@@ -1,7 +1,8 @@
 # TASK-226 — Gli occhi staccati sull'acqua
 
-**Stato**: In corso (parte A, motore e API, in `main` dalla #310,
-`15df224`; parte B, l'app, in PR)
+**Stato**: Done (2026-10-05) — parte A #310 (`15df224`), parte B #315
+(`9297984`). `main` non si pubblica finché il server non ha la parte A
+(aggiornamento e `draw_examples`, con l'ok dell'utente).
 **Fase**: 4 · **Branch**: `feat/TASK-226-water-eyes` (A),
 `feat/TASK-226-water-eyes-app` (B)
 **Dipende da**: TASK-223 (le forme a pezzi, `lift` e `pieces`, #284 e

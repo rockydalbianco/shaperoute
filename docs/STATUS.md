@@ -215,19 +215,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Mancano il cerchio da 20 km, Levico e Padova, quando Overpass riapre. Il
   miglioramento delle forme in bici è TASK-206, qui sotto. Da dove
   riprendere: il task file, «Esito», «I campioni».
-- **TASK-217 — La voce confronta ogni km col precedente** (ADR-0180;
-  chiesto e scelto dall'utente il 2026-10-03; codice scritto il
-  2026-10-05, PR #308): dopo la frase di ogni km, dal secondo, «Questo
-  chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2
-  s «Stesso passo del chilometro precedente.»; al primo km niente. Con e
-  senza percorso, con i secondi della fine corsa (`splits`), pause
-  escluse. In bici ogni 10 km da 20 km e senza numeri («Ultimi 10
-  chilometri più veloci dei 10 precedenti.»). Tutto in
-  `src/navigation/kmCompare.ts`. **Da confermare dall'utente**: le frasi
-  in tedesco, spagnolo e francese, e in bici «stessa velocità» entro 0,5
-  km/h (frase e soglia, proposta dell'agente). Le forme con le miglia le
-  aggiunge TASK-182. Solo app: esce con la prossima pubblicazione, con
-  l'ok dell'utente; da provare correndo. `tasks/TASK-217.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,
@@ -434,6 +421,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-217: la voce confronta ogni km col precedente
+  (ADR-0180; chiesto e scelto dall'utente il 2026-10-03; PR #308, merge
+  `f811e3a`). Dal secondo km, subito dopo la frase del km, «Questo
+  chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2
+  s «Stesso passo del chilometro precedente.»; al primo km niente. Con e
+  senza percorso, con i secondi della fine corsa (`splits`), pause
+  escluse. In bici ogni 10 km da 20 km e senza numeri («Ultimi 10
+  chilometri più veloci dei 10 precedenti.»). Tutto in
+  `src/navigation/kmCompare.ts`. **Da confermare dall'utente**: le frasi
+  in tedesco, spagnolo e francese, e in bici «stessa velocità» entro 0,5
+  km/h (frase e soglia, proposta dell'agente). Le forme con le miglia le
+  aggiunge TASK-182. Solo app: esce con la prossima pubblicazione; da
+  provare correndo. Task file: `tasks/TASK-217.md`.
 - **App** — TASK-227: «Explore» con «Paddle» come la corsa (ADR-0189;
   scelte dell'utente del 2026-10-04; PR #297, merge `e761044`). Con
   «Paddle» ogni luogo d'acqua ha le otto forme della corsa da 2 km, e i

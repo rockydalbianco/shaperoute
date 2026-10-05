@@ -44,17 +44,6 @@ ora ha il database e il server. Gli altri Todo.
 
 In coda, dopo o accanto:
 
-- **TASK-236 — I paesi vicini sotto «Near me»** (ADR-0200, chiesto
-  dall'utente il 2026-10-05): in «Explore», con «Near me», la sezione
-  «NEARBY TOWNS» con fino a sei posti intorno alla partenza (quattro paesi
-  entro 20 km, o fino a 50 dove sono pochi, più i due più vicini anche se
-  piccoli: risposta dell'utente), da `GET /nearby-cities`; mentre è
-  sulla pagina l'app fa disegnare al server i primi tre esempi di ognuno,
-  e la scheda ne mostra uno. Corsa e bici; la canoa ha i laghi vicini
-  (TASK-233). In revisione; **mancano** il server (l'endpoint: senza, la
-  sezione non compare) e la pubblicazione, con l'ok dell'utente. Regola,
-  testi e tre campioni per posto confermati dall'utente
-  (`tasks/TASK-236.md`).
 - **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
   posizioni non si salva; il GPX di una corsa salvata; il cuore dei
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
@@ -512,6 +501,25 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   pubblicazione (del coordinatore, con l'ok dell'utente); da provare
   sull'iPhone con due account. Le notifiche ad app chiusa restano
   TASK-185. `tasks/TASK-239.md`.
+
+- **App e API** — TASK-236: i paesi vicini sotto «Near me» (ADR-0200;
+  chiesto dall'utente il 2026-10-05, regola, testi e campioni confermati
+  uno per uno; PR #323, merge `8c3a6ff`). In «Explore», con «Near me»,
+  sotto la fila delle città c'è «NEARBY TOWNS»: una fila di schede da
+  scorrere con fino a sei posti intorno alla partenza, dal più vicino:
+  quattro città e paesi (i più grandi entro 20 km; dove sono meno, i più
+  vicini fino a 50) e i due posti più vicini di tutti, anche villaggi (da
+  Caldonazzo: Tenna, Calceranica, Levico, Pergine, Trento, Borgo). Vengono
+  da `GET /nearby-cities` (`nearby_cities.py`, Places di Geoapify, la
+  chiave resta nell'API). Mentre la sezione è sulla pagina l'app fa
+  disegnare al server cerchio, cuore e stella da 5 km di ogni posto, uno
+  alla volta e al più 12 al minuto: la scheda mostra il cuore, e il paese
+  toccato si apre con le prime tre schede pronte. Corsa e bici (stessi
+  esempi della corsa); la canoa ha i laghi vicini (TASK-233). Provato nel
+  simulatore con l'API del branch, prima dei due posti più vicini.
+  **Sul server** dal 2026-10-05 09:32Z (`f3fdbce`) e **su `preview`** da
+  `8c3a6ff` (gruppo `8f6849ca`), fatti dal coordinatore. Da provare
+  sull'iPhone: le sei schede. Seguiti in `tasks/TASK-236.md`.
 
 - **Motore, API e app** — TASK-234: «Viene meglio a N km» (ADR-0197;
   chiesto dall'utente il 2026-10-05, il «passo 1»; PR #327, merge

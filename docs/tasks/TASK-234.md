@@ -1,9 +1,9 @@
 # TASK-234 — «Viene meglio a 12 km»: la distanza dove la forma riesce meglio
 
-**Stato**: Todo — task file scritto il 2026-10-05; il codice dopo la #310
-(TASK-226), che tocca gli stessi file del motore
+**Stato**: Todo — task file scritto il 2026-10-05; il codice dopo il merge
+della #310 (TASK-226 A, che tocca `models.py`)
 **Fase**: 4 · **Branch**: `feat/TASK-234-better-distance`
-**ADR**: ADR-0196 (estende ADR-0041)
+**ADR**: ADR-0197 (estende ADR-0041)
 
 ## Obiettivo
 
@@ -28,7 +28,7 @@ tentativi che la ricerca ha già tracciato, senza calcoli e senza attese in
 più. Il passo 2 (cercare apposta 2–3 distanze vicine, 5–50 s di server
 l'una) è fuori da questo task: si valuta dopo, se il passo 1 scatta poco.
 
-## Le scelte (ADR-0196)
+## Le scelte (ADR-0197)
 
 Dall'utente: il passo 1, e una riga con «Prova» sotto il percorso. Il
 resto è deciso dall'agente su delega dell'utente:
@@ -41,8 +41,9 @@ resto è deciso dall'agente su delega dell'utente:
    più basso di quello del percorso scelto di almeno `W_SHAPE × 0,05`
    (cinque punti di somiglianza), e la sua somiglianza è almeno
    `SIMILARITY_THRESHOLD` (0,90). Così non si consiglia un percorso con
-   un baffo ripassato o lontano dalla partenza. Le soglie si tarano sulle
-   misure (punto 7).
+   un baffo ripassato o lontano dalla partenza. Questi sono i valori di
+   partenza: la soglia vera si decide misurando (punto 7) e si scrive in
+   ADR-0197.
 3. **Quale distanza**: quella del tentativo, arrotondata al km come
    `suggested_distance_m` e dentro i limiti della richiesta per
    l'attività (bici 10–30 km). Se arrotondata è uguale alla distanza
@@ -74,22 +75,32 @@ resto è deciso dall'agente su delega dell'utente:
 
 - `docs/DECISIONS.md`: ADR-0041 (la distanza quando la forma non ci sta),
   ADR-0040 (la ricerca lontana), ADR-0087 (le alternative, TASK-093),
-  ADR-0172 (le lingue), ADR-0196
+  ADR-0172 (le lingue), ADR-0197
 - `docs/ROUTE_ENGINE.md` §5 (la ricerca e il costo)
 - `docs/API.md` «Errori» (`suggested_distance_m`), `docs/MAPS.md`
 - `docs/UI.md` «Draw»
 
 ## Cosa fare
 
+Dopo il merge della #310 (TASK-226 A, che tocca `models.py`).
+`optimizer.py` è libero. `RoutePanel.tsx` lo tocca anche TASK-226 B
+(`penUpShapes`, pochi punti): chi entra secondo si aggiorna (il
+coordinatore, 2026-10-05).
+
 1. Motore (`optimizer.py`, `models.py`): calcolare il consiglio dai
    tentativi in `plan_shape` e metterlo in `RouteResult`.
 2. API (`schemas.py`, l'arrotondamento di `errors.py`): `better_distance_m`
-   nella risposta; `packages/shared-types`; `docs/API.md`.
+   nella risposta, solo come aggiunta al contratto come
+   `suggested_distance_m`, con un test del contratto che l'app di oggi
+   lo ignora; `packages/shared-types`; `docs/API.md`.
 3. `engine.zip` del telefono rifatto (TASK-214):
-   `python tools/phone_engine/phone_engine.py engine`.
+   `python tools/phone_engine/phone_engine.py engine`; se servisse,
+   anche `apps/mobile/src/paddle/paddleExamples.json`. Sul server,
+   `draw_examples` dopo il merge, con l'ok dell'utente.
 4. Le misure del punto 7 in `MAPS.md`.
 5. App: la riga e il bottone sotto il percorso (`betterDistance.ts`, file
-   nuovo, e `RoutePanel.tsx`), i testi nelle cinque lingue, `docs/UI.md`.
+   nuovo, e `RoutePanel.tsx`), i testi con `t()` nelle cinque lingue, da
+   confermare con l'utente, `docs/UI.md`.
 
 ## Criteri di accettazione
 
@@ -119,6 +130,7 @@ services/api/shaperoute_api/errors.py
 services/api/tests/test_better_distance.py                  (nuovo)
 packages/shared-types/src/index.ts
 apps/mobile/assets/engine/engine.zip
+apps/mobile/src/paddle/paddleExamples.json                  (se servisse)
 apps/mobile/src/route/betterDistance.ts                     (nuovo)
 apps/mobile/src/route/betterDistance.test.ts                (nuovo)
 apps/mobile/src/route/RoutePanel.tsx

@@ -145,7 +145,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-234 — «Viene meglio a 12 km»** (ADR-0196; Todo, chiesto
+- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; Todo, chiesto
   dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
   riesce ma un tentativo già tracciato a un'altra distanza segue la forma
   chiaramente meglio, l'API manda `better_distance_m` e l'app scrive la

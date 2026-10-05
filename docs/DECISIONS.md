@@ -9499,7 +9499,7 @@ peggio del precedente, e fra tre proposte ha scelto quella con i secondi.
   «Same pace as the last kilometre.» al secondo km.
 - Solo app: esce con la prossima pubblicazione, con l'ok dell'utente.
 
-## ADR-0196 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
+## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 
 **Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-234 ·
 il consiglio da tentativi già fatti (il «passo 1») e la riga con «Prova»
@@ -9518,7 +9518,9 @@ calcoli in più.
    (`Search.attempts`): nessun tracciato e nessuna attesa in più.
 2. Un tentativo è «chiaramente meglio» quando il suo costo senza la parte
    della distanza è più basso di quello del percorso scelto di almeno
-   `W_SHAPE × 0,05`, e la sua somiglianza è almeno 0,90.
+   `W_SHAPE × 0,05`, e la sua somiglianza è almeno 0,90. Sono i valori
+   di partenza: la soglia si decide misurando (TASK-234) e si scrive
+   qui.
 3. La distanza è la sua, arrotondata al km e dentro i limiti
    dell'attività come `suggested_distance_m`; uguale a quella chiesta,
    niente consiglio.

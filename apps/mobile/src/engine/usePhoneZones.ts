@@ -1,6 +1,8 @@
+import type { LatLon } from "@shaperoute/shared-types";
 import { useEffect, useRef, useState } from "react";
 
 import type { PositionState } from "../location/useCurrentPosition";
+import { drawShapesAhead } from "../paddle/aheadExamples";
 import { activityOf, loadSport } from "../settings/sport";
 import { downloadAhead } from "./aheadZones";
 import { type PhoneEngine, phoneEngine } from "./phoneEngine";
@@ -23,7 +25,10 @@ export const NOTICE_MIN_BYTES = 100_000;
  * data (the user's choice of 2026-10-03); a zone the phone has costs a 304.
  * With a zone around the phone, Python starts ahead of the first route.
  * Then, slowly, the zones of the cities ahead (part B2, `aheadZones.ts`),
- * when the server gave a zone around the phone at this opening.
+ * when the server gave a zone around the phone at this opening; and, beside
+ * them, the shapes on the water of the places near the phone (TASK-246,
+ * `aheadExamples.ts`): routes asked of the API when it answers, whatever it
+ * has of zones.
  *
  * Gives the bytes of the first maps of the phone while they download, for
  * the notice over «Draw route» (part C), else null. Only the first: when
@@ -37,10 +42,12 @@ export function usePhoneZones(
     engine = phoneEngine,
     download = downloadZone,
     ahead = downloadAhead,
+    shapes = drawShapesAhead,
   }: {
     engine?: PhoneEngine;
     download?: typeof downloadZone;
     ahead?: typeof downloadAhead;
+    shapes?: (apiUrl: string, here: LatLon) => Promise<unknown>;
   } = {},
 ): number | null {
   const done = useRef(false);
@@ -64,10 +71,12 @@ export function usePhoneZones(
     void (async () => {
       let ready = false;
       let served = false;
+      let answered = false;
       const networks = networksInOrder();
       for (const network of networks) {
         const answer = await download(baseUrl, network, point, first ? { onSize } : {});
         served ||= answer.kind === "saved" || answer.kind === "unchanged";
+        answered ||= answer.kind !== "failed";
         ready ||= served;
         // Offline at the opening: the zone saved before still counts.
         ready ||= coveringZone(savedZones(), network, point) !== null;
@@ -76,13 +85,19 @@ export function usePhoneZones(
       if (ready) {
         engine.warmUp();
       }
+      // After the maps around the phone, not with them: the first route
+      // of the user is not behind these. From a server that answers now,
+      // with a zone or without: the shapes are routes it draws.
+      if (answered) {
+        void shapes(baseUrl, point);
+      }
       // Only from a server that gives zones and answers now: else every
       // city ahead would be a request for nothing.
       if (served) {
         await ahead(baseUrl, point, networks[0], { download });
       }
     })();
-  }, [position, baseUrl, engine, download, ahead]);
+  }, [position, baseUrl, engine, download, ahead, shapes]);
 
   return firstBytes;
 }

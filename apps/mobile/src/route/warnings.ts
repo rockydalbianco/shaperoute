@@ -13,6 +13,15 @@
  */
 
 import { decimal, t } from "../i18n";
+import {
+  distanceLabel,
+  METRES_PER_FOOT,
+  shortBelowM,
+  shortDistanceLabel,
+  withPoint,
+  type Written,
+} from "../units/format";
+import { appUnits } from "../units/units";
 
 /** How a note should look: something to watch for, or just to know. */
 export type NoteTone = "caution" | "info";
@@ -28,18 +37,44 @@ type Rule = {
   say: (match: RegExpExecArray) => string;
 };
 
-/** "250 m", or "1.2 km" from a thousand metres up. */
+/**
+ * With «Miles» (TASK-182): "800 ft", to 50 feet and at least 50, or "1.2
+ * mi" from a thousand feet up.
+ */
+function inMiles(m: number, written: Written): string {
+  return m < shortBelowM("mi")
+    ? shortDistanceLabel(Math.max(m, 50 * METRES_PER_FOOT), "mi")
+    : distanceLabel(m, "mi", written);
+}
+
+/** "250 m", or "1.2 km" from a thousand metres up; in the app's units. */
 function metres(value: string): string {
   const m = Number(value);
+  if (appUnits() === "mi") {
+    return inMiles(m, withPoint);
+  }
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
+}
+
+/** The engine's own "250 m" or "1.5 km", in the app's units: as it is in
+ * km, and when it does not read. */
+function engineDistance(text: string): string {
+  const match = /^(\d+(?:\.\d+)?) (m|km)$/.exec(text);
+  if (appUnits() !== "mi" || !match) {
+    return text;
+  }
+  return inMiles(Number(match[1]) * (match[2] === "km" ? 1000 : 1), withPoint);
 }
 
 /**
  * A stretch with the bike on foot as the card says it (TASK-206): "920 m",
  * to 10 m and at least 10, or "1.1 km" ("1,1 km" in Italian) from a
- * thousand metres up.
+ * thousand metres up. With «Miles», "900 ft" or "0.7 mi".
  */
 export function roughMetres(m: number): string {
+  if (appUnits() === "mi") {
+    return inMiles(m, decimal);
+  }
   const tens = Math.max(10, Math.round(m / 10) * 10);
   return tens < 1000 ? `${tens} m` : `${decimal(m / 1000)} km`;
 }
@@ -52,7 +87,7 @@ const RULES: Rule[] = [
       /^start moved (.+?) ([a-z]+(?:-[a-z]+)*) of the requested point, where the shape closes/,
     tone: "info",
     say: ([, distance, direction]) =>
-      `The route starts ${distance} ${direction} of your start, where the shape fits the roads. Go to “Start here”.`,
+      `The route starts ${engineDistance(distance)} ${direction} of your start, where the shape fits the roads. Go to “Start here”.`,
   },
   {
     pattern: /^(\d+(?:\.\d+)?) m of the route on steps$/,

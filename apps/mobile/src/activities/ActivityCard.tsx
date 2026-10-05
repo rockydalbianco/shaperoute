@@ -15,6 +15,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useUnits } from "../units/useUnits";
 import { runFacts, startedLabel, whereAndWhat } from "./activityText";
 
 type Props = {
@@ -36,6 +37,8 @@ type Props = {
 export function ActivityCard({ activity, onList, onDelete }: Props) {
   // «Delete» asks first, on the card itself.
   const [confirming, setConfirming] = useState(false);
+  // The facts are written again when «Settings» changes the units (TASK-182).
+  useUnits();
   const withRoute = activity.points !== null;
   return (
     <View style={styles.card}>

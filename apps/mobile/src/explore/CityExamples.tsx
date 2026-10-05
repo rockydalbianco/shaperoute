@@ -47,13 +47,18 @@ export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) 
   const messages = Array.from(new Set(failed.map((e) => e.message)));
   // Something is still to draw, the other shapes too: the note says to wait.
   const coming = examples.some((e) => e.status === "waiting" || e.status === "drawing");
+  // The distance the examples are asked at: "5 km"; with «Miles», "3.1 mi".
+  const asked =
+    units === "mi"
+      ? distanceLabel(EXAMPLE_DISTANCE_M, "mi", withPoint)
+      : `${EXAMPLE_DISTANCE_M / 1000} km`;
   return (
     <View style={styles.section}>
       <Text
         style={styles.label}
       >{`EXAMPLES IN ${cityShort(city.label).toUpperCase()}`}</Text>
       <Text style={styles.note}>
-        {`No recommended routes here yet: shapes of ${EXAMPLE_DISTANCE_M / 1000} km from the centre, drawn now.${coming ? " Three first, more while you choose." : ""}`}
+        {`No recommended routes here yet: shapes of ${asked} from the centre, drawn now.${coming ? " Three first, more while you choose." : ""}`}
       </Text>
       <View style={styles.grid}>
         {shown.map((example) => {

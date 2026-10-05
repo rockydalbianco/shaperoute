@@ -510,10 +510,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (`FOLLOWS_PHONE` spento): solo chi sceglie «Miles» vede l'app mista.
   Su `preview` dal 2026-10-05 (gruppo `1b49d248`, pubblicata dal
   coordinatore). Testi «Kilometres», «Miles» e «{mi} mi away» **confermati
-  dall'utente** il 2026-10-05; «Phone units» si vedrà con l'ultimo passo. La
-  riga «Units» è stata vista nel simulatore in italiano. **Da fare con
-  l'ultimo passo**: la prova su un iPhone con le miglia (l'unità del
-  telefono non è stata vista su un telefono vero). **Parte B** (file di
+  dall'utente** il 2026-10-05; la riga «Units» è stata vista nel
+  simulatore in italiano. **Parte B** (file di
   altri task): «Draw» (la distanza chiesta, passi e limiti in miglia: una
   scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
@@ -522,8 +520,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Miles» le schermate della corsa, la navigazione, la fine della corsa e
   la voce sono in miglia (parziali per miglio calcolati sul telefono, la
   voce a ogni miglio e in bici ogni 5, le svolte in piedi, mph in bici),
-  e aspettano l'utente i testi e le frasi nuove e tre numeri scelti
-  dall'agente (`tasks/TASK-182.md`, «Parte C»; ADR-0149, aggiornamento).
+  con i testi, le frasi e i tre numeri scelti dall'agente confermati
+  dall'utente come letti: la voce in miglia è da ascoltare sull'iPhone
+  (`tasks/TASK-182.md`, «Parte C»; ADR-0149, aggiornamento).
+  **Parte B, «Draw» e le schede** (2026-10-05, branch
+  `feat/TASK-182-b-draw-and-cards`, in revisione): con «Miles» la distanza
+  di «Draw» si scrive in miglia (− e + di 1 mi; corsa 1–13, bici 7–18,
+  canoa 1–3; all'API metri interi), e sono in miglia il risultato, «Try»,
+  il «Feed», i disegni pubblici ed «Explore» con «Paddle»; i testi nuovi
+  sono confermati dall'utente (`tasks/TASK-182.md`, «Parte B»);
+  `FOLLOWS_PHONE` resta spento fino all'ultimo passo, con «Phone units»
+  e il testo di «Share» in miglia.
 ## Completato
 
 - **API e app** — TASK-185: i due interruttori delle notifiche (ADR-0206;
@@ -650,6 +657,24 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   pubblicazione dell'app (del coordinatore) e la prova con un dito vero
   sull'iPhone. `tasks/TASK-244.md`.
 
+- **App** — TASK-246: le figure «Paddle» dei tre posti più vicini già
+  sul telefono (ADR-0211; chiesto dall'utente il 2026-10-05, che ha
+  scelto: tre posti, con qualunque sport, anche con i dati mobili).
+  **Fatto**: in `main` dalla #369 (`2fcf6b5`). A ogni apertura, dopo le mappe della zona, il telefono fa
+  disegnare al server le otto forme dei tre posti più vicini entro 30 km
+  che non ha ancora, una ogni 6 secondi al massimo, e le tiene in
+  `Documents/paddle-ahead.json`: «Explore» con «Paddle» le mostra subito.
+  Solo app: **niente motore, API, server**; nessun testo nuovo.
+  Provato dal vero sul Mac contro un'API locale (le otto forme del Lago di
+  Levico, mezzo secondo l'una), non visto sullo schermo. Le spiagge di
+  TASK-245 sono fra i tre posti; con l'app in secondo piano il giro
+  aspetta. **Aspettano**: la pubblicazione dell'app (del coordinatore) e
+  la prova sull'iPhone (aprire l'app, tre minuti, poi «Explore» con
+  «Paddle»).
+  **Seguito**: il server non tiene le figure dei laghi, ogni telefono
+  nuovo gliene fa disegnare fino a 24 (circa un minuto di motore).
+  `tasks/TASK-246.md`.
+
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della
   faccina a Trento, campioni prima/dopo giudicati «sì, va bene»; PR
@@ -683,9 +708,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   /track-scores` (PR #365, merge `0294922`). **Il punteggio non si vede
   più da nessuna parte nell'app**; l'API lo calcola ancora per le corse
   salvate. Conseguenza: l'evento `run_scored` degli `insights` non viene
-  più registrato (seguito, se serve). Restano da decidere con l'utente
-  due frasi della bozza di «Privacy» che lo nominano. Esce con la
-  prossima pubblicazione. `tasks/TASK-241.md`.
+  più registrato (seguito, se serve). **Parte F** («ok continua»
+  dell'utente alla proposta): dalla bozza di «Privacy» esce «a run
+  scored» fra gli eventi tenuti; resta «…distance, duration, score…»,
+  ancora vera. Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

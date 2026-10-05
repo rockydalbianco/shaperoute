@@ -369,7 +369,8 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   sono esempi: scelta dell'utente. Ogni scheda ha l'iniziale e il nome di
   chi ha corso, la
   città, il disegno in giallo a tutta larghezza, il titolo e una riga
-  «Horse · 19.2 km · 1 h 41 min». **Il punteggio non c'è**, né sopra il
+  «Horse · 19.2 km · 1 h 41 min» (con «Miles», «Horse · 11.9 mi · 1 h 41
+  min»: TASK-182). **Il punteggio non c'è**, né sopra il
   disegno né in quello che legge VoiceOver (TASK-241, ADR-0207, chiesto
   dall'utente). Sono le
   figure venute meglio nelle sette città del catalogo, due per città e
@@ -618,6 +619,11 @@ mappa è quella di prima.
   fine, la voce, i post del «Feed», i disegni pubblici, «Explore» con
   «Paddle», le frasi di «Explore» («Starting within 5 km of…»). Con
   «Kilometres» niente cambia. Il GPX, l'API e il motore restano in metri.
+  **Dalla parte B** (2026-10-05) sono in miglia anche «Draw» e il suo
+  risultato (sotto, «Forma e distanza» e «Il risultato»), i post del
+  «Feed», i disegni pubblici, «Explore» con «Paddle» e le due frasi di
+  «Explore» («Starting within 3.1 mi of…», «shapes of 3.1 mi from the
+  centre»); restano la corsa, la sua fine e la voce.
   **«Notifications»**: «Email
   notifications» e «Push notifications», due interruttori salvati
   nell'account (TASK-185, ADR-0206, sotto). **«About»**: «Help»,
@@ -1237,6 +1243,35 @@ tastierino numerico non ha il tasto invio: si chiude toccando «Draw
 route»; quello della forma si chiude con «Fine». Mentre una tastiera è
 aperta la schermata si accorcia perché non copra i campi.
 
+**Con «Miles»** (TASK-182 parte B, ADR-0149 «aggiornamento»; scelte
+dell'utente del 2026-10-05) la distanza si chiede in miglia:
+
+- accanto al campo c'è «mi» (VoiceOver: «Distance in miles»); si scrivono
+  miglia intere o con un decimale (`4`, `4,5`, `4.5`), e al motore vanno i
+  metri interi (4,5 mi → 7242);
+- **− e + cambiano di 1 miglio**; i limiti sono le miglia intere dentro
+  quelli in km: **corsa 1–13 mi, bici 7–18 mi, canoa 1–3 mi**
+  (`APP_DISTANCE_LIMITS_MI`). Fuori: «Enter a distance between 1 and 13
+  mi.»;
+- di partenza **3 mi** (i 5 km, al miglio più vicino), 7 mi con «Bike»,
+  1 mi con «Paddle» (i 2 km);
+- l'avviso dei percorsi lunghi resta a 15 km: compare da 9,4 mi (da 10
+  mi con − e +);
+- cambiando l'unità in «Settings» la distanza scritta resta la stessa,
+  al km o al miglio intero più vicino e dentro i limiti (5 km → 3 mi,
+  7,5 km → 5 mi, 21 km → 13 mi; 3 mi → 5 km);
+- una parola: «“CIAO” needs at least 7.5 mi: 1.9 mi for each letter.»,
+  il tasto «Use 8 mi» (il miglio intero che basta), «4 letters: at least
+  7.5 mi. A word takes a few minutes to draw.»; le miglia di una parola
+  sono arrotondate **in su**, mai meno di quelle che servono. A piedi le
+  lettere sono **al massimo 6** (7 chiedono 21 km, più di 13 mi): «At
+  most 6 letters: each needs 1.9 mi, and the app goes up to 13 mi.»;
+- un lago piccolo scelto in «Another place» (TASK-240) tiene la sua
+  distanza di 1 o 1,5 km anche sotto il miglio: il campo mostra «0.6» o
+  «0.9».
+
+Con «Kilometres» tutto è come sopra, alla lettera.
+
 ### L'immagine (TASK-073)
 
 Con «Image» due pulsanti: **«Choose picture»**, dalla libreria delle foto,
@@ -1391,6 +1426,21 @@ Sulla mappa la linea del percorso, inquadrata. Sotto, la distanza in grande
 («4.0 km») e, dopo il nome del percorso, «heart · on roads · target 5 km»
 o «“CIAO” · on roads · target 12 km» (TASK-057); poi gli avvisi del motore, uno per
 riga, e «Export GPX» largo (sotto, «Export del GPX»).
+
+**Con «Miles»** (TASK-182 parte B) tutto questo è in miglia, subito:
+«3.2 mi», «heart · on roads · target 3 mi», l'attesa «Drawing a 3 mi
+heart…», le tessere «3.2 mi · 91%», la riga della penna alzata («6.0 mi of
+letters + 0.1 mi walking between them»), gli avvisi del motore in piedi
+sotto i 1000 piedi e in miglia sopra («There are 400 ft of steps along the
+way.», «The route starts 0.7 mi north of your start…», «Includes 0.7 mi
+walking the bike.»). «This shape comes out better at about 5 mi.» e «Try
+5 mi» propongono il **miglio intero più vicino** dentro i limiti, e il
+tasto chiede quelle miglia (in metri interi); se la richiesta è già a quel
+miglio la riga non c'è. Così «It fits at about 4 mi.» / «Try 4 mi» quando
+la forma non ci sta; se il miglio intero è quello appena chiesto, il
+decimo più vicino («Try 3.1 mi»), e senza un'altra distanza le forme del
+catalogo. Sull'acqua il miglio è arrotondato **in giù** (la distanza
+dell'API è il massimo che ci sta).
 
 **Più percorsi fra cui scegliere** (TASK-093, ADR-0087, scelte
 dell'utente): quando l'API manda delle alternative, sotto il nome ci sono
@@ -2176,7 +2226,13 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
 - **«Explore»** (scelta dell'utente; come la corsa dal TASK-233, ADR-0196):
   al posto di città, esempi di corsa e percorsi consigliati, la pagina «On
   the water», «Shapes to paddle, within 1 km of the shore», con il cuore di
-  Sgrava in alto a destra e la sezione «LAKES AND SEA».
+  Sgrava in alto a destra e la sezione «LAKES AND SEA». Con «Miles»
+  (TASK-182 parte B) le schede dicono «Heart · 1.2 mi» («Heart, 1.2 mi, on
+  the water» per VoiceOver) e il lago «0.6 mi away»; «within 1 km of the
+  shore» resta in km, come nell'avviso di sicurezza: è il limite del
+  motore, e in miglia tonde non sarebbe vero. Senza acqua vicina: «…Start
+  from the shore, within 1 mile of the water.» (il motore cerca entro 2
+  km).
   - **«Near me»** è il primo della riga, con il segno della posizione, ed è
     **acceso da subito** quando c'è una partenza, come nella corsa. Mostra
     il luogo dell'elenco più vicino entro 30 km, con il nome e la distanza:
@@ -2227,6 +2283,13 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     mappa come un percorso di «Explore», con «Start», «Export GPX» e il
     cuore dei preferiti, che la tiene come canoa. La scelta resta quando si
     torna dalla mappa.
+  - **Le forme dei tre posti più vicini sono già sul telefono** (TASK-246,
+    ADR-0211; richiesta e scelta dell'utente): a ogni apertura dell'app,
+    dopo le mappe della zona, il telefono chiede all'API le otto forme dei
+    tre posti più vicini entro 30 km che non ha ancora, con qualunque
+    sport di «Settings», senza avvisi, anche con i dati mobili. La pagina
+    le mostra subito, come quelle venute con l'app; quello che manca
+    ancora lo chiede lei come prima.
 - **I pezzi staccati sull'acqua** (TASK-226, ADR-0188; scelta dell'utente
   sui campioni): con «Paddle» gatto, pesce, testa di cane, testa di
   coniglio, zucca, faccina, fantasmino e ciambella si chiedono **sempre**

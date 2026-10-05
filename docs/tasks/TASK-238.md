@@ -119,6 +119,7 @@ services/api/shaperoute_api/on_phone.py
 services/api/shaperoute_api/route_store.py
 services/api/tests/test_paddling_near.py              (nuovo)
 services/api/tests/test_contract.py
+services/api/tests/test_better_distance.py            (l'elenco dei campi aggiunti)
 packages/shared-types/src/index.ts
 packages/shared-types/test/contract.test.ts
 packages/shared-types/fixtures/route-request-paddling-near.json  (nuovo)

@@ -1,6 +1,9 @@
 import type { Activity } from "@shaperoute/shared-types";
 
 import { BASE_LANGUAGE, type Language } from "../i18n/languages";
+import { metresPer } from "../units/format";
+import { speedIn } from "../units/runFormat";
+import { appUnits, type Units } from "../units/units";
 import { wordsOf } from "../voice/words";
 import { ANNOUNCE_M } from "./navigator";
 import { durationMs, type Track } from "./trackRecorder";
@@ -22,6 +25,16 @@ export const RIDE_ANNOUNCE_M = 100;
 /** On a bike the voice says the kilometres every this many (the user's
  * choice, 2026-10-03): a kilometre lasts 2–3 minutes. */
 export const RIDE_KM_EVERY = 10;
+
+/** With miles the voice says them every this many (TASK-182, ADR-0149):
+ * 8 km, the round number of miles nearest to RIDE_KM_EVERY. */
+export const RIDE_MI_EVERY = 5;
+
+/** How many kilometres, or with miles how many miles, between two
+ * announcements on a bike. */
+export function rideEveryOf(units: Units = appUnits()): number {
+  return units === "mi" ? RIDE_MI_EVERY : RIDE_KM_EVERY;
+}
 
 /** Whether a route of `activity` is followed by bike. */
 export function isRide(activity: Activity | undefined): boolean {
@@ -52,22 +65,34 @@ export function speedChange(seconds: number, before: number): string {
 }
 
 /** The kilometres of `track` the voice has said by now: every whole one on
- * a run, every RIDE_KM_EVERY on a bike. */
-export function saidKmOf(track: Track, activity: Activity | undefined): number {
-  const km = Math.floor(track.distanceM / 1000);
-  return isRide(activity) ? Math.floor(km / RIDE_KM_EVERY) * RIDE_KM_EVERY : km;
+ * a run, every RIDE_KM_EVERY on a bike. With miles, the miles: every whole
+ * one, and every RIDE_MI_EVERY on a bike (TASK-182). */
+export function saidKmOf(
+  track: Track,
+  activity: Activity | undefined,
+  units: Units = appUnits(),
+): number {
+  const whole = Math.floor(track.distanceM / metresPer(units));
+  const every = rideEveryOf(units);
+  return isRide(activity) ? Math.floor(whole / every) * every : whole;
 }
 
 /**
  * What the voice says when a ride passes `km` kilometres: the time so far
- * and the average speed, in whole km/h, in the voice's `language`.
+ * and the average speed, in whole km/h, in the voice's `language`. With
+ * miles `km` counts miles, and the speed is in whole mph (TASK-182).
  */
 export function rideAnnouncement(
   km: number,
   track: Track,
   language: Language = BASE_LANGUAGE,
+  units: Units = appUnits(),
 ): string {
   const ms = durationMs(track);
+  if (units === "mi") {
+    const mph = Math.round(speedIn(track.distanceM, ms, units));
+    return wordsOf(language, units).rideMiles(km, ms, mph);
+  }
   const speed = ms > 0 ? (track.distanceM / ms) * 3600 : 0;
-  return wordsOf(language).rideKilometres(km, ms, Math.round(speed));
+  return wordsOf(language, units).rideKilometres(km, ms, Math.round(speed));
 }

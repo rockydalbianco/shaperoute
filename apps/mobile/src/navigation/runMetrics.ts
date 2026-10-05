@@ -7,18 +7,18 @@ import { stepAt, type Track } from "./trackRecorder";
  */
 
 /**
- * The time of the run at the end of each whole kilometre, in milliseconds
- * from the first fix, pauses left out. A kilometre that ends between two
- * fixes ends in proportion.
+ * The time of the run at the end of each whole `unitM` metres (a kilometre,
+ * or with miles a mile: TASK-182), in milliseconds from the first fix,
+ * pauses left out. One that ends between two fixes ends in proportion.
  */
-export function kmTimesMs(track: Track): number[] {
+export function unitTimesMs(track: Track, unitM: number): number[] {
   const times: number[] = [];
   let metres = 0;
   let ms = 0;
   for (let i = 1; i < track.fixes.length; i += 1) {
     const step = stepAt(track, i);
-    while (step.metres > 0 && metres + step.metres >= (times.length + 1) * 1000) {
-      const share = ((times.length + 1) * 1000 - metres) / step.metres;
+    while (step.metres > 0 && metres + step.metres >= (times.length + 1) * unitM) {
+      const share = ((times.length + 1) * unitM - metres) / step.metres;
       times.push(ms + share * step.ms);
     }
     metres += step.metres;
@@ -27,8 +27,18 @@ export function kmTimesMs(track: Track): number[] {
   return times;
 }
 
+/**
+ * The time of the run at the end of each whole kilometre, in milliseconds
+ * from the first fix, pauses left out. A kilometre that ends between two
+ * fixes ends in proportion.
+ */
+export function kmTimesMs(track: Track): number[] {
+  return unitTimesMs(track, 1000);
+}
+
 export type Split = {
-  /** Which kilometre of the run: 1, 2, … */
+  /** Which kilometre of the run: 1, 2, …; which mile, when the splits are
+   * a mile long (TASK-182). */
   km: number;
   /** How long it took, in seconds. */
   seconds: number;
@@ -37,9 +47,14 @@ export type Split = {
   change: number | null;
 };
 
-/** The whole kilometres of the run, each with its time. */
-export function splits(track: Track): Split[] {
-  const times = kmTimesMs(track);
+/**
+ * The whole kilometres of the run, each with its time; with `unitM` the
+ * metres of a mile, its whole miles (TASK-182): worked out here, from the
+ * track the phone has, never kept. What is left after the last whole one
+ * is not a split.
+ */
+export function splits(track: Track, unitM: number = 1000): Split[] {
+  const times = unitTimesMs(track, unitM);
   return times.map((time, index) => {
     const seconds = (time - (index === 0 ? 0 : times[index - 1])) / 1000;
     const before =

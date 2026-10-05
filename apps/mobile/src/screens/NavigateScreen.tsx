@@ -15,6 +15,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useUnits } from "../units/useUnits";
 import { RunCard } from "./RunDashboard";
 
 /**
@@ -77,6 +78,8 @@ export function NavigationBanner({ state }: { state: NavigationState }) {
 }
 
 function NextTurn({ navigation }: { navigation: Navigation }) {
+  // The way to the turn in the app's units (TASK-182): metres, or feet.
+  const units = useUnits();
   if (navigation.offRoute) {
     return (
       <View style={[styles.box, styles.off]}>
@@ -102,7 +105,7 @@ function NextTurn({ navigation }: { navigation: Navigation }) {
           </Text>
         </View>
         <View style={styles.words}>
-          <Text style={styles.distance}>{distanceLabel(next.inM)}</Text>
+          <Text style={styles.distance}>{distanceLabel(next.inM, units)}</Text>
           <Text style={styles.instruction}>{instruction(next.direction)}</Text>
         </View>
       </View>

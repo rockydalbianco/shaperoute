@@ -1,5 +1,8 @@
 import type { Direction, Turn } from "@shaperoute/shared-types";
 
+import { milesBannerLabel } from "../units/runFormat";
+import { appUnits, type Units } from "../units/units";
+
 /**
  * What the app writes for a direction (TASK-049), in English like the rest
  * of the interface. The street is the one OpenStreetMap names; a road
@@ -77,8 +80,12 @@ export function roundMetres(metres: number): number {
   return Math.max(10, Math.round(metres / 10) * 10);
 }
 
-/** For the banner: "120 m", "1.4 km". */
-export function distanceLabel(metres: number): string {
+/** For the banner: "120 m", "1.4 km"; with miles (TASK-182) "400 ft",
+ * "0.9 mi". */
+export function distanceLabel(metres: number, units: Units = appUnits()): string {
+  if (units === "mi") {
+    return milesBannerLabel(metres);
+  }
   if (metres >= 1000) {
     return `${(metres / 1000).toFixed(1)} km`;
   }

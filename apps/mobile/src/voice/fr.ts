@@ -90,4 +90,21 @@ export const FR: Phrasebook = {
   // The bike on foot (TASK-206).
   walkTheBike: (metres) => `descendez et poussez le vélo sur ${metres} mètres`,
   backOnTheBike: "Remontez sur le vélo.",
+  // With miles (TASK-182): written by the agent, to be confirmed. «Mile»,
+  // as the app's «Miles» in «Settings».
+  inFeet: (feet, words) => `Dans ${feet} pieds, ${words}`,
+  mile: (miles, time, pace) =>
+    `${capital(units(miles, "un mile", "miles"))}. Temps : ${time}. Allure moyenne : ${pace} au mile.`,
+  mileFaster: (by) => `Ce mile : ${by} plus rapide que le précédent.`,
+  mileSlower: (by) => `Ce mile : ${by} plus lent que le précédent.`,
+  mileSamePace: "Même allure que le mile précédent.",
+  rideMilesFaster: (miles) =>
+    `Les ${miles} derniers miles ont été plus rapides que les ${miles} précédents.`,
+  rideMilesSlower: (miles) =>
+    `Les ${miles} derniers miles ont été plus lents que les ${miles} précédents.`,
+  rideMilesSameSpeed: (miles) =>
+    `Les ${miles} derniers miles ont été à la même vitesse que les ${miles} précédents.`,
+  rideMiles: (miles, time, speed) =>
+    `${capital(units(miles, "un mile", "miles"))}. Temps : ${time}. Vitesse moyenne : ${speed} miles par heure.`,
+  walkTheBikeFeet: (feet) => `descendez et poussez le vélo sur ${feet} pieds`,
 };

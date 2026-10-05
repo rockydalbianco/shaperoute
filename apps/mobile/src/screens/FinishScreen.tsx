@@ -16,6 +16,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useUnits } from "../units/useUnits";
 
 /**
  * The end of a run (TASK-113): over the map, which shows the run on its
@@ -126,7 +127,9 @@ type Props = {
 
 export function FinishCard({ apiUrl, run, onDone, onResume, fetchFn }: Props) {
   const { state, retry } = useTrackScore(apiUrl, run, fetchFn);
-  const facts = `${distanceLabel(run.track.distanceM)} · ${durationLabel(durationMs(run.track))}`;
+  // How far in the app's units (TASK-182): "4.0 km" or "2.5 mi".
+  const units = useUnits();
+  const facts = `${distanceLabel(run.track.distanceM, units)} · ${durationLabel(durationMs(run.track))}`;
   return (
     <View style={styles.card}>
       <View style={styles.result} accessibilityLiveRegion="polite">

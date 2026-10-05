@@ -153,12 +153,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-245 — Altre spiagge per «Paddle», oltre Jesolo e Riccione**
   (ADR-0210; chiesto dall'utente il 2026-10-05, che ha scelto 29 posti di
-  mare su tutte le coste). Un comando nuovo, `beach_catalog.py`, sceglie
+  mare su tutte le coste; PR #363). Un comando nuovo, `beach_catalog.py`, sceglie
   per ogni paese un punto della riva dai dati di OpenStreetMap e lo prova
   col motore; l'elenco è `apps/mobile/src/paddle/beaches.json`, letto da
   `waterSpots.ts`: le spiagge si trovano in «Explore», in «Near me» e in
-  «Another place». **29 posti su 29** tengono le forme a 2 km, con tutte
-  e otto le forme di «Explore»; nessuno scartato. **Il server vuole 27
+  «Another place», dove ora solo l'ultima parola scritta vale come inizio
+  di un nome («via Roma» non propone «Viareggio»). **29 posti su 29**
+  tengono le forme a 2 km, con tutte e otto le forme di «Explore»; nessuno
+  scartato. **Il server vuole 27
   file d'acqua nuovi, 22,6 MB**, pronti sul Mac in
   `out/task245-beaches/new/water/`: si copiano con l'ok dell'utente e il
   via del coordinatore. **L'app non si pubblica prima che l'acqua sia sul

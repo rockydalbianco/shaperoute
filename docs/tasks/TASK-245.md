@@ -1,7 +1,7 @@
 # TASK-245 — Altre spiagge per «Paddle», oltre Jesolo e Riccione
 
-**Stato**: In corso (2026-10-05) — comando, elenco e prove fatti sul Mac
-(29 posti su 29); mancano l'acqua sul server e la PR
+**Stato**: In corso (2026-10-05) — PR #363; comando, elenco e prove fatti
+sul Mac (29 posti su 29); manca l'acqua sul server, prima del merge
 **Fase**: 4 · **Branch**: `feat/TASK-245-more-beaches`
 **Dipende da**: TASK-225 (l'acqua da un estratto), TASK-233 (l'elenco dei
 laghi, `waterSpots.ts`), TASK-240 (laghi e spiagge in «Another place»)
@@ -205,8 +205,8 @@ Test nuovi con le spiagge di più parole («forte dei marmi», «san vito»,
 
 **Da dove riprendere** (2026-10-05):
 
-1. La PR, con i controlli JS verdi (`npm test`, `typecheck`, `lint`,
-   `format:check`).
+1. La PR è la **#363** (jest 2204 verdi, `typecheck`, `lint`,
+   `format:check`, ruff e black in locale).
 2. **L'ok dell'utente per il server** (27 file, 22,6 MB) e il «via» del
    coordinatore. Poi: copiare `out/task245-beaches/new/water/*.json` in
    una cartella d'appoggio del server (tar su ssh), spostarli uno per uno

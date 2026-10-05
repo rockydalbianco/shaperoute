@@ -125,12 +125,14 @@ In coda, dopo o accanto:
   `shaperoute-api:before-task185`, copia del database
   `shaperoute-2026-10-05T1202Z.dump`; `draw_examples` rilanciato alle
   12:03Z (`data/draw-examples-2026-10-05-task232.log`). Zone del telefono:
-  526 file (le 521 della mattina più Borgo Valsugana, Tenna, Calceranica,
-  Caldonazzo, Pergine, chieste dall'utente). Acqua della canoa: 247 file,
+  528 file (le 521 della mattina più Borgo Valsugana, Tenna, Calceranica,
+  Caldonazzo, Pergine, Vigolo Vattaro, chieste dall'utente). Acqua della canoa: 247 file,
   93 MB (i laghi d'Italia e i 27 tratti di costa di TASK-245). **App** su
-  `preview` da `main` `20c021b` (gruppo `71e4f577`): tutto `main`, fino a
-  «Move the shape» sugli esempi di «Explore» (TASK-244) e agli
-  interruttori delle notifiche (TASK-185). Dal 2026-10-05 le cose di sola
+  `preview` da `main` `7a9d28b` (gruppo `b21caee9`): tutto `main`, fino
+  alle miglia (TASK-182), alle 29 spiagge (TASK-245), alle figure «Paddle»
+  al primo avvio (TASK-246) e alla fine corsa senza punteggio (TASK-241).
+  In coda, verdi: la #378 (TASK-232 B, aspetta l'utente) e la #362
+  (TASK-243: entra con l'ok per il server). Dal 2026-10-05 le cose di sola
   app le pubblica il coordinatore appena sono in `main` (ok dell'utente).
   **Da provare sull'iPhone.** Strava spento per scelta dell'utente.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
@@ -261,7 +263,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   inclinate»). Prossimo passo: le parti B e C (la mappa girata nell'app),
   in un contesto pulito, dopo aver sentito il coordinatore; non si
   pubblicano prima del server. `tasks/TASK-232.md`.
-  **Parte B** (2026-10-05, sola app, in Pull Request): un percorso
+  **Parte B** (sola app, in `main` dalla #378, `44f17c8`, il 2026-10-06;
+  la freccia e i tre testi confermati dall'utente; la pubblica il
+  coordinatore): un percorso
   disegnato in «Draw» che il motore ha inclinato gira la mappa dall'altra
   parte, così il disegno si legge dritto; ogni tessera «A · B · C» la sua
   inclinazione; la mappa resta girata mentre lo si corre e a fine corsa.
@@ -269,8 +273,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   corsa sotto il riquadro della svolta): un tocco rimette il nord in alto,
   un secondo rigira la mappa come il disegno; compare anche quando la
   mappa è girata con due dita. «Move the shape» sposta giusto anche a
-  mappa girata. Tre testi nuovi per VoiceOver nelle cinque lingue, da far
-  vedere all'utente. Visto nel browser sulla pagina vera e nel simulatore
+  mappa girata. Tre testi nuovi per VoiceOver nelle cinque lingue. Visto nel browser sulla pagina vera e nel simulatore
   (`out/task-232b/`); manca il dito vero. Prossimo passo: la **parte B2**
   («Explore»: l'esempio aperto, la sua corsa e le schede, che usano le
   foto-mappa del «Feed»), poi la C; il server ha già la parte A.
@@ -701,6 +704,26 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Seguito**: il server non tiene le figure dei laghi, ogni telefono
   nuovo gliene fa disegnare fino a 24 (circa un minuto di motore).
   `tasks/TASK-246.md`.
+
+- **Motore** — TASK-243: la penna si alza anche sui baffi del contorno
+  (ADR-0209; chiesto dall'utente il 2026-10-05 dopo il «sì» a TASK-242,
+  campioni prima/dopo giudicati «va bene»; PR #362). Con la penna alzata,
+  il contorno di una forma a pezzi non disegna più i suoi **baffi**: una
+  deviazione oltre 3/8 di altezza di pezzo che rientra vicino a dove esce
+  (salta al più 1/8 del lato del disegno di contorno, misurato lungo la
+  linea, e la sua strada è lunga almeno il doppio della distanza fra i
+  capi) diventa un tratto a piedi, al più due per contorno; le deviazioni
+  lunghe restano disegnate; la partenza resta il primo punto
+  (`pen_up._lifted`, `detours.py`). Senza `pen_up`, per le parole e
+  sull'acqua niente cambia. Su 42 richieste di prova (motore con
+  TASK-232) 26 identiche, 14 cambiano (10 con lo stesso disegno e un
+  baffo camminato; in 4 la ricerca sceglie un altro disegno, e in 2 la
+  somiglianza scende), una diventa disponibile (`ROUTE_ENGINE.md` §5).
+  In media 1 km disegnato in meno e 0,7 km a piedi in più dove cambia.
+  **Non sul server né pubblicato**: server e `draw_examples` li fa il
+  coordinatore con l'ok dell'utente; `engine.zip` è rifatto, il telefono
+  lo riceve con la prossima pubblicazione. Seguiti in
+  `tasks/TASK-243.md`.
 
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della

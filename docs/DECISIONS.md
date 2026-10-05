@@ -8955,7 +8955,8 @@ parole) e l'app: la parte B di TASK-223.
 delega dell'utente**). Le quattro forme sono il «sì» dell'utente sui
 campioni; la penna alzata accesa di partenza e la frase della voce sono le
 proposte del task file, applicate sul «continua e pubblica» dell'utente e
-da confermare sul telefono.
+da confermare sul telefono. **Confermate dall'utente** il 2026-10-05
+(«confermo le frasi della voce e la penna accesa»).
 
 8. **Nel catalogo** faccina (`smiley`), fantasmino (`ghost`), ciambella
    (`donut`) e sole (`sun`), in coda a `SHAPES` e al contratto.

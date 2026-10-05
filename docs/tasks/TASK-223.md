@@ -287,10 +287,13 @@ fantasmino, ciambella e sole nel catalogo; `pen_up` con le forme a pezzi su
 strada; nell'app l'interruttore per le prime tre, acceso di partenza, e la
 voce fra i pezzi. Non ancora sul server né sul telefono: il server prima
 (un'API vecchia rifiuta le quattro forme), poi `draw_examples`, poi la
-pubblicazione, tutto dal coordinatore con l'ok dell'utente. **Aspettano
-l'utente**: i testi nuovi (`UI.md`, «da confermare»), la penna alzata
-accesa di partenza; poi la prova sul telefono (una faccina a penna alzata,
-la voce fra i pezzi). Gli occhi staccati: giudicati il 2026-10-05, sotto.
+pubblicazione, tutto dal coordinatore con l'ok dell'utente. **Confermate
+dall'utente** il 2026-10-05 («confermo le frasi della voce e la penna
+accesa»): la voce fra i pezzi in inglese e italiano, e la penna alzata
+accesa di partenza. **Aspettano l'utente**: i testi dello schermo (`UI.md`,
+«da confermare»: i nomi, «Lift the pen between parts», la riga dei km);
+poi la prova sul telefono (una faccina a penna alzata, la voce fra i
+pezzi). Gli occhi staccati: giudicati il 2026-10-05, sotto.
 
 **Da dove ripartiva la parte B**: dalle quattro forme del «sì» (faccina,
 fantasmino, ciambella con la penna alzata, sole con la penna giù), più gli

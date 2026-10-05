@@ -179,8 +179,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   pubblicazione dell'app è del coordinatore. **Occhi staccati su strada**:
   sì a tutte e cinque le forme (gatto, pesce, teste, zucca; utente,
   2026-10-05, `samples/LOG.md`); l'interruttore in «Draw» anche per loro è
-  un seguito da assegnare. **Aspettano l'utente**: la conferma della frase
-  della voce e della penna alzata accesa. `tasks/TASK-223.md`.
+  un seguito di TASK-226 B. La voce fra i pezzi e la penna alzata accesa di
+  partenza sono **confermate dall'utente** (2026-10-05). **Aspettano
+  l'utente**: i testi dello schermo (nomi, interruttore, riga dei km).
+  `tasks/TASK-223.md`.
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia
   notturna dal 2026-10-02 (07:27Z, 18 s di API ferma); iscrizione,

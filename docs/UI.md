@@ -918,7 +918,8 @@ sulle strade:
   confermare con l'utente**; tedesco, spagnolo e francese da confermare).
 - **Faccina, fantasmino e ciambella** (TASK-223, ADR-0185) hanno sotto il
   campo l'interruttore **«Lift the pen between parts»**, lo stesso stato di
-  quello delle parole, acceso all'avvio: acceso, la richiesta ha `pen_up:
+  quello delle parole, acceso all'avvio (confermato dall'utente il
+  2026-10-05): acceso, la richiesta ha `pen_up:
   true` e la forma si disegna un pezzo alla volta, a piedi fra l'uno e
   l'altro (`API.md`, «La penna alzata»). Il sole si disegna con la penna
   giù, scelta sui campioni, e non ha l'interruttore; sull'acqua nessuna
@@ -1344,8 +1345,8 @@ TASK-164, di cui tiene i numeri.
   part.» · «Parte finita. Cammina fino alla parte successiva: il disegno è
   in pausa.» e «Giù la penna: disegna la parte successiva.»; in bici «Ride
   to the next part» · «Pedala fino alla parte successiva». Inglese e
-  italiano **da confermare con l'utente**; tedesco, spagnolo e francese da
-  confermare (`src/voice/`).
+  italiano **confermati dall'utente** il 2026-10-05; tedesco, spagnolo e
+  francese da confermare (`src/voice/`).
   - **Perché 20 m, e lungo il percorso**: una posizione che la corsa tiene
     sbaglia fino a 40 m (`POOR_FIX_M`), in città 10–20 m. Ripartendo 20 m
     prima della lettera, anche una posizione in ritardo fa partire la
@@ -1572,7 +1573,8 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   con «Includes … walking the bike.», e i testi della penna alzata
   (TASK-198). Restano da confermare le frasi nuove della bici (TASK-216) in
   tedesco, spagnolo e francese, quelle dei pezzi di una forma (TASK-223)
-  in tutte e cinque le lingue, e quelle del confronto dei km (TASK-217) in
+  in tedesco, spagnolo e francese (inglese e italiano confermati il
+  2026-10-05), e quelle del confronto dei km (TASK-217) in
   tedesco, spagnolo e francese, con «stessa velocità» in bici in tutte e
   cinque. Le parole del foglio («App
   language», «Language», «Voice», «Default», «Listen», «Done») sono in

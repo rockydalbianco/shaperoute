@@ -9401,7 +9401,8 @@ SVG: le linee sono `View` ruotate.
 ## ADR-0195 — Le forme si inclinano fino a 45°, e la mappa gira perché si vedano dritte
 
 **Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-232 ·
-45° e la mappa girata sono scelte dell'utente; il resto è deciso
+45°, la mappa girata, la freccia del nord e la mappa della corsa sono
+scelte dell'utente; il resto è deciso
 dall'agente su delega dell'utente · sostituisce il limite di 15° di
 ADR-0038
 
@@ -9424,7 +9425,12 @@ la mappa anche fino a 45 gradi».
    180), 0 per le forme che girano libere.
 4. L'app gira la mappa di `−rotation_deg` dove mostra il disegno di un
    percorso, così la forma si vede dritta. Senza il campo, nord in alto.
-5. Il GPX non cambia.
+5. Con la mappa girata c'è una piccola freccia del nord in alto a
+   destra: un tocco rimette il nord in alto, un secondo rigira la mappa
+   come il disegno.
+6. Durante la corsa la mappa resta girata come il disegno, e la freccia
+   del corridore gira di conseguenza.
+7. Il GPX non cambia.
 
 **Alternative scartate**: tenere 15° (la richiesta è di provare di più);
 girare libero ogni forma (oltre 45° la mappa capovolta disorienta, e
@@ -9434,6 +9440,5 @@ mappa (è ciò che ADR-0038 ha mostrato non riconoscibile).
 **Conseguenze**: la ricerca prova più rotazioni (7 invece di 3 per
 partenza e fase), con lo stesso numero di tracciati: il tempo va misurato.
 Cambiano i percorsi di oggi dove una forma inclinata segue meglio: i
-campioni si rigiudicano. La mappa girata ha bisogno di un'indicazione del
-nord, da scegliere con l'utente (TASK-232, parte B). Le corse salvate
-prima restano col nord in alto.
+campioni si rigiudicano. Le corse salvate prima restano col nord in
+alto.

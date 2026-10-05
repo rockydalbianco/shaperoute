@@ -47,8 +47,13 @@ delega dell'utente:
    in senso orario) dove mostra il disegno di un percorso. Un percorso
    senza il campo resta col nord in alto.
 5. **Il GPX non cambia**: ha le coordinate vere.
-6. **La bussola e la freccia** con la mappa girata: da chiedere
-   all'utente prima della parte B (la proposta è in fondo).
+6. **La freccia del nord** (scelta dell'utente, 2026-10-05): con la
+   mappa girata compare in alto a destra una piccola freccia del nord; un
+   tocco rimette il nord in alto, un secondo tocco rigira la mappa come
+   il disegno.
+7. **Durante la corsa** (scelta dell'utente, 2026-10-05): la mappa resta
+   girata come il disegno, e la freccia del corridore gira di
+   conseguenza. Chi corre vede la forma dritta come l'ha scelta.
 
 ## Contesto da leggere
 
@@ -78,12 +83,13 @@ delega dell'utente:
 
 ## Parte B — la mappa girata nell'app
 
-1. `MapView` e `mapPage`: un `bearing` che inquadra il percorso girato;
-   la bussola o la freccia del nord come sceglie l'utente.
+1. `MapView` e `mapPage`: un `bearing` che inquadra il percorso girato,
+   e la freccia del nord (scelta 6).
 2. «Draw»: la mappa gira col percorso scelto, anche passando da
    un'alternativa all'altra.
 3. «Explore»: le carte girate come il loro percorso.
-4. La corsa su un percorso: come sceglie l'utente (proposta in fondo).
+4. La corsa su un percorso: la mappa resta girata, la freccia del
+   corridore gira di `heading + rotation_deg` (scelta 7).
 5. I testi nuovi (la bussola per VoiceOver) nelle cinque lingue.
 
 ## Parte C — i disegni salvati
@@ -168,14 +174,6 @@ migrazione nuova, `apps/mobile/src/activities/fitLines.ts`,
 - Girare le forme oltre 45°.
 - Cambiare come la mappa segue il corridore durante una corsa senza
   percorso.
-
-## Da chiedere all'utente prima della parte B
-
-**Proposta**: con la mappa girata compare in alto a destra una piccola
-freccia del nord; toccandola la mappa torna col nord in alto, e un
-secondo tocco la rigira come il disegno. Durante la corsa la mappa resta
-girata come il disegno, e la freccia del corridore gira di conseguenza:
-chi corre vede la forma dritta come l'ha scelta.
 
 ## Esito
 

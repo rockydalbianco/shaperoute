@@ -225,9 +225,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   ogni forma fino a ±45° quando segue meglio le strade (oggi ±15°,
   ADR-0038), il risultato dice di quanto (`rotation_deg`), e l'app gira
   la mappa perché il disegno si veda dritto. Parte A (motore e API) dopo
-  TASK-226, parti B e C (app, corse salvate) dopo TASK-119 B. Prima della
-  B, chiedere all'utente la freccia del nord e la mappa durante la
-  corsa (proposta nel task file). `tasks/TASK-232.md`.
+  TASK-226, parti B e C (app, corse salvate) dopo TASK-119 B. Scelto
+  dall'utente: una freccia del nord che rimette il nord in alto, e
+  durante la corsa la mappa resta girata come il disegno.
+  `tasks/TASK-232.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,

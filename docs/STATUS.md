@@ -515,6 +515,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
   «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito».
+  **Parte B, «Draw» e le schede** (2026-10-05, branch
+  `feat/TASK-182-b-draw-and-cards`, in revisione): con «Miles» la distanza
+  di «Draw» si scrive in miglia (− e + di 1 mi; corsa 1–13, bici 7–18,
+  canoa 1–3; all'API metri interi), e sono in miglia il risultato, «Try»,
+  il «Feed», i disegni pubblici ed «Explore» con «Paddle»; i testi nuovi
+  sono da confermare (`tasks/TASK-182.md`, «Parte B»), la corsa, la fine
+  corsa e la voce sono della parte C, `FOLLOWS_PHONE` resta spento.
 - **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
   dall'utente il 2026-10-05: una mini guida, e le prime bozze di
   condizioni e privacy). In revisione (branch

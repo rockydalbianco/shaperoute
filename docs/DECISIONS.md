@@ -10930,3 +10930,97 @@ lingue con una regola (ADR-0172): ogni testo è scritto in inglese dentro
 - `SettingsPage` chiede a chi la mostra di aprire i testi (`onAbout`);
   restano «Soon» solo le due righe di «Notifications» (TASK-185).
 - Solo app: nessuna dipendenza, niente server.
+
+## ADR-0149 — aggiornamento (parte B): «Draw» in miglia
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-182, parte B). Le **scelte dell'utente** (2026-10-05): con «Miles»
+− e + cambiano di 1 miglio; i limiti sono miglia intere dentro quelli di
+oggi (corsa 1–13 mi, bici 7–18 mi, canoa 1–3 mi); un valore scritto con un
+decimale («4.5») vale. Il modo, qui sotto, è dell'agente.
+
+**Contesto**: la parte A (sopra, ADR-0149) ha lasciato in km «Draw», il
+«Feed», i disegni pubblici, «Explore» con «Paddle». La distanza scritta in
+«Draw» la tiene `App.tsx`, che è di altri task: la legge con
+`toDistanceM`, la porta nei limiti con `distanceForSport`, e ci scrive da
+sé dei km (`String(metri / 1000)`) dopo un «Try» e per un lago piccolo
+(TASK-240).
+
+**Decisione**:
+
+1. **Il testo del campo dice la sua unità** (`src/units/distanceInput.ts`,
+   nuovo). In km è il numero da solo, come sempre («7», «7,5»); in miglia
+   è il numero con la sigla («4.5 mi»), che il campo aggiunge e toglie da
+   sé. Così chi tiene il testo non deve sapere l'unità, `App.tsx` non
+   cambia, e un testo rimasto da prima di un cambio in «Settings» vale
+   ancora la stessa distanza.
+2. **All'API vanno metri interi**, con aritmetica intera: i decimi di
+   miglio per 1 609 344 e una sola divisione arrotondata (3 mi → 4828 m,
+   4,5 mi → 7242 m, 13 mi → 20 921 m). Con «Kilometres» il codice e la
+   richiesta sono quelli di prima.
+3. **I limiti in miglia** sono le miglia intere dentro quelli in km
+   (`APP_DISTANCE_LIMITS_MI`, calcolati da `APP_DISTANCE_LIMITS_KM`: 1–13,
+   7–18, 1–3), quindi dentro `DISTANCE_LIMITS_M`. Valgono per quello che
+   si scrive e per − e +, che cambiano di 1 miglio e tengono il decimale
+   scritto, come in km.
+4. **La partenza e il cambio di unità**: la distanza di oggi al miglio
+   intero più vicino dentro i limiti (5 km → 3 mi, i 2 km della canoa → 1
+   mi, i 10 km della bici → 7 mi). Quando «Settings» cambia l'unità,
+   «Draw» riscrive il campo allo stesso modo (7,5 km → 5 mi; 3 mi → 5
+   km); un testo che non è un numero resta com'è.
+5. **Un testo in km mentre l'app è in miglia** non è stato scritto a
+   mano: sono i metri che l'app ha scritto da sé, o quelli di prima del
+   cambio. Vale per i metri che dice (fino a tre decimali), dentro i
+   limiti in km, e il campo lo mostra in miglia con un decimale. Così
+   dopo un «Try» la richiesta resta la stessa e il percorso resta sullo
+   schermo, e un lago piccolo tiene i suoi 1 o 1,5 km anche sotto il
+   miglio (a 1 mi le forme non ci starebbero).
+6. **Le distanze che l'app propone**: «better at about N mi» e «Try N
+   mi» al miglio intero più vicino dentro i limiti, e «Try» chiede quelle
+   miglia; niente riga se la richiesta è già a quel miglio. «It fits at
+   about N mi» lo stesso; se il miglio intero è quello appena chiesto (e
+   fallito), il decimo di miglio più vicino («3.1 mi»); se anche quello
+   coincide, nessuna distanza. Sull'acqua, dove la distanza dell'API è il
+   massimo che ci sta (ADR-0164), il miglio intero **in giù**.
+7. **Quello che una parola chiede** si dice in miglia arrotondate **in
+   su** al decimo («needs at least 7.5 mi», «1.9 mi for each letter»), e
+   «Use N mi» porta al miglio intero che basta. Con il limite di 13 mi
+   una parola a piedi ha al massimo **6 lettere** (7 chiedono 21 km =
+   13,05 mi); in bici restano 8.
+8. **L'avviso dei percorsi lunghi** resta a 15 km, in metri.
+9. **I testi**: una riga per unità nelle tabelle, come nella parte A. Le
+   frasi di «Draw» che in km non passano ancora da `t()` hanno la loro
+   versione in miglia in `t()`, tradotta. Gli avvisi del motore
+   (`warnings.ts`) e le due frasi di «Explore» con una distanza fissa
+   restano frasi inglesi con dentro la misura scritta dai formattatori:
+   piedi ai cinquanta sotto i 1000 piedi (mai «0 ft»), miglia sopra;
+   «Starting within 3.1 mi of…» e «shapes of 3.1 mi from the centre»
+   dicono i 5 km del motore al decimo, perché «3 mi» non sarebbe vero.
+10. **Restano in km anche con «Miles»**: «Shapes to paddle, within 1 km
+    of the shore» e l'avviso di sicurezza della canoa (il limite del
+    motore in una frase che promette la vicinanza alla riva: «0.6 mi»
+    sarebbe meno del vero). «Start from the shore, within 2 km of the
+    water» diventa «within 1 mile»: un miglio sta dentro i 2 km.
+
+**Alternative scartate**: tenere la distanza in metri in `App.tsx` (il
+modo più pulito, ma è un file di altri: si può fare dopo, e il testo con
+la sigla sparisce); leggere il testo secondo l'unità dell'app, senza
+sigla (i km che `App.tsx` scrive da sé verrebbero letti come miglia: un
+lago di 1,5 km diventerebbe 1,5 mi); limiti in miglia con i decimali
+(13,05 mi per arrivare ai 21 km: l'utente ha scelto miglia intere); arrotondare
+al miglio intero anche la distanza di un lago piccolo (1 mi è più del lago);
+proporre sempre il decimo di miglio (l'utente ha scelto il miglio intero);
+«within 0.6 mi of the shore».
+
+**Conseguenze**:
+
+- Con «Miles» sono in miglia «Draw» e il suo risultato, il «Feed», i
+  disegni pubblici, «Explore» con «Paddle». La corsa, la fine corsa, la
+  navigazione e la voce sono della parte C; `FOLLOWS_PHONE` resta spento
+  finché non c'è anche quella.
+- `src/share/postRun.ts` non è stato toccato: i suoi numeri vengono da
+  `navigation/freeRun.ts` (parte C).
+- I testi nuovi sono da confermare con l'utente (`tasks/TASK-182.md`,
+  «Parte B»).
+- Quando `App.tsx` è libero: la distanza in metri nello stato e
+  `useUnits()` alla radice.
+- Solo app: nessuna dipendenza, niente server.

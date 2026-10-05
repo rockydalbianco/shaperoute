@@ -85,8 +85,16 @@ docs/DECISIONS.md
 docs/tasks/TASK-242.md
 ```
 
-`optimizer.py` è di TASK-232 A mentre si scrive: la riga è stata chiesta
-al coordinatore (2026-10-05).
+`optimizer.py` è di TASK-232 A mentre si scrive: la riga in
+`drawn_distance` (`pen_up.sized_m(route)` al posto di `pen_up.drawn_m(…)`,
+più la docstring) ha l'ok del coordinatore (2026-10-05), che avvisa
+TASK-232 A. Il motivo: senza, i metri della deviazione camminata escono
+dai km che la ricerca insegue, e per la faccina dello screenshot la
+ricerca ingrandisce il disegno fino a far passare la bocca sul bordo:
+**18,0 km e 0,74 senza la riga, 15,8 km e 0,79 con** (la variante A di
+oggi, 15,8 km e 0,77, con la deviazione camminata). Chi entra secondo fra
+questa PR, TASK-232 A e TASK-238 A si aggiorna da `main` e rifà
+`engine.zip`.
 
 ## Fuori scope
 

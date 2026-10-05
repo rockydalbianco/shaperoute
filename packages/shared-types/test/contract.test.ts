@@ -40,6 +40,7 @@ import penUpShapeRequest from "../fixtures/route-request-pen-up-shape.json" with
 import penUpRequest from "../fixtures/route-request-pen-up.json" with { type: "json" };
 import wordRequest from "../fixtures/route-request-word.json" with { type: "json" };
 import request from "../fixtures/route-request.json" with { type: "json" };
+import betterResult from "../fixtures/route-result-better-distance.json" with { type: "json" };
 import cyclingResult from "../fixtures/route-result-cycling.json" with { type: "json" };
 import imageResult from "../fixtures/route-result-image.json" with { type: "json" };
 import penUpResult from "../fixtures/route-result-pen-up.json" with { type: "json" };
@@ -96,14 +97,15 @@ import {
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 // The fixtures written before TASK-197 are what an older app sends and an
 // older API answers: without the pen up and the walks, both optional; nor
-// the stretches with the bike on foot, optional too (TASK-206).
+// the stretches with the bike on foot, optional too (TASK-206); nor the
+// distance where the shape comes out better (TASK-234).
 // Member by member: a shape's request and a word's stay apart.
 type OlderRequest = RouteRequest extends infer R
   ? R extends RouteRequest
     ? Omit<R, "pen_up">
     : never
   : never;
-type OlderResult = Omit<RouteResult, "walks" | "on_foot">;
+type OlderResult = Omit<RouteResult, "walks" | "on_foot" | "better_distance_m">;
 const requestFields: Same<keyof typeof request, keyof OlderRequest> = true;
 const resultFields: Same<keyof typeof result, keyof OlderResult> = true;
 const wordFields: Same<keyof typeof wordRequest, keyof OlderRequest> &
@@ -114,10 +116,18 @@ const cyclingFields: Same<keyof typeof cyclingRequest, keyof OlderRequest> = tru
 const paddlingFields: Same<keyof typeof paddlingRequest, keyof OlderRequest> = true;
 const penUpFields: Same<keyof typeof penUpRequest, keyof RouteRequest> &
   Same<keyof typeof penUpShapeRequest, keyof RouteRequest> &
-  Same<keyof typeof penUpResult, keyof Omit<RouteResult, "on_foot">> = true;
-// A bike route walked in part (TASK-206): every field, its alternative too.
-const cyclingResultFields: Same<keyof typeof cyclingResult, keyof RouteResult> &
-  Same<keyof (typeof cyclingResult.alternatives)[number], keyof RouteResult> = true;
+  Same<
+    keyof typeof penUpResult,
+    keyof Omit<RouteResult, "on_foot" | "better_distance_m">
+  > = true;
+// A bike route walked in part (TASK-206): every field before TASK-234, its
+// alternative too.
+type BikeResult = Omit<RouteResult, "better_distance_m">;
+const cyclingResultFields: Same<keyof typeof cyclingResult, keyof BikeResult> &
+  Same<keyof (typeof cyclingResult.alternatives)[number], keyof BikeResult> = true;
+// A route with a better distance (TASK-234): every field, its alternative too.
+const betterFields: Same<keyof typeof betterResult, keyof RouteResult> &
+  Same<keyof (typeof betterResult.alternatives)[number], keyof RouteResult> = true;
 const trackFields: Same<
   keyof typeof trackScoreRequest,
   keyof Omit<TrackScoreRequest, "walks">
@@ -183,6 +193,7 @@ const typedPenUp: [RouteRequest, RouteResult, TrackScoreRequest] = [
   trackWalksRequest as unknown as TrackScoreRequest,
 ];
 const typedCycling = cyclingResult as unknown as RouteResult;
+const typedBetter = betterResult as unknown as RouteResult;
 
 const isShape = (value: string): boolean =>
   (SHAPES as readonly string[]).includes(value);
@@ -192,7 +203,7 @@ test("the fixtures have the fields of the types", () => {
   assert.ok(jobFields && jobResultFields && jobErrorFields && gpxFields);
   assert.ok(shapeReadingFields && directionFields && wordFields);
   assert.ok(penUpFields && trackFields && cyclingFields && paddlingFields);
-  assert.ok(cyclingResultFields);
+  assert.ok(cyclingResultFields && betterFields);
 });
 
 /** Whether `walks` are stretches of a route of `count` points, in order. */
@@ -246,6 +257,19 @@ test("a bike route says where the bike is walked, its alternatives too", () => {
     assert.deepEqual(route.walks, []);
     assert.deepEqual(route.points.at(0), route.points.at(-1));
     assert.ok(route.warnings.some((w) => w.endsWith("with the bike on foot")));
+  }
+});
+
+test("a route may say where its shape comes out better, not its alternatives", () => {
+  // TASK-234: whole km, another distance than the route's; null otherwise.
+  const better = typedBetter.better_distance_m ?? 0;
+  assert.ok(better > 0 && better % 1000 === 0);
+  assert.ok(Math.abs(better - typedBetter.distance_m) > 1000);
+  for (const other of typedBetter.alternatives ?? []) {
+    assert.equal(other.better_distance_m, null);
+  }
+  for (const fixture of [result, wordResult, imageResult, penUpResult, cyclingResult]) {
+    assert.ok(!("better_distance_m" in fixture));
   }
 });
 

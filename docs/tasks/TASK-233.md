@@ -1,7 +1,8 @@
 # TASK-233 — «Explore» della canoa come la corsa, e tutti i laghi
 
-**Stato**: In corso (parte A nella PR #319: la pagina, il comando, l'elenco del
-nord-est; poi la parte B, l'elenco di tutta l'Italia e l'acqua sul server)
+**Stato**: Done (2026-10-05) — parte A PR #319 (merge `1dc4bb9`), parte B
+in questa PR; l'acqua dei laghi è sul server. Esce con la prossima
+pubblicazione, del coordinatore.
 **Fase**: 4 · **Branch**: `feat/TASK-233-paddle-lakes`
 **Dipende da**: TASK-227 («Explore» con «Paddle», gli esempi dentro
 l'app), TASK-225 (l'acqua da un estratto), TASK-230 (i laghi multipoligono)
@@ -77,9 +78,11 @@ Parte A:
 
 Parte B:
 
-- [ ] L'elenco copre l'Italia intera.
-- [ ] Il server ha l'acqua di ogni lago dell'elenco, e un lago scelto
-      nell'app pubblicata mostra le sue forme.
+- [x] L'elenco copre l'Italia intera.
+- [x] Il server ha l'acqua di ogni lago dell'elenco (provato dentro
+      l'API: il cuore e la testa di coniglio sul lago di Levico). Un lago
+      scelto nell'app pubblicata è da provare sull'iPhone, dopo la
+      pubblicazione.
 
 ## File toccati
 
@@ -171,3 +174,47 @@ con `water_extract --extract`, come quelli di TASK-225.
    --cache-dir`, Prettier su `lakes.json`, una PR.
 4. Pubblicare l'app dopo il punto 2: finché il server non ha l'acqua di un
    lago, sceglierlo dà «Map data for this area could not be downloaded.».
+
+### 2026-10-05, parte B
+
+Ok dell'utente nella sessione del task («ok per il server, fai tutta
+l'Italia», «quando hai i numeri copia l'acqua sul server») e «vai» del
+coordinatore. Strada leggera: sul server solo una lettura e una copia di
+file.
+
+**L'elenco dell'Italia** (`lakes.json`, 55 KB senza spazi): **211 laghi,
+758 punti** della riva, dall'estratto `italy-260930-water.osm.pbf` del
+server, copiato sul Mac in sola lettura (674 MB).
+
+- 221 laghi trovati; 7 scartati dal motore (nessuna riva raggiungibile a
+  piedi, o nemmeno le forme da 1 km: Griessee, Lago Salarno, Lago
+  Sciaguana, Lago dell'Esaro, Lago di Castelnuovo, Lago di Gannano, Lago
+  di Sant'Anna); 3 lasciati fuori per il nome (il bacino della centrale di
+  Presenzano, una cassa di espansione, una zona umida: regola aggiunta
+  nella #319).
+- 128 laghi con le forme da 2 km, 48 da 1,5 km, 35 da 1 km.
+- I più lunghi: Como 46 punti, Garda 44, Maggiore 43, Omodeo 21, Lugano e
+  Iseo 19.
+- Tempi sul Mac: 9 minuti per scrivere l'acqua, 26 per provare i punti.
+
+**L'acqua sul server** (2026-10-05, 04:22Z): **210 file, 50,4 MB**, in
+`/root/shaperoute/data/cache/water/`, che ora ne ha 219 (71 MB). Copiati
+in una cartella d'appoggio e poi spostati uno per uno senza sovrascrivere;
+proprietario e permessi come gli altri; nessun riavvio. I sei file di
+TASK-225 e due scaricati da Overpass quella notte non sono toccati. Provato
+dentro il container dell'API, senza rete: sul lago di Levico il cuore da
+2 km in 1,2 s e la testa di coniglio a pezzi in 1,5 s. I 93 punti del
+nord-est della #319 sono coperti dagli stessi file.
+
+**Rifare l'elenco** (un estratto nuovo, o il motore dell'acqua che
+cambia): `MAPS.md`, «I laghi di Explore». Gli script usati sul Mac al
+posto di `osmium` sono in `out/task233-lakes/scripts/`, fuori dal
+repository.
+
+**Seguiti**:
+
+- La prova sull'iPhone dopo la pubblicazione: «Near me» da Levico Terme,
+  un lago cercato per nome, un lago piccolo.
+- Il Lago di Ledro (`water=pond` in OpenStreetMap) e i sette laghi
+  scartati dal motore.
+- I «laghi vicini» come sottocategoria di «Near me» (TASK-236 li propone).

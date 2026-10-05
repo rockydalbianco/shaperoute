@@ -157,26 +157,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   i testi, dominio e pubblicazione. Come si aggiunge una maglietta e come
   si guarda in locale: `SITO.md`. Da dove riprendere:
   `tasks/TASK-237.md`, «Esito».
-- **TASK-228 — Il «Feed» sull'acqua** (ADR-0190; chiesto dall'utente il
-  2026-10-03, scelte del 2026-10-05). Fatto, in review: PR #322, aspetta
-  la coda dei merge. Fra i quindici disegni d'esempio di «Feed» ce ne sono
-  quattro fatti sull'acqua, sempre, con ogni sport: `greta_kayak` (cuore,
-  Lago di Garda), `leo.sup` (stella, Lago di Como), `irene_onwater` (luna,
-  Jesolo), `ale.paddle` (testa di cane a pezzi, Riccione), da 2 km, con
-  «Paddle» in testa alla riga dei fatti. I percorsi sono gli esempi dentro
-  l'app (`paddleExamples.json`): `src/feed/paddlePosts.ts` li legge, senza
-  una copia sua. Un tocco apre il percorso sull'acqua senza chiedere
-  all'API; lo sport scelto non cambia. `FeedScreen.tsx`, `App.tsx` e le
-  tabelle delle lingue non sono toccati. Solo app: esce con la prossima
-  pubblicazione. Da confermare con l'utente i quattro titoli; da provare
-  sull'iPhone. File toccati e dove riprendere: `tasks/TASK-228.md`.
-- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; Todo, chiesto
+- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; chiesto
   dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
   riesce ma un tentativo già tracciato a un'altra distanza segue la forma
   chiaramente meglio, l'API manda `better_distance_m` e l'app scrive la
-  riga con «Try N km». Il percorso scelto non cambia. Prima si misura
-  quanto spesso scatta. Il codice dopo la #310 (TASK-226), stessi file
-  del motore. `tasks/TASK-234.md`.
+  riga con «Try N km». Il percorso scelto non cambia. **Parte A, motore e
+  API**, in PR (2026-10-05): il campo nel risultato, anche da una
+  partenza vicina, `null` nelle alternative; `engine.zip` ed esempi della
+  canoa rifatti. **Misura**: scatta in 8 percorsi su 129, nessuno dei 12
+  di riferimento in cache (`MAPS.md`); da dire all'utente prima della
+  **parte B** (l'app, testi nelle cinque lingue). Dopo il merge di A,
+  `draw_examples` sul server con l'ok dell'utente. `tasks/TASK-234.md`.
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal
@@ -374,23 +365,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   ogni attività come «Run». Da dove riprendere: `tasks/TASK-191.md`,
   «Esito», parti A2, B e C (fatta).
 
-- **TASK-233 — «Explore» della canoa come la corsa, e tutti i laghi**
-  (ADR-0196; chiesto dall'utente il 2026-10-05: «fai anche tutti i laghi,
-  tipo vicino a me c'è il lago di Levico Terme»). **Parte A** nella PR #319: con
-  «Paddle», «Near me» è acceso da subito e mostra il lago più vicino
-  («LAGO DI LEVICO · 1.2 KM AWAY»), poi gli otto luoghi più vicini da
-  toccare e «Type a lake or a beach»; l'elenco dei laghi è dentro l'app
-  (`src/paddle/lakes.json`, da `python -m shaperoute_api.lake_catalog`),
-  con le forme da 2 km, o da 1,5 e 1 km sui laghi piccoli. Per ora il
-  nord-est: 41 laghi, 93 punti, ognuno provato dal motore. Campioni veri
-  in `out/task233-lakes-samples.html`, **da giudicare dall'utente**.
-  **Parte B**, con l'ok dell'utente per il server: l'elenco dell'Italia
-  intera e l'acqua di ogni lago in `data/cache/water/` (41 file e 12 MB
-  per il nord-est; stima 150–200 laghi e 40–60 MB per l'Italia). **Non
-  pubblicare l'app con questa pagina prima dell'acqua sul server**: un
-  lago scelto direbbe «Map data for this area could not be downloaded.».
-  Da dove riprendere: `tasks/TASK-233.md`, «Esito».
-
 - **TASK-119 — Reazioni ai disegni pubblicati** (ADR-0193; scelte
   dell'utente del 2026-10-04): era «Like», diventa sei reazioni sotto un
   disegno pubblicato aperto, una a testa: il cuore di Sgrava, 🔥 👏 💪 😂
@@ -503,10 +477,24 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App, API e server** — TASK-233: «Explore» della canoa come la corsa, e
+  tutti i laghi (ADR-0196; chiesto dall'utente il 2026-10-05, scelte
+  confermate una per una; PR #319, merge `1dc4bb9`, e la parte B). Con
+  «Paddle», «Near me» è acceso da subito e mostra il lago più vicino
+  («LAGO DI LEVICO · 1.2 KM AWAY»), poi gli otto luoghi più vicini da
+  toccare e «Type a lake or a beach». L'elenco è dentro l'app
+  (`src/paddle/lakes.json`, da `python -m shaperoute_api.lake_catalog`):
+  **211 laghi d'Italia, 758 punti della riva**, ognuno provato dal motore;
+  le forme sono da 2 km (128 laghi), da 1,5 km (48) o da 1 km (35). **Sul
+  server** dal 2026-10-05 04:22Z l'acqua di ogni lago: 210 file, 50 MB in
+  `data/cache/water/`, senza riavvio; provata dentro l'API sul lago di
+  Levico. Esce con la prossima pubblicazione; da provare sull'iPhone.
+  `tasks/TASK-233.md`.
+
 - **App** — TASK-235: la pubblicità fra i post del «Feed» (ADR-0198,
   supera in parte ADR-0102; chiesto dall'utente il 2026-10-05, con la
   scelta che **sostituisce** l'annuncio a schermo intero all'inizio di ogni
-  ricerca). Un annuncio nativo AdMob dopo ogni 5 post, solo fra due post
+  ricerca; PR #324, merge `7452ec6`). Un annuncio nativo AdMob dopo ogni 5 post, solo fra due post
   (tre nei 19 d'esempio), con «Sponsored» in alto grande come il nome di
   un corridore, nelle cinque lingue. Uno alla volta: il primo quando si
   apre il Feed, il successivo quando l'utente arriva al posto del
@@ -563,6 +551,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   disegnato al momento, e fuori dai quattro luoghi dipende da Overpass (i
   laghi multipoligono solo dopo che il server ha TASK-230). Esce con la
   prossima pubblicazione. `tasks/TASK-227.md`.
+- **App** — TASK-228: il «Feed» sull'acqua (ADR-0190; chiesto dall'utente
+  il 2026-10-03, scelte del 2026-10-05; PR #322, merge `de9512b`). Fra i
+  quindici disegni d'esempio di «Feed» ce ne sono quattro fatti sull'acqua,
+  sempre, con ogni sport, al 3º, 8º, 13º e 18º posto di 19: `greta_kayak`
+  (cuore, Lago di Garda), `leo.sup` (stella, Lago di Como),
+  `irene_onwater` (luna, Jesolo), `ale.paddle` (testa di cane a pezzi,
+  Riccione), da 2 km, con «Paddle» in testa alla riga dei fatti. I
+  percorsi sono gli esempi dentro l'app (`paddleExamples.json`):
+  `src/feed/paddlePosts.ts` li legge, senza una copia sua, quindi rifare
+  quel JSON aggiorna anche i post. Un tocco apre il percorso sull'acqua
+  senza chiedere all'API; lo sport scelto non cambia. Nessun testo nuovo
+  da tradurre. Visto nel simulatore. Solo app: esce con la prossima
+  pubblicazione. **Da confermare con l'utente** i quattro titoli e se
+  «Meanwhile, from the feed» in «Explore» può mostrare anche un post
+  sull'acqua; da provare sull'iPhone. `tasks/TASK-228.md`.
 
 - **Motore** — TASK-230: l'acqua da Overpass con i laghi multipoligono
   (ADR-0192; trovato da TASK-225; PR #292, merge `28e1ae0`).

@@ -9623,7 +9623,8 @@ alto.
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 
-**Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-234 ·
+**Data**: 2026-10-05 · **Stato**: Accettato; motore e API fatti (parte A),
+l'app da fare · **Task**: TASK-234 ·
 il consiglio da tentativi già fatti (il «passo 1») e la riga con «Prova»
 sono scelte dell'utente; soglie, campo e casi sono decisi dall'agente su
 delega dell'utente · estende ADR-0041
@@ -9664,6 +9665,34 @@ provato, cioè intorno a quella chiesta (scale fra 0,4 e 1,1 di quella
 iniziale): quanto spesso scatta va misurato prima di fare l'app. Come per
 ADR-0041, la distanza consigliata non è garantita: un nuovo disegno rifà
 la ricerca.
+
+**Parte A, motore e API (2026-10-05)**, deciso dall'agente su delega
+dell'utente:
+
+- **La soglia resta 5 punti** (`BETTER_MARGIN` = `W_SHAPE × 0,05`) con
+  somiglianza ≥ 0,90: misurata su 129 percorsi (i 12 di riferimento in
+  cache, le 17 forme a Trento e Levico, tre parole), scatta in 8, a 4
+  punti negli stessi 8, a 3 in 11, con guadagni di 3–4 punti
+  (`MAPS.md`, «Viene meglio a N km»). Nessuno dei 12 di riferimento.
+- **Fuori dai limiti niente consiglio**, invece di riportarlo dentro come
+  `suggested_distance_m`: una distanza riportata al limite non è quella
+  dove la forma è venuta meglio. Per una parola il limite basso è anche
+  3 km a lettera (`check_word`), per una forma a pezzi no.
+- **Fra più distanze** si confronta il costo senza la parte della
+  distanza, il migliore per ogni km; a parità vince il km più vicino.
+- **Il calcolo sta nel motore** (`optimizer.better_distance`), già al km:
+  la CLI e il telefono (TASK-214) lo hanno uguale all'API. Lo fanno
+  `plan_shape` e `ShapeJob.here` (`nearby_starts.py`, ok del coordinatore),
+  così resta anche quando vince una partenza vicina; `plan_nearby` lo
+  toglie alle alternative.
+- **Il campo è nuovo e facoltativo** (`shared-types`, `RouteResultBody`):
+  `null` senza consiglio; le fixture di prima restano quelle di un'API
+  precedente, e una nuova (`route-result-better-distance.json`) ha tutti i
+  campi.
+
+Il percorso scelto è identico: le impronte fissate dei test non cambiano.
+Gli esempi della canoa e `engine.zip` sono rifatti solo perché `models.py`
+è cambiato (in `paddleExamples.json` cambia solo `"engine"`).
 
 ## ADR-0199 — Seguire nell'app: il tasto sul profilo di un altro, tre numeri in «Profile» con i loro elenchi
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
@@ -9855,6 +9884,12 @@ pagina come quella della corsa.
 - Il Lago di Ledro manca: in OpenStreetMap è `water=pond`. Seguito.
 - Gli esempi a 1,5 e 1 km stanno sul telefono sotto chiavi loro
   (`paddling:1500:…`), a parte da quelli a 2 km.
+
+**Aggiunta (2026-10-05, parte B)**: con l'ok dell'utente l'elenco è
+dell'Italia intera, 211 laghi e 758 punti, e l'acqua di ognuno è sul
+server (210 file, 50 MB). Il calcolo è stato fatto sul Mac dall'estratto
+del server copiato in sola lettura, e sul server sono stati solo copiati i
+file: niente CPU dell'API, niente riavvio.
 
 ## ADR-0198 — La pubblicità fra i post del «Feed»: un annuncio nativo ogni 5 post, niente più annuncio alla ricerca
 

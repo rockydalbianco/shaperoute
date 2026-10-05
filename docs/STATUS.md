@@ -123,15 +123,20 @@ In coda, dopo o accanto:
   (le forme a pezzi sull'acqua: una faccina da 2 km a Riccione in 12 s,
   quattro tratti a penna alzata); fermo circa 14 secondi; immagine di
   prima `shaperoute-api:before-task226`, copia del database
-  `shaperoute-2026-10-05T0327Z.dump`; `draw_examples` rilanciato alle
-  03:29Z (`data/draw-examples-2026-10-05-task226.log`). `/phone-zones` c'è,
-  le zone del telefono non sono ancora costruite. **App** su `preview` da
-  `main` `ef7ad90` (gruppo `1fc82a12`): in più rispetto a `f8951439`, le
-  forme a pezzi sull'acqua e l'interruttore degli occhi staccati su strada
-  (TASK-226 B). **Da provare sull'iPhone.** Il prossimo passo sul server è
-  l'acqua dei laghi di TASK-233: **prima** di quella `main` con la #319
-  non si pubblica. Strava spento finché l'utente non scrive il secret sul
-  server.
+  `shaperoute-2026-10-05T0327Z.dump`; esempi ridisegnati per 66 città su
+  66 (`data/draw-examples-2026-10-05-task226.log`). Dalle 04:22Z ha anche
+  l'acqua dei laghi d'Italia (TASK-233: 210 file nuovi, 50 MB, senza
+  riavvio). `/phone-zones` c'è, le zone del telefono non sono ancora
+  costruite. **App** su `preview` da `main` `ef7ad90` (gruppo
+  `1fc82a12`): in più rispetto a `f8951439`, le forme a pezzi sull'acqua e
+  l'interruttore degli occhi staccati su strada (TASK-226 B). **Da provare
+  sull'iPhone.** In `main` dopo, **non ancora pubblicati** (si può, manca
+  l'ok dell'utente): «Follow» (#320), il «Feed» sull'acqua (#322), i
+  laghi in «Explore» (#319, #328), la pubblicità nel «Feed» (#324). In
+  `main` anche il motore di TASK-234 A (#327): il server vuole un altro
+  aggiornamento con `draw_examples`, con l'ok dell'utente, **prima** di
+  pubblicare la parte B di TASK-234. Strava spento per scelta dell'utente
+  (2026-10-05: «teniamo solo Instagram per ora»).
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),

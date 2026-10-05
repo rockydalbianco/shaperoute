@@ -215,19 +215,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Mancano il cerchio da 20 km, Levico e Padova, quando Overpass riapre. Il
   miglioramento delle forme in bici è TASK-206, qui sotto. Da dove
   riprendere: il task file, «Esito», «I campioni».
-- **TASK-217 — La voce confronta ogni km col precedente** (ADR-0180;
-  chiesto e scelto dall'utente il 2026-10-03; codice scritto il
-  2026-10-05, PR #308): dopo la frase di ogni km, dal secondo, «Questo
-  chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2
-  s «Stesso passo del chilometro precedente.»; al primo km niente. Con e
-  senza percorso, con i secondi della fine corsa (`splits`), pause
-  escluse. In bici ogni 10 km da 20 km e senza numeri («Ultimi 10
-  chilometri più veloci dei 10 precedenti.»). Tutto in
-  `src/navigation/kmCompare.ts`. **Da confermare dall'utente**: le frasi
-  in tedesco, spagnolo e francese, e in bici «stessa velocità» entro 0,5
-  km/h (frase e soglia, proposta dell'agente). Le forme con le miglia le
-  aggiunge TASK-182. Solo app: esce con la prossima pubblicazione, con
-  l'ok dell'utente; da provare correndo. `tasks/TASK-217.md`.
 - **TASK-232 — Forme inclinate fino a 45°, con la mappa girata**
   (ADR-0195; Todo, chiesto dall'utente il 2026-10-05): il motore inclina
   ogni forma fino a ±45° quando segue meglio le strade (oggi ±15°,
@@ -351,16 +338,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   e `DELETE /drawings/{id}/reaction`; il super like scrive il suo
   commento nella stessa transazione, dal filtro di TASK-213. Non sul
   server: migrazione, quindi l'ok dell'utente. **Parte B, l'app**, fatta
-  il 2026-10-05 (branch `feat/TASK-119-b-reactions-app`): sotto un
+  e in `main` dal 2026-10-05 (PR #309, merge `0e5ff55`): sotto un
   disegno aperto, accanto al pulsante dei commenti, la propria reazione,
   le tre più usate e il totale; il tocco apre la barra delle sei; le
   emoji si vedono subito e tornano com'erano se l'API non le tiene; il
   doppio tocco sulla mappa del disegno (che lì non fa più lo zoom) o il
   cuore nella barra aprono il foglio «Super like» con il cuore grande e
   il commento obbligatorio. Provata nel simulatore con un'API locale, non
-  con le dita. **Aspettano l'utente**: la conferma dei testi (task file,
-  «Esito»), l'aggiornamento del server con la `0015` e la pubblicazione,
-  la prova sull'iPhone con due account. Finché il server non ha le
+  con le dita; testi confermati dall'utente. **Aspettano l'utente**:
+  l'aggiornamento del server con la `0015` e la pubblicazione, poi la
+  prova sull'iPhone con due account. Finché il server non ha le
   reazioni l'app pubblicata non le mostra. Da dove riprendere:
   `tasks/TASK-119.md`, «Esito».
 
@@ -453,6 +440,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-217: la voce confronta ogni km col precedente
+  (ADR-0180; chiesto e scelto dall'utente il 2026-10-03; PR #308, merge
+  `f811e3a`). Dal secondo km, subito dopo la frase del km, «Questo
+  chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2
+  s «Stesso passo del chilometro precedente.»; al primo km niente. Con e
+  senza percorso, con i secondi della fine corsa (`splits`), pause
+  escluse. In bici ogni 10 km da 20 km e senza numeri («Ultimi 10
+  chilometri più veloci dei 10 precedenti.»). Tutto in
+  `src/navigation/kmCompare.ts`. **Confermate dall'utente** il 2026-10-05
+  le frasi in tedesco, spagnolo e francese e, in bici, «stessa velocità»
+  entro 0,5 km/h (frase e soglia). Le forme con le miglia le
+  aggiunge TASK-182. Solo app: esce con la prossima pubblicazione; da
+  provare correndo. Task file: `tasks/TASK-217.md`.
 - **App** — TASK-227: «Explore» con «Paddle» come la corsa (ADR-0189;
   scelte dell'utente del 2026-10-04; PR #297, merge `e761044`). Con
   «Paddle» ogni luogo d'acqua ha le otto forme della corsa da 2 km, e i

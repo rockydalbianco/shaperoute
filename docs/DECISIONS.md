@@ -9474,13 +9474,14 @@ peggio del precedente, e fra tre proposte ha scelto quella con i secondi.
 4. **In bici**, ogni `RIDE_KM_EVERY` km da 20 km: gli ultimi 10 km contro
    i 10 prima, in km/h, senza numeri. «Stessa velocità» entro 0,5 km/h
    (`SAME_SPEED_KMH`): su 10 km a 24 km/h sono circa 30 secondi, sotto non
-   è una differenza che si sente pedalando. L'utente non l'ha chiesto: da
-   confermare, frase e soglia.
+   è una differenza che si sente pedalando. L'utente non l'aveva chiesto:
+   frase e soglia **confermate dall'utente** il 2026-10-05.
 5. **«km» detto per intero** nelle frasi della bici («Ultimi 10 chilometri
    più veloci dei 10 precedenti.»): l'utente le ha scritte con «km», ma la
    voce del telefono può leggere male le sigle (ADR-0179, «km/h») e la
    frase dei km dice già «chilometri». All'orecchio è la stessa frase.
-6. **Tedesco, spagnolo e francese** scritti dall'agente, da confermare.
+6. **Tedesco, spagnolo e francese** scritti dall'agente, **confermati
+   dall'utente** il 2026-10-05.
    Spagnolo e francese dicono «più veloce / più lento» («más rápido», «plus
    rapide»): «mejor / mieux» con i secondi suona tradotto.
 

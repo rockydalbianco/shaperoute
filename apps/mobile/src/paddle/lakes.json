@@ -2,8 +2,698 @@
   "license": "Lakes from OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
   "lakes": [
     {
+      "name": "Alimini Grande",
+      "point": [40.20124, 18.4429],
+      "distance_m": 2000
+    },
+    {
+      "name": "Alimini Grande",
+      "point": [40.20916, 18.44469],
+      "distance_m": 2000
+    },
+    {
+      "name": "Alimini Piccolo (o Fontanelle)",
+      "point": [40.17453, 18.45182],
+      "distance_m": 1000
+    },
+    {
+      "name": "Diga sul Lordo",
+      "point": [38.29663, 16.27462],
+      "distance_m": 1500
+    },
+    {
+      "name": "Invaso del Locone",
+      "point": [41.06077, 16.00088],
+      "distance_m": 2000
+    },
+    {
+      "name": "Invaso del Locone",
+      "point": [41.08664, 16.0064],
+      "distance_m": 2000
+    },
+    {
+      "name": "Invaso del Locone",
+      "point": [41.08703, 15.98587],
+      "distance_m": 2000
+    },
+    {
+      "name": "Invaso di Marsico Nuovo",
+      "point": [40.43086, 15.73919],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lac de la Sassière",
+      "point": [45.47964, 7.00661],
+      "distance_m": 1500
+    },
+    {
       "name": "Laghetto del Frassino",
       "point": [45.43637, 10.66215],
+      "distance_m": 2000
+    },
+    {
+      "name": "Laghetto di Dascio",
+      "point": [46.18224, 9.42148],
+      "distance_m": 2000
+    },
+    {
+      "name": "Laghi di Mantova",
+      "point": [45.16205, 10.78616],
+      "distance_m": 2000
+    },
+    {
+      "name": "Laghi di Mantova",
+      "point": [45.16354, 10.75177],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Albano",
+      "point": [41.74074, 12.65849],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Albano",
+      "point": [41.75298, 12.67782],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Alpe dei Cavalli",
+      "point": [46.09043, 8.10655],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Alto del Flumendosa",
+      "point": [39.92648, 9.47017],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Alto del Flumendosa",
+      "point": [39.93463, 9.45435],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Alto del Flumendosa",
+      "point": [39.93574, 9.45948],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Alto del Flumendosa",
+      "point": [39.94418, 9.4373],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Alto del Flumendosa",
+      "point": [39.95053, 9.44289],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Alto del Flumendosa",
+      "point": [39.95541, 9.43139],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Ampollino",
+      "point": [39.19204, 16.61523],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Ampollino",
+      "point": [39.19722, 16.58457],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Ampollino",
+      "point": [39.19765, 16.61429],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Ampollino",
+      "point": [39.19773, 16.65473],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Ampollino",
+      "point": [39.20196, 16.65469],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Ampollino",
+      "point": [39.20562, 16.67303],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Arancio",
+      "point": [37.62572, 13.06523],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Arancio",
+      "point": [37.63708, 13.06599],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Arvo",
+      "point": [39.21996, 16.47695],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Arvo",
+      "point": [39.22136, 16.45563],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Arvo",
+      "point": [39.23503, 16.4688],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Arvo",
+      "point": [39.23887, 16.50967],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Arvo",
+      "point": [39.24134, 16.49125],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Arvo",
+      "point": [39.24632, 16.54471],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Arvo",
+      "point": [39.24807, 16.51301],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Baitone",
+      "point": [46.14304, 10.43193],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.67089, 9.31086],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.67132, 9.31711],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.68916, 9.29727],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.69295, 9.30274],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.70619, 9.296],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.71485, 9.27846],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.7229, 9.27724],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.72748, 9.25052],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.73216, 9.25472],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.74573, 9.23435],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.75235, 9.24089],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.76348, 9.22591],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Basso del Flumendosa",
+      "point": [39.78203, 9.22916],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Benedetto",
+      "point": [46.18541, 10.47386],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Biviere di Lentini",
+      "point": [37.31336, 14.95542],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Biviere di Lentini",
+      "point": [37.3207, 14.92818],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Biviere di Lentini",
+      "point": [37.33768, 14.95527],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Castel",
+      "point": [46.42291, 8.43467],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Cimia",
+      "point": [37.19117, 14.35473],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.69988, 9.00704],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.70355, 9.01701],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.70357, 9.0358],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.72265, 9.03423],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.73192, 9.05779],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.73288, 9.04065],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.7472, 9.06199],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.75381, 9.08491],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.76113, 9.0943],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.76136, 9.01216],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.76138, 9.06715],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.77056, 9.03309],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.77684, 9.02523],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Coghinas",
+      "point": [40.78433, 9.02197],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Comunelli",
+      "point": [37.15812, 14.15854],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Diga del Goillet",
+      "point": [45.9271, 7.66845],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Dirillo",
+      "point": [37.12648, 14.69991],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Dirillo",
+      "point": [37.13018, 14.69819],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Disueri",
+      "point": [37.1919, 14.28868],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Fanaco",
+      "point": [37.65422, 13.54596],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Garcia",
+      "point": [37.78902, 13.11165],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Garcia",
+      "point": [37.80176, 13.12133],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Garcia",
+      "point": [37.80188, 13.09971],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Garcia",
+      "point": [37.80712, 13.14809],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Grande",
+      "point": [40.93278, 15.60801],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Grande di Avigliana",
+      "point": [45.06594, 7.38238],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Inferiore",
+      "point": [45.15635, 10.81017],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Lerno",
+      "point": [40.5747, 9.16372],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Lerno",
+      "point": [40.57905, 9.15546],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Lerno",
+      "point": [40.58307, 9.16391],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Lerno",
+      "point": [40.5881, 9.19177],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Lungo",
+      "point": [42.47755, 12.84974],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Maccheronis",
+      "point": [40.62944, 9.58594],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Maccheronis",
+      "point": [40.62966, 9.60479],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Maccheronis",
+      "point": [40.63322, 9.59021],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Maccheronis",
+      "point": [40.63485, 9.60422],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Maccheronis",
+      "point": [40.64414, 9.60536],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.7254, 8.58371],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.72627, 8.61853],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.73526, 8.59749],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.74729, 8.56684],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.75887, 8.58315],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.76873, 8.55011],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.77035, 8.57162],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.79891, 8.56913],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.79957, 8.5388],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.80489, 8.60324],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.82019, 8.56501],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.82549, 8.62335],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.84436, 8.62061],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.85202, 8.5701],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.86562, 8.60556],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.88247, 8.54796],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.89521, 8.59392],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.89844, 8.51245],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.9114, 8.61763],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.92132, 8.54938],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.92509, 8.48791],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.93248, 8.57069],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.9326, 8.63931],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.93853, 8.51087],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.94417, 8.59692],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.95506, 8.66458],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.97085, 8.62771],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.97432, 8.70354],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.99715, 8.72967],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [45.9976, 8.65582],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.015, 8.75097],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.01978, 8.68375],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.03805, 8.73374],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.04149, 8.70713],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.06726, 8.70066],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.07012, 8.73106],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.09277, 8.69162],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.09828, 8.73631],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.11607, 8.77332],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.1557, 8.86235],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.15816, 8.8619],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.16269, 8.85657],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Maggiore",
+      "point": [46.16873, 8.84938],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Miseno",
+      "point": [40.79022, 14.07192],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Morasco",
+      "point": [46.42026, 8.39597],
       "distance_m": 2000
     },
     {
@@ -12,9 +702,374 @@
       "distance_m": 1500
     },
     {
+      "name": "Lago Nicoletti",
+      "point": [37.61118, 14.34578],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.01775, 8.86537],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.0284, 8.85747],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.03623, 8.86383],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.05553, 8.87575],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.0573, 8.86919],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.06832, 8.88343],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.07394, 8.87232],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.08986, 8.88545],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.09752, 8.88089],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.10721, 8.89678],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.10952, 8.89483],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.12305, 8.91617],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.13289, 8.93235],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.13449, 8.89228],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.13883, 8.97656],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.14431, 8.9065],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.14462, 8.95449],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.14573, 8.96632],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.14832, 8.87751],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.14899, 8.955],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Omodeo",
+      "point": [40.15704, 8.93035],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Passante",
+      "point": [39.09296, 16.51586],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Passante",
+      "point": [39.10125, 16.51942],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Passante",
+      "point": [39.11165, 16.50999],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Piccolo di Avigliana",
+      "point": [45.05365, 7.3875],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Poma",
+      "point": [37.98035, 13.1176],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Poma",
+      "point": [37.9954, 13.08333],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Pozzillo",
+      "point": [37.65811, 14.60765],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Pozzillo",
+      "point": [37.67236, 14.61128],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Rubino",
+      "point": [37.88906, 12.72382],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Rubino",
+      "point": [37.89244, 12.71582],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Saetta",
+      "point": [40.8155, 15.4287],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago San Giovanni",
+      "point": [37.30561, 13.76148],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago San Giovanni",
+      "point": [37.31508, 13.78406],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago San Puoto",
+      "point": [41.2839, 13.40904],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago San Sebastiano",
+      "point": [39.75102, 9.09445],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago San Sebastiano",
+      "point": [39.75903, 9.11409],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Santa Rosalia",
+      "point": [36.97389, 14.77347],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Santa Rosalia",
+      "point": [36.97737, 14.77231],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Santa Rosalia",
+      "point": [36.98545, 14.78315],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago Serrù",
+      "point": [45.46095, 7.12493],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago Simbirizzi",
+      "point": [39.24902, 9.21728],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Simbirizzi",
+      "point": [39.25973, 9.21787],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Superiore",
+      "point": [45.16205, 10.78616],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Superiore",
+      "point": [45.16354, 10.75177],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Tarsia",
+      "point": [39.60456, 16.28608],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Tarsia",
+      "point": [39.60762, 16.27553],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Tarsia",
+      "point": [39.61243, 16.30319],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Toggia",
+      "point": [46.44258, 8.43195],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.08205, 12.1095],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.08891, 12.15228],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.0962, 12.18557],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.11128, 12.17378],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.12684, 12.05854],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.13229, 12.16435],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.15351, 12.02541],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.15486, 12.18353],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.17868, 12.16584],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.18351, 12.02443],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.18907, 12.07046],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.18955, 12.12843],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Trasimeno",
+      "point": [43.19074, 12.08732],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Vallazza",
+      "point": [45.13798, 10.81654],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Vannino",
+      "point": [46.37997, 8.35656],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago artificiale di Castello",
+      "point": [44.61576, 7.04601],
+      "distance_m": 1000
+    },
+    {
       "name": "Lago artificiale di Zoccolo",
       "point": [46.541, 10.98259],
       "distance_m": 1500
+    },
+    {
+      "name": "Lago d'Averno",
+      "point": [40.84194, 14.07535],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Avino",
+      "point": [46.24751, 8.1323],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago d'Avio",
+      "point": [46.19422, 10.46838],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago d'Idro",
+      "point": [45.73937, 10.46506],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Idro",
+      "point": [45.74917, 10.48631],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Idro",
+      "point": [45.76619, 10.49698],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Idro",
+      "point": [45.77397, 10.52222],
+      "distance_m": 2000
     },
     {
       "name": "Lago d'Idro",
@@ -27,9 +1082,179 @@
       "distance_m": 2000
     },
     {
+      "name": "Lago d'Iseo",
+      "point": [45.65587, 10.024],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.65866, 10.00861],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.65917, 10.03488],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.66593, 9.9612],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.66699, 9.98327],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.66986, 10.07113],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.67765, 9.99992],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.68279, 10.03673],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.68421, 10.09401],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.70797, 10.04701],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.71333, 10.11004],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.73877, 10.05048],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.7404, 10.09034],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.76993, 10.06823],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.77064, 10.03595],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.79227, 10.09707],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.79254, 10.0561],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.80999, 10.07059],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Iseo",
+      "point": [45.81439, 10.0925],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Orta",
+      "point": [45.76592, 8.42866],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Orta",
+      "point": [45.78429, 8.39668],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Orta",
+      "point": [45.79498, 8.41206],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Orta",
+      "point": [45.80781, 8.41472],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Orta",
+      "point": [45.81085, 8.38672],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Orta",
+      "point": [45.83871, 8.40017],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Orta",
+      "point": [45.84869, 8.38745],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Orta",
+      "point": [45.87394, 8.41058],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago dei Monaci",
+      "point": [41.37847, 12.92878],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Barbellino",
+      "point": [46.06606, 10.0514],
+      "distance_m": 1000
+    },
+    {
       "name": "Lago del Careser",
       "point": [46.42795, 10.7057],
       "distance_m": 1500
+    },
+    {
+      "name": "Lago del Cuga",
+      "point": [40.60582, 8.46625],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Cuga",
+      "point": [40.61393, 8.48758],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Cuga",
+      "point": [40.61499, 8.46113],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Fusaro",
+      "point": [40.82308, 14.05084],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Matese",
+      "point": [41.41821, 14.38209],
+      "distance_m": 2000
     },
     {
       "name": "Lago del Mis",
@@ -42,6 +1267,56 @@
       "distance_m": 1000
     },
     {
+      "name": "Lago del Pantano di Pignola",
+      "point": [40.58647, 15.74517],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Pertusillo",
+      "point": [40.27425, 15.98446],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago del Pertusillo",
+      "point": [40.27986, 15.95358],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Pertusillo",
+      "point": [40.28015, 15.96051],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Pertusillo",
+      "point": [40.28097, 15.9872],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago del Pertusillo",
+      "point": [40.2813, 15.9482],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Pertusillo",
+      "point": [40.28993, 15.95037],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Pertusillo",
+      "point": [40.29008, 15.971],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Pertusillo",
+      "point": [40.29078, 15.91399],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Pertusillo",
+      "point": [40.29814, 15.9298],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago del Predil",
       "point": [46.42263, 13.56369],
       "distance_m": 1000
@@ -52,8 +1327,158 @@
       "distance_m": 1500
     },
     {
+      "name": "Lago del Sabbione",
+      "point": [46.41139, 8.34292],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.23717, 13.12373],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.23898, 13.08366],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.24234, 13.09233],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.24857, 13.06871],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.2495, 13.09895],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.2533, 13.07529],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.26185, 13.04776],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.26638, 13.06397],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.27132, 13.03534],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.27637, 13.04338],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.27952, 13.0567],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Salto",
+      "point": [42.28185, 13.03425],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Turano",
+      "point": [42.19136, 12.99],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago del Turano",
+      "point": [42.19356, 12.99206],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago del Turano",
+      "point": [42.20485, 12.96982],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Turano",
+      "point": [42.21046, 12.97105],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Turano",
+      "point": [42.21579, 12.9475],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Turano",
+      "point": [42.22065, 12.9565],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Turano",
+      "point": [42.22949, 12.9417],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago dell'Alto Temo",
+      "point": [40.46707, 8.54433],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago dell'Alto Temo",
+      "point": [40.46733, 8.52854],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago dell'Alto Temo",
+      "point": [40.47155, 8.52525],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago dell'Alto Temo",
+      "point": [40.47701, 8.54544],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago dell'Alto Temo",
+      "point": [40.47898, 8.56065],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago dell'Alto Temo",
+      "point": [40.48699, 8.53092],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago dell'Angitola",
+      "point": [38.73434, 16.24631],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago dell'Angitola",
+      "point": [38.7424, 16.23972],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago della Gherardesca",
+      "point": [43.78113, 10.6154],
+      "distance_m": 1000
+    },
+    {
       "name": "Lago della Muta",
       "point": [46.75199, 10.53502],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago della Rossa",
+      "point": [45.26965, 7.13973],
       "distance_m": 1500
     },
     {
@@ -62,8 +1487,28 @@
       "distance_m": 1000
     },
     {
+      "name": "Lago della Trinità",
+      "point": [37.70037, 12.75951],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago della Trinità",
+      "point": [37.70633, 12.74987],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago delle Nazioni",
       "point": [44.7631, 12.23996],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Acerenza",
+      "point": [40.76969, 15.90862],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Acerenza",
+      "point": [40.77672, 15.91845],
       "distance_m": 2000
     },
     {
@@ -72,14 +1517,259 @@
       "distance_m": 1000
     },
     {
+      "name": "Lago di Alpe Gera",
+      "point": [46.32399, 9.94861],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Alserio",
+      "point": [45.78407, 9.21804],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Alviano",
+      "point": [42.5951, 12.24509],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Alviano",
+      "point": [42.6095, 12.24867],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Alviano",
+      "point": [42.61788, 12.2395],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Annone",
+      "point": [45.80297, 9.35504],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Annone",
+      "point": [45.81094, 9.3287],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Annone",
+      "point": [45.81365, 9.34473],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Annone est",
+      "point": [45.80637, 9.3392],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Annone est",
+      "point": [45.81352, 9.35869],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Annone ovest",
+      "point": [45.81246, 9.33446],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di Anterselva",
       "point": [46.88416, 12.16903],
       "distance_m": 1500
     },
     {
+      "name": "Lago di Baratz",
+      "point": [40.67902, 8.22486],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di Barcis",
       "point": [46.18683, 12.56884],
       "distance_m": 1000
+    },
+    {
+      "name": "Lago di Barrea",
+      "point": [41.76119, 13.96379],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Barrea",
+      "point": [41.7632, 13.97714],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Bilancino",
+      "point": [43.9718, 11.26057],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bilancino",
+      "point": [43.97698, 11.23052],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bilancino",
+      "point": [43.98273, 11.27515],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bilancino",
+      "point": [43.98275, 11.24622],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bilancino",
+      "point": [43.98361, 11.26446],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bilancino",
+      "point": [43.98423, 11.28045],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bolsena",
+      "point": [42.53477, 11.95389],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bolsena",
+      "point": [42.53933, 11.91741],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bolsena",
+      "point": [42.54703, 11.99643],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bolsena",
+      "point": [42.55541, 11.8905],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bolsena",
+      "point": [42.58017, 11.86477],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bolsena",
+      "point": [42.58185, 11.99196],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bolsena",
+      "point": [42.61204, 11.86721],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bolsena",
+      "point": [42.61547, 11.99309],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bolsena",
+      "point": [42.64164, 11.98123],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bolsena",
+      "point": [42.64191, 11.89021],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bolsena",
+      "point": [42.65189, 11.93733],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bomba",
+      "point": [41.98032, 14.36553],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Bomba",
+      "point": [41.98327, 14.36994],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bomba",
+      "point": [42.00991, 14.35056],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bomba",
+      "point": [42.01606, 14.3585],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bracciano",
+      "point": [42.08253, 12.23006],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bracciano",
+      "point": [42.09346, 12.26832],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bracciano",
+      "point": [42.09876, 12.19356],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bracciano",
+      "point": [42.11547, 12.28115],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bracciano",
+      "point": [42.12632, 12.17568],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bracciano",
+      "point": [42.14471, 12.27183],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bracciano",
+      "point": [42.15263, 12.20159],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Bracciano",
+      "point": [42.15443, 12.24731],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Burano",
+      "point": [42.39487, 11.39088],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Burano",
+      "point": [42.4073, 11.36711],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Caccamo",
+      "point": [37.92035, 13.63376],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Caccamo",
+      "point": [37.92732, 13.62623],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Caccamo",
+      "point": [37.94501, 13.64629],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Caccamo",
+      "point": [37.95481, 13.63946],
+      "distance_m": 2000
     },
     {
       "name": "Lago di Caldaro",
@@ -102,6 +1792,111 @@
       "distance_m": 2000
     },
     {
+      "name": "Lago di Campolattaro",
+      "point": [41.30198, 14.731],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Campolattaro",
+      "point": [41.31416, 14.7491],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Campolattaro",
+      "point": [41.32998, 14.72376],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Campolattaro",
+      "point": [41.33646, 14.72701],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Campolattaro",
+      "point": [41.34215, 14.70878],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Camposecco",
+      "point": [46.0648, 8.04422],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Campotosto",
+      "point": [42.51372, 13.36485],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Campotosto",
+      "point": [42.52073, 13.33713],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Campotosto",
+      "point": [42.52615, 13.35121],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Campotosto",
+      "point": [42.52721, 13.39107],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Campotosto",
+      "point": [42.53537, 13.40317],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Campotosto",
+      "point": [42.53634, 13.38006],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Campotosto",
+      "point": [42.55315, 13.34097],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Campotosto",
+      "point": [42.55559, 13.36395],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cancano",
+      "point": [46.52371, 10.29767],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cancano",
+      "point": [46.53191, 10.30172],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Candia",
+      "point": [45.32911, 7.91215],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Canterno",
+      "point": [41.74594, 13.24895],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Canterno",
+      "point": [41.75978, 13.24008],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Casoli",
+      "point": [42.09193, 14.25927],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cava Escosa",
+      "point": [44.93891, 7.67657],
+      "distance_m": 1500
+    },
+    {
       "name": "Lago di Cavazzo",
       "point": [46.32412, 13.07433],
       "distance_m": 2000
@@ -117,6 +1912,56 @@
       "distance_m": 1500
     },
     {
+      "name": "Lago di Cecita",
+      "point": [39.36578, 16.48304],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Cecita",
+      "point": [39.37446, 16.48386],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Cecita",
+      "point": [39.37591, 16.51389],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cecita",
+      "point": [39.37673, 16.52545],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cecita",
+      "point": [39.37812, 16.54326],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cecita",
+      "point": [39.37854, 16.50518],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cecita",
+      "point": [39.38701, 16.50785],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cecita",
+      "point": [39.38863, 16.47653],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Cecita",
+      "point": [39.38989, 16.52989],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cecita",
+      "point": [39.39477, 16.54203],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di Centro Cadore",
       "point": [46.43283, 12.39087],
       "distance_m": 1000
@@ -130,6 +1975,341 @@
       "name": "Lago di Centro Cadore",
       "point": [46.45157, 12.41333],
       "distance_m": 1000
+    },
+    {
+      "name": "Lago di Ceresole",
+      "point": [45.42893, 7.22143],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Chiusi",
+      "point": [43.04141, 11.97237],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Chiusi",
+      "point": [43.05211, 11.95662],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Chiusi",
+      "point": [43.06196, 11.9706],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cingoli",
+      "point": [43.36019, 13.16443],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Cingoli",
+      "point": [43.37077, 13.1546],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Cingoli",
+      "point": [43.37767, 13.157],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Cingoli",
+      "point": [43.38197, 13.15832],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Comabbio",
+      "point": [45.76351, 8.68325],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Comabbio",
+      "point": [45.76513, 8.70186],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.81938, 9.08046],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.82175, 9.06736],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.84135, 9.10339],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.84641, 9.08318],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.85378, 9.38779],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.85835, 9.13095],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.86127, 9.36575],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.86594, 9.11058],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.87853, 9.15622],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.88117, 9.36737],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.8842, 9.33298],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.88424, 9.14127],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.89733, 9.33039],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.90665, 9.29893],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.90947, 9.1534],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.91256, 9.1319],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.91986, 9.31138],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.93574, 9.28263],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.93902, 9.16047],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.94469, 9.12908],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.94843, 9.30229],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.94948, 9.20495],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.96417, 9.16748],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.96459, 9.26785],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.9694, 9.20167],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.97101, 9.23766],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.97581, 9.29681],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.98283, 9.22532],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [45.99073, 9.2629],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.00645, 9.28919],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.0097, 9.23578],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.03035, 9.29012],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.03689, 9.23939],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.0511, 9.31027],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.06026, 9.2642],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.07423, 9.29801],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.08757, 9.278],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.10009, 9.31649],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.11649, 9.34496],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.11873, 9.28054],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.12327, 9.32854],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.13628, 9.35894],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.13677, 9.30293],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.14905, 9.33303],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.15502, 9.37694],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Como",
+      "point": [46.16818, 9.36544],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Conza",
+      "point": [40.86786, 15.3182],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Conza",
+      "point": [40.88037, 15.30106],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Conza",
+      "point": [40.88201, 15.3201],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Conza",
+      "point": [40.88758, 15.29909],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Corbara",
+      "point": [42.6951, 12.24422],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Corbara",
+      "point": [42.70393, 12.23051],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Corbara",
+      "point": [42.7112, 12.26217],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Corbara",
+      "point": [42.71343, 12.24678],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Corbara",
+      "point": [42.73529, 12.279],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Corbara",
+      "point": [42.73717, 12.2884],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Corbara",
+      "point": [42.74277, 12.2672],
+      "distance_m": 2000
     },
     {
       "name": "Lago di Corlo",
@@ -152,14 +2332,84 @@
       "distance_m": 1500
     },
     {
+      "name": "Lago di Cucchinadorza",
+      "point": [40.11972, 9.13454],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Cucchinadorza",
+      "point": [40.12267, 9.13993],
+      "distance_m": 1000
+    },
+    {
       "name": "Lago di Cà Selva",
       "point": [46.26288, 12.69612],
       "distance_m": 1000
     },
     {
+      "name": "Lago di Devero - Codelago",
+      "point": [46.342, 8.29875],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Endine",
+      "point": [45.76402, 9.92868],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Endine",
+      "point": [45.78153, 9.93687],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Endine",
+      "point": [45.78833, 9.95972],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Faro",
+      "point": [38.26721, 15.63512],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di Fedaia",
       "point": [46.45817, 11.86833],
       "distance_m": 1000
+    },
+    {
+      "name": "Lago di Fondi",
+      "point": [41.30948, 13.3565],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Fondi",
+      "point": [41.31707, 13.31064],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Fondi",
+      "point": [41.32238, 13.34488],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Fondi",
+      "point": [41.32262, 13.33011],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Fondi",
+      "point": [41.32542, 13.31309],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Fondi",
+      "point": [41.32584, 13.34116],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Fondi",
+      "point": [41.32603, 13.35531],
+      "distance_m": 1500
     },
     {
       "name": "Lago di Garda",
@@ -169,6 +2419,11 @@
     {
       "name": "Lago di Garda",
       "point": [45.45395, 10.66145],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.46048, 10.57284],
       "distance_m": 2000
     },
     {
@@ -198,7 +2453,17 @@
     },
     {
       "name": "Lago di Garda",
+      "point": [45.49499, 10.51248],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
       "point": [45.49596, 10.73213],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.52031, 10.53696],
       "distance_m": 2000
     },
     {
@@ -238,7 +2503,32 @@
     },
     {
       "name": "Lago di Garda",
+      "point": [45.59333, 10.56757],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.5975, 10.52733],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.61173, 10.54201],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
       "point": [45.61381, 10.68998],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.62549, 10.57783],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.63096, 10.61292],
       "distance_m": 2000
     },
     {
@@ -248,7 +2538,17 @@
     },
     {
       "name": "Lago di Garda",
+      "point": [45.65399, 10.63179],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
       "point": [45.66941, 10.73346],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.67985, 10.65465],
       "distance_m": 2000
     },
     {
@@ -258,7 +2558,17 @@
     },
     {
       "name": "Lago di Garda",
+      "point": [45.70315, 10.6857],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
       "point": [45.7256, 10.78085],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.72789, 10.71848],
       "distance_m": 2000
     },
     {
@@ -268,12 +2578,27 @@
     },
     {
       "name": "Lago di Garda",
+      "point": [45.75167, 10.74991],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
       "point": [45.77315, 10.81278],
       "distance_m": 2000
     },
     {
       "name": "Lago di Garda",
+      "point": [45.77838, 10.77183],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
       "point": [45.79816, 10.83683],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.80667, 10.791],
       "distance_m": 2000
     },
     {
@@ -307,9 +2632,184 @@
       "distance_m": 2000
     },
     {
+      "name": "Lago di Garlate",
+      "point": [45.81591, 9.41915],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garlate",
+      "point": [45.82289, 9.39595],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Genna is Abis",
+      "point": [39.26796, 8.88642],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Genna is Abis",
+      "point": [39.2792, 8.87844],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Genna is Abis",
+      "point": [39.27964, 8.85507],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Genna is Abis",
+      "point": [39.28814, 8.88034],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di Gioveretto",
       "point": [46.5051, 10.71978],
       "distance_m": 1000
+    },
+    {
+      "name": "Lago di Guardialfiera",
+      "point": [41.79584, 14.80938],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Guardialfiera",
+      "point": [41.79874, 14.80537],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Guardialfiera",
+      "point": [41.80927, 14.83957],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Guardialfiera",
+      "point": [41.81453, 14.86592],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Guardialfiera",
+      "point": [41.81984, 14.82206],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Guardialfiera",
+      "point": [41.82591, 14.84645],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Gusana",
+      "point": [40.11203, 9.20851],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Gusana",
+      "point": [40.13067, 9.20226],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Gusana",
+      "point": [40.13157, 9.21148],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Gusana",
+      "point": [40.13431, 9.21131],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Gusana",
+      "point": [40.14202, 9.19823],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Lacina",
+      "point": [38.58589, 16.39889],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lacina",
+      "point": [38.58894, 16.41601],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lacina",
+      "point": [38.5987, 16.41409],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lei",
+      "point": [46.41719, 9.4342],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Lei",
+      "point": [46.44866, 9.44673],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Lei",
+      "point": [46.45197, 9.43918],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Lei",
+      "point": [46.48168, 9.45456],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Lesina",
+      "point": [41.86219, 15.34849],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lesina",
+      "point": [41.86964, 15.42844],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lesina",
+      "point": [41.87146, 15.47518],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lesina",
+      "point": [41.87333, 15.38657],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lesina",
+      "point": [41.8853, 15.51271],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lesina",
+      "point": [41.89067, 15.39148],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lesina",
+      "point": [41.89243, 15.34548],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lesina",
+      "point": [41.89419, 15.55186],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lesina",
+      "point": [41.89889, 15.48434],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lesina",
+      "point": [41.90697, 15.51974],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lesina",
+      "point": [41.91447, 15.56402],
+      "distance_m": 2000
     },
     {
       "name": "Lago di Levico",
@@ -317,9 +2817,244 @@
       "distance_m": 2000
     },
     {
+      "name": "Lago di Liscia",
+      "point": [40.97962, 9.22609],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Liscia",
+      "point": [40.98422, 9.22253],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Liscia",
+      "point": [40.98884, 9.26433],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Liscia",
+      "point": [40.9928, 9.24119],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Liscia",
+      "point": [40.997, 9.22578],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Liscia",
+      "point": [41.00062, 9.26894],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Liscia",
+      "point": [41.00101, 9.25323],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Liscia",
+      "point": [41.00828, 9.27853],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Liscia",
+      "point": [41.01328, 9.27316],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Livigno",
+      "point": [46.56121, 10.1643],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Livigno",
+      "point": [46.56694, 10.15613],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Livigno",
+      "point": [46.58961, 10.17574],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Livigno",
+      "point": [46.60087, 10.1741],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Livigno",
+      "point": [46.62078, 10.19388],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Livigno",
+      "point": [46.62291, 10.20402],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.90547, 8.89765],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.92033, 8.92946],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.92303, 8.91757],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.93528, 8.88775],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.9473, 8.90331],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.95675, 8.87463],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.96356, 8.96853],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.96724, 8.88424],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.96798, 8.94844],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.96817, 8.87315],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.97654, 8.90309],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [45.98932, 8.9902],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [46.00037, 8.97565],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [46.00492, 9.0317],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [46.00916, 9.07328],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [46.01424, 9.01797],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [46.01909, 9.11448],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [46.02404, 9.06158],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Lugano",
+      "point": [46.03225, 9.10615],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Magazzolo",
+      "point": [37.57832, 13.41209],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Magazzolo",
+      "point": [37.58501, 13.42225],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di Malga Bissina",
       "point": [46.05738, 10.51472],
       "distance_m": 1500
+    },
+    {
+      "name": "Lago di Martignano",
+      "point": [42.11443, 12.32249],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Massaciuccoli",
+      "point": [43.82471, 10.34108],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Massaciuccoli",
+      "point": [43.82728, 10.3139],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Massaciuccoli",
+      "point": [43.83936, 10.31224],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Massaciuccoli",
+      "point": [43.84354, 10.34494],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mergozzo",
+      "point": [45.94878, 8.46617],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mezzano",
+      "point": [42.61418, 11.77278],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mezzo",
+      "point": [45.17128, 10.79377],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mezzola",
+      "point": [46.19113, 9.42344],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mezzola",
+      "point": [46.19435, 9.44924],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mezzola",
+      "point": [46.21156, 9.4454],
+      "distance_m": 2000
     },
     {
       "name": "Lago di Molveno",
@@ -332,9 +3067,284 @@
       "distance_m": 2000
     },
     {
+      "name": "Lago di Monate",
+      "point": [45.8037, 8.66062],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Cotugno",
+      "point": [40.13032, 16.33186],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Cotugno",
+      "point": [40.13663, 16.32091],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Cotugno",
+      "point": [40.15918, 16.31663],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Cotugno",
+      "point": [40.17218, 16.33025],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Cotugno",
+      "point": [40.1809, 16.31329],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Cotugno",
+      "point": [40.18209, 16.32643],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Cotugno",
+      "point": [40.18498, 16.34696],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Cotugno",
+      "point": [40.19106, 16.32927],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Pranu",
+      "point": [39.08424, 8.62853],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Pranu",
+      "point": [39.09159, 8.59604],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Pranu",
+      "point": [39.09163, 8.61326],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monte Pranu",
+      "point": [39.11565, 8.60825],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Montedoglio",
+      "point": [43.59392, 12.05446],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Montedoglio",
+      "point": [43.59428, 12.07122],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Montedoglio",
+      "point": [43.59969, 12.07085],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Montedoglio",
+      "point": [43.60248, 12.03984],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Montedoglio",
+      "point": [43.61446, 12.06744],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Montedoglio",
+      "point": [43.62705, 12.07335],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Montepulciano",
+      "point": [43.08981, 11.91998],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Montepulciano",
+      "point": [43.09742, 11.92143],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Monterosi",
+      "point": [42.20401, 12.30095],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Montespluga",
+      "point": [46.48027, 9.34361],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Montimannu",
+      "point": [39.4159, 8.71045],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Montorfano",
+      "point": [45.78464, 9.13463],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.59344, 9.24094],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.60087, 9.25653],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.6124, 9.24353],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.61781, 9.25146],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.6212, 9.22425],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.62293, 9.21479],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.62919, 9.2692],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.6296, 9.20486],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.63007, 9.24295],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.63817, 9.20299],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.63857, 9.26552],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.64113, 9.25057],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.64158, 9.21874],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Mulargia",
+      "point": [39.64389, 9.2255],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Nemi",
+      "point": [41.71369, 12.69566],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di Neves",
       "point": [46.94702, 11.78474],
       "distance_m": 1000
+    },
+    {
+      "name": "Lago di Occhito",
+      "point": [41.53165, 14.94034],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Occhito",
+      "point": [41.54251, 14.93394],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Occhito",
+      "point": [41.55908, 14.9491],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Occhito",
+      "point": [41.56623, 14.93574],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Occhito",
+      "point": [41.57854, 14.95614],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Occhito",
+      "point": [41.59049, 14.93752],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Occhito",
+      "point": [41.60365, 14.95236],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Occhito",
+      "point": [41.61033, 14.93803],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Occhito",
+      "point": [41.61792, 14.93815],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Occhito",
+      "point": [41.62225, 14.96585],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Ogliastro",
+      "point": [37.4356, 14.56392],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Ogliastro",
+      "point": [37.45015, 14.56729],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Olai",
+      "point": [40.14104, 9.34577],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Olai",
+      "point": [40.14139, 9.33127],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Olginate",
+      "point": [45.79452, 9.42275],
+      "distance_m": 2000
     },
     {
       "name": "Lago di Paneveggio",
@@ -342,13 +3352,118 @@
       "distance_m": 1000
     },
     {
+      "name": "Lago di Patria",
+      "point": [40.9247, 14.02775],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Patria",
+      "point": [40.93606, 14.04086],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Penne",
+      "point": [42.44271, 13.91227],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Pergusa",
+      "point": [37.51681, 14.3019],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di Pian Palù",
       "point": [46.33419, 10.60308],
       "distance_m": 1000
     },
     {
+      "name": "Lago di Piana degli Albanesi",
+      "point": [37.96754, 13.29043],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Piana degli Albanesi",
+      "point": [37.97556, 13.30784],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Piana degli Albanesi",
+      "point": [37.97807, 13.29133],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Piano",
+      "point": [46.03387, 9.16182],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Piediluco",
+      "point": [42.51714, 12.77181],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Piediluco",
+      "point": [42.53105, 12.75147],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Piediluco",
+      "point": [42.53538, 12.75435],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Place Moulin",
+      "point": [45.90134, 7.49602],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Place Moulin",
+      "point": [45.91657, 7.52748],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Polverina",
+      "point": [43.08834, 13.1066],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Ponte Fontanelle",
+      "point": [40.52367, 15.98513],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Ponte Fontanelle",
+      "point": [40.53174, 15.98671],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Prizzi",
+      "point": [37.72925, 13.40869],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Prizzi",
+      "point": [37.72934, 13.40385],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Pusiano",
+      "point": [45.79308, 9.27041],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Pusiano",
+      "point": [45.8137, 9.2751],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di Quaira",
       "point": [46.54664, 10.89001],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Recentino",
+      "point": [42.51554, 12.54738],
       "distance_m": 1500
     },
     {
@@ -372,8 +3487,68 @@
       "distance_m": 2000
     },
     {
+      "name": "Lago di San Giacomo",
+      "point": [46.53796, 10.26947],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di San Giacomo",
+      "point": [46.5471, 10.26565],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di San Giorgio",
       "point": [45.98225, 12.22459],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di San Giovanni Incarico",
+      "point": [41.51715, 13.55513],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di San Giovanni Incarico",
+      "point": [41.52516, 13.56705],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di San Giuliano",
+      "point": [40.59797, 16.53451],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di San Giuliano",
+      "point": [40.59885, 16.52176],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di San Giuliano",
+      "point": [40.60852, 16.50016],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di San Giuliano",
+      "point": [40.61104, 16.53087],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di San Giuliano",
+      "point": [40.61533, 16.51588],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di San Giuliano",
+      "point": [40.61551, 16.47765],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di San Giuliano",
+      "point": [40.62483, 16.47329],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di San Liberato",
+      "point": [42.46744, 12.44132],
       "distance_m": 1000
     },
     {
@@ -422,6 +3597,11 @@
       "distance_m": 2000
     },
     {
+      "name": "Lago di Santa Luce",
+      "point": [43.438, 10.51342],
+      "distance_m": 1500
+    },
+    {
       "name": "Lago di Sauris",
       "point": [46.44593, 12.71866],
       "distance_m": 2000
@@ -432,6 +3612,11 @@
       "distance_m": 2000
     },
     {
+      "name": "Lago di Scanno",
+      "point": [41.91773, 13.86363],
+      "distance_m": 1500
+    },
+    {
       "name": "Lago di Suviana",
       "point": [44.11369, 11.04375],
       "distance_m": 2000
@@ -440,6 +3625,11 @@
       "name": "Lago di Suviana",
       "point": [44.12979, 11.0353],
       "distance_m": 2000
+    },
+    {
+      "name": "Lago di Teleccio",
+      "point": [45.488, 7.37243],
+      "distance_m": 1500
     },
     {
       "name": "Lago di Toblino",
@@ -462,9 +3652,144 @@
       "distance_m": 1000
     },
     {
+      "name": "Lago di Varano",
+      "point": [41.84847, 15.74218],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varano",
+      "point": [41.84882, 15.77239],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varano",
+      "point": [41.85593, 15.80345],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varano",
+      "point": [41.85738, 15.70282],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varano",
+      "point": [41.87698, 15.68437],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varano",
+      "point": [41.88222, 15.80334],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varano",
+      "point": [41.90301, 15.67858],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varano",
+      "point": [41.90766, 15.70909],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varano",
+      "point": [41.90811, 15.74962],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varano",
+      "point": [41.91241, 15.79681],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varese",
+      "point": [45.79492, 8.78498],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varese",
+      "point": [45.80171, 8.74419],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varese",
+      "point": [45.80239, 8.7786],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varese",
+      "point": [45.80884, 8.71586],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varese",
+      "point": [45.81963, 8.74073],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Varese",
+      "point": [45.8372, 8.7097],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di Vernago",
       "point": [46.73233, 10.84291],
       "distance_m": 2000
+    },
+    {
+      "name": "Lago di Vico",
+      "point": [42.30184, 12.16761],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Vico",
+      "point": [42.31897, 12.19575],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Vico",
+      "point": [42.3262, 12.17322],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Vico",
+      "point": [42.33019, 12.15453],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Villarosa",
+      "point": [37.58113, 14.20819],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Viverone",
+      "point": [45.40661, 8.03141],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Viverone",
+      "point": [45.42738, 8.04171],
+      "distance_m": 2000
+    },
+    {
+      "name": "lago di Serra di Corvo",
+      "point": [40.84987, 16.24345],
+      "distance_m": 2000
+    },
+    {
+      "name": "lago di Serra di Corvo",
+      "point": [40.84994, 16.23183],
+      "distance_m": 2000
+    },
+    {
+      "name": "lago di Serra di Corvo",
+      "point": [40.85066, 16.21716],
+      "distance_m": 2000
+    },
+    {
+      "name": "lago di Serra di Corvo",
+      "point": [40.8747, 16.2281],
+      "distance_m": 1500
     }
   ]
 }

@@ -13,7 +13,6 @@ import { Vibration } from "react-native";
 
 import { recordedRun } from "../activities/recordedRun";
 import type { FavoriteDetail } from "../api/favorites";
-import { toScoreRequest } from "../api/trackScores";
 import { PEN_DOWN_M } from "../navigation/penUp";
 import { runControl, skipCountdown } from "../navigation/runControl";
 import { clearRun, endRun, loadRun, type ScorableRun } from "../navigation/trackStore";
@@ -177,10 +176,10 @@ test("a favorite with the pen up pauses by itself at the end of each letter", as
   ]);
   await unmount();
 
-  // The score leaves the walks out, and «Save» sends them with the pen.
+  // The run keeps the walks, and «Save» sends them with the pen.
   expect(loadRun()?.walks).toEqual(FAVORITE.walks);
   const run = endRun() as ScorableRun;
-  expect(toScoreRequest(run).walks).toEqual(FAVORITE.walks);
+  expect(run.walks).toEqual(FAVORITE.walks);
   const saved = recordedRun(run, {
     shape: null,
     word: "SUN",

@@ -201,9 +201,14 @@ contiene.
   **l'evento `run_scored` degli `insights` non viene più registrato**
   (partiva da quella richiesta): se quel dato serve, è un seguito (il
   server potrebbe registrarlo al salvataggio).
-- Nell'app `src/api/trackScores.ts` resta senza una schermata che lo
-  chiami: lo leggono i test della penna alzata (`toScoreRequest`).
-  Toglierlo è un seguito.
+- Nell'app `src/api/trackScores.ts` non c'è più (**parte G**, 2026-10-05,
+  «continua va bene» dell'utente; branch
+  `chore/TASK-241-g-remove-track-scores`): tolto con il suo test, e i due
+  test della penna alzata (`navigation/penUpRun.test.ts`,
+  `favorites/favoritePenUpRun.test.ts`) guardano i `walks` della corsa
+  tenuta invece della richiesta del punteggio. `shared-types` tiene
+  `TrackScoreRequest`, `TrackScoreResult` e le fixture: sono il contratto
+  di `POST /track-scores`, che l'API ha ancora.
 - I post d'esempio del «Feed» tengono `score` nei dati: `feedRoute` lo usa
   come somiglianza del percorso che si apre dal post.
 

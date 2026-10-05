@@ -2,16 +2,14 @@
  * A word with the pen up, run (TASK-198): positions simulated along a word
  * of three letters, through the navigation as the run screen uses it. The
  * recording pauses on each walk, the voice says so once, and the run's
- * metres, time and score are the letters'.
+ * metres and time are the letters'.
  */
-import walkedScore from "@shaperoute/shared-types/fixtures/track-score-request-walks.json";
 import type { Direction, LatLon, Walk } from "@shaperoute/shared-types";
 import { act, renderHook } from "@testing-library/react-native";
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { Vibration } from "react-native";
 
-import { toScoreRequest } from "../api/trackScores";
 import { PEN_DOWN_M } from "./penUp";
 import { pauseRun, resumeRun, runControl, skipCountdown } from "./runControl";
 import { durationMs, openPause } from "./trackRecorder";
@@ -227,7 +225,7 @@ test("a pause asked by hand on a walk is not ended by the next letter", async ()
   await unmount();
 });
 
-test("the run keeps the walks, and its score sends them", async () => {
+test("the run keeps the walks and its route, for «Save» to send", async () => {
   const { unmount } = await startRunning(PEN);
   await act(async () => {
     runTo(0, 1300);
@@ -236,12 +234,10 @@ test("the run keeps the walks, and its score sends them", async () => {
   const saved = loadRun();
   expect(saved?.walks).toEqual(WALKS);
   expect(saved?.track.pauses?.every((pause) => pause.pen === true)).toBe(true);
+  // The ended run has them still: the API scores the letters alone.
   const run = endRun() as ScorableRun;
-  const request = toScoreRequest(run);
-  expect(request.walks).toEqual(WALKS);
-  expect(request.points).toEqual(ROUTE);
-  // The same field as the contract's request with walks.
-  expect(Object.keys(request).sort()).toEqual(Object.keys(walkedScore).sort());
+  expect(run.walks).toEqual(WALKS);
+  expect(run.route).toEqual(ROUTE);
 });
 
 test("a route without walks runs as before: no pause, nothing said of a pen", async () => {
@@ -258,5 +254,5 @@ test("a route without walks runs as before: no pause, nothing said of a pen", as
   expect(said().filter((words) => /Letter done|Pen down/.test(words))).toEqual([]);
   await unmount();
   expect(loadRun()?.walks).toBeUndefined();
-  expect(toScoreRequest(endRun() as ScorableRun)).not.toHaveProperty("walks");
+  expect(endRun()?.walks).toBeUndefined();
 });

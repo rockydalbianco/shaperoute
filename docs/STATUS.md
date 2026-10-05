@@ -150,6 +150,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-237 — Il sito web, con «Merch» per le magliette** (ADR-0201;
+  chiesto dall'utente il 2026-10-05, che ha scelto la **stampa su
+  ordinazione**). **Parte A** in PR: una pagina statica in `site/`
+  (nuova, senza dipendenze), con il cuore di Milano che si disegna, «How
+  it works» e «Merch»: quattro magliette proposte, con le stampe dai
+  percorsi veri del catalogo. Il sito non vende da solo: «Buy» aprirà la
+  pagina della maglietta sul servizio di stampa; finché manca
+  l'indirizzo, «Coming soon». **Niente è pubblicato.** **Aspettano
+  l'utente**: il servizio di stampa e il suo account, magliette e prezzi,
+  i testi, dominio e pubblicazione. Come si aggiunge una maglietta e come
+  si guarda in locale: `SITO.md`. Da dove riprendere:
+  `tasks/TASK-237.md`, «Esito».
 - **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; Todo, chiesto
   dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
   riesce ma un tentativo già tracciato a un'altra distanza segue la forma

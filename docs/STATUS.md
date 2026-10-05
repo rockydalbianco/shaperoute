@@ -117,26 +117,21 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `9deba3b` dalle
-  03:27Z (ok dell'utente «ok aggiorna il server e pubblica», sessione del
-  coordinatore), con le migrazioni `0001`–`0015` e il motore di TASK-226 A
-  (le forme a pezzi sull'acqua: una faccina da 2 km a Riccione in 12 s,
-  quattro tratti a penna alzata); fermo circa 14 secondi; immagine di
-  prima `shaperoute-api:before-task226`, copia del database
-  `shaperoute-2026-10-05T0327Z.dump`; esempi ridisegnati per 66 città su
-  66 (`data/draw-examples-2026-10-05-task226.log`). Dalle 04:22Z ha anche
-  l'acqua dei laghi d'Italia (TASK-233: 210 file nuovi, 50 MB, senza
-  riavvio). `/phone-zones` c'è, le zone del telefono non sono ancora
-  costruite. **App** su `preview` da `main` `ef7ad90` (gruppo
-  `1fc82a12`): in più rispetto a `f8951439`, le forme a pezzi sull'acqua e
-  l'interruttore degli occhi staccati su strada (TASK-226 B). **Da provare
-  sull'iPhone.** In `main` dopo, **non ancora pubblicati** (si può, manca
-  l'ok dell'utente): «Follow» (#320), il «Feed» sull'acqua (#322), i
-  laghi in «Explore» (#319, #328), la pubblicità nel «Feed» (#324). In
-  `main` anche il motore di TASK-234 A (#327): il server vuole un altro
-  aggiornamento con `draw_examples`, con l'ok dell'utente, **prima** di
-  pubblicare la parte B di TASK-234. Strava spento per scelta dell'utente
-  (2026-10-05: «teniamo solo Instagram per ora»).
+- **Server e app, al 2026-10-05**. **Server**: su `main` `fd14cd3` dalle
+  08:54Z (ok dell'utente «sì pubblica, ok server», sessione del
+  coordinatore), con le migrazioni `0001`–`0015`, il motore di TASK-234 A
+  (`better_distance_m` nel risultato: un cuore da 5 km a Trento in 9 s,
+  senza consiglio) e il tetto del traffico di TASK-214 A2; fermo circa 15
+  secondi; immagine di prima `shaperoute-api:before-task234`, copia del
+  database `shaperoute-2026-10-05T0853Z.dump`; `draw_examples` rilanciato
+  alle 08:56Z (`data/draw-examples-2026-10-05-task234.log`). Ha l'acqua
+  dei laghi d'Italia (TASK-233: 219 file, 71 MB). `/phone-zones` c'è, le
+  zone del telefono non sono ancora costruite; `/nearby-cities` arriva
+  con la #323. **App** su `preview` da `main` `fd14cd3` (gruppo
+  `da4e955c`): «Follow» (#320), il «Feed» sull'acqua (#322), i laghi in
+  «Explore» (#319, #328), la pubblicità nel «Feed» (#324, non si vede in
+  Expo Go). **Da provare sull'iPhone.** Strava spento per scelta
+  dell'utente (2026-10-05: «teniamo solo Instagram per ora»).
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),

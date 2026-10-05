@@ -4,8 +4,9 @@ import { whereAndWhat } from "../activities/activityText";
 import type { ActivityDetail } from "../api/activities";
 import { t } from "../i18n";
 import { metresBetween } from "../map/coordinates";
-import { clockLabel, kmLabel, paceLabel } from "../navigation/freeRun";
+import { clockLabel } from "../navigation/freeRun";
 import { durationMs, type Track } from "../navigation/trackRecorder";
+import { paceLabel, runDistanceLabel } from "../units/format";
 
 /**
  * A run as its post shows it (TASK-231, ADR-0194): the picture to share on
@@ -73,12 +74,13 @@ export function resultName(result: PostResult): string {
   }
 }
 
-/** The number of `result` for `run`, as runners read it; null when the run
- * has none (too short for a pace). */
+/** The number of `result` for `run`, as runners read it, in the app's units
+ * (TASK-182: "3.23 mi", "8:43 /mi"); null when the run has none (too short
+ * for a pace). */
 export function resultValue(run: PostRun, result: PostResult): string | null {
   switch (result) {
     case "distance":
-      return kmLabel(run.distanceM);
+      return runDistanceLabel(run.distanceM);
     case "time":
       return clockLabel(run.durationMs);
     case "pace":

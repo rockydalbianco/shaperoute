@@ -1,6 +1,6 @@
 # TASK-243 — La penna si alza anche sulle deviazioni del contorno
 
-**Stato**: In revisione (in attesa del giudizio dell'utente sui campioni)
+**Stato**: Done
 **Fase**: 2 · **Branch**: `feat/TASK-243-outline-detours`
 
 ## Obiettivo
@@ -107,8 +107,8 @@ buono.
       stesso percorso di `main`, punto per punto.
 - [x] Un confronto su più forme e città scritto in `ROUTE_ENGINE.md`:
       quante richieste cambiano, in meglio o in peggio.
-- [ ] Test del motore e dell'API verdi; `engine.zip` rifatto.
-- [ ] Il giudizio dell'utente sui campioni.
+- [x] Test del motore e dell'API verdi; `engine.zip` rifatto.
+- [x] Il giudizio dell'utente sui campioni.
 
 ## File toccati
 
@@ -135,20 +135,20 @@ docs/tasks/TASK-243.md
 - Il server, `draw_examples` e la pubblicazione: del coordinatore, con
   l'ok dell'utente.
 
-## A che punto è (2026-10-05)
-
-Codice, test, `engine.zip`, campioni e documenti sono nel branch, in PR.
-**Manca il giudizio dell'utente** sulle immagini prima/dopo: sono in
-`out/task-243/cli/` del checkout principale (fuori dal repository), una
-per campione di `samples/LOG.md`, rifatte da `gpx_pair.py` nella stessa
-cartella. Dopo il «sì»: scrivere il giudizio in `samples/LOG.md`, in
-ADR-0209 e qui sotto, spuntare l'ultimo criterio, stato `Done`, e
-«#NNN pronta» al coordinatore. Con un «no»: le alternative provate sono
-in ADR-0209, gli strumenti in `out/task-243/` (`explore.py` con
-`POLICY=before|all`, `run3.sh` per le 42 richieste, `summary.py`,
-`pairs.py`).
-
 ## Esito
+
+Fatto (PR #362, 2026-10-05). Con la penna alzata il contorno di una forma
+a pezzi non disegna più i suoi baffi: diventano tratti a piedi, al più
+due. Su 42 richieste di prova 26 restano identiche, 14 cambiano (10 con
+lo stesso disegno e la somiglianza più alta; in 4 la ricerca sceglie un
+altro disegno, e in 2 la somiglianza scende), una diventa disponibile. La
+faccina dello screenshot tiene il suo disegno e perde un baffo: 0,79 →
+0,80. Giudicato dall'utente sulle otto immagini prima/dopo: «continua va
+bene».
+
+Gli strumenti dei confronti sono in `out/task-243/` del checkout
+principale, fuori dal repository (`explore.py`, `run3.sh`, `table.py`,
+`pairs.py`, `attempts.py`, `cli_pair.sh`, `gpx_pair.py`).
 
 La regola scelta (ADR-0209): sul contorno si camminano solo i **baffi**,
 le deviazioni che rientrano vicino a dove escono; le altre restano

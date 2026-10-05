@@ -9,6 +9,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { distanceLabel, withPoint } from "../units/format";
+import { useUnits } from "../units/useUnits";
 import { choiceLabel, likeness } from "./choices";
 
 type Props = {
@@ -21,16 +23,18 @@ type Props = {
 /**
  * Under the route: one tile for each route to choose from (TASK-093,
  * ADR-0087), with its length and how much it looks like the shape. The one
- * chosen has the route's yellow; the others are grey on the map too.
+ * chosen has the route's yellow; the others are grey on the map too. The
+ * length is in the app's units (TASK-182).
  */
 export function RouteTiles({ choices, chosen, onChoose }: Props) {
+  const units = useUnits();
   if (choices.length < 2) {
     return null;
   }
   return (
     <View style={styles.row} accessibilityRole="radiogroup">
       {choices.map((result, index) => {
-        const km = `${(result.distance_m / 1000).toFixed(1)} km`;
+        const km = distanceLabel(result.distance_m, units, withPoint);
         const selected = index === chosen;
         return (
           <Pressable

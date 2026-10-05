@@ -101,7 +101,7 @@ const help: AboutDocument = {
             "Foto del profilo, email e numero di telefono. Il numero è facoltativo e lo vedi solo tu.",
             "Lingua: English, Deutsch, Italiano, Español o Français. La voce la segue.",
             "Mappe offline: il telefono tiene le mappe intorno a te e disegna i percorsi da solo; «Elimina» libera lo spazio.",
-            "Unità di misura: chilometri o miglia. Per ora le miglia si vedono in «Le mie attività», nei «Preferiti» e in «Explore».",
+            "Unità di misura: quelle del telefono, chilometri o miglia. Con le miglia cambiano le distanze, il passo e la voce: un annuncio a ogni miglio, le svolte in piedi.",
             "Notifiche: due interruttori, email e push, spenti finché non li accendi. Sgrava non manda ancora notifiche: la tua scelta resta salvata nel tuo account per quando lo farà.",
           ],
         },
@@ -320,7 +320,7 @@ const privacy: AboutDocument = {
         "Le mappe offline vengono dal nostro server: quella intorno a te e, in anticipo, quelle dei paesi vicini. Per mettere un tetto a questi download il server li conta, giorno per giorno, con un numero anonimo che l'app crea per il telefono; il conteggio sta solo in memoria.",
         "Le parole che descrivono una forma sono lette sul nostro server e non vanno a un servizio di AI esterno.",
         "Una foto che scegli per un disegno va al nostro server una volta, per trovarne il contorno: il server non la salva e non la scrive nei log.",
-        "Per migliorare la ricerca teniamo un evento per ogni ricerca e per alcuni usi dell'app (un percorso scelto, un file GPX esportato, una corsa con il punteggio): il testo in minuscolo, al massimo 200 caratteri, con email e numeri lunghi oscurati; le posizioni solo come quadrati di circa 1 km; niente che dica chi sei o quale telefono era. Questi eventi sono conservati senza un limite di tempo.",
+        "Per migliorare la ricerca teniamo un evento per ogni ricerca e per alcuni usi dell'app (un percorso scelto, un file GPX esportato): il testo in minuscolo, al massimo 200 caratteri, con email e numeri lunghi oscurati; le posizioni solo come quadrati di circa 1 km; niente che dica chi sei o quale telefono era. Questi eventi sono conservati senza un limite di tempo.",
       ],
     },
     {

@@ -1,6 +1,6 @@
 # TASK-182 — Le unità di misura: km o miglia
 
-**Stato**: In corso (parte A in `main`, PR #351, merge `7a9506a`, 2026-10-05; parte B da fare)
+**Stato**: In revisione (parti A, B e C in `main`: #351, #368, #366; l'ultimo passo, «Phone units», in PR)
 **Fase**: 4 · **Branch**: `feat/TASK-182-units` (parte A)
 
 ## Obiettivo
@@ -108,8 +108,9 @@ Parte A:
       `SettingsPage.test.tsx`).
 - [x] I testi nuovi sono in `t()` con le quattro tabelle.
 - [x] Nessuna dipendenza nuova.
-- [ ] (passa alla parte B, con `FOLLOWS_PHONE`: fino ad allora l'app non segue il telefono) Provato nel simulatore con il telefono in miglia. **Non fatto**: la
-      sessione che ha scritto la parte A non usa il simulatore.
+- [x] Provato nel simulatore con il telefono in miglia (ultimo passo,
+      2026-10-05): un iPhone 17 con la regione «Stati Uniti» apre
+      «Units» su «Phone units — Miles» (`out/task182/settings-phone-units-us.png`).
 
 ## File toccati
 
@@ -139,6 +140,39 @@ apps/mobile/src/explore/CityExamples.tsx
 apps/mobile/src/explore/ExploredCard.tsx
 apps/mobile/src/explore/ThemedCard.tsx
 apps/mobile/src/explore/NearbyTowns.tsx
+apps/mobile/src/i18n/de.ts
+apps/mobile/src/i18n/es.ts
+apps/mobile/src/i18n/fr.ts
+apps/mobile/src/i18n/it.ts
+docs/DECISIONS.md
+docs/UI.md
+docs/STATUS.md
+docs/tasks/TASK-182.md
+```
+
+Parte B, «Draw» e le schede (2026-10-05):
+
+```
+apps/mobile/src/units/distanceInput.ts            (nuovo)
+apps/mobile/src/units/distanceInput.test.ts       (nuovo)
+apps/mobile/src/units/cardsInMiles.test.tsx       (nuovo)
+apps/mobile/src/route/distanceMiles.test.ts       (nuovo)
+apps/mobile/src/route/milesTexts.test.ts          (nuovo)
+apps/mobile/src/route/RoutePanelMiles.test.tsx    (nuovo)
+apps/mobile/src/route/distance.ts
+apps/mobile/src/route/DistanceStepper.tsx
+apps/mobile/src/route/RoutePanel.tsx
+apps/mobile/src/route/RouteTiles.tsx
+apps/mobile/src/route/betterDistance.ts
+apps/mobile/src/route/problems.ts
+apps/mobile/src/route/warnings.ts
+apps/mobile/src/route/wordInput.ts
+apps/mobile/src/feed/FeedPost.tsx
+apps/mobile/src/social/DrawingCard.tsx
+apps/mobile/src/activities/ActivityCard.tsx
+apps/mobile/src/paddle/PaddleExplore.tsx
+apps/mobile/src/explore/ExploreScreen.tsx
+apps/mobile/src/explore/CityExamples.tsx
 apps/mobile/src/i18n/de.ts
 apps/mobile/src/i18n/es.ts
 apps/mobile/src/i18n/fr.ts
@@ -215,6 +249,109 @@ revisione:
   unità («{mi} mi away»); se nella parte B diventano tante, conviene un
   testo solo con la distanza già scritta («{distance} away»), togliendo
   le righe vecchie insieme a chi le possiede.
+
+**Parte B — «Draw» e le schede** (2026-10-05, branch
+`feat/TASK-182-b-draw-and-cards`, ADR-0149 «aggiornamento (parte B)»), in
+revisione. La parte C (la corsa, la fine corsa, la navigazione, la voce) è
+di un'altra sessione, sullo stesso giorno.
+
+Scelte dell'utente (2026-10-05): con «Miles» − e + cambiano di 1 miglio; i
+limiti sono miglia intere dentro quelli di oggi (corsa 1–13, bici 7–18,
+canoa 1–3); un valore scritto con un decimale («4.5») vale.
+
+Fatto:
+
+- **La distanza di «Draw» in miglia**: il campo, la sigla «mi», − e +, i
+  limiti per sport, la partenza (3 mi; 7 con «Bike»; 1 con «Paddle»), il
+  messaggio dei limiti, le frasi della parola («needs at least», «Use N
+  mi»), il cambio di unità in «Settings» con una distanza scritta (stessa
+  distanza, al km o al miglio intero, dentro i limiti). All'API vanno
+  metri interi (3 mi → 4828, 4,5 mi → 7242, 13 mi → 20921); con
+  «Kilometres» la richiesta è quella di prima (i test esistenti passano
+  senza modifiche).
+- **Il testo del campo dice la sua unità** (`src/units/distanceInput.ts`):
+  in km è il numero da solo, come sempre; in miglia è «4.5 mi». La
+  distanza scritta la tiene `App.tsx`, che è di altri e non è stato
+  toccato: così `toDistanceM`, `stepDistance` e `distanceForSport` (che
+  `App.tsx` chiama già) capiscono da soli, e i km che `App.tsx` scrive da
+  sé in metri (dopo un «Try», o i 1,5 km di un lago piccolo) restano
+  quelli, anche in miglia.
+- **Il risultato**: la lunghezza, «target N mi», l'attesa, le tessere A ·
+  B · C, la riga della penna alzata, gli avvisi del motore (piedi sotto i
+  1000 piedi, miglia sopra), «better at about N mi» e «Try N mi» (miglio
+  intero più vicino dentro i limiti; niente riga se la richiesta è già a
+  quel miglio), «It fits at about N mi» (se il miglio intero è quello
+  appena chiesto, il decimo più vicino; sull'acqua arrotondato in giù).
+- **Le schede**: la riga dei post del «Feed» («Horse · 11.9 mi · 1 h 41
+  min»), il disegno aperto da un profilo («2.49 mi»), la scheda di una
+  corsa di «My activities» aperta sulla mappa (scriveva già in miglia con
+  `runFacts`; ora chiama `useUnits()` e segue subito il cambio: la PR #358
+  era in `main` a fine lavoro, e il branch l'ha presa), «Explore» con
+  «Paddle» («Heart · 1.2 mi», «0.6 mi away»), le due frasi di «Explore»
+  con una distanza fissa («Starting within 3.1 mi of…», «shapes of 3.1 mi
+  from the centre»: i 5 km del motore, detti al decimo perché «3 mi» non
+  sarebbe vero).
+- Test: `distanceInput.test.ts`, `distanceMiles.test.ts`,
+  `milesTexts.test.ts`, `RoutePanelMiles.test.tsx`, `cardsInMiles.test.tsx`.
+
+**Testi nuovi, confermati dall'utente il 2026-10-05** («ok, i testi delle miglia vanno bene»: gli sono stati mostrati i principali e le due conseguenze dei limiti; inglese; le quattro
+traduzioni sono nelle tabelle):
+
+- «Distance in miles» (VoiceOver), «Enter a distance between {lowest} and
+  {highest} mi.»
+- «{count} letter: at least {mi} mi. A word takes a few minutes to draw.»
+  e «{count} letters: …», «Use {mi} mi»
+- «At most {most} letters: each needs {each} mi, and the app goes up to
+  {highest} mi.», «“{word}” needs at least {mi} mi: {each} mi for each
+  letter.»
+- «Drawing the picture's outline, {mi} mi…», «Drawing “{word}”, {mi} mi…»,
+  «Drawing a {mi} mi {name}…»
+- «{name} · on roads · target {mi} mi», «{name} · on the water · target
+  {mi} mi»
+- «{letters} mi of letters + {between} mi walking between them», «… riding
+  between them»; «{drawn} mi of drawing + {between} mi walking between the
+  parts», «… riding …», «… paddling …»
+- «This shape comes out better at about {mi} mi.» («This word…», «This
+  outline…»), «Try {mi} mi»
+- «This shape does not fit the roads here at this distance. It fits at
+  about {mi} mi.» («This word…», «This image…»), e sull'acqua «This shape
+  does not fit on the water here at this distance. It fits at about {mi}
+  mi.»
+- «There is no lake or sea near this start. Start from the shore, within 1
+  mile of the water.» (in km dice «within 2 km»: un miglio sta dentro i 2
+  km che il motore guarda)
+- «{shape}, {mi} mi, on the water» (VoiceOver)
+
+**Da sapere** (conseguenze delle scelte, da dire all'utente):
+
+- Con «Miles» una parola a piedi ha **al massimo 6 lettere**, non 7: sette
+  chiedono 21 km, cioè 13,05 mi, oltre il limite di 13 mi.
+- Con «Miles» un lago piccolo resta ai suoi 1 o 1,5 km (il campo mostra
+  «0.6» o «0.9», sotto il limite di 1 mi): a 1 mi le forme non ci
+  starebbero.
+- I testi di «Draw» che in km non sono ancora tradotti («Enter a distance
+  between…», le frasi della parola, l'attesa) in miglia passano da `t()`
+  e sono tradotti: con «Miles» in italiano si leggono in italiano, con
+  «Kilometres» ancora in inglese, finché TASK-210 non traduce «Draw».
+
+**Lasciato** (e perché):
+
+- `src/share/postRun.ts`: i suoi numeri vengono da `kmLabel` e `paceLabel`
+  di `src/navigation/freeRun.ts`, che sono della parte C; di suo non
+  scrive distanze. Non toccato.
+- `src/social/PublicParts.tsx`, `PublicRow.tsx`: non scrivono distanze.
+- «Shapes to paddle, within 1 km of the shore» (`PaddleExplore.tsx`) e
+  l'avviso di sicurezza (`PaddleNotice.tsx`, non fra i file della parte
+  B): restano in km. È il limite del motore, in una frase che promette
+  quanto si sta vicini alla riva: «0.6 mi» sarebbe meno del vero.
+- L'esempio nel campo della richiesta a parole di «Explore»
+  (`src/explore/presets.ts`, «…food 8 km»): è un esempio di cosa
+  scrivere; se chi legge la richiesta capisca le miglia non è stato
+  guardato (è dell'API).
+- `FOLLOWS_PHONE`, `phoneUnits.ts`, «Phone units»: non toccati; si
+  accendono quando anche la parte C è in `main`.
+- `App.tsx`: quando è libero, la distanza può tenerla in metri invece che
+  come testo, e chiamare `useUnits()` alla radice.
 
 ### Parte C — la corsa, la sua fine, la navigazione e la voce (2026-10-05)
 
@@ -361,6 +498,40 @@ docs/tasks/TASK-182.md
   della parte B (passano a `src/units/format.ts`).
 - «Elev. gain» resta in metri e «Calories» in kcal (le altezze sono fuori
   scope, sopra).
-- In `docs/UI.md`, «Settings», il paragrafo della parte A dice ancora che
-  la corsa, la sua fine e la voce sono in km: va aggiornato da chi mergia
-  per ultimo fra B e C, insieme a `FOLLOWS_PHONE`.
+- Il paragrafo di «Settings» in `docs/UI.md` è aggiornato con l'ultimo
+  passo, sotto.
+
+### Ultimo passo — seguire il telefono, e «Share» in miglia (2026-10-05)
+
+Branch `feat/TASK-182-d-phone-units`, dopo le parti B (#368) e C (#366).
+
+- **L'app segue l'unità del telefono** finché non se ne sceglie una:
+  `unitsOf("phone")` torna a chiedere `phoneUnits()`, «Phone units» è di
+  nuovo la prima scelta di «Units», e l'interruttore `FOLLOWS_PHONE`
+  (`src/units/followsPhone.ts`) con il suo test `kmUntilPartB.test.tsx`
+  non ci sono più: la scelta dell'utente «km di partenza» valeva fino alla
+  seconda parte.
+- **Provato nel simulatore** (iPhone 17, Expo Go, regione «Stati Uniti»
+  scritta con `defaults write "Apple Global Domain" AppleLocale en_US`):
+  l'app legge `AppleLocale` da `Settings` di React Native e apre «Units»
+  su «Phone units — Miles» con il «✓». `AppleMetricUnits` e
+  `AppleMeasurementUnits` non ci sono finché nessuno sceglie a mano il
+  sistema di misura, e `I18nManager.localeIdentifier` in Expo Go non c'è:
+  la regione basta. Su un iPhone vero non è stato visto.
+- **Il post di «Share»** (`share/postRun.ts`) scrive distanza e passo
+  nell'unità dell'app («3.23 mi · 28:10 · 8:43 /mi»), anche nel testo che
+  va a Strava; in km è quello di prima (test).
+- **«Help»** (inglese e italiano): la riga delle unità dice «quelle del
+  telefono, chilometri o miglia» e che con le miglia cambia anche la voce.
+- File: `src/units/units.ts`, `src/units/followsPhone.ts` (tolto),
+  `src/units/kmUntilPartB.test.tsx` (tolto), `src/units/units.test.ts`,
+  `src/settings/UnitsSetting.tsx`, `UnitsSetting.test.tsx`,
+  `src/share/postRun.ts`, `src/share/postRunMiles.test.ts` (nuovo),
+  `src/about/content/en.ts`, `it.ts`, `docs/UI.md`, `docs/STATUS.md`,
+  questo file.
+- **Testo nuovo che ora si vede**: «Phone units» (già nelle tabelle dalla
+  parte A), da confermare con l'utente; le due righe nuove di «Help».
+- **Resta**: la voce in miglia da ascoltare sull'iPhone; la distanza di
+  «Draw» in metri dentro `App.tsx` quando è libero; «within 1 km of the
+  shore» e l'avviso sull'acqua restano in km per scelta (limiti del
+  motore).

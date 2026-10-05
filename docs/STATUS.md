@@ -518,12 +518,25 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
   «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito». **Parte C**
-  (2026-10-05, branch `feat/TASK-182-c-run-and-voice`, in revisione): con
+  (in `main` dal 2026-10-05, PR #366, merge `ad3e443`): con
   «Miles» le schermate della corsa, la navigazione, la fine della corsa e
   la voce sono in miglia (parziali per miglio calcolati sul telefono, la
   voce a ogni miglio e in bici ogni 5, le svolte in piedi, mph in bici),
-  e aspettano l'utente i testi e le frasi nuove e tre numeri scelti
-  dall'agente (`tasks/TASK-182.md`, «Parte C»; ADR-0149, aggiornamento).
+  con i testi, le frasi e i tre numeri scelti dall'agente confermati
+  dall'utente come letti: la voce in miglia è da ascoltare sull'iPhone
+  (`tasks/TASK-182.md`, «Parte C»; ADR-0149, aggiornamento).
+  **Parte B, «Draw» e le schede** (in `main` dal 2026-10-05, PR #368,
+  merge `0703d25`): con «Miles» la distanza
+  di «Draw» si scrive in miglia (− e + di 1 mi; corsa 1–13, bici 7–18,
+  canoa 1–3; all'API metri interi), e sono in miglia il risultato, «Try»,
+  il «Feed», i disegni pubblici ed «Explore» con «Paddle»; i testi nuovi
+  sono confermati dall'utente (`tasks/TASK-182.md`, «Parte B»);
+  **ultimo passo** (2026-10-05, branch `feat/TASK-182-d-phone-units`, in
+  revisione): l'app segue l'unità del telefono finché non se ne sceglie
+  una («Phone units» torna fra le scelte; l'interruttore `FOLLOWS_PHONE`
+  non c'è più), e il post di «Share» è in miglia. Provato nel simulatore
+  con il telefono sugli Stati Uniti: «Phone units — Miles»
+  (`out/task182/`). Da ascoltare sull'iPhone la voce in miglia.
 - **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
   dall'utente il 2026-10-05: una mini guida, e le prime bozze di
   condizioni e privacy). In revisione (branch
@@ -560,25 +573,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (non visto nemmeno nel simulatore). **Dopo**, un task da aprire con
   scelte dell'utente: l'invio vero (che cosa si notifica, il servizio di
   posta, `expo-notifications`, una build propria). `tasks/TASK-185.md`.
-
-- **TASK-243 — La penna si alza anche sui baffi del contorno** (ADR-0209;
-  chiesto dall'utente il 2026-10-05, dopo il «sì» a TASK-242). Con la
-  penna alzata, il contorno di una forma a pezzi non disegna più i suoi
-  **baffi**: una deviazione oltre 3/8 di altezza di pezzo che rientra
-  vicino a dove esce (salta al più 1/8 del lato del disegno di contorno,
-  misurato lungo la linea, e la sua strada è lunga almeno il doppio della
-  distanza fra i capi) diventa un tratto a piedi, al più due per
-  contorno; le deviazioni lunghe restano disegnate, perché camminarle
-  aprirebbe la forma; la partenza resta il primo punto (`pen_up._lifted`,
-  `detours.py`). Senza `pen_up`, per le parole e sull'acqua niente
-  cambia. Su 42 richieste di prova (motore con TASK-232) 26 identiche, 14
-  cambiano (10 con lo stesso disegno e un baffo camminato; in 4 la
-  ricerca sceglie un altro disegno, e in 2 di queste la somiglianza
-  scende), una diventa disponibile (`ROUTE_ENGINE.md` §5). In PR #362,
-  **in attesa del giudizio dell'utente sui campioni prima/dopo**
-  (`samples/TASK-243_*`): senza quello non si mergia. Poi server e
-  `draw_examples` dal coordinatore, con l'ok dell'utente; `engine.zip` è
-  rifatto. `tasks/TASK-243.md`.
 
 ## Completato
 
@@ -663,6 +657,44 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   pubblicazione dell'app (del coordinatore) e la prova con un dito vero
   sull'iPhone. `tasks/TASK-244.md`.
 
+- **App** — TASK-246: le figure «Paddle» dei tre posti più vicini già
+  sul telefono (ADR-0211; chiesto dall'utente il 2026-10-05, che ha
+  scelto: tre posti, con qualunque sport, anche con i dati mobili).
+  **Fatto**: in `main` dalla #369 (`2fcf6b5`). A ogni apertura, dopo le mappe della zona, il telefono fa
+  disegnare al server le otto forme dei tre posti più vicini entro 30 km
+  che non ha ancora, una ogni 6 secondi al massimo, e le tiene in
+  `Documents/paddle-ahead.json`: «Explore» con «Paddle» le mostra subito.
+  Solo app: **niente motore, API, server**; nessun testo nuovo.
+  Provato dal vero sul Mac contro un'API locale (le otto forme del Lago di
+  Levico, mezzo secondo l'una), non visto sullo schermo. Le spiagge di
+  TASK-245 sono fra i tre posti; con l'app in secondo piano il giro
+  aspetta. **Aspettano**: la pubblicazione dell'app (del coordinatore) e
+  la prova sull'iPhone (aprire l'app, tre minuti, poi «Explore» con
+  «Paddle»).
+  **Seguito**: il server non tiene le figure dei laghi, ogni telefono
+  nuovo gliene fa disegnare fino a 24 (circa un minuto di motore).
+  `tasks/TASK-246.md`.
+
+- **Motore** — TASK-243: la penna si alza anche sui baffi del contorno
+  (ADR-0209; chiesto dall'utente il 2026-10-05 dopo il «sì» a TASK-242,
+  campioni prima/dopo giudicati «va bene»; PR #362). Con la penna alzata,
+  il contorno di una forma a pezzi non disegna più i suoi **baffi**: una
+  deviazione oltre 3/8 di altezza di pezzo che rientra vicino a dove esce
+  (salta al più 1/8 del lato del disegno di contorno, misurato lungo la
+  linea, e la sua strada è lunga almeno il doppio della distanza fra i
+  capi) diventa un tratto a piedi, al più due per contorno; le deviazioni
+  lunghe restano disegnate; la partenza resta il primo punto
+  (`pen_up._lifted`, `detours.py`). Senza `pen_up`, per le parole e
+  sull'acqua niente cambia. Su 42 richieste di prova (motore con
+  TASK-232) 26 identiche, 14 cambiano (10 con lo stesso disegno e un
+  baffo camminato; in 4 la ricerca sceglie un altro disegno, e in 2 la
+  somiglianza scende), una diventa disponibile (`ROUTE_ENGINE.md` §5).
+  In media 1 km disegnato in meno e 0,7 km a piedi in più dove cambia.
+  **Non sul server né pubblicato**: server e `draw_examples` li fa il
+  coordinatore con l'ok dell'utente; `engine.zip` è rifatto, il telefono
+  lo riceve con la prossima pubblicazione. Seguiti in
+  `tasks/TASK-243.md`.
+
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della
   faccina a Trento, campioni prima/dopo giudicati «sì, va bene»; PR
@@ -696,9 +728,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   /track-scores` (PR #365, merge `0294922`). **Il punteggio non si vede
   più da nessuna parte nell'app**; l'API lo calcola ancora per le corse
   salvate. Conseguenza: l'evento `run_scored` degli `insights` non viene
-  più registrato (seguito, se serve). Restano da decidere con l'utente
-  due frasi della bozza di «Privacy» che lo nominano. Esce con la
-  prossima pubblicazione. `tasks/TASK-241.md`.
+  più registrato (seguito, se serve). **Parte F** («ok continua»
+  dell'utente alla proposta): dalla bozza di «Privacy» esce «a run
+  scored» fra gli eventi tenuti; resta «…distance, duration, score…»,
+  ancora vera. Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

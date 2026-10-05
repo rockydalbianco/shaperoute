@@ -28,6 +28,9 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { distanceLabel, inUnits } from "../units/format";
+import { appUnits } from "../units/units";
+import { useUnits } from "../units/useUnits";
 import {
   byName,
   examplesAt,
@@ -62,8 +65,11 @@ export function forgetWaterChoice(): void {
 /** The position mark of «Near me», as the run's (ExploreTools). */
 const MARK_SIZE = 12;
 
+/** "2.3 km away"; with «Miles», "1.4 mi away" (TASK-182). */
 function awayText(awayM: number): string {
-  return t("{km} km away", { km: decimal(awayM / 1000) });
+  return appUnits() === "mi"
+    ? t("{mi} mi away", { mi: decimal(inUnits(awayM, "mi")) })
+    : t("{km} km away", { km: decimal(awayM / 1000) });
 }
 
 const STATUS: Record<"waiting" | "drawing", string> = {
@@ -91,6 +97,8 @@ type Props = {
  * sport.
  */
 export function PaddleExplore({ apiUrl, near, onOpen }: Props) {
+  // The places say how far in the app's units, at once (TASK-182).
+  useUnits();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const [chosen, setChosen] = useState<Chosen>(() => kept);
@@ -287,6 +295,8 @@ function WaterExamples({
   onRetry: () => void;
   width: number;
 }) {
+  // The cards are written again when «Settings» changes the units (TASK-182).
+  const units = useUnits();
   // Two cards side by side inside the section.
   const card = cardWidth(width - 2 * space.md);
   // The shapes after the first ones only once they come (as CityExamples).
@@ -301,21 +311,28 @@ function WaterExamples({
           const name = shapeLabel(example.shape);
           if (example.status === "ready") {
             const { route } = example;
-            const km = decimal(route.route_m / 1000);
+            const length = distanceLabel(route.route_m, units);
             return (
               <RouteCard
                 key={example.shape}
                 width={card}
                 line={route.preview}
                 gaps={route.gaps}
-                title={`${name} · ${km} km`}
+                title={`${name} · ${length}`}
                 detail={t("On the water")}
                 map
                 onPress={() => onOpen(route)}
-                accessibilityLabel={t("{shape}, {km} km, on the water", {
-                  shape: name,
-                  km,
-                })}
+                accessibilityLabel={
+                  units === "mi"
+                    ? t("{shape}, {mi} mi, on the water", {
+                        shape: name,
+                        mi: decimal(inUnits(route.route_m, "mi")),
+                      })
+                    : t("{shape}, {km} km, on the water", {
+                        shape: name,
+                        km: decimal(route.route_m / 1000),
+                      })
+                }
               />
             );
           }

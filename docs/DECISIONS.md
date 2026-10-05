@@ -8622,15 +8622,15 @@ delega dell'utente:
    dipendenze nuove. Il server lo tiene solo in memoria, per il giorno,
    e non lo scrive. Chi cambia id a ogni richiesta trova comunque il tetto
    di tutto il server.
-6. **Senza un id valido conta l'indirizzo**. Dietro Caddy l'indirizzo è
-   quello di Caddy per tutti, quindi le richieste senza id dividono un
-   solo tetto da 300 MB: va bene, perché solo l'app nuova manda
+6. **Senza un id valido conta l'indirizzo** della richiesta, come il
+   limite dei POST (ADR-0076): sul server è quello del telefono, che Caddy
+   passa in `X-Forwarded-For` (`FORWARDED_ALLOW_IPS` in `compose.yaml`).
+   Con i dati mobili molti telefoni escono dallo stesso indirizzo e
+   dividerebbero un tetto: non succede, perché solo l'app nuova manda
    `prefetch=1`, e la manda sempre con l'id.
 
-**Scartato**: contare per indirizzo (dietro Caddy è uno solo, e con i
-dati mobili molti telefoni escono dallo stesso indirizzo); leggere
-`X-Forwarded-For` (si può falsificare senza un proxy davanti, come in
-casa); contare nel database (una migrazione per un numero che vale un
+**Scartato**: contare solo per indirizzo (con i dati mobili molti
+telefoni escono dallo stesso indirizzo); contare nel database (una migrazione per un numero che vale un
 giorno); un tetto solo sul telefono (un'app difettosa non lo rispetta);
 rifiutare solo quando il tetto è già passato (lo si supererebbe di una
 zona).

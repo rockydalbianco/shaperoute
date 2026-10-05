@@ -583,8 +583,9 @@ migrazione.
 - **Il telefono** è un id anonimo, 32 cifre esadecimali a caso fatte dal
   telefono la prima volta, nell'header `X-Phone-Id`. Il server lo tiene
   solo in memoria, per il giorno, e non lo scrive nei log. Senza un id
-  valido conta l'indirizzo: dietro Caddy, sul server, è lo stesso per
-  tutti, quindi le richieste senza id dividono un solo tetto. L'app nuova
+  valido conta l'indirizzo del telefono, che Caddy passa all'API
+  (`FORWARDED_ALLOW_IPS` in `compose.yaml`), come per il limite dei POST;
+  con i dati mobili più telefoni possono avere lo stesso. L'app nuova
   manda sempre l'id con `prefetch=1`; quelle di prima non mandano
   `prefetch=1`.
 - **In memoria**: un riavvio dell'API riparte da zero, e un giorno con un

@@ -268,6 +268,11 @@ type OutcomeProps = {
   onPickShape: (shape: Shape) => void;
   /** Turn-by-turn along the route on screen (TASK-049). */
   onStart: () => void;
+  /** On the water, when the route says where its shape is (TASK-238):
+   * «Move the shape» lets the user drag it on the map. */
+  onMove?: () => void;
+  /** The moved shape did not fit where it was left: the panel says so. */
+  movedElsewhere?: boolean;
   /** The routes to choose from and the one on screen (TASK-093); `view`
    * shows the one chosen. None: the route alone, as before. */
   choices?: RouteResult[];
@@ -287,6 +292,8 @@ export function RouteOutcome({
   onTryDistance,
   onPickShape,
   onStart,
+  onMove,
+  movedElsewhere = false,
   choices = [],
   chosen = 0,
   onChoose = () => {},
@@ -374,6 +381,14 @@ export function RouteOutcome({
           {toNotes(view.result.warnings).map((note) => (
             <NoteRow key={note.text} note={note} />
           ))}
+          {movedElsewhere && (
+            <NoteRow
+              note={{
+                tone: "info",
+                text: t("The shape does not fit there: this is the nearest place."),
+              }}
+            />
+          )}
           {/* Only with directions: a route traced without them has no turns.
               On the water there are none to follow: the line is the way. */}
           {(view.result.directions.length > 0 || onWater(view.request)) && (
@@ -383,6 +398,15 @@ export function RouteOutcome({
               accessibilityRole="button"
             >
               <Text style={styles.drawText}>Start</Text>
+            </Pressable>
+          )}
+          {onMove && (
+            <Pressable
+              style={[styles.secondary, styles.export]}
+              onPress={onMove}
+              accessibilityRole="button"
+            >
+              <Text style={styles.secondaryText}>{t("Move the shape")}</Text>
             </Pressable>
           )}
           <Pressable

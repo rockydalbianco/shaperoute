@@ -149,6 +149,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; Todo, chiesto
+  dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
+  riesce ma un tentativo già tracciato a un'altra distanza segue la forma
+  chiaramente meglio, l'API manda `better_distance_m` e l'app scrive la
+  riga con «Try N km». Il percorso scelto non cambia. Prima si misura
+  quanto spesso scatta. Il codice dopo la #310 (TASK-226), stessi file
+  del motore. `tasks/TASK-234.md`.
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal

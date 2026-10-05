@@ -79,4 +79,21 @@ export const IT: Phrasebook = {
   // The bike on foot (TASK-206).
   walkTheBike: (metres) => `scendi e porta la bici a mano per ${metres} metri`,
   backOnTheBike: "Risali in bici.",
+  // With miles (TASK-182): written by the agent, to be confirmed by the
+  // user. «Miglia» is feminine: «le ultime 5 miglia».
+  inFeet: (feet, words) => `Tra ${feet} piedi, ${words}`,
+  mile: (miles, time, pace) =>
+    `${capital(units(miles, "un miglio", "miglia"))}. Tempo: ${time}. Passo medio: ${pace} al miglio.`,
+  mileFaster: (by) => `Questo miglio: ${by} meglio del precedente.`,
+  mileSlower: (by) => `Questo miglio: ${by} peggio del precedente.`,
+  mileSamePace: "Stesso passo del miglio precedente.",
+  rideMilesFaster: (miles) =>
+    `Ultime ${miles} miglia più veloci delle ${miles} precedenti.`,
+  rideMilesSlower: (miles) =>
+    `Ultime ${miles} miglia più lente delle ${miles} precedenti.`,
+  rideMilesSameSpeed: (miles) =>
+    `Ultime ${miles} miglia alla stessa velocità delle ${miles} precedenti.`,
+  rideMiles: (miles, time, speed) =>
+    `${capital(units(miles, "un miglio", "miglia"))}. Tempo: ${time}. Velocità media: ${speed} miglia orarie.`,
+  walkTheBikeFeet: (feet) => `scendi e porta la bici a mano per ${feet} piedi`,
 };

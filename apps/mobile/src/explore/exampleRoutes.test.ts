@@ -13,6 +13,7 @@ import {
   EXAMPLE_SHAPES,
   EXAMPLES_PER_MINUTE,
   exampleDetail,
+  exampleRequest,
   examplesKey,
   type Example,
   firstExamples,
@@ -20,6 +21,7 @@ import {
   isMore,
   MAX_KEPT_CITIES,
   MORE_SHAPES,
+  movedExample,
   moreWaitMs,
   PADDLE_EXAMPLES,
   readKept,
@@ -741,5 +743,138 @@ describe("on the water (TASK-191)", () => {
       message:
         "There is no lake or sea near this start. Start from the shore, within 2 km of the water.",
     });
+  });
+});
+
+describe("where its shape is, to be moved (TASK-244)", () => {
+  const garda: Place = { label: "Lago di Garda", point: [45.88114, 10.84559] };
+  const malcesine: Place = { label: "Your start", point: [45.7636, 10.8098] };
+  const set = PADDLE_EXAMPLES;
+  const centre: [number, number] = [45.7641, 10.8112];
+  const placed = { ...result, centre } as RouteResult;
+
+  test("an example of the app says its centre, and how it was asked", async () => {
+    const { request } = api();
+    const storage = memory();
+    const { result: hook } = await renderHook(() =>
+      useCityExamples("http://api", garda, { request, storage, set }),
+    );
+    const list = hook.current.examples ?? [];
+    const heart = list[0];
+    const dog = list.find((e) => e.shape === "dog_head");
+    if (heart.status !== "ready" || dog?.status !== "ready") {
+      throw new Error("the app's examples should be ready");
+    }
+    expect(exampleDetail(heart.route.id)?.centre).toEqual([45.878804, 10.844628]);
+    // From the place, not from where the route begins: the API reads the
+    // same water again.
+    expect(exampleRequest(heart.route.id)).toEqual({
+      shape: "heart",
+      distance_m: 2000,
+      start: garda.point,
+      activity: "paddling",
+    });
+    // A head, with its eyes apart as it was drawn (TASK-226).
+    expect(exampleRequest(dog.route.id)).toEqual({
+      shape: "dog_head",
+      pen_up: true,
+      distance_m: 2000,
+      start: garda.point,
+      activity: "paddling",
+    });
+    expect(exampleRequest("example:heart:paddling:0.0000,0.0000")).toBeUndefined();
+  });
+
+  test("one asked to the API keeps the centre it answers, and so does the file", async () => {
+    const { request, asked } = api();
+    const storage = memory();
+    const { result: hook, unmount } = await renderHook(() =>
+      useCityExamples("http://api", malcesine, { request, storage, set }),
+    );
+    // The circle with its centre; the heart from an API of before TASK-238.
+    await act(async () => asked[0].answer({ kind: "route", result: placed }));
+    await act(async () => asked[1].answer({ kind: "route", result }));
+    const [heart, circle] = hook.current.examples ?? [];
+    if (heart.status !== "ready" || circle.status !== "ready") {
+      throw new Error("the first two should be ready");
+    }
+    expect(exampleDetail(circle.route.id)?.centre).toEqual(centre);
+    expect(exampleDetail(heart.route.id)).not.toHaveProperty("centre");
+    expect(exampleRequest(circle.route.id)).toEqual({
+      shape: "circle",
+      distance_m: 2000,
+      start: malcesine.point,
+      activity: "paddling",
+    });
+    const key = examplesKey(malcesine.point, set);
+    expect(storage.kept[key].map((d) => [d.shape, "centre" in d])).toEqual([
+      ["heart", false],
+      ["circle", true],
+    ]);
+
+    // The next time, from the file: the centre and the request are back.
+    unmount();
+    forgetExamples();
+    expect(exampleRequest(circle.route.id)).toBeUndefined();
+    const again = api();
+    await renderHook(() =>
+      useCityExamples("http://api", malcesine, {
+        request: again.request,
+        storage,
+        set,
+      }),
+    );
+    expect(exampleDetail(circle.route.id)?.centre).toEqual(centre);
+    expect(exampleRequest(circle.route.id)?.start).toEqual(malcesine.point);
+    // One kept without its centre is not asked again for that: it is not
+    // moved until it is drawn again.
+    expect(again.asked.map((a) => a.shape)).not.toContain("heart");
+  });
+
+  test("a run's example has no centre, and one that does not read is dropped", () => {
+    expect(asRecommended(vercelli, "heart", result).detail).not.toHaveProperty(
+      "centre",
+    );
+    const detail = asRecommended(malcesine, "heart", placed, set).detail;
+    expect(detail.centre).toEqual(centre);
+    const { centre: dropped, ...without } = detail;
+    expect(dropped).toEqual(centre);
+    expect(
+      readKept({
+        a: [detail, { ...detail, centre: "there" }, { ...detail, centre: [1] }],
+      }),
+    ).toEqual({ a: [detail, without, without] });
+  });
+
+  test("moved, the example is the engine's answer, the rest as it was", () => {
+    const head = asRecommended(
+      malcesine,
+      "dog_head",
+      { ...placed, walks: [[1, 2]] } as RouteResult,
+      set,
+    ).detail;
+    const elsewhere: [number, number] = [45.7655, 10.8131];
+    const answer = {
+      ...result,
+      points: result.points.map(([lat, lon]) => [lat + 0.001, lon + 0.002]),
+      distance_m: 1968,
+      similarity: 1,
+      walks: [[2, 3]],
+      centre: elsewhere,
+    } as RouteResult;
+    expect(movedExample(head, answer)).toEqual({
+      ...head,
+      points: answer.points,
+      route_m: 1968,
+      similarity: 1,
+      walks: [[2, 3]],
+      centre: elsewhere,
+      alternatives: [],
+    });
+    // Moved to where it is drawn in one line, or by an API without the
+    // centre: neither is kept from the route of before.
+    const plain = movedExample(head, { ...result, walks: [] } as RouteResult);
+    expect(plain).not.toHaveProperty("walks");
+    expect(plain).not.toHaveProperty("centre");
   });
 });

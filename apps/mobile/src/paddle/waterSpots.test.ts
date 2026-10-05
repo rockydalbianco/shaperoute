@@ -1,7 +1,9 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
 import { MORE_SHAPES, PADDLE_EXAMPLES } from "../explore/exampleRoutes";
+import beaches from "./beaches.json";
 import lakes from "./lakes.json";
+import { spotPlaces } from "./placeSpots";
 import { WATER_PLACES } from "./waterPlaces";
 import {
   allSpots,
@@ -34,6 +36,41 @@ test("the list is the lakes the command wrote, each a name, a point and a distan
   }
   // The lake of the user's request.
   expect(lakes.lakes.map((lake) => lake.name)).toContain("Lago di Levico");
+});
+
+test("the beaches are the seaside places the command wrote, one point each", () => {
+  expect(beaches.beaches.length).toBeGreaterThan(0);
+  const names = beaches.beaches.map((beach) => beach.name);
+  expect(new Set(names).size).toBe(names.length);
+  for (const beach of beaches.beaches) {
+    expect(beach.point).toHaveLength(2);
+    expect([1000, 1500, 2000]).toContain(beach.distance_m);
+  }
+  // Jesolo and Riccione are chosen by hand, with their examples in the app.
+  expect(names).not.toContain("Jesolo");
+  expect(names).not.toContain("Riccione");
+  // Every beach is a spot, after the lakes, as the command wrote it.
+  expect(WATER_SPOTS.slice(-names.length)).toEqual(beaches.beaches);
+  expect(WATER_SPOTS).toHaveLength(allSpots(lakes.lakes).length + names.length);
+});
+
+test("a new beach is found by its name in «Explore» and in «Another place»", () => {
+  const [beach] = beaches.beaches;
+  const word = beach.name.split(" ")[0].toLowerCase();
+  expect(
+    searchSpots(WATER_SPOTS, beach.name, null).map(({ spot }) => spot.name),
+  ).toContain(beach.name);
+  expect(searchSpots(WATER_SPOTS, word, null).map(({ spot }) => spot)).toContainEqual(
+    beach,
+  );
+  // «Another place» reads the text as an address (TASK-240).
+  expect(spotPlaces(`spiaggia di ${beach.name}`, null)).toContainEqual({
+    label: beach.name,
+    point: beach.point,
+    distance_m: beach.distance_m,
+  });
+  // From its own shore it is the spot of «Near me».
+  expect(nearestSpot(WATER_SPOTS, beach.point as LatLon)?.spot.name).toBe(beach.name);
 });
 
 test("the places chosen by hand come first, and the list does not double them", () => {

@@ -1,7 +1,7 @@
 # TASK-232 — Forme inclinate fino a 45°, con la mappa girata
 
-**Stato**: In lavorazione — parte A (motore e API) nella PR #356,
-campioni giudicati dall'utente, aspetta il merge; parti B e C da fare
+**Stato**: In lavorazione — parte A (motore e API) in `main` dalla #356
+(`799071a`), non ancora sul server; parti B e C da fare
 **Fase**: 4 · **Branch**: `feat/TASK-232-a-tilt-45` (A),
 `feat/TASK-232-b-turned-map` (B), `feat/TASK-232-c-saved-turn` (C)
 **ADR**: ADR-0195 (supera in parte ADR-0038: il limite di 15°)
@@ -205,7 +205,7 @@ migrazione nuova, `apps/mobile/src/activities/fitLines.ts`,
 
 ## Esito
 
-**Parte A, motore e API** (2026-10-05, PR #356, ADR-0195 «Parte A»):
+**Parte A, motore e API** (2026-10-05, in `main` dalla #356, `799071a`, ADR-0195 «Parte A»):
 
 - **Prima dritta, poi inclinata**: la ricerca di sempre entro ±15°; solo
   se non dà un percorso buono, le rotazioni oltre 15° fino a 45° con 10
@@ -240,5 +240,8 @@ migrazione nuova, `apps/mobile/src/activities/fitLines.ts`,
   **Giudicati dall'utente** il 2026-10-05, sui percorsi nuovi con la mappa
   girata: 17 `sì`, `quasi` l'albero di Natale di Levico da 5 km e il sole
   di Levico da 5 km; nessun `no` (`samples/LOG.md`).
-- Dopo il merge: il server e `draw_examples` (il coordinatore, con l'ok
-  dell'utente); poi le parti B e C.
+- Dopo il merge: il server e `draw_examples` li fa il coordinatore
+  (l'utente ha dato l'ok il 2026-10-05: «ok server per le forme
+  inclinate»); poi le parti B e C, in un contesto pulito, dopo aver
+  sentito il coordinatore (`src/map/*` e la navigazione li tocca anche
+  TASK-182 B).

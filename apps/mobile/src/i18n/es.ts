@@ -66,8 +66,6 @@ export const ES: Table = {
   "{when}, {where}, {facts}, open on the map":
     "{when}, {where}, {facts}, abrir en el mapa",
   "Opening…": "Abriendo…",
-  "Score: {score} out of 100": "Puntuación: {score} de 100",
-  "Score {score}": "Puntuación {score}",
   Public: "Pública",
   "Delete this run? It cannot be undone.":
     "¿Eliminar esta carrera? No se puede deshacer.",
@@ -78,7 +76,6 @@ export const ES: Table = {
   Delete: "Eliminar",
 
   // src/activities/ActivityCard.tsx
-  "out of 100": "de 100",
   "Yellow: the route. White: what you ran.":
     "Amarillo: la ruta. Blanco: lo que has corrido.",
   "White: what you ran.": "Blanco: lo que has corrido.",
@@ -412,11 +409,17 @@ export const ES: Table = {
   // src/screens/RunDashboard.tsx
   Speed: "Velocidad",
   "Kilometre {km}: {speed} km/h": "Kilómetro {km}: {speed} km/h",
+  Mi: "Mi",
+  miles: "millas",
+  "Your first mile will show here.": "Tu primera milla aparecerá aquí.",
+  "Mile {mile}: {pace}": "Milla {mile}: {pace}",
+  "Mile {mile}: {speed} mph": "Milla {mile}: {speed} mph",
 
   // src/screens/RunPanel.tsx
   "Speed now": "Vel. ahora",
   "Avg speed": "Vel. media",
   "Last km": "Último km",
+  "Last mi": "Última mi",
 
   // src/screens/SignInScreen.tsx
   "Sign up": "Registrarse",
@@ -514,8 +517,6 @@ export const ES: Table = {
   "No public drawings yet. Make a run public in My activities.":
     "Aún no hay dibujos públicos. Haz pública una carrera en Mis actividades.",
   "No drawings yet.": "Aún no hay dibujos.",
-  "{title}, score {score} out of 100, open on the map":
-    "{title}, puntuación {score} de 100, abrir en el mapa",
 
   // src/social/SuperLikeSheet.tsx
   "Super like": "Super like",

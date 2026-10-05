@@ -84,4 +84,21 @@ export const ES: Phrasebook = {
   // The bike on foot (TASK-206).
   walkTheBike: (metres) => `bájate y empuja la bici durante ${metres} metros`,
   backOnTheBike: "Vuelve a subir a la bici.",
+  // With miles (TASK-182): written by the agent, to be confirmed. «Milla»
+  // is feminine.
+  inFeet: (feet, words) => `En ${feet} pies, ${words}`,
+  mile: (miles, time, pace) =>
+    `${capital(units(miles, "una milla", "millas"))}. Tiempo: ${time}. Ritmo medio: ${pace} por milla.`,
+  mileFaster: (by) => `Esta milla: ${by} más rápida que la anterior.`,
+  mileSlower: (by) => `Esta milla: ${by} más lenta que la anterior.`,
+  mileSamePace: "Mismo ritmo que la milla anterior.",
+  rideMilesFaster: (miles) =>
+    `Las últimas ${miles} millas, más rápidas que las ${miles} anteriores.`,
+  rideMilesSlower: (miles) =>
+    `Las últimas ${miles} millas, más lentas que las ${miles} anteriores.`,
+  rideMilesSameSpeed: (miles) =>
+    `Las últimas ${miles} millas, a la misma velocidad que las ${miles} anteriores.`,
+  rideMiles: (miles, time, speed) =>
+    `${capital(units(miles, "una milla", "millas"))}. Tiempo: ${time}. Velocidad media: ${speed} millas por hora.`,
+  walkTheBikeFeet: (feet) => `bájate y empuja la bici durante ${feet} pies`,
 };

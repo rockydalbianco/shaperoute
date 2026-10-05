@@ -6,6 +6,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { type Explored, optionsOf } from "./explored";
 import { ExploredCard } from "./ExploredCard";
 import { isRecommendedList, type RecommendedRouteDetail } from "./recommendedRoutes";
+import type { MoveExample } from "../paddle/useMoveExample";
 import type { StartView } from "./useStartDirections";
 
 const [route] = isRecommendedList(listed) ? listed.routes : [];
@@ -32,7 +33,11 @@ function opened(others: RecommendedRouteDetail[], chosen = 0) {
   return { explored, choose };
 }
 
-async function card(explored: Explored, start: StartView = { status: "idle" }) {
+async function card(
+  explored: Explored,
+  start: StartView = { status: "idle" },
+  move?: MoveExample,
+) {
   await render(
     <ExploredCard
       explored={explored}
@@ -41,6 +46,7 @@ async function card(explored: Explored, start: StartView = { status: "idle" }) {
       onList={jest.fn()}
       start={start}
       onStart={jest.fn()}
+      move={move}
     />,
   );
 }
@@ -83,4 +89,90 @@ test("while the directions come, the route chosen stays", async () => {
   await card(explored, { status: "loading" });
   await fireEvent.press(screen.getByTestId("route-B"));
   expect(choose).not.toHaveBeenCalled();
+});
+
+/** The shape of the example on the map, as useMoveExample tells the card. */
+function moveOf(now: Partial<MoveExample> = {}): MoveExample {
+  return {
+    available: true,
+    moving: false,
+    begin: jest.fn(),
+    cancel: jest.fn(),
+    onMoved: jest.fn(),
+    waiting: false,
+    elsewhere: false,
+    problem: null,
+    ...now,
+  };
+}
+
+const MOVE = { name: "Move the shape" };
+
+test("an example that says where its shape is has «Move the shape», under Start (TASK-244)", async () => {
+  const move = moveOf();
+  await card(opened([]).explored, { status: "idle" }, move);
+  // Start, «Move the shape», the GPX and the way back.
+  expect(screen.getAllByRole("button")).toHaveLength(4);
+  expect(screen.getByRole("button", { name: "Start" })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", MOVE));
+  expect(move.begin).toHaveBeenCalledTimes(1);
+});
+
+test("a route that cannot be moved has no «Move the shape»", async () => {
+  await card(opened([]).explored, { status: "idle" }, moveOf({ available: false }));
+  expect(screen.queryByRole("button", MOVE)).toBeNull();
+  expect(screen.getByRole("button", { name: "Start" })).toBeOnTheScreen();
+});
+
+test("while the finger has the shape: what to do, and «Cancel»", async () => {
+  const move = moveOf({ moving: true });
+  await card(opened([]).explored, { status: "idle" }, move);
+  expect(
+    screen.getByText("Drag the shape where you want it, then let go."),
+  ).toBeOnTheScreen();
+  expect(screen.queryByRole("button", { name: "Start" })).toBeNull();
+  expect(screen.queryByText("Back to the list")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Cancel" }));
+  expect(move.cancel).toHaveBeenCalledTimes(1);
+});
+
+test("while the moved route is drawn there is nothing to start, only the way back", async () => {
+  await card(opened([]).explored, { status: "idle" }, moveOf({ waiting: true }));
+  expect(screen.getByText("Drawing a 5 km star…")).toBeOnTheScreen();
+  expect(screen.queryByRole("button", { name: "Start" })).toBeNull();
+  expect(screen.queryByRole("button", MOVE)).toBeNull();
+  expect(screen.queryByText("Export GPX")).toBeNull();
+  expect(screen.getByText("Back to the list")).toBeOnTheScreen();
+});
+
+test("a shape that did not fit, or a move that failed, says so above Start", async () => {
+  const { rerender } = await render(
+    <ExploredCard
+      explored={opened([]).explored}
+      exporting={{ status: "idle" }}
+      onExport={jest.fn()}
+      onList={jest.fn()}
+      start={{ status: "idle" }}
+      onStart={jest.fn()}
+      move={moveOf({ elsewhere: true })}
+    />,
+  );
+  expect(
+    screen.getByText("The shape does not fit there: this is the nearest place."),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Start" })).toBeOnTheScreen();
+
+  await rerender(
+    <ExploredCard
+      explored={opened([]).explored}
+      exporting={{ status: "idle" }}
+      onExport={jest.fn()}
+      onList={jest.fn()}
+      start={{ status: "idle" }}
+      onStart={jest.fn()}
+      move={moveOf({ problem: "The API did not answer." })}
+    />,
+  );
+  expect(screen.getByText("The API did not answer.")).toBeOnTheScreen();
+  expect(screen.getByRole("button", MOVE)).toBeOnTheScreen();
 });

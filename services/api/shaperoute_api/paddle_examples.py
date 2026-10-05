@@ -10,7 +10,8 @@ It writes them as the app keeps the examples it draws
 (`exampleRoutes.ts`, `asRecommended`): for each place, under the key the app
 looks it up by, its eight shapes whole. A shape in pieces is drawn piece by
 piece, the pen up between them, as the app asks for it on the water
-(TASK-226): its example has the `walks`.
+(TASK-226): its example has the `walks`. Each says the `centre` of its
+shape, as the API's answer does, so the app can ask for it moved (TASK-244).
 
     python -m shaperoute_api.paddle_examples --cache-dir out/water-cache
 
@@ -201,6 +202,13 @@ def example(place: WaterPlace, shape: str, source: WaterSource) -> dict[str, Any
         ],
         "license": LICENSE,
         "activity": ACTIVITY,
+        # Where the engine placed the shape: what «Move the shape» moves
+        # (TASK-244), as the app keeps it from a route it asked for.
+        **(
+            {"centre": [round(v, DECIMALS) for v in result.centre]}
+            if result.centre is not None
+            else {}
+        ),
         # The stretches with the pen up, only when there are some.
         **({"walks": [list(walk) for walk in result.walks]} if result.walks else {}),
         # On the water the engine places the shape once (ADR-0164).

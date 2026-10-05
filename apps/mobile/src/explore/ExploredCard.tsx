@@ -1,5 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { t } from "../i18n";
+import { MoveShape } from "../paddle/MoveShape";
+import type { MoveExample } from "../paddle/useMoveExample";
 import {
   color,
   fontSize,
@@ -25,6 +28,9 @@ type Props = {
   /** Turn-by-turn along it, the directions asked for first (TASK-145). */
   start: StartView;
   onStart: () => void;
+  /** An example on the water that says where its shape is (TASK-244):
+   * «Move the shape» lets the user drag it on the map, as in «Draw». */
+  move?: MoveExample;
 };
 
 /** Under the map: a route of "Explore", to run, look at and export (TASK-126). */
@@ -35,12 +41,19 @@ export function ExploredCard({
   onList,
   start,
   onStart,
+  move,
 }: Props) {
   const { route } = explored;
   const title = routeTitle(route);
   // Written again when «Settings» changes the units (TASK-182); with a
   // point, as the texts here, still in English.
   const units = useUnits();
+  // The finger has the shape: what to do, and the way out.
+  if (move?.moving) {
+    return <MoveShape onCancel={move.cancel} />;
+  }
+  // The moved route is being drawn: nothing to start or export meanwhile.
+  const open = explored.status === "done" && !move?.waiting ? explored : null;
   return (
     <View style={styles.panel}>
       <View>
@@ -57,17 +70,40 @@ export function ExploredCard({
       {explored.status === "failed" && (
         <Text style={styles.error}>The route could not load. Try again.</Text>
       )}
+      {move?.waiting && (
+        // As «Draw» says it while it draws.
+        <Text style={styles.target}>
+          {`Drawing a ${route.distance_m / 1000} km ${title}…`}
+        </Text>
+      )}
+      {open !== null && move?.elsewhere && (
+        <Text style={styles.target}>
+          {t("The shape does not fit there: this is the nearest place.")}
+        </Text>
+      )}
+      {open !== null && move?.problem != null && (
+        <Text style={styles.error}>{move.problem}</Text>
+      )}
       {/* A city's example with the API's alternatives: A · B · C (TASK-151). */}
-      {explored.status === "done" && (
+      {open !== null && (
         <RouteTiles
-          choices={explored.choices}
-          chosen={explored.chosen}
+          choices={open.choices}
+          chosen={open.chosen}
           // The directions being asked for are those of the route chosen.
-          onChoose={start.status === "loading" ? keepChoice : explored.choose}
+          onChoose={start.status === "loading" ? keepChoice : open.choose}
         />
       )}
-      {explored.status === "done" && <ExploreStart start={start} onStart={onStart} />}
-      {explored.status === "done" && (
+      {open !== null && <ExploreStart start={start} onStart={onStart} />}
+      {open !== null && move?.available && (
+        <Pressable
+          style={styles.secondary}
+          onPress={move.begin}
+          accessibilityRole="button"
+        >
+          <Text style={styles.secondaryText}>{t("Move the shape")}</Text>
+        </Pressable>
+      )}
+      {open !== null && (
         <Pressable
           style={styles.secondary}
           onPress={onExport}

@@ -488,14 +488,14 @@ nessun pulsante dell'account è giallo.
 nella cartella nuova `src/social/`), in fondo a «Profile»: le corse che
 l'account ha reso pubbliche, come le vedono gli altri, dalla
 più recente, tre per riga. Ognuna è la traccia senza i primi e gli ultimi
-200 m, piccola e gialla come i disegni di «Feed», con sotto «Score 87»
-(niente per una corsa senza percorso); venti per volta, poi «Show more».
+200 m, piccola e gialla come i disegni di «Feed», **senza punteggio**
+(TASK-241 parte E, chiesto dall'utente); venti per volta, poi «Show more».
 Vuota: «No public drawings yet. Make a run public in My activities.».
 Non arrivata: il motivo e «Try again». **Un disegno toccato si apre sulla
 mappa**, come una corsa di «My activities»: «Profile» si toglie, la mappa
 si inquadra sulla linea gialla (nessun segnaposto di partenza, nessuna
 linea bianca) e sotto c'è la sua scheda: il titolo (senza titolo, il
-giorno), il giorno, i km, il punteggio («87», «out of 100»), mai l'ora;
+giorno), il giorno, i km, mai il punteggio né l'ora;
 **«Back to the profile»** e «←» tornano a «Profile». Se nel frattempo è
 tornato privato: «This drawing is no longer public.» sopra la griglia.
 
@@ -880,8 +880,8 @@ dell'account.
   parola appena disegnata: sulla mappa le lettere gialle e i tratti a piedi
   tratteggiati; «Start» mette in pausa da sola alla fine di ogni lettera,
   con la voce, e riparte 20 m prima della successiva (TASK-198); «Export
-  GPX» ha «Pause» e «Resume»; il punteggio a fine corsa guarda solo le
-  lettere. Nessun testo nuovo. Un preferito tenuto prima di TASK-199, o
+  GPX» ha «Pause» e «Resume»; il punteggio che l'API calcola per la corsa
+  salvata (l'app non lo mostra, TASK-241) guarda solo le lettere. Nessun testo nuovo. Un preferito tenuto prima di TASK-199, o
   con `walks` che non stanno nella linea, è una linea sola, come prima. Se
   l'API non conosce ancora i `walks` (più vecchia di TASK-199) e rifiuta,
   l'app tiene il preferito senza, come una linea sola, invece di mostrare
@@ -1856,6 +1856,62 @@ come sempre. Da TASK-198 una pausa «penna» ha `pen: true`, e il file di
 una parola a penna alzata ha anche i `walks` del percorso, per il
 punteggio; quello di ogni altro percorso è come prima.
 
+**Con le miglia** (TASK-182 parte C, ADR-0149 «aggiornamento (parte C)»;
+scelta dell'utente del 2026-10-03, «come fa Strava»). Con «Miles» in
+«Settings» la corsa si mostra e si dice in miglia, subito, anche a corsa
+iniziata; con «Kilometres» ogni scritta e ogni frase è quella di prima.
+
+- **Il banner della svolta**: la distanza in piedi, ai cinquanta («350
+  ft», mai «0 ft»), e da 1000 piedi in miglia con un decimale («0.6 mi»).
+- **I numeri** (sotto la mappa, in pausa e su «Data»): la distanza in
+  miglia con due decimali e «mi» accanto («2.30 mi»; su «Data», sotto il
+  numero grande, «miles»); «Pace now» e «Avg pace» in «/mi» («8:03 /mi»);
+  al posto di «Last km», **«Last mi»**, l'ultimo miglio intero; lungo un
+  percorso «2.0 mi to go», sotto i 1000 piedi «400 ft to go». «Elev.
+  gain» resta in metri e «Calories» in kcal.
+- **I parziali di «Data»** sono un miglio ciascuno: la colonna «Mi» al
+  posto di «Km», una riga per ogni miglio intero con il suo passo e il
+  cambio sul miglio prima («Mile 2: 9:39, +1:37» per chi ascolta lo
+  schermo); prima del primo miglio «Your first mile will show here.». Li
+  calcola il telefono dalla traccia, che resta in metri: quello che avanza
+  dopo l'ultimo miglio intero non è una riga, le pause sono escluse come
+  nei km.
+- **In bici** la velocità è in **mph** («Speed now», «Avg speed», «Last
+  mi»: «12.4 mph»), e i parziali dicono la velocità di ogni miglio («Mile
+  2: 12.4 mph, -2.5»).
+- **La voce** dice ogni miglio al posto di ogni km, con il tempo e il
+  passo medio al miglio, e dal secondo il confronto col miglio prima
+  (stesse soglie: entro 2 secondi, compresi, è lo stesso passo).
+  L'incitamento arriva dopo il **terzo miglio** (4,8 km: il più vicino ai
+  5 km). In bici la voce parla **ogni 5 miglia** (8 km) al posto di ogni
+  10 km, con la velocità media in miglia orarie intere, e dal decimo
+  confronta le ultime 5 con le 5 prima, senza numeri (entro 0,5 km/h,
+  compresi, è la stessa velocità). **Le svolte e i tratti con la bici a
+  mano si dicono in piedi**, ai cinquanta: i punti in cui la voce parla
+  restano quelli di prima (50 m a piedi, 100 m in bici), cambiano solo le
+  parole («In 150 feet…», «In 350 feet…»). Le frasi della penna, della
+  pausa, del fuori percorso e dell'arrivo non hanno distanze: restano
+  quelle. «Listen», sotto «Voice», fa sentire la svolta in piedi.
+- Se l'unità cambia a corsa iniziata, la voce non ridice quello che è già
+  passato: dice il prossimo miglio (o km) intero.
+
+Le frasi nuove, in inglese e in italiano (**scritte dall'agente, da
+confermare con l'utente**; tedesco, spagnolo e francese in
+`src/voice/{de,es,fr}.ts`, anche quelle da confermare):
+
+| Caso | Inglese | Italiano |
+|---|---|---|
+| ogni miglio | «1 mile. Time: 8 minutes 3 seconds. Average pace: 8 minutes 3 seconds per mile.» / «2 miles. …» | «Un miglio. Tempo: 8 minuti e 3 secondi. Passo medio: 8 minuti e 3 secondi al miglio.» / «2 miglia. …» |
+| miglio più veloce | «12 seconds faster than the last mile.» | «Questo miglio: 12 secondi meglio del precedente.» |
+| miglio più lento | «8 seconds slower than the last mile.» | «Questo miglio: 8 secondi peggio del precedente.» |
+| stesso passo | «Same pace as the last mile.» | «Stesso passo del miglio precedente.» |
+| bici, ogni 5 miglia | «5 miles. Time: 20 minutes. Average speed: 15 miles per hour.» | «5 miglia. Tempo: 20 minuti. Velocità media: 15 miglia orarie.» |
+| bici, più veloce | «The last 5 miles were faster than the 5 before.» | «Ultime 5 miglia più veloci delle 5 precedenti.» |
+| bici, più lento | «The last 5 miles were slower than the 5 before.» | «Ultime 5 miglia più lente delle 5 precedenti.» |
+| bici, stessa velocità | «The last 5 miles were at the same speed as the 5 before.» | «Ultime 5 miglia alla stessa velocità delle 5 precedenti.» |
+| una svolta | «In 150 feet, turn left onto Via Roma» | «Tra 150 piedi, svolta a sinistra su Via Roma» |
+| la bici a mano | «In 350 feet, get off and walk the bike for 650 feet.» | «Tra 350 piedi, scendi e porta la bici a mano per 650 piedi.» |
+
 ## La fine della corsa
 
 «Stop» tenuto premuto, dalla pausa (TASK-169), o «Finish» all'arrivo,
@@ -1863,15 +1919,19 @@ chiude la corsa e apre la schermata di fine corsa (TASK-113, ADR-0093), se
 la traccia ha almeno due posizioni; se no si torna al risultato come
 prima. Sulla mappa il percorso giallo e, sopra, più sottile e chiara
 (`track` nei token), la linea di quello che si è corso. In alto «Your run»
-con la legenda «Yellow: the route. White: what you ran.». Sotto, il
-punteggio in grande («91», «out of 100») e una riga «4.0 km · 32 min · 97%
-of the route»: distanza e durata della corsa, e quanta parte del percorso
-è stata coperta. Il punteggio lo calcola l'API (`POST /track-scores`);
-nell'attesa «Scoring your run…», con distanza e durata già lì.
+con la legenda «Yellow: the route. White: what you ran.». Sotto, una
+riga sola: «4.0 km · 32 min», distanza e durata della corsa. **Niente
+punteggio** (TASK-241 parte E, ADR-0207, scelta dell'utente: «solo km e
+tempo»): l'app non lo mostra e a fine corsa **non chiede più `POST
+/track-scores`**, quindi non ci sono né un'attesa né «Try again». Il
+punteggio lo calcola ancora l'API da sé per le corse salvate, e non si
+vede da nessuna parte.
+Con le miglia (TASK-182 parte C) la riga dice la distanza in miglia: «2.5
+mi · 32 min» (sotto i 1000 piedi, in piedi); quello che «Save» tiene resta
+in metri.
 
 Con una parola a penna alzata (TASK-198) la mappa ha i tratti a piedi
-tratteggiati, e `POST /track-scores` riceve anche i `walks`: la corsa si
-giudica sulle sole lettere. Con «Save» le pause «penna» vanno in «My
+tratteggiati. Con «Save» le pause «penna» vanno in «My
 activities» con le altre, come pause di chi corre (`auto: false`), e da
 TASK-199 con `pen: true` e i `walks` del percorso: il punteggio che l'API
 di «My activities» calcola da sé è delle sole lettere, come qui, e la
@@ -1879,23 +1939,18 @@ corsa riaperta da lì ha i tratti a piedi tratteggiati («My activities»).
 Il GPX per Strava (TASK-187) apre un segmento nuovo a ogni pausa: Strava
 mostra le lettere unite da linee dritte sulla base.
 
-- **Senza rete o senza API**: «The score will come later», la corsa resta
-  nel file sul telefono, «Try again» la richiede. Anche con «Done» la
-  corsa resta: alla prossima apertura l'app si apre su questa schermata e
-  chiede di nuovo il punteggio.
-- **Corsa troppo corta**: «Too short for a score».
+- **Senza rete o senza API** la schermata è la stessa: non chiede niente
+  a nessuno.
 - **«Keep running»**, dopo uno «Stop» e con il percorso ancora sullo
   schermo: torna alla navigazione, e la traccia continua (ADR-0091).
 - **«Done»**: torna al risultato, o alla prima schermata se il percorso
-  non c'è più. Con il punteggio arrivato, o la corsa troppo corta, la
-  traccia si cancella dal file della corsa. «Done» c'è solo senza
-  account.
+  non c'è più, e la traccia si cancella dal file della corsa. «Done» c'è
+  solo senza account.
 - **Con un account, «Save» e «Discard»** al posto di «Done», sotto la
   scheda, larghi mezza riga l'uno (TASK-172, chiesto dall'utente il
   2026-10-02: prima di salvare, una schermata che lo chiede). **«Save»**
   mette la corsa in «My activities» (sopra) e torna dove tornava «Done»;
-  la corsa lascia il file anche senza punteggio, perché l'API la giudica
-  da sé. **«Discard»**, in rosso, chiede prima sulla scheda stessa:
+  la corsa lascia il file, e l'API la giudica da sé. **«Discard»**, in rosso, chiede prima sulla scheda stessa:
   «Discard this run? It will not be saved.», con «Keep it» e «Discard
   run»; poi la corsa sparisce dal telefono e non va da nessuna parte.
   Finché non si tocca né l'uno né l'altro niente è salvato; «Keep running»
@@ -1949,7 +2004,7 @@ mostra le lettere unite da linee dritte sulla base.
 - **Senza account**, sotto la scheda, la riga «Sign up or log in to keep
   your runs and share them as drawings.» (TASK-117), che apre «Profile».
 
-Il punteggio non è giallo: il giallo resta del percorso e dell'azione
+Niente nella scheda è giallo: il giallo resta del percorso e dell'azione
 principale.
 
 ## Il post da condividere (TASK-231, ADR-0194)
@@ -2009,7 +2064,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   without a route».
 - **«Another place»** (TASK-240, ADR-0204): la ricerca della partenza
   offre anche i laghi e le spiagge dell'elenco di «Explore» (`WATER_SPOTS`:
-  211 laghi d'Italia, Lago di Garda, Lago di Como, Jesolo, Riccione), mai
+  211 laghi d'Italia, Lago di Garda, Lago di Como, Jesolo, Riccione e, dal
+  TASK-245, altri 29 posti di mare), mai
   un lago preso da Photon o da Geoapify: solo di quelli il server ha
   l'acqua.
   - Il campo dice «Lake, beach, city or street».
@@ -2025,7 +2081,11 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     un'altra parola dice il lago. «lago di Levico Terme» trova «Lago di
     Levico», «spiaggia di Riccione» trova «Riccione». Con sole parole
     comuni devono esserci tutte nel nome, come in «Explore»: «lago» trova
-    ogni lago, «via al lago» nessuno.
+    ogni lago, «via al lago» nessuno. **Solo l'ultima parola scritta vale
+    come inizio di una parola del nome**, perché la si sta ancora
+    scrivendo; quelle prima devono essere parole intere (TASK-245,
+    ADR-0210): «via» da sola propone «Viareggio», «via Roma» no; «lago di
+    lev» trova «Lago di Levico», «lev terme» niente.
   - Scelto un lago, la partenza è il suo punto della riva più vicino alla
     posizione (un lago lungo ne ha molti), e la riga dice «Starting from
     Lago di Levico.».
@@ -2069,11 +2129,31 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   troppo al largo, troppo vicina alla riva) una riga lo dice: «The shape
   does not fit there: this is the nearest place.». Si può spostare ancora,
   ogni volta da dov'è. Un dito che si muove meno di 8 px non sposta niente;
-  «Cancel» lascia tutto com'era. Vale per il percorso di «Draw»; quelli di
-  «Explore» e dei preferiti non si spostano (non hanno `centre`). Nella
+  «Cancel» lascia tutto com'era. Vale per il percorso di «Draw» e per gli
+  esempi di «Explore» (qui sotto); i preferiti non si spostano (non hanno
+  `centre`). Nella
   pagina della mappa sono i messaggi `setMove` e `moved`
   (`src/map/messages.ts`, `mapPage.ts`); la logica è in
   `src/paddle/shapeMove.ts` e `useMoveShape.ts`. Testi in cinque lingue.
+- **«Move the shape» su un esempio di «Explore»** (TASK-244; che il
+  percorso spostato resti di «Explore» è una scelta dell'utente del
+  2026-10-05): nella scheda di un esempio sull'acqua aperto da «Explore»,
+  sotto «Start», quando l'esempio dice dov'è la sua forma (i 32 che
+  vengono con l'app, e quelli dei laghi chiesti al server da questo task
+  in poi; uno tenuto sul telefono da prima no, finché non è ridisegnato).
+  Stesso pannello, stesso dito sulla mappa, stessa riga se la forma non ci
+  sta. Al rilascio l'app richiede **l'esempio com'era stato chiesto**
+  (forma, distanza, la partenza del luogo) con `near`; mentre il motore
+  lavora la forma resta dove il dito l'ha lasciata e la scheda dice
+  «Drawing a 2 km heart…», senza «Start» né «Export GPX», con «Back to the
+  list» che lascia perdere. Poi la scheda è **ancora quella di «Explore»**,
+  con i km del percorso nuovo, «Start», «Move the shape» per spostarlo
+  ancora, il GPX e il cuore dei preferiti. Se la richiesta fallisce torna
+  il percorso di prima, con il perché in rosso. La lista tiene l'esempio
+  com'era: riaperto, è al suo posto. Lo stesso esempio aperto dal «Feed»,
+  un preferito e gli esempi della corsa non si spostano. La logica è in
+  `src/paddle/useMoveExample.ts`; `exampleRoutes.ts` tiene `centre` e la
+  richiesta di ogni esempio. Nessun testo nuovo.
 - **L'avviso di sicurezza**, al **primo** «Start» sull'acqua su questo
   telefono (scelta dell'utente), a tutto schermo prima del conto alla
   rovescia: 🛶, «Before you paddle», quattro righe («Wear a life
@@ -2121,6 +2201,20 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     (uno ogni 4 km su una riva lunga: l'app prende il più vicino) e la
     distanza delle forme: **2 km, oppure 1,5 o 1 km su un lago piccolo**.
     L'Italia intera: 211 laghi, 758 punti (`tasks/TASK-233.md`).
+  - **Le spiagge** (TASK-245, ADR-0210; `src/paddle/beaches.json`, scritto
+    da `python -m shaperoute_api.beach_catalog`): 29 posti di mare scelti
+    dall'utente, su tutte le coste d'Italia, oltre a Jesolo e Riccione:
+    Lignano Sabbiadoro, Bibione, Caorle, Cavallino, Sottomarina,
+    Cesenatico, Rimini, Cattolica, Senigallia, San Benedetto del Tronto,
+    Pescara, Vieste, Gallipoli, Otranto, Tropea, Cefalù, Mondello, San
+    Vito lo Capo, Alghero, Villasimius, San Teodoro, Viareggio, Forte dei
+    Marmi, Castiglione della Pescaia, Ostia, Sperlonga, Alassio, Sanremo,
+    Sestri Levante. Ognuno ha **un punto solo**, sulla riva vicino al
+    paese, dove si arriva a piedi, e le forme a 2 km. Si trovano come i
+    laghi: «Near me» entro 30 km, fra gli otto luoghi più vicini, per nome
+    in «Type a lake or a beach» e in «Another place». Le loro forme sono
+    chieste all'API, come quelle dei laghi: niente esempi dentro l'app.
+    Stanno 200 m oltre la riva, come a Jesolo e a Riccione.
   - Un luogo ha **le otto forme della corsa** in canoa (TASK-227, scelta
     dell'utente): cuore, cerchio, stella, luna, cavallo, lumaca, testa di
     cane, testa di coniglio. Quelle dei quattro luoghi scelti a mano
@@ -2155,8 +2249,11 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     confermare.
 - **I laghi sul server**: il server ha l'acqua dei quattro luoghi
   (TASK-225) e, dal 2026-10-05, di ogni lago dell'elenco (TASK-233: 210
-  file in `data/cache/water/`). Altrove, per esempio al mare lontano da
-  Jesolo e Riccione, la scarica da Overpass, se risponde, e la prima volta
+  file in `data/cache/water/`). Le spiagge di TASK-245 hanno altri 27
+  file (22,6 MB, sul server dal 2026-10-05), uno a paese: tengono ogni
+  partenza entro 3 km dal paese.
+  Altrove, per esempio al mare lontano dai posti dell'elenco,
+  la scarica da Overpass, se risponde, e la prima volta
   ci mette minuti, altrimenti «Map data for this area could not be
   downloaded.». **Un elenco nuovo vuole prima la sua acqua sul server**
   (`MAPS.md`, «I laghi di Explore»).
@@ -2221,8 +2318,12 @@ Kilometer.»; «Este kilómetro: 12 segundos más rápido que el anterior.» /
 «… más lento …» / «Mismo ritmo que el kilómetro anterior.»; «Ce
 kilomètre : 12 secondes plus rapide que le précédent.» / «… plus lent …»
 / «Même allure que le kilomètre précédent.». In bici il confronto è ogni
-10 km («La navigazione», la bici). Le forme con le miglia le aggiunge
-TASK-182 con il resto della voce in miglia.
+10 km («La navigazione», la bici). Con le miglia (TASK-182 parte C) la
+voce dice ogni miglio e lo confronta col miglio prima («1 mile. Time: …
+Average pace: … per mile.», «12 seconds faster than the last mile.»): le
+frasi sono in «La navigazione», «Con le miglia»; il banner della partenza
+dice la distanza in piedi («650 ft») e da 1000 piedi in miglia («1.2
+mi»).
 
 La traccia è quella della navigazione (ADR-0091), con le stesse regole,
 nello stesso file `current-run.json`, con il percorso vuoto: resta se
@@ -2232,7 +2333,9 @@ file alla prima posizione).
 **«Stop»** (in pausa, tenuto premuto) apre la fine della corsa: in alto
 «Your run» e «White: what you ran.»; sotto i km in grande e i sei riquadri
 di «Data» (tempo senza le pause, passo medio, ultimo km, salita,
-calorie). Senza forma non c'è
+calorie). Con le miglia (TASK-182 parte C) le miglia in grande («2.62
+mi»), il passo medio al miglio («9:33 /mi») e l'ultimo miglio («Last
+mi»). Senza forma non c'è
 punteggio, e niente va a `POST /track-scores`. **«Keep running»** torna
 alla corsa, con la stessa traccia; **«Done»**, senza account, torna alla
 prima schermata e toglie la corsa dal file: si perde, com'era, e sotto la

@@ -51,7 +51,6 @@ const help: AboutDocument = {
             "Una voce ti dice ogni svolta in anticipo. La mappa mostra il tratto già corso e quello ancora davanti.",
             "«Pause» ferma il tempo e «Resume» lo fa ripartire.",
             "Per finire la corsa tieni premuto il pulsante di stop: un tocco breve non la chiude.",
-            "Alla fine un punteggio su 100 dice quanto il tuo disegno somiglia alla forma.",
           ],
         },
         "«Corri senza percorso» registra lo stesso la tua corsa, senza una forma da seguire.",
@@ -193,7 +192,7 @@ const terms: AboutDocument = {
             "Sull'acqua serve ancora più attenzione: indossa il giubbotto salvagente, controlla il meteo e il vento, rispetta le regole del posto (zone di balneazione, corridoi di lancio, porti). Sgrava non le conosce. Un percorso vicino alla riva non è, per questo, sicuro né permesso.",
           ],
         },
-        "Distanze, tempi, velocità e punteggio vengono dal GPS del telefono e sono stime.",
+        "Distanze, tempi e velocità vengono dal GPS del telefono e sono stime.",
       ],
     },
     {

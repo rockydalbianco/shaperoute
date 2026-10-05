@@ -1887,10 +1887,11 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
 - Testi nuovi **da confermare con l'utente**: «On the water, a shape of the
   catalogue.», «on the water», «Paddle without a route», i testi d'errore
   qui sopra e quelli di «Explore» («On the water», «Shapes to paddle,
-  within 1 km of the shore», «LAKES AND SEA», «Near me», i due avvisi, e da
-  TASK-233 «Choose a lake or a beach: eight shapes on its water, from the
-  shore.», «Type a lake or a beach», «No lake or beach matches “…”.» e
-  «… km away»). Il
+  within 1 km of the shore», «LAKES AND SEA», «Near me», l'avviso senza
+  partenza). I testi di TASK-233 sono **confermati dall'utente** il
+  2026-10-05, in inglese e in italiano: «Choose a lake or a beach: eight
+  shapes on its water, from the shore.», «Type a lake or a beach», «No lake
+  or beach matches “…”.» e «… km away». Il
   testo dell'avviso di sicurezza è approvato. Tutti questi testi sono anche
   in tedesco, italiano, spagnolo e francese (ADR-0169, «Aggiunta»).
 

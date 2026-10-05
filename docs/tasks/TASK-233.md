@@ -27,6 +27,11 @@ Una domanda per volta, ognuna con una proposta:
 3. **2026-10-05 — i bacini artificiali**: «sì, restano anche i bacini
    artificiali». L'elenco ha laghi e bacini; dove pagaiare è vietato la
    mappa non lo dice, e vale l'avviso di sicurezza del primo «Start».
+4. **2026-10-05 — i testi**: «sì, vanno bene così». Visti in inglese e in
+   italiano: «Choose a lake or a beach: eight shapes on its water, from the
+   shore.» (quella di prima senza «of 2 km»), «Type a lake or a beach», «No
+   lake or beach matches “…”.», «… km away» · «a … km». Tedesco, spagnolo e
+   francese tradotti allo stesso modo.
 
 ## Contesto da leggere
 
@@ -156,10 +161,8 @@ con `water_extract --extract`, come quelli di TASK-225.
 
 **Da dove riprendere** (parte B):
 
-1. Le risposte dell'utente alle scelte fatte su delega (ADR-0196) ancora
-   aperte: la frase cambiata e i tre testi nuovi. Le forme più corte,
-   «Near me» acceso e i bacini artificiali sono confermati («Scelte
-   dell'utente»).
+1. Le scelte fatte su delega (ADR-0196) sono tutte confermate dall'utente
+   («Scelte dell'utente»): niente da chiedere prima della parte B.
 2. Con l'ok dell'utente, dal coordinatore: sul server, `osmium export`
    delle acque dall'estratto dell'Italia, `lake_catalog --boxes`, poi
    `water_extract --extract ... --bbox` per ogni riga (`MAPS.md`, «I laghi

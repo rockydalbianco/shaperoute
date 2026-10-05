@@ -9618,8 +9618,9 @@ alto.
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-233 · «tutti
 i laghi» e «come la corsa» sono richieste dell'utente; le forme più corte
 sui laghi piccoli (sui campioni), «Near me» acceso da subito e i bacini
-artificiali nell'elenco sono sue scelte del 2026-10-05; il resto è deciso
-dall'agente su delega dell'utente, e i testi sono da confermare
+artificiali nell'elenco sono sue scelte del 2026-10-05, e i testi li ha
+confermati lo stesso giorno; il resto è deciso dall'agente su delega
+dell'utente
 
 **Contesto**: con «Paddle», «Explore» aveva quattro luoghi scelti a mano
 (ADR-0169, ADR-0189) e «Near me», che disegnava dalla partenza e funzionava
@@ -9676,7 +9677,7 @@ pagina come quella della corsa.
 - Con una partenza, aprire «Explore» con «Paddle» chiede subito all'API le
   otto forme del lago più vicino (prima non chiedeva niente fino al tocco).
 - La frase d'attesa perde «of 2 km» nelle cinque lingue; tre testi nuovi,
-  da confermare con l'utente.
+  confermati dall'utente in inglese e in italiano.
 - Il Lago di Ledro manca: in OpenStreetMap è `water=pond`. Seguito.
 - Gli esempi a 1,5 e 1 km stanno sul telefono sotto chiavi loro
   (`paddling:1500:…`), a parte da quelli a 2 km.

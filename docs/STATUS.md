@@ -626,7 +626,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **App** — TASK-246: le figure «Paddle» dei tre posti più vicini già
   sul telefono (ADR-0211; chiesto dall'utente il 2026-10-05, che ha
   scelto: tre posti, con qualunque sport, anche con i dati mobili). In
-  revisione. A ogni apertura, dopo le mappe della zona, il telefono fa
+  revisione, PR #369. A ogni apertura, dopo le mappe della zona, il telefono fa
   disegnare al server le otto forme dei tre posti più vicini entro 30 km
   che non ha ancora, una ogni 6 secondi al massimo, e le tiene in
   `Documents/paddle-ahead.json`: «Explore» con «Paddle» le mostra subito.

@@ -1,6 +1,6 @@
 # TASK-246 — Le figure «Paddle» dei posti vicini già sul telefono
 
-**Stato**: In revisione (il merge aspetta il «merge NNN» del coordinatore)
+**Stato**: In revisione (PR #369; il merge aspetta il «merge 369» del coordinatore)
 **Fase**: 4 · **Branch**: `feat/TASK-246-paddle-shapes-ahead`
 **Dipende da**: TASK-214 (le mappe della zona al primo avvio, ADR-0177),
 TASK-227 e TASK-233 (gli esempi sull'acqua di «Explore»)

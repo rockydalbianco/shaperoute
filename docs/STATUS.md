@@ -53,8 +53,7 @@ In coda, dopo o accanto:
   (TASK-178, sotto), email e numero di telefono anche (TASK-183), le unità di misura hanno la parte A (TASK-182, «In
   lavorazione»), «Help», «Terms» e «Privacy» sono fatte, i due testi
   legali come bozze (TASK-184); **TASK-185**, i due
-  interruttori delle notifiche email e push, è in revisione («In
-  lavorazione»): salvati nell'account, spenti all'inizio, e **non mandano
+  interruttori delle notifiche email e push, è fatto: salvati nell'account, spenti all'inizio, e **non mandano
   ancora niente**. L'invio vero (che cosa notificare, un servizio di
   posta, `expo-notifications`, una build propria) è un task da aprire,
   con scelte dell'utente. Nessuna voce dice più «Soon».
@@ -519,28 +518,31 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
   «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito».
 
-- **TASK-185 — I due interruttori delle notifiche** (ADR-0206; chiesto
-  dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha scelto:
-  **tutti e due spenti** all'inizio). In revisione (branch
-  `feat/TASK-185-notification-switches`; API, contratto e app, nessuna
-  dipendenza). «Email notifications» e «Push notifications» in «Settings»
-  sono due interruttori salvati nell'account: `PUT /me/notifications`
-  (solo quello che cambia), `User.notifications`, migrazione
-  `0017_notifications.sql` (il numero è il primo libero al merge). **Non
-  si manda niente**, e la pagina lo dice sotto le righe: «Sgrava does not
-  send notifications yet. Your choice is kept for when it does.»; nessun
-  permesso chiesto al telefono. Li legge solo il proprietario. Nessuna
-  riga di «Settings» dice più «Soon»; una riga in «Help» e una nella bozza
-  di «Privacy». Test in locale: tutta la parte JS e i file dell'API
-  toccati; l'intera suite dell'API è della CI. **Aspettano l'utente**:
-  l'aggiornamento del server (migrazione `0017`) prima di pubblicare
-  l'app; il testo nuovo «Notifications are not available on this API
-  yet.» e le due righe di «Help» e «Privacy»; la prova su un telefono
-  (non visto nemmeno nel simulatore). **Dopo**, un task da aprire con
+## Completato
+
+- **API e app** — TASK-185: i due interruttori delle notifiche (ADR-0206;
+  chiesto dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha
+  scelto: **tutti e due spenti** all'inizio; PR #359, merge `c2bb428`).
+  «Email notifications» e «Push notifications» in «Settings» sono due
+  interruttori salvati nell'account: `PUT /me/notifications` (solo quello
+  che cambia), `User.notifications`, migrazione `0017_notifications.sql`.
+  **Non si manda niente**, e la pagina lo dice sotto le righe: «Sgrava
+  does not send notifications yet. Your choice is kept for when it
+  does.»; nessun permesso chiesto al telefono. Li legge solo il
+  proprietario. Nessuna riga di «Settings» dice più «Soon»; una riga in
+  «Help» e una nella bozza di «Privacy». Testi confermati dall'utente
+  («ok, i testi delle notifiche vanno bene»). **Sul server** dal
+  2026-10-05, 12:02Z (ok dell'utente «ok per il server», sessione
+  «Impostazioni»; nello stesso aggiornamento il motore delle forme
+  inclinate di TASK-232 A, con il suo ok): `main` `c2bb428`, circa 10
+  secondi di fermo, copia `shaperoute-2026-10-05T1202Z.dump`, immagine di
+  prima `shaperoute-api:before-task185`, `draw_examples` rilanciato alle
+  12:03Z (`data/draw-examples-2026-10-05-task232.log`). La pubblicazione
+  dell'app è del coordinatore. Visto nel simulatore (`out/task185/`),
+  senza tocchi; **da provare sull'iPhone** (girare un interruttore e
+  ritrovarlo dopo aver riaperto l'app). **Dopo**, un task da aprire con
   scelte dell'utente: l'invio vero (che cosa si notifica, il servizio di
   posta, `expo-notifications`, una build propria). `tasks/TASK-185.md`.
-
-## Completato
 
 - **App** — TASK-184: «Help», «Terms», «Privacy» (ADR-0205; chiesto
   dall'utente il 2026-10-05: una mini guida, e le prime bozze di

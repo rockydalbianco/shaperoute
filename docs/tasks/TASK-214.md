@@ -3,7 +3,8 @@
 **Stato**: In corso. Le sei scelte hanno la risposta dell'utente; la parte A
 (API) è in `main` dalla #275, la parte B (l'app) dalla #282, la parte C
 («Settings» e l'avviso) dalla #295, la parte A2 (il tetto del traffico)
-dalla #330; la parte B2 (le zone in più) è in PR; poi D.
+dalla #330, la parte B2 (le zone in più) dalla #337; le città vicine
+(B2b) in PR; poi D.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 
@@ -599,19 +600,23 @@ migrazione.
   Nessuno la chiama ancora: le zone in più sono la parte B2.
 - **Test**: 19 per il tetto e 6 per l'endpoint nell'API; 9 nell'app.
 
-**Parte B2, le zone in più** (in PR, 2026-10-05; ADR-0177, «Decisione
-dell'agente, parte B2»). Partita senza la #323 per scelta dell'utente
-(«parti subito con la b», 2026-10-05): le città vicine si aggiungono
-quando `GET /nearby-cities` è in `main`.
+**Parte B2, le zone in più** (#337, in `main` come `f3fdbce` il
+2026-10-05, non pubblicata; ADR-0177, «Decisione dell'agente, parte B2»).
+Partita senza la #323 per scelta dell'utente («parti subito con la b»,
+2026-10-05); le città vicine sono entrate dopo, con la B2b (in PR).
 
 - **Quando**: a ogni apertura, finite le zone intorno al telefono, e solo
   se il server ne ha appena data una (salvata o `304`): un server senza
   zone per il telefono, o nessuna rete, non riceve richieste inutili. Una
   zona alla volta, senza avvisi, con qualunque rete (scelte dell'utente).
 - **Quali città, in ordine** (`src/engine/aheadZones.ts`):
-  1. quelle scelte per ultime in «Explore» (fino a cinque, la memoria
+  1. i paesi vicini al telefono, dal più vicino, come li dà `GET
+     /nearby-cities` di TASK-236 (fino a sei, parte B2b). Senza risposta
+     (un server di prima, nessuna chiave Geoapify) il giro va avanti
+     senza, e li richiede il giorno dopo;
+  2. quelle scelte per ultime in «Explore» (fino a cinque, la memoria
      dell'app), cioè le più cercate da chi usa il telefono;
-  2. le 14 città in evidenza di «Explore», **dalla più vicina**. Il centro
+  3. le 14 città in evidenza di «Explore», **dalla più vicina**. Il centro
      lo dà `GET /cities` come al tocco del chip, una volta sola: poi resta
      in `Documents/engine/ahead.json`.
 
@@ -657,6 +662,17 @@ quando `GET /nearby-cities` è in `main`.
   - con il giro di 25 ore prima, i due `304` e una richiesta sola, Berlino.
   - Nessun avviso sopra «Draw route».
 
+**Parte B2b, le città vicine** (in PR, 2026-10-05; ADR-0177, punto 1
+della parte B2). Il giro chiede prima i paesi vicini con
+`fetchNearbyCities` di TASK-236 (`src/explore/nearbyCities.ts`, solo
+letto), che tiene la risposta per quadrato di circa 1 km, la stessa che
+usa «Explore». I paesi vengono in testa, prima delle città scelte per
+ultime e di quelle in evidenza. Sul server di oggi `/nearby-cities` non
+c'è ancora (404): il giro va avanti senza, e li richiede il giorno dopo.
+Test: uno nuovo per l'ordine e i paesi già dentro la zona intorno;
+tutta la suite dell'app passa (1960). Non provata nel simulatore: è
+un'aggiunta all'ordine del giro provato con la B2.
+
 **Le parti dopo** (d'accordo con il coordinatore, ognuna in un contesto
 pulito, tutte sotto TASK-214 e ADR-0177):
 1. **C**, la riga in «Settings» e l'avviso del primo download: fatta,
@@ -664,8 +680,8 @@ pulito, tutte sotto TASK-214 e ADR-0177):
 2. **A2**, il tetto sul server: le richieste «in più» con `?prefetch=1`, i
    byte contati per giorno, in memoria, senza migrazione: fatta, sopra.
 3. **B2**, le zone in più, cioè le città vicine e le più cercate fino a 2
-   GB (scelta 4, punto 2): fatta, sopra, senza le città vicine, che
-   entrano con un'aggiunta piccola dopo la #323 (TASK-236).
+   GB (scelta 4, punto 2): fatta, sopra; le città vicine con la B2b,
+   dopo la #323 (TASK-236).
 4. **D**, la prova sull'iPhone: fissa i limiti di distanza. Vuole il server
    con `/phone-zones` e le zone del telefono scritte (0,7–0,8 GB): un
    aggiornamento del server da chiedere all'utente, che coordina il

@@ -8643,8 +8643,10 @@ senza la #323), deciso dall'agente su delega dell'utente:
    dalla più vicina. Il server sa quali città si cercano di più (gli
    eventi di TASK-130), ma darle all'app vorrebbe un endpoint nuovo e un
    aggiornamento del server. Le città vicine (TASK-236, `GET
-   /nearby-cities`) andranno in testa, con un'aggiunta piccola dopo la
-   #323.
+   /nearby-cities`) vanno in testa (parte B2b, dopo la #323), con la
+   cache per quadrato di `nearbyCities.ts`, la stessa di «Explore». Se non
+   rispondono, il giro non le aspetta: le richiede il giorno dopo, come
+   chiede un server senza `/nearby-cities`.
 2. **Il centro di una città in evidenza** lo dà `GET /cities`, come al
    tocco del chip, una volta per telefono: poi resta in
    `Documents/engine/ahead.json`. I centri non si scrivono nel codice

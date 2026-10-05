@@ -45,6 +45,7 @@ TOKEN_URL = "https://www.strava.com/api/v3/oauth/token"
 # ends in June 2027.
 REVOKE_URL = "https://www.strava.com/oauth/revoke"
 UPLOADS_URL = "https://www.strava.com/api/v3/uploads"
+ACTIVITIES_URL = "https://www.strava.com/api/v3/activities"
 ACTIVITY_URL = "https://www.strava.com/activities/{id}"
 CALLBACK_PATH = "/strava/callback"
 # All that is asked of an athlete: to add activities. Nothing is read.
@@ -439,3 +440,28 @@ class Strava:
         if reply.status != 200:
             raise StravaDownError()
         return _upload(_json(reply))
+
+    def describe(self, access_token: str, activity_id: int, description: str) -> bool:
+        """Put `description` under the name of an activity already on Strava
+        (TASK-231): `PUT /activities/{id}`, which `activity:write` allows.
+        False when Strava does not let it: the activity was deleted there,
+        or only its athlete sees it, which would want `activity:read_all`
+        too."""
+        reply = self._ask(
+            Call(
+                "PUT",
+                f"{ACTIVITIES_URL}/{activity_id}",
+                {
+                    "Authorization": f"Bearer {access_token}",
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                urllib.parse.urlencode({"description": description}).encode(),
+            )
+        )
+        if reply.status == 401:
+            raise StravaRefusedError()
+        if reply.status in (403, 404):
+            return False
+        if reply.status != 200:
+            raise StravaDownError()
+        return True

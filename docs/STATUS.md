@@ -159,8 +159,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   principale lo fa il coordinatore; poi la pubblicazione e la prova
   sull'iPhone con l'ok dell'utente. Il testo per Strava («🔥❤️ 5.20 km ·
   28:10 · 5:25 /km · Punteggio 87», poi «Drawn with Sgrava») è stato
-  mostrato all'utente: va bene se non chiede di cambiarlo. **Parte B, l'API**: cambiare la descrizione di una
-  corsa già su Strava (`tasks/TASK-231.md`).
+  mostrato all'utente, che ha risposto «va bene». **Parte B**, in PR
+  (2026-10-05, «fai la parte b e pubblica» dell'utente): il testo del
+  post va come `post`, in cima alla descrizione, e su una corsa già su
+  Strava la cambia con `PUT /activities/{id}` («Update on Strava»
+  nell'app). Vuole il server aggiornato (`tasks/TASK-231.md`).
 
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il

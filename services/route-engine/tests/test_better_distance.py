@@ -225,7 +225,8 @@ def test_the_contract_fixture_has_every_field_of_the_result() -> None:
     data = json.loads(
         (FIXTURES / "route-result-better-distance.json").read_text(encoding="utf-8")
     )
-    names = {f.name for f in fields(RouteResult)}
+    # Every field of its day: the rotation came after (TASK-232).
+    names = {f.name for f in fields(RouteResult)} - {"rotation_deg"}
     for each in (data, *data["alternatives"]):
         assert set(each) == names
     assert data["better_distance_m"] == 12_000

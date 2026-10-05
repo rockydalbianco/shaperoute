@@ -9665,7 +9665,8 @@ spostano «dove ci sono le strade», come fanno su strada (`pieces.compose`).
 
 ## ADR-0195 — Le forme si inclinano fino a 45°, e la mappa gira perché si vedano dritte
 
-**Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-232 ·
+**Data**: 2026-10-05 · **Stato**: Accettato; motore e API fatti (parte A),
+l'app da fare · **Task**: TASK-232 ·
 45°, la mappa girata, la freccia del nord e la mappa della corsa sono
 scelte dell'utente; il resto è deciso
 dall'agente su delega dell'utente · supera in parte ADR-0038 (il limite
@@ -9707,6 +9708,42 @@ partenza e fase), con lo stesso numero di tracciati: il tempo va misurato.
 Cambiano i percorsi di oggi dove una forma inclinata segue meglio: i
 campioni si rigiudicano. Le corse salvate prima restano col nord in
 alto.
+
+**Parte A, motore e API (2026-10-05)**, deciso dall'agente su delega
+dell'utente dopo le misure (`MAPS.md`, «Forme inclinate»):
+
+- **Prima dritta, poi inclinata**, invece di provare tutte le rotazioni
+  insieme (punto 1 sopra, e il piano del task file): la ricerca di sempre
+  entro ±15°, e solo se non dà un percorso buono le rotazioni oltre 15°
+  fino a 45° (±30°, ±45°, rifinitura ogni 5°) con 10 tracciamenti in più
+  (`TILTED_TRACES`). Tutte insieme, con lo stesso budget, perdevano
+  percorsi buoni (pesce di Trento da 10 km 0,91 → 0,70) e peggioravano il
+  cuore di Levico da 5 km, uno dei 12 di riferimento. Così su 129 percorsi
+  110 restano identici (i 12 di riferimento tutti), 19 si inclinano di
+  20–45°, i buoni passano da 65 a 67, e il tempo medio sale del 10% (dei
+  12 di riferimento il 6%).
+- **Il costo dell'inclinazione** (punto 2) conta solo i gradi oltre 15°:
+  il 5% di copertura a 45°, 0 entro 15° come prima (`tilt_share`). Dal
+  primo grado faceva raddrizzare forme che prima venivano meglio a 15°.
+- **La ricerca lontana resta dritta** (ADR-0040), e vicino o lontano si
+  decide sulla ricerca dritta, come prima (`Search.upright`): un percorso
+  inclinato vicino, disegnabile ma non buono, teneva fuori quello lontano
+  che prima vinceva (gatto e pesce di Levico da 15 km). Un percorso
+  inclinato vicino buono vince, e la ricerca lontana non parte.
+- **Le parole squadrate** seguono le vie fino a 45° (`GRID_MAX_TILT_DEG`):
+  le direzioni oltre 30° sono il secondo tempo, come le inclinazioni.
+- **Sull'acqua** lo stesso schema in `water_fit.py`: entro ±15° ogni 5°,
+  e solo se la forma non ci sta nella tolleranza della distanza, da 20° a
+  45°, con il 5% di distanza a 45° (`TILT_WEIGHT`). I 32 esempi della
+  canoa non cambiano.
+- **`rotation_deg`** anche dalle partenze vicine (`ShapeJob.here`) e dalla
+  canoa; 0 senza ricerca. I percorsi tenuti sul server (`route_store`, gli
+  esempi di «Explore») lo conservano, e da qui anche `better_distance_m`
+  (TASK-234), che rileggendoli si perdeva.
+- **I campioni**: i 19 percorsi che cambiano, prima col nord in alto e
+  dopo con la mappa girata (`tools/preview_turned.py`). Giudizio
+  dell'utente sui percorsi nuovi: 17 `sì`, 2 `quasi`, nessun `no`.
+
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 

@@ -5,7 +5,9 @@ On water there is no road network: the placed shape *is* the route, as long
 as all of it lies in the band of `water.WaterArea` (within 1 km of the
 shore, off the shore and the obstacles). The search tries the shape at full
 size and smaller, upright within ±15° (ADR-0038), at every place of a grid
-within reach of the start; keeps, for each scale and angle, the few places
+within reach of the start, and tilted up to ±45° when that fits nowhere
+within DISTANCE_TOLERANCE (TASK-232, ADR-0195); keeps, for each scale and
+angle, the few places
 whose outline passes where joining it to a shore reachable on foot costs
 least (ADR-0161); checks those exactly on the band; and joins each to the
 shore start of lowest cost by a straight leg out and back. The cost says
@@ -74,9 +76,16 @@ DISTANCE_TOLERANCE = 0.10
 # asked), then smaller by SCALE_STEP down to MIN_SCALE.
 SCALE_STEP = 0.03
 MIN_SCALE = 0.4
-# Shapes stay upright within ±15°, the circle turns freely (ADR-0038).
-MAX_TILT_DEG = 15.0
+# Shapes are tried upright within ±UPRIGHT_TILT_DEG, as before (ADR-0038);
+# only when none fits within DISTANCE_TOLERANCE, tilted beyond it up to
+# ±MAX_TILT_DEG, the app turning the map back (TASK-232, ADR-0195). A tilt
+# of 45° costs TILT_WEIGHT, as a route that much off the distance, in
+# proportion to the degrees beyond UPRIGHT_TILT_DEG: on a tie the
+# straighter shape wins. The circle turns freely.
+UPRIGHT_TILT_DEG = 15.0
+MAX_TILT_DEG = 45.0
 TILT_STEP_DEG = 5.0
+TILT_WEIGHT = 0.05
 # The band is looked at on a grid of cells: about 200 along the outline,
 # and never finer than 10 m nor coarser than 40 m.
 CELLS_PER_OUTLINE = 200
@@ -157,16 +166,28 @@ class WaterMeasures:
     closed: bool
 
 
-def rotations(free: bool) -> tuple[float, ...]:
+def rotations(free: bool, tilted: bool = False) -> tuple[float, ...]:
     """The angles tried: one for a shape that looks the same at any angle
-    (its fit does not change), else upright within ±15° (ADR-0038)."""
+    (its fit does not change), else upright within ±UPRIGHT_TILT_DEG
+    (ADR-0038); with `tilted`, those beyond it up to ±MAX_TILT_DEG, none
+    for a shape that turns freely (TASK-232)."""
     if free:
-        return (0.0,)
-    steps = int(MAX_TILT_DEG / TILT_STEP_DEG)
-    out = [0.0]
-    for k in range(1, steps + 1):
+        return () if tilted else (0.0,)
+    first = round(UPRIGHT_TILT_DEG / TILT_STEP_DEG) + 1 if tilted else 1
+    last = round((MAX_TILT_DEG if tilted else UPRIGHT_TILT_DEG) / TILT_STEP_DEG)
+    out = [] if tilted else [0.0]
+    for k in range(first, last + 1):
         out += [-k * TILT_STEP_DEG, k * TILT_STEP_DEG]
     return tuple(out)
+
+
+def tilt_cost(rotation_deg: float) -> float:
+    """What a placement at `rotation_deg` adds to its cost: nothing within
+    UPRIGHT_TILT_DEG, TILT_WEIGHT at MAX_TILT_DEG (TASK-232)."""
+    beyond = abs(rotation_deg) - UPRIGHT_TILT_DEG
+    if beyond <= 0.0:
+        return 0.0
+    return TILT_WEIGHT * beyond / (MAX_TILT_DEG - UPRIGHT_TILT_DEG)
 
 
 def _outline_length(shape: Sequence[XY]) -> float:
@@ -712,74 +733,85 @@ def fit_shape(
     # Below this scale no route is within DISTANCE_TOLERANCE, legs or not.
     lowest_ok = 1.0 - DISTANCE_TOLERANCE - 2 * APPROACH_MAX_M / distance_m
     levels = np.arange(1.0, MIN_SCALE - 1e-9, -SCALE_STEP)
-    for level in levels:
-        if level + legs > 1.0 + DISTANCE_TOLERANCE:
-            continue  # too long with its legs, wherever it is placed
-        # The cost of any placement at this scale is at least this much.
-        lowest = abs(level + legs - 1.0) + LEG_WEIGHT * legs
-        if best is not None and lowest >= best.cost:
-            if level <= 1.0 - legs:
-                break  # smaller shapes only cost more
-            continue
-        if best is None and best_any is not None and level < lowest_ok:
-            break  # what fits is known, and nothing smaller is within tolerance
-        for angle in rotations(free_rotation):
-            outline = _placed(unit, full * level, angle)
-            dense = _densified(outline, cell)
-            tour: tuple[np.ndarray, ...] = ()
-            if parts is not None:
-                tour = tuple(_placed(p, full * level, angle) for p in parts.tour)
-                dense = np.concatenate([dense, *(_densified(p, cell) for p in tour)])
-            centres = _fitting_centres(grid, dense, reach + radius * level, wanted)
-            if wanted is None:
-                tried = _promising(
-                    grid,
-                    join,
-                    centres,
-                    outline,
-                    PLACEMENTS_PER_TRY,
-                    max(5 * cell, 50.0),
-                )
-            else:
-                tried = _nearest(wanted, centres, NEAR_PLACEMENTS_PER_TRY, 2 * cell)
-            for _, centre in tried:
-                if parts is None:
-                    placement = _Placement(level, angle, centre, outline + centre)
-                else:
-                    placement = _Placement(
-                        level,
-                        angle,
-                        centre,
-                        outline + centre,
-                        tuple(piece + centre for piece in tour),
-                        parts.branch,
-                        parts.extra * full * level,
+
+    def look(angles: Sequence[float]) -> None:
+        """Try the shape at every scale and at `angles`, keeping the best
+        placements so far."""
+        nonlocal best, best_any, fitted_somewhere
+        for level in levels:
+            if level + legs > 1.0 + DISTANCE_TOLERANCE:
+                continue  # too long with its legs, wherever it is placed
+            # The cost of any placement at this scale is at least this much.
+            lowest = abs(level + legs - 1.0) + LEG_WEIGHT * legs
+            if best is not None and lowest >= best.cost:
+                if level <= 1.0 - legs:
+                    break  # smaller shapes only cost more
+                continue
+            if best is None and best_any is not None and level < lowest_ok:
+                break  # what fits is known, and nothing smaller is within tolerance
+            for angle in angles:
+                outline = _placed(unit, full * level, angle)
+                dense = _densified(outline, cell)
+                tour: tuple[np.ndarray, ...] = ()
+                if parts is not None:
+                    tour = tuple(_placed(p, full * level, angle) for p in parts.tour)
+                    dense = np.concatenate(
+                        [dense, *(_densified(p, cell) for p in tour)]
                     )
-                line = LineString(placement.outline)
-                if not area.band.contains(line):
-                    continue
-                if placement.pieces and not placement.in_band(area):
-                    continue
-                fitted_somewhere = True
-                start = _start_on_shore(area, placement, distance_m)
-                if start is None:
-                    continue
-                cost = start[0]
-                if wanted is not None:
-                    cost += wanted.cost(centre, distance_m)
-                found = _Found(
-                    placement,
-                    cost,
-                    *start[1:],
-                    line.length + placement.extra_m + 2 * start[4],
-                )
-                if best_any is None or found.cost < best_any.cost:
-                    best_any = found
-                off = abs(found.distance_m - distance_m)
-                if off <= DISTANCE_TOLERANCE * distance_m and (
-                    best is None or found.cost < best.cost
-                ):
-                    best = found
+                centres = _fitting_centres(grid, dense, reach + radius * level, wanted)
+                if wanted is None:
+                    tried = _promising(
+                        grid,
+                        join,
+                        centres,
+                        outline,
+                        PLACEMENTS_PER_TRY,
+                        max(5 * cell, 50.0),
+                    )
+                else:
+                    tried = _nearest(wanted, centres, NEAR_PLACEMENTS_PER_TRY, 2 * cell)
+                for _, centre in tried:
+                    if parts is None:
+                        placement = _Placement(level, angle, centre, outline + centre)
+                    else:
+                        placement = _Placement(
+                            level,
+                            angle,
+                            centre,
+                            outline + centre,
+                            tuple(piece + centre for piece in tour),
+                            parts.branch,
+                            parts.extra * full * level,
+                        )
+                    line = LineString(placement.outline)
+                    if not area.band.contains(line):
+                        continue
+                    if placement.pieces and not placement.in_band(area):
+                        continue
+                    fitted_somewhere = True
+                    start = _start_on_shore(area, placement, distance_m)
+                    if start is None:
+                        continue
+                    cost = start[0] + tilt_cost(angle)
+                    if wanted is not None:
+                        cost += wanted.cost(centre, distance_m)
+                    found = _Found(
+                        placement,
+                        cost,
+                        *start[1:],
+                        line.length + placement.extra_m + 2 * start[4],
+                    )
+                    if best_any is None or found.cost < best_any.cost:
+                        best_any = found
+                    off = abs(found.distance_m - distance_m)
+                    if off <= DISTANCE_TOLERANCE * distance_m and (
+                        best is None or found.cost < best.cost
+                    ):
+                        best = found
+
+    look(rotations(free_rotation))
+    if best is None:  # it fits nowhere within tolerance upright: tilted
+        look(rotations(free_rotation, tilted=True))
     if best is not None:
         return _water_route(area, best)
     if best_any is not None:

@@ -180,8 +180,9 @@ def test_a_request_with_the_pen_up_needs_a_word() -> None:
 BEFORE = {
     "grid io 6000": "752db4f68f1a45d8",
     "grid ciao block 12000": "fd96bddd213a8e83",
-    "levico IO 2500": "c81a039a021b37d4",
-    "levico LO 3000": "0e604646dafbd9a6",
+    # Tilted since TASK-232 (ADR-0195): -30°, and the LO tried tilted.
+    "levico IO 2500": "3336c17f3b851d4b",
+    "levico LO 3000": "832c26d07d47df65",
     "levico nearby io 6000": "c7560d2d0ad932f2",
 }
 

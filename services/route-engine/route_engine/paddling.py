@@ -125,5 +125,7 @@ def plan_paddling(request: RouteRequest, source: WaterSource) -> WaterPlan:
         shape=request.shape,
         walks=list(route.walks),
         centre=route.centre,
+        # Within ±45°, counterclockwise; 0 for the circle (TASK-232).
+        rotation_deg=route.rotation_deg + 0.0,
     )
     return WaterPlan(result, route, area)

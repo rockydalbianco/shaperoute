@@ -27,7 +27,7 @@ type Props = {
 
 /**
  * A run of «My activities» on the map (TASK-172), under it: when and where
- * it was, how far and how fast, its score when it has one. The map shows it
+ * it was, how far and how fast; never its score (TASK-241). The map shows it
  * as the end of a run does: the route yellow, what was run light. «Public»
  * and its title make it a drawing in the profile (TASK-117). With Strava
  * connected, «Send to Strava» or «View on Strava» (TASK-187). «Share» makes
@@ -44,18 +44,6 @@ export function ActivityCard({ activity, onList, onDelete }: Props) {
           <Text style={styles.when}>{startedLabel(activity.started_at)}</Text>
           <Text style={styles.message}>{whereAndWhat(activity, withRoute)}</Text>
         </View>
-        {activity.score !== null && (
-          <View
-            style={styles.scoreBox}
-            accessible
-            accessibilityLabel={t("Score: {score} out of 100", {
-              score: activity.score,
-            })}
-          >
-            <Text style={styles.score}>{activity.score}</Text>
-            <Text style={styles.message}>{t("out of 100")}</Text>
-          </View>
-        )}
       </View>
       <Text style={styles.facts}>{runFacts(activity)}</Text>
       <Text style={styles.message}>
@@ -131,15 +119,6 @@ const styles = StyleSheet.create({
   message: {
     color: color.textMuted,
     fontSize: fontSize.small,
-  },
-  scoreBox: {
-    alignItems: "flex-end",
-  },
-  // Not the yellow: that is the route's and the main action's (ADR-0046).
-  score: {
-    color: color.text,
-    fontSize: fontSize.title,
-    fontWeight: fontWeight.bold,
   },
   facts: {
     color: color.text,

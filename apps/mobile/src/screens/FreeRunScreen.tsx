@@ -161,7 +161,7 @@ export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
       <RunGrid numbers={numbers} />
       <View style={styles.finishButtons}>
         {/* The post of the run (TASK-231). */}
-        <SharePostButton makeRun={() => postOfTrack(track, null)} />
+        <SharePostButton makeRun={() => postOfTrack(track)} />
         {onResume && (
           <Pressable
             style={styles.button}

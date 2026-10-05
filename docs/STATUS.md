@@ -51,12 +51,14 @@ In coda, dopo o accanto:
 - **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
   sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
   (TASK-178, sotto), email e numero di telefono anche (TASK-183, «In
-  lavorazione»); restano **TASK-182** le unità di
-  misura, km o miglia (ADR-0149, solo app, tocca molti file), **TASK-184**
-  «Help», «Terms», «Privacy» (dopo TASK-152: testi e contatti), **TASK-185**
-  le notifiche email e push (per ultime: serve qualcosa da notificare, un
-  servizio di posta, `expo-notifications`, una build propria). Tutti Todo,
-  senza task file; l'utente: «li svilupperemo più avanti».
+  lavorazione»), le unità di misura hanno la parte A (TASK-182, «In
+  lavorazione»), «Help», «Terms» e «Privacy» sono fatte, i due testi
+  legali come bozze (TASK-184, «In lavorazione»); **TASK-185**, i due
+  interruttori delle notifiche email e push, è in revisione («In
+  lavorazione»): salvati nell'account, spenti all'inizio, e **non mandano
+  ancora niente**. L'invio vero (che cosa notificare, un servizio di
+  posta, `expo-notifications`, una build propria) è un task da aprire,
+  con scelte dell'utente. Nessuna voce dice più «Soon».
 - **Pubblicità che paga**, chiesta dall'utente il 2026-10-02: **TASK-150**
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
@@ -116,25 +118,26 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `f3fdbce` dalle
-  09:32Z (secondo ok dell'utente «sì pubblica, ok server», sessione del
-  coordinatore), con le migrazioni `0001`–`0015`, `GET /nearby-cities`
-  (TASK-236: da Caldonazzo risponde in 0,8 s con Calceranica, Levico,
-  Pergine, Trento, Borgo), il motore di TASK-234 A (in `fd14cd3` dalle
-  08:54Z, esempi ridisegnati per 66 città su 66) e il tetto del traffico
-  di TASK-214 A2; fermo circa 14 secondi; immagine di prima
-  `shaperoute-api:before-task236`, copia del database
-  `shaperoute-2026-10-05T0931Z.dump`. Ha l'acqua dei laghi d'Italia
-  (TASK-233: 219 file, 71 MB). **Le zone del telefono non sono scritte**:
-  in cache ci sono 521 grafi e 3 file per il telefono; scriverli tutti
-  sarebbe circa 2,9 GB e 2–3,5 ore, da chiarire con TASK-214 prima
-  dell'ok dell'utente. **App** su `preview` da `main` `8c3a6ff` (gruppo
-  `8f6849ca`): «Follow», il «Feed» sull'acqua, i laghi in «Explore», la
-  pubblicità nel «Feed» (non si vede in Expo Go), «Try N km» (#336), i
-  paesi vicini sotto «Near me» (#323). **Non pubblicata**: la parte B2 di
-  TASK-214 (#337, le zone scaricate in anticipo), in `main` da `f3fdbce`.
-  **Da provare sull'iPhone.** Strava spento per scelta dell'utente
-  (2026-10-05: «teniamo solo Instagram per ora»).
+- **Server e app, al 2026-10-05**. **Server**: su `main` `ae320d3` dalle
+  10:58Z (ok dell'utente «ok aggiorna il server e pubblica», eseguito
+  dalla sessione «Impostazioni» al via del coordinatore), con le
+  migrazioni `0001`–`0016` (`0016_contact`: email e telefono), il motore
+  di TASK-238 A e TASK-242, `GET /nearby-cities`, il tetto del traffico;
+  fermo circa 10 secondi; immagine di prima
+  `shaperoute-api:before-task183`, copia del database
+  `shaperoute-2026-10-05T1058Z.dump`; `draw_examples` rilanciato alle
+  10:59Z (`data/draw-examples-2026-10-05-task238.log`). **Le zone del
+  telefono sono scritte** (ok dell'utente «ok zone e pubblica»): 521 file,
+  2,6 GB, 82 minuti; Trento a piedi 2,5 MB, in bici 11,5 MB, in meno di
+  0,1 s. Acqua dei laghi d'Italia: 219 file, 71 MB. Da fare: la zona di
+  Borgo Valsugana. **App** su `preview` da `main` `7a9506a` (gruppo
+  `1b49d248`): tutto `main`: le zone scaricate in anticipo (TASK-214
+  B2/B2b), il numero rosso delle richieste (TASK-239), niente punteggio
+  sui post (TASK-241), email e telefono (TASK-183), «Move the shape»
+  (TASK-238), «Units» (TASK-182 A), «Try N km», i paesi vicini, i laghi,
+  il «Feed» sull'acqua, «Follow». **Da provare sull'iPhone**: da adesso
+  il telefono scarica la sua zona e disegna i percorsi da sé (comincia la
+  parte D di TASK-214). Strava spento per scelta dell'utente.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -250,7 +253,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dall'utente: una freccia del nord che rimette il nord in alto, e
   durante la corsa la mappa resta girata come il disegno, con le linee
   del percorso fatto e da fare (TASK-224) che girano con lei.
-  `tasks/TASK-232.md`.
+  **Parte A** (motore e API) nella PR #356: prima la ricerca di sempre
+  entro ±15°, poi, solo se non dà un percorso buono, inclinata fino a 45°
+  con 10 tracciamenti in più; anche in canoa. Su 129 percorsi 110
+  identici (i 12 di riferimento tutti), 19 inclinati di 20–45°, i buoni da
+  65 a 67, tempo +10% (`MAPS.md`, «Forme inclinate»). `rotation_deg` nel
+  risultato e nell'API; `route_store` conserva anche `better_distance_m`
+  (seguito di TASK-234). I 19 campioni giudicati dall'utente il
+  2026-10-05: 17 `sì` e 2 `quasi`, nessun `no` (`samples/LOG.md`).
+  Aspetta il merge; server e `draw_examples` col suo ok. Parti B e C
+  dopo. `tasks/TASK-232.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,
@@ -485,23 +497,62 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
-- **TASK-183 — Cambiare email e numero di telefono** (ADR-0150; chiesto
-  dall'utente il 2026-10-02 e di nuovo il 2026-10-05, con due scelte: il
-  numero serve a farsi trovare dagli amici che lo hanno già, e l'email
-  cambia subito con la password, senza mail di conferma finché non c'è un
-  servizio di posta). In revisione. **API**: `PUT /me/email` (`email`,
-  `password`; password sbagliata `403`, contata con quelle dell'accesso),
-  `PUT /me/phone` (il numero con il prefisso del paese, tenuto in E.164,
-  `null` lo toglie; non provato e quindi non unico; lo legge solo il
-  proprietario), `User.phone`, migrazione `0016_contact.sql`. **App**: in
-  «Settings» le righe «Change email» e «Phone number» si aprono sotto,
-  nelle cinque lingue. **Aspettano l'utente**: l'aggiornamento del server
-  (migrazione) e poi la pubblicazione, in quest'ordine; i testi nuovi
-  (`tasks/TASK-183.md`, «Esito»). Visto nel simulatore, non su un telefono. Seguiti: la
-  ricerca dalla rubrica (prima va deciso come si prova un numero), la
-  mail di conferma. Poi, nella stessa sessione «Impostazioni», un task
-  per contesto: **TASK-182** (unità), **TASK-184** («Help», «Terms»,
-  «Privacy»), **TASK-185** (gli interruttori delle notifiche).
+- **TASK-182 — Le unità di misura: km o miglia** (ADR-0149; chiesto
+  dall'utente il 2026-10-02 e il 2026-10-03, con due scelte: si parte
+  dall'unità del telefono, e con le miglia si fa come Strava). **Parte A**
+  in `main` dal 2026-10-05 (PR #351, merge `7a9506a`; solo app, nessuna
+  dipendenza): `src/units/` (la scelta in `units.json`, l'unità del
+  telefono, `useUnits()`, i formattatori), la riga **«Units»** in
+  «Settings» al posto di quella con «Soon» («Kilometres», «Miles»;
+  «Phone units» dalla parte B), e le miglia in «My activities», nei preferiti e nelle schede
+  di «Explore». Con «Kilometres» l'app scrive quello che scriveva prima.
+  **Scelta dell'utente del 2026-10-05**: la parte A si pubblica subito,
+  ma **l'app parte in km su ogni telefono** finché non c'è la parte B
+  (`FOLLOWS_PHONE` spento): solo chi sceglie «Miles» vede l'app mista.
+  **Aspettano l'utente**: i testi nuovi («Kilometres», «Miles», «{mi} mi
+  away»; «Phone units» si vedrà con la parte B); la prova su un iPhone
+  con le miglia (l'unità del telefono non è stata vista su un telefono
+  vero, né nel simulatore). **Parte B** (file di
+  altri task): «Draw» (la distanza chiesta, passi e limiti in miglia: una
+  scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
+  svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
+  «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito».
+- **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
+  dall'utente il 2026-10-05: una mini guida, e le prime bozze di
+  condizioni e privacy). In revisione (branch
+  `feat/TASK-184-help-terms-privacy`, solo app, nessuna dipendenza). Le
+  tre righe di «About» in «Settings» aprono ognuna il suo testo come
+  pagina, con «←» che torna a «Settings» com'era. I testi sono dati in
+  `src/about/content/`, in inglese e in italiano (con tedesco, spagnolo e
+  francese l'app mostra l'inglese). **«Terms» e «Privacy» sono bozze** e
+  lo dicono in cima («Draft — not final yet.»). **Aspettano l'utente**:
+  i segnaposto da riempire (`[name]`, `[contact email]`,
+  `[governing law]`, le basi giuridiche), la lettura di un legale prima
+  dell'App Store, l'approvazione, e poi le altre tre lingue; l'elenco
+  intero dei punti aperti e di quello che «Privacy» non dice perché non
+  si è potuto verificare è in `tasks/TASK-184.md`, «Esito». Non visto su
+  un telefono. Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
+  aggiorna anche «Privacy».
+- **TASK-185 — I due interruttori delle notifiche** (ADR-0206; chiesto
+  dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha scelto:
+  **tutti e due spenti** all'inizio). In revisione (branch
+  `feat/TASK-185-notification-switches`; API, contratto e app, nessuna
+  dipendenza). «Email notifications» e «Push notifications» in «Settings»
+  sono due interruttori salvati nell'account: `PUT /me/notifications`
+  (solo quello che cambia), `User.notifications`, migrazione
+  `0017_notifications.sql` (il numero è il primo libero al merge). **Non
+  si manda niente**, e la pagina lo dice sotto le righe: «Sgrava does not
+  send notifications yet. Your choice is kept for when it does.»; nessun
+  permesso chiesto al telefono. Li legge solo il proprietario. Nessuna
+  riga di «Settings» dice più «Soon»; una riga in «Help» e una nella bozza
+  di «Privacy». Test in locale: tutta la parte JS e i file dell'API
+  toccati; l'intera suite dell'API è della CI. **Aspettano l'utente**:
+  l'aggiornamento del server (migrazione `0017`) prima di pubblicare
+  l'app; il testo nuovo «Notifications are not available on this API
+  yet.» e le due righe di «Help» e «Privacy»; la prova su un telefono
+  (non visto nemmeno nel simulatore). **Dopo**, un task da aprire con
+  scelte dell'utente: l'invio vero (che cosa si notifica, il servizio di
+  posta, `expo-notifications`, una build propria). `tasks/TASK-185.md`.
 
 - **TASK-243 — La penna si alza anche sui baffi del contorno** (ADR-0209;
   chiesto dall'utente il 2026-10-05, dopo il «sì» a TASK-242). Con la
@@ -522,6 +573,39 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   rifatto. `tasks/TASK-243.md`.
 
 ## Completato
+
+- **App** — TASK-240: con «Paddle», laghi e spiagge anche in «Another
+  place» (ADR-0204; chiesto dall'utente il 2026-10-05, scelte tutte
+  confermate; PR #344). In «Draw», con «Paddle», la ricerca della partenza
+  offre i laghi e le spiagge dell'elenco di «Explore» sopra le vie e i
+  paesi, subito: «lago di Levico Terme» dà «Lago di Levico», e sceglierlo
+  mette la partenza sulla riva; un lago piccolo porta la distanza a 1,5 o
+  1 km; il campo dice «Lake, beach, city or street». Il mare: solo Jesolo
+  e Riccione. Solo app, niente server; «Run» e «Bike» com'erano. Esce con
+  la prossima pubblicazione, del coordinatore; da provare sull'iPhone.
+  Seguiti in `tasks/TASK-240.md`.
+
+- **API e app** — TASK-183: cambiare email e numero di telefono da
+  «Settings» (ADR-0150; chiesto dall'utente il 2026-10-02 e di nuovo il
+  2026-10-05; PR #346, merge `a89f086`). Scelte dell'utente: il numero
+  serve a farsi trovare dagli amici che lo hanno già (la ricerca dalla
+  rubrica è un task a parte: prima va deciso come si prova un numero), e
+  l'email cambia subito con la password, senza mail di conferma finché
+  non c'è un servizio di posta. `PUT /me/email` (password sbagliata
+  `403`, contata con quelle dell'accesso), `PUT /me/phone` (prefisso del
+  paese, tenuto in E.164, `null` lo toglie; non provato, quindi non
+  unico; lo legge solo il proprietario), `User.phone`, migrazione
+  `0016_contact.sql`. In «Settings» le righe «Change email» e «Phone
+  number» si aprono sotto, nelle cinque lingue; testi confermati
+  dall'utente. **Sul server** dal 2026-10-05, 10:58Z (ok dell'utente «ok
+  aggiorna il server e pubblica», sessione «Impostazioni»): `main`
+  `ae320d3`, circa 10 secondi di fermo, copia
+  `shaperoute-2026-10-05T1058Z.dump`, immagine di prima
+  `shaperoute-api:before-task183`, `draw_examples` rilanciato alle 10:59Z
+  per il motore di #347 e #349 (`data/draw-examples-2026-10-05-task238.log`).
+  La pubblicazione dell'app è del coordinatore. Visto nel simulatore;
+  **da provare sull'iPhone** (un cambio vero di email e di numero).
+  `tasks/TASK-183.md`.
 
 - **Motore, API, app** — TASK-238: spostare la figura sull'acqua col dito
   (ADR-0202; chiesto dall'utente il 2026-10-05, che ha scelto il
@@ -559,9 +643,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   100» sopra il disegno non c'è più, nemmeno nei post che «Explore» mostra
   mentre disegna una città (PR #345, merge `ad80385`). **Parte B**
   (stesso giorno, «sì toglilo anche da VoiceOver»): nemmeno VoiceOver lo
-  legge più, nelle cinque lingue. Altrove (fine corsa, «My activities»,
-  disegno aperto dal «Profile», post da condividere) il punteggio resta.
-  Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
+  legge più, nelle cinque lingue (PR #348, merge `69af6c6`). **Parte C**
+  (stesso giorno, «togli il punteggio anche dal post da condividere»):
+  «Score» non è più fra i risultati del post di «Share»: né pastiglia, né
+  numero sull'immagine, né nel testo per Strava (PR #355, merge
+  `b7a82da`). **Parte D** (stesso giorno, «toglilo anche da My
+  activities»): niente «Score 91» nell'elenco e niente «91 · out of 100»
+  sulla corsa aperta. Il punteggio resta a fine corsa e sui disegni del
+  «Profile». Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

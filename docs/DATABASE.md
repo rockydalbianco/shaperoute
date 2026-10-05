@@ -30,7 +30,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 
 | Tabella | Cosa | Chi la crea |
 |---|---|---|
-| `users` | email (unica, minuscola), hash della password (Argon2id), nome utente (unico, 3–20 caratteri), bio, id pubblico casuale del profilo, `role` (`user` o `admin`), quando ha detto di avere 16 anni, data d'iscrizione; il numero di telefono, facoltativo (TASK-183) | TASK-114, TASK-116, TASK-183 |
+| `users` | email (unica, minuscola), hash della password (Argon2id), nome utente (unico, 3–20 caratteri), bio, id pubblico casuale del profilo, `role` (`user` o `admin`), quando ha detto di avere 16 anni, data d'iscrizione; il numero di telefono, facoltativo (TASK-183); i due interruttori delle notifiche, spenti all'inizio (TASK-185) | TASK-114, TASK-116, TASK-183, TASK-185 |
 | `sessions` | hash del token (SHA-256), utente, ultimo uso, scadenza a 90 giorni | TASK-114 |
 | `profile_photos` | utente, JPEG quadrato 256 px | TASK-178 |
 | `generated_routes` | ogni percorso dell'API (ADR-0086): richiesta, tipo (forma, parola, immagine), distanza, somiglianza, linea, **punto di partenza mostrato** (a più di 500 m da quello vero), centro, data; utente se era entrato, se no nessuno | TASK-092 |
@@ -339,6 +339,19 @@ libero in `main` al merge):
   dalla rubrica, quando ci sarà.
 - L'email cambia con un `UPDATE` della stessa riga (`PUT /me/email`): il
   vincolo `users_email_key` dice quando è di un altro account.
+
+Migrazione `0017_notifications.sql` (TASK-185, ADR-0206; il numero è il
+primo libero in `main` al merge):
+
+- `users.notify_email` e `users.notify_push`: i due interruttori di
+  «Settings», `boolean NOT NULL DEFAULT false`. **Spenti** per ogni
+  account che non li ha mai toccati, quelli di prima compresi: il
+  `DEFAULT` li riempie senza toccare le righe. Li legge solo il
+  proprietario (`GET /me`, dove sono l'oggetto `notifications`) e li
+  cambia `PUT /me/notifications`.
+- **Nessun codice li legge per mandare qualcosa**: l'invio (posta, push)
+  non c'è ancora. Chi lo farà parte da queste due colonne. Nessun indice:
+  lo chiederà l'invio, quando ci sarà.
 
 ## Come si memorizza una traccia
 

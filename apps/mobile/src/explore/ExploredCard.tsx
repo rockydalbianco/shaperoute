@@ -10,6 +10,8 @@ import {
 } from "../theme/tokens";
 import { RouteTiles } from "../route/RouteTiles";
 import type { ExportState } from "../route/useGpxExport";
+import { distanceLabel, withPoint } from "../units/format";
+import { useUnits } from "../units/useUnits";
 import type { Explored } from "./explored";
 import { ExploreStart } from "./ExploreStart";
 import { cityName, routeTitle } from "./recommendedRoutes";
@@ -36,10 +38,15 @@ export function ExploredCard({
 }: Props) {
   const { route } = explored;
   const title = routeTitle(route);
+  // Written again when «Settings» changes the units (TASK-182); with a
+  // point, as the texts here, still in English.
+  const units = useUnits();
   return (
     <View style={styles.panel}>
       <View>
-        <Text style={styles.result}>{`${(route.route_m / 1000).toFixed(1)} km`}</Text>
+        <Text style={styles.result}>
+          {distanceLabel(route.route_m, units, withPoint)}
+        </Text>
         <Text style={styles.target}>
           {`${title} · ${cityName(route.city)} · looks ${Math.round(route.similarity * 100)}% like it`}
         </Text>

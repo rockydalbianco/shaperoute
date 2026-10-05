@@ -11,6 +11,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { distanceLabel, withPoint } from "../units/format";
+import { useUnits } from "../units/useUnits";
 import { ExploreStart } from "./ExploreStart";
 import type { ThemedResult } from "./themedRoutes";
 import type { StartView } from "./useStartDirections";
@@ -75,6 +77,9 @@ export function ThemedCard({
   start,
   onStart,
 }: Props) {
+  // Written again when «Settings» changes the units (TASK-182); with a
+  // point, as the texts here, still in English.
+  const units = useUnits();
   if (state.status === "idle") {
     return null;
   }
@@ -113,9 +118,9 @@ export function ThemedCard({
   return (
     <View style={styles.panel}>
       <View>
-        <Text
-          style={styles.result}
-        >{`${(result.distance_m / 1000).toFixed(1)} km`}</Text>
+        <Text style={styles.result}>
+          {distanceLabel(result.distance_m, units, withPoint)}
+        </Text>
         <Text style={styles.target}>
           {`${result.shape.replace(/_/g, " ")} · ${result.city ?? "here"} · looks ${Math.round(result.similarity * 100)}% like it`}
         </Text>

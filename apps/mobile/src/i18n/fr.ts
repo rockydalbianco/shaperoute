@@ -6,6 +6,10 @@ import type { Table } from "./translate";
  * (docs/UI.md).
  */
 export const FR: Table = {
+  // src/about/AboutPage.tsx
+  "Draft — not final yet.": "Brouillon — pas encore définitif.",
+  "Last updated: {date}": "Dernière mise à jour : {date}",
+
   // src/account/fields.ts
   "You must be at least 16 to sign up.":
     "Tu dois avoir au moins 16 ans pour t'inscrire.",
@@ -198,6 +202,8 @@ export const FR: Table = {
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "VILLES PROCHES",
   "{town}, {km} km away": "{town}, à {km} km",
+  "{mi} mi away": "à {mi} mi",
+  "{town}, {mi} mi away": "{town}, à {mi} mi",
 
   // src/paddle/PaddleExplore.tsx
   Next: "À suivre",
@@ -219,6 +225,9 @@ export const FR: Table = {
     "Aucun lac ou plage ne correspond à « {typed} ».",
   "{shape}, {km} km, on the water": "{shape}, {km} km, sur l'eau",
   "Not drawn": "Non dessiné",
+
+  // src/paddle/placeSpots.ts
+  "Lake, beach, city or street": "Lac, plage, ville ou rue",
 
   // src/paddle/PaddleNotice.tsx
   "Before you paddle": "Avant de pagayer",
@@ -297,6 +306,12 @@ export const FR: Table = {
   "Wrong password.": "Mot de passe incorrect.",
   "Another account has this email.": "Un autre compte a cet e-mail.",
 
+  // src/settings/NotificationsSetting.tsx, notificationFields.ts
+  "Sgrava does not send notifications yet. Your choice is kept for when it does.":
+    "Sgrava n'envoie pas encore de notifications. Ton choix est gardé pour quand ce sera le cas.",
+  "Notifications are not available on this API yet.":
+    "Sur cette API, il n'y a pas encore de notifications.",
+
   // src/profile/SettingsPage.tsx
   "Change email": "Changer d'e-mail",
   "Phone number": "Numéro de téléphone",
@@ -308,8 +323,6 @@ export const FR: Table = {
   Help: "Aide",
   Terms: "Conditions",
   Privacy: "Confidentialité",
-  "{name}, coming soon": "{name}, bientôt disponible",
-  Soon: "Bientôt",
   ACCOUNT: "COMPTE",
   PREFERENCES: "PRÉFÉRENCES",
   "Log out": "Se déconnecter",
@@ -419,6 +432,11 @@ export const FR: Table = {
   Language: "Langue",
   "Phone language": "Langue du téléphone",
 
+  // src/settings/UnitsSetting.tsx
+  Kilometres: "Kilomètres",
+  Miles: "Miles",
+  "Phone units": "Unités du téléphone",
+
   // src/settings/sport.ts
   "Ride without a route": "Rouler sans parcours",
   "Paddle without a route": "Pagayer sans parcours",
@@ -457,7 +475,6 @@ export const FR: Table = {
   Distance: "Distance",
   Time: "Temps",
   Pace: "Allure",
-  Score: "Score",
 
   // src/share/sharePicture.ts
   "This phone cannot open the share sheet.":

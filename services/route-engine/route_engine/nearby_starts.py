@@ -70,6 +70,7 @@ from route_engine.optimizer import (
     planned_distance,
     required_area,
     search,
+    shown_rotation,
     tilt_limit,
 )
 from route_engine.pen_up import check_begins, drawn_m
@@ -285,6 +286,7 @@ class ShapeJob:
             better_distance_m=better_distance(
                 found, self.distance_m, self.activity, self.word
             ),
+            rotation_deg=shown_rotation(best.rotation_deg, self.max_tilt_deg),
         )
         if route is not best.route:
             found = replace(found, best=replace(best, route=route))

@@ -597,16 +597,97 @@ mappa è quella di prima.
   subito, senza chiedere: le mappe tornano alla prossima apertura, con la
   riga sopra «Draw route». Il numero cresce anche da solo: dopo la zona
   intorno, il telefono scarica piano piano quelle dei paesi vicini e
-  delle città di «Explore», senza avvisi (TASK-214, parte B2). Poi «Units», «Soon». **«Notifications»**: «Email
-  notifications» e «Push notifications», «Soon». **«About»**: «Help»,
-  «Terms», «Privacy», «Soon».
+  delle città di «Explore», senza avvisi (TASK-214, parte B2). Poi
+  **«Units»** (📏, TASK-182, ADR-0149), con in fondo l'unità in cui è
+  l'app («Kilometres» o «Miles»); un tocco apre sotto la riga
+  «Kilometres» e «Miles», con il «✓» bianco sulla scelta, come
+  «Language». La scelta chiude la lista, vale subito e resta sul
+  telefono. **Fino alla parte B l'app parte in km su ogni telefono**
+  (scelta dell'utente del 2026-10-05), e «Phone units» non è fra le
+  scelte; dalla parte B (`FOLLOWS_PHONE` in `src/units/followsPhone.ts`)
+  la lista si apre con «Phone units» (con accanto l'unità del telefono),
+  che è la partenza: miglia dove il telefono misura le strade in miglia
+  (Stati Uniti, Regno Unito, o il sistema di misura scelto a mano in
+  iOS), km altrove e quando il telefono non lo dice. **Con le miglia**, per ora
+  (parte A): «My activities» («2.49 mi · 19:00 · 7:38 /mi», anche nella
+  scheda della corsa aperta), i preferiti («Star · 3.2 mi») e le schede di
+  «Explore» («Star · 3.2 mi», «0.4 mi away», sotto i 1000 piedi «650 ft
+  away»; i paesi vicini «1.8 mi away»; il percorso aperto sulla mappa
+  «3.2 mi»). Il resto dell'app è ancora in km e arriva con la parte B: la
+  distanza che si chiede in «Draw» e il suo risultato, la corsa e la sua
+  fine, la voce, i post del «Feed», i disegni pubblici, «Explore» con
+  «Paddle», le frasi di «Explore» («Starting within 5 km of…»). Con
+  «Kilometres» niente cambia. Il GPX, l'API e il motore restano in metri.
+  **«Notifications»**: «Email
+  notifications» e «Push notifications», due interruttori salvati
+  nell'account (TASK-185, ADR-0206, sotto). **«About»**: «Help»,
+  «Terms», «Privacy», tre righe con «›» in fondo: ognuna apre il suo
+  testo come pagina (TASK-184, ADR-0205, sotto).
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
   sulla schermata stessa: «Delete my account» o «Keep my account».
 
-Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
-interruttori, perché dietro non c'è ancora niente (le accendono TASK-182,
-184, 185). Usciti dall'account da «Settings», chi rientra trova
+Nessuna voce di «Settings» dice più «Soon»: le ultime due erano le
+notifiche (TASK-185).
+Usciti dall'account da «Settings», chi rientra trova
 «Profile».
+
+**«Notifications»** (TASK-185, ADR-0206): due righe in un riquadro, «Email
+notifications» (📧) e «Push notifications» (🔔), ognuna con il suo
+interruttore in fondo, disegnato come quelli della corsa (una pista con il
+pomello a destra e bianca quando è acceso; mai gialla). **Tutti e due
+spenti** finché non si accendono (scelta dell'utente). Sotto il riquadro,
+piccolo e grigio come la nota di «Offline maps», sempre: «Sgrava does not
+send notifications yet. Your choice is kept for when it does.». **Non si
+manda niente**: la scelta resta nell'account per quando l'invio ci sarà, e
+accendere «Push notifications» non chiede nessun permesso al telefono.
+
+- Un tocco su una riga gira il suo interruttore **subito** e manda all'API
+  solo quello; se l'API rifiuta torna com'era, e sotto la nota, in rosso,
+  c'è il motivo. Il tocco dopo toglie il motivo.
+- Mentre una risposta è in viaggio un secondo tocco, su una qualunque
+  delle due righe, non manda niente.
+- Per VoiceOver ogni riga è un interruttore con il suo nome («Email
+  notifications», acceso o spento); l'emoji non si legge.
+
+| Cosa succede | Cosa dice, sotto la nota |
+|---|---|
+| API di prima di TASK-185 | Notifications are not available on this API yet. |
+| senza rete | Cannot reach the API at {url}. Check the connection and try again. |
+| sessione finita | Your session has ended. Log in again. (e si esce) |
+
+**«Help», «Terms», «Privacy»** (❓ 📄 🔒, TASK-184, ADR-0205): un tocco
+apre il testo sopra «Settings», a tutto schermo: «←», il nome della riga
+come titolo, poi il nome del testo e le sue sezioni, ognuna sotto il suo
+titolo, con paragrafi ed elenchi a punti. La pagina scorre da sola; «←»
+torna a «Settings» **com'era**, nel punto in cui era e con le righe
+aperte ancora aperte (resta montata sotto, nascosta anche a VoiceOver).
+Per VoiceOver i titoli sono intestazioni.
+
+- **«Help»** è la mini guida, «How Sgrava works»: undici sezioni brevi
+  (che cos'è, disegnare un percorso, «Explore», correre, tenere corse e
+  percorsi, pubblicare e condividere, «Feed» e amici, i tre sport con
+  l'avviso dell'acqua, «Settings», l'account, a chi scrivere). Dice le
+  cose con le parole del sito (`site/content.js`).
+- **«Terms»** («Terms of use») e **«Privacy»** («Privacy policy») sono
+  **bozze**, e lo dicono prima di tutto: un riquadro in cima, bordo e
+  scritta arancio (`warning`, non il giallo del percorso), «Draft — not
+  final yet.» e sotto, grigio, «Last updated: 5 October 2026». Restano
+  bozze finché l'utente non le approva (`draft` in
+  `src/about/content/`).
+- **Quello che è ancora da riempire è scritto fra parentesi quadre** e
+  spicca in arancio: `[name]` (chi gestisce Sgrava), `[contact email]`,
+  `[governing law]` in «Terms», le basi giuridiche in «Privacy». Uguali in
+  tutte le lingue. Li riempie l'utente; nel codice non c'è nessun nome né
+  indirizzo vero.
+- **Le lingue**: i testi sono in inglese e in italiano, e seguono la
+  lingua dell'app; con tedesco, spagnolo e francese sono in inglese (e
+  VoiceOver li legge in inglese), mentre il titolo della riga e il
+  riquadro della bozza sono nella lingua dell'app. Nel testo italiano i
+  nomi di pagine e pulsanti sono quelli che l'app in italiano mostra oggi.
+- «Privacy» dice solo quello che fa l'app oggi («Cosa esce dal telefono»,
+  sotto, e `DATABASE.md`): quando cambia cosa l'app manda o tiene, cambia
+  anche `src/about/content/`. I punti ancora aperti sono in
+  `tasks/TASK-184.md`, «Esito».
 
 **«Change email»** (✉️, TASK-183, ADR-0150): un tocco apre sotto la riga
 «NEW EMAIL» e «PASSWORD» (la password dell'account, nascosta) e «Save»; un
@@ -727,7 +808,8 @@ destra; VoiceOver dice «Profile, 2 follow requests». L'app lo chiede
 all'apertura, ogni minuto mentre è sullo schermo e quando ci torna: una
 richiesta nuova si vede da sola, senza aprire «Profile». Sparisce quando
 ogni richiesta ha avuto «Accept» o «Decline»: guardarle non basta. Ad app
-chiusa non arriva niente: le notifiche del telefono sono TASK-185.
+chiusa non arriva niente: le notifiche del telefono non ci sono ancora
+(TASK-185 salva solo la scelta in «Settings»; l'invio è un task da aprire).
 
 | Elenco | Tasti della riga | Vuoto |
 |---|---|---|
@@ -853,14 +935,16 @@ telefono dell'account: con un percorso o senza.
   con l'orologio del telefono («Fri 2 Oct 2026 · 08:12»); il luogo e cosa
   disegnava («Trento · Star»; il luogo è il paese da cui si parte, trovato
   dall'API, e manca se non lo trova; senza luogo né percorso, «Run»); «4.01
-  km · 19:00 · 4:45 /km», cioè km, tempo senza le pause e passo medio;
-  «Score 91» quando c'è. Niente è giallo, tranne il percorso nel disegno.
+  km · 19:00 · 4:45 /km», cioè km, tempo senza le pause e passo medio.
+  **Il punteggio non c'è** (TASK-241 parte D, chiesto dall'utente), né
+  nell'elenco né sulla corsa aperta. Niente è giallo, tranne il percorso
+  nel disegno.
 - **Venti per volta**: in fondo «Show more» porta le venti successive. Il
   numero in «Profile» le conta tutte.
 - **Una scheda apre la corsa sulla mappa**: il percorso giallo e la linea
-  corsa, come a fine corsa; sotto, giorno e ora, luogo e disegno, il
-  punteggio («91», «out of 100»), km, tempo e passo, la legenda («Yellow:
-  the route. White: what you ran.»). «←» e «Back to the list» tornano
+  corsa, come a fine corsa; sotto, giorno e ora, luogo e disegno, km,
+  tempo e passo, la legenda («Yellow: the route. White: what you
+  ran.»). «←» e «Back to the list» tornano
   all'elenco. Niente cuore e niente «Start»: è una corsa, non un percorso.
 - **Strava sulla corsa aperta** (TASK-187), sopra «Delete», solo se l'API
   ha Strava: **«View on Strava»** se la corsa c'è già (apre la sua pagina);
@@ -904,7 +988,8 @@ telefono dell'account: con un percorso o senza.
   da «Draw» o da un preferito: «Save» manda anche i tratti a piedi del
   percorso (`walks`) e dice quali pause sono della penna (`pen`); per
   ogni altra corsa la richiesta è quella di prima, campo per campo. Il
-  punteggio in «My activities» è quello delle sole lettere, lo stesso
+  punteggio che l'API tiene per la corsa (da TASK-241 «My activities» non
+  lo mostra) è quello delle sole lettere, lo stesso
   della fine della corsa, e le pause «penna» tolgono km e tempo come le
   altre. Riaperta, la mappa ha i tratti a piedi tratteggiati, come a fine
   corsa; la linea corsa resta unita sulle pause (spezzarla è una scelta
@@ -969,6 +1054,9 @@ punto, ricentra la mappa.
 - Sotto i risultati, «© OpenStreetMap contributors».
 - Nessun risultato: «No place found. Try adding the city.» Errore di rete o
   del servizio: «The search failed. Check the connection and try again.»
+- Con «Paddle» la ricerca offre anche i laghi e le spiagge che l'app
+  conosce, sopra questi risultati (TASK-240, ADR-0204: «Sull'acqua:
+  «Paddle»»). Con «Run» e «Bike» è quella descritta qui.
 
 ## Forma e distanza
 
@@ -1874,8 +1962,9 @@ run», con «Close» in alto a sinistra:
   «Sgrava», il titolo (quello della corsa, o luogo e forma; nessuno a
   fine corsa), il disegno della corsa in nero **senza i primi e gli ultimi
   200 m**, e in basso i risultati accesi, due per riga: «Distance»,
-  «Time», «Pace», «Score» (il passo manca sotto i 100 m, il punteggio a
-  una corsa che non ce l'ha).
+  «Time», «Pace» (il passo manca sotto i 100 m). **Il punteggio non è fra i risultati**
+  (TASK-241 parte C, chiesto dall'utente): non si può accendere, non è
+  sul post e non va nel testo per Strava.
 - **«Results»**: una pastiglia per risultato, accesa all'inizio; spenta,
   il risultato sparisce dal post e dal testo per Strava.
 - **«Add emoji»**: 🔥 ❤️ 💪 🏃 🎉 😅 🥵 😎 ⚡ 🏆 ☀️ 🌧️. Un tocco mette l'emoji
@@ -1918,6 +2007,37 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   e torna a 2 km ogni volta che si sceglie «Paddle». La richiesta ha
   `activity: "paddling"`. Il pulsante della corsa libera dice «Paddle
   without a route».
+- **«Another place»** (TASK-240, ADR-0204): la ricerca della partenza
+  offre anche i laghi e le spiagge dell'elenco di «Explore» (`WATER_SPOTS`:
+  211 laghi d'Italia, Lago di Garda, Lago di Como, Jesolo, Riccione), mai
+  un lago preso da Photon o da Geoapify: solo di quelli il server ha
+  l'acqua.
+  - Il campo dice «Lake, beach, city or street».
+  - I laghi compaiono **subito**, da 3 lettere, senza aspettare la rete, e
+    stanno **sopra** le vie e i paesi trovati; al massimo tre
+    (`SPOT_PLACES_SHOWN`), il più vicino alla posizione per primo. Un
+    luogo trovato con lo stesso nome di un lago mostrato non si ripete.
+    Con un lago mostrato non si dice «No place found».
+  - Il testo si legge come un indirizzo (`findSpots` in
+    `src/paddle/placeSpots.ts`): le parole che non sono nel nome di nessun
+    lago si ignorano («Terme», «via», «spiaggia»); le parole comuni, quelle
+    in più del 2% dei nomi («lago», «di», «del», «san»), non contano quando
+    un'altra parola dice il lago. «lago di Levico Terme» trova «Lago di
+    Levico», «spiaggia di Riccione» trova «Riccione». Con sole parole
+    comuni devono esserci tutte nel nome, come in «Explore»: «lago» trova
+    ogni lago, «via al lago» nessuno.
+  - Scelto un lago, la partenza è il suo punto della riva più vicino alla
+    posizione (un lago lungo ne ha molti), e la riga dice «Starting from
+    Lago di Levico.».
+  - Un lago piccolo, le cui forme stanno a 1,5 o 1 km (TASK-233), porta il
+    campo della distanza a quella, se era più lunga (`distanceOnSpot`); un
+    lago da 2 km e una via la lasciano com'è.
+  - Le vie e i paesi restano quelli della ricerca di sempre: una partenza
+    su un lungomare che non è nell'elenco funziona solo dove il server ha
+    o riesce a scaricare l'acqua.
+  - La regola delle parole, il mare (solo Jesolo e Riccione), la distanza
+    sui laghi piccoli e il testo del campo sono **confermati dall'utente**
+    il 2026-10-05 (`tasks/TASK-240.md`).
 - **Il risultato**: «heart · on the water · target 2 km». Il percorso
   parte dalla riva, dove si arriva a piedi: se è a più di 50 m dalla
   partenza chiesta, il segnaposto ciano «Start here» la segna, come per una
@@ -2207,6 +2327,10 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   (`expo-secure-store`, ADR-0125); mai la password. Il token va all'API
   solo con le richieste dell'account (`GET /me`, `DELETE /session`,
   `DELETE /me`), dei preferiti e delle corse, in `Authorization`.
+- **Le notifiche** (TASK-185): i due interruttori di «Settings» vanno
+  all'API quando si toccano e restano nell'account, letti solo dal suo
+  proprietario. Non parte nessuna notifica, il telefono non chiede il
+  permesso delle push e non manda nessun identificativo per riceverle.
 - **I preferiti** (TASK-171): un percorso tenuto va all'API intero, con la
   sua linea, e resta nel database legato all'account finché non lo si
   toglie o si cancella l'account. La linea di un percorso disegnato parte

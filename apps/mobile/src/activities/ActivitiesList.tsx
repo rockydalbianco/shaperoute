@@ -13,6 +13,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useUnits } from "../units/useUnits";
 import { useActivitiesDoor } from "./activitiesDoor";
 import { runFacts, startedLabel, whereAndWhat } from "./activityText";
 import { RunDrawing } from "./RunDrawing";
@@ -139,6 +140,8 @@ function ActivityRow({
 }: RowProps) {
   const when = startedLabel(activity.started_at);
   const where = whereAndWhat(activity, activity.route_preview !== null);
+  // Written again when «Settings» changes the units (TASK-182).
+  useUnits();
   const facts = runFacts(activity);
   return (
     <View style={styles.row} testID="activity-row">
@@ -169,16 +172,6 @@ function ActivityRow({
           <Text style={styles.facts} numberOfLines={1}>
             {opening ? t("Opening…") : facts}
           </Text>
-          {activity.score !== null && (
-            <Text
-              style={styles.detail}
-              accessibilityLabel={t("Score: {score} out of 100", {
-                score: activity.score,
-              })}
-            >
-              {t("Score {score}", { score: activity.score })}
-            </Text>
-          )}
           {isPublic && (
             <Text style={styles.mark} testID="activity-public">
               {t("Public")}

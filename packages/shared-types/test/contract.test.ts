@@ -46,6 +46,7 @@ import cyclingResult from "../fixtures/route-result-cycling.json" with { type: "
 import imageResult from "../fixtures/route-result-image.json" with { type: "json" };
 import paddlingResult from "../fixtures/route-result-paddling.json" with { type: "json" };
 import penUpResult from "../fixtures/route-result-pen-up.json" with { type: "json" };
+import tiltedResult from "../fixtures/route-result-tilted.json" with { type: "json" };
 import wordResult from "../fixtures/route-result-word.json" with { type: "json" };
 import result from "../fixtures/route-result.json" with { type: "json" };
 import shapeReadingLimits from "../fixtures/shape-reading-limits.json" with { type: "json" };
@@ -101,7 +102,8 @@ type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 // older API answers: without the pen up and the walks, both optional; nor
 // the stretches with the bike on foot, optional too (TASK-206); nor the
 // distance where the shape comes out better (TASK-234); nor where a shape
-// on the water is wanted and where it is (TASK-238).
+// on the water is wanted and where it is (TASK-238); nor how far the
+// shape is turned (TASK-232).
 // Member by member: a shape's request and a word's stay apart.
 type OlderRequest = RouteRequest extends infer R
   ? R extends RouteRequest
@@ -110,7 +112,7 @@ type OlderRequest = RouteRequest extends infer R
   : never;
 type OlderResult = Omit<
   RouteResult,
-  "walks" | "on_foot" | "better_distance_m" | "centre"
+  "walks" | "on_foot" | "better_distance_m" | "centre" | "rotation_deg"
 >;
 const requestFields: Same<keyof typeof request, keyof OlderRequest> = true;
 const resultFields: Same<keyof typeof result, keyof OlderResult> = true;
@@ -124,20 +126,25 @@ const penUpFields: Same<keyof typeof penUpRequest, keyof Omit<RouteRequest, "nea
   Same<keyof typeof penUpShapeRequest, keyof Omit<RouteRequest, "near">> &
   Same<
     keyof typeof penUpResult,
-    keyof Omit<RouteResult, "on_foot" | "better_distance_m" | "centre">
+    keyof Omit<RouteResult, "on_foot" | "better_distance_m" | "centre" | "rotation_deg">
   > = true;
 // A shape moved on the water (TASK-238): every field of the request, and of
-// the result that says where the shape is.
+// the result that says where the shape is, before TASK-232.
 const movedFields: Same<keyof typeof paddlingNearRequest, keyof RouteRequest> &
-  Same<keyof typeof paddlingResult, keyof RouteResult> = true;
+  Same<keyof typeof paddlingResult, keyof Omit<RouteResult, "rotation_deg">> = true;
 // A bike route walked in part (TASK-206): every field before TASK-234, its
 // alternative too.
-type BikeResult = Omit<RouteResult, "better_distance_m" | "centre">;
+type BikeResult = Omit<RouteResult, "better_distance_m" | "centre" | "rotation_deg">;
 const cyclingResultFields: Same<keyof typeof cyclingResult, keyof BikeResult> &
   Same<keyof (typeof cyclingResult.alternatives)[number], keyof BikeResult> = true;
-// A route with a better distance (TASK-234): every field, its alternative too.
-const betterFields: Same<keyof typeof betterResult, keyof RouteResult> &
-  Same<keyof (typeof betterResult.alternatives)[number], keyof RouteResult> = true;
+// A route with a better distance (TASK-234): every field before TASK-232,
+// its alternative too.
+type BetterResult = Omit<RouteResult, "rotation_deg">;
+const betterFields: Same<keyof typeof betterResult, keyof BetterResult> &
+  Same<keyof (typeof betterResult.alternatives)[number], keyof BetterResult> = true;
+// A tilted route (TASK-232): every field, its alternative too.
+const tiltedFields: Same<keyof typeof tiltedResult, keyof RouteResult> &
+  Same<keyof (typeof tiltedResult.alternatives)[number], keyof RouteResult> = true;
 const trackFields: Same<
   keyof typeof trackScoreRequest,
   keyof Omit<TrackScoreRequest, "walks">
@@ -204,6 +211,7 @@ const typedPenUp: [RouteRequest, RouteResult, TrackScoreRequest] = [
 ];
 const typedCycling = cyclingResult as unknown as RouteResult;
 const typedBetter = betterResult as unknown as RouteResult;
+const typedTilted = tiltedResult as unknown as RouteResult;
 
 const isShape = (value: string): boolean =>
   (SHAPES as readonly string[]).includes(value);
@@ -213,7 +221,7 @@ test("the fixtures have the fields of the types", () => {
   assert.ok(jobFields && jobResultFields && jobErrorFields && gpxFields);
   assert.ok(shapeReadingFields && directionFields && wordFields);
   assert.ok(penUpFields && trackFields && cyclingFields && paddlingFields);
-  assert.ok(cyclingResultFields && betterFields && movedFields);
+  assert.ok(cyclingResultFields && betterFields && movedFields && tiltedFields);
 });
 
 /** Whether `walks` are stretches of a route of `count` points, in order. */
@@ -280,6 +288,20 @@ test("a route may say where its shape comes out better, not its alternatives", (
   }
   for (const fixture of [result, wordResult, imageResult, penUpResult, cyclingResult]) {
     assert.ok(!("better_distance_m" in fixture));
+  }
+});
+
+test("a route says how far its shape is turned, each alternative its own", () => {
+  // TASK-232: counterclockwise within (-180, 180]; at most 45° for a shape
+  // with a top and a bottom (ADR-0195).
+  const routes = [typedTilted, ...(typedTilted.alternatives ?? [])];
+  assert.ok(routes.length > 1);
+  const turns = routes.map((route) => route.rotation_deg ?? 0);
+  for (const turn of turns) assert.ok(-45 <= turn && turn <= 45);
+  assert.notEqual(turns[0], 0);
+  assert.notDeepEqual(turns[0], turns[1]);
+  for (const fixture of [result, wordResult, imageResult, penUpResult, betterResult]) {
+    assert.ok(!("rotation_deg" in fixture));
   }
 });
 

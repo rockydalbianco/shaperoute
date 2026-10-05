@@ -6,6 +6,7 @@ import { t } from "../i18n";
 import { HeartBadge } from "../intro/HeartBadge";
 import { color, fontWeight } from "../theme/tokens";
 import {
+  POST_RESULTS,
   type PostResult,
   type PostRun,
   resultName,
@@ -61,7 +62,7 @@ export const PostImage = forwardRef<View, Props>(function PostImage(
     () => fitLines([withoutEnds(run.track)], boxWidth, boxHeight, line),
     [run.track, boxWidth, boxHeight, line],
   );
-  const results = (["distance", "time", "pace", "score"] as const).filter(
+  const results = POST_RESULTS.filter(
     (result) => shown.includes(result) && resultValue(run, result) !== null,
   );
 

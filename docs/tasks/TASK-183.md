@@ -1,6 +1,6 @@
 # TASK-183 — Cambiare email e numero di telefono, da «Settings»
 
-**Stato**: In revisione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-183-email-phone`
 **Dipende da**: TASK-177 (la pagina «Settings»), TASK-114 (gli account
 nell'API), TASK-116 (`PATCH /me`, il modello del cambio di un dato)
@@ -132,7 +132,10 @@ rinomina; i test lo trovano dal nome (`_contact.sql`).
 
 ## Esito
 
-Fatto il 2026-10-05, in revisione.
+Fatto il 2026-10-05: PR #346, in `main` con il merge `a89f086`; sul server
+dalle 10:58Z dello stesso giorno (`main` `ae320d3`, migrazione `0016`
+applicata, i due `PUT` rispondono). La pubblicazione dell'app è del
+coordinatore.
 
 - **API**: `PUT /me/email` e `PUT /me/phone` (`contact.py`), `User.phone`,
   migrazione `0016_contact.sql`. 47 test nuovi in `test_contact.py`, con il
@@ -144,13 +147,11 @@ Fatto il 2026-10-05, in revisione.
   cambio fatto sull'API il nuovo indirizzo nel riquadro in cima, il numero
   in fondo alla riga e «Remove number». Schermate in `out/task183/`. Non
   provato con le dita né su un telefono.
-- **Per vederlo sul telefono** servono l'aggiornamento del server
-  (migrazione `0016`) e la pubblicazione dell'app, con l'ok dell'utente,
-  in quest'ordine. L'app nuova con il server di oggi mostra le due righe
-  e, al «Save», «Changing the email is not available on this API yet.» /
-  «The phone number is not available on this API yet.».
-- **Testi nuovi da confermare con l'utente** (inglese; le quattro
-  traduzioni sono dell'agente): «NEW EMAIL», «PHONE NUMBER», «Add»,
+- **Sul telefono** con la pubblicazione che segue l'aggiornamento del
+  server (ok dell'utente del 2026-10-05: «ok aggiorna il server e
+  pubblica»). Da provare lì: un cambio vero di email e di numero.
+- **Testi nuovi, confermati dall'utente il 2026-10-05** («ok, i testi
+  vanno bene»; le quattro traduzioni sono dell'agente): «NEW EMAIL», «PHONE NUMBER», «Add»,
   «Remove number», «Only you see your number. Friends who already have it
   will be able to find you on Sgrava.», «This is already the email of your
   account.», «Write the number with its country code, like +39 333 123

@@ -9543,6 +9543,10 @@ dall'agente su delega dell'utente):
 9. **Nell'app** «Update on Strava» compare su una corsa già là solo se il
    post ha un testo.
 
+**Aggiornamento** (2026-10-05, TASK-241 parte C, scelta dell'utente): il
+punteggio non è più fra i risultati del post né nel testo per Strava
+(punto 5: «🔥❤️ 5.20 km · 28:10 · 5:25 /km»). Vedi ADR-0207.
+
 ## ADR-0180 — Il confronto dei km nella voce: i secondi della fine corsa, una frase a parte, in bici ogni 10 km senza numeri
 **Stato**: Attiva · 2026-10-05 · **scelte dell'utente** (2026-10-03) la
 frase a ogni km con i secondi, «stesso passo» entro 2 s, niente al primo
@@ -9661,7 +9665,8 @@ spostano «dove ci sono le strade», come fanno su strada (`pieces.compose`).
 
 ## ADR-0195 — Le forme si inclinano fino a 45°, e la mappa gira perché si vedano dritte
 
-**Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-232 ·
+**Data**: 2026-10-05 · **Stato**: Accettato; motore e API fatti (parte A),
+l'app da fare · **Task**: TASK-232 ·
 45°, la mappa girata, la freccia del nord e la mappa della corsa sono
 scelte dell'utente; il resto è deciso
 dall'agente su delega dell'utente · supera in parte ADR-0038 (il limite
@@ -9703,6 +9708,42 @@ partenza e fase), con lo stesso numero di tracciati: il tempo va misurato.
 Cambiano i percorsi di oggi dove una forma inclinata segue meglio: i
 campioni si rigiudicano. Le corse salvate prima restano col nord in
 alto.
+
+**Parte A, motore e API (2026-10-05)**, deciso dall'agente su delega
+dell'utente dopo le misure (`MAPS.md`, «Forme inclinate»):
+
+- **Prima dritta, poi inclinata**, invece di provare tutte le rotazioni
+  insieme (punto 1 sopra, e il piano del task file): la ricerca di sempre
+  entro ±15°, e solo se non dà un percorso buono le rotazioni oltre 15°
+  fino a 45° (±30°, ±45°, rifinitura ogni 5°) con 10 tracciamenti in più
+  (`TILTED_TRACES`). Tutte insieme, con lo stesso budget, perdevano
+  percorsi buoni (pesce di Trento da 10 km 0,91 → 0,70) e peggioravano il
+  cuore di Levico da 5 km, uno dei 12 di riferimento. Così su 129 percorsi
+  110 restano identici (i 12 di riferimento tutti), 19 si inclinano di
+  20–45°, i buoni passano da 65 a 67, e il tempo medio sale del 10% (dei
+  12 di riferimento il 6%).
+- **Il costo dell'inclinazione** (punto 2) conta solo i gradi oltre 15°:
+  il 5% di copertura a 45°, 0 entro 15° come prima (`tilt_share`). Dal
+  primo grado faceva raddrizzare forme che prima venivano meglio a 15°.
+- **La ricerca lontana resta dritta** (ADR-0040), e vicino o lontano si
+  decide sulla ricerca dritta, come prima (`Search.upright`): un percorso
+  inclinato vicino, disegnabile ma non buono, teneva fuori quello lontano
+  che prima vinceva (gatto e pesce di Levico da 15 km). Un percorso
+  inclinato vicino buono vince, e la ricerca lontana non parte.
+- **Le parole squadrate** seguono le vie fino a 45° (`GRID_MAX_TILT_DEG`):
+  le direzioni oltre 30° sono il secondo tempo, come le inclinazioni.
+- **Sull'acqua** lo stesso schema in `water_fit.py`: entro ±15° ogni 5°,
+  e solo se la forma non ci sta nella tolleranza della distanza, da 20° a
+  45°, con il 5% di distanza a 45° (`TILT_WEIGHT`). I 32 esempi della
+  canoa non cambiano.
+- **`rotation_deg`** anche dalle partenze vicine (`ShapeJob.here`) e dalla
+  canoa; 0 senza ricerca. I percorsi tenuti sul server (`route_store`, gli
+  esempi di «Explore») lo conservano, e da qui anche `better_distance_m`
+  (TASK-234), che rileggendoli si perdeva.
+- **I campioni**: i 19 percorsi che cambiano, prima col nord in alto e
+  dopo con la mappa girata (`tools/preview_turned.py`). Giudizio
+  dell'utente sui percorsi nuovi: 17 `sì`, 2 `quasi`, nessun `no`.
+
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 
@@ -10254,6 +10295,76 @@ solo scrivendone il nome.
   server risponde subito da quelli tenuti.
 - TASK-214 B2 può chiedere i paesi vicini allo stesso endpoint.
 
+## ADR-0204 — Con «Paddle», i laghi e le spiagge nella ricerca di «Another place»: dall'elenco dentro l'app, sopra i luoghi trovati
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-240), dentro la **richiesta dell'utente** del 2026-10-05: con
+«Paddle», in «Draw», «Another place» deve far scegliere anche i laghi e i
+mari («lago di Levico Terme» dava solo «Via al Lago»). La regola delle
+parole, il mare, la distanza sui laghi piccoli e il testo del campo sono
+**scelte dell'utente** del 2026-10-05, proposte una alla volta e tutte
+confermate (`tasks/TASK-240.md`, «Scelte dell'utente»). Numero dato dal
+coordinatore.
+
+**Contesto**: la ricerca della partenza chiede i luoghi all'API
+(Geoapify) o a Photon, che per un lago rispondono con vie e paesi. L'app
+ha già l'elenco dei laghi su cui il motore pagaia, con un punto sulla riva
+e la distanza a cui le forme ci stanno (`WATER_SPOTS`, TASK-233,
+ADR-0196), e il server ha l'acqua solo di quelli. La ricerca di «Explore»
+(`searchSpots`) vuole ogni parola scritta nel nome: «lago di Levico Terme»
+non trova niente, per «Terme».
+
+**Decisione**:
+
+1. **I laghi vengono dall'elenco dentro l'app, non dalla ricerca in
+   rete.** `PlaceSearch` riceve `suggest`, una funzione che dà subito i
+   luoghi che l'app conosce per il testo scritto; li mostra sopra quelli
+   trovati, senza ripetere un'etichetta uguale. Senza `suggest` è quella
+   di prima: `App.tsx` la passa solo con «Paddle». Niente API, niente
+   server, nessuna richiesta in più.
+2. **Il testo si legge come un indirizzo** (`findSpots`, in
+   `src/paddle/placeSpots.ts`): le parole scritte che non cominciano
+   nessuna parola di nessun nome si ignorano; le parole **comuni**, quelle
+   in più del 2% dei nomi (oggi «lago», «di», «del», «san», «d», «della»),
+   non servono a trovare un lago quando un'altra parola, di almeno 3
+   lettere, lo dice. Con sole parole comuni vale la regola di «Explore»
+   (tutte nel nome), e se una parola è stata ignorata non si propone
+   niente: «via al lago» non è un lago. Le parole comuni si contano
+   sull'elenco, non stanno scritte a mano.
+3. **Al massimo tre laghi**, il più vicino per primo; di un lago lungo il
+   punto della riva più vicino alla posizione (`byName`).
+4. **Un lago scelto è un luogo con la sua distanza** (`SpotPlace`): se le
+   sue forme stanno a meno di 2 km e la distanza scritta è più lunga, il
+   campo scende a quella (`distanceOnSpot`). Non sale mai, e un lago da
+   2 km non la tocca: 2 km è la distanza a cui è stato provato, non la più
+   lunga che tiene.
+5. `searchSpots` e «Explore» non cambiano: lì si sceglie fra laghi, e una
+   parola in più è un errore di battitura da far vedere.
+
+**Alternative scartate**:
+
+- **Aggiungere i laghi a `GET /places`**: vuole l'elenco anche nell'API e
+  un aggiornamento del server, e i laghi arriverebbero dopo 2–3 s come le
+  vie; l'elenco è già nel telefono.
+- **Avvolgere `find`** (la funzione che cerca) invece di un prop nuovo: i
+  laghi comparirebbero solo quando la rete risponde, e sparirebbero con un
+  errore di rete.
+- **Allentare `searchSpots`** per tutti: cambierebbe «Explore», che è di
+  TASK-233 e ha i suoi testi («No lake or beach matches…»).
+- **Un elenco scritto a mano di parole da ignorare** («terme», «via»,
+  «lido»): non finisce mai, e cambia con la lingua.
+- **Chiedere a Photon solo i laghi** (`osm_tag=natural:water`): troverebbe
+  anche i laghi fuori elenco, di cui il server non ha l'acqua.
+
+**Conseguenze**:
+
+- Una via che contiene una parola del nome di un lago mostra quel lago
+  sopra le vie («via Monte Grappa»: due laghi «Monte…»). Solo con
+  «Paddle», e al massimo tre righe.
+- Il mare resta alle due spiagge dell'elenco; le altre partenze sul mare
+  sono le vie e i paesi di prima, e dipendono dall'acqua che il server ha
+  o riesce a scaricare.
+- Un elenco nuovo (`lakes.json` rifatto) cambia da solo le parole comuni.
+
 ## ADR-0202 — Spostare la figura sull'acqua: l'utente dice «vicino a dove», il motore decide il posto
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-238 ·
@@ -10382,6 +10493,28 @@ dell'utente: «sì toglilo anche da VoiceOver»): il punto 3 non vale più.
 L'etichetta del post è «{user} in {city}: {title}. {facts}.», senza
 punteggio, in inglese e nelle quattro tabelle (`de`, `es`, `fr`, `it`).
 Chi ascolta sente quello che gli altri vedono.
+
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte C; scelta
+dell'utente: «togli il punteggio anche dal post da condividere»): del
+punto 4 non vale più «nel post da condividere». Nel post di «Share»
+(ADR-0194) i risultati sono tre, «Distance», «Time», «Pace»: «Score» non
+si può accendere, non è sull'immagine e, poiché il testo per Strava è
+fatto dei risultati accesi, non va nemmeno là (deciso dall'agente su
+delega: un punteggio nel testo e non nel post direbbe due cose diverse).
+`PostRun` non porta più il punteggio e `postOfTrack` non lo riceve; la
+chiave «Score» esce dalle quattro tabelle, «Score {score}» resta per «My
+activities» e i disegni del «Profile». A fine corsa, in «My activities» e
+sotto un disegno aperto dal «Profile» il punteggio si vede come prima.
+
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte D; scelta
+dell'utente: «toglilo anche da My activities»): in «My activities» il
+punteggio non si vede e non si legge più, né nella riga dell'elenco
+(«Score 91») né sulla corsa aperta («91», «out of 100»). L'API lo tiene
+e lo manda come prima (`score` in `/me/activities`): l'app non lo
+mostra. Le chiavi «Score {score}», «Score: {score} out of 100» e «out of
+100» restano nelle tabelle perché le usano i disegni del «Profile»
+(`DrawingsGrid`, `DrawingCard`), dove il punteggio si vede ancora, come
+a fine corsa: l'utente non li ha nominati.
 
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
@@ -10602,6 +10735,318 @@ pezzo e l'altro, mai dentro un pezzo.
 
 **Giudicato dall'utente** (2026-10-05, sulle immagini prima/dopo della
 faccina e della ciambella a Trento): «sì, va bene, fai il merge».
+
+## ADR-0149 — Le unità di misura: km o miglia scelti in «Settings», l'unità del telefono alla partenza, la conversione solo dove si mostra
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente (TASK-182)
+(parte A). Le **scelte dell'utente** (2026-10-03): si parte dall'unità del
+telefono, e con le miglia si fa come Strava (distanze in mi, passo in
+min/mi, voce a ogni miglio, distanze brevi in piedi). Il modo, qui sotto,
+è dell'agente. Numero tenuto dal coordinatore dal 2026-10-02.
+
+**Contesto**: «Units» era in «Settings» con «Soon» (ADR-0145). L'app
+scrive le distanze a mano in decine di file, quasi tutti di altri lavori
+in corso; il motore, l'API e il GPX lavorano in metri (`CLAUDE.md`). La
+lingua (ADR-0172) ha già lo schema: la scelta in un file, la partenza dal
+telefono, un cambio che vale subito.
+
+**Decisione**:
+
+1. **`src/units/`, sullo schema della lingua.** `Units = "km" | "mi"`; la
+   scelta sta in `units.json` nei documenti (`{"units":"mi"}`), «Phone
+   units» cancella il file; un file che non si legge vale «telefono». La
+   scelta vale subito: `saveUnitsChoice()` avvisa chi ascolta.
+2. **Si converte solo dove si mostra.** Il motore, l'API, il GPX, i file
+   sul telefono e il database restano in metri. I formattatori
+   (`src/units/format.ts`) prendono metri e scrivono nell'unità dell'app
+   (o in quella passata): `distanceLabel` («5.2 km» / «3.2 mi», con la
+   virgola di `decimal()` nelle lingue che la usano), `wholeDistanceLabel`
+   («21 km» / «13 mi»), `awayNumber` («2.9», da dieci unità in su «13»),
+   `runDistanceLabel` («4.01 km» / «2.49 mi»), `paceLabel` («4:44 /km» /
+   «7:37 /mi»), `shortDistanceLabel` («50 m» / «150 ft»),
+   `nearDistanceLabel` (breve o no). 1 mi = 1609,344 m, 1 ft = 0,3048 m.
+3. **Con «Kilometres» l'app scrive quello che scriveva prima**, alla
+   lettera e in ogni lingua: un test confronta `runDistanceLabel` e
+   `paceLabel` con `kmLabel` e `paceLabel` di `navigation/freeRun.ts`.
+   Per questo i formattatori scrivono la virgola con `decimal()` (i
+   preferiti e i paesi vicini la scrivevano già), ma:
+   - la **distanza di una corsa** (due decimali) resta **con il punto in
+     ogni lingua**, come sulla schermata della corsa: la virgola lì
+     arriva, se arriva, insieme a quella schermata (parte B), non a metà;
+   - le schede di **«Explore»**, i cui testi sono ancora in inglese
+     (ADR-0172, parti successive), passano `withPoint` e restano con il
+     punto, anche in miglia: prendono la virgola quando vengono tradotte,
+     togliendo quel parametro.
+4. **Le distanze brevi**: i metri alla decina, i piedi ai cinquanta («50
+   m» → «150 ft», «100 m» → «350 ft»): sono i numeri che si dicono, e la
+   voce della parte B li userà così. «Quanto dista» passa dai piedi alle
+   miglia a 1000 piedi (dai metri ai km a 1000 m, come prima): mai «0.0
+   mi».
+5. **L'unità del telefono, senza dipendenze nuove**
+   (`src/units/phoneUnits.ts`), come la lingua legge `AppleLanguages`:
+   - su iOS, `Settings` di React Native legge `AppleMetricUnits` e
+     `AppleMeasurementUnits`, che ci sono quando il «Sistema di misura» è
+     stato scelto a mano (su un Mac con la regione e nient'altro mancano:
+     per questo serve la regione); si leggono come li legge iOS (non metrico = Stati
+     Uniti; metrico con «Inches» = Regno Unito: tutti e due in miglia);
+   - altrimenti la **regione** del telefono, da `AppleLocale` e da
+     `I18nManager.localeIdentifier` (anche su Android): miglia per Stati
+     Uniti, Regno Unito, Liberia e Myanmar, cioè i paesi che iOS mette nei
+     sistemi «US» e «UK»; una regione o un sistema scritti nel locale
+     (`@rg=uszzzz`, `@measure=metric`, `-u-ms-…`) vengono prima;
+   - se il telefono non dice niente (nei test, sempre): **km**.
+6. **Nessun `useUnits()` alla radice.** La lingua ridisegna tutto da
+   `App.tsx`, che oggi è di altri task. `useUnits()` (con
+   `useSyncExternalStore`) lo chiama **ogni componente che scrive una
+   distanza**: si ridisegna da solo quando «Settings» cambia. I
+   formattatori leggono l'unità dell'app (`appUnits()`), come `decimal()`
+   legge la lingua: chi li usa senza `useUnits()` è giusto alla prossima
+   volta che si disegna.
+7. **La riga «Units»** (`src/settings/UnitsSetting.tsx`) è la copia di
+   «Language»: stessa riga, stesse scelte sotto, stesso «✓». In fondo alla
+   riga il nome dell'unità («Kilometres», «Miles»), non la sigla. Sta
+   sotto «Offline maps», dov'era la riga con «Soon».
+8. **I testi con l'unità dentro** hanno una riga per unità nelle tabelle
+   («{km} km away» e, nuova, «{mi} mi away»): le righe degli altri non si
+   riscrivono, e in km le traduzioni restano quelle. Le sigle «km», «mi»,
+   «m», «ft» non si traducono.
+9. **A pezzi**, come la lingua. Parte A: il modulo, la riga, «My
+   activities», i preferiti, le schede di «Explore». `runFacts` e
+   `favoriteHeading` cambiano dove sono definiti, quindi anche la scheda
+   della corsa aperta (`ActivityCard.tsx`, non toccata) scrive in miglia.
+
+**Alternative scartate**: `expo-localization` (una dipendenza per leggere
+una regione); `Intl.NumberFormat` con `unit` (scrive il numero, ma non
+dice l'unità del telefono, e cambierebbe i testi in km); convertire nell'API (un contratto in più
+per una cosa che è solo di chi guarda); `useUnits()` in `App.tsx` (file di
+altri task: si può aggiungere dopo senza cambiare niente); un testo solo
+«{distance} away» con dentro numero e sigla (lascerebbe senza uso le righe
+di TASK-236 nelle tabelle, che il test delle tabelle rifiuta); le yarde
+(fuori scope); i piedi alla decina («160 ft» non lo dice nessuno).
+
+**Conseguenze**:
+
+- Finché la parte B non c'è, con «Miles» l'app è **mista**: liste e
+  schede in miglia, «Draw», la corsa, la voce, il «Feed», i disegni
+  pubblici, «Explore» con «Paddle» e le frasi di «Explore» in km. Con
+  «Kilometres», e su ogni telefono che non misura in miglia, niente cambia.
+  **Scelta dell'utente del 2026-10-05**: la parte A si pubblica subito,
+  ma finché non c'è la parte B l'app **parte in km su ogni telefono** e
+  «Settings» non offre «Phone units» (`FOLLOWS_PHONE` in
+  `src/units/followsPhone.ts`, oggi `false`); solo chi sceglie «Miles» a
+  mano vede l'app mista. La parte B accende l'interruttore, e da allora
+  vale il punto 5: un telefono degli Stati Uniti o del Regno Unito parte
+  in miglia.
+- **Non provato su un iPhone**: che `Settings` di React Native dia
+  `AppleLocale`, `AppleMetricUnits` e `AppleMeasurementUnits` in Expo Go è
+  dedotto da come dà `AppleLanguages` (ADR-0172), non visto. Se non li dà,
+  l'app resta in km e la scelta a mano funziona lo stesso.
+- Cinque testi nuovi in inglese e nelle quattro lingue: «Phone units»,
+  «Kilometres», «Miles», «{mi} mi away», «{town}, {mi} mi away».
+- Solo app: nessuna dipendenza, niente server.
+- Parte B: chi scrive una distanza usa `src/units/format.ts` e chiama
+  `useUnits()`; la distanza di «Draw» in miglia (passi e limiti dentro
+  `DISTANCE_LIMITS_M`) è una scelta ancora da fare lì.
+
+## ADR-0205 — «Help», «Terms», «Privacy»: i testi come dati in inglese e italiano, una pagina sopra «Settings», e le bozze che dicono di esserlo
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-184), dentro le **scelte dell'utente** del 2026-10-05: «Help» è una
+mini guida; «Terms» e «Privacy» sono bozze, segnate come bozze finché non
+le approva; chi gestisce Sgrava e l'indirizzo a cui scrivere restano
+segnaposto, `[name]` e `[contact email]`. Numero dato dal coordinatore.
+
+**Contesto**: le tre righe di «About» erano in «Settings» con «Soon»
+(ADR-0145). Sono testi lunghi, due dei quali legali, e l'app ha cinque
+lingue con una regola (ADR-0172): ogni testo è scritto in inglese dentro
+`t()`, e l'inglese è la chiave delle tabelle.
+
+**Decisione**:
+
+1. **I testi sono dati, non chiamate a `t()`**: `src/about/content/en.ts`
+   e `it.ts`, ognuno con i tre testi (`AboutDocument`: titolo, `draft`,
+   data, sezioni con titolo, paragrafi ed elenchi). Un paragrafo intero
+   come chiave di quattro tabelle non si legge e non si corregge; e una
+   virgola cambiata in inglese farebbe sparire le traduzioni.
+   `aboutDocument(id, language)` sceglie il file della lingua dell'app.
+2. **Inglese e italiano, per ora**: l'italiano perché l'utente deve
+   leggere e approvare le bozze; tedesco, spagnolo e francese dopo
+   l'approvazione, per non tradurre tre volte un testo che cambierà. Con
+   quelle lingue il testo è in inglese (come ogni testo senza traduzione,
+   ADR-0172) e VoiceOver lo sa (`accessibilityLanguage`). Un test
+   controlla che l'italiano abbia le sezioni dell'inglese, blocco per
+   blocco.
+3. **Le frasi corte passano da `t()`**: i nomi delle righe (c'erano già),
+   «Draft — not final yet.» e «Last updated: {date}», nelle cinque lingue.
+   La data sta nel testo, scritta come la scrive la sua lingua.
+4. **Una pagina, non una riga che si apre sotto**: sono testi da leggere,
+   lunghi fino a diciotto sezioni. `ProfilePage` ha tre valori nuovi
+   (`help`, `terms`, `privacy`) e `ProfileScreen` mostra `AboutScreen`
+   **sopra** «Settings», con il suo «←», il suo titolo e il suo scorrere;
+   «Settings» resta montata sotto, nascosta (`display: none`, come la
+   lista di «Find friends» sotto un profilo). Così «←» la ritrova nel
+   punto in cui era, con le righe aperte ancora aperte. `ProfileLayer.tsx`
+   non cambia: tiene già la pagina qualunque sia.
+5. **Una bozza lo dice prima di tutto**: un riquadro in cima con «Draft —
+   not final yet.» e la data, con il colore `warning` (il giallo è del
+   percorso). Lo decide `draft` nel testo: l'approvazione dell'utente è
+   cambiare quel campo, non il codice della pagina.
+6. **I segnaposto sono testo fra parentesi quadre**, uguali in ogni
+   lingua, e la pagina li mette in evidenza: `[name]`, `[contact email]`,
+   `[governing law]`, e le basi giuridiche in «Privacy». Un test rifiuta
+   in tutti i testi un indirizzo email, un link o un numero di telefono, e
+   controlla che chi offre l'app e chi è titolare dei dati sia `[name]`.
+7. **«Privacy» dice solo quello che documenti e codice confermano**
+   (`UI.md` «Cosa esce dal telefono», `DATABASE.md`, `API.md`,
+   `DEPLOY.md`, ADR-0101, 0102, 0114, 0150, 0156, 0177, 0198, le
+   migrazioni). Quello che non si è potuto verificare non è scritto: è
+   nell'elenco dei punti aperti di `tasks/TASK-184.md`. Esempio: la
+   tabella `generated_routes` di `DATABASE.md` non esiste nelle migrazioni
+   (TASK-092 è da fare), e la bozza non parla di percorsi tenuti.
+8. **La guida usa le parole del sito** (`site/content.js`, TASK-237), che
+   è la guida dell'app sul web: stessi fatti, stesse frasi dove si può.
+9. **Nel testo italiano i nomi di pagine e pulsanti sono quelli che l'app
+   in italiano mostra oggi**: «Impostazioni», «Salva», ma ancora «Feed»,
+   «Draw», «Start», «Pause» (TASK-210 non li ha tradotti tutti).
+
+**Alternative scartate**:
+
+- **I testi nelle tabelle di `t()`**: punto 1.
+- **Le righe che si aprono sotto**, come «Language» (la riserva del task):
+  un testo di diciotto sezioni dentro una riga allunga «Settings» di
+  molte schermate e mette «Log out» e «Delete account» in fondo a tutto.
+- **Lo stesso scorrere di «Profile»** per il testo: le righe di «About»
+  sono in fondo a «Settings», e il testo si aprirebbe alla fine; riportare
+  lo scorrere a mano, all'andata e al ritorno, non si può provare senza un
+  telefono.
+- **Una pagina web** aperta nel browser o in una WebView: serve un
+  indirizzo pubblicato e la rete, e il sito è di un altro task; senza rete
+  la guida non si aprirebbe.
+- **Markdown** con una libreria che lo mostra: una dipendenza nuova per
+  titoli, paragrafi ed elenchi.
+- **Un nome e un indirizzo veri**, o inventati: scelta dell'utente.
+- **Scrivere nella privacy quello che di solito si scrive** (basi
+  giuridiche, trasferimenti, tempi di risposta) senza una fonte: un testo
+  legale con fatti inventati è peggio di uno con un buco dichiarato.
+
+**Conseguenze**:
+
+- Le due bozze non sono approvate: prima dell'App Store l'utente riempie
+  i segnaposto, le fa leggere a un legale e mette `draft: false`.
+- Chi cambia cosa l'app manda o tiene (TASK-208 B: descrizione, foto e
+  tag dei disegni; TASK-092: i percorsi generati; la ricerca dalla
+  rubrica; il servizio di posta) aggiorna anche `src/about/content/`, in
+  tutte e due le lingue.
+- Quando TASK-210 traduce le pagine che mancano, i nomi nel testo
+  italiano vanno riallineati.
+- `SettingsPage` chiede a chi la mostra di aprire i testi (`onAbout`);
+  restano «Soon» solo le due righe di «Notifications» (TASK-185).
+- Solo app: nessuna dipendenza, niente server.
+
+## ADR-0206 — I due interruttori delle notifiche: salvati nell'account, spenti all'inizio, e niente si manda ancora
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-185), dentro le **scelte dell'utente** del 2026-10-05: tutti e due
+gli interruttori partono spenti («Spenti tutti e due»), e si salvano
+anche se l'invio vero non c'è ancora, purché la pagina lo dica. Numero
+assegnato dal coordinatore.
+
+**Contesto**: «Email notifications» e «Push notifications» erano in
+«Settings» con «Soon» (ADR-0145), le ultime due righe così. L'API non
+manda email (nessun servizio di posta) e non manda push; l'app gira in
+Expo Go, dove le push non arrivano, e non ha `expo-notifications`. Non è
+deciso nemmeno che cosa si notificherà.
+
+**Decisione**:
+
+1. **Si salva la scelta, non si manda niente.** Nessun codice legge i due
+   interruttori per agire: sono una preferenza tenuta per quando l'invio
+   ci sarà. Nessuna dipendenza nuova, nessun permesso chiesto al telefono:
+   accendere «Push notifications» salva soltanto.
+2. **La pagina lo dice**, sotto le due righe, sempre: «Sgrava does not
+   send notifications yet. Your choice is kept for when it does.». Un
+   interruttore che non fa niente senza dirlo sarebbe una promessa falsa.
+3. **Nell'account, non sul telefono**: due colonne di `users`,
+   `notify_email` e `notify_push`, `boolean NOT NULL DEFAULT false`. Chi
+   manderà le notifiche sarà il server, e deve saperlo senza chiederlo al
+   telefono; la scelta segue l'account su ogni telefono. `DEFAULT false`
+   dà «spento» anche a ogni account di prima, senza toccarne le righe.
+4. **Un endpoint suo, `PUT /me/notifications`**, in `notifications.py`,
+   come `PUT /me/email` e `PUT /me/phone` (ADR-0150): `PATCH /me` cambia
+   quello che gli altri vedono e resta com'è per l'app pubblicata.
+5. **Il corpo porta solo quello che cambia** (`email?`, `push?`): un
+   interruttore non mandato resta com'è, così un tocco su uno non può
+   riscrivere l'altro con un valore vecchio del telefono. `{}` non cambia
+   niente e risponde l'account com'è; `null` vale «non mandato». Solo
+   vero o falso (`StrictBool`): `"true"`, `1` sono `422`, perché una
+   preferenza accesa per una conversione di tipo è un consenso mai dato.
+6. **`User.notifications` è un oggetto, `{ "email": …, "push": … }`**, non
+   due campi piatti: è la forma della richiesta, ed è dove andranno le
+   voci future (che cosa si notifica) senza allargare `User`. Nel database
+   restano due colonne piatte in `USER_COLUMNS`; l'oggetto lo costruisce
+   un `model_validator(mode="before")` di `UserBody`, così `accounts.py`,
+   `profiles.py` e `contact.py` continuano a fare
+   `UserBody.model_validate(row)` senza cambiare una riga di SQL.
+7. **Le legge solo il proprietario** (`GET /me`, `Session`): mai in
+   `PublicProfile`, nella ricerca, negli elenchi. `DELETE /me` le cancella
+   con la riga.
+8. **Nel contratto `User.notifications` è facoltativo**: un'API di prima
+   non lo manda, e l'app lo legge come «tutti e due spenti».
+9. **Nell'app l'interruttore è disegnato**, come gli altri dell'app
+   (`RunDashboard`: una pista e un pomello, colori dai token, bianco
+   quando è acceso — il giallo è del percorso), non lo `Switch` di React
+   Native: l'app non lo usa da nessuna parte, e così ogni riga è **un
+   solo** elemento per VoiceOver, un interruttore con il suo nome e il suo
+   stato, senza l'emoji.
+10. **Il valore nuovo si vede subito** e torna indietro se l'API rifiuta,
+    con il motivo in parole sotto le righe; mentre una risposta è in
+    viaggio un secondo tocco, su uno qualunque dei due, non manda niente.
+    Con un'API di prima (`404`): «Notifications are not available on this
+    API yet.».
+11. **«Soon» esce da «Settings»**: erano le ultime due righe a dirlo.
+    `COMING` e `ComingRows` sono tolti da `SettingsPage`, e i testi «Soon»
+    e «{name}, coming soon» dalle quattro tabelle (`tables.test.ts`
+    rifiuta un testo che nessuno mostra).
+12. **«Help» e «Privacy» lo dicono** (ADR-0205: chi cambia cosa l'app
+    tiene aggiorna i testi): una riga nella sezione «Settings» della
+    guida, un punto in «Your account» della bozza, in inglese e italiano.
+
+**Alternative scartate**:
+
+- **Aspettare l'invio vero** e lasciare «Soon»: l'utente ha chiesto gli
+  interruttori adesso; proposto e accettato di salvarli dicendo che non si
+  manda niente.
+- **La scelta solo sul telefono** (come lingua e unità): il server non la
+  saprebbe, e cambiando telefono si perderebbe.
+- **Due campi piatti in `User`** (`notify_email`, `notify_push`): più
+  semplici oggi, ma ogni voce futura allargherebbe `User`, e la richiesta
+  avrebbe una forma diversa dalla risposta.
+- **Costruire l'oggetto in SQL** (`json_build_object(…) AS notifications`
+  dentro `USER_COLUMNS`): `USER_COLUMNS` smetterebbe di essere un elenco
+  di colonne, e chi lo usa in un `RETURNING` o in una `JOIN` dovrebbe
+  saperlo.
+- **`PUT` con tutti e due i valori obbligatori**: due telefoni con valori
+  vecchi si sovrascriverebbero l'interruttore che non hanno toccato.
+- **Accesi all'inizio**: scelta dell'utente, spenti; e un consenso a
+  ricevere messaggi non si presume.
+- **Chiedere il permesso delle push all'accensione**: serve
+  `expo-notifications`, e chiedere un permesso per qualcosa che non
+  arriva brucia l'unica domanda che iOS lascia fare.
+- **Lo `Switch` di React Native**: punto 9.
+
+**Conseguenze**:
+
+- **L'invio vero è un task a parte**, con scelte dell'utente: che cosa si
+  notifica, quale servizio di posta, `expo-notifications` e una build
+  propria. Quel task legge `users.notify_email` e `users.notify_push`,
+  chiede il permesso del telefono, e riscrive la nota sotto gli
+  interruttori e le due righe di «Help» e «Privacy».
+- Migrazione nuova (`0017_notifications.sql`, il primo numero libero al
+  merge): serve l'aggiornamento del server prima di pubblicare l'app.
+  Un'API di prima risponde `404` al `PUT` e l'app lo dice in parole.
+- Ogni `SELECT {USER_COLUMNS}` legge le due colonne: un test che usa
+  l'API di oggi su uno schema senza `0017` fallisce (`UndefinedColumn`),
+  come successe con `phone` (TASK-183). Quelli che ci sono creano già
+  l'account di prima in SQL.
+- `Account` ha un metodo in più, `changeNotifications`: i test che
+  costruiscono un `Account` a mano hanno una riga in più.
 
 ## ADR-0209 — Con la penna alzata, sul contorno si camminano solo i baffi
 **Stato**: Attiva · 2026-10-05 · **deciso dall'agente su delega

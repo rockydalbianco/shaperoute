@@ -72,6 +72,7 @@ from shaperoute_api.line_directions import (
     RouteDirectionsRequestBody,
     directions_of,
 )
+from shaperoute_api.notifications import install_notifications
 from shaperoute_api.outline_edits import edit_outline
 from shaperoute_api.places import (
     MAX_QUERY_LENGTH,
@@ -301,6 +302,9 @@ def create_app(
     # The email and the phone number of an account, changed by their owner
     # (TASK-183); both need a token.
     install_contact(app)
+    # The two notification switches of an account, kept and never acted on:
+    # nothing is sent yet (TASK-185); they need a token.
+    install_notifications(app)
     # The runs an account publishes as drawings, cut for the others
     # (TASK-117); they need a token.
     install_drawings(app)

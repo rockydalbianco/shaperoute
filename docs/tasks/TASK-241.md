@@ -79,10 +79,70 @@ docs/DECISIONS.md
 docs/tasks/TASK-241.md
 ```
 
+## Parte C — Niente punteggio nel post da condividere
+
+Chiesto dall'utente il 2026-10-05: «togli il punteggio anche dal post da
+condividere». Branch `feat/TASK-241-c-share-no-score`.
+
+Nel post di «Share» (TASK-231) «Score» esce dai risultati: niente
+pastiglia in «Results», niente numero sull'immagine, niente «Score 87»
+nel testo per Strava. `PostRun` non porta più il punteggio.
+
+- [x] «Results» offre solo «Distance», «Time», «Pace».
+- [x] L'immagine del post non mostra il punteggio.
+- [x] Il testo per Strava non contiene il punteggio.
+- [x] Lint, typecheck, Prettier e test dell'app verdi.
+
+```
+apps/mobile/src/share/postRun.ts
+apps/mobile/src/share/postRun.test.ts
+apps/mobile/src/share/PostImage.tsx
+apps/mobile/src/share/SharePost.test.tsx
+apps/mobile/src/screens/FinishScreen.tsx
+apps/mobile/src/screens/FreeRunScreen.tsx
+apps/mobile/src/i18n/de.ts
+apps/mobile/src/i18n/es.ts
+apps/mobile/src/i18n/fr.ts
+apps/mobile/src/i18n/it.ts
+docs/UI.md
+docs/STATUS.md
+docs/DECISIONS.md
+docs/tasks/TASK-241.md
+```
+
+Fuori scope: il punteggio a fine corsa, in «My activities» e sotto un
+disegno aperto dal «Profile».
+
+## Parte D — Niente punteggio in «My activities»
+
+Chiesto dall'utente il 2026-10-05: «toglilo anche da My activities».
+Branch `feat/TASK-241-d-activities-no-score`.
+
+- [x] Una riga dell'elenco non mostra «Score 91», né lo legge VoiceOver.
+- [x] La corsa aperta non mostra «91 · out of 100».
+- [x] Lint, typecheck, Prettier e test dell'app verdi.
+
+```
+apps/mobile/src/activities/ActivitiesList.tsx
+apps/mobile/src/activities/ActivityCard.tsx
+apps/mobile/__tests__/AppActivities.test.tsx
+docs/UI.md
+docs/STATUS.md
+docs/DECISIONS.md
+docs/tasks/TASK-241.md
+```
+
+Fuori scope: il punteggio a fine corsa e sui disegni del «Profile»
+(griglia e disegno aperto); il campo `score` dell'API.
+
 ## Esito
 
 Fatto il 2026-10-05. Parte A (PR #345, merge `ad80385`): il riquadro non
 c'è più, nel «Feed» e nei post che «Explore» mostra mentre disegna una
-città (stesso componente). Parte B: nemmeno VoiceOver legge più il
-punteggio. Non pubblicato: esce con la prossima pubblicazione, con l'ok
-dell'utente.
+città (stesso componente). Parte B (PR #348, merge `69af6c6`): nemmeno
+VoiceOver legge più il punteggio. Parte C (PR #355, merge `b7a82da`): il
+post da condividere non ha più il punteggio, nemmeno nel testo per
+Strava. Parte D: «My activities» non lo mostra più, né nell'elenco né
+sulla corsa aperta. Le pubblicazioni le fa il coordinatore, con l'ok
+dell'utente: ogni parte esce con la prima che parte da un `main` che la
+contiene. Resta il punteggio a fine corsa e sui disegni del «Profile».

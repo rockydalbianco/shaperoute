@@ -576,6 +576,29 @@ export interface User {
    * TASK-183.
    */
   phone?: string | null;
+  /**
+   * The two notification switches of «Settings» (TASK-185): told to their
+   * owner only. Missing from an API older than TASK-185: both off.
+   */
+  notifications?: Notifications;
+}
+
+/**
+ * What an account chose about being notified (TASK-185): both off until
+ * turned on. Sgrava sends nothing yet; the choice is kept for when it does.
+ */
+export interface Notifications {
+  email: boolean;
+  push: boolean;
+}
+
+/**
+ * PUT /me/notifications (TASK-185): only what changes; a switch not sent
+ * stays as it is. The answer is the User.
+ */
+export interface NotificationsRequest {
+  email?: boolean;
+  push?: boolean;
 }
 
 /**

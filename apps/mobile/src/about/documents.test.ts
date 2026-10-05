@@ -141,6 +141,17 @@ test("«Privacy» says what the phone number is for (ADR-0150)", () => {
   expect(italian).toMatch(/toglierlo in ogni momento da «Impostazioni»/);
 });
 
+test("«Help» and «Privacy» say the notification choices are kept, and nothing is sent (ADR-0206)", () => {
+  for (const text of [all(EN.help), all(EN.privacy)]) {
+    expect(text).toMatch(/off until you turn them on/);
+    expect(text).toMatch(/Sgrava sends no notifications yet/);
+  }
+  for (const text of [all(IT.help), all(IT.privacy)]) {
+    expect(text).toMatch(/spent[ie] finché non l[ie] accendi/);
+    expect(text).toMatch(/Sgrava non manda ancora notifiche/);
+  }
+});
+
 test("«Privacy» says how the account is deleted and what goes with it", () => {
   const english = all(EN.privacy);
   expect(english).toMatch(

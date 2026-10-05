@@ -53,10 +53,12 @@ In coda, dopo o accanto:
   (TASK-178, sotto), email e numero di telefono anche (TASK-183, «In
   lavorazione»), le unità di misura hanno la parte A (TASK-182, «In
   lavorazione»), «Help», «Terms» e «Privacy» sono fatte, i due testi
-  legali come bozze (TASK-184, «In lavorazione»); resta **TASK-185**
-  le notifiche email e push (per ultime: serve qualcosa da notificare, un
-  servizio di posta, `expo-notifications`, una build propria). Tutti Todo,
-  senza task file; l'utente: «li svilupperemo più avanti».
+  legali come bozze (TASK-184, «In lavorazione»); **TASK-185**, i due
+  interruttori delle notifiche email e push, è in revisione («In
+  lavorazione»): salvati nell'account, spenti all'inizio, e **non mandano
+  ancora niente**. L'invio vero (che cosa notificare, un servizio di
+  posta, `expo-notifications`, una build propria) è un task da aprire,
+  con scelte dell'utente. Nessuna voce dice più «Soon».
 - **Pubblicità che paga**, chiesta dall'utente il 2026-10-02: **TASK-150**
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
@@ -531,6 +533,26 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   si è potuto verificare è in `tasks/TASK-184.md`, «Esito». Non visto su
   un telefono. Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
   aggiorna anche «Privacy».
+- **TASK-185 — I due interruttori delle notifiche** (ADR-0206; chiesto
+  dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha scelto:
+  **tutti e due spenti** all'inizio). In revisione (branch
+  `feat/TASK-185-notification-switches`; API, contratto e app, nessuna
+  dipendenza). «Email notifications» e «Push notifications» in «Settings»
+  sono due interruttori salvati nell'account: `PUT /me/notifications`
+  (solo quello che cambia), `User.notifications`, migrazione
+  `0017_notifications.sql` (il numero è il primo libero al merge). **Non
+  si manda niente**, e la pagina lo dice sotto le righe: «Sgrava does not
+  send notifications yet. Your choice is kept for when it does.»; nessun
+  permesso chiesto al telefono. Li legge solo il proprietario. Nessuna
+  riga di «Settings» dice più «Soon»; una riga in «Help» e una nella bozza
+  di «Privacy». Test in locale: tutta la parte JS e i file dell'API
+  toccati; l'intera suite dell'API è della CI. **Aspettano l'utente**:
+  l'aggiornamento del server (migrazione `0017`) prima di pubblicare
+  l'app; il testo nuovo «Notifications are not available on this API
+  yet.» e le due righe di «Help» e «Privacy»; la prova su un telefono
+  (non visto nemmeno nel simulatore). **Dopo**, un task da aprire con
+  scelte dell'utente: l'invio vero (che cosa si notifica, il servizio di
+  posta, `expo-notifications`, una build propria). `tasks/TASK-185.md`.
 
 ## Completato
 

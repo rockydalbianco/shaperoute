@@ -50,12 +50,9 @@ In coda, dopo o accanto:
   TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
 - **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
   sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
-  (TASK-178, sotto), email e numero di telefono anche (TASK-183, «In
-  lavorazione»), le unità di misura hanno la parte A (TASK-182, «In
-  lavorazione»), «Help», «Terms» e «Privacy» sono fatte, i due testi
-  legali come bozze (TASK-184, «In lavorazione»); **TASK-185**, i due
-  interruttori delle notifiche email e push, è in revisione («In
-  lavorazione»): salvati nell'account, spenti all'inizio, e **non mandano
+  (TASK-178, sotto), email e numero di telefono anche (TASK-183), le unità di misura sono fatte (TASK-182), «Help», «Terms» e «Privacy» sono fatte, i due testi
+  legali come bozze (TASK-184); **TASK-185**, i due
+  interruttori delle notifiche email e push, è fatto: salvati nell'account, spenti all'inizio, e **non mandano
   ancora niente**. L'invio vero (che cosa notificare, un servizio di
   posta, `expo-notifications`, una build propria) è un task da aprire,
   con scelte dell'utente. Nessuna voce dice più «Soon».
@@ -498,49 +495,61 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
-- **TASK-182 — Le unità di misura: km o miglia** (ADR-0149; chiesto
-  dall'utente il 2026-10-02 e il 2026-10-03, con due scelte: si parte
-  dall'unità del telefono, e con le miglia si fa come Strava). **Parte A**
-  in `main` dal 2026-10-05 (PR #351, merge `7a9506a`; solo app, nessuna
-  dipendenza): `src/units/` (la scelta in `units.json`, l'unità del
-  telefono, `useUnits()`, i formattatori), la riga **«Units»** in
-  «Settings» al posto di quella con «Soon» («Kilometres», «Miles»;
-  «Phone units» dalla parte B), e le miglia in «My activities», nei preferiti e nelle schede
-  di «Explore». Con «Kilometres» l'app scrive quello che scriveva prima.
-  **Scelta dell'utente del 2026-10-05**: la parte A si pubblica subito,
-  ma **l'app parte in km su ogni telefono** finché non c'è la parte B
-  (`FOLLOWS_PHONE` spento): solo chi sceglie «Miles» vede l'app mista.
-  **Aspettano l'utente**: i testi nuovi («Kilometres», «Miles», «{mi} mi
-  away»; «Phone units» si vedrà con la parte B); la prova su un iPhone
-  con le miglia (l'unità del telefono non è stata vista su un telefono
-  vero, né nel simulatore). **Parte B** (file di
-  altri task): «Draw» (la distanza chiesta, passi e limiti in miglia: una
-  scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
-  svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
-  «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito». **Parte C**
-  (in `main` dal 2026-10-05, PR #366, merge `ad3e443`): con
-  «Miles» le schermate della corsa, la navigazione, la fine della corsa e
-  la voce sono in miglia (parziali per miglio calcolati sul telefono, la
-  voce a ogni miglio e in bici ogni 5, le svolte in piedi, mph in bici),
-  con i testi, le frasi e i tre numeri scelti dall'agente confermati
-  dall'utente come letti: la voce in miglia è da ascoltare sull'iPhone
-  (`tasks/TASK-182.md`, «Parte C»; ADR-0149, aggiornamento).
-  **Parte B, «Draw» e le schede** (in `main` dal 2026-10-05, PR #368,
-  merge `0703d25`): con «Miles» la distanza
-  di «Draw» si scrive in miglia (− e + di 1 mi; corsa 1–13, bici 7–18,
-  canoa 1–3; all'API metri interi), e sono in miglia il risultato, «Try»,
-  il «Feed», i disegni pubblici ed «Explore» con «Paddle»; i testi nuovi
-  sono confermati dall'utente (`tasks/TASK-182.md`, «Parte B»);
-  **ultimo passo** (2026-10-05, branch `feat/TASK-182-d-phone-units`, in
-  revisione): l'app segue l'unità del telefono finché non se ne sceglie
-  una («Phone units» torna fra le scelte; l'interruttore `FOLLOWS_PHONE`
-  non c'è più), e il post di «Share» è in miglia. Provato nel simulatore
-  con il telefono sugli Stati Uniti: «Phone units — Miles»
-  (`out/task182/`). Da ascoltare sull'iPhone la voce in miglia.
-- **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
+## Completato
+
+- **App** — TASK-182: le unità di misura, km o miglia (ADR-0149 e i suoi
+  tre aggiornamenti; chiesto dall'utente il 2026-10-02 e il 2026-10-03;
+  PR #351, #366, #368, #374, ultimo merge `3ad0c22`, 2026-10-05). In
+  «Settings» la riga «Units»: «Phone units» (la partenza: miglia dove il
+  telefono misura le strade in miglia, km altrove), «Kilometres»,
+  «Miles»; la scelta vale subito e resta sul telefono. Con le miglia
+  tutta l'app scrive e dice miglia: «My activities», i preferiti,
+  «Explore», «Draw» (− e + di 1 mi; corsa 1–13, bici 7–18, canoa 1–3,
+  scelta dell'utente; all'API metri interi), il «Feed», i disegni
+  pubblici, la corsa e la sua fine (parziali per miglio calcolati sul
+  telefono), la voce nelle cinque lingue (a ogni miglio, in bici ogni 5,
+  le svolte in piedi, mph), il post di «Share». Con «Kilometres» ogni
+  testo e ogni frase sono quelli di prima; il motore, l'API, il GPX e
+  quello che si salva restano in metri. Testi e frasi **confermati
+  dall'utente** il 2026-10-05, la voce come letta. Parti A, B e C su
+  `preview` (gruppi `1b49d248`, `4dbdf450`, `f5623cf3`); l'ultimo passo
+  («Phone units», «Share») esce con la prossima pubblicazione, del
+  coordinatore. Provato nel simulatore con il telefono sugli Stati Uniti
+  («Phone units — Miles», `out/task182/`). **Da fare sull'iPhone**:
+  ascoltare la voce in miglia; un iPhone vero con le miglia. **Seguiti**:
+  tenere la distanza di «Draw» in metri dentro `App.tsx` (oggi il testo
+  del campo porta la sua unità); una parola di corsa in miglia ha al più
+  6 lettere; «within 1 km of the shore» e l'avviso sull'acqua restano in
+  km per scelta. `tasks/TASK-182.md`.
+
+- **API e app** — TASK-185: i due interruttori delle notifiche (ADR-0206;
+  chiesto dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha
+  scelto: **tutti e due spenti** all'inizio; PR #359, merge `c2bb428`).
+  «Email notifications» e «Push notifications» in «Settings» sono due
+  interruttori salvati nell'account: `PUT /me/notifications` (solo quello
+  che cambia), `User.notifications`, migrazione `0017_notifications.sql`.
+  **Non si manda niente**, e la pagina lo dice sotto le righe: «Sgrava
+  does not send notifications yet. Your choice is kept for when it
+  does.»; nessun permesso chiesto al telefono. Li legge solo il
+  proprietario. Nessuna riga di «Settings» dice più «Soon»; una riga in
+  «Help» e una nella bozza di «Privacy». Testi confermati dall'utente
+  («ok, i testi delle notifiche vanno bene»). **Sul server** dal
+  2026-10-05, 12:02Z (ok dell'utente «ok per il server», sessione
+  «Impostazioni»; nello stesso aggiornamento il motore delle forme
+  inclinate di TASK-232 A, con il suo ok): `main` `c2bb428`, circa 10
+  secondi di fermo, copia `shaperoute-2026-10-05T1202Z.dump`, immagine di
+  prima `shaperoute-api:before-task185`, `draw_examples` rilanciato alle
+  12:03Z (`data/draw-examples-2026-10-05-task232.log`). La pubblicazione
+  dell'app è del coordinatore. Visto nel simulatore (`out/task185/`),
+  senza tocchi; **da provare sull'iPhone** (girare un interruttore e
+  ritrovarlo dopo aver riaperto l'app). **Dopo**, un task da aprire con
+  scelte dell'utente: l'invio vero (che cosa si notifica, il servizio di
+  posta, `expo-notifications`, una build propria). `tasks/TASK-185.md`.
+
+- **App** — TASK-184: «Help», «Terms», «Privacy» (ADR-0205; chiesto
   dall'utente il 2026-10-05: una mini guida, e le prime bozze di
-  condizioni e privacy). In revisione (branch
-  `feat/TASK-184-help-terms-privacy`, solo app, nessuna dipendenza). Le
+  condizioni e privacy). PR #353, merge `8dfb62a`, 2026-10-05; solo
+  app, nessuna dipendenza. Le
   tre righe di «About» in «Settings» aprono ognuna il suo testo come
   pagina, con «←» che torna a «Settings» com'era. I testi sono dati in
   `src/about/content/`, in inglese e in italiano (con tedesco, spagnolo e
@@ -550,32 +559,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `[governing law]`, le basi giuridiche), la lettura di un legale prima
   dell'App Store, l'approvazione, e poi le altre tre lingue; l'elenco
   intero dei punti aperti e di quello che «Privacy» non dice perché non
-  si è potuto verificare è in `tasks/TASK-184.md`, «Esito». Non visto su
-  un telefono. Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
+  si è potuto verificare è in `tasks/TASK-184.md`, «Esito». Visto nel
+  simulatore in italiano (la cima di ogni pagina, senza tocchi:
+  `out/task184/`); esce con la prossima pubblicazione; da provare
+  sull'iPhone lo scorrimento e il «←». Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
   aggiorna anche «Privacy».
-- **TASK-185 — I due interruttori delle notifiche** (ADR-0206; chiesto
-  dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha scelto:
-  **tutti e due spenti** all'inizio). In revisione (branch
-  `feat/TASK-185-notification-switches`; API, contratto e app, nessuna
-  dipendenza). «Email notifications» e «Push notifications» in «Settings»
-  sono due interruttori salvati nell'account: `PUT /me/notifications`
-  (solo quello che cambia), `User.notifications`, migrazione
-  `0017_notifications.sql` (il numero è il primo libero al merge). **Non
-  si manda niente**, e la pagina lo dice sotto le righe: «Sgrava does not
-  send notifications yet. Your choice is kept for when it does.»; nessun
-  permesso chiesto al telefono. Li legge solo il proprietario. Nessuna
-  riga di «Settings» dice più «Soon»; una riga in «Help» e una nella bozza
-  di «Privacy». Test in locale: tutta la parte JS e i file dell'API
-  toccati; l'intera suite dell'API è della CI. **Aspettano l'utente**:
-  l'aggiornamento del server (migrazione `0017`) prima di pubblicare
-  l'app; il testo nuovo «Notifications are not available on this API
-  yet.» e le due righe di «Help» e «Privacy»; la prova su un telefono
-  (non visto nemmeno nel simulatore). **Dopo**, un task da aprire con
-  scelte dell'utente: l'invio vero (che cosa si notifica, il servizio di
-  posta, `expo-notifications`, una build propria). `tasks/TASK-185.md`.
 
-## Completato
-
+- **App** — TASK-245 parte B: in «Another place» con «Paddle», una parola
+  comune scritta sceglie fra i nomi trovati (ADR-0210, aggiornamento;
+  seguito del task, fatto dopo il «continua» dell'utente del 2026-10-05).
+  «lago lev» propone solo «Lago di Levico», non più anche «Sestri
+  Levante»; «lev» da sola tutti e due, e «lungomare di Viareggio» trova
+  la sua spiaggia. Solo `placeSpots.ts` e i suoi test; niente server.
+  Esce con la pubblicazione del coordinatore.
 - **App e API** — TASK-245: altre spiagge per «Paddle», oltre Jesolo e
   Riccione (ADR-0210; chiesto dall'utente il 2026-10-05, che ha scelto 29
   posti di mare su tutte le coste; PR #363, merge `0d8bbc1`). Un comando
@@ -731,7 +727,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   più registrato (seguito, se serve). **Parte F** («ok continua»
   dell'utente alla proposta): dalla bozza di «Privacy» esce «a run
   scored» fra gli eventi tenuti; resta «…distance, duration, score…»,
-  ancora vera. Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
+  ancora vera (PR #372). **Parte G**: tolto dall'app
+  `src/api/trackScores.ts`, che nessuno chiamava più; niente cambia per
+  chi usa l'app. Esce con la prossima pubblicazione.
+  `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

@@ -1,6 +1,6 @@
 # TASK-184 — «Help», «Terms», «Privacy»: la mini guida e le prime bozze
 
-**Stato**: In revisione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-184-help-terms-privacy`
 **Dipende da**: TASK-177 (la pagina «Settings»), TASK-210 (le lingue
 dell'app), TASK-183 (il numero di telefono, ADR-0150)
@@ -78,8 +78,9 @@ niente API, niente database, nessuna dipendenza nuova.
 - [x] Restano «Soon» solo le due righe di «Notifications» (TASK-185).
 - [x] Nessun colore scritto a mano, nessuna dipendenza nuova.
 - [x] `tsc`, `expo lint`, Prettier e i test dell'app verdi.
-- [ ] L'utente ha riempito i segnaposto e approvato le due bozze (dopo
-      questo task: finché non succede restano bozze).
+- [x] Le due bozze restano bozze finché l'utente non riempie i
+      segnaposto e le approva: è un seguito del task, non un suo criterio
+      («Esito», punti aperti).
 
 ## File toccati
 
@@ -126,7 +127,13 @@ uscite).
 
 ## Esito
 
-Fatto il 2026-10-05, solo app. I tre testi sono dati in
+Fatto il 2026-10-05, solo app: PR #353, in `main` con il merge `8dfb62a`.
+Visto nel simulatore con l'app in italiano (iPhone 17, Expo Go, senza
+tocchi): le tre righe in «Settings», «Aiuto», e «Privacy» con la fascia
+«Bozza — non ancora definitiva.» e i segnaposto evidenziati; schermate in
+`out/task184/`. Da provare col dito: lo scorrimento dei testi lunghi e il
+«←» che torna a «Settings». Verificato sul server il 2026-10-05 che il
+registro delle richieste è spento, come dice la bozza. I tre testi sono dati in
 `src/about/content/` (inglese e italiano, undici sezioni la guida,
 quattordici le condizioni, diciotto la privacy); `AboutPage` li mostra,
 `AboutRows` sono le tre righe, `AboutScreen` è la pagina con «←» sopra

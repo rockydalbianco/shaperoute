@@ -1048,6 +1048,10 @@ entrare nel catalogo (ADR-0036). Le forme ancora a `no` si riconoscono da
 un occhio, una finestra, una rientranza: servono i tratti interni ripassati
 (TASK-037).
 
+**Aggiornamento 2026-10-05 (TASK-232)**: il limite di 15° è superato da
+ADR-0195, scelta dell'utente: le forme si inclinano fino a 45° e l'app
+gira la mappa perché si vedano dritte. Il cerchio resta libero.
+
 ## ADR-0039 — Tratti ripassati: linee e anelli dentro la forma
 **Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente;
 il giudizio dell'utente sui campioni lo sostiene a Trento e Milano, non a
@@ -9403,8 +9407,8 @@ SVG: le linee sono `View` ruotate.
 **Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-232 ·
 45°, la mappa girata, la freccia del nord e la mappa della corsa sono
 scelte dell'utente; il resto è deciso
-dall'agente su delega dell'utente · sostituisce il limite di 15° di
-ADR-0038
+dall'agente su delega dell'utente · supera in parte ADR-0038 (il limite
+di 15°)
 
 **Contesto**: ADR-0038 tiene ogni forma con un alto e un basso entro
 ±15°, perché su una mappa col nord in alto l'occhio non riconosceva le

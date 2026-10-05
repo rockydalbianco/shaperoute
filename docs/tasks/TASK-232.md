@@ -4,7 +4,7 @@
 dopo TASK-226, la mappa (parti B e C) dopo TASK-119 B: stessi file
 **Fase**: 4 · **Branch**: `feat/TASK-232-a-tilt-45` (A),
 `feat/TASK-232-b-turned-map` (B), `feat/TASK-232-c-saved-turn` (C)
-**ADR**: ADR-0195 (sostituisce il limite di 15° di ADR-0038)
+**ADR**: ADR-0195 (supera in parte ADR-0038: il limite di 15°)
 
 ## Obiettivo
 
@@ -66,6 +66,10 @@ delega dell'utente:
 
 ## Parte A — il motore e l'API
 
+Dopo TASK-226 («App per il padel», che lavora su `water_fit.py` e sui
+pezzi). `optimizer.py` e `nearby_starts.py` sono liberi: TASK-190 è
+chiusa nel codice (il coordinatore, 2026-10-05).
+
 1. `optimizer.py`: `MAX_TILT_DEG` 45, `GRID_MAX_TILT_DEG` 45, la
    penalità d'inclinazione (punto 2). Le rotazioni provate vanno da −45°
    a +45° ogni 15°: 7 per partenza e fase invece di 3. Contare le strade
@@ -76,10 +80,15 @@ delega dell'utente:
 3. `models.py`: `RouteResult.rotation_deg`, riempito da `plan_shape` e
    dalla canoa, anche nelle alternative.
 4. L'API lo restituisce (`schemas.py`, `packages/shared-types`).
-5. `engine.zip` del telefono rifatto (TASK-214).
-6. **I campioni**: rifare quelli giudicati in TASK-035 e TASK-036, con le
-   immagini girate come le mostrerà l'app. L'utente li guarda prima e
-   dopo, e li giudica (`samples/LOG.md`).
+5. `engine.zip` del telefono rifatto (TASK-214):
+   `python tools/phone_engine/phone_engine.py engine`. Se cambiano le
+   forme sull'acqua, anche `apps/mobile/src/paddle/paddleExamples.json`.
+6. **I campioni** (ADR-0036): cambiano i percorsi di oggi, quindi si
+   rifanno quelli giudicati in TASK-035 e TASK-036, con le immagini
+   girate come le mostrerà l'app. L'utente li guarda prima e dopo, e li
+   giudica (`samples/LOG.md`).
+7. **Le impronte fissate dei test** che cambiano si rifanno, e la PR dice
+   quali e perché (una forma ora inclinata, un'altra partenza).
 
 ## Parte B — la mappa girata nell'app
 
@@ -88,8 +97,13 @@ delega dell'utente:
 2. «Draw»: la mappa gira col percorso scelto, anche passando da
    un'alternativa all'altra.
 3. «Explore»: le carte girate come il loro percorso.
-4. La corsa su un percorso: la mappa resta girata, la freccia del
-   corridore gira di `heading + rotation_deg` (scelta 7).
+4. La corsa su un percorso (scelta 7): la mappa resta girata come il
+   disegno. La freccia di direzione del corridore (TASK-164) segna
+   sempre dove va davvero: sullo schermo gira di `heading +
+   rotation_deg`. Il percorso fatto (giallo pieno) e quello da fare
+   (tratteggiato che lampeggia, TASK-224) sono linee della mappa:
+   girano con lei e restano come oggi. La freccia del nord c'è anche
+   qui, con gli stessi due tocchi.
 5. I testi nuovi (la bussola per VoiceOver) nelle cinque lingue.
 
 ## Parte C — i disegni salvati
@@ -99,7 +113,8 @@ delega dell'utente:
 2. «My activities», il «Feed» e il post da condividere (TASK-231)
    mostrano il disegno girato. Le corse di prima restano col nord in alto.
 3. Gli esempi di «Explore» si ridisegnano sul server (`draw_examples`,
-   `paddle_examples`) dopo la parte A: con l'ok dell'utente.
+   `paddle_examples`) dopo il merge della parte A, con l'ok
+   dell'utente: il server oggi è fermo su `7098cb9` (`STATUS.md`).
 
 ## Criteri di accettazione
 
@@ -133,7 +148,9 @@ services/route-engine/tests/test_tilt.py                    (nuovo)
 services/api/shaperoute_api/schemas.py
 services/api/tests/test_rotation.py                         (nuovo)
 packages/shared-types/src/index.ts
+services/route-engine/tests/                                (le impronte fissate che cambiano, elencate nella PR)
 apps/mobile/assets/engine/engine.zip
+apps/mobile/src/paddle/paddleExamples.json                  (se cambiano le forme sull'acqua)
 samples/LOG.md
 samples/TASK-232_*                                          (nuovi)
 docs/ROUTE_ENGINE.md

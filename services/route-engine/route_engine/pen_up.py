@@ -13,6 +13,8 @@ becomes a route:
 - the route is one line, letters and walks in order, and `walks` says
   which stretches of it are walked: [from, to] indices into its points,
   both included. Where a walk ends, the next letter begins.
+- a piece of a shape that leaves its line for a long detour is drawn in
+  parts, and the detour is walked too (detours.py, TASK-242).
 
 Only the letters count: the similarity looks at them alone (`similarity`),
 and the distance asked for is theirs (`drawn_m`). The route's own length,
@@ -23,10 +25,13 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
+from typing import Any
 
 import networkx as nx
 import numpy as np
 
+from route_engine import detours
 from route_engine.errors import ShapeNotDrawableError
 from route_engine.geo import (
     LatLon,
@@ -56,6 +61,15 @@ from route_engine.words import Word
 
 # A walk: the points of a route from `from` to `to`, both included.
 Walk = tuple[int, int]
+
+
+@dataclass
+class LiftedRoute(NetworkRoute):
+    """The route of a shape in pieces with a detour walked instead of drawn
+    (TASK-242): `lifted_m` are the metres its pieces lost to that, on a walk
+    or left out."""
+
+    lifted_m: float = 0.0
 
 
 def place_line(
@@ -109,7 +123,9 @@ def trace(
 
     The pieces of a shape (pieces.py, TASK-223) are its details, as strokes
     are: the zones and the corridor are always the finer ones. A closed
-    piece, like an eye, is traced closed: it ends where it began.
+    piece, like an eye, is traced closed: it ends where it began. Where a
+    piece goes a long way off its line the route walks instead of drawing
+    (`_lifted`, TASK-242): there are more walks than pieces then.
     """
     letters = letter_lines(word, line)
     xys = [latlon_to_local_array(letter[0], np.array(letter)) for letter in letters]
@@ -130,19 +146,29 @@ def trace(
         )
         for letter, xy, own in zip(letters, xys, lengths, strict=True)
     ]
+    drawn = [(k, piece.nodes, piece.points) for k, piece in enumerate(pieces)]
+    lifted_m = 0.0
+    if word.kind == "piece":
+        height_m = word.height * sum(lengths) / word.drawn_length
+        drawn = _lifted(graph, letters, pieces, height_m)
+        if any(part is not pieces[k].points for k, _, part in drawn):
+            # What the pieces drew and no longer do, walked or left out.
+            kept_m = sum(path_length_m(part) for _, _, part in drawn)
+            lifted_m = sum(piece.distance_m for piece in pieces) - kept_m
     points = list(pieces[0].points)
     nodes = list(pieces[0].nodes)
     waypoints = list(pieces[0].waypoints)
     warnings = _named(word, 0, pieces[0].warnings)
     walks: list[Walk] = []
-    for k, piece in enumerate(pieces[1:], start=1):
+    last = 0  # the piece the route is on
+    for k, part_nodes, part_points in drawn[1:]:
         try:
-            way = nx.shortest_path(graph, nodes[-1], piece.nodes[0], weight=step_cost)
+            way = nx.shortest_path(graph, nodes[-1], part_nodes[0], weight=step_cost)
         except nx.NetworkXNoPath:
             raise ShapeNotDrawableError(
-                f"no road leads from {word.label(k - 1)} to {word.label(k)}"
+                f"no road leads from {word.label(last)} to {word.label(k)}"
                 if word.kind == "piece"
-                else f"no road leads from the {word.letters[k - 1].char} "
+                else f"no road leads from the {word.letters[last].char} "
                 f"to the {word.letters[k].char}"
             ) from None
         begin = len(points) - 1
@@ -150,11 +176,13 @@ def trace(
             points.extend(_edge_points(graph, u, v))
         walks.append((begin, len(points) - 1))
         nodes.extend(way[1:])
-        nodes.extend(piece.nodes[1:])
-        points.extend(piece.points[1:])
-        waypoints.extend(piece.waypoints)
-        warnings.extend(_named(word, k, piece.warnings))
-    return NetworkRoute(
+        nodes.extend(part_nodes[1:])
+        points.extend(part_points[1:])
+        if k != last:
+            waypoints.extend(pieces[k].waypoints)
+            warnings.extend(_named(word, k, pieces[k].warnings))
+        last = k
+    route = NetworkRoute(
         points=points,
         distance_m=path_length_m(points),
         warnings=warnings,
@@ -162,6 +190,57 @@ def trace(
         nodes=nodes,
         walks=walks,
     )
+    if lifted_m:
+        return LiftedRoute(**vars(route), lifted_m=lifted_m)
+    return route
+
+
+def _lifted(
+    graph: Graph,
+    lines: Sequence[list[LatLon]],
+    pieces: Sequence[NetworkRoute],
+    height_m: float,
+) -> list[tuple[int, list[Any], list[LatLon]]]:
+    """The stretches the route of a shape in pieces draws, in order: for
+    each the piece it belongs to, its nodes and its points. The outline is
+    drawn whole, and so is a piece that stays by its line; a piece with
+    detours (detours.strays, with pieces `height_m` high) is drawn in parts,
+    without them. Each part more is a walk more: when the walks would be
+    more than detours.MAX_WALKS, the deepest detours are the ones walked."""
+    found = {
+        k: detours.strays(
+            graph,
+            piece.nodes,
+            lines[k],
+            detours.LIFT_NEAR * height_m,
+            detours.LIFT_FAR * height_m,
+            closed=lines[k][0] == lines[k][-1],
+        )
+        for k, piece in enumerate(pieces)
+        if k > 0 and len(piece.nodes) > 1
+    }
+    free = {k: detours.loops(pieces[k].nodes, strays) for k, strays in found.items()}
+    walked = sorted(
+        (
+            (detour.depth_m, k, detour)
+            for k, strays in found.items()
+            for detour in strays.detours
+            if detour not in free[k]
+        ),
+        key=lambda entry: entry[:2],
+        reverse=True,
+    )[: max(0, detours.MAX_WALKS - (len(pieces) - 1))]
+    drawn: list[tuple[int, list[Any], list[LatLon]]] = []
+    for k, piece in enumerate(pieces):
+        if k not in found:
+            drawn.append((k, piece.nodes, piece.points))
+            continue
+        lifted = free[k] + [detour for _, at, detour in walked if at == k]
+        for part in detours.parts(piece.nodes, found[k], lifted):
+            whole = part == piece.nodes
+            points = piece.points if whole else detours.points_of(graph, part)
+            drawn.append((k, part, points))
+    return drawn
 
 
 def _trace_letter(
@@ -231,6 +310,15 @@ def drawn_m(
     if not walks:
         return distance_m
     return distance_m - sum(path_length_m(points[a : b + 1]) for a, b in walks)
+
+
+def sized_m(route: NetworkRoute) -> float:
+    """The length of `route` the distance asked for sizes: what it draws
+    (`drawn_m`), and the detours of its pieces it walks instead (TASK-242).
+    They still count, so that the search keeps the shape the size it had
+    with them rather than making it larger to make up for them."""
+    drawn = drawn_m(route.points, route.distance_m, route.walks)
+    return drawn + (route.lifted_m if isinstance(route, LiftedRoute) else 0.0)
 
 
 def walks_problem(walks: Sequence[Walk], count: int, what: str = "walk") -> str | None:

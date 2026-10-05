@@ -173,8 +173,7 @@ export const FR: Table = {
   // src/feed/FeedPost.tsx
   "OpenFreeMap © OpenMapTiles\nData from OpenStreetMap":
     "OpenFreeMap © OpenMapTiles\nDonnées d'OpenStreetMap",
-  "{user} in {city}: {title}. {facts}. Score {score} out of 100.":
-    "{user} à {city} : {title}. {facts}. Score {score} sur 100.",
+  "{user} in {city}: {title}. {facts}.": "{user} à {city} : {title}. {facts}.",
   "Opens the route on the map": "Ouvre le parcours sur la carte",
 
   // src/i18n/shapeNames.ts
@@ -199,6 +198,8 @@ export const FR: Table = {
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "VILLES PROCHES",
   "{town}, {km} km away": "{town}, à {km} km",
+  "{mi} mi away": "à {mi} mi",
+  "{town}, {mi} mi away": "{town}, à {mi} mi",
 
   // src/paddle/PaddleExplore.tsx
   Next: "À suivre",
@@ -235,6 +236,15 @@ export const FR: Table = {
     "Le parcours reste à moins de 1 km du rivage. Cela ne le rend ni sûr ni autorisé.",
   "I understand": "J'ai compris",
   "Not now": "Pas maintenant",
+
+  // src/paddle/MoveShape.tsx, src/route/RoutePanel.tsx
+  "Move the shape": "Déplacer la forme",
+  "Drag the shape where you want it, then let go.":
+    "Fais glisser la forme où tu veux, puis relâche.",
+  "It stays on the water, off the shore, where it fits.":
+    "Elle reste sur l'eau, à distance de la rive, là où elle tient.",
+  "The shape does not fit there: this is the nearest place.":
+    "La forme ne tient pas là : voici l'endroit le plus proche.",
 
   // src/paddle/waterPlaces.ts
   "from Riva del Garda": "depuis Riva del Garda",
@@ -274,6 +284,23 @@ export const FR: Table = {
   Favorites: "Favoris",
   "My activities": "Mes activités",
   Settings: "Réglages",
+
+  // src/settings/EmailSetting.tsx, PhoneSetting.tsx, contactFields.ts (TASK-183)
+  "NEW EMAIL": "NOUVEL E-MAIL",
+  "PHONE NUMBER": "NUMÉRO DE TÉLÉPHONE",
+  Add: "Ajouter",
+  "Remove number": "Retirer le numéro",
+  "Only you see your number. Friends who already have it will be able to find you on Sgrava.":
+    "Toi seul vois ton numéro. Les amis qui l'ont déjà pourront te trouver sur Sgrava.",
+  "Changing the email is not available on this API yet.":
+    "Sur cette API, on ne peut pas encore changer l'e-mail.",
+  "The phone number is not available on this API yet.":
+    "Sur cette API, il n'y a pas encore de numéro de téléphone.",
+  "This is already the email of your account.": "C'est déjà l'e-mail de ton compte.",
+  "Write the number with its country code, like +39 333 123 4567.":
+    "Écris le numéro avec l'indicatif du pays, comme +39 333 123 4567.",
+  "Wrong password.": "Mot de passe incorrect.",
+  "Another account has this email.": "Un autre compte a cet e-mail.",
 
   // src/profile/SettingsPage.tsx
   "Change email": "Changer d'e-mail",
@@ -363,6 +390,8 @@ export const FR: Table = {
 
   // src/screens/ProfileLayer.tsx
   "Profile, log in again": "Profil, reconnecte-toi",
+  "Profile, {count} follow request": "Profil, {count} demande d'abonnement",
+  "Profile, {count} follow requests": "Profil, {count} demandes d'abonnement",
   Profile: "Profil",
 
   // src/screens/ProfileScreen.tsx
@@ -394,6 +423,11 @@ export const FR: Table = {
   // src/settings/LanguageSetting.tsx
   Language: "Langue",
   "Phone language": "Langue du téléphone",
+
+  // src/settings/UnitsSetting.tsx
+  Kilometres: "Kilomètres",
+  Miles: "Miles",
+  "Phone units": "Unités du téléphone",
 
   // src/settings/sport.ts
   "Ride without a route": "Rouler sans parcours",
@@ -522,6 +556,8 @@ export const FR: Table = {
   "Accept {name}": "Accepter {name}",
   Decline: "Refuser",
   "Decline {name}": "Refuser {name}",
+  "Follow back": "Suivre en retour",
+  "Follow {name} back": "Suivre {name} en retour",
   Remove: "Retirer",
   "Remove {name}": "Retirer {name}",
   "Remove {name} from your followers?": "Retirer {name} de tes abonnés ?",

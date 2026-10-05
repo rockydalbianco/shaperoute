@@ -1,4 +1,10 @@
-import type { EditProfileRequest, Session } from "@shaperoute/shared-types";
+import type {
+  ChangeEmailRequest,
+  ChangePhoneRequest,
+  EditProfileRequest,
+  Session,
+  User,
+} from "@shaperoute/shared-types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -9,9 +15,14 @@ import {
   signOut as signOutRequest,
   signUp as signUpRequest,
 } from "../api/accounts";
+import {
+  changeEmail as emailRequest,
+  changePhone as phoneRequest,
+} from "../api/contact";
 import { editProfile as editRequest } from "../api/profiles";
 import { t } from "../i18n";
 import { profileProblem } from "../profile/profileFields";
+import { contactProblem } from "../settings/contactFields";
 import {
   type Checked,
   checkSignIn,
@@ -51,6 +62,16 @@ export type Account = {
    * in words; the page that asked says it, not `problem`.
    */
   editProfile: (changes: EditProfileRequest) => Promise<string | null>;
+  /**
+   * PUT /me/email (TASK-183): the new address, with the password of the
+   * account. Resolves as `editProfile` does.
+   */
+  changeEmail: (request: ChangeEmailRequest) => Promise<string | null>;
+  /**
+   * PUT /me/phone (TASK-183): the phone number, or null for none. Resolves
+   * as `editProfile` does.
+   */
+  changePhone: (request: ChangePhoneRequest) => Promise<string | null>;
   clearProblem: () => void;
   /**
    * A request sent with `token` elsewhere in the app (the favorites) was
@@ -60,6 +81,8 @@ export type Account = {
 };
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
+
+type Failed = Exclude<AccountOutcome<User>, { kind: "ok" }>;
 
 function keptState(): AccountState {
   const session = loadSession();
@@ -220,9 +243,13 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
   }, [baseUrl, ended, fetchFn, key, put]);
 
   // The account as the API answers, kept like a sign-in: the next opening
-  // has it, and every page shows it at once.
-  const editProfile = useCallback(
-    async (changes: EditProfileRequest): Promise<string | null> => {
+  // has it, and every page shows it at once. What went wrong comes back in
+  // words, for the page that asked.
+  const change = useCallback(
+    async (
+      request: (url: string, token: string) => Promise<AccountOutcome<User>>,
+      problemOf: (failed: Failed) => string,
+    ): Promise<string | null> => {
       const now = current.current;
       if (now.status !== "signedIn") {
         return t(SESSION_ENDED);
@@ -231,12 +258,12 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
         return t(NO_API);
       }
       const { token } = now.session;
-      const outcome = await editRequest(baseUrl, token, changes, { fetchFn, key });
+      const outcome = await request(baseUrl, token);
       if (outcome.kind !== "ok") {
         if (sessionEnded(outcome)) {
           ended(token);
         }
-        return profileProblem(outcome);
+        return problemOf(outcome);
       }
       const latest = current.current;
       if (latest.status === "signedIn" && latest.session.token === token) {
@@ -246,7 +273,34 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
       }
       return null;
     },
-    [baseUrl, ended, fetchFn, key, put],
+    [baseUrl, ended, put],
+  );
+
+  const editProfile = useCallback(
+    (changes: EditProfileRequest) =>
+      change(
+        (url, token) => editRequest(url, token, changes, { fetchFn, key }),
+        profileProblem,
+      ),
+    [change, fetchFn, key],
+  );
+
+  const changeEmail = useCallback(
+    (request: ChangeEmailRequest) =>
+      change(
+        (url, token) => emailRequest(url, token, request, { fetchFn, key }),
+        (failed) => contactProblem(failed, "email"),
+      ),
+    [change, fetchFn, key],
+  );
+
+  const changePhone = useCallback(
+    (request: ChangePhoneRequest) =>
+      change(
+        (url, token) => phoneRequest(url, token, request, { fetchFn, key }),
+        (failed) => contactProblem(failed, "phone"),
+      ),
+    [change, fetchFn, key],
   );
 
   const clearProblem = useCallback(() => setProblem(null), []);
@@ -260,6 +314,8 @@ export function useAccount(baseUrl: string | null, options: Options = {}): Accou
     signOut,
     deleteAccount: () => void deleteAccount(),
     editProfile,
+    changeEmail,
+    changePhone,
     clearProblem,
     sessionEnded: ended,
   };

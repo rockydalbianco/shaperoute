@@ -1,6 +1,7 @@
 import { favoriteTitle } from "../favorites/favoriteRoute";
 import { t, tLater } from "../i18n";
-import { clockLabel, kmLabel, paceLabel } from "../navigation/freeRun";
+import { clockLabel } from "../navigation/freeRun";
+import { paceLabel, runDistanceLabel } from "../units/format";
 
 /**
  * A run of «My activities» in words (TASK-172): when it began, where, what
@@ -77,11 +78,16 @@ export function whereAndWhat(
   return parts.length > 0 ? parts.join(" · ") : t("Run");
 }
 
-/** "4.01 km · 19:00 · 4:44 /km": distance, time and average pace; no pace
- * for a run too short to have one. */
+/** "4.01 km · 19:00 · 4:44 /km": distance, time and average pace, in the
+ * app's units (TASK-182: "2.49 mi · 19:00 · 7:37 /mi"); no pace for a run
+ * too short to have one. */
 export function runFacts(run: { distance_m: number; duration_s: number }): string {
   const ms = run.duration_s * 1000;
-  return [kmLabel(run.distance_m), clockLabel(ms), paceLabel(run.distance_m, ms)]
+  return [
+    runDistanceLabel(run.distance_m),
+    clockLabel(ms),
+    paceLabel(run.distance_m, ms),
+  ]
     .filter((part): part is string => part !== null)
     .join(" · ");
 }

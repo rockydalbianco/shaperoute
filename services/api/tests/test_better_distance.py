@@ -92,7 +92,13 @@ def test_an_older_app_reads_the_answer_as_before(advised: TestClient) -> None:
     body = done(advised)
     older = _load("route-result.json")
     assert set(older) <= set(body)
-    assert set(body) - set(older) == {"walks", "on_foot", "better_distance_m"}
+    # `centre` since TASK-238: null on the roads.
+    assert set(body) - set(older) == {
+        "walks",
+        "on_foot",
+        "better_distance_m",
+        "centre",
+    }
 
 
 def test_the_gpx_takes_the_result_back_with_or_without_the_field(

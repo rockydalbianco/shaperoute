@@ -19,6 +19,14 @@ import {
   space,
 } from "../theme/tokens";
 import {
+  distanceLabel,
+  nearDistanceLabel,
+  wholeDistanceLabel,
+  withPoint,
+} from "../units/format";
+import { appUnits } from "../units/units";
+import { useUnits } from "../units/useUnits";
+import {
   cityName,
   fetchRecommended,
   NEAR_RADIUS_M,
@@ -82,14 +90,15 @@ export function ownCityName(routes: RecommendedRoute[]): string | undefined {
     : undefined;
 }
 
+/** "21 km", in the app's units (TASK-182: "13 mi"). */
 export function kmLabel(distanceM: number): string {
-  return `${Math.round(distanceM / 1000)} km`;
+  return wholeDistanceLabel(distanceM);
 }
 
+/** "640 m away", "1.4 km away"; with miles, "650 ft away", "0.9 mi away". */
 export function awayText(awayM: number): string {
-  return awayM < 1000
-    ? `${Math.round(awayM / 10) * 10} m away`
-    : `${(awayM / 1000).toFixed(1)} km away`;
+  // With a point, as the rest of this page: its texts are still in English.
+  return `${nearDistanceLabel(awayM, appUnits(), withPoint)} away`;
 }
 
 /**
@@ -110,6 +119,8 @@ export function ExploreScreen({
   // A city searched for takes the place of the start (TASK-129).
   const near = city?.point ?? start;
   const insets = useSafeAreaInsets();
+  // The cards are written again when «Settings» changes the units (TASK-182).
+  const units = useUnits();
   // What the page has between its side margins: two cards side by side.
   const { width } = useWindowDimensions();
   const contentWidth = width - 2 * space.lg;
@@ -207,7 +218,7 @@ export function ExploreScreen({
       key={route.id}
       width={card}
       line={route.preview}
-      title={`${capitalised(routeTitle(route))} · ${(route.route_m / 1000).toFixed(1)} km`}
+      title={`${capitalised(routeTitle(route))} · ${distanceLabel(route.route_m, units, withPoint)}`}
       detail={`${cityName(route.city)} · ${awayText(route.away_m)}`}
       match={route.similarity}
       map

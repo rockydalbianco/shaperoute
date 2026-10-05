@@ -13,14 +13,16 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAccount } from "../account/useAccount";
 import { ActivitiesContext, useActivitiesOf } from "../activities/activitiesDoor";
 import { FavoritesContext, useFavoritesOf } from "../favorites/favoritesDoor";
-import { t } from "../i18n";
+import { t, tPlural } from "../i18n";
 import { ProfilePhotoContext, useProfilePhotoOf } from "../profile/useProfilePhoto";
 import { CommentsContext, useCommentsOf } from "../social/commentsDoor";
 import { DrawingsContext, useDrawingsOf } from "../social/drawingsDoor";
+import { useFollowRequestsOf } from "../social/followRequests";
 import { FollowsContext } from "../social/followsDoor";
 import { PeopleContext } from "../social/peopleDoor";
 import { LOG_IN_TO_FIND } from "../social/PeopleSearch";
 import { ReactionsContext, useReactionsOf } from "../social/reactionsDoor";
+import { RequestsBadge } from "../social/RequestsBadge";
 import { StravaContext, useStravaOf } from "../strava/useStrava";
 import {
   color,
@@ -45,6 +47,8 @@ type Door = {
   initial: string | null;
   /** Their picture (TASK-178), in place of the letter; null without one. */
   photo: string | null;
+  /** How many ask to follow them and wait for an answer (TASK-239). */
+  requests: number;
 };
 
 const DoorContext = createContext<Door>({
@@ -52,6 +56,7 @@ const DoorContext = createContext<Door>({
   attention: false,
   initial: null,
   photo: null,
+  requests: 0,
 });
 
 type Props = {
@@ -157,6 +162,9 @@ export function ProfileLayer({ apiUrl, children }: Props) {
   const comments = useCommentsOf(apiUrl, account);
   // And the reactions they leave there (TASK-119).
   const reactions = useReactionsOf(apiUrl, account);
+  // Who asks to follow the account (TASK-239): the number on the button
+  // in the header, asked while the app is open.
+  const { count: requests, counted: onRequests } = useFollowRequestsOf(apiUrl, account);
   const photoUri = photo.uri;
   const attention = state.status === "signedOut" && state.notice === "ended";
   const initial =
@@ -191,8 +199,10 @@ export function ProfileLayer({ apiUrl, children }: Props) {
         setPage(null);
         setPeople("shown");
       },
+      requests,
+      onRequests,
     }),
-    [account, apiUrl, setPeople],
+    [account, apiUrl, onRequests, requests, setPeople],
   );
   const door = useMemo(
     () => ({
@@ -203,8 +213,9 @@ export function ProfileLayer({ apiUrl, children }: Props) {
       attention,
       initial,
       photo: photoUri,
+      requests,
     }),
-    [attention, initial, photoUri],
+    [attention, initial, photoUri, requests],
   );
   return (
     <DoorContext.Provider value={door}>
@@ -274,16 +285,25 @@ export function ProfileLayer({ apiUrl, children }: Props) {
 /**
  * The way to «Profile», at the right of the pages' names: the picture of
  * who is signed in (TASK-178), or their first letter, or a figure when
- * nobody is.
+ * nobody is. At its top right, in red, how many ask to follow them
+ * (TASK-239).
  */
 export function ProfileButton() {
-  const { open, attention, initial, photo } = useContext(DoorContext);
+  const { open, attention, initial, photo, requests } = useContext(DoorContext);
   return (
     <Pressable
       style={styles.button}
       onPress={open}
       accessibilityRole="button"
-      accessibilityLabel={t(attention ? "Profile, log in again" : "Profile")}
+      accessibilityLabel={
+        requests > 0
+          ? tPlural(
+              requests,
+              "Profile, {count} follow request",
+              "Profile, {count} follow requests",
+            )
+          : t(attention ? "Profile, log in again" : "Profile")
+      }
     >
       {initial !== null && photo !== null ? (
         <Image
@@ -301,6 +321,7 @@ export function ProfileButton() {
         </View>
       )}
       {attention && <View style={styles.dot} testID="profile-attention" />}
+      <RequestsBadge count={requests} />
     </Pressable>
   );
 }

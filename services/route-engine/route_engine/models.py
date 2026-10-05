@@ -56,6 +56,11 @@ PEN_UP_WITHOUT_WORD = "pen_up is for the letters of a word"
 PEN_UP_WITHOUT_PIECES = f"{PEN_UP_WITHOUT_WORD}, or the pieces of a shape"
 
 
+# A shape is moved only on the water (TASK-238): on the roads the search
+# decides where it fits.
+NEAR_ON_WATER_ONLY = "a shape is placed near a point only on the water"
+
+
 class InvalidRequestError(ValueError):
     """A RouteRequest field is outside its allowed range."""
 
@@ -76,6 +81,10 @@ class RouteRequest:
     # piece on its own (TASK-223, ADR-0185), on the water too (TASK-226,
     # ADR-0188).
     pen_up: bool = False
+    # On the water, where the centre of the shape is wanted (TASK-238): the
+    # `centre` of a route before, moved. The engine places the shape at the
+    # nearest place to it where it fits.
+    near: tuple[float, float] | None = None
 
     def __post_init__(self) -> None:
         check_start(self.start)
@@ -101,6 +110,10 @@ class RouteRequest:
             )
         if self.pen_up and self.shape is not None and not in_pieces(self.shape):
             raise InvalidRequestError(f"{PEN_UP_WITHOUT_PIECES}; {self.shape} has none")
+        if self.near is not None:
+            if self.activity not in WATER_ACTIVITIES:
+                raise InvalidRequestError(NEAR_ON_WATER_ONLY)
+            check_start(self.near)
 
     @property
     def name(self) -> str:
@@ -198,3 +211,7 @@ class RouteResult:
     # better drawn (optimizer.better_distance, TASK-234, ADR-0197): for the
     # request, not its alternatives. None without one, and on the water.
     better_distance_m: int | None = None
+    # On the water, the centre of the shape as placed (water_fit.WaterRoute):
+    # moved and asked back as `RouteRequest.near`, it moves the shape
+    # (TASK-238). None on the roads.
+    centre: tuple[float, float] | None = None

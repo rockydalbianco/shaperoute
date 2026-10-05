@@ -44,27 +44,15 @@ ora ha il database e il server. Gli altri Todo.
 
 In coda, dopo o accanto:
 
-- **TASK-236 — I paesi vicini sotto «Near me»** (ADR-0200, chiesto
-  dall'utente il 2026-10-05): in «Explore», con «Near me», la sezione
-  «NEARBY TOWNS» con fino a sei posti intorno alla partenza (quattro paesi
-  entro 20 km, o fino a 50 dove sono pochi, più i due più vicini anche se
-  piccoli: risposta dell'utente), da `GET /nearby-cities`; mentre è
-  sulla pagina l'app fa disegnare al server i primi tre esempi di ognuno,
-  e la scheda ne mostra uno. Corsa e bici; la canoa ha i laghi vicini
-  (TASK-233). In revisione; **mancano** il server (l'endpoint: senza, la
-  sezione non compare) e la pubblicazione, con l'ok dell'utente. Regola,
-  testi e tre campioni per posto confermati dall'utente
-  (`tasks/TASK-236.md`).
 - **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
   posizioni non si salva; il GPX di una corsa salvata; il cuore dei
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
   TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
 - **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
   sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
-  (TASK-178, sotto); restano **TASK-183**
-  cambiare email e numero di telefono (ADR-0150, migrazione: il primo numero libero in main al merge; a cosa
-  serve il numero va chiesto all'utente prima), **TASK-182** le unità di
-  misura, km o miglia (ADR-0149, solo app, tocca molti file), **TASK-184**
+  (TASK-178, sotto), email e numero di telefono anche (TASK-183, «In
+  lavorazione»), le unità di misura hanno la parte A (TASK-182, «In
+  lavorazione»); restano **TASK-184**
   «Help», «Terms», «Privacy» (dopo TASK-152: testi e contatti), **TASK-185**
   le notifiche email e push (per ultime: serve qualcosa da notificare, un
   servizio di posta, `expo-notifications`, una build propria). Tutti Todo,
@@ -497,6 +485,27 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
+- **TASK-182 — Le unità di misura: km o miglia** (ADR-0149; chiesto
+  dall'utente il 2026-10-02 e il 2026-10-03, con due scelte: si parte
+  dall'unità del telefono, e con le miglia si fa come Strava). **Parte A**
+  in `main` dal 2026-10-05 (PR #351, merge `7a9506a`; solo app, nessuna
+  dipendenza): `src/units/` (la scelta in `units.json`, l'unità del
+  telefono, `useUnits()`, i formattatori), la riga **«Units»** in
+  «Settings» al posto di quella con «Soon» («Kilometres», «Miles»;
+  «Phone units» dalla parte B), e le miglia in «My activities», nei preferiti e nelle schede
+  di «Explore». Con «Kilometres» l'app scrive quello che scriveva prima.
+  **Scelta dell'utente del 2026-10-05**: la parte A si pubblica subito,
+  ma **l'app parte in km su ogni telefono** finché non c'è la parte B
+  (`FOLLOWS_PHONE` spento): solo chi sceglie «Miles» vede l'app mista.
+  **Aspettano l'utente**: i testi nuovi («Kilometres», «Miles», «{mi} mi
+  away»; «Phone units» si vedrà con la parte B); la prova su un iPhone
+  con le miglia (l'unità del telefono non è stata vista su un telefono
+  vero, né nel simulatore). **Parte B** (file di
+  altri task): «Draw» (la distanza chiesta, passi e limiti in miglia: una
+  scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
+  svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
+  «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito».
+
 ## Completato
 
 - **App** — TASK-240: con «Paddle», laghi e spiagge anche in «Another
@@ -509,6 +518,101 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   e Riccione. Solo app, niente server; «Run» e «Bike» com'erano. Esce con
   la prossima pubblicazione, del coordinatore; da provare sull'iPhone.
   Seguiti in `tasks/TASK-240.md`.
+
+- **API e app** — TASK-183: cambiare email e numero di telefono da
+  «Settings» (ADR-0150; chiesto dall'utente il 2026-10-02 e di nuovo il
+  2026-10-05; PR #346, merge `a89f086`). Scelte dell'utente: il numero
+  serve a farsi trovare dagli amici che lo hanno già (la ricerca dalla
+  rubrica è un task a parte: prima va deciso come si prova un numero), e
+  l'email cambia subito con la password, senza mail di conferma finché
+  non c'è un servizio di posta. `PUT /me/email` (password sbagliata
+  `403`, contata con quelle dell'accesso), `PUT /me/phone` (prefisso del
+  paese, tenuto in E.164, `null` lo toglie; non provato, quindi non
+  unico; lo legge solo il proprietario), `User.phone`, migrazione
+  `0016_contact.sql`. In «Settings» le righe «Change email» e «Phone
+  number» si aprono sotto, nelle cinque lingue; testi confermati
+  dall'utente. **Sul server** dal 2026-10-05, 10:58Z (ok dell'utente «ok
+  aggiorna il server e pubblica», sessione «Impostazioni»): `main`
+  `ae320d3`, circa 10 secondi di fermo, copia
+  `shaperoute-2026-10-05T1058Z.dump`, immagine di prima
+  `shaperoute-api:before-task183`, `draw_examples` rilanciato alle 10:59Z
+  per il motore di #347 e #349 (`data/draw-examples-2026-10-05-task238.log`).
+  La pubblicazione dell'app è del coordinatore. Visto nel simulatore;
+  **da provare sull'iPhone** (un cambio vero di email e di numero).
+  `tasks/TASK-183.md`.
+
+- **Motore, API, app** — TASK-238: spostare la figura sull'acqua col dito
+  (ADR-0202; chiesto dall'utente il 2026-10-05, che ha scelto il
+  trascinamento). **Parte A** (PR #347, merge `797c4bb`): la richiesta in
+  canoa può avere `near`, dove si vuole il centro della forma, e il
+  risultato ha `centre`; il motore mette la forma nel posto più vicino in
+  cui ci sta, nella fascia e con la riva a piedi entro 300 m; senza `near`
+  niente cambia. **Parte B** (PR #350): «Move the shape» sotto «Start» in
+  «Draw» con «Paddle», un dito trascina la figura a mappa ferma, al
+  rilascio l'app richiede il percorso con `near`, e una riga dice se la
+  figura non ci stava. I sei testi sono **confermati dall'utente**
+  (2026-10-05). **Aspettano**: il server con la parte A e poi
+  `draw_examples` (ok dell'utente, dal coordinatore: fino ad allora il
+  pulsante non compare), la pubblicazione dell'app dopo il server, la
+  prova con un dito vero sull'iPhone. Gli esempi di «Explore» e i
+  preferiti non si spostano: seguito da chiedere. `tasks/TASK-238.md`.
+
+- **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
+  (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della
+  faccina a Trento, campioni prima/dopo giudicati «sì, va bene»; PR
+  #349). Con la penna alzata, un pezzo di una forma (bocca, occhio, buco)
+  che le strade portano più di 3/8 di altezza di pezzo lontano dalla sua
+  linea si disegna in parti, e la deviazione è un tratto a piedi
+  (`detours.py`, `pen_up.trace`): a Trento la bocca non scende più 250 m
+  fino al sottopasso della ferrovia. I `walks` possono essere più dei
+  pezzi meno uno, mai più di 9. Il contorno, le parole e l'acqua non
+  cambiano; su 42 richieste di prova 30 danno lo stesso percorso, 10
+  migliorano, nessuna peggiora (`ROUTE_ENGINE.md` §5). **Non sul server
+  né pubblicato**: server e `draw_examples` li fa il coordinatore con
+  l'ok dell'utente; `engine.zip` è rifatto, il telefono lo riceve con la
+  prossima pubblicazione. Seguiti in `tasks/TASK-242.md`.
+
+- **App** — TASK-241: niente punteggio sulle foto dei post del «Feed»
+  (ADR-0207; chiesto dall'utente il 2026-10-05). Il riquadro «98 · out of
+  100» sopra il disegno non c'è più, nemmeno nei post che «Explore» mostra
+  mentre disegna una città (PR #345, merge `ad80385`). **Parte B**
+  (stesso giorno, «sì toglilo anche da VoiceOver»): nemmeno VoiceOver lo
+  legge più, nelle cinque lingue. Altrove (fine corsa, «My activities»,
+  disegno aperto dal «Profile», post da condividere) il punteggio resta.
+  Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
+
+- **App** — TASK-239: il numero rosso delle richieste di follow, e
+  «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).
+  Sul pulsante di «Profile», in alto a destra, un tondo rosso con quante
+  richieste di follow aspettano: l'app lo chiede all'apertura, al ritorno
+  sullo schermo e ogni minuto mentre è aperta (`social/followRequests.ts`,
+  `GET /me/follow-requests?limit=1`). «Profile» si apre con «Requests» già
+  aperto; una richiesta accettata resta nella riga con «Follow back».
+  Nessuna modifica all'API. **Confermati dall'utente** (2026-10-05): il
+  numero, che si spegne quando ogni richiesta ha una risposta, i testi e il
+  giro al minuto. **Non visto su un telefono**: esce con la prossima
+  pubblicazione (del coordinatore, con l'ok dell'utente); da provare
+  sull'iPhone con due account. Le notifiche ad app chiusa restano
+  TASK-185. `tasks/TASK-239.md`.
+
+- **App e API** — TASK-236: i paesi vicini sotto «Near me» (ADR-0200;
+  chiesto dall'utente il 2026-10-05, regola, testi e campioni confermati
+  uno per uno; PR #323, merge `8c3a6ff`). In «Explore», con «Near me»,
+  sotto la fila delle città c'è «NEARBY TOWNS»: una fila di schede da
+  scorrere con fino a sei posti intorno alla partenza, dal più vicino:
+  quattro città e paesi (i più grandi entro 20 km; dove sono meno, i più
+  vicini fino a 50) e i due posti più vicini di tutti, anche villaggi (da
+  Caldonazzo: Tenna, Calceranica, Levico, Pergine, Trento, Borgo). Vengono
+  da `GET /nearby-cities` (`nearby_cities.py`, Places di Geoapify, la
+  chiave resta nell'API). Mentre la sezione è sulla pagina l'app fa
+  disegnare al server cerchio, cuore e stella da 5 km di ogni posto, uno
+  alla volta e al più 12 al minuto: la scheda mostra il cuore, e il paese
+  toccato si apre con le prime tre schede pronte. Corsa e bici (stessi
+  esempi della corsa); la canoa ha i laghi vicini (TASK-233). Provato nel
+  simulatore con l'API del branch, prima dei due posti più vicini.
+  **Sul server** dal 2026-10-05 09:32Z (`f3fdbce`) e **su `preview`** da
+  `8c3a6ff` (gruppo `8f6849ca`), fatti dal coordinatore. Da provare
+  sull'iPhone: le sei schede. Seguiti in `tasks/TASK-236.md`.
 
 - **Motore, API e app** — TASK-234: «Viene meglio a N km» (ADR-0197;
   chiesto dall'utente il 2026-10-05, il «passo 1»; PR #327, merge

@@ -100,9 +100,11 @@ import { NavigationBanner, NavigationCard } from "./src/screens/NavigateScreen";
 import { Pager } from "./src/screens/Pager";
 import { ProfileButton, ProfileLayer } from "./src/screens/ProfileLayer";
 import { PaddleExplore } from "./src/paddle/PaddleExplore";
+import { MoveShape } from "./src/paddle/MoveShape";
 import { PaddleNotice } from "./src/paddle/PaddleNotice";
 import { distanceOnSpot, SPOT_SEARCH_HINT, spotPlaces } from "./src/paddle/placeSpots";
 import { usePaddleNotice } from "./src/paddle/safetyNotice";
+import { useMoveShape } from "./src/paddle/useMoveShape";
 import { activityOf, withoutRouteLabel } from "./src/settings/sport";
 import { SportButton } from "./src/settings/SportButton";
 import { useSport } from "./src/settings/useSport";
@@ -404,6 +406,15 @@ function Sgrava() {
   const paddleNotice = usePaddleNotice();
   const [exploreRun, setExploreRun] = useState<ExploreRun | null>(null);
   const followed = exploreRun ?? chosen;
+  // The shape of a drawn route on the water, moved with a finger (TASK-238).
+  const move = useMoveShape(view, chosen, draw);
+  // Only with the drawn route on the map, not one of "Explore" or a theme's.
+  const movingShape =
+    move.moving &&
+    screen === "map" &&
+    !reviewing &&
+    explored === null &&
+    themed.state.status === "idle";
   // The walks of a drawn word with the pen up (TASK-198), or of a favorite
   // (TASK-199); a route of "Explore" has none.
   const followedWalks =
@@ -740,7 +751,8 @@ function Sgrava() {
                       ? explored.status === "done"
                         ? explored.detail.points
                         : null
-                      : (followed?.points ?? null)
+                      : // A shape left elsewhere stays there while it is drawn.
+                        (followed?.points ?? move.left?.points ?? null)
             }
             walks={
               finishing
@@ -752,7 +764,7 @@ function Sgrava() {
                       explored.status === "done"
                       ? (explored.result.walks ?? null)
                       : null
-                    : followedWalks
+                    : (followedWalks ?? move.left?.walks ?? null)
             }
             onFoot={
               finishing || running || freeFinishing || theming
@@ -762,7 +774,7 @@ function Sgrava() {
                     explored.status === "done"
                     ? (explored.result.on_foot ?? null)
                     : null
-                  : followedOnFoot
+                  : (followedOnFoot ?? move.left?.onFoot ?? null)
             }
             // Only while choosing, a drawn route or an example of "Explore"
             // (TASK-155): running, or on a themed route, one route is the route.
@@ -803,6 +815,8 @@ function Sgrava() {
             onDoubleTap={
               reviewing && drawing !== null ? drawingDoubleTapped : undefined
             }
+            moving={movingShape}
+            onMoved={move.onMoved}
             onError={setMapError}
             // A run of «My activities» takes the map from whatever was on it.
             {...(reviewing ? reviewed : null)}
@@ -909,6 +923,8 @@ function Sgrava() {
             onStop={onEndRun}
             activity={followedActivity}
           />
+        ) : movingShape ? (
+          <MoveShape onCancel={move.cancel} />
         ) : (
           <RouteOutcome
             view={shown}
@@ -936,6 +952,8 @@ function Sgrava() {
                 setScreen("navigate");
               }
             }}
+            onMove={move.available ? move.begin : undefined}
+            movedElsewhere={move.elsewhere}
             choices={choices}
             chosen={chosenIndex}
             onChoose={(index) => answer && setPicked({ of: answer, index })}

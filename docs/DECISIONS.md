@@ -9498,3 +9498,45 @@ peggio del precedente, e fra tre proposte ha scelto quella con i secondi.
 - `rideRun.test.ts` (TASK-216) ha la riga nuova a 20 km e, per la corsa,
   «Same pace as the last kilometre.» al secondo km.
 - Solo app: esce con la prossima pubblicazione, con l'ok dell'utente.
+
+## ADR-0196 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
+
+**Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-234 ·
+il consiglio da tentativi già fatti (il «passo 1») e la riga con «Prova»
+sono scelte dell'utente; soglie, campo e casi sono decisi dall'agente su
+delega dell'utente · estende ADR-0041
+
+**Contesto**: ADR-0041 propone una distanza solo quando il motore
+rifiuta. Se il cuore da 15 km riesce ma a 12 km verrebbe meglio, oggi
+nessuno lo dice. L'utente: «te cerchi un cuore da 15 km ma se con 12 viene
+meglio te lo dice». Fra due proposte ha scelto di partire da quella senza
+calcoli in più.
+
+**Decisione**:
+
+1. Il consiglio viene dai tentativi che la ricerca ha già tracciato
+   (`Search.attempts`): nessun tracciato e nessuna attesa in più.
+2. Un tentativo è «chiaramente meglio» quando il suo costo senza la parte
+   della distanza è più basso di quello del percorso scelto di almeno
+   `W_SHAPE × 0,05`, e la sua somiglianza è almeno 0,90.
+3. La distanza è la sua, arrotondata al km e dentro i limiti
+   dell'attività come `suggested_distance_m`; uguale a quella chiesta,
+   niente consiglio.
+4. Il percorso scelto non cambia: il consiglio è il campo nuovo
+   `better_distance_m` del risultato, `null` senza consiglio.
+5. L'app scrive «This heart comes out better at about 12 km.» con «Try
+   12 km» sotto il percorso, nelle cinque lingue, solo dentro le distanze
+   di «Draw», e mai per tornare alla distanza appena lasciata.
+6. La canoa resta fuori: ha già la sua distanza suggerita (ADR-0164).
+
+**Alternative scartate**: cercare apposta 2–3 distanze vicine dopo il
+primo percorso (il «passo 2»: 5–50 s di server per distanza; si valuta se
+il passo 1 scatta poco); consigliare in base alla sola somiglianza (un
+percorso con un baffo ripassato o una partenza spostata sembrerebbe
+migliore di quanto è).
+
+**Conseguenze**: il consiglio vede solo le distanze che la ricerca ha
+provato, cioè intorno a quella chiesta (scale fra 0,4 e 1,1 di quella
+iniziale): quanto spesso scatta va misurato prima di fare l'app. Come per
+ADR-0041, la distanza consigliata non è garantita: un nuovo disegno rifà
+la ricerca.

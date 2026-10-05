@@ -67,6 +67,16 @@ export const ES: Phrasebook = {
   kilometre: (km, time, pace) =>
     `${capital(units(km, "un kilómetro", "kilómetros"))}. Tiempo: ${time}. Ritmo medio: ${pace} por kilómetro.`,
   cheer: "¡Vamos, a toda máquina!",
+  // Each kilometre against the one before (TASK-217).
+  kmFaster: (by) => `Este kilómetro: ${by} más rápido que el anterior.`,
+  kmSlower: (by) => `Este kilómetro: ${by} más lento que el anterior.`,
+  kmSamePace: "Mismo ritmo que el kilómetro anterior.",
+  rideFaster: (km) =>
+    `Los últimos ${km} kilómetros, más rápidos que los ${km} anteriores.`,
+  rideSlower: (km) =>
+    `Los últimos ${km} kilómetros, más lentos que los ${km} anteriores.`,
+  rideSameSpeed: (km) =>
+    `Los últimos ${km} kilómetros, a la misma velocidad que los ${km} anteriores.`,
   rideKilometres: (km, time, speed) =>
     `${capital(units(km, "un kilómetro", "kilómetros"))}. Tiempo: ${time}. Velocidad media: ${speed} kilómetros por hora.`,
   // The bike on foot (TASK-206).

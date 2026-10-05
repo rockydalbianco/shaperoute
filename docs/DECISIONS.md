@@ -9397,3 +9397,60 @@ SVG: le linee sono `View` ruotate.
   Strava», e la foto si aggiunge a mano. Cambiare la descrizione là è la
   parte B di TASK-231 (API).
 - I testi nuovi sono nelle cinque lingue (ADR-0172), da far confermare.
+
+## ADR-0180 — Il confronto dei km nella voce: i secondi della fine corsa, una frase a parte, in bici ogni 10 km senza numeri
+**Stato**: Attiva · 2026-10-05 · **scelte dell'utente** (2026-10-03) la
+frase a ogni km con i secondi, «stesso passo» entro 2 s, niente al primo
+km, in bici ogni 10 km e senza numeri; il resto **deciso dall'agente su
+delega dell'utente** (TASK-217).
+
+**Contesto**: a ogni km la voce diceva il tempo e il passo medio della
+corsa. L'utente ha chiesto di sentire anche se il km è andato meglio o
+peggio del precedente, e fra tre proposte ha scelto quella con i secondi.
+
+**Decisione**:
+
+1. **Gli stessi secondi della fine corsa.** La differenza viene da
+   `splits` (`runMetrics.ts`), il calcolo della colonna «Change» di «Data»
+   e del riepilogo: il tempo di ogni km dalla traccia, pause escluse,
+   arrotondato al secondo come `changeLabel`. La voce e lo schermo non
+   possono dire due numeri diversi. Il limite dei 2 s (compresi) si guarda
+   sul numero arrotondato, quello che si sentirebbe.
+2. **Una frase a parte, dopo quella del km** (`kmCompare.ts`, un file
+   nuovo: `freeRun.ts`, `runMetrics.ts` e `ride.ts` restano com'erano). La
+   frase del km non cambia di una parola; al quinto km il confronto viene
+   dopo «Daje, avanti tutta!», che è la coda della frase del km (TASK-209).
+3. **Da un minuto in su la differenza è detta come un tempo** («1 minute
+   15 seconds faster…»), con `time` del `Phrasebook`: «75 secondi» non lo
+   dice nessuno. Sotto il minuto è la frase scelta dall'utente.
+4. **In bici**, ogni `RIDE_KM_EVERY` km da 20 km: gli ultimi 10 km contro
+   i 10 prima, in km/h, senza numeri. «Stessa velocità» entro 0,5 km/h
+   (`SAME_SPEED_KMH`): su 10 km a 24 km/h sono circa 30 secondi, sotto non
+   è una differenza che si sente pedalando. L'utente non l'ha chiesto: da
+   confermare, frase e soglia.
+5. **«km» detto per intero** nelle frasi della bici («Ultimi 10 chilometri
+   più veloci dei 10 precedenti.»): l'utente le ha scritte con «km», ma la
+   voce del telefono può leggere male le sigle (ADR-0179, «km/h») e la
+   frase dei km dice già «chilometri». All'orecchio è la stessa frase.
+6. **Tedesco, spagnolo e francese** scritti dall'agente, da confermare.
+   Spagnolo e francese dicono «più veloce / più lento» («más rápido», «plus
+   rapide»): «mejor / mieux» con i secondi suona tradotto.
+
+**Alternative scartate**:
+
+- Allungare la frase del km con il confronto: cambiava una frase
+  approvata (TASK-209) e i test che la fissano parola per parola.
+- Calcolare la differenza dai tempi detti a voce (il tempo totale a ogni
+  km): contiene le pause automatiche solo in parte e non è il numero di
+  «Data».
+- Il confronto in bici con i km/h («2 km/h più veloci»): l'utente ha
+  scelto senza numeri.
+
+**Conseguenze**:
+
+- Le forme con le miglia («Questo miglio: …», «… than the last mile.») le
+  aggiunge TASK-182 con il resto della voce in miglia; lì si decide anche
+  l'intervallo della bici in miglia.
+- `rideRun.test.ts` (TASK-216) ha la riga nuova a 20 km e, per la corsa,
+  «Same pace as the last kilometre.» al secondo km.
+- Solo app: esce con la prossima pubblicazione, con l'ok dell'utente.

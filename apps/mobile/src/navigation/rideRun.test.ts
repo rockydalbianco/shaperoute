@@ -2,8 +2,8 @@
  * A route followed by bike (TASK-216): positions simulated along it, through
  * the navigation as the run screen uses it. Turns said 100 m ahead, the
  * kilometres every 10 with the average speed, the way between two letters
- * ridden; a run along the same route says what it said before, word for
- * word.
+ * ridden; a run along the same route says what a run says. From 20 km the
+ * last 10 km are compared with the 10 before (TASK-217).
  */
 import type { Activity, Direction, LatLon, Walk } from "@shaperoute/shared-types";
 import { act, renderHook } from "@testing-library/react-native";
@@ -172,6 +172,36 @@ test("by bike the kilometres are said every 10, with the average speed", async (
   expect(said().filter((words) => /kilometre/.test(words))).toEqual([
     "10 kilometres. Time: 24 minutes. Average speed: 25 kilometres per hour.",
     "20 kilometres. Time: 48 minutes. Average speed: 25 kilometres per hour.",
+    // The last 10 against the first 10 (TASK-217): nothing at 10 km.
+    "The last 10 kilometres were at the same speed as the 10 before.",
+  ]);
+  await unmount();
+});
+
+test("by bike the last 10 km are compared with the 10 before, with no numbers (TASK-217)", async () => {
+  const { unmount } = await follow(line(31_000), { activity: "cycling" });
+  // 10 km at 20 km/h, 10 at 26, 11 at 23: a fix every 50 m.
+  let seconds = 0;
+  await act(async () => {
+    for (let m = 0; m <= 31_000; m += 50) {
+      onPosition({
+        coords: {
+          latitude: START[0] + m * METRE,
+          longitude: START[1],
+          accuracy: 5,
+          altitude: null,
+        },
+        timestamp: BEGAN + Math.round(seconds * 1000),
+      } as Location.LocationObject);
+      seconds += 50 / ((m < 10_000 ? 20 : m < 20_000 ? 26 : 23) / 3.6);
+    }
+  });
+  expect(said().filter((words) => /kilometre/.test(words))).toEqual([
+    expect.stringMatching(/^10 kilometres\. Time: /),
+    expect.stringMatching(/^20 kilometres\. Time: /),
+    "The last 10 kilometres were faster than the 10 before.",
+    expect.stringMatching(/^30 kilometres\. Time: /),
+    "The last 10 kilometres were slower than the 10 before.",
   ]);
   await unmount();
 });
@@ -194,6 +224,8 @@ test("a ride that goes on does not say again the 10 km it has said", async () =>
   });
   expect(said().filter((words) => /kilometre/.test(words))).toEqual([
     expect.stringMatching(/^20 kilometres\. Time: /),
+    // With its comparison (TASK-217), once.
+    expect.stringMatching(/^The last 10 kilometres were /),
   ]);
   await again.unmount();
 });
@@ -215,7 +247,7 @@ test("by bike the way between two letters is ridden", async () => {
 });
 
 test.each([[undefined], ["running" as const]])(
-  "a run (activity %s) says what it said before, word for word",
+  "a run (activity %s) says a run's words, and each kilometre against the one before",
   async (activity) => {
     const { unmount } = await follow(line(2100), { activity, walks: [], word: null! });
     await act(async () => {
@@ -226,6 +258,8 @@ test.each([[undefined], ["running" as const]])(
       "In 50 metres, turn left onto Via Verdi",
       "1 kilometre. Time: 6 minutes. Average pace: 6 minutes per kilometre.",
       "2 kilometres. Time: 12 minutes. Average pace: 6 minutes per kilometre.",
+      // TASK-217.
+      "Same pace as the last kilometre.",
       "You have arrived.",
     ]);
     await unmount();

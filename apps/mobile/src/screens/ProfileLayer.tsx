@@ -1,3 +1,4 @@
+import type { Person } from "@shaperoute/shared-types";
 import {
   createContext,
   type ReactNode,
@@ -16,6 +17,7 @@ import { t } from "../i18n";
 import { ProfilePhotoContext, useProfilePhotoOf } from "../profile/useProfilePhoto";
 import { CommentsContext, useCommentsOf } from "../social/commentsDoor";
 import { DrawingsContext, useDrawingsOf } from "../social/drawingsDoor";
+import { FollowsContext } from "../social/followsDoor";
 import { PeopleContext } from "../social/peopleDoor";
 import { LOG_IN_TO_FIND } from "../social/PeopleSearch";
 import { ReactionsContext, useReactionsOf } from "../social/reactionsDoor";
@@ -78,6 +80,9 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     peopleAt.current = next;
     setPeopleState(next);
   }, []);
+  // A member touched in the lists of «Profile» (TASK-211): «Find friends»
+  // opens on their profile, and back comes to «Profile».
+  const [member, setMember] = useState<Person | null>(null);
   // Where the drawing on the map was opened: back goes there.
   const drawingFrom = useRef<"profile" | "people">("profile");
   const shown = page !== null || people === "shown";
@@ -165,6 +170,7 @@ export function ProfileLayer({ apiUrl, children }: Props) {
     () => ({
       open: () => {
         if (signedIn) {
+          setMember(null);
           setPeople("shown");
           return;
         }
@@ -173,6 +179,20 @@ export function ProfileLayer({ apiUrl, children }: Props) {
       },
     }),
     [setPeople, signedIn],
+  );
+  // Who follows the account (TASK-211): «Profile» shows the lists, and a
+  // name in them opens the member's profile over it.
+  const followsDoor = useMemo(
+    () => ({
+      apiUrl,
+      account,
+      openProfile: (person: Person) => {
+        setMember(person);
+        setPage(null);
+        setPeople("shown");
+      },
+    }),
+    [account, apiUrl, setPeople],
   );
   const door = useMemo(
     () => ({
@@ -209,24 +229,36 @@ export function ProfileLayer({ apiUrl, children }: Props) {
                     </View>
                     {people !== null && (
                       <PeopleScreen
+                        // A member of the lists, or the search: not the same page.
+                        key={member?.public_id ?? "search"}
                         apiUrl={apiUrl}
                         account={account}
+                        first={member}
                         hidden={people === "behind"}
-                        onBack={() => setPeople(null)}
+                        onBack={() => {
+                          setPeople(null);
+                          if (member !== null) {
+                            setMember(null);
+                            setHint(null);
+                            setPage("account");
+                          }
+                        }}
                       />
                     )}
                     {page !== null && (
-                      <ProfileScreen
-                        account={account}
-                        page={page}
-                        onPage={setPage}
-                        hint={hint}
-                        onBack={() => {
-                          // Closed without an account: the heart's route waits no more.
-                          forgetWaiting();
-                          setPage(null);
-                        }}
-                      />
+                      <FollowsContext.Provider value={followsDoor}>
+                        <ProfileScreen
+                          account={account}
+                          page={page}
+                          onPage={setPage}
+                          hint={hint}
+                          onBack={() => {
+                            // Closed without an account: the heart's route waits no more.
+                            forgetWaiting();
+                            setPage(null);
+                          }}
+                        />
+                      </FollowsContext.Provider>
                     )}
                   </View>
                 </PeopleContext.Provider>

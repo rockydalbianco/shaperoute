@@ -202,11 +202,15 @@ export const FR: Table = {
     "Des formes à pagayer, à moins de 1 km du rivage",
   "LAKES AND SEA": "LACS ET MER",
   "Near me": "Près de moi",
-  "Choose a lake or a beach: eight shapes of 2 km on its water, from the shore.":
-    "Choisis un lac ou une plage : huit formes de 2 km sur son eau, depuis le rivage.",
+  "Choose a lake or a beach: eight shapes on its water, from the shore.":
+    "Choisis un lac ou une plage : huit formes sur son eau, depuis le rivage.",
   "Choose a start in Draw first: the shapes start from the shore nearest to it.":
     "Choisis d'abord un départ dans Draw : les formes partent du rivage le plus proche.",
   "Near your start": "Près de ton départ",
+  "{km} km away": "à {km} km",
+  "Type a lake or a beach": "Écris un lac ou une plage",
+  "No lake or beach matches “{typed}”.":
+    "Aucun lac ou plage ne correspond à « {typed} ».",
   "{shape}, {km} km, on the water": "{shape}, {km} km, sur l'eau",
   "Not drawn": "Non dessiné",
 
@@ -291,6 +295,9 @@ export const FR: Table = {
   "{count} drawing": "{count} dessin",
   "{count} drawings": "{count} dessins",
   "Loading the profile…": "Chargement du profil…",
+  "{count} follower": "{count} abonné",
+  "{count} followers": "{count} abonnés",
+  "{count} following": "suit {count}",
 
   // src/profile/profileFields.ts
   "Editing the profile is not available on this API yet.":
@@ -476,6 +483,29 @@ export const FR: Table = {
 
   // src/social/drawingsDoor.ts
   "This drawing is no longer public.": "Ce dessin n'est plus public.",
+
+  // src/social/FollowButton.tsx
+  "Stop following {name}?": "Ne plus suivre {name} ?",
+  Unfollow: "Ne plus suivre",
+  "Takes your request back.": "Retire ta demande.",
+  Follow: "Suivre",
+  Requested: "Demandé",
+  Following: "Suivis",
+
+  // src/social/FollowLists.tsx
+  Requests: "Demandes",
+  Followers: "Abonnés",
+  "Nobody is asking to follow you.": "Personne ne demande à te suivre.",
+  "Nobody follows you yet.": "Personne ne te suit encore.",
+  "You are not following anyone yet. Find friends from Feed.":
+    "Tu ne suis encore personne. Trouve des amis depuis Feed.",
+  Accept: "Accepter",
+  "Accept {name}": "Accepter {name}",
+  Decline: "Refuser",
+  "Decline {name}": "Refuser {name}",
+  Remove: "Retirer",
+  "Remove {name}": "Retirer {name}",
+  "Remove {name} from your followers?": "Retirer {name} de tes abonnés ?",
 
   // src/social/PeopleSearch.tsx
   "Log in to find your friends.": "Connecte-toi pour trouver tes amis.",

@@ -13,8 +13,8 @@ import {
   UserProfilePage,
 } from "./UserProfilePage";
 
-// Nothing in the app opens this page yet (TASK-116): the tests open it by
-// hand, as the feed will.
+// The page as the search of «Feed» opens it (TASK-215); the button to
+// follow is in UserProfileFollow.test.tsx.
 
 const URL = "http://api";
 const ID = publicProfile.public_id;
@@ -45,10 +45,11 @@ test("another member's profile: picture, name, bio and drawings, read only", asy
   await show(fetchFn);
   expect(await screen.findByText("Ada_runs")).toBeOnTheScreen();
   expect(screen.getByText(publicProfile.bio)).toBeOnTheScreen();
-  expect(screen.getByText("0 drawings")).toBeOnTheScreen();
+  expect(screen.getByText("0 drawings · 12 followers · 9 following")).toBeOnTheScreen();
   expect(screen.getByTestId("avatar-photo")).toHaveProp("source", {
     uri: `data:image/jpeg;base64,${publicProfile.photo}`,
   });
+  // The fixtures' profile is the account's own: not even the button to follow.
   expect(screen.queryAllByRole("button")).toHaveLength(0);
   const [url, init] = fetchFn.mock.calls[0];
   expect(url).toBe(`${URL}/users/${ID}`);

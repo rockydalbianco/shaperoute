@@ -13,6 +13,7 @@ import { thumbSegments } from "../explore/RouteThumb";
 import { decimal, t, tLater } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
 import { durationLabel } from "../screens/FinishScreen";
+import { SPORTS } from "../settings/sport";
 import {
   color,
   fontSize,
@@ -59,9 +60,16 @@ export function shapeLabel(shape: string): string {
   return shapeName(shape);
 }
 
-/** "Moon · 4.9 km · 27 min": what was drawn, how far, how long. */
+/** The sport's name, as its button says it: the same in every language. */
+const PADDLE = SPORTS.find((sport) => sport.id === "paddle")?.name ?? "Paddle";
+
+/**
+ * "Moon · 4.9 km · 27 min": what was drawn, how far, how long. A drawing on
+ * the water says so first, "Paddle · Moon · 2.0 km · 24 min" (TASK-228).
+ */
 export function postFacts(post: SamplePost): string {
-  return `${shapeLabel(post.shape)} · ${decimal(post.route_m / 1000, 1)} km · ${durationLabel(post.minutes * 60_000)}`;
+  const facts = `${shapeLabel(post.shape)} · ${decimal(post.route_m / 1000, 1)} km · ${durationLabel(post.minutes * 60_000)}`;
+  return post.activity === "paddling" ? `${PADDLE} · ${facts}` : facts;
 }
 
 /**
@@ -69,13 +77,14 @@ export function postFacts(post: SamplePost): string {
  * its title. The line is yellow, the route's colour; the score is not. Under
  * the line, once its picture is taken, the map of where it was run
  * (TASK-162). With `onOpen` a tap opens its route on the map, to keep among
- * the favorites or to run (TASK-188).
+ * the favorites or to run (TASK-188). A drawing on the water is drawn the
+ * same, in pieces when its shape is (TASK-228).
  */
 export function FeedPost({ post, width, onOpen }: Props) {
   const height = drawingHeight(width);
   const segments = useMemo(
-    () => thumbSegments(post.line, width, height, DRAWING_PAD),
-    [post.line, width, height],
+    () => thumbSegments(post.line, width, height, DRAWING_PAD, post.gaps),
+    [post.line, post.gaps, width, height],
   );
   const map = useFeedMap(post.id, post.line, width, height, DRAWING_PAD);
   const city = cityName(post.city);

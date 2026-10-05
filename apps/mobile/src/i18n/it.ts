@@ -64,8 +64,6 @@ export const IT: Table = {
   "{when}, {where}, {facts}, open on the map":
     "{when}, {where}, {facts}, apri sulla mappa",
   "Opening…": "Apertura…",
-  "Score: {score} out of 100": "Punteggio: {score} su 100",
-  "Score {score}": "Punteggio {score}",
   Public: "Pubblica",
   "Delete this run? It cannot be undone.":
     "Eliminare questa corsa? Non si può annullare.",
@@ -76,7 +74,6 @@ export const IT: Table = {
   Delete: "Elimina",
 
   // src/activities/ActivityCard.tsx
-  "out of 100": "su 100",
   "Yellow: the route. White: what you ran.":
     "Giallo: il percorso. Bianco: quello che hai corso.",
   "White: what you ran.": "Bianco: quello che hai corso.",
@@ -512,8 +509,6 @@ export const IT: Table = {
   "No public drawings yet. Make a run public in My activities.":
     "Ancora nessun disegno pubblico. Rendi pubblica una corsa in Le mie attività.",
   "No drawings yet.": "Ancora nessun disegno.",
-  "{title}, score {score} out of 100, open on the map":
-    "{title}, punteggio {score} su 100, apri sulla mappa",
 
   // src/social/SuperLikeSheet.tsx
   "Super like": "Super like",

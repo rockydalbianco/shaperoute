@@ -324,9 +324,9 @@ test("a favorite with the pen up starts with its walks, pauses at a letter's end
     await fireEvent.press(screen.getByLabelText("Pause"));
     await fireEvent(screen.getByLabelText("Stop"), "longPress");
     await screen.findByText("Your run");
-    // The score is of the letters alone.
-    await waitFor(() => expect(bodies("POST", "/track-scores")).toHaveLength(1));
-    expect(bodies("POST", "/track-scores")[0]).toMatchObject({ walks: WALKS });
+    // The end of a run asks for no score (TASK-241): the walks go with
+    // «Save», and the API scores the letters alone by itself.
+    expect(bodies("POST", "/track-scores")).toHaveLength(0);
 
     await fireEvent.press(
       screen.getByRole("button", { name: "Save to My activities" }),

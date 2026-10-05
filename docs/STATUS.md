@@ -631,8 +631,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   numero sull'immagine, né nel testo per Strava (PR #355, merge
   `b7a82da`). **Parte D** (stesso giorno, «toglilo anche da My
   activities»): niente «Score 91» nell'elenco e niente «91 · out of 100»
-  sulla corsa aperta. Il punteggio resta a fine corsa e sui disegni del
-  «Profile». Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
+  sulla corsa aperta (PR #358, merge `78e9bc1`). **Parte E** (stesso
+  giorno, «sì toglilo anche da lì», e per la fine corsa «solo km e
+  tempo»): niente punteggio sui disegni del «Profile» né a fine corsa,
+  dove la scheda dice «4.0 km · 32 min» e l'app non chiede più `POST
+  /track-scores`. **Il punteggio non si vede più da nessuna parte
+  nell'app**; l'API lo calcola ancora per le corse salvate. Restano da
+  decidere con l'utente due frasi della bozza di «Privacy» che lo
+  nominano. Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

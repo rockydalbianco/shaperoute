@@ -1932,6 +1932,28 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   disegnato né per uno di «Explore» o dei preferiti. Si segue la linea:
   il banner dice «Follow the route to the end.», la barra e i km mancanti
   sono quelli della corsa, la voce dice solo i km.
+- **«Move the shape»** (TASK-238, ADR-0202; trascinare col dito è una
+  scelta dell'utente del 2026-10-05): sotto «Start», quando il percorso
+  disegnato è sull'acqua e la risposta dice dov'è la forma (`centre`; con
+  un'API di prima il pulsante non c'è). Toccato, il pannello diventa «Move
+  the shape», «Drag the shape where you want it, then let go.», «It stays
+  on the water, off the shore, where it fits.» e «Cancel»; sulla mappa
+  **un dito trascina il percorso invece della mappa** (due dita fanno lo
+  zoom come sempre, e rimettono la forma dov'era). Al rilascio l'app
+  richiede lo stesso percorso con `near`, il centro di prima più lo
+  spostamento, e la stessa partenza: il posto lo decide il motore, il più
+  vicino in cui la forma ci sta. Mentre il motore lavora la forma resta
+  sulla mappa **dove il dito l'ha lasciata**, con la barra d'attesa sotto;
+  poi arriva il percorso vero, con la sua partenza dalla riva. Se è finita
+  a più di 80 m da dove è stata lasciata (`NOT_THERE_M`: sulla terra,
+  troppo al largo, troppo vicina alla riva) una riga lo dice: «The shape
+  does not fit there: this is the nearest place.». Si può spostare ancora,
+  ogni volta da dov'è. Un dito che si muove meno di 8 px non sposta niente;
+  «Cancel» lascia tutto com'era. Vale per il percorso di «Draw»; quelli di
+  «Explore» e dei preferiti non si spostano (non hanno `centre`). Nella
+  pagina della mappa sono i messaggi `setMove` e `moved`
+  (`src/map/messages.ts`, `mapPage.ts`); la logica è in
+  `src/paddle/shapeMove.ts` e `useMoveShape.ts`. Testi in cinque lingue.
 - **L'avviso di sicurezza**, al **primo** «Start» sull'acqua su questo
   telefono (scelta dell'utente), a tutto schermo prima del conto alla
   rovescia: 🛶, «Before you paddle», quattro righe («Wear a life

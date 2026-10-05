@@ -232,6 +232,15 @@ export const FR: Table = {
   "I understand": "J'ai compris",
   "Not now": "Pas maintenant",
 
+  // src/paddle/MoveShape.tsx, src/route/RoutePanel.tsx
+  "Move the shape": "Déplacer la forme",
+  "Drag the shape where you want it, then let go.":
+    "Fais glisser la forme où tu veux, puis relâche.",
+  "It stays on the water, off the shore, where it fits.":
+    "Elle reste sur l'eau, à distance de la rive, là où elle tient.",
+  "The shape does not fit there: this is the nearest place.":
+    "La forme ne tient pas là : voici l'endroit le plus proche.",
+
   // src/paddle/waterPlaces.ts
   "from Riva del Garda": "depuis Riva del Garda",
   "from Como": "depuis Côme",

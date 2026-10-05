@@ -149,6 +149,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-228 — Il «Feed» sull'acqua** (ADR-0190; chiesto dall'utente il
+  2026-10-03, scelte del 2026-10-05). Fatto, in review: la PR aspetta la
+  coda dei merge. Fra i quindici disegni d'esempio di «Feed» ce ne sono
+  quattro fatti sull'acqua, sempre, con ogni sport: `greta_kayak` (cuore,
+  Lago di Garda), `leo.sup` (stella, Lago di Como), `irene_onwater` (luna,
+  Jesolo), `ale.paddle` (testa di cane a pezzi, Riccione), da 2 km, con
+  «Paddle» in testa alla riga dei fatti. I percorsi sono gli esempi dentro
+  l'app (`paddleExamples.json`): `src/feed/paddlePosts.ts` li legge, senza
+  una copia sua. Un tocco apre il percorso sull'acqua senza chiedere
+  all'API; lo sport scelto non cambia. `FeedScreen.tsx`, `App.tsx` e le
+  tabelle delle lingue non sono toccati. Solo app: esce con la prossima
+  pubblicazione. Da confermare con l'utente i quattro titoli; da provare
+  sull'iPhone. File toccati e dove riprendere: `tasks/TASK-228.md`.
 - **TASK-226 — Gli occhi staccati sull'acqua** (ADR-0188; chiesto
   dall'utente il 2026-10-03, forme scelte il 2026-10-05: tutte quelle a
   pezzi tranne il sole). **Parte A, il motore e l'API**, in `main` dalla

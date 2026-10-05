@@ -46,6 +46,7 @@ from shaperoute_api.strava import (
     typed_name,
 )
 from shaperoute_api.strava_client import (
+    ACTIVITIES_URL,
     AUTHORIZE_URL,
     CALLBACK_PATH,
     CLIENT_ID_VARIABLE,
@@ -123,6 +124,11 @@ class FakeStrava:
         self.read_only: set[int] = set()
         self.uploads: dict[int, dict[str, Any]] = {}
         self.activities: dict[tuple[int, str], int] = {}
+        # The text under each activity's name, as changed after its upload.
+        self.descriptions: dict[int, str] = {}
+        # Activities Strava does not let Sgrava change (only their athlete
+        # sees them).
+        self.locked: set[int] = set()
         self.files: list[dict[str, Any]] = []
         self._numbers = itertools.count(1)
 
@@ -166,6 +172,8 @@ class FakeStrava:
             return self._upload(call)
         if call.method == "GET" and call.url.startswith(UPLOADS_URL + "/"):
             return self._look(call)
+        if call.method == "PUT" and call.url.startswith(ACTIVITIES_URL + "/"):
+            return self._describe(call)
         return _answer(404, {"message": "Record Not Found"})
 
     def _form(self, call: Call) -> dict[str, str]:
@@ -280,6 +288,20 @@ class FakeStrava:
         elif "activity_id" not in upload and "error" not in upload:
             self._read(upload)
         return _answer(200, self._state(upload_id))
+
+    def _describe(self, call: Call) -> Reply:
+        athlete = self._athlete(call)
+        if athlete is None:
+            return _answer(401, {"message": "Authorization Error"})
+        activity_id = int(call.url.rsplit("/", 1)[1])
+        if (athlete, activity_id) not in {
+            (a, number) for (a, _), number in self.activities.items()
+        }:
+            return _answer(404, {"message": "Record Not Found"})
+        if activity_id in self.locked:
+            return _answer(403, {"message": "Forbidden"})
+        self.descriptions[activity_id] = self._form(call)["description"]
+        return _answer(200, {"id": activity_id})
 
     def _read(self, upload: dict[str, Any]) -> None:
         mine = (upload["athlete"], upload["external_id"])
@@ -434,15 +456,19 @@ def test_the_examples_are_the_bodies() -> None:
         ("strava-status.json", StravaStatusBody),
         ("strava-connect.json", StravaConnectBody),
         ("strava-activity.json", StravaActivityBody),
-        ("strava-send-description.json", StravaSendBody),
+        ("strava-send-post.json", StravaSendBody),
     ):
         example = _load(name)
         assert set(example) == set(model.model_fields)
         assert model.model_validate(example).model_dump() == example
-    # The body of an app before TASK-208: the name alone.
+    # The body of an app before TASK-208: the name alone; before TASK-231,
+    # no post.
     before = _load("strava-send.json")
-    assert set(before) == set(StravaSendBody.model_fields) - {"description"}
+    assert set(before) == set(StravaSendBody.model_fields) - {"description", "post"}
     StravaSendBody.model_validate(before)
+    described = _load("strava-send-description.json")
+    assert set(described) == set(StravaSendBody.model_fields) - {"post"}
+    StravaSendBody.model_validate(described)
     url = _load("strava-connect.json")["url"]
     assert url.startswith(AUTHORIZE_URL + "?")
 
@@ -948,6 +974,98 @@ def test_a_typed_description_keeps_its_lines_and_is_cut_not_refused() -> None:
     assert long == "x" * MAX_DESCRIPTION_LENGTH
     assert strava_description(None, drawn=False) == "Recorded with Sgrava"
     assert strava_description("Fun.", drawn=True) == "Fun.\n\nDrawn with Sgrava"
+    # The post's text on top (TASK-231).
+    assert strava_description("Fun.", drawn=True, post="🔥 5.20 km") == (
+        "🔥 5.20 km\n\nFun.\n\nDrawn with Sgrava"
+    )
+    assert strava_description(None, drawn=False, post="🔥") == (
+        "🔥\n\nRecorded with Sgrava"
+    )
+
+
+def test_the_post_goes_over_the_runners_words(
+    client: TestClient, fake: FakeStrava
+) -> None:
+    headers = signed_up(client)
+    connected(client, fake, headers)
+    saved(client, headers)
+    body = _load("strava-send-post.json")
+    client.post(f"/me/activities/{KEY}/strava", json=body, headers=headers)
+
+    [form] = fake.files
+    assert form["name"] == body["name"]
+    assert form["description"] == (
+        f"{body['post']}\n\n{body['description']}\n\nDrawn with Sgrava"
+    )
+
+
+def test_a_post_changes_the_text_of_a_run_already_on_strava(
+    client: TestClient, fake: FakeStrava
+) -> None:
+    headers = signed_up(client)
+    connected(client, fake, headers)
+    saved(client, headers)
+    kept = client.put(
+        f"/me/activities/{KEY}/drawing",
+        json={"visibility": "only_me", "description": "Legs heavy."},
+        headers=headers,
+    )
+    assert kept.status_code == 200
+    first = client.post(f"/me/activities/{KEY}/strava", headers=headers)
+    [form] = fake.files
+    assert form["description"] == "Legs heavy.\n\nDrawn with Sgrava"
+
+    again = client.post(
+        f"/me/activities/{KEY}/strava",
+        json={"name": "Not this", "post": " 🔥❤️ 5.20 km · Score 87 "},
+        headers=headers,
+    )
+
+    assert again.status_code == 200
+    assert again.json() == first.json()
+    # No second upload: the same activity, its text changed, its name not.
+    assert len(fake.files) == 1
+    [activity_id] = fake.activities.values()
+    [put] = fake.made("PUT", ACTIVITIES_URL)
+    assert put.url == f"{ACTIVITIES_URL}/{activity_id}"
+    assert fake.descriptions[activity_id] == (
+        "🔥❤️ 5.20 km · Score 87\n\nLegs heavy.\n\nDrawn with Sgrava"
+    )
+    # Without a post a run already sent is answered as it is.
+    client.post(f"/me/activities/{KEY}/strava", json={"post": " "}, headers=headers)
+    client.post(f"/me/activities/{KEY}/strava", headers=headers)
+    assert len(fake.made("PUT", ACTIVITIES_URL)) == 1
+
+
+def test_an_activity_strava_will_not_let_change_is_said(
+    client: TestClient, fake: FakeStrava
+) -> None:
+    headers = signed_up(client)
+    connected(client, fake, headers)
+    saved(client, headers)
+    first = client.post(f"/me/activities/{KEY}/strava", headers=headers)
+    [activity_id] = fake.activities.values()
+    fake.locked.add(activity_id)
+
+    refused = client.post(
+        f"/me/activities/{KEY}/strava", json={"post": "🔥"}, headers=headers
+    )
+
+    assert refused.status_code == 422
+    assert refused.json()["error"]["code"] == "invalid_request"
+    assert message(refused) == (
+        "Strava did not let Sgrava change this activity: change its text on Strava."
+    )
+    assert activity_id not in fake.descriptions
+    # Deleted on Strava: the same. The run stays sent, as it was.
+    fake.locked.clear()
+    fake.activities.clear()
+    gone = client.post(
+        f"/me/activities/{KEY}/strava", json={"post": "🔥"}, headers=headers
+    )
+    assert gone.status_code == 422
+    still = client.get(f"/me/activities/{KEY}/strava", headers=headers)
+    assert still.json() == first.json()
 
 
 def test_a_typed_name_is_one_line_and_not_too_long() -> None:

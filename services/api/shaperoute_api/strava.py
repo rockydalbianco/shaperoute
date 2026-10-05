@@ -93,6 +93,9 @@ NOT_CONNECTED = "Strava is not connected: connect it first."
 STRAVA_DOWN = "Strava did not answer: try again in a while."
 STRAVA_BUSY = "Strava is taking no more uploads for now: try again later."
 RUN_REFUSED = "Strava could not read this run."
+NOT_DESCRIBED = (
+    "Strava did not let Sgrava change this activity: change its text on Strava."
+)
 
 T = TypeVar("T")
 SendStatus = Literal["not_sent", "processing", "sent"]
@@ -126,6 +129,10 @@ class StravaSendBody(BaseModel):
     description: str | None = None
     """«How did it go?», typed before «Save» (TASK-208); empty or null: the
     drawing's, if the run has one. Above Sgrava's own line."""
+    post: str | None = None
+    """The text of the run's post (TASK-231): its emoji and results, above
+    the runner's words. On a run already on Strava it changes the text
+    there."""
 
 
 class StravaActivityBody(BaseModel):
@@ -226,11 +233,14 @@ def typed_description(text: str | None) -> str | None:
     return lines.strip()[:MAX_DESCRIPTION_LENGTH].strip() or None
 
 
-def strava_description(described: str | None, drawn: bool) -> str:
-    """What Strava shows under the name: the runner's words, then a line on
-    what Sgrava did with the run, a route it drew or only the recording."""
+def strava_description(
+    described: str | None, drawn: bool, post: str | None = None
+) -> str:
+    """What Strava shows under the name: the post's emoji and results
+    (TASK-231), the runner's words, then a line on what Sgrava did with the
+    run, a route it drew or only the recording."""
     sgrava = DRAWN if drawn else RECORDED
-    return sgrava if described is None else f"{described}\n\n{sgrava}"
+    return "\n\n".join(part for part in (post, described, sgrava) if part is not None)
 
 
 def _activity(status: str | None, activity_id: int | None) -> StravaActivityBody:
@@ -491,12 +501,15 @@ class StravaRuns:
         key: str,
         name: str | None = None,
         description: str | None = None,
+        post: str | None = None,
     ) -> StravaActivityBody:
         """The run on Strava: uploaded if it never was, then followed until
         Strava has read it, for a few seconds. `processing` after that: the
         same call again goes on following, and uploads nothing twice.
         `name` and `description` are the ones typed in the app; they count
-        only for the upload."""
+        only for the upload. `post`, the text of the run's post (TASK-231),
+        goes with the upload, and on a run already sent replaces the text
+        under its name on Strava."""
         with self._answering():
             first: Upload | None = None
             with self.database.connect() as conn:
@@ -510,10 +523,13 @@ class StravaRuns:
                 if run is None:
                     raise HTTPException(404, UNKNOWN_ACTIVITY)
                 if run["strava_status"] == "sent":
+                    posted = typed_description(post)
+                    if posted is not None and run["strava_activity_id"]:
+                        self._describe(user_id, run, description, posted)
                     return _activity("sent", run["strava_activity_id"])
                 upload_id: int | None = run["strava_upload_id"]
                 if upload_id is None:
-                    first = self._upload(user_id, key, run, name, description)
+                    first = self._upload(user_id, key, run, name, description, post)
                     upload_id = first.id
                     if upload_id is not None:
                         conn.execute(
@@ -530,6 +546,7 @@ class StravaRuns:
         run: DictRow,
         typed: str | None,
         typed_words: str | None,
+        post: str | None = None,
     ) -> Upload:
         name = typed_name(typed) or activity_name(run)
         gpx = run_gpx(
@@ -540,7 +557,9 @@ class StravaRuns:
         )
         # A run that followed no route drew nothing: it was only recorded.
         description = strava_description(
-            typed_description(typed_words) or run["described"], run["drawn"]
+            typed_description(typed_words) or run["described"],
+            run["drawn"],
+            typed_description(post),
         )
         sport_type = SPORT_TYPES[run["activity"]]
         return self._authorized(
@@ -549,6 +568,21 @@ class StravaRuns:
                 token, gpx, key, name, description, sport_type
             ),
         )
+
+    def _describe(
+        self, user_id: int, run: DictRow, typed_words: str | None, posted: str
+    ) -> None:
+        """The text under the name of a run already on Strava, made again
+        with its post on top (TASK-231). 422 when Strava does not let it."""
+        description = strava_description(
+            typed_description(typed_words) or run["described"], run["drawn"], posted
+        )
+        activity_id: int = run["strava_activity_id"]
+        if not self._authorized(
+            user_id,
+            lambda token: self.strava.describe(token, activity_id, description),
+        ):
+            raise AccountError(422, "invalid_request", NOT_DESCRIBED)
 
     def _look(self, user_id: int, upload_id: int) -> Upload | None:
         return self._authorized(
@@ -700,7 +734,7 @@ def strava_routes() -> APIRouter:
         activity = (
             runs.send(user.id, key)
             if body is None
-            else runs.send(user.id, key, body.name, body.description)
+            else runs.send(user.id, key, body.name, body.description, body.post)
         )
         if activity.status == "processing":
             response.status_code = 202

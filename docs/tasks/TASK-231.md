@@ -58,7 +58,7 @@ della traccia, come un disegno che vedono gli altri (ADR-0114).
    mette sopra «Drawn with Sgrava». L'API la accetta già (TASK-208 A).
 4. I testi nuovi in inglese, italiano, tedesco, spagnolo e francese.
 
-## Parte B — l'API (da fare)
+## Parte B — l'API (fatta il 2026-10-05, branch `feat/TASK-231-b-strava-update`)
 
 Una corsa **già su Strava** tiene il testo con cui è partita: oggi «Send
 to Strava» a «Save» manda la corsa senza il testo del post, e il post
@@ -68,6 +68,10 @@ una corsa già mandata, cambi la descrizione dell'attività su Strava (`PUT
 /api/v3/activities/{id}`, permesso `activity:write`, che Sgrava chiede
 già). Poi l'app mostra «Update on Strava» al posto della riga di oggi.
 Vuole l'aggiornamento del server, con l'ok dell'utente.
+
+Fatta così (ADR-0194, punti 7–9): il testo del post è un campo suo,
+`post`, in cima alla descrizione; su una corsa già mandata fa il `PUT`.
+L'utente il 2026-10-05: «fai la parte b e pubblica».
 
 ## Criteri di accettazione
 
@@ -86,11 +90,18 @@ Vuole l'aggiornamento del server, con l'ok dell'utente.
 - [x] Test verdi dell'app, lint, tipi, Prettier.
 - [ ] Prova sull'iPhone con Instagram e Strava veri (l'utente, dopo la
       pubblicazione con il suo ok).
-- [ ] Parte B.
+- [x] Parte B: `post` in cima alla descrizione all'invio; su una corsa
+      già mandata il testo cambia su Strava con un `PUT`, il nome no;
+      Strava che rifiuta dà `422` e la corsa resta mandata (test con
+      Strava finto); «Update on Strava» nell'app (test).
 
 ## File toccati
 
 ```
+services/api/shaperoute_api/strava.py, strava_client.py   (parte B)
+services/api/tests/test_strava.py                         (parte B)
+packages/shared-types/fixtures/strava-send-post.json      (parte B, nuovo)
+docs/API.md                                               (parte B)
 apps/mobile/package.json
 package-lock.json
 apps/mobile/__mocks__/react-native-view-shot.ts          (nuovo)

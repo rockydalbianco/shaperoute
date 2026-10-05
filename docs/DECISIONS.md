@@ -9802,8 +9802,12 @@ pagina come quella della corsa.
   nome, e `water=lake`/`reservoir` oppure un nome che dice lago («Lago»,
   «Laghi», «Laghetto», «Lac», «…see»). Senza la regola del nome entravano
   valli da pesca, casse di laminazione e cave. I bacini artificiali ci
-  sono: OpenStreetMap non dice dove pagaiare è vietato, e l'avviso di
-  sicurezza della canoa c'è già.
+  sono (confermato dall'utente): OpenStreetMap non dice dove pagaiare è
+  vietato, e l'avviso di sicurezza della canoa c'è già. Restano fuori le
+  acque segnate come lago ma chiamate per quello che sono: «Centrale …»,
+  «Cassa di …», «Vasca …», «Zona umida …» (trovate nell'estratto
+  dell'Italia: il bacino di una centrale, una cassa di espansione, una
+  zona umida).
 - **Le forme sono da 2 km dove ci stanno, altrimenti da 1,5 o da 1 km**: la
   distanza più grande a cui cuore, cerchio e stella ci stanno tutti e tre,
   provata con il motore punto per punto. Sotto 1 km il motore non disegna,

@@ -1,6 +1,6 @@
 # TASK-246 — Le figure «Paddle» dei posti vicini già sul telefono
 
-**Stato**: In revisione (PR #369; il merge aspetta il «merge 369» del coordinatore)
+**Stato**: Done — in `main` dalla #369 (`2fcf6b5`, 2026-10-05); figure dei tre posti più vicini già sul telefono, prova sull'iPhone dell'utente dopo la pubblicazione
 **Fase**: 4 · **Branch**: `feat/TASK-246-paddle-shapes-ahead`
 **Dipende da**: TASK-214 (le mappe della zona al primo avvio, ADR-0177),
 TASK-227 e TASK-233 (gli esempi sull'acqua di «Explore»)
@@ -126,6 +126,10 @@ Le otto forme del Lago di Levico: tutte disegnate, una ogni 6 secondi,
 mezzo secondo l'una; testa di cane e testa di coniglio con i tre tratti a
 penna alzata; il file pesa 47 kB per un posto, quindi circa 150 kB per
 tre.
+
+**In `main`** dalla #369 (`2fcf6b5`), con le spiagge di TASK-245 fra i
+«tre posti» (test con Alassio) e il giro fermo mentre l'app è in secondo
+piano (paletto del coordinatore). La pubblica il coordinatore.
 
 **Non visto** sullo schermo, né nel simulatore né sull'iPhone: la prova è
 dell'utente dopo la pubblicazione (aprire l'app, aspettare tre minuti, poi

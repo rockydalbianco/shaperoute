@@ -3,8 +3,9 @@ import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useState } from "react";
 
+import { appUnits } from "../units/units";
 import { loadVoices, speaking } from "../voice/voiceChoice";
-import { FREE_ROUTE, kmAnnouncement, wholeKm } from "./freeRun";
+import { FREE_ROUTE, kmAnnouncement, wholeUnits } from "./freeRun";
 import { kmComparison } from "./kmCompare";
 import { controlRun, type RunSession } from "./runControl";
 import { emptyTrack, type Track } from "./trackRecorder";
@@ -22,7 +23,8 @@ export type FreeRunState =
  * position, with the screen on or in pocket mode, into the run file of
  * TASK-112. No directions: the voice says each kilometre, with the time
  * and the pace, and from the second how it went against the one before
- * (TASK-217). The countdown, «Pause» and the pause by standing still are
+ * (TASK-217); with miles each mile, in the units «Settings» has when the
+ * voice speaks (TASK-182). The countdown, «Pause» and the pause by standing still are
  * runControl's (TASK-169). The position never leaves the phone.
  */
 export function useFreeRun(active: boolean): FreeRunState {
@@ -50,8 +52,10 @@ export function useFreeRun(active: boolean): FreeRunState {
       // A free run stopped lately goes on with its track (trackStore).
       const recorder = startRun(FREE_ROUTE, Date.now());
       stopRecording = recorder.stop;
-      // A run that goes on does not say again the kilometres it has said.
-      let saidKm = wholeKm(recorder.track());
+      // A run that goes on does not say again the kilometres it has said;
+      // with miles, the miles (TASK-182).
+      let saidUnits = appUnits();
+      let saidKm = wholeUnits(recorder.track(), saidUnits);
       let position: LatLon | null = null;
       const session = controlRun(recorder, {
         // «Pause» and «Resume» change the track between two fixes.
@@ -85,13 +89,20 @@ export function useFreeRun(active: boolean): FreeRunState {
             false,
           );
           const track = recorder.track();
-          const km = wholeKm(track);
+          const units = appUnits();
+          if (units !== saidUnits) {
+            // «Settings» changed the units during the run: those behind
+            // are not said again, the next one is.
+            saidUnits = units;
+            saidKm = wholeUnits(track, units);
+          }
+          const km = wholeUnits(track, units);
           if (km > saidKm) {
             saidKm = km;
             const { language } = speaking();
-            play([{ say: kmAnnouncement(km, track, language), vibrate: false }]);
+            play([{ say: kmAnnouncement(km, track, language, units), vibrate: false }]);
             // Then how it went against the one before (TASK-217).
-            const compared = kmComparison(km, track, language);
+            const compared = kmComparison(km, track, language, units);
             if (compared !== null) {
               play([{ say: compared, vibrate: false }]);
             }

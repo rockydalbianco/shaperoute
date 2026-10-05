@@ -53,7 +53,7 @@ test("a drawing is read by its title, or by the day it was run", () => {
   expect(dayLabel("yesterday")).toBe("");
 });
 
-test("the drawings of a profile, three a row, with their score; a tap opens one", async () => {
+test("the drawings of a profile, three a row, without their score; a tap opens one", async () => {
   const { value, pageOf, open } = door(page([HEART, another(2)]));
   await render(
     <DrawingsContext.Provider value={value}>
@@ -62,14 +62,15 @@ test("the drawings of a profile, three a row, with their score; a tap opens one"
   );
   expect(await screen.findAllByTestId("drawing-cell")).toHaveLength(2);
   expect(pageOf).toHaveBeenCalledWith(ID, null);
-  expect(screen.getByText("Score 87")).toBeOnTheScreen();
-  // A run without a route has no score.
+  // The heart has a score (87): nobody sees it, nobody hears it.
+  expect(screen.queryByText(/Score/)).toBeNull();
+  expect(screen.queryByRole("button", { name: /score/ })).toBeNull();
   expect(
     screen.getByRole("button", { name: "Drawing 2, open on the map" }),
   ).toBeOnTheScreen();
   await fireEvent.press(
     screen.getByRole("button", {
-      name: "Sunday heart by the river, score 87 out of 100, open on the map",
+      name: "Sunday heart by the river, open on the map",
     }),
   );
   expect(open).toHaveBeenCalledWith(HEART);

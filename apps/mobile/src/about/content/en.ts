@@ -54,7 +54,6 @@ const help: AboutDocument = {
             "A voice tells you each turn ahead of time. The map shows the part you have run and the part still ahead.",
             "«Pause» stops the clock and «Resume» starts it again.",
             "To end the run, hold the stop button: a short tap does not end it.",
-            "At the end, a score out of 100 tells how close you drew the shape.",
           ],
         },
         "«Run without a route» records your run all the same, with no shape to follow.",
@@ -196,7 +195,7 @@ const terms: AboutDocument = {
             "On the water take extra care: wear a life jacket, check the weather and the wind, follow the local rules (swimming areas, boat lanes, harbours). Sgrava does not know them. A route close to the shore is not, for that, safe or allowed.",
           ],
         },
-        "Distances, times, speed and score come from the phone's GPS and are estimates.",
+        "Distances, times and speed come from the phone's GPS and are estimates.",
       ],
     },
     {

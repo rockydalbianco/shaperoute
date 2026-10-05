@@ -10453,6 +10453,34 @@ cose); tenere premuto per prenderla (un gesto che nessuno scopre da solo).
 - Gli esempi di «Explore» con «Paddle» non hanno `centre`: per spostarli
   serve ridisegnarli o chiedere il percorso al server (parte B).
 
+**Aggiunta del 2026-10-05 (TASK-244)** — gli esempi di «Explore» con
+«Paddle» si spostano anche loro; che il percorso spostato **resti di
+«Explore»** è una scelta dell'utente (2026-10-05, l'altra proposta: farlo
+diventare il percorso di «Draw»), il resto è deciso dall'agente su delega
+dell'utente.
+
+10. **L'esempio dice dov'è la sua forma**: `centre` è scritto nei 32
+    esempi dentro l'app (`paddle_examples.py`; ridisegnati sull'acqua del
+    server sono identici, con `centre` in più) e tenuto per quelli chiesti
+    al server, anche nel file del telefono. Un esempio tenuto prima non ce
+    l'ha e non si sposta finché non è ridisegnato: non lo si ridisegna
+    apposta, perché senza rete sparirebbe.
+11. **Si richiede l'esempio com'era stato chiesto**, con `near`: l'app
+    ricorda la richiesta di ogni esempio pronto, con **la partenza del
+    luogo** e non quella del percorso sulla riva. È il punto 5: la stessa
+    partenza è lo stesso file dell'acqua, e nessun download in più.
+12. **La risposta prende il posto dell'esempio sulla mappa, non nella
+    lista**: la scheda resta quella di «Explore», e riaprendola dalla
+    lista c'è l'esempio com'era (il punto 6 dal lato dell'app). Se la
+    richiesta fallisce torna il percorso di prima, con una riga che dice
+    perché.
+13. **Solo aperto da «Explore»**: lo stesso esempio aperto dal «Feed»
+    (TASK-228) o un preferito non si spostano. Scartato: scrivere nella
+    richiesta la partenza del percorso (`points[0]`), che l'esempio ha già
+    (un'altra area dell'acqua, forse da scaricare); far passare il
+    percorso spostato a «Draw» (la sua pagina avrebbe forma, distanza e
+    partenza diverse da quelle sulla mappa).
+
 ## ADR-0207 — Niente punteggio sopra il disegno dei post del «Feed»
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-241 ·
@@ -10515,6 +10543,42 @@ mostra. Le chiavi «Score {score}», «Score: {score} out of 100» e «out of
 100» restano nelle tabelle perché le usano i disegni del «Profile»
 (`DrawingsGrid`, `DrawingCard`), dove il punteggio si vede ancora, come
 a fine corsa: l'utente non li ha nominati.
+
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte E; scelte
+dell'utente: «sì toglilo anche da lì» per la fine corsa e i disegni del
+«Profile», e «Solo km e tempo» alla domanda su cosa mostra la scheda di
+fine corsa). **Il punteggio non si vede e non si legge più da nessuna
+parte nell'app.**
+
+1. **Disegni del «Profile»**: niente «Score 87» sotto il disegno della
+   griglia, niente riquadro sul disegno aperto; l'etichetta è «{title},
+   open on the map» per tutti.
+2. **Fine corsa** (supera in parte ADR-0090 e ADR-0093, per quello che
+   l'app mostra): la scheda ha una riga, «4.0 km · 32 min», e i pulsanti
+   di prima. L'app **non chiede più `POST /track-scores`**: via «Scoring
+   your run…», «Too short for a score», «The score will come later»,
+   «The score did not arrive», «Try again» e «97% of the route».
+3. **«Done» senza account** toglie sempre la corsa dal file: non c'è più
+   un punteggio da aspettare alla prossima apertura (deciso dall'agente
+   su delega, conseguenza del punto 2).
+4. **L'API non cambia**: `POST /track-scores` resta, e le corse salvate
+   hanno ancora `score`, calcolato da sé. `src/api/trackScores.ts` resta
+   nell'app senza che una schermata lo chiami (deciso dall'agente: i test
+   della penna alzata leggono `toScoreRequest`; toglierlo è un seguito).
+5. **Le chiavi** «Score {score}», «Score: {score} out of 100», «out of
+   100» e «{title}, score {score} out of 100, open on the map» escono
+   dalle quattro tabelle.
+6. **«Help» e «Terms»** (`src/about/content/`, bozze di TASK-184): tolta
+   la frase «At the end, a score out of 100 tells how close you drew the
+   shape.» e «and score» da «Distances, times, speed and score come from
+   the phone's GPS». **«Privacy» non è toccata**: dice che il server
+   tiene il punteggio delle corse salvate (vero) e nomina l'evento «a run
+   scored», che l'app non manda più; è un testo dell'utente.
+
+**Alternative scartate**: tenere «97% of the route» (l'utente ha scelto
+solo km e tempo; avrebbe tenuto la richiesta all'API, l'attesa e i
+messaggi senza rete); togliere `score` dall'API (altro contratto, usato
+dai dati già salvati; non chiesto).
 
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
@@ -11047,6 +11111,192 @@ deciso nemmeno che cosa si notificherà.
   l'account di prima in SQL.
 - `Account` ha un metodo in più, `changeNotifications`: i test che
   costruiscono un `Account` a mano hanno una riga in più.
+
+## ADR-0210 — Le spiagge di «Paddle»: i paesi scelti dall'utente, il punto della riva dai dati, un riquadro d'acqua a paese
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-245), dentro la **richiesta dell'utente** del 2026-10-05: «aggiungi
+altre spiagge oltre Jesolo e Riccione». I 29 posti e la regola «si tengono
+solo dove il motore disegna» sono **scelte dell'utente** dello stesso
+giorno (`tasks/TASK-245.md`, «Scelte dell'utente»). Numero dato dal
+coordinatore.
+
+**Contesto**: al mare l'app aveva due posti scelti a mano, con il punto
+della riva scritto a mano e gli esempi dentro l'app (`waterPlaces.ts`,
+ADR-0169, ADR-0189). I laghi invece vengono da un elenco scritto da un
+comando (`lake_catalog.py`, ADR-0196), con i punti presi dalla forma del
+lago. Il mare non ha una forma da cui prendere i punti: è il riquadro
+meno la terra, e una costa non ha un nome. Il server ha l'acqua solo dei
+riquadri che gli si danno (ADR-0187): Overpass non gli risponde.
+
+**Decisione**:
+
+1. **Un comando nuovo, `beach_catalog.py`, sul modello di quello dei
+   laghi**, in due passi: i riquadri d'acqua (`--boxes`), poi l'elenco
+   (`--cache-dir`), provato col motore come lo disegna l'API
+   (`plan_water`). Scrive `apps/mobile/src/paddle/beaches.json`, con le
+   righe uguali a quelle di `lakes.json`. `lake_catalog.py` non cambia.
+2. **Un posto è un paese**: il nome che l'app mostra e il punto dove
+   OpenStreetMap ha il suo nodo `place`, scritti nel comando (`PLACES`).
+   Le posizioni sono state lette una volta da Photon; «Ostia» è Lido di
+   Ostia, «Cavallino» il paese di Cavallino-Treporti.
+3. **Il punto della riva non è scritto a mano**: è uno dei punti dove il
+   motore dice che si arriva all'acqua a piedi (`water.build_area`), su
+   una spiaggia se ce n'è una, il più vicino al paese entro **3 km**
+   (`REACH_M`: la piazza di Villasimius è a 1,8 km dalla sua spiaggia). Il
+   comando ne prova fino a quattro, lontani almeno 500 m l'uno
+   dall'altro, e tiene il primo dove cuore, cerchio e stella stanno a
+   2 km; altrimenti quello con la distanza più lunga fra 1,5 e 1 km, come
+   sui laghi piccoli (scelta dell'utente in TASK-233).
+4. **Un punto solo a paese**, non uno ogni 4 km come sulle rive dei laghi:
+   chi cerca «Rimini» vuole Rimini, e il motore sposta comunque la
+   partenza fino a 2 km lungo la riva.
+5. **Un riquadro d'acqua a paese**: tiene la richiesta più lunga che l'API
+   accetta sull'acqua (5 km) da ogni partenza entro 3 km dal paese, circa
+   16 km di lato. Un paese che un file già sul server copre non ne ha uno
+   nuovo (`--boxes --cache-dir`): Rimini sta nel file di Riccione,
+   Cavallino in quello di Jesolo.
+6. **Nell'app solo `waterSpots.ts`**: `WATER_SPOTS` è i luoghi scelti a
+   mano, i laghi, poi le spiagge. «Explore», «Near me» e «Another place»
+   le trovano. Niente esempi dentro l'app: le forme si chiedono all'API,
+   come per i laghi.
+7. **In «Another place» solo l'ultima parola scritta vale come inizio di
+   una parola del nome** (`findSpots` in `placeSpots.ts`, ADR-0204); le
+   parole prima, già finite, devono essere parole intere. Con le spiagge
+   nell'elenco ogni indirizzo che comincia con «via» proponeva
+   «Viareggio», di cui «via» è l'inizio: «via al lago» e «via Roma,
+   Trento» tornano a non proporre niente, come l'utente aveva confermato
+   in TASK-240. «via» da sola, mentre si scrive, propone ancora
+   «Viareggio». `searchSpots` di «Explore» non cambia: lì si cerca un
+   lago o una spiaggia, e ogni parola vale come inizio. File dati dal
+   coordinatore a questo task.
+
+**Alternative scartate**:
+
+- **Un elenco di parole da strada da ignorare** («via», «viale»,
+  «corso»): già scartato in ADR-0204, non finisce mai.
+- **Tutta la costa d'Italia**, un punto ogni tanti km: a spanne 0,3–1,7 GB
+  d'acqua sul server, e punti senza un nome da cercare. Sconsigliata
+  all'utente, che ha scelto i 29 posti.
+- **Aggiungere i posti a `waterPlaces.ts`**, come Jesolo e Riccione:
+  vorrebbe il punto scritto a mano e gli esempi dentro l'app (25 KB a
+  posto), che sono di TASK-244.
+- **Il punto scritto a mano**, guardando la mappa: 29 punti da scegliere e
+  da rifare a ogni estratto nuovo, e niente dice che lì si arriva
+  all'acqua.
+- **Prendere i paesi dall'estratto** (`place=*`): l'estratto dell'acqua
+  non ha i nodi dei paesi, e «Mondello» o «Ostia» non sono comuni.
+- **Riquadri stretti intorno al punto scelto**: il punto si conosce solo
+  dopo aver letto l'acqua, e una partenza sul lungomare a 2 km dal punto
+  resterebbe senz'acqua.
+
+**Conseguenze**:
+
+- 29 posti su 29 tengono le forme a 2 km (estratto del 2026-09-30), e
+  tutti le otto forme di «Explore». 27 file d'acqua nuovi, 22,6 MB.
+- **L'app non si pubblica prima che l'acqua sia sul server**: senza,
+  scegliere una spiaggia nuova dà «Map data for this area could not be
+  downloaded.».
+- In «Another place» una parola scritta a metà e seguita da un'altra non
+  trova più niente («lev terme»); «lev», «lago di lev» e i nomi interi
+  come prima. «lev» trova anche «Sestri Levante».
+- Una partenza al mare a più di 3 km da un paese dell'elenco resta come
+  prima: funziona solo dove il server ha o riesce a scaricare l'acqua.
+- Se il motore dell'acqua cambia (TASK-232 A tocca `water_fit.py`), le
+  distanze dell'elenco vanno riprovate: `MAPS.md`, «Le spiagge di
+  «Paddle»».
+- Il motore non cambia; «Run» e «Bike» non cambiano.
+
+## ADR-0149 — aggiornamento (parte C): la corsa e la voce in miglia
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente (TASK-182,
+parte C). Le **scelte dell'utente** restano quelle del 2026-10-03: con le
+miglia le distanze in mi, il passo in min/mi, la voce a ogni miglio, le
+distanze brevi in piedi; in bici la velocità. Il modo, e i numeri qui
+sotto, sono dell'agente e **vanno detti all'utente**.
+
+**Contesto**: dopo la parte A, con «Miles» la corsa, la sua fine e la
+voce erano ancora in km. La traccia sul telefono, i punti in cui la voce
+parla (ADR-0052, ADR-0179) e quello che si salva sono in metri; i
+parziali di «Data» e il confronto della voce (ADR-0180) nascono dalla
+traccia, per km. La voce ha le sue tabelle per lingua (ADR-0171).
+
+**Decisione**:
+
+1. **I parziali per miglio si calcolano sul telefono, dalla traccia.**
+   `unitTimesMs(track, unitM)` in `runMetrics.ts` è `kmTimesMs` con la
+   lunghezza del tratto come parametro (`kmTimesMs` lo chiama con 1000);
+   `splits(track, unitM)` e `lastKmS(track, unitM)` lo stesso. Un miglio
+   che finisce fra due posizioni finisce in proporzione, le pause sono
+   escluse, quello che avanza dopo l'ultimo miglio intero non è un
+   parziale: come per i km. Niente si salva per miglio: non esistono
+   parziali salvati (né alla fine della corsa né in «My activities»), e
+   quello che va all'API o resta nel file della corsa non cambia.
+2. **In bici la voce parla ogni 5 miglia** (`RIDE_MI_EVERY`, 8 km) al
+   posto di ogni 10 km (`RIDE_KM_EVERY`, scelta dell'utente del
+   2026-10-03): è il numero tondo di miglia più vicino, e a 15 mph sono
+   venti minuti. Dal decimo miglio confronta le ultime 5 con le 5 prima.
+3. **Le soglie non cambiano con l'unità**: stesso passo entro 2 secondi,
+   compresi, anche fra due miglia (`SAME_PACE_S`); stessa velocità entro
+   0,5 km/h, compresi, misurati in km/h anche con le miglia
+   (`SAME_SPEED_KMH`): la frase della bici non ha numeri.
+4. **L'incitamento dopo il terzo miglio** (`CHEER_MI`, 4,8 km): il miglio
+   più vicino ai 5 km scelti dall'utente (`CHEER_KM`); al quinto miglio
+   sarebbero 8 km.
+5. **I piedi ai cinquanta, mai zero** (`roundFeet` in
+   `src/units/runFormat.ts`), come `shortDistanceLabel` della parte A:
+   50 m → «150 feet», 100 m → «350 feet». **I punti in cui la voce parla
+   restano in metri** (50 m a piedi, 100 m in bici, il tratto con la bici
+   a mano): cambiano solo le parole. Il banner scrive i piedi allo stesso
+   modo e passa alle miglia, con un decimale e il punto, da 1000 piedi.
+6. **La voce legge l'unità quando parla**: `wordsOf(lingua, unità =
+   appUnits())` dà le frasi con le distanze brevi in metri o in piedi
+   (`voiceWords(book, units)`); il navigatore e la bici a mano non sanno
+   niente delle unità. Le frasi del miglio sono voci nuove di ogni
+   tabella (`mile`, `mileFaster`, `mileSlower`, `mileSamePace`,
+   `rideMiles`, `rideMilesFaster`…, `inFeet`, `walkTheBikeFeet`), accanto
+   a quelle in km, che restano alla lettera. I ganci della corsa leggono
+   `appUnits()` a ogni posizione: se l'unità cambia a corsa iniziata, il
+   conto riparte da dove si è, senza ridire niente.
+7. **Sullo schermo**: `useRunNumbers` chiama `useUnits()` e porta l'unità
+   nei numeri; la distanza con due decimali e il punto, come in km
+   (ADR-0149, punto 3); la velocità in mph con un decimale. I testi nuovi
+   in `t()` con una riga per unità (ADR-0149, punto 8): «Last mi»,
+   «miles», «Mi», «Your first mile will show here.», «Mile {mile}:
+   {pace}», «Mile {mile}: {speed} mph». I testi in km della schermata,
+   non ancora tradotti (ADR-0172), restano come sono.
+8. **Resta in metri**: la traccia, il file della corsa, il GPX, l'API, i
+   punti delle svolte, la salita («Elev. gain», in m) e le calorie.
+
+**Alternative scartate**: ogni 10 miglia in bici (16 km: a 15 mph la voce
+tacerebbe quaranta minuti); ogni miglio in bici (un miglio dura quattro
+minuti: troppo, per la stessa ragione per cui i km sono ogni 10);
+l'incitamento al quinto miglio (8 km: non è più «dopo i primi 5 km»); i
+piedi alla decina («160 feet» non lo dice nessuno, ADR-0149); le yarde
+(fuori scope); convertire le soglie del confronto (3,2 s al miglio, 0,3
+mph: numeri che nessuno ha scelto, per una frase che in bici non ha
+numeri); salvare i parziali per miglio (un contratto in più, per una cosa
+che il telefono calcola dalla traccia); rinominare `kilometre`, `kmFaster`
+e le altre voci delle tabelle in nomi senza unità (cambierebbe i test di
+TASK-209/216/217, che devono passare come sono).
+
+**Conseguenze**:
+
+- Con «Miles» la corsa, la navigazione, la sua fine e la voce sono in
+  miglia; con «Kilometres» niente cambia (i test di prima passano senza
+  modifiche). `FOLLOWS_PHONE` resta spento: lo accende chi chiude la
+  parte B.
+- **Mostrati all'utente e confermati il 2026-10-05** («ok, i testi delle
+  miglia vanno bene»): i tre numeri sopra (5 miglia in bici, il terzo
+  miglio, i piedi ai cinquanta), i sei testi nuovi e le frasi della voce
+  in inglese e italiano (`tasks/TASK-182.md`, «Parte C»); tedesco,
+  spagnolo e francese sono dell'agente.
+- **Non ascoltato**: come la voce del telefono legge «feet», «miles per
+  hour», «miglia orarie» e il francese «mile» va sentito su un telefono.
+- `src/activities/RunEnd.tsx` non scrive distanze e non è stato toccato:
+  la fine della corsa con i km è in `FinishScreen.tsx` e
+  `FreeRunScreen.tsx`.
+- `kmLabel` e `paceLabel` di `navigation/freeRun.ts` restano in km per chi
+  li usa ancora (`share/postRun.ts`, `social/DrawingCard.tsx`: parte B).
+- Solo app: nessuna dipendenza, niente server.
 
 ## ADR-0209 — Con la penna alzata, sul contorno si camminano solo i baffi
 **Stato**: Attiva · 2026-10-05 · **deciso dall'agente su delega

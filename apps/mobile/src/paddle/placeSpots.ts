@@ -45,8 +45,10 @@ function wordsOf(text: string): string[] {
  * left out («Terme», «via»), and so are the common ones («lago», «di») when
  * another word tells the lake: «lago di Levico Terme» finds «Lago di
  * Levico». With common words alone every typed word must be in the name, as
- * in «Explore»: «lago» finds every lake, «via al lago» none. The nearest
- * first.
+ * in «Explore»: «lago» finds every lake, «via al lago» none. Only the last
+ * word typed may be the beginning of a word of a name, as it is still being
+ * written; a word before it must be a whole one: «via Roma» does not find
+ * «Viareggio» (TASK-245). The nearest first.
  */
 export function findSpots(
   spots: readonly WaterSpot[],
@@ -71,19 +73,23 @@ export function findSpots(
   const many = Math.max(COMMON_NAMES, named.length * COMMON_SHARE);
   const common = all.filter((word) => (names.get(word) ?? 0) > many);
 
-  const known = typed.filter((part) => all.some((word) => word.startsWith(part)));
+  // Only the last word is still being typed: the ones before it are whole.
+  const parts = typed.map((text, i) => ({ text, whole: i < typed.length - 1 }));
+  const fits = (word: string, part: (typeof parts)[number]) =>
+    part.whole ? word === part.text : word.startsWith(part.text);
+  const known = parts.filter((part) => all.some((word) => fits(word, part)));
   const telling = known.filter(
     (part) =>
-      part.length >= MIN_TELLING_LENGTH &&
-      !common.some((word) => word.startsWith(part)),
+      part.text.length >= MIN_TELLING_LENGTH &&
+      !common.some((word) => fits(word, part)),
   );
-  if (telling.length === 0 && known.length < typed.length) {
+  if (telling.length === 0 && known.length < parts.length) {
     return [];
   }
-  const wanted = telling.length > 0 ? telling : typed;
+  const wanted = telling.length > 0 ? telling : parts;
   return named
     .filter(({ words }) =>
-      wanted.every((part) => words.some((word) => word.startsWith(part))),
+      wanted.every((part) => words.some((word) => fits(word, part))),
     )
     .map(({ found }) => found);
 }

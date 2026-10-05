@@ -1,4 +1,10 @@
-import type { Activity, LatLon, RouteResult, Shape } from "@shaperoute/shared-types";
+import type {
+  Activity,
+  LatLon,
+  RouteRequest,
+  RouteResult,
+  Shape,
+} from "@shaperoute/shared-types";
 import { File, Paths } from "expo-file-system";
 import { useEffect, useSyncExternalStore } from "react";
 
@@ -103,6 +109,16 @@ function shapeOf(shape: Shape, set: ExampleSet): ReturnType<typeof shapeAsked> {
   return set.activity === "paddling" ? shapeAsked(shape, true, "paddling") : { shape };
 }
 
+/** What a set asks the API for `shape` from `city`: an example's request. */
+function requestOf(city: Place, shape: Shape, set: ExampleSet): RouteRequest {
+  return {
+    ...shapeOf(shape, set),
+    distance_m: set.distance_m,
+    start: city.point,
+    activity: set.activity,
+  };
+}
+
 /** A set's shapes, as its cards show them: the heart first. */
 function setShapes(set: ExampleSet): readonly Shape[] {
   return [...EXAMPLE_SHAPES, ...set.more];
@@ -144,6 +160,12 @@ const LICENSE =
  */
 export type ExampleDetail = RecommendedRouteDetail & {
   alternatives?: RecommendedRouteDetail[];
+  /**
+   * On the water, where the engine placed the shape (RouteResult.centre):
+   * what «Move the shape» moves (TASK-244). An example kept before it, or
+   * drawn by an API older than TASK-238, has none and is not moved.
+   */
+  centre?: LatLon;
 };
 
 export type Example =
@@ -246,11 +268,40 @@ export function asRecommended(
       points,
       license,
       ...(walks !== undefined ? { walks } : {}),
+      ...(result.centre ? { centre: result.centre } : {}),
       // B, C: the routes the engine found besides its own (TASK-093).
       alternatives: (result.alternatives ?? []).map((other, i) =>
         whole(other, `${id}:${i + 1}`),
       ),
     },
+  };
+}
+
+/**
+ * An example with its route drawn again, its shape moved (TASK-244): what
+ * the engine answered in place of its line, the rest as it was. Only for
+ * the map it is open on: the list keeps the example as it was drawn.
+ */
+export function movedExample(
+  detail: ExampleDetail,
+  result: RouteResult,
+): ExampleDetail {
+  const { id, city, shape, word, style, distance_m, license, activity } = detail;
+  return {
+    id,
+    city,
+    shape,
+    word,
+    style,
+    distance_m,
+    route_m: result.distance_m,
+    similarity: result.similarity,
+    points: result.points,
+    license,
+    ...(activity !== undefined ? { activity } : {}),
+    ...penUp(result),
+    ...(result.centre ? { centre: result.centre } : {}),
+    alternatives: [],
   };
 }
 
@@ -308,6 +359,8 @@ function cannotBeDrawn(outcome: RouteOutcome): boolean {
 // whole, to open. Outside the screen: going to the map stops nothing.
 const examples = new Map<string, Example[]>();
 const details = new Map<string, ExampleDetail>();
+// How each was asked, to ask for it again with its shape moved (TASK-244).
+const asked = new Map<string, RouteRequest>();
 const listeners = new Set<() => void>();
 // The other shapes the API could not draw in a city, in this run of the
 // app: asked again they would fail the same, at the cost of a whole search.
@@ -354,6 +407,14 @@ export function exampleDetail(id: string): ExampleDetail | undefined {
   return details.get(id);
 }
 
+/**
+ * The request a ready example was drawn for: from its place, not from where
+ * its route begins, so the API reads the same zone or water again.
+ */
+export function exampleRequest(id: string): RouteRequest | undefined {
+  return asked.get(id);
+}
+
 export type Storage = {
   load: () => Record<string, ExampleDetail[]>;
   save: (kept: Record<string, ExampleDetail[]>) => void;
@@ -392,7 +453,10 @@ export function readKept(data: unknown): Record<string, ExampleDetail[]> {
   const kept: Record<string, ExampleDetail[]> = {};
   for (const [key, list] of Object.entries(data)) {
     if (Array.isArray(list)) {
-      kept[key] = list.filter(isRecommendedDetail).map(readAlternatives);
+      kept[key] = list
+        .filter(isRecommendedDetail)
+        .map(readAlternatives)
+        .map(readCentre);
     }
   }
   return kept;
@@ -404,6 +468,20 @@ function readAlternatives(detail: ExampleDetail): ExampleDetail {
   return Array.isArray(alternatives) && alternatives.every(isRecommendedDetail)
     ? detail
     : route;
+}
+
+/** A centre that does not read is as none kept: the example is not moved. */
+function readCentre(detail: ExampleDetail): ExampleDetail {
+  const { centre, ...route } = detail;
+  return centre === undefined || isPoint(centre) ? detail : route;
+}
+
+function isPoint(value: unknown): value is LatLon {
+  return (
+    Array.isArray(value) &&
+    value.length === 2 &&
+    value.every((n) => typeof n === "number" && Number.isFinite(n))
+  );
 }
 
 /** `city`'s routes first in the file, the oldest cities out. */
@@ -445,6 +523,7 @@ function fromFile(
       return { shape, status: "waiting" };
     }
     details.set(detail.id, detail);
+    asked.set(detail.id, requestOf(city, shape, set));
     const { id, city: name, word, style, distance_m, route_m, similarity } = detail;
     const route: RecommendedRoute = {
       id,
@@ -558,22 +637,16 @@ export function drawExamples(
       }
       sent.push(Date.now());
       put({ shape, status: "drawing" });
-      const outcome = await request(
-        apiUrl,
-        {
-          ...shapeOf(shape, set),
-          distance_m: set.distance_m,
-          start: city.point,
-          activity: set.activity,
-        },
-        { signal: controller.signal },
-      );
+      const outcome = await request(apiUrl, requestOf(city, shape, set), {
+        signal: controller.signal,
+      });
       if (controller.signal.aborted || outcome.kind === "cancelled") {
         return;
       }
       if (outcome.kind === "route") {
         const { route, detail } = asRecommended(city, shape, outcome.result, set);
         details.set(detail.id, detail);
+        asked.set(detail.id, requestOf(city, shape, set));
         put({ shape, status: "ready", route });
         keep(storage, key, examples.get(key) ?? []);
         continue;
@@ -621,6 +694,7 @@ export function forgetExamples(): void {
   running = null;
   examples.clear();
   details.clear();
+  asked.clear();
   leftOut.clear();
   sent.length = 0;
 }

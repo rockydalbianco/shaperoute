@@ -147,17 +147,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-226 — Gli occhi staccati sull'acqua** (ADR-0188; chiesto
   dall'utente il 2026-10-03, forme scelte il 2026-10-05: tutte quelle a
-  pezzi tranne il sole). **Parte A, il motore e l'API**: con `pen_up` e
-  `paddling` una forma a pezzi si disegna pezzo per pezzo; il percorso
-  lascia il contorno dove gli occhi sono più vicini, li disegna e torna,
-  e i tratti a penna alzata sono i `walks`. Campioni veri nei quattro
-  luoghi: 36 su 36 a 2 km, 64–112 m a penna alzata per pesce e teste. Con
-  la penna giù tutto identico (18 impronte nuove, più quelle di prima). Lo
-  zip del motore e l'impronta degli esempi dell'app rifatti. **Poi la
-  parte B, l'app**: `pen_up` da solo con «Paddle», la pausa e la voce
-  sull'acqua, gli esempi delle teste. L'impronta del motore cambia:
-  `draw_examples` dopo l'aggiornamento del server, e l'app della parte B
-  si pubblica dopo il server. Da dove riprendere: `tasks/TASK-226.md`.
+  pezzi tranne il sole). **Parte A, il motore e l'API**, in `main` dalla
+  #310 (`15df224`): con `pen_up` e `paddling` una forma a pezzi si disegna
+  pezzo per pezzo; il percorso lascia il contorno dove gli occhi sono più
+  vicini, li disegna e torna, e i tratti a penna alzata sono i `walks`.
+  Campioni veri nei quattro luoghi: 36 su 36 a 2 km. Con la penna giù tutto
+  identico. **Parte B, l'app**, in PR: `pen_up` da solo con «Paddle» per
+  le otto forme, la pausa e la voce in canoa («Paddle to the next part»,
+  la penna giù 5 m prima), la riga dei km, le teste di «Explore» con gli
+  occhi staccati anche dentro l'app e nelle schede; e, seguito di
+  TASK-223, l'interruttore su strada per gatto, pesce, teste e zucca
+  (scelta dell'utente del 2026-10-05). **Ordine**: il server non ha la
+  parte A e rifiuta `pen_up` con `paddling`: prima l'aggiornamento del
+  server e `draw_examples`, con l'ok dell'utente, poi la pubblicazione
+  della B. Due testi nuovi da confermare; da provare sull'iPhone. Da dove
+  riprendere: `tasks/TASK-226.md`.
 
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la

@@ -1,7 +1,7 @@
 # TASK-226 — Gli occhi staccati sull'acqua
 
-**Stato**: In corso (parte A, motore e API, PR #310; parte B, l'app, in PR
-dopo il merge della A)
+**Stato**: In corso (parte A, motore e API, in `main` dalla #310,
+`15df224`; parte B, l'app, in PR)
 **Fase**: 4 · **Branch**: `feat/TASK-226-water-eyes` (A),
 `feat/TASK-226-water-eyes-app` (B)
 **Dipende da**: TASK-223 (le forme a pezzi, `lift` e `pieces`, #284 e

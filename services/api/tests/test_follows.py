@@ -21,7 +21,7 @@ from PIL import Image
 from psycopg import errors as pg_errors
 from route_engine.network import FileSource
 
-from shaperoute_api.accounts import AccountError, Accounts
+from shaperoute_api.accounts import AccountError, Accounts, token_hash
 from shaperoute_api.app import create_app
 from shaperoute_api.db import MIGRATIONS_DIR, Database, migrations
 from shaperoute_api.follows import (
@@ -109,6 +109,39 @@ class Member:
         self.headers = {"Authorization": f"Bearer {answer.json()['token']}"}
         self.public_id = answer.json()["user"]["public_id"]
         self.id: int = answer.json()["user"]["id"]
+
+
+def old_member(database: Database, wall: WallClock, username: str) -> Member:
+    """An account and a phone's session, kept as the API of before the
+    follows kept them: the code of today reads columns a database before
+    them does not have (the phone number, TASK-183)."""
+    member = Member.__new__(Member)
+    member.email = f"{username.lower()}@example.com"
+    member.username = username
+    token = f"token-of-before-{username}"
+    with database.connect() as conn:
+        row = conn.execute(
+            "INSERT INTO users"
+            " (email, password_hash, username, confirmed_16_at, created_at)"
+            " VALUES (%s, %s, %s, %s, %s) RETURNING id, public_id",
+            (
+                member.email,
+                FAST_HASHER.hash(_load("sign-up-request.json")["password"]),
+                username,
+                wall.t,
+                wall.t,
+            ),
+        ).fetchone()
+        assert row is not None
+        conn.execute(
+            "INSERT INTO sessions (token_hash, user_id, created_at, last_used_at)"
+            " VALUES (%s, %s, %s, %s)",
+            (token_hash(token), row["id"], wall.t, wall.t),
+        )
+    member.headers = {"Authorization": f"Bearer {token}"}
+    member.public_id = str(row["public_id"])
+    member.id = row["id"]
+    return member
 
 
 @pytest.fixture
@@ -653,8 +686,8 @@ def test_accounts_made_before_the_follows_can_follow(
     for path in before:
         shutil.copy(path, tmp_path / path.name)
     database.migrate(tmp_path)
-    old = api(database, wall)
-    ada, bea = Member(old, "Ada_runs"), Member(old, "bea.trento")
+    ada = old_member(database, wall, "Ada_runs")
+    bea = old_member(database, wall, "bea.trento")
     # The API of TASK-211 starts: the follows' migration, and nothing else.
     assert database.migrate(MIGRATIONS_DIR) == [
         path.stem for path in migrations() if path.name >= FOLLOWS.name

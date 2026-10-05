@@ -99,6 +99,8 @@ apps/mobile/src/profile/SettingsPage.test.tsx
 apps/mobile/src/profile/useProfilePhoto.test.ts   (i due metodi nuovi di Account)
 apps/mobile/src/social/commentsDoor.test.ts       (idem)
 apps/mobile/src/social/reactionsDoor.test.ts      (idem)
+services/api/tests/test_drawings.py            (old_account: vedi sotto)
+services/api/tests/test_follows.py             (old_member: vedi sotto)
 apps/mobile/src/i18n/de.ts, es.ts, fr.ts, it.ts
 docs/API.md
 docs/DATABASE.md
@@ -107,6 +109,12 @@ docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-183.md
 ```
+
+`test_drawings.py` e `test_follows.py`: tre test preparano un database
+«di prima» e ci creavano l'account con l'API di oggi, che ora legge
+`users.phone` e su quello schema fallisce. Ora l'account di prima lo
+scrivono in SQL (`old_account`, `old_member`), come già `old_run` fa per
+le corse: nessun altro cambiamento in quei file.
 
 Il numero della migrazione è il primo libero in `main` al merge
 (`AGENTI.md`, punto 10): se un'altra PR prende `0016` prima, il file si

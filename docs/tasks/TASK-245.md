@@ -183,7 +183,10 @@ posto di `osmium` e `water_extract.write_from`, il codice del repository
 `out/task245-beaches/`, fuori dal repository: `cache-all/` (i 29 riquadri
 e i due del server rifatti per le prove), `cache/` (come sarà il server:
 i due file suoi e i 27 nuovi; le prove sono fatte lì), **`new/water/` (i
-27 file da copiare)**, `beaches.json`, `list.log`, `eight.log`.
+27 file da copiare)**, `beaches.json`, `list.log`, `eight.log`, e in
+`scripts/` i passi (`run.sh`: `boxes-all`, `cut`, `boxes`, `list`). Dopo
+il merge di `main` con le forme inclinate (TASK-232 A, che cambia
+`water_fit.py`) i riquadri e l'elenco sono stati rifatti: identici.
 
 **Un difetto trovato nella ricerca di «Another place»** (`findSpots`, di
 TASK-240): con le spiagge nell'elenco, ogni indirizzo che comincia con

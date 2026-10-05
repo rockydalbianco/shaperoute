@@ -172,8 +172,7 @@ export const IT: Table = {
   // src/feed/FeedPost.tsx
   "OpenFreeMap © OpenMapTiles\nData from OpenStreetMap":
     "OpenFreeMap © OpenMapTiles\nDati da OpenStreetMap",
-  "{user} in {city}: {title}. {facts}. Score {score} out of 100.":
-    "{user} a {city}: {title}. {facts}. Punteggio {score} su 100.",
+  "{user} in {city}: {title}. {facts}.": "{user} a {city}: {title}. {facts}.",
   "Opens the route on the map": "Apre il percorso sulla mappa",
 
   // src/i18n/shapeNames.ts

@@ -107,7 +107,7 @@ test("a screen reader hears the drawing as one thing", async () => {
   await render(<FeedPost post={POST} width={358} />);
   expect(
     screen.getByLabelText(
-      "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min. Score 92 out of 100.",
+      "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min.",
     ),
   ).toBeOnTheScreen();
 });
@@ -121,7 +121,7 @@ test("a tap opens its route, and a screen reader hears where it leads", async ()
   const onOpen = jest.fn();
   await render(<FeedPost post={POST} width={358} onOpen={onOpen} />);
   const card = screen.getByRole("button", {
-    name: "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min. Score 92 out of 100.",
+    name: "fede_km in Firenze: Dog walk, without the dog. Dog head · 10.5 km · 1 h 04 min.",
   });
   expect(card).toHaveProp("accessibilityHint", "Opens the route on the map");
   await fireEvent.press(card);
@@ -164,7 +164,7 @@ describe("a drawing on the water (TASK-228)", () => {
     expect(screen.getByText("Riccione")).toBeOnTheScreen();
     expect(screen.getByText("Paddle · Dog head · 2.0 km · 30 min")).toBeOnTheScreen();
     expect(screen.getByRole("button")).toHaveAccessibleName(
-      "ale.paddle in Riccione: Dog paddle off Riccione. Paddle · Dog head · 2.0 km · 30 min. Score 89 out of 100.",
+      "ale.paddle in Riccione: Dog paddle off Riccione. Paddle · Dog head · 2.0 km · 30 min.",
     );
   });
 

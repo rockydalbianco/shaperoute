@@ -75,7 +75,8 @@ export function postFacts(post: SamplePost): string {
 /**
  * A drawing in «Feed» (TASK-156): who ran it and where, the line, its
  * title. The line is yellow, the route's colour. Nothing is written over the
- * drawing but the map's credit: its score is only read out (TASK-241). Under
+ * drawing but the map's credit: its score is neither shown nor read out
+ * (TASK-241). Under
  * the line, once its picture is taken, the map of where it was run
  * (TASK-162). With `onOpen` a tap opens its route on the map, to keep among
  * the favorites or to run (TASK-188). A drawing on the water is drawn the
@@ -107,12 +108,11 @@ export function FeedPost({ post, width, onOpen }: Props) {
       onOpen?.();
     }
   }
-  const label = t("{user} in {city}: {title}. {facts}. Score {score} out of 100.", {
+  const label = t("{user} in {city}: {title}. {facts}.", {
     user: post.user,
     city,
     title: post.title,
     facts: postFacts(post),
-    score: post.score,
   });
   const body = (
     <>

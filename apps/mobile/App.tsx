@@ -101,6 +101,7 @@ import { Pager } from "./src/screens/Pager";
 import { ProfileButton, ProfileLayer } from "./src/screens/ProfileLayer";
 import { PaddleExplore } from "./src/paddle/PaddleExplore";
 import { PaddleNotice } from "./src/paddle/PaddleNotice";
+import { distanceOnSpot, SPOT_SEARCH_HINT, spotPlaces } from "./src/paddle/placeSpots";
 import { usePaddleNotice } from "./src/paddle/safetyNotice";
 import { activityOf, withoutRouteLabel } from "./src/settings/sport";
 import { SportButton } from "./src/settings/SportButton";
@@ -993,9 +994,21 @@ function Sgrava() {
                     }
                   }}
                   searching={showsSearch(startMode, position)}
-                  onPlace={setPlace}
+                  onPlace={(chosen) => {
+                    setPlace(chosen);
+                    // A small lake's shapes fit at less than 2 km (TASK-240).
+                    const fits = distanceOnSpot(chosen, distanceM);
+                    if (fits !== null) {
+                      setDistanceText(String(fits / 1000));
+                    }
+                  }}
                   near={
                     position.status === "ok" ? position.point : (place?.point ?? null)
+                  }
+                  // On the water the search knows the lakes and the beaches.
+                  suggest={sportActivity === "paddling" ? spotPlaces : undefined}
+                  searchHint={
+                    sportActivity === "paddling" ? SPOT_SEARCH_HINT : undefined
                   }
                   mapError={mapError}
                   footer={

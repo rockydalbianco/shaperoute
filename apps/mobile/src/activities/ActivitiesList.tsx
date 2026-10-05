@@ -172,16 +172,6 @@ function ActivityRow({
           <Text style={styles.facts} numberOfLines={1}>
             {opening ? t("Opening…") : facts}
           </Text>
-          {activity.score !== null && (
-            <Text
-              style={styles.detail}
-              accessibilityLabel={t("Score: {score} out of 100", {
-                score: activity.score,
-              })}
-            >
-              {t("Score {score}", { score: activity.score })}
-            </Text>
-          )}
           {isPublic && (
             <Text style={styles.mark} testID="activity-public">
               {t("Public")}

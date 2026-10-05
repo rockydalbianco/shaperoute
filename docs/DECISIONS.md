@@ -9665,7 +9665,8 @@ spostano «dove ci sono le strade», come fanno su strada (`pieces.compose`).
 
 ## ADR-0195 — Le forme si inclinano fino a 45°, e la mappa gira perché si vedano dritte
 
-**Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-232 ·
+**Data**: 2026-10-05 · **Stato**: Accettato; motore e API fatti (parte A),
+l'app da fare · **Task**: TASK-232 ·
 45°, la mappa girata, la freccia del nord e la mappa della corsa sono
 scelte dell'utente; il resto è deciso
 dall'agente su delega dell'utente · supera in parte ADR-0038 (il limite
@@ -9707,6 +9708,42 @@ partenza e fase), con lo stesso numero di tracciati: il tempo va misurato.
 Cambiano i percorsi di oggi dove una forma inclinata segue meglio: i
 campioni si rigiudicano. Le corse salvate prima restano col nord in
 alto.
+
+**Parte A, motore e API (2026-10-05)**, deciso dall'agente su delega
+dell'utente dopo le misure (`MAPS.md`, «Forme inclinate»):
+
+- **Prima dritta, poi inclinata**, invece di provare tutte le rotazioni
+  insieme (punto 1 sopra, e il piano del task file): la ricerca di sempre
+  entro ±15°, e solo se non dà un percorso buono le rotazioni oltre 15°
+  fino a 45° (±30°, ±45°, rifinitura ogni 5°) con 10 tracciamenti in più
+  (`TILTED_TRACES`). Tutte insieme, con lo stesso budget, perdevano
+  percorsi buoni (pesce di Trento da 10 km 0,91 → 0,70) e peggioravano il
+  cuore di Levico da 5 km, uno dei 12 di riferimento. Così su 129 percorsi
+  110 restano identici (i 12 di riferimento tutti), 19 si inclinano di
+  20–45°, i buoni passano da 65 a 67, e il tempo medio sale del 10% (dei
+  12 di riferimento il 6%).
+- **Il costo dell'inclinazione** (punto 2) conta solo i gradi oltre 15°:
+  il 5% di copertura a 45°, 0 entro 15° come prima (`tilt_share`). Dal
+  primo grado faceva raddrizzare forme che prima venivano meglio a 15°.
+- **La ricerca lontana resta dritta** (ADR-0040), e vicino o lontano si
+  decide sulla ricerca dritta, come prima (`Search.upright`): un percorso
+  inclinato vicino, disegnabile ma non buono, teneva fuori quello lontano
+  che prima vinceva (gatto e pesce di Levico da 15 km). Un percorso
+  inclinato vicino buono vince, e la ricerca lontana non parte.
+- **Le parole squadrate** seguono le vie fino a 45° (`GRID_MAX_TILT_DEG`):
+  le direzioni oltre 30° sono il secondo tempo, come le inclinazioni.
+- **Sull'acqua** lo stesso schema in `water_fit.py`: entro ±15° ogni 5°,
+  e solo se la forma non ci sta nella tolleranza della distanza, da 20° a
+  45°, con il 5% di distanza a 45° (`TILT_WEIGHT`). I 32 esempi della
+  canoa non cambiano.
+- **`rotation_deg`** anche dalle partenze vicine (`ShapeJob.here`) e dalla
+  canoa; 0 senza ricerca. I percorsi tenuti sul server (`route_store`, gli
+  esempi di «Explore») lo conservano, e da qui anche `better_distance_m`
+  (TASK-234), che rileggendoli si perdeva.
+- **I campioni**: i 19 percorsi che cambiano, prima col nord in alto e
+  dopo con la mappa girata (`tools/preview_turned.py`). Giudizio
+  dell'utente sui percorsi nuovi: 17 `sì`, 2 `quasi`, nessun `no`.
+
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 
@@ -10469,6 +10506,16 @@ chiave «Score» esce dalle quattro tabelle, «Score {score}» resta per «My
 activities» e i disegni del «Profile». A fine corsa, in «My activities» e
 sotto un disegno aperto dal «Profile» il punteggio si vede come prima.
 
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte D; scelta
+dell'utente: «toglilo anche da My activities»): in «My activities» il
+punteggio non si vede e non si legge più, né nella riga dell'elenco
+(«Score 91») né sulla corsa aperta («91», «out of 100»). L'API lo tiene
+e lo manda come prima (`score` in `/me/activities`): l'app non lo
+mostra. Le chiavi «Score {score}», «Score: {score} out of 100» e «out of
+100» restano nelle tabelle perché le usano i disegni del «Profile»
+(`DrawingsGrid`, `DrawingCard`), dove il punteggio si vede ancora, come
+a fine corsa: l'utente non li ha nominati.
+
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
 (TASK-239), dentro la **richiesta dell'utente** dello stesso giorno: «deve
@@ -10893,3 +10940,110 @@ lingue con una regola (ADR-0172): ogni testo è scritto in inglese dentro
 - `SettingsPage` chiede a chi la mostra di aprire i testi (`onAbout`);
   restano «Soon» solo le due righe di «Notifications» (TASK-185).
 - Solo app: nessuna dipendenza, niente server.
+
+## ADR-0206 — I due interruttori delle notifiche: salvati nell'account, spenti all'inizio, e niente si manda ancora
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-185), dentro le **scelte dell'utente** del 2026-10-05: tutti e due
+gli interruttori partono spenti («Spenti tutti e due»), e si salvano
+anche se l'invio vero non c'è ancora, purché la pagina lo dica. Numero
+assegnato dal coordinatore.
+
+**Contesto**: «Email notifications» e «Push notifications» erano in
+«Settings» con «Soon» (ADR-0145), le ultime due righe così. L'API non
+manda email (nessun servizio di posta) e non manda push; l'app gira in
+Expo Go, dove le push non arrivano, e non ha `expo-notifications`. Non è
+deciso nemmeno che cosa si notificherà.
+
+**Decisione**:
+
+1. **Si salva la scelta, non si manda niente.** Nessun codice legge i due
+   interruttori per agire: sono una preferenza tenuta per quando l'invio
+   ci sarà. Nessuna dipendenza nuova, nessun permesso chiesto al telefono:
+   accendere «Push notifications» salva soltanto.
+2. **La pagina lo dice**, sotto le due righe, sempre: «Sgrava does not
+   send notifications yet. Your choice is kept for when it does.». Un
+   interruttore che non fa niente senza dirlo sarebbe una promessa falsa.
+3. **Nell'account, non sul telefono**: due colonne di `users`,
+   `notify_email` e `notify_push`, `boolean NOT NULL DEFAULT false`. Chi
+   manderà le notifiche sarà il server, e deve saperlo senza chiederlo al
+   telefono; la scelta segue l'account su ogni telefono. `DEFAULT false`
+   dà «spento» anche a ogni account di prima, senza toccarne le righe.
+4. **Un endpoint suo, `PUT /me/notifications`**, in `notifications.py`,
+   come `PUT /me/email` e `PUT /me/phone` (ADR-0150): `PATCH /me` cambia
+   quello che gli altri vedono e resta com'è per l'app pubblicata.
+5. **Il corpo porta solo quello che cambia** (`email?`, `push?`): un
+   interruttore non mandato resta com'è, così un tocco su uno non può
+   riscrivere l'altro con un valore vecchio del telefono. `{}` non cambia
+   niente e risponde l'account com'è; `null` vale «non mandato». Solo
+   vero o falso (`StrictBool`): `"true"`, `1` sono `422`, perché una
+   preferenza accesa per una conversione di tipo è un consenso mai dato.
+6. **`User.notifications` è un oggetto, `{ "email": …, "push": … }`**, non
+   due campi piatti: è la forma della richiesta, ed è dove andranno le
+   voci future (che cosa si notifica) senza allargare `User`. Nel database
+   restano due colonne piatte in `USER_COLUMNS`; l'oggetto lo costruisce
+   un `model_validator(mode="before")` di `UserBody`, così `accounts.py`,
+   `profiles.py` e `contact.py` continuano a fare
+   `UserBody.model_validate(row)` senza cambiare una riga di SQL.
+7. **Le legge solo il proprietario** (`GET /me`, `Session`): mai in
+   `PublicProfile`, nella ricerca, negli elenchi. `DELETE /me` le cancella
+   con la riga.
+8. **Nel contratto `User.notifications` è facoltativo**: un'API di prima
+   non lo manda, e l'app lo legge come «tutti e due spenti».
+9. **Nell'app l'interruttore è disegnato**, come gli altri dell'app
+   (`RunDashboard`: una pista e un pomello, colori dai token, bianco
+   quando è acceso — il giallo è del percorso), non lo `Switch` di React
+   Native: l'app non lo usa da nessuna parte, e così ogni riga è **un
+   solo** elemento per VoiceOver, un interruttore con il suo nome e il suo
+   stato, senza l'emoji.
+10. **Il valore nuovo si vede subito** e torna indietro se l'API rifiuta,
+    con il motivo in parole sotto le righe; mentre una risposta è in
+    viaggio un secondo tocco, su uno qualunque dei due, non manda niente.
+    Con un'API di prima (`404`): «Notifications are not available on this
+    API yet.».
+11. **«Soon» esce da «Settings»**: erano le ultime due righe a dirlo.
+    `COMING` e `ComingRows` sono tolti da `SettingsPage`, e i testi «Soon»
+    e «{name}, coming soon» dalle quattro tabelle (`tables.test.ts`
+    rifiuta un testo che nessuno mostra).
+12. **«Help» e «Privacy» lo dicono** (ADR-0205: chi cambia cosa l'app
+    tiene aggiorna i testi): una riga nella sezione «Settings» della
+    guida, un punto in «Your account» della bozza, in inglese e italiano.
+
+**Alternative scartate**:
+
+- **Aspettare l'invio vero** e lasciare «Soon»: l'utente ha chiesto gli
+  interruttori adesso; proposto e accettato di salvarli dicendo che non si
+  manda niente.
+- **La scelta solo sul telefono** (come lingua e unità): il server non la
+  saprebbe, e cambiando telefono si perderebbe.
+- **Due campi piatti in `User`** (`notify_email`, `notify_push`): più
+  semplici oggi, ma ogni voce futura allargherebbe `User`, e la richiesta
+  avrebbe una forma diversa dalla risposta.
+- **Costruire l'oggetto in SQL** (`json_build_object(…) AS notifications`
+  dentro `USER_COLUMNS`): `USER_COLUMNS` smetterebbe di essere un elenco
+  di colonne, e chi lo usa in un `RETURNING` o in una `JOIN` dovrebbe
+  saperlo.
+- **`PUT` con tutti e due i valori obbligatori**: due telefoni con valori
+  vecchi si sovrascriverebbero l'interruttore che non hanno toccato.
+- **Accesi all'inizio**: scelta dell'utente, spenti; e un consenso a
+  ricevere messaggi non si presume.
+- **Chiedere il permesso delle push all'accensione**: serve
+  `expo-notifications`, e chiedere un permesso per qualcosa che non
+  arriva brucia l'unica domanda che iOS lascia fare.
+- **Lo `Switch` di React Native**: punto 9.
+
+**Conseguenze**:
+
+- **L'invio vero è un task a parte**, con scelte dell'utente: che cosa si
+  notifica, quale servizio di posta, `expo-notifications` e una build
+  propria. Quel task legge `users.notify_email` e `users.notify_push`,
+  chiede il permesso del telefono, e riscrive la nota sotto gli
+  interruttori e le due righe di «Help» e «Privacy».
+- Migrazione nuova (`0017_notifications.sql`, il primo numero libero al
+  merge): serve l'aggiornamento del server prima di pubblicare l'app.
+  Un'API di prima risponde `404` al `PUT` e l'app lo dice in parole.
+- Ogni `SELECT {USER_COLUMNS}` legge le due colonne: un test che usa
+  l'API di oggi su uno schema senza `0017` fallisce (`UndefinedColumn`),
+  come successe con `phone` (TASK-183). Quelli che ci sono creano già
+  l'account di prima in SQL.
+- `Account` ha un metodo in più, `changeNotifications`: i test che
+  costruiscono un `Account` a mano hanno una riga in più.

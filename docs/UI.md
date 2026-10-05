@@ -1459,6 +1459,37 @@ lasciata, per lo stesso disegno dalla stessa partenza. «This shape» e non
 («Questa forma viene meglio a circa 8 km.»). Testi nelle cinque lingue
 (`src/route/betterDistance.ts`).
 
+**La mappa girata e la freccia del nord** (TASK-232 parte B, ADR-0195;
+la mappa girata, la freccia e i suoi due tocchi sono scelte dell'utente
+del 2026-10-05). Il motore può inclinare una forma fino a 45° per seguire
+meglio le strade, e il risultato dice di quanto (`rotation_deg`). Quando
+il percorso disegnato è inclinato, **la mappa gira dall'altra parte** e lo
+inquadra così: il disegno si legge dritto, le vie e i nomi sono girati.
+Ogni tessera «A · B · C» ha la sua inclinazione, e la mappa gira con la
+tessera scelta. Un percorso che non lo dice (il cerchio, un'API di prima)
+resta col nord in alto, come sempre.
+
+Con la mappa girata c'è **la freccia del nord**: un tondo come quello del
+«←», a destra, sotto la riga del «←» (l'angolo in alto a destra è del
+tondo del profilo, e in corsa del riquadro della svolta); dentro, una
+punta e una «N» che indicano dov'è il nord. **Un tocco rimette il nord in
+alto** (e il disegno torna inclinato), **un secondo tocco rigira la mappa
+come il disegno**. Se la mappa è ancora inquadrata sul percorso il tocco
+lo inquadra di nuovo, girato; se l'utente l'ha spostata o ingrandita, gira
+dov'è. La freccia segue la mappa vera: anche girata con due dita compare,
+e un tocco rimette il nord in alto (senza un percorso inclinato, a quel
+punto sparisce). Per VoiceOver è «North arrow», con «Turns the map north
+up» o «Turns the map like the drawing»; nelle cinque lingue
+(`src/map/NorthArrow.tsx`, `turnedMap.ts`). Posto, aspetto e testi
+confermati dall'utente il 2026-10-06, sulle schermate del simulatore.
+
+Sull'acqua, «Move the shape» con la mappa girata sposta la forma dove va
+il dito sullo schermo; durante l'attesa la forma lasciata resta girata
+com'era. Per ora gira solo la mappa di un percorso **disegnato in «Draw»**
+(anche mentre lo si corre e a fine corsa): gli esempi di «Explore» e le
+loro schede, le corse salvate, il «Feed» e il post restano col nord in
+alto fino ai passi successivi di TASK-232.
+
 Gli avvisi sono **in parole semplici** (TASK-054, ADR-0048): l'app
 riconosce i testi che il motore scrive e li riscrive brevi, con una
 striscia arancio (`warning`) per quelli a cui fare attenzione (scale,
@@ -1759,7 +1790,12 @@ più giù).
 
 **La freccia di direzione** (TASK-164). Mentre si corre il segnaposto sulla
 mappa è una freccia chiara, girata dove si sta andando; la mappa resta col
-nord in alto. La direzione viene dalla traccia, dagli ultimi 10 m: serve
+nord in alto, o **girata come il disegno** quando il percorso è inclinato
+(TASK-232, scelta dell'utente: chi corre vede la forma dritta come l'ha
+scelta). La freccia segna sempre dove si va davvero: è girata con la
+mappa. Il fatto e il da fare sono linee della mappa e girano con lei. La
+freccia del nord c'è anche qui, sotto il riquadro della svolta, con gli
+stessi due tocchi; la scelta vale fino alla fine della corsa. La direzione viene dalla traccia, dagli ultimi 10 m: serve
 qualche passo perché compaia (prima c'è il segnaposto di sempre), e da
 fermi resta quella di prima. A fine corsa torna il segnaposto.
 

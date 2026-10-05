@@ -53,6 +53,8 @@ import { usePhoneZones } from "./src/engine/usePhoneZones";
 import { ZoneNotice } from "./src/engine/ZoneNotice";
 import { useLanguage } from "./src/i18n/useLanguage";
 import { MapView } from "./src/map/MapView";
+import { NorthArrow } from "./src/map/NorthArrow";
+import { useTurnedMap } from "./src/map/turnedMap";
 import {
   canResume,
   endFreeRun,
@@ -474,6 +476,21 @@ function Sgrava() {
     explored === null &&
     themed.state.status !== "idle";
   const exploring = screen === "map" && !reviewing && explored !== null;
+  // A drawn route whose shape is turned turns the map, so the drawing is
+  // upright (TASK-232): choosing it, running it and at its end. Any other
+  // route, and a route that does not say, keeps north up.
+  const drawnRotation = exploreRun === null ? (chosen?.rotation_deg ?? null) : null;
+  const turned = useTurnedMap(
+    reviewing || running || freeFinishing || theming || exploring
+      ? null
+      : finishing
+        ? followed !== null && sameLine(finished.run.route, followed.points)
+          ? drawnRotation
+          : null
+        : exploreRun === null
+          ? (drawnRotation ?? move.left?.rotationDeg ?? null)
+          : null,
+  );
   const exploredExport: ExportState =
     explored?.status === "done" &&
     gpx.state.status !== "idle" &&
@@ -726,6 +743,11 @@ function Sgrava() {
             <NavigationBanner state={navigation} />
           ) : undefined
         }
+        compass={
+          turned.arrow ? (
+            <NorthArrow shown={turned.shown} onPress={turned.onArrow} />
+          ) : undefined
+        }
         map={
           <MapView
             style={styles.map}
@@ -826,6 +848,9 @@ function Sgrava() {
             }
             moving={movingShape || movingExample}
             onMoved={movingExample ? moveExample.onMoved : move.onMoved}
+            bearing={turned.bearing}
+            turn={turned.turn}
+            onTurned={turned.onTurned}
             onError={setMapError}
             // A run of «My activities» takes the map from whatever was on it.
             {...(reviewing ? reviewed : null)}

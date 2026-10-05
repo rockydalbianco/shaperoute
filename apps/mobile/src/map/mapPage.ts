@@ -192,6 +192,16 @@ export function buildMapPage(): string {
     var track = noRoute;
     var stops = noRoute;
     var others = noRoute;
+    // The bearing the map keeps (TASK-232): the one of the route shown, so
+    // its drawing is upright, until the app or two fingers turn the map.
+    var wanted = 0;
+    // The bearing of the route shown, the route as framed, and whether the
+    // map is still as framed: the user has not moved it since.
+    var drawn = 0;
+    var framed = null;
+    var inFrame = false;
+    var following = false;
+    var toldBearing = 0;
     var map = new maplibregl.Map({
       container: "map",
       style: ${toScript(MAP_STYLE)},
@@ -480,6 +490,38 @@ export function buildMapPage(): string {
         source.setData(track);
       }
     }
+    // The map turned, by the app or by two fingers: the app is told each
+    // whole degree, for its north arrow. Fingers leave it as they turn it.
+    map.on("rotate", function (event) {
+      if (event && event.originalEvent) {
+        wanted = map.getBearing();
+      }
+      var now = Math.round(map.getBearing()) || 0;
+      if (now !== toldBearing) {
+        toldBearing = now;
+        post({ type: "turned", bearing: now });
+      }
+    });
+    map.on("movestart", function (event) {
+      if (event && event.originalEvent) {
+        inFrame = false;
+      }
+    });
+    function frame() {
+      inFrame = true;
+      map.fitBounds(framed, { padding: 40, bearing: wanted });
+    }
+    // The north arrow (TASK-232): the map turns where the app asks. Still
+    // framed on its route, it frames it again as turned; moved by the user
+    // or following the runner, it turns where it is.
+    function turnTo(bearing) {
+      wanted = bearing;
+      if (framed && inFrame && !following) {
+        frame();
+      } else {
+        map.easeTo({ bearing: wanted, duration: 500 });
+      }
+    }
     // The first time every tile in view is drawn: the app hides its bar.
     map.once("idle", function () {
       post({ type: "loaded" });
@@ -681,7 +723,7 @@ export function buildMapPage(): string {
       receive: function (message) {
         if (message.type === "setPosition") {
           showPin(message.lngLat);
-          map.flyTo({ center: message.lngLat, zoom: ${START_ZOOM} });
+          map.flyTo({ center: message.lngLat, zoom: ${START_ZOOM}, bearing: wanted });
         } else if (message.type === "showRoute") {
           var points = message.coordinates;
           // A word with the pen up: its letters are the route, its walks dashed.
@@ -725,7 +767,11 @@ export function buildMapPage(): string {
             // Where the user is and where to go, both in view.
             bounds.extend(marker.getLngLat());
           }
-          map.fitBounds(bounds, { padding: 40 });
+          // Turned as its drawing is (TASK-232): the shape reads upright.
+          drawn = message.bearing || 0;
+          wanted = drawn;
+          framed = bounds;
+          frame();
         } else if (message.type === "follow") {
           // An arrow once the heading is known; it stays one when a fix
           // comes without it.
@@ -734,8 +780,16 @@ export function buildMapPage(): string {
           } else {
             showPin(message.lngLat);
           }
-          map.easeTo({ center: message.lngLat, zoom: ${FOLLOW_ZOOM}, duration: 500 });
+          // The map stays turned as the drawing while it is run.
+          following = true;
+          map.easeTo({
+            center: message.lngLat,
+            zoom: ${FOLLOW_ZOOM},
+            bearing: wanted,
+            duration: 500,
+          });
         } else if (message.type === "stopFollow") {
+          following = false;
           if (arrow) {
             showPin(arrow.getLngLat());
           }
@@ -781,6 +835,15 @@ export function buildMapPage(): string {
           setWalks(noRoute);
           setOnFoot(noRoute);
           setStartHere(null);
+          // A map turned for its route is north-up again without it; one
+          // turned by the user stays as it was left.
+          framed = null;
+          if (drawn !== 0) {
+            drawn = 0;
+            wanted = 0;
+          }
+        } else if (message.type === "turn") {
+          turnTo(message.bearing);
         }
       },
     };

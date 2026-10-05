@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-05, 14:20 · `main` = `20c021b`
+**Ultimo aggiornamento**: 2026-10-06, 00:10 · `main` = `4e4370f`
 
 ## Come si usa
 
@@ -52,52 +52,37 @@
 
 ## La coda dei merge
 
-Alle 14:20 del 2026-10-05: in CI la **#365** (TASK-241 E), la **#363**
-(TASK-245) e la **#366** (TASK-182 C), in quest'ordine; la **#362**
-(TASK-243) è verde e aspetta il giudizio dell'utente sui campioni; #357 e
-#364 sono documenti. Entra prima chi è pronto prima; la sessione
-proprietaria mergia da sola al 5/5 verde e CLEAN, ricontrollato subito
-prima, dopo il «merge NNN» del coordinatore. Le PR di soli documenti di
-una sessione chiusa le mergia (e le aggiorna) il coordinatore. Quando più
-PR sono pronte insieme **non aggiornarti e non mergiare da solo**: ogni
-merge rimette le altre in conflitto su STATUS e DECISIONS, il turno lo dà
-il coordinatore (la sua risposta arriva a fine turno: leggila nel suo
-transcript prima di mergiare).
+Alle 00:10 del 2026-10-06: due PR verdi e CLEAN, ferme sull'utente: la
+**#378** (TASK-232 B, la mappa girata: aspetta che l'utente veda i tre
+testi e la freccia del nord) e la **#362** (TASK-243, motore: aspetta
+l'«ok server», perché dopo il suo merge `main` non si pubblica prima
+dell'aggiornamento). Ordine: prima le PR di sola app, la #362 per ultima.
+Entra prima chi è pronto prima; la sessione proprietaria mergia da sola
+al 5/5 verde e CLEAN, ricontrollato subito prima, dopo il «merge NNN» del
+coordinatore. Le PR di soli documenti di una sessione chiusa le mergia (e
+le aggiorna) il coordinatore. Quando più PR sono pronte insieme **non
+aggiornarti e non mergiare da solo**: ogni merge rimette le altre in
+conflitto su STATUS e DECISIONS, il turno lo dà il coordinatore (la sua
+risposta arriva a fine turno: leggila nel suo transcript prima di
+mergiare).
 
 ## L'albero
 
 ```
+Posizionamento figura sezione padel
+  ├─ Adesso  TASK-232 B  La mappa girata come il percorso in «Draw» e in
+  │                      corsa, la freccia del nord: #378 verde, aspetta
+  │                      la conferma dell'utente
+  ├─ Dopo    TASK-232 B2  «Explore»: l'esempio aperto, la sua corsa, le
+  │                       schede girate
+  └─ Dopo    TASK-232 C  I disegni salvati girati (una migrazione: l'ok
+                         per il server tramite il coordinatore) ADR-0195
+
 Possibilità di alzare la penna per la bocca
   └─ Adesso  TASK-243  La penna alzata sui baffi del contorno (forme a
-                       pezzi con `pen_up`): #362 verde, aspetta il
-                       giudizio dell'utente; poi server + `draw_examples`
-                                                               ADR-0209
-
-Impostazioni utente e notifiche
-  ├─ Adesso  TASK-182 C  La corsa e la voce in miglia: #366 in coda
-  ├─ Adesso  TASK-182 B  «Draw» e le schede in miglia (sotto-agente)
-  └─ Dopo    «Phone units» (`FOLLOWS_PHONE`), quando B e C sono in
-             `main`                                            ADR-0149
-
-Toggle foto post
-  └─ Adesso  TASK-241 E  Il punteggio via da fine corsa e dai disegni del
-                         «Profile», niente più `POST /track-scores` a
-                         fine corsa: #365 in coda              ADR-0207
-
-Add lakes and seas to Draw's «Another place» with Paddle
-  └─ Adesso  TASK-245  Altre 29 spiagge per «Paddle»: #363 in coda;
-                       l'acqua è già sul server                ADR-0210
-
-Download mappe e figure padel all'installazione
-  └─ Adesso  TASK-246  Al primo avvio, gli esempi «Paddle» dei posti più
-                       vicini già sul telefono; prima le risposte
-                       dell'utente                             ADR-0211
-
-Sezione Near me con città vicine (TASK-236, chiuso)
-  └─ Adesso  le zone chieste dall'utente sul server: fatte Borgo
-             Valsugana, Tenna, Calceranica, Caldonazzo, Pergine; dopo
-             `draw_examples`: Vigolo Vattaro e gli esempi di Tenna e
-             Calceranica dai punti di `/nearby-cities`
+                       pezzi con `pen_up`): #362 verde, giudicata
+                       dall'utente; entra con l'«ok server», poi
+                       `draw_examples` e la pubblicazione      ADR-0209
 
 Mappe offline: parte B pubblicata
   └─ Dopo    TASK-214 D  La prova sull'iPhone: le zone del telefono
@@ -112,36 +97,46 @@ SITO WEB (già «Sezione merchandising magliette»)
                        la pubblicazione                        ADR-0201
 
 Chiuse il 2026-10-05: TASK-226, 228, 233, 211 B, 235, 236, 234, 214
-(A2, B2, B2b), 238, 239, 240, 241 (A–D), 242, 244, 183, 184, 185, 182 A,
-232 A.
+(A2, B2, B2b), 238, 239, 240, 241 (A–G), 242, 244, 245 (A, B), 246, 183,
+184, 185, 182 (A–D), 232 A. Sessioni archiviate o libere: «Impostazioni
+utente e notifiche», «Sezione Near me con città vicine», «Forme inclinate
+e distanza ottimale», «Toggle foto post», «Add lakes and seas…»,
+«Download mappe e figure padel all'installazione».
 
 Da assegnare (task file in `main`)
-  ├─ **TASK-232 B e C**  La mappa girata, la freccia del nord, la mappa
-  │              girata in corsa (ADR-0195): la A è in `main` e sul
-  │              server; la sessione è stata archiviata. `NavigateScreen`
-  │              e `RunDashboard` passano prima da TASK-182 C
   ├─ TASK-208 B  La fine corsa stile Strava, dopo le conferme
   │              dell'utente                                   ADR-0170
+  ├─ **Il job `api` della CI che resta appeso** nel passo «Test» (due
+  │  volte il 2026-10-05: #332 e `main` `1c8366e`): trovare il test e
+  │  dargli un tempo massimo (una dipendenza nuova va chiesta)
   └─ Seguiti: il Lago di Ledro (`water=pond`) e i sette laghi scartati
      (TASK-233); un villaggio di «NEARBY TOWNS» e lo stesso per nome
-     sono due città (TASK-236); `near` uguale al proprio `centre` sposta
-     di 20 m la testa di coniglio del Garda (TASK-238); `run_scored`
-     negli `insights` senza `POST /track-scores` (TASK-241 E); un
-     segnale per i tocchi su «Try» (TASK-234)
+     sono due città (TASK-236); `run_scored` negli `insights` senza
+     `POST /track-scores` (TASK-241, scelta dell'utente); un segnale per
+     i tocchi su «Try» (TASK-234); il server non tiene le figure dei
+     laghi e delle spiagge (TASK-246); la ricerca degli amici dalla
+     rubrica, la mail di conferma e l'invio vero delle notifiche
+     (TASK-183, 185); la distanza di «Draw» in metri dentro `App.tsx`
+     (TASK-182); altre spiagge (TASK-245)
 
 Sistema pubblicitario non invasivo
   └─ Aspetta il «fatto» dell'utente su TASK-150 (pagamenti AdMob)
 
 Aspettano l'utente
-  ├─ La prova sull'iPhone di `71e4f577`: le mappe offline (la zona
-  │  scaricata, un percorso disegnato sul telefono senza rete), il numero
-  │  rosso e «Follow back» con due account, il cambio di email e numero,
-  │  gli interruttori delle notifiche, «Move the shape» con un dito vero
-  │  (in «Draw» e sugli esempi di «Explore»), «Units», laghi e mari nella
-  │  ricerca di «Draw», «Help»/«Terms»/«Privacy», i paesi vicini
-  ├─ TASK-243: il giudizio sui campioni · TASK-246: quanti posti · TASK-182
-  │  C: i testi e le frasi in miglia · TASK-184: i segnaposto di «Terms»
-  │  e «Privacy» · TASK-237: i testi in inglese del sito
+  ├─ **L'«ok server» per TASK-243** (#362): aggiornamento, `draw_examples`
+  │  (~40 minuti), poi la pubblicazione
+  ├─ TASK-232 B (#378): i tre testi di VoiceOver e l'aspetto della
+  │  freccia del nord
+  ├─ La prova sull'iPhone di `b21caee9`: le mappe offline (la zona
+  │  scaricata, un percorso disegnato sul telefono senza rete), le figure
+  │  «Paddle» già pronte dopo tre minuti, il numero rosso e «Follow back»
+  │  con due account, il cambio di email e numero, gli interruttori delle
+  │  notifiche, «Move the shape» con un dito vero, «Units» e la voce in
+  │  miglia, una spiaggia nuova, laghi e mari nella ricerca di «Draw»,
+  │  «Help»/«Terms»/«Privacy», i paesi vicini, la fine corsa senza
+  │  punteggio
+  ├─ TASK-184: i segnaposto di «Terms» e «Privacy», le due frasi che
+  │  nominano il punteggio · TASK-237: i testi in inglese del sito
   ├─ Strava: spento per scelta dell'utente del 2026-10-05 («teniamo solo
   │  Instagram per ora»); per riaccenderlo, `DEPLOY.md` «Strava»
   ├─ TASK-236: la regola dei quattro paesi e i tre testi · TASK-237: il
@@ -198,11 +193,7 @@ Da assegnare
 | File | Di chi |
 |---|---|
 | `detours.py`, `pen_up.py`, `engine.zip` | TASK-243 (#362) |
-| `screens/FinishScreen.tsx`, `social/DrawingsGrid.tsx`, `DrawingCard.tsx`, righe di `App.tsx`, `about/content/{en,it}.ts` | TASK-241 E (#365) |
-| `src/navigation/`, `src/voice/`, `screens/RunPanel.tsx`, `RunDashboard.tsx`, `NavigateScreen.tsx`, `FreeRunScreen.tsx`, `FinishScreen.tsx`, `units/runFormat.ts` | TASK-182 C (#366) |
-| `route/RoutePanel.tsx`, `distance.ts`, `useRouteRequest.ts`, `betterDistance.ts`, `feed/FeedPost.tsx`, `share/postRun.ts`, `social/DrawingCard.tsx`, `PublicParts.tsx`, `PublicRow.tsx`, `paddle/PaddleExplore.tsx`, `activities/ActivityCard.tsx` | TASK-182 B |
-| `paddle/beaches.json`, `waterSpots.ts`, `placeSpots.ts`, `beach_catalog.py` | TASK-245 (#363) |
-| `paddle/aheadExamples.ts` (nuovo), righe di `engine/usePhoneZones.ts` e `explore/exampleRoutes.ts` | TASK-246 |
+| `App.tsx`, `src/map/*`, `screens/MapScreen.tsx`, `paddle/useMoveShape.ts`; poi `src/explore/*`, `paddle/PaddleExplore.tsx`, `feed/feedMapPage.ts`, `FeedMaps.tsx` (B2 e C) | TASK-232 B, B2, C |
 | `site/`, `docs/SITO.md`, `.github/workflows/site.yml` | TASK-237 |
 | `deploy/`, `docs/DEPLOY.md` | TASK-122 (in attesa dello Storage Box) |
 | `docs/PUBBLICITA.md` | TASK-150 |
@@ -237,12 +228,12 @@ Da assegnare
   motore di TASK-232 A (un cuore da 5 km a Trento esce con
   `rotation_deg: -30`). `draw_examples` rilanciato alle 12:03Z con
   Rovereto, Borgo Valsugana, Caldonazzo, Pergine Valsugana. Zone del
-  telefono: 526 file (`python -m shaperoute_api.phone_zone_api`, dentro il
+  telefono: 528 file (`python -m shaperoute_api.phone_zone_api`, dentro il
   container dell'API: un riavvio lo uccide; rilanciarlo dopo zone nuove
   scrive solo quelle che mancano). Acqua della canoa: 247 file, 93 MB (i
   laghi d'Italia e, dal 2026-10-05, 27 tratti di costa di TASK-245).
   Strava spento per scelta dell'utente.
-- **App**: su `preview` da `main` `20c021b` (gruppo `71e4f577`,
+- **App**: su `preview` da `main` `7a9d28b` (gruppo `b21caee9`,
   2026-10-05): tutto `main`. **Dal 2026-10-05 il coordinatore pubblica da
   solo le cose di sola app** appena sono in `main` e il job `mobile` è
   verde (ok dell'utente: «sì, pubblica sempre le cose di sola app»); per
@@ -266,7 +257,7 @@ In `main`: #137 (TASK-136), #112 (088), #148 (140), #142 (142), #149 (147),
 #150 (137), #166 (158), #165 (157), #164 (156), #167 (122, copie), #140
 (141), #169 (141), #170 (AGENTI), #168 (159), #171 (160), #172 (165), #173
 (162), #174 (163, prima PR), #175 (161), #176 (164), e poi fino alla #214:
-#177–#361, fra cui 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
+#177–#377, fra cui 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
 177, 178, 179, 180, 181, 186, 187 (API), 188, 189, 190 A, 192, 193, 194,
 195, 196, 067, 190 (A, B, C), 191 A1 e A2, 197, 198, 199, 116, 201 (misurato, non conviene), 200,
 202, 203, 187 (app), 204, 117 (A e B), 191 B, 205, 206 (A e B), 207,

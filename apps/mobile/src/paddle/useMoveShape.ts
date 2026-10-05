@@ -12,6 +12,8 @@ type Drawn = {
   points: LatLon[];
   walks: Walk[] | null;
   onFoot: Stretch[] | null;
+  /** How far its shape is turned (TASK-232): the map stays turned so. */
+  rotationDeg: number | null;
 };
 
 /** The route as it was when its shape was left somewhere, kept on the map
@@ -69,6 +71,7 @@ export function useMoveShape(
         points: shown.points,
         walks: shown.walks ?? null,
         onFoot: shown.on_foot ?? null,
+        rotationDeg: shown.rotation_deg ?? null,
       });
       draw(request);
     },

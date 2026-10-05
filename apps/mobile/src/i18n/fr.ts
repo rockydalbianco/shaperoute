@@ -202,6 +202,11 @@ export const FR: Table = {
   "{mi} mi away": "à {mi} mi",
   "{town}, {mi} mi away": "{town}, à {mi} mi",
 
+  // src/map/NorthArrow.tsx
+  "North arrow": "Flèche du nord",
+  "Turns the map north up": "Met le nord en haut",
+  "Turns the map like the drawing": "Tourne la carte comme le dessin",
+
   // src/paddle/PaddleExplore.tsx
   Next: "À suivre",
   "Drawing…": "Dessin en cours…",

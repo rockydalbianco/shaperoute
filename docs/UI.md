@@ -914,22 +914,24 @@ sulle strade:
 - «ring», «round», «anello» e «tondo» restano del cerchio: «ciambella» e
   «donut» sono la ciambella (TASK-223). Nelle cinque lingue i nomi sono
   «Smiley», «Ghost», «Donut», «The sun» (`shapeNames.ts`; «Sun» è già la
-  domenica) · «Faccina», «Fantasmino», «Ciambella», «Sole» (**da
-  confermare con l'utente**; tedesco, spagnolo e francese da confermare).
+  domenica) · «Faccina», «Fantasmino», «Ciambella», «Sole» (**confermati
+  dall'utente** il 2026-10-05; tedesco, spagnolo e francese da confermare).
 - **Faccina, fantasmino e ciambella** (TASK-223, ADR-0185), e **gatto,
   pesce, testa di cane, testa di coniglio e zucca** con gli occhi staccati
   (scelta dell'utente sui campioni, 2026-10-05; nell'app con TASK-226),
   hanno sotto il campo l'interruttore **«Lift the pen between parts»**, lo
-  stesso stato di quello delle parole, acceso all'avvio: acceso, la
-  richiesta ha `pen_up: true` e la forma si disegna un pezzo alla volta, a
-  piedi fra l'uno e l'altro (`API.md`, «La penna alzata»). Il sole si
-  disegna con la penna giù, scelta sui campioni, e non ha l'interruttore.
-  **Sull'acqua l'interruttore non c'è**: lì la penna si alza da sola
-  («Sull'acqua: «Paddle»», sotto). Il percorso mostra «6.0 km of drawing + 0.4 km walking
+  stesso stato di quello delle parole, acceso all'avvio (confermato
+  dall'utente il 2026-10-05): acceso, la richiesta ha `pen_up: true` e la
+  forma si disegna un pezzo alla volta, a piedi fra l'uno e l'altro
+  (`API.md`, «La penna alzata»). Il sole si disegna con la penna giù,
+  scelta sui campioni, e non ha l'interruttore. **Sull'acqua
+  l'interruttore non c'è**: lì la penna si alza da sola («Sull'acqua:
+  «Paddle»», sotto). Il percorso mostra «6.0 km of drawing + 0.4 km walking
   between the parts» · «6,0 km di disegno + 0,4 km a piedi fra una parte e
   l'altra» («riding» · «in bici» in bici), attraverso `t()`. Testi nuovi:
-  «Lift the pen between parts» e le due righe dei km **da confermare con
-  l'utente**; le righe in tedesco, spagnolo e francese da confermare.
+  «Lift the pen between parts» e le due righe dei km **confermati
+  dall'utente** il 2026-10-05; le righe in tedesco, spagnolo e francese da
+  confermare.
 - Nel campo vuoto il suggerimento è «heart, star, horse…». Il campo
   accetta al massimo 60 caratteri.
 
@@ -1346,14 +1348,16 @@ TASK-164, di cui tiene i numeri.
   Walk to the next part: the drawing is paused.» e «Pen down: draw the next
   part.» · «Parte finita. Cammina fino alla parte successiva: il disegno è
   in pausa.» e «Giù la penna: disegna la parte successiva.»; in bici «Ride
-  to the next part» · «Pedala fino alla parte successiva»; **in canoa**
-  (TASK-226) «Part done. Paddle to the next part: the drawing is paused.»
-  · «Parte finita. Pagaia fino alla parte successiva: il disegno è in
-  pausa.», e la penna scende 5 m prima della parte invece di 20
-  (`PEN_DOWN_ON_WATER_M`): sull'acqua i tratti a penna alzata sono di poche
-  decine di metri, e quello che si registra prima della parte è proprio il
-  collegamento da non disegnare. Inglese e italiano **da confermare con
-  l'utente**; tedesco, spagnolo e francese da confermare (`src/voice/`).
+  to the next part» · «Pedala fino alla parte successiva». Inglese e
+  italiano **confermati dall'utente** il 2026-10-05; tedesco, spagnolo e
+  francese da confermare (`src/voice/`). **In canoa** (TASK-226) «Part
+  done. Paddle to the next part: the drawing is paused.» · «Parte finita.
+  Pagaia fino alla parte successiva: il disegno è in pausa.», e la penna
+  scende 5 m prima della parte invece di 20 (`PEN_DOWN_ON_WATER_M`):
+  sull'acqua i tratti a penna alzata sono di poche decine di metri, e
+  quello che si registra prima della parte è proprio il collegamento da
+  non disegnare. La frase della canoa è **da confermare con l'utente**, in
+  tutte e cinque le lingue.
   - **Perché 20 m, e lungo il percorso**: una posizione che la corsa tiene
     sbaglia fino a 40 m (`POOR_FIX_M`), in città 10–20 m. Ripartendo 20 m
     prima della lettera, anche una posizione in ritardo fa partire la
@@ -1580,9 +1584,10 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   con «Includes … walking the bike.», e i testi della penna alzata
   (TASK-198). Restano da confermare le frasi nuove della bici (TASK-216) in
   tedesco, spagnolo e francese, e quelle dei pezzi di una forma (TASK-223)
-  in tutte e cinque le lingue. Quelle del confronto dei km (TASK-217), con
-  «stessa velocità» in bici, sono **confermate dall'utente** il 2026-10-05
-  in tutte e cinque le lingue. Le parole del foglio («App
+  in tedesco, spagnolo e francese (inglese e italiano confermati il
+  2026-10-05). Quelle del confronto dei km (TASK-217), con «stessa
+  velocità» in bici, sono **confermate dall'utente** il 2026-10-05 in tutte
+  e cinque le lingue. Le parole del foglio («App
   language», «Language», «Voice», «Default», «Listen», «Done») sono in
   inglese come il resto dello schermo: le traduce TASK-210.
 

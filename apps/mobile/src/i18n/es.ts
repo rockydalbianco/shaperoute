@@ -203,6 +203,11 @@ export const ES: Table = {
   "{mi} mi away": "a {mi} mi",
   "{town}, {mi} mi away": "{town}, a {mi} mi",
 
+  // src/map/NorthArrow.tsx
+  "North arrow": "Flecha del norte",
+  "Turns the map north up": "Pone el norte arriba",
+  "Turns the map like the drawing": "Gira el mapa como el dibujo",
+
   // src/paddle/PaddleExplore.tsx
   Next: "A continuación",
   "Drawing…": "Dibujando…",

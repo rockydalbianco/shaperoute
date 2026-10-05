@@ -32,8 +32,10 @@ import {
   showStops,
   showTrack,
   stopFollow,
+  turn as turnMap,
 } from "./messages";
 import { doneMetres, splitRoute } from "./routeSplit";
+import type { Turn } from "./turnedMap";
 
 const MAP_PAGE = buildMapPage();
 /** One empty list, so the map is not told again and again of no routes. */
@@ -74,6 +76,16 @@ type Props = {
   /** The route was dragged and left: by how many degrees of longitude and
    * of latitude. The map keeps it there until `route` changes. */
   onMoved?: (by: LngLat) => void;
+  /** The bearing that shows the route upright, when its shape is turned
+   * (TASK-232, `bearingOf`): the map is framed on the route turned so, and
+   * stays so while it is run. 0, north up, without. */
+  bearing?: number;
+  /** A tap on the north arrow: the map turns there. A new one for each
+   * tap; the same one is not asked twice. */
+  turn?: Turn | null;
+  /** The map turned, by the app or by two fingers: its bearing now, in
+   * whole degrees clockwise from north. */
+  onTurned?: (bearing: number) => void;
   /** Called when the map cannot be shown, with a reason for the log. */
   onError: (reason: string) => void;
   style?: StyleProp<ViewStyle>;
@@ -93,6 +105,9 @@ export function MapView({
   onDoubleTap,
   moving = false,
   onMoved,
+  bearing = 0,
+  turn = null,
+  onTurned,
   onError,
   style,
 }: Props) {
@@ -109,6 +124,7 @@ export function MapView({
   const progressShown = useRef(false);
   const doubleTapAsked = useRef(false);
   const moveAsked = useRef(false);
+  const turnAsked = useRef<Turn | null>(null);
   const along = useMemo(() => (route ? cumulative(route) : null), [route]);
   // In steps, so the map is not told of every metre.
   const doneM = progress ? doneMetres(progress) : null;
@@ -141,14 +157,14 @@ export function MapView({
     }
     if (route) {
       webView.current?.injectJavaScript(
-        pageScript(showRoute(route, start, walks, onFoot)),
+        pageScript(showRoute(route, start, walks, onFoot, bearing)),
       );
       routeShown.current = true;
     } else if (routeShown.current) {
       webView.current?.injectJavaScript(pageScript(clearRoute()));
       routeShown.current = false;
     }
-  }, [ready, route, start, walks, onFoot]);
+  }, [ready, route, start, walks, onFoot, bearing]);
 
   useEffect(() => {
     if (!ready) {
@@ -189,7 +205,7 @@ export function MapView({
       webView.current?.injectJavaScript(pageScript(stopFollow()));
       if (route) {
         webView.current?.injectJavaScript(
-          pageScript(showRoute(route, start, walks, onFoot)),
+          pageScript(showRoute(route, start, walks, onFoot, bearing)),
         );
       }
     }
@@ -238,6 +254,15 @@ export function MapView({
     }
   }, [ready, moving]);
 
+  // After the route, which turns the map as its drawing: a tap on the north
+  // arrow is asked of the map once, not again when the page loads again.
+  useEffect(() => {
+    if (ready && turn !== null && turn !== turnAsked.current) {
+      webView.current?.injectJavaScript(pageScript(turnMap(turn.bearing)));
+    }
+    turnAsked.current = turn;
+  }, [ready, turn]);
+
   return (
     <View style={style}>
       <WebView
@@ -249,6 +274,8 @@ export function MapView({
         onLoadStart={() => {
           setReady(false);
           setLoading(true);
+          // A page that loads is north-up.
+          onTurned?.(0);
         }}
         onMessage={(event) => {
           const message = parsePageMessage(event.nativeEvent.data);
@@ -260,6 +287,8 @@ export function MapView({
             onDoubleTap?.();
           } else if (message?.type === "moved") {
             onMoved?.(message.by);
+          } else if (message?.type === "turned") {
+            onTurned?.(message.bearing);
           } else if (message?.type === "error") {
             setLoading(false);
             onError(message.message);

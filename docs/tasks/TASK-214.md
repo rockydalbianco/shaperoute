@@ -633,11 +633,14 @@ quando `GET /nearby-cities` è in `main`.
 - **«Delete»** in «Settings» lascia `ahead.json`: la zona intorno torna
   alla prossima apertura, le altre col giro dopo. Se il giro del giorno era
   finito, il giorno dopo.
-- **Prima di pubblicare**: il server deve avere la parte A2. Senza il
-  tetto, un telefono scaricherebbe in un giorno tutte le zone in più
-  (oggi circa 0,3 GB per le città in evidenza), e il server
-  scriverebbe al volo il file di ogni zona che non ha ancora (circa 50 s
-  per Milano, parte D).
+- **Prima di pubblicare**: il server deve avere la parte A2, e ce l'ha
+  dal 2026-10-05 alle 08:54Z (`fd14cd3`). Senza il tetto un telefono
+  scaricherebbe in un giorno tutte le zone in più, oggi circa 0,2 GB per
+  le città in evidenza. **Meglio anche scrivere prima le zone del
+  telefono sul server** (`python -m shaperoute_api.phone_zone_api`, il
+  passo della parte D): senza, il primo telefono che chiede una zona la
+  fa scrivere al server, circa 50 s di calcolo per Milano, una volta per
+  zona.
 - **Test**: 9 nuovi in `aheadZones.test.ts`, uno in `zones.test.ts`, uno
   in `usePhoneZones.test.ts`; tutta la suite dell'app passa (1926).
 - **Nel simulatore** (iPhone 17e, Expo Go, 2026-10-05), con l'API del

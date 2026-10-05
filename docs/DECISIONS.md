@@ -8663,8 +8663,11 @@ senza la #323), deciso dall'agente su delega dell'utente:
    ferma a 100 MB dai 2 GB. Così oltre il limite se ne va prima una zona
    in più che quella intorno al telefono, e due giri non si cancellano a
    vicenda le zone per farsi posto.
-7. **L'app con B2 si pubblica solo dopo il server con A2**: senza il
-   tetto un telefono scaricherebbe tutte le zone in più in un giorno.
+7. **L'app con B2 si pubblica solo con il server che ha A2** (c'è dal
+   2026-10-05, `fd14cd3`): senza il tetto un telefono scaricherebbe
+   tutte le zone in più in un giorno. Meglio dopo aver scritto le zone del
+   telefono sul server (parte D): se no le scrive la prima richiesta di
+   ogni zona, circa 50 s di calcolo per Milano.
 
 **Scartato**: un endpoint con le città più cercate (API nuova e server
 da aggiornare, per un ordine che «Explore» dà già); scaricare tutte e

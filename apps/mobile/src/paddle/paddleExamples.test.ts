@@ -48,6 +48,7 @@ test.each(WATER_PLACES.map((place) => [place.name, place] as const))(
         similarity: detail.similarity,
         alternatives: [],
         ...(detail.walks !== undefined ? { walks: detail.walks } : {}),
+        centre: detail.centre,
       } as unknown as RouteResult;
       expect(
         asRecommended(asPlace(place), shape, drawn, PADDLE_EXAMPLES).detail,
@@ -91,6 +92,23 @@ test.each(WATER_PLACES.map((place) => [place.name, place] as const))(
         0,
       );
       expect(up).toBeLessThan(0.07 * detail.route_m);
+    }
+  },
+);
+
+test.each(WATER_PLACES.map((place) => [place.name, place] as const))(
+  "%s: each says where its shape is, to be moved from there",
+  (_, place) => {
+    for (const detail of bundled[examplesKey(place.point, PADDLE_EXAMPLES)]) {
+      // The centre of the shape as the engine placed it (TASK-244): on the
+      // water, inside the line that draws it.
+      const [lat, lon] = detail.centre ?? [NaN, NaN];
+      const lats = detail.points.map((point) => point[0]);
+      const lons = detail.points.map((point) => point[1]);
+      expect(lat).toBeGreaterThan(Math.min(...lats));
+      expect(lat).toBeLessThan(Math.max(...lats));
+      expect(lon).toBeGreaterThan(Math.min(...lons));
+      expect(lon).toBeLessThan(Math.max(...lons));
     }
   },
 );

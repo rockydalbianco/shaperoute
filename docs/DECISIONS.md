@@ -10342,6 +10342,34 @@ cose); tenere premuto per prenderla (un gesto che nessuno scopre da solo).
 - Gli esempi di «Explore» con «Paddle» non hanno `centre`: per spostarli
   serve ridisegnarli o chiedere il percorso al server (parte B).
 
+**Aggiunta del 2026-10-05 (TASK-244)** — gli esempi di «Explore» con
+«Paddle» si spostano anche loro; che il percorso spostato **resti di
+«Explore»** è una scelta dell'utente (2026-10-05, l'altra proposta: farlo
+diventare il percorso di «Draw»), il resto è deciso dall'agente su delega
+dell'utente.
+
+10. **L'esempio dice dov'è la sua forma**: `centre` è scritto nei 32
+    esempi dentro l'app (`paddle_examples.py`; ridisegnati sull'acqua del
+    server sono identici, con `centre` in più) e tenuto per quelli chiesti
+    al server, anche nel file del telefono. Un esempio tenuto prima non ce
+    l'ha e non si sposta finché non è ridisegnato: non lo si ridisegna
+    apposta, perché senza rete sparirebbe.
+11. **Si richiede l'esempio com'era stato chiesto**, con `near`: l'app
+    ricorda la richiesta di ogni esempio pronto, con **la partenza del
+    luogo** e non quella del percorso sulla riva. È il punto 5: la stessa
+    partenza è lo stesso file dell'acqua, e nessun download in più.
+12. **La risposta prende il posto dell'esempio sulla mappa, non nella
+    lista**: la scheda resta quella di «Explore», e riaprendola dalla
+    lista c'è l'esempio com'era (il punto 6 dal lato dell'app). Se la
+    richiesta fallisce torna il percorso di prima, con una riga che dice
+    perché.
+13. **Solo aperto da «Explore»**: lo stesso esempio aperto dal «Feed»
+    (TASK-228) o un preferito non si spostano. Scartato: scrivere nella
+    richiesta la partenza del percorso (`points[0]`), che l'esempio ha già
+    (un'altra area dell'acqua, forse da scaricare); far passare il
+    percorso spostato a «Draw» (la sua pagina avrebbe forma, distanza e
+    partenza diverse da quelle sulla mappa).
+
 ## ADR-0207 — Niente punteggio sopra il disegno dei post del «Feed»
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-241 ·

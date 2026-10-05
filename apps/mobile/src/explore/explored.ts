@@ -9,7 +9,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import { isPenUpShape } from "../route/penUpShapes";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
-import { exampleDetail } from "./exampleRoutes";
+import { type ExampleDetail, exampleDetail } from "./exampleRoutes";
 import {
   type DetailOutcome,
   fetchRecommendedRoute,
@@ -102,7 +102,9 @@ export function toRequest(detail: RecommendedRouteDetail): AnyRouteRequest | nul
     : { ...base, shape: detail.shape };
 }
 
-export function toResult(detail: RecommendedRouteDetail): RouteResult {
+export function toResult(
+  detail: RecommendedRouteDetail & Pick<ExampleDetail, "centre">,
+): RouteResult {
   return {
     points: detail.points,
     distance_m: detail.route_m,
@@ -113,6 +115,8 @@ export function toResult(detail: RecommendedRouteDetail): RouteResult {
     directions: [],
     word: detail.word,
     ...(detail.walks !== undefined ? { walks: detail.walks } : {}),
+    // An example on the water says where its shape is (TASK-244).
+    ...(detail.centre !== undefined ? { centre: detail.centre } : {}),
   };
 }
 
@@ -130,6 +134,11 @@ export function useExplored(apiUrl: string | null): {
   explored: Explored | null;
   open: (route: RecommendedRoute, fetchWhole?: FetchWhole) => void;
   close: () => void;
+  /**
+   * The example on the map drawn again with its shape moved (TASK-244):
+   * `detail` takes its place, alone. Nothing when another route is open.
+   */
+  redraw: (detail: ExampleDetail) => void;
 } {
   const [opened, setOpened] = useState<Opened | null>(null);
   const asked = useRef<string | null>(null);
@@ -169,6 +178,16 @@ export function useExplored(apiUrl: string | null): {
     setOpened(null);
   }, []);
 
+  const redraw = useCallback((detail: ExampleDetail) => {
+    setOpened((now) => {
+      if (now?.status !== "done" || now.options[now.chosen].detail.id !== detail.id) {
+        return now;
+      }
+      const options = optionsOf(now.options[now.chosen].route, detail);
+      return options.length > 0 ? { status: "done", options, chosen: 0 } : now;
+    });
+  }, []);
+
   const choose = useCallback((index: number) => {
     setOpened((now) =>
       now?.status === "done" && index >= 0 && index < now.options.length
@@ -193,5 +212,5 @@ export function useExplored(apiUrl: string | null): {
     };
   }, [opened, choose]);
 
-  return { explored, open, close };
+  return { explored, open, close, redraw };
 }

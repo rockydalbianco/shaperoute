@@ -2,7 +2,8 @@
 
 **Stato**: In lavorazione — parte A (motore e API) in `main` dalla #356
 (`799071a`) e sul server; parte B (la mappa girata in «Draw» e in corsa,
-la freccia del nord) in Pull Request; B2 («Explore») e C da fare
+la freccia del nord) in `main` dalla #378 (`44f17c8`); B2 («Explore») e C
+da fare
 **Fase**: 4 · **Branch**: `feat/TASK-232-a-tilt-45` (A),
 `feat/TASK-232-b-turned-map` (B), `feat/TASK-232-b2-explore-turn` (B2),
 `feat/TASK-232-c-saved-turn` (C)
@@ -275,8 +276,13 @@ migrazione nuova, `apps/mobile/src/activities/fitLines.ts`,
   sentito il coordinatore (`src/map/*` e la navigazione li tocca anche
   TASK-182 B).
 
-**Parte B, la mappa girata in «Draw» e in corsa** (2026-10-05, ADR-0195
-«Parte B»):
+**Parte B, la mappa girata in «Draw» e in corsa** (2026-10-05, in `main`
+dalla #378, `44f17c8`, il 2026-10-06; ADR-0195 «Parte B»):
+
+- **Confermati dall'utente** il 2026-10-06, sulle tre schermate del
+  simulatore («confermo»): la freccia del nord a destra sotto la riga del
+  «←» (non nell'angolo, che è già occupato), il suo aspetto, e i tre testi
+  di VoiceOver nelle cinque lingue.
 
 - **La mappa**: `showRoute` porta il `bearing` (`−rotation_deg`,
   `turnedMap.bearingOf`) e la pagina inquadra il percorso girato; lo tiene
@@ -302,3 +308,11 @@ migrazione nuova, `apps/mobile/src/activities/fitLines.ts`,
   una corsa vera.
 - **Non fatto qui**: «Explore» (parte B2) e i disegni salvati (parte C).
   In corsa la freccia sta sotto la riga «2% drawn», non accanto.
+- **Da dove riprende la B2** (ok del coordinatore, 2026-10-05; i file
+  sono in «File toccati», tutti liberi; `feedMapPage.ts` e `FeedMaps.tsx`
+  restano di questo task fino alla C): portare `rotation_deg` in
+  `RecommendedRouteDetail` e `RecommendedRoute` (`asRecommended`,
+  `movedExample`, gli esempi tenuti sul telefono, `toResult` di
+  `explored.ts`), passarlo a `useTurnedMap` in `App.tsx` per `exploring` e
+  per `exploreRun`, girare la linea delle schede e dare un `bearing` alla
+  foto-mappa. La pubblicazione dell'app la fa il coordinatore.

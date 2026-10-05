@@ -1480,7 +1480,8 @@ dov'è. La freccia segue la mappa vera: anche girata con due dita compare,
 e un tocco rimette il nord in alto (senza un percorso inclinato, a quel
 punto sparisce). Per VoiceOver è «North arrow», con «Turns the map north
 up» o «Turns the map like the drawing»; nelle cinque lingue
-(`src/map/NorthArrow.tsx`, `turnedMap.ts`).
+(`src/map/NorthArrow.tsx`, `turnedMap.ts`). Posto, aspetto e testi
+confermati dall'utente il 2026-10-06, sulle schermate del simulatore.
 
 Sull'acqua, «Move the shape» con la mappa girata sposta la forma dove va
 il dito sullo schermo; durante l'attesa la forma lasciata resta girata

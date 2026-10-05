@@ -106,17 +106,21 @@ Una domanda per volta, ognuna con una proposta:
 
 ## Criteri di accettazione
 
-- [ ] `beaches.json` ha i posti dell'elenco che il motore tiene, ognuno
+- [x] `beaches.json` ha i posti dell'elenco che il motore tiene, ognuno
       con almeno un punto sulla riva e la sua distanza (test sul file).
-- [ ] Ogni punto è stato provato dal motore sull'acqua vera: cuore,
+- [x] Ogni punto è stato provato dal motore sull'acqua vera: cuore,
       cerchio e stella ci stanno alla distanza scritta.
-- [ ] Con «Paddle», una spiaggia nuova si trova in «Explore» e in «Another
+- [x] Con «Paddle», una spiaggia nuova si trova in «Explore» e in «Another
       place» scrivendone il nome (test).
-- [ ] Jesolo, Riccione, i laghi e i loro esempi dentro l'app restano
+- [x] Jesolo, Riccione, i laghi e i loro esempi dentro l'app restano
       com'erano (test).
-- [ ] Il server ha l'acqua di ogni punto dell'elenco (provato dentro
-      l'API), prima della pubblicazione.
-- [ ] Con «Run» e «Bike» niente cambia; il motore non cambia.
+- [x] Il server ha l'acqua di ogni punto dell'elenco, prima della
+      pubblicazione. **«Provato dentro l'API»: non fatto**, negato dai
+      permessi della sessione; sostituito dall'impronta uguale (lo SHA-256
+      dei 27 file sul server è quello dei file su cui il motore di
+      `c2bb428` ha provato i 29 posti; deciso col coordinatore); **da
+      confermare con la prova dell'utente sul telefono**.
+- [x] Con «Run» e «Bike» niente cambia; il motore non cambia.
 
 ## File toccati
 
@@ -228,8 +232,10 @@ mentre girava `draw_examples`, che non è stato fermato.
 
 1. La PR è la **#363** (jest 2204 verdi, `typecheck`, `lint`,
    `format:check`, ruff e black in locale).
-2. L'acqua è sul server; manca solo la prova dentro l'API (sopra): la
-   decide l'utente.
-3. «#363 pronta» al coordinatore; niente merge senza il suo «merge 363».
+2. L'acqua è sul server; la prova dentro l'API non è fatta e per il merge
+   basta l'impronta uguale (coordinatore). Resta la prova dell'utente sul
+   telefono, dopo la pubblicazione.
+3. La #363 è in coda dal coordinatore, dietro la #365; niente merge senza
+   il suo «merge 363».
    Dopo il merge: task `Done`, STATUS in «Completato», branch e worktree
    tolti.

@@ -1,6 +1,6 @@
 # TASK-182 — Le unità di misura: km o miglia
 
-**Stato**: In revisione (parti A, B e C in `main`: #351, #368, #366; l'ultimo passo, «Phone units», in PR)
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-182-units` (parte A)
 
 ## Obiettivo
@@ -205,9 +205,10 @@ revisione:
 - Con «Kilometres» ogni testo è quello di prima, in tutte le lingue: la
   distanza di una corsa resta con il punto, le schede di «Explore» anche
   (`withPoint`), finché i loro testi sono in inglese.
-- **Testi nuovi, da confermare con l'utente**: «Phone units»,
-  «Kilometres», «Miles», «{mi} mi away», «{town}, {mi} mi away» (e le
-  quattro traduzioni).
+- **Testi nuovi, confermati dall'utente il 2026-10-05**: «Kilometres»,
+  «Miles», «{mi} mi away», «{town}, {mi} mi away» («ok, i testi delle
+  unità vanno bene») e, con l'ultimo passo, «Phone units» (e le quattro
+  traduzioni).
 - **Non visto su un telefono né nel simulatore.** L'unità del telefono si
   legge da `Settings` di React Native (`AppleMetricUnits`,
   `AppleMeasurementUnits`, `AppleLocale`) e da
@@ -535,3 +536,12 @@ Branch `feat/TASK-182-d-phone-units`, dopo le parti B (#368) e C (#366).
   «Draw» in metri dentro `App.tsx` quando è libero; «within 1 km of the
   shore» e l'avviso sull'acqua restano in km per scelta (limiti del
   motore).
+
+### Chiusura (2026-10-05)
+
+Tutto in `main`: parte A #351 (`7a9506a`), parte C #366 (`ad3e443`),
+parte B #368 (`0703d25`), ultimo passo #374 (`3ad0c22`). Il testo «Phone
+units» è confermato dall'utente («continua va bene»). Parti A, B e C su
+`preview`; l'ultimo passo esce con la prossima pubblicazione, del
+coordinatore. Restano, fuori dal task: ascoltare la voce in miglia
+sull'iPhone; la distanza di «Draw» in metri dentro `App.tsx`.

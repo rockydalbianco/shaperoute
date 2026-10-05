@@ -145,6 +145,29 @@ class NoWater:
         ({"natural": "water", "name": "Haidersee"}, "Haidersee"),
         ({"natural": "water", "name": "Valle Fossa di Porto"}, None),
         ({"natural": "water", "name": "Bacino di Malamocco"}, None),
+        # A lake by its tags, named as the plant or the basin it is.
+        (
+            {
+                "natural": "water",
+                "water": "reservoir",
+                "name": "Centrale Idroelettrica Presenzano",
+            },
+            None,
+        ),
+        (
+            {
+                "natural": "water",
+                "water": "lake",
+                "name": "Cassa di espansione dei Renai",
+            },
+            None,
+        ),
+        ({"natural": "water", "water": "lake", "name": "Zona umida Zapponeta"}, None),
+        # A reservoir named as one stays (the user's choice).
+        (
+            {"natural": "water", "water": "reservoir", "name": "Invaso del Locone"},
+            "Invaso del Locone",
+        ),
         # Not what the engine paddles on (water.is_lake).
         ({"natural": "water", "water": "lagoon", "name": "Laguna di Marano"}, None),
         ({"natural": "water", "water": "pond", "name": "Lago di Ledro"}, None),

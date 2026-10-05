@@ -97,6 +97,9 @@ _LAKE_NAME = re.compile(
     r"\b(lago|laghi|laghetto|laghetti|lac|lacs)\b|see\b", re.IGNORECASE
 )
 _LAKE_KINDS = frozenset({"lake", "reservoir"})
+# Tagged as a lake or a reservoir, but named as what it is: the basin of a
+# power plant, a flood basin, a wetland. Not a place to send a canoe to.
+_NOT_A_LAKE = re.compile(r"\b(centrale|cassa di|vasca|zona umida)\b", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -122,7 +125,7 @@ def lake_name(tags: dict[str, str]) -> str | None:
     («Kalterer See - Lago di Caldaro»); None when this water is not a lake
     of the list."""
     name = (tags.get("name:it") or tags.get("name") or "").strip()
-    if not name or not is_lake(tags):
+    if not name or not is_lake(tags) or _NOT_A_LAKE.search(name):
         return None
     if tags.get("water") in _LAKE_KINDS or _LAKE_NAME.search(name):
         return name

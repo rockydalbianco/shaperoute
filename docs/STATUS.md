@@ -707,7 +707,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   più registrato (seguito, se serve). **Parte F** («ok continua»
   dell'utente alla proposta): dalla bozza di «Privacy» esce «a run
   scored» fra gli eventi tenuti; resta «…distance, duration, score…»,
-  ancora vera. Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
+  ancora vera (PR #372). **Parte G**: tolto dall'app
+  `src/api/trackScores.ts`, che nessuno chiamava più; niente cambia per
+  chi usa l'app. Esce con la prossima pubblicazione.
+  `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

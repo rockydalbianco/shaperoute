@@ -202,6 +202,14 @@ export interface RouteResult {
    * one, in the alternatives and on the water; missing from an older API.
    */
   better_distance_m?: number | null;
+  /**
+   * How far the shape is turned, in degrees counterclockwise, in (-180, 180]
+   * (TASK-232, ADR-0195): the map shows the drawing upright with a MapLibre
+   * bearing of -rotation_deg. 0 for a shape that turns freely, like the
+   * circle; each alternative has its own. Missing from an older API: the map
+   * stays north-up.
+   */
+  rotation_deg?: number;
 }
 
 /** Routes besides the one chosen by the engine: three to choose from. */

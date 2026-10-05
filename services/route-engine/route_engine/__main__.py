@@ -467,6 +467,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"phase {best.phase:.2f}, "
             f"scale {best.scale_m / base:.0%} of the initial one"
         )
+        if route.rotation_deg:  # TASK-232: the app turns the map back
+            print(
+                f"  tilted:     {route.rotation_deg:+.0f} deg; the map shows it "
+                f"upright with a bearing of {-route.rotation_deg:+.0f} deg"
+            )
         if best.offset_m > 0:
             start_lat, start_lon = best.placement.start
             print(

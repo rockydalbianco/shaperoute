@@ -97,6 +97,8 @@ def result_from(data: dict[str, Any]) -> RouteResult:
         walks=[(int(a), int(b)) for a, b in data.get("walks", [])],
         # Kept before TASK-206 part B: none.
         on_foot=[(int(a), int(b)) for a, b in data.get("on_foot", [])],
+        # Kept before TASK-232: upright.
+        rotation_deg=float(data.get("rotation_deg", 0.0)),
     )
 
 

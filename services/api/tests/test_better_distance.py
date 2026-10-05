@@ -80,7 +80,8 @@ def test_without_advice_the_field_is_null() -> None:
 
 def test_the_fixture_of_the_contract_is_a_valid_body() -> None:
     data = _load("route-result-better-distance.json")
-    assert set(data) == set(RouteResultBody.model_fields)
+    # Every field of its day: the rotation came after (TASK-232).
+    assert set(data) == set(RouteResultBody.model_fields) - {"rotation_deg"}
     body = RouteResultBody.model_validate(data)
     assert body.better_distance_m == 12_000
     assert [other.better_distance_m for other in body.alternatives] == [None]
@@ -92,7 +93,8 @@ def test_an_older_app_reads_the_answer_as_before(advised: TestClient) -> None:
     body = done(advised)
     older = _load("route-result.json")
     assert set(older) <= set(body)
-    assert set(body) - set(older) == {"walks", "on_foot", "better_distance_m"}
+    new = {"walks", "on_foot", "better_distance_m", "rotation_deg"}
+    assert set(body) - set(older) == new
 
 
 def test_the_gpx_takes_the_result_back_with_or_without_the_field(

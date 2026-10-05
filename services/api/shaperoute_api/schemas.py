@@ -214,6 +214,19 @@ class RouteResultBody(BaseModel):
             "without one, in the alternatives and on the water."
         ),
     )
+    # Missing from an older API, and in a GPX request from an older app.
+    rotation_deg: float = Field(
+        default=0.0,
+        ge=-180.0,
+        le=180.0,
+        description=(
+            "How far the shape is turned, in degrees counterclockwise, in "
+            "(-180, 180] (TASK-232, ADR-0195): the app turns the map by its "
+            "opposite (a MapLibre bearing of -rotation_deg) so the drawing "
+            "reads upright. 0 for a shape that turns freely, like the "
+            "circle; each alternative has its own."
+        ),
+    )
 
     @model_validator(mode="after")
     def _walks_within_points(self) -> Self:

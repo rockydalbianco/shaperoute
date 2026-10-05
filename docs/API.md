@@ -546,6 +546,19 @@ rifà la ricerca. Un'API precedente non lo manda (in `shared-types` è
 facoltativo), le app installate lo ignorano, e il `GpxRequest` lo accetta
 con o senza. Esempio: `fixtures/route-result-better-distance.json`.
 
+**`rotation_deg`** (TASK-232, ADR-0195): di quanti gradi è girata la
+forma, in senso antiorario come nel motore (ADR-0018), fra −180 e 180. Il
+motore inclina una forma fino a 45° quando così segue meglio le strade
+(`ROUTE_ENGINE.md` §5, «Forme inclinate»), e l'app gira la mappa di
+`−rotation_deg` (il `bearing` di MapLibre è in senso orario) perché il
+disegno si veda dritto. Vale 0 per una forma dritta e per quelle che
+girano libere, come il cerchio: lì la mappa resta col nord in alto. Ogni
+alternativa ha il suo. Il GPX non cambia: ha le coordinate vere. Un'API
+precedente non lo manda (in `shared-types` è facoltativo: senza, nord in
+alto), le app installate lo ignorano, e il `GpxRequest` lo accetta con o
+senza; fuori da [−180, 180] è un `422`. Esempio:
+`fixtures/route-result-tilted.json`.
+
 La richiesta è sincrona: la risposta arriva quando il percorso è pronto
 (tempi sotto). Resta per `/docs`, `curl` e le misure; l'app usa
 `/route-jobs`.

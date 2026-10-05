@@ -683,16 +683,19 @@ richiesto, se da lì la forma si chiude meglio (ADR-0025).
 
 | Parametro | Valori | Note |
 |---|---|---|
-| rotazione | −15°, 0°, +15°, poi ±15° ogni 5° restando entro ±15° | attorno alla partenza; il cerchio 0–345° ogni 15° |
+| rotazione | −15°, 0°, +15°, poi ±15° ogni 5° restando entro ±15°; se non basta, ±30° e ±45°, poi ogni 5° fra 15° e 45° | attorno alla partenza; il cerchio 0–345° ogni 15° |
 | fase di partenza | 0; 0,25; 0,5; 0,75 | dove la partenza entra nella forma |
 | scala | 0,4–1,1 × la stima di §3 | le strade allungano il percorso fino a 2,5× |
 | partenza | il punto richiesto, o a 250 / 500 m in 8 direzioni | spostarla deve valere almeno il 5% del contorno |
 | partenza lontana | a 1 / 1,5 / 2 km in 12 direzioni | solo nel secondo tempo, sotto |
 
 La rotazione conta molto dove la rete ha buchi (campi, fiumi, ferrovie); in
-una città fitta come Milano la forma va bene già dove cade. Ma l'occhio non
-riconosce una forma inclinata: dal TASK-036 ogni forma resta dritta entro
-±15°, tranne il cerchio, che a qualsiasi angolo è lo stesso (ADR-0038).
+una città fitta come Milano la forma va bene già dove cade. Su una mappa
+col nord in alto l'occhio non riconosce una forma inclinata: dal TASK-036
+ogni forma restava dritta entro ±15°, tranne il cerchio, che a qualsiasi
+angolo è lo stesso (ADR-0038). Dal TASK-232 l'app gira la mappa come la
+forma, e una forma si inclina fino a **45°** (ADR-0195, «Forme inclinate»
+qui sotto).
 
 ### Strategia di ricerca
 
@@ -709,12 +712,47 @@ riconosce una forma inclinata: dal TASK-036 ogni forma resta dritta entro
    lontane da quelle già provate; poi si rifinisce la rotazione migliore.
 5. Con il budget che resta (20 tracciamenti in tutto, fino a 6
    piazzamenti) si corregge ancora la distanza del piazzamento migliore.
+6. **Le inclinazioni oltre 15°** (TASK-232): se fin qui nessun percorso
+   è buono, gli stessi passi 1–5 ripartono con le sole rotazioni oltre
+   ±15° (±30°, ±45°; la rifinitura ogni 5° fra 15° e 45°) e **10
+   tracciamenti in più** (`TILTED_TRACES`). Sotto, «Forme inclinate».
 
 Ci si ferma appena distanza (±10%) e somiglianza (≥ 0,90) vanno bene. Se il
-budget finisce prima, si restituisce il tentativo di costo minore entro
+budget finisce prima, si restituisce il tentativo di costo minore, dritto
+o inclinato, entro
 **±2 km** dal target, con un warning che dice cosa manca. Se la somiglianza
 migliore è sotto **0,60**, o nessun tentativo sta entro ±2 km, nessun
 percorso: la forma lì non è disponibile (ADR-0025).
+
+### Forme inclinate (TASK-232)
+
+L'app gira la mappa di quanto è girata la forma (`RouteResult.rotation_deg`,
+antiorario, fra −180° e 180°, 0 per il cerchio), così il disegno si vede
+dritto anche inclinato: il motivo di ADR-0038 cade, e una forma con un
+alto e un basso si inclina fino a **±45°** (`MAX_TILT_DEG`, ADR-0195):
+catalogo, emoji, contorni da foto, parole.
+
+1. **Prima dritta, come prima**: la ricerca di sempre, entro ±15°
+   (`UPRIGHT_TILT_DEG`) e con i suoi 20 tracciamenti. Se dà un percorso
+   buono, è lui: stesso percorso e stesso tempo di prima.
+2. **Poi inclinata**, solo se il primo tempo non trova un percorso buono:
+   la stessa ricerca sulle sole rotazioni oltre ±15°, con 10 tracciamenti
+   in più (`TILTED_TRACES`). Il risultato è il migliore dei due tempi; la
+   ricerca lontana (ADR-0040) e le partenze vicine fanno lo stesso.
+3. **Inclinarla costa**: oltre 15°, il 5% di copertura a 45° in
+   proporzione all'angolo (`TILT_FIT_PENALTY`, come spostare la partenza
+   di 500 m), sia nel conteggio delle strade sia nel costo di un
+   tracciato (`W_TILT`). Entro 15° non costa, come prima. A parità vince
+   la forma più dritta.
+4. **Il risultato** dice la rotazione del percorso scelto (`shown_rotation`),
+   anche per ogni partenza vicina e alternativa; 0 senza ricerca e per le
+   forme che girano libere.
+
+Provare tutte le rotazioni insieme, con la penalità in proporzione
+dall'angolo 0 o da 15°, è stato misurato e scartato: il conteggio delle
+strade premiava piazzamenti inclinati che tracciati venivano peggio, e la
+ricerca, con lo stesso budget, perdeva percorsi buoni (`MAPS.md`, «Forme
+inclinate»).
 
 ### Trova dove la forma ci sta (TASK-038)
 
@@ -883,7 +921,10 @@ lontane almeno 20° e alte almeno metà della prima, sono le direzioni della
 griglia. La ricerca prova, per ogni partenza, le direzioni al più **30°**
 fuori dall'orizzontale (dritta se non ce n'è), e la rifinitura gira di al
 più 5° attorno a una di esse. A Levico una griglia a 43° metteva la parola
-di traverso sulla mappa, e non si leggeva.
+di traverso sulla mappa col nord in alto, e non si leggeva. Dal TASK-232
+la mappa gira con la parola: le direzioni fra 30° e 45° (ogni griglia ne
+ha una entro 45°) sono il secondo tempo della ricerca, come le
+inclinazioni delle forme («Forme inclinate»).
 
 ### La penna alzata (TASK-197)
 
@@ -970,7 +1011,9 @@ costo = w_forma · (1 − somiglianza) + w_dist · |dist_reale − dist_target| 
 ```
 
 con `w_forma` = 3 e `w_dist` = 1: la forma conta più della distanza. Una
-partenza spostata di 500 m aggiunge 0,15, cioè vale 5 punti di copertura.
+partenza spostata di 500 m aggiunge 0,15, cioè vale 5 punti di copertura;
+altrettanto una forma inclinata di 45°, in proporzione ai gradi oltre 15°
+(TASK-232, `W_TILT`).
 
 **I baffi del cuore** (TASK-131, ADR-0107): per il cuore il costo ha un
 termine in più, `w_baffi · quota fatta due volte`, con `w_baffi` = 1,5

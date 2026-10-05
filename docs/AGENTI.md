@@ -74,7 +74,13 @@ Sezione Explore padel e laghi
 
 Impossibile seguire amici
   └─ Adesso  TASK-211 B  «Follow», «Requests», le liste, nella #320
-                                                               ADR-0173
+                                                     ADR-0173, ADR-0199
+
+Sezione Near me con città vicine
+  └─ Adesso  TASK-236  In «Explore», sotto «Near me», fino a quattro
+                       paesi vicini (20–50 km) con i loro esempi;
+                       `GET /nearby-cities`. La canoa resta a TASK-233
+                                                               ADR-0200
 
 Mappe offline: parte B pubblicata
   ├─ Adesso  TASK-235  La pubblicità fra i post del «Feed», una ogni
@@ -151,6 +157,7 @@ Da assegnare
 |---|---|
 | `src/paddle/PaddleExplore.tsx`, `waterSpots.ts`, `lakes.json`; `lake_catalog.py` nell'API | TASK-233 |
 | `src/profile/`, `src/social/`, `src/api/follows.ts`, `PeopleScreen.tsx`, `ProfileLayer.tsx` | TASK-211 B |
+| `ExploreScreen.tsx` (poche righe), file nuovi in `src/explore/`, `nearby_cities.py`, un blocco in `app.py` | TASK-236 |
 | `FeedScreen.tsx`, file nuovi in `src/feed/` | TASK-235; TASK-228 entra dopo e si accorda |
 | `phone_zone_api.py` e i suoi test | TASK-214 A2, quando parte |
 | `optimizer.py`, `models.py`, `schemas.py`, `shared-types`, poi `RoutePanel.tsx` | TASK-234 |
@@ -161,12 +168,12 @@ Da assegnare
 
 ## Numeri
 
-- Task: presi fino a **TASK-235**. Il prossimo libero è **TASK-236**.
-- ADR: presi fino a **ADR-0198** (0183 TASK-220, 0184 TASK-221, 0185
+- Task: presi fino a **TASK-236**. Il prossimo libero è **TASK-237**.
+- ADR: presi fino a **ADR-0200** (0183 TASK-220, 0184 TASK-221, 0185
   TASK-223, 0186 TASK-224, 0187 TASK-225, 0188 TASK-226, 0189 TASK-227,
   0190 TASK-228, 0191 TASK-229, 0192 TASK-230, 0193 TASK-119, 0194
-  TASK-231, 0195 TASK-232, 0196 TASK-233, 0197 TASK-234, 0198 TASK-235). Il
-  prossimo libero è **ADR-0199**.
+  TASK-231, 0195 TASK-232, 0196 TASK-233, 0197 TASK-234, 0198 TASK-235, 0199
+  TASK-211 B, 0200 TASK-236). Il prossimo libero è **ADR-0201**.
 - Migrazioni in `main`: 0001 account, 0002 preferiti, 0003 corse, 0004
   Strava, 0005 foto, 0006 penna alzata, 0007 profili, 0008 attività nei
   preferiti, 0009 corse pubblicate, 0010 canoa nei preferiti, 0011

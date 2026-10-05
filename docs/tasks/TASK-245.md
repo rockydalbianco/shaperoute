@@ -1,8 +1,9 @@
 # TASK-245 — Altre spiagge per «Paddle», oltre Jesolo e Riccione
 
-**Stato**: In corso (2026-10-05) — PR #363; comando, elenco e prove fatti
-sul Mac (29 posti su 29); l'acqua è sul server (27 file), non ancora
-provata dentro l'API
+**Stato**: Done (2026-10-05) — PR #363 (merge `0d8bbc1`): 29 posti di
+mare su 29 nell'elenco, tutti a 2 km; l'acqua è sul server (27 file).
+Esce con la pubblicazione del coordinatore; la prova sul telefono è
+dell'utente
 **Fase**: 4 · **Branch**: `feat/TASK-245-more-beaches`
 **Dipende da**: TASK-225 (l'acqua da un estratto), TASK-233 (l'elenco dei
 laghi, `waterSpots.ts`), TASK-240 (laghi e spiagge in «Another place»)
@@ -228,14 +229,23 @@ mentre girava `draw_examples`, che non è stato fermato.
   da fare, da chi ha il permesso o dall'utente sul telefono dopo la
   pubblicazione: una spiaggia nuova scelta in «Explore» con «Paddle».
 
-**Da dove riprendere** (2026-10-05):
+### 2026-10-05, chiuso
 
-1. La PR è la **#363** (jest 2204 verdi, `typecheck`, `lint`,
-   `format:check`, ruff e black in locale).
-2. L'acqua è sul server; la prova dentro l'API non è fatta e per il merge
-   basta l'impronta uguale (coordinatore). Resta la prova dell'utente sul
-   telefono, dopo la pubblicazione.
-3. La #363 è in coda dal coordinatore, dietro la #365; niente merge senza
-   il suo «merge 363».
-   Dopo il merge: task `Done`, STATUS in «Completato», branch e worktree
-   tolti.
+PR **#363** mergiata in `main` (`0d8bbc1`, 12:31Z) al «merge 363» del
+coordinatore, con la CI 5/5 verde. L'utente, saputo che la prova dentro
+l'API non è stata fatta: «va bene così, la provo sul telefono».
+
+**Seguiti**:
+
+- **La prova sull'iPhone, dell'utente**, dopo la pubblicazione: con
+  «Paddle», una spiaggia nuova in «Explore» (per esempio Viareggio), le
+  sue forme, e il nome scritto in «Another place».
+- Se il motore dell'acqua o l'estratto cambiano, l'elenco si rifà:
+  `MAPS.md`, «Le spiagge di «Paddle»»; gli script usati sul Mac al posto
+  di `osmium` sono in `out/task245-beaches/scripts/` e
+  `out/task233-lakes/scripts/`, fuori dal repository.
+- Una partenza al mare a più di 3 km da un paese dell'elenco resta senza
+  acqua sul server: altri posti si aggiungono a `PLACES`.
+- In «Another place», «lago lev» propone anche «Sestri Levante» dopo
+  «Lago di Levico»: le parole comuni («lago») non contano quando un'altra
+  parola dice il luogo (regola di TASK-240).

@@ -2,7 +2,7 @@ import type { LatLon } from "@shaperoute/shared-types";
 
 import { metresBetween } from "../map/coordinates";
 import { MIN_PACE_M } from "./freeRun";
-import { kmTimesMs } from "./runMetrics";
+import { unitTimesMs } from "./runMetrics";
 import { activeBetween, stepAt, type Track } from "./trackRecorder";
 
 /**
@@ -119,10 +119,11 @@ export function averagePaceS(track: Track, ms: number): number | null {
 
 /**
  * The seconds the last whole kilometre took; null before the first. The
- * moment a kilometre ends falls between two fixes, in proportion.
+ * moment a kilometre ends falls between two fixes, in proportion. With
+ * `unitM` the metres of a mile, the last whole mile (TASK-182).
  */
-export function lastKmS(track: Track): number | null {
-  const times = kmTimesMs(track);
+export function lastKmS(track: Track, unitM: number = 1000): number | null {
+  const times = unitTimesMs(track, unitM);
   if (times.length === 0) {
     return null;
   }

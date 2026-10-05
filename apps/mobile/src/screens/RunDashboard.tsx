@@ -42,6 +42,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { metresPer } from "../units/format";
+import type { Units } from "../units/units";
 import { VoiceSetting } from "../voice/VoiceSetting";
 import { Countdown } from "./Countdown";
 import { HoldButton, ROUND_BUTTON } from "./HoldButton";
@@ -60,7 +62,8 @@ import {
  * pages a swipe apart. «Map» is the map with the turn over it and, under
  * it, a few numbers; «Data» is every number, the kilometres one by one and
  * the run's switches, with no map. Both have the same way to pause, to go
- * on and to stop.
+ * on and to stop. With miles (TASK-182) the kilometres are miles, one by
+ * one too: worked out here from the track, which stays in metres.
  */
 
 export type RunPage = "map" | "data";
@@ -187,7 +190,7 @@ function Kilometres({
     <View
       style={styles.km}
       accessible
-      accessibilityLabel={`Distance: ${numbers.km} km`}
+      accessibilityLabel={`Distance: ${numbers.km} ${numbers.units}`}
     >
       <Text
         style={hero ? styles.kmHero : styles.kmNumber}
@@ -196,7 +199,9 @@ function Kilometres({
       >
         {numbers.km}
       </Text>
-      <Text style={styles.kmUnit}>kilometres</Text>
+      <Text style={styles.kmUnit}>
+        {numbers.units === "mi" ? t("miles") : "kilometres"}
+      </Text>
     </View>
   );
 }
@@ -498,7 +503,7 @@ function DataPage({
         <Kilometres numbers={numbers} hero />
         {route && <RouteBar route={route} numbers={numbers} />}
         <RunGrid numbers={numbers} />
-        <Splits track={track} ride={numbers.ride} />
+        <Splits track={track} ride={numbers.ride} units={numbers.units} />
         <View style={styles.switches}>
           <Switch label="Auto-pause" on={control.autoPause} onChange={setAutoPause} />
           <Switch label="Voice" on={control.voice} onChange={setVoice} />
@@ -528,7 +533,8 @@ export function splitShare(seconds: number, fastest: number, slowest: number): n
 /** The bar of the slowest kilometre, as a share of the fastest one's. */
 const MIN_SPLIT_SHARE = 0.35;
 
-/** A kilometre's pace, or on a bike its speed in km/h (TASK-216). */
+/** A kilometre's pace, or on a bike its speed in km/h (TASK-216). A row a
+ * mile long (TASK-182) gives the mile's pace, and mph. */
 function splitSpeed(row: Split, ride: boolean): string {
   return ride ? speedNumber(row.seconds) : paceClock(row.seconds);
 }
@@ -544,17 +550,32 @@ function splitChange(row: Split, ride: boolean): string {
     : changeLabel(row.change);
 }
 
+/** What a row of the splits is read as: "Kilometre 2: 5:30", on a bike
+ * "Kilometre 2: 24.3 km/h"; with miles "Mile 2: 8:51", "Mile 2: 15.1 mph". */
+function splitName(row: Split, ride: boolean, units: Units): string {
+  if (units === "mi") {
+    return ride
+      ? t("Mile {mile}: {speed} mph", { mile: row.km, speed: splitSpeed(row, ride) })
+      : t("Mile {mile}: {pace}", { mile: row.km, pace: paceClock(row.seconds) });
+  }
+  return ride
+    ? t("Kilometre {km}: {speed} km/h", { km: row.km, speed: splitSpeed(row, ride) })
+    : `Kilometre ${row.km}: ${paceClock(row.seconds)}`;
+}
+
 /** Each whole kilometre, its pace, and how it went against the one before;
  * a bar beside each, longer the faster it was (TASK-204). On a bike, the
- * speed (TASK-216). */
-function Splits({ track, ride }: { track: Track; ride: boolean }) {
-  const rows = useMemo(() => splits(track), [track]);
+ * speed (TASK-216). With miles, each whole mile (TASK-182). */
+function Splits({ track, ride, units }: { track: Track; ride: boolean; units: Units }) {
+  const rows = useMemo(() => splits(track, metresPer(units)), [track, units]);
   const fastest = Math.min(...rows.map((row) => row.seconds));
   const slowest = Math.max(...rows.map((row) => row.seconds));
   return (
     <View style={styles.splits}>
       <View style={styles.splitRow}>
-        <Text style={[styles.splitHead, styles.splitKm]}>Km</Text>
+        <Text style={[styles.splitHead, styles.splitKm]}>
+          {units === "mi" ? t("Mi") : "Km"}
+        </Text>
         <View style={styles.splitBarCell} />
         <Text style={[styles.splitHead, styles.splitCell]}>
           {ride ? t("Speed") : "Pace"}
@@ -562,7 +583,11 @@ function Splits({ track, ride }: { track: Track; ride: boolean }) {
         <Text style={[styles.splitHead, styles.splitCell]}>Change</Text>
       </View>
       {rows.length === 0 ? (
-        <Text style={styles.noSplits}>Your first kilometre will show here.</Text>
+        <Text style={styles.noSplits}>
+          {units === "mi"
+            ? t("Your first mile will show here.")
+            : "Your first kilometre will show here."}
+        </Text>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* The last one first: it is the one just run. */}
@@ -572,12 +597,7 @@ function Splits({ track, ride }: { track: Track; ride: boolean }) {
               style={styles.splitRow}
               accessible
               accessibilityLabel={
-                (ride
-                  ? t("Kilometre {km}: {speed} km/h", {
-                      km: row.km,
-                      speed: splitSpeed(row, ride),
-                    })
-                  : `Kilometre ${row.km}: ${paceClock(row.seconds)}`) +
+                splitName(row, ride, units) +
                 (row.change === null ? "" : `, ${splitChange(row, ride)}`)
               }
             >

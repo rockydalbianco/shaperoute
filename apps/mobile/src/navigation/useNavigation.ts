@@ -12,6 +12,7 @@ import { Vibration } from "react-native";
 
 import { onFootOf } from "../route/onFoot";
 import { walksOf } from "../route/walks";
+import { appUnits } from "../units/units";
 import { loadVoices, speaking } from "../voice/voiceChoice";
 import { wordsOf } from "../voice/words";
 import { kmAnnouncement } from "./freeRun";
@@ -70,7 +71,9 @@ export function play(cues: Cue[]): void {
  * way between the letters ridden. After the kilometres the voice says how
  * they went against those before (TASK-217, `kmCompare`).
  * Each fix is said in the voice's language of that moment (TASK-209), so a
- * change on «Data» is heard at once. The position never leaves the phone.
+ * change on «Data» is heard at once, and in the units «Settings» has at
+ * that moment (TASK-182): with miles each mile, on a bike every
+ * RIDE_MI_EVERY, and the turns in feet. The position never leaves the phone.
  */
 export function useNavigation(
   points: LatLon[] | null,
@@ -129,8 +132,10 @@ export function useNavigation(
       // A route stopped lately goes on with its track (trackStore).
       const recorder = startRun(points, Date.now(), similarity, walked);
       stopRecording = recorder.stop;
-      // A run that goes on does not say again the kilometres it has said.
-      let saidKm = saidKmOf(recorder.track(), activity);
+      // A run that goes on does not say again the kilometres it has said;
+      // with miles, the miles (TASK-182).
+      let saidUnits = appUnits();
+      let saidKm = saidKmOf(recorder.track(), activity, saidUnits);
       let position: LatLon | null = null;
       const session = controlRun(recorder, {
         // «Pause» and «Resume» change the track between two fixes.
@@ -217,15 +222,22 @@ export function useNavigation(
           bike = walking.onFoot;
           play(walking.cues);
           // After the turn, so a kilometre never delays one.
-          const km = saidKmOf(track, activity);
+          const units = appUnits();
+          if (units !== saidUnits) {
+            // «Settings» changed the units during the run: those behind
+            // are not said again, the next one is.
+            saidUnits = units;
+            saidKm = saidKmOf(track, activity, units);
+          }
+          const km = saidKmOf(track, activity, units);
           if (km > saidKm) {
             saidKm = km;
             const said = isRide(activity)
-              ? rideAnnouncement(km, track, language)
-              : kmAnnouncement(km, track, language);
+              ? rideAnnouncement(km, track, language, units)
+              : kmAnnouncement(km, track, language, units);
             play([{ say: said, vibrate: false }]);
             // Then how it went against the one before (TASK-217).
-            const compared = comparisonOf(km, track, activity, language);
+            const compared = comparisonOf(km, track, activity, language, units);
             if (compared !== null) {
               play([{ say: compared, vibrate: false }]);
             }

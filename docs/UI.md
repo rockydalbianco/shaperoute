@@ -1906,6 +1906,62 @@ come sempre. Da TASK-198 una pausa «penna» ha `pen: true`, e il file di
 una parola a penna alzata ha anche i `walks` del percorso, per il
 punteggio; quello di ogni altro percorso è come prima.
 
+**Con le miglia** (TASK-182 parte C, ADR-0149 «aggiornamento (parte C)»;
+scelta dell'utente del 2026-10-03, «come fa Strava»). Con «Miles» in
+«Settings» la corsa si mostra e si dice in miglia, subito, anche a corsa
+iniziata; con «Kilometres» ogni scritta e ogni frase è quella di prima.
+
+- **Il banner della svolta**: la distanza in piedi, ai cinquanta («350
+  ft», mai «0 ft»), e da 1000 piedi in miglia con un decimale («0.6 mi»).
+- **I numeri** (sotto la mappa, in pausa e su «Data»): la distanza in
+  miglia con due decimali e «mi» accanto («2.30 mi»; su «Data», sotto il
+  numero grande, «miles»); «Pace now» e «Avg pace» in «/mi» («8:03 /mi»);
+  al posto di «Last km», **«Last mi»**, l'ultimo miglio intero; lungo un
+  percorso «2.0 mi to go», sotto i 1000 piedi «400 ft to go». «Elev.
+  gain» resta in metri e «Calories» in kcal.
+- **I parziali di «Data»** sono un miglio ciascuno: la colonna «Mi» al
+  posto di «Km», una riga per ogni miglio intero con il suo passo e il
+  cambio sul miglio prima («Mile 2: 9:39, +1:37» per chi ascolta lo
+  schermo); prima del primo miglio «Your first mile will show here.». Li
+  calcola il telefono dalla traccia, che resta in metri: quello che avanza
+  dopo l'ultimo miglio intero non è una riga, le pause sono escluse come
+  nei km.
+- **In bici** la velocità è in **mph** («Speed now», «Avg speed», «Last
+  mi»: «12.4 mph»), e i parziali dicono la velocità di ogni miglio («Mile
+  2: 12.4 mph, -2.5»).
+- **La voce** dice ogni miglio al posto di ogni km, con il tempo e il
+  passo medio al miglio, e dal secondo il confronto col miglio prima
+  (stesse soglie: entro 2 secondi, compresi, è lo stesso passo).
+  L'incitamento arriva dopo il **terzo miglio** (4,8 km: il più vicino ai
+  5 km). In bici la voce parla **ogni 5 miglia** (8 km) al posto di ogni
+  10 km, con la velocità media in miglia orarie intere, e dal decimo
+  confronta le ultime 5 con le 5 prima, senza numeri (entro 0,5 km/h,
+  compresi, è la stessa velocità). **Le svolte e i tratti con la bici a
+  mano si dicono in piedi**, ai cinquanta: i punti in cui la voce parla
+  restano quelli di prima (50 m a piedi, 100 m in bici), cambiano solo le
+  parole («In 150 feet…», «In 350 feet…»). Le frasi della penna, della
+  pausa, del fuori percorso e dell'arrivo non hanno distanze: restano
+  quelle. «Listen», sotto «Voice», fa sentire la svolta in piedi.
+- Se l'unità cambia a corsa iniziata, la voce non ridice quello che è già
+  passato: dice il prossimo miglio (o km) intero.
+
+Le frasi nuove, in inglese e in italiano (**scritte dall'agente, da
+confermare con l'utente**; tedesco, spagnolo e francese in
+`src/voice/{de,es,fr}.ts`, anche quelle da confermare):
+
+| Caso | Inglese | Italiano |
+|---|---|---|
+| ogni miglio | «1 mile. Time: 8 minutes 3 seconds. Average pace: 8 minutes 3 seconds per mile.» / «2 miles. …» | «Un miglio. Tempo: 8 minuti e 3 secondi. Passo medio: 8 minuti e 3 secondi al miglio.» / «2 miglia. …» |
+| miglio più veloce | «12 seconds faster than the last mile.» | «Questo miglio: 12 secondi meglio del precedente.» |
+| miglio più lento | «8 seconds slower than the last mile.» | «Questo miglio: 8 secondi peggio del precedente.» |
+| stesso passo | «Same pace as the last mile.» | «Stesso passo del miglio precedente.» |
+| bici, ogni 5 miglia | «5 miles. Time: 20 minutes. Average speed: 15 miles per hour.» | «5 miglia. Tempo: 20 minuti. Velocità media: 15 miglia orarie.» |
+| bici, più veloce | «The last 5 miles were faster than the 5 before.» | «Ultime 5 miglia più veloci delle 5 precedenti.» |
+| bici, più lento | «The last 5 miles were slower than the 5 before.» | «Ultime 5 miglia più lente delle 5 precedenti.» |
+| bici, stessa velocità | «The last 5 miles were at the same speed as the 5 before.» | «Ultime 5 miglia alla stessa velocità delle 5 precedenti.» |
+| una svolta | «In 150 feet, turn left onto Via Roma» | «Tra 150 piedi, svolta a sinistra su Via Roma» |
+| la bici a mano | «In 350 feet, get off and walk the bike for 650 feet.» | «Tra 350 piedi, scendi e porta la bici a mano per 650 piedi.» |
+
 ## La fine della corsa
 
 «Stop» tenuto premuto, dalla pausa (TASK-169), o «Finish» all'arrivo,
@@ -1920,6 +1976,9 @@ tempo»): l'app non lo mostra e a fine corsa **non chiede più `POST
 /track-scores`**, quindi non ci sono né un'attesa né «Try again». Il
 punteggio lo calcola ancora l'API da sé per le corse salvate, e non si
 vede da nessuna parte.
+Con le miglia (TASK-182 parte C) la riga dice la distanza in miglia: «2.5
+mi · 32 min» (sotto i 1000 piedi, in piedi); quello che «Save» tiene resta
+in metri.
 
 Con una parola a penna alzata (TASK-198) la mappa ha i tratti a piedi
 tratteggiati. Con «Save» le pause «penna» vanno in «My
@@ -2315,8 +2374,12 @@ Kilometer.»; «Este kilómetro: 12 segundos más rápido que el anterior.» /
 «… más lento …» / «Mismo ritmo que el kilómetro anterior.»; «Ce
 kilomètre : 12 secondes plus rapide que le précédent.» / «… plus lent …»
 / «Même allure que le kilomètre précédent.». In bici il confronto è ogni
-10 km («La navigazione», la bici). Le forme con le miglia le aggiunge
-TASK-182 con il resto della voce in miglia.
+10 km («La navigazione», la bici). Con le miglia (TASK-182 parte C) la
+voce dice ogni miglio e lo confronta col miglio prima («1 mile. Time: …
+Average pace: … per mile.», «12 seconds faster than the last mile.»): le
+frasi sono in «La navigazione», «Con le miglia»; il banner della partenza
+dice la distanza in piedi («650 ft») e da 1000 piedi in miglia («1.2
+mi»).
 
 La traccia è quella della navigazione (ADR-0091), con le stesse regole,
 nello stesso file `current-run.json`, con il percorso vuoto: resta se
@@ -2326,7 +2389,9 @@ file alla prima posizione).
 **«Stop»** (in pausa, tenuto premuto) apre la fine della corsa: in alto
 «Your run» e «White: what you ran.»; sotto i km in grande e i sei riquadri
 di «Data» (tempo senza le pause, passo medio, ultimo km, salita,
-calorie). Senza forma non c'è
+calorie). Con le miglia (TASK-182 parte C) le miglia in grande («2.62
+mi»), il passo medio al miglio («9:33 /mi») e l'ultimo miglio («Last
+mi»). Senza forma non c'è
 punteggio, e niente va a `POST /track-scores`. **«Keep running»** torna
 alla corsa, con la stessa traccia; **«Done»**, senza account, torna alla
 prima schermata e toglie la corsa dal file: si perde, com'era, e sotto la

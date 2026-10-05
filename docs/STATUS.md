@@ -149,20 +149,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-245 — Altre spiagge per «Paddle», oltre Jesolo e Riccione**
-  (ADR-0210; chiesto dall'utente il 2026-10-05, che ha scelto 29 posti di
-  mare su tutte le coste; PR #363). Un comando nuovo, `beach_catalog.py`, sceglie
-  per ogni paese un punto della riva dai dati di OpenStreetMap e lo prova
-  col motore; l'elenco è `apps/mobile/src/paddle/beaches.json`, letto da
-  `waterSpots.ts`: le spiagge si trovano in «Explore», in «Near me» e in
-  «Another place», dove ora solo l'ultima parola scritta vale come inizio
-  di un nome («via Roma» non propone «Viareggio»). **29 posti su 29**
-  tengono le forme a 2 km, con tutte e otto le forme di «Explore»; nessuno
-  scartato. **L'acqua è sul server dal 2026-10-05**: 27 file nuovi,
-  22,6 MB, in `data/cache/water/` (247 file, 93 MB), senza riavvio, con
-  le impronte uguali a quelle provate sul Mac; la prova di una spiaggia
-  nuova dentro l'API non è stata fatta (negata dai permessi della
-  sessione). Da dove riprendere: `tasks/TASK-245.md`, «Esito».
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -531,14 +517,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   altri task): «Draw» (la distanza chiesta, passi e limiti in miglia: una
   scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
-  «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito».
+  «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito». **Parte C**
+  (in `main` dal 2026-10-05, PR #366, merge `ad3e443`): con
+  «Miles» le schermate della corsa, la navigazione, la fine della corsa e
+  la voce sono in miglia (parziali per miglio calcolati sul telefono, la
+  voce a ogni miglio e in bici ogni 5, le svolte in piedi, mph in bici),
+  con i testi, le frasi e i tre numeri scelti dall'agente confermati
+  dall'utente come letti: la voce in miglia è da ascoltare sull'iPhone
+  (`tasks/TASK-182.md`, «Parte C»; ADR-0149, aggiornamento).
   **Parte B, «Draw» e le schede** (2026-10-05, branch
   `feat/TASK-182-b-draw-and-cards`, in revisione): con «Miles» la distanza
   di «Draw» si scrive in miglia (− e + di 1 mi; corsa 1–13, bici 7–18,
   canoa 1–3; all'API metri interi), e sono in miglia il risultato, «Try»,
   il «Feed», i disegni pubblici ed «Explore» con «Paddle»; i testi nuovi
-  sono da confermare (`tasks/TASK-182.md`, «Parte B»), la corsa, la fine
-  corsa e la voce sono della parte C, `FOLLOWS_PHONE` resta spento.
+  sono confermati dall'utente (`tasks/TASK-182.md`, «Parte B»);
+  `FOLLOWS_PHONE` resta spento fino all'ultimo passo, con «Phone units»
+  e il testo di «Share» in miglia.
 - **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
   dall'utente il 2026-10-05: una mini guida, e le prime bozze di
   condizioni e privacy). In revisione (branch
@@ -577,6 +571,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   posta, `expo-notifications`, una build propria). `tasks/TASK-185.md`.
 
 ## Completato
+
+- **App e API** — TASK-245: altre spiagge per «Paddle», oltre Jesolo e
+  Riccione (ADR-0210; chiesto dall'utente il 2026-10-05, che ha scelto 29
+  posti di mare su tutte le coste; PR #363, merge `0d8bbc1`). Un comando
+  nuovo, `beach_catalog.py`, sceglie per ogni paese un punto della riva
+  dai dati di OpenStreetMap e lo prova col motore; l'elenco è
+  `apps/mobile/src/paddle/beaches.json`, letto da `waterSpots.ts`: le
+  spiagge si trovano in «Explore», in «Near me» e in «Another place», dove
+  ora solo l'ultima parola scritta vale come inizio di un nome («via
+  Roma» non propone «Viareggio»). **29 posti su 29** tengono le forme a
+  2 km, con tutte e otto le forme di «Explore»; nessuno scartato.
+  **L'acqua è sul server dal 2026-10-05**: 27 file nuovi, 22,6 MB, in
+  `data/cache/water/` (247 file, 93 MB), senza riavvio, con le impronte
+  uguali a quelle provate sul Mac. La prova dentro l'API non è stata
+  fatta (negata dai permessi della sessione): **la prova di una spiaggia
+  nuova sul telefono è dell'utente**, dopo la pubblicazione, che è del
+  coordinatore. Seguiti in `tasks/TASK-245.md`.
 
 - **App** — TASK-240: con «Paddle», laghi e spiagge anche in «Another
   place» (ADR-0204; chiesto dall'utente il 2026-10-05, scelte tutte
@@ -672,10 +683,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   giorno, «sì toglilo anche da lì», e per la fine corsa «solo km e
   tempo»): niente punteggio sui disegni del «Profile» né a fine corsa,
   dove la scheda dice «4.0 km · 32 min» e l'app non chiede più `POST
-  /track-scores`. **Il punteggio non si vede più da nessuna parte
-  nell'app**; l'API lo calcola ancora per le corse salvate. Restano da
-  decidere con l'utente due frasi della bozza di «Privacy» che lo
-  nominano. Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
+  /track-scores` (PR #365, merge `0294922`). **Il punteggio non si vede
+  più da nessuna parte nell'app**; l'API lo calcola ancora per le corse
+  salvate. Conseguenza: l'evento `run_scored` degli `insights` non viene
+  più registrato (seguito, se serve). Restano da decidere con l'utente
+  due frasi della bozza di «Privacy» che lo nominano. Esce con la
+  prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

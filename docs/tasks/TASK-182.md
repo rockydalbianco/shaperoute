@@ -351,3 +351,152 @@ traduzioni sono nelle tabelle):
   accendono quando anche la parte C è in `main`.
 - `App.tsx`: quando è libero, la distanza può tenerla in metri invece che
   come testo, e chiamare `useUnits()` alla radice.
+
+### Parte C — la corsa, la sua fine, la navigazione e la voce (2026-10-05)
+
+Branch `feat/TASK-182-c-run-and-voice`, ADR-0149 «aggiornamento (parte
+C)». Solo app: niente API, niente database, nessuna dipendenza. In
+parallelo alla parte B («Draw», il feed, le altre schede), su file
+diversi. `FOLLOWS_PHONE` non toccato: resta spento.
+
+**Fatto**, con «Miles» scelto in «Settings» (con «Kilometres» ogni
+scritta e ogni frase è quella di prima: i test esistenti passano senza
+modifiche):
+
+- **Le schermate della corsa** (`RunPanel`, `RunDashboard`): la distanza
+  in miglia («2.30 mi», su «Data» con «miles» sotto), «Pace now» e «Avg
+  pace» in «/mi», «Last mi» al posto di «Last km» (l'ultimo miglio
+  intero), lungo un percorso «2.0 mi to go» (sotto i 1000 piedi «400 ft
+  to go»); in bici «mph». I **parziali di «Data» sono un miglio
+  ciascuno**, calcolati sul telefono dalla traccia (`splits(track,
+  unitM)`), con la colonna «Mi» e «Your first mile will show here.».
+- **Il banner** della svolta (`NavigateScreen`) e quello della partenza
+  («Run without a route», `FreeRunScreen`): piedi ai cinquanta, miglia da
+  1000 piedi.
+- **La fine della corsa**: lungo un percorso «2.5 mi · 32 min · 97% of
+  the route» (`FinishScreen`); senza percorso «2.62 mi» in grande e i
+  riquadri in miglia (`FreeRunScreen`).
+- **La voce**, nelle cinque lingue (`src/voice/`): ogni miglio con tempo
+  e passo al miglio, dal secondo il confronto col miglio prima,
+  l'incitamento dopo il terzo; in bici ogni 5 miglia con la velocità in
+  miglia orarie e dal decimo il confronto delle ultime 5 con le 5 prima;
+  le svolte e la bici a mano in piedi, dette negli stessi punti di prima.
+  «Listen» sotto «Voice» fa sentire la svolta in piedi.
+- Ogni componente che scrive una distanza chiama `useUnits()`; i ganci
+  della corsa (`useNavigation`, `useFreeRun`) leggono `appUnits()` a ogni
+  posizione, e `wordsOf(lingua)` legge l'unità quando parla. Un cambio di
+  unità a corsa iniziata vale subito, senza ridire quello che è passato.
+
+**Dove il codice non era come il task lo descriveva**:
+
+- `src/activities/RunEnd.tsx` non scrive distanze (sono «Save»,
+  «Discard», «Public», il titolo e Strava): **non è stato toccato**. La
+  fine della corsa che mostra km e passo è in `src/screens/FinishScreen.tsx`
+  e `FreeRunScreen.tsx`.
+- **Alla fine della corsa non ci sono parziali**, né nelle corse salvate:
+  i parziali esistono solo su «Data», a corsa in corso, e vengono dalla
+  traccia. Non c'è quindi nessun parziale per km salvato da mostrare in
+  miglia, e niente di quello che va all'API o resta sul telefono cambia.
+- Le schermate della corsa non sono ancora tradotte (TASK-210): i testi
+  di prima sono in inglese fuori da `t()`, e restano così. I testi
+  **nuovi** sono in `t()` con le quattro tabelle, come ha fatto TASK-216
+  per la bici: in italiano con le miglia si legge «Ultimo mi» e «miglia»
+  accanto a «Pace now» ancora in inglese, finché TASK-210 non traduce la
+  schermata.
+
+**Testi nuovi sullo schermo, confermati dall'utente il 2026-10-05** («ok, i testi delle miglia vanno bene»; inglese →
+italiano; tedesco, spagnolo e francese in `src/i18n/`):
+
+| Inglese | Italiano | Dove |
+|---|---|---|
+| «Last mi» | «Ultimo mi» | il riquadro dell'ultimo miglio |
+| «miles» | «miglia» | sotto la distanza grande di «Data» |
+| «Mi» | «Mi» | la colonna dei parziali |
+| «Your first mile will show here.» | «Il tuo primo miglio apparirà qui.» | «Data», prima del primo miglio |
+| «Mile {mile}: {pace}» | «Miglio {mile}: {pace}» | i parziali, per chi ascolta lo schermo |
+| «Mile {mile}: {speed} mph» | «Miglio {mile}: {speed} mph» | lo stesso, in bici |
+
+Le sigle «mi», «ft», «/mi», «mph» non si traducono (ADR-0149, punto 8).
+
+**Frasi nuove della voce, confermate dall'utente il 2026-10-05 come lette, non ascoltate: la voce in miglia è da ascoltare sull'iPhone** (scritte
+dall'agente; le altre tre lingue in `src/voice/{de,es,fr}.ts`):
+
+| Caso | Inglese | Italiano |
+|---|---|---|
+| ogni miglio | «1 mile. Time: 8 minutes 3 seconds. Average pace: 8 minutes 3 seconds per mile.» · «2 miles. …» | «Un miglio. Tempo: 8 minuti e 3 secondi. Passo medio: 8 minuti e 3 secondi al miglio.» · «2 miglia. …» |
+| dopo il terzo miglio | «… Come on, full speed ahead!» (quella dei 5 km) | «… Daje, avanti tutta!» |
+| miglio più veloce | «12 seconds faster than the last mile.» | «Questo miglio: 12 secondi meglio del precedente.» |
+| miglio più lento | «8 seconds slower than the last mile.» | «Questo miglio: 8 secondi peggio del precedente.» |
+| stesso passo | «Same pace as the last mile.» | «Stesso passo del miglio precedente.» |
+| bici, ogni 5 miglia | «5 miles. Time: 20 minutes. Average speed: 15 miles per hour.» | «5 miglia. Tempo: 20 minuti. Velocità media: 15 miglia orarie.» |
+| bici, più veloce | «The last 5 miles were faster than the 5 before.» | «Ultime 5 miglia più veloci delle 5 precedenti.» |
+| bici, più lento | «The last 5 miles were slower than the 5 before.» | «Ultime 5 miglia più lente delle 5 precedenti.» |
+| bici, stessa velocità | «The last 5 miles were at the same speed as the 5 before.» | «Ultime 5 miglia alla stessa velocità delle 5 precedenti.» |
+| una svolta | «In 150 feet, turn left onto Via Roma» | «Tra 150 piedi, svolta a sinistra su Via Roma» |
+| la bici a mano | «In 350 feet, get off and walk the bike for 650 feet.» · «Get off and walk the bike for 300 feet.» | «Tra 350 piedi, scendi e porta la bici a mano per 650 piedi.» · «Scendi e porta la bici a mano per 300 piedi.» |
+
+**Scelte dell'agente, da dire all'utente** (ADR-0149, aggiornamento):
+
+- In bici la voce parla **ogni 5 miglia** (8 km) al posto di ogni 10 km.
+- L'incitamento arriva dopo il **terzo miglio** (4,8 km), non dopo il
+  quinto (8 km).
+- Le svolte in piedi **ai cinquanta**, mai «0 feet»: 50 m si dicono «150
+  feet», 100 m «350 feet».
+- «Last mi» e non «Last mile»: il riquadro è stretto come «Last km».
+- In francese «mile» («un mile», «5 miles»), come «Miles» in «Settings».
+
+**File toccati** (parte C, 2026-10-05):
+
+```
+apps/mobile/src/units/runFormat.ts                (nuovo)
+apps/mobile/src/units/runFormat.test.ts           (nuovo)
+apps/mobile/src/navigation/runMetrics.ts
+apps/mobile/src/navigation/runStats.ts
+apps/mobile/src/navigation/freeRun.ts
+apps/mobile/src/navigation/ride.ts
+apps/mobile/src/navigation/kmCompare.ts
+apps/mobile/src/navigation/phrases.ts
+apps/mobile/src/navigation/useFreeRun.ts
+apps/mobile/src/navigation/useNavigation.ts
+apps/mobile/src/navigation/mileSplits.test.ts     (nuovo)
+apps/mobile/src/navigation/mileVoice.test.ts      (nuovo)
+apps/mobile/src/navigation/mileRun.test.ts        (nuovo)
+apps/mobile/src/voice/phrasebook.ts
+apps/mobile/src/voice/words.ts
+apps/mobile/src/voice/en.ts
+apps/mobile/src/voice/it.ts
+apps/mobile/src/voice/de.ts
+apps/mobile/src/voice/es.ts
+apps/mobile/src/voice/fr.ts
+apps/mobile/src/voice/mileWords.test.ts           (nuovo)
+apps/mobile/src/voice/ListenMiles.test.tsx        (nuovo)
+apps/mobile/src/screens/RunPanel.tsx
+apps/mobile/src/screens/RunDashboard.tsx
+apps/mobile/src/screens/NavigateScreen.tsx
+apps/mobile/src/screens/FreeRunScreen.tsx
+apps/mobile/src/screens/FinishScreen.tsx
+apps/mobile/src/screens/RunMiles.test.tsx         (nuovo)
+apps/mobile/src/i18n/de.ts
+apps/mobile/src/i18n/es.ts
+apps/mobile/src/i18n/fr.ts
+apps/mobile/src/i18n/it.ts
+docs/DECISIONS.md
+docs/UI.md
+docs/STATUS.md
+docs/tasks/TASK-182.md
+```
+
+**Resta** (non della parte C):
+
+- **Non provato nel simulatore né su un telefono**, e la voce in miglia
+  non è stata ascoltata: come il telefono legge «150 feet», «mph» scritto
+  per esteso («miles per hour»), «miglia orarie» e in francese «mile» va
+  sentito con la voce di ogni lingua.
+- `kmLabel` e `paceLabel` di `navigation/freeRun.ts` restano in km: li
+  usano `src/share/postRun.ts` e `src/social/DrawingCard.tsx`, che sono
+  della parte B (passano a `src/units/format.ts`).
+- «Elev. gain» resta in metri e «Calories» in kcal (le altezze sono fuori
+  scope, sopra).
+- In `docs/UI.md`, «Settings», il paragrafo della parte A dice ancora che
+  la corsa, la sua fine e la voce sono in km: va aggiornato da chi mergia
+  per ultimo fra B e C, insieme a `FOLLOWS_PHONE`.

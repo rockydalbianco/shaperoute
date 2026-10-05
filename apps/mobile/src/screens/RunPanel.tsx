@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { t } from "../i18n";
 
-import { clockLabel, kmNumber } from "../navigation/freeRun";
+import { clockLabel } from "../navigation/freeRun";
 import { distanceLabel } from "../navigation/phrases";
 import { isRide, speedNumber } from "../navigation/ride";
 import { useRunControl } from "../navigation/runControl";
@@ -19,6 +19,10 @@ import {
 } from "../navigation/runStats";
 import { activeMs, openPause, type Track } from "../navigation/trackRecorder";
 import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
+import { metresPer } from "../units/format";
+import { paceUnit, perUnitS, runDistanceNumber, speedUnit } from "../units/runFormat";
+import type { Units } from "../units/units";
+import { useUnits } from "../units/useUnits";
 
 /**
  * The numbers of a run in progress (TASK-164, TASK-169), the same with a
@@ -26,7 +30,9 @@ import { color, fontSize, fontWeight, radius, space } from "../theme/tokens";
  * the pace now and the time. All of them on the page of the data and while
  * the run is paused (`RunGrid`): also the average pace, the last kilometre,
  * the metres climbed and the energy. On a bike the speed in km/h takes the
- * place of every pace (TASK-216).
+ * place of every pace (TASK-216). With miles (TASK-182) the distance is in
+ * miles, the paces are a mile's, the last mile takes the place of the last
+ * kilometre and the speed is in mph; the metres climbed stay metres.
  */
 
 /** The clock ticks once a second. */
@@ -34,9 +40,6 @@ export const TICK_MS = 1000;
 
 /** No number yet: the pace before it means anything. */
 export const NO_NUMBER = "–";
-
-/** The unit of a speed: the same in every language. */
-export const KMH = "km/h";
 
 /** Now, again every `everyMs` while `on`. */
 export function useNow(on: boolean, everyMs: number): number {
@@ -56,14 +59,17 @@ export function useNow(on: boolean, everyMs: number): number {
 export type RouteProgress = { remainingM: number; done: number };
 
 export type RunNumbers = {
-  /** "2.34": the kilometres, without their unit. */
+  /** "2.34": the kilometres, without their unit; with miles, the miles. */
   km: string;
+  /** What the distance, the paces and the speeds are written in (TASK-182). */
+  units: Units;
   /** On a bike (TASK-216): `average`, `recent` and `lastKm` are speeds. */
   ride: boolean;
   /** "5:21", or NO_NUMBER before the pace means anything; on a bike
-   * "24.3", in km/h. */
+   * "24.3", in km/h. With miles, a mile's pace and mph. */
   average: string;
   recent: string;
+  /** The last whole kilometre or, with miles, the last whole mile. */
   lastKm: string;
   /** "12:34". */
   time: string;
@@ -71,7 +77,8 @@ export type RunNumbers = {
   climb: string;
   /** "187", kilocalories. */
   energy: string;
-  /** "3.2 km to go" and "about 17 min", along a route. */
+  /** "3.2 km to go" and "about 17 min", along a route; with miles
+   * "2.0 mi to go". */
   toGo: string | null;
   eta: string | null;
 };
@@ -80,7 +87,8 @@ export type RunNumbers = {
  * The numbers of `track`, again every second while `live`: the GPS is on
  * and the run is not over. The clock waits during the countdown and during
  * a pause, and a run that is over stops it at its last fix. Along a route
- * of `activity` "cycling" the paces are speeds (TASK-216).
+ * of `activity` "cycling" the paces are speeds (TASK-216). In the app's
+ * units, and again when «Settings» changes them (TASK-182).
  */
 export function useRunNumbers(
   track: Track,
@@ -89,6 +97,7 @@ export function useRunNumbers(
   activity?: Activity,
 ): RunNumbers {
   const { phase } = useRunControl();
+  const units = useUnits();
   const pause = openPause(track);
   const ticking =
     live && pause === null && phase !== "countdown" && track.fixes.length > 0;
@@ -99,30 +108,45 @@ export function useRunNumbers(
   const average = averagePaceS(track, ms);
   const recent = pause === null ? recentPaceS(track, at) : null;
   // Every fix of the run, once per fix and not once per second.
-  const lastKm = useMemo(() => lastKmS(track), [track]);
+  // The last whole kilometre; with miles, the last whole mile.
+  const lastKm = useMemo(() => lastKmS(track, metresPer(units)), [track, units]);
   const climbed = useMemo(() => climbM(track), [track]);
   const eta = route ? etaMs(route.remainingM, track, ms) : null;
   const ride = isRide(activity);
-  // The seconds of a kilometre, as a pace or as a speed.
+  // The seconds of a kilometre or of a mile, as a pace or as a speed.
   const said = (seconds: number | null) =>
     seconds === null ? NO_NUMBER : ride ? speedNumber(seconds) : paceClock(seconds);
+  // The track's paces are a kilometre's: with miles, a mile's.
+  const perUnit = (secondsPerKm: number | null) =>
+    secondsPerKm === null ? null : perUnitS(secondsPerKm, units);
   return {
-    km: kmNumber(track.distanceM),
+    km: runDistanceNumber(track.distanceM, units),
+    units,
     ride,
-    average: said(average),
-    recent: said(recent),
+    average: said(perUnit(average)),
+    recent: said(perUnit(recent)),
     lastKm: said(lastKm),
     time: clockLabel(ms),
     climb: climbed === null ? NO_NUMBER : String(Math.round(climbed)),
     energy: String(kcal(track.distanceM)),
-    toGo: route ? `${distanceLabel(route.remainingM)} to go` : null,
+    toGo: route ? `${distanceLabel(route.remainingM, units)} to go` : null,
     eta: eta === null ? null : aboutMinutes(eta),
   };
 }
 
-/** The unit of a pace, or on a bike of a speed. */
+/** The unit of a pace, or on a bike of a speed: "/km" and "km/h" or, with
+ * miles, "/mi" and "mph". */
 function unitOf(numbers: RunNumbers): string {
-  return numbers.ride ? KMH : "/km";
+  return numbers.ride ? speedUnit(numbers.units) : paceUnit(numbers.units);
+}
+
+/** The name of the last whole kilometre's tile or, with miles, of the last
+ * whole mile's. */
+function lastLabel(numbers: RunNumbers): string {
+  if (numbers.units === "mi") {
+    return t("Last mi");
+  }
+  return numbers.ride ? t("Last km") : "Last km";
 }
 
 /** Under the map, where the map is what is looked at: three numbers, the
@@ -130,7 +154,7 @@ function unitOf(numbers: RunNumbers): string {
 export function RunStrip({ numbers }: { numbers: RunNumbers }) {
   return (
     <View style={styles.strip}>
-      <Metric label="Distance" value={numbers.km} unit="km" lead />
+      <Metric label="Distance" value={numbers.km} unit={numbers.units} lead />
       <View style={styles.divider} />
       <Metric
         label={numbers.ride ? t("Speed now") : "Pace now"}
@@ -215,7 +239,7 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
       </View>
       <View style={styles.tiles}>
         <Tile
-          label={numbers.ride ? t("Last km") : "Last km"}
+          label={lastLabel(numbers)}
           value={numbers.lastKm}
           unit={unitOf(numbers)}
         />

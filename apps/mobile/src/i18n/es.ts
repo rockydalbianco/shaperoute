@@ -226,6 +226,9 @@ export const ES: Table = {
   "{shape}, {km} km, on the water": "{shape}, {km} km, en el agua",
   "Not drawn": "No dibujado",
 
+  // src/paddle/placeSpots.ts
+  "Lake, beach, city or street": "Lago, playa, ciudad o calle",
+
   // src/paddle/PaddleNotice.tsx
   "Before you paddle": "Antes de remar",
   "Wear a life jacket.": "Ponte un chaleco salvavidas.",
@@ -473,7 +476,6 @@ export const ES: Table = {
   Distance: "Distancia",
   Time: "Tiempo",
   Pace: "Ritmo",
-  Score: "Puntuación",
 
   // src/share/sharePicture.ts
   "This phone cannot open the share sheet.":

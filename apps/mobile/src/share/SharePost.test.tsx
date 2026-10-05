@@ -36,7 +36,6 @@ const RUN: PostRun = {
   track: north(5200),
   distanceM: 5200,
   durationMs: (28 * 60 + 10) * 1000,
-  score: 87,
 };
 
 type Fake = Partial<StravaState> & { activity?: StravaActivity };
@@ -86,7 +85,7 @@ describe("the post", () => {
     await shown(<SharePost run={RUN} onClose={() => {}} />);
     expect(screen.getByText("Heart in Trento")).toBeOnTheScreen();
     expect(screen.getAllByTestId("post-drawing").length).toBeGreaterThan(0);
-    for (const value of ["5.20 km", "28:10", "5:25 /km", "87"]) {
+    for (const value of ["5.20 km", "28:10", "5:25 /km"]) {
       expect(screen.getByText(value)).toBeOnTheScreen();
     }
     await screen.findByText("Send to Strava");
@@ -104,9 +103,10 @@ describe("the post", () => {
     await screen.findByText("Send to Strava");
   });
 
-  it("offers no score to a run without one", async () => {
-    await shown(<SharePost run={{ ...RUN, score: null }} onClose={() => {}} />);
+  it("offers no score, and writes none on the picture", async () => {
+    await shown(<SharePost run={RUN} onClose={() => {}} />);
     expect(screen.queryByRole("checkbox", { name: "Score" })).toBeNull();
+    expect(screen.queryByText("Score")).toBeNull();
     await screen.findByText("Send to Strava");
   });
 
@@ -198,11 +198,7 @@ describe("Strava on the post", () => {
     await fireEvent.press(
       await screen.findByRole("button", { name: "Send to Strava" }),
     );
-    expect(state.send).toHaveBeenCalledWith(
-      "run-1",
-      null,
-      "🔥 5.20 km · 5:25 /km · Score 87",
-    );
+    expect(state.send).toHaveBeenCalledWith("run-1", null, "🔥 5.20 km · 5:25 /km");
     expect(await screen.findByText("View on Strava")).toBeOnTheScreen();
   });
 
@@ -236,7 +232,7 @@ describe("Strava on the post", () => {
     expect(state.send).toHaveBeenCalledWith(
       "run-1",
       null,
-      "🏆 5.20 km · 28:10 · 5:25 /km · Score 87",
+      "🏆 5.20 km · 28:10 · 5:25 /km",
     );
     expect(
       await screen.findByText("The activity on Strava has this post's text now."),
@@ -275,10 +271,7 @@ describe("Strava on the post", () => {
 
   it("offers no update when the post has nothing to say", async () => {
     await shown(
-      <SharePost
-        run={{ ...RUN, score: null, distanceM: 0, durationMs: 0 }}
-        onClose={() => {}}
-      />,
+      <SharePost run={{ ...RUN, distanceM: 0, durationMs: 0 }} onClose={() => {}} />,
       strava({
         activity: { status: "sent", url: "https://www.strava.com/activities/7" },
       }),

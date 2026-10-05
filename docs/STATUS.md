@@ -547,6 +547,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-240: con «Paddle», laghi e spiagge anche in «Another
+  place» (ADR-0204; chiesto dall'utente il 2026-10-05, scelte tutte
+  confermate; PR #344). In «Draw», con «Paddle», la ricerca della partenza
+  offre i laghi e le spiagge dell'elenco di «Explore» sopra le vie e i
+  paesi, subito: «lago di Levico Terme» dà «Lago di Levico», e sceglierlo
+  mette la partenza sulla riva; un lago piccolo porta la distanza a 1,5 o
+  1 km; il campo dice «Lake, beach, city or street». Il mare: solo Jesolo
+  e Riccione. Solo app, niente server; «Run» e «Bike» com'erano. Esce con
+  la prossima pubblicazione, del coordinatore; da provare sull'iPhone.
+  Seguiti in `tasks/TASK-240.md`.
+
 - **API e app** — TASK-183: cambiare email e numero di telefono da
   «Settings» (ADR-0150; chiesto dall'utente il 2026-10-02 e di nuovo il
   2026-10-05; PR #346, merge `a89f086`). Scelte dell'utente: il numero
@@ -605,9 +616,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   100» sopra il disegno non c'è più, nemmeno nei post che «Explore» mostra
   mentre disegna una città (PR #345, merge `ad80385`). **Parte B**
   (stesso giorno, «sì toglilo anche da VoiceOver»): nemmeno VoiceOver lo
-  legge più, nelle cinque lingue. Altrove (fine corsa, «My activities»,
-  disegno aperto dal «Profile», post da condividere) il punteggio resta.
-  Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
+  legge più, nelle cinque lingue (PR #348, merge `69af6c6`). **Parte C**
+  (stesso giorno, «togli il punteggio anche dal post da condividere»):
+  «Score» non è più fra i risultati del post di «Share»: né pastiglia, né
+  numero sull'immagine, né nel testo per Strava. Altrove (fine corsa, «My
+  activities», disegno aperto dal «Profile») il punteggio resta. Esce con
+  la prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

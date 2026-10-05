@@ -65,7 +65,8 @@ export function usernameProblem(username: string): string | null {
     : t("A username is 3 to 20 letters, digits, _ or . (no spaces).");
 }
 
-function emailProblem(email: string): string | null {
+/** The rule of an email, at sign-up and in «Change email» (TASK-183). */
+export function emailProblem(email: string): string | null {
   return EMAIL.test(email) && email.length <= MAX_EMAIL_LENGTH
     ? null
     : t("Enter an email address, like name@example.com.");

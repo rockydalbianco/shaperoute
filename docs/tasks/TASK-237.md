@@ -1,7 +1,8 @@
 # TASK-237 — Il sito web, con la sezione «Merch» per le magliette
 
-**Stato**: In corso — parte A (la pagina e la vetrina) in PR dal
-2026-10-05; parte B (aprire il negozio e pubblicare) aspetta l'utente
+**Stato**: In corso — parte A (la pagina e la vetrina) in `main` (PR
+#325, `f8e68b6`, 2026-10-05); parte B (aprire il negozio e pubblicare)
+aspetta l'utente
 **Fase**: 4 · **Branch**: `feat/TASK-237-website-merch`
 **ADR**: ADR-0201
 
@@ -30,7 +31,7 @@ apre il pagamento del servizio.
 
 ## Cosa fare
 
-**Parte A — la pagina e la vetrina** (questa PR):
+**Parte A — la pagina e la vetrina** (PR #325, fatta):
 
 1. Una cartella nuova `site/`: pagina, stile, le magliette in un file
    solo, le schede di «Merch» costruite da quel file.
@@ -87,7 +88,7 @@ docs/INDEX.md                    (una riga per SITO.md)
 
 ## Esito
 
-**Parte A** (2026-10-05): il sito è in `site/`, guardato in Chrome senza
+**Parte A** (2026-10-05, PR #325, merge `f8e68b6`): il sito è in `site/`, guardato in Chrome senza
 finestra a 1280 e 520 px; 12 test verdi. Quattro magliette proposte (cuore
 di Milano, lumaca di Torino, stella di Trento, logo), tutte «Coming soon».
 Il cuore in cima sta nella pagina e non in un'immagine: disegnato dentro

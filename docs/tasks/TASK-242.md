@@ -1,6 +1,6 @@
 # TASK-242 — La penna si alza sulle deviazioni di un pezzo
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 2 · **Branch**: `feat/TASK-242-piece-detours`
 
 ## Obiettivo
@@ -64,8 +64,10 @@ dalla linea, che toccano il bordo della faccia. La penna si alzava solo
 - [x] L'app regge un tratto a piedi in più dei pezzi: pausa, voce, linee
       tratteggiate, km di disegno (`penUpDetours.test.ts`).
 - [x] Test del motore e dell'API verdi; `engine.zip` rifatto.
-- [ ] **Il giudizio dell'utente sui campioni prima del merge** (paletto
-      del coordinatore): la faccina e la ciambella a Trento.
+- [x] **Il giudizio dell'utente sui campioni prima del merge** (paletto
+      del coordinatore): la faccina e la ciambella a Trento, prima e
+      dopo, e la faccina a Milano che resta identica. L'utente, il
+      2026-10-05: «sì, va bene, fai il merge».
 
 ## File toccati
 
@@ -111,4 +113,25 @@ questa PR, TASK-232 A e TASK-238 A si aggiorna da `main` e rifà
 
 ## Esito
 
-*(a fine task)*
+Fatto (PR #349, 2026-10-05). Con la penna alzata la deviazione di un pezzo
+si cammina: la faccina dello screenshot tiene il suo percorso da 15,8 km
+e passa da 0,77 a 0,79, con la bocca in due parti e 2,9 km a piedi invece
+di 2,3. Su 42 richieste di prova 30 restano identiche, 10 migliorano,
+nessuna peggiora. Giudicato dall'utente sulle immagini prima/dopo: «sì, va
+bene».
+
+Emerso: togliere le deviazioni dai km che la ricerca insegue le faceva
+scegliere un disegno peggiore (punto 4 di «Cosa fare»); `network.py` sta
+nell'impronta del motore sull'acqua, e non andava toccato.
+
+Rimandato:
+
+- **Il contorno**: le sue deviazioni restano disegnate. Alzare la penna
+  anche lì è una scelta dell'utente, non chiesta.
+- **`schemas.py` e `models.py`** descrivono ancora i `walks` come «uno in
+  meno dei pezzi»: da aggiornare quando TASK-238 li lascia.
+- **Server e `draw_examples`**: del coordinatore, con l'ok dell'utente.
+  Gli esempi tenuti a Trento (ciambella, fantasmino, faccina) cambiano.
+- **La prova sull'iPhone** di una forma con un tratto a piedi dentro un
+  pezzo: la voce e la pausa sono provate solo nei test
+  (`penUpDetours.test.ts`).

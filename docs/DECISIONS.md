@@ -10505,3 +10505,6 @@ pezzo e l'altro, mai dentro un pezzo.
 - `schemas.py` e `models.py` descrivono ancora i `walks` come «uno in
   meno dei pezzi»: sono di TASK-238 mentre si scrive, da aggiornare dopo.
 - `engine.zip` va rifatto: il telefono disegna con lo stesso motore.
+
+**Giudicato dall'utente** (2026-10-05, sulle immagini prima/dopo della
+faccina e della ciambella a Trento): «sì, va bene, fai il merge».

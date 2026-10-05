@@ -1020,7 +1020,8 @@ alla fine di un pezzo, o tornava al suo nodo. La faccina dello
 screenshot (dalla CLI con `--nearby 3`, come l'API: la variante A) passa
 da 0,77 a 0,79 con lo stesso percorso di 15,8 km: 12,9 km disegnati
 invece di 13,6, 2,9 km a piedi invece di 2,3 (`samples/`, `TASK-242_*`).
-**Non ancora giudicati a occhio dall'utente.**
+La faccina e la ciambella a Trento, prima e dopo, **giudicate dall'utente
+il 2026-10-05: «sì, va bene»**; le altre righe della tabella no.
 
 ### Funzione obiettivo
 

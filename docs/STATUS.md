@@ -118,26 +118,24 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `ae320d3` dalle
-  10:58Z (ok dell'utente «ok aggiorna il server e pubblica», eseguito
-  dalla sessione «Impostazioni» al via del coordinatore), con le
-  migrazioni `0001`–`0016` (`0016_contact`: email e telefono), il motore
-  di TASK-238 A e TASK-242, `GET /nearby-cities`, il tetto del traffico;
-  fermo circa 10 secondi; immagine di prima
-  `shaperoute-api:before-task183`, copia del database
-  `shaperoute-2026-10-05T1058Z.dump`; `draw_examples` rilanciato alle
-  10:59Z (`data/draw-examples-2026-10-05-task238.log`). **Le zone del
-  telefono sono scritte** (ok dell'utente «ok zone e pubblica»): 521 file,
-  2,6 GB, 82 minuti; Trento a piedi 2,5 MB, in bici 11,5 MB, in meno di
-  0,1 s. Acqua dei laghi d'Italia: 219 file, 71 MB. Da fare: la zona di
-  Borgo Valsugana. **App** su `preview` da `main` `7a9506a` (gruppo
-  `1b49d248`): tutto `main`: le zone scaricate in anticipo (TASK-214
-  B2/B2b), il numero rosso delle richieste (TASK-239), niente punteggio
-  sui post (TASK-241), email e telefono (TASK-183), «Move the shape»
-  (TASK-238), «Units» (TASK-182 A), «Try N km», i paesi vicini, i laghi,
-  il «Feed» sull'acqua, «Follow». **Da provare sull'iPhone**: da adesso
-  il telefono scarica la sua zona e disegna i percorsi da sé (comincia la
-  parte D di TASK-214). Strava spento per scelta dell'utente.
+- **Server e app, al 2026-10-05**. **Server**: su `main` `c2bb428` dalle
+  12:02Z (ok dell'utente per la migrazione 0017 nella sessione
+  «Impostazioni» e «ok server per le forme inclinate» in quella di
+  TASK-232; eseguito da «Impostazioni» al via del coordinatore), con le
+  migrazioni `0001`–`0017`, `PUT /me/notifications`, il motore di TASK-232
+  A (un cuore da 5 km a Trento: `rotation_deg: -30`, somiglianza 0,94),
+  di TASK-238 A e TASK-242; fermo circa 10 secondi; immagine di prima
+  `shaperoute-api:before-task185`, copia del database
+  `shaperoute-2026-10-05T1202Z.dump`; `draw_examples` rilanciato alle
+  12:03Z (`data/draw-examples-2026-10-05-task232.log`). Zone del telefono:
+  526 file (le 521 della mattina più Borgo Valsugana, Tenna, Calceranica,
+  Caldonazzo, Pergine, chieste dall'utente). Acqua della canoa: 247 file,
+  93 MB (i laghi d'Italia e i 27 tratti di costa di TASK-245). **App** su
+  `preview` da `main` `20c021b` (gruppo `71e4f577`): tutto `main`, fino a
+  «Move the shape» sugli esempi di «Explore» (TASK-244) e agli
+  interruttori delle notifiche (TASK-185). Dal 2026-10-05 le cose di sola
+  app le pubblica il coordinatore appena sono in `main` (ok dell'utente).
+  **Da provare sull'iPhone.** Strava spento per scelta dell'utente.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -151,6 +149,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-245 — Altre spiagge per «Paddle», oltre Jesolo e Riccione**
+  (ADR-0210; chiesto dall'utente il 2026-10-05, che ha scelto 29 posti di
+  mare su tutte le coste; PR #363). Un comando nuovo, `beach_catalog.py`, sceglie
+  per ogni paese un punto della riva dai dati di OpenStreetMap e lo prova
+  col motore; l'elenco è `apps/mobile/src/paddle/beaches.json`, letto da
+  `waterSpots.ts`: le spiagge si trovano in «Explore», in «Near me» e in
+  «Another place», dove ora solo l'ultima parola scritta vale come inizio
+  di un nome («via Roma» non propone «Viareggio»). **29 posti su 29**
+  tengono le forme a 2 km, con tutte e otto le forme di «Explore»; nessuno
+  scartato. **L'acqua è sul server dal 2026-10-05**: 27 file nuovi,
+  22,6 MB, in `data/cache/water/` (247 file, 93 MB), senza riavvio, con
+  le impronte uguali a quelle provate sul Mac; la prova di una spiaggia
+  nuova dentro l'API non è stata fatta (negata dai permessi della
+  sessione). Da dove riprendere: `tasks/TASK-245.md`, «Esito».
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

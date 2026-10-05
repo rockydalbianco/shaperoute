@@ -24,10 +24,37 @@ test("the user's text finds the lake: «Terme» is in no lake's name", () => {
 });
 
 test("a name is found as in «Explore»: its beginning, without accents or capitals", () => {
-  expect(names("lev")).toEqual(["Lago di Levico"]);
-  expect(names("LAGO LEV")).toEqual(["Lago di Levico"]);
+  // «lev» begins «Levico» and the «Levante» of a beach (TASK-245): the
+  // nearest first.
+  expect(names("lev")).toEqual(["Lago di Levico", "Sestri Levante"]);
+  expect(names("LAGO LEV")).toEqual(["Lago di Levico", "Sestri Levante"]);
+  expect(names("levi")).toEqual(["Lago di Levico"]);
   expect(names("lago d'iseo")).toEqual(["Lago d'Iseo"]);
   expect(names("como")).toEqual(["Lago di Como"]);
+});
+
+test("only the last word typed may be the beginning of a word of a name", () => {
+  // Still being written.
+  expect(names("via")).toEqual(["Viareggio"]);
+  expect(names("viar")).toEqual(["Viareggio"]);
+  expect(names("lago di lev")).toEqual(["Lago di Levico", "Sestri Levante"]);
+  // Written whole: «via» is no «Viareggio», «lev» no «Levico».
+  expect(names("via Roma, Trento")).toEqual([]);
+  expect(names("via r")).toEqual([]);
+  expect(names("lev terme")).toEqual([]);
+  expect(names("levico terme")).toEqual(["Lago di Levico"]);
+});
+
+test("a beach of the list is found, with one word of its name or more", () => {
+  expect(names("forte dei marmi")).toEqual(["Forte dei Marmi"]);
+  expect(names("Forte dei Marmi, Lucca")).toEqual(["Forte dei Marmi"]);
+  expect(names("spiaggia di san vito lo capo")).toEqual(["San Vito lo Capo"]);
+  expect(names("san vito")).toEqual(["San Vito lo Capo"]);
+  expect(names("sestri lev")).toEqual(["Sestri Levante"]);
+  expect(names("lungomare di Viareggio")).toEqual(["Viareggio"]);
+  const [forte] = spotPlaces("forte dei marmi", null);
+  expect(forte.label).toBe("Forte dei Marmi");
+  expect(forte.distance_m).toBe(2000);
 });
 
 test("the two beaches are found, with the words around them", () => {

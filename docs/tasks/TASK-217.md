@@ -1,8 +1,8 @@
 # TASK-217 — La voce confronta ogni km col precedente
 
 **Stato**: Done (2026-10-05) — PR #308, merge `f811e3a`. Solo app: esce
-con la prossima pubblicazione. Da confermare dall'utente le frasi in
-tedesco, spagnolo e francese e, in bici, «stessa velocità».
+con la prossima pubblicazione. Le frasi in tedesco, spagnolo e francese
+e, in bici, «stessa velocità» confermate dall'utente il 2026-10-05.
 **Fase**: 4 · **Branch**: `feat/TASK-217-km-compare-voice`
 **Dipende da**: TASK-209 (la voce in cinque lingue, `src/voice/`, PR
 #259), TASK-206 C (tocca gli stessi file della voce)
@@ -180,6 +180,8 @@ Fatto come «Cosa fare», con l'ADR-0180.
   `useNavigation.test.ts`, `rideRun.test.ts`). 210 file di test, 1778
   test verdi; `typecheck`, `lint`, `format:check` puliti.
 
-**Da confermare dall'utente**: le frasi in tedesco, spagnolo e francese;
-in bici «stessa velocità» (frase e 0,5 km/h). **Da provare** correndo
-con l'iPhone, dopo la prossima pubblicazione.
+**Confermato dall'utente** (2026-10-05, «confermo le frasi e la stessa
+velocità in bici»): le frasi in tedesco, spagnolo e francese; in bici
+«stessa velocità» (frase e 0,5 km/h). In «Esito» qui sopra «da
+confermare» è com'era alla PR #308. **Da provare** correndo con l'iPhone,
+dopo la prossima pubblicazione.

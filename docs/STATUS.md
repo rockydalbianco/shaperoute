@@ -438,9 +438,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   senza percorso, con i secondi della fine corsa (`splits`), pause
   escluse. In bici ogni 10 km da 20 km e senza numeri («Ultimi 10
   chilometri più veloci dei 10 precedenti.»). Tutto in
-  `src/navigation/kmCompare.ts`. **Da confermare dall'utente**: le frasi
-  in tedesco, spagnolo e francese, e in bici «stessa velocità» entro 0,5
-  km/h (frase e soglia, proposta dell'agente). Le forme con le miglia le
+  `src/navigation/kmCompare.ts`. **Confermate dall'utente** il 2026-10-05
+  le frasi in tedesco, spagnolo e francese e, in bici, «stessa velocità»
+  entro 0,5 km/h (frase e soglia). Le forme con le miglia le
   aggiunge TASK-182. Solo app: esce con la prossima pubblicazione; da
   provare correndo. Task file: `tasks/TASK-217.md`.
 - **App** — TASK-227: «Explore» con «Paddle» come la corsa (ADR-0189;

@@ -148,22 +148,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-238 — Spostare la figura sull'acqua** (ADR-0202; chiesto
-  dall'utente il 2026-10-05: «spostare la figura un po' più a destra, a
-  sinistra, più vicini alla riva»). L'utente ha scelto di **trascinarla
-  col dito**. **Parte A fatta** (branch
-  `feat/TASK-238-paddle-move-shape`): la richiesta in canoa può avere
-  `near`, dove si vuole il centro della forma, e il risultato ha `centre`;
-  il motore mette la forma nel posto più vicino in cui ci sta, nella
-  fascia e con la riva a piedi entro 300 m (`water_fit.fit_shape(...,
-  near=)`, `--near` dalla CLI). Senza `near` niente cambia: i 32 esempi
-  dell'app sono identici. **Non è sul server**; dopo l'aggiornamento va
-  rilanciato `draw_examples`. **Parte B da fare**: il trascinamento sulla
-  mappa e «Move» in «Draw» con «Paddle», con i testi da confermare; gli
-  esempi di «Explore» non hanno `centre` (task file, punto 9).
-  File toccati: quelli della parte A in `tasks/TASK-238.md`; per la B
-  `apps/mobile/src/map/{messages,mapPage}.ts`, `MapView.tsx`, `App.tsx`,
-  `src/paddle/`, `src/i18n/`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -521,6 +505,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **Motore, API, app** — TASK-238: spostare la figura sull'acqua col dito
+  (ADR-0202; chiesto dall'utente il 2026-10-05, che ha scelto il
+  trascinamento). **Parte A** (PR #347, merge `797c4bb`): la richiesta in
+  canoa può avere `near`, dove si vuole il centro della forma, e il
+  risultato ha `centre`; il motore mette la forma nel posto più vicino in
+  cui ci sta, nella fascia e con la riva a piedi entro 300 m; senza `near`
+  niente cambia. **Parte B** (PR #350): «Move the shape» sotto «Start» in
+  «Draw» con «Paddle», un dito trascina la figura a mappa ferma, al
+  rilascio l'app richiede il percorso con `near`, e una riga dice se la
+  figura non ci stava. I sei testi sono **confermati dall'utente**
+  (2026-10-05). **Aspettano**: il server con la parte A e poi
+  `draw_examples` (ok dell'utente, dal coordinatore: fino ad allora il
+  pulsante non compare), la pubblicazione dell'app dopo il server, la
+  prova con un dito vero sull'iPhone. Gli esempi di «Explore» e i
+  preferiti non si spostano: seguito da chiedere. `tasks/TASK-238.md`.
+
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della
   faccina a Trento, campioni prima/dopo giudicati «sì, va bene»; PR
@@ -535,6 +535,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   né pubblicato**: server e `draw_examples` li fa il coordinatore con
   l'ok dell'utente; `engine.zip` è rifatto, il telefono lo riceve con la
   prossima pubblicazione. Seguiti in `tasks/TASK-242.md`.
+
 - **App** — TASK-241: niente punteggio sulle foto dei post del «Feed»
   (ADR-0207; chiesto dall'utente il 2026-10-05). Il riquadro «98 · out of
   100» sopra il disegno non c'è più, nemmeno nei post che «Explore» mostra

@@ -13,6 +13,7 @@ import { usePocketOn } from "../navigation/pocketOn";
 import { cumulative } from "../navigation/progress";
 import { MapLoadingBar } from "../route/LoadingBar";
 import { color, space } from "../theme/tokens";
+import type { LngLat } from "./coordinates";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
   clearProgress,
@@ -23,6 +24,7 @@ import {
   pageScript,
   parsePageMessage,
   setDoubleTap,
+  setMove,
   setPosition,
   showOthers,
   showProgress,
@@ -66,6 +68,12 @@ type Props = {
   /** With it, a double tap on the map calls it and no longer zooms
    * (TASK-119); two fingers still do. Without, the map is as before. */
   onDoubleTap?: () => void;
+  /** While true, one finger drags the route and no longer the map
+   * (TASK-238): the shape of a route on the water, moved by the user. */
+  moving?: boolean;
+  /** The route was dragged and left: by how many degrees of longitude and
+   * of latitude. The map keeps it there until `route` changes. */
+  onMoved?: (by: LngLat) => void;
   /** Called when the map cannot be shown, with a reason for the log. */
   onError: (reason: string) => void;
   style?: StyleProp<ViewStyle>;
@@ -83,6 +91,8 @@ export function MapView({
   progress = null,
   stops = null,
   onDoubleTap,
+  moving = false,
+  onMoved,
   onError,
   style,
 }: Props) {
@@ -98,6 +108,7 @@ export function MapView({
   const othersShown = useRef(false);
   const progressShown = useRef(false);
   const doubleTapAsked = useRef(false);
+  const moveAsked = useRef(false);
   const along = useMemo(() => (route ? cumulative(route) : null), [route]);
   // In steps, so the map is not told of every metre.
   const doneM = progress ? doneMetres(progress) : null;
@@ -215,6 +226,18 @@ export function MapView({
     }
   }, [ready, wantsDoubleTap]);
 
+  // Asked for only while the user moves a shape: elsewhere a finger drags
+  // the map.
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (moving || moveAsked.current) {
+      webView.current?.injectJavaScript(pageScript(setMove(moving)));
+      moveAsked.current = moving;
+    }
+  }, [ready, moving]);
+
   return (
     <View style={style}>
       <WebView
@@ -235,6 +258,8 @@ export function MapView({
             setLoading(false);
           } else if (message?.type === "doubleTap") {
             onDoubleTap?.();
+          } else if (message?.type === "moved") {
+            onMoved?.(message.by);
           } else if (message?.type === "error") {
             setLoading(false);
             onError(message.message);

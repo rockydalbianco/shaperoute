@@ -253,7 +253,7 @@ chiede (`setDoubleTap`, `doubleTap` in `messages.ts`), `MapView` ha
 cinque lingue. Come funziona: `UI.md`, «Le reazioni di un disegno»; le
 scelte: ADR-0193, punti 10–15.
 
-Provata: 51 test nuovi (1 806 in tutto, verdi); nel simulatore (Expo Go,
+Provata: 51 test nuovi (1 809 in tutto, verdi); nel simulatore (Expo Go,
 API del worktree con un database usa e getta e la `0015`, tre account di
 prova) la scheda con le reazioni vere, la barra delle sei e il foglio del
 super like con il cuore; il riconoscimento del doppio tocco nella pagina

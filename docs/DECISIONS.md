@@ -10289,6 +10289,12 @@ ancora VoiceOver, e il feed vero, TASK-118, lo avrà dall'API).
 somiglia alla forma, chi ascolta sì: da allineare con l'utente quando i
 file delle lingue sono liberi.
 
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte B; scelta
+dell'utente: «sì toglilo anche da VoiceOver»): il punto 3 non vale più.
+L'etichetta del post è «{user} in {city}: {title}. {facts}.», senza
+punteggio, in inglese e nelle quattro tabelle (`de`, `es`, `fr`, `it`).
+Chi ascolta sente quello che gli altri vedono.
+
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
 (TASK-239), dentro la **richiesta dell'utente** dello stesso giorno: «deve

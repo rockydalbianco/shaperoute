@@ -369,9 +369,9 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   sono esempi: scelta dell'utente. Ogni scheda ha l'iniziale e il nome di
   chi ha corso, la
   città, il disegno in giallo a tutta larghezza, il titolo e una riga
-  «Horse · 19.2 km · 1 h 41 min». **Sopra il disegno non c'è il
-  punteggio** (TASK-241, ADR-0207, chiesto dall'utente): lo legge solo
-  VoiceOver. Sono le
+  «Horse · 19.2 km · 1 h 41 min». **Il punteggio non c'è**, né sopra il
+  disegno né in quello che legge VoiceOver (TASK-241, ADR-0207, chiesto
+  dall'utente). Sono le
   figure venute meglio nelle sette città del catalogo, due per città e
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
   inventati.

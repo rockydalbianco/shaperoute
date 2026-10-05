@@ -1,10 +1,12 @@
 # TASK-211 — Seguire con richiesta
 
-**Stato**: In lavorazione — parte A (l'API) fatta il 2026-10-03; parte B
-da fare, dopo la conferma delle proposte da parte dell'utente
+**Stato**: Done — parte A (l'API) il 2026-10-03, parte B (l'app) il
+2026-10-05: si segue dal profilo di un altro e si accetta in «Profile».
+Resta la prova sull'iPhone con due account, dopo la pubblicazione
 **Fase**: 4 · **Branch**: `feat/TASK-211-follow-api` (parte A),
 `feat/TASK-211-follow-app` (parte B)
-**Dipende da**: TASK-116 (fatto) · **ADR**: ADR-0173
+**Dipende da**: TASK-116 (fatto) · **ADR**: ADR-0173 (l'API), ADR-0199
+(l'app)
 
 ## Obiettivo
 
@@ -78,8 +80,8 @@ persone (TASK-208), e dà finalmente un ingresso al profilo di un altro.
 - [x] La ricerca non restituisce mai email né altro oltre a nome, foto e
       `public_id` (test).
 - [x] Rifiutare non lascia traccia visibile a chi ha chiesto (test).
-- [ ] Test verdi dell'API e dell'app (l'API sì, parte A; l'app è la
-      parte B).
+- [x] Test verdi dell'API e dell'app (l'API con la parte A; l'app con la
+      parte B, 1867 test).
 - [ ] Prova sull'iPhone con due account, dopo l'aggiornamento del server,
       con l'ok dell'utente.
 
@@ -102,11 +104,17 @@ docs/API.md, docs/DATABASE.md, docs/DECISIONS.md, docs/STATUS.md
 Parte B:
 
 ```
-apps/mobile/src/profile/UserProfilePage.tsx
+apps/mobile/src/profile/UserProfilePage.tsx         (+ il suo test, e UserProfileFollow.test.tsx nuovo)
 apps/mobile/src/profile/ProfileHome.tsx
-apps/mobile/src/profile/ProfileHeader.tsx
-apps/mobile/src/api/                                (file nuovo per follows)
-apps/mobile/src/social/                             (file nuovi)
+apps/mobile/src/profile/ProfileHeader.tsx           (non toccato)
+apps/mobile/src/api/follows.ts                      (nuovo, con il test)
+apps/mobile/src/social/FollowButton.tsx             (nuovo)
+apps/mobile/src/social/FollowLists.tsx              (nuovo, con due test)
+apps/mobile/src/social/followsDoor.ts               (nuovo)
+apps/mobile/src/screens/ProfileLayer.tsx            (aggiunto: il contesto e il profilo da un elenco)
+apps/mobile/src/screens/PeopleScreen.tsx            (aggiunto: la prop `first`)
+apps/mobile/src/i18n/it.ts, de.ts, es.ts, fr.ts     (aggiunti: solo le righe dei testi nuovi)
+apps/mobile/src/social/DrawingsGrid.test.tsx        (aggiunto: una riga, la riga sotto il nome)
 docs/UI.md, docs/DECISIONS.md, docs/STATUS.md
 ```
 
@@ -177,3 +185,44 @@ resta.
 
 **Non fatto**: niente sul server né sul telefono (servono la parte B,
 l'aggiornamento del server e l'ok dell'utente).
+
+### Parte B — l'app (2026-10-05, ADR-0199)
+
+Chiesta dall'utente il 2026-10-05: «dai la possibilità di seguire gli
+amici, io ho trovato il mio amico, ma non posso seguirlo». Delle
+proposte qui sopra l'utente ha confermato, alla domanda, **«Requests» in
+«Profile»** con i tre numeri «Requests», «Followers», «Following» che
+aprono gli elenchi (l'altra scelta offerta era in cima a «Feed»).
+
+**Cosa funziona**:
+- **Sul profilo di un altro** il tasto «Follow» → «Requested» (toccato,
+  ritira) → «Following» (toccato, chiede «Stop following {name}?»), e la
+  riga «12 drawings · 3 followers · 5 following».
+- **In «Profile»** i tre numeri, con il pallino su «Requests» quando
+  qualcuno aspetta; gli elenchi sotto, con «Accept», «Decline» e
+  «Remove» (che chiede prima); «Show more» oltre i venti.
+- **Un nome in un elenco** apre il profilo di quella persona; «←» torna
+  a «Profile».
+- La ricerca era già fatta (TASK-215) e non è cambiata.
+
+**File aggiunti all'elenco**, chiesti al coordinatore il 2026-10-05
+(occupato con il server: nessuna risposta prima della PR, nessuno dei
+file era di un altro task in `AGENTI.md`): `ProfileLayer.tsx` e
+`PeopleScreen.tsx` per il contesto e per aprire un profilo da un elenco;
+le quattro tabelle delle lingue, che `tables.test.ts` vuole complete;
+una riga di `DrawingsGrid.test.tsx`, che aspettava «1 drawing» da solo.
+`ProfileHeader.tsx` non è servito.
+
+**Testi nuovi, da confermare** (in inglese; tradotti dall'agente in it,
+de, es, fr): «Follow», «Requested», «Following», «Unfollow», «Stop
+following {name}?», «Takes your request back.» (VoiceOver), «{count}
+follower(s)», «{count} following», «Requests», «Followers», «Accept»,
+«Decline», «Remove», «Remove {name} from your followers?», «Nobody is
+asking to follow you.», «Nobody follows you yet.», «You are not
+following anyone yet. Find friends from Feed.». «Following» è una parola
+sola per tasto ed elenco (it «Segui già»).
+
+**Non fatto**: l'aspetto non è stato visto né sul simulatore né su un
+telefono (solo i test); la prova con due account è dell'utente, dopo la
+pubblicazione, che chiede il suo ok. Niente notifiche delle richieste
+(TASK-185): si vedono solo aprendo «Profile». Bloccare è TASK-121.

@@ -295,6 +295,9 @@ export const IT: Table = {
   "{count} drawing": "{count} disegno",
   "{count} drawings": "{count} disegni",
   "Loading the profile…": "Carico il profilo…",
+  "{count} follower": "{count} follower",
+  "{count} followers": "{count} follower",
+  "{count} following": "segue {count}",
 
   // src/profile/profileFields.ts
   "Editing the profile is not available on this API yet.":
@@ -480,6 +483,29 @@ export const IT: Table = {
 
   // src/social/drawingsDoor.ts
   "This drawing is no longer public.": "Questo disegno non è più pubblico.",
+
+  // src/social/FollowButton.tsx
+  "Stop following {name}?": "Smettere di seguire {name}?",
+  Unfollow: "Non seguire più",
+  "Takes your request back.": "Ritira la tua richiesta.",
+  Follow: "Segui",
+  Requested: "Richiesta inviata",
+  Following: "Segui già",
+
+  // src/social/FollowLists.tsx
+  Requests: "Richieste",
+  Followers: "Follower",
+  "Nobody is asking to follow you.": "Nessuno chiede di seguirti.",
+  "Nobody follows you yet.": "Ancora nessuno ti segue.",
+  "You are not following anyone yet. Find friends from Feed.":
+    "Non segui ancora nessuno. Trova amici da Feed.",
+  Accept: "Accetta",
+  "Accept {name}": "Accetta {name}",
+  Decline: "Rifiuta",
+  "Decline {name}": "Rifiuta {name}",
+  Remove: "Togli",
+  "Remove {name}": "Togli {name}",
+  "Remove {name} from your followers?": "Togliere {name} dai tuoi follower?",
 
   // src/social/PeopleSearch.tsx
   "Log in to find your friends.": "Accedi per trovare i tuoi amici.",

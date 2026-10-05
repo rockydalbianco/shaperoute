@@ -131,20 +131,21 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `3b6e821` dalle
-  02:42Z (ok dell'utente «Sì, aggiorna e pubblica», sessione di TASK-231),
-  con le migrazioni `0001`–`0015`, il motore di TASK-223 e TASK-230,
-  `/phone-zones` (le zone del telefono non sono ancora costruite), gli
-  esempi ridisegnati per 66 città su 66; immagine di prima
-  `shaperoute-api:before-task223`, copia del database
-  `shaperoute-2026-10-05T0241Z.dump`. **App** su `preview` da `main`
-  `e7bc8c1` (gruppo `f8951439`): le quattro forme nuove, la canoa in
-  «Explore» con otto forme, «Offline maps», «Share», le reazioni, il
-  confronto dei km nella voce. **Da provare sull'iPhone.** In `main` dopo:
-  TASK-226 A (#310, il motore dei pezzi sull'acqua): il server vuole un
-  altro aggiornamento con `draw_examples`, con l'ok dell'utente, **prima**
-  di pubblicare la parte B di TASK-226 (l'app). Strava spento finché
-  l'utente non scrive il secret sul server.
+- **Server e app, al 2026-10-05**. **Server**: su `main` `9deba3b` dalle
+  03:27Z (ok dell'utente «ok aggiorna il server e pubblica», sessione del
+  coordinatore), con le migrazioni `0001`–`0015` e il motore di TASK-226 A
+  (le forme a pezzi sull'acqua: una faccina da 2 km a Riccione in 12 s,
+  quattro tratti a penna alzata); fermo circa 14 secondi; immagine di
+  prima `shaperoute-api:before-task226`, copia del database
+  `shaperoute-2026-10-05T0327Z.dump`; `draw_examples` rilanciato alle
+  03:29Z (`data/draw-examples-2026-10-05-task226.log`). `/phone-zones` c'è,
+  le zone del telefono non sono ancora costruite. **App** su `preview` da
+  `main` `ef7ad90` (gruppo `1fc82a12`): in più rispetto a `f8951439`, le
+  forme a pezzi sull'acqua e l'interruttore degli occhi staccati su strada
+  (TASK-226 B). **Da provare sull'iPhone.** Il prossimo passo sul server è
+  l'acqua dei laghi di TASK-233: **prima** di quella `main` con la #319
+  non si pubblica. Strava spento finché l'utente non scrive il secret sul
+  server.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -158,6 +159,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; Todo, chiesto
+  dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
+  riesce ma un tentativo già tracciato a un'altra distanza segue la forma
+  chiaramente meglio, l'API manda `better_distance_m` e l'app scrive la
+  riga con «Try N km». Il percorso scelto non cambia. Prima si misura
+  quanto spesso scatta. Il codice dopo la #310 (TASK-226), stessi file
+  del motore. `tasks/TASK-234.md`.
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal
@@ -260,6 +268,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `0011` e l'ok dell'utente). Poi **B** (l'app),
   dopo che l'utente ha confermato le proposte del task file; e TASK-208 A.
   Da dove riprendere: `tasks/TASK-211.md`.
+  **Parte B, l'app** (2026-10-05, ADR-0199; chiesta dall'utente: «ho
+  trovato il mio amico, ma non posso seguirlo»; «Requests» in «Profile»
+  scelto dall'utente): sul profilo di un altro il tasto «Follow» →
+  «Requested» → «Following»; in «Profile» i tre numeri «Requests»,
+  «Followers», «Following» con i loro elenchi («Accept», «Decline»,
+  «Remove»); un nome negli elenchi apre il profilo. Il server ha già l'API:
+  **manca solo pubblicare l'app** (con l'ok dell'utente, dal coordinatore).
+  Da fare: la prova sull'iPhone con due account; i testi nuovi (cinque
+  lingue) da confermare. L'aspetto non è stato visto su un telefono.
 - **TASK-208 — Pubblicare una corsa in stile Strava** (ADR-0170; scelte
   dell'utente del 2026-10-03: «How did it go?», tag degli iscritti per
   nome, fino a 3 foto, «Everyone», «Followers», «Only me»; e, durante la

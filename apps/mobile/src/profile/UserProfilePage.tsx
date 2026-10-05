@@ -1,4 +1,4 @@
-import type { PublicProfile } from "@shaperoute/shared-types";
+import type { FollowState, PublicProfile } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -8,6 +8,7 @@ import type { AccountOutcome } from "../api/accounts";
 import { fetchProfile, profilePhotoUri } from "../api/profiles";
 import { t, tLater, tPlural } from "../i18n";
 import { DrawingsGrid } from "../social/DrawingsGrid";
+import { FollowButton } from "../social/FollowButton";
 import { color, fontSize, space } from "../theme/tokens";
 import { ProfileHeader } from "./ProfileHeader";
 
@@ -40,6 +41,24 @@ export function drawingsText(drawings: number): string {
   return tPlural(drawings, "{count} drawing", "{count} drawings");
 }
 
+/**
+ * The line under the name: «12 drawings · 3 followers · 5 following». An
+ * API older than TASK-211 has no numbers of who follows: the drawings only.
+ */
+export function profileDetail(
+  profile: Pick<PublicProfile, "drawings" | "followers" | "following">,
+): string {
+  const { followers, following } = profile;
+  if (followers === undefined || following === undefined) {
+    return drawingsText(profile.drawings);
+  }
+  return [
+    drawingsText(profile.drawings),
+    tPlural(followers, "{count} follower", "{count} followers"),
+    t("{count} following", { count: following }),
+  ].join(" · ");
+}
+
 /** A profile that could not be shown, in words. */
 export function profileViewProblem(failed: Failed): string {
   // Unknown, deleted, or an API older than TASK-116 that has no profiles.
@@ -53,14 +72,19 @@ export function profileViewProblem(failed: Failed): string {
  * Another member's profile, read only (TASK-116, ADR-0128): the picture,
  * the name, the bio and how many drawings they published, and under them
  * the drawings (TASK-117). Never the email: the API does not send it.
- * Nothing in the app opens it yet: where it opens from (the feed, a like, a
- * comment) is the user's choice.
+ * It opens from the search of «Feed» (TASK-215) and from the lists of who
+ * follows (TASK-211). Under the name, how many follow it and the button to
+ * follow it, which asks: the other accepts or declines (ADR-0173).
  */
 export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: Props) {
   const { state, sessionEnded: onSessionEnded } = account;
   const token = state.status === "signedIn" ? state.session.token : null;
   const asked = `${token ?? ""} ${publicId}`;
   const [answer, setAnswer] = useState<Answer | null>(null);
+  // What the button changed since the profile came, for that profile only.
+  const [changed, setChanged] = useState<{ asked: string; follow: FollowState } | null>(
+    null,
+  );
 
   useEffect(() => {
     if (token === null || apiUrl === null) {
@@ -104,14 +128,42 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
     return <Text style={[styles.message, styles.problem]}>{shown.problem}</Text>;
   }
   const { profile } = shown;
+  const follow =
+    changed !== null && changed.asked === asked ? changed.follow : profile.follow;
+  // Who stops following is one follower less, before the API is asked again.
+  const left = profile.follow === "following" && follow !== "following" ? 1 : 0;
+  const own =
+    state.status === "signedIn" && state.session.user.public_id === profile.public_id;
   return (
     <View style={styles.page}>
-      <ProfileHeader
-        username={profile.username}
-        bio={profile.bio}
-        photo={profilePhotoUri(profile)}
-        detail={drawingsText(profile.drawings)}
-      />
+      <View style={styles.top}>
+        <ProfileHeader
+          username={profile.username}
+          bio={profile.bio}
+          photo={profilePhotoUri(profile)}
+          detail={profileDetail({
+            ...profile,
+            followers:
+              profile.followers === undefined
+                ? undefined
+                : Math.max(0, profile.followers - left),
+          })}
+        />
+        {/* An API older than TASK-211 says nothing of following: no button. */}
+        {follow !== undefined && !own && (
+          <FollowButton
+            apiUrl={apiUrl}
+            token={token}
+            publicId={profile.public_id}
+            username={profile.username}
+            follow={follow}
+            onFollow={(next) => setChanged({ asked, follow: next })}
+            onSessionEnded={onSessionEnded}
+            fetchFn={fetchFn}
+            apiKey={apiKey}
+          />
+        )}
+      </View>
       <DrawingsGrid publicId={profile.public_id} own={false} />
     </View>
   );
@@ -120,6 +172,10 @@ export function UserProfilePage({ apiUrl, account, publicId, fetchFn, apiKey }: 
 const styles = StyleSheet.create({
   page: {
     gap: space.lg,
+  },
+  // As the top of one's own «Profile» (ProfileHome.tsx).
+  top: {
+    gap: space.md,
   },
   message: {
     color: color.textMuted,

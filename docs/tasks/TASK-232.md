@@ -1,7 +1,7 @@
 # TASK-232 — Forme inclinate fino a 45°, con la mappa girata
 
-**Stato**: In lavorazione — parte A (motore e API) nella PR #356, aspetta
-il giudizio dell'utente sui campioni; parti B e C da fare
+**Stato**: In lavorazione — parte A (motore e API) nella PR #356,
+campioni giudicati dall'utente, aspetta il merge; parti B e C da fare
 **Fase**: 4 · **Branch**: `feat/TASK-232-a-tilt-45` (A),
 `feat/TASK-232-b-turned-map` (B), `feat/TASK-232-c-saved-turn` (C)
 **ADR**: ADR-0195 (supera in parte ADR-0038: il limite di 15°)
@@ -126,7 +126,7 @@ chiusa nel codice (il coordinatore, 2026-10-05).
 - [x] Sui 14 casi disegnabili (`MAPS.md`) la somiglianza non peggiora in
       nessun caso, e il tempo medio sale al più del 25%. Misure in
       `MAPS.md`.
-- [ ] L'utente ha giudicato i campioni prima e dopo, con la mappa
+- [x] L'utente ha giudicato i campioni prima e dopo, con la mappa
       girata: nessun `sì` diventa `no`.
 - [x] L'API restituisce `rotation_deg`; un'app senza il campo funziona
       come prima.
@@ -237,7 +237,8 @@ migrazione nuova, `apps/mobile/src/activities/fitLines.ts`,
 - **I campioni**: `samples/TASK-232_*` (19 casi, v1 prima col nord in
   alto, v2 dopo con la mappa girata), `samples/TASK-232_rotations.json`,
   la pagina con `python tools/preview_turned.py "samples/TASK-232_*.gpx"`.
-  **Manca il giudizio dell'utente** (`samples/LOG.md`, «da giudicare»):
-  nessun `sì` deve diventare `no`.
+  **Giudicati dall'utente** il 2026-10-05, sui percorsi nuovi con la mappa
+  girata: 17 `sì`, `quasi` l'albero di Natale di Levico da 5 km e il sole
+  di Levico da 5 km; nessun `no` (`samples/LOG.md`).
 - Dopo il merge: il server e `draw_examples` (il coordinatore, con l'ok
   dell'utente); poi le parti B e C.

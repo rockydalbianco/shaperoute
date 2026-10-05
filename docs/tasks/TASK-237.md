@@ -2,7 +2,8 @@
 
 **Stato**: In corso — parte A (la pagina e la vetrina) in `main` (PR
 #325, `f8e68b6`, 2026-10-05); parte A2 (la pagina diventa la guida
-dell'app, il merch messo da parte) in PR dal 2026-10-05; il link per
+dell'app, il merch messo da parte) in `main` (PR #335, `8f23ff4`,
+2026-10-05); il link per
 scaricare, la pubblicazione e il merch aspettano l'utente
 **Fase**: 4 · **Branch**: `feat/TASK-237-website-merch`
 **ADR**: ADR-0201
@@ -56,7 +57,7 @@ Letta così (da confermare con l'utente dove dice «letto dall'agente»):
 3. Test in Node e un workflow suo.
 4. `docs/SITO.md`, ADR-0201, le righe in `STATUS.md` e `INDEX.md`.
 
-**Parte A2 — la guida dell'app** (seconda PR):
+**Parte A2 — la guida dell'app** (PR #335, fatta):
 
 1. Il merch esce da `index.html`; i suoi file restano, con i loro test.
 2. In cima il pannello «Try it»: forma e distanza scelte, il percorso
@@ -139,7 +140,7 @@ Il cuore in cima sta nella pagina e non in un'immagine: disegnato dentro
 un `<img>` l'animazione non partiva nel controllo, e la riga restava
 nascosta.
 
-**Parte A2** (2026-10-05): la pagina è la guida dell'app. Provata in
+**Parte A2** (2026-10-05, PR #335, merge `8f23ff4`): la pagina è la guida dell'app. Provata in
 Chrome senza finestra guidato dal protocollo DevTools, a 1280 e 390 px:
 i tasti di sport, forma, distanza e filtro cambiano quello che devono,
 nessun errore in console, nessuno scorrimento orizzontale; 25 test verdi.

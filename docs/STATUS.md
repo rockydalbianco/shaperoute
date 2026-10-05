@@ -148,7 +148,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
-  in PR (2026-10-05), dopo la seconda richiesta dell'utente («per intanto
+  in `main` (PR #335, merge `8f23ff4`, 2026-10-05), dopo la seconda
+  richiesta dell'utente («per intanto
   solo il sito che spiega come usare l'app… futuristico… selezionare lo
   sport… i post migliori, una decina»): la pagina è la **guida dell'app**.
   «Try it» disegna il percorso vero di Milano per la forma e la distanza

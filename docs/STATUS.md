@@ -159,7 +159,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Trento era la ferrovia: la bocca scendeva 250 m fino al sottopasso e
   pendeva dal bordo. Il contorno, le parole e l'acqua non cambiano; su
   42 richieste di prova 30 danno lo stesso percorso, 10 migliorano,
-  nessuna peggiora (`ROUTE_ENGINE.md` §5). **In PR**, non in `main`.
+  nessuna peggiora (`ROUTE_ENGINE.md` §5). **In PR #349**, non in `main`.
   **Aspetta l'utente**: il giudizio sui campioni prima/dopo
   (`samples/TASK-242_*`), chiesto dal coordinatore prima del merge. Poi
   server e `draw_examples` (coordinatore, con l'ok dell'utente). Da dove

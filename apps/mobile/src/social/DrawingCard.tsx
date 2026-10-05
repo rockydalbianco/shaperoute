@@ -25,9 +25,10 @@ type Props = {
 
 /**
  * A drawing on the map (TASK-117), under it: its title (without one, the
- * day it was run), the day, the km (the miles with «Miles», TASK-182) and
- * the score, which everybody sees (the user's choice). Never the time of
- * day: the others see the drawing, not when somebody runs. Its comments open from a button (TASK-120), and
+ * day it was run), the day and the km (the miles with «Miles», TASK-182).
+ * Never the score (TASK-241, the user's choice), nor the time of day: the
+ * others see the drawing, not when somebody runs. Its comments open from a
+ * button (TASK-120), and
  * next to it are its reactions (TASK-119).
  */
 export function DrawingCard({ drawing, onBack }: Props) {
@@ -45,18 +46,6 @@ export function DrawingCard({ drawing, onBack }: Props) {
             {runDistanceLabel(drawing.distance_m, units)}
           </Text>
         </View>
-        {drawing.score !== null && (
-          <View
-            style={styles.scoreBox}
-            accessible
-            accessibilityLabel={t("Score: {score} out of 100", {
-              score: drawing.score,
-            })}
-          >
-            <Text style={styles.score}>{drawing.score}</Text>
-            <Text style={styles.message}>{t("out of 100")}</Text>
-          </View>
-        )}
       </View>
       <DrawingReactions
         drawingId={drawing.id}
@@ -96,15 +85,6 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.input,
     fontWeight: fontWeight.semibold,
-  },
-  scoreBox: {
-    alignItems: "flex-end",
-  },
-  // As on a run of «My activities»: the yellow is the drawing's, on the map.
-  score: {
-    color: color.text,
-    fontSize: fontSize.title,
-    fontWeight: fontWeight.bold,
   },
   button: {
     minHeight: MIN_TAP_SIZE,

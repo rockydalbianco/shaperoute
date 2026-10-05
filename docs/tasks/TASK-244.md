@@ -1,6 +1,6 @@
 # TASK-244 — «Move the shape» anche sugli esempi di «Explore» con «Paddle»
 
-**Stato**: In revisione (PR #360; il merge aspetta il «merge 360» del coordinatore)
+**Stato**: Done (PR #360, merge `20c021b`, 2026-10-05). Aperti dopo il merge: la pubblicazione, la prova con un dito vero
 **Fase**: 4 · **Branch**: `feat/TASK-244-explore-move`
 **Dipende da**: TASK-238 (spostare la figura sull'acqua, ADR-0202),
 TASK-227 e TASK-233 (gli esempi sull'acqua di «Explore»)
@@ -78,8 +78,6 @@ la partenza del luogo e non quella del percorso sulla riva).
       senza scaricare niente, in 0,4–3,7 s.
 - [x] Nessun testo nuovo da tradurre.
 - [x] Test dell'app e dello script verdi.
-- [ ] Visto con un dito vero sull'iPhone (dopo la pubblicazione, che è del
-      coordinatore).
 
 ## File toccati
 
@@ -157,6 +155,26 @@ schede di «Explore» usano già sull'acqua.
   altro posto. L'app non manda mai uno spostamento nullo (sotto 8 px il
   dito non sposta niente), quindi non si vede; detto al coordinatore.
 
+## Aperto dopo il merge
+
+- **La pubblicazione dell'app** (del coordinatore; solo app, il server ha
+  già `near`).
+- **La prova con un dito vero** sull'iPhone, dell'utente: un esempio di un
+  luogo di «Explore» con «Paddle», «Move the shape», e che il percorso
+  spostato resti nella scheda di «Explore». È la stessa prova ancora
+  aperta di TASK-238 (il dito non deve far scorrere la pagina, due dita
+  ingrandiscono).
+- **Il caso del motore** scritto in «Emerso»: seguito di TASK-238, non
+  urgente (coordinatore).
+
 ## Esito
 
-*(alla chiusura)*
+Gli esempi di «Explore» con «Paddle» si spostano col dito come un
+percorso di «Draw», e il percorso spostato resta di «Explore» (scelta
+dell'utente). È bastata l'app, più `centre` scritto negli esempi: i 32
+dentro l'app, ridisegnati sull'acqua del server, sono identici, anche
+dopo il motore delle forme inclinate (TASK-232 A, entrato prima: il file
+rigenerato era byte per byte quello del merge). Nessun testo nuovo.
+Restano la pubblicazione e la prova con un dito vero; non si spostano gli
+esempi tenuti sul telefono da prima, i preferiti e i disegni del «Feed»
+(«Note per chi prosegue», «Fuori scope»).

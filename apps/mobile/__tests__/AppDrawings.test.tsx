@@ -516,14 +516,16 @@ test("the profile shows its drawings, and one opens on the map", async () => {
   expect(await screen.findByText("Drawings")).toBeOnTheScreen();
   await fireEvent.press(
     await screen.findByRole("button", {
-      name: "Sunday heart by the river, score 87 out of 100, open on the map",
+      name: "Sunday heart by the river, open on the map",
     }),
   );
   // On the map, with its card under it; «Profile» out of the way.
   expect(await screen.findByText("Sunday heart by the river")).toBeOnTheScreen();
   expect(screen.getByText(dayLabel(drawing.started_at))).toBeOnTheScreen();
   expect(screen.getByText("4.00 km")).toBeOnTheScreen();
-  expect(screen.getByLabelText("Score: 87 out of 100")).toBeOnTheScreen();
+  // Its score (87) is not on the card.
+  expect(screen.queryByLabelText(/^Score/)).toBeNull();
+  expect(screen.queryByText(/out of 100/)).toBeNull();
   expect(screen.queryByText("Drawings")).toBeNull();
   // The cut run, as the line the map frames: yellow as in «Feed», no
   // white line over it, no time of day.

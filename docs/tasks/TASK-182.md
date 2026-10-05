@@ -293,7 +293,7 @@ Fatto:
 - Test: `distanceInput.test.ts`, `distanceMiles.test.ts`,
   `milesTexts.test.ts`, `RoutePanelMiles.test.tsx`, `cardsInMiles.test.tsx`.
 
-**Testi nuovi, da confermare con l'utente** (inglese; le quattro
+**Testi nuovi, confermati dall'utente il 2026-10-05** («ok, i testi delle miglia vanno bene»: gli sono stati mostrati i principali e le due conseguenze dei limiti; inglese; le quattro
 traduzioni sono nelle tabelle):
 
 - «Distance in miles» (VoiceOver), «Enter a distance between {lowest} and

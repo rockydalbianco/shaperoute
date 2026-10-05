@@ -10544,6 +10544,42 @@ mostra. Le chiavi «Score {score}», «Score: {score} out of 100» e «out of
 (`DrawingsGrid`, `DrawingCard`), dove il punteggio si vede ancora, come
 a fine corsa: l'utente non li ha nominati.
 
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte E; scelte
+dell'utente: «sì toglilo anche da lì» per la fine corsa e i disegni del
+«Profile», e «Solo km e tempo» alla domanda su cosa mostra la scheda di
+fine corsa). **Il punteggio non si vede e non si legge più da nessuna
+parte nell'app.**
+
+1. **Disegni del «Profile»**: niente «Score 87» sotto il disegno della
+   griglia, niente riquadro sul disegno aperto; l'etichetta è «{title},
+   open on the map» per tutti.
+2. **Fine corsa** (supera in parte ADR-0090 e ADR-0093, per quello che
+   l'app mostra): la scheda ha una riga, «4.0 km · 32 min», e i pulsanti
+   di prima. L'app **non chiede più `POST /track-scores`**: via «Scoring
+   your run…», «Too short for a score», «The score will come later»,
+   «The score did not arrive», «Try again» e «97% of the route».
+3. **«Done» senza account** toglie sempre la corsa dal file: non c'è più
+   un punteggio da aspettare alla prossima apertura (deciso dall'agente
+   su delega, conseguenza del punto 2).
+4. **L'API non cambia**: `POST /track-scores` resta, e le corse salvate
+   hanno ancora `score`, calcolato da sé. `src/api/trackScores.ts` resta
+   nell'app senza che una schermata lo chiami (deciso dall'agente: i test
+   della penna alzata leggono `toScoreRequest`; toglierlo è un seguito).
+5. **Le chiavi** «Score {score}», «Score: {score} out of 100», «out of
+   100» e «{title}, score {score} out of 100, open on the map» escono
+   dalle quattro tabelle.
+6. **«Help» e «Terms»** (`src/about/content/`, bozze di TASK-184): tolta
+   la frase «At the end, a score out of 100 tells how close you drew the
+   shape.» e «and score» da «Distances, times, speed and score come from
+   the phone's GPS». **«Privacy» non è toccata**: dice che il server
+   tiene il punteggio delle corse salvate (vero) e nomina l'evento «a run
+   scored», che l'app non manda più; è un testo dell'utente.
+
+**Alternative scartate**: tenere «97% of the route» (l'utente ha scelto
+solo km e tempo; avrebbe tenuto la richiesta all'API, l'attesa e i
+messaggi senza rete); togliere `score` dall'API (altro contratto, usato
+dai dati già salvati; non chiesto).
+
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
 (TASK-239), dentro la **richiesta dell'utente** dello stesso giorno: «deve
@@ -11075,6 +11111,100 @@ deciso nemmeno che cosa si notificherà.
   l'account di prima in SQL.
 - `Account` ha un metodo in più, `changeNotifications`: i test che
   costruiscono un `Account` a mano hanno una riga in più.
+
+## ADR-0210 — Le spiagge di «Paddle»: i paesi scelti dall'utente, il punto della riva dai dati, un riquadro d'acqua a paese
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-245), dentro la **richiesta dell'utente** del 2026-10-05: «aggiungi
+altre spiagge oltre Jesolo e Riccione». I 29 posti e la regola «si tengono
+solo dove il motore disegna» sono **scelte dell'utente** dello stesso
+giorno (`tasks/TASK-245.md`, «Scelte dell'utente»). Numero dato dal
+coordinatore.
+
+**Contesto**: al mare l'app aveva due posti scelti a mano, con il punto
+della riva scritto a mano e gli esempi dentro l'app (`waterPlaces.ts`,
+ADR-0169, ADR-0189). I laghi invece vengono da un elenco scritto da un
+comando (`lake_catalog.py`, ADR-0196), con i punti presi dalla forma del
+lago. Il mare non ha una forma da cui prendere i punti: è il riquadro
+meno la terra, e una costa non ha un nome. Il server ha l'acqua solo dei
+riquadri che gli si danno (ADR-0187): Overpass non gli risponde.
+
+**Decisione**:
+
+1. **Un comando nuovo, `beach_catalog.py`, sul modello di quello dei
+   laghi**, in due passi: i riquadri d'acqua (`--boxes`), poi l'elenco
+   (`--cache-dir`), provato col motore come lo disegna l'API
+   (`plan_water`). Scrive `apps/mobile/src/paddle/beaches.json`, con le
+   righe uguali a quelle di `lakes.json`. `lake_catalog.py` non cambia.
+2. **Un posto è un paese**: il nome che l'app mostra e il punto dove
+   OpenStreetMap ha il suo nodo `place`, scritti nel comando (`PLACES`).
+   Le posizioni sono state lette una volta da Photon; «Ostia» è Lido di
+   Ostia, «Cavallino» il paese di Cavallino-Treporti.
+3. **Il punto della riva non è scritto a mano**: è uno dei punti dove il
+   motore dice che si arriva all'acqua a piedi (`water.build_area`), su
+   una spiaggia se ce n'è una, il più vicino al paese entro **3 km**
+   (`REACH_M`: la piazza di Villasimius è a 1,8 km dalla sua spiaggia). Il
+   comando ne prova fino a quattro, lontani almeno 500 m l'uno
+   dall'altro, e tiene il primo dove cuore, cerchio e stella stanno a
+   2 km; altrimenti quello con la distanza più lunga fra 1,5 e 1 km, come
+   sui laghi piccoli (scelta dell'utente in TASK-233).
+4. **Un punto solo a paese**, non uno ogni 4 km come sulle rive dei laghi:
+   chi cerca «Rimini» vuole Rimini, e il motore sposta comunque la
+   partenza fino a 2 km lungo la riva.
+5. **Un riquadro d'acqua a paese**: tiene la richiesta più lunga che l'API
+   accetta sull'acqua (5 km) da ogni partenza entro 3 km dal paese, circa
+   16 km di lato. Un paese che un file già sul server copre non ne ha uno
+   nuovo (`--boxes --cache-dir`): Rimini sta nel file di Riccione,
+   Cavallino in quello di Jesolo.
+6. **Nell'app solo `waterSpots.ts`**: `WATER_SPOTS` è i luoghi scelti a
+   mano, i laghi, poi le spiagge. «Explore», «Near me» e «Another place»
+   le trovano. Niente esempi dentro l'app: le forme si chiedono all'API,
+   come per i laghi.
+7. **In «Another place» solo l'ultima parola scritta vale come inizio di
+   una parola del nome** (`findSpots` in `placeSpots.ts`, ADR-0204); le
+   parole prima, già finite, devono essere parole intere. Con le spiagge
+   nell'elenco ogni indirizzo che comincia con «via» proponeva
+   «Viareggio», di cui «via» è l'inizio: «via al lago» e «via Roma,
+   Trento» tornano a non proporre niente, come l'utente aveva confermato
+   in TASK-240. «via» da sola, mentre si scrive, propone ancora
+   «Viareggio». `searchSpots` di «Explore» non cambia: lì si cerca un
+   lago o una spiaggia, e ogni parola vale come inizio. File dati dal
+   coordinatore a questo task.
+
+**Alternative scartate**:
+
+- **Un elenco di parole da strada da ignorare** («via», «viale»,
+  «corso»): già scartato in ADR-0204, non finisce mai.
+- **Tutta la costa d'Italia**, un punto ogni tanti km: a spanne 0,3–1,7 GB
+  d'acqua sul server, e punti senza un nome da cercare. Sconsigliata
+  all'utente, che ha scelto i 29 posti.
+- **Aggiungere i posti a `waterPlaces.ts`**, come Jesolo e Riccione:
+  vorrebbe il punto scritto a mano e gli esempi dentro l'app (25 KB a
+  posto), che sono di TASK-244.
+- **Il punto scritto a mano**, guardando la mappa: 29 punti da scegliere e
+  da rifare a ogni estratto nuovo, e niente dice che lì si arriva
+  all'acqua.
+- **Prendere i paesi dall'estratto** (`place=*`): l'estratto dell'acqua
+  non ha i nodi dei paesi, e «Mondello» o «Ostia» non sono comuni.
+- **Riquadri stretti intorno al punto scelto**: il punto si conosce solo
+  dopo aver letto l'acqua, e una partenza sul lungomare a 2 km dal punto
+  resterebbe senz'acqua.
+
+**Conseguenze**:
+
+- 29 posti su 29 tengono le forme a 2 km (estratto del 2026-09-30), e
+  tutti le otto forme di «Explore». 27 file d'acqua nuovi, 22,6 MB.
+- **L'app non si pubblica prima che l'acqua sia sul server**: senza,
+  scegliere una spiaggia nuova dà «Map data for this area could not be
+  downloaded.».
+- In «Another place» una parola scritta a metà e seguita da un'altra non
+  trova più niente («lev terme»); «lev», «lago di lev» e i nomi interi
+  come prima. «lev» trova anche «Sestri Levante».
+- Una partenza al mare a più di 3 km da un paese dell'elenco resta come
+  prima: funziona solo dove il server ha o riesce a scaricare l'acqua.
+- Se il motore dell'acqua cambia (TASK-232 A tocca `water_fit.py`), le
+  distanze dell'elenco vanno riprovate: `MAPS.md`, «Le spiagge di
+  «Paddle»».
+- Il motore non cambia; «Run» e «Bike» non cambiano.
 
 ## ADR-0149 — aggiornamento (parte B): «Draw» in miglia
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente

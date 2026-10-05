@@ -196,6 +196,12 @@ export interface RouteResult {
    * older API, which says nothing of it.
    */
   on_foot?: Stretch[];
+  /**
+   * A distance in whole km where the search found the shape clearly better
+   * drawn (TASK-234, ADR-0197), for «Try N km» under the route. Null without
+   * one, in the alternatives and on the water; missing from an older API.
+   */
+  better_distance_m?: number | null;
 }
 
 /** Routes besides the one chosen by the engine: three to choose from. */

@@ -1,7 +1,7 @@
 # TASK-234 — «Viene meglio a 12 km»: la distanza dove la forma riesce meglio
 
-**Stato**: Todo — task file scritto il 2026-10-05; il codice dopo il merge
-della #310 (TASK-226 A, che tocca `models.py`)
+**Stato**: In corso — parte A (motore e API) in PR il 2026-10-05; la
+parte B (app) dopo, con i testi visti dall'utente
 **Fase**: 4 · **Branch**: `feat/TASK-234-better-distance`
 **ADR**: ADR-0197 (estende ADR-0041)
 
@@ -104,31 +104,38 @@ coordinatore, 2026-10-05).
 
 ## Criteri di accettazione
 
-- [ ] Test del motore: con tentativi finti, il consiglio c'è quando uno è
+- [x] Test del motore: con tentativi finti, il consiglio c'è quando uno è
       chiaramente meglio a un'altra distanza, e manca quando è meglio di
       poco, quando la somiglianza è sotto 0,90, quando arrotondato al km
       è la distanza chiesta o è fuori dai limiti dell'attività.
-- [ ] Il percorso scelto è identico a prima su tutti i test e sui 14 casi
+- [x] Il percorso scelto è identico a prima su tutti i test e sui 14 casi
       (`MAPS.md`): stesse impronte fissate.
-- [ ] L'API restituisce `better_distance_m`; senza consiglio è `null`; i
+- [x] L'API restituisce `better_distance_m`; senza consiglio è `null`; i
       client di oggi non si rompono.
-- [ ] Le misure del punto 7 sono in `MAPS.md`.
+- [x] Le misure del punto 7 sono in `MAPS.md`.
 - [ ] L'app mostra la riga e «Try N km» solo col campo e dentro le
       distanze di «Draw»; «Try» ridisegna a quella distanza; niente riga
       che rimanda alla distanza di prima.
 - [ ] I testi nelle cinque lingue; l'utente li ha visti.
-- [ ] Test deterministici per motore, API e app (`docs/TESTING.md`).
+- [ ] Test deterministici per motore, API e app (`docs/TESTING.md`):
+      motore e API fatti nella parte A.
 
 ## File toccati
 
 ```
 services/route-engine/route_engine/optimizer.py
 services/route-engine/route_engine/models.py
+services/route-engine/route_engine/nearby_starts.py         (ok del coordinatore)
 services/route-engine/tests/test_better_distance.py         (nuovo)
+services/route-engine/tests/measure_better.py               (nuovo)
+services/route-engine/tests/test_contract.py                (il campo nuovo)
 services/api/shaperoute_api/schemas.py
 services/api/shaperoute_api/errors.py
 services/api/tests/test_better_distance.py                  (nuovo)
+services/api/tests/test_contract.py                         (il campo nuovo)
 packages/shared-types/src/index.ts
+packages/shared-types/test/contract.test.ts                 (il campo nuovo)
+packages/shared-types/fixtures/route-result-better-distance.json (nuovo)
 apps/mobile/assets/engine/engine.zip
 apps/mobile/src/paddle/paddleExamples.json                  (se servisse)
 apps/mobile/src/route/betterDistance.ts                     (nuovo)
@@ -158,4 +165,25 @@ docs/tasks/TASK-234.md
 
 ## Esito
 
-—
+**Parte A, motore e API** (2026-10-05, PR da `feat/TASK-234-better-distance`):
+
+- `optimizer.better_distance` e `shape_cost`; `RouteResult.better_distance_m`
+  da `plan_shape` e da `ShapeJob.here` (`nearby_starts.py`, ok del
+  coordinatore: altrimenti il consiglio spariva quando vince una partenza
+  vicina); `plan_nearby` lo toglie alle alternative.
+- API: `better_distance_m` in `RouteResultBody`, `null` senza consiglio;
+  `shared-types` facoltativo; `errors.py` non è servito (l'arrotondamento
+  al km sta nel motore). I test di contratto contano il campo come
+  `walks` e `on_foot` (fixture di prima = API precedente) e una fixture
+  nuova ha tutti i campi.
+- Il percorso scelto non cambia: suite del motore verde, impronte fissate
+  comprese. `engine.zip` rifatto; `paddleExamples.json` rifatto con
+  l'acqua del server copiata in sola lettura (ok del coordinatore): cambia
+  solo `"engine"`.
+- **Misure (punto 7)** in `MAPS.md`: il consiglio scatta in 8 percorsi su
+  129, nessuno dei 12 di riferimento in cache; la soglia resta 5 punti
+  (ADR-0197). Da dire all'utente prima della parte B: scatta poco, forse
+  serve il passo 2.
+- Da fare: parte B (l'app), dopo la risposta dell'utente sulle misure e
+  sui testi; `draw_examples` sul server dopo il merge di A, con l'ok
+  dell'utente (il coordinatore).

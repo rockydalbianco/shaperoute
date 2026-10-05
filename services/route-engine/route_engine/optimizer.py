@@ -33,7 +33,7 @@ from route_engine.metrics import (
     coverage,
     precision,
 )
-from route_engine.models import RouteRequest, RouteResult
+from route_engine.models import DISTANCE_LIMITS_M, RouteRequest, RouteResult
 from route_engine.network import (
     AREA_MARGIN_M,
     CORRIDOR_BAND,
@@ -62,7 +62,14 @@ from route_engine.retracing import extra_doubled_share
 from route_engine.shapes import FREE_ROTATION, get_shape
 from route_engine.street_grid import StreetDirections
 from route_engine.validation import check_closed, measure, validate
-from route_engine.words import MAX_SHIFT, SHIFT_STEP, Style, Word, compose
+from route_engine.words import (
+    LETTER_DISTANCE_M,
+    MAX_SHIFT,
+    SHIFT_STEP,
+    Style,
+    Word,
+    compose,
+)
 
 # Where the start enters the shape, as arc-length fractions (TASK-015).
 PHASES = (0.0, 0.25, 0.5, 0.75)
@@ -146,6 +153,11 @@ WORD_RETRACE = 0.5
 # word ran across the map like a diagonal, and did not read (TASK-077).
 GRID_MAX_TILT_DEG = 30.0
 GRID_TILT_DEG = 5.0
+# A route the search traced at another distance is advised (better_distance,
+# TASK-234, ADR-0197) when its cost without the distance part is lower than
+# the chosen route's by at least this much, five points of similarity, and
+# its similarity is at least SIMILARITY_THRESHOLD.
+BETTER_MARGIN = W_SHAPE * 0.05
 
 
 def reach(shape: Sequence[Point], phases: Sequence[float] = PHASES) -> float:
@@ -1036,6 +1048,9 @@ def plan_shape(
     entered at its first letter; the route is open too, and its `walks`
     say where it goes from one letter to the next without drawing
     (TASK-197): `distance_m` is planned for the letters alone.
+
+    After a search the result may advise another distance, where the
+    search found the shape clearly better drawn (better_distance, TASK-234).
     """
     similarity = SIMILARITIES[SIMILARITY]
     planned_m = planned_distance(distance_m, one_way)
@@ -1167,6 +1182,11 @@ def plan_shape(
         warnings=warnings,
         walks=list(route.walks),
         on_foot=on_foot_stretches(graph, route.nodes),
+        better_distance_m=(
+            None
+            if found is None
+            else better_distance(found, distance_m, activity, word)
+        ),
     )
     return Plan(result, found, measures, far)
 
@@ -1178,3 +1198,42 @@ def _drawable(best: Attempt, distance_m: float, kept: float = 1.0) -> bool:
         best.similarity >= MIN_SIMILARITY
         and abs(drawn_distance(best.route) - distance_m) * kept <= DISTANCE_FALLBACK_M
     )
+
+
+def shape_cost(attempt: Attempt) -> float:
+    """The cost of `attempt` without its distance part: the shape, the
+    streets run twice beyond it and the start moved (search)."""
+    return attempt.cost - W_DISTANCE * abs(attempt.ratio - 1)
+
+
+def better_distance(
+    found: Search,
+    distance_m: float,
+    activity: str = "running",
+    word: Word | None = None,
+) -> int | None:
+    """A distance to ask for instead of `distance_m`, where the shape came
+    out clearly better (TASK-234, ADR-0197); None without one.
+
+    From the routes `found` has already traced, nothing more: one whose
+    `shape_cost` is at least BETTER_MARGIN below the chosen one's and whose
+    similarity is at least SIMILARITY_THRESHOLD. Its distance is the one
+    asked for that gives it (its ratio, as the search measures it), to the
+    whole km as the API's suggested distance; never `distance_m` itself,
+    nor one a request of `activity` (or of the letters of `word`) may not
+    ask for. Of several, the cheapest; on a tie, the nearest. The chosen
+    route stays what it is."""
+    low, high = DISTANCE_LIMITS_M.get(activity, DISTANCE_LIMITS_M["running"])
+    if word is not None and word.kind == "letter":  # models.check_word
+        low = max(low, len(word.letters) * LETTER_DISTANCE_M)
+    beaten = shape_cost(found.best) - BETTER_MARGIN + 1e-9
+    costs: dict[int, float] = {}
+    for a in found.attempts:
+        if a.similarity < SIMILARITY_THRESHOLD or shape_cost(a) > beaten:
+            continue
+        km = round(a.ratio * distance_m / 1000) * 1000
+        if km != distance_m and low <= km <= high:
+            costs[km] = min(costs.get(km, math.inf), shape_cost(a))
+    if not costs:
+        return None
+    return min(costs, key=lambda km: (costs[km], abs(km - distance_m), km))

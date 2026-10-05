@@ -9543,6 +9543,10 @@ dall'agente su delega dell'utente):
 9. **Nell'app** «Update on Strava» compare su una corsa già là solo se il
    post ha un testo.
 
+**Aggiornamento** (2026-10-05, TASK-241 parte C, scelta dell'utente): il
+punteggio non è più fra i risultati del post né nel testo per Strava
+(punto 5: «🔥❤️ 5.20 km · 28:10 · 5:25 /km»). Vedi ADR-0207.
+
 ## ADR-0180 — Il confronto dei km nella voce: i secondi della fine corsa, una frase a parte, in bici ogni 10 km senza numeri
 **Stato**: Attiva · 2026-10-05 · **scelte dell'utente** (2026-10-03) la
 frase a ogni km con i secondi, «stesso passo» entro 2 s, niente al primo
@@ -10291,6 +10295,76 @@ solo scrivendone il nome.
   server risponde subito da quelli tenuti.
 - TASK-214 B2 può chiedere i paesi vicini allo stesso endpoint.
 
+## ADR-0204 — Con «Paddle», i laghi e le spiagge nella ricerca di «Another place»: dall'elenco dentro l'app, sopra i luoghi trovati
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-240), dentro la **richiesta dell'utente** del 2026-10-05: con
+«Paddle», in «Draw», «Another place» deve far scegliere anche i laghi e i
+mari («lago di Levico Terme» dava solo «Via al Lago»). La regola delle
+parole, il mare, la distanza sui laghi piccoli e il testo del campo sono
+**scelte dell'utente** del 2026-10-05, proposte una alla volta e tutte
+confermate (`tasks/TASK-240.md`, «Scelte dell'utente»). Numero dato dal
+coordinatore.
+
+**Contesto**: la ricerca della partenza chiede i luoghi all'API
+(Geoapify) o a Photon, che per un lago rispondono con vie e paesi. L'app
+ha già l'elenco dei laghi su cui il motore pagaia, con un punto sulla riva
+e la distanza a cui le forme ci stanno (`WATER_SPOTS`, TASK-233,
+ADR-0196), e il server ha l'acqua solo di quelli. La ricerca di «Explore»
+(`searchSpots`) vuole ogni parola scritta nel nome: «lago di Levico Terme»
+non trova niente, per «Terme».
+
+**Decisione**:
+
+1. **I laghi vengono dall'elenco dentro l'app, non dalla ricerca in
+   rete.** `PlaceSearch` riceve `suggest`, una funzione che dà subito i
+   luoghi che l'app conosce per il testo scritto; li mostra sopra quelli
+   trovati, senza ripetere un'etichetta uguale. Senza `suggest` è quella
+   di prima: `App.tsx` la passa solo con «Paddle». Niente API, niente
+   server, nessuna richiesta in più.
+2. **Il testo si legge come un indirizzo** (`findSpots`, in
+   `src/paddle/placeSpots.ts`): le parole scritte che non cominciano
+   nessuna parola di nessun nome si ignorano; le parole **comuni**, quelle
+   in più del 2% dei nomi (oggi «lago», «di», «del», «san», «d», «della»),
+   non servono a trovare un lago quando un'altra parola, di almeno 3
+   lettere, lo dice. Con sole parole comuni vale la regola di «Explore»
+   (tutte nel nome), e se una parola è stata ignorata non si propone
+   niente: «via al lago» non è un lago. Le parole comuni si contano
+   sull'elenco, non stanno scritte a mano.
+3. **Al massimo tre laghi**, il più vicino per primo; di un lago lungo il
+   punto della riva più vicino alla posizione (`byName`).
+4. **Un lago scelto è un luogo con la sua distanza** (`SpotPlace`): se le
+   sue forme stanno a meno di 2 km e la distanza scritta è più lunga, il
+   campo scende a quella (`distanceOnSpot`). Non sale mai, e un lago da
+   2 km non la tocca: 2 km è la distanza a cui è stato provato, non la più
+   lunga che tiene.
+5. `searchSpots` e «Explore» non cambiano: lì si sceglie fra laghi, e una
+   parola in più è un errore di battitura da far vedere.
+
+**Alternative scartate**:
+
+- **Aggiungere i laghi a `GET /places`**: vuole l'elenco anche nell'API e
+  un aggiornamento del server, e i laghi arriverebbero dopo 2–3 s come le
+  vie; l'elenco è già nel telefono.
+- **Avvolgere `find`** (la funzione che cerca) invece di un prop nuovo: i
+  laghi comparirebbero solo quando la rete risponde, e sparirebbero con un
+  errore di rete.
+- **Allentare `searchSpots`** per tutti: cambierebbe «Explore», che è di
+  TASK-233 e ha i suoi testi («No lake or beach matches…»).
+- **Un elenco scritto a mano di parole da ignorare** («terme», «via»,
+  «lido»): non finisce mai, e cambia con la lingua.
+- **Chiedere a Photon solo i laghi** (`osm_tag=natural:water`): troverebbe
+  anche i laghi fuori elenco, di cui il server non ha l'acqua.
+
+**Conseguenze**:
+
+- Una via che contiene una parola del nome di un lago mostra quel lago
+  sopra le vie («via Monte Grappa»: due laghi «Monte…»). Solo con
+  «Paddle», e al massimo tre righe.
+- Il mare resta alle due spiagge dell'elenco; le altre partenze sul mare
+  sono le vie e i paesi di prima, e dipendono dall'acqua che il server ha
+  o riesce a scaricare.
+- Un elenco nuovo (`lakes.json` rifatto) cambia da solo le parole comuni.
+
 ## ADR-0202 — Spostare la figura sull'acqua: l'utente dice «vicino a dove», il motore decide il posto
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-238 ·
@@ -10419,6 +10493,18 @@ dell'utente: «sì toglilo anche da VoiceOver»): il punto 3 non vale più.
 L'etichetta del post è «{user} in {city}: {title}. {facts}.», senza
 punteggio, in inglese e nelle quattro tabelle (`de`, `es`, `fr`, `it`).
 Chi ascolta sente quello che gli altri vedono.
+
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte C; scelta
+dell'utente: «togli il punteggio anche dal post da condividere»): del
+punto 4 non vale più «nel post da condividere». Nel post di «Share»
+(ADR-0194) i risultati sono tre, «Distance», «Time», «Pace»: «Score» non
+si può accendere, non è sull'immagine e, poiché il testo per Strava è
+fatto dei risultati accesi, non va nemmeno là (deciso dall'agente su
+delega: un punteggio nel testo e non nel post direbbe due cose diverse).
+`PostRun` non porta più il punteggio e `postOfTrack` non lo riceve; la
+chiave «Score» esce dalle quattro tabelle, «Score {score}» resta per «My
+activities» e i disegni del «Profile». A fine corsa, in «My activities» e
+sotto un disegno aperto dal «Profile» il punteggio si vede come prima.
 
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
@@ -10750,3 +10836,97 @@ di TASK-236 nelle tabelle, che il test delle tabelle rifiuta); le yarde
 - Parte B: chi scrive una distanza usa `src/units/format.ts` e chiama
   `useUnits()`; la distanza di «Draw» in miglia (passi e limiti dentro
   `DISTANCE_LIMITS_M`) è una scelta ancora da fare lì.
+
+## ADR-0205 — «Help», «Terms», «Privacy»: i testi come dati in inglese e italiano, una pagina sopra «Settings», e le bozze che dicono di esserlo
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-184), dentro le **scelte dell'utente** del 2026-10-05: «Help» è una
+mini guida; «Terms» e «Privacy» sono bozze, segnate come bozze finché non
+le approva; chi gestisce Sgrava e l'indirizzo a cui scrivere restano
+segnaposto, `[name]` e `[contact email]`. Numero dato dal coordinatore.
+
+**Contesto**: le tre righe di «About» erano in «Settings» con «Soon»
+(ADR-0145). Sono testi lunghi, due dei quali legali, e l'app ha cinque
+lingue con una regola (ADR-0172): ogni testo è scritto in inglese dentro
+`t()`, e l'inglese è la chiave delle tabelle.
+
+**Decisione**:
+
+1. **I testi sono dati, non chiamate a `t()`**: `src/about/content/en.ts`
+   e `it.ts`, ognuno con i tre testi (`AboutDocument`: titolo, `draft`,
+   data, sezioni con titolo, paragrafi ed elenchi). Un paragrafo intero
+   come chiave di quattro tabelle non si legge e non si corregge; e una
+   virgola cambiata in inglese farebbe sparire le traduzioni.
+   `aboutDocument(id, language)` sceglie il file della lingua dell'app.
+2. **Inglese e italiano, per ora**: l'italiano perché l'utente deve
+   leggere e approvare le bozze; tedesco, spagnolo e francese dopo
+   l'approvazione, per non tradurre tre volte un testo che cambierà. Con
+   quelle lingue il testo è in inglese (come ogni testo senza traduzione,
+   ADR-0172) e VoiceOver lo sa (`accessibilityLanguage`). Un test
+   controlla che l'italiano abbia le sezioni dell'inglese, blocco per
+   blocco.
+3. **Le frasi corte passano da `t()`**: i nomi delle righe (c'erano già),
+   «Draft — not final yet.» e «Last updated: {date}», nelle cinque lingue.
+   La data sta nel testo, scritta come la scrive la sua lingua.
+4. **Una pagina, non una riga che si apre sotto**: sono testi da leggere,
+   lunghi fino a diciotto sezioni. `ProfilePage` ha tre valori nuovi
+   (`help`, `terms`, `privacy`) e `ProfileScreen` mostra `AboutScreen`
+   **sopra** «Settings», con il suo «←», il suo titolo e il suo scorrere;
+   «Settings» resta montata sotto, nascosta (`display: none`, come la
+   lista di «Find friends» sotto un profilo). Così «←» la ritrova nel
+   punto in cui era, con le righe aperte ancora aperte. `ProfileLayer.tsx`
+   non cambia: tiene già la pagina qualunque sia.
+5. **Una bozza lo dice prima di tutto**: un riquadro in cima con «Draft —
+   not final yet.» e la data, con il colore `warning` (il giallo è del
+   percorso). Lo decide `draft` nel testo: l'approvazione dell'utente è
+   cambiare quel campo, non il codice della pagina.
+6. **I segnaposto sono testo fra parentesi quadre**, uguali in ogni
+   lingua, e la pagina li mette in evidenza: `[name]`, `[contact email]`,
+   `[governing law]`, e le basi giuridiche in «Privacy». Un test rifiuta
+   in tutti i testi un indirizzo email, un link o un numero di telefono, e
+   controlla che chi offre l'app e chi è titolare dei dati sia `[name]`.
+7. **«Privacy» dice solo quello che documenti e codice confermano**
+   (`UI.md` «Cosa esce dal telefono», `DATABASE.md`, `API.md`,
+   `DEPLOY.md`, ADR-0101, 0102, 0114, 0150, 0156, 0177, 0198, le
+   migrazioni). Quello che non si è potuto verificare non è scritto: è
+   nell'elenco dei punti aperti di `tasks/TASK-184.md`. Esempio: la
+   tabella `generated_routes` di `DATABASE.md` non esiste nelle migrazioni
+   (TASK-092 è da fare), e la bozza non parla di percorsi tenuti.
+8. **La guida usa le parole del sito** (`site/content.js`, TASK-237), che
+   è la guida dell'app sul web: stessi fatti, stesse frasi dove si può.
+9. **Nel testo italiano i nomi di pagine e pulsanti sono quelli che l'app
+   in italiano mostra oggi**: «Impostazioni», «Salva», ma ancora «Feed»,
+   «Draw», «Start», «Pause» (TASK-210 non li ha tradotti tutti).
+
+**Alternative scartate**:
+
+- **I testi nelle tabelle di `t()`**: punto 1.
+- **Le righe che si aprono sotto**, come «Language» (la riserva del task):
+  un testo di diciotto sezioni dentro una riga allunga «Settings» di
+  molte schermate e mette «Log out» e «Delete account» in fondo a tutto.
+- **Lo stesso scorrere di «Profile»** per il testo: le righe di «About»
+  sono in fondo a «Settings», e il testo si aprirebbe alla fine; riportare
+  lo scorrere a mano, all'andata e al ritorno, non si può provare senza un
+  telefono.
+- **Una pagina web** aperta nel browser o in una WebView: serve un
+  indirizzo pubblicato e la rete, e il sito è di un altro task; senza rete
+  la guida non si aprirebbe.
+- **Markdown** con una libreria che lo mostra: una dipendenza nuova per
+  titoli, paragrafi ed elenchi.
+- **Un nome e un indirizzo veri**, o inventati: scelta dell'utente.
+- **Scrivere nella privacy quello che di solito si scrive** (basi
+  giuridiche, trasferimenti, tempi di risposta) senza una fonte: un testo
+  legale con fatti inventati è peggio di uno con un buco dichiarato.
+
+**Conseguenze**:
+
+- Le due bozze non sono approvate: prima dell'App Store l'utente riempie
+  i segnaposto, le fa leggere a un legale e mette `draft: false`.
+- Chi cambia cosa l'app manda o tiene (TASK-208 B: descrizione, foto e
+  tag dei disegni; TASK-092: i percorsi generati; la ricerca dalla
+  rubrica; il servizio di posta) aggiorna anche `src/about/content/`, in
+  tutte e due le lingue.
+- Quando TASK-210 traduce le pagine che mancano, i nomi nel testo
+  italiano vanno riallineati.
+- `SettingsPage` chiede a chi la mostra di aprire i testi (`onAbout`);
+  restano «Soon» solo le due righe di «Notifications» (TASK-185).
+- Solo app: nessuna dipendenza, niente server.

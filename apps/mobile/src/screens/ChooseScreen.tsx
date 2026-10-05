@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HeartBadge } from "../intro/HeartBadge";
-import { PlaceSearch } from "../places/PlaceSearch";
+import { PlaceSearch, type SuggestPlaces } from "../places/PlaceSearch";
 import type { LatLon } from "@shaperoute/shared-types";
 
 import type { Place } from "../places/photon";
@@ -50,6 +50,11 @@ type Props = {
   onPlace: (place: Place) => void;
   /** The GPS position when known: the search prefers places around it. */
   near: LatLon | null;
+  /** Places the search offers by itself, above the ones it finds: the lakes
+   * and beaches of «Paddle» (TASK-240). */
+  suggest?: SuggestPlaces;
+  /** What the empty search field says, when not «City or street». */
+  searchHint?: string;
   mapError: string | null;
   /** Shape and distance (RouteChoice). */
   children: ReactNode;
@@ -73,6 +78,8 @@ export function ChooseScreen({
   searching,
   onPlace,
   near,
+  suggest,
+  searchHint,
   mapError,
   children,
   footer,
@@ -125,7 +132,14 @@ export function ChooseScreen({
               <Text style={styles.link}>Open Settings</Text>
             </Pressable>
           )}
-          {searching && <PlaceSearch onSelect={onPlace} near={near} />}
+          {searching && (
+            <PlaceSearch
+              onSelect={onPlace}
+              near={near}
+              suggest={suggest}
+              placeholder={searchHint}
+            />
+          )}
         </View>
         {mapError && <MapError reason={mapError} />}
         {children}

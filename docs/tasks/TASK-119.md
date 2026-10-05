@@ -1,6 +1,6 @@
 # TASK-119 — Reazioni ai disegni pubblicati, e il super like di Sgrava
 
-**Stato**: In corso — parte A (API) in `main` (PR #301, `3c94690`, 2026-10-04), non sul server; parte B (app) fatta, nella sua PR (2026-10-05); poi server, pubblicazione e la prova sull'iPhone
+**Stato**: In lavorazione: parte A Done (merge #301, `3c94690`, 2026-10-04), parte B Done (merge #309, `0e5ff55`, 2026-10-05); restano il server (`0015`), la pubblicazione e la prova sull'iPhone con due account
 **Fase**: 4 · **Branch**: `feat/TASK-119-a-reactions-api` (parte A),
 `feat/TASK-119-b-reactions-app` (parte B)
 **Dipende da**: TASK-117 (i disegni pubblicati) · TASK-120 (i commenti) ·
@@ -239,7 +239,7 @@ la migrazione e l'ok dell'utente (lo coordina il coordinatore).
 e `App.tsx`; **TASK-231** («Condivisione post e modifica con emoji») può
 toccare anche `DrawingCard.tsx`: accordarsi con la sua sessione.
 
-**Parte B, l'app** (2026-10-05, branch `feat/TASK-119-b-reactions-app`):
+**Parte B, l'app** (2026-10-05, PR #309, merge `0e5ff55`):
 `src/api/reactions.ts` (le tre chiamate), `reactionsDoor.ts` (le reazioni
 con l'account, da `ProfileLayer`), `useDrawingReactions.ts` (le emoji
 ottimiste, una per volta, indietro a un rifiuto; il super like aspetta
@@ -263,11 +263,10 @@ corretto (ADR-0193, punto 14). **Non provato con le dita**: il simulatore
 non era concesso ai tocchi, il doppio tocco e la tastiera vera sono della
 prova sull'iPhone.
 
-**Testi**: quelli della proposta (punto 5 di «Cosa fare»), che l'utente
-ha confermato il 2026-10-05 nella sessione della parte A («confermo i
-testi», riferito da quella sessione), più uno solo per VoiceOver, «{count}
-reaction» / «{count} reactions», chiesto all'utente nella sessione della
-parte B e ancora da confermare prima del merge.
+**Testi**: confermati dall'utente il 2026-10-05: quelli della proposta
+(punto 5 di «Cosa fare») nella sessione della parte A («confermo i
+testi»), e quello in più per VoiceOver, «{count} reaction» / «{count}
+reactions», nella sessione della parte B («ok»).
 
 **Dopo il merge**: il server vuole la `0015` (e la `0014` di TASK-208 A)
 con l'ok dell'utente, poi la pubblicazione; finché il server non ha le

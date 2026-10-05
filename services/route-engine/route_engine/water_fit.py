@@ -19,6 +19,11 @@ vertex, then goes on along the outline. Outline and pieces are placed
 together, all in the band; the stretches between them are the route's
 `walks`, paddled with the pen up, and count in its distance.
 
+A shape may be wanted somewhere (`near`, TASK-238): the search is the same,
+but the places looked at are those nearest that point, and every metre from
+it costs (NEAR_WEIGHT). The shape is still where it fits: all in the band,
+with a shore start reachable on foot.
+
 Metres on the plane tangent at the requested start, (lat, lon) in and out.
 """
 
@@ -88,6 +93,18 @@ CENTRES_ENOUGH = 200
 CELL_SAFETY = 1.25
 # Placements kept from each scale and rotation, to be checked exactly.
 PLACEMENTS_PER_TRY = 3
+# A shape wanted somewhere (`near`): each metre between its centre and that
+# point costs NEAR_WEIGHT / asked, five times a metre of leg out and back.
+# The place comes first, then the largest shape and the shortest legs there.
+# The first NEAR_FREE_M cost nothing: a finger on the map cannot tell them,
+# and a shape is not made smaller or turned to be a few metres nearer.
+NEAR_WEIGHT = 10.0
+NEAR_FREE_M = 30.0
+# Its placements kept from each scale and rotation are the nearest that
+# point, closer to each other than those of the free search: the nearest
+# may have no clear leg to the shore, and the next should not be far.
+NEAR_PLACEMENTS_PER_TRY = 6
+NEAR_CENTRES_ENOUGH = 50
 # Shore points tried as the start of one placement, nearest first.
 STARTS_PER_PLACEMENT = 12
 # A leg starts on the edge of the water: it may run this close to land or
@@ -118,6 +135,9 @@ class WaterRoute:
     # the route gets from the shore.
     nearest_land_m: float
     farthest_shore_m: float
+    # The centre of the shape as placed: the mean of the vertices of its
+    # outline. Asked back as `near`, the shape stays where it is.
+    centre: LatLon
     # A shape in pieces (TASK-226): [from, to] indices into `points`, both
     # included, of each stretch paddled without drawing, from the outline
     # to a piece, from one piece to the next and back to the outline, in
@@ -311,10 +331,18 @@ def _grid(band: BaseGeometry, reach_m: float, cell: float) -> _Grid | None:
     return _Grid(x0, y0, cell, mask, rows_in, cols_in)
 
 
-def _fitting_centres(grid: _Grid, outline: np.ndarray, reach_m: float) -> np.ndarray:
+def _fitting_centres(
+    grid: _Grid,
+    outline: np.ndarray,
+    reach_m: float,
+    wanted: _Wanted | None = None,
+) -> np.ndarray:
     """Centres (k, 2) within `reach_m` of the start where every point of
     `outline` (around 0, 0) falls on a band cell: nearest the start first,
-    CENTRES_CHUNK at a time, until CENTRES_ENOUGH are found."""
+    CENTRES_CHUNK at a time, until CENTRES_ENOUGH are found.
+
+    With `wanted`, nearest that point first, and only those from which the
+    shore can be reached (`_Wanted.reached`), until NEAR_CENTRES_ENOUGH."""
     cells = np.round(outline / grid.cell).astype(int)
     _, first = np.unique(cells, axis=0, return_index=True)
     offsets = cells[np.sort(first)]  # in the order of the outline
@@ -324,8 +352,11 @@ def _fitting_centres(grid: _Grid, outline: np.ndarray, reach_m: float) -> np.nda
     centre = grid.centre(rows, cols)
     away = np.hypot(centre[:, 0], centre[:, 1])
     near = away <= reach_m
+    if wanted is not None:
+        away = np.hypot(*(centre - wanted.at).T)
     order = np.argsort(away[near], kind="stable")
     rows, cols = rows[near][order], cols[near][order]
+    enough = CENTRES_ENOUGH if wanted is None else NEAR_CENTRES_ENOUGH
     found: list[np.ndarray] = []
     count = 0
     for begin in range(0, len(rows), CENTRES_CHUNK):
@@ -335,9 +366,12 @@ def _fitting_centres(grid: _Grid, outline: np.ndarray, reach_m: float) -> np.nda
             rows[begin : begin + CENTRES_CHUNK],
             cols[begin : begin + CENTRES_CHUNK],
         )
-        found.append(grid.centre(r_fit, c_fit))
-        count += len(r_fit)
-        if count >= CENTRES_ENOUGH:
+        fit = grid.centre(r_fit, c_fit)
+        if wanted is not None:
+            fit = fit[wanted.reached(grid, fit, outline)]
+        found.append(fit)
+        count += len(fit)
+        if count >= enough:
             break
     return np.concatenate(found) if found else np.zeros((0, 2))
 
@@ -363,18 +397,91 @@ def _join_costs(grid: _Grid, access: np.ndarray, distance_m: float) -> np.ndarra
     shore point reachable on foot within MOVE_MAX_M of the start, and the
     move to that point (LEG_WEIGHT, MOVE_WEIGHT). inf off the band, and
     everywhere when no such point is (ADR-0161)."""
-    costs = np.full(grid.mask.shape, np.inf)
-    near = access[np.hypot(access[:, 0], access[:, 1]) <= MOVE_MAX_M]
-    if not len(near):
-        return costs
-    tree = shapely.STRtree(shapely.points(near))
-    cells = shapely.points(grid.centre(grid.rows, grid.cols))
-    (found, nearest), legs = tree.query_nearest(cells, return_distance=True)
-    moves = np.hypot(near[nearest, 0], near[nearest, 1])
-    costs[grid.rows[found], grid.cols[found]] = (
+    legs, moves = _shore_legs(grid, access)
+    costs: np.ndarray = (
         LEG_WEIGHT * 2 * legs / distance_m + MOVE_WEIGHT * moves / 1000.0
     )
     return costs
+
+
+def _shore_legs(grid: _Grid, access: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """For each band cell of `grid`, the metres to the nearest shore point
+    reachable on foot within MOVE_MAX_M of the start, and the metres from
+    the start to that point: inf off the band, and everywhere when no such
+    point is."""
+    legs = np.full(grid.mask.shape, np.inf)
+    moves = np.full(grid.mask.shape, np.inf)
+    near = access[np.hypot(access[:, 0], access[:, 1]) <= MOVE_MAX_M]
+    if not len(near):
+        return legs, moves
+    tree = shapely.STRtree(shapely.points(near))
+    cells = shapely.points(grid.centre(grid.rows, grid.cols))
+    (found, nearest), away = tree.query_nearest(cells, return_distance=True)
+    legs[grid.rows[found], grid.cols[found]] = away
+    moves[grid.rows[found], grid.cols[found]] = np.hypot(
+        near[nearest, 0], near[nearest, 1]
+    )
+    return legs, moves
+
+
+def _on_cells(
+    grid: _Grid, values: np.ndarray, centres: np.ndarray, outline: np.ndarray
+) -> np.ndarray:
+    """The least of `values`, one for each cell of `grid`, on the cells an
+    `outline` (around 0, 0) passes when placed at each of `centres`: looked
+    at on about 48 of its points."""
+    sample = outline[:: max(1, len(outline) // 48)]
+    xs = centres[:, None, 0] + sample[None, :, 0]
+    ys = centres[:, None, 1] + sample[None, :, 1]
+    rows_n, cols_n = values.shape
+    cols = np.clip(np.floor((xs - grid.x0) / grid.cell).astype(int), 0, cols_n - 1)
+    rows = np.clip(np.floor((ys - grid.y0) / grid.cell).astype(int), 0, rows_n - 1)
+    least: np.ndarray = values[rows, cols].min(axis=1)
+    return least
+
+
+@dataclass(frozen=True)
+class _Wanted:
+    """Where the shape is wanted (`near` of fit_shape), in metres around
+    the start, and the leg from each cell of the grid to the shore
+    (`_shore_legs`)."""
+
+    at: np.ndarray
+    legs: np.ndarray
+
+    def reached(
+        self, grid: _Grid, centres: np.ndarray, outline: np.ndarray
+    ) -> np.ndarray:
+        """Which of `centres` place `outline` within APPROACH_MAX_M of a
+        shore point reachable on foot: the others have no start."""
+        if not len(centres):
+            return np.zeros(0, dtype=bool)
+        reached: np.ndarray = (
+            _on_cells(grid, self.legs, centres, outline) <= APPROACH_MAX_M
+        )
+        return reached
+
+    def cost(self, centre: np.ndarray, distance_m: float) -> float:
+        """What a shape placed at `centre` costs for being away from the
+        point it is wanted at (NEAR_WEIGHT, NEAR_FREE_M)."""
+        away = max(0.0, math.dist(centre, self.at) - NEAR_FREE_M)
+        return NEAR_WEIGHT * away / distance_m
+
+
+def _nearest(
+    wanted: _Wanted, centres: np.ndarray, keep: int, apart_m: float
+) -> list[tuple[float, np.ndarray]]:
+    """Up to `keep` of `centres`, at least `apart_m` from each other, the
+    nearest the point the shape is wanted at: (metres from it, centre)."""
+    away = np.hypot(*(centres - wanted.at).T) if len(centres) else np.zeros(0)
+    picked: list[tuple[float, np.ndarray]] = []
+    for i in np.argsort(away, kind="stable"):
+        centre = centres[i]
+        if all(math.dist(centre, other) >= apart_m for _, other in picked):
+            picked.append((float(away[i]), centre))
+            if len(picked) >= keep:
+                break
+    return picked
 
 
 def _promising(
@@ -392,13 +499,7 @@ def _promising(
     or the move."""
     if not len(centres):
         return []
-    sample = outline[:: max(1, len(outline) // 48)]
-    xs = centres[:, None, 0] + sample[None, :, 0]
-    ys = centres[:, None, 1] + sample[None, :, 1]
-    rows_n, cols_n = join.shape
-    cols = np.clip(np.floor((xs - grid.x0) / grid.cell).astype(int), 0, cols_n - 1)
-    rows = np.clip(np.floor((ys - grid.y0) / grid.cell).astype(int), 0, rows_n - 1)
-    costs = join[rows, cols].min(axis=1)
+    costs = _on_cells(grid, join, centres, outline)
     away = np.hypot(centres[:, 0], centres[:, 1])
     picked: list[tuple[float, np.ndarray]] = []
     for i in np.lexsort((away, costs)):
@@ -554,6 +655,7 @@ def fit_shape(
     name: str = "shape",
     free_rotation: bool = False,
     pieces: Sequence[Sequence[XY]] = (),
+    near: LatLon | None = None,
 ) -> WaterRoute:
     """Place a normalized closed `shape` on the water of `area` so that it
     lies in the band, with a shore start reachable on foot, at the lowest
@@ -565,6 +667,13 @@ def fit_shape(
     on its own with the pen up between them (`WaterRoute.walks`). At full
     size the outline, the pieces and the stretches with the pen up are
     together as long as the distance asked.
+
+    `near` is where the centre of the shape is wanted (`WaterRoute.centre`
+    of a route before, moved): the shape is placed at the nearest place to
+    it where it fits, every metre from it at NEAR_WEIGHT in the cost (but
+    the first NEAR_FREE_M). The
+    band, the shore start and its reach from the start of `area` are those
+    of any placement.
 
     NoWaterError when there is no band within reach of the start;
     WaterFitError when the shape does not fit in it, or fits only outside
@@ -590,6 +699,10 @@ def fit_shape(
     if grid is None:
         raise WaterFitError(_too_small(name, distance_m))
     join = _join_costs(grid, area.access, distance_m)
+    wanted: _Wanted | None = None
+    if near is not None:
+        at = latlon_to_local_array(area.origin, np.array([near], dtype=float))[0]
+        wanted = _Wanted(at, _shore_legs(grid, area.access)[0])
     # Both legs, as a share of the distance, are at least this long wherever
     # the shape is: at sea 200 m each (ADR-0161).
     legs = 2 * _shortest_leg(area) / distance_m
@@ -617,10 +730,19 @@ def fit_shape(
             if parts is not None:
                 tour = tuple(_placed(p, full * level, angle) for p in parts.tour)
                 dense = np.concatenate([dense, *(_densified(p, cell) for p in tour)])
-            centres = _fitting_centres(grid, dense, reach + radius * level)
-            for _, centre in _promising(
-                grid, join, centres, outline, PLACEMENTS_PER_TRY, max(5 * cell, 50.0)
-            ):
+            centres = _fitting_centres(grid, dense, reach + radius * level, wanted)
+            if wanted is None:
+                tried = _promising(
+                    grid,
+                    join,
+                    centres,
+                    outline,
+                    PLACEMENTS_PER_TRY,
+                    max(5 * cell, 50.0),
+                )
+            else:
+                tried = _nearest(wanted, centres, NEAR_PLACEMENTS_PER_TRY, 2 * cell)
+            for _, centre in tried:
                 if parts is None:
                     placement = _Placement(level, angle, centre, outline + centre)
                 else:
@@ -642,9 +764,13 @@ def fit_shape(
                 start = _start_on_shore(area, placement, distance_m)
                 if start is None:
                     continue
+                cost = start[0]
+                if wanted is not None:
+                    cost += wanted.cost(centre, distance_m)
                 found = _Found(
                     placement,
-                    *start,
+                    cost,
+                    *start[1:],
                     line.length + placement.extra_m + 2 * start[4],
                 )
                 if best_any is None or found.cost < best_any.cost:
@@ -723,6 +849,7 @@ def _water_route(area: WaterArea, found: _Found) -> WaterRoute:
         cost=found.cost,
         nearest_land_m=float(area.dry.distance(LineString(placement.outline))),
         farthest_shore_m=_farthest(line, area.shore),
+        centre=local_to_latlon(area.origin, *map(float, placement.centre)),
         walks=walks,
     )
 
@@ -791,9 +918,11 @@ def plan_on_water(
     free_rotation: bool = False,
     bbox: BBox | None = None,
     pieces: Sequence[Sequence[XY]] = (),
+    near: LatLon | None = None,
 ) -> tuple[WaterRoute, WaterArea]:
     """The whole plan from a request: the water of `water_bbox` (or of
-    `bbox`, the area some data cover), then `fit_shape`."""
+    `bbox`, the area some data cover), then `fit_shape`. The water is that
+    around `start` with `near` too: the shape stays within reach of it."""
     area_bbox = (
         bbox if bbox is not None else water_bbox(start, shape, distance_m, pieces)
     )
@@ -805,5 +934,6 @@ def plan_on_water(
         name=name,
         free_rotation=free_rotation,
         pieces=pieces,
+        near=near,
     )
     return route, area

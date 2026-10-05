@@ -134,6 +134,17 @@ class RouteRequestBody(BaseModel):
             "the whole route's, the stretches with the pen up included."
         ),
     )
+    # Missing from an app of before TASK-238.
+    near: tuple[float, float] | None = Field(
+        default=None,
+        description=(
+            "On the water (TASK-238), where the centre of the shape is wanted, "
+            "as [lat, lon]: the centre of a result before, moved. The shape is "
+            "placed at the nearest place to it where it fits. With another "
+            "activity, invalid_request."
+        ),
+        examples=[None],
+    )
 
 
 class DirectionBody(BaseModel):
@@ -212,6 +223,15 @@ class RouteResultBody(BaseModel):
             "A distance in whole km where the search found the shape clearly "
             "better drawn, to offer as «Try N km» (TASK-234, ADR-0197); null "
             "without one, in the alternatives and on the water."
+        ),
+    )
+    # Missing from an older API, and in a GPX request from an older app.
+    centre: tuple[float, float] | None = Field(
+        default=None,
+        description=(
+            "On the water, the centre of the shape as placed, as [lat, lon] "
+            "(TASK-238): moved and sent back as the request's near, it moves "
+            "the shape. Null on the roads."
         ),
     )
 

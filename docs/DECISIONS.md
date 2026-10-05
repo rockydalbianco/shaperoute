@@ -10254,6 +10254,76 @@ solo scrivendone il nome.
   server risponde subito da quelli tenuti.
 - TASK-214 B2 può chiedere i paesi vicini allo stesso endpoint.
 
+## ADR-0202 — Spostare la figura sull'acqua: l'utente dice «vicino a dove», il motore decide il posto
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-238 ·
+trascinare la figura col dito è una **scelta dell'utente** (2026-10-05,
+fra tre proposte: quattro pulsanti, quattro frecce, il dito); il resto è
+deciso dall'agente su delega dell'utente. Numero preso come primo libero
+di `AGENTI.md`, detto al coordinatore.
+
+**Contesto**: l'utente: «dai la possibilità nella sezione padel di poter
+spostare la figura un po' più destra sinistro, un po' più vicini alla
+riva». Sull'acqua il posto della forma lo sceglie il motore (ADR-0154,
+ADR-0161): quello dove il tratto dalla riva costa meno. Chi vuole la
+figura davanti a un'altra spiaggia, o più al largo, non aveva modo di
+dirlo. Il principio di `CLAUDE.md` resta: il percorso lo decide il
+motore, mai l'app.
+
+**Decisione**:
+
+1. **Una preferenza, non una coordinata**. La richiesta può avere `near`,
+   il punto dove si vuole il centro della forma; il risultato ha `centre`,
+   dove il motore l'ha messo. L'app manda `centre` più lo spostamento del
+   dito. Il motore mette la forma **nel posto più vicino a `near` in cui
+   ci sta**: stessa fascia, stessi margini dalla riva, stessa partenza
+   raggiungibile a piedi entro 300 m, stessi 2 km dalla partenza chiesta.
+2. **La stessa ricerca**, non una seconda: `fit_shape(..., near=)` guarda
+   i posti più vicini a `near` invece dei più comodi dalla riva, e mette
+   nel costo i metri di distanza da lì (`NEAR_WEIGHT = 10` per metro sulla
+   distanza chiesta: il posto conta più del tratto dalla riva, che pesa 2
+   all'andata e 2 al ritorno). Scala e rotazione le cerca come sempre.
+3. **I primi 30 m non costano** (`NEAR_FREE_M`). Senza, la forma si
+   rimpiccioliva dell'11% per stare 20 m più vicina al punto chiesto, e si
+   inclinava da −15° a +15° per 10 m. Un dito sulla mappa non distingue
+   30 m; una forma più piccola si vede.
+4. **Solo sull'acqua**. Su strada `near` è `invalid_request`: lì il posto
+   lo trova la ricerca fra le strade, e spostare la forma a mano
+   cambierebbe quanto il percorso le somiglia.
+5. **`start` non cambia** fra uno spostamento e l'altro: è la partenza
+   chiesta all'inizio. Così l'acqua è lo stesso file della cache, e la
+   figura non si allontana a passi oltre i 2 km da dove l'utente è.
+6. **Un percorso spostato non si tiene** fra gli esempi (`route_store`): è
+   di chi l'ha spostato, come il contorno di un'immagine.
+7. **I campi sono facoltativi** nel contratto. Un'app di prima non manda
+   `near`; un'API di prima lo rifiuta, e l'app offre lo spostamento solo
+   se il risultato ha `centre`.
+
+**Alternative scartate**: mandare uno spostamento in metri rispetto al
+posto automatico (il motore dovrebbe piazzare due volte, e dopo il primo
+spostamento «da dove» non è più il posto automatico); far calcolare il
+centro all'app dai punti del percorso (i tratti dalla riva e i pezzi a
+penna alzata lo spostano: chiesta dov'è, la forma si muoverebbe);
+rispettare il punto a ogni costo (porta la forma sulla terra o fuori
+dalla fascia: la sicurezza dei margini è una scelta dell'utente del
+2026-10-03); far scegliere all'app anche scala e rotazione (è TASK-232, e
+resta del motore); tenere fissi scala e rotazione di prima (in una baia
+stretta la forma non ci starebbe più, e la richiesta dovrebbe portarli).
+
+**Conseguenze**:
+
+- Uno spostamento costa 1–6 s sull'acqua vera, contro 0,5–1,7 s del posto
+  automatico: il costo del posto toglie potature alla ricerca.
+- La forma può fermarsi prima di dove è stata lasciata, e uscirne più
+  piccola (entro il ±10% della distanza) o inclinata diversamente: l'app
+  lo deve dire, non nasconderlo (parte B).
+- Senza `near` il motore è quello di prima: i 32 esempi della canoa
+  dentro l'app, ridisegnati sull'acqua del server, sono identici. Cambia
+  solo l'impronta del motore (`paddleExamples.json`, `engine.zip`), e sul
+  server vanno ridisegnati gli esempi tenuti (`draw_examples`).
+- Gli esempi di «Explore» con «Paddle» non hanno `centre`: per spostarli
+  serve ridisegnarli o chiedere il percorso al server (parte B).
+
 ## ADR-0207 — Niente punteggio sopra il disegno dei post del «Feed»
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-241 ·

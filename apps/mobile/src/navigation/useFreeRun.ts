@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { loadVoices, speaking } from "../voice/voiceChoice";
 import { FREE_ROUTE, kmAnnouncement, wholeKm } from "./freeRun";
+import { kmComparison } from "./kmCompare";
 import { controlRun, type RunSession } from "./runControl";
 import { emptyTrack, type Track } from "./trackRecorder";
 import { startRun } from "./trackStore";
@@ -20,7 +21,8 @@ export type FreeRunState =
  * Records a run without a route while `active` (TASK-149): the phone's
  * position, with the screen on or in pocket mode, into the run file of
  * TASK-112. No directions: the voice says each kilometre, with the time
- * and the pace. The countdown, «Pause» and the pause by standing still are
+ * and the pace, and from the second how it went against the one before
+ * (TASK-217). The countdown, «Pause» and the pause by standing still are
  * runControl's (TASK-169). The position never leaves the phone.
  */
 export function useFreeRun(active: boolean): FreeRunState {
@@ -86,12 +88,13 @@ export function useFreeRun(active: boolean): FreeRunState {
           const km = wholeKm(track);
           if (km > saidKm) {
             saidKm = km;
-            play([
-              {
-                say: kmAnnouncement(km, track, speaking().language),
-                vibrate: false,
-              },
-            ]);
+            const { language } = speaking();
+            play([{ say: kmAnnouncement(km, track, language), vibrate: false }]);
+            // Then how it went against the one before (TASK-217).
+            const compared = kmComparison(km, track, language);
+            if (compared !== null) {
+              play([{ say: compared, vibrate: false }]);
+            }
           }
           setState({ status: "running", track, position: fix });
         },

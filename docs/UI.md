@@ -1375,6 +1375,16 @@ corsa, e un percorso senza attività, restano come prima, parola per parola.
   può leggere male «km/h»). Le pause non contano, e una pedalata che
   riprende non ridice i 10 km già detti. L'incitamento dopo i primi 5 km
   in bici non c'è.
+- **Il confronto ogni 10 km** (TASK-217, ADR-0180; scelta dell'utente del
+  2026-10-03), subito dopo la frase dei km, a 20 e a 30 km (a 10 non c'è
+  niente prima): gli ultimi 10 km contro i 10 precedenti, in velocità e
+  **senza numeri**. «The last 10 kilometres were faster than the 10
+  before.» / «… slower …» · «Ultimi 10 chilometri più veloci dei 10
+  precedenti.» / «… più lenti …». Entro 0,5 km/h (compresi): «The last 10
+  kilometres were at the same speed as the 10 before.» · «Ultimi 10
+  chilometri alla stessa velocità dei 10 precedenti.» (proposta
+  dell'agente, **da confermare**: l'utente non l'ha chiesto). «km» è detto
+  per intero, come nella frase dei km. Le pause non contano.
 - **Le svolte 100 m prima** (`RIDE_ANNOUNCE_M`), con la distanza detta
   («In 100 metres, turn left onto Via Roma»), e così i tratti con la bici a
   mano. Perché 100 m: a 20 km/h la svolta arriva in mediana 16 s dopo
@@ -1431,7 +1441,9 @@ misura, e un sensore si collega solo in una build propria (seguiti in
 `tasks/TASK-169.md`). Sotto il banner della svolta restano le due
 etichette piccole di TASK-164: «42% drawn» e il punto cardinale («NE»).
 Con un percorso la voce dice anche ogni km, come senza («1 kilometre.
-Time: … Average pace: …»), dopo la svolta se cadono insieme.
+Time: … Average pace: …»), dopo la svolta se cadono insieme, e dal secondo
+km il confronto col km precedente (TASK-217: «Correre senza percorso»,
+più giù).
 
 **La freccia di direzione** (TASK-164). Mentre si corre il segnaposto sulla
 mappa è una freccia chiara, girata dove si sta andando; la mappa resta col
@@ -1507,7 +1519,7 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   partenza, le vie senza nome per tipo (mai un nome inventato; i nomi
   delle vie mai tradotti), «beside», fuori e di nuovo sul percorso,
   l'arrivo, la pausa da fermi e la ripresa, la penna alzata, ogni km con
-  tempo e passo, la bici a mano (TASK-206), in bici i km ogni 10 con la velocità media e la penna alzata
+  tempo e passo e il confronto col km precedente (TASK-217), la bici a mano (TASK-206), in bici i km ogni 10 con la velocità media e la penna alzata
   pedalando (TASK-216: tedesco, spagnolo e francese da confermare). Il
   numero uno detto a parole dove si accorda («Un chilometro», «un'ora»,
   «eine Minute»). Le frasi sono in `src/voice/`, una tabella per lingua;
@@ -1523,8 +1535,10 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
   anche quelle della bici a mano (TASK-206) in tedesco, spagnolo e francese,
   con «Includes … walking the bike.», e i testi della penna alzata
   (TASK-198). Restano da confermare le frasi nuove della bici (TASK-216) in
-  tedesco, spagnolo e francese, e quelle dei pezzi di una forma (TASK-223)
-  in tutte e cinque le lingue. Le parole del foglio («App
+  tedesco, spagnolo e francese, quelle dei pezzi di una forma (TASK-223)
+  in tutte e cinque le lingue, e quelle del confronto dei km (TASK-217) in
+  tedesco, spagnolo e francese, con «stessa velocità» in bici in tutte e
+  cinque. Le parole del foglio («App
   language», «Language», «Voice», «Default», «Listen», «Done») sono in
   inglese come il resto dello schermo: le traduce TASK-210.
 
@@ -1817,6 +1831,31 @@ dice il tempo e il passo medio: «1 kilometre. Time: 5 minutes 42 seconds.
 Average pace: 5 minutes 42 seconds per kilometre.» (oltre l'ora, ore e
 minuti). Anche in modalità tasca; niente vibrazione, che in navigazione
 vuol dire una svolta. «Keep running» non ripete i km già detti.
+
+**Il confronto col km precedente** (TASK-217, ADR-0180; chiesto e scelto
+dall'utente il 2026-10-03: «ad ogni km di' anche se ha fatto meglio o
+peggio rispetto al km precedente»). Dal secondo km, subito dopo la frase
+del km, con un percorso e senza:
+
+| Caso | Inglese | Italiano |
+|---|---|---|
+| più veloce | «12 seconds faster than the last kilometre.» | «Questo chilometro: 12 secondi meglio del precedente.» |
+| più lento | «8 seconds slower than the last kilometre.» | «Questo chilometro: 8 secondi peggio del precedente.» |
+| entro 2 s, compresi | «Same pace as the last kilometre.» | «Stesso passo del chilometro precedente.» |
+
+Al primo km niente. I secondi sono quelli della colonna «Change» di «Data»
+e della fine corsa (`splits`), interi e con le pause escluse; da un minuto
+in su detti come un tempo («1 minute 15 seconds faster…»). Una corsa che
+riprende non ridice i confronti già detti. Al quinto km viene dopo
+l'incitamento, che chiude la frase del km. Tedesco, spagnolo e francese
+scritti dall'agente, **da confermare**: «12 Sekunden schneller als der
+letzte Kilometer.» / «… langsamer …» / «Gleiches Tempo wie der letzte
+Kilometer.»; «Este kilómetro: 12 segundos más rápido que el anterior.» /
+«… más lento …» / «Mismo ritmo que el kilómetro anterior.»; «Ce
+kilomètre : 12 secondes plus rapide que le précédent.» / «… plus lent …»
+/ «Même allure que le kilomètre précédent.». In bici il confronto è ogni
+10 km («La navigazione», la bici). Le forme con le miglia le aggiunge
+TASK-182 con il resto della voce in miglia.
 
 La traccia è quella della navigazione (ADR-0091), con le stesse regole,
 nello stesso file `current-run.json`, con il percorso vuoto: resta se

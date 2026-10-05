@@ -15,6 +15,7 @@ import { walksOf } from "../route/walks";
 import { loadVoices, speaking } from "../voice/voiceChoice";
 import { wordsOf } from "../voice/words";
 import { kmAnnouncement } from "./freeRun";
+import { comparisonOf } from "./kmCompare";
 import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
 import { moveOnFoot, startOnFoot } from "./onFootVoice";
 import { movePen, startPen } from "./penUp";
@@ -66,7 +67,8 @@ export function play(cues: Cue[]): void {
  * ahead, and its end, without pausing the recording (TASK-206). A route of
  * `activity` "cycling" is followed by bike (TASK-216): turns said further
  * ahead, the kilometres every RIDE_KM_EVERY with the average speed, and the
- * way between the letters ridden.
+ * way between the letters ridden. After the kilometres the voice says how
+ * they went against those before (TASK-217, `kmCompare`).
  * Each fix is said in the voice's language of that moment (TASK-209), so a
  * change on «Data» is heard at once. The position never leaves the phone.
  */
@@ -222,6 +224,11 @@ export function useNavigation(
               ? rideAnnouncement(km, track, language)
               : kmAnnouncement(km, track, language);
             play([{ say: said, vibrate: false }]);
+            // Then how it went against the one before (TASK-217).
+            const compared = comparisonOf(km, track, activity, language);
+            if (compared !== null) {
+              play([{ say: compared, vibrate: false }]);
+            }
           }
         },
       );

@@ -40,6 +40,15 @@ async function settle(): Promise<void> {
   }
 }
 
+/** As `settle`, past the pause before a sample is asked once more. */
+async function settleRetry(): Promise<void> {
+  for (let i = 0; i < 5; i += 1) {
+    await settle();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+  await settle();
+}
+
 type Asked = { shape: string; start: [number, number] };
 
 function requester(answer: (asked: Asked) => RouteOutcome | Promise<RouteOutcome>) {
@@ -141,6 +150,29 @@ test("trouble that is not a shape's stops every town, and the next call goes on"
   ]);
   const sample = townSample(levico);
   expect(sample.status === "ready" && sample.route.shape).toBe("heart");
+});
+
+test("a request the API did not get is asked once more, then it is trouble", async () => {
+  let lost = 1;
+  const { request, asked } = requester(({ shape }) => {
+    if (shape === "heart" && lost > 0) {
+      lost -= 1;
+      return { kind: "unreachable", url: API };
+    }
+    return done;
+  });
+  drawSamples(API, [levico], { request, gapMs: 0, retryMs: 0 });
+  await settleRetry();
+  expect(asked.map((a) => a.shape)).toEqual(["circle", "heart", "heart", "star"]);
+  const sample = townSample(levico);
+  expect(sample.status === "ready" && sample.route.shape).toBe("heart");
+  // Lost twice in a row: no network, and the other town is not asked.
+  lost = 2;
+  drawSamples(API, [pergine, levico], { request, gapMs: 0, retryMs: 0 });
+  await settleRetry();
+  expect(asked.map((a) => a.shape).slice(4)).toEqual(["circle", "heart", "heart"]);
+  const kept = townSample(pergine);
+  expect(kept.status === "ready" && kept.route.shape).toBe("circle");
 });
 
 test("stopped, nothing more is asked; ready towns are never asked again", async () => {

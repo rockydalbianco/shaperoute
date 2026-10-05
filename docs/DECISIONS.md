@@ -9658,7 +9658,9 @@ solo scrivendone il nome.
    degli esempi di una città restano nei 30 POST al minuto di un
    telefono, ADR-0076). Si fermano quando la sezione lascia la pagina, e
    al primo guaio che non è di una forma (zona non scaricata, rete, troppe
-   richieste).
+   richieste). Una richiesta che non arriva all'API si rifà una volta dopo
+   1 s: uvicorn chiude una connessione ferma da 5 s, proprio l'intervallo
+   fra due campioni, e nel simulatore una richiesta su sei andava persa.
 5. **Nell'app**: una fila di schede da scorrere sotto la fila delle
    città, solo con «Near me»: il nome, la distanza, e un campione
    disegnato sulla sua mappa (il cuore, o quello che c'è prima). Un tocco

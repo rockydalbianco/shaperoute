@@ -34,6 +34,8 @@ export const SHOWN_SHAPE: Shape = "heart";
  * of them (EXAMPLES_PER_MINUTE): «Start» and «Export GPX» keep their room.
  */
 export const SAMPLE_GAP_MS = 5000;
+/** Before a sample the API did not get is asked once more. */
+export const RETRY_MS = 1000;
 
 export type TownSample =
   | { status: "waiting" }
@@ -107,7 +109,11 @@ function pause(ms: number, signal: AbortSignal): Promise<void> {
   });
 }
 
-export type SampleOptions = { request?: typeof requestRoute; gapMs?: number };
+export type SampleOptions = {
+  request?: typeof requestRoute;
+  gapMs?: number;
+  retryMs?: number;
+};
 
 /**
  * Draws what `towns` miss, a town after the other, each shape in its turn.
@@ -119,7 +125,11 @@ export type SampleOptions = { request?: typeof requestRoute; gapMs?: number };
 export function drawSamples(
   apiUrl: string,
   towns: readonly Place[],
-  { request = requestRoute, gapMs = SAMPLE_GAP_MS }: SampleOptions = {},
+  {
+    request = requestRoute,
+    gapMs = SAMPLE_GAP_MS,
+    retryMs = RETRY_MS,
+  }: SampleOptions = {},
 ): () => void {
   running?.abort();
   const controller = new AbortController();
@@ -147,17 +157,29 @@ export function drawSamples(
         }
         lastAsked = Date.now();
         show(key, { status: "drawing", route: shownRoute(drawn.get(key) ?? {}) });
-        const outcome = await request(
-          apiUrl,
-          // As a city's examples ask it: the API keeps one answer for both.
-          {
-            shape,
-            distance_m: EXAMPLE_DISTANCE_M,
-            start: town.point,
-            activity: "running",
-          },
-          { signal },
-        );
+        const ask = () =>
+          request(
+            apiUrl,
+            // As a city's examples ask it: the API keeps one answer for both.
+            {
+              shape,
+              distance_m: EXAMPLE_DISTANCE_M,
+              start: town.point,
+              activity: "running",
+            },
+            { signal },
+          );
+        let outcome = await ask();
+        if (outcome.kind === "unreachable" && !signal.aborted) {
+          // Once more: the API closes a connection left idle for 5 s, which
+          // is the gap between two samples, and a request sent on it as it
+          // closes is lost (seen in the simulator: every sixth).
+          await pause(retryMs, signal);
+          if (signal.aborted) {
+            return;
+          }
+          outcome = await ask();
+        }
         if (signal.aborted || outcome.kind === "cancelled") {
           return;
         }

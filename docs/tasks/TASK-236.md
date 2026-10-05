@@ -57,6 +57,12 @@ così il paese si apre con le prime schede pronte.
       scelta (stessa richiesta: il server ne tiene una sola), e si fermano
       quando la sezione lascia la pagina.
 - [x] Test deterministici, senza rete, per API e app.
+- [x] Provato dal vero sul Mac (2026-10-05): API del branch sulla porta
+      8011, app in Expo Go nel simulatore con la posizione a Caldonazzo.
+      «NEARBY TOWNS» mostra Levico, Pergine, Trento, Borgo; i campioni di
+      Levico, Pergine e Trento arrivano sulle schede; il tocco su Trento lo
+      apre come città. Borgo Valsugana no: la sua zona non è sul Mac e
+      Overpass rifiutava la connessione (la scheda resta senza disegno).
 
 ## File toccati
 

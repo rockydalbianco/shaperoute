@@ -501,25 +501,29 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Niente server né pubblicazione senza l'ok dell'utente. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
-- **TASK-183 — Cambiare email e numero di telefono** (ADR-0150; chiesto
-  dall'utente il 2026-10-02 e di nuovo il 2026-10-05, con due scelte: il
-  numero serve a farsi trovare dagli amici che lo hanno già, e l'email
-  cambia subito con la password, senza mail di conferma finché non c'è un
-  servizio di posta). In revisione. **API**: `PUT /me/email` (`email`,
-  `password`; password sbagliata `403`, contata con quelle dell'accesso),
-  `PUT /me/phone` (il numero con il prefisso del paese, tenuto in E.164,
-  `null` lo toglie; non provato e quindi non unico; lo legge solo il
-  proprietario), `User.phone`, migrazione `0016_contact.sql`. **App**: in
-  «Settings» le righe «Change email» e «Phone number» si aprono sotto,
-  nelle cinque lingue. **Aspettano l'utente**: l'aggiornamento del server
-  (migrazione) e poi la pubblicazione, in quest'ordine; i testi nuovi
-  (`tasks/TASK-183.md`, «Esito»). Visto nel simulatore, non su un telefono. Seguiti: la
-  ricerca dalla rubrica (prima va deciso come si prova un numero), la
-  mail di conferma. Poi, nella stessa sessione «Impostazioni», un task
-  per contesto: **TASK-182** (unità), **TASK-184** («Help», «Terms»,
-  «Privacy»), **TASK-185** (gli interruttori delle notifiche).
-
 ## Completato
+
+- **API e app** — TASK-183: cambiare email e numero di telefono da
+  «Settings» (ADR-0150; chiesto dall'utente il 2026-10-02 e di nuovo il
+  2026-10-05; PR #346, merge `a89f086`). Scelte dell'utente: il numero
+  serve a farsi trovare dagli amici che lo hanno già (la ricerca dalla
+  rubrica è un task a parte: prima va deciso come si prova un numero), e
+  l'email cambia subito con la password, senza mail di conferma finché
+  non c'è un servizio di posta. `PUT /me/email` (password sbagliata
+  `403`, contata con quelle dell'accesso), `PUT /me/phone` (prefisso del
+  paese, tenuto in E.164, `null` lo toglie; non provato, quindi non
+  unico; lo legge solo il proprietario), `User.phone`, migrazione
+  `0016_contact.sql`. In «Settings» le righe «Change email» e «Phone
+  number» si aprono sotto, nelle cinque lingue; testi confermati
+  dall'utente. **Sul server** dal 2026-10-05, 10:58Z (ok dell'utente «ok
+  aggiorna il server e pubblica», sessione «Impostazioni»): `main`
+  `ae320d3`, circa 10 secondi di fermo, copia
+  `shaperoute-2026-10-05T1058Z.dump`, immagine di prima
+  `shaperoute-api:before-task183`, `draw_examples` rilanciato alle 10:59Z
+  per il motore di #347 e #349 (`data/draw-examples-2026-10-05-task238.log`).
+  La pubblicazione dell'app è del coordinatore. Visto nel simulatore;
+  **da provare sull'iPhone** (un cambio vero di email e di numero).
+  `tasks/TASK-183.md`.
 
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della

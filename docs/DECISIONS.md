@@ -1048,6 +1048,10 @@ entrare nel catalogo (ADR-0036). Le forme ancora a `no` si riconoscono da
 un occhio, una finestra, una rientranza: servono i tratti interni ripassati
 (TASK-037).
 
+**Aggiornamento 2026-10-05 (TASK-232)**: il limite di 15° è superato da
+ADR-0195, scelta dell'utente: le forme si inclinano fino a 45° e l'app
+gira la mappa perché si vedano dritte. Il cerchio resta libero.
+
 ## ADR-0039 — Tratti ripassati: linee e anelli dentro la forma
 **Stato**: Attiva · 2026-09-24 · deciso dall'agente su delega dell'utente;
 il giudizio dell'utente sui campioni lo sostiene a Trento e Milano, non a
@@ -8955,7 +8959,8 @@ parole) e l'app: la parte B di TASK-223.
 delega dell'utente**). Le quattro forme sono il «sì» dell'utente sui
 campioni; la penna alzata accesa di partenza e la frase della voce sono le
 proposte del task file, applicate sul «continua e pubblica» dell'utente e
-da confermare sul telefono.
+da confermare sul telefono. **Confermate dall'utente** il 2026-10-05
+(«confermo le frasi della voce e la penna accesa»).
 
 8. **Nel catalogo** faccina (`smiley`), fantasmino (`ghost`), ciambella
    (`donut`) e sole (`sun`), in coda a `SHAPES` e al contratto.
@@ -8981,6 +8986,11 @@ da confermare sul telefono.
    le chiavi sono il testo inglese (ADR-0172) e «Sun» è già la domenica.
 14. **I preferiti** tengono i tratti a piedi anche di una forma di
    `PEN_UP_SHAPES`, e la riaprono chiesta con la penna alzata.
+
+**Aggiornamento** (2026-10-05, ADR-0188, TASK-226): la penna alzata delle
+forme a pezzi vale anche sull'acqua, e lì i tratti sono uno in più (il
+ritorno al contorno): al più 9, non 8. I punti 9–11 qui sopra dicono
+com'era prima.
 
 ## ADR-0184 — Il cuore su giallo, segno di Sgrava: il cuore dell'avvio, fermo, in un quadrato giallo, un componente solo
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
@@ -9470,13 +9480,14 @@ peggio del precedente, e fra tre proposte ha scelto quella con i secondi.
 4. **In bici**, ogni `RIDE_KM_EVERY` km da 20 km: gli ultimi 10 km contro
    i 10 prima, in km/h, senza numeri. «Stessa velocità» entro 0,5 km/h
    (`SAME_SPEED_KMH`): su 10 km a 24 km/h sono circa 30 secondi, sotto non
-   è una differenza che si sente pedalando. L'utente non l'ha chiesto: da
-   confermare, frase e soglia.
+   è una differenza che si sente pedalando. L'utente non l'aveva chiesto:
+   frase e soglia **confermate dall'utente** il 2026-10-05.
 5. **«km» detto per intero** nelle frasi della bici («Ultimi 10 chilometri
    più veloci dei 10 precedenti.»): l'utente le ha scritte con «km», ma la
    voce del telefono può leggere male le sigle (ADR-0179, «km/h») e la
    frase dei km dice già «chilometri». All'orecchio è la stessa frase.
-6. **Tedesco, spagnolo e francese** scritti dall'agente, da confermare.
+6. **Tedesco, spagnolo e francese** scritti dall'agente, **confermati
+   dall'utente** il 2026-10-05.
    Spagnolo e francese dicono «più veloce / più lento» («más rápido», «plus
    rapide»): «mejor / mieux» con i secondi suona tradotto.
 
@@ -9498,6 +9509,109 @@ peggio del precedente, e fra tre proposte ha scelto quella con i secondi.
 - `rideRun.test.ts` (TASK-216) ha la riga nuova a 20 km e, per la corsa,
   «Same pace as the last kilometre.» al secondo km.
 - Solo app: esce con la prossima pubblicazione, con l'ok dell'utente.
+
+## ADR-0188 — Gli occhi staccati sull'acqua: i pezzi piazzati col contorno, lasciato dove sono più vicini, e la distanza di tutto il percorso
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-226 · le forme
+(tutte quelle a pezzi tranne il sole) e la penna alzata automatica sono
+scelte dell'utente; il resto è deciso dall'agente su delega dell'utente
+
+**Contesto**: sull'acqua una forma a pezzi (ADR-0185) si disegnava in una
+linea sola, con gli occhi attaccati al contorno da un collegamento
+percorso due volte, e `pen_up` con `paddling` era rifiutato. L'utente ha
+chiesto gli occhi senza linee di collegamento, con il disegno in pausa da
+solo fra un pezzo e l'altro. Sull'acqua non c'è una rete: i pezzi non si
+spostano «dove ci sono le strade», come fanno su strada (`pieces.compose`).
+
+**Decisione**:
+
+1. **Contorno e pezzi si piazzano insieme, rigidi.** Stessa scala, stessa
+   rotazione, stesso centro; tutti nella fascia (ADR-0154), compresi i
+   tratti a penna alzata. Un pezzo su un'isola o troppo vicino a un
+   ostacolo scarta il piazzamento.
+2. **Il contorno si lascia dove i pezzi sono più vicini**: al vertice da
+   cui la penna resta alzata di meno, calcolato una volta sulla forma. Lì
+   il percorso va al pezzo più vicino, poi al successivo, e dopo l'ultimo
+   torna allo stesso vertice; poi il contorno prosegue. I `walks` sono
+   quei tratti, dritti: uno per pezzo più il ritorno.
+3. **La distanza chiesta è quella di tutto il percorso**, tratti a penna
+   alzata compresi, come lo sono già i tratti dalla riva. Alla grandezza
+   intera contorno, pezzi e tratti a penna alzata sono lunghi insieme
+   quanto la distanza: la ricerca di ADR-0161 resta la stessa.
+4. **`pen_up` vale con `paddling`** per le forme a pezzi; senza, il
+   percorso è quello di prima, punto per punto. Quali forme l'app chiede
+   così è una scelta dell'utente, nell'app (parte B): tutte tranne il
+   sole.
+5. **`MAX_WALKS` dell'API sale a 9**: sull'acqua c'è anche il ritorno al
+   contorno.
+
+**Alternative scartate**:
+
+- **Andare ai pezzi da dove la riva tocca il contorno**, come su strada si
+  parte dalla fine del contorno. Provato: al mare il punto della riva è
+  spesso dal lato opposto agli occhi, e il pesce aveva 534 m a penna
+  alzata su 2 km, con la forma al 55%. La lunghezza dei tratti dipendeva
+  anche dal punto della riva, e i limiti della ricerca non valevano più.
+- **La distanza del solo disegno**, come su strada: sull'acqua i limiti di
+  1–5 km sono di sicurezza, e i tratti a penna alzata si pagaiano.
+- **Un tratto di andata e ritorno per ogni pezzo**, dal punto del contorno
+  più vicino a ciascuno: più pause, per pochi metri in meno.
+
+**Conseguenze**:
+
+- La penna alzata sull'acqua costa 64–112 m su 2 km per pesce e teste,
+  185–354 m per zucca, ciambella, fantasmino, gatto e faccina; il sole
+  726–876 m in 9 tratti, e per questo l'utente lo tiene a penna giù.
+- L'impronta del motore cambia: `draw_examples` dopo l'aggiornamento del
+  server, lo zip del telefono e l'impronta degli esempi della canoa
+  nell'app (ADR-0189) rifatti.
+- Un server senza questa parte rifiuta `pen_up` con `paddling`: l'app che
+  lo chiede (parte B) si pubblica dopo l'aggiornamento del server.
+
+## ADR-0195 — Le forme si inclinano fino a 45°, e la mappa gira perché si vedano dritte
+
+**Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-232 ·
+45°, la mappa girata, la freccia del nord e la mappa della corsa sono
+scelte dell'utente; il resto è deciso
+dall'agente su delega dell'utente · supera in parte ADR-0038 (il limite
+di 15°)
+
+**Contesto**: ADR-0038 tiene ogni forma con un alto e un basso entro
+±15°, perché su una mappa col nord in alto l'occhio non riconosceva le
+forme inclinate (TASK-035). In un posto dove le strade reggono la forma
+solo inclinata, il percorso esce dritto ma la segue peggio. L'utente:
+«pur di farlo venire perfetto puoi scegliere tu l'orientamento e girare
+la mappa anche fino a 45 gradi».
+
+**Decisione**:
+
+1. Ogni forma con un alto e un basso si inclina fino a ±45°: catalogo,
+   emoji, contorni da foto, parole (anche quelle a blocchi lungo le
+   strade), canoa. Il cerchio resta libero.
+2. A parità vince la forma dritta: inclinarla costa il 5% di copertura a
+   45°, in proporzione all'angolo, come spostare la partenza di 500 m
+   (`OFFSET_FIT_PENALTY`). Il valore si tara sui campioni.
+3. Il risultato porta `rotation_deg` (antiorario, ADR-0018, fra −180 e
+   180), 0 per le forme che girano libere.
+4. L'app gira la mappa di `−rotation_deg` dove mostra il disegno di un
+   percorso, così la forma si vede dritta. Senza il campo, nord in alto.
+5. Con la mappa girata c'è una piccola freccia del nord in alto a
+   destra: un tocco rimette il nord in alto, un secondo rigira la mappa
+   come il disegno.
+6. Durante la corsa la mappa resta girata come il disegno, e la freccia
+   del corridore gira di conseguenza.
+7. Il GPX non cambia.
+
+**Alternative scartate**: tenere 15° (la richiesta è di provare di più);
+girare libero ogni forma (oltre 45° la mappa capovolta disorienta, e
+lettere e animali si leggono male); inclinare la forma senza girare la
+mappa (è ciò che ADR-0038 ha mostrato non riconoscibile).
+
+**Conseguenze**: la ricerca prova più rotazioni (7 invece di 3 per
+partenza e fase), con lo stesso numero di tracciati: il tempo va misurato.
+Cambiano i percorsi di oggi dove una forma inclinata segue meglio: i
+campioni si rigiudicano. Le corse salvate prima restano col nord in
+alto.
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 

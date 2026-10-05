@@ -8,7 +8,9 @@ with the engine, as the API would (`paddling.plan_water`), on the water of a
 cache folder: the server's `data/cache/water/`, or a copy of it (TASK-225).
 It writes them as the app keeps the examples it draws
 (`exampleRoutes.ts`, `asRecommended`): for each place, under the key the app
-looks it up by, its eight shapes whole.
+looks it up by, its eight shapes whole. A shape in pieces is drawn piece by
+piece, the pen up between them, as the app asks for it on the water
+(TASK-226): its example has the `walks`.
 
     python -m shaperoute_api.paddle_examples --cache-dir out/water-cache
 
@@ -42,6 +44,7 @@ import route_engine
 from route_engine.errors import ShapeNotDrawableError
 from route_engine.geo import LatLon
 from route_engine.models import RouteRequest
+from route_engine.shapes import in_pieces
 from route_engine.water import OverpassWaterSource, WaterNotCachedError, WaterSource
 
 from shaperoute_api.paddling import plan_water
@@ -64,6 +67,10 @@ SHAPES = (
 )
 DISTANCE_M = 2000
 ACTIVITY = "paddling"
+# The shapes in pieces the app draws in one line on the water all the same
+# (its penUpShapes.ts, APART_ON_WATER, the user's choice): the sun's rays
+# would be nine pauses.
+PEN_DOWN_ON_WATER = frozenset({"sun"})
 # As the app's: `PADDLE_EXAMPLES.prefix`, `ID_PREFIX`, `LICENSE`.
 KEY_PREFIX = "paddling:"
 ID_PREFIX = "example:"
@@ -164,10 +171,20 @@ def place_key(point: LatLon) -> str:
     return f"{KEY_PREFIX}{point[0]:.4f},{point[1]:.4f}"
 
 
+def apart_on_water(shape: str) -> bool:
+    """Whether the app asks for `shape` with the pen up on the water: every
+    shape in pieces but those of PEN_DOWN_ON_WATER (its `apartOnWater`)."""
+    return in_pieces(shape) and shape not in PEN_DOWN_ON_WATER
+
+
 def example(place: WaterPlace, shape: str, source: WaterSource) -> dict[str, Any]:
     """One example whole, as the app's `asRecommended(...).detail`."""
     request = RouteRequest(
-        start=place.point, shape=shape, distance_m=DISTANCE_M, activity=ACTIVITY
+        start=place.point,
+        shape=shape,
+        distance_m=DISTANCE_M,
+        activity=ACTIVITY,
+        pen_up=apart_on_water(shape),
     )
     result = plan_water(request, source).result
     return {
@@ -184,6 +201,8 @@ def example(place: WaterPlace, shape: str, source: WaterSource) -> dict[str, Any
         ],
         "license": LICENSE,
         "activity": ACTIVITY,
+        # The stretches with the pen up, only when there are some.
+        **({"walks": [list(walk) for walk in result.walks]} if result.walks else {}),
         # On the water the engine places the shape once (ADR-0164).
         "alternatives": [],
     }

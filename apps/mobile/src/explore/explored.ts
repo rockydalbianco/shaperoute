@@ -7,6 +7,7 @@ import {
 } from "@shaperoute/shared-types";
 import { useCallback, useMemo, useRef, useState } from "react";
 
+import { isPenUpShape } from "../route/penUpShapes";
 import type { AnyRouteRequest } from "../route/useRouteRequest";
 import { exampleDetail } from "./exampleRoutes";
 import {
@@ -92,7 +93,13 @@ export function toRequest(detail: RecommendedRouteDetail): AnyRouteRequest | nul
     const style: LetterStyle = detail.style === "block" ? "block" : "round";
     return { ...base, word: detail.word, style };
   }
-  return isShape(detail.shape) ? { ...base, shape: detail.shape } : null;
+  if (!isShape(detail.shape)) {
+    return null;
+  }
+  // Drawn in pieces, the pen up between them (TASK-226): asked so again.
+  return detail.walks !== undefined && isPenUpShape(detail.shape)
+    ? { ...base, shape: detail.shape, pen_up: true }
+    : { ...base, shape: detail.shape };
 }
 
 export function toResult(detail: RecommendedRouteDetail): RouteResult {
@@ -105,6 +112,7 @@ export function toResult(detail: RecommendedRouteDetail): RouteResult {
     // Planned ahead, without turn-by-turn: Start asks for them (TASK-145).
     directions: [],
     word: detail.word,
+    ...(detail.walks !== undefined ? { walks: detail.walks } : {}),
   };
 }
 

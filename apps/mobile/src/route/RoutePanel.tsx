@@ -447,15 +447,21 @@ function PenSplit({ result, activity }: { result: RouteResult; activity: Activit
   if (result.word === null) {
     return (
       <Text style={styles.target}>
-        {activity === "cycling"
-          ? t("{drawn} km of drawing + {between} km riding between the parts", {
+        {activity === "paddling"
+          ? // On the water (TASK-226): the whole is the distance asked.
+            t("{drawn} km of drawing + {between} km paddling between the parts", {
               drawn,
               between,
             })
-          : t("{drawn} km of drawing + {between} km walking between the parts", {
-              drawn,
-              between,
-            })}
+          : activity === "cycling"
+            ? t("{drawn} km of drawing + {between} km riding between the parts", {
+                drawn,
+                between,
+              })
+            : t("{drawn} km of drawing + {between} km walking between the parts", {
+                drawn,
+                between,
+              })}
       </Text>
     );
   }

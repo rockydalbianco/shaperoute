@@ -46,6 +46,21 @@ test("a shape the app does not know has no request", () => {
   expect(toRequest({ ...star, shape: "unicorn" })).toBeNull();
 });
 
+test("an example drawn in pieces on the water keeps its pen up (TASK-226)", () => {
+  // Asked so again, and its stretches with the pen up go with the route.
+  const walks: [number, number][] = [[1, 2]];
+  const head = { ...star, shape: "dog_head", distance_m: 2000, walks };
+  expect(toRequest({ ...head, activity: "paddling" })).toEqual({
+    start: star.points[0],
+    distance_m: 2000,
+    activity: "paddling",
+    shape: "dog_head",
+    pen_up: true,
+  });
+  expect(toResult(head).walks).toEqual(walks);
+  expect(toResult(star)).not.toHaveProperty("walks");
+});
+
 test("a city's example opens at once, without asking the API (TASK-143)", async () => {
   forgetExamples();
   const city = {

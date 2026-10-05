@@ -26,6 +26,15 @@ import { isRide } from "./ride";
  */
 export const PEN_DOWN_M = POOR_FIX_M / 2;
 
+/**
+ * On the water the next part starts the recording this far before it
+ * (TASK-226): the stretches with the pen up are tens of metres there, not
+ * the hundreds between two letters, and what is recorded before the part is
+ * the connecting line the pen up is for leaving out. Under an open sky a fix
+ * is good to a few metres: about one fix of a canoe's.
+ */
+export const PEN_DOWN_ON_WATER_M = 5;
+
 /** A walk in metres along the route, and the letter it leads to. */
 type Stretch = { fromM: number; toM: number; letter: string | null };
 
@@ -39,6 +48,10 @@ export type Pen = {
   ride: boolean;
   /** The pieces of a shape, not letters (TASK-223): "the next part". */
   parts: boolean;
+  /** Between the pieces on the water (TASK-226): "Paddle to the next part". */
+  paddle: boolean;
+  /** How far before the end of a walk the pen comes down. */
+  downM: number;
 };
 
 /** What the pen did at a fix: up at the end of a letter, down at the start
@@ -52,7 +65,8 @@ export type PenStep = { pen: Pen; move: "up" | "down" | null; cues: Cue[] };
  * than walks; otherwise the voice says "the next letter". A route with walks
  * and no word is a shape in pieces (TASK-223): the voice says "the next
  * part". On a route of `activity` "cycling" the way between the letters is
- * ridden (TASK-216).
+ * ridden (TASK-216), and of "paddling" the way between the parts is paddled,
+ * the pen down nearer the next (TASK-226).
  */
 export function startPen(
   along: readonly number[],
@@ -72,6 +86,8 @@ export function startPen(
     up: false,
     ride: isRide(activity),
     parts: !word,
+    paddle: activity === "paddling",
+    downM: activity === "paddling" ? PEN_DOWN_ON_WATER_M : PEN_DOWN_M,
   };
 }
 
@@ -101,7 +117,7 @@ export function movePen(
           cues: [{ say: endOfLetter(pen, walk.letter, language), vibrate: true }],
         };
   }
-  return alongM < walk.toM - PEN_DOWN_M
+  return alongM < walk.toM - pen.downM
     ? still
     : {
         pen: { ...pen, next: pen.next + 1, up: false },
@@ -111,11 +127,11 @@ export function movePen(
 }
 
 /** What the voice says at the end of a letter: walk, or ride, to the next;
- * or to the next part of a shape. */
+ * or to the next part of a shape, paddling on the water. */
 function endOfLetter(pen: Pen, letter: string | null, language: Language): string {
   const words = wordsOf(language);
   if (pen.parts) {
-    return pen.ride ? words.rideToPart : words.partUp;
+    return pen.paddle ? words.paddleToPart : pen.ride ? words.rideToPart : words.partUp;
   }
   return pen.ride ? words.rideTo(letter) : words.penUp(letter);
 }

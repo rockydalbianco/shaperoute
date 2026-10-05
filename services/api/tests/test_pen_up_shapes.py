@@ -1,6 +1,6 @@
 """A shape in pieces with the pen up through the API (TASK-223, ADR-0185):
-the request reaches the engine as it is, the walks come back, and on the
-water the pen stays down."""
+the request reaches the engine as it is, and the walks come back. On the
+water too (TASK-226): tests/test_paddling_pieces.py."""
 
 from __future__ import annotations
 
@@ -11,7 +11,6 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 from route_engine.models import (
-    PEN_UP_ON_WATER,
     PEN_UP_WITHOUT_PIECES,
     RouteRequest,
     RouteResult,
@@ -85,8 +84,8 @@ ON_WATER = {"activity": "paddling", "distance_m": 2000}
             f"{PEN_UP_WITHOUT_PIECES}; heart has none",
         ),
         (
-            {"shape": "donut", "pen_up": True, **ON_WATER},
-            PEN_UP_ON_WATER,
+            {"shape": "heart", "pen_up": True, **ON_WATER},
+            f"{PEN_UP_WITHOUT_PIECES}; heart has none",
         ),
     ],
 )
@@ -106,12 +105,14 @@ def test_the_pen_up_is_refused_where_it_cannot_draw(
 
 
 def test_every_walk_of_a_shape_in_pieces_fits_in_a_result() -> None:
-    # The sun has 8 rays: one walk more than the longest word.
+    # The sun has 8 rays: one walk more than the longest word. On the water
+    # the route also comes back to the outline (TASK-226): one more still.
     walks = {name: len(compose_shape(name).letters) - 1 for name in PEN_UP_SHAPES}
-    assert max(walks.values()) == walks["sun"] == MAX_WALKS == 8
+    assert max(walks.values()) == walks["sun"] == 8
+    assert MAX_WALKS == 9
     points = [(46.0 + i / 1000, 11.0) for i in range(20)]
-    rays = [(i, i + 1) for i in range(0, 16, 2)]
+    rays = [(i, i + 1) for i in range(0, 18, 2)]
     sun = RouteResult(
         points=points, distance_m=2000.0, similarity=0.9, shape="sun", walks=rays
     )
-    assert len(RouteResultBody.from_result(sun).walks) == 8
+    assert len(RouteResultBody.from_result(sun).walks) == 9

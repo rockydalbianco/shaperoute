@@ -39,8 +39,20 @@ function shapeChoice(
   );
 }
 
-test("the smiley, the ghost and the donut have the switch, on to start", async () => {
-  for (const shape of ["smiley", "ghost", "donut"] as const) {
+test("the shapes in pieces the user chose have the switch, on to start", async () => {
+  // The smiley, the ghost and the donut (TASK-223); the eyes of the cat, the
+  // fish, the heads and the pumpkin, judged on 2026-10-05 (TASK-226).
+  const offered = [
+    "smiley",
+    "ghost",
+    "donut",
+    "cat",
+    "fish",
+    "dog_head",
+    "rabbit_head",
+    "pumpkin",
+  ] as const;
+  for (const shape of offered) {
     const onPenUp = jest.fn();
     await render(shapeChoice(shape, { onPenUp }));
     const toggle = screen.getByRole("switch", { name: SWITCH, checked: true });
@@ -49,6 +61,7 @@ test("the smiley, the ghost and the donut have the switch, on to start", async (
   }
 });
 
+// On the water the pen goes up by itself (TASK-226): nothing to switch.
 test("no switch for the sun, a shape without pieces, or on the water", async () => {
   await render(shapeChoice("sun"));
   expect(screen.queryByRole("switch")).toBeNull();
@@ -103,5 +116,10 @@ test("a shape in pieces shows the km of its drawing apart from the walks", async
   await rerender(outcome("cycling"));
   expect(
     screen.getByText("6.0 km of drawing + 0.1 km riding between the parts"),
+  ).toBeTruthy();
+  // On the water the parts are paddled to (TASK-226).
+  await rerender(outcome("paddling"));
+  expect(
+    screen.getByText("6.0 km of drawing + 0.1 km paddling between the parts"),
   ).toBeTruthy();
 });

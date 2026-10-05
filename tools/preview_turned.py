@@ -111,6 +111,34 @@ PAGE_TEMPLATE = """<!doctype html>
     };
   }
 
+  // The camera that shows the route as large as the map holds it, turned:
+  // its box on the screen, not the north-south box of its coordinates. Web
+  // Mercator at zoom 0 is 512 pixels wide (MapLibre); the screen is the
+  // world turned by -bearing.
+  function camera(coords, bearing, width, height) {
+    const turn = (-bearing * Math.PI) / 180;
+    const [cos, sin] = [Math.cos(turn), Math.sin(turn)];
+    const world = coords.map(([lon, lat]) => {
+      const phi = (lat * Math.PI) / 180;
+      return [
+        ((lon + 180) / 360) * 512,
+        (1 - Math.log(Math.tan(phi) + 1 / Math.cos(phi)) / Math.PI) * 256,
+      ];
+    });
+    const screen = world.map(([x, y]) => [x * cos - y * sin, x * sin + y * cos]);
+    const xs = screen.map((p) => p[0]);
+    const ys = screen.map((p) => p[1]);
+    const [x0, x1, y0, y1] = [
+      Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+    const fit = Math.min(
+      (width - 60) / Math.max(x1 - x0, 1e-9), (height - 60) / Math.max(y1 - y0, 1e-9));
+    const [mx, my] = [(x0 + x1) / 2, (y0 + y1) / 2];
+    const [wx, wy] = [mx * cos + my * sin, -mx * sin + my * cos];  // turned back
+    const lon = (wx / 512) * 360 - 180;
+    const lat = (Math.atan(Math.sinh(Math.PI * (1 - wy / 256))) * 180) / Math.PI;
+    return { center: [lon, lat], zoom: Math.log2(fit), bearing };
+  }
+
   function show(index) {
     maps.forEach((m) => m.remove());
     maps = [];
@@ -118,7 +146,9 @@ PAGE_TEMPLATE = """<!doctype html>
     select.value = String(index);
     document.getElementById("count").textContent =
       (index + 1) + " / " + cases.length;
-    for (const sample of cases[index].samples) {
+    // Every pane first, then the maps: each frames its route on its own
+    // size, once the grid holds them all.
+    const boxes = cases[index].samples.map((sample) => {
       const pane = document.createElement("div");
       pane.className = "pane";
       const title = document.createElement("h2");
@@ -131,16 +161,20 @@ PAGE_TEMPLATE = """<!doctype html>
       box.className = "map";
       pane.append(title, box);
       panes.append(pane);
+      return box;
+    });
+    cases[index].samples.forEach((sample, k) => {
+      const box = boxes[k];
       const coords = sample.points.map(([lat, lon]) => [lon, lat]);
-      const bounds = coords.reduce(
-        (b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
       const bearing = -sample.rotation_deg;
+      const { width, height } = box.getBoundingClientRect();
       const map = new maplibregl.Map({
-        container: box, style: style(), bearing, attributionControl: {},
+        container: box,
+        style: style(),
+        attributionControl: {},
+        ...camera(coords, bearing, width, height),
       });
       map.addControl(new maplibregl.NavigationControl({ showZoom: false }));
-      const camera = map.cameraForBounds(bounds, { padding: 30, bearing });
-      if (camera) map.jumpTo({ ...camera, bearing });
       map.on("load", () => {
         map.addSource("route", { type: "geojson", data: {
           type: "Feature", geometry: { type: "LineString", coordinates: coords },
@@ -155,7 +189,7 @@ PAGE_TEMPLATE = """<!doctype html>
                    "circle-stroke-color": "#e41a1c", "circle-stroke-width": 2 } });
       });
       maps.push(map);
-    }
+    });
   }
 
   const step = (by) =>

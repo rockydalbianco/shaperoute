@@ -10,13 +10,19 @@ counterclockwise in (-180, 180], so the app can turn the map back; 0 for
 the circle, which turns freely.
 """
 
+import math
+from dataclasses import replace
 from pathlib import Path
 
 import networkx as nx
+import numpy as np
 import pytest
+import shapely
+from shapely.geometry import Polygon
 from test_optimizer import LEVICO, _fake_trace, _half_grid, _Loader
 
 import route_engine.__main__ as cli
+from route_engine import paddling, water_fit
 from route_engine.geo import LatLon, haversine_m, local_to_latlon
 from route_engine.models import RouteRequest
 from route_engine.nearby_starts import ShapeJob, plan_nearby
@@ -24,10 +30,10 @@ from route_engine.optimizer import (
     FREE_TILT_DEG,
     MAX_TILT_DEG,
     MAX_TRACES,
-    TILTED_TRACES,
-    UPRIGHT_TILT_DEG,
     OFFSET_FIT_PENALTY,
     TILT_FIT_PENALTY,
+    TILTED_TRACES,
+    UPRIGHT_TILT_DEG,
     W_OFFSET,
     W_TILT,
     plan_route,
@@ -39,6 +45,7 @@ from route_engine.optimizer import (
 )
 from route_engine.projection import initial_scale, project_shape
 from route_engine.shapes import FREE_ROTATION, SUPPORTED_SHAPES, get_shape
+from route_engine.water import WaterArea
 
 HEART = get_shape("heart")(64)
 DISTANCE_M = 3000.0
@@ -291,3 +298,81 @@ def test_the_cli_says_how_far_the_shape_is_tilted(
     assert "tilted:     +30 deg; the map shows it upright with a bearing of -30" in (
         printed
     )
+
+
+# --- On the water ---
+
+# A long rectangle, four times as long as high, and a lake that is a strip
+# 400 m wide running 35° off east: the rectangle fits in it only tilted.
+BAR = [(0.0, 0.0), (4.0, 0.0), (4.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
+
+
+def _strip_lake(turn_deg: float) -> WaterArea:
+    """A lake that is a strip 400 m wide and 6 km long, turned `turn_deg`
+    from east, its southern shore through the start; the band 300 m wide
+    in the middle of it, and the shore reached on foot at the start and
+    every 100 m along it."""
+    theta = math.radians(turn_deg)
+    along = np.array([math.cos(theta), math.sin(theta)])
+    across = np.array([-math.sin(theta), math.cos(theta)])
+    centre = 200.0 * across
+
+    def strip(half_width: float) -> Polygon:
+        corners = [
+            centre + a * 3000.0 * along + b * half_width * across
+            for a, b in ((-1, -1), (1, -1), (1, 1), (-1, 1))
+        ]
+        return Polygon(corners)
+
+    navigable = strip(200.0)
+    box = shapely.box(-5000.0, -5000.0, 5000.0, 5000.0)
+    dry = box.difference(navigable)
+    access = np.array([k * 100.0 * along for k in range(-5, 6)])
+    return WaterArea(
+        origin=LEVICO,
+        bbox=(45.95, 11.23, 46.07, 11.37),
+        box=box,
+        navigable=navigable,
+        wet=navigable.buffer(0.5),
+        dry=dry,
+        shore=dry,
+        obstacles=Polygon(),
+        band=strip(150.0),
+        access=access,
+        access_kind=tuple("beach" for _ in access),
+    )
+
+
+def test_on_the_water_a_shape_tilts_only_where_upright_it_does_not_fit() -> None:
+    assert water_fit.MAX_TILT_DEG == 45.0
+    assert sorted(water_fit.rotations(False)) == [-15, -10, -5, 0, 5, 10, 15]
+    tilted = water_fit.rotations(False, tilted=True)
+    assert sorted(abs(a) for a in tilted) == sorted(2 * list(range(20, 50, 5)))
+    assert water_fit.rotations(True, tilted=True) == ()  # the circle turns freely
+    # Along a strip 35° off east the bar fits only tilted, by about as much.
+    route = water_fit.fit_shape(BAR, 2000, _strip_lake(35.0), name="bar")
+    assert 25.0 <= route.rotation_deg <= 45.0
+    # Along a strip 10° off east it fits upright, as before.
+    route = water_fit.fit_shape(BAR, 2000, _strip_lake(10.0), name="bar")
+    assert abs(route.rotation_deg) <= 15.0
+
+
+def test_on_the_water_a_tilt_costs_as_on_the_roads() -> None:
+    assert water_fit.tilt_cost(0.0) == water_fit.tilt_cost(-15.0) == 0.0
+    assert water_fit.tilt_cost(-45.0) == pytest.approx(water_fit.TILT_WEIGHT)
+    assert water_fit.tilt_cost(30.0) == pytest.approx(water_fit.TILT_WEIGHT / 2)
+    assert water_fit.TILT_WEIGHT == TILT_FIT_PENALTY
+
+
+def test_a_paddling_result_says_the_rotation_of_its_shape(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    area = _strip_lake(35.0)
+    route = water_fit.fit_shape(BAR, 2000, area, name="bar")
+    turned = replace(route, rotation_deg=-30.0)
+    monkeypatch.setattr(paddling, "plan_on_water", lambda *a, **k: (turned, area))
+    monkeypatch.setattr(paddling, "check_on_water", lambda *a, **k: None)
+    request = RouteRequest(
+        start=LEVICO, shape="heart", distance_m=2000, activity="paddling"
+    )
+    assert paddling.plan_paddling(request, None).result.rotation_deg == -30.0  # type: ignore[arg-type]

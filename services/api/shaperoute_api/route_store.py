@@ -97,6 +97,13 @@ def result_from(data: dict[str, Any]) -> RouteResult:
         walks=[(int(a), int(b)) for a, b in data.get("walks", [])],
         # Kept before TASK-206 part B: none.
         on_foot=[(int(a), int(b)) for a, b in data.get("on_foot", [])],
+        # Kept before TASK-234, or without advice: none (TASK-232 noticed
+        # it was dropped, and «Try N km» with it, on a repeated request).
+        better_distance_m=(
+            None
+            if data.get("better_distance_m") is None
+            else int(data["better_distance_m"])
+        ),
         # Kept before TASK-238, or on the roads: none.
         centre=None if data.get("centre") is None else _pair(data["centre"]),
         # Kept before TASK-232: upright.

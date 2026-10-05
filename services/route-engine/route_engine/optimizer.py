@@ -405,6 +405,14 @@ class Search:
     attempts: list[Attempt]
     converged: bool
     warnings: list[str] = field(default_factory=list)
+    # When the tilted stage ran too (TASK-232), the best of the upright one:
+    # what the search gave before tilts beyond UPRIGHT_TILT_DEG.
+    upright: Attempt | None = None
+
+    @property
+    def upright_best(self) -> Attempt:
+        """The best attempt of the upright stage of the search."""
+        return self.upright or self.best
 
 
 Tracer = Callable[[list[LatLon]], NetworkRoute]
@@ -552,6 +560,7 @@ def search(
     phases: Sequence[float] = PHASES,
     word: Word | None = None,
     doubled: float = 0.0,
+    tilted_traces: int = TILTED_TRACES,
 ) -> Search:
     """Best route for `shape` near `distance_m` on `graph`, starting at
     `start` or, with `move_start`, up to START_OFFSET_M away from it; or
@@ -561,8 +570,9 @@ def search(
 
     The search goes upright first, within UPRIGHT_TILT_DEG and `max_traces`
     traces; when that gives no good route and `max_tilt_deg` allows more,
-    it goes again over the tilts beyond, with TILTED_TRACES traces more
-    (TASK-232, ADR-0195). The best route of both is the result.
+    it goes again over the tilts beyond, with `tilted_traces` traces more
+    (TASK-232, ADR-0195). The best route of both is the result, and
+    `Search.upright` that of the first.
 
     When `shape` is the `word`'s points and `phases` its phases, every
     trace first moves the letters to where the roads are (fit_letters). A
@@ -858,9 +868,15 @@ def search(
         polish(min(attempts[first:], key=lambda a: a.cost), budget)
         return any(good(a) for a in attempts[first:])
 
-    if not go(False, max_traces):
-        go(True, max_traces + TILTED_TRACES)
-    return _done(attempts, good, distance_m)
+    if go(False, max_traces) or tilted_traces <= 0:
+        return _done(attempts, good, distance_m)
+    upright = _done(list(attempts), good, distance_m).best
+    upright_traces = len(attempts)
+    go(True, max_traces + tilted_traces)
+    found = _done(attempts, good, distance_m)
+    if len(attempts) > upright_traces:
+        found.upright = upright
+    return found
 
 
 def _angle_gap(a: float, b: float) -> float:
@@ -872,10 +888,11 @@ def tilt_share(rotation_deg: float, max_tilt_deg: float) -> float:
     the way to MAX_TILT_DEG: what its tilt costs (TILT_FIT_PENALTY, W_TILT).
     Nothing within UPRIGHT_TILT_DEG, as before TASK-232, nor for a shape that
     turns freely (`max_tilt_deg` FREE_TILT_DEG), which has no upright."""
-    if max_tilt_deg >= FREE_TILT_DEG:
-        return 0.0
     beyond = _angle_gap(rotation_deg, 0.0) - UPRIGHT_TILT_DEG
-    return max(0.0, beyond) / (MAX_TILT_DEG - UPRIGHT_TILT_DEG)
+    span = MAX_TILT_DEG - UPRIGHT_TILT_DEG
+    if max_tilt_deg >= FREE_TILT_DEG or beyond <= 0.0 or span <= 0.0:
+        return 0.0
+    return beyond / span
 
 
 def shown_rotation(rotation_deg: float, max_tilt_deg: float) -> float:
@@ -1169,9 +1186,15 @@ def plan_shape(
                 phases=phases,
                 word=word,
                 doubled=doubled_weight(name),
+                # Upright only, as before TASK-232: tilting was tried
+                # where the user is, and the time stays within bounds.
+                tilted_traces=0,
             )
+            # As before TASK-232, on the upright search: a tilted route
+            # near the start that is drawable but not good does not keep
+            # the far one out.
             if far.converged or (
-                not _drawable(found.best, planned_m, kept)
+                not _drawable(found.upright_best, planned_m, kept)
                 and _drawable(far.best, planned_m, kept)
             ):
                 found, graph = far, far_graph

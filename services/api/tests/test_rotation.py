@@ -139,3 +139,16 @@ def test_a_kept_route_keeps_its_rotation() -> None:
     # Kept before TASK-232: upright.
     del kept["rotation_deg"]
     assert result_from(kept).rotation_deg == 0.0
+
+
+def test_a_kept_route_keeps_its_better_distance() -> None:
+    # Before TASK-232 the kept routes lost it: a repeated request came back
+    # without «Try N km» (TASK-234, ADR-0197).
+    chosen = replace(result(0.0), better_distance_m=12_000)
+    chosen = replace(chosen, alternatives=[result(0.0, 0.002)])
+    kept = json.loads(json.dumps(asdict(chosen)))
+    again = result_from(kept)
+    assert again.better_distance_m == 12_000
+    assert [other.better_distance_m for other in again.alternatives] == [None]
+    del kept["better_distance_m"]  # kept before TASK-234
+    assert result_from(kept).better_distance_m is None

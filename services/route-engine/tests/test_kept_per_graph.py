@@ -108,14 +108,17 @@ class _Source:
 # Levico heart comes out another way with the libraries of CI (Python 3.11,
 # NetworkX 3.6, NumPy 2.4) than on the Mac (3.12, 3.7, 2.5), already with
 # the code of before: both are its route of before, each where it ran.
+# Since TASK-232 the shapes that are not good upright are tried tilted too
+# (ADR-0195): the Levico heart's alternatives, the town's CIAO and the
+# alternatives of its heart and star are new, the grid and the circle not.
 BEFORE: dict[str, str | tuple[str, ...]] = {
     "grid heart 5000": "3df8155c69e599f7",
-    "levico heart 2000": ("fe1ece7d303c7430", "c252f402c7b05d09"),
-    "town CIAO 12000": "ab7b0837f088a672",
-    "town CIAO pen up 12000": "8faf66cd46b5c9c9",
+    "levico heart 2000": ("b9ea27acaea65287",),
+    "town CIAO 12000": "ded8ea0129644e19",
+    "town CIAO pen up 12000": "b4173e7a6e4ca727",
     "town circle 10000": "96eb22388f95078e",
-    "town heart 8000": "c067fe3f0daeb6e4",
-    "town star 5000": "6cd503112eada568",
+    "town heart 8000": "9441bb1743c10811",
+    "town star 5000": "7f7106f7b85e4a4a",
 }
 
 

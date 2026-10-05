@@ -6,7 +6,7 @@ then prints one row per case and variant (docs/MAPS.md, «Forme inclinate»).
 
     python tests/measure_tilt.py                      # the reference cases
     python tests/measure_tilt.py --catalog --words --json out.json
-    python tests/measure_tilt.py --variants before,after --gpx-dir ../../samples
+    python tests/measure_tilt.py --from-json a.json b.json --gpx-dir ../../samples
     python tests/measure_tilt.py --catalog --shard 2/4   # every 4th case, from the 2nd
 
 Variants:
@@ -154,6 +154,36 @@ def write_gpx(row: dict[str, Any], out_dir: Path, task: str, tag: str) -> Path:
     return path
 
 
+def write_samples(
+    rows: list[dict[str, Any]], out_dir: Path, task: str, tags: dict[str, str]
+) -> list[Path]:
+    """The GPX samples of the cases whose route the variants of `tags`
+    changed, one per variant, and ``<task>_rotations.json`` beside them with
+    the rotation of those of `after`, the engine as it is: the app turns
+    their map (tools/preview_turned.py reads it). The others are shown as
+    the app of before TASK-232 shows them, north-up."""
+    by_case: dict[str, dict[str, dict[str, Any]]] = {}
+    for r in rows:
+        if "variant" in r and "skipped" not in r and r["variant"] in tags:
+            by_case.setdefault(r["case"], {})[r["variant"]] = r
+    written: list[Path] = []
+    rotations_path = out_dir / f"{task}_rotations.json"
+    rotations: dict[str, float] = {}
+    if rotations_path.exists():
+        rotations = json.loads(rotations_path.read_text(encoding="utf-8"))
+    for case in by_case.values():
+        if len(case) < len(tags) or len({r["digest"] for r in case.values()}) == 1:
+            continue  # not drawn by every variant, or the same route
+        for v, row in case.items():
+            path = write_gpx(row, out_dir, task, tags[v])
+            if v == "after":
+                rotations[path.stem] = row["rotation_deg"]
+            written.append(path)
+    text = json.dumps(dict(sorted(rotations.items())), indent=1)
+    rotations_path.write_text(text + "\n", encoding="utf-8")
+    return written
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--cache-dir", type=Path, default=Path("../../data/cache"))
@@ -165,7 +195,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--shard", default="1/1", help="this share of the cases, e.g. 2/4"
     )
     parser.add_argument("--json", type=Path, help="also write the rows here")
-    parser.add_argument("--gpx-dir", type=Path, help="also write GPX samples here")
+    parser.add_argument(
+        "--gpx-dir",
+        type=Path,
+        help="also write here the GPX samples of the cases the variants changed",
+    )
+    parser.add_argument(
+        "--from-json",
+        type=Path,
+        nargs="+",
+        help="read the rows of an earlier run instead of planning again",
+    )
     parser.add_argument("--task", default="TASK-232")
     parser.add_argument(
         "--tags",
@@ -175,8 +215,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     variants = args.variants.split(",")
     tags = dict(pair.split(":") for pair in args.tags.split(","))
-    source = OsmnxSource(args.cache_dir)
     rows: list[dict[str, Any]] = []
+    if args.from_json:
+        for path in args.from_json:
+            rows += json.loads(path.read_text(encoding="utf-8"))
+        if args.gpx_dir is not None:
+            written = write_samples(rows, args.gpx_dir, args.task, tags)
+            print(f"Wrote {len(written)} samples in {args.gpx_dir}")
+        _summary(rows, variants)
+        return 0
+    source = OsmnxSource(args.cache_dir)
     show: Callable[[dict[str, Any]], str] = lambda r: (  # noqa: E731
         f"{r['case']:<26} {r['variant']:<8} {r['similarity']:.2f}"
         f" {r['ratio']:4.2f}x {'ok' if r['good'] else 'no'}"
@@ -199,10 +247,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
                 continue
             print(show(row), flush=True)
-            if args.gpx_dir is not None and row["variant"] in tags:
-                write_gpx(row, args.gpx_dir, args.task, tags[row["variant"]])
         if args.json is not None:
             args.json.write_text(json.dumps(rows), encoding="utf-8")
+    if args.gpx_dir is not None:
+        written = write_samples(rows, args.gpx_dir, args.task, tags)
+        print(f"Wrote {len(written)} samples in {args.gpx_dir}")
     _summary(rows, variants)
     return 0
 

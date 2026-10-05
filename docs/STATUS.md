@@ -149,6 +149,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-245 — Altre spiagge per «Paddle», oltre Jesolo e Riccione**
+  (ADR-0210; chiesto dall'utente il 2026-10-05, che ha scelto 29 posti di
+  mare su tutte le coste; PR #363). Un comando nuovo, `beach_catalog.py`, sceglie
+  per ogni paese un punto della riva dai dati di OpenStreetMap e lo prova
+  col motore; l'elenco è `apps/mobile/src/paddle/beaches.json`, letto da
+  `waterSpots.ts`: le spiagge si trovano in «Explore», in «Near me» e in
+  «Another place», dove ora solo l'ultima parola scritta vale come inizio
+  di un nome («via Roma» non propone «Viareggio»). **29 posti su 29**
+  tengono le forme a 2 km, con tutte e otto le forme di «Explore»; nessuno
+  scartato. **L'acqua è sul server dal 2026-10-05**: 27 file nuovi,
+  22,6 MB, in `data/cache/water/` (247 file, 93 MB), senza riavvio, con
+  le impronte uguali a quelle provate sul Mac; la prova di una spiaggia
+  nuova dentro l'API non è stata fatta (negata dai permessi della
+  sessione). Da dove riprendere: `tasks/TASK-245.md`, «Esito».
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

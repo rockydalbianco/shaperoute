@@ -2005,7 +2005,8 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   without a route».
 - **«Another place»** (TASK-240, ADR-0204): la ricerca della partenza
   offre anche i laghi e le spiagge dell'elenco di «Explore» (`WATER_SPOTS`:
-  211 laghi d'Italia, Lago di Garda, Lago di Como, Jesolo, Riccione), mai
+  211 laghi d'Italia, Lago di Garda, Lago di Como, Jesolo, Riccione e, dal
+  TASK-245, altri 29 posti di mare), mai
   un lago preso da Photon o da Geoapify: solo di quelli il server ha
   l'acqua.
   - Il campo dice «Lake, beach, city or street».
@@ -2021,7 +2022,11 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     un'altra parola dice il lago. «lago di Levico Terme» trova «Lago di
     Levico», «spiaggia di Riccione» trova «Riccione». Con sole parole
     comuni devono esserci tutte nel nome, come in «Explore»: «lago» trova
-    ogni lago, «via al lago» nessuno.
+    ogni lago, «via al lago» nessuno. **Solo l'ultima parola scritta vale
+    come inizio di una parola del nome**, perché la si sta ancora
+    scrivendo; quelle prima devono essere parole intere (TASK-245,
+    ADR-0210): «via» da sola propone «Viareggio», «via Roma» no; «lago di
+    lev» trova «Lago di Levico», «lev terme» niente.
   - Scelto un lago, la partenza è il suo punto della riva più vicino alla
     posizione (un lago lungo ne ha molti), e la riga dice «Starting from
     Lago di Levico.».
@@ -2137,6 +2142,20 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     (uno ogni 4 km su una riva lunga: l'app prende il più vicino) e la
     distanza delle forme: **2 km, oppure 1,5 o 1 km su un lago piccolo**.
     L'Italia intera: 211 laghi, 758 punti (`tasks/TASK-233.md`).
+  - **Le spiagge** (TASK-245, ADR-0210; `src/paddle/beaches.json`, scritto
+    da `python -m shaperoute_api.beach_catalog`): 29 posti di mare scelti
+    dall'utente, su tutte le coste d'Italia, oltre a Jesolo e Riccione:
+    Lignano Sabbiadoro, Bibione, Caorle, Cavallino, Sottomarina,
+    Cesenatico, Rimini, Cattolica, Senigallia, San Benedetto del Tronto,
+    Pescara, Vieste, Gallipoli, Otranto, Tropea, Cefalù, Mondello, San
+    Vito lo Capo, Alghero, Villasimius, San Teodoro, Viareggio, Forte dei
+    Marmi, Castiglione della Pescaia, Ostia, Sperlonga, Alassio, Sanremo,
+    Sestri Levante. Ognuno ha **un punto solo**, sulla riva vicino al
+    paese, dove si arriva a piedi, e le forme a 2 km. Si trovano come i
+    laghi: «Near me» entro 30 km, fra gli otto luoghi più vicini, per nome
+    in «Type a lake or a beach» e in «Another place». Le loro forme sono
+    chieste all'API, come quelle dei laghi: niente esempi dentro l'app.
+    Stanno 200 m oltre la riva, come a Jesolo e a Riccione.
   - Un luogo ha **le otto forme della corsa** in canoa (TASK-227, scelta
     dell'utente): cuore, cerchio, stella, luna, cavallo, lumaca, testa di
     cane, testa di coniglio. Quelle dei quattro luoghi scelti a mano
@@ -2171,8 +2190,11 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     confermare.
 - **I laghi sul server**: il server ha l'acqua dei quattro luoghi
   (TASK-225) e, dal 2026-10-05, di ogni lago dell'elenco (TASK-233: 210
-  file in `data/cache/water/`). Altrove, per esempio al mare lontano da
-  Jesolo e Riccione, la scarica da Overpass, se risponde, e la prima volta
+  file in `data/cache/water/`). Le spiagge di TASK-245 hanno altri 27
+  file (22,6 MB, sul server dal 2026-10-05), uno a paese: tengono ogni
+  partenza entro 3 km dal paese.
+  Altrove, per esempio al mare lontano dai posti dell'elenco,
+  la scarica da Overpass, se risponde, e la prima volta
   ci mette minuti, altrimenti «Map data for this area could not be
   downloaded.». **Un elenco nuovo vuole prima la sua acqua sul server**
   (`MAPS.md`, «I laghi di Explore»).

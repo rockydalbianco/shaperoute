@@ -12,6 +12,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { useUnits } from "../units/useUnits";
 import { HEART_EMPTY, HEART_KEPT } from "./FavoriteHeart";
 import { favoriteHeading, favoritePlace, favoriteTitle } from "./favoriteRoute";
 import { useFavoritesDoor } from "./favoritesDoor";
@@ -64,6 +65,8 @@ type Props = {
  */
 export function FavoritesList({ margin }: Props) {
   const favorites = useFavoritesDoor();
+  // The cards are written again when «Settings» changes the units (TASK-182).
+  useUnits();
   const { width } = useWindowDimensions();
   const card = cardWidth(width - 2 * margin);
   const { refresh, clearProblem } = favorites;

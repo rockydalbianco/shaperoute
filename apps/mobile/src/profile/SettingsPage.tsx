@@ -9,6 +9,7 @@ import { EmailSetting } from "../settings/EmailSetting";
 import { LanguageSetting } from "../settings/LanguageSetting";
 import { PhoneSetting } from "../settings/PhoneSetting";
 import { SportSetting } from "../settings/SportSetting";
+import { UnitsSetting } from "../settings/UnitsSetting";
 import { StravaSetting } from "../strava/StravaSetting";
 import {
   color,
@@ -35,7 +36,6 @@ type Coming = { emoji: string; name: string };
  * What «Settings» will hold, as the user listed it (ADR-0145): each row is
  * turned on by its own task and leaves this list then.
  */
-const PREFERENCES_COMING: Coming[] = [{ emoji: "📏", name: tLater("Units") }];
 const COMING: { label: string; rows: Coming[] }[] = [
   {
     label: tLater("NOTIFICATIONS"),
@@ -91,8 +91,8 @@ function ComingRows({ rows }: { rows: Coming[] }) {
  * «Settings» in «Profile» (TASK-177), in sections: the account with its
  * email and phone number (TASK-183) and the ways out of it, the sport
  * (TASK-189), Strava (TASK-187), the language
- * (TASK-210) and the offline maps (TASK-214) among the preferences, and the
- * settings to come, named and marked «Soon».
+ * (TASK-210), the offline maps (TASK-214) and the units (TASK-182) among
+ * the preferences, and the settings to come, named and marked «Soon».
  * «Delete account» asks first, on the screen (ADR-0120: the API does not).
  */
 export function SettingsPage({ user, account }: Props) {
@@ -114,7 +114,7 @@ export function SettingsPage({ user, account }: Props) {
       <Section label={t("PREFERENCES")}>
         <LanguageSetting />
         <OfflineMapsSetting />
-        <ComingRows rows={PREFERENCES_COMING} />
+        <UnitsSetting />
       </Section>
       {COMING.map((section) => (
         <Section key={section.label} label={t(section.label)}>

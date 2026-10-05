@@ -122,20 +122,21 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `3b6e821` dalle
-  02:42Z (ok dell'utente «Sì, aggiorna e pubblica», sessione di TASK-231),
-  con le migrazioni `0001`–`0015`, il motore di TASK-223 e TASK-230,
-  `/phone-zones` (le zone del telefono non sono ancora costruite), gli
-  esempi ridisegnati per 66 città su 66; immagine di prima
-  `shaperoute-api:before-task223`, copia del database
-  `shaperoute-2026-10-05T0241Z.dump`. **App** su `preview` da `main`
-  `e7bc8c1` (gruppo `f8951439`): le quattro forme nuove, la canoa in
-  «Explore» con otto forme, «Offline maps», «Share», le reazioni, il
-  confronto dei km nella voce. **Da provare sull'iPhone.** In `main` dopo:
-  TASK-226 A (#310, il motore dei pezzi sull'acqua): il server vuole un
-  altro aggiornamento con `draw_examples`, con l'ok dell'utente, **prima**
-  di pubblicare la parte B di TASK-226 (l'app). Strava spento finché
-  l'utente non scrive il secret sul server.
+- **Server e app, al 2026-10-05**. **Server**: su `main` `9deba3b` dalle
+  03:27Z (ok dell'utente «ok aggiorna il server e pubblica», sessione del
+  coordinatore), con le migrazioni `0001`–`0015` e il motore di TASK-226 A
+  (le forme a pezzi sull'acqua: una faccina da 2 km a Riccione in 12 s,
+  quattro tratti a penna alzata); fermo circa 14 secondi; immagine di
+  prima `shaperoute-api:before-task226`, copia del database
+  `shaperoute-2026-10-05T0327Z.dump`; `draw_examples` rilanciato alle
+  03:29Z (`data/draw-examples-2026-10-05-task226.log`). `/phone-zones` c'è,
+  le zone del telefono non sono ancora costruite. **App** su `preview` da
+  `main` `ef7ad90` (gruppo `1fc82a12`): in più rispetto a `f8951439`, le
+  forme a pezzi sull'acqua e l'interruttore degli occhi staccati su strada
+  (TASK-226 B). **Da provare sull'iPhone.** Il prossimo passo sul server è
+  l'acqua dei laghi di TASK-233: **prima** di quella `main` con la #319
+  non si pubblica. Strava spento finché l'utente non scrive il secret sul
+  server.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),

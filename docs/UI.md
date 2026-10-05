@@ -685,8 +685,8 @@ si apre (TASK-239). Ogni riga ha la foto (o l'iniziale) e il nome, che
 toccato apre il profilo di quella persona sopra l'app; «←» torna a
 «Profile».
 
-**Il numero rosso** (TASK-239, ADR-0203; chiesto dall'utente, testi **da
-confermare**). Quando qualcuno chiede di seguirti, il pulsante di
+**Il numero rosso** (TASK-239, ADR-0203; chiesto dall'utente, testi
+**confermati** il 2026-10-05). Quando qualcuno chiede di seguirti, il pulsante di
 «Profile» in alto a destra nelle pagine ha un tondo rosso col numero
 delle richieste in attesa («9+» oltre nove), sopra il suo angolo in alto a
 destra; VoiceOver dice «Profile, 2 follow requests». L'app lo chiede

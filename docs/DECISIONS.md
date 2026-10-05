@@ -10312,6 +10312,10 @@ sempre aperta col server (troppo per un numero).
 
 - Un telefono con l'app aperta fa una richiesta piccola al minuto in più.
 - Solo app: si può pubblicare senza toccare il server.
-- Quattro testi nuovi in inglese e nelle quattro lingue, da confermare
-  con l'utente: «Follow back», «Follow {name} back», «Profile, {count}
-  follow request(s)».
+- Quattro testi nuovi in inglese e nelle quattro lingue: «Follow back»,
+  «Follow {name} back», «Profile, {count} follow request(s)».
+
+**Confermato dall'utente** (2026-10-05, «va bene così, tieni il giro al
+minuto e fai il merge»): il numero (punto 1), quando si spegne (punto 3),
+i testi, e il giro ogni 60 secondi (punto 4), che il coordinatore
+proponeva di togliere per non caricare il server.

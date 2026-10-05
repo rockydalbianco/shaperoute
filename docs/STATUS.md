@@ -156,17 +156,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-239 — Il numero rosso delle richieste di follow, e «Follow
-  back»** (ADR-0203; chiesto dall'utente il 2026-10-05). Solo app, nessuna
-  modifica all'API. Sul pulsante di «Profile», in alto a destra, un tondo
-  rosso con quante richieste di follow aspettano (chiesto all'apertura,
-  ogni minuto e al ritorno dell'app); «Profile» si apre con «Requests»
-  già aperto; una richiesta accettata resta nella riga con «Follow back».
-  PR aperta dal branch `feat/TASK-239-follow-request-badge`. **Non visto
-  su un telefono**: solo i test. **Da confermare con l'utente**: i quattro
-  testi e quando il numero sparisce (oggi: quando ogni richiesta ha una
-  risposta). Le notifiche ad app chiusa restano TASK-185. Da dove
-  riprendere: `tasks/TASK-239.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -520,6 +509,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-239: il numero rosso delle richieste di follow, e
+  «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).
+  Sul pulsante di «Profile», in alto a destra, un tondo rosso con quante
+  richieste di follow aspettano: l'app lo chiede all'apertura, al ritorno
+  sullo schermo e ogni minuto mentre è aperta (`social/followRequests.ts`,
+  `GET /me/follow-requests?limit=1`). «Profile» si apre con «Requests» già
+  aperto; una richiesta accettata resta nella riga con «Follow back».
+  Nessuna modifica all'API. **Confermati dall'utente** (2026-10-05): il
+  numero, che si spegne quando ogni richiesta ha una risposta, i testi e il
+  giro al minuto. **Non visto su un telefono**: esce con la prossima
+  pubblicazione (del coordinatore, con l'ok dell'utente); da provare
+  sull'iPhone con due account. Le notifiche ad app chiusa restano
+  TASK-185. `tasks/TASK-239.md`.
 - **App, API e server** — TASK-233: «Explore» della canoa come la corsa, e
   tutti i laghi (ADR-0196; chiesto dall'utente il 2026-10-05, scelte
   confermate una per una; PR #319, merge `1dc4bb9`, e la parte B). Con

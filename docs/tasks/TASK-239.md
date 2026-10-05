@@ -1,6 +1,6 @@
 # TASK-239 — Il numero rosso delle richieste di follow, e «Follow back»
 
-**Stato**: In corso
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-239-follow-request-badge`
 **Dipende da**: TASK-211 (A e B, in `main` e sul server). **ADR**: ADR-0203.
 
@@ -59,7 +59,6 @@ a seguire a sua volta sono tre tocchi: il cerchio, «Accept», «Follow back».
 - [x] Chi si segue già non ha «Follow back».
 - [x] Una richiesta rifiutata sparisce come prima.
 - [x] I testi nuovi sono nelle quattro tabelle (`tables.test.ts` verde).
-- [ ] Visto su un iPhone o nel simulatore (non fatto: vedi «Esito»).
 
 ## File toccati
 
@@ -94,6 +93,26 @@ docs/tasks/TASK-239.md
 - «Follow back» nell'elenco «Followers».
 - Un avviso per commenti e reazioni: stesso posto, altro task.
 
+## Scelte dell'utente (2026-10-05)
+
+Viste a codice scritto, confermate con «va bene così, tieni il giro al
+minuto e fai il merge»:
+
+- il **numero** rosso (non il pallino semplice);
+- si spegne **quando ogni richiesta ha avuto una risposta**, non quando
+  le si guarda;
+- i testi: «Follow back» (it «Segui anche tu»), «Follow {name} back»,
+  «Profile, {count} follow request(s)»;
+- l'app chiede il numero **anche ogni minuto** mentre è aperta: il
+  coordinatore proponeva solo all'apertura e al ritorno, per il server
+  piccolo; l'utente ha scelto di tenere il giro.
+
 ## Esito
 
-*(si compila a fine task)*
+PR #343. Il numero rosso sul pulsante di «Profile», «Requests» già aperto
+e «Follow back» nella riga accettata funzionano nei test (suite dell'app
+1981 verde). **Non visto su un iPhone né nel simulatore**: posizione e
+misura del numero sono da guardare alla prossima pubblicazione, con la
+prova a due account già aperta per TASK-211 B. Rimandato: le notifiche ad
+app chiusa (TASK-185); de/es/fr dei testi nuovi non riletti da un
+madrelingua.

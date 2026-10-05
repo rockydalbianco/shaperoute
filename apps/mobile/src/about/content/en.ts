@@ -105,6 +105,7 @@ const help: AboutDocument = {
             "Profile picture, email and phone number. The phone number is optional and only you see it.",
             "Language: English, Deutsch, Italiano, Español or Français. The voice follows it.",
             "Offline maps: the phone keeps the maps around you and draws routes by itself; «Delete» frees the space.",
+            "Units: kilometres or miles. For now the miles show in «My activities», in «Favorites» and in «Explore».",
           ],
         },
       ],

@@ -52,8 +52,8 @@ In coda, dopo o accanto:
   sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
   (TASK-178, sotto), email e numero di telefono anche (TASK-183, «In
   lavorazione»), le unità di misura hanno la parte A (TASK-182, «In
-  lavorazione»); restano **TASK-184**
-  «Help», «Terms», «Privacy» (dopo TASK-152: testi e contatti), **TASK-185**
+  lavorazione»), «Help», «Terms» e «Privacy» sono fatte, i due testi
+  legali come bozze (TASK-184, «In lavorazione»); resta **TASK-185**
   le notifiche email e push (per ultime: serve qualcosa da notificare, un
   servizio di posta, `expo-notifications`, una build propria). Tutti Todo,
   senza task file; l'utente: «li svilupperemo più avanti».
@@ -522,6 +522,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
   «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito».
+- **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
+  dall'utente il 2026-10-05: una mini guida, e le prime bozze di
+  condizioni e privacy). In revisione (branch
+  `feat/TASK-184-help-terms-privacy`, solo app, nessuna dipendenza). Le
+  tre righe di «About» in «Settings» aprono ognuna il suo testo come
+  pagina, con «←» che torna a «Settings» com'era. I testi sono dati in
+  `src/about/content/`, in inglese e in italiano (con tedesco, spagnolo e
+  francese l'app mostra l'inglese). **«Terms» e «Privacy» sono bozze** e
+  lo dicono in cima («Draft — not final yet.»). **Aspettano l'utente**:
+  i segnaposto da riempire (`[name]`, `[contact email]`,
+  `[governing law]`, le basi giuridiche), la lettura di un legale prima
+  dell'App Store, l'approvazione, e poi le altre tre lingue; l'elenco
+  intero dei punti aperti e di quello che «Privacy» non dice perché non
+  si è potuto verificare è in `tasks/TASK-184.md`, «Esito». Non visto su
+  un telefono. Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
+  aggiorna anche «Privacy».
 
 ## Completato
 

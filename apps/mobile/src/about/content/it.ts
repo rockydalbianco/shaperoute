@@ -102,6 +102,7 @@ const help: AboutDocument = {
             "Foto del profilo, email e numero di telefono. Il numero è facoltativo e lo vedi solo tu.",
             "Lingua: English, Deutsch, Italiano, Español o Français. La voce la segue.",
             "Mappe offline: il telefono tiene le mappe intorno a te e disegna i percorsi da solo; «Elimina» libera lo spazio.",
+            "Unità di misura: chilometri o miglia. Per ora le miglia si vedono in «Le mie attività», nei «Preferiti» e in «Explore».",
           ],
         },
       ],

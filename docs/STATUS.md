@@ -175,10 +175,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   una forma a pezzi (`PEN_UP_SHAPES`), solo su strada; nell'app
   «Lift the pen between parts», acceso di partenza, per le prime tre; la
   voce «Part done. Walk to the next part…» nelle cinque lingue; fino a 8
-  tratti a piedi. **Aspettano l'utente**: il giudizio degli occhi
-  staccati (campioni a 15 km), la conferma della frase della voce e della
-  penna alzata accesa; poi server (`draw_examples`) e pubblicazione.
-  `tasks/TASK-223.md`.
+  tratti a piedi. Sul server da `main` 3b6e821 (2026-10-05); la
+  pubblicazione dell'app è del coordinatore. **Occhi staccati su strada**:
+  sì a tutte e cinque le forme (gatto, pesce, teste, zucca; utente,
+  2026-10-05, `samples/LOG.md`); l'interruttore in «Draw» anche per loro è
+  un seguito da assegnare. **Aspettano l'utente**: la conferma della frase
+  della voce e della penna alzata accesa. `tasks/TASK-223.md`.
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia
   notturna dal 2026-10-02 (07:27Z, 18 s di API ferma); iscrizione,

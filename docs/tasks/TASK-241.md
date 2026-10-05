@@ -182,10 +182,31 @@ città (stesso componente). Parte B (PR #348, merge `69af6c6`): nemmeno
 VoiceOver legge più il punteggio. Parte C (PR #355, merge `b7a82da`): il
 post da condividere non ha più il punteggio, nemmeno nel testo per
 Strava. Parte D (PR #358, merge `78e9bc1`): «My activities» non lo
-mostra più, né nell'elenco né sulla corsa aperta. Parte E: via anche dai
-disegni del «Profile» e dalla fine corsa, dove l'app non lo chiede più
-all'API. **Il punteggio non si vede più da nessuna parte.** Le
-pubblicazioni le fa il coordinatore, con l'ok dell'utente: ogni parte
-esce con la prima che parte da un `main` che la contiene. Da decidere con
-l'utente: le due frasi della bozza di «Privacy»; da fare quando serve:
-togliere `src/api/trackScores.ts`.
+mostra più, né nell'elenco né sulla corsa aperta. Parte E (PR #365,
+merge `0294922`): via anche dai disegni del «Profile» e dalla fine corsa,
+dove l'app non lo chiede più all'API. **Il punteggio non si vede più da
+nessuna parte.** Le pubblicazioni le fa il coordinatore, con l'ok
+dell'utente: ogni parte esce con la prima che parte da un `main` che la
+contiene.
+
+**Cosa resta nell'API**, non toccata:
+
+- Il punteggio continua a essere calcolato e salvato dall'API al
+  salvataggio della corsa («Save» manda la corsa senza punteggio, com'era
+  già: `pauses`, `points`, `shape`, `similarity`, `style`, `title`,
+  `track`, `word`). `score` e `fidelity` restano nelle risposte di
+  `/me/activities` e dei disegni; l'app li legge e non li mostra. I
+  punteggi già salvati restano dove sono.
+- `POST /track-scores` esiste ancora ma l'app non lo chiama più. Con lui
+  **l'evento `run_scored` degli `insights` non viene più registrato**
+  (partiva da quella richiesta): se quel dato serve, è un seguito (il
+  server potrebbe registrarlo al salvataggio).
+- Nell'app `src/api/trackScores.ts` resta senza una schermata che lo
+  chiami: lo leggono i test della penna alzata (`toScoreRequest`).
+  Toglierlo è un seguito.
+- I post d'esempio del «Feed» tengono `score` nei dati: `feedRoute` lo usa
+  come somiglianza del percorso che si apre dal post.
+
+**Da decidere con l'utente**: le due frasi della bozza di «Privacy» che
+nominano il punteggio («…distance, duration, score…», ancora vera; «a run
+scored» fra gli eventi, non più vera).

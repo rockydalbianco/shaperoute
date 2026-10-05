@@ -9,12 +9,15 @@ type Segment = { left: number; top: number; length: number; angle: number };
  * The segments of `line` drawn in a box `width` × `height`, the line fitted
  * inside `pad` with north up and its proportions kept (metres east and north,
  * not degrees). No SVG in the app: each segment is a thin turned View.
+ * `gaps` are the points of `line` the pen comes to without drawing: the
+ * segment that ends at each is left out (a shape in pieces, TASK-226).
  */
 export function thumbSegments(
   line: LatLon[],
   width: number,
   height: number,
   pad: number,
+  gaps: readonly number[] = [],
 ): Segment[] {
   if (line.length < 2) {
     return [];
@@ -38,6 +41,9 @@ export function thumbSegments(
   ];
   const segments: Segment[] = [];
   for (let i = 1; i < line.length; i += 1) {
+    if (gaps.includes(i)) {
+      continue;
+    }
     const [x1, y1] = at(i - 1);
     const [x2, y2] = at(i);
     const length = Math.hypot(x2 - x1, y2 - y1);

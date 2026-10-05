@@ -59,6 +59,8 @@ export const EN: Phrasebook = {
   partUp: "Part done. Walk to the next part: the drawing is paused.",
   partDown: "Pen down: draw the next part.",
   rideToPart: "Part done. Ride to the next part: the drawing is paused.",
+  // On the water (TASK-226).
+  paddleToPart: "Part done. Paddle to the next part: the drawing is paused.",
   hours: (count) => units(count, "hour"),
   minutes: (count) => units(count, "minute"),
   seconds: (count) => units(count, "second"),

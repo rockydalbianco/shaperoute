@@ -66,6 +66,9 @@ type Props = {
   width: number;
   /** The line to draw; null while there is none, as an example not drawn yet. */
   line: LatLon[] | null;
+  /** The points of `line` reached without drawing: no segment ends there
+   * (a shape drawn in pieces on the water, TASK-226). */
+  gaps?: readonly number[];
   /** "Star · 5.1 km". */
   title: string;
   /** Under the title: where it is, or where its drawing has got to. */
@@ -96,6 +99,7 @@ type Props = {
 export function RouteCard({
   width,
   line,
+  gaps,
   title,
   detail,
   match,
@@ -111,8 +115,8 @@ export function RouteCard({
   );
   const picture = useFeedMap(framing, mapped, width, height, DRAWING_PAD);
   const segments = useMemo(
-    () => (line === null ? [] : thumbSegments(line, width, height, DRAWING_PAD)),
-    [line, width, height],
+    () => (line === null ? [] : thumbSegments(line, width, height, DRAWING_PAD, gaps)),
+    [line, width, height, gaps],
   );
   const tap = useTapNotSwipe(onPress);
   const body = (

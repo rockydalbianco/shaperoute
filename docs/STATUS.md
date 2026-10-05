@@ -677,9 +677,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   /track-scores` (PR #365, merge `0294922`). **Il punteggio non si vede
   più da nessuna parte nell'app**; l'API lo calcola ancora per le corse
   salvate. Conseguenza: l'evento `run_scored` degli `insights` non viene
-  più registrato (seguito, se serve). Restano da decidere con l'utente
-  due frasi della bozza di «Privacy» che lo nominano. Esce con la
-  prossima pubblicazione. `tasks/TASK-241.md`.
+  più registrato (seguito, se serve). **Parte F** («ok continua»
+  dell'utente alla proposta): dalla bozza di «Privacy» esce «a run
+  scored» fra gli eventi tenuti; resta «…distance, duration, score…»,
+  ancora vera. Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

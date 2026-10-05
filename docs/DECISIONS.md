@@ -10260,8 +10260,9 @@ solo scrivendone il nome.
 «Paddle», in «Draw», «Another place» deve far scegliere anche i laghi e i
 mari («lago di Levico Terme» dava solo «Via al Lago»). La regola delle
 parole, il mare, la distanza sui laghi piccoli e il testo del campo sono
-proposte all'utente, una alla volta (`tasks/TASK-240.md`, «Scelte
-dell'utente»). Numero dato dal coordinatore.
+**scelte dell'utente** del 2026-10-05, proposte una alla volta e tutte
+confermate (`tasks/TASK-240.md`, «Scelte dell'utente»). Numero dato dal
+coordinatore.
 
 **Contesto**: la ricerca della partenza chiede i luoghi all'API
 (Geoapify) o a Photon, che per un lago rispondono con vie e paesi. L'app

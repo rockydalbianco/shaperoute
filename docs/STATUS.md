@@ -160,17 +160,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-240 — Con «Paddle», laghi e spiagge anche in «Another place»**
-  (ADR-0204; chiesto dall'utente il 2026-10-05). In «Draw», con «Paddle»,
-  la ricerca della partenza offre i laghi e le spiagge dell'elenco di
-  «Explore» sopra le vie e i paesi, subito: «lago di Levico Terme» dà
-  «Lago di Levico», e sceglierlo mette la partenza sulla riva; un lago
-  piccolo porta la distanza a 1,5 o 1 km. Solo app, niente server; «Run» e
-  «Bike» com'erano. In revisione. **Aspettano l'utente**: la regola delle
-  parole, il mare (solo Jesolo e Riccione nell'elenco), la distanza sui
-  laghi piccoli, il testo «Lake, beach, city or street»
-  (`tasks/TASK-240.md`). Poi la pubblicazione, del coordinatore, e la
-  prova sull'iPhone.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -509,6 +498,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **App** — TASK-240: con «Paddle», laghi e spiagge anche in «Another
+  place» (ADR-0204; chiesto dall'utente il 2026-10-05, scelte tutte
+  confermate; PR #344). In «Draw», con «Paddle», la ricerca della partenza
+  offre i laghi e le spiagge dell'elenco di «Explore» sopra le vie e i
+  paesi, subito: «lago di Levico Terme» dà «Lago di Levico», e sceglierlo
+  mette la partenza sulla riva; un lago piccolo porta la distanza a 1,5 o
+  1 km; il campo dice «Lake, beach, city or street». Il mare: solo Jesolo
+  e Riccione. Solo app, niente server; «Run» e «Bike» com'erano. Esce con
+  la prossima pubblicazione, del coordinatore; da provare sull'iPhone.
+  Seguiti in `tasks/TASK-240.md`.
 
 - **Motore, API e app** — TASK-234: «Viene meglio a N km» (ADR-0197;
   chiesto dall'utente il 2026-10-05, il «passo 1»; PR #327, merge

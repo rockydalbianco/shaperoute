@@ -1899,9 +1899,9 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   - Le vie e i paesi restano quelli della ricerca di sempre: una partenza
     su un lungomare che non è nell'elenco funziona solo dove il server ha
     o riesce a scaricare l'acqua.
-  - Proposte in attesa della conferma dell'utente: la regola delle parole,
-    il mare, la distanza sui laghi piccoli, il testo del campo
-    (`tasks/TASK-240.md`).
+  - La regola delle parole, il mare (solo Jesolo e Riccione), la distanza
+    sui laghi piccoli e il testo del campo sono **confermati dall'utente**
+    il 2026-10-05 (`tasks/TASK-240.md`).
 - **Il risultato**: «heart · on the water · target 2 km». Il percorso
   parte dalla riva, dove si arriva a piedi: se è a più di 50 m dalla
   partenza chiesta, il segnaposto ciano «Start here» la segna, come per una

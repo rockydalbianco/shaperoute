@@ -685,6 +685,26 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nuovo gliene fa disegnare fino a 24 (circa un minuto di motore).
   `tasks/TASK-246.md`.
 
+- **Motore** — TASK-243: la penna si alza anche sui baffi del contorno
+  (ADR-0209; chiesto dall'utente il 2026-10-05 dopo il «sì» a TASK-242,
+  campioni prima/dopo giudicati «va bene»; PR #362). Con la penna alzata,
+  il contorno di una forma a pezzi non disegna più i suoi **baffi**: una
+  deviazione oltre 3/8 di altezza di pezzo che rientra vicino a dove esce
+  (salta al più 1/8 del lato del disegno di contorno, misurato lungo la
+  linea, e la sua strada è lunga almeno il doppio della distanza fra i
+  capi) diventa un tratto a piedi, al più due per contorno; le deviazioni
+  lunghe restano disegnate; la partenza resta il primo punto
+  (`pen_up._lifted`, `detours.py`). Senza `pen_up`, per le parole e
+  sull'acqua niente cambia. Su 42 richieste di prova (motore con
+  TASK-232) 26 identiche, 14 cambiano (10 con lo stesso disegno e un
+  baffo camminato; in 4 la ricerca sceglie un altro disegno, e in 2 la
+  somiglianza scende), una diventa disponibile (`ROUTE_ENGINE.md` §5).
+  In media 1 km disegnato in meno e 0,7 km a piedi in più dove cambia.
+  **Non sul server né pubblicato**: server e `draw_examples` li fa il
+  coordinatore con l'ok dell'utente; `engine.zip` è rifatto, il telefono
+  lo riceve con la prossima pubblicazione. Seguiti in
+  `tasks/TASK-243.md`.
+
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della
   faccina a Trento, campioni prima/dopo giudicati «sì, va bene»; PR

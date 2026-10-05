@@ -44,6 +44,11 @@ ora ha il database e il server. Gli altri Todo.
 
 In coda, dopo o accanto:
 
+- **TASK-235 — Gli annunci fra i post del «Feed»** (ADR-0198, chiesto
+  dall'utente il 2026-10-05): un annuncio nativo AdMob con «Sponsored»
+  ogni 5 post, al posto dell'annuncio a schermo intero all'inizio di ogni
+  ricerca (scelta dell'utente: sostituisce). Todo, task file in
+  `tasks/TASK-235.md`; solo unità di prova finché mancano TASK-150/152/153.
 - **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
   posizioni non si salva; il GPX di una corsa salvata; il cuore dei
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è

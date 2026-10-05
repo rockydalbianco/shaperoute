@@ -409,11 +409,17 @@ export const ES: Table = {
   // src/screens/RunDashboard.tsx
   Speed: "Velocidad",
   "Kilometre {km}: {speed} km/h": "Kilómetro {km}: {speed} km/h",
+  Mi: "Mi",
+  miles: "millas",
+  "Your first mile will show here.": "Tu primera milla aparecerá aquí.",
+  "Mile {mile}: {pace}": "Milla {mile}: {pace}",
+  "Mile {mile}: {speed} mph": "Milla {mile}: {speed} mph",
 
   // src/screens/RunPanel.tsx
   "Speed now": "Vel. ahora",
   "Avg speed": "Vel. media",
   "Last km": "Último km",
+  "Last mi": "Última mi",
 
   // src/screens/SignInScreen.tsx
   "Sign up": "Registrarse",

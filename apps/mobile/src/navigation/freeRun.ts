@@ -1,6 +1,8 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
 import { BASE_LANGUAGE, type Language } from "../i18n/languages";
+import { METRES_PER_MILE, metresPer } from "../units/format";
+import { appUnits, type Units } from "../units/units";
 import { wordsOf } from "../voice/words";
 import { activeMs, durationMs, type Track } from "./trackRecorder";
 import { endRun, loadRun, RESUME_WITHIN_MS, type SavedRun } from "./trackStore";
@@ -91,17 +93,29 @@ export function wholeKm(track: Track): number {
   return Math.floor(track.distanceM / 1000);
 }
 
+/** The whole kilometres in `track` or, with miles, its whole miles
+ * (TASK-182): what the voice counts, and says each one once. */
+export function wholeUnits(track: Track, units: Units = appUnits()): number {
+  return Math.floor(track.distanceM / metresPer(units));
+}
+
 /**
  * What the voice says when the run passes `km` kilometres: the time so far
  * and the average pace, as a running watch does, in the voice's `language`
- * (TASK-209).
+ * (TASK-209). With miles `km` counts miles, and the pace is a mile's
+ * (TASK-182).
  */
 export function kmAnnouncement(
   km: number,
   track: Track,
   language: Language = BASE_LANGUAGE,
+  units: Units = appUnits(),
 ): string {
   const ms = durationMs(track);
+  if (units === "mi") {
+    const pace = track.distanceM > 0 ? (ms / track.distanceM) * METRES_PER_MILE : 0;
+    return wordsOf(language, units).mile(km, ms, pace);
+  }
   const pace = track.distanceM > 0 ? (ms / track.distanceM) * 1000 : 0;
-  return wordsOf(language).kilometre(km, ms, pace);
+  return wordsOf(language, units).kilometre(km, ms, pace);
 }

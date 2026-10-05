@@ -722,8 +722,8 @@ disegna da sola, e fra una e l'altra si cammina senza disegnare
   l'altro come fra le lettere. Le forme che lo accettano sono
   `PEN_UP_SHAPES` in `shared-types`: `smiley`, `ghost`, `donut`, `sun`, e
   `cat`, `fish`, `dog_head`, `rabbit_head`, `pumpkin`, che staccano gli
-  occhi. Il risultato ha `shape` e `word: null`, con i `walks` (fino a 8,
-  i raggi del sole).
+  occhi. Il risultato ha `shape` e `word: null`, con i `walks` (su strada
+  fino a 8, i raggi del sole).
 - **Una forma a pezzi sull'acqua** (TASK-226, ADR-0188): `pen_up` vale
   anche con `"activity": "paddling"`. Il percorso lascia il contorno
   vicino ai pezzi, li disegna uno per volta e torna: i `walks` sono i
@@ -914,7 +914,7 @@ tipi dell'app in `apps/mobile/src/api/favorites.ts`.
 - Ognuno vede solo i suoi: la chiave di un altro dà `404`. `DELETE /me`
   cancella anche i preferiti.
 - **Una parola con la penna alzata** (TASK-199, ADR-0158), o una forma a
-  pezzi (TASK-223, al più 8 tratti): il corpo del `PUT` può avere `walks`, quelli del `RouteResult` (coppie `[da, a]` di
+  pezzi (TASK-223; al più 9 tratti da TASK-226, per l'acqua): il corpo del `PUT` può avere `walks`, quelli del `RouteResult` (coppie `[da, a]` di
   indici in `points`, «La penna alzata»), facoltativo. Si controllano come
   in `POST /track-scores`: fuori dai punti, all'indietro o sovrapposti,
   `422 invalid_request`. Il preferito intero ha **sempre** `walks`, vuoto

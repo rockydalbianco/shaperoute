@@ -51,8 +51,8 @@ ON_WATER_SHAPES_ONLY = "on the water only a shape of the catalogue is drawn"
 # Why a request with the pen up and no word is refused (TASK-197): the API
 # says it for an image too.
 PEN_UP_WITHOUT_WORD = "pen_up is for the letters of a word"
-# A shape is drawn with the pen up only if it has pieces (TASK-223), and
-# only on roads: on the water its pieces are not placed yet (TASK-226).
+# A shape is drawn with the pen up only if it has pieces (TASK-223), on
+# roads and on the water (TASK-226).
 PEN_UP_WITHOUT_PIECES = f"{PEN_UP_WITHOUT_WORD}, or the pieces of a shape"
 
 

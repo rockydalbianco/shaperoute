@@ -370,10 +370,10 @@ vale per una parola e per una forma del catalogo che ha pezzi o tratti
 staccabili (`shapes.in_pieces`): le quattro sopra e gatto, pesce, teste di
 cane e coniglio, zucca. `plan_route` e `ShapeJob.of_request` la scrivono con
 `pieces.compose_shape`, il risultato tiene `shape` e ha i `walks`. Una forma
-senza pezzi si rifiuta (`… or the pieces of a shape; heart has none`), e
-così sull'acqua (`on the water a shape is drawn with the pen down`): lì i
-pezzi non si piazzano ancora (TASK-226). Con la penna giù una forma a pezzi
-è una linea chiusa come le altre.
+senza pezzi si rifiuta (`… or the pieces of a shape; heart has none`).
+Sull'acqua la penna alzata vale da TASK-226 (§8, «Una forma a pezzi
+sull'acqua»): i pezzi si piazzano col contorno, senza `pieces.compose`. Con
+la penna giù una forma a pezzi è una linea chiusa come le altre.
 
 ### Il contorno da un'immagine (TASK-072, TASK-084)
 

@@ -8982,6 +8982,11 @@ da confermare sul telefono.
 14. **I preferiti** tengono i tratti a piedi anche di una forma di
    `PEN_UP_SHAPES`, e la riaprono chiesta con la penna alzata.
 
+**Aggiornamento** (2026-10-05, ADR-0188, TASK-226): la penna alzata delle
+forme a pezzi vale anche sull'acqua, e lì i tratti sono uno in più (il
+ritorno al contorno): al più 9, non 8. I punti 9–11 qui sopra dicono
+com'era prima.
+
 ## ADR-0184 — Il cuore su giallo, segno di Sgrava: il cuore dell'avvio, fermo, in un quadrato giallo, un componente solo
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-221). La richiesta («Dentro l'app, metti il cuore giallo sullo

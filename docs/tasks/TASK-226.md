@@ -177,7 +177,7 @@ forme. L'utente ha scelto tutte tranne il sole.
 - cuore, cerchio e stella sull'acqua (`test_bike_on_foot.py`) e la corsa
   (`test_kept_per_graph.py`): invariate;
 - i 32 esempi di `paddleExamples.json`, rifatti con il motore nuovo, sono
-  identici: cambia solo l'impronta, da `037e327adfe7` a `56eb201a0b31`.
+  identici: cambia solo l'impronta, da `037e327adfe7` a `43ef533d5d82`.
 
 **Test**: `test_water_pieces.py` (59: la richiesta, `_entered`, `_tour`,
 `_branch`, le nove forme su costa e lago con i tratti e i pezzi nella

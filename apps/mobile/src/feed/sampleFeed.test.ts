@@ -1,6 +1,6 @@
 import { SHAPES } from "@shaperoute/shared-types";
 
-import { SAMPLE_FEED } from "./sampleFeed";
+import { RUN_POSTS, SAMPLE_FEED } from "./sampleFeed";
 
 // As the app accepts a username (src/account/fields.ts).
 const USERNAME = /^[A-Za-z0-9_.]{3,20}$/;
@@ -13,11 +13,11 @@ function count(values: string[]): Map<string, number> {
   return counts;
 }
 
-test("fifteen drawings, each its own, each by its own runner", () => {
-  expect(SAMPLE_FEED).toHaveLength(15);
-  expect(new Set(SAMPLE_FEED.map((post) => post.id)).size).toBe(15);
-  expect(new Set(SAMPLE_FEED.map((post) => post.user)).size).toBe(15);
-  for (const post of SAMPLE_FEED) {
+test("fifteen drawings of runs, each its own, each by its own runner", () => {
+  expect(RUN_POSTS).toHaveLength(15);
+  expect(new Set(RUN_POSTS.map((post) => post.id)).size).toBe(15);
+  expect(new Set(RUN_POSTS.map((post) => post.user)).size).toBe(15);
+  for (const post of RUN_POSTS) {
     expect(post.user).toMatch(USERNAME);
     expect(post.title.length).toBeGreaterThan(0);
     expect(post.title.length).toBeLessThanOrEqual(60);
@@ -25,10 +25,10 @@ test("fifteen drawings, each its own, each by its own runner", () => {
 });
 
 test("seven cities, two drawings or more each, and no figure more than twice", () => {
-  const cities = count(SAMPLE_FEED.map((post) => post.city));
+  const cities = count(RUN_POSTS.map((post) => post.city));
   expect(cities.size).toBe(7);
   expect(Math.min(...cities.values())).toBeGreaterThanOrEqual(2);
-  const shapes = count(SAMPLE_FEED.map((post) => post.shape));
+  const shapes = count(RUN_POSTS.map((post) => post.shape));
   expect(Math.max(...shapes.values())).toBeLessThanOrEqual(2);
   // The figures are shapes of the catalogue, by the names of the contract.
   for (const shape of shapes.keys()) {
@@ -36,8 +36,9 @@ test("seven cities, two drawings or more each, and no figure more than twice", (
   }
 });
 
-test("each drawing has a line to draw, a run's time and a score", () => {
-  for (const post of SAMPLE_FEED) {
+test("each drawing of a run has a line to draw, a run's time and a score", () => {
+  for (const post of RUN_POSTS) {
+    expect(post.activity).toBeUndefined();
     expect(post.line.length).toBeGreaterThanOrEqual(20);
     expect(post.line.length).toBeLessThanOrEqual(120);
     for (const [lat, lon] of post.line) {
@@ -54,4 +55,16 @@ test("each drawing has a line to draw, a run's time and a score", () => {
     expect(pace).toBeGreaterThanOrEqual(5);
     expect(pace).toBeLessThanOrEqual(7);
   }
+});
+
+test("«Feed» shows the runs and, among them, the drawings on the water", () => {
+  expect(SAMPLE_FEED).toHaveLength(19);
+  expect(new Set(SAMPLE_FEED.map((post) => post.id)).size).toBe(19);
+  expect(new Set(SAMPLE_FEED.map((post) => post.user)).size).toBe(19);
+  // The runs keep their order.
+  expect(SAMPLE_FEED.filter((post) => post.activity === undefined)).toEqual(RUN_POSTS);
+  // On the water: the third drawing, then one every five.
+  expect(
+    SAMPLE_FEED.flatMap((post, i) => (post.activity === "paddling" ? [i] : [])),
+  ).toEqual([2, 7, 12, 17]);
 });

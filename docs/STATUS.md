@@ -44,6 +44,11 @@ ora ha il database e il server. Gli altri Todo.
 
 In coda, dopo o accanto:
 
+- **TASK-235 — Gli annunci fra i post del «Feed»** (ADR-0198, chiesto
+  dall'utente il 2026-10-05): un annuncio nativo AdMob con «Sponsored»
+  ogni 5 post, al posto dell'annuncio a schermo intero all'inizio di ogni
+  ricerca (scelta dell'utente: sostituisce). Todo, task file in
+  `tasks/TASK-235.md`; solo unità di prova finché mancano TASK-150/152/153.
 - **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
   posizioni non si salva; il GPX di una corsa salvata; il cuore dei
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
@@ -117,20 +122,21 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `3b6e821` dalle
-  02:42Z (ok dell'utente «Sì, aggiorna e pubblica», sessione di TASK-231),
-  con le migrazioni `0001`–`0015`, il motore di TASK-223 e TASK-230,
-  `/phone-zones` (le zone del telefono non sono ancora costruite), gli
-  esempi ridisegnati per 66 città su 66; immagine di prima
-  `shaperoute-api:before-task223`, copia del database
-  `shaperoute-2026-10-05T0241Z.dump`. **App** su `preview` da `main`
-  `e7bc8c1` (gruppo `f8951439`): le quattro forme nuove, la canoa in
-  «Explore» con otto forme, «Offline maps», «Share», le reazioni, il
-  confronto dei km nella voce. **Da provare sull'iPhone.** In `main` dopo:
-  TASK-226 A (#310, il motore dei pezzi sull'acqua): il server vuole un
-  altro aggiornamento con `draw_examples`, con l'ok dell'utente, **prima**
-  di pubblicare la parte B di TASK-226 (l'app). Strava spento finché
-  l'utente non scrive il secret sul server.
+- **Server e app, al 2026-10-05**. **Server**: su `main` `9deba3b` dalle
+  03:27Z (ok dell'utente «ok aggiorna il server e pubblica», sessione del
+  coordinatore), con le migrazioni `0001`–`0015` e il motore di TASK-226 A
+  (le forme a pezzi sull'acqua: una faccina da 2 km a Riccione in 12 s,
+  quattro tratti a penna alzata); fermo circa 14 secondi; immagine di
+  prima `shaperoute-api:before-task226`, copia del database
+  `shaperoute-2026-10-05T0327Z.dump`; `draw_examples` rilanciato alle
+  03:29Z (`data/draw-examples-2026-10-05-task226.log`). `/phone-zones` c'è,
+  le zone del telefono non sono ancora costruite. **App** su `preview` da
+  `main` `ef7ad90` (gruppo `1fc82a12`): in più rispetto a `f8951439`, le
+  forme a pezzi sull'acqua e l'interruttore degli occhi staccati su strada
+  (TASK-226 B). **Da provare sull'iPhone.** Il prossimo passo sul server è
+  l'acqua dei laghi di TASK-233: **prima** di quella `main` con la #319
+  non si pubblica. Strava spento finché l'utente non scrive il secret sul
+  server.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -144,24 +150,26 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-226 — Gli occhi staccati sull'acqua** (ADR-0188; chiesto
-  dall'utente il 2026-10-03, forme scelte il 2026-10-05: tutte quelle a
-  pezzi tranne il sole). **Parte A, il motore e l'API**, in `main` dalla
-  #310 (`15df224`): con `pen_up` e `paddling` una forma a pezzi si disegna
-  pezzo per pezzo; il percorso lascia il contorno dove gli occhi sono più
-  vicini, li disegna e torna, e i tratti a penna alzata sono i `walks`.
-  Campioni veri nei quattro luoghi: 36 su 36 a 2 km. Con la penna giù tutto
-  identico. **Parte B, l'app**, in PR: `pen_up` da solo con «Paddle» per
-  le otto forme, la pausa e la voce in canoa («Paddle to the next part»,
-  la penna giù 5 m prima), la riga dei km, le teste di «Explore» con gli
-  occhi staccati anche dentro l'app e nelle schede; e, seguito di
-  TASK-223, l'interruttore su strada per gatto, pesce, teste e zucca
-  (scelta dell'utente del 2026-10-05). **Ordine**: il server non ha la
-  parte A e rifiuta `pen_up` con `paddling`: prima l'aggiornamento del
-  server e `draw_examples`, con l'ok dell'utente, poi la pubblicazione
-  della B. Due testi nuovi da confermare; da provare sull'iPhone. Da dove
-  riprendere: `tasks/TASK-226.md`.
-
+- **TASK-228 — Il «Feed» sull'acqua** (ADR-0190; chiesto dall'utente il
+  2026-10-03, scelte del 2026-10-05). Fatto, in review: PR #322, aspetta
+  la coda dei merge. Fra i quindici disegni d'esempio di «Feed» ce ne sono
+  quattro fatti sull'acqua, sempre, con ogni sport: `greta_kayak` (cuore,
+  Lago di Garda), `leo.sup` (stella, Lago di Como), `irene_onwater` (luna,
+  Jesolo), `ale.paddle` (testa di cane a pezzi, Riccione), da 2 km, con
+  «Paddle» in testa alla riga dei fatti. I percorsi sono gli esempi dentro
+  l'app (`paddleExamples.json`): `src/feed/paddlePosts.ts` li legge, senza
+  una copia sua. Un tocco apre il percorso sull'acqua senza chiedere
+  all'API; lo sport scelto non cambia. `FeedScreen.tsx`, `App.tsx` e le
+  tabelle delle lingue non sono toccati. Solo app: esce con la prossima
+  pubblicazione. Da confermare con l'utente i quattro titoli; da provare
+  sull'iPhone. File toccati e dove riprendere: `tasks/TASK-228.md`.
+- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; Todo, chiesto
+  dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
+  riesce ma un tentativo già tracciato a un'altra distanza segue la forma
+  chiaramente meglio, l'API manda `better_distance_m` e l'app scrive la
+  riga con «Try N km». Il percorso scelto non cambia. Prima si misura
+  quanto spesso scatta. Il codice dopo la #310 (TASK-226), stessi file
+  del motore. `tasks/TASK-234.md`.
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal
@@ -264,6 +272,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `0011` e l'ok dell'utente). Poi **B** (l'app),
   dopo che l'utente ha confermato le proposte del task file; e TASK-208 A.
   Da dove riprendere: `tasks/TASK-211.md`.
+  **Parte B, l'app** (2026-10-05, ADR-0199; chiesta dall'utente: «ho
+  trovato il mio amico, ma non posso seguirlo»; «Requests» in «Profile»
+  scelto dall'utente): sul profilo di un altro il tasto «Follow» →
+  «Requested» → «Following»; in «Profile» i tre numeri «Requests»,
+  «Followers», «Following» con i loro elenchi («Accept», «Decline»,
+  «Remove»); un nome negli elenchi apre il profilo. Il server ha già l'API:
+  **manca solo pubblicare l'app** (con l'ok dell'utente, dal coordinatore).
+  Da fare: la prova sull'iPhone con due account; i testi nuovi (cinque
+  lingue) da confermare. L'aspetto non è stato visto su un telefono.
 - **TASK-208 — Pubblicare una corsa in stile Strava** (ADR-0170; scelte
   dell'utente del 2026-10-03: «How did it go?», tag degli iscritti per
   nome, fino a 3 foto, «Everyone», «Followers», «Only me»; e, durante la
@@ -478,6 +495,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **Motore, API e app** — TASK-226: gli occhi staccati sull'acqua
+  (ADR-0188; chiesto dall'utente il 2026-10-03, forme scelte il
+  2026-10-05: tutte quelle a pezzi tranne il sole). **Parte A**, #310
+  (`15df224`): con `pen_up` e `paddling` una forma a pezzi si disegna pezzo
+  per pezzo; il percorso lascia il contorno dove gli occhi sono più vicini,
+  li disegna e torna, e i tratti a penna alzata sono i `walks`; la distanza
+  chiesta è quella di tutto il percorso. Campioni veri nei quattro luoghi:
+  36 su 36 a 2 km. Con la penna giù tutto identico. **Parte B**, #315
+  (`9297984`): con «Paddle» `pen_up` da solo per le otto forme, la pausa e
+  la voce in canoa («Paddle to the next part», la penna giù 5 m prima), la
+  riga dei km, le teste di «Explore» con gli occhi staccati anche dentro
+  l'app e nelle schede; e, seguito di TASK-223, l'interruttore su strada
+  per gatto, pesce, teste e zucca. **Il server non ha la parte A** e
+  rifiuta `pen_up` con `paddling`: `main` non si pubblica finché il server
+  non è aggiornato, con `draw_examples` e l'ok dell'utente. Due testi nuovi
+  da confermare; da provare sull'iPhone. `tasks/TASK-226.md`.
 
 - **App** — TASK-217: la voce confronta ogni km col precedente
   (ADR-0180; chiesto e scelto dall'utente il 2026-10-03; PR #308, merge

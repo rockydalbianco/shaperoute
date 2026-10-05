@@ -9613,6 +9613,168 @@ Cambiano i percorsi di oggi dove una forma inclinata segue meglio: i
 campioni si rigiudicano. Le corse salvate prima restano col nord in
 alto.
 
+## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
+
+**Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-234 ·
+il consiglio da tentativi già fatti (il «passo 1») e la riga con «Prova»
+sono scelte dell'utente; soglie, campo e casi sono decisi dall'agente su
+delega dell'utente · estende ADR-0041
+
+**Contesto**: ADR-0041 propone una distanza solo quando il motore
+rifiuta. Se il cuore da 15 km riesce ma a 12 km verrebbe meglio, oggi
+nessuno lo dice. L'utente: «te cerchi un cuore da 15 km ma se con 12 viene
+meglio te lo dice». Fra due proposte ha scelto di partire da quella senza
+calcoli in più.
+
+**Decisione**:
+
+1. Il consiglio viene dai tentativi che la ricerca ha già tracciato
+   (`Search.attempts`): nessun tracciato e nessuna attesa in più.
+2. Un tentativo è «chiaramente meglio» quando il suo costo senza la parte
+   della distanza è più basso di quello del percorso scelto di almeno
+   `W_SHAPE × 0,05`, e la sua somiglianza è almeno 0,90. Sono i valori
+   di partenza: la soglia si decide misurando (TASK-234) e si scrive
+   qui.
+3. La distanza è la sua, arrotondata al km e dentro i limiti
+   dell'attività come `suggested_distance_m`; uguale a quella chiesta,
+   niente consiglio.
+4. Il percorso scelto non cambia: il consiglio è il campo nuovo
+   `better_distance_m` del risultato, `null` senza consiglio.
+5. L'app scrive «This heart comes out better at about 12 km.» con «Try
+   12 km» sotto il percorso, nelle cinque lingue, solo dentro le distanze
+   di «Draw», e mai per tornare alla distanza appena lasciata.
+6. La canoa resta fuori: ha già la sua distanza suggerita (ADR-0164).
+
+**Alternative scartate**: cercare apposta 2–3 distanze vicine dopo il
+primo percorso (il «passo 2»: 5–50 s di server per distanza; si valuta se
+il passo 1 scatta poco); consigliare in base alla sola somiglianza (un
+percorso con un baffo ripassato o una partenza spostata sembrerebbe
+migliore di quanto è).
+
+**Conseguenze**: il consiglio vede solo le distanze che la ricerca ha
+provato, cioè intorno a quella chiesta (scale fra 0,4 e 1,1 di quella
+iniziale): quanto spesso scatta va misurato prima di fare l'app. Come per
+ADR-0041, la distanza consigliata non è garantita: un nuovo disegno rifà
+la ricerca.
+
+## ADR-0199 — Seguire nell'app: il tasto sul profilo di un altro, tre numeri in «Profile» con i loro elenchi
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-211, parte B), dentro le **scelte dell'utente**: seguire vuole una
+richiesta (2026-10-03, ADR-0173) e le richieste si vedono in «Profile»,
+con i tre numeri «Requests», «Followers», «Following» che aprono gli
+elenchi (2026-10-05, chiesto con «ho trovato il mio amico, ma non posso
+seguirlo»). Numero preso come primo libero, detto al coordinatore.
+
+**Contesto**: l'API di ADR-0173 è sul server dal 2026-10-03, ma l'app
+aveva solo la ricerca (TASK-215): un iscritto trovato non si poteva
+seguire, e chi riceveva una richiesta non aveva dove accettarla.
+
+**Decisione**:
+
+1. **Il tasto sul profilo di un altro** (`social/FollowButton.tsx`, sotto
+   l'intestazione di `UserProfilePage`): «Follow» (bianco, l'unica cosa da
+   fare lì; il giallo resta del percorso) manda la richiesta e diventa
+   «Requested»; «Requested» toccato la ritira subito; «Following» chiede
+   prima «Stop following {name}?» con «Keep it» e «Unfollow», nella
+   pagina come le altre conferme dell'app, senza finestre di sistema. Lo
+   stato mostrato è quello che risponde l'API, mai uno supposto prima. Sul
+   proprio profilo e con un'API senza `follow` il tasto non c'è.
+2. **La riga sotto il nome** di un altro: «12 drawings · 3 followers · 5
+   following». Chi smette di seguire vede subito un follower in meno,
+   senza richiedere il profilo.
+3. **In «Profile»**, sotto «Edit profile», **tre numeri**
+   (`social/FollowLists.tsx`): «Requests», «Followers», «Following». Un
+   tocco apre l'elenco sotto la riga, un altro lo richiude: niente pagine
+   nuove in `ProfileScreen`. «Requests» ha un pallino `warning` quando
+   qualcuno aspetta: senza notifiche (TASK-185) è l'unico posto che lo
+   dice.
+4. **Negli elenchi**: una richiesta ha «Accept» (bianco) e «Decline»;
+   accettata, la persona passa in «Followers» senza richiedere gli
+   elenchi. Un follower ha «Remove», che chiede prima «Remove {name} from
+   your followers?». «Following» non ha tasti: si smette dal profilo.
+   Venti per pagina, poi «Show more».
+5. **Un nome in un elenco apre il profilo** di quell'iscritto sopra l'app
+   (`PeopleScreen` con `first`, senza la ricerca sotto); «←» torna a
+   «Profile», che richiede i numeri.
+6. **Un contesto nuovo**, `social/followsDoor.ts`, dato da `ProfileLayer`
+   a «Profile»: l'API, l'account e la via al profilo di un iscritto. Le
+   chiamate stanno in `api/follows.ts`.
+7. **«Following» è una parola sola** per il tasto e per l'elenco: una
+   traduzione che va per tutti e due (it «Segui già»), come «Keep it».
+8. Con un'API senza gli elenchi (`404`) i tre numeri non si mostrano.
+
+**Alternative scartate**: le richieste in cima a «Feed» (proposta
+all'utente, non scelta); pagine proprie per gli elenchi dentro
+`ProfileScreen` (più file di altri per lo stesso risultato); una finestra
+di sistema per «Unfollow» (l'app non ne usa per le conferme); cambiare il
+tasto prima della risposta dell'API (su una rete lenta direbbe
+«Requested» per una richiesta mai arrivata).
+
+**Conseguenze**: si può seguire e accettare, quindi «Followers» di
+TASK-208 ha qualcuno da mostrare. Le richieste si scoprono solo aprendo
+«Profile», fino alle notifiche (TASK-185). I testi nuovi, in cinque
+lingue, sono da confermare con l'utente. Bloccare resta TASK-121.
+
+## ADR-0190 — Il «Feed» sull'acqua: quattro post che leggono gli esempi dentro l'app
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-228 · quando
+si vedono, quanti, dove e i nomi sono scelte dell'utente; il resto è deciso
+dall'agente su delega dell'utente
+
+**Contesto**: «Feed» mostra quindici disegni d'esempio della corsa
+(ADR-0127), scritti in `sampleFeed.json` da `tools/sample_feed.py` a
+partire dal catalogo. L'utente ha chiesto anche personaggi inventati con
+percorsi fatti in canoa. Sull'acqua il catalogo non c'è: ci sono gli esempi
+dei quattro luoghi dentro l'app (`paddleExamples.json`, ADR-0189),
+disegnati dal motore sull'acqua del server. La condizione è che i percorsi
+dei post vengano dal motore, mai disegnati a mano.
+
+**Decisione**:
+
+1. **Sempre, mescolati** (utente): i post sull'acqua stanno fra quelli
+   della corsa con qualunque sport, il primo dopo due della corsa e poi
+   uno ogni quattro.
+2. **Quattro, uno per luogo** (utente): Lago di Garda, Lago di Como,
+   Jesolo, Riccione, con cuore, stella, luna e testa di cane, da 2 km.
+3. **I nomi** (utente): `greta_kayak`, `leo.sup`, `irene_onwater`,
+   `ale.paddle`.
+4. **I post non hanno coordinate loro**: `src/feed/paddlePosts.ts` tiene
+   solo il luogo, la forma e ciò che è inventato (nome, titolo, minuti,
+   punteggio), e legge il percorso da `PADDLE_EXAMPLES.bundled`. L'`id`
+   del post è quello dell'esempio.
+5. **Il tocco apre l'esempio**: `fetchPostRoute` di un post sull'acqua
+   restituisce il percorso dentro l'app, senza chiedere all'API. Lo sport
+   viene dal percorso (`activity: "paddling"`), come per un preferito o un
+   esempio di «Explore»: lo sport scelto dall'utente non cambia.
+6. **«Paddle» sulla scheda** è il nome dello sport come lo scrive il suo
+   bottone (`SPORTS`), uguale in ogni lingua, in testa alla riga dei
+   fatti: nessun testo nuovo da tradurre.
+7. `SAMPLE_FEED` resta il nome di ciò che «Feed» mostra; i quindici della
+   corsa sono `RUN_POSTS`.
+
+**Alternative scartate**:
+
+- Un `paddleFeed.json` scritto da un comando, come per la corsa: sarebbe
+  una seconda copia delle stesse coordinate, da rifare a ogni cambio del
+  motore sull'acqua insieme a `paddleExamples.json`.
+- Percorsi di altre lunghezze disegnati apposta (scartata dall'utente):
+  «Explore» non li avrebbe, e andrebbero tenuti dentro il feed.
+- Cambiare lo sport scelto quando si apre un post sull'acqua: un tocco su
+  un disegno non deve cambiare un'impostazione.
+- Una targhetta «Paddle» sopra il disegno: vuole uno stile nuovo; la riga
+  dei fatti c'è già e VoiceOver la legge.
+- Mettere i post in `FeedScreen.tsx` o aprirli da `App.tsx`: sono i file
+  di TASK-235, e non serve.
+
+**Conseguenze**: nessun file di dati nuovo e nessun comando nuovo; il peso
+dell'app non cambia. Rifare `paddleExamples.json` aggiorna anche i post;
+se un luogo o una forma dei quattro manca, il post sparisce e
+`paddlePosts.test.ts` lo dice. «Meanwhile, from the feed» in «Explore»
+(TASK-163) mostra gli stessi 19 disegni, quindi a volte uno sull'acqua.
+Senza API configurata un post toccato non si apre, come uno della corsa.
+Il feed vero (TASK-118) dovrà dire lo sport di ogni disegno: il campo
+`activity` di `SamplePost` è già quello.
+
 ## ADR-0196 — «Explore» della canoa come la corsa: l'elenco dei laghi dentro l'app, il più vicino per primo, forme più corte sui laghi piccoli
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-233 · «tutti

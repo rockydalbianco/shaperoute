@@ -30,6 +30,11 @@ type Props = {
   account: Pick<Account, "state" | "sessionEnded">;
   /** Back to «Feed», as it was left. */
   onBack: () => void;
+  /**
+   * A member whose profile it opens on, with no search: one touched in the
+   * lists of «Profile» (TASK-211). Back from it is `onBack`.
+   */
+  first?: Person | null;
   /** Behind a drawing opened from a profile: kept, with what was typed. */
   hidden?: boolean;
   /** The fake fetch of the tests. */
@@ -41,18 +46,23 @@ type Props = {
  * «Find friends» (TASK-215), over the app as «Profile» is: the members
  * found by name, and the profile of the one touched, read only
  * (`UserProfilePage`, TASK-116). Back from a profile goes to the names
- * found, which stay as they were; back from them goes to «Feed».
+ * found, which stay as they were; back from them goes to «Feed». Opened
+ * on a member of the lists of «Profile» (TASK-211), it is that profile
+ * alone, and back goes to «Profile».
  */
 export function PeopleScreen({
   apiUrl,
   account,
   onBack,
+  first = null,
   hidden = false,
   fetchFn,
   apiKey,
 }: Props) {
   const insets = useSafeAreaInsets();
-  const [person, setPerson] = useState<Person | null>(null);
+  const [person, setPerson] = useState<Person | null>(first);
+  // With the search under it, back from a profile goes to the names found.
+  const toNames = person !== null && first === null;
   return (
     <KeyboardAvoidingView
       style={[StyleSheet.absoluteFill, styles.screen, hidden && styles.hidden]}
@@ -73,7 +83,7 @@ export function PeopleScreen({
         <View style={styles.titleRow}>
           <Pressable
             style={styles.back}
-            onPress={person !== null ? () => setPerson(null) : onBack}
+            onPress={toNames ? () => setPerson(null) : onBack}
             accessibilityRole="button"
             accessibilityLabel={t("Back")}
           >
@@ -84,15 +94,17 @@ export function PeopleScreen({
           </Text>
         </View>
         {/* Kept while a profile is open: back finds the names as they were. */}
-        <View style={person !== null && styles.hidden}>
-          <PeopleSearch
-            apiUrl={apiUrl}
-            account={account}
-            onPick={setPerson}
-            fetchFn={fetchFn}
-            apiKey={apiKey}
-          />
-        </View>
+        {first === null && (
+          <View style={person !== null && styles.hidden}>
+            <PeopleSearch
+              apiUrl={apiUrl}
+              account={account}
+              onPick={setPerson}
+              fetchFn={fetchFn}
+              apiKey={apiKey}
+            />
+          </View>
+        )}
         {person !== null && (
           <UserProfilePage
             apiUrl={apiUrl}

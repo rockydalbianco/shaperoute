@@ -352,6 +352,20 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   figure venute meglio nelle sette città del catalogo, due per città e
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
   inventati.
+  **Fra i quindici ci sono quattro disegni fatti sull'acqua** (TASK-228,
+  ADR-0190, chiesto dall'utente): sempre, qualunque sia lo sport scelto,
+  il 3º, l'8º, il 13º e il 18º dei 19. Uno per luogo d'acqua di «Explore»
+  con «Paddle», ognuno con la sua forma da 2 km: `greta_kayak` un cuore sul
+  Lago di Garda, `leo.sup` una stella sul Lago di Como, `irene_onwater` una
+  luna a Jesolo, `ale.paddle` una testa di cane a Riccione, con gli occhi
+  staccati. La scheda è quella degli altri, con il luogo al posto della
+  città e la mappa del lago o del mare sotto la linea; la riga dei fatti
+  comincia con lo sport, «Paddle · Heart · 2.0 km · 26 min». Nomi, titoli,
+  tempi e punteggi sono inventati; i percorsi sono gli esempi che l'app ha
+  già per quei luoghi, disegnati dal motore sull'acqua vera. Un tocco apre
+  il percorso come un esempio di «Explore» con «Paddle», senza chiedere
+  niente all'API: «on the water», «Start» con l'avviso della canoa, la
+  linea senza indicazioni. Lo sport scelto non cambia.
   **Un tocco su una scheda apre il suo percorso** sulla mappa (TASK-188,
   ADR-0151, chiesto dall'utente), come un percorso di «Explore»: la stessa
   scheda con km, forma e città, «Start» per correrlo, «Export GPX», e il
@@ -381,7 +395,7 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   **Senza account** il tasto apre «Profile» con «Log in to find your
   friends.» sopra «Sign up». Un server senza la ricerca (prima della
   migrazione `0011`) fa dire «This server cannot look for members yet.».
-  Il tasto «Follow» sul profilo è di TASK-211, parte B.
+  Sul profilo c'è il tasto «Follow» (TASK-211, sotto).
   **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
   chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
   stile dell'app. È una foto, non una mappa da muovere: la fa una pagina
@@ -538,7 +552,8 @@ mappa è quella di prima.
   della corsa: cosa mostrano con la bici è una scelta dell'utente ancora
   aperta (`tasks/TASK-190.md`, «Domande aperte»). **Con «Paddle»** cambiano
   «Draw», «Start» ed «Explore» (sotto, «Sull'acqua»); «Feed» e la schermata
-  della corsa restano quelli della corsa.
+  della corsa restano quelli della corsa. I quattro disegni sull'acqua di
+  «Feed» (TASK-228, sopra) ci sono con ogni sport.
 - **«Strava»** (TASK-187), solo se l'API ha Strava: «Connect with
   Strava» (il pulsante ufficiale di Strava, TASK-218, come a fine corsa)
   con «Send the runs you save in Sgrava to your Strava
@@ -619,9 +634,41 @@ come in «Profile» (sopra), vuota «No drawings yet.»; un disegno toccato si
 apre sulla mappa. Mentre arriva dice «Loading the profile…»; un profilo che
 non c'è, o un'API senza profili, «This profile is not available.»; senza
 account «Log in to see the profiles of the others.». **Ci si arriva da
-«Find friends»**, la lente in cima a «Feed» (TASK-215, ADR-0178, sopra); altri
+«Find friends»**, la lente in cima a «Feed» (TASK-215, ADR-0178, sopra), e
+dagli elenchi di chi segue in «Profile» (sotto); altri
 ingressi (un like, un commento) li decide l'utente
 (`tasks/TASK-116.md`, «Esito»).
+
+**Seguire** (TASK-211, ADR-0173 e ADR-0199; testi **da confermare**). La
+riga sotto il nome di un altro dice anche chi lo segue: «12 drawings · 3
+followers · 5 following». Sotto l'intestazione, un tasto largo:
+
+| Stato | Tasto | Toccato |
+|---|---|---|
+| non lo segui | **«Follow»**, bianco | manda la richiesta: l'altro accetta o rifiuta |
+| hai chiesto | «Requested», neutro | ritira la richiesta, subito |
+| lo segui | «Following», neutro | chiede «Stop following {name}?» con «Keep it» e «Unfollow» |
+
+Una richiesta rifiutata rimette «Follow»: niente dice che è stata
+rifiutata. Se la richiesta non parte, il tasto resta com'era e sotto dice
+perché. Sul proprio profilo il tasto non c'è.
+
+**In «Profile»**, sotto «Edit profile», tre riquadri con un numero:
+**«Requests»**, **«Followers»**, **«Following»** (un trattino finché non
+arrivano). Uno toccato apre sotto il suo elenco, toccato di nuovo lo
+richiude. «Requests» ha un pallino arancio (`warning`) quando qualcuno
+aspetta: è l'unico posto che lo dice, finché non ci sono le notifiche
+(TASK-185). Ogni riga ha la foto (o l'iniziale) e il nome, che toccato
+apre il profilo di quella persona sopra l'app; «←» torna a «Profile».
+
+| Elenco | Tasti della riga | Vuoto |
+|---|---|---|
+| «Requests» | «Accept» (bianco), «Decline» | Nobody is asking to follow you. |
+| «Followers» | «Remove», che chiede «Remove {name} from your followers?» con «Keep it» e «Remove» | Nobody follows you yet. |
+| «Following» | nessuno: si smette dal profilo | You are not following anyone yet. Find friends from Feed. |
+
+Accettata, la persona passa subito in «Followers». Venti per volta, poi
+«Show more». Con un server senza gli elenchi i tre riquadri non ci sono.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale

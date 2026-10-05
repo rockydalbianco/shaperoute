@@ -50,10 +50,9 @@ In coda, dopo o accanto:
   TASK-187, da chiedere all'utente. Tutti in `tasks/TASK-172.md`.
 - **Le voci di «Settings»**, elencate dall'utente il 2026-10-02 e già
   sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
-  (TASK-178, sotto), email e numero di telefono anche (TASK-183, «In
-  lavorazione»), le unità di misura hanno la parte A (TASK-182, «In
+  (TASK-178, sotto), email e numero di telefono anche (TASK-183), le unità di misura hanno la parte A (TASK-182, «In
   lavorazione»), «Help», «Terms» e «Privacy» sono fatte, i due testi
-  legali come bozze (TASK-184, «In lavorazione»); resta **TASK-185**
+  legali come bozze (TASK-184); resta **TASK-185**
   le notifiche email e push (per ultime: serve qualcosa da notificare, un
   servizio di posta, `expo-notifications`, una build propria). Tutti Todo,
   senza task file; l'utente: «li svilupperemo più avanti».
@@ -506,10 +505,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
   «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito».
-- **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
+## Completato
+
+- **App** — TASK-184: «Help», «Terms», «Privacy» (ADR-0205; chiesto
   dall'utente il 2026-10-05: una mini guida, e le prime bozze di
-  condizioni e privacy). In revisione (branch
-  `feat/TASK-184-help-terms-privacy`, solo app, nessuna dipendenza). Le
+  condizioni e privacy). PR #353, merge `8dfb62a`, 2026-10-05; solo
+  app, nessuna dipendenza. Le
   tre righe di «About» in «Settings» aprono ognuna il suo testo come
   pagina, con «←» che torna a «Settings» com'era. I testi sono dati in
   `src/about/content/`, in inglese e in italiano (con tedesco, spagnolo e
@@ -519,11 +520,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `[governing law]`, le basi giuridiche), la lettura di un legale prima
   dell'App Store, l'approvazione, e poi le altre tre lingue; l'elenco
   intero dei punti aperti e di quello che «Privacy» non dice perché non
-  si è potuto verificare è in `tasks/TASK-184.md`, «Esito». Non visto su
-  un telefono. Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
+  si è potuto verificare è in `tasks/TASK-184.md`, «Esito». Visto nel
+  simulatore in italiano (la cima di ogni pagina, senza tocchi:
+  `out/task184/`); esce con la prossima pubblicazione; da provare
+  sull'iPhone lo scorrimento e il «←». Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
   aggiorna anche «Privacy».
-
-## Completato
 
 - **API e app** — TASK-183: cambiare email e numero di telefono da
   «Settings» (ADR-0150; chiesto dall'utente il 2026-10-02 e di nuovo il

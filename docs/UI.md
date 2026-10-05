@@ -486,6 +486,42 @@ o qualsiasi sotto il proprio disegno) chiede «Delete this comment?» con
 testo è sempre solo testo**: un link non si tocca, un tag HTML si legge
 com'è scritto, e il commento non entra mai nella WebView della mappa.
 
+**Le reazioni di un disegno** (TASK-119, ADR-0193, scelte dell'utente del
+2026-10-04): nella scheda di un disegno aperto, **sulla riga del pulsante
+dei commenti, alla sua sinistra**, un pulsante tondo neutro con la propria
+reazione (senza, una faccina 🙂 spenta: «React» per VoiceOver, poi «Your
+reaction: Fire»), poi **le tre più usate** (a pari numero, l'ordine della
+barra) e **il totale** («7»; per VoiceOver «7 reactions»); senza reazioni
+solo il pulsante. Senza account, con un'API senza reazioni o se non
+arrivano, la riga ha solo i commenti, com'era. **Il tocco sul pulsante
+apre la barra delle sei** sopra la riga (un altro tocco la chiude): il
+cuore di Sgrava sul suo quadrato giallo (`HeartBadge`), 🔥 👏 💪 😂 😮, la
+propria con un bordo chiaro; per VoiceOver «Sgrava heart, super like»,
+«Fire», «Clap», «Strong», «Laugh», «Wow». **Una a testa**: un'emoji scelta
+si vede **subito** e prende il posto della propria; la propria toccata di
+nuovo la toglie; una per volta (finché l'API non risponde un'altra scelta
+non parte). Se l'API non la tiene (senza rete, troppe in un minuto) **torna
+com'era** e sotto la riga c'è «Your reaction wasn't saved. Check the
+connection.», che va via alla scelta dopo. **Il cuore di Sgrava è il super
+like**: si mette con **un doppio tocco sulla mappa del disegno aperto**, o
+dal cuore nella barra (così anche con VoiceOver). Compare **il cuore
+grande** (128 pt, sul giallo) sopra il disegno e, dal basso sopra la
+tastiera, il foglio **«Super like»**: il campo «Write a comment to send
+your super like», sotto «At least 2 characters» finché mancano, «Cancel» e
+**«Send»**, spento sotto i 2 caratteri (senza gli spazi ai lati) e oltre i
+500 (da 450 il conto, come nei commenti). **Non conta prima che l'API lo
+tenga** con il suo commento: mandato, il foglio si chiude, il cuore è la
+propria reazione e il pulsante dei commenti ne conta uno in più.
+«Cancel», o un tocco sopra il foglio, **non lascia niente**. Un commento
+negativo: l'avviso di ADR-0176 («You can't write negative comments in this
+app. Try another app.»), il foglio resta con le parole da cambiare, niente
+super like; senza rete il motivo nel foglio («No connection. Try again when
+you are online.»). **Con il super like già messo** il doppio tocco mostra
+il cuore grande per un attimo (0,9 s) e non cambia niente; il proprio cuore
+toccato nella barra lo toglie, e il commento resta. **Su un disegno aperto
+il doppio tocco non fa lo zoom** della mappa (le due dita sì); altrove la
+mappa è quella di prima.
+
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 
 - **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,

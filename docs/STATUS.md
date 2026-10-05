@@ -498,7 +498,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **App** — TASK-235: la pubblicità fra i post del «Feed» (ADR-0198,
   supera in parte ADR-0102; chiesto dall'utente il 2026-10-05, con la
   scelta che **sostituisce** l'annuncio a schermo intero all'inizio di ogni
-  ricerca). Un annuncio nativo AdMob dopo ogni 5 post, solo fra due post
+  ricerca; PR #324, merge `7452ec6`). Un annuncio nativo AdMob dopo ogni 5 post, solo fra due post
   (tre nei 19 d'esempio), con «Sponsored» in alto grande come il nome di
   un corridore, nelle cinque lingue. Uno alla volta: il primo quando si
   apre il Feed, il successivo quando l'utente arriva al posto del

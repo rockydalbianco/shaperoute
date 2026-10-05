@@ -10930,3 +10930,93 @@ lingue con una regola (ADR-0172): ogni testo è scritto in inglese dentro
 - `SettingsPage` chiede a chi la mostra di aprire i testi (`onAbout`);
   restano «Soon» solo le due righe di «Notifications» (TASK-185).
 - Solo app: nessuna dipendenza, niente server.
+
+## ADR-0149 — aggiornamento (parte C): la corsa e la voce in miglia
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente (TASK-182,
+parte C). Le **scelte dell'utente** restano quelle del 2026-10-03: con le
+miglia le distanze in mi, il passo in min/mi, la voce a ogni miglio, le
+distanze brevi in piedi; in bici la velocità. Il modo, e i numeri qui
+sotto, sono dell'agente e **vanno detti all'utente**.
+
+**Contesto**: dopo la parte A, con «Miles» la corsa, la sua fine e la
+voce erano ancora in km. La traccia sul telefono, i punti in cui la voce
+parla (ADR-0052, ADR-0179) e quello che si salva sono in metri; i
+parziali di «Data» e il confronto della voce (ADR-0180) nascono dalla
+traccia, per km. La voce ha le sue tabelle per lingua (ADR-0171).
+
+**Decisione**:
+
+1. **I parziali per miglio si calcolano sul telefono, dalla traccia.**
+   `unitTimesMs(track, unitM)` in `runMetrics.ts` è `kmTimesMs` con la
+   lunghezza del tratto come parametro (`kmTimesMs` lo chiama con 1000);
+   `splits(track, unitM)` e `lastKmS(track, unitM)` lo stesso. Un miglio
+   che finisce fra due posizioni finisce in proporzione, le pause sono
+   escluse, quello che avanza dopo l'ultimo miglio intero non è un
+   parziale: come per i km. Niente si salva per miglio: non esistono
+   parziali salvati (né alla fine della corsa né in «My activities»), e
+   quello che va all'API o resta nel file della corsa non cambia.
+2. **In bici la voce parla ogni 5 miglia** (`RIDE_MI_EVERY`, 8 km) al
+   posto di ogni 10 km (`RIDE_KM_EVERY`, scelta dell'utente del
+   2026-10-03): è il numero tondo di miglia più vicino, e a 15 mph sono
+   venti minuti. Dal decimo miglio confronta le ultime 5 con le 5 prima.
+3. **Le soglie non cambiano con l'unità**: stesso passo entro 2 secondi,
+   compresi, anche fra due miglia (`SAME_PACE_S`); stessa velocità entro
+   0,5 km/h, compresi, misurati in km/h anche con le miglia
+   (`SAME_SPEED_KMH`): la frase della bici non ha numeri.
+4. **L'incitamento dopo il terzo miglio** (`CHEER_MI`, 4,8 km): il miglio
+   più vicino ai 5 km scelti dall'utente (`CHEER_KM`); al quinto miglio
+   sarebbero 8 km.
+5. **I piedi ai cinquanta, mai zero** (`roundFeet` in
+   `src/units/runFormat.ts`), come `shortDistanceLabel` della parte A:
+   50 m → «150 feet», 100 m → «350 feet». **I punti in cui la voce parla
+   restano in metri** (50 m a piedi, 100 m in bici, il tratto con la bici
+   a mano): cambiano solo le parole. Il banner scrive i piedi allo stesso
+   modo e passa alle miglia, con un decimale e il punto, da 1000 piedi.
+6. **La voce legge l'unità quando parla**: `wordsOf(lingua, unità =
+   appUnits())` dà le frasi con le distanze brevi in metri o in piedi
+   (`voiceWords(book, units)`); il navigatore e la bici a mano non sanno
+   niente delle unità. Le frasi del miglio sono voci nuove di ogni
+   tabella (`mile`, `mileFaster`, `mileSlower`, `mileSamePace`,
+   `rideMiles`, `rideMilesFaster`…, `inFeet`, `walkTheBikeFeet`), accanto
+   a quelle in km, che restano alla lettera. I ganci della corsa leggono
+   `appUnits()` a ogni posizione: se l'unità cambia a corsa iniziata, il
+   conto riparte da dove si è, senza ridire niente.
+7. **Sullo schermo**: `useRunNumbers` chiama `useUnits()` e porta l'unità
+   nei numeri; la distanza con due decimali e il punto, come in km
+   (ADR-0149, punto 3); la velocità in mph con un decimale. I testi nuovi
+   in `t()` con una riga per unità (ADR-0149, punto 8): «Last mi»,
+   «miles», «Mi», «Your first mile will show here.», «Mile {mile}:
+   {pace}», «Mile {mile}: {speed} mph». I testi in km della schermata,
+   non ancora tradotti (ADR-0172), restano come sono.
+8. **Resta in metri**: la traccia, il file della corsa, il GPX, l'API, i
+   punti delle svolte, la salita («Elev. gain», in m) e le calorie.
+
+**Alternative scartate**: ogni 10 miglia in bici (16 km: a 15 mph la voce
+tacerebbe quaranta minuti); ogni miglio in bici (un miglio dura quattro
+minuti: troppo, per la stessa ragione per cui i km sono ogni 10);
+l'incitamento al quinto miglio (8 km: non è più «dopo i primi 5 km»); i
+piedi alla decina («160 feet» non lo dice nessuno, ADR-0149); le yarde
+(fuori scope); convertire le soglie del confronto (3,2 s al miglio, 0,3
+mph: numeri che nessuno ha scelto, per una frase che in bici non ha
+numeri); salvare i parziali per miglio (un contratto in più, per una cosa
+che il telefono calcola dalla traccia); rinominare `kilometre`, `kmFaster`
+e le altre voci delle tabelle in nomi senza unità (cambierebbe i test di
+TASK-209/216/217, che devono passare come sono).
+
+**Conseguenze**:
+
+- Con «Miles» la corsa, la navigazione, la sua fine e la voce sono in
+  miglia; con «Kilometres» niente cambia (i test di prima passano senza
+  modifiche). `FOLLOWS_PHONE` resta spento: lo accende chi chiude la
+  parte B.
+- **Da confermare con l'utente**: i tre numeri sopra (5 miglia in
+  bici, il terzo miglio, i piedi ai cinquanta), i sei testi nuovi e le
+  frasi della voce nelle cinque lingue (`tasks/TASK-182.md`, «Parte C»).
+- **Non ascoltato**: come la voce del telefono legge «feet», «miles per
+  hour», «miglia orarie» e il francese «mile» va sentito su un telefono.
+- `src/activities/RunEnd.tsx` non scrive distanze e non è stato toccato:
+  la fine della corsa con i km è in `FinishScreen.tsx` e
+  `FreeRunScreen.tsx`.
+- `kmLabel` e `paceLabel` di `navigation/freeRun.ts` restano in km per chi
+  li usa ancora (`share/postRun.ts`, `social/DrawingCard.tsx`: parte B).
+- Solo app: nessuna dipendenza, niente server.

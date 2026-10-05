@@ -514,7 +514,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   altri task): «Draw» (la distanza chiesta, passi e limiti in miglia: una
   scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
-  «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito».
+  «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito». **Parte C**
+  (2026-10-05, branch `feat/TASK-182-c-run-and-voice`, in revisione): con
+  «Miles» le schermate della corsa, la navigazione, la fine della corsa e
+  la voce sono in miglia (parziali per miglio calcolati sul telefono, la
+  voce a ogni miglio e in bici ogni 5, le svolte in piedi, mph in bici),
+  e aspettano l'utente i testi e le frasi nuove e tre numeri scelti
+  dall'agente (`tasks/TASK-182.md`, «Parte C»; ADR-0149, aggiornamento).
 - **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
   dall'utente il 2026-10-05: una mini guida, e le prime bozze di
   condizioni e privacy). In revisione (branch

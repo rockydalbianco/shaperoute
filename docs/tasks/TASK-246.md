@@ -66,6 +66,8 @@ a parte.
       una settimana; senza rete il giro si ferma e riprende all'apertura
       dopo; un posto senza acqua sul server si salta.
 - [x] Al massimo una richiesta ogni 6 secondi.
+- [x] Con l'app in secondo piano non parte nessuna richiesta: il giro
+      aspetta che l'app torni davanti.
 - [x] Senza risposta del server alle mappe della zona il giro non parte.
 - [x] Typecheck, lint, prettier e tutti i test dell'app verdi.
 - [x] Il giro vero contro un'API vera con l'acqua dei laghi, sul Mac: le

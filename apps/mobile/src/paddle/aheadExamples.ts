@@ -1,4 +1,5 @@
 import type { LatLon, Shape } from "@shaperoute/shared-types";
+import { AppState } from "react-native";
 
 import { requestRoute } from "../api/routes";
 import {
@@ -33,7 +34,8 @@ import {
  * app, or were drawn before, costs nothing. A shape the API could not draw
  * there is not asked again for a week. Trouble that is not a shape's (no
  * network, too many requests) ends the round: it goes on at the next
- * opening.
+ * opening. With the app in the background nothing is asked: the round
+ * waits for it to come back.
  */
 
 /** The places whose shapes are drawn ahead, the nearest first. */
@@ -68,6 +70,12 @@ export function placesAhead(
     .filter(({ away_m }) => (away_m ?? Infinity) <= NEAR_ME_M)
     .slice(0, PLACES_AHEAD)
     .map(({ spot }) => spot);
+}
+
+/** Whether the app is in front: a moment «inactive» (a call, the Control
+ * Centre) still is. */
+function inFront(): boolean {
+  return AppState.currentState !== "background";
 }
 
 function pause(ms: number): Promise<void> {
@@ -116,12 +124,14 @@ export async function drawShapesAhead(
     spots = WATER_SPOTS,
     now = Date.now,
     wait = pause,
+    active = inFront,
   }: {
     request?: typeof requestRoute;
     storage?: Storage;
     spots?: readonly WaterSpot[];
     now?: () => number;
     wait?: (ms: number) => Promise<void>;
+    active?: () => boolean;
   } = {},
 ): Promise<ShapesOutcome> {
   if (running) {
@@ -159,6 +169,9 @@ export async function drawShapesAhead(
           if (early > 0) {
             await wait(early);
           }
+        }
+        while (!active()) {
+          await wait(AHEAD_GAP_MS);
         }
         lastAsked = now();
         const outcome = await request(apiUrl, asked);

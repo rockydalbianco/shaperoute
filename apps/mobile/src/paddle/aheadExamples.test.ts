@@ -298,6 +298,27 @@ test("a place without water on the server is passed over", async () => {
   expect(asked).toHaveLength(1 + 16);
 });
 
+test("in the background nothing is asked: the round waits for the app", async () => {
+  const { request, asked } = api();
+  const time = clock();
+  let away = 2;
+  const seen: number[] = [];
+  const outcome = await drawShapesAhead("https://api", LEVICO_TERME, {
+    request,
+    storage: memory(),
+    spots: [LEVICO],
+    ...time,
+    active: () => {
+      seen.push(asked.length);
+      // Left after the third shape, for two looks.
+      return asked.length !== 3 || away-- <= 0;
+    },
+  });
+  expect(outcome).toBe("done");
+  expect(asked).toHaveLength(8);
+  expect(seen.filter((n) => n === 3)).toHaveLength(3);
+});
+
 test("one round at a time", async () => {
   let answer: (outcome: RouteOutcome) => void = () => undefined;
   const request = jest.fn(

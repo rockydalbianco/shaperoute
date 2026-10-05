@@ -11106,6 +11106,9 @@ canoa erano dentro l'app solo per i quattro luoghi scelti a mano
 4. **Una richiesta ogni 6 secondi al massimo.** L'API accetta 30 POST al
    minuto da un telefono (ADR-0076) e gli esempi della pagina ne usano
    fino a 18: dieci al minuto qui lasciano posto a «Start».
+   Con l'app in secondo piano non si chiede niente: il giro aspetta che
+   torni davanti (paletto del coordinatore: il server è piccolo). Un
+   telefono nuovo fa al massimo 24 richieste, in circa due minuti e mezzo.
 5. **Un file suo, `Documents/paddle-ahead.json`**, non quello della
    pagina (`city-examples.json`), che tiene gli ultimi otto luoghi scelti
    e li butterebbe fuori. Tiene gli ultimi sei posti disegnati. La pagina

@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-05, 11:00 · `main` = `fd14cd3`
+**Ultimo aggiornamento**: 2026-10-05, 11:40 · `main` = `f3fdbce`
 
 ## Come si usa
 
@@ -52,46 +52,47 @@
 
 ## La coda dei merge
 
-Alle 07:00 del 2026-10-05: aperte la **#330** (TASK-214 A2, il tetto del
-traffico, CI in corso) e la **#323** (TASK-236, le città vicine: pronta,
-entra dopo le conferme dell'utente su testi e regola). Entra prima chi è
-pronto prima; la sessione proprietaria mergia da sola al 5/5 verde e
-CLEAN, ricontrollato subito prima, dopo il «merge NNN» del coordinatore.
-Le PR di soli documenti di una sessione chiusa le mergia (e le aggiorna)
-il coordinatore. Quando più PR sono pronte insieme **non aggiornarti da
+Alle 11:40 del 2026-10-05: aperte solo PR di documenti (#339, #340). In
+arrivo: TASK-214 B2b, TASK-238 A. Entra prima chi è pronto prima; la
+sessione proprietaria mergia da sola al 5/5 verde e CLEAN, ricontrollato
+subito prima, dopo il «merge NNN» del coordinatore. Le PR di soli
+documenti di una sessione chiusa le mergia (e le aggiorna) il
+coordinatore. Quando più PR sono pronte insieme **non aggiornarti da
 solo**: ogni merge rimette le altre in conflitto su STATUS e DECISIONS,
 il turno lo dà il coordinatore.
 
 ## L'albero
 
 ```
-Sezione Near me con città vicine
-  └─ Adesso  TASK-236  In «Explore», sotto «Near me», fino a quattro
-                       paesi vicini (20–50 km) con i loro esempi;
-                       `GET /nearby-cities`. #323 pronta: aspetta le
-                       conferme dell'utente                    ADR-0200
-
 Mappe offline: parte B pubblicata
-  ├─ Adesso  TASK-214 A2  Il tetto del traffico e `?prefetch=1`, #330
-  └─ Dopo    B2 (città vicine, con `/nearby-cities`) e D (prova
-             sull'iPhone, vuole le zone del telefono sul server) ADR-0177
+  ├─ Adesso  TASK-214 B2b  Le città vicine (`/nearby-cities`) nella coda
+  │                        delle zone in più; la B2 è in `main` (#337),
+  │                        **non pubblicata**
+  └─ Dopo    D (prova sull'iPhone): vuole le zone del telefono sul
+             server, da chiarire prima (521 grafi in cache, circa 2,9 GB
+             e 2–3,5 ore: vedi «Il server e l'app»)             ADR-0177
 
 Forme inclinate e distanza ottimale
-  ├─ Adesso  TASK-234 B  «Viene meglio a X km» nell'app, dopo le misure
-  │                      e i testi visti dall'utente (la A è in `main`,
-  │                      #327)                                 ADR-0197
-  └─ Dopo    TASK-232  Forme inclinate fino a ±45° e mappa girata: A
-                       (motore), poi B e C                     ADR-0195
+  └─ Adesso  TASK-232  Forme inclinate fino a ±45° e mappa girata: A
+                       (motore) in un contesto pulito, poi B e C.
+                       `models.py` anche di TASK-238            ADR-0195
 
-Sezione merchandising magliette
-  └─ Adesso  TASK-237 B  Il sito con «Merch»: la A è in `main` (#325,
-                         `site/`, segnaposto «Coming soon»); servizio di
-                         stampa, disegni, prezzi e dove sta il sito li
-                         sceglie l'utente                      ADR-0201
+Posizionamento figura sezione padel
+  └─ Adesso  TASK-238  Spostare la figura sull'acqua (più a destra, a
+                       sinistra, verso riva): A motore, B API, C app;
+                       prima la scelta dell'utente (pulsanti o dito)
+                                                               ADR-0202
+
+SITO WEB (già «Sezione merchandising magliette»)
+  └─ Adesso  TASK-237  Il sito è la guida dell'app (A2 in `main`, #335;
+                       il merch è spento). Aspettano l'utente: i testi
+                       in inglese, il link dell'App Store, il dominio,
+                       la pubblicazione                        ADR-0201
 
 Chiuse in questa tornata: «App per il padel» (TASK-226, TASK-228),
 «Sezione Explore padel e laghi» (TASK-233), «Impossibile seguire amici»
-(TASK-211 B), TASK-235 (pubblicità nel «Feed»).
+(TASK-211 B), TASK-235 (pubblicità nel «Feed»), «Sezione Near me con
+città vicine» (TASK-236), TASK-234 («viene meglio a X km»), TASK-214 A2.
 
 Da assegnare (task file in `main`)
   ├─ TASK-208 B  La fine corsa stile Strava, dopo le conferme
@@ -105,10 +106,12 @@ Sistema pubblicitario non invasivo
   └─ Aspetta il «fatto» dell'utente su TASK-150 (pagamenti AdMob)
 
 Aspettano l'utente
-  ├─ La prova sull'iPhone di `da4e955c`: «Follow» con due account, i
+  ├─ La prova sull'iPhone di `8f6849ca`: «Follow» con due account, i
   │  post in canoa nel «Feed», i laghi in «Explore» con «Paddle» («Near
-  │  me» da Levico, un lago per nome, un lago piccolo)
-  ├─ Le zone del telefono sul server (TASK-214, ~0,8 GB)
+  │  me» da Levico, un lago per nome, un lago piccolo), «Try N km», le
+  │  sei schede dei paesi vicini sotto «Near me»
+  ├─ Le zone del telefono sul server (TASK-214): quali e quante, poi
+  │  l'ok; da quel momento l'iPhone disegna sul telefono (parte la D)
   ├─ Strava: spento per scelta dell'utente del 2026-10-05 («teniamo solo
   │  Instagram per ora»); per riaccenderlo, `DEPLOY.md` «Strava»
   ├─ TASK-236: la regola dei quattro paesi e i tre testi · TASK-237: il
@@ -164,9 +167,9 @@ Da assegnare
 
 | File | Di chi |
 |---|---|
-| `ExploreScreen.tsx` (poche righe), `src/explore/nearby*`, `NearbyTowns.tsx`, `nearby_cities.py`, tre righe in `__main__.py` | TASK-236 (#323) |
-| `phone_zone_api.py`, `phone_zone_cap.py`, `src/engine/prefetch.ts`, `zones.ts` | TASK-214 A2 (#330) |
-| `src/route/betterDistance.ts` (nuovo), `RoutePanel.tsx`, le tabelle i18n (righe nuove) | TASK-234 B, quando parte |
+| `apps/mobile/src/engine/` | TASK-214 B2b |
+| `water_fit.py`, `paddling.py` (motore e API), `cli.py`, `models.py` (un campo), `schemas.py`, `shared-types`; poi `RoutePanel.tsx`, `useRouteRequest.ts`, `api/routes.ts`, un file nuovo in `src/paddle/` | TASK-238 |
+| `models.py` e il motore delle forme inclinate | TASK-232 A, quando parte (si accorda con TASK-238) |
 | `site/`, `docs/SITO.md`, `.github/workflows/site.yml` | TASK-237 |
 | `deploy/`, `docs/DEPLOY.md` | TASK-122 (in attesa dello Storage Box) |
 | `docs/PUBBLICITA.md` | TASK-150 |
@@ -175,13 +178,13 @@ Da assegnare
 
 ## Numeri
 
-- Task: presi fino a **TASK-237**. Il prossimo libero è **TASK-238**.
-- ADR: presi fino a **ADR-0201** (0183 TASK-220, 0184 TASK-221, 0185
+- Task: presi fino a **TASK-238**. Il prossimo libero è **TASK-239**.
+- ADR: presi fino a **ADR-0202** (0183 TASK-220, 0184 TASK-221, 0185
   TASK-223, 0186 TASK-224, 0187 TASK-225, 0188 TASK-226, 0189 TASK-227,
   0190 TASK-228, 0191 TASK-229, 0192 TASK-230, 0193 TASK-119, 0194
   TASK-231, 0195 TASK-232, 0196 TASK-233, 0197 TASK-234, 0198 TASK-235, 0199
-  TASK-211 B, 0200 TASK-236, 0201 TASK-237). Il prossimo libero è
-  **ADR-0202**.
+  TASK-211 B, 0200 TASK-236, 0201 TASK-237, 0202 TASK-238). Il prossimo
+  libero è **ADR-0203**.
 - Migrazioni in `main`: 0001 account, 0002 preferiti, 0003 corse, 0004
   Strava, 0005 foto, 0006 penna alzata, 0007 profili, 0008 attività nei
   preferiti, 0009 corse pubblicate, 0010 canoa nei preferiti, 0011
@@ -191,20 +194,24 @@ Da assegnare
 ## Il server e l'app
 
 - **Server**: Hetzner CX33, `https://188-245-9-220.sslip.io`, da
-  `deploy/compose.yaml` con PostgreSQL. A `main` `fd14cd3` dal 2026-10-05
-  08:54Z (migrazioni 0001–0015; immagine di prima
-  `shaperoute-api:before-task234`, copia del database
-  `shaperoute-2026-10-05T0853Z.dump`), con il motore di TASK-234 A
-  (`better_distance_m`) e il tetto del traffico di TASK-214 A2.
-  `draw_examples` rilanciato alle 08:56Z; zona bici di Trento; l'acqua
-  della canoa: 219 file, 71 MB (i laghi d'Italia di TASK-233). Mancano
-  `/nearby-cities` (#323, non ancora in `main`) e le zone del telefono.
-  Strava spento per scelta dell'utente.
-- **App**: su `preview` da `main` `fd14cd3` (gruppo `da4e955c`,
-  2026-10-05): «Follow», i post in canoa nel «Feed», i 211 laghi in
-  «Explore» con «Paddle», la pubblicità fra i post (non si vede in Expo
-  Go). La parte B di TASK-234 si potrà pubblicare appena è in `main`: il
-  server ha già la A.
+  `deploy/compose.yaml` con PostgreSQL. A `main` `f3fdbce` dal 2026-10-05
+  09:32Z (migrazioni 0001–0015; immagine di prima
+  `shaperoute-api:before-task236`, copia del database
+  `shaperoute-2026-10-05T0931Z.dump`), con `GET /nearby-cities`, il motore
+  di TASK-234 A e il tetto del traffico di TASK-214 A2. Esempi ridisegnati
+  per 66 città su 66 (09:30Z); zona bici di Trento; l'acqua della canoa:
+  219 file, 71 MB. **Zone del telefono non scritte**: in cache ci sono 521
+  grafi (`foot_`/`bike_`, 7,3 GB di pickle) e solo 3 file per il telefono;
+  scriverli tutti con `python -m shaperoute_api.phone_zone_api` sarebbe
+  circa 2,9 GB e 2–3,5 ore, non gli 0,7–0,8 GB stimati: da chiarire con
+  TASK-214 prima di chiedere l'ok all'utente. Strava spento per scelta
+  dell'utente.
+- **App**: su `preview` da `main` **`8c3a6ff`** (gruppo `8f6849ca`,
+  2026-10-05): in più rispetto a `da4e955c`, «Try N km» (TASK-234 B) e i
+  paesi vicini sotto «Near me» (TASK-236). È il commit **prima** della
+  #337: la B2 di TASK-214 (le zone scaricate in anticipo) è in `main` ma
+  **non si pubblica** finché le zone del telefono non sono sul server.
+  Chi pubblica parte da un commit di `main` scelto con il coordinatore.
 - **Chi cambia il motore** rifà `apps/mobile/assets/engine/engine.zip`
   (`python tools/phone_engine/phone_engine.py engine`) e, se tocca i file
   dell'acqua o le sagome, `src/paddle/paddleExamples.json`
@@ -220,10 +227,10 @@ In `main`: #137 (TASK-136), #112 (088), #148 (140), #142 (142), #149 (147),
 #150 (137), #166 (158), #165 (157), #164 (156), #167 (122, copie), #140
 (141), #169 (141), #170 (AGENTI), #168 (159), #171 (160), #172 (165), #173
 (162), #174 (163, prima PR), #175 (161), #176 (164), e poi fino alla #214:
-#177–#329, fra cui 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
+#177–#338, fra cui 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
 177, 178, 179, 180, 181, 186, 187 (API), 188, 189, 190 A, 192, 193, 194,
 195, 196, 067, 190 (A, B, C), 191 A1 e A2, 197, 198, 199, 116, 201 (misurato, non conviene), 200,
 202, 203, 187 (app), 204, 117 (A e B), 191 B, 205, 206 (A e B), 207,
 210 A, 211 A, 212, 213, 215, 120, 208 A, 209, 214 (A, B, C), 216, 218,
-219, 220, 221, 222, 223, 224, 225, 226 (A, B), 227, 228, 229, 230, 231 (A, B),
+219, 220, 221, 222, 223, 224, 225, 226 (A, B), 227, 228, 233, 234, 235, 236, 237 (A, A2), 211 B, 214 (A2, B2), 229, 230, 231 (A, B),
 119 (A, B), 217 e 191 C.

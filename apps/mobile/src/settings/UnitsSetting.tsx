@@ -10,6 +10,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { FOLLOWS_PHONE } from "../units/followsPhone";
 import { phoneUnits } from "../units/phoneUnits";
 import {
   loadUnitsChoice,
@@ -29,9 +30,10 @@ const NAMES: Readonly<Record<Units, string>> = {
 /**
  * «Units» in «Settings» (TASK-182, ADR-0149): the units the app shows
  * distances in, at the end of the row. A tap opens the choices under it, as
- * «Language» does: the phone's units first, which is what the app follows
- * until one is chosen, then kilometres and miles. The choice stays on the
- * phone and the app turns to it at once.
+ * «Language» does: kilometres and miles, and before them the phone's units
+ * once the app follows them (`FOLLOWS_PHONE`: not until part B, and until
+ * then the app starts in kilometres). The choice stays on the phone and the
+ * app turns to it at once.
  */
 export function UnitsSetting() {
   const units = useUnits();
@@ -59,17 +61,20 @@ export function UnitsSetting() {
       </Pressable>
       {open && (
         <View accessibilityRole="radiogroup">
-          <Choice
-            name={t("Phone units")}
-            detail={t(NAMES[phoneUnits()])}
-            chosen={choice === "phone"}
-            onPress={() => choose("phone")}
-          />
+          {FOLLOWS_PHONE && (
+            <Choice
+              name={t("Phone units")}
+              detail={t(NAMES[phoneUnits()])}
+              chosen={choice === "phone"}
+              onPress={() => choose("phone")}
+            />
+          )}
           {UNITS.map((option) => (
             <Choice
               key={option}
               name={t(NAMES[option])}
-              chosen={choice === option}
+              // Until the app follows the phone, no choice made is kilometres.
+              chosen={FOLLOWS_PHONE ? choice === option : units === option}
               onPress={() => choose(option)}
             />
           ))}

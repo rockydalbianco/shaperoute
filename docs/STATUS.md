@@ -524,13 +524,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   in revisione (branch `feat/TASK-182-units`, solo app, nessuna
   dipendenza): `src/units/` (la scelta in `units.json`, l'unità del
   telefono, `useUnits()`, i formattatori), la riga **«Units»** in
-  «Settings» al posto di quella con «Soon» («Phone units», «Kilometres»,
-  «Miles»), e le miglia in «My activities», nei preferiti e nelle schede
+  «Settings» al posto di quella con «Soon» («Kilometres», «Miles»;
+  «Phone units» dalla parte B), e le miglia in «My activities», nei preferiti e nelle schede
   di «Explore». Con «Kilometres» l'app scrive quello che scriveva prima.
-  **Aspettano l'utente**: i cinque testi nuovi; la prova su un iPhone con
-  le miglia (l'unità del telefono non è stata vista su un telefono vero,
-  né nel simulatore); se pubblicare la parte A da sola, perché con
-  «Miles» l'app è mista finché non c'è la parte B. **Parte B** (file di
+  **Scelta dell'utente del 2026-10-05**: la parte A si pubblica subito,
+  ma **l'app parte in km su ogni telefono** finché non c'è la parte B
+  (`FOLLOWS_PHONE` spento): solo chi sceglie «Miles» vede l'app mista.
+  **Aspettano l'utente**: i testi nuovi («Kilometres», «Miles», «{mi} mi
+  away»; «Phone units» si vedrà con la parte B); la prova su un iPhone
+  con le miglia (l'unità del telefono non è stata vista su un telefono
+  vero, né nel simulatore). **Parte B** (file di
   altri task): «Draw» (la distanza chiesta, passi e limiti in miglia: una
   scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con

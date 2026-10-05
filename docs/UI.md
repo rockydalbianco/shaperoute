@@ -599,13 +599,16 @@ mappa è quella di prima.
   intorno, il telefono scarica piano piano quelle dei paesi vicini e
   delle città di «Explore», senza avvisi (TASK-214, parte B2). Poi
   **«Units»** (📏, TASK-182, ADR-0149), con in fondo l'unità in cui è
-  l'app («Kilometres» o «Miles»); un tocco apre sotto la riga «Phone
-  units» (con accanto l'unità del telefono), «Kilometres» e «Miles», con
-  il «✓» bianco sulla scelta, come «Language». La scelta chiude la lista,
-  vale subito e resta sul telefono; «Phone units» torna a seguire il
-  telefono: miglia dove il telefono misura le strade in miglia (Stati
-  Uniti, Regno Unito, o il sistema di misura scelto a mano in iOS), km
-  altrove e quando il telefono non lo dice. **Con le miglia**, per ora
+  l'app («Kilometres» o «Miles»); un tocco apre sotto la riga
+  «Kilometres» e «Miles», con il «✓» bianco sulla scelta, come
+  «Language». La scelta chiude la lista, vale subito e resta sul
+  telefono. **Fino alla parte B l'app parte in km su ogni telefono**
+  (scelta dell'utente del 2026-10-05), e «Phone units» non è fra le
+  scelte; dalla parte B (`FOLLOWS_PHONE` in `src/units/followsPhone.ts`)
+  la lista si apre con «Phone units» (con accanto l'unità del telefono),
+  che è la partenza: miglia dove il telefono misura le strade in miglia
+  (Stati Uniti, Regno Unito, o il sistema di misura scelto a mano in
+  iOS), km altrove e quando il telefono non lo dice. **Con le miglia**, per ora
   (parte A): «My activities» («2.49 mi · 19:00 · 7:38 /mi», anche nella
   scheda della corsa aperta), i preferiti («Star · 3.2 mi») e le schede di
   «Explore» («Star · 3.2 mi», «0.4 mi away», sotto i 1000 piedi «650 ft

@@ -10598,8 +10598,13 @@ di TASK-236 nelle tabelle, che il test delle tabelle rifiuta); le yarde
   schede in miglia, «Draw», la corsa, la voce, il «Feed», i disegni
   pubblici, «Explore» con «Paddle» e le frasi di «Explore» in km. Con
   «Kilometres», e su ogni telefono che non misura in miglia, niente cambia.
-  Un telefono degli Stati Uniti o del Regno Unito parte in miglia appena
-  l'app è pubblicata: pubblicare la parte A da sola è una scelta da fare.
+  **Scelta dell'utente del 2026-10-05**: la parte A si pubblica subito,
+  ma finché non c'è la parte B l'app **parte in km su ogni telefono** e
+  «Settings» non offre «Phone units» (`FOLLOWS_PHONE` in
+  `src/units/followsPhone.ts`, oggi `false`); solo chi sceglie «Miles» a
+  mano vede l'app mista. La parte B accende l'interruttore, e da allora
+  vale il punto 5: un telefono degli Stati Uniti o del Regno Unito parte
+  in miglia.
 - **Non provato su un iPhone**: che `Settings` di React Native dia
   `AppleLocale`, `AppleMetricUnits` e `AppleMeasurementUnits` in Expo Go è
   dedotto da come dà `AppleLanguages` (ADR-0172), non visto. Se non li dà,

@@ -1,5 +1,6 @@
 import { File, Paths } from "expo-file-system";
 
+import { FOLLOWS_PHONE } from "./followsPhone";
 import { phoneUnits } from "./phoneUnits";
 
 /** What the app shows distances in (TASK-182): kilometres or miles. */
@@ -37,9 +38,15 @@ export function loadUnitsChoice(): UnitsChoice {
   }
 }
 
-/** The units a choice shows the app in. */
+/**
+ * The units a choice shows the app in. With no choice made, the phone's
+ * own once the app follows them (`FOLLOWS_PHONE`), kilometres until then.
+ */
 export function unitsOf(choice: UnitsChoice, phone: () => Units = phoneUnits): Units {
-  return choice === "phone" ? phone() : choice;
+  if (choice !== "phone") {
+    return choice;
+  }
+  return FOLLOWS_PHONE ? phone() : "km";
 }
 
 /** The app's units now; read from the phone on first use. */

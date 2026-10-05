@@ -93,7 +93,7 @@ in metri.
 
 Parte A:
 
-- [x] In «Settings» si sceglie fra «Phone units», «Kilometres» e
+- [x] (dalla parte B anche «Phone units»: vedi «Esito») In «Settings» si sceglie fra «Phone units», «Kilometres» e
       «Miles»; la scelta vale subito e resta dopo un riavvio (test:
       `UnitsSetting.test.tsx`, `units.test.ts`).
 - [x] Senza scelta, un telefono con le miglia mostra miglia, gli altri
@@ -124,6 +124,8 @@ apps/mobile/src/units/units.test.ts               (nuovo)
 apps/mobile/src/units/phoneUnits.test.ts          (nuovo)
 apps/mobile/src/units/format.test.ts              (nuovo)
 apps/mobile/src/units/shownInMiles.test.tsx       (nuovo)
+apps/mobile/src/units/followsPhone.ts             (nuovo)
+apps/mobile/src/units/kmUntilPartB.test.tsx       (nuovo)
 apps/mobile/src/settings/UnitsSetting.tsx         (nuovo)
 apps/mobile/src/settings/UnitsSetting.test.tsx    (nuovo)
 apps/mobile/src/profile/SettingsPage.tsx
@@ -179,9 +181,15 @@ revisione:
   possibili, ma che Expo Go dia davvero quelle chiavi è da vedere su un
   iPhone con la regione «Stati Uniti». Se non le dà, l'app resta in km e
   la scelta a mano funziona.
-- **Da decidere prima di pubblicare**: con «Miles» (e su ogni telefono
-  degli Stati Uniti o del Regno Unito, senza scelta) l'app è mista finché
-  non c'è la parte B.
+- **Deciso dall'utente il 2026-10-05** («Subito, ma km di partenza»): la
+  parte A si pubblica subito, ma finché non c'è la parte B **l'app parte
+  in km su ogni telefono**, anche americano o inglese, e «Settings» offre
+  solo «Kilometres» e «Miles». L'interruttore è `FOLLOWS_PHONE` in
+  `src/units/followsPhone.ts` (oggi `false`): la parte B lo accende, e
+  allora valgono la partenza dal telefono e la scelta «Phone units»
+  (già scritte e provate: `units.test.ts`, `UnitsSetting.test.tsx`; il
+  comportamento di oggi è in `kmUntilPartB.test.tsx`). Con «Miles» scelto
+  a mano l'app è mista finché non c'è la parte B.
 
 **Per la parte B** (file che il 2026-10-05 erano di altri task):
 

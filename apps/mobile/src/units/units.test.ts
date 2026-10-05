@@ -10,6 +10,10 @@ import {
 
 // The phone's documents folder, in memory: what is written stays there for
 // the next read, as after closing the app.
+// As it will be from part B: the app follows the phone's units while none
+// is chosen. What it does until then is in `kmUntilPartB.test.tsx`.
+jest.mock("./followsPhone", () => ({ FOLLOWS_PHONE: true }));
+
 jest.mock("expo-file-system", () => {
   const files = new Map<string, string>();
   const state = { failing: false };

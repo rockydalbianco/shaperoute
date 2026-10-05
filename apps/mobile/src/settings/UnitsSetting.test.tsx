@@ -8,6 +8,10 @@ import { loadUnitsChoice, saveUnitsChoice } from "../units/units";
 import { useUnits } from "../units/useUnits";
 import { UnitsSetting } from "./UnitsSetting";
 
+// As it will be from part B: the app follows the phone's units while none
+// is chosen. What it does until then is in `kmUntilPartB.test.tsx`.
+jest.mock("../units/followsPhone", () => ({ FOLLOWS_PHONE: true }));
+
 jest.mock("../units/units", () => {
   const actual = jest.requireActual<typeof import("../units/units")>("../units/units");
   return {

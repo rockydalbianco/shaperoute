@@ -1,6 +1,6 @@
 # TASK-185 — I due interruttori delle notifiche, salvati nell'account
 
-**Stato**: In revisione
+**Stato**: Done
 **Fase**: 4 · **Branch**: `feat/TASK-185-notification-switches`
 **Dipende da**: TASK-177 (la pagina «Settings»), TASK-114 (gli account
 nell'API), TASK-183 (il modello: un dato dell'account cambiato da
@@ -153,7 +153,14 @@ rinomina; i test lo trovano dal nome (`_notifications.sql`).
 
 ## Esito
 
-In revisione dal 2026-10-05, sul branch
+Fatto il 2026-10-05: PR #359, in `main` con il merge `c2bb428`; sul server
+dalle 12:02Z dello stesso giorno (migrazione `0017` applicata, `PUT
+/me/notifications` risponde). Testi confermati dall'utente («ok, i testi
+delle notifiche vanno bene»). Visto nel simulatore, senza tocchi: le due
+righe con l'interruttore e la frase sotto (`out/task185/`). La
+pubblicazione dell'app è del coordinatore; da provare sull'iPhone.
+
+Scritto sul branch
 `feat/TASK-185-notification-switches` (parte da `main` `8dfb62a`, che ha
 già TASK-184; poi unito `main` `b54c6c8`, con TASK-240 e TASK-241, senza
 conflitti).
@@ -174,7 +181,8 @@ conflitti).
 - **Serve l'aggiornamento del server** (migrazione `0017`) prima di
   pubblicare l'app: con l'API di prima l'app legge «tutti e due spenti» e
   al tocco dice «Notifications are not available on this API yet.».
-- **Testi nuovi, da confermare con l'utente** (le quattro traduzioni sono
+- **Testi nuovi** — i due dello schermo confermati dall'utente il
+  2026-10-05; le righe di «Help» e «Privacy» si leggono con le bozze (le quattro traduzioni sono
   dell'agente): «Notifications are not available on this API yet.»; la
   nota «Sgrava does not send notifications yet. Your choice is kept for
   when it does.» è quella concordata. In «Help» (inglese e italiano):

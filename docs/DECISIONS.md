@@ -11516,3 +11516,35 @@ di partenza» finché non c'era la seconda parte; con le parti B e C in
   miglia non è stata ascoltata.
 - Chi aveva scelto «Kilometres» o «Miles» a mano tiene la sua scelta.
 
+
+## ADR-0210 — aggiornamento (parte B): una parola comune scritta sceglie fra i nomi trovati
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-245, parte B; seguito scritto alla chiusura del task).
+
+**Contesto**: in «Another place» con «Paddle» (`findSpots`, ADR-0204) le
+parole comuni («lago», «di») non contano quando un'altra parola dice il
+luogo. Con le spiagge nell'elenco, «lago lev» proponeva «Lago di Levico»
+e poi «Sestri Levante»: «lev» è l'inizio di tutti e due i nomi, e il
+«lago» scritto non veniva guardato.
+
+**Decisione**: fra i nomi trovati con le parole che dicono il luogo, se
+qualcuno ha **tutte** le parole scritte che sono in un nome dell'elenco,
+comuni comprese, restano solo quelli. Se nessuno le ha tutte, i nomi
+trovati restano come prima. «lago lev» e «lago di lev» propongono solo
+«Lago di Levico»; «lev» da sola propone ancora tutti e due;
+«lungomare di Viareggio» e «spiaggia di San Vito lo Capo» trovano la loro
+spiaggia, anche se nel nome non c'è «di»; «lago di iseo» trova «Lago
+d'Iseo».
+
+**Alternative scartate**:
+
+- **Far contare sempre le parole comuni**: «lago di Levico Terme» e
+  «spiaggia di Riccione», i testi dell'utente in TASK-240, non
+  troverebbero più niente.
+- **Ordinare soltanto** (prima i nomi con più parole scritte): «Sestri
+  Levante» resterebbe fra le tre proposte sopra le vie, per chi ha
+  scritto «lago».
+
+**Conseguenze**: solo `placeSpots.ts`; `searchSpots` di «Explore» non
+cambia, e nemmeno il motore o l'API. Chi scrive «lago» prima del nome di
+una spiaggia la trova lo stesso, perché nessun nome trovato ha «lago».

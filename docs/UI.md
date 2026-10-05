@@ -2163,7 +2163,12 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     come inizio di una parola del nome**, perché la si sta ancora
     scrivendo; quelle prima devono essere parole intere (TASK-245,
     ADR-0210): «via» da sola propone «Viareggio», «via Roma» no; «lago di
-    lev» trova «Lago di Levico», «lev terme» niente.
+    lev» trova «Lago di Levico», «lev terme» niente. **Una parola comune
+    scritta sceglie fra i nomi trovati** (TASK-245 parte B, ADR-0210,
+    aggiornamento): se qualche nome trovato ha tutte le parole scritte
+    che l'elenco conosce, restano solo quelli. «lago lev» propone solo
+    «Lago di Levico», non «Sestri Levante»; «lev» da sola tutti e due;
+    «lungomare di Viareggio» trova la sua spiaggia.
   - Scelto un lago, la partenza è il suo punto della riva più vicino alla
     posizione (un lago lungo ne ha molti), e la riga dice «Starting from
     Lago di Levico.».

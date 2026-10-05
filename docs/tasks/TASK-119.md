@@ -263,9 +263,11 @@ corretto (ADR-0193, punto 14). **Non provato con le dita**: il simulatore
 non era concesso ai tocchi, il doppio tocco e la tastiera vera sono della
 prova sull'iPhone.
 
-**Testi**: quelli della proposta (punto 5 di «Cosa fare»), più uno solo
-per VoiceOver, «{count} reaction» / «{count} reactions». Da confermare
-con l'utente prima del merge.
+**Testi**: quelli della proposta (punto 5 di «Cosa fare»), che l'utente
+ha confermato il 2026-10-05 nella sessione della parte A («confermo i
+testi», riferito da quella sessione), più uno solo per VoiceOver, «{count}
+reaction» / «{count} reactions», chiesto all'utente nella sessione della
+parte B e ancora da confermare prima del merge.
 
 **Dopo il merge**: il server vuole la `0015` (e la `0014` di TASK-208 A)
 con l'ok dell'utente, poi la pubblicazione; finché il server non ha le

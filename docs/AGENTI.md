@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-05, 07:00 · `main` = `f8e68b6`
+**Ultimo aggiornamento**: 2026-10-05, 11:00 · `main` = `fd14cd3`
 
 ## Come si usa
 
@@ -105,12 +105,9 @@ Sistema pubblicitario non invasivo
   └─ Aspetta il «fatto» dell'utente su TASK-150 (pagamenti AdMob)
 
 Aspettano l'utente
-  ├─ **Pubblicare `main`**: «Follow», i post in canoa nel «Feed», i laghi
-  │  in «Explore» con «Paddle» (tutto ciò che serve è già sul server). Il
-  │  «sì» va detto nella sessione del coordinatore
-  ├─ **Il server, di nuovo**: `main` ha il motore di TASK-234 A (#327) e
-  │  avrà `/nearby-cities` (#323) e il tetto del traffico (#330):
-  │  aggiornamento con `draw_examples`, prima di pubblicare TASK-234 B
+  ├─ La prova sull'iPhone di `da4e955c`: «Follow» con due account, i
+  │  post in canoa nel «Feed», i laghi in «Explore» con «Paddle» («Near
+  │  me» da Levico, un lago per nome, un lago piccolo)
   ├─ Le zone del telefono sul server (TASK-214, ~0,8 GB)
   ├─ Strava: spento per scelta dell'utente del 2026-10-05 («teniamo solo
   │  Instagram per ora»); per riaccenderlo, `DEPLOY.md` «Strava»
@@ -194,19 +191,20 @@ Da assegnare
 ## Il server e l'app
 
 - **Server**: Hetzner CX33, `https://188-245-9-220.sslip.io`, da
-  `deploy/compose.yaml` con PostgreSQL. A `main` `9deba3b` dal 2026-10-05
-  03:27Z (migrazioni 0001–0015; immagine di prima
-  `shaperoute-api:before-task226`, copia del database
-  `shaperoute-2026-10-05T0327Z.dump`), con il motore di TASK-226 A.
-  Esempi ridisegnati per 66 città su 66; zona bici di Trento; l'acqua
-  della canoa: i sei box di TASK-225 più 210 file dei laghi d'Italia
-  (TASK-233, 04:22Z; in tutto 219 file, 71 MB). Mancano il motore di
-  TASK-234 A, `/nearby-cities`, il tetto del traffico e le zone del
-  telefono. Strava spento per scelta dell'utente.
-- **App**: su `preview` da `main` `ef7ad90` (gruppo `1fc82a12`,
-  2026-10-05), con la parte B di TASK-226. `main` (`f8e68b6`) **si può
-  pubblicare** così com'è: aspetta l'ok dell'utente. La parte B di
-  TASK-234 no, finché il server non ha la A.
+  `deploy/compose.yaml` con PostgreSQL. A `main` `fd14cd3` dal 2026-10-05
+  08:54Z (migrazioni 0001–0015; immagine di prima
+  `shaperoute-api:before-task234`, copia del database
+  `shaperoute-2026-10-05T0853Z.dump`), con il motore di TASK-234 A
+  (`better_distance_m`) e il tetto del traffico di TASK-214 A2.
+  `draw_examples` rilanciato alle 08:56Z; zona bici di Trento; l'acqua
+  della canoa: 219 file, 71 MB (i laghi d'Italia di TASK-233). Mancano
+  `/nearby-cities` (#323, non ancora in `main`) e le zone del telefono.
+  Strava spento per scelta dell'utente.
+- **App**: su `preview` da `main` `fd14cd3` (gruppo `da4e955c`,
+  2026-10-05): «Follow», i post in canoa nel «Feed», i 211 laghi in
+  «Explore» con «Paddle», la pubblicità fra i post (non si vede in Expo
+  Go). La parte B di TASK-234 si potrà pubblicare appena è in `main`: il
+  server ha già la A.
 - **Chi cambia il motore** rifà `apps/mobile/assets/engine/engine.zip`
   (`python tools/phone_engine/phone_engine.py engine`) e, se tocca i file
   dell'acqua o le sagome, `src/paddle/paddleExamples.json`

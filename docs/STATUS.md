@@ -52,8 +52,9 @@ In coda, dopo o accanto:
   sulla pagina l'app fa disegnare al server i primi tre esempi di ognuno,
   e la scheda ne mostra uno. Corsa e bici; la canoa ha i laghi vicini
   (TASK-233). In revisione; **mancano** il server (l'endpoint: senza, la
-  sezione non compare) e la pubblicazione, con l'ok dell'utente, e la sua
-  conferma dei testi e dei tre campioni per paese (`tasks/TASK-236.md`).
+  sezione non compare) e la pubblicazione, con l'ok dell'utente. Regola,
+  testi e tre campioni per posto confermati dall'utente
+  (`tasks/TASK-236.md`).
 - **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
   posizioni non si salva; il GPX di una corsa salvata; il cuore dei
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
@@ -127,26 +128,21 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `9deba3b` dalle
-  03:27Z (ok dell'utente «ok aggiorna il server e pubblica», sessione del
-  coordinatore), con le migrazioni `0001`–`0015` e il motore di TASK-226 A
-  (le forme a pezzi sull'acqua: una faccina da 2 km a Riccione in 12 s,
-  quattro tratti a penna alzata); fermo circa 14 secondi; immagine di
-  prima `shaperoute-api:before-task226`, copia del database
-  `shaperoute-2026-10-05T0327Z.dump`; esempi ridisegnati per 66 città su
-  66 (`data/draw-examples-2026-10-05-task226.log`). Dalle 04:22Z ha anche
-  l'acqua dei laghi d'Italia (TASK-233: 210 file nuovi, 50 MB, senza
-  riavvio). `/phone-zones` c'è, le zone del telefono non sono ancora
-  costruite. **App** su `preview` da `main` `ef7ad90` (gruppo
-  `1fc82a12`): in più rispetto a `f8951439`, le forme a pezzi sull'acqua e
-  l'interruttore degli occhi staccati su strada (TASK-226 B). **Da provare
-  sull'iPhone.** In `main` dopo, **non ancora pubblicati** (si può, manca
-  l'ok dell'utente): «Follow» (#320), il «Feed» sull'acqua (#322), i
-  laghi in «Explore» (#319, #328), la pubblicità nel «Feed» (#324). In
-  `main` anche il motore di TASK-234 A (#327): il server vuole un altro
-  aggiornamento con `draw_examples`, con l'ok dell'utente, **prima** di
-  pubblicare la parte B di TASK-234. Strava spento per scelta dell'utente
-  (2026-10-05: «teniamo solo Instagram per ora»).
+- **Server e app, al 2026-10-05**. **Server**: su `main` `fd14cd3` dalle
+  08:54Z (ok dell'utente «sì pubblica, ok server», sessione del
+  coordinatore), con le migrazioni `0001`–`0015`, il motore di TASK-234 A
+  (`better_distance_m` nel risultato: un cuore da 5 km a Trento in 9 s,
+  senza consiglio) e il tetto del traffico di TASK-214 A2; fermo circa 15
+  secondi; immagine di prima `shaperoute-api:before-task234`, copia del
+  database `shaperoute-2026-10-05T0853Z.dump`; `draw_examples` rilanciato
+  alle 08:56Z (`data/draw-examples-2026-10-05-task234.log`). Ha l'acqua
+  dei laghi d'Italia (TASK-233: 219 file, 71 MB). `/phone-zones` c'è, le
+  zone del telefono non sono ancora costruite; `/nearby-cities` arriva
+  con la #323. **App** su `preview` da `main` `fd14cd3` (gruppo
+  `da4e955c`): «Follow» (#320), il «Feed» sull'acqua (#322), i laghi in
+  «Explore» (#319, #328), la pubblicità nel «Feed» (#324, non si vede in
+  Expo Go). **Da provare sull'iPhone.** Strava spento per scelta
+  dell'utente (2026-10-05: «teniamo solo Instagram per ora»).
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -160,19 +156,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-237 — Il sito web, con «Merch» per le magliette** (ADR-0201;
-  chiesto dall'utente il 2026-10-05, che ha scelto la **stampa su
-  ordinazione**). **Parte A** in `main` dal 2026-10-05 (PR #325, merge
-  `f8e68b6`): una pagina statica in `site/`
-  (nuova, senza dipendenze), con il cuore di Milano che si disegna, «How
-  it works» e «Merch»: quattro magliette proposte, con le stampe dai
-  percorsi veri del catalogo. Il sito non vende da solo: «Buy» aprirà la
-  pagina della maglietta sul servizio di stampa; finché manca
-  l'indirizzo, «Coming soon». **Niente è pubblicato.** **Aspettano
-  l'utente**: il servizio di stampa e il suo account, magliette e prezzi,
-  i testi, dominio e pubblicazione. Come si aggiunge una maglietta e come
-  si guarda in locale: `SITO.md`. Da dove riprendere:
-  `tasks/TASK-237.md`, «Esito».
+- **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
+  2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
+  A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
+  in PR (2026-10-05), dopo la seconda richiesta dell'utente («per intanto
+  solo il sito che spiega come usare l'app… futuristico… selezionare lo
+  sport… i post migliori, una decina»): la pagina è la **guida dell'app**.
+  «Try it» disegna il percorso vero di Milano per la forma e la distanza
+  scelte; «How it works» cambia fatti e passi con lo sport («Run»,
+  «Bike», «Paddle»); «Best drawings» mostra dieci disegni dai dati
+  dell'app, con un filtro; «Get the app» dice «Download — coming soon»
+  finché `site/config.js` non ha il link. **Il merch è messo da parte**: i
+  file restano, la pagina non lo mostra. **Niente è pubblicato.** **Da
+  confermare con l'utente**: i testi, i dieci disegni, che «trasporta»
+  fosse «sport». **Aspettano l'utente**: il link dell'App Store
+  (TASK-152), dominio e pubblicazione, e per il merch il servizio di
+  stampa, magliette e prezzi. Come si cambia e come si guarda:
+  `SITO.md`. Da dove riprendere: `tasks/TASK-237.md`, «Esito».
 - **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; chiesto
   dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
   riesce ma un tentativo già tracciato a un'altra distanza segue la forma

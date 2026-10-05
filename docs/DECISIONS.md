@@ -10059,6 +10059,41 @@ tocca solo `products.js` (`docs/SITO.md`). Un cambio di colore in
 `tokens.ts` va ripetuto in `styles.css`. Se un giorno servono un carrello
 o più pagine, questa decisione va rivista.
 
+**Aggiornamento del 2026-10-05, stesso giorno** (deciso dall'agente su
+delega, dentro la **seconda richiesta dell'utente**: «per intanto fai solo
+il sito web che spiega come utilizzare l'app, poi inseriremo il link per
+scaricarla; un po' futuristico; poter selezionare lo sport; i post
+migliori, una decina»):
+
+1. **La pagina è la guida dell'app; il merch è messo da parte.** La
+   sezione esce da `index.html`, ma `products.js`, `merch.js`, `merch.css`
+   e `prints/` restano con i loro test: rimetterla è una sezione e due
+   righe nell'intestazione. I punti 2–4 sopra valgono per quando torna.
+2. **Lo sport si sceglie** («Run», «Bike», «Paddle») e cambia fatti e
+   passi di «How it works». I testi stanno in `content.js` e dicono solo
+   cose che l'app fa oggi.
+3. **«Try it»**: una forma e una distanza scelte mostrano il percorso
+   vero di Milano del catalogo (sei forme per 5, 10, 21 km). Niente è
+   calcolato nel browser: il sito non ha un motore e non chiama l'API.
+4. **«Best drawings» sono dieci percorsi veri** presi dai dati dell'app:
+   sei corse dei disegni d'esempio del «Feed» e i quattro esempi
+   sull'acqua, con i loro titoli. **Nomi degli utenti, minuti e punteggi
+   d'esempio non si mostrano**: nell'app sono inventati, e su un sito
+   pubblico sembrerebbero persone e risultati veri. Quando ci sarà il
+   feed vero (TASK-118) si potrà scegliere da lì.
+5. **I disegni sono copiati in `site/data/drawings.js`** da
+   `make_drawings.py`, che legge i file dell'app senza toccarli e sfoltisce
+   le linee (Douglas–Peucker a 2,5 m, in metri): il sito non dipende dai
+   file dell'app mentre gira, e i test non si rompono se quelli cambiano.
+6. **Il link per scaricare** è una riga in `config.js`; finché è `null`
+   la pagina dice «Download — coming soon». Solo un indirizzo `https`
+   diventa un link.
+7. **L'aspetto «futuristico»**: griglia da mappa sullo sfondo, etichette
+   a spaziatura fissa, angoli accesi sul pannello, la linea gialla con un
+   alone. Sempre i colori di `tokens.ts` (il ciano è `startHere`, l'acqua
+   è `map.water`); i toni intermedi si mescolano con `color-mix`, senza
+   colori nuovi. Nessun font scaricato: quelli del sistema.
+
 ## ADR-0200 — I paesi vicini sotto «Near me»: quattro paesi e i due posti più vicini, dal Places di Geoapify, con i campioni chiesti dal telefono
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-236 ·

@@ -98,19 +98,21 @@ cambia.
 - I campioni tenuti sul telefono fra un'apertura e l'altra dell'app.
 - Scaricare le zone dall'estratto invece che da Overpass a richiesta.
 
-## Da confermare con l'utente
+## Confermato dall'utente (2026-10-05)
 
-- I testi: «NEARBY TOWNS» / «PAESI VICINI», «2.9 km away» / «a 2,9 km».
+- **I testi: confermati** («vanno bene così i testi»): «NEARBY TOWNS» /
+  «PAESI VICINI», «2.9 km away» / «a 2,9 km».
 - **La regola: confermata** (2026-10-05). Alla domanda «i quattro più
   grandi entro 20 km, e dove sono meno i più vicini fino a 50, o sempre i
   quattro più vicini anche se piccoli?» l'utente: «va bene così, magari
   aggiungine altri due e sono i più vicini anche se piccoli». Quindi sei:
   i quattro di prima più i due posti più vicini di tutti, villaggi
   compresi.
-- Chi è in una grande città lontano dal centro (oltre 1,5 km) vede fra i
-  sei anche la sua città («Roma · 4 km away»).
-- Tre campioni per paese (cerchio, cuore, stella), con il cuore sulla
-  scheda.
+- Non chiesto: chi è in una grande città lontano dal centro (oltre
+  1,5 km) vede fra i sei anche la sua città («Roma · 4 km away»).
+- **Tre campioni per posto: confermati** («sì, tieni i tre e fai il
+  merge»): cerchio, cuore, stella, con il cuore sulla scheda. L'altra
+  scelta era il solo cuore, più leggero per il server.
 
 ## Esito
 

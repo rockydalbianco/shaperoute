@@ -27,7 +27,7 @@ import {
   worthAgain,
 } from "../api/drawings";
 import { t } from "../i18n";
-import { keepForDrawing, waitingDrawing } from "./drawingOutbox";
+import { forgetForDrawing, keepForDrawing, waitingDrawing } from "./drawingOutbox";
 
 /** What the owner chose for a run, as a run of «My activities» shows it. */
 export type ChoiceShown =
@@ -206,14 +206,23 @@ export function useDrawingsOf(
         key,
       });
       if (outcome.kind === "ok") {
+        // The API has this choice: an older one still waiting on the phone
+        // would undo it when it is sent (TASK-252).
+        forgetForDrawing(owner, runKey);
         mark(token, runKey, outcome.value.public);
         return { kind: "saved", drawing: outcome.value };
       }
-      if (!ended(token, outcome) && worthAgain(outcome)) {
+      if (ended(token, outcome)) {
+        return { kind: "failed", problem: drawingProblem(outcome) ?? "" };
+      }
+      if (worthAgain(outcome)) {
         if (keepForDrawing({ owner, key: runKey, ...choice })) {
           mark(token, runKey, choice.public);
           return { kind: "waiting" };
         }
+      } else {
+        // Refused, and told so: the older choice does not go behind it.
+        forgetForDrawing(owner, runKey);
       }
       return { kind: "failed", problem: drawingProblem(outcome) ?? "" };
     },

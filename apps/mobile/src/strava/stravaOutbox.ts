@@ -1,7 +1,6 @@
-import { File, Paths } from "expo-file-system";
-
 import { sessionEnded } from "../account/messages";
 import { sendToStrava, worthAgain } from "../api/strava";
+import { keptList } from "../storage/keptList";
 
 /**
  * The saved runs still to go to Strava (TASK-187), in a file of the app's
@@ -25,10 +24,6 @@ export type StravaWaiting = {
   name: string | null;
 };
 
-function outboxFile(): File {
-  return new File(Paths.document, STRAVA_OUTBOX_FILE);
-}
-
 function isStravaWaiting(value: unknown): value is StravaWaiting {
   if (typeof value !== "object" || value === null) {
     return false;
@@ -41,35 +36,16 @@ function isStravaWaiting(value: unknown): value is StravaWaiting {
   );
 }
 
+// Written so that a write cut short loses nothing that waited (TASK-252).
+const kept = keptList(STRAVA_OUTBOX_FILE, isStravaWaiting);
+
 /** The runs in the file, the oldest first; none when it cannot be read. */
 export function loadStravaOutbox(): StravaWaiting[] {
-  try {
-    const file = outboxFile();
-    if (!file.exists) {
-      return [];
-    }
-    const data: unknown = JSON.parse(file.textSync());
-    return Array.isArray(data) ? data.filter(isStravaWaiting) : [];
-  } catch {
-    return [];
-  }
+  return kept.load();
 }
 
 function saveStravaOutbox(list: StravaWaiting[]): boolean {
-  try {
-    const file = outboxFile();
-    if (list.length === 0) {
-      if (file.exists) {
-        file.delete();
-      }
-      return true;
-    }
-    file.create({ overwrite: true });
-    file.write(JSON.stringify(list));
-    return true;
-  } catch {
-    return false;
-  }
+  return kept.save(list);
 }
 
 /** Adds `run`, once for its account; false when the file could not be written. */
@@ -85,6 +61,16 @@ export function keepForStrava(run: StravaWaiting): boolean {
 export function dropForStrava(owner: number, key: string): void {
   const list = loadStravaOutbox();
   const next = list.filter((item) => !(item.key === key && item.owner === owner));
+  if (next.length !== list.length) {
+    saveStravaOutbox(next);
+  }
+}
+
+/** Takes every run of `owner` out of the file: the account is deleted
+ * (TASK-252). */
+export function forgetStravaOf(owner: number): void {
+  const list = loadStravaOutbox();
+  const next = list.filter((item) => item.owner !== owner);
   if (next.length !== list.length) {
     saveStravaOutbox(next);
   }

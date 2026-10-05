@@ -5,6 +5,9 @@
  * tests run them in Node without a browser; only the last lines touch the page.
  */
 import { fulfilledBy, products } from "./products.js";
+import { escapeHtml } from "./render.js";
+
+export { escapeHtml };
 
 /** The shirt colours the shop knows; each has its class in `styles.css`. */
 export const TEE_COLOURS = ["black", "white", "yellow"];
@@ -14,13 +17,6 @@ const TEE_OUTLINE =
   "L312 362Q312 376 298 376L102 376Q88 376 88 362L88 150L66 184L6 148L41 80" +
   "Q48 67 62 62Z";
 const TEE_COLLAR = "M138 34C160 62 240 62 262 34C246 82 154 82 138 34Z";
-
-const ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
-
-/** Text made safe for markup and for an attribute. */
-export function escapeHtml(text) {
-  return String(text).replace(/[&<>"']/g, (character) => ESCAPES[character]);
-}
 
 /** «€25» or «€24.90»; nothing when the price is not set. */
 export function formatPrice(priceEur) {

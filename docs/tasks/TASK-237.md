@@ -1,8 +1,9 @@
 # TASK-237 — Il sito web, con la sezione «Merch» per le magliette
 
 **Stato**: In corso — parte A (la pagina e la vetrina) in `main` (PR
-#325, `f8e68b6`, 2026-10-05); parte B (aprire il negozio e pubblicare)
-aspetta l'utente
+#325, `f8e68b6`, 2026-10-05); parte A2 (la pagina diventa la guida
+dell'app, il merch messo da parte) in PR dal 2026-10-05; il link per
+scaricare, la pubblicazione e il merch aspettano l'utente
 **Fase**: 4 · **Branch**: `feat/TASK-237-website-merch`
 **ADR**: ADR-0201
 
@@ -24,6 +25,22 @@ sola vetrina: **stampa su ordinazione**. Un servizio stampa e spedisce
 ogni maglietta quando viene ordinata; il sito mostra le magliette e «Buy»
 apre il pagamento del servizio.
 
+## La seconda richiesta dell'utente (2026-10-05)
+
+«No dai, per intanto fai solo il sito web che spiega come utilizzare
+l'app, e poi inseriremo anche il link per poterla scaricare; fallo un po'
+futuristico; poter selezionare un po' di cose, per selezionare [lo sport];
+metti i post migliori, tipo una decina.»
+
+Letta così (da confermare con l'utente dove dice «letto dall'agente»):
+
+1. **Per ora niente merch**: la pagina spiega solo come si usa l'app.
+2. **Il link per scaricare** arriva dopo: adesso un segnaposto.
+3. **Più futuristico**.
+4. **Cose da selezionare**: lo sport («trasporta» nel messaggio dettato,
+   letto dall'agente come «sport»), e una forma e una distanza da provare.
+5. **I dieci post migliori**: dieci disegni presi da quelli dell'app.
+
 ## Contesto da leggere
 
 - `docs/SITO.md`
@@ -38,6 +55,18 @@ apre il pagamento del servizio.
 2. Le stampe dai percorsi veri del catalogo, con uno script.
 3. Test in Node e un workflow suo.
 4. `docs/SITO.md`, ADR-0201, le righe in `STATUS.md` e `INDEX.md`.
+
+**Parte A2 — la guida dell'app** (seconda PR):
+
+1. Il merch esce da `index.html`; i suoi file restano, con i loro test.
+2. In cima il pannello «Try it»: forma e distanza scelte, il percorso
+   vero di Milano disegnato.
+3. «How it works» con la scelta dello sport: fatti e passi per «Run»,
+   «Bike», «Paddle»; le tre pagine dell'app.
+4. «Best drawings»: dieci disegni dai dati dell'app, con un filtro.
+5. «Get the app»: segnaposto, e `site/config.js` per il link.
+6. L'aspetto: griglia da mappa, etichette a spaziatura fissa, la linea
+   gialla che brilla.
 
 **Parte B — aprire il negozio e pubblicare** (dopo le scelte dell'utente):
 
@@ -61,6 +90,21 @@ Parte A:
       è il link del credito OpenStreetMap.
 - [x] `cd site && npm test` è verde, senza installare niente.
 - [x] `python3 site/tools/make_prints.py` rifà gli stessi file.
+
+Parte A2:
+
+- [x] La pagina non mostra più il merch e non ne carica i file.
+- [x] Toccando «Bike» o «Paddle» cambiano i tre fatti e i quattro passi;
+      il tasto scelto ha `aria-pressed="true"`.
+- [x] Toccando una forma e una distanza in «Try it» cambiano il disegno e
+      la riga «Milano · Star · 20.7 km»; ogni coppia ha il suo percorso.
+- [x] «Best drawings» mostra dieci disegni; «Paddle» ne lascia quattro,
+      «Run» sei.
+- [x] Con `downloadUrl` `null` i due tasti dicono «Download — coming
+      soon»; con un indirizzo `https` sono un link.
+- [x] Nessuno scorrimento orizzontale a 1280 e a 390 px; nessun errore
+      nella console.
+- [x] `cd site && npm test` è verde; i due script rifanno gli stessi file.
 
 Parte B: da scrivere con le scelte dell'utente.
 
@@ -95,7 +139,19 @@ Il cuore in cima sta nella pagina e non in un'immagine: disegnato dentro
 un `<img>` l'animazione non partiva nel controllo, e la riga restava
 nascosta.
 
-**Aspettano l'utente**: il servizio di stampa e l'account; magliette,
+**Parte A2** (2026-10-05): la pagina è la guida dell'app. Provata in
+Chrome senza finestra guidato dal protocollo DevTools, a 1280 e 390 px:
+i tasti di sport, forma, distanza e filtro cambiano quello che devono,
+nessun errore in console, nessuno scorrimento orizzontale; 25 test verdi.
+Il pannello Browser dell'app non si è potuto usare: `launch.json` è nel
+checkout principale e la modifica è stata bloccata dai permessi. Nei
+«Best drawings» non ci sono i nomi degli utenti d'esempio né minuti e
+punteggi, che nell'app sono inventati: solo titolo, luogo e km. Nessun
+disegno in bici: i dati dell'app non ne hanno. **Da confermare con
+l'utente**: che «trasporta» fosse «sport»; i testi nuovi (`content.js`,
+i titoli delle sezioni); se i dieci disegni vanno bene così.
+
+**Aspettano l'utente** (parte B, il merch, messo da parte): il servizio di stampa e l'account; magliette,
 nomi, colori e prezzi; i testi della pagina («Runs that draw a shape on
 the map.», i tre passi, «Sgrava is in preview on iPhone, not yet on the
 App Store.»); dominio e pubblicazione.

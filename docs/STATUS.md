@@ -253,7 +253,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dall'utente: una freccia del nord che rimette il nord in alto, e
   durante la corsa la mappa resta girata come il disegno, con le linee
   del percorso fatto e da fare (TASK-224) che girano con lei.
-  **Parte A** (motore e API) nella PR #356: prima la ricerca di sempre
+  **Parte A** (motore e API) in `main` dalla #356 (`799071a`): prima la ricerca di sempre
   entro ±15°, poi, solo se non dà un percorso buono, inclinata fino a 45°
   con 10 tracciamenti in più; anche in canoa. Su 129 percorsi 110
   identici (i 12 di riferimento tutti), 19 inclinati di 20–45°, i buoni da
@@ -261,8 +261,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   risultato e nell'API; `route_store` conserva anche `better_distance_m`
   (seguito di TASK-234). I 19 campioni giudicati dall'utente il
   2026-10-05: 17 `sì` e 2 `quasi`, nessun `no` (`samples/LOG.md`).
-  Aspetta il merge; server e `draw_examples` col suo ok. Parti B e C
-  dopo. `tasks/TASK-232.md`.
+  Non ancora sul server: l'aggiornamento e `draw_examples` li fa il
+  coordinatore, con l'ok dell'utente («ok server per le forme
+  inclinate»). Prossimo passo: le parti B e C (la mappa girata nell'app),
+  in un contesto pulito, dopo aver sentito il coordinatore; non si
+  pubblicano prima del server. `tasks/TASK-232.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,

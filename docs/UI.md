@@ -620,14 +620,49 @@ mappa è quella di prima.
   «Kilometres» niente cambia. Il GPX, l'API e il motore restano in metri.
   **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
-  «Terms», «Privacy», «Soon».
+  «Terms», «Privacy», tre righe con «›» in fondo: ognuna apre il suo
+  testo come pagina (TASK-184, ADR-0205, sotto).
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
   sulla schermata stessa: «Delete my account» o «Keep my account».
 
 Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
-interruttori, perché dietro non c'è ancora niente (le accendono TASK-184
-e 185). Usciti dall'account da «Settings», chi rientra trova
+interruttori, perché dietro non c'è ancora niente (le accende TASK-185).
+Usciti dall'account da «Settings», chi rientra trova
 «Profile».
+
+**«Help», «Terms», «Privacy»** (❓ 📄 🔒, TASK-184, ADR-0205): un tocco
+apre il testo sopra «Settings», a tutto schermo: «←», il nome della riga
+come titolo, poi il nome del testo e le sue sezioni, ognuna sotto il suo
+titolo, con paragrafi ed elenchi a punti. La pagina scorre da sola; «←»
+torna a «Settings» **com'era**, nel punto in cui era e con le righe
+aperte ancora aperte (resta montata sotto, nascosta anche a VoiceOver).
+Per VoiceOver i titoli sono intestazioni.
+
+- **«Help»** è la mini guida, «How Sgrava works»: undici sezioni brevi
+  (che cos'è, disegnare un percorso, «Explore», correre, tenere corse e
+  percorsi, pubblicare e condividere, «Feed» e amici, i tre sport con
+  l'avviso dell'acqua, «Settings», l'account, a chi scrivere). Dice le
+  cose con le parole del sito (`site/content.js`).
+- **«Terms»** («Terms of use») e **«Privacy»** («Privacy policy») sono
+  **bozze**, e lo dicono prima di tutto: un riquadro in cima, bordo e
+  scritta arancio (`warning`, non il giallo del percorso), «Draft — not
+  final yet.» e sotto, grigio, «Last updated: 5 October 2026». Restano
+  bozze finché l'utente non le approva (`draft` in
+  `src/about/content/`).
+- **Quello che è ancora da riempire è scritto fra parentesi quadre** e
+  spicca in arancio: `[name]` (chi gestisce Sgrava), `[contact email]`,
+  `[governing law]` in «Terms», le basi giuridiche in «Privacy». Uguali in
+  tutte le lingue. Li riempie l'utente; nel codice non c'è nessun nome né
+  indirizzo vero.
+- **Le lingue**: i testi sono in inglese e in italiano, e seguono la
+  lingua dell'app; con tedesco, spagnolo e francese sono in inglese (e
+  VoiceOver li legge in inglese), mentre il titolo della riga e il
+  riquadro della bozza sono nella lingua dell'app. Nel testo italiano i
+  nomi di pagine e pulsanti sono quelli che l'app in italiano mostra oggi.
+- «Privacy» dice solo quello che fa l'app oggi («Cosa esce dal telefono»,
+  sotto, e `DATABASE.md`): quando cambia cosa l'app manda o tiene, cambia
+  anche `src/about/content/`. I punti ancora aperti sono in
+  `tasks/TASK-184.md`, «Esito».
 
 **«Change email»** (✉️, TASK-183, ADR-0150): un tocco apre sotto la riga
 «NEW EMAIL» e «PASSWORD» (la password dell'account, nascosta) e «Save»; un

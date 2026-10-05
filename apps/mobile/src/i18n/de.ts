@@ -6,6 +6,10 @@ import type { Table } from "./translate";
  * (docs/UI.md).
  */
 export const DE: Table = {
+  // src/about/AboutPage.tsx
+  "Draft — not final yet.": "Entwurf – noch nicht endgültig.",
+  "Last updated: {date}": "Zuletzt aktualisiert: {date}",
+
   // src/account/fields.ts
   "You must be at least 16 to sign up.":
     "Du musst mindestens 16 sein, um dich zu registrieren.",

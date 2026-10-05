@@ -10713,3 +10713,97 @@ di TASK-236 nelle tabelle, che il test delle tabelle rifiuta); le yarde
 - Parte B: chi scrive una distanza usa `src/units/format.ts` e chiama
   `useUnits()`; la distanza di «Draw» in miglia (passi e limiti dentro
   `DISTANCE_LIMITS_M`) è una scelta ancora da fare lì.
+
+## ADR-0205 — «Help», «Terms», «Privacy»: i testi come dati in inglese e italiano, una pagina sopra «Settings», e le bozze che dicono di esserlo
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-184), dentro le **scelte dell'utente** del 2026-10-05: «Help» è una
+mini guida; «Terms» e «Privacy» sono bozze, segnate come bozze finché non
+le approva; chi gestisce Sgrava e l'indirizzo a cui scrivere restano
+segnaposto, `[name]` e `[contact email]`. Numero dato dal coordinatore.
+
+**Contesto**: le tre righe di «About» erano in «Settings» con «Soon»
+(ADR-0145). Sono testi lunghi, due dei quali legali, e l'app ha cinque
+lingue con una regola (ADR-0172): ogni testo è scritto in inglese dentro
+`t()`, e l'inglese è la chiave delle tabelle.
+
+**Decisione**:
+
+1. **I testi sono dati, non chiamate a `t()`**: `src/about/content/en.ts`
+   e `it.ts`, ognuno con i tre testi (`AboutDocument`: titolo, `draft`,
+   data, sezioni con titolo, paragrafi ed elenchi). Un paragrafo intero
+   come chiave di quattro tabelle non si legge e non si corregge; e una
+   virgola cambiata in inglese farebbe sparire le traduzioni.
+   `aboutDocument(id, language)` sceglie il file della lingua dell'app.
+2. **Inglese e italiano, per ora**: l'italiano perché l'utente deve
+   leggere e approvare le bozze; tedesco, spagnolo e francese dopo
+   l'approvazione, per non tradurre tre volte un testo che cambierà. Con
+   quelle lingue il testo è in inglese (come ogni testo senza traduzione,
+   ADR-0172) e VoiceOver lo sa (`accessibilityLanguage`). Un test
+   controlla che l'italiano abbia le sezioni dell'inglese, blocco per
+   blocco.
+3. **Le frasi corte passano da `t()`**: i nomi delle righe (c'erano già),
+   «Draft — not final yet.» e «Last updated: {date}», nelle cinque lingue.
+   La data sta nel testo, scritta come la scrive la sua lingua.
+4. **Una pagina, non una riga che si apre sotto**: sono testi da leggere,
+   lunghi fino a diciotto sezioni. `ProfilePage` ha tre valori nuovi
+   (`help`, `terms`, `privacy`) e `ProfileScreen` mostra `AboutScreen`
+   **sopra** «Settings», con il suo «←», il suo titolo e il suo scorrere;
+   «Settings» resta montata sotto, nascosta (`display: none`, come la
+   lista di «Find friends» sotto un profilo). Così «←» la ritrova nel
+   punto in cui era, con le righe aperte ancora aperte. `ProfileLayer.tsx`
+   non cambia: tiene già la pagina qualunque sia.
+5. **Una bozza lo dice prima di tutto**: un riquadro in cima con «Draft —
+   not final yet.» e la data, con il colore `warning` (il giallo è del
+   percorso). Lo decide `draft` nel testo: l'approvazione dell'utente è
+   cambiare quel campo, non il codice della pagina.
+6. **I segnaposto sono testo fra parentesi quadre**, uguali in ogni
+   lingua, e la pagina li mette in evidenza: `[name]`, `[contact email]`,
+   `[governing law]`, e le basi giuridiche in «Privacy». Un test rifiuta
+   in tutti i testi un indirizzo email, un link o un numero di telefono, e
+   controlla che chi offre l'app e chi è titolare dei dati sia `[name]`.
+7. **«Privacy» dice solo quello che documenti e codice confermano**
+   (`UI.md` «Cosa esce dal telefono», `DATABASE.md`, `API.md`,
+   `DEPLOY.md`, ADR-0101, 0102, 0114, 0150, 0156, 0177, 0198, le
+   migrazioni). Quello che non si è potuto verificare non è scritto: è
+   nell'elenco dei punti aperti di `tasks/TASK-184.md`. Esempio: la
+   tabella `generated_routes` di `DATABASE.md` non esiste nelle migrazioni
+   (TASK-092 è da fare), e la bozza non parla di percorsi tenuti.
+8. **La guida usa le parole del sito** (`site/content.js`, TASK-237), che
+   è la guida dell'app sul web: stessi fatti, stesse frasi dove si può.
+9. **Nel testo italiano i nomi di pagine e pulsanti sono quelli che l'app
+   in italiano mostra oggi**: «Impostazioni», «Salva», ma ancora «Feed»,
+   «Draw», «Start», «Pause» (TASK-210 non li ha tradotti tutti).
+
+**Alternative scartate**:
+
+- **I testi nelle tabelle di `t()`**: punto 1.
+- **Le righe che si aprono sotto**, come «Language» (la riserva del task):
+  un testo di diciotto sezioni dentro una riga allunga «Settings» di
+  molte schermate e mette «Log out» e «Delete account» in fondo a tutto.
+- **Lo stesso scorrere di «Profile»** per il testo: le righe di «About»
+  sono in fondo a «Settings», e il testo si aprirebbe alla fine; riportare
+  lo scorrere a mano, all'andata e al ritorno, non si può provare senza un
+  telefono.
+- **Una pagina web** aperta nel browser o in una WebView: serve un
+  indirizzo pubblicato e la rete, e il sito è di un altro task; senza rete
+  la guida non si aprirebbe.
+- **Markdown** con una libreria che lo mostra: una dipendenza nuova per
+  titoli, paragrafi ed elenchi.
+- **Un nome e un indirizzo veri**, o inventati: scelta dell'utente.
+- **Scrivere nella privacy quello che di solito si scrive** (basi
+  giuridiche, trasferimenti, tempi di risposta) senza una fonte: un testo
+  legale con fatti inventati è peggio di uno con un buco dichiarato.
+
+**Conseguenze**:
+
+- Le due bozze non sono approvate: prima dell'App Store l'utente riempie
+  i segnaposto, le fa leggere a un legale e mette `draft: false`.
+- Chi cambia cosa l'app manda o tiene (TASK-208 B: descrizione, foto e
+  tag dei disegni; TASK-092: i percorsi generati; la ricerca dalla
+  rubrica; il servizio di posta) aggiorna anche `src/about/content/`, in
+  tutte e due le lingue.
+- Quando TASK-210 traduce le pagine che mancano, i nomi nel testo
+  italiano vanno riallineati.
+- `SettingsPage` chiede a chi la mostra di aprire i testi (`onAbout`);
+  restano «Soon» solo le due righe di «Notifications» (TASK-185).
+- Solo app: nessuna dipendenza, niente server.

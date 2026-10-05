@@ -31,10 +31,12 @@
       "alternatives": [],
       "walks": [],
       "on_foot": [],
-      "better_distance_m": null
+      "better_distance_m": null,
+      "centre": null
     }
   ],
   "walks": [],
   "on_foot": [],
-  "better_distance_m": 12000
+  "better_distance_m": 12000,
+  "centre": null
 }

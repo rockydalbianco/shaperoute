@@ -148,6 +148,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-238 — Spostare la figura sull'acqua** (ADR-0202; chiesto
+  dall'utente il 2026-10-05: «spostare la figura un po' più a destra, a
+  sinistra, più vicini alla riva»). L'utente ha scelto di **trascinarla
+  col dito**. **Parte A fatta** (branch
+  `feat/TASK-238-paddle-move-shape`): la richiesta in canoa può avere
+  `near`, dove si vuole il centro della forma, e il risultato ha `centre`;
+  il motore mette la forma nel posto più vicino in cui ci sta, nella
+  fascia e con la riva a piedi entro 300 m (`water_fit.fit_shape(...,
+  near=)`, `--near` dalla CLI). Senza `near` niente cambia: i 32 esempi
+  dell'app sono identici. **Non è sul server**; dopo l'aggiornamento va
+  rilanciato `draw_examples`. **Parte B da fare**: il trascinamento sulla
+  mappa e «Move» in «Draw» con «Paddle», con i testi da confermare; gli
+  esempi di «Explore» non hanno `centre` (task file, punto 9).
+  File toccati: quelli della parte A in `tasks/TASK-238.md`; per la B
+  `apps/mobile/src/map/{messages,mapPage}.ts`, `MapView.tsx`, `App.tsx`,
+  `src/paddle/`, `src/i18n/`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

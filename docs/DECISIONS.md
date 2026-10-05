@@ -3575,6 +3575,14 @@ passa com'è e guarda solo l'inizio dell'attesa. L'ID dell'app AdMob vero
 dell'utente sostituisce quello di prova in `app.json`; l'unità resta quella
 di prova di Google fino a TASK-153.
 
+**Aggiornamento 2026-10-05 (TASK-235, ADR-0198)**: l'annuncio a schermo
+intero all'inizio di ogni ricerca non c'è più, scelta dell'utente: la
+pubblicità sta fra i post del «Feed», un annuncio nativo ogni 5 post
+(ADR-0198). `useAdBeforeRoute` e `routeAds` sono tolti. Restano AdMob, il
+consenso di Google (ora alla prima apertura del Feed, mai all'avvio),
+niente richiesta ATT, niente annunci in Expo Go. Le variabili
+`EXPO_PUBLIC_ADMOB_INTERSTITIAL_*` diventano `EXPO_PUBLIC_ADMOB_NATIVE_*`.
+
 ## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
 (TASK-133, miglioramento generale)
@@ -9714,6 +9722,209 @@ tasto prima della risposta dell'API (su una rete lenta direbbe
 TASK-208 ha qualcuno da mostrare. Le richieste si scoprono solo aprendo
 «Profile», fino alle notifiche (TASK-185). I testi nuovi, in cinque
 lingue, sono da confermare con l'utente. Bloccare resta TASK-121.
+
+## ADR-0190 — Il «Feed» sull'acqua: quattro post che leggono gli esempi dentro l'app
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-228 · quando
+si vedono, quanti, dove e i nomi sono scelte dell'utente; il resto è deciso
+dall'agente su delega dell'utente
+
+**Contesto**: «Feed» mostra quindici disegni d'esempio della corsa
+(ADR-0127), scritti in `sampleFeed.json` da `tools/sample_feed.py` a
+partire dal catalogo. L'utente ha chiesto anche personaggi inventati con
+percorsi fatti in canoa. Sull'acqua il catalogo non c'è: ci sono gli esempi
+dei quattro luoghi dentro l'app (`paddleExamples.json`, ADR-0189),
+disegnati dal motore sull'acqua del server. La condizione è che i percorsi
+dei post vengano dal motore, mai disegnati a mano.
+
+**Decisione**:
+
+1. **Sempre, mescolati** (utente): i post sull'acqua stanno fra quelli
+   della corsa con qualunque sport, il primo dopo due della corsa e poi
+   uno ogni quattro.
+2. **Quattro, uno per luogo** (utente): Lago di Garda, Lago di Como,
+   Jesolo, Riccione, con cuore, stella, luna e testa di cane, da 2 km.
+3. **I nomi** (utente): `greta_kayak`, `leo.sup`, `irene_onwater`,
+   `ale.paddle`.
+4. **I post non hanno coordinate loro**: `src/feed/paddlePosts.ts` tiene
+   solo il luogo, la forma e ciò che è inventato (nome, titolo, minuti,
+   punteggio), e legge il percorso da `PADDLE_EXAMPLES.bundled`. L'`id`
+   del post è quello dell'esempio.
+5. **Il tocco apre l'esempio**: `fetchPostRoute` di un post sull'acqua
+   restituisce il percorso dentro l'app, senza chiedere all'API. Lo sport
+   viene dal percorso (`activity: "paddling"`), come per un preferito o un
+   esempio di «Explore»: lo sport scelto dall'utente non cambia.
+6. **«Paddle» sulla scheda** è il nome dello sport come lo scrive il suo
+   bottone (`SPORTS`), uguale in ogni lingua, in testa alla riga dei
+   fatti: nessun testo nuovo da tradurre.
+7. `SAMPLE_FEED` resta il nome di ciò che «Feed» mostra; i quindici della
+   corsa sono `RUN_POSTS`.
+
+**Alternative scartate**:
+
+- Un `paddleFeed.json` scritto da un comando, come per la corsa: sarebbe
+  una seconda copia delle stesse coordinate, da rifare a ogni cambio del
+  motore sull'acqua insieme a `paddleExamples.json`.
+- Percorsi di altre lunghezze disegnati apposta (scartata dall'utente):
+  «Explore» non li avrebbe, e andrebbero tenuti dentro il feed.
+- Cambiare lo sport scelto quando si apre un post sull'acqua: un tocco su
+  un disegno non deve cambiare un'impostazione.
+- Una targhetta «Paddle» sopra il disegno: vuole uno stile nuovo; la riga
+  dei fatti c'è già e VoiceOver la legge.
+- Mettere i post in `FeedScreen.tsx` o aprirli da `App.tsx`: sono i file
+  di TASK-235, e non serve.
+
+**Conseguenze**: nessun file di dati nuovo e nessun comando nuovo; il peso
+dell'app non cambia. Rifare `paddleExamples.json` aggiorna anche i post;
+se un luogo o una forma dei quattro manca, il post sparisce e
+`paddlePosts.test.ts` lo dice. «Meanwhile, from the feed» in «Explore»
+(TASK-163) mostra gli stessi 19 disegni, quindi a volte uno sull'acqua.
+Senza API configurata un post toccato non si apre, come uno della corsa.
+Il feed vero (TASK-118) dovrà dire lo sport di ogni disegno: il campo
+`activity` di `SamplePost` è già quello.
+
+## ADR-0196 — «Explore» della canoa come la corsa: l'elenco dei laghi dentro l'app, il più vicino per primo, forme più corte sui laghi piccoli
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-233 · «tutti
+i laghi» e «come la corsa» sono richieste dell'utente; le forme più corte
+sui laghi piccoli (sui campioni), «Near me» acceso da subito e i bacini
+artificiali nell'elenco sono sue scelte del 2026-10-05, e i testi li ha
+confermati lo stesso giorno; il resto è deciso dall'agente su delega
+dell'utente
+
+**Contesto**: con «Paddle», «Explore» aveva quattro luoghi scelti a mano
+(ADR-0169, ADR-0189) e «Near me», che disegnava dalla partenza e funzionava
+solo se la partenza era già sulla riva. L'utente, che sta a un chilometro
+dal lago di Levico, non vedeva il suo lago. Ha chiesto tutti i laghi e una
+pagina come quella della corsa.
+
+**Decisione**:
+
+- **L'elenco dei laghi viene con l'app** (`lakes.json`): nome, punto della
+  riva, distanza delle forme. La ricerca per nome e «il più vicino» si
+  fanno nel telefono, senza API. Gli esempi no: 25 KB a lago sarebbero
+  megabyte, quindi li disegna il server quando il lago è scelto, come per
+  una città.
+- **Che cos'è un lago**: un'acqua su cui il motore pagaia (`water.is_lake`:
+  `natural=water` con `water=lake`, `reservoir` o senza `water`), con un
+  nome, e `water=lake`/`reservoir` oppure un nome che dice lago («Lago»,
+  «Laghi», «Laghetto», «Lac», «…see»). Senza la regola del nome entravano
+  valli da pesca, casse di laminazione e cave. I bacini artificiali ci
+  sono (confermato dall'utente): OpenStreetMap non dice dove pagaiare è
+  vietato, e l'avviso di sicurezza della canoa c'è già. Restano fuori le
+  acque segnate come lago ma chiamate per quello che sono: «Centrale …»,
+  «Cassa di …», «Vasca …», «Zona umida …» (trovate nell'estratto
+  dell'Italia: il bacino di una centrale, una cassa di espansione, una
+  zona umida).
+- **Le forme sono da 2 km dove ci stanno, altrimenti da 1,5 o da 1 km**: la
+  distanza più grande a cui cuore, cerchio e stella ci stanno tutti e tre,
+  provata con il motore punto per punto. Sotto 1 km il motore non disegna,
+  e il lago resta fuori. «Tutti i laghi» con le sole forme da 2 km erano 16
+  su 41 nel nord-est.
+- **Un punto ogni 4 km di riva** sui laghi lunghi: una richiesta parte entro
+  2 km dal punto chiesto (`MOVE_MAX_M`), quindi così ogni tratto di riva ha
+  le sue forme. L'app mostra un nome una volta, con il punto più vicino.
+- **«Near me» è acceso da subito**, come nella corsa, e mostra il luogo
+  dell'elenco più vicino entro 30 km. Più lontano resta com'era: le forme
+  dalla partenza. I luoghi da toccare sono gli otto più vicini.
+- **I quattro luoghi scelti a mano restano**, con i loro esempi dentro
+  l'app: un punto dell'elenco con lo stesso nome entro 3 km è quel luogo.
+- **Il comando legge `osmium export`** (un GeoJSON a riga), non il PBF:
+  nessuna dipendenza nuova, e i multipoligoni li ricompone osmium.
+
+**Alternative scartate**:
+
+- Chiedere i laghi all'API (`GET /lakes`): un contratto nuovo e la rete
+  per una ricerca che nel telefono pesa 7 KB.
+- «Near me» che cerca l'acqua attorno alla partenza sul server: dipende da
+  Overpass, che rifiuta (ADR-0187).
+- Solo forme da 2 km: lascia fuori 25 laghi su 41.
+- Gli esempi di ogni lago dentro l'app: 1 MB per il solo nord-est.
+
+**Conseguenze**:
+
+- **Il server deve avere l'acqua di ogni lago dell'elenco prima che l'app
+  sia pubblicata** (parte B, con l'ok dell'utente): 41 file e 12 MB per il
+  nord-est. Senza, un lago scelto dice «Map data for this area could not be
+  downloaded.».
+- L'elenco di questa PR è il nord-est: l'estratto dell'Italia è sul server.
+- Con una partenza, aprire «Explore» con «Paddle» chiede subito all'API le
+  otto forme del lago più vicino (prima non chiedeva niente fino al tocco).
+- La frase d'attesa perde «of 2 km» nelle cinque lingue; tre testi nuovi,
+  confermati dall'utente in inglese e in italiano.
+- Il Lago di Ledro manca: in OpenStreetMap è `water=pond`. Seguito.
+- Gli esempi a 1,5 e 1 km stanno sul telefono sotto chiavi loro
+  (`paddling:1500:…`), a parte da quelli a 2 km.
+
+## ADR-0198 — La pubblicità fra i post del «Feed»: un annuncio nativo ogni 5 post, niente più annuncio alla ricerca
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-235 ·
+**Supera in parte ADR-0102**: l'annuncio a schermo intero all'inizio di
+ogni ricerca non c'è più; restano AdMob, il consenso di Google, niente
+ATT, niente annunci in Expo Go · il posto (fra i post del Feed, al posto
+dell'annuncio della ricerca), l'annuncio nativo con «Sponsored» e uno ogni
+5 post sono scelte dell'utente; il resto è deciso dall'agente su delega
+dell'utente
+
+**Contesto**: il 2026-10-05 l'utente ha scritto «La pubblicità le mettiamo
+tra i post dei feed». Alla domanda se si aggiunge all'annuncio all'inizio
+di ogni ricerca o lo sostituisce ha scelto **sostituisce**, con la
+proposta che la accompagnava: un annuncio nativo con l'aspetto di un post,
+la scritta «Sponsored», uno ogni 5 post. Il Feed oggi ha 19 post d'esempio
+(ADR-0127, quattro in canoa da ADR-0190); il feed vero è TASK-118.
+
+**Decisione**:
+
+1. **Annunci nativi di AdMob** (`NativeAd`, `NativeAdView`, `NativeAsset`,
+   `NativeMediaView` di `react-native-google-mobile-ads` 17.2, già
+   nell'app): nessun pacchetto e nessuna configurazione nuovi. L'unità da
+   `EXPO_PUBLIC_ADMOB_NATIVE_IOS` / `_ANDROID`; vuote, l'annuncio nativo
+   di prova di Google. Si chiede il media orizzontale
+   (`NativeMediaAspectRatio.LANDSCAPE`).
+2. **Dove** (`feedWithAds`): dopo il 5°, il 10°, … post, solo se sotto c'è
+   un altro post. Nessuno con 5 post o meno, uno con 6–10, tre con i 19
+   d'esempio. Mai in cima, mai in fondo, mai due di fila. Un posto senza
+   annuncio non lascia buchi.
+3. **Quando** (`useFeedAds`): uno alla volta. Il primo si chiede quando il
+   Feed è la pagina sullo schermo, il successivo quando l'utente arriva al
+   posto del precedente (`AD_LOAD_AHEAD`, 5 post). Un posto il cui annuncio
+   non arriva resta vuoto e non si richiede. Un annuncio che arriva quando
+   il post sotto il suo posto è già stato sullo schermo va al primo posto
+   ancora davanti, così i post che l'utente guarda non si spostano; se non
+   ce n'è, si distrugge. Quando il Feed si smonta, i suoi annunci si
+   distruggono.
+4. **Consenso**: lo stesso modulo di Google (UMP, `gatherConsent`), una
+   volta, alla prima richiesta di annuncio: la prima volta che l'utente
+   apre il Feed. Il Feed si costruisce dietro «Draw» all'avvio, ma non
+   chiede niente finché non è la pagina sullo schermo (`active`): niente
+   all'apertura dell'app, come in ADR-0102. Senza `canRequestAds`, niente
+   annunci.
+5. **L'aspetto** (`FeedAd`): largo e arrotondato come un post. In alto,
+   prima di tutto, «Sponsored» grande come il nome di un corridore
+   (`fontSize.body`, colore dei testi), con l'icona quadrata (il corridore
+   ha il cerchio) e il nome dell'inserzionista; poi il media, mai più alto
+   che largo; poi titolo, testo e un pulsante grigio (il giallo è del
+   percorso). Niente iniziale, punteggio, tempi; un tocco apre quello che
+   dice l'annuncio, non la mappa. AdChoices lo mette l'SDK in alto a
+   destra, dove la riga lascia spazio. «Sponsored» nelle cinque lingue.
+6. **Via l'annuncio della ricerca**: `useAdBeforeRoute` e `routeAds` sono
+   tolti; «Draw route» e «Ask for a route» non mostrano più annunci.
+
+**Alternative scartate**: aggiungere gli annunci del Feed a quello della
+ricerca (l'utente ha scelto di sostituirlo); un banner fra i post (si
+vede come la pubblicità di un'altra app; l'utente ha chiesto l'aspetto di
+un post); caricare tutti gli annunci all'apertura del Feed (traffico per
+annunci che nessuno vede); mettere un annuncio arrivato tardi nel suo
+posto anche se è sullo schermo (sposta i post sotto il dito); chiedere il
+consenso all'avvio dell'app (ADR-0102: niente all'apertura).
+
+**Conseguenze**: con i 19 post d'esempio al più tre annunci per visita
+del Feed, meno impressioni di un annuncio a ogni ricerca. In Expo Go
+nessun annuncio, come prima. Per gli annunci veri serve un'unità
+**nativa** in AdMob: TASK-153 parla ancora di un'unità interstitial, e
+`docs/PUBBLICITA.md` (branch di TASK-150) dice ancora «a ogni ricerca»;
+li aggiornano i loro task. Il feed vero (TASK-118) usa la stessa
+`feedWithAds`.
 
 ## ADR-0201 — Il sito web: una pagina statica in `site/`, e il merch venduto da un servizio di stampa su ordinazione
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente

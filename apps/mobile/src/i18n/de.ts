@@ -168,6 +168,9 @@ export const DE: Table = {
   "Sign up or log in to keep your favorite routes.":
     "Registriere dich oder melde dich an, um deine Lieblingsrouten zu behalten.",
 
+  // src/feed/FeedAd.tsx
+  Sponsored: "Gesponsert",
+
   // src/feed/FeedPost.tsx
   "OpenFreeMap © OpenMapTiles\nData from OpenStreetMap":
     "OpenFreeMap © OpenMapTiles\nDaten von OpenStreetMap",
@@ -203,11 +206,14 @@ export const DE: Table = {
     "Formen zum Paddeln, höchstens 1 km vom Ufer",
   "LAKES AND SEA": "SEEN UND MEER",
   "Near me": "In meiner Nähe",
-  "Choose a lake or a beach: eight shapes of 2 km on its water, from the shore.":
-    "Wähle einen See oder einen Strand: acht Formen von 2 km auf seinem Wasser, vom Ufer aus.",
+  "Choose a lake or a beach: eight shapes on its water, from the shore.":
+    "Wähle einen See oder einen Strand: acht Formen auf seinem Wasser, vom Ufer aus.",
   "Choose a start in Draw first: the shapes start from the shore nearest to it.":
     "Wähle zuerst einen Start in Draw: Die Formen beginnen am nächstgelegenen Ufer.",
   "Near your start": "In der Nähe deines Starts",
+  "{km} km away": "{km} km entfernt",
+  "Type a lake or a beach": "See oder Strand eingeben",
+  "No lake or beach matches “{typed}”.": "Kein See oder Strand passt zu „{typed}“.",
   "{shape}, {km} km, on the water": "{shape}, {km} km, auf dem Wasser",
   "Not drawn": "Nicht gezeichnet",
 

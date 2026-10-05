@@ -1,4 +1,5 @@
-"""Detours of a piece walked, not drawn (TASK-242, ADR-0208).
+"""Detours of a piece walked, not drawn (TASK-242, ADR-0208), and the
+spikes of the outline (TASK-243, ADR-0209).
 
 A piece of a shape drawn with the pen up (pieces.py) is a short line, and
 the roads may not follow it: a mouth that crosses a railway goes down to the
@@ -12,6 +13,11 @@ line (within LIFT_NEAR piece heights of it) that gets farther than LIFT_FAR
 piece heights from it. A stretch like that before the first node on the
 line, or after the last, is left out: the piece begins and ends on its
 line. What strays less stays drawn: a road is never quite the line.
+
+The outline is the shape: a hole in it costs more than a crooked stretch.
+It is lifted only on its spikes, the detours that go out and come back
+where they left (OUTLINE_SPIKE and the constants after it), and it always
+begins at the start.
 """
 
 from __future__ import annotations
@@ -22,7 +28,12 @@ from typing import Any
 
 import numpy as np
 
-from route_engine.geo import LatLon, latlon_to_local_array
+from route_engine.geo import (
+    LatLon,
+    haversine_m,
+    latlon_to_local_array,
+    path_length_m,
+)
 from route_engine.network import (
     Graph,
     _edge_points,
@@ -41,6 +52,18 @@ LIFT_NEAR = 1 / 8
 # 175-185 m there); its other stretches off the line, up to 140 m, were
 # left drawn (TASK-242, ADR-0208).
 LIFT_FAR = 3 / 8
+# The outline of a shape in pieces is lifted on its spikes only: a detour
+# that goes out and comes back near where it left. Its two ends are no
+# farther apart than OUTLINE_GAP piece heights, an eighth of the shape's
+# size, which is the hole it leaves in the outline; and its road is at
+# least OUTLINE_SPIKE times as long as that. A detour that is no spike is
+# the outline itself on the roads there are: walked, it would open the
+# shape (TASK-243, ADR-0209).
+OUTLINE_SPIKE = 2.0
+OUTLINE_GAP = 4 / 8
+# The most spikes of the outline that are walked, the deepest: with more
+# holes than these the outline no longer reads as one line.
+OUTLINE_WALKS = 2
 # The most walks a route has, between its pieces and on their detours: what
 # a result of the API holds (schemas.MAX_WALKS; services/api/tests check it).
 MAX_WALKS = 9
@@ -83,6 +106,7 @@ def strays(
     near_m: float,
     far_m: float,
     closed: bool = False,
+    held: bool = False,
 ) -> Strays:
     """Where the route through `nodes` leaves `line`, the piece it draws: a
     node is on the line within `near_m`, and a stretch between two nodes on
@@ -90,7 +114,11 @@ def strays(
     `far_m`. So the stretch before the first node on the line and the one
     after the last, which `begin` and `end` leave out; for a `closed` piece,
     which ends where it began, those two are one stretch. A route with no
-    node on the line is kept whole."""
+    node on the line is kept whole.
+
+    A `held` route holds its first node, as the outline holds the start: it
+    begins there whatever strays after it, and a detour that leaves that
+    node is none, unless it comes back to it."""
     last = len(nodes) - 1
     points = [_node_latlon(graph, nodes[0])]
     at = [0]  # the index in `points` of each node
@@ -117,9 +145,25 @@ def strays(
         for a, b in zip(near, near[1:], strict=False)
         if depth(a, b) > far_m
     )
-    return Strays(
-        near[0] if head > far_m else 0, near[-1] if tail > far_m else last, found
+    begin = near[0] if head > far_m else 0
+    if held:
+        begin = 0
+        found = tuple(d for d in found if d.first > 0 or nodes[0] == nodes[d.last])
+    return Strays(begin, near[-1] if tail > far_m else last, found)
+
+
+def gap_m(graph: Graph, nodes: Sequence[Any], detour: Detour) -> float:
+    """How far apart the two ends of `detour` are, as the crow flies: the
+    hole it leaves in the line when it is walked."""
+    return haversine_m(
+        _node_latlon(graph, nodes[detour.first]),
+        _node_latlon(graph, nodes[detour.last]),
     )
+
+
+def road_m(graph: Graph, nodes: Sequence[Any], detour: Detour) -> float:
+    """How long `detour` is along its roads."""
+    return path_length_m(points_of(graph, nodes[detour.first : detour.last + 1]))
 
 
 def loops(nodes: Sequence[Any], found: Strays) -> list[Detour]:

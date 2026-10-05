@@ -14,7 +14,8 @@ becomes a route:
   which stretches of it are walked: [from, to] indices into its points,
   both included. Where a walk ends, the next letter begins.
 - a piece of a shape that leaves its line for a long detour is drawn in
-  parts, and the detour is walked too (detours.py, TASK-242).
+  parts, and the detour is walked too (detours.py, TASK-242); so is a spike
+  of its outline (TASK-243).
 
 Only the letters count: the similarity looks at them alone (`similarity`),
 and the distance asked for is theirs (`drawn_m`). The route's own length,
@@ -125,7 +126,9 @@ def trace(
     are: the zones and the corridor are always the finer ones. A closed
     piece, like an eye, is traced closed: it ends where it began. Where a
     piece goes a long way off its line the route walks instead of drawing
-    (`_lifted`, TASK-242): there are more walks than pieces then.
+    (`_lifted`, TASK-242), and across a spike of the outline (TASK-243):
+    there are more walks than pieces then. The route still begins where the
+    outline does.
     """
     letters = letter_lines(word, line)
     xys = [latlon_to_local_array(letter[0], np.array(letter)) for letter in letters]
@@ -155,8 +158,8 @@ def trace(
             # What the pieces drew and no longer do, walked or left out.
             kept_m = sum(path_length_m(part) for _, _, part in drawn)
             lifted_m = sum(piece.distance_m for piece in pieces) - kept_m
-    points = list(pieces[0].points)
-    nodes = list(pieces[0].nodes)
+    points = list(drawn[0][2])
+    nodes = list(drawn[0][1])
     waypoints = list(pieces[0].waypoints)
     warnings = _named(word, 0, pieces[0].warnings)
     walks: list[Walk] = []
@@ -202,11 +205,16 @@ def _lifted(
     height_m: float,
 ) -> list[tuple[int, list[Any], list[LatLon]]]:
     """The stretches the route of a shape in pieces draws, in order: for
-    each the piece it belongs to, its nodes and its points. The outline is
-    drawn whole, and so is a piece that stays by its line; a piece with
-    detours (detours.strays, with pieces `height_m` high) is drawn in parts,
-    without them. Each part more is a walk more: when the walks would be
-    more than detours.MAX_WALKS, the deepest detours are the ones walked."""
+    each the piece it belongs to, its nodes and its points. A piece that
+    stays by its line is drawn whole; a piece with detours (detours.strays,
+    with pieces `height_m` high) is drawn in parts, without them. Each part
+    more is a walk more: when the walks would be more than
+    detours.MAX_WALKS, the deepest detours are the ones walked.
+
+    The outline, the first piece, holds the start and loses its spikes only
+    (`_spike`), at most detours.OUTLINE_WALKS of them on a walk: its other
+    detours stay drawn. A loop back to the node it left is cut from any
+    piece, and takes no walk."""
     found = {
         k: detours.strays(
             graph,
@@ -214,13 +222,14 @@ def _lifted(
             lines[k],
             detours.LIFT_NEAR * height_m,
             detours.LIFT_FAR * height_m,
-            closed=lines[k][0] == lines[k][-1],
+            closed=k > 0 and lines[k][0] == lines[k][-1],
+            held=k == 0,
         )
         for k, piece in enumerate(pieces)
-        if k > 0 and len(piece.nodes) > 1
+        if len(piece.nodes) > 1
     }
     free = {k: detours.loops(pieces[k].nodes, strays) for k, strays in found.items()}
-    walked = sorted(
+    deepest = sorted(
         (
             (detour.depth_m, k, detour)
             for k, strays in found.items()
@@ -229,7 +238,15 @@ def _lifted(
         ),
         key=lambda entry: entry[:2],
         reverse=True,
-    )[: max(0, detours.MAX_WALKS - (len(pieces) - 1))]
+    )
+    # On the outline only the spikes, and few.
+    spikes = [
+        entry
+        for entry in deepest
+        if entry[1] == 0 and _spike(graph, pieces[0].nodes, entry[2], height_m)
+    ][: detours.OUTLINE_WALKS]
+    walked = [entry for entry in deepest if entry[1] > 0 or entry in spikes]
+    walked = walked[: max(0, detours.MAX_WALKS - (len(pieces) - 1))]
     drawn: list[tuple[int, list[Any], list[LatLon]]] = []
     for k, piece in enumerate(pieces):
         if k not in found:
@@ -241,6 +258,19 @@ def _lifted(
             points = piece.points if whole else detours.points_of(graph, part)
             drawn.append((k, part, points))
     return drawn
+
+
+def _spike(
+    graph: Graph, nodes: Sequence[Any], detour: detours.Detour, height_m: float
+) -> bool:
+    """Whether `detour` is a spike of the outline, with pieces `height_m`
+    high: its two ends are close, and its road is much longer than the hole
+    it leaves between them."""
+    gap_m = detours.gap_m(graph, nodes, detour)
+    return (
+        gap_m <= detours.OUTLINE_GAP * height_m
+        and detours.road_m(graph, nodes, detour) >= detours.OUTLINE_SPIKE * gap_m
+    )
 
 
 def _trace_letter(

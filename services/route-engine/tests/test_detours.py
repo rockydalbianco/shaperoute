@@ -1,4 +1,5 @@
-"""The detours of a piece are walked, not drawn (TASK-242, ADR-0208)."""
+"""The detours of a piece are walked, not drawn (TASK-242, ADR-0208), and
+the spikes of the outline too (TASK-243, ADR-0209)."""
 
 from typing import Any
 
@@ -10,7 +11,7 @@ from shapely.geometry import LineString
 from route_engine import detours, pen_up
 from route_engine.detours import Detour, Strays
 from route_engine.geo import LatLon, latlon_to_local_array, local_to_latlon
-from route_engine.network import EDGE_REUSE_PENALTY
+from route_engine.network import EDGE_REUSE_PENALTY, NetworkRoute
 from route_engine.optimizer import WORD_RETRACE, WORD_TOLERANCE, drawn_distance
 from route_engine.pieces import compose
 from route_engine.shapes.outline import parse_outline
@@ -80,11 +81,13 @@ def _mouth_line() -> list[LatLon]:
     ]
 
 
-def _strays(nodes: list[Any], closed: bool = False) -> Strays:
+def _strays(nodes: list[Any], closed: bool = False, held: bool = False) -> Strays:
     """Where a route leaves the mouth's line, in a town with no railway:
     any street may be taken."""
     graph = _town(railway=False)
-    return detours.strays(graph, nodes, _mouth_line(), 62.5, 187.5, closed=closed)
+    return detours.strays(
+        graph, nodes, _mouth_line(), 62.5, 187.5, closed=closed, held=held
+    )
 
 
 # --- Where a route leaves its line ---
@@ -167,6 +170,40 @@ def test_a_route_that_never_meets_its_line_is_kept_whole() -> None:
     assert detours.parts(nodes, found, []) == [nodes]
 
 
+def test_a_held_route_begins_at_its_first_node() -> None:
+    # It comes up from 500 m below the line and leaves the same way, as an
+    # outline whose start is off its line: the start stays, the way back
+    # does not.
+    nodes = [*_column(4, 0, 5), *_row(5, 5, 16), *_column(16, 4, 0)]
+    found = _strays(nodes, held=True)
+    assert (found.begin, found.end) == (0, 17)
+    assert detours.parts(nodes, found, []) == [nodes[:18]]
+
+
+def test_a_held_route_draws_the_detour_that_leaves_its_first_node() -> None:
+    # 300 m down from the first node, across and up again, one street on.
+    nodes = [*_column(4, 5, 2), *_column(5, 2, 5), *_row(5, 6, 16)]
+    assert _strays(nodes).detours == (Detour(0, 7, pytest.approx(300.0)),)
+    # Walked, the route would begin with a walk: it stays drawn.
+    assert _strays(nodes, held=True) == Strays(0, len(nodes) - 1)
+
+
+def test_a_held_route_still_loses_a_loop_at_its_first_node() -> None:
+    # 300 m down a street and back up it, before anything else.
+    nodes = [*_column(4, 5, 2), *_column(4, 3, 5), *_row(5, 5, 16)]
+    found = _strays(nodes, held=True)
+    assert found.detours == (Detour(0, 6, pytest.approx(300.0)),)
+    assert detours.parts(nodes, found, found.detours) == [_row(5, 4, 16)]
+
+
+def test_the_hole_of_a_detour_is_between_its_two_ends() -> None:
+    graph = _town(railway=False)
+    under = [*_column(9, 5, 0), *_column(10, 0, 5)]
+    nodes = [*_row(5, 4, 9), *under[1:], *_row(5, 11, 16)]
+    [detour] = _strays(nodes).detours
+    assert detours.gap_m(graph, nodes, detour) == pytest.approx(100.0, abs=0.5)
+
+
 # --- What stays drawn ---
 
 
@@ -222,6 +259,11 @@ def _trace(word: Word, line: list[LatLon], graph: nx.MultiDiGraph) -> Any:
     return pen_up.trace(graph, word, line, EDGE_REUSE_PENALTY, WORD_RETRACE)
 
 
+def _lift_nothing(patch: pytest.MonkeyPatch) -> None:
+    """As before TASK-242: no stretch is far enough to be a detour."""
+    patch.setattr(detours, "LIFT_FAR", float("inf"))
+
+
 def _metres(points: list[LatLon]) -> np.ndarray:
     return latlon_to_local_array(TRENTO, np.array(points))
 
@@ -260,7 +302,7 @@ def test_the_lift_draws_the_shape_better(monkeypatch: pytest.MonkeyPatch) -> Non
     word, line = _face(MOUTH)
     tolerance = WORD_TOLERANCE * HEIGHT_M
     lifted = _trace(word, line, _town())
-    monkeypatch.setattr(detours, "LIFT_FAR", float("inf"))
+    _lift_nothing(monkeypatch)
     whole = _trace(word, line, _town())
     # Without the lift the mouth hangs from the lower side of the face.
     assert len(whole.walks) == 1 and whole.nodes == lifted.nodes
@@ -275,7 +317,7 @@ def test_without_a_railway_nothing_changes(monkeypatch: pytest.MonkeyPatch) -> N
     word, line = _face(EYE, MOUTH)
     route = _trace(word, line, _town(railway=False))
     assert len(route.walks) == 2
-    monkeypatch.setattr(detours, "LIFT_FAR", float("inf"))
+    _lift_nothing(monkeypatch)
     before = _trace(word, line, _town(railway=False))
     assert (route.points, route.walks, route.nodes) == (
         before.points,
@@ -286,9 +328,9 @@ def test_without_a_railway_nothing_changes(monkeypatch: pytest.MonkeyPatch) -> N
     assert not isinstance(route, pen_up.LiftedRoute)
 
 
-def test_the_outline_is_never_lifted() -> None:
+def test_a_short_way_round_stays_on_the_outline() -> None:
     # A face whose lower side runs where the mouth's street did: its way
-    # round the railway is drawn, as before.
+    # round the railway, one street below, is drawn as before.
     word, line = _face(MOUTH)
     graph = _town()
     for j in (0, 20):  # the face's own sides cross only farther out
@@ -310,3 +352,230 @@ def test_the_walks_are_never_more_than_a_result_holds(
     assert len(route.walks) == 2
     under = _metres(pen_up.drawn_pieces(route.points, route.walks)[2])
     assert under[:, 1].min() == pytest.approx(0.0, abs=0.5)
+
+
+# --- The outline (TASK-243) ---
+
+# A block with no streets across the lower side of the face: the side goes
+# round it, 200 m off its line, and comes back 200 m farther on.
+LOWER_BLOCK = [(9, -1), (9, 0), (9, 1)]
+# A spike on the lower side, which runs from right to left: down street 10
+# for 200 m, across and up street 9. 500 m of streets, and its two ends are
+# 100 m of street apart.
+SPIKE = [*_column(10, 0, -2), *_column(9, -2, 0)]
+
+
+def _blocked(*nodes: Any) -> nx.MultiDiGraph:
+    graph = _town(railway=False)
+    graph.remove_nodes_from(nodes)
+    return graph
+
+
+def _square(*, lower: list[Any], right: list[Any] | None = None) -> list[Any]:
+    """The nodes of the face's outline along its streets, from its first
+    corner and back: `right` is its third side, from the top down to the
+    street above the lower one, and `lower` its last, from right to left."""
+    right = _column(20, 19, 1) if right is None else right
+    return [*_column(0, 0, 20), *_row(20, 1, 20), *right, *lower]
+
+
+def _lifted_outline(
+    nodes: list[Any], graph: nx.MultiDiGraph | None = None
+) -> list[list[Any]]:
+    """The parts `nodes` are drawn in, as the outline of the face."""
+    word, line = _face(MOUTH)
+    graph = _town(railway=False) if graph is None else graph
+    lines = pen_up.letter_lines(word, line)
+    points = detours.points_of(graph, nodes)
+    outline = NetworkRoute(points=points, distance_m=0.0, nodes=nodes)
+    mouth = _row(5, 4, 16)
+    piece = NetworkRoute(
+        points=detours.points_of(graph, mouth), distance_m=0.0, nodes=mouth
+    )
+    drawn = pen_up._lifted(graph, lines, [outline, piece], HEIGHT_M)
+    assert drawn[-1] == (1, mouth, piece.points)
+    assert all(k == 0 for k, _, _ in drawn[:-1])
+    return [part for _, part, _ in drawn[:-1]]
+
+
+def _with_a_path() -> nx.MultiDiGraph:
+    """The town with a path that leaves the lower side of the face at
+    street 11, goes straight to a point 190 m below it and straight back to
+    the side, 240 m from where it left: 60 m before street 8."""
+    graph = _town(railway=False)
+    places = {"below": (980.0, -190.0), "side": (860.0, 0.0)}
+    for name, (x, y) in places.items():
+        lat, lon = local_to_latlon(TRENTO, x, y)
+        graph.add_node(name, y=lat, x=lon)
+    leg = float(np.hypot(120.0, 190.0))
+    for a, b, length in (
+        ((11, 0), "below", leg),
+        ("below", "side", leg),
+        ("side", (8, 0), 60.0),
+    ):
+        graph.add_edge(a, b, length=length)
+        graph.add_edge(b, a, length=length)
+    return graph
+
+
+def test_a_spike_closes_on_a_small_hole() -> None:
+    # Its ends at most 250 m apart, an eighth of the face's side, and as
+    # far off the line as the detour of a piece: 187.5 m.
+    assert detours.OUTLINE_GAP * HEIGHT_M == 250.0
+    assert detours.LIFT_FAR * HEIGHT_M == 187.5
+
+
+def test_a_spike_of_the_outline_is_walked() -> None:
+    nodes = _square(lower=[*_row(0, 20, 11), *SPIKE, *_row(0, 8, 0)])
+    assert _lifted_outline(nodes) == [
+        _square(lower=_row(0, 20, 10)),
+        _row(0, 9, 0),
+    ]
+
+
+def test_a_long_way_round_stays_on_the_outline(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The block is one street wider: 700 m round it, and walked the hole in
+    # the side would be 300 m.
+    word, line = _face(MOUTH)
+    graph = _blocked(*LOWER_BLOCK, (8, -1), (8, 0), (8, 1))
+    route = _trace(word, line, graph)
+    _lift_nothing(monkeypatch)
+    before = _trace(word, line, graph)
+    assert (route.points, route.walks, route.nodes) == (
+        before.points,
+        before.walks,
+        before.nodes,
+    )
+    assert not isinstance(route, pen_up.LiftedRoute)
+    face = _metres(pen_up.drawn_pieces(route.points, route.walks)[0])
+    assert face[0] == pytest.approx(face[-1], abs=0.5)
+    assert face[:, 1].min() == pytest.approx(-200.0, abs=0.5)
+
+
+def test_a_way_round_that_is_no_spike_stays_on_the_outline() -> None:
+    # 449 m of path for a hole of 240 m: less than twice as long.
+    graph = _with_a_path()
+    nodes = _square(lower=[*_row(0, 20, 11), "below", "side", *_row(0, 8, 0)])
+    found = detours.strays(
+        graph, nodes, pen_up.letter_lines(*_face(MOUTH))[0], 62.5, 187.5, held=True
+    )
+    [detour] = found.detours
+    assert detour.depth_m == pytest.approx(190.0, abs=0.5)
+    assert detours.gap_m(graph, nodes, detour) == pytest.approx(240.0, abs=0.5)
+    assert detours.road_m(graph, nodes, detour) == pytest.approx(449.4, abs=0.5)
+    assert _lifted_outline(nodes, graph) == [nodes]
+
+
+def test_a_spike_that_leaves_a_wide_hole_stays_on_the_outline() -> None:
+    # Down street 10, three streets across and up street 7: 700 m of streets,
+    # more than twice the hole, but the hole is 300 m.
+    wide = [*_column(10, 0, -2), (9, -2), (8, -2), *_column(7, -2, 0)]
+    nodes = _square(lower=[*_row(0, 20, 11), *wide, *_row(0, 6, 0)])
+    assert _lifted_outline(nodes) == [nodes]
+
+
+def test_the_outline_walks_its_deepest_spikes_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A spike on the right side too, 300 m out: the deeper of the two.
+    deeper = [*_row(10, 20, 23), *_row(9, 23, 20)]
+    right = [*_column(20, 19, 11), *deeper, *_column(20, 8, 1)]
+    nodes = _square(lower=[*_row(0, 20, 11), *SPIKE, *_row(0, 8, 0)], right=right)
+    parts = _lifted_outline(nodes)
+    assert [(part[0], part[-1]) for part in parts] == [
+        ((0, 0), (20, 10)),
+        ((20, 9), (10, 0)),
+        ((9, 0), (0, 0)),
+    ]
+    monkeypatch.setattr(detours, "OUTLINE_WALKS", 1)
+    parts = _lifted_outline(nodes)
+    assert [(part[0], part[-1]) for part in parts] == [
+        ((0, 0), (20, 10)),
+        ((20, 9), (0, 0)),
+    ]
+    assert (10, -2) in parts[1]
+
+
+def test_the_outline_and_the_pieces_share_the_walks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    nodes = _square(lower=[*_row(0, 20, 11), *SPIKE, *_row(0, 8, 0)])
+    monkeypatch.setattr(detours, "MAX_WALKS", 1)
+    # One piece, one walk: none is left for the outline.
+    assert _lifted_outline(nodes) == [nodes]
+
+
+def test_a_loop_of_the_outline_is_cut_with_no_walk() -> None:
+    # 300 m down a street from the lower side, and back up it.
+    spike = [*_column(12, 0, -3), *_column(12, -2, 0)]
+    nodes = _square(lower=[*_row(0, 20, 13), *spike, *_row(0, 11, 0)])
+    assert _lifted_outline(nodes) == [_square(lower=_row(0, 20, 0))]
+
+
+def test_a_spike_to_a_corner_of_the_outline_stays() -> None:
+    # The upper side reaches its corner and comes back a street, then cuts
+    # across to the right side: the spike is on the line, and it is what
+    # draws the corner.
+    right = [(19, 20), (19, 19), *_column(20, 19, 1)]
+    nodes = _square(lower=_row(0, 20, 0), right=right)
+    assert _lifted_outline(nodes) == [nodes]
+
+
+def test_an_outline_along_its_line_is_drawn_whole() -> None:
+    nodes = _square(lower=_row(0, 20, 0))
+    assert _lifted_outline(nodes) == [nodes]
+
+
+def test_the_route_walks_round_a_spike_of_its_outline() -> None:
+    # 600 m round the block for a hole of 200 m in the lower side.
+    word, line = _face(MOUTH)
+    route = _trace(word, line, _blocked(*LOWER_BLOCK))
+    # The walk round the block, and the one to the mouth.
+    assert len(route.walks) == 2
+    assert pen_up.walks_problem(route.walks, len(route.points)) is None
+    first, last, mouth = (
+        _metres(part) for part in pen_up.drawn_pieces(route.points, route.walks)
+    )
+    # Three sides and the lower one as far as the block, then the rest of
+    # it: both on the line, and the outline still ends at the start.
+    assert first[0] == pytest.approx((0.0, 0.0), abs=0.5)
+    assert first[-1] == pytest.approx((1000.0, 0.0), abs=0.5)
+    assert last[0] == pytest.approx((800.0, 0.0), abs=0.5)
+    assert last[-1] == pytest.approx((0.0, 0.0), abs=0.5)
+    assert min(first[:, 1].min(), last[:, 1].min()) == pytest.approx(0.0, abs=0.5)
+    begin, end = route.walks[0]
+    around = _metres(route.points[begin : end + 1])
+    assert np.abs(around[:, 1]).max() == pytest.approx(200.0, abs=0.5)
+    assert mouth[:, 1] == pytest.approx(500.0, abs=0.5)
+    # What the outline lost still sizes the shape for the search.
+    assert isinstance(route, pen_up.LiftedRoute)
+    assert route.lifted_m == pytest.approx(600.0, abs=1.0)
+    drawn = pen_up.drawn_m(route.points, route.distance_m, route.walks)
+    assert drawn == pytest.approx(8000.0 - 200.0 + 1200.0, abs=1.0)
+    assert drawn_distance(route) == pytest.approx(drawn + 600.0, abs=1.0)
+
+
+def test_the_route_still_begins_at_the_start() -> None:
+    word, line = _face(MOUTH)
+    graph = _blocked(*LOWER_BLOCK)
+    route = _trace(word, line, graph)
+    start = (graph.nodes[(0, 0)]["y"], graph.nodes[(0, 0)]["x"])
+    pen_up.check_begins(route.points, start, TRENTO, TRENTO, 0.0)
+    assert route.nodes[0] == (0, 0)
+
+
+def test_the_lift_draws_the_outline_better(monkeypatch: pytest.MonkeyPatch) -> None:
+    word, line = _face(MOUTH)
+    graph = _blocked(*LOWER_BLOCK)
+    tolerance = WORD_TOLERANCE * HEIGHT_M
+    lifted = _trace(word, line, graph)
+    _lift_nothing(monkeypatch)
+    whole = _trace(word, line, graph)
+    assert len(whole.walks) == 1 and whole.nodes == lifted.nodes
+    assert not isinstance(whole, pen_up.LiftedRoute)
+    assert drawn_distance(whole) == pytest.approx(drawn_distance(lifted))
+    assert pen_up.similarity(
+        word, lifted.points, lifted.walks, line, tolerance
+    ) > pen_up.similarity(word, whole.points, whole.walks, line, tolerance)

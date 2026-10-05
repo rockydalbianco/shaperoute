@@ -10324,6 +10324,41 @@ stretta la forma non ci starebbe più, e la richiesta dovrebbe portarli).
 - Gli esempi di «Explore» con «Paddle» non hanno `centre`: per spostarli
   serve ridisegnarli o chiedere il percorso al server (parte B).
 
+## ADR-0207 — Niente punteggio sopra il disegno dei post del «Feed»
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-241 ·
+togliere il punteggio dalle foto dei post è una scelta dell'utente; il
+resto è deciso dall'agente su delega dell'utente
+
+**Contesto**: ogni post del «Feed» aveva, in basso a sinistra sopra il
+disegno, un riquadro con il punteggio («98», «out of 100»; TASK-156,
+ADR-0127). Il 2026-10-05 l'utente ha scritto «togli dalle foto dei post
+98 su 100 - 93 su 100...».
+
+**Decisione**:
+
+1. Il riquadro è tolto da `FeedPost`: sopra il disegno resta solo il
+   credito della mappa. Vale anche per i post che «Explore» mostra mentre
+   disegna una città, che sono lo stesso componente.
+2. Il punteggio non va altrove nella scheda (né nel titolo né nella riga
+   dei fatti): l'utente ha chiesto di toglierlo, non di spostarlo.
+3. L'etichetta di VoiceOver dice ancora «Score 92 out of 100»: toglierlo
+   vuole una chiave nuova nei file `src/i18n/*`, che un altro task aveva
+   in lavorazione (TASK-239, PR #343).
+4. Il campo `score` resta nei post d'esempio (`sampleFeed`) e, altrove
+   nell'app, il punteggio si vede come prima: a fine corsa, in «My
+   activities», sotto un disegno aperto dal «Profile», nel post da
+   condividere.
+
+**Alternative scartate**: spostare il punteggio nella riga dei fatti
+(l'utente ha detto «togli»); toglierlo da tutta l'app (la richiesta parla
+delle foto dei post); togliere `score` dai dati d'esempio (lo legge
+ancora VoiceOver, e il feed vero, TASK-118, lo avrà dall'API).
+
+**Conseguenze**: nel «Feed» chi vede non sa più quanto un disegno
+somiglia alla forma, chi ascolta sì: da allineare con l'utente quando i
+file delle lingue sono liberi.
+
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
 (TASK-239), dentro la **richiesta dell'utente** dello stesso giorno: «deve

@@ -2,8 +2,8 @@
 
 **Stato**: In corso. Le sei scelte hanno la risposta dell'utente; la parte A
 (API) è in `main` dalla #275, la parte B (l'app) dalla #282, la parte C
-(«Settings» e l'avviso) dalla #295; la parte A2 (il tetto del traffico)
-nella sua PR; poi B2 e D, in quest'ordine.
+(«Settings» e l'avviso) dalla #295, la parte A2 (il tetto del traffico)
+dalla #330; poi B2 e D, in quest'ordine.
 **Fase**: 4 · **Branch**: il task file con la #258; il codice in
 `feat/TASK-214-…`, una PR per parte · **ADR**: ADR-0177
 
@@ -561,7 +561,8 @@ legge (`expo-network` non la dà). È un seguito della build propria
     «… (10 MB) …», poi la riga sparisce.
 - **Test**: 16 nuovi; tutta la suite dell'app passa.
 
-**Parte A2, il tetto del traffico** (PR del 2026-10-05; ADR-0177,
+**Parte A2, il tetto del traffico** (#330, in `main` come `6f14656` il
+2026-10-05, non sul server; ADR-0177,
 «Decisione dell'agente, parte A2»). Solo codice: niente server, niente
 migrazione.
 

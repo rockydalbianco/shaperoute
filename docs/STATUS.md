@@ -471,7 +471,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Downloading the maps of your area (10 MB) so routes work without
   signal.» con il peso vero (il posto l'ha scelto l'utente il
   2026-10-04); nelle cinque lingue. Provata nel simulatore. **Parte A2**,
-  il tetto del traffico, nella sua PR (2026-10-05): le zone in più
+  il tetto del traffico, in `main` dalla #330 (`6f14656`, 2026-10-05): le zone in più
   arrivano con `?prefetch=1` e l'id anonimo del telefono, al massimo 300
   MB al giorno per telefono e 300 GB in tutto; oltre, `429` con
   `Retry-After` fino alla mezzanotte UTC, e l'app non ne chiede altre fino

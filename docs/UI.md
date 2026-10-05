@@ -352,6 +352,20 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   figure venute meglio nelle sette città del catalogo, due per città e
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
   inventati.
+  **Fra i quindici ci sono quattro disegni fatti sull'acqua** (TASK-228,
+  ADR-0190, chiesto dall'utente): sempre, qualunque sia lo sport scelto,
+  il 3º, l'8º, il 13º e il 18º dei 19. Uno per luogo d'acqua di «Explore»
+  con «Paddle», ognuno con la sua forma da 2 km: `greta_kayak` un cuore sul
+  Lago di Garda, `leo.sup` una stella sul Lago di Como, `irene_onwater` una
+  luna a Jesolo, `ale.paddle` una testa di cane a Riccione, con gli occhi
+  staccati. La scheda è quella degli altri, con il luogo al posto della
+  città e la mappa del lago o del mare sotto la linea; la riga dei fatti
+  comincia con lo sport, «Paddle · Heart · 2.0 km · 26 min». Nomi, titoli,
+  tempi e punteggi sono inventati; i percorsi sono gli esempi che l'app ha
+  già per quei luoghi, disegnati dal motore sull'acqua vera. Un tocco apre
+  il percorso come un esempio di «Explore» con «Paddle», senza chiedere
+  niente all'API: «on the water», «Start» con l'avviso della canoa, la
+  linea senza indicazioni. Lo sport scelto non cambia.
   **Un tocco su una scheda apre il suo percorso** sulla mappa (TASK-188,
   ADR-0151, chiesto dall'utente), come un percorso di «Explore»: la stessa
   scheda con km, forma e città, «Start» per correrlo, «Export GPX», e il
@@ -538,7 +552,8 @@ mappa è quella di prima.
   della corsa: cosa mostrano con la bici è una scelta dell'utente ancora
   aperta (`tasks/TASK-190.md`, «Domande aperte»). **Con «Paddle»** cambiano
   «Draw», «Start» ed «Explore» (sotto, «Sull'acqua»); «Feed» e la schermata
-  della corsa restano quelli della corsa.
+  della corsa restano quelli della corsa. I quattro disegni sull'acqua di
+  «Feed» (TASK-228, sopra) ci sono con ogni sport.
 - **«Strava»** (TASK-187), solo se l'API ha Strava: «Connect with
   Strava» (il pulsante ufficiale di Strava, TASK-218, come a fine corsa)
   con «Send the runs you save in Sgrava to your Strava

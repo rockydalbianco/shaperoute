@@ -150,7 +150,8 @@ def hero_markup(print_: Print, indent: str) -> str:
     fitted = fit(project(route["points"]))
     start_x, start_y = fitted[0]
     lines = [
-        f'<svg class="hero__drawing" viewBox="0 0 {BOX:g} {BOX:g}" role="img" '
+        f'<svg class="hero__drawing" data-try-drawing viewBox="0 0 {BOX:g} {BOX:g}" '
+        'role="img" '
         f'aria-label="A {print_.shape} drawn by a running route on the streets of '
         f'{print_.city_label.capitalize()}">',
         f'  <path class="hero__line" pathLength="1" d="{path_data(fitted)}" />',

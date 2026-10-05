@@ -1,69 +1,86 @@
-# SITO — Il sito web e il merch
+# SITO — Il sito web
 
-> Cosa c'è nel sito di Sgrava, come si aggiunge una maglietta e come si
-> guarda in locale. Le scelte e i loro perché stanno in `DECISIONS.md`
-> (ADR-0201); lo stato in `STATUS.md`.
+> Cosa c'è nel sito di Sgrava, come si cambia e come si guarda in locale.
+> Le scelte e i loro perché stanno in `DECISIONS.md` (ADR-0201); lo stato
+> in `STATUS.md`.
 
 ## Cos'è
 
-Una pagina sola, in inglese, in `site/`: l'intestazione con il logo, il
-cuore di Milano che si disegna, «How it works» in tre passi e la sezione
-**«Merch»** con le magliette. HTML, CSS e JavaScript scritti a mano: nessuna
-dipendenza, nessun passo di build, niente cookie, niente dati di chi visita.
+Una pagina sola, in inglese, in `site/`, che **spiega come si usa l'app**
+(scelta dell'utente, 2026-10-05). HTML, CSS e JavaScript scritti a mano:
+nessuna dipendenza, nessun passo di build, niente cookie, niente dati di
+chi visita, niente caricato da altri siti.
 
-**Il sito non vende niente da solo.** Le magliette sono stampate su
-ordinazione da un servizio esterno (scelta dell'utente, 2026-10-05), che
-stampa, incassa, spedisce e gestisce i resi. Il sito mostra le magliette e
-«Buy» apre la pagina di quella maglietta sul servizio. Il servizio non è
-ancora scelto: finché una maglietta non ha il suo indirizzo, al posto di
-«Buy» c'è «Coming soon», e sotto il negozio «The shop opens soon.».
+Dall'alto in basso:
+
+1. **In cima**, il titolo e il pannello **«Try it»**: si sceglie una forma
+   (sei) e una distanza (5, 10, 21 km) e il pannello disegna quel percorso
+   a Milano, uno dei percorsi veri del catalogo.
+2. **«How it works»**: si sceglie lo **sport** («Run», «Bike», «Paddle») e
+   cambiano i tre fatti (distanze, dove, come guida) e i quattro passi.
+   Sotto, le tre pagine dell'app: «Draw», «Explore», «Profile».
+3. **«Best drawings»**: dieci disegni, sei corse e quattro uscite in
+   canoa, con un filtro («All», «Run», «Paddle»).
+4. **«Get the app»**: per ora «Download — coming soon», in cima e in
+   fondo. Il link arriva quando l'app è sull'App Store (TASK-152).
 
 ## I file
 
 | File | Cosa contiene |
 |---|---|
 | `site/index.html` | la pagina |
-| `site/styles.css` | l'aspetto; i colori sono dichiarati una volta in cima e ricalcano `apps/mobile/src/theme/tokens.ts` |
-| `site/products.js` | **le magliette**: l'unico file da toccare per aggiungerne una, darle un prezzo o metterla in vendita |
-| `site/merch.js` | costruisce le schede di «Merch» da `products.js` |
-| `site/prints/` | le stampe, una per maglietta |
+| `site/styles.css` | l'aspetto; i colori sono dichiarati una volta in cima e ricalcano `apps/mobile/src/theme/tokens.ts`, i toni più chiari si mescolano da quelli |
+| `site/config.js` | **il link per scaricare l'app** (`downloadUrl`) |
+| `site/content.js` | **i testi della guida**: sport, fatti, passi, le pagine dell'app |
+| `site/data/drawings.js` | i disegni di «Try it» e di «Best drawings»; lo scrive `make_drawings.py`, non si tocca a mano |
+| `site/render.js` | costruisce i pezzi della pagina (funzioni pure, provate dai test) |
+| `site/main.js` | collega i tasti alla pagina |
 | `site/assets/` | logo e simbolo, copiati da `docs/brand/` |
-| `site/tools/make_prints.py` | ridisegna le stampe e il cuore in cima alla pagina dai percorsi di `catalog/seed/` |
+| `site/tools/` | gli script che ricavano i disegni dai percorsi veri |
 | `site/tests/` | i test (`node --test`) |
 
-## Mettere in vendita una maglietta
+## Mettere il link per scaricare l'app
 
-In `site/products.js` ogni maglietta è una voce:
+In `site/config.js`, `downloadUrl`: l'indirizzo `https://…` dell'app
+sull'App Store. Con `null` i due tasti dicono «Download — coming soon»;
+con l'indirizzo diventano «Download the app». Vanno poi cambiati a mano
+il titolo e la frase di «Get the app» in `index.html` («On iPhone, soon.»,
+«Sgrava is in preview on iPhone…»).
 
-- `buyUrl`: l'indirizzo `https://…` della maglietta sul servizio di stampa.
-  Con `null` la scheda dice «Coming soon». Solo un indirizzo `https` la
-  mette in vendita.
-- `priceEur`: il prezzo in euro, lo stesso scritto sul servizio. Una
-  maglietta in vendita senza prezzo fa fallire i test.
-- `fulfilledBy`, in cima al file: il nome del servizio, scritto sotto il
-  negozio («Payment, shipping and returns are handled by …»). Va messo
-  quando la prima maglietta va in vendita: i test lo chiedono.
-- `tee`: `black`, `white` o `yellow`, il colore della maglietta disegnata.
-- `print`: il file della stampa in `site/prints/`.
+## Cambiare i testi della guida
 
-## Le stampe
+In `site/content.js`. Ogni riga dice una cosa che l'app fa oggi: quando
+l'app cambia (una distanza, uno sport, un passo), si cambia lì. I test
+chiedono tre fatti e quattro passi per sport.
 
-Le tre stampe con un percorso (cuore di Milano 10,1 km, lumaca di Torino
-21,8 km, stella di Trento 5,1 km) sono percorsi veri di `catalog/seed/`,
-tracciati dal Route Engine: lo script li proietta in metri e li disegna
-come una linea, con il pallino della partenza e la scritta. Non inventa
-geometrie. Per rifarle o aggiungerne una (elenco `PRINTS` nello script):
+## I disegni
+
+Nessuna geometria è inventata: ogni linea è un percorso tracciato dal
+Route Engine su dati OpenStreetMap, che gli script proiettano in metri,
+sfoltiscono e adattano a un quadrato.
+
+- **«Try it»**: `catalog/seed/milano.json`, sei forme per tre distanze.
+- **«Best drawings»**: sei corse dei disegni d'esempio del «Feed»
+  dell'app (`apps/mobile/src/feed/sampleFeed.json`) e i quattro esempi
+  sull'acqua che il «Feed» mostra (`apps/mobile/src/paddle/paddleExamples.json`),
+  con gli stessi titoli. Il sito mostra titolo, luogo e km; **non** i nomi
+  degli utenti d'esempio, i minuti e i punteggi, che nell'app sono
+  inventati. Non ci sono disegni in bici: nei dati dell'app non ce ne sono.
+
+I file dell'app vengono solo letti; i disegni restano copiati in `site/`,
+quindi un cambio nell'app non cambia il sito finché non si rilancia:
 
 ```bash
 python3 site/tools/make_prints.py
+python3 site/tools/make_drawings.py
 ```
 
-I percorsi vengono da dati OpenStreetMap: il credito «© OpenStreetMap
-contributors» in fondo alla pagina deve restare (lo controlla un test).
+Il primo rifà anche il cuore scritto dentro `index.html` (quello che si
+vede prima che parta JavaScript). Quali forme, quali città e quali dieci
+disegni: gli elenchi in cima a `make_drawings.py`.
 
-I file SVG sono la stampa come si vede sul sito. Il file da caricare sul
-servizio di stampa (di solito un PNG grande, a 300 dpi) si ricava da lì
-quando il servizio è scelto.
+Il credito «© OpenStreetMap contributors» in fondo alla pagina deve
+restare (lo controlla un test).
 
 ## Guardarlo in locale
 
@@ -74,7 +91,7 @@ python3 -m http.server 8237 --bind 127.0.0.1 --directory site
 ```
 
 Aprire `index.html` con un doppio clic non basta: senza un server il
-browser non carica `merch.js` e le magliette non compaiono.
+browser non carica gli script, e passi e disegni non compaiono.
 
 ## I test
 
@@ -85,9 +102,21 @@ cd site && npm test
 Solo Node, niente da installare. In CI li fa girare
 `.github/workflows/site.yml`, quando cambia qualcosa in `site/`.
 
+## Il merch, messo da parte
+
+La prima versione della pagina aveva una sezione «Merch» con le magliette,
+vendute da un servizio di stampa su ordinazione. Il 2026-10-05 l'utente ha
+detto di fare **per ora solo la guida**: la sezione è fuori dalla pagina,
+ma i suoi file restano e i loro test girano ancora: `site/products.js` (le
+magliette), `site/merch.js` (le schede), `site/merch.css` (lo stile),
+`site/prints/` (le stampe). Per rimetterla: una sezione con
+`<ul data-products>` e `<p data-shop-note>` in `index.html`, il foglio
+`merch.css` e lo script `merch.js` nell'intestazione; una maglietta è in
+vendita quando ha `buyUrl` (`https`) e `priceEur` in `products.js`, e
+`fulfilledBy` dice il nome del servizio.
+
 ## Non ancora deciso (dell'utente)
 
-Quale servizio di stampa e il suo account; quali magliette, con quali
-nomi, colori e prezzi (le quattro di adesso sono una proposta); i testi
-della pagina; il dominio e dove pubblicare il sito. Finché non è
-pubblicato, il sito esiste solo nel repository.
+I testi della pagina; quali dieci disegni; il dominio e dove pubblicare il
+sito; quando rimettere il merch, con quale servizio, quali magliette e
+quali prezzi. Finché non è pubblicato, il sito esiste solo nel repository.

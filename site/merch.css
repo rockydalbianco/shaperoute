@@ -1,0 +1,121 @@
+/*
+ * The «Merch» section, parked: the page does not link this file while the
+ * shop is off (`docs/SITO.md`). It uses the colours declared in `styles.css`.
+ */
+
+.merch {
+  padding-block: clamp(40px, 7vw, 88px);
+}
+
+.merch__lead {
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.products__fallback {
+  color: var(--text-muted);
+}
+
+.product {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.product__text {
+  flex: 1;
+  padding: 18px 18px 0;
+}
+
+.product__description {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.product__buy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 18px;
+}
+
+.product__price {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.product__buy .button {
+  margin-left: auto;
+  min-height: 44px;
+}
+
+.merch__note {
+  margin-top: 24px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* The drawn shirt */
+
+.tee {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--surface-raised);
+}
+
+.tee__shape {
+  position: absolute;
+  inset: 7%;
+  width: 86%;
+  height: 86%;
+}
+
+.tee__body {
+  stroke: var(--tee-edge);
+  stroke-width: 2;
+}
+
+.tee__collar {
+  fill: rgb(0 0 0 / 22%);
+}
+
+.tee--black .tee__body {
+  fill: var(--background);
+}
+
+.tee--white .tee__body {
+  fill: var(--tee-white);
+}
+
+.tee--yellow .tee__body {
+  fill: var(--accent);
+}
+
+.tee--black .tee__collar {
+  fill: rgb(245 245 244 / 9%);
+}
+
+.tee__print {
+  position: absolute;
+  left: 31%;
+  top: 29%;
+  width: 38%;
+  height: 44%;
+  object-fit: contain;
+  object-position: center top;
+}

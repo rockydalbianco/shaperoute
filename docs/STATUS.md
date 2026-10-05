@@ -145,19 +145,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-237 — Il sito web, con «Merch» per le magliette** (ADR-0201;
-  chiesto dall'utente il 2026-10-05, che ha scelto la **stampa su
-  ordinazione**). **Parte A** in `main` dal 2026-10-05 (PR #325, merge
-  `f8e68b6`): una pagina statica in `site/`
-  (nuova, senza dipendenze), con il cuore di Milano che si disegna, «How
-  it works» e «Merch»: quattro magliette proposte, con le stampe dai
-  percorsi veri del catalogo. Il sito non vende da solo: «Buy» aprirà la
-  pagina della maglietta sul servizio di stampa; finché manca
-  l'indirizzo, «Coming soon». **Niente è pubblicato.** **Aspettano
-  l'utente**: il servizio di stampa e il suo account, magliette e prezzi,
-  i testi, dominio e pubblicazione. Come si aggiunge una maglietta e come
-  si guarda in locale: `SITO.md`. Da dove riprendere:
-  `tasks/TASK-237.md`, «Esito».
+- **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
+  2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
+  A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
+  in PR (2026-10-05), dopo la seconda richiesta dell'utente («per intanto
+  solo il sito che spiega come usare l'app… futuristico… selezionare lo
+  sport… i post migliori, una decina»): la pagina è la **guida dell'app**.
+  «Try it» disegna il percorso vero di Milano per la forma e la distanza
+  scelte; «How it works» cambia fatti e passi con lo sport («Run»,
+  «Bike», «Paddle»); «Best drawings» mostra dieci disegni dai dati
+  dell'app, con un filtro; «Get the app» dice «Download — coming soon»
+  finché `site/config.js` non ha il link. **Il merch è messo da parte**: i
+  file restano, la pagina non lo mostra. **Niente è pubblicato.** **Da
+  confermare con l'utente**: i testi, i dieci disegni, che «trasporta»
+  fosse «sport». **Aspettano l'utente**: il link dell'App Store
+  (TASK-152), dominio e pubblicazione, e per il merch il servizio di
+  stampa, magliette e prezzi. Come si cambia e come si guarda:
+  `SITO.md`. Da dove riprendere: `tasks/TASK-237.md`, «Esito».
 - **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; chiesto
   dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
   riesce ma un tentativo già tracciato a un'altra distanza segue la forma

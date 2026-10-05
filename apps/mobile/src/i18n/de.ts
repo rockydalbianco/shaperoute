@@ -397,8 +397,13 @@ export const DE: Table = {
   // src/share/StravaPostRow.tsx
   "To send this post to Strava, save the run, then share it from «My activities».":
     "Um diesen Beitrag an Strava zu senden, speichere den Lauf und teile ihn dann aus «Meine Aktivitäten».",
-  "This run is already on Strava. To add the picture there, keep it in Photos with «Save Image».":
-    "Dieser Lauf ist schon auf Strava. Um das Bild dort hinzuzufügen, leg es mit «Bild sichern» in Fotos ab.",
+  "Update on Strava": "Auf Strava aktualisieren",
+  "The activity on Strava has this post's text now.":
+    "Die Aktivität auf Strava hat jetzt den Text dieses Beitrags.",
+  "Strava did not let Sgrava change this activity. Change its text on Strava.":
+    "Strava hat Sgrava diese Aktivität nicht ändern lassen. Ändere den Text auf Strava.",
+  "Strava takes no pictures from other apps: keep this one in Photos with «Save Image» and add it there.":
+    "Strava nimmt keine Bilder aus anderen Apps: leg dieses mit «Bild sichern» in Fotos ab und füg es dort hinzu.",
 
   // src/share/postRun.ts
   Distance: "Distanz",

@@ -117,23 +117,21 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app aggiornati il 2026-10-03** (ok dell'utente). **Server**:
-  su `main` `7098cb9` dalle 12:39Z («va bene pubblica»), con le migrazioni
-  `0001`–`0013` (immagine di prima `shaperoute-api:before-task206`, copia
-  del database `shaperoute-2026-10-03T1239Z.dump`; prima ancora
-  `before-task205`, 10:00Z); la zona bici di Trento rifatta con la bici a
-  mano di TASK-206 (GraphML 72 MB); gli esempi ridisegnati per 66 città su
-  66. **App** su `preview` da `main` `b649a88` (gruppo `fcdb1a46`, uguale a
-  `0fa3f391` di pochi minuti prima): la voce in cinque lingue (TASK-209),
-  la bici a mano nell'app (TASK-206 C), la lente «Find friends» (TASK-215,
-  219), le immagini di Strava (TASK-218), seguire e i commenti (TASK-211 A,
-  120, 213), la lingua dell'app (TASK-210 A) e il logo dopo «Save»
-  (TASK-212). **Da provare sull'iPhone.** In `main` ma non sul server: la
-  migrazione `0014` (TASK-208 A) e `/phone-zones` (TASK-214 A), con le zone
-  nel formato del telefono da costruire (0,7–0,8 GB, 20–30 minuti):
-  servono quando ci saranno le loro parti app. Strava spento finché
-  l'utente non scrive il secret sul server; la canoa nell'app è «Soon»
-  (#255 in pausa) e non va pubblicata prima dell'acqua sul server.
+- **Server e app, al 2026-10-05**. **Server**: su `main` `7098cb9` dal
+  2026-10-03 12:39Z, con le migrazioni `0001`–`0013`, la zona bici di
+  Trento con la bici a mano, gli esempi di 66 città e, dal 2026-10-04,
+  l'acqua dei quattro luoghi della canoa (TASK-225). **App** su `preview`
+  da `main` `7e9e27a` (gruppo `b6399e76`, 2026-10-04): canoa, navigazione
+  in bici, percorso fatto e da fare, cuore su giallo, pulsante giallo,
+  «Save» nel contorno, il motore sul telefono (che usa ancora il server).
+  **Da fare, con il server per primo**: aggiornarlo a `main` (motore di
+  TASK-223 e TASK-230, migrazioni `0014` e `0015`, `/phone-zones`), poi
+  `draw_examples`, poi pubblicare l'app. Fino ad allora `main` **non si
+  pubblica**: l'API di oggi rifiuta le quattro forme nuove di TASK-223 B.
+  L'utente ha chiesto di finire (2026-10-05); il deploy dalla sessione del
+  coordinatore è stato negato dal controllo dei permessi e aspetta una
+  regola di permesso o l'utente. Strava spento finché l'utente non scrive
+  il secret sul server.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -159,8 +157,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   principale lo fa il coordinatore; poi la pubblicazione e la prova
   sull'iPhone con l'ok dell'utente. Il testo per Strava («🔥❤️ 5.20 km ·
   28:10 · 5:25 /km · Punteggio 87», poi «Drawn with Sgrava») è stato
-  mostrato all'utente: va bene se non chiede di cambiarlo. **Parte B, l'API**: cambiare la descrizione di una
-  corsa già su Strava (`tasks/TASK-231.md`).
+  mostrato all'utente, che ha risposto «va bene». **Parte B**, in PR
+  (2026-10-05, «fai la parte b e pubblica» dell'utente): il testo del
+  post va come `post`, in cima alla descrizione, e su una corsa già su
+  Strava la cambia con `PUT /activities/{id}` («Update on Strava»
+  nell'app). Vuole il server aggiornato (`tasks/TASK-231.md`).
 
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il

@@ -9423,3 +9423,21 @@ SVG: le linee sono `View` ruotate.
   Strava», e la foto si aggiunge a mano. Cambiare la descrizione là è la
   parte B di TASK-231 (API).
 - I testi nuovi sono nelle cinque lingue (ADR-0172), da far confermare.
+
+**Parte B** (2026-10-05, «fai la parte b e pubblica» dell'utente; deciso
+dall'agente su delega dell'utente):
+
+7. **Il testo del post è un campo suo**, `post`, nel corpo di `POST
+   /me/activities/{key}/strava`, non la `description`: va in cima, sopra
+   le parole di chi corre (TASK-208) e la riga di Sgrava, così il post non
+   le cancella. La parte A, mai pubblicata, mandava il testo come
+   `description`: cambiata senza che nessun telefono l'abbia avuta.
+8. **Su una corsa già mandata `post` cambia il testo su Strava** con `PUT
+   /api/v3/activities/{id}` (basta `activity:write`); il nome resta. Senza
+   `post` la corsa risponde com'era, come prima: l'outbox di «Send to
+   Strava» che rimanda una corsa non cambia niente. Se Strava risponde 403
+   o 404 (attività cancellata, o «Only me» senza `activity:read_all`),
+   `422 invalid_request` e la corsa resta mandata: non si chiede un
+   permesso in più per leggere.
+9. **Nell'app** «Update on Strava» compare su una corsa già là solo se il
+   post ha un testo.

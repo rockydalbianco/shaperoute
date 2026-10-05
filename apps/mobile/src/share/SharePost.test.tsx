@@ -6,7 +6,7 @@ import { Linking } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { captureRef } from "react-native-view-shot";
 
-import type { StravaActivity } from "../api/strava";
+import type { StravaActivity, StravaOutcome } from "../api/strava";
 import { StravaContext, type StravaState } from "../strava/useStrava";
 import type { PostRun } from "./postRun";
 import { SharePost, SharePostButton } from "./SharePost";
@@ -219,10 +219,77 @@ describe("Strava on the post", () => {
     expect(open).toHaveBeenCalledWith(url);
     expect(
       screen.getByText(
-        "This run is already on Strava. To add the picture there, keep it in Photos with «Save Image».",
+        "Strava takes no pictures from other apps: keep this one in Photos with «Save Image» and add it there.",
       ),
     ).toBeOnTheScreen();
     open.mockRestore();
+  });
+
+  it("puts the post's text on a run already on Strava", async () => {
+    const url = "https://www.strava.com/activities/7";
+    const state = strava({ activity: { status: "sent", url } });
+    await shown(<SharePost run={RUN} onClose={() => {}} />, state);
+    await fireEvent.press(screen.getByRole("button", { name: "Add 🏆" }));
+    await fireEvent.press(
+      await screen.findByRole("button", { name: "Update on Strava" }),
+    );
+    expect(state.send).toHaveBeenCalledWith(
+      "run-1",
+      null,
+      "🏆 5.20 km · 28:10 · 5:25 /km · Score 87",
+    );
+    expect(
+      await screen.findByText("The activity on Strava has this post's text now."),
+    ).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "View on Strava" })).toBeOnTheScreen();
+  });
+
+  it("says so when Strava does not let the text change", async () => {
+    const url = "https://www.strava.com/activities/7";
+    const state = strava({
+      activity: { status: "sent", url },
+      send: jest.fn(async (): Promise<StravaOutcome<StravaActivity>> => ({
+        kind: "api_error",
+        code: "invalid_request",
+        message: "…",
+        suggested_distance_m: null,
+        retryAfterS: null,
+        http: 422,
+      })),
+    });
+    await shown(<SharePost run={RUN} onClose={() => {}} />, state);
+    await fireEvent.press(
+      await screen.findByRole("button", { name: "Update on Strava" }),
+    );
+    expect(
+      await screen.findByText(
+        "Strava did not let Sgrava change this activity. Change its text on Strava.",
+      ),
+    ).toBeOnTheScreen();
+    // Still on Strava, as it was: it can be tried again.
+    expect(screen.getByRole("button", { name: "Update on Strava" })).toBeOnTheScreen();
+    expect(
+      screen.queryByText("The activity on Strava has this post's text now."),
+    ).toBeNull();
+  });
+
+  it("offers no update when the post has nothing to say", async () => {
+    await shown(
+      <SharePost
+        run={{ ...RUN, score: null, distanceM: 0, durationMs: 0 }}
+        onClose={() => {}}
+      />,
+      strava({
+        activity: { status: "sent", url: "https://www.strava.com/activities/7" },
+      }),
+    );
+    for (const name of ["Distance", "Time"]) {
+      await fireEvent.press(screen.getByRole("checkbox", { name }));
+    }
+    expect(
+      await screen.findByRole("button", { name: "View on Strava" }),
+    ).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Update on Strava" })).toBeNull();
   });
 
   it("before «Save», says where the run goes to Strava from", async () => {

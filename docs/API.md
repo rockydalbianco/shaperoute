@@ -513,6 +513,19 @@ da solo. Quali entrano: `ROUTE_ENGINE.md`, «Altri percorsi fra cui
 scegliere». Il registro delle richieste scrive anche le loro impronte
 (`outcome.alternatives`), e il replay le confronta.
 
+**`better_distance_m`** (TASK-234, ADR-0197): una distanza, in metri al
+km intero, dove la ricerca ha visto la forma venire chiaramente meglio,
+per «This heart comes out better at about 12 km» con «Try 12 km»
+nell'app. Viene dai tentativi che la ricerca ha già tracciato (nessun
+calcolo in più, `ROUTE_ENGINE.md`, «Dove la forma viene meglio»); il
+percorso scelto è quello di sempre. È `null` senza un consiglio, nelle
+alternative e sull'acqua; mai la distanza chiesta, né una fuori dai limiti
+dell'attività (bici 10–30 km) o sotto i 3 km a lettera di una parola. Come
+`suggested_distance_m` di un errore, non è garantita: un nuovo disegno
+rifà la ricerca. Un'API precedente non lo manda (in `shared-types` è
+facoltativo), le app installate lo ignorano, e il `GpxRequest` lo accetta
+con o senza. Esempio: `fixtures/route-result-better-distance.json`.
+
 La richiesta è sincrona: la risposta arriva quando il percorso è pronto
 (tempi sotto). Resta per `/docs`, `curl` e le misure; l'app usa
 `/route-jobs`.

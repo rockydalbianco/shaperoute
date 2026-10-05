@@ -202,11 +202,15 @@ export const FR: Table = {
     "Des formes à pagayer, à moins de 1 km du rivage",
   "LAKES AND SEA": "LACS ET MER",
   "Near me": "Près de moi",
-  "Choose a lake or a beach: eight shapes of 2 km on its water, from the shore.":
-    "Choisis un lac ou une plage : huit formes de 2 km sur son eau, depuis le rivage.",
+  "Choose a lake or a beach: eight shapes on its water, from the shore.":
+    "Choisis un lac ou une plage : huit formes sur son eau, depuis le rivage.",
   "Choose a start in Draw first: the shapes start from the shore nearest to it.":
     "Choisis d'abord un départ dans Draw : les formes partent du rivage le plus proche.",
   "Near your start": "Près de ton départ",
+  "{km} km away": "à {km} km",
+  "Type a lake or a beach": "Écris un lac ou une plage",
+  "No lake or beach matches “{typed}”.":
+    "Aucun lac ou plage ne correspond à « {typed} ».",
   "{shape}, {km} km, on the water": "{shape}, {km} km, sur l'eau",
   "Not drawn": "Non dessiné",
 

@@ -367,6 +367,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   ogni attività come «Run». Da dove riprendere: `tasks/TASK-191.md`,
   «Esito», parti A2, B e C (fatta).
 
+- **TASK-233 — «Explore» della canoa come la corsa, e tutti i laghi**
+  (ADR-0196; chiesto dall'utente il 2026-10-05: «fai anche tutti i laghi,
+  tipo vicino a me c'è il lago di Levico Terme»). **Parte A** nella PR #319: con
+  «Paddle», «Near me» è acceso da subito e mostra il lago più vicino
+  («LAGO DI LEVICO · 1.2 KM AWAY»), poi gli otto luoghi più vicini da
+  toccare e «Type a lake or a beach»; l'elenco dei laghi è dentro l'app
+  (`src/paddle/lakes.json`, da `python -m shaperoute_api.lake_catalog`),
+  con le forme da 2 km, o da 1,5 e 1 km sui laghi piccoli. Per ora il
+  nord-est: 41 laghi, 93 punti, ognuno provato dal motore. Campioni veri
+  in `out/task233-lakes-samples.html`, **da giudicare dall'utente**.
+  **Parte B**, con l'ok dell'utente per il server: l'elenco dell'Italia
+  intera e l'acqua di ogni lago in `data/cache/water/` (41 file e 12 MB
+  per il nord-est; stima 150–200 laghi e 40–60 MB per l'Italia). **Non
+  pubblicare l'app con questa pagina prima dell'acqua sul server**: un
+  lago scelto direbbe «Map data for this area could not be downloaded.».
+  Da dove riprendere: `tasks/TASK-233.md`, «Esito».
+
 - **TASK-119 — Reazioni ai disegni pubblicati** (ADR-0193; scelte
   dell'utente del 2026-10-04): era «Like», diventa sei reazioni sotto un
   disegno pubblicato aperto, una a testa: il cuore di Sgrava, 🔥 👏 💪 😂

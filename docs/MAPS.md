@@ -149,6 +149,21 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   regionale: la VM docker del Mac non basta. Sul server, il 2026-10-04,
   `italy-260930-water.osm.pbf` (674 MB, in `/srv/shaperoute/extracts`)
   e i sei riquadri dei quattro luoghi della canoa (TASK-225).
+  **I laghi di Explore** (TASK-233, ADR-0196): l'elenco dei laghi dell'app
+  (`apps/mobile/src/paddle/lakes.json`) si scrive dallo stesso estratto, in
+  tre passi. Prima le acque, una a riga: `osmium tags-filter
+  <estratto>.osm.pbf wr/natural=water -o water.osm.pbf`, poi `osmium export
+  water.osm.pbf -f geojsonseq -o water.geojsonseq`. Poi i riquadri: `python
+  -m shaperoute_api.lake_catalog --waters water.geojsonseq --boxes` stampa
+  per ogni lago `S,W,N,E` e il nome, e ogni riga è un `water_extract
+  --extract acqua.osm.pbf --bbox S,W,N,E --cache-dir data/cache`. Infine,
+  con quell'acqua in una cartella (il server, o una sua copia), `python -m
+  shaperoute_api.lake_catalog --waters water.geojsonseq --cache-dir <cache>`
+  prova ogni punto con il motore e scrive l'elenco; dopo, Prettier sul
+  file. Un lago è un'acqua su cui il motore pagaia (`water.is_lake`), con
+  un nome da lago e largo abbastanza per un cerchio da 1 km a 50 m dalla
+  riva. Nel nord-est (estratto del 2026-10-02): 41 laghi, 93 punti, 41 file
+  d'acqua per 12 MB, 4 minuti e mezzo di prove sul Mac.
   **Overpass e i laghi**: la prima risposta vera alla query (dal server,
   2026-10-04, 184 s) dava le relazioni senza membri, perché `out tags
   geom` non li scrive: un lago disegnato come multipoligono mancava.

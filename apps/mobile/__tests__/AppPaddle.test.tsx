@@ -299,9 +299,13 @@ test("«Explore» has the lakes and the beaches; their routes start without dire
   apiAnswers(waterDone);
   await atRiccione();
   await fireEvent.press(screen.getByText("Explore"));
-  expect(screen.getByText("On the water")).toBeOnTheScreen();
+  expect(
+    screen.getByText("Shapes to paddle, within 1 km of the shore"),
+  ).toBeOnTheScreen();
   expect(screen.queryByText("Best near you")).toBeNull();
-  await fireEvent.press(screen.getByRole("button", { name: "Riccione" }));
+  // «Near me» is on at once, and the start is on Riccione's beach (TASK-233).
+  expect(screen.getByRole("button", { name: "Near me" })).toBeSelected();
+  expect(screen.getByText("RICCIONE · FROM THE BEACH")).toBeOnTheScreen();
   // Its eight come with the app (TASK-227): nothing is asked.
   expect(routeBodies()).toHaveLength(0);
   expect(screen.getByLabelText("Rabbit head, 2.0 km, on the water")).toBeOnTheScreen();

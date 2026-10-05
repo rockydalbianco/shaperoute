@@ -26,6 +26,9 @@ export type ToPage =
       /** A bike route (TASK-206): the stretches with the bike on foot,
        * marked over the route. Absent otherwise. */
       onFoot?: LngLat[][];
+      /** A route whose shape is turned (TASK-232): the bearing the map
+       * takes so the drawing is upright. Absent with north up. */
+      bearing?: number;
     }
   | { type: "clearRoute" }
   | {
@@ -49,7 +52,10 @@ export type ToPage =
   | { type: "setDoubleTap"; on: boolean }
   /** With `on`, one finger drags the route and no longer the map
    * (TASK-238); lifted, the page tells the app by how much (`moved`). */
-  | { type: "setMove"; on: boolean };
+  | { type: "setMove"; on: boolean }
+  /** The north arrow (TASK-232): the map turns to `bearing`, in degrees
+   * clockwise from north; 0 is north up. */
+  | { type: "turn"; bearing: number };
 
 /** A place of a themed route on the map (TASK-129). */
 export type StopFeature = { name: string; lngLat: LngLat; passed: boolean };
@@ -64,6 +70,9 @@ export type FromPage =
   /** The route was dragged and left, while the app asked (TASK-238): by
    * how many degrees of longitude and of latitude. */
   | { type: "moved"; by: LngLat }
+  /** The map turned, by the app or by two fingers (TASK-232): its bearing
+   * now, in whole degrees clockwise from north. */
+  | { type: "turned"; bearing: number }
   | { type: "error"; message: string };
 
 export function setPosition(point: LatLon): ToPage {
@@ -76,13 +85,15 @@ export function setPosition(point: LatLon): ToPage {
  * walks of a word with the pen up (TASK-198) the letters are the route and
  * the walks are dashed; without, the message is the one of before. With the
  * stretches of a bike route walked with the bike on foot (TASK-206) they
- * are marked over the route.
+ * are marked over the route. With the `bearing` of a turned shape
+ * (TASK-232, `bearingOf`) the map turns so the drawing is upright.
  */
 export function showRoute(
   points: LatLon[],
   requested: LatLon | null = null,
   walks: readonly Walk[] | null = null,
   onFoot: readonly Stretch[] | null = null,
+  bearing: number = 0,
 ): ToPage {
   const moved =
     requested !== null && metresBetween(requested, points[0]) > START_HERE_M;
@@ -92,6 +103,7 @@ export function showRoute(
     coordinates: points.map(toLngLat),
     startHere: moved ? toLngLat(points[0]) : null,
     ...(lines.length > 0 ? { onFoot: lines.map((line) => line.map(toLngLat)) } : {}),
+    ...(bearing !== 0 ? { bearing } : {}),
   };
   const walked = walksOf(points, walks);
   if (walked.length === 0) {
@@ -200,6 +212,15 @@ export function setMove(on: boolean): ToPage {
   return { type: "setMove", on };
 }
 
+/**
+ * Turns the map to `bearing`, in degrees clockwise from north (TASK-232):
+ * a tap on the north arrow. Still framed on its route, the map frames it
+ * again as turned; otherwise it turns where it is.
+ */
+export function turn(bearing: number): ToPage {
+  return { type: "turn", bearing };
+}
+
 /** JavaScript that hands a message to the page (see `mapPage.ts`). */
 export function pageScript(message: ToPage): string {
   // The trailing `true` is what injectJavaScript expects as a result.
@@ -237,6 +258,12 @@ export function parsePageMessage(data: string): FromPage | null {
       return { type: "moved", by: [by[0], by[1]] };
     }
     return null;
+  }
+  if (message.type === "turned" && "bearing" in message) {
+    const bearing = message.bearing;
+    return typeof bearing === "number" && Number.isFinite(bearing)
+      ? { type: "turned", bearing }
+      : null;
   }
   if (
     message.type === "error" &&

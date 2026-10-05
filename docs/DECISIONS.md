@@ -9744,6 +9744,36 @@ dell'utente dopo le misure (`MAPS.md`, «Forme inclinate»):
   dopo con la mappa girata (`tools/preview_turned.py`). Giudizio
   dell'utente sui percorsi nuovi: 17 `sì`, 2 `quasi`, nessun `no`.
 
+**Parte B, la mappa girata nell'app (2026-10-05)**, deciso dall'agente su
+delega dell'utente (TASK-232 parte B):
+
+- **La mappa gira con il percorso mostrato**: `showRoute` porta il
+  `bearing` (`−rotation_deg`), e la pagina inquadra il percorso così
+  (`fitBounds` con il `bearing`). La pagina tiene il `bearing` voluto e lo
+  ripete a ogni mossa sua (`follow`, `setPosition`): un `easeTo` senza
+  `bearing` fermerebbe la rotazione a metà.
+- **La freccia del nord è dell'app, non della pagina** (React Native,
+  `NorthArrow.tsx`): testi di VoiceOver nelle cinque lingue e colori dai
+  token come ogni altro pulsante. La pagina dice all'app di quanto è
+  girata, a gradi interi (`turned`), anche quando la girano due dita.
+- **Dove sta**: a destra, sotto la riga del «←» o sotto il riquadro della
+  svolta. «In alto a destra» è già del tondo del profilo, e in corsa del
+  riquadro: sopra non ci sta.
+- **La freccia vale per ogni mappa girata**, non solo per un percorso
+  inclinato: MapLibre gira la mappa anche con due dita, e finora non c'era
+  modo di rimettere il nord. Con il nord in alto e nessun percorso
+  inclinato la freccia non c'è.
+- **Il tocco inquadra di nuovo il percorso** se la mappa è ancora
+  com'era inquadrata (il riquadro di una forma girata è diverso, e il
+  percorso uscirebbe dai bordi); se l'utente l'ha mossa, o in corsa, gira
+  dov'è. Un percorso nuovo riparte girato come il suo disegno.
+- **Due dita lasciano la mappa come l'hanno girata** anche in corsa, come
+  prima: la pagina prende quel `bearing` come voluto.
+- **Solo «Draw» in questo passo**: il percorso disegnato, la sua corsa e
+  la sua fine. Gli esempi di «Explore» non portano `rotation_deg` fino
+  alla mappa (`RecommendedRouteDetail` non ce l'ha) e le loro schede usano
+  le foto-mappa del «Feed»: sono il passo B2, prima della parte C.
+
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 

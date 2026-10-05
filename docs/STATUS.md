@@ -261,6 +261,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   inclinate»). Prossimo passo: le parti B e C (la mappa girata nell'app),
   in un contesto pulito, dopo aver sentito il coordinatore; non si
   pubblicano prima del server. `tasks/TASK-232.md`.
+  **Parte B** (2026-10-05, sola app, in Pull Request): un percorso
+  disegnato in «Draw» che il motore ha inclinato gira la mappa dall'altra
+  parte, così il disegno si legge dritto; ogni tessera «A · B · C» la sua
+  inclinazione; la mappa resta girata mentre lo si corre e a fine corsa.
+  Con la mappa girata c'è la freccia del nord, a destra sotto il «←» (in
+  corsa sotto il riquadro della svolta): un tocco rimette il nord in alto,
+  un secondo rigira la mappa come il disegno; compare anche quando la
+  mappa è girata con due dita. «Move the shape» sposta giusto anche a
+  mappa girata. Tre testi nuovi per VoiceOver nelle cinque lingue, da far
+  vedere all'utente. Visto nel browser sulla pagina vera e nel simulatore
+  (`out/task-232b/`); manca il dito vero. Prossimo passo: la **parte B2**
+  («Explore»: l'esempio aperto, la sua corsa e le schede, che usano le
+  foto-mappa del «Feed»), poi la C; il server ha già la parte A.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,

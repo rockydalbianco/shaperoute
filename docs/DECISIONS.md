@@ -10506,6 +10506,16 @@ chiave «Score» esce dalle quattro tabelle, «Score {score}» resta per «My
 activities» e i disegni del «Profile». A fine corsa, in «My activities» e
 sotto un disegno aperto dal «Profile» il punteggio si vede come prima.
 
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte D; scelta
+dell'utente: «toglilo anche da My activities»): in «My activities» il
+punteggio non si vede e non si legge più, né nella riga dell'elenco
+(«Score 91») né sulla corsa aperta («91», «out of 100»). L'API lo tiene
+e lo manda come prima (`score` in `/me/activities`): l'app non lo
+mostra. Le chiavi «Score {score}», «Score: {score} out of 100» e «out of
+100» restano nelle tabelle perché le usano i disegni del «Profile»
+(`DrawingsGrid`, `DrawingCard`), dove il punteggio si vede ancora, come
+a fine corsa: l'utente non li ha nominati.
+
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
 (TASK-239), dentro la **richiesta dell'utente** dello stesso giorno: «deve

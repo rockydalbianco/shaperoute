@@ -199,17 +199,17 @@ test("«My activities» in «Profile» lists the runs, with how many they are", 
   expect(auth[1]?.headers).toMatchObject({ Authorization: `Bearer ${session.token}` });
 
   // The latest first: the day and the time it began, where, what it drew,
-  // how far and how fast, its score.
+  // how far and how fast. Never its score.
   expect(screen.getAllByTestId("activity-row")).toHaveLength(2);
   expect(screen.getByText(STAR_WHEN)).toBeOnTheScreen();
   expect(screen.getByText("Trento · Star")).toBeOnTheScreen();
   expect(screen.getByText("4.01 km · 19:00 · 4:45 /km")).toBeOnTheScreen();
-  expect(screen.getByLabelText("Score: 91 out of 100")).toBeOnTheScreen();
-  // A run without a route, from a place nobody found: no score, no name.
+  // A run without a route, from a place nobody found: no name.
   expect(screen.getByText(FREE_WHEN)).toBeOnTheScreen();
   expect(screen.getByText("Run")).toBeOnTheScreen();
   expect(screen.getByText("2.31 km · 13:35 · 5:53 /km")).toBeOnTheScreen();
-  expect(screen.getAllByText(/^Score/)).toHaveLength(1);
+  expect(screen.queryByText(/^Score/)).toBeNull();
+  expect(screen.queryByLabelText(/^Score/)).toBeNull();
   // The drawing: the route and, over it, what was run; a run alone.
   expect(screen.getAllByTestId("run-drawing-route")).toHaveLength(4);
   expect(screen.getAllByTestId("run-drawing-track")).toHaveLength(4 + 2);
@@ -242,7 +242,10 @@ test("a run opens on the map, its route under what was run, and goes back to the
   expect(screen.getByText(STAR_WHEN)).toBeOnTheScreen();
   expect(screen.getByText("Trento · Star")).toBeOnTheScreen();
   expect(screen.getByText("4.01 km · 19:00 · 4:45 /km")).toBeOnTheScreen();
-  expect(screen.getByLabelText("Score: 91 out of 100")).toBeOnTheScreen();
+  // The run has a score (91): its card does not show it.
+  expect(screen.queryByText(/out of 100/)).toBeNull();
+  expect(screen.queryByLabelText(/^Score/)).toBeNull();
+  expect(screen.queryByText("91")).toBeNull();
   expect(screen.getByText("Yellow: the route. White: what you ran.")).toBeOnTheScreen();
   // Neither a route to keep nor one to start.
   expect(screen.queryByRole("button", { name: /favorites/ })).toBeNull();

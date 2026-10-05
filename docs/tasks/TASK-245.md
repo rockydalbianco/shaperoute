@@ -267,3 +267,5 @@ Dopo il «continua va bene» dell'utente, il seguito qui sopra (branch
   proposte di `spotPlaces`); i 98 test di `src/paddle/` verdi.
 - Niente server, niente motore: esce con la prossima pubblicazione
   dell'app.
+- **Chiusa**: PR **#376** mergiata in `main` (`1c8366e`, 15:23Z) al
+  «merge 376» del coordinatore, con la CI 5/5 verde.

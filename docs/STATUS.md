@@ -571,7 +571,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «lago lev» propone solo «Lago di Levico», non più anche «Sestri
   Levante»; «lev» da sola tutti e due, e «lungomare di Viareggio» trova
   la sua spiaggia. Solo `placeSpots.ts` e i suoi test; niente server.
-  Esce con la pubblicazione del coordinatore.
+  PR #376, merge `1c8366e` (2026-10-05, 15:23Z). Esce con la
+  pubblicazione del coordinatore.
 - **App e API** — TASK-245: altre spiagge per «Paddle», oltre Jesolo e
   Riccione (ADR-0210; chiesto dall'utente il 2026-10-05, che ha scelto 29
   posti di mare su tutte le coste; PR #363, merge `0d8bbc1`). Un comando

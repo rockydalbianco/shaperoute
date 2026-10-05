@@ -562,7 +562,7 @@ mappa è quella di prima.
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 
 - **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,
-  sotto); poi «Change email» e «Phone number», con la scritta «Soon».
+  sotto); poi **«Change email»** e **«Phone number»** (TASK-183, sotto).
 - **«Sport»** (TASK-189, ADR-0152): per cosa sono i percorsi. Tre righe:
   «Run» (🏃‍♂️), scelto all'inizio, con un «✓» bianco; «Bike» (🚴), che
   si sceglie dal TASK-190; «Paddle» (🛶: canoa, kayak, SUP, nome scelto
@@ -605,8 +605,40 @@ mappa è quella di prima.
 
 Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
 interruttori, perché dietro non c'è ancora niente (le accendono TASK-182,
-183, 184, 185). Usciti dall'account da «Settings», chi rientra trova
+184, 185). Usciti dall'account da «Settings», chi rientra trova
 «Profile».
+
+**«Change email»** (✉️, TASK-183, ADR-0150): un tocco apre sotto la riga
+«NEW EMAIL» e «PASSWORD» (la password dell'account, nascosta) e «Save»; un
+altro tocco richiude e dimentica quello che era scritto. Salvata, la riga
+si chiude e il riquadro del nome in cima mostra il nuovo indirizzo: vale
+subito, senza mail di conferma, e da lì in poi si entra con quello. Il
+telefono resta dentro.
+
+**«Phone number»** (📱, TASK-183): in fondo alla riga il numero
+dell'account, come lo tiene l'API («+393331234567»), o «Add». Un tocco
+apre sotto la riga «PHONE NUMBER» (con il numero di adesso; l'esempio
+grigio è «+39 333 123 4567»), la frase «Only you see your number. Friends
+who already have it will be able to find you on Sgrava.», «Save» e, se un
+numero c'è, «Remove number» in rosso. Il numero si scrive con il prefisso
+del paese, spaziato come si vuole; salvare il campo vuoto lo toglie; lo
+stesso numero di prima non chiede niente all'API. La ricerca degli amici
+dalla rubrica non c'è ancora (ADR-0150).
+
+| Cosa succede | Cosa dice, sotto «Save» |
+|---|---|
+| email non valida | Enter an email address, like name@example.com. |
+| l'email di adesso | This is already the email of your account. |
+| password non scritta | Enter your password. |
+| password sbagliata | Wrong password. |
+| troppe password sbagliate | Too many tries. Wait {minutes} minutes and try again. |
+| email di un altro account | Another account has this email. |
+| numero senza prefisso o non valido | Write the number with its country code, like +39 333 123 4567. |
+| API di prima di TASK-183 | Changing the email is not available on this API yet. / The phone number is not available on this API yet. |
+
+Con un errore i campi tengono quello che era scritto. Mentre salva il
+pulsante dice «Saving…» («Removing…» per «Remove number») e un secondo
+tocco non manda niente.
 
 **«Profile picture»** (TASK-178, ADR-0146): una riga con 📷, il nome e, in
 fondo, la foto in piccolo (o l'iniziale). Un tocco apre sotto la riga

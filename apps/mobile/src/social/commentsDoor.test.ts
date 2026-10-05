@@ -22,6 +22,8 @@ function account(over: Partial<Account> = {}): Account {
     signOut: jest.fn(),
     deleteAccount: jest.fn(),
     editProfile: jest.fn(),
+    changeEmail: jest.fn(),
+    changePhone: jest.fn(),
     clearProblem: jest.fn(),
     sessionEnded: jest.fn(),
     ...over,

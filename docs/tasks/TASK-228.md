@@ -1,7 +1,7 @@
 # TASK-228 — Il «Feed» sull'acqua
 
-**Stato**: In review (2026-10-05) — PR #322: codice, test e documenti
-fatti; aspetta la coda dei merge.
+**Stato**: Done (2026-10-05) — PR #322, merge `de9512b`. Solo app: esce
+con la prossima pubblicazione.
 **Fase**: 4 · **Branch**: `feat/TASK-228-water-feed`
 **Dipende da**: TASK-156 (il feed d'esempio), TASK-188 (il tocco apre il
 percorso), TASK-227 (gli esempi della canoa dentro l'app), TASK-226 (gli
@@ -186,6 +186,16 @@ nelle tabelle.
 
 **Testi da confermare con l'utente**: i quattro titoli (in inglese, come
 quelli della corsa) e i tempi.
+
+**Visto nel simulatore** (2026-10-05, Expo Go dal worktree, un dispositivo
+a parte): i quattro post con la mappa del lago o del mare sotto la linea,
+la riga «Paddle · …», la testa di cane a pezzi. Per la foto i post erano
+in cima all'elenco, solo in locale. Il tocco non è stato provato sul
+dispositivo (senza tocchi): lo coprono i test dell'app. Le due schermate
+sono in `out/task228-feed/`, fuori dal repository.
+
+**Merge**: PR #322, `de9512b` (2026-10-05 04:00Z), CI 5/5 verde, solo i 13
+file elencati sopra.
 
 ## Note per il deploy
 

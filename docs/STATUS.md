@@ -150,19 +150,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-228 — Il «Feed» sull'acqua** (ADR-0190; chiesto dall'utente il
-  2026-10-03, scelte del 2026-10-05). Fatto, in review: PR #322, aspetta
-  la coda dei merge. Fra i quindici disegni d'esempio di «Feed» ce ne sono
-  quattro fatti sull'acqua, sempre, con ogni sport: `greta_kayak` (cuore,
-  Lago di Garda), `leo.sup` (stella, Lago di Como), `irene_onwater` (luna,
-  Jesolo), `ale.paddle` (testa di cane a pezzi, Riccione), da 2 km, con
-  «Paddle» in testa alla riga dei fatti. I percorsi sono gli esempi dentro
-  l'app (`paddleExamples.json`): `src/feed/paddlePosts.ts` li legge, senza
-  una copia sua. Un tocco apre il percorso sull'acqua senza chiedere
-  all'API; lo sport scelto non cambia. `FeedScreen.tsx`, `App.tsx` e le
-  tabelle delle lingue non sono toccati. Solo app: esce con la prossima
-  pubblicazione. Da confermare con l'utente i quattro titoli; da provare
-  sull'iPhone. File toccati e dove riprendere: `tasks/TASK-228.md`.
 - **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; Todo, chiesto
   dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
   riesce ma un tentativo già tracciato a un'altra distanza segue la forma
@@ -520,6 +507,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   disegnato al momento, e fuori dai quattro luoghi dipende da Overpass (i
   laghi multipoligono solo dopo che il server ha TASK-230). Esce con la
   prossima pubblicazione. `tasks/TASK-227.md`.
+- **App** — TASK-228: il «Feed» sull'acqua (ADR-0190; chiesto dall'utente
+  il 2026-10-03, scelte del 2026-10-05; PR #322, merge `de9512b`). Fra i
+  quindici disegni d'esempio di «Feed» ce ne sono quattro fatti sull'acqua,
+  sempre, con ogni sport, al 3º, 8º, 13º e 18º posto di 19: `greta_kayak`
+  (cuore, Lago di Garda), `leo.sup` (stella, Lago di Como),
+  `irene_onwater` (luna, Jesolo), `ale.paddle` (testa di cane a pezzi,
+  Riccione), da 2 km, con «Paddle» in testa alla riga dei fatti. I
+  percorsi sono gli esempi dentro l'app (`paddleExamples.json`):
+  `src/feed/paddlePosts.ts` li legge, senza una copia sua, quindi rifare
+  quel JSON aggiorna anche i post. Un tocco apre il percorso sull'acqua
+  senza chiedere all'API; lo sport scelto non cambia. Nessun testo nuovo
+  da tradurre. Visto nel simulatore. Solo app: esce con la prossima
+  pubblicazione. **Da confermare con l'utente** i quattro titoli e se
+  «Meanwhile, from the feed» in «Explore» può mostrare anche un post
+  sull'acqua; da provare sull'iPhone. `tasks/TASK-228.md`.
 
 - **Motore** — TASK-230: l'acqua da Overpass con i laghi multipoligono
   (ADR-0192; trovato da TASK-225; PR #292, merge `28e1ae0`).

@@ -167,6 +167,28 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   (`italy-260930-water.osm.pbf`, 2026-10-05): 211 laghi, 758 punti, 210
   file d'acqua per 50 MB, sul server dallo stesso giorno; 26 minuti di
   prove sul Mac.
+  **Le spiagge di «Paddle»** (TASK-245, ADR-0210): l'elenco dei posti di
+  mare dell'app (`apps/mobile/src/paddle/beaches.json`) si scrive in due
+  passi, senza le acque esportate. I posti sono nel comando (`PLACES`, 29
+  paesi scelti dall'utente, ognuno dove OpenStreetMap ha il suo nodo
+  `place`). Prima i riquadri: `python -m shaperoute_api.beach_catalog
+  --boxes` stampa per ogni paese `S,W,N,E` e il nome, e ogni riga è un
+  `water_extract --extract acqua.osm.pbf --bbox S,W,N,E --cache-dir
+  data/cache`; con `--cache-dir <cache>` lascia fuori i paesi che un file
+  di quella cartella copre già. Un riquadro tiene la richiesta più lunga,
+  5 km, da ogni partenza entro 3 km dal paese: circa 16 km di lato. Poi,
+  con quell'acqua in una cartella, `python -m shaperoute_api.beach_catalog
+  --cache-dir <cache>` sceglie per ogni paese un punto della riva dove si
+  arriva a piedi (`water.build_area`, quelli del motore): su una spiaggia
+  se c'è, il più vicino al paese entro 3 km; ne prova fino a quattro,
+  lontani almeno 500 m l'uno dall'altro, e tiene il primo dove cuore,
+  cerchio e stella stanno a 2 km, altrimenti quello dove stanno a 1,5 o a
+  1 km. Un paese senza un punto così resta fuori, e il comando dice
+  perché. Dopo, Prettier sul file. Il 2026-10-05
+  (`italy-260930-water.osm.pbf`): 29 paesi su 29 a 2 km, tutti con le otto
+  forme di «Explore»; 27 file d'acqua nuovi per 22,6 MB (Rimini e
+  Cavallino stanno nei file di Riccione e di Jesolo, TASK-225); 4 minuti
+  per scrivere l'acqua e 1 per le prove, sul Mac.
   **Overpass e i laghi**: la prima risposta vera alla query (dal server,
   2026-10-04, 184 s) dava le relazioni senza membri, perché `out tags
   geom` non li scrive: un lago disegnato come multipoligono mancava.

@@ -1,6 +1,7 @@
 # TASK-245 — Altre spiagge per «Paddle», oltre Jesolo e Riccione
 
-**Stato**: In corso (2026-10-05) — task file scritto, nessun codice ancora
+**Stato**: In corso (2026-10-05) — comando, elenco e prove fatti sul Mac
+(29 posti su 29); mancano l'acqua sul server e la PR
 **Fase**: 4 · **Branch**: `feat/TASK-245-more-beaches`
 **Dipende da**: TASK-225 (l'acqua da un estratto), TASK-233 (l'elenco dei
 laghi, `waterSpots.ts`), TASK-240 (laghi e spiagge in «Another place»)
@@ -36,11 +37,10 @@ Una domanda per volta, ognuna con una proposta:
 2. **L'acqua sul server** — *da chiedere, con i numeri veri* (quanti file,
    quanti MB): serve l'ok dell'utente in questa sessione **e** il via del
    coordinatore. L'utente sa già che per le spiagge nuove serve il server.
-3. **I posti che il motore scarta** — *da dire all'utente* a prove fatte:
-   quali dei 29 restano fuori e perché.
-4. **Le forme più corte** — *da chiedere se serve*: per i laghi piccoli
-   l'utente ha approvato 1,5 e 1 km (TASK-233); se un posto di mare tiene
-   le forme solo a meno di 2 km, proporre la stessa regola.
+3. **I posti che il motore scarta** — a prove fatte: **nessuno**, tutti e
+   29 tengono le forme a 2 km («Esito»). Detto all'utente con i numeri.
+4. **Le forme più corte** — non serve chiederlo: nessun posto di mare
+   scende sotto i 2 km.
 
 ## Contesto da leggere
 
@@ -143,11 +143,67 @@ motore non cambiano. Se serve altro, fermarsi e chiederlo al coordinatore.
 
 ## Esito
 
-*(a fine task)*
+### 2026-10-05, il comando, l'elenco e le prove sul Mac
 
-**Da dove riprendere** (2026-10-05): niente codice ancora. Il worktree è
-`.claude/worktrees/TASK-245`, con i `node_modules` già collegati. Primo
-passo: il punto 1 di «Cosa fare», leggendo `lake_catalog.py` e
-`water_extract.py`; poi il punto 2 sul Mac. L'utente ha detto «ok vai»
-dopo aver visto l'ordine del lavoro; la prossima cosa che gli serve sono i
-numeri del punto 3.
+**I numeri**:
+
+- **29 posti su 29** tengono cuore, cerchio e stella a **2 km**, e tutti
+  hanno anche le altre cinque forme di «Explore» (8 su 8, chieste come le
+  chiede l'app). **Nessuno scartato**: la fascia dei 200 m dalla riva non
+  ne fa cadere nessuno, e le forme più corte non servono.
+- **L'acqua nuova: 27 file, 22,6 MB**, uno a paese, da 0,2 MB (Cefalù, San
+  Vito lo Capo, Senigallia) a 3,9 MB (Sottomarina, per la laguna); Bibione
+  e Lignano 2,1, Caorle 1,9, Viareggio 1,5, Pescara 1,3. **Rimini e
+  Cavallino non ne vogliono**: stanno nei file di Riccione e di Jesolo che
+  il server ha già (Cattolica no: il suo riquadro esce di poco da quello
+  di Riccione).
+- Tempi sul Mac: 4 minuti per scrivere l'acqua, 1 per le prove. Un cuore
+  da 2 km sull'acqua nuova: 0,5–1,8 s.
+- Dov'è il punto: sulla spiaggia in 27 posti, su un sentiero lungo la riva
+  ad Alghero e San Benedetto del Tronto; da 100 m (Mondello) a 1,8 km
+  (Villasimius) dal punto del paese in OpenStreetMap.
+
+**Fatto** (ADR-0210):
+
+- `services/api/shaperoute_api/beach_catalog.py` (nuovo): i 29 paesi
+  (`PLACES`, dove OpenStreetMap ha il loro nodo `place`, letti una volta
+  da Photon); `--boxes` stampa il riquadro d'acqua di ognuno (con
+  `--cache-dir` solo quelli che la cartella non copre già); `--cache-dir`
+  sceglie il punto della riva fra quelli dove il motore dice che si arriva
+  a piedi, lo prova con `plan_water` a 2, 1,5 e 1 km e scrive l'elenco. Un
+  posto che resta fuori è detto col perché. Niente scaricato.
+- `apps/mobile/src/paddle/beaches.json` (nuovo): 29 righe, 3 KB.
+- `waterSpots.ts`: `WATER_SPOTS` ha anche le spiagge, dopo i laghi.
+- Test: `test_beach_catalog.py` (13) e due in `waterSpots.test.ts`.
+
+**Come è stata fatta l'acqua sul Mac**: come in TASK-233, con pyosmium al
+posto di `osmium` e `water_extract.write_from`, il codice del repository
+(`out/task233-lakes/scripts/cuts.py`), dall'estratto
+`out/task233-lakes/italy-260930-water.osm.pbf`. Tutto in
+`out/task245-beaches/`, fuori dal repository: `cache-all/` (i 29 riquadri
+e i due del server rifatti per le prove), `cache/` (come sarà il server:
+i due file suoi e i 27 nuovi; le prove sono fatte lì), **`new/water/` (i
+27 file da copiare)**, `beaches.json`, `list.log`, `eight.log`.
+
+**Un difetto trovato nella ricerca di «Another place»** (`findSpots`, di
+TASK-240): con le spiagge nell'elenco, ogni indirizzo che comincia con
+«via» propone «Viareggio», perché «via» è l'inizio del nome. Vuole poche
+righe in `placeSpots.ts` e in `placeSpots.test.ts`, che non sono fra i
+file di questo task: chiesto al coordinatore, con la proposta (solo
+l'ultima parola scritta vale come inizio di parola; quelle prima devono
+essere una parola intera del nome).
+
+**Da dove riprendere** (2026-10-05):
+
+1. La risposta del coordinatore sui due file di `placeSpots`; poi la
+   correzione, i controlli JS (`npm test`, `typecheck`, `lint`,
+   `format:check`) e la PR. Finché manca, due test di
+   `placeSpots.test.ts` sono rossi.
+2. **L'ok dell'utente per il server** (27 file, 22,6 MB) e il «via» del
+   coordinatore. Poi: copiare `out/task245-beaches/new/water/*.json` in
+   una cartella d'appoggio del server (tar su ssh), spostarli uno per uno
+   in `/root/shaperoute/data/cache/water/` con `mv -n`, proprietario e
+   permessi come gli altri, nessun riavvio; provare dentro il container
+   dell'API un cuore da 2 km da un punto dell'elenco.
+3. «#NNN pronta» al coordinatore, dicendo se l'acqua è già sul server;
+   niente merge senza il suo «merge NNN».

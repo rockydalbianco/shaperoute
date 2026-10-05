@@ -1,0 +1,150 @@
+{
+  "license": "Beaches from OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
+  "beaches": [
+    {
+      "name": "Alassio",
+      "point": [44.00719, 8.17467],
+      "distance_m": 2000
+    },
+    {
+      "name": "Alghero",
+      "point": [40.55601, 8.31415],
+      "distance_m": 2000
+    },
+    {
+      "name": "Bibione",
+      "point": [45.63129, 13.05729],
+      "distance_m": 2000
+    },
+    {
+      "name": "Caorle",
+      "point": [45.59728, 12.88612],
+      "distance_m": 2000
+    },
+    {
+      "name": "Castiglione della Pescaia",
+      "point": [42.76203, 10.87694],
+      "distance_m": 2000
+    },
+    {
+      "name": "Cattolica",
+      "point": [43.96845, 12.74414],
+      "distance_m": 2000
+    },
+    {
+      "name": "Cavallino",
+      "point": [45.47268, 12.55899],
+      "distance_m": 2000
+    },
+    {
+      "name": "Cefalù",
+      "point": [38.03772, 14.01921],
+      "distance_m": 2000
+    },
+    {
+      "name": "Cesenatico",
+      "point": [44.20661, 12.40069],
+      "distance_m": 2000
+    },
+    {
+      "name": "Forte dei Marmi",
+      "point": [43.95694, 10.16523],
+      "distance_m": 2000
+    },
+    {
+      "name": "Gallipoli",
+      "point": [40.05544, 17.97428],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lignano Sabbiadoro",
+      "point": [45.6871, 13.14479],
+      "distance_m": 2000
+    },
+    {
+      "name": "Mondello",
+      "point": [38.20605, 13.3257],
+      "distance_m": 2000
+    },
+    {
+      "name": "Ostia",
+      "point": [41.72915, 12.27468],
+      "distance_m": 2000
+    },
+    {
+      "name": "Otranto",
+      "point": [40.14713, 18.48994],
+      "distance_m": 2000
+    },
+    {
+      "name": "Pescara",
+      "point": [42.47484, 14.21216],
+      "distance_m": 2000
+    },
+    {
+      "name": "Rimini",
+      "point": [44.06805, 12.58585],
+      "distance_m": 2000
+    },
+    {
+      "name": "San Benedetto del Tronto",
+      "point": [42.94979, 13.88751],
+      "distance_m": 2000
+    },
+    {
+      "name": "San Teodoro",
+      "point": [40.77396, 9.67855],
+      "distance_m": 2000
+    },
+    {
+      "name": "San Vito lo Capo",
+      "point": [38.17628, 12.73721],
+      "distance_m": 2000
+    },
+    {
+      "name": "Sanremo",
+      "point": [43.81365, 7.77539],
+      "distance_m": 2000
+    },
+    {
+      "name": "Senigallia",
+      "point": [43.71825, 13.22347],
+      "distance_m": 2000
+    },
+    {
+      "name": "Sestri Levante",
+      "point": [44.26944, 9.39469],
+      "distance_m": 2000
+    },
+    {
+      "name": "Sottomarina",
+      "point": [45.21479, 12.29965],
+      "distance_m": 2000
+    },
+    {
+      "name": "Sperlonga",
+      "point": [41.25794, 13.43093],
+      "distance_m": 2000
+    },
+    {
+      "name": "Tropea",
+      "point": [38.67799, 15.89217],
+      "distance_m": 2000
+    },
+    {
+      "name": "Viareggio",
+      "point": [43.86702, 10.24006],
+      "distance_m": 2000
+    },
+    {
+      "name": "Vieste",
+      "point": [41.87919, 16.17807],
+      "distance_m": 2000
+    },
+    {
+      "name": "Villasimius",
+      "point": [39.12896, 9.53193],
+      "distance_m": 2000
+    }
+  ]
+}

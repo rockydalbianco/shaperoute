@@ -10893,3 +10893,82 @@ lingue con una regola (ADR-0172): ogni testo è scritto in inglese dentro
 - `SettingsPage` chiede a chi la mostra di aprire i testi (`onAbout`);
   restano «Soon» solo le due righe di «Notifications» (TASK-185).
 - Solo app: nessuna dipendenza, niente server.
+
+## ADR-0210 — Le spiagge di «Paddle»: i paesi scelti dall'utente, il punto della riva dai dati, un riquadro d'acqua a paese
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-245), dentro la **richiesta dell'utente** del 2026-10-05: «aggiungi
+altre spiagge oltre Jesolo e Riccione». I 29 posti e la regola «si tengono
+solo dove il motore disegna» sono **scelte dell'utente** dello stesso
+giorno (`tasks/TASK-245.md`, «Scelte dell'utente»). Numero dato dal
+coordinatore.
+
+**Contesto**: al mare l'app aveva due posti scelti a mano, con il punto
+della riva scritto a mano e gli esempi dentro l'app (`waterPlaces.ts`,
+ADR-0169, ADR-0189). I laghi invece vengono da un elenco scritto da un
+comando (`lake_catalog.py`, ADR-0196), con i punti presi dalla forma del
+lago. Il mare non ha una forma da cui prendere i punti: è il riquadro
+meno la terra, e una costa non ha un nome. Il server ha l'acqua solo dei
+riquadri che gli si danno (ADR-0187): Overpass non gli risponde.
+
+**Decisione**:
+
+1. **Un comando nuovo, `beach_catalog.py`, sul modello di quello dei
+   laghi**, in due passi: i riquadri d'acqua (`--boxes`), poi l'elenco
+   (`--cache-dir`), provato col motore come lo disegna l'API
+   (`plan_water`). Scrive `apps/mobile/src/paddle/beaches.json`, con le
+   righe uguali a quelle di `lakes.json`. `lake_catalog.py` non cambia.
+2. **Un posto è un paese**: il nome che l'app mostra e il punto dove
+   OpenStreetMap ha il suo nodo `place`, scritti nel comando (`PLACES`).
+   Le posizioni sono state lette una volta da Photon; «Ostia» è Lido di
+   Ostia, «Cavallino» il paese di Cavallino-Treporti.
+3. **Il punto della riva non è scritto a mano**: è uno dei punti dove il
+   motore dice che si arriva all'acqua a piedi (`water.build_area`), su
+   una spiaggia se ce n'è una, il più vicino al paese entro **3 km**
+   (`REACH_M`: la piazza di Villasimius è a 1,8 km dalla sua spiaggia). Il
+   comando ne prova fino a quattro, lontani almeno 500 m l'uno
+   dall'altro, e tiene il primo dove cuore, cerchio e stella stanno a
+   2 km; altrimenti quello con la distanza più lunga fra 1,5 e 1 km, come
+   sui laghi piccoli (scelta dell'utente in TASK-233).
+4. **Un punto solo a paese**, non uno ogni 4 km come sulle rive dei laghi:
+   chi cerca «Rimini» vuole Rimini, e il motore sposta comunque la
+   partenza fino a 2 km lungo la riva.
+5. **Un riquadro d'acqua a paese**: tiene la richiesta più lunga che l'API
+   accetta sull'acqua (5 km) da ogni partenza entro 3 km dal paese, circa
+   16 km di lato. Un paese che un file già sul server copre non ne ha uno
+   nuovo (`--boxes --cache-dir`): Rimini sta nel file di Riccione,
+   Cavallino in quello di Jesolo.
+6. **Nell'app solo `waterSpots.ts`**: `WATER_SPOTS` è i luoghi scelti a
+   mano, i laghi, poi le spiagge. «Explore», «Near me» e «Another place»
+   le trovano senza altre modifiche. Niente esempi dentro l'app: le forme
+   si chiedono all'API, come per i laghi.
+
+**Alternative scartate**:
+
+- **Tutta la costa d'Italia**, un punto ogni tanti km: a spanne 0,3–1,7 GB
+  d'acqua sul server, e punti senza un nome da cercare. Sconsigliata
+  all'utente, che ha scelto i 29 posti.
+- **Aggiungere i posti a `waterPlaces.ts`**, come Jesolo e Riccione:
+  vorrebbe il punto scritto a mano e gli esempi dentro l'app (25 KB a
+  posto), che sono di TASK-244.
+- **Il punto scritto a mano**, guardando la mappa: 29 punti da scegliere e
+  da rifare a ogni estratto nuovo, e niente dice che lì si arriva
+  all'acqua.
+- **Prendere i paesi dall'estratto** (`place=*`): l'estratto dell'acqua
+  non ha i nodi dei paesi, e «Mondello» o «Ostia» non sono comuni.
+- **Riquadri stretti intorno al punto scelto**: il punto si conosce solo
+  dopo aver letto l'acqua, e una partenza sul lungomare a 2 km dal punto
+  resterebbe senz'acqua.
+
+**Conseguenze**:
+
+- 29 posti su 29 tengono le forme a 2 km (estratto del 2026-09-30), e
+  tutti le otto forme di «Explore». 27 file d'acqua nuovi, 22,6 MB.
+- **L'app non si pubblica prima che l'acqua sia sul server**: senza,
+  scegliere una spiaggia nuova dà «Map data for this area could not be
+  downloaded.».
+- Una partenza al mare a più di 3 km da un paese dell'elenco resta come
+  prima: funziona solo dove il server ha o riesce a scaricare l'acqua.
+- Se il motore dell'acqua cambia (TASK-232 A tocca `water_fit.py`), le
+  distanze dell'elenco vanno riprovate: `MAPS.md`, «Le spiagge di
+  «Paddle»».
+- Il motore non cambia; «Run» e «Bike» non cambiano.

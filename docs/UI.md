@@ -1805,38 +1805,59 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   another shape, or another start:» con le forme. Senza i dati dell'acqua
   (Overpass che rifiuta) il testo è quello della mappa, «Map data for this
   area could not be downloaded. Try again later.».
-- **«Explore»** (scelta dell'utente): al posto di città, esempi di corsa e
-  percorsi consigliati, la pagina «On the water», «Shapes to paddle, within
-  1 km of the shore», con la sezione «LAKES AND SEA»: «Near me», «Lago di
-  Garda», «Lago di Como», «Jesolo», «Riccione». Finché non se ne sceglie uno
-  dice «Choose a lake or a beach: eight shapes of 2 km on its water, from
-  the shore.» e non chiede niente. Un luogo scelto ha **le otto forme della
-  corsa** da 2 km in canoa (TASK-227, scelta dell'utente): cuore, cerchio,
-  stella, luna, cavallo, lumaca, testa di cane, testa di coniglio, sotto
-  «LAGO DI GARDA · FROM RIVA DEL GARDA». **Vengono con l'app**
-  (`src/paddle/paddleExamples.json`, ADR-0189): pronte subito, anche senza
-  rete, e niente chiesto all'API. Ogni scheda «Heart · 2.0 km», «On the
-  water», si apre sulla mappa come un percorso di «Explore», con «Start»,
-  «Export GPX» e il cuore dei preferiti, che la tiene come canoa. I punti di
-  partenza sono sulla riva, scelti a mano (`src/paddle/waterPlaces.ts`):
-  Riva del Garda, il lungolago di Como, la spiaggia di Jesolo e quella di
-  Riccione. «Near me» disegna dalla partenza di «Draw» com'era al tocco,
-  come gli esempi delle città: le otto forme chieste una alla volta, il
-  cerchio per primo, le cinque dopo le prime tre solo quando arrivano (senza
-  partenza: «Choose a start in Draw first: the shapes start from the shore
-  nearest to it.»). Gli esempi di «Near me» restano sul telefono come quelli
-  delle città, a parte. La scelta resta quando si torna dalla mappa.
-- **«Near me» sul server**: il server ha l'acqua solo dei quattro luoghi
+- **«Explore»** (scelta dell'utente; come la corsa dal TASK-233, ADR-0196):
+  al posto di città, esempi di corsa e percorsi consigliati, la pagina «On
+  the water», «Shapes to paddle, within 1 km of the shore», con il cuore di
+  Sgrava in alto a destra e la sezione «LAKES AND SEA».
+  - **«Near me»** è il primo della riga, con il segno della posizione, ed è
+    **acceso da subito** quando c'è una partenza, come nella corsa. Mostra
+    il luogo dell'elenco più vicino entro 30 km, con il nome e la distanza:
+    «LAGO DI LEVICO · 1.2 KM AWAY». Più lontano di così disegna dalla
+    partenza di «Draw», sotto «NEAR YOUR START», come prima. La partenza è
+    quella di quando «Near me» si è acceso: se si sposta, le forme non si
+    ridisegnano. Senza partenza: «Choose a start in Draw first: the shapes
+    start from the shore nearest to it.».
+  - **I luoghi da toccare**, in una riga che scorre: gli otto più vicini
+    alla partenza dopo quello di «Near me»; senza partenza i quattro scelti
+    a mano («Lago di Garda», «Lago di Como», «Jesolo», «Riccione») e la
+    frase «Choose a lake or a beach: eight shapes on its water, from the
+    shore.», senza chiedere niente.
+  - **«Type a lake or a beach»**: da due lettere, fino a sei nomi che hanno
+    ogni parola scritta all'inizio di una loro parola, senza badare agli
+    accenti («lev», «ca selva»), il più vicino per primo, con la distanza.
+    Un nome toccato è scelto e diventa il primo della riga. Niente:
+    «No lake or beach matches “zzz”.». La ricerca è nel telefono.
+  - **L'elenco** (`src/paddle/lakes.json`, scritto da `python -m
+    shaperoute_api.lake_catalog`): i laghi di OpenStreetMap su cui una
+    forma ci sta, ognuno con i punti della riva da cui partono gli esempi
+    (uno ogni 4 km su una riva lunga: l'app prende il più vicino) e la
+    distanza delle forme: **2 km, oppure 1,5 o 1 km su un lago piccolo**.
+    Per ora il nord-est: 41 laghi, 93 punti (`tasks/TASK-233.md`).
+  - Un luogo ha **le otto forme della corsa** in canoa (TASK-227, scelta
+    dell'utente): cuore, cerchio, stella, luna, cavallo, lumaca, testa di
+    cane, testa di coniglio. Quelle dei quattro luoghi scelti a mano
+    **vengono con l'app** (`src/paddle/paddleExamples.json`, ADR-0189),
+    sotto «LAGO DI GARDA · FROM RIVA DEL GARDA»: pronte subito, anche senza
+    rete, e niente chiesto all'API. Quelle degli altri laghi sono chieste
+    all'API una alla volta, il cerchio per primo, le cinque dopo le prime
+    tre solo quando arrivano, e restano sul telefono come gli esempi delle
+    città. Ogni scheda «Heart · 2.0 km», «On the water», si apre sulla
+    mappa come un percorso di «Explore», con «Start», «Export GPX» e il
+    cuore dei preferiti, che la tiene come canoa. La scelta resta quando si
+    torna dalla mappa.
+- **I laghi sul server**: il server ha l'acqua solo dei quattro luoghi
   (`data/cache/water/`, TASK-225); altrove la scarica da Overpass, se
   risponde, e la prima volta ci mette minuti, altrimenti «Map data for this
-  area could not be downloaded.». Finché il server non ha TASK-230, i laghi
-  disegnati come multipoligono scaricati da Overpass mancano.
+  area could not be downloaded.». **L'acqua dei laghi dell'elenco va messa
+  sul server prima di pubblicare l'app** (TASK-233 parte B, con l'ok
+  dell'utente; `MAPS.md`, «I laghi di Explore»).
 - Testi nuovi **da confermare con l'utente**: «On the water, a shape of the
   catalogue.», «on the water», «Paddle without a route», i testi d'errore
   qui sopra e quelli di «Explore» («On the water», «Shapes to paddle,
   within 1 km of the shore», «LAKES AND SEA», «Near me», i due avvisi, e da
-  TASK-227 «Choose a lake or a beach: eight shapes of 2 km on its water,
-  from the shore.»). Il
+  TASK-233 «Choose a lake or a beach: eight shapes on its water, from the
+  shore.», «Type a lake or a beach», «No lake or beach matches “…”.» e
+  «… km away»). Il
   testo dell'avviso di sicurezza è approvato. Tutti questi testi sono anche
   in tedesco, italiano, spagnolo e francese (ADR-0169, «Aggiunta»).
 

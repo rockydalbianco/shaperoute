@@ -14,6 +14,14 @@ me c'è il lago di Levico Terme». Con «Paddle», «Explore» ha ogni lago su
 cui una forma ci sta, il più vicino per primo, e si usa come quello della
 corsa.
 
+## Scelte dell'utente
+
+Una domanda per volta, ognuna con una proposta:
+
+1. **2026-10-05 — le forme più corte sui laghi piccoli**: «sì, vanno bene
+   le forme più corte». Un lago che non tiene le forme da 2 km le ha da
+   1,5 o da 1 km, viste sui campioni di Toblino, Serraia e Tovel.
+
 ## Contesto da leggere
 
 - `docs/tasks/TASK-227.md`, ADR-0189 (le otto forme, gli esempi dentro l'app)
@@ -142,9 +150,10 @@ con `water_extract --extract`, come quelli di TASK-225.
 
 **Da dove riprendere** (parte B):
 
-1. Il giudizio dell'utente sui campioni, e le sue risposte alle scelte
-   fatte su delega (ADR-0196): forme più corte sui laghi piccoli, «Near me»
-   acceso da subito, la frase cambiata, i bacini artificiali nell'elenco.
+1. Le risposte dell'utente alle scelte fatte su delega (ADR-0196) ancora
+   aperte: «Near me» acceso da subito, i bacini artificiali nell'elenco, la
+   frase cambiata e i tre testi nuovi. Le forme più corte sono confermate
+   («Scelte dell'utente»).
 2. Con l'ok dell'utente, dal coordinatore: sul server, `osmium export`
    delle acque dall'estratto dell'Italia, `lake_catalog --boxes`, poi
    `water_extract --extract ... --bbox` per ogni riga (`MAPS.md`, «I laghi

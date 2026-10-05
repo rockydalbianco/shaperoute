@@ -8643,8 +8643,10 @@ senza la #323), deciso dall'agente su delega dell'utente:
    dalla più vicina. Il server sa quali città si cercano di più (gli
    eventi di TASK-130), ma darle all'app vorrebbe un endpoint nuovo e un
    aggiornamento del server. Le città vicine (TASK-236, `GET
-   /nearby-cities`) andranno in testa, con un'aggiunta piccola dopo la
-   #323.
+   /nearby-cities`) vanno in testa (parte B2b, dopo la #323), con la
+   cache per quadrato di `nearbyCities.ts`, la stessa di «Explore». Se non
+   rispondono, il giro non le aspetta: le richiede il giorno dopo, come
+   chiede un server senza `/nearby-cities`.
 2. **Il centro di una città in evidenza** lo dà `GET /cities`, come al
    tocco del chip, una volta per telefono: poi resta in
    `Documents/engine/ahead.json`. I centri non si scrivono nel codice
@@ -10251,3 +10253,254 @@ solo scrivendone il nome.
 - I campioni restano in memoria per un'apertura dell'app; riaperti, il
   server risponde subito da quelli tenuti.
 - TASK-214 B2 può chiedere i paesi vicini allo stesso endpoint.
+
+## ADR-0202 — Spostare la figura sull'acqua: l'utente dice «vicino a dove», il motore decide il posto
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-238 ·
+trascinare la figura col dito è una **scelta dell'utente** (2026-10-05,
+fra tre proposte: quattro pulsanti, quattro frecce, il dito); il resto è
+deciso dall'agente su delega dell'utente. Numero preso come primo libero
+di `AGENTI.md`, detto al coordinatore.
+
+**Contesto**: l'utente: «dai la possibilità nella sezione padel di poter
+spostare la figura un po' più destra sinistro, un po' più vicini alla
+riva». Sull'acqua il posto della forma lo sceglie il motore (ADR-0154,
+ADR-0161): quello dove il tratto dalla riva costa meno. Chi vuole la
+figura davanti a un'altra spiaggia, o più al largo, non aveva modo di
+dirlo. Il principio di `CLAUDE.md` resta: il percorso lo decide il
+motore, mai l'app.
+
+**Decisione**:
+
+1. **Una preferenza, non una coordinata**. La richiesta può avere `near`,
+   il punto dove si vuole il centro della forma; il risultato ha `centre`,
+   dove il motore l'ha messo. L'app manda `centre` più lo spostamento del
+   dito. Il motore mette la forma **nel posto più vicino a `near` in cui
+   ci sta**: stessa fascia, stessi margini dalla riva, stessa partenza
+   raggiungibile a piedi entro 300 m, stessi 2 km dalla partenza chiesta.
+2. **La stessa ricerca**, non una seconda: `fit_shape(..., near=)` guarda
+   i posti più vicini a `near` invece dei più comodi dalla riva, e mette
+   nel costo i metri di distanza da lì (`NEAR_WEIGHT = 10` per metro sulla
+   distanza chiesta: il posto conta più del tratto dalla riva, che pesa 2
+   all'andata e 2 al ritorno). Scala e rotazione le cerca come sempre.
+3. **I primi 30 m non costano** (`NEAR_FREE_M`). Senza, la forma si
+   rimpiccioliva dell'11% per stare 20 m più vicina al punto chiesto, e si
+   inclinava da −15° a +15° per 10 m. Un dito sulla mappa non distingue
+   30 m; una forma più piccola si vede.
+4. **Solo sull'acqua**. Su strada `near` è `invalid_request`: lì il posto
+   lo trova la ricerca fra le strade, e spostare la forma a mano
+   cambierebbe quanto il percorso le somiglia.
+5. **`start` non cambia** fra uno spostamento e l'altro: è la partenza
+   chiesta all'inizio. Così l'acqua è lo stesso file della cache, e la
+   figura non si allontana a passi oltre i 2 km da dove l'utente è.
+6. **Un percorso spostato non si tiene** fra gli esempi (`route_store`): è
+   di chi l'ha spostato, come il contorno di un'immagine.
+7. **I campi sono facoltativi** nel contratto. Un'app di prima non manda
+   `near`; un'API di prima lo rifiuta, e l'app offre lo spostamento solo
+   se il risultato ha `centre`.
+
+**Alternative scartate**: mandare uno spostamento in metri rispetto al
+posto automatico (il motore dovrebbe piazzare due volte, e dopo il primo
+spostamento «da dove» non è più il posto automatico); far calcolare il
+centro all'app dai punti del percorso (i tratti dalla riva e i pezzi a
+penna alzata lo spostano: chiesta dov'è, la forma si muoverebbe);
+rispettare il punto a ogni costo (porta la forma sulla terra o fuori
+dalla fascia: la sicurezza dei margini è una scelta dell'utente del
+2026-10-03); far scegliere all'app anche scala e rotazione (è TASK-232, e
+resta del motore); tenere fissi scala e rotazione di prima (in una baia
+stretta la forma non ci starebbe più, e la richiesta dovrebbe portarli).
+
+**Conseguenze**:
+
+- Uno spostamento costa 1–6 s sull'acqua vera, contro 0,5–1,7 s del posto
+  automatico: il costo del posto toglie potature alla ricerca.
+- La forma può fermarsi prima di dove è stata lasciata, e uscirne più
+  piccola (entro il ±10% della distanza) o inclinata diversamente: l'app
+  lo deve dire, non nasconderlo (parte B).
+- Senza `near` il motore è quello di prima: i 32 esempi della canoa
+  dentro l'app, ridisegnati sull'acqua del server, sono identici. Cambia
+  solo l'impronta del motore (`paddleExamples.json`, `engine.zip`), e sul
+  server vanno ridisegnati gli esempi tenuti (`draw_examples`).
+- Gli esempi di «Explore» con «Paddle» non hanno `centre`: per spostarli
+  serve ridisegnarli o chiedere il percorso al server (parte B).
+
+## ADR-0207 — Niente punteggio sopra il disegno dei post del «Feed»
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-241 ·
+togliere il punteggio dalle foto dei post è una scelta dell'utente; il
+resto è deciso dall'agente su delega dell'utente
+
+**Contesto**: ogni post del «Feed» aveva, in basso a sinistra sopra il
+disegno, un riquadro con il punteggio («98», «out of 100»; TASK-156,
+ADR-0127). Il 2026-10-05 l'utente ha scritto «togli dalle foto dei post
+98 su 100 - 93 su 100...».
+
+**Decisione**:
+
+1. Il riquadro è tolto da `FeedPost`: sopra il disegno resta solo il
+   credito della mappa. Vale anche per i post che «Explore» mostra mentre
+   disegna una città, che sono lo stesso componente.
+2. Il punteggio non va altrove nella scheda (né nel titolo né nella riga
+   dei fatti): l'utente ha chiesto di toglierlo, non di spostarlo.
+3. L'etichetta di VoiceOver dice ancora «Score 92 out of 100»: toglierlo
+   vuole una chiave nuova nei file `src/i18n/*`, che un altro task aveva
+   in lavorazione (TASK-239, PR #343).
+4. Il campo `score` resta nei post d'esempio (`sampleFeed`) e, altrove
+   nell'app, il punteggio si vede come prima: a fine corsa, in «My
+   activities», sotto un disegno aperto dal «Profile», nel post da
+   condividere.
+
+**Alternative scartate**: spostare il punteggio nella riga dei fatti
+(l'utente ha detto «togli»); toglierlo da tutta l'app (la richiesta parla
+delle foto dei post); togliere `score` dai dati d'esempio (lo legge
+ancora VoiceOver, e il feed vero, TASK-118, lo avrà dall'API).
+
+**Conseguenze**: nel «Feed» chi vede non sa più quanto un disegno
+somiglia alla forma, chi ascolta sì: da allineare con l'utente quando i
+file delle lingue sono liberi.
+
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte B; scelta
+dell'utente: «sì toglilo anche da VoiceOver»): il punto 3 non vale più.
+L'etichetta del post è «{user} in {city}: {title}. {facts}.», senza
+punteggio, in inglese e nelle quattro tabelle (`de`, `es`, `fr`, `it`).
+Chi ascolta sente quello che gli altri vedono.
+
+## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-239), dentro la **richiesta dell'utente** dello stesso giorno: «deve
+arrivarti una notifica quando ti mettono un follower… sulla foto in alto a
+destra, tipo un pallino rosso oppure uno rosso che dice la notifica, e
+quando accetti puoi seguire subito». Numero dato dal coordinatore.
+
+**Contesto**: con ADR-0199 una richiesta si vedeva solo aprendo «Profile»
+(un pallino arancio su «Requests»), e per seguire a propria volta chi si
+era appena accettato servivano il suo profilo e il ritorno: cinque tocchi.
+
+**Decisione**:
+
+1. **Un numero, non un pallino**: sul pulsante di «Profile»
+   (`ProfileButton`), sopra l'angolo in alto a destra, un tondo rosso con
+   quante richieste aspettano, «9+» oltre nove
+   (`social/RequestsBadge.tsx`). Fra le due forme dette dall'utente è
+   quella che dice di più nello stesso spazio.
+2. **Rosso, con due colori nuovi** in `tokens.ts`: `badge` `#E02D2D` e
+   `onBadge` bianco (4,6:1). `error` (`#FF6B6B`) è troppo chiaro per un
+   numero bianco e vuol dire un'altra cosa; `warning` è degli avvisi sul
+   percorso. Il pallino di «Requests» in «Profile» passa allo stesso
+   rosso: un colore solo per «qualcuno aspetta te».
+3. **Conta le richieste in attesa, non quelle «non viste»**: sparisce
+   quando ognuna ha avuto «Accept» o «Decline». Non serve ricordare sul
+   telefono cosa è stato visto, e una richiesta guardata e lasciata lì
+   resta una cosa da fare.
+4. **L'app chiede il numero da sola**
+   (`social/followRequests.ts`): con un account all'apertura, ogni 60
+   secondi mentre è sullo schermo, e quando ci torna; in secondo piano
+   niente. Chiede `GET /me/follow-requests?limit=1` e legge `total`: una
+   persona sola per risposta, nessun endpoint nuovo. Senza risposta resta
+   l'ultimo numero; con un `404` (API senza gli elenchi) non chiede più.
+5. **Gli elenchi di «Profile» sanno il numero meglio**: dopo ogni
+   risposta lo dicono a `ProfileLayer` (`onRequests` in `followsDoor.ts`),
+   e una risposta dell'API chiesta prima viene scartata.
+6. **«Requests» è già aperto** se qualcuno aspetta quando «Profile» si
+   apre: il numero rosso porta dritto a chi ha chiesto.
+7. **«Follow back» nella stessa riga**: accettata, la persona resta in
+   «Requests» (che non la conta più) con «Follow back» al posto dei due
+   tasti. Prima di mostrarlo l'app chiede il profilo (`GET /users/{id}`,
+   campo `follow`): chi è già seguito ha la scritta «Following», chi ha già
+   una richiesta «Requested». Se il profilo non risponde il tasto c'è lo
+   stesso: chiedere due volte non cambia niente (ADR-0173).
+8. **Niente notifiche del telefono**: ad app chiusa non arriva niente.
+   Servono una dipendenza nuova (`expo-notifications`), una build propria e
+   il server che le manda: restano TASK-185, da decidere con l'utente.
+
+**Alternative scartate**: il numero anche sulla foto grande dentro
+«Profile» (quel cerchio cambia la foto: un numero lì farebbe credere che
+apra le richieste); lo stato `follow` dentro `Person` negli elenchi
+(cambia un contratto dell'API già sul server per risparmiare una
+richiesta); chiedere il numero solo all'apertura (una richiesta arrivata
+con l'app aperta non si vedrebbe fino al giorno dopo); una connessione
+sempre aperta col server (troppo per un numero).
+
+**Conseguenze**:
+
+- Un telefono con l'app aperta fa una richiesta piccola al minuto in più.
+- Solo app: si può pubblicare senza toccare il server.
+- Quattro testi nuovi in inglese e nelle quattro lingue: «Follow back»,
+  «Follow {name} back», «Profile, {count} follow request(s)».
+
+**Confermato dall'utente** (2026-10-05, «va bene così, tieni il giro al
+minuto e fai il merge»): il numero (punto 1), quando si spegne (punto 3),
+i testi, e il giro ogni 60 secondi (punto 4), che il coordinatore
+proponeva di togliere per non caricare il server.
+
+## ADR-0150 — Cambiare email e numero di telefono: l'email con la password e senza mail di conferma, il numero privato e non provato
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-183), dentro le **scelte dell'utente** del 2026-10-05: il numero di
+telefono serve a farsi trovare dagli amici che lo hanno già, e il cambio
+email vale subito, con la password, finché non c'è un servizio di posta.
+Numero tenuto dal coordinatore dal 2026-10-02.
+
+**Contesto**: «Change email» e «Phone number» erano in «Settings» con
+«Soon» (ADR-0145). L'API non manda email (nessun servizio di posta: è
+anche il motivo per cui la password dimenticata non c'è, TASK-114) e non
+manda SMS.
+
+**Decisione**:
+
+1. **Due endpoint nuovi, non `PATCH /me`**: `PUT /me/email` e
+   `PUT /me/phone`, in `contact.py`. `PATCH /me` (ADR-0128) cambia quello
+   che gli altri vedono e non chiede la password; l'email è la chiave con
+   cui si entra e la chiede. Tenerli separati lascia `PATCH /me` com'è per
+   l'app pubblicata.
+2. **L'email cambia con la password dell'account**, riscritta: il token da
+   solo, su un telefono lasciato sbloccato, non basta a portare l'account
+   a un altro indirizzo. La password sbagliata è `403 wrong_credentials`
+   (non `401`: la sessione vale ancora, e l'app non deve uscire) e conta
+   con le password sbagliate dell'accesso, per l'email di adesso: dopo 5
+   in 15 minuti, `429` qui e all'accesso.
+3. **Niente mail di conferma**: il nuovo indirizzo vale subito. Chi lo
+   scrive sbagliato e poi esce non rientra più, perché non c'è ancora la
+   password dimenticata: per questo «Settings» mostra subito il nuovo
+   indirizzo, sopra la riga. Quando ci sarà la posta: conferma al nuovo
+   indirizzo e avviso al vecchio.
+4. **Le altre sessioni restano aperte**: cambiare email non è cambiare
+   password.
+5. **Il numero di telefono** sta in `users.phone`, in E.164 («+» e da 8 a
+   15 cifre), `NULL` senza. Si scrive con il prefisso del paese; spazi,
+   trattini, punti, barre e parentesi si tolgono, «00» davanti vale «+».
+   Senza prefisso è rifiutato: indovinare il paese vorrebbe una libreria
+   dei numeri (dipendenza nuova) o la posizione.
+6. **Il numero non è provato, quindi non è unico**: nessun SMS dice che è
+   di chi lo scrive. Due account possono avere lo stesso numero, e
+   l'API non dice a nessuno se un numero è già di un account.
+7. **Lo vede solo il proprietario** (`GET /me`): mai in `PublicProfile`,
+   nella ricerca, negli elenchi. `DELETE /me` lo cancella con la riga.
+8. **Nell'app** le due righe si aprono sotto, come «Language» e «Profile
+   picture»; sotto il campo del numero: «Only you see your number. Friends
+   who already have it will be able to find you on Sgrava.».
+
+**Alternative scartate**:
+
+- **Aspettare il servizio di posta** per il cambio email: proposto
+  all'utente, che ha scelto di farlo subito con la password.
+- **Il numero unico**: senza prova, chi scrive per primo il numero di un
+  altro glielo toglie, e l'errore «numero già usato» dice a chiunque chi
+  è iscritto.
+- **Solo cifre nazionali** («333 123 4567»): due paesi hanno gli stessi
+  numeri; la rubrica di un amico li ha quasi sempre con il prefisso o li
+  porta a E.164 il telefono.
+- **`401` per la password sbagliata**: l'app lo legge come sessione finita
+  ed esce.
+
+**Conseguenze**:
+
+- **La ricerca dalla rubrica non c'è ancora**, e prima di farla va deciso
+  come si prova un numero (SMS, un servizio a pagamento): oggi chiunque
+  può scrivere il numero di un altro e farsi trovare al suo posto. La
+  frase nell'app dice «will be able», non «can».
+- La privacy (TASK-184) deve dire che il numero è facoltativo, a cosa
+  serve e che si toglie da «Settings».
+- Migrazione nuova (`0016_contact.sql`, il primo numero libero al merge):
+  serve l'aggiornamento del server prima di pubblicare l'app. Un'API di
+  prima risponde `404` ai due `PUT` e l'app lo dice in parole; il suo
+  `User` non ha `phone` e l'app lo legge come «nessun numero».

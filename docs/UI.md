@@ -52,6 +52,7 @@ ciano di «Start here».
 | `textFaint` | `#8A8A90` | il testo più tenue ancora leggibile (5,8:1), non per il corpo |
 | `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
 | `error` | `#FF6B6B` | una richiesta fallita |
+| `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
 | `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | nessuno dal TASK-218: «Connect with Strava» (TASK-187) ora è l'immagine ufficiale di Strava, con i suoi colori dentro (ADR-0181); da togliere quando `tokens.ts` è libero |
 | `map.*` | dal `#0D0E10` al `#3A3D45` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
@@ -367,8 +368,10 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   (TASK-156, ADR-0127, chiesto dall'utente). Niente sulla pagina dice che
   sono esempi: scelta dell'utente. Ogni scheda ha l'iniziale e il nome di
   chi ha corso, la
-  città, il disegno in giallo a tutta larghezza, il punteggio («98», «out
-  of 100»), il titolo e una riga «Horse · 19.2 km · 1 h 41 min». Sono le
+  città, il disegno in giallo a tutta larghezza, il titolo e una riga
+  «Horse · 19.2 km · 1 h 41 min». **Il punteggio non c'è**, né sopra il
+  disegno né in quello che legge VoiceOver (TASK-241, ADR-0207, chiesto
+  dall'utente). Sono le
   figure venute meglio nelle sette città del catalogo, due per città e
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
   inventati.
@@ -422,8 +425,8 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   MapLibre che l'elenco copre, una mappa alla volta, inquadrata come la
   linea; finché non arriva la scheda è la linea sul fondo scuro, e senza
   rete resta così. In basso a destra di ogni mappa il credito,
-  «OpenFreeMap © OpenMapTiles / Data from OpenStreetMap», in due righe
-  accanto al punteggio. Le foto fatte restano finché l'app è aperta.
+  «OpenFreeMap © OpenMapTiles / Data from OpenStreetMap», in due
+  righe. Le foto fatte restano finché l'app è aperta.
 - **«Explore»** chiede i suoi percorsi all'API la prima volta che ci si
   arriva, non all'apertura dell'app; tornandoci l'elenco è ancora lì. Non
   ha più «←»: per tornare c'è lo swipe, o il nome «Draw».
@@ -559,7 +562,7 @@ mappa è quella di prima.
 **«Settings»**, una pagina di «Profile» («←» torna a «Profile»), a sezioni:
 
 - **«Account»**: nome ed email; poi **«Profile picture»** (TASK-178,
-  sotto); poi «Change email» e «Phone number», con la scritta «Soon».
+  sotto); poi **«Change email»** e **«Phone number»** (TASK-183, sotto).
 - **«Sport»** (TASK-189, ADR-0152): per cosa sono i percorsi. Tre righe:
   «Run» (🏃‍♂️), scelto all'inizio, con un «✓» bianco; «Bike» (🚴), che
   si sceglie dal TASK-190; «Paddle» (🛶: canoa, kayak, SUP, nome scelto
@@ -593,8 +596,8 @@ mappa è quella di prima.
   e grigio, «Maps download on Wi-Fi and mobile data.». «Delete» cancella
   subito, senza chiedere: le mappe tornano alla prossima apertura, con la
   riga sopra «Draw route». Il numero cresce anche da solo: dopo la zona
-  intorno, il telefono scarica piano piano quelle delle città di
-  «Explore», senza avvisi (TASK-214, parte B2). Poi «Units», «Soon». **«Notifications»**: «Email
+  intorno, il telefono scarica piano piano quelle dei paesi vicini e
+  delle città di «Explore», senza avvisi (TASK-214, parte B2). Poi «Units», «Soon». **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
@@ -602,8 +605,40 @@ mappa è quella di prima.
 
 Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
 interruttori, perché dietro non c'è ancora niente (le accendono TASK-182,
-183, 184, 185). Usciti dall'account da «Settings», chi rientra trova
+184, 185). Usciti dall'account da «Settings», chi rientra trova
 «Profile».
+
+**«Change email»** (✉️, TASK-183, ADR-0150): un tocco apre sotto la riga
+«NEW EMAIL» e «PASSWORD» (la password dell'account, nascosta) e «Save»; un
+altro tocco richiude e dimentica quello che era scritto. Salvata, la riga
+si chiude e il riquadro del nome in cima mostra il nuovo indirizzo: vale
+subito, senza mail di conferma, e da lì in poi si entra con quello. Il
+telefono resta dentro.
+
+**«Phone number»** (📱, TASK-183): in fondo alla riga il numero
+dell'account, come lo tiene l'API («+393331234567»), o «Add». Un tocco
+apre sotto la riga «PHONE NUMBER» (con il numero di adesso; l'esempio
+grigio è «+39 333 123 4567»), la frase «Only you see your number. Friends
+who already have it will be able to find you on Sgrava.», «Save» e, se un
+numero c'è, «Remove number» in rosso. Il numero si scrive con il prefisso
+del paese, spaziato come si vuole; salvare il campo vuoto lo toglie; lo
+stesso numero di prima non chiede niente all'API. La ricerca degli amici
+dalla rubrica non c'è ancora (ADR-0150).
+
+| Cosa succede | Cosa dice, sotto «Save» |
+|---|---|
+| email non valida | Enter an email address, like name@example.com. |
+| l'email di adesso | This is already the email of your account. |
+| password non scritta | Enter your password. |
+| password sbagliata | Wrong password. |
+| troppe password sbagliate | Too many tries. Wait {minutes} minutes and try again. |
+| email di un altro account | Another account has this email. |
+| numero senza prefisso o non valido | Write the number with its country code, like +39 333 123 4567. |
+| API di prima di TASK-183 | Changing the email is not available on this API yet. / The phone number is not available on this API yet. |
+
+Con un errore i campi tengono quello che era scritto. Mentre salva il
+pulsante dice «Saving…» («Removing…» per «Remove number») e un secondo
+tocco non manda niente.
 
 **«Profile picture»** (TASK-178, ADR-0146): una riga con 📷, il nome e, in
 fondo, la foto in piccolo (o l'iniziale). Un tocco apre sotto la riga
@@ -678,19 +713,34 @@ perché. Sul proprio profilo il tasto non c'è.
 **In «Profile»**, sotto «Edit profile», tre riquadri con un numero:
 **«Requests»**, **«Followers»**, **«Following»** (un trattino finché non
 arrivano). Uno toccato apre sotto il suo elenco, toccato di nuovo lo
-richiude. «Requests» ha un pallino arancio (`warning`) quando qualcuno
-aspetta: è l'unico posto che lo dice, finché non ci sono le notifiche
-(TASK-185). Ogni riga ha la foto (o l'iniziale) e il nome, che toccato
-apre il profilo di quella persona sopra l'app; «←» torna a «Profile».
+richiude. «Requests» ha un pallino rosso (`badge`) quando qualcuno
+aspetta, e in quel caso il suo elenco è **già aperto** quando «Profile»
+si apre (TASK-239). Ogni riga ha la foto (o l'iniziale) e il nome, che
+toccato apre il profilo di quella persona sopra l'app; «←» torna a
+«Profile».
+
+**Il numero rosso** (TASK-239, ADR-0203; chiesto dall'utente, testi
+**confermati** il 2026-10-05). Quando qualcuno chiede di seguirti, il pulsante di
+«Profile» in alto a destra nelle pagine ha un tondo rosso col numero
+delle richieste in attesa («9+» oltre nove), sopra il suo angolo in alto a
+destra; VoiceOver dice «Profile, 2 follow requests». L'app lo chiede
+all'apertura, ogni minuto mentre è sullo schermo e quando ci torna: una
+richiesta nuova si vede da sola, senza aprire «Profile». Sparisce quando
+ogni richiesta ha avuto «Accept» o «Decline»: guardarle non basta. Ad app
+chiusa non arriva niente: le notifiche del telefono sono TASK-185.
 
 | Elenco | Tasti della riga | Vuoto |
 |---|---|---|
-| «Requests» | «Accept» (bianco), «Decline» | Nobody is asking to follow you. |
+| «Requests» | «Accept» (bianco), «Decline»; accettata: «Follow back» (bianco) | Nobody is asking to follow you. |
 | «Followers» | «Remove», che chiede «Remove {name} from your followers?» con «Keep it» e «Remove» | Nobody follows you yet. |
 | «Following» | nessuno: si smette dal profilo | You are not following anyone yet. Find friends from Feed. |
 
-Accettata, la persona passa subito in «Followers». Venti per volta, poi
-«Show more». Con un server senza gli elenchi i tre riquadri non ci sono.
+Accettata, la persona passa subito in «Followers» e **resta nella sua
+riga** di «Requests» finché «Profile» è aperto (TASK-239): al posto dei due
+tasti c'è **«Follow back»**, che manda la tua richiesta e diventa la
+scritta «Requested» (o «Following», se l'altro ti aveva già accettato). Se
+lo segui già, o hai già chiesto, la riga lo dice subito e il tasto non
+c'è. Venti per volta, poi «Show more». Con un server senza gli elenchi i tre riquadri non ci sono.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale

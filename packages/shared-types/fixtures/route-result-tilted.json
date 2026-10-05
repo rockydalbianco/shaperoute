@@ -33,11 +33,13 @@
       "walks": [],
       "on_foot": [],
       "better_distance_m": null,
+      "centre": null,
       "rotation_deg": 0.0
     }
   ],
   "walks": [],
   "on_foot": [],
   "better_distance_m": null,
+  "centre": null,
   "rotation_deg": 30.0
 }

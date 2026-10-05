@@ -174,8 +174,7 @@ export const DE: Table = {
   // src/feed/FeedPost.tsx
   "OpenFreeMap © OpenMapTiles\nData from OpenStreetMap":
     "OpenFreeMap © OpenMapTiles\nDaten von OpenStreetMap",
-  "{user} in {city}: {title}. {facts}. Score {score} out of 100.":
-    "{user} in {city}: {title}. {facts}. Punktzahl {score} von 100.",
+  "{user} in {city}: {title}. {facts}.": "{user} in {city}: {title}. {facts}.",
   "Opens the route on the map": "Öffnet die Route auf der Karte",
 
   // src/i18n/shapeNames.ts
@@ -272,6 +271,24 @@ export const DE: Table = {
   "My activities": "Meine Aktivitäten",
   Settings: "Einstellungen",
 
+  // src/settings/EmailSetting.tsx, PhoneSetting.tsx, contactFields.ts (TASK-183)
+  "NEW EMAIL": "NEUE E-MAIL",
+  "PHONE NUMBER": "TELEFONNUMMER",
+  Add: "Hinzufügen",
+  "Remove number": "Nummer entfernen",
+  "Only you see your number. Friends who already have it will be able to find you on Sgrava.":
+    "Nur du siehst deine Nummer. Freunde, die sie schon haben, können dich auf Sgrava finden.",
+  "Changing the email is not available on this API yet.":
+    "Die E-Mail lässt sich auf dieser API noch nicht ändern.",
+  "The phone number is not available on this API yet.":
+    "Die Telefonnummer gibt es auf dieser API noch nicht.",
+  "This is already the email of your account.":
+    "Das ist schon die E-Mail deines Kontos.",
+  "Write the number with its country code, like +39 333 123 4567.":
+    "Schreib die Nummer mit Ländervorwahl, zum Beispiel +39 333 123 4567.",
+  "Wrong password.": "Falsches Passwort.",
+  "Another account has this email.": "Ein anderes Konto hat diese E-Mail.",
+
   // src/profile/SettingsPage.tsx
   "Change email": "E-Mail ändern",
   "Phone number": "Telefonnummer",
@@ -363,6 +380,8 @@ export const DE: Table = {
 
   // src/screens/ProfileLayer.tsx
   "Profile, log in again": "Profil, erneut anmelden",
+  "Profile, {count} follow request": "Profil, {count} Folgeanfrage",
+  "Profile, {count} follow requests": "Profil, {count} Folgeanfragen",
   Profile: "Profil",
 
   // src/screens/ProfileScreen.tsx
@@ -522,6 +541,8 @@ export const DE: Table = {
   "Accept {name}": "{name} annehmen",
   Decline: "Ablehnen",
   "Decline {name}": "{name} ablehnen",
+  "Follow back": "Zurückfolgen",
+  "Follow {name} back": "{name} zurückfolgen",
   Remove: "Entfernen",
   "Remove {name}": "{name} entfernen",
   "Remove {name} from your followers?": "{name} aus deinen Followern entfernen?",

@@ -97,6 +97,8 @@ def result_from(data: dict[str, Any]) -> RouteResult:
         walks=[(int(a), int(b)) for a, b in data.get("walks", [])],
         # Kept before TASK-206 part B: none.
         on_foot=[(int(a), int(b)) for a, b in data.get("on_foot", [])],
+        # Kept before TASK-238, or on the roads: none.
+        centre=None if data.get("centre") is None else _pair(data["centre"]),
         # Kept before TASK-232: upright.
         rotation_deg=float(data.get("rotation_deg", 0.0)),
     )
@@ -229,6 +231,8 @@ class RouteStore:
     def _path(self, request: object) -> Path | None:
         if not isinstance(request, RouteRequest):
             return None  # an image: its outline is the user's own
+        if request.near is not None:
+            return None  # a shape moved by the user (TASK-238): theirs too
         same = json.dumps([self._engine, self._same(request)], sort_keys=True)
         name = hashlib.sha256(same.encode()).hexdigest()[:24]
         return self._directory / f"{name}.json"

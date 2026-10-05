@@ -12,7 +12,9 @@ pieces, the outline and then each piece on its own (TASK-223).
 `--activity paddling` draws a shape of the catalogue, 1-5 km, on the water
 of a lake or the sea, from a start on the shore; the water is cached in
 `<cache-dir>/water/` (TASK-191). With `--pen-up` a shape in pieces is drawn
-piece by piece there too, the pen up between them (TASK-226).
+piece by piece there too, the pen up between them (TASK-226). `--near
+LAT,LON` asks for the shape on the water near that point, where its centre
+is wanted (TASK-238).
 """
 
 from __future__ import annotations
@@ -26,11 +28,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from route_engine.export_gpx import route_name, to_gpx
-from route_engine.geo import path_length_m
+from route_engine.geo import haversine_m, path_length_m
 from route_engine.image_outline import InvalidImageError, outline_data
 from route_engine.models import (
     ACTIVITIES,
     DISTANCE_LIMITS_M,
+    NEAR_ON_WATER_ONLY,
     PEN_UP_WITHOUT_WORD,
     WATER_ACTIVITIES,
     InvalidRequestError,
@@ -199,6 +202,14 @@ def _build_parser() -> argparse.ArgumentParser:
         "write --start=-33.9,18.4 when LAT is negative",
     )
     parser.add_argument(
+        "--near",
+        type=_parse_start,
+        metavar="LAT,LON",
+        help="with --activity paddling: where the centre of the shape is "
+        "wanted, e.g. the centre printed for a route before, moved; the shape "
+        "is placed at the nearest place to it where it fits",
+    )
+    parser.add_argument(
         "--out", type=Path, help="write the route to this GPX file (never overwritten)"
     )
     parser.add_argument(
@@ -284,6 +295,8 @@ def parse_args(
                 "--no-optimize is for roads: on the water the shape is placed "
                 "where it fits"
             )
+    elif args.near is not None:
+        parser.error(f"--near: {NEAR_ON_WATER_ONLY}")
     if args.save_outline is not None:
         if args.image is None:
             parser.error("--save-outline needs --image")
@@ -334,6 +347,7 @@ def parse_args(
                 # On the water the request says it (TASK-226); on roads the
                 # pieces are composed below, as a word's letters.
                 pen_up=args.pen_up and args.activity in WATER_ACTIVITIES,
+                near=args.near,
             )
         else:
             request = OutlineRequest(
@@ -559,6 +573,12 @@ def _main_on_water(request: RouteRequest, args: argparse.Namespace) -> int:
         f"({on_water.shore_access}), {on_water.move_m:.0f} m from the start"
     )
     print(f"  leg:        {on_water.approach_m:.0f} m each way, shore to shape")
+    centre_lat, centre_lon = on_water.centre
+    asked = ""
+    if request.near is not None:
+        off = haversine_m(on_water.centre, request.near)
+        asked = f", {off:.0f} m from where it was asked"
+    print(f"  centre:     {centre_lat:.5f}, {centre_lon:.5f}{asked}")
     print(f"  similarity: {route.similarity:.2f} (the shape itself)")
     print(f"  on water:   {route.distance_m:.0f} m (target {request.distance_m} m)")
     if route.walks:

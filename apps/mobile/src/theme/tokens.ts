@@ -51,6 +51,14 @@ export const color = {
   /** A request that failed. */
   error: "#FF6B6B",
 
+  /**
+   * Someone waits for the user's answer: the number on the way to «Profile»
+   * and on «Requests» (TASK-239). Red by the user's choice; nothing else is.
+   */
+  badge: "#E02D2D",
+  /** The number on `badge`: 4.6:1. */
+  onBadge: "#FFFFFF",
+
   /** Where a moved route begins (ADR-0040). Cyan, so it never reads as route. */
   startHere: "#4DD2FF",
 

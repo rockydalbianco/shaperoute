@@ -30,7 +30,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 
 | Tabella | Cosa | Chi la crea |
 |---|---|---|
-| `users` | email (unica, minuscola), hash della password (Argon2id), nome utente (unico, 3–20 caratteri), bio, id pubblico casuale del profilo, `role` (`user` o `admin`), quando ha detto di avere 16 anni, data d'iscrizione | TASK-114, TASK-116 |
+| `users` | email (unica, minuscola), hash della password (Argon2id), nome utente (unico, 3–20 caratteri), bio, id pubblico casuale del profilo, `role` (`user` o `admin`), quando ha detto di avere 16 anni, data d'iscrizione; il numero di telefono, facoltativo (TASK-183) | TASK-114, TASK-116, TASK-183 |
 | `sessions` | hash del token (SHA-256), utente, ultimo uso, scadenza a 90 giorni | TASK-114 |
 | `profile_photos` | utente, JPEG quadrato 256 px | TASK-178 |
 | `generated_routes` | ogni percorso dell'API (ADR-0086): richiesta, tipo (forma, parola, immagine), distanza, somiglianza, linea, **punto di partenza mostrato** (a più di 500 m da quello vero), centro, data; utente se era entrato, se no nessuno | TASK-092 |
@@ -327,6 +327,18 @@ libero in `main` al merge):
   le due righe, perché dopo vivono separate (ADR-0193).
 - Legate al **disegno**, come i commenti: le vede chi vede il disegno, e
   un disegno tornato privato le tiene.
+
+Migrazione `0016_contact.sql` (TASK-183, ADR-0150; il numero è il primo
+libero in `main` al merge):
+
+- `users.phone`: il numero di telefono in E.164 (`^\+[1-9][0-9]{7,14}$`,
+  «+» e da 8 a 15 cifre), `NULL` senza, come per ogni account di prima.
+  **Non unico**: nessuno ha provato che il numero è suo (niente SMS), e un
+  vincolo direbbe a chi lo scrive che un altro account lo ha già. Lo legge
+  solo il proprietario (`GET /me`). Nessun indice: lo chiederà la ricerca
+  dalla rubrica, quando ci sarà.
+- L'email cambia con un `UPDATE` della stessa riga (`PUT /me/email`): il
+  vincolo `users_email_key` dice quando è di un altro account.
 
 ## Come si memorizza una traccia
 

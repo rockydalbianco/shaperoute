@@ -117,6 +117,13 @@ interface RouteRequestFields {
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
+  /**
+   * On the water (TASK-238, ADR-0202), where the centre of the shape is
+   * wanted: `RouteResult.centre` of the route before, moved by the user. The
+   * shape is placed at the nearest place to it where it fits. Refused with
+   * another activity; absent or null leaves the place to the engine.
+   */
+  near?: LatLon | null;
 }
 
 /** A shape of the catalogue, or a word written one letter at a time: one
@@ -202,6 +209,12 @@ export interface RouteResult {
    * one, in the alternatives and on the water; missing from an older API.
    */
   better_distance_m?: number | null;
+  /**
+   * On the water, the centre of the shape as placed (TASK-238, ADR-0202):
+   * moved and sent back as the request's `near`, it moves the shape. Null on
+   * the roads; missing from an older API, whose shapes are not moved.
+   */
+  centre?: LatLon | null;
   /**
    * How far the shape is turned, in degrees counterclockwise, in (-180, 180]
    * (TASK-232, ADR-0195): the map shows the drawing upright with a MapLibre
@@ -557,6 +570,30 @@ export interface User {
    * random UUID, never `id`. Missing from an API older than TASK-116.
    */
   public_id?: string;
+  /**
+   * The phone number (TASK-183), in E.164 ("+393331234567"), or null
+   * without one: told to its owner only. Missing from an API older than
+   * TASK-183.
+   */
+  phone?: string | null;
+}
+
+/**
+ * PUT /me/email (TASK-183): the new address, and the password of the
+ * account. It holds at once; the answer is the User.
+ */
+export interface ChangeEmailRequest {
+  email: string;
+  password: string;
+}
+
+/**
+ * PUT /me/phone (TASK-183): the number with its country code, however it
+ * is spaced ("+39 333 123 4567"); null takes it away. The answer is the
+ * User, with the number in E.164.
+ */
+export interface ChangePhoneRequest {
+  phone: string | null;
 }
 
 /** The limit of a bio, checked by the API too (TASK-116). */

@@ -1312,6 +1312,41 @@ nella fascia, e ogni pezzo si disegna da solo.
 - **Con la penna giù niente cambia**: le forme a pezzi restano una linea
   sola, punto per punto come prima (`tests/test_water_pieces.py`).
 
+**Una forma spostata dall'utente** (TASK-238, ADR-0202): la richiesta può
+dire dove si vuole il centro della forma (`RouteRequest.near`, solo
+sull'acqua), e il risultato dice dov'è (`RouteResult.centre`,
+`WaterRoute.centre`: la media dei vertici del contorno, che la rotazione
+non sposta). L'app fa trascinare la forma sulla mappa e richiede il
+percorso con `near` = il centro di prima più lo spostamento. **Il posto lo
+decide ancora il motore**: `near` è una preferenza, non una coordinata del
+percorso.
+
+- **La ricerca è la stessa** (`fit_shape(..., near=)`): stesse scale,
+  stesse rotazioni, stessa fascia, stessa partenza dalla riva entro 300 m
+  dalla forma e 2 km dalla partenza chiesta. Cambia quali posti si
+  guardano: per ogni scala e rotazione i centri **più vicini a `near`**
+  (`_fitting_centres`, `_nearest`: 6, a due celle l'uno dall'altro) invece
+  di quelli dove il tratto dalla riva costa meno, e solo quelli da cui una
+  riva raggiungibile a piedi sta entro 300 m (`_Wanted.reached`), così una
+  forma lasciata al largo torna dove una partenza c'è.
+- **Il costo** ha un termine in più: `NEAR_WEIGHT = 10` per ogni metro fra
+  il centro e `near`, diviso la distanza chiesta: cinque volte un metro di
+  tratto dalla riva andata e ritorno. Prima viene il posto, poi la forma
+  più grande e il tratto più corto lì. I primi `NEAR_FREE_M = 30` metri non
+  costano: un dito sulla mappa non li distingue, e la forma non si
+  rimpicciolisce né si inclina per stare dieci metri più vicina.
+- **Dove non ci sta** (sulla terra, oltre la fascia, troppo al largo,
+  oltre i 2 km dalla partenza) la forma va nel posto più vicino in cui ci
+  sta: più vicina alla riva di così non si può (50 m sui laghi, 200 m al
+  mare), e può uscirne più piccola (entro il ±10% della distanza) o
+  inclinata diversamente.
+- **Chiesta dov'è, resta dov'è**: `near` uguale al `centre` di un percorso
+  dà lo stesso percorso. **Senza `near` niente cambia**: i 32 esempi
+  dell'app sull'acqua vera sono usciti identici, punto per punto.
+- **Tempi** sull'acqua vera (Garda, Como, Jesolo, Riccione, 2 km, cuore e
+  testa di cane a pezzi): 1–6 s, contro 0,5–1,7 s senza `near`: il costo
+  del posto toglie potature alla ricerca.
+
 **La validazione sull'acqua** (`validation.check_on_water`, da
 `water_fit.measure`): il percorso è chiuso, nessun metro sulla terra (oltre
 mezzo metro dentro: il tratto parte dal bordo dell'acqua), nessun punto
@@ -1338,6 +1373,16 @@ GPX li segna con `Pause` e `Resume`:
 ```
 python -m route_engine --shape cat --distance 2000 --pen-up \
     --start 45.8132,9.0803 --activity paddling --out cat_como.gpx
+```
+
+Stampa anche il centro della forma (`centre:`). Con `--near LAT,LON` la
+forma si chiede vicino a quel punto (TASK-238), e la riga dice a quanti
+metri è finita; con un'altra attività `--near` si rifiuta:
+
+```
+python -m route_engine --shape heart --distance 2000 \
+    --start 44.0036,12.6634 --activity paddling --near 44.0105,12.6702 \
+    --out heart_riccione_moved.gpx
 ```
 
 `python -m route_engine.water` resta per i campioni, dalle fixture o dalle

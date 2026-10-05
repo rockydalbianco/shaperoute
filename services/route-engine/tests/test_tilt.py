@@ -45,7 +45,9 @@ DISTANCE_M = 3000.0
 SCALE_M = initial_scale(HEART, DISTANCE_M)
 
 
-def _ring(outline: list[LatLon], graph: nx.MultiDiGraph | None = None) -> nx.MultiDiGraph:
+def _ring(
+    outline: list[LatLon], graph: nx.MultiDiGraph | None = None
+) -> nx.MultiDiGraph:
     """Roads exactly along `outline`, both ways, added to `graph`."""
     graph = graph if graph is not None else nx.MultiDiGraph()
     nodes = [(round(lat, 7), round(lon, 7)) for lat, lon in outline[:-1]]
@@ -82,8 +84,14 @@ def test_a_shape_with_a_top_and_a_bottom_tilts_up_to_45_degrees() -> None:
 
 def test_the_tilts_beyond_15_degrees_come_after_the_upright_search() -> None:
     found = search(
-        _hearts(0.0), HEART, LEVICO, DISTANCE_M, max_tilt_deg=MAX_TILT_DEG,
-        move_start=False, phases=(0.0,), trace=_fake_trace(0.5),
+        _hearts(0.0),
+        HEART,
+        LEVICO,
+        DISTANCE_M,
+        max_tilt_deg=MAX_TILT_DEG,
+        move_start=False,
+        phases=(0.0,),
+        trace=_fake_trace(0.5),
     )  # never good: the search tries all it may
     tilts = [_tilt(a.rotation_deg) for a in found.attempts]
     first = next(i for i, t in enumerate(tilts) if t > UPRIGHT_TILT_DEG)
@@ -98,26 +106,28 @@ def test_the_tilts_beyond_15_degrees_come_after_the_upright_search() -> None:
 def test_a_good_upright_route_never_tries_a_tilt() -> None:
     # The same search as before TASK-232, the same route and time.
     found = search(
-        _hearts(0.0), HEART, LEVICO, DISTANCE_M, max_tilt_deg=MAX_TILT_DEG,
-        move_start=False, phases=(0.0,), trace=_fake_trace(1.0),
+        _hearts(0.0),
+        HEART,
+        LEVICO,
+        DISTANCE_M,
+        max_tilt_deg=MAX_TILT_DEG,
+        move_start=False,
+        phases=(0.0,),
+        trace=_fake_trace(1.0),
     )
     assert found.converged
     assert all(_tilt(a.rotation_deg) <= UPRIGHT_TILT_DEG for a in found.attempts)
 
 
 def test_the_shape_follows_roads_that_run_30_degrees_off() -> None:
-    plan = plan_shape(
-        HEART, "heart", LEVICO, int(DISTANCE_M), _Loader(_hearts(30.0))
-    )
+    plan = plan_shape(HEART, "heart", LEVICO, int(DISTANCE_M), _Loader(_hearts(30.0)))
     assert plan.search is not None
     assert plan.result.rotation_deg == pytest.approx(30.0, abs=5.0)
     assert plan.result.similarity >= 0.9
 
 
 def test_roads_tilted_beyond_45_degrees_never_tilt_the_shape_beyond_it() -> None:
-    found = search(
-        _hearts(70.0), HEART, LEVICO, DISTANCE_M, max_tilt_deg=MAX_TILT_DEG
-    )
+    found = search(_hearts(70.0), HEART, LEVICO, DISTANCE_M, max_tilt_deg=MAX_TILT_DEG)
     assert found.attempts
     assert all(_tilt(a.rotation_deg) <= MAX_TILT_DEG for a in found.attempts)
 
@@ -130,8 +140,13 @@ def test_on_a_tie_the_straighter_shape_wins() -> None:
     # neither upright. Without the tilt's cost the first of the rotations
     # tried would win, 45°; with it the one that leans less.
     found = search(
-        _hearts(45.0, -30.0), HEART, LEVICO, DISTANCE_M, max_tilt_deg=MAX_TILT_DEG,
-        move_start=False, phases=(0.0,),
+        _hearts(45.0, -30.0),
+        HEART,
+        LEVICO,
+        DISTANCE_M,
+        max_tilt_deg=MAX_TILT_DEG,
+        move_start=False,
+        phases=(0.0,),
     )
     assert found.converged
     assert shown_rotation(found.best.rotation_deg, MAX_TILT_DEG) == -30.0
@@ -139,8 +154,14 @@ def test_on_a_tie_the_straighter_shape_wins() -> None:
 
 def test_on_a_tie_the_upright_shape_wins() -> None:
     found = search(
-        _hearts(45.0, 0.0), HEART, LEVICO, DISTANCE_M, max_tilt_deg=MAX_TILT_DEG,
-        move_start=False, phases=(0.0,), trace=_fake_trace(1.0),
+        _hearts(45.0, 0.0),
+        HEART,
+        LEVICO,
+        DISTANCE_M,
+        max_tilt_deg=MAX_TILT_DEG,
+        move_start=False,
+        phases=(0.0,),
+        trace=_fake_trace(1.0),
     )
     assert found.converged
     assert found.best.rotation_deg == 0.0
@@ -163,8 +184,14 @@ def test_a_traced_route_pays_for_its_tilt() -> None:
     # Every route is half as long as the shape, never good: the search
     # tries the tilts too, and each pays for its own.
     found = search(
-        _hearts(0.0), HEART, LEVICO, DISTANCE_M, max_tilt_deg=MAX_TILT_DEG,
-        move_start=False, phases=(0.0,), trace=_fake_trace(0.5),
+        _hearts(0.0),
+        HEART,
+        LEVICO,
+        DISTANCE_M,
+        max_tilt_deg=MAX_TILT_DEG,
+        move_start=False,
+        phases=(0.0,),
+        trace=_fake_trace(0.5),
     )
     tilted = [a for a in found.attempts if _tilt(a.rotation_deg) > UPRIGHT_TILT_DEG]
     assert tilted
@@ -196,9 +223,7 @@ def test_a_shape_that_turns_freely_says_0() -> None:
 
 
 def test_the_result_says_the_rotation_of_the_chosen_route() -> None:
-    plan = plan_shape(
-        HEART, "heart", LEVICO, int(DISTANCE_M), _Loader(_hearts(30.0))
-    )
+    plan = plan_shape(HEART, "heart", LEVICO, int(DISTANCE_M), _Loader(_hearts(30.0)))
     assert plan.search is not None
     best = plan.search.best
     assert plan.result.rotation_deg == shown_rotation(best.rotation_deg, MAX_TILT_DEG)

@@ -50,6 +50,7 @@ from shaperoute_api.activity_graphs import (
 )
 from shaperoute_api.cities import CitySearch, SuggestionsBody
 from shaperoute_api.comments import install_comments
+from shaperoute_api.contact import install_contact
 from shaperoute_api.drawing_photos import install_drawing_photos
 from shaperoute_api.drawings import install_drawings
 from shaperoute_api.errors import error_of
@@ -178,6 +179,7 @@ def to_request(body: RouteRequestBody | ImageRouteRequestBody) -> AnyRequest:
         activity=body.activity,
         style=body.style,  # type: ignore[arg-type]  # RouteRequest checks it
         pen_up=body.pen_up,
+        near=body.near,
     )
 
 
@@ -296,6 +298,9 @@ def create_app(
     # Username and bio, and the profile the others see (TASK-116); both need
     # a token.
     install_profiles(app)
+    # The email and the phone number of an account, changed by their owner
+    # (TASK-183); both need a token.
+    install_contact(app)
     # The runs an account publishes as drawings, cut for the others
     # (TASK-117); they need a token.
     install_drawings(app)

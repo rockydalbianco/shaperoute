@@ -115,6 +115,7 @@ def plan_paddling(request: RouteRequest, source: WaterSource) -> WaterPlan:
         name=str(request.shape),
         free_rotation=request.shape in FREE_ROTATION,
         pieces=water_pieces(request),
+        near=request.near,
     )
     check_on_water(measure(route.points, area), request.distance_m)
     result = RouteResult(
@@ -123,5 +124,6 @@ def plan_paddling(request: RouteRequest, source: WaterSource) -> WaterPlan:
         similarity=1.0,
         shape=request.shape,
         walks=list(route.walks),
+        centre=route.centre,
     )
     return WaterPlan(result, route, area)

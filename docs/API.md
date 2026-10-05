@@ -691,6 +691,32 @@ motore.)
 - **Tempi** sulle fixture del motore: 0,1–1 s un piano, l'acqua letta
   dalla cache in un attimo; un download Overpass non è mai stato misurato
   (task file).
+- **La forma spostata dall'utente** (TASK-238, ADR-0202): il risultato di
+  un percorso sull'acqua ha `centre`, `[lat, lon]`, il centro della forma
+  come è stata messa (su strada `null`). La richiesta può avere `near`,
+  `[lat, lon]`: dove l'utente vuole quel centro, cioè il `centre` di prima
+  spostato. Il motore mette la forma **nel posto più vicino a `near` in cui
+  ci sta**: nella fascia, con una riva raggiungibile a piedi entro 300 m,
+  entro 2 km dalla `start`, che resta quella della prima richiesta. Può
+  quindi rispondere con un `centre` diverso da `near`, e con una forma un
+  po' più piccola o inclinata. `near` uguale al `centre` ricevuto dà lo
+  stesso percorso.
+
+  ```json
+  { "start": [44.0007, 12.6513], "shape": "heart", "distance_m": 2000,
+    "activity": "paddling", "near": [44.0041, 12.6569] }
+  ```
+
+  (`fixtures/route-request-paddling-near.json`,
+  `fixtures/route-result-paddling.json`.) Con un'altra attività `near` è
+  `422 invalid_request`, `a shape is placed near a point only on the
+  water`; così una latitudine o una longitudine impossibili. Gli errori
+  sono quelli di ogni richiesta sull'acqua. Un percorso spostato **non si
+  tiene** fra gli esempi (`route_store`): è di chi l'ha spostato. I due
+  campi sono facoltativi: un'app di prima non manda `near` e ignora
+  `centre`; un'API di prima rifiuta `near` (`extra="forbid"`), quindi l'app
+  offre lo spostamento solo quando il risultato ha `centre`. Tempi
+  sull'acqua vera (Garda, Como, Jesolo, Riccione, 2 km): 1–6 s.
 
 ### Una parola invece di una forma (TASK-056)
 
@@ -905,7 +931,8 @@ Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,
 
 - `Session` è `{ "token": "…", "user": User }`; `User` è `id`, `email`,
   `username`, `role` (`user` o `admin`) e `created_at`, più `bio` e
-  `public_id` da TASK-116 («Profile», sotto). Il token è l'unica
+  `public_id` da TASK-116 («Profile», sotto) e `phone` da TASK-183
+  («Email and phone number», sotto). Il token è l'unica
   cosa segreta che l'API dà, e solo qui: l'app lo tiene in
   `expo-secure-store` e lo rimanda come `Authorization: Bearer <token>` a
   `GET /me`, `DELETE /session`, `DELETE /me`, ai preferiti e alle corse
@@ -1191,6 +1218,56 @@ not_signed_in`; senza database, `503 accounts_unavailable`. Tipi in
   `public_id`: l'app nuova lo legge lo stesso e dice «Editing the profile
   is not available on this API yet.». L'app pubblicata ignora i campi in
   più.
+
+### Email and phone number (TASK-183, ADR-0150)
+
+L'email e il numero di telefono di un account, cambiati dal proprietario.
+Tutti e due vogliono il token: senza, `401 not_signed_in`; senza database,
+`503 accounts_unavailable`. Tipi in `shared-types` (`ChangeEmailRequest`,
+`ChangePhoneRequest`, `User.phone`), esempi in
+`fixtures/change-email-request.json` e `fixtures/change-phone-request.json`;
+il codice in `contact.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/email` | cambiare email: `email`, `password` | `200` `User`, com'è adesso |
+| `PUT /me/phone` | tenere un numero di telefono, o toglierlo: `phone` | `200` `User`, com'è adesso |
+
+- **`User`** (anche in `Session` e `GET /me`) ha in più `phone`: il numero
+  in E.164 (`"+393331234567"`) o `null`. Solo il proprietario lo legge:
+  non è in `PublicProfile`, nella ricerca né negli elenchi (un test lo
+  prova).
+- **`PUT /me/email`**: il nuovo indirizzo (stessa regola dell'iscrizione,
+  salvato in minuscolo) e la **password dell'account**. Vale subito: l'API
+  non manda mail di conferma (ADR-0150). Il telefono resta dentro, le
+  altre sessioni anche; da lì in poi si entra con il nuovo indirizzo. La
+  propria email di adesso è accettata e non cambia niente.
+- **Errori di `PUT /me/email`**: password sbagliata, `403
+  wrong_credentials` «Wrong password.» (non `401`: la sessione vale
+  ancora); le password sbagliate contano con quelle di `POST /session`
+  per l'email di adesso, e dopo 5 in 15 minuti è `429 too_many_requests`
+  con `Retry-After`, qui e all'accesso; l'email di un altro account, `409
+  email_taken` «Another account has this email.»; un indirizzo fuori
+  regola, un campo mancante o in più, `422 invalid_request`. Con un errore
+  non cambia niente. La password non torna mai in una risposta né nei log.
+- **`PUT /me/phone`**: `phone` è il numero **con il prefisso del paese**,
+  comunque sia spaziato (`"+39 333 123 4567"`, `"0039 333-123-4567"`,
+  `"+39 (333) 123.4567"`): spazi, trattini, punti, barre e parentesi si
+  tolgono, «00» davanti vale «+», e resta «+» con 8–15 cifre, la prima non
+  zero. `null`, o un testo vuoto, toglie il numero. `phone` è
+  obbligatorio: `{}` è `422`.
+- **Errori di `PUT /me/phone`**: un numero fuori regola (senza prefisso,
+  con lettere, troppo corto o lungo), `422 invalid_request` «Write the
+  number with its country code, like +39 333 123 4567.», che l'app mostra
+  così com'è; un testo oltre 40 caratteri, un tipo diverso o campi in più,
+  `422 invalid_request`.
+- Il numero **non è provato** (nessun SMS) e quindi **non è unico**: due
+  account possono avere lo stesso, e l'API non dice se un numero è già di
+  qualcuno.
+- **Un'API precedente** non ha i due `PUT` (`404 http_error`) e il suo
+  `User` non ha `phone`: l'app nuova lo legge lo stesso e dice «Changing
+  the email is not available on this API yet.» / «The phone number is not
+  available on this API yet.». L'app pubblicata ignora il campo in più.
 
 ### Drawings (TASK-117, ADR-0159; TASK-208, ADR-0170)
 

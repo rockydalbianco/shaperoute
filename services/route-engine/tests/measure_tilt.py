@@ -57,7 +57,6 @@ from route_engine.shapes import SUPPORTED_SHAPES, get_shape
 from route_engine.words import compose
 
 
-
 @contextmanager
 def variant(name: str) -> Iterator[None]:
     """The optimizer's constants as `name` has them, then back."""
@@ -193,8 +192,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         for row in measure(source, zone, drawn, distance, variants):
             rows.append(row)
             if "skipped" in row:
-                print(f"{row['case']:<26} {row.get('variant', '')}"
-                      f" {row['skipped'][:90]}", flush=True)
+                print(
+                    f"{row['case']:<26} {row.get('variant', '')}"
+                    f" {row['skipped'][:90]}",
+                    flush=True,
+                )
                 continue
             print(show(row), flush=True)
             if args.gpx_dir is not None and row["variant"] in tags:

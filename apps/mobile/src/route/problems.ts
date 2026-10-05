@@ -7,7 +7,14 @@ import {
 } from "@shaperoute/shared-types";
 
 import { t } from "../i18n";
-import { APP_DISTANCE_LIMITS_KM } from "./distance";
+import { nearestTenths, tenthsToM, unitsNumber } from "../units/distanceInput";
+import { METRES_PER_MILE } from "../units/format";
+import { appUnits, type Units } from "../units/units";
+import {
+  APP_DISTANCE_LIMITS_KM,
+  APP_DISTANCE_LIMITS_MI,
+  offeredDistanceM,
+} from "./distance";
 import { shapeList } from "./shapeWords";
 import type { EditProblem, ImageProblem } from "./useImageOutline";
 import type { RouteProblem } from "./useRouteRequest";
@@ -30,27 +37,98 @@ export type ProblemText = {
 
 const BUG = "The app and the API do not agree (a bug)";
 
+/**
+ * The distance the API says the shape fits at, as the app offers it: only
+ * within the distances «Draw» offers for `activity`. In km as it is. With
+ * «Miles» (TASK-182) the nearest whole mile within the limits; when that is
+ * the distance just `asked`, the nearest tenth of a mile ("3.1 mi" after 3
+ * mi), and none when that is it too: a «Try» never asks again for what
+ * just failed. On the water the API's distance is the most that fits
+ * (ADR-0164): `atMost` rounds down to the whole mile, never up.
+ */
+export function fitsAtM(
+  fits: number | null | undefined,
+  activity: Activity,
+  units: Units = appUnits(),
+  asked: number | null = null,
+  atMost = false,
+): number | null {
+  const [lowest, highest] = APP_DISTANCE_LIMITS_KM[activity];
+  if (fits == null || fits < lowest * 1000 || fits > highest * 1000) {
+    return null;
+  }
+  if (units === "km") {
+    return fits;
+  }
+  const [least, most] = APP_DISTANCE_LIMITS_MI[activity];
+  if (atMost) {
+    const miles = Math.min(most, Math.floor(fits / METRES_PER_MILE));
+    const metres = tenthsToM(miles * 10, "mi");
+    return miles < least || metres === asked ? null : metres;
+  }
+  const whole = offeredDistanceM(fits, activity, "mi");
+  if (whole !== asked) {
+    return whole;
+  }
+  const tenths = nearestTenths(fits, "mi");
+  const metres = tenthsToM(tenths, "mi");
+  return tenths < least * 10 || tenths > most * 10 || metres === asked ? null : metres;
+}
+
+/** "This shape does not fit…" with the distance it fits at, for what the
+ * route draws: in km as the app always said it, in miles with «Miles». */
+function fitsAtText(kind: ChoiceKind, fits: number, units: Units): string {
+  if (units === "km") {
+    return `This ${kind} does not fit the roads here at this distance. It fits at about ${fits / 1000} km.`;
+  }
+  const miles = { mi: unitsNumber(fits, "mi") };
+  switch (kind) {
+    case "word":
+      return t(
+        "This word does not fit the roads here at this distance. It fits at about {mi} mi.",
+        miles,
+      );
+    case "image":
+      return t(
+        "This image does not fit the roads here at this distance. It fits at about {mi} mi.",
+        miles,
+      );
+    default:
+      return t(
+        "This shape does not fit the roads here at this distance. It fits at about {mi} mi.",
+        miles,
+      );
+  }
+}
+
 /** `kind`: what the route draws; a word that does not fit is not offered
  * the shapes, but a shorter word (TASK-057). `activity`: the request's, whose
- * distances «Draw» offers (TASK-190); a run's unless said. */
+ * distances «Draw» offers (TASK-190); a run's unless said. `asked`: the
+ * distance of the request, in metres, when there is one: with «Miles» a
+ * distance offered is never the one that just failed (TASK-182). */
 export function problemText(
   problem: RouteProblem,
   kind: ChoiceKind = "shape",
   activity: Activity = "running",
+  asked: number | null = null,
+  units: Units = appUnits(),
 ): ProblemText {
   switch (problem.kind) {
     case "api_error":
       switch (problem.code) {
         case "shape_not_drawable": {
           if (activity === "paddling") {
-            return waterProblemText(problem.message, problem.suggested_distance_m);
+            return waterProblemText(
+              problem.message,
+              fitsAtM(problem.suggested_distance_m, activity, units, asked, true),
+              units,
+            );
           }
-          const fits = problem.suggested_distance_m;
           // Offered only within the distances «Draw» offers for it.
-          const [lowest, highest] = APP_DISTANCE_LIMITS_KM[activity];
-          if (fits != null && fits >= lowest * 1000 && fits <= highest * 1000) {
+          const fits = fitsAtM(problem.suggested_distance_m, activity, units, asked);
+          if (fits !== null) {
             return {
-              text: `This ${kind} does not fit the roads here at this distance. It fits at about ${fits / 1000} km.`,
+              text: fitsAtText(kind, fits, units),
               detail: problem.message,
               tryDistanceM: fits,
             };
@@ -150,27 +228,40 @@ const NO_WATER = "no lake or sea";
  * and not the roads: no lake or sea near the start, or a shape that does not
  * fit within 1 km of the shore. There only shapes of the catalogue are
  * drawn. The distance the API offers is rounded down to the half km
- * (ADR-0164), "It fits at about 2.5 km".
+ * (ADR-0164), "It fits at about 2.5 km"; `fits` is that distance as the app
+ * offers it (fitsAtM), or null.
  */
 function waterProblemText(
   message: string,
-  fits: number | null | undefined,
+  fits: number | null,
+  units: Units,
 ): ProblemText {
   if (message.includes(NO_WATER)) {
     return {
-      text: t(
-        "There is no lake or sea near this start. Start from the shore, within 2 km of the water.",
-      ),
+      // The engine looks within 2 km: a mile from the water is within them.
+      text:
+        units === "mi"
+          ? t(
+              "There is no lake or sea near this start. Start from the shore, within 1 mile of the water.",
+            )
+          : t(
+              "There is no lake or sea near this start. Start from the shore, within 2 km of the water.",
+            ),
       detail: message,
     };
   }
-  const [lowest, highest] = APP_DISTANCE_LIMITS_KM.paddling;
-  if (fits != null && fits >= lowest * 1000 && fits <= highest * 1000) {
+  if (fits !== null) {
     return {
-      text: t(
-        "This shape does not fit on the water here at this distance. It fits at about {km} km.",
-        { km: fits / 1000 },
-      ),
+      text:
+        units === "mi"
+          ? t(
+              "This shape does not fit on the water here at this distance. It fits at about {mi} mi.",
+              { mi: unitsNumber(fits, "mi") },
+            )
+          : t(
+              "This shape does not fit on the water here at this distance. It fits at about {km} km.",
+              { km: fits / 1000 },
+            ),
       detail: message,
       tryDistanceM: fits,
     };

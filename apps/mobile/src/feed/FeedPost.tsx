@@ -10,7 +10,7 @@ import {
 
 import { cityName } from "../explore/recommendedRoutes";
 import { thumbSegments } from "../explore/RouteThumb";
-import { decimal, t, tLater } from "../i18n";
+import { t, tLater } from "../i18n";
 import { shapeName } from "../i18n/shapeNames";
 import { durationLabel } from "../screens/FinishScreen";
 import { SPORTS } from "../settings/sport";
@@ -23,6 +23,8 @@ import {
   route as routeLine,
   space,
 } from "../theme/tokens";
+import { distanceLabel } from "../units/format";
+import { useUnits } from "../units/useUnits";
 import { useFeedMap } from "./FeedMaps";
 import type { SamplePost } from "./sampleFeed";
 
@@ -65,10 +67,11 @@ const PADDLE = SPORTS.find((sport) => sport.id === "paddle")?.name ?? "Paddle";
 
 /**
  * "Moon · 4.9 km · 27 min": what was drawn, how far, how long. A drawing on
- * the water says so first, "Paddle · Moon · 2.0 km · 24 min" (TASK-228).
+ * the water says so first, "Paddle · Moon · 2.0 km · 24 min" (TASK-228). In
+ * the app's units (TASK-182): "Moon · 3.0 mi · 27 min".
  */
 export function postFacts(post: SamplePost): string {
-  const facts = `${shapeLabel(post.shape)} · ${decimal(post.route_m / 1000, 1)} km · ${durationLabel(post.minutes * 60_000)}`;
+  const facts = `${shapeLabel(post.shape)} · ${distanceLabel(post.route_m)} · ${durationLabel(post.minutes * 60_000)}`;
   return post.activity === "paddling" ? `${PADDLE} · ${facts}` : facts;
 }
 
@@ -83,6 +86,9 @@ export function postFacts(post: SamplePost): string {
  * same, in pieces when its shape is (TASK-228).
  */
 export function FeedPost({ post, width, onOpen }: Props) {
+  // The line of facts is written again when «Settings» changes the units
+  // (TASK-182).
+  useUnits();
   const height = drawingHeight(width);
   const segments = useMemo(
     () => thumbSegments(post.line, width, height, DRAWING_PAD, post.gaps),

@@ -4,7 +4,6 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { dayLabel } from "../activities/activityText";
 import { t } from "../i18n";
-import { kmLabel } from "../navigation/freeRun";
 import {
   color,
   fontSize,
@@ -13,6 +12,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { runDistanceLabel } from "../units/format";
+import { useUnits } from "../units/useUnits";
 import { DrawingComments } from "./DrawingComments";
 import { DrawingReactions } from "./DrawingReactions";
 
@@ -24,13 +25,14 @@ type Props = {
 
 /**
  * A drawing on the map (TASK-117), under it: its title (without one, the
- * day it was run), the day, the km and the score, which everybody sees
- * (the user's choice). Never the time of day: the others see the drawing,
- * not when somebody runs. Its comments open from a button (TASK-120), and
+ * day it was run), the day, the km (the miles with «Miles», TASK-182) and
+ * the score, which everybody sees (the user's choice). Never the time of
+ * day: the others see the drawing, not when somebody runs. Its comments open from a button (TASK-120), and
  * next to it are its reactions (TASK-119).
  */
 export function DrawingCard({ drawing, onBack }: Props) {
   const day = dayLabel(drawing.started_at);
+  const units = useUnits();
   // A super like goes with a comment: the comments are asked for again.
   const [superLikes, setSuperLikes] = useState(0);
   return (
@@ -39,7 +41,9 @@ export function DrawingCard({ drawing, onBack }: Props) {
         <View style={styles.words}>
           <Text style={styles.title}>{drawing.title ?? day}</Text>
           {drawing.title !== null && <Text style={styles.message}>{day}</Text>}
-          <Text style={styles.facts}>{kmLabel(drawing.distance_m)}</Text>
+          <Text style={styles.facts}>
+            {runDistanceLabel(drawing.distance_m, units)}
+          </Text>
         </View>
         {drawing.score !== null && (
           <View

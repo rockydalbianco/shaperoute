@@ -243,7 +243,7 @@ export function ExploreScreen({
         <View style={styles.titles}>
           <Text style={styles.title}>Best near you</Text>
           <Text style={styles.subtitle}>
-            {`Starting within ${NEAR_RADIUS_M / 1000} km of ${city?.label ?? "your start"}`}
+            {`Starting within ${units === "mi" ? distanceLabel(NEAR_RADIUS_M, "mi", withPoint) : `${NEAR_RADIUS_M / 1000} km`} of ${city?.label ?? "your start"}`}
           </Text>
         </View>
         {/* The sign of Sgrava, under the button of «Profile» and as wide

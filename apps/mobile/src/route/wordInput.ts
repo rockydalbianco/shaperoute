@@ -6,7 +6,10 @@ import {
   type RouteRequest,
 } from "@shaperoute/shared-types";
 
-import { APP_DISTANCE_LIMITS_KM, MAX_APP_DISTANCE_KM } from "./distance";
+import { t } from "../i18n";
+import { milesAtLeast } from "../units/distanceInput";
+import { appUnits, type Units } from "../units/units";
+import { distanceLimits, distanceLimitsM, MAX_APP_DISTANCE_KM } from "./distance";
 import { shapeName } from "./shapeWords";
 
 /** What the route draws: a shape of the catalogue, or a word (ADR-0053). */
@@ -23,12 +26,14 @@ export const MAX_APP_WORD_LETTERS = Math.min(
 
 /**
  * The most letters for `activity` (TASK-190): MAX_APP_WORD_LETTERS for a
- * run; by bike, up to 30 km, all MAX_WORD_LETTERS of the contract.
+ * run; by bike, up to 30 km, all MAX_WORD_LETTERS of the contract. With
+ * «Miles» (TASK-182) a run stops at 13 mi, under the 21 km of seven
+ * letters: six.
  */
-export function maxWordLetters(activity: Activity): number {
+export function maxWordLetters(activity: Activity, units: Units = appUnits()): number {
   return Math.min(
     MAX_WORD_LETTERS,
-    Math.floor((APP_DISTANCE_LIMITS_KM[activity][1] * 1000) / LETTER_DISTANCE_M),
+    Math.floor(distanceLimitsM(activity, units)[1] / LETTER_DISTANCE_M),
   );
 }
 
@@ -56,11 +61,14 @@ export function wordDistanceM(word: string): number {
  * forma»): the word in capitals, or why it cannot be sent, in plain English.
  * A distance that is not valid (null) is left to the distance field.
  * `activity`: whose distances «Draw» offers (TASK-190); a run's unless said.
+ * `units`: the app's; with «Miles» the distances are said in miles, never
+ * less than they are (TASK-182).
  */
 export function checkWord(
   text: string,
   distanceM: number | null,
   activity: Activity = "running",
+  units: Units = appUnits(),
 ): WordCheck {
   const typed = text.trim();
   if (typed === "") {
@@ -81,23 +89,35 @@ export function checkWord(
     };
   }
   const word = typed.toUpperCase();
-  const most = maxWordLetters(activity);
+  const most = maxWordLetters(activity, units);
   if (characters.length > most) {
-    const highest = APP_DISTANCE_LIMITS_KM[activity][1];
+    const highest = distanceLimits(activity, units)[1];
     return {
       ok: false,
       // The distance is the limit for a run; by bike, the contract's letters.
       problem:
-        most < MAX_WORD_LETTERS
-          ? `At most ${most} letters: each needs ${LETTER_DISTANCE_M / 1000} km, and the app goes up to ${highest} km.`
-          : `At most ${most} letters.`,
+        most >= MAX_WORD_LETTERS
+          ? `At most ${most} letters.`
+          : units === "mi"
+            ? t(
+                "At most {most} letters: each needs {each} mi, and the app goes up to {highest} mi.",
+                { most, each: milesAtLeast(LETTER_DISTANCE_M), highest },
+              )
+            : `At most ${most} letters: each needs ${LETTER_DISTANCE_M / 1000} km, and the app goes up to ${highest} km.`,
     };
   }
   const needs = wordDistanceM(word);
   if (distanceM !== null && distanceM < needs) {
     return {
       ok: false,
-      problem: `“${word}” needs at least ${needs / 1000} km: ${LETTER_DISTANCE_M / 1000} km for each letter.`,
+      problem:
+        units === "mi"
+          ? t("“{word}” needs at least {mi} mi: {each} mi for each letter.", {
+              word,
+              mi: milesAtLeast(needs),
+              each: milesAtLeast(LETTER_DISTANCE_M),
+            })
+          : `“${word}” needs at least ${needs / 1000} km: ${LETTER_DISTANCE_M / 1000} km for each letter.`,
       needsDistanceM: needs,
     };
   }

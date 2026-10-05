@@ -2,7 +2,9 @@ import type { RouteResult } from "@shaperoute/shared-types";
 
 import type { AnyRouteRequest } from "../api/routes";
 import { t } from "../i18n";
-import { APP_DISTANCE_LIMITS_KM } from "./distance";
+import { unitsNumber } from "../units/distanceInput";
+import { appUnits, type Units } from "../units/units";
+import { APP_DISTANCE_LIMITS_KM, offeredDistanceM } from "./distance";
 import type { ChoiceKind } from "./problems";
 import { sameRequest } from "./useRouteRequest";
 
@@ -17,20 +19,25 @@ export type Left = { from: AnyRouteRequest; to: number };
  * without it (an older API), on the water (ADR-0164), outside the distances
  * «Draw» offers for the activity, at the distance asked for, nor back to
  * the distance a «Try» has just `left` for this one: no back and forth.
+ * With «Miles» (TASK-182) it is offered to the nearest whole mile within
+ * the limits, and that is the distance «Try» asks for: none when the
+ * request is already at that mile.
  */
 export function betterDistanceM(
   result: RouteResult,
   request: AnyRouteRequest,
   left: Left | null = null,
+  units: Units = appUnits(),
 ): number | null {
-  const advised = result.better_distance_m;
-  if (advised == null || request.activity === "paddling") {
+  const said = result.better_distance_m;
+  if (said == null || request.activity === "paddling") {
     return null;
   }
   const [lowest, highest] = APP_DISTANCE_LIMITS_KM[request.activity];
-  if (advised < lowest * 1000 || advised > highest * 1000) {
+  if (said < lowest * 1000 || said > highest * 1000) {
     return null;
   }
+  const advised = offeredDistanceM(said, request.activity, units);
   if (advised === request.distance_m) {
     return null;
   }
@@ -43,7 +50,22 @@ export function betterDistanceM(
 }
 
 /** The line that offers it, for what the route draws. */
-export function betterDistanceText(kind: ChoiceKind, distanceM: number): string {
+export function betterDistanceText(
+  kind: ChoiceKind,
+  distanceM: number,
+  units: Units = appUnits(),
+): string {
+  if (units === "mi") {
+    const miles = { mi: unitsNumber(distanceM, "mi") };
+    switch (kind) {
+      case "word":
+        return t("This word comes out better at about {mi} mi.", miles);
+      case "image":
+        return t("This outline comes out better at about {mi} mi.", miles);
+      default:
+        return t("This shape comes out better at about {mi} mi.", miles);
+    }
+  }
   const values = { km: distanceM / 1000 };
   switch (kind) {
     case "word":
@@ -56,6 +78,8 @@ export function betterDistanceText(kind: ChoiceKind, distanceM: number): string 
 }
 
 /** Its button: writes the distance and draws again. */
-export function tryText(distanceM: number): string {
-  return t("Try {km} km", { km: distanceM / 1000 });
+export function tryText(distanceM: number, units: Units = appUnits()): string {
+  return units === "mi"
+    ? t("Try {mi} mi", { mi: unitsNumber(distanceM, "mi") })
+    : t("Try {km} km", { km: distanceM / 1000 });
 }

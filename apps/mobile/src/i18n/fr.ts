@@ -224,6 +224,7 @@ export const FR: Table = {
   "No lake or beach matches “{typed}”.":
     "Aucun lac ou plage ne correspond à « {typed} ».",
   "{shape}, {km} km, on the water": "{shape}, {km} km, sur l'eau",
+  "{shape}, {mi} mi, on the water": "{shape}, {mi} mi, sur l'eau",
   "Not drawn": "Non dessiné",
 
   // src/paddle/placeSpots.ts
@@ -368,6 +369,35 @@ export const FR: Table = {
   "On the water, a shape of the catalogue.": "Sur l'eau, une forme du catalogue.",
   "{name} · on the water · target {km} km": "{name} · sur l'eau · objectif {km} km",
   "{name} · on roads · target {km} km": "{name} · sur route · objectif {km} km",
+  // «Draw» with «Miles» (TASK-182 part B): src/route/RoutePanel.tsx,
+  // DistanceStepper.tsx, wordInput.ts
+  "Distance in miles": "Distance en miles",
+  "Enter a distance between {lowest} and {highest} mi.":
+    "Saisis une distance entre {lowest} et {highest} mi.",
+  "{count} letter: at least {mi} mi. A word takes a few minutes to draw.":
+    "{count} lettre : au moins {mi} mi. Dessiner un mot prend quelques minutes.",
+  "{count} letters: at least {mi} mi. A word takes a few minutes to draw.":
+    "{count} lettres : au moins {mi} mi. Dessiner un mot prend quelques minutes.",
+  "Use {mi} mi": "Utiliser {mi} mi",
+  "{letters} mi of letters + {between} mi riding between them":
+    "{letters} mi de lettres + {between} mi à vélo entre elles",
+  "{letters} mi of letters + {between} mi walking between them":
+    "{letters} mi de lettres + {between} mi à pied entre elles",
+  "{drawn} mi of drawing + {between} mi walking between the parts":
+    "{drawn} mi de dessin + {between} mi à pied entre les parties",
+  "{drawn} mi of drawing + {between} mi riding between the parts":
+    "{drawn} mi de dessin + {between} mi à vélo entre les parties",
+  "{drawn} mi of drawing + {between} mi paddling between the parts":
+    "{drawn} mi de dessin + {between} mi à la pagaie entre les parties",
+  "{name} · on the water · target {mi} mi": "{name} · sur l'eau · objectif {mi} mi",
+  "{name} · on roads · target {mi} mi": "{name} · sur route · objectif {mi} mi",
+  "Drawing the picture's outline, {mi} mi…": "Dessin du contour de la photo, {mi} mi…",
+  "Drawing “{word}”, {mi} mi…": "Dessin de « {word} », {mi} mi…",
+  "Drawing a {mi} mi {name}…": "Dessin en cours : {name}, {mi} mi…",
+  "At most {most} letters: each needs {each} mi, and the app goes up to {highest} mi.":
+    "Au plus {most} lettres : chacune demande {each} mi, et l'app va jusqu'à {highest} mi.",
+  "“{word}” needs at least {mi} mi: {each} mi for each letter.":
+    "« {word} » demande au moins {mi} mi : {each} mi par lettre.",
 
   // src/route/betterDistance.ts
   "This shape comes out better at about {km} km.":
@@ -377,6 +407,13 @@ export const FR: Table = {
   "This outline comes out better at about {km} km.":
     "Ce contour rend mieux à environ {km} km.",
   "Try {km} km": "Essayer {km} km",
+  "This shape comes out better at about {mi} mi.":
+    "Cette forme rend mieux à environ {mi} mi.",
+  "This word comes out better at about {mi} mi.":
+    "Ce mot rend mieux à environ {mi} mi.",
+  "This outline comes out better at about {mi} mi.":
+    "Ce contour rend mieux à environ {mi} mi.",
+  "Try {mi} mi": "Essayer {mi} mi",
 
   // src/route/problems.ts
   "There is no lake or sea near this start. Start from the shore, within 2 km of the water.":
@@ -385,6 +422,16 @@ export const FR: Table = {
     "Cette forme ne tient pas sur l'eau ici à cette distance. Elle tient à environ {km} km.",
   "This shape does not fit on the water here. Try a shorter distance, another shape, or another start:":
     "Cette forme ne tient pas sur l'eau ici. Essaie une distance plus courte, une autre forme ou un autre départ :",
+  "This shape does not fit the roads here at this distance. It fits at about {mi} mi.":
+    "Cette forme ne tient pas sur les routes ici à cette distance. Elle tient à environ {mi} mi.",
+  "This word does not fit the roads here at this distance. It fits at about {mi} mi.":
+    "Ce mot ne tient pas sur les routes ici à cette distance. Il tient à environ {mi} mi.",
+  "This image does not fit the roads here at this distance. It fits at about {mi} mi.":
+    "Cette image ne tient pas sur les routes ici à cette distance. Elle tient à environ {mi} mi.",
+  "There is no lake or sea near this start. Start from the shore, within 1 mile of the water.":
+    "Il n'y a ni lac ni mer près de ce départ. Pars du rivage, à moins de 1 mile de l'eau.",
+  "This shape does not fit on the water here at this distance. It fits at about {mi} mi.":
+    "Cette forme ne tient pas sur l'eau ici à cette distance. Elle tient à environ {mi} mi.",
 
   // src/route/warnings.ts
   "Includes {distance} walking the bike.": "Dont {distance} à pied, vélo à la main.",

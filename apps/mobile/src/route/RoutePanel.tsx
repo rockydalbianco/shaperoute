@@ -7,7 +7,7 @@ import {
   SHAPES,
 } from "@shaperoute/shared-types";
 import type { Signal } from "@shaperoute/shared-types/src/signals";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -20,15 +20,24 @@ import {
 } from "../theme/tokens";
 import { isImageRequest } from "../api/routes";
 import { drawnOf, sendSignal } from "../api/signals";
-import { decimal, t } from "../i18n";
+import { decimal, t, tPlural } from "../i18n";
 import { Segmented } from "../screens/Segmented";
+import { milesAtLeast, tenthsToM, unitsNumber } from "../units/distanceInput";
+import { distanceLabel, inUnits, METRES_PER_MILE, withPoint } from "../units/format";
+import { appUnits, type Units } from "../units/units";
+import { useUnits } from "../units/useUnits";
 import {
   betterDistanceM,
   betterDistanceText,
   type Left,
   tryText,
 } from "./betterDistance";
-import { APP_DISTANCE_LIMITS_KM, LONG_DISTANCE_KM } from "./distance";
+import {
+  distanceField,
+  distanceLimits,
+  LONG_DISTANCE_KM,
+  switchDistance,
+} from "./distance";
 import { DistanceStepper } from "./DistanceStepper";
 import { ImageChoice } from "./ImageChoice";
 import { LoadingBar, ReadingBar } from "./LoadingBar";
@@ -90,7 +99,9 @@ type ChoiceProps = {
   /** The picture chosen and its outline (TASK-073), and how to choose one. */
   image: ImageState;
   onChooseImage: (source: ImageSource) => void;
-  /** The km field as typed, and what it means in metres (null: not valid). */
+  /** The distance field as typed, km or with «Miles» miles (the text says
+   * which: `units/distanceInput`), and what it means in metres (null: not
+   * valid). */
   distanceText: string;
   distanceM: number | null;
   onDistanceText: (text: string) => void;
@@ -127,7 +138,18 @@ export function RouteChoice({
   onDistanceText,
   activity = "running",
 }: ChoiceProps) {
-  const [lowest, highest] = APP_DISTANCE_LIMITS_KM[activity];
+  // The distance is asked in the app's units, at once (TASK-182).
+  const units = useUnits();
+  const [lowest, highest] = distanceLimits(activity, units);
+  // «Settings» changed the units: the distance typed stays the same, to
+  // the nearest whole km or mile within the limits.
+  const typedIn = useRef(units);
+  useEffect(() => {
+    if (typedIn.current !== units) {
+      typedIn.current = units;
+      onDistanceText(switchDistance(distanceText, activity, units));
+    }
+  }, [units, distanceText, activity, onDistanceText]);
   const shapesOnly = activity === "paddling";
   return (
     <View style={styles.panel}>
@@ -191,7 +213,8 @@ export function RouteChoice({
           <WordNote
             text={wordText}
             check={wordCheck}
-            onDistance={(metres) => onDistanceText(String(metres / 1000))}
+            units={units}
+            onDistance={(metres) => onDistanceText(distanceField(metres, units))}
           />
           <Text style={[styles.label, styles.section]}>LETTERS</Text>
           <Segmented
@@ -223,7 +246,12 @@ export function RouteChoice({
       />
       {distanceM === null ? (
         <Text style={styles.problem}>
-          {`Enter a distance between ${lowest} and ${highest} km.`}
+          {units === "mi"
+            ? t("Enter a distance between {lowest} and {highest} mi.", {
+                lowest,
+                highest,
+              })
+            : `Enter a distance between ${lowest} and ${highest} km.`}
         </Text>
       ) : (
         distanceM > LONG_DISTANCE_KM * 1000 && (
@@ -299,6 +327,8 @@ export function RouteOutcome({
   onChoose = () => {},
   onSignal = (signal) => void sendSignal(signal),
 }: OutcomeProps) {
+  // The distances are written in the app's units, at once (TASK-182).
+  const units = useUnits();
   // Each route of an answer counts once as chosen, by its first use: a
   // second export of it is no second choice.
   const told = useRef<{ of: RouteResult | null; routes: Set<number> }>({
@@ -312,7 +342,7 @@ export function RouteOutcome({
   // choice, whichever route is on screen.
   const better =
     view.status === "done"
-      ? betterDistanceM(choices[0] ?? view.result, view.request, left)
+      ? betterDistanceM(choices[0] ?? view.result, view.request, left, units)
       : null;
 
   /** Start or export the route on screen, and say which one it was. */
@@ -340,7 +370,7 @@ export function RouteOutcome({
       return (
         <View style={styles.panel}>
           <View style={styles.row}>
-            <Text style={styles.waiting}>{waitingText(view)}</Text>
+            <Text style={styles.waiting}>{waitingText(view, units)}</Text>
             <Pressable
               style={styles.secondary}
               onPress={onCancel}
@@ -362,16 +392,20 @@ export function RouteOutcome({
         <View style={styles.panel}>
           <View>
             <Text style={styles.result}>
-              {`${(view.result.distance_m / 1000).toFixed(1)} km`}
+              {distanceLabel(view.result.distance_m, units, withPoint)}
             </Text>
-            <Text style={styles.target}>{targetLine(view.request)}</Text>
-            <PenSplit result={view.result} activity={view.request.activity} />
+            <Text style={styles.target}>{targetLine(view.request, units)}</Text>
+            <PenSplit
+              result={view.result}
+              activity={view.request.activity}
+              units={units}
+            />
           </View>
           <RouteTiles choices={choices} chosen={chosen} onChoose={onChoose} />
           {better !== null && (
             <BetterDistance
-              text={betterDistanceText(kindOf(view.request), better)}
-              distanceM={better}
+              text={betterDistanceText(kindOf(view.request), better, units)}
+              tryLabel={tryText(better, units)}
               onTry={() => {
                 setLeft({ from: view.request, to: better });
                 onTryDistance(better);
@@ -428,6 +462,8 @@ export function RouteOutcome({
           problem={view.problem}
           kind={kindOf(view.request)}
           activity={view.request.activity}
+          asked={view.request.distance_m}
+          units={units}
           onTryDistance={(distanceM) => {
             onSignal({
               kind: "hint_taken",
@@ -484,15 +520,54 @@ function PenSwitch({
  * A word with the pen up (TASK-198): the km of its letters, what the run
  * records, apart from the km walked between them; on a bike, ridden
  * (TASK-216). So a shape in pieces, between its parts (TASK-223). Nothing
- * for any other route, nor from an API that sends no walks.
+ * for any other route, nor from an API that sends no walks. With «Miles»
+ * the same in miles (TASK-182).
  */
-function PenSplit({ result, activity }: { result: RouteResult; activity: Activity }) {
+function PenSplit({
+  result,
+  activity,
+  units,
+}: {
+  result: RouteResult;
+  activity: Activity;
+  units: Units;
+}) {
   const split = penSplit(result);
   if (split === null) {
     return null;
   }
-  const drawn = decimal(split.lettersM / 1000);
-  const between = decimal(split.walksM / 1000);
+  const drawn = decimal(inUnits(split.lettersM, units));
+  const between = decimal(inUnits(split.walksM, units));
+  if (units === "mi") {
+    return (
+      <Text style={styles.target}>
+        {result.word !== null
+          ? activity === "cycling"
+            ? t("{letters} mi of letters + {between} mi riding between them", {
+                letters: drawn,
+                between,
+              })
+            : t("{letters} mi of letters + {between} mi walking between them", {
+                letters: drawn,
+                between,
+              })
+          : activity === "paddling"
+            ? t("{drawn} mi of drawing + {between} mi paddling between the parts", {
+                drawn,
+                between,
+              })
+            : activity === "cycling"
+              ? t("{drawn} mi of drawing + {between} mi riding between the parts", {
+                  drawn,
+                  between,
+                })
+              : t("{drawn} mi of drawing + {between} mi walking between the parts", {
+                  drawn,
+                  between,
+                })}
+      </Text>
+    );
+  }
   if (result.word === null) {
     return (
       <Text style={styles.target}>
@@ -581,17 +656,26 @@ function ShapeNote({
 function WordNote({
   text,
   check,
+  units,
   onDistance,
 }: {
   text: string;
   check: WordCheck;
+  units: Units;
   onDistance: (distanceM: number) => void;
 }) {
   if (check.ok) {
     const letters = Array.from(check.word).length;
     return (
       <Text style={styles.note}>
-        {`${letters} ${letters === 1 ? "letter" : "letters"}: at least ${wordDistanceM(check.word) / 1000} km. A word takes a few minutes to draw.`}
+        {units === "mi"
+          ? tPlural(
+              letters,
+              "{count} letter: at least {mi} mi. A word takes a few minutes to draw.",
+              "{count} letters: at least {mi} mi. A word takes a few minutes to draw.",
+              { mi: milesAtLeast(wordDistanceM(check.word)) },
+            )
+          : `${letters} ${letters === 1 ? "letter" : "letters"}: at least ${wordDistanceM(check.word) / 1000} km. A word takes a few minutes to draw.`}
       </Text>
     );
   }
@@ -600,16 +684,24 @@ function WordNote({
     return <Text style={styles.note}>{check.problem}</Text>;
   }
   const needs = check.needsDistanceM;
+  // With «Miles» the next whole mile: never less than the word needs.
+  const miles = needs === undefined ? 0 : Math.ceil(needs / METRES_PER_MILE - 1e-9);
   return (
     <View style={styles.problemBox}>
       <Text style={styles.problem}>{check.problem}</Text>
       {needs !== undefined && (
         <Pressable
           style={[styles.secondary, styles.choice]}
-          onPress={() => onDistance(needs)}
+          onPress={() =>
+            onDistance(units === "mi" ? tenthsToM(miles * 10, "mi") : needs)
+          }
           accessibilityRole="button"
         >
-          <Text style={styles.secondaryText}>{`Use ${needs / 1000} km`}</Text>
+          <Text style={styles.secondaryText}>
+            {units === "mi"
+              ? t("Use {mi} mi", { mi: miles })
+              : `Use ${needs / 1000} km`}
+          </Text>
         </Pressable>
       )}
     </View>
@@ -628,7 +720,13 @@ function onWater(request: AnyRouteRequest): boolean {
 
 /** The line under the route's distance: what it is, what it runs on, and
  * the distance asked for. */
-function targetLine(request: AnyRouteRequest): string {
+function targetLine(request: AnyRouteRequest, units: Units): string {
+  if (units === "mi") {
+    const miles = { name: nameOf(request), mi: unitsNumber(request.distance_m, "mi") };
+    return onWater(request)
+      ? t("{name} · on the water · target {mi} mi", miles)
+      : t("{name} · on roads · target {mi} mi", miles);
+  }
   const values = { name: nameOf(request), km: request.distance_m / 1000 };
   return onWater(request)
     ? t("{name} · on the water · target {km} km", values)
@@ -640,7 +738,10 @@ function kindOf(request: AnyRouteRequest): ChoiceKind {
 }
 
 /** What the API is doing, as it said on its last answer. */
-function waitingText({ phase, request }: Extract<RouteState, { status: "waiting" }>) {
+function waitingText(
+  { phase, request }: Extract<RouteState, { status: "waiting" }>,
+  units: Units,
+) {
   switch (phase) {
     case "sending":
     case "queued":
@@ -648,6 +749,15 @@ function waitingText({ phase, request }: Extract<RouteState, { status: "waiting"
     case "downloading_map":
       return "Downloading map data for this area…";
     default:
+      if (units === "mi") {
+        const mi = unitsNumber(request.distance_m, "mi");
+        if (isImageRequest(request)) {
+          return t("Drawing the picture's outline, {mi} mi…", { mi });
+        }
+        return request.word
+          ? t("Drawing “{word}”, {mi} mi…", { word: request.word, mi })
+          : t("Drawing a {mi} mi {name}…", { mi, name: routeName(request) });
+      }
       if (isImageRequest(request)) {
         return `Drawing the picture's outline, ${request.distance_m / 1000} km…`;
       }
@@ -661,6 +771,8 @@ function Problem({
   problem,
   kind,
   activity,
+  asked,
+  units = appUnits(),
   onTryDistance,
   onPickShape,
 }: {
@@ -668,6 +780,10 @@ function Problem({
   kind?: ChoiceKind;
   /** The request's: a distance offered is within its limits (TASK-190). */
   activity?: Activity;
+  /** The request's distance: with «Miles» the one offered is another. */
+  asked?: number;
+  /** The app's, when the problem may name a distance (TASK-182). */
+  units?: Units;
   onTryDistance?: (distanceM: number) => void;
   onPickShape?: (shape: Shape) => void;
 }) {
@@ -675,6 +791,8 @@ function Problem({
     problem,
     kind,
     activity,
+    asked ?? null,
+    units,
   );
   return (
     <View style={styles.problemBox}>
@@ -685,7 +803,11 @@ function Problem({
           onPress={() => onTryDistance(tryDistanceM)}
           accessibilityRole="button"
         >
-          <Text style={styles.secondaryText}>{`Try ${tryDistanceM / 1000} km`}</Text>
+          <Text style={styles.secondaryText}>
+            {units === "mi"
+              ? tryText(tryDistanceM, "mi")
+              : `Try ${tryDistanceM / 1000} km`}
+          </Text>
         </Pressable>
       )}
       {pickShape && onPickShape && <ShapeChoices onPick={onPickShape} />}
@@ -716,11 +838,11 @@ function ShapeChoices({ onPick }: { onPick: (shape: Shape) => void }) {
  * button that draws it there (TASK-234, ADR-0197). */
 function BetterDistance({
   text,
-  distanceM,
+  tryLabel,
   onTry,
 }: {
   text: string;
-  distanceM: number;
+  tryLabel: string;
   onTry: () => void;
 }) {
   return (
@@ -731,7 +853,7 @@ function BetterDistance({
         onPress={onTry}
         accessibilityRole="button"
       >
-        <Text style={styles.secondaryText}>{tryText(distanceM)}</Text>
+        <Text style={styles.secondaryText}>{tryLabel}</Text>
       </Pressable>
     </View>
   );

@@ -145,6 +145,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-228 — Il «Feed» sull'acqua** (ADR-0190; chiesto dall'utente il
+  2026-10-03, scelte del 2026-10-05). Fatto, in review: PR #322, aspetta
+  la coda dei merge. Fra i quindici disegni d'esempio di «Feed» ce ne sono
+  quattro fatti sull'acqua, sempre, con ogni sport: `greta_kayak` (cuore,
+  Lago di Garda), `leo.sup` (stella, Lago di Como), `irene_onwater` (luna,
+  Jesolo), `ale.paddle` (testa di cane a pezzi, Riccione), da 2 km, con
+  «Paddle» in testa alla riga dei fatti. I percorsi sono gli esempi dentro
+  l'app (`paddleExamples.json`): `src/feed/paddlePosts.ts` li legge, senza
+  una copia sua. Un tocco apre il percorso sull'acqua senza chiedere
+  all'API; lo sport scelto non cambia. `FeedScreen.tsx`, `App.tsx` e le
+  tabelle delle lingue non sono toccati. Solo app: esce con la prossima
+  pubblicazione. Da confermare con l'utente i quattro titoli; da provare
+  sull'iPhone. File toccati e dove riprendere: `tasks/TASK-228.md`.
 - **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; Todo, chiesto
   dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
   riesce ma un tentativo già tracciato a un'altra distanza segue la forma
@@ -254,6 +267,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `0011` e l'ok dell'utente). Poi **B** (l'app),
   dopo che l'utente ha confermato le proposte del task file; e TASK-208 A.
   Da dove riprendere: `tasks/TASK-211.md`.
+  **Parte B, l'app** (2026-10-05, ADR-0199; chiesta dall'utente: «ho
+  trovato il mio amico, ma non posso seguirlo»; «Requests» in «Profile»
+  scelto dall'utente): sul profilo di un altro il tasto «Follow» →
+  «Requested» → «Following»; in «Profile» i tre numeri «Requests»,
+  «Followers», «Following» con i loro elenchi («Accept», «Decline»,
+  «Remove»); un nome negli elenchi apre il profilo. Il server ha già l'API:
+  **manca solo pubblicare l'app** (con l'ok dell'utente, dal coordinatore).
+  Da fare: la prova sull'iPhone con due account; i testi nuovi (cinque
+  lingue) da confermare. L'aspetto non è stato visto su un telefono.
 - **TASK-208 — Pubblicare una corsa in stile Strava** (ADR-0170; scelte
   dell'utente del 2026-10-03: «How did it go?», tag degli iscritti per
   nome, fino a 3 foto, «Everyone», «Followers», «Only me»; e, durante la
@@ -339,6 +361,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sceglie avrebbe solo errori. Seguito in `services/`: Strava riceve
   ogni attività come «Run». Da dove riprendere: `tasks/TASK-191.md`,
   «Esito», parti A2, B e C (fatta).
+
+- **TASK-233 — «Explore» della canoa come la corsa, e tutti i laghi**
+  (ADR-0196; chiesto dall'utente il 2026-10-05: «fai anche tutti i laghi,
+  tipo vicino a me c'è il lago di Levico Terme»). **Parte A** nella PR #319: con
+  «Paddle», «Near me» è acceso da subito e mostra il lago più vicino
+  («LAGO DI LEVICO · 1.2 KM AWAY»), poi gli otto luoghi più vicini da
+  toccare e «Type a lake or a beach»; l'elenco dei laghi è dentro l'app
+  (`src/paddle/lakes.json`, da `python -m shaperoute_api.lake_catalog`),
+  con le forme da 2 km, o da 1,5 e 1 km sui laghi piccoli. Per ora il
+  nord-est: 41 laghi, 93 punti, ognuno provato dal motore. Campioni veri
+  in `out/task233-lakes-samples.html`, **da giudicare dall'utente**.
+  **Parte B**, con l'ok dell'utente per il server: l'elenco dell'Italia
+  intera e l'acqua di ogni lago in `data/cache/water/` (41 file e 12 MB
+  per il nord-est; stima 150–200 laghi e 40–60 MB per l'Italia). **Non
+  pubblicare l'app con questa pagina prima dell'acqua sul server**: un
+  lago scelto direbbe «Map data for this area could not be downloaded.».
+  Da dove riprendere: `tasks/TASK-233.md`, «Esito».
 
 - **TASK-119 — Reazioni ai disegni pubblicati** (ADR-0193; scelte
   dell'utente del 2026-10-04): era «Like», diventa sei reazioni sotto un

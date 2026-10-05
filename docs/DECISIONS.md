@@ -9665,6 +9665,197 @@ iniziale): quanto spesso scatta va misurato prima di fare l'app. Come per
 ADR-0041, la distanza consigliata non è garantita: un nuovo disegno rifà
 la ricerca.
 
+## ADR-0199 — Seguire nell'app: il tasto sul profilo di un altro, tre numeri in «Profile» con i loro elenchi
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-211, parte B), dentro le **scelte dell'utente**: seguire vuole una
+richiesta (2026-10-03, ADR-0173) e le richieste si vedono in «Profile»,
+con i tre numeri «Requests», «Followers», «Following» che aprono gli
+elenchi (2026-10-05, chiesto con «ho trovato il mio amico, ma non posso
+seguirlo»). Numero preso come primo libero, detto al coordinatore.
+
+**Contesto**: l'API di ADR-0173 è sul server dal 2026-10-03, ma l'app
+aveva solo la ricerca (TASK-215): un iscritto trovato non si poteva
+seguire, e chi riceveva una richiesta non aveva dove accettarla.
+
+**Decisione**:
+
+1. **Il tasto sul profilo di un altro** (`social/FollowButton.tsx`, sotto
+   l'intestazione di `UserProfilePage`): «Follow» (bianco, l'unica cosa da
+   fare lì; il giallo resta del percorso) manda la richiesta e diventa
+   «Requested»; «Requested» toccato la ritira subito; «Following» chiede
+   prima «Stop following {name}?» con «Keep it» e «Unfollow», nella
+   pagina come le altre conferme dell'app, senza finestre di sistema. Lo
+   stato mostrato è quello che risponde l'API, mai uno supposto prima. Sul
+   proprio profilo e con un'API senza `follow` il tasto non c'è.
+2. **La riga sotto il nome** di un altro: «12 drawings · 3 followers · 5
+   following». Chi smette di seguire vede subito un follower in meno,
+   senza richiedere il profilo.
+3. **In «Profile»**, sotto «Edit profile», **tre numeri**
+   (`social/FollowLists.tsx`): «Requests», «Followers», «Following». Un
+   tocco apre l'elenco sotto la riga, un altro lo richiude: niente pagine
+   nuove in `ProfileScreen`. «Requests» ha un pallino `warning` quando
+   qualcuno aspetta: senza notifiche (TASK-185) è l'unico posto che lo
+   dice.
+4. **Negli elenchi**: una richiesta ha «Accept» (bianco) e «Decline»;
+   accettata, la persona passa in «Followers» senza richiedere gli
+   elenchi. Un follower ha «Remove», che chiede prima «Remove {name} from
+   your followers?». «Following» non ha tasti: si smette dal profilo.
+   Venti per pagina, poi «Show more».
+5. **Un nome in un elenco apre il profilo** di quell'iscritto sopra l'app
+   (`PeopleScreen` con `first`, senza la ricerca sotto); «←» torna a
+   «Profile», che richiede i numeri.
+6. **Un contesto nuovo**, `social/followsDoor.ts`, dato da `ProfileLayer`
+   a «Profile»: l'API, l'account e la via al profilo di un iscritto. Le
+   chiamate stanno in `api/follows.ts`.
+7. **«Following» è una parola sola** per il tasto e per l'elenco: una
+   traduzione che va per tutti e due (it «Segui già»), come «Keep it».
+8. Con un'API senza gli elenchi (`404`) i tre numeri non si mostrano.
+
+**Alternative scartate**: le richieste in cima a «Feed» (proposta
+all'utente, non scelta); pagine proprie per gli elenchi dentro
+`ProfileScreen` (più file di altri per lo stesso risultato); una finestra
+di sistema per «Unfollow» (l'app non ne usa per le conferme); cambiare il
+tasto prima della risposta dell'API (su una rete lenta direbbe
+«Requested» per una richiesta mai arrivata).
+
+**Conseguenze**: si può seguire e accettare, quindi «Followers» di
+TASK-208 ha qualcuno da mostrare. Le richieste si scoprono solo aprendo
+«Profile», fino alle notifiche (TASK-185). I testi nuovi, in cinque
+lingue, sono da confermare con l'utente. Bloccare resta TASK-121.
+
+## ADR-0190 — Il «Feed» sull'acqua: quattro post che leggono gli esempi dentro l'app
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-228 · quando
+si vedono, quanti, dove e i nomi sono scelte dell'utente; il resto è deciso
+dall'agente su delega dell'utente
+
+**Contesto**: «Feed» mostra quindici disegni d'esempio della corsa
+(ADR-0127), scritti in `sampleFeed.json` da `tools/sample_feed.py` a
+partire dal catalogo. L'utente ha chiesto anche personaggi inventati con
+percorsi fatti in canoa. Sull'acqua il catalogo non c'è: ci sono gli esempi
+dei quattro luoghi dentro l'app (`paddleExamples.json`, ADR-0189),
+disegnati dal motore sull'acqua del server. La condizione è che i percorsi
+dei post vengano dal motore, mai disegnati a mano.
+
+**Decisione**:
+
+1. **Sempre, mescolati** (utente): i post sull'acqua stanno fra quelli
+   della corsa con qualunque sport, il primo dopo due della corsa e poi
+   uno ogni quattro.
+2. **Quattro, uno per luogo** (utente): Lago di Garda, Lago di Como,
+   Jesolo, Riccione, con cuore, stella, luna e testa di cane, da 2 km.
+3. **I nomi** (utente): `greta_kayak`, `leo.sup`, `irene_onwater`,
+   `ale.paddle`.
+4. **I post non hanno coordinate loro**: `src/feed/paddlePosts.ts` tiene
+   solo il luogo, la forma e ciò che è inventato (nome, titolo, minuti,
+   punteggio), e legge il percorso da `PADDLE_EXAMPLES.bundled`. L'`id`
+   del post è quello dell'esempio.
+5. **Il tocco apre l'esempio**: `fetchPostRoute` di un post sull'acqua
+   restituisce il percorso dentro l'app, senza chiedere all'API. Lo sport
+   viene dal percorso (`activity: "paddling"`), come per un preferito o un
+   esempio di «Explore»: lo sport scelto dall'utente non cambia.
+6. **«Paddle» sulla scheda** è il nome dello sport come lo scrive il suo
+   bottone (`SPORTS`), uguale in ogni lingua, in testa alla riga dei
+   fatti: nessun testo nuovo da tradurre.
+7. `SAMPLE_FEED` resta il nome di ciò che «Feed» mostra; i quindici della
+   corsa sono `RUN_POSTS`.
+
+**Alternative scartate**:
+
+- Un `paddleFeed.json` scritto da un comando, come per la corsa: sarebbe
+  una seconda copia delle stesse coordinate, da rifare a ogni cambio del
+  motore sull'acqua insieme a `paddleExamples.json`.
+- Percorsi di altre lunghezze disegnati apposta (scartata dall'utente):
+  «Explore» non li avrebbe, e andrebbero tenuti dentro il feed.
+- Cambiare lo sport scelto quando si apre un post sull'acqua: un tocco su
+  un disegno non deve cambiare un'impostazione.
+- Una targhetta «Paddle» sopra il disegno: vuole uno stile nuovo; la riga
+  dei fatti c'è già e VoiceOver la legge.
+- Mettere i post in `FeedScreen.tsx` o aprirli da `App.tsx`: sono i file
+  di TASK-235, e non serve.
+
+**Conseguenze**: nessun file di dati nuovo e nessun comando nuovo; il peso
+dell'app non cambia. Rifare `paddleExamples.json` aggiorna anche i post;
+se un luogo o una forma dei quattro manca, il post sparisce e
+`paddlePosts.test.ts` lo dice. «Meanwhile, from the feed» in «Explore»
+(TASK-163) mostra gli stessi 19 disegni, quindi a volte uno sull'acqua.
+Senza API configurata un post toccato non si apre, come uno della corsa.
+Il feed vero (TASK-118) dovrà dire lo sport di ogni disegno: il campo
+`activity` di `SamplePost` è già quello.
+
+## ADR-0196 — «Explore» della canoa come la corsa: l'elenco dei laghi dentro l'app, il più vicino per primo, forme più corte sui laghi piccoli
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-233 · «tutti
+i laghi» e «come la corsa» sono richieste dell'utente; le forme più corte
+sui laghi piccoli (sui campioni), «Near me» acceso da subito e i bacini
+artificiali nell'elenco sono sue scelte del 2026-10-05, e i testi li ha
+confermati lo stesso giorno; il resto è deciso dall'agente su delega
+dell'utente
+
+**Contesto**: con «Paddle», «Explore» aveva quattro luoghi scelti a mano
+(ADR-0169, ADR-0189) e «Near me», che disegnava dalla partenza e funzionava
+solo se la partenza era già sulla riva. L'utente, che sta a un chilometro
+dal lago di Levico, non vedeva il suo lago. Ha chiesto tutti i laghi e una
+pagina come quella della corsa.
+
+**Decisione**:
+
+- **L'elenco dei laghi viene con l'app** (`lakes.json`): nome, punto della
+  riva, distanza delle forme. La ricerca per nome e «il più vicino» si
+  fanno nel telefono, senza API. Gli esempi no: 25 KB a lago sarebbero
+  megabyte, quindi li disegna il server quando il lago è scelto, come per
+  una città.
+- **Che cos'è un lago**: un'acqua su cui il motore pagaia (`water.is_lake`:
+  `natural=water` con `water=lake`, `reservoir` o senza `water`), con un
+  nome, e `water=lake`/`reservoir` oppure un nome che dice lago («Lago»,
+  «Laghi», «Laghetto», «Lac», «…see»). Senza la regola del nome entravano
+  valli da pesca, casse di laminazione e cave. I bacini artificiali ci
+  sono (confermato dall'utente): OpenStreetMap non dice dove pagaiare è
+  vietato, e l'avviso di sicurezza della canoa c'è già. Restano fuori le
+  acque segnate come lago ma chiamate per quello che sono: «Centrale …»,
+  «Cassa di …», «Vasca …», «Zona umida …» (trovate nell'estratto
+  dell'Italia: il bacino di una centrale, una cassa di espansione, una
+  zona umida).
+- **Le forme sono da 2 km dove ci stanno, altrimenti da 1,5 o da 1 km**: la
+  distanza più grande a cui cuore, cerchio e stella ci stanno tutti e tre,
+  provata con il motore punto per punto. Sotto 1 km il motore non disegna,
+  e il lago resta fuori. «Tutti i laghi» con le sole forme da 2 km erano 16
+  su 41 nel nord-est.
+- **Un punto ogni 4 km di riva** sui laghi lunghi: una richiesta parte entro
+  2 km dal punto chiesto (`MOVE_MAX_M`), quindi così ogni tratto di riva ha
+  le sue forme. L'app mostra un nome una volta, con il punto più vicino.
+- **«Near me» è acceso da subito**, come nella corsa, e mostra il luogo
+  dell'elenco più vicino entro 30 km. Più lontano resta com'era: le forme
+  dalla partenza. I luoghi da toccare sono gli otto più vicini.
+- **I quattro luoghi scelti a mano restano**, con i loro esempi dentro
+  l'app: un punto dell'elenco con lo stesso nome entro 3 km è quel luogo.
+- **Il comando legge `osmium export`** (un GeoJSON a riga), non il PBF:
+  nessuna dipendenza nuova, e i multipoligoni li ricompone osmium.
+
+**Alternative scartate**:
+
+- Chiedere i laghi all'API (`GET /lakes`): un contratto nuovo e la rete
+  per una ricerca che nel telefono pesa 7 KB.
+- «Near me» che cerca l'acqua attorno alla partenza sul server: dipende da
+  Overpass, che rifiuta (ADR-0187).
+- Solo forme da 2 km: lascia fuori 25 laghi su 41.
+- Gli esempi di ogni lago dentro l'app: 1 MB per il solo nord-est.
+
+**Conseguenze**:
+
+- **Il server deve avere l'acqua di ogni lago dell'elenco prima che l'app
+  sia pubblicata** (parte B, con l'ok dell'utente): 41 file e 12 MB per il
+  nord-est. Senza, un lago scelto dice «Map data for this area could not be
+  downloaded.».
+- L'elenco di questa PR è il nord-est: l'estratto dell'Italia è sul server.
+- Con una partenza, aprire «Explore» con «Paddle» chiede subito all'API le
+  otto forme del lago più vicino (prima non chiedeva niente fino al tocco).
+- La frase d'attesa perde «of 2 km» nelle cinque lingue; tre testi nuovi,
+  confermati dall'utente in inglese e in italiano.
+- Il Lago di Ledro manca: in OpenStreetMap è `water=pond`. Seguito.
+- Gli esempi a 1,5 e 1 km stanno sul telefono sotto chiavi loro
+  (`paddling:1500:…`), a parte da quelli a 2 km.
+
 ## ADR-0198 — La pubblicità fra i post del «Feed»: un annuncio nativo ogni 5 post, niente più annuncio alla ricerca
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-235 ·

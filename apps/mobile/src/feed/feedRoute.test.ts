@@ -3,6 +3,7 @@ import list from "@shaperoute/shared-types/fixtures/recommended-routes.json";
 
 import type { RecommendedRouteDetail } from "../explore/recommendedRoutes";
 import { fetchPostRoute, isRouteOf, postRoute } from "./feedRoute";
+import { PADDLE_POSTS, paddleDetail } from "./paddlePosts";
 import { SAMPLE_FEED, type SamplePost } from "./sampleFeed";
 
 const star = detail as RecommendedRouteDetail;
@@ -155,4 +156,40 @@ test("with the API down it fails, and never throws", async () => {
   expect(
     await fetchPostRoute(POST, { fetchFn, key: null })("http://api", POST.id),
   ).toEqual({ kind: "failed" });
+});
+
+describe("a drawing on the water (TASK-228)", () => {
+  const [heart, , , dog] = PADDLE_POSTS;
+
+  test("is a route of «Explore» with «Paddle»: its distance, its pieces", () => {
+    expect(postRoute(heart)).toEqual({
+      id: "example:heart:paddling:45.8811,10.8456",
+      city: "Lago di Garda",
+      shape: "heart",
+      word: null,
+      style: null,
+      // The distance asked for, not the one paddled.
+      distance_m: 2000,
+      route_m: heart.route_m,
+      similarity: 0.96,
+      start: heart.line[0],
+      away_m: 0,
+      preview: heart.line,
+    });
+    expect(postRoute(dog).gaps).toEqual(dog.gaps);
+    expect(postRoute(dog).gaps?.length).toBeGreaterThan(0);
+  });
+
+  test("its route came with the app: nothing is asked, and it is paddled", async () => {
+    const { fetchFn, asked } = api({});
+    for (const post of PADDLE_POSTS) {
+      const outcome = await fetchPostRoute(post, { fetchFn })("http://api", post.id);
+      expect(outcome).toEqual({ kind: "route", route: paddleDetail(post) });
+      if (outcome.kind === "route") {
+        expect(outcome.route.activity).toBe("paddling");
+        expect(outcome.route.shape).toBe(post.shape);
+      }
+    }
+    expect(asked).toEqual([]);
+  });
 });

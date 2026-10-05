@@ -156,7 +156,7 @@ test("another member's profile shows their drawings under it", async () => {
       />
     </DrawingsContext.Provider>,
   );
-  expect(await screen.findByText("1 drawing")).toBeOnTheScreen();
+  expect(await screen.findByText(/^1 drawing ·/)).toBeOnTheScreen();
   expect(screen.getByText("Drawings")).toBeOnTheScreen();
   expect(await screen.findAllByTestId("drawing-cell")).toHaveLength(1);
   expect(pageOf).toHaveBeenCalledWith(ID, null);

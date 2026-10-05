@@ -4,12 +4,14 @@ import {
   fetchRecommendedRoute,
   type RecommendedRoute,
 } from "../explore/recommendedRoutes";
+import { paddleDetail } from "./paddlePosts";
 import type { SamplePost } from "./sampleFeed";
 
 /**
  * A drawing of «Feed» as a route of «Explore» (TASK-188): what the map and
  * its card show while the route is fetched whole. Then the route's own
- * length and likeness take the place of these.
+ * length and likeness take the place of these. A drawing in pieces keeps
+ * its pieces (TASK-228).
  */
 export function postRoute(post: SamplePost): RecommendedRoute {
   return {
@@ -18,14 +20,16 @@ export function postRoute(post: SamplePost): RecommendedRoute {
     shape: post.shape,
     word: null,
     style: null,
-    // The post does not say the distance asked for: the one run is near it.
-    distance_m: post.route_m,
+    // A run's post does not say the distance asked for: the one run is near
+    // it. On the water the route is in the app, and says it.
+    distance_m: paddleDetail(post)?.distance_m ?? post.route_m,
     route_m: post.route_m,
     // The made-up score of the run, until the route says how well it draws.
     similarity: post.score / 100,
     start: post.line[0],
     away_m: 0,
     preview: post.line,
+    ...(post.gaps !== undefined ? { gaps: post.gaps } : {}),
   };
 }
 
@@ -49,9 +53,14 @@ type Options = { fetchFn?: typeof fetch; key?: string | null };
  * (tools/sample_feed.py), and the catalogue has grown since: when the id is
  * another route's by now, or nobody's, the route is looked for among those
  * that start where the drawing starts. A route no longer in the catalogue
- * fails, as one that does not load.
+ * fails, as one that does not load. A drawing on the water asks nothing: its
+ * route came with the app, and says it is paddled (TASK-228).
  */
 export function fetchPostRoute(post: SamplePost, options: Options = {}): FetchWhole {
+  const paddled = paddleDetail(post);
+  if (paddled !== undefined) {
+    return async () => ({ kind: "route", route: paddled });
+  }
   return async (apiUrl) => {
     const byId = await fetchRecommendedRoute(apiUrl, post.id, options);
     if (byId.kind === "route" && isRouteOf(post, byId.route)) {

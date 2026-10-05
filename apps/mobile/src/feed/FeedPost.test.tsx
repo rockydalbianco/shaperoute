@@ -140,3 +140,34 @@ test("a swipe that ends on the card is not a tap", async () => {
   await fireEvent.press(card, at(86, 304));
   expect(onOpen).toHaveBeenCalledTimes(1);
 });
+
+describe("a drawing on the water (TASK-228)", () => {
+  const PADDLED: SamplePost = {
+    ...POST,
+    id: "example:dog_head:paddling:44.0035,12.6634",
+    user: "ale.paddle",
+    title: "Dog paddle off Riccione",
+    city: "Riccione",
+    route_m: 2000,
+    minutes: 30,
+    score: 89,
+    activity: "paddling",
+  };
+
+  test("says its sport before the facts, on the card and to who listens", async () => {
+    expect(postFacts(PADDLED)).toBe("Paddle · Dog head · 2.0 km · 30 min");
+    await render(<FeedPost post={PADDLED} width={358} onOpen={() => {}} />);
+    expect(screen.getByText("Riccione")).toBeOnTheScreen();
+    expect(screen.getByText("Paddle · Dog head · 2.0 km · 30 min")).toBeOnTheScreen();
+    expect(screen.getByRole("button")).toHaveAccessibleName(
+      "ale.paddle in Riccione: Dog paddle off Riccione. Paddle · Dog head · 2.0 km · 30 min. Score 89 out of 100.",
+    );
+  });
+
+  test("a shape in pieces: no line where the pen is up", async () => {
+    // The pen comes to the third point without drawing.
+    await render(<FeedPost post={{ ...PADDLED, gaps: [2] }} width={358} />);
+    // Three stretches of the four, and the score over them.
+    expect(screen.getByTestId("feed-drawing").children).toHaveLength(4);
+  });
+});

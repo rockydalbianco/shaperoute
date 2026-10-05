@@ -352,6 +352,20 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   figure venute meglio nelle sette città del catalogo, due per città e
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
   inventati.
+  **Fra i quindici ci sono quattro disegni fatti sull'acqua** (TASK-228,
+  ADR-0190, chiesto dall'utente): sempre, qualunque sia lo sport scelto,
+  il 3º, l'8º, il 13º e il 18º dei 19. Uno per luogo d'acqua di «Explore»
+  con «Paddle», ognuno con la sua forma da 2 km: `greta_kayak` un cuore sul
+  Lago di Garda, `leo.sup` una stella sul Lago di Como, `irene_onwater` una
+  luna a Jesolo, `ale.paddle` una testa di cane a Riccione, con gli occhi
+  staccati. La scheda è quella degli altri, con il luogo al posto della
+  città e la mappa del lago o del mare sotto la linea; la riga dei fatti
+  comincia con lo sport, «Paddle · Heart · 2.0 km · 26 min». Nomi, titoli,
+  tempi e punteggi sono inventati; i percorsi sono gli esempi che l'app ha
+  già per quei luoghi, disegnati dal motore sull'acqua vera. Un tocco apre
+  il percorso come un esempio di «Explore» con «Paddle», senza chiedere
+  niente all'API: «on the water», «Start» con l'avviso della canoa, la
+  linea senza indicazioni. Lo sport scelto non cambia.
   **Un tocco su una scheda apre il suo percorso** sulla mappa (TASK-188,
   ADR-0151, chiesto dall'utente), come un percorso di «Explore»: la stessa
   scheda con km, forma e città, «Start» per correrlo, «Export GPX», e il
@@ -381,7 +395,7 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   **Senza account** il tasto apre «Profile» con «Log in to find your
   friends.» sopra «Sign up». Un server senza la ricerca (prima della
   migrazione `0011`) fa dire «This server cannot look for members yet.».
-  Il tasto «Follow» sul profilo è di TASK-211, parte B.
+  Sul profilo c'è il tasto «Follow» (TASK-211, sotto).
   **Sotto ogni linea c'è la mappa** della zona (TASK-162, ADR-0131,
   chiesto dall'utente): strade, acqua, verde e nomi dei paesi, con lo
   stile dell'app. È una foto, non una mappa da muovere: la fa una pagina
@@ -538,7 +552,8 @@ mappa è quella di prima.
   della corsa: cosa mostrano con la bici è una scelta dell'utente ancora
   aperta (`tasks/TASK-190.md`, «Domande aperte»). **Con «Paddle»** cambiano
   «Draw», «Start» ed «Explore» (sotto, «Sull'acqua»); «Feed» e la schermata
-  della corsa restano quelli della corsa.
+  della corsa restano quelli della corsa. I quattro disegni sull'acqua di
+  «Feed» (TASK-228, sopra) ci sono con ogni sport.
 - **«Strava»** (TASK-187), solo se l'API ha Strava: «Connect with
   Strava» (il pulsante ufficiale di Strava, TASK-218, come a fine corsa)
   con «Send the runs you save in Sgrava to your Strava
@@ -619,9 +634,41 @@ come in «Profile» (sopra), vuota «No drawings yet.»; un disegno toccato si
 apre sulla mappa. Mentre arriva dice «Loading the profile…»; un profilo che
 non c'è, o un'API senza profili, «This profile is not available.»; senza
 account «Log in to see the profiles of the others.». **Ci si arriva da
-«Find friends»**, la lente in cima a «Feed» (TASK-215, ADR-0178, sopra); altri
+«Find friends»**, la lente in cima a «Feed» (TASK-215, ADR-0178, sopra), e
+dagli elenchi di chi segue in «Profile» (sotto); altri
 ingressi (un like, un commento) li decide l'utente
 (`tasks/TASK-116.md`, «Esito»).
+
+**Seguire** (TASK-211, ADR-0173 e ADR-0199; testi **da confermare**). La
+riga sotto il nome di un altro dice anche chi lo segue: «12 drawings · 3
+followers · 5 following». Sotto l'intestazione, un tasto largo:
+
+| Stato | Tasto | Toccato |
+|---|---|---|
+| non lo segui | **«Follow»**, bianco | manda la richiesta: l'altro accetta o rifiuta |
+| hai chiesto | «Requested», neutro | ritira la richiesta, subito |
+| lo segui | «Following», neutro | chiede «Stop following {name}?» con «Keep it» e «Unfollow» |
+
+Una richiesta rifiutata rimette «Follow»: niente dice che è stata
+rifiutata. Se la richiesta non parte, il tasto resta com'era e sotto dice
+perché. Sul proprio profilo il tasto non c'è.
+
+**In «Profile»**, sotto «Edit profile», tre riquadri con un numero:
+**«Requests»**, **«Followers»**, **«Following»** (un trattino finché non
+arrivano). Uno toccato apre sotto il suo elenco, toccato di nuovo lo
+richiude. «Requests» ha un pallino arancio (`warning`) quando qualcuno
+aspetta: è l'unico posto che lo dice, finché non ci sono le notifiche
+(TASK-185). Ogni riga ha la foto (o l'iniziale) e il nome, che toccato
+apre il profilo di quella persona sopra l'app; «←» torna a «Profile».
+
+| Elenco | Tasti della riga | Vuoto |
+|---|---|---|
+| «Requests» | «Accept» (bianco), «Decline» | Nobody is asking to follow you. |
+| «Followers» | «Remove», che chiede «Remove {name} from your followers?» con «Keep it» e «Remove» | Nobody follows you yet. |
+| «Following» | nessuno: si smette dal profilo | You are not following anyone yet. Find friends from Feed. |
+
+Accettata, la persona passa subito in «Followers». Venti per volta, poi
+«Show more». Con un server senza gli elenchi i tre riquadri non ci sono.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale
@@ -1818,27 +1865,46 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   another shape, or another start:» con le forme. Senza i dati dell'acqua
   (Overpass che rifiuta) il testo è quello della mappa, «Map data for this
   area could not be downloaded. Try again later.».
-- **«Explore»** (scelta dell'utente): al posto di città, esempi di corsa e
-  percorsi consigliati, la pagina «On the water», «Shapes to paddle, within
-  1 km of the shore», con la sezione «LAKES AND SEA»: «Near me», «Lago di
-  Garda», «Lago di Como», «Jesolo», «Riccione». Finché non se ne sceglie uno
-  dice «Choose a lake or a beach: eight shapes of 2 km on its water, from
-  the shore.» e non chiede niente. Un luogo scelto ha **le otto forme della
-  corsa** da 2 km in canoa (TASK-227, scelta dell'utente): cuore, cerchio,
-  stella, luna, cavallo, lumaca, testa di cane, testa di coniglio, sotto
-  «LAGO DI GARDA · FROM RIVA DEL GARDA». **Vengono con l'app**
-  (`src/paddle/paddleExamples.json`, ADR-0189): pronte subito, anche senza
-  rete, e niente chiesto all'API. Ogni scheda «Heart · 2.0 km», «On the
-  water», si apre sulla mappa come un percorso di «Explore», con «Start»,
-  «Export GPX» e il cuore dei preferiti, che la tiene come canoa. I punti di
-  partenza sono sulla riva, scelti a mano (`src/paddle/waterPlaces.ts`):
-  Riva del Garda, il lungolago di Como, la spiaggia di Jesolo e quella di
-  Riccione. «Near me» disegna dalla partenza di «Draw» com'era al tocco,
-  come gli esempi delle città: le otto forme chieste una alla volta, il
-  cerchio per primo, le cinque dopo le prime tre solo quando arrivano (senza
-  partenza: «Choose a start in Draw first: the shapes start from the shore
-  nearest to it.»). Gli esempi di «Near me» restano sul telefono come quelli
-  delle città, a parte. La scelta resta quando si torna dalla mappa.
+- **«Explore»** (scelta dell'utente; come la corsa dal TASK-233, ADR-0196):
+  al posto di città, esempi di corsa e percorsi consigliati, la pagina «On
+  the water», «Shapes to paddle, within 1 km of the shore», con il cuore di
+  Sgrava in alto a destra e la sezione «LAKES AND SEA».
+  - **«Near me»** è il primo della riga, con il segno della posizione, ed è
+    **acceso da subito** quando c'è una partenza, come nella corsa. Mostra
+    il luogo dell'elenco più vicino entro 30 km, con il nome e la distanza:
+    «LAGO DI LEVICO · 1.2 KM AWAY». Più lontano di così disegna dalla
+    partenza di «Draw», sotto «NEAR YOUR START», come prima. La partenza è
+    quella di quando «Near me» si è acceso: se si sposta, le forme non si
+    ridisegnano. Senza partenza: «Choose a start in Draw first: the shapes
+    start from the shore nearest to it.».
+  - **I luoghi da toccare**, in una riga che scorre: gli otto più vicini
+    alla partenza dopo quello di «Near me»; senza partenza i quattro scelti
+    a mano («Lago di Garda», «Lago di Como», «Jesolo», «Riccione») e la
+    frase «Choose a lake or a beach: eight shapes on its water, from the
+    shore.», senza chiedere niente.
+  - **«Type a lake or a beach»**: da due lettere, fino a sei nomi che hanno
+    ogni parola scritta all'inizio di una loro parola, senza badare agli
+    accenti («lev», «ca selva»), il più vicino per primo, con la distanza.
+    Un nome toccato è scelto e diventa il primo della riga. Niente:
+    «No lake or beach matches “zzz”.». La ricerca è nel telefono.
+  - **L'elenco** (`src/paddle/lakes.json`, scritto da `python -m
+    shaperoute_api.lake_catalog`): i laghi di OpenStreetMap su cui una
+    forma ci sta, ognuno con i punti della riva da cui partono gli esempi
+    (uno ogni 4 km su una riva lunga: l'app prende il più vicino) e la
+    distanza delle forme: **2 km, oppure 1,5 o 1 km su un lago piccolo**.
+    Per ora il nord-est: 41 laghi, 93 punti (`tasks/TASK-233.md`).
+  - Un luogo ha **le otto forme della corsa** in canoa (TASK-227, scelta
+    dell'utente): cuore, cerchio, stella, luna, cavallo, lumaca, testa di
+    cane, testa di coniglio. Quelle dei quattro luoghi scelti a mano
+    **vengono con l'app** (`src/paddle/paddleExamples.json`, ADR-0189),
+    sotto «LAGO DI GARDA · FROM RIVA DEL GARDA»: pronte subito, anche senza
+    rete, e niente chiesto all'API. Quelle degli altri laghi sono chieste
+    all'API una alla volta, il cerchio per primo, le cinque dopo le prime
+    tre solo quando arrivano, e restano sul telefono come gli esempi delle
+    città. Ogni scheda «Heart · 2.0 km», «On the water», si apre sulla
+    mappa come un percorso di «Explore», con «Start», «Export GPX» e il
+    cuore dei preferiti, che la tiene come canoa. La scelta resta quando si
+    torna dalla mappa.
 - **I pezzi staccati sull'acqua** (TASK-226, ADR-0188; scelta dell'utente
   sui campioni): con «Paddle» gatto, pesce, testa di cane, testa di
   coniglio, zucca, faccina, fantasmino e ciambella si chiedono **sempre**
@@ -1859,17 +1925,20 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   - Testi nuovi **da confermare con l'utente**: la frase della voce e la
     riga dei km, in inglese e in italiano; tedesco, spagnolo e francese da
     confermare.
-- **«Near me» sul server**: il server ha l'acqua solo dei quattro luoghi
+- **I laghi sul server**: il server ha l'acqua solo dei quattro luoghi
   (`data/cache/water/`, TASK-225); altrove la scarica da Overpass, se
   risponde, e la prima volta ci mette minuti, altrimenti «Map data for this
-  area could not be downloaded.». Finché il server non ha TASK-230, i laghi
-  disegnati come multipoligono scaricati da Overpass mancano.
+  area could not be downloaded.». **L'acqua dei laghi dell'elenco va messa
+  sul server prima di pubblicare l'app** (TASK-233 parte B, con l'ok
+  dell'utente; `MAPS.md`, «I laghi di Explore»).
 - Testi nuovi **da confermare con l'utente**: «On the water, a shape of the
   catalogue.», «on the water», «Paddle without a route», i testi d'errore
   qui sopra e quelli di «Explore» («On the water», «Shapes to paddle,
-  within 1 km of the shore», «LAKES AND SEA», «Near me», i due avvisi, e da
-  TASK-227 «Choose a lake or a beach: eight shapes of 2 km on its water,
-  from the shore.»). Il
+  within 1 km of the shore», «LAKES AND SEA», «Near me», l'avviso senza
+  partenza). I testi di TASK-233 sono **confermati dall'utente** il
+  2026-10-05, in inglese e in italiano: «Choose a lake or a beach: eight
+  shapes on its water, from the shore.», «Type a lake or a beach», «No lake
+  or beach matches “…”.» e «… km away». Il
   testo dell'avviso di sicurezza è approvato. Tutti questi testi sono anche
   in tedesco, italiano, spagnolo e francese (ADR-0169, «Aggiunta»).
 

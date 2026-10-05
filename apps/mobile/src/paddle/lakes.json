@@ -1,0 +1,470 @@
+{
+  "license": "Lakes from OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
+  "lakes": [
+    {
+      "name": "Laghetto del Frassino",
+      "point": [45.43637, 10.66215],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago Morto",
+      "point": [46.05723, 12.32221],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago artificiale di Zoccolo",
+      "point": [46.541, 10.98259],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago d'Idro",
+      "point": [45.80141, 10.50744],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago d'Idro",
+      "point": [45.80493, 10.53349],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago del Careser",
+      "point": [46.42795, 10.7057],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago del Mis",
+      "point": [46.16779, 12.05795],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago del Mis",
+      "point": [46.16839, 12.06477],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago del Predil",
+      "point": [46.42263, 13.56369],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago del Quaternario",
+      "point": [44.88797, 11.4536],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago della Muta",
+      "point": [46.75199, 10.53502],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago della Serraia",
+      "point": [46.13783, 11.25324],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago delle Nazioni",
+      "point": [44.7631, 12.23996],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Alleghe",
+      "point": [46.40676, 12.01291],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Anterselva",
+      "point": [46.88416, 12.16903],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Barcis",
+      "point": [46.18683, 12.56884],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Caldaro",
+      "point": [46.3802, 11.25872],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Caldonazzo",
+      "point": [46.01073, 11.26274],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Caldonazzo",
+      "point": [46.01291, 11.23624],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Caldonazzo",
+      "point": [46.03819, 11.23829],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cavazzo",
+      "point": [46.32412, 13.07433],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cavazzo",
+      "point": [46.33434, 13.07481],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Cavedine",
+      "point": [45.99568, 10.95243],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Centro Cadore",
+      "point": [46.43283, 12.39087],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Centro Cadore",
+      "point": [46.43506, 12.38632],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Centro Cadore",
+      "point": [46.45157, 12.41333],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Corlo",
+      "point": [45.94433, 11.74976],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Corlo",
+      "point": [45.95625, 11.76221],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Corlo",
+      "point": [45.9621, 11.7591],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Corlo",
+      "point": [45.9838, 11.78172],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Cà Selva",
+      "point": [46.26288, 12.69612],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Fedaia",
+      "point": [46.45817, 11.86833],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.44646, 10.69519],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.45395, 10.66145],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.46111, 10.63077],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.46828, 10.71291],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.4761, 10.53849],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.47681, 10.60702],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.47977, 10.60997],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.49596, 10.73213],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.52704, 10.72659],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.54294, 10.56314],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.54944, 10.71474],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.56642, 10.56957],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.57747, 10.6995],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.57811, 10.55554],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.58299, 10.67389],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.61381, 10.68998],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.64219, 10.70958],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.66941, 10.73346],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.69738, 10.75762],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.7256, 10.78085],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.74913, 10.7951],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.77315, 10.81278],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.79816, 10.83683],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.82541, 10.85691],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.82547, 10.81552],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.85275, 10.86566],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.85401, 10.83389],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.8747, 10.86732],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Garda",
+      "point": [45.88418, 10.83938],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Gioveretto",
+      "point": [46.5051, 10.71978],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Levico",
+      "point": [46.01129, 11.28612],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Malga Bissina",
+      "point": [46.05738, 10.51472],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Molveno",
+      "point": [46.12121, 10.9502],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Molveno",
+      "point": [46.13312, 10.96787],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Neves",
+      "point": [46.94702, 11.78474],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Paneveggio",
+      "point": [46.30125, 11.71455],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Pian Palù",
+      "point": [46.33419, 10.60308],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Quaira",
+      "point": [46.54664, 10.89001],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Resia",
+      "point": [46.78394, 10.54125],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Resia",
+      "point": [46.79324, 10.52691],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Resia",
+      "point": [46.80912, 10.53587],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Resia",
+      "point": [46.82464, 10.50891],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di San Giorgio",
+      "point": [45.98225, 12.22459],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Santa Croce",
+      "point": [46.09628, 12.34296],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Santa Croce",
+      "point": [46.10973, 12.32878],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Santa Croce",
+      "point": [46.11834, 12.34271],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Santa Croce",
+      "point": [46.12963, 12.32019],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Santa Giustina",
+      "point": [46.35184, 11.06129],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Santa Giustina",
+      "point": [46.3671, 11.04647],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Santa Giustina",
+      "point": [46.3722, 11.05493],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Santa Giustina",
+      "point": [46.38277, 11.06151],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Santa Giustina",
+      "point": [46.39081, 11.03649],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Sauris",
+      "point": [46.44593, 12.71866],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Sauris",
+      "point": [46.45089, 12.72281],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Suviana",
+      "point": [44.11369, 11.04375],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Suviana",
+      "point": [44.12979, 11.0353],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Toblino",
+      "point": [46.04956, 10.96705],
+      "distance_m": 1500
+    },
+    {
+      "name": "Lago di Tovel",
+      "point": [46.25959, 10.95028],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Tramonti",
+      "point": [46.25767, 12.75195],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Tramonti",
+      "point": [46.26484, 12.77194],
+      "distance_m": 1000
+    },
+    {
+      "name": "Lago di Vernago",
+      "point": [46.73233, 10.84291],
+      "distance_m": 2000
+    }
+  ]
+}

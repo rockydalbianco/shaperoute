@@ -163,21 +163,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (TASK-152), dominio e pubblicazione, e per il merch il servizio di
   stampa, magliette e prezzi. Come si cambia e come si guarda:
   `SITO.md`. Da dove riprendere: `tasks/TASK-237.md`, «Esito».
-- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; chiesto
-  dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
-  riesce ma un tentativo già tracciato a un'altra distanza segue la forma
-  chiaramente meglio, l'API manda `better_distance_m` e l'app scrive la
-  riga con «Try N km». Il percorso scelto non cambia. **Parte A, motore e
-  API**, in `main` dalla #327 (784cc03, 2026-10-05): il campo nel
-  risultato, anche da una partenza vicina, `null` nelle alternative;
-  `engine.zip` ed esempi della canoa rifatti. **Misura**: scatta in 8
-  percorsi su 129, nessuno dei 12 di riferimento in cache (`MAPS.md`);
-  l'utente: «sì, fai la parte B come previsto». **Parte B, l'app**, in PR:
-  la riga sotto le tessere con «Try N km», testi nelle cinque lingue
-  confermati dall'utente; provata nel simulatore. Il server ha la parte
-  A da `main` `fd14cd3` (2026-10-05 08:54Z, ok dell'utente, il
-  coordinatore), con `draw_examples` rilanciato: la B si pubblica appena
-  è in `main`. `tasks/TASK-234.md`.
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal
@@ -492,6 +477,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **Motore, API e app** — TASK-234: «Viene meglio a N km» (ADR-0197;
+  chiesto dall'utente il 2026-10-05, il «passo 1»; PR #327, merge
+  `784cc03`, e #336, merge `db2c30e`). Quando un percorso riesce ma la
+  ricerca ha già visto la forma chiaramente meglio a un'altra distanza,
+  l'API manda `better_distance_m` e «Draw» scrive sotto le tessere «This
+  shape comes out better at about 8 km.» con «Try 8 km», che ridisegna a
+  quella distanza (testi nelle cinque lingue confermati dall'utente). Il
+  percorso scelto non cambia. Scatta poco: 8 percorsi su 129 (`MAPS.md`);
+  il passo 2 si valuta dopo. Sul server da `fd14cd3`; l'app esce con la
+  prossima pubblicazione; da provare sull'iPhone. `tasks/TASK-234.md`.
 
 - **App, API e server** — TASK-233: «Explore» della canoa come la corsa, e
   tutti i laghi (ADR-0196; chiesto dall'utente il 2026-10-05, scelte

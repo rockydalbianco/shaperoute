@@ -10453,6 +10453,34 @@ cose); tenere premuto per prenderla (un gesto che nessuno scopre da solo).
 - Gli esempi di «Explore» con «Paddle» non hanno `centre`: per spostarli
   serve ridisegnarli o chiedere il percorso al server (parte B).
 
+**Aggiunta del 2026-10-05 (TASK-244)** — gli esempi di «Explore» con
+«Paddle» si spostano anche loro; che il percorso spostato **resti di
+«Explore»** è una scelta dell'utente (2026-10-05, l'altra proposta: farlo
+diventare il percorso di «Draw»), il resto è deciso dall'agente su delega
+dell'utente.
+
+10. **L'esempio dice dov'è la sua forma**: `centre` è scritto nei 32
+    esempi dentro l'app (`paddle_examples.py`; ridisegnati sull'acqua del
+    server sono identici, con `centre` in più) e tenuto per quelli chiesti
+    al server, anche nel file del telefono. Un esempio tenuto prima non ce
+    l'ha e non si sposta finché non è ridisegnato: non lo si ridisegna
+    apposta, perché senza rete sparirebbe.
+11. **Si richiede l'esempio com'era stato chiesto**, con `near`: l'app
+    ricorda la richiesta di ogni esempio pronto, con **la partenza del
+    luogo** e non quella del percorso sulla riva. È il punto 5: la stessa
+    partenza è lo stesso file dell'acqua, e nessun download in più.
+12. **La risposta prende il posto dell'esempio sulla mappa, non nella
+    lista**: la scheda resta quella di «Explore», e riaprendola dalla
+    lista c'è l'esempio com'era (il punto 6 dal lato dell'app). Se la
+    richiesta fallisce torna il percorso di prima, con una riga che dice
+    perché.
+13. **Solo aperto da «Explore»**: lo stesso esempio aperto dal «Feed»
+    (TASK-228) o un preferito non si spostano. Scartato: scrivere nella
+    richiesta la partenza del percorso (`points[0]`), che l'esempio ha già
+    (un'altra area dell'acqua, forse da scaricare); far passare il
+    percorso spostato a «Draw» (la sua pagina avrebbe forma, distanza e
+    partenza diverse da quelle sulla mappa).
+
 ## ADR-0207 — Niente punteggio sopra il disegno dei post del «Feed»
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-241 ·
@@ -10505,6 +10533,16 @@ delega: un punteggio nel testo e non nel post direbbe due cose diverse).
 chiave «Score» esce dalle quattro tabelle, «Score {score}» resta per «My
 activities» e i disegni del «Profile». A fine corsa, in «My activities» e
 sotto un disegno aperto dal «Profile» il punteggio si vede come prima.
+
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte D; scelta
+dell'utente: «toglilo anche da My activities»): in «My activities» il
+punteggio non si vede e non si legge più, né nella riga dell'elenco
+(«Score 91») né sulla corsa aperta («91», «out of 100»). L'API lo tiene
+e lo manda come prima (`score` in `/me/activities`): l'app non lo
+mostra. Le chiavi «Score {score}», «Score: {score} out of 100» e «out of
+100» restano nelle tabelle perché le usano i disegni del «Profile»
+(`DrawingsGrid`, `DrawingCard`), dove il punteggio si vede ancora, come
+a fine corsa: l'utente non li ha nominati.
 
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
@@ -10930,6 +10968,113 @@ lingue con una regola (ADR-0172): ogni testo è scritto in inglese dentro
 - `SettingsPage` chiede a chi la mostra di aprire i testi (`onAbout`);
   restano «Soon» solo le due righe di «Notifications» (TASK-185).
 - Solo app: nessuna dipendenza, niente server.
+
+## ADR-0206 — I due interruttori delle notifiche: salvati nell'account, spenti all'inizio, e niente si manda ancora
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-185), dentro le **scelte dell'utente** del 2026-10-05: tutti e due
+gli interruttori partono spenti («Spenti tutti e due»), e si salvano
+anche se l'invio vero non c'è ancora, purché la pagina lo dica. Numero
+assegnato dal coordinatore.
+
+**Contesto**: «Email notifications» e «Push notifications» erano in
+«Settings» con «Soon» (ADR-0145), le ultime due righe così. L'API non
+manda email (nessun servizio di posta) e non manda push; l'app gira in
+Expo Go, dove le push non arrivano, e non ha `expo-notifications`. Non è
+deciso nemmeno che cosa si notificherà.
+
+**Decisione**:
+
+1. **Si salva la scelta, non si manda niente.** Nessun codice legge i due
+   interruttori per agire: sono una preferenza tenuta per quando l'invio
+   ci sarà. Nessuna dipendenza nuova, nessun permesso chiesto al telefono:
+   accendere «Push notifications» salva soltanto.
+2. **La pagina lo dice**, sotto le due righe, sempre: «Sgrava does not
+   send notifications yet. Your choice is kept for when it does.». Un
+   interruttore che non fa niente senza dirlo sarebbe una promessa falsa.
+3. **Nell'account, non sul telefono**: due colonne di `users`,
+   `notify_email` e `notify_push`, `boolean NOT NULL DEFAULT false`. Chi
+   manderà le notifiche sarà il server, e deve saperlo senza chiederlo al
+   telefono; la scelta segue l'account su ogni telefono. `DEFAULT false`
+   dà «spento» anche a ogni account di prima, senza toccarne le righe.
+4. **Un endpoint suo, `PUT /me/notifications`**, in `notifications.py`,
+   come `PUT /me/email` e `PUT /me/phone` (ADR-0150): `PATCH /me` cambia
+   quello che gli altri vedono e resta com'è per l'app pubblicata.
+5. **Il corpo porta solo quello che cambia** (`email?`, `push?`): un
+   interruttore non mandato resta com'è, così un tocco su uno non può
+   riscrivere l'altro con un valore vecchio del telefono. `{}` non cambia
+   niente e risponde l'account com'è; `null` vale «non mandato». Solo
+   vero o falso (`StrictBool`): `"true"`, `1` sono `422`, perché una
+   preferenza accesa per una conversione di tipo è un consenso mai dato.
+6. **`User.notifications` è un oggetto, `{ "email": …, "push": … }`**, non
+   due campi piatti: è la forma della richiesta, ed è dove andranno le
+   voci future (che cosa si notifica) senza allargare `User`. Nel database
+   restano due colonne piatte in `USER_COLUMNS`; l'oggetto lo costruisce
+   un `model_validator(mode="before")` di `UserBody`, così `accounts.py`,
+   `profiles.py` e `contact.py` continuano a fare
+   `UserBody.model_validate(row)` senza cambiare una riga di SQL.
+7. **Le legge solo il proprietario** (`GET /me`, `Session`): mai in
+   `PublicProfile`, nella ricerca, negli elenchi. `DELETE /me` le cancella
+   con la riga.
+8. **Nel contratto `User.notifications` è facoltativo**: un'API di prima
+   non lo manda, e l'app lo legge come «tutti e due spenti».
+9. **Nell'app l'interruttore è disegnato**, come gli altri dell'app
+   (`RunDashboard`: una pista e un pomello, colori dai token, bianco
+   quando è acceso — il giallo è del percorso), non lo `Switch` di React
+   Native: l'app non lo usa da nessuna parte, e così ogni riga è **un
+   solo** elemento per VoiceOver, un interruttore con il suo nome e il suo
+   stato, senza l'emoji.
+10. **Il valore nuovo si vede subito** e torna indietro se l'API rifiuta,
+    con il motivo in parole sotto le righe; mentre una risposta è in
+    viaggio un secondo tocco, su uno qualunque dei due, non manda niente.
+    Con un'API di prima (`404`): «Notifications are not available on this
+    API yet.».
+11. **«Soon» esce da «Settings»**: erano le ultime due righe a dirlo.
+    `COMING` e `ComingRows` sono tolti da `SettingsPage`, e i testi «Soon»
+    e «{name}, coming soon» dalle quattro tabelle (`tables.test.ts`
+    rifiuta un testo che nessuno mostra).
+12. **«Help» e «Privacy» lo dicono** (ADR-0205: chi cambia cosa l'app
+    tiene aggiorna i testi): una riga nella sezione «Settings» della
+    guida, un punto in «Your account» della bozza, in inglese e italiano.
+
+**Alternative scartate**:
+
+- **Aspettare l'invio vero** e lasciare «Soon»: l'utente ha chiesto gli
+  interruttori adesso; proposto e accettato di salvarli dicendo che non si
+  manda niente.
+- **La scelta solo sul telefono** (come lingua e unità): il server non la
+  saprebbe, e cambiando telefono si perderebbe.
+- **Due campi piatti in `User`** (`notify_email`, `notify_push`): più
+  semplici oggi, ma ogni voce futura allargherebbe `User`, e la richiesta
+  avrebbe una forma diversa dalla risposta.
+- **Costruire l'oggetto in SQL** (`json_build_object(…) AS notifications`
+  dentro `USER_COLUMNS`): `USER_COLUMNS` smetterebbe di essere un elenco
+  di colonne, e chi lo usa in un `RETURNING` o in una `JOIN` dovrebbe
+  saperlo.
+- **`PUT` con tutti e due i valori obbligatori**: due telefoni con valori
+  vecchi si sovrascriverebbero l'interruttore che non hanno toccato.
+- **Accesi all'inizio**: scelta dell'utente, spenti; e un consenso a
+  ricevere messaggi non si presume.
+- **Chiedere il permesso delle push all'accensione**: serve
+  `expo-notifications`, e chiedere un permesso per qualcosa che non
+  arriva brucia l'unica domanda che iOS lascia fare.
+- **Lo `Switch` di React Native**: punto 9.
+
+**Conseguenze**:
+
+- **L'invio vero è un task a parte**, con scelte dell'utente: che cosa si
+  notifica, quale servizio di posta, `expo-notifications` e una build
+  propria. Quel task legge `users.notify_email` e `users.notify_push`,
+  chiede il permesso del telefono, e riscrive la nota sotto gli
+  interruttori e le due righe di «Help» e «Privacy».
+- Migrazione nuova (`0017_notifications.sql`, il primo numero libero al
+  merge): serve l'aggiornamento del server prima di pubblicare l'app.
+  Un'API di prima risponde `404` al `PUT` e l'app lo dice in parole.
+- Ogni `SELECT {USER_COLUMNS}` legge le due colonne: un test che usa
+  l'API di oggi su uno schema senza `0017` fallisce (`UndefinedColumn`),
+  come successe con `phone` (TASK-183). Quelli che ci sono creano già
+  l'account di prima in SQL.
+- `Account` ha un metodo in più, `changeNotifications`: i test che
+  costruiscono un `Account` a mano hanno una riga in più.
 
 ## ADR-0149 — aggiornamento (parte C): la corsa e la voce in miglia
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente (TASK-182,

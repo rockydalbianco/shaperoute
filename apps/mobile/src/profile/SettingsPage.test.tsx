@@ -36,6 +36,7 @@ async function show(over: Partial<Account> = {}) {
     editProfile: jest.fn(),
     changeEmail: jest.fn(),
     changePhone: jest.fn(),
+    changeNotifications: jest.fn(),
     clearProblem: jest.fn(),
     sessionEnded: jest.fn(),
     ...over,
@@ -51,15 +52,13 @@ test("the account, by name and email", async () => {
   expect(screen.getByText("runner@example.com")).toBeOnTheScreen();
 });
 
-test("the settings to come are named, say «Soon» and take no tap", async () => {
+test("every row works: none says «Soon» any more", async () => {
   await show();
-  for (const name of ["Email notifications", "Push notifications"]) {
-    expect(screen.getByLabelText(`${name}, coming soon`)).toBeOnTheScreen();
-  }
-  // Two settings to come, the notifications (TASK-185). Every sport is
-  // ready («Sport», TASK-189: the bike since TASK-190, paddling since
-  // TASK-191).
-  expect(screen.getAllByText("Soon")).toHaveLength(2);
+  // The notifications were the last settings to come (TASK-185). Every
+  // sport is ready («Sport», TASK-189: the bike since TASK-190, paddling
+  // since TASK-191).
+  expect(screen.queryByText("Soon")).toBeNull();
+  expect(screen.queryByLabelText(/coming soon$/)).toBeNull();
   // The picture (TASK-178), the email and the phone number (TASK-183), the
   // language (TASK-210), the units (TASK-182), the three texts of «ABOUT»
   // (TASK-184) and the ways out are buttons.
@@ -83,6 +82,26 @@ test("«Help», «Terms» and «Privacy» are rows that open their page (TASK-18
   await fireEvent.press(screen.getByRole("button", { name: "Terms" }));
   await fireEvent.press(screen.getByRole("button", { name: "Privacy" }));
   expect(onAbout.mock.calls).toEqual([["help"], ["terms"], ["privacy"]]);
+});
+
+test("the notifications are two switches kept in the account, off at first (TASK-185)", async () => {
+  const account = await show({ changeNotifications: jest.fn(async () => null) });
+  expect(screen.getByText("NOTIFICATIONS")).toBeOnTheScreen();
+  const email = screen.getByRole("switch", { name: "Email notifications" });
+  const push = screen.getByRole("switch", { name: "Push notifications" });
+  expect(screen.getAllByRole("switch")).toHaveLength(2);
+  expect(email).not.toBeChecked();
+  expect(push).not.toBeChecked();
+  // The page says nothing is sent yet.
+  expect(
+    screen.getByText(
+      "Sgrava does not send notifications yet. Your choice is kept for when it does.",
+    ),
+  ).toBeOnTheScreen();
+  await fireEvent.press(push);
+  expect(account.changeNotifications).toHaveBeenCalledWith({ push: true });
+  await fireEvent.press(email);
+  expect(account.changeNotifications).toHaveBeenLastCalledWith({ email: true });
 });
 
 test("«Change email» and «Phone number» ask the account (TASK-183)", async () => {
@@ -149,8 +168,9 @@ test("«Language» is among the preferences and turns the whole page at once (TA
   expect(
     screen.getByRole("button", { name: "Einheiten, Kilometer" }),
   ).toBeOnTheScreen();
+  expect(screen.getByText("BENACHRICHTIGUNGEN")).toBeOnTheScreen();
   expect(
-    screen.getByLabelText("Push-Benachrichtigungen, bald verfügbar"),
+    screen.getByRole("switch", { name: "Push-Benachrichtigungen" }),
   ).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Hilfe" })).toBeOnTheScreen();
   expect(screen.queryByText("Log out")).toBeNull();

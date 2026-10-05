@@ -27,6 +27,7 @@ function account(state: Account["state"]): Account {
     editProfile: jest.fn(),
     changeEmail: jest.fn(),
     changePhone: jest.fn(),
+    changeNotifications: jest.fn(),
     clearProblem: jest.fn(),
     sessionEnded: jest.fn(),
   };

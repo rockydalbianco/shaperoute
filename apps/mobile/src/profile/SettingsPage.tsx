@@ -6,9 +6,10 @@ import { AboutRows } from "../about/AboutRows";
 import type { AboutId } from "../about/documents";
 import type { Account } from "../account/useAccount";
 import { OfflineMapsSetting } from "../engine/OfflineMapsSetting";
-import { t, tLater } from "../i18n";
+import { t } from "../i18n";
 import { EmailSetting } from "../settings/EmailSetting";
 import { LanguageSetting } from "../settings/LanguageSetting";
+import { NotificationsSetting } from "../settings/NotificationsSetting";
 import { PhoneSetting } from "../settings/PhoneSetting";
 import { SportSetting } from "../settings/SportSetting";
 import { UnitsSetting } from "../settings/UnitsSetting";
@@ -30,26 +31,6 @@ type Props = {
   onAbout: (id: AboutId) => void;
 };
 
-/**
- * A setting with its name on the page and nothing behind it yet; the name
- * in English, shown in the app's language (TASK-210).
- */
-type Coming = { emoji: string; name: string };
-
-/**
- * What «Settings» will hold, as the user listed it (ADR-0145): each row is
- * turned on by its own task and leaves this list then.
- */
-const COMING: { label: string; rows: Coming[] }[] = [
-  {
-    label: tLater("NOTIFICATIONS"),
-    rows: [
-      { emoji: "📧", name: tLater("Email notifications") },
-      { emoji: "🔔", name: tLater("Push notifications") },
-    ],
-  },
-];
-
 /** A group of «Settings» under its name; each new setting joins one. */
 function Section({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -60,35 +41,13 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-/** Rows that say «Soon» and take no tap: nothing is promised to work. */
-function ComingRows({ rows }: { rows: Coming[] }) {
-  return (
-    <View style={styles.menu}>
-      {rows.map((row, at) => (
-        <View key={row.name}>
-          {at > 0 && <View style={styles.divider} />}
-          <View
-            style={styles.row}
-            accessible
-            // One name for the row: the emoji is not read on its own.
-            accessibilityLabel={t("{name}, coming soon", { name: t(row.name) })}
-          >
-            <Text style={styles.emoji}>{row.emoji}</Text>
-            <Text style={styles.rowText}>{t(row.name)}</Text>
-            <Text style={styles.soon}>{t("Soon")}</Text>
-          </View>
-        </View>
-      ))}
-    </View>
-  );
-}
-
 /**
  * «Settings» in «Profile» (TASK-177), in sections: the account with its
  * email and phone number (TASK-183) and the ways out of it, the sport
  * (TASK-189), Strava (TASK-187), the language
  * (TASK-210), the offline maps (TASK-214) and the units (TASK-182) among
- * the preferences, and the settings to come, named and marked «Soon».
+ * the preferences, the two notification switches (TASK-185) and the texts
+ * of «ABOUT» (TASK-184). Every row works: none says «Soon» any more.
  * «Delete account» asks first, on the screen (ADR-0120: the API does not).
  */
 export function SettingsPage({ user, account, onAbout }: Props) {
@@ -112,11 +71,10 @@ export function SettingsPage({ user, account, onAbout }: Props) {
         <OfflineMapsSetting />
         <UnitsSetting />
       </Section>
-      {COMING.map((section) => (
-        <Section key={section.label} label={t(section.label)}>
-          <ComingRows rows={section.rows} />
-        </Section>
-      ))}
+      {/* Kept in the account; nothing is sent yet (TASK-185). */}
+      <Section label={t("NOTIFICATIONS")}>
+        <NotificationsSetting user={user} account={account} />
+      </Section>
       {/* The guide and the two legal texts, each on its own page (TASK-184). */}
       <Section label={t("ABOUT")}>
         <AboutRows onOpen={onAbout} />
@@ -188,37 +146,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.label,
     fontWeight: fontWeight.semibold,
     letterSpacing: 1.2,
-  },
-  menu: {
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: color.border,
-    backgroundColor: color.surface,
-  },
-  row: {
-    minHeight: MIN_TAP_SIZE + space.sm,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
-    paddingHorizontal: space.md,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginHorizontal: space.md,
-    backgroundColor: color.border,
-  },
-  emoji: {
-    fontSize: fontSize.input + space.xs,
-  },
-  rowText: {
-    flex: 1,
-    color: color.text,
-    fontSize: fontSize.input,
-    fontWeight: fontWeight.medium,
-  },
-  soon: {
-    color: color.textFaint,
-    fontSize: fontSize.small,
   },
   card: {
     gap: space.xs,

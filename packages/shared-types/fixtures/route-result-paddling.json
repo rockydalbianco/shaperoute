@@ -1,0 +1,22 @@
+{
+  "points": [
+    [44.0011, 12.6521],
+    [44.0029, 12.6534],
+    [44.0046, 12.6529],
+    [44.0052, 12.6551],
+    [44.0038, 12.6572],
+    [44.0029, 12.6534],
+    [44.0011, 12.6521]
+  ],
+  "distance_m": 1984.0,
+  "similarity": 1.0,
+  "shape": "heart",
+  "warnings": [],
+  "directions": [],
+  "word": null,
+  "alternatives": [],
+  "walks": [],
+  "on_foot": [],
+  "better_distance_m": null,
+  "centre": [44.0041, 12.655]
+}

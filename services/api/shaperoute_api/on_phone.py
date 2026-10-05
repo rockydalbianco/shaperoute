@@ -46,6 +46,7 @@ def to_request(body: RouteRequestBody) -> RouteRequest:
         activity=body.activity,
         style=body.style,  # type: ignore[arg-type]  # RouteRequest checks it
         pen_up=body.pen_up,
+        near=body.near,
     )
 
 

@@ -35,6 +35,7 @@ import jobRunning from "../fixtures/route-job-running.json" with { type: "json" 
 import jobStatuses from "../fixtures/route-job-statuses.json" with { type: "json" };
 import alternativeLimits from "../fixtures/route-alternatives.json" with { type: "json" };
 import cyclingRequest from "../fixtures/route-request-cycling.json" with { type: "json" };
+import paddlingNearRequest from "../fixtures/route-request-paddling-near.json" with { type: "json" };
 import paddlingRequest from "../fixtures/route-request-paddling.json" with { type: "json" };
 import penUpShapeRequest from "../fixtures/route-request-pen-up-shape.json" with { type: "json" };
 import penUpRequest from "../fixtures/route-request-pen-up.json" with { type: "json" };
@@ -43,6 +44,7 @@ import request from "../fixtures/route-request.json" with { type: "json" };
 import betterResult from "../fixtures/route-result-better-distance.json" with { type: "json" };
 import cyclingResult from "../fixtures/route-result-cycling.json" with { type: "json" };
 import imageResult from "../fixtures/route-result-image.json" with { type: "json" };
+import paddlingResult from "../fixtures/route-result-paddling.json" with { type: "json" };
 import penUpResult from "../fixtures/route-result-pen-up.json" with { type: "json" };
 import wordResult from "../fixtures/route-result-word.json" with { type: "json" };
 import result from "../fixtures/route-result.json" with { type: "json" };
@@ -98,14 +100,18 @@ type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 // The fixtures written before TASK-197 are what an older app sends and an
 // older API answers: without the pen up and the walks, both optional; nor
 // the stretches with the bike on foot, optional too (TASK-206); nor the
-// distance where the shape comes out better (TASK-234).
+// distance where the shape comes out better (TASK-234); nor where a shape
+// on the water is wanted and where it is (TASK-238).
 // Member by member: a shape's request and a word's stay apart.
 type OlderRequest = RouteRequest extends infer R
   ? R extends RouteRequest
-    ? Omit<R, "pen_up">
+    ? Omit<R, "pen_up" | "near">
     : never
   : never;
-type OlderResult = Omit<RouteResult, "walks" | "on_foot" | "better_distance_m">;
+type OlderResult = Omit<
+  RouteResult,
+  "walks" | "on_foot" | "better_distance_m" | "centre"
+>;
 const requestFields: Same<keyof typeof request, keyof OlderRequest> = true;
 const resultFields: Same<keyof typeof result, keyof OlderResult> = true;
 const wordFields: Same<keyof typeof wordRequest, keyof OlderRequest> &
@@ -114,15 +120,19 @@ const wordFields: Same<keyof typeof wordRequest, keyof OlderRequest> &
 const cyclingFields: Same<keyof typeof cyclingRequest, keyof OlderRequest> = true;
 // A paddling route (TASK-191): the same fields again.
 const paddlingFields: Same<keyof typeof paddlingRequest, keyof OlderRequest> = true;
-const penUpFields: Same<keyof typeof penUpRequest, keyof RouteRequest> &
-  Same<keyof typeof penUpShapeRequest, keyof RouteRequest> &
+const penUpFields: Same<keyof typeof penUpRequest, keyof Omit<RouteRequest, "near">> &
+  Same<keyof typeof penUpShapeRequest, keyof Omit<RouteRequest, "near">> &
   Same<
     keyof typeof penUpResult,
-    keyof Omit<RouteResult, "on_foot" | "better_distance_m">
+    keyof Omit<RouteResult, "on_foot" | "better_distance_m" | "centre">
   > = true;
+// A shape moved on the water (TASK-238): every field of the request, and of
+// the result that says where the shape is.
+const movedFields: Same<keyof typeof paddlingNearRequest, keyof RouteRequest> &
+  Same<keyof typeof paddlingResult, keyof RouteResult> = true;
 // A bike route walked in part (TASK-206): every field before TASK-234, its
 // alternative too.
-type BikeResult = Omit<RouteResult, "better_distance_m">;
+type BikeResult = Omit<RouteResult, "better_distance_m" | "centre">;
 const cyclingResultFields: Same<keyof typeof cyclingResult, keyof BikeResult> &
   Same<keyof (typeof cyclingResult.alternatives)[number], keyof BikeResult> = true;
 // A route with a better distance (TASK-234): every field, its alternative too.
@@ -203,7 +213,7 @@ test("the fixtures have the fields of the types", () => {
   assert.ok(jobFields && jobResultFields && jobErrorFields && gpxFields);
   assert.ok(shapeReadingFields && directionFields && wordFields);
   assert.ok(penUpFields && trackFields && cyclingFields && paddlingFields);
-  assert.ok(cyclingResultFields && betterFields);
+  assert.ok(cyclingResultFields && betterFields && movedFields);
 });
 
 /** Whether `walks` are stretches of a route of `count` points, in order. */
@@ -443,6 +453,28 @@ test("a paddling request is a request with a shape and the water's distances", (
   );
   assert.ok(isShape(paddlingRequest.shape));
   assert.equal(paddlingRequest.word, null);
+});
+
+test("a shape on the water says where it is, and may be asked elsewhere", () => {
+  // TASK-238: the result's centre, moved, is the next request's `near`.
+  const asked = paddlingNearRequest as unknown as RouteRequest;
+  const drawn = paddlingResult as unknown as RouteResult;
+  assert.equal(asked.activity, "paddling");
+  assert.ok(asked.near && drawn.centre);
+  assert.notDeepEqual(asked.near, drawn.centre);
+  const lats = drawn.points.map(([lat]) => lat);
+  const lons = drawn.points.map(([, lon]) => lon);
+  const [lat, lon] = drawn.centre;
+  assert.ok(Math.min(...lats) < lat && lat < Math.max(...lats));
+  assert.ok(Math.min(...lons) < lon && lon < Math.max(...lons));
+  // On the roads there is none; before TASK-238 the field is missing.
+  assert.equal(betterResult.centre, null);
+  for (const fixture of [result, wordResult, imageResult, penUpResult, cyclingResult]) {
+    assert.ok(!("centre" in fixture));
+  }
+  for (const fixture of [request, wordRequest, cyclingRequest, paddlingRequest]) {
+    assert.ok(!("near" in fixture));
+  }
 });
 
 test("a result names its shape or its word", () => {

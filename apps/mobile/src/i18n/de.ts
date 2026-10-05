@@ -226,6 +226,9 @@ export const DE: Table = {
   "{shape}, {km} km, on the water": "{shape}, {km} km, auf dem Wasser",
   "Not drawn": "Nicht gezeichnet",
 
+  // src/paddle/placeSpots.ts
+  "Lake, beach, city or street": "See, Strand, Stadt oder Straße",
+
   // src/paddle/PaddleNotice.tsx
   "Before you paddle": "Bevor du lospaddelst",
   "Wear a life jacket.": "Trag eine Schwimmweste.",

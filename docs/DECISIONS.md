@@ -10258,6 +10258,76 @@ solo scrivendone il nome.
   server risponde subito da quelli tenuti.
 - TASK-214 B2 può chiedere i paesi vicini allo stesso endpoint.
 
+## ADR-0204 — Con «Paddle», i laghi e le spiagge nella ricerca di «Another place»: dall'elenco dentro l'app, sopra i luoghi trovati
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-240), dentro la **richiesta dell'utente** del 2026-10-05: con
+«Paddle», in «Draw», «Another place» deve far scegliere anche i laghi e i
+mari («lago di Levico Terme» dava solo «Via al Lago»). La regola delle
+parole, il mare, la distanza sui laghi piccoli e il testo del campo sono
+**scelte dell'utente** del 2026-10-05, proposte una alla volta e tutte
+confermate (`tasks/TASK-240.md`, «Scelte dell'utente»). Numero dato dal
+coordinatore.
+
+**Contesto**: la ricerca della partenza chiede i luoghi all'API
+(Geoapify) o a Photon, che per un lago rispondono con vie e paesi. L'app
+ha già l'elenco dei laghi su cui il motore pagaia, con un punto sulla riva
+e la distanza a cui le forme ci stanno (`WATER_SPOTS`, TASK-233,
+ADR-0196), e il server ha l'acqua solo di quelli. La ricerca di «Explore»
+(`searchSpots`) vuole ogni parola scritta nel nome: «lago di Levico Terme»
+non trova niente, per «Terme».
+
+**Decisione**:
+
+1. **I laghi vengono dall'elenco dentro l'app, non dalla ricerca in
+   rete.** `PlaceSearch` riceve `suggest`, una funzione che dà subito i
+   luoghi che l'app conosce per il testo scritto; li mostra sopra quelli
+   trovati, senza ripetere un'etichetta uguale. Senza `suggest` è quella
+   di prima: `App.tsx` la passa solo con «Paddle». Niente API, niente
+   server, nessuna richiesta in più.
+2. **Il testo si legge come un indirizzo** (`findSpots`, in
+   `src/paddle/placeSpots.ts`): le parole scritte che non cominciano
+   nessuna parola di nessun nome si ignorano; le parole **comuni**, quelle
+   in più del 2% dei nomi (oggi «lago», «di», «del», «san», «d», «della»),
+   non servono a trovare un lago quando un'altra parola, di almeno 3
+   lettere, lo dice. Con sole parole comuni vale la regola di «Explore»
+   (tutte nel nome), e se una parola è stata ignorata non si propone
+   niente: «via al lago» non è un lago. Le parole comuni si contano
+   sull'elenco, non stanno scritte a mano.
+3. **Al massimo tre laghi**, il più vicino per primo; di un lago lungo il
+   punto della riva più vicino alla posizione (`byName`).
+4. **Un lago scelto è un luogo con la sua distanza** (`SpotPlace`): se le
+   sue forme stanno a meno di 2 km e la distanza scritta è più lunga, il
+   campo scende a quella (`distanceOnSpot`). Non sale mai, e un lago da
+   2 km non la tocca: 2 km è la distanza a cui è stato provato, non la più
+   lunga che tiene.
+5. `searchSpots` e «Explore» non cambiano: lì si sceglie fra laghi, e una
+   parola in più è un errore di battitura da far vedere.
+
+**Alternative scartate**:
+
+- **Aggiungere i laghi a `GET /places`**: vuole l'elenco anche nell'API e
+  un aggiornamento del server, e i laghi arriverebbero dopo 2–3 s come le
+  vie; l'elenco è già nel telefono.
+- **Avvolgere `find`** (la funzione che cerca) invece di un prop nuovo: i
+  laghi comparirebbero solo quando la rete risponde, e sparirebbero con un
+  errore di rete.
+- **Allentare `searchSpots`** per tutti: cambierebbe «Explore», che è di
+  TASK-233 e ha i suoi testi («No lake or beach matches…»).
+- **Un elenco scritto a mano di parole da ignorare** («terme», «via»,
+  «lido»): non finisce mai, e cambia con la lingua.
+- **Chiedere a Photon solo i laghi** (`osm_tag=natural:water`): troverebbe
+  anche i laghi fuori elenco, di cui il server non ha l'acqua.
+
+**Conseguenze**:
+
+- Una via che contiene una parola del nome di un lago mostra quel lago
+  sopra le vie («via Monte Grappa»: due laghi «Monte…»). Solo con
+  «Paddle», e al massimo tre righe.
+- Il mare resta alle due spiagge dell'elenco; le altre partenze sul mare
+  sono le vie e i paesi di prima, e dipendono dall'acqua che il server ha
+  o riesce a scaricare.
+- Un elenco nuovo (`lakes.json` rifatto) cambia da solo le parole comuni.
+
 ## ADR-0202 — Spostare la figura sull'acqua: l'utente dice «vicino a dove», il motore decide il posto
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-238 ·

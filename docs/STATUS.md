@@ -488,6 +488,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-241: niente punteggio sulle foto dei post del «Feed»
+  (ADR-0207; chiesto dall'utente il 2026-10-05). Il riquadro «98 · out of
+  100» sopra il disegno non c'è più, nemmeno nei post che «Explore» mostra
+  mentre disegna una città. VoiceOver lo legge ancora: cambiarlo vuole i
+  file delle lingue, che erano di TASK-239. Altrove (fine corsa, «My
+  activities», disegno aperto dal «Profile», post da condividere) il
+  punteggio resta. Esce con la prossima pubblicazione.
+  `tasks/TASK-241.md`.
+
 - **App e API** — TASK-236: i paesi vicini sotto «Near me» (ADR-0200;
   chiesto dall'utente il 2026-10-05, regola, testi e campioni confermati
   uno per uno; PR #323, merge `8c3a6ff`). In «Explore», con «Near me»,

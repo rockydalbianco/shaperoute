@@ -367,8 +367,10 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   (TASK-156, ADR-0127, chiesto dall'utente). Niente sulla pagina dice che
   sono esempi: scelta dell'utente. Ogni scheda ha l'iniziale e il nome di
   chi ha corso, la
-  città, il disegno in giallo a tutta larghezza, il punteggio («98», «out
-  of 100»), il titolo e una riga «Horse · 19.2 km · 1 h 41 min». Sono le
+  città, il disegno in giallo a tutta larghezza, il titolo e una riga
+  «Horse · 19.2 km · 1 h 41 min». **Sopra il disegno non c'è il
+  punteggio** (TASK-241, ADR-0207, chiesto dall'utente): lo legge solo
+  VoiceOver. Sono le
   figure venute meglio nelle sette città del catalogo, due per città e
   nessuna forma più di due volte; corridori, titoli, tempi e punteggi sono
   inventati.
@@ -422,8 +424,8 @@ lineetta sotto; gli altri sono grigi. Niente giallo: è del percorso.
   MapLibre che l'elenco copre, una mappa alla volta, inquadrata come la
   linea; finché non arriva la scheda è la linea sul fondo scuro, e senza
   rete resta così. In basso a destra di ogni mappa il credito,
-  «OpenFreeMap © OpenMapTiles / Data from OpenStreetMap», in due righe
-  accanto al punteggio. Le foto fatte restano finché l'app è aperta.
+  «OpenFreeMap © OpenMapTiles / Data from OpenStreetMap», in due
+  righe. Le foto fatte restano finché l'app è aperta.
 - **«Explore»** chiede i suoi percorsi all'API la prima volta che ci si
   arriva, non all'apertura dell'app; tornandoci l'elenco è ancora lì. Non
   ha più «←»: per tornare c'è lo swipe, o il nome «Draw».

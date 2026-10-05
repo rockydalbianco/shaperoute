@@ -10522,3 +10522,83 @@ manda SMS.
   serve l'aggiornamento del server prima di pubblicare l'app. Un'API di
   prima risponde `404` ai due `PUT` e l'app lo dice in parole; il suo
   `User` non ha `phone` e l'app lo legge come «nessun numero».
+
+## ADR-0208 — Con la penna alzata, la deviazione di un pezzo si cammina invece di disegnarla
+**Stato**: Attiva · 2026-10-05 · **deciso dall'agente su delega
+dell'utente** (TASK-242). Se alzare la penna anche sulle deviazioni del
+contorno resta dell'utente.
+
+**Contesto**: l'utente, il 2026-10-05, con lo screenshot della faccina a
+15 km a Trento: «Ma quand'è la possibilità di alzare la penna anche per la
+bocca», e poi «vedi da dove nasce e migliora il servizio di disegno». La
+bocca è già un pezzo staccato (ADR-0185), ma sulla mappa pendeva dal bordo
+della faccia. Rifatto sul Mac: la bocca attraversa la ferrovia, il primo
+sottopasso è 250–370 m sotto la sua linea, e il motore disegnava 560–650 m
+di andata e ritorno fuori dalla linea. La penna si alzava solo fra un
+pezzo e l'altro, mai dentro un pezzo.
+
+**Decisione**:
+
+1. **Una deviazione** (`detours.py`) è un tratto del percorso di un pezzo
+   fra due nodi **sulla linea** del pezzo (entro `LIFT_NEAR` = 1/8 di
+   altezza di pezzo, la tolleranza della somiglianza) che se ne allontana
+   più di `LIFT_FAR` = 3/8 di altezza: circa un decimo del lato del
+   disegno, 175–185 m per una faccina da 15 km. La distanza si misura sui
+   punti delle strade, non solo sui nodi.
+2. **Si cammina, non si disegna** (`pen_up.trace`, `_lifted`): il pezzo si
+   disegna in due parti, e dalla fine dell'una all'inizio dell'altra c'è
+   un tratto a piedi come fra due pezzi, per la strada più breve. I `walks`
+   sono quindi più dei pezzi meno uno.
+3. **Un pezzo comincia e finisce sulla sua linea**: un tratto così prima
+   del primo nodo sulla linea, o dopo l'ultimo, si lascia fuori senza
+   tratti a piedi in più (il tratto a piedi che porta al pezzo arriva più
+   avanti). Per un anello, che finisce dove comincia, i due sono un tratto
+   solo.
+4. **Una deviazione che torna al nodo da cui parte** si taglia e basta:
+   la linea prosegue, nessun tratto a piedi.
+5. **Il contorno non si tocca**: le sue deviazioni restano disegnate. Un
+   buco nel contorno toglie alla forma più di un tratto storto.
+6. **Mai più di `MAX_WALKS` = 9 tratti a piedi**, quanti ne tiene un
+   risultato dell'API (`schemas.MAX_WALKS`, che non cambia): se le
+   deviazioni sono di più, si camminano le più profonde. Il sole, con 8
+   tratti fra i pezzi, ne ha uno.
+7. **La distanza che la ricerca insegue conta ancora le deviazioni**
+   (`pen_up.sized_m`, `optimizer.drawn_distance`): la forma resta
+   grande com'era, non cresce per recuperare i metri non disegnati.
+   Togliendoli dal conto, a Trento la ricerca ingrandiva la faccina fino
+   a far passare la bocca sul bordo (18,0 km, 0,74, contro 15,8 km e
+   0,79). I km «di disegno» che l'app mostra sono quelli veri, senza le
+   deviazioni: possono stare più sotto la distanza chiesta di prima.
+8. **Solo le forme a pezzi sulle strade**: le parole con la penna alzata
+   (ADR-0157) e l'acqua (ADR-0188) restano come sono.
+
+**Alternative scartate**:
+
+- **Spostare la bocca dove le strade la lasciano passare**: i pezzi si
+  spostano al più di 1/16 del lato (116 m a 15 km), il sottopasso è a
+  250–370 m.
+- **Alzare la penna dopo la ricerca, solo sul percorso scelto**: due
+  copie dei passi dopo la ricerca (`plan_shape`, `ShapeJob.here`), e la
+  ricerca non vede che una forma con una deviazione camminata è riuscita
+  meglio.
+- **Togliere le deviazioni dai km che la ricerca insegue**: vedi il
+  punto 7.
+- **Una soglia più bassa** (2/8 di altezza, 120 m a 15 km): non provata
+  sui percorsi. Dai tratti misurati a Trento, la bocca della variante B
+  si spezzerebbe in tre parti per due tratti a 133 e 142 m dalla linea,
+  che all'occhio dell'agente (non giudicati dall'utente) si leggono come
+  bocca.
+
+**Conseguenze**:
+
+- Il percorso scelto è quasi sempre quello di prima, con la deviazione
+  tratteggiata e più km a piedi (a Trento, variante A: da 2,3 a 2,9 km a
+  piedi, da 13,5 a 12,9 km di disegno, somiglianza da 0,77 a 0,79).
+- La voce dice «Part done. Walk to the next part» anche a metà di un
+  pezzo: la frase resta giusta.
+- `schemas.py` e `models.py` descrivono ancora i `walks` come «uno in
+  meno dei pezzi»: sono di TASK-238 mentre si scrive, da aggiornare dopo.
+- `engine.zip` va rifatto: il telefono disegna con lo stesso motore.
+
+**Giudicato dall'utente** (2026-10-05, sulle immagini prima/dopo della
+faccina e della ciambella a Trento): «sì, va bene, fai il merge».

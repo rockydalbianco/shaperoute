@@ -1025,6 +1025,9 @@ punto, ricentra la mappa.
 - Sotto i risultati, «© OpenStreetMap contributors».
 - Nessun risultato: «No place found. Try adding the city.» Errore di rete o
   del servizio: «The search failed. Check the connection and try again.»
+- Con «Paddle» la ricerca offre anche i laghi e le spiagge che l'app
+  conosce, sopra questi risultati (TASK-240, ADR-0204: «Sull'acqua:
+  «Paddle»»). Con «Run» e «Bike» è quella descritta qui.
 
 ## Forma e distanza
 
@@ -1930,8 +1933,9 @@ run», con «Close» in alto a sinistra:
   «Sgrava», il titolo (quello della corsa, o luogo e forma; nessuno a
   fine corsa), il disegno della corsa in nero **senza i primi e gli ultimi
   200 m**, e in basso i risultati accesi, due per riga: «Distance»,
-  «Time», «Pace», «Score» (il passo manca sotto i 100 m, il punteggio a
-  una corsa che non ce l'ha).
+  «Time», «Pace» (il passo manca sotto i 100 m). **Il punteggio non è fra i risultati**
+  (TASK-241 parte C, chiesto dall'utente): non si può accendere, non è
+  sul post e non va nel testo per Strava.
 - **«Results»**: una pastiglia per risultato, accesa all'inizio; spenta,
   il risultato sparisce dal post e dal testo per Strava.
 - **«Add emoji»**: 🔥 ❤️ 💪 🏃 🎉 😅 🥵 😎 ⚡ 🏆 ☀️ 🌧️. Un tocco mette l'emoji
@@ -1974,6 +1978,37 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   e torna a 2 km ogni volta che si sceglie «Paddle». La richiesta ha
   `activity: "paddling"`. Il pulsante della corsa libera dice «Paddle
   without a route».
+- **«Another place»** (TASK-240, ADR-0204): la ricerca della partenza
+  offre anche i laghi e le spiagge dell'elenco di «Explore» (`WATER_SPOTS`:
+  211 laghi d'Italia, Lago di Garda, Lago di Como, Jesolo, Riccione), mai
+  un lago preso da Photon o da Geoapify: solo di quelli il server ha
+  l'acqua.
+  - Il campo dice «Lake, beach, city or street».
+  - I laghi compaiono **subito**, da 3 lettere, senza aspettare la rete, e
+    stanno **sopra** le vie e i paesi trovati; al massimo tre
+    (`SPOT_PLACES_SHOWN`), il più vicino alla posizione per primo. Un
+    luogo trovato con lo stesso nome di un lago mostrato non si ripete.
+    Con un lago mostrato non si dice «No place found».
+  - Il testo si legge come un indirizzo (`findSpots` in
+    `src/paddle/placeSpots.ts`): le parole che non sono nel nome di nessun
+    lago si ignorano («Terme», «via», «spiaggia»); le parole comuni, quelle
+    in più del 2% dei nomi («lago», «di», «del», «san»), non contano quando
+    un'altra parola dice il lago. «lago di Levico Terme» trova «Lago di
+    Levico», «spiaggia di Riccione» trova «Riccione». Con sole parole
+    comuni devono esserci tutte nel nome, come in «Explore»: «lago» trova
+    ogni lago, «via al lago» nessuno.
+  - Scelto un lago, la partenza è il suo punto della riva più vicino alla
+    posizione (un lago lungo ne ha molti), e la riga dice «Starting from
+    Lago di Levico.».
+  - Un lago piccolo, le cui forme stanno a 1,5 o 1 km (TASK-233), porta il
+    campo della distanza a quella, se era più lunga (`distanceOnSpot`); un
+    lago da 2 km e una via la lasciano com'è.
+  - Le vie e i paesi restano quelli della ricerca di sempre: una partenza
+    su un lungomare che non è nell'elenco funziona solo dove il server ha
+    o riesce a scaricare l'acqua.
+  - La regola delle parole, il mare (solo Jesolo e Riccione), la distanza
+    sui laghi piccoli e il testo del campo sono **confermati dall'utente**
+    il 2026-10-05 (`tasks/TASK-240.md`).
 - **Il risultato**: «heart · on the water · target 2 km». Il percorso
   parte dalla riva, dove si arriva a piedi: se è a più di 50 m dalla
   partenza chiesta, il segnaposto ciano «Start here» la segna, come per una

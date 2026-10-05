@@ -156,12 +156,8 @@ export function FinishCard({ apiUrl, run, onDone, onResume, fetchFn }: Props) {
         )}
       </View>
       <View style={styles.buttons}>
-        {/* The post of the run, with its score once it has one (TASK-231). */}
-        <SharePostButton
-          makeRun={() =>
-            postOfTrack(run.track, state.status === "scored" ? state.score.score : null)
-          }
-        />
+        {/* The post of the run (TASK-231); it never has the score (TASK-241). */}
+        <SharePostButton makeRun={() => postOfTrack(run.track)} />
         {(state.status === "offline" || state.status === "failed") && (
           <Pressable style={styles.button} onPress={retry} accessibilityRole="button">
             <Text style={styles.buttonText}>Try again</Text>

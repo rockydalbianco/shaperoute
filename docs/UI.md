@@ -1892,7 +1892,7 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     forma ci sta, ognuno con i punti della riva da cui partono gli esempi
     (uno ogni 4 km su una riva lunga: l'app prende il più vicino) e la
     distanza delle forme: **2 km, oppure 1,5 o 1 km su un lago piccolo**.
-    Per ora il nord-est: 41 laghi, 93 punti (`tasks/TASK-233.md`).
+    L'Italia intera: 211 laghi, 758 punti (`tasks/TASK-233.md`).
   - Un luogo ha **le otto forme della corsa** in canoa (TASK-227, scelta
     dell'utente): cuore, cerchio, stella, luna, cavallo, lumaca, testa di
     cane, testa di coniglio. Quelle dei quattro luoghi scelti a mano
@@ -1925,12 +1925,13 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   - Testi nuovi **da confermare con l'utente**: la frase della voce e la
     riga dei km, in inglese e in italiano; tedesco, spagnolo e francese da
     confermare.
-- **I laghi sul server**: il server ha l'acqua solo dei quattro luoghi
-  (`data/cache/water/`, TASK-225); altrove la scarica da Overpass, se
-  risponde, e la prima volta ci mette minuti, altrimenti «Map data for this
-  area could not be downloaded.». **L'acqua dei laghi dell'elenco va messa
-  sul server prima di pubblicare l'app** (TASK-233 parte B, con l'ok
-  dell'utente; `MAPS.md`, «I laghi di Explore»).
+- **I laghi sul server**: il server ha l'acqua dei quattro luoghi
+  (TASK-225) e, dal 2026-10-05, di ogni lago dell'elenco (TASK-233: 210
+  file in `data/cache/water/`). Altrove, per esempio al mare lontano da
+  Jesolo e Riccione, la scarica da Overpass, se risponde, e la prima volta
+  ci mette minuti, altrimenti «Map data for this area could not be
+  downloaded.». **Un elenco nuovo vuole prima la sua acqua sul server**
+  (`MAPS.md`, «I laghi di Explore»).
 - Testi nuovi **da confermare con l'utente**: «On the water, a shape of the
   catalogue.», «on the water», «Paddle without a route», i testi d'errore
   qui sopra e quelli di «Explore» («On the water», «Shapes to paddle,

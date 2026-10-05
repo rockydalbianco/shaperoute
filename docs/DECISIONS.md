@@ -9847,3 +9847,9 @@ pagina come quella della corsa.
 - Il Lago di Ledro manca: in OpenStreetMap è `water=pond`. Seguito.
 - Gli esempi a 1,5 e 1 km stanno sul telefono sotto chiavi loro
   (`paddling:1500:…`), a parte da quelli a 2 km.
+
+**Aggiunta (2026-10-05, parte B)**: con l'ok dell'utente l'elenco è
+dell'Italia intera, 211 laghi e 758 punti, e l'acqua di ognuno è sul
+server (210 file, 50 MB). Il calcolo è stato fatto sul Mac dall'estratto
+del server copiato in sola lettura, e sul server sono stati solo copiati i
+file: niente CPU dell'API, niente riavvio.

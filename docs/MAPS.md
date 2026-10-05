@@ -163,7 +163,10 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   file. Un lago è un'acqua su cui il motore pagaia (`water.is_lake`), con
   un nome da lago e largo abbastanza per un cerchio da 1 km a 50 m dalla
   riva. Nel nord-est (estratto del 2026-10-02): 41 laghi, 93 punti, 41 file
-  d'acqua per 12 MB, 4 minuti e mezzo di prove sul Mac.
+  d'acqua per 12 MB, 4 minuti e mezzo di prove sul Mac. **In Italia**
+  (`italy-260930-water.osm.pbf`, 2026-10-05): 211 laghi, 758 punti, 210
+  file d'acqua per 50 MB, sul server dallo stesso giorno; 26 minuti di
+  prove sul Mac.
   **Overpass e i laghi**: la prima risposta vera alla query (dal server,
   2026-10-04, 184 s) dava le relazioni senza membri, perché `out tags
   geom` non li scrive: un lago disegnato come multipoligono mancava.

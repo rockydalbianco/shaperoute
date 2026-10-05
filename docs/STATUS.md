@@ -220,6 +220,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   numeri («Ultimi 10 km più veloci dei 10 precedenti.»), con la voce dei
   km in bici anch'essa ogni 10 km (TASK-216). Il codice dopo la #259 e TASK-206
   C (stessi file della voce). `tasks/TASK-217.md`.
+- **TASK-232 — Forme inclinate fino a 45°, con la mappa girata**
+  (ADR-0195; Todo, chiesto dall'utente il 2026-10-05): il motore inclina
+  ogni forma fino a ±45° quando segue meglio le strade (oggi ±15°,
+  ADR-0038), il risultato dice di quanto (`rotation_deg`), e l'app gira
+  la mappa perché il disegno si veda dritto. Parte A (motore e API) dopo
+  TASK-226, parti B e C (app, corse salvate) dopo TASK-119 B. Prima della
+  B, chiedere all'utente la freccia del nord e la mappa durante la
+  corsa (proposta nel task file). `tasks/TASK-232.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,

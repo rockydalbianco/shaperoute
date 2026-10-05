@@ -9397,3 +9397,43 @@ SVG: le linee sono `View` ruotate.
   Strava», e la foto si aggiunge a mano. Cambiare la descrizione là è la
   parte B di TASK-231 (API).
 - I testi nuovi sono nelle cinque lingue (ADR-0172), da far confermare.
+
+## ADR-0195 — Le forme si inclinano fino a 45°, e la mappa gira perché si vedano dritte
+
+**Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-232 ·
+45° e la mappa girata sono scelte dell'utente; il resto è deciso
+dall'agente su delega dell'utente · sostituisce il limite di 15° di
+ADR-0038
+
+**Contesto**: ADR-0038 tiene ogni forma con un alto e un basso entro
+±15°, perché su una mappa col nord in alto l'occhio non riconosceva le
+forme inclinate (TASK-035). In un posto dove le strade reggono la forma
+solo inclinata, il percorso esce dritto ma la segue peggio. L'utente:
+«pur di farlo venire perfetto puoi scegliere tu l'orientamento e girare
+la mappa anche fino a 45 gradi».
+
+**Decisione**:
+
+1. Ogni forma con un alto e un basso si inclina fino a ±45°: catalogo,
+   emoji, contorni da foto, parole (anche quelle a blocchi lungo le
+   strade), canoa. Il cerchio resta libero.
+2. A parità vince la forma dritta: inclinarla costa il 5% di copertura a
+   45°, in proporzione all'angolo, come spostare la partenza di 500 m
+   (`OFFSET_FIT_PENALTY`). Il valore si tara sui campioni.
+3. Il risultato porta `rotation_deg` (antiorario, ADR-0018, fra −180 e
+   180), 0 per le forme che girano libere.
+4. L'app gira la mappa di `−rotation_deg` dove mostra il disegno di un
+   percorso, così la forma si vede dritta. Senza il campo, nord in alto.
+5. Il GPX non cambia.
+
+**Alternative scartate**: tenere 15° (la richiesta è di provare di più);
+girare libero ogni forma (oltre 45° la mappa capovolta disorienta, e
+lettere e animali si leggono male); inclinare la forma senza girare la
+mappa (è ciò che ADR-0038 ha mostrato non riconoscibile).
+
+**Conseguenze**: la ricerca prova più rotazioni (7 invece di 3 per
+partenza e fase), con lo stesso numero di tracciati: il tempo va misurato.
+Cambiano i percorsi di oggi dove una forma inclinata segue meglio: i
+campioni si rigiudicano. La mappa girata ha bisogno di un'indicazione del
+nord, da scegliere con l'utente (TASK-232, parte B). Le corse salvate
+prima restano col nord in alto.

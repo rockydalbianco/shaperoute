@@ -47,8 +47,8 @@ type Props = {
 /**
  * «Drawings» in a profile (TASK-117, ADR-0159): the runs it made public,
  * the latest first, three a row, a page at a time. Each is the run as the
- * others see it, small and without its first and last 200 m, with its
- * score; a tap opens it on the map.
+ * others see it, small and without its first and last 200 m; a tap opens
+ * it on the map. Never its score (TASK-241).
  */
 export function DrawingsGrid({ publicId, own }: Props) {
   const { pageOf, open, opening, openProblem } = useDrawingsDoor();
@@ -173,14 +173,9 @@ export function DrawingsGrid({ publicId, own }: Props) {
                 onPress={() => open(drawing)}
                 disabled={opening !== null}
                 accessibilityRole="button"
-                accessibilityLabel={
-                  drawing.score !== null
-                    ? t("{title}, score {score} out of 100, open on the map", {
-                        title: drawingName(drawing),
-                        score: drawing.score,
-                      })
-                    : t("{title}, open on the map", { title: drawingName(drawing) })
-                }
+                accessibilityLabel={t("{title}, open on the map", {
+                  title: drawingName(drawing),
+                })}
                 testID="drawing-cell"
               >
                 <RunDrawing
@@ -189,11 +184,6 @@ export function DrawingsGrid({ publicId, own }: Props) {
                   width={cell}
                   height={cell}
                 />
-                {drawing.score !== null && (
-                  <Text style={styles.score}>
-                    {t("Score {score}", { score: drawing.score })}
-                  </Text>
-                )}
               </Pressable>
             ))}
           </View>
@@ -238,10 +228,6 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.6,
-  },
-  score: {
-    color: color.textMuted,
-    fontSize: fontSize.small,
   },
   message: {
     color: color.textMuted,

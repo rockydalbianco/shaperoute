@@ -6,14 +6,15 @@ import {
   PADDLE_EXAMPLES,
 } from "../explore/exampleRoutes";
 import { metresBetween } from "../map/coordinates";
+import beaches from "./beaches.json";
 import lakes from "./lakes.json";
 import { WATER_PLACES } from "./waterPlaces";
 
 /**
  * A point on the shore of a lake or of the sea that examples start from
  * (TASK-233): one of the places chosen by hand (WATER_PLACES, with `from`
- * and the examples that come with the app), or a point of the lakes'
- * list. A long shore has many points under one name.
+ * and the examples that come with the app), or a point of the lakes' or of
+ * the beaches' list. A long shore has many points under one name.
  */
 export type WaterSpot = {
   name: string;
@@ -78,9 +79,14 @@ export function allSpots(listed: readonly unknown[]): WaterSpot[] {
   return [...FEATURED, ...found];
 }
 
-/** Every spot of «Explore» with «Paddle». The list is written by `python -m
- * shaperoute_api.lake_catalog` (TASK-233). */
-export const WATER_SPOTS: readonly WaterSpot[] = allSpots(lakes.lakes);
+/** Every spot of «Explore» with «Paddle». The lakes are written by `python
+ * -m shaperoute_api.lake_catalog` (TASK-233), the beaches by
+ * `shaperoute_api.beach_catalog` (TASK-245): a seaside place has one point,
+ * on its shore. */
+export const WATER_SPOTS: readonly WaterSpot[] = allSpots([
+  ...lakes.lakes,
+  ...beaches.beaches,
+]);
 
 /**
  * One spot a name: the nearest to `from`, the nearest name first. Without

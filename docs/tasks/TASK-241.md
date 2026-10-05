@@ -135,6 +135,45 @@ docs/tasks/TASK-241.md
 Fuori scope: il punteggio a fine corsa e sui disegni del «Profile»
 (griglia e disegno aperto); il campo `score` dell'API.
 
+## Parte E — Niente punteggio a fine corsa né sui disegni del «Profile»
+
+Chiesto dall'utente il 2026-10-05: «sì toglilo anche da lì»; alla domanda
+su cosa mostra la scheda di fine corsa ha scelto «Solo km e tempo».
+Branch `feat/TASK-241-e-no-score-anywhere`.
+
+- [x] La griglia «Drawings» non mostra «Score 87», né lo legge VoiceOver.
+- [x] Il disegno aperto dal «Profile» non mostra «87 · out of 100».
+- [x] La scheda di fine corsa dice solo «4.0 km · 32 min».
+- [x] A fine corsa l'app non chiama `POST /track-scores`.
+- [x] «Done» senza account toglie la corsa dal telefono.
+- [x] Lint, typecheck, Prettier e test dell'app verdi.
+
+```
+apps/mobile/App.tsx
+apps/mobile/src/screens/FinishScreen.tsx
+apps/mobile/src/screens/FinishScreen.test.tsx
+apps/mobile/src/social/DrawingsGrid.tsx
+apps/mobile/src/social/DrawingsGrid.test.tsx
+apps/mobile/src/social/DrawingCard.tsx
+apps/mobile/src/about/content/en.ts
+apps/mobile/src/about/content/it.ts
+apps/mobile/src/i18n/de.ts
+apps/mobile/src/i18n/es.ts
+apps/mobile/src/i18n/fr.ts
+apps/mobile/src/i18n/it.ts
+apps/mobile/__tests__/AppActivities.test.tsx
+apps/mobile/__tests__/AppDrawings.test.tsx
+apps/mobile/__tests__/AppPenUpSaved.test.tsx
+docs/UI.md
+docs/STATUS.md
+docs/DECISIONS.md
+docs/tasks/TASK-241.md
+```
+
+Fuori scope: il campo `score` e `POST /track-scores` dell'API;
+`src/api/trackScores.ts` (resta, senza chi lo chiama: lo leggono i test
+della penna alzata); le due frasi di «Privacy» che nominano il punteggio.
+
 ## Esito
 
 Fatto il 2026-10-05. Parte A (PR #345, merge `ad80385`): il riquadro non
@@ -142,7 +181,32 @@ c'è più, nel «Feed» e nei post che «Explore» mostra mentre disegna una
 città (stesso componente). Parte B (PR #348, merge `69af6c6`): nemmeno
 VoiceOver legge più il punteggio. Parte C (PR #355, merge `b7a82da`): il
 post da condividere non ha più il punteggio, nemmeno nel testo per
-Strava. Parte D: «My activities» non lo mostra più, né nell'elenco né
-sulla corsa aperta. Le pubblicazioni le fa il coordinatore, con l'ok
+Strava. Parte D (PR #358, merge `78e9bc1`): «My activities» non lo
+mostra più, né nell'elenco né sulla corsa aperta. Parte E (PR #365,
+merge `0294922`): via anche dai disegni del «Profile» e dalla fine corsa,
+dove l'app non lo chiede più all'API. **Il punteggio non si vede più da
+nessuna parte.** Le pubblicazioni le fa il coordinatore, con l'ok
 dell'utente: ogni parte esce con la prima che parte da un `main` che la
-contiene. Resta il punteggio a fine corsa e sui disegni del «Profile».
+contiene.
+
+**Cosa resta nell'API**, non toccata:
+
+- Il punteggio continua a essere calcolato e salvato dall'API al
+  salvataggio della corsa («Save» manda la corsa senza punteggio, com'era
+  già: `pauses`, `points`, `shape`, `similarity`, `style`, `title`,
+  `track`, `word`). `score` e `fidelity` restano nelle risposte di
+  `/me/activities` e dei disegni; l'app li legge e non li mostra. I
+  punteggi già salvati restano dove sono.
+- `POST /track-scores` esiste ancora ma l'app non lo chiama più. Con lui
+  **l'evento `run_scored` degli `insights` non viene più registrato**
+  (partiva da quella richiesta): se quel dato serve, è un seguito (il
+  server potrebbe registrarlo al salvataggio).
+- Nell'app `src/api/trackScores.ts` resta senza una schermata che lo
+  chiami: lo leggono i test della penna alzata (`toScoreRequest`).
+  Toglierlo è un seguito.
+- I post d'esempio del «Feed» tengono `score` nei dati: `feedRoute` lo usa
+  come somiglianza del percorso che si apre dal post.
+
+**Da decidere con l'utente**: le due frasi della bozza di «Privacy» che
+nominano il punteggio («…distance, duration, score…», ancora vera; «a run
+scored» fra gli eventi, non più vera).

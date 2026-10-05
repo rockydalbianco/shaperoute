@@ -22,6 +22,7 @@ import {
   placesAhead,
 } from "./aheadExamples";
 import { readAheadFile, writeAheadFile } from "./aheadStore";
+import beaches from "./beaches.json";
 import { WATER_PLACES } from "./waterPlaces";
 import { examplesAt, NEAR_ME_M, type WaterSpot } from "./waterSpots";
 
@@ -112,6 +113,29 @@ test("the three places nearest, one a name, within «Near me»", () => {
   expect(PLACES_AHEAD).toBe(3);
   expect(placesAhead(LEVICO_TERME, [FAR])).toEqual([]);
   expect(NEAR_ME_M).toBeLessThan(100_000);
+});
+
+test("a beach is a place as a lake is: its shapes are asked from its shore", async () => {
+  const alassio = beaches.beaches.find((beach) => beach.name === "Alassio");
+  expect(alassio).toBeDefined();
+  const point = alassio?.point as LatLon;
+  // The app's own list (TASK-245), a little inland of the beach.
+  const here: LatLon = [point[0] + 0.01, point[1]];
+  const places = placesAhead(here);
+  expect(places[0]).toMatchObject({ name: "Alassio", point, distance_m: 2000 });
+  expect(places.length).toBeLessThanOrEqual(PLACES_AHEAD);
+  const { request, asked } = api(() => ({ kind: "unreachable", url: "https://api" }));
+  expect(
+    await drawShapesAhead("https://api", here, {
+      request,
+      storage: memory(),
+      ...clock(),
+      active: () => true,
+    }),
+  ).toBe("stopped");
+  expect(asked).toEqual([
+    { shape: "circle", distance_m: 2000, start: point, activity: "paddling" },
+  ]);
 });
 
 test("every shape of the three places is asked, the nearest first, and kept", async () => {

@@ -14,6 +14,13 @@ export type FollowsDoor = {
   account: Pick<Account, "state" | "sessionEnded">;
   /** Opens a member's profile over the app; back comes to «Profile». */
   openProfile: (person: Person) => void;
+  /**
+   * How many asked to follow when «Profile» opened (TASK-239): with one
+   * waiting, «Requests» is open from the start. Left out: nobody.
+   */
+  requests?: number;
+  /** The lists know how many ask now: the way to «Profile» shows it. */
+  onRequests?: (count: number) => void;
 };
 
 export const FollowsContext = createContext<FollowsDoor>({

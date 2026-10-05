@@ -88,7 +88,9 @@ test("a request accepted becomes a follower", async () => {
   await fireEvent.press(screen.getByRole("button", { name: "Accept adam.trento" }));
   expect(await screen.findByRole("button", { name: "Requests, 0" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Followers, 2" })).toBeOnTheScreen();
-  expect(screen.getByText("Nobody is asking to follow you.")).toBeOnTheScreen();
+  // The row stays, answered, to follow back from it (FollowBack.test.tsx).
+  expect(screen.queryByRole("button", { name: "Accept adam.trento" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Decline adam.trento" })).toBeNull();
   expect(screen.queryByTestId("requests-waiting")).toBeNull();
   expect(asked).toContain(`POST /me/follow-requests/${adam.public_id}/accept`);
 
@@ -107,6 +109,7 @@ test("a request declined is gone, and nobody follows more", async () => {
   await fireEvent.press(screen.getByRole("button", { name: "Decline adam.trento" }));
   expect(await screen.findByRole("button", { name: "Requests, 0" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Followers, 0" })).toBeOnTheScreen();
+  expect(screen.getByText("Nobody is asking to follow you.")).toBeOnTheScreen();
   expect(asked).toContain(`POST /me/follow-requests/${adam.public_id}/decline`);
 });
 

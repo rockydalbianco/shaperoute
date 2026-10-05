@@ -1,6 +1,6 @@
 # TASK-182 — Le unità di misura: km o miglia
 
-**Stato**: In corso (parte A in `main`, PR #351, merge `7a9506a`, 2026-10-05; parte B da fare)
+**Stato**: In revisione (parti A, B e C in `main`: #351, #368, #366; l'ultimo passo, «Phone units», in PR)
 **Fase**: 4 · **Branch**: `feat/TASK-182-units` (parte A)
 
 ## Obiettivo

@@ -147,7 +147,7 @@ docs/tasks/TASK-235.md
 
 ## Esito
 
-Il 2026-10-05, branch `feat/TASK-235-feed-ads`. La pubblicità sta solo
+Il 2026-10-05, branch `feat/TASK-235-feed-ads`, PR #324, merge `7452ec6`. La pubblicità sta solo
 nel «Feed»: `src/ads/feedAds.ts` (rete dietro un'interfaccia, consenso una
 volta), `useFeedAds` (un posto alla volta, il primo quando il Feed è la
 pagina sullo schermo, gli annunci tardi al primo posto ancora davanti),

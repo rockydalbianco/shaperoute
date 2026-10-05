@@ -259,6 +259,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `0011` e l'ok dell'utente). Poi **B** (l'app),
   dopo che l'utente ha confermato le proposte del task file; e TASK-208 A.
   Da dove riprendere: `tasks/TASK-211.md`.
+  **Parte B, l'app** (2026-10-05, ADR-0199; chiesta dall'utente: «ho
+  trovato il mio amico, ma non posso seguirlo»; «Requests» in «Profile»
+  scelto dall'utente): sul profilo di un altro il tasto «Follow» →
+  «Requested» → «Following»; in «Profile» i tre numeri «Requests»,
+  «Followers», «Following» con i loro elenchi («Accept», «Decline»,
+  «Remove»); un nome negli elenchi apre il profilo. Il server ha già l'API:
+  **manca solo pubblicare l'app** (con l'ok dell'utente, dal coordinatore).
+  Da fare: la prova sull'iPhone con due account; i testi nuovi (cinque
+  lingue) da confermare. L'aspetto non è stato visto su un telefono.
 - **TASK-208 — Pubblicare una corsa in stile Strava** (ADR-0170; scelte
   dell'utente del 2026-10-03: «How did it go?», tag degli iscritti per
   nome, fino a 3 foto, «Everyone», «Followers», «Only me»; e, durante la

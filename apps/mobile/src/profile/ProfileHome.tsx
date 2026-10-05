@@ -12,6 +12,7 @@ import {
   space,
 } from "../theme/tokens";
 import { DrawingsGrid } from "../social/DrawingsGrid";
+import { FollowLists } from "../social/FollowLists";
 import { photoBusyText, PhotoChoices } from "./PhotoChoices";
 import { ProfileHeader } from "./ProfileHeader";
 import { bioOf } from "./profileFields";
@@ -40,8 +41,9 @@ type Props = {
 
 /**
  * The first page of «Profile» with an account (TASK-177): who it is, with
- * the bio and «Edit profile» (TASK-116), what it keeps in two tiles with
- * their number, the way to «Settings», and the drawings it made public
+ * the bio and «Edit profile» (TASK-116), who asks to follow it, who does
+ * and whom it follows (TASK-211), what it keeps in two tiles with their
+ * number, the way to «Settings», and the drawings it made public
  * (TASK-117), as the others see them. A tap on the circle opens the ways
  * to change the picture under it, as the row of «Settings» (TASK-207).
  */
@@ -82,6 +84,7 @@ export function ProfileHome({ user, favorites, activities, onOpen, onEdit }: Pro
           <Text style={styles.editText}>{t("Edit profile")}</Text>
         </Pressable>
       </View>
+      <FollowLists />
       <View style={styles.tiles}>
         <Tile
           emoji={SECTION_EMOJI.favorites}

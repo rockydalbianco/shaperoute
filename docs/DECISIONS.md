@@ -9656,3 +9656,61 @@ provato, cioè intorno a quella chiesta (scale fra 0,4 e 1,1 di quella
 iniziale): quanto spesso scatta va misurato prima di fare l'app. Come per
 ADR-0041, la distanza consigliata non è garantita: un nuovo disegno rifà
 la ricerca.
+
+## ADR-0199 — Seguire nell'app: il tasto sul profilo di un altro, tre numeri in «Profile» con i loro elenchi
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-211, parte B), dentro le **scelte dell'utente**: seguire vuole una
+richiesta (2026-10-03, ADR-0173) e le richieste si vedono in «Profile»,
+con i tre numeri «Requests», «Followers», «Following» che aprono gli
+elenchi (2026-10-05, chiesto con «ho trovato il mio amico, ma non posso
+seguirlo»). Numero preso come primo libero, detto al coordinatore.
+
+**Contesto**: l'API di ADR-0173 è sul server dal 2026-10-03, ma l'app
+aveva solo la ricerca (TASK-215): un iscritto trovato non si poteva
+seguire, e chi riceveva una richiesta non aveva dove accettarla.
+
+**Decisione**:
+
+1. **Il tasto sul profilo di un altro** (`social/FollowButton.tsx`, sotto
+   l'intestazione di `UserProfilePage`): «Follow» (bianco, l'unica cosa da
+   fare lì; il giallo resta del percorso) manda la richiesta e diventa
+   «Requested»; «Requested» toccato la ritira subito; «Following» chiede
+   prima «Stop following {name}?» con «Keep it» e «Unfollow», nella
+   pagina come le altre conferme dell'app, senza finestre di sistema. Lo
+   stato mostrato è quello che risponde l'API, mai uno supposto prima. Sul
+   proprio profilo e con un'API senza `follow` il tasto non c'è.
+2. **La riga sotto il nome** di un altro: «12 drawings · 3 followers · 5
+   following». Chi smette di seguire vede subito un follower in meno,
+   senza richiedere il profilo.
+3. **In «Profile»**, sotto «Edit profile», **tre numeri**
+   (`social/FollowLists.tsx`): «Requests», «Followers», «Following». Un
+   tocco apre l'elenco sotto la riga, un altro lo richiude: niente pagine
+   nuove in `ProfileScreen`. «Requests» ha un pallino `warning` quando
+   qualcuno aspetta: senza notifiche (TASK-185) è l'unico posto che lo
+   dice.
+4. **Negli elenchi**: una richiesta ha «Accept» (bianco) e «Decline»;
+   accettata, la persona passa in «Followers» senza richiedere gli
+   elenchi. Un follower ha «Remove», che chiede prima «Remove {name} from
+   your followers?». «Following» non ha tasti: si smette dal profilo.
+   Venti per pagina, poi «Show more».
+5. **Un nome in un elenco apre il profilo** di quell'iscritto sopra l'app
+   (`PeopleScreen` con `first`, senza la ricerca sotto); «←» torna a
+   «Profile», che richiede i numeri.
+6. **Un contesto nuovo**, `social/followsDoor.ts`, dato da `ProfileLayer`
+   a «Profile»: l'API, l'account e la via al profilo di un iscritto. Le
+   chiamate stanno in `api/follows.ts`.
+7. **«Following» è una parola sola** per il tasto e per l'elenco: una
+   traduzione che va per tutti e due (it «Segui già»), come «Keep it».
+8. Con un'API senza gli elenchi (`404`) i tre numeri non si mostrano.
+
+**Alternative scartate**: le richieste in cima a «Feed» (proposta
+all'utente, non scelta); pagine proprie per gli elenchi dentro
+`ProfileScreen` (più file di altri per lo stesso risultato); una finestra
+di sistema per «Unfollow» (l'app non ne usa per le conferme); cambiare il
+tasto prima della risposta dell'API (su una rete lenta direbbe
+«Requested» per una richiesta mai arrivata).
+
+**Conseguenze**: si può seguire e accettare, quindi «Followers» di
+TASK-208 ha qualcuno da mostrare. Le richieste si scoprono solo aprendo
+«Profile», fino alle notifiche (TASK-185). I testi nuovi, in cinque
+lingue, sono da confermare con l'utente. Bloccare resta TASK-121.

@@ -67,15 +67,23 @@ def test_no_streets_no_direction() -> None:
     assert StreetDirections(nx.MultiDiGraph(), TRENTO).around((0, 0), 1e6) == []
 
 
-def test_a_block_word_turns_with_the_grid_but_never_beyond_the_limit() -> None:
+def test_a_block_word_turns_with_the_grid_up_to_45_degrees() -> None:
     starts = [(TRENTO, 0.0)]
     [[turn]] = grid_turns(_grid(20.0), TRENTO, starts, 1500.0).values()
     assert turn == pytest.approx(20.0, abs=0.5)
     [[turn]] = grid_turns(_grid(-25.0), TRENTO, starts, 1500.0).values()
     assert turn == pytest.approx(335.0, abs=0.5)
-    steep = 40.0
-    assert steep > GRID_MAX_TILT_DEG
-    assert grid_turns(_grid(steep), TRENTO, starts, 1500.0) == {TRENTO: [0.0]}
+    # A grid runs within 45° of level one way or across, and the app turns
+    # the map with the word (TASK-232, ADR-0195): at 40° it follows the
+    # grid, where up to 30° it stayed upright (TASK-077).
+    assert GRID_MAX_TILT_DEG == 45.0
+    [[turn]] = grid_turns(_grid(40.0), TRENTO, starts, 1500.0).values()
+    assert turn == pytest.approx(40.0, abs=0.5)
+    [[turn]] = grid_turns(_grid(-50.0), TRENTO, starts, 1500.0).values()
+    assert turn == pytest.approx(40.0, abs=0.5)
+    # No streets around: upright.
+    far = [((TRENTO[0] + 1.0, TRENTO[1]), 0.0)]
+    assert grid_turns(_grid(40.0), TRENTO, far, 1500.0) == {far[0][0]: [0.0]}
 
 
 class _Loader:

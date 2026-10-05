@@ -45,6 +45,9 @@ BETTER = {"better_distance_m"}
 # are what an older app sends and an older API answers.
 NEAR = {"near"}
 CENTRE = {"centre"}
+# Added by TASK-232 (ADR-0195), optional too: the fixtures written before
+# are what an older API answers and an older app sends back.
+ROTATION = {"rotation_deg"}
 
 
 def test_request_fixtures_are_valid_requests() -> None:
@@ -64,7 +67,10 @@ def test_request_fixtures_are_valid_requests() -> None:
 def test_result_fixtures_have_the_result_fields() -> None:
     for name in ("route-result.json", "route-result-word.json"):
         data = _load(name)
-        assert set(data) == _names(RouteResult) - WALKS - ON_FOOT - BETTER - CENTRE
+        assert (
+            set(data)
+            == _names(RouteResult) - WALKS - ON_FOOT - BETTER - CENTRE - ROTATION
+        )
         points = [tuple(p) for p in data["points"]]
         result = RouteResult(**{**data, "points": points})
         assert result.points[0] == result.points[-1]
@@ -84,7 +90,7 @@ def test_a_word_with_the_pen_up_and_its_walks_are_in_the_contract() -> None:
     request = RouteRequest(**{**data, "start": tuple(data["start"])})
     assert request.pen_up and request.shape == "smiley"
     data = _load("route-result-pen-up.json")
-    assert set(data) == _names(RouteResult) - ON_FOOT - BETTER - CENTRE
+    assert set(data) == _names(RouteResult) - ON_FOOT - BETTER - CENTRE - ROTATION
     points = [tuple(p) for p in data["points"]]
     walks = [tuple(w) for w in data["walks"]]
     result = RouteResult(**{**data, "points": points, "walks": walks})
@@ -130,7 +136,10 @@ def test_a_cycling_request_is_a_request_with_the_bike_limits() -> None:
 def test_alternatives_have_the_engine_limit_and_the_result_fields() -> None:
     assert _load("route-alternatives.json") == {"max_alternatives": MAX_ALTERNATIVES}
     for other in _load("route-result.json")["alternatives"]:
-        assert set(other) == _names(RouteResult) - WALKS - ON_FOOT - BETTER - CENTRE
+        assert (
+            set(other)
+            == _names(RouteResult) - WALKS - ON_FOOT - BETTER - CENTRE - ROTATION
+        )
         assert other["alternatives"] == []
 
 
@@ -151,7 +160,7 @@ def test_a_bike_route_and_where_it_is_walked_are_in_the_contract() -> None:
     # points like the walks, in the alternatives too.
     data = _load("route-result-cycling.json")
     for fields_of in (data, *data["alternatives"]):
-        assert set(fields_of) == _names(RouteResult) - BETTER - CENTRE
+        assert set(fields_of) == _names(RouteResult) - BETTER - CENTRE - ROTATION
     result = _result(data)
     for each in (result, *result.alternatives):
         assert each.on_foot and each.walks == []
@@ -170,7 +179,7 @@ def test_a_moved_shape_and_its_centre_are_in_the_contract() -> None:
     )
     assert request.activity == "paddling" and request.near is not None
     result = _load("route-result-paddling.json")
-    assert set(result) == _names(RouteResult)
+    assert set(result) == _names(RouteResult) - ROTATION  # of its day
     lat, lon = result["centre"]
     lats = [p[0] for p in result["points"]]
     lons = [p[1] for p in result["points"]]

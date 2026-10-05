@@ -562,6 +562,62 @@ I consigli con la soglia tenuta (somiglianza scelto → consigliato):
 - Il passo 2 (cercare apposta altre distanze, ADR-0197) troverebbe di
   più, a 5–50 s di server per distanza.
 
+### Forme inclinate (TASK-232)
+
+Quanto cambiano i percorsi se una forma si inclina fino a 45° (ADR-0195,
+`ROUTE_ENGINE.md` §5, «Forme inclinate»). Misurato il 2026-10-05 sul Mac,
+dalla cache, con `plan_route` (la ricerca della partenza e quella lontana
+quando parte) e `services/route-engine/tests/measure_tilt.py --catalog
+--words`: ogni caso prima com'era (15°, parole squadrate a 30°, nessun
+costo dell'inclinazione) e poi con il motore nuovo, uno dopo l'altro sullo
+stesso grafo già letto. 129 percorsi: i 12 di riferimento in cache, le 17
+forme del catalogo a Trento e Levico a 5/10/15 km (il pesce di Levico da
+5 km rifiutato), «CIAO», «IO», «RUN» a 9/12/15 km. Quattro processi in
+parallelo: i tempi si confrontano dentro lo stesso processo.
+
+| Ricerca | Uguali | Meglio | Peggio | Oltre 15° | Buoni (65 prima) | Tempo medio |
+|---|---|---|---|---|---|---|
+| Tutte le rotazioni insieme, costo in proporzione da 0° | 71 | 27 | 29 | 0 | 70, ma 2 buoni persi | +22% |
+| Tutte insieme, i primi 15° gratis | 116 | 4 | 8 | 7 | 65, 2 buoni persi | +11% |
+| Prima dritta, poi inclinata, anche lontano | 107 | 15 | 4 | 22 | 69 | +31% |
+| **Prima dritta, poi inclinata solo vicino (tenuta)** | **110** | **14** | **2** | **19** | **67** | **+10%** |
+
+(«meglio» e «peggio»: somiglianza di almeno mezzo punto diversa; i
+percorsi che cambiano di meno contano fra quelli che cambiano.)
+
+- **Tutte insieme non va**: il conteggio delle strade premia piazzamenti
+  inclinati che tracciati vengono peggio, e con lo stesso budget la
+  ricerca ne prova meno di dritti. Con il costo da 0° nessuna forma si
+  inclina oltre 15°, ma molte si raddrizzano e peggiorano (il pesce di
+  Trento da 10 km 0,91 → 0,70, la testa di cane di Levico da 15 km 0,95 →
+  0,88); il cuore di Levico da 5 km, uno dei 12 di riferimento, scende da
+  0,92 a 0,88.
+- **Prima dritta**: dove la ricerca di sempre dà un percorso buono è lui,
+  punto per punto. Nella prima prova anche la ricerca lontana provava le
+  inclinazioni (tempo +31%), e un percorso inclinato vicino, disegnabile
+  ma non buono, teneva fuori quello lontano che vinceva prima: gatto e
+  pesce di Levico da 15 km da 0,71 e 0,78 a 0,64 e 0,62. Tenuta: la
+  ricerca lontana resta dritta, e vicino o lontano si decide sulla ricerca
+  dritta, come prima.
+- **I 12 di riferimento**: tutti identici, tempo medio 5,5 → 5,8 s (+6%;
+  due cuori di Levico fanno i 10 tracciamenti in più senza trovare di
+  meglio).
+- **I 19 che cambiano** (campioni `samples/TASK-232_*`, `LOG.md`): tutti
+  inclinati oltre 15°, di 20–45° (la mappa li gira), 14 con la somiglianza
+  più alta.
+  Diventano buoni la lumaca di Trento da 5 km (0,85 → 0,91) e quella di
+  Levico da 10 km (0,83 → 0,92); l'albero di Natale di Trento da 15 km
+  (0,93 → 0,98) e la lumaca di Trento da 10 km (0,92 → 0,90) erano buoni
+  solo con la partenza spostata di 1 km, ora lo sono dove l'utente è. Il
+  sole di Levico da 15 km 0,75 → 0,90, il fantasmino di Levico da 10 km
+  0,61 → 0,73. Due scendono di qualche punto con la distanza più giusta:
+  l'albero di Natale di Levico da 5 km (0,75 a 6,6 km → 0,73 a 4,8 km) e
+  la lumaca di Trento da 10 km, sopra. Il gatto e il sole di Trento da
+  5 km guadagnano forma (0,79 → 0,91, 0,84 → 0,96) allungandosi del 22–25%,
+  scelti dal costo.
+- **Sull'acqua** lo stesso schema (`water_fit.py`): i 32 esempi della canoa
+  in «Explore» non cambiano (tutti ci stanno dritti).
+
 ## Fixture di test
 
 `services/route-engine/tests/fixtures/levico_walk_1km.graphml`: 1 km²

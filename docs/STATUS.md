@@ -149,24 +149,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-226 — Gli occhi staccati sull'acqua** (ADR-0188; chiesto
-  dall'utente il 2026-10-03, forme scelte il 2026-10-05: tutte quelle a
-  pezzi tranne il sole). **Parte A, il motore e l'API**, in `main` dalla
-  #310 (`15df224`): con `pen_up` e `paddling` una forma a pezzi si disegna
-  pezzo per pezzo; il percorso lascia il contorno dove gli occhi sono più
-  vicini, li disegna e torna, e i tratti a penna alzata sono i `walks`.
-  Campioni veri nei quattro luoghi: 36 su 36 a 2 km. Con la penna giù tutto
-  identico. **Parte B, l'app**, in PR: `pen_up` da solo con «Paddle» per
-  le otto forme, la pausa e la voce in canoa («Paddle to the next part»,
-  la penna giù 5 m prima), la riga dei km, le teste di «Explore» con gli
-  occhi staccati anche dentro l'app e nelle schede; e, seguito di
-  TASK-223, l'interruttore su strada per gatto, pesce, teste e zucca
-  (scelta dell'utente del 2026-10-05). **Ordine**: il server non ha la
-  parte A e rifiuta `pen_up` con `paddling`: prima l'aggiornamento del
-  server e `draw_examples`, con l'ok dell'utente, poi la pubblicazione
-  della B. Due testi nuovi da confermare; da provare sull'iPhone. Da dove
-  riprendere: `tasks/TASK-226.md`.
-
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal
@@ -466,6 +448,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **Motore, API e app** — TASK-226: gli occhi staccati sull'acqua
+  (ADR-0188; chiesto dall'utente il 2026-10-03, forme scelte il
+  2026-10-05: tutte quelle a pezzi tranne il sole). **Parte A**, #310
+  (`15df224`): con `pen_up` e `paddling` una forma a pezzi si disegna pezzo
+  per pezzo; il percorso lascia il contorno dove gli occhi sono più vicini,
+  li disegna e torna, e i tratti a penna alzata sono i `walks`; la distanza
+  chiesta è quella di tutto il percorso. Campioni veri nei quattro luoghi:
+  36 su 36 a 2 km. Con la penna giù tutto identico. **Parte B**, #315
+  (`9297984`): con «Paddle» `pen_up` da solo per le otto forme, la pausa e
+  la voce in canoa («Paddle to the next part», la penna giù 5 m prima), la
+  riga dei km, le teste di «Explore» con gli occhi staccati anche dentro
+  l'app e nelle schede; e, seguito di TASK-223, l'interruttore su strada
+  per gatto, pesce, teste e zucca. **Il server non ha la parte A** e
+  rifiuta `pen_up` con `paddling`: `main` non si pubblica finché il server
+  non è aggiornato, con `draw_examples` e l'ok dell'utente. Due testi nuovi
+  da confermare; da provare sull'iPhone. `tasks/TASK-226.md`.
 
 - **App** — TASK-217: la voce confronta ogni km col precedente
   (ADR-0180; chiesto e scelto dall'utente il 2026-10-03; PR #308, merge

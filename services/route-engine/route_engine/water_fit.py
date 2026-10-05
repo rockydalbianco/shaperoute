@@ -11,6 +11,14 @@ least (ADR-0161); checks those exactly on the band; and joins each to the
 shore start of lowest cost by a straight leg out and back. The cost says
 how much the shape had to shrink and move.
 
+A shape in pieces is drawn with the pen up (TASK-226, ADR-0188): its outline
+as any shape, and each piece on its own, such as the eyes of a face. The
+route leaves the outline at the vertex from which the pieces are nearest
+(`_branch`), paddles to each in turn without drawing and comes back to that
+vertex, then goes on along the outline. Outline and pieces are placed
+together, all in the band; the stretches between them are the route's
+`walks`, paddled with the pen up, and count in its distance.
+
 Metres on the plane tangent at the requested start, (lat, lon) in and out.
 """
 
@@ -110,6 +118,11 @@ class WaterRoute:
     # the route gets from the shore.
     nearest_land_m: float
     farthest_shore_m: float
+    # A shape in pieces (TASK-226): [from, to] indices into `points`, both
+    # included, of each stretch paddled without drawing, from the outline
+    # to a piece, from one piece to the next and back to the outline, in
+    # order (as RouteResult.walks). Empty for a shape drawn in one line.
+    walks: tuple[tuple[int, int], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -163,6 +176,86 @@ def _densified(xy: np.ndarray, step: float) -> np.ndarray:
         t = np.arange(1, n + 1)[:, None] / n
         out.append(a + (b - a) * t)
     return np.concatenate(out)
+
+
+# --- A shape in pieces (TASK-226) --------------------------------------------
+
+
+def _entered(piece: np.ndarray, at: Sequence[float]) -> np.ndarray:
+    """`piece` as it is drawn coming from `at`: a closed one from its vertex
+    nearest `at`, round and back to it; an open one from its nearer end (as
+    Outline.pen_up_lines)."""
+    if len(piece) > 2 and math.dist(piece[0], piece[-1]) <= 1e-9:
+        ring = piece[:-1]
+        first = int(np.argmin(np.hypot(ring[:, 0] - at[0], ring[:, 1] - at[1])))
+        return np.concatenate([ring[first:], ring[:first], ring[first : first + 1]])
+    if math.dist(piece[-1], at) < math.dist(piece[0], at):
+        return piece[::-1]
+    return piece
+
+
+def _tour(
+    vertex: Sequence[float], pieces: Sequence[np.ndarray]
+) -> tuple[tuple[np.ndarray, ...], float]:
+    """The pieces in the order they are drawn leaving the outline at
+    `vertex`: each time the nearest left, entered where it is nearest
+    (`_entered`), the first of the file among equals. With them, how far
+    the pen is up: to the first, from each to the next, and from the last
+    back to `vertex`."""
+    left = list(range(len(pieces)))
+    at = (float(vertex[0]), float(vertex[1]))
+    drawn: list[np.ndarray] = []
+    links = 0.0
+    while left:
+        entered = [_entered(pieces[i], at) for i in left]
+        away = [math.dist(line[0], at) for line in entered]
+        k = min(range(len(left)), key=lambda j: (away[j], left[j]))
+        links += away[k]
+        drawn.append(entered[k])
+        at = (float(entered[k][-1][0]), float(entered[k][-1][1]))
+        left.pop(k)
+    return tuple(drawn), links + math.dist(at, vertex)
+
+
+@dataclass(frozen=True)
+class _Pieces:
+    """The pieces of a shape around the centre of its outline, in its
+    units, as they are drawn: `tour` leaving the outline at its vertex
+    `branch`, the pen up for `links` in all; `drawn` is their own length."""
+
+    branch: int
+    tour: tuple[np.ndarray, ...]
+    links: float
+    drawn: float
+
+    @property
+    def extra(self) -> float:
+        """What they add to the outline's length."""
+        return self.drawn + self.links
+
+
+def _branch(shape: Sequence[XY], pieces: Sequence[Sequence[XY]]) -> _Pieces | None:
+    """Where the route leaves the outline for `pieces`, given in the frame
+    of `shape`: the vertex of the outline from which the pen is up the
+    least (`_tour`), the first among equals. None without pieces."""
+    if not pieces:
+        return None
+    unit = _centred(shape)
+    centre = np.asarray(shape, dtype=float)[:-1].mean(axis=0)
+    parts = [np.asarray(piece, dtype=float) - centre for piece in pieces]
+    tours = [_tour(vertex, parts) for vertex in unit[:-1]]
+    branch = min(range(len(tours)), key=lambda i: (tours[i][1], i))
+    tour, links = tours[branch]
+    drawn = sum(float(np.hypot(*np.diff(part, axis=0).T).sum()) for part in parts)
+    return _Pieces(branch, tour, links, drawn)
+
+
+def _reach(unit: np.ndarray, parts: _Pieces | None) -> float:
+    """How far the shape reaches from its centre, in its units."""
+    reach = float(np.hypot(*unit.T).max())
+    for piece in parts.tour if parts else ():
+        reach = max(reach, float(np.hypot(*piece.T).max()))
+    return reach
 
 
 def _spread(n: int) -> np.ndarray:
@@ -323,6 +416,26 @@ class _Placement:
     rotation_deg: float
     centre: np.ndarray
     outline: np.ndarray  # closed, in metres around the start
+    # A shape in pieces (TASK-226): the pieces as they are drawn, placed
+    # with the outline; its vertex where the route leaves it for them; and
+    # the metres they add to its length, the pen up included.
+    pieces: tuple[np.ndarray, ...] = ()
+    branch: int = 0
+    extra_m: float = 0.0
+
+    def in_band(self, area: WaterArea) -> bool:
+        """Whether the pieces, and the stretches with the pen up from the
+        outline to them and back, lie in the band."""
+        at = self.outline[self.branch]
+        for piece in [*self.pieces, self.outline[self.branch][None, :]]:
+            if math.dist(at, piece[0]) > 1e-6 and not area.band.contains(
+                LineString([at, piece[0]])
+            ):
+                return False
+            if len(piece) > 1 and not area.band.contains(LineString(piece)):
+                return False
+            at = piece[-1]
+        return True
 
 
 def _start_on_shore(
@@ -351,7 +464,7 @@ def _start_on_shore(
     index, legs = index[legs <= APPROACH_MAX_M], legs[legs <= APPROACH_MAX_M]
     if not len(index):
         return None
-    total = line.length + 2 * legs
+    total = line.length + placement.extra_m + 2 * legs
     moves = np.hypot(pts[index, 0], pts[index, 1])
     costs = (
         np.abs(total - distance_m) / distance_m
@@ -372,13 +485,19 @@ def _start_on_shore(
     return None
 
 
-def _route_points(outline: np.ndarray, shore: XY, on_shape: XY) -> list[XY]:
-    """Shore, out to the shape, around it, back to where it joined, shore."""
+def _joined_side(outline: np.ndarray, on_shape: XY) -> int:
+    """The side of `outline` the point `on_shape` of it is on: from its
+    vertex of this index to the next."""
     line = LineString(outline)
     along = line.project(Point(on_shape))
     lengths = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(outline, axis=0).T))])
     k = int(np.searchsorted(lengths, along, side="right") - 1)
-    k = min(max(k, 0), len(outline) - 2)
+    return min(max(k, 0), len(outline) - 2)
+
+
+def _route_points(outline: np.ndarray, shore: XY, on_shape: XY) -> list[XY]:
+    """Shore, out to the shape, around it, back to where it joined, shore."""
+    k = _joined_side(outline, on_shape)
     vertices = [tuple(p) for p in outline[:-1]]
     n = len(vertices)
     ring = [on_shape] + [vertices[(k + 1 + i) % n] for i in range(n)] + [on_shape]
@@ -389,6 +508,44 @@ def _route_points(outline: np.ndarray, shore: XY, on_shape: XY) -> list[XY]:
     return points
 
 
+def _route_in_pieces(
+    placement: _Placement, shore: XY, on_shape: XY
+) -> tuple[list[XY], tuple[tuple[int, int], ...]]:
+    """`_route_points` for a shape in pieces: at the outline's vertex
+    `placement.branch` the pen goes up to where each piece begins, down
+    along it, and after the last up again back to that vertex; then the
+    outline goes on. The route and the stretches with the pen up, as
+    indices into it."""
+    outline = placement.outline
+    k = _joined_side(outline, on_shape)
+    n = len(outline) - 1
+    points: list[XY] = [shore]
+    walks: list[tuple[int, int]] = []
+
+    def draw_to(p: Sequence[float]) -> None:
+        if math.dist(p, points[-1]) > 1e-6:
+            points.append((float(p[0]), float(p[1])))
+
+    def paddle_to(p: Sequence[float]) -> None:
+        if math.dist(p, points[-1]) > 1e-6:
+            walks.append((len(points) - 1, len(points)))
+            points.append((float(p[0]), float(p[1])))
+
+    draw_to(on_shape)
+    for i in range(n):
+        vertex = (k + 1 + i) % n
+        draw_to(outline[vertex])
+        if vertex == placement.branch:
+            for piece in placement.pieces:
+                paddle_to(piece[0])
+                for p in piece[1:]:
+                    draw_to(p)
+            paddle_to(outline[vertex])
+    draw_to(on_shape)
+    draw_to(shore)
+    return points, tuple(walks)
+
+
 def fit_shape(
     shape: Sequence[XY],
     distance_m: float,
@@ -396,11 +553,18 @@ def fit_shape(
     *,
     name: str = "shape",
     free_rotation: bool = False,
+    pieces: Sequence[Sequence[XY]] = (),
 ) -> WaterRoute:
     """Place a normalized closed `shape` on the water of `area` so that it
     lies in the band, with a shore start reachable on foot, at the lowest
     cost (LEG_WEIGHT, MOVE_WEIGHT): the largest shape, the shortest legs,
     the nearest start.
+
+    `pieces` are the lines of a shape in pieces besides its outline, in the
+    frame of `shape` (TASK-226): placed with it, all in the band, each drawn
+    on its own with the pen up between them (`WaterRoute.walks`). At full
+    size the outline, the pieces and the stretches with the pen up are
+    together as long as the distance asked.
 
     NoWaterError when there is no band within reach of the start;
     WaterFitError when the shape does not fit in it, or fits only outside
@@ -408,8 +572,13 @@ def fit_shape(
     distance it fits at)."""
     area.prepare()
     unit = _centred(shape)
-    full = distance_m / _outline_length(shape)
-    radius = float(np.hypot(*unit.T).max()) * full
+    parts = _branch(shape, pieces)
+    if parts is None:
+        full = distance_m / _outline_length(shape)
+        radius = float(np.hypot(*unit.T).max()) * full
+    else:
+        full = distance_m / (_outline_length(shape) + parts.extra)
+        radius = _reach(unit, parts) * full
     reach = MOVE_MAX_M + APPROACH_MAX_M
     if area.band.is_empty or area.band.distance(Point(0.0, 0.0)) > reach:
         raise NoWaterError(
@@ -444,19 +613,40 @@ def fit_shape(
         for angle in rotations(free_rotation):
             outline = _placed(unit, full * level, angle)
             dense = _densified(outline, cell)
+            tour: tuple[np.ndarray, ...] = ()
+            if parts is not None:
+                tour = tuple(_placed(p, full * level, angle) for p in parts.tour)
+                dense = np.concatenate([dense, *(_densified(p, cell) for p in tour)])
             centres = _fitting_centres(grid, dense, reach + radius * level)
             for _, centre in _promising(
                 grid, join, centres, outline, PLACEMENTS_PER_TRY, max(5 * cell, 50.0)
             ):
-                placement = _Placement(level, angle, centre, outline + centre)
+                if parts is None:
+                    placement = _Placement(level, angle, centre, outline + centre)
+                else:
+                    placement = _Placement(
+                        level,
+                        angle,
+                        centre,
+                        outline + centre,
+                        tuple(piece + centre for piece in tour),
+                        parts.branch,
+                        parts.extra * full * level,
+                    )
                 line = LineString(placement.outline)
                 if not area.band.contains(line):
+                    continue
+                if placement.pieces and not placement.in_band(area):
                     continue
                 fitted_somewhere = True
                 start = _start_on_shore(area, placement, distance_m)
                 if start is None:
                     continue
-                found = _Found(placement, *start, line.length + 2 * start[4])
+                found = _Found(
+                    placement,
+                    *start,
+                    line.length + placement.extra_m + 2 * start[4],
+                )
                 if best_any is None or found.cost < best_any.cost:
                     best_any = found
                 off = abs(found.distance_m - distance_m)
@@ -515,7 +705,11 @@ class _Found:
 
 def _water_route(area: WaterArea, found: _Found) -> WaterRoute:
     placement = found.placement
-    local = _route_points(placement.outline, found.shore, found.on_shape)
+    walks: tuple[tuple[int, int], ...] = ()
+    if placement.pieces:
+        local, walks = _route_in_pieces(placement, found.shore, found.on_shape)
+    else:
+        local = _route_points(placement.outline, found.shore, found.on_shape)
     line = LineString(local)
     return WaterRoute(
         points=area.to_latlon(local),
@@ -529,6 +723,7 @@ def _water_route(area: WaterArea, found: _Found) -> WaterRoute:
         cost=found.cost,
         nearest_land_m=float(area.dry.distance(LineString(placement.outline))),
         farthest_shore_m=_farthest(line, area.shore),
+        walks=walks,
     )
 
 
@@ -556,13 +751,24 @@ def measure(points: Sequence[LatLon], area: WaterArea) -> WaterMeasures:
 # --- From a request ---------------------------------------------------------
 
 
-def water_bbox(start: LatLon, shape: Sequence[XY], distance_m: float) -> BBox:
+def water_bbox(
+    start: LatLon,
+    shape: Sequence[XY],
+    distance_m: float,
+    pieces: Sequence[Sequence[XY]] = (),
+) -> BBox:
     """The area whose water a request needs: the shape may lie as far as
     MOVE_MAX_M + APPROACH_MAX_M from the start, and the shore within
     SHORE_BAND_M of it counts. Rounded outward to 1e-4° (≈ 10 m), as the
     road areas, so the same request finds the same file."""
     unit = _centred(shape)
-    radius = float(np.hypot(*unit.T).max()) * distance_m / _outline_length(shape)
+    parts = _branch(shape, pieces)
+    if parts is None:
+        radius = float(np.hypot(*unit.T).max()) * distance_m / _outline_length(shape)
+    else:
+        radius = (
+            _reach(unit, parts) * distance_m / (_outline_length(shape) + parts.extra)
+        )
     half = MOVE_MAX_M + APPROACH_MAX_M + 2 * radius + SHORE_BAND_M
     south, west = local_to_latlon(start, -half, -half)
     north, east = local_to_latlon(start, half, half)
@@ -584,10 +790,20 @@ def plan_on_water(
     name: str = "shape",
     free_rotation: bool = False,
     bbox: BBox | None = None,
+    pieces: Sequence[Sequence[XY]] = (),
 ) -> tuple[WaterRoute, WaterArea]:
     """The whole plan from a request: the water of `water_bbox` (or of
     `bbox`, the area some data cover), then `fit_shape`."""
-    area_bbox = bbox if bbox is not None else water_bbox(start, shape, distance_m)
+    area_bbox = (
+        bbox if bbox is not None else water_bbox(start, shape, distance_m, pieces)
+    )
     area = build_area(source.elements(area_bbox), start, area_bbox)
-    route = fit_shape(shape, distance_m, area, name=name, free_rotation=free_rotation)
+    route = fit_shape(
+        shape,
+        distance_m,
+        area,
+        name=name,
+        free_rotation=free_rotation,
+        pieces=pieces,
+    )
     return route, area

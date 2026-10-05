@@ -38,11 +38,13 @@ MAX_IMAGE_BASE64 = 4 * -(-MAX_IMAGE_BYTES // 3)
 PEN_UP_SHAPES = tuple(name for name in SUPPORTED_SHAPES if in_pieces(name))
 # A walk between two letters of a word with the pen up (TASK-197), or two
 # pieces of a shape (TASK-223): its first and last point, indices into the
-# route's points; one fewer than letters or pieces, 8 for the sun.
+# route's points; one fewer than letters or pieces, 8 for the sun. On the
+# water the route also comes back to the outline it left (TASK-226): one
+# more than that, 9 for the sun.
 Walk = tuple[int, int]
 MAX_WALKS = max(
     MAX_WORD_LETTERS - 1,
-    *(len(compose_shape(name).letters) - 1 for name in PEN_UP_SHAPES),
+    *(len(compose_shape(name).letters) for name in PEN_UP_SHAPES),
 )
 # A stretch walked with the bike on foot (TASK-206, ADR-0167): its first and
 # last point, indices into the route's points, as a walk.
@@ -66,8 +68,10 @@ WALKS_DESCRIPTION = (
     "A word with the pen up (TASK-197), or a shape in pieces (TASK-223): "
     "[from, to] indices into points, both included, of each stretch walked "
     "from one letter or piece to the next without drawing; in order, the "
-    "next beginning where a walk ends. Empty for a shape with the pen down, "
-    "an image and a word without; missing from an older API."
+    "next beginning where a walk ends. On the water (TASK-226) they are "
+    "paddled: from the outline to a piece, between the pieces and back to "
+    "the outline. Empty for a shape with the pen down, an image and a word "
+    "without; missing from an older API."
 )
 ON_FOOT_DESCRIPTION = (
     "By bike (TASK-206): [from, to] indices into points, both included, of "
@@ -126,7 +130,8 @@ class RouteRequestBody(BaseModel):
             "route walks from one to the next without drawing (walks in the "
             "result). The distance is the letters'. So with a shape in "
             f"pieces, one of {', '.join(PEN_UP_SHAPES)}, piece by piece "
-            "(TASK-223), on the roads only."
+            "(TASK-223); on the water too (TASK-226), where the distance is "
+            "the whole route's, the stretches with the pen up included."
         ),
     )
 

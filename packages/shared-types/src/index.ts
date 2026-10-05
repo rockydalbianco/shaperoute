@@ -124,8 +124,8 @@ interface RouteRequestFields {
  * (TASK-197, ADR-0157): each letter drawn on its own, and the route walks
  * from one to the next without drawing (`RouteResult.walks`); the distance
  * is the letters'. So with a shape of PEN_UP_SHAPES, piece by piece
- * (TASK-223), on the roads only. Absent means false, as an older app sends
- * it. */
+ * (TASK-223); on the water too (TASK-226, ADR-0188), where the distance is
+ * the whole route's. Absent means false, as an older app sends it. */
 export type RouteRequest =
   | (RouteRequestFields & {
       shape: Shape;

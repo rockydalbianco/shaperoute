@@ -9397,3 +9397,61 @@ SVG: le linee sono `View` ruotate.
   Strava», e la foto si aggiunge a mano. Cambiare la descrizione là è la
   parte B di TASK-231 (API).
 - I testi nuovi sono nelle cinque lingue (ADR-0172), da far confermare.
+
+## ADR-0188 — Gli occhi staccati sull'acqua: i pezzi piazzati col contorno, lasciato dove sono più vicini, e la distanza di tutto il percorso
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-226 · le forme
+(tutte quelle a pezzi tranne il sole) e la penna alzata automatica sono
+scelte dell'utente; il resto è deciso dall'agente su delega dell'utente
+
+**Contesto**: sull'acqua una forma a pezzi (ADR-0185) si disegnava in una
+linea sola, con gli occhi attaccati al contorno da un collegamento
+percorso due volte, e `pen_up` con `paddling` era rifiutato. L'utente ha
+chiesto gli occhi senza linee di collegamento, con il disegno in pausa da
+solo fra un pezzo e l'altro. Sull'acqua non c'è una rete: i pezzi non si
+spostano «dove ci sono le strade», come fanno su strada (`pieces.compose`).
+
+**Decisione**:
+
+1. **Contorno e pezzi si piazzano insieme, rigidi.** Stessa scala, stessa
+   rotazione, stesso centro; tutti nella fascia (ADR-0154), compresi i
+   tratti a penna alzata. Un pezzo su un'isola o troppo vicino a un
+   ostacolo scarta il piazzamento.
+2. **Il contorno si lascia dove i pezzi sono più vicini**: al vertice da
+   cui la penna resta alzata di meno, calcolato una volta sulla forma. Lì
+   il percorso va al pezzo più vicino, poi al successivo, e dopo l'ultimo
+   torna allo stesso vertice; poi il contorno prosegue. I `walks` sono
+   quei tratti, dritti: uno per pezzo più il ritorno.
+3. **La distanza chiesta è quella di tutto il percorso**, tratti a penna
+   alzata compresi, come lo sono già i tratti dalla riva. Alla grandezza
+   intera contorno, pezzi e tratti a penna alzata sono lunghi insieme
+   quanto la distanza: la ricerca di ADR-0161 resta la stessa.
+4. **`pen_up` vale con `paddling`** per le forme a pezzi; senza, il
+   percorso è quello di prima, punto per punto. Quali forme l'app chiede
+   così è una scelta dell'utente, nell'app (parte B): tutte tranne il
+   sole.
+5. **`MAX_WALKS` dell'API sale a 9**: sull'acqua c'è anche il ritorno al
+   contorno.
+
+**Alternative scartate**:
+
+- **Andare ai pezzi da dove la riva tocca il contorno**, come su strada si
+  parte dalla fine del contorno. Provato: al mare il punto della riva è
+  spesso dal lato opposto agli occhi, e il pesce aveva 534 m a penna
+  alzata su 2 km, con la forma al 55%. La lunghezza dei tratti dipendeva
+  anche dal punto della riva, e i limiti della ricerca non valevano più.
+- **La distanza del solo disegno**, come su strada: sull'acqua i limiti di
+  1–5 km sono di sicurezza, e i tratti a penna alzata si pagaiano.
+- **Un tratto di andata e ritorno per ogni pezzo**, dal punto del contorno
+  più vicino a ciascuno: più pause, per pochi metri in meno.
+
+**Conseguenze**:
+
+- La penna alzata sull'acqua costa 64–112 m su 2 km per pesce e teste,
+  185–354 m per zucca, ciambella, fantasmino, gatto e faccina; il sole
+  726–876 m in 9 tratti, e per questo l'utente lo tiene a penna giù.
+- L'impronta del motore cambia: `draw_examples` dopo l'aggiornamento del
+  server, lo zip del telefono e l'impronta degli esempi della canoa
+  nell'app (ADR-0189) rifatti.
+- Un server senza questa parte rifiuta `pen_up` con `paddling`: l'app che
+  lo chiede (parte B) si pubblica dopo l'aggiornamento del server.

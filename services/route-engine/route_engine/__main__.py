@@ -11,7 +11,8 @@ walks from one to the next (TASK-197); with a shape or an outline that has
 pieces, the outline and then each piece on its own (TASK-223).
 `--activity paddling` draws a shape of the catalogue, 1-5 km, on the water
 of a lake or the sea, from a start on the shore; the water is cached in
-`<cache-dir>/water/` (TASK-191).
+`<cache-dir>/water/` (TASK-191). With `--pen-up` a shape in pieces is drawn
+piece by piece there too, the pen up between them (TASK-226).
 """
 
 from __future__ import annotations
@@ -330,6 +331,9 @@ def parse_args(
                 shape=args.shape,
                 distance_m=args.distance,
                 activity=args.activity,
+                # On the water the request says it (TASK-226); on roads the
+                # pieces are composed below, as a word's letters.
+                pen_up=args.pen_up and args.activity in WATER_ACTIVITIES,
             )
         else:
             request = OutlineRequest(
@@ -537,7 +541,8 @@ def _main_on_water(request: RouteRequest, args: argparse.Namespace) -> int:
     when = datetime.now(UTC)
     if args.out is not None:
         name = route_name(request.name, request.distance_m, when)
-        args.out.write_text(to_gpx(route.points, name, when), encoding="utf-8")
+        document = to_gpx(route.points, name, when, route.walks)
+        args.out.write_text(document, encoding="utf-8")
         print(f"Wrote {args.out}: {len(route.points)} points")
     shore_lat, shore_lon = on_water.shore_start
     print(
@@ -551,6 +556,11 @@ def _main_on_water(request: RouteRequest, args: argparse.Namespace) -> int:
     print(f"  leg:        {on_water.approach_m:.0f} m each way, shore to shape")
     print(f"  similarity: {route.similarity:.2f} (the shape itself)")
     print(f"  on water:   {route.distance_m:.0f} m (target {request.distance_m} m)")
+    if route.walks:
+        pen_up = ", ".join(
+            f"{path_length_m(route.points[a : b + 1]):.0f} m" for a, b in route.walks
+        )
+        print(f"  pen up:     {len(route.walks)} stretches, not drawn: {pen_up}")
     print(
         f"  checks:     the shape {on_water.nearest_land_m:.0f} m from land "
         f"at the nearest, the route {on_water.farthest_shore_m:.0f} m from "
@@ -559,7 +569,9 @@ def _main_on_water(request: RouteRequest, args: argparse.Namespace) -> int:
     for warning in route.warnings:
         print(f"  warning: {warning}")
     if args.track is not None:
-        return _print_track_score(args.track, route.points, route.similarity)
+        return _print_track_score(
+            args.track, route.points, route.similarity, route.walks
+        )
     return 0
 
 

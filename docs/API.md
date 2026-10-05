@@ -723,8 +723,14 @@ disegna da sola, e fra una e l'altra si cammina senza disegnare
   `PEN_UP_SHAPES` in `shared-types`: `smiley`, `ghost`, `donut`, `sun`, e
   `cat`, `fish`, `dog_head`, `rabbit_head`, `pumpkin`, che staccano gli
   occhi. Il risultato ha `shape` e `word: null`, con i `walks` (fino a 8,
-  i raggi del sole). Solo su strada: con `paddling` è `invalid_request`
-  (`on the water a shape is drawn with the pen down`).
+  i raggi del sole).
+- **Una forma a pezzi sull'acqua** (TASK-226, ADR-0188): `pen_up` vale
+  anche con `"activity": "paddling"`. Il percorso lascia il contorno
+  vicino ai pezzi, li disegna uno per volta e torna: i `walks` sono i
+  tratti pagaiati senza disegnare, uno per pezzo più il ritorno al
+  contorno (fino a 9, per il sole). La distanza chiesta è quella di tutto
+  il percorso, tratti a penna alzata compresi. Una forma senza pezzi resta
+  `invalid_request`. Senza `pen_up` la risposta è quella di prima.
 - **`walks` c'è sempre nelle risposte**, vuoto per una forma senza
   `pen_up`, un'immagine e una parola senza. Un'API precedente non lo manda: in
   `shared-types` è facoltativo, e un'app nuova legge anche un'API vecchia

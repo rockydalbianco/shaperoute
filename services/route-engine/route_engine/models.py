@@ -54,7 +54,6 @@ PEN_UP_WITHOUT_WORD = "pen_up is for the letters of a word"
 # A shape is drawn with the pen up only if it has pieces (TASK-223), and
 # only on roads: on the water its pieces are not placed yet (TASK-226).
 PEN_UP_WITHOUT_PIECES = f"{PEN_UP_WITHOUT_WORD}, or the pieces of a shape"
-PEN_UP_ON_WATER = "on the water a shape is drawn with the pen down"
 
 
 class InvalidRequestError(ValueError):
@@ -74,7 +73,8 @@ class RouteRequest:
     style: Style = "round"
     # Each letter drawn on its own, walking from one to the next without
     # drawing (TASK-197, ADR-0157): for a word, or a shape in pieces, each
-    # piece on its own (TASK-223, ADR-0185).
+    # piece on its own (TASK-223, ADR-0185), on the water too (TASK-226,
+    # ADR-0188).
     pen_up: bool = False
 
     def __post_init__(self) -> None:
@@ -99,13 +99,8 @@ class RouteRequest:
             raise InvalidRequestError(
                 "a style is for the letters of a word, not a shape"
             )
-        if self.pen_up and self.shape is not None:
-            if not in_pieces(self.shape):
-                raise InvalidRequestError(
-                    f"{PEN_UP_WITHOUT_PIECES}; {self.shape} has none"
-                )
-            if self.activity in WATER_ACTIVITIES:
-                raise InvalidRequestError(PEN_UP_ON_WATER)
+        if self.pen_up and self.shape is not None and not in_pieces(self.shape):
+            raise InvalidRequestError(f"{PEN_UP_WITHOUT_PIECES}; {self.shape} has none")
 
     @property
     def name(self) -> str:

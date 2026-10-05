@@ -22,6 +22,7 @@ import {
   follow,
   pageScript,
   parsePageMessage,
+  setDoubleTap,
   setPosition,
   showOthers,
   showProgress,
@@ -62,6 +63,9 @@ type Props = {
   progress?: { alongM: number; arrived: boolean } | null;
   /** The places of a themed route (TASK-129), or null for none. */
   stops?: { name: string; point: LatLon; passed: boolean }[] | null;
+  /** With it, a double tap on the map calls it and no longer zooms
+   * (TASK-119); two fingers still do. Without, the map is as before. */
+  onDoubleTap?: () => void;
   /** Called when the map cannot be shown, with a reason for the log. */
   onError: (reason: string) => void;
   style?: StyleProp<ViewStyle>;
@@ -78,6 +82,7 @@ export function MapView({
   heading = null,
   progress = null,
   stops = null,
+  onDoubleTap,
   onError,
   style,
 }: Props) {
@@ -92,6 +97,7 @@ export function MapView({
   const stopsShown = useRef(false);
   const othersShown = useRef(false);
   const progressShown = useRef(false);
+  const doubleTapAsked = useRef(false);
   const along = useMemo(() => (route ? cumulative(route) : null), [route]);
   // In steps, so the map is not told of every metre.
   const doneM = progress ? doneMetres(progress) : null;
@@ -197,6 +203,18 @@ export function MapView({
     }
   }, [ready, route, along, walks, doneM, pocket]);
 
+  // Asked for only where a double tap means something: elsewhere it zooms.
+  const wantsDoubleTap = onDoubleTap !== undefined;
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    if (wantsDoubleTap || doubleTapAsked.current) {
+      webView.current?.injectJavaScript(pageScript(setDoubleTap(wantsDoubleTap)));
+      doubleTapAsked.current = wantsDoubleTap;
+    }
+  }, [ready, wantsDoubleTap]);
+
   return (
     <View style={style}>
       <WebView
@@ -215,6 +233,8 @@ export function MapView({
             setReady(true);
           } else if (message?.type === "loaded") {
             setLoading(false);
+          } else if (message?.type === "doubleTap") {
+            onDoubleTap?.();
           } else if (message?.type === "error") {
             setLoading(false);
             onError(message.message);

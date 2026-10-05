@@ -1,6 +1,6 @@
 # TASK-119 — Reazioni ai disegni pubblicati, e il super like di Sgrava
 
-**Stato**: In corso — parte A (API) in `main` (PR #301, `3c94690`, 2026-10-04), non sul server; poi la parte B (app)
+**Stato**: In corso — parte A (API) in `main` (PR #301, `3c94690`, 2026-10-04), non sul server; parte B (app) fatta, nella sua PR (2026-10-05); poi server, pubblicazione e la prova sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-119-a-reactions-api` (parte A),
 `feat/TASK-119-b-reactions-app` (parte B)
 **Dipende da**: TASK-117 (i disegni pubblicati) · TASK-120 (i commenti) ·
@@ -136,12 +136,14 @@ Dell'agente, su delega (nell'ADR):
       commento compare in `GET /drawings/{id}/comments`.
 - [x] Reazione a un disegno che chi chiede non vede: `404`.
 - [x] Cancellato un disegno o un account, le sue reazioni spariscono.
-- [ ] App: il doppio tocco sul disegno aperto mostra il cuore e apre il
+- [x] App: il doppio tocco sul disegno aperto mostra il cuore e apre il
       campo del commento; «Cancel» non lascia niente; lì il doppio tocco
       non fa zoom, le due dita sì.
-- [ ] App: dalla barra si mette il super like anche con VoiceOver.
-- [ ] Senza rete una reazione torna com'era, con un avviso.
-- [ ] Test verdi; prova sull'iPhone con due account.
+- [x] App: dalla barra si mette il super like anche con VoiceOver.
+- [x] Senza rete una reazione torna com'era, con un avviso.
+- [x] Test verdi.
+- [ ] Dopo il merge, con il server aggiornato (`0015`) e l'app
+      pubblicata: la prova sull'iPhone con due account (dell'utente).
 
 ## File toccati
 
@@ -175,15 +177,30 @@ apps/mobile/src/social/SuperLikeSheet.tsx
 apps/mobile/src/social/SuperLikeSheet.test.tsx
 apps/mobile/src/social/useDrawingReactions.ts
 apps/mobile/src/social/reactionKinds.ts
+apps/mobile/src/social/reactionKinds.test.ts
+apps/mobile/src/social/reactionsDoor.ts
+apps/mobile/src/social/reactionsDoor.test.ts
 apps/mobile/src/social/DrawingCard.tsx
+apps/mobile/src/social/DrawingCard.test.tsx
+apps/mobile/src/screens/ProfileLayer.tsx
 apps/mobile/src/map/MapView.tsx
+apps/mobile/src/map/MapViewDoubleTap.test.tsx
 apps/mobile/src/map/mapPage.ts
+apps/mobile/src/map/mapPageDoubleTap.test.ts
+apps/mobile/src/map/messages.ts
 apps/mobile/App.tsx
 apps/mobile/src/i18n/
 docs/UI.md
+docs/DECISIONS.md
 docs/STATUS.md
 docs/tasks/TASK-119.md
 ```
+
+Aggiunti il 2026-10-05, scrivendo la parte B (chiesti al coordinatore):
+`ProfileLayer.tsx` (tre righe: è lì che vive l'account, come per i
+commenti), `messages.ts` (i due messaggi nuovi fra app e mappa),
+`reactionsDoor.ts`, i test in file nuovi e `DECISIONS.md` (le scelte
+della parte B, in fondo ad ADR-0193).
 
 `src/social/` e `DrawingCard.tsx`: liberi, ok del coordinatore del
 2026-10-04 (TASK-211 B e TASK-208 B non sono partite). `MapView.tsx`,
@@ -222,3 +239,39 @@ la migrazione e l'ok dell'utente (lo coordina il coordinatore).
 e `App.tsx`; **TASK-231** («Condivisione post e modifica con emoji») può
 toccare anche `DrawingCard.tsx`: accordarsi con la sua sessione.
 
+**Parte B, l'app** (2026-10-05, branch `feat/TASK-119-b-reactions-app`):
+`src/api/reactions.ts` (le tre chiamate), `reactionsDoor.ts` (le reazioni
+con l'account, da `ProfileLayer`), `useDrawingReactions.ts` (le emoji
+ottimiste, una per volta, indietro a un rifiuto; il super like aspetta
+l'API), `DrawingReactions.tsx` (il pulsante, le tre più usate, il totale,
+la barra delle sei, accanto al pulsante dei commenti), `SuperLikeSheet.tsx`
+(il cuore grande e il campo sopra la tastiera; il cuore da solo per un
+super like già messo), `reactionKinds.ts`. Il doppio tocco: la pagina
+della mappa lo riconosce dai tocchi di un dito solo quando l'app lo
+chiede (`setDoubleTap`, `doubleTap` in `messages.ts`), `MapView` ha
+`onDoubleTap`, `App.tsx` lo passa solo con un disegno aperto. Testi nelle
+cinque lingue. Come funziona: `UI.md`, «Le reazioni di un disegno»; le
+scelte: ADR-0193, punti 10–15.
+
+Provata: 51 test nuovi (1 809 in tutto, verdi); nel simulatore (Expo Go,
+API del worktree con un database usa e getta e la `0015`, tre account di
+prova) la scheda con le reazioni vere, la barra delle sei e il foglio del
+super like con il cuore; il riconoscimento del doppio tocco nella pagina
+vera con MapLibre 5.24 in un browser. La prova nel simulatore ha trovato
+il cuore grande invisibile con l'animazione nativa dentro il `Modal`:
+corretto (ADR-0193, punto 14). **Non provato con le dita**: il simulatore
+non era concesso ai tocchi, il doppio tocco e la tastiera vera sono della
+prova sull'iPhone.
+
+**Testi**: quelli della proposta (punto 5 di «Cosa fare»), che l'utente
+ha confermato il 2026-10-05 nella sessione della parte A («confermo i
+testi», riferito da quella sessione), più uno solo per VoiceOver, «{count}
+reaction» / «{count} reactions», chiesto all'utente nella sessione della
+parte B e ancora da confermare prima del merge.
+
+**Dopo il merge**: il server vuole la `0015` (e la `0014` di TASK-208 A)
+con l'ok dell'utente, poi la pubblicazione; finché il server non ha le
+reazioni l'app pubblicata non le mostra (la riga ha solo i commenti) e
+sul disegno aperto il doppio tocco non fa niente. Seguiti possibili:
+l'elenco di chi ha reagito, le reazioni nelle schede del feed vero
+(TASK-118).

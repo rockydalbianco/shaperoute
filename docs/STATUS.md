@@ -327,10 +327,19 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   migrazione `0015_reactions.sql`, `GET /drawings/{id}/reactions`, `PUT`
   e `DELETE /drawings/{id}/reaction`; il super like scrive il suo
   commento nella stessa transazione, dal filtro di TASK-213. Non sul
-  server: migrazione, quindi l'ok dell'utente. Poi la **parte B**, l'app
-  (`DrawingCard.tsx` ok dal coordinatore; `MapView.tsx`, `mapPage.ts`,
-  `App.tsx` da chiedere; TASK-231 può toccare `DrawingCard.tsx`). Da dove
-  riprendere: `tasks/TASK-119.md`, «Esito».
+  server: migrazione, quindi l'ok dell'utente. **Parte B, l'app**, fatta
+  il 2026-10-05 (branch `feat/TASK-119-b-reactions-app`): sotto un
+  disegno aperto, accanto al pulsante dei commenti, la propria reazione,
+  le tre più usate e il totale; il tocco apre la barra delle sei; le
+  emoji si vedono subito e tornano com'erano se l'API non le tiene; il
+  doppio tocco sulla mappa del disegno (che lì non fa più lo zoom) o il
+  cuore nella barra aprono il foglio «Super like» con il cuore grande e
+  il commento obbligatorio. Provata nel simulatore con un'API locale, non
+  con le dita. **Aspettano l'utente**: la conferma dei testi (task file,
+  «Esito»), l'aggiornamento del server con la `0015` e la pubblicazione,
+  la prova sull'iPhone con due account. Finché il server non ha le
+  reazioni l'app pubblicata non le mostra. Da dove riprendere:
+  `tasks/TASK-119.md`, «Esito».
 
 - **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:
   subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API

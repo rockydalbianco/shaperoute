@@ -107,6 +107,7 @@ import { activityOf, withoutRouteLabel } from "./src/settings/sport";
 import { SportButton } from "./src/settings/SportButton";
 import { useSport } from "./src/settings/useSport";
 import { DrawingCard } from "./src/social/DrawingCard";
+import { drawingDoubleTapped } from "./src/social/DrawingReactions";
 import { useDrawingsDoor } from "./src/social/drawingsDoor";
 import { color, space } from "./src/theme/tokens";
 
@@ -798,6 +799,10 @@ function Sgrava() {
               navigating && navigation.status === "following"
                 ? navigation.navigation
                 : null
+            }
+            // On a drawing a double tap is its super like, not a zoom (TASK-119).
+            onDoubleTap={
+              reviewing && drawing !== null ? drawingDoubleTapped : undefined
             }
             onError={setMapError}
             // A run of «My activities» takes the map from whatever was on it.

@@ -168,6 +168,9 @@ export const DE: Table = {
   "Sign up or log in to keep your favorite routes.":
     "Registriere dich oder melde dich an, um deine Lieblingsrouten zu behalten.",
 
+  // src/feed/FeedAd.tsx
+  Sponsored: "Gesponsert",
+
   // src/feed/FeedPost.tsx
   "OpenFreeMap © OpenMapTiles\nData from OpenStreetMap":
     "OpenFreeMap © OpenMapTiles\nDaten von OpenStreetMap",

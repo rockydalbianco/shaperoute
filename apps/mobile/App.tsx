@@ -18,7 +18,6 @@ import { useActivitiesDoor } from "./src/activities/activitiesDoor";
 import { ActivityCard } from "./src/activities/ActivityCard";
 import { type Drawn, sameLine } from "./src/activities/recordedRun";
 import { RunEnd } from "./src/activities/RunEnd";
-import { useAdBeforeRoute } from "./src/ads/useAdBeforeRoute";
 import { apiUrl } from "./src/api/apiUrl";
 import {
   chooseStart,
@@ -302,10 +301,7 @@ function Sgrava() {
   // Past RouteChoice to the image panel (TASK-079).
   const { edits, add, undo } = image;
   const imageEdits = useMemo(() => ({ ...edits, add, undo }), [edits, add, undo]);
-  const routeRequest = useRouteRequest(API_URL);
-  const { draw, cancel } = routeRequest;
-  // A ready route waits behind the ad, if there is one (TASK-132).
-  const state = useAdBeforeRoute(routeRequest.state);
+  const { draw, cancel, state } = useRouteRequest(API_URL);
   const gpx = useGpxExport(API_URL);
   const {
     explored: exploredRoute,
@@ -320,9 +316,7 @@ function Sgrava() {
   const [exploreCity, setExploreCity] = useState<Place | null>(null);
   // The cities chosen last, kept on the phone (TASK-134).
   const [recentCities, setRecentCities] = useState<Place[]>(loadRecentCities);
-  const themedRoute = useThemedRoute(API_URL);
-  const themedState = useAdBeforeRoute(themedRoute.state);
-  const themed = { ...themedRoute, state: themedState };
+  const themed = useThemedRoute(API_URL);
   const themedExport = useMemo(
     () => (themed.state.status === "done" ? themedGpx(themed.state.result) : null),
     [themed.state],
@@ -974,6 +968,7 @@ function Sgrava() {
               title: "Feed",
               render: () => (
                 <FeedScreen
+                  active={screen === "feed"}
                   onOpen={(post) => {
                     closeExplore();
                     openExplored(postRoute(post), fetchPostRoute(post));

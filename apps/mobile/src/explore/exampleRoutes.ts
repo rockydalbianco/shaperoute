@@ -10,6 +10,7 @@ import { useEffect, useSyncExternalStore } from "react";
 
 import { requestRoute, type RouteOutcome } from "../api/routes";
 import { metresBetween } from "../map/coordinates";
+import { readAheadFile } from "../paddle/aheadStore";
 import paddleExamples from "../paddle/paddleExamples.json";
 import type { Place } from "../places/photon";
 import { shapeAsked } from "../route/penUpShapes";
@@ -110,7 +111,7 @@ function shapeOf(shape: Shape, set: ExampleSet): ReturnType<typeof shapeAsked> {
 }
 
 /** What a set asks the API for `shape` from `city`: an example's request. */
-function requestOf(city: Place, shape: Shape, set: ExampleSet): RouteRequest {
+export function requestOf(city: Place, shape: Shape, set: ExampleSet): RouteRequest {
   return {
     ...shapeOf(shape, set),
     distance_m: set.distance_m,
@@ -131,7 +132,7 @@ function comesWithTheApp(set: ExampleSet, key: string): boolean {
 }
 
 /** A set's shapes, in the order they are asked (DRAW_ORDER). */
-function drawOrderOf(set: ExampleSet): readonly Shape[] {
+export function drawOrderOf(set: ExampleSet): readonly Shape[] {
   return DRAW_ORDER.filter((shape) => !isMore(shape) || set.more.includes(shape));
 }
 /**
@@ -510,8 +511,15 @@ function fromFile(
   key: string,
   set: ExampleSet,
 ): Example[] {
-  // What came with the app first: the phone's file is for the rest.
-  const saved = [...(set.bundled?.[key] ?? []), ...(storage.load()[key] ?? [])];
+  // What came with the app first, then what the phone drew ahead of the
+  // page (TASK-246): the phone's file is for the rest.
+  const saved = [
+    ...(set.bundled?.[key] ?? []),
+    ...(set.activity === "paddling"
+      ? (readKept({ [key]: readAheadFile().examples[key] })[key] ?? [])
+      : []),
+    ...(storage.load()[key] ?? []),
+  ];
   return setShapes(set).map((shape): Example => {
     const detail = saved.find((d) => d.shape === shape);
     if (

@@ -2153,6 +2153,13 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     mappa come un percorso di «Explore», con «Start», «Export GPX» e il
     cuore dei preferiti, che la tiene come canoa. La scelta resta quando si
     torna dalla mappa.
+  - **Le forme dei tre posti più vicini sono già sul telefono** (TASK-246,
+    ADR-0211; richiesta e scelta dell'utente): a ogni apertura dell'app,
+    dopo le mappe della zona, il telefono chiede all'API le otto forme dei
+    tre posti più vicini entro 30 km che non ha ancora, con qualunque
+    sport di «Settings», senza avvisi, anche con i dati mobili. La pagina
+    le mostra subito, come quelle venute con l'app; quello che manca
+    ancora lo chiede lei come prima.
 - **I pezzi staccati sull'acqua** (TASK-226, ADR-0188; scelta dell'utente
   sui campioni): con «Paddle» gatto, pesce, testa di cane, testa di
   coniglio, zucca, faccina, fantasmino e ciambella si chiedono **sempre**

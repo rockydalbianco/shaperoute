@@ -473,7 +473,7 @@ export const FR: Table = {
   "Avg speed": "Vit. moy.",
   "Last km": "Dernier km",
   "Last mi": "Dernier mi",
-  "Avg pace": "Allure moy.",
+  "Avg /500 m": "Moy. /500 m",
   "Last 500 m": "Dern. 500 m",
 
   // src/screens/SignInScreen.tsx

@@ -11678,8 +11678,11 @@ chiesto la velocità e l'andatura «che si usa col kayak».
 1. **Sotto la mappa «Speed now»**, in km/h, al posto di «Pace now», come
    in bici: è il numero che si guarda pagaiando.
 2. **Su «Data» e in pausa sei caselle**: «Speed now», «Avg speed», «Time»;
-   «Avg pace» in `/500 m`, «Last 500 m» (il tempo degli ultimi 500 m
-   interi), «Calories». **«Last km» ed «Elev. gain» non ci sono**: per
+   «Avg /500 m» (l'andatura media), «Last 500 m» (il tempo degli ultimi
+   500 m interi), «Calories». L'unità dell'andatura è nel nome della
+   casella: accanto al numero («5:37 /500 m») lo rimpiccioliva, visto in
+   un simulatore; i nomi nelle altre lingue sono quelli che ci stanno
+   («Med. /500 m», «Ø /500 m», «Moy. /500 m»). **«Last km» ed «Elev. gain» non ci sono**: per
    mostrare velocità e andatura insieme due caselle dovevano lasciare il
    posto, e un lago non sale. Le calorie restano quelle della corsa.
 3. **I parziali ogni 500 m**, non ogni km: il tempo di ogni 500 m è già

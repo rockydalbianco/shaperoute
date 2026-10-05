@@ -157,7 +157,7 @@ test("on the water the speed is in km/h and the pace is of 500 m", async () => {
   // The last 200 m at 5 km/h; 1.3 km in 14 min 36 s.
   expect(screen.getAllByLabelText("Speed now: 5.0 km/h")).toHaveLength(2);
   expect(screen.getByLabelText("Avg speed: 5.3 km/h")).toBeOnTheScreen();
-  expect(screen.getByLabelText("Avg pace: 5:37 /500 m")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Avg /500 m: 5:37")).toBeOnTheScreen();
   expect(screen.getByLabelText("Last 500 m: 6:00")).toBeOnTheScreen();
   expect(screen.getAllByLabelText("Distance: 1.30 km")).toHaveLength(2);
   // A lake does not climb: the pace has the place of the metres climbed.
@@ -174,7 +174,7 @@ test("on the water «Data» says each 500 m and how it changed", async () => {
   expect(screen.getByLabelText("Speed now: 5.0 km/h")).toBeOnTheScreen();
   expect(screen.queryByText("Pace now")).toBeNull();
   await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
-  expect(screen.getByLabelText("Avg pace: 5:37 /500 m")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Avg /500 m: 5:37")).toBeOnTheScreen();
   expect(screen.getByText("m")).toBeOnTheScreen();
   expect(screen.queryByText("Km")).toBeNull();
   expect(screen.getByLabelText("500 metres: 5:00")).toBeOnTheScreen();
@@ -201,7 +201,7 @@ test("with miles the speed is in mph, the pace still of 500 m", async () => {
     expect(screen.getByLabelText("Speed now: 3.1 mph")).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
     expect(screen.getByLabelText("Avg speed: 3.3 mph")).toBeOnTheScreen();
-    expect(screen.getByLabelText("Avg pace: 5:37 /500 m")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Avg /500 m: 5:37")).toBeOnTheScreen();
     expect(screen.getByLabelText("Last 500 m: 6:00")).toBeOnTheScreen();
     expect(screen.getByLabelText("1000 metres: 6:00, +1:00")).toBeOnTheScreen();
     expect(screen.queryByText("Mi")).toBeNull();
@@ -219,7 +219,7 @@ test("in Italian, the names of the paddler's tiles", async () => {
     expect(screen.getByLabelText("Vel. ora: 5.0 km/h")).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
     expect(screen.getByLabelText("Vel. media: 5.3 km/h")).toBeOnTheScreen();
-    expect(screen.getByLabelText("Passo medio: 5:37 /500 m")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Med. /500 m: 5:37")).toBeOnTheScreen();
     expect(screen.getByLabelText("Ultimi 500 m: 6:00")).toBeOnTheScreen();
     expect(screen.getByLabelText("1000 metri: 6:00, +1:00")).toBeOnTheScreen();
   } finally {
@@ -304,7 +304,7 @@ test("the end of an outing without a route: a paddler's numbers and post", async
   }
   await render(<FreeFinishCard run={run} onDone={() => {}} />);
   expect(screen.getByLabelText("Avg speed: 5.3 km/h")).toBeOnTheScreen();
-  expect(screen.getByLabelText("Avg pace: 5:37 /500 m")).toBeOnTheScreen();
+  expect(screen.getByLabelText("Avg /500 m: 5:37")).toBeOnTheScreen();
   expect(screen.getByLabelText("Last 500 m: 6:00")).toBeOnTheScreen();
   const post = jest.mocked(SharePostButton).mock.calls[0][0].makeRun();
   expect(resultValue(post, "pace")).toBe("5:37 /500 m");

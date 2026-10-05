@@ -42,7 +42,7 @@ velocità.
 1. `src/navigation/paddle.ts` (nuovo): `isPaddle`, `PADDLE_PACE_M`,
    `per500S`, `paddlePaceLabel`, `paddleAnnouncement`.
 2. `RunPanel.tsx`: con `paddling` «Speed now» e «Avg speed» (km/h o mph),
-   «Avg pace» in `/500 m`, «Last 500 m»; niente «Last km» né «Elev. gain».
+   «Avg /500 m», «Last 500 m»; niente «Last km» né «Elev. gain».
 3. `RunDashboard.tsx`: i parziali ogni 500 m, chiamati coi metri.
 4. La voce: ogni km (o miglio) col passo medio ogni 500 m, cinque lingue.
 5. Il post di fine uscita: l'andatura in `/500 m`; lo sport nel file della
@@ -53,8 +53,7 @@ velocità.
 ## Criteri di accettazione
 
 - [x] Lungo un percorso sull'acqua, sotto la mappa: «Speed now» in km/h.
-- [x] Su «Data» e in pausa: «Speed now», «Avg speed», «Time», «Avg pace»
-      in `/500 m`, «Last 500 m», «Calories».
+- [x] Su «Data» e in pausa: «Speed now», «Avg speed», «Time», «Avg /500 m», «Last 500 m», «Calories».
 - [x] I parziali sono ogni 500 m («500», «1000», …), col loro tempo e la
       differenza dal precedente; prima dei primi 500 m lo dicono.
 - [x] Con le miglia: distanza in miglia, velocità in mph, andatura e
@@ -97,12 +96,12 @@ docs/UI.md
 
 ## Da confermare dall'utente
 
-- I testi nuovi: «Avg pace» · «Passo medio», «Last 500 m» · «Ultimi
+- I testi nuovi: «Avg /500 m» · «Med. /500 m», «Last 500 m» · «Ultimi
   500 m», «Your first 500 metres will show here.» · «I tuoi primi 500 metri
   appariranno qui.», e la frase della voce «… Passo medio: 6 minuti ogni
   500 metri.» (tedesco, spagnolo e francese scritti dall'agente).
 - **«Elev. gain» non c'è sull'acqua**: al suo posto e a quello di «Last
-  km» ci sono «Avg pace» e «Last 500 m». Se il dislivello serve, va tolto
+  km» ci sono «Avg /500 m» e «Last 500 m». Se il dislivello serve, va tolto
   altro.
 - **In bici senza percorso** («Ride without a route») la schermata mostra
   ancora il passo al km, non i km/h: non è stato chiesto e non è stato
@@ -110,5 +109,9 @@ docs/UI.md
 
 ## Esito
 
-Parte A: vedi la PR. Non guardata su un telefono: i numeri e i testi sono
-provati dai test, la larghezza delle etichette nelle caselle no.
+Parte A: vedi la PR. Le caselle sono state guardate in un simulatore
+(iPhone 17e, Expo Go, una pagina di prova con `RunStrip` e `RunGrid`):
+«5:37 /500 m» rimpiccioliva il numero e «Passo med…» e «Letzte 500…»
+venivano tagliati, quindi l'unità è nel nome della casella («Avg /500 m»)
+e i nomi sono quelli che ci stanno. I parziali e la voce sono provati solo
+dai test. Sull'iPhone, pagaiando, non è stata provata.

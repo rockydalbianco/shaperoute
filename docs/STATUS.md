@@ -152,7 +152,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
   **Parte A, solo app**, in PR: lungo un percorso sull'acqua e in «Paddle
   without a route» la schermata mostra «Speed now» e «Avg speed» in km/h
-  (mph con le miglia), «Avg pace» in `/500 m` e «Last 500 m» al posto di
+  (mph con le miglia), «Avg /500 m» e «Last 500 m» al posto di
   «Last km» ed «Elev. gain»; i parziali sono ogni 500 m; la voce dice ogni
   km col passo medio ogni 500 metri (cinque lingue); il post di fine
   uscita scrive «5:37 /500 m». Corsa e bici come prima. Non guardata su un

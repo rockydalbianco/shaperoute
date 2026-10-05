@@ -478,8 +478,8 @@ export const DE: Table = {
   "Avg speed": "Ø Geschw.",
   "Last km": "Letzter km",
   "Last mi": "Letzte mi",
-  "Avg pace": "Ø Pace",
-  "Last 500 m": "Letzte 500 m",
+  "Avg /500 m": "Ø /500 m",
+  "Last 500 m": "Letzte 500",
 
   // src/screens/SignInScreen.tsx
   "Sign up": "Registrieren",

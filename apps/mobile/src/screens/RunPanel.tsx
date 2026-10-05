@@ -272,9 +272,10 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
       </View>
       {numbers.paddle ? (
         // On the water: a paddler's pace where a run has the last
-        // kilometre and the metres climbed (TASK-251).
+        // kilometre and the metres climbed (TASK-251). Its unit is in the
+        // name: beside the number it made the number smaller.
         <View style={styles.tiles}>
-          <Tile label={t("Avg pace")} value={numbers.pace500} unit={PADDLE_PACE_UNIT} />
+          <Tile label={t("Avg /500 m")} value={numbers.pace500} />
           <Tile label={t("Last 500 m")} value={numbers.lastKm} />
           <Tile label="Calories" value={numbers.energy} unit="kcal" />
         </View>

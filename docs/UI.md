@@ -2201,8 +2201,9 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   2026-10-06: km/h e minuti ogni 500 m). Lungo un percorso sull'acqua, e
   senza percorso con «Paddle» in «Settings» («Paddle without a route»):
   sotto la mappa «Speed now» in km/h; su «Data» e in pausa «Speed now»,
-  «Avg speed», «Time», poi «Avg pace» in `/500 m` («5:37 /500 m»), «Last
-  500 m» (il tempo degli ultimi 500 m interi) e «Calories». «Last km» ed
+  «Avg speed», «Time», poi «Avg /500 m» (l'andatura media, «5:37»: l'unità
+  è nel nome, perché accanto al numero lo rimpiccioliva), «Last 500 m» (il
+  tempo degli ultimi 500 m interi) e «Calories». «Last km» ed
   «Elev. gain» non ci sono. I parziali sono **ogni 500 m**: «m · /500 m ·
   Change», le righe «500», «1000», … col loro tempo e la differenza dal
   precedente; prima, «Your first 500 metres will show here.» Con le miglia
@@ -2212,7 +2213,7 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   minutes per 500 metres.» · «Un chilometro. Tempo: 12 minuti. Passo
   medio: 6 minuti ogni 500 metri.»; il confronto col km prima è quello
   della corsa. Il post di fine uscita scrive l'andatura in `/500 m`. In
-  italiano «Passo medio», «Ultimi 500 m», «I tuoi primi 500 metri
+  italiano «Med. /500 m», «Ultimi 500 m», «I tuoi primi 500 metri
   appariranno qui.» (dell'agente, **da confermare**, come tedesco, spagnolo
   e francese). «My activities» mostra ancora il passo al km (parte B).
   `src/navigation/paddle.ts`.

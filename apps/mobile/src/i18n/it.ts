@@ -472,7 +472,7 @@ export const IT: Table = {
   "Avg speed": "Vel. media",
   "Last km": "Ultimo km",
   "Last mi": "Ultimo mi",
-  "Avg pace": "Passo medio",
+  "Avg /500 m": "Med. /500 m",
   "Last 500 m": "Ultimi 500 m",
 
   // src/screens/SignInScreen.tsx

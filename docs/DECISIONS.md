@@ -9609,7 +9609,7 @@ pagina come quella della corsa.
 **Alternative scartate**:
 
 - Chiedere i laghi all'API (`GET /lakes`): un contratto nuovo e la rete
-  per una ricerca che nel telefono pesa 12 KB.
+  per una ricerca che nel telefono pesa 7 KB.
 - «Near me» che cerca l'acqua attorno alla partenza sul server: dipende da
   Overpass, che rifiuta (ADR-0187).
 - Solo forme da 2 km: lascia fuori 25 laghi su 41.

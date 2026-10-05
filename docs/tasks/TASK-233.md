@@ -1,6 +1,6 @@
 # TASK-233 — «Explore» della canoa come la corsa, e tutti i laghi
 
-**Stato**: In corso (parte A in PR: la pagina, il comando, l'elenco del
+**Stato**: In corso (parte A nella PR #319: la pagina, il comando, l'elenco del
 nord-est; poi la parte B, l'elenco di tutta l'Italia e l'acqua sul server)
 **Fase**: 4 · **Branch**: `feat/TASK-233-paddle-lakes`
 **Dipende da**: TASK-227 («Explore» con «Paddle», gli esempi dentro
@@ -120,7 +120,7 @@ Serraia e Tovel (1 km): 48 su 48 ci stanno. Il giudizio è dell'utente.
   e, con `--boxes`, il riquadro d'acqua che serve a ciascuno; con
   `--cache-dir`, ogni punto provato con `plan_water` a 2, 1,5 e 1 km, e
   l'elenco scritto in `lakes.json`. Niente scaricato.
-- `apps/mobile/src/paddle/lakes.json` (nuovo): 93 punti di 41 laghi, 12 KB
+- `apps/mobile/src/paddle/lakes.json` (nuovo): 93 punti di 41 laghi, 7 KB
   senza spazi.
 - `waterSpots.ts` (nuovo): i quattro luoghi scelti a mano e l'elenco, senza
   doppioni; un nome è il suo punto più vicino; la ricerca per nome; «Near

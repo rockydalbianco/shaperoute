@@ -343,7 +343,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 - **TASK-233 — «Explore» della canoa come la corsa, e tutti i laghi**
   (ADR-0196; chiesto dall'utente il 2026-10-05: «fai anche tutti i laghi,
-  tipo vicino a me c'è il lago di Levico Terme»). **Parte A** in PR: con
+  tipo vicino a me c'è il lago di Levico Terme»). **Parte A** nella PR #319: con
   «Paddle», «Near me» è acceso da subito e mostra il lago più vicino
   («LAGO DI LEVICO · 1.2 KM AWAY»), poi gli otto luoghi più vicini da
   toccare e «Type a lake or a beach»; l'elenco dei laghi è dentro l'app

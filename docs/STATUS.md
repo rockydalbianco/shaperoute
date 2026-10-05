@@ -145,6 +145,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-226 — Gli occhi staccati sull'acqua** (ADR-0188; chiesto
+  dall'utente il 2026-10-03, forme scelte il 2026-10-05: tutte quelle a
+  pezzi tranne il sole). **Parte A, il motore e l'API**: con `pen_up` e
+  `paddling` una forma a pezzi si disegna pezzo per pezzo; il percorso
+  lascia il contorno dove gli occhi sono più vicini, li disegna e torna,
+  e i tratti a penna alzata sono i `walks`. Campioni veri nei quattro
+  luoghi: 36 su 36 a 2 km, 64–112 m a penna alzata per pesce e teste. Con
+  la penna giù tutto identico (18 impronte nuove, più quelle di prima). Lo
+  zip del motore e l'impronta degli esempi dell'app rifatti. **Poi la
+  parte B, l'app**: `pen_up` da solo con «Paddle», la pausa e la voce
+  sull'acqua, gli esempi delle teste. L'impronta del motore cambia:
+  `draw_examples` dopo l'aggiornamento del server, e l'app della parte B
+  si pubblica dopo il server. Da dove riprendere: `tasks/TASK-226.md`.
+
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal
@@ -175,9 +189,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   una forma a pezzi (`PEN_UP_SHAPES`), solo su strada; nell'app
   «Lift the pen between parts», acceso di partenza, per le prime tre; la
   voce «Part done. Walk to the next part…» nelle cinque lingue; fino a 8
-  tratti a piedi. **Aspettano l'utente**: il giudizio degli occhi
-  staccati (campioni a 15 km), la conferma della frase della voce e della
-  penna alzata accesa; poi server (`draw_examples`) e pubblicazione.
+  tratti a piedi. Sul server da `main` 3b6e821 (2026-10-05); la
+  pubblicazione dell'app è del coordinatore. **Occhi staccati su strada**:
+  sì a tutte e cinque le forme (gatto, pesce, teste, zucca; utente,
+  2026-10-05, `samples/LOG.md`); l'interruttore in «Draw» anche per loro è
+  un seguito di TASK-226 B. La voce fra i pezzi, la penna alzata accesa di
+  partenza e i testi dello schermo sono **confermati dall'utente** in
+  inglese e italiano (2026-10-05); tedesco, spagnolo e francese da
+  confermare; la prova sul telefono è dell'utente.
   `tasks/TASK-223.md`.
 - **TASK-122 — L'API e il database sempre accesi** (ADR-0123): il server
   Hetzner gira su `deploy/compose.yaml` con il database e la copia

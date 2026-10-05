@@ -273,19 +273,28 @@ catalogo finché l'utente non le rivede.
 
 **Gli occhi staccati** di gatto, pesce, teste di cane e coniglio e zucca:
 campioni a 15 km con la penna alzata (`samples/TASK-223_*-pen-up_15km_*`),
-sulla stessa pagina; aspettano il giudizio. Parere dell'agente: gatto, pesce
-e coniglio sì a Milano; testa di cane e zucca no (muso e sorriso staccati si
-confondono).
+sulla stessa pagina. Parere dell'agente: gatto, pesce e coniglio sì a
+Milano; testa di cane e zucca no (muso e sorriso staccati si confondono).
+**Giudizio dell'utente** (2026-10-05): sì a **tutte e cinque** (gatto,
+pesce, teste di cane e coniglio, zucca), su strada; righe in
+`samples/LOG.md`. Sull'acqua l'ha scelto in TASK-226. Il seguito nel codice:
+l'interruttore «Lift the pen between parts» in «Draw» anche per queste
+cinque (`OFFERED` in `apps/mobile/src/route/penUpShapes.ts`, i test,
+`UI.md`), da assegnare dal coordinatore (TASK-226 B tocca lo stesso file).
 
 **Parte B** (2026-10-04): in `main` con la #296 (09c2c3c). Faccina,
 fantasmino, ciambella e sole nel catalogo; `pen_up` con le forme a pezzi su
 strada; nell'app l'interruttore per le prime tre, acceso di partenza, e la
 voce fra i pezzi. Non ancora sul server né sul telefono: il server prima
 (un'API vecchia rifiuta le quattro forme), poi `draw_examples`, poi la
-pubblicazione, tutto dal coordinatore con l'ok dell'utente. **Aspettano
-l'utente**: i testi nuovi (`UI.md`, «da confermare»), la penna alzata
-accesa di partenza, il giudizio degli occhi staccati; poi la prova sul
-telefono (una faccina a penna alzata, la voce fra i pezzi).
+pubblicazione, tutto dal coordinatore con l'ok dell'utente. **Confermate
+dall'utente** il 2026-10-05 («confermo le frasi della voce e la penna
+accesa»): la voce fra i pezzi in inglese e italiano, e la penna alzata
+accesa di partenza. Lo stesso giorno i testi dello schermo in inglese e
+italiano («confermo anche i testi dello schermo»): i nomi, «Lift the pen
+between parts», la riga dei km. Restano le traduzioni in tedesco,
+spagnolo e francese, da confermare con chi parla la lingua, e la prova sul
+telefono (una faccina a penna alzata, la voce fra i pezzi). Gli occhi staccati: giudicati il 2026-10-05, sotto.
 
 **Da dove ripartiva la parte B**: dalle quattro forme del «sì» (faccina,
 fantasmino, ciambella con la penna alzata, sole con la penna giù), più gli

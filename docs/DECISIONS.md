@@ -9341,6 +9341,32 @@ quindi l'ok dell'utente per il server. I post di esempio del «Feed»
 restano senza reazioni; il feed vero (TASK-118) userà gli stessi
 endpoint. Bloccare (TASK-121) dovrà tenere conto anche delle reazioni.
 
+**Parte B, l'app** (2026-10-05, deciso dall'agente su delega dell'utente,
+TASK-119):
+
+10. **Il doppio tocco lo riconosce la pagina della mappa** dai tocchi di
+    un dito (`touchstart`/`touchend` sul contenitore di MapLibre, ascolto
+    passivo): due tocchi sotto i 300 ms, entro 350 ms e 40 px. Solo quando
+    l'app lo chiede (`setDoubleTap`), e allora `doubleClickZoom` di
+    MapLibre è spento; gli ascolti si mettono alla prima richiesta, così
+    altrove la pagina è byte per byte quella di prima. Non l'evento
+    `dblclick`: su iOS con le dita non arriva in modo affidabile.
+11. **La mappa non sa delle reazioni**: `MapView` ha solo `onDoubleTap`, e
+    `App.tsx` lo collega a `drawingDoubleTapped()` di `DrawingReactions`
+    (una lista di ascoltatori nel modulo, come `showSavedLogo` di
+    ADR-0174), senza stato nuovo in `App.tsx`.
+12. **Le emoji sono ottimiste, una per volta**; a un rifiuto torna
+    l'ultima risposta dell'API. Se le reazioni non si leggono (qualsiasi
+    motivo) la riga non c'è: non valgono un «Try again» nella scheda.
+13. **Dopo un super like i commenti si richiedono** (il pulsante si
+    rimonta), invece di uno stato condiviso fra reazioni e commenti.
+14. **Il cuore grande sta nei `Modal`** (nel foglio, sopra; da solo per
+    0,9 s): niente da posare sulla mappa in `App.tsx`. L'animazione del
+    cuore è in JS: con `useNativeDriver` dentro il `Modal` restava
+    invisibile (visto nel simulatore, iOS 27, nuova architettura).
+15. **Per VoiceOver il totale si dice «7 reactions»**: un testo in più
+    rispetto alla proposta del task file.
+
 ## ADR-0194 — Il post di una corsa: un'immagine fatta dall'app, Instagram dal foglio di condivisione, Strava come testo
 
 **Data**: 2026-10-04 · **Stato**: Accettato · **Task**: TASK-231 · il

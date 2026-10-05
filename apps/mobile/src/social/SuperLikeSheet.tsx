@@ -2,6 +2,7 @@ import { COMMENT_MAX_LENGTH, SUPER_LIKE_MIN_COMMENT } from "@shaperoute/shared-t
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -75,6 +76,7 @@ export function SuperLikeSheet({ visible, sending, problem, onSend, onCancel }: 
 
 function SheetBody({ sending, problem, onSend, onCancel }: Omit<Props, "visible">) {
   const insets = useSafeAreaInsets();
+  const typing = useKeyboardShown();
   const [text, setText] = useState("");
   const length = [...commentOf(text)].length;
   const tooLong = length > COMMENT_MAX_LENGTH;
@@ -95,7 +97,12 @@ function SheetBody({ sending, problem, onSend, onCancel }: Omit<Props, "visible"
       >
         <BigHeart />
       </Pressable>
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + space.sm }]}>
+      <View
+        style={[
+          styles.sheet,
+          { paddingBottom: (typing ? 0 : insets.bottom) + space.sm },
+        ]}
+      >
         <Text style={styles.title} accessibilityRole="header">
           {t("Super like")}
         </Text>
@@ -157,6 +164,27 @@ function SheetBody({ sending, problem, onSend, onCancel }: Omit<Props, "visible"
   );
 }
 
+/** True while the keyboard is up: the sheet's bottom is then its top. */
+function useKeyboardShown(): boolean {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    // iOS says it before it moves, Android only after.
+    const ios = Platform.OS === "ios";
+    const up = Keyboard.addListener(ios ? "keyboardWillShow" : "keyboardDidShow", () =>
+      setShown(true),
+    );
+    const down = Keyboard.addListener(
+      ios ? "keyboardWillHide" : "keyboardDidHide",
+      () => setShown(false),
+    );
+    return () => {
+      up.remove();
+      down.remove();
+    };
+  }, []);
+  return shown;
+}
+
 type AloneProps = {
   /** The heart has come and gone. */
   onDone: () => void;
@@ -192,7 +220,9 @@ function BigHeart() {
     const coming = Animated.timing(shown, {
       toValue: 1,
       duration: HEART_IN_MS,
-      useNativeDriver: true,
+      // In JS: driven natively, inside the Modal the heart stays unseen
+      // (iOS, the new architecture).
+      useNativeDriver: false,
     });
     coming.start();
     return () => coming.stop();

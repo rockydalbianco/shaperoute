@@ -186,8 +186,9 @@ docs/tasks/TASK-234.md
   129, nessuno dei 12 di riferimento in cache; la soglia resta 5 punti
   (ADR-0197). Da dire all'utente prima della parte B: scatta poco, forse
   serve il passo 2.
-- `draw_examples` sul server dopo il merge di A, con l'ok dell'utente:
-  lo chiede il coordinatore.
+- Sul server da `main` `fd14cd3` (2026-10-05 08:54Z, ok dell'utente, il
+  coordinatore), con `draw_examples` rilanciato; app su `preview` dal
+  gruppo `da4e955c`. La parte B si pubblica appena è in `main`.
 
 **Le misure all'utente** (2026-10-05): «sì, fai la parte B come
 previsto», sapendo che la riga compare in circa il 6% dei percorsi; il

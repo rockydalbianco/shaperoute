@@ -174,9 +174,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   percorsi su 129, nessuno dei 12 di riferimento in cache (`MAPS.md`);
   l'utente: «sì, fai la parte B come previsto». **Parte B, l'app**, in PR:
   la riga sotto le tessere con «Try N km», testi nelle cinque lingue da
-  confermare con l'utente; provata nel simulatore. Da fare: sul server
-  l'aggiornamento e `draw_examples` (ok dell'utente, il coordinatore),
-  prima di pubblicare la B. `tasks/TASK-234.md`.
+  confermare con l'utente; provata nel simulatore. Il server ha la parte
+  A da `main` `fd14cd3` (2026-10-05 08:54Z, ok dell'utente, il
+  coordinatore), con `draw_examples` rilanciato: la B si pubblica appena
+  è in `main`. `tasks/TASK-234.md`.
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal

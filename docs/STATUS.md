@@ -665,10 +665,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   giorno, «sì toglilo anche da lì», e per la fine corsa «solo km e
   tempo»): niente punteggio sui disegni del «Profile» né a fine corsa,
   dove la scheda dice «4.0 km · 32 min» e l'app non chiede più `POST
-  /track-scores`. **Il punteggio non si vede più da nessuna parte
-  nell'app**; l'API lo calcola ancora per le corse salvate. Restano da
-  decidere con l'utente due frasi della bozza di «Privacy» che lo
-  nominano. Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
+  /track-scores` (PR #365, merge `0294922`). **Il punteggio non si vede
+  più da nessuna parte nell'app**; l'API lo calcola ancora per le corse
+  salvate. Conseguenza: l'evento `run_scored` degli `insights` non viene
+  più registrato (seguito, se serve). Restano da decidere con l'utente
+  due frasi della bozza di «Privacy» che lo nominano. Esce con la
+  prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

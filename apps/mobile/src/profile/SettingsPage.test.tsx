@@ -50,7 +50,6 @@ test("the account, by name and email", async () => {
 test("the settings to come are named, say «Soon» and take no tap", async () => {
   await show();
   for (const name of [
-    "Units",
     "Email notifications",
     "Push notifications",
     "Help",
@@ -59,16 +58,18 @@ test("the settings to come are named, say «Soon» and take no tap", async () =>
   ]) {
     expect(screen.getByLabelText(`${name}, coming soon`)).toBeOnTheScreen();
   }
-  // Six settings to come; every sport is ready («Sport», TASK-189: the
+  // Five settings to come; every sport is ready («Sport», TASK-189: the
   // bike since TASK-190, paddling since TASK-191).
-  expect(screen.getAllByText("Soon")).toHaveLength(6);
+  expect(screen.getAllByText("Soon")).toHaveLength(5);
   // Only the picture (TASK-178), the email and the phone number (TASK-183),
-  // the language (TASK-210) and the ways out are buttons.
-  expect(screen.getAllByRole("button")).toHaveLength(6);
+  // the language (TASK-210), the units (TASK-182) and the ways out are
+  // buttons.
+  expect(screen.getAllByRole("button")).toHaveLength(7);
   expect(screen.getByRole("button", { name: "Profile picture" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Change email" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Phone number, Add" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Language, English" })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Units, Kilometres" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Log out" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Delete account" })).toBeOnTheScreen();
 });
@@ -134,7 +135,10 @@ test("«Language» is among the preferences and turns the whole page at once (TA
   expect(screen.getByText("PRÄFERENZEN")).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Sprache, Deutsch" })).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Abmelden" })).toBeOnTheScreen();
-  expect(screen.getByLabelText("Einheiten, bald verfügbar")).toBeOnTheScreen();
+  expect(
+    screen.getByRole("button", { name: "Einheiten, Kilometer" }),
+  ).toBeOnTheScreen();
+  expect(screen.getByLabelText("Hilfe, bald verfügbar")).toBeOnTheScreen();
   expect(screen.queryByText("Log out")).toBeNull();
   // The account's own words are not translated.
   expect(screen.getByText("Runner_42")).toBeOnTheScreen();

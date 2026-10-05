@@ -155,7 +155,8 @@ rinomina; i test lo trovano dal nome (`_notifications.sql`).
 
 In revisione dal 2026-10-05, sul branch
 `feat/TASK-185-notification-switches` (parte da `main` `8dfb62a`, che ha
-già TASK-184).
+già TASK-184; poi unito `main` `b54c6c8`, con TASK-240 e TASK-241, senza
+conflitti).
 
 - **API**: `PUT /me/notifications` (`notifications.py`),
   `User.notifications`, migrazione `0017_notifications.sql`. 23 test nuovi
@@ -163,11 +164,12 @@ già TASK-184).
 - **App**: in «Settings» la sezione «NOTIFICATIONS» ha due interruttori e
   la nota; nessuna riga dice più «Soon».
 - **Test in locale**: tutta la parte JS (typecheck, lint, format, `npm
-  test`); dell'API `ruff`, `black` e i file `test_notifications.py`,
+  test`: 2200 test dell'app e 53 del contratto, dopo l'unione di `main`);
+  dell'API `ruff`, `black` e i file `test_notifications.py` (23 test),
   `test_contact.py`, `test_accounts.py`, `test_profiles.py`,
   `test_contract.py`, `test_follows.py`, `test_drawings.py`,
-  `test_activities.py`, `test_favorites.py`. **L'intera suite dell'API è
-  lasciata alla CI.**
+  `test_activities.py`, `test_favorites.py` (361 test). **L'intera suite
+  dell'API è lasciata alla CI.**
 - **Non visto** nel simulatore né su un telefono.
 - **Serve l'aggiornamento del server** (migrazione `0017`) prima di
   pubblicare l'app: con l'API di prima l'app legge «tutti e due spenti» e

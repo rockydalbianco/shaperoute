@@ -1,7 +1,7 @@
 # TASK-228 — Il «Feed» sull'acqua
 
-**Stato**: In review (2026-10-05) — codice, test e documenti fatti; la PR
-aspetta la coda dei merge.
+**Stato**: In review (2026-10-05) — PR #322: codice, test e documenti
+fatti; aspetta la coda dei merge.
 **Fase**: 4 · **Branch**: `feat/TASK-228-water-feed`
 **Dipende da**: TASK-156 (il feed d'esempio), TASK-188 (il tocco apre il
 percorso), TASK-227 (gli esempi della canoa dentro l'app), TASK-226 (gli

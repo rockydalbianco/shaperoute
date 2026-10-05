@@ -10,6 +10,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { distanceLabel } from "../units/format";
+import { useUnits } from "../units/useUnits";
 import { EXAMPLE_DISTANCE_M, type Example, shownExamples } from "./exampleRoutes";
 import { cityShort } from "./presets";
 import type { RecommendedRoute } from "./recommendedRoutes";
@@ -36,6 +38,8 @@ const STATUS: Record<"waiting" | "drawing", string> = {
  */
 export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) {
   const window = useWindowDimensions();
+  // The cards are written again when «Settings» changes the units (TASK-182).
+  useUnits();
   // Two cards side by side inside the section, as in «Best near you».
   const card = cardWidth((width ?? window.width - 2 * space.lg) - 2 * space.md);
   const shown = shownExamples(examples);
@@ -56,18 +60,18 @@ export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) 
           const name = shapeLabel(example.shape);
           if (example.status === "ready") {
             const { route } = example;
-            const km = (route.route_m / 1000).toFixed(1);
+            const distance = distanceLabel(route.route_m);
             return (
               <RouteCard
                 key={example.shape}
                 width={card}
                 line={route.preview}
-                title={`${name} · ${km} km`}
+                title={`${name} · ${distance}`}
                 detail={route.city}
                 match={route.similarity}
                 map
                 onPress={() => onOpen(route)}
-                accessibilityLabel={`${name}, ${km} km`}
+                accessibilityLabel={`${name}, ${distance}`}
               />
             );
           }

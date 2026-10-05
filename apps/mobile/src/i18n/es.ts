@@ -200,6 +200,8 @@ export const ES: Table = {
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "LOCALIDADES CERCANAS",
   "{town}, {km} km away": "{town}, a {km} km",
+  "{mi} mi away": "a {mi} mi",
+  "{town}, {mi} mi away": "{town}, a {mi} mi",
 
   // src/paddle/PaddleExplore.tsx
   Next: "A continuación",
@@ -394,6 +396,11 @@ export const ES: Table = {
   // src/settings/LanguageSetting.tsx
   Language: "Idioma",
   "Phone language": "Idioma del teléfono",
+
+  // src/settings/UnitsSetting.tsx
+  Kilometres: "Kilómetros",
+  Miles: "Millas",
+  "Phone units": "Unidades del teléfono",
 
   // src/settings/sport.ts
   "Ride without a route": "Rodar sin ruta",

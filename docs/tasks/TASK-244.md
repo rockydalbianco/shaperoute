@@ -1,6 +1,6 @@
 # TASK-244 — «Move the shape» anche sugli esempi di «Explore» con «Paddle»
 
-**Stato**: In revisione (PR da aprire; il merge aspetta il «merge NNN» del coordinatore)
+**Stato**: In revisione (PR #360; il merge aspetta il «merge 360» del coordinatore)
 **Fase**: 4 · **Branch**: `feat/TASK-244-explore-move`
 **Dipende da**: TASK-238 (spostare la figura sull'acqua, ADR-0202),
 TASK-227 e TASK-233 (gli esempi sull'acqua di «Explore»)

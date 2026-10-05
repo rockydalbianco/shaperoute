@@ -549,7 +549,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **App** — TASK-244: «Move the shape» anche sugli esempi di «Explore»
   con «Paddle» (aggiunta ad ADR-0202; chiesto dall'utente il 2026-10-05,
   che ha scelto: il percorso spostato **resta di «Explore»**). In
-  revisione, PR #PRNUM. Gli esempi dicono dov'è la loro forma (`centre`:
+  revisione, PR #360. Gli esempi dicono dov'è la loro forma (`centre`:
   nei 32 dentro l'app, ridisegnati sull'acqua del server e per il resto
   identici, e in quelli dei laghi chiesti al server da ora); la scheda di
   «Explore» ha «Move the shape» sotto «Start», e al rilascio l'app

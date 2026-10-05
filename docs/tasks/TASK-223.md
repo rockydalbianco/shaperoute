@@ -290,10 +290,11 @@ voce fra i pezzi. Non ancora sul server né sul telefono: il server prima
 pubblicazione, tutto dal coordinatore con l'ok dell'utente. **Confermate
 dall'utente** il 2026-10-05 («confermo le frasi della voce e la penna
 accesa»): la voce fra i pezzi in inglese e italiano, e la penna alzata
-accesa di partenza. **Aspettano l'utente**: i testi dello schermo (`UI.md`,
-«da confermare»: i nomi, «Lift the pen between parts», la riga dei km);
-poi la prova sul telefono (una faccina a penna alzata, la voce fra i
-pezzi). Gli occhi staccati: giudicati il 2026-10-05, sotto.
+accesa di partenza. Lo stesso giorno i testi dello schermo in inglese e
+italiano («confermo anche i testi dello schermo»): i nomi, «Lift the pen
+between parts», la riga dei km. Restano le traduzioni in tedesco,
+spagnolo e francese, da confermare con chi parla la lingua, e la prova sul
+telefono (una faccina a penna alzata, la voce fra i pezzi). Gli occhi staccati: giudicati il 2026-10-05, sotto.
 
 **Da dove ripartiva la parte B**: dalle quattro forme del «sì» (faccina,
 fantasmino, ciambella con la penna alzata, sole con la penna giù), più gli

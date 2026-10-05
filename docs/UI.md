@@ -914,8 +914,8 @@ sulle strade:
 - «ring», «round», «anello» e «tondo» restano del cerchio: «ciambella» e
   «donut» sono la ciambella (TASK-223). Nelle cinque lingue i nomi sono
   «Smiley», «Ghost», «Donut», «The sun» (`shapeNames.ts`; «Sun» è già la
-  domenica) · «Faccina», «Fantasmino», «Ciambella», «Sole» (**da
-  confermare con l'utente**; tedesco, spagnolo e francese da confermare).
+  domenica) · «Faccina», «Fantasmino», «Ciambella», «Sole» (**confermati
+  dall'utente** il 2026-10-05; tedesco, spagnolo e francese da confermare).
 - **Faccina, fantasmino e ciambella** (TASK-223, ADR-0185) hanno sotto il
   campo l'interruttore **«Lift the pen between parts»**, lo stesso stato di
   quello delle parole, acceso all'avvio (confermato dall'utente il
@@ -926,8 +926,9 @@ sulle strade:
   forma lo ha. Il percorso mostra «6.0 km of drawing + 0.4 km walking
   between the parts» · «6,0 km di disegno + 0,4 km a piedi fra una parte e
   l'altra» («riding» · «in bici» in bici), attraverso `t()`. Testi nuovi:
-  «Lift the pen between parts» e le due righe dei km **da confermare con
-  l'utente**; le righe in tedesco, spagnolo e francese da confermare.
+  «Lift the pen between parts» e le due righe dei km **confermati
+  dall'utente** il 2026-10-05; le righe in tedesco, spagnolo e francese da
+  confermare.
 - Nel campo vuoto il suggerimento è «heart, star, horse…». Il campo
   accetta al massimo 60 caratteri.
 

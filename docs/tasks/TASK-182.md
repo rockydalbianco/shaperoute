@@ -1,6 +1,6 @@
 # TASK-182 — Le unità di misura: km o miglia
 
-**Stato**: In revisione (parte A)
+**Stato**: In corso (parte A in `main`, PR #351, merge `7a9506a`, 2026-10-05; parte B da fare)
 **Fase**: 4 · **Branch**: `feat/TASK-182-units` (parte A)
 
 ## Obiettivo
@@ -108,7 +108,7 @@ Parte A:
       `SettingsPage.test.tsx`).
 - [x] I testi nuovi sono in `t()` con le quattro tabelle.
 - [x] Nessuna dipendenza nuova.
-- [ ] Provato nel simulatore con il telefono in miglia. **Non fatto**: la
+- [ ] (passa alla parte B, con `FOLLOWS_PHONE`: fino ad allora l'app non segue il telefono) Provato nel simulatore con il telefono in miglia. **Non fatto**: la
       sessione che ha scritto la parte A non usa il simulatore.
 
 ## File toccati

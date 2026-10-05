@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import shutil
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -15,12 +16,16 @@ from route_engine.network import FileSource
 from shaperoute_api import __main__ as entry
 from shaperoute_api.app import create_app
 from shaperoute_api.phone_zone_api import install_phone_zones, main, write_all
+from shaperoute_api.phone_zone_cap import TrafficCap
 from shaperoute_api.phone_zones import SUFFIX, read_zone, zone_name
 
 REPO = Path(__file__).resolve().parents[3]
 LEVICO_GRAPH = REPO / "services/route-engine/tests/fixtures/levico_walk_1km.graphml"
 BBOX = (45.95, 11.2, 46.07, 11.4)
 LEVICO = {"lat": 46.0122, "lon": 11.2986}
+AHEAD = {**LEVICO, "prefetch": 1}
+PHONE = {"X-Phone-Id": "0123456789abcdef0123456789abcdef"}
+OTHER_PHONE = {"X-Phone-Id": "fedcba9876543210fedcba9876543210"}
 
 
 @pytest.fixture
@@ -96,6 +101,98 @@ def test_wrong_requests(
     client: TestClient, network: str, params: dict[str, float], status: int
 ) -> None:
     assert client.get(f"/phone-zones/{network}", params=params).status_code == status
+
+
+def capped_client(cache: Path, zones: float, total: float = 100) -> TestClient:
+    """`zones` of the Levico zone a day for each phone, `total` in all, at
+    18:00 UTC."""
+    size = len(TestClient(_app(cache)).get("/phone-zones/foot", params=LEVICO).content)
+    cap = TrafficCap(
+        per_phone=int(size * zones),
+        total=int(size * total),
+        clock=lambda: datetime(2026, 10, 5, 18, 0, tzinfo=UTC),
+    )
+    return TestClient(_app(cache, cap))
+
+
+def _app(cache: Path, cap: TrafficCap | None = None) -> Any:
+    app = create_app(FileSource(LEVICO_GRAPH))
+    install_phone_zones(app, cache, cap)
+    return app
+
+
+def test_a_zone_downloaded_ahead_counts_against_the_phones_cap(cache: Path) -> None:
+    client = capped_client(cache, zones=2)
+    assert (
+        client.get("/phone-zones/foot", params=AHEAD, headers=PHONE).status_code == 200
+    )
+    assert (
+        client.get("/phone-zones/foot", params=AHEAD, headers=PHONE).status_code == 200
+    )
+    refused = client.get("/phone-zones/foot", params=AHEAD, headers=PHONE)
+    assert refused.status_code == 429
+    assert refused.headers["retry-after"] == str(6 * 3600)  # to midnight UTC
+    error = refused.json()["error"]
+    assert error["code"] == "too_many_requests"
+    assert error["message"] == "Enough maps downloaded ahead today: try again tomorrow."
+    other = client.get("/phone-zones/foot", params=AHEAD, headers=OTHER_PHONE)
+    assert other.status_code == 200
+
+
+def test_the_zone_around_the_phone_is_always_given(cache: Path) -> None:
+    client = capped_client(cache, zones=1, total=1)
+    assert (
+        client.get("/phone-zones/foot", params=AHEAD, headers=PHONE).status_code == 200
+    )
+    assert (
+        client.get("/phone-zones/foot", params=AHEAD, headers=PHONE).status_code == 429
+    )
+    for _ in range(3):  # without prefetch=1: never counted, never refused
+        assert (
+            client.get("/phone-zones/foot", params=LEVICO, headers=PHONE).status_code
+            == 200
+        )
+    params = {**LEVICO, "prefetch": 0}
+    assert (
+        client.get("/phone-zones/foot", params=params, headers=PHONE).status_code == 200
+    )
+
+
+def test_the_server_gives_zones_ahead_up_to_its_cap(cache: Path) -> None:
+    client = capped_client(cache, zones=5, total=1)
+    assert (
+        client.get("/phone-zones/foot", params=AHEAD, headers=PHONE).status_code == 200
+    )
+    refused = client.get("/phone-zones/foot", params=AHEAD, headers=OTHER_PHONE)
+    assert refused.status_code == 429
+    assert refused.headers["retry-after"] == str(6 * 3600)
+
+
+def test_a_zone_the_phone_has_costs_nothing_even_beyond_the_cap(cache: Path) -> None:
+    client = capped_client(cache, zones=1)
+    tag = client.get("/phone-zones/foot", params=AHEAD, headers=PHONE).headers["etag"]
+    for _ in range(3):
+        again = client.get(
+            "/phone-zones/foot", params=AHEAD, headers={**PHONE, "If-None-Match": tag}
+        )
+        assert again.status_code == 304
+
+
+def test_no_zone_ahead_is_still_404(cache: Path) -> None:
+    client = capped_client(cache, zones=0, total=0)
+    params = {"lat": 45.4642, "lon": 9.19, "prefetch": 1}
+    assert (
+        client.get("/phone-zones/foot", params=params, headers=PHONE).status_code == 404
+    )
+
+
+def test_phones_without_an_id_count_by_address(cache: Path) -> None:
+    client = capped_client(cache, zones=1)
+    assert client.get("/phone-zones/foot", params=AHEAD).status_code == 200
+    assert client.get("/phone-zones/foot", params=AHEAD).status_code == 429
+    assert (
+        client.get("/phone-zones/foot", params=AHEAD, headers=PHONE).status_code == 200
+    )
 
 
 def test_the_api_started_from_the_command_line_has_it(

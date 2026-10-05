@@ -1,6 +1,7 @@
 import { createDownloadResumable } from "expo-file-system/legacy";
 
 import { files } from "./memoryFiles";
+import { phoneId, prefetchPausedUntil } from "./prefetch";
 import {
   coveringZone,
   deleteZones,
@@ -274,4 +275,56 @@ test("a watcher hears each change of the zones, until it stops", async () => {
 test("the space of the zones is the sum of their sizes", () => {
   expect(savedBytes([entry(TRENTO, 7), entry(TRENTO_BIKE, 12)])).toBe(19);
   expect(savedBytes([])).toBe(0);
+});
+
+test("a zone ahead says so, with the phone's id; the zone around it does not", async () => {
+  const download = answering(200, zipHeaders(TRENTO));
+  await downloadZone(URL_BASE, "foot", HERE, { apiKey: "k", download });
+  await downloadZone(URL_BASE, "foot", [45.4642, 9.19], {
+    apiKey: "k",
+    download,
+    prefetch: true,
+  });
+  const [around, ahead] = download.mock.calls;
+  expect(around[0]).toBe(`${URL_BASE}/phone-zones/foot?lat=46.0679&lon=11.1211`);
+  expect(around[2]).toEqual({ headers: { "X-API-Key": "k" } });
+  expect(ahead[0]).toBe(`${URL_BASE}/phone-zones/foot?lat=45.4642&lon=9.19&prefetch=1`);
+  expect(ahead[2]).toEqual({
+    headers: { "X-API-Key": "k", "X-Phone-Id": phoneId() },
+  });
+});
+
+test("past the day's cap, no zone ahead is asked before Retry-After", async () => {
+  const refused = answering(429, { "Retry-After": "21600" }, '{"error":{}}');
+  const at = (now: number) => ({ apiKey: null, now: () => now, prefetch: true });
+  expect(
+    await downloadZone(URL_BASE, "bike", HERE, { ...at(1_000), download: refused }),
+  ).toEqual({ kind: "later", retryAt: 1_000 + 21_600_000 });
+  expect(prefetchPausedUntil()).toBe(1_000 + 21_600_000);
+  expect(savedZones()).toEqual([]);
+  expect([...files.keys()].some((uri) => uri.includes(".download"))).toBe(false);
+
+  const saved = answering(200, zipHeaders(TRENTO_BIKE));
+  expect(
+    await downloadZone(URL_BASE, "bike", HERE, { ...at(21_600_999), download: saved }),
+  ).toEqual({ kind: "later", retryAt: 21_601_000 });
+  expect(saved).not.toHaveBeenCalled();
+  // The zone around the phone is never held back.
+  await downloadZone(URL_BASE, "bike", HERE, { apiKey: null, download: saved });
+  expect(saved).toHaveBeenCalledTimes(1);
+
+  files.delete(`file:///documents/engine/zones/${TRENTO_BIKE}`);
+  expect(
+    await downloadZone(URL_BASE, "bike", HERE, { ...at(21_601_000), download: saved }),
+  ).toMatchObject({ kind: "saved" });
+});
+
+test("a 429 for the zone around the phone is a failure, not a pause", async () => {
+  expect(
+    await downloadZone(URL_BASE, "foot", HERE, {
+      apiKey: null,
+      download: answering(429, { "Retry-After": "60" }),
+    }),
+  ).toEqual({ kind: "failed", why: "the server answered 429" });
+  expect(prefetchPausedUntil()).toBe(0);
 });

@@ -620,14 +620,49 @@ mappa è quella di prima.
   «Kilometres» niente cambia. Il GPX, l'API e il motore restano in metri.
   **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
-  «Terms», «Privacy», «Soon».
+  «Terms», «Privacy», tre righe con «›» in fondo: ognuna apre il suo
+  testo come pagina (TASK-184, ADR-0205, sotto).
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
   sulla schermata stessa: «Delete my account» o «Keep my account».
 
 Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
-interruttori, perché dietro non c'è ancora niente (le accendono TASK-184
-e 185). Usciti dall'account da «Settings», chi rientra trova
+interruttori, perché dietro non c'è ancora niente (le accende TASK-185).
+Usciti dall'account da «Settings», chi rientra trova
 «Profile».
+
+**«Help», «Terms», «Privacy»** (❓ 📄 🔒, TASK-184, ADR-0205): un tocco
+apre il testo sopra «Settings», a tutto schermo: «←», il nome della riga
+come titolo, poi il nome del testo e le sue sezioni, ognuna sotto il suo
+titolo, con paragrafi ed elenchi a punti. La pagina scorre da sola; «←»
+torna a «Settings» **com'era**, nel punto in cui era e con le righe
+aperte ancora aperte (resta montata sotto, nascosta anche a VoiceOver).
+Per VoiceOver i titoli sono intestazioni.
+
+- **«Help»** è la mini guida, «How Sgrava works»: undici sezioni brevi
+  (che cos'è, disegnare un percorso, «Explore», correre, tenere corse e
+  percorsi, pubblicare e condividere, «Feed» e amici, i tre sport con
+  l'avviso dell'acqua, «Settings», l'account, a chi scrivere). Dice le
+  cose con le parole del sito (`site/content.js`).
+- **«Terms»** («Terms of use») e **«Privacy»** («Privacy policy») sono
+  **bozze**, e lo dicono prima di tutto: un riquadro in cima, bordo e
+  scritta arancio (`warning`, non il giallo del percorso), «Draft — not
+  final yet.» e sotto, grigio, «Last updated: 5 October 2026». Restano
+  bozze finché l'utente non le approva (`draft` in
+  `src/about/content/`).
+- **Quello che è ancora da riempire è scritto fra parentesi quadre** e
+  spicca in arancio: `[name]` (chi gestisce Sgrava), `[contact email]`,
+  `[governing law]` in «Terms», le basi giuridiche in «Privacy». Uguali in
+  tutte le lingue. Li riempie l'utente; nel codice non c'è nessun nome né
+  indirizzo vero.
+- **Le lingue**: i testi sono in inglese e in italiano, e seguono la
+  lingua dell'app; con tedesco, spagnolo e francese sono in inglese (e
+  VoiceOver li legge in inglese), mentre il titolo della riga e il
+  riquadro della bozza sono nella lingua dell'app. Nel testo italiano i
+  nomi di pagine e pulsanti sono quelli che l'app in italiano mostra oggi.
+- «Privacy» dice solo quello che fa l'app oggi («Cosa esce dal telefono»,
+  sotto, e `DATABASE.md`): quando cambia cosa l'app manda o tiene, cambia
+  anche `src/about/content/`. I punti ancora aperti sono in
+  `tasks/TASK-184.md`, «Esito».
 
 **«Change email»** (✉️, TASK-183, ADR-0150): un tocco apre sotto la riga
 «NEW EMAIL» e «PASSWORD» (la password dell'account, nascosta) e «Save»; un
@@ -990,6 +1025,9 @@ punto, ricentra la mappa.
 - Sotto i risultati, «© OpenStreetMap contributors».
 - Nessun risultato: «No place found. Try adding the city.» Errore di rete o
   del servizio: «The search failed. Check the connection and try again.»
+- Con «Paddle» la ricerca offre anche i laghi e le spiagge che l'app
+  conosce, sopra questi risultati (TASK-240, ADR-0204: «Sull'acqua:
+  «Paddle»»). Con «Run» e «Bike» è quella descritta qui.
 
 ## Forma e distanza
 
@@ -1895,8 +1933,9 @@ run», con «Close» in alto a sinistra:
   «Sgrava», il titolo (quello della corsa, o luogo e forma; nessuno a
   fine corsa), il disegno della corsa in nero **senza i primi e gli ultimi
   200 m**, e in basso i risultati accesi, due per riga: «Distance»,
-  «Time», «Pace», «Score» (il passo manca sotto i 100 m, il punteggio a
-  una corsa che non ce l'ha).
+  «Time», «Pace» (il passo manca sotto i 100 m). **Il punteggio non è fra i risultati**
+  (TASK-241 parte C, chiesto dall'utente): non si può accendere, non è
+  sul post e non va nel testo per Strava.
 - **«Results»**: una pastiglia per risultato, accesa all'inizio; spenta,
   il risultato sparisce dal post e dal testo per Strava.
 - **«Add emoji»**: 🔥 ❤️ 💪 🏃 🎉 😅 🥵 😎 ⚡ 🏆 ☀️ 🌧️. Un tocco mette l'emoji
@@ -1939,6 +1978,37 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   e torna a 2 km ogni volta che si sceglie «Paddle». La richiesta ha
   `activity: "paddling"`. Il pulsante della corsa libera dice «Paddle
   without a route».
+- **«Another place»** (TASK-240, ADR-0204): la ricerca della partenza
+  offre anche i laghi e le spiagge dell'elenco di «Explore» (`WATER_SPOTS`:
+  211 laghi d'Italia, Lago di Garda, Lago di Como, Jesolo, Riccione), mai
+  un lago preso da Photon o da Geoapify: solo di quelli il server ha
+  l'acqua.
+  - Il campo dice «Lake, beach, city or street».
+  - I laghi compaiono **subito**, da 3 lettere, senza aspettare la rete, e
+    stanno **sopra** le vie e i paesi trovati; al massimo tre
+    (`SPOT_PLACES_SHOWN`), il più vicino alla posizione per primo. Un
+    luogo trovato con lo stesso nome di un lago mostrato non si ripete.
+    Con un lago mostrato non si dice «No place found».
+  - Il testo si legge come un indirizzo (`findSpots` in
+    `src/paddle/placeSpots.ts`): le parole che non sono nel nome di nessun
+    lago si ignorano («Terme», «via», «spiaggia»); le parole comuni, quelle
+    in più del 2% dei nomi («lago», «di», «del», «san»), non contano quando
+    un'altra parola dice il lago. «lago di Levico Terme» trova «Lago di
+    Levico», «spiaggia di Riccione» trova «Riccione». Con sole parole
+    comuni devono esserci tutte nel nome, come in «Explore»: «lago» trova
+    ogni lago, «via al lago» nessuno.
+  - Scelto un lago, la partenza è il suo punto della riva più vicino alla
+    posizione (un lago lungo ne ha molti), e la riga dice «Starting from
+    Lago di Levico.».
+  - Un lago piccolo, le cui forme stanno a 1,5 o 1 km (TASK-233), porta il
+    campo della distanza a quella, se era più lunga (`distanceOnSpot`); un
+    lago da 2 km e una via la lasciano com'è.
+  - Le vie e i paesi restano quelli della ricerca di sempre: una partenza
+    su un lungomare che non è nell'elenco funziona solo dove il server ha
+    o riesce a scaricare l'acqua.
+  - La regola delle parole, il mare (solo Jesolo e Riccione), la distanza
+    sui laghi piccoli e il testo del campo sono **confermati dall'utente**
+    il 2026-10-05 (`tasks/TASK-240.md`).
 - **Il risultato**: «heart · on the water · target 2 km». Il percorso
   parte dalla riva, dove si arriva a piedi: se è a più di 50 m dalla
   partenza chiesta, il segnaposto ciano «Start here» la segna, come per una

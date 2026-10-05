@@ -215,3 +215,8 @@ class RouteResult:
     # moved and asked back as `RouteRequest.near`, it moves the shape
     # (TASK-238). None on the roads.
     centre: tuple[float, float] | None = None
+    # How far the shape is turned, in degrees counterclockwise (ADR-0018),
+    # in (-180, 180]: the app turns the map back by it so the drawing reads
+    # upright (optimizer.shown_rotation, TASK-232, ADR-0195). 0 for a shape
+    # that turns freely, like the circle, and without a search.
+    rotation_deg: float = 0.0

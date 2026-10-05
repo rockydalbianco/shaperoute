@@ -52,8 +52,8 @@ In coda, dopo o accanto:
   sulla pagina con «Soon» (TASK-177): la foto del profilo è fatta
   (TASK-178, sotto), email e numero di telefono anche (TASK-183, «In
   lavorazione»), le unità di misura hanno la parte A (TASK-182, «In
-  lavorazione»); restano **TASK-184**
-  «Help», «Terms», «Privacy» (dopo TASK-152: testi e contatti), **TASK-185**
+  lavorazione»), «Help», «Terms» e «Privacy» sono fatte, i due testi
+  legali come bozze (TASK-184, «In lavorazione»); resta **TASK-185**
   le notifiche email e push (per ultime: serve qualcosa da notificare, un
   servizio di posta, `expo-notifications`, una build propria). Tutti Todo,
   senza task file; l'utente: «li svilupperemo più avanti».
@@ -116,25 +116,26 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `f3fdbce` dalle
-  09:32Z (secondo ok dell'utente «sì pubblica, ok server», sessione del
-  coordinatore), con le migrazioni `0001`–`0015`, `GET /nearby-cities`
-  (TASK-236: da Caldonazzo risponde in 0,8 s con Calceranica, Levico,
-  Pergine, Trento, Borgo), il motore di TASK-234 A (in `fd14cd3` dalle
-  08:54Z, esempi ridisegnati per 66 città su 66) e il tetto del traffico
-  di TASK-214 A2; fermo circa 14 secondi; immagine di prima
-  `shaperoute-api:before-task236`, copia del database
-  `shaperoute-2026-10-05T0931Z.dump`. Ha l'acqua dei laghi d'Italia
-  (TASK-233: 219 file, 71 MB). **Le zone del telefono non sono scritte**:
-  in cache ci sono 521 grafi e 3 file per il telefono; scriverli tutti
-  sarebbe circa 2,9 GB e 2–3,5 ore, da chiarire con TASK-214 prima
-  dell'ok dell'utente. **App** su `preview` da `main` `8c3a6ff` (gruppo
-  `8f6849ca`): «Follow», il «Feed» sull'acqua, i laghi in «Explore», la
-  pubblicità nel «Feed» (non si vede in Expo Go), «Try N km» (#336), i
-  paesi vicini sotto «Near me» (#323). **Non pubblicata**: la parte B2 di
-  TASK-214 (#337, le zone scaricate in anticipo), in `main` da `f3fdbce`.
-  **Da provare sull'iPhone.** Strava spento per scelta dell'utente
-  (2026-10-05: «teniamo solo Instagram per ora»).
+- **Server e app, al 2026-10-05**. **Server**: su `main` `ae320d3` dalle
+  10:58Z (ok dell'utente «ok aggiorna il server e pubblica», eseguito
+  dalla sessione «Impostazioni» al via del coordinatore), con le
+  migrazioni `0001`–`0016` (`0016_contact`: email e telefono), il motore
+  di TASK-238 A e TASK-242, `GET /nearby-cities`, il tetto del traffico;
+  fermo circa 10 secondi; immagine di prima
+  `shaperoute-api:before-task183`, copia del database
+  `shaperoute-2026-10-05T1058Z.dump`; `draw_examples` rilanciato alle
+  10:59Z (`data/draw-examples-2026-10-05-task238.log`). **Le zone del
+  telefono sono scritte** (ok dell'utente «ok zone e pubblica»): 521 file,
+  2,6 GB, 82 minuti; Trento a piedi 2,5 MB, in bici 11,5 MB, in meno di
+  0,1 s. Acqua dei laghi d'Italia: 219 file, 71 MB. Da fare: la zona di
+  Borgo Valsugana. **App** su `preview` da `main` `7a9506a` (gruppo
+  `1b49d248`): tutto `main`: le zone scaricate in anticipo (TASK-214
+  B2/B2b), il numero rosso delle richieste (TASK-239), niente punteggio
+  sui post (TASK-241), email e telefono (TASK-183), «Move the shape»
+  (TASK-238), «Units» (TASK-182 A), «Try N km», i paesi vicini, i laghi,
+  il «Feed» sull'acqua, «Follow». **Da provare sull'iPhone**: da adesso
+  il telefono scarica la sua zona e disegna i percorsi da sé (comincia la
+  parte D di TASK-214). Strava spento per scelta dell'utente.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -250,7 +251,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dall'utente: una freccia del nord che rimette il nord in alto, e
   durante la corsa la mappa resta girata come il disegno, con le linee
   del percorso fatto e da fare (TASK-224) che girano con lei.
-  `tasks/TASK-232.md`.
+  **Parte A** (motore e API) nella PR #356: prima la ricerca di sempre
+  entro ±15°, poi, solo se non dà un percorso buono, inclinata fino a 45°
+  con 10 tracciamenti in più; anche in canoa. Su 129 percorsi 110
+  identici (i 12 di riferimento tutti), 19 inclinati di 20–45°, i buoni da
+  65 a 67, tempo +10% (`MAPS.md`, «Forme inclinate»). `rotation_deg` nel
+  risultato e nell'API; `route_store` conserva anche `better_distance_m`
+  (seguito di TASK-234). I 19 campioni giudicati dall'utente il
+  2026-10-05: 17 `sì` e 2 `quasi`, nessun `no` (`samples/LOG.md`).
+  Aspetta il merge; server e `draw_examples` col suo ok. Parti B e C
+  dopo. `tasks/TASK-232.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,
@@ -505,8 +515,35 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scelta da fare), la corsa e la sua fine, la voce (a ogni miglio, le
   svolte in piedi), i post del «Feed», i disegni pubblici, «Explore» con
   «Paddle». Da dove riprendere: `tasks/TASK-182.md`, «Esito».
+- **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
+  dall'utente il 2026-10-05: una mini guida, e le prime bozze di
+  condizioni e privacy). In revisione (branch
+  `feat/TASK-184-help-terms-privacy`, solo app, nessuna dipendenza). Le
+  tre righe di «About» in «Settings» aprono ognuna il suo testo come
+  pagina, con «←» che torna a «Settings» com'era. I testi sono dati in
+  `src/about/content/`, in inglese e in italiano (con tedesco, spagnolo e
+  francese l'app mostra l'inglese). **«Terms» e «Privacy» sono bozze** e
+  lo dicono in cima («Draft — not final yet.»). **Aspettano l'utente**:
+  i segnaposto da riempire (`[name]`, `[contact email]`,
+  `[governing law]`, le basi giuridiche), la lettura di un legale prima
+  dell'App Store, l'approvazione, e poi le altre tre lingue; l'elenco
+  intero dei punti aperti e di quello che «Privacy» non dice perché non
+  si è potuto verificare è in `tasks/TASK-184.md`, «Esito». Non visto su
+  un telefono. Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
+  aggiorna anche «Privacy».
 
 ## Completato
+
+- **App** — TASK-240: con «Paddle», laghi e spiagge anche in «Another
+  place» (ADR-0204; chiesto dall'utente il 2026-10-05, scelte tutte
+  confermate; PR #344). In «Draw», con «Paddle», la ricerca della partenza
+  offre i laghi e le spiagge dell'elenco di «Explore» sopra le vie e i
+  paesi, subito: «lago di Levico Terme» dà «Lago di Levico», e sceglierlo
+  mette la partenza sulla riva; un lago piccolo porta la distanza a 1,5 o
+  1 km; il campo dice «Lake, beach, city or street». Il mare: solo Jesolo
+  e Riccione. Solo app, niente server; «Run» e «Bike» com'erano. Esce con
+  la prossima pubblicazione, del coordinatore; da provare sull'iPhone.
+  Seguiti in `tasks/TASK-240.md`.
 
 - **API e app** — TASK-183: cambiare email e numero di telefono da
   «Settings» (ADR-0150; chiesto dall'utente il 2026-10-02 e di nuovo il
@@ -581,9 +618,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   100» sopra il disegno non c'è più, nemmeno nei post che «Explore» mostra
   mentre disegna una città (PR #345, merge `ad80385`). **Parte B**
   (stesso giorno, «sì toglilo anche da VoiceOver»): nemmeno VoiceOver lo
-  legge più, nelle cinque lingue. Altrove (fine corsa, «My activities»,
-  disegno aperto dal «Profile», post da condividere) il punteggio resta.
-  Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
+  legge più, nelle cinque lingue (PR #348, merge `69af6c6`). **Parte C**
+  (stesso giorno, «togli il punteggio anche dal post da condividere»):
+  «Score» non è più fra i risultati del post di «Share»: né pastiglia, né
+  numero sull'immagine, né nel testo per Strava. Altrove (fine corsa, «My
+  activities», disegno aperto dal «Profile») il punteggio resta. Esce con
+  la prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

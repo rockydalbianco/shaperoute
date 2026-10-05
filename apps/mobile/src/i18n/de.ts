@@ -6,6 +6,10 @@ import type { Table } from "./translate";
  * (docs/UI.md).
  */
 export const DE: Table = {
+  // src/about/AboutPage.tsx
+  "Draft — not final yet.": "Entwurf – noch nicht endgültig.",
+  "Last updated: {date}": "Zuletzt aktualisiert: {date}",
+
   // src/account/fields.ts
   "You must be at least 16 to sign up.":
     "Du musst mindestens 16 sein, um dich zu registrieren.",
@@ -221,6 +225,9 @@ export const DE: Table = {
   "No lake or beach matches “{typed}”.": "Kein See oder Strand passt zu „{typed}“.",
   "{shape}, {km} km, on the water": "{shape}, {km} km, auf dem Wasser",
   "Not drawn": "Nicht gezeichnet",
+
+  // src/paddle/placeSpots.ts
+  "Lake, beach, city or street": "See, Strand, Stadt oder Straße",
 
   // src/paddle/PaddleNotice.tsx
   "Before you paddle": "Bevor du lospaddelst",
@@ -468,7 +475,6 @@ export const DE: Table = {
   Distance: "Distanz",
   Time: "Zeit",
   Pace: "Pace",
-  Score: "Punktzahl",
 
   // src/share/sharePicture.ts
   "This phone cannot open the share sheet.":

@@ -1,0 +1,418 @@
+import type { AboutContent, AboutDocument } from "../documents";
+
+/**
+ * «Help», «Terms» and «Privacy» in Italian (TASK-184, ADR-0205): the same
+ * sections as `en.ts`, in the same order (a test compares them). The names
+ * of pages and buttons are the ones the app shows in Italian today: some
+ * are still in English there (TASK-210).
+ */
+
+const UPDATED = "5 ottobre 2026";
+
+const help: AboutDocument = {
+  title: "Come funziona Sgrava",
+  draft: false,
+  updated: null,
+  sections: [
+    {
+      heading: "Che cos'è Sgrava",
+      blocks: [
+        "Sgrava disegna percorsi veri che sulla mappa tracciano una forma. Scegli la forma, la distanza e da dove partire: ottieni un percorso su strade vere, con il suo file GPX.",
+        "L'app ha tre pagine affiancate, «Feed», «Draw» ed «Explore»: scorri a destra o a sinistra, oppure tocca un nome in alto. «Profilo» si apre dal cerchio in alto.",
+      ],
+    },
+    {
+      heading: "Disegnare un percorso",
+      blocks: [
+        {
+          bullets: [
+            "Scegli una forma: un cuore, una stella, un gatto e altre, una parola dalla A alla Z, o il contorno di una tua foto.",
+            "Scegli la distanza: fino a 21 km a piedi, partendo da dove sei o da un luogo che cerchi.",
+            "Tocca «Draw route». Sgrava disegna fino a tre percorsi su strade vere, A, B e C: tieni quello che ti piace.",
+            "«Export GPX» ti dà il file per l'orologio o per un'altra app.",
+          ],
+        },
+        "Un percorso di solito arriva in pochi secondi; i più lunghi possono chiedere fino a un minuto.",
+      ],
+    },
+    {
+      heading: "Explore",
+      blocks: [
+        "Percorsi già disegnati nella tua città, pronti da correre: niente attesa, basta sceglierne uno.",
+        "Scegli «Vicino a me», un paese vicino o cerca una città, poi tocca un percorso per vederlo sulla mappa.",
+      ],
+    },
+    {
+      heading: "Correre un percorso",
+      blocks: [
+        {
+          bullets: [
+            "«Start» fa partire la corsa dopo un breve conto alla rovescia.",
+            "Una voce ti dice ogni svolta in anticipo. La mappa mostra il tratto già corso e quello ancora davanti.",
+            "«Pause» ferma il tempo e «Resume» lo fa ripartire.",
+            "Per finire la corsa tieni premuto il pulsante di stop: un tocco breve non la chiude.",
+            "Alla fine un punteggio su 100 dice quanto il tuo disegno somiglia alla forma.",
+          ],
+        },
+        "«Corri senza percorso» registra lo stesso la tua corsa, senza una forma da seguire.",
+        "Un percorso è un suggerimento calcolato dai dati della mappa: tieni gli occhi sulla strada e rispetta il codice della strada.",
+      ],
+    },
+    {
+      heading: "Tenere corse e percorsi",
+      blocks: [
+        "Con un account, «Salva» a fine corsa la tiene in «Le mie attività», in «Profilo»; «Discard» la butta via. Senza rete la corsa aspetta sul telefono e parte dopo.",
+        "Il cuore su un percorso sulla mappa lo tiene fra i «Preferiti».",
+      ],
+    },
+    {
+      heading: "Pubblicare e condividere",
+      blocks: [
+        "Una corsa salvata è privata: la vedi solo tu. Accendi «Pubblica», a fine corsa o su una corsa di «Le mie attività», e gli altri iscritti la vedono come disegno sul tuo profilo, senza i primi e gli ultimi 200 m.",
+        "«Condividi» crea un'immagine della tua corsa da mandare dove vuoi.",
+      ],
+    },
+    {
+      heading: "Feed e amici",
+      blocks: [
+        "«Feed» mostra disegni da cui prendere idee: toccane uno per aprire il suo percorso e correrlo.",
+        "La lente in cima a «Feed» trova gli altri iscritti per nome. Su un profilo puoi toccare «Segui»; le richieste, chi ti segue e chi segui sono in «Profilo».",
+        "Sul disegno pubblico di un iscritto puoi reagire con un'emoji, mandare un super like e scrivere un commento. I commenti negativi non sono accettati.",
+      ],
+    },
+    {
+      heading: "Corsa, bici, canoa",
+      blocks: [
+        "Scegli lo sport con il pulsante accanto al profilo, o in «Impostazioni».",
+        {
+          bullets: [
+            "Corsa («Run»): fino a 21 km su strade vere, con la voce svolta per svolta.",
+            "Bici («Bike»): da 10 a 30 km, su ciclabili e strade aperte alle bici. Le svolte sono dette in anticipo e lo schermo mostra la velocità.",
+            "Canoa («Paddle»): da 1 a 5 km su laghi e mare, vicino alla riva, in canoa, kayak o SUP. Segui la linea sulla mappa.",
+          ],
+        },
+        "Sull'acqua leggi l'avviso di sicurezza prima di partire: indossa il giubbotto salvagente, controlla il meteo e il vento, rispetta le regole del posto. Il percorso resta entro 1 km dalla riva: questo non lo rende sicuro né permesso.",
+      ],
+    },
+    {
+      heading: "Impostazioni",
+      blocks: [
+        {
+          bullets: [
+            "Foto del profilo, email e numero di telefono. Il numero è facoltativo e lo vedi solo tu.",
+            "Lingua: English, Deutsch, Italiano, Español o Français. La voce la segue.",
+            "Mappe offline: il telefono tiene le mappe intorno a te e disegna i percorsi da solo; «Elimina» libera lo spazio.",
+            "Unità di misura: chilometri o miglia. Per ora le miglia si vedono in «Le mie attività», nei «Preferiti» e in «Explore».",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Il tuo account",
+      blocks: [
+        "Ti iscrivi con un'email, un nome utente e una password. Devi avere almeno 16 anni.",
+        "Non c'è ancora un modo per recuperare una password dimenticata: conserva bene la tua.",
+        "«Esci» ed «Elimina account» sono in fondo a «Impostazioni». Eliminare l'account elimina tutto quello che è tuo, subito, e non si può annullare.",
+      ],
+    },
+    {
+      heading: "Domande",
+      blocks: ["Scrivi a [contact email]."],
+    },
+  ],
+};
+
+const terms: AboutDocument = {
+  title: "Condizioni d'uso",
+  draft: true,
+  updated: UPDATED,
+  sections: [
+    {
+      heading: "Chi offre Sgrava",
+      blocks: [
+        "Sgrava è offerta da [name] («noi»). Puoi scriverci a [contact email].",
+        "Queste condizioni sono l'accordo fra te e noi per l'uso dell'app Sgrava. Creando un account o usando l'app le accetti.",
+      ],
+    },
+    {
+      heading: "Che cos'è Sgrava",
+      blocks: [
+        "Sgrava disegna percorsi che sulla mappa tracciano una forma, da fare di corsa, in bici o in canoa; registra la tua attività mentre li segui; e permette agli iscritti di pubblicare i loro disegni, seguirsi, reagire e commentare.",
+      ],
+    },
+    {
+      heading: "Chi può usarla",
+      blocks: [
+        "Per creare un account devi avere almeno 16 anni. Per disegnare un percorso l'account non serve.",
+      ],
+    },
+    {
+      heading: "Il tuo account",
+      blocks: [
+        {
+          bullets: [
+            "Ti iscrivi con un indirizzo email, un nome utente e una password. L'account è solo tuo: non usare l'account di un'altra persona e non farti passare per qualcun altro.",
+            "Tieni segreta la password. Sei responsabile di ciò che viene fatto con il tuo account. Non c'è ancora un modo per recuperare una password dimenticata.",
+            "Se aggiungi un numero di telefono, aggiungi solo un numero che è tuo.",
+            "Puoi uscire o eliminare l'account in ogni momento da «Impostazioni».",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Come usare Sgrava",
+      blocks: [
+        "Usa l'app nel rispetto della legge e degli altri iscritti. In particolare, non:",
+        {
+          bullets: [
+            "pubblicare contenuti offensivi, d'odio, minacciosi o molesti, nel nome utente, nella bio, nella foto, nei titoli o nei commenti;",
+            "pubblicare contenuti che non hai il diritto di pubblicare, o dati personali di altre persone senza il loro permesso;",
+            "cercare di guastare, sovraccaricare o aggirare il servizio, o raccogliere dati sugli iscritti con mezzi automatici.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Quello che pubblichi",
+      blocks: [
+        "Le tue corse, i tuoi disegni, i loro titoli, il tuo profilo e i tuoi commenti restano tuoi.",
+        "Pubblicandoli ci permetti di conservarli e di mostrarli nell'app agli altri iscritti, solo per far funzionare il servizio: un permesso gratuito e non esclusivo, che finisce quando elimini il contenuto o l'account.",
+        "L'app non accetta commenti con parole offensive: un filtro automatico di parole li rifiuta. Possiamo togliere i contenuti contrari a queste condizioni. Per segnalarci un contenuto che non dovrebbe esserci, scrivi a [contact email].",
+      ],
+    },
+    {
+      heading: "Sicurezza",
+      blocks: [
+        "Un percorso è un suggerimento calcolato dai dati della mappa. Nessuno lo ha percorso per te, e la mappa può essere incompleta o non aggiornata: una strada può essere chiusa, privata, senza marciapiede o pericolosa.",
+        {
+          bullets: [
+            "Sei tu responsabile di dove vai. Rispetta il codice della strada e la segnaletica, anche quando il percorso o la voce dicono altro.",
+            "Controlla le condizioni prima e durante l'attività: traffico, luce, meteo, fondo, la tua salute e il tuo allenamento.",
+            "Non guardare il telefono mentre ti muovi nel traffico.",
+            "Sull'acqua serve ancora più attenzione: indossa il giubbotto salvagente, controlla il meteo e il vento, rispetta le regole del posto (zone di balneazione, corridoi di lancio, porti). Sgrava non le conosce. Un percorso vicino alla riva non è, per questo, sicuro né permesso.",
+          ],
+        },
+        "Distanze, tempi, velocità e punteggio vengono dal GPS del telefono e sono stime.",
+      ],
+    },
+    {
+      heading: "Nessuna garanzia, e i limiti della nostra responsabilità",
+      blocks: [
+        "Lavoriamo perché Sgrava funzioni e i suoi percorsi siano buoni, ma l'app è offerta così com'è: non promettiamo che sia sempre disponibile o senza errori, che un percorso si possa completare, o che le sue misure siano esatte.",
+        "Nei limiti in cui la legge lo permette, non rispondiamo dei danni che derivano dall'uso dell'app o dei suoi percorsi. Niente in queste condizioni limita una responsabilità che la legge non permette di limitare, né i diritti che hai come consumatore.",
+      ],
+    },
+    {
+      heading: "Pubblicità",
+      blocks: [
+        "Sgrava mostra pubblicità, fornita da Google AdMob, fra i disegni di «Feed» e segnata «Sponsorizzato». Un annuncio apre quello che dice l'inserzionista: il suo contenuto non è nostro.",
+      ],
+    },
+    {
+      heading: "Servizi di altri",
+      blocks: [
+        {
+          bullets: [
+            "Le mappe vengono da OpenFreeMap e dai dati di OpenStreetMap (© contributori di OpenStreetMap).",
+            "I luoghi si cercano con Geoapify.",
+            "Se colleghi Strava, le corse che mandi là seguono le condizioni e le impostazioni di privacy di Strava.",
+            "Un'immagine che condividi esce dal foglio di condivisione del telefono: l'app che la riceve ha le sue condizioni.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "Modifiche",
+      blocks: [
+        "Possiamo cambiare l'app, e aggiungere o togliere ciò che fa. Quando cambiamo queste condizioni cambiamo la data in cima; se una modifica è importante la faremo sapere prima che valga.",
+      ],
+    },
+    {
+      heading: "Chiudere l'account",
+      blocks: [
+        "Puoi smettere di usare Sgrava ed eliminare l'account in ogni momento: «Privacy» dice che cosa si cancella e quando. Possiamo sospendere o chiudere un account contrario a queste condizioni.",
+      ],
+    },
+    {
+      heading: "Legge applicabile",
+      blocks: [
+        "Queste condizioni sono regolate da [governing law]. Se sei un consumatore, conservi le tutele che la legge del paese in cui vivi non permette di escludere.",
+      ],
+    },
+    {
+      heading: "Contatti",
+      blocks: ["[name] · [contact email]"],
+    },
+  ],
+};
+
+const privacy: AboutDocument = {
+  title: "Informativa sulla privacy",
+  draft: true,
+  updated: UPDATED,
+  sections: [
+    {
+      heading: "Chi è responsabile dei tuoi dati",
+      blocks: [
+        "Il titolare del trattamento dei tuoi dati personali è [name]. Per tutto ciò che riguarda i tuoi dati, scrivi a [contact email].",
+        "Questo testo dice quali dati tratta Sgrava, perché, dove stanno e per quanto tempo, e che cosa puoi fare.",
+      ],
+    },
+    {
+      heading: "Senza account",
+      blocks: [
+        "Puoi disegnare percorsi, esplorare e correre senza account. La corsa, allora, non esce dal telefono. Quello che esce lo stesso è in «I percorsi che chiedi», «La tua posizione» e «Chi altro riceve dati».",
+      ],
+    },
+    {
+      heading: "Il tuo account",
+      blocks: [
+        {
+          bullets: [
+            "Il tuo indirizzo email e il tuo nome utente, per farti entrare e distinguere gli account.",
+            "La tua password, conservata solo come hash (Argon2id): la password vera non la conserviamo e non la vediamo mai.",
+            "Il giorno in cui ti sei iscritto e quando hai confermato di avere almeno 16 anni.",
+            "La sessione di ogni telefono da cui sei entrato: il telefono tiene un token nel suo archivio protetto, il server ne tiene solo l'hash. Una sessione finisce 90 giorni dopo l'ultimo uso, o quando esci.",
+          ],
+        },
+        "Il tuo indirizzo email non è mai mostrato agli altri iscritti.",
+      ],
+    },
+    {
+      heading: "Il tuo numero di telefono (facoltativo)",
+      blocks: [
+        "Puoi aggiungere un numero di telefono in «Impostazioni». È facoltativo: l'app funziona allo stesso modo senza.",
+        "È privato: lo vedi solo tu. Non compare mai sul tuo profilo, nella ricerca o in un elenco. Serve perché gli amici che hanno già il tuo numero possano trovare il tuo account, con una ricerca dalla rubrica del telefono che ancora non esiste.",
+        "Non verifichiamo il numero e non gli mandiamo messaggi. Puoi toglierlo in ogni momento da «Impostazioni»; si cancella con l'account.",
+      ],
+    },
+    {
+      heading: "Il tuo profilo",
+      blocks: [
+        "Il nome utente, la bio e la foto del profilo sono ciò che gli altri iscritti vedono di te. La foto è conservata come una piccola immagine quadrata, senza i dati che la fotocamera le aggiunge. Chiunque abbia un account può cercare gli iscritti per nome utente.",
+      ],
+    },
+    {
+      heading: "Le tue corse e le loro tracce GPS",
+      blocks: [
+        "Con un account, quando tocchi «Salva» a fine corsa la corsa intera va al nostro server: ogni posizione con il suo orario, le pause, il percorso seguito, distanza, durata, punteggio e il nome del luogo. Con «Discard» non parte niente.",
+        "Una corsa salvata è privata: la vede solo il tuo account. Resta finché non la elimini da «Le mie attività» o elimini l'account.",
+        "Una corsa spesso parte e finisce davanti a casa. Per questo diventa visibile agli altri iscritti solo quando accendi «Pubblica», e allora vedono la traccia senza i primi e gli ultimi 200 m, con il titolo che le hai dato, e senza orari, pause né il percorso pianificato.",
+      ],
+    },
+    {
+      heading: "Preferiti, commenti, reazioni e follow",
+      blocks: [
+        {
+          bullets: [
+            "Un percorso che tieni fra i «Preferiti» è conservato intero, con la sua linea, che spesso parte vicino a casa tua. Lo vede solo il tuo account, finché non lo togli o elimini l'account.",
+            "I tuoi commenti e le tue reazioni sotto un disegno li vedono gli iscritti che vedono quel disegno. Puoi eliminare i tuoi commenti.",
+            "Chi segui, chi ti segue e le richieste di follow sono conservati con il tuo account.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "I percorsi che chiedi",
+      blocks: [
+        "Per disegnare un percorso l'app manda al nostro server la partenza, la forma o la parola e la distanza. Quando il telefono ha la mappa offline della zona, il percorso lo disegna da solo.",
+        "Le mappe offline vengono dal nostro server: quella intorno a te e, in anticipo, quelle dei paesi vicini. Per mettere un tetto a questi download il server li conta, giorno per giorno, con un numero anonimo che l'app crea per il telefono; il conteggio sta solo in memoria.",
+        "Le parole che descrivono una forma sono lette sul nostro server e non vanno a un servizio di AI esterno.",
+        "Una foto che scegli per un disegno va al nostro server una volta, per trovarne il contorno: il server non la salva e non la scrive nei log.",
+        "Per migliorare la ricerca teniamo un evento per ogni ricerca e per alcuni usi dell'app (un percorso scelto, un file GPX esportato, una corsa con il punteggio): il testo in minuscolo, al massimo 200 caratteri, con email e numeri lunghi oscurati; le posizioni solo come quadrati di circa 1 km; niente che dica chi sei o quale telefono era. Questi eventi sono conservati senza un limite di tempo.",
+      ],
+    },
+    {
+      heading: "La tua posizione",
+      blocks: [
+        "La posizione del telefono è usata sul telefono, per far partire un percorso da dove sei e per seguire la tua corsa. Va al nostro server come partenza di un percorso che chiedi, dentro una corsa che salvi, e con la ricerca di un luogo, per mettere prima i luoghi vicini a te.",
+        "Come ogni servizio su internet, il nostro server vede l'indirizzo internet (IP) da cui arriva una richiesta mentre le risponde. Il log del server non scrive posizioni, e nel database non ci sono indirizzi IP.",
+        "Un registro delle richieste di percorso, con la loro partenza, esiste per riprodurre un difetto. Sul nostro server è spento; acceso, tiene al massimo 10 MB, poi le righe più vecchie si perdono.",
+      ],
+    },
+    {
+      heading: "Pubblicità",
+      blocks: [
+        "Sgrava mostra annunci di Google AdMob fra i disegni di «Feed». La prima volta che apri «Feed», il modulo di consenso di Google chiede la tua scelta dove serve; finché gli annunci non si possono chiedere, non se ne mostrano. Su iPhone l'app non chiede di tracciarti nelle altre app e gli annunci sono chiesti senza l'identificativo pubblicitario.",
+        "Google tratta ciò che il suo software pubblicitario raccoglie secondo la propria informativa sulla privacy.",
+      ],
+    },
+    {
+      heading: "Strava",
+      blocks: [
+        "Una corsa va a Strava solo quando lo chiedi, e solo dopo che hai collegato il tuo profilo Strava. Finché è collegato, il nostro server tiene il tuo nome su Strava e le chiavi che Strava ci ha dato per il tuo profilo. A Strava mandiamo allora la traccia con gli orari, il nome e una riga di descrizione. A Strava chiediamo solo il permesso di aggiungere attività, mai di leggere le tue. Su Strava l'attività segue le tue impostazioni di privacy di Strava, non quelle di Sgrava.",
+      ],
+    },
+    {
+      heading: "Chi altro riceve dati",
+      blocks: [
+        {
+          bullets: [
+            "Hetzner ospita il nostro server e le sue copie di sicurezza, in Germania.",
+            "Geoapify riceve le ricerche dei luoghi e dei paesi vicini a te, con la posizione, e, per dare un nome al luogo di una corsa salvata, la sua partenza arrotondata a circa 1 km: mai la tua porta, la corsa o chi sei. Se il nostro server non risponde, la ricerca di un luogo va invece a Photon (komoot).",
+            "OpenFreeMap serve la mappa: come ogni servizio di mappe, vede quale zona guardi.",
+            "Il servizio Overpass dei dati di OpenStreetMap riceve dal nostro server la richiesta della mappa di una zona che non ha ancora: vede quale zona, non chi l'ha chiesta.",
+            "unpkg serve la libreria della mappa all'avvio dell'app.",
+            "Expo serve gli aggiornamenti dell'app.",
+            "Google AdMob e Strava, come detto sopra.",
+          ],
+        },
+        "Un'immagine della tua corsa creata con «Condividi» si fa sul telefono ed esce solo dal foglio di condivisione, dove la mandi tu.",
+      ],
+    },
+    {
+      heading: "Dove stanno i tuoi dati e per quanto",
+      blocks: [
+        {
+          bullets: [
+            "Sul nostro server in Germania, finché hai l'account.",
+            "Quando elimini l'account, tutto quello che è tuo si cancella subito: profilo, foto, numero di telefono, corse, disegni, preferiti, commenti, reazioni e follow.",
+            "Una copia di sicurezza del database si fa ogni notte e si tiene 13 giorni: un account eliminato è fuori da ogni copia entro 14 giorni.",
+            "Sul tuo telefono: la sessione, le tue scelte (lingua, sport), le mappe offline e le corse che aspettano ancora di partire.",
+          ],
+        },
+        "Il collegamento fra l'app e il nostro server è cifrato (HTTPS).",
+      ],
+    },
+    {
+      heading: "Perché possiamo usare i tuoi dati",
+      blocks: [
+        "[basi giuridiche: da completare prima che questo testo sia definitivo]",
+      ],
+    },
+    {
+      heading: "I tuoi diritti",
+      blocks: [
+        "Puoi, in ogni momento:",
+        {
+          bullets: [
+            "vedere e correggere i tuoi dati: nome utente, bio e foto in «Profilo», email e numero di telefono in «Impostazioni»;",
+            "eliminare una corsa da «Le mie attività», un preferito, un commento, o l'intero account da «Impostazioni», «Elimina account»;",
+            "chiederci una copia dei tuoi dati, o di fermare o limitare un loro uso;",
+            "ritirare un consenso che hai dato;",
+            "fare reclamo all'autorità per la protezione dei dati del tuo paese (in Italia, il Garante per la protezione dei dati personali).",
+          ],
+        },
+        "Per tutto ciò che non puoi fare dall'app, scrivi a [contact email].",
+      ],
+    },
+    {
+      heading: "Minori",
+      blocks: [
+        "Gli account di Sgrava sono per chi ha almeno 16 anni. Se pensi che qualcuno più giovane abbia un account, scrivici e lo elimineremo.",
+      ],
+    },
+    {
+      heading: "Modifiche a questo testo",
+      blocks: [
+        "Quando questo testo cambia, cambiamo la data in cima; se una modifica è importante la faremo sapere prima che valga.",
+      ],
+    },
+    {
+      heading: "Contatti",
+      blocks: ["[name] · [contact email]"],
+    },
+  ],
+};
+
+export const IT: AboutContent = { help, terms, privacy };

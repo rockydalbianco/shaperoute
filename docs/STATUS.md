@@ -149,6 +149,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-242 — La penna si alza sulle deviazioni di un pezzo**
+  (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della
+  faccina a Trento: «alzare la penna anche per la bocca… migliora il
+  servizio di disegno»). Solo motore: con la penna alzata, un pezzo di
+  una forma (bocca, occhio, buco) che le strade portano lontano dalla sua
+  linea, più di 3/8 di altezza di pezzo, si disegna in parti e la
+  deviazione è un tratto a piedi (`detours.py`, `pen_up.trace`). A
+  Trento era la ferrovia: la bocca scendeva 250 m fino al sottopasso e
+  pendeva dal bordo. Il contorno, le parole e l'acqua non cambiano; su
+  42 richieste di prova 30 danno lo stesso percorso, 10 migliorano,
+  nessuna peggiora (`ROUTE_ENGINE.md` §5). **In PR**, non in `main`.
+  **Aspetta l'utente**: il giudizio sui campioni prima/dopo
+  (`samples/TASK-242_*`), chiesto dal coordinatore prima del merge. Poi
+  server e `draw_examples` (coordinatore, con l'ok dell'utente). Da dove
+  riprendere: `tasks/TASK-242.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**

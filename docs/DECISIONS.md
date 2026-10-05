@@ -10544,6 +10544,42 @@ mostra. Le chiavi «Score {score}», «Score: {score} out of 100» e «out of
 (`DrawingsGrid`, `DrawingCard`), dove il punteggio si vede ancora, come
 a fine corsa: l'utente non li ha nominati.
 
+**Aggiornamento** (2026-10-05, stesso giorno, TASK-241 parte E; scelte
+dell'utente: «sì toglilo anche da lì» per la fine corsa e i disegni del
+«Profile», e «Solo km e tempo» alla domanda su cosa mostra la scheda di
+fine corsa). **Il punteggio non si vede e non si legge più da nessuna
+parte nell'app.**
+
+1. **Disegni del «Profile»**: niente «Score 87» sotto il disegno della
+   griglia, niente riquadro sul disegno aperto; l'etichetta è «{title},
+   open on the map» per tutti.
+2. **Fine corsa** (supera in parte ADR-0090 e ADR-0093, per quello che
+   l'app mostra): la scheda ha una riga, «4.0 km · 32 min», e i pulsanti
+   di prima. L'app **non chiede più `POST /track-scores`**: via «Scoring
+   your run…», «Too short for a score», «The score will come later»,
+   «The score did not arrive», «Try again» e «97% of the route».
+3. **«Done» senza account** toglie sempre la corsa dal file: non c'è più
+   un punteggio da aspettare alla prossima apertura (deciso dall'agente
+   su delega, conseguenza del punto 2).
+4. **L'API non cambia**: `POST /track-scores` resta, e le corse salvate
+   hanno ancora `score`, calcolato da sé. `src/api/trackScores.ts` resta
+   nell'app senza che una schermata lo chiami (deciso dall'agente: i test
+   della penna alzata leggono `toScoreRequest`; toglierlo è un seguito).
+5. **Le chiavi** «Score {score}», «Score: {score} out of 100», «out of
+   100» e «{title}, score {score} out of 100, open on the map» escono
+   dalle quattro tabelle.
+6. **«Help» e «Terms»** (`src/about/content/`, bozze di TASK-184): tolta
+   la frase «At the end, a score out of 100 tells how close you drew the
+   shape.» e «and score» da «Distances, times, speed and score come from
+   the phone's GPS». **«Privacy» non è toccata**: dice che il server
+   tiene il punteggio delle corse salvate (vero) e nomina l'evento «a run
+   scored», che l'app non manda più; è un testo dell'utente.
+
+**Alternative scartate**: tenere «97% of the route» (l'utente ha scelto
+solo km e tempo; avrebbe tenuto la richiesta all'API, l'attesa e i
+messaggi senza rete); togliere `score` dall'API (altro contratto, usato
+dai dati già salvati; non chiesto).
+
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
 (TASK-239), dentro la **richiesta dell'utente** dello stesso giorno: «deve

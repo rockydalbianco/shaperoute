@@ -277,6 +277,20 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (`out/task-232b/`); manca il dito vero. Prossimo passo: la **parte B2**
   («Explore»: l'esempio aperto, la sua corsa e le schede, che usano le
   foto-mappa del «Feed»), poi la C; il server ha già la parte A.
+  **Parte B2** (sola app, in PR dal 2026-10-06; la pubblica il
+  coordinatore dopo il merge): un esempio di «Explore» che il motore ha
+  inclinato si apre con la mappa girata e la freccia del nord, ogni
+  tessera la sua inclinazione, e resta girato in corsa e a fine corsa; la
+  sua scheda è girata allo stesso modo, linea e foto-mappa. Lo dicono gli
+  esempi disegnati per un posto (città, paesi vicini, acqua); restano col
+  nord in alto i percorsi del catalogo dell'API, gli esempi tenuti sul
+  telefono da prima, quelli sull'acqua che arrivano con l'app e i
+  preferiti. Visto nel browser sulla pagina vera delle foto-mappa con
+  quattro campioni inclinati; non nel simulatore né sul telefono. Seguiti
+  senza numero: `rotation_deg` nel catalogo dell'API e in
+  `paddleExamples.json`. Prossimo passo: la **parte C** (corse salvate,
+  preferiti, «Feed», post: una migrazione), in un contesto pulito, dopo
+  aver sentito il coordinatore.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,

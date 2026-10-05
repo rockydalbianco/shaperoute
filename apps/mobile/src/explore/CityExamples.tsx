@@ -72,6 +72,7 @@ export function CityExamples({ city, examples, onOpen, onRetry, width }: Props) 
                 key={example.shape}
                 width={card}
                 line={route.preview}
+                rotationDeg={route.rotation_deg}
                 title={`${name} · ${distance}`}
                 detail={route.city}
                 match={route.similarity}

@@ -9774,6 +9774,39 @@ delega dell'utente (TASK-232 parte B):
   alla mappa (`RecommendedRouteDetail` non ce l'ha) e le loro schede usano
   le foto-mappa del «Feed»: sono il passo B2, prima della parte C.
 
+**Parte B2, «Explore» con la mappa girata (2026-10-06)**, deciso
+dall'agente su delega dell'utente (TASK-232 parte B2):
+
+- **L'inclinazione viaggia con l'esempio**: `rotation_deg` in
+  `RecommendedRoute` (la scheda) e in `RecommendedRouteDetail` (il
+  percorso intero, le alternative ciascuna la sua), preso dal risultato del
+  motore (`asRecommended`, `movedExample`) e riportato nel risultato che
+  leggono la mappa, «Start» e la corsa (`toResult`, `ExploreRun`).
+- **Dritto vuol dire senza campo** (`turnOf`): 0, assente o illeggibile
+  non si scrive. Gli esempi dritti, il file sul telefono e le foto già
+  fatte restano identici a prima, byte per byte.
+- **Un esempio tenuto sul telefono da prima non si ridisegna** per avere
+  il campo: è un percorso trovato entro ±15°, e resta col nord in alto
+  com'era. Ridisegnarli tutti costerebbe una ricerca per forma a ogni
+  utente, per percorsi che vanno già bene.
+- **La scheda gira la linea, non la vista**: `turnedLine` gira i punti
+  attorno al loro centro, in metri, e `thumbSegments` li disegna come
+  sempre; così il disegno girato riempie la scheda con lo stesso margine.
+  Girare la vista (un `transform`) taglierebbe gli angoli o lascerebbe la
+  forma più piccola.
+- **La foto-mappa prende lo stesso `bearing`** (`lineCamera`, `Shoot`):
+  l'inquadratura è quella della linea girata, con il centro riportato sulla
+  terra. La pagina rimette il nord in alto a ogni foto che non lo chiede,
+  perché la mappa è una sola per tutte le foto. La foto girata ha un nome
+  suo (`…@−30`): non prende il posto di quella col nord in alto. Serve
+  anche alla parte C.
+- **Niente freccia del nord sulle schede**: sono disegni larghi mezzo
+  telefono; la freccia c'è sulla mappa, appena si apre il percorso.
+- **Fuori da questo passo**: il catalogo dell'API
+  (`/recommended-routes`) e gli esempi sull'acqua che arrivano con l'app
+  (`paddleExamples.json`) non dicono l'inclinazione; i preferiti non la
+  tengono (parte C).
+
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 

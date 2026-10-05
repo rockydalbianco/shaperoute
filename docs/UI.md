@@ -168,7 +168,12 @@ pagine»):
    non arriva la scheda è la linea sul fondo scuro, e senza rete resta
    così. Il credito della mappa non è su ogni foto, che è larga mezzo
    telefono: sta una volta sola sopra le schede, «Maps: OpenFreeMap ©
-   OpenMapTiles · Data from OpenStreetMap». **Niente filtri** (TASK-176,
+   OpenMapTiles · Data from OpenStreetMap». **Un percorso inclinato ha la
+   scheda girata** (TASK-232 parte B2, ADR-0195): la linea e la foto della
+   mappa sotto sono girate dall'altra parte, così il disegno si legge
+   dritto già nell'elenco, come poi sulla mappa; i nomi dei paesi restano
+   dritti. Una scheda che non dice l'inclinazione resta col nord in alto.
+   **Niente filtri** (TASK-176,
    ADR-0144, chiesto dall'utente: «toglimi i filtri, non mi piacciono»):
    fino a TASK-167 sopra le schede c'erano «Shape» e «Distance». Toccata
    una scheda, il percorso si apre sulla
@@ -1485,10 +1490,19 @@ confermati dall'utente il 2026-10-06, sulle schermate del simulatore.
 
 Sull'acqua, «Move the shape» con la mappa girata sposta la forma dove va
 il dito sullo schermo; durante l'attesa la forma lasciata resta girata
-com'era. Per ora gira solo la mappa di un percorso **disegnato in «Draw»**
-(anche mentre lo si corre e a fine corsa): gli esempi di «Explore» e le
-loro schede, le corse salvate, il «Feed» e il post restano col nord in
-alto fino ai passi successivi di TASK-232.
+com'era.
+
+**Anche gli esempi di «Explore»** (TASK-232 parte B2): un esempio che il
+motore ha inclinato si apre con la mappa girata e la freccia del nord,
+ogni tessera «A · B · C» con la sua inclinazione, e resta girato mentre lo
+si corre e a fine corsa; spostato con «Move the shape», prende
+l'inclinazione del percorso nuovo. Vale per gli esempi disegnati per un
+posto (le città, i paesi vicini, l'acqua), che portano `rotation_deg`. Non
+lo dicono, e restano col nord in alto: i percorsi del catalogo dell'API,
+gli esempi tenuti sul telefono da prima (finché non vengono ridisegnati),
+gli esempi sull'acqua che arrivano con l'app, i preferiti. Le corse
+salvate, il «Feed» e il post restano col nord in alto fino alla parte C di
+TASK-232.
 
 Gli avvisi sono **in parole semplici** (TASK-054, ADR-0048): l'app
 riconosce i testi che il motore scrive e li riscrive brevi, con una

@@ -54,10 +54,35 @@ docs/tasks/TASK-241.md
   L'utente ha parlato delle foto dei post.
 - Il campo `score` dei post d'esempio (`sampleFeed`): resta nei dati.
 
+## Parte B — Nemmeno VoiceOver legge il punteggio
+
+Chiesto dall'utente il 2026-10-05, alla domanda fatta dopo la parte A:
+«sì toglilo anche da VoiceOver». Branch `feat/TASK-241-b-feed-label`.
+
+L'etichetta del post passa da «{user} in {city}: {title}. {facts}. Score
+{score} out of 100.» a «{user} in {city}: {title}. {facts}.», in
+`FeedPost.tsx` e nelle quattro tabelle delle lingue (una voce per file).
+
+- [x] L'etichetta di un post non contiene il punteggio, in nessuna lingua.
+- [x] Lint, typecheck, Prettier e test dell'app verdi.
+
+```
+apps/mobile/src/feed/FeedPost.tsx
+apps/mobile/src/feed/FeedPost.test.tsx
+apps/mobile/src/i18n/de.ts
+apps/mobile/src/i18n/es.ts
+apps/mobile/src/i18n/fr.ts
+apps/mobile/src/i18n/it.ts
+docs/UI.md
+docs/STATUS.md
+docs/DECISIONS.md
+docs/tasks/TASK-241.md
+```
+
 ## Esito
 
-Fatto il 2026-10-05. Il riquadro non c'è più, nel «Feed» e nei post che
-«Explore» mostra mentre disegna una città (stesso componente). VoiceOver
-legge ancora il punteggio: da decidere con l'utente se toglierlo anche lì,
-quando i file delle lingue sono liberi. Non pubblicato: esce con la
-prossima pubblicazione, con l'ok dell'utente.
+Fatto il 2026-10-05. Parte A (PR #345, merge `ad80385`): il riquadro non
+c'è più, nel «Feed» e nei post che «Explore» mostra mentre disegna una
+città (stesso componente). Parte B: nemmeno VoiceOver legge più il
+punteggio. Non pubblicato: esce con la prossima pubblicazione, con l'ok
+dell'utente.

@@ -1,7 +1,7 @@
 # TASK-217 — La voce confronta ogni km col precedente
 
-**Stato**: In review (2026-10-05) — codice e documenti scritti, PR
-aperta. Solo app: esce con la prossima pubblicazione, con l'ok dell'utente.
+**Stato**: In review (2026-10-05) — codice e documenti scritti, PR #308.
+Solo app: esce con la prossima pubblicazione, con l'ok dell'utente.
 **Fase**: 4 · **Branch**: `feat/TASK-217-km-compare-voice`
 **Dipende da**: TASK-209 (la voce in cinque lingue, `src/voice/`, PR
 #259), TASK-206 C (tocca gli stessi file della voce)

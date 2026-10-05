@@ -214,7 +214,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: il task file, «Esito», «I campioni».
 - **TASK-217 — La voce confronta ogni km col precedente** (ADR-0180;
   chiesto e scelto dall'utente il 2026-10-03; codice scritto il
-  2026-10-05, PR aperta): dopo la frase di ogni km, dal secondo, «Questo
+  2026-10-05, PR #308): dopo la frase di ogni km, dal secondo, «Questo
   chilometro: 12 secondi meglio del precedente.» / «… peggio …», entro 2
   s «Stesso passo del chilometro precedente.»; al primo km niente. Con e
   senza percorso, con i secondi della fine corsa (`splits`), pause

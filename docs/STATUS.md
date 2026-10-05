@@ -565,6 +565,13 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sull'iPhone lo scorrimento e il «←». Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
   aggiorna anche «Privacy».
 
+- **App** — TASK-245 parte B: in «Another place» con «Paddle», una parola
+  comune scritta sceglie fra i nomi trovati (ADR-0210, aggiornamento;
+  seguito del task, fatto dopo il «continua» dell'utente del 2026-10-05).
+  «lago lev» propone solo «Lago di Levico», non più anche «Sestri
+  Levante»; «lev» da sola tutti e due, e «lungomare di Viareggio» trova
+  la sua spiaggia. Solo `placeSpots.ts` e i suoi test; niente server.
+  Esce con la pubblicazione del coordinatore.
 - **App e API** — TASK-245: altre spiagge per «Paddle», oltre Jesolo e
   Riccione (ADR-0210; chiesto dall'utente il 2026-10-05, che ha scelto 29
   posti di mare su tutte le coste; PR #363, merge `0d8bbc1`). Un comando

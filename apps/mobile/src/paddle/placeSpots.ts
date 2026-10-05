@@ -48,7 +48,10 @@ function wordsOf(text: string): string[] {
  * in «Explore»: «lago» finds every lake, «via al lago» none. Only the last
  * word typed may be the beginning of a word of a name, as it is still being
  * written; a word before it must be a whole one: «via Roma» does not find
- * «Viareggio» (TASK-245). The nearest first.
+ * «Viareggio» (TASK-245). A common word left out still chooses among the
+ * names found: «lago lev» is «Lago di Levico» alone, not «Sestri Levante»,
+ * while «lungomare di Viareggio» keeps its beach, as no name found has the
+ * «di». The nearest first.
  */
 export function findSpots(
   spots: readonly WaterSpot[],
@@ -87,11 +90,12 @@ export function findSpots(
     return [];
   }
   const wanted = telling.length > 0 ? telling : parts;
-  return named
-    .filter(({ words }) =>
-      wanted.every((part) => words.some((word) => fits(word, part))),
-    )
-    .map(({ found }) => found);
+  const holds = (words: string[], asked: typeof parts) =>
+    asked.every((part) => words.some((word) => fits(word, part)));
+  const found = named.filter(({ words }) => holds(words, wanted));
+  // The names with every known word typed, the common ones too, come alone.
+  const exact = found.filter(({ words }) => holds(words, known));
+  return (exact.length > 0 ? exact : found).map((name) => name.found);
 }
 
 /** The lakes and beaches to offer for a text typed in «Another place». */

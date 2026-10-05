@@ -27,7 +27,7 @@ test("a name is found as in «Explore»: its beginning, without accents or capit
   // «lev» begins «Levico» and the «Levante» of a beach (TASK-245): the
   // nearest first.
   expect(names("lev")).toEqual(["Lago di Levico", "Sestri Levante"]);
-  expect(names("LAGO LEV")).toEqual(["Lago di Levico", "Sestri Levante"]);
+  expect(names("LEV")).toEqual(["Lago di Levico", "Sestri Levante"]);
   expect(names("levi")).toEqual(["Lago di Levico"]);
   expect(names("lago d'iseo")).toEqual(["Lago d'Iseo"]);
   expect(names("como")).toEqual(["Lago di Como"]);
@@ -37,12 +37,26 @@ test("only the last word typed may be the beginning of a word of a name", () => 
   // Still being written.
   expect(names("via")).toEqual(["Viareggio"]);
   expect(names("viar")).toEqual(["Viareggio"]);
-  expect(names("lago di lev")).toEqual(["Lago di Levico", "Sestri Levante"]);
+  expect(names("forte dei mar")).toEqual(["Forte dei Marmi"]);
   // Written whole: «via» is no «Viareggio», «lev» no «Levico».
   expect(names("via Roma, Trento")).toEqual([]);
   expect(names("via r")).toEqual([]);
   expect(names("lev terme")).toEqual([]);
   expect(names("levico terme")).toEqual(["Lago di Levico"]);
+});
+
+test("a common word typed chooses among the names found", () => {
+  // «lago» tells no lake from another, but it is no «Sestri Levante».
+  expect(names("lago lev")).toEqual(["Lago di Levico"]);
+  expect(names("LAGO LEV")).toEqual(["Lago di Levico"]);
+  expect(names("lago di lev")).toEqual(["Lago di Levico"]);
+  expect(names("lago di levico terme")).toEqual(["Lago di Levico"]);
+  // No name found has the common word: the names found stay.
+  expect(names("lago di sestri lev")).toEqual(["Sestri Levante"]);
+  expect(names("lungomare di Viareggio")).toEqual(["Viareggio"]);
+  expect(names("lago di iseo")).toEqual(["Lago d'Iseo"]);
+  const offered = spotPlaces("lago lev", LEVICO_TERME);
+  expect(offered.map((place) => place.label)).toEqual(["Lago di Levico"]);
 });
 
 test("a beach of the list is found, with one word of its name or more", () => {

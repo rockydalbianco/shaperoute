@@ -113,7 +113,7 @@ class _Source:
 # alternatives of its heart and star are new, the grid and the circle not.
 BEFORE: dict[str, str | tuple[str, ...]] = {
     "grid heart 5000": "3df8155c69e599f7",
-    "levico heart 2000": ("b9ea27acaea65287",),
+    "levico heart 2000": ("60333137c30f1143", "b9ea27acaea65287"),  # CI, Mac
     "town CIAO 12000": "ded8ea0129644e19",
     "town CIAO pen up 12000": "b4173e7a6e4ca727",
     "town circle 10000": "96eb22388f95078e",

@@ -9,8 +9,12 @@ import { type downloadZone, type ZoneDownload, zoneUri } from "./zones";
 jest.mock("expo-file-system", () => jest.requireActual("./memoryFiles"));
 jest.mock("expo-file-system/legacy", () => ({ createDownloadResumable: jest.fn() }));
 
+// The round of zones ahead (part B2), tested in aheadZones.test.ts.
+const noAhead = jest.fn(async () => "done" as const);
+
 beforeEach(() => {
   files.clear();
+  noAhead.mockClear();
 });
 
 const HERE: PositionState = { status: "ok", point: [46.0679, 11.1211] };
@@ -36,7 +40,7 @@ test("once the position is known, both zones are asked, once, then Python starts
   const download = jest.fn(async (): Promise<ZoneDownload> => SAVED);
   const { rerender } = await renderHook(
     ({ position }: { position: PositionState }) =>
-      usePhoneZones(position, "https://api", { engine, download }),
+      usePhoneZones(position, "https://api", { engine, download, ahead: noAhead }),
     { initialProps: { position: { status: "loading" } as PositionState } },
   );
   expect(download).not.toHaveBeenCalled();
@@ -48,10 +52,15 @@ test("once the position is known, both zones are asked, once, then Python starts
     ["https://api", "bike", HERE.point],
   ]);
   expect(warmUp).toHaveBeenCalledTimes(1);
+  // Then the zones ahead, on the network of the sport, as the zones around.
+  expect(noAhead.mock.calls).toEqual([
+    ["https://api", HERE.point, "foot", { download }],
+  ]);
   await act(async () => {
     await rerender({ position: { status: "ok", point: [45, 11] } });
   });
   expect(download).toHaveBeenCalledTimes(2);
+  expect(noAhead).toHaveBeenCalledTimes(1);
 });
 
 test("no zone around the phone, and none saved: Python waits for a route", async () => {
@@ -59,16 +68,21 @@ test("no zone around the phone, and none saved: Python waits for a route", async
   const warmUp = jest.spyOn(engine, "warmUp");
   const download = jest.fn(async (): Promise<ZoneDownload> => ({ kind: "none" }));
   await act(async () => {
-    await renderHook(() => usePhoneZones(HERE, "https://api", { engine, download }));
+    await renderHook(() =>
+      usePhoneZones(HERE, "https://api", { engine, download, ahead: noAhead }),
+    );
   });
   expect(download).toHaveBeenCalledTimes(2);
   expect(warmUp).not.toHaveBeenCalled();
+  // A server without zones here, or one that does not answer: no city ahead.
+  expect(noAhead).not.toHaveBeenCalled();
 });
 
 test("without an API address nothing is downloaded", async () => {
   const download = jest.fn(async (): Promise<ZoneDownload> => SAVED);
-  await renderHook(() => usePhoneZones(HERE, null, { download }));
+  await renderHook(() => usePhoneZones(HERE, null, { download, ahead: noAhead }));
   expect(download).not.toHaveBeenCalled();
+  expect(noAhead).not.toHaveBeenCalled();
 });
 
 test("the first maps of the phone are told while they download, then not", async () => {
@@ -85,7 +99,7 @@ test("the first maps of the phone are told while they download, then not", async
       }),
   );
   const { result } = await renderHook(() =>
-    usePhoneZones(HERE, "https://api", { engine, download }),
+    usePhoneZones(HERE, "https://api", { engine, download, ahead: noAhead }),
   );
   expect(result.current).toBe(7_000_000);
   await act(async () => finish());
@@ -105,9 +119,28 @@ test("with maps on the phone already, nothing is told", async () => {
     async (..._args: Parameters<typeof downloadZone>): Promise<ZoneDownload> => SAVED,
   );
   const { result } = await renderHook(() =>
-    usePhoneZones(HERE, "https://api", { engine, download }),
+    usePhoneZones(HERE, "https://api", { engine, download, ahead: noAhead }),
   );
   await act(async () => undefined);
   expect(download.mock.calls.map((call) => call[3])).toEqual([{}, {}]);
   expect(result.current).toBeNull();
+});
+
+test("offline, the zone saved before starts Python, and no city ahead is asked", async () => {
+  const zone = { name: TRENTO, etag: null, bytes: 7_000_000, usedAt: 0 };
+  files.set("file:///documents/engine/zones.json", JSON.stringify({ zones: [zone] }));
+  files.set(zoneUri(zone), "zone");
+  const engine = new PhoneEngine();
+  const warmUp = jest.spyOn(engine, "warmUp").mockImplementation(() => undefined);
+  const download = jest.fn(async (): Promise<ZoneDownload> => ({
+    kind: "failed",
+    why: "offline",
+  }));
+  await act(async () => {
+    await renderHook(() =>
+      usePhoneZones(HERE, "https://api", { engine, download, ahead: noAhead }),
+    );
+  });
+  expect(warmUp).toHaveBeenCalledTimes(1);
+  expect(noAhead).not.toHaveBeenCalled();
 });

@@ -1,7 +1,9 @@
 # TASK-234 — «Viene meglio a 12 km»: la distanza dove la forma riesce meglio
 
-**Stato**: In revisione — parte A (motore e API) in `main` dalla #327
-(784cc03, 2026-10-05); parte B (app) in PR, testi confermati dall'utente
+**Stato**: Done — 2026-10-05: parte A (motore e API) dalla #327
+(`784cc03`), parte B (app) dalla #336 (`db2c30e`). «Draw» offre la
+distanza dove la forma viene meglio, con «Try N km»; scatta in circa il 6%
+dei percorsi (`MAPS.md`)
 **Fase**: 4 · **Branch**: `feat/TASK-234-better-distance` (A),
 `feat/TASK-234-better-distance-app` (B)
 **ADR**: ADR-0197 (estende ADR-0041)
@@ -195,7 +197,7 @@ docs/tasks/TASK-234.md
 previsto», sapendo che la riga compare in circa il 6% dei percorsi; il
 passo 2 resta da valutare dopo.
 
-**Parte B, l'app** (2026-10-05, PR da `feat/TASK-234-better-distance-app`):
+**Parte B, l'app**: in `main` dalla #336 (merge `db2c30e`, 2026-10-05):
 
 - `src/route/betterDistance.ts`: quando offrire la distanza (il campo
   della risposta, dentro le distanze di «Draw», mai sull'acqua né uguale

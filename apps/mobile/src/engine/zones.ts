@@ -42,7 +42,8 @@ export type ZoneEntry = {
   /** The ETag the API sent with it, to ask again with If-None-Match. */
   etag: string | null;
   bytes: number;
-  /** When a route last used it, or it was saved, in ms since 1970. */
+  /** When a route last used it, or it was saved, in ms since 1970; 0 for
+   * a zone saved ahead that no route used yet, the first to go. */
   usedAt: number;
 };
 
@@ -274,7 +275,9 @@ export const downloadTelling: Download = (url, fileUri, options, onSize) => {
  *
  * `prefetch`: a zone downloaded ahead, not the one around the phone. It says
  * so to the server with the phone's id, which counts it against the day's
- * cap; after a 429 the phone asks for none until Retry-After (part A2).
+ * cap; after a 429 the phone asks for none until Retry-After (part A2). It
+ * is saved as never used: beyond the limit it goes before the zones the
+ * phone was in (part B2).
  */
 export async function downloadZone(
   baseUrl: string,
@@ -353,7 +356,7 @@ export async function downloadZone(
       name,
       etag: header(answer.headers, "etag"),
       bytes: new File(folder, name).size,
-      usedAt: now(),
+      usedAt: prefetch ? 0 : now(),
     };
     const kept = [...savedZones().filter((each) => each.name !== name), zone];
     const gone = overLimit(kept, SPACE_LIMIT_BYTES, name);

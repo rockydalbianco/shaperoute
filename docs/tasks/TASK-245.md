@@ -246,6 +246,24 @@ l'API non è stata fatta: «va bene così, la provo sul telefono».
   `out/task233-lakes/scripts/`, fuori dal repository.
 - Una partenza al mare a più di 3 km da un paese dell'elenco resta senza
   acqua sul server: altri posti si aggiungono a `PLACES`.
-- In «Another place», «lago lev» propone anche «Sestri Levante» dopo
+- ~~In «Another place», «lago lev» propone anche «Sestri Levante» dopo
   «Lago di Levico»: le parole comuni («lago») non contano quando un'altra
-  parola dice il luogo (regola di TASK-240).
+  parola dice il luogo (regola di TASK-240).~~ Fatto nella parte B.
+
+### 2026-10-05, parte B: una parola comune sceglie fra i nomi trovati
+
+Dopo il «continua va bene» dell'utente, il seguito qui sopra (branch
+`fix/TASK-245-b-common-words`; ADR-0210, aggiornamento). File toccati:
+`apps/mobile/src/paddle/placeSpots.ts` e `placeSpots.test.ts`,
+`docs/UI.md`, `docs/DECISIONS.md`, `docs/STATUS.md`, questo file.
+
+- `findSpots`: fra i nomi trovati con le parole che dicono il luogo, se
+  qualcuno ha tutte le parole scritte che l'elenco conosce (comuni
+  comprese), restano solo quelli; se no, i nomi trovati restano.
+- «lago lev» e «lago di lev» → solo «Lago di Levico»; «lev» → «Lago di
+  Levico» e «Sestri Levante», come prima; «lago di sestri lev»,
+  «lungomare di Viareggio», «lago di iseo» trovano il loro luogo.
+- Test: uno nuovo in `placeSpots.test.ts` (i casi qui sopra, e le
+  proposte di `spotPlaces`); i 98 test di `src/paddle/` verdi.
+- Niente server, niente motore: esce con la prossima pubblicazione
+  dell'app.

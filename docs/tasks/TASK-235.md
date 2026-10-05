@@ -156,7 +156,8 @@ pagina sullo schermo, gli annunci tardi al primo posto ancora davanti),
 `routeAds`; un test (`onlyInFeed.test.ts`) controlla che solo `FeedScreen`
 prenda codice da `src/ads/`. Variabili `EXPO_PUBLIC_ADMOB_NATIVE_*` al
 posto delle `INTERSTITIAL`. Nessun pacchetto e nessuna configurazione
-nuovi. App jest 1854 test verdi, lint, Prettier e typecheck verdi.
+nuovi. App jest 1854 test verdi, lint, Prettier e typecheck verdi; dopo
+aver preso da `main` i 19 post di TASK-228 (tre annunci), 1906 verdi.
 
 Prova in una build Release nel simulatore (iOS 27, ID di prova dell'app di
 Google nell'`Info.plist` generato): nessun annuncio né consenso all'avvio;

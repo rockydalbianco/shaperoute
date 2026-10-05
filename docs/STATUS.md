@@ -495,15 +495,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   supera in parte ADR-0102; chiesto dall'utente il 2026-10-05, con la
   scelta che **sostituisce** l'annuncio a schermo intero all'inizio di ogni
   ricerca). Un annuncio nativo AdMob dopo ogni 5 post, solo fra due post
-  (due nei 15 d'esempio), con «Sponsored» in alto grande come il nome di
+  (tre nei 19 d'esempio), con «Sponsored» in alto grande come il nome di
   un corridore, nelle cinque lingue. Uno alla volta: il primo quando si
   apre il Feed, il successivo quando l'utente arriva al posto del
   precedente; un annuncio arrivato tardi non sposta i post sullo schermo.
   Il consenso di Google compare alla prima apertura del Feed, non
   all'avvio. «Draw route» e «Ask for a route» non mostrano più annunci
   (`useAdBeforeRoute` tolto). Provato in una build Release nel simulatore
-  con l'annuncio nativo di prova: due annunci dopo il 5° e il 10° post,
-  nessuno in fondo, il validatore di AdMob «No implementation issues
+  con l'annuncio nativo di prova (allora 15 post): due annunci dopo il 5°
+  e il 10° post, nessuno in fondo, il validatore di AdMob «No implementation issues
   found». In Expo Go nessun annuncio, come prima. Da riguardare su un
   iPhone vero: che scorrere sopra un annuncio non lo apra (nel simulatore
   lo apriva solo il gesto finto dello strumento). Per gli annunci veri

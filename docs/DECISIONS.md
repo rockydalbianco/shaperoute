@@ -9870,8 +9870,8 @@ dell'utente
 tra i post dei feed». Alla domanda se si aggiunge all'annuncio all'inizio
 di ogni ricerca o lo sostituisce ha scelto **sostituisce**, con la
 proposta che la accompagnava: un annuncio nativo con l'aspetto di un post,
-la scritta «Sponsored», uno ogni 5 post. Il Feed oggi ha 15 post d'esempio
-(ADR-0127); il feed vero è TASK-118.
+la scritta «Sponsored», uno ogni 5 post. Il Feed oggi ha 19 post d'esempio
+(ADR-0127, quattro in canoa da ADR-0190); il feed vero è TASK-118.
 
 **Decisione**:
 
@@ -9882,7 +9882,7 @@ la scritta «Sponsored», uno ogni 5 post. Il Feed oggi ha 15 post d'esempio
    di prova di Google. Si chiede il media orizzontale
    (`NativeMediaAspectRatio.LANDSCAPE`).
 2. **Dove** (`feedWithAds`): dopo il 5°, il 10°, … post, solo se sotto c'è
-   un altro post. Nessuno con 5 post o meno, uno con 6–10, due con i 15
+   un altro post. Nessuno con 5 post o meno, uno con 6–10, tre con i 19
    d'esempio. Mai in cima, mai in fondo, mai due di fila. Un posto senza
    annuncio non lascia buchi.
 3. **Quando** (`useFeedAds`): uno alla volta. Il primo si chiede quando il
@@ -9918,7 +9918,7 @@ annunci che nessuno vede); mettere un annuncio arrivato tardi nel suo
 posto anche se è sullo schermo (sposta i post sotto il dito); chiedere il
 consenso all'avvio dell'app (ADR-0102: niente all'apertura).
 
-**Conseguenze**: con i 15 post d'esempio al più due annunci per visita
+**Conseguenze**: con i 19 post d'esempio al più tre annunci per visita
 del Feed, meno impressioni di un annuncio a ogni ricerca. In Expo Go
 nessun annuncio, come prima. Per gli annunci veri serve un'unità
 **nativa** in AdMob: TASK-153 parla ancora di un'unità interstitial, e

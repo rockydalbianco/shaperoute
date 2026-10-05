@@ -53,10 +53,12 @@ In coda, dopo o accanto:
   (TASK-178, sotto), email e numero di telefono anche (TASK-183, «In
   lavorazione»), le unità di misura hanno la parte A (TASK-182, «In
   lavorazione»), «Help», «Terms» e «Privacy» sono fatte, i due testi
-  legali come bozze (TASK-184, «In lavorazione»); resta **TASK-185**
-  le notifiche email e push (per ultime: serve qualcosa da notificare, un
-  servizio di posta, `expo-notifications`, una build propria). Tutti Todo,
-  senza task file; l'utente: «li svilupperemo più avanti».
+  legali come bozze (TASK-184, «In lavorazione»); **TASK-185**, i due
+  interruttori delle notifiche email e push, è in revisione («In
+  lavorazione»): salvati nell'account, spenti all'inizio, e **non mandano
+  ancora niente**. L'invio vero (che cosa notificare, un servizio di
+  posta, `expo-notifications`, una build propria) è un task da aprire,
+  con scelte dell'utente. Nessuna voce dice più «Soon».
 - **Pubblicità che paga**, chiesta dall'utente il 2026-10-02: **TASK-150**
   (account AdMob e pagamenti) e **TASK-152** (Sgrava sull'App Store) in
   parallelo, poi **TASK-153** (gli annunci veri). Partono da scelte e
@@ -251,7 +253,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dall'utente: una freccia del nord che rimette il nord in alto, e
   durante la corsa la mappa resta girata come il disegno, con le linee
   del percorso fatto e da fare (TASK-224) che girano con lei.
-  **Parte A** (motore e API) nella PR #356: prima la ricerca di sempre
+  **Parte A** (motore e API) in `main` dalla #356 (`799071a`): prima la ricerca di sempre
   entro ±15°, poi, solo se non dà un percorso buono, inclinata fino a 45°
   con 10 tracciamenti in più; anche in canoa. Su 129 percorsi 110
   identici (i 12 di riferimento tutti), 19 inclinati di 20–45°, i buoni da
@@ -259,8 +261,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   risultato e nell'API; `route_store` conserva anche `better_distance_m`
   (seguito di TASK-234). I 19 campioni giudicati dall'utente il
   2026-10-05: 17 `sì` e 2 `quasi`, nessun `no` (`samples/LOG.md`).
-  Aspetta il merge; server e `draw_examples` col suo ok. Parti B e C
-  dopo. `tasks/TASK-232.md`.
+  Non ancora sul server: l'aggiornamento e `draw_examples` li fa il
+  coordinatore, con l'ok dell'utente («ok server per le forme
+  inclinate»). Prossimo passo: le parti B e C (la mappa girata nell'app),
+  in un contesto pulito, dopo aver sentito il coordinatore; non si
+  pubblicano prima del server. `tasks/TASK-232.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,
@@ -538,6 +543,26 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   si è potuto verificare è in `tasks/TASK-184.md`, «Esito». Non visto su
   un telefono. Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
   aggiorna anche «Privacy».
+- **TASK-185 — I due interruttori delle notifiche** (ADR-0206; chiesto
+  dall'utente il 2026-10-02 e di nuovo il 2026-10-05, che ha scelto:
+  **tutti e due spenti** all'inizio). In revisione (branch
+  `feat/TASK-185-notification-switches`; API, contratto e app, nessuna
+  dipendenza). «Email notifications» e «Push notifications» in «Settings»
+  sono due interruttori salvati nell'account: `PUT /me/notifications`
+  (solo quello che cambia), `User.notifications`, migrazione
+  `0017_notifications.sql` (il numero è il primo libero al merge). **Non
+  si manda niente**, e la pagina lo dice sotto le righe: «Sgrava does not
+  send notifications yet. Your choice is kept for when it does.»; nessun
+  permesso chiesto al telefono. Li legge solo il proprietario. Nessuna
+  riga di «Settings» dice più «Soon»; una riga in «Help» e una nella bozza
+  di «Privacy». Test in locale: tutta la parte JS e i file dell'API
+  toccati; l'intera suite dell'API è della CI. **Aspettano l'utente**:
+  l'aggiornamento del server (migrazione `0017`) prima di pubblicare
+  l'app; il testo nuovo «Notifications are not available on this API
+  yet.» e le due righe di «Help» e «Privacy»; la prova su un telefono
+  (non visto nemmeno nel simulatore). **Dopo**, un task da aprire con
+  scelte dell'utente: l'invio vero (che cosa si notifica, il servizio di
+  posta, `expo-notifications`, una build propria). `tasks/TASK-185.md`.
 
 ## Completato
 
@@ -590,6 +615,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   prova con un dito vero sull'iPhone. Gli esempi di «Explore» e i
   preferiti non si spostano: seguito da chiedere. `tasks/TASK-238.md`.
 
+- **App** — TASK-244: «Move the shape» anche sugli esempi di «Explore»
+  con «Paddle» (aggiunta ad ADR-0202; chiesto dall'utente il 2026-10-05,
+  che ha scelto: il percorso spostato **resta di «Explore»**). In
+  revisione, PR #360. Gli esempi dicono dov'è la loro forma (`centre`:
+  nei 32 dentro l'app, ridisegnati sull'acqua del server e per il resto
+  identici, e in quelli dei laghi chiesti al server da ora); la scheda di
+  «Explore» ha «Move the shape» sotto «Start», e al rilascio l'app
+  richiede l'esempio dalla partenza del suo luogo con `near`. La lista
+  tiene l'esempio com'era. Solo app più lo script degli esempi: **niente
+  motore, API, server, `draw_examples`, `engine.zip`**; nessun testo
+  nuovo. Non si spostano: un esempio tenuto sul telefono da prima (finché
+  non è ridisegnato), i preferiti, i disegni del «Feed». **Aspettano**: la
+  pubblicazione dell'app (del coordinatore) e la prova con un dito vero
+  sull'iPhone. `tasks/TASK-244.md`.
+
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della
   faccina a Trento, campioni prima/dopo giudicati «sì, va bene»; PR
@@ -613,9 +653,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   legge più, nelle cinque lingue (PR #348, merge `69af6c6`). **Parte C**
   (stesso giorno, «togli il punteggio anche dal post da condividere»):
   «Score» non è più fra i risultati del post di «Share»: né pastiglia, né
-  numero sull'immagine, né nel testo per Strava. Altrove (fine corsa, «My
-  activities», disegno aperto dal «Profile») il punteggio resta. Esce con
-  la prossima pubblicazione. `tasks/TASK-241.md`.
+  numero sull'immagine, né nel testo per Strava (PR #355, merge
+  `b7a82da`). **Parte D** (stesso giorno, «toglilo anche da My
+  activities»): niente «Score 91» nell'elenco e niente «91 · out of 100»
+  sulla corsa aperta. Il punteggio resta a fine corsa e sui disegni del
+  «Profile». Esce con la prossima pubblicazione. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

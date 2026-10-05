@@ -931,8 +931,9 @@ Tipi e esempi in `shared-types` (`SignUpRequest`, `SignInRequest`,
 
 - `Session` è `{ "token": "…", "user": User }`; `User` è `id`, `email`,
   `username`, `role` (`user` o `admin`) e `created_at`, più `bio` e
-  `public_id` da TASK-116 («Profile», sotto) e `phone` da TASK-183
-  («Email and phone number», sotto). Il token è l'unica
+  `public_id` da TASK-116 («Profile», sotto), `phone` da TASK-183
+  («Email and phone number», sotto) e `notifications` da TASK-185
+  («Notifications», sotto). Il token è l'unica
   cosa segreta che l'API dà, e solo qui: l'app lo tiene in
   `expo-secure-store` e lo rimanda come `Authorization: Bearer <token>` a
   `GET /me`, `DELETE /session`, `DELETE /me`, ai preferiti e alle corse
@@ -1268,6 +1269,39 @@ il codice in `contact.py`.
   `User` non ha `phone`: l'app nuova lo legge lo stesso e dice «Changing
   the email is not available on this API yet.» / «The phone number is not
   available on this API yet.». L'app pubblicata ignora il campo in più.
+
+### Notifications (TASK-185, ADR-0206)
+
+I due interruttori delle notifiche di un account, «Email notifications» e
+«Push notifications», cambiati dal proprietario. **L'API non manda
+niente**: non ha un servizio di posta né le push, e nessun codice legge i
+due valori per agire. Sono una scelta tenuta per quando l'invio ci sarà.
+Vuole il token: senza, `401 not_signed_in`; senza database, `503
+accounts_unavailable`. Tipi in `shared-types` (`Notifications`,
+`NotificationsRequest`, `User.notifications`), esempio in
+`fixtures/notifications-request.json`; il codice in `notifications.py`.
+
+| Endpoint | Cosa | Risposta |
+|---|---|---|
+| `PUT /me/notifications` | accendere o spegnere un interruttore, o tutti e due: `email`, `push` | `200` `User`, com'è adesso |
+
+- **`User`** (anche in `Session` e `GET /me`) ha in più `notifications`:
+  `{ "email": false, "push": false }`. **Tutti e due spenti** finché il
+  proprietario non li accende, anche per gli account di prima (scelta
+  dell'utente). Solo il proprietario li legge: non sono in
+  `PublicProfile`, nella ricerca né negli elenchi (un test lo prova).
+  `DELETE /me` li cancella con l'account.
+- **`PUT /me/notifications`** porta **solo quello che cambia**: `{ "push":
+  true }` accende le push e lascia l'email com'è. Un campo non mandato, o
+  mandato `null`, resta com'è; `{}` non cambia niente e risponde l'account
+  com'è. Lo stesso valore di prima è accettato.
+- **Errori**: un valore che non è `true` o `false` (`"true"`, `"yes"`,
+  `1`, una lista) o un campo in più, `422 invalid_request`; non cambia
+  niente.
+- **Un'API precedente** non ha il `PUT` (`404 http_error`) e il suo `User`
+  non ha `notifications`: l'app nuova lo legge come «tutti e due spenti» e
+  al tocco dice «Notifications are not available on this API yet.». L'app
+  pubblicata ignora il campo in più.
 
 ### Drawings (TASK-117, ADR-0159; TASK-208, ADR-0170)
 

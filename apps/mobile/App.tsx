@@ -104,6 +104,7 @@ import { MoveShape } from "./src/paddle/MoveShape";
 import { PaddleNotice } from "./src/paddle/PaddleNotice";
 import { distanceOnSpot, SPOT_SEARCH_HINT, spotPlaces } from "./src/paddle/placeSpots";
 import { usePaddleNotice } from "./src/paddle/safetyNotice";
+import { useMoveExample } from "./src/paddle/useMoveExample";
 import { useMoveShape } from "./src/paddle/useMoveShape";
 import { activityOf, withoutRouteLabel } from "./src/settings/sport";
 import { SportButton } from "./src/settings/SportButton";
@@ -310,6 +311,7 @@ function Sgrava() {
     explored: exploredRoute,
     open: openExplored,
     close: closeExplored,
+    redraw: redrawExplored,
   } = useExplored(API_URL);
   const explored = favorite ?? exploredRoute;
   // The page a route was opened from, where «←» goes back to: a drawing of
@@ -415,6 +417,15 @@ function Sgrava() {
     !reviewing &&
     explored === null &&
     themed.state.status === "idle";
+  // And that of an example of "Explore" on the water (TASK-244): not of a
+  // favorite, nor of a drawing of «Feed».
+  const moveExample = useMoveExample(
+    API_URL,
+    favorite === null && routeList === "explore" ? exploredRoute : null,
+    redrawExplored,
+  );
+  const movingExample =
+    moveExample.moving && screen === "map" && !reviewing && explored !== null;
   // The walks of a drawn word with the pen up (TASK-198), or of a favorite
   // (TASK-199); a route of "Explore" has none.
   const followedWalks =
@@ -815,8 +826,8 @@ function Sgrava() {
             onDoubleTap={
               reviewing && drawing !== null ? drawingDoubleTapped : undefined
             }
-            moving={movingShape}
-            onMoved={move.onMoved}
+            moving={movingShape || movingExample}
+            onMoved={movingExample ? moveExample.onMoved : move.onMoved}
             onError={setMapError}
             // A run of «My activities» takes the map from whatever was on it.
             {...(reviewing ? reviewed : null)}
@@ -899,6 +910,7 @@ function Sgrava() {
                 onStartExplore(explored.result, explored.request.activity);
               }
             }}
+            move={moveExample}
           />
         ) : finishing ? (
           <FinishCard

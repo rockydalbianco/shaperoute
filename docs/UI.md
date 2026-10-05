@@ -625,16 +625,41 @@ mappa è quella di prima.
   «Explore» («Starting within 3.1 mi of…», «shapes of 3.1 mi from the
   centre»); restano la corsa, la sua fine e la voce.
   **«Notifications»**: «Email
-  notifications» e «Push notifications», «Soon». **«About»**: «Help»,
+  notifications» e «Push notifications», due interruttori salvati
+  nell'account (TASK-185, ADR-0206, sotto). **«About»**: «Help»,
   «Terms», «Privacy», tre righe con «›» in fondo: ognuna apre il suo
   testo come pagina (TASK-184, ADR-0205, sotto).
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
   sulla schermata stessa: «Delete my account» o «Keep my account».
 
-Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
-interruttori, perché dietro non c'è ancora niente (le accende TASK-185).
+Nessuna voce di «Settings» dice più «Soon»: le ultime due erano le
+notifiche (TASK-185).
 Usciti dall'account da «Settings», chi rientra trova
 «Profile».
+
+**«Notifications»** (TASK-185, ADR-0206): due righe in un riquadro, «Email
+notifications» (📧) e «Push notifications» (🔔), ognuna con il suo
+interruttore in fondo, disegnato come quelli della corsa (una pista con il
+pomello a destra e bianca quando è acceso; mai gialla). **Tutti e due
+spenti** finché non si accendono (scelta dell'utente). Sotto il riquadro,
+piccolo e grigio come la nota di «Offline maps», sempre: «Sgrava does not
+send notifications yet. Your choice is kept for when it does.». **Non si
+manda niente**: la scelta resta nell'account per quando l'invio ci sarà, e
+accendere «Push notifications» non chiede nessun permesso al telefono.
+
+- Un tocco su una riga gira il suo interruttore **subito** e manda all'API
+  solo quello; se l'API rifiuta torna com'era, e sotto la nota, in rosso,
+  c'è il motivo. Il tocco dopo toglie il motivo.
+- Mentre una risposta è in viaggio un secondo tocco, su una qualunque
+  delle due righe, non manda niente.
+- Per VoiceOver ogni riga è un interruttore con il suo nome («Email
+  notifications», acceso o spento); l'emoji non si legge.
+
+| Cosa succede | Cosa dice, sotto la nota |
+|---|---|
+| API di prima di TASK-185 | Notifications are not available on this API yet. |
+| senza rete | Cannot reach the API at {url}. Check the connection and try again. |
+| sessione finita | Your session has ended. Log in again. (e si esce) |
 
 **«Help», «Terms», «Privacy»** (❓ 📄 🔒, TASK-184, ADR-0205): un tocco
 apre il testo sopra «Settings», a tutto schermo: «←», il nome della riga
@@ -789,7 +814,8 @@ destra; VoiceOver dice «Profile, 2 follow requests». L'app lo chiede
 all'apertura, ogni minuto mentre è sullo schermo e quando ci torna: una
 richiesta nuova si vede da sola, senza aprire «Profile». Sparisce quando
 ogni richiesta ha avuto «Accept» o «Decline»: guardarle non basta. Ad app
-chiusa non arriva niente: le notifiche del telefono sono TASK-185.
+chiusa non arriva niente: le notifiche del telefono non ci sono ancora
+(TASK-185 salva solo la scelta in «Settings»; l'invio è un task da aprire).
 
 | Elenco | Tasti della riga | Vuoto |
 |---|---|---|
@@ -915,14 +941,16 @@ telefono dell'account: con un percorso o senza.
   con l'orologio del telefono («Fri 2 Oct 2026 · 08:12»); il luogo e cosa
   disegnava («Trento · Star»; il luogo è il paese da cui si parte, trovato
   dall'API, e manca se non lo trova; senza luogo né percorso, «Run»); «4.01
-  km · 19:00 · 4:45 /km», cioè km, tempo senza le pause e passo medio;
-  «Score 91» quando c'è. Niente è giallo, tranne il percorso nel disegno.
+  km · 19:00 · 4:45 /km», cioè km, tempo senza le pause e passo medio.
+  **Il punteggio non c'è** (TASK-241 parte D, chiesto dall'utente), né
+  nell'elenco né sulla corsa aperta. Niente è giallo, tranne il percorso
+  nel disegno.
 - **Venti per volta**: in fondo «Show more» porta le venti successive. Il
   numero in «Profile» le conta tutte.
 - **Una scheda apre la corsa sulla mappa**: il percorso giallo e la linea
-  corsa, come a fine corsa; sotto, giorno e ora, luogo e disegno, il
-  punteggio («91», «out of 100»), km, tempo e passo, la legenda («Yellow:
-  the route. White: what you ran.»). «←» e «Back to the list» tornano
+  corsa, come a fine corsa; sotto, giorno e ora, luogo e disegno, km,
+  tempo e passo, la legenda («Yellow: the route. White: what you
+  ran.»). «←» e «Back to the list» tornano
   all'elenco. Niente cuore e niente «Start»: è una corsa, non un percorso.
 - **Strava sulla corsa aperta** (TASK-187), sopra «Delete», solo se l'API
   ha Strava: **«View on Strava»** se la corsa c'è già (apre la sua pagina);
@@ -966,7 +994,8 @@ telefono dell'account: con un percorso o senza.
   da «Draw» o da un preferito: «Save» manda anche i tratti a piedi del
   percorso (`walks`) e dice quali pause sono della penna (`pen`); per
   ogni altra corsa la richiesta è quella di prima, campo per campo. Il
-  punteggio in «My activities» è quello delle sole lettere, lo stesso
+  punteggio che l'API tiene per la corsa (da TASK-241 «My activities» non
+  lo mostra) è quello delle sole lettere, lo stesso
   della fine della corsa, e le pause «penna» tolgono km e tempo come le
   altre. Riaperta, la mappa ha i tratti a piedi tratteggiati, come a fine
   corsa; la linea corsa resta unita sulle pause (spezzarla è una scelta
@@ -2090,11 +2119,31 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   troppo al largo, troppo vicina alla riva) una riga lo dice: «The shape
   does not fit there: this is the nearest place.». Si può spostare ancora,
   ogni volta da dov'è. Un dito che si muove meno di 8 px non sposta niente;
-  «Cancel» lascia tutto com'era. Vale per il percorso di «Draw»; quelli di
-  «Explore» e dei preferiti non si spostano (non hanno `centre`). Nella
+  «Cancel» lascia tutto com'era. Vale per il percorso di «Draw» e per gli
+  esempi di «Explore» (qui sotto); i preferiti non si spostano (non hanno
+  `centre`). Nella
   pagina della mappa sono i messaggi `setMove` e `moved`
   (`src/map/messages.ts`, `mapPage.ts`); la logica è in
   `src/paddle/shapeMove.ts` e `useMoveShape.ts`. Testi in cinque lingue.
+- **«Move the shape» su un esempio di «Explore»** (TASK-244; che il
+  percorso spostato resti di «Explore» è una scelta dell'utente del
+  2026-10-05): nella scheda di un esempio sull'acqua aperto da «Explore»,
+  sotto «Start», quando l'esempio dice dov'è la sua forma (i 32 che
+  vengono con l'app, e quelli dei laghi chiesti al server da questo task
+  in poi; uno tenuto sul telefono da prima no, finché non è ridisegnato).
+  Stesso pannello, stesso dito sulla mappa, stessa riga se la forma non ci
+  sta. Al rilascio l'app richiede **l'esempio com'era stato chiesto**
+  (forma, distanza, la partenza del luogo) con `near`; mentre il motore
+  lavora la forma resta dove il dito l'ha lasciata e la scheda dice
+  «Drawing a 2 km heart…», senza «Start» né «Export GPX», con «Back to the
+  list» che lascia perdere. Poi la scheda è **ancora quella di «Explore»**,
+  con i km del percorso nuovo, «Start», «Move the shape» per spostarlo
+  ancora, il GPX e il cuore dei preferiti. Se la richiesta fallisce torna
+  il percorso di prima, con il perché in rosso. La lista tiene l'esempio
+  com'era: riaperto, è al suo posto. Lo stesso esempio aperto dal «Feed»,
+  un preferito e gli esempi della corsa non si spostano. La logica è in
+  `src/paddle/useMoveExample.ts`; `exampleRoutes.ts` tiene `centre` e la
+  richiesta di ogni esempio. Nessun testo nuovo.
 - **L'avviso di sicurezza**, al **primo** «Start» sull'acqua su questo
   telefono (scelta dell'utente), a tutto schermo prima del conto alla
   rovescia: 🛶, «Before you paddle», quattro righe («Wear a life
@@ -2354,6 +2403,10 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
   (`expo-secure-store`, ADR-0125); mai la password. Il token va all'API
   solo con le richieste dell'account (`GET /me`, `DELETE /session`,
   `DELETE /me`), dei preferiti e delle corse, in `Authorization`.
+- **Le notifiche** (TASK-185): i due interruttori di «Settings» vanno
+  all'API quando si toccano e restano nell'account, letti solo dal suo
+  proprietario. Non parte nessuna notifica, il telefono non chiede il
+  permesso delle push e non manda nessun identificativo per riceverle.
 - **I preferiti** (TASK-171): un percorso tenuto va all'API intero, con la
   sua linea, e resta nel database legato all'account finché non lo si
   toglie o si cancella l'account. La linea di un percorso disegnato parte

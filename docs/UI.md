@@ -2026,7 +2026,11 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
     un'altra parola dice il lago. «lago di Levico Terme» trova «Lago di
     Levico», «spiaggia di Riccione» trova «Riccione». Con sole parole
     comuni devono esserci tutte nel nome, come in «Explore»: «lago» trova
-    ogni lago, «via al lago» nessuno.
+    ogni lago, «via al lago» nessuno. **Solo l'ultima parola scritta vale
+    come inizio di una parola del nome**, perché la si sta ancora
+    scrivendo; quelle prima devono essere parole intere (TASK-245,
+    ADR-0210): «via» da sola propone «Viareggio», «via Roma» no; «lago di
+    lev» trova «Lago di Levico», «lev terme» niente.
   - Scelto un lago, la partenza è il suo punto della riva più vicino alla
     posizione (un lago lungo ne ha molti), e la riga dice «Starting from
     Lago di Levico.».

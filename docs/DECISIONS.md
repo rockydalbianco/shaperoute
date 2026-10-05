@@ -11093,11 +11093,23 @@ riquadri che gli si danno (ADR-0187): Overpass non gli risponde.
    Cavallino in quello di Jesolo.
 6. **Nell'app solo `waterSpots.ts`**: `WATER_SPOTS` è i luoghi scelti a
    mano, i laghi, poi le spiagge. «Explore», «Near me» e «Another place»
-   le trovano senza altre modifiche. Niente esempi dentro l'app: le forme
-   si chiedono all'API, come per i laghi.
+   le trovano. Niente esempi dentro l'app: le forme si chiedono all'API,
+   come per i laghi.
+7. **In «Another place» solo l'ultima parola scritta vale come inizio di
+   una parola del nome** (`findSpots` in `placeSpots.ts`, ADR-0204); le
+   parole prima, già finite, devono essere parole intere. Con le spiagge
+   nell'elenco ogni indirizzo che comincia con «via» proponeva
+   «Viareggio», di cui «via» è l'inizio: «via al lago» e «via Roma,
+   Trento» tornano a non proporre niente, come l'utente aveva confermato
+   in TASK-240. «via» da sola, mentre si scrive, propone ancora
+   «Viareggio». `searchSpots` di «Explore» non cambia: lì si cerca un
+   lago o una spiaggia, e ogni parola vale come inizio. File dati dal
+   coordinatore a questo task.
 
 **Alternative scartate**:
 
+- **Un elenco di parole da strada da ignorare** («via», «viale»,
+  «corso»): già scartato in ADR-0204, non finisce mai.
 - **Tutta la costa d'Italia**, un punto ogni tanti km: a spanne 0,3–1,7 GB
   d'acqua sul server, e punti senza un nome da cercare. Sconsigliata
   all'utente, che ha scelto i 29 posti.
@@ -11120,6 +11132,9 @@ riquadri che gli si danno (ADR-0187): Overpass non gli risponde.
 - **L'app non si pubblica prima che l'acqua sia sul server**: senza,
   scegliere una spiaggia nuova dà «Map data for this area could not be
   downloaded.».
+- In «Another place» una parola scritta a metà e seguita da un'altra non
+  trova più niente («lev terme»); «lev», «lago di lev» e i nomi interi
+  come prima. «lev» trova anche «Sestri Levante».
 - Una partenza al mare a più di 3 km da un paese dell'elenco resta come
   prima: funziona solo dove il server ha o riesce a scaricare l'acqua.
 - Se il motore dell'acqua cambia (TASK-232 A tocca `water_fit.py`), le

@@ -123,14 +123,17 @@ Una domanda per volta, ognuna con una proposta:
 - `services/api/tests/test_beach_catalog.py` (nuovo)
 - `apps/mobile/src/paddle/beaches.json` (nuovo)
 - `apps/mobile/src/paddle/waterSpots.ts` (poche righe) e `.test.ts`
+- `apps/mobile/src/paddle/placeSpots.ts` (la regola dell'ultima parola in
+  `findSpots`) e `.test.ts`: dati dal coordinatore il 2026-10-05, per il
+  difetto di «via» → «Viareggio» («Esito»)
 - `docs/tasks/TASK-245.md` (nuovo), `docs/UI.md` («Sull'acqua:
   «Paddle»»), `docs/MAPS.md` (le spiagge, accanto a «I laghi di Explore»),
   `docs/DECISIONS.md` (ADR-0210), `docs/STATUS.md` (solo le righe di
   questo task)
 
 `lakes.json`, `waterPlaces.ts`, `PaddleExplore.tsx` (lo toccherà TASK-182
-B), `paddleExamples.json`, `src/explore/` (TASK-244), `placeSpots.ts` e il
-motore non cambiano. Se serve altro, fermarsi e chiederlo al coordinatore.
+B), `paddleExamples.json`, `src/explore/` (TASK-244) e il motore non
+cambiano. Se serve altro, fermarsi e chiederlo al coordinatore.
 
 ## Fuori scope
 
@@ -190,18 +193,20 @@ il merge di `main` con le forme inclinate (TASK-232 A, che cambia
 
 **Un difetto trovato nella ricerca di «Another place»** (`findSpots`, di
 TASK-240): con le spiagge nell'elenco, ogni indirizzo che comincia con
-«via» propone «Viareggio», perché «via» è l'inizio del nome. Vuole poche
-righe in `placeSpots.ts` e in `placeSpots.test.ts`, che non sono fra i
-file di questo task: chiesto al coordinatore, con la proposta (solo
-l'ultima parola scritta vale come inizio di parola; quelle prima devono
-essere una parola intera del nome).
+«via» proponeva «Viareggio», perché «via» è l'inizio del nome. Il
+coordinatore ha dato a questo task `placeSpots.ts` e `placeSpots.test.ts`.
+**Corretto** (ADR-0210, punto 7): solo l'ultima parola scritta vale come
+inizio di parola, perché la si sta ancora scrivendo; quelle prima devono
+essere una parola intera del nome. «via al lago» e «via Roma, Trento» non
+propongono niente, «via» da sola propone «Viareggio», «lago di lev» e
+«lago di Levico Terme» come prima; «lev» trova anche «Sestri Levante».
+Test nuovi con le spiagge di più parole («forte dei marmi», «san vito»,
+«sestri lev»). `searchSpots` di «Explore» non cambia.
 
 **Da dove riprendere** (2026-10-05):
 
-1. La risposta del coordinatore sui due file di `placeSpots`; poi la
-   correzione, i controlli JS (`npm test`, `typecheck`, `lint`,
-   `format:check`) e la PR. Finché manca, due test di
-   `placeSpots.test.ts` sono rossi.
+1. La PR, con i controlli JS verdi (`npm test`, `typecheck`, `lint`,
+   `format:check`).
 2. **L'ok dell'utente per il server** (27 file, 22,6 MB) e il «via» del
    coordinatore. Poi: copiare `out/task245-beaches/new/water/*.json` in
    una cartella d'appoggio del server (tar su ssh), spostarli uno per uno

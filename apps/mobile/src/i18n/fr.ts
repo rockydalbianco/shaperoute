@@ -465,12 +465,16 @@ export const FR: Table = {
   "Your first mile will show here.": "Ton premier mile s'affichera ici.",
   "Mile {mile}: {pace}": "Mile {mile} : {pace}",
   "Mile {mile}: {speed} mph": "Mile {mile} : {speed} mph",
+  "Your first 500 metres will show here.": "Tes 500 premiers mètres s'afficheront ici.",
+  "{metres} metres: {pace}": "{metres} mètres : {pace}",
 
   // src/screens/RunPanel.tsx
   "Speed now": "Vitesse",
   "Avg speed": "Vit. moy.",
   "Last km": "Dernier km",
   "Last mi": "Dernier mi",
+  "Avg pace": "Allure moy.",
+  "Last 500 m": "Dern. 500 m",
 
   // src/screens/SignInScreen.tsx
   "Sign up": "S'inscrire",

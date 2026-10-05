@@ -3,10 +3,12 @@ import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useState } from "react";
 
+import { activityOf, loadSport } from "../settings/sport";
 import { appUnits } from "../units/units";
 import { loadVoices, speaking } from "../voice/voiceChoice";
 import { FREE_ROUTE, kmAnnouncement, wholeUnits } from "./freeRun";
 import { kmComparison } from "./kmCompare";
+import { isPaddle, paddleAnnouncement } from "./paddle";
 import { controlRun, type RunSession } from "./runControl";
 import { emptyTrack, type Track } from "./trackRecorder";
 import { startRun } from "./trackStore";
@@ -24,7 +26,8 @@ export type FreeRunState =
  * TASK-112. No directions: the voice says each kilometre, with the time
  * and the pace, and from the second how it went against the one before
  * (TASK-217); with miles each mile, in the units «Settings» has when the
- * voice speaks (TASK-182). The countdown, «Pause» and the pause by standing still are
+ * voice speaks (TASK-182). With «Paddle» in «Settings» the pace said is of
+ * 500 m (TASK-251). The countdown, «Pause» and the pause by standing still are
  * runControl's (TASK-169). The position never leaves the phone.
  */
 export function useFreeRun(active: boolean): FreeRunState {
@@ -50,7 +53,11 @@ export function useFreeRun(active: boolean): FreeRunState {
         return;
       }
       // A free run stopped lately goes on with its track (trackStore).
-      const recorder = startRun(FREE_ROUTE, Date.now());
+      // On the water the pace is a paddler's (TASK-251): the sport is the
+      // one «Settings» has when the outing starts, kept in the run's file.
+      const sport = activityOf(loadSport());
+      const activity = isPaddle(sport) ? sport : undefined;
+      const recorder = startRun(FREE_ROUTE, Date.now(), undefined, [], activity);
       stopRecording = recorder.stop;
       // A run that goes on does not say again the kilometres it has said;
       // with miles, the miles (TASK-182).
@@ -100,7 +107,10 @@ export function useFreeRun(active: boolean): FreeRunState {
           if (km > saidKm) {
             saidKm = km;
             const { language } = speaking();
-            play([{ say: kmAnnouncement(km, track, language, units), vibrate: false }]);
+            const said = isPaddle(activity)
+              ? paddleAnnouncement(km, track, language, units)
+              : kmAnnouncement(km, track, language, units);
+            play([{ say: said, vibrate: false }]);
             // Then how it went against the one before (TASK-217).
             const compared = kmComparison(km, track, language, units);
             if (compared !== null) {

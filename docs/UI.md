@@ -575,8 +575,9 @@ mappa è quella di prima.
   10 a 30 km. «Explore», «Feed» e la schermata della corsa restano quelli
   della corsa: cosa mostrano con la bici è una scelta dell'utente ancora
   aperta (`tasks/TASK-190.md`, «Domande aperte»). **Con «Paddle»** cambiano
-  «Draw», «Start» ed «Explore» (sotto, «Sull'acqua»); «Feed» e la schermata
-  della corsa restano quelli della corsa. I quattro disegni sull'acqua di
+  «Draw», «Start» ed «Explore» (sotto, «Sull'acqua»), e dal TASK-251 i
+  numeri della schermata della corsa (sotto, «Velocità e andatura»);
+  «Feed» resta quello della corsa. I quattro disegni sull'acqua di
   «Feed» (TASK-228, sopra) ci sono con ogni sport.
 - **«Strava»** (TASK-187), solo se l'API ha Strava: «Connect with
   Strava» (il pulsante ufficiale di Strava, TASK-218, come a fine corsa)
@@ -1903,6 +1904,7 @@ fuori chiude. Con «Voice» spenta la riga resta e si può cambiare, ma
 | Bici a mano (TASK-206) | «Tra 100 metri, scendi e porta la bici a mano per 200 metri.» · «Risali in bici.» |
 | Penna alzata in bici (TASK-216) | «Lettera finita. Pedala fino alla U: il disegno è in pausa.» |
 | Km in bici, ogni 10 (TASK-216) | «10 chilometri. Tempo: 25 minuti e 10 secondi. Velocità media: 24 chilometri orari.» |
+| Km sull'acqua (TASK-251) | «Un chilometro. Tempo: 12 minuti. Passo medio: 6 minuti ogni 500 metri.» |
 
 **Modalità tasca** (TASK-070, ADR-0066). Accanto a «Pause», «Pocket»: lo
 schermo diventa nero, la luminosità va al minimo e resta acceso, e i tocchi
@@ -2195,6 +2197,25 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   disegnato né per uno di «Explore» o dei preferiti. Si segue la linea:
   il banner dice «Follow the route to the end.», la barra e i km mancanti
   sono quelli della corsa, la voce dice solo i km.
+- **Velocità e andatura** (TASK-251, ADR-0215; unità scelte dall'utente il
+  2026-10-06: km/h e minuti ogni 500 m). Lungo un percorso sull'acqua, e
+  senza percorso con «Paddle» in «Settings» («Paddle without a route»):
+  sotto la mappa «Speed now» in km/h; su «Data» e in pausa «Speed now»,
+  «Avg speed», «Time», poi «Avg pace» in `/500 m` («5:37 /500 m»), «Last
+  500 m» (il tempo degli ultimi 500 m interi) e «Calories». «Last km» ed
+  «Elev. gain» non ci sono. I parziali sono **ogni 500 m**: «m · /500 m ·
+  Change», le righe «500», «1000», … col loro tempo e la differenza dal
+  precedente; prima, «Your first 500 metres will show here.» Con le miglia
+  la distanza è in miglia e la velocità in mph; andatura e parziali restano
+  ogni 500 m. La voce dice ogni km (con le miglia ogni miglio) col passo
+  medio ogni 500 metri: «1 kilometre. Time: 12 minutes. Average pace: 6
+  minutes per 500 metres.» · «Un chilometro. Tempo: 12 minuti. Passo
+  medio: 6 minuti ogni 500 metri.»; il confronto col km prima è quello
+  della corsa. Il post di fine uscita scrive l'andatura in `/500 m`. In
+  italiano «Passo medio», «Ultimi 500 m», «I tuoi primi 500 metri
+  appariranno qui.» (dell'agente, **da confermare**, come tedesco, spagnolo
+  e francese). «My activities» mostra ancora il passo al km (parte B).
+  `src/navigation/paddle.ts`.
 - **«Move the shape»** (TASK-238, ADR-0202; trascinare col dito è una
   scelta dell'utente del 2026-10-05): sotto «Start», quando il percorso
   disegnato è sull'acqua e la risposta dice dov'è la forma (`centre`; con

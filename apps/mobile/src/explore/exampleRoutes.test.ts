@@ -54,18 +54,20 @@ function memory(): Storage & { kept: Record<string, RecommendedRouteDetail[]> } 
 function api() {
   const asked: {
     shape: Shape;
+    penUp: boolean;
     signal?: AbortSignal;
     answer: (o: RouteOutcome) => void;
   }[] = [];
   const request = jest.fn(
     (
       _url: string,
-      body: { shape?: Shape | null },
+      body: { shape?: Shape | null; pen_up?: boolean },
       options?: { signal?: AbortSignal },
     ) =>
       new Promise<RouteOutcome>((resolve) => {
         asked.push({
           shape: body.shape as Shape,
+          penUp: body.pen_up === true,
           signal: options?.signal,
           answer: resolve,
         });
@@ -588,6 +590,17 @@ describe("on the water (TASK-191)", () => {
       alternatives: [],
     });
     expect(detail?.points.length).toBeGreaterThan(100);
+    // A head has its eyes apart (TASK-226): its card draws every point but
+    // the stretches with the pen up; a shape in one line a few points.
+    const dog = list.find((e) => e.shape === "dog_head");
+    const whole = dog?.status === "ready" ? exampleDetail(dog.route.id) : undefined;
+    expect(whole?.walks).toHaveLength(3);
+    expect(dog?.status === "ready" && dog.route.preview).toEqual(whole?.points);
+    expect(dog?.status === "ready" && dog.route.gaps).toEqual(
+      whole?.walks?.map(([, to]) => to),
+    );
+    expect(heart.status === "ready" && heart.route.preview.length).toBe(60);
+    expect(heart.status === "ready" && heart.route.gaps).toBeUndefined();
   });
 
   test("without an API the places of «Explore» show all the same", async () => {
@@ -621,6 +634,12 @@ describe("on the water (TASK-191)", () => {
       await act(async () => asked[i].answer({ kind: "route", result }));
     }
     expect(asked.map((a) => a.shape)).toEqual(DRAW_ORDER);
+    // The heads are asked piece by piece, the pen up between their eyes and
+    // their outline (TASK-226); the shapes in one line as before.
+    expect(asked.filter((a) => a.penUp).map((a) => a.shape)).toEqual([
+      "dog_head",
+      "rabbit_head",
+    ]);
     expect(read()?.map((e) => `${e.shape}:${e.status}`)).toEqual(
       eight.map((shape) => `${shape}:ready`),
     );
@@ -642,6 +661,50 @@ describe("on the water (TASK-191)", () => {
     );
     // A run's examples of the same point are another set.
     expect(storage.kept[cityKey(malcesine.point)]).toBeUndefined();
+  });
+
+  test("a head drawn in pieces keeps its pen up, and one kept before is drawn again", async () => {
+    const walks: [number, number][] = [[1, 2]];
+    const inPieces = { ...result, walks } as RouteResult;
+    const { request, asked } = api();
+    const storage = memory();
+    const { result: hook } = await renderHook(() =>
+      useCityExamples("http://api", malcesine, { request, storage, set }),
+    );
+    for (let i = 0; i < eight.length; i += 1) {
+      const answer = asked[i].penUp ? inPieces : result;
+      await act(async () => asked[i].answer({ kind: "route", result: answer }));
+    }
+    const key = examplesKey(malcesine.point, set);
+    const kept = storage.kept[key];
+    expect(kept.filter((d) => d.walks !== undefined).map((d) => d.shape)).toEqual([
+      "dog_head",
+      "rabbit_head",
+    ]);
+    const dog = hook.current.examples?.find((e) => e.shape === "dog_head");
+    const detail = dog?.status === "ready" ? exampleDetail(dog.route.id) : undefined;
+    expect(detail?.walks).toEqual(walks);
+
+    // The same file as an app before TASK-226 left it: the heads in one
+    // line. They are drawn again, with the pen up; the others stay.
+    forgetExamples();
+    storage.kept = { [key]: kept.map(({ walks: _, ...before }) => before) };
+    const again = api();
+    drawExamples("http://api", malcesine, { request: again.request, storage, set });
+    expect(again.asked.map((a) => `${a.shape}:${a.penUp}`)).toEqual(["dog_head:true"]);
+    await act(async () => again.asked[0].answer({ kind: "route", result: inPieces }));
+    expect(again.asked.map((a) => a.shape)).toEqual(["dog_head", "rabbit_head"]);
+  });
+
+  test("a run's heads are drawn in one line, as before", async () => {
+    const { request, asked } = api();
+    drawExamples("http://api", malcesine, { request, storage: memory() });
+    for (let i = 0; i < eight.length; i += 1) {
+      await act(async () => asked[i].answer({ kind: "route", result }));
+    }
+    expect(asked.map((a) => a.shape)).toEqual(DRAW_ORDER);
+    expect(asked.some((a) => a.penUp)).toBe(false);
+    expect(request.mock.calls.every(([, body]) => !("pen_up" in body))).toBe(true);
   });
 
   test("a run's examples of the same point stay apart, and say no activity", async () => {

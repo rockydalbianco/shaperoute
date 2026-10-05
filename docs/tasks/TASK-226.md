@@ -1,7 +1,9 @@
 # TASK-226 — Gli occhi staccati sull'acqua
 
-**Stato**: In corso (parte A, motore e API, in PR; poi la parte B, l'app)
-**Fase**: 4 · **Branch**: `feat/TASK-226-water-eyes` (A)
+**Stato**: In corso (parte A, motore e API, PR #310; parte B, l'app, in PR
+dopo il merge della A)
+**Fase**: 4 · **Branch**: `feat/TASK-226-water-eyes` (A),
+`feat/TASK-226-water-eyes-app` (B)
 **Dipende da**: TASK-223 (le forme a pezzi, `lift` e `pieces`, #284 e
 #296), TASK-191 (la canoa), TASK-225 (l'acqua sul server), TASK-227 (gli
 esempi della canoa dentro l'app)
@@ -26,6 +28,11 @@ coniglio «con gli occhi all'interno e senza linee di collegamento».
   testa di coniglio, zucca, faccina, fantasmino, ciambella. Il sole resta a
   penna giù: staccato avrebbe 9 pause e 730–880 m su 2 km senza disegnare.
   Scartate: solo le quattro chieste; tutte, anche il sole.
+- **2026-10-05**, nella sessione di TASK-223 (#313), sui campioni a 15 km:
+  gli occhi staccati **su strada** per **tutte e cinque** (gatto, pesce,
+  testa di cane, testa di coniglio, zucca). Il coordinatore ha messo
+  l'interruttore per loro nella parte B di questo task, come seguito di
+  TASK-223: stessi file.
 
 ## Contesto da leggere
 
@@ -72,7 +79,20 @@ Parte A:
 - [x] Campioni veri nei quattro luoghi, giudicati dall'utente.
 - [x] Lo zip del motore e l'impronta degli esempi dell'app rifatti.
 
-Parte B: da scrivere con la parte.
+Parte B:
+
+- [x] Con «Paddle» le otto forme scelte si chiedono con `pen_up` da sole,
+      qualunque sia l'interruttore; il sole e le forme in una linea come
+      prima (test).
+- [x] In canoa la voce dice «Paddle to the next part» nelle cinque lingue,
+      e la penna scende 5 m prima della parte (test).
+- [x] In «Explore» le teste hanno gli occhi staccati, nei quattro luoghi
+      dentro l'app e in «Near me»; la scheda non disegna i tratti a penna
+      alzata; un esempio tenuto prima si ridisegna (test).
+- [x] Su strada l'interruttore c'è anche per gatto, pesce, teste e zucca
+      (test).
+- [x] Con «Run» e «Bike» gli esempi di «Explore» sono chiesti come prima:
+      nessun `pen_up` (test).
 
 ## File toccati
 
@@ -93,11 +113,33 @@ Parte A:
   `docs/API.md` («La penna alzata»), `docs/DECISIONS.md` (ADR-0188),
   `docs/STATUS.md` (solo le righe di questo task)
 
+Parte B:
+
+- `apps/mobile/src/route/penUpShapes.ts` e `.test.ts` (le otto forme
+  sull'acqua; **seguito di TASK-223**: le cinque forme con gli occhi in
+  `OFFERED`)
+- `apps/mobile/src/route/RoutePanel.tsx` (la riga dei km in canoa),
+  `RoutePanelPieces.test.tsx`
+- `apps/mobile/src/navigation/penUp.ts` e `.test.ts`
+- `apps/mobile/src/voice/phrasebook.ts`, `en.ts`, `it.ts`, `de.ts`,
+  `es.ts`, `fr.ts` (`paddleToPart`)
+- `apps/mobile/src/i18n/{it,de,es,fr}.ts` (una riga in più: i km in canoa)
+- `apps/mobile/src/explore/exampleRoutes.ts` e `.test.ts`, `explored.ts` e
+  `.test.ts`, `recommendedRoutes.ts` (`walks`, `gaps`), `RouteThumb.tsx` e
+  `.test.tsx`, `RouteCard.tsx`
+- `apps/mobile/src/paddle/PaddleExplore.tsx`, `paddleExamples.json`
+  (rifatto), `paddleExamples.test.ts`
+- `apps/mobile/App.tsx` (solo aggiunta: i `walks` a «Start» da «Explore»
+  sull'acqua), `apps/mobile/__tests__/AppPaddle.test.tsx`
+- `services/api/shaperoute_api/paddle_examples.py`,
+  `services/api/tests/test_paddle_examples.py`
+- `docs/tasks/TASK-226.md`, `docs/UI.md`, `docs/STATUS.md` (solo le righe
+  di questo task)
+
 ## Fuori scope
 
-- Gli occhi staccati **su strada** di gatto, pesce, teste e zucca: sono di
-  TASK-223, e aspettano ancora il giudizio dell'utente sui campioni a
-  15 km (`tasks/TASK-223.md`, «Gli occhi staccati»).
+- Il motore e l'API degli occhi staccati **su strada**: sono di TASK-223
+  e ci sono già. Qui, nella parte B, solo l'interruttore nell'app.
 - «Explore» con «Paddle» oltre le otto forme, e il «Feed» sull'acqua
   (TASK-228).
 
@@ -192,6 +234,65 @@ niente finché la B non entra. La voce di oggi fra i pezzi dice «Walk to
 the next part»: sull'acqua serve «Paddle to…». `PEN_DOWN_M` (20 m) è più
 lungo di alcuni tratti sull'acqua: va accorciato per `paddling`.
 
+### Parte B — 2026-10-05
+
+**Fatto** (`UI.md`, «Sull'acqua: «Paddle»», «La navigazione», «Draw»):
+
+- **La richiesta** (`penUpShapes.ts`): con `paddling`, `shapeAsked` manda
+  `pen_up: true` per gatto, pesce, teste, zucca, faccina, fantasmino e
+  ciambella, qualunque sia l'interruttore (che sull'acqua non c'è); il
+  sole e le forme in una linea come prima. Su strada l'interruttore ora
+  c'è anche per le cinque forme con gli occhi (seguito di TASK-223).
+- **La navigazione** (`penUp.ts`): in canoa la voce dice `paddleToPart`,
+  nelle cinque tabelle di `src/voice/`, e la penna scende
+  `PEN_DOWN_ON_WATER_M` = 5 m prima della parte, non 20: sull'acqua i
+  tratti sono di 30–100 m, e 20 m registrati prima dell'occhio sarebbero
+  due terzi del collegamento che non si vuole disegnare. La pausa e la
+  ripresa sono quelle delle forme a pezzi su strada.
+- **Sotto il percorso**: «{drawn} km of drawing + {between} km paddling
+  between the parts», con le quattro traduzioni.
+- **«Explore»**:
+  - gli esempi sull'acqua si chiedono come li chiede «Draw»
+    (`shapeOf`): le teste con `pen_up`; quelli della corsa come prima;
+  - un esempio tiene i suoi `walks` (`RecommendedRouteDetail.walks`), e
+    si riapre, parte, si esporta e si tiene nei preferiti con quelli;
+  - **la scheda non disegna i tratti a penna alzata**: una linea con
+    `gaps`, i punti raggiunti senza disegnare (`thumbSegments`,
+    `RouteCard`). Un percorso a pezzi tiene nella scheda tutti i suoi
+    punti invece di 60: diradandoli un tratto finirebbe fra due punti
+    tenuti;
+  - un esempio di «Near me» tenuto sul telefono prima, in una linea sola,
+    si ridisegna;
+  - «Start» da «Explore» sull'acqua porta i `walks` alla navigazione
+    (`App.tsx`).
+- **Gli esempi dentro l'app**: `paddle_examples.py` chiede `pen_up` per le
+  forme a pezzi tranne il sole (`apart_on_water`, come `apartOnWater`
+  dell'app) e scrive i `walks`. `paddleExamples.json` rifatto: cambiano
+  solo le otto teste (due per luogo), ora di 169–173 punti con tre tratti
+  a penna alzata; gli altri 24 esempi sono identici. Il file pesa 168 KB
+  nel repository.
+- **Test**:
+  - `penUpShapes.test.ts`: le otto forme, su strada e sull'acqua;
+  - `penUp.test.ts`: la voce in canoa nelle cinque lingue, i 5 m;
+  - `exampleRoutes.test.ts`: le teste chieste a pezzi in «Near me», tenute
+    con i `walks`, ridisegnate se tenute prima; le teste della corsa in
+    una linea; la scheda con `gaps`;
+  - `paddleExamples.test.ts`: `walks` solo dove l'app chiede `pen_up`, tre
+    tratti dritti, meno del 7% a penna alzata;
+  - `explored.test.ts`, `RouteThumb.test.tsx`, `RoutePanelPieces.test.tsx`,
+    `AppPaddle.test.tsx`; API `test_paddle_examples.py`.
+
+**Non visto nel simulatore**: il comportamento è coperto dai test, ma la
+pagina con le schede delle teste e una pagaiata vera con le pause non le
+ho guardate su un telefono. **Da provare sull'iPhone**, dopo il server:
+una testa di cane a Riva o a Como, con le pause e la voce.
+
+**Testi da confermare con l'utente**: «Part done. Paddle to the next part:
+the drawing is paused.» · «Parte finita. Pagaia fino alla parte successiva:
+il disegno è in pausa.»; «… km of drawing + … km paddling between the
+parts» · «… km di disegno + … km pagaiando fra una parte e l'altra»;
+tedesco, spagnolo e francese.
+
 ## Note per il deploy
 
 - La parte A cambia `route_engine`: l'impronta del motore cambia, quindi
@@ -206,3 +307,9 @@ lungo di alcuni tratti sull'acqua: va accorciato per `paddling`.
   server ha la A, o «Paddle» con le forme a pezzi darebbe un errore.
 - Lo zip del motore del telefono è rifatto; il motore sul telefono non
   disegna sull'acqua, ma lo zip segue il codice.
+- **Parte B**: solo l'app (e il comando che scrive gli esempi). Con un
+  server senza la parte A: «Draw» con «Paddle» e una forma a pezzi dà
+  «The app and the API do not agree (a bug): invalid_request.», e le teste
+  di «Near me» non compaiono. I quattro luoghi di «Explore» funzionano
+  comunque: sono dentro l'app. Per questo: **prima il server, poi la
+  pubblicazione**.

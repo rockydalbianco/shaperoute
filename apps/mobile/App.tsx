@@ -612,6 +612,10 @@ function Sgrava() {
           directions: NO_DIRECTIONS,
           similarity: route.similarity,
           activity,
+          // A shape in pieces: the pen up between them (TASK-226).
+          ...(route.walks !== undefined && route.walks.length > 0
+            ? { walks: route.walks, word: null }
+            : {}),
         });
         setScreen("navigate");
       });

@@ -6,7 +6,9 @@ import { requestRoute, type RouteOutcome } from "../api/routes";
 import { metresBetween } from "../map/coordinates";
 import paddleExamples from "../paddle/paddleExamples.json";
 import type { Place } from "../places/photon";
+import { shapeAsked } from "../route/penUpShapes";
 import { problemText } from "../route/problems";
+import { walksOf } from "../route/walks";
 import { cityShort } from "./presets";
 import {
   isRecommendedDetail,
@@ -91,6 +93,15 @@ export const PADDLE_EXAMPLES: ExampleSet = {
   prefix: "paddling:",
   bundled: readKept(paddleExamples.examples),
 };
+
+/**
+ * How a set asks for `shape`. On the water a shape in pieces is drawn piece
+ * by piece, the pen up between them, as «Draw» asks for it (TASK-226); a
+ * run's examples are drawn in one line, as they always were.
+ */
+function shapeOf(shape: Shape, set: ExampleSet): ReturnType<typeof shapeAsked> {
+  return set.activity === "paddling" ? shapeAsked(shape, true, "paddling") : { shape };
+}
 
 /** A set's shapes, as its cards show them: the heart first. */
 function setShapes(set: ExampleSet): readonly Shape[] {
@@ -220,25 +231,52 @@ export function asRecommended(
     points: of.points,
     license: LICENSE,
     ...(set.activity === "running" ? {} : { activity: set.activity }),
+    ...penUp(of),
   });
-  const { points, license, ...common } = whole(result, id);
+  const { points, license, walks, ...common } = whole(result, id);
   return {
     route: {
       ...common,
       start: points[0],
       away_m: metresBetween(city.point, points[0]),
-      preview: thinned(points),
+      ...previewOf(points, walks),
     },
     detail: {
       ...common,
       points,
       license,
+      ...(walks !== undefined ? { walks } : {}),
       // B, C: the routes the engine found besides its own (TASK-093).
       alternatives: (result.alternatives ?? []).map((other, i) =>
         whole(other, `${id}:${i + 1}`),
       ),
     },
   };
+}
+
+/**
+ * The line a card draws for a route: a few of its points, or, drawn in
+ * pieces, all of them with the points the pen comes to without drawing
+ * (`gaps`): thinned, a walk would fall between two points kept (TASK-226).
+ */
+function previewOf(
+  points: LatLon[],
+  walks: readonly (readonly [number, number])[] | undefined,
+): Pick<RecommendedRoute, "preview" | "gaps"> {
+  if (walks === undefined || walks.length === 0) {
+    return { preview: thinned(points) };
+  }
+  const gaps = walks.flatMap(([from, to]) =>
+    Array.from({ length: to - from }, (_, i) => from + 1 + i),
+  );
+  return { preview: points, gaps };
+}
+
+/** The stretches with the pen up of a planned route, when it has some: a
+ * shape drawn in pieces on the water (TASK-226). */
+function penUp(result: RouteResult): Pick<RecommendedRouteDetail, "walks"> {
+  const walks = walksOf(result.points, result.walks);
+  return walks.length > 0 ? { walks: walks.map(([from, to]) => [from, to]) } : {};
 }
 
 /** What a card says when its route could not be drawn: on the water in the
@@ -398,7 +436,12 @@ function fromFile(
   const saved = [...(set.bundled?.[key] ?? []), ...(storage.load()[key] ?? [])];
   return setShapes(set).map((shape): Example => {
     const detail = saved.find((d) => d.shape === shape);
-    if (detail === undefined || detail.alternatives === undefined) {
+    if (
+      detail === undefined ||
+      detail.alternatives === undefined ||
+      // Kept in one line before the pieces (TASK-226): drawn again.
+      ("pen_up" in shapeOf(shape, set) && detail.walks === undefined)
+    ) {
       return { shape, status: "waiting" };
     }
     details.set(detail.id, detail);
@@ -414,7 +457,7 @@ function fromFile(
       similarity,
       start: detail.points[0],
       away_m: metresBetween(city.point, detail.points[0]),
-      preview: thinned(detail.points),
+      ...previewOf(detail.points, walksOf(detail.points, detail.walks)),
     };
     return { shape, status: "ready", route };
   });
@@ -518,7 +561,7 @@ export function drawExamples(
       const outcome = await request(
         apiUrl,
         {
-          shape,
+          ...shapeOf(shape, set),
           distance_m: set.distance_m,
           start: city.point,
           activity: set.activity,

@@ -916,13 +916,16 @@ sulle strade:
   «Smiley», «Ghost», «Donut», «The sun» (`shapeNames.ts`; «Sun» è già la
   domenica) · «Faccina», «Fantasmino», «Ciambella», «Sole» (**da
   confermare con l'utente**; tedesco, spagnolo e francese da confermare).
-- **Faccina, fantasmino e ciambella** (TASK-223, ADR-0185) hanno sotto il
-  campo l'interruttore **«Lift the pen between parts»**, lo stesso stato di
-  quello delle parole, acceso all'avvio: acceso, la richiesta ha `pen_up:
-  true` e la forma si disegna un pezzo alla volta, a piedi fra l'uno e
-  l'altro (`API.md`, «La penna alzata»). Il sole si disegna con la penna
-  giù, scelta sui campioni, e non ha l'interruttore; sull'acqua nessuna
-  forma lo ha. Il percorso mostra «6.0 km of drawing + 0.4 km walking
+- **Faccina, fantasmino e ciambella** (TASK-223, ADR-0185), e **gatto,
+  pesce, testa di cane, testa di coniglio e zucca** con gli occhi staccati
+  (scelta dell'utente sui campioni, 2026-10-05; nell'app con TASK-226),
+  hanno sotto il campo l'interruttore **«Lift the pen between parts»**, lo
+  stesso stato di quello delle parole, acceso all'avvio: acceso, la
+  richiesta ha `pen_up: true` e la forma si disegna un pezzo alla volta, a
+  piedi fra l'uno e l'altro (`API.md`, «La penna alzata»). Il sole si
+  disegna con la penna giù, scelta sui campioni, e non ha l'interruttore.
+  **Sull'acqua l'interruttore non c'è**: lì la penna si alza da sola
+  («Sull'acqua: «Paddle»», sotto). Il percorso mostra «6.0 km of drawing + 0.4 km walking
   between the parts» · «6,0 km di disegno + 0,4 km a piedi fra una parte e
   l'altra» («riding» · «in bici» in bici), attraverso `t()`. Testi nuovi:
   «Lift the pen between parts» e le due righe dei km **da confermare con
@@ -1343,9 +1346,14 @@ TASK-164, di cui tiene i numeri.
   Walk to the next part: the drawing is paused.» e «Pen down: draw the next
   part.» · «Parte finita. Cammina fino alla parte successiva: il disegno è
   in pausa.» e «Giù la penna: disegna la parte successiva.»; in bici «Ride
-  to the next part» · «Pedala fino alla parte successiva». Inglese e
-  italiano **da confermare con l'utente**; tedesco, spagnolo e francese da
-  confermare (`src/voice/`).
+  to the next part» · «Pedala fino alla parte successiva»; **in canoa**
+  (TASK-226) «Part done. Paddle to the next part: the drawing is paused.»
+  · «Parte finita. Pagaia fino alla parte successiva: il disegno è in
+  pausa.», e la penna scende 5 m prima della parte invece di 20
+  (`PEN_DOWN_ON_WATER_M`): sull'acqua i tratti a penna alzata sono di poche
+  decine di metri, e quello che si registra prima della parte è proprio il
+  collegamento da non disegnare. Inglese e italiano **da confermare con
+  l'utente**; tedesco, spagnolo e francese da confermare (`src/voice/`).
   - **Perché 20 m, e lungo il percorso**: una posizione che la corsa tiene
     sbaglia fino a 40 m (`POOR_FIX_M`), in città 10–20 m. Ripartendo 20 m
     prima della lettera, anche una posizione in ritardo fa partire la
@@ -1826,6 +1834,26 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   partenza: «Choose a start in Draw first: the shapes start from the shore
   nearest to it.»). Gli esempi di «Near me» restano sul telefono come quelli
   delle città, a parte. La scelta resta quando si torna dalla mappa.
+- **I pezzi staccati sull'acqua** (TASK-226, ADR-0188; scelta dell'utente
+  sui campioni): con «Paddle» gatto, pesce, testa di cane, testa di
+  coniglio, zucca, faccina, fantasmino e ciambella si chiedono **sempre**
+  con `pen_up: true`, senza interruttore; il sole e le forme in una linea
+  come prima.
+  - **Il percorso**: lascia il contorno vicino ai pezzi, li disegna uno
+    per volta e torna. Sulla mappa i tratti a penna alzata sono
+    tratteggiati, come fra le lettere. Sotto il percorso: «1.9 km of
+    drawing + 0.1 km paddling between the parts» · «1,9 km di disegno +
+    0,1 km pagaiando fra una parte e l'altra».
+  - **Correndo**: a ogni tratto il disegno va in pausa da solo e riprende
+    alla parte successiva, con la voce («La navigazione», «La penna
+    alzata»).
+  - **In «Explore»**: le teste di cane e di coniglio hanno gli occhi
+    staccati, anche nei quattro luoghi dentro l'app, e la scheda non
+    disegna i tratti a penna alzata. Un esempio di «Near me» tenuto prima,
+    in una linea sola, si ridisegna.
+  - Testi nuovi **da confermare con l'utente**: la frase della voce e la
+    riga dei km, in inglese e in italiano; tedesco, spagnolo e francese da
+    confermare.
 - **«Near me» sul server**: il server ha l'acqua solo dei quattro luoghi
   (`data/cache/water/`, TASK-225); altrove la scarica da Overpass, se
   risponde, e la prima volta ci mette minuti, altrimenti «Map data for this

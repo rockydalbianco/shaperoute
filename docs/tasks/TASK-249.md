@@ -99,11 +99,33 @@ Col servizio vero, dal Mac, il 2026-10-06:
 - Tenna, Calceranica al Lago, Levico Terme, Pergine Valsugana, Trento e
   Borgo Valsugana, i sei posti di `/nearby-cities` da Caldonazzo: in
   `/cities` stessa etichetta e stesso punto.
-- **Delle 66 città con gli esempi disegnati prima** (`--preset italy`, 52,
-  e `featured`, 14) **nessuna cambia punto**: il catalogo non va
-  ridisegnato.
-- Cambiano punto, fra quelli provati: Tenna (650 m), Calceranica al Lago
-  (700 m), Caldonazzo (1127 m), Riva del Garda (519 m), Jesolo (1228 m).
+- **La ricerca vecchia e la nuova sull'elenco di `draw_examples`**
+  (chiesto dal coordinatore): il primo risultato di ogni nome, prima e
+  dopo.
+
+  | Elenco | Nomi | Cambiano punto |
+  | --- | --- | --- |
+  | `--preset italy` | 52 | 0 |
+  | `--preset featured` | 14 | 0 |
+  | Rovereto, Borgo Valsugana, Pergine Valsugana, Vigolo Vattaro | 4 | 0 |
+  | Caldonazzo | 1 | 1: 1127 m |
+  | Tenna, Calceranica al Lago | 2 | 2: 650 m, 700 m |
+  | Altri provati: Levico Terme, Riccione | 2 | 0 |
+  | Altri provati: Riva del Garda, Jesolo | 2 | 2: 519 m, 1228 m |
+
+  **Il catalogo non va ridisegnato**: nessuna delle 66 città cambia.
+- **Sul telefono**: la chiave degli esempi di una città è il suo punto
+  (`cityKey`, 4 decimali). Le città in evidenza e quelle dentro l'app non
+  cambiano punto, quindi niente cambia per loro. Chi ha fra le recenti
+  Caldonazzo, Tenna o Calceranica cercate per nome le tiene col punto di
+  prima, e il server continua a servire i loro esempi tenuti da lì finché
+  non scadono. Le zone del telefono si chiedono per area contenuta
+  (`covering_path`), non per punto uguale: uno spostamento di 1 km resta
+  dentro la zona del paese.
+- **Limitare la regola ai villaggi non conviene**: non sposterebbe nessuna
+  città del catalogo in meno (sono già zero), e lascerebbe con due punti
+  i paesi come Riva del Garda (`place=town`), che `/nearby-cities` dà come
+  uno dei quattro grandi. La regola resta per ogni area.
 - Il costo: una ricerca nuova fa una richiesta in più al Places per ogni
   area fra i suoi risultati, una dopo l'altra, circa 0,35 s l'una:
   «Tenna» 0,6 s invece di 0,3, «Roma» (quattro aree) 1,8 s. Poi la

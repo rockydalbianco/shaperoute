@@ -11700,6 +11700,9 @@ risponde la ricerca fallisce con 503 e niente è tenuto.
 - **Una sola chiamata all'autocompletamento** per ricerca: dà il nodo,
   ma solo per i primi nomi che iniziano così; i risultati che non ci sono
   resterebbero col punto dell'area.
+- **La regola solo per i villaggi** (`place=village`): Riva del Garda è
+  `place=town` e ha i due punti a 519 m; e non risparmierebbe niente al
+  catalogo, che non si sposta comunque (0 città su 66, misurato).
 - **Servire il punto dell'area se il Places non risponde**: per un giorno
   lo stesso luogo avrebbe di nuovo due punti, e `route_store` imparerebbe
   quello sbagliato.

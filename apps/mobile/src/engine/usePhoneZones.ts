@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { PositionState } from "../location/useCurrentPosition";
 import { activityOf, loadSport } from "../settings/sport";
+import { downloadAhead } from "./aheadZones";
 import { type PhoneEngine, phoneEngine } from "./phoneEngine";
 import {
   coveringZone,
@@ -21,6 +22,8 @@ export const NOTICE_MIN_BYTES = 100_000;
  * other (TASK-214, choice 4). Without asking, on any network, also on mobile
  * data (the user's choice of 2026-10-03); a zone the phone has costs a 304.
  * With a zone around the phone, Python starts ahead of the first route.
+ * Then, slowly, the zones of the cities ahead (part B2, `aheadZones.ts`),
+ * when the server gave a zone around the phone at this opening.
  *
  * Gives the bytes of the first maps of the phone while they download, for
  * the notice over «Draw route» (part C), else null. Only the first: when
@@ -33,7 +36,12 @@ export function usePhoneZones(
   {
     engine = phoneEngine,
     download = downloadZone,
-  }: { engine?: PhoneEngine; download?: typeof downloadZone } = {},
+    ahead = downloadAhead,
+  }: {
+    engine?: PhoneEngine;
+    download?: typeof downloadZone;
+    ahead?: typeof downloadAhead;
+  } = {},
 ): number | null {
   const done = useRef(false);
   const [firstBytes, setFirstBytes] = useState<number | null>(null);
@@ -55,9 +63,12 @@ export function usePhoneZones(
     };
     void (async () => {
       let ready = false;
-      for (const network of networksInOrder()) {
+      let served = false;
+      const networks = networksInOrder();
+      for (const network of networks) {
         const answer = await download(baseUrl, network, point, first ? { onSize } : {});
-        ready ||= answer.kind === "saved" || answer.kind === "unchanged";
+        served ||= answer.kind === "saved" || answer.kind === "unchanged";
+        ready ||= served;
         // Offline at the opening: the zone saved before still counts.
         ready ||= coveringZone(savedZones(), network, point) !== null;
       }
@@ -65,8 +76,13 @@ export function usePhoneZones(
       if (ready) {
         engine.warmUp();
       }
+      // Only from a server that gives zones and answers now: else every
+      // city ahead would be a request for nothing.
+      if (served) {
+        await ahead(baseUrl, point, networks[0], { download });
+      }
     })();
-  }, [position, baseUrl, engine, download]);
+  }, [position, baseUrl, engine, download, ahead]);
 
   return firstBytes;
 }

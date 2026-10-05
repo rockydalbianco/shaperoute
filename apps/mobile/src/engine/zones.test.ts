@@ -319,6 +319,31 @@ test("past the day's cap, no zone ahead is asked before Retry-After", async () =
   ).toMatchObject({ kind: "saved" });
 });
 
+test("a zone ahead is saved as never used: beyond the limit it goes first", async () => {
+  const own = entry(TRENTO, SPACE_LIMIT_BYTES - 12, 500);
+  files.set("file:///documents/engine/zones.json", JSON.stringify({ zones: [own] }));
+  files.set(zoneUri(own), "zone");
+  const milan = "foot_45.38000_9.04000_45.54000_9.30000.zone.json.gz";
+  expect(
+    await downloadZone(URL_BASE, "foot", [45.4642, 9.19], {
+      apiKey: null,
+      now: () => 800,
+      download: answering(200, zipHeaders(milan), "abc"),
+      prefetch: true,
+    }),
+  ).toEqual({
+    kind: "saved",
+    zone: { name: milan, etag: '"1-2"', bytes: 3, usedAt: 0 },
+  });
+  await downloadZone(URL_BASE, "bike", HERE, {
+    apiKey: null,
+    now: () => 900,
+    download: answering(200, zipHeaders(TRENTO_BIKE), "0123456789"),
+  });
+  // The zone the phone was in stays; the one ahead, never used, goes.
+  expect(savedZones().map((zone) => zone.name)).toEqual([TRENTO, TRENTO_BIKE]);
+});
+
 test("a 429 for the zone around the phone is a failure, not a pause", async () => {
   expect(
     await downloadZone(URL_BASE, "foot", HERE, {

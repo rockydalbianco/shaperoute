@@ -8635,6 +8635,48 @@ giorno); un tetto solo sul telefono (un'app difettosa non lo rispetta);
 rifiutare solo quando il tetto è già passato (lo si supererebbe di una
 zona).
 
+**Decisione dell'agente** (parte B2, le zone in più, 2026-10-05; 2 GB,
+qualunque rete e nessun avviso sono scelte dell'utente, e così partire
+senza la #323), deciso dall'agente su delega dell'utente:
+1. **Le città «più cercate» sono quelle di «Explore»**: prima le ultime
+   scelte sul telefono (`recent-cities.json`), poi le 14 in evidenza
+   dalla più vicina. Il server sa quali città si cercano di più (gli
+   eventi di TASK-130), ma darle all'app vorrebbe un endpoint nuovo e un
+   aggiornamento del server. Le città vicine (TASK-236, `GET
+   /nearby-cities`) andranno in testa, con un'aggiunta piccola dopo la
+   #323.
+2. **Il centro di una città in evidenza** lo dà `GET /cities`, come al
+   tocco del chip, una volta per telefono: poi resta in
+   `Documents/engine/ahead.json`. I centri non si scrivono nel codice
+   (`presets.ts` tiene solo i nomi), e il server tiene le risposte un
+   giorno: 14 città costano a Geoapify al massimo 14 richieste al giorno.
+3. **Solo la rete dello sport** di «Settings», a piedi con la canoa.
+4. **Una città già dentro una zona salvata non si chiede**, nemmeno con
+   l'ETag: la zona si aggiorna quando il telefono si apre lì. Un giro
+   costa così solo le città che mancano.
+5. **Un giro intero al giorno al massimo**, segnato in `ahead.json`;
+   un giro interrotto riprende alla prossima apertura. Parte solo se il
+   server ha appena dato la zona intorno al telefono (salvata o `304`):
+   con un server senza zone per il telefono, o senza rete, non si chiede
+   niente.
+6. **Le zone in più entrano come «mai usate»** (`usedAt` 0) e il giro si
+   ferma a 100 MB dai 2 GB. Così oltre il limite se ne va prima una zona
+   in più che quella intorno al telefono, e due giri non si cancellano a
+   vicenda le zone per farsi posto.
+7. **L'app con B2 si pubblica solo con il server che ha A2** (c'è dal
+   2026-10-05, `fd14cd3`): senza il tetto un telefono scaricherebbe
+   tutte le zone in più in un giorno. Meglio dopo aver scritto le zone del
+   telefono sul server (parte D): se no le scrive la prima richiesta di
+   ogni zona, circa 50 s di calcolo per Milano.
+
+**Scartato**: un endpoint con le città più cercate (API nuova e server
+da aggiornare, per un ordine che «Explore» dà già); scaricare tutte e
+due le reti (le zone bici sul server sono poche, il traffico
+raddoppierebbe); richiedere ogni giorno con l'ETag le zone già salvate
+(richieste per niente); cancellare zone in più per farne entrare altre
+(i giri si inseguirebbero); aspettare qualche minuto dopo l'apertura (chi
+apre l'app per poco non scaricherebbe mai).
+
 ## ADR-0170 — Pubblicare come su Strava, l'API: chi lo vede in tre valori, una domanda sola per saperlo, foto in posti fissi, campi nuovi che un'app di prima non cancella
 **Stato**: Attiva · 2026-10-03 · deciso dall'agente su delega dell'utente
 (TASK-208, parte A), dentro le **scelte dell'utente** del 2026-10-03:

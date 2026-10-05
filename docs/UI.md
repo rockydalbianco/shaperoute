@@ -597,15 +597,36 @@ mappa è quella di prima.
   subito, senza chiedere: le mappe tornano alla prossima apertura, con la
   riga sopra «Draw route». Il numero cresce anche da solo: dopo la zona
   intorno, il telefono scarica piano piano quelle dei paesi vicini e
-  delle città di «Explore», senza avvisi (TASK-214, parte B2). Poi «Units», «Soon». **«Notifications»**: «Email
+  delle città di «Explore», senza avvisi (TASK-214, parte B2). Poi
+  **«Units»** (📏, TASK-182, ADR-0149), con in fondo l'unità in cui è
+  l'app («Kilometres» o «Miles»); un tocco apre sotto la riga
+  «Kilometres» e «Miles», con il «✓» bianco sulla scelta, come
+  «Language». La scelta chiude la lista, vale subito e resta sul
+  telefono. **Fino alla parte B l'app parte in km su ogni telefono**
+  (scelta dell'utente del 2026-10-05), e «Phone units» non è fra le
+  scelte; dalla parte B (`FOLLOWS_PHONE` in `src/units/followsPhone.ts`)
+  la lista si apre con «Phone units» (con accanto l'unità del telefono),
+  che è la partenza: miglia dove il telefono misura le strade in miglia
+  (Stati Uniti, Regno Unito, o il sistema di misura scelto a mano in
+  iOS), km altrove e quando il telefono non lo dice. **Con le miglia**, per ora
+  (parte A): «My activities» («2.49 mi · 19:00 · 7:38 /mi», anche nella
+  scheda della corsa aperta), i preferiti («Star · 3.2 mi») e le schede di
+  «Explore» («Star · 3.2 mi», «0.4 mi away», sotto i 1000 piedi «650 ft
+  away»; i paesi vicini «1.8 mi away»; il percorso aperto sulla mappa
+  «3.2 mi»). Il resto dell'app è ancora in km e arriva con la parte B: la
+  distanza che si chiede in «Draw» e il suo risultato, la corsa e la sua
+  fine, la voce, i post del «Feed», i disegni pubblici, «Explore» con
+  «Paddle», le frasi di «Explore» («Starting within 5 km of…»). Con
+  «Kilometres» niente cambia. Il GPX, l'API e il motore restano in metri.
+  **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
   sulla schermata stessa: «Delete my account» o «Keep my account».
 
 Le voci con «Soon» hanno il nome e basta: non si toccano e non hanno
-interruttori, perché dietro non c'è ancora niente (le accendono TASK-182,
-184, 185). Usciti dall'account da «Settings», chi rientra trova
+interruttori, perché dietro non c'è ancora niente (le accendono TASK-184
+e 185). Usciti dall'account da «Settings», chi rientra trova
 «Profile».
 
 **«Change email»** (✉️, TASK-183, ADR-0150): un tocco apre sotto la riga
@@ -1932,6 +1953,28 @@ l'API: ADR-0164). Con «Run» e «Bike» niente di quanto segue cambia.
   disegnato né per uno di «Explore» o dei preferiti. Si segue la linea:
   il banner dice «Follow the route to the end.», la barra e i km mancanti
   sono quelli della corsa, la voce dice solo i km.
+- **«Move the shape»** (TASK-238, ADR-0202; trascinare col dito è una
+  scelta dell'utente del 2026-10-05): sotto «Start», quando il percorso
+  disegnato è sull'acqua e la risposta dice dov'è la forma (`centre`; con
+  un'API di prima il pulsante non c'è). Toccato, il pannello diventa «Move
+  the shape», «Drag the shape where you want it, then let go.», «It stays
+  on the water, off the shore, where it fits.» e «Cancel»; sulla mappa
+  **un dito trascina il percorso invece della mappa** (due dita fanno lo
+  zoom come sempre, e rimettono la forma dov'era). Al rilascio l'app
+  richiede lo stesso percorso con `near`, il centro di prima più lo
+  spostamento, e la stessa partenza: il posto lo decide il motore, il più
+  vicino in cui la forma ci sta. Mentre il motore lavora la forma resta
+  sulla mappa **dove il dito l'ha lasciata**, con la barra d'attesa sotto;
+  poi arriva il percorso vero, con la sua partenza dalla riva. Se è finita
+  a più di 80 m da dove è stata lasciata (`NOT_THERE_M`: sulla terra,
+  troppo al largo, troppo vicina alla riva) una riga lo dice: «The shape
+  does not fit there: this is the nearest place.». Si può spostare ancora,
+  ogni volta da dov'è. Un dito che si muove meno di 8 px non sposta niente;
+  «Cancel» lascia tutto com'era. Vale per il percorso di «Draw»; quelli di
+  «Explore» e dei preferiti non si spostano (non hanno `centre`). Nella
+  pagina della mappa sono i messaggi `setMove` e `moved`
+  (`src/map/messages.ts`, `mapPage.ts`); la logica è in
+  `src/paddle/shapeMove.ts` e `useMoveShape.ts`. Testi in cinque lingue.
 - **L'avviso di sicurezza**, al **primo** «Start» sull'acqua su questo
   telefono (scelta dell'utente), a tutto schermo prima del conto alla
   rovescia: 🛶, «Before you paddle», quattro righe («Wear a life

@@ -189,8 +189,10 @@ def _word_reach(shape: Sequence[Point], word: Word) -> float:
 
 def drawn_distance(route: NetworkRoute) -> float:
     """The length of `route` the distance asked for applies to: all of it,
-    but the walks between the letters of a word with the pen up (TASK-197)."""
-    return pen_up.drawn_m(route.points, route.distance_m, route.walks)
+    but the walks between the letters of a word with the pen up (TASK-197);
+    the detours of a piece walked instead of drawn still count (TASK-242,
+    `pen_up.sized_m`)."""
+    return pen_up.sized_m(route)
 
 
 def zone_area(

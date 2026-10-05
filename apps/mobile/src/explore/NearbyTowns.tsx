@@ -2,9 +2,11 @@ import type { LatLon } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { decimal, t } from "../i18n";
+import { t } from "../i18n";
 import type { Place } from "../places/photon";
 import { color, fontSize, fontWeight, space } from "../theme/tokens";
+import { awayNumber } from "../units/format";
+import { useUnits } from "../units/useUnits";
 import { fetchNearbyCities, knownNearby, type NearbyCity } from "./nearbyCities";
 import { type SampleOptions, useNearbySamples } from "./nearbySamples";
 import { cityShort } from "./presets";
@@ -31,8 +33,7 @@ type Props = {
 
 /** «2.9 km» from the start; a town further than 10 km without decimals. */
 export function awayKm(awayM: number): string {
-  const km = awayM / 1000;
-  return km < 10 ? decimal(km) : String(Math.round(km));
+  return awayNumber(awayM, "km");
 }
 
 /**
@@ -50,6 +51,8 @@ export function NearbyTowns({
   request,
   credit = true,
 }: Props) {
+  // The cards say how far in the app's units, at once (TASK-182).
+  const miles = useUnits() === "mi";
   const lat = near?.[0];
   const lon = near?.[1];
   const [fetched, setFetched] = useState<{ key: string; towns: NearbyCity[] } | null>(
@@ -106,7 +109,9 @@ export function NearbyTowns({
                 ? sample.route
                 : null;
             const name = cityShort(town.label);
-            const away = t("{km} km away", { km: awayKm(town.away_m) });
+            const away = miles
+              ? t("{mi} mi away", { mi: awayNumber(town.away_m, "mi") })
+              : t("{km} km away", { km: awayKm(town.away_m) });
             return (
               <RouteCard
                 key={town.label}
@@ -120,10 +125,17 @@ export function NearbyTowns({
                 }
                 map
                 onPress={() => onCity({ label: town.label, point: town.point })}
-                accessibilityLabel={t("{town}, {km} km away", {
-                  town: name,
-                  km: awayKm(town.away_m),
-                })}
+                accessibilityLabel={
+                  miles
+                    ? t("{town}, {mi} mi away", {
+                        town: name,
+                        mi: awayNumber(town.away_m, "mi"),
+                      })
+                    : t("{town}, {km} km away", {
+                        town: name,
+                        km: awayKm(town.away_m),
+                      })
+                }
               />
             );
           })}

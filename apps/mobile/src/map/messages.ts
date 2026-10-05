@@ -46,7 +46,10 @@ export type ToPage =
   | { type: "clearStops" }
   /** With `on`, a double tap is told to the app and no longer zooms the
    * map (TASK-119); two fingers still do. */
-  | { type: "setDoubleTap"; on: boolean };
+  | { type: "setDoubleTap"; on: boolean }
+  /** With `on`, one finger drags the route and no longer the map
+   * (TASK-238); lifted, the page tells the app by how much (`moved`). */
+  | { type: "setMove"; on: boolean };
 
 /** A place of a themed route on the map (TASK-129). */
 export type StopFeature = { name: string; lngLat: LngLat; passed: boolean };
@@ -58,6 +61,9 @@ export type FromPage =
   | { type: "loaded" }
   /** A double tap on the map, while the app asked for them (TASK-119). */
   | { type: "doubleTap" }
+  /** The route was dragged and left, while the app asked (TASK-238): by
+   * how many degrees of longitude and of latitude. */
+  | { type: "moved"; by: LngLat }
   | { type: "error"; message: string };
 
 export function setPosition(point: LatLon): ToPage {
@@ -183,6 +189,17 @@ export function setDoubleTap(on: boolean): ToPage {
   return { type: "setDoubleTap", on };
 }
 
+/**
+ * Lets one finger drag the route in place of the map (TASK-238): the shape
+ * of a route on the water, moved by the user. The page draws the route
+ * under the finger and, when it is lifted, tells the app by how much
+ * (`moved`); the engine then places the shape near there. `false` gives
+ * the map its drag back.
+ */
+export function setMove(on: boolean): ToPage {
+  return { type: "setMove", on };
+}
+
 /** JavaScript that hands a message to the page (see `mapPage.ts`). */
 export function pageScript(message: ToPage): string {
   // The trailing `true` is what injectJavaScript expects as a result.
@@ -206,6 +223,20 @@ export function parsePageMessage(data: string): FromPage | null {
     message.type === "doubleTap"
   ) {
     return { type: message.type };
+  }
+  if (message.type === "moved" && "by" in message) {
+    const by = message.by;
+    if (
+      Array.isArray(by) &&
+      by.length === 2 &&
+      typeof by[0] === "number" &&
+      typeof by[1] === "number" &&
+      Number.isFinite(by[0]) &&
+      Number.isFinite(by[1])
+    ) {
+      return { type: "moved", by: [by[0], by[1]] };
+    }
+    return null;
   }
   if (
     message.type === "error" &&

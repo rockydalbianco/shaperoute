@@ -203,6 +203,8 @@ export const ES: Table = {
   // src/explore/NearbyTowns.tsx
   "NEARBY TOWNS": "LOCALIDADES CERCANAS",
   "{town}, {km} km away": "{town}, a {km} km",
+  "{mi} mi away": "a {mi} mi",
+  "{town}, {mi} mi away": "{town}, a {mi} mi",
 
   // src/paddle/PaddleExplore.tsx
   Next: "A continuación",
@@ -235,6 +237,15 @@ export const ES: Table = {
     "La ruta se queda a menos de 1 km de la orilla. Eso no la hace segura ni permitida.",
   "I understand": "Entendido",
   "Not now": "Ahora no",
+
+  // src/paddle/MoveShape.tsx, src/route/RoutePanel.tsx
+  "Move the shape": "Mover la forma",
+  "Drag the shape where you want it, then let go.":
+    "Arrastra la forma adonde la quieras y suéltala.",
+  "It stays on the water, off the shore, where it fits.":
+    "Se queda en el agua, lejos de la orilla, donde cabe.",
+  "The shape does not fit there: this is the nearest place.":
+    "La forma no cabe ahí: este es el lugar más cercano.",
 
   // src/paddle/waterPlaces.ts
   "from Riva del Garda": "desde Riva del Garda",
@@ -414,6 +425,11 @@ export const ES: Table = {
   // src/settings/LanguageSetting.tsx
   Language: "Idioma",
   "Phone language": "Idioma del teléfono",
+
+  // src/settings/UnitsSetting.tsx
+  Kilometres: "Kilómetros",
+  Miles: "Millas",
+  "Phone units": "Unidades del teléfono",
 
   // src/settings/sport.ts
   "Ride without a route": "Rodar sin ruta",

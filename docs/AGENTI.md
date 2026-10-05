@@ -83,6 +83,11 @@ Posizionamento figura sezione padel
                        prima la scelta dell'utente (pulsanti o dito)
                                                                ADR-0202
 
+Notifica follower nel profilo
+  └─ Adesso  TASK-239  Il pallino rosso sulla foto del profilo quando
+                       arriva una richiesta, e «Follow back» dopo
+                       «Accept»; solo app, niente push          ADR-0203
+
 SITO WEB (già «Sezione merchandising magliette»)
   └─ Adesso  TASK-237  Il sito è la guida dell'app (A2 in `main`, #335;
                        il merch è spento). Aspettano l'utente: i testi
@@ -168,6 +173,7 @@ Da assegnare
 | File | Di chi |
 |---|---|
 | `apps/mobile/src/engine/` | TASK-214 B2b |
+| `ProfileLayer.tsx`, `ProfileHeader.tsx`, `social/followsDoor.ts`, `FollowLists.tsx`, file nuovi in `src/social/`, un colore in `theme/tokens.ts` | TASK-239 |
 | `water_fit.py`, `paddling.py` (motore e API), `cli.py`, `models.py` (un campo), `schemas.py`, `shared-types`; poi `RoutePanel.tsx`, `useRouteRequest.ts`, `api/routes.ts`, un file nuovo in `src/paddle/` | TASK-238 |
 | `models.py` e il motore delle forme inclinate | TASK-232 A, quando parte (si accorda con TASK-238) |
 | `site/`, `docs/SITO.md`, `.github/workflows/site.yml` | TASK-237 |
@@ -178,13 +184,13 @@ Da assegnare
 
 ## Numeri
 
-- Task: presi fino a **TASK-238**. Il prossimo libero è **TASK-239**.
-- ADR: presi fino a **ADR-0202** (0183 TASK-220, 0184 TASK-221, 0185
+- Task: presi fino a **TASK-239**. Il prossimo libero è **TASK-240**.
+- ADR: presi fino a **ADR-0203** (0183 TASK-220, 0184 TASK-221, 0185
   TASK-223, 0186 TASK-224, 0187 TASK-225, 0188 TASK-226, 0189 TASK-227,
   0190 TASK-228, 0191 TASK-229, 0192 TASK-230, 0193 TASK-119, 0194
   TASK-231, 0195 TASK-232, 0196 TASK-233, 0197 TASK-234, 0198 TASK-235, 0199
-  TASK-211 B, 0200 TASK-236, 0201 TASK-237, 0202 TASK-238). Il prossimo
-  libero è **ADR-0203**.
+  TASK-211 B, 0200 TASK-236, 0201 TASK-237, 0202 TASK-238, 0203
+  TASK-239). Il prossimo libero è **ADR-0204**.
 - Migrazioni in `main`: 0001 account, 0002 preferiti, 0003 corse, 0004
   Strava, 0005 foto, 0006 penna alzata, 0007 profili, 0008 attività nei
   preferiti, 0009 corse pubblicate, 0010 canoa nei preferiti, 0011
@@ -202,9 +208,10 @@ Da assegnare
   per 66 città su 66 (09:30Z); zona bici di Trento; l'acqua della canoa:
   219 file, 71 MB. **Zone del telefono non scritte**: in cache ci sono 521
   grafi (`foot_`/`bike_`, 7,3 GB di pickle) e solo 3 file per il telefono;
-  scriverli tutti con `python -m shaperoute_api.phone_zone_api` sarebbe
-  circa 2,9 GB e 2–3,5 ore, non gli 0,7–0,8 GB stimati: da chiarire con
-  TASK-214 prima di chiedere l'ok all'utente. Strava spento per scelta
+  scriverli tutti con `python -m shaperoute_api.phone_zone_api` (con
+  `nice -n 19`, lontano da `draw_examples`) sono circa 2,9 GB e 1–2 ore,
+  non gli 0,7–0,8 GB stimati il 2026-10-03: TASK-214 consiglia di
+  scriverli tutti una volta; aspetta l'ok dell'utente. Strava spento per scelta
   dell'utente.
 - **App**: su `preview` da `main` **`8c3a6ff`** (gruppo `8f6849ca`,
   2026-10-05): in più rispetto a `da4e955c`, «Try N km» (TASK-234 B) e i

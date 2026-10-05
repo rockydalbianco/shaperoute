@@ -66,6 +66,10 @@ function waterDone(centre: [number, number] | undefined, lonBy = 0) {
       directions: [],
       alternatives: [],
       warnings: [],
+      // As the API of today answers on the water: none, but there.
+      walks: [],
+      on_foot: [],
+      better_distance_m: null,
       ...(centre === undefined ? {} : { centre }),
     },
   };

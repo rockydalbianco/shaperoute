@@ -10298,6 +10298,21 @@ motore, mai l'app.
 7. **I campi sono facoltativi** nel contratto. Un'app di prima non manda
    `near`; un'API di prima lo rifiuta, e l'app offre lo spostamento solo
    se il risultato ha `centre`.
+8. **Il trascinamento è un modo, non un gesto in più** (parte B). Fuori
+   da «Move the shape» la mappa è quella di sempre: un dito la sposta, due
+   la ingrandiscono. Dentro, **un dito sposta la forma, ovunque tocchi**
+   (non serve prendere la linea, che su un telefono è larga pochi pixel),
+   e la mappa non si sposta (`dragPan` spento, `touch-action: none` sulla
+   mappa); **due dita fanno ancora lo zoom**, e se arrivano a metà
+   trascinamento rimettono la forma dov'era, senza dire niente all'app. Un
+   dito che si muove meno di 8 px non ha spostato niente. Dal modo si esce
+   lasciando la forma o con «Cancel». Così i due gesti non si possono
+   confondere: lo dice il pannello sotto la mappa, non la distanza del
+   dito dalla linea.
+9. **La forma resta dove il dito l'ha lasciata** finché il motore non
+   risponde: la pagina tiene il percorso di prima traslato, l'app non lo
+   ridisegna (gli stessi array), poi arriva quello vero. Se il motore l'ha
+   messo a più di 80 m da lì, una riga lo dice.
 
 **Alternative scartate**: mandare uno spostamento in metri rispetto al
 posto automatico (il motore dovrebbe piazzare due volte, e dopo il primo
@@ -10308,7 +10323,10 @@ rispettare il punto a ogni costo (porta la forma sulla terra o fuori
 dalla fascia: la sicurezza dei margini è una scelta dell'utente del
 2026-10-03); far scegliere all'app anche scala e rotazione (è TASK-232, e
 resta del motore); tenere fissi scala e rotazione di prima (in una baia
-stretta la forma non ci starebbe più, e la richiesta dovrebbe portarli).
+stretta la forma non ci starebbe più, e la richiesta dovrebbe portarli);
+prendere la forma toccando la linea, senza un modo (la linea è larga
+4 px, e un dito accanto sposterebbe la mappa: lo stesso gesto farebbe due
+cose); tenere premuto per prenderla (un gesto che nessuno scopre da solo).
 
 **Conseguenze**:
 

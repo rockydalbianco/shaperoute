@@ -1,4 +1,4 @@
-import type { LatLon, RouteResult, Walk } from "@shaperoute/shared-types";
+import type { LatLon, RouteResult, Stretch, Walk } from "@shaperoute/shared-types";
 import { useCallback, useState } from "react";
 
 import type { AnyRouteRequest } from "../api/routes";
@@ -6,13 +6,17 @@ import type { LngLat } from "../map/coordinates";
 import type { RouteState } from "../route/useRouteRequest";
 import { leftElsewhere, movable, movedRequest } from "./shapeMove";
 
-/** The route as it was when its shape was left somewhere, kept on the map
- * where the finger left it while the engine places it there. */
-type Left = {
-  request: AnyRouteRequest;
+/** What the map draws of a route: the very arrays, so that a route kept on
+ * the map is not sent to it again. */
+type Drawn = {
   points: LatLon[];
   walks: Walk[] | null;
+  onFoot: Stretch[] | null;
 };
+
+/** The route as it was when its shape was left somewhere, kept on the map
+ * where the finger left it while the engine places it there. */
+type Left = Drawn & { request: AnyRouteRequest };
 
 export type MoveShape = {
   /** The route on screen is on the water and says where its shape is. */
@@ -25,7 +29,7 @@ export type MoveShape = {
   onMoved: (by: LngLat) => void;
   /** While the moved route is drawn, the one of before for the map to keep
    * where it was left: the same arrays, so the map is not told again. */
-  left: { points: LatLon[]; walks: Walk[] | null } | null;
+  left: Drawn | null;
   /** The moved shape did not fit where it was left. */
   elsewhere: boolean;
 };
@@ -60,7 +64,12 @@ export function useMoveShape(
         return;
       }
       setMoved(null);
-      setLeft({ request, points: shown.points, walks: shown.walks ?? null });
+      setLeft({
+        request,
+        points: shown.points,
+        walks: shown.walks ?? null,
+        onFoot: shown.on_foot ?? null,
+      });
       draw(request);
     },
     [view, shown, moved, draw],

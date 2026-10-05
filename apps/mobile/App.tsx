@@ -773,7 +773,7 @@ function Sgrava() {
                     explored.status === "done"
                     ? (explored.result.on_foot ?? null)
                     : null
-                  : followedOnFoot
+                  : (followedOnFoot ?? move.left?.onFoot ?? null)
             }
             // Only while choosing, a drawn route or an example of "Explore"
             // (TASK-155): running, or on a themed route, one route is the route.

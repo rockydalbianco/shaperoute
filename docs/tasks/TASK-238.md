@@ -105,8 +105,17 @@ Parte B:
 - [x] Con un'API senza `centre` «Move the shape» non compare.
 - [x] Se la figura non ci sta dov'è stata lasciata, una riga lo dice.
 - [ ] I testi sono confermati dall'utente.
-- [ ] Provato col dito sull'iPhone (il simulatore non l'ha visto: sul
-      server la parte A non c'è ancora).
+- [x] Visto nel simulatore (iPhone 17, Expo Go, l'API del worktree con
+      l'acqua vera di Riccione), con un dito finto dentro la pagina della
+      mappa: «Move the shape», la figura che segue il dito a mappa ferma,
+      la figura che resta dov'è stata lasciata durante l'attesa, il
+      percorso nuovo con «Start here» e la riga «The shape does not fit
+      there…». La prova ha trovato un difetto, corretto: con `on_foot: []`
+      nella risposta vera la figura tornava al posto di prima durante
+      l'attesa.
+- [ ] Provato con un dito vero (il simulatore senza l'accesso dell'utente
+      non si tocca; sull'iPhone dopo l'aggiornamento del server): che il
+      dito non faccia scorrere la pagina e che le due dita ingrandiscano.
 
 ## File toccati
 
@@ -157,6 +166,7 @@ apps/mobile/App.tsx
 apps/mobile/__tests__/AppPaddleMove.test.tsx          (nuovo)
 apps/mobile/src/i18n/{de,es,fr,it}.ts
 docs/UI.md
+docs/DECISIONS.md                                     (ADR-0202, punti 8 e 9)
 docs/STATUS.md
 docs/tasks/TASK-238.md
 ```

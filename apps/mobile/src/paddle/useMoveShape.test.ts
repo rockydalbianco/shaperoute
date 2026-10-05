@@ -24,6 +24,8 @@ function drawn(centre: LatLon | null = CENTRE): RouteResult {
     warnings: [],
     directions: [],
     walks: [[1, 2]],
+    // As the API answers on the water: none, but there.
+    on_foot: [],
     centre,
   };
 }
@@ -90,6 +92,7 @@ test("left somewhere, the same route is asked for there, and kept on the map mea
   });
   expect(move.current.left?.points).toBe(result.points);
   expect(move.current.left?.walks).toBe(result.walks);
+  expect(move.current.left?.onFoot).toBe(result.on_foot);
 
   // Placed where it was left.
   const placed = { ...drawn(asked.near), points: [...result.points] };

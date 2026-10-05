@@ -39,23 +39,27 @@ test("the facts of a drawing: what, how far, how long", () => {
   );
 });
 
-test("shows who ran it and where, the title, the facts and the score", async () => {
+test("shows who ran it and where, the title and the facts", async () => {
   await render(<FeedPost post={POST} width={358} />);
   expect(screen.getByText("fede_km")).toBeOnTheScreen();
   expect(screen.getByText("F")).toBeOnTheScreen();
   expect(screen.getByText("Firenze")).toBeOnTheScreen();
   expect(screen.getByText("Dog walk, without the dog")).toBeOnTheScreen();
   expect(screen.getByText("Dog head · 10.5 km · 1 h 04 min")).toBeOnTheScreen();
-  expect(screen.getByText("92")).toBeOnTheScreen();
-  expect(screen.getByText("out of 100")).toBeOnTheScreen();
+});
+
+test("writes no score over the drawing", async () => {
+  await render(<FeedPost post={POST} width={358} />);
+  expect(screen.queryByText("92")).toBeNull();
+  expect(screen.queryByText("out of 100")).toBeNull();
 });
 
 test("draws the line, one view for each stretch, as wide as the card", async () => {
   await render(<FeedPost post={POST} width={358} />);
   const drawing = screen.getByTestId("feed-drawing");
   expect(drawing).toHaveStyle({ width: 358, height: 222 });
-  // Four stretches, and the score over them.
-  expect(drawing.children).toHaveLength(5);
+  // Four stretches, and nothing over them.
+  expect(drawing.children).toHaveLength(4);
 });
 
 test("until its picture is taken there is no map, and no credit for one", async () => {
@@ -85,9 +89,9 @@ test("lays the map under the line, and says whose it is", async () => {
   });
 
   const drawing = screen.getByTestId("feed-drawing");
-  // The map, the four stretches, the score, the credit: the map first, so
-  // that everything else is over it.
-  expect(drawing.children).toHaveLength(7);
+  // The map, the four stretches, the credit: the map first, so that
+  // everything else is over it.
+  expect(drawing.children).toHaveLength(6);
   const map = screen.getByTestId("feed-map", { includeHiddenElements: true });
   expect(drawing.children[0]).toBe(map);
   expect(map).toHaveProp("source", { uri: picture });
@@ -167,7 +171,7 @@ describe("a drawing on the water (TASK-228)", () => {
   test("a shape in pieces: no line where the pen is up", async () => {
     // The pen comes to the third point without drawing.
     await render(<FeedPost post={{ ...PADDLED, gaps: [2] }} width={358} />);
-    // Three stretches of the four, and the score over them.
-    expect(screen.getByTestId("feed-drawing").children).toHaveLength(4);
+    // Three stretches of the four.
+    expect(screen.getByTestId("feed-drawing").children).toHaveLength(3);
   });
 });

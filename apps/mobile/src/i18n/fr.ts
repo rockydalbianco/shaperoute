@@ -377,6 +377,8 @@ export const FR: Table = {
 
   // src/screens/ProfileLayer.tsx
   "Profile, log in again": "Profil, reconnecte-toi",
+  "Profile, {count} follow request": "Profil, {count} demande d'abonnement",
+  "Profile, {count} follow requests": "Profil, {count} demandes d'abonnement",
   Profile: "Profil",
 
   // src/screens/ProfileScreen.tsx
@@ -536,6 +538,8 @@ export const FR: Table = {
   "Accept {name}": "Accepter {name}",
   Decline: "Refuser",
   "Decline {name}": "Refuser {name}",
+  "Follow back": "Suivre en retour",
+  "Follow {name} back": "Suivre {name} en retour",
   Remove: "Retirer",
   "Remove {name}": "Retirer {name}",
   "Remove {name} from your followers?": "Retirer {name} de tes abonnés ?",

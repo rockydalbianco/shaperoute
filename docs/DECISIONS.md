@@ -10254,6 +10254,109 @@ solo scrivendone il nome.
   server risponde subito da quelli tenuti.
 - TASK-214 B2 può chiedere i paesi vicini allo stesso endpoint.
 
+## ADR-0207 — Niente punteggio sopra il disegno dei post del «Feed»
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-241 ·
+togliere il punteggio dalle foto dei post è una scelta dell'utente; il
+resto è deciso dall'agente su delega dell'utente
+
+**Contesto**: ogni post del «Feed» aveva, in basso a sinistra sopra il
+disegno, un riquadro con il punteggio («98», «out of 100»; TASK-156,
+ADR-0127). Il 2026-10-05 l'utente ha scritto «togli dalle foto dei post
+98 su 100 - 93 su 100...».
+
+**Decisione**:
+
+1. Il riquadro è tolto da `FeedPost`: sopra il disegno resta solo il
+   credito della mappa. Vale anche per i post che «Explore» mostra mentre
+   disegna una città, che sono lo stesso componente.
+2. Il punteggio non va altrove nella scheda (né nel titolo né nella riga
+   dei fatti): l'utente ha chiesto di toglierlo, non di spostarlo.
+3. L'etichetta di VoiceOver dice ancora «Score 92 out of 100»: toglierlo
+   vuole una chiave nuova nei file `src/i18n/*`, che un altro task aveva
+   in lavorazione (TASK-239, PR #343).
+4. Il campo `score` resta nei post d'esempio (`sampleFeed`) e, altrove
+   nell'app, il punteggio si vede come prima: a fine corsa, in «My
+   activities», sotto un disegno aperto dal «Profile», nel post da
+   condividere.
+
+**Alternative scartate**: spostare il punteggio nella riga dei fatti
+(l'utente ha detto «togli»); toglierlo da tutta l'app (la richiesta parla
+delle foto dei post); togliere `score` dai dati d'esempio (lo legge
+ancora VoiceOver, e il feed vero, TASK-118, lo avrà dall'API).
+
+**Conseguenze**: nel «Feed» chi vede non sa più quanto un disegno
+somiglia alla forma, chi ascolta sì: da allineare con l'utente quando i
+file delle lingue sono liberi.
+
+## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-239), dentro la **richiesta dell'utente** dello stesso giorno: «deve
+arrivarti una notifica quando ti mettono un follower… sulla foto in alto a
+destra, tipo un pallino rosso oppure uno rosso che dice la notifica, e
+quando accetti puoi seguire subito». Numero dato dal coordinatore.
+
+**Contesto**: con ADR-0199 una richiesta si vedeva solo aprendo «Profile»
+(un pallino arancio su «Requests»), e per seguire a propria volta chi si
+era appena accettato servivano il suo profilo e il ritorno: cinque tocchi.
+
+**Decisione**:
+
+1. **Un numero, non un pallino**: sul pulsante di «Profile»
+   (`ProfileButton`), sopra l'angolo in alto a destra, un tondo rosso con
+   quante richieste aspettano, «9+» oltre nove
+   (`social/RequestsBadge.tsx`). Fra le due forme dette dall'utente è
+   quella che dice di più nello stesso spazio.
+2. **Rosso, con due colori nuovi** in `tokens.ts`: `badge` `#E02D2D` e
+   `onBadge` bianco (4,6:1). `error` (`#FF6B6B`) è troppo chiaro per un
+   numero bianco e vuol dire un'altra cosa; `warning` è degli avvisi sul
+   percorso. Il pallino di «Requests» in «Profile» passa allo stesso
+   rosso: un colore solo per «qualcuno aspetta te».
+3. **Conta le richieste in attesa, non quelle «non viste»**: sparisce
+   quando ognuna ha avuto «Accept» o «Decline». Non serve ricordare sul
+   telefono cosa è stato visto, e una richiesta guardata e lasciata lì
+   resta una cosa da fare.
+4. **L'app chiede il numero da sola**
+   (`social/followRequests.ts`): con un account all'apertura, ogni 60
+   secondi mentre è sullo schermo, e quando ci torna; in secondo piano
+   niente. Chiede `GET /me/follow-requests?limit=1` e legge `total`: una
+   persona sola per risposta, nessun endpoint nuovo. Senza risposta resta
+   l'ultimo numero; con un `404` (API senza gli elenchi) non chiede più.
+5. **Gli elenchi di «Profile» sanno il numero meglio**: dopo ogni
+   risposta lo dicono a `ProfileLayer` (`onRequests` in `followsDoor.ts`),
+   e una risposta dell'API chiesta prima viene scartata.
+6. **«Requests» è già aperto** se qualcuno aspetta quando «Profile» si
+   apre: il numero rosso porta dritto a chi ha chiesto.
+7. **«Follow back» nella stessa riga**: accettata, la persona resta in
+   «Requests» (che non la conta più) con «Follow back» al posto dei due
+   tasti. Prima di mostrarlo l'app chiede il profilo (`GET /users/{id}`,
+   campo `follow`): chi è già seguito ha la scritta «Following», chi ha già
+   una richiesta «Requested». Se il profilo non risponde il tasto c'è lo
+   stesso: chiedere due volte non cambia niente (ADR-0173).
+8. **Niente notifiche del telefono**: ad app chiusa non arriva niente.
+   Servono una dipendenza nuova (`expo-notifications`), una build propria e
+   il server che le manda: restano TASK-185, da decidere con l'utente.
+
+**Alternative scartate**: il numero anche sulla foto grande dentro
+«Profile» (quel cerchio cambia la foto: un numero lì farebbe credere che
+apra le richieste); lo stato `follow` dentro `Person` negli elenchi
+(cambia un contratto dell'API già sul server per risparmiare una
+richiesta); chiedere il numero solo all'apertura (una richiesta arrivata
+con l'app aperta non si vedrebbe fino al giorno dopo); una connessione
+sempre aperta col server (troppo per un numero).
+
+**Conseguenze**:
+
+- Un telefono con l'app aperta fa una richiesta piccola al minuto in più.
+- Solo app: si può pubblicare senza toccare il server.
+- Quattro testi nuovi in inglese e nelle quattro lingue: «Follow back»,
+  «Follow {name} back», «Profile, {count} follow request(s)».
+
+**Confermato dall'utente** (2026-10-05, «va bene così, tieni il giro al
+minuto e fai il merge»): il numero (punto 1), quando si spegne (punto 3),
+i testi, e il giro ogni 60 secondi (punto 4), che il coordinatore
+proponeva di togliere per non caricare il server.
+
 ## ADR-0150 — Cambiare email e numero di telefono: l'email con la password e senza mail di conferma, il numero privato e non provato
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
 (TASK-183), dentro le **scelte dell'utente** del 2026-10-05: il numero di

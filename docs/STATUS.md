@@ -531,8 +531,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   canoa 1–3; all'API metri interi), e sono in miglia il risultato, «Try»,
   il «Feed», i disegni pubblici ed «Explore» con «Paddle»; i testi nuovi
   sono confermati dall'utente (`tasks/TASK-182.md`, «Parte B»);
-  `FOLLOWS_PHONE` resta spento fino all'ultimo passo, con «Phone units»
-  e il testo di «Share» in miglia.
+  **ultimo passo** (2026-10-05, branch `feat/TASK-182-d-phone-units`, in
+  revisione): l'app segue l'unità del telefono finché non se ne sceglie
+  una («Phone units» torna fra le scelte; l'interruttore `FOLLOWS_PHONE`
+  non c'è più), e il post di «Share» è in miglia. Provato nel simulatore
+  con il telefono sugli Stati Uniti: «Phone units — Miles»
+  (`out/task182/`). Da ascoltare sull'iPhone la voce in miglia.
 - **TASK-184 — «Help», «Terms», «Privacy»** (ADR-0205; chiesto
   dall'utente il 2026-10-05: una mini guida, e le prime bozze di
   condizioni e privacy). In revisione (branch

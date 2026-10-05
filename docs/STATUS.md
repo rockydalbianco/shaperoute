@@ -117,21 +117,20 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `7098cb9` dal
-  2026-10-03 12:39Z, con le migrazioni `0001`–`0013`, la zona bici di
-  Trento con la bici a mano, gli esempi di 66 città e, dal 2026-10-04,
-  l'acqua dei quattro luoghi della canoa (TASK-225). **App** su `preview`
-  da `main` `7e9e27a` (gruppo `b6399e76`, 2026-10-04): canoa, navigazione
-  in bici, percorso fatto e da fare, cuore su giallo, pulsante giallo,
-  «Save» nel contorno, il motore sul telefono (che usa ancora il server).
-  **Da fare, con il server per primo**: aggiornarlo a `main` (motore di
-  TASK-223 e TASK-230, migrazioni `0014` e `0015`, `/phone-zones`), poi
-  `draw_examples`, poi pubblicare l'app. Fino ad allora `main` **non si
-  pubblica**: l'API di oggi rifiuta le quattro forme nuove di TASK-223 B.
-  L'utente ha chiesto di finire (2026-10-05); il deploy dalla sessione del
-  coordinatore è stato negato dal controllo dei permessi e aspetta una
-  regola di permesso o l'utente. Strava spento finché l'utente non scrive
-  il secret sul server.
+- **Server e app, al 2026-10-05**. **Server**: su `main` `3b6e821` dalle
+  02:42Z (ok dell'utente «Sì, aggiorna e pubblica», sessione di TASK-231),
+  con le migrazioni `0001`–`0015`, il motore di TASK-223 e TASK-230,
+  `/phone-zones` (le zone del telefono non sono ancora costruite), gli
+  esempi ridisegnati per 66 città su 66; immagine di prima
+  `shaperoute-api:before-task223`, copia del database
+  `shaperoute-2026-10-05T0241Z.dump`. **App** su `preview` da `main`
+  `e7bc8c1` (gruppo `f8951439`): le quattro forme nuove, la canoa in
+  «Explore» con otto forme, «Offline maps», «Share», le reazioni, il
+  confronto dei km nella voce. **Da provare sull'iPhone.** In `main` dopo:
+  TASK-226 A (#310, il motore dei pezzi sull'acqua): il server vuole un
+  altro aggiornamento con `draw_examples`, con l'ok dell'utente, **prima**
+  di pubblicare la parte B di TASK-226 (l'app). Strava spento finché
+  l'utente non scrive il secret sul server.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -238,6 +237,16 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   Mancano il cerchio da 20 km, Levico e Padova, quando Overpass riapre. Il
   miglioramento delle forme in bici è TASK-206, qui sotto. Da dove
   riprendere: il task file, «Esito», «I campioni».
+- **TASK-232 — Forme inclinate fino a 45°, con la mappa girata**
+  (ADR-0195; Todo, chiesto dall'utente il 2026-10-05): il motore inclina
+  ogni forma fino a ±45° quando segue meglio le strade (oggi ±15°,
+  ADR-0038), il risultato dice di quanto (`rotation_deg`), e l'app gira
+  la mappa perché il disegno si veda dritto. Parte A (motore e API) dopo
+  TASK-226, parti B e C (app, corse salvate) dopo TASK-119 B. Scelto
+  dall'utente: una freccia del nord che rimette il nord in alto, e
+  durante la corsa la mappa resta girata come il disegno, con le linee
+  del percorso fatto e da fare (TASK-224) che girano con lei.
+  `tasks/TASK-232.md`.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,

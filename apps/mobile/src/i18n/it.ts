@@ -271,6 +271,23 @@ export const IT: Table = {
   "My activities": "Le mie attività",
   Settings: "Impostazioni",
 
+  // src/settings/EmailSetting.tsx, PhoneSetting.tsx, contactFields.ts (TASK-183)
+  "NEW EMAIL": "NUOVA EMAIL",
+  "PHONE NUMBER": "NUMERO DI TELEFONO",
+  Add: "Aggiungi",
+  "Remove number": "Togli il numero",
+  "Only you see your number. Friends who already have it will be able to find you on Sgrava.":
+    "Il numero lo vedi solo tu. Gli amici che lo hanno già potranno trovarti su Sgrava.",
+  "Changing the email is not available on this API yet.":
+    "Su questa API non si può ancora cambiare l'email.",
+  "The phone number is not available on this API yet.":
+    "Su questa API il numero di telefono non c'è ancora.",
+  "This is already the email of your account.": "È già l'email del tuo account.",
+  "Write the number with its country code, like +39 333 123 4567.":
+    "Scrivi il numero con il prefisso del paese, come +39 333 123 4567.",
+  "Wrong password.": "Password sbagliata.",
+  "Another account has this email.": "Un altro account ha questa email.",
+
   // src/profile/SettingsPage.tsx
   "Change email": "Cambia email",
   "Phone number": "Numero di telefono",

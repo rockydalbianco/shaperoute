@@ -10253,3 +10253,75 @@ solo scrivendone il nome.
 - I campioni restano in memoria per un'apertura dell'app; riaperti, il
   server risponde subito da quelli tenuti.
 - TASK-214 B2 può chiedere i paesi vicini allo stesso endpoint.
+
+## ADR-0150 — Cambiare email e numero di telefono: l'email con la password e senza mail di conferma, il numero privato e non provato
+**Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
+(TASK-183), dentro le **scelte dell'utente** del 2026-10-05: il numero di
+telefono serve a farsi trovare dagli amici che lo hanno già, e il cambio
+email vale subito, con la password, finché non c'è un servizio di posta.
+Numero tenuto dal coordinatore dal 2026-10-02.
+
+**Contesto**: «Change email» e «Phone number» erano in «Settings» con
+«Soon» (ADR-0145). L'API non manda email (nessun servizio di posta: è
+anche il motivo per cui la password dimenticata non c'è, TASK-114) e non
+manda SMS.
+
+**Decisione**:
+
+1. **Due endpoint nuovi, non `PATCH /me`**: `PUT /me/email` e
+   `PUT /me/phone`, in `contact.py`. `PATCH /me` (ADR-0128) cambia quello
+   che gli altri vedono e non chiede la password; l'email è la chiave con
+   cui si entra e la chiede. Tenerli separati lascia `PATCH /me` com'è per
+   l'app pubblicata.
+2. **L'email cambia con la password dell'account**, riscritta: il token da
+   solo, su un telefono lasciato sbloccato, non basta a portare l'account
+   a un altro indirizzo. La password sbagliata è `403 wrong_credentials`
+   (non `401`: la sessione vale ancora, e l'app non deve uscire) e conta
+   con le password sbagliate dell'accesso, per l'email di adesso: dopo 5
+   in 15 minuti, `429` qui e all'accesso.
+3. **Niente mail di conferma**: il nuovo indirizzo vale subito. Chi lo
+   scrive sbagliato e poi esce non rientra più, perché non c'è ancora la
+   password dimenticata: per questo «Settings» mostra subito il nuovo
+   indirizzo, sopra la riga. Quando ci sarà la posta: conferma al nuovo
+   indirizzo e avviso al vecchio.
+4. **Le altre sessioni restano aperte**: cambiare email non è cambiare
+   password.
+5. **Il numero di telefono** sta in `users.phone`, in E.164 («+» e da 8 a
+   15 cifre), `NULL` senza. Si scrive con il prefisso del paese; spazi,
+   trattini, punti, barre e parentesi si tolgono, «00» davanti vale «+».
+   Senza prefisso è rifiutato: indovinare il paese vorrebbe una libreria
+   dei numeri (dipendenza nuova) o la posizione.
+6. **Il numero non è provato, quindi non è unico**: nessun SMS dice che è
+   di chi lo scrive. Due account possono avere lo stesso numero, e
+   l'API non dice a nessuno se un numero è già di un account.
+7. **Lo vede solo il proprietario** (`GET /me`): mai in `PublicProfile`,
+   nella ricerca, negli elenchi. `DELETE /me` lo cancella con la riga.
+8. **Nell'app** le due righe si aprono sotto, come «Language» e «Profile
+   picture»; sotto il campo del numero: «Only you see your number. Friends
+   who already have it will be able to find you on Sgrava.».
+
+**Alternative scartate**:
+
+- **Aspettare il servizio di posta** per il cambio email: proposto
+  all'utente, che ha scelto di farlo subito con la password.
+- **Il numero unico**: senza prova, chi scrive per primo il numero di un
+  altro glielo toglie, e l'errore «numero già usato» dice a chiunque chi
+  è iscritto.
+- **Solo cifre nazionali** («333 123 4567»): due paesi hanno gli stessi
+  numeri; la rubrica di un amico li ha quasi sempre con il prefisso o li
+  porta a E.164 il telefono.
+- **`401` per la password sbagliata**: l'app lo legge come sessione finita
+  ed esce.
+
+**Conseguenze**:
+
+- **La ricerca dalla rubrica non c'è ancora**, e prima di farla va deciso
+  come si prova un numero (SMS, un servizio a pagamento): oggi chiunque
+  può scrivere il numero di un altro e farsi trovare al suo posto. La
+  frase nell'app dice «will be able», non «can».
+- La privacy (TASK-184) deve dire che il numero è facoltativo, a cosa
+  serve e che si toglie da «Settings».
+- Migrazione nuova (`0016_contact.sql`, il primo numero libero al merge):
+  serve l'aggiornamento del server prima di pubblicare l'app. Un'API di
+  prima risponde `404` ai due `PUT` e l'app lo dice in parole; il suo
+  `User` non ha `phone` e l'app lo legge come «nessun numero».

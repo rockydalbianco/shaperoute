@@ -678,6 +678,32 @@ motore.)
 - **Tempi** sulle fixture del motore: 0,1–1 s un piano, l'acqua letta
   dalla cache in un attimo; un download Overpass non è mai stato misurato
   (task file).
+- **La forma spostata dall'utente** (TASK-238, ADR-0202): il risultato di
+  un percorso sull'acqua ha `centre`, `[lat, lon]`, il centro della forma
+  come è stata messa (su strada `null`). La richiesta può avere `near`,
+  `[lat, lon]`: dove l'utente vuole quel centro, cioè il `centre` di prima
+  spostato. Il motore mette la forma **nel posto più vicino a `near` in cui
+  ci sta**: nella fascia, con una riva raggiungibile a piedi entro 300 m,
+  entro 2 km dalla `start`, che resta quella della prima richiesta. Può
+  quindi rispondere con un `centre` diverso da `near`, e con una forma un
+  po' più piccola o inclinata. `near` uguale al `centre` ricevuto dà lo
+  stesso percorso.
+
+  ```json
+  { "start": [44.0007, 12.6513], "shape": "heart", "distance_m": 2000,
+    "activity": "paddling", "near": [44.0041, 12.6569] }
+  ```
+
+  (`fixtures/route-request-paddling-near.json`,
+  `fixtures/route-result-paddling.json`.) Con un'altra attività `near` è
+  `422 invalid_request`, `a shape is placed near a point only on the
+  water`; così una latitudine o una longitudine impossibili. Gli errori
+  sono quelli di ogni richiesta sull'acqua. Un percorso spostato **non si
+  tiene** fra gli esempi (`route_store`): è di chi l'ha spostato. I due
+  campi sono facoltativi: un'app di prima non manda `near` e ignora
+  `centre`; un'API di prima rifiuta `near` (`extra="forbid"`), quindi l'app
+  offre lo spostamento solo quando il risultato ha `centre`. Tempi
+  sull'acqua vera (Garda, Como, Jesolo, Riccione, 2 km): 1–6 s.
 
 ### Una parola invece di una forma (TASK-056)
 

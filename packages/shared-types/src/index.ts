@@ -117,6 +117,13 @@ interface RouteRequestFields {
   /** Target distance in metres, a whole number. */
   distance_m: number;
   activity: Activity;
+  /**
+   * On the water (TASK-238, ADR-0202), where the centre of the shape is
+   * wanted: `RouteResult.centre` of the route before, moved by the user. The
+   * shape is placed at the nearest place to it where it fits. Refused with
+   * another activity; absent or null leaves the place to the engine.
+   */
+  near?: LatLon | null;
 }
 
 /** A shape of the catalogue, or a word written one letter at a time: one
@@ -202,6 +209,12 @@ export interface RouteResult {
    * one, in the alternatives and on the water; missing from an older API.
    */
   better_distance_m?: number | null;
+  /**
+   * On the water, the centre of the shape as placed (TASK-238, ADR-0202):
+   * moved and sent back as the request's `near`, it moves the shape. Null on
+   * the roads; missing from an older API, whose shapes are not moved.
+   */
+  centre?: LatLon | null;
 }
 
 /** Routes besides the one chosen by the engine: three to choose from. */

@@ -1,4 +1,4 @@
-import type { Person } from "@shaperoute/shared-types";
+import type { FollowState, Person } from "@shaperoute/shared-types";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -6,6 +6,7 @@ import { sessionEnded } from "../account/messages";
 import type { AccountOutcome } from "../api/accounts";
 import {
   answerFollowRequest,
+  askToFollow,
   fetchFollowList,
   FOLLOW_LISTS,
   type FollowList,
@@ -13,6 +14,7 @@ import {
   removeFollower,
 } from "../api/follows";
 import { personPhotoUri } from "../api/people";
+import { fetchProfile } from "../api/profiles";
 import { t, tLater } from "../i18n";
 import { Avatar } from "../profile/Avatar";
 import {
@@ -73,6 +75,20 @@ function without(shown: Shown, publicId: string): Shown {
   };
 }
 
+/** `shown` with one less in its number: `publicId` stays, answered. */
+function answered(shown: Shown, publicId: string): Shown {
+  if (shown.kind !== "ready" || !shown.people.some((p) => p.public_id === publicId)) {
+    return shown;
+  }
+  return { ...shown, total: Math.max(0, shown.total - 1) };
+}
+
+/**
+ * Where the account stands towards a member it just accepted (TASK-239):
+ * unknown until the API says, then what its button to follow back shows.
+ */
+type Back = FollowState | "unknown";
+
 /** `shown` with `person` first, and one more in its number. */
 function withFirst(shown: Shown, person: Person): Shown {
   if (shown.kind !== "ready") {
@@ -88,19 +104,33 @@ function withFirst(shown: Shown, person: Person): Shown {
 /**
  * Who follows the account, in «Profile» (TASK-211, ADR-0173): three
  * numbers, «Requests», «Followers» and «Following», and under them the
- * list of the one touched. A request is accepted or declined here, the
- * only place that shows it; a follower can be removed; a name opens the
- * member's profile. Nothing with an API older than following.
+ * list of the one touched. A request is accepted or declined here; a
+ * follower can be removed; a name opens the member's profile. Nothing with
+ * an API older than following.
+ *
+ * With someone waiting when «Profile» opens, «Requests» is open from the
+ * start, and a request accepted stays in its row with «Follow back»
+ * (TASK-239): the answer and the way to follow in turn are one tap apart.
  */
 export function FollowLists({ fetchFn, apiKey }: Props) {
-  const { apiUrl, account, openProfile } = useFollowsDoor();
+  const {
+    apiUrl,
+    account,
+    openProfile,
+    requests: waitingAtFirst = 0,
+    onRequests,
+  } = useFollowsDoor();
   const { state, sessionEnded: onSessionEnded } = account;
   const token = state.status === "signedIn" ? state.session.token : null;
   // The lists of one account: another's are not this one's.
   const [answer, setAnswer] = useState<{ asked: string; lists: Lists } | null>(null);
   // An API older than TASK-211 has no lists.
   const [off, setOff] = useState(false);
-  const [open, setOpen] = useState<FollowList | null>(null);
+  const [open, setOpen] = useState<FollowList | null>(
+    waitingAtFirst > 0 ? "requests" : null,
+  );
+  // The members accepted since the lists came, still in «Requests».
+  const [accepted, setAccepted] = useState<Record<string, Back>>({});
   // The member a request is on its way for: no second tap.
   const [busy, setBusy] = useState<string | null>(null);
   // The follower «Remove» was touched for: it asks first.
@@ -145,12 +175,20 @@ export function FollowLists({ fetchFn, apiKey }: Props) {
     };
   }, [apiKey, apiUrl, fetchFn, onSessionEnded, token]);
 
+  const lists = answer !== null && answer.asked === token ? answer.lists : LOADING;
+  // The number the way to «Profile» shows: the lists have the newest.
+  const waiting = lists.requests.kind === "ready" ? lists.requests.total : null;
+  useEffect(() => {
+    if (waiting !== null) {
+      onRequests?.(waiting);
+    }
+  }, [onRequests, waiting]);
+
   if (token === null || apiUrl === null || off) {
     return null;
   }
   const url = apiUrl;
   const asked = token;
-  const lists = answer !== null && answer.asked === token ? answer.lists : LOADING;
 
   function change(next: (lists: Lists) => Lists) {
     setAnswer((was) =>
@@ -159,10 +197,10 @@ export function FollowLists({ fetchFn, apiKey }: Props) {
   }
 
   /** Sends what was asked about `person`, and shows what came of it. */
-  function send(
+  function send<T>(
     person: Person,
-    request: Promise<AccountOutcome<null>>,
-    done: (lists: Lists) => Lists,
+    request: Promise<AccountOutcome<T>>,
+    done: (value: T) => void,
   ) {
     setBusy(person.public_id);
     setProblem(null);
@@ -170,7 +208,7 @@ export function FollowLists({ fetchFn, apiKey }: Props) {
     void request.then((outcome) => {
       setBusy(null);
       if (outcome.kind === "ok") {
-        change(done);
+        done(outcome.value);
         return;
       }
       setProblem(followProblem(outcome));
@@ -180,26 +218,58 @@ export function FollowLists({ fetchFn, apiKey }: Props) {
     });
   }
 
+  function stands(person: Person, back: Back) {
+    setAccepted((was) => ({ ...was, [person.public_id]: back }));
+  }
+
   function answerRequest(person: Person, reply: "accept" | "decline") {
     const id = person.public_id;
     send(
       person,
       answerFollowRequest(url, asked, id, reply, { fetchFn, key: apiKey }),
-      (was) => ({
-        ...was,
-        requests: without(was.requests, id),
-        followers:
-          reply === "accept" ? withFirst(was.followers, person) : was.followers,
-      }),
+      () => {
+        if (reply === "decline") {
+          change((was) => ({ ...was, requests: without(was.requests, id) }));
+          return;
+        }
+        // Accepted: the row stays, to follow back from it.
+        change((was) => ({
+          ...was,
+          requests: answered(was.requests, id),
+          followers: withFirst(was.followers, person),
+        }));
+        stands(person, "unknown");
+        // Followed already, or asked: the row says so. Without an answer
+        // «Follow back» is shown: asking twice changes nothing.
+        void fetchProfile(url, asked, id, { fetchFn, key: apiKey }).then((outcome) =>
+          stands(
+            person,
+            outcome.kind === "ok" ? (outcome.value.follow ?? "none") : "none",
+          ),
+        );
+      },
+    );
+  }
+
+  function followBack(person: Person) {
+    const id = person.public_id;
+    send(
+      person,
+      askToFollow(url, asked, id, { fetchFn, key: apiKey }),
+      ({ follow }) => {
+        stands(person, follow);
+        if (follow === "following") {
+          change((was) => ({ ...was, following: withFirst(was.following, person) }));
+        }
+      },
     );
   }
 
   function remove(person: Person) {
     const id = person.public_id;
-    send(person, removeFollower(url, asked, id, { fetchFn, key: apiKey }), (was) => ({
-      ...was,
-      followers: without(was.followers, id),
-    }));
+    send(person, removeFollower(url, asked, id, { fetchFn, key: apiKey }), () =>
+      change((was) => ({ ...was, followers: without(was.followers, id) })),
+    );
   }
 
   function loadMore(list: FollowList) {
@@ -269,7 +339,7 @@ export function FollowLists({ fetchFn, apiKey }: Props) {
                   {count !== null ? String(count) : "–"}
                 </Text>
                 {list === "requests" && count !== null && count > 0 && (
-                  // Someone waits for an answer: the only place that says it.
+                  // Someone waits for an answer: red, as on the way to «Profile».
                   <View style={styles.dot} testID="requests-waiting" />
                 )}
               </View>
@@ -297,6 +367,7 @@ export function FollowLists({ fetchFn, apiKey }: Props) {
           {shown.kind === "ready" &&
             shown.people.map((person) => {
               const waiting = busy === person.public_id;
+              const back = open === "requests" ? accepted[person.public_id] : undefined;
               return (
                 <View key={person.public_id} style={styles.member}>
                   <View style={styles.row}>
@@ -315,7 +386,21 @@ export function FollowLists({ fetchFn, apiKey }: Props) {
                         {person.username}
                       </Text>
                     </Pressable>
-                    {open === "requests" && (
+                    {back === "none" && (
+                      <Action
+                        text={t("Follow back")}
+                        label={t("Follow {name} back", { name: person.username })}
+                        strong
+                        disabled={waiting}
+                        onPress={() => followBack(person)}
+                      />
+                    )}
+                    {(back === "requested" || back === "following") && (
+                      <Text style={styles.stands} testID="accepted-stands">
+                        {t(back === "requested" ? "Requested" : "Following")}
+                      </Text>
+                    )}
+                    {open === "requests" && back === undefined && (
                       <>
                         <Action
                           text={t("Accept")}
@@ -464,12 +549,12 @@ const styles = StyleSheet.create({
   numberUnknown: {
     color: color.textFaint,
   },
-  // Not yellow, which is the route's: `warning` is what asks for attention.
+  // Red, as the number on the way to «Profile» (TASK-239).
   dot: {
     width: space.sm,
     height: space.sm,
     borderRadius: radius.pill,
-    backgroundColor: color.warning,
+    backgroundColor: color.badge,
   },
   countName: {
     color: color.textMuted,
@@ -510,6 +595,13 @@ const styles = StyleSheet.create({
     color: color.text,
     fontSize: fontSize.body,
     fontWeight: fontWeight.bold,
+  },
+  // Where the account stands towards a member accepted: said, not a button.
+  stands: {
+    paddingHorizontal: space.md,
+    color: color.textMuted,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.semibold,
   },
   action: {
     minHeight: MIN_TAP_SIZE,

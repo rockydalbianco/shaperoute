@@ -503,6 +503,29 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-241: niente punteggio sulle foto dei post del «Feed»
+  (ADR-0207; chiesto dall'utente il 2026-10-05). Il riquadro «98 · out of
+  100» sopra il disegno non c'è più, nemmeno nei post che «Explore» mostra
+  mentre disegna una città. VoiceOver lo legge ancora: cambiarlo vuole i
+  file delle lingue, che erano di TASK-239. Altrove (fine corsa, «My
+  activities», disegno aperto dal «Profile», post da condividere) il
+  punteggio resta. Esce con la prossima pubblicazione.
+  `tasks/TASK-241.md`.
+
+- **App** — TASK-239: il numero rosso delle richieste di follow, e
+  «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).
+  Sul pulsante di «Profile», in alto a destra, un tondo rosso con quante
+  richieste di follow aspettano: l'app lo chiede all'apertura, al ritorno
+  sullo schermo e ogni minuto mentre è aperta (`social/followRequests.ts`,
+  `GET /me/follow-requests?limit=1`). «Profile» si apre con «Requests» già
+  aperto; una richiesta accettata resta nella riga con «Follow back».
+  Nessuna modifica all'API. **Confermati dall'utente** (2026-10-05): il
+  numero, che si spegne quando ogni richiesta ha una risposta, i testi e il
+  giro al minuto. **Non visto su un telefono**: esce con la prossima
+  pubblicazione (del coordinatore, con l'ok dell'utente); da provare
+  sull'iPhone con due account. Le notifiche ad app chiusa restano
+  TASK-185. `tasks/TASK-239.md`.
+
 - **App e API** — TASK-236: i paesi vicini sotto «Near me» (ADR-0200;
   chiesto dall'utente il 2026-10-05, regola, testi e campioni confermati
   uno per uno; PR #323, merge `8c3a6ff`). In «Explore», con «Near me»,
@@ -521,6 +544,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   **Sul server** dal 2026-10-05 09:32Z (`f3fdbce`) e **su `preview`** da
   `8c3a6ff` (gruppo `8f6849ca`), fatti dal coordinatore. Da provare
   sull'iPhone: le sei schede. Seguiti in `tasks/TASK-236.md`.
+
 - **Motore, API e app** — TASK-234: «Viene meglio a N km» (ADR-0197;
   chiesto dall'utente il 2026-10-05, il «passo 1»; PR #327, merge
   `784cc03`, e #336, merge `db2c30e`). Quando un percorso riesce ma la

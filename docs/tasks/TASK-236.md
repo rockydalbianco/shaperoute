@@ -1,6 +1,6 @@
 # TASK-236 — I paesi vicini sotto «Near me»
 
-**Stato**: In revisione (PR aperta)
+**Stato**: Done (2026-10-05, PR #323, merge `8c3a6ff`)
 **Fase**: 4 · **Branch**: `feat/TASK-236-nearby-towns`
 **Dipende da**: TASK-129, TASK-143, TASK-168, TASK-176 (in `main`) ·
 **ADR**: ADR-0200
@@ -116,4 +116,23 @@ cambia.
 
 ## Esito
 
-*(a fine task)*
+In `main` dal 2026-10-05 09:27Z (PR #323, merge `8c3a6ff`): l'endpoint
+`GET /nearby-cities`, la sezione «NEARBY TOWNS» sotto «Near me» con fino a
+sei posti e i campioni chiesti in sottofondo. Regola, testi e tre campioni
+confermati dall'utente. Emerso provando nel simulatore: uvicorn chiude una
+connessione ferma da 5 s, l'intervallo fra due campioni, e una richiesta su
+sei andava persa; ora si rifà una volta.
+
+Rimandato:
+
+- **La prova sull'iPhone**, anche delle sei schede (nel simulatore se ne
+  sono viste quattro). Il server ha l'endpoint dal 2026-10-05 09:32Z
+  (`f3fdbce`) e l'app è su `preview` da `8c3a6ff` (gruppo `8f6849ca`):
+  fatti dal coordinatore.
+- **La zona di Borgo Valsugana** non è stata scaricata sul Mac: Overpass
+  rifiutava la connessione il 2026-10-05 e sul Mac manca `osmium` per
+  `prefetch_zones --extract`. Sul server le zone dei paesi si possono
+  costruire dall'estratto senza Overpass, con l'ok dell'utente.
+- I seguiti di «Fuori scope»: il segnale `via: "nearby"` negli
+  `insights`, i campioni tenuti sul telefono, TASK-214 B2 che usa
+  l'endpoint.

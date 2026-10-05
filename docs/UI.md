@@ -52,6 +52,7 @@ ciano di «Start here».
 | `textFaint` | `#8A8A90` | il testo più tenue ancora leggibile (5,8:1), non per il corpo |
 | `warning` | `#FF7A59` | gli avvisi sul percorso prodotto |
 | `error` | `#FF6B6B` | una richiesta fallita |
+| `badge`, `onBadge` | `#E02D2D`, `#FFFFFF` | qualcuno aspetta una risposta: il numero delle richieste di follow sul pulsante di «Profile» e il pallino di «Requests» (TASK-239, rosso per scelta dell'utente); il numero è bianco, 4,6:1 |
 | `startHere` | `#4DD2FF` | il segnaposto «Start here» (ADR-0040) |
 | `strava`, `onStrava` | `#FC5200`, `#FFFFFF` | nessuno dal TASK-218: «Connect with Strava» (TASK-187) ora è l'immagine ufficiale di Strava, con i suoi colori dentro (ADR-0181); da togliere quando `tokens.ts` è libero |
 | `map.*` | dal `#0D0E10` al `#3A3D45` | fondo, acqua, verde, costruito, edifici, quattro livelli di strade, nomi dei luoghi |
@@ -593,8 +594,8 @@ mappa è quella di prima.
   e grigio, «Maps download on Wi-Fi and mobile data.». «Delete» cancella
   subito, senza chiedere: le mappe tornano alla prossima apertura, con la
   riga sopra «Draw route». Il numero cresce anche da solo: dopo la zona
-  intorno, il telefono scarica piano piano quelle delle città di
-  «Explore», senza avvisi (TASK-214, parte B2). Poi «Units», «Soon». **«Notifications»**: «Email
+  intorno, il telefono scarica piano piano quelle dei paesi vicini e
+  delle città di «Explore», senza avvisi (TASK-214, parte B2). Poi «Units», «Soon». **«Notifications»**: «Email
   notifications» e «Push notifications», «Soon». **«About»**: «Help»,
   «Terms», «Privacy», «Soon».
 - In fondo **«Log out»** e **«Delete account»**, in rosso, che chiede prima
@@ -678,19 +679,34 @@ perché. Sul proprio profilo il tasto non c'è.
 **In «Profile»**, sotto «Edit profile», tre riquadri con un numero:
 **«Requests»**, **«Followers»**, **«Following»** (un trattino finché non
 arrivano). Uno toccato apre sotto il suo elenco, toccato di nuovo lo
-richiude. «Requests» ha un pallino arancio (`warning`) quando qualcuno
-aspetta: è l'unico posto che lo dice, finché non ci sono le notifiche
-(TASK-185). Ogni riga ha la foto (o l'iniziale) e il nome, che toccato
-apre il profilo di quella persona sopra l'app; «←» torna a «Profile».
+richiude. «Requests» ha un pallino rosso (`badge`) quando qualcuno
+aspetta, e in quel caso il suo elenco è **già aperto** quando «Profile»
+si apre (TASK-239). Ogni riga ha la foto (o l'iniziale) e il nome, che
+toccato apre il profilo di quella persona sopra l'app; «←» torna a
+«Profile».
+
+**Il numero rosso** (TASK-239, ADR-0203; chiesto dall'utente, testi
+**confermati** il 2026-10-05). Quando qualcuno chiede di seguirti, il pulsante di
+«Profile» in alto a destra nelle pagine ha un tondo rosso col numero
+delle richieste in attesa («9+» oltre nove), sopra il suo angolo in alto a
+destra; VoiceOver dice «Profile, 2 follow requests». L'app lo chiede
+all'apertura, ogni minuto mentre è sullo schermo e quando ci torna: una
+richiesta nuova si vede da sola, senza aprire «Profile». Sparisce quando
+ogni richiesta ha avuto «Accept» o «Decline»: guardarle non basta. Ad app
+chiusa non arriva niente: le notifiche del telefono sono TASK-185.
 
 | Elenco | Tasti della riga | Vuoto |
 |---|---|---|
-| «Requests» | «Accept» (bianco), «Decline» | Nobody is asking to follow you. |
+| «Requests» | «Accept» (bianco), «Decline»; accettata: «Follow back» (bianco) | Nobody is asking to follow you. |
 | «Followers» | «Remove», che chiede «Remove {name} from your followers?» con «Keep it» e «Remove» | Nobody follows you yet. |
 | «Following» | nessuno: si smette dal profilo | You are not following anyone yet. Find friends from Feed. |
 
-Accettata, la persona passa subito in «Followers». Venti per volta, poi
-«Show more». Con un server senza gli elenchi i tre riquadri non ci sono.
+Accettata, la persona passa subito in «Followers» e **resta nella sua
+riga** di «Requests» finché «Profile» è aperto (TASK-239): al posto dei due
+tasti c'è **«Follow back»**, che manda la tua richiesta e diventa la
+scritta «Requested» (o «Following», se l'altro ti aveva già accettato). Se
+lo segui già, o hai già chiesto, la riga lo dice subito e il tasto non
+c'è. Venti per volta, poi «Show more». Con un server senza gli elenchi i tre riquadri non ci sono.
 
 - **Chiusa e riaperta**, l'app è già dentro: la sessione sta nel
   portachiavi del telefono. All'apertura chiede all'API (`GET /me`) se vale

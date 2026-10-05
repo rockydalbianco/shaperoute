@@ -44,17 +44,6 @@ ora ha il database e il server. Gli altri Todo.
 
 In coda, dopo o accanto:
 
-- **TASK-236 — I paesi vicini sotto «Near me»** (ADR-0200, chiesto
-  dall'utente il 2026-10-05): in «Explore», con «Near me», la sezione
-  «NEARBY TOWNS» con fino a sei posti intorno alla partenza (quattro paesi
-  entro 20 km, o fino a 50 dove sono pochi, più i due più vicini anche se
-  piccoli: risposta dell'utente), da `GET /nearby-cities`; mentre è
-  sulla pagina l'app fa disegnare al server i primi tre esempi di ognuno,
-  e la scheda ne mostra uno. Corsa e bici; la canoa ha i laghi vicini
-  (TASK-233). In revisione; **mancano** il server (l'endpoint: senza, la
-  sezione non compare) e la pubblicazione, con l'ok dell'utente. Regola,
-  testi e tre campioni per posto confermati dall'utente
-  (`tasks/TASK-236.md`).
 - **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
   posizioni non si salva; il GPX di una corsa salvata; il cuore dei
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
@@ -128,21 +117,25 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `fd14cd3` dalle
-  08:54Z (ok dell'utente «sì pubblica, ok server», sessione del
-  coordinatore), con le migrazioni `0001`–`0015`, il motore di TASK-234 A
-  (`better_distance_m` nel risultato: un cuore da 5 km a Trento in 9 s,
-  senza consiglio) e il tetto del traffico di TASK-214 A2; fermo circa 15
-  secondi; immagine di prima `shaperoute-api:before-task234`, copia del
-  database `shaperoute-2026-10-05T0853Z.dump`; `draw_examples` rilanciato
-  alle 08:56Z (`data/draw-examples-2026-10-05-task234.log`). Ha l'acqua
-  dei laghi d'Italia (TASK-233: 219 file, 71 MB). `/phone-zones` c'è, le
-  zone del telefono non sono ancora costruite; `/nearby-cities` arriva
-  con la #323. **App** su `preview` da `main` `fd14cd3` (gruppo
-  `da4e955c`): «Follow» (#320), il «Feed» sull'acqua (#322), i laghi in
-  «Explore» (#319, #328), la pubblicità nel «Feed» (#324, non si vede in
-  Expo Go). **Da provare sull'iPhone.** Strava spento per scelta
-  dell'utente (2026-10-05: «teniamo solo Instagram per ora»).
+- **Server e app, al 2026-10-05**. **Server**: su `main` `f3fdbce` dalle
+  09:32Z (secondo ok dell'utente «sì pubblica, ok server», sessione del
+  coordinatore), con le migrazioni `0001`–`0015`, `GET /nearby-cities`
+  (TASK-236: da Caldonazzo risponde in 0,8 s con Calceranica, Levico,
+  Pergine, Trento, Borgo), il motore di TASK-234 A (in `fd14cd3` dalle
+  08:54Z, esempi ridisegnati per 66 città su 66) e il tetto del traffico
+  di TASK-214 A2; fermo circa 14 secondi; immagine di prima
+  `shaperoute-api:before-task236`, copia del database
+  `shaperoute-2026-10-05T0931Z.dump`. Ha l'acqua dei laghi d'Italia
+  (TASK-233: 219 file, 71 MB). **Le zone del telefono non sono scritte**:
+  in cache ci sono 521 grafi e 3 file per il telefono; scriverli tutti
+  sarebbe circa 2,9 GB e 2–3,5 ore, da chiarire con TASK-214 prima
+  dell'ok dell'utente. **App** su `preview` da `main` `8c3a6ff` (gruppo
+  `8f6849ca`): «Follow», il «Feed» sull'acqua, i laghi in «Explore», la
+  pubblicità nel «Feed» (non si vede in Expo Go), «Try N km» (#336), i
+  paesi vicini sotto «Near me» (#323). **Non pubblicata**: la parte B2 di
+  TASK-214 (#337, le zone scaricate in anticipo), in `main` da `f3fdbce`.
+  **Da provare sull'iPhone.** Strava spento per scelta dell'utente
+  (2026-10-05: «teniamo solo Instagram per ora»).
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -190,21 +183,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (TASK-152), dominio e pubblicazione, e per il merch il servizio di
   stampa, magliette e prezzi. Come si cambia e come si guarda:
   `SITO.md`. Da dove riprendere: `tasks/TASK-237.md`, «Esito».
-- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; chiesto
-  dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
-  riesce ma un tentativo già tracciato a un'altra distanza segue la forma
-  chiaramente meglio, l'API manda `better_distance_m` e l'app scrive la
-  riga con «Try N km». Il percorso scelto non cambia. **Parte A, motore e
-  API**, in `main` dalla #327 (784cc03, 2026-10-05): il campo nel
-  risultato, anche da una partenza vicina, `null` nelle alternative;
-  `engine.zip` ed esempi della canoa rifatti. **Misura**: scatta in 8
-  percorsi su 129, nessuno dei 12 di riferimento in cache (`MAPS.md`);
-  l'utente: «sì, fai la parte B come previsto». **Parte B, l'app**, in PR:
-  la riga sotto le tessere con «Try N km», testi nelle cinque lingue
-  confermati dall'utente; provata nel simulatore. Il server ha la parte
-  A da `main` `fd14cd3` (2026-10-05 08:54Z, ok dell'utente, il
-  coordinatore), con `draw_examples` rilanciato: la B si pubblica appena
-  è in `main`. `tasks/TASK-234.md`.
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal
@@ -512,11 +490,12 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   MB al giorno per telefono e 300 GB in tutto; oltre, `429` con
   `Retry-After` fino alla mezzanotte UTC, e l'app non ne chiede altre fino
   ad allora. Conteggio in memoria: un riavvio lo rimette a zero. Sul
-  server dal 2026-10-05, 08:54Z. **Parte B2**, le zone in più, in PR (2026-10-05): finite le
-  zone intorno al telefono, una alla volta, quelle delle città scelte per
+  server dal 2026-10-05, 08:54Z. **Parte B2**, le zone in più, in `main`
+  dalla #337 (`f3fdbce`, 2026-10-05, non pubblicata): finite le zone
+  intorno al telefono, una alla volta, quelle dei paesi vicini
+  (`/nearby-cities` di TASK-236: la B2b, in PR), delle città scelte per
   ultime in «Explore» e delle 14 in evidenza, dalla più vicina, con
-  `prefetch=1`, fino a 2 GB; un giro intero al giorno. Le città vicine
-  (TASK-236) si aggiungono dopo la #323. Il server ha A2 dalle 08:54Z;
+  `prefetch=1`, fino a 2 GB; un giro intero al giorno. Il server ha A2 dalle 08:54Z;
   meglio pubblicare dopo aver scritto lì le zone del telefono (se no la
   prima richiesta di ogni zona la fa scrivere, ~50 s per Milano).
   **Dopo**: D, la prova sull'iPhone, con le zone del telefono sul server.
@@ -524,6 +503,50 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **App** — TASK-239: il numero rosso delle richieste di follow, e
+  «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).
+  Sul pulsante di «Profile», in alto a destra, un tondo rosso con quante
+  richieste di follow aspettano: l'app lo chiede all'apertura, al ritorno
+  sullo schermo e ogni minuto mentre è aperta (`social/followRequests.ts`,
+  `GET /me/follow-requests?limit=1`). «Profile» si apre con «Requests» già
+  aperto; una richiesta accettata resta nella riga con «Follow back».
+  Nessuna modifica all'API. **Confermati dall'utente** (2026-10-05): il
+  numero, che si spegne quando ogni richiesta ha una risposta, i testi e il
+  giro al minuto. **Non visto su un telefono**: esce con la prossima
+  pubblicazione (del coordinatore, con l'ok dell'utente); da provare
+  sull'iPhone con due account. Le notifiche ad app chiusa restano
+  TASK-185. `tasks/TASK-239.md`.
+
+- **App e API** — TASK-236: i paesi vicini sotto «Near me» (ADR-0200;
+  chiesto dall'utente il 2026-10-05, regola, testi e campioni confermati
+  uno per uno; PR #323, merge `8c3a6ff`). In «Explore», con «Near me»,
+  sotto la fila delle città c'è «NEARBY TOWNS»: una fila di schede da
+  scorrere con fino a sei posti intorno alla partenza, dal più vicino:
+  quattro città e paesi (i più grandi entro 20 km; dove sono meno, i più
+  vicini fino a 50) e i due posti più vicini di tutti, anche villaggi (da
+  Caldonazzo: Tenna, Calceranica, Levico, Pergine, Trento, Borgo). Vengono
+  da `GET /nearby-cities` (`nearby_cities.py`, Places di Geoapify, la
+  chiave resta nell'API). Mentre la sezione è sulla pagina l'app fa
+  disegnare al server cerchio, cuore e stella da 5 km di ogni posto, uno
+  alla volta e al più 12 al minuto: la scheda mostra il cuore, e il paese
+  toccato si apre con le prime tre schede pronte. Corsa e bici (stessi
+  esempi della corsa); la canoa ha i laghi vicini (TASK-233). Provato nel
+  simulatore con l'API del branch, prima dei due posti più vicini.
+  **Sul server** dal 2026-10-05 09:32Z (`f3fdbce`) e **su `preview`** da
+  `8c3a6ff` (gruppo `8f6849ca`), fatti dal coordinatore. Da provare
+  sull'iPhone: le sei schede. Seguiti in `tasks/TASK-236.md`.
+
+- **Motore, API e app** — TASK-234: «Viene meglio a N km» (ADR-0197;
+  chiesto dall'utente il 2026-10-05, il «passo 1»; PR #327, merge
+  `784cc03`, e #336, merge `db2c30e`). Quando un percorso riesce ma la
+  ricerca ha già visto la forma chiaramente meglio a un'altra distanza,
+  l'API manda `better_distance_m` e «Draw» scrive sotto le tessere «This
+  shape comes out better at about 8 km.» con «Try 8 km», che ridisegna a
+  quella distanza (testi nelle cinque lingue confermati dall'utente). Il
+  percorso scelto non cambia. Scatta poco: 8 percorsi su 129 (`MAPS.md`);
+  il passo 2 si valuta dopo. Sul server da `fd14cd3`; l'app esce con la
+  prossima pubblicazione; da provare sull'iPhone. `tasks/TASK-234.md`.
 
 - **App, API e server** — TASK-233: «Explore» della canoa come la corsa, e
   tutti i laghi (ADR-0196; chiesto dall'utente il 2026-10-05, scelte

@@ -3575,6 +3575,14 @@ passa com'è e guarda solo l'inizio dell'attesa. L'ID dell'app AdMob vero
 dell'utente sostituisce quello di prova in `app.json`; l'unità resta quella
 di prova di Google fino a TASK-153.
 
+**Aggiornamento 2026-10-05 (TASK-235, ADR-0198)**: l'annuncio a schermo
+intero all'inizio di ogni ricerca non c'è più, scelta dell'utente: la
+pubblicità sta fra i post del «Feed», un annuncio nativo ogni 5 post
+(ADR-0198). `useAdBeforeRoute` e `routeAds` sono tolti. Restano AdMob, il
+consenso di Google (ora alla prima apertura del Feed, mai all'avvio),
+niente richiesta ATT, niente annunci in Expo Go. Le variabili
+`EXPO_PUBLIC_ADMOB_INTERSTITIAL_*` diventano `EXPO_PUBLIC_ADMOB_NATIVE_*`.
+
 ## ADR-0104 — I file della cache delle zone si scrivono interi o non si scrivono
 **Stato**: Attiva · 2026-10-01 · deciso dall'agente su delega dell'utente
 (TASK-133, miglioramento generale)
@@ -9615,7 +9623,8 @@ alto.
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 
-**Data**: 2026-10-05 · **Stato**: Accettato, da fare · **Task**: TASK-234 ·
+**Data**: 2026-10-05 · **Stato**: Accettato; motore e API fatti (parte A),
+l'app da fare · **Task**: TASK-234 ·
 il consiglio da tentativi già fatti (il «passo 1») e la riga con «Prova»
 sono scelte dell'utente; soglie, campo e casi sono decisi dall'agente su
 delega dell'utente · estende ADR-0041
@@ -9656,6 +9665,34 @@ provato, cioè intorno a quella chiesta (scale fra 0,4 e 1,1 di quella
 iniziale): quanto spesso scatta va misurato prima di fare l'app. Come per
 ADR-0041, la distanza consigliata non è garantita: un nuovo disegno rifà
 la ricerca.
+
+**Parte A, motore e API (2026-10-05)**, deciso dall'agente su delega
+dell'utente:
+
+- **La soglia resta 5 punti** (`BETTER_MARGIN` = `W_SHAPE × 0,05`) con
+  somiglianza ≥ 0,90: misurata su 129 percorsi (i 12 di riferimento in
+  cache, le 17 forme a Trento e Levico, tre parole), scatta in 8, a 4
+  punti negli stessi 8, a 3 in 11, con guadagni di 3–4 punti
+  (`MAPS.md`, «Viene meglio a N km»). Nessuno dei 12 di riferimento.
+- **Fuori dai limiti niente consiglio**, invece di riportarlo dentro come
+  `suggested_distance_m`: una distanza riportata al limite non è quella
+  dove la forma è venuta meglio. Per una parola il limite basso è anche
+  3 km a lettera (`check_word`), per una forma a pezzi no.
+- **Fra più distanze** si confronta il costo senza la parte della
+  distanza, il migliore per ogni km; a parità vince il km più vicino.
+- **Il calcolo sta nel motore** (`optimizer.better_distance`), già al km:
+  la CLI e il telefono (TASK-214) lo hanno uguale all'API. Lo fanno
+  `plan_shape` e `ShapeJob.here` (`nearby_starts.py`, ok del coordinatore),
+  così resta anche quando vince una partenza vicina; `plan_nearby` lo
+  toglie alle alternative.
+- **Il campo è nuovo e facoltativo** (`shared-types`, `RouteResultBody`):
+  `null` senza consiglio; le fixture di prima restano quelle di un'API
+  precedente, e una nuova (`route-result-better-distance.json`) ha tutti i
+  campi.
+
+Il percorso scelto è identico: le impronte fissate dei test non cambiano.
+Gli esempi della canoa e `engine.zip` sono rifatti solo perché `models.py`
+è cambiato (in `paddleExamples.json` cambia solo `"engine"`).
 
 ## ADR-0199 — Seguire nell'app: il tasto sul profilo di un altro, tre numeri in «Profile» con i loro elenchi
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
@@ -9774,3 +9811,146 @@ se un luogo o una forma dei quattro manca, il post sparisce e
 Senza API configurata un post toccato non si apre, come uno della corsa.
 Il feed vero (TASK-118) dovrà dire lo sport di ogni disegno: il campo
 `activity` di `SamplePost` è già quello.
+
+## ADR-0196 — «Explore» della canoa come la corsa: l'elenco dei laghi dentro l'app, il più vicino per primo, forme più corte sui laghi piccoli
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-233 · «tutti
+i laghi» e «come la corsa» sono richieste dell'utente; le forme più corte
+sui laghi piccoli (sui campioni), «Near me» acceso da subito e i bacini
+artificiali nell'elenco sono sue scelte del 2026-10-05, e i testi li ha
+confermati lo stesso giorno; il resto è deciso dall'agente su delega
+dell'utente
+
+**Contesto**: con «Paddle», «Explore» aveva quattro luoghi scelti a mano
+(ADR-0169, ADR-0189) e «Near me», che disegnava dalla partenza e funzionava
+solo se la partenza era già sulla riva. L'utente, che sta a un chilometro
+dal lago di Levico, non vedeva il suo lago. Ha chiesto tutti i laghi e una
+pagina come quella della corsa.
+
+**Decisione**:
+
+- **L'elenco dei laghi viene con l'app** (`lakes.json`): nome, punto della
+  riva, distanza delle forme. La ricerca per nome e «il più vicino» si
+  fanno nel telefono, senza API. Gli esempi no: 25 KB a lago sarebbero
+  megabyte, quindi li disegna il server quando il lago è scelto, come per
+  una città.
+- **Che cos'è un lago**: un'acqua su cui il motore pagaia (`water.is_lake`:
+  `natural=water` con `water=lake`, `reservoir` o senza `water`), con un
+  nome, e `water=lake`/`reservoir` oppure un nome che dice lago («Lago»,
+  «Laghi», «Laghetto», «Lac», «…see»). Senza la regola del nome entravano
+  valli da pesca, casse di laminazione e cave. I bacini artificiali ci
+  sono (confermato dall'utente): OpenStreetMap non dice dove pagaiare è
+  vietato, e l'avviso di sicurezza della canoa c'è già. Restano fuori le
+  acque segnate come lago ma chiamate per quello che sono: «Centrale …»,
+  «Cassa di …», «Vasca …», «Zona umida …» (trovate nell'estratto
+  dell'Italia: il bacino di una centrale, una cassa di espansione, una
+  zona umida).
+- **Le forme sono da 2 km dove ci stanno, altrimenti da 1,5 o da 1 km**: la
+  distanza più grande a cui cuore, cerchio e stella ci stanno tutti e tre,
+  provata con il motore punto per punto. Sotto 1 km il motore non disegna,
+  e il lago resta fuori. «Tutti i laghi» con le sole forme da 2 km erano 16
+  su 41 nel nord-est.
+- **Un punto ogni 4 km di riva** sui laghi lunghi: una richiesta parte entro
+  2 km dal punto chiesto (`MOVE_MAX_M`), quindi così ogni tratto di riva ha
+  le sue forme. L'app mostra un nome una volta, con il punto più vicino.
+- **«Near me» è acceso da subito**, come nella corsa, e mostra il luogo
+  dell'elenco più vicino entro 30 km. Più lontano resta com'era: le forme
+  dalla partenza. I luoghi da toccare sono gli otto più vicini.
+- **I quattro luoghi scelti a mano restano**, con i loro esempi dentro
+  l'app: un punto dell'elenco con lo stesso nome entro 3 km è quel luogo.
+- **Il comando legge `osmium export`** (un GeoJSON a riga), non il PBF:
+  nessuna dipendenza nuova, e i multipoligoni li ricompone osmium.
+
+**Alternative scartate**:
+
+- Chiedere i laghi all'API (`GET /lakes`): un contratto nuovo e la rete
+  per una ricerca che nel telefono pesa 7 KB.
+- «Near me» che cerca l'acqua attorno alla partenza sul server: dipende da
+  Overpass, che rifiuta (ADR-0187).
+- Solo forme da 2 km: lascia fuori 25 laghi su 41.
+- Gli esempi di ogni lago dentro l'app: 1 MB per il solo nord-est.
+
+**Conseguenze**:
+
+- **Il server deve avere l'acqua di ogni lago dell'elenco prima che l'app
+  sia pubblicata** (parte B, con l'ok dell'utente): 41 file e 12 MB per il
+  nord-est. Senza, un lago scelto dice «Map data for this area could not be
+  downloaded.».
+- L'elenco di questa PR è il nord-est: l'estratto dell'Italia è sul server.
+- Con una partenza, aprire «Explore» con «Paddle» chiede subito all'API le
+  otto forme del lago più vicino (prima non chiedeva niente fino al tocco).
+- La frase d'attesa perde «of 2 km» nelle cinque lingue; tre testi nuovi,
+  confermati dall'utente in inglese e in italiano.
+- Il Lago di Ledro manca: in OpenStreetMap è `water=pond`. Seguito.
+- Gli esempi a 1,5 e 1 km stanno sul telefono sotto chiavi loro
+  (`paddling:1500:…`), a parte da quelli a 2 km.
+
+## ADR-0198 — La pubblicità fra i post del «Feed»: un annuncio nativo ogni 5 post, niente più annuncio alla ricerca
+
+**Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-235 ·
+**Supera in parte ADR-0102**: l'annuncio a schermo intero all'inizio di
+ogni ricerca non c'è più; restano AdMob, il consenso di Google, niente
+ATT, niente annunci in Expo Go · il posto (fra i post del Feed, al posto
+dell'annuncio della ricerca), l'annuncio nativo con «Sponsored» e uno ogni
+5 post sono scelte dell'utente; il resto è deciso dall'agente su delega
+dell'utente
+
+**Contesto**: il 2026-10-05 l'utente ha scritto «La pubblicità le mettiamo
+tra i post dei feed». Alla domanda se si aggiunge all'annuncio all'inizio
+di ogni ricerca o lo sostituisce ha scelto **sostituisce**, con la
+proposta che la accompagnava: un annuncio nativo con l'aspetto di un post,
+la scritta «Sponsored», uno ogni 5 post. Il Feed oggi ha 19 post d'esempio
+(ADR-0127, quattro in canoa da ADR-0190); il feed vero è TASK-118.
+
+**Decisione**:
+
+1. **Annunci nativi di AdMob** (`NativeAd`, `NativeAdView`, `NativeAsset`,
+   `NativeMediaView` di `react-native-google-mobile-ads` 17.2, già
+   nell'app): nessun pacchetto e nessuna configurazione nuovi. L'unità da
+   `EXPO_PUBLIC_ADMOB_NATIVE_IOS` / `_ANDROID`; vuote, l'annuncio nativo
+   di prova di Google. Si chiede il media orizzontale
+   (`NativeMediaAspectRatio.LANDSCAPE`).
+2. **Dove** (`feedWithAds`): dopo il 5°, il 10°, … post, solo se sotto c'è
+   un altro post. Nessuno con 5 post o meno, uno con 6–10, tre con i 19
+   d'esempio. Mai in cima, mai in fondo, mai due di fila. Un posto senza
+   annuncio non lascia buchi.
+3. **Quando** (`useFeedAds`): uno alla volta. Il primo si chiede quando il
+   Feed è la pagina sullo schermo, il successivo quando l'utente arriva al
+   posto del precedente (`AD_LOAD_AHEAD`, 5 post). Un posto il cui annuncio
+   non arriva resta vuoto e non si richiede. Un annuncio che arriva quando
+   il post sotto il suo posto è già stato sullo schermo va al primo posto
+   ancora davanti, così i post che l'utente guarda non si spostano; se non
+   ce n'è, si distrugge. Quando il Feed si smonta, i suoi annunci si
+   distruggono.
+4. **Consenso**: lo stesso modulo di Google (UMP, `gatherConsent`), una
+   volta, alla prima richiesta di annuncio: la prima volta che l'utente
+   apre il Feed. Il Feed si costruisce dietro «Draw» all'avvio, ma non
+   chiede niente finché non è la pagina sullo schermo (`active`): niente
+   all'apertura dell'app, come in ADR-0102. Senza `canRequestAds`, niente
+   annunci.
+5. **L'aspetto** (`FeedAd`): largo e arrotondato come un post. In alto,
+   prima di tutto, «Sponsored» grande come il nome di un corridore
+   (`fontSize.body`, colore dei testi), con l'icona quadrata (il corridore
+   ha il cerchio) e il nome dell'inserzionista; poi il media, mai più alto
+   che largo; poi titolo, testo e un pulsante grigio (il giallo è del
+   percorso). Niente iniziale, punteggio, tempi; un tocco apre quello che
+   dice l'annuncio, non la mappa. AdChoices lo mette l'SDK in alto a
+   destra, dove la riga lascia spazio. «Sponsored» nelle cinque lingue.
+6. **Via l'annuncio della ricerca**: `useAdBeforeRoute` e `routeAds` sono
+   tolti; «Draw route» e «Ask for a route» non mostrano più annunci.
+
+**Alternative scartate**: aggiungere gli annunci del Feed a quello della
+ricerca (l'utente ha scelto di sostituirlo); un banner fra i post (si
+vede come la pubblicità di un'altra app; l'utente ha chiesto l'aspetto di
+un post); caricare tutti gli annunci all'apertura del Feed (traffico per
+annunci che nessuno vede); mettere un annuncio arrivato tardi nel suo
+posto anche se è sullo schermo (sposta i post sotto il dito); chiedere il
+consenso all'avvio dell'app (ADR-0102: niente all'apertura).
+
+**Conseguenze**: con i 19 post d'esempio al più tre annunci per visita
+del Feed, meno impressioni di un annuncio a ogni ricerca. In Expo Go
+nessun annuncio, come prima. Per gli annunci veri serve un'unità
+**nativa** in AdMob: TASK-153 parla ancora di un'unità interstitial, e
+`docs/PUBBLICITA.md` (branch di TASK-150) dice ancora «a ogni ricerca»;
+li aggiornano i loro task. Il feed vero (TASK-118) usa la stessa
+`feedWithAds`.

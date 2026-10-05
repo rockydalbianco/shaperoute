@@ -811,6 +811,43 @@ danno lo stesso percorso scelto punto per punto. Dove le partenze vicine
 sono poche (una sola a Levico, via Montebello) le alternative possono
 mancare: l'app mostra allora il percorso da solo, come prima.
 
+### Dove la forma viene meglio (TASK-234)
+
+Un percorso può riuscire alla distanza chiesta mentre, a un'altra, la
+forma verrebbe chiaramente meglio. La ricerca lo ha già visto: fra i suoi
+tentativi (`Search.attempts`) ci sono quelli riscalati, ciascuno con la
+sua somiglianza e la sua lunghezza. `optimizer.better_distance` (ADR-0197)
+li guarda dopo che il percorso è scelto, senza tracciare niente in più:
+
+1. **Il confronto** è sul costo senza la parte della distanza
+   (`shape_cost`): forma, baffi in più e partenza spostata, come nella
+   funzione obiettivo qui sotto. Un tentativo è «chiaramente meglio» se lo
+   ha più basso di quello scelto di almeno `BETTER_MARGIN` = `W_SHAPE ×
+   0,05` (cinque punti di somiglianza) e se la sua somiglianza è almeno
+   0,90 (`SIMILARITY_THRESHOLD`). Un baffo ripassato o una partenza lontana
+   lo rendono più caro: non si consiglia un percorso che sembra migliore
+   solo alla somiglianza.
+2. **La distanza** è quella da chiedere per avere quel tentativo
+   (`ratio × distanza chiesta`: le lettere sole con la penna alzata, metà
+   di una forma andata e ritorno), al km intero come `suggested_distance_m`
+   di un errore. Niente consiglio se arrotondata è la distanza chiesta, se
+   è fuori dai limiti dell'attività (`DISTANCE_LIMITS_M`: la bici 10–30
+   km) o, per una parola, sotto i 3 km a lettera (`check_word`).
+3. **Fra più distanze** vince quella col tentativo più economico; a
+   parità, la più vicina alla distanza chiesta.
+4. **Da dove**: dalla ricerca che ha dato il percorso, anche quella
+   lontana (ADR-0040) quando vince lei; da una partenza vicina la sua
+   (`ShapeJob.here`), da cui il percorso viene. Le alternative (TASK-093)
+   non hanno un consiglio loro: vale per la richiesta.
+5. **Il percorso non cambia**: è un campo in più del risultato,
+   `better_distance_m`, `None` senza consiglio. Sull'acqua `water_fit` ha
+   già la sua distanza suggerita (ADR-0164) e il campo resta `None`.
+
+La ricerca prova scale fra 0,4 e 1,1 di quella iniziale, quindi il
+consiglio vede solo distanze in quell'intorno, e a volte lontane da quella
+chiesta (il cavallo di Trento da 15 km consiglia 6 km). Quanto spesso
+scatta: `MAPS.md`, «Viene meglio a N km».
+
 ### Lettere che si spostano (TASK-050)
 
 Per una parola composta (§2) la ricerca è la stessa, con due differenze

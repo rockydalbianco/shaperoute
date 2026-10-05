@@ -44,11 +44,6 @@ ora ha il database e il server. Gli altri Todo.
 
 In coda, dopo o accanto:
 
-- **TASK-235 — Gli annunci fra i post del «Feed»** (ADR-0198, chiesto
-  dall'utente il 2026-10-05): un annuncio nativo AdMob con «Sponsored»
-  ogni 5 post, al posto dell'annuncio a schermo intero all'inizio di ogni
-  ricerca (scelta dell'utente: sostituisce). Todo, task file in
-  `tasks/TASK-235.md`; solo unità di prova finché mancano TASK-150/152/153.
 - **Seguiti di TASK-172** («My activities», fatto): l'altitudine delle
   posizioni non si salva; il GPX di una corsa salvata; il cuore dei
   preferiti e «Start» da una corsa aperta; «Send to Strava» a fine corsa è
@@ -150,13 +145,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; Todo, chiesto
+- **TASK-234 — «Viene meglio a 12 km»** (ADR-0197; chiesto
   dall'utente il 2026-10-05, scelto il «passo 1»): quando un percorso
   riesce ma un tentativo già tracciato a un'altra distanza segue la forma
   chiaramente meglio, l'API manda `better_distance_m` e l'app scrive la
-  riga con «Try N km». Il percorso scelto non cambia. Prima si misura
-  quanto spesso scatta. Il codice dopo la #310 (TASK-226), stessi file
-  del motore. `tasks/TASK-234.md`.
+  riga con «Try N km». Il percorso scelto non cambia. **Parte A, motore e
+  API**, in PR (2026-10-05): il campo nel risultato, anche da una
+  partenza vicina, `null` nelle alternative; `engine.zip` ed esempi della
+  canoa rifatti. **Misura**: scatta in 8 percorsi su 129, nessuno dei 12
+  di riferimento in cache (`MAPS.md`); da dire all'utente prima della
+  **parte B** (l'app, testi nelle cinque lingue). Dopo il merge di A,
+  `draw_examples` sul server con l'ok dell'utente. `tasks/TASK-234.md`.
 - **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
   (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
   dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal
@@ -354,6 +353,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   ogni attività come «Run». Da dove riprendere: `tasks/TASK-191.md`,
   «Esito», parti A2, B e C (fatta).
 
+- **TASK-233 — «Explore» della canoa come la corsa, e tutti i laghi**
+  (ADR-0196; chiesto dall'utente il 2026-10-05: «fai anche tutti i laghi,
+  tipo vicino a me c'è il lago di Levico Terme»). **Parte A** nella PR #319: con
+  «Paddle», «Near me» è acceso da subito e mostra il lago più vicino
+  («LAGO DI LEVICO · 1.2 KM AWAY»), poi gli otto luoghi più vicini da
+  toccare e «Type a lake or a beach»; l'elenco dei laghi è dentro l'app
+  (`src/paddle/lakes.json`, da `python -m shaperoute_api.lake_catalog`),
+  con le forme da 2 km, o da 1,5 e 1 km sui laghi piccoli. Per ora il
+  nord-est: 41 laghi, 93 punti, ognuno provato dal motore. Campioni veri
+  in `out/task233-lakes-samples.html`, **da giudicare dall'utente**.
+  **Parte B**, con l'ok dell'utente per il server: l'elenco dell'Italia
+  intera e l'acqua di ogni lago in `data/cache/water/` (41 file e 12 MB
+  per il nord-est; stima 150–200 laghi e 40–60 MB per l'Italia). **Non
+  pubblicare l'app con questa pagina prima dell'acqua sul server**: un
+  lago scelto direbbe «Map data for this area could not be downloaded.».
+  Da dove riprendere: `tasks/TASK-233.md`, «Esito».
+
 - **TASK-119 — Reazioni ai disegni pubblicati** (ADR-0193; scelte
   dell'utente del 2026-10-04): era «Like», diventa sei reazioni sotto un
   disegno pubblicato aperto, una a testa: il cuore di Sgrava, 🔥 👏 💪 😂
@@ -465,6 +481,25 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **App** — TASK-235: la pubblicità fra i post del «Feed» (ADR-0198,
+  supera in parte ADR-0102; chiesto dall'utente il 2026-10-05, con la
+  scelta che **sostituisce** l'annuncio a schermo intero all'inizio di ogni
+  ricerca). Un annuncio nativo AdMob dopo ogni 5 post, solo fra due post
+  (tre nei 19 d'esempio), con «Sponsored» in alto grande come il nome di
+  un corridore, nelle cinque lingue. Uno alla volta: il primo quando si
+  apre il Feed, il successivo quando l'utente arriva al posto del
+  precedente; un annuncio arrivato tardi non sposta i post sullo schermo.
+  Il consenso di Google compare alla prima apertura del Feed, non
+  all'avvio. «Draw route» e «Ask for a route» non mostrano più annunci
+  (`useAdBeforeRoute` tolto). Provato in una build Release nel simulatore
+  con l'annuncio nativo di prova (allora 15 post): due annunci dopo il 5°
+  e il 10° post, nessuno in fondo, il validatore di AdMob «No implementation issues
+  found». In Expo Go nessun annuncio, come prima. Da riguardare su un
+  iPhone vero: che scorrere sopra un annuncio non lo apra (nel simulatore
+  lo apriva solo il gesto finto dello strumento). Per gli annunci veri
+  serve un'unità **nativa** in AdMob: TASK-153 parla ancora di
+  interstitial. `tasks/TASK-235.md`.
 
 - **Motore, API e app** — TASK-226: gli occhi staccati sull'acqua
   (ADR-0188; chiesto dall'utente il 2026-10-03, forme scelte il

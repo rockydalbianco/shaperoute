@@ -149,6 +149,21 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   regionale: la VM docker del Mac non basta. Sul server, il 2026-10-04,
   `italy-260930-water.osm.pbf` (674 MB, in `/srv/shaperoute/extracts`)
   e i sei riquadri dei quattro luoghi della canoa (TASK-225).
+  **I laghi di Explore** (TASK-233, ADR-0196): l'elenco dei laghi dell'app
+  (`apps/mobile/src/paddle/lakes.json`) si scrive dallo stesso estratto, in
+  tre passi. Prima le acque, una a riga: `osmium tags-filter
+  <estratto>.osm.pbf wr/natural=water -o water.osm.pbf`, poi `osmium export
+  water.osm.pbf -f geojsonseq -o water.geojsonseq`. Poi i riquadri: `python
+  -m shaperoute_api.lake_catalog --waters water.geojsonseq --boxes` stampa
+  per ogni lago `S,W,N,E` e il nome, e ogni riga è un `water_extract
+  --extract acqua.osm.pbf --bbox S,W,N,E --cache-dir data/cache`. Infine,
+  con quell'acqua in una cartella (il server, o una sua copia), `python -m
+  shaperoute_api.lake_catalog --waters water.geojsonseq --cache-dir <cache>`
+  prova ogni punto con il motore e scrive l'elenco; dopo, Prettier sul
+  file. Un lago è un'acqua su cui il motore pagaia (`water.is_lake`), con
+  un nome da lago e largo abbastanza per un cerchio da 1 km a 50 m dalla
+  riva. Nel nord-est (estratto del 2026-10-02): 41 laghi, 93 punti, 41 file
+  d'acqua per 12 MB, 4 minuti e mezzo di prove sul Mac.
   **Overpass e i laghi**: la prima risposta vera alla query (dal server,
   2026-10-04, 184 s) dava le relazioni senza membri, perché `out tags
   geom` non li scrive: un lago disegnato come multipoligono mancava.
@@ -467,6 +482,60 @@ strade principali / gallerie):
   correggere la scala di ogni piazzamento (tenuta) dà somiglianza media
   0,862; tracciare più piazzamenti una volta sola 0,845.
 - Tempi dalla cache: 5–28 s per caso.
+
+### Viene meglio a N km (TASK-234)
+
+Quante volte i tentativi della ricerca dicono una distanza dove la forma
+viene chiaramente meglio (`better_distance`, `ROUTE_ENGINE.md` §5,
+ADR-0197). Misurato il 2026-10-05 sul Mac, dalla cache (`plan_route`: la
+ricerca della partenza, e quella lontana quando parte), con
+`services/route-engine/tests/measure_better.py --catalog --words`: per
+ogni caso il consiglio e il margine più grande di un tentativo con
+somiglianza ≥ 0,90 a un altro km, così la soglia si legge sugli stessi
+numeri.
+
+| Casi | Percorsi | Consigli a 5 punti (tenuta) | a 4 | a 3 |
+|---|---|---|---|---|
+| I 14 disegnabili (12 in cache: la Valsugana no) | 12 | 0 | 0 | 0 |
+| Le 17 forme del catalogo a Trento e Levico, 5/10/15 km (il pesce di Levico da 5 km rifiutato) | 93 | 6 | 6 | 8 |
+| «CIAO», «IO», «RUN» a 9/12/15 km (dai 3 km a lettera), Trento, Levico, Milano | 24 | 2 | 2 | 3 |
+| **Tutti** | **129** | **8 (6%)** | 8 | 11 |
+
+I consigli con la soglia tenuta (somiglianza scelto → consigliato):
+
+| Caso | Scelto | Consiglio |
+|---|---|---|
+| cuore 10 km, Trento | 0,86 a 8,3 km, non buono | 8 km, 0,92 |
+| cavallo 10 km, Trento | 0,97, con baffi | 7 km, 1,00 |
+| cavallo 15 km, Trento | 0,93, con baffi | 6 km, 0,96 |
+| cavallo 15 km, Levico | 0,98, con baffi | 17 km, 1,00 |
+| luna 10 km, Levico | 0,90, non buono, con baffi | 16 km, 0,91 |
+| lumaca 10 km, Levico | 0,83 a 8,6 km, non buono | 12 km, 0,94 |
+| «IO» 12 km, Levico | 0,88 a 13,8 km, non buono | 10 km, 0,94 |
+| «IO» 15 km, Levico | 0,86, non buono | 12 km, 0,92 |
+
+- **Scatta poco**: 8 percorsi su 129, nessuno dei 12 di riferimento
+  misurati. Dove la forma riesce (somiglianza ≥ 0,90, distanza ±10%: 65
+  percorsi su 129) la ricerca si ferma al primo tentativo buono e ne prova
+  pochi altri; dove non riesce, di solito non riesce a nessuna scala
+  (forme a Levico: 40 su 50 non buone, e in 36 di loro nessun tentativo
+  arriva a 0,90).
+- **La soglia resta 5 punti** (`BETTER_MARGIN` = 0,15): a 4 gli stessi
+  8; a 3 entrano testa di cane 5 km e albero 15 km a Trento, «CIAO» 12 km
+  a Milano (0,92 → 0,96 a 15 km), e il cerchio di Milano da 5 km resta
+  appena sotto (0,089): guadagni di 3–4 punti di somiglianza.
+- **Con le partenze vicine** (`plan_nearby`, come l'API) il consiglio è
+  quello della partenza che vince: il cavallo di Trento da 10 km consiglia
+  8 km invece di 7, la lumaca di Levico nessuno (vince una partenza
+  vicina, con la sua ricerca). I percorsi di prima non cambiano: stesse impronte sui
+  12 casi e su tre dei consigli, con `plan_route` e `plan_nearby`,
+  alternative comprese.
+- **I baffi pesano**: per cavallo e luna il margine viene soprattutto dalla
+  quota fatta due volte (`W_DOUBLED`), non dalla somiglianza.
+- **Le distanze possono essere lontane**: il cavallo di Trento da 15 km
+  viene meglio a 6 km (la scala più piccola che la ricerca prova, 0,4).
+- Il passo 2 (cercare apposta altre distanze, ADR-0197) troverebbe di
+  più, a 5–50 s di server per distanza.
 
 ## Fixture di test
 

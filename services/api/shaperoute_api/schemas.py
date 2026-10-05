@@ -205,6 +205,15 @@ class RouteResultBody(BaseModel):
     on_foot: list[Stretch] = Field(
         default_factory=list, description=ON_FOOT_DESCRIPTION
     )
+    # Missing from an older API, and in a GPX request from an older app.
+    better_distance_m: int | None = Field(
+        default=None,
+        description=(
+            "A distance in whole km where the search found the shape clearly "
+            "better drawn, to offer as «Try N km» (TASK-234, ADR-0197); null "
+            "without one, in the alternatives and on the water."
+        ),
+    )
 
     @model_validator(mode="after")
     def _walks_within_points(self) -> Self:

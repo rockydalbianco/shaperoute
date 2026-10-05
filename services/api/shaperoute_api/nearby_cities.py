@@ -1,16 +1,18 @@
 """The towns near a point, for "Near me" in "Explore" (TASK-236, ADR-0200).
 
-GET /nearby-cities gives at most four cities and towns around where the
-user is: those within 20 km, the largest first; where there are fewer than
-four, as around a city alone in its valley, the circle widens up to 50 km
-and the nearest beyond fill the list. The town the user is in is not one of
-them: "Near me" already shows it.
+GET /nearby-cities gives at most six places around where the user is. Four
+are cities and towns: those within 20 km, the largest first; where there
+are fewer than four, as around a city alone in its valley, the circle
+widens up to 50 km and the nearest beyond fill the list. Two more are the
+nearest of all within 20 km, villages too, however small (the user's
+choice). The place the user is in is not one of them: "Near me" already
+shows it.
 
-They are OpenStreetMap's `place=city` and `place=town`, through Geoapify's
-Places API with the key of the place search (places.py): the same points
-and the same labels GET /cities gives for those names, so a town tapped
-here and the same town typed are one city, with the same examples kept
-(route_store.py). The service is asked from the middle of a square of about
+They are OpenStreetMap's `place=city`, `place=town` and `place=village`,
+through Geoapify's Places API with the key of the place search (places.py):
+for a city or a town, the same points and the same labels GET /cities gives
+for those names, so a town tapped here and the same town typed are one
+city, with the same examples kept (route_store.py). The service is asked from the middle of a square of about
 1 km, not from the user's own position, and the answer is kept a day.
 """
 
@@ -38,18 +40,21 @@ LatLon = tuple[float, float]
 PLACES_URL = "https://api.geoapify.com/v2/places"
 CITIES = "populated_place.city"
 TOWNS = "populated_place.town"
-MAX_NEARBY = 4
+VILLAGES = "populated_place.village"
+# The largest around, then the nearest, however small.
+MAX_LARGE = 4
+MAX_SMALL = 2
+MAX_NEARBY = MAX_LARGE + MAX_SMALL
 # A short drive: the towns looked at first.
 NEAR_RADIUS_M = 20_000
-# Where those are fewer than MAX_NEARBY, as far as this.
+# Where those are fewer than MAX_LARGE, as far as this.
 FAR_RADIUS_M = 50_000
-# A town whose centre is this close is the one the user is in (the app's
-# OWN_RADIUS_M, ownRoutes.ts).
+# The nearest place, when its centre is this close, is the one the user is
+# in (the app's OWN_RADIUS_M, ownRoutes.ts).
 OWN_RADIUS_M = 1500.0
 # The service gives the nearest first: around Milan the towns within
-# NEAR_RADIUS_M are about a hundred.
-ASK_TOWNS = 100
-ASK_CITIES = 50
+# NEAR_RADIUS_M are about a hundred; of the villages only the nearest count.
+ASK = {CITIES: 50, TOWNS: 100, VILLAGES: 20}
 # About 1 km: the points of a neighbourhood share an answer.
 CELL_DECIMALS = 2
 CACHE_SIZE = 500
@@ -90,7 +95,7 @@ def nearby_url(key: str, categories: str, centre: LatLon, radius_m: int) -> str:
         "conditions": "named",
         "filter": f"circle:{lon},{lat},{radius_m}",
         "bias": f"proximity:{lon},{lat}",
-        "limit": str(ASK_CITIES if categories == CITIES else ASK_TOWNS),
+        "limit": str(ASK[categories]),
         "apiKey": key,
     }
     return f"{PLACES_URL}?{urllib.parse.urlencode(params)}"
@@ -126,10 +131,20 @@ def parse_towns(body: Any) -> list[Town]:
     return list(towns.values())
 
 
-def choose(centre: LatLon, near: list[Town], far: list[Town]) -> list[Town]:
-    """At most MAX_NEARBY: the largest of `near`, then the nearest of `far`
-    that are not among them, as a circle that widens; the user's own town is
-    in neither. The nearest first."""
+def own_place(centre: LatLon, places: list[Town]) -> str | None:
+    """The label of the place the user is in: the nearest of all, when its
+    centre is within OWN_RADIUS_M."""
+    nearest = min(places, key=lambda t: haversine_m(centre, t.point), default=None)
+    if nearest is None or haversine_m(centre, nearest.point) > OWN_RADIUS_M:
+        return None
+    return nearest.label
+
+
+def choose(
+    centre: LatLon, near: list[Town], far: list[Town], own: str | None = None
+) -> list[Town]:
+    """At most MAX_LARGE: the largest of `near`, then the nearest of `far`
+    that are not among them, as a circle that widens; never `own`."""
 
     def away(town: Town) -> float:
         return haversine_m(centre, town.point)
@@ -139,11 +154,22 @@ def choose(centre: LatLon, near: list[Town], far: list[Town]) -> list[Town]:
 
     chosen: dict[str, Town] = {}
     for town in [*largest(near), *sorted(far, key=away)]:
-        if len(chosen) == MAX_NEARBY:
+        if len(chosen) == MAX_LARGE:
             break
-        if away(town) > OWN_RADIUS_M:
+        if town.label != own:
             chosen.setdefault(town.label, town)
-    return sorted(chosen.values(), key=away)
+    return list(chosen.values())
+
+
+def nearest_others(
+    centre: LatLon, places: list[Town], taken: list[Town], own: str | None = None
+) -> list[Town]:
+    """At most MAX_SMALL of `places`, the nearest first, however small:
+    those not `taken` already, and never `own`."""
+    left_out = {town.label for town in taken} | {own}
+    others = {t.label: t for t in places if t.label not in left_out}
+    by_distance = sorted(others.values(), key=lambda t: haversine_m(centre, t.point))
+    return by_distance[:MAX_SMALL]
 
 
 class NearbyCities:
@@ -174,10 +200,16 @@ class NearbyCities:
             cities = self._ask(CITIES, centre, FAR_RADIUS_M)
             near = self._ask(TOWNS, centre, NEAR_RADIUS_M)
             near += [c for c in cities if haversine_m(centre, c.point) <= NEAR_RADIUS_M]
-            chosen = choose(centre, near, [])
-            if len(chosen) < MAX_NEARBY:
+            small = [*self._ask(VILLAGES, centre, NEAR_RADIUS_M), *near]
+            own = own_place(centre, [*small, *cities])
+            large = choose(centre, near, [], own)
+            if len(large) < MAX_LARGE:
                 far = cities + self._ask(TOWNS, centre, FAR_RADIUS_M)
-                chosen = choose(centre, near, far)
+                large = choose(centre, near, far, own)
+            chosen = sorted(
+                [*large, *nearest_others(centre, small, large, own)],
+                key=lambda t: haversine_m(centre, t.point),
+            )
         except Exception:
             # The URL carries the key: no message, no chain.
             raise PlacesUnavailableError(SERVICE_FAILED) from None
@@ -194,16 +226,17 @@ class NearbyCities:
         )
 
     def body(self, point: LatLon) -> NearbyCitiesBody:
-        return NearbyCitiesBody(
-            places=[
-                NearbyCityBody(
-                    label=town.label,
-                    point=town.point,
-                    away_m=round(haversine_m(point, town.point)),
-                )
-                for town in self.towns(point)
-            ]
-        )
+        """The places of `point`'s square, the nearest to `point` first: two
+        of them may be nearer the square's middle the other way round."""
+        places = [
+            NearbyCityBody(
+                label=town.label,
+                point=town.point,
+                away_m=round(haversine_m(point, town.point)),
+            )
+            for town in self.towns(point)
+        ]
+        return NearbyCitiesBody(places=sorted(places, key=lambda p: p.away_m))
 
 
 def install_nearby_cities(

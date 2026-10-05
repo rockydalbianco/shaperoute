@@ -281,9 +281,11 @@ pagine»):
    **Da TASK-236** (ADR-0200, chiesto dall'utente: «favorisci la sezione
    Near me con una sottocategoria con le città vicine a me … massimo
    quattro»): con «Near me», sotto la fila delle città c'è **«NEARBY
-   TOWNS»**, una fila di schede da scorrere, fino a quattro paesi intorno
-   alla partenza (entro 20 km, o fino a 50 dove sono pochi), dal più
-   vicino. Una scheda è larga il 42% della pagina: due intere e l'orlo
+   TOWNS»**, una fila di schede da scorrere, fino a sei posti intorno
+   alla partenza, dal più vicino: quattro paesi (i più grandi entro 20 km,
+   o fino a 50 dove sono pochi) e i due posti più vicini di tutti, anche
+   piccoli (da Caldonazzo: Tenna, Calceranica, Levico, Pergine, Trento,
+   Borgo). Una scheda è larga il 42% della pagina: due intere e l'orlo
    della terza. Dice il nome e la distanza («Levico Terme», «2.9 km
    away»; da 10 km in su senza decimali) e mostra un campione disegnato
    nel paese, sulla sua mappa: il cuore, o il cerchio finché il cuore non

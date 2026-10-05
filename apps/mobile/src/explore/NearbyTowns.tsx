@@ -36,7 +36,7 @@ export function awayKm(awayM: number): string {
 }
 
 /**
- * Under «Near me» (TASK-236): the towns around the start, four at most, a
+ * Under «Near me» (TASK-236): the towns around the start, six at most, a
  * card each in a row to scroll. A card shows a shape drawn in its town,
  * when the API has drawn it, and opens the town as a city of «Explore».
  * Nothing while the towns are not known, and where there are none.

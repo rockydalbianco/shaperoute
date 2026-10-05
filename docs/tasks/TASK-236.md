@@ -14,8 +14,9 @@ qualcosina per qualche campione».
 ## Obiettivo
 
 In «Explore», con «Near me» acceso, sotto la fila delle città c'è la
-sezione «NEARBY TOWNS»: fino a quattro città e paesi intorno alla partenza,
-ognuno una scheda che lo apre come città scelta. Mentre la sezione è sulla
+sezione «NEARBY TOWNS»: fino a sei posti intorno alla partenza (quattro
+città e paesi, più i due più vicini anche se piccoli), ognuno una scheda
+che lo apre come città scelta. Mentre la sezione è sulla
 pagina, il server scarica la zona di ognuno e ne disegna i primi esempi,
 così il paese si apre con le prime schede pronte.
 
@@ -29,11 +30,12 @@ così il paese si apre con le prime schede pronte.
 
 ## Cosa fare
 
-1. **API**: `GET /nearby-cities?lat=&lon=` (`nearby_cities.py`), fino a 4
-   città e paesi di OpenStreetMap dal Places di Geoapify, con la chiave
-   che c'è già: quelli entro 20 km, i più grandi; se sono meno di quattro,
-   i più vicini oltre i 20, fino a 50 km. Il paese in cui si è (centro entro 1,5 km)
-   resta fuori. I centri passano a `route_store.learn`.
+1. **API**: `GET /nearby-cities?lat=&lon=` (`nearby_cities.py`), fino a 6
+   posti di OpenStreetMap dal Places di Geoapify, con la chiave che c'è
+   già. Quattro città e paesi: quelli entro 20 km, i più grandi; se sono
+   meno di quattro, i più vicini oltre i 20, fino a 50 km. Più i due posti
+   più vicini di tutti entro 20 km, anche villaggi. Il posto in cui si è
+   (il più vicino, col centro entro 1,5 km) resta fuori. I centri passano a `route_store.learn`.
 2. **App**: `nearbyCities.ts` (la richiesta), `nearbySamples.ts` (i
    campioni in sottofondo: cerchio, cuore, stella da 5 km dal centro di
    ogni paese, uno alla volta, al più dodici richieste al minuto),
@@ -43,8 +45,8 @@ così il paese si apre con le prime schede pronte.
 
 ## Criteri di accettazione
 
-- [x] `GET /nearby-cities` dà al più quattro paesi, i più vicini per
-      primi, con etichetta e punto uguali a quelli di `GET /cities`; 503
+- [x] `GET /nearby-cities` dà al più sei posti (quattro paesi e i due
+      più vicini), i più vicini per primi, con etichetta e punto uguali a quelli di `GET /cities`; 503
       senza chiave o senza risposta, senza la chiave nel messaggio.
 - [x] Con quattro paesi entro 20 km non si chiede oltre; con meno, la
       lista si riempie fino a 50 km.
@@ -63,6 +65,9 @@ così il paese si apre con le prime schede pronte.
       Levico, Pergine e Trento arrivano sulle schede; il tocco su Trento lo
       apre come città. Borgo Valsugana no: la sua zona non è sul Mac e
       Overpass rifiutava la connessione (la scheda resta senza disegno).
+      La prova è di prima dei due posti più vicini: quelli sono provati
+      sull'endpoint col servizio vero (Tenna e Calceranica), non nel
+      simulatore.
 
 ## File toccati
 
@@ -96,9 +101,14 @@ cambia.
 ## Da confermare con l'utente
 
 - I testi: «NEARBY TOWNS» / «PAESI VICINI», «2.9 km away» / «a 2,9 km».
-- La regola dei quattro: i più grandi entro 20 km; dove sono meno, i più
-  vicini fino a 50 km. Chi è in una grande città lontano dal centro (oltre
-  1,5 km) vede fra i quattro anche la sua città («Roma · 4 km away»).
+- **La regola: confermata** (2026-10-05). Alla domanda «i quattro più
+  grandi entro 20 km, e dove sono meno i più vicini fino a 50, o sempre i
+  quattro più vicini anche se piccoli?» l'utente: «va bene così, magari
+  aggiungine altri due e sono i più vicini anche se piccoli». Quindi sei:
+  i quattro di prima più i due posti più vicini di tutti, villaggi
+  compresi.
+- Chi è in una grande città lontano dal centro (oltre 1,5 km) vede fra i
+  sei anche la sua città («Roma · 4 km away»).
 - Tre campioni per paese (cerchio, cuore, stella), con il cuore sulla
   scheda.
 

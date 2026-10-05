@@ -9715,11 +9715,12 @@ TASK-208 ha qualcuno da mostrare. Le richieste si scoprono solo aprendo
 «Profile», fino alle notifiche (TASK-185). I testi nuovi, in cinque
 lingue, sono da confermare con l'utente. Bloccare resta TASK-121.
 
-## ADR-0200 — I paesi vicini sotto «Near me»: quattro al più, dal Places di Geoapify, con i campioni chiesti dal telefono
+## ADR-0200 — I paesi vicini sotto «Near me»: quattro paesi e i due posti più vicini, dal Places di Geoapify, con i campioni chiesti dal telefono
 
 **Data**: 2026-10-05 · **Stato**: Accettato · **Task**: TASK-236 ·
-la sezione, i 20–50 km, il massimo di quattro e i campioni sono scelte
-dell'utente; il resto è deciso dall'agente su delega dell'utente
+la sezione, i 20–50 km, i quattro paesi, i due più vicini «anche se
+piccoli» e i campioni sono scelte dell'utente; il resto è deciso
+dall'agente su delega dell'utente
 
 **Contesto**: l'utente: «favorisci la sezione Near me con una
 sottocategoria con le città vicine a me, fai 20, 50 km in base alla città,
@@ -9740,13 +9741,23 @@ solo scrivendone il nome.
 2. **Quali quattro**: quelli entro 20 km, i più grandi per abitanti; se
    sono meno di quattro, il cerchio si allarga fino a 50 km e la lista si
    riempie con i più vicini oltre i 20. Mostrati dal più vicino. Il paese in cui si è (centro entro
-   1,5 km, come `OWN_RADIUS_M`) resta fuori: è già «Near me». I villaggi
-   (`place=village`) no: intorno a una città sarebbero decine. Da
-   Caldonazzo: Levico, Pergine, Trento, Borgo. Dal centro di Trento:
+   1,5 km, come `OWN_RADIUS_M`) resta fuori: è già «Near me». Fra questi
+   quattro i villaggi (`place=village`) no: intorno a una città sarebbero
+   decine. Da Caldonazzo: Levico, Pergine, Trento, Borgo. Dal centro di Trento:
    Pergine, Levico, poi Rovereto (21 km) e Arco (25 km). Da Livigno:
    Bormio, St. Moritz, Glorenza, Tirano. Da Milano, i quattro più grandi
    entro 20 km (Monza, Sesto San Giovanni, Cinisello, Cologno). Provati
    sul servizio vero il 2026-10-05.
+   **Più i due posti più vicini, anche se piccoli** (risposta dell'utente
+   del 2026-10-05 alla regola qui sopra: «va bene così, magari aggiungine
+   altri due e sono i più vicini anche se piccoli»): fra città, paesi e
+   villaggi (`populated_place.village`) entro 20 km, i due più vicini che
+   non sono già fra i quattro. Sei in tutto, mostrati dal più vicino alla
+   posizione. Da Caldonazzo si aggiungono Tenna e Calceranica al Lago; dal
+   centro di Trento Sardagna e Vela; da Milano Lavanderie e Linate; da
+   Livigno Trepalle e Semogo. «Dove si è» è il posto più vicino di tutti,
+   se ha il centro entro 1,5 km, e solo quello: da Caldonazzo, Calceranica
+   è a 1,6 km e resta.
 3. **La posizione**: al servizio va il centro di un quadrato di circa
    1 km (2 decimali), non la posizione; la risposta è tenuta un giorno in
    memoria. Negli eventi non si scrive niente.
@@ -9756,7 +9767,8 @@ solo scrivendone il nome.
    richiesta degli esempi di una città (ADR-0144: il cerchio per primo, la
    sua zona tiene le altre). Il server scarica la zona alla prima e tiene
    ogni percorso: i centri dei paesi vicini sono centri di città per
-   `route_store`. Al più una richiesta ogni 5 s (12 al minuto: con le 18
+   `route_store`. Sei paesi sono 18 richieste, un minuto e mezzo. Al più
+   una richiesta ogni 5 s (12 al minuto: con le 18
    degli esempi di una città restano nei 30 POST al minuto di un
    telefono, ADR-0076). Si fermano quando la sezione lascia la pagina, e
    al primo guaio che non è di una forma (zona non scaricata, rete, troppe
@@ -9788,9 +9800,10 @@ solo scrivendone il nome.
 
 **Conseguenze**:
 
-- Una posizione nuova costa al più 13 crediti di Geoapify (3 richieste) e,
-  la prima volta, fino a 4 zone scaricate da Overpass e 12 percorsi sul
-  server (7–19 s l'uno, TASK-168), uno alla volta.
+- Una posizione nuova costa al più 14 crediti di Geoapify (4 richieste) e,
+  la prima volta, fino a 6 zone scaricate da Overpass e 18 percorsi sul
+  server (7–19 s l'uno, TASK-168), uno alla volta. Un villaggio accanto a
+  un paese sta di solito nella zona di quello, e non ne scarica un'altra.
 - Un server senza `GET /nearby-cities` risponde 404: la sezione non
   compare, il resto di «Explore» è com'era. L'app si può pubblicare prima
   del server.

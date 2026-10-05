@@ -17,10 +17,13 @@ from shaperoute_api.nearby_cities import (
     FAR_RADIUS_M,
     NEAR_RADIUS_M,
     TOWNS,
+    VILLAGES,
     NearbyCities,
     Town,
     choose,
     install_nearby_cities,
+    nearest_others,
+    own_place,
     parse_towns,
     population_of,
 )
@@ -56,6 +59,13 @@ ROVERETO = place("Rovereto", 45.886548, 11.0452369, 40285)
 RIVA = place("Riva del Garda", 45.8857, 10.8413, 17190)
 ARCO = place("Arco", 45.9177, 10.8867, 17588)
 BOLZANO = place("Bolzano", 46.4981, 11.3548, 107436)
+# Villages: Caldonazzo is where the user is, the others its neighbours.
+CALDONAZZO_VILLAGE = place("Caldonazzo", 45.9953, 11.2631, 2766)
+CALCERANICA = place("Calceranica al Lago", 46.0036, 11.2436, 1145)
+TENNA = place("Tenna", 46.0156, 11.2640, 850)
+BOSENTINO = place("Bosentino", 45.9995, 11.2233, 728)
+VELA = place("Vela", 46.0823, 11.1017, 963)
+SARDAGNA = place("Sardagna", 46.0640, 11.0965, 903)
 
 
 class Service:
@@ -79,6 +89,12 @@ def around_caldonazzo() -> Service:
         {
             (CITIES, FAR_RADIUS_M): [TRENTO, BOLZANO],
             (TOWNS, NEAR_RADIUS_M): [LEVICO, PERGINE, BORGO],
+            (VILLAGES, NEAR_RADIUS_M): [
+                CALDONAZZO_VILLAGE,
+                CALCERANICA,
+                TENNA,
+                BOSENTINO,
+            ],
         }
     )
 
@@ -89,6 +105,7 @@ def around_trento() -> Service:
             (CITIES, FAR_RADIUS_M): [TRENTO, BOLZANO],
             (TOWNS, NEAR_RADIUS_M): [PERGINE, LEVICO],
             (TOWNS, FAR_RADIUS_M): [PERGINE, LEVICO, ROVERETO, BORGO, ARCO, RIVA],
+            (VILLAGES, NEAR_RADIUS_M): [VELA, SARDAGNA],
         }
     )
 
@@ -97,19 +114,24 @@ def names(towns: list[Town]) -> list[str]:
     return [town.label.split(",")[0] for town in towns]
 
 
-def test_four_towns_within_20_km_the_nearest_first() -> None:
+def test_four_towns_within_20_km_and_the_two_nearest_villages() -> None:
     service = around_caldonazzo()
     towns = NearbyCities("K", service).towns(CALDONAZZO)
+    # The nearest first: the two villages next door, then the four towns.
+    # Caldonazzo itself is where the user is.
     assert names(towns) == [
+        "Calceranica al Lago",
+        "Tenna",
         "Levico Terme",
         "Pergine Valsugana",
         "Trento",
         "Borgo Valsugana",
     ]
-    # Four within 20 km: the towns further away are not asked for.
+    # Four towns within 20 km: those further away are not asked for.
     assert [(kind, radius) for kind, radius, _ in service.calls] == [
         (CITIES, FAR_RADIUS_M),
         (TOWNS, NEAR_RADIUS_M),
+        (VILLAGES, NEAR_RADIUS_M),
     ]
 
 
@@ -118,16 +140,30 @@ def test_fewer_than_four_are_filled_with_the_nearest_up_to_50_km() -> None:
     towns = NearbyCities("K", service).towns(TRENTO_CENTRE)
     # Trento is where the user is; Pergine and Levico are within 20 km, and
     # Rovereto and Arco are the nearest beyond: Bolzano is larger, and
-    # further.
-    assert names(towns) == ["Pergine Valsugana", "Levico Terme", "Rovereto", "Arco"]
+    # further. Sardagna and Vela are the two nearest of all.
+    assert names(towns) == [
+        "Sardagna",
+        "Vela",
+        "Pergine Valsugana",
+        "Levico Terme",
+        "Rovereto",
+        "Arco",
+    ]
     assert (TOWNS, FAR_RADIUS_M) in [(k, r) for k, r, _ in service.calls]
 
 
-def test_more_than_four_within_20_km_keep_the_largest() -> None:
+def test_more_than_four_within_20_km_keep_the_largest_and_the_two_nearest() -> None:
     crowd = [place(f"Town {n}", 46.0036, 11.30 + n / 100, 1000 * n) for n in range(9)]
-    service = Service({(CITIES, FAR_RADIUS_M): [], (TOWNS, NEAR_RADIUS_M): crowd})
+    service = Service(
+        {
+            (CITIES, FAR_RADIUS_M): [],
+            (TOWNS, NEAR_RADIUS_M): crowd,
+            (VILLAGES, NEAR_RADIUS_M): [],
+        }
+    )
     towns = NearbyCities("K", service).towns(CALDONAZZO)
-    assert names(towns) == ["Town 5", "Town 6", "Town 7", "Town 8"]
+    # Without villages around, the nearest towns that are not the largest.
+    assert names(towns) == ["Town 0", "Town 1", "Town 5", "Town 6", "Town 7", "Town 8"]
 
 
 def test_none_around_is_an_empty_list() -> None:
@@ -136,6 +172,7 @@ def test_none_around_is_an_empty_list() -> None:
             (CITIES, FAR_RADIUS_M): [],
             (TOWNS, NEAR_RADIUS_M): [],
             (TOWNS, FAR_RADIUS_M): [],
+            (VILLAGES, NEAR_RADIUS_M): [],
         }
     )
     assert NearbyCities("K", service).towns(CALDONAZZO) == []
@@ -190,6 +227,25 @@ def test_without_a_population_a_town_comes_after_the_others() -> None:
     assert "Unknown" not in names(choose(CALDONAZZO, [unknown, known, *others], []))
 
 
+def test_only_the_nearest_place_is_where_the_user_is() -> None:
+    here = Town("Caldonazzo", (45.9953, 11.2631), 2766)
+    next_door = Town("Calceranica al Lago", (46.0036, 11.2436), 1145)
+    far = Town("Levico Terme", (46.0091, 11.3018), 7915)
+    centre = (46.0, 11.26)
+    # Both within 1.5 km: only the nearer is the user's own.
+    assert own_place(centre, [next_door, here, far]) == "Caldonazzo"
+    assert own_place(centre, [far]) is None
+    assert own_place(centre, []) is None
+    assert names(nearest_others(centre, [far, next_door, here], [], "Caldonazzo")) == [
+        "Calceranica al Lago",
+        "Levico Terme",
+    ]
+    # One taken among the four is not given twice.
+    assert names(nearest_others(centre, [far, next_door], [far], None)) == [
+        "Calceranica al Lago"
+    ]
+
+
 def test_the_service_is_asked_from_the_square_not_from_the_position() -> None:
     service = around_caldonazzo()
     nearby = NearbyCities("K", service)
@@ -200,7 +256,7 @@ def test_the_service_is_asked_from_the_square_not_from_the_position() -> None:
     }
     # Another point of the same square costs nothing.
     nearby.towns((46.0012, 11.2629))
-    assert len(service.calls) == 2
+    assert len(service.calls) == 3
 
 
 def test_the_answer_is_asked_again_after_a_day() -> None:
@@ -210,10 +266,10 @@ def test_the_answer_is_asked_again_after_a_day() -> None:
     nearby.towns(CALDONAZZO)
     now[0] = 23 * 3600.0
     nearby.towns(CALDONAZZO)
-    assert len(service.calls) == 2
+    assert len(service.calls) == 3
     now[0] = 25 * 3600.0
     nearby.towns(CALDONAZZO)
-    assert len(service.calls) == 4
+    assert len(service.calls) == 6
 
 
 def client_with(nearby: NearbyCities, store: RouteStore | None = None) -> TestClient:
@@ -227,13 +283,17 @@ def test_the_endpoint_gives_the_towns_and_how_far_they_are() -> None:
     response = client.get("/nearby-cities", params={"lat": 46.0036, "lon": 11.2647})
     assert response.status_code == 200
     places = response.json()["places"]
+    # From the point itself, not from the middle of its square: there
+    # Calceranica is the nearer of the two villages.
     assert [p["label"].split(",")[0] for p in places] == [
+        "Tenna",
+        "Calceranica al Lago",
         "Levico Terme",
         "Pergine Valsugana",
         "Trento",
         "Borgo Valsugana",
     ]
-    assert places[0] == {
+    assert places[2] == {
         "label": "Levico Terme, Trentino – Alto Adige/Südtirol, Italy",
         "point": [46.0091259, 11.3017774],
         "away_m": 2929,
@@ -248,7 +308,7 @@ def test_the_towns_centres_are_city_centres_for_the_kept_examples(
     client.get("/nearby-cities", params={"lat": 46.0036, "lon": 11.2647})
     centres = (tmp_path / "routes" / "city-centres.txt").read_text().split()
     assert cell((46.0091259, 11.3017774)) in centres
-    assert len(centres) == 4
+    assert len(centres) == 6
 
 
 def test_without_a_key_or_an_answer_it_is_503() -> None:

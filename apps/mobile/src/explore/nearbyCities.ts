@@ -9,8 +9,9 @@ import type { Place } from "../places/photon";
  */
 export type NearbyCity = Place & { away_m: number };
 
-/** As many as the API gives at most: four cards, never more. */
-export const MAX_NEARBY = 4;
+/** As many as the API gives at most: four towns and the two places
+ * nearest of all, however small. Six cards, never more. */
+export const MAX_NEARBY = 6;
 
 type Options = { fetchFn?: typeof fetch; key?: string | null; signal?: AbortSignal };
 
@@ -51,9 +52,9 @@ function isNearbyCity(value: unknown): value is NearbyCity {
 
 /**
  * The towns near `near`, the nearest first, from the API's GET
- * /nearby-cities: at most four within 20 km, or up to 50 km where the towns
- * are few. Never throws: null when the API does not answer, and nothing is
- * kept then.
+ * /nearby-cities: at most four towns within 20 km, or up to 50 km where the
+ * towns are few, and the two nearest places, villages too. Never throws:
+ * null when the API does not answer, and nothing is kept then.
  */
 export async function fetchNearbyCities(
   baseUrl: string,

@@ -29,7 +29,8 @@ export const SAMPLE_SHAPES: readonly Shape[] = DRAW_ORDER.filter((shape) =>
 /** The one a town's card shows, when it is drawn; else the first that is. */
 export const SHOWN_SHAPE: Shape = "heart";
 /**
- * From one sample asked to the next, at least: twelve a minute. The API
+ * From one sample asked to the next, at least: twelve a minute, so the
+ * eighteen of six towns take a minute and a half. The API
  * takes 30 POSTs a minute from a phone, and a city's examples use up to 18
  * of them (EXAMPLES_PER_MINUTE): «Start» and «Export GPX» keep their room.
  */

@@ -48,8 +48,8 @@ test("another square, or another API, asks again", async () => {
   expect(nearbyKey(API, CALDONAZZO)).toBe(`${API} 46.00,11.26`);
 });
 
-test("four at most, and what does not read is left out", async () => {
-  const many = Array.from({ length: 6 }, (_, i) => ({ ...levico, label: `Town ${i}` }));
+test("six at most, and what does not read is left out", async () => {
+  const many = Array.from({ length: 9 }, (_, i) => ({ ...levico, label: `Town ${i}` }));
   const broken = [
     null,
     { label: "No point", away_m: 10 },

@@ -168,6 +168,7 @@ apps/mobile/src/route/warnings.ts
 apps/mobile/src/route/wordInput.ts
 apps/mobile/src/feed/FeedPost.tsx
 apps/mobile/src/social/DrawingCard.tsx
+apps/mobile/src/activities/ActivityCard.tsx
 apps/mobile/src/paddle/PaddleExplore.tsx
 apps/mobile/src/explore/ExploreScreen.tsx
 apps/mobile/src/explore/CityExamples.tsx
@@ -281,7 +282,10 @@ Fatto:
   quel miglio), «It fits at about N mi» (se il miglio intero è quello
   appena chiesto, il decimo più vicino; sull'acqua arrotondato in giù).
 - **Le schede**: la riga dei post del «Feed» («Horse · 11.9 mi · 1 h 41
-  min»), il disegno aperto da un profilo («2.49 mi»), «Explore» con
+  min»), il disegno aperto da un profilo («2.49 mi»), la scheda di una
+  corsa di «My activities» aperta sulla mappa (scriveva già in miglia con
+  `runFacts`; ora chiama `useUnits()` e segue subito il cambio: la PR #358
+  era in `main` a fine lavoro, e il branch l'ha presa), «Explore» con
   «Paddle» («Heart · 1.2 mi», «0.6 mi away»), le due frasi di «Explore»
   con una distanza fissa («Starting within 3.1 mi of…», «shapes of 3.1 mi
   from the centre»: i 5 km del motore, detti al decimo perché «3 mi» non
@@ -331,8 +335,6 @@ traduzioni sono nelle tabelle):
 
 **Lasciato** (e perché):
 
-- `src/activities/ActivityCard.tsx`: la PR #358 non era in `main`; la
-  scheda scrive già in miglia dove legge `runFacts` (parte A).
 - `src/share/postRun.ts`: i suoi numeri vengono da `kmLabel` e `paceLabel`
   di `src/navigation/freeRun.ts`, che sono della parte C; di suo non
   scrive distanze. Non toccato.

@@ -2,7 +2,12 @@ import type { DrawingDetail, RouteResult } from "@shaperoute/shared-types";
 import drawing from "@shaperoute/shared-types/fixtures/drawing.json";
 import listed from "@shaperoute/shared-types/fixtures/recommended-routes.json";
 import fixture from "@shaperoute/shared-types/fixtures/route-result.json";
+import activity from "@shaperoute/shared-types/fixtures/activity.json";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
+
+import { ActivityCard } from "../activities/ActivityCard";
+import { runFacts } from "../activities/activityText";
+import type { ActivityDetail } from "../api/activities";
 
 import { CityExamples } from "../explore/CityExamples";
 import { asRecommended, type Example, forgetExamples } from "../explore/exampleRoutes";
@@ -109,6 +114,20 @@ test("a drawing opened from a profile says its miles, at once", async () => {
   await act(async () => saveUnitsChoice("mi"));
   expect(screen.getByText("2.49 mi")).toBeOnTheScreen();
   expect(screen.queryByText("4.00 km")).toBeNull();
+});
+
+test("a run of «My activities» open on the map says its miles, at once", async () => {
+  const run = activity as ActivityDetail;
+  await render(<ActivityCard activity={run} onList={jest.fn()} onDelete={jest.fn()} />);
+  await act(async () => {});
+  const inKm = runFacts(run);
+  expect(inKm).toMatch(/^\d+\.\d\d km · /);
+  expect(screen.getByText(inKm)).toBeOnTheScreen();
+  await act(async () => saveUnitsChoice("mi"));
+  const inMiles = runFacts(run);
+  expect(inMiles).toMatch(/^\d+\.\d\d mi · .* \/mi$/);
+  expect(screen.getByText(inMiles)).toBeOnTheScreen();
+  expect(screen.queryByText(inKm)).toBeNull();
 });
 
 describe("«Explore» on the water", () => {

@@ -176,7 +176,7 @@ Fatto come «Cosa fare», con l'ADR-0180.
   secondi di `changeLabel`, la bici a 10, 20 e 30 km e il limite di 0,5
   km/h (`kmCompare.test.ts`); le due corse dal vero, la lingua della
   voce e la corsa che riprende (`useFreeRun.test.ts`,
-  `useNavigation.test.ts`, `rideRun.test.ts`). 210 file di test, 1775
+  `useNavigation.test.ts`, `rideRun.test.ts`). 210 file di test, 1778
   test verdi; `typecheck`, `lint`, `format:check` puliti.
 
 **Da confermare dall'utente**: le frasi in tedesco, spagnolo e francese;

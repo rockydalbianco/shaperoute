@@ -1,13 +1,18 @@
 import type { Direction, Turn } from "@shaperoute/shared-types";
 
 import { roundMetres } from "../navigation/phrases";
+import { roundFeet } from "../units/runFormat";
+import type { Units } from "../units/units";
 
 /**
  * What the voice says along a run, in one language (TASK-209, ADR-0171).
  * Each language writes its words once (`en.ts`, `it.ts`, …) and
  * `voiceWords` puts them together the same way for all: the navigator
  * decides when to speak and what about, these say it. Only what is said:
- * what the screen writes, the banner too, is the app's (TASK-210).
+ * what the screen writes, the banner too, is the app's (TASK-210). With
+ * miles (TASK-182, ADR-0149) the same phrases say miles and feet: each
+ * language writes those too, beside the ones in kilometres and metres,
+ * which stay as they were.
  */
 
 /** The kinds of road the voice names when OpenStreetMap gives no name
@@ -29,6 +34,10 @@ export type Kind = (typeof KINDS)[number];
 /** The kilometre after which the voice cheers the runner on (the user's
  * choice, 2026-10-03): «Daje, avanti tutta!» after the first 5 km. */
 export const CHEER_KM = 5;
+
+/** With miles, the mile after which the voice cheers (TASK-182): the one
+ * nearest to CHEER_KM, 4.8 km into the run. */
+export const CHEER_MI = 3;
 
 /** Where a direction goes, as said after a turn ("onto the footpath") and
  * at the start ("on the footpath"): some languages change the words. */
@@ -103,6 +112,27 @@ export type Phrasebook = {
   walkTheBike(metres: number): string;
   /** Its end: "Back on the bike." */
   backOnTheBike: string;
+  /** With miles (TASK-182), a short distance is said in feet: "In 150
+   * feet, turn left…"; `feet` is rounded, `words` start in lower case. */
+  inFeet(feet: number, words: string): string;
+  /** Each mile, as `kilometre` each kilometre: the time so far and the
+   * average pace for a mile, both already said as times. */
+  mile(miles: number, time: string, pace: string): string;
+  /** After each mile from the second, the mile against the one before, as
+   * `kmFaster`, `kmSlower` and `kmSamePace`. */
+  mileFaster(by: string): string;
+  mileSlower(by: string): string;
+  mileSamePace: string;
+  /** On a bike, the last `miles` miles against the `miles` before, as
+   * `rideFaster`, `rideSlower` and `rideSameSpeed`. */
+  rideMilesFaster(miles: number): string;
+  rideMilesSlower(miles: number): string;
+  rideMilesSameSpeed(miles: number): string;
+  /** Every RIDE_MI_EVERY miles on a bike, as `rideKilometres`: the average
+   * speed in whole miles per hour. */
+  rideMiles(miles: number, time: string, speed: number): string;
+  /** As `walkTheBike`, in feet: "get off and walk the bike for 650 feet". */
+  walkTheBikeFeet(feet: number): string;
 };
 
 /** The voice's phrases in one language, ready to say. */
@@ -114,7 +144,8 @@ export type VoiceWords = {
    * The words said before a junction: "In 50 metres, turn left onto Via
    * Roma, then turn right onto the footpath". `chain` is the direction and
    * those joined to it (a street crossed in a few metres), said together;
-   * with `inM` null, the first is said as it is.
+   * with `inM` null, the first is said as it is. With miles, the same
+   * metres are said in feet: "In 150 feet, turn left…" (TASK-182).
    */
   announcement(chain: readonly Direction[], inM: number | null): string;
   /** "25 minutes 10 seconds", "1 hour 2 minutes": a time as said. */
@@ -152,9 +183,26 @@ export type VoiceWords = {
    * bike (TASK-216): `speed` in km/h, already whole. */
   rideKilometres(km: number, ms: number, speed: number): string;
   /** "In 50 metres, get off and walk the bike for 200 metres."; with `inM`
-   * null, from here: "Get off and walk the bike for 200 metres." (TASK-206). */
+   * null, from here: "Get off and walk the bike for 200 metres." (TASK-206).
+   * With miles, both in feet: "In 150 feet, get off and walk the bike for
+   * 650 feet." (TASK-182). */
   walkTheBike(inM: number | null, metres: number): string;
   backOnTheBike: string;
+  /** With miles (TASK-182): "1 mile. Time: … Average pace: … per mile.",
+   * `paceMs` the time of a mile; the mile CHEER_MI ends with the cheer. */
+  mile(miles: number, ms: number, paceMs: number): string;
+  /** "12 seconds faster than the last mile.", "8 seconds slower…", "Same
+   * pace as the last mile.": as `kmFaster`, `kmSlower` and `kmSamePace`. */
+  mileFaster(seconds: number): string;
+  mileSlower(seconds: number): string;
+  mileSamePace: string;
+  /** "The last 5 miles were faster than the 5 before.", on a bike. */
+  rideMilesFaster(miles: number): string;
+  rideMilesSlower(miles: number): string;
+  rideMilesSameSpeed(miles: number): string;
+  /** "5 miles. Time: … Average speed: 15 miles per hour.", on a bike:
+   * `speed` in mph, already whole. */
+  rideMiles(miles: number, ms: number, speed: number): string;
 };
 
 function isKind(kind: string): kind is Kind {
@@ -165,8 +213,19 @@ function lower(words: string): string {
   return words.charAt(0).toLowerCase() + words.slice(1);
 }
 
-/** The phrases of `book`, put together as every language does. */
-export function voiceWords(book: Phrasebook): VoiceWords {
+/**
+ * The phrases of `book`, put together as every language does. With `units`
+ * miles the short distances, which stay the navigator's metres, are said in
+ * feet (TASK-182); in kilometres, as always, in metres.
+ */
+export function voiceWords(book: Phrasebook, units: Units = "km"): VoiceWords {
+  /** "In 50 metres, …" or, with miles, "In 150 feet, …". */
+  function inShort(metres: number, words: string): string {
+    return units === "mi"
+      ? book.inFeet(roundFeet(metres), words)
+      : book.inMetres(roundMetres(metres), words);
+  }
+
   /** The road the direction goes onto, or null when OSM says nothing. */
   function place(direction: Direction): Place | null {
     if (direction.street) {
@@ -213,8 +272,7 @@ export function voiceWords(book: Phrasebook): VoiceWords {
     direction,
     announcement(chain, inM) {
       const said = chain.map(direction);
-      const first =
-        inM === null ? said[0] : book.inMetres(roundMetres(inM), lower(said[0]));
+      const first = inM === null ? said[0] : inShort(inM, lower(said[0]));
       return [
         first,
         ...said.slice(1).map((words) => `${book.then} ${lower(words)}`),
@@ -247,12 +305,26 @@ export function voiceWords(book: Phrasebook): VoiceWords {
       return book.rideKilometres(km, time(ms), speed);
     },
     walkTheBike(inM, metres) {
-      const words = book.walkTheBike(roundMetres(metres));
-      return inM === null
-        ? `${capital(words)}.`
-        : `${book.inMetres(roundMetres(inM), words)}.`;
+      const words =
+        units === "mi"
+          ? book.walkTheBikeFeet(roundFeet(metres))
+          : book.walkTheBike(roundMetres(metres));
+      return inM === null ? `${capital(words)}.` : `${inShort(inM, words)}.`;
     },
     backOnTheBike: book.backOnTheBike,
+    mile(miles, ms, paceMs) {
+      const said = book.mile(miles, time(ms), time(paceMs));
+      return miles === CHEER_MI ? `${said} ${book.cheer}` : said;
+    },
+    mileFaster: (seconds) => book.mileFaster(time(seconds * 1000)),
+    mileSlower: (seconds) => book.mileSlower(time(seconds * 1000)),
+    mileSamePace: book.mileSamePace,
+    rideMilesFaster: book.rideMilesFaster,
+    rideMilesSlower: book.rideMilesSlower,
+    rideMilesSameSpeed: book.rideMilesSameSpeed,
+    rideMiles(miles, ms, speed) {
+      return book.rideMiles(miles, time(ms), speed);
+    },
   };
 }
 

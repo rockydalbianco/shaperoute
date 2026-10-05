@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { type FreeRun, kmLabel } from "../navigation/freeRun";
+import type { FreeRun } from "../navigation/freeRun";
 import { distanceLabel } from "../navigation/phrases";
 import {
   AT_START_M,
@@ -22,6 +22,8 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { runDistanceLabel } from "../units/format";
+import { useUnits } from "../units/useUnits";
 import { RunCard } from "./RunDashboard";
 import { RunGrid, useRunNumbers } from "./RunPanel";
 
@@ -54,6 +56,8 @@ function StartPointer({
   track: Track | null;
   flat?: boolean;
 }) {
+  // The way to the start in the app's units (TASK-182).
+  const units = useUnits();
   const heading = useMemo(() => (track ? headingDeg(track) : null), [track]);
   const start = useMemo(() => (track ? toStart(track) : null), [track]);
   const box = flat ? styles.flat : styles.banner;
@@ -81,7 +85,7 @@ function StartPointer({
       style={box}
       accessible
       accessibilityLabel={
-        `Your start: ${distanceLabel(start.distanceM)} in a straight line, ` +
+        `Your start: ${distanceLabel(start.distanceM, units)} in a straight line, ` +
         `to the ${compassWords(start.bearing)}`
       }
     >
@@ -95,7 +99,7 @@ function StartPointer({
           </Text>
         </View>
         <View style={styles.words}>
-          <Text style={styles.distance}>{distanceLabel(start.distanceM)}</Text>
+          <Text style={styles.distance}>{distanceLabel(start.distanceM, units)}</Text>
           <Text style={styles.title}>Your start, in a straight line</Text>
           {headingText && <Text style={styles.message}>{headingText}</Text>}
         </View>
@@ -150,13 +154,12 @@ export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
   const { track } = run;
   // A run that is over: its clock stands at the last fix.
   const numbers = useRunNumbers(track, false);
+  // "4.01 km" or, with miles, "2.49 mi" (TASK-182).
+  const total = runDistanceLabel(track.distanceM, numbers.units);
   return (
     <View style={styles.finish}>
-      <Text
-        style={styles.total}
-        accessibilityLabel={`Distance: ${kmLabel(track.distanceM)}`}
-      >
-        {kmLabel(track.distanceM)}
+      <Text style={styles.total} accessibilityLabel={`Distance: ${total}`}>
+        {total}
       </Text>
       <RunGrid numbers={numbers} />
       <View style={styles.finishButtons}>

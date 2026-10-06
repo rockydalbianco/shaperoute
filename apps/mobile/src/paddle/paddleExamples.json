@@ -443,6 +443,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.878291, 10.846214],
+        "rotation_deg": 5.0,
         "alternatives": []
       },
       {
@@ -590,6 +591,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.879539, 10.842026],
+        "rotation_deg": 5.0,
         "alternatives": []
       },
       {
@@ -737,6 +739,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.878978, 10.845097],
+        "rotation_deg": 15.0,
         "alternatives": []
       },
       {
@@ -884,6 +887,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.881263, 10.842413],
+        "rotation_deg": -15.0,
         "alternatives": []
       },
       {
@@ -1074,6 +1078,7 @@
           [88, 89],
           [105, 106]
         ],
+        "rotation_deg": -10.0,
         "alternatives": []
       },
       {
@@ -1268,6 +1273,7 @@
           [79, 80],
           [96, 97]
         ],
+        "rotation_deg": -15.0,
         "alternatives": []
       }
     ],
@@ -1417,6 +1423,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.818423, 9.07502],
+        "rotation_deg": 10.0,
         "alternatives": []
       },
       {
@@ -1712,6 +1719,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.817344, 9.077084],
+        "rotation_deg": -15.0,
         "alternatives": []
       },
       {
@@ -1860,6 +1868,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.817613, 9.076568],
+        "rotation_deg": 10.0,
         "alternatives": []
       },
       {
@@ -2007,6 +2016,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.816624, 9.078116],
+        "rotation_deg": -10.0,
         "alternatives": []
       },
       {
@@ -2154,6 +2164,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.816714, 9.078245],
+        "rotation_deg": -5.0,
         "alternatives": []
       },
       {
@@ -2537,6 +2548,7 @@
           [47, 48],
           [64, 65]
         ],
+        "rotation_deg": 15.0,
         "alternatives": []
       }
     ],
@@ -2686,6 +2698,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.498045, 12.642846],
+        "rotation_deg": -15.0,
         "alternatives": []
       },
       {
@@ -2980,6 +2993,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.497981, 12.641729],
+        "rotation_deg": 15.0,
         "alternatives": []
       },
       {
@@ -3274,6 +3288,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.499298, 12.642709],
+        "rotation_deg": -5.0,
         "alternatives": []
       },
       {
@@ -3421,6 +3436,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [45.498885, 12.640965],
+        "rotation_deg": 10.0,
         "alternatives": []
       },
       {
@@ -3611,6 +3627,7 @@
           [100, 101],
           [117, 118]
         ],
+        "rotation_deg": -5.0,
         "alternatives": []
       },
       {
@@ -3804,6 +3821,7 @@
           [109, 110],
           [126, 127]
         ],
+        "rotation_deg": 5.0,
         "alternatives": []
       }
     ],
@@ -3953,6 +3971,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [44.007349, 12.665509],
+        "rotation_deg": -5.0,
         "alternatives": []
       },
       {
@@ -4247,6 +4266,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [44.006692, 12.666296],
+        "rotation_deg": 15.0,
         "alternatives": []
       },
       {
@@ -4395,6 +4415,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [44.0067, 12.666281],
+        "rotation_deg": -15.0,
         "alternatives": []
       },
       {
@@ -4542,6 +4563,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [44.004981, 12.667376],
+        "rotation_deg": -15.0,
         "alternatives": []
       },
       {
@@ -4689,6 +4711,7 @@
         "license": "Routes on OpenStreetMap data, (c) OpenStreetMap contributors, ODbL 1.0: https://www.openstreetmap.org/copyright",
         "activity": "paddling",
         "centre": [44.005636, 12.667052],
+        "rotation_deg": 15.0,
         "alternatives": []
       },
       {
@@ -4879,6 +4902,7 @@
           [114, 115],
           [131, 132]
         ],
+        "rotation_deg": -10.0,
         "alternatives": []
       },
       {
@@ -5072,6 +5096,7 @@
           [137, 138],
           [154, 155]
         ],
+        "rotation_deg": -10.0,
         "alternatives": []
       }
     ]

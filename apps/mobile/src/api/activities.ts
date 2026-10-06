@@ -38,6 +38,13 @@ export type Activity = {
   /** What the run was (TASK-251): on the water its pace is a paddler's.
    * Absent from an API before TASK-251, which only knew runs. */
   activity?: Sport;
+  /**
+   * How far the planned route's shape is turned, as RouteResult.rotation_deg
+   * (TASK-232): the drawing is shown turned back. Null for a run without a
+   * route, one north up and every run saved before; missing from an API
+   * older than TASK-232 part C. Read through `bearingOf`.
+   */
+  rotation_deg?: number | null;
   /** The planned route; null for a run without one. */
   route_preview: LatLon[] | null;
   track_preview: LatLon[];
@@ -110,21 +117,45 @@ export type ActivityRequest = {
    * TASK-199 refuses a field it does not know.
    */
   walks?: Walk[];
+  /**
+   * How far the planned route's shape is turned, as RouteResult.rotation_deg
+   * (TASK-232, ADR-0195). Sent only when the route is turned: an API older
+   * than TASK-232 part C refuses the field.
+   */
+  rotation_deg?: number;
 };
 
 /**
- * `request` as an app older than TASK-199 sends it: without the walks and
- * without the pen on its pauses. The same object when it has neither.
+ * `request` as an app older than TASK-199 sends it: without the walks,
+ * without the pen on its pauses and without the turn of TASK-232. The same
+ * object when it has none of them.
  */
 export function withoutPenUp(request: ActivityRequest): ActivityRequest {
-  if (request.walks === undefined && !request.pauses.some((p) => "pen" in p)) {
+  if (
+    request.walks === undefined &&
+    request.rotation_deg === undefined &&
+    !request.pauses.some((p) => "pen" in p)
+  ) {
     return request;
   }
-  const { walks: _walks, ...older } = request;
+  const { walks: _walks, rotation_deg: _turn, ...older } = request;
   return {
     ...older,
     pauses: request.pauses.map(({ pen: _pen, ...pause }) => pause),
   };
+}
+
+/**
+ * `request` as an app older than TASK-232 part C sends it, without the turn
+ * of its route: an API before it refuses the field, and keeps the run as
+ * one north up. The same object when it has none.
+ */
+export function withoutTurn(request: ActivityRequest): ActivityRequest {
+  if (request.rotation_deg === undefined) {
+    return request;
+  }
+  const { rotation_deg: _turn, ...older } = request;
+  return older;
 }
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
@@ -164,9 +195,11 @@ export function fetchActivity(
 
 /**
  * PUT /me/activities/{key}: saved once, however many times it is sent. A
- * run along a word with the pen up that the API refuses goes once more as
- * an older app sends it (TASK-199, ADR-0158): an API older than TASK-199
- * keeps it, scored on the whole route, rather than the run being lost.
+ * run along a turned route that the API refuses is first sent again without
+ * the turn (TASK-232, ADR-0195); a run along a word with the pen up that the
+ * API refuses goes once more as an older app sends it (TASK-199, ADR-0158):
+ * an API older than TASK-199 keeps it, scored on the whole route, rather
+ * than the run being lost.
  */
 export async function saveActivity(
   baseUrl: string,
@@ -183,13 +216,18 @@ export async function saveActivity(
       isActivity,
       options,
     );
-  const outcome = await put(request);
-  const older = withoutPenUp(request);
-  return outcome.kind === "api_error" &&
-    outcome.code === "invalid_request" &&
-    older !== request
-    ? put(older)
-    : outcome;
+  const refused = (outcome: AccountOutcome<Activity>) =>
+    outcome.kind === "api_error" && outcome.code === "invalid_request";
+  let sent = request;
+  let outcome = await put(sent);
+  for (const older of [withoutTurn, withoutPenUp]) {
+    const next = older(sent);
+    if (refused(outcome) && next !== sent) {
+      sent = next;
+      outcome = await put(sent);
+    }
+  }
+  return outcome;
 }
 
 /** DELETE /me/activities/{key}: gone, or never there. */
@@ -259,7 +297,8 @@ function hasFields(body: Record<string, unknown>): boolean {
     typeof body.distance_m === "number" &&
     typeof body.duration_s === "number" &&
     isNumber(body.score) &&
-    isNumber(body.fidelity)
+    isNumber(body.fidelity) &&
+    (body.rotation_deg === undefined || isNumber(body.rotation_deg))
   );
 }
 

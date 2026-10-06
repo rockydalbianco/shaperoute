@@ -74,6 +74,14 @@ def test_each_example_is_the_app_s_detail_of_a_paddling_route() -> None:
     }
     assert heart["activity"] == "paddling"
     assert heart["alternatives"] == []
+    # How far the shape is turned (TASK-232), only when it is: as the app
+    # keeps it, upright means no field.
+    for example in (heart, circle):
+        if "rotation_deg" in example:
+            assert isinstance(example["rotation_deg"], float)
+            assert example["rotation_deg"] != 0
+            assert -45 <= example["rotation_deg"] <= 45
+    assert "rotation_deg" not in circle  # a circle turns freely: 0
     assert heart["license"] == LICENSE
     assert heart["similarity"] == 1.0
     points = heart["points"]

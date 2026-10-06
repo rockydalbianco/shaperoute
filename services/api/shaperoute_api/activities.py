@@ -12,7 +12,9 @@ Every endpoint needs the token of an account (accounts.py): a run is seen,
 opened and deleted only by its owner. Deleting the account deletes its runs
 (ON DELETE CASCADE). A run opened whole has its pauses as they are kept
 (TASK-200). A run says what it was, on foot, by bike or paddling (TASK-208):
-its drawing shows it, and Strava takes it (drawings.py, strava.py).
+its drawing shows it, and Strava takes it (drawings.py, strava.py). A run
+along a route whose shape the engine turned keeps the turn (TASK-232,
+ADR-0195): the app shows the run turned back, so the drawing reads upright.
 """
 
 from __future__ import annotations
@@ -168,6 +170,13 @@ class ActivityRequestBody(BaseModel):
     activity: RunActivity = "running"
     """What the run was (TASK-208); missing from an older app, which only
     ran. Its drawing may change it later."""
+    rotation_deg: float | None = Field(
+        default=None, ge=-180, le=180, allow_inf_nan=False
+    )
+    """How far the planned route's shape is turned, RouteResult.rotation_deg
+    (TASK-232, ADR-0195): the app shows the run turned the other way, so the
+    drawing reads upright. Only with `points`, and only when the route is
+    turned: an older app, and a route north up, send nothing."""
 
     @field_validator("track")
     @classmethod
@@ -190,6 +199,8 @@ class ActivityRequestBody(BaseModel):
             raise ValueError("points and similarity come together, or neither")
         if self.walks and self.points is None:
             raise ValueError("walks are stretches of points: there are none")
+        if self.rotation_deg is not None and self.points is None:
+            raise ValueError("rotation_deg is the route's: there is none")
         # As POST /track-scores checks them (schemas.py).
         problem = walks_problem(self.walks, len(self.points or []))
         if problem is not None:
@@ -213,6 +224,11 @@ class ActivityBody(BaseModel):
     duration_s: int
     score: int | None
     fidelity: float | None
+    rotation_deg: float | None = None
+    """How far the planned route's shape is turned (TASK-232, ADR-0195):
+    the app draws the run turned the other way. Null for a run without a
+    route, one whose route was north up, and every run saved before. Always
+    answered; the default is for the examples written before."""
     activity: RunActivity
     """What the run was (TASK-251): the app writes a paddler's pace."""
     route_preview: list[LatLon] | None
@@ -256,6 +272,8 @@ class ActivityDetailBody(BaseModel):
     duration_s: int
     score: int | None
     fidelity: float | None
+    rotation_deg: float | None = None
+    """As in the list: the planned route's turn, or null."""
     activity: RunActivity
     """What the run was (TASK-251)."""
     similarity: float | None
@@ -462,6 +480,7 @@ def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:
 COLUMNS = (
     "id, key, started_at, place, shape, word, style, title, distance_m,"
     " duration_s, score, fidelity, route_similarity, walks, activity,"
+    " route_rotation_deg,"
     " ST_AsGeoJSON(route, 15) AS route,"
     " ST_AsGeoJSON(ST_Force2D(track), 15) AS track"
 )
@@ -503,8 +522,15 @@ def _fields(row: DictRow) -> dict[str, Any]:
         "score": row["score"],
         # A `real` column: without rounding 0.83 comes back as 0.8299999833.
         "fidelity": None if fidelity is None else round(fidelity, 4),
+        "rotation_deg": turn_kept(row["route_rotation_deg"]),
         "activity": row["activity"],
     }
+
+
+def turn_kept(kept: float | None) -> float | None:
+    """A `real` column, as the app sent it: whole degrees mostly, a
+    half at most (route_engine.water_fit tries every 5°)."""
+    return None if kept is None else round(kept, 2)
 
 
 def _listed(row: DictRow) -> ActivityBody:
@@ -639,9 +665,11 @@ class Activities:
             row = conn.execute(
                 "INSERT INTO runs (user_id, key, route, route_similarity, shape,"
                 " word, style, title, track, pauses, started_at, distance_m,"
-                " duration_s, score, fidelity, place, created_at, walks, activity)"
+                " duration_s, score, fidelity, place, created_at, walks, activity,"
+                " route_rotation_deg)"
                 " VALUES (%s, %s, ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s,"
-                " ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                " ST_GeomFromText(%s, 4326), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
+                " %s)"
                 f" RETURNING {COLUMNS}",
                 (
                     user_id,
@@ -663,6 +691,7 @@ class Activities:
                     self.now(),
                     Jsonb([list(walk) for walk in body.walks]),
                     body.activity,
+                    body.rotation_deg,
                 ),
             ).fetchone()
             assert row is not None

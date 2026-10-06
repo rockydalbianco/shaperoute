@@ -444,6 +444,14 @@ function Sgrava() {
         ? view.request.activity
         : undefined
       : exploreRun.activity;
+  // How far the shape of the route followed is turned (TASK-232): a drawn
+  // route, and one of "Explore" that says how it is turned, an example
+  // drawn for a place. Any other route, and a route that does not say,
+  // keeps north up.
+  const followedRotation =
+    exploreRun === null
+      ? (chosen?.rotation_deg ?? null)
+      : (exploreRun.rotation_deg ?? null);
   const navigating = screen === "navigate" && followed !== null;
   const navigation = useNavigation(
     followed?.points ?? null,
@@ -455,6 +463,9 @@ function Sgrava() {
       word: exploreRun === null ? chosen?.word : (exploreRun.word ?? null),
       onFoot: followedOnFoot ?? undefined,
       activity: followedActivity,
+      // Kept with the run: its drawing in «My activities» and its post are
+      // turned back too (TASK-232 part C).
+      rotationDeg: followedRotation ?? undefined,
     },
   );
   const finishing = screen === "finish" && finished !== null;
@@ -479,13 +490,7 @@ function Sgrava() {
     themed.state.status !== "idle";
   const exploring = screen === "map" && !reviewing && explored !== null;
   // A route whose shape is turned turns the map, so the drawing is upright
-  // (TASK-232): choosing it, running it and at its end. A drawn route, and
-  // one of "Explore" that says how it is turned: an example drawn for a
-  // place. Any other route, and a route that does not say, keeps north up.
-  const followedRotation =
-    exploreRun === null
-      ? (chosen?.rotation_deg ?? null)
-      : (exploreRun.rotation_deg ?? null);
+  // (TASK-232): choosing it, running it and at its end.
   const turned = useTurnedMap(
     reviewing || running || freeFinishing || theming
       ? null

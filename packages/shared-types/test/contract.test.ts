@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import activityPauses from "../fixtures/activity-pauses.json" with { type: "json" };
+import activityRequestTurned from "../fixtures/activity-request-turned.json" with { type: "json" };
 import activityRequestWalks from "../fixtures/activity-request-walks.json" with { type: "json" };
 import activityRequest from "../fixtures/activity-request.json" with { type: "json" };
+import activityTurned from "../fixtures/activity-turned.json" with { type: "json" };
 import activityWalks from "../fixtures/activity-walks.json" with { type: "json" };
 import activity from "../fixtures/activity.json" with { type: "json" };
 import apiErrorCodes from "../fixtures/api-error-codes.json" with { type: "json" };
@@ -13,8 +15,10 @@ import directions from "../fixtures/directions.json" with { type: "json" };
 import editReasons from "../fixtures/edit-reasons.json" with { type: "json" };
 import favoriteCycling from "../fixtures/favorite-cycling.json" with { type: "json" };
 import favoriteRequestCycling from "../fixtures/favorite-request-cycling.json" with { type: "json" };
+import favoriteRequestTurned from "../fixtures/favorite-request-turned.json" with { type: "json" };
 import favoriteRequestWalks from "../fixtures/favorite-request-walks.json" with { type: "json" };
 import favoriteRequest from "../fixtures/favorite-request.json" with { type: "json" };
+import favoriteTurned from "../fixtures/favorite-turned.json" with { type: "json" };
 import favoriteWalks from "../fixtures/favorite-walks.json" with { type: "json" };
 import favorite from "../fixtures/favorite.json" with { type: "json" };
 import favoritesCycling from "../fixtures/favorites-cycling.json" with { type: "json" };
@@ -395,6 +399,47 @@ test("a favorite keeps its activity, and a saved run opens with its pauses", () 
   for (const fixture of [activity, activityWalks]) {
     assert.ok(!("pauses" in fixture));
   }
+});
+
+test("a saved run and a favorite keep how far their shape is turned", () => {
+  // TASK-232 part C: the turn of the route, as RouteResult.rotation_deg, in
+  // the request and in the answer, within half a turn; the bodies are typed
+  // in the app (src/api/activities.ts, favorites.ts). The fixtures written
+  // before say nothing: an older app's requests, an older API's answers.
+  for (const fixture of [
+    activityRequestTurned,
+    activityTurned,
+    favoriteRequestTurned,
+    favoriteTurned,
+  ]) {
+    assert.ok(-180 <= fixture.rotation_deg && fixture.rotation_deg <= 180);
+    assert.notEqual(fixture.rotation_deg, 0);
+  }
+  assert.deepEqual(
+    { ...activityRequestTurned, rotation_deg: undefined },
+    { ...activityRequest, rotation_deg: undefined },
+  );
+  assert.equal(activityTurned.rotation_deg, activityRequestTurned.rotation_deg);
+  assert.deepEqual(activityTurned.points, activityRequestTurned.points);
+  assert.deepEqual(
+    { ...favoriteRequestTurned, rotation_deg: undefined },
+    { ...favoriteRequest, rotation_deg: undefined },
+  );
+  assert.equal(favoriteTurned.rotation_deg, favoriteRequestTurned.rotation_deg);
+  assert.deepEqual(favoriteTurned.points, favoriteRequestTurned.points);
+  for (const fixture of [
+    activityRequest,
+    activity,
+    activityWalks,
+    activityPauses,
+    favoriteRequest,
+    favorite,
+    favoriteWalks,
+    favoriteCycling,
+  ]) {
+    assert.ok(!("rotation_deg" in fixture));
+  }
+  assert.ok(favorites.favorites.every((one) => !("rotation_deg" in one)));
 });
 
 test("a shape reading names a shape of the catalogue, or none", () => {

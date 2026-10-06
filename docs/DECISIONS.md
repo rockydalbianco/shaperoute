@@ -9807,6 +9807,47 @@ dall'agente su delega dell'utente (TASK-232 parte B2):
   (`paddleExamples.json`) non dicono l'inclinazione; i preferiti non la
   tengono (parte C).
 
+**Parte C, i disegni salvati (2026-10-06)**, deciso dall'agente su delega
+dell'utente (TASK-232 parte C):
+
+- **L'inclinazione si salva com'è stata mandata, non si ricalcola**:
+  `runs.route_rotation_deg` e `favorites.rotation_deg` (migrazione
+  `0018`, `real`, fra −180 e 180, facoltative). L'API non ha la forma né
+  il motore sotto mano quando salva una corsa: tiene quello che il
+  `RouteResult` diceva, come fa per `similarity`. In `runs` solo con un
+  percorso (`CHECK`).
+- **L'app manda il campo solo quando la forma è girata** (`turnOf`: un
+  numero finito diverso da 0), e **l'API risponde sempre**, `null` quando
+  non c'è: la regola di `walks`, `activity` e `on_foot`. Un'API precedente
+  rifiuta il campo: l'app rimanda prima senza il campo, poi come un'app
+  precedente (`withoutTurn` davanti alla catena di `saveActivity` e
+  `keepFavorite`).
+- **Le corse di prima restano col nord in alto**: la colonna è vuota per
+  ogni riga di prima e non si riempie (non si sa com'era la forma). Lo
+  stesso per i preferiti.
+- **Il disegno visto dagli altri dice l'inclinazione della corsa**
+  (`Drawing`, `DrawingDetail`): la traccia segue il percorso, e girarla
+  dello stesso angolo la fa leggere dritta. `MyDrawing` no: è della corsa.
+- **Un disegno di più linee gira attorno a un centro solo** (`fitLines`
+  con un `bearing`): «My activities» disegna percorso e traccia insieme, e
+  girare ognuno attorno al proprio centro, come `turnedLine` fa per una
+  linea sola, li separerebbe. La linea del post (una sola) passa dalla
+  stessa strada.
+- **La corsa tiene l'inclinazione nel suo file** (`SavedRun.rotation_deg`,
+  solo quando c'è): `recordedRun` la manda all'API e la fine corsa la mette
+  nel post; il file di ogni altro percorso resta com'era.
+- **Il catalogo dell'API risponde sempre `rotation_deg`**, `0` per un
+  percorso dritto, come `RouteResult`: lo legge dai file delle città
+  (`seed_catalog` del motore lo scrive solo quando il motore inclina) e un
+  valore che non è un angolo si legge `0`. Il catalogo di oggi è di prima
+  della parte A: resta tutto `0` finché non si ridisegna. Il feed campione
+  (`tools/sample_feed.py`) porta il campo nel post quando il file lo dice.
+- **Gli esempi sull'acqua che arrivano con l'app dicono l'inclinazione**
+  (`paddle_examples.py`, solo quando c'è, come `asRecommended`): rifatti
+  con l'acqua del server sul Mac, 25 esempi su 32 escono inclinati di
+  5–15° con gli stessi percorsi di prima; «Explore» con «Paddle» e i
+  quattro disegni sull'acqua del «Feed» girano da soli.
+
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 

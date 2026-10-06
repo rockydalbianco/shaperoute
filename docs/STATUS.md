@@ -240,7 +240,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   attività (una zona della bici in memoria, due a piedi come prima), fuori
   da 10–30 km un `invalid_request` che dice i limiti, le foto in bici, la
   distanza suggerita nei limiti, e `prefetch_zones --activity cycling
-  --extract` per zone della bici di 26 × 26 km (stima 0,15–0,6 GB in
+--extract` per zone della bici di 26 × 26 km (stima 0,15–0,6 GB in
   memoria ciascuna). La corsa non cambia. **Parte C, l'app** (assegnata il
   2026-10-02 sera), PR #221, in `main` dal 2026-10-02 20:36Z: «Bike» si
   sceglie in «Settings» e vale subito; con «Bike» «Draw» chiede `cycling`
@@ -314,6 +314,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   salvate, preferiti, «Feed», post: una migrazione; e `rotation_deg` nel
   catalogo dell'API e in `paddleExamples.json`, punti 4 e 5 nel task
   file), in un contesto pulito, dopo aver sentito il coordinatore.
+  **Parte C** (API e app, in PR dal 2026-10-06; **migrazione `0018`**:
+  prima del merge serve l'ok dell'utente per il server, tramite il
+  coordinatore): le corse salvate e i preferiti tengono `rotation_deg`
+  come l'app l'ha mandato (`runs.route_rotation_deg`,
+  `favorites.rotation_deg`; `null` per le righe di prima, che restano col
+  nord in alto); «My activities», il disegno nel profilo, il post da
+  condividere e la scheda di un preferito si vedono girati dall'altra
+  parte (percorso e traccia insieme, `fitLines` con un `bearing`), e un
+  preferito inclinato si apre con la mappa girata; il disegno visto dagli
+  altri (`Drawing`) dice l'inclinazione. I due seguiti della B2: il
+  catalogo dell'API risponde `rotation_deg` (`0` finché i file delle città
+  non si ridisegnano; `seed_catalog` lo scrive) e gli esempi sull'acqua
+  nell'app rifatti con l'acqua del Mac (25 su 32 inclinati di 5–15°,
+  percorsi identici): i quattro disegni sull'acqua del «Feed» girano. Un'API
+  precedente rifiuta il campo e l'app rimanda senza. Visto solo nei test
+  (API in PostgreSQL, app con jest); non nel simulatore né sul telefono.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,
@@ -394,7 +410,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   in `main` (PR #235, 2026-10-03): `paddling` nel motore,
   **1–5 km** (scelta dell'utente), al mare la forma **oltre 200 m dalla
   riva** e sui laghi a 50 m (scelta dell'utente), `python -m route_engine
-  --activity paddling`, la validazione sull'acqua (errori, non warning),
+--activity paddling`, la validazione sull'acqua (errori, non warning),
   parole e immagini rifiutate sull'acqua, `paddling.plan_paddling` per la
   parte B; i centri scelti da dove si arriva alla riva. **B** (l'API,
   ADR-0164, in `main` dalla PR #241, 2026-10-03): `paddling` nel contratto
@@ -453,7 +469,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API
   e app in `main` dalla PR #260 (`8a938fd`, 2026-10-03):
   `GET`/`POST /drawings/{id}/comments` e `DELETE
-  /comments/{id}`, tabella `comments` (migrazione `0013`), al più 10 al
+/comments/{id}`, tabella `comments` (migrazione `0013`), al più 10 al
   minuto, il filtro di TASK-213 (`422 comment_rejected`, l'avviso
   nell'app). Nell'app, sotto un disegno aperto da un profilo, «Write a
   comment» / «N comments» apre un foglio dal basso con l'elenco e il campo
@@ -470,7 +486,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   dell'utente: due PR, il punteggio visibile agli altri, anche le corse
   senza percorso). **Parte A, l'API**, in `main` (PR #232, 2026-10-03):
   titolo e «Public» su una corsa di «My activities» (`PUT
-  /me/activities/{key}/drawing`), i disegni di un profilo e un disegno dal
+/me/activities/{key}/drawing`), i disegni di un profilo e un disegno dal
   suo id, la traccia senza i primi e gli ultimi 200 m e senza il percorso
   pianificato, il numero di disegni pubblici nel profilo; tabella
   `drawings`, migrazione `0009`. Non ancora sul server: arriva con il
@@ -848,7 +864,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   giorno, «sì toglilo anche da lì», e per la fine corsa «solo km e
   tempo»): niente punteggio sui disegni del «Profile» né a fine corsa,
   dove la scheda dice «4.0 km · 32 min» e l'app non chiede più `POST
-  /track-scores` (PR #365, merge `0294922`). **Il punteggio non si vede
+/track-scores` (PR #365, merge `0294922`). **Il punteggio non si vede
   più da nessuna parte nell'app**; l'API lo calcola ancora per le corse
   salvate. Conseguenza: l'evento `run_scored` degli `insights` non viene
   più registrato (seguito, se serve). **Parte F** («ok continua»
@@ -971,7 +987,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   quattro luoghi le hanno **dentro l'app** (`src/paddle/paddleExamples.json`,
   circa 100 KB), pronte subito anche senza rete. Nei campioni veri
   sull'acqua del server ci stanno 52 forme su 52. Il JSON lo scrive `python
-  -m shaperoute_api.paddle_examples` e porta l'impronta del motore
+-m shaperoute_api.paddle_examples` e porta l'impronta del motore
   sull'acqua: un test dell'API dice quando rifarlo. «Near me» resta
   disegnato al momento, e fuori dai quattro luoghi dipende da Overpass (i
   laghi multipoligono solo dopo che il server ha TASK-230). Esce con la
@@ -1231,7 +1247,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   alto li mostrano subito, e il portachiavi li tiene. API: `PATCH /me`
   (solo ciò che cambia; il nome con la regola dell'iscrizione, punto
   compreso; la bio al più 160 caratteri; errori in parole, `409
-  username_taken`) e `GET /users/{public_id}`, solo con il token: nome,
+username_taken`) e `GET /users/{public_id}`, solo con il token: nome,
   bio, foto e disegni pubblicati (0 finché non c'è TASK-117), **mai
   l'email** (test). `public_id` è un UUID casuale nuovo in `users`, non
   l'id in sequenza. Migrazione `0007_profiles.sql`: `bio` e `public_id` in
@@ -1320,7 +1336,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   ritaglia al quadrato nel telefono e si vede nella riga, nel cerchio di
   «Profile» e nel pulsante in alto, al posto dell'iniziale. Nell'API la
   tabella `profile_photos` (migrazione `0005`) e `GET`, `PUT`, `DELETE
-  /me/photo`: l'API tiene solo un JPEG quadrato di 256 px fatto da lei,
+/me/photo`: l'API tiene solo un JPEG quadrato di 256 px fatto da lei,
   dritto e senza i dati dello scatto. `DELETE /me` la cancella. Nessuna
   dipendenza nuova. Il resto di TASK-116 (nome, bio, profilo visto dagli
   altri) avrà una migrazione sua. **Sul telefono si vede dopo due passi
@@ -1763,8 +1779,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   motore leggeva la memoria libera (MemFree, 534 MB: il resto è cache
   delle zone) invece di quella disponibile (MemAvailable, 6,8 GB), e non
   avviava mai le partenze vicine. Provato nel container del server: cuore
-  da 5 km a Trento con 1 alternativa (10,8 s), stella con 2 (5,8 s), prima
-  0. Il server si aggiorna a `main` subito dopo il merge, perché l'utente
+  da 5 km a Trento con 1 alternativa (10,8 s), stella con 2 (5,8 s), prima 0. Il server si aggiorna a `main` subito dopo il merge, perché l'utente
   vuole le alternative presto; l'app non va ripubblicata.
 - **API e app** — TASK-142: le ricerche imparano anche da cosa fa l'app
   (ADR-0112, `docs/INSIGHTS.md`). `POST /signals` riceve la città scelta in
@@ -1805,7 +1820,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **Motore, API e app** — TASK-145: «Start» anche sui percorsi di
   «Explore» (consigliati, esempi delle città, a tema), chiesto dall'utente
   (ADR-0117). Al tocco l'app chiede le indicazioni a `POST
-  /route-directions`, che ritrova i nodi della linea sul grafo della zona
+/route-directions`, che ritrova i nodi della linea sul grafo della zona
   (`route_nodes.py`), poi la navigazione di sempre; «Stop» torna alla
   scheda. Sull'API del Mac 0,1–0,5 s, e indicazioni identiche a quelle
   del motore su 4 percorsi appena pianificati. L'API sul server e l'app
@@ -1841,7 +1856,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **API** — TASK-130: le ricerche che insegnano (ADR-0101,
   `docs/INSIGHTS.md`). L'API registra ogni ricerca e ogni segnale d'uso in
   `data/insights/` (acceso di default, senza dati personali); `python -m
-  shaperoute_api.insights` propone sinonimi, correzioni dei refusi, città e
+shaperoute_api.insights` propone sinonimi, correzioni dei refusi, città e
   frasi per il catalogo, con le prove e i controlli superati (`explain`).
   Si impara solo da giorni o luoghi diversi (il modello risponde sempre
   uguale) e mai se l'AI e l'ortografia non concordano. Si applica solo a
@@ -1886,7 +1901,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   sull'iPhone (2026-10-01): funziona. L'utente: «il cuore ad occhio
   saprei farlo un po' meglio» (da proporre come task sul motore).
 - **API e app** — TASK-126: «Explore» (ADR-0098): `GET
-  /recommended-routes` dai file del catalogo e la terza schermata
+/recommended-routes` dai file del catalogo e la terza schermata
   dell'app. In `main` (PR #124), da provare sull'iPhone (task file «In
   corso»).
 - **Catalogo** — TASK-125: il seme dei percorsi consigliati, 137 in 6
@@ -1905,7 +1920,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **API e app** — TASK-113 (prova sull'iPhone non riportata, vale anche
   per TASK-112): a fine corsa l'app mostra
   la corsa sopra il percorso e il punteggio da 0 a 100, chiesto a `POST
-  /track-scores` (ADR-0093). Senza rete la corsa resta sul telefono e il
+/track-scores` (ADR-0093). Senza rete la corsa resta sul telefono e il
   punteggio si richiede dopo. Il seguito della parte social è **TASK-110**,
   le scelte dell'utente su account e dati.
 - **Motore** — TASK-091: il log dell'API non scrive più le coordinate
@@ -1929,14 +1944,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 - **API** — TASK-090: il registro delle richieste (ADR-0085). Con
   `--request-log` l'API scrive ogni richiesta di percorso, partenza
   compresa, in `data/requests/requests.jsonl`; `python -m
-  shaperoute_api.replay` la rifà e dice se il percorso è lo stesso punto
+shaperoute_api.replay` la rifà e dice se il percorso è lo stesso punto
   per punto. **Spento per default**: accenderlo sempre sul Mac è una scelta
   dell'utente. Non si vede nell'app. Provato: cuore 10 km a Caldonazzo e
   «CIAO» a Levico, rifatti identici (467 e 626 punti).
 - **Motore** — TASK-111: il punteggio di una traccia corsa, da 0 a 100
   (`track_score.py`, ADR-0090): la somiglianza del percorso per la fedeltà
   della corsa al percorso, entro 40 m. Dalla CLI con `--score-track
-  corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
+corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
   poi TASK-113.
 
 - **API e motore** — TASK-087: il ritaglio della zona più veloce, a
@@ -2225,7 +2240,7 @@ Niente.
   Expo Go vuole l'accesso con lo stesso account Expo sul PC e sul telefono
   (già fatto); il permesso di posizione è di Expo Go (`SETUP.md`, 9.4).
 - API: dalla radice `services\api\.venv\Scripts\python.exe -m
-  shaperoute_api --lan` (`SETUP.md`, passo 10); risponde anche su `/docs`.
+shaperoute_api --lan` (`SETUP.md`, passo 10); risponde anche su `/docs`.
 - Il disco C: di questo PC ha poco spazio (5,5 GB liberi il 2026-09-23,
   dopo la pulizia: tolti MATLAB, i ritagli in `data/cache/` e la venv del
   route-engine). Ogni zona nuova scaricata vale circa 40 MB, più le
@@ -2243,7 +2258,7 @@ Niente.
   solo in `.env`, che non entra nel repository.
 - Più sessioni lavorano insieme, ognuna nel suo worktree: l'app in
   `D:\shaperoute-app`, con i suoi `node_modules` (`npm ci --cache
-  D:/npm-cache`: il 2026-09-24 C: aveva 2,8 GB liberi). Il primo `jest` a
+D:/npm-cache`: il 2026-09-24 C: aveva 2,8 GB liberi). Il primo `jest` a
   freddo può superare i 5 s di un test e fallire; al secondo giro è verde.
 
 ---

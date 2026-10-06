@@ -1,6 +1,7 @@
 import type { LatLon, Walk } from "@shaperoute/shared-types";
 
 import type { ActivityPause, ActivityRequest } from "../api/activities";
+import { turnOf } from "../explore/recommendedRoutes";
 import type { SavedRun } from "../navigation/trackStore";
 import { walksOf } from "../route/walks";
 import { activityKey } from "./activityKey";
@@ -10,8 +11,9 @@ import { activityKey } from "./activityKey";
  * what PUT /me/activities/{key} takes. The fixes and the pauses go as they
  * were recorded: metres, seconds and score are the API's to count. A run
  * along a word with the pen up also sends its route's walks and the pen of
- * its pauses (TASK-199); any other run sends what it sent before, field for
- * field, because an API older than TASK-199 refuses what it does not know.
+ * its pauses (TASK-199), and a run along a route whose shape is turned sends
+ * the turn (TASK-232); any other run sends what it sent before, field for
+ * field, because an older API refuses what it does not know.
  */
 export type RecordedRun = { id: string; request: ActivityRequest };
 
@@ -86,6 +88,8 @@ export function recordedRun(run: SavedRun, drawn: Drawn | null): RecordedRun | n
       title: cut(what?.title ?? null, MAX_TITLE),
       // Last, and only for a word with the pen up.
       ...(penUp ? { walks: walks.map(([from, to]): Walk => [from, to]) } : {}),
+      // And only for a route whose shape is turned (TASK-232).
+      ...(withRoute ? turnOf(run) : {}),
     },
   };
 }

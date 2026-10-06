@@ -4,6 +4,7 @@ import { type GestureResponderEvent, StyleSheet, Text, View } from "react-native
 import { fitLines, type Segment } from "../activities/fitLines";
 import { t } from "../i18n";
 import { HeartBadge } from "../intro/HeartBadge";
+import { bearingOf } from "../map/turnedMap";
 import { color, fontWeight } from "../theme/tokens";
 import {
   POST_RESULTS,
@@ -48,7 +49,9 @@ type Props = {
  * The post as it is shared (TASK-231): on the yellow of Sgrava, the logo,
  * the title, the drawing the run made in black, the results chosen and the
  * emoji where the runner dragged them. The ends of the track are left out
- * (POST_CUT_M). The ref is the View the picture is made of.
+ * (POST_CUT_M). A run along a turned route is drawn turned back, so the
+ * drawing reads upright (TASK-232). The ref is the View the picture is
+ * made of.
  */
 export const PostImage = forwardRef<View, Props>(function PostImage(
   { run, shown, stickers, width, onMoveSticker, onRemoveSticker },
@@ -58,9 +61,10 @@ export const PostImage = forwardRef<View, Props>(function PostImage(
   const boxWidth = width * (1 - 2 * SIDE);
   const boxHeight = height * (DRAWING_BOTTOM - DRAWING_TOP);
   const line = width * LINE;
+  const bearing = bearingOf(run.rotationDeg);
   const [segments] = useMemo(
-    () => fitLines([withoutEnds(run.track)], boxWidth, boxHeight, line),
-    [run.track, boxWidth, boxHeight, line],
+    () => fitLines([withoutEnds(run.track)], boxWidth, boxHeight, line, bearing),
+    [run.track, boxWidth, boxHeight, line, bearing],
   );
   const results = POST_RESULTS.filter(
     (result) => shown.includes(result) && resultValue(run, result) !== null,

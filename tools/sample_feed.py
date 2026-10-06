@@ -107,6 +107,18 @@ class Figure:
     route_m: int
     similarity: float
     points: tuple[LatLon, ...]
+    rotation_deg: float = 0.0
+    """How far the engine turned the shape (TASK-232, ADR-0195), as the city
+    file says it; 0 for a route north up, or one that does not say."""
+
+
+def turn_of(route: dict[str, object]) -> float:
+    """`rotation_deg` of a route of a city file, as the API reads it
+    (recommended.turn_of): 0 unless it is a number between -180 and 180."""
+    turn = route.get("rotation_deg")
+    if isinstance(turn, bool) or not isinstance(turn, int | float):
+        return 0.0
+    return float(turn) if math.isfinite(turn) and -180 <= turn <= 180 else 0.0
 
 
 def read_city(path: Path) -> list[Figure]:
@@ -128,6 +140,7 @@ def read_city(path: Path) -> list[Figure]:
                 route_m=int(route["route_m"]),
                 similarity=float(route["similarity"]),
                 points=points,
+                rotation_deg=turn_of(route),
             )
         )
     return figures
@@ -295,6 +308,11 @@ def build(figures: Sequence[Figure]) -> list[dict[str, object]]:
                     [round(lat, COORD_DECIMALS), round(lon, COORD_DECIMALS)]
                     for lat, lon in simplified(figure.points)
                 ],
+                # Only a figure the engine turned (TASK-232): the app draws
+                # it turned back, so the drawing reads upright.
+                **(
+                    {"rotation_deg": figure.rotation_deg} if figure.rotation_deg else {}
+                ),
             }
         )
         seen[figure.shape] += 1

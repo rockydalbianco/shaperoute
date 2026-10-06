@@ -28,6 +28,10 @@ export type SamplePost = {
   /** The points of `line` the pen comes to without drawing: a shape in
    * pieces (TASK-226). */
   gaps?: number[];
+  /** How far the engine turned the figure, as RouteResult.rotation_deg
+   * (TASK-232): the drawing is shown turned back. Absent for a figure
+   * north up. */
+  rotation_deg?: number;
 };
 
 /** The drawings of the runs, in their order. In the file a point is a list

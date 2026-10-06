@@ -79,6 +79,8 @@ DAY_MS = 86_400_000
 NEAR_M = 0.01
 # What TASK-208 added to the bodies.
 NEW_FIELDS = {"visibility", "description", "activity", "tags", "photos"}
+# And the run's turn, TASK-232 part C: the same older fixtures.
+NEW_FIELDS |= {"rotation_deg"}
 THIRD_EMAIL = "third@example.com"
 
 
@@ -724,6 +726,35 @@ def test_a_run_saved_before_the_drawings_can_be_published(
     drawing_id = published(client, me)["id"]
     seen = client.get(f"/drawings/{drawing_id}", headers=other(client))
     assert seen.status_code == 200
+
+
+def test_the_others_see_how_far_the_drawing_is_turned(client: TestClient) -> None:
+    """TASK-232 part C: a run along a route whose shape the engine turned
+    is seen turned the same way, in the profile's list and whole, so the
+    drawing reads upright; a run north up, or saved before, says nothing."""
+    me = signed_up(client)
+    saved(client, me, rotation_deg=-30)
+    drawing_id = published(client, me)["id"]
+    saved(client, me, key=OTHER_KEY, days_later=1)
+    upright_id = published(client, me, key=OTHER_KEY)["id"]
+    them = other(client)
+    seen = client.get(f"/drawings/{drawing_id}", headers=them).json()
+    assert seen["rotation_deg"] == -30
+    assert (
+        client.get(f"/drawings/{upright_id}", headers=them).json()["rotation_deg"]
+        is None
+    )
+    mine = public_id(client, me)
+    listed = client.get(f"/users/{mine}/drawings", headers=them).json()["drawings"]
+    assert [(d["id"], d["rotation_deg"]) for d in listed] == [
+        (upright_id, None),
+        (drawing_id, -30),
+    ]
+    # What the owner chose says nothing of it: the turn is the run's.
+    assert (
+        "rotation_deg"
+        not in client.get("/me/drawings", headers=me).json()["drawings"][0]
+    )
 
 
 def test_a_run_without_a_route_is_published_without_a_score(

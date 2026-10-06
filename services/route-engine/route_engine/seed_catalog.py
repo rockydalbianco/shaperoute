@@ -326,6 +326,10 @@ def plan_case(case: Case, start: LatLon, planner: Planner) -> dict[str, Any]:
             ],
             warnings=list(result.warnings),
         )
+        # How far the shape is turned (TASK-232, ADR-0195), only when it is:
+        # the API's catalogue says it, and the app draws the route turned back.
+        if result.rotation_deg:
+            run["rotation_deg"] = round(result.rotation_deg, 2)
     run["seconds"] = round(time.monotonic() - began, 1)
     run["planned_at"] = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     return run
@@ -432,6 +436,11 @@ def catalogue_files(
                     "similarity": r["similarity"],
                     "planned_at": r["planned_at"],
                     "points": r["points"],
+                    **(
+                        {"rotation_deg": r["rotation_deg"]}
+                        if r.get("rotation_deg")
+                        else {}
+                    ),
                 }
                 for r in routes
             ],

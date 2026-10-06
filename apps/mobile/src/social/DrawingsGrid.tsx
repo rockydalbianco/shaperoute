@@ -183,6 +183,7 @@ export function DrawingsGrid({ publicId, own }: Props) {
                   track={NO_TRACK}
                   width={cell}
                   height={cell}
+                  rotationDeg={drawing.rotation_deg}
                 />
               </Pressable>
             ))}

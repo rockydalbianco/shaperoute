@@ -2,6 +2,7 @@ import type { LatLon } from "@shaperoute/shared-types";
 import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
+import { bearingOf } from "../map/turnedMap";
 import { color, radius, route as routeLine, space, track } from "../theme/tokens";
 import { fitLines, type Segment } from "./fitLines";
 
@@ -15,6 +16,12 @@ type Props = {
   track: LatLon[];
   width: number;
   height: number;
+  /**
+   * How far the route's shape is turned, counterclockwise
+   * (`rotation_deg` of the run, TASK-232): the drawing is turned the other
+   * way, so it reads upright as on the map. Without it, north up.
+   */
+  rotationDeg?: number | null;
 };
 
 const NO_ROUTE: LatLon[] = [];
@@ -22,12 +29,14 @@ const NO_ROUTE: LatLon[] = [];
 /**
  * A run as the end of a run shows it on the map, small (TASK-172): the
  * route yellow, and over it, thin and light, what was run. No SVG in the
- * app: each segment is a thin turned View.
+ * app: each segment is a thin turned View. A run along a turned route is
+ * drawn turned back, route and run together (TASK-232).
  */
-export function RunDrawing({ route, track: run, width, height }: Props) {
+export function RunDrawing({ route, track: run, width, height, rotationDeg }: Props) {
+  const bearing = bearingOf(rotationDeg);
   const [planned, done] = useMemo(
-    () => fitLines([route ?? NO_ROUTE, run], width, height, space.sm),
-    [route, run, width, height],
+    () => fitLines([route ?? NO_ROUTE, run], width, height, space.sm, bearing),
+    [route, run, width, height, bearing],
   );
   return (
     <View style={[styles.box, { width, height }]} accessible={false}>

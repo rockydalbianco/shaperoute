@@ -20,6 +20,7 @@ import {
   cityName,
   type RecommendedRoute,
   type RecommendedRouteDetail,
+  turnOf,
 } from "../explore/recommendedRoutes";
 import type { ThemedResult } from "../explore/themedRoutes";
 import { t } from "../i18n";
@@ -123,6 +124,8 @@ export function drawnKeepable(
       // A bike route keeps its stretches with the bike on foot (TASK-206).
       ...onFoot(result.points, result.on_foot),
       ...drawnFor(request.activity),
+      // A turned shape keeps its turn (TASK-232): only when it is.
+      ...turnOf(result),
     },
     result.similarity,
   );
@@ -145,6 +148,7 @@ export function exploredKeepable(
       route_m: Math.round(detail.route_m),
       points: detail.points,
       ...drawnFor(detail.activity ?? "running"),
+      ...turnOf(detail),
     },
     detail.similarity,
   );
@@ -268,7 +272,8 @@ export type OpenedFavorite = Extract<Explored, { status: "done" }> & {
  * leave them out; its request asks for the pen up, as the export wants.
  * Its request has the activity it was kept with (TASK-200), whatever sport
  * «Settings» has: a bike route is exported as one, and has its stretches
- * with the bike on foot in the result (TASK-206), marked on the map.
+ * with the bike on foot in the result (TASK-206), marked on the map. A
+ * turned shape opens with the map turned, as it was kept (TASK-232).
  */
 export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
   const detail: RecommendedRouteDetail = {
@@ -282,6 +287,7 @@ export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
     similarity: favorite.similarity,
     points: favorite.points,
     license: "",
+    ...turnOf(favorite),
   };
   const route: RecommendedRoute = {
     id: favorite.id,
@@ -299,6 +305,7 @@ export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
     start: favorite.points[0],
     away_m: 0,
     preview: [],
+    ...turnOf(favorite),
   };
   const walked = penUp(favorite, favorite.points, favorite.walks);
   const stretches = onFoot(favorite.points, favorite.on_foot);
@@ -353,6 +360,7 @@ export function openedFavorite(favorite: FavoriteDetail): OpenedFavorite {
         ...walked,
         ...stretches,
         ...drawnFor(activity),
+        ...turnOf(favorite),
       },
     },
   };

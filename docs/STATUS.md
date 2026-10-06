@@ -574,8 +574,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Stop» e «Keep running», o l'app chiusa a metà corsa, il navigatore
   riparte da dove la traccia era arrivata (svolte, penna, bici a piedi);
   un rifiuto della posizione porta a «denied». Solo app, niente testi
-  nuovi. **Rimandato all'utente**: rientrare più avanti dopo aver saltato
-  un pezzo. `tasks/TASK-253.md`.
+  nuovi. Il rientro più avanti dopo un pezzo saltato **non si fa**, per scelta
+  dell'utente del 2026-10-06 (chi sbaglia strada disegna un'alternativa,
+  l'app glielo dice). `tasks/TASK-253.md`.
 
 
 - **CI e motore** — TASK-248: il job `api` della CI che restava appeso

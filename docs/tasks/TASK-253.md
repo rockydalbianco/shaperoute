@@ -129,5 +129,6 @@ navigazione riprende da dove la traccia era arrivata (`resume.ts`, nuovo:
 navigatore, penna, bici a piedi; «Head out on …» non si ripete). Il
 rifiuto della posizione porta a «denied». Test nuovi rossi su `main` e
 verdi qui; suite dell'app verde. Tre test di prima cambiano misura (la fine
-corsa una posizione dopo). **Rimandato**: il passo 4 (rientrare più avanti
-dopo aver saltato un pezzo), scelta dell'utente.
+corsa una posizione dopo). **Chiuso dall'utente** il 2026-10-06: il passo 4 non si fa
+(«hai sbagliato a disegnare e basta, ma puoi continuare dicendo che è
+sbagliato e così disegni un'alternativa»: ADR-0217, aggiornamento).

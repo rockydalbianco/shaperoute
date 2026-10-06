@@ -181,8 +181,8 @@ allo stesso modo, e la seconda riga è «Poi …» con `t("Then {directions}")`;
 `phrases.instruction`/`thenText` restano per i loro test, da togliere con
 «Draw». Test: `screens/RunItalian.test.tsx` (banner, fine corsa, numeri,
 bottone, tempi in italiano); `RunBike`, `RunPaddle`, `RunMiles` cercano
-la scheda «Dati» dove sono in italiano. **Testi da vedere all'utente
-prima del merge.**
+la scheda «Dati» dove sono in italiano. **Testi approvati dall'utente**
+il 2026-10-06 («vanno bene i testi»).
 
 **Da fare nelle parti successive**: «Draw» (`RoutePanel`, `problems`,
 `distance`, `ImageChoice`, `OutlineBoard`, `warnings`, `wordInput`,

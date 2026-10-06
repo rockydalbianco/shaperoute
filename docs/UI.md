@@ -1843,7 +1843,18 @@ route», e la voce lo dice una volta, con una vibrazione; il percorso non si
 ricalcola. Il marciapiede opposto e un GPS che sbaglia per qualche secondo
 non bastano, e una posizione con un errore dichiarato oltre 40 m non conta;
 una via parallela sbagliata sì (ADR-0070). Dopo due posizioni di fila sul
-percorso, «Back on the route». Alla fine, «You have arrived». Funziona con lo schermo
+percorso, «Back on the route». Alla fine, «You have arrived», alla seconda
+posizione di fila entro 25 m dalla fine (TASK-253, ADR-0217): una sola, o
+una con un errore dichiarato oltre 40 m, non basta, perché l'arrivo chiude
+la registrazione. Dove il percorso ripassa dallo stesso punto entro 300 m
+(un baffo, un incrocio) la posizione resta sul passaggio più vicino a dove
+si era: andare avanti lungo il percorso costa un quarto di metro al metro,
+andare indietro un metro al metro, e fra i punti del percorso entro 40 m
+vince il più economico (ADR-0217). Dopo «Stop» e «Keep running», o dopo
+l'app chiusa a metà corsa, il navigatore riparte da dove la traccia era
+arrivata, ripassando in silenzio le posizioni registrate: la prossima
+svolta detta è quella davanti, le lettere già disegnate restano disegnate,
+e «Head out on …» non si ripete. Funziona con lo schermo
 acceso e l'app aperta; la posizione non esce dal telefono.
 
 **La voce della corsa** (TASK-209, ADR-0171; chiesto dall'utente il

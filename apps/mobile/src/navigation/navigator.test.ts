@@ -2,6 +2,7 @@ import type { Direction, LatLon } from "@shaperoute/shared-types";
 
 import {
   ANNOUNCE_M,
+  ARRIVE_FIXES,
   BACK_FIXES,
   chainFrom,
   type Cue,
@@ -250,11 +251,64 @@ test("the end of the route is said, and nothing after", () => {
   for (let m = 50; m <= 1990; m += 40) {
     navigation = onFix(navigation, m <= 1000 ? east(m) : east(2000 - m)).navigation;
   }
-  const end = onFix(navigation, east(5));
+  // One fix at the end is not enough (TASK-253): ARRIVE_FIXES in a row are.
+  const first = onFix(navigation, east(5));
+  expect(ARRIVE_FIXES).toBe(2);
+  expect(first.navigation.arrived).toBe(false);
+  expect(first.cues).toEqual([]);
+  const end = onFix(first.navigation, east(5));
   expect(end.navigation.arrived).toBe(true);
   expect(end.cues).toContainEqual({ say: "You have arrived.", vibrate: true });
   expect(onFix(end.navigation, east(5)).cues).toEqual([]);
   expect(remainingM(end.navigation)).toBeLessThan(30);
+});
+
+test("a poor fix at the end, or one away from it, does not count towards arriving", () => {
+  let navigation = startNavigation(POINTS, DIRECTIONS).navigation;
+  for (let m = 50; m <= 1990; m += 40) {
+    navigation = onFix(navigation, m <= 1000 ? east(m) : east(2000 - m)).navigation;
+  }
+  const poor = onFix(navigation, east(5), { accuracyM: 60 });
+  expect(poor.navigation.arrived).toBe(false);
+  const there = onFix(poor.navigation, east(5));
+  expect(there.navigation.arrived).toBe(false);
+  // Away again (the runner overshot): the count starts over.
+  const away = onFix(there.navigation, east(40));
+  expect(away.navigation.arrived).toBe(false);
+  const back = onFix(away.navigation, east(8));
+  expect(back.navigation.arrived).toBe(false);
+  expect(onFix(back.navigation, east(6)).navigation.arrived).toBe(true);
+});
+
+test("a direction in the last metres does not stop the arrival (TASK-253)", () => {
+  // A right turn 6 m before the end: never passed by PASS_M.
+  const directions = [...DIRECTIONS, direction("right", 1994, "Via Roma")];
+  let navigation = startNavigation(POINTS, directions).navigation;
+  for (let m = 50; m <= 1990; m += 40) {
+    navigation = onFix(navigation, m <= 1000 ? east(m) : east(2000 - m)).navigation;
+  }
+  navigation = onFix(navigation, east(5)).navigation;
+  const end = onFix(navigation, east(5));
+  expect(end.navigation.arrived).toBe(true);
+  expect(end.cues).toContainEqual({ say: "You have arrived.", vibrate: true });
+});
+
+test("a route that passes near its own end arrives only at the end (TASK-253)", () => {
+  // Out east 1 km and back along the same street: at 300 m out the fix is
+  // 300 m from the end, and the end is within AHEAD_M of 1700 m. From
+  // 1650 m, a fix at 60 m out (1940 m back) is placed on the way back,
+  // not on the end 60 m further.
+  const along = cumulative(POINTS);
+  const back = locate(POINTS, along, east(60), 1650);
+  expect(back.alongM).toBeCloseTo(1940, -1);
+  // And the navigation does not arrive there.
+  let navigation = startNavigation(POINTS, DIRECTIONS).navigation;
+  for (let m = 50; m <= 1930; m += 40) {
+    navigation = onFix(navigation, m <= 1000 ? east(m) : east(2000 - m)).navigation;
+  }
+  const near = onFix(onFix(navigation, east(60)).navigation, east(54));
+  expect(near.navigation.arrived).toBe(false);
+  expect(near.navigation.alongM).toBeCloseTo(1946, -1);
 });
 
 test("a chain is the direction and the joined ones after it", () => {

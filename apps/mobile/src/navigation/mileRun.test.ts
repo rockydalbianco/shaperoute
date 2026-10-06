@@ -218,6 +218,8 @@ test("with miles a ride says its turn in feet and the miles every 5, in miles pe
   ]);
   await act(async () => {
     go(550, 25_000, RIDING, 50);
+    // The end is reached on the second fix there (TASK-253).
+    go(25_000, 25_000, RIDING);
   });
   expect(said().slice(2)).toEqual([
     "5 miles. Time: 19 minutes 19 seconds. Average speed: 16 miles per hour.",
@@ -349,6 +351,7 @@ test("with «Kilometres» chosen, the run and the ride say what they said before
   const ride = await follow(line(10_500), { activity: "cycling", onFoot: [[6, 8]] });
   await act(async () => {
     go(0, 10_500, RIDING, 50);
+    go(10_500, 10_500, RIDING);
   });
   expect(said()).toEqual([
     "Head out on Via Roma",

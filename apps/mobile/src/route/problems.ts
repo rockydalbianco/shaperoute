@@ -6,7 +6,7 @@ import {
   MAX_IMAGE_BYTES,
 } from "@shaperoute/shared-types";
 
-import { t } from "../i18n";
+import { decimal, t, tLater } from "../i18n";
 import { nearestTenths, tenthsToM, unitsNumber } from "../units/distanceInput";
 import { METRES_PER_MILE } from "../units/format";
 import { appUnits, type Units } from "../units/units";
@@ -97,7 +97,24 @@ export function fitsAtM(
  * route draws: in km as the app always said it, in miles with «Miles». */
 function fitsAtText(kind: ChoiceKind, fits: number, units: Units): string {
   if (units === "km") {
-    return `This ${kind} does not fit the roads here at this distance. It fits at about ${fits / 1000} km.`;
+    const km = { km: fits / 1000 };
+    switch (kind) {
+      case "word":
+        return t(
+          "This word does not fit the roads here at this distance. It fits at about {km} km.",
+          km,
+        );
+      case "image":
+        return t(
+          "This image does not fit the roads here at this distance. It fits at about {km} km.",
+          km,
+        );
+      default:
+        return t(
+          "This shape does not fit the roads here at this distance. It fits at about {km} km.",
+          km,
+        );
+    }
   }
   const miles = { mi: unitsNumber(fits, "mi") };
   switch (kind) {
@@ -153,25 +170,31 @@ export function problemText(
           }
           if (kind === "word") {
             return {
-              text: "This word does not fit the roads here. Try a shorter word, or another start.",
+              text: t(
+                "This word does not fit the roads here. Try a shorter word, or another start.",
+              ),
               detail: devDetail(problem.message),
             };
           }
           if (kind === "image") {
             return {
-              text: "This outline does not fit the roads here. Try another distance, another start, or a simpler picture.",
+              text: t(
+                "This outline does not fit the roads here. Try another distance, another start, or a simpler picture.",
+              ),
               detail: devDetail(problem.message),
             };
           }
           return {
-            text: "This shape does not fit the roads here. Try another shape, or another start:",
+            text: t(
+              "This shape does not fit the roads here. Try another shape, or another start:",
+            ),
             detail: devDetail(problem.message),
             pickShape: true,
           };
         }
         case "map_data_unavailable":
           return {
-            text: "Map data for this area could not be downloaded. Try again later.",
+            text: t("Map data for this area could not be downloaded. Try again later."),
             detail: devDetail(problem.message),
             retry: true,
           };
@@ -184,16 +207,16 @@ export function problemText(
         case "image_not_usable":
           return {
             text: isImageReason(problem.reason)
-              ? REASON_TEXT[problem.reason]
-              : "The route engine cannot find one clear outline in this picture.",
+              ? t(REASON_TEXT[problem.reason])
+              : t("The route engine cannot find one clear outline in this picture."),
             detail: devDetail(problem.message),
           };
         case "outline_edit_rejected":
           return {
             text:
               problem.reason && problem.reason in EDIT_REASON_TEXT
-                ? EDIT_REASON_TEXT[problem.reason as EditReason]
-                : "This line cannot be added to the outline. Draw it again.",
+                ? t(EDIT_REASON_TEXT[problem.reason as EditReason])
+                : t("This line cannot be added to the outline. Draw it again."),
             detail: devDetail(problem.message),
           };
         case "ai_unavailable":
@@ -212,7 +235,9 @@ export function problemText(
           };
         case "too_many_requests":
           return {
-            text: "Too many requests to the API in the last minute. Wait a minute, then try again.",
+            text: t(
+              "Too many requests to the API in the last minute. Wait a minute, then try again.",
+            ),
             detail: devDetail(problem.message),
           };
         default:
@@ -239,9 +264,9 @@ export function problemText(
         retry: true,
       };
     case "no_sharing":
-      return { text: "This phone cannot open the share sheet." };
+      return { text: t("This phone cannot open the share sheet.") };
     case "share_failed":
-      return { text: "The GPX could not be saved on the phone. Try again." };
+      return { text: t("The GPX could not be saved on the phone. Try again.") };
     // An app built without the address of its service (TASK-256): on a
     // phone, only one older than the service.
     case "no_api_url":
@@ -312,20 +337,26 @@ function waterProblemText(
 
 /**
  * Why the engine found no outline, in plain words and with what to do
- * (the reasons of route_engine/image_outline.py, ADR-0068).
+ * (the reasons of route_engine/image_outline.py, ADR-0068). In English:
+ * translated where shown, with t() (TASK-210).
  */
 export const REASON_TEXT: Record<ImageReason, string> = {
-  format: "Only PNG and JPEG pictures work. Choose another one.",
-  unreadable: "This picture could not be read. Choose another one.",
-  background:
+  format: tLater("Only PNG and JPEG pictures work. Choose another one."),
+  unreadable: tLater("This picture could not be read. Choose another one."),
+  background: tLater(
     "The background is too busy. Use one subject on a plain background, like a drawing on white paper or an object on a bare table.",
-  no_subject:
+  ),
+  no_subject: tLater(
     "Nothing stands out from the background. Use a subject much darker or brighter than what is around it.",
-  scattered:
+  ),
+  scattered: tLater(
     "The picture shows more than 4 separate things. Use a picture with 4 subjects at most.",
-  edge: "The subject touches the edge of the picture. Leave some background all around it.",
-  small: "The subject is too small. Get closer, or use a bigger picture.",
-  jagged: "The outline is too jagged to run on roads. Try a simpler subject.",
+  ),
+  edge: tLater(
+    "The subject touches the edge of the picture. Leave some background all around it.",
+  ),
+  small: tLater("The subject is too small. Get closer, or use a bigger picture."),
+  jagged: tLater("The outline is too jagged to run on roads. Try a simpler subject."),
 };
 
 function isImageReason(reason: unknown): reason is ImageReason {
@@ -337,11 +368,13 @@ function isImageReason(reason: unknown): reason is ImageReason {
  * to do (the reasons of route_engine/outline_edits.py, TASK-079).
  */
 export const EDIT_REASON_TEXT: Record<EditReason, string> = {
-  short: "This line is too short to add. Draw a longer one.",
-  covers_detail:
+  short: tLater("This line is too short to add. Draw a longer one."),
+  covers_detail: tLater(
     "This part covers where a detail starts. Undo the detail first, or draw the part elsewhere.",
-  too_many_corners:
+  ),
+  too_many_corners: tLater(
     "That is too much for one route. Undo something, or draw simpler lines.",
+  ),
 };
 
 /** Under the picture: why a drawn line was not added (TASK-079). */
@@ -354,15 +387,20 @@ export function imageProblemText(problem: ImageProblem): ProblemText {
   switch (problem.kind) {
     case "denied":
       return {
-        text: "The camera is off for this app. Allow it in Settings, or choose a picture instead.",
+        text: t(
+          "The camera is off for this app. Allow it in Settings, or choose a picture instead.",
+        ),
       };
     case "too_large":
       return {
-        text: `This picture is too large: ${(problem.bytes / 1e6).toFixed(1)} MB, at most ${MAX_IMAGE_BYTES / 1e6} MB. Choose a smaller one.`,
+        text: t(
+          "This picture is too large: {mb} MB, at most {most} MB. Choose a smaller one.",
+          { mb: decimal(problem.bytes / 1e6), most: MAX_IMAGE_BYTES / 1e6 },
+        ),
       };
     case "pick_failed":
       return {
-        text: "The picture could not be opened. Try again, or choose another one.",
+        text: t("The picture could not be opened. Try again, or choose another one."),
       };
     default:
       return problemText(problem, "image");

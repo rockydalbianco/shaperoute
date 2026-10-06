@@ -72,10 +72,10 @@ export function checkWord(
 ): WordCheck {
   const typed = text.trim();
   if (typed === "") {
-    return { ok: false, problem: "Write a word to draw, with the letters A to Z." };
+    return { ok: false, problem: t("Write a word to draw, with the letters A to Z.") };
   }
   if (/\s/.test(typed)) {
-    return { ok: false, problem: "One word only, without spaces." };
+    return { ok: false, problem: t("One word only, without spaces.") };
   }
   // Code points, not UTF-16 units: an emoji is one character, not two.
   const characters = Array.from(typed);
@@ -85,7 +85,10 @@ export function checkWord(
     const shown = Array.from(upper).length === 1 ? upper : unknown;
     return {
       ok: false,
-      problem: `No letter “${shown}”: a word can use only the letters A to Z, without accents.`,
+      problem: t(
+        "No letter “{letter}”: a word can use only the letters A to Z, without accents.",
+        { letter: shown },
+      ),
     };
   }
   const word = typed.toUpperCase();
@@ -97,13 +100,16 @@ export function checkWord(
       // The distance is the limit for a run; by bike, the contract's letters.
       problem:
         most >= MAX_WORD_LETTERS
-          ? `At most ${most} letters.`
+          ? t("At most {most} letters.", { most })
           : units === "mi"
             ? t(
                 "At most {most} letters: each needs {each} mi, and the app goes up to {highest} mi.",
                 { most, each: milesAtLeast(LETTER_DISTANCE_M), highest },
               )
-            : `At most ${most} letters: each needs ${LETTER_DISTANCE_M / 1000} km, and the app goes up to ${highest} km.`,
+            : t(
+                "At most {most} letters: each needs {each} km, and the app goes up to {highest} km.",
+                { most, each: LETTER_DISTANCE_M / 1000, highest },
+              ),
     };
   }
   const needs = wordDistanceM(word);
@@ -117,7 +123,11 @@ export function checkWord(
               mi: milesAtLeast(needs),
               each: milesAtLeast(LETTER_DISTANCE_M),
             })
-          : `“${word}” needs at least ${needs / 1000} km: ${LETTER_DISTANCE_M / 1000} km for each letter.`,
+          : t("“{word}” needs at least {km} km: {each} km for each letter.", {
+              word,
+              km: needs / 1000,
+              each: LETTER_DISTANCE_M / 1000,
+            }),
       needsDistanceM: needs,
     };
   }

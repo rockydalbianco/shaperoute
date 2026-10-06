@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { t } from "../i18n";
+import { t, tLater } from "../i18n";
 import {
   color,
   fontSize,
@@ -40,17 +40,21 @@ import { editProblemText } from "./problems";
 /** The line under the finger, thinner: it is not the outline yet. */
 const DRAWN_LINE = 2;
 
+// In English: translated where shown, with t() (TASK-210).
 const EDIT_BUTTONS: { kind: EditKind; label: string }[] = [
-  { kind: "part", label: "Add a part" },
-  { kind: "detail", label: "Add a detail" },
+  { kind: "part", label: tLater("Add a part") },
+  { kind: "detail", label: tLater("Add a detail") },
 ];
 
 /** What to do, before and once a button is on. */
-const HINT = "Choose what to add. Two fingers zoom and move the picture.";
+const HINT = tLater("Choose what to add. Two fingers zoom and move the picture.");
 const DRAW_HINT: Record<EditKind, string> = {
-  part: "Draw a closed shape. Across the yellow line it becomes part of the outline; anywhere else it is joined to the nearest yellow line.",
-  detail:
+  part: tLater(
+    "Draw a closed shape. Across the yellow line it becomes part of the outline; anywhere else it is joined to the nearest yellow line.",
+  ),
+  detail: tLater(
     "Draw a line anywhere: it is joined to the nearest yellow line, and the route runs along it and back. Close a loop to make an eye.",
+  ),
 };
 
 type Point = [x: number, y: number];
@@ -169,14 +173,14 @@ export function OutlineBoard({
         ]}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Edit the outline</Text>
+          <Text style={styles.title}>{t("Edit the outline")}</Text>
           {zoomed && (
             <Pressable
               style={styles.headerButton}
               onPress={() => setView(FIT)}
               accessibilityRole="button"
             >
-              <Text style={styles.link}>Fit</Text>
+              <Text style={styles.link}>{t("Fit")}</Text>
             </Pressable>
           )}
         </View>
@@ -246,8 +250,8 @@ export function OutlineBoard({
           {sending ? (
             <Text style={styles.note}>
               {edits.edit.status === "sending" && edits.edit.kind === "part"
-                ? "Adding the part…"
-                : "Adding the detail…"}
+                ? t("Adding the part…")
+                : t("Adding the detail…")}
             </Text>
           ) : refused ? (
             <View>
@@ -255,7 +259,7 @@ export function OutlineBoard({
               {refused.detail && <Text style={styles.detail}>{refused.detail}</Text>}
             </View>
           ) : (
-            <Text style={styles.note}>{drawing ? DRAW_HINT[drawing] : HINT}</Text>
+            <Text style={styles.note}>{t(drawing ? DRAW_HINT[drawing] : HINT)}</Text>
           )}
           <View style={styles.row}>
             {EDIT_BUTTONS.map(({ kind, label }) => {
@@ -269,7 +273,7 @@ export function OutlineBoard({
                   accessibilityState={{ selected: on }}
                 >
                   <Text style={[styles.buttonText, on && styles.buttonTextOn]}>
-                    {label}
+                    {t(label)}
                   </Text>
                 </Pressable>
               );
@@ -281,7 +285,7 @@ export function OutlineBoard({
               accessibilityRole="button"
               accessibilityState={{ disabled: edits.earlier.length === 0 }}
             >
-              <Text style={styles.buttonText}>Undo</Text>
+              <Text style={styles.buttonText}>{t("Undo")}</Text>
             </Pressable>
           </View>
           {/* At the foot, under the thumb: in Expo Go its own button

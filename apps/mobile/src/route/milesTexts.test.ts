@@ -231,9 +231,9 @@ describe("a word", () => {
     expect(checkWord("ciao", 4828)).toMatchObject({
       problem: "A «CIAO» servono almeno 7,5 mi: 1,9 mi per ogni lettera.",
     });
-    // In km, as before: not yet translated.
+    // In km too, in the app's language (TASK-210, «Draw»).
     expect(checkWord("ciao", 5000, "running", "km")).toMatchObject({
-      problem: "“CIAO” needs at least 12 km: 3 km for each letter.",
+      problem: "A «CIAO» servono almeno 12 km: 3 km per ogni lettera.",
     });
   });
 });

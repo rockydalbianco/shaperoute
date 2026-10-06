@@ -1,6 +1,6 @@
 # TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m
 
-**Stato**: In lavorazione — parte A (l'uscita in corso e la sua fine) in `main` dalla #383 (`bf859e0`, 2026-10-06), non ancora pubblicata; parte B («My activities») aspetta il via del coordinatore
+**Stato**: In lavorazione — parte A (l'uscita in corso e la sua fine) in `main` dalla #383 (`bf859e0`, 2026-10-06), pubblicata su `preview` (gruppo `1924575c`); parte B («My activities») in `main` dalla #394 (`c99b8c8`, 2026-10-06); aspettano il server (ok dell'utente) e la prova sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-251-paddle-speed-pace`
 **Dipende da**: TASK-191 (i percorsi sull'acqua), TASK-216 (la velocità
 in bici, `navigation/ride.ts`), TASK-182 (km o miglia)
@@ -29,12 +29,13 @@ velocità.
 ## Parti
 
 - **A — l'uscita in corso e la sua fine (solo app).** Questa PR.
-- **B — «My activities» e il post da lì.** L'API tiene lo sport di una
-  corsa salvata (`runs.activity`) ma **non lo restituisce** in
-  `GET /me/activities` né in `GET /me/activities/{key}`: serve un campo in
-  più nel contratto (`activity`), i fixture di `shared-types`, e poi
-  `activityText.runFacts` e `postOfActivity`. `activities.py` è di TASK-247:
-  si parte col via del coordinatore. Aggiornare il server chiede l'ok
+- **B — «My activities» e il post da lì.** L'API teneva lo sport di una
+  corsa salvata (`runs.activity`) ma non lo restituiva: ora `activity` è in
+  `GET /me/activities` e in `GET /me/activities/{key}` (campo in più nel
+  contratto, nessuna migrazione; `API.md`), nei fixture di `shared-types`,
+  e l'app lo legge in `activityText.runFacts` e `postOfActivity`. Un'app di
+  B con un server di prima (senza `activity`) scrive il passo al km come
+  prima: il campo è facoltativo nell'app. Aggiornare il server chiede l'ok
   dell'utente.
 
 ## Cosa fare (parte A)
@@ -67,7 +68,11 @@ velocità.
       parola per parola (i test di prima passano senza modifiche).
 - [x] Typecheck, lint, prettier e tutti i test dell'app verdi.
 - [ ] Guardato dall'utente sull'iPhone (dopo la pubblicazione).
-- [ ] Parte B: «My activities» e il post da lì.
+- [x] Parte B: «My activities» e il post da lì scrivono «5:37 /500 m» per
+      una pagaiata salvata; una corsa, e una risposta senza `activity`,
+      come prima. Test API con PostgreSQL (`test_activities_sport.py`) e
+      test dell'app (`paddleFacts.test.ts`).
+- [ ] Server aggiornato (ok dell'utente), poi la prova sull'iPhone.
 
 ## File toccati
 
@@ -92,6 +97,20 @@ docs/tasks/TASK-251.md
 docs/STATUS.md
 docs/DECISIONS.md
 docs/UI.md
+
+Parte B:
+services/api/shaperoute_api/activities.py        (righe: `activity` nei body, COLUMNS, _fields)
+services/api/tests/test_activities_sport.py      (nuovo)
+packages/shared-types/fixtures/activities.json
+packages/shared-types/fixtures/activity.json
+packages/shared-types/fixtures/activity-walks.json
+packages/shared-types/fixtures/activity-pauses.json
+apps/mobile/src/api/activities.ts                (righe: `activity?`)
+apps/mobile/src/activities/activityText.ts       (righe: runFacts)
+apps/mobile/src/activities/paddleFacts.test.ts   (nuovo)
+apps/mobile/src/share/postRun.ts                 (righe: postOfActivity)
+apps/mobile/src/screens/RunPanel.tsx             (una riga: import inutilizzato della A)
+docs/API.md
 ```
 
 ## Da confermare dall'utente
@@ -109,7 +128,8 @@ docs/UI.md
 
 ## Esito
 
-Parte A in `main` (#383, merge `bf859e0`, 2026-10-06; merge fatto dalla
+Parte B in `main` (#394, merge `c99b8c8`, 2026-10-06, terza nella coda del
+coordinatore dopo #388 e #392). Parte A in `main` (#383, merge `bf859e0`, 2026-10-06; merge fatto dalla
 sessione col sì dell'utente, perché il coordinatore era senza crediti). Le
 caselle sono state guardate in un simulatore
 (iPhone 17e, Expo Go, una pagina di prova con `RunStrip` e `RunGrid`):

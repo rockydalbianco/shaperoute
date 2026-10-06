@@ -115,26 +115,24 @@ In coda, dopo o accanto:
   Tutti e due in `main` (PR #217 e #218), non ancora sul server né sul
   telefono. Seguiti: **TASK-199**, i `walks` in «My activities» e nei
   preferiti (assegnato il 2026-10-02 sera).
-- **Server e app, al 2026-10-05**. **Server**: su `main` `c2bb428` dalle
-  12:02Z (ok dell'utente per la migrazione 0017 nella sessione
-  «Impostazioni» e «ok server per le forme inclinate» in quella di
-  TASK-232; eseguito da «Impostazioni» al via del coordinatore), con le
-  migrazioni `0001`–`0017`, `PUT /me/notifications`, il motore di TASK-232
-  A (un cuore da 5 km a Trento: `rotation_deg: -30`, somiglianza 0,94),
-  di TASK-238 A e TASK-242; fermo circa 10 secondi; immagine di prima
-  `shaperoute-api:before-task185`, copia del database
-  `shaperoute-2026-10-05T1202Z.dump`; `draw_examples` rilanciato alle
-  12:03Z (`data/draw-examples-2026-10-05-task232.log`). Zone del telefono:
-  528 file (le 521 della mattina più Borgo Valsugana, Tenna, Calceranica,
-  Caldonazzo, Pergine, Vigolo Vattaro, chieste dall'utente). Acqua della canoa: 247 file,
-  93 MB (i laghi d'Italia e i 27 tratti di costa di TASK-245). **App** su
-  `preview` da `main` `7a9d28b` (gruppo `b21caee9`): tutto `main`, fino
-  alle miglia (TASK-182), alle 29 spiagge (TASK-245), alle figure «Paddle»
-  al primo avvio (TASK-246) e alla fine corsa senza punteggio (TASK-241).
-  In coda, verdi: la #378 (TASK-232 B, aspetta l'utente) e la #362
-  (TASK-243: entra con l'ok per il server). Dal 2026-10-05 le cose di sola
-  app le pubblica il coordinatore appena sono in `main` (ok dell'utente).
-  **Da provare sull'iPhone.** Strava spento per scelta dell'utente.
+- **Server e app, al 2026-10-06**. **Server**: su `main` `a784f77` dalle
+  22:13Z del 2026-10-05 («ok server» dell'utente nella sessione di
+  TASK-243, che l'ha eseguito al via del coordinatore), con le migrazioni
+  `0001`–`0017` e il motore di TASK-243 (la penna alzata sui baffi del
+  contorno); fermo circa 9 secondi; immagine di prima
+  `shaperoute-api:before-task243`, copia del database
+  `shaperoute-2026-10-05T2212Z.dump`; `draw_examples` finito («70 of 70»,
+  con Borgo Valsugana, Caldonazzo, Pergine Valsugana, Vigolo Vattaro).
+  Zone del telefono: 528 file. Acqua della canoa: 247 file, 93 MB. **Non
+  ancora sul server**: #381 (TASK-249), #386 (TASK-247), #392 (TASK-248
+  B: cambia l'impronta del motore), #394 (TASK-251 B): un aggiornamento
+  con `draw_examples`, con l'ok dell'utente. **App** su `preview` da
+  `main` `e12ba55` (gruppo `e17c80c3`): tutto `main` fino alle code sul
+  telefono (TASK-252), compresi la mappa girata in «Draw», in corsa e in
+  «Explore» (TASK-232 B, B2), le unità del kayak (TASK-251 A), la penna
+  alzata sui baffi (TASK-243, `engine.zip`); #392 e #394 escono con il
+  server. **Da provare sull'iPhone.** Strava spento per scelta
+  dell'utente.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -148,34 +146,22 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-248 — Il job `api` della CI che resta appeso** (ADR-0212;
-  assegnato dal coordinatore il 2026-10-06). **Causa trovata**: non un
-  test lento ma `multiprocessing.Pool.terminate()` in `plan_nearby`
-  (`route_engine/nearby_starts.py`), che aspetta per sempre se arriva
-  mentre un grafo sta per essere mandato a un processo delle partenze
-  vicine; in CI succede in `test_cycling.py`, dove il motore rifiuta
-  subito. **Parte A** (in PR, niente motore): ogni job di `ci.yml` ha un
-  tempo massimo e un test fermo da due minuti stampa gli stack
-  (`faulthandler_timeout`, nessuna dipendenza nuova). **Parte B** (dopo,
-  motore): le partenze vicine senza `Pool`, percorsi identici,
-  `engine.zip` rifatto; l'impronta del motore cambia, quindi al prossimo
-  aggiornamento del server serve `draw_examples`. Sul server lo stesso
-  blocco può prendere un thread dei job dopo un `engine_error`: non
-  verificato, lo guarda il coordinatore. Da dove riprendere:
-  `tasks/TASK-248.md`, «Esito».
 - **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
   (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
-  **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06), non
-  ancora pubblicata: lungo un percorso sull'acqua e in «Paddle
+  **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06),
+  su `preview` (gruppo `1924575c`): lungo un percorso sull'acqua e in «Paddle
   without a route» la schermata mostra «Speed now» e «Avg speed» in km/h
   (mph con le miglia), «Avg /500 m» e «Last 500 m» al posto di
   «Last km» ed «Elev. gain»; i parziali sono ogni 500 m; la voce dice ogni
   km col passo medio ogni 500 metri (cinque lingue); il post di fine
   uscita scrive «5:37 /500 m». Corsa e bici come prima. Caselle guardate in un
-  simulatore, non su un telefono. **Parte B**: «My activities» e il post da lì mostrano ancora
-  il passo al km, perché l'API non restituisce lo sport di una corsa
-  salvata; serve `activity` nel contratto (`activities.py` è di TASK-247:
-  aspetta il via del coordinatore) e poi il server, con l'ok dell'utente.
+  simulatore, non su un telefono. **Parte B** in `main` (PR #394, merge
+  `c99b8c8`, 2026-10-06): `activity`
+  nelle risposte di `/me/activities` (campo in più nel contratto, nessuna
+  migrazione), e «My activities» e il post da lì scrivono il passo ogni
+  500 m per una pagaiata salvata; con un server di prima l'app scrive il
+  passo al km come prima. **Il server non è aggiornato**: lo fa il
+  coordinatore con l'ok dell'utente, poi la pubblicazione dell'app.
   **Aspettano l'utente**: i testi nuovi, «Elev. gain» tolto sull'acqua, e
   cosa mostra la bici senza percorso (oggi il passo al km). Da dove
   riprendere: `tasks/TASK-251.md`.
@@ -575,6 +561,25 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   nuovi. **Rimandato all'utente**: rientrare più avanti dopo aver saltato
   un pezzo. `tasks/TASK-253.md`.
 
+
+- **CI e motore** — TASK-248: il job `api` della CI che restava appeso
+  (ADR-0212 e aggiornamento; assegnato dal coordinatore il 2026-10-06;
+  PR #385, merge `cdb50bb`, e PR #392, merge `11eeac7`). **La causa**:
+  non un test lento ma `multiprocessing.Pool.terminate()` in
+  `plan_nearby` (`route_engine/nearby_starts.py`), che aspetta per
+  sempre se arriva mentre un grafo sta per essere mandato a un processo
+  delle partenze vicine; in CI in `test_cycling.py`, dove il motore
+  rifiuta subito; sul server solo dopo un `engine_error` inatteso (non
+  verificato: lo guarda il coordinatore). **Parte A**: ogni job di
+  `ci.yml` ha un tempo massimo e un test fermo da due minuti stampa gli
+  stack (`faulthandler_timeout`, nessuna dipendenza nuova). **Parte B**:
+  le partenze vicine senza `Pool` (un processo e una pipe ciascuna,
+  fermarli ritorna sempre), 12 test nuovi, percorsi identici (impronte
+  fissate e 7 casi su 7 con i processi), tempi uguali, `engine.zip`
+  rifatto. **Per il server**: l'impronta del motore cambia, i percorsi
+  no → al prossimo aggiornamento serve `draw_examples` (~40 minuti); la
+  pubblicazione con `engine.zip` nuovo è del coordinatore. Come si
+  riconosce il blocco sul server: `tasks/TASK-248.md`, «Esito».
 - **App** — TASK-252: le code sul telefono non perdono niente (ADR-0216;
   dalla revisione del codice dell'app chiesta dall'utente il 2026-10-06,
   elenco in `out/revisione-app-2026-10-06.md` sul Mac, fuori dal

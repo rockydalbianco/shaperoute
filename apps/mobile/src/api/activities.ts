@@ -1,4 +1,9 @@
-import type { LatLon, TrackFix, Walk } from "@shaperoute/shared-types";
+import type {
+  Activity as Sport,
+  LatLon,
+  TrackFix,
+  Walk,
+} from "@shaperoute/shared-types";
 
 import { type AccountOutcome, ask } from "./accounts";
 
@@ -30,6 +35,9 @@ export type Activity = {
   /** From 0 to 100; null without a route, or for a run too short to judge. */
   score: number | null;
   fidelity: number | null;
+  /** What the run was (TASK-251): on the water its pace is a paddler's.
+   * Absent from an API before TASK-251, which only knew runs. */
+  activity?: Sport;
   /** The planned route; null for a run without one. */
   route_preview: LatLon[] | null;
   track_preview: LatLon[];

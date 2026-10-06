@@ -213,6 +213,8 @@ class ActivityBody(BaseModel):
     duration_s: int
     score: int | None
     fidelity: float | None
+    activity: RunActivity
+    """What the run was (TASK-251): the app writes a paddler's pace."""
     route_preview: list[LatLon] | None
     track_preview: list[LatLon]
 
@@ -254,6 +256,8 @@ class ActivityDetailBody(BaseModel):
     duration_s: int
     score: int | None
     fidelity: float | None
+    activity: RunActivity
+    """What the run was (TASK-251)."""
     similarity: float | None
     """The planned route's."""
     points: list[LatLon] | None
@@ -457,7 +461,7 @@ def recorded(body: ActivityRequestBody, now: datetime) -> RecordedRun:
 
 COLUMNS = (
     "id, key, started_at, place, shape, word, style, title, distance_m,"
-    " duration_s, score, fidelity, route_similarity, walks,"
+    " duration_s, score, fidelity, route_similarity, walks, activity,"
     " ST_AsGeoJSON(route, 15) AS route,"
     " ST_AsGeoJSON(ST_Force2D(track), 15) AS track"
 )
@@ -499,6 +503,7 @@ def _fields(row: DictRow) -> dict[str, Any]:
         "score": row["score"],
         # A `real` column: without rounding 0.83 comes back as 0.8299999833.
         "fidelity": None if fidelity is None else round(fidelity, 4),
+        "activity": row["activity"],
     }
 
 

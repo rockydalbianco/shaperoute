@@ -21,10 +21,11 @@ import multiprocessing
 import os
 import pickle
 import sys
+import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, replace
-from multiprocessing.pool import AsyncResult
+from multiprocessing.connection import Connection
 from typing import Any, Protocol
 
 import networkx as nx
@@ -120,6 +121,9 @@ NEARBY_MAX_NODES = 30_000
 WORKER_BASE_MB = 100.0
 WORKER_PER_MB = 10.0
 MEMORY_RESERVE_MB = 1000.0
+# A worker told to stop has this long before it is killed: it ends at
+# once, unless the system is out of breath.
+STOP_WAIT_S = 5.0
 
 
 class Job(Protocol):
@@ -557,6 +561,102 @@ def _plan_in_worker(
     return outcome, time.perf_counter() - began
 
 
+def _work(pipe: Connection) -> None:
+    """A worker process: one nearby plan, asked for and answered on `pipe`."""
+    _lower_priority()
+    try:
+        job, start, source = pipe.recv()
+    except (EOFError, OSError):
+        return  # stopped before the plan was asked
+    answer: tuple[bool, Any]
+    try:
+        answer = True, _plan_in_worker(job, start, source)
+    except Exception as exc:
+        answer = False, exc
+    try:
+        pipe.send(answer)
+    except OSError:
+        pass  # nobody waits for it any more
+    except Exception as exc:  # an answer that does not pickle
+        pipe.send((False, RuntimeError(f"{type(exc).__name__}: {exc}")))
+
+
+class _Workers:
+    """A process for each nearby start, all planning at the same time.
+
+    Not a multiprocessing.Pool: its terminate() waits for ever when it comes
+    while the pool's thread is about to send a task, and here it can, the
+    graph being megabytes and a start that cannot be planned failing at once
+    (the API's tests in CI never ended, TASK-248). Each process has a pipe
+    of its own instead: with the processes stopped nobody is left to read,
+    so the thread that sends gets an error rather than waiting, and `stop`
+    always returns."""
+
+    def __init__(self, job: Job, starts: list[LatLon], source: GraphLoader) -> None:
+        context = multiprocessing.get_context("spawn")
+        self._processes = []
+        self._pipes: list[Connection] = []
+        self._failed: dict[int, Exception] = {}
+        # Megabytes for each: sent while the start is planned.
+        self._sender = threading.Thread(
+            target=self._send, args=(job, starts, source), daemon=True
+        )
+        try:
+            for _ in starts:
+                ours, theirs = context.Pipe()
+                self._pipes.append(ours)
+                process = context.Process(target=_work, args=(theirs,), daemon=True)
+                process.start()
+                theirs.close()  # the process has the only other end
+                self._processes.append(process)
+            self._sender.start()
+        except BaseException:
+            self.stop()  # the ones that did start
+            raise
+
+    def _send(self, job: Job, starts: list[LatLon], source: GraphLoader) -> None:
+        for i, start in enumerate(starts):
+            try:
+                self._pipes[i].send((job, start, source))
+            except OSError:
+                pass  # stopped before it read
+            except Exception as exc:  # a job that does not pickle
+                self._failed[i] = exc
+                self._processes[i].terminate()
+
+    def outcome(self, i: int, wait_s: float) -> tuple[Plan | str, float] | None:
+        """What `_plan_in_worker` gave for start `i`; None when it is still
+        running after `wait_s`."""
+        try:
+            if not self._pipes[i].poll(wait_s):
+                return None
+            done, answer = self._pipes[i].recv()
+        except (EOFError, OSError):
+            if i in self._failed:
+                raise self._failed[i] from None
+            return "the worker process stopped", float("nan")
+        if not done:
+            raise answer
+        outcome: tuple[Plan | str, float] = answer
+        return outcome
+
+    def stop(self) -> None:
+        """Drops the plans still running."""
+        for process in self._processes:
+            process.terminate()
+        for process in self._processes:
+            process.join(STOP_WAIT_S)
+            if process.is_alive():
+                process.kill()
+                process.join()
+        if self._sender.is_alive():
+            self._sender.join()
+        for pipe in self._pipes:
+            pipe.close()
+        for process in self._processes:
+            process.close()
+
+
 @dataclass
 class Tried:
     """One start that was planned, for the log and the samples."""
@@ -643,15 +743,9 @@ def plan_nearby(
             nearby = nearby[:fit]
     if skipped:
         log.info(skipped)
-    pool = None
-    pending: list[AsyncResult[tuple[Plan | str, float]]] = []
-    if nearby and processes:
-        pool = multiprocessing.get_context("spawn").Pool(
-            len(nearby), initializer=_lower_priority
-        )
-        pending = [
-            pool.apply_async(_plan_in_worker, (job, n.point, here)) for n in nearby
-        ]
+    workers = None
+    if here is not None and processes:
+        workers = _Workers(job, [n.point for n in nearby], here)
     try:
         tried = [_start_tried(job, start, _First(source, area, graph), distance_m)]
         done = time.monotonic()
@@ -660,20 +754,17 @@ def plan_nearby(
             # Waited for briefly, for the alternatives only (TASK-093).
             deadline = min(deadline, done + good_grace_s)
         for i, n in enumerate(nearby):
-            if pool is None:
+            if workers is None:
                 assert here is not None  # there are nearby starts
                 outcome = _plan_in_worker(job, n.point, here)
             else:
-                try:
-                    outcome = pending[i].get(max(0.0, deadline - time.monotonic()))
-                except multiprocessing.TimeoutError:
-                    late = f"still running {deadline - began:.0f} s in"
-                    outcome = (late, float("nan"))
+                ready = workers.outcome(i, max(0.0, deadline - time.monotonic()))
+                late = f"still running {deadline - began:.0f} s in"
+                outcome = ready or (late, float("nan"))
             tried.append(_nearby_tried(graph, n, *outcome, distance_m))
     finally:
-        if pool is not None:
-            pool.terminate()  # drops the late ones
-            pool.join()
+        if workers is not None:
+            workers.stop()  # drops the late ones
     for i, t in enumerate(tried):
         what = t.note or f"score {t.score:.3f}, approach {t.approach_m:.0f} m"
         # Not t.start: where the user is stays out of the log (TASK-091).

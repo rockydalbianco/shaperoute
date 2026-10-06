@@ -145,24 +145,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-256 — Gli errori parlano a chi corre** (ADR-0220; dalla revisione
-  dell'app, «sì» dell'utente del 2026-10-06). Branch
-  `feat/TASK-256-errors-for-runners`, solo app. I messaggi di «Draw» e
-  dell'account riscritti per chi corre nelle cinque lingue («No
-  connection. Check the network and try again.», «Something went wrong on
-  our side…», «Update the app» per la chiave rifiutata), il dettaglio
-  tecnico solo nelle build di sviluppo; «Try again» sotto l'errore di
-  «Draw route» che rimanda la stessa richiesta (`useRouteRequest.retry()`,
-  `onRetry` su `RouteOutcome`); `AppBoundary` attorno all'app (giallo,
-  logo, «Something went wrong.», «Try again»); «Retry» sulla mappa che non
-  carica, ricarica anche al ritorno in primo piano, `onError(null)` quando
-  carica; due righe in `App.tsx` (`retry` → `onRetry`, ok del
-  coordinatore). **PR #408 aperta**; aspetta il sì dell'utente sui testi
-  nelle cinque lingue e il «merge» del coordinatore, dopo la #407
-  (TASK-254). Seguiti senza numero: «Open
-  Settings» accanto a fotocamera/posizione negate (`ImageChoice.tsx`,
-  `NavigateScreen`, `FreeRunScreen`), la riga rossa di `ChooseScreen`
-  («reopen the app») da riscrivere. `tasks/TASK-256.md`.
 - **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
   (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
   **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06),
@@ -583,6 +565,23 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-256: gli errori parlano a chi corre (ADR-0220; dalla
+  revisione dell'app, «sì» dell'utente del 2026-10-06, testi nelle cinque
+  lingue approvati dall'utente). PR #408, merge `e24c79f3`, 2026-10-06. I
+  messaggi di «Draw» e dell'account riscritti per chi corre («No
+  connection. Check the network and try again.», «Something went wrong on
+  our side…», «Update the app» per la chiave rifiutata e per una build
+  senza indirizzo), il dettaglio tecnico solo nelle build di sviluppo;
+  «Try again» sotto l'errore di «Draw route» rimanda la stessa richiesta
+  (`useRouteRequest.retry()`, `onRetry` su `RouteOutcome`, due righe in
+  `App.tsx`); `AppBoundary` attorno all'app in `Root.tsx` (giallo, logo,
+  «Something went wrong.», «Try again»); «Retry» sulla mappa che non
+  carica, ricarica anche al ritorno in primo piano, `onError(null)` quando
+  carica. Solo app: **la pubblicazione su `preview` è del coordinatore**.
+  Seguiti senza numero, nel task file: «Open Settings» accanto a
+  fotocamera/posizione negate (`ImageChoice.tsx`, `NavigateScreen`,
+  `FreeRunScreen`), la riga rossa di `ChooseScreen.MapError` («reopen the
+  app») da riscrivere. `tasks/TASK-256.md`.
 - **App** — TASK-254: le correzioni piccole della revisione (ADR-0218;
   dalla revisione del codice dell'app del 2026-10-06, «sì» dell'utente).
   Dodici difetti piccoli, ognuno con il suo test, solo app, niente da

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { titleOf } from "../api/drawings";
+import { t } from "../i18n";
 import { showSavedLogo } from "../intro/SavedLogo";
 import {
   DrawingTitle,
@@ -24,7 +25,8 @@ import { SIGN_IN_TO_KEEP_RUNS, useActivitiesDoor } from "./activitiesDoor";
 
 type Props = {
   /** «Save»: the run goes to «My activities». False when it could not even
-   * be kept on the phone: the screen stays, and says so. */
+   * be kept on the phone, or the phone holds too many runs not sent yet
+   * (TASK-257): the screen stays, and says so. */
   onSave: () => boolean;
   /** «Discard», after a yes: the run is gone for good. */
   onDiscard: () => void;
@@ -41,7 +43,8 @@ type Props = {
  * profile, and the title names it, on Strava too.
  */
 export function RunEnd({ onSave, onDiscard }: Props) {
-  const { signedIn, signIn, toStrava, toDrawing } = useActivitiesDoor();
+  const { signedIn, signIn, toStrava, toDrawing, full, waiting, refused } =
+    useActivitiesDoor();
   const strava = useStrava();
   // «Discard» asks first, here: a run thrown away does not come back.
   const [confirming, setConfirming] = useState(false);
@@ -111,7 +114,16 @@ export function RunEnd({ onSave, onDiscard }: Props) {
       />
       {failed && (
         <Text style={styles.problem} accessibilityRole="alert">
-          This run could not be kept on the phone. Try again.
+          {!full
+            ? "This run could not be kept on the phone. Try again."
+            : // Nothing is let go to make room (TASK-257): only a run the
+              // API refused can be discarded, in «My activities».
+              t(
+                refused.length > 0
+                  ? "The phone holds {count} runs not sent yet. Discard one in My activities first."
+                  : "The phone holds {count} runs not sent yet. They go when there is a connection; then save this one.",
+                { count: String(waiting) },
+              )}
         </Text>
       )}
       <View style={styles.buttons}>

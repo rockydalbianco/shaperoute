@@ -20,19 +20,37 @@ import {
 } from "../api/activities";
 import type { DrawingChoice } from "../api/drawings";
 import { t, tLater } from "../i18n";
+import { metresBetween } from "../map/coordinates";
 import type { SavedRun } from "../navigation/trackStore";
 import { keepForDrawing, sendWaitingDrawings } from "../social/drawingOutbox";
 import { keepForStrava, sendWaitingToStrava } from "../strava/stravaOutbox";
 import {
   keepWaiting,
   loadOutbox,
+  markRefused,
+  MAX_WAITING,
+  refusedOf,
   stopWaiting,
   toDrawingOf,
   type ToStrava,
   toStravaOf,
+  type Waiting,
 } from "./outbox";
 import { type Drawn, recordedRun } from "./recordedRun";
 import { activityProblem, type ActivitiesState, useActivities } from "./useActivities";
+
+/** A run of this phone the API will not take (TASK-257), as «My
+ * activities» shows it until it is discarded. */
+export type RefusedRun = {
+  id: string;
+  /** When it began, on the phone's clock (ISO 8601); "" when the clock was
+   * not one. */
+  startedAt: string;
+  /** Its length as the phone recorded it, in metres. */
+  distanceM: number;
+  /** The API's message, in English as it came. */
+  message: string;
+};
 
 /**
  * The runs of the account as the whole app reaches them (TASK-172): the
@@ -46,7 +64,8 @@ export type ActivitiesDoor = ActivitiesState & {
    * «Save» on a run that ended: it goes to the API, now or when there is a
    * network. `drawn` is what its route draws. True once the run is safe on
    * the phone; false with nobody signed in, with less than a line, or when
-   * the phone refuses the file.
+   * the phone refuses the file, or when the account holds MAX_WAITING runs
+   * on the phone already (`full`).
    */
   record: (run: SavedRun, drawn: Drawn | null) => boolean;
   /**
@@ -61,8 +80,19 @@ export type ActivitiesDoor = ActivitiesState & {
    * run just before «Save», and forgotten by `record`.
    */
   toDrawing: (choice: DrawingChoice | null) => void;
-  /** The runs of this account still on the phone, waiting for the API. */
+  /** The runs of this account still on the phone, waiting for the API;
+   * those it refused too. */
   waiting: number;
+  /** The phone holds MAX_WAITING runs of this account: «Save» keeps no
+   * other until one goes (TASK-257). */
+  full: boolean;
+  /** The runs of this account the API will not take, the oldest first
+   * (TASK-257). */
+  refused: RefusedRun[];
+  /** Takes a refused run off the phone, for good. */
+  discard: (id: string) => void;
+  /** Sends a refused run again. */
+  retry: (id: string) => void;
   /** How many of them go public once the API has them (TASK-117). */
   waitingPublic: number;
   /** Opens «Profile» to sign up or log in, saying it keeps the runs. */
@@ -95,6 +125,10 @@ const NOTHING: ActivitiesDoor = {
   toStrava: () => {},
   toDrawing: () => {},
   waiting: 0,
+  full: false,
+  refused: [],
+  discard: () => {},
+  retry: () => {},
   waitingPublic: 0,
   signIn: () => {},
   opening: null,
@@ -128,7 +162,12 @@ type Doors = {
 
 type Options = { fetchFn?: typeof fetch; key?: string | null };
 
-type Counted = { owner: number | null; count: number; publicCount: number };
+type Counted = {
+  owner: number | null;
+  count: number;
+  publicCount: number;
+  refused: RefusedRun[];
+};
 
 /** How many runs in a row the API may fail on before the round stops: one
  * run it cannot take must not hold the others, and an API in trouble must
@@ -149,14 +188,45 @@ function serverFailed(outcome: AccountOutcome<unknown>): boolean {
   return outcome.kind === "bad_answer" && outcome.status >= 500;
 }
 
+/** The moment a run began, or "" when its clock was not one. */
+function startedAtOf(run: Waiting): string {
+  const when = new Date(run.request.track[0]?.time_ms ?? Number.NaN);
+  return Number.isNaN(when.getTime()) ? "" : when.toISOString();
+}
+
+/** The length of the run's track as the phone recorded it. */
+function distanceOf(run: Waiting): number {
+  const { track } = run.request;
+  let metres = 0;
+  for (let i = 1; i < track.length; i += 1) {
+    metres += metresBetween(track[i - 1].point, track[i].point);
+  }
+  return metres;
+}
+
 function waitingOf(owner: number | null): Counted {
   const runs = owner === null ? [] : loadOutbox().filter((run) => run.owner === owner);
   return {
     owner,
     count: runs.length,
     publicCount: runs.filter((run) => toDrawingOf(run)?.public === true).length,
+    refused: runs.flatMap((run): RefusedRun[] => {
+      const refused = refusedOf(run);
+      return refused === null
+        ? []
+        : [
+            {
+              id: run.id,
+              startedAt: startedAtOf(run),
+              distanceM: distanceOf(run),
+              message: refused.message,
+            },
+          ];
+    }),
   };
 }
+
+const NONE_REFUSED: RefusedRun[] = [];
 
 /** The runs of the account, for «Profile» to hand to the app. */
 export function useActivitiesOf(
@@ -183,6 +253,7 @@ export function useActivitiesOf(
   }
   const waiting = counted.owner === owner ? counted.count : 0;
   const waitingPublic = counted.owner === owner ? counted.publicCount : 0;
+  const refusedRuns = counted.owner === owner ? counted.refused : NONE_REFUSED;
   const recount = useCallback(() => setCounted(waitingOf(owner)), [owner]);
   const sending = useRef(false);
   const again = useRef(false);
@@ -202,7 +273,12 @@ export function useActivitiesOf(
       do {
         again.current = false;
         let refused = 0;
-        for (const run of loadOutbox().filter((item) => item.owner === owner)) {
+        // A run the API refused for good waits for «Discard» or «Try
+        // again» in «My activities» (TASK-257), and is not sent again.
+        const toSend = loadOutbox().filter(
+          (item) => item.owner === owner && refusedOf(item) === null,
+        );
+        for (const run of toSend) {
           const outcome = await saveActivity(baseUrl, token, run.id, run.request, {
             fetchFn,
             key,
@@ -226,9 +302,13 @@ export function useActivitiesOf(
             continue;
           }
           // Not a run for the API (a track with nothing to believe, a list
-          // that is full): sending it again would change nothing.
+          // that is full): sending it again would change nothing. It stays
+          // on the phone with the reason, for «My activities» to show.
           if (outcome.kind === "api_error" && outcome.code === "invalid_request") {
-            stopWaiting(owner, run.id);
+            markRefused(owner, run.id, {
+              code: outcome.code,
+              message: outcome.message,
+            });
             gone = true;
             continue;
           }
@@ -320,19 +400,42 @@ export function useActivitiesOf(
         return false;
       }
       // On the phone first: the run is not lost if the app closes now.
-      if (
-        !keepWaiting({
-          ...recorded,
-          owner,
-          ...(strava === null ? {} : { strava }),
-          ...(drawing === null ? {} : { drawing }),
-        })
-      ) {
+      const kept = keepWaiting({
+        ...recorded,
+        owner,
+        ...(strava === null ? {} : { strava }),
+        ...(drawing === null ? {} : { drawing }),
+      });
+      if (kept !== "kept") {
+        // Counted again: «Save» says the phone is full from the file as it is.
+        recount();
         return false;
       }
       recount();
       void send();
       return true;
+    },
+    [owner, recount, send],
+  );
+
+  // A refused run in «My activities» (TASK-257): thrown away after a yes,
+  // or sent once more.
+  const discard = useCallback(
+    (id: string) => {
+      if (owner !== null) {
+        stopWaiting(owner, id);
+        recount();
+      }
+    },
+    [owner, recount],
+  );
+  const retry = useCallback(
+    (id: string) => {
+      if (owner !== null) {
+        markRefused(owner, id, null);
+        recount();
+        void send();
+      }
     },
     [owner, recount, send],
   );
@@ -407,6 +510,10 @@ export function useActivitiesOf(
       toStrava,
       toDrawing,
       waiting,
+      full: waiting >= MAX_WAITING,
+      refused: refusedRuns,
+      discard,
+      retry,
       waitingPublic,
       signIn,
       opening,
@@ -426,6 +533,9 @@ export function useActivitiesOf(
       toStrava,
       toDrawing,
       waiting,
+      refusedRuns,
+      discard,
+      retry,
       waitingPublic,
       signIn,
       opening,

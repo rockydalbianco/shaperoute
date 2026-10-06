@@ -1,6 +1,6 @@
 # TASK-257 — Una corsa rifiutata resta sul telefono, con il motivo
 
-**Stato**: Todo
+**Stato**: In review
 **Fase**: 4 · **Branch**: `fix/TASK-257-refused-run-kept`
 
 ## Obiettivo
@@ -93,4 +93,14 @@ docs/UI.md, docs/STATUS.md, docs/DECISIONS.md        (le righe di questo task)
 
 ## Esito
 
-*(si compila a fine task)*
+Branch `feat/TASK-257-refused-run-stays` (nome dal coordinatore).
+`invalid_request` segna la corsa (`refused`) invece di toglierla; il giro
+la salta; «My activities» la mostra con «Try again» e «Discard». Il
+limite di 20 è per account (ADR-0221, punto 3) e `keepWaiting` risponde
+`kept` / `full` / `not_written`. `App.tsx` **non** cambia: `onSaveRun`
+chiama `clearRun()` solo quando `record` riesce, e a telefono pieno
+`record` risponde `false`. File fuori dall'elenco: `__tests__/AppActivities.test.tsx`
+(la prova «a run the API will never take stops waiting» diceva il
+comportamento di prima) e un test nuovo `RunEnd.test.tsx`. Due testi a
+telefono pieno invece di uno: senza corse rifiutate non c'è niente da
+scartare. Testi da confermare dall'utente.

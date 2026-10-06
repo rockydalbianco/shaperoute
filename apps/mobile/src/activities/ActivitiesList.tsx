@@ -13,8 +13,9 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { runDistanceLabel } from "../units/format";
 import { useUnits } from "../units/useUnits";
-import { useActivitiesDoor } from "./activitiesDoor";
+import { type RefusedRun, useActivitiesDoor } from "./activitiesDoor";
 import { runFacts, startedLabel, whereAndWhat } from "./activityText";
 import { RunDrawing } from "./RunDrawing";
 
@@ -24,7 +25,9 @@ const DRAWING = 88;
 /**
  * «My activities» in «Profile» (TASK-172): the runs the account recorded,
  * the latest first, a page at a time. A row opens its run on the map;
- * «Delete» asks first. A public run says so (TASK-117).
+ * «Delete» asks first. A public run says so (TASK-117). Over them, the runs
+ * of this phone the API will not take, with its reason and «Discard»
+ * (TASK-257).
  */
 export function ActivitiesList() {
   const activities = useActivitiesDoor();
@@ -32,6 +35,8 @@ export function ActivitiesList() {
   // The run whose «Delete» was tapped, waiting for a yes.
   const [confirming, setConfirming] = useState<string | null>(null);
   const { refresh, clearProblem, list } = activities;
+  // The refused ones are not waiting for a connection: they have rows.
+  const waiting = activities.waiting - activities.refused.length;
   // As it is on the API now: a run may have been saved or deleted since.
   useEffect(() => {
     clearProblem();
@@ -49,10 +54,24 @@ export function ActivitiesList() {
           {activities.problem}
         </Text>
       )}
-      {activities.waiting > 0 && (
+      {activities.refused.map((run) => (
+        <RefusedRow
+          key={run.id}
+          run={run}
+          confirming={confirming === run.id}
+          onRetry={() => activities.retry(run.id)}
+          onAsk={() => setConfirming(run.id)}
+          onKeep={() => setConfirming(null)}
+          onDiscard={() => {
+            setConfirming(null);
+            activities.discard(run.id);
+          }}
+        />
+      ))}
+      {waiting > 0 && (
         <Text style={styles.message}>
           {tPlural(
-            activities.waiting,
+            waiting,
             "{count} run is on this phone, waiting for a connection.",
             "{count} runs are on this phone, waiting for a connection.",
           )}
@@ -109,6 +128,90 @@ export function ActivitiesList() {
         <Text style={styles.message}>
           {t("No activities yet. Save a run when you finish it, and it is kept here.")}
         </Text>
+      )}
+    </View>
+  );
+}
+
+type RefusedProps = {
+  run: RefusedRun;
+  /** «Discard» was tapped: the row asks before the run goes. */
+  confirming: boolean;
+  onRetry: () => void;
+  onAsk: () => void;
+  onKeep: () => void;
+  onDiscard: () => void;
+};
+
+/** A run of this phone the API will not take (TASK-257): when, how far,
+ * why, and what to do with it. */
+function RefusedRow({
+  run,
+  confirming,
+  onRetry,
+  onAsk,
+  onKeep,
+  onDiscard,
+}: RefusedProps) {
+  // Written again when «Settings» changes the units (TASK-182).
+  useUnits();
+  const when = startedLabel(run.startedAt) || t("Run");
+  return (
+    <View style={[styles.row, styles.refused]} testID="refused-run">
+      <View style={styles.words}>
+        <Text style={styles.when} numberOfLines={1}>
+          {when}
+        </Text>
+        <Text style={styles.facts} numberOfLines={1}>
+          {runDistanceLabel(run.distanceM)}
+        </Text>
+        <Text style={styles.reason}>
+          {t("The server could not take this run: {message}", { message: run.message })}
+        </Text>
+      </View>
+      {confirming ? (
+        <View style={styles.confirm}>
+          <Text style={styles.confirmText}>
+            {t("Discard this run? It will not be saved.")}
+          </Text>
+          <View style={styles.confirmButtons}>
+            <Pressable
+              style={[styles.button, styles.half]}
+              onPress={onKeep}
+              accessibilityRole="button"
+            >
+              <Text style={styles.buttonText}>{t("Keep it")}</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.button, styles.half, styles.danger]}
+              onPress={onDiscard}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.buttonText, styles.dangerText]}>
+                {t("Discard run")}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.confirmButtons}>
+          <Pressable
+            style={[styles.button, styles.half]}
+            onPress={onRetry}
+            accessibilityRole="button"
+            accessibilityLabel={t("Send the run of {when} again", { when })}
+          >
+            <Text style={styles.buttonText}>{t("Try again")}</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.button, styles.half]}
+            onPress={onAsk}
+            accessibilityRole="button"
+            accessibilityLabel={t("Discard the run of {when}", { when })}
+          >
+            <Text style={[styles.buttonText, styles.dangerText]}>{t("Discard")}</Text>
+          </Pressable>
+        </View>
       )}
     </View>
   );
@@ -229,6 +332,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.border,
     backgroundColor: color.surface,
+  },
+  // Marked by its border, as a problem is (the yellow is the route's).
+  refused: {
+    borderColor: color.error,
+  },
+  reason: {
+    color: color.text,
+    fontSize: fontSize.small,
   },
   open: {
     flexDirection: "row",

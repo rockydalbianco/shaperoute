@@ -922,12 +922,30 @@ telefono dell'account: con un percorso o senza.
   registrata, posizione per posizione, con le pause e, se c'era, il
   percorso seguito; km, tempo e punteggio li conta l'API, non il telefono.
 - **Senza rete** la corsa salvata resta sul telefono, in un file a parte
-  (`activities-outbox.json`, al più 20 corse), e parte da sola alla
+  (`activities-outbox.json`, al più 20 corse per account), e parte da sola alla
   prossima apertura dell'app con la rete, o quando si apre «My
   activities»; mandata due volte, è salvata una volta. Una corsa che
   aspetta è dell'account con cui è stata corsa: un altro account sullo
   stesso telefono non la manda. In cima alla pagina, finché aspetta:
   «1 run is on this phone, waiting for a connection.».
+- **Una corsa che l'API non prenderà mai** (`422 invalid_request`: meno
+  di due posizioni buone, l'orologio del telefono sbagliato, i 2 000
+  salvataggi dell'account già pieni) non sparisce (TASK-257, ADR-0221):
+  resta nel file, segnata con il motivo, e non viene più mandata. In cima
+  a «My activities», bordata di rosso come un problema, una riga per
+  corsa con il giorno e l'ora, i km come il telefono li ha registrati e
+  «The server could not take this run: {message}» (il messaggio dell'API,
+  in inglese com'è arriva); sotto, «Try again» (la manda ancora: utile
+  dopo aver cancellato una corsa a lista piena) e «Discard», che chiede
+  «Discard this run? It will not be saved.» con «Keep it» e «Discard
+  run». La riga «waiting for a connection» non la conta.
+- **Il telefono tiene al più 20 corse non mandate per account**, le
+  rifiutate comprese; non ne lascia andare nessuna per fare posto. Al
+  «Save» della ventunesima la fine della corsa resta com'è (il file della
+  corsa in corso non si cancella) e dice «The phone holds 20 runs not sent
+  yet. Discard one in My activities first.» se fra quelle c'è una
+  rifiutata, altrimenti «The phone holds 20 runs not sent yet. They go
+  when there is a connection; then save this one.».
 - **Senza account** non si salva niente, com'era: sotto la scheda di fine
   corsa la riga «Sign up or log in to keep your runs and share them as
   drawings.» (TASK-117) apre «Profile» con la stessa frase sopra il

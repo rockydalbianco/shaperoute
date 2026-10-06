@@ -21,7 +21,12 @@ import { apiError, type MemorySecureStore } from "../src/account/testing";
 import { activityKey } from "../src/activities/activityKey";
 import { SIGN_IN_TO_KEEP_RUNS } from "../src/activities/activitiesDoor";
 import { startedLabel } from "../src/activities/activityText";
-import { loadOutbox, saveOutbox, type Waiting } from "../src/activities/outbox";
+import {
+  loadOutbox,
+  MAX_WAITING,
+  saveOutbox,
+  type Waiting,
+} from "../src/activities/outbox";
 import { skipCountdown } from "../src/navigation/runControl";
 import {
   clearRun,
@@ -708,20 +713,65 @@ test("with nothing waiting, an opening sends nothing", async () => {
   expect(fetchSpy.mock.calls.filter(([, init]) => init?.method === "PUT")).toEqual([]);
 });
 
-test("a run the API will never take stops waiting", async () => {
+test("a run the API will never take stays on the phone, with the reason and «Discard»", async () => {
+  // TASK-257: it was dropped without a word, after the logo said «saved».
+  const REASON =
+    "This run cannot be saved: the track has 1 usable positions, 2 are needed.";
   signedIn();
   api({
     ...ACCOUNT,
     "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
     [`PUT /me/activities/${KEY}`]: () =>
-      Response.json(apiError("invalid_request", "This run cannot be saved: …"), {
-        status: 422,
-      }),
+      Response.json(apiError("invalid_request", REASON), { status: 422 }),
   });
   await openOnRun(FREE_ENDED);
   await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
   await waitFor(() => expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1));
-  await waitFor(() => expect(loadOutbox()).toEqual([]));
+  await waitFor(() => expect(loadOutbox()[0]?.refused?.message).toBe(REASON));
+
+  await screen.findByText("Starting from your position.");
+  await openActivities();
+  expect(
+    await screen.findByText(`The server could not take this run: ${REASON}`),
+  ).toBeOnTheScreen();
+  // Not waiting for a connection: it has its own row.
+  expect(screen.queryByText(/waiting for a connection/)).toBeNull();
+  // The page asks its list again; the run is not sent again.
+  await waitFor(() => expect(calls("GET", "/me/activities").length).toBeGreaterThan(1));
+  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(1);
+
+  await fireEvent.press(screen.getByRole("button", { name: /^Discard the run of / }));
+  await fireEvent.press(screen.getByRole("button", { name: "Keep it" }));
+  expect(screen.getByTestId("refused-run")).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: /^Discard the run of / }));
+  await fireEvent.press(screen.getByRole("button", { name: "Discard run" }));
+  expect(screen.queryByTestId("refused-run")).toBeNull();
+  expect(loadOutbox()).toEqual([]);
+});
+
+test("a phone full of runs not sent keeps the run that ended, and says so", async () => {
+  // TASK-257: the oldest run was let go to make room.
+  signedIn();
+  const held = Array.from({ length: MAX_WAITING }, (_, n) => ({
+    id: `held${String(n).padStart(4, "0")}`,
+    owner: session.user.id,
+    request: activityRequest,
+    refused: { code: "invalid_request", message: "…" },
+  })) as Waiting[];
+  saveOutbox(held);
+  api({
+    ...ACCOUNT,
+    "GET /me/activities": () => Response.json({ activities: [], next: null, total: 0 }),
+  });
+  await openOnRun(FREE_ENDED);
+  await fireEvent.press(screen.getByRole("button", { name: "Save to My activities" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    `The phone holds ${MAX_WAITING} runs not sent yet. Discard one in My activities first.`,
+  );
+  // Nothing went: neither the run that ended nor one of those held.
+  expect(loadRun()).not.toBeNull();
+  expect(loadOutbox()).toEqual(held);
+  expect(calls("PUT", `/me/activities/${KEY}`)).toHaveLength(0);
 });
 
 test("an API that is away keeps the run waiting", async () => {

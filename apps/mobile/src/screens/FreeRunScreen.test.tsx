@@ -1,5 +1,6 @@
 import type { LatLon } from "@shaperoute/shared-types";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { Linking } from "react-native";
 
 import type { FreeRun } from "../navigation/freeRun";
 import { addFix, emptyTrack, type Track } from "../navigation/trackRecorder";
@@ -113,13 +114,16 @@ test("before the first fix, the banner waits for the GPS", async () => {
   expect(screen.getByText("Finding your position…")).toBeOnTheScreen();
 });
 
-test("without the location, the banner says how to turn it on", async () => {
+test("without the location, the banner says how to turn it on and opens the Settings", async () => {
+  const openSettings = jest.spyOn(Linking, "openSettings").mockResolvedValue();
   await render(<FreeRunBanner state={{ status: "denied" }} />);
+  expect(screen.getByText("Location is off")).toBeOnTheScreen();
   expect(
-    screen.getByText(
-      "Location is off for Sgrava: allow it in Settings to record a run.",
-    ),
+    screen.getByText("Allow it for Sgrava in Settings to record your track."),
   ).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole("button", { name: "Open Settings" }));
+  expect(openSettings).toHaveBeenCalledTimes(1);
+  openSettings.mockRestore();
 });
 
 test("Stop ends the run; Pocket only once the GPS is on", async () => {

@@ -2,7 +2,8 @@
 
 **Stato**: In corso
 **Fase**: 4 · **Branch**: `feat/TASK-210-app-language` (parte A),
-`feat/TASK-210-run-screens` (parte B, la corsa)
+`feat/TASK-210-run-screens` (parte B, la corsa), `feat/TASK-210-explore`
+(parte C, «Explore»)
 
 ## Obiettivo
 
@@ -184,13 +185,31 @@ bottone, tempi in italiano); `RunBike`, `RunPaddle`, `RunMiles` cercano
 la scheda «Dati» dove sono in italiano. **Testi approvati dall'utente**
 il 2026-10-06 («vanno bene i testi»).
 
+**Parte C — «Explore»** (2026-10-06, chiesta dall'utente: «parti con
+«Explore» di TASK-210»): `AskForRoute`, `CityExamples`, `ExploreScreen`,
+`ExploreStart`, `ExploreTools`, `ExploredCard`, `ThemedCard`,
+`WhileDrawing`, `RouteCard` (il credito delle mappe è ora una funzione,
+`cardMapsCredit()`), `presets` (le categorie si vedono tradotte con
+`tLater`/`t`, **la richiesta all'API resta in inglese**: «Food in New
+York»; «near your start», «in {city}», il suggerimento del campo),
+`useStartDirections`, `useThemedRoute`. 64 testi nuovi nelle quattro
+tabelle (`out/task-210-explore-testi.md` sul Mac); «Try again», «Back»,
+«Cancel», «Next», «Drawing…», «Near me», «Back to the list», «Not drawn»
+erano già tradotti. I km nei testi («Starting within 5 km», «Drawing a 2
+km heart») restano scritti come prima, con la virgola della lingua
+(`kmOrMiles`), e con le miglia passano da `distanceLabel` (prima
+`ExploredCard` scriveva i km anche con le miglia). Test:
+`explore/ExploreItalian.test.tsx` (categorie tradotte e richiesta
+inglese, frasi del percorso a tema e delle indicazioni, credito). I nomi
+delle città e i nomi dei percorsi dell'API restano com'è. **Testi da
+vedere all'utente prima del merge.**
+
 **Da fare nelle parti successive**: «Draw» (`RoutePanel`, `problems`,
 `distance`, `ImageChoice`, `OutlineBoard`, `warnings`, `wordInput`,
 `LoadingBar`, `DistanceStepper`, `RouteTiles`, `shareGpx`; dopo
-TASK-256, che ne tocca i testi d'errore), «Explore» (`ExploreScreen`,
-`ExploreTools`, `CityExamples`, `AskForRoute`, `ThemedCard`,
-`ExploredCard`, `ExploreStart`, `WhileDrawing`, `useStartDirections`,
-`useThemedRoute`, `presets`), la fine corsa di TASK-208 (`RunEnd.tsx`,
+TASK-256, che ne tocca i testi d'errore), i nomi delle forme sulle schede
+di «Explore» (`routeTitle` dà l'inglese, «dog head»: `shapeLabel` lo
+tradurrebbe), la fine corsa di TASK-208 (`RunEnd.tsx`,
 `PublicParts.tsx`, `PublicRow.tsx`, `api/drawings.ts`), `VoiceSetting.tsx`,
 `SportSetting`/`SportButton`/`sport.ts`, i titoli delle pagine in
 `App.tsx`, i nomi delle forme in «Draw» (`shapeWords.ts` sa solo

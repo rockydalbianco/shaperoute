@@ -163,6 +163,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   blocco può prendere un thread dei job dopo un `engine_error`: non
   verificato, lo guarda il coordinatore. Da dove riprendere:
   `tasks/TASK-248.md`, «Esito».
+- **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
+  (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
+  **Parte A, solo app**, in PR: lungo un percorso sull'acqua e in «Paddle
+  without a route» la schermata mostra «Speed now» e «Avg speed» in km/h
+  (mph con le miglia), «Avg /500 m» e «Last 500 m» al posto di
+  «Last km» ed «Elev. gain»; i parziali sono ogni 500 m; la voce dice ogni
+  km col passo medio ogni 500 metri (cinque lingue); il post di fine
+  uscita scrive «5:37 /500 m». Corsa e bici come prima. Non guardata su un
+  telefono. **Parte B**: «My activities» e il post da lì mostrano ancora
+  il passo al km, perché l'API non restituisce lo sport di una corsa
+  salvata; serve `activity` nel contratto (`activities.py` è di TASK-247:
+  aspetta il via del coordinatore) e poi il server, con l'ok dell'utente.
+  **Aspettano l'utente**: i testi nuovi, «Elev. gain» tolto sull'acqua, e
+  cosa mostra la bici senza percorso (oggi il passo al km). Da dove
+  riprendere: `tasks/TASK-251.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -718,10 +733,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   baffo camminato; in 4 la ricerca sceglie un altro disegno, e in 2 la
   somiglianza scende), una diventa disponibile (`ROUTE_ENGINE.md` §5).
   In media 1 km disegnato in meno e 0,7 km a piedi in più dove cambia.
-  **Non sul server né pubblicato**: server e `draw_examples` li fa il
-  coordinatore con l'ok dell'utente; `engine.zip` è rifatto, il telefono
-  lo riceve con la prossima pubblicazione. Seguiti in
-  `tasks/TASK-243.md`.
+  **Sul server** da `main` a784f772 dal 2026-10-05 22:22Z (ok dell'utente
+  «ok server», 9 s di fermo, ritorno `shaperoute-api:before-task243`),
+  `draw_examples` rifatto: 70 di 70 città alle 22:58Z, nessuna da rifare.
+  La pubblicazione dell'app, con `engine.zip` rifatto, è del coordinatore.
+  Seguiti in `tasks/TASK-243.md`.
 
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della

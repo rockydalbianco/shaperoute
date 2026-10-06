@@ -11807,10 +11807,13 @@ sopra i parziali); i parziali ogni km con l'andatura ogni 500 m (un numero
 che non è il tempo della riga); la velocità detta dalla voce (a 5–6 km/h un
 numero intero non dice niente, e i decimali la voce li legge male).
 
-**Conseguenze**: «My activities» e il post fatto da lì mostrano ancora il
-passo al km: l'API non restituisce lo sport di una corsa salvata. È la
-parte B di TASK-251 (un campo in più nel contratto). I testi nuovi in
-tedesco, spagnolo e francese sono dell'agente, da confermare.
+**Conseguenze**: «My activities» e il post fatto da lì mostravano ancora il
+passo al km: l'API non restituiva lo sport di una corsa salvata. La parte
+B di TASK-251 aggiunge `activity` alle risposte di `GET /me/activities` e
+`GET /me/activities/{key}` (campo in più, nessuna migrazione: la colonna
+c'è dal TASK-208); nell'app è facoltativo, così un server di prima lascia
+il passo al km. I testi nuovi in tedesco, spagnolo e francese sono
+dell'agente, da confermare.
 
 ## ADR-0212 — aggiornamento (parte B): le partenze vicine senza `multiprocessing.Pool`
 **Stato**: Attiva · 2026-10-06 · **deciso dall'agente su delega

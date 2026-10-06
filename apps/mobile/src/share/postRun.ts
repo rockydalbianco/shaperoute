@@ -30,7 +30,7 @@ export type PostRun = {
 };
 
 /** A run of «My activities» as its post shows it: its title, or where it
- * was and what it drew. */
+ * was and what it drew; its sport, when the API says it (TASK-251). */
 export function postOfActivity(activity: ActivityDetail): PostRun {
   return {
     key: activity.id,
@@ -38,6 +38,7 @@ export function postOfActivity(activity: ActivityDetail): PostRun {
     track: activity.track,
     distanceM: activity.distance_m,
     durationMs: activity.duration_s * 1000,
+    ...(activity.activity === undefined ? {} : { activity: activity.activity }),
   };
 }
 

@@ -12,6 +12,7 @@
       "duration_s": 1140,
       "score": 91,
       "fidelity": 1.0,
+      "activity": "running",
       "route_preview": [
         [46.0671, 11.1214],
         [46.0671, 11.1344],
@@ -39,6 +40,7 @@
       "duration_s": 815,
       "score": null,
       "fidelity": null,
+      "activity": "running",
       "route_preview": null,
       "track_preview": [
         [45.4642, 9.19],

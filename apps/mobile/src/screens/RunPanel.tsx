@@ -5,12 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { t } from "../i18n";
 
 import { clockLabel } from "../navigation/freeRun";
-import {
-  isPaddle,
-  PADDLE_PACE_M,
-  PADDLE_PACE_UNIT,
-  per500S,
-} from "../navigation/paddle";
+import { isPaddle, PADDLE_PACE_M, per500S } from "../navigation/paddle";
 import { distanceLabel } from "../navigation/phrases";
 import { isRide, speedNumber } from "../navigation/ride";
 import { useRunControl } from "../navigation/runControl";

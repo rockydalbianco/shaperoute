@@ -578,6 +578,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App e API** — TASK-258: il post condiviso resta sul server (ADR-0222;
+  chiesto dall'utente il 2026-10-06, tre scelte sue: emoji e risultati
+  senza l'immagine, salvato quando lo si condivide, rivisto riaprendo
+  «Share»). Migrazione **0019** (`runs.post`), `PUT
+  /me/activities/{key}/post`, `post` nella corsa intera; nell'app
+  «Instagram» e «Send to Strava» mandano il post con la corsa, e «Share»
+  da «My activities» lo riapre com'era. L'attività era già tutta sul
+  server. **Vuole l'aggiornamento del server** (migrazione, motore non
+  toccato) con l'ok dell'utente; poi la pubblicazione. Usare post e corse
+  per «cosa piace» è un seguito, in forma aggregata e anonima.
+  `tasks/TASK-258.md`.
+
 - **App** — TASK-256: gli errori parlano a chi corre (ADR-0220; dalla
   revisione dell'app, «sì» dell'utente del 2026-10-06, testi nelle cinque
   lingue approvati dall'utente). PR #408, merge `e24c79f3`, 2026-10-06. I

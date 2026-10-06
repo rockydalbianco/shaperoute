@@ -68,6 +68,39 @@ export type ActivityDetail = Omit<Activity, "route_preview" | "track_preview"> &
    * API older than TASK-200. Nothing shows them yet.
    */
   pauses?: SavedPause[];
+  /**
+   * Its post as it was last shared (TASK-258): «Share» opens it as it was.
+   * Null for a run whose post was never shared; missing from an API older
+   * than TASK-258.
+   */
+  post?: RunPost | null;
+};
+
+/** An emoji on the post: its centre as shares of the picture's width and
+ * height, from the top left (stickers.ts). */
+export type PostEmoji = {
+  emoji: string;
+  x: number;
+  y: number;
+};
+
+/**
+ * The post of a run as the app shared it (TASK-258, ADR-0194 for the post):
+ * enough to make the same picture again from the run, never the picture.
+ * PUT /me/activities/{key}/post: packages/shared-types/fixtures/
+ * run-post-request.json.
+ */
+export type RunPostRequest = {
+  /** What was written over the drawing; null for a post without one. */
+  title: string | null;
+  /** The results shown, in the post's order: "distance", "time", "pace". */
+  results: string[];
+  emoji: PostEmoji[];
+};
+
+/** The post kept, with when it was last shared (fixtures/run-post.json). */
+export type RunPost = RunPostRequest & {
+  shared_at: string;
 };
 
 /** A pause of a run saved, in seconds since the first point of its `track`,
@@ -230,6 +263,24 @@ export async function saveActivity(
   return outcome;
 }
 
+/** PUT /me/activities/{key}/post: the post as shared now, over the one
+ * before (TASK-258). 404 for a run the API does not have. */
+export function savePost(
+  baseUrl: string,
+  token: string,
+  id: string,
+  request: RunPostRequest,
+  options: Options = {},
+): Promise<AccountOutcome<RunPost>> {
+  return ask(
+    baseUrl,
+    `/me/activities/${id}/post`,
+    { method: "PUT", body: request, token },
+    isRunPost,
+    options,
+  );
+}
+
 /** DELETE /me/activities/{key}: gone, or never there. */
 export function removeActivity(
   baseUrl: string,
@@ -285,6 +336,27 @@ function isPause(value: unknown): value is SavedPause {
 }
 
 /** What the list and the whole run share. */
+function isPostEmoji(value: unknown): value is PostEmoji {
+  return (
+    isRecord(value) &&
+    typeof value.emoji === "string" &&
+    typeof value.x === "number" &&
+    typeof value.y === "number"
+  );
+}
+
+export function isRunPost(body: unknown): body is RunPost {
+  return (
+    isRecord(body) &&
+    isText(body.title) &&
+    Array.isArray(body.results) &&
+    body.results.every((result) => typeof result === "string") &&
+    Array.isArray(body.emoji) &&
+    body.emoji.every(isPostEmoji) &&
+    typeof body.shared_at === "string"
+  );
+}
+
 function hasFields(body: Record<string, unknown>): boolean {
   return (
     typeof body.id === "string" &&
@@ -320,7 +392,8 @@ export function isActivityDetail(body: unknown): body is ActivityDetail {
     isLine(body.track) &&
     body.track.length >= 2 &&
     (body.pauses === undefined ||
-      (Array.isArray(body.pauses) && body.pauses.every(isPause)))
+      (Array.isArray(body.pauses) && body.pauses.every(isPause))) &&
+    (body.post === undefined || body.post === null || isRunPost(body.post))
   );
 }
 

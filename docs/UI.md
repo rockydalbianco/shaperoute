@@ -2189,6 +2189,15 @@ run», con «Close» in alto a sinistra:
   text on Strava.»; e «View on Strava». Sotto, sempre: «Strava takes no
   pictures from other apps: keep this one in Photos with «Save Image» and
   add it there.» (TASK-231 B).
+- **Il post resta sul server** (TASK-258, ADR-0222; scelte dell'utente):
+  su una corsa salvata, quando il foglio di condivisione si è aperto o
+  la corsa è andata a Strava, l'app manda all'API gli emoji con la loro
+  posizione, i risultati accesi e il titolo — mai l'immagine. Niente
+  cambia sullo schermo e niente si dice se non arriva. Riaprendo «Share»
+  da «My activities» il post torna com'era: stessi emoji nelle stesse
+  posizioni, stessi risultati accesi (un risultato che la corsa non ha
+  più non compare). A fine corsa, prima di «Save», il post si condivide
+  come prima e non resta.
 
 ## Sull'acqua: «Paddle» (TASK-191, ADR-0169)
 

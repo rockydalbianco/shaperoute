@@ -10,6 +10,7 @@ import {
   postOfActivity,
   postOfTrack,
   type PostRun,
+  postRequestOf,
   resultsOf,
   resultValue,
   withoutEnds,
@@ -136,6 +137,51 @@ describe("a post made of", () => {
       track: points,
       distanceM: 400,
       durationMs: 90_000,
+    });
+  });
+});
+
+describe("the post kept by the API (TASK-258)", () => {
+  const ACTIVITY = {
+    id: "abc",
+    started_at: "2026-10-04T08:00:00Z",
+    place: "Trento",
+    shape: "heart",
+    word: null,
+    style: null,
+    title: null,
+    distance_m: 5200,
+    duration_s: 1690,
+    score: 87,
+    fidelity: null,
+    similarity: 0.9,
+    points: north(5000),
+    track: north(5200),
+  } as ActivityDetail;
+  const kept = {
+    title: "Trento · Star",
+    results: ["distance", "pace"],
+    emoji: [{ emoji: "🔥", x: 0.8, y: 0.24 }],
+    shared_at: "2026-10-06T10:15:00Z",
+  };
+
+  it("opens with a run of «My activities», or not at all", () => {
+    expect(postOfActivity(ACTIVITY).post).toBeNull();
+    expect(postOfActivity({ ...ACTIVITY, post: null }).post).toBeNull();
+    expect(postOfActivity({ ...ACTIVITY, post: kept }).post).toEqual(kept);
+  });
+
+  it("is what is on the picture now, the results in the post's order", () => {
+    const emoji = [{ emoji: "❤️", x: 0.2, y: 0.5 }];
+    expect(postRequestOf(RUN, ["pace", "distance"], emoji)).toEqual({
+      title: "Heart in Trento",
+      results: ["distance", "pace"],
+      emoji,
+    });
+    expect(postRequestOf({ ...RUN, title: null }, [], [])).toEqual({
+      title: null,
+      results: [],
+      emoji: [],
     });
   });
 });

@@ -1064,6 +1064,7 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
 | `GET /me/activities` | una pagina dell'elenco, dalla corsa più recente | `200` `{ "activities": [...], "next": …, "total": … }` |
 | `GET /me/activities/{key}` | una corsa intera, con le due linee | `200`, o `404 http_error` |
 | `PUT /me/activities/{key}` | salvare una corsa | `201` la prima volta, poi `200` |
+| `PUT /me/activities/{key}/post` | il post della corsa, come condiviso (TASK-258) | `200` con `shared_at`, o `404 http_error` |
 | `DELETE /me/activities/{key}` | cancellarla | `204`, anche se non c'era |
 
 - **`key`** la fa l'app dall'inizio della traccia (`activityKey`: 16 cifre
@@ -1111,6 +1112,19 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   riceve mai il punto vero. Senza chiave, se il servizio non risponde o se
   lì non c'è un paese, `null`, e la corsa si salva lo stesso. Le risposte
   restano in memoria: due corse dallo stesso chilometro chiedono una volta.
+- **Il post della corsa** (TASK-258, ADR-0222): `PUT
+  /me/activities/{key}/post` riceve il post come l'app l'ha condiviso,
+  `shared-types/fixtures/run-post-request.json`: `title` (quello scritto
+  sul disegno, o `null`, al più 120 caratteri), `results` (fra
+  `distance`, `time`, `pace`, ognuno al più una volta, nell'ordine del
+  post) ed `emoji` (al più 5, ognuno con `emoji` e il centro `x`, `y` come
+  frazioni della larghezza e dell'altezza dell'immagine, fra 0 e 1). Un
+  campo in più, un'immagine per esempio, è `422 invalid_request`. Risponde
+  il post con `shared_at` (`run-post.json`); scritto intero a ogni
+  condivisione, l'ultimo vince. `404` per una corsa che l'account non ha.
+  **Mai l'immagine**: si rifà dal post e dalla corsa. La corsa intera ha
+  `post` (`null` per una corsa mai condivisa, e per ogni corsa salvata
+  prima); l'elenco no.
 - **Una corsa dell'elenco** ha `id` (la chiave), `started_at`, `place`,
   `shape`, `word`, `style`, `title`, `distance_m`, `duration_s`, `score`,
   `fidelity`, `activity` (`running`, `cycling` o `paddling`, com'è stata

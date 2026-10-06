@@ -35,7 +35,7 @@ partenza: ogni task lo crea con la sua migrazione e aggiorna questo file.
 | `profile_photos` | utente, JPEG quadrato 256 px | TASK-178 |
 | `generated_routes` | ogni percorso dell'API (ADR-0086): richiesta, tipo (forma, parola, immagine), distanza, somiglianza, linea, **punto di partenza mostrato** (a più di 500 m da quello vero), centro, data; utente se era entrato, se no nessuno | TASK-092 |
 | `favorites` | percorso tenuto fra i preferiti: utente, chiave fatta dall'app sulla linea (unica per utente), città, forma o parola e stile, titolo, distanza chiesta e sulle strade, somiglianza, **linea intera**, data; i tratti a piedi di una parola con la penna alzata (TASK-199); i tratti con la bici a mano (TASK-206) | TASK-171, TASK-199, TASK-206 |
-| `runs` | corsa salvata: utente, chiave fatta dall'app, percorso pianificato, cosa disegna, traccia (`LineStringM`, M = secondi dall'inizio), pause, inizio, distanza, durata, punteggio, fedeltà, luogo (TASK-172); i tratti a piedi del percorso di una parola con la penna alzata (TASK-199); l'attività, a piedi, in bici o in canoa (TASK-208) | TASK-172, TASK-199, TASK-208 |
+| `runs` | corsa salvata: utente, chiave fatta dall'app, percorso pianificato, cosa disegna, traccia (`LineStringM`, M = secondi dall'inizio), pause, inizio, distanza, durata, punteggio, fedeltà, luogo (TASK-172); i tratti a piedi del percorso di una parola con la penna alzata (TASK-199); l'attività, a piedi, in bici o in canoa (TASK-208); il post condiviso, emoji e risultati, mai l'immagine (TASK-258) | TASK-172, TASK-199, TASK-208, TASK-258 |
 | `drawings` | il disegno di una corsa: **traccia tagliata** (senza 200 m all'inizio e alla fine), titolo dato dall'utente (TASK-117); chi lo vede (tutti, chi segue, solo io) e la descrizione (TASK-208) | TASK-117, TASK-208 |
 | `drawing_photos` | fino a 3 foto di un disegno oltre alla mappa: posto 1–3, JPEG al più 1080 px di lato, senza EXIF | TASK-208 |
 | `drawing_tags` | gli iscritti taggati in un disegno, in ordine, al più 10 | TASK-208 |
@@ -367,6 +367,19 @@ numero è il primo libero in `main` al merge):
   col nord in alto e per un'app precedente: si leggono `null`, e l'app li
   mostra col nord in alto, com'erano (test con dati sullo schema senza la
   migrazione). Nessun indice: non si cerca per inclinazione.
+
+Migrazione `0019_run_posts.sql` (TASK-258, ADR-0222; il numero è il primo
+libero in `main` al merge):
+
+- `runs.post` (`jsonb`, facoltativa): il post della corsa come il suo
+  proprietario l'ha condiviso, `{ title, results, emoji, shared_at }`
+  (`API.md`, «My activities»): gli emoji con il centro come frazioni
+  dell'immagine, i risultati accesi, il titolo scritto sul disegno, e
+  quando. Scritto intero a ogni condivisione; **mai l'immagine**, che si
+  rifà da questi dati e dalla corsa. Letto solo con la corsa intera.
+- **Assente** per ogni corsa di prima e per una corsa mai condivisa: si
+  legge `null`. Nessun indice: non si cerca per post. Cade con la corsa
+  (è una colonna sua) e con l'account.
 
 ## Come si memorizza una traccia
 

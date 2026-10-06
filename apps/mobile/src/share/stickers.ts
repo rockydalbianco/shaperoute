@@ -79,6 +79,22 @@ export function removeSticker(stickers: readonly Sticker[], id: number): Sticker
   return stickers.filter((s) => s.id !== id);
 }
 
+/** An emoji as the post kept on the server has it (TASK-258): no id. */
+export type PlacedEmoji = Pick<Sticker, "emoji" | "x" | "y">;
+
+/** The emoji of a post kept, back on the post where they were, with ids
+ * of their own; no more than MAX_STICKERS, each kept on the post. */
+export function stickersOf(placed: readonly PlacedEmoji[]): Sticker[] {
+  return placed
+    .slice(0, MAX_STICKERS)
+    .map((e, i) => ({ id: i + 1, emoji: e.emoji, x: clamp(e.x), y: clamp(e.y) }));
+}
+
+/** The emoji as the post keeps them: where they are, without ids. */
+export function placedOf(stickers: readonly Sticker[]): PlacedEmoji[] {
+  return stickers.map(({ emoji, x, y }) => ({ emoji, x, y }));
+}
+
 /** A finger that moved less than this, in points, tapped: the emoji goes. */
 export const TAP_SLOP = 6;
 

@@ -11783,3 +11783,40 @@ numero intero non dice niente, e i decimali la voce li legge male).
 passo al km: l'API non restituisce lo sport di una corsa salvata. È la
 parte B di TASK-251 (un campo in più nel contratto). I testi nuovi in
 tedesco, spagnolo e francese sono dell'agente, da confermare.
+
+## ADR-0212 — aggiornamento (parte B): le partenze vicine senza `multiprocessing.Pool`
+**Stato**: Attiva · 2026-10-06 · **deciso dall'agente su delega
+dell'utente** (TASK-248, parte B).
+
+**Contesto**: la causa del job appeso (ADR-0212) è nel motore:
+`plan_nearby` fermava i processi delle partenze vicine con
+`Pool.terminate()`, che aspetta per sempre se arriva mentre il thread
+del pool ha deciso di mandare un compito ma non ha ancora scritto il
+primo byte (svuota la coda finché ci trova qualcosa, poi ferma i
+processi; il thread scrive allora megabyte in una pipe che nessuno legge
+più). Capitava in CI, dove un test rifiuta subito; sul server solo dopo
+un errore inatteso del piano dalla partenza. Riprodotto sul Mac con la
+sola libreria standard.
+
+**Decisione**:
+
+1. **Un `Process` e una `Pipe` per partenza vicina** (`_Workers`), non un
+   `Pool`: a processi fermati nessuno legge più, chi manda riceve un
+   errore invece di aspettare, e fermarli ritorna sempre.
+2. **Lo stesso lavoro di prima**: `_plan_in_worker`, `spawn`, la
+   priorità abbassata, le attese e i limiti di memoria non cambiano. I
+   percorsi sono identici: impronte fissate uguali, e con i processi
+   7 casi su 7 con lo stesso digest prima e dopo.
+3. **Un processo che muore** è una partenza senza piano, detta nel log
+   («the worker process stopped»), non un'attesa fino al limite come con
+   il `Pool`. Un errore inatteso in un processo è rialzato qui, come
+   prima.
+
+**Conseguenze**:
+
+- L'impronta del motore cambia anche se i percorsi no: al prossimo
+  aggiornamento del server serve `draw_examples`. `engine.zip` è
+  rifatto; l'impronta dell'acqua (`paddleExamples.json`) non cambia.
+- Tempi uguali (0,48 s e 0,54 s sui due casi rapidi, prima e dopo, a
+  macchina scarica); memoria nella stessa fascia.
+- Il telefono (`processes=False`) non cambia.

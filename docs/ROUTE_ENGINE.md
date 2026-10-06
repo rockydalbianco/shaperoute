@@ -797,7 +797,10 @@ da alcuni nodi della rete vicini e tiene il percorso migliore:
    altrove andrebbe scartato comunque.
 3. **Quanto si aspetta**: finita la partenza dell'utente, le vicine hanno
    al più altri 8 s, e mai oltre 25 s dalla richiesta; nessuno se il suo
-   percorso è già buono. Quelle ancora in corso si lasciano. Non si provano
+   percorso è già buono. Quelle ancora in corso si lasciano: ogni processo
+   ha una pipe sua e si ferma con `terminate`, non un `multiprocessing.Pool`,
+   il cui `terminate()` aspettava per sempre se arrivava mentre un grafo
+   stava per essere mandato (TASK-248, ADR-0212). Non si provano
    su grafi oltre 30 000 nodi (Milano) né in più processi di quanti ne
    entrano nella memoria che un processo nuovo può prendere: su Linux
    MemAvailable, che conta anche la cache dei file, non la memoria libera

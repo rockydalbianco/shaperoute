@@ -142,33 +142,12 @@ In coda, dopo o accanto:
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
   2–3,7 s in meno nei casi lunghi; `NEARBY_GOOD_GRACE_S` 3→1, 1,5 s in
   meno con meno alternative (`tasks/TASK-203.md`).
-- **Task file rimasti aperti**: TASK-055 e TASK-065 dicono «In corso»,
-  TASK-076 «In revisione» (PR #93): da controllare e chiudere.
 
 Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 `CLAUDE.md` («Autonomia», «Merge», «Lavoro in parallelo»).
 
 ## In lavorazione
 
-- **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
-  (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
-  **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06),
-  su `preview` (gruppo `1924575c`): lungo un percorso sull'acqua e in «Paddle
-  without a route» la schermata mostra «Speed now» e «Avg speed» in km/h
-  (mph con le miglia), «Avg /500 m» e «Last 500 m» al posto di
-  «Last km» ed «Elev. gain»; i parziali sono ogni 500 m; la voce dice ogni
-  km col passo medio ogni 500 metri (cinque lingue); il post di fine
-  uscita scrive «5:37 /500 m». Corsa e bici come prima. Caselle guardate in un
-  simulatore, non su un telefono. **Parte B** in `main` (PR #394, merge
-  `c99b8c8`, 2026-10-06): `activity`
-  nelle risposte di `/me/activities` (campo in più nel contratto, nessuna
-  migrazione), e «My activities» e il post da lì scrivono il passo ogni
-  500 m per una pagaiata salvata; con un server di prima l'app scrive il
-  passo al km come prima. **Il server non è aggiornato**: lo fa il
-  coordinatore con l'ok dell'utente, poi la pubblicazione dell'app.
-  **Aspettano l'utente**: i testi nuovi, «Elev. gain» tolto sull'acqua, e
-  cosa mostra la bici senza percorso (oggi il passo al km). Da dove
-  riprendere: `tasks/TASK-251.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -187,24 +166,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (TASK-152), dominio e pubblicazione, e per il merch il servizio di
   stampa, magliette e prezzi. Come si cambia e come si guarda:
   `SITO.md`. Da dove riprendere: `tasks/TASK-237.md`, «Esito».
-- **TASK-231 — Condividere il post di una corsa su Instagram e Strava**
-  (ADR-0194; chiesto dall'utente il 2026-10-04, proposta accettata con la
-  dipendenza `react-native-view-shot`). **Parte A, l'app**, in `main` dal
-  2026-10-04 (PR #303, merge `cf973d1`), non pubblicata: «Share»
-  a fine corsa e in «My activities» apre il post (9:16, giallo, disegno
-  senza i primi e gli ultimi 200 m, risultati accendibili, fino a 5 emoji
-  trascinabili); «Instagram» ne fa un PNG e apre il foglio di iOS; «Send
-  to Strava» dal post manda emoji e risultati come descrizione. Provato
-  nel simulatore (immagine e foglio). `npm install` nel checkout
-  principale lo fa il coordinatore; poi la pubblicazione e la prova
-  sull'iPhone con l'ok dell'utente. Il testo per Strava («🔥❤️ 5.20 km ·
-  28:10 · 5:25 /km · Punteggio 87», poi «Drawn with Sgrava») è stato
-  mostrato all'utente, che ha risposto «va bene». **Parte B**, in PR
-  (2026-10-05, «fai la parte b e pubblica» dell'utente): il testo del
-  post va come `post`, in cima alla descrizione, e su una corsa già su
-  Strava la cambia con `PUT /activities/{id}` («Update on Strava»
-  nell'app). Vuole il server aggiornato (`tasks/TASK-231.md`).
-
 - **TASK-223 — Emoji semplici per il catalogo, e la penna alzata nelle
   forme** (ADR-0185; chiesto dall'utente il 2026-10-03). **Parte A, il
   motore**, in `main` (#284): le forme possono avere `pieces`, e gatto,
@@ -469,42 +430,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   reazioni l'app pubblicata non le mostra. Da dove riprendere:
   `tasks/TASK-119.md`, «Esito».
 
-- **TASK-120 — Commenti** (ADR-0175; scelta dell'utente del 2026-10-03:
-  subito sotto le corse pubblicate vere, non sugli esempi di «Feed»). API
-  e app in `main` dalla PR #260 (`8a938fd`, 2026-10-03):
-  `GET`/`POST /drawings/{id}/comments` e `DELETE
-/comments/{id}`, tabella `comments` (migrazione `0013`), al più 10 al
-  minuto, il filtro di TASK-213 (`422 comment_rejected`, l'avviso
-  nell'app). Nell'app, sotto un disegno aperto da un profilo, «Write a
-  comment» / «N comments» apre un foglio dal basso con l'elenco e il campo
-  sopra la tastiera; tieni premuto per cancellare il proprio, o qualsiasi
-  sotto il proprio disegno; i testi anche nelle quattro lingue di TASK-210.
-  Segnalare un commento arriva con TASK-121 (scelta dell'utente).
-  **Aspettano l'utente**: i testi nuovi (`UI.md`),
-  l'aggiornamento del server con la `0013` e la pubblicazione, la prova
-  sull'iPhone con due account. Con TASK-208 A i commenti seguiranno
-  «Followers» (seguito nel task file). Da dove riprendere:
-  `tasks/TASK-120.md`, «Esito».
-
-- **TASK-117 — Pubblicare una corsa salvata** (ADR-0159; scelte
-  dell'utente: due PR, il punteggio visibile agli altri, anche le corse
-  senza percorso). **Parte A, l'API**, in `main` (PR #232, 2026-10-03):
-  titolo e «Public» su una corsa di «My activities» (`PUT
-/me/activities/{key}/drawing`), i disegni di un profilo e un disegno dal
-  suo id, la traccia senza i primi e gli ultimi 200 m e senza il percorso
-  pianificato, il numero di disegni pubblici nel profilo; tabella
-  `drawings`, migrazione `0009`. Non ancora sul server: arriva con il
-  prossimo aggiornamento, con l'ok dell'utente. **Parte B, l'app**
-  (ADR-0166), in `main` dalla PR #242 (2026-10-03, `18f6d5c`), con le
-  scelte dell'utente: «Public» spento
-  a ogni corsa e un solo «Title» a fine corsa (anche il nome su Strava);
-  «Public» e «Title» su una corsa aperta; il segno «Public» nell'elenco;
-  «Drawings» in «Profile» e nel profilo di un altro, un disegno aperto
-  sulla mappa; senza rete la scelta aspetta in `drawings-outbox.json`.
-  **Aspettano l'utente**: quattro testi nuovi (task file, «Esito»),
-  l'aggiornamento del server con la `0009` prima di pubblicare l'app, la
-  prova sull'iPhone. Da dove riprendere: `tasks/TASK-117.md`, «Esito».
-
 - **TASK-210 — La lingua dell'app** (ADR-0172; scelte dell'utente: inglese,
   tedesco, italiano, spagnolo, francese; senza scelta la lingua del
   telefono). **Parte A** in `main` (PR #254, merge `18fe25c`) e pubblicata su
@@ -579,6 +504,52 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
+
+- **App** — TASK-251: «Paddle» con velocità in km/h e andatura in
+  min/500 m (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte
+  da lui). **Parte A** (l'uscita e la sua fine) in `main` con la PR #383
+  (`bf859e0`), **parte B** («My activities», `activity` in
+  `/me/activities`, nessuna migrazione) con la PR #394 (`c99b8c8`),
+  entrambe del 2026-10-06; sul server (`d7b490f1`) e su `preview` dal
+  2026-10-06. Chiuso il 2026-10-06 dalla pulizia dei task file.
+  **Aspettano l'utente**: i testi nuovi, «Elev. gain» tolto sull'acqua,
+  cosa mostra la bici senza percorso (oggi il passo al km), la prova
+  sull'iPhone pagaiando. `tasks/TASK-251.md`.
+
+- **App e API** — TASK-231: il post di una corsa su Instagram e Strava
+  (ADR-0194; chiesto dall'utente il 2026-10-04). **Parte A**, l'app, PR
+  #303 (`cf973d1`, 2026-10-04): «Share» a fine corsa e in «My activities»
+  fa il post 9:16 giallo con emoji e risultati; «Instagram» ne fa un PNG
+  e apre il foglio di iOS; «Send to Strava» manda emoji e risultati come
+  descrizione. **Parte B**, l'API, PR #306 (`3b6e821`, 2026-10-05): il
+  testo del post va come `post` in cima alla descrizione e su una corsa
+  già su Strava la cambia («Update on Strava»). Sul server e su `preview`
+  dal 2026-10-05. Chiuso il 2026-10-06 dalla pulizia dei task file; resta
+  la prova sull'iPhone. `tasks/TASK-231.md`.
+
+- **App e API** — TASK-120: i commenti sotto le corse pubblicate
+  (ADR-0175; scelta dell'utente del 2026-10-03: subito sotto le corse
+  pubblicate vere, non sugli esempi di «Feed»). In `main` con la PR #260
+  (`8a938fd`, 2026-10-03): `GET`/`POST /drawings/{id}/comments`, `DELETE
+  /comments/{id}`, tabella `comments` (migrazione `0013`), al più 10 al
+  minuto, il filtro di TASK-213; nell'app il foglio dal basso con
+  l'elenco e il campo sopra la tastiera, testi in cinque lingue. Sul
+  server (migrazione `0013`) e su `preview` dal 2026-10-06. Chiuso il
+  2026-10-06 dalla pulizia dei task file. **Aspettano l'utente**: i testi
+  nuovi (`UI.md`, «I commenti di un disegno») e la prova sull'iPhone con
+  due account. Segnalare un commento: TASK-121. `tasks/TASK-120.md`.
+
+- **App e API** — TASK-117: pubblicare una corsa salvata come disegno
+  (ADR-0159, ADR-0166; scelte dell'utente: due PR, anche le corse senza
+  percorso). **Parte A**, l'API, PR #232 (2026-10-03): titolo e «Public»
+  su una corsa di «My activities», i disegni di un profilo, la traccia
+  senza i primi e gli ultimi 200 m; tabella `drawings`, migrazione
+  `0009`. **Parte B**, l'app, PR #242 (`18f6d5c`, 2026-10-03): «Public» e
+  «Title» a fine corsa e su una corsa aperta, «Drawings» nel profilo, un
+  disegno aperto sulla mappa; senza rete la scelta aspetta. Sul server
+  (migrazione `0009`) e su `preview` dal 2026-10-06. Chiuso il 2026-10-06
+  dalla pulizia dei task file. **Aspettano l'utente**: quattro testi nuovi
+  (task file, «Esito») e la prova sull'iPhone. `tasks/TASK-117.md`.
 
 - **App** — TASK-259: «Open Settings» e «Location is off» (ADR-0223;
   seguito di TASK-256 e della revisione del 2026-10-06; testi nelle cinque
@@ -1864,8 +1835,8 @@ username_taken`) e `GET /users/{public_id}`, solo con il token: nome,
   aggiornato. L'app non cambia: niente da ripubblicare per questo.
 - **Catalogo** — TASK-128: Firenze nel catalogo seme (22 percorsi, 159 in
   7 città), una zona per città; la città salta se Overpass rifiuta. In
-  `main` (PR #147). Mancano Napoli, Verona, Padova, Genova, Bari, Palermo,
-  New York e le frasi: un seguito.
+  `main` (PR #147). Napoli, Verona, Padova, Genova, Bari, Palermo,
+  New York e le frasi sono del seguito TASK-161 (PR #175).
 - **API** — TASK-114: gli account nell'API, su PostgreSQL con PostGIS
   (ADR-0115, ADR-0120). `POST /accounts` per iscriversi, `POST /session`
   ed `DELETE /session` per entrare e uscire, `GET /me`, `DELETE /me` che
@@ -2111,7 +2082,7 @@ corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
   «south-west») nell'avviso della partenza spostata ora si traducono come
   «north»; test per le otto direzioni del motore. Un avviso che l'app non
   conosce arriva con la prima lettera maiuscola (ADR-0077).
-- **Motore** — TASK-076 (PR aperta, merge del coordinatore): il motore
+- **Motore** — TASK-076 (PR #93, in `main` dal 2026-09-26): il motore
   prova il cuore anche da 3 nodi a 25–100 m, in parallelo, e tiene il
   migliore; il percorso parte comunque dall'utente, con l'avvicinamento nei
   km e nel GPX (`nearby_starts.py`, ADR-0071, CLI `--nearby 3`). Trento
@@ -2122,6 +2093,12 @@ corsa.gpx`. Il seguito è **TASK-112** (registrare la traccia nell'app),
   Caldonazzo: stesso motore di ieri; il cuore cambia con la posizione del
   GPS (0,73–0,98 entro 100 m). Il testo inglese grezzo di uno screenshot è
   un bug dell'app: TASK-082.
+- **Catalogo** — TASK-065: farfalla, lumaca, testa di cane e testa di
+  coniglio nel catalogo (ADR-0061; scelte dell'utente sui campioni di
+  TASK-064, 068 e 078): motore, contratto, parole e tessere nell'app,
+  righe in `OUTLINES` dell'AI. In `main` (PR #95, `59c8623b`, 2026-09-26).
+  Chiuso il 2026-10-06 dalla pulizia dei task file: la prova sull'iPhone
+  e la nuova misura dell'AI con `qwen3:4b` non risultano fatte.
 - **Programmatore Lettere** — TASK-078: tre forme candidate come contorni,
   sagoma nel contorno e dettagli ripassati (ADR-0073): testa di coniglio
   (`rabbit_head`), zucca di Halloween (`pumpkin`), albero di Natale con la

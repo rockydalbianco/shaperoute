@@ -1,6 +1,6 @@
 # TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m
 
-**Stato**: In lavorazione — parte A (l'uscita in corso e la sua fine) in `main` dalla #383 (`bf859e0`, 2026-10-06), pubblicata su `preview` (gruppo `1924575c`); parte B («My activities») in `main` dalla #394 (`c99b8c8`, 2026-10-06); aspettano il server (ok dell'utente) e la prova sull'iPhone
+**Stato**: Done — parte A (l'uscita in corso e la sua fine) in `main` dalla #383 (`bf859e0`, 2026-10-06), pubblicata su `preview` (gruppo `1924575c`); parte B («My activities») in `main` dalla #394 (`c99b8c8`, 2026-10-06), sul server (`d7b490f1`) e su `preview` dal 2026-10-06; aperti per l'utente i tre punti di «Da confermare» e la prova sull'iPhone
 **Fase**: 4 · **Branch**: `feat/TASK-251-paddle-speed-pace`
 **Dipende da**: TASK-191 (i percorsi sull'acqua), TASK-216 (la velocità
 in bici, `navigation/ride.ts`), TASK-182 (km o miglia)
@@ -137,3 +137,9 @@ caselle sono state guardate in un simulatore
 venivano tagliati, quindi l'unità è nel nome della casella («Avg /500 m»)
 e i nomi sono quelli che ci stanno. I parziali e la voce sono provati solo
 dai test. Sull'iPhone, pagaiando, non è stata provata.
+
+**Chiusura (2026-10-06, pulizia dei task file).** Il server è su `main`
+`d7b490f1`, che contiene `c99b8c8`: `/me/activities` risponde con
+`activity`. L'app con le parti A e B è su `preview` (gruppo `f062e005` e
+seguenti). Restano dell'utente i tre punti di «Da confermare dall'utente»
+e la prova sull'iPhone pagaiando.

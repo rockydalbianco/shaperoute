@@ -1,7 +1,8 @@
 # TASK-256 — Gli errori parlano a chi corre
 
-**Stato**: Todo
-**Fase**: 4 · **Branch**: `fix/TASK-256-runner-errors`
+**Stato**: Done (PR #408, merge `e24c79f3`, 2026-10-06)
+**Fase**: 4 · **Branch**: `feat/TASK-256-errors-for-runners` (nome dal
+brief del coordinatore)
 
 ## Obiettivo
 
@@ -112,7 +113,14 @@ apps/mobile/src/route/RoutePanel.tsx          (+ test)
 apps/mobile/src/intro/AppBoundary.tsx         (nuovo, + test)
 apps/mobile/src/intro/Root.tsx
 apps/mobile/src/map/MapView.tsx               (+ test)
+apps/mobile/App.tsx                           (due righe: `retry` → `onRetry`, ok del coordinatore 2026-10-06)
 apps/mobile/src/i18n/{de,it,es,fr}.ts
+test di altri moduli che leggevano i vecchi testi (ok del coordinatore):
+  __tests__/App.test.tsx, __tests__/AppBike.test.tsx,
+  src/account/{changeContact,changeNotifications,editProfile,useAccount}.test.ts,
+  src/profile/{profileFields,useProfilePhoto}.test.ts,
+  src/settings/{contactFields,notificationFields}.test.ts,
+  src/social/DrawingsGrid.test.tsx, src/route/accessProblems.test.ts
 docs/UI.md, docs/STATUS.md, docs/DECISIONS.md (le righe di questo task)
 ```
 
@@ -129,4 +137,36 @@ docs/UI.md, docs/STATUS.md, docs/DECISIONS.md (le righe di questo task)
 
 ## Esito
 
-*(si compila a fine task)*
+Fatto il 2026-10-06 (ADR-0220): PR #408 mergiata (`e24c79f3`), CI 5/5
+verde, job `mobile` pass in 1m46s; testi nelle cinque lingue approvati
+dall'utente il 2026-10-06. Solo app: la pubblicazione su `preview` è del
+coordinatore.
+
+- Punti 1–4, 6 fatti. Punto 5 («Open Settings» accanto a fotocamera e
+  posizione negate) **non fatto**: i testi stanno in `ImageChoice.tsx`
+  (TASK-254) e in `NavigateScreen.tsx` / `FreeRunScreen.tsx`, fuori dai
+  file del task; seguito senza numero.
+- `problems.ts`: `devDetail()` e `ProblemText.retry`; `messages.ts`:
+  `withDetail()`; `useRouteRequest.retry()`; `RouteOutcome.onRetry`;
+  `src/intro/AppBoundary.tsx` in `Root.tsx`; `MapView` con «Retry»,
+  ricarica al ritorno in primo piano e `onError(null)`.
+- Test nuovi: `AppBoundary.test.tsx`, `RoutePanelRetry.test.tsx`,
+  `MapViewRetry.test.tsx`; test delle parole da sviluppatore in
+  `problems.test.ts` e `messages.test.ts`. Test di altri moduli che
+  leggevano i vecchi testi aggiornati (account, profilo, impostazioni,
+  `App.test.tsx`, `AppBike.test.tsx`, `DrawingsGrid.test.tsx`,
+  `accessProblems.test.ts`).
+- `App.tsx`: le due righe (`retry` dal hook, `onRetry={retry}` su
+  `RouteOutcome`) con l'ok del coordinatore del 2026-10-06; i test di
+  altri moduli aggiornati, idem.
+
+**Seguiti, per il coordinatore** (senza numero, file non di questo task):
+
+- «Open Settings» (`Linking.openSettings`) accanto a «The camera is off for
+  this app…» in `route/ImageChoice.tsx` (TASK-254 lo sta toccando) e a
+  «Location is off for Sgrava…» in `screens/NavigateScreen.tsx` e
+  `screens/FreeRunScreen.tsx`.
+- La riga rossa di `ChooseScreen.MapError` («The map could not load
+  (motivo). Check the connection and reopen the app.») da riscrivere per
+  chi corre: ora sparisce da sola quando la mappa carica (`onError(null)`),
+  ma finché è lì dice ancora di riaprire l'app.

@@ -9,6 +9,7 @@ and the water the engine tries them on is its hand-built lake
 
 from __future__ import annotations
 
+import io
 import json
 import math
 from collections.abc import Sequence
@@ -30,6 +31,7 @@ from shapely.geometry.base import BaseGeometry
 from shaperoute_api.lake_catalog import (
     DISTANCES_M,
     LICENSE,
+    MAP_KIND_TAG,
     OUT,
     SPACING_M,
     Entry,
@@ -41,6 +43,7 @@ from shaperoute_api.lake_catalog import (
     lake_name,
     lakes,
     main,
+    ponds_as_lakes,
     shore_points,
 )
 
@@ -91,8 +94,16 @@ WIDE = _ring(0.0, -1100.0, 3000.0, 900.0)
 LAKE_TAGS = {"natural": "water", "water": "lake", "name": "Lago di prova"}
 
 
+ROUND = _ring(0.0, 0.0, 300.0, 300.0)
+# As the map has Lago di Ledro: a lake by its name, a pond by its tag.
+POND_TAGS = {"natural": "water", "water": "pond", "name": "Lago Tondo"}
+
+
 class RoundLake:
     """A lake of 300 m radius with a path around it, 10 m from the water."""
+
+    def __init__(self, tags: dict[str, str] | None = None) -> None:
+        self.tags = tags or {"natural": "water", "water": "lake"}
 
     def elements(self, bbox: BBox) -> list[Element]:
         def geometry(xy: Sequence[XY]) -> list[dict[str, float]]:
@@ -102,8 +113,8 @@ class RoundLake:
             {
                 "type": "way",
                 "id": 1,
-                "tags": {"natural": "water", "water": "lake"},
-                "geometry": geometry(_ring(0.0, 0.0, 300.0, 300.0)),
+                "tags": self.tags,
+                "geometry": geometry(ROUND),
             },
             {
                 "type": "way",
@@ -170,8 +181,23 @@ class NoWater:
         ),
         # Not what the engine paddles on (water.is_lake).
         ({"natural": "water", "water": "lagoon", "name": "Laguna di Marano"}, None),
-        ({"natural": "water", "water": "pond", "name": "Lago di Ledro"}, None),
         ({"natural": "water", "water": "river", "name": "Adige"}, None),
+        # A pond with a lake's name is a lake the map has as a pond (TASK-250).
+        (
+            {"natural": "water", "water": "pond", "name": "Lago di Ledro"},
+            "Lago di Ledro",
+        ),
+        ({"natural": "water", "water": "pond", "name": "Stagno di Molentargius"}, None),
+        ({"natural": "water", "water": "pond", "name": "Cassa di lago"}, None),
+        (
+            {
+                "natural": "water",
+                "water": "pond",
+                "name": "Lago di pesca",
+                "amenity": "fishing",
+            },
+            None,
+        ),
         (
             {"natural": "water", "water": "lake", "leisure": "marina", "name": "Lago"},
             None,
@@ -295,6 +321,75 @@ def test_the_list_has_each_point_once_and_says_whose_water_is_missing() -> None:
     assert missing == ["Lago di prova"]
 
 
+def test_a_lake_left_out_is_told_with_the_engine_s_reason() -> None:
+    log = io.StringIO()
+    far = Lake("Lago lontano", (local_to_latlon(ORIGIN, 0, 9000),))
+    listed, missing = entries([far], FileWaterSource(LAKE), log)
+    assert listed == [] and missing == []
+    assert "Lago lontano: left out, there is no lake" in log.getvalue()
+
+    log = io.StringIO()
+    entries([Lake("Lago di prova", (LAKE_START,))], FileWaterSource(LAKE), log)
+    assert "left out" not in log.getvalue()
+
+
+def test_a_pond_of_the_list_is_written_as_a_lake_and_no_other() -> None:
+    tondo = {"type": "way", "id": 1, "tags": POND_TAGS, "geometry": []}
+    stagno = {
+        "type": "way",
+        "id": 2,
+        "tags": {"natural": "water", "water": "pond", "name": "Stagno"},
+        "geometry": [],
+    }
+    # A lake by its name too, but not one of the list (too small for it).
+    cava = {
+        "type": "relation",
+        "id": 3,
+        "tags": {"natural": "water", "water": "pond", "name": "Laghetto di Cava"},
+        "members": [],
+    }
+    path = {"type": "way", "id": 4, "tags": {"highway": "path"}, "geometry": []}
+
+    written = ponds_as_lakes([tondo, stagno, cava, path], ["Lago Tondo"])
+
+    assert written[0] == {
+        "type": "way",
+        "id": 1,
+        "tags": {
+            "natural": "water",
+            "water": "lake",
+            "name": "Lago Tondo",
+            MAP_KIND_TAG: "pond",
+        },
+        "geometry": [],
+    }
+    assert tondo["tags"] == POND_TAGS
+    assert written[1] is stagno and written[2] is cava and written[3] is path
+    # Written already: the same again.
+    again = ponds_as_lakes(written, ["Lago Tondo"])
+    assert all(a is b for a, b in zip(again, written, strict=True))
+
+
+def test_the_engine_paddles_on_a_pond_only_once_it_is_written_as_a_lake() -> None:
+    start = local_to_latlon(ORIGIN, 0.0, 305.0)
+    pond = RoundLake(POND_TAGS)
+    assert fitting_distance(start, pond) is None
+
+    class Written:
+        def elements(self, bbox: BBox) -> list[Element]:
+            return ponds_as_lakes(pond.elements(bbox), ["Lago Tondo"])
+
+    assert fitting_distance(start, Written()) == fitting_distance(start, RoundLake())
+
+
+def test_the_lakes_say_which_the_map_has_as_ponds() -> None:
+    found = lakes([_feature(POND_TAGS, ROUND), _feature(LAKE_TAGS, WIDE)])
+    assert [(lake.name, lake.pond) for lake in found] == [
+        ("Lago Tondo", True),
+        ("Lago di prova", False),
+    ]
+
+
 def test_the_file_is_the_app_s_list_by_name() -> None:
     written = as_json(
         [Entry("Lago B", (45.2, 10.0), 1000), Entry("Lago A", (45.1, 10.0), 2000)]
@@ -373,6 +468,58 @@ def test_without_the_water_nothing_is_downloaded_nor_written(
     assert code == 1
     assert not out.exists()
     assert "No lake" in capsys.readouterr().out
+
+
+def _pond_cache(tmp_path: Path) -> tuple[Path, Path, Path]:
+    """A water file with the round lake as a pond, and the waters that
+    have it: the cache folder, the file, the waters."""
+    cache = tmp_path / "cache"
+    box = (44.9, 9.9, 45.1, 10.1)
+    file = OverpassWaterSource(cache).path(box)
+    water.write_water(file, box, RoundLake(POND_TAGS).elements(box))
+    waters = tmp_path / "water.geojsonseq"
+    waters.write_text(_feature(POND_TAGS, ROUND) + "\n", encoding="utf-8")
+    return cache, file, waters
+
+
+def test_the_command_writes_the_ponds_of_the_list_as_lakes_in_the_water_files(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    cache, file, waters = _pond_cache(tmp_path)
+    # A file without the pond is not written again.
+    elsewhere = (40.0, 9.0, 40.1, 9.1)
+    other = OverpassWaterSource(cache).path(elsewhere)
+    water.write_water(other, elsewhere, RoundLake().elements(elsewhere))
+    untouched = other.read_text(encoding="utf-8")
+    out = tmp_path / "lakes.json"
+    args = ["--waters", str(waters), "--cache-dir", str(cache), "--out", str(out)]
+
+    # As the map has it, the engine does not paddle on it: no list.
+    assert main(args) == 1
+    capsys.readouterr()
+
+    assert main([*args, "--ponds"]) == 0
+    said = capsys.readouterr().out
+    assert "Lago Tondo" in said and str(file) in said and str(other) not in said
+    assert not out.exists()
+    bbox, elements = water.read_water(file)
+    assert bbox == (44.9, 9.9, 45.1, 10.1)
+    assert elements[0]["tags"] == {**POND_TAGS, "water": "lake", MAP_KIND_TAG: "pond"}
+    assert elements[1:] == RoundLake().elements(bbox)[1:]
+    assert other.read_text(encoding="utf-8") == untouched
+
+    # Again: nothing left to write.
+    assert main([*args, "--ponds"]) == 0
+    assert "written as a lake" not in capsys.readouterr().out
+
+    assert main(args) == 0
+    written = json.loads(out.read_text(encoding="utf-8"))
+    assert {e["name"] for e in written["lakes"]} == {"Lago Tondo"}
+
+
+def test_the_ponds_are_written_in_a_cache_folder_only(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit):
+        main(["--waters", str(_waters(tmp_path)), "--boxes", "--ponds"])
 
 
 def test_the_app_s_list_is_one_this_command_writes() -> None:

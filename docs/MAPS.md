@@ -167,6 +167,18 @@ fondo stanno in ADR-0008, ADR-0020, ADR-0022 e ADR-0023.
   (`italy-260930-water.osm.pbf`, 2026-10-05): 211 laghi, 758 punti, 210
   file d'acqua per 50 MB, sul server dallo stesso giorno; 26 minuti di
   prove sul Mac.
+  **Un lago segnato come stagno** (TASK-250, ADR-0214): il Lago di Ledro è
+  `water=pond` in OpenStreetMap, e su uno stagno il motore non pagaia.
+  Uno stagno con un nome da lago è un lago dell'elenco, e prima di provare
+  i punti `lake_catalog --waters water.geojsonseq --cache-dir <cache>
+  --ponds` lo riscrive come `water=lake` nei file d'acqua della cartella
+  che lo contengono (quello che dice la mappa resta in `water:osm`); il
+  motore non cambia. Va rilanciato ogni volta che i file d'acqua si
+  rifanno. Il comando dice di ogni lago lasciato fuori il motivo del
+  motore. Dei sette laghi scartati da TASK-233, sei non hanno nei dati
+  una via, una spiaggia o uno scivolo a meno di 40 m dalla riva (Griessee,
+  Salarno, Sciaguana, Esaro, Castelnuovo, Sant'Anna in Calabria), e Gannano tiene a 1 km la
+  stella ma non il cuore e il cerchio: restano fuori (`tasks/TASK-250.md`).
   **Le spiagge di «Paddle»** (TASK-245, ADR-0210): l'elenco dei posti di
   mare dell'app (`apps/mobile/src/paddle/beaches.json`) si scrive in due
   passi, senza le acque esportate. I posti sono nel comando (`PLACES`, 29

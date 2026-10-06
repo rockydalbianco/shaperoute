@@ -309,6 +309,10 @@ type OutcomeProps = {
   /** Tells the API the route taken among A, B, C, and a way out taken
    * (TASK-142); POST /signals. */
   onSignal?: (signal: Signal) => void;
+  /** Sends the request that failed again, as it was (TASK-256): «Try
+   * again» under an error that may well not happen twice. Without it no
+   * button is offered. */
+  onRetry?: () => void;
 };
 
 /** Under the map: the wait, the route, or why there is none. */
@@ -326,6 +330,7 @@ export function RouteOutcome({
   chosen = 0,
   onChoose = () => {},
   onSignal = (signal) => void sendSignal(signal),
+  onRetry,
 }: OutcomeProps) {
   // The distances are written in the app's units, at once (TASK-182).
   const units = useUnits();
@@ -464,6 +469,7 @@ export function RouteOutcome({
           activity={view.request.activity}
           asked={view.request.distance_m}
           units={units}
+          onRetry={onRetry}
           onTryDistance={(distanceM) => {
             onSignal({
               kind: "hint_taken",
@@ -775,6 +781,7 @@ function Problem({
   units = appUnits(),
   onTryDistance,
   onPickShape,
+  onRetry,
 }: {
   problem: RouteProblem;
   kind?: ChoiceKind;
@@ -786,8 +793,10 @@ function Problem({
   units?: Units;
   onTryDistance?: (distanceM: number) => void;
   onPickShape?: (shape: Shape) => void;
+  /** The same request again (TASK-256), where the problem allows it. */
+  onRetry?: () => void;
 }) {
-  const { text, detail, tryDistanceM, pickShape } = problemText(
+  const { text, detail, tryDistanceM, pickShape, retry } = problemText(
     problem,
     kind,
     activity,
@@ -797,6 +806,15 @@ function Problem({
   return (
     <View style={styles.problemBox}>
       <Text style={styles.problem}>{text}</Text>
+      {retry && onRetry && (
+        <Pressable
+          style={[styles.secondary, styles.choice]}
+          onPress={onRetry}
+          accessibilityRole="button"
+        >
+          <Text style={styles.secondaryText}>{t("Try again")}</Text>
+        </Pressable>
+      )}
       {tryDistanceM !== undefined && onTryDistance && (
         <Pressable
           style={[styles.secondary, styles.choice]}

@@ -1,18 +1,29 @@
 import type { LatLon, Stretch, Walk } from "@shaperoute/shared-types";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  AppState,
   Linking,
+  Pressable,
   type StyleProp,
   StyleSheet,
+  Text,
   View,
   type ViewStyle,
 } from "react-native";
 import { WebView } from "react-native-webview";
 
+import { t } from "../i18n";
 import { usePocketOn } from "../navigation/pocketOn";
 import { cumulative } from "../navigation/progress";
 import { MapLoadingBar } from "../route/LoadingBar";
-import { color, space } from "../theme/tokens";
+import {
+  color,
+  fontSize,
+  fontWeight,
+  MIN_TAP_SIZE,
+  radius,
+  space,
+} from "../theme/tokens";
 import type { LngLat } from "./coordinates";
 import { buildMapPage, isExternalUrl } from "./mapPage";
 import {
@@ -86,8 +97,10 @@ type Props = {
   /** The map turned, by the app or by two fingers: its bearing now, in
    * whole degrees clockwise from north. */
   onTurned?: (bearing: number) => void;
-  /** Called when the map cannot be shown, with a reason for the log. */
-  onError: (reason: string) => void;
+  /** Called when the map cannot be shown, with a reason for the log; with
+   * null once the map loads after that (TASK-256), so the screen's note
+   * goes away. The map itself says it could not load and offers «Retry». */
+  onError: (reason: string | null) => void;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -116,6 +129,11 @@ export function MapView({
   // Until the first tiles are drawn, a bar over the map (TASK-058); an error
   // takes its place.
   const [loading, setLoading] = useState(true);
+  // The page said it could not load (TASK-256): in place of the bar, the
+  // words and «Retry», until the page loads. `erred` remembers it across the
+  // reload, so `onError(null)` follows an error reported, and only that.
+  const [failed, setFailed] = useState(false);
+  const erred = useRef(false);
   const routeShown = useRef(false);
   const followed = useRef(false);
   const trackShown = useRef(false);
@@ -130,6 +148,33 @@ export function MapView({
   const doneM = progress ? doneMetres(progress) : null;
   // Under the black screen of pocket mode nobody sees the blinking.
   const pocket = usePocketOn();
+
+  const fail = (reason: string) => {
+    setLoading(false);
+    setFailed(true);
+    erred.current = true;
+    onError(reason);
+  };
+
+  const retry = () => {
+    setFailed(false);
+    setLoading(true);
+    webView.current?.reload();
+  };
+
+  // Offline when it opened, back with the network on: the map that could
+  // not load is loaded again as the app comes to the front (TASK-256).
+  useEffect(() => {
+    if (!failed) {
+      return;
+    }
+    const watching = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        retry();
+      }
+    });
+    return () => watching.remove();
+  }, [failed]);
 
   // A new start, even at the same place, centres the map on it again.
   useEffect(() => {
@@ -283,6 +328,11 @@ export function MapView({
             setReady(true);
           } else if (message?.type === "loaded") {
             setLoading(false);
+            setFailed(false);
+            if (erred.current) {
+              erred.current = false;
+              onError(null);
+            }
           } else if (message?.type === "doubleTap") {
             onDoubleTap?.();
           } else if (message?.type === "moved") {
@@ -290,14 +340,10 @@ export function MapView({
           } else if (message?.type === "turned") {
             onTurned?.(message.bearing);
           } else if (message?.type === "error") {
-            setLoading(false);
-            onError(message.message);
+            fail(message.message);
           }
         }}
-        onError={(event) => {
-          setLoading(false);
-          onError(event.nativeEvent.description);
-        }}
+        onError={(event) => fail(event.nativeEvent.description)}
         onShouldStartLoadWithRequest={(request) => {
           if (isExternalUrl(request.url)) {
             void Linking.openURL(request.url);
@@ -313,9 +359,19 @@ export function MapView({
         // iOS may stop the page to free memory: without a reload it stays white.
         onContentProcessDidTerminate={() => webView.current?.reload()}
       />
-      {loading && (
+      {loading && !failed && (
         <View style={styles.loading} pointerEvents="none">
           <MapLoadingBar />
+        </View>
+      )}
+      {failed && (
+        <View style={styles.failed}>
+          <Text style={styles.failedText}>
+            {t("The map could not be loaded. Check the network.")}
+          </Text>
+          <Pressable style={styles.retry} onPress={retry} accessibilityRole="button">
+            <Text style={styles.retryText}>{t("Retry")}</Text>
+          </Pressable>
         </View>
       )}
     </View>
@@ -335,5 +391,33 @@ const styles = StyleSheet.create({
     left: "20%",
     right: "20%",
     marginTop: -space.xs,
+  },
+  // Where the bar was, the words and the button, on the blank map.
+  failed: {
+    position: "absolute",
+    top: "50%",
+    left: "15%",
+    right: "15%",
+    marginTop: -space.xxl,
+    alignItems: "center",
+    gap: space.md,
+  },
+  failedText: {
+    color: color.text,
+    fontSize: fontSize.body,
+    textAlign: "center",
+  },
+  retry: {
+    minHeight: MIN_TAP_SIZE,
+    justifyContent: "center",
+    paddingHorizontal: space.lg,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: color.borderStrong,
+    backgroundColor: color.surfaceRaised,
+  },
+  retryText: {
+    color: color.text,
+    fontWeight: fontWeight.bold,
   },
 });

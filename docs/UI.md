@@ -2557,7 +2557,19 @@ e «Resume» (`GPX.md`).
 
 ## Quando non va
 
-Un messaggio per caso, con sotto il testo dell'API quando aiuta:
+Un messaggio per caso, scritto per chi corre: cosa è successo e cosa può
+fare (TASK-256, ADR-0220). Nessun testo mostrato nomina indirizzi, file,
+comandi, l'AI sul PC o «bug»: il dettaglio tecnico (l'indirizzo cercato,
+lo stato HTTP, il codice e il testo dell'API) compare sotto in grigio
+**solo nelle build di sviluppo** (`__DEV__`). Dove la stessa richiesta può
+andare bene la seconda volta (rete assente, risposta inattesa, motore
+fallito, dati OSM non scaricati, cinque minuti passati, richiesta persa) c'è
+un pulsante **«Try again»** che la rimanda uguale; una forma che non ci sta
+o una chiave rifiutata non lo hanno. Un componente che va in errore mentre
+disegna non lascia più lo schermo bianco: al suo posto il giallo della
+partenza con il logo, «Something went wrong.» e «Try again», che riavvia
+l'app (la corsa in corso è nel suo file e torna da sola); in sviluppo sotto
+c'è anche l'errore.
 
 | Caso | Messaggio |
 |---|---|
@@ -2566,20 +2578,22 @@ Un messaggio per caso, con sotto il testo dell'API quando aiuta:
 | Contorno di un'immagine che non ci sta (TASK-073) | come per la forma, con «This image…»; senza distanza: This outline does not fit the roads here. Try another distance, another start, or a simpler picture. (niente forme da toccare) |
 | Parola che non ci sta (TASK-057) | come per la forma, con «This word…»; senza distanza: This word does not fit the roads here. Try a shorter word, or another start. (niente forme da toccare) |
 | Dati OSM non scaricabili (`map_data_unavailable`) | Map data for this area could not be downloaded. Try again later. |
-| Errore del motore (`engine_error`) | The route engine failed. Try again; if it happens again, look at the API log. |
-| L'AI non risponde (`ai_unavailable`) | The AI that reads shape words is not running on the PC (Ollama). These words work without it: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin or christmas tree. |
-| `invalid_request`, `http_error`, risposta illeggibile | The app and the API do not agree (a bug): … (anche un percorso in bici chiesto a un'API più vecchia di TASK-190, parte B, che conosce solo `running`: sotto, il testo dell'API) |
-| API non raggiungibile | Cannot reach the API at http://…:8000. Start it on the PC with --lan, on the same Wi-Fi. |
-| Nessun risultato in 5 minuti | The API took more than 5 minutes. Try again later, or a shorter distance. |
-| L'API non conosce più la richiesta (riavviata) | The API lost this request (was it restarted?). Try again. |
-| Indirizzo dell'API sconosciuto | The app does not know where the API is: open it from the QR code of npm run mobile on the PC. |
+| Errore del motore (`engine_error`) | The route could not be drawn. Try again, or try another start. e «Try again» |
+| L'AI non risponde (`ai_unavailable`) | This word cannot be read right now. Try one of these: circle, heart, star, horse, moon, cat, fish, butterfly, snail, dog head, rabbit head, pumpkin, christmas tree, smiley, ghost, donut or sun. |
+| `invalid_request`, `http_error`, risposta illeggibile | Something went wrong on our side. Try again in a moment. e «Try again» (anche un percorso in bici chiesto a un'API più vecchia di TASK-190, parte B, che conosce solo `running`; il codice e il testo dell'API sotto, solo nelle build di sviluppo) |
+| API non raggiungibile | No connection. Check the network and try again. e «Try again» (l'indirizzo cercato sotto, solo nelle build di sviluppo) |
+| Nessun risultato in 5 minuti | Drawing this route is taking too long. Try again later, or a shorter distance. e «Try again» |
+| L'API non conosce più la richiesta (riavviata) | This request was lost. Try again. e «Try again» |
+| Chiave dell'app rifiutata (`unauthorized`, TASK-081) | This version of the app is no longer allowed in. Update the app. |
+| Indirizzo dell'API sconosciuto (build senza indirizzo) | The app cannot reach the service. Update the app. |
 | Account: email già usata (`email_taken`, TASK-115) | This email already has an account. Log in instead. |
 | Account: nome già usato (`username_taken`) | This username is taken. Try another one. |
 | Account: email o password sbagliate (`wrong_credentials`) | Wrong email or password. |
 | Account: troppi tentativi (`too_many_requests`, con `Retry-After`) | Too many tries. Wait 10 minutes and try again. (al minuto intero; sotto il minuto, «Wait a minute») |
 | Account: sessione scaduta o chiusa (`session_expired`, `not_signed_in`) | Your session has ended. Log in again. |
-| Account: l'API non ha un database (`accounts_unavailable`) | Accounts are not available on this API: it has no database. |
-| Account: API non raggiungibile | Cannot reach the API at http://…:8000. Check the connection and try again. |
+| Account: l'API non ha un database (`accounts_unavailable`) | Accounts are not available right now. Try again later. |
+| Account: API non raggiungibile | No connection. Check the network and try again. |
+| Account: chiave dell'app rifiutata, o risposta fuori dal contratto | This version of the app is no longer allowed in. Update the app. · Something went wrong on our side. Try again in a moment. |
 | Account: un campo che l'API rifiuterebbe | il primo che non va: Enter an email address, like name@example.com. · A username is 3 to 20 letters, digits, _ or . (no spaces). · A password is at least 8 characters. · You must be at least 16 to sign up. |
 
 ## Cosa esce dal telefono
@@ -2673,9 +2687,14 @@ La pagina avvisa l'app se lo script di MapLibre non arriva (anche con un
 hash SRI che non torna), se lo stile non è valido, o se non arriva la
 descrizione delle tile di OpenFreeMap (la TileJSON): lo stile è nella
 pagina, ma senza di lei la mappa resta vuota. Una tile mancante, dopo, non
-è un errore. L'app mostra «The map could not load (motivo).
-Check the connection and reopen the app.» invece di uno schermo bianco. Se
-iOS chiude la pagina per liberare memoria, la WebView la ricarica da sola.
+è un errore. Sulla mappa, al posto della barra di caricamento, l'app
+scrive «The map could not be loaded. Check the network.» con un pulsante
+**«Retry»** che ricarica la pagina (TASK-256); la ricarica anche da sola
+quando l'app torna in primo piano con la mappa in errore. Appena la mappa
+carica, il testo sparisce e la schermata viene avvisata che l'errore non
+c'è più (`onError(null)`), così la riga rossa sotto la ricerca («The map
+could not load (motivo)…», `ChooseScreen`) se ne va. Se iOS chiude la
+pagina per liberare memoria, la WebView la ricarica da sola.
 
 ## Domande ancora aperte
 

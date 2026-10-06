@@ -116,7 +116,7 @@ test("a change refused leaves the account as it was, and says why", async () => 
   });
   expect(phone).toBe(NO_PHONE);
   expect(await email()).toBe(
-    `Cannot reach the API at ${URL}. Check the connection and try again.`,
+    `No connection. Check the network and try again. (Cannot reach the API at ${URL}.)`,
   );
   expect(result.current.state).toEqual({ status: "signedIn", session });
   expect(kept()).toEqual(session);

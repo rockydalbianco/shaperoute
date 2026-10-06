@@ -4,10 +4,12 @@ import { t, tLater } from "../i18n";
 /** A request that did not go as asked, in plain words (docs/UI.md). */
 type Failed = Exclude<AccountOutcome<unknown>, { kind: "ok" }>;
 
-/** In English: where it is shown, `t(NO_API)` (TASK-210). */
-export const NO_API = tLater(
-  "The app does not know where the API is: open it from the QR code of npm run mobile on the PC.",
-);
+/**
+ * An app built without the address of its service (TASK-256): on a phone,
+ * only one older than the service. In English: where it is shown,
+ * `t(NO_API)` (TASK-210).
+ */
+export const NO_API = tLater("The app cannot reach the service. Update the app.");
 
 /**
  * The session is over (`session_expired`, `not_signed_in`): log in again.
@@ -15,17 +17,33 @@ export const NO_API = tLater(
  */
 export const SESSION_ENDED = tLater("Your session has ended. Log in again.");
 
+/**
+ * Something the app did not expect from the API, for whoever uses the
+ * phone: nothing to do but try again. `detail` (an address, a status, the
+ * API's words) follows only in a development build (TASK-256).
+ */
+function ourSide(detail: string): string {
+  return withDetail(
+    t("Something went wrong on our side. Try again in a moment."),
+    detail,
+  );
+}
+
+/** `text`, and `detail` after it in a development build. */
+export function withDetail(text: string, detail: string): string {
+  return __DEV__ ? `${text} (${detail})` : text;
+}
+
 /** An account request that failed, in words. */
 export function accountProblem(failed: Failed): string {
   switch (failed.kind) {
     case "unreachable":
-      return t("Cannot reach the API at {url}. Check the connection and try again.", {
-        url: failed.url,
-      });
+      return withDetail(
+        t("No connection. Check the network and try again."),
+        `Cannot reach the API at ${failed.url}.`,
+      );
     case "bad_answer":
-      return t("The app and the API do not agree (a bug): HTTP {status}.", {
-        status: failed.status,
-      });
+      return ourSide(`unexpected answer, HTTP ${failed.status}`);
     case "api_error":
       switch (failed.code) {
         case "email_taken":
@@ -40,15 +58,12 @@ export function accountProblem(failed: Failed): string {
         case "not_signed_in":
           return t(SESSION_ENDED);
         case "accounts_unavailable":
-          return t("Accounts are not available on this API: it has no database.");
+          return t("Accounts are not available right now. Try again later.");
+        // A key refused is an app older than its service (TASK-081).
         case "unauthorized":
-          return t(
-            "The API refused the app's key (EXPO_PUBLIC_API_KEY in apps/mobile/.env).",
-          );
+          return t("This version of the app is no longer allowed in. Update the app.");
         default:
-          return t("The app and the API do not agree (a bug): {message}", {
-            message: failed.message,
-          });
+          return ourSide(`${failed.code}: ${failed.message}`);
       }
   }
 }

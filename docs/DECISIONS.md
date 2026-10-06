@@ -12169,6 +12169,83 @@ modalità tasca). Il file della corsa può avere pause `away`
 (`trackStore.isPause` le legge). `NavigateScreen.test.tsx` cambia verso:
 lo schermo è acceso anche senza la modalità tasca.
 
+## ADR-0220 — Gli errori parlano a chi corre: il dettaglio tecnico solo in sviluppo, «Try again» dove la richiesta può andare, uno schermo giallo al posto di quello bianco
+**Stato**: Attiva · 2026-10-06 · scelta dell'utente del 2026-10-06 («sì» ai
+testi per chi corre con «Try again», dalla revisione dell'app); il resto
+deciso dall'agente su delega dell'utente (TASK-256).
+
+**Contesto**: i messaggi di `route/problems.ts` e `account/messages.ts`
+erano scritti per chi sviluppa: «Cannot reach the API at https://…sslip.io.
+Check that it is running (on the PC: with --lan)…», «look at the API log»,
+«not running on the PC (Ollama)», «Put the API's key in
+EXPO_PUBLIC_API_KEY in apps/mobile/.env…», «The app and the API do not
+agree (a bug): HTTP 502». L'indirizzo del server finiva sullo schermo del
+telefono. Dopo un errore di «Draw route» non c'era modo di rifare la stessa
+richiesta. L'app non aveva un `ErrorBoundary`: un componente in errore
+lasciava lo schermo bianco, anche a metà corsa. Una mappa che non caricava
+(offline, `unpkg.com` irraggiungibile) restava in errore per sempre e il
+testo diceva di riaprire l'app.
+
+**Decisione**:
+
+1. **I testi dicono cosa è successo e cosa fare, a chi corre.** «No
+   connection. Check the network and try again.», «Something went wrong on
+   our side. Try again in a moment.», «The route could not be drawn. Try
+   again, or try another start.», «This word cannot be read right now. Try
+   one of these: …», «Drawing this route is taking too long…», «This
+   request was lost. Try again.», «Accounts are not available right now.
+   Try again later.». Una chiave rifiutata o una build senza indirizzo
+   dell'API sono, sul telefono, un'app più vecchia del suo servizio: «This
+   version of the app is no longer allowed in. Update the app.» e «The app
+   cannot reach the service. Update the app.». Nessun testo mostrato
+   contiene `http`, `.env`, `npm`, `Ollama`, `--lan`, «API log» o «bug»: un
+   test lo verifica su ogni problema di `problems.ts` e su ogni codice di
+   `messages.ts`. Testi nelle cinque lingue (ADR-0172); in `problems.ts`
+   si traducono solo i testi toccati, il resto resta a TASK-210.
+2. **Il dettaglio tecnico solo nelle build di sviluppo**: `detail`
+   (l'indirizzo, lo stato HTTP, il codice e il testo dell'API, le parole
+   del motore) passa da `devDetail()`, che fuori da `__DEV__` non dà
+   niente; nei messaggi dell'account `withDetail()` lo accoda fra
+   parentesi, solo in sviluppo. Sotto jest `__DEV__` è vero: i test del
+   dettaglio lo spengono a mano.
+3. **«Try again» dove la stessa richiesta può andare bene la seconda
+   volta**: `ProblemText.retry` è vero per rete assente, risposta
+   inattesa, motore fallito, dati OSM non scaricati, cinque minuti
+   passati, richiesta persa; falso per una forma che non ci sta, una
+   chiave rifiutata, troppe richieste, l'AI spenta. `useRouteRequest.retry()`
+   rimanda l'ultima richiesta com'era; `RouteOutcome` riceve `onRetry` e
+   senza di esso non mostra il pulsante.
+4. **`AppBoundary` attorno all'app** (`src/intro/AppBoundary.tsx`, in
+   `Root.tsx` intorno all'app, al logo di «Save» e all'animazione): un
+   componente che lancia mentre disegna mostra il giallo della partenza con
+   il logo, «Something went wrong.» e «Try again», che rimonta l'app con
+   una `key` nuova senza rifare l'animazione (lo stato dell'intro sta
+   fuori). La corsa in corso è nel suo file (TASK-252) e torna da sola.
+   Nessuna segnalazione a un servizio esterno (dipendenza nuova, scelta
+   dell'utente).
+5. **La mappa in errore si ricarica**: `MapView` mostra al posto della
+   barra «The map could not be loaded. Check the network.» e «Retry»
+   (`reload()` della WebView), ricarica da sola quando `AppState` torna
+   «active» con la mappa in errore, e appena la pagina dice `loaded`
+   chiama `onError(null)`: la riga rossa della schermata sparisce. Il
+   tipo di `onError` diventa `(reason: string | null) => void`, compatibile
+   con `setMapError` in `App.tsx` e con `giveUp()` in `FeedMaps.tsx` senza
+   toccarli.
+
+**Alternative scartate**: tradurre tutto `problems.ts` (è di TASK-210);
+un «Try again» che passa da `onTryDistance(view.request.distance_m)` per
+non toccare `App.tsx` (meno chiaro di `retry()`; `App.tsx` prende le due
+righe con l'ok del coordinatore); «Open Settings» accanto a «The camera is
+off…» e a «Location is off» (stanno in `ImageChoice.tsx`, di TASK-254, e
+in `NavigateScreen` / `FreeRunScreen`: seguito).
+
+**Conseguenze**: i test che leggevano i vecchi testi (account, profilo,
+impostazioni, `App.test.tsx`, `AppBike.test.tsx`) leggono i nuovi, con il
+dettaglio fra parentesi dove jest fa da build di sviluppo. La riga rossa di
+`ChooseScreen` («Check the connection and reopen the app») è ancora quella
+di prima finché la mappa non carica: seguito, file non del task. `UI.md`
+(«Quando non va», «Quando la mappa non si carica») aggiornato.
+
 ## ADR-0218 — Le correzioni piccole della revisione: tolleranza ai 5xx e a quello che l'app non conosce, posizione arrotondata dove è solo «qui vicino»
 
 **Data**: 2026-10-06 · **Stato**: accettata · **Task**: TASK-254
@@ -12285,3 +12362,71 @@ che non si vede; non vale).
 post condiviso da un'app precedente non c'è: si vede dal prossimo
 «Share». TASK-182 B (le miglia) non cambia il post tenuto: i risultati
 sono nomi, i numeri si rifanno nelle unità di adesso.
+
+## ADR-0214 — Un lago che la mappa segna come stagno entra nell'elenco di «Paddle» scritto come lago nel suo file d'acqua, senza cambiare il motore
+**Stato**: Attiva · 2026-10-06 · deciso dall'agente su delega dell'utente
+(TASK-250), dentro i confini del coordinatore: Ledro entra senza toccare
+il motore, se si può. Numero dal coordinatore (il primo libero dopo
+TASK-249).
+
+**Contesto**: il Lago di Ledro (2,1 km², 655 m) manca dall'elenco dei
+laghi di «Explore» con «Paddle» (TASK-233, ADR-0196): in OpenStreetMap è
+`water=pond` dal 2023 (relazione 1400447, versioni 17–19; prima era
+`water=lake`), e il motore pagaia solo su `natural=water` senza `water` o
+con `lake` o `reservoir` (`water.is_lake`). Su uno stagno il motore dice
+«there is no lake or sea to paddle on». In Italia gli stagni sopra 10 ha
+sono 32, quasi tutti stagni veri (Molentargius, Santa Caterina, Pantano
+Longarini); sei hanno un nome da lago, e solo Ledro è largo abbastanza
+per una forma. Cambiare `is_lake` vorrebbe dire un aggiornamento del
+server e il ridisegno degli esempi (`draw_examples`, 35 minuti).
+
+**Decisione**:
+
+1. **Uno stagno con un nome da lago è un lago dell'elenco**
+   (`lake_catalog.named_pond`): `water=pond`, un nome che dice «lago»
+   (la stessa regola dei laghi senza `water`), e niente di quello per cui
+   `is_lake` lo terrebbe fuori comunque (porto, `amenity`). Poi le regole
+   di sempre: largo per un cerchio da 1 km, e provato dal motore.
+2. **Il motore non cambia: cambia il file d'acqua.** `lake_catalog
+   --ponds` riscrive come `water=lake`, nei file d'acqua di una cartella,
+   gli stagni dell'elenco, e tiene quello che dice la mappa in
+   `water:osm=pond`. Solo quegli elementi; un file che non li ha non è
+   riscritto; rifatto, non cambia niente. Il motore legge i file e
+   pagaia su Ledro come su ogni lago; lo stesso file serve «Explore»,
+   «Draw» e «Another place».
+3. **I file sono due**: quello nuovo di Ledro
+   (`water_45.84170_10.69460_45.91630_10.81050.json`, 0,5 MB) e quello
+   del Garda di TASK-233 (`water_45.41050_10.46120_45.92020_10.91900.json`),
+   che contiene Ledro e serve le richieste più lunghe (da 3 a 5 km): senza
+   riscriverlo, da 3 km in su Ledro tornerebbe «no lake». Riscritto, i
+   percorsi del Garda vicino a Ledro sono gli stessi, punto per punto (192
+   su 192: i 12 punti del Garda entro 15 km, otto forme, 2 e 5 km).
+4. **Il comando dice perché un lago resta fuori**, con le parole del
+   motore, per il primo punto: serve a capire i laghi scartati senza
+   rifare le prove a mano.
+
+**Alternative scartate**:
+
+- *Cambiare `water.is_lake`*: la regola più pulita (vale anche per un
+  download da Overpass, e per un altro lago che la mappa segnasse così),
+  ma costa un aggiornamento del server con il ridisegno degli esempi per
+  un lago solo. Da fare insieme a un altro cambio del motore; allora
+  `--ponds` non serve più e i file riscritti restano giusti.
+- *Correggere OpenStreetMap* (Ledro di nuovo `water=lake`): è la cura
+  vera e l'estratto successivo lo avrebbe, ma è una modifica pubblica, con
+  l'account di qualcuno. Proposta all'utente, non fatta.
+- *Un elenco di eccezioni nel motore* («Lago di Ledro è un lago»): un
+  nome scritto nel codice del motore, e comunque un aggiornamento del
+  server.
+
+**Conseguenze**:
+
+- L'acqua del server va riscritta in due file, con l'ok dell'utente:
+  copiare il file nuovo di Ledro e quello del Garda riscritto, senza
+  riavvio. Fino ad allora l'app pubblicata con Ledro nell'elenco
+  direbbe «no lake» toccandolo: la pubblicazione viene dopo.
+- Un download da Overpass dell'area di Ledro scriverebbe un file nuovo con
+  lo stagno: sul server non succede (Overpass rifiuta il server, e un file
+  che copre la richiesta c'è già).
+- Se l'estratto si rifà, `--ponds` va rilanciato dopo i file d'acqua
+  (`MAPS.md`, «I laghi di Explore»).

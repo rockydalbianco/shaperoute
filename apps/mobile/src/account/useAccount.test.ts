@@ -173,7 +173,7 @@ test("deleting the account signs out only with the API's yes", async () => {
   await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(1));
 
   await act(async () => result.current.deleteAccount());
-  await waitFor(() => expect(result.current.problem).toMatch(/^Cannot reach the API/));
+  await waitFor(() => expect(result.current.problem).toMatch(/^No connection/));
   expect(result.current.busy).toBeNull();
   expect(result.current.state.status).toBe("signedIn");
   expect(kept()).toEqual(session);

@@ -115,7 +115,7 @@ test("drawings that could not come can be asked again", async () => {
   );
   expect(
     await screen.findByText(
-      "Cannot reach the API at http://api. Check the connection and try again.",
+      "No connection. Check the network and try again. (Cannot reach the API at http://api.)",
     ),
   ).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: "Try again" }));

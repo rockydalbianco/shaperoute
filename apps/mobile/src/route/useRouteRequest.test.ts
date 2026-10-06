@@ -89,6 +89,29 @@ test("an image is the same while its outline is the one traced for it", () => {
   expect(sameRequest(REQUEST, image)).toBe(false);
 });
 
+test("«Try again» sends the last request again, as it was (TASK-256)", async () => {
+  fetchSpy
+    .mockRejectedValueOnce(new TypeError("Network request failed"))
+    .mockResolvedValueOnce(Response.json(jobDone));
+  const { result: hook } = await renderHook(() => useRouteRequest("http://pc:8000"));
+  // Nothing to send again before the first request.
+  await act(() => hook.current.retry());
+  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(hook.current.state).toEqual({ status: "idle" });
+
+  await act(() => hook.current.draw(REQUEST));
+  await waitFor(() =>
+    expect(hook.current.state).toMatchObject({ status: "failed", request: REQUEST }),
+  );
+  await act(() => hook.current.retry());
+  await waitFor(() =>
+    expect(hook.current.state).toEqual({ status: "done", request: REQUEST, result }),
+  );
+  expect(fetchSpy).toHaveBeenCalledTimes(2);
+  const [first, second] = fetchSpy.mock.calls.map(([, init]) => init?.body);
+  expect(second).toEqual(first);
+});
+
 test("an image with other details is another request (TASK-079)", () => {
   const { start, distance_m, activity } = REQUEST;
   const outline = edited.points as [number, number][];

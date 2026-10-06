@@ -7,6 +7,9 @@ name: CI
 # dell'AI (job "ai"), senza nessun modello vero.
 # La cache di pip ha per chiave il pyproject.toml del route-engine: finché
 # le dipendenze non cambiano, OSMnx e il resto non si riscaricano a ogni run.
+# Ogni job ha un tempo massimo, almeno il doppio del suo tempo normale
+# (TASK-248): senza, un test che non termina tiene il job sei ore. Dove si è
+# fermato lo dice `faulthandler_timeout` nei pyproject.toml.
 
 on:
   pull_request:
@@ -17,6 +20,7 @@ on:
 jobs:
   route-engine:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -57,6 +61,7 @@ jobs:
   # I test girano sul grafo piccolo di Levico e sui JSON di shared-types.
   api:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -90,6 +95,7 @@ jobs:
   # Ollama non c'è, e measure_phrases.py non gira qui.
   ai:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -119,6 +125,7 @@ jobs:
   # La cache di npm ha per chiave package-lock.json.
   mobile:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -145,6 +152,7 @@ jobs:
   # prova che risponde a /health, con e senza chiave; non si pubblica.
   docker:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 

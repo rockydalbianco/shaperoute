@@ -133,6 +133,11 @@ export type Phrasebook = {
   rideMiles(miles: number, time: string, speed: number): string;
   /** As `walkTheBike`, in feet: "get off and walk the bike for 650 feet". */
   walkTheBikeFeet(feet: number): string;
+  /** Each kilometre on the water (TASK-251), as `kilometre`: the time so
+   * far and the average pace of 500 metres, both already said as times. */
+  paddleKilometre(km: number, time: string, pace: string): string;
+  /** The same with miles: each mile, and the pace of 500 metres still. */
+  paddleMile(miles: number, time: string, pace: string): string;
 };
 
 /** The voice's phrases in one language, ready to say. */
@@ -203,6 +208,13 @@ export type VoiceWords = {
   /** "5 miles. Time: … Average speed: 15 miles per hour.", on a bike:
    * `speed` in mph, already whole. */
   rideMiles(miles: number, ms: number, speed: number): string;
+  /** "1 kilometre. Time: … Average pace: … per 500 metres.", on the water
+   * (TASK-251): `paceMs` the time of 500 metres; the kilometre CHEER_KM
+   * ends with the cheer. */
+  paddleKilometre(km: number, ms: number, paceMs: number): string;
+  /** With miles: "1 mile. Time: … Average pace: … per 500 metres."; the
+   * mile CHEER_MI ends with the cheer. */
+  paddleMile(miles: number, ms: number, paceMs: number): string;
 };
 
 function isKind(kind: string): kind is Kind {
@@ -324,6 +336,14 @@ export function voiceWords(book: Phrasebook, units: Units = "km"): VoiceWords {
     rideMilesSameSpeed: book.rideMilesSameSpeed,
     rideMiles(miles, ms, speed) {
       return book.rideMiles(miles, time(ms), speed);
+    },
+    paddleKilometre(km, ms, paceMs) {
+      const said = book.paddleKilometre(km, time(ms), time(paceMs));
+      return km === CHEER_KM ? `${said} ${book.cheer}` : said;
+    },
+    paddleMile(miles, ms, paceMs) {
+      const said = book.paddleMile(miles, time(ms), time(paceMs));
+      return miles === CHEER_MI ? `${said} ${book.cheer}` : said;
     },
   };
 }

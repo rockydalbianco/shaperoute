@@ -148,6 +148,37 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-248 — Il job `api` della CI che resta appeso** (ADR-0212;
+  assegnato dal coordinatore il 2026-10-06). **Causa trovata**: non un
+  test lento ma `multiprocessing.Pool.terminate()` in `plan_nearby`
+  (`route_engine/nearby_starts.py`), che aspetta per sempre se arriva
+  mentre un grafo sta per essere mandato a un processo delle partenze
+  vicine; in CI succede in `test_cycling.py`, dove il motore rifiuta
+  subito. **Parte A** (in PR, niente motore): ogni job di `ci.yml` ha un
+  tempo massimo e un test fermo da due minuti stampa gli stack
+  (`faulthandler_timeout`, nessuna dipendenza nuova). **Parte B** (dopo,
+  motore): le partenze vicine senza `Pool`, percorsi identici,
+  `engine.zip` rifatto; l'impronta del motore cambia, quindi al prossimo
+  aggiornamento del server serve `draw_examples`. Sul server lo stesso
+  blocco può prendere un thread dei job dopo un `engine_error`: non
+  verificato, lo guarda il coordinatore. Da dove riprendere:
+  `tasks/TASK-248.md`, «Esito».
+- **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
+  (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
+  **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06), non
+  ancora pubblicata: lungo un percorso sull'acqua e in «Paddle
+  without a route» la schermata mostra «Speed now» e «Avg speed» in km/h
+  (mph con le miglia), «Avg /500 m» e «Last 500 m» al posto di
+  «Last km» ed «Elev. gain»; i parziali sono ogni 500 m; la voce dice ogni
+  km col passo medio ogni 500 metri (cinque lingue); il post di fine
+  uscita scrive «5:37 /500 m». Corsa e bici come prima. Caselle guardate in un
+  simulatore, non su un telefono. **Parte B**: «My activities» e il post da lì mostrano ancora
+  il passo al km, perché l'API non restituisce lo sport di una corsa
+  salvata; serve `activity` nel contratto (`activities.py` è di TASK-247:
+  aspetta il via del coordinatore) e poi il server, con l'ok dell'utente.
+  **Aspettano l'utente**: i testi nuovi, «Elev. gain» tolto sull'acqua, e
+  cosa mostra la bici senza percorso (oggi il passo al km). Da dove
+  riprendere: `tasks/TASK-251.md`.
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte
   A** in `main` (PR #325, `f8e68b6`): la pagina con «Merch». **Parte A2**
@@ -277,6 +308,26 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   (`out/task-232b/`); manca il dito vero. Prossimo passo: la **parte B2**
   («Explore»: l'esempio aperto, la sua corsa e le schede, che usano le
   foto-mappa del «Feed»), poi la C; il server ha già la parte A.
+  **Parte B2** (sola app, in `main` dalla #384, `b2d7662`, il
+  2026-10-06; pubblicata su `preview` dal coordinatore lo stesso giorno,
+  da `cdb50bb`, gruppo `8429fea6`): un esempio di «Explore» che il motore ha
+  inclinato si apre con la mappa girata e la freccia del nord, ogni
+  tessera la sua inclinazione, e resta girato in corsa e a fine corsa; la
+  sua scheda è girata allo stesso modo, linea e foto-mappa. Lo dicono gli
+  esempi disegnati per un posto (città, paesi vicini, acqua); restano col
+  nord in alto i percorsi del catalogo dell'API, gli esempi tenuti sul
+  telefono da prima, quelli sull'acqua che arrivano con l'app e i
+  preferiti. Visto nel browser sulla pagina vera delle foto-mappa con
+  quattro campioni inclinati, e nel simulatore a Levico (la luna a 30°:
+  scheda, mappa, freccia, tessere, corsa; «Move the shape» sul lago con la
+  mappa girata; `out/task-232b2/`); non sul telefono. Visto lì, di prima
+  della B2: appena aperto, un esempio è inquadrato come se la mappa fosse
+  alta tutto lo schermo e la metà bassa resta sotto la scheda finché non si
+  tocca una tessera (anche con la stella, dritta): un seguito. Prossimo
+  passo: la **parte C** (corse
+  salvate, preferiti, «Feed», post: una migrazione; e `rotation_deg` nel
+  catalogo dell'API e in `paddleExamples.json`, punti 4 e 5 nel task
+  file), in un contesto pulito, dopo aver sentito il coordinatore.
 - **TASK-211 — Seguire con richiesta** (ADR-0173; scelte dell'utente del
   2026-10-03: seguire vuole una richiesta, gli iscritti si cercano per
   nome). **Parte A, l'API**, in `main` dal 2026-10-03 (PR #256,
@@ -521,12 +572,39 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   corsa rifiutata non ferma le altre; la coda riparte quando l'app torna
   in primo piano; 30 s alle richieste dell'account (90 alle PUT); «Delete
   account» svuota le code di quell'account; «Stop» dà la corsa anche a
-  file rifiutato. Solo app, niente di visibile. **Aspettano l'utente** (le
-  cinque domande della revisione): schermo acceso per tutta la corsa, i
-  testi d'errore per chi corre, la corsa rifiutata da tenere con il
-  motivo, le calorie in bici e canoa, l'ordine dei prossimi task
-  (TASK-253 navigazione e TASK-254 correzioni piccole sono scritti e da
-  assegnare). `tasks/TASK-252.md`.
+  file rifiutato. Solo app, niente di visibile. Dalla stessa revisione:
+  TASK-253 (la navigazione), TASK-254 (correzioni piccole) e, dai «sì a
+  tutte e cinque» dell'utente del 2026-10-06, TASK-255 (schermo acceso in
+  corsa, niente calorie fuori dalla corsa), TASK-256 (gli errori per chi
+  corre), TASK-257 (la corsa rifiutata resta con il motivo): task file in
+  `main`, ordine 253 → 255 → 256 → 257. `tasks/TASK-252.md`.
+
+- **API** — TASK-247: `run_scored` registrato al salvataggio della corsa
+  (seguito di TASK-241, aggiornamento sotto ADR-0207; «si» dell'utente
+  del 2026-10-06; PR #386). Il primo `PUT /me/activities/{key}` di una
+  corsa con punteggio registra l'evento negli `insights` con la sola
+  `quality`; una corsa rimandata o senza percorso no. Nella bozza di
+  «Privacy» torna «a run scored». **Vuole l'aggiornamento del server**
+  (nessuna migrazione, il motore non cambia: niente `draw_examples`), con
+  l'ok dell'utente. `tasks/TASK-247.md`.
+
+- **API** — TASK-249: un paese toccato in «NEARBY TOWNS» e lo stesso
+  paese cercato per nome sono la stessa città (ADR-0213; seguito di
+  TASK-236, scelto dall'utente il 2026-10-06). **Fatto**: in `main` dalla
+  #381 (`c290d04`). Per Tenna, Calceranica al Lago, Caldonazzo, Riva del
+  Garda e altri comuni `GET /cities` dava il centro dell'area del comune,
+  a 500–1200 m dal paese, e `GET /nearby-cities` il centro del paese: due
+  punti, due serie di esempi tenuti, percorsi diversi. Ora il punto di un
+  luogo è uno, il suo nodo `place` di OpenStreetMap: `/cities` lo chiede
+  al Places per i risultati che sono aree. Solo API: **niente app, motore,
+  database**. Provato col servizio vero dal Mac; delle 66 città con gli
+  esempi disegnati prima nessuna cambia punto. Se il Places non risponde
+  la ricerca torna ai punti di prima, senza tenerli. **Aspetta**
+  l'aggiornamento del server (del coordinatore, con l'ok dell'utente;
+  nessun `draw_examples` del catalogo, solo Tenna, Calceranica e
+  Caldonazzo per non far aspettare il primo telefono). **Seguito**: le
+  etichette di una frazione e di un nome tradotto differiscono ancora fra
+  i due endpoint (il punto no). `tasks/TASK-249.md`.
 
 - **App** — TASK-182: le unità di misura, km o miglia (ADR-0149 e i suoi
   tre aggiornamenti; chiesto dall'utente il 2026-10-02 e il 2026-10-03;
@@ -718,10 +796,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   baffo camminato; in 4 la ricerca sceglie un altro disegno, e in 2 la
   somiglianza scende), una diventa disponibile (`ROUTE_ENGINE.md` §5).
   In media 1 km disegnato in meno e 0,7 km a piedi in più dove cambia.
-  **Non sul server né pubblicato**: server e `draw_examples` li fa il
-  coordinatore con l'ok dell'utente; `engine.zip` è rifatto, il telefono
-  lo riceve con la prossima pubblicazione. Seguiti in
-  `tasks/TASK-243.md`.
+  **Sul server** da `main` a784f772 dal 2026-10-05 22:22Z (ok dell'utente
+  «ok server», 9 s di fermo, ritorno `shaperoute-api:before-task243`),
+  `draw_examples` rifatto: 70 di 70 città alle 22:58Z, nessuna da rifare.
+  La pubblicazione dell'app, con `engine.zip` rifatto, è del coordinatore.
+  Seguiti in `tasks/TASK-243.md`.
 
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della
@@ -761,8 +840,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scored» fra gli eventi tenuti; resta «…distance, duration, score…»,
   ancora vera (PR #372). **Parte G**: tolto dall'app
   `src/api/trackScores.ts`, che nessuno chiamava più; niente cambia per
-  chi usa l'app. Esce con la prossima pubblicazione.
-  `tasks/TASK-241.md`.
+  chi usa l'app (PR #375). Seguito: TASK-247. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

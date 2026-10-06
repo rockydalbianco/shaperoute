@@ -9774,6 +9774,39 @@ delega dell'utente (TASK-232 parte B):
   alla mappa (`RecommendedRouteDetail` non ce l'ha) e le loro schede usano
   le foto-mappa del «Feed»: sono il passo B2, prima della parte C.
 
+**Parte B2, «Explore» con la mappa girata (2026-10-06)**, deciso
+dall'agente su delega dell'utente (TASK-232 parte B2):
+
+- **L'inclinazione viaggia con l'esempio**: `rotation_deg` in
+  `RecommendedRoute` (la scheda) e in `RecommendedRouteDetail` (il
+  percorso intero, le alternative ciascuna la sua), preso dal risultato del
+  motore (`asRecommended`, `movedExample`) e riportato nel risultato che
+  leggono la mappa, «Start» e la corsa (`toResult`, `ExploreRun`).
+- **Dritto vuol dire senza campo** (`turnOf`): 0, assente o illeggibile
+  non si scrive. Gli esempi dritti, il file sul telefono e le foto già
+  fatte restano identici a prima, byte per byte.
+- **Un esempio tenuto sul telefono da prima non si ridisegna** per avere
+  il campo: è un percorso trovato entro ±15°, e resta col nord in alto
+  com'era. Ridisegnarli tutti costerebbe una ricerca per forma a ogni
+  utente, per percorsi che vanno già bene.
+- **La scheda gira la linea, non la vista**: `turnedLine` gira i punti
+  attorno al loro centro, in metri, e `thumbSegments` li disegna come
+  sempre; così il disegno girato riempie la scheda con lo stesso margine.
+  Girare la vista (un `transform`) taglierebbe gli angoli o lascerebbe la
+  forma più piccola.
+- **La foto-mappa prende lo stesso `bearing`** (`lineCamera`, `Shoot`):
+  l'inquadratura è quella della linea girata, con il centro riportato sulla
+  terra. La pagina rimette il nord in alto a ogni foto che non lo chiede,
+  perché la mappa è una sola per tutte le foto. La foto girata ha un nome
+  suo (`…@−30`): non prende il posto di quella col nord in alto. Serve
+  anche alla parte C.
+- **Niente freccia del nord sulle schede**: sono disegni larghi mezzo
+  telefono; la freccia c'è sulla mappa, appena si apre il percorso.
+- **Fuori da questo passo**: il catalogo dell'API
+  (`/recommended-routes`) e gli esempi sull'acqua che arrivano con l'app
+  (`paddleExamples.json`) non dicono l'inclinazione; i preferiti non la
+  tengono (parte C).
+
 
 ## ADR-0197 — «Viene meglio a N km»: la distanza consigliata anche quando la forma riesce
 
@@ -10609,6 +10642,34 @@ parte nell'app.**
 solo km e tempo; avrebbe tenuto la richiesta all'API, l'attesa e i
 messaggi senza rete); togliere `score` dall'API (altro contratto, usato
 dai dati già salvati; non chiesto).
+
+**Aggiornamento** (2026-10-06, TASK-247, seguito di TASK-241; scelta dell'utente:
+«si» alla domanda «vuoi che il server torni a registrare l'evento "run
+scored" quando una corsa viene salvata?»). Il punto 4 cambia: **l'API
+registra `run_scored` al salvataggio**. Il resto è deciso dall'agente su
+delega dell'utente:
+
+1. **Quando**: al primo `PUT /me/activities/{key}` di una corsa (`201`)
+   che ha un punteggio. Non a una ripetizione della stessa chiave (`200`:
+   l'outbox dell'app rimanda), non per una corsa senza percorso o troppo
+   corta per un punteggio.
+2. **Cosa**: solo `quality` (punteggio / 100, tre decimali), come faceva
+   `POST /track-scores`. Niente account, luogo, forma o titolo: gli
+   `insights` restano senza niente che dica chi è (ADR-0101).
+3. **`POST /track-scores` non cambia** e registra ancora l'evento: l'app
+   da TASK-241 non lo chiama. Un'app più vecchia conta la stessa corsa
+   due volte finché non si aggiorna; non vale un cambio dell'endpoint.
+4. **Cosa si conta adesso**: le corse lungo un percorso **salvate da chi
+   ha un account**. Prima erano tutte le corse finite con un punteggio,
+   anche senza account e anche se poi scartate.
+5. **«Privacy»**: torna «a run scored» fra gli eventi tenuti (tolto con la
+   parte F), in inglese e in italiano.
+
+**Alternative scartate**: spostare l'evento togliendolo da `POST
+/track-scores` (cambia un endpoint che le app vecchie usano ancora);
+registrarlo dall'app con `POST /signals` (il telefono non ha più il
+punteggio); contare anche le corse senza account (non arrivano al
+server).
 
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
@@ -11661,6 +11722,164 @@ punto per punto. La faccina dello screenshot (CLI, `--nearby 3`): 0,79 →
 campioni di `samples/`, `TASK-243_*`, con la domanda «va bene così,
 compresi i casi 6 e 7?», il pesce e il fantasmino in cui la somiglianza
 scende): «continua va bene».
+
+## ADR-0212 — La CI ha un tempo massimo per job e dice dove un test si è fermato
+**Stato**: Attiva · 2026-10-06 · **deciso dall'agente su delega
+dell'utente** (TASK-248): i tempi e il modo.
+
+**Contesto**: il 2026-10-05 il job `api` della CI è rimasto appeso tre
+volte nel passo «Test», una per sei ore. La causa è nel motore
+(`multiprocessing.Pool.terminate()` in `plan_nearby` aspetta per sempre
+se arriva mentre un grafo sta per essere mandato a un processo:
+`tasks/TASK-248.md`), ma dal log non si capiva: pytest stampa una riga
+per file, a file finito, e un job di GitHub senza tempo massimo dura fino
+a sei ore.
+
+**Decisione**:
+
+1. **Ogni job ha `timeout-minutes`**, almeno il doppio del suo tempo
+   normale: `route-engine` 15, `api` 25, `ai` 5, `mobile` 10, `docker`
+   15. Un job che lo supera fallisce.
+2. **`faulthandler_timeout = 120`** nei `pyproject.toml` dell'API e del
+   route-engine: un test che dura più di due minuti stampa lo stack di
+   ogni thread e prosegue. Vale anche in locale.
+3. **Nessuna dipendenza nuova.** `pytest-timeout` farebbe fallire il
+   singolo test invece del job, ma è una dipendenza da chiedere, e con la
+   causa tolta (parte B) non serve.
+
+**Conseguenze**:
+
+- Un blocco costa al più il tempo massimo del job, non ore, e il log dice
+  quale test e in quale riga.
+- Un test lento ma sano che supera i due minuti stampa uno stack e passa:
+  rumore nel log, non un errore. Oggi nessun test ci arriva.
+- Se un job diventa più lento del suo tempo massimo per buone ragioni, il
+  numero in `ci.yml` va alzato: resta almeno il doppio del tempo normale.
+- Chi aggiunge un job a `ci.yml` gli dà un tempo massimo.
+
+## ADR-0215 — Con «Paddle» la velocità è in km/h e l'andatura è il tempo di 500 m
+**Stato**: Attiva · 2026-10-06 · deciso dall'agente su delega dell'utente
+(TASK-251), dentro la **scelta dell'utente** del 2026-10-06: velocità in
+km/h, andatura in minuti ogni 500 m (proposte anche: nodi e min/500 m; solo
+nodi). Numero assegnato dal coordinatore.
+
+**Contesto**: un'uscita sull'acqua mostrava i numeri di una corsa: passo al
+chilometro sotto la mappa, su «Data», nei parziali, nella voce e nel post,
+e nessuna velocità. Solo la bici aveva i suoi (ADR-0179). L'utente ha
+chiesto la velocità e l'andatura «che si usa col kayak».
+
+**Decisione**:
+
+1. **Sotto la mappa «Speed now»**, in km/h, al posto di «Pace now», come
+   in bici: è il numero che si guarda pagaiando.
+2. **Su «Data» e in pausa sei caselle**: «Speed now», «Avg speed», «Time»;
+   «Avg /500 m» (l'andatura media), «Last 500 m» (il tempo degli ultimi
+   500 m interi), «Calories». L'unità dell'andatura è nel nome della
+   casella: accanto al numero («5:37 /500 m») lo rimpiccioliva, visto in
+   un simulatore; i nomi nelle altre lingue sono quelli che ci stanno
+   («Med. /500 m», «Ø /500 m», «Moy. /500 m»). **«Last km» ed «Elev. gain» non ci sono**: per
+   mostrare velocità e andatura insieme due caselle dovevano lasciare il
+   posto, e un lago non sale. Le calorie restano quelle della corsa.
+3. **I parziali ogni 500 m**, non ogni km: il tempo di ogni 500 m è già
+   l'andatura, e un percorso sull'acqua è di 1–5 km (ADR-0169). Le righe
+   si chiamano coi metri («500», «1000»), sotto «m».
+4. **Con le miglia** (ADR-0149) la distanza è in miglia e la velocità in
+   mph, come in bici; **andatura e parziali restano ogni 500 m**: è il
+   metro della canoa e del canottaggio ovunque, e «ogni 0,31 miglia» non lo
+   legge nessuno.
+5. **La voce dice ogni km** (con le miglia ogni miglio), come in una corsa,
+   col **passo medio ogni 500 metri**: «1 kilometre. Time: 12 minutes.
+   Average pace: 6 minutes per 500 metres.» Il confronto col km prima
+   (ADR-0180) e l'incitamento restano quelli della corsa.
+6. **Il post** scrive l'andatura in `/500 m`. Per saperlo a fine uscita il
+   file della corsa in corso (`current-run.json`) tiene `activity` quando
+   non è una corsa; il file di una corsa resta com'era, byte per byte.
+7. **Senza percorso** vale lo sport di «Settings» alla partenza: solo con
+   «Paddle» cambia qualcosa. In bici senza percorso resta il passo al km:
+   non chiesto, lasciato com'è e segnalato all'utente.
+8. **`navigation/paddle.ts`** accanto a `ride.ts`: funzioni pure, e una
+   corsa o una pedalata non passano dal codice nuovo.
+
+**Alternative scartate**: l'andatura al posto della velocità sotto la mappa
+(un solo numero ci sta: la velocità è il primo chiesto); una terza riga di
+caselle per tenere anche «Elev. gain» (la pagina «Data» non ha lo spazio
+sopra i parziali); i parziali ogni km con l'andatura ogni 500 m (un numero
+che non è il tempo della riga); la velocità detta dalla voce (a 5–6 km/h un
+numero intero non dice niente, e i decimali la voce li legge male).
+
+**Conseguenze**: «My activities» e il post fatto da lì mostrano ancora il
+passo al km: l'API non restituisce lo sport di una corsa salvata. È la
+parte B di TASK-251 (un campo in più nel contratto). I testi nuovi in
+tedesco, spagnolo e francese sono dell'agente, da confermare.
+
+
+## ADR-0213 — Un luogo ha un punto solo: il suo nodo `place` di OpenStreetMap
+
+**Data**: 2026-10-06 · **Stato**: Accettato · **Task**: TASK-249 ·
+deciso dall'agente su delega dell'utente
+
+**Contesto**: per alcuni luoghi `GET /cities` e `GET /nearby-cities`
+(ADR-0200) davano punti diversi: Tenna a 650 m, Calceranica al Lago a
+700 m, Caldonazzo a 1,1 km, Riva del Garda a 500 m. La geocodifica
+`type=city` di Geoapify dà per loro il confine del comune
+(`category: administrative`) col punto al centro dell'area; il Places e
+l'autocompletamento di `/city-suggestions` danno il nodo `place`, il
+centro del paese. Gli esempi tenuti vanno per punto (ADR-0136): lo stesso
+paese aveva due serie di esempi, e chi lo toccava in «NEARBY TOWNS» e chi
+lo cercava per nome vedeva percorsi diversi.
+
+**Decisione**: il punto di un luogo è **quello del suo nodo `place`**
+(`place=city`, `town`, `village`), come lo dà il Places di Geoapify.
+`/nearby-cities` e `/city-suggestions` lo danno già e non cambiano.
+`/cities`, per ogni risultato che è un'area, chiede al Places i luoghi con
+quel nome dentro il `bbox` dell'area, dal più vicino al suo punto, e
+prende il punto del primo con **la stessa etichetta** (nome, regione,
+stato: `place_label`, la stessa regola di `/nearby-cities`). Se nessuno ha
+quell'etichetta resta il punto della geocodifica. Se il Places non
+risponde, la ricerca risponde lo stesso coi punti della geocodifica, ma
+quella risposta **non è tenuta** e gli altri luoghi non si chiedono
+(un'attesa sola): la ricerca dopo richiede e trova il nodo.
+
+**Alternative scartate**:
+
+- **Il punto della geocodifica come verità**, con `/nearby-cities` che
+  cerca per nome ogni posto: chiamate in più per ogni posizione, e il
+  centro dell'area di un comune è un punto peggiore (per Caldonazzo è nei
+  campi, per Calceranica sul monte).
+- **Un registro di punti imparati** da `/nearby-cities`, che `/cities`
+  rilegge: nessuna chiamata in più, ma il punto di un paese cambierebbe
+  il giorno in cui qualcuno gli passa vicino.
+- **Una sola chiamata all'autocompletamento** per ricerca: dà il nodo,
+  ma solo per i primi nomi che iniziano così; i risultati che non ci sono
+  resterebbero col punto dell'area.
+- **La regola solo per i villaggi** (`place=village`): Riva del Garda è
+  `place=town` e ha i due punti a 519 m; e non risparmierebbe niente al
+  catalogo, che non si sposta comunque (0 città su 66, misurato).
+- **Fallire la ricerca (503) se il Places non risponde**, la prima
+  stesura: mai due punti, ma la ricerca delle città smetterebbe di
+  funzionare per un servizio che le serve solo a spostare qualche paese
+  di qualche centinaio di metri. Scartata su richiesta del coordinatore.
+- **Tenere un giorno la risposta coi punti dell'area**: lo stesso luogo
+  avrebbe di nuovo due punti per un giorno. Non tenuta, dura una ricerca.
+
+**Conseguenze**:
+
+- Una ricerca nuova costa una richiesta al Places per ogni area fra i suoi
+  risultati (al più 5, una dopo l'altra, circa 0,35 s l'una: «Roma»
+  1,8 s), poi è tenuta un giorno. Nessuna chiamata in più per posizione.
+- Mentre il Places non risponde, un luogo cercato per nome può avere il
+  punto dell'area: `route_store` lo impara come centro, e i suoi esempi
+  restano finché scadono.
+- Delle 66 città con gli esempi disegnati prima nessuna cambia punto.
+  Cambiano Tenna, Calceranica al Lago, Caldonazzo, Riva del Garda, Jesolo
+  fra quelle provate: i loro esempi disegnati dal punto vecchio di
+  `/cities` non vengono più chiesti e scadono da soli.
+- Anche `themed.py` e `prefetch_zones.py`, che usano la stessa ricerca,
+  partono dal nodo.
+- Chi ha già scelto uno di quei paesi lo tiene sul telefono col punto di
+  prima finché non lo sceglie di nuovo.
+- Le etichette possono ancora differire fra i due endpoint (una frazione,
+  un nome tradotto): il punto no. `tasks/TASK-249.md`, «Emerso».
 
 ## ADR-0216 — Le code sul telefono: una copia accanto al file, un tempo massimo alle richieste dell'account, una corsa rifiutata non ferma le altre
 **Stato**: Attiva · 2026-10-06 · deciso dall'agente su delega dell'utente

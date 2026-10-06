@@ -222,3 +222,6 @@ place») resta: il server il punteggio lo tiene. Branch
 `feat/TASK-241-f-privacy-run-scored`; file: i due di `about/content`,
 STATUS, questo task file. Se un giorno il server registra di nuovo
 l'evento al salvataggio, la frase va rimessa.
+
+**Seguito: TASK-247** (`run_scored` registrato dall'API al salvataggio,
+«si» dell'utente del 2026-10-06).

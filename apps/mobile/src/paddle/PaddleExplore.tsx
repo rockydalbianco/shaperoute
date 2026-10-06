@@ -318,6 +318,7 @@ function WaterExamples({
                 width={card}
                 line={route.preview}
                 gaps={route.gaps}
+                rotationDeg={route.rotation_deg}
                 title={`${name} · ${length}`}
                 detail={t("On the water")}
                 map

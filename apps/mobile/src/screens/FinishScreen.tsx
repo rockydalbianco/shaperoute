@@ -57,7 +57,7 @@ export function FinishCard({ run, onDone, onResume }: Props) {
       <Text style={styles.title}>{facts}</Text>
       <View style={styles.buttons}>
         {/* The post of the run (TASK-231); it never has the score (TASK-241). */}
-        <SharePostButton makeRun={() => postOfTrack(run.track)} />
+        <SharePostButton makeRun={() => postOfTrack(run.track, run.activity)} />
         {onResume && (
           <Pressable
             style={styles.button}

@@ -1,4 +1,9 @@
-import type { LatLon, Walk } from "@shaperoute/shared-types";
+import {
+  ACTIVITIES,
+  type Activity,
+  type LatLon,
+  type Walk,
+} from "@shaperoute/shared-types";
 import { File, Paths } from "expo-file-system";
 
 import {
@@ -38,6 +43,10 @@ export type SavedRun = {
   /** The route's walks, for a word with the pen up (TASK-198): the score
    * leaves them out. Absent for any other route, and before TASK-198. */
   walks?: Walk[];
+  /** What the route is for, when it is not a run's (TASK-251): the end of
+   * a run on the water writes a paddler's pace. Absent for a run, and
+   * before TASK-251. */
+  activity?: Activity;
   track: Track;
   status: RunStatus;
 };
@@ -142,6 +151,8 @@ function isSavedRun(value: unknown): value is SavedRun {
     (run.similarity === undefined || typeof run.similarity === "number") &&
     (run.walks === undefined ||
       (Array.isArray(run.walks) && run.walks.every(isWalk))) &&
+    (run.activity === undefined ||
+      (ACTIVITIES as readonly unknown[]).includes(run.activity)) &&
     (run.status === "running" ||
       run.status === "stopped" ||
       run.status === "arrived") &&
@@ -209,12 +220,14 @@ export type RunRecorder = {
  * again the route of a run stopped lately goes on with its track; anything
  * else in the file is replaced at the first fix kept. `walks` are the
  * route's, for a word with the pen up (TASK-198): kept for the score.
+ * `activity` is the route's, kept when it is not a run's (TASK-251).
  */
 export function startRun(
   route: LatLon[],
   nowMs: number,
   similarity?: number,
   walks: readonly Walk[] = [],
+  activity?: Activity,
 ): RunRecorder {
   let track = resumable(loadRun(), route, nowMs) ?? emptyTrack();
   let status: RunStatus = "running";
@@ -224,12 +237,22 @@ export function startRun(
   // Only with walks: the file of any other run is as it was.
   const walked =
     walks.length > 0 ? { walks: walks.map(([from, to]): Walk => [from, to]) } : {};
+  // Only when it is not a run: the file of a run is as it was.
+  const sport = activity === undefined || activity === "running" ? {} : { activity };
 
   // The run as it would be in the file, when the last write failed.
   let notWritten: SavedRun | null = null;
 
   function save(): void {
-    const run: SavedRun = { version: 1, route, similarity, ...walked, track, status };
+    const run: SavedRun = {
+      version: 1,
+      route,
+      similarity,
+      ...walked,
+      ...sport,
+      track,
+      status,
+    };
     notWritten = saveRun(run) ? null : run;
     unsaved = false;
   }

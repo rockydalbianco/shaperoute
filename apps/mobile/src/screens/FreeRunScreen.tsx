@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { FreeRun } from "../navigation/freeRun";
+import { isPaddle } from "../navigation/paddle";
 import { distanceLabel } from "../navigation/phrases";
 import {
   AT_START_M,
@@ -12,6 +13,8 @@ import {
 } from "../navigation/runStats";
 import { emptyTrack, type Track } from "../navigation/trackRecorder";
 import type { FreeRunState } from "../navigation/useFreeRun";
+import { activityOf } from "../settings/sport";
+import { useSport } from "../settings/useSport";
 import { postOfTrack } from "../share/postRun";
 import { SharePostButton } from "../share/SharePost";
 import {
@@ -122,12 +125,16 @@ export function FreeRunCard({
   track?: Track;
   onStop: () => void;
 }) {
+  // With «Paddle» in «Settings» the numbers are a paddler's (TASK-251); a
+  // run, and a ride without a route, as before.
+  const sport = activityOf(useSport());
   return (
     <RunCard
       track={track}
       live={running}
       heading={<StartPointer track={running ? track : null} flat />}
       onStop={onStop}
+      activity={isPaddle(sport) ? sport : undefined}
     />
   );
 }
@@ -153,7 +160,8 @@ type FinishProps = {
 export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
   const { track } = run;
   // A run that is over: its clock stands at the last fix.
-  const numbers = useRunNumbers(track, false);
+  // On the water, a paddler's numbers: the file says so (TASK-251).
+  const numbers = useRunNumbers(track, false, undefined, run.activity);
   // "4.01 km" or, with miles, "2.49 mi" (TASK-182).
   const total = runDistanceLabel(track.distanceM, numbers.units);
   return (
@@ -164,7 +172,7 @@ export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
       <RunGrid numbers={numbers} />
       <View style={styles.finishButtons}>
         {/* The post of the run (TASK-231). */}
-        <SharePostButton makeRun={() => postOfTrack(track)} />
+        <SharePostButton makeRun={() => postOfTrack(track, run.activity)} />
         {onResume && (
           <Pressable
             style={styles.button}

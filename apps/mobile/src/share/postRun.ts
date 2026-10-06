@@ -1,10 +1,11 @@
-import type { LatLon } from "@shaperoute/shared-types";
+import type { Activity, LatLon } from "@shaperoute/shared-types";
 
 import { whereAndWhat } from "../activities/activityText";
 import type { ActivityDetail } from "../api/activities";
 import { t } from "../i18n";
 import { metresBetween } from "../map/coordinates";
 import { clockLabel } from "../navigation/freeRun";
+import { isPaddle, paddlePaceLabel } from "../navigation/paddle";
 import { durationMs, type Track } from "../navigation/trackRecorder";
 import { paceLabel, runDistanceLabel } from "../units/format";
 
@@ -23,6 +24,9 @@ export type PostRun = {
   distanceM: number;
   /** The time of the run, its pauses left out. */
   durationMs: number;
+  /** What the run was, when the post knows: on the water its pace is of
+   * 500 m (TASK-251). Absent, a run's. */
+  activity?: Activity;
 };
 
 /** A run of «My activities» as its post shows it: its title, or where it
@@ -37,14 +41,16 @@ export function postOfActivity(activity: ActivityDetail): PostRun {
   };
 }
 
-/** A run that just ended, before «Save»: no title yet. */
-export function postOfTrack(track: Track): PostRun {
+/** A run that just ended, before «Save»: no title yet. `activity` is its
+ * route's, when it followed one. */
+export function postOfTrack(track: Track, activity?: Activity): PostRun {
   return {
     key: null,
     title: null,
     track: track.fixes.map((fix) => fix.point),
     distanceM: track.distanceM,
     durationMs: durationMs(track),
+    ...(activity === undefined ? {} : { activity }),
   };
 }
 
@@ -76,7 +82,8 @@ export function resultName(result: PostResult): string {
 
 /** The number of `result` for `run`, as runners read it, in the app's units
  * (TASK-182: "3.23 mi", "8:43 /mi"); null when the run has none (too short
- * for a pace). */
+ * for a pace). On the water the pace is a paddler's, "5:00 /500 m", with
+ * miles too (TASK-251). */
 export function resultValue(run: PostRun, result: PostResult): string | null {
   switch (result) {
     case "distance":
@@ -84,7 +91,9 @@ export function resultValue(run: PostRun, result: PostResult): string | null {
     case "time":
       return clockLabel(run.durationMs);
     case "pace":
-      return paceLabel(run.distanceM, run.durationMs);
+      return isPaddle(run.activity)
+        ? paddlePaceLabel(run.distanceM, run.durationMs)
+        : paceLabel(run.distanceM, run.durationMs);
   }
 }
 

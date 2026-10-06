@@ -177,5 +177,7 @@ Rimandato:
 
 - **`schemas.py` e `models.py`** descrivono ancora i `walks` come «uno in
   meno dei pezzi» (come dopo TASK-242).
-- **Server e `draw_examples`**: del coordinatore, con l'ok dell'utente.
+- **La pubblicazione dell'app**: del coordinatore. Il server è su
+  `main` a784f772 dal 2026-10-05 22:22Z («ok server» dell'utente), con
+  `draw_examples` rifatto (70 di 70 città).
 - **La prova sull'iPhone** di un tratto a piedi a metà del contorno.

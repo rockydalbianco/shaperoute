@@ -323,7 +323,7 @@ const privacy: AboutDocument = {
         "The offline maps come from our server: the one around you and, ahead of time, those of towns nearby. To cap these downloads the server counts them, per day, by an anonymous number the app makes for the phone; the count is kept in memory only.",
         "Words that describe a shape are read on our server and are not sent to an outside AI service.",
         "A photo you choose for a drawing goes to our server once, to find its outline: the server does not save it and does not log it.",
-        "To make the search better we keep an event for each search and for a few uses of the app (a route chosen, a GPX file exported): the text in lower case, at most 200 characters, with emails and long numbers hidden; positions only as squares of about 1 km; nothing that says who you are or which phone it was. These events are kept without a time limit.",
+        "To make the search better we keep an event for each search and for a few uses of the app (a route chosen, a GPX file exported, a run scored): the text in lower case, at most 200 characters, with emails and long numbers hidden; positions only as squares of about 1 km; nothing that says who you are or which phone it was. These events are kept without a time limit.",
       ],
     },
     {

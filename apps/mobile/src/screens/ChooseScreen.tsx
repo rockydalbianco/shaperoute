@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import {
   KeyboardAvoidingView,
-  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -11,7 +10,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { t } from "../i18n";
 import { HeartBadge } from "../intro/HeartBadge";
+import { OpenSettings } from "../permissions/OpenSettings";
 import { PlaceSearch, type SuggestPlaces } from "../places/PlaceSearch";
 import type { LatLon } from "@shaperoute/shared-types";
 
@@ -56,6 +57,8 @@ type Props = {
   /** What the empty search field says, when not «City or street». */
   searchHint?: string;
   mapError: string | null;
+  /** Loads the map that could not load again (TASK-259). */
+  onMapRetry?: () => void;
   /** Shape and distance (RouteChoice). */
   children: ReactNode;
   /** "Draw route", kept at the foot of the screen. */
@@ -81,6 +84,7 @@ export function ChooseScreen({
   suggest,
   searchHint,
   mapError,
+  onMapRetry,
   children,
   footer,
   onRun,
@@ -123,15 +127,7 @@ export function ChooseScreen({
           <Text style={styles.label}>START</Text>
           <Segmented options={START_MODES} value={mode} onChange={onMode} />
           <Text style={styles.status}>{status}</Text>
-          {denied && (
-            <Pressable
-              style={styles.linkButton}
-              onPress={() => void Linking.openSettings()}
-              accessibilityRole="button"
-            >
-              <Text style={styles.link}>Open Settings</Text>
-            </Pressable>
-          )}
+          {denied && <OpenSettings />}
           {searching && (
             <PlaceSearch
               onSelect={onPlace}
@@ -141,7 +137,7 @@ export function ChooseScreen({
             />
           )}
         </View>
-        {mapError && <MapError reason={mapError} />}
+        {mapError && <MapError onRetry={onMapRetry} />}
         {children}
       </ScrollView>
       <View style={[styles.footer, { paddingBottom: insets.bottom + space.sm }]}>
@@ -151,12 +147,28 @@ export function ChooseScreen({
   );
 }
 
-/** The map page could not load (UI.md, «Quando la mappa non si carica»). */
-export function MapError({ reason }: { reason: string }) {
+/**
+ * The map page could not load (UI.md, «Quando la mappa non si carica»): the
+ * map's own words, without the reason, which is for the log (TASK-259). Under
+ * «Draw» the map, and its «Retry», are hidden: the screen offers its own.
+ * It goes away once the map loads (TASK-256).
+ */
+export function MapError({ onRetry }: { reason?: string; onRetry?: () => void }) {
   return (
-    <Text style={styles.error}>
-      The map could not load ({reason}). Check the connection and reopen the app.
-    </Text>
+    <View style={styles.mapError}>
+      <Text style={styles.error}>
+        {t("The map could not be loaded. Check the network.")}
+      </Text>
+      {onRetry && (
+        <Pressable
+          style={styles.linkButton}
+          onPress={onRetry}
+          accessibilityRole="button"
+        >
+          <Text style={styles.link}>{t("Retry")}</Text>
+        </Pressable>
+      )}
+    </View>
   );
 }
 
@@ -228,6 +240,9 @@ const styles = StyleSheet.create({
     color: color.text,
     fontWeight: fontWeight.bold,
     textDecorationLine: "underline",
+  },
+  mapError: {
+    gap: space.xs,
   },
   error: {
     color: color.error,

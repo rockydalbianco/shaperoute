@@ -9,6 +9,7 @@ import {
   radius,
   space,
 } from "../theme/tokens";
+import { OpenSettings } from "../permissions/OpenSettings";
 import { ImageEditsContext } from "./imageEdits";
 import { ImagePreview } from "./ImagePreview";
 import { OutlineBoard } from "./OutlineBoard";
@@ -139,6 +140,8 @@ function ProblemNote({ problem }: { problem: ImageProblem }) {
     <View style={styles.problemBox}>
       <Text style={styles.problem}>{text}</Text>
       {detail && <Text style={styles.detail}>{detail}</Text>}
+      {/* The camera refused: where it can be allowed (TASK-259). */}
+      {problem.kind === "denied" && <OpenSettings />}
     </View>
   );
 }

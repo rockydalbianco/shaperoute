@@ -272,6 +272,9 @@ function Sgrava() {
   const [startMode, setStartMode] = useState<StartMode>("gps");
   const [place, setPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  // «Retry» under «Draw» mounts the map again (TASK-259): its own «Retry»
+  // is hidden there. If it fails again, it says so again.
+  const [mapTries, setMapTries] = useState(0);
   const [kind, setKind] = useState<ChoiceKind>("shape");
   const [shapeText, setShapeText] = useState("heart");
   const tableShape = toShape(shapeText);
@@ -771,6 +774,7 @@ function Sgrava() {
         }
         map={
           <MapView
+            key={mapTries}
             style={styles.map}
             start={
               running
@@ -1085,6 +1089,10 @@ function Sgrava() {
                     sportActivity === "paddling" ? SPOT_SEARCH_HINT : undefined
                   }
                   mapError={mapError}
+                  onMapRetry={() => {
+                    setMapError(null);
+                    setMapTries((tries) => tries + 1);
+                  }}
                   footer={
                     <>
                       <ZoneNotice bytes={firstMaps} />

@@ -148,6 +148,17 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
+- **TASK-259 — «Open Settings» e «Location is off»** (ADR-0223; seguito
+  di TASK-256 e della revisione del 2026-10-06). **Parte A, solo app**,
+  branch `feat/TASK-259-open-settings`: «Open Settings» sotto «The camera is
+  off for this app…» in «Draw»; la riga rossa della mappa che non carica
+  dice «The map could not be loaded. Check the network.», senza il motivo
+  tecnico né «reopen the app», con un «Retry» che monta di nuovo la mappa;
+  `location/LocationOff.tsx` («Location is off» + «Open Settings») pronto
+  ma non ancora sulle schermate della corsa. **Parte B**: collegarlo a
+  `NavigateScreen` e `FreeRunScreen` dopo il merge della parte «corsa» di
+  TASK-210, che li modifica. **Aspettano l'utente**: i testi nuovi. Da dove
+  riprendere: `tasks/TASK-259.md`.
 - **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
   (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
   **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06),

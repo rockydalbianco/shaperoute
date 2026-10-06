@@ -12362,3 +12362,45 @@ server e il ridisegno degli esempi (`draw_examples`, 35 minuti).
   che copre la richiesta c'è già).
 - Se l'estratto si rifà, `--ponds` va rilanciato dopo i file d'acqua
   (`MAPS.md`, «I laghi di Explore»).
+
+## ADR-0223 — «Open Settings» accanto a ogni permesso negato, e il «Retry» di «Draw» monta di nuovo la mappa
+**Stato**: Attiva · 2026-10-06 · deciso dall'agente su delega dell'utente
+(TASK-259); i testi nuovi sono mostrati all'utente prima del merge.
+
+**Contesto**: con la fotocamera negata (`ImageChoice`) e con la posizione
+negata durante la corsa i testi dicevano «allow it in Settings» senza un
+modo di arrivarci; solo la partenza di «Draw» aveva «Open Settings». La
+riga rossa di `ChooseScreen.MapError` diceva il motivo tecnico e «reopen
+the app»; il «Retry» della mappa (TASK-256, ADR-0220) in «Draw» non si
+vede, perché la mappa è sotto la schermata.
+
+**Decisione**:
+
+1. Un solo bottone `permissions/OpenSettings.tsx`
+   (`Linking.openSettings()`, già in React Native: nessuna dipendenza),
+   un link sottolineato e non giallo, usato dalla partenza, dalla
+   fotocamera negata e da `location/LocationOff.tsx` per la corsa.
+2. `MapError` dice le parole della mappa, «The map could not be loaded.
+   Check the network.», senza il motivo (resta per il log); con
+   `onRetry` mostra «Retry». In «Draw» `App.tsx` azzera l'errore e cambia
+   la `key` della `MapView`: la mappa viene montata di nuovo, come una
+   ricarica; se non carica ancora, `onError` rimette la riga.
+3. La foto della libreria non chiede permessi (il selettore di sistema
+   consegna solo la foto scelta): non c'è un «foto negate» da trattare.
+
+**Alternative scartate**:
+
+- *Una prop `reload` su `MapView`* (come le richieste `turn`): ricarica
+  senza smontare, ma tocca la `MapView` e il suo protocollo per un caso
+  in cui la mappa è vuota comunque; la `key` costa due righe in `App.tsx`.
+- *Solo un testo diverso* («leave the app and come back»): vero, perché
+  la mappa si ricarica quando l'app torna in primo piano, ma chiede a chi
+  corre un gesto strano invece di un bottone.
+
+**Conseguenze**:
+
+- L'avviso «Location is off» con «Open Settings» va nelle schermate della
+  corsa (`NavigateScreen`, `FreeRunScreen`) dopo il merge della parte
+  «corsa» di TASK-210, che modifica quei due file: parte B di TASK-259.
+- La foto del profilo (`profile/useProfilePhoto.ts`) ha lo stesso testo
+  della fotocamera negata senza bottone: seguito.

@@ -701,4 +701,12 @@ export const ES: Table = {
   // src/strava/useStrava.ts
   "Could not open Strava. Try again.":
     "No se ha podido abrir Strava. Inténtalo de nuevo.",
+
+  // src/permissions/OpenSettings.tsx, src/location/LocationOff.tsx (TASK-259)
+  "Open Settings": "Abrir Ajustes",
+  "Location is off": "La ubicación está desactivada",
+  "Allow it for Sgrava in Settings to follow the route.":
+    "Permítela a Sgrava en Ajustes para seguir la ruta.",
+  "Allow it for Sgrava in Settings to record your track.":
+    "Permítela a Sgrava en Ajustes para grabar tu recorrido.",
 };

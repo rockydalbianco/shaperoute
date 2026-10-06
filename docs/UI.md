@@ -745,7 +745,7 @@ prima resta:
 
 | Quando | Cosa dice |
 |---|---|
-| fotocamera negata | The camera is off for this app. Allow it in Settings, or choose a picture instead. |
+| fotocamera negata | The camera is off for this app. Allow it in Settings, or choose a picture instead. + «Open Settings» (TASK-259) |
 | foto oltre 10 MB | This picture is too large. Choose a smaller one. |
 | il selettore non si apre | Could not open the picture. Try again. |
 | l'API non legge l'immagine | This picture cannot be used. Choose another one. |
@@ -1395,7 +1395,7 @@ semplici, con sotto il testo del motore:
 | `jagged` | The outline is too jagged to run on roads. Try a simpler subject. |
 | `format` | Only PNG and JPEG pictures work. Choose another one. |
 | `unreadable` | This picture could not be read. Choose another one. |
-| fotocamera negata | The camera is off for this app. Allow it in Settings, or choose a picture instead. |
+| fotocamera negata | The camera is off for this app. Allow it in Settings, or choose a picture instead. + «Open Settings» (TASK-259) |
 | oltre 10 MB | This picture is too large: 12.3 MB, at most 10 MB. Choose a smaller one. |
 
 ## Chiedere un percorso
@@ -2683,8 +2683,11 @@ scrive «The map could not be loaded. Check the network.» con un pulsante
 **«Retry»** che ricarica la pagina (TASK-256); la ricarica anche da sola
 quando l'app torna in primo piano con la mappa in errore. Appena la mappa
 carica, il testo sparisce e la schermata viene avvisata che l'errore non
-c'è più (`onError(null)`), così la riga rossa sotto la ricerca («The map
-could not load (motivo)…», `ChooseScreen`) se ne va. Se iOS chiude la
+c'è più (`onError(null)`), così la riga rossa sotto la ricerca
+(`ChooseScreen`) se ne va. In «Draw» la mappa è sotto la schermata e il suo
+«Retry» non si vede: la riga rossa dice le stesse parole della mappa, senza
+il motivo tecnico (resta per il log), con un suo **«Retry»** che monta di
+nuovo la mappa (TASK-259); se non carica ancora, la riga torna. Se iOS chiude la
 pagina per liberare memoria, la WebView la ricarica da sola.
 
 ## Domande ancora aperte

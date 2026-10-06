@@ -1096,7 +1096,9 @@ tipi dell'app in `apps/mobile/src/api/activities.ts`; il codice in
   restano in memoria: due corse dallo stesso chilometro chiedono una volta.
 - **Una corsa dell'elenco** ha `id` (la chiave), `started_at`, `place`,
   `shape`, `word`, `style`, `title`, `distance_m`, `duration_s`, `score`,
-  `fidelity`, e due anteprime leggere, al più 64 punti l'una:
+  `fidelity`, `activity` (`running`, `cycling` o `paddling`, com'è stata
+  salvata; dal TASK-251: sull'acqua l'app scrive il passo ogni 500 m) e
+  due anteprime leggere, al più 64 punti l'una:
   `route_preview` (`null` senza percorso) e `track_preview`. Quella intera
   ha al loro posto `points` (o `null`), `track` (la traccia pulita, come
   `[lat, lon]`) e `similarity`, e in più `walks` (sotto) e `pauses`.

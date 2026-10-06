@@ -10,6 +10,7 @@
   "duration_s": 1200,
   "score": 88,
   "fidelity": 1.0,
+  "activity": "running",
   "similarity": 0.88,
   "points": [
     [46.0671, 11.1214],

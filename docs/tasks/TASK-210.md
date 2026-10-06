@@ -201,8 +201,8 @@ km heart») restano scritti come prima, con la virgola della lingua
 `ExploredCard` scriveva i km anche con le miglia). Test:
 `explore/ExploreItalian.test.tsx` (categorie tradotte e richiesta
 inglese, frasi del percorso a tema e delle indicazioni, credito). I nomi
-delle città e i nomi dei percorsi dell'API restano com'è. **Testi da
-vedere all'utente prima del merge.**
+delle città e i nomi dei percorsi dell'API restano com'è. **Testi
+approvati dall'utente** il 2026-10-06 («va bene procedi»).
 
 **Da fare nelle parti successive**: «Draw» (`RoutePanel`, `problems`,
 `distance`, `ImageChoice`, `OutlineBoard`, `warnings`, `wordInput`,

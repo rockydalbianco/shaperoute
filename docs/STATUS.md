@@ -534,8 +534,8 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   corsa** fatta il 2026-10-06 (le schermate della corsa, il banner della
   svolta con il frasario della voce, 58 testi nuovi; testi approvati
   dall'utente il 2026-10-06). **Parte C — «Explore»** fatta il 2026-10-06
-  (64 testi nuovi, le categorie tradotte a vista e inglesi verso l'API; i
-  testi all'utente prima del merge): restano «Draw», la fine corsa,
+  (64 testi nuovi, le categorie tradotte a vista e inglesi verso l'API;
+  testi approvati dall'utente il 2026-10-06): restano «Draw», la fine corsa,
   «Sport», `App.tsx`, i nomi delle forme (`tasks/TASK-210.md`). L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano

@@ -12590,5 +12590,16 @@ MuW».
   #425 (TASK-208 B), che vi aggiunge righe: seconda parte di TASK-260.
 - Il server va aggiornato (i testi di Strava e del GPX), con l'ok
   dell'utente; l'app va pubblicata su `preview`.
-- Logo, segno e icona con «MuW»: aspettano l'utente (`tasks/TASK-260.md`,
-  «Fuori scope»). Il sito (`site/`) è di TASK-237.
+- Logo, segno e icona con «MuW»: parte B, sotto. Il sito (`site/`) è di
+  TASK-237.
+
+**Aggiunta (parte B, 2026-10-06, scelta dell'utente)**: «terrei il cuore
+sullo sfondo giallo però con scritto muw». Il segno diventa il cuore
+dell'avvio su giallo (quello del badge di «Draw», TASK-221), il logo il
+cuore con sotto «MuW» nel tratto del vecchio logo (M e W maiuscole, u
+minuscola: la grafia del nome). L'icona iOS è il cuore nero su giallo,
+quella Android ha il fondo giallo e il cuore nel cerchio sicuro; lo
+splash iOS mostra «MuW», quello Android il cuore. I PNG li genera
+`docs/brand/make_brand.py` con Pillow, a mano, dai punti del cuore e dai
+token dell'app: non è in `tools/`, dove la CI ha solo la libreria
+standard. I vecchi `sgrava-*.svg` sono tolti (restano nella storia).

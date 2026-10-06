@@ -151,14 +151,18 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 ## In lavorazione
 
 - **App e API** — TASK-260: l'app si chiama «MuW» (ADR-0224; chiesto
-  dall'utente il 2026-10-06). `name` in `app.json`, i permessi, il titolo
-  di «Draw», il post, l'avvio, aiuto/condizioni/privacy, lo stile della
-  mappa, e nell'API «Drawn with MuW», le pagine di ritorno da Strava, il
-  `creator` del GPX e il messaggio dei tag, e le otto chiavi di `i18n/*`
-  con il nome nelle cinque lingue. **Mancano**: l'aggiornamento del
-  server (ok dell'utente) e la pubblicazione. **Fuori
-  scope**: logo, segno e icona leggono ancora «SGRAVA» (scelta
-  dell'utente), `bundleIdentifier`, `slug`, il sito. `tasks/TASK-260.md`.
+  dall'utente il 2026-10-06). **Parte A** in `main` (PR #426, merge
+  `717eb69b`, 2026-10-06), su `preview` (gruppo `36e2a9f1`): il nome
+  sotto l'icona, i permessi, i testi dell'app nelle cinque lingue,
+  aiuto/condizioni/privacy, e nell'API «Drawn with MuW», le pagine di
+  ritorno da Strava, il `creator` del GPX, il messaggio dei tag. **Il
+  server** lo aggiorna il coordinatore con l'ok dell'utente. **Parte B**
+  (logo: il cuore su giallo con la scritta «MuW», scelta dell'utente):
+  icona iOS e Android, splash, favicon, `docs/brand/muw-*.svg` e il
+  generatore `make_brand.py`; in PR, **anteprima mostrata all'utente, il
+  merge aspetta il suo ok**. Icona e splash si vedono solo in una build
+  propria. Non si toccano `bundleIdentifier`, `slug`, il sito.
+  `tasks/TASK-260.md`.
 
 - **TASK-237 — Il sito web** (ADR-0201; chiesto dall'utente il
   2026-10-05). Una pagina statica in `site/`, senza dipendenze. **Parte

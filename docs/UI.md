@@ -77,27 +77,30 @@ Quattro regole:
    villaggi; non i nomi delle vie, i numeri civici e i punti d'interesse.
    Nessuno strato della mappa usa il giallo.
 
-## Il logo e l'icona (TASK-159, ADR-0129)
+## Il logo e l'icona (TASK-159, ADR-0129; «MuW» da TASK-260, ADR-0224)
 
-Il segno è una S fatta come un percorso: un tratto solo, di spessore
-costante, con gli angoli arrotondati, e un punto in alto a destra da cui
-parte. Giallo `accent` su `background`, o nero su giallo. Il logo intero è
-il segno seguito da «GRAVA» con lo stesso tratto, le due A senza trattino.
-I vettoriali stanno in `docs/brand/` (`sgrava-mark.svg`, `sgrava-logo.svg`).
+Il segno è **il cuore dell'avvio su giallo**: il percorso a cuore di
+Milano, nero `onAccent` su `accent`, con il punto di partenza (lo stesso
+cuore del badge in cima a «Draw», sotto). Il logo intero è il cuore con
+sotto la parola «MuW», disegnata con un tratto solo di spessore costante
+e gli angoli arrotondati, come il vecchio «SGRAVA»: M e W maiuscole, la u
+all'altezza delle minuscole. Fino a TASK-260 il segno era una S fatta come
+un percorso, con «GRAVA» accanto. I vettoriali stanno in `docs/brand/`
+(`muw-mark.svg`, `muw-logo.svg`); i PNG li genera `docs/brand/make_brand.py`
+(Pillow, a mano) dai punti del cuore e dai colori dell'app.
 
-Sotto l'icona il nome è «MuW» (`name` in `app.json`, TASK-260); il
-segno e il logo leggono ancora «S» e «SGRAVA», finché l'utente non
-sceglie i nuovi. L'icona dell'app
-è il segno giallo su nero (`assets/icon.png`, 1024 × 1024,
-senza trasparenza). Su Android il segno sta nel cerchio sicuro dell'icona
-adattiva, il fondo è nero e l'icona a un colore è il segno bianco. In Expo
-Go sulla schermata di casa resta l'icona di Expo Go: la nostra si vede con
-una build propria. Dentro l'app il nome in cima a «Draw» resta un testo,
-con a sinistra il cuore su giallo (sotto).
+Sotto l'icona il nome è «MuW» (`name` in `app.json`). L'icona dell'app
+è il cuore nero su giallo (`assets/icon.png`, 1024 × 1024, senza
+trasparenza), con il tratto più sottile del badge perché il percorso si
+legga. Su Android il cuore sta nel cerchio sicuro dell'icona adattiva, il
+fondo è giallo e l'icona a un colore è il cuore bianco. In Expo Go sulla
+schermata di casa resta l'icona di Expo Go: la nostra si vede con una
+build propria. Dentro l'app il nome in cima a «Draw» resta un testo, con
+a sinistra il cuore su giallo (sotto).
 
 **La schermata di avvio** (TASK-165, ADR-0134; gialla da TASK-181): fondo
-giallo `accent`, il logo nero al centro. Su iOS il logo intero, largo 260
-punti (`assets/splash-logo-dark.png`); su Android il segno da solo
+giallo `accent`, il logo nero al centro. Su iOS la parola «MuW», larga 260
+punti (`assets/splash-logo-dark.png`); su Android il cuore da solo
 (`assets/splash-icon-dark.png`), perché il sistema ritaglia l'immagine in
 un cerchio. La genera il plugin `expo-splash-screen` da `app.json`, dove il
 giallo è scritto (`#FFD02B`: `app.json` non legge i token). Nessun codice la

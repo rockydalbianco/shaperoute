@@ -7,6 +7,7 @@ import {
   continueTrack,
   durationMs,
   emptyTrack,
+  leaveTrack,
   MAX_ACCURACY_M,
   openPause,
   pausedMs,
@@ -156,3 +157,44 @@ describe("a pause (TASK-169)", () => {
 function record2(track: Track, fixes: TrackFix[]): Track {
   return fixes.reduce(addFix, track);
 }
+
+describe("the app leaving the front (TASK-255)", () => {
+  test("the run waits from then, and the next fix starts a new stretch with no metres", () => {
+    const running = record([fix(0, 0), fix(100, 30)]);
+    const left = leaveTrack(running, 40_000);
+    expect(openPause(left)).toEqual({ fromMs: 40_000, toMs: null, away: true });
+    // Back two minutes later, 300 m on: no line across, no time in between.
+    const back = record2(left, [fix(400, 160), fix(500, 190)]);
+    expect(openPause(back)).toBeNull();
+    expect(back.fixes[2].gap).toBe(true);
+    expect(back.distanceM).toBeCloseTo(200, 0);
+    expect(pausedMs(back, 0, 190_000)).toBe(120_000);
+    expect(durationMs(back)).toBe(70_000);
+  });
+
+  test("never before the last fix, and nothing when the runner or the pen paused already", () => {
+    const running = record([fix(0, 0), fix(100, 30)]);
+    expect(openPause(leaveTrack(running, 20_000))?.fromMs).toBe(30_000);
+    const byHand = pauseTrack(running, 40_000);
+    expect(leaveTrack(byHand, 50_000)).toBe(byHand);
+    const penUp = {
+      ...running,
+      pauses: [{ fromMs: 40_000, toMs: null, pen: true as const }],
+    };
+    expect(leaveTrack(penUp, 50_000)).toBe(penUp);
+  });
+
+  test("a pause by standing still ends where the app leaves: what follows is not the runner's", () => {
+    const running = record([fix(0, 0), fix(100, 30)]);
+    const still = pauseTrack(running, 40_000, true);
+    const left = leaveTrack(still, 60_000);
+    expect(left.pauses).toEqual([
+      { fromMs: 40_000, toMs: 60_000, auto: true },
+      { fromMs: 60_000, toMs: null, away: true },
+    ]);
+    // Standing still would have kept the metres of the next fix; away, no.
+    const back = record2(left, [fix(400, 100)]);
+    expect(back.fixes[2].gap).toBe(true);
+    expect(back.distanceM).toBeCloseTo(100, 0);
+  });
+});

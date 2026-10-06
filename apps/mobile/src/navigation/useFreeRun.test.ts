@@ -2,6 +2,7 @@ import type { LatLon } from "@shaperoute/shared-types";
 import { act, renderHook } from "@testing-library/react-native";
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
+import { AppState, type AppStateStatus } from "react-native";
 
 import { DEFAULT_VOICE_CHOICE, saveVoiceChoice } from "../voice/voiceChoice";
 import { FREE_ROUTE } from "./freeRun";
@@ -339,4 +340,61 @@ test("during the countdown the map follows the runner and the track waits", asyn
     expect(state.track.fixes[0].timeMs).toBeGreaterThanOrEqual(before);
   }
   await unmount();
+});
+
+test("the app behind another, or the phone locked, pauses the run until the next fix (TASK-255)", async () => {
+  let appState: (next: AppStateStatus) => void = () => {};
+  const removeAppState = jest.fn();
+  jest.spyOn(AppState, "addEventListener").mockImplementation((_type, listener) => {
+    appState = listener;
+    return { remove: removeAppState };
+  });
+  const start: LatLon = [46.0122, 11.2986];
+  const metre = 1 / 111_195;
+  let onPosition: (position: Location.LocationObject) => void = () => {};
+  jest
+    .mocked(Location.requestForegroundPermissionsAsync)
+    .mockResolvedValue({ granted: true } as Location.LocationPermissionResponse);
+  jest
+    .mocked(Location.watchPositionAsync)
+    .mockImplementation(async (_options, callback) => {
+      onPosition = callback;
+      return { remove: jest.fn() };
+    });
+  const began = Date.now();
+  const position = (northM: number, seconds: number) =>
+    ({
+      coords: { latitude: start[0] + northM * metre, longitude: start[1], accuracy: 5 },
+      timestamp: began + seconds * 1000,
+    }) as Location.LocationObject;
+  jest.spyOn(Date, "now").mockImplementation(() => began + 40_000);
+
+  const { result, unmount } = await renderHook(() => useFreeRun(true));
+  await act(async () => {
+    skipCountdown();
+    onPosition(position(0, 0));
+    onPosition(position(100, 30));
+    // The phone locks; three minutes later the app is back, 400 m on.
+    appState("background");
+    appState("active");
+    onPosition(position(500, 220));
+    onPosition(position(600, 250));
+  });
+  const state = result.current;
+  expect(state.status).toBe("running");
+  if (state.status === "running") {
+    expect(state.track.fixes.map((fix) => fix.gap ?? false)).toEqual([
+      false,
+      false,
+      true,
+      false,
+    ]);
+    expect(state.track.distanceM).toBeCloseTo(200, 0);
+    expect(state.track.pauses).toEqual([
+      { fromMs: began + 40_000, toMs: began + 220_000, away: true },
+    ]);
+  }
+  await unmount();
+  expect(removeAppState).toHaveBeenCalled();
+  jest.restoreAllMocks();
 });

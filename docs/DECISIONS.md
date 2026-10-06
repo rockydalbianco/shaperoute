@@ -12066,3 +12066,44 @@ spenti) era un rifiuto non gestito.
 **Conseguenze**: tre test di prima cambiano misura (la fine della corsa
 arriva una posizione dopo: +20 m in `penUpRun.test.ts`, una posizione in più
 in `mileRun.test.ts`). Nessun testo nuovo.
+
+## ADR-0219 — La corsa tiene lo schermo acceso, l'app in secondo piano è una pausa, niente calorie fuori dalla corsa
+**Stato**: Attiva · 2026-10-06 · **scelte dell'utente** del 2026-10-06
+(«sì a tutte e cinque» alle domande della revisione: lo schermo acceso, le
+calorie); il modo deciso dall'agente su delega dell'utente (TASK-255).
+Numero assegnato dal coordinatore. Aggiorna ADR-0066.
+
+**Contesto**: `expo-keep-awake` era chiamato solo entrando in modalità
+tasca (ADR-0066). Con la mappa a vista e il blocco automatico del telefono
+l'app andava in secondo piano; il GPS è seguito solo in primo piano
+(nessun permesso di sfondo), quindi registrazione, voce e pausa automatica
+si fermavano senza avviso, e al ritorno la prima posizione era unita
+all'ultima con una riga dritta, con tutto il tempo di mezzo sul cronometro.
+Una build di sviluppo tiene lo schermo acceso da sola e lo nascondeva. Le
+calorie usavano la formula della corsa (1,036 kcal per kg e km) per ogni
+sport: in bici circa il triplo del vero.
+
+**Decisione**:
+
+1. **Lo schermo resta acceso per tutta la corsa** (`useRunAwake`, tag
+   `run`), dalla partenza a «Stop» o all'arrivo, con e senza percorso. La
+   modalità tasca tiene il suo tag (`pocket-mode`): entrare e uscire non
+   spegne lo schermo della corsa. Nessuna dipendenza nuova.
+2. **L'app che lascia il primo piano è una pausa** (`Pause.away`,
+   `leaveTrack`, `RunRecorder.leave`): quando `AppState` passa a
+   «background» la corsa è in pausa da quel momento; la prossima posizione
+   la chiude e comincia un tratto nuovo (`gap`): niente metri sulla riga
+   dritta, niente tempo di mezzo. Una pausa a mano o della penna già aperta
+   resta com'è; una pausa da fermi finisce lì, perché quello che segue non
+   è del corridore. Scartata la regola «nessuna posizione per 30 s»: con la
+   pausa automatica spenta avrebbe tolto dal cronometro anche una sosta
+   lunga a un semaforo, e sotto una galleria avrebbe tolto i metri.
+   «inactive» (centro di controllo, tasto laterale senza blocco) non conta.
+3. **Il riquadro «Calories» solo correndo**: in bici e in canoa il suo
+   posto lo prendono i riquadri accanto; nessun testo nuovo. Una formula
+   per sport quando l'utente la vorrà.
+
+**Conseguenze**: più batteria con lo schermo acceso (era già così in
+modalità tasca). Il file della corsa può avere pause `away`
+(`trackStore.isPause` le legge). `NavigateScreen.test.tsx` cambia verso:
+lo schermo è acceso anche senza la modalità tasca.

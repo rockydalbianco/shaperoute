@@ -336,3 +336,17 @@ test("a run written again after a refusal is read from the file", () => {
   expect(ended?.track.fixes).toHaveLength(3);
   expect(loadRun()).toEqual(ended);
 });
+
+test("a pause of the app's leaving is read back with the run (TASK-255)", () => {
+  const run = startRun(ROUTE, 0);
+  run.onFix(fix(0, 0), false);
+  run.onFix(fix(10, 4), false);
+  run.leave(10_000);
+  expect(loadRun()?.track.pauses).toEqual([{ fromMs: 10_000, toMs: null, away: true }]);
+  // Paused by hand already: the app leaving changes nothing.
+  const other = startRun(OTHER_ROUTE, 60_000);
+  other.onFix(fix(0, 60), false);
+  other.pause(61_000);
+  other.leave(62_000);
+  expect(loadRun()?.track.pauses).toEqual([{ fromMs: 61_000, toMs: null }]);
+});

@@ -2,6 +2,7 @@ import type { LatLon } from "@shaperoute/shared-types";
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import { useEffect, useState } from "react";
+import { AppState } from "react-native";
 
 import { activityOf, loadSport } from "../settings/sport";
 import { appUnits } from "../units/units";
@@ -41,6 +42,7 @@ export function useFreeRun(active: boolean): FreeRunState {
     let subscription: Location.LocationSubscription | null = null;
     let run: RunSession | null = null;
     let stopRecording: (() => void) | null = null;
+    let leaving: { remove(): void } | null = null;
     // The phone's voices, before the first kilometre (TASK-209).
     void loadVoices();
     // The phone refusing the position altogether (its services off) is a
@@ -77,6 +79,13 @@ export function useFreeRun(active: boolean): FreeRunState {
           say: (text) => play([{ say: text, vibrate: false }]),
         });
         run = session;
+        // The app behind another, or the phone locked: the GPS stops with
+        // it, and so does the run, until the next fix (TASK-255).
+        leaving = AppState.addEventListener("change", (next) => {
+          if (next === "background") {
+            recorder.leave(Date.now());
+          }
+        });
         setState({ status: "running", track: recorder.track(), position });
         subscription = await Location.watchPositionAsync(
           {
@@ -135,6 +144,7 @@ export function useFreeRun(active: boolean): FreeRunState {
     return () => {
       stopped = true;
       subscription?.remove();
+      leaving?.remove();
       run?.end();
       stopRecording?.();
       void Speech.stop();

@@ -272,7 +272,6 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
         <View style={styles.tiles}>
           <Tile label={t("Avg /500 m")} value={numbers.pace500} />
           <Tile label={t("Last 500 m")} value={numbers.lastKm} />
-          <Tile label="Calories" value={numbers.energy} unit="kcal" />
         </View>
       ) : (
         <View style={styles.tiles}>
@@ -282,7 +281,12 @@ export function RunGrid({ numbers }: { numbers: RunNumbers }) {
             unit={unitOf(numbers)}
           />
           <Tile label="Elev. gain" value={numbers.climb} unit="m" />
-          <Tile label="Calories" value={numbers.energy} unit="kcal" />
+          {/* The energy is a runner's (KCAL_PER_KG_KM): on a bike it would
+              read about three times the truth. Off a run, no tile
+              (TASK-255, the user's choice). */}
+          {!numbers.ride && (
+            <Tile label="Calories" value={numbers.energy} unit="kcal" />
+          )}
         </View>
       )}
     </View>

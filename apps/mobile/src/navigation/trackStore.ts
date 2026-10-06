@@ -10,6 +10,7 @@ import {
   addFix,
   continueTrack,
   emptyTrack,
+  leaveTrack,
   pauseTrack,
   penDownTrack,
   penUpTrack,
@@ -130,7 +131,8 @@ function isPause(value: unknown): boolean {
     typeof pause.fromMs === "number" &&
     (pause.toMs === null || typeof pause.toMs === "number") &&
     (pause.auto === undefined || pause.auto === true) &&
-    (pause.pen === undefined || pause.pen === true)
+    (pause.pen === undefined || pause.pen === true) &&
+    (pause.away === undefined || pause.away === true)
   );
 }
 
@@ -215,6 +217,10 @@ export type RunRecorder = {
   /** The next letter starts: the pen's pause ends at `nowMs`; any other
    * pause stays. */
   lowerPen(nowMs: number): void;
+  /** The app leaves the front (TASK-255): the run waits from `nowMs`, a
+   * pause of the phone's, unless the runner or the pen paused it; the next
+   * fix ends it. */
+  leave(nowMs: number): void;
   /** The run is left: what there is goes to the file. */
   stop(): void;
   track(): Track;
@@ -321,6 +327,16 @@ export function startRun(
       if (status === "running" && next !== track) {
         track = next;
         unsaved = true;
+      }
+    },
+    leave(nowMs) {
+      const next = leaveTrack(track, nowMs);
+      // Written at once: the app may not come back.
+      if (status === "running" && next !== track) {
+        track = next;
+        if (track.fixes.length > 0) {
+          save();
+        }
       }
     },
     stop() {

@@ -35,6 +35,7 @@ import { changeLabel, type Split, splits } from "../navigation/runMetrics";
 import { paceClock } from "../navigation/runStats";
 import { openPause, type Track } from "../navigation/trackRecorder";
 import { usePocketMode } from "../navigation/usePocketMode";
+import { useRunAwake } from "../navigation/useRunAwake";
 import {
   color,
   fontSize,
@@ -120,6 +121,8 @@ export function RunCard({
   const numbers = useRunNumbers(track, live && !arrived, route, activity);
   const control = useRunControl();
   const pocket = usePocketMode(live && !arrived);
+  // The screen on for the whole run, pocket mode or not (TASK-255).
+  useRunAwake(live && !arrived);
   const [page, setPage] = useState<RunPage>("map");
   const paused = openPause(track) !== null;
   // One function for the whole run: a swipe in progress keeps its page.

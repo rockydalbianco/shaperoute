@@ -566,6 +566,14 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **App** — TASK-255: la corsa tiene lo schermo acceso (ADR-0219; scelte
+  dell'utente del 2026-10-06 dalla revisione). Schermo acceso per tutta la
+  corsa, con o senza percorso, non solo in modalità tasca; l'app che va in
+  secondo piano (telefono bloccato a mano, un'altra app) mette la corsa in
+  pausa fino alla prossima posizione, senza riga dritta e senza il tempo
+  di mezzo; «Calories» solo correndo. Solo app, nessun testo nuovo,
+  nessuna dipendenza nuova. `tasks/TASK-255.md`.
+
 - **App** — TASK-253: la navigazione non salta avanti e riprende dove era
   (ADR-0217; dalla revisione del codice dell'app del 2026-10-06). Dove il
   percorso ripassa dallo stesso punto entro 300 m la posizione resta sul

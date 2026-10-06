@@ -5,7 +5,7 @@
 > Dopo il clear di fine task, un agente trova qui la sua riga: il prossimo
 > task, da cosa dipende e quali file non può toccare.
 
-**Ultimo aggiornamento**: 2026-10-06, 12:30 · `main` = `0bb8dd9`
+**Ultimo aggiornamento**: 2026-10-06, 13:10 · `main` = `2189faa`
 
 ## Come si usa
 
@@ -52,9 +52,12 @@
 
 ## La coda dei merge
 
-Alle 12:30 del 2026-10-06: aperte la **#400** (TASK-257, aspetta il sì
-dell'utente sui testi) e la **#403** (TASK-255, aspetta la scelta
-dell'utente sulla pausa). Il server e il telefono hanno tutto `main`.
+Alle 13:10 del 2026-10-06: nessuna PR aperta. In lavorazione
+TASK-258 (il post sul server, aspetta le tre risposte dell'utente) e
+TASK-259 («Open Settings» quando il telefono nega fotocamera, foto o
+posizione). Il telefono ha tutto `main` (gruppo `37310f11`); il server è
+a `f41eaea` e aspetta l'ok dell'utente per Ledro nell'elenco dell'API
+(#406) — una PR di soli documenti alla volta la mergia il coordinatore.
 Entra prima chi è pronto prima; la sessione proprietaria mergia da sola al
 5/5 verde e CLEAN, ricontrollato subito prima, dopo il «merge NNN» del
 coordinatore; quando il coordinatore scrive «al verde mergia senza
@@ -68,33 +71,18 @@ transcript prima di mergiare).
 ## L'albero
 
 ```
-Revisione e miglioramento App
-  ├─ Adesso  TASK-255  Lo schermo acceso in corsa, niente calorie fuori
-  │                    dalla corsa: #403, aspetta la scelta dell'utente
-  │                    sulla pausa quando l'app va in secondo piano
-  │                                                            ADR-0219
-  └─ Dopo    TASK-254  Le correzioni piccole della revisione  ADR-0218
-
-Add lakes and seas to Draw's «Another place» with Paddle
-  └─ Adesso  TASK-256  Gli errori parlano a chi corre, «Try again»,
-                       `ErrorBoundary`; i testi all'utente prima del
-                       merge                                   ADR-0220
-
-Nuovo task
-  └─ Adesso  TASK-257  Una corsa rifiutata resta sul telefono con il
-                       motivo e «Discard»: #400 verde, aspetta il sì
-                       dell'utente sui testi                   ADR-0221
+Unità di misura velocità Kayak/Padel
+  └─ Adesso  TASK-259  «Open Settings» quando il telefono nega la
+                       fotocamera, le foto o la posizione («Location is
+                       off» in corsa); la riga rossa della mappa in
+                       «Draw» (dalla revisione del 2026-10-06; i testi
+                       all'utente prima del merge)   ADR-0223 se serve
 
 Toggle foto post
   └─ Adesso  TASK-258  Il post condiviso resta sul server (richiesta
                        dell'utente del 2026-10-06; migrazione = primo
                        numero libero al merge, oggi 0019; prima le tre
                        domande all'utente)                     ADR-0222
-
-Lago di Ledro e sette laghi scartati
-  └─ Adesso  TASK-250  Ledro nell'elenco dei laghi e i sette scartati
-                       (preferire il catalogo al motore; l'acqua sul
-                       server con l'ok dell'utente)            ADR-0214
 
 Mappe offline: parte B pubblicata
   └─ Dopo    TASK-214 D  La prova sull'iPhone: le zone del telefono
@@ -111,11 +99,15 @@ SITO WEB (già «Sezione merchandising magliette»)
 Chiuse il 2026-10-05/06: TASK-226, 228, 233, 211 B, 235, 236, 234, 214
 (A2, B2, B2b), 238, 239, 240, 241 (A–G), 242, 243, 244, 245 (A, B), 246,
 247, 248 (A, B), 249, 251 (A, B), 252, 253, 183, 184, 185, 182 (A–D), 232
-(A, B, B2, C). Sessioni chiuse o libere: «Impostazioni utente e
-notifiche», «Sezione Near me con città vicine», «Forme inclinate e
-distanza ottimale», «Download mappe e figure padel all'installazione»,
-«Possibilità di alzare la penna per la bocca», «Unità di misura velocità
-Kayak/Padel», «Posizionamento figura sezione padel».
+(A, B, B2, C), 254 (#407), 255 (#403), 256 (#408), 257 (#400), 250 (#406:
+l'acqua di Ledro è sul server, Ledro nell'elenco dell'API aspetta
+l'aggiornamento del server). Sessioni chiuse o libere: «Impostazioni
+utente e notifiche», «Sezione Near me con città vicine», «Forme inclinate
+e distanza ottimale», «Download mappe e figure padel all'installazione»,
+«Possibilità di alzare la penna per la bocca», «Posizionamento figura
+sezione padel», «Revisione e miglioramento App», «Add lakes and seas to
+Draw's "Another place" with Paddle», «Nuovo task», «Lago di Ledro e sette
+laghi scartati».
 
 Da assegnare (task file in `main`)
   ├─ TASK-208 B  La fine corsa stile Strava, dopo le conferme
@@ -134,15 +126,18 @@ Sistema pubblicitario non invasivo
   └─ Aspetta il «fatto» dell'utente su TASK-150 (pagamenti AdMob)
 
 Aspettano l'utente
-  ├─ TASK-255: la pausa quando l'app va in secondo piano (proposta:
-  │  solo se in secondo piano **e** senza posizioni per 60 s) · TASK-257:
-  │  i testi · TASK-258: le tre domande · TASK-251: i testi delle cinque
-  │  lingue (già pubblicati) · TASK-184: i segnaposto di «Terms» e
-  │  «Privacy» · TASK-237: i testi in inglese
-  ├─ La prova sull'iPhone di `1541decf`: la mappa girata (Draw, corsa,
-  │  Explore, i disegni salvati), le unità del kayak, la navigazione che
-  │  non salta, le code sul telefono, il punto giusto di Tenna e
-  │  Calceranica, più tutto il 2026-10-05
+  ├─ L'ok per il server: Ledro nell'elenco dell'API (#406, `main`
+  │  `938c70d`) e, dopo il merge, TASK-258 (migrazione nuova)
+  ├─ TASK-258: le tre domande · TASK-251: i testi delle cinque lingue
+  │  (già pubblicati) · TASK-184: i segnaposto di «Terms» e «Privacy» ·
+  │  TASK-237: i testi in inglese
+  ├─ La prova sull'iPhone di `37310f11`: gli errori che parlano a chi
+  │  corre e «Try again» (TASK-256), la corsa rifiutata con il motivo
+  │  (TASK-257), lo schermo acceso e la pausa in secondo piano
+  │  (TASK-255), le dodici correzioni piccole (TASK-254), Ledro in
+  │  «Paddle» (TASK-250), la mappa girata, le unità del kayak, la
+  │  navigazione che non salta, le code sul telefono, più tutto il
+  │  2026-10-05
   ├─ Strava: spento per scelta dell'utente del 2026-10-05 («teniamo solo
   │  Instagram per ora»); per riaccenderlo, `DEPLOY.md` «Strava»
   ├─ TASK-236: la regola dei quattro paesi e i tre testi · TASK-237: il
@@ -198,11 +193,8 @@ Da assegnare
 
 | File | Di chi |
 |---|---|
-| `navigation/useRunAwake.ts`, `useNavigation.ts`, `useFreeRun.ts`, `trackRecorder.ts`, `trackStore.ts`, `RunDashboard.tsx`, `RunPanel.tsx` | TASK-255 (#403) |
-| `route/problems.ts`, `account/messages.ts`, `useRouteRequest.ts`, `RoutePanel.tsx`, `map/MapView.tsx`, `src/intro/` (nuovo) | TASK-256 |
-| `activities/outbox.ts`, `activitiesDoor.ts`, `ActivitiesList.tsx`, `RunEnd.tsx` | TASK-257 (#400) |
 | `activities.py` (il post), `share/*`, la migrazione nuova | TASK-258 |
-| `lake_catalog.py`, `lakes.json` (forse `route_engine/water.py`: prima chiedere) | TASK-250 |
+| `route/ImageChoice.tsx`, `navigation/NavigateScreen.tsx`, `FreeRunScreen.tsx`, `ChooseScreen.tsx` (`MapError`), `i18n/*` (le righe nuove) | TASK-259 |
 | `site/`, `docs/SITO.md`, `.github/workflows/site.yml` | TASK-237 |
 | `deploy/`, `docs/DEPLOY.md` | TASK-122 (in attesa dello Storage Box) |
 | `docs/PUBBLICITA.md` | TASK-150 |
@@ -211,8 +203,8 @@ Da assegnare
 
 ## Numeri
 
-- Task: presi fino a **TASK-258**. Il prossimo libero è **TASK-259**.
-- ADR: presi fino a **ADR-0222** (0183 TASK-220, 0184 TASK-221, 0185
+- Task: presi fino a **TASK-259**. Il prossimo libero è **TASK-260**.
+- ADR: presi fino a **ADR-0223** (0183 TASK-220, 0184 TASK-221, 0185
   TASK-223, 0186 TASK-224, 0187 TASK-225, 0188 TASK-226, 0189 TASK-227,
   0190 TASK-228, 0191 TASK-229, 0192 TASK-230, 0193 TASK-119, 0194
   TASK-231, 0195 TASK-232, 0196 TASK-233, 0197 TASK-234, 0198 TASK-235, 0199
@@ -221,9 +213,9 @@ Da assegnare
   0208 TASK-242, 0209 TASK-243, 0210 TASK-245, 0211 TASK-246, 0212
   TASK-248, 0213 TASK-249, 0214 TASK-250, 0215 TASK-251, 0216 TASK-252,
   0217 TASK-253, 0218 TASK-254, 0219 TASK-255, 0220 TASK-256, 0221
-  TASK-257, 0222 TASK-258; TASK-244 e TASK-247 sono aggiunte ad ADR-0202
-  e ADR-0207; 0149 TASK-182 e 0150 TASK-183 tenuti da prima). Il prossimo
-  libero è **ADR-0223**.
+  TASK-257, 0222 TASK-258, 0223 TASK-259 (se serve); TASK-244 e TASK-247
+  sono aggiunte ad ADR-0202 e ADR-0207; 0149 TASK-182 e 0150 TASK-183
+  tenuti da prima). Il prossimo libero è **ADR-0224**.
 - Migrazioni in `main`: 0001 account, 0002 preferiti, 0003 corse, 0004
   Strava, 0005 foto, 0006 penna alzata, 0007 profili, 0008 attività nei
   preferiti, 0009 corse pubblicate, 0010 canoa nei preferiti, 0011
@@ -242,10 +234,13 @@ Da assegnare
   in `/me/activities`, la rotazione nei percorsi salvati e nel catalogo.
   `draw_examples` finito («70 of 72»: a Tenna il cuore e a Calceranica il
   cerchio non si disegnano su quelle strade). Zone del telefono: 528
-  file. Acqua della canoa: 247 file, 93 MB. Strava spento per scelta
-  dell'utente.
-- **App**: su `preview` da `main` `f41eaea` (gruppo `1541decf`,
-  2026-10-06): tutto `main`. **Dal 2026-10-05 il coordinatore pubblica da
+  file. Acqua della canoa: 248 file (il Lago di Ledro dal 2026-10-06,
+  TASK-250, con il Garda riscritto; quello di prima in
+  `data/cache/water/before-task250/`). **Manca** Ledro nell'elenco dei
+  laghi dell'API (#406): aspetta l'ok dell'utente. Strava spento per
+  scelta dell'utente.
+- **App**: su `preview` da `main` `938c70d` (gruppo `37310f11`,
+  2026-10-06 ~10:50Z): tutto `main`. **Dal 2026-10-05 il coordinatore pubblica da
   solo le cose di sola app** appena sono in `main` e il job `mobile` è
   verde (ok dell'utente: «sì, pubblica sempre le cose di sola app»); per
   il server l'ok si chiede ogni volta. Una PR la cui app vuole qualcosa

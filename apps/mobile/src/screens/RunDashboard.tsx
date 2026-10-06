@@ -20,7 +20,7 @@ import {
 } from "react-native";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 
-import { t } from "../i18n";
+import { t, tLater } from "../i18n";
 import { openMusic } from "../navigation/music";
 import {
   pauseRun,
@@ -194,7 +194,10 @@ function Kilometres({
     <View
       style={styles.km}
       accessible
-      accessibilityLabel={`Distance: ${numbers.km} ${numbers.units}`}
+      accessibilityLabel={t("Distance: {distance} {units}", {
+        distance: numbers.km,
+        units: numbers.units,
+      })}
     >
       <Text
         style={hero ? styles.kmHero : styles.kmNumber}
@@ -243,9 +246,9 @@ function RunButtons({
       style={styles.small}
       onPress={onPocket}
       accessibilityRole="button"
-      accessibilityLabel="Pocket mode"
+      accessibilityLabel={t("Pocket mode")}
     >
-      <Text style={styles.pillText}>Pocket</Text>
+      <Text style={styles.pillText}>{t("Pocket")}</Text>
     </Pressable>
   );
   if (arrived || !live || (!started && !paused)) {
@@ -254,7 +257,7 @@ function RunButtons({
         {live && !arrived && pocket}
         <Pressable style={styles.pill} onPress={onStop} accessibilityRole="button">
           {/* Both end the run and, along a route, show its score (TASK-113). */}
-          <Text style={styles.pillText}>{arrived ? "Finish" : "Stop"}</Text>
+          <Text style={styles.pillText}>{arrived ? t("Finish") : t("Stop")}</Text>
         </Pressable>
       </View>
     );
@@ -268,7 +271,7 @@ function RunButtons({
             <View style={styles.chipBar} />
           </View>
           <Text style={styles.pausedText} accessibilityLiveRegion="polite">
-            {auto ? "Paused: you stopped moving" : "Paused"}
+            {auto ? t("Paused: you stopped moving") : t("Paused")}
           </Text>
         </View>
         <View style={styles.rounds}>
@@ -278,11 +281,11 @@ function RunButtons({
               style={[styles.circle, styles.resume]}
               onPress={resumeRun}
               accessibilityRole="button"
-              accessibilityLabel="Resume"
+              accessibilityLabel={t("Resume")}
             >
               <View style={styles.play} />
             </Pressable>
-            <Text style={styles.roundLabel}>Resume</Text>
+            <Text style={styles.roundLabel}>{t("Resume")}</Text>
           </View>
         </View>
       </View>
@@ -291,7 +294,7 @@ function RunButtons({
   return (
     <View style={styles.running}>
       <View style={styles.side}>
-        <SideButton label="Pocket" a11yLabel="Pocket mode" onPress={onPocket}>
+        <SideButton label={t("Pocket")} a11yLabel={t("Pocket mode")} onPress={onPocket}>
           <PhoneIcon />
         </SideButton>
       </View>
@@ -300,19 +303,19 @@ function RunButtons({
           style={[styles.circle, styles.pause]}
           onPress={pauseRun}
           accessibilityRole="button"
-          accessibilityLabel="Pause"
+          accessibilityLabel={t("Pause")}
         >
           <View style={styles.bars}>
             <View style={styles.bar} />
             <View style={styles.bar} />
           </View>
         </Pressable>
-        <Text style={styles.roundLabel}>Pause</Text>
+        <Text style={styles.roundLabel}>{t("Pause")}</Text>
       </View>
       <View style={[styles.side, styles.sideEnd]}>
         <SideButton
-          label="Music"
-          a11yHint="Opens Spotify"
+          label={t("Music")}
+          a11yHint={t("Opens Spotify")}
           onPress={() => void openMusic()}
         >
           <Text style={styles.note}>♪</Text>
@@ -372,8 +375,8 @@ function PhoneIcon() {
 export const PAGE_TAB_HEIGHT = MIN_TAP_SIZE + space.md;
 
 const PAGES: readonly { page: RunPage; title: string }[] = [
-  { page: "map", title: "Map" },
-  { page: "data", title: "Data" },
+  { page: "map", title: tLater("Map") },
+  { page: "data", title: tLater("Data") },
 ];
 
 /**
@@ -399,10 +402,10 @@ function PageTabs({
             onPress={() => onPage(each.page)}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
-            accessibilityLabel={each.title}
+            accessibilityLabel={t(each.title)}
           >
             <Text style={[styles.tabText, selected && styles.tabTextSelected]}>
-              {each.title}
+              {t(each.title)}
             </Text>
           </Pressable>
         );
@@ -514,8 +517,12 @@ function DataPage({
           units={numbers.units}
         />
         <View style={styles.switches}>
-          <Switch label="Auto-pause" on={control.autoPause} onChange={setAutoPause} />
-          <Switch label="Voice" on={control.voice} onChange={setVoice} />
+          <Switch
+            label={t("Auto-pause")}
+            on={control.autoPause}
+            onChange={setAutoPause}
+          />
+          <Switch label={t("Voice")} on={control.voice} onChange={setVoice} />
         </View>
         <VoiceSetting />
         {buttons}
@@ -576,7 +583,7 @@ function splitName(row: Split, ride: boolean, paddle: boolean, units: Units): st
   }
   return ride
     ? t("Kilometre {km}: {speed} km/h", { km: row.km, speed: splitSpeed(row, ride) })
-    : `Kilometre ${row.km}: ${paceClock(row.seconds)}`;
+    : t("Kilometre {km}: {pace}", { km: row.km, pace: paceClock(row.seconds) });
 }
 
 /** Each whole kilometre, its pace, and how it went against the one before;
@@ -604,13 +611,13 @@ function Splits({
     <View style={styles.splits}>
       <View style={styles.splitRow}>
         <Text style={[styles.splitHead, nameStyle]}>
-          {paddle ? "m" : units === "mi" ? t("Mi") : "Km"}
+          {paddle ? "m" : units === "mi" ? t("Mi") : t("Km")}
         </Text>
         <View style={styles.splitBarCell} />
         <Text style={[styles.splitHead, styles.splitCell]}>
-          {ride ? t("Speed") : paddle ? PADDLE_PACE_UNIT : "Pace"}
+          {ride ? t("Speed") : paddle ? PADDLE_PACE_UNIT : t("Pace")}
         </Text>
-        <Text style={[styles.splitHead, styles.splitCell]}>Change</Text>
+        <Text style={[styles.splitHead, styles.splitCell]}>{t("Change")}</Text>
       </View>
       {rows.length === 0 ? (
         <Text style={styles.noSplits}>
@@ -618,7 +625,7 @@ function Splits({
             ? t("Your first 500 metres will show here.")
             : units === "mi"
               ? t("Your first mile will show here.")
-              : "Your first kilometre will show here."}
+              : t("Your first kilometre will show here.")}
         </Text>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>

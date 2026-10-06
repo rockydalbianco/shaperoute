@@ -3,7 +3,10 @@ import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { type Navigation, remainingM, upcoming } from "../navigation/navigator";
-import { ARROWS, distanceLabel, instruction, thenText } from "../navigation/phrases";
+import { t } from "../i18n";
+import { useLanguage } from "../i18n/useLanguage";
+import { ARROWS, distanceLabel } from "../navigation/phrases";
+import { wordsOf } from "../voice/words";
 import { compassPoint, headingDeg, share } from "../navigation/runStats";
 import { emptyTrack, type Track } from "../navigation/trackRecorder";
 import type { NavigationState } from "../navigation/useNavigation";
@@ -44,7 +47,7 @@ export function NavigationBanner({ state }: { state: NavigationState }) {
   if (state.status === "starting") {
     return (
       <View style={styles.banner}>
-        <Text style={styles.message}>Finding your position…</Text>
+        <Text style={styles.message}>{t("Finding your position…")}</Text>
       </View>
     );
   }
@@ -52,7 +55,7 @@ export function NavigationBanner({ state }: { state: NavigationState }) {
   if (navigation.arrived) {
     return (
       <View style={styles.banner}>
-        <Text style={styles.instruction}>You have arrived.</Text>
+        <Text style={styles.instruction}>{t("You have arrived.")}</Text>
       </View>
     );
   }
@@ -78,13 +81,16 @@ export function NavigationBanner({ state }: { state: NavigationState }) {
 }
 
 function NextTurn({ navigation }: { navigation: Navigation }) {
-  // The way to the turn in the app's units (TASK-182): metres, or feet.
+  // The way to the turn in the app's units (TASK-182): metres, or feet,
+  // and its words in the app's language (TASK-210): the voice's phrasebook
+  // writes the banner too, so a street is said and shown the same way.
   const units = useUnits();
+  const words = wordsOf(useLanguage(), units);
   if (navigation.offRoute) {
     return (
       <View style={[styles.box, styles.off]}>
-        <Text style={styles.instruction}>Off the route</Text>
-        <Text style={styles.message}>Head back to the yellow line.</Text>
+        <Text style={styles.instruction}>{t("Off the route")}</Text>
+        <Text style={styles.message}>{t("Head back to the yellow line.")}</Text>
       </View>
     );
   }
@@ -92,7 +98,7 @@ function NextTurn({ navigation }: { navigation: Navigation }) {
   if (next === null) {
     return (
       <View style={styles.box}>
-        <Text style={styles.instruction}>Follow the route to the end.</Text>
+        <Text style={styles.instruction}>{t("Follow the route to the end.")}</Text>
       </View>
     );
   }
@@ -106,11 +112,15 @@ function NextTurn({ navigation }: { navigation: Navigation }) {
         </View>
         <View style={styles.words}>
           <Text style={styles.distance}>{distanceLabel(next.inM, units)}</Text>
-          <Text style={styles.instruction}>{instruction(next.direction)}</Text>
+          <Text style={styles.instruction}>{words.direction(next.direction)}</Text>
         </View>
       </View>
       {next.then.length > 0 && (
-        <Text style={styles.message}>{thenText(next.then)}</Text>
+        <Text style={styles.message}>
+          {t("Then {directions}", {
+            directions: lower(words.announcement(next.then, null)),
+          })}
+        </Text>
       )}
     </View>
   );
@@ -148,7 +158,7 @@ export function NavigationCard({
       heading={
         navigation === null ? undefined : arrived ? (
           <View style={styles.box}>
-            <Text style={styles.instruction}>You have arrived.</Text>
+            <Text style={styles.instruction}>{t("You have arrived.")}</Text>
           </View>
         ) : (
           <NextTurn navigation={navigation} />
@@ -240,3 +250,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.small,
   },
 });
+
+/** "Turn right…" as "turn right…": after "Then". */
+function lower(words: string): string {
+  return words.charAt(0).toLowerCase() + words.slice(1);
+}

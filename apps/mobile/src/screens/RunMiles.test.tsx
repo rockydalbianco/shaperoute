@@ -316,7 +316,7 @@ test("in Italian, the miles' own names", async () => {
   jest.mocked(appLanguage).mockReturnValue("it");
   try {
     await render(<LiveRun fixes={north(3700, 300, 360)} />);
-    await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+    await fireEvent.press(screen.getByRole("tab", { name: "Dati" }));
     expect(screen.getByLabelText("Ultimo mi: 9:39 /mi")).toBeOnTheScreen();
     expect(screen.getByText("miglia")).toBeOnTheScreen();
     expect(screen.getByLabelText("Miglio 2: 9:39, +1:37")).toBeOnTheScreen();
@@ -329,12 +329,12 @@ test("in Italian before the first mile, and by bike", async () => {
   jest.mocked(appLanguage).mockReturnValue("it");
   try {
     const view = await render(<LiveRun fixes={north(1450, 300)} />);
-    await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+    await fireEvent.press(screen.getByRole("tab", { name: "Dati" }));
     expect(screen.getByText("Il tuo primo miglio apparirà qui.")).toBeOnTheScreen();
     await view.unmount();
     clearRun();
     await render(<LiveRun fixes={north(3700, 150, 180)} activity="cycling" />);
-    await fireEvent.press(screen.getByRole("tab", { name: "Data" }));
+    await fireEvent.press(screen.getByRole("tab", { name: "Dati" }));
     expect(screen.getByLabelText("Miglio 2: 12.4 mph, -2.5")).toBeOnTheScreen();
     expect(screen.getByLabelText("Ultimo mi: 12.4 mph")).toBeOnTheScreen();
   } finally {

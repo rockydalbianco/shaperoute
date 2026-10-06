@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { FreeRun } from "../navigation/freeRun";
 import { isPaddle } from "../navigation/paddle";
+import { t } from "../i18n";
 import { distanceLabel } from "../navigation/phrases";
 import {
   AT_START_M,
@@ -67,15 +68,18 @@ function StartPointer({
   if (start === null) {
     return (
       <View style={box}>
-        <Text style={styles.message}>Finding your position…</Text>
+        <Text style={styles.message}>{t("Finding your position…")}</Text>
       </View>
     );
   }
-  const headingText = heading === null ? null : `Heading ${compassWords(heading)}`;
+  const headingText =
+    heading === null
+      ? null
+      : t("Heading {direction}", { direction: t(compassWords(heading)) });
   if (start.distanceM < AT_START_M) {
     return (
       <View style={box}>
-        <Text style={styles.title}>You are at your start</Text>
+        <Text style={styles.title}>{t("You are at your start")}</Text>
         {headingText && <Text style={styles.message}>{headingText}</Text>}
       </View>
     );
@@ -87,10 +91,13 @@ function StartPointer({
     <View
       style={box}
       accessible
-      accessibilityLabel={
-        `Your start: ${distanceLabel(start.distanceM, units)} in a straight line, ` +
-        `to the ${compassWords(start.bearing)}`
-      }
+      accessibilityLabel={t(
+        "Your start: {distance} in a straight line, to the {direction}",
+        {
+          distance: distanceLabel(start.distanceM, units),
+          direction: t(compassWords(start.bearing)),
+        },
+      )}
     >
       <View style={styles.row}>
         <View style={styles.badge}>
@@ -103,7 +110,7 @@ function StartPointer({
         </View>
         <View style={styles.words}>
           <Text style={styles.distance}>{distanceLabel(start.distanceM, units)}</Text>
-          <Text style={styles.title}>Your start, in a straight line</Text>
+          <Text style={styles.title}>{t("Your start, in a straight line")}</Text>
           {headingText && <Text style={styles.message}>{headingText}</Text>}
         </View>
       </View>
@@ -142,8 +149,8 @@ export function FreeRunCard({
 export function FreeFinishBanner() {
   return (
     <View style={styles.banner}>
-      <Text style={styles.title}>Your run</Text>
-      <Text style={styles.message}>White: what you ran.</Text>
+      <Text style={styles.title}>{t("Your run")}</Text>
+      <Text style={styles.message}>{t("White: what you ran.")}</Text>
     </View>
   );
 }
@@ -166,7 +173,10 @@ export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
   const total = runDistanceLabel(track.distanceM, numbers.units);
   return (
     <View style={styles.finish}>
-      <Text style={styles.total} accessibilityLabel={`Distance: ${total}`}>
+      <Text
+        style={styles.total}
+        accessibilityLabel={t("Distance: {distance}", { distance: total })}
+      >
         {total}
       </Text>
       <RunGrid numbers={numbers} />
@@ -179,12 +189,12 @@ export function FreeFinishCard({ run, onResume, onDone }: FinishProps) {
             onPress={onResume}
             accessibilityRole="button"
           >
-            <Text style={styles.buttonText}>Keep running</Text>
+            <Text style={styles.buttonText}>{t("Keep running")}</Text>
           </Pressable>
         )}
         {onDone && (
           <Pressable style={styles.button} onPress={onDone} accessibilityRole="button">
-            <Text style={styles.buttonText}>Done</Text>
+            <Text style={styles.buttonText}>{t("Done")}</Text>
           </Pressable>
         )}
       </View>

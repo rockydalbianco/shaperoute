@@ -1,5 +1,6 @@
 import type { Direction, Turn } from "@shaperoute/shared-types";
 
+import { decimal } from "../i18n";
 import { milesBannerLabel } from "../units/runFormat";
 import { appUnits, type Units } from "../units/units";
 
@@ -87,7 +88,7 @@ export function distanceLabel(metres: number, units: Units = appUnits()): string
     return milesBannerLabel(metres);
   }
   if (metres >= 1000) {
-    return `${(metres / 1000).toFixed(1)} km`;
+    return `${decimal(metres / 1000)} km`;
   }
   return `${roundMetres(metres)} m`;
 }

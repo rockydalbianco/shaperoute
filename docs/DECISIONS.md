@@ -12294,3 +12294,71 @@ ogni partenza; un posto senza `away_m` non si scarta più. I guard `isApiError` 
 `isRouteJob` accettano codici e stati come stringhe qualsiasi: chi li usa
 ha già un ramo generico. Un profilo nuovo sul server (una forma nuova)
 arriva all'app vecchia senza aggiornarla.
+
+## ADR-0214 — Un lago che la mappa segna come stagno entra nell'elenco di «Paddle» scritto come lago nel suo file d'acqua, senza cambiare il motore
+**Stato**: Attiva · 2026-10-06 · deciso dall'agente su delega dell'utente
+(TASK-250), dentro i confini del coordinatore: Ledro entra senza toccare
+il motore, se si può. Numero dal coordinatore (il primo libero dopo
+TASK-249).
+
+**Contesto**: il Lago di Ledro (2,1 km², 655 m) manca dall'elenco dei
+laghi di «Explore» con «Paddle» (TASK-233, ADR-0196): in OpenStreetMap è
+`water=pond` dal 2023 (relazione 1400447, versioni 17–19; prima era
+`water=lake`), e il motore pagaia solo su `natural=water` senza `water` o
+con `lake` o `reservoir` (`water.is_lake`). Su uno stagno il motore dice
+«there is no lake or sea to paddle on». In Italia gli stagni sopra 10 ha
+sono 32, quasi tutti stagni veri (Molentargius, Santa Caterina, Pantano
+Longarini); sei hanno un nome da lago, e solo Ledro è largo abbastanza
+per una forma. Cambiare `is_lake` vorrebbe dire un aggiornamento del
+server e il ridisegno degli esempi (`draw_examples`, 35 minuti).
+
+**Decisione**:
+
+1. **Uno stagno con un nome da lago è un lago dell'elenco**
+   (`lake_catalog.named_pond`): `water=pond`, un nome che dice «lago»
+   (la stessa regola dei laghi senza `water`), e niente di quello per cui
+   `is_lake` lo terrebbe fuori comunque (porto, `amenity`). Poi le regole
+   di sempre: largo per un cerchio da 1 km, e provato dal motore.
+2. **Il motore non cambia: cambia il file d'acqua.** `lake_catalog
+   --ponds` riscrive come `water=lake`, nei file d'acqua di una cartella,
+   gli stagni dell'elenco, e tiene quello che dice la mappa in
+   `water:osm=pond`. Solo quegli elementi; un file che non li ha non è
+   riscritto; rifatto, non cambia niente. Il motore legge i file e
+   pagaia su Ledro come su ogni lago; lo stesso file serve «Explore»,
+   «Draw» e «Another place».
+3. **I file sono due**: quello nuovo di Ledro
+   (`water_45.84170_10.69460_45.91630_10.81050.json`, 0,5 MB) e quello
+   del Garda di TASK-233 (`water_45.41050_10.46120_45.92020_10.91900.json`),
+   che contiene Ledro e serve le richieste più lunghe (da 3 a 5 km): senza
+   riscriverlo, da 3 km in su Ledro tornerebbe «no lake». Riscritto, i
+   percorsi del Garda vicino a Ledro sono gli stessi, punto per punto (192
+   su 192: i 12 punti del Garda entro 15 km, otto forme, 2 e 5 km).
+4. **Il comando dice perché un lago resta fuori**, con le parole del
+   motore, per il primo punto: serve a capire i laghi scartati senza
+   rifare le prove a mano.
+
+**Alternative scartate**:
+
+- *Cambiare `water.is_lake`*: la regola più pulita (vale anche per un
+  download da Overpass, e per un altro lago che la mappa segnasse così),
+  ma costa un aggiornamento del server con il ridisegno degli esempi per
+  un lago solo. Da fare insieme a un altro cambio del motore; allora
+  `--ponds` non serve più e i file riscritti restano giusti.
+- *Correggere OpenStreetMap* (Ledro di nuovo `water=lake`): è la cura
+  vera e l'estratto successivo lo avrebbe, ma è una modifica pubblica, con
+  l'account di qualcuno. Proposta all'utente, non fatta.
+- *Un elenco di eccezioni nel motore* («Lago di Ledro è un lago»): un
+  nome scritto nel codice del motore, e comunque un aggiornamento del
+  server.
+
+**Conseguenze**:
+
+- L'acqua del server va riscritta in due file, con l'ok dell'utente:
+  copiare il file nuovo di Ledro e quello del Garda riscritto, senza
+  riavvio. Fino ad allora l'app pubblicata con Ledro nell'elenco
+  direbbe «no lake» toccandolo: la pubblicazione viene dopo.
+- Un download da Overpass dell'area di Ledro scriverebbe un file nuovo con
+  lo stagno: sul server non succede (Overpass rifiuta il server, e un file
+  che copre la richiesta c'è già).
+- Se l'estratto si rifà, `--ponds` va rilanciato dopo i file d'acqua
+  (`MAPS.md`, «I laghi di Explore»).

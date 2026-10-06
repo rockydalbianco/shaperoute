@@ -1,6 +1,6 @@
 # TASK-256 — Gli errori parlano a chi corre
 
-**Stato**: In lavorazione (PR aperta il 2026-10-06)
+**Stato**: Done (PR #408, merge `e24c79f3`, 2026-10-06)
 **Fase**: 4 · **Branch**: `feat/TASK-256-errors-for-runners` (nome dal
 brief del coordinatore)
 
@@ -137,7 +137,10 @@ docs/UI.md, docs/STATUS.md, docs/DECISIONS.md (le righe di questo task)
 
 ## Esito
 
-Fatto il 2026-10-06 (ADR-0220), in attesa di merge:
+Fatto il 2026-10-06 (ADR-0220): PR #408 mergiata (`e24c79f3`), CI 5/5
+verde, job `mobile` pass in 1m46s; testi nelle cinque lingue approvati
+dall'utente il 2026-10-06. Solo app: la pubblicazione su `preview` è del
+coordinatore.
 
 - Punti 1–4, 6 fatti. Punto 5 («Open Settings» accanto a fotocamera e
   posizione negate) **non fatto**: i testi stanno in `ImageChoice.tsx`

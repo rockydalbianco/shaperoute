@@ -127,11 +127,14 @@ In coda, dopo o accanto:
   prima `shaperoute-api:before-task232c`, copia del database
   `shaperoute-2026-10-06T0723Z.dump`; `draw_examples` finito («70 of 72»:
   a Tenna il cuore e a Calceranica il cerchio non si disegnano). Zone del
-  telefono: 528 file. Acqua della canoa: 247 file, 93 MB. **App** su
-  `preview` da `main` `f41eaea` (gruppo `1541decf`): tutto `main`, fino
-  ai disegni salvati girati (TASK-232 C), alla navigazione che non salta
-  (TASK-253) e alle code sul telefono (TASK-252). **Da provare
-  sull'iPhone.** Strava spento per scelta dell'utente.
+  telefono: 528 file. Acqua della canoa: 248 file (Ledro dal 2026-10-06,
+  TASK-250). **Manca sul server** Ledro nell'elenco dei laghi dell'API
+  (#406): aspetta l'ok dell'utente. **App** su `preview` da `main`
+  `938c70d` (gruppo `37310f11`, 2026-10-06 ~10:50Z): tutto `main`, fino
+  agli errori che parlano a chi corre (TASK-256), alla corsa rifiutata
+  con il motivo (TASK-257), allo schermo acceso in corsa (TASK-255), alle
+  dodici correzioni piccole (TASK-254) e a Ledro in «Paddle» (TASK-250).
+  **Da provare sull'iPhone.** Strava spento per scelta dell'utente.
 - **Più veloce, ma con percorsi diversi** (TASK-203, da decidere
   dall'utente con campioni da più città): saltare la ricerca lontana
   quando la vicina ha già un percorso, o dimezzarla (`FAR_TRACES` 20→10),
@@ -145,24 +148,6 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## In lavorazione
 
-- **TASK-256 — Gli errori parlano a chi corre** (ADR-0220; dalla revisione
-  dell'app, «sì» dell'utente del 2026-10-06). Branch
-  `feat/TASK-256-errors-for-runners`, solo app. I messaggi di «Draw» e
-  dell'account riscritti per chi corre nelle cinque lingue («No
-  connection. Check the network and try again.», «Something went wrong on
-  our side…», «Update the app» per la chiave rifiutata), il dettaglio
-  tecnico solo nelle build di sviluppo; «Try again» sotto l'errore di
-  «Draw route» che rimanda la stessa richiesta (`useRouteRequest.retry()`,
-  `onRetry` su `RouteOutcome`); `AppBoundary` attorno all'app (giallo,
-  logo, «Something went wrong.», «Try again»); «Retry» sulla mappa che non
-  carica, ricarica anche al ritorno in primo piano, `onError(null)` quando
-  carica; due righe in `App.tsx` (`retry` → `onRetry`, ok del
-  coordinatore). **PR #408 aperta**; aspetta il sì dell'utente sui testi
-  nelle cinque lingue e il «merge» del coordinatore, dopo la #407
-  (TASK-254). Seguiti senza numero: «Open
-  Settings» accanto a fotocamera/posizione negate (`ImageChoice.tsx`,
-  `NavigateScreen`, `FreeRunScreen`), la riga rossa di `ChooseScreen`
-  («reopen the app») da riscrivere. `tasks/TASK-256.md`.
 - **TASK-251 — «Paddle»: velocità in km/h e andatura in min/500 m**
   (ADR-0215; chiesto dall'utente il 2026-10-06, unità scelte da lui).
   **Parte A, solo app**, in `main` (PR #383, merge `bf859e0`, 2026-10-06),
@@ -569,20 +554,36 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   MB al giorno per telefono e 300 GB in tutto; oltre, `429` con
   `Retry-After` fino alla mezzanotte UTC, e l'app non ne chiede altre fino
   ad allora. Conteggio in memoria: un riavvio lo rimette a zero. Sul
-  server dal 2026-10-05, 08:54Z. **Parte B2**, le zone in più, in `main`
-  dalla #337 (`f3fdbce`, 2026-10-05, non pubblicata): finite le zone
-  intorno al telefono, una alla volta, quelle dei paesi vicini
-  (`/nearby-cities` di TASK-236: la B2b, in PR), delle città scelte per
-  ultime in «Explore» e delle 14 in evidenza, dalla più vicina, con
-  `prefetch=1`, fino a 2 GB; un giro intero al giorno. Il server ha A2 dalle 08:54Z;
-  meglio pubblicare dopo aver scritto lì le zone del telefono (se no la
-  prima richiesta di ogni zona la fa scrivere, ~50 s per Milano).
-  **Dopo**: D, la prova sull'iPhone, con le zone del telefono sul server.
-  Niente server né pubblicazione senza l'ok dell'utente. Da dove
+  server dal 2026-10-05, 08:54Z. **Parte B2**, le zone in più, dalla
+  #337 (`f3fdbce`) e **B2b**, i paesi vicini, dalla #341 (`a9ca8f6`):
+  finite le zone intorno al telefono, una alla volta, quelle dei paesi
+  vicini (`/nearby-cities`), delle città scelte per ultime in «Explore» e
+  delle 14 in evidenza, dalla più vicina, con `prefetch=1`, fino a 2 GB;
+  un giro intero al giorno. **Le zone del telefono sono sul server** dal
+  2026-10-05 (521 file, 2,6 GB, 82 minuti), e B2/B2b su «preview» da
+  `7a9506a`: il telefono disegna da sé. **Resta D**, la prova
+  sull'iPhone, che è dell'utente e fissa i limiti di distanza. Da dove
   riprendere: `tasks/TASK-214.md`, «Esito».
 
 ## Completato
 
+- **App** — TASK-256: gli errori parlano a chi corre (ADR-0220; dalla
+  revisione dell'app, «sì» dell'utente del 2026-10-06, testi nelle cinque
+  lingue approvati dall'utente). PR #408, merge `e24c79f3`, 2026-10-06. I
+  messaggi di «Draw» e dell'account riscritti per chi corre («No
+  connection. Check the network and try again.», «Something went wrong on
+  our side…», «Update the app» per la chiave rifiutata e per una build
+  senza indirizzo), il dettaglio tecnico solo nelle build di sviluppo;
+  «Try again» sotto l'errore di «Draw route» rimanda la stessa richiesta
+  (`useRouteRequest.retry()`, `onRetry` su `RouteOutcome`, due righe in
+  `App.tsx`); `AppBoundary` attorno all'app in `Root.tsx` (giallo, logo,
+  «Something went wrong.», «Try again»); «Retry» sulla mappa che non
+  carica, ricarica anche al ritorno in primo piano, `onError(null)` quando
+  carica. Solo app: **la pubblicazione su `preview` è del coordinatore**.
+  Seguiti senza numero, nel task file: «Open Settings» accanto a
+  fotocamera/posizione negate (`ImageChoice.tsx`, `NavigateScreen`,
+  `FreeRunScreen`), la riga rossa di `ChooseScreen.MapError` («reopen the
+  app») da riscrivere. `tasks/TASK-256.md`.
 - **App** — TASK-254: le correzioni piccole della revisione (ADR-0218;
   dalla revisione del codice dell'app del 2026-10-06, «sì» dell'utente).
   Dodici difetti piccoli, ognuno con il suo test, solo app, niente da
@@ -761,6 +762,21 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `out/task184/`); esce con la prossima pubblicazione; da provare
   sull'iPhone lo scorrimento e il «←». Chi cambia cosa l'app manda o tiene (TASK-208 B, TASK-092)
   aggiorna anche «Privacy».
+
+- **App e API** — TASK-250: il Lago di Ledro nell'elenco di «Paddle»
+  (ADR-0214; chiesto dall'utente il 2026-10-06, seguito di TASK-233). In
+  OpenStreetMap Ledro è `water=pond` dal 2023, e su uno stagno il motore
+  non pagaia: ora uno stagno con un nome da lago è un lago dell'elenco, e
+  `lake_catalog --ponds` lo scrive come lago nei file d'acqua; **il motore
+  non cambia**. `lakes.json` ha due punti di Ledro a 2 km, con tutte e otto
+  le forme. I sette laghi scartati restano fuori: sei non hanno una via
+  alla riva nei dati, Gannano tiene a 1 km solo la stella (tabella in
+  `tasks/TASK-250.md`). **L'acqua è sul server dal 2026-10-06** (Ledro
+  nuovo, Garda riscritto, il vecchio in `before-task250/`; senza riavvio):
+  un cuore da 2 km da Ledro e uno da Riva rispondono 200 dentro l'API. Esce
+  con la pubblicazione del coordinatore. **Aspettano l'utente**: se
+  riportare Ledro a `water=lake` in OpenStreetMap; se togliere i cinque
+  laghi segnati `boat=no` o `access=private`.
 
 - **App** — TASK-245 parte B: in «Another place» con «Paddle», una parola
   comune scritta sceglie fra i nomi trovati (ADR-0210, aggiornamento;

@@ -2737,6 +2737,16 @@
       "distance_m": 2000
     },
     {
+      "name": "Lago di Ledro",
+      "point": [45.87763, 10.74626],
+      "distance_m": 2000
+    },
+    {
+      "name": "Lago di Ledro",
+      "point": [45.88035, 10.75886],
+      "distance_m": 2000
+    },
+    {
       "name": "Lago di Lei",
       "point": [46.41719, 9.4342],
       "distance_m": 1500

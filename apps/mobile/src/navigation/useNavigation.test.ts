@@ -280,3 +280,118 @@ test("the voice speaks the language chosen for it; the banner stays the app's (T
   await unmount();
   saveVoiceChoice(DEFAULT_VOICE_CHOICE);
 });
+
+test("the phone refusing the position altogether is a denial, not a crash (TASK-253)", async () => {
+  const start: LatLon = [46.0122, 11.2986];
+  const route: LatLon[] = [start, [start[0] + 0.01, start[1]]];
+  const NO_DIRECTIONS: Direction[] = [];
+  jest
+    .mocked(Location.requestForegroundPermissionsAsync)
+    .mockResolvedValue({ granted: true } as Location.LocationPermissionResponse);
+  jest
+    .mocked(Location.watchPositionAsync)
+    .mockRejectedValue(new Error("Location services are disabled"));
+  const { result, unmount } = await renderHook(() =>
+    useNavigation(route, NO_DIRECTIONS, true),
+  );
+  await act(async () => {});
+  expect(result.current).toEqual({ status: "denied" });
+  await unmount();
+});
+
+/** A direction to build others from. */
+const DEPART: Direction = {
+  node: 0,
+  point: [46.0122, 11.2986],
+  distance_m: 0,
+  turn: "depart",
+  angle_deg: 0,
+  street: "Via Roma",
+  road_type: "residential",
+  branches: 3,
+  joined: false,
+};
+
+test("a run that goes on does not head out again, and says the turn ahead (TASK-253)", async () => {
+  const start: LatLon = [46.0122, 11.2986];
+  const metre = 1 / 111_195;
+  const north = (m: number): LatLon => [start[0] + m * metre, start[1]];
+  const route: LatLon[] = Array.from({ length: 21 }, (_, i) => north(100 * i));
+  const directions: Direction[] = [
+    { ...DEPART, point: north(0) },
+    {
+      ...DEPART,
+      point: north(600),
+      distance_m: 600,
+      node: 6,
+      turn: "left",
+      street: "Via Verdi",
+    },
+    {
+      ...DEPART,
+      point: north(1400),
+      distance_m: 1400,
+      node: 14,
+      turn: "right",
+      street: "Via Bianchi",
+    },
+  ];
+  let onPosition: (position: Location.LocationObject) => void = () => {};
+  jest
+    .mocked(Location.requestForegroundPermissionsAsync)
+    .mockResolvedValue({ granted: true } as Location.LocationPermissionResponse);
+  jest
+    .mocked(Location.watchPositionAsync)
+    .mockImplementation(async (_options, callback) => {
+      onPosition = callback;
+      return { remove: jest.fn() };
+    });
+  // Now, as the phone has it: a run goes on only when stopped lately.
+  const began = Date.now();
+  const position = (m: number, seconds: number) =>
+    ({
+      coords: { latitude: start[0] + m * metre, longitude: start[1], accuracy: 5 },
+      timestamp: began + seconds * 1000,
+    }) as Location.LocationObject;
+  jest.mocked(Speech.speak).mockClear();
+  clearRun();
+
+  // To 1 km, then «Stop».
+  const first = await renderHook(() => useNavigation(route, directions, true));
+  await act(async () => {
+    skipCountdown();
+    for (let m = 0; m <= 1000; m += 20) {
+      onPosition(position(m, m / 3));
+    }
+  });
+  await first.unmount();
+  expect(loadRun()?.status).toBe("stopped");
+  const saidBefore = jest.mocked(Speech.speak).mock.calls.map(([words]) => words);
+  expect(saidBefore[0]).toBe("Head out on Via Roma");
+  expect(saidBefore).toContainEqual(expect.stringMatching(/turn left onto Via Verdi/));
+
+  // «Keep running», a minute later: on with the track, and the navigation.
+  jest.mocked(Speech.speak).mockClear();
+  const again = await renderHook(() => useNavigation(route, directions, true));
+  await act(async () => {
+    skipCountdown();
+    for (let m = 1020; m <= 1400; m += 20) {
+      onPosition(position(m, 60 + m / 3));
+    }
+  });
+  const state = again.result.current;
+  expect(state.status).toBe("following");
+  if (state.status === "following") {
+    expect(state.navigation.offRoute).toBe(false);
+    expect(state.navigation.alongM).toBeCloseTo(1400, -1);
+    expect(state.track.fixes.length).toBeGreaterThan(51);
+  }
+  const saidAfter = jest.mocked(Speech.speak).mock.calls.map(([words]) => words);
+  expect(saidAfter).not.toContainEqual("Head out on Via Roma");
+  expect(saidAfter).not.toContainEqual(expect.stringMatching(/Via Verdi/));
+  expect(saidAfter).toContainEqual(
+    expect.stringMatching(/turn right onto Via Bianchi/),
+  );
+  expect(saidAfter).not.toContainEqual("You are off the route. Head back to it.");
+  await again.unmount();
+});

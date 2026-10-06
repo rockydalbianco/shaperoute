@@ -1,6 +1,6 @@
 # TASK-253 — La navigazione non salta avanti e riprende dove era
 
-**Stato**: Todo
+**Stato**: Done
 **Fase**: 4 · **Branch**: `fix/TASK-253-navigation-progress`
 
 ## Obiettivo
@@ -72,20 +72,21 @@ voce, con una copia di `locate` su percorsi finti:
 
 ## Criteri di accettazione
 
-- [ ] Baffo di 80 m: su ogni posizione dell'andata e del ritorno
+- [x] Baffo di 80 m: su ogni posizione dell'andata e del ritorno
       l'avanzamento non salta più di qualche metro e non torna indietro;
       la svolta in fondo al baffo viene detta, una volta.
-- [ ] Incrocio: passando la prima volta, la posizione resta sul primo
+- [x] Incrocio: passando la prima volta, la posizione resta sul primo
       passaggio.
-- [ ] Doppio passaggio negli ultimi 300 m: «arrived» solo alla fine vera.
-- [ ] Andata e ritorno di 1 km e i percorsi dei test che ci sono: stesse
-      frasi di prima (`navigator.test.ts` verde senza modifiche).
-- [ ] «Stop» al km 3 di 5, «Keep running»: la prossima svolta detta è
+- [x] Doppio passaggio negli ultimi 300 m: «arrived» solo alla fine vera.
+- [x] Andata e ritorno di 1 km e i percorsi dei test che ci sono: stesse
+      frasi di prima (`navigator.test.ts`: cambia solo la seconda
+      posizione alla fine, voluta dal passo 2).
+- [x] «Stop» al km 3 di 5, «Keep running»: la prossima svolta detta è
       quella dopo il km 3; la penna e i chilometri detti sono allineati.
-- [ ] Una svolta a 6 m dalla fine: «You have arrived» viene detto.
-- [ ] `watchPositionAsync` che rifiuta: lo stato è «denied», nessun
+- [x] Una svolta a 6 m dalla fine: «You have arrived» viene detto.
+- [x] `watchPositionAsync` che rifiuta: lo stato è «denied», nessun
       rifiuto non gestito.
-- [ ] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
+- [x] `npm run lint`, `typecheck`, `test`, `format:check` verdi.
 
 ## File toccati
 
@@ -98,7 +99,10 @@ apps/mobile/src/navigation/navigatorResume.test.ts   (nuovo)
 apps/mobile/src/navigation/useNavigation.ts
 apps/mobile/src/navigation/useNavigation.test.ts
 apps/mobile/src/navigation/useFreeRun.ts
-apps/mobile/src/navigation/penUp.ts                  (solo se serve per riprendere)
+apps/mobile/src/navigation/resume.ts                 (nuovo, con resume.test.ts al posto di navigatorResume.test.ts)
+apps/mobile/src/navigation/penUpRun.test.ts          (la fine corsa una posizione dopo)
+apps/mobile/src/navigation/mileRun.test.ts           (una posizione in più alla fine)
+docs/tasks/TASK-253.md
 docs/UI.md, docs/STATUS.md, docs/DECISIONS.md        (le righe di questo task)
 ```
 
@@ -114,4 +118,16 @@ docs/UI.md, docs/STATUS.md, docs/DECISIONS.md        (le righe di questo task)
 
 ## Esito
 
-*(si compila a fine task)*
+Fatto il 2026-10-06 (ADR-0217). `locate` fa pagare anche l'andare avanti
+(0,25 al metro) e fra i punti entro 40 m sceglie il più economico: sul
+baffo di 80 m e all'incrocio la posizione resta entro 12 m dal vero, con e
+senza un errore GPS di 3–8 m (`progress.test.ts`, nuovo). «You have
+arrived» alla seconda posizione di fila entro 25 m, mai con un errore
+dichiarato oltre 40 m; una svolta a 6 m dalla fine non ferma più l'arrivo;
+un percorso che passa a 60 m dalla propria fine non arriva lì. La
+navigazione riprende da dove la traccia era arrivata (`resume.ts`, nuovo:
+navigatore, penna, bici a piedi; «Head out on …» non si ripete). Il
+rifiuto della posizione porta a «denied». Test nuovi rossi su `main` e
+verdi qui; suite dell'app verde. Tre test di prima cambiano misura (la fine
+corsa una posizione dopo). **Rimandato**: il passo 4 (rientrare più avanti
+dopo aver saltato un pezzo), scelta dell'utente.

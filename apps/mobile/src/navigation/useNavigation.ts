@@ -21,6 +21,7 @@ import { type Cue, type Navigation, onFix, startNavigation } from "./navigator";
 import { moveOnFoot, startOnFoot } from "./onFootVoice";
 import { isPaddle, paddleAnnouncement } from "./paddle";
 import { movePen, startPen } from "./penUp";
+import { resumeFollowing } from "./resume";
 import { announceMOf, isRide, rideAnnouncement, saidKmOf } from "./ride";
 import { controlRun, runControl, type RunSession } from "./runControl";
 import { emptyTrack, type Track } from "./trackRecorder";
@@ -117,151 +118,171 @@ export function useNavigation(
     // The phone's voices, before the first words: a chosen one is used only
     // once it is known to be there.
     void loadVoices();
+    // The phone refusing the position altogether (its services off) is a
+    // rejection, not a denial: it is one all the same (TASK-253).
     void (async () => {
-      const permission = await Location.requestForegroundPermissionsAsync();
-      if (stopped) {
-        return;
-      }
-      if (!permission.granted) {
-        setState({ status: "denied" });
-        return;
-      }
-      const started = startNavigation(
-        points,
-        directions,
-        speaking().language,
-        announceMOf(activity),
-      );
-      navigation.current = started.navigation;
-      const walked = walksOf(points, walks);
-      let pen = startPen(started.navigation.along, walked, word, activity);
-      let bike = startOnFoot(started.navigation.along, onFootOf(points, onFoot));
-      // A route stopped lately goes on with its track (trackStore).
-      const recorder = startRun(
-        points,
-        Date.now(),
-        similarity,
-        walked,
-        activity,
-        rotationDeg,
-      );
-      stopRecording = recorder.stop;
-      // A run that goes on does not say again the kilometres it has said;
-      // with miles, the miles (TASK-182).
-      let saidUnits = appUnits();
-      let saidKm = saidKmOf(recorder.track(), activity, saidUnits);
-      let position: LatLon | null = null;
-      const session = controlRun(recorder, {
-        // «Pause» and «Resume» change the track between two fixes.
-        onChange: () => {
-          if (!stopped && navigation.current !== null) {
+      try {
+        const permission = await Location.requestForegroundPermissionsAsync();
+        if (stopped) {
+          return;
+        }
+        if (!permission.granted) {
+          setState({ status: "denied" });
+          return;
+        }
+        const started = startNavigation(
+          points,
+          directions,
+          speaking().language,
+          announceMOf(activity),
+        );
+        navigation.current = started.navigation;
+        const walked = walksOf(points, walks);
+        let pen = startPen(started.navigation.along, walked, word, activity);
+        let bike = startOnFoot(started.navigation.along, onFootOf(points, onFoot));
+        // A route stopped lately goes on with its track (trackStore).
+        const recorder = startRun(
+          points,
+          Date.now(),
+          similarity,
+          walked,
+          activity,
+          rotationDeg,
+        );
+        stopRecording = recorder.stop;
+        // A run that goes on: the navigator, the pen and the bike on foot
+        // where its track got to, without a word (TASK-253).
+        const resumed = resumeFollowing(
+          { navigation: started.navigation, pen, onFoot: bike },
+          recorder.track().fixes,
+        );
+        navigation.current = resumed.navigation;
+        pen = resumed.pen;
+        bike = resumed.onFoot;
+        // A run that goes on does not say again the kilometres it has said;
+        // with miles, the miles (TASK-182).
+        let saidUnits = appUnits();
+        let saidKm = saidKmOf(recorder.track(), activity, saidUnits);
+        let position: LatLon | null = null;
+        const session = controlRun(recorder, {
+          // «Pause» and «Resume» change the track between two fixes.
+          onChange: () => {
+            if (!stopped && navigation.current !== null) {
+              setState({
+                status: "following",
+                navigation: navigation.current,
+                position,
+                track: recorder.track(),
+              });
+            }
+          },
+          say: (text) => play([{ say: text, vibrate: false }]),
+        });
+        run = session;
+        setState({
+          status: "following",
+          navigation: resumed.navigation,
+          position,
+          track: recorder.track(),
+        });
+        // «Head out on …» is for a run that starts, not one that goes on.
+        if (recorder.track().fixes.length === 0) {
+          play(started.cues);
+        }
+        subscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.BestForNavigation,
+            distanceInterval: FIX_EVERY_M,
+          },
+          ({ coords, timestamp }) => {
+            if (stopped || navigation.current === null) {
+              return;
+            }
+            const fix: LatLon = [coords.latitude, coords.longitude];
+            position = fix;
+            const { language } = speaking();
+            const next = onFix(
+              navigation.current,
+              fix,
+              { accuracyM: coords.accuracy, timeMs: timestamp },
+              language,
+            );
+            navigation.current = next.navigation;
+            const drawing = movePen(
+              pen,
+              next.navigation.alongM,
+              coords.accuracy,
+              language,
+            );
+            pen = drawing.pen;
+            // The fix that reaches a letter is its first; the one that ends a
+            // letter is its last.
+            if (drawing.move === "down") {
+              session.lowerPen(timestamp);
+            }
+            session.onFix(
+              {
+                point: fix,
+                timeMs: timestamp,
+                accuracyM: coords.accuracy,
+                altitudeM: coords.altitude,
+              },
+              next.navigation.arrived,
+            );
+            if (drawing.move === "up") {
+              session.liftPen(timestamp);
+            }
+            const track = recorder.track();
             setState({
               status: "following",
-              navigation: navigation.current,
-              position,
-              track: recorder.track(),
+              navigation: next.navigation,
+              position: fix,
+              track,
             });
-          }
-        },
-        say: (text) => play([{ say: text, vibrate: false }]),
-      });
-      run = session;
-      setState({
-        status: "following",
-        navigation: started.navigation,
-        position,
-        track: recorder.track(),
-      });
-      play(started.cues);
-      subscription = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.BestForNavigation,
-          distanceInterval: FIX_EVERY_M,
-        },
-        ({ coords, timestamp }) => {
-          if (stopped || navigation.current === null) {
-            return;
-          }
-          const fix: LatLon = [coords.latitude, coords.longitude];
-          position = fix;
-          const { language } = speaking();
-          const next = onFix(
-            navigation.current,
-            fix,
-            { accuracyM: coords.accuracy, timeMs: timestamp },
-            language,
-          );
-          navigation.current = next.navigation;
-          const drawing = movePen(
-            pen,
-            next.navigation.alongM,
-            coords.accuracy,
-            language,
-          );
-          pen = drawing.pen;
-          // The fix that reaches a letter is its first; the one that ends a
-          // letter is its last.
-          if (drawing.move === "down") {
-            session.lowerPen(timestamp);
-          }
-          session.onFix(
-            {
-              point: fix,
-              timeMs: timestamp,
-              accuracyM: coords.accuracy,
-              altitudeM: coords.altitude,
-            },
-            next.navigation.arrived,
-          );
-          if (drawing.move === "up") {
-            session.liftPen(timestamp);
-          }
-          const track = recorder.track();
-          setState({
-            status: "following",
-            navigation: next.navigation,
-            position: fix,
-            track,
-          });
-          // The pen first: what the runner does next depends on it.
-          play(drawing.cues);
-          play(next.cues);
-          // After the turn, which may be the way onto the stretch.
-          const walking = moveOnFoot(
-            bike,
-            next.navigation.alongM,
-            wordsOf(language),
-            coords.accuracy,
-          );
-          bike = walking.onFoot;
-          play(walking.cues);
-          // After the turn, so a kilometre never delays one.
-          const units = appUnits();
-          if (units !== saidUnits) {
-            // «Settings» changed the units during the run: those behind
-            // are not said again, the next one is.
-            saidUnits = units;
-            saidKm = saidKmOf(track, activity, units);
-          }
-          const km = saidKmOf(track, activity, units);
-          if (km > saidKm) {
-            saidKm = km;
-            const said = isRide(activity)
-              ? rideAnnouncement(km, track, language, units)
-              : isPaddle(activity)
-                ? paddleAnnouncement(km, track, language, units)
-                : kmAnnouncement(km, track, language, units);
-            play([{ say: said, vibrate: false }]);
-            // Then how it went against the one before (TASK-217).
-            const compared = comparisonOf(km, track, activity, language, units);
-            if (compared !== null) {
-              play([{ say: compared, vibrate: false }]);
+            // The pen first: what the runner does next depends on it.
+            play(drawing.cues);
+            play(next.cues);
+            // After the turn, which may be the way onto the stretch.
+            const walking = moveOnFoot(
+              bike,
+              next.navigation.alongM,
+              wordsOf(language),
+              coords.accuracy,
+            );
+            bike = walking.onFoot;
+            play(walking.cues);
+            // After the turn, so a kilometre never delays one.
+            const units = appUnits();
+            if (units !== saidUnits) {
+              // «Settings» changed the units during the run: those behind
+              // are not said again, the next one is.
+              saidUnits = units;
+              saidKm = saidKmOf(track, activity, units);
             }
-          }
-        },
-      );
-      if (stopped) {
-        subscription.remove();
+            const km = saidKmOf(track, activity, units);
+            if (km > saidKm) {
+              saidKm = km;
+              const said = isRide(activity)
+                ? rideAnnouncement(km, track, language, units)
+                : isPaddle(activity)
+                  ? paddleAnnouncement(km, track, language, units)
+                  : kmAnnouncement(km, track, language, units);
+              play([{ say: said, vibrate: false }]);
+              // Then how it went against the one before (TASK-217).
+              const compared = comparisonOf(km, track, activity, language, units);
+              if (compared !== null) {
+                play([{ say: compared, vibrate: false }]);
+              }
+            }
+          },
+        );
+        if (stopped) {
+          subscription.remove();
+        }
+      } catch {
+        if (!stopped) {
+          setState({ status: "denied" });
+        }
       }
     })();
     return () => {

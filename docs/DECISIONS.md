@@ -12015,3 +12015,54 @@ non veniva tolta quando una scelta successiva arrivava all'API.
 più per ogni cambiamento delle code (rare). Niente di visibile cambia.
 Rimandati all'utente: la corsa rifiutata con `invalid_request`, oggi
 cancellata in silenzio, e la più vecchia che sparisce oltre le venti.
+
+## ADR-0217 — La posizione sul percorso preferisce il passaggio vicino, l'arrivo vuole due posizioni, la navigazione riprende da dove era
+**Stato**: Attiva · 2026-10-06 · deciso dall'agente su delega dell'utente
+(TASK-253, dalla revisione del codice dell'app del 2026-10-06). Numero
+assegnato dal coordinatore. Aggiorna ADR-0052.
+
+**Contesto**: `progress.locate` metteva la posizione sul punto del percorso
+con il costo più basso fra 50 m indietro e 300 m avanti, con costo = scarto
+laterale + metri indietro. Andare avanti non costava niente: dove il
+percorso ripassa dallo stesso posto entro 300 m (un baffo percorso andata e
+ritorno, un incrocio con sé stesso: nelle forme succede spesso) una
+posizione sbagliata di pochi metri finiva sul passaggio successivo, 130–230
+m avanti. Le svolte saltate non si dicevano, quella all'uscita del baffo si
+diceva mentre ci si allontanava, l'avanzamento tornava indietro; negli
+ultimi 300 m «You have arrived» chiudeva la registrazione in anticipo e
+senza «Resume». «Keep running» dopo «Stop» e una corsa ripresa dopo l'app
+chiusa facevano ripartire il navigatore da 0 m con la traccia che
+continuava: «off the route» fino alla fine, nessuna svolta, 0 % disegnato.
+Una svolta negli ultimi 10 m non poteva mai risultare passata, e l'arrivo
+non veniva detto. `watchPositionAsync` che rifiutava (servizi di posizione
+spenti) era un rifiuto non gestito.
+
+**Decisione**:
+
+1. **Un costo anche per andare avanti**: `FORWARD_COST` = 0,25 al metro
+   (indietro resta 1 al metro). Fra i punti del percorso **entro i 40 m del
+   fuori tracciato** vince il più economico; se nessuno è entro 40 m, il
+   più vicino, come prima. Così una posizione sbagliata di 8 m batte il
+   passaggio della stessa strada 40 m più avanti, e un corridore che salta
+   davvero 200 m di percorso viene ritrovato entro due o tre posizioni,
+   appena il punto sbagliato esce dai 40 m. La finestra resta 50 m indietro
+   e 300 m avanti. Pesi fissati con i test (`progress.test.ts`: baffo di
+   80 m e incrocio, con e senza un errore GPS di 3–8 m).
+2. **L'arrivo alla seconda posizione di fila entro 25 m dalla fine**
+   (`ARRIVE_FIXES`), nessuna delle due con un errore dichiarato oltre 40 m;
+   una posizione lontana azzera il conto. Entro 25 m dalla fine le svolte
+   che restano contano come passate.
+3. **La navigazione riprende** (`navigation/resume.ts`): quando il
+   registratore continua una traccia, il navigatore, la penna e la bici a
+   piedi vengono fatti passare in silenzio per le posizioni già registrate;
+   «Head out on …» non si ripete. Chi si era fermato fuori percorso riparte
+   fuori percorso e lo ritrova come prima.
+4. **Rientrare più avanti dopo aver saltato un pezzo** (cercare su tutto il
+   percorso dopo N secondi fuori tracciato) **non si fa qui**: cambia quello
+   che il corridore sente, è una scelta dell'utente.
+5. Un rifiuto della posizione (permesso o `watchPositionAsync` che lanciano)
+   porta allo stato «denied» che c'è, in corsa e senza percorso.
+
+**Conseguenze**: tre test di prima cambiano misura (la fine della corsa
+arriva una posizione dopo: +20 m in `penUpRun.test.ts`, una posizione in più
+in `mileRun.test.ts`). Nessun testo nuovo.

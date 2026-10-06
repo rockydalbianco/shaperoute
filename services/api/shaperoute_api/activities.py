@@ -64,6 +64,7 @@ from shaperoute_api.accounts import (
     now_utc,
 )
 from shaperoute_api.db import Database
+from shaperoute_api.insights import Insights
 from shaperoute_api.places import KEY_VARIABLE, Fetch, fetch_json
 from shaperoute_api.recommended import preview
 from shaperoute_api.schemas import (
@@ -706,6 +707,7 @@ def activity_routes() -> APIRouter:
     def save_activity(
         key: Key,
         body: ActivityRequestBody,
+        request: Request,
         response: Response,
         activities: Annotated[Activities, Depends(activities_of)],
         user: Annotated[UserBody, Depends(current_user)],
@@ -713,6 +715,12 @@ def activity_routes() -> APIRouter:
         activity, created = activities.save(user.id, key, body)
         if created:
             response.status_code = 201
+            if activity.score is not None:
+                # A run along a route, kept: the search led somewhere
+                # (TASK-130). Once, when the run is new, and only how well
+                # it went: nothing of who ran it, nor where.
+                insights: Insights = request.app.state.run_insights
+                insights.record("run_scored", quality=round(activity.score / 100, 3))
         return activity
 
     @router.delete("/me/activities/{key}", status_code=204)
@@ -727,8 +735,14 @@ def activity_routes() -> APIRouter:
     return router
 
 
-def install_activities(app: FastAPI, places: PlaceNames | None = None) -> None:
+def install_activities(
+    app: FastAPI,
+    places: PlaceNames | None = None,
+    insights: Insights | None = None,
+) -> None:
     """The runs of the accounts; after install_accounts, which sets the
-    database and the errors. `places` None: the environment's key."""
+    database and the errors. `places` None: the environment's key.
+    `insights` hears of each new run saved with a score; None: nobody."""
     app.state.run_places = places if places is not None else PlaceNames.from_env()
+    app.state.run_insights = insights if insights is not None else Insights(None)
     app.include_router(activity_routes())

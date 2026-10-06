@@ -564,6 +564,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
 
 ## Completato
 
+- **API** — TASK-247: `run_scored` registrato al salvataggio della corsa
+  (seguito di TASK-241, aggiornamento sotto ADR-0207; «si» dell'utente
+  del 2026-10-06; PR #386). Il primo `PUT /me/activities/{key}` di una
+  corsa con punteggio registra l'evento negli `insights` con la sola
+  `quality`; una corsa rimandata o senza percorso no. Nella bozza di
+  «Privacy» torna «a run scored». **Vuole l'aggiornamento del server**
+  (nessuna migrazione, il motore non cambia: niente `draw_examples`), con
+  l'ok dell'utente. `tasks/TASK-247.md`.
+
 - **API** — TASK-249: un paese toccato in «NEARBY TOWNS» e lo stesso
   paese cercato per nome sono la stessa città (ADR-0213; seguito di
   TASK-236, scelto dall'utente il 2026-10-06). **Fatto**: in `main` dalla
@@ -816,8 +825,7 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   scored» fra gli eventi tenuti; resta «…distance, duration, score…»,
   ancora vera (PR #372). **Parte G**: tolto dall'app
   `src/api/trackScores.ts`, che nessuno chiamava più; niente cambia per
-  chi usa l'app. Esce con la prossima pubblicazione.
-  `tasks/TASK-241.md`.
+  chi usa l'app (PR #375). Seguito: TASK-247. `tasks/TASK-241.md`.
 
 - **App** — TASK-239: il numero rosso delle richieste di follow, e
   «Follow back» (ADR-0203; chiesto dall'utente il 2026-10-05, PR #343).

@@ -290,7 +290,7 @@ def create_app(
     install_favorites(app)
     # The runs an account recorded (TASK-172); the name of their place comes
     # from the place search's key, when the environment has one.
-    install_activities(app, run_places)
+    install_activities(app, run_places, insights)
     # A run sent to the runner's Strava (TASK-187); off unless the
     # environment has this server's Strava application.
     install_strava(app, strava)

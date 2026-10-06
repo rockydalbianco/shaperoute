@@ -797,7 +797,7 @@ export const ES: Table = {
   "{count} more": "{count} más",
   "OR IN YOUR WORDS": "O CON TUS PALABRAS",
   "From {where}. Name a city in the words to go elsewhere.":
-    "Desde {where}. Nombra una ciudad en las palabras para ir a otro sitio.",
+    "Se sale {where}. Nombra una ciudad en las palabras para ir a otro sitio.",
   "Make my route": "Crear mi ruta",
   "EXAMPLES IN {city}": "EJEMPLOS EN {city}",
   "No recommended routes here yet: shapes of {distance} from the centre, drawn now.":
@@ -855,7 +855,7 @@ export const ES: Table = {
     "No se han encontrado las indicaciones. Inténtalo de nuevo.",
   "The API answered without directions. It may be out of date.":
     "El servidor ha respondido sin indicaciones. Puede que no esté actualizado.",
-  "near your start": "cerca de tu salida",
+  "near your start": "cerca de ti",
   "near {place}": "cerca de {place}",
   "in {city}": "en {city}",
   "e.g. a romantic heart, famous places, food 8 km":

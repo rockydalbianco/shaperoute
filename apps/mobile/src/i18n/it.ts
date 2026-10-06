@@ -793,7 +793,7 @@ export const IT: Table = {
   "{count} more": "altre {count}",
   "OR IN YOUR WORDS": "O CON PAROLE TUE",
   "From {where}. Name a city in the words to go elsewhere.":
-    "Da {where}. Scrivi una città nelle parole per andare altrove.",
+    "Si parte {where}. Scrivi una città nelle parole per andare altrove.",
   "Make my route": "Crea il mio percorso",
   "EXAMPLES IN {city}": "ESEMPI A {city}",
   "No recommended routes here yet: shapes of {distance} from the centre, drawn now.":
@@ -801,7 +801,7 @@ export const IT: Table = {
   "Three first, more while you choose.": "Prima tre, altre mentre scegli.",
   "Best near you": "I migliori vicino a te",
   "Starting within {distance} of {place}": "Con partenza entro {distance} da {place}",
-  "your start": "la tua partenza",
+  "your start": "dove sei",
   "Loading routes…": "Carico i percorsi…",
   "Choose a start first: the routes are the ones near it.":
     "Scegli prima una partenza: i percorsi sono quelli vicini.",
@@ -847,7 +847,7 @@ export const IT: Table = {
     "Le indicazioni non si sono trovate. Riprova.",
   "The API answered without directions. It may be out of date.":
     "Il server ha risposto senza indicazioni. Potrebbe non essere aggiornato.",
-  "near your start": "vicino alla tua partenza",
+  "near your start": "vicino a te",
   "near {place}": "vicino a {place}",
   "in {city}": "a {city}",
   "e.g. a romantic heart, famous places, food 8 km":

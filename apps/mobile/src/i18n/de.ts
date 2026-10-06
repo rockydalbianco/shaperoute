@@ -802,7 +802,7 @@ export const DE: Table = {
   "{count} more": "{count} weitere",
   "OR IN YOUR WORDS": "ODER IN DEINEN WORTEN",
   "From {where}. Name a city in the words to go elsewhere.":
-    "Von {where}. Nenne eine Stadt in den Worten, um woanders hinzugehen.",
+    "Los geht es {where}. Nenne eine Stadt in den Worten, um woanders hinzugehen.",
   "Make my route": "Meine Route erstellen",
   "EXAMPLES IN {city}": "BEISPIELE IN {city}",
   "No recommended routes here yet: shapes of {distance} from the centre, drawn now.":
@@ -858,7 +858,7 @@ export const DE: Table = {
     "Die Wegbeschreibung wurde nicht gefunden. Versuche es noch einmal.",
   "The API answered without directions. It may be out of date.":
     "Der Server hat ohne Wegbeschreibung geantwortet. Er ist vielleicht veraltet.",
-  "near your start": "nahe deinem Start",
+  "near your start": "in deiner Nähe",
   "near {place}": "nahe {place}",
   "in {city}": "in {city}",
   "e.g. a romantic heart, famous places, food 8 km":

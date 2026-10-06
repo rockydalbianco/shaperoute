@@ -51,6 +51,8 @@ test("the categories are shown in Italian, and asked for in English", async () =
   expect(screen.getByText("Cibo")).toBeOnTheScreen();
   expect(screen.queryByText("Food")).toBeNull();
   expect(screen.getByText("Crea il mio percorso")).toBeOnTheScreen();
+  // The sentence is whole in Italian: no "Da vicino a".
+  expect(screen.getByText(/^Si parte vicino a te\./)).toBeOnTheScreen();
   // The request the API gets is the English one.
   expect(requestFor(CATEGORIES[0], null)).toMatch(/^Food/);
   expect(screen.getByLabelText(requestFor(CATEGORIES[0], null))).toBeOnTheScreen();

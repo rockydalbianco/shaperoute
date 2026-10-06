@@ -805,9 +805,10 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   `tasks/TASK-250.md`). **L'acqua è sul server dal 2026-10-06** (Ledro
   nuovo, Garda riscritto, il vecchio in `before-task250/`; senza riavvio):
   un cuore da 2 km da Ledro e uno da Riva rispondono 200 dentro l'API. Esce
-  con la pubblicazione del coordinatore. **Aspettano l'utente**: se
-  riportare Ledro a `water=lake` in OpenStreetMap; se togliere i cinque
-  laghi segnati `boat=no` o `access=private`.
+  con la pubblicazione del coordinatore (gruppo 37310f11). I cinque laghi
+  segnati `boat=no` o `access=private` restano nell'elenco (utente,
+  2026-10-06). Ledro di nuovo `water=lake` in OpenStreetMap: chiesto
+  dall'utente il 2026-10-06, da fare con il suo account.
 
 - **App** — TASK-245 parte B: in «Another place» con «Paddle», una parola
   comune scritta sceglie fra i nomi trovati (ADR-0210, aggiornamento;

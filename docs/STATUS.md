@@ -703,10 +703,11 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   baffo camminato; in 4 la ricerca sceglie un altro disegno, e in 2 la
   somiglianza scende), una diventa disponibile (`ROUTE_ENGINE.md` §5).
   In media 1 km disegnato in meno e 0,7 km a piedi in più dove cambia.
-  **Non sul server né pubblicato**: server e `draw_examples` li fa il
-  coordinatore con l'ok dell'utente; `engine.zip` è rifatto, il telefono
-  lo riceve con la prossima pubblicazione. Seguiti in
-  `tasks/TASK-243.md`.
+  **Sul server** da `main` a784f772 dal 2026-10-05 22:22Z (ok dell'utente
+  «ok server», 9 s di fermo, ritorno `shaperoute-api:before-task243`),
+  `draw_examples` rifatto: 70 di 70 città alle 22:58Z, nessuna da rifare.
+  La pubblicazione dell'app, con `engine.zip` rifatto, è del coordinatore.
+  Seguiti in `tasks/TASK-243.md`.
 
 - **Motore** — TASK-242: la penna si alza sulle deviazioni di un pezzo
   (ADR-0208; chiesto dall'utente il 2026-10-05 con lo screenshot della

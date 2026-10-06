@@ -1,5 +1,6 @@
 import type { Direction, LatLon } from "@shaperoute/shared-types";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t, tLater } from "../i18n";
 
 import { type DirectionsOutcome, requestDirections } from "../api/routeDirections";
 
@@ -24,24 +25,28 @@ export function startViewOf(state: StartState, points: LatLon[] | null): StartVi
     : { status: "failed", message: state.message };
 }
 
-const UNREACHABLE = "The API did not answer. Check the connection and try again.";
+const UNREACHABLE = tLater(
+  "The API did not answer. Check the connection and try again.",
+);
 
 /** Why there are no directions, in words for the card. */
 export function failureText(outcome: DirectionsOutcome): string {
   if (outcome.kind === "api_error") {
     switch (outcome.code) {
       case "map_data_unavailable":
-        return "The map of this area could not be loaded for directions. Try again later.";
+        return t(
+          "The map of this area could not be loaded for directions. Try again later.",
+        );
       case "invalid_request":
-        return "This route is not on the map the API has: it has no directions.";
+        return t("This route is not on the map the API has: it has no directions.");
       default:
-        return "The directions could not be found. Try again.";
+        return t("The directions could not be found. Try again.");
     }
   }
   if (outcome.kind === "bad_answer") {
-    return "The API answered without directions. It may be out of date.";
+    return t("The API answered without directions. It may be out of date.");
   }
-  return UNREACHABLE;
+  return t(UNREACHABLE);
 }
 
 /**

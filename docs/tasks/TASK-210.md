@@ -3,8 +3,7 @@
 **Stato**: In corso
 **Fase**: 4 · **Branch**: `feat/TASK-210-app-language` (parte A),
 `feat/TASK-210-run-screens` (parte B, la corsa), `feat/TASK-210-explore`
-(parte C, «Explore», un'altra sessione), `feat/TASK-210-draw` (parte D,
-«Draw»)
+(parte C, «Explore»), `feat/TASK-210-draw` (parte D, «Draw»)
 
 ## Obiettivo
 
@@ -208,6 +207,25 @@ bottone, tempi in italiano); `RunBike`, `RunPaddle`, `RunMiles` cercano
 la scheda «Dati» dove sono in italiano. **Testi approvati dall'utente**
 il 2026-10-06 («vanno bene i testi»).
 
+**Parte C — «Explore»** (2026-10-06, chiesta dall'utente: «parti con
+«Explore» di TASK-210»): `AskForRoute`, `CityExamples`, `ExploreScreen`,
+`ExploreStart`, `ExploreTools`, `ExploredCard`, `ThemedCard`,
+`WhileDrawing`, `RouteCard` (il credito delle mappe è ora una funzione,
+`cardMapsCredit()`), `presets` (le categorie si vedono tradotte con
+`tLater`/`t`, **la richiesta all'API resta in inglese**: «Food in New
+York»; «near your start», «in {city}», il suggerimento del campo),
+`useStartDirections`, `useThemedRoute`. 64 testi nuovi nelle quattro
+tabelle (`out/task-210-explore-testi.md` sul Mac); «Try again», «Back»,
+«Cancel», «Next», «Drawing…», «Near me», «Back to the list», «Not drawn»
+erano già tradotti. I km nei testi («Starting within 5 km», «Drawing a 2
+km heart») restano scritti come prima, con la virgola della lingua
+(`kmOrMiles`), e con le miglia passano da `distanceLabel` (prima
+`ExploredCard` scriveva i km anche con le miglia). Test:
+`explore/ExploreItalian.test.tsx` (categorie tradotte e richiesta
+inglese, frasi del percorso a tema e delle indicazioni, credito). I nomi
+delle città e i nomi dei percorsi dell'API restano com'è. **Testi
+approvati dall'utente** il 2026-10-06 («va bene procedi»).
+
 **Parte D — «Draw»** (2026-10-06, branch `feat/TASK-210-draw`, in
 parallelo con la parte C «Explore» di un'altra sessione): `RoutePanel`
 (etichette «DRAW»/«LETTERS»/«DISTANCE», lo switch forma/parola/immagine,
@@ -235,10 +253,10 @@ non conosce (vanno all'AI): sono la parte «nomi delle forme». «Vai a
 «Empieza aquí», fr «Départ ici»). **Testi approvati dall'utente** il
 2026-10-06 («va bene procedi»); PR #421, in coda dopo #419 e #420.
 
-**Da fare nelle parti successive**: «Explore» (`ExploreScreen`,
-`ExploreTools`, `CityExamples`, `AskForRoute`, `ThemedCard`,
-`ExploredCard`, `ExploreStart`, `WhileDrawing`, `useStartDirections`,
-`useThemedRoute`, `presets`), la fine corsa di TASK-208 (`RunEnd.tsx`,
+**Da fare nelle parti successive** (dopo le parti C e D, entrambe in
+`main` il 2026-10-06): i nomi delle forme sulle schede di «Explore»
+(`routeTitle` dà l'inglese, «dog head»: `shapeLabel` lo tradurrebbe), la
+fine corsa di TASK-208 (`RunEnd.tsx`,
 `PublicParts.tsx`, `PublicRow.tsx`, `api/drawings.ts`), `VoiceSetting.tsx`,
 `SportSetting`/`SportButton`/`sport.ts`, i titoli delle pagine in
 `App.tsx`, i nomi delle forme in «Draw» (`shapeWords.ts` sa solo

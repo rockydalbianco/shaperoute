@@ -8,7 +8,7 @@ import { saveLanguageChoice } from "../i18n/language";
 import { forgetNearby } from "./nearbyCities";
 import { forgetSamples } from "./nearbySamples";
 import { awayKm, NearbyTowns } from "./NearbyTowns";
-import { CARD_MAPS_CREDIT } from "./RouteCard";
+import { cardMapsCredit } from "./RouteCard";
 
 const API = "http://api.test";
 const CALDONAZZO: [number, number] = [46.0036, 11.2647];
@@ -83,7 +83,7 @@ test("a card for each town near the start, with how far it is", async () => {
   expect(screen.getByText("13 km away · Drawing…")).toBeOnTheScreen();
   expect(screen.getAllByTestId("route-card")).toHaveLength(3);
   // No drawing yet, no map under it: no credit.
-  expect(screen.queryByText(CARD_MAPS_CREDIT)).toBeNull();
+  expect(screen.queryByText(cardMapsCredit())).toBeNull();
 });
 
 test("a town tapped opens as a city", async () => {
@@ -121,7 +121,7 @@ test("a sample drawn is on its card, with the maps' credit", async () => {
   expect(await screen.findByText("2.9 km away")).toBeOnTheScreen();
   // The next shape waits for its turn: one asked so far.
   expect(request).toHaveBeenCalledTimes(1);
-  expect(screen.getByText(CARD_MAPS_CREDIT)).toBeOnTheScreen();
+  expect(screen.getByText(cardMapsCredit())).toBeOnTheScreen();
 });
 
 test("the page's own credit takes the place of the section's", async () => {
@@ -137,7 +137,7 @@ test("the page's own credit takes the place of the section's", async () => {
     />,
   );
   expect(await screen.findByText("2.9 km away")).toBeOnTheScreen();
-  expect(screen.queryByText(CARD_MAPS_CREDIT)).toBeNull();
+  expect(screen.queryByText(cardMapsCredit())).toBeNull();
 });
 
 test("nothing without towns, without a start, or without an answer", async () => {

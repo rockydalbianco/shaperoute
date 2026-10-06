@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
+import { t } from "../i18n";
 
 import {
   color,
@@ -32,7 +33,7 @@ export function ExploreStart({ start, onStart }: Props) {
         accessibilityState={{ busy: loading, disabled: loading }}
       >
         <Text style={styles.startText}>
-          {loading ? "Getting directions…" : "Start"}
+          {loading ? t("Getting directions…") : t("Start")}
         </Text>
       </Pressable>
       {start.status === "failed" && <Text style={styles.error}>{start.message}</Text>}

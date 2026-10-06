@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t, tLater } from "../i18n";
 
 import { MAX_POLL_FAILURES } from "../api/routes";
 import {
@@ -19,7 +20,9 @@ export type ThemedState =
   | { status: "done"; request: ThemedRequest; result: ThemedResult }
   | { status: "failed"; request: ThemedRequest; message: string };
 
-const UNREACHABLE = "The API did not answer. Check the connection and try again.";
+const UNREACHABLE = tLater(
+  "The API did not answer. Check the connection and try again.",
+);
 
 /** Asks for a themed route and follows its job until it ends (TASK-129). */
 export function useThemedRoute(
@@ -47,7 +50,7 @@ export function useThemedRoute(
       run.current = controller;
       const { signal } = controller;
       if (apiUrl === null) {
-        setState({ status: "failed", request, message: UNREACHABLE });
+        setState({ status: "failed", request, message: t(UNREACHABLE) });
         return;
       }
       setState({ status: "waiting", request });
@@ -86,7 +89,7 @@ export function useThemedRoute(
           setState({
             status: "failed",
             request,
-            message: job?.error?.message ?? UNREACHABLE,
+            message: job?.error?.message ?? t(UNREACHABLE),
           });
         }
       })();

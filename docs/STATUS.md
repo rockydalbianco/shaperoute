@@ -520,14 +520,15 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   «Explore», la corsa, la riga «Sport») dopo il loro merge. **Parte B — la
   corsa** fatta il 2026-10-06 (le schermate della corsa, il banner della
   svolta con il frasario della voce, 58 testi nuovi; testi approvati
-  dall'utente il 2026-10-06): restano «Draw», «Explore», la fine corsa, «Sport»,
-  `App.tsx`, i nomi delle forme (`tasks/TASK-210.md`). **Parte D —
-  «Draw»** fatta il 2026-10-06 (branch `feat/TASK-210-draw`, in parallelo
-  con la parte C «Explore»): il pannello di «Draw», i testi d'errore in
-  km, gli avvisi del motore, la parola, la foto e il contorno, 101 testi
-  nuovi (`out/task-210-draw-testi.md`), test `route/DrawItalian.test.tsx`;
-  i nomi delle forme restano inglesi fino alla loro parte; testi
-  approvati dall'utente il 2026-10-06, PR #421 in coda. L'utente ha
+  dall'utente il 2026-10-06). **Parte C — «Explore»** fatta il 2026-10-06
+  (64 testi nuovi, le categorie tradotte a vista e inglesi verso l'API;
+  testi approvati dall'utente il 2026-10-06). **Parte D — «Draw»** fatta
+  il 2026-10-06 (branch `feat/TASK-210-draw`, in parallelo con la C): il
+  pannello di «Draw», i testi d'errore in km, gli avvisi del motore, la
+  parola, la foto e il contorno, 101 testi nuovi
+  (`out/task-210-draw-testi.md`), test `route/DrawItalian.test.tsx`; testi
+  approvati dall'utente il 2026-10-06, PR #421. Restano la fine corsa,
+  «Sport», `App.tsx`, i nomi delle forme (`tasks/TASK-210.md`). L'utente ha
   delegato il controllo delle traduzioni e dato l'ok a pubblicare
   (2026-10-03), sapendo che fino all'ultima parte un telefono in italiano
   vede l'app mezza in italiano e mezza in inglese. Da dove riprendere:

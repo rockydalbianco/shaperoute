@@ -1,12 +1,13 @@
 import type { LatLon } from "@shaperoute/shared-types";
 
-import { type LngLat } from "../map/coordinates";
+import { type LngLat, toLngLat } from "../map/coordinates";
 import {
   MAP_BACKGROUND,
   MAP_STYLE,
   MAPLIBRE_JS_SRI,
   MAPLIBRE_JS_URL,
 } from "../map/mapPage";
+import { turnedLine, unturnedPoint } from "./turnedLine";
 
 /**
  * The map under a drawing of «Feed» (TASK-162, ADR-0131). A card is not a
@@ -18,23 +19,42 @@ import {
 /** How wide MapLibre's world is at zoom 0, in points. */
 const WORLD = 512;
 
-/** Where the map looks to lie exactly under a line drawn by `thumbSegments`. */
-export type Camera = { center: LngLat; zoom: number };
+/**
+ * Where the map looks to lie exactly under a line drawn by `thumbSegments`.
+ * `bearing`, degrees clockwise from north, only for a map that is turned.
+ */
+export type Camera = { center: LngLat; zoom: number; bearing?: number };
 
 /**
  * The camera that puts the map under `line` as `thumbSegments` draws it in a
  * box `width` × `height` with `pad`: the same fit, said the way MapLibre
  * wants it. A drawing is a few kilometres wide: over that, the map's
  * projection and the flat one of the line differ by less than a point.
+ * With a `bearing` the map is turned (TASK-232), and lies under
+ * `turnedLine(line, bearing)` drawn the same way.
  */
 export function lineCamera(
   line: LatLon[],
   width: number,
   height: number,
   pad: number,
+  bearing: number = 0,
 ): Camera | null {
   if (line.length < 2) {
     return null;
+  }
+  if (bearing !== 0) {
+    // The fit of the line turned, then its middle back where it is.
+    const turned = lineCamera(turnedLine(line, bearing), width, height, pad);
+    if (turned === null) {
+      return null;
+    }
+    const [lon, lat] = turned.center;
+    return {
+      center: toLngLat(unturnedPoint([lat, lon], line, bearing)),
+      zoom: turned.zoom,
+      bearing,
+    };
   }
   const midLat = line.reduce((sum, [lat]) => sum + lat, 0) / line.length;
   const k = Math.cos((midLat * Math.PI) / 180);
@@ -61,6 +81,8 @@ export type Shoot = {
   key: string;
   center: LngLat;
   zoom: number;
+  /** Degrees clockwise from north; without it, north up. */
+  bearing?: number;
   width: number;
   height: number;
 };
@@ -161,12 +183,14 @@ export function buildFeedMapPage(): string {
     function shoot(message) {
       missed = false;
       asked = message.key;
+      // North up unless the picture is asked turned: the map before may have been.
+      var bearing = message.bearing || 0;
       // The picture is as large as the drawing it goes under.
       box.style.width = message.width + "px";
       box.style.height = message.height + "px";
       if (map) {
         map.resize();
-        map.jumpTo({ center: message.center, zoom: message.zoom });
+        map.jumpTo({ center: message.center, zoom: message.zoom, bearing: bearing });
         // A camera that did not move draws nothing, and nothing would answer.
         map.triggerRepaint();
       } else {
@@ -175,6 +199,7 @@ export function buildFeedMapPage(): string {
           style: ${toScript(MAP_STYLE)},
           center: message.center,
           zoom: message.zoom,
+          bearing: bearing,
           interactive: false,
           attributionControl: false,
           fadeDuration: 0,

@@ -156,6 +156,8 @@ type ExploreRun = {
   on_foot?: Stretch[];
   /** What it is for (TASK-216): a favorite kept by bike is followed by bike. */
   activity?: Activity;
+  /** How far its shape is turned (TASK-232): the map stays turned as it. */
+  rotation_deg?: number;
 };
 
 function finishedRun(run: ScorableRun, resumable: boolean): Finished {
@@ -476,20 +478,28 @@ function Sgrava() {
     explored === null &&
     themed.state.status !== "idle";
   const exploring = screen === "map" && !reviewing && explored !== null;
-  // A drawn route whose shape is turned turns the map, so the drawing is
-  // upright (TASK-232): choosing it, running it and at its end. Any other
-  // route, and a route that does not say, keeps north up.
-  const drawnRotation = exploreRun === null ? (chosen?.rotation_deg ?? null) : null;
+  // A route whose shape is turned turns the map, so the drawing is upright
+  // (TASK-232): choosing it, running it and at its end. A drawn route, and
+  // one of "Explore" that says how it is turned: an example drawn for a
+  // place. Any other route, and a route that does not say, keeps north up.
+  const followedRotation =
+    exploreRun === null
+      ? (chosen?.rotation_deg ?? null)
+      : (exploreRun.rotation_deg ?? null);
   const turned = useTurnedMap(
-    reviewing || running || freeFinishing || theming || exploring
+    reviewing || running || freeFinishing || theming
       ? null
-      : finishing
-        ? followed !== null && sameLine(finished.run.route, followed.points)
-          ? drawnRotation
+      : exploring
+        ? explored.status === "done"
+          ? (explored.result.rotation_deg ?? null)
           : null
-        : exploreRun === null
-          ? (drawnRotation ?? move.left?.rotationDeg ?? null)
-          : null,
+        : finishing
+          ? followed !== null && sameLine(finished.run.route, followed.points)
+            ? followedRotation
+            : null
+          : exploreRun === null
+            ? (followedRotation ?? move.left?.rotationDeg ?? null)
+            : followedRotation,
   );
   const exploredExport: ExportState =
     explored?.status === "done" &&
@@ -633,9 +643,13 @@ function Sgrava() {
       walks?: Walk[];
       word?: string | null;
       on_foot?: Stretch[];
+      rotation_deg?: number;
     },
     activity?: Activity,
   ) {
+    // Turned on the map, it stays turned while it is run (TASK-232).
+    const turn =
+      route.rotation_deg !== undefined ? { rotation_deg: route.rotation_deg } : {};
     if (activity === "paddling") {
       paddleNotice.ask(() => {
         startDirections.reset();
@@ -644,6 +658,7 @@ function Sgrava() {
           directions: NO_DIRECTIONS,
           similarity: route.similarity,
           activity,
+          ...turn,
           // A shape in pieces: the pen up between them (TASK-226).
           ...(route.walks !== undefined && route.walks.length > 0
             ? { walks: route.walks, word: null }
@@ -665,6 +680,7 @@ function Sgrava() {
           ? { on_foot: route.on_foot }
           : {}),
         ...(activity !== undefined ? { activity } : {}),
+        ...turn,
       });
       setScreen("navigate");
     });

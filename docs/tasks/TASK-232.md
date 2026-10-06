@@ -3,7 +3,7 @@
 **Stato**: In lavorazione — parte A (motore e API) in `main` dalla #356
 (`799071a`) e sul server; parte B (la mappa girata in «Draw» e in corsa,
 la freccia del nord) in `main` dalla #378 (`44f17c8`); parte B2
-(«Explore») in PR; C da fare
+(«Explore») in `main` dalla #384 (`b2d7662`); C da fare
 **Fase**: 4 · **Branch**: `feat/TASK-232-a-tilt-45` (A),
 `feat/TASK-232-b-turned-map` (B), `feat/TASK-232-b2-explore-turned` (B2),
 `feat/TASK-232-c-saved-turn` (C)
@@ -129,6 +129,15 @@ servono anche alla parte C.
 3. Gli esempi di «Explore» si ridisegnano sul server (`draw_examples`,
    `paddle_examples`) dopo il merge della parte A, con l'ok
    dell'utente: il server oggi è fermo su `7098cb9` (`STATUS.md`).
+4. **Il catalogo dell'API dice l'inclinazione** (seguito della B2, messo
+   qui dal coordinatore il 2026-10-06): `rotation_deg` in
+   `GET /recommended-routes` e `/recommended-routes/{id}`
+   (`recommended.py` e i file delle città). L'app lo legge già
+   (`RecommendedRoute`, `RecommendedRouteDetail`): scheda e mappa girano
+   da sole appena il campo arriva.
+5. **Gli esempi sull'acqua che arrivano con l'app** (seguito della B2):
+   `paddle_examples.py` scrive `rotation_deg`, e
+   `apps/mobile/src/paddle/paddleExamples.json` si rifà.
 
 ## Criteri di accettazione
 
@@ -225,8 +234,11 @@ docs/UI.md, docs/DECISIONS.md, docs/STATUS.md, docs/tasks/TASK-232.md
 ```
 
 Parte C: da completare all'inizio della parte C, dopo B. Almeno
-`services/api/shaperoute_api/activities.py`, `favorites.py`, la
-migrazione nuova, `apps/mobile/src/activities/fitLines.ts`,
+`services/api/shaperoute_api/activities.py` (oggi di TASK-247, e lo vuole
+anche TASK-251 B: la fila la fa il coordinatore), `favorites.py`,
+`recommended.py`, `paddle_examples.py`,
+`apps/mobile/src/paddle/paddleExamples.json`, la migrazione nuova (la
+prima libera al merge: `0018` al 2026-10-06), `apps/mobile/src/activities/fitLines.ts`,
 `RunDrawing.tsx`, `apps/mobile/src/feed/FeedMaps.tsx`, `feedMapPage.ts`,
 `apps/mobile/src/share/PostImage.tsx`.
 
@@ -323,8 +335,9 @@ dalla #378, `44f17c8`, il 2026-10-06; ADR-0195 «Parte B»):
   per `exploreRun`, girare la linea delle schede e dare un `bearing` alla
   foto-mappa. La pubblicazione dell'app la fa il coordinatore.
 
-**Parte B2, «Explore» con la mappa girata** (2026-10-06, sola app, in PR;
-ADR-0195 «Parte B2»):
+**Parte B2, «Explore» con la mappa girata** (2026-10-06, sola app, in
+`main` dalla #384, `b2d7662`, pubblicata su `preview` da `cdb50bb`, gruppo
+`8429fea6`; ADR-0195 «Parte B2»):
 
 - **L'esempio aperto**: un esempio che il motore ha inclinato si apre con
   la mappa girata e la freccia del nord; ogni tessera «A · B · C» la sua
@@ -345,11 +358,28 @@ ADR-0195 «Parte B2»):
   campioni inclinati (`samples/TASK-232_*`: stella e fantasmino di Levico,
   ciambella e gatto di Trento), ciascuno col nord in alto e girato: la
   linea girata sta sulle strade della foto girata, la forma è dritta, i
-  nomi dei paesi restano dritti. **Non visto** nel simulatore né sul
-  telefono: l'app è coperta dai test (`AppExploreTurned.test.tsx`).
-- **Seguiti senza numero**, per il coordinatore: `rotation_deg` nel
-  catalogo dell'API (`recommended.py` e i file delle città) e in
-  `paddle_examples.py` con `paddleExamples.json` rifatto. Il catalogo è
+  nomi dei paesi restano dritti.
+- **Visto nel simulatore** (2026-10-06, iPhone 17e con Expo Go dal
+  worktree e l'API del worktree sul Mac; schermate in `out/task-232b2/`).
+  A Levico Terme, dal punto che la ricerca dà all'app, la luna esce
+  inclinata di 30° (la stella, che dal punto dei campioni esce a 30°, qui
+  esce dritta: bastano 3 m di partenza in più): la sua scheda è girata; la
+  luna si apre con la mappa girata e la freccia del nord; un tocco rimette
+  il nord in alto, il secondo rigira; la tessera B, dritta, rimette il nord
+  in alto; «Start» tiene la mappa girata in corsa e dopo lo «Stop». Sul
+  Lago di Levico un esempio spostato con «Move the shape» si ridisegna e la
+  mappa prende l'inclinazione del percorso nuovo (piccola, 5°); spostato di
+  nuovo con la mappa girata con due dita, la forma segue il dito. Non
+  provato sul telefono.
+- **Visto, non di questo passo**: appena aperto un esempio la mappa lo
+  inquadra come se fosse alta tutto lo schermo, e la metà bassa del
+  percorso resta sotto la scheda finché non si tocca una tessera; succede
+  anche con un esempio dritto (la stella), quindi è di prima della B2. Da
+  guardare in un seguito.
+- **Due seguiti, ora punti 4 e 5 della parte C** (deciso dal
+  coordinatore, 2026-10-06): `rotation_deg` nel catalogo dell'API
+  (`recommended.py` e i file delle città) e in `paddle_examples.py` con
+  `paddleExamples.json` rifatto. Il catalogo è
   di prima della parte A (percorsi entro ±15°), e gli esempi sull'acqua
   dell'app sono usciti identici dalla parte A: non controllato oltre.
 - **Da dove riprende la C**: `useFeedMap(…, bearing)` e

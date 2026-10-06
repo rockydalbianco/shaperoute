@@ -314,9 +314,9 @@ Dal 2026-09-24 più sessioni lavorano insieme, con le regole di
   salvate, preferiti, «Feed», post: una migrazione; e `rotation_deg` nel
   catalogo dell'API e in `paddleExamples.json`, punti 4 e 5 nel task
   file), in un contesto pulito, dopo aver sentito il coordinatore.
-  **Parte C** (API e app, in PR dal 2026-10-06; **migrazione `0018`**:
-  prima del merge serve l'ok dell'utente per il server, tramite il
-  coordinatore): le corse salvate e i preferiti tengono `rotation_deg`
+  **Parte C** (API e app, in `main` dalla #395, `f41eaea`, il 2026-10-06;
+  **migrazione `0018`**: il server e la pubblicazione dell'app li fa il
+  coordinatore con l'ok dell'utente; l'app regge un'API senza il campo): le corse salvate e i preferiti tengono `rotation_deg`
   come l'app l'ha mandato (`runs.route_rotation_deg`,
   `favorites.rotation_deg`; `null` per le righe di prima, che restano col
   nord in alto); «My activities», il disegno nel profilo, il post da

@@ -130,8 +130,10 @@ In coda, dopo o accanto:
   telefono: 528 file. Acqua della canoa: 248 file (Ledro dal 2026-10-06,
   TASK-250; l'elenco dei laghi vive nell'app, `lake_catalog.py` è un
   comando offline: il server non ha bisogno di altro). **App** su `preview` da `main`
-  `2fd7fa1` (gruppo `f062e005`, 2026-10-06 ~11:40Z): tutto `main`, fino
-  alla corsa in italiano (TASK-210 B), al post che resta sul server
+  `4a8e23f` (gruppo `65620103`, 2026-10-06 ~14:50Z): tutto `main`, fino
+  a «Draw» ed «Explore» in italiano (TASK-210 C, D), a «Location is off»
+  in corsa (TASK-259 B), alla corsa in italiano (TASK-210 B), al post che
+  resta sul server
   (TASK-258), a «Open Settings» e «Retry» (TASK-259 A), agli errori che
   parlano a chi corre (TASK-256), alla corsa rifiutata
   con il motivo (TASK-257), allo schermo acceso in corsa (TASK-255), alle

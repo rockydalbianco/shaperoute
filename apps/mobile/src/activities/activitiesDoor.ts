@@ -7,9 +7,11 @@ import {
   useRef,
   useState,
 } from "react";
+import { AppState } from "react-native";
 
 import type { Account } from "../account/useAccount";
 import { sessionEnded } from "../account/messages";
+import type { AccountOutcome } from "../api/accounts";
 import {
   type Activity,
   type ActivityDetail,
@@ -128,6 +130,25 @@ type Options = { fetchFn?: typeof fetch; key?: string | null };
 
 type Counted = { owner: number | null; count: number; publicCount: number };
 
+/** How many runs in a row the API may fail on before the round stops: one
+ * run it cannot take must not hold the others, and an API in trouble must
+ * not be sent every run that waits. */
+const MAX_REFUSED_IN_A_ROW = 2;
+
+/** After these answers the runs behind would fare no better: no network,
+ * or the API asking to slow down. */
+function restWaits(outcome: AccountOutcome<unknown>): boolean {
+  return (
+    outcome.kind === "unreachable" ||
+    (outcome.kind === "api_error" && outcome.code === "too_many_requests")
+  );
+}
+
+/** The API failing on its own side, not refusing the run. */
+function serverFailed(outcome: AccountOutcome<unknown>): boolean {
+  return outcome.kind === "bad_answer" && outcome.status >= 500;
+}
+
 function waitingOf(owner: number | null): Counted {
   const runs = owner === null ? [] : loadOutbox().filter((run) => run.owner === owner);
   return {
@@ -180,12 +201,14 @@ export function useActivitiesOf(
     try {
       do {
         again.current = false;
+        let refused = 0;
         for (const run of loadOutbox().filter((item) => item.owner === owner)) {
           const outcome = await saveActivity(baseUrl, token, run.id, run.request, {
             fetchFn,
             key,
           });
           if (outcome.kind === "ok") {
+            refused = 0;
             // To Strava now that the API has it: in the file of Strava
             // first, so the run is not forgotten if the app closes here.
             const strava = toStravaOf(run);
@@ -212,6 +235,14 @@ export function useActivitiesOf(
           if (sessionEnded(outcome)) {
             ended = true;
             endSession(token);
+          } else if (!restWaits(outcome)) {
+            // The API is there and will not take this run now: it waits,
+            // and does not keep the runs after it waiting too (TASK-252).
+            // A second answer like it in a row is the API in trouble.
+            refused += 1;
+            if (refused < MAX_REFUSED_IN_A_ROW || !serverFailed(outcome)) {
+              continue;
+            }
           }
           // No network, or the API is away: this run and the rest wait.
           again.current = false;
@@ -253,6 +284,17 @@ export function useActivitiesOf(
   // without a network goes now.
   useEffect(() => {
     void send();
+  }, [send]);
+
+  // And when the app comes back to the front: the network may be back
+  // (TASK-252).
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (next) => {
+      if (next === "active") {
+        void send();
+      }
+    });
+    return () => subscription.remove();
   }, [send]);
 
   // Told by the end of the run just before «Save», read by `record` once.

@@ -294,3 +294,45 @@ test("ending with no run in progress gives what the file has", () => {
   run.onFix(fix(10, 4), true);
   expect(endRun()?.status).toBe("arrived");
 });
+
+test("a run stopped with one fix is not the start of the next (TASK-252)", () => {
+  const first = startRun(ROUTE, 0);
+  first.onFix(fix(0, 0), false);
+  first.stop();
+  expect(loadRun()?.track.fixes).toHaveLength(1);
+
+  // The same route, a minute later, from somewhere else.
+  const next = startRun(ROUTE, 60_000);
+  expect(next.track().fixes).toHaveLength(0);
+  next.onFix(fix(400, 61), false);
+  expect(loadRun()?.track.fixes).toEqual([fix(400, 61)]);
+});
+
+test("ending a run the phone could not write gives it back from memory (TASK-252)", () => {
+  const run = startRun(ROUTE, 0, 0.88);
+  run.onFix(fix(0, 0), false);
+  disk.state.failing = true;
+  run.onFix(fix(10, 4), false);
+  run.onFix(fix(20, 8), false);
+  const ended = endRun();
+  expect(ended?.status).toBe("stopped");
+  expect(ended?.similarity).toBe(0.88);
+  expect(ended?.track.fixes).toHaveLength(3);
+  // The file is the old one, a fix long: not what was run.
+  expect(loadRun()?.track.fixes).toHaveLength(1);
+  // Once given back, it is not given again for a run that never started.
+  disk.files.clear();
+  expect(endRun()).toBeNull();
+});
+
+test("a run written again after a refusal is read from the file", () => {
+  const run = startRun(ROUTE, 0, 0.88);
+  disk.state.failing = true;
+  run.onFix(fix(0, 0), false);
+  disk.state.failing = false;
+  run.onFix(fix(10, 4), false);
+  run.onFix(fix(20, 8), false);
+  const ended = endRun();
+  expect(ended?.track.fixes).toHaveLength(3);
+  expect(loadRun()).toEqual(ended);
+});

@@ -1,7 +1,6 @@
-import { File, Paths } from "expo-file-system";
-
 import { sessionEnded } from "../account/messages";
 import { type DrawingChoice, saveDrawing, worthAgain } from "../api/drawings";
+import { keptList } from "../storage/keptList";
 
 /**
  * The choices of «Public» and title still to reach the API (TASK-117), in
@@ -23,10 +22,6 @@ export type DrawingWaiting = DrawingChoice & {
   key: string;
 };
 
-function outboxFile(): File {
-  return new File(Paths.document, DRAWING_OUTBOX_FILE);
-}
-
 function isDrawingWaiting(value: unknown): value is DrawingWaiting {
   if (typeof value !== "object" || value === null) {
     return false;
@@ -40,35 +35,16 @@ function isDrawingWaiting(value: unknown): value is DrawingWaiting {
   );
 }
 
+// Written so that a write cut short loses nothing that waited (TASK-252).
+const kept = keptList(DRAWING_OUTBOX_FILE, isDrawingWaiting);
+
 /** The choices in the file, the oldest first; none when it cannot be read. */
 export function loadDrawingOutbox(): DrawingWaiting[] {
-  try {
-    const file = outboxFile();
-    if (!file.exists) {
-      return [];
-    }
-    const data: unknown = JSON.parse(file.textSync());
-    return Array.isArray(data) ? data.filter(isDrawingWaiting) : [];
-  } catch {
-    return [];
-  }
+  return kept.load();
 }
 
 function saveDrawingOutbox(list: DrawingWaiting[]): boolean {
-  try {
-    const file = outboxFile();
-    if (list.length === 0) {
-      if (file.exists) {
-        file.delete();
-      }
-      return true;
-    }
-    file.create({ overwrite: true });
-    file.write(JSON.stringify(list));
-    return true;
-  } catch {
-    return false;
-  }
+  return kept.save(list);
 }
 
 function sameRun(a: DrawingWaiting, owner: number, key: string): boolean {
@@ -110,6 +86,27 @@ export function dropForDrawing(choice: DrawingWaiting): void {
         item.public === choice.public
       ),
   );
+  if (next.length !== list.length) {
+    saveDrawingOutbox(next);
+  }
+}
+
+/** Takes whatever waits for the run `key` of `owner` out of the file: the
+ * API has answered a later choice, and an older one sent after it would
+ * undo it (TASK-252). */
+export function forgetForDrawing(owner: number, key: string): void {
+  const list = loadDrawingOutbox();
+  const next = list.filter((item) => !sameRun(item, owner, key));
+  if (next.length !== list.length) {
+    saveDrawingOutbox(next);
+  }
+}
+
+/** Takes every choice of `owner` out of the file: the account is deleted
+ * (TASK-252). */
+export function forgetDrawingsOf(owner: number): void {
+  const list = loadDrawingOutbox();
+  const next = list.filter((item) => item.owner !== owner);
   if (next.length !== list.length) {
     saveDrawingOutbox(next);
   }

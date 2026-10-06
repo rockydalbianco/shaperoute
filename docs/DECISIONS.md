@@ -10643,6 +10643,34 @@ solo km e tempo; avrebbe tenuto la richiesta all'API, l'attesa e i
 messaggi senza rete); togliere `score` dall'API (altro contratto, usato
 dai dati già salvati; non chiesto).
 
+**Aggiornamento** (2026-10-06, TASK-247, seguito di TASK-241; scelta dell'utente:
+«si» alla domanda «vuoi che il server torni a registrare l'evento "run
+scored" quando una corsa viene salvata?»). Il punto 4 cambia: **l'API
+registra `run_scored` al salvataggio**. Il resto è deciso dall'agente su
+delega dell'utente:
+
+1. **Quando**: al primo `PUT /me/activities/{key}` di una corsa (`201`)
+   che ha un punteggio. Non a una ripetizione della stessa chiave (`200`:
+   l'outbox dell'app rimanda), non per una corsa senza percorso o troppo
+   corta per un punteggio.
+2. **Cosa**: solo `quality` (punteggio / 100, tre decimali), come faceva
+   `POST /track-scores`. Niente account, luogo, forma o titolo: gli
+   `insights` restano senza niente che dica chi è (ADR-0101).
+3. **`POST /track-scores` non cambia** e registra ancora l'evento: l'app
+   da TASK-241 non lo chiama. Un'app più vecchia conta la stessa corsa
+   due volte finché non si aggiorna; non vale un cambio dell'endpoint.
+4. **Cosa si conta adesso**: le corse lungo un percorso **salvate da chi
+   ha un account**. Prima erano tutte le corse finite con un punteggio,
+   anche senza account e anche se poi scartate.
+5. **«Privacy»**: torna «a run scored» fra gli eventi tenuti (tolto con la
+   parte F), in inglese e in italiano.
+
+**Alternative scartate**: spostare l'evento togliendolo da `POST
+/track-scores` (cambia un endpoint che le app vecchie usano ancora);
+registrarlo dall'app con `POST /signals` (il telefono non ha più il
+punteggio); contare anche le corse senza account (non arrivano al
+server).
+
 ## ADR-0203 — Le richieste di follow si vedono da fuori: un numero rosso sul pulsante di «Profile», e «Follow back» nella riga accettata
 **Stato**: Attiva · 2026-10-05 · deciso dall'agente su delega dell'utente
 (TASK-239), dentro la **richiesta dell'utente** dello stesso giorno: «deve
@@ -11820,3 +11848,126 @@ sola libreria standard.
 - Tempi uguali (0,48 s e 0,54 s sui due casi rapidi, prima e dopo, a
   macchina scarica); memoria nella stessa fascia.
 - Il telefono (`processes=False`) non cambia.
+
+## ADR-0213 — Un luogo ha un punto solo: il suo nodo `place` di OpenStreetMap
+
+**Data**: 2026-10-06 · **Stato**: Accettato · **Task**: TASK-249 ·
+deciso dall'agente su delega dell'utente
+
+**Contesto**: per alcuni luoghi `GET /cities` e `GET /nearby-cities`
+(ADR-0200) davano punti diversi: Tenna a 650 m, Calceranica al Lago a
+700 m, Caldonazzo a 1,1 km, Riva del Garda a 500 m. La geocodifica
+`type=city` di Geoapify dà per loro il confine del comune
+(`category: administrative`) col punto al centro dell'area; il Places e
+l'autocompletamento di `/city-suggestions` danno il nodo `place`, il
+centro del paese. Gli esempi tenuti vanno per punto (ADR-0136): lo stesso
+paese aveva due serie di esempi, e chi lo toccava in «NEARBY TOWNS» e chi
+lo cercava per nome vedeva percorsi diversi.
+
+**Decisione**: il punto di un luogo è **quello del suo nodo `place`**
+(`place=city`, `town`, `village`), come lo dà il Places di Geoapify.
+`/nearby-cities` e `/city-suggestions` lo danno già e non cambiano.
+`/cities`, per ogni risultato che è un'area, chiede al Places i luoghi con
+quel nome dentro il `bbox` dell'area, dal più vicino al suo punto, e
+prende il punto del primo con **la stessa etichetta** (nome, regione,
+stato: `place_label`, la stessa regola di `/nearby-cities`). Se nessuno ha
+quell'etichetta resta il punto della geocodifica. Se il Places non
+risponde, la ricerca risponde lo stesso coi punti della geocodifica, ma
+quella risposta **non è tenuta** e gli altri luoghi non si chiedono
+(un'attesa sola): la ricerca dopo richiede e trova il nodo.
+
+**Alternative scartate**:
+
+- **Il punto della geocodifica come verità**, con `/nearby-cities` che
+  cerca per nome ogni posto: chiamate in più per ogni posizione, e il
+  centro dell'area di un comune è un punto peggiore (per Caldonazzo è nei
+  campi, per Calceranica sul monte).
+- **Un registro di punti imparati** da `/nearby-cities`, che `/cities`
+  rilegge: nessuna chiamata in più, ma il punto di un paese cambierebbe
+  il giorno in cui qualcuno gli passa vicino.
+- **Una sola chiamata all'autocompletamento** per ricerca: dà il nodo,
+  ma solo per i primi nomi che iniziano così; i risultati che non ci sono
+  resterebbero col punto dell'area.
+- **La regola solo per i villaggi** (`place=village`): Riva del Garda è
+  `place=town` e ha i due punti a 519 m; e non risparmierebbe niente al
+  catalogo, che non si sposta comunque (0 città su 66, misurato).
+- **Fallire la ricerca (503) se il Places non risponde**, la prima
+  stesura: mai due punti, ma la ricerca delle città smetterebbe di
+  funzionare per un servizio che le serve solo a spostare qualche paese
+  di qualche centinaio di metri. Scartata su richiesta del coordinatore.
+- **Tenere un giorno la risposta coi punti dell'area**: lo stesso luogo
+  avrebbe di nuovo due punti per un giorno. Non tenuta, dura una ricerca.
+
+**Conseguenze**:
+
+- Una ricerca nuova costa una richiesta al Places per ogni area fra i suoi
+  risultati (al più 5, una dopo l'altra, circa 0,35 s l'una: «Roma»
+  1,8 s), poi è tenuta un giorno. Nessuna chiamata in più per posizione.
+- Mentre il Places non risponde, un luogo cercato per nome può avere il
+  punto dell'area: `route_store` lo impara come centro, e i suoi esempi
+  restano finché scadono.
+- Delle 66 città con gli esempi disegnati prima nessuna cambia punto.
+  Cambiano Tenna, Calceranica al Lago, Caldonazzo, Riva del Garda, Jesolo
+  fra quelle provate: i loro esempi disegnati dal punto vecchio di
+  `/cities` non vengono più chiesti e scadono da soli.
+- Anche `themed.py` e `prefetch_zones.py`, che usano la stessa ricerca,
+  partono dal nodo.
+- Chi ha già scelto uno di quei paesi lo tiene sul telefono col punto di
+  prima finché non lo sceglie di nuovo.
+- Le etichette possono ancora differire fra i due endpoint (una frazione,
+  un nome tradotto): il punto no. `tasks/TASK-249.md`, «Emerso».
+
+## ADR-0216 — Le code sul telefono: una copia accanto al file, un tempo massimo alle richieste dell'account, una corsa rifiutata non ferma le altre
+**Stato**: Attiva · 2026-10-06 · deciso dall'agente su delega dell'utente
+(TASK-252, dalla revisione del codice dell'app chiesta il 2026-10-06).
+Numero assegnato dal coordinatore.
+
+**Contesto**: le corse salvate senza rete, «Public» e Strava aspettano in
+tre file JSON dei documenti dell'app, riscritti per intero a ogni
+cambiamento con `create({ overwrite: true })` e poi `write`: fra le due
+chiamate il file è vuoto, e con il telefono pieno resta così. Il giro che
+manda le corse si fermava alla prima risposta che non fosse un sì o un
+`invalid_request`, anche per un 413 o un 500 di quella sola corsa. Le
+richieste dell'account (`api/accounts.ts` `ask`) non avevano un tempo
+massimo: su Android una connessione che tace tiene «Logging in…»,
+reazioni e «Follow» fermi per sempre. Una scelta «Public» rimasta in coda
+non veniva tolta quando una scelta successiva arrivava all'API.
+
+**Decisione**:
+
+1. **Un modulo solo per le liste su file** (`src/storage/keptList.ts`):
+   il contenuto nuovo va prima in una copia (`<nome>.copy`), poi nel file;
+   in lettura un file vuoto o rotto lascia il posto alla copia; una lista
+   vuota cancella prima la copia, poi il file. Solo con i metodi di `File`
+   che i trenta test con un file system in memoria già imitano: niente
+   `move`, che li avrebbe cambiati tutti. **Non** per il file della corsa
+   in corso, riscritto ogni 15 secondi: lì «Stop» dà la corsa dalla
+   memoria se l'ultima scrittura è fallita.
+2. **Il giro delle corse si ferma solo** senza rete, con l'API che chiede
+   di rallentare (`too_many_requests`) o con la sessione finita. Una corsa
+   rifiutata in un altro modo resta in coda e la successiva parte; **due
+   fallimenti dell'API di fila (5xx) fermano il giro**, perché un server
+   spento dietro Caddy risponde 502 a tutto e venti corse con la traccia
+   sono megabyte di dati mobili a ogni apertura. Il giro parte anche
+   quando l'app torna in primo piano (`AppState`), oltre che all'apertura,
+   al «Save» e in «My activities».
+3. **Tempo massimo in `ask`**: 30 secondi, 90 per le `PUT` (una corsa, una
+   foto; una `PUT` mandata due volte non cambia niente). Allo scadere la
+   richiesta è interrotta (`AbortController`) e l'esito è `unreachable`,
+   che ogni chiamante già gestisce. Un corpo che smette di arrivare conta
+   lo stesso. Le altre famiglie di `fetch` (percorsi, GPX, foto del
+   contorno, Photon) restano senza: sono di TASK-254 e di un task di
+   struttura.
+4. **Una scelta «Public» arrivata all'API** (un sì, o un no definitivo)
+   toglie dalla coda quella più vecchia della stessa corsa. Con la
+   sessione finita resta: la manderà lo stesso account.
+5. **«Delete account» riuscito** toglie dalle tre code le voci di quel
+   solo account; «Log out» non toglie niente. Il file della corsa in corso
+   non ha un proprietario e non si tocca.
+6. **Una corsa salvata con una sola posizione non si riprende**: non è una
+   linea, e diventava il primo punto della corsa dopo.
+
+**Conseguenze**: tre file `.copy` in più nei documenti; una scrittura in
+più per ogni cambiamento delle code (rare). Niente di visibile cambia.
+Rimandati all'utente: la corsa rifiutata con `invalid_request`, oggi
+cancellata in silenzio, e la più vecchia che sparisce oltre le venti.

@@ -6,17 +6,27 @@ the middle of the municipality's area, which for Milan is in Baggio, 6 km
 from the Duomo; the geocoding of a city gives the city's own point, its
 centre. Answers are kept a day: city centres do not move.
 
+A place has one point, OpenStreetMap's own for it: its `place` node
+(TASK-249, ADR-0213). The geocoding of a village may give its municipality
+instead, an area whose point is the middle of it, 650 m from the church in
+Tenna. For each such area the Places API is asked for the place with the
+same label inside it, and that point is the city's: the one GET
+/city-suggestions and GET /nearby-cities give for the same place. When the
+Places API does not answer, the search still does, with the geocoding's
+points, and that answer is not kept: the next search asks again.
+
 GET /city-suggestions (TASK-134, TASK-138, ADR-0110) suggests cities and
 places in them while typing: "arena di ver" gives the Arena di Verona.
 """
 
 from __future__ import annotations
 
+import logging
 import threading
 import time
 import urllib.parse
 from collections import OrderedDict
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from typing import Any, Literal
 
 from pydantic import BaseModel
@@ -30,11 +40,21 @@ from shaperoute_api.places import (
     fetch_json,
 )
 
+log = logging.getLogger(__name__)
+
 GEOCODE_URL = "https://api.geoapify.com/v1/geocode/search"
 # While typing (TASK-138): the autocomplete, any kind of result. Its city
 # results carry the city's own point, as the geocoding's; the middle of the
 # municipality's area comes with the county results, which are left out.
 AUTOCOMPLETE_URL = "https://api.geoapify.com/v1/geocode/autocomplete"
+# OpenStreetMap's places, each with its own point (TASK-249).
+PLACES_URL = "https://api.geoapify.com/v2/places"
+NODES = "populated_place.city,populated_place.town,populated_place.village"
+# A result of this category is a municipality's area, not a place.
+AREA = "administrative"
+# Places asked within an area, the nearest its point first: the service
+# takes the name as a part of theirs ("Milan" gives Novate Milanese too).
+MAX_NODES = 20
 # Fewer letters say too little about which city.
 MIN_SUGGEST_LETTERS = 2
 MAX_CITIES = 5
@@ -102,6 +122,12 @@ def city_label(result: dict[str, Any]) -> str | None:
     return ", ".join(parts)
 
 
+def place_label(properties: dict[str, Any]) -> str | None:
+    """The label of one of the Places API's places, as `city_label` of the
+    city with its name: `city` there is the municipality around a village."""
+    return city_label({**properties, "city": properties.get("name")})
+
+
 def suggestion_label(result: dict[str, Any], kind: str) -> str | None:
     """Its name, the first wider area that differs, the country: "Verona,
     Veneto, Italy", "Parè, Colverde, Italy" (a village and its municipality),
@@ -133,9 +159,10 @@ def result_point(result: dict[str, Any]) -> tuple[float, float] | None:
     return float(lat), float(lon)
 
 
-def parse_cities(body: Any) -> list[PlaceBody]:
+def _cities(body: Any) -> Iterator[tuple[PlaceBody, dict[str, Any]]]:
+    """The geocoding's cities that read, each label once, and the result
+    each came from."""
     results = body.get("results") if isinstance(body, dict) else None
-    cities: list[PlaceBody] = []
     labels: set[str] = set()
     for result in results if isinstance(results, list) else []:
         if not isinstance(result, dict):
@@ -147,8 +174,53 @@ def parse_cities(body: Any) -> list[PlaceBody]:
         if label is None or label in labels:
             continue
         labels.add(label)
-        cities.append(PlaceBody(label=label, point=point))
-    return cities
+        yield PlaceBody(label=label, point=point), result
+
+
+def parse_cities(body: Any) -> list[PlaceBody]:
+    return [city for city, _ in _cities(body)]
+
+
+def node_url(key: str, result: dict[str, Any]) -> str | None:
+    """Asks the places within the bounds of `result`, an area; None when it
+    is a place already, with its own point, or its bounds do not read."""
+    if result.get("category") != AREA:
+        return None
+    point = result_point(result)
+    box = result.get("bbox")
+    corners = (
+        [box.get(k) for k in ("lon1", "lat1", "lon2", "lat2")]
+        if isinstance(box, dict)
+        else []
+    )
+    name = result.get("city") or result.get("name")
+    if point is None or not isinstance(name, str) or len(corners) != 4:
+        return None
+    if not all(isinstance(v, int | float) and not isinstance(v, bool) for v in corners):
+        return None
+    params = {
+        "categories": NODES,
+        "conditions": "named",
+        "name": name.strip(),
+        "filter": "rect:" + ",".join(str(v) for v in corners),
+        "bias": f"proximity:{point[1]},{point[0]}",
+        "limit": str(MAX_NODES),
+        "apiKey": key,
+    }
+    return f"{PLACES_URL}?{urllib.parse.urlencode(params)}"
+
+
+def node_point(label: str, body: Any) -> tuple[float, float] | None:
+    """The point of the first place of `body`, the Places API's answer, with
+    this label; None when the area has no place named as it is."""
+    features = body.get("features") if isinstance(body, dict) else None
+    for feature in features if isinstance(features, list) else []:
+        properties = feature.get("properties") if isinstance(feature, dict) else None
+        if isinstance(properties, dict) and place_label(properties) == label:
+            point = result_point(properties)
+            if point is not None:
+                return point
+    return None
 
 
 def parse_suggestions(body: Any) -> list[SuggestionBody]:
@@ -207,12 +279,37 @@ class CitySearch:
         except Exception:
             # The URL carries the key: no message, no chain.
             raise PlacesUnavailableError(SERVICE_FAILED) from None
-        cities = parse_cities(body)
+        cities, at_their_nodes = self._at_their_nodes(body)
+        if not at_their_nodes:
+            return cities  # not kept: the next search asks the places again
         with self._lock:
             self._cache[text] = (now, cities)
             while len(self._cache) > CACHE_SIZE:
                 self._cache.popitem(last=False)
         return cities
+
+    def _at_their_nodes(self, body: Any) -> tuple[list[PlaceBody], bool]:
+        """The geocoding's cities, each at its place's own point when the
+        geocoding gave an area (TASK-249): one more request for each. False
+        when the Places API did not answer for one: that city and the areas
+        after it are at the geocoding's points, without another wait."""
+        assert self.key is not None
+        cities: list[PlaceBody] = []
+        answered = True
+        for city, result in _cities(body):
+            url = node_url(self.key, result) if answered else None
+            if url is not None:
+                try:
+                    point = node_point(city.label, self._fetch(url))
+                except Exception as exc:
+                    # The URL carries the key: the kind of failure only.
+                    log.warning("a city's place not asked: %s", type(exc).__name__)
+                    answered = False
+                    point = None
+                if point is not None:
+                    city = PlaceBody(label=city.label, point=point)
+            cities.append(city)
+        return cities, answered
 
     def suggest(self, query: str) -> list[SuggestionBody]:
         """Cities and places whose name begins with what is typed: "Par"

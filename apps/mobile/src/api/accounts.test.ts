@@ -3,11 +3,14 @@ import signUpRequest from "@shaperoute/shared-types/fixtures/sign-up-request.jso
 import type { Session, SignUpRequest } from "@shaperoute/shared-types";
 
 import {
+  ask,
+  ASK_TIMEOUT_MS,
   authHeaders,
   deleteAccount,
   fetchMe,
   isSession,
   isUser,
+  PUT_TIMEOUT_MS,
   signIn,
   signOut,
   signUp,
@@ -166,4 +169,79 @@ test("the guards accept the contract's fixtures", () => {
   expect(isUser(session.user)).toBe(true);
   expect(isSession({ token: TOKEN })).toBe(false);
   expect(isUser({ ...session.user, id: "1" })).toBe(false);
+});
+
+describe("a connection that accepts and then stays silent (TASK-252)", () => {
+  /** A fetch that never answers, and fails when its request is cut. */
+  function silent() {
+    const signals: AbortSignal[] = [];
+    const fetchFn = jest.fn(
+      (_input: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          const signal = init?.signal;
+          if (signal) {
+            signals.push(signal);
+            signal.addEventListener("abort", () => reject(new Error("Aborted")));
+          }
+        }),
+    );
+    return { fetchFn, signals };
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  test("a request is cut after its time, and the API counts as unreachable", async () => {
+    const { fetchFn, signals } = silent();
+    const outcome = fetchMe(URL, TOKEN, { fetchFn, key: null });
+
+    await jest.advanceTimersByTimeAsync(ASK_TIMEOUT_MS - 1);
+    expect(signals[0].aborted).toBe(false);
+    await jest.advanceTimersByTimeAsync(1);
+    expect(signals[0].aborted).toBe(true);
+    expect(await outcome).toEqual({ kind: "unreachable", url: URL });
+  });
+
+  test("a PUT, which may carry a run or a picture, is given longer", async () => {
+    const { fetchFn, signals } = silent();
+    const isAnything = (body: unknown): body is unknown => true;
+    const outcome = ask(
+      URL,
+      "/me/photo",
+      { method: "PUT", body: { image: "…" }, token: TOKEN },
+      isAnything,
+      { fetchFn, key: null },
+    );
+
+    await jest.advanceTimersByTimeAsync(ASK_TIMEOUT_MS);
+    expect(signals[0].aborted).toBe(false);
+    await jest.advanceTimersByTimeAsync(PUT_TIMEOUT_MS - ASK_TIMEOUT_MS);
+    expect(await outcome).toEqual({ kind: "unreachable", url: URL });
+  });
+
+  test("a body that stops coming is no answer either", async () => {
+    const fetchFn = jest.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const body = new Promise<unknown>((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => reject(new Error("Aborted")));
+      });
+      return { ok: true, status: 200, json: () => body } as unknown as Response;
+    });
+    const outcome = fetchMe(URL, TOKEN, { fetchFn, key: null });
+
+    await jest.advanceTimersByTimeAsync(ASK_TIMEOUT_MS);
+    expect(await outcome).toEqual({ kind: "unreachable", url: URL });
+  });
+
+  test("an answer in time leaves no timer behind", async () => {
+    const fetchFn = jest.fn(async () => Response.json(SESSION.user, { status: 200 }));
+    expect(await fetchMe(URL, TOKEN, { fetchFn, key: null })).toMatchObject({
+      kind: "ok",
+    });
+    expect(jest.getTimerCount()).toBe(0);
+  });
 });
